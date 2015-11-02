@@ -1,0 +1,7 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = true
+[remote "origin_back"]
+	url = https://LonelyPriest@github.com/LonelyPriest/sdiablo_back.git
+	fetch = +refs/heads/*:refs/remotes/origin_back/*
