@@ -115,16 +115,15 @@ wgoodApp.controller("wgoodSizeDetailCtrl", function(
     /*
      * modify
      */
-    $scope.do_modify = function(group){
+    $scope.do_modify = function(g){
 	// group.$editable=true;
 	diabloUtilsService.response(false, "修改尺码组", "暂不支持此操作！！", $scope);
     };
 
     /*
      * delete
-     */
-
-    $scope.do_update = function(group){
+     */ 
+    $scope.do_delete = function(g){
 	diabloUtilsService.response(false, "删除尺码组", "暂不支持此操作！！", $scope);
     }
     

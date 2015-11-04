@@ -110,13 +110,24 @@ var App = function () {
         var viewport = _getViewPort();
         if (viewport.width < 992) {
             $('body').removeClass("page-sidebar-closed");
-        } else {
-	    if ($.cookie('sidebar_closed') === '1') {
-		if (!$('body').hasClass('page-sidebar-closed')){
-		    $('body').addClass('page-sidebar-closed');
-		}
-            }
-	}
+        }
+	// else {
+	//     if ($.cookie('sidebar_closed') === '1') {
+	// 	if (!$('body').hasClass('page-sidebar-closed')){
+	// 	    $('body').addClass('page-sidebar-closed');
+	// 	}
+        //     } else {
+	// 	var sidebar = $('.page-sidebar');
+	// 	if ($('body').hasClass("page-sidebar-closed")) {
+        //             $('body').removeClass("page-sidebar-closed");
+        //             if ($('body').hasClass('page-sidebar-fixed')) {
+	// 		sidebar.css('width', '');
+        //             }
+	// 	}
+
+	// 	// handleSidebarAndContentHeight();
+	//     }
+	// }
     }
 
     // runs callback functions set by App.addResponsiveHandler().
@@ -404,7 +415,9 @@ var App = function () {
             var body = $('body');
             var sidebar = $('.page-sidebar');
 
-            if ((body.hasClass("page-sidebar-hover-on") && body.hasClass('page-sidebar-fixed')) || sidebar.hasClass('page-sidebar-hovering')) {
+            if ((body.hasClass("page-sidebar-hover-on")
+		 && body.hasClass('page-sidebar-fixed'))
+		|| sidebar.hasClass('page-sidebar-hovering')) {
                 body.removeClass('page-sidebar-hover-on');
                 sidebar.css('width', '').hide().show();
                 handleSidebarAndContentHeight(); //fix content & sidebar height
@@ -414,7 +427,7 @@ var App = function () {
                 return;
             }
 
-            $(".sidebar-search", sidebar).removeClass("open");
+            // $(".sidebar-search", sidebar).removeClass("open");
 
             if (body.hasClass("page-sidebar-closed")) {
                 body.removeClass("page-sidebar-closed");

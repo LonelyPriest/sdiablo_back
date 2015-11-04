@@ -7,63 +7,63 @@ var wgoodApp = angular.module(
 	$httpProvider.interceptors.push(authenProvider.interceptor); 
 });
 
-wgoodApp.config(['$routeProvider', function($routeProvider){
-    var user = {"user": function(userService){
-	return userService()}}; 
+// wgoodApp.config(['$routeProvider', function($routeProvider){
+//     var user = {"user": function(userService){
+//     	return userService()}}; 
 
-    var brand = {"filterBrand": function(diabloFilter){
-	return diabloFilter.get_brand()}};
+//     var brand = {"filterBrand": function(diabloFilter){
+//     	return diabloFilter.get_brand()}};
     
-    var firm = {"filterFirm": function(diabloFilter){
-	return diabloFilter.get_firm()}}; 
+//     var firm = {"filterFirm": function(diabloFilter){
+//     	return diabloFilter.get_firm()}}; 
 
-    var type = {"filterType": function(diabloFilter){
-	return diabloFilter.get_type()}};
+//     var type = {"filterType": function(diabloFilter){
+//     	return diabloFilter.get_type()}};
     
-    var color = {"filterColor": function(diabloFilter){
-	return diabloFilter.get_color()}};
+//     var color = {"filterColor": function(diabloFilter){
+//     	return diabloFilter.get_color()}};
 
-    var color_type = {"filterColorType": function(diabloFilter){
-	return diabloFilter.get_color_type()}};
+//     var color_type = {"filterColorType": function(diabloFilter){
+//     	return diabloFilter.get_color_type()}};
 
-    var s_group = {"filterSizeGroup": function(diabloFilter){
-	return diabloFilter.get_size_group()}};
+//     var s_group = {"filterSizeGroup": function(diabloFilter){
+//     	return diabloFilter.get_size_group()}};
 
-    var base = {"base": function(diabloNormalFilter){
-	return diabloNormalFilter.get_base_setting()}};
+//     var base = {"base": function(diabloNormalFilter){
+//     	return diabloNormalFilter.get_base_setting()}};
     
-    $routeProvider.
-	when('/wgood_detail', {
-	    templateUrl: '/private/wgood/html/wgood_detail.html',
-            controller: 'wgoodDetailCtrl',
-	    resolve: angular.extend({}, user, brand, firm, type, color, base) 
-	}).
-	when('/wgood_update/:id?', {
-	    templateUrl: '/private/wgood/html/wgood_update.html',
-            controller: 'wgoodUpdateCtrl',
-	    resolve: angular.extend({}, brand, firm, type, color, user)
-	}).
-	when('/wgood_new', {
-	    templateUrl: '/private/wgood/html/wgood_new.html',
-            controller: 'wgoodNewCtrl',
-	    resolve: angular.extend({}, brand, firm, type, s_group)
-	}).
-	when('/setting/size', {
-	    templateUrl: '/private/wgood/html/wgood_size.html',
-            controller: 'wgoodSizeDetailCtrl',
-	    resolve: angular.extend({}, s_group)
-	}).
-	when('/setting/color', {
-	    templateUrl: '/private/wgood/html/wgood_color.html',
-            controller: 'wgoodColorDetailCtrl',
-	    resolve: angular.extend({}, color_type, color)
-	}).
-	otherwise({
-	    templateUrl: '/private/wgood/html/wgood_detail.html',
-            controller: 'wgoodDetailCtrl',
-	    resolve: angular.extend({}, user, brand, firm, type, color, base) 
-        })
-}]);
+//     $routeProvider.
+// 	when('/wgood_detail', {
+// 	    templateUrl: '/private/wgood/html/wgood_detail.html',
+//             controller: 'wgoodDetailCtrl',
+// 	    resolve: angular.extend({}, user, brand, firm, type, color, base) 
+// 	}).
+// 	when('/wgood_update/:id?', {
+// 	    templateUrl: '/private/wgood/html/wgood_update.html',
+//             controller: 'wgoodUpdateCtrl',
+// 	    resolve: angular.extend({}, brand, firm, type, color, user)
+// 	}).
+// 	when('/wgood_new', {
+// 	    templateUrl: '/private/wgood/html/wgood_new.html',
+//             controller: 'wgoodNewCtrl',
+// 	    resolve: angular.extend({}, brand, firm, type, s_group)
+// 	}).
+// 	when('/setting/size', {
+// 	    templateUrl: '/private/wgood/html/wgood_size.html',
+//             controller: 'wgoodSizeDetailCtrl',
+// 	    resolve: angular.extend({}, s_group)
+// 	}).
+// 	when('/setting/color', {
+// 	    templateUrl: '/private/wgood/html/wgood_color.html',
+//             controller: 'wgoodColorDetailCtrl',
+// 	    resolve: angular.extend({}, color_type, color)
+// 	}).
+// 	otherwise({
+// 	    templateUrl: '/private/wgood/html/wgood_detail.html',
+//             controller: 'wgoodDetailCtrl',
+// 	    resolve: angular.extend({}, user, brand, firm, type, color, base) 
+//         })
+// }]);
 
 
 wgoodApp.service("wgoodService", function($resource, $http, dateFilter){

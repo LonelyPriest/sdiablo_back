@@ -80,9 +80,9 @@
      env,
      [
       %% port
-      {diablo_port, 63551},
+      {diablo_port, 63552},
       
-      {diablo_db_name, "diablo"},
+      {diablo_db_name, "sdiablo"},
       {diablo_db_user, "root"},
       {diablo_db_passwd, "bxh"},
       {diablo_db_host, "localhost"}

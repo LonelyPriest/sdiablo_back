@@ -160,19 +160,8 @@ init([]) ->
     %% WholeSale = [WInventory, WRetailer, WSale, WSaleDraft,
     %% 		 WPrint, WBase, WProfile, HttpPrint, WReport],
 
-    WholeSale = [WPrint, WBase, WProfile, HttpPrint, WReport],
-
-    WRetailerSup = ?to_a(lists:concat([?w_retailer, "_sup"])),
-    WRetailerPoolSup = {
-      WRetailerSup,
-      {diablo_work_pool_sup, start_link, [?w_retailer]},
-      Restart, Shutdown, supervisor, [WRetailerSup]},
+    WholeSale = [WPrint, WBase, WProfile, HttpPrint, WReport], 
     
-    %% WRetailer =
-    %% 	{diablo_w_retailer,
-    %% 	 {diablo_w_retailer, start_link, []},
-    %% 	 Restart, Shutdown, Type, [diablo_w_retailer]},
-
     WInvSup = ?to_a(?to_s(?w_inventory) ++ "_sup"),
     WInvPoolSup = {WInvSup,
 		   {diablo_work_pool_sup, start_link, [?w_inventory]},
@@ -184,7 +173,7 @@ init([]) ->
 		    {diablo_work_pool_sup, start_link, [?w_sale]},
 		    Restart, Shutdown, supervisor, [WSaleSup]}, 
     
-    PoolSup = [WRetailerPoolSup, WInvPoolSup, WSalePoolSup],
+    PoolSup = [WInvPoolSup, WSalePoolSup],
 
     {ok, {SupFlags, [IConv, Mysql, Employ, Merchant,
     		     Shop, Right, Supplier,

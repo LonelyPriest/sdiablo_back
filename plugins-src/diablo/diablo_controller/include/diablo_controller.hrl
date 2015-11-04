@@ -55,14 +55,14 @@
 -define(QZG_DY_SESSION, "qzg_dyty_session").
 
 %% right module
--define(right_sale, 10000).
--define(right_inventory, 20000).
+%% -define(right_sale, 10000).
+%% -define(right_inventory, 20000).
 -define(right_member, 30000).
 -define(right_shop, 40000).
 -define(right_employe, 50000).
 -define(right_right, 60000).
 %% -define(right_right_sup, 60000).
--define(right_supplier, 70000).
+%% -define(right_supplier, 70000).
 -define(right_merchant, 80000).
 %% -define(right_size_group, 90000).
 
@@ -70,7 +70,7 @@
 -define(right_w_sale,      90000).
 -define(right_w_inventory, 100000).
 -define(right_w_firm,      110000).
--define(right_w_retailer,  120000). 
+%% -define(right_w_retailer,  120000). 
 -define(right_w_print,     130000).
 -define(right_w_good,      140000).
 -define(right_w_report,    150000).
@@ -80,32 +80,6 @@
 
 %% base setting
 -define(right_w_base, 900000).
-
-
-%% child functions
-%% sale
--define(perment, ?right_sale + 1).
--define(list_sale_info, ?right_sale + 2).
--define(reject_and_exchange, ?right_sale + 3).
--define(list_reject_info, ?right_sale + 4).
-
-%% inventory
--define(new_inventory,     ?right_inventory + 1).
--define(del_inventory,     ?right_inventory + 2).
--define(update_inventory,  ?right_inventory + 3).
--define(list_inventory,    ?right_inventory + 4).
--define(new_size_group,    ?right_inventory + 5).
--define(del_size_group,    ?right_inventory + 6).
--define(update_size_group, ?right_inventory + 7).
--define(list_size_group,   ?right_inventory + 8).
--define(check_inventory,   ?right_inventory + 9).
--define(move_inventory,    ?right_inventory + 10).
--define(do_move_inventory, ?right_inventory + 11).
--define(reject_inventory,  ?right_inventory + 12).
--define(import_inventory,  ?right_inventory + 13).
--define(export_inventory,  ?right_inventory + 14).
--define(adjust_price,      ?right_inventory + 15).
-
 
 %% member
 -define(new_member,              ?right_member + 1).
@@ -150,17 +124,6 @@
 -define(update_account, ?right_right + 7).
 -define(list_account,   ?right_right + 8).
 
-%% supplier
--define(new_supplier,       ?right_supplier + 1).
--define(del_supplier,       ?right_supplier + 2).
--define(update_supplier,    ?right_supplier + 3).
--define(list_supplier,      ?right_supplier + 4).
--define(new_brand,          ?right_supplier + 5).
--define(del_brand,          ?right_supplier + 6).
--define(update_brand,       ?right_supplier + 7).
--define(list_brand,         ?right_supplier + 8).
--define(connect_brand,      ?right_supplier + 9).
-
 %% merchant
 -define(new_merchant,       ?right_merchant + 1).
 -define(del_merchant,       ?right_merchant + 2).
@@ -181,10 +144,6 @@
 -define(check_w_sale,       ?right_w_sale + 6).
 
 %% inventory
--define(new_w_order,    ?right_w_inventory + 1).
--define(del_w_order,    ?right_w_inventory + 2).
--define(list_w_order,   ?right_w_inventory + 3). 
-
 -define(new_w_inventory,             ?right_w_inventory + 4).
 -define(del_w_inventory,             ?right_w_inventory + 5).
 -define(update_w_inventory,          ?right_w_inventory + 6).
@@ -196,19 +155,16 @@
 -define(filter_fix_w_inventory,      ?right_w_inventory + 12).
 -define(check_w_inventory,           ?right_w_inventory + 13).
 
-
-
 %% firm
 -define(new_w_firm,    ?right_w_firm + 1).
 -define(del_w_firm,    ?right_w_firm + 2).
 -define(update_w_firm, ?right_w_firm + 3).
 -define(list_w_firm,   ?right_w_firm + 4).
 
-%% wretailer
--define(new_w_retailer,    ?right_w_retailer + 1).
--define(del_w_retailer,    ?right_w_retailer + 2).
--define(update_w_retailer, ?right_w_retailer + 3).
--define(list_w_retailer,   ?right_w_retailer + 4).
+-define(new_w_brand,   ?right_w_firm + 5).
+-define(del_w_brand,   ?right_w_firm + 6).
+-define(update_w_brand,?right_w_firm + 7).
+-define(list_w_brand,  ?right_w_firm + 8).
 
 %% wprint
 -define(new_w_print_server,  ?right_w_print + 1).
@@ -219,7 +175,6 @@
 -define(del_w_printer,    ?right_w_print + 5).
 -define(update_w_printer, ?right_w_print + 6).
 -define(list_w_printer,   ?right_w_print + 7).
-
 
 %% good
 -define(new_w_good,     ?right_w_good + 1).
@@ -313,10 +268,6 @@
 -define(supplier_request, diablo_controller_supplier_request).
 -define(supplier, diablo_controller_supplier).
 
-%% size group
-%% -define(size_group_request, diablo_controller_size_group_request).
-%% -define(size_group, diablo_controller_size_group).
-
 %% about whole sale
 -define(firm_request, diablo_firm_request).
 -define(firm, diablo_firm).
@@ -326,10 +277,6 @@
 -define(w_sale_request, diablo_w_sale_request).
 -define(w_sale, diablo_w_sale).
 -define(w_sale_draft, diablo_w_sale_draft).
-
-%% saler
--define(w_retailer_request, diablo_w_retailer_request).
--define(w_retailer, diablo_w_retailer).
 
 %% inventory
 -define(w_inventory_request, diablo_purchaser_request).
@@ -417,7 +364,6 @@
 	  size_groups = [] :: list(),
 	  itype       = [] :: list(), %% type of inventory
 	  brand       = [] :: list(), %% brand of inventory
-	  retailer    = [] :: list(), %% all retailer of merchant
 	  employee    = [] :: list(), %% all employee of merchant
 	  firm        = [] :: list(), %% all firms of merchant
 	  color_type  = [] :: list(),

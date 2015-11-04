@@ -84,6 +84,13 @@ Page sidebar
     display: block !important;
 }
 
+/* .page-sidebar-closed .page-sidebar-menu{ */
+/*     transition: width 5s; */
+/*     -moz-transition: width 5s; /\* Firefox 4 *\/ */
+/*     -webkit-transition: width 5s; /\* Safari,Chrome *\/ */
+/*     -o-transition: width 5s; /\* Opera *\/ */
+/* } */
+
 
 .page-sidebar-closed .page-sidebar-menu > li:hover > .sub-menu > li > .sub-menu,
 .page-sidebar-closed .page-sidebar-menu > li:hover > .sub-menu > li > .sub-menu > li > .sub-menu {

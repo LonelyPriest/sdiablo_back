@@ -40,7 +40,7 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 	return diabloFilter.get_brand()}};
     
     var firm = {"filterFirm": function(diabloFilter){
-	return diabloFilter.get_firm()}}; 
+    	return diabloFilter.get_firm()}};
     
     var type = {"filterType": function(diabloFilter){
 	return diabloFilter.get_type()}};
@@ -50,6 +50,9 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 
     var color = {"filterColor": function(diabloFilter){
 	return diabloFilter.get_color()}};
+
+    var color_type = {"filterColorType": function(diabloFilter){
+            return diabloFilter.get_color_type()}};
     
     var s_group = {"filterSizeGroup": function(diabloFilter){
 	return diabloFilter.get_size_group()}};
@@ -57,7 +60,8 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
     var base = {"base": function(diabloNormalFilter){
 	return diabloNormalFilter.get_base_setting()}};
     
-    $routeProvider. 
+    $routeProvider.
+	// new
 	when('/inventory_new', {
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_new.html',
             controller: 'purchaserInventoryNewCtrl',
@@ -66,24 +70,28 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 	when('/update_new_detail/:rsn?/:ppage?', {
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_new_detail_update.html',
             controller: 'purchaserInventoryNewUpdateCtrl',
-	    resolve: angular.extend({}, user, brand, firm, type, employee, s_group, color, base)
+	    resolve: angular.extend(
+		{}, user, brand, firm, type, employee, s_group, color, base)
 	}).
-	//
+	// reject
 	when('/inventory_reject', {
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_reject.html',
             controller: 'purchaserInventoryRejectCtrl',
-	    resolve: angular.extend({}, user, firm, employee, s_group, color, base)
+	    resolve: angular.extend(
+		{}, user, firm, employee, s_group, color, base)
 	}). 
 	when('/update_new_detail_reject/:rsn?/:ppage?', {
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_reject_update.html',
             controller: 'purchaserInventoryRejectUpdateCtrl',
-	    resolve: angular.extend({}, user, brand, firm, type, employee, s_group, color, base)
+	    resolve: angular.extend(
+		{}, user, brand, firm, type, employee, s_group, color, base)
 	}).
-	//
+	// detail
 	when('/inventory_rsn_detail/:rsn?/:ppage?', {
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_new_rsn_detail.html',
 	    controller: 'purchaserInventoryNewRsnDetailCtrl',
-	    resolve: angular.extend({}, user, brand, firm, type, employee, s_group, color, base)
+	    resolve: angular.extend(
+		{}, user, brand, firm, type, employee, s_group, color, base)
 	}).
 	when('/inventory_new_detail/:page?', {
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_new_detail.html',
@@ -93,9 +101,10 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 	when('/inventory_detail/:rsn?', {
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_detail.html',
             controller: 'purchaserInventoryDetailCtrl' ,
-	    resolve: angular.extend({}, user, brand, firm, type, s_group, color, base)
+	    resolve: angular.extend(
+		{}, user, brand, firm, type, s_group, color, base)
 	}).
-	// 
+	// fix
 	when('/inventory/inventory_fix', {
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_fix.html',
             controller: 'purchaserInventoryFixCtrl' ,
@@ -109,8 +118,36 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 	when('/inventory/inventory_rsn_detail/fix/:rsn?', {
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_fix_rsn_detail.html',
             controller: 'purchaserInventoryFixRsnDetailCtrl',
-	    resolve: angular.extend({}, user, brand, firm, s_group, color, base)
-	}). 
+	    resolve: angular.extend(
+		{}, user, brand, firm, s_group, color, base)
+	}).
+	// wgood
+	when('/good/size', {
+	    templateUrl: '/private/wgood/html/wgood_size.html',
+            controller: 'wgoodSizeDetailCtrl',
+	    resolve: angular.extend({}, s_group)
+	}).
+	when('/good/color', {
+	    templateUrl: '/private/wgood/html/wgood_color.html',
+	    controller: 'wgoodColorDetailCtrl',
+	    resolve: angular.extend({}, color_type, color)
+	}).
+	when('/good/wgood_new', {
+	    templateUrl: '/private/wgood/html/wgood_new.html',
+	    controller: 'wgoodNewCtrl',
+	    resolve: angular.extend({}, brand, firm, type, s_group)
+	}).
+	when('/good/wgood_update/:id?', {
+	    templateUrl: '/private/wgood/html/wgood_update.html',
+	    controller: 'wgoodUpdateCtrl',
+	    resolve: angular.extend({}, brand, firm, type, color, user)
+	}).
+	when('/good/wgood_detail', {
+	    templateUrl: '/private/wgood/html/wgood_detail.html',
+	    controller: 'wgoodDetailCtrl',
+	    resolve: angular.extend({}, user, brand, firm, type, color, base) 
+		}).
+	// default
 	otherwise({
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_new_detail.html',
             controller: 'purchaserInventoryNewDetailCtrl' ,

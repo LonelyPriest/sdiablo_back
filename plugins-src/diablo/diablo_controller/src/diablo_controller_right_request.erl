@@ -58,7 +58,8 @@ action(Session, Req, {"list_right_catlog"}) ->
 	    Catlogs = ?right_auth:catlog(session, Session),
 	    %% ?DEBUG("catlogs ~p", [Catlogs]),
 	    %% filter right
-	    {ok, Rights} = ?right_init:get_children([{<<"id">>, ?right_right}]), 
+	    {ok, Rights} =
+		?right_init:get_children([{<<"id">>, ?right_right}]), 
 	    NewCatlogs = Catlogs -- Rights,
 	    %% ?DEBUG("NewCatlogs ~p", [NewCatlogs]),
 	    ?utils:respond(200, batch, Req, NewCatlogs)
@@ -71,27 +72,19 @@ action(Session, Req, {"get_login_user_info"}) ->
     {ok, Catlogs} = ?w_user_profile:get(user_right, Merchant, Session),
     {ok, Shops} = ?w_user_profile:get(user_shop, Merchant, Session),
 
-    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
-				       {<<"right">>, Catlogs},
-				       {<<"shop">>, Shops},
-				       {<<"type">>, ?session:get(type, Session)}]});
+    ?utils:respond(200, object, Req,
+		   {[{<<"ecode">>, 0},
+		     {<<"right">>, Catlogs},
+		     {<<"shop">>, Shops},
+		     {<<"type">>, ?session:get(type, Session)}]});
     
 action(Session, Req, {"list_login_user_right"}) ->
     ?DEBUG("list_login_user_right with session ~p", [Session]),
     %% {ok, Catlogs} = login_user(right, Session),
     Merchant = ?session:get(merchant, Session),
     %% UserId = ?session:get(id, Session),
-    {ok, Catlogs} = ?w_user_profile:get(user_right, Merchant, Session),
-    
-    ?utils:respond(200, batch, Req, Catlogs);
-    %% case ?session:get(type, Session) of
-    %% 	?SUPER ->
-    %% 	    {ok, Catlogs} = ?right_init:lookup(super),
-    %% 	    ?utils:respond(200, batch, Req, Catlogs);
-    %% 	_ ->
-    %% 	    Catlogs = ?right_auth:catlog(session, Session),
-    %% 	    ?utils:respond(200, batch, Req, Catlogs)
-    %% end;
+    {ok, Catlogs} = ?w_user_profile:get(user_right, Merchant, Session), 
+    ?utils:respond(200, batch, Req, Catlogs); 
 
 
 action(Session, Req, {"list_login_user_shop"}) ->
@@ -138,15 +131,15 @@ action(Session, Req, {"get_shop_by_role", RoleId}) ->
 		  case lists:member(AShop, Acc) of
 		      true  -> Acc;
 		      false -> [AShop|Acc]
-		  end
-	  end, [], Shops),
+		  end end, [], Shops),
     
     NewShops = 
 	lists:foldr(
 	  fun({Shop}, Acc) ->
 		  {ok, Children} =
 		      ?right_init:get_children(
-			 children_only, [{<<"id">>, ?v(<<"func_id">>, Shop)}]),
+			 children_only,
+			 [{<<"id">>, ?v(<<"func_id">>, Shop)}]),
 
 		  case Children of
 		      [] -> 
@@ -155,14 +148,12 @@ action(Session, Req, {"get_shop_by_role", RoleId}) ->
 			  Left = proplists:delete(<<"func_id">>, Shop),
 			  [ {[{<<"func_id">>,  ?v(<<"id">>, Child)}|Left]}
 			    || {Child} <-  Children] ++ Acc
-		  end
-
+		  end 
 	  end, [], FilterShops),
 
-    ?DEBUG("get shops ~p", [NewShops]),
+    %% ?DEBUG("get shops ~p", [NewShops]),
 
     ?utils:respond(200, batch, Req, NewShops);
-
 	    
 action(Session, Req, {"list_account"}) ->
     ?DEBUG("list_account with session ~p", [Session]),
@@ -178,8 +169,9 @@ action(Session, Req, {"list_account"}) ->
 	_ ->
 	    Req:respond({598,
 			 [{"Content-Type", "application/json"}],
-			 ejson:encode({[{<<"ecode">>, 9901},
-					{<<"action">>, <<"list_account">>}]})})
+			 ejson:encode(
+			   {[{<<"ecode">>, 9901},
+			     {<<"action">>, <<"list_account">>}]})})
     end;
 
 %% =============================================================================
@@ -189,24 +181,20 @@ action(Session, Req, {"list_account_right", AccountId}) ->
     ?DEBUG("list_account_right with session ~p, accountId ~p",
 	   [Session, AccountId]),
     %% ?utils:respond(200, Req, ?err(not_enought_right, ?utils:get_user(Session)));
-    Roles = ?right:lookup_account_right({<<"user_id">>, ?to_integer(AccountId)}),
+    Roles = ?right:lookup_account_right(
+	       {<<"user_id">>, ?to_integer(AccountId)}),
     ?utils:respond(200, batch, Req, Roles);
 
 action(Session, Req, {"list_inventory_children"}) ->
     ?DEBUG("list_inventory_children with session ~p", [Session]),
 
-    {RightId, Cares} =
-	case ?session:get(mtype, Session) of
-	    ?SALER ->
-		{?right_inventory,
-		 %% only need [new, delete, update, query, check, move] child 
-		 [?new_inventory, ?del_inventory,
-		  ?update_inventory, ?check_inventory]};
-	    ?WHOLESALER ->
-		{?right_w_inventory,
-		 [?new_w_inventory, ?del_w_inventory, ?update_w_inventory,
-		  ?reject_w_inventory, ?fix_w_inventory, ?check_w_inventory]}
-	end,
+    {RightId, Cares}
+	= {?right_w_inventory, [?new_w_inventory,
+				?del_w_inventory,
+				?update_w_inventory,
+				?reject_w_inventory,
+				?fix_w_inventory,
+				?check_w_inventory]}, 
     
     {ok, Children} = ?right_init:get_children(
 			children_only, [{<<"id">>, RightId}]),
@@ -223,14 +211,11 @@ action(Session, Req, {"list_sales_children"}) ->
     ?DEBUG("list_sales_children with session ~p", [Session]),
     
     {RightId, Cares} =
-	case ?session:get(mtype, Session) of
-	    ?SALER ->
-		{?right_sale, [?perment]};
-	    ?WHOLESALER ->
-		{?right_w_sale,
-		 [?new_w_sale, ?reject_w_sale, ?print_w_sale,
-		  ?update_w_sale, ?check_w_sale]}
-	end,
+	{?right_w_sale, [?new_w_sale,
+			 ?reject_w_sale,
+			 ?print_w_sale,
+			 ?update_w_sale,
+			 ?check_w_sale]},
     
     {ok, Children} =
 	?right_init:get_children(children_only, [{<<"id">>, RightId}]),
@@ -241,7 +226,6 @@ action(Session, Req, {"list_sales_children"}) ->
 		  lists:member(?value(<<"id">>, Node), Cares)
 	  end, Children),
     ?utils:respond(200, batch, Req, FilterChildren).
-
 
 %%
 %% POST
@@ -289,8 +273,9 @@ action(Session, Req, {"new_role"}, Payload) ->
 	    {?MERCHANT, ?USER} ->
 		%% ?err(not_enought_right, LoginName);
 		case ?right:right(
-			new_user_role, [{<<"created_by">>, LoginId},
-					{<<"merchant">>, Merchant}|Payload]) of
+			new_user_role,
+			[{<<"created_by">>, LoginId},
+			 {<<"merchant">>, Merchant}|Payload]) of
 		    {ok, RoleName} ->
 			?succ(add_role,RoleName);
 		    {error, Error} ->
@@ -356,11 +341,12 @@ action(Session, Req, {"new_account"}, Payload) ->
 
 		case MaxCreate =< ExistCreate of
 		    true ->
-			?DEBUG("beyond the number of account, limit ~p, exist ~p",
-			      [MaxCreate, ExistCreate]),
+			?DEBUG("beyond the number of account, limit ~p"
+			       ", exist ~p", [MaxCreate, ExistCreate]),
 			{error, ?err(max_account, MaxCreate)};
 		    false ->
-			?right:right(new_account, [{<<"merchant">>, Merchant}|Payload])
+			?right:right(
+			   new_account, [{<<"merchant">>, Merchant}|Payload])
 		end;
 	    _ ->
 		{error, ?err(not_enought_right, ?value(<<"name">>, Payload))}
@@ -459,26 +445,20 @@ get_shops(Session, Module) ->
 	    ?SUPER ->
 		?shop:lookup();
 	    ?MERCHANT ->
-		{ok, S0} = ?w_user_profile:get(shop, ?session:get(merchant, Session)),
+		{ok, S0} = ?w_user_profile:get(
+			      shop, ?session:get(merchant, Session)),
 		lists:foldr(
 		  fun({AShop}, Acc) ->
 			  [{[{<<"shop_id">>,  ?v(<<"id">>, AShop)},
 			     {<<"name">>,     ?v(<<"name">>, AShop)},
 			     {<<"repo_id">>,  ?v(<<"repo">>, AShop)},
 			     {<<"type">>,     ?v(<<"type">>, AShop)},
-			     {<<"func_id">>,
-			      case ?session:get(mtype, Session) of
-				  ?SALER ->
-				      case Module of
-					  inventory -> ?right_inventory;
-					  sale      -> ?perment
-				      end;
-				  ?WHOLESALER ->
-				      case Module of
-					  inventory -> ?right_w_inventory;
-					  sale ->      ?right_w_sale
-				      end
-			      end}]} | Acc] 
+			     {<<"func_id">>, 
+			      case Module of
+				  inventory -> ?right_w_inventory;
+				  sale ->      ?right_w_sale
+			      end}
+			    ]} | Acc] 
 		  end, [], S0);
 	    ?USER ->
 		?right_auth:get_user_shop(Session)
@@ -539,11 +519,8 @@ login_user(shop, Session) ->
 			 {<<"name">>,    ?v(<<"name">>, AShop)},
 			 {<<"repo_id">>, ?v(<<"repo">>, AShop)},
 			 {<<"type">>,    ?v(<<"type">>, AShop)},
-			 {<<"func_id">>,
-			  case ?session:get(mtype, Session) of
-			      ?SALER -> ?right_inventory;
-			      ?WHOLESALER -> ?right_w_inventory
-			  end}]} | Acc]
+			 {<<"func_id">>, ?right_w_inventory}]}
+		       | Acc]
 	      end, [], S);
 	?USER ->
 	    ?right_auth:get_user_shop(Session)

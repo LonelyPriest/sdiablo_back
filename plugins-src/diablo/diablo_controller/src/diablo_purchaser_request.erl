@@ -401,16 +401,8 @@ action(Session, Req, {"w_inventory_export"}, Payload) ->
 sidebar(Session) -> 
     case ?right_request:get_shops(Session, inventory) of
 	[] ->
-	   ?menu:sidebar(level_1_menu,[]);
+	    ?menu:sidebar(level_1_menu,[]);
 	Shops ->
-	    %% Order = 
-	    %% 	case ?inventory_request:shop_action(?new_w_order, Shops) of
-	    %% 	    [] -> [];
-	    %% 	    _ ->
-	    %% 		[] 
-	    %% 	end,
-
-	    
 	    Record = authen_shop_action(
 		       {?new_w_inventory,
 			"inventory_new",
@@ -419,49 +411,51 @@ sidebar(Session) ->
 
 	    Reject = authen_shop_action(
 		       {?reject_w_inventory,
-			"inventory_reject", "采购退货", "glyphicon glyphicon-arrow-left"}, Shops),
+			"inventory_reject",
+			"采购退货", "glyphicon glyphicon-arrow-left"}, Shops),
 
-	    TransR = [{"inventory_new_detail", "采购记录", "glyphicon glyphicon-download"}],
-	    TransD = [{"inventory_rsn_detail", "采购明细", "glyphicon glyphicon-map-marker"}],
+	    TransR = [{"inventory_new_detail",
+		       "采购记录", "glyphicon glyphicon-download"}],
+	    TransD = [{"inventory_rsn_detail",
+		       "采购明细", "glyphicon glyphicon-map-marker"}],
 
-	    InvDetail = [{"inventory_detail", "库存详情", "glyphicon glyphicon-book"}],
+	    InvDetail = [{"inventory_detail",
+			  "库存详情", "glyphicon glyphicon-book"}], 
 
-	    
-	    %% Record =
-	    %% 	[{{"record", "采购入库", "glyphicon glyphicon-shopping-cart"},
-	    %% 	  authen_shop_action(
-	    %% 	    {?new_w_inventory, "inventory_new", "入库", "glyphicon glyphicon-plus"}, Shops)
-	    %% 	  ++ [{"inventory_new_detail", "入库详情", "glyphicon glyphicon-briefcase"},
-	    %% 	      {"inventory_rsn_detail/new", "入库明细", "glyphicon glyphicon-map-marker"}] 
-	    %% 	 }],
-
-	    %% Reject = 
-	    %% 	[{{"record", "采购退货", "glyphicon glyphicon-plane"}, 
-	    %% 	  authen_shop_action(
-	    %% 	    {?reject_w_inventory,
-	    %% 	     "inventory_reject", "退货", "glyphicon glyphicon-arrow-left"}, Shops)
-	    %% 	  ++ [{"inventory_reject_detail",
-	    %% 	       "退货详情", "glyphicon glyphicon-briefcase"},
-	    %% 	      {"inventory_rsn_detail/reject",
-	    %% 	       "退货明细", "glyphicon glyphicon-map-marker"}]
-	    %%  }],
-	    
 	    InvMgr =
-		[
-		 {{"inventory", "库存盘点", "glyphicon glyphicon-check"},
+		[{{"inventory", "库存盘点", "glyphicon glyphicon-check"},
 		  authen_shop_action(
-		       {?fix_w_inventory,
-			"inventory_fix", "盘点", "glyphicon glyphicon-check"}, Shops) 
+		    {?fix_w_inventory,
+		     "inventory_fix",
+		     "盘点", "glyphicon glyphicon-check"}, Shops) 
 		  ++ [{"inventory_fix_detail",
 		       "盘点记录", "glyphicon glyphicon-tasks"},
 		      {"inventory_rsn_detail/fix",
 		       "盘点明细", "glyphicon glyphicon-leaf"}] 
 		 }],
 
-	    Level1 = ?menu:sidebar(level_1_menu, Record ++ Reject ++ TransR ++ TransD ++ InvDetail),
-	    Level2 = ?menu:sidebar(level_2_menu, InvMgr),
+	    GoodMgr = [{{"good", "货品资料",
+			 "glyphicon glyphicon-headphones"},
+			case ?right_auth:authen(?new_w_good, Session) of
+			    {ok, ?new_w_good} ->
+				[{"wgood_new",
+				  "新增货品", "glyphicon glyphicon-plus"}];
+			    _ -> []
+			end
+			++ [{"wgood_detail",
+			     "货品详情", "glyphicon glyphicon-book"},
+			    {"size",
+			     "尺码", "glyphicon glyphicon-text-size"},
+			    {"color", "颜色",
+			     "glyphicon glyphicon-font"}]
+		       }],
+
+	    Level1 = ?menu:sidebar(level_1_menu,
+				   Record ++ Reject ++ TransR
+				   ++ TransD ++ InvDetail),
+	    Level2 = ?menu:sidebar(level_2_menu, InvMgr ++ GoodMgr),
+
 	    Level1 ++ Level2
-	    %% ?menu:sidebar(level_2_menu, Order ++ Record ++ Reject ++ InvMgr) 
     end.
 
 authen_shop_action({Action, Path, Name}, Shops) ->

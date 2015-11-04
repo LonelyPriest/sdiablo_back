@@ -97,20 +97,16 @@ init([]) ->
     Empty = gb_trees:empty(),
 
     Funcs = 
-	[{?right_sale,      {"/sale",      "销售",     ?sale_request}},
-	 {?right_member,    {"/member",    "会员",     ?member_request}},
+	[{?right_member,    {"/member",    "会员",     ?member_request}},
 	 {?right_shop,      {"/shop",      "店铺",     ?shop_request}},
 	 {?right_merchant,  {"/merchant",  "商家",     ?merchant_request}},
 	 {?right_employe,   {"/employ",    "员工",     ?employ_request}},
-	 {?right_inventory, {"/inventory", "库存",     ?inventory_request}},
 	 {?right_right,     {"/right",     "权限",     ?right_request}},
-	 {?right_supplier,  {"/supplier",  "供应商",   ?supplier_request}},
-
+	 
 	 %% about whole sale
 	 {?right_w_sale,       {"/wsale",     "销售",   ?w_sale_request}}, 
 	 {?right_w_firm,       {"/firm",      "厂商",   ?firm_request}}, 
 	 {?right_w_inventory,  {"/purchaser", "采购",   ?w_inventory_request}},
-	 {?right_w_retailer,   {"/wretailer", "零售商", ?w_retailer_request}}, 
 	 {?right_w_print,      {"/wprint",    "打印",   ?w_print_request}}, 
 	 {?right_w_good,       {"/wgood",     "货品",   ?w_good_request}}, 
 	 {?right_w_report,     {"/wreport",   "报表",   ?w_report_request}}, 
@@ -138,8 +134,9 @@ handle_call({navbar, super}, _From, #func_tree{tree=Tree} = State) ->
     RootKeys = [?right_merchant, ?right_right, ?right_w_print],
     Navs = 
 	lists:foldr(
-	  fun(Root, Acc) ->
-		  [gb_trees:get(Root, Tree)|Acc]
+	  fun(RId, Acc) ->
+		  {Href, Name, Module} = gb_trees:get(RId, Tree),
+		  [{Href, Name, Module, false}|Acc]
 	  end,[], RootKeys),
     ?DEBUG("navs ~p", [Navs]),
     {reply, Navs, State};
@@ -171,13 +168,9 @@ handle_call({navbar, UserId}, _From, #func_tree{tree=Tree} = State) ->
 
 
     %% order right
-    OrderRoots = [?right_w_sale, ?right_w_inventory, ?right_w_good,
-		  ?right_sale, ?right_inventory, ?right_member,
+    OrderRoots = [?right_w_sale, ?right_w_inventory, ?right_member,
 		  ?right_employe, ?right_shop, ?right_w_firm,
-		  ?right_supplier, ?right_w_retailer, ?right_w_report,
-		  ?right_right
-		  %% ?right_w_base
-		 ], 
+		  ?right_w_report, ?right_right], 
     ?DEBUG("OrderRoots ~p", [OrderRoots]),
 
     OrderRights = order_root(OrderRoots, ?to_tl(Roots)),

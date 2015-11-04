@@ -370,11 +370,7 @@ create table w_inventory_good
     brand            INTEGER default -1,
     firm             INTEGER default -1,
     org_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
-    tag_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
-    pkg_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
-    price3           DECIMAL(10, 2) default 0, -- max: 99999999.99
-    price4           DECIMAL(10, 2) default 0, -- max: 99999999.99
-    price5           DECIMAL(10, 2) default 0, -- max: 99999999.99
+    tag_price        DECIMAL(10, 2) default 0, -- max: 99999999.99 
     discount         DECIMAL(3, 0), -- max: 100
     path             VARCHAR(255) default null, -- the image path
     alarm_day        TINYINT default -1,  -- the days of alarm
@@ -410,11 +406,7 @@ create table w_inventory
 
     
     org_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
-    tag_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
-    pkg_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
-    price3           DECIMAL(10, 2) default 0, -- max: 99999999.99
-    price4           DECIMAL(10, 2) default 0, -- max: 99999999.99
-    price5           DECIMAL(10, 2) default 0, -- max: 99999999.99
+    tag_price        DECIMAL(10, 2) default 0, -- max: 99999999.99 
     discount         DECIMAL(3, 0), -- max: 100
     
     path             VARCHAR(255) default null, -- the image path
@@ -458,7 +450,7 @@ create table w_inventory_new(
     rsn            VARCHAR(32) not null, -- record sn
     employ         VARCHAR(8) not null,     -- employ
     firm           INTEGER default -1, 
-    shop           INTEGER default -1,                  -- which shop saled the goods
+    shop           INTEGER default -1,  -- which shop saled the goods
     merchant       INTEGER default -1,
     
     balance        DECIMAL(10, 2) default 0, -- max: 99999999.99, balance of last record 
@@ -488,32 +480,24 @@ create table w_inventory_new(
 create table w_inventory_new_detail(
     id             INTEGER AUTO_INCREMENT,
     rsn            VARCHAR(32) not null, -- record sn
+    
     style_number   VARCHAR(64) not null,
     brand          INTEGER default -1, 
-    -- color          INTEGER default -1,
-    -- size           VARCHAR(8) default null, -- S/26, M/27.... 
+    
     type           INTEGER default -1, -- reference to inv_type 
     sex            TINYINT default -1, -- 0: man, 1:woman
-    season         TINYINT, -- 0:spring, 1:summer, 2:autumn, 3:winter
-    amount         INTEGER default 0,
-    firm           INTEGER default -1,
-
+    season         TINYINT, -- 0:spring, 1:summer, 2:autumn, 3:winter 
+    firm           INTEGER default -1, 
     s_group        VARCHAR(32) default 0,  -- which size group 
     free           TINYINT default 0,  -- free color and free size
     year           YEAR(4),
     
     org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
-    tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
-    pkg_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
-    price3         DECIMAL(10, 2) default 0, -- max: 99999999.99
-    price4         DECIMAL(10, 2) default 0, -- max: 99999999.99
-    price5         DECIMAL(10, 2) default 0, -- max: 99999999.99
+    tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99 
     discount       DECIMAL(3, 0)  default 100, -- max: 100
-    path           VARCHAR(255) default null, -- the image path
+    amount         INTEGER default 0,
     
-    -- shop           INTEGER default -1,
-    -- employ         VARCHAR(8) not null,     -- employ	 
-    -- merchant       INTEGER default -1,
+    path           VARCHAR(255) default null, -- the image path
 
     entry_date     DATETIME,
     deleted        INTEGER default 0, -- 0: no;  1: yes
@@ -526,10 +510,12 @@ create table w_inventory_new_detail(
 create table w_inventory_new_detail_amount(
     id             INTEGER AUTO_INCREMENT,
     rsn            VARCHAR(32) not null, -- record sn
+    
     style_number   VARCHAR(64) not null,
     brand          INTEGER default -1,
     color          INTEGER default -1,
     size           VARCHAR(8) default null, -- S/26, M/27....
+    
     total          INTEGER default 0,
     entry_date     DATETIME,
     deleted        INTEGER default 0, -- 0: no;  1: yes
@@ -540,11 +526,14 @@ create table w_inventory_new_detail_amount(
 create table w_inventory_fix(
     id             INTEGER AUTO_INCREMENT,
     rsn            VARCHAR(32) not null, -- record sn
+    
     shop           INTEGER,                 -- which shop saled the goods
     employ         VARCHAR(8) not null,     -- employ
+    
     exist          INTEGER,
     fixed          INTEGER default 0,
     metric         INTEGER default 0,
+    
     merchant       INTEGER, 
     entry_date     DATETIME,
     deleted        INTEGER default 0, -- 0: no;  1: yes
@@ -555,28 +544,19 @@ create table w_inventory_fix(
 
 create table w_inventory_fix_detail(
     id             INTEGER AUTO_INCREMENT,
-    -- key
     rsn            VARCHAR(32) not null, -- record sn
+    
     style_number   VARCHAR(64) not null,
     brand          INTEGER default -1,
+    
     type           INTEGER default -1,
     season         TINYINT, -- 0:spring, 1:summer, 2:autumn, 3:winter 
     firm           INTEGER default -1,
-    -- color          INTEGER default -1,
     
-    -- size           VARCHAR(8) default null, -- S/26, M/27....
     s_group        VARCHAR(32) default 0,  -- which size group 
-    free           TINYINT default 0,  -- free color and free size
-    
-    -- shop           INTEGER default -1,
-    -- merchant       INTEGER default -1,
-    
-    -- season         TINYINT, -- 0:spring, 1:summer, 2:autumn, 3:winter 
-    -- firm           INTEGER default -1,
+    free           TINYINT default 0,  -- free color and free size 
     path           VARCHAR(255) default null, -- the image path
-    
-    -- employ         VARCHAR(8) not null,     -- employ
-    
+        
     exist          INTEGER not null,
     fixed          INTEGER default 0,
     metric         INTEGER default 0,
@@ -591,6 +571,7 @@ create table w_inventory_fix_detail(
 create table w_inventory_fix_detail_amount(
     id             INTEGER AUTO_INCREMENT,
     rsn            VARCHAR(32) not null, -- record sn
+    
     style_number   VARCHAR(64) not null,
     brand          INTEGER default -1,
     color          INTEGER default -1,
@@ -637,28 +618,11 @@ create table w_sale(
     check_date     DATETIME default null, -- date of last change
     entry_date     DATETIME,
     deleted        INTEGER default 0, -- 0: no;  1: yes
-    unique  key rsn (rsn),
-    key index_smer  (shop, merchant, employ, retailer),
-    primary key     (id),
+    unique  key rsn     (rsn),
+    key     index_smer  (shop, merchant, employ, retailer),
+    primary key         (id)
     
 )default charset=utf8;
-
--- create table w_sale_reject(
---     id             INTEGER AUTO_INCREMENT,
---     rsn            VARCHAR(16), -- record sn
---     employ         VARCHAR(8) not null,     -- employ
---     retailer       INTEGER, 
---     shop           INTEGER,                  -- which shop saled the goods
---     merchant       INTEGER,
---     balance        DECIMAL(10, 2) default 0, -- max: 99999999.99, balance of last record
---     cur_balance    DECIMAL(10, 2) default 0, -- max: 99999999.99, balance of current record
---     total          INTEGER default 0,
---     comment        VARCHAR(255) default null,
---     -- type           TINYINT  default -1, -- 0:sale 1:reject 
---     entry_date     DATETIME,
---     deleted        INTEGER default 0, -- 0: no;  1: yes
---     primary key    (id)
--- )default charset=utf8;
 
 /*
 * sale

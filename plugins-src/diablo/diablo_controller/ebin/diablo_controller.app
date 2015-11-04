@@ -45,8 +45,8 @@
               {registered,[diablo_controller,diablo_controller_sup]},
               {applications,[kernel,stdlib]},
               {mod,{diablo_controller,[]}},
-              {env,[{diablo_port,63551},
-                    {diablo_db_name,"diablo"},
+              {env,[{diablo_port,63552},
+                    {diablo_db_name,"sdiablo"},
                     {diablo_db_user,"root"},
                     {diablo_db_passwd,"bxh"},
                     {diablo_db_host,"localhost"}]}]}.

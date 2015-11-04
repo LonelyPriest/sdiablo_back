@@ -33,14 +33,14 @@ action(Session, Req, {"list_merchant"}) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
-action(Session, Req, {"list_w_merchant"}) ->
-    ?DEBUG("list_w_merchant with session ~p", [Session]),
-    case ?merchant:lookup({<<"type">>, ?WHOLESALER}) of
-	{ok, Merchants} ->
-	    ?utils:respond(200, batch, Req, Merchants);
-	{error, Error} ->
-	    ?utils:respond(200, Req, Error)
-    end;
+%% action(Session, Req, {"list_w_merchant"}) ->
+%%     ?DEBUG("list_w_merchant with session ~p", [Session]),
+%%     case ?merchant:lookup({<<"type">>, ?WHOLESALER}) of
+%% 	{ok, Merchants} ->
+%% 	    ?utils:respond(200, batch, Req, Merchants);
+%% 	{error, Error} ->
+%% 	    ?utils:respond(200, Req, Error)
+%%     end;
 
 %%--------------------------------------------------------------------
 %% @desc: DELTE action

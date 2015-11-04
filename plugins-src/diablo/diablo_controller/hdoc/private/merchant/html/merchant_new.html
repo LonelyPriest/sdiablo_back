@@ -54,10 +54,10 @@
 		<div class="input-group">
 		  <select class="form-control"
 			  name="type"
+			  disabled
 			  placeholder="请选择商家类型"
 			  x-ng-model="merchant.type"
-			  x-ng-options="t as t.chinese for t in merchantTypes"
-			  x-ng-init="merchant.type=merchantTypes[1]">
+			  x-ng-options="t as t.chinese for t in merchantTypes">
 		  </select>
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div>

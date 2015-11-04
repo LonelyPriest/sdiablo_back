@@ -217,85 +217,25 @@
 	      </div>
 	    </div>
 
-	    <div class="form-group diablo-good-form-group">
-	      <label class="col-sm-3 col-md-3 control-label">批发价</label>
-	      <div class="col-sm-6 col-md-6"> 
-		<div class="input-group">
-		  <input class="form-control"
-			 type="number" step="0.01"
-			 name="pkg_price"
-			 required
-			 placeholder="打包价，支持二位小数"
-			 x-ng-enter=""
-			 x-ng-pattern="/^\d+(.\d{1,2})?$/"
-			 x-ng-model="good.pkg_price"></input>
-		  <span class="input-group-addon bg-white fg-red">*</span>
-		</div>
-	      </div>
-	      <div ng-show="goodForm.pkg_price.$invalid && !goodForm.pkg_price.$pristine">
-		<span style="color:red">格式（dd.dd）只支持二位小数</span>
-	      </div>
-	    </div>
-
-	    <div class="form-group diablo-good-form-group">
-	      <label class="col-sm-3 col-md-3 control-label">价3</label>
-	      <div class="col-sm-6 col-md-6"> 
-		<div class="input-group">
-		  <input class="form-control"
-			 type="number" step="0.01"
-			 name="p3"
-			 required
-			 placeholder="支持二位小数"
-			 x-ng-enter=""
-			 x-ng-pattern="/^\d+(.\d{1,2})?$/"
-			 x-ng-model="good.p3"></input>
-		  <span class="input-group-addon bg-white fg-red">*</span>
-		</div>
-	      </div>	      
-	      <div ng-show="goodForm.p3.$invalid && !goodForm.p3.$pristine">
-		<span style="color:red">格式（dd.dd）只支持二位小数</span>
-	      </div>
-	    </div>
-
-	    <div class="form-group diablo-good-form-group">
-	      <label class="col-sm-3 col-md-3 control-label">价4</label>
-	      <div class="col-sm-6 col-md-6"> 
-		<div class="input-group">
-		  <input class="form-control"
-			 type="number" step="0.01" 
-			 name="p4"
-			 required
-			 placeholder="支持二位小数"
-			 x-ng-enter=""
-			 x-ng-pattern="/^\d+(.\d{1,2})?$/"
-			 x-ng-model="good.p4"></input>
-		  <span class="input-group-addon bg-white fg-red">*</span>
-		</div>
-	      </div>	      
-	      <div ng-show="goodForm.p4.$invalid && !goodForm.p4.$pristine">
-		<span style="color:red">格式（dd.dd）只支持二位小数</span>
-	      </div>
-	    </div>
-
-	    <div class="form-group diablo-good-form-group">
-	      <label class="col-sm-3 col-md-3 control-label">价5</label>
-	      <div class="col-sm-6 col-md-6"> 
-		<div class="input-group">
-		  <input class="form-control"
-			 type="number" step="0.01" 
-			 name="p5"
-			 required
-			 placeholder="支持二位小数"
-			 x-ng-enter=""
-			 x-ng-pattern="/^\d+(.\d{1,2})?$/"
-			 x-ng-model="good.p5"></input>
-		  <span class="input-group-addon bg-white fg-red">*</span>
-		</div>
-	      </div>	      
-	      <div ng-show="goodForm.p5.$invalid && !goodForm.p5.$pristine">
-		<span style="color:red">格式（dd.dd）只支持二位小数</span>
-	      </div>
-	    </div>
+	    <!-- <div class="form-group diablo-good-form-group"> -->
+	    <!--   <label class="col-sm-3 col-md-3 control-label">批发价</label> -->
+	    <!--   <div class="col-sm-6 col-md-6">  -->
+	    <!-- 	<div class="input-group"> -->
+	    <!-- 	  <input class="form-control" -->
+	    <!-- 		 type="number" step="0.01" -->
+	    <!-- 		 name="pkg_price" -->
+	    <!-- 		 required -->
+	    <!-- 		 placeholder="打包价，支持二位小数" -->
+	    <!-- 		 x-ng-enter="" -->
+	    <!-- 		 x-ng-pattern="/^\d+(.\d{1,2})?$/" -->
+	    <!-- 		 x-ng-model="good.pkg_price"></input> -->
+	    <!-- 	  <span class="input-group-addon bg-white fg-red">*</span> -->
+	    <!-- 	</div> -->
+	    <!--   </div> -->
+	    <!--   <div ng-show="goodForm.pkg_price.$invalid && !goodForm.pkg_price.$pristine"> -->
+	    <!-- 	<span style="color:red">格式（dd.dd）只支持二位小数</span> -->
+	    <!--   </div> -->
+	    <!-- </div>  -->
 	    
 	    <div class="form-group diablo-good-form-group">
 	      <label class="col-sm-3 col-md-3 control-label">折扣</label>

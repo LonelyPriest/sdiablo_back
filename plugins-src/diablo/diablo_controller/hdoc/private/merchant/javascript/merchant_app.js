@@ -54,9 +54,9 @@ merchantApp.service("merchantService", function($resource, dateFilter){
     this.list = function(){
 	return merchant.query({operation: "list_merchant"})};
 
-    this.list_w_merchant = function(){
-	return merchant.query({operation: "list_w_merchant"}).$promise;
-    };
+    // this.list_w_merchant = function(){
+    // 	return merchant.query({operation: "list_w_merchant"}).$promise;
+    // };
 
     this.query = function(merchantId){
 	return merchant.get(
@@ -146,7 +146,11 @@ merchantApp.controller("merchantNewCtrl", function(
     $scope.merchantTypes = merchantService.types;
     // console.log($scope.merchantTypes);
 
-    $scope.pattern_mobile=diabloPattern.mobile; 
+    $scope.pattern_mobile=diabloPattern.mobile;
+
+    $scope.merchant = {
+	type: $scope.merchantTypes[0]
+    };
     
     // new merchant
     $scope.new_merchant = function(){

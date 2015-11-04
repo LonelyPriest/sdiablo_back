@@ -75,32 +75,39 @@ action(Session, Req, {"update_firm"}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end. 
 
-sidebar(Session) ->
-    %% firm
-    %% S1 = 
-    %% 	case ?right_auth:authen(?list_w_firm, Session) of 
-    %% 	    {ok, ?list_w_firm} ->
-    %% 		[{"firm_detail", "厂商详情", "glyphicon glyphicon-briefcase"}];
-    %% 	    _ ->
-    %% 		[]
-    %% 	end,
-
-    S2 = 
+sidebar(Session) -> 
+    NewFrim =
 	case ?right_auth:authen(?new_w_firm, Session) of
 	    {ok, ?new_w_firm} ->
-		[{"new_firm", "新增厂商", "glyphicon glyphicon-plus"},
-		 {"firm_detail", "厂商详情", "glyphicon glyphicon-book"}];
+		[{"new_firm", "新增厂商", "glyphicon glyphicon-plus"}];
 	    _ ->
-		[{"firm_detail", "厂商详情", "glyphicon glyphicon-book"}]
+		[]
 	end,
 
-    %% level_2_menu,
-    %% [{{"firm", "厂商管理", "glyphicon glyphicon-map-marker"}, S1 ++ S2}]).
-    
-    %% ?menu:sidebar(level_1_menu, S2 ++ S1).
-    ?menu:sidebar(level_1_menu, S2).
+    ListFirm =
+	case ?right_auth:authen(?list_w_firm, Session) of
+	    {ok, ?list_w_firm} ->
+		[{"firm_detail", "厂商详情", "glyphicon glyphicon-book"}];
+	    _ ->
+		[]
+	end,
 
+    NewBrand =
+	case ?right_auth:authen(?new_w_brand, Session) of
+	    {ok, ?new_w_brand} ->
+		[{"new_brand", "新增品牌", "glyphicon glyphicon-plus"}];
+	    _ ->
+		[]
+	end,
 
+    ListBrand =
+	case ?right_auth:authen(?list_w_brand, Session) of
+	    {ok, ?list_w_brand} ->
+		[{"brand_detail", "品牌详情", "glyphicon glyphicon-bold"}];
+	    _ ->
+		[]
+	end, 
+    ?menu:sidebar(level_1_menu, NewFrim ++ ListFirm ++ NewBrand ++ ListBrand).
 
 batch_responed(Fun, Req) ->
     case Fun() of
