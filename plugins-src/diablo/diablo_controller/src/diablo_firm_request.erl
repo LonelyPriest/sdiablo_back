@@ -27,7 +27,13 @@ action(Session, Req, {"list_firm"}) ->
     ?DEBUG("list firm with session ~p", [Session]), 
     Merchant = ?session:get(merchant, Session),
     %% batch_responed(fun() -> ?supplier:supplier(w_list, Merchant) end, Req);
-    batch_responed(fun() -> ?w_user_profile:get(firm, Merchant) end, Req); 
+    batch_responed(fun() -> ?w_user_profile:get(firm, Merchant) end, Req);
+
+action(Session, Req, {"list_brand"}) ->
+    ?DEBUG("list brand with session ~p", [Session]),
+    Merchant = ?session:get(merchant, Session),
+    %% batch_responed(fun()->?attr:brand(list, Merchant) end, Req);
+    batch_responed(fun()->?w_user_profile:get(brand, Merchant) end, Req); 
 
 %%--------------------------------------------------------------------
 %% @desc: DELTE action
@@ -73,7 +79,34 @@ action(Session, Req, {"update_firm"}, Payload) ->
 	    ?utils:respond(200, Req, ?succ(update_supplier, FirmId));
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
-    end. 
+    end;
+
+%%
+%% brand
+%%
+action(Session, Req, {"new_brand"}, Payload) ->
+    ?DEBUG("new brand with session ~p,  payload ~p", [Session, Payload]),
+
+    Merchant = ?session:get(merchant, Session),
+    case ?attr:brand(new, Merchant, Payload) of
+	{ok, BrandId} ->
+	    ?utils:respond(
+	       200, Req, ?succ(add_brand, BrandId), {<<"id">>, BrandId});
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"update_brand"}, Payload) ->
+    ?DEBUG("update brand with session ~p,  payload ~p", [Session, Payload]),
+
+    Merchant = ?session:get(merchant, Session),
+    case ?attr:brand(update, Merchant, Payload) of
+	{ok, BrandId} ->
+	    ?utils:respond(
+	       200, Req, ?succ(update_brand, BrandId), {<<"id">>, BrandId});
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end.
 
 sidebar(Session) -> 
     NewFrim =

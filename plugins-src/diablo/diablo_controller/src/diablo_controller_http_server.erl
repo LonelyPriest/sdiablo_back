@@ -41,10 +41,13 @@ valid_session(Req) ->
 	undefined -> %% redirect to login page
 	    {error, no_session};
 	MSession ->
-	    ?DEBUG("MSession ~p", [MSession]),
+	    %% ?DEBUG("MSession ~p", [MSession]),
 	    case 
 		mochiweb_session:check_session_cookie(
-		  ?to_b(MSession), 3600 * 12, fun(A) -> A end, ?QZG_DY_SESSION) of
+		  ?to_b(MSession),
+		  3600 * 12,
+		  fun(A) -> A end,
+		  ?QZG_DY_SESSION) of
 		{true, [_, SessionId]} -> 
 		    case ?session:lookup(SessionId) of
 			{ok, []} -> %% session time out or lost

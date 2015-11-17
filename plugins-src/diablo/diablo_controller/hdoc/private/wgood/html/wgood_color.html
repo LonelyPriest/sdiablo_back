@@ -136,13 +136,15 @@
 	<div class="form-group">
 	  <div class="input-group">
 	      <span class="input-group-addon">
-		<i class="glyphicon glyphicon-hand-right fg-red"></i>备注</span>
+		<i class="glyphicon glyphicon-hand-right fg-red"></i>
+		备注
+	      </span>
 	      <input class="form-control"
 		     name="remark"
 		     type="text" 
 		     placeholder="请输入备注"
 		     x-ng-model="params.color.remark"
-		     x-ng-pattern="/^[A-Za-z0-9-\u4e00-\u9fa5]+$/"></input>
+		     x-ng-pattern="/^[A-Za-z0-9-\u4e00-\u9fa5]+$/"/>
 	  </div>
 	  <div ng-show="newColorForm.remark.$invalid &&
 			 ! newColorForm.remark.$pristine">

@@ -1,0 +1,233 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="portlet box purple">
+      
+      <div class="portlet-title">
+	<div class="caption">
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>
+	  品牌详情
+	</div>	
+
+	<div class="actions">
+	  <div class="btn-group btn-group-solid">
+	    <a type="button" class="btn btn-success purple-stripe"
+		    x-ng-click="new_brand()">新增
+	      <i class="glyphicon glyphicon-plus"></i></a> 
+
+	    <a type="button" class="btn blue reload purple-stripe"
+		    x-ng-click="refresh()">刷新
+	      <i class="icon icon-spinner fg-white"></i></a>
+	  </div>
+	</div>
+	
+	<!-- <div class="tools"> -->
+	<!--   <a class="reload" href="javascript:;"></a> -->
+	<!-- </div> -->
+      </div>
+
+      <!--BEGIN table container-->
+      <div class="portlet-body">
+	<!--BEGIN table-toolbar-->
+	<div class="table-toolbar">
+	  
+	  <!--BEGIN form-group-->
+	  <div class="row form-group">
+
+	    <div class="col-xs-12 col-ms-12 col-md-12">
+	      <div class="input-group">
+	  	<span class="input-group-addon">
+	  	  <i class="glyphicon glyphicon-search fg-red"></i>
+	  	</span>
+	  	<input
+	  	   class="form-control"
+	  	   placeholder="支持厂商/品牌查询"
+	  	   typeahead-editable="false"
+	  	   typeahead-on-select="select_brand($item, $model, $label)"
+	  	   typeahead="s as s.name for s in
+	  		      prompts|filter:$viewValue|limitTo:8"
+	  	   x-ng-model="search">
+	      </div>
+	    </div>
+	    
+	  </div> <!--END form-group-->
+	</div> <!--END table-toolbar-->
+	
+	<!--BEGN portlet body--> 
+	<div class="portlet-body">
+	  <!--BEGIN panel-->
+	  <div class="panel panel-default table-panel">
+	    <div class="table-responsive">
+	      <!--EBGIN table supplier-->
+	      <table class="table table-bordered
+			    table-striped table-hover
+			    table-condensed table-advanced">
+		<thead>
+		  <tr>
+		    <th>序号</th>
+		    <th>品牌</th>
+		    <th>厂商</th>
+		    <th>备注</th>
+		    <th>日期</th>
+		    <th>操作</th>
+		  </tr>
+		</thead>
+		<tbody>
+		  <tr ng-repeat="b in filter_brands">
+		    <td>{{b.order_id}}</td>
+		    <td>{{b.name}}</td>
+		    <td>{{b.supplier}}</td>
+		    <td x-ng-if="!b.remark">暂无</td>
+		    <td x-ng-if="b.remark">{{f.mobile}}</td>
+		    <td>{{b.entry}}</td>
+		    
+		    <td> 
+                      <button class="btn diablo-button btn-warning"
+			 x-ng-click="update_brand(b)">修改 
+			<i class="glyphicon glyphicon-edit"></i></button>
+		      
+                      <button class="btn diablo-button btn-danger"
+			 x-ng-click="delete_brand(b)">删除
+			<i class="glyphicon glyphicon-erase"></i></button>
+		    </td>
+		  </tr> 
+		</tbody>
+
+		<tfoot> 
+		</tfoot>
+		
+	      </table> <!--END supplier table-->
+	    </div> <!--END table responsive-->
+	    
+	  </div> <!--END panel-->
+
+	  <div x-ng-show="total_items>items_perpage" class="row">
+	  <div class="col-md-12, col-sm-12, col-xs-12">
+	
+	    <span>显示第 {{current_page}} / {{num_pages}} 项结果，
+	      共 {{total_items}} 项</span>
+	    
+	    <pagination class="pagination-lg table-pagination pull-right"
+		      	total-items="total_items"
+		      	items-per-page="items_perpage"
+		      	num-pages="num_pages"
+		      	max-size="max_page_size"
+		      	boundary-links="true"
+		      	previous-text="&lsaquo;" next-text="&rsaquo;"
+		      	first-text="&laquo;" last-text="&raquo;"
+		      	x-ng-model="current_page"
+		      	x-ng-change="page_changed()">
+	    </pagination>
+	  </div>
+	</div>
+	  
+	</div> <!--END portlet body-->
+
+	
+	
+      </div> <!--END table container-->
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+<script type="text/ng-template" id="update-brand.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    
+    <h4 class="modal-title">
+      <span class="label label-sm label-primary">品牌编辑</span></h4>
+  </div>
+
+  <div class="modal-body">
+    <form class="form-horizontal" name="bForm" novalidate> 
+      <div class="form-body">
+	<!--Name-->
+	<div class="form-group">
+	  <label class="col-sm-3 col-md-3 control-label">名称</label> 
+	  <div class="col-sm-6 col-md-6">
+	    <div class="input-group">
+	      <div ng-class="{'has-error':bForm.name.$invalid
+			     && !bForm.name.$pristine
+			     || !params.check_same(params.brand.name)}">
+		<input type="text"
+		       class="form-control"
+		       name="name"
+		       required
+		       placeholder="请输入品牌名称"
+		       x-ng-model="params.brand.name"
+		       x-ng-minlength="2"
+		       x-ng-maxlength="8"></input>
+	      </div>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	  </div>
+	  <div>
+	    <span ng-show="bForm.name.$error.minlength
+			   || bForm.name.$error.maxlength">
+	      <span class="fg-red">请输入2-8个字符</span>
+	    </span>
+
+	    <span ng-show="!params.check_same(params.brand.name)">
+	      <span class="fg-red">该品牌已存在，请重新输入</span>
+	    </span>
+	  </div> 
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-3 col-md-3 control-label">厂商</label>
+	  <div class="col-sm-6 col-md-6">
+	    <div class="input-group">
+	      <input type="text"
+		     class="form-control"
+		     name="firm"
+		     required
+		     placeholder="请选择品牌所属厂商"
+		     typeahead="f as f.name for f in
+				params.firms|filter:$viewValue|limitTo:15"
+		     typeahead-editable="false"
+		     x-ng-model="params.brand.firm" />
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	  </div>
+	  <div ng-show="bForm.firm.$invalid
+			&& !bForm.firm.$pristine">
+	    <span style="color:red">厂商只能从提示列表中选择</span>
+	  </div> 
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-3 col-md-3 control-label">备注</label>
+	  <div class="col-sm-6 col-md-6">
+	    <input type="text"
+		   class="form-control"
+		   name="remark"
+		   x-ng-pattern="params.pattern.remark"
+		   placeholder="请输入备注"
+		   x-ng-model="params.brand.remark" />
+	  </div> 
+	  <div x-ng-if="bForm.remark.$invalid
+			&& !bForm.remark.$pristine">
+	    <span class="fg-red">请输入汉字，字母，下划线或数字</span>
+	  </div> 
+	</div>
+	
+      </div> 
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="bForm.$invalid
+			   || !params.has_update(params.brand) 
+			   || !params.check_same(params.brand.name)"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
+  
+</script>

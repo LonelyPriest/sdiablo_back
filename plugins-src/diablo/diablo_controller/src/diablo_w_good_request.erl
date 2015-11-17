@@ -188,7 +188,7 @@ action(Session, Req, {"new_w_good"}, Payload) ->
     
     Type        = ?v(<<"type">>, Good),
     Brand       = ?v(<<"brand">>, Good),
-    Firm        = ?v(<<"firm">>, Good),
+    %% Firm        = ?v(<<"firm">>, Good),
     StyleNumber = ?v(<<"style_number">>, Good),
     ImageData   = ?v(<<"image">>, Payload, <<>>),
     
@@ -199,13 +199,14 @@ action(Session, Req, {"new_w_good"}, Payload) ->
     
     
     try 
-	{ok, BrandId} = ?attr:brand(new, Merchant, Brand, Firm),
-
+	{ok, BrandId} = ?attr:brand(new, Merchant, [{<<"name">>, Brand}]), 
 	case ImageData of
 	    <<>> -> ok;
 	    _ ->
 		ImageFile = filename:join(
-			      [ImageDir, ?to_s(StyleNumber) ++ "-" ++ ?to_s(BrandId) ++ ".png"]),
+			      [ImageDir,
+			       ?to_s(StyleNumber) ++ "-"
+			       ++ ?to_s(BrandId) ++ ".png"]),
 
 		case filelib:ensure_dir(ImageFile) of
 		    ok -> ok;

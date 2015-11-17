@@ -52,11 +52,11 @@ wretailerApp.config(['$routeProvider', function($routeProvider){
     var employee = {"filterEmployee": function(diabloNormalFilter){
 	return diabloNormalFilter.get_employee()}};
     
-    var province = {"filterProvince": function(diabloNormalFilter){
-	return diabloNormalFilter.get_province()}};
+    // var province = {"filterProvince": function(diabloNormalFilter){
+    // 	return diabloNormalFilter.get_province()}};
 
-    var city = {"filterCity": function(diabloNormalFilter){
-	return diabloNormalFilter.get_city()}};
+    // var city = {"filterCity": function(diabloNormalFilter){
+    // 	return diabloNormalFilter.get_city()}};
 
     var base = {"base": function(diabloNormalFilter){
 	return diabloNormalFilter.get_base_setting()}};
@@ -65,12 +65,12 @@ wretailerApp.config(['$routeProvider', function($routeProvider){
 	when('/wretailer_new', {
 	    templateUrl: '/private/wretailer/html/wretailer_new.html',
 	    controller: 'wretailerNewCtrl',
-	    resolve: angular.extend({}, province, city, user) 
+	    resolve: angular.extend({}, user) 
 	}).
 	when('/wretailer_detail', {
 	    templateUrl: '/private/wretailer/html/wretailer_detail.html',
 	    controller: 'wretailerDetailCtrl',
-	    resolve: angular.extend({}, province, city, user)
+	    resolve: angular.extend({}, user)
 	}).
 	when('/wretailer_trans/:retailer?/:page?', {
 	    templateUrl: '/private/wretailer/html/wretailer_trans.html',
@@ -85,12 +85,13 @@ wretailerApp.config(['$routeProvider', function($routeProvider){
 	when('/wretailer_trans_rsn/:retailer?/:rsn?/:ppage?', {
 	    templateUrl: '/private/wretailer/html/wretailer_trans_rsn_detail.html',
 	    controller: 'wretailerTransRsnDetailCtrl',
-	    resolve: angular.extend({}, brand, firm, retailer, employee, s_group, type, user, base)
+	    resolve: angular.extend(
+		{}, brand, firm, retailer, employee, s_group, type, user, base)
 	}).
 	otherwise({
 	    templateUrl: '/private/wretailer/html/wretailer_detail.html',
 	    controller: 'wretailerDetailCtrl',
-	    resolve: angular.extend({}, province, city, user)
+	    resolve: angular.extend({}, user)
         })
 }]);
 

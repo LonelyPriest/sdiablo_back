@@ -30,25 +30,18 @@
 -define(ROOT, 0).
 -define(ALL_CATLOGS,
 	[
-	 %% sale
-	 %% ?right_sale,	 
-	 %% ?right_inventory,
-	 ?right_member,
 	 ?right_shop,
 	 ?right_employe,
 	 ?right_right,
-	 %% ?right_supplier,
 	 ?right_merchant,
 	 
-	 %% about whole sale
 	 ?right_w_sale,
 	 ?right_w_inventory,
 	 ?right_w_firm,
-	 %% ?right_w_retailer,
+	 ?right_w_retailer,
 	 ?right_w_print,
 	 ?right_w_good,
 	 ?right_w_report,
-	 %% base seting 
 	 ?right_w_base, 
 	 
 	 %% rainbow
@@ -99,7 +92,7 @@ init([]) ->
     Catlog = [
 	      %% {?right_sale,      <<"销售管理">>,   <<"sale">>},
 	      %% {?right_inventory, <<"库存管理">>,   <<"inventory">>},
-	      {?right_member,    <<"会员管理">>,   <<"member">>},
+	      {?right_w_retailer,<<"会员管理">>,   <<"member">>},
 	      {?right_shop,      <<"店铺管理">>,   <<"shop">>},
 	      {?right_employe,   <<"员工管理">>,   <<"employ">>},
 	      {?right_right,     <<"权限管理">>,   <<"right">>},
@@ -124,14 +117,14 @@ init([]) ->
 	     ], 
 
     Member = 
-	[{?new_member,
-	  <<"新增会员">>, <<"new_member">>,    ?right_member},
-	 {?del_member,
-	  <<"删除会员">>, <<"delete_member">>, ?right_member},
-	 {?update_member,
-	  <<"修改会员">>, <<"update_member">>, ?right_member},
-	 {?list_member,
-	  <<"查询会员">>, <<"list_member">>,   ?right_member} 
+	[{?new_w_retailer, 
+	  <<"新增会员">>, <<"new_member">>,    ?right_w_retailer},
+	 {?del_w_retailer,
+	  <<"删除会员">>, <<"delete_member">>, ?right_w_retailer},
+	 {?update_w_retailer,
+	  <<"修改会员">>, <<"update_member">>, ?right_w_retailer},
+	 {?list_w_retailer,
+	  <<"查询会员">>, <<"list_member">>,   ?right_w_retailer} 
 	],
 
     

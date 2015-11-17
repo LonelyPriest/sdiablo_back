@@ -2,7 +2,8 @@ var firmApp = angular.module(
     'firmApp', ['ui.bootstrap', 'ngRoute', 'ngResource',
 		'LocalStorageModule', 'diabloAuthenApp',
 		'diabloFilterApp', 'diabloNormalFilterApp',
-		'diabloPattern', 'diabloUtils', 'userApp', 'wgoodApp'])
+		'diabloPattern', 'diabloUtils', 'wgoodApp',
+		'userApp'])
     .config(function(localStorageServiceProvider){
 	localStorageServiceProvider
 	    .setPrefix('firmApp')
@@ -26,7 +27,6 @@ var firmApp = angular.module(
 	      };
 	  }])
     .config(function($httpProvider, authenProvider){
-	// $httpProvider.responseInterceptors.push(authenProvider.interceptor);
 	$httpProvider.interceptors.push(authenProvider.interceptor); 
     });
     
@@ -65,15 +65,29 @@ firmApp.config(['$routeProvider', function($routeProvider){
 	when('/firm_trans_rsn/:firm?/:rsn?/:ppage?', {
 	    templateUrl: '/private/firm/html/firm_trans_rsn_detail.html',
 	    controller: 'firmTransRsnDetailCtrl',
-	    resolve: angular.extend({}, brand, firm, employee, s_group, type, user, base)
+	    resolve: angular.extend(
+		{}, brand, firm, employee, s_group, type, user, base)
 	}). 
 	when('/new_firm', {
 	    templateUrl: '/private/firm/html/new_firm.html',
             controller: 'firmNewCtrl'
 	}).
+	// brand
+	when('/new_brand', {
+	    templateUrl: '/private/firm/html/new_brand.html',
+            controller: 'brandNewCtrl',
+	    resolve: angular.extend({}, brand, firm) 
+	}).
+	when('/brand_detail', {
+	    templateUrl: '/private/firm/html/brand_detail.html',
+            controller: 'brandDetailCtrl',
+	    resolve: angular.extend({}, firm) 
+	}).
+	// default
 	otherwise({
-	    templateUrl: '/private/firm/html/firm_detail.html',
-	    controller: 'firmDetailCtrl'
+	    templateUrl: '/private/firm/html/brand_detail.html',
+	    controller: 'brandDetailCtrl',
+	    resolve: angular.extend({}, firm)
         })
 }]);
 
@@ -111,6 +125,30 @@ firmApp.service("firmService", function($resource, dateFilter){
     this.list_firm = function(){
 	return http.query({operation: "list_firm"}).$promise;
     }
+
+    /*
+     * brand
+     */ 
+    this.new_brand = function(brand){
+	return http.save(
+	    {operation:"new_brand"},
+	    {name:      brand.name,
+	     firm:      brand.firm.id,
+	     remark:    brand.remark}).$promise
+    };
+
+    this.list_brand = function(){
+	return http.query({operation: "list_brand"}).$promise;
+    };
+
+    this.update_brand = function(brand){
+	return http.save(
+	    {operation:"update_brand"},
+	    {name:      brand.name,
+	     bid:       brand.id,
+	     firm:      brand.firm,
+	     remark:    brand.remark}).$promise
+    };
 
     /*
      * transaction
@@ -294,8 +332,6 @@ firmApp.controller("firmDetailCtrl", function(
 	    $scope.firms = angular.copy(data);
 	    $scope.total_balance = 0;
 	    angular.forEach($scope.firms, function(f){
-	    	f.entry_date =
-	    	    angular.isDefined(f.entry_date) ? f.entry_date.slice(0,10) : undefined;
 		$scope.total_balance = f_add($scope.total_balance, f.balance);
 	    })
 
@@ -311,8 +347,10 @@ firmApp.controller("firmDetailCtrl", function(
 	    // pagination
 	    diabloPagination.set_data(filters);
 	    diabloPagination.set_items_perpage($scope.items_perpage);
-	    $scope.total_items  = diabloPagination.get_length();
-	    $scope.filter_firms = diabloPagination.get_page($scope.current_page);
+	    $scope.total_items  =
+		diabloPagination.get_length();
+	    $scope.filter_firms =
+		diabloPagination.get_page($scope.current_page);
 	    // save
 	    $scope.save_to_local($scope.search, $scope.total_items);
 	    
@@ -381,8 +419,9 @@ firmApp.controller("firmDetailCtrl", function(
 		    console.log(result);
 		    if (result.ecode === 0){
 			dialog.response_with_callback(
-			    true, "厂商编辑", "厂商 [" + params.firm.name + "] 编辑成功！！",
-			    $scope, function(){$scope.refresh()})
+			    true, "厂商编辑",
+			    "厂商 [" + params.firm.name + "] 编辑成功！！",
+			    $scope, $scope.refresh())
 		    } else{
 			dialog.response(
 			    false, "厂商编辑", "厂商编辑失败："

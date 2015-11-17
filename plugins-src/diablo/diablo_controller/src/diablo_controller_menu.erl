@@ -6,32 +6,32 @@
 -compile(export_all).
 
 
-titles() ->
-    [{"/sale",      "销售",     ?sale_request},
-     {"/member",    "会员",     ?member_request},
-     {"/shop",      "店铺",     ?shop_request},
-     %%case utils:get_role(Session) of
-     {"/merchant",  "商家",     ?merchant_request},
-     {"/employ",    "员工",     ?employ_request},
-     {"/inventory", "库存",     ?inventory_request},
-     {"/right",     "权限",     ?right_request},
-     {"/supplier",  "供应商",   ?supplier_request}].
+%% titles() ->
+%%     [{"/sale",      "销售",     ?sale_request},
+%%      {"/",    "会员",     ?member_request},
+%%      {"/shop",      "店铺",     ?shop_request},
+%%      %%case utils:get_role(Session) of
+%%      {"/merchant",  "商家",     ?merchant_request},
+%%      {"/employ",    "员工",     ?employ_request},
+%%      {"/inventory", "库存",     ?inventory_request},
+%%      {"/right",     "权限",     ?right_request},
+%%      {"/supplier",  "供应商",   ?supplier_request}].
 
-titles(Session) ->
-    UserType = ?session:get(type, Session),
-    case UserType of
-	?SUPER ->
-	    [{"/merchant",  "商家",     ?merchant_request},
-	     {"/right",     "权限",     ?right_request}];
-	_ ->
-	    [{"/sale",      "销售",     ?sale_request},
-	     {"/member",    "会员",     ?member_request},
-	     {"/shop",      "店铺",     ?shop_request},
-	     {"/employ",    "员工",     ?employ_request},
-	     {"/inventory", "库存",     ?inventory_request},
-	     {"/right",     "权限",     ?right_request},
-	     {"/supplier",  "供应商",   ?supplier_request}]	
-    end.
+%% titles(Session) ->
+%%     UserType = ?session:get(type, Session),
+%%     case UserType of
+%% 	?SUPER ->
+%% 	    [{"/merchant",  "商家",     ?merchant_request},
+%% 	     {"/right",     "权限",     ?right_request}];
+%% 	_ ->
+%% 	    [{"/sale",      "销售",     ?sale_request},
+%% 	     {"/member",    "会员",     ?member_request},
+%% 	     {"/shop",      "店铺",     ?shop_request},
+%% 	     {"/employ",    "员工",     ?employ_request},
+%% 	     {"/inventory", "库存",     ?inventory_request},
+%% 	     {"/right",     "权限",     ?right_request},
+%% 	     {"/supplier",  "供应商",   ?supplier_request}]	
+%%     end.
 
 redirect_path(UserType) ->
     case UserType of
@@ -62,32 +62,26 @@ navbars(Module, Session) ->
 		     end, [], Titles),
     navbar(ActiveTitles).
 
-navbars(Module) ->
-    Titles = ?MODULE:titles(),
-    ActiveTitles = lists:foldr(
-		     fun({P, T, M, H}, Acc) when M =:= Module ->
-			     [{P, T, true, H}|Acc];
-			({P, T, _, H}, Acc) ->
-			     [{P, T, false, H}|Acc]
-		     end, [], Titles),
-    navbar(ActiveTitles).
+%% navbars(Module) ->
+%%     Titles = ?MODULE:titles(),
+%%     ActiveTitles = lists:foldr(
+%% 		     fun({P, T, M, H}, Acc) when M =:= Module ->
+%% 			     [{P, T, true, H}|Acc];
+%% 			({P, T, _, H}, Acc) ->
+%% 			     [{P, T, false, H}|Acc]
+%% 		     end, [], Titles),
+%%     navbar(ActiveTitles).
 
 navbar(Titles) ->
     lists:foldr(
-      fun({Href, Title, Active, Hidden}, Acc) ->
-	      %% ?DEBUG("href ~p hidden ~p", [Href, Hidden]), 
+      fun({Href, Title, Active, {SM, XS, XXS} = Hidden}, Acc) ->
+	      ?DEBUG("href ~p active ~p, hidden ~p", [Href, Active, Hidden]), 
 	      "<li name="
 		  ++ string:strip(Href, both, $/)
-		  ++ case Hidden of
-			 true -> " class=\"hidden-xs hidden-sm\">";
-			 false ->
-			     case Active of
-				 true -> "  class=\"start active\">";
-				 false -> ">"
-			     end
-		     end
-		  ++
-		  "<a href=\""++ Href ++ "\">" ++ Title
+		  ++ " class=\""
+		  ++ hidden(sm, SM) ++ hidden(xs, XS) ++ hidden(xxs, XXS)
+		  ++ active(Active) ++ "\">" 
+		  ++ "<a href=\""++ Href ++ "\">" ++ Title
 		  ++ "<span class=\"selected\"></span>"
 		  ++ "</a>"
 		  ++ "</li>\n" ++ Acc
@@ -101,6 +95,7 @@ w_basebar(Module, Session) ->
 	"<a href='javascript:;' class='dropdown-toggle'"
 	" data-toggle='dropdown' data-hover='dropdown' data-close-others='true'>"
 	"<i class='icon icon-cogs'></i><span class='badge'>"
+	%% "<span ng-bind=\"" ++ ?to_s(User) ++  "\"></span></a>"
 	++ ?to_s(User) ++ "</span></a>"
 	"<ul class='dropdown-menu' x-ng-controller='loginOutCtrl'>"
 	%% ++ "<li id='loginOutApp' x-ng-app='loginOutApp' x-ng-controller='loginOutCtrl'>"
@@ -314,3 +309,15 @@ sidebar(level_3_menu, [], Levels)->
 sidebar(level_3_menu, [Node|T], Levels)->
     L = sidebar(level3_menu, Node),
     sidebar(level_3_menu, T, Levels ++ L).
+
+
+hidden(sm, H) when H =:= true -> " hidden-sm ";
+hidden(sm, _) -> "";
+hidden(xs, H) when H =:= true -> " hidden-xs ";
+hidden(xs, _) -> "";
+hidden(xxs, H) when H =:= true -> " hidden-xxs ";
+hidden(xxs, _) ->  "".
+
+active(true) -> " start active " ;
+active(false) -> "".
+    

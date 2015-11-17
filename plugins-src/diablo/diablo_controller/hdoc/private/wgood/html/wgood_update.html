@@ -7,9 +7,8 @@
 	<a href="javascript:;">货品</a>
 	<i class="glyphicon glyphicon-menu-right fg-red"></i>
       </li>
-      <!-- <li class="active">新增货品</li> -->
       <li class="active">
-	<a href="javascript:;">修改货品</a>
+	<a href="javascript:;">货品编辑</a>
       </li>
     </ul>    
   </div>
@@ -56,7 +55,7 @@
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div>
 	      </div>
-	      <div ng-show="goodForm.style_number.$invalid
+	      <div ng-if="goodForm.style_number.$invalid
 			    && !goodForm.style_number.$pristine">
 		<span class="fg-red">
 		  款号只能是字母，数字或横杠，2-10个字符
@@ -69,7 +68,6 @@
 	      <label class="col-sm-3 col-md-3 control-label">品牌</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
-		  <!-- <span class="input-group-addon">品牌</span> -->
 		  <input type="text"
 			 class="form-control"
 			 name="brand"
@@ -83,8 +81,9 @@
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div>
 	      </div>	      
-	      <div ng-show="goodForm.brand.$invalid && !goodForm.brand.$pristine">
-		<span style="color:red">品牌只能是中文，字母或数字</span>
+	      <div ng-if="goodForm.brand.$invalid
+			    && !goodForm.brand.$pristine">
+		<span class="fg-red">品牌只能是中文，字母或数字</span>
 	      </div>
 	    </div>
 	    
@@ -93,7 +92,6 @@
 	      <label class="col-sm-3 col-md-3 control-label">类别</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
-		  <!-- <span class="input-group-addon">类别</span>  -->
 		  <input type="text"
 			 class="form-control"
 			 name="type"
@@ -106,9 +104,9 @@
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div>
 	      </div>
-	      <div ng-show="goodForm.type.$invalid
+	      <div ng-if="goodForm.type.$invalid
 			    && !goodForm.type.$pristine">
-		<span style="color:red">
+		<span class="fg-red">
 		  请输入以中文，字母或数字，必须以中文开头
 		</span>
 	      </div>
@@ -132,13 +130,14 @@
 				    firms|filter:$viewValue|limitTo:8"/>
 		  <span class="input-group-btn">
 		    <button class="btn btn-success" x-ng-click="new_firm()">
-		      <i class="glyphicon glyphicon-plus"></i></button>
+		      <i class="glyphicon glyphicon-plus"></i>
+		    </button>
 		  </span>
 		  <span class="input-group-addon bg-white fg-red">*</span> 
 		</div>
 	      </div>	      
-	      <div ng-show="goodForm.firm.$invalid && !goodForm.firm.$pristine">
-		<span style="color:red">厂商只能从提示框中选择</span>
+	      <div ng-if="goodForm.firm.$invalid && !goodForm.firm.$pristine">
+		<span class="fg-red">厂商只能从提示框中选择</span>
 	      </div>
 	    </div>
 
@@ -197,13 +196,36 @@
 			 placeholder="进货价，支持二位小数"
 			 x-ng-pattern="/^\d+(.\d{1,2})?$/"
 			 x-ng-enter=""
-			 x-ng-model="good.org_price"
-			 x-ng-init="good.org_price=0"/>
+			 x-ng-model="good.org_price"/>
 		  <span class="input-group-addon bg-white fg-red">*</span>
-		</div>	      
-		<div ng-show="goodForm.org_price.$invalid && !goodForm.org_price.$pristine">
-		  <span style="color:red">格式（dd.dd）只支持二位小数</span>
+		</div> 
+	      </div>
+	      <div ng-if="goodForm.org_price.$invalid
+			  && !goodForm.org_price.$pristine">
+		<span class="fg-red">格式（dd.dd）只支持二位小数</span>
+	      </div>
+	    </div>
+
+	    <div class="form-group">
+	      <label class="col-sm-3 col-md-3 control-label">进货折扣</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<div class="input-group">
+		  <div ng-class="{'has-error':goodForm.ediscount.$invalid
+				 && !goodForm.ediscount.$pristine}">
+		    <input class="form-control"
+			   type="number" step="1" 
+			   name="ediscount"
+			   required
+			   placeholder="两位整数，无折扣请输入100"
+			   x-ng-pattern="/^\d{2}$|100$/"
+			   x-ng-model="good.ediscount"/>
+		  </div>
+		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div>
+	      </div>
+	      <div ng-if="goodForm.ediscount.$invalid
+			  && !goodForm.ediscount.$pristine">
+		<span style="color:red">两位整数，无折扣请输入100</span>
 	      </div>
 	    </div>
 
@@ -219,107 +241,16 @@
 			 placeholder="吊牌价，支持二位小数"
 			 x-ng-pattern="/^\d+(.\d{1,2})?$/"
 			 x-ng-enter=""
-			 x-ng-model="good.tag_price"
-			 x-ng-init="good.tag_price=0"/>
+			 x-ng-model="good.tag_price"/>
 		  <span class="input-group-addon bg-white fg-red">*</span> 
 		</div>
 	      </div>
-	      <div ng-show="goodForm.tag_price.$invalid && !goodForm.tag_price.$pristine">
+	      <div ng-show="goodForm.tag_price.$invalid
+			    && !goodForm.tag_price.$pristine">
 		<span style="color:red">格式（dd.dd）只支持二位小数</span>
 	      </div>
 	    </div>
 
-	    <!-- <div class="col-sm-4 col-md-4"> -->
-	    <div class="form-group">
-	      <label class="col-sm-3 col-md-3 control-label">批发价</label>
-	      <div class="col-sm-6 col-md-6"> 
-		<div class="input-group">
-		  <!-- <span class="input-group-addon">打包价</span>  -->
-		  <input type="text"
-			 class="form-control"
-			 name="pkg_price"
-			 required
-			 placeholder="打包价，支持二位小数"
-			 x-ng-enter=""
-			 x-ng-pattern="/^\d+(.\d{1,2})?$/"
-			 x-ng-model="good.pkg_price"
-			 x-ng-init="good.pkg_price=0"/>
-		  <span class="input-group-addon bg-white fg-red">*</span>
-		</div>
-	      </div>
-	      <div ng-show="goodForm.pkg_price.$invalid && !goodForm.pkg_price.$pristine">
-		<span style="color:red">格式（dd.dd）只支持二位小数</span>
-	      </div>
-	    </div>
-	    <!-- </div><\!--END row-\-> -->
-
-	    <!--BEGIN row-->
-	    <div class="form-group">
-	      <label class="col-sm-3 col-md-3 control-label">价3</label>
-	      <div class="col-sm-6 col-md-6"> 
-		<div class="input-group">
-		  <!-- <span class="input-group-addon">价3</span>  -->
-		  <input type="text"
-			 class="form-control"
-			 name="p3"
-			 required
-			 placeholder="支持二位小数"
-			 x-ng-enter=""
-			 x-ng-pattern="/^\d+(.\d{1,2})?$/"
-			 x-ng-model="good.price3"/>
-		  <span class="input-group-addon bg-white fg-red">*</span>
-		</div>
-	      </div>	      
-	      <div ng-show="goodForm.p3.$invalid && !goodForm.p3.$pristine">
-		<span style="color:red">格式（dd.dd）只支持二位小数</span>
-	      </div>
-	    </div>
-
-	    <div class="form-group">
-	      <label class="col-sm-3 col-md-3 control-label">价4</label>
-	      <div class="col-sm-6 col-md-6"> 
-		<div class="input-group">
-		  <!-- <span class="input-group-addon">价4</span>  -->
-		  <input type="text"
-			 class="form-control"
-			 name="p4"
-			 required
-			 placeholder="支持二位小数"
-			 x-ng-enter=""
-			 x-ng-pattern="/^\d+(.\d{1,2})?$/"
-			 x-ng-model="good.price4"/>
-		  <span class="input-group-addon bg-white fg-red">*</span>
-		</div>
-	      </div>	      
-	      <div ng-show="goodForm.p4.$invalid && !goodForm.p4.$pristine">
-		<span style="color:red">格式（dd.dd）只支持二位小数</span>
-	      </div>
-	    </div>
-
-	    <!-- <div class="col-sm-4 col-md-4">  -->
-	    <div class="form-group">
-	      <label class="col-sm-3 col-md-3 control-label">价5</label>
-	      <div class="col-sm-6 col-md-6"> 
-		<div class="input-group">
-		  <!-- <span class="input-group-addon">价5</span>  -->
-		  <input type="text"
-			 class="form-control"
-			 name="p5"
-			 required
-			 placeholder="支持二位小数"
-			 x-ng-enter=""
-			 x-ng-pattern="/^\d+(.\d{1,2})?$/"
-			 x-ng-model="good.price5"/>
-		  <span class="input-group-addon bg-white fg-red">*</span>
-		</div>
-	      </div>	      
-	      <div ng-show="goodForm.p5.$invalid && !goodForm.p5.$pristine">
-		<span style="color:red">格式（dd.dd）只支持二位小数</span>
-	      </div>
-	    </div>
-	    <!-- </div><\!--END row-\-> -->
-
-	    <!--BEGIN row-->
 	    <div class="form-group">
 	      <label class="col-sm-3 col-md-3 control-label">折扣</label>
 	      <div class="col-sm-6 col-md-6"> 
@@ -339,8 +270,9 @@
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div>
 	      </div>
-	      <div ng-show="goodForm.discount.$invalid && !goodForm.discount.$pristine">
-		<span style="color:red">两位整数，无折扣请输入100</span>
+	      <div ng-if="goodForm.discount.$invalid
+			  && !goodForm.discount.$pristine">
+		<span class="fg-red">两位整数，无折扣请输入100</span>
 	      </div>
 	    </div>
 
@@ -394,7 +326,7 @@
 		<div class="input-group">
 		  <input class="form-control" type="text"
 			 x-ng-readonly=true
-			 x-ng-model="good.path"></input>
+			 x-ng-model="good.path"/>
 		  <span class="input-group-btn"> 
 		    <image-upload image="image"></image-upload>
 		    <button class="btn btn-danger"
@@ -409,19 +341,22 @@
 	    <div class="form-group">
 	      <div x-ng-show="good.path"
 		   class="col-sm-offset-3 col-sm-3 col-md-offset-3 col-md-3">
-	      	<!-- <image x-ng-show="image" class="img-responsive img-thumbnail"> -->
-		<image class="img-responsive img-thumbnail" src={{good.path}}></image> 
+		<image class="img-responsive img-thumbnail"
+		       src={{good.path}}>
+		</image> 
 	      </div>
 	      <div x-ng-show="good.path" class="col-sm-3 col-md-3">
 		<image-draw x-ng-show="image"
 			    class="img-responsive img-thumbnail"
-			    org-image="image"></image-draw> 
+			    org-image="image">
+		</image-draw> 
 	      </div>
 	      <div x-ng-show="!good.path"
 		   class="col-sm-offset-3 col-sm-3 col-md-offset-3 col-md-3">
 		<image-draw x-ng-show="image"
 			    class="img-responsive img-thumbnail"
-			    org-image="image"></image-draw> 
+			    org-image="image">
+		</image-draw> 
 	      </div>
 	    </div> 
 	    

@@ -3,7 +3,8 @@
     <div class="portlet box purple">
       
       <div class="portlet-title">
-	<div class="caption"><i class="glyphicon glyphicon-menu-hamburger"></i>
+	<div class="caption">
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>
 	  新增入库
 	</div>
 	<div class="actions">
@@ -14,7 +15,7 @@
 	    
 	    <button class="btn btn-info purple-stripe" 
 		    x-ng-disabled="disable_draft()"
-		    x-ng-click="list_draft()">获取草稿
+		    x-ng-click="list_draft()">草稿
 	      <i class="glyphicon glyphicon-send"></i></button>
 	    
 	    <button class="btn btn-success purple-stripe"
@@ -37,20 +38,18 @@
 	  
 	  <div class="row diablo-form-group">
 	    <div class="col-xs-3 col-md-3">
-	      <div class="input-group">
-		<!-- <span class="input-group-addon"> -->
-		<!--   <i class="glyphicon glyphicon-knight fg-red"></i>厂商</span> -->
+	      <div class="input-group"> 
 	  	<input class="form-control" type="text"
-	  	       x-ng-model="select.firm" 
-	  	       placeholder="请选择厂商"
+	  	       x-ng-model="select.brand" 
+	  	       placeholder="请选择品牌"
 	  	       typeahead-editable="false"
-		       typeahead-on-select="change_firm()"
-	  	       typeahead="f as f.name for f in
-	  			  firms|filter:$viewValue|limitTo:8"/>
+		       typeahead-on-select="change_brand()"
+	  	       typeahead="b as b.name for b in
+	  			  brands|filter:$viewValue|limitTo:8"/>
 		<span class="input-group-btn">
 		  <button class="btn default fg-red"
-			  x-ng-disabled="!select.firm"
-			  x-ng-click="select.firm=undefined"> 
+			  x-ng-disabled="!select.brand"
+			  x-ng-click="select.brand=undefined"> 
 		    <i class="glyphicon glyphicon-pushpin"></i></button>
 	  	</span>
 	      </div>

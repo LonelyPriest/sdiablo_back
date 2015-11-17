@@ -1,18 +1,16 @@
 var purchaserApp = angular.module(
     'purchaserApp',
     ['ui.bootstrap', 'ngRoute', 'ngResource',
-     'LocalStorageModule', 'fsm',
-     'diabloPattern', 'diabloNormalFilterApp', 'diabloUtils',
-     'userApp', 'employApp', 'wgoodApp'])
+     'LocalStorageModule', 'fsm', 'diabloPattern',
+     'diabloNormalFilterApp', 'diabloUtils', 'userApp',
+     'employApp', 'wgoodApp'])
     .config(function(localStorageServiceProvider){
 	localStorageServiceProvider
 	    .setPrefix('purchaserApp')
 	    .setStorageType('localStorage')
 	    .setNotify(true, true)
     })
-// .config(diablo_authen)
     .config(function($httpProvider, authenProvider){
-	// $httpProvider.responseInterceptors.push(authenProvider.interceptor);
 	$httpProvider.interceptors.push(authenProvider.interceptor); 
     })
     .run(['$route', '$rootScope', '$location',
@@ -135,7 +133,7 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 	when('/good/wgood_new', {
 	    templateUrl: '/private/wgood/html/wgood_new.html',
 	    controller: 'wgoodNewCtrl',
-	    resolve: angular.extend({}, brand, firm, type, s_group)
+	    resolve: angular.extend({}, brand, type, s_group)
 	}).
 	when('/good/wgood_update/:id?', {
 	    templateUrl: '/private/wgood/html/wgood_update.html',
@@ -146,7 +144,7 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 	    templateUrl: '/private/wgood/html/wgood_detail.html',
 	    controller: 'wgoodDetailCtrl',
 	    resolve: angular.extend({}, user, brand, firm, type, color, base) 
-		}).
+	}).
 	// default
 	otherwise({
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_new_detail.html',

@@ -63,8 +63,8 @@ success(delete_supplier, Id) ->
     {0, "Success to delete the supplier with id " ++ ?to_s(Id)};
 success(add_brand, Name) ->
     {0, "Success to create the brand " ++ ?to_s(Name)};
-success(connect_brand, Name) ->
-    {0, "Success to connect the brand " ++ ?to_s(Name)};
+success(update_brand, Name) ->
+    {0, "Success to update the brand " ++ ?to_s(Name)};
 
 %% inventory
 success(add_inventory, Number) ->

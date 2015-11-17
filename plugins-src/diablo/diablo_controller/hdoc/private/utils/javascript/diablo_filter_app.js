@@ -252,7 +252,13 @@ function filterProvider(){
 			// console.log(brands);
 			_brands =  brands.map(function(b){
 			    return {id: b.id,
-				    name:b.name, py:diablo_pinyin(b.name)};
+				    name:b.name,
+				    py:diablo_pinyin(b.name)
+				    // firm: supplier,
+				    // firm_id: b.supplier_id,
+				    // remark: b.remark,
+				    // entry: b.entry
+				   };
 			})
 
 			return _brands;

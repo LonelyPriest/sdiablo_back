@@ -25,8 +25,21 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
--define(SERVER, ?MODULE). 
+-define(SERVER, ?MODULE).
+-define(SUPER_ROOT, [?right_merchant, ?right_right, ?right_w_print]).
+-define(USER_ORDER_ROOT,
+	[?right_w_sale,
+	 ?right_w_inventory,
+	 ?right_w_retailer,
+	 ?right_employe,
+	 ?right_shop,
+	 ?right_w_firm,
+	 ?right_w_report,
+	 ?right_right]).
 
+-define(hidden_sm,  [?right_shop, ?right_employe, ?right_right]).
+-define(hddine_xs,  [?right_shop, ?right_employe, ?right_right]).
+-define(hddine_xxs, [?right_w_good]). 
 
 -record(func_tree,
 	{tree   :: gb_tree(),
@@ -97,13 +110,13 @@ init([]) ->
     Empty = gb_trees:empty(),
 
     Funcs = 
-	[{?right_member,    {"/member",    "会员",     ?member_request}},
-	 {?right_shop,      {"/shop",      "店铺",     ?shop_request}},
+	[{?right_shop,      {"/shop",      "店铺",     ?shop_request}},
 	 {?right_merchant,  {"/merchant",  "商家",     ?merchant_request}},
 	 {?right_employe,   {"/employ",    "员工",     ?employ_request}},
 	 {?right_right,     {"/right",     "权限",     ?right_request}},
 	 
 	 %% about whole sale
+	 {?right_w_retailer,   {"/wretailer", "会员",   ?w_retailer_request}},
 	 {?right_w_sale,       {"/wsale",     "销售",   ?w_sale_request}}, 
 	 {?right_w_firm,       {"/firm",      "厂商",   ?firm_request}}, 
 	 {?right_w_inventory,  {"/purchaser", "采购",   ?w_inventory_request}},
@@ -131,13 +144,13 @@ handle_call(lookup, _From, #func_tree{tree=Tree} = State) ->
 
 handle_call({navbar, super}, _From, #func_tree{tree=Tree} = State) ->
     %% super only have merchant and right menu
-    RootKeys = [?right_merchant, ?right_right, ?right_w_print],
+    %% RootKeys = [?right_merchant, ?right_right, ?right_w_print],
     Navs = 
 	lists:foldr(
 	  fun(RId, Acc) ->
 		  {Href, Name, Module} = gb_trees:get(RId, Tree),
-		  [{Href, Name, Module, false}|Acc]
-	  end,[], RootKeys),
+		  [{Href, Name, Module, hidden(mobile, RId)}|Acc]
+	  end,[], ?SUPER_ROOT),
     ?DEBUG("navs ~p", [Navs]),
     {reply, Navs, State};
 
@@ -168,12 +181,12 @@ handle_call({navbar, UserId}, _From, #func_tree{tree=Tree} = State) ->
 
 
     %% order right
-    OrderRoots = [?right_w_sale, ?right_w_inventory, ?right_member,
-		  ?right_employe, ?right_shop, ?right_w_firm,
-		  ?right_w_report, ?right_right], 
-    ?DEBUG("OrderRoots ~p", [OrderRoots]),
+    %% OrderRoots = [?right_w_sale, ?right_w_inventory, ?right_member,
+    %% 		  ?right_employe, ?right_shop, ?right_w_firm,
+    %% 		  ?right_w_report, ?right_right], 
+    %% ?DEBUG("OrderRoots ~p", [OrderRoots]),
 
-    OrderRights = order_root(OrderRoots, ?to_tl(Roots)),
+    OrderRights = order_root(?USER_ORDER_ROOT, ?to_tl(Roots)),
     ?DEBUG("OrderRights ~p", [OrderRights]),
 
     %% get root navbar
@@ -184,13 +197,15 @@ handle_call({navbar, UserId}, _From, #func_tree{tree=Tree} = State) ->
 		  RId = ?v(<<"id">>, Root),
 		  {Href, Name, Module} = gb_trees:get(RId, Tree),
 
-		  %% mobile hidden when xs, sm
-		  case RId =:= ?right_shop
-		      orelse RId =:= ?right_employe
-		      orelse RId =:= ?right_right of
-		      true ->  [{Href, Name, Module, true}|Acc];
-		      false ->[{Href, Name, Module, false}|Acc]
-		  end 
+		  %% mobile device hidden 
+		  [{Href, Name, Module, hidden(mobile, RId)}|Acc]
+		  %% %% mobile hidden when xs, sm
+		  %% case RId =:= ?right_shop
+		  %%     orelse RId =:= ?right_employe
+		  %%     orelse RId =:= ?right_right of
+		  %%     true ->  [{Href, Name, Module, true}|Acc];
+		  %%     false ->[{Href, Name, Module, false}|Acc]
+		  %% end 
 	  end,[], OrderRights),
     ?DEBUG("navs ~p", [Navs]),
     
@@ -465,3 +480,12 @@ order_root([H|T], Currents, Acc) ->
 	[Order] ->
 	    order_root(T, Currents, [Order|Acc])
     end.
+
+hidden(mobile, Nav) ->
+    {hidden(sm, Nav), hidden(xs, Nav), hidden(xxs, Nav)};
+hidden(sm, Nav) ->
+    lists:member(Nav, ?hidden_sm);
+hidden(xs, Nav) ->
+    lists:member(Nav, ?hddine_xs);
+hidden(xxs, Nav) ->
+    lists:member(Nav, ?hddine_xxs).

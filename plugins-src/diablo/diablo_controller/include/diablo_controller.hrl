@@ -55,22 +55,16 @@
 -define(QZG_DY_SESSION, "qzg_dyty_session").
 
 %% right module
-%% -define(right_sale, 10000).
-%% -define(right_inventory, 20000).
--define(right_member, 30000).
 -define(right_shop, 40000).
 -define(right_employe, 50000).
 -define(right_right, 60000).
-%% -define(right_right_sup, 60000).
-%% -define(right_supplier, 70000).
 -define(right_merchant, 80000).
-%% -define(right_size_group, 90000).
 
 %% about wholesale
 -define(right_w_sale,      90000).
 -define(right_w_inventory, 100000).
 -define(right_w_firm,      110000).
-%% -define(right_w_retailer,  120000). 
+-define(right_w_retailer,  30000). 
 -define(right_w_print,     130000).
 -define(right_w_good,      140000).
 -define(right_w_report,    150000).
@@ -81,18 +75,11 @@
 %% base setting
 -define(right_w_base, 900000).
 
-%% member
--define(new_member,              ?right_member + 1).
--define(del_member,              ?right_member + 2).
--define(update_member,           ?right_member + 3).
--define(list_member,             ?right_member + 4).
-%%-define(acc_score,             ?right_member + 5).
--define(acc_score_detail,        ?right_member + 6).
--define(exchange_score,          ?right_member + 7).
--define(exchange_score_detail,   ?right_member + 8).
--define(query_score_stratege,    ?right_member + 9).
--define(update_score_stratege,   ?right_member + 10).
--define(get_member,              ?right_member + 11).
+%% retailer
+-define(new_w_retailer,            ?right_w_retailer + 1).
+-define(del_w_retailer,            ?right_w_retailer + 2).
+-define(update_w_retailer,         ?right_w_retailer + 3).
+-define(list_w_retailer,           ?right_w_retailer + 4).
 
 %% shop
 -define(new_shop,       ?right_shop + 1).
@@ -207,20 +194,14 @@
 %% =============================================================================
 %% base setting
 %% =============================================================================
--define(new_w_bank_card,    ?right_w_base + 1). 
--define(del_w_bank_card,    ?right_w_base + 2). 
--define(update_w_bank_card, ?right_w_base + 3).
--define(list_w_bank_card,   ?right_w_base + 4).
+-define(new_w_bank_card,       ?right_w_base + 1). 
+-define(del_w_bank_card,       ?right_w_base + 2). 
+-define(update_w_bank_card,    ?right_w_base + 3).
+-define(list_w_bank_card,      ?right_w_base + 4).
 -define(new_w_printer_conn,    ?right_w_base + 5).
 -define(del_w_printer_conn,    ?right_w_base + 6).
 -define(update_w_printer_conn, ?right_w_base + 7).
 -define(list_w_printer_conn,   ?right_w_base + 8).
-
-%% member
--define(MAX_EMPLOYEE_ID, 8).
--define(member_request, diablo_controller_member_request).
--define(member, diablo_controller_member).
-
 
 %% public
 -define(http_route, diablo_controller_http_route).
@@ -252,9 +233,13 @@
 -define(employ_request, diablo_controller_employ_request).
 -define(employ, diablo_controller_employ).
 
+%% retailer
+-define(w_retailer_request, diablo_w_retailer_request).
+-define(w_retailer, diablo_w_retailer).
+
 %% inventory
--define(inventory_request, diablo_controller_inventory_request).
--define(inventory, diablo_controller_inventory).
+%% -define(inventory_request, diablo_controller_inventory_request).
+%% -define(inventory, diablo_controller_inventory).
 -define(inventory_sn, diablo_controller_inventory_sn).
 
 %% right
@@ -264,19 +249,13 @@
 -define(right_request, diablo_controller_right_request).
 -define(right, diablo_controller_right).
 
-%% supplier
--define(supplier_request, diablo_controller_supplier_request).
--define(supplier, diablo_controller_supplier).
-
 %% about whole sale
 -define(firm_request, diablo_firm_request).
--define(firm, diablo_firm).
-
+-define(supplier, diablo_controller_supplier).
 
 %% sale
 -define(w_sale_request, diablo_w_sale_request).
 -define(w_sale, diablo_w_sale).
--define(w_sale_draft, diablo_w_sale_draft).
 
 %% inventory
 -define(w_inventory_request, diablo_purchaser_request).
@@ -298,7 +277,6 @@
 -define(w_report, diablo_w_report).
 -define(w_report_sql, diablo_w_report_sql).
 
-
 %% base setting
 -define(w_base_request, diablo_w_base_request).
 -define(w_base, diablo_w_base).
@@ -312,8 +290,10 @@
 %% pool
 -define(wpool, diablo_work_pool_sup).
 
--define(value(Key, Proplists), diablo_controller_utils:value_from_proplists(Key, Proplists)).
--define(value(Key, Proplists, Default), proplists:get_value(Key, Proplists, Default)).
+-define(value(Key, Proplists),
+	diablo_controller_utils:value_from_proplists(Key, Proplists)).
+-define(value(Key, Proplists, Default),
+	proplists:get_value(Key, Proplists, Default)).
 -define(v(K, L), ?value(K, L)).
 -define(v(K, L, D), ?value(K, L, D)).
 
@@ -325,12 +305,18 @@
 -define(SESSION, tbl_session).
 -record(session, {
 	  id          = <<>>  :: binary(),
-	  user_id     = -1    :: integer(), %% user id
-	  user_name   = ""    :: string(),  %% user name
-	  user_type   = -1    :: integer(), %% user level, 0:super, 1:merchant, 2:user
-	  merchant    = -1    :: integer(), %% which merchant belong to
-	  mtype       = -1    :: integer(), %% merhcant type 0: saler, 1: wholesaler
-	  login_time          :: string()   %% start time of login
+	  %% user id
+	  user_id     = -1    :: integer(), 
+	  %% user name
+	  user_name   = ""    :: string(),  
+	  %% user level, 0:super, 1:merchant, 2:user
+	  user_type   = -1    :: integer(),
+	  %% which merchant belong to
+	  merchant    = -1    :: integer(),
+	  %% merhcant type 0: saler, 1: wholesaler
+	  mtype       = -1    :: integer(),
+	  %% start time of login
+	  login_time          :: string()   
 	 }).
 
 -define(WSALE_DRAFT, tbl_wsale_draft).
@@ -365,6 +351,7 @@
 	  itype       = [] :: list(), %% type of inventory
 	  brand       = [] :: list(), %% brand of inventory
 	  employee    = [] :: list(), %% all employee of merchant
+	  retailer    = [] :: list(), %% all retailer
 	  firm        = [] :: list(), %% all firms of merchant
 	  color_type  = [] :: list(),
 	  color       = [] :: list(), 

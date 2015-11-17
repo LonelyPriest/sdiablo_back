@@ -138,13 +138,14 @@ create table color_type(
 create table brands(
     id               INTEGER AUTO_INCREMENT,
     name             VARCHAR(8) default null,
-    -- pinyin           VARCHAR(16) not null,
     supplier         INTEGER default -1,  -- supplier of brand
     merchant         INTEGER default -1,  -- brand belong to
+    remark           VARCHAR(256) default null,
     deleted          INTEGER default 0, -- 0: no;  1: yes
+    entry            DATETIME NOT NULL DEFAULT 0,
     
-    unique  key      index_nm (name, supplier, merchant),
-    key              index_m (merchant),
+    unique  key      index_nm (name, merchant),
+    key              index_m (supplier),
     primary key      (id)
 )default charset=utf8;
 
@@ -285,19 +286,19 @@ create table w_printer_conn(
 )default charset=utf8;
 
 
-create table w_bank_card(
-   id              INTEGER AUTO_INCREMENT,
-   name            VARCHAR(16) not null,
-   no              VARCHAR(32) not null,
-   bank            VARCHAR(64) not null,
-   remark          VARCHAR(64) default null,
-   merchant        INTEGER not null,
-   entry_date      DATE, 
-   deleted         INTEGER default 0, -- 0: no;  1: yes
+-- create table w_bank_card(
+--    id              INTEGER AUTO_INCREMENT,
+--    name            VARCHAR(16) not null,
+--    no              VARCHAR(32) not null,
+--    bank            VARCHAR(64) not null,
+--    remark          VARCHAR(64) default null,
+--    merchant        INTEGER not null,
+--    entry_date      DATE, 
+--    deleted         INTEGER default 0, -- 0: no;  1: yes
    
-   unique  key     index_nm (no, merchant), 
-   primary key     (id)
-)default charset=utf8;
+--    unique  key     index_nm (no, merchant), 
+--    primary key     (id)
+-- )default charset=utf8;
 
 -- about base setting
 create table w_base_setting(
@@ -336,16 +337,13 @@ create table w_retailer
     id              INTEGER AUTO_INCREMENT,
     name            VARCHAR(127) not null,
     balance         DECIMAL(10, 2) default 0, -- max: 99999999.99 
-    -- pinyin          VARCHAR(16) not null,
     mobile          VARCHAR(11),
-    address         VARCHAR(256),
-    province        TINYINT default -1,
-    city            INTEGER default -1,
+    address         VARCHAR(256), 
     merchant        INTEGER default -1, -- which merchant belong to
     change_date     DATETIME, -- last changed
-    entry_date      DATE, -- last changed
+    entry_date      DATETIME, -- last changed
     deleted         INTEGER default 0, -- 0: no;  1: yes
-
+    
     unique  key  index_nm (name, merchant),
     key          index_m  (merchant),
     primary key     (id)
@@ -362,7 +360,7 @@ create table w_inventory_good
     sex              TINYINT default -1, -- 0: man, 1:woman
     color            VARCHAR (255), -- all of the color seperate by comma "1, 2, 3..."
     season           TINYINT default -1, -- 0:spring, 1:summer, 2:autumn, 3:winter
-    year             YEAR(4) default null,
+    year             YEAR(4) not null default 0,
     type             INTEGER default -1, -- reference to inv_type 
     size             VARCHAR(255), -- all of the size seperate by comma "S/26, M/27...."
     s_group          VARCHAR(32) default 0,  -- which size group "1, 2"
@@ -370,18 +368,19 @@ create table w_inventory_good
     brand            INTEGER default -1,
     firm             INTEGER default -1,
     org_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
-    tag_price        DECIMAL(10, 2) default 0, -- max: 99999999.99 
-    discount         DECIMAL(3, 0), -- max: 100
+    tag_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
+    ediscount        DECIMAL(3, 0), -- max: 100, discount of entry
+    discount         DECIMAL(3, 0), -- max: 100, discount of sell
     path             VARCHAR(255) default null, -- the image path
     alarm_day        TINYINT default -1,  -- the days of alarm
     merchant         INTEGER default -1,
     change_date      DATETIME, -- date of last change 
-    entry_date       DATE,
+    entry_date       DATETIME,
     deleted          INTEGER default 0, -- 0: no;  1: yes
 
     UNIQUE key       index_sbsm (style_number, brand, merchant),
-    key              index_sbm  (style_number, brand, firm, merchant),
-    key              merchant (merchant),
+    key              firm  (firm),
+    -- key              merchant (merchant),
     
     primary key      (id)
 )default charset=utf8;
@@ -393,8 +392,6 @@ create table w_inventory
     style_number     VARCHAR(64) not null,
     brand            INTEGER default -1,
 
-    -- color            INTEGER default -1,
-    -- size             VARCHAR(8), -- S/26, M/27.... 
     type             INTEGER default -1, -- reference to inv_type
     sex              TINYINT default -1, -- 0: man, 1:woman
     season           TINYINT default -1, -- 0:spring, 1:summer, 2:autumn, 3:winter
@@ -406,7 +403,9 @@ create table w_inventory
 
     
     org_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
-    tag_price        DECIMAL(10, 2) default 0, -- max: 99999999.99 
+    tag_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
+    
+    ediscount        DECIMAL(3, 0), -- max: 100, discount of entry
     discount         DECIMAL(3, 0), -- max: 100
     
     path             VARCHAR(255) default null, -- the image path
@@ -418,9 +417,10 @@ create table w_inventory
 
     merchant         INTEGER default -1,
     
-    last_sell        DATE default 0,
-    change_date      DATETIME, -- date of last change 
-    entry_date       DATE,
+    last_sell        DATETIME NOT NULL default 0,
+    change_date      DATETIME NOT NULL default 0, -- date of last change 
+    entry_date       DATETIME NOT NULL default 0,
+    
     deleted          INTEGER default 0, -- 0: no;  1: yes
     
     UNIQUE key       index_sbsm (style_number, brand, shop, merchant),
@@ -493,7 +493,9 @@ create table w_inventory_new_detail(
     year           YEAR(4),
     
     org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
-    tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99 
+    tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
+    
+    ediscount      DECIMAL(3, 0)  default 100, -- max: 100
     discount       DECIMAL(3, 0)  default 100, -- max: 100
     amount         INTEGER default 0,
     
@@ -599,24 +601,22 @@ create table w_sale(
     retailer       INTEGER, 
     shop           INTEGER,                  -- which shop saled the goods
     merchant       INTEGER,
-    balance        DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
-    -- cur_balance    DECIMAL(10, 2) default 0, -- max: 99999999.99, balance of current record
+    
+    balance        DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance 
     should_pay     DECIMAL(10, 2) default 0, -- max: 99999999.99
     has_pay        DECIMAL(10, 2) default 0, -- max: 99999999.99
     cash           DECIMAL(10, 2) default 0, -- max: 99999999.99
-    card           DECIMAL(10, 2) default 0, -- max: 99999999.99
-    wire           DECIMAL(10, 2) default 0, -- max: 99999999.99
-    verificate     DECIMAL(10, 2) default 0, -- max: 99999999.99
+    card           DECIMAL(10, 2) default 0, -- max: 99999999.99 
     total          INTEGER default 0,
     comment        VARCHAR(255) default null,
 
-    e_pay_type     TINYINT  default -1,
-    e_pay          DECIMAL(10, 2) default 0, -- max: 99999999.99
+    -- e_pay_type     TINYINT  default -1,
+    -- e_pay          DECIMAL(10, 2) default 0, -- max: 99999999.99
     
     type           TINYINT  default -1, -- 0:sale 1:reject 
     state          TINYINT  default 0,  -- 0: wait for check, 1: checked
-    check_date     DATETIME default null, -- date of last change
-    entry_date     DATETIME,
+    check_date     DATETIME default 0, -- date of last change
+    entry_date     DATETIME default 0,
     deleted        INTEGER default 0, -- 0: no;  1: yes
     unique  key rsn     (rsn),
     key     index_smer  (shop, merchant, employ, retailer),
@@ -632,18 +632,15 @@ create table w_sale_detail(
     rsn            VARCHAR(32) not null, -- record sn
     style_number   VARCHAR(64) not null,
     brand          INTEGER not null default -1,
-    -- color          INTEGER default -1,
-    -- size           VARCHAR(8) default null, -- S/26, M/27....
+    
     type           INTEGER default -1, -- reference to inv_type 
     s_group        VARCHAR(32) default 0,  -- which size group
     free           TINYINT default 0,  -- free color and free size 
-    -- shop           INTEGER default -1,
-    -- merchant       INTEGER default -1, 
+    
     season         TINYINT default -1, -- 0:spring, 1:summer, 2:autumn, 3:winter
     firm           INTEGER default -1,
     year           YEAR(4),
-    -- retailer       INTEGER default -1,
-    -- employ         VARCHAR(8) not null,     -- employ
+    
     hand           INTEGER default -1, 
     total          INTEGER default 0,
     sell_style     TINYINT default -1,

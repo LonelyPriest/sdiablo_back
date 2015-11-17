@@ -10,22 +10,19 @@ good_new(Merchant, UseZero, Shop, Attrs) ->
     BrandId     = ?v(<<"brand_id">>, Attrs),
     TypeId      = ?v(<<"type_id">>, Attrs),
     Sex         = ?v(<<"sex">>, Attrs),
-    Firm        = ?v(<<"firm">>, Attrs),
+    Firm        = ?v(<<"firm">>, Attrs, -1),
     Season      = ?v(<<"season">>, Attrs),
     Year        = ?v(<<"year">>, Attrs),
     OrgPrice    = ?v(<<"org_price">>, Attrs),
-    TagPrice    = ?v(<<"tag_price">>, Attrs),
-    PkgPrice    = ?v(<<"pkg_price">>, Attrs),
-    P3          = ?v(<<"p3">>, Attrs, 0),
-    P4          = ?v(<<"p4">>, Attrs, 0),
-    P5          = ?v(<<"p5">>, Attrs, 0),
+    TagPrice    = ?v(<<"tag_price">>, Attrs), 
+    EDiscount   = ?v(<<"ediscount">>, Attrs, 100),
     Discount    = ?v(<<"discount">>, Attrs, 100),
     Colors      = ?v(<<"colors">>, Attrs, [?FREE_COLOR]),
     Path        = ?v(<<"path">>, Attrs, []),
     AlarmDay    = ?v(<<"alarm_day">>, Attrs, 7),
 
     Sizes       = ?v(<<"sizes">>, Attrs, [?FREE_SIZE]), 
-    Date        = ?utils:current_time(localdate),
+    %% Date        = ?utils:current_time(localdate),
     DateTime    = ?utils:current_time(localtime), 
 
 
@@ -35,13 +32,13 @@ good_new(Merchant, UseZero, Shop, Attrs) ->
 	   end,
 
     {GIds, GNames} = decompose_size(Sizes),
-    ?DEBUG("GIds ~p, GNames ~p", [GIds, GNames]),
+    %% ?DEBUG("GIds ~p, GNames ~p", [GIds, GNames]),
 
     Sql1 =
 	"insert into w_inventory_good"
 	"(style_number, sex, color, year, season, type, size, s_group, free"
-	", brand, firm, org_price, tag_price, pkg_price, price3, price4, price5"
-	", discount, path, alarm_day, merchant, change_date, entry_date"
+	", brand, firm, org_price, tag_price, ediscount, discount"
+	", path, alarm_day, merchant, change_date, entry_date"
 	") values("
 	++ "\"" ++ ?to_s(StyleNumber) ++ "\","
 	++ ?to_s(Sex) ++ ","
@@ -56,103 +53,98 @@ good_new(Merchant, UseZero, Shop, Attrs) ->
 	++ ?to_s(Firm) ++ ","
 	++ ?to_s(OrgPrice) ++ ","
 	++ ?to_s(TagPrice) ++ ","
-	++ ?to_s(PkgPrice) ++ ","
-	++ ?to_s(P3) ++ ","
-	++ ?to_s(P4) ++ ","
-	++ ?to_s(P5) ++ ","
+	++ ?to_s(EDiscount) ++ ","
 	++ ?to_s(Discount) ++ ","
 	++ "\"" ++ ?to_s(Path) ++ "\","
 	++ ?to_s(AlarmDay) ++ ","
 	++ ?to_s(Merchant) ++ ","
 	++ "\"" ++ ?to_s(DateTime) ++ "\","
-	++ "\"" ++ ?to_s(Date) ++ "\");",
+	++ "\"" ++ ?to_s(DateTime) ++ "\");",
 
-     case UseZero of
-	 ?NO ->
-	     [Sql1];
-	 ?YES -> 
-	     FSize = fun(S) when S =:= <<>> -> [];
-			(S) when S =:= [] -> [];
-			(S) -> [S]
-		     end,
-	     
-	     GetSizeGroup =
-		 fun([]) -> ["0"];
-		 (G) ->
-			 SI   = ?v(<<"si">>, G),
-			 SII  = ?v(<<"sii">>, G),
-			 SIII = ?v(<<"siii">>, G),
-			 SIV  = ?v(<<"siv">>, G),
-			 SV   = ?v(<<"sv">>, G),
-			 SVI  = ?v(<<"svi">>, G),
-			 FSize(SI) ++ FSize(SII) ++ FSize(SIII)
-			     ++ FSize(SIV) ++ FSize(SV) ++ FSize(SVI) 
-		 end,
+    case UseZero of
+	?NO ->
+	    [Sql1];
+	?YES -> 
+	    FSize = fun(S) when S =:= <<>> -> [];
+		       (S) when S =:= [] -> [];
+		       (S) -> [S]
+		    end,
 
-	     InventoryAmount =
-		 fun(Size, Color) ->
-			 ["insert into w_inventory_amount(rsn, style_number, brand"
-			     ", color, size, shop, merchant, entry_date) values("
-			  ++ "-1,"
-			  ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
-			  ++ ?to_s(BrandId) ++ ","
-			  ++ ?to_s(Color) ++ ","
-			  ++ "\'" ++ ?to_s(Size) ++ "\',"
-			  ++ ?to_s(Shop) ++ ","
-			  ++ ?to_s(Merchant) ++ ","
-			  ++ "\"" ++ ?to_s(DateTime) ++ "\")"]
-		 end,
+	    GetSizeGroup =
+		fun([]) -> ["0"];
+		   (G) ->
+			SI   = ?v(<<"si">>, G),
+			SII  = ?v(<<"sii">>, G),
+			SIII = ?v(<<"siii">>, G),
+			SIV  = ?v(<<"siv">>, G),
+			SV   = ?v(<<"sv">>, G),
+			SVI  = ?v(<<"svi">>, G),
+			FSize(SI) ++ FSize(SII) ++ FSize(SIII)
+			    ++ FSize(SIV) ++ FSize(SV) ++ FSize(SVI) 
+		end,
 
-	     [Sql1, 
-	      "insert into w_inventory(rsn"
-	      ", style_number, brand, type, sex, season, amount"
-	      ", firm, s_group, free, year"
-	      ", org_price, tag_price, pkg_price, price3"
-	      ", price4, price5, discount, path, alarm_day"
-	      ", shop, merchant, last_sell, change_date, entry_date)"
-	      " values("
-	      ++ "\"" ++ ?to_s(-1) ++ "\","
-	      ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
-	      ++ ?to_s(BrandId) ++ ","
-	      ++ ?to_s(TypeId) ++ ","
-	      ++ ?to_s(Sex) ++ ","
-	      ++ ?to_s(Season) ++ ","
-	      ++ ?to_s(0) ++ ","
-	      ++ ?to_s(Firm) ++ "," 
-	      %% ++ ?to_s(Color) ++ ","
-	      %% ++ "\"" ++ ?to_s(Size) ++ "\","
-	      ++ "\"" ++ join_with_comma(GIds) ++ "\","
-	      ++ ?to_s(Free) ++ ","
-	      ++ ?to_s(Year) ++ ","
-	      ++ ?to_s(OrgPrice) ++ ","
-	      ++ ?to_s(TagPrice) ++ ","
-	      ++ ?to_s(PkgPrice) ++ ","
-	      ++ ?to_s(P3) ++ ","
-	      ++ ?to_s(P4) ++ ","
-	      ++ ?to_s(P5) ++ ","
-	      ++ ?to_s(Discount) ++ ","
-	      ++ "\"" ++ ?to_s(Path) ++ "\","
-	      ++ ?to_s(AlarmDay) ++ ","
-	      ++ ?to_s(Shop) ++ ","
-	      ++ ?to_s(Merchant) ++ ","
-	      ++ "\"" ++ ?to_s(Date) ++ "\","
-	      ++ "\"" ++ ?to_s(DateTime) ++ "\","
-	      ++ "\"" ++ ?to_s(Date) ++ "\")" 
-	     ] ++
-		 lists:foldr(
-		   fun(GId, Acc0) ->
-			   {ok, G} = ?w_user_profile:get(size_group, Merchant, GId),
-			   ?DEBUG("G ======= ~p", [G]),
-			   lists:foldr(
-			     fun(S, Acc1) ->
-				     lists:foldr(
-				       fun(C, Acc2)->
-					       InventoryAmount(S, C) ++ Acc2
-				       end, [], Colors) ++ Acc1
-			     end, [], GetSizeGroup(G)) ++ Acc0
-		   end, [], GIds)
-		 
-     end.
+	    InventoryAmount =
+		fun(Size, Color) ->
+			["insert into w_inventory_amount("
+			 "rsn, style_number, brand"
+			 ", color, size, shop, merchant, entry_date) values("
+			 ++ "-1,"
+			 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
+			 ++ ?to_s(BrandId) ++ ","
+			 ++ ?to_s(Color) ++ ","
+			 ++ "\'" ++ ?to_s(Size) ++ "\',"
+			 ++ ?to_s(Shop) ++ ","
+			 ++ ?to_s(Merchant) ++ ","
+			 ++ "\"" ++ ?to_s(DateTime) ++ "\")"]
+		end,
+
+	    [Sql1, 
+	     "insert into w_inventory(rsn"
+	     ", style_number, brand, type, sex, season, amount"
+	     ", firm, s_group, free, year"
+	     ", org_price, tag_price,, ediscount, discount"
+	     ", path, alarm_day, shop, merchant"
+	     ", last_sell, change_date, entry_date)"
+	     " values("
+	     ++ "\"" ++ ?to_s(-1) ++ "\","
+	     ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
+	     ++ ?to_s(BrandId) ++ ","
+	     ++ ?to_s(TypeId) ++ ","
+	     ++ ?to_s(Sex) ++ ","
+	     ++ ?to_s(Season) ++ ","
+	     ++ ?to_s(0) ++ ","
+	     ++ ?to_s(Firm) ++ ","
+	     %% ++ ?to_s(Color) ++ ","
+	     %% ++ "\"" ++ ?to_s(Size) ++ "\","
+	     ++ "\"" ++ join_with_comma(GIds) ++ "\","
+	     ++ ?to_s(Free) ++ ","
+	     ++ ?to_s(Year) ++ ","
+	     ++ ?to_s(OrgPrice) ++ ","
+	     ++ ?to_s(TagPrice) ++ ","
+	     ++ ?to_s(EDiscount) ++ ","
+	     ++ ?to_s(Discount) ++ ","
+	     ++ "\"" ++ ?to_s(Path) ++ "\","
+	     ++ ?to_s(AlarmDay) ++ ","
+	     ++ ?to_s(Shop) ++ ","
+	     ++ ?to_s(Merchant) ++ ","
+	     ++ "\"" ++ ?to_s(DateTime) ++ "\","
+	     ++ "\"" ++ ?to_s(DateTime) ++ "\","
+	     ++ "\"" ++ ?to_s(DateTime) ++ "\")"] ++
+		lists:foldr(
+		  fun(GId, Acc0) ->
+			  {ok, G} =
+			      ?w_user_profile:get(size_group, Merchant, GId),
+			  %% ?DEBUG("G ======= ~p", [G]),
+			  lists:foldr(
+			    fun(S, Acc1) ->
+				    lists:foldr(
+				      fun(C, Acc2)->
+					      InventoryAmount(S, C) ++ Acc2
+				      end, [], Colors) ++ Acc1
+			    end, [], GetSizeGroup(G)) ++ Acc0
+		  end, [], GIds)
+
+    end.
      
 good(detail, Merchant) ->
     good(detail, Merchant, []).
@@ -165,23 +157,11 @@ good(delete, Merchant, GoodId) ->
 good(detail, Merchant, Conditions) ->
     {StartTime, EndTime, NewConditions} =
 	?sql_utils:cut(fields_no_prifix, Conditions), 
-    %% "select a.id, a.style_number, a.brand as brand_id"
-    %% 	", a.firm as firm_id, a.type as type_id"
-    %% 	", a.sex, a.color, a.year, a.season, a.size, a.s_group, a.free"
-    %% 	", a.org_price, a.tag_price, a.pkg_price"
-    %% 	", a.price3, a.price4, a.price5"
-    %% 	", a.discount, a.path, a.entry_date"
-
-	%% ", b.name as brand"
-	%% ", c.name as firm"
-	%% ", e.name as type"
-	
-    %% " from "
 	"select id, style_number"
 	", brand as brand_id, firm as firm_id, type as type_id"
 	", sex, color, year, season, size, s_group, free"
-	", org_price, tag_price" ", pkg_price, price3, price4, price5"
-	", discount, path, entry_date"
+	", org_price, tag_price, ediscount, discount"
+	", path, entry_date"
 	" from w_inventory_good"
 	" where "
 	++ ?sql_utils:condition(proplists_suffix, NewConditions)
@@ -190,19 +170,7 @@ good(detail, Merchant, Conditions) ->
 	       [] -> [];
 	       TimeSql ->  " and " ++ TimeSql
 	   end
-	++ " and deleted=" ++ ?to_s(?NO);
-	
-	%% " left join "
-	%% "(select id, name from brands where merchant=" ++ ?to_s(Merchant) ++ ")"
-	%% " as b on a.brand=b.id"
-
-	%% " left join "
-	%% "(select id, name from suppliers where merchant=" ++ ?to_s(Merchant) ++ ")" 
-	%% " c on a.firm=c.id"
-
-	%% " left join "
-	%% "(select id, name from inv_types) where merchant=" ++ ?to_s(Merchant) ++ ")"	
-	%% ++ " e on a.type=e.id"; 
+	++ " and deleted=" ++ ?to_s(?NO); 
 
 good(price, Merchant, [{_StyleNumber, _Brand}|_] = Conditions) ->
     [{S1, B1}|T] = Conditions, 
@@ -218,7 +186,8 @@ good(price, Merchant, [{_StyleNumber, _Brand}|_] = Conditions) ->
 	++ "(\'" ++ ?to_s(S1) ++ "\'," ++ ?to_s(B1) ++ "))"
 	++ "and a.merchant=" ++ ?to_s(Merchant).
 
-good(detail_with_pagination, Merchant, Conditions, CurrentPage, ItemsPerPage) -> 
+good(detail_with_pagination,
+     Merchant, Conditions, CurrentPage, ItemsPerPage) -> 
     good(detail, Merchant, Conditions)
 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage).
 
