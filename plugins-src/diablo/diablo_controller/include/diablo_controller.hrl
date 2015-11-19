@@ -258,6 +258,7 @@
 -define(w_sale, diablo_w_sale).
 
 %% inventory
+-define(inventory_request, diablo_controller_inventory_request).
 -define(w_inventory_request, diablo_purchaser_request).
 -define(w_inventory, diablo_purchaser).
 

@@ -163,22 +163,23 @@ action(Session, Req, {"match_w_good"}, Payload) ->
 	   [Session, Payload]),
     Merchant     = ?session:get(merchant, Session),
     PromptNumber = ?v(<<"prompt_value">>, Payload),
-    Firm         = ?v(<<"firm">>, Payload), 
+    Brand        = ?v(<<"brand">>, Payload), 
     batch_responed(
       fun() -> ?w_inventory:match(
-		  style_number_brand_firm, Merchant, PromptNumber, Firm)
+		  style_number_with_brand, Merchant, PromptNumber, Brand)
       end, Req);
 
 
 action(Session, Req, {"match_all_w_good"}, Payload) ->
-    ?DEBUG("match_all_w_good with session ~p, payload ~p", [Session, Payload]),
+    ?DEBUG("match_all_w_good with session ~p, payload ~p",
+	   [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
     StartTime = ?v(<<"start_time">>, Payload, []),
-    Firm      = ?v(<<"firm">>, Payload, []),
+    Brand     = ?v(<<"firm">>, Payload, []),
 
     batch_responed(
       fun() -> ?w_inventory:match(
-		  all_style_number_brand_firm, Merchant, StartTime, Firm)
+		  all_style_number_with_brand, Merchant, StartTime, Brand)
       end, Req);
 
 action(Session, Req, {"new_w_good"}, Payload) ->
@@ -259,26 +260,42 @@ action(Session, Req, {"update_w_good"}, Payload) ->
     OImagePath   = ?v(<<"o_path">>, Good),
     OFirm        = ?v(<<"o_firm">>, Good),
 
-    StyleNumber = ?v(<<"style_number">>, Payload),
+    StyleNumber  = ?v(<<"style_number">>, Good),
+    Firm         = case ?v(<<"firm_id">>, Good) of
+		       undefined -> OFirm;
+		       _Firm     -> _Firm
+		   end,
+
+    UpdateOrNewBrand = 
+    	fun(undefined) ->
+    		case Firm =:= OFirm of
+    		    true  ->
+    			undefined;
+    		    false ->
+    			?attr:brand(
+    			   update,
+    			   Merchant,
+    			   [{<<"bid">>, OBrandId}, {<<"firm">>, Firm}]),
+    			undefined
+    		end;
+    	   (NewBrand) ->
+    		{ok, BId} =
+    		    ?attr:brand(
+    		       new,
+    		       Merchant,
+    		       [{<<"name">>, NewBrand}, {<<"firm">>, Firm}]),
+    		BId
+    	end, 
     
     try
 	TypeId = case ?v(<<"type">>, Good) of
 		     undefined -> undefined;
-		     Type -> {ok, TId} = ?attr:type(new, Merchant, Type),
-			     TId
+		     Type ->
+			 {ok, TId} = ?attr:type(new, Merchant, Type),
+			 TId
 		 end,
 
-	BrandId = case ?v(<<"brand">>, Good) of
-		      undefined -> undefined;
-		      Brand ->
-			  Firm = case ?v(<<"firm">>, Payload) of
-				     undefined -> OFirm;
-				     _Firm     -> _Firm
-				 end,
-			  {ok, BId} = ?attr:brand(new, Merchant, Brand, Firm),
-			  BId
-		  end, 
-
+	BrandId = UpdateOrNewBrand(?v(<<"brand">>, Good)), 
 	OldPath = image(path, Merchant, OStyleNumber, OBrandId),
 	
 	NewPath= case {StyleNumber, BrandId} of

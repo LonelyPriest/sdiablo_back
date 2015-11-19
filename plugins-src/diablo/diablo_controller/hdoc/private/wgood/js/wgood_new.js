@@ -570,16 +570,10 @@ wgoodApp.controller("wgoodDetailCtrl", function(
     // console.log(filterType);
 
     // $scope.show_orgprice = rightAuthen.show_orgprice(user.type);
-    $scope.hidden = {
-	org_price:rightAuthen.show_orgprice(user.type),
-	p3_5:true
-    };
-
-    $scope.toggle_price = function(){
-	$scope.hidden.p3_5 = !$scope.hidden.p3_5;
-    };
-
-    // console.log($scope.hidden);
+    // $scope.hidden = {
+    // 	org_price:rightAuthen.show_orgprice(user.type),
+    // 	p3_5:true
+    // };
     
     /*
      * filter
@@ -611,113 +605,31 @@ wgoodApp.controller("wgoodDetailCtrl", function(
     $scope.do_search = function(page){
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
 	    wgoodService.filter_purchaser_good(
-		$scope.match, search, page, $scope.items_perpage).then(function(result){
+		$scope.match, search, page, $scope.items_perpage
+	    ).then(function(result){
 		    console.log(result);
 		    if (page === 1){
 			$scope.total_items      = result.total;
 		    }
 		    angular.forEach(result.data, function(d){
 			d.firm  = diablo_get_object(d.firm_id, filterFirm);
-			d.brand = diablo_get_object(d.brand_id, filterBrand);
 			d.type  = diablo_get_object(d.type_id, filterType);
 		    })
 		    $scope.goods = result.data;
-		    diablo_order_page(page, $scope.items_perpage, $scope.goods);
+		    diablo_order_page(
+			page, $scope.items_perpage, $scope.goods);
 		})
 	});
     };
-    
-    
-    // $scope.do_search = function(page){
-    // 	console.log($scope.match);
-    // 	console.log($scope.filters);
-
-    // 	var search =  diablo_filters($scope.filters);
-    
-    // 	// console.log($scope.time);
-    // 	search.start_time = diablo_filter_time($scope.time.start_time, 0, dateFilter); 
-    // 	search.end_time   = diablo_filter_time($scope.time.end_time, 1, dateFilter);
-    // 	console.log(search);
-
-    // 	wgoodService.filter_purchaser_good(
-    // 	    $scope.match, search, page, $scope.items_perpage).then(function(result){
-    // 		console.log(result);
-    // 		if (page === 1){
-    // 		    $scope.total_items      = result.total;
-    // 		}
-    // 		$scope.goods = result.data;
-    // 		diablo_order_page(page, $scope.items_perpage, $scope.goods);
-    // 	    })
-    // }; 
 
     $scope.page_changed = function(){
-    	// console.log(page);
     	$scope.do_search($scope.current_page);
     }
     
     $scope.default_page = 1;
     $scope.do_search($scope.default_page); 
-    
-    // var match_filed = {
-    // 	firm:  "firm_id",
-    // 	style_number: "style_number", 
-    // 	brand: "brand_id",
-    // 	type:  "type_id"
-    // };
-    
 
-    // filter
-    // $scope.do_search = function(page){
-    // 	// console.log(page);
-    // 	// console.log($scope.match);
-    // 	// console.log($scope.filters);
-
-    // 	var search =  diablo_filters($scope.filters);
-
-    // 	var time = {};
-    // 	time.end_time = diablo_filter_time($scope.time.end_time, 1, dateFilter); 
-    
-    // 	if (angular.isDefined($scope.time.start_time) && $scope.time.start_time){
-    // 	    time.start_time = dateFilter($scope.time.start_time, "yyyy-MM-dd");
-    // 	} else{
-    // 	    // default 30 days
-    // 	    time.start_time = diablo_filter_time($scope.time.end_time, -30, dateFilter); 
-    // 	} 
-    
-    
-    // 	console.log(search);
-    // 	// console.log(time);
-
-    // 	var index = [];
-    // 	for (var i=0, l=$scope.goods.length; i<l; i++){
-    // 	    var good = $scope.goods[i];
-    // 	    var find = true;
-    
-    // 	    for (var f in search){
-    // 		if (search[f] !== good[match_filed[f]]){
-    // 		    find = false;
-    // 		    break;
-    // 		}
-    // 	    }
-
-    // 	    if (find &&
-    // 		(good.entry_date >= time.start_time && good.entry_date <= time.end_time)){
-    // 		index.push(i);
-    // 	    } 
-    // 	}
-
-    // 	$scope.filter_data = index.map(function(i){return $scope.goods[i]});
-    // 	// console.log(filter_data);
-    // 	diablo_order($scope.filter_data);
-    // 	diabloPagination.set_data($scope.filter_data);
-    // 	// console.log(diabloPagination.get_data());
-    // 	$scope.total_items = diabloPagination.get_length();
-    // 	$scope.page_changed($scope.default_page);
-    // };
-    
-    // $scope.refresh();
-
-    $scope.goto_page = diablo_goto_page; 
+    // $scope.goto_page = diablo_goto_page; 
 
     var dialog = diabloUtilsService;
     $scope.lookup_detail = function(good){
@@ -736,9 +648,6 @@ wgoodApp.controller("wgoodDetailCtrl", function(
 		     colors: good.colors,
 		     path:   good.path});
 	    } else{
-		// wgoodService.get_colors(good.color.split(",")).then(function(colors){
-		//     console.log(colors);
-		// good.colors = colors.map(function(c){return {id: c.id, name:c.name}});
 		good.colors = good.color.split(",").map(function(cid){
 		    return diablo_find_color(parseInt(cid), filterColor); 
 		});
@@ -780,22 +689,25 @@ wgoodApp.controller("wgoodDetailCtrl", function(
 					+ "-" + g.brand.name + "-"
 					+ g.type.name + " ]删除成功！！",
 				    $scope,
-				    function(){
-					$scope.do_search($scope.current_page)})
+				    function(){$scope.do_search(
+					$scope.current_page)})
 			    } else {
 				dialog.response(
 				    false, "删除货品", "删除货品失败："
 					+ wgoodService.error[result.ecode]);
 			    }
 			})
-		    } 
+		    };
+		    
 		    dialog.request(
-			"删除货品", "确定要删除该货品资料吗？",
-			callback);
+			"删除货品", "确定要删除该货品资料吗？", callback);
 		}
 	    })    
-	}
-	
+	} 
+    };
+
+    $scope.add_good = function(){
+	diablo_goto_page("#/good/wgood_new");
     };
     
 });

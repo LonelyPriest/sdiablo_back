@@ -159,16 +159,16 @@ wgoodApp.service("wgoodService", function($resource, $http, dateFilter){
 	    {prompt_value: viewValue}).$promise;
     };
 
-    this.match_purchaser_good_with_firm = function(viewValue, firm){
+    this.match_purchaser_good_with_brand = function(viewValue, brand){
 	return http.query_by_post(
 	    {operation: "match_w_good"},
-	    {prompt_value: viewValue, firm: firm}).$promise;
+	    {prompt_value: viewValue, brand: brand}).$promise;
     };
 
-    this.match_all_purchaser_good = function(start_time, firm){
+    this.match_all_purchaser_good = function(start_time, brand){
 	return http.query_by_post(
 	    {operation: "match_all_w_good"},
-	    {start_time: start_time, firm: firm}).$promise;
+	    {start_time: start_time, brand: brand}).$promise;
     };
 
     this.add_purchaser_good = function(good, image){
@@ -191,16 +191,17 @@ wgoodApp.service("wgoodService", function($resource, $http, dateFilter){
     /*
      * firm
      */
-    // var firm_http = $resource("/firm/:operation", {operation: '@operation'});
-    // this.new_firm = function(firm){
-    // 	var balance = firm.balance;
-    // 	return firm_http.save(
-    // 	    {operation:"new_firm"},
-    // 	    {name:    firm.name,
-    // 	     balance: angular.isDefined(balance) ? parseInt(balance) : 0,
-    // 	     mobile:  angular.isDefined(firm.mobile) && firm.mobile ? firm.mobile:undefined,
-    // 	     address: firm.address}).$promise
-    // };
+    var firm_http = $resource("/firm/:operation", {operation: '@operation'});
+    this.new_firm = function(firm){
+    	var balance = firm.balance;
+    	return firm_http.save(
+    	    {operation:"new_firm"},
+    	    {name:    firm.name,
+    	     balance: angular.isDefined(balance) ? parseInt(balance) : 0,
+    	     mobile:  (angular.isDefined(firm.mobile)
+		       && firm.mobile ? firm.mobile:undefined),
+    	     address: firm.address}).$promise
+    };
 });
 
 

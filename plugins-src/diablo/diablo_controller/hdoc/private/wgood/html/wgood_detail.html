@@ -12,7 +12,7 @@
 	  <div class="btn-group btn-group-solid">
 	    <button type="button"
 		    class="btn btn-success purple-stripe hidden-xs"
-	  	    x-ng-click="goto_page('#/wgood_new')">新增
+	  	    x-ng-click="add_good()">新增
 	      <i class="glyphicon glyphicon-plus"></i></button>
 
 	    <button type="button" class="btn blue reload purple-stripe"
@@ -89,7 +89,7 @@
 		    <td x-ng-if="g.firm_id===-1">暂无</td>
 		    <td x-ng-if="g.firm_id!==-1">{{g.firm.name}}</td>
 		    <td>{{g.style_number}}</td>
-		    <td>{{g.brand.name}}</td>
+		    <td>{{g.brand}}</td>
 		    <td>{{g.type.name}}</td>
 		    <!-- <td>{{g.sex}}</td>-->
 		    <!-- <td>{{g.season}}</td> -->

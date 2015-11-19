@@ -63,7 +63,8 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 	when('/inventory_new', {
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_new.html',
             controller: 'purchaserInventoryNewCtrl',
-	    resolve: angular.extend({}, user, firm, employee, color, base)
+	    resolve: angular.extend(
+		{}, user, brand, firm, employee, color, base)
 	}).
 	when('/update_new_detail/:rsn?/:ppage?', {
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_new_detail_update.html',
@@ -260,12 +261,13 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
     };
     
     // =========================================================================
-    var http = $resource("/purchaser/:operation/:id",
-    			 {operation: '@operation', id: '@id'},
-			 {
-			     get_inventory_group: {method: 'POST', isArray: true},
-			     get_inventory: {method: 'POST', isArray: true}
-			 }); 
+    var http = $resource(
+	"/purchaser/:operation/:id",
+    	{operation: '@operation', id: '@id'},
+	{
+	    get_inventory_group: {method: 'POST', isArray: true},
+	    get_inventory: {method: 'POST', isArray: true}
+	}); 
     
     /*
      * new
@@ -306,10 +308,13 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
     };
 
     this.get_w_invnetory_new_amount = function(condition){
-    	return http.save({operation: "get_w_inventory_new_amount"}, condition).$promise;
+    	return http.save(
+	    {operation: "get_w_inventory_new_amount"}, condition).$promise;
     };
 
-    this.filter_w_inventory_new = function(match, fields, currentPage, itemsPerpage){
+    this.filter_w_inventory_new = function(
+	match, fields, currentPage, itemsPerpage
+    ){
 	return http.save(
 	    {operation: "filter_w_inventory_new"},
 	    {match:  angular.isDefined(match) ? match.op : undefined,
@@ -318,7 +323,9 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
 	     count:  itemsPerpage}).$promise;
     };
 
-    this.filter_w_inventory_new_rsn_group = function(match, fields, currentPage, itemsPerpage){
+    this.filter_w_inventory_new_rsn_group = function(
+	match, fields, currentPage, itemsPerpage
+    ){
 	return http.save(
 	    {operation: "filter_w_inventory_new_rsn_group"},
 	    {match:  angular.isDefined(match) ? match.op : undefined,
@@ -330,17 +337,22 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
     this.w_inventory_new_rsn_detail = function(inv){
 	return http.save(
 	    {operation: "w_inventory_new_rsn_detail"},
-	    {rsn:inv.rsn, style_number:inv.style_number, brand:inv.brand}).$promise;
-    }
+	    {rsn:inv.rsn,
+	     style_number:inv.style_number,
+	     brand:inv.brand}).$promise;
+    };
 
     /*
      * reject
      */
     this.reject_purchaser_inventory = function(inventory){
-	return http.save({operation: "reject_w_inventory"}, inventory).$promise;
+	return http.save(
+	    {operation: "reject_w_inventory"}, inventory).$promise;
     }
     
-    this.filter_w_inventory_reject = function(match, fields, currentPage, itemsPerpage){
+    this.filter_w_inventory_reject = function(
+	match, fields, currentPage, itemsPerpage
+    ){
 	return http.save(
 	    {operation: "filter_w_inventory_reject"},
 	    {match:  angular.isDefined(match) ? match.op : undefined,
@@ -349,7 +361,9 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
 	     count:  itemsPerpage}).$promise;
     };
 
-    this.filter_w_inventory_reject_rsn_group = function(match, fields, currentPage, itemsPerpage){
+    this.filter_w_inventory_reject_rsn_group = function(
+	match, fields, currentPage, itemsPerpage
+    ){
 	return http.save(
 	    {operation: "filter_w_inventory_reject_rsn_group"},
 	    {match:  angular.isDefined(match) ? match.op : undefined,
@@ -361,8 +375,10 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
     this.w_invnetory_reject_rsn_detail = function(inv){
 	return http.save(
 	    {operation: "w_inventory_reject_rsn_detail"},
-	    {rsn:inv.rsn, style_number:inv.style_number, brand:inv.brand}).$promise;
-    }
+	    {rsn:inv.rsn,
+	     style_number:inv.style_number,
+	     brand:inv.brand}).$promise;
+    };
 
     /*
      * fix
@@ -371,7 +387,9 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
 	return http.save({operation: "fix_w_inventory"}, inventory).$promise;
     }
 
-    this.filter_fix_w_inventory = function(match, fields, currentPage, itemsPerpage){
+    this.filter_fix_w_inventory = function(
+	match, fields, currentPage, itemsPerpage
+    ){
 	return http.save(
 	    {operation: "filter_fix_w_inventory"},
 	    {match:  angular.isDefined(match) ? match.op : undefined,
@@ -380,7 +398,9 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
 	     count:  itemsPerpage}).$promise;
     };
 
-    this.filter_w_inventory_fix_rsn_group = function(match, fields, currentPage, itemsPerpage){
+    this.filter_w_inventory_fix_rsn_group = function(
+	match, fields, currentPage, itemsPerpage
+    ){
 	return http.save(
 	    {operation: "filter_w_inventory_fix_rsn_group"},
 	    {match:  angular.isDefined(match) ? match.op : undefined,
@@ -392,30 +412,18 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
     this.w_invnetory_fix_rsn_detail = function(inv){
 	return http.save(
 	    {operation: "w_inventory_fix_rsn_detail"},
-	    {rsn:inv.rsn, style_number:inv.style_number, brand:inv.brand}).$promise;
+	    {rsn:inv.rsn,
+	     style_number:inv.style_number,
+	     brand:inv.brand}).$promise;
     };
 
     this.csv_export = function(e_type, condition){
-	return http.save({operation: "w_inventory_export"},
-			 {condition: condition, e_type:e_type}).$promise;
+	return http.save(
+	    {operation: "w_inventory_export"},
+	    {condition: condition, e_type:e_type}).$promise;
     };
     
 });
-
-// purchaserApp.controller(
-//     "purchaserOrderNewCtrl",
-//     function($scope){
-// 	console.log("purchaserNewCtrl");
-//     }
-// );
-
-
-// purchaserApp.controller(
-//     "purchaserOrderDetailCtrl",
-//     function($scope){
-// 	console.log("purchaserDetailCtrl");
-//     }
-// );
 
 purchaserApp.controller("purchaserCtrl", function($scope, localStorageService){
     diablo_remove_local_storage(localStorageService);

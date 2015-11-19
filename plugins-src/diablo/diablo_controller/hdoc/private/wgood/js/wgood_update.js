@@ -51,21 +51,23 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 
     // console.log($scope.types);
     // console.log($scope.firms);
-    wgoodService.get_purchaser_good_by_id($routeParams.id).then(function(good){
+    wgoodService.get_purchaser_good_by_id($routeParams.id).then(function(
+	good){
 	console.log(good); 
-	// reset
 	var get_by_id = diablo_get_object;
-
-	$scope.src_good = angular.copy(good);
-	$scope.src_good.brand =
-	    get_by_id($scope.src_good.brand_id, $scope.brands).name;
-	$scope.src_good.type  = get_by_id(good.type_id, $scope.types).name;
+	var brand     = get_by_id(good.brand_id, $scope.brands);
+	// console.log(brand);
 	
+	// old
+	$scope.src_good = angular.copy(good);
+	$scope.src_good.brand = brand.name;
+	$scope.src_good.type  = get_by_id(good.type_id, $scope.types).name;
+
+	// now
 	$scope.good = angular.copy(good);
-	$scope.good.brand =
-	    get_by_id($scope.good.brand_id, $scope.brands).name;
+	$scope.good.brand = brand.name;
 	$scope.good.type  = get_by_id(good.type_id, $scope.types);
-	$scope.good.firm  = get_by_id(good.firm_id, $scope.firms);
+	$scope.good.firm  = get_by_id(brand.firm_id, $scope.firms);
 	$scope.good.sex   = get_by_id(good.sex, $scope.sexs);
 	$scope.good.season= get_by_id(good.season, $scope.seasons);
 	$scope.good.shop  = $scope.shops[0];
@@ -105,21 +107,6 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	$scope.image = undefined;
     };
     
-    $scope.get_firm_by_name = function(name){
-	for(var i=0, l=$scope.firms.length; i<l; i++){
-	    if (name === $scope.firms[i].name){
-		return $scope.firms[i]
-	    }
-	}
-    };
-    
-    $scope.refresh_firm = function(newFirmName){
-	diabloFilter.get_firm().then(function(firms){
-	    $scope.firms = firms;
-	    $scope.good.firm = $scope.get_firm_by_name(newFirmName);
-	})
-    };
-    
     $scope.new_firm = function(){
 	var callback = function(params){
 	    console.log(params);
@@ -128,13 +115,20 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 		console.log(state);
 		if (state.ecode == 0){
 		    dialog.response_with_callback(
-			true, "新增厂家",
+			true,
+			"新增厂家",
 			"恭喜你，厂家 " + params.firm.name + " 成功创建！！",
-			$scope, function(){$scope.refresh_firm(params.firm.name)});
+			$scope,
+			function(){
+			    $scope.good.firm = {
+				id:state.id,
+				name:params.firm.name,
+				py:diablo_pinyin(params.firm.name)}; 
+			});
 		} else{
 		    dialog.response(
 	    		false, "新增厂家",
-	    		"新增厂家失败：" + firmService.error[state.ecode]);
+	    		"新增厂家失败：" + wgoodService.error[state.ecode]);
 		};
 	    })
 	    
@@ -150,7 +144,8 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	}
 	
 	var re = diabloPattern.ch_en_num;
-	if (!re.test(typeof(newValue) === "object" ? newValue.name : newValue)){
+	if (!re.test(typeof(newValue) === "object"
+		     ? newValue.name : newValue)){
 	    $scope.goodForm.brand.$invalid = true;
 	} else{
 	    $scope.goodForm.brand.$invalid = false;
@@ -164,7 +159,8 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
     	}
 	
     	var re = $scope.pattern.type;
-    	if (!re.test(typeof(newValue) === "object" ? newValue.name : newValue)){
+    	if (!re.test(typeof(newValue) === "object"
+		     ? newValue.name : newValue)){
     	    $scope.goodForm.type.$invalid = true;
     	}else{
     	    $scope.goodForm.type.$invalid = false;
@@ -196,9 +192,9 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 			
 			if (!in_sys_color($scope.colors, newColor)){
 			    $scope.colors.push(
-				{type: newColor.type,
-				 tid:  newColor.tid,
-				 colors:[{name:newColor.name, id:newColor.id}]})
+				{type:newColor.type,
+				 tid:newColor.tid,
+				 colors:[{name:newColor.name,id:newColor.id}]})
 			} 
 			console.log($scope.colors); 
 		    };
@@ -274,10 +270,11 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	update_good.season    = good.season.id;
 	update_good.org_price = parseFloat(good.org_price);
 	update_good.tag_price = parseFloat(good.tag_price);
-	update_good.pkg_price = parseFloat(good.pkg_price);
-	update_good.price3    = parseFloat(good.price3);
-	update_good.price4    = parseFloat(good.price4);
-	update_good.price5    = parseFloat(good.price5);
+	// update_good.pkg_price = parseFloat(good.pkg_price);
+	// update_good.price3    = parseFloat(good.price3);
+	// update_good.price4    = parseFloat(good.price4);
+	// update_good.price5    = parseFloat(good.price5);
+	update_good.ediscount = parseInt(good.ediscount);
 	update_good.discount  = parseInt(good.discount);
 	update_good.color     = function(){
 	    if (angular.isDefined($scope.selectColors)
@@ -303,31 +300,11 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	    if (!angular.equals(update_good[o], $scope.src_good[o])){
 		changed_good[o] = update_good[o];
 	    }
-	};
-
-	// style number and brand
-	// if (angular.isDefined(changed_good.style_number)
-	//    && angular.isUndefined(changed_good.brand)){
-	//     changed_good.brand = update_good.brand;
-	// };
-
-	// if (angular.isDefined(changed_good.brand)
-	//     && angular.isUndefined(changed_good.style_number)){
-	//     changed_good.style_number = update_good.style_number; 
-	// };
-
-	// if (angular.isDefined(changed_good.brand)){
-	//     changed_good.firm_id = update_good.firm_id;
-	// };
+	}; 
 	
-
-	// if (angular.isDefined(changed_good.firm_id)){
-	//     changed_good.brand   = update_good.brand; 
-	// }
-
 	var image  = angular.isDefined($scope.image) && $scope.image
-	    ? $scope.image.dataUrl.replace(/^data:image\/(png|jpg);base64,/, "")
-	    : undefined;
+	    ? $scope.image.dataUrl.replace(
+		    /^data:image\/(png|jpg);base64,/, "") : undefined;
 	
 	// changed_good.brand_id = update_good.brand_id;
 	// changed_good.style_number = update_good.style_number;
@@ -356,18 +333,24 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 		    diabloUtilsService.response_with_callback(
 			true, "修改货品", "修改货品资料成功！！", $scope,
 			function(){
-			    $location.path("/wgood_detail");
+			    // reset cache, refresh
+			    diabloFilter.reset_firm();
+			    diabloFilter.reset_brand();
+			    diabloFilter.reset_type();
+			    diablo_goto_page("#/good/wgood_detail");
 			});
 		} else{
 		    diabloUtilsService.response(
-			false, "修改货品",
-			"修改货品资料失败：" + wgoodService.error[state.ecode]);
+			false,
+			"修改货品",
+			"修改货品资料失败："
+			    + wgoodService.error[state.ecode]);
 		}
 	    });
 	}
     };
 
     $scope.cancel = function(){
-	$location.path("/wgood_detail");
+	diablo_goto_page("#/good/wgood_detail");
     }
 });

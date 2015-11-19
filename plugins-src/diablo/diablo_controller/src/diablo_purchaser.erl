@@ -124,14 +124,14 @@ purchaser_inventory(amount, Merchant, Shop, StyleNumber, Brand) ->
 match(style_number, Merchant, PromptNumber) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {match_style_number, Merchant, PromptNumber}).
-match(style_number_brand_firm, Merchant, PromptNumber, Firm) ->
+match(style_number_with_brand, Merchant, PromptNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {match_style_number_brand_firm,
-			      Merchant, PromptNumber, Firm});
-match(all_style_number_brand_firm, Merchant, StartTime, Firm) ->
+    gen_server:call(Name, {match_style_number_with_brand,
+			   Merchant, PromptNumber, Brand});
+match(all_style_number_with_brand, Merchant, StartTime, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {match_all_style_number_brand_firm,
-			      Merchant, StartTime, Firm}).
+    gen_server:call(Name, {match_all_style_number_with_brand,
+			   Merchant, StartTime, Brand}).
 
 
 %% match inventory 
@@ -324,10 +324,8 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
     
     OrgPrice       = ?v(<<"org_price">>, Attrs),
     TagPrice       = ?v(<<"tag_price">>, Attrs),
-    PkgPrice       = ?v(<<"pkg_price">>, Attrs),
-    P3             = ?v(<<"price3">>, Attrs),
-    P4             = ?v(<<"price4">>, Attrs),
-    P5             = ?v(<<"price5">>, Attrs),
+
+    EDiscount      = ?v(<<"ediscount">>, Attrs),
     Discount       = ?v(<<"discount">>, Attrs),
     
     Colors         = ?v(<<"color">>, Attrs),
@@ -346,10 +344,7 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 	++ ?utils:v(season, integer, Season)
 	++ ?utils:v(org_price, float, OrgPrice)
 	++ ?utils:v(tag_price, float, TagPrice)
-	++ ?utils:v(pkg_price, float, PkgPrice)
-	++ ?utils:v(price3, float, P3)
-	++ ?utils:v(price4, float, P4)
-	++ ?utils:v(price5, float, P5)
+	++ ?utils:v(ediscount, integer, EDiscount) 
 	++ ?utils:v(discount, integer, Discount) 
 	++ ?utils:v(path, string, Path),
 	%% ++ ?utils:v(change_date, string, DateTime),
@@ -448,8 +443,7 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 			Size  = ?v(<<"size">>, R),
 			Total = ?v(<<"total">>, R),
 			case ?sql_utils:execute(
-				s_read,
-				FindFun(Color, Size)) of
+				s_read, FindFun(Color, Size)) of
 			    {ok, []} ->
 				[InsertFun(Color, Size, Total)|Acc];
 			    {ok, F} ->
@@ -462,13 +456,14 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 		Update2 =
 		    ?utils:v(style_number, string, StyleNumber)
 		    ++ ?utils:v(brand, integer, Brand),
+		    %% ++ ?utils:v(firm, integer, Firm),
 		
 		%% update w_inventory_good 
 		Sql00 = 
 		    case ?sql_utils:execute(
 			    s_read,
-			    "select id, style_number, brand "
-			    "from w_inventory_good"
+			    "select id, style_number, brand"
+			    " from w_inventory_good"
 			    " where "
 			    ++ C(false,
 				 RStyleNumber(StyleNumber), RBrand(Brand))) of
@@ -492,8 +487,11 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 		Sql10 = 
 		    ["update w_inventory_new_detail set "
 		     ++ ?utils:to_sqls(
-			   proplists, comma,
-			   Update2 ++ ?utils:v(path, string, Path))
+			   proplists,
+			   comma,
+			   Update2
+			   ++ ?utils:v(path, string, Path)
+			   ++ ?utils:v(firm, integer, Firm))
 		     ++ " where " ++ RC(OrgStyleNumber, OrgBrand),
 
 		     "update w_inventory_new_detail_amount set "
@@ -544,7 +542,8 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 			    
 			    Sqlb = 
 				case ?sql_utils:execute(
-					read, "select id, style_number, brand"
+					read,
+					"select id, style_number, brand"
 					", color, size, total"
 					" from w_inventory_amount"
 					" where "
@@ -584,8 +583,11 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 		Sql14 =
 		    [ "update w_sale_detail set "
 		      ++ ?utils:to_sqls(
-			    proplists, comma,
-			    Update2 ++ ?utils:v(path, string, Path))
+			    proplists,
+			    comma,
+			    Update2
+			    ++ ?utils:v(path, string, Path)
+			    ++ ?utils:v(firm, integer, Firm))
 		      ++ " where "
 		      ++ RC(OrgStyleNumber, OrgBrand),
 
@@ -654,21 +656,21 @@ handle_call({match_style_number, Merchant, PromptNumber}, _Form, State) ->
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({match_style_number_brand_firm, Merchant, PromptNumber, Firm},
+handle_call({match_style_number_with_brand, Merchant, PromptNumber, Brand},
 	    _Form, State) ->
-    ?DEBUG("match_style_number_brand with merchant ~p, promptNumber ~p"
-	   ",firm ~p", [Merchant, PromptNumber, Firm]),
+    ?DEBUG("match_style_number_with_brand with merchant ~p, promptNumber ~p"
+	   ", brand ~p", [Merchant, PromptNumber, Brand]),
     Sql = ?w_good_sql:good_match(
-	     style_number_brand_firm, Merchant, PromptNumber, Firm),
+	     style_number_with_brand, Merchant, PromptNumber, Brand),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({match_all_style_number_brand_firm, Merchant, StartTime, Firm},
+handle_call({match_all_style_number_with_brand, Merchant, StartTime, Brand},
 	    _Form, State) ->
-    ?DEBUG("match_all_style_number_brand with merchant ~p, start time ~p"
-	   ",firm ~p", [Merchant, StartTime, Firm]),
+    ?DEBUG("match_all_style_number_with_brand with merchant ~p, start time ~p"
+	   ",brand ~p", [Merchant, StartTime, Brand]),
     Sql = ?w_good_sql:good_match(
-	     all_style_number_brand_firm, Merchant, StartTime, Firm),
+	     all_style_number_with_brand, Merchant, StartTime, Brand),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
@@ -743,7 +745,7 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
     EPay       = ?v(<<"e_pay">>, Props, 0),
     
     Balance    = ?v(<<"balance">>, Props),
-    Date       = ?v(<<"date">>, Props, ?utils:current_time(localdate)),
+    %% Date       = ?v(<<"date">>, Props, ?utils:current_time(localdate)),
     Total      = ?v(<<"total">>, Props, 0),
 
 
@@ -754,17 +756,20 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
 
     case ?sql_utils:execute(s_read, Sql0) of 
 	{ok, Account} ->
-	    RSn = rsn(new, Merchant, Shop, ?inventory_sn:sn(w_inventory_new_sn, Merchant)),
+	    RSn = rsn(new,
+		      Merchant,
+		      Shop,
+		      ?inventory_sn:sn(w_inventory_new_sn, Merchant)),
 	    
-	    Sql1 = sql(wnew, RSn, Merchant,
-		       Shop, Firm, Date, DateTime, Inventories),
+	    Sql1 = sql(wnew, RSn, Merchant, Shop, Firm, DateTime, Inventories),
 
 	    CurrentBalance = ?v(<<"balance">>, Account),
 	    
 	    Sql2 = "insert into w_inventory_new(rsn"
 		", employ, firm, shop, merchant, balance"
 		", should_pay, has_pay, cash, card, wire"
-		", verificate, total, comment, e_pay_type, e_pay, type, entry_date) values("
+		", verificate, total, comment"
+		", e_pay_type, e_pay, type, entry_date) values("
 		++ "\"" ++ ?to_s(RSn) ++ "\","
 		++ "\"" ++ ?to_s(Employee) ++ "\","
 		++ ?to_s(Firm) ++ ","
@@ -1011,7 +1016,8 @@ handle_call({reject_inventory, Merchant, Inventories, Props}, _From, State) ->
 
 	    Sql1 = case RejectTotal of
 		       0 -> [];
-		       _ -> sql(wreject, RSN, Merchant, Shop, Firm, Date, DateTime, Inventories)
+		       _ -> sql(wreject, RSN, Merchant,
+				Shop, Firm, DateTime, Inventories)
 		   end, 
 	    
 	    RealBalance = ?v(<<"balance">>, Account),
@@ -1489,25 +1495,25 @@ rsn(fix, Merchant, Shop, Rsn) ->
     lists:concat(["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-", Rsn]).
 
 %% @desc: geratte a sql
-sql(wnew, RSN, Merchant, Shop, Firm, Date, DateTime, Inventories) ->
+sql(wnew, RSN, Merchant, Shop, Firm, DateTime, Inventories) ->
     RealyShop = realy_shop(Merchant, Shop),
     lists:foldr(
       fun({struct, Inv}, Acc0)->
 	      Amounts      = lists:reverse(?v(<<"amount">>, Inv)),
 	      ?w_good_sql:amount_new(
-		 RSN, Merchant, RealyShop,
-		 Firm, Date, DateTime, Inv, Amounts) ++ Acc0 
+		 RSN, Merchant, RealyShop, Firm, DateTime, Inv, Amounts)
+		  ++ Acc0 
       end, [], Inventories);
 
 
-sql(wreject, RSN, Merchant, Shop, Firm, Date, DateTime, Inventories) ->
+sql(wreject, RSN, Merchant, Shop, Firm, DateTime, Inventories) ->
     RealyShop = realy_shop(true, Merchant, Shop),
     lists:foldr(
       fun({struct, Inv}, Acc0)->
 	      Amounts      = lists:reverse(?v(<<"amounts">>, Inv)),
 	      ?w_good_sql:amount_reject(
-		 RSN, Merchant, RealyShop,
-		 Firm, Date, DateTime, Inv, Amounts) ++ Acc0 
+		 RSN, Merchant, RealyShop, Firm, DateTime, Inv, Amounts)
+		  ++ Acc0 
       end, [], Inventories). 
 
 sql(wfix, RSN, DateTime, Merchant, Shop, Inventories) ->

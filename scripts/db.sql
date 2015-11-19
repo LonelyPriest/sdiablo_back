@@ -378,9 +378,8 @@ create table w_inventory_good
     entry_date       DATETIME,
     deleted          INTEGER default 0, -- 0: no;  1: yes
 
-    UNIQUE key       index_sbsm (style_number, brand, merchant),
+    UNIQUE key       index_sbsm (merchant, brand, style_number),
     key              firm  (firm),
-    -- key              merchant (merchant),
     
     primary key      (id)
 )default charset=utf8;

@@ -387,7 +387,9 @@
       <span class="sr-only"></span>
     </button>
     
-    <h4 class="modal-title"><span class="label label-sm label-primary">新增厂商</span></h4>
+    <h4 class="modal-title">
+      <span class="label label-sm label-primary">新增厂商</span>
+    </h4>
   </div>
 
   <div class="modal-body">
@@ -429,7 +431,8 @@
 		<!-- <span class="input-group-addon bg-white fg-red">*</span> -->
 		<!-- </div> -->
 	      </div>
-	      <div ng-show="firmForm.balance.$invalid && !firmForm.balance.$pristine">
+	      <div ng-show="firmForm.balance.$invalid
+			    && !firmForm.balance.$pristine">
 		<span class="fg-red">请输入正确的数字，支持两位小数</span>
 	      </div> 
 	    </div>
@@ -440,18 +443,17 @@
 			   && !firmForm.mobile.$pristine}">
 	      <label class="col-sm-3 col-md-3 control-label">联系方式</label>
 	      <div class="col-sm-6 col-md-6">
-		<div class="input-group">
+		<!-- <div class="input-group"> -->
 		<input type="text"
 		       name="mobile"
-		       required
 		       ng-pattern="/^\d{3,4}\d{7,8}$/"
 		       placeholder="请输入电话或手机号码"
 		       class="form-control"
-		       x-ng-model="params.firm.mobile"></input>
-		<span class="input-group-addon bg-white fg-red">*</span>
-		</div>
+		       x-ng-model="params.firm.mobile"/>
+		<!-- </div> -->
 	      </div>
-	      <div ng-show="firmForm.mobile.$invalid && !firmForm.mobile.$pristine">
+	      <div ng-show="firmForm.mobile.$invalid
+			    && !firmForm.mobile.$pristine">
 		<span style="color:red">请输入正确的电话或手机号码</span>
 	      </div>
 	    </div>

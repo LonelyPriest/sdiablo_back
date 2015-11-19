@@ -124,7 +124,9 @@ function filterProvider(){
 	    },
 	    
 	    match_style_number: function(viewValue){
-		return wgoodService.match_purchaser_style_number(viewValue).then(function(result){
+		return wgoodService.match_purchaser_style_number(
+		    viewValue
+		).then(function(result){
 		    // console.log(result);
 		    return result.map(function(s){
 			return s.style_number;
@@ -132,26 +134,29 @@ function filterProvider(){
 		})
 	    },
 
-	    match_wgood_with_firm: function(viewValue, firm){
-		return wgoodService.match_purchaser_good_with_firm(viewValue, firm)
-		    .then(function(goods){
-			// console.log(goods); 
-			return goods.map(function(g){
-			    return angular.extend(
-				g, {name:g.style_number + "，"
-				    + g.brand + "，" + g.type})
-			})
+	    match_wgood_with_brand: function(viewValue, brand){
+		return wgoodService.match_purchaser_good_with_brand(
+		    viewValue, brand
+		).then(function(goods){
+		    // console.log(goods); 
+		    return goods.map(function(g){
+			return angular.extend(
+			    g, {name:g.style_number
+				+ "，" + g.brand + "，" + g.type})
 		    })
+		})
 	    },
 
-	    match_all_w_good: function(start_time, firm){
-		return wgoodService.match_all_purchaser_good(start_time, firm);
+	    match_all_w_good: function(start_time, brand){
+		return wgoodService.match_all_purchaser_good(
+		    start_time, brand);
 	    },
 
 	    match_w_query_inventory:function(viewValue, Shop){
 		return resource.query_by_post(
 		    {operation:'match_w_inventory'},
-		    {prompt:viewValue, shop:shop, type:1}).$promise.then(function(invs){
+		    {prompt:viewValue, shop:shop, type:1})
+		    .$promise.then(function(invs){
 			console.log(invs);
 			return invs.map(function(inv){
 			    return inv.style_number;
@@ -162,11 +167,13 @@ function filterProvider(){
 	    match_w_reject_inventory: function(viewValue, shop, firm){
 		return resource.query_by_post(
 		    {operation:'match_w_inventory'},
-		    {prompt:viewValue, shop:shop, firm:firm, type:1}).$promise.then(function(invs){
+		    {prompt:viewValue, shop:shop, firm:firm, type:1})
+		    .$promise.then(function(invs){
 			console.log(invs);
 			return invs.map(function(inv){
 			    return angular.extend(
-				inv, {name:inv.style_number + "，" + inv.brand + "，" + inv.type})
+				inv, {name:inv.style_number
+				      + "，" + inv.brand + "，" + inv.type})
 			})
 		    })
 	    },
@@ -184,7 +191,8 @@ function filterProvider(){
 	    match_w_inventory: function(viewValue, shop, firm){
 		return resource.query_by_post(
 		    {operation:'match_w_inventory'},
-		    {prompt:viewValue, shop:shop, firm:firm}).$promise.then(function(invs){
+		    {prompt:viewValue, shop:shop, firm:firm})
+		    .$promise.then(function(invs){
 			console.log(invs);
 			if (angular.isUndefined(firm)){
 			    return invs.map(function(inv){
@@ -193,7 +201,9 @@ function filterProvider(){
 			} else{
 			    return invs.map(function(inv){
 				return angular.extend(
-				    inv, {name:inv.style_number + "，" + inv.brand + "，" + inv.type})
+				    inv,
+				    {name:inv.style_number
+				     + "，" + inv.brand + "，" + inv.type})
 			    })
 			}
 		    })
@@ -202,11 +212,13 @@ function filterProvider(){
 	    match_w_fix: function(viewValue, shop){
 		return resource.query_by_post(
 		    {operation:'match_w_inventory'},
-		    {prompt:viewValue, shop:shop, firm:[]}).$promise.then(function(invs){
+		    {prompt:viewValue, shop:shop, firm:[]})
+		    .$promise.then(function(invs){
 			console.log(invs);
 			return invs.map(function(inv){
 			    return angular.extend(
-				inv, {name:inv.style_number + "，" + inv.brand + "，" + inv.type})
+				inv, {name:inv.style_number
+				      + "，" + inv.brand + "，" + inv.type})
 			})
 		    })
 	    },
@@ -214,15 +226,21 @@ function filterProvider(){
 	    match_w_sale: function(viewValue, shop){
 		return resource.query_by_post(
 		    {operation:'match_w_inventory'},
-		    {prompt:viewValue, shop:shop, firm:[]}).$promise.then(function(invs){
+		    {prompt:viewValue, shop:shop, firm:[]})
+		    .$promise.then(function(invs){
 			console.log(invs);
 			return invs.map(function(inv){
 			    return angular.extend(
-				inv, {name:inv.style_number + "，" + inv.brand + "，" + inv.type})
+				inv, {name:inv.style_number
+				      + "，" + inv.brand + "，" + inv.type})
 			})
 		    })
 	    }, 
 
+	    reset_firm: function(){
+		_firms = [];
+	    },
+	    
 	    get_firm: function(){
 		if (_firms.length !== 0 ){
 		    // console.log("cache");
@@ -242,6 +260,10 @@ function filterProvider(){
 		}
 	    },
 
+	    reset_brand: function(){
+		_brands = [];
+	    },
+	    
 	    get_brand: function(){
 		if (_brands.length != 0 ){
 		    // console.log("cache brands");
@@ -253,9 +275,9 @@ function filterProvider(){
 			_brands =  brands.map(function(b){
 			    return {id: b.id,
 				    name:b.name,
-				    py:diablo_pinyin(b.name)
+				    py:diablo_pinyin(b.name),
 				    // firm: supplier,
-				    // firm_id: b.supplier_id,
+				    firm_id: b.supplier_id,
 				    // remark: b.remark,
 				    // entry: b.entry
 				   };
@@ -267,6 +289,10 @@ function filterProvider(){
 		
 	    },
 
+	    reset_type: function(){
+		_types = [];
+	    },
+	    
 	    get_type: function(){
 		if (_types.length !== 0){
 		    return _types;

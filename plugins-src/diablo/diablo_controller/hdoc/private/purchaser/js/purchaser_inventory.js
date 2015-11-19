@@ -1,14 +1,13 @@
 purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope, $timeout, dateFilter, diabloPattern, diabloUtilsService,
     diabloFilter, wgoodService, purchaserService,
-    localStorageService, user, filterFirm,
+    localStorageService, user, filterBrand, filterFirm,
     filterEmployee, filterColor, base){
     // console.log(user); 
-    // $scope.shops = user.sortAvailabeShops;
-    $scope.shops = user.sortShops;
-    // console.log($scope.shops);
-    
+    $scope.shops             = user.sortShops;
+    // console.log($scope.shops); 
     $scope.firms             = filterFirm;
+    $scope.brands            = filterBrand;
     $scope.employees         = filterEmployee; 
     $scope.sexs              = diablo_sex;
     $scope.seasons           = diablo_season;
@@ -30,22 +29,6 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     }();
 
     var now = $.now(); 
-    // $scope.refresh_firm = function(){
-    // 	// $scope.firms = [];
-    // 	wgoodService.list_purchaser_firm().then(function(firms){
-    // 	    console.log(firms);
-
-    // 	    $scope.firms = firms.map(function(f){
-    // 		return {id:f.id, name:f.name, py:diablo_pinyin(f.name), balance:f.balance};
-    // 	    })
-	    
-    // 	    if ($scope.firms.length !== 0){
-    // 		$scope.select.firm = $scope.firms[0];
-    // 		$scope.select.surplus = parseFloat($scope.select.firm.balance);
-    // 	    }
-    // 	});
-    // };
-
     $scope.q_typeahead = function(shopId){
 	// console.log(shopId);
 	// default prompt comes from backend
@@ -64,10 +47,12 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     };
 	
 
-    $scope.change_firm = function(){
-	console.log($scope.select.firm);
+    $scope.change_brand = function(){
+	console.log($scope.select.brand);
+	$scope.select.firm = diablo_get_object(
+	    $scope.select.brand.firm_id, $scope.firms);
 	$scope.select.surplus = parseFloat($scope.select.firm.balance);
-	$scope.left_balance  = $scope.select.surplus;
+	$scope.left_balance   = $scope.select.surplus;
 	
 	$scope.local_save();
 	$scope.re_calculate();
@@ -119,7 +104,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope.inventories.push({$edit:false, $new:true});
     
     $scope.select = {
-	shop: angular.isDefined($scope.shops) && $scope.shops.length !== 0 ? $scope.shops[0]:undefined,
+	shop: angular.isDefined($scope.shops)
+	    && $scope.shops.length !== 0 ? $scope.shops[0]:undefined,
 	total: 0,
 	has_pay: 0,
 	should_pay: 0,
@@ -127,9 +113,13 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     
     $scope.current_inventories = [];
     
-    if ($scope.firms.length !== 0){
-    	$scope.select.firm = $scope.firms[0];
-    	$scope.select.surplus = parseFloat($scope.select.firm.balance);
+    if ($scope.brands.length !== 0){
+    	$scope.select.brand = $scope.brands[0];
+
+	$scope.select.firm = diablo_get_object(
+	    $scope.select.brand.firm_id, $scope.firms);
+	
+    	$scope.select.surplus = $scope.select.firm.balance;
 	$scope.select.left_balance = $scope.select.surplus;
     }
     
@@ -138,18 +128,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     }
 
 
-    $scope.setting.round = $scope.p_round($scope.select.shop.id);
-
-    // console.log($scope.setting);
-
-    // $scope.get_inventory = function(index){
-    // 	$scope.current_inventories = []; 
-    // 	// var invs = [];
-    // 	angular.forEach(index, function(i){
-    // 	    $scope.current_inventories.push($scope.inventories[i]);
-    // 	}) 
-    // 	// return invs;
-    // }
+    $scope.setting.round = $scope.p_round($scope.select.shop.id); 
 
     /*
      * pagination
@@ -202,7 +181,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
      * draft
      */
     var current_key = function(){
-	return "wp-" + $scope.select.firm.id.toString()
+	return "wp-" + $scope.select.brand.id.toString()
 	    + "-" + $scope.select.shop.id.toString()
 	    + "-" + $scope.select.employee.id.toString();
     };
@@ -252,7 +231,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	var drafts = key_fix.map(function(k){
 	    var p = k.split("-");
 	    return {sn:k,
-		    firm:diablo_get_object(parseInt(p[1]), $scope.firms),
+		    brand:diablo_get_object(parseInt(p[1]), $scope.brands),
 		    shop:diablo_get_object(parseInt(p[2]), $scope.shops),
 		    employee:diablo_get_object(p[3], $scope.employees),
 		   }
@@ -265,8 +244,10 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    })[0];
 
 	    // console.log($scope.select);
+	    $scope.select.brand =
+		diablo_get_object(select_draft.brand.id, $scope.brands);
 	    $scope.select.firm =
-		diablo_get_object(select_draft.firm.id, $scope.firms);
+		diablo_get_object(select_draft.brand.firm_id, $scope.firms);
 	    $scope.select.shop =
 		diablo_get_object(select_draft.shop.id, $scope.shops);
 	    $scope.select.employee =
@@ -281,7 +262,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 
 		// pagination
 		$scope.total_items = $scope.inventories.length; 
-		$scope.current_inventories = $scope.get_page($scope.current_page);
+		$scope.current_inventories
+		    = $scope.get_page($scope.current_page);
 		
 		$scope.disable_refresh = false;
 	        $scope.re_calculate();
@@ -295,7 +277,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    {drafts:drafts,
 	     valid: function(drafts){
 		 for (var i=0, l=drafts.length; i<l; i++){
-		     if (angular.isDefined(drafts[i].select) && drafts[i].select){
+		     if (angular.isDefined(drafts[i].select)
+			 && drafts[i].select){
 			 return true;
 		     }
 		 } 
@@ -315,13 +298,17 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
      * match
      */
     $scope.match_prompt_good = function(viewValue){
-	if (angular.isUndefined($scope.select.firm)){
+	if (angular.isUndefined($scope.select.brand)){
 	    diabloUtilsService.response_with_callback(
-		false, "新增库存", "新增库存失败：" + purchaserService.error[2095],
-		$scope, function(){ $scope.inventories[0] = {$edit:false, $new:true}});
+		false,
+		"新增库存",
+		"新增库存失败：" + purchaserService.error[2095],
+		$scope,
+		function(){ $scope.inventories[0] = {$edit:false, $new:true}});
 	    return;
 	}
-	return diabloFilter.match_wgood_with_firm(viewValue, $scope.select.firm.id); 
+	return diabloFilter.match_wgood_with_brand(
+	    viewValue, $scope.select.brand.id); 
     };
 
     $scope.q_prompt = $scope.q_typeahead($scope.select.shop.id);
@@ -334,7 +321,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 
     $scope.get_all_w_good = function(){
 	diabloFilter.match_all_w_good(
-	    $scope.qtime_start($scope.select.shop.id), $scope.select.firm.id
+	    $scope.qtime_start($scope.select.shop.id),
+	    $scope.select.brand.id
 	).then(function(goods){
 	    // console.log(invs);
 	    $scope.all_w_goods =  goods.map(function(g){
@@ -360,14 +348,17 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    if (item.style_number === $scope.inventories[i].style_number
 		&& item.brand_id  === $scope.inventories[i].brand_id){
 		diabloUtilsService.response_with_callback(
-		    false, "新增库存", "新增库存失败：" + purchaserService.error[2099],
-		    $scope, function(){ $scope.inventories[0] = {$edit:false, $new:true}});
+		    false,
+		    "新增库存",
+		    "新增库存失败：" + purchaserService.error[2099],
+		    $scope, function(){
+			$scope.inventories[0] = {$edit:false, $new:true}});
 		return;
 	    }
 	}
 
 	// add at first allways 
-	var add = $scope.inventories[0];
+	var add          = $scope.inventories[0];
 	add.id           = item.id;
 	add.style_number = item.style_number;
 	add.brand        = item.brand;
@@ -380,10 +371,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	add.season       = item.season;
 	add.org_price    = item.org_price;
 	add.tag_price    = item.tag_price;
-	add.pkg_price    = item.pkg_price;
-	add.price3       = item.price3;
-	add.price4       = item.price4;
-	add.price5       = item.price5;
+	add.ediscount    = item.ediscount;
 	add.discount     = item.discount;
 	add.path         = item.path;
 	add.alarm_day    = item.alarm_day;
@@ -509,7 +497,9 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    || angular.isUndefined($scope.select.employee)
 	    || diablo_is_empty($scope.select.employee)){
 	    diabloUtilsService.response(
-		false, "新增库存", "新增库存失败：" + purchaserService.error[2096]);
+		false,
+		"新增库存",
+		"新增库存失败：" + purchaserService.error[2096]);
 	    return;
 	};
 	
@@ -523,17 +513,14 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		firm        : add.firm_id,
 		type        : add.type_id,
 		sex         : add.sex,
-		year        : angular.isDefined(add.year) && add.year ? add.year : undefined,
+		year        : add.year,
 		season      : add.season,
 		amount      : add.amount,
 		s_group     : add.s_group,
 		free        : add.free,
 		org_price   : parseFloat(add.org_price),
 		tag_price   : parseFloat(add.tag_price), 
-		pkg_price   : parseFloat(add.pkg_price),
-		p3          : parseFloat(add.price3),
-		p4          : parseFloat(add.price4),
-		p5          : parseFloat(add.price5),
+		ediscount   : parseInt(add.ediscount),
 		discount    : parseInt(add.discount),
 		path        : add.path,
 		alarm_day   : add.alarm_day,
@@ -547,11 +534,11 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	var base = {
 	    firm:          $scope.select.firm.id,
 	    shop:          $scope.select.shop.id,
-	    date:          dateFilter($scope.select.date, "yyyy-MM-dd"),
-	    datetime:      dateFilter($scope.select.date, "yyyy-MM-dd HH:mm:ss"),
+	    datetime:      dateFilter(
+		$scope.select.date, "yyyy-MM-dd HH:mm:ss"),
 	    employee:      $scope.select.employee.id,
 	    comment:       $scope.select.comment,
-	    total:         $scope.select.total ? parseInt($scope.select.total):undefined,
+	    total:         $scope.select.total,
 	    balance:       parseFloat($scope.select.surplus), 
 	    cash:          setv($scope.select.cash),
 	    card:          setv($scope.select.card),
@@ -560,7 +547,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    should_pay:    setv($scope.select.should_pay),
 	    has_pay:       setv($scope.select.has_pay),
 	    
-	    e_pay_type:     angular.isUndefined(e_pay) ? undefined : $scope.select.extra_pay_type.id,
+	    e_pay_type:     angular.isUndefined(e_pay)
+		? undefined : $scope.select.extra_pay_type.id,
 	    e_pay:          e_pay,
 	};
 
@@ -581,7 +569,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		    $scope, function(){
 			// $scope.has_saved = true;
 			// modify current balance of retailer
-			$scope.select.firm.balance = $scope.select.left_balance;
+			$scope.select.firm.balance
+			    = $scope.select.left_balance;
 			$scope.select.surplus = $scope.select.firm.balance;
 			$scope.local_remove();
 		    })

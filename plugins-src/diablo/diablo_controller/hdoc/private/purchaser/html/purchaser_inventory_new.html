@@ -45,12 +45,13 @@
 	  	       typeahead-editable="false"
 		       typeahead-on-select="change_brand()"
 	  	       typeahead="b as b.name for b in
-	  			  brands|filter:$viewValue|limitTo:8"/>
+	  			  brands|filter:$viewValue|limitTo:15"/>
 		<span class="input-group-btn">
 		  <button class="btn default fg-red"
 			  x-ng-disabled="!select.brand"
 			  x-ng-click="select.brand=undefined"> 
-		    <i class="glyphicon glyphicon-pushpin"></i></button>
+		    <i class="glyphicon glyphicon-pushpin"></i>
+		  </button>
 	  	</span>
 	      </div>
 	    </div>
@@ -280,25 +281,16 @@
 		    <th class="text-center">品名</th>
 		    <th class="text-center">类别</th>
 		    <!-- <th class="text-center">性别</th> -->
-		    <!-- <th class="text-center">厂商</th> -->
 		    <th class="text-center">年份</th>
-		    <th class="text-center">季节</th>
-		    <th class="text-center">进货价</th>
-		    <!-- <th class="text-center">吊牌价</th>  -->
-		    <!-- <th class="text-center">打包价</th> -->
-		    <!-- <th class="text-center">价3</th> -->
-		    <!-- <th class="text-center">价4</th> -->
-		    <!-- <th class="text-center">价5</th> -->
-		    <!-- <th class="text-center">折扣</th> -->
-		    <!-- <th class="text-center">店铺</th> -->
+		    <th class="text-center">季节</th> 
 		    <th class="text-center">数量</th>
 		    <th class="text-center">合计</th>
 		    <th class="text-center">操作</th>
 		  </tr>
 		</thead>
 		<tbody>
-		  <!-- <tr class="text-center" ng-repeat="inv in inventories"> -->
-		  <tr class="text-center" ng-repeat="inv in current_inventories">  
+		  <tr class="text-center"
+		      ng-repeat="inv in current_inventories">  
 		    <td>{{inv.order_id}}</td>
 
 		    <td x-ng-if="q_prompt===0"
@@ -312,9 +304,10 @@
 			       x-ng-model="inv.style_number"
 			       placeholder="货号"
 			       typeahead-editable="false"
-			       typeahead-on-select="on_select_good($item, $model, $label)" 
+			       typeahead-on-select="on_select_good(
+						    $item, $model, $label)" 
 			       typeahead="g as g.name for g in
-					  all_w_goods|filter:{name:$viewValue}|limitTo:20"></input>
+					  all_w_goods|filter:{name:$viewValue}|limitTo:20"/>
 			  <span x-ng-show="loading">
 			    <i class="glyphicon glyphicon-refresh"></i>
 			  </span>
@@ -330,17 +323,17 @@
 				       && !inv.form.good.$pristine}">
 			<input class="form-control text-left" type="text"
 				 required
-				 x-ng-model="inv.style_number"
-				 placeholder="货号"
-				 typeahead-editable="false"
-				 typeahead-on-select="on_select_good($item, $model, $label)"
-				 typeahead-wait-ms="500"
-				 typeahead-loading="loading"
-				 typeahead="g as g.name for g in
-					    match_prompt_good($viewValue)"></input>
-			  <span x-ng-show="loading">
-			    <i class="glyphicon glyphicon-refresh"></i>
-			  </span>
+			       x-ng-model="inv.style_number"
+			       placeholder="货号"
+			       typeahead-editable="false"
+			       typeahead-on-select="on_select_good($item, $model, $label)"
+			       typeahead-wait-ms="500"
+			       typeahead-loading="loading"
+			       typeahead="g as g.name for g in
+					  match_prompt_good($viewValue)"/>
+			<span x-ng-show="loading">
+			  <i class="glyphicon glyphicon-refresh"></i>
+			</span>
 			</div>
 		      </form>
 		    </td>
@@ -352,39 +345,27 @@
 		    <td class="vert-align">{{inv.year}}</td>
 		    <td class="vert-align">{{seasons[inv.season]}}</td>
 		    
-		    <td class="col-md-1 vert-align">
-		      <span x-ng-if="!inv.$new && !inv.update_directory">
-			{{inv.org_price}}</span>
-		      <form name="inv.form.orgprice"
-			    x-ng-if="inv.$new && inv.free_color_size && modify_orgprice 
-				     || inv.update_directory && modify_orgprice ">
-			<div ng-class="{'has-error':inv.form.orgprice.$invalid
-				       && !inv.form.orgprice.$pristine}">
-			  <input class="form-control"
-				 type="number" step="0.01"
-				 placeholder="进货价"
-				 required
-				 x-ng-pattern="/^\d+(.\d{1,2})?$/"
-				 x-ng-model="inv.org_price"
-				 popover-placement="top"
-				 popover-trigger="focus"
-				 popover="请输入进货价"></input>
-			  <div>
-		      </form> 
-		    </td> 
-		    
-		    <!-- <td>{{inv.tag_price}}</td> -->
-		    <!-- <td>{{inv.pkg_price}}</td> -->
-		    <!-- <td>{{inv.price3}}</td> -->
-		    <!-- <td>{{inv.price4}}</td> -->
-		    <!-- <td>{{inv.price5}}</td> -->
-		    <!-- <td>{{inv.discount}}</td> -->
-		    <!-- <td> -->
-		    <!--   <select class="form-control" -->
-		    <!-- 	      x-ng-model="inv.shop" -->
-		    <!-- 	      x-ng-options="s as s.name for s in shops" -->
-		    <!-- 	      x-ng-init="inv.shop=shops[0]"></select> -->
-		    <!-- </td> -->
+		    <!-- <td class="col-md-1 vert-align"> -->
+		    <!--   <span x-ng-if="!inv.$new && !inv.update_directory"> -->
+		    <!-- 	{{inv.org_price}}</span> -->
+		    <!--   <form name="inv.form.orgprice" -->
+		    <!-- 	    x-ng-if="inv.$new && inv.free_color_size -->
+		    <!-- 		     || inv.update_directory -->
+		    <!-- 		     && modify_orgprice "> -->
+		    <!-- 	<div ng-class="{'has-error':inv.form.orgprice.$invalid -->
+		    <!-- 		       && !inv.form.orgprice.$pristine}"> -->
+		    <!-- 	  <input class="form-control" -->
+		    <!-- 		 type="number" step="0.01" -->
+		    <!-- 		 placeholder="进货价" -->
+		    <!-- 		 required -->
+		    <!-- 		 x-ng-pattern="/^\d+(.\d{1,2})?$/" -->
+		    <!-- 		 x-ng-model="inv.org_price" -->
+		    <!-- 		 popover-placement="top" -->
+		    <!-- 		 popover-trigger="focus" -->
+		    <!-- 		 popover="请输入进货价"></input> -->
+		    <!-- 	  <div> -->
+		    <!--   </form>  -->
+		    <!-- </td>  --> 
 		    
 		    <td class="col-md-1 vert-align">
 		      <span x-ng-if="!inv.$new && !inv.update_directory">
@@ -477,7 +458,7 @@
 		  <tr>
 		    <!--statistic-->
 		  <tr x-ng-if="inventories.length>1" class="text-center">
-		    <td colspan="7"></td>
+		    <td colspan="6"></td>
 		    <td class="vert-align fg-red">{{select.total}}</td>
 		    <td class="vert-align fg-red">{{select.should_pay}}</td>
 		    <td colspan="1"></td>
