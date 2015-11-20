@@ -448,6 +448,7 @@ create table w_inventory_new(
     id             INTEGER AUTO_INCREMENT,
     rsn            VARCHAR(32) not null, -- record sn
     employ         VARCHAR(8) not null,     -- employ
+    brand          INTEGER default -1,
     firm           INTEGER default -1, 
     shop           INTEGER default -1,  -- which shop saled the goods
     merchant       INTEGER default -1,
@@ -470,7 +471,7 @@ create table w_inventory_new(
     state          TINYINT  default 0,  -- 0: wait for check, 1: checked
     check_date     DATETIME default null, -- date of last change 
     entry_date     DATETIME default 0,
-    deleted        INTEGER default 0, -- 0: no;  1: yes
+    deleted        INTEGER  default 0, -- 0: no;  1: yes
     unique  key    rsn (rsn),
     key     index_smef (shop, merchant, employ, firm),
     primary key    (id)

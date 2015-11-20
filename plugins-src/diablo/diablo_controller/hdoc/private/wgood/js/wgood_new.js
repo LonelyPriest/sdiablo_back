@@ -108,11 +108,12 @@ wgoodApp.controller("wgoodNewCtrl", function(
     $scope.types = angular.copy(filterType);
 
     $scope.refresh_type = function(){
-	$scope.types = wgoodService.list_purchaser_type().then(function(types){
-	    return types.map(function(t){
-		return {id: t.id, name:t.name, py:diablo_pinyin(t.name)};
-	    })
-	});
+	$scope.types = wgoodService.list_purchaser_type().then(
+	    function(types){
+		return types.map(function(t){
+		    return {id: t.id, name:t.name, py:diablo_pinyin(t.name)};
+		})
+	    });
     };
 
     $scope.is_same_good = false;

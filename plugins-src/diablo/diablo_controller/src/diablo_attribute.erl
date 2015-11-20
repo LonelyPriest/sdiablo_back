@@ -106,7 +106,9 @@ handle_call({new_w_clolor, Merchant, Attr}, _From, State) ->
 		    ++ ?to_s(Type) ++ ","
 		    ++ "\"" ++ ?to_s(Remark) ++ "\","
 		    ++ ?to_s(Merchant) ++ ");",
-		?sql_utils:execute(insert, Sql1); 
+		R = ?sql_utils:execute(insert, Sql1),
+		?w_user_profile:update(color, Merchant),
+		R;
 	    {ok, Color} ->
 		{error, ?err(color_exist, ?v(<<"id">>, Color))};
 	    Error ->

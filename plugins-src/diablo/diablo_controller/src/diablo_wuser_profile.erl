@@ -124,7 +124,9 @@ update(brand, Merchant) ->
 update(print_format, Merchant) ->
     gen_server:cast(?SERVER, {update_print_format, Merchant});
 update(firm, Merchant) ->
-    gen_server:cast(?SERVER, {update_firm_format, Merchant}).
+    gen_server:cast(?SERVER, {update_firm_format, Merchant});
+update(color, Merchant) ->
+    gen_server:cast(?SERVER, {update_color, Merchant}).
 
 
 start_link() ->
@@ -145,10 +147,10 @@ handle_call({new_profile, Merchant}, _From, State) ->
 
     try
 	{ok, MerchantInfo} = ?merchant:merchant(get, Merchant),
-	{ok, Shops} = ?shop:lookup(Merchant),
-	{ok, Repoes} = ?shop:repo(list, Merchant),
+	{ok, Shops}        = ?shop:lookup(Merchant),
+	{ok, Repoes}       = ?shop:repo(list, Merchant),
 	
-	{ok, Cards} = ?w_base:bank_card(list, Merchant), 
+	{ok, Cards}        = ?w_base:bank_card(list, Merchant), 
 	%% base stting
 	{ok, Setting}      = ?w_base:setting(list, Merchant),
 	{ok, SizeGroups}   = ?attr:size_group(list, Merchant),
@@ -407,7 +409,6 @@ handle_call({get_shop_profile, Merchant, Shop}, _From, State) ->
    
 	
     {reply, {ok, NewShops}, State};
-
 
 handle_call({get_repo_profile, Merchant}, _From, State) ->
     ?DEBUG("get_repo_profile of merchant ~p", [Merchant]),
@@ -753,7 +754,10 @@ handle_cast({Update, Merchant}, State) ->
 			Profile#wuser_profile{pformat=?to_tl(Formats)};
 		    update_firm_format ->
 			{ok, Firms} = ?supplier:supplier(w_list, Merchant),
-			Profile#wuser_profile{firm=Firms} 
+			Profile#wuser_profile{firm=Firms} ;
+		    update_color ->
+			{ok, Colors}= ?attr:color(w_list, Merchant),
+			Profile#wuser_profile{color=Colors}
 		end 
 	end,
 

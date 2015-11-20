@@ -13,6 +13,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope.seasons           = diablo_season;
     $scope.float_add         = diablo_float_add;
     $scope.float_sub         = diablo_float_sub;
+    $scope.float_mul         = diablo_float_mul;
     $scope.extra_pay_types   = purchaserService.extra_pay_types;
     $scope.round             = diablo_round;
     $scope.disable_refresh   = true;
@@ -490,8 +491,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	$scope.has_saved = true;
 	console.log($scope.inventories);
 
-	if (angular.isUndefined($scope.select.firm)
-	    || diablo_is_empty($scope.select.firm)
+	if (angular.isUndefined($scope.select.brand)
+	    || diablo_is_empty($scope.select.brand)
 	    || angular.isUndefined($scope.select.shop)
 	    || diablo_is_empty($scope.select.shop)
 	    || angular.isUndefined($scope.select.employee)
@@ -532,6 +533,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	var e_pay = setv($scope.select.extra_pay);
 	
 	var base = {
+	    brand:         $scope.select.brand.id,
 	    firm:          $scope.select.firm.id,
 	    shop:          $scope.select.shop.id,
 	    datetime:      dateFilter(
@@ -634,14 +636,16 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 
 	    if ($scope.setting.round === diablo_round_row){
 		$scope.select.should_pay
-		    += $scope.round(one.org_price * one.total);
+		    += $scope.round(
+			one.org_price * one.ediscount * one.total * 0.01);
 	    } else {
-		$scope.select.should_pay += one.org_price * one.total; 
+		$scope.select.should_pay
+		    += one.org_price * one.ediscount * one.total * 0.01; 
 	    }
 	};
 
 	$scope.select.should_pay = $scope.round($scope.select.should_pay);
-
+	
 	$scope.select.left_balance =
 	    $scope.select.surplus + $scope.select.should_pay + e_pay
 	    - $scope.select.has_pay - verificate;
@@ -675,7 +679,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 
 	return {amount:    new_amount,
 		total:     total,
-		org_price: params.fprice};
+		org_price: params.org_price,
+		ediscount: params.ediscount};
 	// inv.total = total; 
 	// reset(); 
     };
@@ -708,6 +713,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    inv.amount    = result.amount;
 	    inv.total     = result.total;
 	    inv.org_price = result.org_price;
+	    inv.ediscount = result.ediscount;
 	    after_add();
 	} 
 	
@@ -721,6 +727,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 			   large_size:   large_size,
 			   amount:       inv.amount,
 			   org_price:    inv.org_price,
+			   ediscount:    inv.ediscount,
 			   path:         inv.path,
 			   get_amount:   get_amount,
 			   valid_amount: valid_amount};
@@ -729,17 +736,17 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		inv.colors_info = [{cid:0}];
 		payload.colors = inv.colors_info;
 		diabloUtilsService.edit_with_modal(
-		    "inventory-new.html", modal_size, callback, $scope, payload)
+		    "inventory-new.html",
+		    modal_size, callback, $scope, payload)
 	    } else{
 		inv.colors_info = inv.colors.map(function(cid){
-		    return diablo_find_color(parseInt(cid), filterColor); 
-		});
-		// console.log(inv.colors_info);
+		    return diablo_find_color(parseInt(cid), filterColor)});
+		
 		payload.colors = inv.colors_info;
-		payload.path   = inv.path;
+		// payload.path   = inv.path;
 		diabloUtilsService.edit_with_modal(
-		    "inventory-new.html", modal_size, callback, $scope, payload);
-		// })
+		    "inventory-new.html",
+		    modal_size, callback, $scope, payload);
 	    } 
 	} 
     };
@@ -783,6 +790,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	var payload = {sizes:      inv.sizes,
 		       amount:     inv.amount,
 		       org_price:  inv.org_price,
+		       ediscount:  inv.ediscount,
 		       colors:     inv.colors_info,
 		       path:       inv.path,
 		       get_amount: get_amount};
@@ -796,6 +804,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope.update_inventory = function(inv){
 	inv.$update = true;
 	inv.o_org_price = inv.org_price;
+	inv.o_ediscount = inv.ediscount;
 	
 	if (inv.free_color_size){
 	    inv.update_directory = true;
@@ -807,6 +816,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    inv.amount    = result.amount;
 	    inv.total     = result.total;
 	    inv.org_price = result.org_price;
+	    inv.ediscount = result.ediscount;
 
 	    // save to local
 	    $scope.local_save(); 
@@ -820,6 +830,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		       large_size: large_size,
 		       amount:     inv.amount,
 		       org_price:  inv.org_price,
+		       ediscount:  inv.ediscount,
 		       colors:     inv.colors_info,
 		       path:       inv.path,
 		       get_amount: get_amount,
@@ -845,6 +856,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	inv.update_directory = false;
 	inv.$update          = false;
 	inv.org_price        = inv.o_org_price;
+	inv.ediscount        = inv.o_ediscount;
 	inv.amount[0].count  = inv.total; 
 	// $scope.re_calculate(); 
     };

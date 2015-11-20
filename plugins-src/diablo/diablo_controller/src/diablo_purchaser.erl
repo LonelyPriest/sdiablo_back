@@ -294,9 +294,9 @@ handle_call({new_good, Merchant, Attrs}, _Form, State) ->
     Reply = 
 	case ?sql_utils:execute(s_read, Sql) of
 	    {ok, []} ->
-		RealyShop = realy_shop(Merchant, Shop),
+		GetShop = fun() -> realy_shop(Merchant, Shop) end,
 		Sql1 = ?w_good_sql:good_new(
-			  Merchant, UseZero, RealyShop, Attrs),
+			  Merchant, UseZero, GetShop, Attrs),
 		?sql_utils:execute(transaction, Sql1, StyleNumber);
 	    {ok, _} ->
 		{error, ?err(purchaser_good_exist, StyleNumber)};
@@ -732,6 +732,7 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
     
     Shop       = ?v(<<"shop">>, Props),
     Firm       = ?v(<<"firm">>, Props),
+    Brand      = ?v(<<"brand">>, Props),
     Employee   = ?v(<<"employee">>, Props),
     Cash       = ?v(<<"cash">>, Props, 0),
     Card       = ?v(<<"card">>, Props, 0),
@@ -761,17 +762,19 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
 		      Shop,
 		      ?inventory_sn:sn(w_inventory_new_sn, Merchant)),
 	    
-	    Sql1 = sql(wnew, RSn, Merchant, Shop, Firm, DateTime, Inventories),
+	    Sql1 = sql(wnew,
+		       RSn, Merchant, Shop, Firm, DateTime, Inventories),
 
 	    CurrentBalance = ?v(<<"balance">>, Account),
 	    
 	    Sql2 = "insert into w_inventory_new(rsn"
-		", employ, firm, shop, merchant, balance"
+		", employ, brand, firm, shop, merchant, balance"
 		", should_pay, has_pay, cash, card, wire"
 		", verificate, total, comment"
 		", e_pay_type, e_pay, type, entry_date) values("
 		++ "\"" ++ ?to_s(RSn) ++ "\","
 		++ "\"" ++ ?to_s(Employee) ++ "\","
+		++ ?to_s(Brand) ++ ","
 		++ ?to_s(Firm) ++ ","
 		++ ?to_s(Shop) ++ ","
 		++ ?to_s(Merchant) ++ ","
@@ -798,7 +801,8 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
 		    Reply = ?sql_utils:execute(transaction, AllSql, RSn),
 		    {reply, Reply, State};
 		Metric -> 
-		    Sql3 = "update suppliers set balance=balance+" ++ ?to_s(Metric)
+		    Sql3 = "update suppliers"
+			" set balance=balance+" ++ ?to_s(Metric)
 			++ ", change_date=" ++ "\"" ++ ?to_s(DateTime) ++ "\""
 			++ " where id=" ++ ?to_s(?v(<<"id">>, Account)),
 
@@ -820,7 +824,8 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
     Id         = ?v(<<"id">>, Props),
     RSN        = ?v(<<"rsn">>, Props),
     Shop       = ?v(<<"shop">>, Props),
-    Datetime   = ?v(<<"datetime">>, Props, CurTime), 
+    Datetime   = ?v(<<"datetime">>, Props),
+    Brand      = ?v(<<"brand">>, Props),
     Firm       = ?v(<<"firm">>, Props),
     Employee   = ?v(<<"employee">>, Props),
 
@@ -853,6 +858,7 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 	      Datetime, OldDatatime, CurTime, Inventories), 
 
     Updates =?utils:v(employ, string, Employee)
+	++ ?utils:v(brand, integer, Brand) 
 	++ ?utils:v(firm, integer, Firm) 
 	++ ?utils:v(shop, integer, Shop)
     %% ++ ?utils:v(balance, float, OldBalance)
@@ -986,8 +992,6 @@ handle_call({reject_inventory, Merchant, Inventories, Props}, _From, State) ->
 	   [Merchant, Inventories, Props]),
 
     Now         = ?utils:current_time(localtime),
-    Date        = ?v(<<"date">>, Props, ?utils:current_time(localdate)),
-
     Shop        = ?v(<<"shop">>, Props),
     Firm        = ?v(<<"firm">>, Props),
     DateTime    = ?v(<<"datetime">>, Props, Now),
@@ -1051,7 +1055,8 @@ handle_call({reject_inventory, Merchant, Inventories, Props}, _From, State) ->
 	    Sql3 =
 		case ShouldPay - EPay == 0 of
 		    true  -> [];
-		    false -> ["update suppliers set balance=balance+" ++ ?to_s(ShouldPay - EPay)
+		    false -> ["update suppliers set balance=balance+"
+			      ++ ?to_s(ShouldPay - EPay)
 			      ++ ", change_date=" ++ "\"" ++ Now ++ "\""
 			      ++ " where id=" ++ ?to_s(?v(<<"id">>, Account))]
 		end,
@@ -1149,8 +1154,11 @@ handle_call({abstract_inventory, Merchant, Shop, Conditions}, _From, State) ->
 handle_call({get_new, Merchant, RSN}, _From, State) ->
     ?DEBUG("get_new_inventory wht merchant ~p, RSN ~p", [Merchant, RSN]),
     Sql = ?w_good_sql:inventory(
-	     new_detail, new, Merchant,
-	     [{<<"rsn">>, ?to_b(RSN)}], fun()-> "" end),
+	     new_detail,
+	     new,
+	     Merchant,
+	     [{<<"rsn">>, ?to_b(RSN)}],
+	     fun()-> "" end),
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
@@ -1639,7 +1647,8 @@ realy_shop(UseBad, Merchant, ShopIds) when is_list(ShopIds) ->
 				      -1 ->
 					  [ShopId|Acc];
 				      Repo ->
-					  case ?v(<<"type">>, Shop) =:= ?BAD_REPERTORY
+					  case ?v(<<"type">>, Shop)
+					      =:= ?BAD_REPERTORY
 					      andalso UseBad of
 					      true  -> [ShopId|Acc];
 					      false -> [Repo|Acc]
@@ -1650,22 +1659,6 @@ realy_shop(UseBad, Merchant, ShopIds) when is_list(ShopIds) ->
 		  end, [], AllShops),
 	    lists:usort(AllIds)
     end;
-	    
-	    %% [case lists:member(?v(<<"id">>, Shop), ShopIds) of
-	    %% 	 true ->
-	    %% 	     case ?v(<<"repo">>, Shop) of
-	    %% 		 -1 ->
-	    %% 		     ?v(<<"id">>, Shop);
-	    %% 		 Repo ->
-	    %% 		     case ?v(<<"type">>, Shop) =:= ?BAD_REPERTORY
-	    %% 			 andalso UseBad of
-	    %% 			 true  -> ?v(<<"id">>, Shop);
-	    %% 			 false -> Repo
-	    %% 		     end
-	    %% 	     end;
-	    %% 	 false -> []
-	    %%  end || Shop <- AllShops]
-	%%  end;
     
 realy_shop(UseBad, Merchant, ShopId) ->
     case ?w_user_profile:get(shop, Merchant, ShopId) of

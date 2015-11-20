@@ -5,7 +5,7 @@
 
 -compile(export_all).
 
-good_new(Merchant, UseZero, Shop, Attrs) ->
+good_new(Merchant, UseZero, GetShop, Attrs) ->
     StyleNumber = ?v(<<"style_number">>, Attrs),
     BrandId     = ?v(<<"brand_id">>, Attrs),
     TypeId      = ?v(<<"type_id">>, Attrs),
@@ -64,7 +64,8 @@ good_new(Merchant, UseZero, Shop, Attrs) ->
     case UseZero of
 	?NO ->
 	    [Sql1];
-	?YES -> 
+	?YES ->
+	    Shop = GetShop(),
 	    FSize = fun(S) when S =:= <<>> -> [];
 		       (S) when S =:= [] -> [];
 		       (S) -> [S]
@@ -449,53 +450,21 @@ inventory(list, Merchant, Conditions) ->
 inventory(get_new_amount, _Merchant, Conditions) ->
     "select a.rsn, a.style_number, a.brand_id, a.type_id, a.sex"
 	", a.season, a.firm_id, a.s_group, a.free, a.year"
-	", a.org_price, a.tag_price, a.pkg_price, a.price3, a.price4"
-	", a.price5, a.discount, a.path"
+	", a.org_price, a.tag_price, a.ediscount"
+	", a.discount, a.path"
 
 	", b.color as color_id, b.size, b.total as amount"
 	" from "
 	
 	"(select rsn, style_number, brand as brand_id, type as type_id, sex"
 	", season, firm as firm_id, s_group, free, year"
-	", org_price, tag_price, pkg_price, price3, price4"
-	", price5, discount, path"
+	", org_price, tag_price, ediscount, discount, path"
 	" from w_inventory_new_detail"
 	" where "++ ?utils:to_sqls(proplists, Conditions)
 	++ " and deleted=" ++ ?to_s(?NO) ++ ") a"
 
 	" inner join w_inventory_new_detail_amount b on a.rsn=b.rsn"
 	" and a.style_number=b.style_number and a.brand_id=b.brand";
-
-    %% "select a.rsn, a.style_number, a.brand as brand_id"
-    %% 	", a.color as color_id, a.size, a.total as amount"
-	
-    %% 	", b.type as type_id, b.sex, b.season, b.amount as total"
-    %% 	", b.firm as firm_id, b.s_group, b.free, b.year"
-    %% 	", b.org_price, b.tag_price, b.pkg_price, b.price3, b.price4"
-    %% 	", b.price5, b.discount, b.path"
-	
-    %% 	", c.name as color"
-	
-    %% 	" from (" 
-    %% 	"select rsn, style_number, brand, color, size, total"
-    %% 	" from w_inventory_new_detail_amount"
-    %% 	" where " ++ ?utils:to_sqls(proplists, Conditions)
-    %% 	++ " and deleted=" ++ ?to_s(?NO) ++ ") a"
-
-    %% 	++ " left join "
-    %% 	"w_inventory_new_detail b"
-    %% 	" on a.rsn=b.rsn and a.style_number=b.style_number"
-    %% 	" and a.brand=b.brand"
-    %% 	%% "(select style_number, brand, type, sex, season, amount"
-	%% ", firm, s_group, free, year"
-	%% ", org_price, tag_price, pkg_price, price3, price4"
-	%% ", price5, discount, path"
-	%% " from w_inventory_new_detail"
-	%% " where "++ ?utils:to_sqls(proplists, Conditions)
-	%% ++ " and deleted=" ++ ?to_s(?NO) ++ ") b"
-	%% " on a.style_number=b.style_number and a.brand = b.brand"
-
-    %% " left join colors c on a.color=c.id";
 
 inventory(new_rsn_detail, _Merchant, Conditions) ->
     {_StartTime, _EndTime, NewConditions} =
@@ -605,19 +574,13 @@ inventory(new_detail, new, Merchant, Conditions, PageFun) ->
     %% {StartTime, EndTime, NewConditions} =
     %% 	?sql_utils:cut(fields_with_prifix, Conditions),
     "select a.id, a.rsn, a.employ as employee_id"
-	", a.firm as firm_id, a.shop as shop_id"
+	", a.brand as brand_id, a.firm as firm_id, a.shop as shop_id"
 	", a.balance, a.should_pay, a.has_pay, a.cash, a.card, a.wire"
 	", a.verificate, a.total, a.comment, a.e_pay_type, a.e_pay"
 	", a.type, a.state, a.entry_date"
 
 	" from w_inventory_new a"
-	" where " ++ SortConditions
-	%% ++ ?sql_utils:condition(proplists_suffix, NewConditions)
-	%% ++ case ?sql_utils:condition(time_no_prfix, StartTime, EndTime) of
-	%%        [] -> [];
-	%%        C -> C ++ " and "
-	%%    end
-	%% ++ "merchant=" ++ ?to_s(Merchant)
+	" where " ++ SortConditions 
 	++ PageFun();
 
 inventory(fix_detail, fix, Merchant, Conditions, PageFun) ->
