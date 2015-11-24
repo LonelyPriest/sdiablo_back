@@ -163,23 +163,23 @@ action(Session, Req, {"match_w_good"}, Payload) ->
 	   [Session, Payload]),
     Merchant     = ?session:get(merchant, Session),
     PromptNumber = ?v(<<"prompt_value">>, Payload),
-    Brand        = ?v(<<"brand">>, Payload), 
+    Firm         = ?v(<<"firm">>, Payload), 
     batch_responed(
       fun() -> ?w_inventory:match(
-		  style_number_with_brand, Merchant, PromptNumber, Brand)
+		  style_number_with_firm, Merchant, PromptNumber, Firm)
       end, Req);
 
 
 action(Session, Req, {"match_all_w_good"}, Payload) ->
     ?DEBUG("match_all_w_good with session ~p, payload ~p",
 	   [Session, Payload]),
-    Merchant = ?session:get(merchant, Session),
+    Merchant  = ?session:get(merchant, Session),
     StartTime = ?v(<<"start_time">>, Payload, []),
-    Brand     = ?v(<<"firm">>, Payload, []),
+    Firm      = ?v(<<"firm">>, Payload, []),
 
     batch_responed(
       fun() -> ?w_inventory:match(
-		  all_style_number_with_brand, Merchant, StartTime, Brand)
+		  all_style_number_with_firm, Merchant, StartTime, Firm)
       end, Req);
 
 action(Session, Req, {"new_w_good"}, Payload) ->

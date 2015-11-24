@@ -46,6 +46,10 @@
 	type="text/javascript"></script> 
 <script src="/private/purchaser/js/purchaser_inventory.js"
 	type="text/javascript"></script>
+<script src="/private/purchaser/js/shortcut_good_new.js"
+	type="text/javascript"></script>
+<script src="/private/purchaser/js/shortcut_good_service.js"
+	type="text/javascript"></script>
 <script src="/private/purchaser/js/purchaser_reject.js"
 	type="text/javascript"></script>
 <script src="/private/purchaser/js/purchaser_inventory_fix.js"

@@ -2,6 +2,7 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
     $scope, $q, $timeout, dateFilter, diabloPattern, diabloUtilsService,
     diabloPromise, diabloFilter, wgoodService, purchaserService,
     user, filterFirm, filterEmployee, filterSizeGroup, filterColor, base){
+    // console.log($scope.disable_refresh);
     // console.log(user);
 
     // $scope.shops     = user.sortShops;
@@ -9,6 +10,13 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
     // $scope.shops     = user.sortAvailabeShops;
     $scope.f_add             = diablo_float_add;
     $scope.f_sub             = diablo_float_sub;
+    $scope.f_mul             = diablo_float_mul;
+
+    $scope.pattern           = {
+	price:    diabloPattern.positive_decimal_2,
+	discount: diabloPattern.discount,
+	amount:   diabloPattern.positive_num
+    };
     
     $scope.sexs              = diablo_sex;
     $scope.seasons           = diablo_season;
@@ -19,8 +27,10 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
     $scope.round             = diablo_round;
     $scope.setting           = {
 	reject_negative: false,
-	round: diablo_round_record
+	round:           diablo_round_record
     };
+
+    $scope.disable_refresh   = true; 
 
     $scope.go_back = function(){
 	diablo_goto_page("#/inventory_new_detail");
@@ -34,14 +44,15 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
     $scope.inventories.push({$edit:false, $new:true});
     
     $scope.select = {
-	total: 0,
+	datetime:   now,
+	total:      0,
 	should_pay: 0,
 	extra_pay_type: $scope.extra_pay_types[0]
     };
     
-    $scope.disable_refresh = function(){
-	return !$scope.has_saved; 
-    };
+    // $scope.disable_refresh = function(){
+    // 	return !$scope.has_saved; 
+    // };
     
     $scope.change_firm = function(){
 	console.log($scope.select.firm);
@@ -56,10 +67,18 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
     $scope.change_shop = function(){
 	// console.log($scope.select.shop);
 	$scope.setting.reject_negative = diablo_base_setting(
-	    "reject_negative", $scope.select.shop.id, base, parseInt, diablo_no);
+	    "reject_negative",
+	    $scope.select.shop.id,
+	    base,
+	    parseInt,
+	    diablo_no);
 
 	$scope.setting.round = diablo_base_setting(
-	    "pround", $scope.select.shop.id, base, parseInt, diablo_round_record);
+	    "pround",
+	    $scope.select.shop.id,
+	    base,
+	    parseInt,
+	    diablo_round_record);
 	if ($scope.q_prompt === diablo_frontend){
 	    $scope.get_all_prompt_inventory();
 	}
@@ -75,7 +94,8 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	$scope.select.left_balance = $scope.select.firm.balance;
 	$scope.select.extra_pay    = undefined;
 
-	$scope.has_saved = false;
+	$scope.disable_refresh   = true;
+	$scope.has_saved         = false;
 
     };
 
@@ -88,9 +108,12 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	    $scope.select.total      += parseInt(one.reject);
 
 	    if ($scope.setting.round === diablo_round_row){
-		$scope.select.should_pay -= $scope.round(one.org_price * one.reject);
+		$scope.select.should_pay -=
+		    $scope.round(
+			one.org_price * one.ediscount * one.reject * 0.01);
 	    } else {
-		$scope.select.should_pay -= one.org_price * one.reject; 
+		$scope.select.should_pay -=
+		    one.org_price * one.ediscount * one.reject * 0.01; 
 	    } 
 	}
 
@@ -106,11 +129,9 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	    $scope.select.surplus + $scope.select.should_pay - e_pay;
 
 	$scope.select.left_balance = $scope.round($scope.select.left_balance);
-	    // $scope.select.surplus + $scope.select.should_pay;
     };
 
     $scope.$watch("select.extra_pay", function(newValue, oldValue){
-	// console.log(newValue);
     	if (newValue === oldValue || angular.isUndefined(newValue)) return;
     	if ($scope.select.form.extraForm.$invalid) return; 
     	$scope.re_calculate(); 
@@ -142,11 +163,6 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	event.stopPropagation();
 	$scope.isOpened = true;
     };
-
-    $scope.today = function(){
-	return now;
-    };
-
 
     $scope.q_typeahead = function(shopId){
 	// console.log(shopId);
@@ -195,15 +211,32 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
     $scope.on_select_inventory = function(item, model, label){
 	console.log(item);
 
+	// if (item.firm_id !== $scope.select.firm.id){
+	//     diabloUtilsService.response_with_callback(
+	// 	false, "退货", "退货失败：" + purchaserService.error[2093],
+	// 	$scope, function(){
+	// 	    $scope.inventories[0] = {$edit:false, $new:true}});
+	//     return;
+	// } 
+
 	// has been added
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    if (item.style_number === $scope.inventories[i].style_number
 		&& item.brand_id  === $scope.inventories[i].brand_id){
 		diabloUtilsService.response_with_callback(
 		    false, "退货", "退货失败：" + purchaserService.error[2099],
-		    $scope, function(){ $scope.inventories[0] = {$edit:false, $new:true}});
+		    $scope, function(){
+			$scope.inventories[0] = {$edit:false, $new:true}});
 		return;
 	    }
+
+	    if (item.firm_id !== $scope.inventories[i].firm_id){
+		diabloUtilsService.response_with_callback(
+		    false, "退货", "退货失败：" + purchaserService.error[2093],
+		    $scope, function(){
+			$scope.inventories[0] = {$edit:false, $new:true}});
+		return;
+	    };
 	}
 	
 	// add at first allways 
@@ -217,17 +250,16 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	add.brand_id     = item.brand_id;
 	add.type         = item.type;
 	add.type_id      = item.type_id;
+	add.firm_id      = item.firm_id;
 	add.s_group      = item.s_group;
 	add.free         = item.free; 
 	add.sex          = item.sex;
 	add.season       = item.season;
 	add.org_price    = item.org_price;
 	add.tag_price    = item.tag_price;
-	add.pkg_price    = item.pkg_price;
-	add.price3       = item.price3;
-	add.price4       = item.price4;
-	add.price5       = item.price5;
+	add.ediscount    = item.ediscount;
 	add.discount     = item.discount;
+	add.year         = item.year;
 	add.path         = item.path;
 
 	console.log(add);
@@ -247,7 +279,8 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	}; 
 	
 	if ($scope.inventories.length === 1
-	    && (angular.isUndefined($scope.select.extra_pay) || !$scope.select.extra_pay)){
+	    && (angular.isUndefined($scope.select.extra_pay)
+		|| !$scope.select.extra_pay)){
 	    return true;
 	};
 
@@ -284,19 +317,19 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 		brand       : add.brand_id,
 		type        : add.type_id,
 		sex         : add.sex,
-		season      : add.season,
-		org_price   : add.org_price,
-		tag_price   : add.tag_price,
-		pkg_price   : add.pkg_price,
-		p3          : add.price3,
-		p4          : add.price4,
-		p5          : add.price5,
+		season      : add.season, 
 		s_group     : add.s_group,
 		free        : add.free,
 		amounts     : get_reject(add.amounts),
 		total       : seti(add.reject),
-		fdiscount   : add.discount,
-		fprice      : add.org_price,
+
+		org_price   : add.org_price,
+		tag_price   : add.tag_price, 
+		fdiscount   : add.ediscount,
+		discount    : add.discount,
+		
+		fprice      : add.ediscount,
+		year        : add.year,
 		path        : add.path
 	    })
 	}; 
@@ -306,14 +339,16 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	var base = {
 	    firm:          $scope.select.firm.id,
 	    shop:          $scope.select.shop.id,
-	    datetime:      dateFilter($scope.select.date, "yyyy-MM-dd HH:mm:ss"),
+	    datetime:      dateFilter(
+		$scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),
 	    employee:      $scope.select.employee.id,
 	    comment:       sets($scope.select.comment),
 	    balance:       setv($scope.select.surplus),
 	    should_pay:    setv($scope.select.should_pay),
 	    total:         seti($scope.select.total),
 
-	    e_pay_type:    angular.isUndefined(e_pay) ? undefined : $scope.select.extra_pay_type.id,
+	    e_pay_type:    angular.isUndefined(e_pay)
+		? undefined : $scope.select.extra_pay_type.id,
 	    e_pay:         e_pay
 	};
 
@@ -326,6 +361,7 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	}).then(function(state){
 	    console.log(state);
 	    if (state.ecode == 0){
+		$scope.disable_refresh     = false;
 		$scope.select.firm.balance = $scope.select.left_balance;
 		$scope.select.surplus = $scope.select.firm.balance;
 	    	diabloUtilsService.response(
@@ -400,13 +436,15 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
     $scope.add_inventory = function(inv){
 	purchaserService.list_purchaser_inventory(
 	    {style_number:inv.style_number,
-	     brand:inv.brand_id,
-	     shop:$scope.select.shop.id,
-	     qtype: diablo_badrepo}
+	     brand:       inv.brand_id,
+	     shop:        $scope.select.shop.id,
+	     qtype:       diablo_badrepo}
 	).then(function(invs){
 	    console.log(invs);
-	    var order_sizes = wgoodService.format_size_group(inv.s_group, filterSizeGroup);
-	    var sort = purchaserService.sort_inventory(invs, order_sizes, filterColor);
+	    var order_sizes = wgoodService.format_size_group(
+		inv.s_group, filterSizeGroup);
+	    var sort = purchaserService.sort_inventory(
+		invs, order_sizes, filterColor);
 	    
 	    inv.total   = sort.total;
 	    inv.sizes   = sort.size;
@@ -423,25 +461,30 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 		    }
 		})
 
-		return {amounts: params.amounts,
-			reject: reject_total};
+		return {amounts:   params.amounts,
+			reject:    reject_total,
+			fprice:    params.fprice,
+		        fdiscount: params.fdiscount};
 	    };
 
 	    var after_add = function(){
 		inv.$edit = true;
-		inv.$new = false;
+		inv.$new  = false;
 		// order
 		inv.order_id = $scope.inventories.length; 
 		// add new line
 		$scope.inventories.unshift({$edit:false, $new:true});
-		
+
+		$scope.disable_refresh   = false;
 		$scope.re_calculate(); 
 	    };
 	    
 	    var callback = function(params){
 		var result = add_callback(params);
-		inv.amounts = result.amounts;
-		inv.reject  = result.reject;
+		inv.amounts   = result.amounts;
+		inv.reject    = result.reject;
+		inv.org_price = result.fprice;
+		inv.ediscount = result.fdiscount;
 		after_add();
 	    };
 
@@ -451,13 +494,15 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 		inv.free_color_size = false;
 		var payload = {sizes:        inv.sizes,
 			       colors:       inv.colors,
+			       fprice:       inv.org_price,
+			       fdiscount:    inv.ediscount,
 			       amounts:      inv.amounts,
 			       get_amount:   get_amount,
-			       // valid_reject: valid_reject,
 			       valid:        valid_all};
 		
 		diabloUtilsService.edit_with_modal(
-		    "inventory-new.html", 'normal', callback, $scope, payload); 
+		    "inventory-new.html",
+		    'normal', callback, $scope, payload); 
 	    }
 	}) 
     };
@@ -494,7 +539,9 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
      */
     $scope.inventory_detail = function(inv){
 	var payload = {sizes:        inv.sizes,
-		       colors:       inv.colors, 
+		       colors:       inv.colors,
+		       fprice:       inv.org_price,
+		       fdiscount:    inv.ediscount,
 		       amounts:      inv.amounts,
 		       get_amount:   get_amount};
 	diabloUtilsService.edit_with_modal(
@@ -508,6 +555,8 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	inv.$update = true; 
 	if (inv.free_color_size){
 	    inv.free_update = true;
+	    inv.o_org_price = inv.org_price;
+	    inv.o_ediscount = inv.ediscount;
 	    return;
 	}
 	
@@ -519,19 +568,27 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 		    inv.reject += parseInt(a.reject_count);
 		}
 	    });
+
+	    inv.org_price = params.fprice;
+	    inv.ediscount = params.fdiscount;
 	    
 	    $scope.re_calculate(); 
 	};
 
 	var payload = {sizes:        inv.sizes,
-		       colors:       inv.colors, 
+		       colors:       inv.colors,
+		       fprice:       inv.org_price,
+		       fdiscount:    inv.ediscount,
 		       amounts:      inv.amounts,
 		       get_amount:   get_amount,
 		       // valid_reject: valid_reject,
 		       valid:        valid_all}; 
 	diabloUtilsService.edit_with_modal(
 	    "inventory-new.html",
-	    inv.sizes.length >= 6 ? "lg" : undefined, callback, $scope, payload)
+	    inv.sizes.length >= 6 ? "lg" : undefined,
+	    callback,
+	    undefined,
+	    payload)
     };
 
     $scope.save_free_update = function(inv){
@@ -545,6 +602,8 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	$timeout.cancel($scope.timeout_auto_save);
 	inv.free_update = false;
 	inv.amounts[0].reject_count = inv.reject;
+	inv.org_price   = inv.o_org_price;
+	inv.ediscount   = inv.o_ediscount;
     } 
     
     $scope.reset_inventory = function(inv){
@@ -560,7 +619,9 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	$timeout.cancel($scope.timeout_auto_save); 
 	if (angular.isUndefined(inv.amounts[0].reject_count)
 	    || !inv.amounts[0].reject_count
-	    || parseInt(inv.amounts[0].reject_count) === 0){
+	    || parseInt(inv.amounts[0].reject_count) === 0
+	    || !inv.ediscount
+	    || (!inv.org_price && inv.org_price !== 0)){
 	    return;
 	}
 

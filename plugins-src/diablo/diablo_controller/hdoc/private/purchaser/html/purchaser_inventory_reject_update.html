@@ -114,24 +114,26 @@
 	      <div class="input-group">
 		
 		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-map-marker fg-red"></i>总数</span>
+		  <i class="glyphicon glyphicon-map-marker fg-red"></i>
+		  总数
+		</span>
 	  	<input class="form-control" type="text" readonly
-	  	       x-ng-model="select.total"></input>
+	  	       x-ng-model="select.total"/>
 		
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>欠款</span>
 	  	<input class="form-control" readonly
-	  	       x-ng-model="select.surplus"></input>
+	  	       x-ng-model="select.surplus"/>
 
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>退款</span>
 	  	<input class="form-control" readonly
-	  	       x-ng-model="select.should_pay"></input>
+	  	       x-ng-model="select.should_pay"/>
 		
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>结余</span>
 	  	<input class="form-control" type="text" readonly
-	  	       x-ng-model="select.left_balance"></input> 
+	  	       x-ng-model="select.left_balance"/>
 	      </div>
 	    </div> 
 	  </div> <!--END row-->
@@ -141,7 +143,9 @@
 	    <div class="col-xs-6 col-md-6">
 	      <div class="input-group">
 	    	<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-plane fg-red"></i>费用性质</span>
+		  <i class="glyphicon glyphicon-plane fg-red"></i>
+		  费用性质
+		</span>
 		<select class="form-control"
 			type="text"
 			disabled
@@ -155,7 +159,9 @@
 	    <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
 		  <span class="input-group-addon">
-		    <i class="glyphicon glyphicon-yen fg-red"></i>关联费用</span> 
+		    <i class="glyphicon glyphicon-yen fg-red"></i>
+		    关联费用
+		  </span> 
 		<form name="select.form.extraForm">
 		  <div ng-class="{'has-error':select.form.extraForm.$invalid
 				 && !select.form.extraForm.$pristine}">
@@ -168,7 +174,7 @@
 			   placeholder="关联费用" 
 			   popover-placement="top"
 			   popover-trigger="focus"
-			   popover="支持二位小数"></input>
+			   popover="支持二位小数"/>
 		  </div>
 		</form> 
 	      </div>
@@ -199,16 +205,8 @@
 		    <!-- <th class="text-center">性别</th> -->
 		    <!-- <th class="text-center">厂商</th> -->
 		    <th class="text-center">季节</th>
-		    <th class="text-center">进货价</th>
-		    <!-- <th class="text-center">库存</th>  -->
-		    <!-- <th class="text-center">吊牌价</th>  -->
-		    <!-- <th class="text-center">打包价</th> -->
-		    <!-- <th class="text-center">价3</th> -->
-		    <!-- <th class="text-center">价4</th> -->
-		    <!-- <th class="text-center">价5</th> -->
-		    <!-- <th class="text-center">折扣</th> -->
-		    <!-- <th class="text-center">店铺</th> -->
-		    <!-- <th class="text-center">数量</th> -->
+		    <th class="text-center">进价</th> 
+		    <th class="text-center">折扣</th> 
 		    <th class="text-center">数量</th>
 		    <th class="text-center">合计</th>
 		    <th class="text-center">操作</th>
@@ -229,9 +227,11 @@
 				 placeholder="货号"
 				 typeahead-editable="false"
 				 typeahead-wait-ms="500"
-				 typeahead-on-select="on_select_inventory($item, $model, $label)"
+				 typeahead-on-select="on_select_inventory(
+						      $item, $model, $label)"
 				 typeahead="g as g.name for g in
-					    match_prompt_inventory($viewValue)|limitTo:8"></input>
+					    match_prompt_inventory(
+					    $viewValue)|limitTo:8"></input>
 			</div>
 		      </form>
 		    </td>
@@ -239,28 +239,70 @@
 		    <td class="vert-align">{{inv.brand.name}}</td>
 		    <td class="vert-align">{{inv.type.name}}</td>
 		    <!-- <td class="vert-align">{{sexs[inv.sex]}}</td> -->
-		    <td class="vert-align">{{seasons[inv.season]}}</td>
-		    <td class="col-md-1 vert-align">{{inv.org_price}}</td>
-		    <!-- <td class="vert-align">{{inv.total}}</td>  -->
-
+		    <td class="vert-align">{{seasons[inv.season]}}</td> 
 		    
 		    <td class="col-md-1 vert-align">
-		      <div x-ng-if="!inv.$new && !inv.free_update">{{inv.reject}}</div> 
-		      <form name="inv.form.reject"
+		      <div x-ng-if="!inv.$new && !inv.free_update">
+			{{inv.org_price}}
+		      </div> 
+		      <form name="inv.form.price"
 			    ng-if="inv.$new && inv.free_color_size
+				   || !inv.$new && inv.free_update">
+			<div ng-class="{'has-error':inv.form.price.$invalid
+				       && !inv.form.price.$pristine}">
+			  <input class="form-control"
+				 type="number" step="0.01" 
+				 required
+				 x-ng-pattern="pattern.price"
+				 x-ng-model="inv.org_price"
+				 placeholder="进价"
+				 popover-placement="top"
+				 popover-trigger="focus"
+				 popover="请输入进价"/>
+		      </form>
+		    </td>
+
+		    <td class="col-md-1 vert-align">
+		      <div x-ng-if="!inv.$new && !inv.free_update">
+			{{inv.ediscount}}
+		      </div> 
+		      <form name="inv.form.discount"
+			    ng-if="inv.$new && inv.free_color_size
+				   || !inv.$new && inv.free_update">
+			<div ng-class="{'has-error':inv.form.discount.$invalid
+				       && !inv.form.discount.$pristine}">
+			  <input class="form-control"
+				 type="number" step="1" 
+				 required
+				 x-ng-pattern="pattern.discount"
+				 x-ng-model="inv.ediscount"
+				 placeholder="折扣"
+				 popover-placement="top"
+				 popover-trigger="focus"
+				 popover="请输入折扣"/>
+		      </form>
+		    </td>
+		    
+		    <td class="col-md-1 vert-align">
+		      <div x-ng-if="!inv.$new && !inv.free_update">
+			{{inv.reject}}
+		      </div> 
+		      <form name="inv.form.reject"
+			    x-ng-if="inv.$new && inv.free_color_size
 				   || !inv.$new && inv.free_update">
 			<div class="input-group">
 			  <span class="input-group-addon
 				       modal-input-group-addon">
 			    {{inv.total}}
 			    </span>
-			  <div x-ng-class="{'has-error':inv.form.reject.$invalid
+			  <div x-ng-class="{'has-error'
+					   :inv.form.reject.$invalid
 					   && !inv.form.reject.$pristine
 					   || !valid_free(inv)}"> 
 			  <input class="form-control"
 				 type="number" step="1" 
 				 required
-				 x-ng-pattern="/^[1-9][0-9]*$/"
+				 x-ng-pattern="pattern.amount"
 				 x-ng-model="inv.amounts[0].reject"
 				 placeholder="数量"
 				 popover-placement="top"
@@ -274,10 +316,22 @@
 		      <span x-ng-if="inv.$new"></span>
 		      <span x-ng-if="!inv.$new">
 			<span x-ng-if="setting.round===1">
-			  {{round(inv.org_price * inv.reject)}}
+			  <span x-ng-if="(inv.org_price || inv.org_price===0)
+					 && inv.ediscount
+					 && inv.reject">
+			    {{round(
+			    inv.org_price*inv.reject*inv.ediscount*0.01)}}
+			  </span>
 			</span>
+			
 			<span x-ng-if="setting.round===0">
-			  {{inv.org_price * inv.reject}}
+			  <span x-ng-if="(inv.org_price || inv.org_price===0)
+					 && inv.ediscount
+					 && inv.reject">
+			    {{f_mul(
+			    f_mul(inv.org_price, inv.reject),
+			    f_mul(inv.ediscount, 0.01))}}
+			  </span>
 			</span>
 		      </span>
 		    </td>
@@ -289,6 +343,8 @@
 			   x-ng-if="inv.free_color_size"
 			   x-ng-disabled="inv.form.good.$invalid
 					  || inv.form.reject.$invalid
+					  || inv.form.price.$invalid
+					  || inv.form.discount.$invalid
 					  || !valid_free(inv)"
 			   x-ng-click="add_free_inventory(inv)">保存
 			  <i class="glyphicon glyphicon-plus"></i></a>
@@ -323,15 +379,17 @@
 			  <i class="glyphicon glyphicon-erase"></i></a>
 
 			<a class="btn diablo-input-button btn-success"
-			   ng-if="inv.free_update"
+			   x-ng-if="inv.free_update"
 			   x-ng-disabled="inv.form.reject.$invalid
+					  || inv.form.price.$invalid
+					  || inv.form.discount.$invalid
 					  || !valid_free(inv)"
 			   x-ng-click="save_free_update(inv)">保存
 			  <i class="glyphicon glyphicon-plus"></i></a>
 			
 			<a class="btn diablo-input-button btn-danger"
-			   ng-if="inv.free_update"
-			   x-ng-click="inv.free_update=false">取消
+			   x-ng-if="inv.free_update"
+			   x-ng-click="cancel_free_update(inv)">取消
 			  <i class="glyphicon glyphicon-erase"></i></a> 
 		      </div>
 		      
@@ -339,7 +397,7 @@
 		  </tr>
 
 		  <tr x-ng-if="select.total!==0" class="text-center">
-		    <td colspan="6"></td>
+		    <td colspan="7"></td>
 		    <td class="vert-align">{{select.total}}</td>
 		    <td class="vert-align">{{select.should_pay}}</td>
 		    <td></td>
@@ -360,8 +418,49 @@
 
 <script type="text/ng-template" id="inventory-new.html">
   <div class="modal-body">
+
+    <div class="row diablo-form-group">
+      <div class="col-md-12 col-sm-12 col-xs-12">
+	<div class="input-group">
+	  <span class="input-group-addon">
+	    <i class="glyphicon glyphicon-jpy fg-red"></i>进价
+	  </span>
+	  
+	  <form name="fprice">
+            <div ng-class="{'has-error':fprice.$invalid
+                           && !fprice.$pristine}">
+              <input class="form-control"
+                     type="number" step="0.01"
+                     required
+                     x-ng-pattern="params.pattern.price"
+                     x-ng-model="params.fprice"/>
+            </div>
+	  </form>
+
+	  <span class="input-group-addon">
+	    <i class="glyphicon glyphicon-sort-by-attributes-alt fg-red"></i>
+	    折扣
+	  </span>
+
+	  <form name="fdiscount">
+	    <div ng-class="{'has-error':ediscount.$invalid
+			   && !ediscount.$pristine}"> 
+	      <input class="form-control"
+		     type="number" step="0.01" 
+		     required
+		     x-ng-pattern="params.pattern.discount"
+		     x-ng-model="params.fdiscount"/>
+	    </div> 
+	  </form> 
+	  
+	</div>
+      </div>
+    </div>
+    
     <div class="table-responsive">
-      <table class="table table-bordered table-striped table-condensed table-advanced">
+      <table class="table
+		    table-bordered table-striped
+		    table-condensed table-advanced">
 	<tbody>
 	  <tr>
 	    <td></td>
@@ -376,13 +475,15 @@
 	      <span x-ng-switch-default>{{c.cname}}</span>
 	    </td>
 	    <td class="col-md-1" x-ng-repeat="s in params.sizes">
-	      <div x-ng-if="amount = params.get_amount(c.cid, s, params.amounts); amount">
+	      <div x-ng-if="amount=params.get_amount(
+			    c.cid, s, params.amounts); amount">
 		
 		<div class="input-group">
 		  <span class="input-group-addon modal-input-group-addon">
 		    {{amount.count}}</span>
 		<form name="form">
-		  <div ng-class="{'has-error':form.$invalid && !form.$pristine}">
+		  <div ng-class="{'has-error':form.$invalid
+				 && !form.$pristine}">
 		    <input x-ng-if="amount"
 			   class="form-control text-center modal-input"
 			   type="number" step="1" 
@@ -402,7 +503,8 @@
 
   <div class="modal-footer">
     <button class="btn btn-primary"
-	    x-ng-disabled="!params.valid(params.amounts)" x-ng-click="ok()">保存</button>
+	    x-ng-disabled="!params.valid(params.amounts)"
+	    x-ng-click="ok()">保存</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>
 </script>
@@ -410,8 +512,32 @@
 
 <script type="text/ng-template" id="inventory-detail.html">
   <div class="modal-body">
+
+    <div class="row diablo-form-group">
+      <div class="col-md-12 col-sm-12 col-xs-12">
+	<div class="input-group">
+	  <span class="input-group-addon">
+	    <i class="glyphicon glyphicon-jpy fg-red"></i>进价
+	  </span> 
+          <input class="form-control"
+                 readonly
+                 x-ng-model="params.fprice"/>
+	  
+	  <span class="input-group-addon">
+	    <i class="glyphicon glyphicon-sort-by-attributes-alt fg-red"></i>
+	    折扣
+	  </span> 
+	  <input class="form-control"
+		 readonly
+		 x-ng-model="params.fdiscount"/> 
+	</div>
+      </div>
+    </div>
+    
     <div class="table-responsive">
-      <table class="table table-bordered table-striped table-condensed table-advanced">
+      <table class="table
+		    table-bordered table-striped
+		    table-condensed table-advanced">
 	<tbody>
 	  <tr>
 	    <td></td>
@@ -423,10 +549,7 @@
 	  <tr x-ng-repeat="c in params.colors">
 	    <td class="col-md-1">{{c.cname}}</td>
 	    <td x-ng-repeat="s in params.sizes">
-	      {{params.get_amount(c.cid, s, params.amounts).reject}}
-	      <!-- <input class="form-control" type="text" -->
-	      <!-- 	     x-ng-model="amount.count" -->
-	      <!-- 	     x-ng-init="amount=params.get_amount(c.cid, s, params.amount)"></input> -->
+	      {{params.get_amount(c.cid, s, params.amounts).reject}} 
 	    </td>
 	  </tr>
 	</tbody>

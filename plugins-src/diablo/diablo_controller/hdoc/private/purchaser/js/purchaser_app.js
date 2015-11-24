@@ -64,7 +64,7 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_new.html',
             controller: 'purchaserInventoryNewCtrl',
 	    resolve: angular.extend(
-		{}, user, brand, firm, employee, color, base)
+		{}, user, firm, employee, color, base)
 	}).
 	when('/update_new_detail/:rsn?/:ppage?', {
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_new_detail_update.html',
@@ -134,7 +134,7 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 	when('/good/wgood_new', {
 	    templateUrl: '/private/wgood/html/wgood_new.html',
 	    controller: 'wgoodNewCtrl',
-	    resolve: angular.extend({}, brand, type, s_group)
+	    resolve: angular.extend({}, firm, brand, type, s_group)
 	}).
 	when('/good/wgood_update/:id?', {
 	    templateUrl: '/private/wgood/html/wgood_update.html',
@@ -159,6 +159,7 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
     // error information
     this.error = {
 	2001: "货品资料已存在！！",
+	2093: "厂商信息不一致，请重新选择货品！！", 
 	2094: "修改前后信息一致，请重新编辑修改项！！", 
 	2095: "请先选择厂商！！",
 	2096: "客户，营业员或店铺为空，请先建立客户，营业员或店铺资料！！",

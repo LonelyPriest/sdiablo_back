@@ -74,6 +74,7 @@
 			   x-ng-model="good.brand"
 			   x-ng-pattern="pattern.brand"
 			   x-ng-enter=""
+			   x-ng-change="on_select_brand()"
 			   typeahead="b.name for b in
 				      brands|filter:$viewValue|limitTo:8"/> 
 		  </div> 
@@ -120,31 +121,31 @@
 	      </div>
 	    </div>
 	    
-	    <!-- <div class="form-group diablo-good-form-group"> -->
-	    <!--   <label class="col-sm-3 col-md-3 control-label">厂商</label> -->
-	    <!--   <div class="col-sm-6 col-md-6">  -->
-	    <!-- 	<div class="input-group"> -->
-	    <!-- 	  <input type="text" -->
-	    <!-- 		 class="form-control" -->
-	    <!-- 		 name="firm" -->
-	    <!-- 		 required -->
-	    <!-- 		 placeholder="请输入厂商" -->
-	    <!-- 		 x-ng-model="good.firm" -->
-	    <!-- 		 x-ng-enter="" -->
-	    <!-- 		 typeahead-editable="false" -->
-	    <!-- 		 typeahead="f as f.name for f in -->
-	    <!-- 			    firms|filter:$viewValue|limitTo:8"/> -->
-	    <!-- 	  <span class="input-group-btn"> -->
-	    <!-- 	    <button class="btn btn-success" x-ng-click="new_firm()"> -->
-	    <!-- 	      <i class="glyphicon glyphicon-plus"></i></button> -->
-	    <!-- 	  </span> -->
-	    <!-- 	  <span class="input-group-addon bg-white fg-red">*</span>  -->
-	    <!-- 	</div> -->
-	    <!--   </div>	       -->
-	    <!--   <div ng-show="goodForm.firm.$invalid && !goodForm.firm.$pristine"> -->
-	    <!-- 	<span style="color:red">厂商只能从提示框中选择</span> -->
-	    <!--   </div> -->
-	    <!-- </div> -->
+	    <div class="form-group diablo-good-form-group">
+	      <label class="col-sm-3 col-md-3 control-label">厂商</label>
+	      <div class="col-sm-6 col-md-6">
+	    	<div class="input-group">
+	    	  <input type="text"
+	    		 class="form-control"
+	    		 name="firm"
+	    		 required
+	    		 placeholder="请输入厂商"
+	    		 x-ng-model="good.firm"
+	    		 x-ng-enter=""
+	    		 typeahead-editable="false"
+	    		 typeahead="f as f.name for f in
+	    			    firms|filter:$viewValue|limitTo:8"/>
+	    	  <span class="input-group-btn">
+	    	    <button class="btn btn-success" x-ng-click="new_firm()">
+	    	      <i class="glyphicon glyphicon-plus"></i></button>
+	    	  </span>
+	    	  <span class="input-group-addon bg-white fg-red">*</span>
+	    	</div>
+	      </div>
+	      <div ng-show="goodForm.firm.$invalid && !goodForm.firm.$pristine">
+	    	<span style="color:red">厂商只能从提示框中选择</span>
+	      </div>
+	    </div>
 
 	    <div class="form-group diablo-good-form-group">
 	      <label class="col-sm-3 col-md-3 control-label">性别</label>
@@ -201,7 +202,7 @@
 	    </div>
 
 	    <div class="form-group diablo-good-form-group">
-	      <label class="col-sm-3 col-md-3 control-label">进货折扣</label>
+	      <label class="col-sm-3 col-md-3 control-label">折扣（进）</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
 		  <div ng-class="{'has-error':goodForm.ediscount.$invalid
@@ -245,7 +246,7 @@
 	    </div> 
 	    
 	    <div class="form-group diablo-good-form-group">
-	      <label class="col-sm-3 col-md-3 control-label">折扣</label>
+	      <label class="col-sm-3 col-md-3 control-label">折扣（卖）</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
 		  <div ng-class="{'has-error':goodForm.discount.$invalid
@@ -381,116 +382,110 @@
 </div><!--END row-->
 
 
-<!-- <script type="text/ng-template" id="new-firm.html"> -->
-<!--   <div class="modal-header"> -->
-<!--     <button class="close" x-ng-click="cancel()" type="button"> -->
-<!--       <span aria-hidden="true">&times;</span> -->
-<!--       <span class="sr-only"></span> -->
-<!--     </button> -->
+<script type="text/ng-template" id="new-firm.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
     
-<!--     <h4 class="modal-title"><span class="label label-sm label-primary">新增厂商</span></h4> -->
-<!--   </div> -->
+    <h4 class="modal-title"><span class="label label-sm label-primary">新增厂商</span></h4>
+  </div>
 
-<!--   <div class="modal-body"> -->
-<!--     <form class="form-horizontal" name="firmForm" novalidate>  -->
-<!--       <div class="form-body"> -->
-<!-- 	<\!--Name-\-> -->
-<!-- 	<div class="form-group"> -->
-<!-- 	  <label class="col-sm-3 col-md-3 control-label">名称</label> -->
-<!-- 	  <div class="col-sm-6 col-md-6"> -->
-<!-- 	    <div class="input-group"> -->
-<!-- 	      <input type="text" -->
-<!-- 		     class="form-control" -->
-<!-- 		     name="name" -->
-<!-- 		     required -->
-<!-- 		     placeholder="请输入厂商名称" -->
-<!-- 		     x-ng-model="params.firm.name" -->
-<!-- 		     x-ng-minlength="2" -->
-<!-- 		     x-ng-maxlength="8"/> -->
-<!-- 	      <span class="input-group-addon bg-white fg-red">*</span> -->
-<!-- 	    </div> -->
-<!-- 	  </div> -->
-<!-- 	  <div ng-show="firmForm.name.$error.minlength -->
-<!-- 			|| firmForm.name.$error.maxlength"> -->
-<!-- 	    <span style="color:red">厂商名称太短，请输入2-8个字符</span> -->
-<!-- 	  </div>  -->
-<!-- 	</div> -->
+  <div class="modal-body">
+    <form class="form-horizontal" name="firmForm" novalidate>
+      <div class="form-body">
+	<!--Name-->
+	<div class="form-group">
+	  <label class="col-sm-3 col-md-3 control-label">名称</label>
+	  <div class="col-sm-6 col-md-6">
+	    <div class="input-group">
+	      <input type="text"
+		     class="form-control"
+		     name="name"
+		     required
+		     placeholder="请输入厂商名称"
+		     x-ng-model="params.firm.name"
+		     x-ng-minlength="2"
+		     x-ng-maxlength="8"/>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	  </div>
+	  <div ng-show="firmForm.name.$error.minlength
+			|| firmForm.name.$error.maxlength">
+	    <span style="color:red">厂商名称太短，请输入2-8个字符</span>
+	  </div>
+	</div>
 
-<!-- 	<\!--balance-\-> -->
-<!-- 	<div class="form-group"> -->
-<!-- 	  <label class="col-sm-3 col-md-3 control-label">欠款</label> -->
-<!-- 	  <div class="col-sm-6 col-md-6"> -->
-<!-- 	    <\!-- <div class="input-group"> -\-> -->
-<!-- 	    <input class="form-control" -->
-<!-- 		   type="number" step="0.01" -->
-<!-- 		   name="balance" -->
-<!-- 		   placeholder="默认为0，支持两位小数" -->
-<!-- 		   x-ng-model="params.firm.balance" -->
-<!-- 		   x-ng-pattern="/^[+|\-]?\d+(.\d{1,2})?$/"></input> -->
-<!-- 	    <\!-- <span class="input-group-addon bg-white fg-red">*</span> -\-> -->
-<!-- 	    <\!-- </div> -\-> -->
-<!-- 	  </div> -->
-<!-- 	  <div ng-show="firmForm.balance.$invalid && !firmForm.balance.$pristine"> -->
-<!-- 	    <span class="fg-red">请输入正确的数字，支持两位小数</span> -->
-<!-- 	  </div>  -->
-<!-- 	</div> -->
+	<!--balance-->
+	<div class="form-group">
+	  <label class="col-sm-3 col-md-3 control-label">欠款</label>
+	  <div class="col-sm-6 col-md-6">
+	    <input class="form-control"
+		   type="number" step="0.01"
+		   name="balance"
+		   placeholder="默认为0，支持两位小数"
+		   x-ng-model="params.firm.balance"
+		   x-ng-pattern="/^[+|\-]?\d+(.\d{1,2})?$/"></input> 
+	  </div>
+	  <div ng-show="firmForm.balance.$invalid && !firmForm.balance.$pristine">
+	    <span class="fg-red">请输入正确的数字，支持两位小数</span>
+	  </div>
+	</div>
 
-<!-- 	<\!--mobile-\-> -->
-<!-- 	<div class="form-group" -->
-<!-- 	     ng-class="{'has-error': firmForm.mobile.$invalid -->
-<!-- 		       && !firmForm.mobile.$pristine}"> -->
-<!-- 	  <label class="col-sm-3 col-md-3 control-label">联系方式</label> -->
-<!-- 	  <div class="col-sm-6 col-md-6"> -->
-<!-- 	    <\!-- <div class="input-group"> -\-> -->
-<!-- 	    <input type="tel" -->
-<!-- 		   name="mobile" -->
-<!-- 		   ng-pattern="/^\d{3,4}\d{7,8}$/" -->
-<!-- 		   placeholder="请输入电话或手机号码" -->
-<!-- 		   class="form-control" -->
-<!-- 		   x-ng-model="params.firm.mobile" /> -->
-<!-- 	      <\!-- <span class="input-group-addon bg-white fg-red">*</span> -\-> -->
-<!-- 	    <\!-- </div> -\-> -->
-<!-- 	  </div> -->
-<!-- 	  <div ng-show="firmForm.mobile.$invalid && !firmForm.mobile.$pristine"> -->
-<!-- 	    <span style="color:red">请输入正确的电话或手机号码</span> -->
-<!-- 	  </div> -->
-<!-- 	</div> -->
+	<!--mobile-->
+	<div class="form-group"
+	     ng-class="{'has-error': firmForm.mobile.$invalid
+		       && !firmForm.mobile.$pristine}">
+	  <label class="col-sm-3 col-md-3 control-label">联系方式</label>
+	  <div class="col-sm-6 col-md-6">
+	    <input type="tel"
+		   name="mobile"
+		   ng-pattern="/^\d{3,4}\d{7,8}$/"
+		   placeholder="请输入电话或手机号码"
+		   class="form-control"
+		   x-ng-model="params.firm.mobile" /> 
+	  </div>
+	  <div ng-show="firmForm.mobile.$invalid && !firmForm.mobile.$pristine">
+	    <span style="color:red">请输入正确的电话或手机号码</span>
+	  </div>
+	</div>
 
-<!-- 	<div class="form-group"> -->
-<!-- 	  <label class="col-sm-3 col-md-3 control-label">联系地址</label> -->
-<!-- 	  <div class="col-sm-6 col-md-6"> -->
-<!-- 	    <div class="input-group"> -->
-<!-- 	    <input type="text" -->
-<!-- 		   class="form-control" -->
-<!-- 		   name="address" -->
-<!-- 		   required -->
-<!-- 		   placeholder="请输入厂商地址" -->
-<!-- 		   x-ng-model="params.firm.address" -->
-<!-- 		   x-ng-minlength="2" -->
-<!-- 		   x-ng-maxlength="20" /> -->
-<!-- 	      <span class="input-group-addon bg-white fg-red">*</span> -->
-<!-- 	    </div> -->
-<!-- 	  </div> -->
-<!-- 	  <div ng-show="firmForm.address.$error.minlength -->
-<!-- 			|| firmForm.address.$error.maxlength"> -->
-<!-- 	    <span style="color:red">名称太短，请输入2-20个字符</span> -->
-<!-- 	  </div>  -->
-<!-- 	</div> -->
+	<div class="form-group">
+	  <label class="col-sm-3 col-md-3 control-label">联系地址</label>
+	  <div class="col-sm-6 col-md-6">
+	    <div class="input-group">
+	    <input type="text"
+		   class="form-control"
+		   name="address"
+		   required
+		   placeholder="请输入厂商地址"
+		   x-ng-model="params.firm.address"
+		   x-ng-minlength="2"
+		   x-ng-maxlength="20" />
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	  </div>
+	  <div ng-show="firmForm.address.$error.minlength
+			|| firmForm.address.$error.maxlength">
+	    <span style="color:red">名称太短，请输入2-20个字符</span>
+	  </div>
+	</div>
 	
-<!--       </div>  -->
-<!--     </form> -->
-<!--   </div> -->
+      </div>
+    </form>
+  </div>
 
-<!--   <\!--BEGIN modal-footer-\-> -->
-<!--   <div class="modal-footer"> -->
-<!--     <button class="btn btn-primary" -->
-<!-- 	    x-ng-disabled="firmForm.$invalid" -->
-<!-- 	    x-ng-click="ok()">确认</button> -->
-<!--     <button class="btn btn-warning" x-ng-click="cancel()">取消</button> -->
-<!--   </div> -->
+  <!--BEGIN modal-footer-->
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="firmForm.$invalid"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
   
-<!--   <\!--END modal-footer-\-> -->
-<!-- </script> -->
+  <!--END modal-footer-->
+</script>
 
 
 

@@ -124,14 +124,14 @@ purchaser_inventory(amount, Merchant, Shop, StyleNumber, Brand) ->
 match(style_number, Merchant, PromptNumber) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {match_style_number, Merchant, PromptNumber}).
-match(style_number_with_brand, Merchant, PromptNumber, Brand) ->
+match(style_number_with_firm, Merchant, PromptNumber, Firm) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {match_style_number_with_brand,
-			   Merchant, PromptNumber, Brand});
-match(all_style_number_with_brand, Merchant, StartTime, Brand) ->
+    gen_server:call(Name, {match_style_number_with_firm,
+			   Merchant, PromptNumber, Firm});
+match(all_style_number_with_firm, Merchant, StartTime, Firm) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {match_all_style_number_with_brand,
-			   Merchant, StartTime, Brand}).
+    gen_server:call(Name, {match_all_style_number_with_firm,
+			   Merchant, StartTime, Firm}).
 
 
 %% match inventory 
@@ -656,28 +656,29 @@ handle_call({match_style_number, Merchant, PromptNumber}, _Form, State) ->
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({match_style_number_with_brand, Merchant, PromptNumber, Brand},
+handle_call({match_style_number_with_firm, Merchant, PromptNumber, Firm},
 	    _Form, State) ->
-    ?DEBUG("match_style_number_with_brand with merchant ~p, promptNumber ~p"
-	   ", brand ~p", [Merchant, PromptNumber, Brand]),
+    ?DEBUG("match_style_number_with_firm with merchant ~p, promptNumber ~p"
+	   ", firm ~p", [Merchant, PromptNumber, Firm]),
     Sql = ?w_good_sql:good_match(
-	     style_number_with_brand, Merchant, PromptNumber, Brand),
+	     style_number_with_firm, Merchant, PromptNumber, Firm),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({match_all_style_number_with_brand, Merchant, StartTime, Brand},
+handle_call({match_all_style_number_with_firm, Merchant, StartTime, Firm},
 	    _Form, State) ->
-    ?DEBUG("match_all_style_number_with_brand with merchant ~p, start time ~p"
-	   ",brand ~p", [Merchant, StartTime, Brand]),
+    ?DEBUG("match_all_style_number_with_firm with merchant ~p, start time ~p"
+	   ",brand ~p", [Merchant, StartTime, Firm]),
     Sql = ?w_good_sql:good_match(
-	     all_style_number_with_brand, Merchant, StartTime, Brand),
+	     all_style_number_with_firm, Merchant, StartTime, Firm),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
 %% inventory match
-handle_call({match_inventory, QType, Merchant, StyleNumber, Shop}, _Form, State) ->
-    ?DEBUG("match_inventory with qtype ~p, merchant ~p, styleNumber ~p, shop ~p",
-	   [QType, Merchant, StyleNumber, Shop]),
+handle_call({match_inventory, QType, Merchant, StyleNumber, Shop},
+	    _Form, State) ->
+    ?DEBUG("match_inventory with qtype ~p, merchant ~p, styleNumber ~p"
+	   ", shop ~p", [QType, Merchant, StyleNumber, Shop]),
     RealyShop = case QType of
 		    1 -> Shop;
 		    _ -> realy_shop(Merchant, Shop)
@@ -732,7 +733,6 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
     
     Shop       = ?v(<<"shop">>, Props),
     Firm       = ?v(<<"firm">>, Props),
-    Brand      = ?v(<<"brand">>, Props),
     Employee   = ?v(<<"employee">>, Props),
     Cash       = ?v(<<"cash">>, Props, 0),
     Card       = ?v(<<"card">>, Props, 0),
@@ -768,13 +768,12 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
 	    CurrentBalance = ?v(<<"balance">>, Account),
 	    
 	    Sql2 = "insert into w_inventory_new(rsn"
-		", employ, brand, firm, shop, merchant, balance"
+		", employ, firm, shop, merchant, balance"
 		", should_pay, has_pay, cash, card, wire"
 		", verificate, total, comment"
 		", e_pay_type, e_pay, type, entry_date) values("
 		++ "\"" ++ ?to_s(RSn) ++ "\","
 		++ "\"" ++ ?to_s(Employee) ++ "\","
-		++ ?to_s(Brand) ++ ","
 		++ ?to_s(Firm) ++ ","
 		++ ?to_s(Shop) ++ ","
 		++ ?to_s(Merchant) ++ ","
@@ -825,7 +824,6 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
     RSN        = ?v(<<"rsn">>, Props),
     Shop       = ?v(<<"shop">>, Props),
     Datetime   = ?v(<<"datetime">>, Props),
-    Brand      = ?v(<<"brand">>, Props),
     Firm       = ?v(<<"firm">>, Props),
     Employee   = ?v(<<"employee">>, Props),
 
@@ -858,7 +856,6 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 	      Datetime, OldDatatime, CurTime, Inventories), 
 
     Updates =?utils:v(employ, string, Employee)
-	++ ?utils:v(brand, integer, Brand) 
 	++ ?utils:v(firm, integer, Firm) 
 	++ ?utils:v(shop, integer, Shop)
     %% ++ ?utils:v(balance, float, OldBalance)
@@ -875,7 +872,7 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 	       false ->
 		   ?utils:v(entry_date, string, Datetime)
 	   end,
-
+    
     case Firm =:= OldFirm of
 	true ->
 	    Sql2 = "update w_inventory_new set "
@@ -1187,11 +1184,13 @@ handle_call({total_news, Merchant, Fields}, _From, State) ->
     {reply, Reply, State}; 
 
 handle_call({filter_news, Merchant, CurrentPage, ItemsPerPage, Fields}, _From, State) ->
-    ?DEBUG("filter_new_with_and: currentPage ~p, ItemsPerpage ~p, Merchant ~p~n"
-	   "fields ~p", [CurrentPage, ItemsPerPage, Merchant, Fields]),
+    ?DEBUG("filter_new_with_and: currentPage ~p, ItemsPerpage ~p"
+	   ", Merchant ~p~nfields ~p",
+	   [CurrentPage, ItemsPerPage, Merchant, Fields]),
     {_, C} = ?w_good_sql:filter_condition(inventory_new, Fields, [], []),
     Sql = ?w_good_sql:inventory(
-	     new_detail_with_pagination, Merchant, C, CurrentPage, ItemsPerPage), 
+	     new_detail_with_pagination,
+	     Merchant, C, CurrentPage, ItemsPerPage), 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State}; 
 

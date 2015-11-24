@@ -12,7 +12,9 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
     $scope.size_groups = filterSizeGroup;
     $scope.sexs        = diablo_sex;
     $scope.seasons     = diablo_season;
-    $scope.e_pay_types = purchaserService.extra_pay_types; 
+    $scope.e_pay_types = purchaserService.extra_pay_types;
+
+    console.log($scope.firms);
 
     $scope.has_saved   = false;
 
@@ -81,10 +83,9 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	$scope.select.left_balance = $scope.round($scope.select.left_balance); 
     };
     
-    $scope.change_brand = function(){
+    $scope.change_firm = function(){
 	// console.log($scope.select.brand);
-	$scope.select.firm
-	    = diablo_get_object($scope.select.brand.firm_id, $scope.firms);
+	// $scope.select.firm = $scope.select.firm.id
 	$scope.select.surplus = parseFloat($scope.select.firm.balance);
 	$scope.re_calculate();
 	// $scope.refresh();
@@ -131,7 +132,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	promise(purchaserService.get_w_invnetory_new, rsn)(),
 	promise(purchaserService.get_w_invnetory_new_amount, {rsn:rsn})()
     ]).then(function(result){
-	console.log(result);
+	// console.log(result);
 	// result[0] is the record detail
 	// result[1] are the inventory detail that the record is included
 	var base = result[0];
@@ -140,8 +141,8 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	$scope.old_select.rsn     = rsn;
 	$scope.old_select.rsn_id  = base.id;
 	
-	$scope.old_select.brand =
-	    $scope.get_object(base.brand_id, $scope.brands);
+	// $scope.old_select.brand =
+	//     $scope.get_object(base.brand_id, $scope.brands);
 	$scope.old_select.firm  =
 	    $scope.get_object(base.firm_id, $scope.firms);
 	
@@ -189,11 +190,17 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 		    $edit:true, $new:false, sizes:[], colors:[], amounts:[]};
 		
 		add.style_number    = invs[i].style_number;
-		add.brand = $scope.get_object(invs[i].brand_id, $scope.brands);
-		add.type  = $scope.get_object(invs[i].type_id, $scope.types);
+		add.brand_id        = invs[i].brand_id;
+		add.brand           =
+		    $scope.get_object(invs[i].brand_id, $scope.brands);
+		add.type            =
+		    $scope.get_object(invs[i].type_id, $scope.types);
 		add.sex             = invs[i].sex,
 		add.free            = invs[i].free,
 		add.season          = invs[i].season;
+		add.firm_id         = invs[i].firm_id;
+		add.year            = invs[i].year;
+		
 		add.s_group         = invs[i].s_group;
 		add.free_color_size = invs[i].free === 0 ? true : false;
 		add.org_price       = invs[i].org_price;
@@ -299,8 +306,8 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 
     
     $scope.match_prompt_good = function(viewValue){
-	return diabloFilter.match_wgood_with_brand(
-	    viewValue, $scope.select.brand.id); 
+	return diabloFilter.match_wgood_with_firm(
+	    viewValue, $scope.select.firm.id); 
     }; 
     
     $scope.on_select_good = function(item, model, label){
@@ -318,6 +325,16 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 			$scope.inventories[0] = {$edit:false, $new:true}});
 		return;
 	    }
+
+	    if (item.firm_id !== $scope.inventories[i].firm_id){
+		diabloUtilsService.response_with_callback(
+		    false,
+		    "退货单修改",
+		    "退货单修改失败：" + purchaserService.error[2093],
+		    $scope, function(){
+			$scope.inventories[0] = {$edit:false, $new:true}});
+		return;
+	    }
 	}
 
 	// add at first allways 
@@ -325,13 +342,11 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	add.id           = item.id;
 	add.style_number = item.style_number;
 	add.brand        = $scope.get_object(item.brand_id, $scope.brands);
-	// add.brand_id     = item.brand_id;
 	add.type         = $scope.get_object(item.type_id, $scope.types);
-	// add.type_id      = item.type_id;
 	add.sex          = item.sex;
-	// add.firm_id      = item.firm_id;
 	add.year         = item.year;
 	add.season       = item.season;
+	add.firm_id      = item.firm_id;
 	add.org_price    = item.org_price;
 	add.tag_price    = item.tag_price;
 	add.ediscount    = item.ediscount;
@@ -436,8 +451,10 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 		    } else {
 			// console.log(newInv);
 			// console.log(oldInv);
-			if (parseFloat(newInv.org_price) !== oldInv.org_price
-			    || parseFloat(newInv.ediscount) !== oldInv.ediscount){
+			if (parseFloat(newInv.org_price)
+			    !== oldInv.org_price
+			    || parseFloat(newInv.ediscount)
+			    !== oldInv.ediscount){
 			    newInv.operation = 'u';
 			    changedInvs.push(newInv);
 			}
@@ -484,14 +501,17 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	$scope.has_saved = true; 
 	console.log($scope.inventories);
 
-	if (angular.isUndefined($scope.select.shop)
+	if (angular.isUndefined($scope.select.firm)
+	    || diablo_is_empty($scope.select.firm)
+	    || angular.isUndefined($scope.select.shop)
 	    || diablo_is_empty($scope.select.shop)
 	    || angular.isUndefined($scope.select.employee)
 	    || diablo_is_empty($scope.select.employee)){
-	    diabloUtilsService.response(
+	    diabloUtilsService.response_with_callback(
 		false,
 		"采购单修改",
-		"采购单修改失败：" + purchaserService.error[2096]);
+		"采购单修改失败：" + purchaserService.error[2096],
+		undefined, function(){$scope.has_saved = false });
 	    return;
 	};
 
@@ -537,21 +557,22 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 		&& $scope.select.card === $scope.old_select.card
 		&& $scope.select.wire === $scope.old_select.wire
 		&& $scope.select.verificate === $scope.old_select.verificate
+		&& $scope.select.firm.id === $scope.old_select.firm.id
 		&& $scope.select.employee.id === $scope.old_select.employee.id
 		&& $scope.select.shop.id === $scope.old_select.shop.id
 		&& $scope.select.comment === $scope.old_select.comment
 		&& new_datetime === old_datetime)){
-	    diabloUtilsService.response(
+	    diabloUtilsService.response_with_callback(
 	    	false,
 		"采购单编辑",
-		"采购单编辑失败：" + purchaserService.error[2094]);
+		"采购单编辑失败：" + purchaserService.error[2094],
+		undefined, function(){$scope.has_saved = false});
 	    return;
 	}
 
 	var base = {
 	    id:             $scope.select.rsn_id,
 	    rsn:            $scope.select.rsn,
-	    brand:          $scope.select.brand.id,
 	    firm:           $scope.select.firm.id,
 	    shop:           $scope.select.shop.id,
 	    datetime:       dateFilter(
@@ -813,7 +834,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	inv.update_directory = false;
 	inv.org_price        = inv.o_org_price;
 	inv.ediscount        = inv.o_ediscount;
-	inv.amount[0].count  = inv.total; 
+	inv.amounts[0].count  = inv.total; 
     };
 
     $scope.reset_inventory = function(inv){

@@ -10,12 +10,14 @@ function filterProvider(){
     var _prompt = {};
 
     // cache
-    var _retailers = [];
-    var _firms     = [];
-    var _brands    = [];
-    var _types     = [];
-    var _colors    = [];
-    var _employees = [];
+    var _retailers   = [];
+    var _firms       = [];
+    var _brands      = [];
+    var _types       = [];
+    var _colors      = [];
+    var _color_types = [];
+    var _employees   = [];
+    var _size_groups = [];
     
     
     this.$get = function($resource, dateFilter, wgoodService){
@@ -27,7 +29,8 @@ function filterProvider(){
 	    default_time: function(start){
 		var now = $.now();
 		if (angular.isUndefined(start)){
-		    return {start_time: now - diablo_day_millisecond * 30, end_time: now}; 
+		    return {start_time: now - diablo_day_millisecond * 30,
+			    end_time: now}; 
 		} else{
 		    return {start_time: start, end_time: now}; 
 		}
@@ -116,8 +119,10 @@ function filterProvider(){
 		});
 
 		
-		search.start_time = diablo_filter_time(time.start_time, 0, dateFilter); 
-		search.end_time   = diablo_filter_time(time.end_time, 1, dateFilter);
+		search.start_time =
+		    diablo_filter_time(time.start_time, 0, dateFilter); 
+		search.end_time   =
+		    diablo_filter_time(time.end_time, 1, dateFilter);
 		console.log(search);
 
 		callback(search);
@@ -134,9 +139,9 @@ function filterProvider(){
 		})
 	    },
 
-	    match_wgood_with_brand: function(viewValue, brand){
-		return wgoodService.match_purchaser_good_with_brand(
-		    viewValue, brand
+	    match_wgood_with_firm: function(viewValue, firm){
+		return wgoodService.match_purchaser_good_with_firm(
+		    viewValue, firm
 		).then(function(goods){
 		    // console.log(goods); 
 		    return goods.map(function(g){
@@ -147,9 +152,9 @@ function filterProvider(){
 		})
 	    },
 
-	    match_all_w_good: function(start_time, brand){
+	    match_all_w_good: function(start_time, firm){
 		return wgoodService.match_all_purchaser_good(
-		    start_time, brand);
+		    start_time, firm);
 	    },
 
 	    match_w_query_inventory:function(viewValue, Shop){
@@ -265,7 +270,7 @@ function filterProvider(){
 	    },
 	    
 	    get_brand: function(){
-		if (_brands.length != 0 ){
+		if (_brands.length !== 0 ){
 		    // console.log("cache brands");
 		    return _brands;
 		} else {
@@ -331,18 +336,27 @@ function filterProvider(){
 	    },
 
 	    get_color_type: function(){
-		return wgoodService.list_color_type().then(function(types){
-		   return types;
-		}); 
+		if (_color_types.length !== 0){
+		    return _color_types;
+		} else {
+		    return wgoodService.list_color_type().then(function(types){
+			return types;
+		    }); 
+		} 
 	    },
 
 	    get_size_group: function(){
-		return wgoodService.list_purchaser_size().then(function(sizes){
-		    // console.log(sizes);
-		    return sizes.map(function(s){
-			return diablo_obj_strip(s);
-		    })
-		});
+		if (_size_groups.length !== 0){
+		    return _size_groups;
+		} else {
+		    return wgoodService.list_purchaser_size().then(
+			function(sizes){
+			    // console.log(sizes);
+			    return sizes.map(function(s){
+				return diablo_obj_strip(s);
+			    })
+			});
+		}
 	    },
 
 	    get_employee: function(){

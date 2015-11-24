@@ -14,6 +14,9 @@ angular.module("diabloPattern", []).service("diabloPattern", [function(){
 
     this.decimal_2 = /^[+|\-]?\d+(.\d{1,2})?$/;
 
+    // 
+    this.discount = /^\d{2}$|100$/;
+
     this.integer_except_zero = /^[+|\-]?[1-9][0-9]*$/
 
     // character or number

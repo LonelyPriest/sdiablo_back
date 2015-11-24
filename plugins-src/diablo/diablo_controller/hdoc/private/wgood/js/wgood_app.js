@@ -87,7 +87,8 @@ wgoodApp.service("wgoodService", function($resource, $http, dateFilter){
     };
 
     this.get_colors = function(colors){
-	return http.query_by_post({operation: 'get_colors'}, {color: colors}).$promise;
+	return http.query_by_post(
+	    {operation: 'get_colors'}, {color: colors}).$promise;
     };
 
     this.add_purchaser_color = function(color){
@@ -159,16 +160,16 @@ wgoodApp.service("wgoodService", function($resource, $http, dateFilter){
 	    {prompt_value: viewValue}).$promise;
     };
 
-    this.match_purchaser_good_with_brand = function(viewValue, brand){
+    this.match_purchaser_good_with_firm = function(viewValue, firm){
 	return http.query_by_post(
 	    {operation: "match_w_good"},
-	    {prompt_value: viewValue, brand: brand}).$promise;
+	    {prompt_value: viewValue, firm: firm}).$promise;
     };
 
-    this.match_all_purchaser_good = function(start_time, brand){
+    this.match_all_purchaser_good = function(start_time, firm){
 	return http.query_by_post(
 	    {operation: "match_all_w_good"},
-	    {start_time: start_time, brand: brand}).$promise;
+	    {start_time: start_time, firm: firm}).$promise;
     };
 
     this.add_purchaser_good = function(good, image){

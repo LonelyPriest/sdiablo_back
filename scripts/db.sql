@@ -44,7 +44,7 @@ create table employees
     merchant        INTEGER, -- which merchant belong to
     deleted         INTEGER default 0, -- 0: no;  1: yes
     unique  key     index_mn (merchant, name),
-    key             index_m  (merchant),
+    -- key             index_m  (merchant),
     primary key     (id)
 ) default charset=utf8;
 
@@ -59,7 +59,7 @@ create table merchants
     province         TINYINT default -1, -- which province
     entry_date       DATE,
     deleted          INTEGER default 0, -- 0: no;  1: yes
-    unique  key index_name (name),
+    unique  key      name (name),
     primary key      (id)
 ) default charset=utf8;
 
@@ -75,8 +75,8 @@ create table shops
     shopowner          INTEGER default -1, -- Leader of the shop, choice from employ, default is no owner
     merchant           INTEGER default -1, -- which merchant belong to
     deleted            INTEGER default 0, -- 0: no;  1: yes
-    unique key index_nm (name, merchant),
-    key        index_s  (merchant),
+    unique key index_mn (merchant, name),
+    -- key        index_s  (merchant),
     primary key        (id)
 ) default charset=utf8;
 
@@ -91,8 +91,8 @@ create table suppliers
     change_date     DATETIME,
     entry_date      DATETIME,
     deleted         INTEGER default 0, -- 0: no;  1: yes
-    unique key      index_nm (name, merchant),
-    key             index_m (merchant),
+    unique key      index_mn (merchant, name),
+    -- key             index_m (merchant),
     primary key     (id)
 ) default charset=utf8;
 
@@ -107,8 +107,8 @@ create table size_group(
    svi              VARCHAR(8),
    merchant         INTEGER,
    deleted          INTEGER default 0, -- 0: no;  1: yes
-   unique key       index_nm (name, merchant),
-   key              index_m (merchant),
+   unique key       index_nm (merchant, name),
+   -- key              index_m (merchant),
    primary key      (id)
 )default charset=utf8;
 
@@ -120,8 +120,8 @@ create table colors
     remark           VARCHAR(255),
     merchant         INTEGER default null,
     deleted          INTEGER default 0, -- 0: no;  1: yes
-    unique key       index_nm (name, merchant),
-    key              index_m  (merchant),
+    unique key       index_mn (merchant, name),
+    -- key              index_m  (merchant),
     primary key      (id)
 ) default charset=utf8;
 
@@ -131,7 +131,7 @@ create table color_type(
     id               INTEGER AUTO_INCREMENT,
     name             VARCHAR(8),
     deleted          INTEGER default 0, -- 0: no;  1: yes
-    unique key index_n (name),
+    unique key name (name),
     primary key      (id)
 )default charset=utf8;
 
@@ -144,8 +144,8 @@ create table brands(
     deleted          INTEGER default 0, -- 0: no;  1: yes
     entry            DATETIME NOT NULL DEFAULT 0,
     
-    unique  key      index_nm (name, merchant),
-    key              index_m (supplier),
+    unique  key      index_nm (merchant, name, supplier),
+    -- key              index_m (supplier),
     primary key      (id)
 )default charset=utf8;
 
@@ -156,8 +156,8 @@ create table inv_types(
     merchant         INTEGER, -- type belong to
     deleted          INTEGER default 0, -- 0: no;  1: yes
 
-    unique  key     index_nm (name, merchant),
-    key             index_m (merchant),
+    unique  key     index_nm (merchant, name),
+    -- key             index_m (merchant),
     primary key      (id)
 )default charset=utf8;
 
@@ -176,6 +176,7 @@ create table users
     create_date    DATETIME,
     deleted        INTEGER default 0,  -- 0: no;  1: yes
     unique  key    index_name (name),
+    key            merchant (merchant),
     primary key    (id)
 ) default charset=utf8;
 
@@ -195,7 +196,7 @@ create table role_to_shop(
     func_id        INTEGER not null,   -- right id of this shop
     merchant       INTEGER default -1,
     deleted        INTEGER default 0,  -- 0: no;  1: yes
-    unique  key index_rscm (role_id, shop_id, func_id, merchant),
+    unique  key    index_mrsf (merchant, role_id, shop_id, func_id),
     primary key    (id)
 )default charset=utf8; 
 
@@ -208,7 +209,7 @@ create table roles(
     created_by     INTEGER default -1, -- who create this role
     create_date    DATETIME,
     deleted        INTEGER default 0,  -- 0: no;  1: yes
-    unique  key index_nm (name, merchant),
+    unique  key index_mn (merchant, name),
     primary key    (id)
 )default charset=utf8;
 
@@ -218,7 +219,7 @@ create table role_to_right(
     right_id       INTEGER not null,
     merchant       INTEGER default -1,
     deleted        INTEGER default 0,  -- 0: no;  1: yes
-    unique  key index_rrm (role_id, right_id, merchant),
+    unique  key index_mrr (merchant, role_id, right_id),
     primary key    (id)
 )default charset=utf8;
 
@@ -255,16 +256,18 @@ create table w_print_server(
    path            VARCHAR(256) not null,
    entry_date      DATE, 
    deleted         INTEGER default 0, -- 0: no;  1: yes
+   -- unique  key     (path),
    primary key     (id)
 )default charset=utf8;
 
 create table w_printer(
    id              INTEGER AUTO_INCREMENT,
-   brand           VARCHAR(256) not null,
+   brand           VARCHAR(64) not null,
    model           VARCHAR(32) not null,
    -- col_width       INTEGER not null,
-   entry_date      DATE not null, 
+   entry_date      DATETIME not null default 0, 
    deleted         INTEGER default 0, -- 0: no;  1: yes
+   unique  key     (brand, model),
    primary key     (id)
 )default charset=utf8;
 
@@ -282,6 +285,7 @@ create table w_printer_conn(
    merchant        INTEGER, 
    entry_date      DATE, 
    deleted         INTEGER default 0, -- 0: no;  1: yes
+   unique key      (sn, code),
    primary key     (id)
 )default charset=utf8;
 
@@ -309,9 +313,10 @@ create table w_base_setting(
    type            TINYINT not null, -- 0: print 1: table
    remark          VARCHAR(255) default null,
    shop            INTEGER default -1,
-   merchant        INTEGER not null,
-   entry_date      DATE, 
+   merchant        INTEGER default -1,
+   entry_date      DATETIME default 0, 
    deleted         INTEGER default 0, -- 0: no;  1: yes
+   unique key      index_me (merchant, shop, ename),
    primary key     (id)
 )default charset=utf8;
 
@@ -320,11 +325,12 @@ create table w_print_format(
    id              INTEGER AUTO_INCREMENT,
    name            VARCHAR(16) not null,
    print           TINYINT default 1,  -- 1: yes, print 0; no
-   width           TINYINT not null,
+   width           TINYINT default -1,
    shop            INTEGER default -1, 
-   merchant        INTEGER not null,
-   entry_date      DATE default null,
+   merchant        INTEGER default -1,
+   entry_date      DATETIME default 0,
    deleted         INTEGER default 0, -- 0: no;  1: yes
+   unique key      index_msn (merchant, shop, name),
    primary key     (id)
 )default charset=utf8;
 
@@ -340,12 +346,12 @@ create table w_retailer
     mobile          VARCHAR(11),
     address         VARCHAR(256), 
     merchant        INTEGER default -1, -- which merchant belong to
-    change_date     DATETIME, -- last changed
-    entry_date      DATETIME, -- last changed
+    change_date     DATETIME default 0, -- last changed
+    entry_date      DATETIME default 0, -- last changed
     deleted         INTEGER default 0, -- 0: no;  1: yes
     
-    unique  key  index_nm (name, merchant),
-    key          index_m  (merchant),
+    unique  key  index_nm (merchant, name),
+    -- key          index_m  (merchant),
     primary key     (id)
 ) default charset=utf8;
 
@@ -357,16 +363,19 @@ create table w_inventory_good
 (
     id               INTEGER AUTO_INCREMENT,
     style_number     VARCHAR(64) not null,
-    sex              TINYINT default -1, -- 0: man, 1:woman
-    color            VARCHAR (255), -- all of the color seperate by comma "1, 2, 3..."
-    season           TINYINT default -1, -- 0:spring, 1:summer, 2:autumn, 3:winter
-    year             YEAR(4) not null default 0,
-    type             INTEGER default -1, -- reference to inv_type 
-    size             VARCHAR(255), -- all of the size seperate by comma "S/26, M/27...."
-    s_group          VARCHAR(32) default 0,  -- which size group "1, 2"
-    free             TINYINT default 0,  -- 0: free color and free size 1: others	 
     brand            INTEGER default -1,
     firm             INTEGER default -1,
+
+    color            VARCHAR (255), -- all of the color seperate by comma "1, 2, 3..."
+    size             VARCHAR(255), -- all of the size seperate by comma "S/26, M/27...."
+    type             INTEGER default -1, -- reference to inv_type 
+    sex              TINYINT default -1, -- 0: man, 1:woman 
+    season           TINYINT default -1, -- 0:spring, 1:summer, 2:autumn, 3:winter
+    year             YEAR(4) not null default 0,
+       
+    s_group          VARCHAR(32) default 0,  -- which size group "1, 2"
+    free             TINYINT default 0,  -- 0: free color and free size 1: others	 
+    
     org_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
     tag_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
     ediscount        DECIMAL(3, 0), -- max: 100, discount of entry
@@ -374,11 +383,12 @@ create table w_inventory_good
     path             VARCHAR(255) default null, -- the image path
     alarm_day        TINYINT default -1,  -- the days of alarm
     merchant         INTEGER default -1,
-    change_date      DATETIME, -- date of last change 
-    entry_date       DATETIME,
+    
+    change_date      DATETIME default 0, -- date of last change 
+    entry_date       DATETIME default 0,
     deleted          INTEGER default 0, -- 0: no;  1: yes
 
-    UNIQUE key       index_sbsm (merchant, brand, style_number),
+    unique key       uk (merchant, style_number, brand),
     key              firm  (firm),
     
     primary key      (id)
@@ -390,16 +400,16 @@ create table w_inventory
     rsn              VARCHAR(32) default null, -- record sn    
     style_number     VARCHAR(64) not null,
     brand            INTEGER default -1,
+    firm             INTEGER default -1,
 
     type             INTEGER default -1, -- reference to inv_type
     sex              TINYINT default -1, -- 0: man, 1:woman
     season           TINYINT default -1, -- 0:spring, 1:summer, 2:autumn, 3:winter
-    amount           INTEGER default 0,
-    firm             INTEGER default -1,
-    s_group          VARCHAR(32) default 0,  -- which size group
-    free             TINYINT default 0,  -- free color and free size 
     year             YEAR(4),
 
+    amount           INTEGER default 0,
+    s_group          VARCHAR(32) default 0,  -- which size group
+    free             TINYINT default 0,  -- free color and free size 
     
     org_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
     tag_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
@@ -422,8 +432,8 @@ create table w_inventory
     
     deleted          INTEGER default 0, -- 0: no;  1: yes
     
-    UNIQUE key       index_sbsm (style_number, brand, shop, merchant),
-    key              index_sm (shop, merchant),
+    unique key       uk (merchant, shop, style_number, brand),
+    key              dk (merchant, firm),
     primary key      (id)
 )default charset=utf8;
 
@@ -437,10 +447,10 @@ create table w_inventory_amount(
     shop           INTEGER default -1,
     merchant       INTEGER default -1,
     total          INTEGER default 0,
-    entry_date     DATETIME,
+    entry_date     DATETIME not null default 0,
     deleted        INTEGER default 0, -- 0: no;  1: yes
-    UNIQUE key     index_sbss (style_number, brand, color, size, shop, merchant),
-    key            index_sbsm (style_number, brand, shop, merchant),
+    unique key     uk (merchant, shop, style_number, brand, color, size),
+    -- key            index_sbsm (style_number, brand, shop, merchant),
     primary key    (id)
 )default charset=utf8;
 
@@ -448,7 +458,6 @@ create table w_inventory_new(
     id             INTEGER AUTO_INCREMENT,
     rsn            VARCHAR(32) not null, -- record sn
     employ         VARCHAR(8) not null,     -- employ
-    brand          INTEGER default -1,
     firm           INTEGER default -1, 
     shop           INTEGER default -1,  -- which shop saled the goods
     merchant       INTEGER default -1,
@@ -469,11 +478,11 @@ create table w_inventory_new(
     type           TINYINT default -1,  -- 0: new inventory 1: reject inventory
     
     state          TINYINT  default 0,  -- 0: wait for check, 1: checked
-    check_date     DATETIME default null, -- date of last change 
+    check_date     DATETIME default 0, -- date of last change 
     entry_date     DATETIME default 0,
     deleted        INTEGER  default 0, -- 0: no;  1: yes
-    unique  key    rsn (rsn),
-    key     index_smef (shop, merchant, employ, firm),
+    unique  key uk (rsn),
+    key     dk (merchant, shop, firm, employ),
     primary key    (id)
 )default charset=utf8;
 
@@ -490,22 +499,22 @@ create table w_inventory_new_detail(
     firm           INTEGER default -1, 
     s_group        VARCHAR(32) default 0,  -- which size group 
     free           TINYINT default 0,  -- free color and free size
-    year           YEAR(4),
+    year          YEAR(4),
     
     org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
     tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
-    
     ediscount      DECIMAL(3, 0)  default 100, -- max: 100
     discount       DECIMAL(3, 0)  default 100, -- max: 100
     amount         INTEGER default 0,
     
     path           VARCHAR(255) default null, -- the image path
+    merchant       INTEGER default -1,
 
-    entry_date     DATETIME,
+    entry_date     DATETIME default 0,
     deleted        INTEGER default 0, -- 0: no;  1: yes
     
-    unique  key  index_rsb (rsn, style_number, brand),
-    key     index_sb (style_number, brand),
+    unique  key uk (rsn, style_number, brand),
+    key     dk (merchant, style_number, brand, type, firm, year),
     primary key    (id)
 )default charset=utf8;
 
@@ -519,9 +528,11 @@ create table w_inventory_new_detail_amount(
     size           VARCHAR(8) default null, -- S/26, M/27....
     
     total          INTEGER default 0,
-    entry_date     DATETIME,
+    merchant       INTEGER default -1,
+    entry_date     DATETIME default 0,
     deleted        INTEGER default 0, -- 0: no;  1: yes
-    unique  key    index_rsbcz (rsn, style_number, brand, color, size),
+    unique  key uk (merchant, rsn, style_number, brand, color, size),
+    -- key     index_msbc (merchant, style_number, brand, color, size),
     primary key    (id)
 )default charset=utf8;
 
@@ -537,10 +548,11 @@ create table w_inventory_fix(
     metric         INTEGER default 0,
     
     merchant       INTEGER, 
-    entry_date     DATETIME,
+    entry_date     DATETIME default 0,
     deleted        INTEGER default 0, -- 0: no;  1: yes
 
-    unique  key  index_rsn (rsn),
+    unique  key uk (rsn),
+    key     dk (merchant, shop, employ),
     primary key    (id)
 )default charset=utf8;
 
@@ -562,31 +574,33 @@ create table w_inventory_fix_detail(
     exist          INTEGER not null,
     fixed          INTEGER default 0,
     metric         INTEGER default 0,
+
+    merchant       INTEGER default -1,
     
-    entry_date     DATETIME,
+    entry_date     DATETIME default 0,
     deleted        INTEGER default 0, -- 0: no;  1: yes
 
-    unique  key  index_rsb (rsn, style_number, brand),
+    unique  key uk (rsn, style_number, brand),
+    key dk (merchant, style_number, brand, type, firm),
     primary key    (id)
 )default charset=utf8;
 
 create table w_inventory_fix_detail_amount(
     id             INTEGER AUTO_INCREMENT,
     rsn            VARCHAR(32) not null, -- record sn
-    
+    merchant       INTEGER default -1,
     style_number   VARCHAR(64) not null,
     brand          INTEGER default -1,
     color          INTEGER default -1,
-    size           VARCHAR(8) default null, -- S/26, M/27....
+    size           VARCHAR(8) default 0, -- S/26, M/27....
     
     exist          INTEGER,
     fixed          INTEGER default 0,
     metric         INTEGER default 0,
     
-    entry_date     DATETIME,
+    entry_date     DATETIME default 0,
     deleted        INTEGER default 0, -- 0: no;  1: yes
-
-    unique  key    index_rsbcz (rsn, style_number, brand, color, size),
+    unique  key uk (merchant, rsn, style_number, brand, color, size),
     primary key    (id)
 )default charset=utf8;
 
@@ -608,19 +622,17 @@ create table w_sale(
     cash           DECIMAL(10, 2) default 0, -- max: 99999999.99
     card           DECIMAL(10, 2) default 0, -- max: 99999999.99 
     total          INTEGER default 0,
-    comment        VARCHAR(255) default null,
-
-    -- e_pay_type     TINYINT  default -1,
-    -- e_pay          DECIMAL(10, 2) default 0, -- max: 99999999.99
+    comment        VARCHAR(255) default null, 
     
     type           TINYINT  default -1, -- 0:sale 1:reject 
     state          TINYINT  default 0,  -- 0: wait for check, 1: checked
-    check_date     DATETIME default 0, -- date of last change
+    check_date     DATETIME default 0,  -- date of last change
     entry_date     DATETIME default 0,
     deleted        INTEGER default 0, -- 0: no;  1: yes
-    unique  key rsn     (rsn),
-    key     index_smer  (shop, merchant, employ, retailer),
-    primary key         (id)
+    
+    unique  key uk (rsn),
+    key     dk     (merchant, shop, employ, retailer),
+    primary key    (id)
     
 )default charset=utf8;
 
@@ -632,6 +644,7 @@ create table w_sale_detail(
     rsn            VARCHAR(32) not null, -- record sn
     style_number   VARCHAR(64) not null,
     brand          INTEGER not null default -1,
+    merchant       INTEGER not null default -1,
     
     type           INTEGER default -1, -- reference to inv_type 
     s_group        VARCHAR(32) default 0,  -- which size group
@@ -649,11 +662,11 @@ create table w_sale_detail(
     path           VARCHAR(255) default null, -- the image path
     comment        VARCHAR(127) default null,
     -- type           TINYINT default -1, -- 0:sale 1:reject 
-    entry_date     DATETIME,
+    entry_date     DATETIME default 0,
     deleted        INTEGER default 0, -- 0: no;  1: yes
 
-    unique  key  index_rsb (rsn, style_number, brand),
-    key          index_sb  (style_number, brand),
+    unique  key uk (rsn),
+    key     dk     (merchant, style_number, brand, type, firm, year),
     primary key    (id)
 )default charset=utf8;
 
@@ -665,9 +678,10 @@ create table w_sale_detail_amount(
     color          INTEGER default -1,
     size           VARCHAR(8) default null, -- S/26, M/27....
     total          INTEGER default 0,
-    entry_date     DATETIME,
+    entry_date     DATETIME default 0,
+    merchant       INTEGER default -1,
     deleted        INTEGER default 0, -- 0: no;  1: yes
 
-    unique  key    index_rsbcz (rsn, style_number, brand, color, size),
+    unique  key  uk (merchant, rsn, style_number, brand, color, size),
     primary key    (id)
 )default charset=utf8;

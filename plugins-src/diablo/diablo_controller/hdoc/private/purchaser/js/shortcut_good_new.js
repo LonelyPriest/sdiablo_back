@@ -1,7 +1,25 @@
-wgoodApp.controller("wgoodNewCtrl", function(
-    $scope, $timeout, diabloPattern, diabloUtilsService, diabloFilter,
-    wgoodService, filterFirm, filterBrand, filterType, filterSizeGroup){
-    
+purchaserApp.controller("shortcutGoodNewCtrl", shortCutGoodNewCtrl);
+
+shortCutGoodNewCtrl.$inject = [
+    '$scope',
+    '$timeout',
+    'diabloPattern',
+    'diabloUtilsService',
+    'diabloFilter',
+    'wgoodService',
+    'shortCutGoodService'];
+
+function shortCutGoodNewCtrl(
+    $scope, $timeout, diabloPattern, diabloUtilsService,
+    diabloFilter, wgoodService, shortCutGoodService){
+    // console.log($scope);
+    $scope.firms      = shortCutGoodService.get_firm();
+    $scope.colorTypes = shortCutGoodService.get_color_type();
+    $scope.brands     = shortCutGoodService.get_brand();
+    $scope.types      = shortCutGoodService.get_type();
+    $scope.groups     = shortCutGoodService.get_size_group();
+    $scope.colors     = [];
+
     $scope.seasons = diablo_season2objects;
     $scope.sexs    = diablo_sex2object;
     $scope.pattern = {style_number: diabloPattern.style_number,
@@ -11,7 +29,66 @@ wgoodApp.controller("wgoodNewCtrl", function(
 
     var dialog     = diabloUtilsService;
     var set_float  = diablo_set_float;
+    var colors     = shortCutGoodService.get_color();
 
+    // get all color
+    var in_sys_color = function(syscolors, color){
+	for(var i=0, l=syscolors.length; i<l; i++){
+	    if(syscolors[i].tid === color.tid){
+		syscolors[i].colors.push(
+		    {name: color.name, id:color.id});
+		return true;
+	    }
+	}
+
+	return false;
+    };
+    
+
+    $scope.select_good_tab = function(){
+	// console.log("select good table");
+	if ($scope.brands.length === 0){
+	    diabloFilter.get_brand().then(function(brands){
+		console.log(brands);
+		shortCutGoodService.set_brand(brands);
+		$scope.brands = brands;
+	    });
+	};
+
+	// console.log($scope.types);
+	if ($scope.types.length === 0){
+	    diabloFilter.get_type().then(function(types){
+		console.log(types);
+		shortCutGoodService.set_type(types);
+		$scope.types = types;
+	    })
+	};
+
+	if ($scope.groups.length === 0){
+	    diabloFilter.get_size_group().then(function(gs){
+		shortCutGoodService.set_size_group(gs);
+		$scope.groups = gs;
+	    })
+	};
+
+	if ($scope.colorTypes.length === 0){
+	    diabloFilter.get_color_type().then(function(ts){
+		shortCutGoodService.set_color_type(ts);
+		$scope.colorTypes = ts;
+	    });
+	}; 
+
+	if ($scope.colors.length === 0){
+	    angular.forEach(colors, function(color){
+    		if (!in_sys_color($scope.colors, color)){
+    		    $scope.colors.push(
+    			{type:color.type, tid:color.tid,
+    			 colors:[{name:color.name, id:color.id}]})
+    		}
+	    });
+	};
+    }; 
+    
     // $scope.colors = [{type:"红色", tid:1
     // 		  colors:[{name:"深红", id:1},
     // 			  {name:"粉红", id:2}]},
@@ -22,7 +99,7 @@ wgoodApp.controller("wgoodNewCtrl", function(
     // 		];
 
     // brands
-    $scope.brands = angular.copy(filterBrand); 
+    // $scope.brands = angular.copy(filterBrand); 
     var get_brand = function(brand_name){
 	for (var i=0, l=$scope.brands.length; i<l; i++){
 	    if (brand_name === $scope.brands[i].name){
@@ -31,41 +108,7 @@ wgoodApp.controller("wgoodNewCtrl", function(
 	}
 
 	return undefined;
-    };
-
-    // $scope.refresh_brand = function(){
-    // 	$scope.brands = wgoodService.list_purchaser_brand().then(
-    // 	    function(brands){
-    // 		// console.log(brands);
-    // 		return brands.map(function(b){
-    // 		    return {id: b.id, name:b.name, py:diablo_pinyin(b.name)};
-    // 		}) 
-    // 	    });
-    // }; 
-
-    // firm
-    $scope.firms = angular.copy(filterFirm);
-
-    // year
-    // $scope.$watch("good.year", function(newValue, oldValue){
-    // 	if(angular.isUndefined(newValue)){
-    // 	    $scope.good.year=diablo_now_year()
-    // 	}; 
-    // })
-    // $scope.get_firm_by_name = function(name){
-    // 	for(var i=0, l=$scope.firms.length; i<l; i++){
-    // 	    if (name === $scope.firms[i].name){
-    // 		return $scope.firms[i]
-    // 	    }
-    // 	}
-    // };
-
-    // $scope.refresh_firm = function(newFirmName){
-    // 	diabloFilter.get_firm().then(function(firms){
-    // 	    $scope.firms = firms;
-    // 	    $scope.good.firm = $scope.get_firm_by_name(newFirmName);
-    // 	})
-    // }; 
+    }; 
     
     $scope.new_firm = function(){
     	var callback = function(params){
@@ -104,20 +147,8 @@ wgoodApp.controller("wgoodNewCtrl", function(
 
     	dialog.edit_with_modal(
     	    "new-firm.html", undefined, callback, $scope, {firm:{}});
-    };
-
-    // type
-    $scope.types = angular.copy(filterType);
-
-    $scope.refresh_type = function(){
-	$scope.types = wgoodService.list_purchaser_type().then(
-	    function(types){
-		return types.map(function(t){
-		    return {id: t.id, name:t.name, py:diablo_pinyin(t.name)};
-		})
-	    });
-    };
-
+    }; 
+    
     $scope.is_same_good = false;
     var check_same_good = function(style_number, brand_name){
 	// console.log(brand_name);
@@ -172,38 +203,24 @@ wgoodApp.controller("wgoodNewCtrl", function(
 	    check_same_good($scope.good.style_number, newValue);
 	}, diablo_delay_300ms) 
     });
-    
-    // get all color
-    var in_sys_color = function(syscolors, color){
-	for(var i=0, l=syscolors.length; i<l; i++){
-	    if(syscolors[i].tid === color.tid){
-		syscolors[i].colors.push(
-		    {name: color.name, id:color.id});
-		return true;
-	    }
-	}
-
-	return false;
-    };
-
+   
     // color
-    $scope.colors = [];
-    wgoodService.list_purchaser_color().then(function(colors){
-	// console.log(colors); 
-	angular.forEach(colors, function(color){
-	    if (!in_sys_color($scope.colors, color)){
-		$scope.colors.push(
-		    {type:color.type, tid:color.tid,
-		     colors:[{name:color.name, id:color.id}]})
-	    }
-	}); 
-	console.log($scope.colors);
-    });
+    // $scope.colors = [];
     
-    wgoodService.list_color_type().then(function(data){
-	console.log(data);
-	$scope.colorTypes = data;
-    });
+    // angular.forEach(colors, function(color){
+    // 	if (!in_sys_color($scope.colors, color)){
+    // 	    $scope.colors.push(
+    // 		{type:color.type, tid:color.tid,
+    // 		 colors:[{name:color.name, id:color.id}]})
+    // 	}
+    // });
+    // console.log($scope.colors);
+
+    
+    // wgoodService.list_color_type().then(function(data){
+    // 	console.log(data);
+    // 	$scope.colorTypes = data;
+    // });
     
     $scope.new_color = function(){
 	var callback = function(params){
@@ -219,15 +236,19 @@ wgoodApp.controller("wgoodNewCtrl", function(
 			id:      newColorId,
 			name:    params.color.name,
 			tid:     params.color.type.id,
-			type:    params.color.type.name, 
-			remark:  params.color.remark};
+			type:    params.color.type.name
+			// remark:  params.color.remark
+		    };
 		    
 		    if (!in_sys_color($scope.colors, newColor)){
 			$scope.colors.push(
 			    {type: newColor.type,
 			     tid:  newColor.tid,
-			     colors:[{name:newColor.name, id:newColor.id}]})
-		    } 
+			     colors:[{name:newColor.name, id:newColor.id}]});
+			
+			shortCutGoodService.set_color(colors.push(newColor)); 
+		    }
+		    
 		    console.log($scope.colors); 
 		}; 
 		
@@ -280,7 +301,7 @@ wgoodApp.controller("wgoodNewCtrl", function(
     /*
      * size group
      */
-    $scope.groups = angular.copy(filterSizeGroup);
+    // $scope.groups = angular.copy(filterSizeGroup);
 
     $scope.new_size = function(){
 	var valid_group = function(size){
@@ -391,9 +412,9 @@ wgoodApp.controller("wgoodNewCtrl", function(
      * new good
      */
     $scope.good = {
-	org_price : 0,
+	// org_price : 0,
 	tag_price : 0,
-	ediscount : 100,
+	// ediscount : 100,
 	discount  : 100,
 	alarm_day : 7,
 	year      : diablo_now_year(),
@@ -522,6 +543,8 @@ wgoodApp.controller("wgoodNewCtrl", function(
 				id   :state.brand,
 				name :good.brand,
 				py   :diablo_pinyin(good.brand)});
+			    
+			    shortCutGoodService.set_brand($scope.brands);
 			}; 
 			// console.log($scope.brands);
 
@@ -532,6 +555,8 @@ wgoodApp.controller("wgoodNewCtrl", function(
 				id   :state.type,
 				name :good.type,
 				py   :diablo_pinyin(good.type)});
+
+			    shortCutGoodService.set_type($scope.types);
 			};
 			// console.log($scope.types);
 		    });
@@ -553,9 +578,9 @@ wgoodApp.controller("wgoodNewCtrl", function(
 	    sex:       $scope.good.sex,
 	    year:      $scope.good.year,
 	    season:    $scope.good.season,
-	    org_price: $scope.good.org_price,
+	    // org_price: $scope.good.org_price,
 	    tag_price: $scope.good.tag_price, 
-	    ediscount: $scope.good.ediscount,
+	    // ediscount: $scope.good.ediscount,
 	    discount:  $scope.good.discount,
 	    alarm_day: $scope.good.alarm_day
 	};
@@ -563,165 +588,12 @@ wgoodApp.controller("wgoodNewCtrl", function(
 	$scope.goodForm.style_number.$pristine = true;
 	$scope.goodForm.brand.$pristine = true;
 	$scope.goodForm.type.$pristine = true;
-	// $scope.goodForm.firm.$pristine = true;
-	$scope.goodForm.org_price.$pristine = true;
+	$scope.goodForm.firm.$pristine = true;
+	// $scope.goodForm.org_price.$pristine = true;
 	$scope.goodForm.tag_price.$pristine = true; 
-	$scope.goodForm.ediscount.$pristine = true;
+	// $scope.goodForm.ediscount.$pristine = true;
 	$scope.goodForm.discount.$pristine  = true;
 	$scope.goodForm.alarm.$pristine     = true;
 	$scope.image = undefined;
     };
-});
-
-
-wgoodApp.controller("wgoodDetailCtrl", function(
-    $scope, $location, dateFilter, diabloUtilsService,
-    diabloPagination, wgoodService, user, diabloFilter,
-    filterBrand, filterFirm, filterType, filterColor, base){
-    // console.log(filterNumber);
-    // console.log(firms);
-    // console.log(filterBrand);
-    // console.log(filterType);
-
-    // $scope.show_orgprice = rightAuthen.show_orgprice(user.type);
-    // $scope.hidden = {
-    // 	org_price:rightAuthen.show_orgprice(user.type),
-    // 	p3_5:true
-    // };
-    
-    /*
-     * filter
-     */ 
-    // initial
-    $scope.filters = [];
-    diabloFilter.reset_field();
-    diabloFilter.add_field("firm", filterFirm);
-    diabloFilter.add_field("style_number", diabloFilter.match_style_number);
-    diabloFilter.add_field("brand", filterBrand);
-    diabloFilter.add_field("type", filterType);
-
-    $scope.filter = diabloFilter.get_filter();
-    $scope.prompt = diabloFilter.get_prompt();
-
-    var now = $.now();
-    $scope.qtime_start = diablo_base_setting(
-	"qtime_start", -1, base, diablo_set_date,
-	diabloFilter.default_start_time(now));
-    
-    $scope.time   = diabloFilter.default_time($scope.qtime_start);
-    
-    // pagination
-    $scope.colspan = 15;
-    $scope.items_perpage = diablo_items_per_page();
-    $scope.max_page_size = 10;
-    $scope.default_page = 1;
-
-    $scope.do_search = function(page){
-	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
-	    wgoodService.filter_purchaser_good(
-		$scope.match, search, page, $scope.items_perpage
-	    ).then(function(result){
-		    console.log(result);
-		    if (page === 1){
-			$scope.total_items      = result.total;
-		    }
-		    angular.forEach(result.data, function(d){
-			d.firm  = diablo_get_object(d.firm_id, filterFirm);
-			d.type  = diablo_get_object(d.type_id, filterType);
-		    })
-		    $scope.goods = result.data;
-		    diablo_order_page(
-			page, $scope.items_perpage, $scope.goods);
-		})
-	});
-    };
-
-    $scope.page_changed = function(){
-    	$scope.do_search($scope.current_page);
-    }
-    
-    $scope.default_page = 1;
-    $scope.do_search($scope.default_page); 
-
-    // $scope.goto_page = diablo_goto_page; 
-
-    var dialog = diabloUtilsService;
-    $scope.lookup_detail = function(good){
-	console.log(good);
-	if (good.color === "0"){
-	    dialog.edit_with_modal(
-		"good-detail.html", undefined, undefined, $scope,
-		{sizes:  good.size.split(","),
-		 colors: [{id:0}],
-		 path:   good.path});
-	} else{
-	    if (angular.isDefined(good.colors) && good.colors.length !== 0){
-		dialog.edit_with_modal(
-		    "good-detail.html", undefined, undefined, $scope,
-		    {sizes:  good.size.split(","),
-		     colors: good.colors,
-		     path:   good.path});
-	    } else{
-		good.colors = good.color.split(",").map(function(cid){
-		    return diablo_find_color(parseInt(cid), filterColor); 
-		});
-		dialog.edit_with_modal(
-		    "good-detail.html", undefined, undefined, $scope,
-		    {sizes:  good.size.split(","),
-		     colors: good.colors,
-		     path:   good.path});
-		// })
-	    }
-	}
-    };
-
-    $scope.update_good = function(g){
-	$location.path("/good/wgood_update/" + g.id.toString());
-    };
-
-    $scope.delete_good = function(g){
-	if (angular.isDefined(g.deleted) && !g.deleted){
-	    dialog.response(false, "删除货品", wgoodService.error[2098]);
-	} else {
-	    wgoodService.get_used_purchaser_good({
-		style_number:g.style_number, brand:g.brand_id
-	    }).then(function(result){
-		console.log(result);
-		if (angular.isDefined(result.id)){
-		    g.deleted = false;
-		    dialog.response(
-			false, "删除货品",
-			"删除货品失败：" + wgoodService.error[2098], $scope);
-		} else {
-		    var callback = function(){
-			wgoodService.delete_purchaser_good(g).then(function(
-			    result){
-			    if (result.ecode === 0){
-				dialog.response_with_callback(
-				    true, "删除货品",
-				    "货品资料 [" + g.style_number
-					+ "-" + g.brand.name + "-"
-					+ g.type.name + " ]删除成功！！",
-				    $scope,
-				    function(){$scope.do_search(
-					$scope.current_page)})
-			    } else {
-				dialog.response(
-				    false, "删除货品", "删除货品失败："
-					+ wgoodService.error[result.ecode]);
-			    }
-			})
-		    };
-		    
-		    dialog.request(
-			"删除货品", "确定要删除该货品资料吗？", callback);
-		}
-	    })    
-	} 
-    };
-
-    $scope.add_good = function(){
-	diablo_goto_page("#/good/wgood_new");
-    };
-    
-});
+};
