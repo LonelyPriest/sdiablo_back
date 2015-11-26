@@ -27,8 +27,6 @@
 
 -record(state, {}).
 
-
-
 %%%===================================================================
 %%% API
 %%%===================================================================
@@ -60,7 +58,6 @@ city(list, Merchant) ->
 province(list, Merchant) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, list_province).
-   
 
 start_link(Name) ->
     gen_server:start_link({local, Name}, ?MODULE, [], []).
@@ -77,54 +74,35 @@ handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
     Name     = ?v(<<"name">>, Attrs),
     Balance  = ?v(<<"balance">>, Attrs, 0),
     Mobile   = ?v(<<"mobile">>, Attrs, []),
-    Address  = ?v(<<"address">>, Attrs, []),
-    %% Merchant = ?v(<<"merchant">>, Attrs),
-    Province = ?v(<<"province">>, Attrs, -1),
-    City     = ?v(<<"city">>, Attrs, -1),
+    Address  = ?v(<<"address">>, Attrs, []), 
 
     %% name can not be same
     Sql = "select id, name, mobile, address"
 	++ " from w_retailer" 
-	++ " where name = " ++ "\"" ++ ?to_s(Name) ++ "\""
-	++ " and merchant = " ++ ?to_s(Merchant) 
+	++ " where merchant=" ++ ?to_s(Merchant) 
+	++ " and name = " ++ "\"" ++ ?to_s(Name) ++ "\""
+	++ " and mobile = " ++ "\"" ++ ?to_s(Mobile) ++ "\"" 
 	++ " and deleted = " ++ ?to_s(?NO),
-    %% ++ " and mobile = " ++ "\"" ++ ?to_s(Mobile) ++ "\";",
 
     case ?sql_utils:execute(read, Sql) of
-	{ok, []} ->
-	    %% Sql0 = "select id, name from city where name=\'"
-	    %% 	++ ?to_s(Name) ++ "\'",
-	    %% case ?sql_utils:execute(read, Sql) of
-	    %% 	{ok, []} ->
-	    %% 	    Sql1 = "insert into city(name, province) values ("
-	    %% 		++ "\'" ++ ?to_s(Name) ++ "\',"
-	    %% 		++ ?to_s(Province) ++ ")",
-	    %% 	    case ?sql_utils:execute(insert, Sql1) of
-	    %% 		{ok, CityId} -> 
-	    Sql2 = "insert into w_retailer"
-		++ "(name, balance, mobile, address"
-		" ,province, city, merchant, entry_date)"
+	{ok, []} -> 
+	    Sql2 = "insert into w_retailer("
+		"name, balance, mobile, address, merchant, entry_date)"
 		++ " values ("
 		++ "\"" ++ ?to_s(Name) ++ "\","
 		++ ?to_s(Balance) ++ "," 
 		++ "\"" ++ ?to_s(Mobile) ++ "\","
-		++ "\"" ++ ?to_s(Address) ++ "\","
-		++ ?to_s(Province) ++ ","
-		++ ?to_s(City) ++ ","
+		++ "\"" ++ ?to_s(Address) ++ "\"," 
 		++ ?to_s(Merchant) ++ ","
-		++ "\"" ++ ?utils:current_time(localdate) ++ "\");", 
+		++ "\"" ++ ?utils:current_time(localtime) ++ "\");", 
 	    Reply = ?sql_utils:execute(insert, Sql2),
 	    ?w_user_profile:update(retailer, Merchant),
-	    {reply, Reply, State};
-			%% {Error} ->
-			%%     {reply, Error, State}
+	    {reply, Reply, State}; 
 	{ok, _Any} ->
-	    %% ?DEBUG("retailer ~p has been exist", [Name]),
 	    {reply, {error, ?err(retailer_exist, Name)}, State};
 	Error ->
 	    {reply, Error, State}
     end;
-
 
 handle_call({update_retailer, Merchant, RetailerId, Attrs}, _From, State) ->
     ?DEBUG("update_retailer with merchant ~p, retailerId ~p~nattrs ~p",
@@ -132,9 +110,7 @@ handle_call({update_retailer, Merchant, RetailerId, Attrs}, _From, State) ->
 
     Name     = ?v(<<"name">>, Attrs),
     Mobile   = ?v(<<"mobile">>, Attrs),
-    Address  = ?v(<<"address">>, Attrs),
-    Province = ?v(<<"province">>, Attrs),
-    City     = ?v(<<"city">>, Attrs),
+    Address  = ?v(<<"address">>, Attrs), 
     Balance  = ?v(<<"balance">>, Attrs),
 
     NameExist =
@@ -157,9 +133,7 @@ handle_call({update_retailer, Merchant, RetailerId, Attrs}, _From, State) ->
 	    Updates = ?utils:v(name, string, Name)
 		++ ?utils:v(balance, float, Balance)
 		++ ?utils:v(mobile, string, Mobile)
-		++ ?utils:v(address, string, Address)
-		++ ?utils:v(province, integer, Province)
-		++ ?utils:v(city, integer, City), 
+		++ ?utils:v(address, string, Address), 
 
 	    Sql1 = "update w_retailer set "
 		++ ?utils:to_sqls(proplists, comma, Updates)
@@ -176,8 +150,8 @@ handle_call({update_retailer, Merchant, RetailerId, Attrs}, _From, State) ->
 handle_call({get_retailer, Merchant, RetailerId}, _From, State) ->
     ?DEBUG("get_retailer with merchant ~p, retailerId ~p",
 	   [Merchant, RetailerId]),
-    Sql = "select id, name, mobile, province as pid,city as cid"
-	", address, balance, merchant, entry_date"
+    Sql = "select id, name, mobile, address"
+	", balance, merchant, entry_date"
 	" from w_retailer where id=" ++ ?to_s(RetailerId)
 	++ " and merchant=" ++ ?to_s(Merchant), 
     Reply = ?sql_utils:execute(write, Sql, RetailerId),
@@ -195,40 +169,13 @@ handle_call({delete_retailer, Merchant, RetailerId}, _From, State) ->
 
 handle_call({list_retailer, Merchant}, _From, State) ->
     ?DEBUG("lookup retail with merchant ~p", [Merchant]),
-    Sql = "select id, name, mobile, province as pid, city as cid"
-	", address, balance, merchant, entry_date"
+    Sql = "select id, name, mobile, address"
+	", balance, merchant, entry_date"
 	" from w_retailer"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and deleted=" ++ ?to_s(?NO)
 	++ " order by id desc",
 
-    Reply = ?sql_utils:execute(read, Sql),
-    {reply, Reply, State};
-
-handle_call({new_city, City, Province}, _From, State) ->
-    ?DEBUG("new_city with city ~p", [City]),
-    Sql0 = "select id, name from city where name=\'"
-    	++ ?to_s(City) ++ "\'",
-    case ?sql_utils:execute(s_read, Sql0) of
-    	{ok, []} ->
-    	    Sql1 = "insert into city(name, province) values ("
-    		++ "\'" ++ ?to_s(City) ++ "\',"
-    		++ ?to_s(Province) ++ ")",
-    	    Reply = ?sql_utils:execute(insert, Sql1),
-	    {reply, Reply, State};
-	{ok, CityInfo} ->
-	    {reply, {ok, ?v(<<"id">>, CityInfo)}, State};
-	Error ->
-	    {reply, Error, State}
-    end;
-
-handle_call(list_city, _From, State)->
-    Sql = "select id, name, province as pid from city where deleted=" ++  ?to_s(?NO),
-    Reply = ?sql_utils:execute(read, Sql),
-    {reply, Reply, State};
-
-handle_call(list_province, _From, State) ->
-    Sql = "select id, name from province where deleted=" ++  ?to_s(?NO),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 

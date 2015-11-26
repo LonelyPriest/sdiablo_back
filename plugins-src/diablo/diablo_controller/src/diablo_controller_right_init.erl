@@ -118,13 +118,13 @@ init([]) ->
 
     Member = 
 	[{?new_w_retailer, 
-	  <<"新增会员">>, <<"new_member">>,    ?right_w_retailer},
+	  <<"新增会员">>, <<"new_w_retailer">>,    ?right_w_retailer},
 	 {?del_w_retailer,
-	  <<"删除会员">>, <<"delete_member">>, ?right_w_retailer},
+	  <<"删除会员">>, <<"del_w_retailer">>, ?right_w_retailer},
 	 {?update_w_retailer,
-	  <<"修改会员">>, <<"update_member">>, ?right_w_retailer},
+	  <<"修改会员">>, <<"update_w_retailer">>, ?right_w_retailer},
 	 {?list_w_retailer,
-	  <<"查询会员">>, <<"list_member">>,   ?right_w_retailer} 
+	  <<"查询会员">>, <<"list_w_retailer">>,   ?right_w_retailer} 
 	],
 
     

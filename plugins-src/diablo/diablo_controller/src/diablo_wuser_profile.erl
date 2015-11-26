@@ -57,7 +57,9 @@ get(print, Merchant) ->
 get(print_format, Merchant) ->
     gen_server:call(?SERVER, {get_print_format_profile, Merchant});
 get(type, Merchant) ->
-    gen_server:call(?SERVER, {get_type_profile, Merchant}); 
+    gen_server:call(?SERVER, {get_type_profile, Merchant});
+get(retailer, Merchant) ->
+    gen_server:call(?SERVER, {get_retailer_profile, Merchant});
 get(firm, Merchant) ->
     gen_server:call(?SERVER, {get_firm_profile, Merchant});
 get(employee, Merchant) ->
@@ -83,7 +85,9 @@ get(setting, Merchant, Shop) ->
 get(size_group, Merchant, GId) ->
     gen_server:call(?SERVER, {get_size_group_profile, Merchant, GId});
 get(type, Merchant, TypeId) ->
-    gen_server:call(?SERVER, {get_type_profile, Merchant, TypeId}); 
+    gen_server:call(?SERVER, {get_type_profile, Merchant, TypeId});
+get(retailer, Merchant, Retailer) -> 
+    gen_server:call(?SERVER, {get_retailer_profile, Merchant, Retailer});
 get(employee, Merchant, Employee) ->
     gen_server:call(?SERVER, {get_employee_profile, Merchant, Employee});
 get(brand, Merchant, BrandId) ->
@@ -125,6 +129,8 @@ update(print_format, Merchant) ->
     gen_server:cast(?SERVER, {update_print_format, Merchant});
 update(firm, Merchant) ->
     gen_server:cast(?SERVER, {update_firm_format, Merchant});
+update(retailer, Merchant) ->
+    gen_server:cast(?SERVER, {update_retailer, Merchant});
 update(color, Merchant) ->
     gen_server:cast(?SERVER, {update_color, Merchant}).
 
@@ -158,6 +164,7 @@ handle_call({new_profile, Merchant}, _From, State) ->
 	{ok, Prints}       = ?w_print:printer(list_conn, Merchant),
 	{ok, PFormats}     = ?w_print:format(list, Merchant),
 
+	{ok, Retailers}    = ?w_retailer:retailer(list, Merchant),
 	{ok, Employees}    = ?employ:employ(list, Merchant),
 	{ok, Brands}       = ?attr:brand(list, Merchant),
 	{ok, Firms}        = ?supplier:supplier(w_list, Merchant),
@@ -180,6 +187,7 @@ handle_call({new_profile, Merchant}, _From, State) ->
 				  itype       = Types,
 				  firm        = Firms,
 				  employee    = Employees,
+				  retailer    = Retailers,
 				  brand       = Brands,
 				  color_type  = ColorTypes,
 				  color       = Colors
@@ -542,6 +550,24 @@ handle_call({get_type_profile, Merchant, TypeId}, _From, State) ->
     {reply, {ok, SelectType}, State};
 
 
+
+%%
+%% retailer
+%%
+handle_call({get_retailer_profile, Merchant}, _From, State) ->
+    ?DEBUG("get_retailer_profile of merchant ~p", [Merchant]),
+    MS = ms(Merchant, retailer),
+    Select = select(MS, fun() -> ?w_retailer:retailer(list, Merchant) end),
+    {reply, {ok, Select}, State};
+
+handle_call({get_retailer_profile, Merchant, RetailerId}, _From, State) ->
+    ?DEBUG("get_retailer_profile of merchant ~p, Retailer ~p",
+	   [Merchant, RetailerId]),
+    MS = ms(Merchant, retailer),
+    Select = select(MS, fun() -> ?w_retailer:retailer(list, Merchant) end),
+    SelectRetailer = filter(Select, <<"id">>, RetailerId),
+    {reply, {ok, SelectRetailer}, State};
+
 %%
 %% firm
 %%
@@ -561,7 +587,8 @@ handle_call({get_employee_profile, Merchant}, _From, State) ->
     {reply, {ok, Select}, State};
 
 handle_call({get_employee_profile, Merchant, EmpId}, _From, State) ->
-    ?DEBUG("get_employee_profile of merchant ~p, empid ~p", [Merchant, EmpId]),
+    ?DEBUG("get_employee_profile of merchant ~p, empid ~p",
+	   [Merchant, EmpId]),
     MS = ms(Merchant, employee),
     Select = select(MS, fun() -> ?employ:employ(list, Merchant) end), 
     SelectEmployee = filter(Select, <<"number">>, EmpId), 
@@ -754,7 +781,10 @@ handle_cast({Update, Merchant}, State) ->
 			Profile#wuser_profile{pformat=?to_tl(Formats)};
 		    update_firm_format ->
 			{ok, Firms} = ?supplier:supplier(w_list, Merchant),
-			Profile#wuser_profile{firm=Firms} ;
+			Profile#wuser_profile{firm=Firms};
+		     update_retailer ->
+                        {ok, Retailers}=?w_retailer:retailer(list, Merchant),
+                        Profile#wuser_profile{retailer=Retailers}; 
 		    update_color ->
 			{ok, Colors}= ?attr:color(w_list, Merchant),
 			Profile#wuser_profile{color=Colors}
@@ -824,7 +854,12 @@ ms(Merchant, itype) ->
     [{{'$1', #wuser_profile{merchant='$1', itype='$2', _='_'}},
       [{'==', '$1', ?to_i(Merchant)}],
       ['$2']
-     }]; 
+     }];
+ms(Merchant, retailer) ->
+    [{{'$1', #wuser_profile{merchant='$1', retailer='$2', _='_'}},
+      [{'==', '$1', ?to_i(Merchant)}],
+      ['$2']
+     }];
 ms(Merchant, firm) ->
     [{{'$1', #wuser_profile{merchant='$1', firm='$2', _='_'}},
       [{'==', '$1', ?to_i(Merchant)}],

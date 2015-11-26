@@ -9,27 +9,29 @@
 {% block self_reference_js %}
 
 <!--pinyin-->
-<script src="/public/assets/pinyin/pinyin.js"              type="text/javascript"></script>
-<!-- <script src="/private/utils/javascript/diablo_authen_app.js" type="text/javascript"></script>  -->
+<script src="/public/assets/pinyin/pinyin.js" type="text/javascript"></script>
+
 
 <!-- right app -->
-<script src="/private/right/javascript/user_right_app.js"  type="text/javascript"></script>
-<script src="/private/right/javascript/user_right_map.js"  type="text/javascript"></script>
-
-
+<script src="/private/right/javascript/user_right_app.js"
+	type="text/javascript"></script>
+<script src="/private/right/javascript/user_right_map.js"
+	type="text/javascript"></script>
 
 <!-- good -->
-<script src="/private/wgood/js/wgood_app.js"               type="text/javascript"></script>
+<script src="/private/wgood/js/wgood_app.js" type="text/javascript"></script>
 
 <!-- filter -->
-<script src="/private/utils/javascript/diablo_filter_app.js"  type="text/javascript"></script>
-
-<!-- employ -->
-<!-- <script src="/private/employ/javascript/employ_app.js"     type="text/javascript"></script> -->
+<script src="/private/utils/javascript/diablo_filter_app.js"
+	type="text/javascript"></script>
 
 <!-- self -->
-<script src="/private/wretailer/js/wretailer_app.js"       type="text/javascript"></script>
-<script src="/private/wretailer/js/wretailer_trans.js"     type="text/javascript"></script> 
+<script src="/private/wretailer/js/wretailer_app.js"
+	type="text/javascript"></script>
+<script src="/private/wretailer/js/wretailer.js"
+	type="text/javascript"></script>
+<script src="/private/wretailer/js/wretailer_trans.js"
+	type="text/javascript"></script> 
 
 {% endblock %}
 

@@ -60,31 +60,15 @@ action(Session, Req, {"del_w_retailer", Id}) ->
 action(Session, Req, {"new_w_retailer"}, Payload) ->
     ?DEBUG("new wretailer with session ~p~npaylaod ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session), 
-    Province = ?v(<<"province">>, Payload),
-    %% City     = ?v(<<"city">>, Payload),
 
-    City =
-	case ?v(<<"city">>, Payload) of
-	    undefined -> {ok, -1};
-	    C -> ?w_retailer:city(new, Merchant, C, Province)
-	end,
-    
-    case City of
-	{ok, CityId} ->
-	    ?DEBUG("cityid  ~p", [CityId]),
-	    case ?w_retailer:retailer(
-		    new,
-		    Merchant,
-		    [{<<"city">>, CityId}
-		     |proplists:delete(<<"city">>, Payload)]) of {ok, RId} ->
-		    ?utils:respond(
-		       200, Req, ?succ(add_w_retailer, RId), {<<"id">>, RId});
-		{error, Error} ->
-		    ?utils:respond(200, Req, Error)
-	    end;
-	Error ->
+    case ?w_retailer:retailer(new, Merchant, Payload) of
+	{ok, RId} ->
+	    ?utils:respond(
+	       200, Req, ?succ(add_w_retailer, RId), {<<"id">>, RId});
+	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;
+	
 
 action(Session, Req, {"update_w_retailer", Id}, Payload) ->
     ?DEBUG("update_w_retailer with Session ~p~npaylaod ~p", [Session, Payload]),
@@ -121,20 +105,15 @@ action(Session, Req, {"update_w_retailer", Id}, Payload) ->
 		
 
 sidebar(Session) -> 
-    S1 = [{"wretailer_detail", "零售商详情", "glyphicon glyphicon-book"}
-	  %%  {"wretailer_top", "零售商分布", "glyphicon glyphicon-map-marker"}
-	 ],
+    S1 = [{"wretailer_detail", "会员详情", "glyphicon glyphicon-book"}],
     
     S2 = 
 	case ?right_auth:authen(?new_w_retailer, Session) of
 	    {ok, ?new_w_retailer} ->
-		[{"wretailer_new", "新增零售商", "glyphicon glyphicon-plus"}];
+		[{"wretailer_new", "新增会员", "glyphicon glyphicon-plus"}];
 	    _ ->
 		[]
 	end,
-
-    %% ?menu:sidebar(
-       %% level_2_menu,
-       %% [{{"wretailer", "零售商管理", "glyphicon glyphicon-map-marker"}, S1 ++ S2}]).
+    
     ?menu:sidebar(level_1_menu, S2 ++ S1).
        

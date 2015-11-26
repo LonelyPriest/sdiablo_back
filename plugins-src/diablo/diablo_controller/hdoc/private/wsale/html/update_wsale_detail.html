@@ -32,7 +32,7 @@
 	      <div class="input-group">
 	  	<input class="form-control" type="text"
 	  	       x-ng-model="select.retailer"
-	  	       placeholder="请选择客户" 
+	  	       placeholder="请选择会员" 
 	  	       typeahead-editable="false"
 		       typeahead-on-select="change_retailer()"
 	  	       typeahead="r as r.name for r in
@@ -55,7 +55,6 @@
 	    <div class="col-xs-3 col-md-3">
 	      <div class="input-group">
 		<span class="input-group-addon">
-	  	  <!-- <i class="glyphicon glyphicon-registration-mark fg-red"></i> -->
 		  店铺
 		</span>
 	  	<input class="form-control"
@@ -65,15 +64,12 @@
 	  	       placeholder="请选择店铺"
 	  	       typeahead-editable="false"
 	  	       typeahead="s as s.name for s in
-	  			  shops|filter:$viewValue|limitTo:8"></input> 
+	  			  shops|filter:$viewValue|limitTo:8"/>
 	      </div>
 	    </div>
 
 	    <div class="col-xs-3 col-md-3">
-	      <div class="input-group">
-		<!-- <span class="input-group-addon"> -->
-	  	<!--   <i class="glyphicon glyphicon-user"></i>日期 -->
-	  	<!-- </span> -->
+	      <div class="input-group"> 
 		<input type="text" class="form-control"
 		       placeholder="年/月/日"
 		       datepicker-popup="yyyy/MM/dd"
@@ -116,7 +112,7 @@
 	  	<input class="form-control"
 		       type="text"
 		       placeholder="备注"
-	  	       x-ng-model="select.comment"></input> 
+	  	       x-ng-model="select.comment"/>
 	      </div>
 	    </div>
 	    
@@ -139,7 +135,9 @@
 		</form>
 
 		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-credit-card fg-red"></i>刷卡</span>
+		  <i class="glyphicon glyphicon-credit-card fg-red"></i>
+		  刷卡
+		</span>
 		<form name="select.form.cardForm">
 		  <div ng-class="{'has-error':select.form.cardForm.$invalid
 				 && !select.form.cardForm.$pristine}">
@@ -152,28 +150,13 @@
 			   popover-trigger="focus"
 			   popover="支持二位小数"></input>
 		  </div>
-		</form>
-
-		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-piggy-bank fg-red"></i>汇款</span>
+		</form> 
 		
-		<form name="select.form.wireForm">
-		  <div ng-class="{'has-error':select.form.wireForm.$invalid
-				 && !select.form.wireForm.$pristine}">
-	  	    <input class="form-control"
-			   type="number" step="0.01" 
-			   placeholder="汇款"
-			   x-ng-pattern=pattern.money
-	  		   x-ng-model="select.wire"></input>
-		  </div> 
-		</form>
-
 		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-yen fg-red"></i>欠款</span>
+		  <i class="glyphicon glyphicon-yen fg-red"></i>结余</span>
 	  	<input class="form-control" readonly
-	  	       x-ng-model="select.surplus"></input> 
+	  	       x-ng-model="select.surplus"/>
 		
-		<!-- <span class="input-group-addon"><span class="fg-red">未付</span></span> -->
 	      </div>
 	    </div> 
 	  </div> <!--END row-->
@@ -193,77 +176,21 @@
 	    </div>
 	    
 	    <div class="col-sm-9 col-md-9"> 
-	      <div class="input-group">
-		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-ban-circle fg-red"></i>核销</span>
-		<form name="select.form.vForm">
-		  <div ng-class="{'has-error':select.form.vForm.$invalid
-				 && !select.form.vForm.$pristine}">
-	  	    <input class="form-control"
-			   type="number" step="0.01" 
-			   placeholder="核销"
-			   x-ng-pattern="/^\d+(.\d{1,2})?$/"
-	  		   x-ng-model="select.verificate"
-			   popover-placement="top"
-			   popover-trigger="focus"
-			   popover="支持二位小数"></input>
-		  </div>
-		</form>
-		
+	      <div class="input-group"> 
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>应付</span>
 		<input class="form-control" type="text" readonly
-		       x-ng-model="select.should_pay"></input>
+		       x-ng-model="select.should_pay"/>
 
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>实付</span>
 	  	<input class="form-control" readonly
-	  	       x-ng-model="select.has_pay"></input>
+	  	       x-ng-model="select.has_pay"/>
 
 		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-yen fg-red"></i>结余</span>
+		  <i class="glyphicon glyphicon-yen fg-red"></i>找零</span>
 	  	<input class="form-control" type="text" readonly
-	  	       x-ng-model="select.left_balance"></input> 
-	      </div>
-	    </div> 
-	  </div> <!--END row-->
-
-	  <!--BEGIN row-->
-	  <div class="row form-group"> 
-	    
-	    <div class="col-xs-6 col-md-6">
-	      <div class="input-group">
-	    	<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-plane fg-red"></i>费用性质</span>
-		<select class="form-control"
-			disabled
-	  		x-ng-model="select.e_pay_type"
-	  		x-ng-options="ex as ex.name for ex in
-	  			      e_pay_types|filter:$viewValue|limitTo:8">
-		</select> 
-		<!-- <input class="form-control" type="text" -->
-	    	<!--        x-ng-model="select.extra_pay_type"></input>  -->
-	      </div>
-	    </div>
-	    
-	    <div class="col-sm-6 col-md-6"> 
-		<div class="input-group">
-		  <span class="input-group-addon">
-		    <i class="glyphicon glyphicon-yen fg-red"></i>关联费用</span> 
-		<form name="select.form.extraForm">
-		  <div ng-class="{'has-error':select.form.extraForm.$invalid
-				 && !select.form.extraForm.$pristine}">
-	  	    <input class="form-control"
-			   type="number" step="0.01" 
-			   readonly
-			   placeholder="关联费用"
-			   x-ng-pattern="/^\d+(.\d{1,2})?$/"
-	  		   x-ng-model="select.e_pay"
-			   popover-placement="top"
-			   popover-trigger="focus"
-			   popover="支持二位小数"></input>
-		  </div>
-		</form> 
+	  	       x-ng-model="select.charge"/> 
 	      </div>
 	    </div> 
 	  </div> <!--END row-->
@@ -299,12 +226,8 @@
 		    <!-- <th class="text-center warning">上次价格</th> -->
 		    <!-- <th class="text-center warning">上次折扣</th> -->
 		    
-		    <th class="text-center">单价类型</th>
 		    <th class="text-center">单价</th>
-		    <th x-ng-if="setting.show_discount"
-			class="text-center">折扣</th>
-		    <!-- <th class="text-center">折扣</th> -->
-		    
+		    <th class="text-center">折扣</th> 
 		    <th class="text-center">折后价</th> 
 		    <th class="text-center">数量</th>
 		    <th class="text-center">合计</th>
@@ -325,11 +248,12 @@
 				 x-ng-model="inv.style_number"
 				 placeholder="货号"
 				 typeahead-editable="false"
-				 typeahead-on-select="on_select_good($item, $model, $label)"
+				 typeahead-on-select="on_select_good(
+						      $item, $model, $label)"
 				 typeahead-wait-ms="500"
 				 typeahead-loading="loading"
 				 typeahead="g as g.name for g in
-					    match_style_number($viewValue)|limitTo:8"></input>
+					    match_style_number($viewValue)">
 			  <span x-ng-show="loading">
 			    <i class="glyphicon glyphicon-refresh"></i>
 			  </span>
@@ -341,50 +265,23 @@
 		    <td class="vert-align">{{inv.brand.name}}</td>
 		    <td x-ng-if="setting.check_sale"
 			class="vert-align">{{inv.total}}
-		    </td>
-		    <!-- <td class="vert-align">{{inv.last_discount}}</td> -->
-		    <!-- <td class="vert-align">{{inv.type}}</td> -->
-		    <!-- <td class="vert-align">{{sexs[inv.sex]}}</td> -->
-		    <!-- <td>{{inv.firm}}</td> -->
-		    <!-- <td class="vert-align">{{seasons[inv.season]}}</td> -->
-		    
-		    <!-- <td class="vert-align">{{inv.last_fprice}}</td> -->
-		    <!-- <td class="vert-align">{{inv.last_discount}}</td>  -->
-
-		    <!-- price style-->
-		    <!-- <td class="vert-align"> -->
-		    <!--   <div ng-if="!inv.$new && !inv.free_update">{{inv.sell_style.name}}</div>  -->
-		    <!--   <div x-ng-if="inv.$new && inv.free_color_size && inv.sell_style -->
-		    <!-- 		    || !inv.$new && inv.free_update"> -->
-		    <!-- 	<select class="form-control table-select" -->
-		    <!-- 		x-ng-model="inv.sell_style" -->
-		    <!-- 		x-ng-change="inv.fprice=inv[inv.sell_style.f]" -->
-		    <!-- 		x-ng-options="s as s.name for s -->
-		    <!-- 			      in sell_styles|filter:$viewValue|limitTo:8"> -->
-		    <!-- 	  <\!-- <option value="">{{inv.sell_style.name}}<option> -\->  -->
-		    <!-- 	</select> -->
-		    <!--   </div> -->
-		    <!-- </td> -->
-
-		    <td class="vert-align">
-		      <div>{{inv.sell_style.name}}</div> 
-		    </td>
+		    </td> 
 
 		    <td class="col-md-1 vert-align">
 		      <span x-ng-if="!inv.$new || inv.free_color_size">
-			<!-- {{inv.fprice}} -->
-			{{inv[inv.sell_style.f]}}
-			<!-- <div class="fg-red">上次：{{inv.last_fprice}}</div> -->
+			{{inv.tag_price}}
 		      </span>
 		    </td>
 
-		    <td x-ng-if="setting.show_discount"
-			class="col-md-1 vert-align">
-		      <div ng-if="!inv.$new && !inv.free_update">{{inv.fdiscount}}</div> 
+		    <td class="col-md-1 vert-align">
+		      <div ng-if="!inv.$new && !inv.free_update">
+			{{inv.fdiscount}}
+		      </div> 
 		      <form name="inv.form.fdiscount"
 			    ng-if="inv.$new && inv.free_color_size
 				   || !inv.$new && inv.free_update">
-			<div ng-class="{'has-error':inv.form.fdiscount.$invalid
+			<div ng-class="{'has-error':
+				       inv.form.fdiscount.$invalid
 				       && !inv.form.fdiscount.$pristine}"> 
 			  <input class="form-control"
 				 type="number" step="1" 
@@ -393,7 +290,7 @@
 				 x-ng-pattern="/^\d{2}$|100$/"
 				 popover-placement="top"
 				 popover-trigger="focus"
-				 popover="默认上次折扣"></input>
+				 popover="请输入折扣"/>
 			</div>
 		      </form>
 		    </td> 
@@ -401,7 +298,9 @@
 		    <!-- <td class="vert-align">{{inv.discount}}</td> -->
 
 		    <td class="col-md-1 vert-align">
-		      <div ng-if="!inv.$new && !inv.free_update">{{inv.fprice * inv.fdiscount * 0.01}}</div> 
+		      <div ng-if="!inv.$new && !inv.free_update">
+			{{inv.fprice * inv.fdiscount * 0.01}}
+		      </div> 
 		      <form name="inv.form.fprice"
 			    ng-if="inv.$new && inv.free_color_size
 				   || !inv.$new && inv.free_update">
@@ -414,7 +313,7 @@
 				 x-ng-model="inv.fprice"
 				 popover-placement="top"
 				 popover-trigger="focus"
-				 popover="默认上次成交价"></input>
+				 popover="请输入单价"/>
 			</div>
 		      </form>
 		    </td> 
@@ -423,7 +322,9 @@
 
 		    <!-- sell count-->
 		    <td class="col-md-1 vert-align">
-		      <div ng-if="!inv.$new && !inv.free_update">{{inv.sell}}</div> 
+		      <div ng-if="!inv.$new && !inv.free_update">
+			{{inv.sell}}
+		      </div> 
 		      <form name="inv.form.sell"
 			    ng-if="inv.$new && inv.free_color_size
 				   || !inv.$new && inv.free_update">
@@ -443,15 +344,19 @@
 		    </td>
 
 		    <td class="vert-align"> 
-		      <div x-ng-if="inv.sell && inv.fprice && inv.fdiscount">
+		      <div x-ng-if="inv.sell
+				    && (inv.fprice || inv.fprice===0)
+				    && inv.fdiscount">
 			<span x-ng-if="setting.round===1">
-			  {{round(inv.fprice * inv.sell * inv.fdiscount * 0.01)}}
+			  {{round(
+			  inv.fprice * inv.sell * inv.fdiscount * 0.01)}}
 			</span>
 
 			<span x-ng-if="setting.round===0">
-			  {{f_mul(inv.fprice * inv.sell * inv.fdiscount, 0.01)}}
+			  {{f_mul(
+			  f_mul(inv.fprice, inv.sell),
+			  f_mul(inv.fdiscount, 0.01))}}
 			</span> 
-			<!-- <span>{{round(inv.sell * inv.fprice * inv.fdiscount * 0.01)}}</span> -->
 		      </div>
 		    </td>
 		    
@@ -514,8 +419,7 @@
 		  </tr>
 
 		  <tr class="text-center">
-		    <td x-ng-if="setting.show_discount" colspan=8></td>
-		    <td x-ng-if="!setting.show_discount" colspan=7></td>
+		    <td colspan="7"></td>
 		    <td class="vert-align">{{select.abs_total}}</td>
 		    <td class="vert-align">{{select.should_pay}}</td>
 		    <td></td>

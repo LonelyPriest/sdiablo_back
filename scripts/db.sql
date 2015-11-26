@@ -350,8 +350,7 @@ create table w_retailer
     entry_date      DATETIME default 0, -- last changed
     deleted         INTEGER default 0, -- 0: no;  1: yes
     
-    unique  key  index_nm (merchant, name),
-    -- key          index_m  (merchant),
+    unique  key  uk (merchant, name, mobile),
     primary key     (id)
 ) default charset=utf8;
 
@@ -615,8 +614,9 @@ create table w_sale(
     retailer       INTEGER, 
     shop           INTEGER,                  -- which shop saled the goods
     merchant       INTEGER,
-    
-    balance        DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance 
+
+    lastbalance    DECIMAL(10, 2) default 0, -- max: 99999999.99
+    curbalance     DECIMAL(10, 2) default 0, -- max: 99999999.99
     should_pay     DECIMAL(10, 2) default 0, -- max: 99999999.99
     has_pay        DECIMAL(10, 2) default 0, -- max: 99999999.99
     cash           DECIMAL(10, 2) default 0, -- max: 99999999.99
@@ -654,14 +654,11 @@ create table w_sale_detail(
     firm           INTEGER default -1,
     year           YEAR(4),
     
-    hand           INTEGER default -1, 
-    total          INTEGER default 0,
-    sell_style     TINYINT default -1,
+    total          INTEGER default 0, 
     fdiscount      DECIMAL(3, 0), -- max: 100
     fprice         DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance 
     path           VARCHAR(255) default null, -- the image path
     comment        VARCHAR(127) default null,
-    -- type           TINYINT default -1, -- 0:sale 1:reject 
     entry_date     DATETIME default 0,
     deleted        INTEGER default 0, -- 0: no;  1: yes
 

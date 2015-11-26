@@ -45,8 +45,8 @@
     <!-- <link href="/public/assets/metronic/plugins/uniform/css/uniform.default.css" -->
     <!-- 	  rel="stylesheet" type="text/css"/> -->
     <!--print-->
-    <link href="/public/assets/bootstrap/css/print.css"
-    	  rel="stylesheet" type="text/css" media="print"/>
+    <!-- <link href="/public/assets/bootstrap/css/print.css" -->
+    <!-- 	  rel="stylesheet" type="text/css" media="print"/> -->
     <!-- <link href="/public/assets/metronic/plugins/font-awesome/css/font-awesome.min.css" -->
     <!-- 	  rel="stylesheet" type="text/css"> -->
     <!-- END GLOBAL MANDATORY STYLES -->
