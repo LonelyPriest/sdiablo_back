@@ -25,6 +25,9 @@
 <script src="/public/assets/sticky-theader/fsm-sticky-header.js"
 	type="text/javascript"></script>
 
+<script src="/public/assets/metronic/plugins/jquery.pulsate.min.js"
+    	    type="text/javascript"></script>
+
 <!-- <script src="/public/assets/hammer/hammer.js" type="text/javascript"></script> -->
 <!-- <script src="/public/assets/hammer/angular.hammer.js"  type="text/javascript"></script> -->
 

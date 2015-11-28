@@ -98,14 +98,15 @@
 		    <th x-ng-if="show.base">交易</th>
 		    <th x-ng-if="show.base">店铺</th>
 		    <th x-ng-if="show.base">店员</th>
-		    <th>客户</th>
-		    
+		    <th>客户</th> 
 		    <th>数量</th>
-		    <th class="success">应付</th> 
+		    
+		    <th class="info">实收</th>
 		    <th>现金</th>
 		    <th>刷卡</th>
-		    <th class="info">实付</th>
-		    <th class="info">余额</th> 
+		    <th>提现</th>
+		    
+		    <!-- <th class="info">余额</th>  -->
 		    <th x-ng-click="toggle_comment()" class="danger">
 		      <span x-ng-if="show.comment">
 			<i class="glyphicon glyphicon-backward fg-red"></i>
@@ -145,18 +146,19 @@
 		    <td x-ng-if="show.base">{{r.employee.name}}</td>
 		    <td>{{r.retailer.name}}</td>
 		    <td>{{r.total}}</td>
-
 		    <td x-ng-switch on="r.type">
 		      <span x-ng-switch-when=0>{{round(r.should_pay)}}</span>
 		      <span class="fg-red" x-ng-switch-when=1>
 			{{round(r.should_pay)}}
 		      </span>
-		    </td> 
+		    </td>
+		    
 		    <td>{{r.cash}}</td>
 		    <td>{{r.card}}</td>
-		    <td>{{r.has_pay}}</td> 
-		    <td>{{round(r.lastbalance)}}</td>
-		    <td>{{r.curbalance}}</td> 
+		    <td>{{r.withdraw}}</td>
+		    
+		    
+		    <td>{{round(r.balance - r.withdraw)}}</td>
 		    
 		    <td x-ng-if="show.comment">
 		      <span x-ng-switch on="r.comment">
@@ -207,14 +209,11 @@
 		    <td class="danger">{{total_spay}}</td>
 		    <!-- <td colspan="1"></td> -->
 		    <td>{{total_cash}}</td>
-		    <td>{{total_card}}</td> 
-		    <td class="info">{{total_hpay}}</td>
-		    <td colspan="2" class="text-center vert-align">
-		      {{total_curbalance - total_lastbalance }}
-		    </td>
-		    
-		    <td x-ng-if="show.comment" colspan="3"></td>
-		    <td x-ng-if="!show.comment" colspan="2"></td>
+		    <td>{{total_card}}</td>
+		    <td>{{total_withdraw}}</td>
+		    <td>{{total_balance - total_withdraw}}</td> 
+		    <td x-ng-if="show.comment" colspan="2"></td>
+		    <td x-ng-if="!show.comment" colspan="1"></td>
 		  </tr>
 		</tbody>
 

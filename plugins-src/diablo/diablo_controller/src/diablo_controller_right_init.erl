@@ -687,10 +687,7 @@ pass_action(saler) ->
     ];
 pass_action(wholesaler) ->
     [
-     %%
-     <<"list_w_province">>,
-     <<"list_w_city">>,
-     
+
      %% login user
      <<"get_login_user">>,
      <<"destroy_login_user">>,
@@ -740,6 +737,7 @@ pass_action(wholesaler) ->
      
      %% retailer
      <<"list_w_retailer">>,
+     <<"check_w_retailer_password">>,
      
      %% wsale
      %% <<"list_w_sale_new">>,

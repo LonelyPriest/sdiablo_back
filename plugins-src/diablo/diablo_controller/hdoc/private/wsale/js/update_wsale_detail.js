@@ -185,7 +185,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	    console.log($scope.old_select);
 	    
 	    $scope.old_select.surplus     = -base.lastbalance;
-	    $scope.old_select.new_surplus = $scope.old_select.surplus;
+	    // $scope.old_select.new_surplus = $scope.old_select.surplus;
 	    
 	    $scope.old_select.shop       =
 		$scope.get_object(base.shop_id,   $scope.shops);
@@ -560,8 +560,8 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	    shop:          $scope.select.shop.id,
 	    datetime:      dateFilter($scope.select.datetime,
 				      "yyyy-MM-dd HH:mm:ss"),
-	    employee:      $scope.select.employee.id, 
-	    balance:       parseFloat($scope.select.surplus),
+	    employee:      $scope.select.employee.id,
+	    lastbalance:   $scope.select.surplus,
 	    
 	    cash:           setv($scope.select.cash),
 	    card:           setv($scope.select.card), 
@@ -569,12 +569,12 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	    has_pay:        setv($scope.select.has_pay),
 	    comment:        sets($scope.select.comment),
 
-	    old_retailer:   $scope.old_select.retailer.id, 
-	    old_balance:    $scope.old_select.surplus,
-	    old_verify_pay: $scope.old_select.verificate,
-	    old_should_pay: $scope.old_select.should_pay,
-	    old_has_pay:    $scope.old_select.has_pay, 
-	    old_datetime:   dateFilter($scope.old_select.datetime,
+	    old_retailer:    $scope.old_select.retailer.id, 
+	    old_lastbalance: $scope.old_select.surplus,
+	    // old_curbalance:  $scope.old_select.curbalance,
+	    old_should_pay:  $scope.old_select.should_pay,
+	    old_has_pay:     $scope.old_select.has_pay, 
+	    old_datetime:    dateFilter($scope.old_select.datetime,
 				       "yyyy-MM-dd HH:mm:ss"),
 	    
 	    total:         seti($scope.select.total)
@@ -587,12 +587,10 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	
 	console.log($scope.old_select);
 	var new_datetime = dateFilter($scope.select.datetime, "yyyy-MM-dd");
-	var old_datetime = dateFilter($scope.old_select.datetime, "yyyy-MM-dd");
+	var old_datetime = dateFilter($scope.old_select.datetime,"yyyy-MM-dd");
 	if (added.length === 0
 	    && ($scope.select.cash === $scope.old_select.cash
-		&& $scope.select.card === $scope.old_select.card
-		&& $scope.select.wire === $scope.old_select.wire
-		&& $scope.select.verificate === $scope.old_select.verificate
+		&& $scope.select.card === $scope.old_select.card 
 		&& $scope.select.employee.id === $scope.old_select.employee.id
 		&& $scope.select.shop.id === $scope.old_select.shop.id
 		&& $scope.select.retailer.id === $scope.old_select.retailer.id
@@ -819,7 +817,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 		console.log(inv.amounts); 
 
 		inv.fdiscount   = inv.discount;
-		inv.fprice      = inv[inv.sell_style.f];
+		inv.fprice      = inv.tag_price;
 
 		if(inv.free === 0){
 		    inv.free_color_size = true;
@@ -860,7 +858,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 
 		    diabloUtilsService.edit_with_modal(
 			"wsale-new.html",
-			inv.sizes.length >= 6 ? "lg":undefined,
+			inv.sizes.length > 6 ? "lg":undefined,
 			callback, $scope, payload); 
 		}; 
 	    });
@@ -942,7 +940,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 		       valid_sell:   valid_sell,
 		       valid:        valid_all_sell}; 
 	diabloUtilsService.edit_with_modal(
-	    "wsale-new.html", inv.sizes.length >= 6 ? "lg":undefined,
+	    "wsale-new.html", inv.sizes.length > 6 ? "lg":undefined,
 	    callback, $scope, payload)
     };
 

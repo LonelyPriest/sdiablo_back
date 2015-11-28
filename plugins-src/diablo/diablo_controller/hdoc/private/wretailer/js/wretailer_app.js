@@ -109,6 +109,7 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
     
     this.error = {
      	2101: "会员信息重复！！",
+	2102: "会员密码不正确，请重新输入！！",
 	9001: "数据库操作失败，请联系服务人员！！"};
 
     this.sort_inventory = function(invs, orderSizes){
@@ -175,11 +176,13 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
     			 {operation: '@operation', id: '@id'});
 
     this.new_wretailer = function(r){
-	var balance = r.balance; 
 	return http.save(
 	    {operation:"new_w_retailer"},
 	    {name:     r.name,
-	     balance:  angular.isDefined(balance) ? parseFloat(balance) : 0,
+	     password: diablo_set_string(r.password),
+	     balance:  diablo_set_float(r.balance),
+	     conusme:  diablo_set_float(r.consume),
+	     score:    diablo_set_integer(r.score),
 	     mobile:   r.mobile,
 	     address:  r.address 
 	    }).$promise;
@@ -200,6 +203,13 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 	     mobile:   r.mobile,
 	     address:  r.address 
 	    }).$promise;
+    };
+
+    this.check_retailer_password = function(retailerId, password){
+	return http.save(
+	    {operation: "check_w_retailer_password"},
+	    {id:         retailerId,
+	     password:   password}).$promise;
     };
 
     this.list_retailer = function(){
@@ -238,5 +248,5 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
     this.check_w_sale_new = function(rsn){
 	return http_wsale.save({operation: "check_w_sale"},
 			       {rsn: rsn}).$promise;
-    };
+    }; 
 });

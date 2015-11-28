@@ -122,14 +122,15 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
     Shop       = ?v(<<"shop">>, Props), 
     DateTime   = ?v(<<"datetime">>, Props, ?utils:current_time(localtime)),
     Employe    = ?v(<<"employee">>, Props),
-
-    Cash       = ?v(<<"cash">>, Props, 0),
-    Card       = ?v(<<"card">>, Props, 0), 
     Comment    = ?v(<<"comment">>, Props, ""),
-    ShouldPay  = round(?v(<<"should_pay">>, Props, 0)),
-    HasPay     = ?v(<<"has_pay">>, Props, 0),
-    
 
+    Balance    = ?v(<<"balance">>, Props, 0),
+    Cash       = ?v(<<"cash">>, Props, 0),
+    Card       = ?v(<<"card">>, Props, 0),
+    Withdraw   = ?v(<<"withdraw">>, Props, 0),
+    
+    ShouldPay  = round(?v(<<"should_pay">>, Props, 0)),
+    HasPay     = ?v(<<"has_pay">>, Props, 0), 
     Total      = ?v(<<"total">>, Props, 0),
 
     Sql0 = "select id, name, balance from w_retailer"
@@ -167,28 +168,27 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 			  false -> Card
 		      end,
 
-	    ?DEBUG("NewCard ~p, NewCard ~p", [NewCash,  NewCard]), 
+	    
+	    ?DEBUG("NewCard ~p, NewCard ~p, withdraw",
+		   [NewCash,  NewCard, Withdraw]), 
 
 	    Sql2 = "insert into w_sale(rsn"
 		", employ, retailer, shop, merchant"
-		", lastbalance, curbalance, should_pay, has_pay"
-		", cash, card, total"
+		", balance, should_pay, cash, card, withdraw, total"
 		", comment, type, entry_date) values("
 		++ "\"" ++ ?to_s(SaleSn) ++ "\","
 		++ "\"" ++ ?to_s(Employe) ++ "\","
 		++ ?to_s(Retailer) ++ ","
 		++ ?to_s(Shop) ++ ","
-		++ ?to_s(Merchant) ++ ","
-		
-		++ ?to_s(CurrentBalance) ++ "," 
-		++ ?to_s(CurrentBalance-NewCash-NewCard+ShouldPay) ++ ","
-		++ ?to_s(ShouldPay) ++ ","
-		++ case HasPay >= ShouldPay of
-		       true -> ?to_s(ShouldPay);
-		       false -> ?to_s(HasPay)
-		   end ++ ","
+		++ ?to_s(Merchant) ++ "," 
+		++ case ?to_f(CurrentBalance) =:= ?to_f(Balance) of
+                       true  -> ?to_s(Balance) ++ ",";
+                       false -> ?to_s(CurrentBalance) ++ ","
+                   end 
+		++ ?to_s(ShouldPay) ++ "," 
 		++ ?to_s(NewCash) ++ ","
-		++ ?to_s(NewCard) ++ "," 
+		++ ?to_s(NewCard) ++ ","
+		++ ?to_s(Withdraw) ++ ","
 		++ ?to_s(Total) ++ ","
 		
 		++ "\"" ++ ?to_s(Comment) ++ "\"," 
@@ -199,8 +199,8 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 		case HasPay >= ShouldPay of
 		    true  -> [];
 		    false ->
-			["update w_retailer set balance=balance+"
-			 ++ ?to_s(ShouldPay - HasPay)
+			["update w_retailer set balance=balance-"
+			 ++ ?to_s(Withdraw)
 			 ++ " where id=" ++ ?to_s(?v(<<"id">>, Account))]
 		end,
 	    
@@ -226,21 +226,17 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
     Datetime   = ?v(<<"datetime">>, Props, CurTime),
     Employee   = ?v(<<"employee">>, Props),
 
-    Balance    = ?v(<<"balance">>, Props), 
-    Cash       = ?v(<<"cash">>, Props, 0),
-    Card       = ?v(<<"card">>, Props, 0),
-    Wire       = ?v(<<"wire">>, Props, 0),
-    VerifyPay  = ?v(<<"verificate">>, Props, 0),
-    EPay       = ?v(<<"e_pay">>, Props, 0),
+    LastBalance = ?v(<<"lastbalance">>, Props), 
+    Cash        = ?v(<<"cash">>, Props, 0),
+    Card        = ?v(<<"card">>, Props, 0), 
 
     Comment    = ?v(<<"comment">>, Props),
     ShouldPay  = ?v(<<"should_pay">>, Props, 0),
     HasPay     = ?v(<<"has_pay">>, Props, 0),
 
-    OldRetailer  = ?v(<<"old_retailer">>, Props),
-    OldBalance   = ?v(<<"old_balance">>, Props),
-    OldVerifyPay = ?v(<<"old_verify_pay">>, Props, 0),
-    OldShouldPay = ?v(<<"old_should_pay">>, Props, 0),
+    OldRetailer      = ?v(<<"old_retailer">>, Props),
+    OldLastBalance   = ?v(<<"old_lastbalance">>, Props),
+    OldShouldPay     = ?v(<<"old_should_pay">>, Props, 0),
     OldHasPay    = ?v(<<"old_has_pay">>, Props, 0),
     OldDatetime  = ?v(<<"old_datetime">>, Props),
 
@@ -251,22 +247,37 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
     Sql1 = sql(update_wsale,
 	       RSN, Merchant, RealyShop, Datetime, OldDatetime, Inventories),
 
+    
+    NewCash = case Cash >= ShouldPay of
+		  true  -> ShouldPay;
+		  false -> Cash
+	      end,
+
+    NewCard = case Card >=  ShouldPay - NewCash of
+		  true  -> ShouldPay - NewCash;
+		  false -> Card
+	      end,
+
+    NewHasPay = case HasPay >= ShouldPay of
+		    true -> ?to_s(ShouldPay);
+		    false -> ?to_s(HasPay)
+		end,
+
     Updates = ?utils:v(employ, string, Employee)
 	++ ?utils:v(retailer, integer, Retailer) 
 	++ ?utils:v(shop, integer, Shop)
     %% ++ ?utils:v(balance, float, OldBalance)
 	++ ?utils:v(should_pay, float, ShouldPay)
-	++ ?utils:v(has_pay, float, HasPay)
-	++ ?utils:v(cash, float, Cash)
-	++ ?utils:v(card, float, Card)
-	++ ?utils:v(wire, float, Wire)
-	++ ?utils:v(verificate, float, VerifyPay)
+	++ ?utils:v(has_pay, float, NewHasPay)
+	++ ?utils:v(cash, float, NewCash)
+	++ ?utils:v(card, float, NewCard)
+    %% ++ ?utils:v(wire, float, Wire)
+    %% ++ ?utils:v(verificate, float, VerifyPay)
 	++ ?utils:v(total, integer, Total)
 	++ ?utils:v(comment, string, Comment)
 	++ case Datetime =:= OldDatetime of
 	       true -> [];
-	       false ->
-		   ?utils:v(entry_date, string, Datetime)
+	       false -> ?utils:v(entry_date, string, Datetime)
 	   end,
 
     case Retailer =:= OldRetailer of
@@ -274,11 +285,10 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
 	    Sql2 = "update w_sale set "
 		++ ?utils:to_sqls(
 		      proplists, comma,
-		      ?utils:v(balance, float, OldBalance) ++ Updates)
+		      ?utils:v(lastbalance, float, OldLastBalance) ++ Updates)
 		++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'",
 
-	    case  (ShouldPay - HasPay - VerifyPay)
-		- (OldShouldPay - OldHasPay - OldVerifyPay) of
+	    case  (ShouldPay - NewHasPay) - (OldShouldPay - OldHasPay) of
 		0 ->
 		    AllSql = Sql1 ++ [Sql2],
 		    Reply = ?sql_utils:execute(transaction, AllSql, RSN),
@@ -312,9 +322,9 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
 		++ " and id<" ++ ?to_s(RSNId)
 		++ " order by id desc limit 1",
 
-	    LastBalance = 
+	    NewLastBalance = 
 		case ?sql_utils:execute(s_read, Sql0) of
-		    {ok, []} -> Balance;
+		    {ok, []} -> LastBalance;
 		    {ok, R}  ->
 			?v(<<"balance">>, R)
 			    + ?v(<<"should_pay">>, R, 0)
@@ -327,14 +337,12 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
 		"update w_sale set "
 		++ ?utils:to_sqls(
 		      proplists, comma,
-		      ?utils:v(balance, float, LastBalance) ++ Updates) 
+		      ?utils:v(balance, float, NewLastBalance) ++ Updates) 
 		++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"
 		++ " and id=" ++ ?to_s(RSNId),
 
-	    BackBalanceOfOldRetailer
-		= OldShouldPay + EPay - OldVerifyPay - OldHasPay,
-	    BalanceOfNewRetailer
-		= ShouldPay + EPay - HasPay - VerifyPay,
+	    BackBalanceOfOldRetailer = OldShouldPay  - OldHasPay,
+	    BalanceOfNewRetailer = ShouldPay  - HasPay ,
 
 	    AllSql = Sql1 ++ [Sql2] ++ 
 		["update w_retailer set balance=balance-"
@@ -914,12 +922,15 @@ sql(update_wsale, RSN, Merchant, Shop, Datetime, _OldDatetime, Inventories) ->
 	      case Operation of
 		  <<"d">> ->
 		      Amounts = ?v(<<"amount">>, Inv),
-		      wsale(delete, RSN, Datetime, Merchant, Shop, Inv, Amounts) ++ Acc0; 
+		      wsale(delete, RSN, Datetime, Merchant,
+			    Shop, Inv, Amounts) ++ Acc0; 
 		  <<"a">> ->
 		      Amounts = lists:reverse(?v(<<"amount">>, Inv)),
-		      wsale(new, RSN, Datetime, Merchant, Shop, Inv, Amounts) ++ Acc0; 
+		      wsale(new, RSN, Datetime, Merchant,
+			    Shop, Inv, Amounts) ++ Acc0; 
 		  <<"u">> -> 
-		      wsale(update, RSN, Datetime, Merchant, Shop, Inv) ++ Acc0
+		      wsale(update, RSN, Datetime, Merchant,
+			    Shop, Inv) ++ Acc0
 	      end
       end, [], Inventories).
     
@@ -1003,14 +1014,15 @@ wsale(update, RSN, DateTime, Merchant, Shop, Inventory) ->
 			    " from w_sale_detail_amount"
 			    " where " ++ C2(Color, Size),
 
-			["update w_inventory_amount set total=total-" ++ ?to_s(Count)
+			["update w_inventory_amount set total=total-"
+			 ++ ?to_s(Count)
 			 ++ " where " ++ C1(Color, Size),
 
 			 case ?sql_utils:execute(s_read, Sql01) of
 			     {ok, []} ->
 				 "insert into w_sale_detail_amount(rsn"
-				     ", style_number, brand, color, size, total, entry_date)"
-				     " values("
+				     ", style_number, brand, "
+				     "color, size, total, entry_date) values("
 				     ++ "\"" ++ ?to_s(RSN) ++ "\","
 				     ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
 				     ++ ?to_s(Brand) ++ ","
@@ -1019,7 +1031,8 @@ wsale(update, RSN, DateTime, Merchant, Shop, Inventory) ->
 				     ++ ?to_s(Count) ++ "," 
 				     ++ "\"" ++ ?to_s(DateTime) ++ "\")";
 			     {ok, _} ->
-				 "update w_sale_detail_amount set total=total+"
+				 "update w_sale_detail_amount"
+				     " set total=total+"
 				     ++ ?to_s(Count)
 				     ++ " where " ++ C2(Color, Size);
 			     {error, E00} ->
@@ -1034,7 +1047,8 @@ wsale(update, RSN, DateTime, Merchant, Shop, Inventory) ->
 			 " where " ++ C2(Color, Size)
 			 | Acc1];
 		    <<"u">> -> 
-			["update w_inventory_amount set total=total-" ++ ?to_s(Count)
+			["update w_inventory_amount"
+			 " set total=total-" ++ ?to_s(Count)
 			 ++ " where " ++ C1(Color, Size),
 
 			 " update w_sale_detail_amount"
@@ -1438,11 +1452,11 @@ count_table(w_sale, Merchant, Conditions) ->
     CountSql = "select count(*) as total"
     	", sum(a.total) as t_amount"
     	", sum(a.should_pay) as t_spay"
-	", sum(a.has_pay) as t_hpay"
+	%% ", sum(a.has_pay) as t_hpay"
     	", sum(a.cash) as t_cash"
     	", sum(a.card) as t_card"
-	", sum(a.lastbalance) as t_lastbalance"
-	", sum(a.curbalance) as t_curbalance"
+	", sum(a.withdraw) as t_withdraw"
+	", sum(a.balance) as t_balance"
 	" from w_sale a where " ++ SortConditions, 
     CountSql.
 
@@ -1451,9 +1465,8 @@ filter_table(w_sale, Merchant, Conditions) ->
 
     Sql = "select a.id, a.rsn, a.employ as employee_id"
 	", a.retailer as retailer_id, a.shop as shop_id"
-	", a.balance, a.should_pay, a.has_pay, a.cash, a.card"
-	", a.total, a.comment, a.type"
-	", a.state, a.entry_date"
+	", a.balance, a.should_pay, a.cash, a.card, a.withdraw"
+	", a.total, a.comment, a.type, a.state, a.entry_date"
 	", b.name as shop"
 	", c.name as employee"
 	", d.name as retailer"
@@ -1471,9 +1484,8 @@ filter_table(w_sale_with_page,
     
     Sql = "select a.id, a.rsn, a.employ as employee_id"
     	", a.retailer as retailer_id, a.shop as shop_id"
-    	", a.lastbalance, a.curbalance, a.should_pay"
-	", a.has_pay, a.cash, a.card"
-    	", a.total, a.comment, a.type, a.state, a.entry_date"
+    	", a.balance, a.should_pay, a.cash, a.card, a.withdraw"
+	", a.total, a.comment, a.type, a.state, a.entry_date"
     	" from w_sale a"
     	" where " ++ SortConditions
 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage), 

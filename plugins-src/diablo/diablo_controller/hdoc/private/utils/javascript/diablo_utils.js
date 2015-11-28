@@ -715,7 +715,7 @@ diabloUtils.controller("diabloDialogCtrl", function($scope, $modalInstance, mess
 diabloUtils.controller("diabloEditDialogCtrl", function($scope, $modalInstance, message){
     // console.log($scope);
     // console.log($modalInstance);
-    // console.log(message); 
+    console.log(message); 
     
     var deviceAgent = navigator.userAgent.toLowerCase();
     if (deviceAgent.match(/iphone|ipod|ipad/i)

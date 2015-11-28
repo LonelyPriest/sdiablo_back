@@ -54,7 +54,7 @@ create table merchants
     name             VARCHAR(64) not null,
     owner            VARCHAR(64) not null,  -- the merchant belonged to
     mobile           VARCHAR(11) not null,
-    address          VARCHAR(255) not null,
+    address          VARCHAR(256) not null,
     type             TINYINT default 0, -- 0:saler 1:wholesaler
     province         TINYINT default -1, -- which province
     entry_date       DATE,
@@ -83,7 +83,7 @@ create table shops
 create table suppliers
 (
     id              INTEGER AUTO_INCREMENT,
-    name            VARCHAR(127) not null,
+    name            VARCHAR(128) not null,
     balance         DECIMAL(10, 2) default 0, -- max: 99999999.99
     mobile          VARCHAR(11),
     address         VARCHAR(256),
@@ -140,7 +140,7 @@ create table brands(
     name             VARCHAR(8) default null,
     supplier         INTEGER default -1,  -- supplier of brand
     merchant         INTEGER default -1,  -- brand belong to
-    remark           VARCHAR(256) default null,
+    remark           VARCHAR(255) default null,
     deleted          INTEGER default 0, -- 0: no;  1: yes
     entry            DATETIME NOT NULL DEFAULT 0,
     
@@ -168,8 +168,8 @@ create table inv_types(
 create table users
 (
     id             INTEGER AUTO_INCREMENT,
-    name           VARCHAR(127) not null,
-    password       VARCHAR(127) not null, -- should be encrypt
+    name           VARCHAR(64) not null,
+    password       VARCHAR(128) not null, -- should be encrypt
     type           TINYINT default -1, -- type to user 0: supper, 1: merchant 2:user
     merchant       INTEGER default -1, -- which merchant belong to, 0: means super
     max_create     INTEGER default -1, -- max users can be created of the user
@@ -203,7 +203,7 @@ create table role_to_shop(
 create table roles(
     id             INTEGER AUTO_INCREMENT,
     name           VARCHAR(127) not null,
-    remark         VARCHAR(256),
+    remark         VARCHAR(255),
     type           TINYINT default -1, -- type to role 1: merchant 2:user
     merchant       INTEGER default -1,
     created_by     INTEGER default -1, -- who create this role
@@ -226,8 +226,8 @@ create table role_to_right(
 create table catlog(
     id             INTEGER AUTO_INCREMENT,
     catlog_id      INTEGER not null,
-    name           VARCHAR(256) not null,
-    path           VARCHAR(256) not null,
+    name           VARCHAR(255) not null,
+    path           VARCHAR(255) not null,
     parent         INTEGER default 0, -- 0: root
     deleted        INTEGER default 0, -- 0: no;  1: yes
     primary key    (id)
@@ -236,8 +236,8 @@ create table catlog(
 create table funcs(
     id             INTEGER AUTO_INCREMENT,
     fun_id         INTEGER not null,
-    name           VARCHAR(256) not null,
-    call_fun       VARCHAR(256) not null,
+    name           VARCHAR(255) not null,
+    call_fun       VARCHAR(255) not null,
     catlog         INTEGER default -1, -- -1: nothing
     deleted        INTEGER default 0, -- 0: no;  1: yes
     primary key    (id)
@@ -252,8 +252,8 @@ create table funcs(
 -------------------------------------------------------------------------------- */
 create table w_print_server(
    id              INTEGER AUTO_INCREMENT,
-   name            VARCHAR(256) not null, 
-   path            VARCHAR(256) not null,
+   name            VARCHAR(64) not null, 
+   path            VARCHAR(128) not null,
    entry_date      DATE, 
    deleted         INTEGER default 0, -- 0: no;  1: yes
    -- unique  key     (path),
@@ -341,11 +341,15 @@ suppliers
 create table w_retailer
 (
     id              INTEGER AUTO_INCREMENT,
-    name            VARCHAR(127) not null,
-    balance         DECIMAL(10, 2) default 0, -- max: 99999999.99 
+    name            VARCHAR(64) not null,
+    password        VARCHAR(128) default null,
+    balance         DECIMAL(10, 2) default 0, -- max: 99999999.99
+    consume         DECIMAL(10, 2) default 0, -- max: 99999999.99
+    score           INTEGER not null default 0,
     mobile          VARCHAR(11),
-    address         VARCHAR(256), 
+    address         VARCHAR(255), 
     merchant        INTEGER default -1, -- which merchant belong to
+    
     change_date     DATETIME default 0, -- last changed
     entry_date      DATETIME default 0, -- last changed
     deleted         INTEGER default 0, -- 0: no;  1: yes
@@ -615,12 +619,12 @@ create table w_sale(
     shop           INTEGER,                  -- which shop saled the goods
     merchant       INTEGER,
 
-    lastbalance    DECIMAL(10, 2) default 0, -- max: 99999999.99
-    curbalance     DECIMAL(10, 2) default 0, -- max: 99999999.99
+    balance        DECIMAL(10, 2) default 0, -- max: 99999999.99
     should_pay     DECIMAL(10, 2) default 0, -- max: 99999999.99
-    has_pay        DECIMAL(10, 2) default 0, -- max: 99999999.99
+    -- has_pay        DECIMAL(10, 2) default 0, -- max: 99999999.99
     cash           DECIMAL(10, 2) default 0, -- max: 99999999.99
-    card           DECIMAL(10, 2) default 0, -- max: 99999999.99 
+    card           DECIMAL(10, 2) default 0, -- max: 99999999.99
+    withdraw       DECIMAL(10, 2) default 0, -- max: 99999999.99
     total          INTEGER default 0,
     comment        VARCHAR(255) default null, 
     
@@ -662,7 +666,7 @@ create table w_sale_detail(
     entry_date     DATETIME default 0,
     deleted        INTEGER default 0, -- 0: no;  1: yes
 
-    unique  key uk (rsn),
+    unique  key uk (rsn, style_number, brand),
     key     dk     (merchant, style_number, brand, type, firm, year),
     primary key    (id)
 )default charset=utf8;

@@ -113,7 +113,7 @@ wsaleApp.service("wsaleService", function($http, $resource, dateFilter){
     this.error = {
 	2190: "该款号库存不存在！！请确认本店是否进货该款号！！",
 	2191: "该货号已存在，请选择新的货号！！",
-	2192: "客户或营业员不存在，请建立客户或营业员资料！！", 
+	2192: "客户或营业员不存在，请建立客户或营业员资料！！",
 	2401: "店铺打印机不存在或打印处理暂停状态！！",
 	
 	2411: "打印机编号错误！！",
@@ -329,16 +329,20 @@ wsaleApp.controller("wsaleNewCtrl", function(
     $scope.f_mul           = diablo_float_mul;
     $scope.wsale_mode      = wsaleService.wsale_mode;
     $scope.disable_refresh = true;
-    
+    $scope.has_withdrawed  = false;
+
     $scope.select = {
 	cash: undefined,
-	card: undefined, 
+	card: undefined,
+	withdraw: undefined,
 	
 	total:        0,
 	abs_total:    0,
-	has_pay:      0.00,
-	should_pay:   0.00,
+	has_pay:      0,
+	should_pay:   0,
 	charge:       0,
+	surplus:      0,
+	left_balance: 0,
 	datetime: $scope.today()
     }; 
 
@@ -371,16 +375,14 @@ wsaleApp.controller("wsaleNewCtrl", function(
     if ($scope.retailers.length !== 0){
 	$scope.select.retailer = $scope.retailers[0];
 	var balance = diablo_set_float($scope.select.retailer.balance);
-	$scope.select.surplus = angular.isDefined(balance) ? -balance : 0;
-	$scope.select.new_surplus = $scope.select.surplus;
-	
-	// $scope.select.left_balance = $scope.select.surplus;
+	$scope.select.surplus = angular.isDefined(balance) ? balance : 0;
+	$scope.select.left_balance = $scope.select.surplus;
     }; 
 
     $scope.change_retailer = function(){
 	var balance = diablo_set_float($scope.select.retailer.balance);
-	$scope.select.surplus = angular.isDefined(balance) ? -balance : 0;
-	$scope.select.new_surplus = $scope.select.surplus;
+	$scope.select.surplus = angular.isDefined(balance) ? balance : 0;
+	$scope.select.left_balance = $scope.select.surplus;
 	
 	$scope.local_save();
 	$scope.re_calculate();
@@ -389,6 +391,67 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	if ($scope.wsale_mode[1].active){
 	    $scope.page_changed($scope.current_page); 
 	}
+    };
+
+    /*
+     * with draw
+     */
+    var check_withdraw = function(balance){
+	return balance > $scope.select.should_pay - $scope.select.has_pay
+	    ? false : true;
+    };
+
+    var check_zero = function(balance){
+	return balance === 0 ? true : false;
+    };
+
+    $scope.disable_withdraw = function(){
+	return angular.isDefined($scope.select.retailer)
+	    && $scope.select.retailer.surplus <= 0
+	    || $scope.select.charge <= 0
+	    || $scope.has_withdrawed;
+    };
+    
+    $scope.withdraw = function(){
+	var callback = function(params){
+	    console.log(params);
+	    wretailerService.check_retailer_password(
+		params.retailer.id, params.retailer.password)
+		.then(function(result){
+		    console.log(result); 
+		    if (result.ecode === 0){
+			// $scope.select.surplus  = params.retailer.balance 
+			$scope.select.withdraw = params.retailer.withdraw;
+			$scope.has_withdrawed  = true;
+			$scope.reset_payment();
+		    } else {
+			diabloUtilsService.response(
+			    false,
+			    "会员现金提取",
+			    wretailerService.error[result.ecode],
+			    undefined)
+		    }
+		}); 
+	};
+
+	// var should_withdraw =
+	//     $scope.select.should_pay - $scope.select.has_pay; 
+	
+	diabloUtilsService.edit_with_modal(
+	    "new-withdraw.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {retailer:
+	     {id        :$scope.select.retailer.id,
+	      name      :$scope.select.retailer.name,
+	      withdraw  :$scope.select.surplus >= $scope.select.charge
+	      ? $scope.select.charge : $scope.select.surplus},
+	     
+	     check_withdraw :check_withdraw,
+	     check_zero     :check_zero
+	    }
+	);
     }
 
     $scope.add_retailer = function(){
@@ -439,19 +502,24 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	$scope.select.form.cashForm.$invalid  = false; 
 
 	$scope.select.cash         = undefined;
-	$scope.select.card         = undefined; 
+	$scope.select.card         = undefined;
+	$scope.select.withdraw     = undefined;
 	
-	$scope.select.has_pay      = 0.00;
-	$scope.select.should_pay   = 0.00;
+	$scope.select.has_pay      = 0;
+	$scope.select.should_pay   = 0;
+	$scope.select.charge       = 0;
+	$scope.select.surplus      = $scope.select.retailer.balance;
+	$scope.select.left_balance = $scope.select.surplus;
 	
 	$scope.select.total        = 0;
 	$scope.select.abs_total    = 0;
 	$scope.select.comment      = undefined;
-	$scope.select.charge       = 0;
+	
 	$scope.select.datetime     = $scope.today();
 
-	$scope.disable_refresh = true;
-	$scope.has_saved = false;
+	$scope.disable_refresh     = true;
+	$scope.has_saved           = false;
+	$scope.has_withdrawed      = false;
     }; 
 
     var now = $scope.today();
@@ -948,12 +1016,14 @@ wsaleApp.controller("wsaleNewCtrl", function(
 				       "yyyy-MM-dd HH:mm:ss"),
 	    employee:       $scope.select.employee.id,
 	    comment:        sets($scope.select.comment),
-	    
+
+	    balance:        setv($scope.select.surplus), 
 	    cash:           setv($scope.select.cash),
 	    card:           setv($scope.select.card),
-	    should_pay:     setv($scope.select.should_pay),
-	    has_pay:        setv($scope.select.has_pay),
+	    withdraw:       setv($scope.select.withdraw),
 	    
+	    should_pay:     setv($scope.select.should_pay),
+	    has_pay:        setv($scope.select.has_pay), 
 	    total:          seti($scope.select.total)
 	};
 
@@ -981,8 +1051,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
 		$scope.local_remove();
 		$scope.disable_refresh = false;
 		// modify current balance of retailer
-		$scope.select.retailer.balance = -$scope.select.new_surplus;
-		$scope.select.surplus = $scope.select.new_surplus;
+		$scope.select.retailer.balance = $scope.select.left_balance;
+		$scope.select.surplus = $scope.select.left_balance;
 	    }
 
 	    if (result.ecode === 0){
@@ -999,39 +1069,41 @@ wsaleApp.controller("wsaleNewCtrl", function(
     };
     
     // watch balance
-    var reset_payment = function(newValue){
-	$scope.select.has_pay = 0.00;
-	$scope.select.new_surplus = 0.00;
-	if(angular.isDefined($scope.select.cash) && $scope.select.cash){
+    $scope.reset_payment = function(newValue){
+	$scope.select.has_pay = 0;
+	// $scope.select.new_surplus = 0.00;
+	if(angular.isDefined($scope.select.cash)
+	   && $scope.select.cash){
 	    $scope.select.has_pay += parseFloat($scope.select.cash);
 	}
 
-	if(angular.isDefined($scope.select.card) && $scope.select.card){
+	if(angular.isDefined($scope.select.card)
+	   && $scope.select.card){
 	    $scope.select.has_pay += parseFloat($scope.select.card);
-	} 
+	}
 
-	// console.log($scope.float_add);
-	$scope.select.new_surplus =
-	    $scope.round($scope.select.surplus + $scope.select.has_pay);
+
+	var withdraw = diablo_set_float($scope.select.withdraw);
+	
+	if(angular.isDefined(withdraw)){
+	    $scope.select.has_pay += parseFloat($scope.select.withdraw);
+	    $scope.select.left_balance = $scope.select.surplus - withdraw;
+	} 
 	
 	$scope.select.charge =
-	    $scope.select.should_pay - $scope.select.new_surplus;
-
-	// if ($scope.select.charge >= 0){
-	//     $scope.select.charge = 0;
-	// }; 
+	    $scope.select.should_pay - $scope.select.has_pay; 
     };
     
     $scope.$watch("select.cash", function(newValue, oldValue){
 	if (newValue === oldValue || angular.isUndefined(newValue)) return;
 	if ($scope.select.form.cashForm.$invalid) return; 
-	reset_payment(newValue);
+	$scope.reset_payment(newValue);
     });
 
     $scope.$watch("select.card", function(newValue, oldValue){
 	if (newValue === oldValue || angular.isUndefined(newValue)) return;
 	if ($scope.select.form.cardForm.$invalid) return;
-	reset_payment(newValue); 
+	$scope.reset_payment(newValue); 
     }); 
     
     var in_amount = function(amounts, inv){
@@ -1056,11 +1128,11 @@ wsaleApp.controller("wsaleNewCtrl", function(
     
     $scope.re_calculate = function(){
 	// console.log("re_calculate");
-	$scope.select.total       = 0;
-	$scope.select.abs_total   = 0;
-	$scope.select.should_pay  = 0.00;
-	$scope.select.new_surplus = 0.00;
-
+	$scope.select.total        = 0;
+	$scope.select.abs_total    = 0;
+	$scope.select.should_pay   = 0;
+	// $scope.select.left_balance = 0;
+	
 	console.log($scope.inventories);
 	for (var i=1, l=$scope.inventories.length; i<l; i++){
 	    var one = $scope.inventories[i];
@@ -1077,13 +1149,10 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    } 
 	}
 
-	$scope.select.should_pay = $scope.round($scope.select.should_pay); 
+	$scope.select.should_pay = $scope.round($scope.select.should_pay);
 
-	$scope.select.new_surplus =
-	    $scope.round($scope.select.surplus + $scope.select.has_pay);
-	
 	$scope.select.charge =
-	    $scope.select.should_pay - $scope.select.new_surplus;
+	    $scope.select.should_pay - $scope.select.has_pay; 
     };
 
     var valid_sell = function(amount){
@@ -1554,12 +1623,12 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 	    $scope.total_items       = stastic.total_items;
 	    $scope.total_amounts     = stastic.total_amounts;
 	    $scope.total_spay        = stastic.total_spay;
-	    $scope.total_hpay        = stastic.total_hpay;
+	    // $scope.total_hpay        = stastic.total_hpay;
 	    $scope.total_cash        = stastic.total_cash;
 	    $scope.total_card        = stastic.total_card;
-	    $scope.total_lastbalance = stastic.total_lastbalance;
-	    $scope.total_curbalance  = stastic.total_curbalance;
-
+	    $scope.total_withdraw    = stastic.total_withdraw;
+	    $scope.total_balance     = stastic.total_balance;
+	    
 	    // recover 
 	    $location.path("/new_wsale_detail", false);
 	    $routeParams.page = undefined;
@@ -1594,11 +1663,11 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 		    $scope.total_items       = result.total;
 		    $scope.total_amounts     = result.t_amount;
 		    $scope.total_spay        = $scope.round(result.t_spay);
-		    $scope.total_hpay        = $scope.round(result.t_hpay);
+		    // $scope.total_hpay        = $scope.round(result.t_hpay);
 		    $scope.total_cash        = result.t_cash;
 		    $scope.total_card        = result.t_card;
-		    $scope.total_lastbalance = result.t_lastbalance;
-		    $scope.total_curbalance  = result.t_curbalance;
+		    $scope.total_withdraw    = result.t_withdraw;
+		    $scope.total_balance     = result.t_balance;
 
 		    $scope.records = [];
 		}
@@ -1653,11 +1722,11 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 	    {total_items:       $scope.total_items,
 	     total_amounts:     $scope.total_amounts,
 	     total_spay:        $scope.total_spay,
-	     total_hpay:        $scope.total_hpay,
+	     // total_hpay:        $scope.total_hpay,
 	     total_cash:        $scope.total_cash,
 	     total_card:        $scope.total_card,
-	     total_lastbalance: $scope.total_balance,
-	     total_curbalance:  $scope.total_curbalance,
+	     total_withdraw:    $scope.total_withdraw,
+	     total_balance:     $scope.total_balance,
 	     t:                now});
     };
     

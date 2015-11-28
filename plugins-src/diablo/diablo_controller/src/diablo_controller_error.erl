@@ -132,6 +132,9 @@ success(update_w_retailer, Retailer) ->
     {0, "Success to update retailer " ++ ?to_s(Retailer)};
 success(delete_w_retailer, Retailer) ->
     {0, "Success to delete retailer " ++ ?to_s(Retailer)};
+success(check_w_retailer_password, Retailer) ->
+    {0, "Success to check password of retailer " ++ ?to_s(Retailer)};
+
 
 %% wsale
 success(new_w_sale, RSn) ->
@@ -300,6 +303,8 @@ error(purchaser_good_exist, Number) ->
 %% retailer
 error(retailer_exist, Retailer) ->
     {2101, "retailer " ++ ?to_s(Retailer) ++ " is been exist."};
+error(retailer_invalid_password, Retailer) ->
+    {2102, "invalid password of retailer " ++ ?to_s(Retailer) ++ "."};
 
 %% wprint
 error(wprint_server_exist, Server) ->

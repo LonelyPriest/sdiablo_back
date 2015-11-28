@@ -47,7 +47,10 @@ retailer(get, Merchant, RetailerId) ->
     
 retailer(update, Merchant, RetailerId, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {update_retailer, Merchant, RetailerId, Attrs}).
+    gen_server:call(Name, {update_retailer, Merchant, RetailerId, Attrs});
+retailer(check_password, Merchant, RetailerId, Password) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {check_password, Merchant, RetailerId, Password}).
 
 city(new, Merchant, City, Province) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -72,9 +75,12 @@ init([]) ->
 handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
     ?DEBUG("new_retailer with attrs ~p", [Attrs]),
     Name     = ?v(<<"name">>, Attrs),
-    Balance  = ?v(<<"balance">>, Attrs, 0),
+    Passwd   = ?v(<<"password">>, Attrs, []),
+    Balance  = ?v(<<"balance">>, Attrs, 0), 
+    Consume  = ?v(<<"consume">>, Attrs, 0),
+    Score    = ?v(<<"score">>, Attrs, 0),
     Mobile   = ?v(<<"mobile">>, Attrs, []),
-    Address  = ?v(<<"address">>, Attrs, []), 
+    Address  = ?v(<<"address">>, Attrs, []),
 
     %% name can not be same
     Sql = "select id, name, mobile, address"
@@ -87,10 +93,14 @@ handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
     case ?sql_utils:execute(read, Sql) of
 	{ok, []} -> 
 	    Sql2 = "insert into w_retailer("
-		"name, balance, mobile, address, merchant, entry_date)"
+		"name, password, balance, consume, score"
+		" ,mobile, address, merchant, entry_date)"
 		++ " values ("
 		++ "\"" ++ ?to_s(Name) ++ "\","
-		++ ?to_s(Balance) ++ "," 
+		++ "\"" ++ ?to_s(Passwd) ++ "\","
+		++ ?to_s(Balance) ++ ","
+		++ ?to_s(Consume) ++ "," 
+		++ ?to_s(Score) ++ "," 
 		++ "\"" ++ ?to_s(Mobile) ++ "\","
 		++ "\"" ++ ?to_s(Address) ++ "\"," 
 		++ ?to_s(Merchant) ++ ","
@@ -147,6 +157,23 @@ handle_call({update_retailer, Merchant, RetailerId, Attrs}, _From, State) ->
 	    {reply, {error, Error}, State}
     end;
 
+handle_call({check_password, Merchant, RetailerId, Password}, _From, State) ->
+    Sql = "select id, password from w_retailer"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and id=" ++ ?to_s(RetailerId)
+	++ " and password=\'" ++ ?to_s(Password) ++ "\'"
+	++ " and deleted=" ++ ?to_s(?NO),
+
+    case ?sql_utils:execute(s_read, Sql) of
+	{ok, []} ->
+	    {reply,
+	     {error, ?err(retailer_invalid_password, RetailerId)}, State};
+	{ok, _}->
+	    {reply, {ok, RetailerId}, State};
+	Error ->
+	    {reply, Error, State}
+    end;
+
 handle_call({get_retailer, Merchant, RetailerId}, _From, State) ->
     ?DEBUG("get_retailer with merchant ~p, retailerId ~p",
 	   [Merchant, RetailerId]),
@@ -169,8 +196,8 @@ handle_call({delete_retailer, Merchant, RetailerId}, _From, State) ->
 
 handle_call({list_retailer, Merchant}, _From, State) ->
     ?DEBUG("lookup retail with merchant ~p", [Merchant]),
-    Sql = "select id, name, mobile, address"
-	", balance, merchant, entry_date"
+    Sql = "select id, name, balance, consume, score, mobile, address"
+	", merchant, entry_date"
 	" from w_retailer"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and deleted=" ++ ?to_s(?NO)

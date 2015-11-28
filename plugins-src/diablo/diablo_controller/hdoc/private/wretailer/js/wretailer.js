@@ -3,7 +3,9 @@ wretailerApp.controller("wretailerNewCtrl", function(
     
     $scope.pattern = {name_address: diabloPattern.ch_name_address,
 		      tel_mobile:   diabloPattern.tel_mobile,
-		      decimal_2:    diabloPattern.decimal_2};
+		      decimal_2:    diabloPattern.decimal_2,
+		      score:        diabloPattern.number,
+		      password:       diabloPattern.num_passwd};
 
     
     $scope.new_wretailer = function(retailer){

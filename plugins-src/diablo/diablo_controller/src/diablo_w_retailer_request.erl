@@ -25,23 +25,10 @@ action(Session, Req) ->
 
 action(Session, Req, {"list_w_retailer"}) ->
     ?DEBUG("list w_retailer with session ~p", [Session]), 
-    Merchant = ?session:get(merchant, Session),
-    
-    %% ?utils:respond(
-    %%    batch, fun() -> ?w_retailer:retailer(list, Merchant) end, Req);
+    Merchant = ?session:get(merchant, Session), 
     ?utils:respond(
        batch, fun() -> ?w_user_profile:get(retailer, Merchant) end, Req);
 
-action(Session, Req, {"list_w_province"}) ->
-    ?DEBUG("list w_province with session ~p", [Session]),
-    Merchant = ?session:get(merchant, Session),
-    ?utils:respond(
-       batch, fun() -> ?w_retailer:province(list, Merchant) end, Req);
-
-action(Session, Req, {"list_w_city"}) ->
-    ?DEBUG("list w_city with session ~p", [Session]),
-    Merchant = ?session:get(merchant, Session),
-    ?utils:respond(batch, fun() -> ?w_retailer:city(list, Merchant) end, Req);
 
 action(Session, Req, {"del_w_retailer", Id}) ->
     ?DEBUG("delete_w_retailer with session ~p, Id ~p", [Session, Id]),
@@ -71,38 +58,31 @@ action(Session, Req, {"new_w_retailer"}, Payload) ->
 	
 
 action(Session, Req, {"update_w_retailer", Id}, Payload) ->
-    ?DEBUG("update_w_retailer with Session ~p~npaylaod ~p", [Session, Payload]),
+    ?DEBUG("update_w_retailer with Session ~p~npaylaod ~p",
+	   [Session, Payload]),
     
     Merchant = ?session:get(merchant, Session),
-    Province = ?v(<<"province">>, Payload),
-
-    UpdateFun =
-	fun(Update, CId) ->
-		case ?w_retailer:retailer(update, Merchant, Id, Update) of
-		    {ok, RId} ->
-			?utils:respond(200,
-				       Req,
-				       ?succ(update_w_retailer, RId),
-				       {<<"cid">>, CId});
-		    {error, Error} ->
-			?utils:respond(200, Req, Error)
-		end 
-	end,
     
-    case ?v(<<"city">>, Payload, []) of
-    	[]   ->
-    	    UpdateFun(Payload, -1);
-    	City ->
-    	    case ?w_retailer:city(new, Merchant, City, Province) of
-		{ok, CityId} -> 
-		    NewPayload = [{<<"city">>, CityId}
-				  |proplists:delete(<<"city">>, Payload)],
-		    UpdateFun(NewPayload, CityId);
-		Error ->
-		    ?utils:respond(200, Req, Error)
-	    end
-    end.
-		
+
+    case ?w_retailer:retailer(update, Merchant, Id, Payload) of
+	{ok, RId} ->
+	    ?utils:respond(
+	       200, Req, ?succ(update_w_retailer, RId));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"check_w_retailer_password", Id}, Payload) ->
+    Merchant = ?session:get(merchant, Session),
+    Password = ?v(<<"password">>, Payload),
+
+    case ?w_retailer:retailer(check_password, Merchant, Id, Password) of
+	{ok, Id} ->
+	    ?utils:respond(
+	       200, Req, ?succ(check_w_retailer_password, Id));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end.		
 
 sidebar(Session) -> 
     S1 = [{"wretailer_detail", "会员详情", "glyphicon glyphicon-book"}],
