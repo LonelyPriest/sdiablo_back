@@ -100,6 +100,8 @@
 		    <th x-ng-if="show.base">店员</th>
 		    <th>客户</th> 
 		    <th>数量</th>
+
+		    <th class="info">余额</th>
 		    
 		    <th class="info">实收</th>
 		    <th>现金</th>
@@ -146,6 +148,9 @@
 		    <td x-ng-if="show.base">{{r.employee.name}}</td>
 		    <td>{{r.retailer.name}}</td>
 		    <td>{{r.total}}</td>
+
+		    <td>{{r.balance}}</td>
+		    
 		    <td x-ng-switch on="r.type">
 		      <span x-ng-switch-when=0>{{round(r.should_pay)}}</span>
 		      <span class="fg-red" x-ng-switch-when=1>
@@ -211,7 +216,7 @@
 		    <td>{{total_cash}}</td>
 		    <td>{{total_card}}</td>
 		    <td>{{total_withdraw}}</td>
-		    <td>{{total_balance - total_withdraw}}</td> 
+		    <!-- <td>{{total_balance - total_withdraw}}</td>  -->
 		    <td x-ng-if="show.comment" colspan="2"></td>
 		    <td x-ng-if="!show.comment" colspan="1"></td>
 		  </tr>

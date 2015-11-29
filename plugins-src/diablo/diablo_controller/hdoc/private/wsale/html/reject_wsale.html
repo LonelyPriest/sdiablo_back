@@ -3,7 +3,8 @@
     <div class="portlet box purple">
       
       <div class="portlet-title">
-	<div class="caption"><i class="glyphicon glyphicon-menu-hamburger"></i>
+	<div class="caption">
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>
 	  销售退货
 	</div>
 	<div class="actions">
@@ -62,29 +63,10 @@
 	  			  shops|filter:$viewValue|limitTo:8">
 		</select> 
 	      </div>
-	    </div>
-	    
-	    <!-- <div class="col-xs-3 col-md-3"> -->
-	    <!--   <div class="input-group"> -->
-	    <!-- 	<span class="input-group-addon"> -->
-	    <!-- 	  <\!-- <i class="glyphicon glyphicon-registration-mark fg-red"></i> -\-> -->
-	    <!-- 	  店铺 -->
-	    <!-- 	</span> -->
-	    <!-- 	  <input class="form-control" type="text" -->
-	    <!-- 		 x-ng-model="select.shop" -->
-	    <!-- 		 x-ng-init="select.shop=shops[0]" -->
-	    <!-- 		 placeholder="请选择店铺" -->
-	    <!-- 		 typeahead-editable="false" -->
-	    <!-- 		 typeahead="s as s.name for s in -->
-	    <!-- 			    shops|filter:$viewValue|limitTo:8"></input>  -->
-	    <!--   </div> -->
-	    <!-- </div> -->
+	    </div> 
 
 	    <div class="col-xs-3 col-md-3">
-	      <div class="input-group">
-		<!-- <span class="input-group-addon"> -->
-	  	<!--   <i class="glyphicon glyphicon-user"></i>日期 -->
-	  	<!-- </span> -->
+	      <div class="input-group"> 
 		<input type="text" class="form-control"
 		       placeholder="年/月/日"
 		       datepicker-popup="yyyy/MM/dd"
@@ -93,8 +75,7 @@
 		       clear-text="清除"
 		       current-text="今天"
 		       show-weeks="false"
-		       x-ng-model="select.date"
-		       x-ng-init="select.date=today()"></input>
+		       x-ng-model="select.datetime"/>
 	  	<span class="input-group-btn">
 		  <button type="button"
 			  class="btn btn-default"
@@ -123,11 +104,12 @@
 	    <div class="col-xs-3 col-md-3"> 
 	      <div class="input-group">
 		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-comment fg-red"></i>备注</span>
+		  <i class="glyphicon glyphicon-comment fg-red"></i>
+		  备注</span>
 	  	<input class="form-control"
 		       type="text"
 		       placeholder="备注"
-	  	       x-ng-model="select.comment"></input> 
+	  	       x-ng-model="select.comment"/>
 	      </div>
 	    </div>
 	    
@@ -137,10 +119,10 @@
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-plane fg-red"></i>总数</span>
 	  	<input class="form-control" type="text" readonly
-	  	       x-ng-model="select.total"></input>
+	  	       x-ng-model="select.total"/>
 		
 		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-yen fg-red"></i>欠款</span>
+		  <i class="glyphicon glyphicon-yen fg-red"></i>余额</span>
 	  	<input class="form-control" readonly
 	  	       x-ng-model="select.surplus"></input>
 		

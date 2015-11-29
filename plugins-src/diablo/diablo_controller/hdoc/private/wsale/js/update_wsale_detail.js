@@ -51,11 +51,11 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 
     $scope.re_calculate = function(){
 	// console.log("re_calculate");
-	$scope.select.total       = 0;
-	$scope.select.abs_total   = 0;
-	$scope.select.should_pay  = 0.00;
-	$scope.select.new_surplus = 0.00;
-
+	$scope.select.total        = 0;
+	$scope.select.abs_total    = 0;
+	$scope.select.should_pay   = 0;
+	$scope.select.left_balance = 0;
+	
 	for (var i=1, l=$scope.inventories.length; i<l; i++){
 	    var one = $scope.inventories[i];
 	    $scope.select.total      += parseInt(one.sell);
@@ -76,16 +76,21 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 
 	$scope.select.should_pay = $scope.round($scope.select.should_pay);
 
-	$scope.select.new_surplus =
-	    $scope.round($scope.select.surplus + $scope.select.has_pay); 
+	// back
+	if ($scope.select.withdraw > $scope.select.should_pay){
+	    $scope.select.left_balance =
+		$scope.select.surplus - $scope.select.should_pay;
+	    $scope.select.withdraw = $scope.select.should_pay;
 
-	$scope.select.charge =
-	    $scope.select.should_pay - $scope.select.new_surplus; 
+	    $scope.select.charge = -($scope.select.cash + $scope.select.card);
+	} else {
+	    $scope.select.charge =
+		$scope.select.should_pay - $scope.select.has_pay; 
+	} 
     };
     
     $scope.change_retailer = function(){
-	$scope.select.surplus = -$scope.select.retailer.balance;
-	$scope.select.new_surplus = $scope.select.surplus;
+	$scope.select.surplus = $scope.select.retailer.balance;
 	$scope.re_calculate(); 
     }
     
@@ -182,28 +187,33 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	    $scope.old_select.retailer = $scope.get_object(
 		base.retailer_id, $scope.retailers); 
 
-	    console.log($scope.old_select);
+	    // console.log($scope.old_select);
 	    
-	    $scope.old_select.surplus     = -base.lastbalance;
 	    // $scope.old_select.new_surplus = $scope.old_select.surplus;
 	    
 	    $scope.old_select.shop       =
 		$scope.get_object(base.shop_id,   $scope.shops);
 	    $scope.old_select.employee   =
-		$scope.get_object(base.employ_id, $scope.employees);
+		$scope.get_object(base.employ_id, $scope.employees); 
 	    
+	    $scope.old_select.surplus    = base.balance; 
+	    $scope.old_select.cash       = base.cash;
+	    $scope.old_select.card       = base.card;
+	    $scope.old_select.withdraw   = base.withdraw;
+	    $scope.old_select.should_pay = base.should_pay;
+
 	    $scope.old_select.comment    = base.comment;
 	    $scope.old_select.total      = base.total;
-	    $scope.old_select.cash       = base.cash;
-	    $scope.old_select.card       = base.card; 
-	    $scope.old_select.should_pay = base.should_pay;
-	    $scope.old_select.has_pay    = base.has_pay;
 
+	    console.log($scope.old_select);
+	    
 	    $scope.select = angular.extend($scope.select, $scope.old_select);
 	    $scope.select.abs_total = 0;
 
 	    // setting
-	    $scope.setting.check_sale = $scope.check_sale($scope.select.shop.id);
+	    $scope.setting.check_sale =
+		$scope.check_sale($scope.select.shop.id);
+	    
 	    $scope.setting.round      = $scope.p_round();
 	    console.log($scope.setting);
 
@@ -260,7 +270,8 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	    angular.forEach(sorts, function(s){
 		var tag = angular.copy(s);
 		s.amounts = s.amounts.filter(function(a){
-		    if (angular.isDefined(a.sell_count) && a.sell_count !== 0){
+		    if (angular.isDefined(a.sell_count)
+			&& a.sell_count !== 0){
 			return true;
 		    }
 		});
@@ -345,12 +356,17 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	// save one time only
 	if ($scope.has_saved){
 	    return true;
-	}; 
+	};
+
+	if ($scope.select.charge > 0){
+	    return true;
+	};
 
 	// console.log($scope.select);
 	// any payment of cash, card or wire or any inventory
 	if (angular.isDefined(diablo_set_float($scope.select.cash))
-	    || angular.isDefined(diablo_set_float($scope.select.card)) 
+	    || angular.isDefined(diablo_set_float($scope.select.card))
+	    || angular.isDefined(diablo_set_float($scope.select.withdraw)) 
 	    || angular.isDefined(diablo_set_string($scope.select.comment))
 	    || $scope.inventories.length !== 1
 	   ){
@@ -561,23 +577,21 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	    datetime:      dateFilter($scope.select.datetime,
 				      "yyyy-MM-dd HH:mm:ss"),
 	    employee:      $scope.select.employee.id,
-	    lastbalance:   $scope.select.surplus,
 	    
-	    cash:           setv($scope.select.cash),
-	    card:           setv($scope.select.card), 
-	    should_pay:     setv($scope.select.should_pay),
-	    has_pay:        setv($scope.select.has_pay),
-	    comment:        sets($scope.select.comment),
+	    balance:       $scope.select.surplus, 
+	    cash:          setv($scope.select.cash),
+	    card:          setv($scope.select.card),
+	    withdraw:      setv($scope.select.withdraw),
+	    should_pa:     setv($scope.select.should_pay),
+	    comment:       sets($scope.select.comment),
 
 	    old_retailer:    $scope.old_select.retailer.id, 
-	    old_lastbalance: $scope.old_select.surplus,
-	    // old_curbalance:  $scope.old_select.curbalance,
+	    old_balance:     $scope.old_select.surplus,
+	    old_withdraw:    $scope.old_select.withdraw,
 	    old_should_pay:  $scope.old_select.should_pay,
-	    old_has_pay:     $scope.old_select.has_pay, 
 	    old_datetime:    dateFilter($scope.old_select.datetime,
-				       "yyyy-MM-dd HH:mm:ss"),
-	    
-	    total:         seti($scope.select.total)
+				       "yyyy-MM-dd HH:mm:ss"), 
+	    total:           seti($scope.select.total)
 	};
 
 	
@@ -587,10 +601,11 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	
 	console.log($scope.old_select);
 	var new_datetime = dateFilter($scope.select.datetime, "yyyy-MM-dd");
-	var old_datetime = dateFilter($scope.old_select.datetime,"yyyy-MM-dd");
+	var old_datetime = dateFilter($scope.old_select.datetime, "yyyy-MM-dd");
 	if (added.length === 0
 	    && ($scope.select.cash === $scope.old_select.cash
-		&& $scope.select.card === $scope.old_select.card 
+		&& $scope.select.card === $scope.old_select.card
+		&& $scope.select.withdraw === $scope.old_select.withdraw 
 		&& $scope.select.employee.id === $scope.old_select.employee.id
 		&& $scope.select.shop.id === $scope.old_select.shop.id
 		&& $scope.select.retailer.id === $scope.old_select.retailer.id
@@ -634,7 +649,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
     var reset_payment = function(newValue){
 	// console.log("reset_payment newValue ", newValue);
 	$scope.select.has_pay = 0.00;
-	$scope.select.new_surplus = 0.00;
+	$scope.select.left_balance = 0.00;
 	
 	if(angular.isDefined($scope.select.cash) && $scope.select.cash){
 	    $scope.select.has_pay
@@ -645,12 +660,26 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	    $scope.select.has_pay
 		+= parseFloat($scope.select.card);
 	} 
+	
+	var withdraw = diablo_set_float($scope.select.withdraw);
+	if(angular.isDefined(withdraw)){
+	    $scope.select.has_pay += parseFloat($scope.select.withdraw);
+	    $scope.select.left_balance =
+		$scope.select.surplus - $scope.select.withdraw
+	} else {
+	    $scope.select.left_balance = $scope.select.surplus;
+	} 
 
-	$scope.select.new_surplus =
-	    $scope.round($scope.select.surplus + $scope.select.has_pay);
+	// back
+	if ($scope.select.withdraw > $scope.select.should_pay){
+	    $scope.select.left_balance += $scope.select.withdraw
+		- $scope.select.should_pay;
 
-	$scope.select.charge =
-	    $scope.select.should_pay - $scope.select.new_surplus; 
+	    $scope.select.charge = -($scope.select.cash + $scope.select.card);
+	} else {
+	    $scope.select.charge =
+		$scope.select.should_pay - $scope.select.has_pay; 
+	} 
     };
     
     $scope.$watch("select.cash", function(newValue, oldValue){
@@ -662,6 +691,11 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
     $scope.$watch("select.card", function(newValue, oldValue){
 	if (newValue === oldValue || angular.isUndefined(newValue)) return;
 	if ($scope.select.form.cardForm.$invalid) return;
+	reset_payment(newValue); 
+    });
+
+    $scope.$watch("select.withdraw", function(newValue, oldValue){
+	if (newValue === oldValue || angular.isUndefined(newValue)) return;
 	reset_payment(newValue); 
     }); 
 

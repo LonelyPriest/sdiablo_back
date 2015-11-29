@@ -30,7 +30,9 @@
 	  <div class="row diablo-form-group">
 	    <div class="col-xs-3 col-md-3 ">
 	      <div class="input-group">
-	  	<input class="form-control" type="text"
+	  	<input class="form-control"
+		       type="text"
+		       readonly
 	  	       x-ng-model="select.retailer"
 	  	       placeholder="请选择会员" 
 	  	       typeahead-editable="false"
@@ -126,7 +128,8 @@
 		  <div ng-class="{'has-error':select.form.cashForm.$invalid
 				 && !select.form.cashForm.$pristine}">
 	  	    <input class="form-control"
-			   type="number" step="0.01" 
+			   type="number" step="0.01"
+			   readonly
 			   placeholder="现金"
 			   x-ng-pattern=pattern.money
 	  		   x-ng-model="select.cash"
@@ -144,7 +147,8 @@
 		  <div ng-class="{'has-error':select.form.cardForm.$invalid
 				 && !select.form.cardForm.$pristine}">
 	  	    <input class="form-control"
-			   type="number" step="0.01" 
+			   type="number" step="0.01"
+			   readonly
 			   placeholder="刷卡"
 			   x-ng-pattern=pattern.money
 	  		   x-ng-model="select.card"
@@ -152,10 +156,24 @@
 			   popover-trigger="focus"
 			   popover="支持二位小数"></input>
 		  </div>
-		</form> 
+		</form>
+
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-piggy-bank fg-red"></i>
+		  提现</span>
+		
+	  	<input class="form-control"
+		       type="number" step="0.01"
+		       x-ng-pattern="pattern.money"
+	  	       x-ng-model="select.withdraw"
+		       x-ng-readonly="true"
+		       placeholder="提现"
+		       popover-placement="top"
+		       popover-trigger="focus"
+		       popover="支持二位小数" />
 		
 		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-yen fg-red"></i>结余</span>
+		  <i class="glyphicon glyphicon-yen fg-red"></i>余额</span>
 	  	<input class="form-control" readonly
 	  	       x-ng-model="select.surplus"/>
 		
@@ -192,7 +210,12 @@
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>找零</span>
 	  	<input class="form-control" type="text" readonly
-	  	       x-ng-model="select.charge"/> 
+	  	       x-ng-model="select.charge"/>
+
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-yen fg-red"></i>结余</span>
+	  	<input class="form-control" type="text" readonly
+	  	       x-ng-model="select.left_balance"/>
 	      </div>
 	    </div> 
 	  </div> <!--END row-->
@@ -270,9 +293,10 @@
 		    </td> 
 
 		    <td class="col-md-1 vert-align">
-		      <span x-ng-if="!inv.$new || inv.free_color_size">
+		      <div x-ng-if="!inv.$new || inv.free_color_size">
 			{{inv.tag_price}}
-		      </span>
+		      </div>
+		      
 		    </td>
 
 		    <td class="col-md-1 vert-align">
@@ -301,7 +325,7 @@
 		    
 		    <td class="col-md-1 vert-align">
 		      <div ng-if="!inv.$new && !inv.free_update">
-		    	{{inv.fprice * inv.fdiscount * 0.01}}
+		    	{{f_mul(inv.fprice, f_mul(inv.fdiscount, 0.01))}}
 		      </div>
 		      <form name="inv.form.fprice"
 		    	    ng-if="inv.$new && inv.free_color_size
@@ -446,14 +470,24 @@
 	
 	<span class="input-group-addon">
 	  <i class="glyphicon glyphicon-yen fg-red"></i>
-	</span> 
-	<input class="form-control text-center"
-	       readonly
-	       x-ng-model="params.fprice" />
+	</span>
+
+	<form name="fprice">
+	  <div ng-class="{'has-error':fprice.$invalid
+			 && !fprice.$pristine}">
+	    <input class="form-control text-center"
+		   type="number" step="0.01"
+		   required
+		   placeholder="请输入价格，支持两位小数"
+		   x-ng-pattern="/^\d+(.\d{1,2})?$/"
+		   x-ng-model="params.fprice" />
+	  </div>
+	</form>
 	
 	<span class="input-group-addon">
 	  <i class="glyphicon glyphicon-sort-by-attributes-alt fg-red"></i>
 	</span>
+	
 	<form name="fdiscount">
 	  <div ng-class="{'has-error':fdiscount.$invalid
 			 && !discount.$pristine}">
@@ -461,10 +495,11 @@
 		   type="number" step="1"
 		   required
 		   x-ng-model="params.fdiscount"
-		   placeholder="两位整数"
+		   placeholder="请输入折扣，两位整数或100"
 		   x-ng-pattern="/^\d{2}$|100$/" />
 	  </div>
-	</form> 
+	</form>
+	
       </div>
     </div>
     

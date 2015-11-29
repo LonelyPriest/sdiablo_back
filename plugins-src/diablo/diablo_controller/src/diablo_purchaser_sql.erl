@@ -301,9 +301,10 @@ inventory(abstract, Merchant, Shop, [{S1, B1}|T] = _Conditions) ->
 	++ " and deleted=" ++ ?to_s(?NO) ++ ") a"
 	
 	" left join w_inventory_amount b on"
-	" a.style_number=b.style_number and a.brand_id=b.brand"
-	" and a.shop=b.shop"
-	" and b.merchant";
+	" a.merchant=b.merchant"
+	" and a.style_number=b.style_number"
+	" and a.brand_id=b.brand"
+	" and a.shop=b.shop";
 
 inventory(group_detail, Merchant, Conditions, PageFun) ->
     {StartTime, EndTime, NewConditions} =
