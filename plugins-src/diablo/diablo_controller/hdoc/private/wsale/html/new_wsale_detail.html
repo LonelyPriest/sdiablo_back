@@ -153,7 +153,7 @@
 		    
 		    <td x-ng-switch on="r.type">
 		      <span x-ng-switch-when=0>{{round(r.should_pay)}}</span>
-		      <span class="fg-red" x-ng-switch-when=1>
+		      <span class="fg-darkRed" x-ng-switch-when=1>
 			{{round(r.should_pay)}}
 		      </span>
 		    </td>
@@ -206,19 +206,20 @@
 		  </tr>
 
 		  <!--Total info-->
-		  <tr x-ng-if="total_items!==0"> 
+		  <tr x-ng-if="total_items!==0" class="info"> 
 		    <td x-ng-if="show.base" colspan="6"></td>
 		    <td x-ng-if="!show.base" colspan="3"></td>
 		    
-		    <td class="danger">{{total_amounts}}</td>
-		    <td class="danger">{{total_spay}}</td>
+		    <td>{{total_amounts}}</td>
+		    <td></td>
+		    <td>{{total_spay}}</td>
 		    <!-- <td colspan="1"></td> -->
 		    <td>{{total_cash}}</td>
 		    <td>{{total_card}}</td>
 		    <td>{{total_withdraw}}</td>
 		    <!-- <td>{{total_balance - total_withdraw}}</td>  -->
-		    <td x-ng-if="show.comment" colspan="2"></td>
-		    <td x-ng-if="!show.comment" colspan="1"></td>
+		    <td x-ng-if="show.comment" colspan="3"></td>
+		    <td x-ng-if="!show.comment" colspan="2"></td>
 		  </tr>
 		</tbody>
 

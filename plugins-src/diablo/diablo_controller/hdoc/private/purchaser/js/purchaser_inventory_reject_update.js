@@ -834,15 +834,10 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 		       valid:        valid_all};
 	
 	if (angular.isDefined(inv.select_amounts)){
-	    if (inv.free_color_size){
-		// nothing
-	    } else {
-		payload.amounts = inv.amounts;
-		payload.colors  = inv.colors;
-		dialog.edit_with_modal(
-		    "inventory-new.html",
-		    'normal', callback, $scope, payload);
-	    } 
+	    payload.amounts = inv.amounts;
+	    payload.colors  = inv.colors;
+	    dialog.edit_with_modal(
+		"inventory-new.html", 'normal', callback, $scope, payload);
 	} else {
 	    purchaserService.list_purchaser_inventory({
 		style_number:inv.style_number,

@@ -49,7 +49,7 @@ angular.module("diabloPattern", []).service("diabloPattern", [function(){
     // this.passwd = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])[a-zA-Z0-9]{6,15}/;
     this.passwd = /^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]{6,15}/;
 
-    this.num_passwd = /^[0-9]{6}/;
+    this.num_passwd = /^\d{6}$/;
 
     this.url = '^((https|http|ftp|rtsp|mms)?://)'
 	+ '?(([0-9a-z_!~*\'().&=+$%-]+: )?[0-9a-z_!~*\'().&=+$%-]+@)?' //user@ of ftp

@@ -753,6 +753,7 @@ pass_action(wholesaler) ->
      <<"w_sale_rsn_detail">>,
      <<"filter_w_sale_image">>,
      <<"w_sale_export">>,
+     <<"get_wsale_rsn">>,
 
      %% base_setting
      <<"list_w_bank_card">>,

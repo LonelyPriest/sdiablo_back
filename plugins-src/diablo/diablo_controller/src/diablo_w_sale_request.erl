@@ -33,11 +33,13 @@ action(Session, Req, {"get_w_print_content", RSN}) ->
     Merchant = ?session:get(merchant, Session),
     try
 	{ok, Sale}     = ?w_sale:sale(get_new, Merchant, RSN),
-	{ok, Employee} = ?w_user_profile:get(employee, Merchant, ?v(<<"employ_id">>, Sale)),
-	{ok, Retailer} = ?w_user_profile:get(retailer, Merchant, ?v(<<"retailer_id">>, Sale)),
+	{ok, Employee} = ?w_user_profile:get(
+			    employee, Merchant, ?v(<<"employ_id">>, Sale)),
+	{ok, Retailer} = ?w_user_profile:get(
+			    retailer, Merchant, ?v(<<"retailer_id">>, Sale)),
 
-	{ok, Details} = ?w_sale:sale(trans_detail, Merchant, {<<"rsn">>, ?to_b(RSN)}),
-	%% {ok, Details}  = ?w_sale:rsn_detail(rsn, Merchant, {<<"rsn">>, ?to_b(RSN)}),
+	{ok, Details} = ?w_sale:sale(
+			   trans_detail, Merchant, {<<"rsn">>, ?to_b(RSN)}),
 	
 	{ok, MerchantInfo} = ?w_user_profile:get(merchant, Merchant),
 	{ok, Banks} = ?w_user_profile:get(bank, Merchant),
@@ -71,47 +73,50 @@ action(Session, Req, {"get_w_sale_new", RSN}) ->
     try
 	{ok, Sale} = ?w_sale:sale(get_new, Merchant, RSN),
 	%% ?DEBUG("sale ~p", [Sale]),
-	{ok, Details} = ?w_sale:sale(trans_detail, Merchant, {<<"rsn">>, ?to_b(RSN)}),
+	{ok, Details} = ?w_sale:sale(
+			   trans_detail, Merchant, {<<"rsn">>, ?to_b(RSN)}),
 	?DEBUG("details ~p", [Details]),
 	
 	%% sort by style_number and brand
-	ShopId = ?v(<<"shop_id">>, Sale),
+	%% ShopId = ?v(<<"shop_id">>, Sale),
 
-	{ok, [{Shop}]} = ?w_user_profile:get(shop, Merchant, ShopId),
+	%% {ok, [{Shop}]} = ?w_user_profile:get(shop, Merchant, ShopId),
 
-	RealShop = 
-	    case ?v(<<"repo">>, Shop) of
-		-1 -> ShopId;
-		RepoId -> RepoId
-	    end, 
+	%% RealShop = 
+	%%     case ?v(<<"repo">>, Shop) of
+	%% 	-1 -> ShopId;
+	%% 	RepoId -> RepoId
+	%%     end, 
 	
-	Goods = lists:foldr(
-		  fun({D}, Acc) ->
-			  S =  {?v(<<"style_number">>, D),
-				?v(<<"brand_id">>, D)},
-			  case lists:member(S, Acc) of
-			      true -> Acc;
-			      false -> [S|Acc]
-			  end
-		  end, [], Details),
+	%% Goods = lists:foldr(
+	%% 	  fun({D}, Acc) ->
+	%% 		  S =  {?v(<<"style_number">>, D),
+	%% 			?v(<<"brand_id">>, D)},
+	%% 		  case lists:member(S, Acc) of
+	%% 		      true -> Acc;
+	%% 		      false -> [S|Acc]
+	%% 		  end
+	%% 	  end, [], Details),
 
-	{ok, Abstracts}
-	    = case Goods of
-		  [] -> {ok, []};
-		  _ -> ?w_inventory:purchaser_inventory(abstract, Merchant, RealShop, Goods)
-	      end,
+	%% {ok, Abstracts}
+	%%     = case Goods of
+	%% 	  [] -> {ok, []};
+	%% 	  _ -> ?w_inventory:purchaser_inventory(
+	%% 		  abstract, Merchant, RealShop, Goods)
+	%%       end,
 
 	?utils:respond(
 	   200, object, Req,
 	   {[{<<"ecode">>, 0},
 	     {<<"sale">>, {Sale}},
-	     {<<"detail">>, Details},
-	     {<<"inv">>, Abstracts}]}) 
+	     {<<"detail">>, Details}
+	     %% {<<"inv">>, Abstracts}
+	    ]}) 
     catch
 	_:{badmatch, {error, Error}} ->
 	    ?utils:respond(200, Req, Error)
     end; 
-
+    
 action(Session, _Req, Action) ->
     ?DEBUG("receive unkown action ~p with session ~p", [Action, Session]).
 
@@ -119,7 +124,8 @@ action(Session, _Req, Action) ->
 %% @desc: POST action
 %%--------------------------------------------------------------------
 action(Session, Req, {"list_w_sale_new"}, Payload) ->
-    ?DEBUG("list_w_sale_new with session ~p, paylaod~n~p", [Session, Payload]), 
+    ?DEBUG("list_w_sale_new with session ~p, paylaod~n~p",
+	   [Session, Payload]), 
     Merchant = ?session:get(merchant, Session), 
     batch_responed(
       fun() -> ?w_sale:sale(list_new, Merchant, Payload) end, Req); 
@@ -136,7 +142,8 @@ action(Session, Req, {"get_last_sale"}, Payload) ->
     end;
 
 action(Session, Req, {"filter_w_sale_new"}, Payload) ->
-    ?DEBUG("filter_w_sale_new with session ~p, paylaod~n~p", [Session, Payload]), 
+    ?DEBUG("filter_w_sale_new with session ~p, paylaod~n~p",
+	   [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
     
     ?pagination:pagination(
@@ -145,26 +152,31 @@ action(Session, Req, {"filter_w_sale_new"}, Payload) ->
        end,
        fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
 	       ?w_sale:filter(
-		  news, Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
+		  news,
+		  Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
        end, Req, Payload);
 
 action(Session, Req, {"filter_w_sale_image"}, Payload) ->
-    ?DEBUG("filter_w_sale_image with session ~p, payload~n~p", [Session, Payload]),
+    ?DEBUG("filter_w_sale_image with session ~p, payload~n~p",
+	   [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
     %% inventory
     {struct, F} = ?v(<<"fields">>, Payload),
-    NewPayload = [{<<"fields">>, {struct, proplists:delete(<<"retailer">>, F)}},
+    NewPayload = [{<<"fields">>,
+		   {struct, proplists:delete(<<"retailer">>, F)}},
 		  {<<"page">>, ?v(<<"page">>, Payload)},
 		  {<<"count">>, ?v(<<"count">>, Payload)}],
     Result = 
 	?pagination:pagination(
 	   no_response,
 	   fun(Match, Conditions) ->
-		   ?w_inventory:filter(total_groups, Match, Merchant, Conditions)
+		   ?w_inventory:filter(
+		      total_groups, Match, Merchant, Conditions)
 	   end,
 	   fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
 		   ?w_inventory:filter(
-		      groups, Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
+		      groups,
+		      Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
 	   end, NewPayload),
 
     case Result of
@@ -219,10 +231,11 @@ action(Session, Req, {"new_w_sale"}, Payload) ->
 		?YES ->
 		    SuccessRespone =
 			fun(PCode, PInfo) ->
-				?utils:respond(200, Req, ?succ(new_w_sale, RSN),
-					       [{<<"rsn">>, ?to_b(RSN)},
-						{<<"pcode">>, PCode},
-						{<<"pinfo">>, PInfo}])
+				?utils:respond(
+				   200, Req, ?succ(new_w_sale, RSN),
+				   [{<<"rsn">>, ?to_b(RSN)},
+				    {<<"pcode">>, PCode},
+				    {<<"pinfo">>, PInfo}])
 			end,
 		    print(RSN, Merchant, Invs, Base, Print, SuccessRespone);
 		?NO ->
@@ -332,67 +345,6 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
     end;
 
 %% =============================================================================
-%% draft
-%% =============================================================================
-action(Session, Req, {"new_w_sale_draft"}, Payload) ->
-    ?DEBUG("new_w_sale_draft with session ~p, paylaod~n~p", [Session, Payload]),
-    Merchant = ?session:get(merchant, Session),
-    Invs = ?v(<<"inventory">>, Payload),
-    {struct, Base} = ?v(<<"base">>, Payload),
-
-    {ok, SN} = ?w_sale_draft:new(wsale_draft, Merchant, Base, Invs),
-    ?utils:respond(200, Req, ?succ(new_w_sale_draft, SN), {<<"rsn">>, ?to_b(SN)});
-
-action(Session, Req, {"list_w_sale_draft"}, Payload) ->
-    ?DEBUG("list_w_sale_draft with session ~p, paylaod~n~p", [Session, Payload]),
-    Merchant = ?session:get(merchant, Session),
-    Shop = ?v(<<"shop">>, Payload),
-    %% {ok, Drafts} = ?w_sale_draft:lookup(wsale_draft, Merchant, Shop),
-    %% ?utils:respond(200, batch, Req, Drafts);
-    batch_responed(
-      fun() -> ?w_sale_draft:lookup(wsale_draft, Merchant, Shop) end, Req);
-
-
-action(Session, Req, {"get_w_sale_draft"}, Payload) ->
-    ?DEBUG("list_w_sale_draft with session ~p, paylaod~n~p", [Session, Payload]),
-    Merchant = ?session:get(merchant, Session),
-    SN = ?v(<<"sn">>, Payload),
-
-    case ?w_sale_draft:get(wsale_draft, Merchant, SN) of
-	{ok, []} ->
-	    ?utils:respond(200, Req, ?err(w_sale_draft_not_exist, SN));
-	{ok, {Shop, Invs}} ->
-	    ?DEBUG("shop ~p, Invs ~p", [Shop, Invs]),
-
-	    %% refrehs inv
-	    try
-		RefreshInvs = 
-		    lists:foldr(
-		      fun({struct, Inv}, Acc)->
-			      StyleNumber = ?v(<<"style_number">>, Inv),
-			      Brand       = ?v(<<"brand">>, Inv),
-			      {ok, Total} =
-				  ?w_inventory:purchaser_inventory(
-				     amount, Merchant, Shop, StyleNumber, Brand),
-			      [{struct, Total ++ Inv}|Acc] 
-		      end, [], Invs),
-		
-		{ECode, EInfo} = ?succ(get_w_sale_draft, SN),
-		Req:respond({200,
-			     [{"Content-Type", "application/json"}],
-			     mochijson2:encode(
-			       {[{<<"ecode">>, ?to_i(ECode)},
-				 {<<"einfo">>, ?to_b(EInfo)},
-				 {<<"invs">>, RefreshInvs}]}
-			      )})
-	    catch
-		_:{badmatch, {error, Error}} ->
-		    ?utils:respond(200, Req, Error)
-	    end 
-	    
-    end;
-	    
-%% =============================================================================
 %% reject
 %% =============================================================================
 action(Session, Req, {"reject_w_sale"}, Payload) ->
@@ -408,10 +360,11 @@ action(Session, Req, {"reject_w_sale"}, Payload) ->
 		?YES ->
 		    SuccessRespone =
 			fun(PCode, PInfo) ->
-				?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
-					       [{<<"rsn">>, ?to_b(RSN)},
-						{<<"pcode">>, PCode},
-						{<<"pinfo">>, PInfo}])
+				?utils:respond(
+				   200, Req, ?succ(reject_w_sale, RSN),
+				   [{<<"rsn">>, ?to_b(RSN)},
+				    {<<"pcode">>, PCode},
+				    {<<"pinfo">>, PInfo}])
 			end,
 		    print(RSN, Merchant, Invs, Base, Print, SuccessRespone);
 		?NO ->
@@ -423,7 +376,8 @@ action(Session, Req, {"reject_w_sale"}, Payload) ->
     end;
 
 action(Session, Req, {"filter_w_sale_rsn_group"}, Payload) ->
-    ?DEBUG("filter_w_sale_rsn_group with session ~p, paylaod~n~p", [Session, Payload]), 
+    ?DEBUG("filter_w_sale_rsn_group with session ~p, paylaod~n~p",
+	   [Session, Payload]), 
     Merchant           = ?session:get(merchant, Session),
     
     %% first, get rsn
@@ -464,7 +418,8 @@ action(Session, Req, {"filter_w_sale_rsn_group"}, Payload) ->
        end, Req, Payload);
 
 action(Session, Req, {"w_sale_rsn_detail"}, Payload) ->
-    ?DEBUG("w_sale_rsn_detail with session ~p, paylaod~n~p", [Session, Payload]),
+    ?DEBUG("w_sale_rsn_detail with session ~p, paylaod~n~p",
+	   [Session, Payload]),
     
     Merchant = ?session:get(merchant, Session),
     %% RSn = ?v(<<"rsn">>, Payload),
@@ -493,7 +448,8 @@ action(Session, Req, {"w_sale_export"}, Payload) ->
 		{struct, C} =
 		    ?v(<<"fields">>,
 		       ?w_inventory_request:filter_condition(
-			  trans_note, [?v(<<"rsn">>, Rsn) || {Rsn} <- Q], CutConditions)),
+			  trans_note, [?v(<<"rsn">>, Rsn) || {Rsn} <- Q],
+			  CutConditions)),
 		C;
 	    trans -> Conditions
 	end,
@@ -504,7 +460,8 @@ action(Session, Req, {"w_sale_export"}, Payload) ->
 	    ?utils:respond(200, Req, ?err(wsale_export_no_date, Merchant));
 	{ok, Transes} -> 
 	    %% write to file 
-	    {ok, ExportFile, Url} = ?utils:create_export_file("otrans", Merchant, UserId), 
+	    {ok, ExportFile, Url} =
+		?utils:create_export_file("otrans", Merchant, UserId), 
 	    case file:open(ExportFile, [append, raw]) of
 		{ok, Fd} -> 
 		    try
@@ -516,8 +473,10 @@ action(Session, Req, {"w_sale_export"}, Payload) ->
 		    catch
 			T:W -> 
 			    file:close(Fd),
-			    ?DEBUG("trace export:T ~p, W ~p~n~p", [T, W, erlang:get_stacktrace()]),
-			    ?utils:respond(200, Req, ?err(wsale_export_error, W)) 
+			    ?DEBUG("trace export:T ~p, W ~p~n~p",
+				   [T, W, erlang:get_stacktrace()]),
+			    ?utils:respond(
+			       200, Req, ?err(wsale_export_error, W)) 
 		    end,
 		    ?utils:respond(200, object, Req,
 				   {[{<<"ecode">>, 0},
@@ -527,7 +486,14 @@ action(Session, Req, {"w_sale_export"}, Payload) ->
 	    end; 
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
-    end. 
+    end;
+
+action(Session, Req, {"get_wsale_rsn"}, Payload) ->
+    ?DEBUG("get_wsale_rsn with session ~p, Payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    batch_responed(
+      fun() -> ?w_sale:sale(
+		  get_rsn, Merchant, [{<<"sell_type">>, 0}|Payload]) end, Req).
 
 sidebar(Session) -> 
     case ?right_request:get_shops(Session, sale) of
@@ -535,37 +501,27 @@ sidebar(Session) ->
 	    ?menu:sidebar(level_2_menu, []);
 	Shops ->
 	    WSale = ?w_inventory_request:authen_shop_action(
-		       {?new_w_sale, "new_wsale", "销售开单", "glyphicon glyphicon-usd"}, Shops),
-	    %% WSale =
-	    %% 	[{{"wsale", "销售开单", "glyphicon glyphicon-usd"},
-	    %% 	  ?w_inventory_request:authen_shop_action(
-	    %% 	    {?new_w_sale, "new_wsale", "开单", "glyphicon glyphicon-plus"}, Shops)
-	    %% 	  ++ [{"new_wsale_detail", "开单详情", "glyphicon glyphicon-briefcase"}]
-	    %% 	  %% ++ [{"new_wsale_rsn_detail", "开单明细"}]
-	    %% 	 }],
+		       {?new_w_sale,
+			"new_wsale",
+			"销售开单", "glyphicon glyphicon-usd"}, Shops), 
 
 	    WReject = ?w_inventory_request:authen_shop_action(
 			 {?reject_w_sale,
-			  "reject_wsale", "销售退货", "glyphicon glyphicon-arrow-left"}, Shops),
-
-	    %% WReject =
-	    %% 	[{{"wsale", "销售退货", "glyphicon glyphicon-arrow-left"},
-	    %% 	  ?w_inventory_request:authen_shop_action(
-	    %% 	     {?reject_w_sale,
-	    %% 	      "reject_wsale", "退货", "glyphicon glyphicon-plus"}, Shops)
-	    %% 	  ++ [{"reject_wsale_detail", "退货详情", "glyphicon glyphicon-briefcase"}]
-	    %% 	  %% ++ [{"reject_wsale_rsn_detail", "退货明细"}]
-	    %%  }],
+			  "reject_wsale",
+			  "销售退货",
+			  "glyphicon glyphicon-arrow-left"}, Shops), 
 
 	    SaleR =
-		[{"new_wsale_detail", "交易记录", "glyphicon glyphicon-download"}],
+		[{"new_wsale_detail",
+		  "交易记录", "glyphicon glyphicon-download"}],
 	    
 	    SaleD =
-		[{"wsale_rsn_detail", "交易明细", "glyphicon glyphicon-map-marker"}],
+		[{"wsale_rsn_detail",
+		  "交易明细", "glyphicon glyphicon-map-marker"}],
 
-	    L1 = ?menu:sidebar(level_1_menu, WSale ++ WReject ++ SaleR ++ SaleD),
-	    %% L2 = ?menu:sidebar(level_1_menu, SaleDetail),
-
+	    L1 = ?menu:sidebar(
+		    level_1_menu, WSale ++ WReject ++ SaleR ++ SaleD),
+	    
 	    L1
 		
     end. 
@@ -704,7 +660,8 @@ combine_inventory(Merchant, GetBrand, Inv, [{struct, H}|T], Combines) ->
 			{<<"colors">>, NewColors},
 			{<<"amounts">> ,NewAmounts}]}|Combines]);
 	false ->
-	    combine_inventory(Merchant, GetBrand, Inv, T, [{struct, H}|Combines])
+	    combine_inventory(
+	      Merchant, GetBrand, Inv, T, [{struct, H}|Combines])
     end.
 
 find_type(Merchant, TypeId) ->

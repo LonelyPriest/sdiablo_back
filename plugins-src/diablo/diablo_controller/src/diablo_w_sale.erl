@@ -59,9 +59,14 @@ sale(get_new, Merchant, RSN) ->
 sale(last, Merchant, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {last_sale, Merchant, Condition});
+
 sale(trans_detail, Merchant, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {trans_detail, Merchant, Condition});
+
+sale(list_rsn_with_shop, Merchant, Shop) -> 
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {list_sale_rsn_with_shop, Merchant, Shop});
 sale(get_rsn, Merchant, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {get_sale_rsn, Merchant, Condition}).
@@ -451,7 +456,7 @@ handle_call({get_sale_rsn, Merchant, Conditions}, _From, State) ->
 	   [Merchant, Conditions]),
     {DetailConditions, SaleConditions} = 
 	filter_condition(
-	  wsale, Conditions ++ [{<<"merchant">>, Merchant}], [], []),
+	  wsale, [{<<"merchant">>, Merchant}|Conditions], [], []),
     ?DEBUG("sale conditions ~p, detail condition ~p",
 	   [SaleConditions, DetailConditions]), 
 
@@ -489,7 +494,7 @@ handle_call({get_sale_rsn, Merchant, Conditions}, _From, State) ->
 				  time_with_prfix, StartTime, EndTime) 
 		end;
 	    _ -> Sql1 
-	end,
+	end ++ " order by id desc",
 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
@@ -555,14 +560,14 @@ handle_call({trans_detail, Merchant, Conditions}, _From, State) ->
 	   [Merchant, Conditions]),
     Sql =
 	" select a.id, a.rsn, a.style_number, a.brand_id, a.type_id"
-	", a.s_group, a.free, a.season, a.firm_id, a.total"
+	", a.s_group, a.free, a.season, a.firm_id, a.year, a.total"
 	", a.fdiscount, a.fprice, a.path"
 
 	", b.color as color_id, b.size, b.total as amount"
 	" from "
 
 	"(select id, rsn, style_number, brand as brand_id, type as type_id"
-	", s_group, free, season, firm as firm_id, total"
+	", s_group, free, season, firm as firm_id, year, total"
 	", fdiscount, fprice, path"
 	" from w_sale_detail"
 	" where " ++ ?utils:to_sqls(proplists, Conditions) ++ ") a"
@@ -606,12 +611,10 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 
     Balance    = ?v(<<"balance">>, Props), 
     Comment    = ?v(<<"comment">>, Props, ""),
-    ShouldPay  = ?v(<<"should_pay">>, Props, 0), 
+    ShouldPay  = ?v(<<"should_pay">>, Props, 0),
+    Withdraw   = ?v(<<"withdraw">>, Props, 0),
     Total      = ?v(<<"total">>, Props, 0),
-
-    EPayType   = ?v(<<"e_pay_type">>, Props, -1),
-    EPay       = ?v(<<"e_pay">>, Props, 0),
-
+    
     Sql0 = "select id, name, balance from w_retailer"
 	" where id=" ++ ?to_s(Retailer)
 	++ " and merchant=" ++ ?to_s(Merchant)
@@ -630,15 +633,25 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 			lists:foldr(
 			  fun({struct, Inv}, Acc0)->
 				  Amounts = ?v(<<"amounts">>, Inv),
-				  wsale(reject_badrepo, Sn, DateTime,
-					Merchant, {Shop, RealyShop}, Inv, Amounts) ++ Acc0
+				  wsale(reject_badrepo,
+					Sn,
+					DateTime,
+					Merchant,
+					{Shop, RealyShop},
+					Inv,
+					Amounts) ++ Acc0
 			  end, [], Inventories);
 		    _ ->
 			lists:foldr(
 			  fun({struct, Inv}, Acc0)->
 				  Amounts = ?v(<<"amounts">>, Inv),
-				  wsale(reject, Sn, DateTime,
-					Merchant, RealyShop, Inv, Amounts) ++ Acc0
+				  wsale(reject,
+					Sn,
+					DateTime,
+					Merchant,
+					RealyShop,
+					Inv,
+					Amounts) ++ Acc0
 			  end, [], Inventories)
 		end,
 
@@ -646,8 +659,8 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 
 	    Sql2 = "insert into w_sale(rsn"
 		", employ, retailer, shop, merchant, balance"
-		", should_pay, total, comment, e_pay_type"
-		", e_pay, type, entry_date) values("
+		", should_pay, cash, withdraw, total, comment, type"
+		", entry_date) values("
 		++ "\"" ++ ?to_s(Sn) ++ "\","
 		++ "\"" ++ ?to_s(Employe) ++ "\","
 		++ ?to_s(Retailer) ++ ","
@@ -657,19 +670,24 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 		       true -> ?to_s(Balance) ++ ",";
 		       false -> ?to_s(CurrentBalance) ++ ","
 		   end
-		++ ?to_s(-ShouldPay) ++ "," 
+		++ ?to_s(-ShouldPay) ++ ","
+		++ ?to_s(-ShouldPay) ++ ","
+		++ ?to_s(-Withdraw) ++ "," 
 		++ ?to_s(-Total) ++ ","
-		++ "\"" ++ ?to_s(Comment) ++ "\","
-		++ ?to_s(EPayType) ++ ","
-		++ ?to_s(-EPay) ++ ","
+		++ "\"" ++ ?to_s(Comment) ++ "\"," 
 		++ ?to_s(type(reject)) ++ ","
 		++ "\"" ++ ?to_s(DateTime) ++ "\");",
 
-	    Sql3 = "update w_retailer set balance=balance-"
-		++ ?to_s(?to_f(ShouldPay + EPay))
-		++ " where id=" ++ ?to_s(?v(<<"id">>, Account)),
+	    Sql3 =
+		case Withdraw > 0 of
+		    true ->
+			["update w_retailer set balance=balance+"
+			 ++ ?to_s(Withdraw)
+			 ++ " where id=" ++ ?to_s(?v(<<"id">>, Account))];
+		    false -> []
+		end,
 
-	    AllSql = Sql1 ++ [Sql2] ++ [Sql3],
+	    AllSql = Sql1 ++ [Sql2] ++ Sql3,
 
 	    case ?sql_utils:execute(transaction, AllSql, Sn) of
 		{error, _} = Error ->
@@ -1104,11 +1122,7 @@ wsale(reject_badrepo, RSN, DateTime, Merchant, {Shop, RealyShop}, Inventory, Amo
     AlarmDay    = ?v(<<"alarm_day">>, Inventory),
     
     OrgPrice    = ?v(<<"org_price">>, Inventory),
-    PkgPrice    = ?v(<<"pkg_price">>, Inventory),
-    TagPrice    = ?v(<<"tag_price">>, Inventory),
-    P3          = ?v(<<"price3">>, Inventory),
-    P4          = ?v(<<"price4">>, Inventory),
-    P5          = ?v(<<"price5">>, Inventory),
+    TagPrice    = ?v(<<"tag_price">>, Inventory), 
     Discount    = ?v(<<"discount">>, Inventory),
     
     FDiscount   = ?v(<<"fdiscount">>, Inventory, 100), 
@@ -1116,12 +1130,10 @@ wsale(reject_badrepo, RSN, DateTime, Merchant, {Shop, RealyShop}, Inventory, Amo
     Firm        = ?v(<<"firm">>, Inventory),
     Season      = ?v(<<"season">>, Inventory),
     SizeGroup   = ?v(<<"s_group">>, Inventory),
-    Hand        = ?v(<<"hand">>, Inventory, 0),
     Total       = ?v(<<"sell_total">>, Inventory), 
     Free        = ?v(<<"free">>, Inventory),
     Path        = ?v(<<"path">>, Inventory, []),
     Comment     = ?v(<<"comment">>, Inventory, []),
-    SellStyle   = ?v(<<"sell_style">>, Inventory, -1),
 
     C1 =
 	fun() ->
@@ -1168,11 +1180,7 @@ wsale(reject_badrepo, RSN, DateTime, Merchant, {Shop, RealyShop}, Inventory, Amo
 		 ++ ?to_s(Free) ++ ","
 		 ++ ?to_s(Year) ++ ","
 		 ++ ?to_s(OrgPrice) ++ ","
-		 ++ ?to_s(TagPrice) ++ ","
-		 ++ ?to_s(PkgPrice) ++ ","
-		 ++ ?to_s(P3) ++ ","
-		 ++ ?to_s(P4) ++ ","
-		 ++ ?to_s(P5) ++ ","
+		 ++ ?to_s(TagPrice) ++ ","		 
 		 ++ ?to_s(Discount) ++ ","
 		 ++ "\"" ++ ?to_s(Path) ++ "\","
 		 ++ ?to_s(AlarmDay) ++ ","
@@ -1209,7 +1217,7 @@ wsale(reject_badrepo, RSN, DateTime, Merchant, {Shop, RealyShop}, Inventory, Amo
 	    {ok, []} ->
 		["insert into w_sale_detail("
 		 "rsn, style_number, brand, type, s_group, free"
-		 ", season, firm, year, hand, total, sell_style, fdiscount"
+		 ", season, firm, year, total, fdiscount"
 		 ", fprice, path, comment, entry_date)"
 		 " values("
 		 ++ "\"" ++ ?to_s(RSN) ++ "\","
@@ -1221,9 +1229,7 @@ wsale(reject_badrepo, RSN, DateTime, Merchant, {Shop, RealyShop}, Inventory, Amo
 		 ++ ?to_s(Season) ++ ","
 		 ++ ?to_s(Firm) ++ ","
 		 ++ ?to_s(Year) ++ ","
-		 ++ ?to_s(Hand) ++ ","
 		 ++ ?to_s(-Total) ++ ","
-		 ++ ?to_s(SellStyle) ++ ","
 		 ++ ?to_s(FDiscount) ++ ","
 		 ++ ?to_s(FPrice) ++ ","
 		 ++ "\"" ++ ?to_s(Path) ++ "\","
@@ -1280,7 +1286,8 @@ wsale(reject_badrepo, RSN, DateTime, Merchant, {Shop, RealyShop}, Inventory, Amo
 			{ok, R01} -> 
 			    "update w_inventory_amount set"
 				" total=total+" ++ ?to_s(Count) 
-				++ ", entry_date=" ++ "\"" ++ ?to_s(DateTime) ++ "\""
+				++ ", entry_date="
+				++ "\"" ++ ?to_s(DateTime) ++ "\""
 				++ " where id=" ++ ?to_s(?v(<<"id">>, R01));
 			{error, E01} ->
 			    throw({db_error, E01})
@@ -1288,8 +1295,9 @@ wsale(reject_badrepo, RSN, DateTime, Merchant, {Shop, RealyShop}, Inventory, Amo
 
 		    case ?sql_utils:execute(s_read, Sql02) of
 			{ok, []} ->
-			    "insert into w_sale_detail_amount(rsn, style_number"
-				", brand, color, size, total, entry_date) values("
+			    "insert into w_sale_detail_amount("
+				"rsn, style_number, brand, color, size"
+				", total, entry_date) values("
 				++ "\"" ++ ?to_s(RSN) ++ "\","
 				++ "\"" ++ ?to_s(StyleNumber) ++ "\","
 				++ ?to_s(Brand) ++ ","
@@ -1298,8 +1306,10 @@ wsale(reject_badrepo, RSN, DateTime, Merchant, {Shop, RealyShop}, Inventory, Amo
 				++ ?to_s(-Count) ++ ","
 				++ "\"" ++ ?to_s(DateTime) ++ "\")";
 			{ok, _} ->
-			    "update w_sale_detail_amount set total=total-" ++ ?to_s(Count)
-				++ ", entry_date=" ++ "\'" ++ ?to_s(DateTime) ++ "\'"
+			    "update w_sale_detail_amount set total=total-"
+				++ ?to_s(Count)
+				++ ", entry_date="
+				++ "\'" ++ ?to_s(DateTime) ++ "\'"
 				++ " where " ++ C2(Color, Size);
 			{error, E02} ->
 			    throw({db_error, E02})
@@ -1317,7 +1327,7 @@ wsale(Action, RSN, DateTime, Merchant, Shop, Inventory, Amounts) ->
     Year        = ?v(<<"year">>, Inventory),
     SizeGroup   = ?v(<<"s_group">>, Inventory),
     Total       = case Action of
-		      new -> ?v(<<"sell_total">>, Inventory);
+		      new    -> ?v(<<"sell_total">>, Inventory);
 		      reject -> -?v(<<"sell_total">>, Inventory) 
 		  end,
     Free        = ?v(<<"free">>, Inventory),

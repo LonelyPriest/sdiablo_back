@@ -56,8 +56,8 @@ wsaleApp.config(['$routeProvider', function($routeProvider){
 	return diabloFilter.get_color()}};
     
     var s_group = {"filterSizeGroup": function(diabloFilter){
-	return diabloFilter.get_size_group()}};
-
+	return diabloFilter.get_size_group()}}; 
+    
     var base = {"base": function(diabloNormalFilter){
 	return diabloNormalFilter.get_base_setting()}};
     
@@ -88,8 +88,9 @@ wsaleApp.config(['$routeProvider', function($routeProvider){
 	when('/reject_wsale', {
 	    templateUrl: '/private/wsale/html/reject_wsale.html',
 	    controller: 'wsaleRejectCtrl',
-	    resolve: angular.extend({}, user, retailer, employee, s_group,
-				    color, base) 
+	    resolve: angular.extend(
+		{}, user, brand, type, retailer, employee,
+		s_group, color, base) 
 	}).
 	when('/update_wsale_reject/:rsn?/:ppage?', {
 	    templateUrl: '/private/wsale/html/update_wsale_reject.html',
@@ -228,16 +229,13 @@ wsaleApp.service("wsaleService", function($http, $resource, dateFilter){
 	return http.save({operation: "reject_w_sale"}, inventory).$promise;
     };
 
-    this.filter_w_sale_reject = function(
-	match, fields, currentPage, itemsPerpage){
-	return http.save(
-	    {operation: "filter_w_sale_reject"},
-	    {match:  angular.isDefined(match) ? match.op : undefined,
-	     fields: fields,
-	     page:   currentPage,
-	     count:  itemsPerpage}).$promise;
+    
+    this.get_wsale_rsn = function(condition){
+	return http.query_by_post(
+	    {operation: "get_wsale_rsn"}, condition
+	).$promise;
     };
-
+    
     this.get_last_sale = function(inv){
 	return http.query_by_post(
 	    {operation:    "get_last_sale"},

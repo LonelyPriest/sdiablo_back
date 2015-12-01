@@ -952,8 +952,7 @@
   <div class="modal-footer">
     <button class="btn btn-primary"
 	    x-ng-disabled="withdrawForm.$invalid
-			   || !params.check_withdraw(params.retailer.withdraw)
-			   || params.check_zero(params.retailer.withdraw)"
+			   || !params.check_withdraw(params.retailer.withdraw) "
 	    x-ng-click="ok()">确定</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div> 
