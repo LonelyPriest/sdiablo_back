@@ -353,3 +353,8 @@ ul.page-sidebar-menu > li.active > a {
 .diablo-margin-bottom-5 {
     margin-bottom:5px !important;
 }
+
+.diablo-table-center {
+    margin: 0 auto !important;
+    float: none !important;
+}

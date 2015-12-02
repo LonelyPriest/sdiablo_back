@@ -268,7 +268,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
     filterSizeGroup, filterBrand, filterType, filterColor, base){
 
     $scope.pattern  = {money: diabloPattern.decimal_2,
-		       sell:  diabloPattern.integer_except_zero};
+		       sell:  diabloPattern.integer_except_zero,
+		       disable: diabloPattern.discount};
     
     $scope.timeout_auto_save = undefined;
     $scope.round             = diablo_round;
@@ -281,9 +282,15 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	diablo_goto_page("#/new_wsale_detail");
     };
 
-    $scope.setting = {q_backend     :true,
-		      check_sale    :true,
-		      round         :diablo_round_record};
+    $scope.setting = {
+	q_backend     :true,
+	check_sale    :true,
+	round         :diablo_round_record};
+
+    $scope.right = {
+	m_discount : false,
+	m_price    : false
+    };
 
     // all right of user
     // console.log(user); 
@@ -930,9 +937,15 @@ wsaleApp.controller("wsaleNewCtrl", function(
 		javascript:window.print();
 	    };
 
-	    dialog.request(
+	    var request = dialog.request(
 		"销售单打印", "开单成功，是否打印销售单？",
-		ok_print, undefined, $scope);
+		undefined, undefined, $scope);
+
+	    request.result.then(function(close){
+		ok_print();
+	    })
+
+	    // ok_print();
 	}
     };
     
@@ -1333,7 +1346,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
 			path:           inv.path,
 			get_amount:     get_amount,
 			valid_sell:     valid_sell,
-			valid:          valid_all_sell};
+			valid:          valid_all_sell,
+			right:          $scope.right};
 
 		    diabloUtilsService.edit_with_modal(
 			"wsale-new.html",
@@ -1429,7 +1443,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
 		       path:         inv.path,
 		       get_amount:   get_amount, 
 		       valid_sell:   valid_sell,
-		       valid:        valid_all_sell}; 
+		       valid:        valid_all_sell,
+		       right:        $scope.right}; 
 	diabloUtilsService.edit_with_modal(
 	    "wsale-new.html", modal_size, callback, $scope, payload)
     };

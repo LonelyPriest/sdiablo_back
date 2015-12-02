@@ -109,8 +109,7 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 	    $scope.old_select = wsale.select;
 	    $scope.select = angular.extend($scope.select, wsale.select);
 	    $scope.select.surplus = $scope.select.retailer.balance;
-	    $scope.select.left_balance = $scope.select.retailer.balance;
-	    
+	    $scope.select.left_balance = $scope.select.retailer.balance; 
 	    console.log($scope.select);
 	    
 	    $scope.old_inventories = wsale.details;
@@ -120,6 +119,8 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 	    console.log($scope.old_inventories);
 	    console.log($scope.inventories);
 
+	    //
+	    $scope.has_withdrawed = false;
 	    $scope.re_calculate();
 
 	    $scope.hidden.travel = false;
@@ -137,6 +138,8 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 	    datetime: $.now();
 	    $scope.hidden.travel   = true;
 	    $scope.has_saved       = false;
+	    $scope.has_withdrawed  = false;
+	    
 	    $scope.select.comment  = undefined;
 	    $scope.select.rsn      = undefined;
 	} else {
@@ -148,7 +151,8 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 	    $scope.select.comment      = undefined;
 	    $scope.select.left_balance = $scope.select.retailer.balance;
 
-	    $scope.has_saved = false;
+	    $scope.has_withdrawed  = false;
+	    $scope.has_saved       = false;
 	    // $scope.get_retailer(); 
 	}
 	
@@ -762,8 +766,6 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 	    amounts:      inv.amounts,
 	    path:         inv.path,
 	    get_amount:   get_amount,
-	    get_price:    function(name){return inv[name]},
-	    // valid_sell:   valid_sell,
 	    valid:        valid_reject};
 
 	if (angular.isDefined(inv.has_query) && inv.has_query){

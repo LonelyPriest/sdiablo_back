@@ -7,12 +7,16 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
     console.log(user);
 
     $scope.pattern     = {money: diabloPattern.decimal_2};
-    $scope.shops       = user.sortShops;
-    $scope.retailers   = filterRetailer; 
-    $scope.employees   = filterEmployee;
-    $scope.size_groups = filterSizeGroup;
-    $scope.brands      = filterBrand;
-    $scope.types       = filterType;
+    
+    $scope.shops         = user.sortShops;
+    $scope.retailers     = filterRetailer; 
+    $scope.employees     = filterEmployee;
+    $scope.size_groups   = filterSizeGroup;
+    $scope.brands        = filterBrand;
+    $scope.colors        = filterColor;
+    $scope.types         = filterType;
+    $scope.base_settings = base;
+    
     $scope.sexs        = diablo_sex;
     $scope.seasons     = diablo_season;
     $scope.sell_styles = diablo_sell_style;
@@ -31,19 +35,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
     $scope.f_add      = diablo_float_add;
     $scope.f_sub      = diablo_float_sub;
     $scope.f_mul      = diablo_float_mul;
-    $scope.get_object = diablo_get_object;
-
-
-    $scope.p_round = function(){
-	return diablo_base_setting(
-	    "pround",
-	    $scope.select.shop.id, base, parseInt, diablo_round_record);
-    };
-
-    $scope.check_sale = function(shopId){
-	return diablo_base_setting(
-	    "check_sale", shopId, base, parseInt, diablo_yes);
-    };
+    $scope.get_object = diablo_get_object; 
 
     $scope.go_back = function(){
 	diablo_goto_page("#/new_wsale_detail/" + $routeParams.ppage);
@@ -58,16 +50,16 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	
 	for (var i=1, l=$scope.inventories.length; i<l; i++){
 	    var one = $scope.inventories[i];
-	    $scope.select.total      += parseInt(one.sell);
-	    $scope.select.abs_total  += Math.abs(parseInt(one.sell));
+	    $scope.select.total      += parseInt(one.reject);
+	    $scope.select.abs_total  += Math.abs(parseInt(one.reject));
 
 	    if ($scope.setting.round === diablo_round_row){
 		$scope.select.should_pay
 		    += $scope.round(
-			one.fprice * one.fdiscount * 0.01 * one.sell);
+			one.fprice * one.fdiscount * 0.01 * one.reject);
 	    } else {
 		$scope.select.should_pay
-		    += one.fprice * one.fdiscount * 0.01 * one.sell; 
+		    += one.fprice * one.fdiscount * 0.01 * one.reject; 
 	    }
 	    
 	    // $scope.select.should_pay
@@ -99,198 +91,48 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	event.preventDefault();
 	event.stopPropagation();
 	$scope.isOpened = true;
-    };
-
-    // $scope.today = function(){
-    // 	return $.now();
-    // }; 
-    
-    var in_sell = function(sells, tag){
-	for(var i=0, l=sells.length; i<l; i++){
-	    if (tag.style_number === sells[i].style_number
-		&& tag.brand_id  === sells[i].brand_id
-		&& tag.color_id  === sells[i].color_id
-		&& tag.size      === sells[i].size){
-
-		tag.sell       = sells[i].amount;
-		tag.fprice     = sells[i].fprice;
-		tag.fdiscount  = sells[i].fdiscount;
-		break;
-	    }
-	}
-
-	return tag;
-    };
-    
-    var in_sort = function(sorts, tag){
-	for (var i=0, l=sorts.length; i<l;i ++){
-	    if(tag.style_number === sorts[i].style_number
-	       && tag.brand_id  === sorts[i].brand.id){
-		
-		sorts[i].total += tag.amount;
-
-		if (angular.isDefined(tag.sell)){
-		    if (angular.isUndefined(sorts[i].sell)){
-			sorts[i].sell       = tag.sell;
-			sorts[i].fdiscount  = tag.fdiscount;
-			sorts[i].fprice     = tag.fprice;
-		    } else {
-			sorts[i].sell  += tag.sell; 
-		    }
-		}
-
-		if (!in_array(sorts[i].sizes, tag.size)){
-		    sorts[i].sizes.push(tag.size)
-		}
-
-		var color = diablo_find_color(tag.color_id, filterColor);
-		if (!diablo_in_colors(color, sorts[i].colors)){
-		    sorts[i].colors.push(color)
-		};
-		
-		sorts[i].amounts.push({
-		    cid:tag.color_id,
-		    size:tag.size,
-		    count:tag.amount,
-		    sell_count:tag.sell}); 
-		return true;
-	    } 
-	}
-
-	return false;
     }; 
 
     // rsn detail
     var rsn     = $routeParams.rsn
     var promise = diabloPromise.promise;
     wsaleService.get_w_sale_new(rsn).then(function(result){
-    // $q.all([
-    // 	promise(wsaleService.get_w_sale_new, rsn)(),
-    // 	promise(wsaleService.w_sale_rsn_detail, {rsn:rsn})()
-    // ]).then(function(result){
 	console.log(result);
 	if (result.ecode === 0){
 	    // result[0] is the record detail
-	    // result[1] are the inventory detail that the record is included
 	    var base        = result.sale;
-	    var invs        = result.inv;
-	    var sell_detail = result.detail; 
+	    var sells       = result.detail;
+	    var wsale = wsaleUtils.cover_wsale(
+		base,
+		sells,
+		$scope.shops,
+		$scope.brands,
+		$scope.retailers,
+		$scope.employees,
+		$scope.types,
+		$scope.colors,
+		$scope.size_groups);
 
-	    // var date = base.entry_date.substr(0,10).split("-")
-	    // var time = base.entry_date.substr(11, 8).split(":");
-	    // console.log(datetime);
-	    $scope.old_select.rsn      = base.rsn;
-	    $scope.old_select.rsn_id   = base.id;
-	    $scope.old_select.datetime = diablo_set_datetime(base.entry_date);
-	    // $scope.old_select.datetime   = new Date(
-	    // 	date[0], date[1]-1, date[2], time[0], time[1], time[2]);
-	    $scope.old_select.retailer = $scope.get_object(
-		base.retailer_id, $scope.retailers); 
+	    console.log(wsale);
 
-	    // console.log($scope.old_select);
-	    
-	    // $scope.old_select.new_surplus = $scope.old_select.surplus;
-	    
-	    $scope.old_select.shop       =
-		$scope.get_object(base.shop_id,   $scope.shops);
-	    $scope.old_select.employee   =
-		$scope.get_object(base.employ_id, $scope.employees); 
-	    
-	    $scope.old_select.surplus    = base.balance; 
-	    $scope.old_select.cash       = base.cash;
-	    $scope.old_select.card       = base.card;
-	    $scope.old_select.withdraw   = base.withdraw;
-	    $scope.old_select.should_pay = base.should_pay;
-
-	    $scope.old_select.comment    = base.comment;
-	    $scope.old_select.total      = base.total;
-
-	    console.log($scope.old_select);
-	    
-	    $scope.select = angular.extend($scope.select, $scope.old_select);
-	    $scope.select.abs_total = 0;
+	    $scope.old_select = wsale.select;
+	    $scope.select = angular.extend($scope.select, wsale.select);
 
 	    // setting
-	    $scope.setting.check_sale =
-		$scope.check_sale($scope.select.shop.id);
-	    
-	    $scope.setting.round      = $scope.p_round();
-	    console.log($scope.setting);
+	    $scope.setting.round = wsaleUtils.get_round(
+		$scope.select.shop.id, $scope.base_settings); 
+	    $scope.setting.check_sale = wsaleUtils.check_sale(
+		$scope.select.shop.id, $scope.base_settings);
 
-	    // console.log($scope.select);
-
-	    var length = invs.length;
-	    var sorts  = [];
-	    for(var i = 0; i < length; i++){
-		var inv  = in_sell(sell_detail, invs[i]);
-		
-		if(!in_sort(sorts, inv)) {
-		    var add = {$edit:true,
-			       $new:false,
-			       sizes:[],
-			       colors:[],
-			       amounts:[]};
-
-		    add.style_number    = inv.style_number;
-		    add.brand           = $scope.get_object(
-			inv.brand_id, $scope.brands);
-		    add.type            = $scope.get_object(
-			inv.type_id, $scope.types);
-		    // add.sex             = inv.sex,
-		    add.firm_id         = inv.firm_id;
-		    add.free            = inv.free,
-		    add.season          = inv.season;
-		    add.s_group         = inv.s_group;
-		    add.free_color_size = inv.free === 0 ? true : false;
-		    // add.org_price       = inv.org_price;
-		    add.tag_price       = inv.tag_price; 
-		    add.total           = inv.amount;
-		    add.path            = inv.path; 
-		    add.fdiscount       = inv.fdiscount;
-		    add.fprice          = inv.fprice;
-		    add.sell            = inv.sell; 
-
-		    add.sizes.push(invs[i].size); 
-		    add.colors.push(diablo_find_color(
-			inv.color_id, filterColor));
-		    
-		    add.amounts.push({
-			cid:inv.color_id,
-			size:inv.size,
-			count:inv.amount,
-			sell_count:inv.sell});
-		    sorts.push(add); 
-		} 
-	    }
-
-	    // console.log(sorts);
-	    $scope.old_inventories = sorts;
-
-	    var order_length = sorts.length;
-	    angular.forEach(sorts, function(s){
-		var tag = angular.copy(s);
-		s.amounts = s.amounts.filter(function(a){
-		    if (angular.isDefined(a.sell_count)
-			&& a.sell_count !== 0){
-			return true;
-		    }
-		});
-		
-		tag.order_id = order_length;
-		if (tag.sizes.length !== 1 || tag.sizes[0] !=="0" ){
-		    tag.sizes = wgoodService.get_size_group(
-			tag.s_group, filterSizeGroup); 
-		}
-		$scope.inventories.push(tag);
-		order_length--;
-	    })
-	    
+	    // inventory
+	    $scope.old_inventories = wsale.details;
+	    $scope.inventories = angular.copy(wsale.details);
 	    $scope.inventories.unshift({$edit:false, $new:true});
-
-	    $scope.re_calculate(); 
 
 	    console.log($scope.old_inventories);
 	    console.log($scope.inventories);
+
+	    $scope.re_calculate(); 
 	}
 	
     });
@@ -553,7 +395,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 			    }
 			})
 		    }}(),
-		sell_total     : parseInt(add.sell),
+		sell_total     : parseInt(add.reject),
 		fdiscount      : parseInt(add.fdiscount),
 		fprice         : parseFloat(add.fprice),
 		path           : add.path,
@@ -574,7 +416,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	    rsn:           $scope.select.rsn,
 	    retailer:      $scope.select.retailer.id,
 	    shop:          $scope.select.shop.id,
-	    datetime:      dateFilter($scope.select.datetime,
+	    datetime:      dateFilter($scope.select.rsn_datetime,
 				      "yyyy-MM-dd HH:mm:ss"),
 	    employee:      $scope.select.employee.id,
 	    
@@ -582,14 +424,14 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	    cash:          setv($scope.select.cash),
 	    card:          setv($scope.select.card),
 	    withdraw:      setv($scope.select.withdraw),
-	    should_pa:     setv($scope.select.should_pay),
+	    should_pay:    setv($scope.select.should_pay),
 	    comment:       sets($scope.select.comment),
 
 	    old_retailer:    $scope.old_select.retailer.id, 
 	    old_balance:     $scope.old_select.surplus,
 	    old_withdraw:    $scope.old_select.withdraw,
 	    old_should_pay:  $scope.old_select.should_pay,
-	    old_datetime:    dateFilter($scope.old_select.datetime,
+	    old_datetime:    dateFilter($scope.old_select.rsn_datetime,
 				       "yyyy-MM-dd HH:mm:ss"), 
 	    total:           seti($scope.select.total)
 	};
@@ -600,8 +442,10 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	console.log(base);
 	
 	console.log($scope.old_select);
-	var new_datetime = dateFilter($scope.select.datetime, "yyyy-MM-dd");
-	var old_datetime = dateFilter($scope.old_select.datetime, "yyyy-MM-dd");
+	var new_datetime = dateFilter($scope.select.rsn_datetime,
+				      "yyyy-MM-dd");
+	var old_datetime = dateFilter($scope.old_select.rsn_datetime,
+				      "yyyy-MM-dd");
 	if (added.length === 0
 	    && ($scope.select.cash === $scope.old_select.cash
 		&& $scope.select.card === $scope.old_select.card
@@ -792,7 +636,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	})
 
 	return {amounts:     params.amounts,
-		sell:        sell_total,
+		reject:        sell_total,
 		fdiscount:   params.fdiscount,
 		fprice:      params.fprice};
     };
@@ -801,7 +645,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	console.log(inv);
 	inv.$edit = true;
 	inv.$new  = false;
-	inv.amounts[0].sell_count = inv.sell;
+	inv.amounts[0].sell_count = inv.reject;
 	// oreder
 	inv.order_id = $scope.inventories.length; 
 	// add new line
@@ -873,7 +717,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 			var result  = add_callback(params);
 			console.log(result);
 			inv.amounts    = result.amounts;
-			inv.sell       = result.sell;
+			inv.reject     = result.reject;
 			inv.fdiscount  = result.fdiscount;
 			inv.fprice     = result.fprice;
 			after_add();
@@ -896,7 +740,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 			callback, $scope, payload); 
 		}; 
 	    });
-	} 
+	}
     };
     
     /*
@@ -958,7 +802,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	    var result  = add_callback(params);
 	    console.log(result);
 	    inv.amounts    = result.amounts;
-	    inv.sell       = result.sell;
+	    inv.reject     = result.reject;
 	    inv.fdiscount  = result.fdiscount;
 	    inv.fprice     = result.fprice;
 	    $scope.re_calculate(); 
@@ -980,13 +824,13 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 
     $scope.save_free_update = function(inv){
 	inv.free_update = false; 
-	inv.amounts[0].sell_count = inv.sell;
+	inv.amounts[0].sell_count = inv.reject;
 	$scope.re_calculate(); 
     }
 
     $scope.cancel_free_update = function(inv){
 	inv.free_update = false;
-	inv.sell = inv.amounts[0].sell_count;
+	inv.reject = inv.amounts[0].sell_count;
 	inv.fdiscount = inv.o_fdiscount;
 	inv.fprice    = inv.o_fprice;
 	$scope.re_calculate(); 

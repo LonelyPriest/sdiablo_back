@@ -239,8 +239,8 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
     ShouldPay  = ?v(<<"should_pay">>, Props, 0),
 
     OldRetailer  = ?v(<<"old_retailer">>, Props),
-    OldBalance   = ?v(<<"old_lastbalance">>, Props),
-    OldWithdraw  = ?v(<<"old_withdraw">>, Props),
+    OldBalance   = ?v(<<"old_balance">>, Props),
+    OldWithdraw  = ?v(<<"old_withdraw">>, Props, 0),
     %% OldShouldPay = ?v(<<"old_should_pay">>, Props, 0),
     OldDatetime  = ?v(<<"old_datetime">>, Props),
 
@@ -284,6 +284,8 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
 		      proplists, comma,
 		      ?utils:v(balance, float, OldBalance) ++ Updates)
 		++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'",
+
+	    ?DEBUG("Sql2 ~p", [Sql2]),
 
 	    case  OldWithdraw - Withdraw of
 		0 ->

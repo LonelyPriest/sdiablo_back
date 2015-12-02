@@ -313,7 +313,8 @@
 			  <form name="inv.form.good" ng-if="inv.$new">
 			    <div ng-class="{'has-error':inv.form.good.$invalid
 					   && !inv.form.good.$pristine}">
-			      <input class="form-control text-left" type="text"
+			      <input class="form-control text-left"
+				     type="text"
 				     required
 				     x-ng-model="inv.style_number"
 				     placeholder="货号"
@@ -342,22 +343,28 @@
 			
 			<td class="col-md-1 vert-align">{{inv.tag_price}}</td>
 
-			<!-- <td class="vert-align">{{inv.discount}}</td> -->
-			<td class="col-md-1 vert-align">
-			  <!-- <td class="col-md-1 vert-align">   -->
-			  <div ng-if="!inv.$new && !inv.free_update">
+			<!--discount-->
+			<td x-ng-if="!right.m_discount"
+			    class="vert-align">
+			  {{inv.fdiscount}}
+			</td>
+			
+			<td x-ng-if="right.m_discount"
+			    class="col-md-1 vert-align">
+			  <div x-ng-if="!inv.$new && !inv.free_update">
 			    {{inv.fdiscount}}
 			  </div> 
 			  <form name="inv.form.fdiscount"
 				ng-if="inv.$new && inv.free_color_size
 				       || !inv.$new && inv.free_update">
-			    <div ng-class="{'has-error':inv.form.fdiscount.$invalid
+			    <div ng-class="{'has-error':
+					   inv.form.fdiscount.$invalid
 					   && !inv.form.fdiscount.$pristine}"> 
 			      <input class="form-control"
 				     type="number" step="1"
 				     required
 				     x-ng-model="inv.fdiscount"
-				     x-ng-pattern="/^\d{2}$|100$/"
+				     x-ng-pattern="pattern.discount"
 				     popover-placement="top"
 				     popover-trigger="focus"
 				     popover="请输入折扣"/>
@@ -365,20 +372,26 @@
 			  </form>
 			</td> 
 
-			<td class="col-md-1 vert-align">
+			<td x-ng-if="!right.m_price" class="vert-align">
+			  <div x-ng-if="inv.fdiscount
+					&& (inv.fprice===0 || inv.fprice)">
+			    {{f_mul(inv.fprice, f_mul(inv.fdiscount, 0.01))}}
+			  </div>
+			</td>
+			
+			<td x-ng-if="right.m_price"
+			    class="col-md-1 vert-align">
 			  <div ng-if="!inv.$new && !inv.free_update">
-			    <div x-ng-if="inv.sell
-					  && inv.fdiscount
-					  && (inv.fprice === 0 || inv.fprice)">
-			      <span>{{f_mul(inv.fprice,
-				f_mul(inv.fdiscount, 0.01))}}
-			      </span>
+			    <div x-ng-if="inv.fdiscount
+					  && (inv.fprice===0 || inv.fprice)">
+			      {{f_mul(inv.fprice,f_mul(inv.fdiscount,0.01))}} 
 			    </div>
 			  </div> 
 			  <form name="inv.form.fprice"
 				ng-if="inv.$new && inv.free_color_size
 				       || !inv.$new && inv.free_update">
-			    <div ng-class="{'has-error':inv.form.fprice.$invalid
+			    <div ng-class="{'has-error':
+					   inv.form.fprice.$invalid
 					   && !inv.form.fprice.$pristine}"> 
 			      <input class="form-control"
 				     type="number" step="0.01"
@@ -631,7 +644,55 @@
 
 <!--print-->
 <div class="row visible-print-block">
-  <p>打印内容</p>
+<!-- <div> -->
+  <h5 class="text-center"><strong>{{select.shop.name}}</strong></h5>
+  <div class="text-left">
+    <p>
+      <span>客户：{{select.retailer.name}}</span>
+      <span class="pull-right">
+	日期：{{select.datetime|date: "yyyy-MM-dd HH:mm:ss"}}
+      </span>
+    </p>
+  </div>
+  <div class="table-responsive">
+    <table class="table-striped table-condensed diablo-table-center">
+      <thead>
+	<tr>
+	  <th>款号</th>
+	  <th>品牌</th>
+	  <th>单价</th>
+	  <th>折扣</th>
+	  <th>数量</th>
+	  <th>小计</th>
+	</tr> 
+      </thead>
+      <tbody>
+	<tr x-ng-if="!inv.$new" x-ng-repeat="inv in inventories">
+	  <td>{{inv.style_number}}</td>
+	  <td>{{inv.brand}}</td>
+	  <td>{{inv.fprice}}</td>
+	  <td>{{inv.fdiscount}}</td>
+	  <td>{{inv.sell}}</td>
+	  <td>
+	    <span x-ng-if="setting.round===1">
+	      {{round(inv.fprice * inv.sell * inv.fdiscount * 0.01)}}
+	    </span>
+	    <span x-ng-if="setting.round===0">
+	      {{f_mul(f_mul(inv.fprice, inv.fdiscount),
+	      f_mul(inv.sell, 0.01))}}</span> 
+	  </td>
+	</tr>
+
+	<tr>
+	  <td colspan="4"></td>
+	  <td>{{select.abs_total}}</td>
+	  <td>{{select.should_pay}}</td>
+	</tr>
+	
+      </tbody> 
+    </table> 
+  </div> 
+  
 </div>
 
 
@@ -642,25 +703,51 @@
 	
 	<span class="input-group-addon">
 	  <i class="glyphicon glyphicon-yen fg-red"></i>
-	</span> 
-	<input class="form-control text-center"
-	       readonly
-	       x-ng-model="params.fprice" />
+	</span>
+
+	<div x-ng-if="!params.right.m_price">
+	  <input class="form-control text-center"
+		 readonly
+		 x-ng-model="params.fprice" />
+	</div>
+	<div x-ng-if="params.right.m_price">
+	  <form name="fprice">
+	    <div ng-class="{'has-error':fprice.$invalid
+			   && !fprice.$pristine}">
+	      <input class="form-control text-center"
+		     type="number" step="0.01"
+		     required
+		     x-ng-model="params.fprice"
+		     placeholder="支持两位小数"
+		     x-ng-pattern="/^\d+(.\d{1,2})?$/"/>
+	    </div>
+	  </form>
+	</div>
 	
 	<span class="input-group-addon">
 	  <i class="glyphicon glyphicon-sort-by-attributes-alt fg-red"></i>
 	</span>
-	<form name="fdiscount">
-	  <div ng-class="{'has-error':fdiscount.$invalid
-			 && !discount.$pristine}">
-	    <input class="form-control text-center"
-		   type="number" step="1"
-		   required
-		   x-ng-model="params.fdiscount"
-		   placeholder="两位整数"
-		   x-ng-pattern="/^\d{2}$|100$/" />
-	  </div>
-	</form> 
+	
+	<div x-ng-if="!params.right.m_discount">
+	  <input class="form-control text-center"
+		 type="number"
+		 readonly
+		 x-ng-model="params.fdiscount"/>
+	</div>
+	
+	<div x-ng-if="params.right.m_discount">
+	  <form name="fdiscount">
+	    <div ng-class="{'has-error':fdiscount.$invalid
+			   && !fdiscount.$pristine}">
+	      <input class="form-control text-center"
+		     type="number" step="1"
+		     required
+		     x-ng-model="params.fdiscount"
+		     placeholder="两位整数"
+		     x-ng-pattern="/^\d{2}$|100$/" />
+	    </div>
+	  </form>
+	</div>
       </div>
     </div>
 

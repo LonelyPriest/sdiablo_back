@@ -648,6 +648,8 @@ diabloUtils.service("diabloUtilsService", function($modal){
 	    backdrop: 'static',
 	    // animation: true,
 	    // openedClass: "modal-open-noscroll",
+	    backdropClass: "hidden-print",
+	    windowClass: "hidden-print",
 	    scope: scope,
 	    resolve:{
 		message: function(){
@@ -663,7 +665,8 @@ diabloUtils.service("diabloUtilsService", function($modal){
 	})
     };
 
-    this.edit_with_modal = function(templateUrl, size, callback, scope, params){
+    this.edit_with_modal = function(
+	templateUrl, size, callback, scope, params){
 	return $modal.open({
 	    templateUrl: templateUrl,
 	    controller: 'diabloEditDialogCtrl',
@@ -684,7 +687,8 @@ diabloUtils.service("diabloUtilsService", function($modal){
     };
 });
 
-diabloUtils.controller("diabloDialogCtrl", function($scope, $modalInstance, message){
+diabloUtils.controller("diabloDialogCtrl", function(
+    $scope, $modalInstance, message){
     // console.log($scope);
     console.log($modalInstance);
     console.log(message);
@@ -692,22 +696,38 @@ diabloUtils.controller("diabloDialogCtrl", function($scope, $modalInstance, mess
     $scope.title = message.title;
     $scope.body  = message.body; 
     
-    $scope.show_cancel = angular.isDefined(message.show_cancel) ? message.show_cancel : true;
+    $scope.show_cancel =
+	angular.isDefined(message.show_cancel) ? message.show_cancel : true;
     
     $scope.cancel = function(){
 	$modalInstance.dismiss('cancel');
     };
 
     $scope.ok = function() {
-	$modalInstance.dismiss('ok');
-	if (angular.isDefined(message.callback) && typeof(message.callback) === "function"){
-	    var callback = message.callback;
-	    if (angular.isDefined(message.params)){
-		callback(message.params)
-	    } else{
-		callback();
+
+	$modalInstance.close('ok'); 
+
+	var ok_call = function(){
+	    if (angular.isDefined(message.callback)
+		&& typeof(message.callback) === "function"){
+		var callback = message.callback;
+		if (angular.isDefined(message.params)){
+		    callback(message.params)
+		} else{
+		    callback();
+		}
 	    }
 	}
+
+	$modalInstance.result.then(function(result) {
+	    if (result === 'ok'){
+		ok_call() 
+	    }
+    	}, function (success) {
+	    
+    	}, function(error){
+	    
+    	});
     };
 });
 

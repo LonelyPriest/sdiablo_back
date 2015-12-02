@@ -80,7 +80,7 @@
 		       clear-text="清除"
 		       current-text="今天"
 		       show-weeks="false"
-		       x-ng-model="select.datetime"></input>
+		       x-ng-model="select.rsn_datetime"/>
 	  	<span class="input-group-btn">
 		  <button type="button"
 			  class="btn btn-default"
@@ -294,7 +294,7 @@
 
 		    <td class="col-md-1 vert-align">
 		      <div x-ng-if="!inv.$new || inv.free_color_size">
-			{{inv.tag_price}}
+			{{inv.fprice}}
 		      </div>
 		      
 		    </td>
@@ -335,7 +335,6 @@
 		    	  <input class="form-control"
 		    		 type="number" step="0.01"
 		    		 required
-				 x-ng-readonly="true"
 		    		 x-ng-pattern="/^\d+(.\d{1,2})?$/"
 		    		 x-ng-model="inv.fprice"
 		    		 popover-placement="top"
@@ -350,8 +349,8 @@
 		    <!-- sell count-->
 		    <td class="col-md-1 vert-align">
 		      <div ng-if="!inv.$new && !inv.free_update">
-			{{inv.sell}}
-		      </div> 
+			{{inv.reject}}
+		      </div>
 		      <form name="inv.form.sell"
 			    ng-if="inv.$new && inv.free_color_size
 				   || !inv.$new && inv.free_update">
@@ -362,7 +361,7 @@
 				 placeholder="数量"
 				 required
 				 x-ng-pattern="/^[+|\-]?[1-9][0-9]*$/"
-				 x-ng-model="inv.sell"
+				 x-ng-model="inv.reject"
 				 popover-placement="top"
 				 popover-trigger="focus"
 				 popover="均色均码直接输入数量">
@@ -371,17 +370,17 @@
 		    </td>
 
 		    <td class="vert-align"> 
-		      <div x-ng-if="inv.sell
+		      <div x-ng-if="inv.reject
 				    && (inv.fprice || inv.fprice===0)
 				    && inv.fdiscount">
 			<span x-ng-if="setting.round===1">
 			  {{round(
-			  inv.fprice * inv.sell * inv.fdiscount * 0.01)}}
+			  inv.fprice * inv.reject * inv.fdiscount * 0.01)}}
 			</span>
 
 			<span x-ng-if="setting.round===0">
 			  {{f_mul(
-			  f_mul(inv.fprice, inv.sell),
+			  f_mul(inv.fprice, inv.reject),
 			  f_mul(inv.fdiscount, 0.01))}}
 			</span> 
 		      </div>

@@ -5,11 +5,11 @@ var wsaleUtils = function(){
 		&& sell.brand_id   === sorts[i].brand_id){
 
 		// sorts[i].total += sell.sell;
-		sorts[i].reject += sell.amount;
+		sorts[i].reject += Math.abs(sell.amount);
 		sorts[i].amounts.push({
-		    cid    :sell.color_id,
-		    size   :sell.size,
-		    reject :sell.amount});
+		    cid        :sell.color_id,
+		    size       :sell.size,
+		    sell_count :Math.abs(sell.amount)});
 		return true;
 	    } 
 	}
@@ -18,23 +18,22 @@ var wsaleUtils = function(){
 
     var sort_wsale = function(base, sells) {
 	console.log(base);
-	var select = {};
-	select.rsn         = base.rsn;
-	select.rsn_id      = base.id;
+	var select             = {};
+	select.rsn             = base.rsn;
+	select.rsn_id          = base.id;
 	select.rsn_datetime    = diablo_set_datetime(base.entry_date); 
-	select.retailer_id = base.retailer_id;
-	select.shop_id     = base.shop_id;
-	
-	select.employee_id = base.employ_id; 
+	select.retailer_id     = base.retailer_id;
+	select.shop_id         = base.shop_id; 
+	select.employee_id     = base.employ_id; 
 	
 	select.surplus    = base.balance; 
-	select.cash       = base.cash;
-	select.card       = base.card;
-	select.withdraw   = base.withdraw;
-	select.should_pay = base.should_pay;
+	select.cash       = Math.abs(base.cash);
+	select.card       = Math.abs(base.card);
+	select.withdraw   = Math.abs(base.withdraw);
+	select.should_pay = Math.abs(base.should_pay);
 
 	select.comment    = base.comment;
-	select.total      = base.total; 
+	select.total      = Math.abs(base.total);
 
 	var sorts = [];
 	for (var i=0, l=sells.length; i<l; i++){
@@ -54,14 +53,15 @@ var wsaleUtils = function(){
 		add.firm_id = s.firm_id;
 		add.year    = s.year;
 		add.free    = s.free;
+		add.path    = s.path;
 
 		add.s_group = s.s_group;
 		add.free_color_size = s.free === 0 ? true : false;
 
 		add.fprice    = s.fprice;
 		add.fdiscount = s.fdiscount;
-		add.reject    = s.amount;
-		add.total     = s.total;
+		add.reject    = Math.abs(s.amount);
+		add.total     = Math.abs(s.total);
 
 		add.sizes.push(s.size);
 		add.colors_id.push(s.color_id);
@@ -69,7 +69,7 @@ var wsaleUtils = function(){
 		add.amounts.push({
 		    cid: s.color_id,
 		    size:s.size,
-		    sell_count:s.amount});
+		    sell_count:Math.abs(s.amount)});
 
 		sorts.push(add);
 	    }
@@ -153,6 +153,11 @@ var wsaleUtils = function(){
 		    diabloFilter.default_start_time(now), "yyyy-MM-dd"));
 	},
 
+	check_sale: function(shop, base){
+	    return diablo_base_setting(
+		"check_sale", shop, base, parseInt, diablo_yes);
+	},
+
 	sort_amount: function(invs, amounts, colors){
 	    var select_amounts = [];
 	    var used_colors = [];
@@ -177,9 +182,9 @@ var wsaleUtils = function(){
 		    var s = amounts[j];
 		    if (inv.color_id === s.cid && inv.size === s.size){
 			// amount.old_reject = s.reject;
-			total += parseInt(s.sell_count);
-			amount.count += parseInt(s.sell_count);
-			amount.sell_count = parseInt(s.sell_count); 
+			total += Math.abs(s.sell_count);
+			amount.count += Math.abs(s.sell_count);
+			amount.sell_count = Math.abs(s.sell_count); 
 			break;
 		    }
 		}
