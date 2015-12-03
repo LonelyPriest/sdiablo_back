@@ -29,7 +29,7 @@ angular.module("diabloPattern", []).service("diabloPattern", [function(){
     this.char_number_underline = /^\w+$/;
 
     // comment
-    this.comment = /^[\u4e00-\u9fa5A-Za-z0-9\uFF00-\uFFFF]+$/;
+    this.comment = /^[\u4e00-\u9fa5A-Za-z0-9\-_\uFF00-\uFFFF]+$/;
 
     // size group
     this.size = /^[A-Za-z0-9\/]{1,3}$/
@@ -43,6 +43,8 @@ angular.module("diabloPattern", []).service("diabloPattern", [function(){
     this.head_ch_en_num  = /^[\u4e00-\u9fa5][\u4e00-\u9fa5A-Za-z0-9\s]+$/;
 
     this.ch_name_address = /^[\u4e00-\u9fa5][\u4e00-\u9fa5A-Za-z0-9\s]+$/;
+
+    this.ch_en_num_beside_underline_bars = /^[\u4e00-\u9fa5A-Za-z0-9\-_]{4,20}$/;
 
     this.style_number = /^[A-Za-z0-9-]{2,10}$/;
 

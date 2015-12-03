@@ -337,6 +337,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
     $scope.has_withdrawed  = false;
 
     $scope.select = {
+	rsn:  undefined,
 	cash: undefined,
 	card: undefined,
 	withdraw: undefined,
@@ -506,6 +507,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	$scope.select.form.cardForm.$invalid  = false;
 	$scope.select.form.cashForm.$invalid  = false; 
 
+	$scope.select.rsn          = undefined;
 	$scope.select.cash         = undefined;
 	$scope.select.card         = undefined;
 	$scope.select.withdraw     = undefined;
@@ -916,13 +918,13 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	} else{
 	    var ok_print = function(){
 		wsaleService.print_w_sale(rsn).then(function(result){
-		    var show_message = "销售单打印" + print(result);
-		    show_dialog("销售单打印", show_message); 
+		    var show_message = "开单成功，" + print(result);
+		    show_dialog("销售开单", show_message); 
 		})
 	    };
 	    
 	    dialog.request(
-		"销售单打印", "开单成功，是否打印销售单？",
+		"销售开单", "开单成功，是否打印销售单？",
 		ok_print, undefined, $scope);
 	}
 	
@@ -938,7 +940,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    };
 
 	    var request = dialog.request(
-		"销售单打印", "开单成功，是否打印销售单？",
+		"销售开单", "开单成功，是否打印销售单？",
 		undefined, undefined, $scope);
 
 	    request.result.then(function(close){
@@ -1067,6 +1069,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    }
 
 	    if (result.ecode === 0){
+		$scope.select.rsn = result.rsn;
 		success_callback();
 		$scope.print_front(result, im_print); 
 	    } else {

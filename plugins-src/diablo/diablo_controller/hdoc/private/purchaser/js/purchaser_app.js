@@ -146,6 +146,15 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 	    controller: 'wgoodDetailCtrl',
 	    resolve: angular.extend({}, user, brand, firm, type, color, base) 
 	}).
+	// promotion
+	when('/promotion/promotion_new', {
+	    templateUrl: '/private/purchaser/html/purchaser_promotion_new.html',
+	    controller: 'stockPromotionNew' 
+	}).
+	when('/promotion/promotion_detail', {
+	    templateUrl: '/private/purchaser/html/purchaser_promotion_detail.html',
+	    controller: 'stockPromotionDetail' 
+	}).
 	// default
 	otherwise({
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_new_detail.html',
@@ -170,13 +179,20 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
 	2702: "文件导出失败，没有任何数据需要导出，请重新设置查询条件！！",
 	9001: "数据库操作失败，请联系服务人员！！"};
 
-    this.purchaser_type =  [{name:"采购开单", id:0, py:diablo_pinyin("采购开单")},
-    			  {name:"采购退货", id:1, py:diablo_pinyin("采购退货")}];
+    this.purchaser_type =  [
+	{name:"采购开单", id:0, py:diablo_pinyin("采购开单")}, 
+    	{name:"采购退货", id:1, py:diablo_pinyin("采购退货")}];
 
     this.extra_pay_types = [
 	{id:0, name: "代付运费"},
 	{id:1, name: "样衣"},
 	{id:2, name: "少配饰"},
+    ];
+
+    this.promotion_rules = [
+	{name: "折扣优惠", id:0, remark: "打折优惠"},
+	{name: "金额减免", id:1, remakr: "交易金额达到目标值减免一定金额"}
+	// {name: "金额赠送", id:2, remakr: "交易金额达到目标值赠送一定金额"}
     ];
 
     this.export_type = {trans:0, trans_note:1, stock:2};
@@ -228,7 +244,9 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
 	    };
 
 	    if (!in_sort(sorts, inv)){
-		sorts.push({cid:inv.color_id, size:inv.size, count:inv.amount})
+		sorts.push({cid:inv.color_id,
+			    size:inv.size,
+			    count:inv.amount})
 	    }; 
 	});
 
@@ -247,7 +265,10 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
 	// console.log(colors);
 	// console.log(sorts);
 	
-	return {total: total, size: order_used_sizes, color:colors, sort:sorts};
+	return {total: total,
+		size: order_used_sizes,
+		color:colors,
+		sort:sorts};
     };
 
     this.promise = function(callback, params){

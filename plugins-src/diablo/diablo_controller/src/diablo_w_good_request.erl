@@ -10,15 +10,7 @@
 %% @desc: GET action
 %%--------------------------------------------------------------------
 action(Session, Req) ->
-    %% ?DEBUG("GET Req ~n~p", [Req]),
-    {ok, HTMLOutput} = wgood_frame:render(
-			 [
-			  {navbar, ?menu:navbars(?MODULE, Session)},
-			  {basebar, ?menu:w_basebar(Session)},
-			  {sidebar, sidebar(Session)},
-			  {ngapp, "wgoodApp"},
-			  {ngcontroller, "wgoodCtrl"}]),
-    Req:respond({200, [{"Content-Type", "text/html"}], HTMLOutput}).
+    ?DEBUG("unkown req ~p with session ~p", [Req, Session]). 
 
 %%--------------------------------------------------------------------
 %% @desc: GET action
@@ -32,35 +24,34 @@ action(Session, Req, {"list_supplier"}) ->
 action(Session, Req, {"list_brand"}) ->
     ?DEBUG("list brand with session ~p", [Session]),
     Merchant = ?session:get(merchant, Session),
-    %% batch_responed(fun()->?attr:brand(list, Merchant) end, Req);
     batch_responed(fun()->?w_user_profile:get(brand, Merchant) end, Req); 
 
 action(Session, Req, {"list_type"}) ->
     ?DEBUG("list_type with session ~p", [Session]),
     Merchant = ?session:get(merchant, Session), 
-    %% batch_responed(fun()->?attr:type(list, Merchant) end, Req);
     batch_responed(fun()->?w_user_profile:get(type, Merchant) end, Req); 
 
 action(Session, Req, {"list_w_size"}) ->
     ?DEBUG("list_purchaser_size with session ~p", [Session]),
     Merchant = ?session:get(merchant, Session),
-    %% batch_responed(fun()->?attr:size_group(list, Merchant) end, Req);
     batch_responed(fun()->?w_user_profile:get(size_group, Merchant) end, Req); 
     
 
 action(Session, Req, {"list_color_type"}) ->
     ?DEBUG("list_color_type with session ~p", [Session]), 
-    %% batch_responed(fun()->?attr:color_type(list) end, Req);
     Merchant = ?session:get(merchant, Session),
     batch_responed(fun()->?w_user_profile:get(color_type, Merchant)end, Req); 
 
 action(Session, Req, {"list_w_color"}) ->
     ?DEBUG("list_purchaser_color with session ~p", [Session]),
     Merchant = ?session:get(merchant, Session),
-    %% batch_responed(fun()->?attr:color(w_list, Merchant) end, Req);
-    batch_responed(fun()->?w_user_profile:get(color, Merchant) end, Req); 
-    
+    batch_responed(fun()->?w_user_profile:get(color, Merchant) end, Req);
 
+action(Session, Req, {"list_w_promotion"}) ->
+    ?DEBUG("list_w_promotion with session ~p", [Session]),
+    Merchant = ?session:get(merchant, Session),
+    batch_responed(fun()->?w_user_profile:get(promotion, Merchant) end, Req);
+    
 action(Session, Req, {"list_w_good"}) ->
     ?DEBUG("list_purchaser_good with session ~p", [Session]),
     Merchant = ?session:get(merchant, Session),    
@@ -371,30 +362,48 @@ action(Session, Req, {"filter_w_good"}, Payload) ->
       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
 	      ?w_inventory:filter(
 		 goods, Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
-      end, Req, Payload).
+      end, Req, Payload);
 
 
-sidebar(Session) -> 
-    G1 = 
-	case ?right_auth:authen(?new_w_good, Session) of
-	    {ok, ?new_w_good} ->
-		[{"wgood_new", "新增货品", "glyphicon glyphicon-plus"},
-		 {"wgood_detail", "货品详情", "glyphicon glyphicon-book"}];
-	    _ ->
-		[{"wgood_detail", "货品详情", "glyphicon glyphicon-book"}]
-	end, 
+%%
+%% promotion 
+%%
+action(Session, Req, {"new_w_promotion"}, Payload) ->
+    ?DEBUG("new_w_promotion with session ~p~nPayload ~p", [Session, Payload]),
 
-    L1 = ?menu:sidebar(level_1_menu, G1),
+    Merchant  = ?session:get(merchant, Session),
+
+    case ?promotion:promotion(new, Merchant, Payload) of 
+	{ok, PId} ->
+	    ?utils:respond(
+	       200, Req, ?succ(new_promotion, PId), {<<"id">>, PId});
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end.
+    
 
 
-    %% setting
-    Setting = [{{"setting", "基本设置", "glyphicon glyphicon-cog"},
-		[{"size", "尺寸", "glyphicon glyphicon-text-size"},
-		 {"color", "颜色", "glyphicon glyphicon-font"}]}],
+%% sidebar(Session) -> 
+%%     G1 = 
+%% 	case ?right_auth:authen(?new_w_good, Session) of
+%% 	    {ok, ?new_w_good} ->
+%% 		[{"wgood_new", "新增货品", "glyphicon glyphicon-plus"},
+%% 		 {"wgood_detail", "货品详情", "glyphicon glyphicon-book"}];
+%% 	    _ ->
+%% 		[{"wgood_detail", "货品详情", "glyphicon glyphicon-book"}]
+%% 	end, 
 
-    L2 = ?menu:sidebar(level_2_menu, Setting), 
+%%     L1 = ?menu:sidebar(level_1_menu, G1),
 
-    L1 ++ L2.
+
+%%     %% setting
+%%     Setting = [{{"setting", "基本设置", "glyphicon glyphicon-cog"},
+%% 		[{"size", "尺寸", "glyphicon glyphicon-text-size"},
+%% 		 {"color", "颜色", "glyphicon glyphicon-font"}]}],
+
+%%     L2 = ?menu:sidebar(level_2_menu, Setting), 
+
+%%     L1 ++ L2.
 
 batch_responed(Fun, Req) ->
     case Fun() of

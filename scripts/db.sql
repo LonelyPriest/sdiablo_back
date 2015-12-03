@@ -359,6 +359,29 @@ create table w_retailer
 ) default charset=utf8;
 
 
+create table w_promotion(
+    id              INTEGER AUTO_INCREMENT,
+    name            VARCHAR(64) default NULL,
+    merchant        INTEGER not null default -1,
+    
+    rule            TINYINT not null default -1, 
+    discount        DECIMAL(3, 0)  not null default 100,
+    cmoney          DECIMAL(10, 2) not null default 0,  -- consume money
+    rmoney          DECIMAL(10, 2) not null default 0,  -- reduce money
+    sdate           DATE default 0,
+    edate           DATE default 0,
+
+    remark          VARCHAR(128) default null,
+
+    
+    entry           DATETIME default 0,
+    deleted         INTEGER default 0, -- 0: no;  1: yes
+
+    unique  key uk  (merchant, name),
+    primary key     (id)
+    
+) default charset=utf8;
+
 /*
 * invnentory
 */

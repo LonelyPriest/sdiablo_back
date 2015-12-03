@@ -450,10 +450,29 @@ sidebar(Session) ->
 			     "glyphicon glyphicon-font"}]
 		       }],
 
-	    Level1 = ?menu:sidebar(level_1_menu,
-				   Record ++ Reject ++ TransR
-				   ++ TransD ++ InvDetail),
-	    Level2 = ?menu:sidebar(level_2_menu, InvMgr ++ GoodMgr),
+
+	    PromotionMgr =
+		[{{"promotion", "促销定价",
+		   "glyphicon glyphicon-superscript"},
+		  case ?right_auth:authen(?new_w_promotion, Session) of
+		      {ok, ?new_w_promotion} ->
+			  [{"promotion_new",
+			    "新增方案", "glyphicon glyphicon-plus"}];
+		      _ -> []
+		  end 
+		  ++ case ?right_auth:authen(?list_w_promotion, Session) of
+			 {ok, ?list_w_promotion} ->
+			     [{"promotion_detail",
+			       "方案详情", "glyphicon glyphicon-book"}];
+			 _ -> []
+		     end 
+		 }],
+
+	    Level1 = ?menu:sidebar(
+			level_1_menu,
+			Record ++ Reject ++ TransR ++ TransD ++ InvDetail),
+	    Level2 = ?menu:sidebar(
+			level_2_menu, InvMgr ++ GoodMgr ++ PromotionMgr),
 
 	    Level1 ++ Level2
     end.

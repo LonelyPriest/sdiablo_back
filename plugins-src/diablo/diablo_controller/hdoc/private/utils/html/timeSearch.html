@@ -1,5 +1,5 @@
 <div class="input-group">
-  <span class="input-group-btn">
+  <span x-ng-if="glyphicon" class="input-group-btn">
     <button type="button" class="btn">
       <i class={{glyphicon}}></i></button>
   </span>
@@ -18,8 +18,12 @@
     <button type="button" class="btn btn-default"
 	    x-ng-click="open_calendar($event)">
       <i class="glyphicon glyphicon-calendar"></i></button>
-    <button type="button" class="btn btn-success"
+    <button x-ng-if="clickOk"
+	    class="btn btn-success"
+	    type="button"
 	    x-ng-disabled="!time" x-ng-click="ok()">
-      <i class="glyphicon glyphicon-ok"></i></button>
+      <i class="glyphicon glyphicon-ok"></i>
+    </button>
   </span> 
 </div>
+

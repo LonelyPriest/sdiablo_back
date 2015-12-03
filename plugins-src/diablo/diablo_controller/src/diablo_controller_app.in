@@ -28,11 +28,11 @@
      %% model
      diablo_controller_member_request,    diablo_controller_member,
      diablo_controller_employ_request,    diablo_controller_employ,
-     diablo_controller_inventory_request, diablo_controller_inventory,
+     %% diablo_controller_inventory_request, diablo_controller_inventory,
      diablo_controller_login_request,     diablo_controller_login,
      diablo_controller_merchant_request,  diablo_controller_merchant,
      diablo_controller_right_request,     diablo_controller_right,
-     diablo_controller_sale_request,      diablo_controller_sale,
+     %% diablo_controller_sale_request,      diablo_controller_sale,
      diablo_controller_shop_request,      diablo_controller_shop,
      diablo_controller_supplier_request,  diablo_controller_supplier,
 
@@ -42,7 +42,8 @@
      diablo_w_retailer,        diablo_w_retailer_request,
      diablo_w_sale,            diablo_w_sale_request, diablo_w_sale_draft,
      diablo_w_print,           diablo_w_print_request, diablo_format_print,
-     diablo_w_good_request, 
+     diablo_w_good_request,
+     diablo_w_promotion,
      %% report
      diablo_w_report_request, diablo_w_report,
      %% base
@@ -55,18 +56,27 @@
      diablo_wuser_profile, 
      
      %% template
-     base_frame, employ_frame,
-     inventory_frame,
-     login, login_force,
-     member_frame, merchant_frame,
-     right_frame, sale_frame,
-     shop_frame, supplier_frame, 
+     base_frame,
+     employ_frame,
+     %% inventory_frame,
+     login,
+     login_force,
+     member_frame,
+     merchant_frame,
+     right_frame,
+     %% sale_frame,
+     shop_frame,
+     supplier_frame, 
 
      %% about wholesale
-     firm_frame, purchaser_frame,
-     wsale_frame, wretailer_frame,
-     wprint_frame, wgood_frame,
-     sys_frame, wreport_frame]
+     firm_frame,
+     purchaser_frame,
+     wsale_frame,
+     wretailer_frame,
+     wprint_frame,
+     wgood_frame,
+     sys_frame,
+     wreport_frame]
    },
 
    {registered,

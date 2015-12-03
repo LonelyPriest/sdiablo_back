@@ -1,0 +1,103 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="portlet box purple">
+      
+      <div class="portlet-title">
+	<div class="caption">
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>
+	  方案详情
+	</div>	
+
+	<div class="actions">
+	  <div class="btn-group btn-group-solid">
+	    <a type="button" class="btn btn-success purple-stripe"
+		    x-ng-click="new_promotion()">新增
+	      <i class="glyphicon glyphicon-plus"></i></a> 
+
+	    <a type="button" class="btn blue reload purple-stripe"
+		    x-ng-click="refresh()">刷新
+	      <i class="icon icon-spinner fg-white"></i></a>
+	  </div>
+	</div> 
+      </div>
+
+      <!--BEGIN table container-->
+      <div class="portlet-body">
+	<div class="table-toolbar"> 
+	</div>
+		  
+	<!--BEGN portlet body--> 
+	<div class="portlet-body">
+	  <!--BEGIN panel-->
+	  <div class="panel panel-default">
+	    <!--EBGIN table responsive-->
+	    <div class="table-responsive">
+	      <!--BEGIN member table--> 
+	      <table class="table table-bordered table-striped table-hover
+			    table-condensed table-advanced">
+		<thead>
+		  <tr>
+		    <th>序号</th>
+		    <th>名称</th>
+		    <th>规则</th>
+		    <th>折扣</th>
+		    <th>消费金额</th>
+		    <th>减免金额</th>
+		    <th>开始日期</th>
+		    <th>结束日期</th>
+		    <th>描述</th>
+		    <th>操作</th>
+		  </tr>
+		</thead>
+		<tbody>
+		  <tr ng-repeat="p in promotions">
+		    <td>{{p.order_id}}</td> 
+		    <td>{{p.name}}</td>
+		    <td>{{p.rule.name}}</td>
+		    <td>
+		      <div x-ng-switch on="p.rule.id">
+			<span x-ng-switch-when=0>{{p.discount}}</span>
+			<span x-ng-switch-default>不涉及</span>
+		      </div>
+		    </td>
+		    <td>
+		       <div x-ng-switch on="p.rule.id">
+			<span x-ng-switch-when=1>{{p.cmoney}}</span>
+			<span x-ng-switch-default>不涉及</span>
+		      </div>
+		    </td>
+		    <td>
+		       <div x-ng-switch on="p.rule.id">
+			<span x-ng-switch-when=1>{{p.rmoney}}</span>
+			<span x-ng-switch-default>不涉及</span>
+		      </div>
+		    </td>
+		    <td>{{p.sdate}}</td>
+		    <td>{{p.edate}}</td>
+		    <td>
+		      <span x-ng-if="p.remark">{{p.remark}}</span>
+		      <span x-ng-if="!p.remark">暂无</span>
+		    </td> 
+
+		    <td>
+                      <button class="btn diablo-button btn-warning"
+			 x-ng-click="edit_shop(shop)">修改
+			<i class="glyphicon glyphicon-edit"></i></button>
+                      <button class="btn diablo-button btn-danger"
+			 x-ng-click="delete_shop(shop)">删除
+			<i class="glyphicon glyphicon-trash"></i></button>
+		    </td>
+		    
+		  </tr>
+		</tbody>
+		
+	      </table> <!--END VM table-->
+	    </div> <!--END table responsive-->
+
+	  </div> <!--END panel-->
+	</div> <!--END portlet body-->
+      </div> <!--END table container-->
+      
+    </div>
+  </div>
+</div>

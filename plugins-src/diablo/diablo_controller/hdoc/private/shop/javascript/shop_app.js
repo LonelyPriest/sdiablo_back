@@ -187,8 +187,11 @@ shopApp.controller("newShopCtrl", function(
 	    console.log(state);
 	    if (state.ecode == 0){
 		diabloUtilsService.response_with_callback(
-		    true, "新增店铺", "恭喜你，店铺 " + $scope.shop.name + " 成功创建！！",
-		    $scope, function(){diablo_goto_page("#/shop/shop_detail")});
+		    true,
+		    "新增店铺",
+		    "恭喜你，店铺 " + $scope.shop.name + " 成功创建！！",
+		    undefined,
+		    function(){diablo_goto_page("#/shop/shop_detail")});
 	    } else{
 		diabloUtilsService.response(
 		    false, "新增店铺", shopService.error[state.ecode]); 

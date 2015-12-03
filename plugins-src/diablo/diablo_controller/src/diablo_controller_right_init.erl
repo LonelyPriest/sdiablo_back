@@ -273,7 +273,17 @@ init([]) ->
 	 {?del_w_color,
 	  <<"删除颜色">>,   <<"delete_w_color">>,?right_w_good},
 	 {?update_w_color,
-	  <<"修改颜色">>,   <<"update_w_color">>,?right_w_good} 
+	  <<"修改颜色">>,   <<"update_w_color">>,?right_w_good},
+
+	 %% promotion
+	 {?new_w_promotion,
+	  <<"新增促销方案">>, <<"new_w_promotion">>, ?right_w_good},
+	 {?del_w_promotion,
+	  <<"删除促销方案">>, <<"del_w_promotion">>, ?right_w_good},
+	 {?update_w_promotion,
+	  <<"修改促销方案">>, <<"update_w_promotion">>, ?right_w_good},
+	 {?list_w_promotion,
+	  <<"查询促销方案">>, <<"list_w_promotion">>, ?right_w_good} 
 	],
 
     WReport =

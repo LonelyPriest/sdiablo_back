@@ -177,6 +177,11 @@
 -define(del_w_color,    ?right_w_good + 9).
 -define(update_w_color, ?right_w_good + 10).
 
+-define(new_w_promotion, ?right_w_good + 11).
+-define(del_w_promotion, ?right_w_good + 12).
+-define(update_w_promotion, ?right_w_good + 13).
+-define(list_w_promotion, ?right_w_good + 14).
+
 %% report
 -define(daily_wreport,   ?right_w_report + 1).
 -define(weekly_wreport,  ?right_w_report + 2).
@@ -285,6 +290,9 @@
 %% base attribute
 -define(attr, diablo_attribute).
 
+%% promotion
+-define(promotion, diablo_w_promotion).
+
 %% profile
 -define(w_user_profile, diablo_wuser_profile).
 
@@ -356,7 +364,8 @@
 	  firm        = [] :: list(), %% all firms of merchant
 	  color_type  = [] :: list(),
 	  color       = [] :: list(), 
-	  good        = [] :: list()
+	  good        = [] :: list(),
+	  promotion   = [] :: list()
 	  %% login_right = [] :: list(),
 	  %% login_shop  = [] :: list()
 	 }).

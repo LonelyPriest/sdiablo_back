@@ -69,7 +69,9 @@ get(brand, Merchant) ->
 get(color_type, Merchant) ->
     gen_server:call(?SERVER, {get_color_type_profile, Merchant});
 get(color, Merchant) ->
-    gen_server:call(?SERVER, {get_color_profile, Merchant}).
+    gen_server:call(?SERVER, {get_color_profile, Merchant});
+get(promotion, Merchant) ->
+    gen_server:call(?SERVER, {get_promotion, Merchant}).
 
 
 get(shop, Merchant, Shop) ->
@@ -170,6 +172,8 @@ handle_call({new_profile, Merchant}, _From, State) ->
 	{ok, Firms}        = ?supplier:supplier(w_list, Merchant),
 	{ok, ColorTypes}   = ?attr:color_type(list),
 	{ok, Colors}       = ?attr:color(w_list, Merchant),
+
+	{ok, Promotions}   = ?promotion:promotion(list, Merchant),
 	
 	%% good
 	%% Goods = ?w_inventory:purchaser_good(lookup, Merchant), 
@@ -190,7 +194,8 @@ handle_call({new_profile, Merchant}, _From, State) ->
 				  retailer    = Retailers,
 				  brand       = Brands,
 				  color_type  = ColorTypes,
-				  color       = Colors
+				  color       = Colors,
+				  promotion   = Promotions
 				  %% good     = ?to_tl(Goods)
 				 }
 			  })
@@ -629,7 +634,22 @@ handle_call({get_color_profile, Merchant, ColorId}, _From, State) ->
     SelectColor = lists:filter(fun({Color}) ->
 				       ?v(<<"id">>, Color) =:= ColorId
 			      end, Select), 
-    {reply, {ok, SelectColor}, State}; 
+    {reply, {ok, SelectColor}, State};
+
+%% promotion
+handle_call({get_promotion, Merchant}, _From, State) ->
+    MS = ms(Merchant, promotion),
+    Select = select(MS, fun() -> ?promotion:promotion(list, Merchant) end),
+    {reply, {ok, Select}, State};
+
+handle_call({get_promotion, Merchant, PId}, _From, State) ->
+    MS = ms(Merchant, promotion),
+    Select = select(MS, fun() -> ?promotion:promotion(list, Merchant) end),
+    SelectPromotion = lists:filter(fun({Promotion}) ->
+				       ?v(<<"id">>, Promotion) =:= PId
+			       end, Select), 
+    {reply, {ok, SelectPromotion}, State};
+
 
 handle_call({set_default, Merchant}, _From, State) ->
     ?DEBUG("set default value of merchant ~p", [Merchant]),
@@ -888,6 +908,11 @@ ms(Merchant, color_type) ->
      }];
 ms(Merchant, color) ->
     [{{'$1', #wuser_profile{merchant='$1', color='$2', _='_'}},
+      [{'==', '$1', ?to_i(Merchant)}],
+      ['$2']
+     }];
+ms(Merchant, promotion) ->
+    [{{'$1', #wuser_profile{merchant='$1', promotion='$2', _='_'}},
       [{'==', '$1', ?to_i(Merchant)}],
       ['$2']
      }].

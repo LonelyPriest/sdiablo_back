@@ -1,0 +1,189 @@
+<div class="row">
+  <div class="col-md-12">
+    <ul class="page-breadcrumb breadcrumb">
+      <li>
+	<i class="glyphicon glyphicon-menu-hamburger fg-red"></i>
+	<a href="javascript:;">促销</a>
+	<i class="glyphicon glyphicon-menu-right fg-red"></i>
+      </li>
+      <li class="active">
+	<a href="javascript:;">新增方案</a>
+      </li>
+    </ul>    
+  </div>
+</div>
+
+
+<div class="row">
+  <div class="com-md-12">
+    <div class="portlet box blue">
+      <div class="portlet-body form">
+
+	<!-- BEGIN form-->
+	<form class="form-horizontal" name="pForm" novalidate>
+	  <div class="form-body">
+
+	    <div class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">名称</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<div class="input-group">
+		  <div x-ng-class="{'has-error':pForm.name.$invalid
+				   && !pForm.name.$pristine}">
+		    <input type="text"
+			   class="form-control"
+			   name="name"
+			   required
+			   placeholder="请输入方案名称" 
+			   x-ng-model="promotion.name"
+			   x-ng-pattern="pattern.name"/>
+		  </div>
+		  <span class="input-group-addon bg-white fg-red">*</span>
+		</div> 
+	      </div>
+	      <div ng-if="pForm.name.$invalid && !pForm.name.$pristine">
+		<span class="fg-red">
+		  4-20个字符，只能是数字，字母，中文，横杠或下划线
+		</span>
+	      </div> 
+	    </div>
+
+	    <div class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">规则</label>
+	      <div class="col-sm-6 col-md-6">
+		<div class="input-group">
+		  <select class="form-control"
+			  x-ng-model="promotion.rule"
+			  x-ng-options="r as r.name for r in rules"> 
+		  </select>
+		  <span class="input-group-addon bg-white fg-red">*</span>
+		</div> 
+	      </div>
+	    </div>
+
+	    <!--promotion of discount-->
+	    <div x-ng-if="promotion.rule.id===0" class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">折扣</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<div class="input-group">
+		  <div x-ng-class="{'has-error':pForm.discount.$invalid
+				   && !pForm.discount.$pristine}">
+		    <input type="number" step="1"
+			   class="form-control"
+			   name="discount"
+			   required
+			   placeholder="请输入折扣，默认无折扣" 
+			   x-ng-model="promotion.discount"
+			   x-ng-pattern="pattern.discount"/>
+		  </div>
+		  <span class="input-group-addon bg-white fg-red">*</span>
+		</div> 
+	      </div>
+	      <div ng-if="pForm.discount.$invalid
+			  && !pForm.discount.$pristine">
+		<span class="fg-red">两位整数，100表示无折扣</span>
+	      </div> 
+	    </div>
+
+
+	    <!--promotion of reduce blance-->
+	    <div x-ng-if="promotion.rule.id===1" class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">消费金额</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<div class="input-group">
+		  <div x-ng-class="{'has-error':pForm.consume.$invalid
+				   && !pForm.consume.$pristine}">
+		    <input type="number" step="1"
+			   class="form-control"
+			   name="consume"
+			   required
+			   placeholder="请输入目标金额" 
+			   x-ng-model="promotion.consume"
+			   x-ng-pattern="pattern.number"/>
+		  </div>
+		  <span class="input-group-addon bg-white fg-red">*</span>
+		</div> 
+	      </div>
+	      <div ng-if="pForm.consume.$invalid && !pForm.consume.$pristine">
+		<span class="fg-red">金额只能是数字</span>
+	      </div> 
+	    </div>
+
+	    <div x-ng-if="promotion.rule.id===1" class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">减免金额</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<div class="input-group">
+		  <div x-ng-class="{'has-error':pForm.reduce.$invalid
+				   && !pForm.reduce.$pristine}">
+		    <input type="number" step="1"
+			   class="form-control"
+			   name="reduce"
+			   required
+			   placeholder="请输入减免金额" 
+			   x-ng-model="promotion.reduce"
+			   x-ng-pattern="pattern.number"/>
+		  </div>
+		  <span class="input-group-addon bg-white fg-red">*</span>
+		</div> 
+	      </div>
+	      <div ng-if="pForm.reduce.$invalid && !pForm.reduce.$pristine">
+		<span class="fg-red">金额只能是数字</span>
+	      </div> 
+	    </div>
+
+	    
+	    <div class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">开始日期</label>
+	      <div class="col-md-6 col-sm-6">
+		<time-search time="promotion.sdate"
+			     click-ok="false">
+		</time-search>
+	      </div>
+	    </div>
+
+	    <div class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">结束日期</label>
+	      <div class="col-md-6 col-sm-6">
+		<time-search time="promotion.edate"
+			     click-ok="false">
+		</time-search>
+	      </div>
+	    </div>
+
+	    <div class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">描述</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<div x-ng-class="{'has-error':pForm.remark.$invalid
+				 && !pForm.remark.$pristine}">
+		  <input type="text"
+			 class="form-control"
+			 name="remark"
+			 placeholder="请输入方案描述" 
+			 x-ng-model="promotion.remark"
+			 x-ng-pattern="pattern.remark"/>
+		</div>
+	      </div>
+	      <div ng-if="pForm.remark.$invalid && !pForm.remark.$pristine">
+		<span class="fg-red">请输入中文，字母，下划线或数字</span>
+	      </div> 
+	    </div> 
+	  </div>
+
+	  <!--BEGIN form action-->
+	  <div class="form-actions fluid">
+	    <div class="col-md-offset-3 col-md-6">
+	      <span class="pull-right">
+		<button class="btn btn-primary"
+			ng-disabled="pForm.$invalid"
+			x-ng-click="new_promotion()">确认</button>
+		<button class="btn btn-warning"
+			x-ng-click="cancel()">取消</button>
+	      </span>
+	    </div>
+	  </div> <!--END form action-->
+	  
+	</form> <!--END form-->
+	
+      </div>
+    </div>
+  </div>
+</div>

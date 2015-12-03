@@ -6,7 +6,7 @@ var wgoodApp = angular.module(
 	$httpProvider.interceptors.push(authenProvider.interceptor); 
     });
 
-wgoodApp.service("wgoodService", function($resource, $http, dateFilter){
+wgoodApp.service("wgoodService", function($resource, $http){
     // error
     this.error = {
 	2001: "货品资料已存在！！",
@@ -187,7 +187,19 @@ wgoodApp.service("wgoodService", function($resource, $http, dateFilter){
 	return http.save(
 	    {operation: "update_w_good"},
 	    {good:good, image:image}).$promise;
-    }; 
+    };
+
+    /*
+     * promotion
+     */
+    this.new_w_promotion = function(promotion){
+	return http.save(
+	    {operation: "new_w_promotion"}, promotion).$promise;
+    };
+
+    this.list_w_promotion = function(){
+	return http.query({operation: 'list_w_promotion'}).$promise;
+    };
 
     /*
      * firm

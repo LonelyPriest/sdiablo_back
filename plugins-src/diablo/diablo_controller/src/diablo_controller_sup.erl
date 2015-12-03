@@ -177,9 +177,18 @@ init([]) ->
     WSaleSup = ?to_a(?to_s(?w_sale) ++ "_sup"), 
     WSalePoolSup = {WSaleSup,
 		    {diablo_work_pool_sup, start_link, [?w_sale]},
-		    Restart, Shutdown, supervisor, [WSaleSup]}, 
+		    Restart, Shutdown, supervisor, [WSaleSup]},
+
+    PromotionSup = ?to_a(?to_s(?promotion) ++ "_sup"),
+    PromotionPoolSup = {PromotionSup,
+			{diablo_work_pool_sup, start_link, [?promotion]},
+			Restart, Shutdown, supervisor, [PromotionSup]},
     
-    PoolSup = [WRetailerPoolSup, WInvPoolSup, WSalePoolSup],
+    
+    PoolSup = [WRetailerPoolSup,
+	       WInvPoolSup,
+	       WSalePoolSup,
+	       PromotionPoolSup],
 
     {ok, {SupFlags, [IConv, Mysql, Employ, Merchant,
     		     Shop, Right, Supplier,

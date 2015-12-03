@@ -121,9 +121,14 @@ success(update_w_inventory, RSN) ->
 success(check_w_inventory, RSN) ->
     {0, "Success to check purchaser inventory with rsn " ++ ?to_s(RSN)};
 success(reject_w_inventory, Total) ->
-    {0, "Success to reject purchaser inventory of total amount " ++ ?to_s(Total)};
+    {0, "Success to reject purchaser inventory of total amount "
+     ++ ?to_s(Total)};
 success(fix_w_inventory, Rsn) ->
     {0, "Success to fix inventory with record no  " ++ ?to_s(Rsn)};
+
+%% promotion
+success(new_promotion, Promotion) ->
+    {0, "Success to add a promotion " ++ ?to_s(Promotion)};
 
 %% retailer
 success(add_w_retailer, Retailer) ->
@@ -299,6 +304,8 @@ error(size_group_exist, Group) ->
 %% purchaser
 error(purchaser_good_exist, Number) ->
     {2001, "purchaser good of number " ++ ?to_s(Number) ++ " is been exist."};
+error(promotion_exist, Promotion) ->
+    {2002, "promotion " ++ ?to_s(Promotion) ++ " is been exist."};
 
 %% retailer
 error(retailer_exist, Retailer) ->

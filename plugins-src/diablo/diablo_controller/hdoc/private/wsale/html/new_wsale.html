@@ -643,12 +643,12 @@
 </div> <!--END row-->
 
 <!--print-->
-<div class="row visible-print-block">
-<!-- <div> -->
-  <h5 class="text-center"><strong>{{select.shop.name}}</strong></h5>
+<!-- <div class="row visible-print-block"> -->
+<div>
+  <h4 class="text-center"><strong>{{select.shop.name}}</strong></h4>
   <div class="text-left">
     <p>
-      <span>客户：{{select.retailer.name}}</span>
+      <span>单号：{{select.rsn}}</span>
       <span class="pull-right">
 	日期：{{select.datetime|date: "yyyy-MM-dd HH:mm:ss"}}
       </span>
@@ -691,7 +691,13 @@
 	
       </tbody> 
     </table> 
-  </div> 
+  </div>
+
+  <div>
+    应付：<strong>{{select.should_pay}}</strong>
+    &nbsp&nbsp&nbsp&nbsp实付：<strong>{{select.has_pay}}</strong>
+    &nbsp&nbsp&nbsp&nbsp找零：<strong class="strong">{{select.charge}}</strong>
+  </div>
   
 </div>
 
