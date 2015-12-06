@@ -13,6 +13,7 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
     Firm        = ?v(<<"firm">>, Attrs, -1),
     Season      = ?v(<<"season">>, Attrs),
     Year        = ?v(<<"year">>, Attrs),
+    Promotion   = ?v(<<"promotion">>, Attrs, -1),
     OrgPrice    = ?v(<<"org_price">>, Attrs, 0),
     TagPrice    = ?v(<<"tag_price">>, Attrs, 0), 
     EDiscount   = ?v(<<"ediscount">>, Attrs, 100),
@@ -37,7 +38,7 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
     Sql1 =
 	"insert into w_inventory_good"
 	"(style_number, sex, color, year, season, type, size, s_group, free"
-	", brand, firm, org_price, tag_price, ediscount, discount"
+	", brand, firm, promotion, org_price, tag_price, ediscount, discount"
 	", path, alarm_day, merchant, change_date, entry_date"
 	") values("
 	++ "\"" ++ ?to_s(StyleNumber) ++ "\","
@@ -51,6 +52,7 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
 	++ ?to_s(Free) ++ ","
 	++ ?to_s(BrandId) ++ ","
 	++ ?to_s(Firm) ++ ","
+	++ ?to_s(Promotion) ++ ","
 	++ ?to_s(OrgPrice) ++ ","
 	++ ?to_s(TagPrice) ++ ","
 	++ ?to_s(EDiscount) ++ ","
@@ -103,7 +105,7 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
 	     "insert into w_inventory(rsn"
 	     ", style_number, brand, type, sex, season, amount"
 	     ", firm, s_group, free, year"
-	     ", org_price, tag_price,, ediscount, discount"
+	     ", promotion, org_price, tag_price, ediscount, discount"
 	     ", path, alarm_day, shop, merchant"
 	     ", last_sell, change_date, entry_date)"
 	     " values("
@@ -120,6 +122,7 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
 	     ++ "\"" ++ join_with_comma(GIds) ++ "\","
 	     ++ ?to_s(Free) ++ ","
 	     ++ ?to_s(Year) ++ ","
+	     ++ ?to_s(Promotion) ++ ","
 	     ++ ?to_s(OrgPrice) ++ ","
 	     ++ ?to_s(TagPrice) ++ ","
 	     ++ ?to_s(EDiscount) ++ ","
@@ -135,7 +138,6 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
 		  fun(GId, Acc0) ->
 			  {ok, G} =
 			      ?w_user_profile:get(size_group, Merchant, GId),
-			  %% ?DEBUG("G ======= ~p", [G]),
 			  lists:foldr(
 			    fun(S, Acc1) ->
 				    lists:foldr(
@@ -161,8 +163,8 @@ good(detail, Merchant, Conditions) ->
 	"select a.id, a.style_number"
 	", a.brand as brand_id, a.firm as firm_id, a.type as type_id"
 	", a.sex, a.color, a.year, a.season, a.size, a.s_group, a.free"
-	", a.org_price, a.tag_price, a.ediscount, a.discount"
-	", a.path, a.entry_date"
+	", a.promotion as pid, a.org_price, a.tag_price, a.ediscount"
+	", a.discount, a.path, a.entry_date"
 
 	", b.name as brand"
 	
@@ -236,7 +238,7 @@ good_match(style_number_with_firm, Merchant, StyleNumber, Firm) ->
     "select a.id, a.style_number, a.brand as brand_id"
 	", a.type as type_id, a.firm as firm_id"
 	", a.sex, a.color, a.year, a.season, a.size, a.s_group, a.free"
-	", a.org_price, a.tag_price, a.ediscount"
+	", a.promotion as pid, a.org_price, a.tag_price, a.ediscount"
 	", a.discount, a.path, a.alarm_day, a.entry_date" 
 	", b.name as brand"
 	", c.name as type"
@@ -254,7 +256,7 @@ good_match(all_style_number_with_firm, Merchant, StartTime, Firm) ->
     "select a.id, a.style_number, a.brand as brand_id"
 	", a.type as type_id, a.firm as firm_id"
 	", a.sex, a.color, a.year, a.season, a.size, a.s_group, a.free"
-	", a.org_price, a.tag_price, a.ediscount"
+	", a.promotion as pid, a.org_price, a.tag_price, a.ediscount"
 	", a.discount, a.path, a.alarm_day, a.entry_date"
 	
 	", b.name as brand"
@@ -629,8 +631,8 @@ inventory_match(all_inventory, Merchant, Shop, Conditions) ->
 
     "select a.id, a.style_number, a.brand as brand_id, a.type as type_id"
 	", a.sex, a.season, a.firm as firm_id, a.s_group, a.free, a.year"
-	", a.org_price, a.tag_price, a.pkg_price"
-	", a.price3, a.price4, a.price5, a.discount, a.path, a.alarm_day"
+	", a.promotion as pid, a.org_price, a.tag_price"
+	", a.ediscount, a.discount, a.path, a.alarm_day"
 
 	", b.name as brand" 
 	", c.name as type"
@@ -639,7 +641,9 @@ inventory_match(all_inventory, Merchant, Shop, Conditions) ->
 	" left join brands b on a.brand=b.id" 
 	" left join inv_types c on a.type=c.id"
 	
-	" where " ++ ?sql_utils:condition(proplists_suffix, [{<<"a.shop">>, Shop}|NewConditions]) 
+	" where "
+	++ ?sql_utils:condition(
+	      proplists_suffix, [{<<"a.shop">>, Shop}|NewConditions]) 
 	++ "a.merchant=" ++ ?to_s(Merchant)
 	++ case ?sql_utils:condition(time_with_prfix, StartTime, EndTime) of
 	       [] -> [];
@@ -651,8 +655,8 @@ inventory_match(Merchant, StyleNumber, Shop, Firm) ->
     P = prompt_num(Merchant),
     "select a.id, a.style_number, a.brand as brand_id, a.type as type_id"
 	", a.sex, a.season, a.firm as firm_id, a.s_group, a.free, a.year"
-	", a.org_price, a.tag_price, a.ediscount, a.discount"
-	", a.path, a.alarm_day"
+	", a.promotion as pid, a.org_price, a.tag_price"
+	", a.ediscount, a.discount, a.path, a.alarm_day"
 	
 	", b.name as brand" 
 	", c.name as type"
@@ -782,6 +786,7 @@ amount_new(RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
     SizeGroup   = ?v(<<"s_group">>, Inv),
     Free        = ?v(<<"free">>, Inv),
     Total       = ?v(<<"total">>, Inv),
+    Promotion   = ?v(<<"promotion">>, Inv),
     OrgPrice    = ?v(<<"org_price">>, Inv),
     TagPrice    = ?v(<<"tag_price">>, Inv),
     EDiscount   = ?v(<<"ediscount">>, Inv),
@@ -805,7 +810,7 @@ amount_new(RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		["insert into w_inventory(rsn"
 		 ", style_number, brand, type, sex, season, amount"
 		 ", firm, s_group, free, year"
-		 ", org_price, tag_price, ediscount, discount"
+		 ", promotion, org_price, tag_price, ediscount, discount"
 		 ", path, alarm_day, shop, merchant"
 		 ", last_sell, change_date, entry_date)"
 		 " values("
@@ -820,6 +825,7 @@ amount_new(RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		 ++ "\"" ++ ?to_s(SizeGroup) ++ "\","
 		 ++ ?to_s(Free) ++ ","
 		 ++ ?to_s(Year) ++ ","
+		 ++ ?to_s(Promotion) ++ ","
 		 ++ ?to_s(OrgPrice) ++ ","
 		 ++ ?to_s(TagPrice) ++ ","
 		 ++ ?to_s(EDiscount) ++ ","
@@ -834,6 +840,7 @@ amount_new(RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 	    {ok, R} ->
 		["update w_inventory set"
 		 " amount=amount+" ++ ?to_s(Total)
+		 ++ ", promotion=" ++ ?to_s(Promotion)
 		 ++ ", org_price=" ++ ?to_s(OrgPrice) 
 		 ++ ", ediscount=" ++ ?to_s(Discount)
 		 ++ ", change_date=" ++ "\"" ++ ?to_s(CurDateTime) ++ "\""
@@ -856,7 +863,7 @@ amount_new(RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		["insert into w_inventory_new_detail(rsn, style_number"
 		 ", brand, type, sex, season, amount, firm"
 		 ", s_group, free, year"
-		 ", org_price, tag_price, ediscount, discount"
+		 ", promotion, org_price, tag_price, ediscount, discount"
 		 " , path, merchant, entry_date) values("
 		 ++ "\"" ++ ?to_s(RSN) ++ "\","
 		 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
@@ -871,6 +878,7 @@ amount_new(RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		 ++ ?to_s(Free) ++ ","
 		 ++ ?to_s(Year) ++ "," 
 
+		 ++ ?to_s(Promotion) ++ ","
 		 ++ ?to_s(OrgPrice) ++ ","
 		 ++ ?to_s(TagPrice) ++ ","
 		 ++ ?to_s(EDiscount) ++ ","

@@ -91,6 +91,33 @@
 		</span>
 	      </div>
 	    </div>
+
+	    <div class="form-group diablo-good-form-group">
+	      <label class="col-sm-3 col-md-3 control-label">厂商</label>
+	      <div class="col-sm-6 col-md-6">
+	    	<div class="input-group">
+	    	  <input type="text"
+	    		 class="form-control"
+	    		 name="firm"
+	    		 required
+	    		 placeholder="请输入厂商"
+	    		 x-ng-model="good.firm"
+	    		 x-ng-enter=""
+	    		 typeahead-editable="false"
+	    		 typeahead="f as f.name for f in
+	    			    firms|filter:$viewValue|limitTo:8"/>
+	    	  <span class="input-group-btn">
+	    	    <button class="btn btn-success" x-ng-click="new_firm()">
+	    	      <i class="glyphicon glyphicon-plus"></i></button>
+	    	  </span>
+	    	  <span class="input-group-addon bg-white fg-red">*</span>
+	    	</div>
+	      </div>
+	      <div ng-show="goodForm.firm.$invalid
+			    && !goodForm.firm.$pristine">
+	    	<span style="color:red">厂商只能从提示框中选择</span>
+	      </div>
+	    </div>
 	    
 	    <!--type-->
 	    <div class="form-group diablo-good-form-group">
@@ -119,33 +146,7 @@
 		  请输入中文，字母或数字，必须以中文开头
 		</span>
 	      </div>
-	    </div>
-	    
-	    <div class="form-group diablo-good-form-group">
-	      <label class="col-sm-3 col-md-3 control-label">厂商</label>
-	      <div class="col-sm-6 col-md-6">
-	    	<div class="input-group">
-	    	  <input type="text"
-	    		 class="form-control"
-	    		 name="firm"
-	    		 required
-	    		 placeholder="请输入厂商"
-	    		 x-ng-model="good.firm"
-	    		 x-ng-enter=""
-	    		 typeahead-editable="false"
-	    		 typeahead="f as f.name for f in
-	    			    firms|filter:$viewValue|limitTo:8"/>
-	    	  <span class="input-group-btn">
-	    	    <button class="btn btn-success" x-ng-click="new_firm()">
-	    	      <i class="glyphicon glyphicon-plus"></i></button>
-	    	  </span>
-	    	  <span class="input-group-addon bg-white fg-red">*</span>
-	    	</div>
-	      </div>
-	      <div ng-show="goodForm.firm.$invalid && !goodForm.firm.$pristine">
-	    	<span style="color:red">厂商只能从提示框中选择</span>
-	      </div>
-	    </div>
+	    </div> 
 
 	    <div class="form-group diablo-good-form-group">
 	      <label class="col-sm-3 col-md-3 control-label">性别</label>
@@ -178,7 +179,7 @@
 			x-ng-options="s as s.name for s in seasons">
 		</select>
 	      </div>
-	    </div>
+	    </div> 
 	    
 	    <div class="form-group diablo-good-form-group">
 	      <label class="col-sm-3 col-md-3 control-label">进货价</label>
@@ -189,7 +190,7 @@
 			 name="org_price"
 			 required
 			 placeholder="进货价，支持二位小数"
-			 x-ng-pattern="/^\d+(.\d{1,2})?$/"
+			 x-ng-pattern="pattern.price"
 			 x-ng-enter=""
 			 x-ng-model="good.org_price"/>
 		  <span class="input-group-addon bg-white fg-red">*</span>
@@ -212,7 +213,7 @@
 			   name="ediscount"
 			   required
 			   placeholder="两位整数，无折扣请输入100"
-			   x-ng-pattern="/^\d{2}$|100$/"
+			   x-ng-pattern="pattern.discount"
 			   x-ng-model="good.ediscount"/>
 		  </div>
 		  <span class="input-group-addon bg-white fg-red">*</span>
@@ -233,7 +234,7 @@
 			 name="tag_price"
 			 required
 			 placeholder="吊牌价，支持二位小数"
-			 x-ng-pattern="/^\d+(.\d{1,2})?$/"
+			 x-ng-pattern="pattern.price"
 			 x-ng-enter=""
 			 x-ng-model="good.tag_price"/>
 		  <span class="input-group-addon bg-white fg-red">*</span> 
@@ -256,7 +257,7 @@
 			   name="discount"
 			   required
 			   placeholder="两位整数，无折扣请输入100"
-			   x-ng-pattern="/^\d{2}$|100$/"
+			   x-ng-pattern="pattern.discount"
 			   x-ng-model="good.discount"/>
 		  </div>
 		  <span class="input-group-addon bg-white fg-red">*</span>
@@ -265,6 +266,16 @@
 	      <div ng-if="goodForm.discount.$invalid
 			    && !goodForm.discount.$pristine">
 		<span style="color:red">两位整数，无折扣请输入100</span>
+	      </div>
+	    </div>
+
+	    <div class="form-group diablo-good-form-group">
+	      <label class="col-sm-3 col-md-3 control-label">促销方案</label>
+	      <div class="col-sm-6 col-md-6">
+	    	<select class="form-control"
+	    		x-ng-model="good.promotion"
+	    		x-ng-options="p as p.name for p in promotions">
+	    	</select>
 	      </div>
 	    </div>
 
@@ -580,7 +591,7 @@
 		<input id={{s.id}}
 		       type="checkbox"
 		       x-ng-model="s.select"
-		       x-ng-click="$event.stopPropagation()"></input>
+		       x-ng-click="$event.stopPropagation()"/>
 		<label for={{s.id}}>{{s.name}}</label>
 	      </div>
 	    </td>

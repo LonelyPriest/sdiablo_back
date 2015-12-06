@@ -1,7 +1,9 @@
 purchaserApp.controller("stockPromotionNew", function(
     $scope, dateFilter, diabloPattern, diabloUtilsService,
     purchaserService, wgoodService){
-    
+
+    // $scope.shops = user.sortShops;
+
     $scope.pattern = {
 	name      :diabloPattern.ch_en_num_beside_underline_bars,
 	discount  :diabloPattern.discount,
@@ -13,6 +15,7 @@ purchaserApp.controller("stockPromotionNew", function(
 
     var now = $.now();
     $scope.promotion = {
+	// shop:      $scope.shops[0],
 	rule       :$scope.rules[0],
 	discount   :100,
 	sdate      :now,
@@ -34,15 +37,17 @@ purchaserApp.controller("stockPromotionNew", function(
 	    $scope.promotion.edate = now +  diablo_day_millisecond * 90;
 	}
 	
-	var p = {name:     $scope.promotion.name,
-		 rule:     $scope.promotion.rule.id,
-		 discount: $scope.promotion.discount,
-		 consume:  $scope.promotion.consume,
-		 reduce:   $scope.promotion.reduce,
-		 sdate:    dateFilter($scope.promotion.sdate, "yyyy-MM-dd"),
-		 edate:    dateFilter($scope.promotion.edate, "yyyy-MM-dd"),
-		 remark:   diablo_set_string($scope.promotion.remark)
-		}; 
+	var p = {
+	    // shop:     $scope.promotion.shop.id,
+	    name:     $scope.promotion.name,
+	    rule:     $scope.promotion.rule.id,
+	    discount: $scope.promotion.discount,
+	    consume:  $scope.promotion.consume,
+	    reduce:   $scope.promotion.reduce,
+	    sdate:    dateFilter($scope.promotion.sdate, "yyyy-MM-dd"),
+	    edate:    dateFilter($scope.promotion.edate, "yyyy-MM-dd"),
+	    remark:   diablo_set_string($scope.promotion.remark)
+	}; 
 	
 	wgoodService.new_w_promotion(p).then(function(result){
 	    console.log(result);
@@ -88,6 +93,9 @@ purchaserApp.controller("stockPromotionDetail", function(
     };
 
     $scope.refresh();
-    
+
+    $scope.new_promotion = function(){
+	diablo_goto_page("#/promotion/promotion_new");
+    };
     
 });

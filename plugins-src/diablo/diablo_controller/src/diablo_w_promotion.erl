@@ -52,9 +52,10 @@ init([]) ->
 handle_call({new_promotion, Merchant, Attrs}, _From, State) ->
     ?DEBUG("new_promotion with merchant ~p, Attrs ~p", [Merchant, Attrs]),
     Entry    = ?utils:current_time(localtime),
-    
-    Name = ?v(<<"name">>, Attrs),
-    Rule = ?v(<<"rule">>, Attrs),
+
+    %% Shop     = ?v(<<"shop">>, Attrs, -1),
+    Name     = ?v(<<"name">>, Attrs),
+    Rule     = ?v(<<"rule">>, Attrs),
     Discount = ?v(<<"discount">>, Attrs, 100),
     Consume  = ?v(<<"consume">>, Attrs, 0),
     Reduce   = ?v(<<"reduce">>, Attrs, 0),
@@ -66,15 +67,17 @@ handle_call({new_promotion, Merchant, Attrs}, _From, State) ->
 
     Sql = "select id, name from w_promotion"
 	" where merchant=" ++ ?to_s(Merchant)
+    %% ++ " and shop=" ++ ?to_s(Shop)
 	++ " and name=\'" ++ ?to_s(Name) ++ "\'",
 
     case ?sql_utils:execute(s_read, Sql) of
 	{ok, []} ->
-	    Sql1 = "insert into w_promotion(name, merchant"
+	    Sql1 = "insert into w_promotion(merchant, name"
 		", rule, discount, cmoney, rmoney, sdate, edate, remark"
 		", entry) values("
-		++ "\'" ++ ?to_s(Name) ++ "\',"
 		++ ?to_s(Merchant) ++ ","
+		%% ++ ?to_s(Shop) ++ ","
+		++ "\'" ++ ?to_s(Name) ++ "\',"
 		++ ?to_s(Rule) ++ ","
 		++ ?to_s(Discount) ++ ","
 		++ ?to_s(Consume) ++ ","
@@ -85,6 +88,11 @@ handle_call({new_promotion, Merchant, Attrs}, _From, State) ->
 		++ "\'" ++ Entry ++ "\')",
 
 	    Reply = ?sql_utils:execute(insert, Sql1),
+
+	    case Reply of
+		{ok, _} -> ?w_user_profile:update(promotion, Merchant);
+		_ -> error
+	    end,
 
 	    {reply, Reply, State};
 	{ok, E} ->

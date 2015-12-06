@@ -49,6 +49,9 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
     var color = {"filterColor": function(diabloFilter){
 	return diabloFilter.get_color()}};
 
+    var promotion = {"filterPromotion": function(diabloFilter){
+	return diabloFilter.get_promotion()}};
+
     var color_type = {"filterColorType": function(diabloFilter){
             return diabloFilter.get_color_type()}};
     
@@ -64,7 +67,7 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_new.html',
             controller: 'purchaserInventoryNewCtrl',
 	    resolve: angular.extend(
-		{}, user, firm, employee, color, base)
+		{}, user, promotion, firm, employee, color, base)
 	}).
 	when('/update_new_detail/:rsn?/:ppage?', {
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_new_detail_update.html',
@@ -134,22 +137,25 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 	when('/good/wgood_new', {
 	    templateUrl: '/private/wgood/html/wgood_new.html',
 	    controller: 'wgoodNewCtrl',
-	    resolve: angular.extend({}, firm, brand, type, s_group)
+	    resolve: angular.extend({}, promotion, firm, brand, type, s_group)
 	}).
 	when('/good/wgood_update/:id?', {
 	    templateUrl: '/private/wgood/html/wgood_update.html',
 	    controller: 'wgoodUpdateCtrl',
-	    resolve: angular.extend({}, brand, firm, type, color, user)
+	    resolve: angular.extend(
+		{}, promotion, brand, firm, type, color, user)
 	}).
 	when('/good/wgood_detail', {
 	    templateUrl: '/private/wgood/html/wgood_detail.html',
 	    controller: 'wgoodDetailCtrl',
-	    resolve: angular.extend({}, user, brand, firm, type, color, base) 
+	    resolve: angular.extend(
+		{}, promotion, brand, firm, type, color, base, user) 
 	}).
 	// promotion
 	when('/promotion/promotion_new', {
 	    templateUrl: '/private/purchaser/html/purchaser_promotion_new.html',
-	    controller: 'stockPromotionNew' 
+	    controller: 'stockPromotionNew'
+	    // resolve: angular.extend({}, user) 
 	}).
 	when('/promotion/promotion_detail', {
 	    templateUrl: '/private/purchaser/html/purchaser_promotion_detail.html',

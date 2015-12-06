@@ -515,13 +515,31 @@
 			<td class="vert-align">{{select.abs_total}}</td>
 			<td class="vert-align">{{select.should_pay}}</td>
 			<td colspan="2"></td>
-		      </tr>
-		      
-		    </tbody> 
+		      </tr> 
+		    </tbody>
+		    <tfoot> 
+		    </tfoot>
 		  </table> <!--END supplier table-->
 		</div> <!--END table responsive--> 
 	      </div> <!--END panel-->
-	    </tab>
+	      <div x-ng-repeat="p in show_promotions">
+		<span>{{p.gname}}&nbsp&nbsp&nbsp&nbsp
+		  <span class="bg-blue">促销：</span>
+		  <span x-ng-switch on="p.rule_id">
+			    
+		    <span x-ng-switch-when=0>
+		      <span class="fg-red">{{p.discount}}</span>折 
+		    </span>
+			    
+		    <span x-ng-switch-when=1>
+		      满<span class="fg-red">{{p.cmoney}}</span>
+		      送<span class="fg-red">{{p.rmoney}}</span>
+		    </span>
+		  
+		  </span>
+		</span>
+	      </div>
+	    </tab> 
 
 	    <tab heading="{{wsale_mode[1].title}}"
 		 active="wsale_mode[1].active"

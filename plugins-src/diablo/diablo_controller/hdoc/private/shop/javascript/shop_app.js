@@ -14,6 +14,12 @@ shopApp.config(['$routeProvider', function($routeProvider){
     	return userService()}};
     var employee = {"filterEmployee": function(diabloNormalFilter){
 	return diabloNormalFilter.get_employee()}};
+
+    var promotion = {"filterPromotion": function(diabloNormalFilter){
+	return diabloNormalFilter.get_promotion()}};
+
+    var shop_promotion = {"filterShopPromotion": function(diabloNormalFilter){
+	return diabloNormalFilter.get_shop_promotion()}};
     
     // var repo = {"filterRepo": function(diabloNormalFilter){
     // 	return diabloNormalFilter.get_repo()}};
@@ -22,7 +28,8 @@ shopApp.config(['$routeProvider', function($routeProvider){
 	when('/shop/shop_detail', {
 	    templateUrl: '/private/shop/html/shop_detail.html',
             controller: 'shopDetailCtrl',
-	    resolve: angular.extend({}, employee, user)
+	    resolve: angular.extend(
+		{}, promotion, shop_promotion, employee, user)
 	}).
 	when('/shop/shop_new', {
 	    templateUrl: '/private/shop/html/shop_new.html',
@@ -50,7 +57,8 @@ shopApp.config(['$routeProvider', function($routeProvider){
 	otherwise({
 	    templateUrl: '/private/shop/html/shop_detail.html',
             controller: 'shopDetailCtrl' ,
-	    resolve: angular.extend({}, employee, user)
+	    resolve: angular.extend(
+		{}, promotion, shop_promotion, employee, user)
         })
 }]);
 
@@ -59,6 +67,7 @@ shopApp.service("shopService", function($resource, dateFilter){
     // error
     this.error = {1301: "店铺创建失败，已存在同样的店铺名称！！",
 		  1302: "仓库创建失败，已存在同样的仓库名称！！",
+		  1398: "同类型的促销方案只允许选择一个！！",
 		  1399: "修改前后信息一致，请重新编辑修改项！！",
 		  9001: "数据库操作失败，请联系服务人员！！"};
 
@@ -114,22 +123,30 @@ shopApp.service("shopService", function($resource, dateFilter){
     };
 
     this.new_repo = function(repo){
-	return shop.save({operation: "new_repo"},
-			 {name: repo.name, address: repo.address}).$promise
+	return shop.save(
+	    {operation: "new_repo"},
+	    {name: repo.name, address: repo.address}).$promise;
     };
 
     this.list_repo = function(){
-	return shop.query({operation: "list_repo"}).$promise
+	return shop.query({operation: "list_repo"}).$promise;
     };
 
     this.new_badrepo = function(repo){
-	return shop.save({operation: "new_badrepo"},
-			 {name: repo.name, address: repo.address,
-			  repo: repo.repo.id}).$promise
+	return shop.save(
+	    {operation: "new_badrepo"},
+	    {name: repo.name, address: repo.address,
+	     repo: repo.repo.id}).$promise;
     };
 
     this.list_badrepo = function(){
-	return shop.query({operation: "list_badrepo"}).$promise
+	return shop.query({operation: "list_badrepo"}).$promise;
+    };
+
+    this.add_promotion = function(type, shopId, promotion){
+	return shop.save(
+	    {operation: "add_shop_promotion"},
+	    {type: type, shop: shopId, promotion: promotion}).$promise;
     };
 });
 
@@ -140,6 +157,8 @@ shopApp.controller("newShopCtrl", function(
     $scope.shop_types = shopService.shop_type;
 
     $scope.employees = filterEmployee;
+
+    var dialog = diabloUtilsService;
     // employService.list().$promise.then(function(employees){
     // 	console.log(employees);
     // 	$scope.employees =  employees.map(function(e){
@@ -149,7 +168,8 @@ shopApp.controller("newShopCtrl", function(
 
     // repo
     $scope.authen_list_repo = false;
-    if (rightAuthen.authen(rightAuthen.shop_action()["list_repo"], user.right)){
+    if (rightAuthen.authen(
+	rightAuthen.shop_action()["list_repo"], user.right)){
 	$scope.authen_list_repo = true; 
     };
 
@@ -186,14 +206,14 @@ shopApp.controller("newShopCtrl", function(
 	shopService.add($scope.shop).$promise.then(function(state){
 	    console.log(state);
 	    if (state.ecode == 0){
-		diabloUtilsService.response_with_callback(
+		dialog.response_with_callback(
 		    true,
 		    "新增店铺",
 		    "恭喜你，店铺 " + $scope.shop.name + " 成功创建！！",
 		    undefined,
 		    function(){diablo_goto_page("#/shop/shop_detail")});
 	    } else{
-		diabloUtilsService.response(
+		dialog.response(
 		    false, "新增店铺", shopService.error[state.ecode]); 
 	    }
 	})
@@ -201,14 +221,22 @@ shopApp.controller("newShopCtrl", function(
     
     $scope.cancel_new_shop = function(){
 	diablo_goto_page("#/shop/shop_detail");
-    };	
+    }; 
 });
 
 
 shopApp.controller("shopDetailCtrl", function(
-    $scope, $q, diabloUtilsService, shopService, filterEmployee, user){
+    $scope, $q, diabloUtilsService, shopService,
+    filterPromotion, filterShopPromotion, filterEmployee, user){
+    // console.log(filterPromotion);
+    // console.log(filterShopPromotion);
     // console.log(filterEmployee);
-    console.log(user); 
+    // console.log(user);
+    
+    $scope.promotions      = filterPromotion;
+    $scope.shop_promotions = filterShopPromotion.map(
+	function(p){return p.pid});
+    
     // employees
     $scope.employees   = filterEmployee;
     // $scope.repertories = filterRepo;
@@ -246,25 +274,7 @@ shopApp.controller("shopDetailCtrl", function(
     
     $scope.get_employee = function(id){
     	return diablo_get_object(id, $scope.employees)
-    };
-
-    // employService.list().$promise.then(function(employees){
-    // 	console.log(employees);
-    // 	angular.forEach(employees, function(e){
-    // 	    $scope.employees.push(
-    // 		{id:e.id, number:e.number, name:e.name, py:diablo_pinyin(e.name)});
-    // 	})
-    // });
-
-    
-    // var get_employee = function(employee_id){
-    // 	for(var i=0, l=$scope.employees.length; i<l; i++){
-    // 	    if (employee_id === $scope.employees[i].id){
-    // 		return $scope.employees[i]
-    // 	    }
-    // 	}
-    // 	return undefined;
-    // } 
+    }; 
     
     $scope.refresh = function(){
 	// $scope.shops = [];
@@ -284,7 +294,8 @@ shopApp.controller("shopDetailCtrl", function(
 			address:      s.address,
 			open_date:    s.open_date,
 			repo_id:      s.repo,
-			repo:         $scope.authen_list_repo ? $scope.get_repo(s.repo) : undefined,
+			repo:         $scope.authen_list_repo
+			    ? $scope.get_repo(s.repo) : undefined,
 			shopowner:    s.shopowner,
 			shopowner_id: s.shopowner_id})
 		}
@@ -333,11 +344,14 @@ shopApp.controller("shopDetailCtrl", function(
     	    shopService.update(update).then(function(state){
     		console.log(state);
     		if (state.ecode == 0){
-		    diabloUtilsService.response_with_callback(
-			true, "店铺编辑", "恭喜你，店铺 [" + old_shop.name + "] 信息修改成功！！",
+		    dialog.response_with_callback(
+			true,
+			"店铺编辑",
+			"恭喜你，店铺 ["
+			    + old_shop.name + "] 信息修改成功！！",
 			$scope, function(){$scope.refresh()});
     		} else{
-		    diabloUtilsService.response(
+		    dialog.response(
 			false, "店铺编辑",
 			"店铺编辑失败：" + shopService.error[state.ecode]);
     		}
@@ -367,7 +381,8 @@ shopApp.controller("shopDetailCtrl", function(
 	dialog.edit_with_modal(
 	    "edit-shop.html", undefined, callback, $scope,
 	    {shop:angular.extend(
-		old_shop, {employee:$scope.get_employee(old_shop.shopowner_id)}),
+		old_shop,
+		{employee:$scope.get_employee(old_shop.shopowner_id)}),
 		// {repo:$scope.get_repo(old_shop.repo)}),
 	     employees:        $scope.employees,
 	     repertories:      $scope.repertories,
@@ -383,20 +398,144 @@ shopApp.controller("shopDetailCtrl", function(
     		console.log(state);
     		if (state.ecode == 0){
 		    dialog.response_with_callback(
-			true, "删除店铺",
-			"恭喜你，店铺　 " + shop.name + " 删除成功！！", $scope,
+			true,
+			"删除店铺",
+			"恭喜你， 店铺 [" + shop.name + "] 删除成功！！",
+			$scope,
 			function(){$scope.refresh()}); 
     		} else{
 		    dialog.response(
-			false, "删除店铺",
-			"删除店铺失败：" + shopService.error[state.ecode], $scope);
+			false,
+			"删除店铺",
+			"删除店铺失败："
+			    + shopService.error[state.ecode], $scope);
     		}
     	    })
 	};
 	
 	diabloUtilsService.request(
 	    "删除店铺", "确定要删除该店铺吗？", callback, undefined, $scope);
-    }; 
+    };
+
+    $scope.on_sale = function(shop){
+	var check_select = function(promotions){
+	    var l = promotions.length;
+	    for (var i=0; i<l; i++){
+		if (promotions[i].select !== $scope.promotions[i].select){
+		    return true;
+		}
+	    } 
+	    
+	    return false;
+	};
+	
+	var callback = function(params){
+	    console.log(params);
+
+	    // only one rule of every promotion
+	    for (var i=0, l=params.promotions.length; i<l; i++){
+		for (var j=1; j<l; j++){
+		    if (params.promotions[i].select
+			&& params.promotions[j].select){
+			if (params.promotions[i].rule_id
+			    === params.promotions[j].rule_id){
+			    dialog.response(
+				false,
+				"促销方案",
+				"促销方案编辑失败！！"
+				    + shopService.error[1398])
+			    return false;
+			}
+		    }
+		}
+	    };
+	    
+	    var ps = params.promotions.filter(function(p){
+		return p.select}).map(function(sp){return sp.id});
+	    console.log(ps);
+
+	    var oldps = $scope.shop_promotions;
+	    console.log(oldps);
+
+	    // added
+	    var adds = [];
+	    for (var i=0, l=ps.length; i<l; i++){
+		var find = false;
+		for (var j=0, k=oldps.length; j<k; j++){
+		    if (ps[i] === oldps[j]){
+			find = true;
+			break;
+		    }
+		}
+		if (!find) adds.push(ps[i]);
+	    }
+
+	    // deleted
+	    var deletes = [];
+	    for (var i=0, l=oldps.length; i<l; i++){
+		var find = false;
+		for (var j=0, k=ps.length; j<k; j++){
+		    if (oldps[i] === ps[j]){
+			find = true;
+			break
+		    }
+		} 
+
+		if (!find) deletes.push(oldps[i]);
+	    }
+	    
+
+	    console.log(adds);
+	    console.log(deletes); 
+	    
+	    shopService.add_promotion(
+		0, shop.id,
+		{add  :adds.length !== 0 ? adds : undefined,
+		 del  : deletes.length !== 0 ? deletes : undefined}
+	    ).then(function(result){
+		console.log(result);
+		
+		if (result.ecode === 0){
+		    $scope.shop_promotions = ps; 
+		    $scope.promotions      = params.promotions; 
+
+		    console.log($scope.shop_promotions);
+		    console.log($scope.promotions); 
+		    
+		    dialog.response(true, "促销方案", "编辑促销方案成功！！");
+		} else {
+		    dialog.response(
+			false,
+			"促销方案",
+			"编辑促销方案失败："
+			    + shopService.error[result.ecode]);
+		}
+	    });
+	};
+
+	console.log($scope.shop_promotions);
+	for (var i=0, l=$scope.promotions.length; i<l; i++){
+	    $scope.promotions[i].select = false;
+	    for (var j=0, k=$scope.shop_promotions.length; j<k; j++){
+		if ($scope.promotions[i].id === $scope.shop_promotions[j]){
+		    $scope.promotions[i].select = true; 
+		    break;
+		}
+	    }
+
+	};
+
+	
+	
+	dialog.edit_with_modal(
+	    "on-sale.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {shop: shop,
+	     promotions: $scope.promotions,
+	     check_select: check_select})
+    };
 });
 
 

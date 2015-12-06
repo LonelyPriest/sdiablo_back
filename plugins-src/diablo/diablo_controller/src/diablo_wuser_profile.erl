@@ -134,7 +134,9 @@ update(firm, Merchant) ->
 update(retailer, Merchant) ->
     gen_server:cast(?SERVER, {update_retailer, Merchant});
 update(color, Merchant) ->
-    gen_server:cast(?SERVER, {update_color, Merchant}).
+    gen_server:cast(?SERVER, {update_color, Merchant});
+update(promotion, Merchant) ->
+    gen_server:cast(?SERVER, {update_promotion, Merchant}).
 
 
 start_link() ->
@@ -808,7 +810,11 @@ handle_cast({Update, Merchant}, State) ->
                         Profile#wuser_profile{retailer=Retailers}; 
 		    update_color ->
 			{ok, Colors}= ?attr:color(w_list, Merchant),
-			Profile#wuser_profile{color=Colors}
+			Profile#wuser_profile{color=Colors};
+		    update_promotion ->
+			{ok, Promotions}
+			    = ?promotion:promotion(list, Merchant),
+			Profile#wuser_profile{promotion=Promotions}
 		end 
 	end,
 
@@ -818,7 +824,8 @@ handle_cast({Update, Merchant}, State) ->
 	    case ets:update_element(
 		   ?WUSER_PROFILE, ?to_i(Merchant), {2, NewProfile}) of
 		true ->
-		    ?DEBUG("success to update profile of merchant ~p", [Merchant]),
+		    ?DEBUG("success to update profile of merchant ~p",
+			   [Merchant]),
 		    {noreply, State};
 		false ->
 		    ?DEBUG("failed to update profile of merchant ~p", [Merchant]),

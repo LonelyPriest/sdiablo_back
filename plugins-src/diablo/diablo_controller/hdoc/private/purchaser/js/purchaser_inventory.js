@@ -1,13 +1,13 @@
 purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope, $timeout, dateFilter, diabloPattern, diabloUtilsService,
     diabloFilter, wgoodService, purchaserService, shortCutGoodService,
-    localStorageService, user, filterFirm,
+    localStorageService, user, filterPromotion, filterFirm,
     filterEmployee, filterColor, base){
     // console.log(user);
 
     shortCutGoodService.set_firm(filterFirm);
-    // shortCutGoodService.set_type(filterType);
     shortCutGoodService.set_color(filterColor);
+    shortCutGoodService.set_promotion(filterPromotion);
     
     $scope.shops             = user.sortShops;
     // console.log($scope.shops); 
@@ -57,7 +57,6 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	
 
     $scope.select_inventory_tab = function(){
-	console.log("select inventory tab");
 	$scope.firms    = shortCutGoodService.get_firm();
 	$scope.colors   = shortCutGoodService.get_color();
 
@@ -346,8 +345,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    if (item.firm_id !== $scope.inventories[i].firm_id){
 		diabloUtilsService.response_with_callback(
 		    false,
-		    "退货单修改",
-		    "退货单修改失败：" + purchaserService.error[2093],
+		    "新增库存",
+		    "新增库存失败：" + purchaserService.error[2093],
 		    $scope, function(){
 			$scope.inventories[0] = {$edit:false, $new:true}});
 		return;
@@ -366,6 +365,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	add.firm_id      = item.firm_id;
 	add.year         = item.year; 
 	add.season       = item.season;
+	add.pid          = item.pid;
 	add.org_price    = item.org_price;
 	add.tag_price    = item.tag_price;
 	add.ediscount    = item.ediscount;
@@ -397,7 +397,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
      */
     $scope.disable_save = function(){
 	// save one time only
-	if ($scope.has_saved){
+	if ($scope.has_saved || angular.isUndefined($scope.select.firm)){
 	    return true;
 	};
 	
@@ -493,6 +493,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    || diablo_is_empty($scope.select.shop)
 	    || angular.isUndefined($scope.select.employee)
 	    || diablo_is_empty($scope.select.employee)){
+	    $scope.has_saved = false;
 	    diabloUtilsService.response(
 		false,
 		"新增库存",
@@ -503,6 +504,16 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	var added = [];
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    var add = $scope.inventories[i];
+	    if (add.firm_id !== $scope.select.firm.id){
+		$scope.has_saved = false;
+		diabloUtilsService.response(
+		    false,
+		    "新增库存",
+		    "新增库存失败：" + purchaserService.error[2093],
+		    undefined);
+		return;
+	    };
+	    
 	    added.push({
 		good        : add.id,
 		style_number: add.style_number,
@@ -515,6 +526,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		amount      : add.amount,
 		s_group     : add.s_group,
 		free        : add.free,
+		promotion   : add.pid,
 		org_price   : parseFloat(add.org_price),
 		tag_price   : parseFloat(add.tag_price), 
 		ediscount   : parseInt(add.ediscount),

@@ -22,7 +22,7 @@
 
 -export([shop/3, shop/4, lookup/1, lookup/2]).
 
--export([repo/2, repo/3, badrepo/2, badrepo/3]).
+-export([repo/2, repo/3, badrepo/2, badrepo/3, promotion/2, promotion/3]).
 
 -define(SERVER, ?MODULE). 
 -define(tbl_shop, "shops").
@@ -65,6 +65,14 @@ badrepo(get, Merchant, RepoId) ->
     gen_server:call(?MODULE, {get_badrepo, Merchant, RepoId}).
 badrepo(list, Merchant) ->
     gen_server:call(?MODULE, {list_badrepo, Merchant}).
+
+%% promotion
+promotion(new, Merchant, Attrs) ->
+    gen_server:call(?MODULE, {new_promotion, Merchant, Attrs});
+promotion(list, Merchant, Conditions) ->
+    gen_server:call(?MODULE, {list_promotion, Merchant, Conditions}).
+promotion(list, Merchant) ->
+    gen_server:call(?MODULE, {list_promotion, Merchant}).
 
 
 start_link() ->
@@ -306,6 +314,66 @@ handle_call({get_badrepo, Merchant, RepoId}, _From, State) ->
 	++ " and type=" ++ ?to_s(?BAD_REPERTORY),
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
+
+handle_call({new_promotion, Merchant, Attrs}, _From, State) ->
+    Shop          = ?v(<<"shop">>, Attrs),
+    
+    {struct, Promotions} = ?v(<<"promotion">>, Attrs), 
+    DelPromotions = ?v(<<"del">>, Promotions, []),
+    AddPromotions = ?v(<<"add">>, Promotions, []),
+
+    ?DEBUG("delpromotions ~p, addpromotions ~p",
+	   [DelPromotions, AddPromotions]),
+
+    Datetime      = ?utils:current_time(localtime),
+
+    AddSql =
+	lists:foldr(
+	  fun(Add, Acc) ->
+		  ["insert into shop_promotion("
+		   "merchant, shop, pid, entry) values("
+		   ++ ?to_s(Merchant)
+		   ++ "," ++ ?to_s(Shop)
+		   ++ "," ++ ?to_s(Add)
+		   ++ ",\'" ++ Datetime ++ "\')"|Acc]
+	  end, [], AddPromotions),
+
+    ?DEBUG("add sql ~p", [AddSql]),
+
+    DelSql = 
+	case DelPromotions of
+	    [] -> [];
+	    _  ->
+		["delete from shop_promotion"
+		 " where merchant=" ++ ?to_s(Merchant)
+		 ++ " and shop=" ++ ?to_s(Shop)
+		 ++ ?sql_utils:condition(
+		       proplists, {<<"pid">>, DelPromotions})]
+	end,
+
+    ?DEBUG("del sql ~p", [DelSql]),
+
+    Reply = ?sql_utils:execute(transaction, DelSql ++ AddSql, Shop),
+
+    {reply, Reply, State};
+
+handle_call({list_promotion, Merchant}, _From, State) ->
+    Sql = "select id, shop as shop_id, pid, entry from shop_promotion"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and deleted=" ++ ?to_s(?NO),
+
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({list_promotion, Merchant, Conditions}, _From, State) ->
+    Sql = "select id, shop as shop_id, pid, entry from shop_promotion"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, Conditions)
+	++ " and deleted=" ++ ?to_s(?NO),
+
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+	
 
 handle_call(_Request, _From, State) ->
     ?WARN("receive unkown request ~p", [_Request]),

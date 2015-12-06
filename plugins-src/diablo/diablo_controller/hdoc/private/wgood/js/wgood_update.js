@@ -1,21 +1,24 @@
 wgoodApp.controller("wgoodUpdateCtrl", function(
     $scope, $location, $routeParams, $q, diabloPattern,
     diabloUtilsService, diabloPromise, diabloFilter, wgoodService,
-    filterBrand, filterFirm, filterType, filterColor, user){
+    filterPromotion, filterBrand, filterFirm, filterType, filterColor, user){
     // console.log(filterBrand); 
     $scope.seasons    = diablo_season2objects;
     $scope.sexs       = diablo_sex2object;
     $scope.full_years = diablo_full_year;
 
-    $scope.pattern = {style_number: diabloPattern.style_number,
-		      brand: diabloPattern.ch_en_num,
-		      type:  diabloPattern.head_ch_en_num};
+    $scope.pattern = {
+	style_number: diabloPattern.style_number,
+	brand: diabloPattern.ch_en_num,
+	type:  diabloPattern.head_ch_en_num};
 
-    $scope.shops  = user.sortShops;
-    $scope.firms  = filterFirm;
-    $scope.types  = filterType;
-    $scope.brands = filterBrand;
-    $scope.colors = [];
+    $scope.shops      = user.sortShops;
+    $scope.promotions = filterPromotion;
+    $scope.brands     = filterBrand; 
+    $scope.firms      = filterFirm;
+    $scope.types      = filterType;
+    
+    $scope.colors     = [];
 
     // [{type:"红色", tid:1
     // 	    colors:[{name:"深红", id:1},
@@ -54,23 +57,23 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
     wgoodService.get_purchaser_good_by_id($routeParams.id).then(function(
 	good){
 	console.log(good); 
-	var get_by_id = diablo_get_object;
-	var brand     = get_by_id(good.brand_id, $scope.brands);
-	// console.log(brand);
 	
 	// old
 	$scope.src_good = angular.copy(good);
-	$scope.src_good.brand = brand.name;
-	$scope.src_good.type  = get_by_id(good.type_id, $scope.types).name;
+	// $scope.src_good.brand =
+	//     diablo_get_object(good.brand_id, $scope.brands);
+	$scope.src_good.type  = diablo_get_object(
+	    good.type_id, $scope.types).name;
 
 	// now
 	$scope.good = angular.copy(good);
-	$scope.good.brand = brand.name;
-	$scope.good.type  = get_by_id(good.type_id, $scope.types);
-	$scope.good.firm  = get_by_id(brand.firm_id, $scope.firms);
-	$scope.good.sex   = get_by_id(good.sex, $scope.sexs);
-	$scope.good.season= get_by_id(good.season, $scope.seasons);
-	$scope.good.shop  = $scope.shops[0];
+	// $scope.good.brand = brand.name;
+	$scope.good.type      = diablo_get_object(good.type_id, $scope.types);
+	$scope.good.firm      = diablo_get_object(good.firm_id, $scope.firms);
+	$scope.good.sex       = diablo_get_object(good.sex, $scope.sexs);
+	$scope.good.season    = diablo_get_object(good.season, $scope.seasons);
+	$scope.good.promotion = diablo_get_object(good.pid, $scope.promotions);
+	// $scope.good.shop      = $scope.shops[0];
 
 	// // image
 	// $scope.image = {}; 
@@ -256,7 +259,7 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	var update_good = {};
 
 	update_good.id           = good.id;
-	update_good.shop         = good.shop.id;
+	// update_good.shop         = good.shop.id;
 	update_good.style_number = good.style_number;
 	// update_good.brand_id     = good.brand_id;
 	update_good.brand  = typeof(good.barnd)
@@ -268,6 +271,7 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	update_good.sex       = good.sex.id;
 	update_good.year      = good.year;
 	update_good.season    = good.season.id;
+	update_good.pid       = good.promotion.id;
 	update_good.org_price = parseFloat(good.org_price);
 	update_good.tag_price = parseFloat(good.tag_price);
 	// update_good.pkg_price = parseFloat(good.pkg_price);
@@ -317,7 +321,7 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 		"修改货品资料失败：" + wgoodService.error[2099]);
 	} else{
 	    changed_good.good_id        = update_good.id;
-	    changed_good.shop           = update_good.shop;
+	    // changed_good.shop           = update_good.shop;
 	    
 	    changed_good.o_style_number = $scope.src_good.style_number;
 	    changed_good.o_brand        = $scope.src_good.brand_id;

@@ -1,13 +1,20 @@
 wgoodApp.controller("wgoodNewCtrl", function(
     $scope, $timeout, diabloPattern, diabloUtilsService, diabloFilter,
-    wgoodService, filterFirm, filterBrand, filterType, filterSizeGroup){
+    wgoodService, filterPromotion, filterFirm, filterBrand,
+    filterType, filterSizeGroup){
+    // console.log(filterPromotion);
+    $scope.promotions = filterPromotion;
     
-    $scope.seasons = diablo_season2objects;
-    $scope.sexs    = diablo_sex2object;
-    $scope.pattern = {style_number: diabloPattern.style_number,
-		      brand: diabloPattern.ch_en_num,
-		      type:  diabloPattern.head_ch_en_num};
-    $scope.full_years = diablo_full_year;
+    $scope.seasons    = diablo_season2objects;
+    $scope.full_years = diablo_full_year; 
+    $scope.sexs       = diablo_sex2object;
+    
+    $scope.pattern = {
+	style_number: diabloPattern.style_number,
+	brand:        diabloPattern.ch_en_num,
+	type:         diabloPattern.head_ch_en_num,
+	discount:     diabloPattern.discount,
+	price:        diabloPattern.positive_decimal_2};
 
     var dialog     = diabloUtilsService;
     var set_float  = diablo_set_float;
@@ -391,6 +398,8 @@ wgoodApp.controller("wgoodNewCtrl", function(
      * new good
      */
     $scope.good = {
+	promotion : $scope.promotions.length > 0
+	    ? $scope.promotions[0]:undefined,
 	org_price : 0,
 	tag_price : 0,
 	ediscount : 100,
@@ -412,12 +421,13 @@ wgoodApp.controller("wgoodNewCtrl", function(
     $scope.new_good = function(){
 	console.log($scope.good);
 	console.log($scope.image);
-	var good      = angular.copy($scope.good);
-	good.firm     = good.firm.id;
-	good.season   = good.season.id;
-	good.sex      = good.sex.id; 
+	var good       = angular.copy($scope.good);
+	good.firm      = good.firm.id;
+	good.season    = good.season.id;
+	good.sex       = good.sex.id;
+	good.promotion = good.promotion.id;
 	
-	good.brand    = typeof(good.brand) === "object"
+	good.brand     = typeof(good.brand) === "object"
 	    ? good.brand.name: good.brand;
 	
 	good.type     = typeof(good.type) === "object"
@@ -577,7 +587,7 @@ wgoodApp.controller("wgoodNewCtrl", function(
 wgoodApp.controller("wgoodDetailCtrl", function(
     $scope, $location, dateFilter, diabloUtilsService,
     diabloPagination, wgoodService, user, diabloFilter,
-    filterBrand, filterFirm, filterType, filterColor, base){
+    filterPromotion, filterBrand, filterFirm, filterType, filterColor, base){
     // console.log(filterNumber);
     // console.log(firms);
     // console.log(filterBrand);
@@ -628,6 +638,8 @@ wgoodApp.controller("wgoodDetailCtrl", function(
 		    angular.forEach(result.data, function(d){
 			d.firm  = diablo_get_object(d.firm_id, filterFirm);
 			d.type  = diablo_get_object(d.type_id, filterType);
+			d.promotion =
+			    diablo_get_object(d.pid, filterPromotion);
 		    })
 		    $scope.goods = result.data;
 		    diablo_order_page(

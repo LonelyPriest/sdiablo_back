@@ -18,6 +18,7 @@ function shortCutGoodNewCtrl(
     $scope.brands     = shortCutGoodService.get_brand();
     $scope.types      = shortCutGoodService.get_type();
     $scope.groups     = shortCutGoodService.get_size_group();
+    $scope.promotions = shortCutGoodService.get_promotion();
     $scope.colors     = [];
 
     $scope.seasons = diablo_season2objects;
@@ -416,6 +417,7 @@ function shortCutGoodNewCtrl(
 	tag_price : 0,
 	// ediscount : 100,
 	discount  : 100,
+	promotion : $scope.promotions[0],
 	alarm_day : 7,
 	year      : diablo_now_year(),
 	season    : $scope.seasons[0]
@@ -433,10 +435,11 @@ function shortCutGoodNewCtrl(
     $scope.new_good = function(){
 	console.log($scope.good);
 	console.log($scope.image);
-	var good      = angular.copy($scope.good);
-	good.firm     = good.firm.id;
-	good.season   = good.season.id;
-	good.sex      = good.sex.id; 
+	var good       = angular.copy($scope.good);
+	good.firm      = good.firm.id;
+	good.season    = good.season.id;
+	good.sex       = good.sex.id;
+	good.promotion = good.promotion.id;
 	
 	good.brand    = typeof(good.brand) === "object"
 	    ? good.brand.name: good.brand;

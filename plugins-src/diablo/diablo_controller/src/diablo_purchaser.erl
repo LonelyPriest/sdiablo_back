@@ -368,7 +368,10 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
     C = fun(true, S, B) ->
 		"style_number=\'" ++ ?to_s(S) ++ "\'"
 		    ++ " and brand=" ++ ?to_s(B)
-		    ++ " and shop="  ++ ?to_s(Shop)
+		    ++ case Shop of
+			   undefined -> [];
+			   _ -> " and shop="  ++ ?to_s(Shop)
+		       end
 		    ++ " and merchant=" ++ ?to_s(Merchant) ;
 	   (false, S, B) ->
 		"style_number=\'" ++ ?to_s(S) ++ "\'"
@@ -410,7 +413,10 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 			    ++ " and brand=" ++ ?to_s(RBrand(Brand))
 			    ++ " and color=" ++ ?to_s(Color)
 			    ++ " and size=" ++ ?to_s(Size)
-			    ++ " and shop=" ++ ?to_s(Shop)
+			    ++ case Shop of
+				   undefined -> [];
+				   _ -> " and shop=" ++ ?to_s(Shop)
+			       end
 			    ++ " and merchant=" ++ ?to_s(Merchant) 
 		end,
 
@@ -424,7 +430,10 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 			    ", " ++ ?to_s(Brand) ++ 
 			    ", " ++ ?to_s(Color) ++ 
 			    ", " ++ ?to_s(Size) ++
-			    ", " ++ ?to_s(Shop) ++
+			    case Shop of
+				undefined -> [];
+				_ -> " and shop=" ++ ?to_s(Shop)
+			    end ++
 			    ", " ++ ?to_s(Merchant) ++
 			    ", " ++ ?to_s(Total) ++
 			    ", \'" ++ ?to_s(DateTime) ++ "\')"

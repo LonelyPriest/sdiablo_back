@@ -54,6 +54,9 @@ wsaleApp.config(['$routeProvider', function($routeProvider){
 
     var color = {"filterColor": function(diabloFilter){
 	return diabloFilter.get_color()}};
+
+    var promotion = {"filterPromotion": function(diabloFilter){
+	return diabloFilter.get_promotion()}};
     
     var s_group = {"filterSizeGroup": function(diabloFilter){
 	return diabloFilter.get_size_group()}}; 
@@ -65,8 +68,9 @@ wsaleApp.config(['$routeProvider', function($routeProvider){
 	when('/new_wsale', {
 	    templateUrl: '/private/wsale/html/new_wsale.html',
 	    controller: 'wsaleNewCtrl',
-	    resolve: angular.extend({}, user, firm, retailer, employee,
-				    s_group, brand, type, color, base)
+	    resolve: angular.extend(
+		{}, user, promotion, firm, retailer, employee,
+		s_group, brand, type, color, base)
 	}).
 	when('/new_wsale_detail/:page?', {
 	    templateUrl: '/private/wsale/html/new_wsale_detail.html',
@@ -82,8 +86,9 @@ wsaleApp.config(['$routeProvider', function($routeProvider){
 	when('/wsale_rsn_detail/:rsn?/:ppage?', {
 	    templateUrl: '/private/wsale/html/wsale_rsn_detail.html',
 	    controller: 'wsaleRsnDetailCtrl',
-	    resolve: angular.extend({}, user, brand, retailer, employee,
-				    firm, s_group, type, color, base)
+	    resolve: angular.extend(
+		{}, user, brand, retailer, employee,
+		firm, s_group, type, color, base)
 	}).
 	when('/reject_wsale', {
 	    templateUrl: '/private/wsale/html/reject_wsale.html',
@@ -264,12 +269,14 @@ wsaleApp.controller("wsaleNewCtrl", function(
     diabloUtilsService, diabloPromise, diabloFilter, diabloNormalFilter,
     diabloPattern, wgoodService, purchaserService, 
     wretailerService, wsaleService, wsaleGoodService,
-    user, filterFirm, filterRetailer, filterEmployee,
+    user, filterPromotion, filterFirm, filterRetailer, filterEmployee,
     filterSizeGroup, filterBrand, filterType, filterColor, base){
 
-    $scope.pattern  = {money: diabloPattern.decimal_2,
-		       sell:  diabloPattern.integer_except_zero,
-		       disable: diabloPattern.discount};
+    $scope.promotions = filterPromotion;
+    $scope.pattern    = {
+	money: diabloPattern.decimal_2,
+	sell:  diabloPattern.integer_except_zero,
+	disable: diabloPattern.discount};
     
     $scope.timeout_auto_save = undefined;
     $scope.round             = diablo_round;
@@ -333,6 +340,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
     $scope.f_sub           = diablo_float_sub;
     $scope.f_mul           = diablo_float_mul;
     $scope.wsale_mode      = wsaleService.wsale_mode;
+    $scope.show_promotions = [];
     $scope.disable_refresh = true;
     $scope.has_withdrawed  = false;
 
@@ -502,6 +510,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
     $scope.refresh = function(){
 	$scope.inventories = [];
 	$scope.inventories.push({$edit:false, $new:true});
+	$scope.show_promotions = [];
+	
 	// $scope.sexs = diablo_sex;
 	// $scope.seasons = diablo_season;
 	$scope.select.form.cardForm.$invalid  = false;
@@ -616,9 +626,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
     };
     
     $scope.list_draft = function(){
-	
-	var key_fix = draft_keys();
-	
+	var key_fix = draft_keys(); 
 	// console.log(key); 
 	var drafts = key_fix.map(function(k){
 	    var p = k.split("-");
@@ -698,6 +706,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	add.season       = src.season;
 	add.year         = src.year;
 
+	add.pid          = src.pid;
 	add.tag_price    = src.tag_price; 
 	add.discount     = src.discount;
 	add.path         = src.path;
@@ -727,7 +736,14 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	
 	// add at first allways 
 	var add = $scope.inventories[0];
-	add = $scope.copy_select(add, item); 
+	add = $scope.copy_select(add, item);
+
+	var show = angular.extend(
+	    {gname:  item.name},
+	    diablo_get_object(add.pid, $scope.promotions));
+	
+	$scope.show_promotions.push(show);
+	console.log($scope.show_promotions);
 
 	console.log(add); 
 	$scope.add_inventory(add);

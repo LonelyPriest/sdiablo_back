@@ -144,7 +144,9 @@ init([]) ->
 	 {?update_badrepo,
 	  <<"修改次品仓">>, <<"update_badrepo">>, ?right_shop},
 	 {?list_badrepo,
-	  <<"查询次品仓">>, <<"list_badrepo">>,   ?right_shop}
+	  <<"查询次品仓">>, <<"list_badrepo">>,   ?right_shop}, 
+	 {?add_shop_promotion, 
+	  <<"编辑促销方案">>, <<"add_shop_promotion">>, ?right_shop}
 	],
 
     
@@ -786,8 +788,8 @@ pass_action(wholesaler) ->
      <<"update_user_passwd">>,
 
      %% print
-     <<"get_w_print_content">>
+     <<"get_w_print_content">>,
 
      %% shop
-     %% <<"list_repo">>
+     <<"list_shop_promotion">>
     ].

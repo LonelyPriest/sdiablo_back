@@ -7,6 +7,7 @@ purchaserApp.factory("shortCutGoodService", function(){
     var _colors      = [];
     var _color_types = [];
     var _base        = [];
+    var _promotions  = [];
     
     var service      = {};
 
@@ -61,7 +62,15 @@ purchaserApp.factory("shortCutGoodService", function(){
     };
     service.get_base = function(){
 	return _base;
-    }; 
+    };
+
+
+    service.set_promotion = function(ps){
+	_promotions = ps;
+    };
+    service.get_promotion = function(){
+	return _promotions;
+    };
 
     return service;
 });

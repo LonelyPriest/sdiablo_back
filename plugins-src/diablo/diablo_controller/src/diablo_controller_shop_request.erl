@@ -36,7 +36,12 @@ action(Session, Req, {"list_repo"}) ->
 action(Session, Req, {"list_badrepo"}) ->
     ?DEBUG("list_badrepo with session ~p", [Session]),
     Merchant = ?session:get(merchant, Session),
-    ?utils:respond(batch, fun() -> ?shop:badrepo(list, Merchant) end, Req); 
+    ?utils:respond(batch, fun() -> ?shop:badrepo(list, Merchant) end, Req);
+
+action(Session, Req, {"list_shop_promotion"}) ->
+    ?DEBUG("list_shop_promotion with session ~p", [Session]),
+    Merchant = ?session:get(merchant, Session),
+    ?utils:respond(batch, fun() -> ?shop:promotion(list, Merchant) end, Req); 
 
 %%--------------------------------------------------------------------
 %% @desc: DELTE action
@@ -93,16 +98,26 @@ action(Session, Req, {"update_shop", Id}, Payload) ->
 action(Session, Req, {"new_repo"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     ?utils:respond(normal,
-		   fun()-> ?shop:repo(new,Merchant, Payload) end,
+		   fun()-> ?shop:repo(new, Merchant, Payload) end,
 		   fun(RepoId)-> ?succ(add_repo, RepoId) end,
 		   Req);
 
 action(Session, Req, {"new_badrepo"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     ?utils:respond(normal,
-		   fun()-> ?shop:badrepo(new,Merchant, Payload) end,
+		   fun()-> ?shop:badrepo(new, Merchant, Payload) end,
 		   fun(RepoId)-> ?succ(add_repo, RepoId) end,
+		   Req);
+
+action(Session, Req, {"add_shop_promotion"}, Payload) ->
+    ?DEBUG("add_promotion with session ~p, paylaod ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+
+    ?utils:respond(normal,
+		   fun()-> ?shop:promotion(new, Merchant, Payload) end,
+		   fun(ShopId)-> ?succ(add_shop_promotion, ShopId) end,
 		   Req).
+
 
 sidebar(Session) ->
     AuthenFun =

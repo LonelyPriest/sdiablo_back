@@ -18,6 +18,7 @@ function filterProvider(){
     var _color_types = [];
     var _employees   = [];
     var _size_groups = [];
+    var _promotions  = [];
     
     
     this.$get = function($resource, dateFilter, wgoodService){
@@ -359,6 +360,35 @@ function filterProvider(){
 		}
 	    },
 
+	    reset_promotion: function(){
+		_promotions = [];
+	    },
+	    
+	    get_promotion: function(){
+		if (_promotions.length !== 0){
+		    return _promotions;
+		} else {
+		    return wgoodService.list_w_promotion().then(function(
+			promotions){
+			console.log(promotions);
+			_promotions = promotions.map(function(p){
+			    return {
+				id:       p.id,
+				name:     p.name,
+				rule_id:  p.rule_id,
+				discount: p.discount,
+				cmoney:   p.cmoney,
+				rmoney:   p.rmoney,
+				sdate:    p.sdate,
+				edate:    p.edate
+			    }
+			});
+
+			return _promotions;
+		    }) 
+		}
+	    },
+
 	    get_employee: function(){
 		if (_employees.length !== 0){
 		    return _employees;
@@ -418,25 +448,35 @@ var diabloNormalFilterApp = angular.module("diabloNormalFilterApp", [], function
 
 function normalFilterProvider(){
 
-    var _retailers     = [];
-    var _employees     = [];
-    var _baseSettings  = [];
+    var _retailers      = [];
+    var _employees      = [];
+    var _baseSettings   = [];
+    var _promotions     = [];
+    var _shopPromotions = [];
     
     this.$get = function($resource){
-	var _employeeHttp = $resource("/employ/:operation", {operation: '@operation'});
-	var _retailerHttp =$resource("/wretailer/:operation", {operation: '@operation'});
-	var _provinceHttp = $resource("/wretailer/:operation", {operation: '@operation'});
-	var _cityHttp = $resource("/wretailer/:operation", {operation: '@operation'});
-	var _baseHttp = $resource("/wbase/:operation", {operation: '@operation'});
-	var _invHttp  = $resource("/purchaser/:operation", {operation:'@operation'},
-				  {
-				      post_get: {method: 'POST', isArray: true}
-				  });
-	// var _goodHttp = $resource("/wgood/:operation/:id", {operation: '@operation', id: '@id'});
+	var _employeeHttp =
+	    $resource("/employ/:operation", {operation: '@operation'});
+	var _retailerHttp =
+	    $resource("/wretailer/:operation", {operation: '@operation'}); 
+	var _baseHttp =
+	    $resource("/wbase/:operation", {operation: '@operation'});
+	var _invHttp  =
+	    $resource("/purchaser/:operation",
+		      {operation:'@operation'},
+		      {
+			  post_get: {method: 'POST', isArray: true}
+		      }); 
+	var _goodHttp =
+	    $resource("/wgood/:operation/:id", {operation: '@operation'});
+
+	var _shopHttp =
+	    $resource("/shop/:operation", {operation: '@operation'});
 	
 	return{
 	    match_all_w_inventory: function(condition){
-		return _invHttp.post_get({operation: 'match_all_w_inventory'}, condition)
+		return _invHttp.post_get(
+		    {operation: 'match_all_w_inventory'}, condition)
 	    }, 
 	    
 	    get_employee: function(){
@@ -479,9 +519,7 @@ function normalFilterProvider(){
 	    }, 
 
 	    get_repo: function(){
-		var http = $resource(
-		    "/shop/:operation", {operation: '@operation'});
-		return http.query(
+		return _shopHttp.query(
 		    {operation: "list_repo"}
 		).$promise.then(function(repo){
 		    console.log(repo);
@@ -491,32 +529,7 @@ function normalFilterProvider(){
 		    })
 		});
 	    },
-
-	    get_province: function(){
-		return _provinceHttp.query({operation: 'list_w_province'})
-		    .$promise.then(function(provinces){
-			// console.log(provinces);
-			return provinces.map(function(p){
-			    return {name:p.name,
-				    id:p.id, py:diablo_pinyin(p.name)}
-			});
-		    });
-	    },
-
-	    get_city: function(){
-		return _cityHttp.query(
-		    {operation: 'list_w_city'}
-		).$promise.then(function(cities){
-		    // console.log(cities);
-		    return cities.map(function(c){
-			return {name:c.name,
-				id:c.id,
-				py:diablo_pinyin(c.name),
-				pid:c.pid}
-		    }) 
-		});
-	    },
-
+	    
 	    get_base_setting: function(){
 		if (_baseSettings.length !== 0 ){
 		    return _baseSettings;
@@ -531,7 +544,56 @@ function normalFilterProvider(){
 		    })    
 		}
 		
-	    } 
+	    },
+
+	    get_promotion: function(){
+		if (_promotions.length !== 0){
+		    return _promotions;
+		} else {
+		    return _goodHttp.query(
+			{operation: 'list_w_promotion'}
+		    ).$promise.then(function(ps){
+			_promotions = ps.map(function(p){
+			    return {
+				id:       p.id,
+				name:     p.name,
+				rule_id:  p.rule_id,
+				discount: p.discount,
+				cmoney:   p.cmoney,
+				rmoney:   p.rmoney,
+				sdate:    p.sdate,
+				edate:    p.edate
+			    }
+			});
+
+			return _promotions;
+		    })
+		}
+		
+	    },
+
+	    get_shop_promotion: function(){
+		if (_shopPromotions.length !== 0){
+		    return _shopPromotions;
+		} else {
+		    return _shopHttp.query(
+			{operation:'list_shop_promotion'}
+		    ).$promise.then(function(ps){
+			_shopPromotions = ps.map(function(p){
+			    return {
+				id:       p.id,
+				shop_id:  p.shop_id,
+				pid:      p.pid,
+				entry:    p.entry
+			    }
+			});
+
+			return _shopPromotions;
+		    });
+		}
+	    }
+
+	    //
 	}
     }
 };

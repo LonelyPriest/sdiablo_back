@@ -82,14 +82,18 @@
 		    <!-- </td> -->
 		    
 		    <td>{{shop.address}}</td>
-		    <td x-ng-show="authen_list_repo" x-ng-switch on="shop.repo">
+		    <td x-ng-show="authen_list_repo"
+			x-ng-switch on="shop.repo">
 		      <span ng-switch-when=undefined>暂无</span>
 		      <span ng-switch-default>{{shop.repo.name}}</span>
 		      <!-- {{shop.repo}} -->
 		    </td>
 		    <td>{{shop.open_date}}</td>
 
-		    <td> 
+		    <td>
+		      <button class="btn btn-success diablo-button"
+			 x-ng-click="on_sale(shop)">促销
+			<i class="glyphicon glyphicon-flash"></i></button>
                       <button class="btn diablo-button btn-warning"
 			 x-ng-click="edit_shop(shop)">修改
 			<i class="glyphicon glyphicon-edit"></i></button>
@@ -213,6 +217,92 @@
 </script>
 
 
+<script type="text/ng-template" id="on-sale.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button> 
+    <h4 class="modal-title">
+      <span class="label label-sm label-primary">
+	促销方案（<span >{{params.shop.name}}</span>）
+      </span>
+    </h4>
+  </div>
+
+  <!--BEGIN modal body--> 
+  <div class="modal-body">
+
+    <div class="table-responsive">
+      <table class="table table-bordered
+		    table-striped table-condensed table-advanced">
+	<thead>
+	  <tr>
+	    <th></th>
+	    <th>名称</th>
+	    <th>方案</th> 
+	    <th>折扣</th>
+	    <th>消费金额</th>
+	    <th>减免金额</th>
+	    <th>开始日期</th>
+	    <th>结束日期</th> 
+	  </tr>
+	</thead>
+	<tbody>
+	  <tr x-ng-repeat="p in params.promotions">
+	    <td class="text-center">
+	      <div class="checkbox checkbox-danger checkbox-circle">
+		<input id={{p.id}}
+		       type="checkbox"
+		       x-ng-model="p.select"/>
+		<label for={{p.id}}></label>
+	      </div>
+	    </td>
+	    
+	    <td class="vert-align">{{p.name}}</td>
+	    <td class="vert-align">
+	      <div x-ng-switch on="p.rule_id">
+		<span x-ng-switch-when=0>折扣优惠</span>
+		<span x-ng-switch-default>金额减免</span>
+	      </div>
+	    </td>
+	    <td class="vert-align">
+	      <div x-ng-switch on="p.rule_id">
+		<span x-ng-switch-when=0>{{p.discount}}</span>
+		<span x-ng-switch-default>不涉及</span>
+	      </div>
+	    </td>
+	    <td class="vert-align">
+	      <div x-ng-switch on="p.rule_id">
+		<span x-ng-switch-when=1>{{p.cmoney}}</span>
+		<span x-ng-switch-default>不涉及</span>
+	      </div>
+	    </td>
+	    
+	    <td class="vert-align">
+	      <div x-ng-switch on="p.rule_id">
+		<span x-ng-switch-when=1>{{p.rmoney}}</span>
+		<span x-ng-switch-default>不涉及</span>
+	      </div>
+	    </td>
+	    
+	    <td class="vert-align">{{p.sdate}}</td>
+	    <td class="vert-align">{{p.edate}}</td>
+	    
+	  </tr>
+	</tbody>
+      </table>
+    </div> 
+  </div>
+  
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="pForm.$invalid
+			   || !params.check_select(params.promotions)"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>  
+</script>
 
 
 

@@ -41,6 +41,8 @@ success(delete_shop, Id) ->
     {0, "Success to delete the shop with id " ++ ?to_s(Id)};
 success(add_repo, Id) ->
     {0, "Success to create a repertory " ++ ?to_s(Id)};
+success(add_shop_promotion, Id) ->
+    {0, "Success to add the promotion of shop " ++ ?to_s(Id)};
 
 %% right
 success(add_account, Name) ->

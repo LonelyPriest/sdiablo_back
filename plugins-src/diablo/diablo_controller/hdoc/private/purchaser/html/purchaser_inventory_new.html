@@ -23,7 +23,7 @@
 		    x-ng-click="save_inventory()">保存
 	      <i class="glyphicon glyphicon-save"></i></button>
 	    <button class="btn btn-danger purple-stripe"
-		    x-ng-disabled="disable_refresh"
+		    x-ng-disabled="!select.firm || disable_refresh"
 		    x-ng-click="refresh()">下一单
 	      <i class="glyphicon glyphicon-plus"></i></button>
 	  </div>
@@ -807,6 +807,17 @@
 			<span style="color:red">
 			  两位整数，无折扣请输入100
 			</span>
+		      </div>
+		    </div>
+
+		    <div class="form-group diablo-good-form-group">
+		      <label class="col-sm-3 col-md-3 control-label">
+			促销方案</label>
+		      <div class="col-sm-6 col-md-6">
+	    		<select class="form-control"
+	    			x-ng-model="good.promotion"
+	    			x-ng-options="p as p.name for p in promotions">
+	    		</select>
 		      </div>
 		    </div>
 

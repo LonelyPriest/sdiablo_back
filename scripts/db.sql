@@ -361,8 +361,9 @@ create table w_retailer
 
 create table w_promotion(
     id              INTEGER AUTO_INCREMENT,
-    name            VARCHAR(64) default NULL,
     merchant        INTEGER not null default -1,
+    -- shop            INTEGER not null default -1,
+    name            VARCHAR(64) default NULL,
     
     rule            TINYINT not null default -1, 
     discount        DECIMAL(3, 0)  not null default 100,
@@ -378,6 +379,19 @@ create table w_promotion(
     deleted         INTEGER default 0, -- 0: no;  1: yes
 
     unique  key uk  (merchant, name),
+    primary key     (id)
+    
+) default charset=utf8;
+
+create table shop_promotion(
+    id              INTEGER AUTO_INCREMENT,
+    merchant        INTEGER not null default -1,
+    shop            INTEGER not null default -1,
+    pid             INTEGER not null default -1, -- reference to promotion
+    entry           DATETIME default 0,
+    deleted         INTEGER default 0, -- 0: no;  1: yes
+
+    unique  key uk  (merchant, shop, pid),
     primary key     (id)
     
 ) default charset=utf8;
@@ -401,7 +415,8 @@ create table w_inventory_good
        
     s_group          VARCHAR(32) default 0,  -- which size group "1, 2"
     free             TINYINT default 0,  -- 0: free color and free size 1: others	 
-    
+
+    promotion        INTEGER not null default -1,
     org_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
     tag_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
     ediscount        DECIMAL(3, 0), -- max: 100, discount of entry
@@ -436,7 +451,8 @@ create table w_inventory
     amount           INTEGER default 0,
     s_group          VARCHAR(32) default 0,  -- which size group
     free             TINYINT default 0,  -- free color and free size 
-    
+
+    promotion        INTEGER not null default -1,
     org_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
     tag_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
     
@@ -525,8 +541,9 @@ create table w_inventory_new_detail(
     firm           INTEGER default -1, 
     s_group        VARCHAR(32) default 0,  -- which size group 
     free           TINYINT default 0,  -- free color and free size
-    year          YEAR(4),
-    
+    year           YEAR(4),
+
+    promotion      INTEGER not null default -1,
     org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
     tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
     ediscount      DECIMAL(3, 0)  default 100, -- max: 100
@@ -681,7 +698,8 @@ create table w_sale_detail(
     firm           INTEGER default -1,
     year           YEAR(4),
     
-    total          INTEGER default 0, 
+    total          INTEGER default 0,
+    promotion      INTEGER not null default -1,
     fdiscount      DECIMAL(3, 0), -- max: 100
     fprice         DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance 
     path           VARCHAR(255) default null, -- the image path

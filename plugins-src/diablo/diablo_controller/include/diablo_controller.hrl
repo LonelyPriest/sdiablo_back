@@ -89,11 +89,12 @@
 -define(new_repo,       ?right_shop + 5).
 -define(del_repo,       ?right_shop + 6).
 -define(update_repo,    ?right_shop + 7).
--define(list_repo,      ?right_shop + 8).
--define(new_badrepo,    ?right_shop + 9).
--define(del_badrepo,    ?right_shop + 10).
--define(update_badrepo, ?right_shop + 11).
--define(list_badrepo,   ?right_shop + 12).
+-define(list_repo,           ?right_shop + 8).
+-define(new_badrepo,         ?right_shop + 9).
+-define(del_badrepo,         ?right_shop + 10).
+-define(update_badrepo,      ?right_shop + 11).
+-define(list_badrepo,        ?right_shop + 12).
+-define(add_shop_promotion,  ?right_shop + 13).
 
 %% employ
 -define(new_employe,    ?right_employe + 1).
@@ -177,10 +178,10 @@
 -define(del_w_color,    ?right_w_good + 9).
 -define(update_w_color, ?right_w_good + 10).
 
--define(new_w_promotion, ?right_w_good + 11).
--define(del_w_promotion, ?right_w_good + 12).
+-define(new_w_promotion,    ?right_w_good + 11).
+-define(del_w_promotion,    ?right_w_good + 12).
 -define(update_w_promotion, ?right_w_good + 13).
--define(list_w_promotion, ?right_w_good + 14).
+-define(list_w_promotion,   ?right_w_good + 14).
 
 %% report
 -define(daily_wreport,   ?right_w_report + 1).
