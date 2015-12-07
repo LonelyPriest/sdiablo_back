@@ -157,7 +157,7 @@ sidebar(Session) ->
 	case ShopAuthen of
 	    []   -> [];
 	    Shop ->
-		[{{"shop", "店铺", "icon icon-truck"}, Shop}] 
+		[{{"shop", "店铺", "glyphicon glyphicon-star-empty"}, Shop}] 
 	end,
 
     SidebarRepo = 

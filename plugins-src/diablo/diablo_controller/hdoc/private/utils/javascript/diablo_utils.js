@@ -587,7 +587,7 @@ diabloUtils.directive('timeSearch', function (){
 	},
 	
 	link: function(scope, element, attrs){
-	    console.log(scope);
+	    // console.log(scope);
 	    scope.open_calendar = function(event){
 		event.preventDefault();
 		event.stopPropagation();

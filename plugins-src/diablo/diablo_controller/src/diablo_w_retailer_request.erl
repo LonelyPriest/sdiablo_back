@@ -82,7 +82,22 @@ action(Session, Req, {"check_w_retailer_password", Id}, Payload) ->
 	       200, Req, ?succ(check_w_retailer_password, Id));
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
-    end.		
+    end;
+
+action(Session, Req, {"add_w_retailer_charge"}, Payload) ->
+    ?DEBUG("add_w_retailer_charge with session ~p, payload ~p",
+	   [Session, Payload]),
+
+    Merchant = ?session:get(merchant, Session),
+
+    case ?w_retailer:charge(new, Merchant, Payload) of
+	{ok, Id} ->
+	    ?utils:respond(
+	       200, Req, ?succ(add_retailer_charge, Id));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end.
+
 
 sidebar(Session) -> 
     S1 = [{"wretailer_detail", "会员详情", "glyphicon glyphicon-book"}],
@@ -93,7 +108,18 @@ sidebar(Session) ->
 		[{"wretailer_new", "新增会员", "glyphicon glyphicon-plus"}];
 	    _ ->
 		[]
-	end,
+	end, 
+
+    Recharge =
+	[{{"promotion", "充值积分", "glyphicon glyphicon-superscript"},
+	  
+	  [{"recharge_detail", "充值方案", "icon-large icon-star-half"},
+	   {"score_detail", "积分方案", "icon-large icon-lock"}]
+	
+	 }],
     
-    ?menu:sidebar(level_1_menu, S2 ++ S1).
+    L1 = ?menu:sidebar(level_1_menu, S2 ++ S1),
+    L2 = ?menu:sidebar(level_2_menu, Recharge),
+
+    L1 ++ L2.
        

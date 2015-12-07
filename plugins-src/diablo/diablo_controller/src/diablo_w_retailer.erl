@@ -21,7 +21,7 @@
 	 terminate/2, code_change/3]).
 
 -export([retailer/2, retailer/3, retailer/4]).
--export([province/2, city/2, city/4]).
+-export([charge/3]).
 
 -define(SERVER, ?MODULE). 
 
@@ -52,15 +52,11 @@ retailer(check_password, Merchant, RetailerId, Password) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {check_password, Merchant, RetailerId, Password}).
 
-city(new, Merchant, City, Province) ->
+
+%% charge
+charge(new, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {new_city, City, Province}).
-city(list, Merchant) ->
-    Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, list_city).
-province(list, Merchant) ->
-    Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, list_province).
+    gen_server:call(Name, {new_charge, Merchant, Attrs}).
 
 start_link(Name) ->
     gen_server:start_link({local, Name}, ?MODULE, [], []).
@@ -205,6 +201,55 @@ handle_call({list_retailer, Merchant}, _From, State) ->
 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
+
+%%
+%% charge
+%%
+handle_call({new_charge, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("new_charge with merchant ~p, paylaod ~p", [Merchant, Attrs]),
+
+    Name    = ?v(<<"name">>, Attrs),
+    Charge  = ?v(<<"charge">>, Attrs, 0),
+    Balance = ?v(<<"balance">>, Attrs, 0),
+    SDate   = ?v(<<"sdate">>, Attrs),
+    EDate   = ?v(<<"edate">>, Attrs),
+    Remark  = ?v(<<"remark">>, Attrs, []),
+
+    Entry    = ?utils:current_time(localtime),
+    
+    Sql = "select id, name from w_charge"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and name=\'" ++ ?to_s(Name) ++ "\'",
+
+    case ?sql_utils:execute(s_read, Sql) of
+	{ok, []} ->
+	    Sql1 = "insert into w_charge(merchant, name"
+		", charge, balance, sdate, edate, remark"
+		", entry) values("
+		++ ?to_s(Merchant) ++ ","
+	    %% ++ ?to_s(Shop) ++ ","
+		++ "\'" ++ ?to_s(Name) ++ "\',"
+		++ ?to_s(Charge) ++ ","
+		++ ?to_s(Balance) ++ "," 
+		++ "\'" ++ ?to_s(SDate) ++ "\',"
+		++ "\'" ++ ?to_s(EDate) ++ "\',"
+		++ "\'" ++ ?to_s(Remark) ++ "\',"
+		++ "\'" ++ Entry ++ "\')",
+
+	    Reply = ?sql_utils:execute(insert, Sql1),
+
+	    %% case Reply of
+	    %% 	{ok, _} -> ?w_user_profile:update(promotion, Merchant);
+	    %% 	_ -> error
+	    %% end,
+
+	    {reply, Reply, State};
+	{ok, E} ->
+	    {reply,
+	     {error, ?err(retailer_charge_exist, ?v(<<"id">>, E))}, State}
+    end;
+    
+
 
 handle_call(_Request, _From, State) ->
     Reply = ok,

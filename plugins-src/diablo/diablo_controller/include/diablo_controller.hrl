@@ -76,10 +76,20 @@
 -define(right_w_base, 900000).
 
 %% retailer
--define(new_w_retailer,            ?right_w_retailer + 1).
--define(del_w_retailer,            ?right_w_retailer + 2).
--define(update_w_retailer,         ?right_w_retailer + 3).
--define(list_w_retailer,           ?right_w_retailer + 4).
+-define(new_w_retailer,                        ?right_w_retailer + 1).
+-define(del_w_retailer,                        ?right_w_retailer + 2).
+-define(update_w_retailer,                     ?right_w_retailer + 3).
+-define(list_w_retailer,                       ?right_w_retailer + 4).
+
+-define(add_w_retailer_charge,       ?right_w_retailer + 5).
+-define(update_w_retailer_charge,    ?right_w_retailer + 6).
+-define(del_w_retailer_charge,       ?right_w_retailer + 7).
+-define(list_w_retailer_charge,      ?right_w_retailer + 8).
+
+-define(add_w_retailer_score,        ?right_w_retailer + 9).
+-define(update_w_retailer_score,     ?right_w_retailer + 10).
+-define(del_w_retailer_score,        ?right_w_retailer + 11).
+-define(list_w_retailer_score,       ?right_w_retailer + 12).
 
 %% shop
 -define(new_shop,       ?right_shop + 1).

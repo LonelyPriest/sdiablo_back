@@ -1,0 +1,147 @@
+<div class="row">
+  <div class="col-md-12">
+    <ul class="page-breadcrumb breadcrumb">
+      <li>
+	<i class="glyphicon glyphicon-menu-hamburger fg-red"></i>
+	<a href="javascript:;">充值方案</a>
+	<i class="glyphicon glyphicon-menu-right fg-red"></i>
+      </li>
+      <li class="active">
+	<a href="javascript:;">新增</a>
+      </li>
+    </ul>    
+  </div>
+</div>
+
+
+<div class="row">
+  <div class="com-md-12">
+    <div class="portlet box blue">
+      <div class="portlet-body form">
+
+	<!-- BEGIN form-->
+	<form class="form-horizontal" name="rForm" novalidate>
+	  <div class="form-body"> 
+	    
+	    <div class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">名称</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<div class="input-group">
+		  <div x-ng-class="{'has-error':rForm.name.$invalid
+				   && !rForm.name.$pristine}">
+		    <input type="text"
+			   class="form-control"
+			   name="name"
+			   required
+			   placeholder="请输入方案名称" 
+			   x-ng-model="promotion.name"
+			   x-ng-pattern="pattern.name"/>
+		  </div>
+		  <span class="input-group-addon bg-white fg-red">*</span>
+		</div> 
+	      </div>
+	      <div ng-if="rForm.name.$invalid && !rForm.name.$pristine">
+		<span class="fg-red">
+		  4-20个字符，只能是数字，字母，中文，横杠或下划线
+		</span>
+	      </div> 
+	    </div>
+
+
+	    <div class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">充值金额</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<div class="input-group">
+		  <div x-ng-class="{'has-error':rForm.consume.$invalid
+				   && !rForm.consume.$pristine}">
+		    <input type="number" step="1"
+			   class="form-control"
+			   name="charge"
+			   required
+			   placeholder="请输入充值金额" 
+			   x-ng-model="promotion.charge"
+			   x-ng-pattern="pattern.number"/>
+		  </div>
+		  <span class="input-group-addon bg-white fg-red">*</span>
+		</div> 
+	      </div>
+	      <div ng-if="rForm.charge.$invalid && !rForm.charge.$pristine">
+		<span class="fg-red">金额只能是数字</span>
+	      </div> 
+	    </div>
+
+	    <div class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">赠送金额</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<div x-ng-class="{'has-error':rForm.balance.$invalid
+				 && !rForm.balance.$pristine}">
+		  <input type="number" step="1"
+			 class="form-control"
+			 name="balance"
+			 placeholder="请输入减免金额，默认为0" 
+			 x-ng-model="promotion.balance"
+			 x-ng-pattern="pattern.number"/>
+		</div>
+	      </div>
+	      <div ng-if="rForm.balance.$invalid && !rForm.balance.$pristine">
+		<span class="fg-red">金额只能是数字</span>
+	      </div> 
+	    </div>
+
+	    
+	    <div class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">开始日期</label>
+	      <div class="col-md-6 col-sm-6">
+		<time-search time="promotion.sdate"
+			     click-ok="false">
+		</time-search>
+	      </div>
+	    </div>
+
+	    <div class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">结束日期</label>
+	      <div class="col-md-6 col-sm-6">
+		<time-search time="promotion.edate"
+			     click-ok="false">
+		</time-search>
+	      </div>
+	    </div>
+
+	    <div class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">描述</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<div x-ng-class="{'has-error':rForm.remark.$invalid
+				 && !rForm.remark.$pristine}">
+		  <input type="text"
+			 class="form-control"
+			 name="remark"
+			 placeholder="请输入方案描述" 
+			 x-ng-model="promotion.remark"
+			 x-ng-pattern="pattern.remark"/>
+		</div>
+	      </div>
+	      <div ng-if="rForm.remark.$invalid && !rForm.remark.$pristine">
+		<span class="fg-red">请输入中文，字母，下划线或数字</span>
+	      </div> 
+	    </div> 
+	  </div>
+
+	  <!--BEGIN form action-->
+	  <div class="form-actions fluid">
+	    <div class="col-md-offset-3 col-md-6">
+	      <span class="pull-right">
+		<button class="btn btn-primary"
+			ng-disabled="rForm.$invalid"
+			x-ng-click="new_promotion()">确认</button>
+		<button class="btn btn-warning"
+			x-ng-click="cancel()">取消</button>
+	      </span>
+	    </div>
+	  </div> <!--END form action-->
+	  
+	</form> <!--END form-->
+	
+      </div>
+    </div>
+  </div>
+</div>

@@ -336,7 +336,7 @@ create table w_print_format(
 
 
 /** ----------------------------------------------------------------------------
-suppliers
+member
 -----------------------------------------------------------------------------**/
 create table w_retailer
 (
@@ -356,6 +356,41 @@ create table w_retailer
     
     unique  key  uk (merchant, name, mobile),
     primary key     (id)
+) default charset=utf8;
+
+create table w_charge(
+    id              INTEGER AUTO_INCREMENT,
+    merchant        INTEGER not null default -1,
+    name            VARCHAR(64) not null,
+    charge          INTEGER not null default 0,
+    balance         INTEGER not null default 0, -- send balance when charge
+    sdate           DATE default 0,
+    edate           DATE default 0,
+    remark          VARCHAR(128) default null,
+   
+    entry           DATETIME default 0,
+    deleted         INTEGER default 0, -- 0: no;  1: yes
+
+    unique  key uk  (merchant, name),
+    primary key     (id)
+) default charset=utf8;
+
+create table w_score(
+   id              INTEGER AUTO_INCREMENT,
+   name            VARCHAR(64) not null,
+   merchant        INTEGER not null default -1,
+   balance         INTEGER not null default 0,
+   score           INTEGER not null default 0,
+   type            TINYINT not null default 0, -- 0: to score 1: to money
+   sdate           DATE default 0,
+   edate           DATE default 0,
+   remark          VARCHAR(128) default null,
+   
+   entry           DATETIME default 0,
+   deleted         INTEGER default 0, -- 0: no;  1: yes 
+   
+   unique  key uk  (merchant, name),
+   primary key     (id)
 ) default charset=utf8;
 
 

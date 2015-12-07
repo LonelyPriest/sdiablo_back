@@ -88,6 +88,24 @@ wretailerApp.config(['$routeProvider', function($routeProvider){
 	    resolve: angular.extend(
 		{}, brand, firm, retailer, employee, s_group, type, user, base)
 	}).
+	// recharge and score
+	when('/promotion/recharge_new', {
+	    templateUrl: '/private/wretailer/html/recharge_new.html',
+	    controller: 'wretailerRechargeNewCtrl'
+	}). 
+	when('/promotion/recharge_detail', {
+	    templateUrl: '/private/wretailer/html/recharge_detail.html',
+	    controller: 'wretailerRechargeDetailCtrl'
+	}).
+	when('/promotion/score_new', {
+	    templateUrl: '/private/wretailer/html/score_new.html',
+	    controller: 'wretailerScoreNewCtrl'
+	}).
+	when('/promotion/score_detail', {
+	    templateUrl: '/private/wretailer/html/score_detail.html',
+	    controller: 'wretailerScoreDetailCtrl'
+	}).
+	// default
 	otherwise({
 	    templateUrl: '/private/wretailer/html/wretailer_detail.html',
 	    controller: 'wretailerDetailCtrl',
@@ -248,5 +266,10 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
     this.check_w_sale_new = function(rsn){
 	return http_wsale.save({operation: "check_w_sale"},
 			       {rsn: rsn}).$promise;
-    }; 
+    };
+
+    this.new_charge_promotion = function(promotion){
+	return http.save(
+	    {operation: "add_w_retailer_charge"}, promotion).$promise;
+    };
 });

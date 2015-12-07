@@ -120,11 +120,29 @@ init([]) ->
 	[{?new_w_retailer, 
 	  <<"新增会员">>, <<"new_w_retailer">>,    ?right_w_retailer},
 	 {?del_w_retailer,
-	  <<"删除会员">>, <<"del_w_retailer">>, ?right_w_retailer},
+	  <<"删除会员">>, <<"del_w_retailer">>,    ?right_w_retailer},
 	 {?update_w_retailer,
 	  <<"修改会员">>, <<"update_w_retailer">>, ?right_w_retailer},
 	 {?list_w_retailer,
-	  <<"查询会员">>, <<"list_w_retailer">>,   ?right_w_retailer} 
+	  <<"查询会员">>, <<"list_w_retailer">>,   ?right_w_retailer},
+
+	 {?add_w_retailer_charge, 
+	  <<"新增充值方案">>, <<"add_w_retailer_charge">>, ?right_w_retailer},
+	 {?del_w_retailer_charge,
+	  <<"删除充值方案">>, <<"del_w_retailer_charge">>, ?right_w_retailer},
+	 {?update_w_retailer_charge,
+	  <<"修改充值方案">>,<<"update_w_retailer_charge">>,?right_w_retailer},
+	 {?list_w_retailer_charge,
+	  <<"查询充值方案">>, <<"list_w_retailer_charge">>,?right_w_retailer},
+
+	 {?add_w_retailer_score, 
+	  <<"新增积分方案">>, <<"add_w_retailer_score">>, ?right_w_retailer},
+	 {?del_w_retailer_score,
+	  <<"删除积分方案">>, <<"del_w_retailer_score">>, ?right_w_retailer},
+	 {?update_w_retailer_score,
+	  <<"修改积分方案">>,<<"update_w_retailer_score">>,?right_w_retailer},
+	 {?list_w_retailer_score,
+	  <<"查询积分方案">>, <<"list_w_retailer_score">>,?right_w_retailer} 
 	],
 
     
@@ -750,6 +768,8 @@ pass_action(wholesaler) ->
      %% retailer
      <<"list_w_retailer">>,
      <<"check_w_retailer_password">>,
+     <<"list_w_retailer_charge">>,
+     <<"list_w_retailer_score">>,
      
      %% wsale
      %% <<"list_w_sale_new">>,
