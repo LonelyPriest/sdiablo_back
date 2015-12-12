@@ -365,7 +365,7 @@
 	  repo        = [] :: list(), %% all repository of merchant
 	  print       = [] :: list(),
 	  pformat     = [] :: list(),
-	  bank        = [] :: list(), %% all bank of merchant
+	  %% bank        = [] :: list(), %% all bank of merchant
 	  setting     = [] :: list(),
 	  size_groups = [] :: list(),
 	  itype       = [] :: list(), %% type of inventory
@@ -376,7 +376,9 @@
 	  color_type  = [] :: list(),
 	  color       = [] :: list(), 
 	  good        = [] :: list(),
-	  promotion   = [] :: list()
+	  promotion   = [] :: list(),
+	  charge      = [] :: list(),
+	  score       = [] :: list()
 	  %% login_right = [] :: list(),
 	  %% login_shop  = [] :: list()
 	 }).

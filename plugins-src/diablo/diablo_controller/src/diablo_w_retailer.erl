@@ -21,7 +21,8 @@
 	 terminate/2, code_change/3]).
 
 -export([retailer/2, retailer/3, retailer/4]).
--export([charge/3]).
+-export([charge/2, charge/3]).
+-export([score/2, score/3]).
 
 -define(SERVER, ?MODULE). 
 
@@ -57,6 +58,19 @@ retailer(check_password, Merchant, RetailerId, Password) ->
 charge(new, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {new_charge, Merchant, Attrs}).
+
+charge(list, Merchant) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {list_charge, Merchant}).
+
+%% score
+score(new, Merchant, Attrs) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {new_score, Merchant, Attrs}).
+
+score(list, Merchant) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {list_score, Merchant}).
 
 start_link(Name) ->
     gen_server:start_link({local, Name}, ?MODULE, [], []).
@@ -248,7 +262,77 @@ handle_call({new_charge, Merchant, Attrs}, _From, State) ->
 	    {reply,
 	     {error, ?err(retailer_charge_exist, ?v(<<"id">>, E))}, State}
     end;
+
+handle_call({list_charge, Merchant}, _From, State) ->
+    Sql = "select id, name, charge, balance, sdate, edate"
+	", remark, entry"
+	" from w_charge"
+	" where merchant=" ++ ?to_s(Merchant),
+
+    Reply = ?sql_utils:execute(read, Sql),
     
+    {reply, Reply, State};
+
+
+%%
+%% score
+%%
+handle_call({new_score, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("new_charge with merchant ~p, paylaod ~p", [Merchant, Attrs]),
+
+    Name    = ?v(<<"name">>, Attrs),
+    Balance = ?v(<<"balance">>, Attrs, 0),
+    Score   = ?v(<<"score">>, Attrs, 0),
+    Rule    = ?v(<<"rule">>, Attrs),
+    SDate   = ?v(<<"sdate">>, Attrs),
+    EDate   = ?v(<<"edate">>, Attrs),
+    Remark  = ?v(<<"remark">>, Attrs, []),
+
+    Entry    = ?utils:current_time(localtime),
+
+    Sql = "select id, name from w_score"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and name=\'" ++ ?to_s(Name) ++ "\'",
+
+    case ?sql_utils:execute(s_read, Sql) of
+	{ok, []} ->
+	    Sql1 = "insert into w_score(name, merchant"
+		", balance, score, type, sdate, edate, remark"
+		", entry) values("
+	    %% ++ ?to_s(Shop) ++ ","
+		++ "\'" ++ ?to_s(Name) ++ "\',"
+		++ ?to_s(Merchant) ++ "," 
+		++ ?to_s(Balance) ++ ","
+		++ ?to_s(Score) ++ ","
+		++ ?to_s(Rule) ++ "," 
+		++ "\'" ++ ?to_s(SDate) ++ "\',"
+		++ "\'" ++ ?to_s(EDate) ++ "\',"
+		++ "\'" ++ ?to_s(Remark) ++ "\',"
+		++ "\'" ++ Entry ++ "\')",
+
+	    Reply = ?sql_utils:execute(insert, Sql1),
+
+	    %% case Reply of
+	    %% 	{ok, _} -> ?w_user_profile:update(promotion, Merchant);
+	    %% 	_ -> error
+	    %% end,
+
+	    {reply, Reply, State};
+	{ok, E} ->
+	    {reply,
+	     {error, ?err(retailer_score_exist, ?v(<<"id">>, E))}, State}
+    end;
+
+handle_call({list_score, Merchant}, _From, State) ->
+    Sql = "select id, name, balance, score, type as type_id, sdate, edate"
+	", remark, entry"
+	" from w_score"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and deleted=" ++ ?to_s(?NO),
+
+    Reply = ?sql_utils:execute(read, Sql),
+
+    {reply, Reply, State};
 
 
 handle_call(_Request, _From, State) ->

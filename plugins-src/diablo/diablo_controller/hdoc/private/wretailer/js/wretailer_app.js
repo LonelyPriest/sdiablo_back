@@ -50,16 +50,13 @@ wretailerApp.config(['$routeProvider', function($routeProvider){
 	return diabloNormalFilter.get_wretailer()}};
     
     var employee = {"filterEmployee": function(diabloNormalFilter){
-	return diabloNormalFilter.get_employee()}};
-    
-    // var province = {"filterProvince": function(diabloNormalFilter){
-    // 	return diabloNormalFilter.get_province()}};
-
-    // var city = {"filterCity": function(diabloNormalFilter){
-    // 	return diabloNormalFilter.get_city()}};
+	return diabloNormalFilter.get_employee()}}; 
 
     var base = {"base": function(diabloNormalFilter){
 	return diabloNormalFilter.get_base_setting()}};
+
+    var charge = {"filterCharge": function(diabloNormalFilter){
+	return diabloNormalFilter.get_charge()}};
     
     $routeProvider. 
 	when('/wretailer_new', {
@@ -70,7 +67,7 @@ wretailerApp.config(['$routeProvider', function($routeProvider){
 	when('/wretailer_detail', {
 	    templateUrl: '/private/wretailer/html/wretailer_detail.html',
 	    controller: 'wretailerDetailCtrl',
-	    resolve: angular.extend({}, user)
+	    resolve: angular.extend({}, employee, charge, user)
 	}).
 	when('/wretailer_trans/:retailer?/:page?', {
 	    templateUrl: '/private/wretailer/html/wretailer_trans.html',
@@ -109,7 +106,7 @@ wretailerApp.config(['$routeProvider', function($routeProvider){
 	otherwise({
 	    templateUrl: '/private/wretailer/html/wretailer_detail.html',
 	    controller: 'wretailerDetailCtrl',
-	    resolve: angular.extend({}, user)
+	    resolve: angular.extend({}, employee, charge, user)
         })
 }]);
 
@@ -128,7 +125,15 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
     this.error = {
      	2101: "会员信息重复！！",
 	2102: "会员密码不正确，请重新输入！！",
+	2103: "充值方案名称已存在，请重新输入方案名称!!",
+	2104: "积分方案名称已存在，请重新输入方案名称!!",
 	9001: "数据库操作失败，请联系服务人员！！"};
+
+    this.score_rules = [
+	{name: "钱兑换积分", id:0, remark: "钱到积分"},
+	{name: "积分兑换钱", id:1, remakr: "积分到钱"}
+	// {name: "金额赠送", id:2, remakr: "交易金额达到目标值赠送一定金额"}
+    ];
 
     this.sort_inventory = function(invs, orderSizes){
 	// console.log(invs);
@@ -268,8 +273,32 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 			       {rsn: rsn}).$promise;
     };
 
+    /*
+     * charge
+     */
     this.new_charge_promotion = function(promotion){
 	return http.save(
 	    {operation: "add_w_retailer_charge"}, promotion).$promise;
     };
+
+    this.list_charge_promotion = function(){
+	return http.query({operation:"list_w_retailer_charge"}).$promise;
+    };
+
+    this.new_charge = function(charge){
+	return http.query({operation:"new_w_retailer_charge"}).$promise;
+    };
+
+    /*
+     * score
+     */
+    this.new_score_promotion = function(promotion){
+	return http.save(
+	    {operation: "add_w_retailer_score"}, promotion).$promise;
+    };
+
+    this.list_score_promotion = function(){
+	return http.query({operation:"list_w_retailer_score"}).$promise;
+    };
+    
 });

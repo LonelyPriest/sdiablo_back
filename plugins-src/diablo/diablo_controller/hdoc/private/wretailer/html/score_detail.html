@@ -1,0 +1,137 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="portlet box purple">
+      
+      <div class="portlet-title">
+	<div class="caption">
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>
+	  积分方案
+	</div>	
+
+	<div class="actions">
+	  <div class="btn-group btn-group-solid">
+	    <a type="button" class="btn btn-success"
+	       x-ng-click="new_score()">新增
+	      <i class="glyphicon glyphicon-plus"></i></a> 
+
+	    <a type="button" class="btn blue reload purple-stripe"
+	       x-ng-click="refresh()">刷新
+	      <i class="icon icon-spinner fg-white"></i></a>
+	  </div>
+	</div> 
+      </div>
+
+
+      <div class="portlet-body">
+	<tabset>
+	  <tab>
+	    <tab-heading class="fg-darkRed">钱兑换积分</tab-heading>
+	    
+	    <div class="panel panel-default table-panel">
+	      <div class="table-responsive">
+		<table class="table table-bordered
+			      table-striped table-hover
+			      table-condensed table-advanced">
+		  <thead>
+		    <tr>
+		      <th>序号</th>
+		      <th>名称</th>
+		      <th>规则</th>
+		      <th>消费金额</th>
+		      <th>兑换积分</th>
+		      <th>开始日期</th>
+		      <th>结束日期</th>
+		      <th>描述</th>
+		      <th>操作</th>
+		    </tr>
+		  </thead>
+
+		  <tbody>
+		    <tr x-ng-repeat="p in promotion.balance2score">
+		      <td>{{p.order_id}}</td>
+		      <td>{{p.name}}</td>
+		      <td>{{p.type.name}}</td> 
+		      <td>{{p.balance}}</td>
+		      <td>{{p.score}}</td>
+		      <td>{{p.sdate}}</td>
+		      <td>{{p.edate}}</td>
+		      <td>
+			<span x-ng-if="p.remark">{{p.remark}}</span>
+			<span x-ng-if="!p.remark">暂无</span> 
+		      </td>
+		      <td>
+			<button class="btn diablo-button btn-warning"
+				x-ng-click="update_score(p)">修改
+			  <i class="glyphicon glyphicon-edit"></i></button>
+			<button class="btn diablo-button btn-danger"
+				x-ng-click="delete_score(p)">删除
+			  <i class="glyphicon glyphicon-erase"></i></button>
+		      </td>
+		    </tr>
+		  </tbody>
+		  
+		</table>
+	      </div>
+	    </div>
+	  </tab>
+
+	  <tab active="select.score2balance">
+	    <tab-heading class="fg-darkBlue">积分兑换钱</tab-heading>
+	  </tab>
+
+	</tabset>
+
+	<div x-ng-if="select.score2balance"
+	     class="panel panel-default table-panel">
+	  <div class="table-responsive">
+	    <table class="table table-bordered
+			  table-striped table-hover
+			  table-condensed table-advanced">
+	      <thead>
+		<tr>
+		  <th>序号</th>
+		  <th>名称</th>
+		  <th>规则</th>
+		  <th>消费积分</th>
+		  <th>兑换金额</th>
+		  <th>开始日期</th>
+		  <th>结束日期</th>
+		  <th>描述</th>
+		  <th>操作</th>
+		</tr>
+	      </thead>
+
+	      <tbody>
+		<tr x-ng-repeat="p in promotion.score2balance">
+		  <td>{{p.order_id}}</td>
+		  <td>{{p.name}}</td>
+		  <td>{{p.type.name}}</td>
+		  <td>{{p.score}}</td> 
+		  <td>{{p.balance}}</td>
+		  <td>{{p.sdate}}</td>
+		  <td>{{p.edate}}</td>
+		  <td>
+		    <span x-ng-if="p.remark">{{p.remark}}</span>
+		    <span x-ng-if="!p.remark">暂无</span> 
+		  </td>
+		  <td>
+		    <button class="btn diablo-button btn-warning"
+			    x-ng-click="update_score(p)">修改
+		      <i class="glyphicon glyphicon-edit"></i></button>
+		    <button class="btn diablo-button btn-danger"
+			    x-ng-click="delete_score(p)">删除
+		      <i class="glyphicon glyphicon-erase"></i></button>
+		  </td>
+		</tr>
+	      </tbody>
+	      
+	    </table>
+	  </div>
+	</div>
+
+	
+      </div>
+
+      
+    </div> 
+</div>

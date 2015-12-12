@@ -40,8 +40,32 @@
 		  <th>开始日期</th>
 		  <th>结束日期</th>
 		  <th>描述</th>
+		  <th>操作</th>
 		</tr>
 	      </thead>
+
+	      <tbody>
+		<tr x-ng-repeat="p in promotions">
+		  <td>{{p.order_id}}</td>
+		  <td>{{p.name}}</td>
+		  <td>{{p.charge}}</td>
+		  <td>{{p.balance}}</td>
+		  <td>{{p.sdate}}</td>
+		  <td>{{p.edate}}</td>
+		  <td>
+		    <span x-ng-if="p.remark">{{p.remark}}</span>
+		    <span x-ng-if="!p.remark">暂无</span> 
+		  </td>
+		  <td>
+                    <button class="btn diablo-button btn-warning"
+			    x-ng-click="update_charge(p)">修改
+		      <i class="glyphicon glyphicon-edit"></i></button>
+                    <button class="btn diablo-button btn-danger"
+			    x-ng-click="delete_charge(p)">删除
+		      <i class="glyphicon glyphicon-erase"></i></button>
+		  </td>
+		</tr>
+	      </tbody>
 	      
 	    </table>
 	  </div>

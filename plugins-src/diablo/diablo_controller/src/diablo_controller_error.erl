@@ -143,6 +143,8 @@ success(check_w_retailer_password, Retailer) ->
     {0, "Success to check password of retailer " ++ ?to_s(Retailer)};
 success(add_retailer_charge, Charge) ->
     {0, "Success to add the chare promotion "++?to_s(Charge)++" of retailer."};
+success(add_retailer_score, Score) ->
+    {0, "Success to add the score promotion "++?to_s(Score)++" of retailer."};
 
 
 
@@ -319,6 +321,8 @@ error(retailer_invalid_password, Retailer) ->
     {2102, "invalid password of retailer " ++ ?to_s(Retailer) ++ "."};
 error(retailer_charge_exist, Charge) ->
     {2103, "retailer of charge promotion " ++ ?to_s(Charge) ++ " does exist."};
+error(retailer_score_exist, Score) ->
+    {2103, "retailer of score promotion " ++ ?to_s(Score) ++ " does exist."};
 
 
 %% wprint

@@ -71,7 +71,12 @@ get(color_type, Merchant) ->
 get(color, Merchant) ->
     gen_server:call(?SERVER, {get_color_profile, Merchant});
 get(promotion, Merchant) ->
-    gen_server:call(?SERVER, {get_promotion, Merchant}).
+    gen_server:call(?SERVER, {get_promotion, Merchant});
+get(charge, Merchant) ->
+    gen_server:call(?SERVER, {get_charge, Merchant});
+get(score, Merchant) ->
+    gen_server:call(?SERVER, {get_score, Merchant}).
+
 
 
 get(shop, Merchant, Shop) ->
@@ -160,7 +165,7 @@ handle_call({new_profile, Merchant}, _From, State) ->
 	{ok, Shops}        = ?shop:lookup(Merchant),
 	{ok, Repoes}       = ?shop:repo(list, Merchant),
 	
-	{ok, Cards}        = ?w_base:bank_card(list, Merchant), 
+	%% {ok, Cards}        = ?w_base:bank_card(list, Merchant), 
 	%% base stting
 	{ok, Setting}      = ?w_base:setting(list, Merchant),
 	{ok, SizeGroups}   = ?attr:size_group(list, Merchant),
@@ -176,6 +181,8 @@ handle_call({new_profile, Merchant}, _From, State) ->
 	{ok, Colors}       = ?attr:color(w_list, Merchant),
 
 	{ok, Promotions}   = ?promotion:promotion(list, Merchant),
+	{ok, Charges}      = ?w_retailer:charge(list, Merchant),
+	{ok, Scores}       = ?w_retailer:score(list, Merchant),
 	
 	%% good
 	%% Goods = ?w_inventory:purchaser_good(lookup, Merchant), 
@@ -187,7 +194,7 @@ handle_call({new_profile, Merchant}, _From, State) ->
 				  repo        = Repoes,
 				  print       = Prints,
 				  pformat     = PFormats,
-				  bank        = ?to_tl(Cards),
+				  %% bank        = ?to_tl(Cards),
 				  setting     = ?to_tl(Setting),
 				  size_groups = ?to_tl(SizeGroups),
 				  itype       = Types,
@@ -197,12 +204,16 @@ handle_call({new_profile, Merchant}, _From, State) ->
 				  brand       = Brands,
 				  color_type  = ColorTypes,
 				  color       = Colors,
-				  promotion   = Promotions
+				  promotion   = Promotions,
+				  charge      = Charges,
+				  score       = Scores
 				  %% good     = ?to_tl(Goods)
 				 }
 			  })
     catch _:_ ->
-	    {ok, Merchant}
+	    ?INFO("=== failed to new profile of merchant ~p~n~p ===",
+		  [Merchant, erlang:get_stacktrace()]),
+	    {reply, {ok, Merchant}, State}
     end,
     
     {reply, {ok, Merchant}, State};
@@ -321,20 +332,20 @@ handle_call({get_merchant_profile, Merchant}, _From, State) ->
     end;
 
 
-handle_call({get_bank_profile, Merchant}, _From, State) ->
-    ?DEBUG("get_bank_profile of merchant ~p", [Merchant]),
-    MS = [{{'$1', #wuser_profile{merchant='$1', bank='$2', _='_'}}, 
-	   [{'==', '$1', ?to_i(Merchant)}],
-	   ['$2']
-	  }],
+%% handle_call({get_bank_profile, Merchant}, _From, State) ->
+%%     ?DEBUG("get_bank_profile of merchant ~p", [Merchant]),
+%%     MS = [{{'$1', #wuser_profile{merchant='$1', bank='$2', _='_'}}, 
+%% 	   [{'==', '$1', ?to_i(Merchant)}],
+%% 	   ['$2']
+%% 	  }],
 
-    case ets:select(?WUSER_PROFILE, MS) of
-	[] ->
-	    {reply, {ok, []}, State};
-	[Bank] ->
-	    ?DEBUG("bank ~p of merchant ~p", [Bank, Merchant]),
-	    {reply, {ok, Bank}, State}
-    end;
+%%     case ets:select(?WUSER_PROFILE, MS) of
+%% 	[] ->
+%% 	    {reply, {ok, []}, State};
+%% 	[Bank] ->
+%% 	    ?DEBUG("bank ~p of merchant ~p", [Bank, Merchant]),
+%% 	    {reply, {ok, Bank}, State}
+%%     end;
 
 %%
 %% Setting
@@ -652,6 +663,16 @@ handle_call({get_promotion, Merchant, PId}, _From, State) ->
 			       end, Select), 
     {reply, {ok, SelectPromotion}, State};
 
+handle_call({get_charge, Merchant}, _From, State) ->
+    MS = ms(Merchant, charge),
+    Select = select(MS, fun() -> ?w_retailer:charge(list, Merchant) end),
+    {reply, {ok, Select}, State};
+
+handle_call({get_score, Merchant}, _From, State) ->
+    MS = ms(Merchant, score),
+    Select = select(MS, fun() -> ?w_retailer:score(list, Merchant) end),
+    {reply, {ok, Select}, State};
+
 
 handle_call({set_default, Merchant}, _From, State) ->
     ?DEBUG("set default value of merchant ~p", [Merchant]),
@@ -780,9 +801,9 @@ handle_cast({Update, Merchant}, State) ->
 		    update_setting ->
 			{ok, S} = ?w_base:setting(list, Merchant),
 			Profile#wuser_profile{setting=?to_tl(S)}; 
-		    update_bank ->
-			{ok, Cards} = ?w_base:bank_card(list, Merchant),
-			Profile#wuser_profile{bank=?to_tl(Cards)};
+		    %% update_bank ->
+		    %% 	{ok, Cards} = ?w_base:bank_card(list, Merchant),
+		    %% 	Profile#wuser_profile{bank=?to_tl(Cards)};
 		    update_shop ->
 			{ok, Shops} = ?shop:lookup(Merchant),
 			Profile#wuser_profile{shop=Shops};
@@ -920,6 +941,16 @@ ms(Merchant, color) ->
      }];
 ms(Merchant, promotion) ->
     [{{'$1', #wuser_profile{merchant='$1', promotion='$2', _='_'}},
+      [{'==', '$1', ?to_i(Merchant)}],
+      ['$2']
+     }];
+ms(Merchant, charge) ->
+    [{{'$1', #wuser_profile{merchant='$1', charge='$2', _='_'}},
+      [{'==', '$1', ?to_i(Merchant)}],
+      ['$2']
+     }];
+ms(Merchant, score) ->
+    [{{'$1', #wuser_profile{merchant='$1', score='$2', _='_'}},
       [{'==', '$1', ?to_i(Merchant)}],
       ['$2']
      }].

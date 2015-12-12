@@ -41,7 +41,7 @@ action(Session, Req, {"list_badrepo"}) ->
 action(Session, Req, {"list_shop_promotion"}) ->
     ?DEBUG("list_shop_promotion with session ~p", [Session]),
     Merchant = ?session:get(merchant, Session),
-    ?utils:respond(batch, fun() -> ?shop:promotion(list, Merchant) end, Req); 
+    ?utils:respond(batch, fun() -> ?shop:promotion(list, Merchant) end, Req);
 
 %%--------------------------------------------------------------------
 %% @desc: DELTE action

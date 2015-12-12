@@ -138,6 +138,7 @@ handle_call({update_shop, Merchant, ShopId, Attrs}, _From, State) ->
     Repo    = ?v(<<"repo">>, Attrs),
     %% Type    = ?v(<<"type">>, Attrs),
     Master  = ?v(<<"shopowner">>, Attrs),
+    Charge  = ?v(<<"charge">>, Attrs),
 
     ShopExist = 
 	case Name of
@@ -155,7 +156,8 @@ handle_call({update_shop, Merchant, ShopId, Attrs}, _From, State) ->
 	    Updates = ?utils:v(repo, integer, Repo) 
 		++ ?utils:v(name, string, Name)
 		++ ?utils:v(address, string, Address)
-		++ ?utils:v(shopowner, integer, Master),
+		++ ?utils:v(shopowner, integer, Master)
+		++ ?utils:v(charge, integer, Charge),
 	    Sql1 = "update shops set "
 		++ ?utils:to_sqls(proplists, comma, Updates)
 		++ " where id=" ++ ?to_s(ShopId)
@@ -201,16 +203,17 @@ handle_call({list_shop, Merchant, Conditions}, _From, State) ->
 	   [Merchant, Conditions]),
 
     Sql1 = "select a.id, a.repo, a.name, a.address, a.type"
-	", a.open_date, a.shopowner as shopowner_id"
-	", b.name as shopowner"
+	", a.open_date, a.shopowner as shopowner_id, a.charge as charge_id"
+	%% ", b.name as shopowner"
 	++ " from shops a"
-	++ " left join employees b on a.shopowner=b.number"
-	++ " and b.merchant=" ++ ?to_s(Merchant)
+	%% ++ " left join employees b on a.shopowner=b.number"
+	%% ++ " and b.merchant=" ++ ?to_s(Merchant)
 	++ " where "
 	++ case Conditions of
 	       [] -> [];
 	       _  ->
-		   CorrectConditions = ?utils:correct_condition(<<"a.">>, Conditions), 
+		   CorrectConditions =
+		       ?utils:correct_condition(<<"a.">>, Conditions), 
 		   ?utils:to_sqls(proplists, CorrectConditions) ++ " and "
 	   end
 	++ "a.merchant=" ++ ?to_s(Merchant)

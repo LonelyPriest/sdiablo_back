@@ -73,6 +73,8 @@ create table shops
     address            VARCHAR(255),
     open_date          DATE,
     shopowner          INTEGER default -1, -- Leader of the shop, choice from employ, default is no owner
+
+    charge             INTEGER default -1, -- charge promotion
     merchant           INTEGER default -1, -- which merchant belong to
     deleted            INTEGER default 0, -- 0: no;  1: yes
     unique key index_mn (merchant, name),
@@ -431,6 +433,19 @@ create table shop_promotion(
     
 ) default charset=utf8;
 
+-- create table shop_charge(
+--     id              INTEGER AUTO_INCREMENT,
+--     merchant        INTEGER not null default -1,
+--     shop            INTEGER not null default -1,
+--     cid             INTEGER not null default -1, -- reference to charge
+--     entry           DATETIME default 0,
+--     deleted         INTEGER default 0, -- 0: no;  1: yes
+
+--     unique  key uk  (merchant, shop, pid),
+--     primary key     (id)
+    
+-- ) default charset=utf8;
+
 /*
 * invnentory
 */
@@ -451,7 +466,7 @@ create table w_inventory_good
     s_group          VARCHAR(32) default 0,  -- which size group "1, 2"
     free             TINYINT default 0,  -- 0: free color and free size 1: others	 
 
-    promotion        INTEGER not null default -1,
+    -- promotion        INTEGER not null default -1,
     org_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
     tag_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
     ediscount        DECIMAL(3, 0), -- max: 100, discount of entry
@@ -487,7 +502,9 @@ create table w_inventory
     s_group          VARCHAR(32) default 0,  -- which size group
     free             TINYINT default 0,  -- free color and free size 
 
-    promotion        INTEGER not null default -1,
+    promotion        INTEGER not null default -1, -- promotion
+    score            INTEGER not null default -1, -- score
+    
     org_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
     tag_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
     
@@ -578,7 +595,7 @@ create table w_inventory_new_detail(
     free           TINYINT default 0,  -- free color and free size
     year           YEAR(4),
 
-    promotion      INTEGER not null default -1,
+    -- promotion      INTEGER not null default -1,
     org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
     tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
     ediscount      DECIMAL(3, 0)  default 100, -- max: 100
@@ -703,7 +720,7 @@ create table w_sale(
     total          INTEGER default 0,
     comment        VARCHAR(255) default null, 
     
-    type           TINYINT  default -1, -- 0:sale 1:reject 
+    type           TINYINT  default -1, -- 0:sale 1:reject 2: charge
     state          TINYINT  default 0,  -- 0: wait for check, 1: checked
     check_date     DATETIME default 0,  -- date of last change
     entry_date     DATETIME default 0,
@@ -734,7 +751,9 @@ create table w_sale_detail(
     year           YEAR(4),
     
     total          INTEGER default 0,
-    promotion      INTEGER not null default -1,
+    promotion      INTEGER not null default -1, -- promotion
+    score          INTEGER not null default -1, -- score
+    
     fdiscount      DECIMAL(3, 0), -- max: 100
     fprice         DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance 
     path           VARCHAR(255) default null, -- the image path

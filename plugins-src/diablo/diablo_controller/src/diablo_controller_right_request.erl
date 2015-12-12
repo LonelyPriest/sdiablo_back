@@ -452,6 +452,7 @@ get_shops(Session, Module) ->
 			  [{[{<<"shop_id">>,  ?v(<<"id">>, AShop)},
 			     {<<"name">>,     ?v(<<"name">>, AShop)},
 			     {<<"repo_id">>,  ?v(<<"repo">>, AShop)},
+			     {<<"charge_id">>,?v(<<"charge_id">>, AShop)},
 			     {<<"type">>,     ?v(<<"type">>, AShop)},
 			     {<<"func_id">>, 
 			      case Module of
@@ -471,8 +472,9 @@ get_shops(Session, Module) ->
 		  Name   = ?v(<<"name">>, Shop),
 		  FunId  = ?v(<<"func_id">>, Shop),
 		  RepoId = ?v(<<"repo_id">>, Shop),
+		  Charge = ?v(<<"charge_id">>, Shop),
 		  Type   = ?v(<<"type">>, Shop),
-		  S = {Id, Name, FunId, RepoId, Type},
+		  S = {Id, Name, FunId, RepoId, Charge, Type},
 		  case lists:member(S, Acc) of
 		      true  ->  Acc;
 		      false -> [S|Acc]
@@ -518,6 +520,7 @@ login_user(shop, Session) ->
 		      [{[{<<"shop_id">>, ?v(<<"id">>,   AShop)},
 			 {<<"name">>,    ?v(<<"name">>, AShop)},
 			 {<<"repo_id">>, ?v(<<"repo">>, AShop)},
+			 {<<"charge_id">>,  ?v(<<"charge_id">>, AShop)},
 			 {<<"type">>,    ?v(<<"type">>, AShop)},
 			 {<<"func_id">>, ?right_w_inventory}]}
 		       | Acc]

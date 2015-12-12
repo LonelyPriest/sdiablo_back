@@ -39,7 +39,26 @@ action(Session, Req, {"del_w_retailer", Id}) ->
 	    ?utils:respond(200, Req, ?succ(delete_w_retailer, RetailerId));
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
-    end.
+    end;
+
+action(Session, Req, {"list_w_retailer_charge"}) ->
+    ?DEBUG("list w_retailer_charge with session ~p", [Session]), 
+    Merchant = ?session:get(merchant, Session), 
+    %% ?utils:respond(
+    %%    batch, fun() -> ?w_user_profile:get(retailer, Merchant) end, Req).
+    ?utils:respond(
+       batch, fun() -> ?w_retailer:charge(list, Merchant) end, Req);
+
+
+action(Session, Req, {"list_w_retailer_score"}) ->
+    ?DEBUG("list w_retailer_charge with session ~p", [Session]), 
+    Merchant = ?session:get(merchant, Session), 
+    %% ?utils:respond(
+    %%    batch, fun() -> ?w_user_profile:get(retailer, Merchant) end, Req).
+    ?utils:respond(
+       batch, fun() -> ?w_retailer:score(list, Merchant) end, Req).
+
+
 
 %%--------------------------------------------------------------------
 %% @desc: POST action
@@ -84,6 +103,9 @@ action(Session, Req, {"check_w_retailer_password", Id}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+%% 
+%% charge
+%%
 action(Session, Req, {"add_w_retailer_charge"}, Payload) ->
     ?DEBUG("add_w_retailer_charge with session ~p, payload ~p",
 	   [Session, Payload]),
@@ -96,7 +118,28 @@ action(Session, Req, {"add_w_retailer_charge"}, Payload) ->
 	       200, Req, ?succ(add_retailer_charge, Id));
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
+    end;
+
+
+%% 
+%% charge
+%%
+action(Session, Req, {"add_w_retailer_score"}, Payload) ->
+    ?DEBUG("add_w_retailer_score with session ~p, payload ~p",
+	   [Session, Payload]),
+
+    Merchant = ?session:get(merchant, Session),
+
+    case ?w_retailer:score(new, Merchant, Payload) of
+	{ok, Id} ->
+	    ?utils:respond(
+	       200, Req, ?succ(add_retailer_score, Id));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
     end.
+
+
+
 
 
 sidebar(Session) -> 

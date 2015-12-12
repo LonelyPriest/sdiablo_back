@@ -19,6 +19,8 @@ function filterProvider(){
     var _employees   = [];
     var _size_groups = [];
     var _promotions  = [];
+    var _chargs      = [];
+    var _scores      = [];
     
     
     this.$get = function($resource, dateFilter, wgoodService){
@@ -402,7 +404,7 @@ function filterProvider(){
 			// console.log(employees);
 			_employees =  employees.map(function(e){
 			    return {name:e.name,
-				    id:e.number,
+				    id:e.id,
 				    py:diablo_pinyin(e.name)}
 			});
 
@@ -453,6 +455,10 @@ function normalFilterProvider(){
     var _baseSettings   = [];
     var _promotions     = [];
     var _shopPromotions = [];
+
+    var _charges        = [];
+    var _shopCharges    = [];
+    var _scores          = [];
     
     this.$get = function($resource){
 	var _employeeHttp =
@@ -489,7 +495,7 @@ function normalFilterProvider(){
 			// console.log(employees);
 			_employees = employees.map(function(e){
 			    return {name:e.name,
-				    id:e.number, py:diablo_pinyin(e.name)}
+				    id:e.id, py:diablo_pinyin(e.name)}
 			});
 
 			return _employees;
@@ -591,79 +597,81 @@ function normalFilterProvider(){
 			return _shopPromotions;
 		    });
 		}
-	    }
-
-	    //
-	}
-    }
-};
-
-
-var diabloShareFilterApp = angular.module("diabloShareFilterApp", [], function($provide){
-    $provide.provider('diabloShareFilter', shareFilterProvider)
-});
-
-
-function shareFilterProvider(){    
-    this.$get = function($resource){
-	var _userHttp = $resource("/right/:operation", {operation: '@operation'});
-	var _employeeHttp = $resource("/employ/:operation", {operation: '@operation'});
-	var _retailerHttp =$resource("/wretailer/:operation", {operation: '@operation'});
-	var _provinceHttp = $resource("/wretailer/:operation", {operation: '@operation'});
-	var _cityHttp = $resource("/wretailer/:operation", {operation: '@operation'});
-	var _baseHttp = $resource("/wbase/:operation", {operation: '@operation'});
-	// var _goodHttp = $resource("/wgood/:operation/:id", {operation: '@operation', id: '@id'});
-	
-	return{
-	    get_right: function(){
-		return _userHttp.query({operation: "list_login_user_right"}).$promise;
 	    },
 
-	    get_shop: function(){
-		return _userHttp.query({operation: "list_login_user_shop"}).$promise;
-	    },
+
+	    get_charge: function(){
+		if (_charges.length !== 0){
+		    return _charges;
+		} else {
+		    return _retailerHttp.query(
+			{operation: 'list_w_retailer_charge'}
+		    ).$promise.then(function(cs){
+			// console.log(cs);
+			_charges = cs.map(function(c){
+			    return {
+				id:       c.id,
+				name:     c.name,
+				charge:   c.charge,
+				balance:  c.balance,
+				sdate:    c.sdate,
+				edate:    c.edate
+			    }
+			});
+
+			return _charges;
+		    })
+		}
 		
-	    get_employee: function(){
-		return _employeeHttp.query({operation: 'list_employe'}).$promise;
 	    },
 
-	    get_retailer: function(){
-		return _retailerHttp.query({operation: 'list_w_retailer'}).$promise;
+	    get_shop_charge: function(){
+		if (_shopCharges.length !== 0){
+		    return _shopCharges;
+		} else {
+		    return _shopHttp.query(
+			{operation:'list_shop_charge'}
+		    ).$promise.then(function(cs){
+			_shopCharges = cs.map(function(c){
+			    return {
+				id:       c.id,
+				shop_id:  c.shop_id,
+				cid:      c.cid,
+				entry:    c.entry
+			    }
+			});
+
+			return _shopCharges;
+		    });
+		}
 	    },
 
-	    // get_repo: function(){
-	    // 	var http = $resource("/shop/:operation", {operation: '@operation'});
-	    // 	return http.query({operation: "list_repo"});},
+	    get_score: function(){
+		if (_scores.length !== 0){
+		    return _scores;
+		} else {
+		    return _retailerHttp.query(
+			{operation: 'list_w_retailer_score'}
+		    ).$promise.then(function(ss){
+			_scores = ss.map(function(s){
+			    return {
+				id:       s.id,
+				name:     s.name,
+				balance:  s.balance,
+				score:    s.score,
+				type_id:  s.type_id,
+				sdate:    s.sdate,
+				edate:    s.edate
+			    }
+			});
 
-	    get_province: function(){
-		return _provinceHttp.query({operation: 'list_w_province'}).$promise;
-	    },
-
-	    get_city: function(){
-		return _cityHttp.query({operation: 'list_w_city'}).$promise;
-	    },
-
-	    get_base_setting: function(){
-		return _baseHttp.query({operation: "list_base_setting"}).$promise;
-	    },
-
-	    get_firm: function(){
-		return _goodHttp.query({operation: "list_supplier"}).$promise;
-	    },
-
-	    get_brand: function(){
-		return _goodHttp.query({operation: "list_brand"}).$promise;
-	    },
-
-	    get_type: function(){
-		return _goodHttp.query({operation: "list_type"}).$promise;
-	    },
-
-	    get_size_group: function(){
-		return _goodHttp.query({operation: 'list_w_size'}).$promise;
+			return _scores;
+		    })
+		}
+		
 	    }
+
 	    //
-	    
 	}
     }
 };

@@ -35,7 +35,15 @@ wretailerApp.controller("wretailerNewCtrl", function(
 
 wretailerApp.controller("wretailerDetailCtrl", function(
     $scope, $location, diabloPattern, diabloUtilsService,
-    diabloPagination, localStorageService, wretailerService){
+    diabloPagination, localStorageService, wretailerService,
+    filterEmployee, filterCharge, user){
+    $scope.employees  = filterEmployee;
+    $scope.charges    = filterCharge;
+    $scope.shops      = user.sortShops;
+
+    // console.log($scope.employees);
+    // console.log($scope.shops);
+    
     $scope.round      = diablo_round;
     $scope.pagination = {};
     $scope.map        = {active:false};
@@ -219,13 +227,63 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 
     $scope.trans_info = function(r){
 	diablo_goto_page("#/wretailer_trans/" +r.id.toString());
-    }
+    };
 
     var pattern = {name_address: diabloPattern.ch_name_address,
 		   tel_mobile:   diabloPattern.tel_mobile,
-		   decimal_2:    diabloPattern.decimal_2};
+		   decimal_2:    diabloPattern.decimal_2,
+		   number:       diabloPattern.number};
 
-    
+
+    $scope.charge = function(retailer){
+	var get_charge = function(charge_id) {
+	    for (var i=0, l=$scope.charge.length; i<l; i++){
+		if (charge_id === $scope.charges[i].id){
+		    return $scope.charges[i];
+		}
+	    }
+
+	    return undefined;
+	};
+	
+	var callback = function(params){
+	    console.log(params);
+
+	    var promotion = params.promotion;
+	    var charge    = diablo_set_integer(params.charge);
+	    var balance   = function(){
+		if (promotion.charge !== 0){
+		    return $scope.round(
+			charge / promotion.charge * promotion.balance);
+		} else {
+		    return 0;
+		}
+	    };
+	    
+	    wretailerService.new_charge({
+		retailer: retailer.id,
+		shop: params.select_shop.id,
+		employee: params.select_employee.id,
+		charge: diablo_set_integer(params.charge),
+		promotion: promotion.id}).then(function(result){
+		    console.log(result);
+		})
+	};
+	
+	dialog.edit_with_modal(
+	    "wretailer-charge.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {retailer:  {name: retailer.name, balance:retailer.balance},
+	     shops:      $scope.shops,
+	     // select_shop: $scope.shops[0]; 
+	     employees:  $scope.employees,
+	     // select_employees:  $scope.employees[0];
+	     pattern:  pattern,
+	     get_charge: get_charge}
+	)
+    };
     
     $scope.update_retailer = function(old_retailer){
 	console.log(old_retailer);
