@@ -145,6 +145,8 @@ success(add_retailer_charge, Charge) ->
     {0, "Success to add the chare promotion "++?to_s(Charge)++" of retailer."};
 success(add_retailer_score, Score) ->
     {0, "Success to add the score promotion "++?to_s(Score)++" of retailer."};
+success(new_recharge, SN) ->
+    {0, "Success to recharge of sn "++?to_s(SN)++"."};
 
 
 

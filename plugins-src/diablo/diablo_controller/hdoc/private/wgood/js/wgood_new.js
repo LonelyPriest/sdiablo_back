@@ -425,7 +425,7 @@ wgoodApp.controller("wgoodNewCtrl", function(
 	good.firm      = good.firm.id;
 	good.season    = good.season.id;
 	good.sex       = good.sex.id;
-	good.promotion = good.promotion.id;
+	// good.promotion = good.promotion.id;
 	
 	good.brand     = typeof(good.brand) === "object"
 	    ? good.brand.name: good.brand;
@@ -638,8 +638,8 @@ wgoodApp.controller("wgoodDetailCtrl", function(
 		    angular.forEach(result.data, function(d){
 			d.firm  = diablo_get_object(d.firm_id, filterFirm);
 			d.type  = diablo_get_object(d.type_id, filterType);
-			d.promotion =
-			    diablo_get_object(d.pid, filterPromotion);
+			// d.promotion =
+			//     diablo_get_object(d.pid, filterPromotion);
 		    })
 		    $scope.goods = result.data;
 		    diablo_order_page(

@@ -388,9 +388,7 @@
 
   <div class="modal-footer"> 
     <button class="btn btn-primary"
-	    x-ng-disabled="params.check_same(params.retailer)
-			   || rForm.$invalid
-			   || params.check_exist(params.retailer) "
+	    x-ng-disabled="cForm.$invalid"
 	    x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>

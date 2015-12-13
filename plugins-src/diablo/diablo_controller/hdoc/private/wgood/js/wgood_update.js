@@ -72,7 +72,7 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	$scope.good.firm      = diablo_get_object(good.firm_id, $scope.firms);
 	$scope.good.sex       = diablo_get_object(good.sex, $scope.sexs);
 	$scope.good.season    = diablo_get_object(good.season, $scope.seasons);
-	$scope.good.promotion = diablo_get_object(good.pid, $scope.promotions);
+	// $scope.good.promotion = diablo_get_object(good.pid, $scope.promotions);
 	// $scope.good.shop      = $scope.shops[0];
 
 	// // image
@@ -271,7 +271,7 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	update_good.sex       = good.sex.id;
 	update_good.year      = good.year;
 	update_good.season    = good.season.id;
-	update_good.pid       = good.promotion.id;
+	// update_good.pid       = good.promotion.id;
 	update_good.org_price = parseFloat(good.org_price);
 	update_good.tag_price = parseFloat(good.tag_price);
 	// update_good.pkg_price = parseFloat(good.pkg_price);

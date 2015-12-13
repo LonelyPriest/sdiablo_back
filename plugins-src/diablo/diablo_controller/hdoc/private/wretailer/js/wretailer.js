@@ -236,8 +236,9 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 
 
     $scope.charge = function(retailer){
+	console.log($scope.charges);
 	var get_charge = function(charge_id) {
-	    for (var i=0, l=$scope.charge.length; i<l; i++){
+	    for (var i=0, l=$scope.charges.length; i<l; i++){
 		if (charge_id === $scope.charges[i].id){
 		    return $scope.charges[i];
 		}
@@ -249,24 +250,48 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	var callback = function(params){
 	    console.log(params);
 
-	    var promotion = params.promotion;
-	    var charge    = diablo_set_integer(params.charge);
-	    var balance   = function(){
+	    var promotion       = params.promotion;
+	    var charge_balance  = diablo_set_integer(params.charge);
+	    var send_balance    = function(){
 		if (promotion.charge !== 0){
 		    return $scope.round(
-			charge / promotion.charge * promotion.balance);
+			charge_balance / promotion.charge * promotion.balance);
 		} else {
 		    return 0;
 		}
-	    };
+	    }();
+
+	    var comment = "充" + promotion.charge.toString()
+		+ "送" + promotion.balance.toString();
 	    
-	    wretailerService.new_charge({
-		retailer: retailer.id,
+	    wretailerService.new_recharge({
+		retailer: retailer.id, 
 		shop: params.select_shop.id,
 		employee: params.select_employee.id,
-		charge: diablo_set_integer(params.charge),
-		promotion: promotion.id}).then(function(result){
-		    console.log(result);
+
+		old_balance:  retailer.balance,
+		charge_balance: charge_balance,
+		send_balance: send_balance,
+		charge: promotion.id,
+		comment: send_balance !== 0 ? comment : send_balance})
+		.then(function(result){
+		    console.log(result); 
+		    if (result.ecode == 0){
+			retailer.balance += charge_balance + send_balance;
+			dialog.response(
+			    true,
+			    "会员充值",
+			    "会员 [" + retailer.name + "] 充分值成功，"
+			    + "帐余额 ["
+				+ retailer.balance.toString() + " ]！！",
+			    undefined);
+    		    } else{
+			dialog.response(
+			    false,
+			    "会员充值",
+			    "会员充值失败："
+				+ wretailerService.error[result.ecode]);
+    		    }
 		})
 	};
 	

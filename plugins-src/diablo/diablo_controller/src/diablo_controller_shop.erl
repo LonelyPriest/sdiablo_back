@@ -166,7 +166,7 @@ handle_call({update_shop, Merchant, ShopId, Attrs}, _From, State) ->
 	    case Master of
 		undefined ->
 		    Reply = ?sql_utils:execute(write, Sql1, ShopId),
-		    ?w_user_profile:update(shop, Merchant),
+		    ?w_user_profile:update(shop, Merchant), 
 		    {reply, Reply, State};
 		Master ->
 		    Trans = [Sql1,

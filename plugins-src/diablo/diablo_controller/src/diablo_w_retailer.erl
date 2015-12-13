@@ -57,7 +57,11 @@ retailer(check_password, Merchant, RetailerId, Password) ->
 %% charge
 charge(new, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {new_charge, Merchant, Attrs}).
+    gen_server:call(Name, {new_charge, Merchant, Attrs});
+
+charge(recharge, Merchant, Attrs) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {recharge, Merchant, Attrs}).
 
 charge(list, Merchant) ->
     Name = ?wpool:get(?MODULE, Merchant),
@@ -262,6 +266,74 @@ handle_call({new_charge, Merchant, Attrs}, _From, State) ->
 	    {reply,
 	     {error, ?err(retailer_charge_exist, ?v(<<"id">>, E))}, State}
     end;
+
+
+handle_call({recharge, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("recharge with merchant ~p, paylaod ~p", [Merchant, Attrs]),
+
+    Retailer = ?v(<<"retailer">>, Attrs),
+    Shop     = ?v(<<"shop">>, Attrs),
+    Employee = ?v(<<"employee">>, Attrs),
+    OldBalance  = ?v(<<"old_balance">>, Attrs),
+    CBalance    = ?v(<<"charge_balance">>, Attrs),
+    SBalance    = ?v(<<"send_balance">>, Attrs),
+
+    Charge      = ?v(<<"charge">>, Attrs), 
+    Comment     = ?v(<<"comment">>, Attrs, []),
+
+    Entry    = ?utils:current_time(localtime),
+
+    Sql0 = "select id, name, balance from w_retailer"
+	" where id=" ++ ?to_s(Retailer)
+	++ " and merchant=" ++ ?to_s(Merchant)
+	++ " and deleted=" ++ ?to_s(?NO) ++ ";",
+
+    case ?sql_utils:execute(s_read, Sql0) of
+	{ok, Account} -> 
+	    SaleSn = lists:concat(
+		       ["M-", ?to_i(Merchant),
+			"-S-", ?to_i(Shop), "-",
+			?inventory_sn:sn(w_sale_new_sn, Merchant)]),
+
+	    CurrentBalance = case ?v(<<"balance">>, Account) of
+				 <<>> -> 0;
+				 R    -> R
+			     end,
+	    
+	    Sql2 =
+		["insert into w_sale(rsn"
+		 ", employ, retailer, shop, merchant"
+		 ", charge, balance, should_pay, cbalance, sbalance"
+		 ", comment, type, entry_date) values("
+		 ++ "\"" ++ ?to_s(SaleSn) ++ "\","
+		 ++ "\"" ++ ?to_s(Employee) ++ "\","
+		 ++ ?to_s(Retailer) ++ ","
+		 ++ ?to_s(Shop) ++ ","
+		 ++ ?to_s(Merchant) ++ ","
+		 ++ ?to_s(Charge) ++ ","
+
+		 ++ case ?to_f(CurrentBalance) =:= ?to_f(OldBalance) of
+			true  -> ?to_s(OldBalance) ++ ",";
+			false -> ?to_s(CurrentBalance) ++ ","
+		    end
+		 ++ ?to_s(CBalance) ++ ","
+		 ++ ?to_s(CBalance) ++ "," 
+		 ++ ?to_s(SBalance) ++ "," 
+		 ++ "\"" ++ ?to_s(Comment) ++ "\"," 
+		 ++ ?to_s(2) ++ ","
+		 ++ "\"" ++ ?to_s(Entry) ++ "\")",
+		 
+		 "update w_retailer set balance=balance+"
+		 ++ ?to_s(CBalance + SBalance)
+		 ++ " where id=" ++ ?to_s(Retailer)],
+
+	    Reply = ?sql_utils:execute(transaction, Sql2, SaleSn),
+	    ?w_user_profile:update(retailer, Merchant),
+	    {reply, Reply, State};
+	Error ->
+	    {reply, Error, State}
+    end;
+	    
 
 handle_call({list_charge, Merchant}, _From, State) ->
     Sql = "select id, name, charge, balance, sdate, edate"

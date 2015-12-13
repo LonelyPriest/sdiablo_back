@@ -417,7 +417,7 @@ function shortCutGoodNewCtrl(
 	tag_price : 0,
 	// ediscount : 100,
 	discount  : 100,
-	promotion : $scope.promotions[0],
+	// promotion : $scope.promotions[0],
 	alarm_day : 7,
 	year      : diablo_now_year(),
 	season    : $scope.seasons[0]
@@ -439,7 +439,7 @@ function shortCutGoodNewCtrl(
 	good.firm      = good.firm.id;
 	good.season    = good.season.id;
 	good.sex       = good.sex.id;
-	good.promotion = good.promotion.id;
+	// good.promotion = good.promotion.id;
 	
 	good.brand    = typeof(good.brand) === "object"
 	    ? good.brand.name: good.brand;

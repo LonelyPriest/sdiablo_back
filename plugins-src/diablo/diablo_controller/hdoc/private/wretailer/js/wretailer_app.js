@@ -285,8 +285,8 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 	return http.query({operation:"list_w_retailer_charge"}).$promise;
     };
 
-    this.new_charge = function(charge){
-	return http.query({operation:"new_w_retailer_charge"}).$promise;
+    this.new_recharge = function(charge){
+	return http.save({operation:"new_recharge"}, charge).$promise;
     };
 
     /*

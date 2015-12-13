@@ -83,16 +83,17 @@ action(Session, Req, {"update_shop", Id}, Payload) ->
     ?DEBUG("update a shop with session ~p, id ~p, paylaod ~p",
 	   [Session, Id, Payload]), 
     Merchant = ?session:get(merchant, Session),
-    %% case ?shop:shop(update, Merchant, ?to_i(Id), Payload) of
-    %% 	{ok, ShopId} ->
-    %% 	    ?utils:respond(200, Req, ?succ(update_shop, ShopId));
-    %% 	{error, Error} ->
-    %% 	    ?utils:respond(200, Req, Error)
-    %% end.
-    ?utils:respond(normal,
-		   fun()-> ?shop:shop(update, Merchant, Id, Payload) end,
-		   fun(ShopId)-> ?succ(update_shop, ShopId) end,
-		   Req);
+    case ?shop:shop(update, Merchant, Id, Payload) of
+    	{ok, Id} ->
+	    ?w_user_profile:update(user_shop, Merchant, Session),
+    	    ?utils:respond(200, Req, ?succ(update_shop, Id));
+    	{error, Error} ->
+    	    ?utils:respond(200, Req, Error)
+    end;
+    %% ?utils:respond(normal,
+    %% 		   fun()-> ?shop:shop(update, Merchant, Id, Payload) end,
+    %% 		   fun(ShopId)-> ?succ(update_shop, ShopId) end,
+    %% 		   Req);
 
 %% repo
 action(Session, Req, {"new_repo"}, Payload) ->

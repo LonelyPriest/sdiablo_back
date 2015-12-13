@@ -120,6 +120,19 @@ action(Session, Req, {"add_w_retailer_charge"}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"new_recharge"}, Payload) ->
+    ?DEBUG("new_recharge with session ~p, payload ~p",
+	   [Session, Payload]), 
+    Merchant = ?session:get(merchant, Session),
+
+    case ?w_retailer:charge(recharge, Merchant, Payload) of
+	{ok, SN} ->
+	    ?utils:respond(
+	       200, Req, ?succ(new_recharge, SN));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
 
 %% 
 %% charge

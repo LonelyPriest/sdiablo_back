@@ -20,7 +20,8 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
--export([new/1, new/2, get/1, get/2, get/3, update/2, set_default/1]).
+-export([new/1, new/2, get/1, get/2, get/3,
+	 update/2, update/3, set_default/1]).
 -export([filter/3]).
 
 -define(SERVER, ?MODULE). 
@@ -142,6 +143,10 @@ update(color, Merchant) ->
     gen_server:cast(?SERVER, {update_color, Merchant});
 update(promotion, Merchant) ->
     gen_server:cast(?SERVER, {update_promotion, Merchant}).
+
+
+update(user_shop, Merchant, Session) ->
+    gen_server:cast(?SERVER, {update_user_shop, Merchant, Session}).
 
 
 start_link() ->
@@ -850,6 +855,44 @@ handle_cast({Update, Merchant}, State) ->
 		    {noreply, State};
 		false ->
 		    ?DEBUG("failed to update profile of merchant ~p", [Merchant]),
+		    {noreply, State}
+	    end
+    end;
+
+
+handle_cast({Update, Merchant, Session}, State) ->
+    ?DEBUG("update user profile of merchant ~p, session ~p, update ~p",
+	   [Merchant, Session, Update]),
+    %% get user profile
+    UserId = ?session:get(id, Session),
+    
+    MS = ms(Merchant, UserId, user),
+
+    NewProfile = 
+	case ets:select(?WUSER_SESSION_PROFILE, MS) of
+	    [] ->
+		[];
+	    [Profile] -> 
+		case Update of 
+		    update_user_shop ->
+			Shops = ?right_request:login_user(shop, Session), 
+			Profile#wuser_session_profile{shop=Shops}
+		end 
+	end,
+
+    case NewProfile of
+	[] -> {noreply, State};
+	NewProfile ->
+	    case ets:update_element(
+		   ?WUSER_SESSION_PROFILE,
+		   {Merchant, UserId}, {2, NewProfile}) of
+		true ->
+		    ?DEBUG("success to update user session profile of "
+			   "merchant ~p", [Merchant]),
+		    {noreply, State};
+		false ->
+		    ?DEBUG("failed to update user session profile of "
+			   "merchant ~p", [Merchant]),
 		    {noreply, State}
 	    end
     end;

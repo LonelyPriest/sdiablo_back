@@ -142,7 +142,9 @@ init([]) ->
 	 {?update_w_retailer_score,
 	  <<"修改积分方案">>,<<"update_w_retailer_score">>,?right_w_retailer},
 	 {?list_w_retailer_score,
-	  <<"查询积分方案">>, <<"list_w_retailer_score">>,?right_w_retailer} 
+	  <<"查询积分方案">>, <<"list_w_retailer_score">>,?right_w_retailer},
+
+	 {?new_recharge, <<"会员充值">>, <<"new_recharge">>,?right_w_retailer}
 	],
 
     

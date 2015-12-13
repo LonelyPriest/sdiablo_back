@@ -528,3 +528,6 @@ login_user(shop, Session) ->
 	?USER ->
 	    ?right_auth:get_user_shop(Session)
     end.
+	
+
+

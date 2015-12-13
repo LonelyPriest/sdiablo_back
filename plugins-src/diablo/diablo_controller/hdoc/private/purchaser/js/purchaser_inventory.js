@@ -526,7 +526,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		amount      : add.amount,
 		s_group     : add.s_group,
 		free        : add.free,
-		promotion   : add.pid,
+		// promotion   : add.pid,
 		org_price   : parseFloat(add.org_price),
 		tag_price   : parseFloat(add.tag_price), 
 		ediscount   : parseInt(add.ediscount),
@@ -999,25 +999,7 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 
     // alarm, use default shop
     $scope.setting.alarm = diablo_base_setting(
-	"stock_alarm", -1, base, parseInt, diablo_no);
-
-    // console.log($scope.setting);
-    
-    // console.log($scope.time); 
-
-    // $scope.qtime_start = function(){
-    // 	var shop = -1
-    // 	if ($scope.shopIds.length === 1){
-    // 	    shop = $scope.shopIds[0];
-    // 	};
-    // 	return diablo_base_setting(
-    // 	    "qtime_start", shop, base, diablo_set_date,
-    // 	    diabloFilter.default_start_time(now));
-    // }();
-    // console.log($scope.qtime_start);
-    
-    // $scope.time   = diabloFilter.default_time($scope.qtime_start); 
-    // $scope.time   = diabloFilter.default_time(); 
+	"stock_alarm", -1, base, parseInt, diablo_no); 
 
     /*
      * pagination 
@@ -1208,12 +1190,16 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 	    add_search_condition(search); 
 	    // console.log(search);
 	    
-	    purchaserService.csv_export(purchaserService.export_type.stock, search)
+	    purchaserService.csv_export(
+		purchaserService.export_type.stock, search)
 		.then(function(result){
 	    	    console.log(result);
 		    if (result.ecode === 0){
 			dialog.response_with_callback(
-			    true, "文件导出成功", "创建文件成功，请点击确认下载！！", undefined,
+			    true,
+			    "文件导出成功",
+			    "创建文件成功，请点击确认下载！！",
+			    undefined,
 			    function(){window.location.href = result.url;}) 
 		    } else {
 			dialog.response(
@@ -1222,6 +1208,14 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 		    } 
 		}); 
 	});
+    };
+
+    $scope.promotion = function(){
+	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+	    add_search_condition(search);
+
+	    
+	})
     };
 });
 

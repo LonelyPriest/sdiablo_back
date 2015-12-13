@@ -707,17 +707,24 @@ create table w_sale(
     id             INTEGER AUTO_INCREMENT,
     rsn            VARCHAR(32) not null, -- record sn
     employ         VARCHAR(8) not null,     -- employ
-    retailer       INTEGER, 
-    shop           INTEGER,                  -- which shop saled the goods
-    merchant       INTEGER,
+    retailer       INTEGER not null default -1, 
+    shop           INTEGER not null default -1, 
+    merchant       INTEGER not null default -1,
+
+    promotion     INTEGER not null default -1,
+    charge        INTEGER not null default -1,
+    
 
     balance        DECIMAL(10, 2) default 0, -- max: 99999999.99
     should_pay     DECIMAL(10, 2) default 0, -- max: 99999999.99
-    -- has_pay        DECIMAL(10, 2) default 0, -- max: 99999999.99
     cash           DECIMAL(10, 2) default 0, -- max: 99999999.99
     card           DECIMAL(10, 2) default 0, -- max: 99999999.99
     withdraw       DECIMAL(10, 2) default 0, -- max: 99999999.99
-    total          INTEGER default 0,
+
+    cbalance       INTEGER not null default 0, -- charge balance
+    sbalance       INTEGER not null default 0, -- send balance of charging
+    
+    total          INTEGER not null default 0,
     comment        VARCHAR(255) default null, 
     
     type           TINYINT  default -1, -- 0:sale 1:reject 2: charge
