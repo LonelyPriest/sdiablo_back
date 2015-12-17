@@ -333,7 +333,29 @@ inventory(group_detail, Merchant, Conditions, PageFun) ->
 	       [] -> [];
 	       TimeSql ->  " and " ++ TimeSql
 	   end
-	++ " and a.deleted=" ++ ?to_s(?NO) ++ PageFun(). 
+	++ " and a.deleted=" ++ ?to_s(?NO) ++ PageFun();
+
+inventory(set_promotion, Merchant, Promotions, Conditions) ->
+    {StartTime, EndTime, NewConditions} =
+	?sql_utils:cut(fields_no_prifix, Conditions),
+
+    Promotion = ?v(<<"promotion">>, Promotions),
+    Score     = ?v(<<"score">>, Promotions),
+
+    Updates = ?utils:v(promotion, integer, Promotion)
+	++ ?utils:v(score, integer, Score),
+
+    %% ?DEBUG("updates ~p", [Updates]),
+    
+    "update w_inventory set " ++ ?utils:to_sqls(proplists, comma, Updates)
+	++ " where " 
+	++ ?sql_utils:condition(proplists_suffix, NewConditions)
+	++ "merchant=" ++ ?to_s(Merchant)
+	++ case ?sql_utils:condition(time_no_prfix, StartTime, EndTime) of
+	       [] -> [];
+	       TimeSql ->  " and " ++ TimeSql
+	   end
+	++ " and deleted=" ++ ?to_s(?NO).
 
 inventory(inventory_new_rsn, Merchant, Conditions) ->
     {DetailConditions, SaleConditions} = 
@@ -631,7 +653,7 @@ inventory_match(all_inventory, Merchant, Shop, Conditions) ->
 
     "select a.id, a.style_number, a.brand as brand_id, a.type as type_id"
 	", a.sex, a.season, a.firm as firm_id, a.s_group, a.free, a.year"
-	", a.promotion as pid, a.org_price, a.tag_price"
+	", a.promotion as pid, a.score as sid, a.org_price, a.tag_price"
 	", a.ediscount, a.discount, a.path, a.alarm_day"
 
 	", b.name as brand" 
@@ -655,7 +677,7 @@ inventory_match(Merchant, StyleNumber, Shop, Firm) ->
     P = prompt_num(Merchant),
     "select a.id, a.style_number, a.brand as brand_id, a.type as type_id"
 	", a.sex, a.season, a.firm as firm_id, a.s_group, a.free, a.year"
-	", a.promotion as pid, a.org_price, a.tag_price"
+	", a.promotion as pid, a.score as sid, a.org_price, a.tag_price"
 	", a.ediscount, a.discount, a.path, a.alarm_day"
 	
 	", b.name as brand" 

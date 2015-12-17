@@ -2,11 +2,14 @@ wsaleApp.controller("wsaleRejectCtrl", function(
     $scope, $q, $timeout, dateFilter, diabloUtilsService, diabloPromise,
     diabloPattern, diabloFilter, diabloNormalFilter, wgoodService,
     purchaserService, wsaleService, wretailerService,
-    user, filterBrand, filterType, filterRetailer,
+    user, filterPromotion, filterScore, filterBrand,
+    filterType, filterRetailer,
     filterEmployee, filterSizeGroup, filterColor, base){
     // console.log(base);
     // console.log(user); 
     $scope.shops         = user.sortBadRepoes.concat(user.sortShops);
+    $scope.promotions    = filterPromotion;
+    $scope.scores        = filterScore;
     $scope.brands        = filterBrand;
     $scope.types         = filterType;
     $scope.retailers     = filterRetailer;
@@ -73,7 +76,9 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 	    total:    0, 
 	    datetime: $.now(),
 	    charge:   0,
-	    left_balance: 0
+	    left_balance: 0,
+	    score:      0,
+	    should_pay: 0
 	};
     } 
 
@@ -96,14 +101,18 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 		    $scope.employees,
 		    $scope.types,
 		    $scope.colors,
-		    $scope.size_groups);
+		    $scope.size_groups,
+		    $scope.promotions,
+		    $scope.scores);
 
 		console.log(wsale);
 	    }
 
 	    // setting
 	    $scope.setting.round = wsaleUtils.get_round(
-		$scope.select.shop.id, $scope.base_settings); 
+		$scope.select.shop.id, $scope.base_settings);
+
+	    $scope.show_promotions = wsale.show_promotions;
 	    // console.log($scope.setting);
 
 	    $scope.old_select = wsale.select;
@@ -114,6 +123,7 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 	    
 	    $scope.old_inventories = wsale.details;
 	    $scope.inventories = angular.copy(wsale.details);
+	    
 	    // $scope.inventories.unshift({$edit:false, $new:true});
 
 	    console.log($scope.old_inventories);
@@ -430,6 +440,9 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 		// tag_price   : add.tag_price, 
 		// discount    : add.discount,
 		alarm_day   : add.alarm_day,
+
+		promotion   : add.promotion.id,
+		score       : add.score.id,
 		
 		amounts     : get_sales(add.amounts),
 		sell_total  : parseInt(add.reject),
@@ -457,7 +470,8 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 	    withdraw:      setv($scope.select.withdraw),
 	    // left_balance:  setv($scope.select.left_balance),
 	    direct:        wsaleService.direct.wreject,
-	    total:         seti($scope.select.total), 
+	    total:         seti($scope.select.total),
+	    score:         $scope.select.score
 	};
 
 	
@@ -509,25 +523,106 @@ wsaleApp.controller("wsaleRejectCtrl", function(
     $scope.re_calculate = function(){
 	$scope.select.total = 0;
 	$scope.select.should_pay = 0;
+	$scope.select.score      = 0;
+
+	var pmoneys = []; 
+	var format_pmoney = function(p, money){
+	    var found = false;
+	    for (var i=0, l=pmoneys.length; i<l; i++){
+		if (p.id === pmoneys[i].promotion.id){
+		    found = true;
+		    pmoneys[i].money += money;
+		    break;
+		}
+	    }
+
+	    if (!found){
+		pmoneys.push({promotion:p, money: money});
+	    }
+	};
+
+	var pscores = [];
+	var format_score = function(score, promotion, money){
+	    var found = false;
+	    for (var i=0, l=pscores.length; i<l; i++){
+		if (score.id === pscores[i].score.id){
+		    found = true;
+		    pscores[i].money += money;
+		    break;
+		}
+	    }
+
+	    if (!found){
+		pscores.push({
+		    score:score, promotion: promotion, money: money});
+	    }
+	};
 	
 	for (var i=0, l=$scope.inventories.length; i<l; i++){
 	    var one = $scope.inventories[i];
 	    if (one.$new) continue;
 	    
-	    $scope.select.total += parseInt(one.sell_count);
+	    $scope.select.total += parseInt(one.reject);
 
 	    if ($scope.setting.round === diablo_round_row){
-		$scope.select.should_pay
-		    += $scope.round(
-			one.reject * one.fdiscount * 0.01 * one.fprice);
+		one.calc = $scope.round(
+		    one.reject * one.fdiscount * 0.01 * one.fprice);
 	    } else {
-		$scope.select.should_pay
-		    += one.reject * one.fdiscount * 0.01 * one.fprice;
+		one.calc = $scope.f_mul(
+		    one.reject * one.fprice,
+		    $scope.f_mul(one.fdiscount, 0.01));
+	    }
+
+	    if (!one.promotion){
+		format_pmoney({id: -1, rule_id: -1}, one.calc);
+	    } else {
+		format_pmoney(one.promotion, one.calc);
+	    }
+
+	    if (one.score){
+		format_score(one.score, one.promotion, one.calc);
 	    }
 	    
 	}
 
-	$scope.select.should_pay = $scope.round($scope.select.should_pay); 
+	console.log(pmoneys);
+	console.log(pscores);
+
+	for ( var i=0, l=pmoneys.length; i<l; i++){
+	    var p = pmoneys[i].promotion;
+	    if (p.rule_id === -1){
+		$scope.select.should_pay += pmoneys[i].money;
+		continue;
+	    }
+
+	    if (p.rule_id === 0){
+		$scope.select.should_pay
+		    += $scope.f_mul(
+			pmoneys[i].money, $scope.f_mul(p.discount, 0.01));
+		continue;
+	    }
+
+	    if (p.rule_id === 1){
+		var rmoney = pmoneys[i].money / p.cmoney *  p.rmoney;
+		$scope.select.should_pay += pmoneys[i].money - rmoney;
+		continue;
+	    }
+	}
+
+	for ( var i=0, l=pscores.length; i<l; i++){
+	    var s = pscores[i];
+	    if (s.promotion && s.promotion.rule_id === 0){
+		$scope.select.score +=
+		s.money * s.promotion.discount * 0.01
+		    * s.score.score / s.score.balance; 
+	    } else {
+		$scope.select.score +=
+		s.money / s.score.balance * s.score.score; 
+	    }
+	}
+
+	$scope.select.should_pay = $scope.round($scope.select.should_pay);
+	$scope.select.score = $scope.round($scope.select.score);
 
 	if ($scope.has_withdrawed){
 	    $scope.select.left_balance =

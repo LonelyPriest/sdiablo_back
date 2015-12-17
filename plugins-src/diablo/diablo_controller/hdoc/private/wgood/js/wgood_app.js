@@ -119,7 +119,8 @@ wgoodApp.service("wgoodService", function($resource, $http){
 	     siii:   group.siii,
 	     siv:    group.siv,
 	     sv:     group.sv,
-	     svi:    group.svi}).$promise;
+	     svi:    group.svi,
+	     svii:   group.svii}).$promise;
     };
 
     /*

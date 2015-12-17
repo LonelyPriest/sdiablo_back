@@ -134,8 +134,9 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
     Card       = ?v(<<"card">>, Props, 0),
     Withdraw   = ?v(<<"withdraw">>, Props, 0),
     
-    ShouldPay  = round(?v(<<"should_pay">>, Props, 0)),
+    ShouldPay  = ?v(<<"should_pay">>, Props, 0),
     Total      = ?v(<<"total">>, Props, 0),
+    Score      = ?v(<<"score">>, Props, 0),
 
     Sql0 = "select id, name, balance from w_retailer"
 	" where id=" ++ ?to_s(Retailer)
@@ -179,7 +180,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 	    Sql2 = "insert into w_sale(rsn"
 		", employ, retailer, shop, merchant"
 		", balance, should_pay, cash, card, withdraw, total"
-		", comment, type, entry_date) values("
+		", score, comment, type, entry_date) values("
 		++ "\"" ++ ?to_s(SaleSn) ++ "\","
 		++ "\"" ++ ?to_s(Employe) ++ "\","
 		++ ?to_s(Retailer) ++ ","
@@ -194,6 +195,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 		++ ?to_s(NewCard) ++ ","
 		++ ?to_s(Withdraw) ++ ","
 		++ ?to_s(Total) ++ ","
+		++ ?to_s(Score) ++ ","
 		
 		++ "\"" ++ ?to_s(Comment) ++ "\"," 
 		++ ?to_s(type(new)) ++ ","
@@ -562,15 +564,15 @@ handle_call({trans_detail, Merchant, Conditions}, _From, State) ->
 	   [Merchant, Conditions]),
     Sql =
 	" select a.id, a.rsn, a.style_number, a.brand_id, a.type_id"
-	", a.s_group, a.free, a.season, a.firm_id, a.year, a.total"
-	", a.fdiscount, a.fprice, a.path"
+	", a.s_group, a.free, a.season, a.firm_id, a.year"
+	", a.total, a.pid, a.sid, a.fdiscount, a.fprice, a.path"
 
 	", b.color as color_id, b.size, b.total as amount"
 	" from "
 
 	"(select id, rsn, style_number, brand as brand_id, type as type_id"
-	", s_group, free, season, firm as firm_id, year, total"
-	", fdiscount, fprice, path"
+	", s_group, free, season, firm as firm_id, year"
+	", total, promotion as pid, score as sid, fdiscount, fprice, path"
 	" from w_sale_detail"
 	" where " ++ ?utils:to_sqls(proplists, Conditions) ++ ") a"
 
@@ -782,8 +784,8 @@ handle_call({filter_rsn_group, Merchant,
     
     Sql = "select b.id, b.rsn, b.style_number"
 	", b.brand as brand_id, b.type as type_id, b.firm as firm_id"
-	", b.s_group, b.free, b.total, b.fdiscount"
-	", b.fprice, b.path, b.comment, b.entry_date"
+	", b.s_group, b.free, b.total, b.promotion as pid, b.score as sid"
+	", b.fdiscount, b.fprice, b.path, b.comment, b.entry_date"
 	
 	", a.shop as shop_id"
 	", a.retailer as retailer_id"
@@ -831,8 +833,9 @@ handle_call({new_trans_note_export, Merchant, Conditions}, _From, State)->
     ?DEBUG("new_trans_note_export: merchant ~p\nConditions~p", [Merchant, Conditions]),
     CorrectCondition = ?utils:correct_condition(<<"a.">>, Conditions),
 
-    Sql = "select a.id, a.rsn, a.style_number, a.brand_id, a.type_id, a.firm_id"
-	", a.s_group, a.free, a.total, a.fdiscount, a.fprice"
+    Sql = "select a.id, a.rsn, a.style_number, a.brand_id"
+	", a.type_id, a.firm_id, a.s_group, a.free"
+	", a.total, a.pid, a.sid, a.fdiscount, a.fprice"
 	", a.path, a.comment, a.entry_date"
     %% ", a.color_id, a.size, a.total"
 	", a.shop_id, a.retailer_id, a.employee_id, a.sell_type"
@@ -849,8 +852,8 @@ handle_call({new_trans_note_export, Merchant, Conditions}, _From, State)->
 
 	"select a.id, a.rsn, a.style_number, a.brand as brand_id"
 	", a.type as type_id, a.firm as firm_id"
-	", a.s_group, a.free, a.total, a.fdiscount"
-	", a.fprice, a.path, a.comment, a.entry_date"
+	", a.s_group, a.free, a.total, a.promotion as pid, a.score as sid"
+	",a.fdiscount, a.fprice, a.path, a.comment, a.entry_date"
 
 	", b.shop as shop_id"
 	", b.retailer as retailer_id"
@@ -1332,6 +1335,8 @@ wsale(Action, RSN, DateTime, Merchant, Shop, Inventory, Amounts) ->
 		      new    -> ?v(<<"sell_total">>, Inventory);
 		      reject -> -?v(<<"sell_total">>, Inventory) 
 		  end,
+    Promotion   = ?v(<<"promotion">>, Inventory, -1),
+    Score       = ?v(<<"score">>, Inventory, -1),
     Free        = ?v(<<"free">>, Inventory),
     Path        = ?v(<<"path">>, Inventory, []),
     Comment     = ?v(<<"comment">>, Inventory, []),
@@ -1373,8 +1378,8 @@ wsale(Action, RSN, DateTime, Merchant, Shop, Inventory, Amounts) ->
 	 {ok, []} ->
 	     "insert into w_sale_detail("
 		 "rsn, style_number, brand, type, s_group, free"
-		 ", season, firm, year, total, fdiscount"
-		 ", fprice, path, comment, entry_date)"
+		 ", season, firm, year, total, promotion, score"
+		 ", fdiscount, fprice, path, comment, entry_date)"
 		 " values("
 		 ++ "\"" ++ ?to_s(RSN) ++ "\","
 		 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
@@ -1386,6 +1391,8 @@ wsale(Action, RSN, DateTime, Merchant, Shop, Inventory, Amounts) ->
 		 ++ ?to_s(Firm) ++ ","
 		 ++ ?to_s(Year) ++ "," 
 		 ++ ?to_s(Total) ++ ","
+		 ++ ?to_s(Promotion) ++ ","
+		 ++ ?to_s(Score) ++ ","
 		 ++ ?to_s(FDiscount) ++ ","
 		 ++ ?to_s(FPrice) ++ ","
 		 ++ "\"" ++ ?to_s(Path) ++ "\","
@@ -1465,8 +1472,13 @@ filter_table(w_sale, Merchant, Conditions) ->
 
     Sql = "select a.id, a.rsn, a.employ as employee_id"
 	", a.retailer as retailer_id, a.shop as shop_id"
+	", a.promotion as pid, a.charge as cid"
+	
 	", a.balance, a.should_pay, a.cash, a.card, a.withdraw"
-	", a.total, a.comment, a.type, a.state, a.entry_date"
+	", a.cbalance, a.sbalance, a.total, a.score"
+	
+	", a.comment, a.type, a.state, a.entry_date"
+	
 	", b.name as shop"
 	", c.name as employee"
 	", d.name as retailer"
@@ -1484,8 +1496,12 @@ filter_table(w_sale_with_page,
     
     Sql = "select a.id, a.rsn, a.employ as employee_id"
     	", a.retailer as retailer_id, a.shop as shop_id"
-    	", a.balance, a.should_pay, a.cash, a.card, a.withdraw"
-	", a.total, a.comment, a.type, a.state, a.entry_date"
+    	", a.promotion as pid, a.charge as cid"
+	
+	", a.balance, a.should_pay, a.cash, a.card, a.withdraw"
+	", a.cbalance, a.sbalance, a.total, a.score"
+	
+	", a.comment, a.type, a.state, a.entry_date"
     	" from w_sale a"
     	" where " ++ SortConditions
 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage), 

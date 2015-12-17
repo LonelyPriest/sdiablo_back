@@ -13,17 +13,19 @@ pagination(no_response, TotalFun, PageFun, Payload) ->
 	    Any -> Any
 	end,
 
-    CurrentPage          = ?value(<<"page">>, Payload), 
-    ItemsPerPage         = ?value(<<"count">>, Payload, ?DEFAULT_ITEMS_PERPAGE),
+    CurrentPage  = ?value(<<"page">>, Payload), 
+    ItemsPerPage  = ?value(<<"count">>, Payload, ?DEFAULT_ITEMS_PERPAGE),
 
-    case page(Conditions, CurrentPage, fun(C) -> TotalFun(?to_a(Match), C) end) of
+    case page(Conditions, CurrentPage,
+	      fun(C) -> TotalFun(?to_a(Match), C) end) of
 	{error, Error} -> {error, Error};
 	{Total, _} -> 
 	    case Total =:= 0 andalso CurrentPage =:= 1 of
 		true ->
 		    {ok, Total, []}; 
 		false ->
-		    case PageFun(?to_a(Match), CurrentPage, ItemsPerPage, Conditions) of
+		    case PageFun(?to_a(Match),
+				 CurrentPage, ItemsPerPage, Conditions) of
 			{ok, Details} ->
 			    {ok, Total, Details}; 
 			{error, Error} ->

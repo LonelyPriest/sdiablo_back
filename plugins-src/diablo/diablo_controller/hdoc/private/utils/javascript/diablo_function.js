@@ -12,6 +12,10 @@ var diablo_badrepo = 1;
 var diablo_round_record = 0;
 var diablo_round_row = 1;
 
+var diablo_sell   = 0;
+var diablo_reject = 1;
+var diablo_charge = 2;
+
 /*
  * storage key
  */
@@ -98,17 +102,13 @@ var diablo_sex2object = [
 
 var diablo_sex = ["女", "男"];
 
-var diablo_sizegroup = ["si", "sii", "siii", "siv", "sv", "svi"];
+var diablo_sizegroup = ["si", "sii", "siii", "siv", "sv", "svi", "svii"];
 
 var diablo_shop = 0;
 var diablo_repo = 1;
 
 var diablo_sell_style = [
-    {name: "吊牌价", id:1, f: "tag_price"},
-    {name: "批发价", id:2, f: "pkg_price"},
-    {name: "价3",    id:3, f: "price3"},
-    {name: "价4",    id:4, f: "price4"},
-    {name: "价5",    id:5, f: "price5"}
+    {name: "吊牌价", id:1, f: "tag_price"} 
 ];
 
 var diablo_sex2number = function(sex){

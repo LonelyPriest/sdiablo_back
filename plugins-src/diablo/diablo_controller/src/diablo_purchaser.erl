@@ -84,6 +84,10 @@ purchaser_inventory(fix, Merchant, Inventories, Props) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {fix_inventory, Merchant, Inventories, Props});
 
+purchaser_inventory(set_promotion, Merchant, Promotions, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {set_promotion, Merchant, Promotions, Conditions});
+
 purchaser_inventory(abstract, Merchant, Shop, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {abstract_inventory, Merchant, Shop, Conditions}). 
@@ -106,11 +110,11 @@ purchaser_inventory(get_new, Merchant, RSN) ->
     gen_server:call(Name, {get_new, Merchant, RSN});
 purchaser_inventory(get_inventory_new_rsn, Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {get_inventory_new_rsn, Merchant, Conditions});
-
+    gen_server:call(Name, {get_inventory_new_rsn, Merchant, Conditions}); 
 purchaser_inventory(get_new_amount, Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {get_new_amount, Merchant, Conditions}).
+    
 purchaser_inventory(amount, Merchant, Shop, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {get_amount, Merchant, Shop, StyleNumber, Brand}).
@@ -1157,6 +1161,15 @@ handle_call({abstract_inventory, Merchant, Shop, Conditions}, _From, State) ->
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
+handle_call({set_promotion, Merchant, Promotions, Conditions}, _From, State) ->
+    ?DEBUG("set_promotion with merchant ~p, promotions ~p, conditions ~p",
+	   [Merchant, Promotions, Conditions]), 
+    Sql = ?w_good_sql:inventory(
+	     set_promotion, Merchant, Promotions, Conditions),
+    
+    Reply = ?sql_utils:execute(write, Sql, ok),
+    {reply, Reply, State};
+
 handle_call({get_new, Merchant, RSN}, _From, State) ->
     ?DEBUG("get_new_inventory wht merchant ~p, RSN ~p", [Merchant, RSN]),
     Sql = ?w_good_sql:inventory(
@@ -1181,6 +1194,7 @@ handle_call({get_amount, Merchant, Shop, StyleNumber, Brand}, _From, State) ->
 
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
+
 
 %% =============================================================================
 %% filter with pagination

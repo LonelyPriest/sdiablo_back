@@ -153,6 +153,7 @@
 -define(fix_w_inventory,             ?right_w_inventory + 11).
 -define(filter_fix_w_inventory,      ?right_w_inventory + 12).
 -define(check_w_inventory,           ?right_w_inventory + 13).
+-define(set_w_inventory_promotion,   ?right_w_inventory + 14).
 
 %% firm
 -define(new_w_firm,    ?right_w_firm + 1).

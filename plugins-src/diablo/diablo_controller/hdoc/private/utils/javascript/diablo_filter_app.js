@@ -19,8 +19,8 @@ function filterProvider(){
     var _employees   = [];
     var _size_groups = [];
     var _promotions  = [];
-    var _chargs      = [];
-    var _scores      = [];
+    // var _chargs      = [];
+    // var _scores      = [];
     
     
     this.$get = function($resource, dateFilter, wgoodService){
@@ -128,7 +128,7 @@ function filterProvider(){
 		    diablo_filter_time(time.end_time, 1, dateFilter);
 		console.log(search);
 
-		callback(search);
+		return callback(search);
 	    },
 	    
 	    match_style_number: function(viewValue){
@@ -458,7 +458,7 @@ function normalFilterProvider(){
 
     var _charges        = [];
     var _shopCharges    = [];
-    var _scores          = [];
+    var _scores         = [];
     
     this.$get = function($resource){
 	var _employeeHttp =

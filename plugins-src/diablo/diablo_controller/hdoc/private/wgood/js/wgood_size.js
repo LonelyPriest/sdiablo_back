@@ -71,7 +71,8 @@ wgoodApp.controller("wgoodSizeDetailCtrl", function(
 		    var append_size_group = function(gid){
 			$scope.size_group.push(
 			    angular.extend({
-				id:gid, order_id:$scope.size_group.length + 1}, size));
+				id:gid,
+				order_id:$scope.size_group.length + 1}, size));
 		    };
 		    
 		    diabloUtilsService.response_with_callback(
@@ -87,28 +88,7 @@ wgoodApp.controller("wgoodSizeDetailCtrl", function(
 	
 	diabloUtilsService.edit_with_modal(
 	    'new-size.html', undefined, callback, $scope,
-	    {size: {}, valid_group: valid_group, check_same: check_same})
-	
-	// // delete empty size
-	// for(var k in group){
-	//     if(!group[k]){
-	// 	delete group[k];
-	//     }
-	// };
-	// console.log(group);
-	// // add
-	// wgoodService.add_purchaser_size(group).then(function(state){
-	//     console.log(state);
-	//     if (state.ecode == 0){
-    	// 	// location.reload();
-	// 	$scope.refresh();
-	// 	$scope.group_new = {$new:true, $editable:false};
-	//     } else{
-	// 	diabloUtilsService.response(
-	// 	    false, "尺码组", "新增尺码组失败，原因："
-	// 		+ wgoodService.error[state.ecode]);
-	//     };
-	// });
+	    {size: {}, valid_group: valid_group, check_same: check_same}) 
     };
 
 
@@ -117,14 +97,16 @@ wgoodApp.controller("wgoodSizeDetailCtrl", function(
      */
     $scope.do_modify = function(g){
 	// group.$editable=true;
-	diabloUtilsService.response(false, "修改尺码组", "暂不支持此操作！！", $scope);
+	diabloUtilsService.response(
+	    false, "修改尺码组", "暂不支持此操作！！", undefined);
     };
 
     /*
      * delete
      */ 
     $scope.do_delete = function(g){
-	diabloUtilsService.response(false, "删除尺码组", "暂不支持此操作！！", $scope);
+	diabloUtilsService.response(
+	    false, "删除尺码组", "暂不支持此操作！！",undefined);
     }
     
 });

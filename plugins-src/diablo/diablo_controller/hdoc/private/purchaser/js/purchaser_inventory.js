@@ -1,10 +1,11 @@
 purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope, $timeout, dateFilter, diabloPattern, diabloUtilsService,
     diabloFilter, wgoodService, purchaserService, shortCutGoodService,
-    localStorageService, user, filterPromotion, filterFirm,
+    localStorageService, user, filterPromotion, filterBrand, filterFirm,
     filterEmployee, filterColor, base){
     // console.log(user);
 
+    shortCutGoodService.set_brand(filterBrand); 
     shortCutGoodService.set_firm(filterFirm);
     shortCutGoodService.set_color(filterColor);
     shortCutGoodService.set_promotion(filterPromotion);
@@ -902,8 +903,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 purchaserApp.controller("purchaserInventoryDetailCtrl", function(
     $scope, $routeParams, $q, dateFilter, diabloPattern, diabloFilter,
     diabloUtilsService, diabloPromise, purchaserService, wgoodService,
-    localStorageService, user, filterBrand, filterFirm, filterType,
-    filterSizeGroup, filterColor, base){
+    localStorageService, filterPromotion,filterScore,  user, filterBrand,
+    filterFirm, filterType, filterSizeGroup, filterColor, base){
     // $scope.touch_start = function(){
     // 	console.log("touch_start");
     // }
@@ -924,6 +925,9 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
     // };
 
     // $scope.chart.data = data;
+
+    $scope.promotions = filterPromotion;
+    $scope.scores     = filterScore;
 
     /*
      * tab-set
@@ -1211,11 +1215,94 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
     };
 
     $scope.promotion = function(){
-	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
-	    add_search_condition(search);
+	
+	var condition = 
+	    diabloFilter.do_filter(
+		$scope.filters, $scope.time, function(search){
+		    add_search_condition(search); 
+		    return search; 
+		}); 
 
+	console.log(condition);
+
+	var check_only = function(select, promotions){
+	    console.log(select);
 	    
-	})
+	    angular.forEach(promotions, function(p){
+		if (p.id !== select.id){
+		    p.select = false;
+		};
+	    });
+	};
+
+	var check_select = function(promotions, scores){
+	    for (var i=0, l=promotions.length; i<l; i++){
+		if (promotions[i].select){
+		    return true;
+		}
+	    }
+
+	    for (var j=0, k=scores.length; j<k; j++){
+		if (scores[j].select) {
+		    return true;
+		}
+	    }
+	    
+	    return false;
+	};
+	
+	var callback = function(params){
+	    console.log(params);
+
+	    var s_promotion = params.promotions.filter(function(p){
+		return p.select;
+	    });
+
+	    var s_score = params.scores.filter(function(s){
+		return s.select;
+	    });
+	    
+	    purchaserService.set_w_inventory_promotion(
+		condition,
+		s_promotion.length !==0 ? s_promotion[0].id : undefined,
+		s_score.length !==0 ? s_score[0].id : undefined 
+	    ).then(function(result){
+		if (result.ecode === 0){
+		    var s;
+		    if (s_promotion.length !== 0){
+			s = "促销 [" + s_promotion[0].name + "] ";
+		    }
+		    if (s_score.length !== 0){
+			s += "积分 [" + s_score[0].name + "] ";
+		    } 
+		    s += "方案设置成功";
+		    
+		    dialog.response(true, "促销积分设置", s)
+		} else {
+		    dialog.response(
+			false,
+			"促销积分设置",
+			"促销积分设置失败："
+			    + purchaserService.error[result.ecode]);
+		}
+	    });
+	};
+	
+	dialog.edit_with_modal(
+	    "purchaser-on-sale.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {shops: condition.shop.map(
+		function(s){
+		    return diablo_get_object(s, $scope.shops);
+		}),
+	     promotions:   $scope.promotions,
+	     scores:       $scope.scores.filter(
+		 function(s){return s.type_id===0}),
+	     check_only:   check_only,
+	     check_select: check_select}); 
+	
     };
 });
 

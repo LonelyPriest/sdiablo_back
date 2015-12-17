@@ -283,7 +283,9 @@
 		      <tr class="text-center"
 			  x-ng-repeat="inv in inventories">
 			
-			<td>{{inv.order_id}}</td>
+			<td class="text-center vert-align">
+			  {{inv.order_id}}
+			</td>
 			<td x-ng-if="!setting.q_backend"
 			    class="col-md-2 text-left vert-align">
 			  <span ng-if="!inv.$new">{{inv.style_number}}</span>
@@ -432,21 +434,8 @@
 			  
 			</td>
 
-			<td class="vert-align">
-			  <div x-ng-if="inv.sell
-					&& (inv.fprice === 0 || inv.fprice)">
-			    
-			    <span x-ng-if="setting.round===1">
-			      {{round(
-			      inv.fprice * inv.sell * inv.fdiscount * 0.01)}}
-			    </span>
-
-			    <span x-ng-if="setting.round===0">
-			      {{f_mul(
-			      f_mul(inv.fprice, inv.fdiscount),
-			      f_mul(inv.sell, 0.01))}}
-			    </span> 
-			  </div>
+			<td class="vert-align"> 
+			    <span>{{inv.calc}}</span>
 			</td>
 
 			<td class="vert-align col-md-1">
@@ -514,30 +503,32 @@
 			<td x-ng-if="!setting.show_discount" colspan=7></td>
 			<td class="vert-align">{{select.abs_total}}</td>
 			<td class="vert-align">{{select.should_pay}}</td>
-			<td colspan="2"></td>
+			<!-- <td colspan="2">{{select.score}}</td> -->
 		      </tr> 
 		    </tbody>
-		    <tfoot> 
+		    <tfoot>
 		    </tfoot>
 		  </table> <!--END supplier table-->
 		</div> <!--END table responsive--> 
 	      </div> <!--END panel-->
 	      <div x-ng-repeat="p in show_promotions">
-		<span>{{p.gname}}&nbsp&nbsp&nbsp&nbsp
-		  <span class="bg-blue">促销：</span>
-		  <span x-ng-switch on="p.rule_id">
+	      	<span>{{p.name}}&nbsp&nbsp&nbsp&nbsp
+	      	  <span class="bg-blue">促销：</span>
+	      	  <span x-ng-switch on="p.promotion.rule_id">
+	      	    <span x-ng-switch-when=0>
+	      	      <span class="fg-red">{{p.promotion.discount}}</span>折
+	      	    </span>
 			    
-		    <span x-ng-switch-when=0>
-		      <span class="fg-red">{{p.discount}}</span>折 
-		    </span>
-			    
-		    <span x-ng-switch-when=1>
-		      满<span class="fg-red">{{p.cmoney}}</span>
-		      送<span class="fg-red">{{p.rmoney}}</span>
-		    </span>
+	      	    <span x-ng-switch-when=1>
+	      	      满<span class="fg-red">{{p.promotion.cmoney}}</span>
+	      	      送<span class="fg-red">{{p.promotion.rmoney}}</span>
+	      	    </span>
+	      	  </span>
+
+	      	  &nbsp&nbsp&nbsp&nbsp<span class="bg-blue">积分：</span>
+	      	  <span class="fg-red">{{p.score.name}}</span>
 		  
-		  </span>
-		</span>
+	      	</span>
 	      </div>
 	    </tab> 
 
@@ -661,8 +652,8 @@
 </div> <!--END row-->
 
 <!--print-->
-<!-- <div class="row visible-print-block"> -->
-<div>
+<div class="row visible-print-block">
+<!-- <div> -->
   <h4 class="text-center"><strong>{{select.shop.name}}</strong></h4>
   <div class="text-left">
     <p>

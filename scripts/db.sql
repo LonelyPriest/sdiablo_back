@@ -15,20 +15,20 @@ shopman(1..*)---------(1)shops(0..*)--------(0..*)stocks
 */
 
 /* ***BEING*** CRM *** */
-create table province(
-    id              INTEGER AUTO_INCREMENT,
-    name            VARCHAR(64),
-    deleted         INTEGER default 0, -- 0: no;  1: yes
-    primary key     (id)
-)default charset=utf8;
+-- create table province(
+--     id              INTEGER AUTO_INCREMENT,
+--     name            VARCHAR(64),
+--     deleted         INTEGER default 0, -- 0: no;  1: yes
+--     primary key     (id)
+-- )default charset=utf8;
 
-create table city(
-    id              INTEGER AUTO_INCREMENT,
-    name            VARCHAR(64),
-    province        INTEGER default -1,
-    deleted         INTEGER default 0, -- 0: no;  1: yes
-    primary key     (id)
-)default charset=utf8;
+-- create table city(
+--     id              INTEGER AUTO_INCREMENT,
+--     name            VARCHAR(64),
+--     province        INTEGER default -1,
+--     deleted         INTEGER default 0, -- 0: no;  1: yes
+--     primary key     (id)
+-- )default charset=utf8;
 
 
 create table employees
@@ -107,6 +107,7 @@ create table size_group(
    siv              VARCHAR(8),
    sv               VARCHAR(8),
    svi              VARCHAR(8),
+   svii             VARCHAR(8),
    merchant         INTEGER,
    deleted          INTEGER default 0, -- 0: no;  1: yes
    unique key       index_nm (merchant, name),
@@ -551,7 +552,7 @@ create table w_inventory_amount(
 create table w_inventory_new(
     id             INTEGER AUTO_INCREMENT,
     rsn            VARCHAR(32) not null, -- record sn
-    employ         VARCHAR(8) not null,     -- employ
+    employ         INTEGER not null default -1,
     firm           INTEGER default -1, 
     shop           INTEGER default -1,  -- which shop saled the goods
     merchant       INTEGER default -1,
@@ -636,7 +637,7 @@ create table w_inventory_fix(
     rsn            VARCHAR(32) not null, -- record sn
     
     shop           INTEGER,                 -- which shop saled the goods
-    employ         VARCHAR(8) not null,     -- employ
+    employ         INTEGER not null default -1, 
     
     exist          INTEGER,
     fixed          INTEGER default 0,
@@ -706,7 +707,7 @@ create table w_inventory_fix_detail_amount(
 create table w_sale(
     id             INTEGER AUTO_INCREMENT,
     rsn            VARCHAR(32) not null, -- record sn
-    employ         VARCHAR(8) not null,     -- employ
+    employ         INTEGER not null default -1,
     retailer       INTEGER not null default -1, 
     shop           INTEGER not null default -1, 
     merchant       INTEGER not null default -1,
@@ -719,12 +720,13 @@ create table w_sale(
     should_pay     DECIMAL(10, 2) default 0, -- max: 99999999.99
     cash           DECIMAL(10, 2) default 0, -- max: 99999999.99
     card           DECIMAL(10, 2) default 0, -- max: 99999999.99
-    withdraw       DECIMAL(10, 2) default 0, -- max: 99999999.99
+    withdraw       DECIMAL(10, 2) default 0, -- max: 99999999.99 
 
     cbalance       INTEGER not null default 0, -- charge balance
     sbalance       INTEGER not null default 0, -- send balance of charging
     
     total          INTEGER not null default 0,
+    score          INTEGER not null default 0,
     comment        VARCHAR(255) default null, 
     
     type           TINYINT  default -1, -- 0:sale 1:reject 2: charge

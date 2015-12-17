@@ -1,8 +1,9 @@
 wsaleApp.controller("wsaleRsnDetailCtrl", function(
     $scope, $routeParams, dateFilter, diabloUtilsService, diabloFilter,
     purchaserService, wgoodService, wsaleService, localStorageService,
-    user, filterBrand, filterRetailer, filterEmployee,
-    filterFirm, filterSizeGroup, filterType, filterColor, base){
+    user, filterPromotion, filterScore, filterBrand,
+    filterRetailer, filterEmployee, filterFirm, filterSizeGroup,
+    filterType, filterColor, base){
     // console.log($routeParams);
     // console.log(filterEmployee);
     $scope.shops    = user.sortShops.concat(user.sortBadRepoes);
@@ -155,7 +156,18 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 		    d.shop     = diablo_get_object(d.shop_id, $scope.shops);
 		    d.retailer = diablo_get_object(d.retailer_id, filterRetailer);
 		    d.employee = diablo_get_object(d.employee_id, filterEmployee);
-		    d.type     = diablo_get_object(d.type_id, filterType);
+		    d.type      = diablo_get_object(d.type_id, filterType);
+		    d.promotion = diablo_get_object(d.pid, filterPromotion);
+		    d.score     = diablo_get_object(d.sid, filterScore);
+
+		    if ($scope.setting.round===1){
+			d.calc = $scope.round(
+			    d.fprice * d.fdiscount * 0.01 * d.total)
+		    } else {
+			d.calc = $scope.f_mul(
+			    d.fprice * d.total,
+			    $scope.f_mul(d.fdiscount, 0.01))
+		    }
 
 		    // d.cur_balance = function(){
 		    // 	if (d.type === 0){

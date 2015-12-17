@@ -225,14 +225,6 @@ value_from_proplists(Key, {Proplists}) ->
 value_from_proplists(Key, Proplists) ->
     proplists:get_value(Key, Proplists).
 
-pack_string(String, Pack) ->
-    SS = ?to_string(String),
-    pack_string(SS, ?to_string(Pack), length(SS)).
-pack_string(String, _Pack, ?MAX_EMPLOYEE_ID) ->
-    String;
-pack_string(String, Pack, Length) ->
-    pack_string(Pack ++ String, Pack, Length + length(Pack)).
-
 %% =============================================================================
 %% @desc: add the sequence number of lists
 %% @param: lists  -> [ {[{<<"a1", 1>>}, {<<"a2">>, 2}]}, ...]

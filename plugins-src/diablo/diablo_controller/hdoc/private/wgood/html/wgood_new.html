@@ -633,7 +633,6 @@
 		     required
 		     name="name"
 		     placeholder="请输入尺码名称"
-		     x-ng-maxlength="10"
 		     x-ng-model="params.size.name"
 		     x-ng-pattern="/^[A-Za-z0-9-_\u4e00-\u9fa5]+$/"/>
 		     <span class="input-group-addon bg-white fg-red">*</span>
@@ -653,14 +652,13 @@
 		     name="si"
 		     placeholder="请输入尺码I"
 		     capitalize
-		     x-ng-maxlength="10"
 		     x-ng-model="params.size.si"
-		     x-ng-pattern="/^[A-Za-z0-9\/]+$/"/>
+		     x-ng-pattern="params.pattern.size"/>
 	      <span class="input-group-addon bg-white fg-red">*</span>
 	    </div>
 	  </div>
 	  <div ng-show="sizeForm.si.$invalid && !sizeForm.si.$pristine">
-	    <span class="fg-red">请输入字母或数字</span>
+	    <span class="fg-red">请输入1-3个字母或数字</span>
 	  </div>
 	  <div ng-show="!params.check_same(params.size, 'si', params.size.si)">
 	    <span class="fg-red">尺码已存在，请重新输入</span>
@@ -677,14 +675,13 @@
 		     name="sii"
 		     placeholder="请输入尺码II"
 		     capitalize
-		     x-ng-maxlength="10"
 		     x-ng-model="params.size.sii"
-		     x-ng-pattern="/^[A-Za-z0-9\/]+$/"/>
+		     x-ng-pattern="params.pattern.size"/>
 	      <span class="input-group-addon bg-white fg-red">*</span>
 	    </div>
 	  </div>
 	  <div ng-show="sizeForm.sii.$invalid && !sizeForm.sii.$pristine">
-	    <span class="fg-red">请输入字母或数字</span>
+	    <span class="fg-red">请输入1-3个字母或数字</span>
 	  </div>
 	  <div ng-show="!params.check_same(
 			params.size, 'sii', params.size.sii)">
@@ -701,14 +698,13 @@
 		     name="siii"
 		     placeholder="请输入尺码III"
 		     capitalize
-		     x-ng-maxlength="10"
 		     x-ng-model="params.size.siii"
-		     x-ng-pattern="/^[A-Za-z0-9\/]+$/"/>
+		     x-ng-pattern="params.pattern.size"/>
 	      <span class="input-group-addon bg-white fg-red">*</span>
 	    </div>
 	  </div>
 	  <div ng-show="sizeForm.siii.$invalid && !sizeForm.siii.$pristine">
-	    <span class="fg-red">请输入字母或数字</span>
+	    <span class="fg-red">请输入1-3个字母或数字</span>
 	  </div>
 	  <div ng-show="!params.check_same(
 			params.size, 'siii', params.size.siii)">
@@ -726,14 +722,13 @@
 		     name="siv"
 		     placeholder="请输入尺码IV"
 		     capitalize
-		     x-ng-maxlength="10"
 		     x-ng-model="params.size.siv"
-		     x-ng-pattern="/^[A-Za-z0-9\/]+$/"/>
+		     x-ng-pattern="params.pattern.size"/>
 	      <span class="input-group-addon bg-white fg-red">*</span>
 	    </div>
 	  </div>
 	  <div ng-show="sizeForm.siv.$invalid && !sizeForm.siv.$pristine">
-	    <span class="fg-red">请输入字母或数字</span>
+	    <span class="fg-red">请输入1-3个字母或数字</span>
 	  </div>
 	  <div ng-show="!params.check_same(
 			params.size, 'siv', params.size.siv)">
@@ -750,14 +745,13 @@
 		     name="sv"
 		     placeholder="请输入尺码IV"
 		     capitalize
-		     x-ng-maxlength="10"
 		     x-ng-model="params.size.sv"
-		     x-ng-pattern="/^[A-Za-z0-9\/]+$/"/>
+		     x-ng-pattern="params.pattern.size"/>
 	      <span class="input-group-addon bg-white fg-red">*</span>
 	    </div>
 	  </div> 
 	  <div ng-show="sizeForm.sv.$invalid && !sizeForm.sv.$pristine">
-	    <span class="fg-red">请输入字母或数字</span>
+	    <span class="fg-red">请输入1-3个字母或数字</span>
 	  </div>
 	  <div ng-show="!params.check_same(
 			params.size, 'sv', params.size.sv)">
@@ -775,17 +769,40 @@
 		     name="svi"
 		     placeholder="请输入尺码VI"
 		     capitalize
-		     x-ng-maxlength="10"
 		     x-ng-model="params.size.svi"
-		     x-ng-pattern="/^[A-Za-z0-9\/]+$/"/>
+		     x-ng-pattern="params.pattern.size"/>
 	      <span class="input-group-addon bg-white fg-red">*</span>
 	    </div>
 	  </div>
 	  <div ng-show="sizeForm.svi.$invalid && !sizeForm.svi.$pristine">
-	    <span class="fg-red">请输入字母或数字</span>
+	    <span class="fg-red">请输入1-3个字母或数字</span>
 	  </div>
 	  <div ng-show="!params.check_same(
 			params.size, 'svi', params.size.svi)">
+	    <span class="fg-red">尺码已存在，请重新输入</span>
+	  </div>
+	</div>
+
+	<!--SVII-->
+	<div class="form-group">
+	  <label class="col-sm-3 col-md-3 control-label">尺码VII</label>
+	  <div class="col-sm-6 col-md-6"> 
+	    <div class="input-group">
+	      
+	      <input class="form-control" type="text"
+		     name="svii"
+		     placeholder="请输入尺码VII"
+		     capitalize
+		     x-ng-model="params.size.svii"
+		     x-ng-pattern="params.pattern.size"/>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	  </div>
+	  <div ng-show="sizeForm.svii.$invalid && !sizeForm.svii.$pristine">
+	    <span class="fg-red">请输入1-3个字母或数字</span>
+	  </div>
+	  <div ng-show="!params.check_same(
+			params.size, 'svii', params.size.svii)">
 	    <span class="fg-red">尺码已存在，请重新输入</span>
 	  </div>
 	</div> 
@@ -830,6 +847,7 @@
 	    <td class="vert-align">{{g.siv}}</td>
 	    <td class="vert-align">{{g.sv}}</td>
 	    <td class="vert-align">{{g.svi}}</td>
+	    <td class="vert-align">{{g.svii}}</td>
 	  </tr>
 	</tbody>
       </table>

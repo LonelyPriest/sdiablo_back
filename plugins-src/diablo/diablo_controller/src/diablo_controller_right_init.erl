@@ -237,7 +237,10 @@ init([]) ->
 	 {?reject_w_inventory,
 	  <<"退货">>, <<"reject_w_inventory">>,      ?right_w_inventory}, 
 	 {?fix_w_inventory,
-	  <<"盘点">>, <<"fix_w_inventory">>,         ?right_w_inventory} 
+	  <<"盘点">>, <<"fix_w_inventory">>,         ?right_w_inventory},
+	 {?set_w_inventory_promotion,
+	  <<"促销方案设置">>,
+	  <<"set_w_inventory_promotion">>, ?right_w_inventory} 
 	],
 
     %% firm

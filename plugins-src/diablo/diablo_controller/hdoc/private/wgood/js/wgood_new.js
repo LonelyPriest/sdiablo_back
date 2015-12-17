@@ -355,7 +355,10 @@ wgoodApp.controller("wgoodNewCtrl", function(
 	
 	dialog.edit_with_modal(
 	    'new-size.html', undefined, callback, $scope,
-	    {size: {}, valid_group: valid_group, check_same: check_same}) 
+	    {size: {},
+	     valid_group: valid_group,
+	     check_same:  check_same,
+	     pattern: {size: diabloPattern.size}});
     };
     
     

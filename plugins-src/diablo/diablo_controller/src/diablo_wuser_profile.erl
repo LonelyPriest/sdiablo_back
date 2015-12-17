@@ -141,6 +141,8 @@ update(retailer, Merchant) ->
     gen_server:cast(?SERVER, {update_retailer, Merchant});
 update(color, Merchant) ->
     gen_server:cast(?SERVER, {update_color, Merchant});
+update(size_group, Merchant) ->
+    gen_server:cast(?SERVER, {update_sizegroup, Merchant});
 update(promotion, Merchant) ->
     gen_server:cast(?SERVER, {update_promotion, Merchant}).
 
@@ -201,7 +203,7 @@ handle_call({new_profile, Merchant}, _From, State) ->
 				  pformat     = PFormats,
 				  %% bank        = ?to_tl(Cards),
 				  setting     = ?to_tl(Setting),
-				  size_groups = ?to_tl(SizeGroups),
+				  size_groups = SizeGroups,
 				  itype       = Types,
 				  firm        = Firms,
 				  employee    = Employees,
@@ -837,6 +839,9 @@ handle_cast({Update, Merchant}, State) ->
 		    update_color ->
 			{ok, Colors}= ?attr:color(w_list, Merchant),
 			Profile#wuser_profile{color=Colors};
+		    update_sizegroup ->
+			{ok, SizeGroups}   = ?attr:size_group(list, Merchant),
+			Profile#wuser_profile{size_groups=SizeGroups};
 		    update_promotion ->
 			{ok, Promotions}
 			    = ?promotion:promotion(list, Merchant),
@@ -854,7 +859,8 @@ handle_cast({Update, Merchant}, State) ->
 			   [Merchant]),
 		    {noreply, State};
 		false ->
-		    ?DEBUG("failed to update profile of merchant ~p", [Merchant]),
+		    ?DEBUG("failed to update profile of merchant ~p",
+			   [Merchant]),
 		    {noreply, State}
 	    end
     end;

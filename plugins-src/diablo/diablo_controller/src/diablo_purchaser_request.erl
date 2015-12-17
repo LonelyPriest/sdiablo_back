@@ -395,8 +395,28 @@ action(Session, Req, {"w_inventory_export"}, Payload) ->
 	    end; 
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
-    end. 
+    end;
+
+action(Session, Req, {"set_w_inventory_promotion"}, Payload) ->
+    ?DEBUG("set_w_inventory_promotion with session ~p~n, paylaod ~p",
+	   [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    {struct, Conditions} = ?value(<<"condition">>, Payload),
+    Promotion = ?v(<<"promotion">>, Payload),
+    Score     = ?v(<<"score">>, Payload),
     
+    case ?w_inventory:purchaser_inventory(
+	    set_promotion, Merchant, [{<<"promotion">>, Promotion},
+				      {<<"score">>, Score}], Conditions) of
+	{ok, _} ->
+	    ?utils:respond(
+	       200,
+	       Req,
+	       ?succ(set_w_inventory_promotion, Merchant));
+	{error, Error} ->
+    	    ?utils:respond(200, Req, Error)
+    end.
+
 
 sidebar(Session) -> 
     case ?right_request:get_shops(Session, inventory) of

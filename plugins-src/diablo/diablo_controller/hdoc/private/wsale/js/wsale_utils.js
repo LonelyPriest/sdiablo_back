@@ -62,6 +62,9 @@ var wsaleUtils = function(){
 		add.fdiscount = s.fdiscount;
 		add.reject    = Math.abs(s.amount);
 		add.total     = Math.abs(s.total);
+		
+		add.pid       = s.pid;
+		add.sid       = s.sid;
 
 		add.sizes.push(s.size);
 		add.colors_id.push(s.color_id);
@@ -97,12 +100,13 @@ var wsaleUtils = function(){
 
     return {
 	cover_wsale: function(
-	    base, sells,
-	    shops, brands, retailers, employees, types, colors, size_groups){
+	    base, sells, shops, brands, retailers, employees,
+	    types, colors, size_groups, promotions, scores){
 	    var wsale         = sort_wsale(base, sells);
 	    var details       = wsale.details;
 	    var order_length  = details.length;
 
+	    var show_promotions = [];
 	    angular.forEach(details, function(d){
 
 		if (d.sizes.length !== 1 || d.sizes[0] !== "0"){
@@ -117,8 +121,22 @@ var wsaleUtils = function(){
 		// d.retailer = diablo_get_object(d.retailer_id, retailers);
 		d.type = diablo_get_object(d.type_id, types);
 
+		d.promotion = diablo_get_object(d.pid, promotions);
+		d.score     = diablo_get_object(d.sid, scores);
+
 		d.order_id = order_length;
+
+		var show = {
+		    order_id:  d.order_id,
+		    name:      d.style_number
+			+ "，" + d.brand.name + "，" + d.type.name,
+		    promotion: d.promotion,
+		    score:     d.score,
+		}; 
+		show_promotions.unshift(show);
+		
 		order_length--; 
+		
 	    });
 
 	    wsale.select.shop = diablo_get_object(
@@ -126,7 +144,9 @@ var wsaleUtils = function(){
 	    wsale.select.retailer = diablo_get_object(
 		wsale.select.retailer_id, retailers);
 	    wsale.select.employee = diablo_get_object(
-		wsale.select.employee_id, employees); 
+		wsale.select.employee_id, employees);
+	    
+	    wsale.show_promotions = show_promotions;
 	    return wsale;
 	},
 

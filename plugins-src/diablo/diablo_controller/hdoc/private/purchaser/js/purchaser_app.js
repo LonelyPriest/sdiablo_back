@@ -52,6 +52,9 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
     var promotion = {"filterPromotion": function(diabloFilter){
 	return diabloFilter.get_promotion()}};
 
+    var score = {"filterScore": function(diabloNormalFilter){
+	return diabloNormalFilter.get_score()}};
+
     var color_type = {"filterColorType": function(diabloFilter){
             return diabloFilter.get_color_type()}};
     
@@ -67,7 +70,7 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_new.html',
             controller: 'purchaserInventoryNewCtrl',
 	    resolve: angular.extend(
-		{}, user, promotion, firm, employee, color, base)
+		{}, user, promotion, brand, firm, employee, color, base)
 	}).
 	when('/update_new_detail/:rsn?/:ppage?', {
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_new_detail_update.html',
@@ -104,7 +107,8 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_detail.html',
             controller: 'purchaserInventoryDetailCtrl' ,
 	    resolve: angular.extend(
-		{}, user, brand, firm, type, s_group, color, base)
+		{}, promotion, score,
+		user, brand, firm, type, s_group, color, base)
 	}).
 	// fix
 	when('/inventory/inventory_fix', {
@@ -449,6 +453,17 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
 	return http.save(
 	    {operation: "w_inventory_export"},
 	    {condition: condition, e_type:e_type}).$promise;
+    };
+
+    /*
+     * promotion 
+     */
+    this.set_w_inventory_promotion = function(condition, promotion, score){
+	return http.save(
+	    {operation: "set_w_inventory_promotion"},
+	    {condition: condition,
+	     promotion: promotion,
+	     score:     score}).$promise;
     };
     
 });

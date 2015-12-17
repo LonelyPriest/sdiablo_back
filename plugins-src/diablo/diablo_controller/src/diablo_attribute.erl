@@ -186,9 +186,11 @@ handle_call({new_size_group, Merchant, Attrs}, _From, State) ->
 		SIV  = ?v(<<"siv">>, Attrs, ""),
 		SV   = ?v(<<"sv">>, Attrs, ""),
 		SVI  = ?v(<<"svi">>, Attrs, ""),
+		SVII = ?v(<<"svii">>, Attrs, ""),
 
 		Sql1 = "insert into size_group("
-		    "name, si, sii, siii, siv, sv, svi, merchant) values("
+		    "name, si, sii, siii, siv, sv, svi, svii, merchant)"
+		    " values("
 		    "\'" ++ ?to_s(Name) ++ "\',"
 		    "\'" ++ ?to_s(SI) ++ "\',"
 		    "\'" ++ ?to_s(SII) ++ "\',"
@@ -196,8 +198,11 @@ handle_call({new_size_group, Merchant, Attrs}, _From, State) ->
 		    "\'" ++ ?to_s(SIV) ++ "\',"
 		    "\'" ++ ?to_s(SV) ++ "\',"
 		    "\'" ++ ?to_s(SVI) ++ "\',"
+		    "\'" ++ ?to_s(SVII) ++ "\',"
 		    ++ ?to_s(Merchant) ++ ")", 
-		?sql_utils:execute(insert, Sql1); 
+		Result = ?sql_utils:execute(insert, Sql1),
+		?w_user_profile:update(size_group, Merchant),
+		Result;
 	    {ok, Group} ->
 		{error, ?err(size_group_exist, ?v(<<"id">>, Group))};
 	    Error ->
@@ -223,14 +228,16 @@ handle_call({update_size_group, Merchant, Attrs}, _From, State) ->
     SIV      = ?v(<<"siv">>, Attrs),
     SV       = ?v(<<"sv">>, Attrs),
     SVI      = ?v(<<"svi">>, Attrs),
+    SVII     = ?v(<<"sviI">>, Attrs),
 
     Updates = ?utils:v(si, string, SI)
 	++ ?utils:v(sii, string, SII)
 	++ ?utils:v(siii, string, SIII)
 	++ ?utils:v(siv, string, SIV)
 	++ ?utils:v(sv, string, SV)
-	++ ?utils:v(svi, string, SVI),
-
+	++ ?utils:v(svi, string, SVI)
+	++ ?utils:v(svii, string, SVII),
+    
     ?DEBUG("updates ~p", [Updates]),
 
     Sql  = "update size_group set "
@@ -243,7 +250,7 @@ handle_call({update_size_group, Merchant, Attrs}, _From, State) ->
 
 handle_call({list_size_group, Merchant}, _From, State) ->
     ?DEBUG("lookup size group with merchant ~p", [Merchant]),
-    Sql = "select id, name, si, sii, siii, siv, sv, svi"
+    Sql = "select id, name, si, sii, siii, siv, sv, svi, svii"
 	++ " from size_group"
 	++ " where merchant = " ++ ?to_string(Merchant)
 	++ " and deleted = " ++ ?to_string(?NO) ++ ";",

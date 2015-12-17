@@ -85,53 +85,58 @@
 		       scroll-stop="50">
 		  <tr>
 		    <th>序号</th>
+		    <th>单号</th>
 		    
+		    <th>交易</th>
+		    <th>店铺</th>
 		    <th x-ng-click="toggle_base()" class="danger">
 		      <span x-ng-if="show.base">
 			<i class="glyphicon glyphicon-backward fg-red"></i>
-			单号</span>
+			客户</span>
 		      <span x-ng-if="!show.base">
-			单号<i class="glyphicon glyphicon-forward fg-red"></i>
+			客户<i class="glyphicon glyphicon-forward fg-red"></i>
 		      </span>
 		    </th>
-		    <th x-ng-if="show.base">交易</th>
-		    <th x-ng-if="show.base">店铺</th>
-		    <th x-ng-if="show.base">店员</th>
-		    <th>客户</th> 
-		    <th>数量</th>
-
-		    <th class="info">余额</th>
+		    <th x-ng-if="show.base" class="info">余额</th>
+		    <th x-ng-if="show.base" class="info">结余</th>
+		    <th>店员</th> 
+		    <th>数量</th> 
 		    
 		    <th class="info">实收</th>
-		    <th>现金</th>
-		    <th>刷卡</th>
-		    <th>提现</th>
-		    
-		    <!-- <th class="info">余额</th>  -->
-		    <th x-ng-click="toggle_comment()" class="danger">
-		      <span x-ng-if="show.comment">
-			<i class="glyphicon glyphicon-backward fg-red"></i>
-			结余
+		    <!-- <th class="info">积分</th> -->
+		    <th x-ng-click="toggle_balance()" class="danger">
+		      <span x-ng-if="show.balance">
+		    	<i class="glyphicon glyphicon-backward fg-red"></i>
+		    	积分
 		      </span>
-		      <span x-ng-if="!show.comment">
-			结余
-			<i class="glyphicon glyphicon-forward fg-red"></i>
-		      </span>
-		    </th> 
-		    <th x-ng-if="show.comment">备注</th>
-		    
-		    <th x-ng-click="toggle_action()">
-		      <span x-ng-if="show.action">
-			<i class="glyphicon glyphicon-backward fg-red"></i>
-			开单日期
-		      </span>
-		      <span x-ng-if="!show.action">
-			开单日期
-			<i class="glyphicon glyphicon-forward fg-red"></i>
+		      <span x-ng-if="!show.balance">
+		    	积分
+		    	<i class="glyphicon glyphicon-forward fg-red"></i>
 		      </span>
 		    </th>
+		    <th x-ng-if="show.balance">现金</th>
+		    <th x-ng-if="show.balance">刷卡</th>
+		    <th x-ng-if="show.balance">提现</th>
 
-		    <th x-ng-if="show.action">操作</th>
+		    <th x-ng-if="show.balance">充值</th>
+		    <th x-ng-if="show.balance">赠送</th>
+		    
+		    
+		    <th>备注</th>
+
+		    <th>日期</th>
+		    <!-- <th x-ng-click="toggle_action()"> -->
+		    <!--   <span x-ng-if="show.action"> -->
+		    <!-- 	<i class="glyphicon glyphicon-backward fg-red"></i> -->
+		    <!-- 	开单日期 -->
+		    <!--   </span> -->
+		    <!--   <span x-ng-if="!show.action"> -->
+		    <!-- 	开单日期 -->
+		    <!-- 	<i class="glyphicon glyphicon-forward fg-red"></i> -->
+		    <!--   </span> -->
+		    <!-- </th> -->
+
+		    <th>操作</th>
 		  </tr>
 		</thead>
 		
@@ -139,41 +144,56 @@
 		  <tr x-ng-repeat="r in records track by r.id">
 		    <td>{{r.order_id}}</td>
 		    <td>{{r.rsn}}</td>
-		    <td x-ng-if="show.base" x-ng-switch on="r.type">
+		    <td x-ng-switch on="r.type">
 		      <span x-ng-switch-when=0>开单</span>
 		      <span class="fg-red" x-ng-switch-when=1>退货</span>
+		      <span class="fg-blue" x-ng-switch-when=2>充值</span>
 		    </td>
-		    <td x-ng-if="show.base">{{r.shop.name}}</td>
-		    <td x-ng-if="show.base">{{r.employee.name}}</td>
+		    <td>{{r.shop.name}}</td>
 		    <td>{{r.retailer.name}}</td>
-		    <td>{{r.total}}</td>
+		    <td x-ng-if="show.base">{{r.balance}}</td>
+		    <td x-ng-if="show.base">{{r.left_balance}} </td>
+		    
+		    <td >{{r.employee.name}}</td>
 
-		    <td>{{r.balance}}</td>
+		    <td>{{r.total}}</td> 
 		    
 		    <td x-ng-switch on="r.type">
 		      <span x-ng-switch-when=0>{{round(r.should_pay)}}</span>
-		      <span class="fg-darkRed" x-ng-switch-when=1>
+		      <span class="fg-red" x-ng-switch-when=1>
+			{{round(r.should_pay)}}
+		      </span>
+		      <span class="fg-blue" x-ng-switch-when=2>
 			{{round(r.should_pay)}}
 		      </span>
 		    </td>
+
+		    <td>{{r.score}}</td>
 		    
-		    <td>{{r.cash}}</td>
-		    <td>{{r.card}}</td>
-		    <td>{{r.withdraw}}</td>
-		    
-		    
-		    <td>{{round(r.balance - r.withdraw)}}</td>
-		    
-		    <td x-ng-if="show.comment">
-		      <span x-ng-switch on="r.comment">
-			<span x-ng-switch-when="null">无</span>
-			<span x-ng-switch-default>{{r.comment}}</span>
-		      </span>
+		    <td x-ng-if="show.balance">{{r.cash}}</td>
+		    <td x-ng-if="show.balance">{{r.card}}</td>
+		    <td x-ng-if="show.balance">{{r.withdraw}}</td>
+
+		    <td x-ng-if="show.balance">
+		      <span x-ng-if="r.cbalance !== 0" class="fg-blue">
+			{{r.cbalance}}</span>
+		      <span x-ng-if="r.cbalance === 0">{{r.cbalance}}</span>
+		    </td>
+		    <td x-ng-if="show.balance">
+		      <span x-ng-if="r.sbalance !== 0" class="fg-blue">
+			{{r.sbalance}}</span>
+		      <span x-ng-if="r.sbalance === 0">{{r.sbalance}}</span>
+		    </td>
+
+		    <td>
+		      <span x-ng-if="r.comment">{{r.comment}}</span>
+		      <span x-ng-if="!r.comment"></span> 
 		    </td>
 		    
 		    <td>{{r.entry_date}}</td>
 
-		    <td x-ng-if="show.action">
+		    <!-- <td x-ng-if="show.action"> -->
+		    <td>
 		      <!-- <button class="btn diablo-button purple-plum" -->
 		      <!-- 	      x-ng-disabled="disable_print" -->
 		      <!-- 	      x-ng-click="print(r)"> -->
@@ -206,19 +226,17 @@
 
 		  <!--Total info-->
 		  <tr x-ng-if="total_items!==0" class="info"> 
-		    <td x-ng-if="show.base" colspan="6"></td>
-		    <td x-ng-if="!show.base" colspan="3"></td>
+		    <td x-ng-if="show.base" colspan="8"></td>
+		    <td x-ng-if="!show.base" colspan="6"></td>
 		    
 		    <td>{{total_amounts}}</td>
-		    <td></td>
 		    <td>{{total_spay}}</td>
-		    <!-- <td colspan="1"></td> -->
-		    <td>{{total_cash}}</td>
-		    <td>{{total_card}}</td>
-		    <td>{{total_withdraw}}</td>
+		    <td></td>
+		    <td x-ng-if="show.balance">{{total_cash}}</td>
+		    <td x-ng-if="show.balance">{{total_card}}</td>
+		    <td x-ng-if="show.balance">{{total_withdraw}}</td>
 		    <!-- <td>{{total_balance - total_withdraw}}</td>  -->
-		    <td x-ng-if="show.comment" colspan="3"></td>
-		    <td x-ng-if="!show.comment" colspan="2"></td>
+		    <td colspan="4"></td>
 		  </tr>
 		</tbody>
 
