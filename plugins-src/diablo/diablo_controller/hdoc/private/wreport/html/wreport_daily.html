@@ -23,14 +23,11 @@
 		      <th>序号</th>
 		      <th>店铺</th>
 		      <th>数量</th>
-		      <th class="success">应收</th>
 		      <th class="danger">实收</th> 
 		      <th>现金</th>
 		      <th>刷卡</th>
-		      <th>汇款</th>
-		      <th>核销</th>
-		      <!-- <th>营业额</th> -->
-		      <!-- <th>净利润</th> -->
+		      <th>充值</th>
+		      <th>提现</th> 
 		    </tr>
 		  </thead>
 		  <tbody>
@@ -39,26 +36,25 @@
 		      <td>{{r.shop.name}}</td>
 		      <td>{{r.t_amount}}</td>
 		      <td>{{r.t_spay}}</td>
-		      <td>{{r.t_hpay}}</td>
 		      <td>{{r.t_cash}}</td>
 		      <td>{{r.t_card}}</td>
-		      <td>{{r.t_wire}}</td>
-		      <td>{{r.t_verificate}}</td>
+		      <td>{{r.t_cbalance}}</td>
+		      <td>{{r.t_withdraw}}</td>
 		    </tr>
 		    <tr>
 		      <td colspan=2></td>
 		      <td>{{total_amounts}}</td>
 		      <td>{{total_spay}}</td>
-		      <td>{{total_hpay}}</td>
 		      <td>{{total_cash}}</td>
 		      <td>{{total_card}}</td>
-		      <td>{{total_wire}}</td>
-		      <td>{{total_verificate}}</td>
+		      <td>{{total_cbalance}}</td>
+		      <td>{{total_withdraw}}</td>
 		    </tr>
 		  </tbody>
 		  <tfoot>
 		    <tr> 
-		      <td x-ng-show="total_items>items_perpage" colspan={{report_shop_colspan}}>
+		      <td x-ng-show="total_items>items_perpage"
+			  colspan={{report_shop_colspan}}>
 			<span class="pagination">
 			  <span>显示第 {{current_shop_page}} / {{num_pages}} 项结果，
 			    共 {{total_items}} 项</span>
@@ -84,7 +80,7 @@
 	  </tab>
 
 	  <tab x-ng-controller="dailyByRetailer"
-	       heading="按零售商"
+	       heading="按客户"
 	       select="do_search(r_pagination.current_page)">
 	    <div class="panel panel-default table-panel">
 	      <div class="table-responsive">
@@ -98,15 +94,13 @@
 			 scroll-stop="50">
 		    <tr>
 		      <th>序号</th>
-		      <th>零售商</th>
-		      <th>欠款</th> 
-		      <!-- <th>数量</th> -->
-		      <!-- <th class="success">应付</th> -->
-		      <th class="danger">实付</th>
+		      <th>客户</th>
+		      <th>余额</th>
+		      <th class="danger">实收</th>
 		      <th>现金</th>
 		      <th>刷卡</th>
-		      <th>汇款</th>
-		      <th class="info">核销</th>
+		      <th>充值</th>
+		      <th>提现</th>
 		    </tr>
 		  </thead>
 		  <tbody>
@@ -114,12 +108,11 @@
 		      <td>{{r.order_id}}</td>
 		      <td>{{r.retailer.name}}</td>
 		      <td>{{r.retailer.balance}}</td>
-		      <td>{{r.t_hpay}}</td>
+		      <td>{{r.t_spay}}</td>
 		      <td>{{r.t_cash}}</td>
 		      <td>{{r.t_card}}</td>
-		      <td>{{r.t_wire}}</td>
-		      <td>{{r.t_verificate}}</td>
-		      
+		      <td>{{r.t_cbalance}}</td>
+		      <td>{{r.t_withdraw}}</td>
 		    </tr>
 		    <tr x-ng-if="r_stastic.total_items!==0">
 		      <td colspan=3></td>
@@ -131,32 +124,7 @@
 		    </tr>
 		  </tbody>
 		  
-		  <tfoot>
-		    <!-- <tr>  -->
-		    <!--   <td x-ng-show="r_stastic.total_items>r_pagination.items_perpage" colspan=9> -->
-		    <!-- 	<span class="pagination"> -->
-		    <!-- 	  <span>显示第 {{r_pagination.current_page}} / {{r_pagination.total_page}} 页结果， -->
-		    <!-- 	    共 {{r_stastic.total_items}} 项</span> -->
-		    <!-- 	</span> -->
-
-		    <!-- 	<\!-- <span class="pull-right"> -\-> -->
-		    <!-- 	  <span class="btn-toolbar pull-right"> -->
-		    <!-- 	    <span class="btn-group btn-group-solid"> -->
-		    <!-- 	      <button class="btn purple-plum" -->
-		    <!-- 		      x-ng-disabled="r_pagination.current_page===1" -->
-		    <!-- 		      x-ng-click="pre()"> -->
-		    <!-- 		<i class="glyphicon glyphicon-menu-left"></i> -->
-		    <!-- 	      </button> -->
-		    <!-- 		<button class="btn red-sunglo" -->
-		    <!-- 			x-ng-disabled="r_pagination.current_page===r_pagination.total_page" -->
-		    <!-- 			x-ng-click="next()"> -->
-		    <!-- 		  <i class="glyphicon glyphicon-menu-right"></i> -->
-		    <!-- 		</button> -->
-		    <!-- 	    </span> -->
-		    <!-- 	  </span>  -->
-		    <!-- 	<\!-- </span>  -\-> -->
-		    <!--   </td> -->
-		    <!-- </tr> -->
+		  <tfoot> 
 		  </tfoot>
 		  
 		</table> <!--END table-->

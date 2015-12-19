@@ -202,12 +202,30 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 		++ "\"" ++ ?to_s(DateTime) ++ "\");",
 
 	    Sql3 =
-		case Withdraw =< 0 of
-		    true  -> [];
+		case Withdraw =< 0  of
+		    true  -> 
+			case Score =:= 0 of
+			    true -> [];
+			    false ->
+				["update w_retailer set score=score+"
+				 ++ ?to_s(Score)
+				 ++ " where "
+				 ++ "id=" ++ ?to_s(?v(<<"id">>, Account))]
+			end;
 		    false ->
-			["update w_retailer set balance=balance-"
-			 ++ ?to_s(Withdraw)
-			 ++ " where id=" ++ ?to_s(?v(<<"id">>, Account))]
+			case Score =:= 0 of
+			    true ->
+				["update w_retailer set balance=balance-"
+				 ++ ?to_s(Withdraw)
+				 ++ " where "
+				 ++ "id=" ++ ?to_s(?v(<<"id">>, Account))];
+			    false ->
+				["update w_retailer set "
+				 "balance=balance-"++ ?to_s(Withdraw)
+				 ++ ", score=score+" ++ ?to_s(Score)
+				 ++ " where "
+				 ++ "id=" ++ ?to_s(?v(<<"id">>, Account))]
+			end
 		end,
 	    
 	    AllSql = Sql1 ++ [Sql2] ++ Sql3,
@@ -618,6 +636,7 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
     ShouldPay  = ?v(<<"should_pay">>, Props, 0),
     Withdraw   = ?v(<<"withdraw">>, Props, 0),
     Total      = ?v(<<"total">>, Props, 0),
+    Score      = ?v(<<"score">>, Props, 0),
     
     Sql0 = "select id, name, balance from w_retailer"
 	" where id=" ++ ?to_s(Retailer)
@@ -663,8 +682,8 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 
 	    Sql2 = "insert into w_sale(rsn"
 		", employ, retailer, shop, merchant, balance"
-		", should_pay, cash, withdraw, total, comment, type"
-		", entry_date) values("
+		", should_pay, cash, withdraw, total, score"
+		", comment, type, entry_date) values("
 		++ "\"" ++ ?to_s(Sn) ++ "\","
 		++ "\"" ++ ?to_s(Employe) ++ "\","
 		++ ?to_s(Retailer) ++ ","
@@ -675,20 +694,25 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 		       false -> ?to_s(CurrentBalance) ++ ","
 		   end
 		++ ?to_s(-ShouldPay) ++ ","
-		++ ?to_s(-ShouldPay) ++ ","
+		++ case Withdraw == ShouldPay of
+		       true -> ?to_s(0) ++ ",";
+		       false -> ?to_s((Withdraw - ShouldPay)) ++ ","
+		   end
 		++ ?to_s(-Withdraw) ++ "," 
 		++ ?to_s(-Total) ++ ","
+		++ ?to_s(-Score) ++ ","
 		++ "\"" ++ ?to_s(Comment) ++ "\"," 
 		++ ?to_s(type(reject)) ++ ","
 		++ "\"" ++ ?to_s(DateTime) ++ "\");",
 
 	    Sql3 =
-		case Withdraw > 0 of
-		    true ->
-			["update w_retailer set balance=balance+"
-			 ++ ?to_s(Withdraw)
-			 ++ " where id=" ++ ?to_s(?v(<<"id">>, Account))];
-		    false -> []
+		case Withdraw =< 0  andalso Score == 0 of
+		    true  -> [];
+		    false ->
+			["update w_retailer set "
+			 "balance=balance+" ++ ?to_s(Withdraw)
+			 ++ ", score=score-" ++ ?to_s(Score)
+			 ++ " where id=" ++ ?to_s(?v(<<"id">>, Account))]
 		end,
 
 	    AllSql = Sql1 ++ [Sql2] ++ Sql3,
@@ -696,8 +720,11 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 	    case ?sql_utils:execute(transaction, AllSql, Sn) of
 		{error, _} = Error ->
 		    {reply, Error, State};
-		OK -> 
-		    ?w_user_profile:update(retailer, Merchant),
+		OK ->
+		    case Withdraw > 0 orelse Score =/= 0 of
+			true -> ?w_user_profile:update(retailer, Merchant);
+			false -> ok
+		    end,
 		    {reply, OK, State}
 	    end; 
 	Error ->

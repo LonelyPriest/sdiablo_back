@@ -15,14 +15,14 @@ sale(new_by_shop, Merchant, Conditions) ->
     {StartTime, EndTime, NewConditions} = 
 	?sql_utils:cut(fields_no_prifix, Conditions), 
     "select shop as shop_id"
+	
 	", sum(total) as t_amount"
-	", sum(should_pay) as t_spay"
-	", sum(has_pay) as t_hpay"
-	", sum(has_pay) as t_hpay"
+	", sum(should_pay) as t_spay" 
 	", sum(cash) as t_cash"
 	", sum(card) as t_card"
-	", sum(wire) as t_wire"
-	", sum(verificate) as t_verificate"
+	", sum(cbalance) as t_cbalance" 
+	", sum(withdraw) as t_withdraw"
+	
 	" from w_sale"
 	++ " where " ++ ?utils:to_sqls(proplists, NewConditions)
 	++ " and merchant=" ++ ?to_s(Merchant)
@@ -40,13 +40,15 @@ sale(new_by_retailer, Merchant, Conditions) ->
     %% {StartTime, EndTime, NewConditions} = 
     %% 	?sql_utils:cut(fields_no_prifix, Conditions), 
     "select a.shop as shop_id"
+	
 	", a.employ as employee_id"
 	", a.retailer as retailer_id"
+	
 	", sum(a.cash) as t_cash"
 	", sum(a.card) as t_card"
-	", sum(a.wire) as t_wire"
-	", sum(a.verificate) as t_verificate"
-	", SUM(a.has_pay) as t_hpay"
+	", sum(cbalance) as t_cbalance" 
+	", sum(withdraw) as t_withdraw"
+	
 	" from w_sale a"
 	++ " where " ++ SortConditions
 	++ " and a.deleted=" ++ ?to_s(?NO)

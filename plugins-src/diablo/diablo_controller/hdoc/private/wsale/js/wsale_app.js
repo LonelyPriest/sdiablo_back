@@ -1026,8 +1026,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
 		year        : add.year,
 		sell_total  : parseInt(add.sell),
 
-		promotion   : add.promotion.id,
-		score       : add.score.id,
+		promotion   : add.pid,
+		score       : add.sid,
 		
 		fdiscount   : seti(add.fdiscount),
 		fprice      : setv(add.fprice),
@@ -1174,38 +1174,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	// $scope.select.left_balance = 0;
 
 	var pmoneys = []; 
-	var format_pmoney = function(p, money){
-	    var found = false;
-	    for (var i=0, l=pmoneys.length; i<l; i++){
-		if (p.id === pmoneys[i].promotion.id){
-		    found = true;
-		    pmoneys[i].money += money;
-		    break;
-		}
-	    }
-
-	    if (!found){
-		pmoneys.push({promotion:p, money: money});
-	    }
-	};
-
-	var pscores = [];
-	var format_score = function(score, promotion, money){
-	    var found = false;
-	    for (var i=0, l=pscores.length; i<l; i++){
-		if (score.id === pscores[i].score.id){
-		    found = true;
-		    pscores[i].money += money;
-		    break;
-		}
-	    }
-
-	    if (!found){
-		pscores.push({
-		    score:score, promotion: promotion, money: money});
-	    }
-	};
-	
+	var pscores = []; 
 	console.log($scope.inventories);
 	for (var i=1, l=$scope.inventories.length; i<l; i++){
 
@@ -1226,54 +1195,26 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    }
 
 	    if (!one.promotion){
-		format_pmoney({id: -1, rule_id: -1}, one.calc);
+		// format_pmoney({id: -1, rule_id: -1}, one.calc);
+		wsaleUtils.sort_promotion(
+		    {id: -1, rule_id: -1}, one.calc, pmoneys);
 	    } else {
-		format_pmoney(one.promotion, one.calc);
+		wsaleUtils.sort_promotion(one.promotion, one.calc, pmoneys);
+		// format_pmoney(one.promotion, one.calc);
 	    }
 
 	    if (one.score){
-		format_score(one.score, one.promotion, one.calc);
+		wsaleUtils.sort_score(
+		    one.score, one.promotion, one.calc, pscores)
+		// format_score(one.score, one.promotion, one.calc);
 	    }
 	}
 
 	console.log(pmoneys);
-	console.log(pscores);
-	
-	for ( var i=0, l=pmoneys.length; i<l; i++){
-	    var p = pmoneys[i].promotion;
-	    if (p.rule_id === -1){
-		$scope.select.should_pay += pmoneys[i].money;
-		continue;
-	    }
+	console.log(pscores); 
 
-	    if (p.rule_id === 0){
-		$scope.select.should_pay
-		    += $scope.f_mul(
-			pmoneys[i].money, $scope.f_mul(p.discount, 0.01));
-		continue;
-	    }
-
-	    if (p.rule_id === 1){
-		var rmoney = pmoneys[i].money / p.cmoney *  p.rmoney;
-		$scope.select.should_pay += pmoneys[i].money - rmoney;
-		continue;
-	    }
-	}
-
-	for ( var i=0, l=pscores.length; i<l; i++){
-	    var s = pscores[i];
-	    if (s.promotion && s.promotion.rule_id === 0){
-		$scope.select.score +=
-		s.money * s.promotion.discount * 0.01
-		    * s.score.score / s.score.balance; 
-	    } else {
-		$scope.select.score +=
-		s.money / s.score.balance * s.score.score; 
-	    }
-	}
-
-	$scope.select.should_pay = $scope.round($scope.select.should_pay);
-	$scope.select.score = $scope.round($scope.select.score);
+	$scope.select.should_pay = wsaleUtils.calc_with_promotion(pmoneys);
+	$scope.select.score = wsaleUtils.calc_with_score(pscores);
 
 	$scope.select.charge =
 	    $scope.select.should_pay - $scope.select.has_pay;
@@ -1340,19 +1281,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 		fprice:      params.fprice};
     };
 
-    var add_promotion = function(inv){
-	// promotion
-	var show = {
-	    order_id:  inv.order_id,
-	    name:      inv.style_number + "，" + inv.brand + "，" + inv.type,
-	    promotion: inv.promotion,
-	    score:     inv.score,
-	};
-	
-	$scope.show_promotions.unshift(show);
-	console.log($scope.show_promotions);
-    }
-
+    
     $scope.add_free_inventory = function(inv){
 	console.log(inv);
 
@@ -1377,7 +1306,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	$scope.re_calculate();
 
 	// promotions
-	add_promotion(inv);
+	wsaleUtils.format_promotion(inv, $scope.show_promotions);
     };
     
     $scope.add_inventory = function(inv){
@@ -1451,7 +1380,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
 			$scope.local_save();
 			$scope.re_calculate();
 
-			add_promotion(inv);
+			wsaleUtils.format_promotion(
+			    inv, $scope.show_promotions);
 		    };
 		    
 		    var callback = function(params){
@@ -1918,19 +1848,22 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 	    console.log(result);
 	    $scope.disable_print = false; 
 	    if (result.ecode == 0){
-		var msg = "";
+		var msg;
 		if (result.pcode == 0){
-		    msg = "销售单打印成功！！单号：" + result.rsn + "，请等待服务器打印";
+		    msg = "销售单打印成功！！单号："
+			+ result.rsn + "，请等待服务器打印";
 		    dialog.response(true, "销售单打印", msg, $scope); 
 		} else {
 		    if (result.pinfo.length === 0){
 			msg += wsaleService.error[result.pcode]
 		    } else {
 			angular.forEach(result.pinfo, function(p){
-			    msg += "[" + p.device + "] " + wsaleService.error[p.ecode]
+			    msg += "[" + p.device + "] "
+				+ wsaleService.error[p.ecode]
 			})
 		    };
-		    msg = "销售单打印失败！！单号：" + result.rsn + "，打印失败：" + msg;
+		    msg = "销售单打印失败！！单号："
+			+ result.rsn + "，打印失败：" + msg;
 		    dialog.response(false, "销售单打印", msg, $scope); 
 		}
 		
@@ -2030,54 +1963,7 @@ wsaleApp.controller("wsaleGuideCtrl", function($scope){
 
 wsaleApp.controller("wsaleCtrl", function(
     $scope, localStorageService){
-    diablo_remove_local_storage(localStorageService);
-
-    // cache 
-    // var promise  = diabloPromise.promise;
-    // var filter   = diabloShareFilter;
-    // $q.all([
-    // 	// promise(user)(),
-    // 	promise(filter.get_right)(),
-    // 	promise(filter.get_shop)(),
-    // 	promise(filter.get_brand)(),
-    // 	promise(filter.get_firm)(),
-    // 	promise(filter.get_type)(),
-    // 	promise(filter.get_employee)(),
-    // 	promise(filter.get_retailer)(),
-    // 	promise(filter.get_size_group)(),
-    // 	promise(filter.get_base_setting)()
-
-    // ]).then(function(data){
-    // 	console.log(data);
-
-    // 	// console.log(wsaleGoodService);
-	
-    // 	wsaleGoodService.set_user(data[0], data[1]);
-    // 	// brand
-    // 	wsaleGoodService.set_brand(angular.copy(data[2]));
-    // 	// firm
-    // 	wsaleGoodService.set_firm(angular.copy(data[3]));
-    // 	// type
-    // 	wsaleGoodService.set_type(angular.copy(data[4]));
-    // 	// employee
-    // 	wsaleGoodService.set_employee(angular.copy(data[5]));
-    // 	// retailer
-    // 	wsaleGoodService.set_retailer(angular.copy(data[6]));
-    // 	// size
-    // 	wsaleGoodService.set_size_group(data[7]);
-    // 	// base
-    // 	wsaleGoodService.set_base(data[8]);
-
-    // 	// console.log(wsaleGoodService.get_user());
-    // 	// console.log(wsaleGoodService.get_brand());
-    // 	// console.log(wsaleGoodService.get_firm());
-    // 	// console.log(wsaleGoodService.get_type());
-    // 	// console.log(wsaleGoodService.get_employee());
-    // 	// console.log(wsaleGoodService.get_retailer());
-    // 	// console.log(wsaleGoodService.get_size_group());
-    // 	// console.log(wsaleGoodService.get_base());
-    // })
-    
+    diablo_remove_local_storage(localStorageService); 
 });
 
 wsaleApp.controller("loginOutCtrl", function($scope, $resource){

@@ -60,11 +60,10 @@ wreportApp.controller("wreportDailyCtrl", function(
 		$scope.shop_reports = result.data.map(function(d){
 		    return {t_amount: d.t_amount,
 			    t_spay:   d.t_spay,
-			    t_hpay:   d.t_hpay,
 			    t_cash:   d.t_cash,
 			    t_card:   d.t_card,
-			    t_wire:   d.t_wire,
-			    t_verificate: d.t_verificate,
+			    t_cbalance:   d.t_cbalance,
+			    t_withdraw: d.t_withdraw,
 			    shop: diablo_get_object(d.shop_id, $scope.sortShops)}
 		});
 
@@ -82,16 +81,14 @@ wreportApp.controller("wreportDailyCtrl", function(
 			= result.t_amount ? result.t_amount : 0;
 		    $scope.total_spay
 			= result.t_spay ? result.t_spay : 0; 
-		    $scope.total_hpay
-			= result.t_hpay ? result.t_hpay : 0;
 		    $scope.total_cash
 			=  result.t_cash ? result.t_cash : 0;
 		    $scope.total_card
 			=  result.t_card ? result.t_card : 0;
-		    $scope.total_wire
-			=  result.t_wire ? result.t_wire : 0;
-		    $scope.total_verificate
-			=  result.t_verificate ? result.t_verificate : 0;
+		    $scope.total_cbalance
+			=  result.t_cbalance ? result.t_cbalance : 0;
+		    $scope.total_withdraw
+			=  result.t_withdraw ? result.t_withdraw : 0;
 		}
 
 		console.log($scope.shop_reports);

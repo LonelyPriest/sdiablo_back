@@ -30,7 +30,8 @@ ENABLED_PLUGINS_FILE=${KNIFE_HOME}/enabled_plugins
 PLUGINS_DIR="${KNIFE_HOME}/plugins"
 
 [ "x" = "x$HOSTNAME" ] && HOSTNAME=`env hostname`
-NODENAME=knife@${HOSTNAME%%.*}
+[ "x" = "x$LOGNAME" ] && LOGNAME=`env logname`
+NODENAME=${LOGNAME}@${HOSTNAME%%.*}
 
 ## Common defaults
 SERVER_ERL_ARGS="+K true +A30 +P 1048576"

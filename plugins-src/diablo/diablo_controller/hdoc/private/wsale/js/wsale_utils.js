@@ -99,6 +99,24 @@ var wsaleUtils = function(){
     };
 
     return {
+	format_promotion: function(inv, promotions){
+	    if (angular.isUndefined(inv.promotion)){
+		return promotions;
+	    }
+	    
+	    var format = {
+		order_id:  inv.order_id,
+		name:      inv.style_number
+		    + "，" + inv.brand.name + "，" + inv.type.name,
+		promotion: inv.promotion,
+		score:     inv.score,
+	    };
+	    
+	    promotions.unshift(format);
+	    console.log(promotions);
+	    return promotions;
+	},
+	
 	cover_wsale: function(
 	    base, sells, shops, brands, retailers, employees,
 	    types, colors, size_groups, promotions, scores){
@@ -126,14 +144,7 @@ var wsaleUtils = function(){
 
 		d.order_id = order_length;
 
-		var show = {
-		    order_id:  d.order_id,
-		    name:      d.style_number
-			+ "，" + d.brand.name + "，" + d.type.name,
-		    promotion: d.promotion,
-		    score:     d.score,
-		}; 
-		show_promotions.unshift(show);
+		wsaleUtils.format_promotion(d, show_promotions);
 		
 		order_length--; 
 		
@@ -212,6 +223,82 @@ var wsaleUtils = function(){
 
 	    return {
 		total: total, amounts:select_amounts, colors:used_colors};
+	},
+
+	sort_promotion:function(p, money, promotions){
+	    var found = false;
+	    for (var i=0, l=promotions.length; i<l; i++){
+		if (p.id === promotions[i].p.id){
+		    found = true;
+		    promotions[i].money += money;
+		    break;
+		}
+	    }
+
+	    if (!found){
+		promotions.push({p:p, money: money});
+	    }
+
+	    return promotions;
+	},
+
+	sort_score: function(s, p, money, scores){
+	    var found = false;
+	    for (var i=0, l=scores.length; i<l; i++){
+		if (s.id === scores[i].score.id){
+		    found = true;
+		    scores[i].money += money;
+		    break;
+		}
+	    }
+
+	    if (!found){
+		scores.push({
+		    score:s, p: p, money: money});
+	    }
+
+	    return scores;
+	},
+
+	calc_with_promotion: function(pmoneys){
+	    var balance = 0;
+	    var f_mul = diablo_float_mul;
+	    for ( var i=0, l=pmoneys.length; i<l; i++){
+		var p = pmoneys[i].p;
+		if (p.rule_id === -1){
+		    balance += pmoneys[i].money;
+		    continue;
+		}
+
+		if (p.rule_id === 0){
+		    balance += f_mul(
+			pmoneys[i].money, f_mul(p.discount, 0.01));
+		    continue;
+		}
+
+		if (p.rule_id === 1){
+		    var rmoney = pmoneys[i].money / p.cmoney *  p.rmoney;
+		    balance += pmoneys[i].money - rmoney;
+		    continue;
+		}
+	    }
+
+	    return diablo_round(balance);
+	},
+
+	calc_with_score: function(pscores){
+	    var score = 0;
+	    for ( var i=0, l=pscores.length; i<l; i++){
+		var s = pscores[i];
+		if (s.p && s.p.rule_id === 0){
+		    score += s.money * s.p.discount * 0.01
+			* s.score.score / s.score.balance; 
+		} else {
+		    score += s.money / s.score.balance * s.score.score; 
+		}
+	    }
+
+	    return diablo_round(score);
 	}
 
 	//

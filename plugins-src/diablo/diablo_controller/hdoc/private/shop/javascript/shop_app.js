@@ -1,3 +1,4 @@
+"use strict";
 
 var shopApp = angular.module(
     "shopApp", ['ngRoute', 'ngResource', 'diabloPattern',

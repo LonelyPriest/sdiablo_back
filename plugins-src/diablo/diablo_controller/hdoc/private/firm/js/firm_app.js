@@ -1,3 +1,4 @@
+"use strict";
 var firmApp = angular.module(
     'firmApp', ['ui.bootstrap', 'ngRoute', 'ngResource',
 		'LocalStorageModule', 'diabloAuthenApp',

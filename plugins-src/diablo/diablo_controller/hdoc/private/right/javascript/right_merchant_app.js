@@ -1,7 +1,9 @@
+"use strict";
 var rightMerchantApp = angular.module(
-    "rightMerchantApp", ['ngRoute', 'ngResource', 'diabloUtils', 'diabloAuthenApp',
-			 'ui.bootstrap', 'rightApp', 'merchantApp',
-			 'employApp'])
+    "rightMerchantApp",
+    ['ngRoute', 'ngResource', 'diabloUtils', 'diabloAuthenApp',
+     'ui.bootstrap', 'rightApp', 'merchantApp',
+     'employApp'])
 // .config(diablo_authen);
 .config(function($httpProvider, authenProvider){
     // $httpProvider.responseInterceptors.push(authenProvider.interceptor);
