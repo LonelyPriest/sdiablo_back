@@ -513,7 +513,7 @@ sidebar(Session) ->
 
 	    SaleR =
 		[{"new_wsale_detail",
-		  "交易记录", "glyphicon glyphicon-download"}],
+		  "交易记录", "glyphicon glyphicon-bookmark"}],
 	    
 	    SaleD =
 		[{"wsale_rsn_detail",

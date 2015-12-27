@@ -126,7 +126,7 @@ shopApp.controller("shopDetailCtrl", function(
     }; 
     
     $scope.refresh = function(){
-	// $scope.shops = [];
+	$scope.shops = [];
 	shopService.list().$promise.then(function(shops){
 	    console.log(shops);
 	    // $scope.shops = angular.copy(shops);
@@ -138,37 +138,24 @@ shopApp.controller("shopDetailCtrl", function(
 		// console.log($scope.authen_list_repo);
 		if (s.type === diablo_shop){
 		    $scope.shops.push({
-			id     :      s.id,
-			name   :      s.name,
+			id: s.id,
+			name: s.name,
 			
-			charge_id:    s.charge_id,
-			charge :      diablo_get_object(
-			    s.charge_id, $scope.charges),
+			charge_id: s.charge_id,
+			charge: diablo_get_object(s.charge_id, $scope.charges),
 			
 			address:      s.address,
 			open_date:    s.open_date,
 			
-			repo_id:      s.repo,
-			repo:         $scope.authen_list_repo
+			repo_id:s.repo,
+			repo:$scope.authen_list_repo
 			    ? $scope.get_repo(s.repo) : undefined,
 			
-			shopowner_id: s.shopowner_id,
-			shopowner:    diablo_get_object(
+			shopowner_id:s.shopowner_id,
+			shopowner:diablo_get_object(
 			    s.shopowner_id, $scope.employees)})
 		}
-	    })
-	    // shops.filter(function(s){
-	    // 	    if (s.type === diablo_shop){
-	    // 		return {id     :      s.id,
-	    // 			name   :      s.name,
-	    // 			address:      s.address,
-	    // 			open_date:    s.open_date,
-	    // 			repo_id:      s.repo,
-	    // 			repo:         $scope.get_repo(s.repo),
-	    // 			shopowner:    s.shopowner,
-	    // 			shopowner_id: s.shopowner_id}
-	    // 	    }
-	    // 	});
+	    }) 
 	    diablo_order($scope.shops);
 	    console.log($scope.shops);
 	});
@@ -177,9 +164,7 @@ shopApp.controller("shopDetailCtrl", function(
     
     // $scope.refresh();
     // wait for loading repo
-    deferred.promise.then(function(data){
-	$scope.refresh(); 
-    })
+    deferred.promise.then(function(data){$scope.refresh()});
     
     var dialog = diabloUtilsService;
     // edit 
@@ -454,7 +439,7 @@ shopApp.controller("shopDetailCtrl", function(
 	    undefined,
 	    callback,
 	    undefined,
-	    {shop, shop,
+	    {shop: shop,
 	     charges: $scope.charges,
 	     check_only: check_only,
 	     check_same: check_same});

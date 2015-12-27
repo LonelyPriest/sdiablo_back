@@ -263,8 +263,10 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
     OldWithdraw  = ?v(<<"old_withdraw">>, Props, 0),
     %% OldShouldPay = ?v(<<"old_should_pay">>, Props, 0),
     OldDatetime  = ?v(<<"old_datetime">>, Props),
+    OldScore     = ?v(<<"old_score">>, Props, 0),
 
     Total        = ?v(<<"total">>, Props),
+    Score        = ?v(<<"score">>, Props, 0),
 
     RealyShop    = realy_shop(Merchant, Shop),
 
@@ -291,6 +293,7 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
 	++ ?utils:v(card, float, NewCard)
 	++ ?utils:v(withdraw, float, Withdraw) 
 	++ ?utils:v(total, integer, Total)
+	++ ?utils:v(score, integer, Score)
 	++ ?utils:v(comment, string, Comment)
 	++ case Datetime =:= OldDatetime of
 	       true -> [];
@@ -315,8 +318,9 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
 		Metric ->
 		    ?DEBUG("Metric ~p", [Metric]),
 		    AllSql = Sql1 ++ [Sql2] ++
-			["update w_retailer set balance=balance+"
-			 ++ ?to_s(Metric) 
+			["update w_retailer set "
+			 "balance=balance+" ++ ?to_s(Metric)
+			 ++ ", score=score+" ++ ?to_s(Score - OldScore)
 			 ++ ", change_date=" ++ "\"" ++ ?to_s(CurTime) ++ "\""
 			 ++ " where id=" ++ ?to_s(Retailer)
 			 ++ " and merchant=" ++ ?to_s(Merchant),
@@ -362,17 +366,20 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
 	    AllSql = Sql1 ++ [Sql2] ++ 
 		["update w_retailer set balance=balance+"
 		 %% ++ ?to_s(OldShouldPay + EPay - OldHasPay)
+		 ++ ", score=score+" ++ ?to_s(Score - OldScore)
 		 ++ ?to_s(BackBalanceOfOldRetailer)
 		 ++ " where id=" ++ ?to_s(OldRetailer),
 
 		 "update w_retailer set balance=balance-"
 		 %% ++ ?to_s(ShouldPay + EPay - HasPay)
+		 ++ ", score=score+" ++ ?to_s(Score - OldScore)
 		 ++ ?to_s(BalanceOfNewRetailer)
 		 ++ " where id=" ++ ?to_s(Retailer),
 
 		 "update w_sale set balance=balance+"
 		 %% ++ ?to_s(OldShouldPay + EPay - OldHasPay)
 		 ++ ?to_s(BackBalanceOfOldRetailer)
+		 ++ ", score=score+" ++ ?to_s(Score - OldScore)
 		 ++ " where shop=" ++ ?to_s(Shop)
 		 ++ " and merchant=" ++ ?to_s(Merchant)
 		 ++ " and retailer=" ++ ?to_s(OldRetailer)
@@ -381,6 +388,7 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
 		 "update w_sale set balance=balance-"
 		 %% ++ ?to_s(ShouldPay + EPay - HasPay)
 		 ++ ?to_s(BalanceOfNewRetailer)
+		 ++ ", score=score+" ++ ?to_s(Score - OldScore)
 		 ++ " where shop=" ++ ?to_s(Shop)
 		 ++ " and merchant=" ++ ?to_s(Merchant)
 		 ++ " and retailer=" ++ ?to_s(Retailer)
@@ -429,7 +437,7 @@ handle_call({get_new, Merchant, RSN}, _From, State) ->
     Sql = "select id, rsn"
 	", employ as employ_id, retailer as retailer_id, shop as shop_id"
 	", balance, should_pay, cash, card, withdraw"
-	", total, comment, type, entry_date" 
+	", total, score, comment, type, entry_date" 
 	" from w_sale" 
 	++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
 	++ " and merchant=" ++ ?to_s(Merchant), 

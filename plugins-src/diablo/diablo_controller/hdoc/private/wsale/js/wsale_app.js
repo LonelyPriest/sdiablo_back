@@ -83,8 +83,9 @@ wsaleApp.config(['$routeProvider', function($routeProvider){
 	when('/update_wsale_detail/:rsn?/:ppage?', {
 	    templateUrl: '/private/wsale/html/update_wsale_detail.html',
 	    controller: 'wsaleUpdateDetailCtrl',
-	    resolve: angular.extend({}, user, retailer, employee,
-				    s_group, brand, color, type, base)
+	    resolve: angular.extend(
+		{}, user, promotion, score, retailer, employee,
+		s_group, brand, color, type, base)
 	}). 
 	when('/wsale_rsn_detail/:rsn?/:ppage?', {
 	    templateUrl: '/private/wsale/html/wsale_rsn_detail.html',
@@ -309,11 +310,11 @@ wsaleApp.controller("wsaleNewCtrl", function(
     // console.log(user); 
     // console.log(base); 
     
-    wsaleGoodService.set_brand(angular.copy(filterBrand));
-    wsaleGoodService.set_type(angular.copy(filterType));
-    wsaleGoodService.set_size_group(angular.copy(filterSizeGroup));
-    wsaleGoodService.set_firm(angular.copy(filterFirm));
-    wsaleGoodService.set_color(angular.copy(filterColor));
+    wsaleGoodService.set_brand(filterBrand);
+    wsaleGoodService.set_type(filterType);
+    wsaleGoodService.set_size_group(filterSizeGroup);
+    wsaleGoodService.set_firm(filterFirm);
+    wsaleGoodService.set_color(filterColor);
 
     // base setting 
     $scope.immediately_print = function(shopId){
@@ -635,15 +636,16 @@ wsaleApp.controller("wsaleNewCtrl", function(
     
     $scope.list_draft = function(){
 	var key_fix = draft_keys(); 
-	// console.log(key); 
+	// console.log(key);
+	// console.log($scope.employees);
 	var drafts = key_fix.map(function(k){
 	    var p = k.split("-");
-	    return {sn:k,
-		    retailer:diablo_get_object(parseInt(p[1]),
-					       $scope.retailers),
-		    shop:diablo_get_object(parseInt(p[2]), $scope.shops),
-		    employee:diablo_get_object(p[3], $scope.employees),
-		   }
+	    return {
+		sn:k,
+		retailer:diablo_get_object(parseInt(p[1]), $scope.retailers),
+		shop:diablo_get_object(parseInt(p[2]), $scope.shops),
+		employee:diablo_get_object(parseInt(p[3]), $scope.employees),
+	    }
 	});
 
 	// console.log(drafts) 
@@ -664,11 +666,21 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    
 	    if (angular.isDefined(one) && null !== one){
 	        $scope.inventories = angular.copy(one.v);
-	        console.log($scope.inventories); 
-	        $scope.inventories.unshift({$edit:false, $new:true});
+		angular.forEach($scope.inventories, function(inv){
+		    inv.promotion = diablo_get_object(
+			inv.pid, $scope.promotions);
+		    
+		    inv.score = diablo_get_object(inv.sid, $scope.scores);
+		    
+		    wsaleUtils.format_promotion(inv, $scope.show_promotions);
+		});
 
+		console.log($scope.inventories); 
+		
+	        $scope.inventories.unshift({$edit:false, $new:true}); 
 		$scope.disable_refresh = false;
 	        $scope.re_calculate();
+
 		
 	        // $scope.draft = true;
 	    } 
@@ -704,10 +716,13 @@ wsaleApp.controller("wsaleNewCtrl", function(
     $scope.copy_select = function(add, src){
 	add.id           = src.id;
 	add.style_number = src.style_number;
-	add.brand        = src.brand;
+	
 	add.brand_id     = src.brand_id;
+	add.brand        = src.brand;
+	
 	add.type_id      = src.type_id;
 	add.type         = src.type;
+	
 	add.type_id      = src.type_id;
 	add.firm_id      = src.firm_id;
 	add.sex          = src.sex;
@@ -717,7 +732,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	add.pid          = src.pid;
 	add.promotion    = diablo_get_object(src.pid, $scope.promotions);
 	add.sid          = src.sid;
-	add.score        = diablo_get_object(src.pid, $scope.scores);
+	add.score        = diablo_get_object(src.sid, $scope.scores);
 	add.tag_price    = src.tag_price; 
 	add.discount     = src.discount;
 	add.path         = src.path;
@@ -1179,9 +1194,9 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	for (var i=1, l=$scope.inventories.length; i<l; i++){
 
 	    var one = $scope.inventories[i];
+	    one.calc = 0; 
 	    $scope.select.total      += parseInt(one.sell);
 	    $scope.select.abs_total  += Math.abs(parseInt(one.sell));
-	    one.calc = 0;
 
 	    if ($scope.setting.round === diablo_round_row){
 		one.calc = $scope.round(
@@ -1597,7 +1612,7 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
     /*
      * hidden
      */
-    $scope.show = {base:false, balance:false, action:false, balance:false};
+    $scope.show = {base:false, action:false, balance:false};
 
     $scope.toggle_base = function(){
 	$scope.show.base = !$scope.show.base;

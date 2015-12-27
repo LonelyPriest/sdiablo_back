@@ -37,8 +37,8 @@
 	 ?right_w_report,
 	 ?right_right]).
 
--define(hidden_sm,  [?right_shop, ?right_employe, ?right_right]).
--define(hddine_xs,  [?right_shop, ?right_employe, ?right_right]).
+-define(hidden_sm,  [?right_employe, ?right_right]).
+-define(hddine_xs,  [?right_employe, ?right_right]).
 -define(hddine_xxs, [?right_w_good]). 
 
 -record(func_tree,

@@ -67,6 +67,9 @@ shopApp.config(['$routeProvider', function($routeProvider){
 }]);
 
 
+// shopApp.service("shopService", function($resource, dateFilter){
+    
+// });
 shopApp.service("shopService", function($resource, dateFilter){
     // error
     this.error = {1301: "店铺创建失败，已存在同样的店铺名称！！",
@@ -129,7 +132,7 @@ shopApp.service("shopService", function($resource, dateFilter){
     this.update_charge = function(shopId, charge) {
 	return shop.save(
 	    {operation: "update_shop"},
-	    {id:         shopId, charge:    charge}).$promise;
+	    {id:shopId, charge:charge}).$promise;
     };
 
     this.new_repo = function(repo){
@@ -145,7 +148,8 @@ shopApp.service("shopService", function($resource, dateFilter){
     this.new_badrepo = function(repo){
 	return shop.save(
 	    {operation: "new_badrepo"},
-	    {name: repo.name, address: repo.address,
+	    {name: repo.name,
+	     address: repo.address,
 	     repo: repo.repo.id}).$promise;
     };
 
@@ -156,8 +160,8 @@ shopApp.service("shopService", function($resource, dateFilter){
     this.add_promotion = function(type, shopId, promotion){
 	return shop.save(
 	    {operation: "add_shop_promotion"},
-	    {type: type, shop: shopId, promotion: promotion}).$promise;
+	    {type: type,
+	     shop: shopId,
+	     promotion: promotion}).$promise;
     };
 });
-
-

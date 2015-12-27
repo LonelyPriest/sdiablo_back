@@ -34,6 +34,7 @@ var wsaleUtils = function(){
 
 	select.comment    = base.comment;
 	select.total      = Math.abs(base.total);
+	select.score      = Math.abs(base.score);
 
 	var sorts = [];
 	for (var i=0, l=sells.length; i<l; i++){
@@ -65,7 +66,7 @@ var wsaleUtils = function(){
 		
 		add.pid       = s.pid;
 		add.sid       = s.sid;
-
+		
 		add.sizes.push(s.size);
 		add.colors_id.push(s.color_id);
 		
@@ -103,14 +104,15 @@ var wsaleUtils = function(){
 	    if (angular.isUndefined(inv.promotion)){
 		return promotions;
 	    }
-	    
+
 	    var format = {
 		order_id:  inv.order_id,
 		name:      inv.style_number
-		    + "，" + inv.brand.name + "，" + inv.type.name,
+		    + "，" + (inv.brand.name ? inv.brand.name : inv.brand)
+		    + "，" + (inv.type.name  ? inv.type.name: inv.type),
 		promotion: inv.promotion,
 		score:     inv.score,
-	    };
+	    }; 
 	    
 	    promotions.unshift(format);
 	    console.log(promotions);
