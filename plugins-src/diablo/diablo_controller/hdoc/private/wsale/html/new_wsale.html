@@ -48,8 +48,8 @@
 	  	       placeholder="请选择会员" 
 	  	       typeahead-editable="false"
 		       typeahead-on-select="change_retailer()"
-	  	       typeahead="r as r.name for r in
-	  			  retailers|filter:$viewValue|limitTo:8"/>
+	  	       typeahead="r as r.lname for r in
+	  			  retailers|filter:$viewValue|limitTo:20"/>
 	  	<!-- <span class="input-group-btn btn-group-solid"> -->
 		<!--   <div class="btn-group"> -->
 	  	<!--     <button class="btn green-meadow" -->
@@ -156,7 +156,7 @@
 			   placeholder="现金"
 			   popover-placement="top"
 			   popover-trigger="focus"
-			   popover="支持二位小数"></input>
+			   popover="支持二位小数"/>
 		  </div>
 		</form>
 
@@ -503,6 +503,7 @@
 			<td x-ng-if="!setting.show_discount" colspan=7></td>
 			<td class="vert-align">{{select.abs_total}}</td>
 			<td class="vert-align">{{select.should_pay}}</td>
+			<td colspan="2"></td>
 			<!-- <td colspan="2">{{select.score}}</td> -->
 		      </tr> 
 		    </tbody>
@@ -511,6 +512,12 @@
 		  </table> <!--END supplier table-->
 		</div> <!--END table responsive--> 
 	      </div> <!--END panel-->
+	      <div x-ng-if="select.score!==0">
+		<span class="fg-red">总积分：</span>
+		  <span class="fg-color-darken">
+		    <strong>{{select.score}}</strong>
+		  </span>
+	      </div>
 	      <div x-ng-repeat="p in show_promotions">
 	      	<span>{{p.name}}&nbsp&nbsp&nbsp&nbsp
 	      	  <span class="bg-blue">促销：</span>
@@ -654,7 +661,7 @@
 <!--print-->
 <div class="row visible-print-block">
 <!-- <div> -->
-  <h4 class="text-center"><strong>{{select.shop.name}}</strong></h4>
+  <h6 class="text-center"><strong>{{select.shop.name}}</strong></h6>
   <div class="text-left">
     <p>
       <span>单号：{{select.rsn}}</span>

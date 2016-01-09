@@ -302,7 +302,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	round         :diablo_round_record};
 
     $scope.right = {
-	m_discount : false,
+	m_discount : rightAuthen.modify_discount_when_sale(user.type),
 	m_price    : false
     };
 
@@ -394,6 +394,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 
     // retailer;
     $scope.retailers = filterRetailer;
+    console.log($scope.retailers);
     if ($scope.retailers.length !== 0){
 	$scope.select.retailer = $scope.retailers[0];
 	var balance = diablo_set_float($scope.select.retailer.balance);

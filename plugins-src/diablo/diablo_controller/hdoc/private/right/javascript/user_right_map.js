@@ -32,5 +32,9 @@ var rightAuthen = {
 
     show_orgprice: function(userType) {
 	return userType === rightAuthen.account._master ? true:false;
+    },
+
+    modify_discount_when_sale: function(userType){
+	return userType === rightAuthen.account._master ? true:false;
     }
 };

@@ -427,8 +427,9 @@ function filterProvider(){
 			// console.log(retailers); 
 			_retailers =  retailers.map(function(r){
 			    return {name:r.name,
+				    lname: r.mobile + "，" + r.name,
 				    id:r.id,
-				    py:diablo_pinyin(r.name),
+				    py:diablo_pinyin(r.name), 
 				    balance:r.balance}
 			})
 

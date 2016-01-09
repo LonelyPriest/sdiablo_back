@@ -1107,6 +1107,8 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 			d.brand = diablo_get_object(d.brand_id, filterBrand);
 			d.type  = diablo_get_object(d.type_id, filterType);
 			d.firm  = diablo_get_object(d.firm_id, filterFirm);
+			d.promotion = diablo_get_object(d.pid, filterPromotion);
+			d.score = diablo_get_object(d.sid, filterScore);
 			// d.shop  = diablo_get_object(d.shop_id, user.sortShops);
 		    })
 		    diablo_order_page(
