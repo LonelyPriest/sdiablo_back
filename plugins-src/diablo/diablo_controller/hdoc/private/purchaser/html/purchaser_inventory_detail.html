@@ -246,8 +246,22 @@
 			  </span>
 			</td>
 
-			<td>{{inv.promotion.name}}</td>
-			<td>{{inv.score.name}}</td> 
+			<td>
+			  <div x-ng-switch on="inv.pid">
+			    <span x-ng-switch-when=-1>暂无</span>
+			    <span x-ng-switch-default>
+			      {{inv.promotion.name}}
+			    </span>
+			  <div>
+			</td> 
+			<td>
+			  <div x-ng-switch on="inv.sid">
+			    <span x-ng-switch-when=-1>暂无</span>
+			    <span x-ng-switch-default>
+			      {{inv.score.name}} 
+			    </span>
+			  <div>
+			</td> 
 
 			<td>
 			  <span x-ng-if="inv.isAlarm && setting.alarm"

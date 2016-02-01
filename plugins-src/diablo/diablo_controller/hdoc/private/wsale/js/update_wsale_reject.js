@@ -171,7 +171,11 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 	}; 
 
 	return false;
-    }; 
+    };
+
+    $scope.disable_modify_discount = function(inv){
+	return inv.pid !== -1 ? true : false;
+    };
 
     var get_update_amount = function(newAmounts, oldAmounts){
 	var changedAmounts = [];
@@ -470,12 +474,23 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 	    
 	    $scope.select.total += parseInt(one.reject);
 	    if ($scope.setting.round === diablo_round_row){
-		$scope.select.should_pay
-		    += $scope.round(
-			one.reject * one.fprice * one.fdiscount * 0.01);
+		if (one.pid === -1){
+		    $scope.select.should_pay
+			+= $scope.round(
+			    one.reject * one.fprice * one.fdiscount * 0.01);
+		} else {
+		    $scope.select.should_pay
+			+= $scope.round(one.reject * one.fprice);
+		}
+		
 	    } else {
-		$scope.select.should_pay
-		    += one.reject * one.fprice * one.fdiscount * 0.01;
+		if (one.pid === -1){
+		    $scope.select.should_pay
+			+= one.reject * one.fprice * one.fdiscount * 0.01;
+		} else {
+		    $scope.select.should_pay += one.reject * one.fprice;
+		}
+		
 	    } 
 	}
 

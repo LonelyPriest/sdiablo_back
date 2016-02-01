@@ -1270,16 +1270,20 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 		s_score.length !==0 ? s_score[0].id : undefined 
 	    ).then(function(result){
 		if (result.ecode === 0){
-		    var s;
+		    var s = "";
 		    if (s_promotion.length !== 0){
-			s = "促销 [" + s_promotion[0].name + "] ";
+			s += "促销 [" + s_promotion[0].name + "] ";
 		    }
 		    if (s_score.length !== 0){
 			s += "积分 [" + s_score[0].name + "] ";
 		    } 
-		    s += "方案设置成功";
+		    s += "方案设置成功！！";
 		    
-		    dialog.response(true, "促销积分设置", s)
+		    dialog.response_with_callback(
+			true, "促销积分设置", s, undefined,
+			function(){
+			    $scope.do_search($scope.tab_page.page_of_time)
+			});
 		} else {
 		    dialog.response(
 			false,

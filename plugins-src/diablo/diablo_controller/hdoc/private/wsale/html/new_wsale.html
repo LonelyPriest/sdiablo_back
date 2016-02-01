@@ -661,7 +661,7 @@
 <!--print-->
 <div class="row visible-print-block">
 <!-- <div> -->
-  <h6 class="text-center"><strong>{{select.shop.name}}</strong></h6>
+  <div class="text-center"><strong>{{select.shop.name}}</strong></div>
   <div class="text-left">
     <p>
       <span>单号：{{select.rsn}}</span>
@@ -670,50 +670,70 @@
       </span>
     </p>
   </div>
-  <div class="table-responsive">
-    <table class="table-striped table-condensed diablo-table-center">
-      <thead>
-	<tr>
-	  <th>款号</th>
-	  <th>品牌</th>
-	  <th>单价</th>
-	  <th>折扣</th>
-	  <th>数量</th>
-	  <th>小计</th>
-	</tr> 
-      </thead>
-      <tbody>
-	<tr x-ng-if="!inv.$new" x-ng-repeat="inv in inventories">
-	  <td>{{inv.style_number}}</td>
-	  <td>{{inv.brand}}</td>
-	  <td>{{inv.fprice}}</td>
-	  <td>{{inv.fdiscount}}</td>
-	  <td>{{inv.sell}}</td>
-	  <td>
-	    <span x-ng-if="setting.round===1">
-	      {{round(inv.fprice * inv.sell * inv.fdiscount * 0.01)}}
-	    </span>
-	    <span x-ng-if="setting.round===0">
-	      {{f_mul(f_mul(inv.fprice, inv.fdiscount),
-	      f_mul(inv.sell, 0.01))}}</span> 
-	  </td>
-	</tr>
 
-	<tr>
-	  <td colspan="4"></td>
-	  <td>{{select.abs_total}}</td>
-	  <td>{{select.should_pay}}</td>
-	</tr>
+  <div x-ng-repeat="inv in inventories">
+    <div x-ng-if="!inv.$new">
+      <div>款号：<span>{{inv.style_number}}</span></div>
+      <!-- <div>品牌：<span>{{inv.brand}}</span></div> -->
+      <div>单价：<span>{{inv.fprice}}</span></div>
+      <div>折扣：<span>{{inv.fdiscount}}</span></div>
+      <div>数量：<span>{{inv.sell}}</span></div>
+      <!-- <div>小计： -->
+      <!-- 	<span x-ng-if="setting.round===1"> -->
+      <!-- 	  {{round(inv.fprice * inv.sell * inv.fdiscount * 0.01)}} -->
+      <!-- 	</span> -->
+      <!-- 	<span x-ng-if="setting.round===0"> -->
+      <!-- 	  {{f_mul(f_mul(inv.fprice, inv.fdiscount), -->
+      <!-- 	  f_mul(inv.sell, 0.01))}}</span> -->
+      <!-- </div> -->
+    </div>
+  </div>
+  <!-- <div class="table-responsive"> -->
+  <!--   <table class="table-striped table-condensed diablo-table-center"> -->
+  <!--     <thead> -->
+  <!-- 	<tr> -->
+  <!-- 	  <th>款号</th> -->
+  <!-- 	  <th>品牌</th> -->
+  <!-- 	  <th>单价</th> -->
+  <!-- 	  <th>折扣</th> -->
+  <!-- 	  <th>数量</th> -->
+  <!-- 	  <th>小计</th> -->
+  <!-- 	</tr>  -->
+  <!--     </thead> -->
+  <!--     <tbody> -->
+  <!-- 	<tr x-ng-if="!inv.$new" x-ng-repeat="inv in inventories"> -->
+  <!-- 	  <td>{{inv.style_number}}</td> -->
+  <!-- 	  <td>{{inv.brand}}</td> -->
+  <!-- 	  <td>{{inv.fprice}}</td> -->
+  <!-- 	  <td>{{inv.fdiscount}}</td> -->
+  <!-- 	  <td>{{inv.sell}}</td> -->
+  <!-- 	  <td> -->
+  <!-- 	    <span x-ng-if="setting.round===1"> -->
+  <!-- 	      {{round(inv.fprice * inv.sell * inv.fdiscount * 0.01)}} -->
+  <!-- 	    </span> -->
+  <!-- 	    <span x-ng-if="setting.round===0"> -->
+  <!-- 	      {{f_mul(f_mul(inv.fprice, inv.fdiscount), -->
+  <!-- 	      f_mul(inv.sell, 0.01))}}</span>  -->
+  <!-- 	  </td> -->
+  <!-- 	</tr> -->
+
+  <!-- 	<tr> -->
+  <!-- 	  <td colspan="4"></td> -->
+  <!-- 	  <td>{{select.abs_total}}</td> -->
+  <!-- 	  <td>{{select.should_pay}}</td> -->
+  <!-- 	</tr> -->
 	
-      </tbody> 
-    </table> 
-  </div>
+  <!--     </tbody>  -->
+  <!--   </table>  -->
+  <!-- </div> -->
 
-  <div>
-    应付：<strong>{{select.should_pay}}</strong>
-    &nbsp&nbsp&nbsp&nbsp实付：<strong>{{select.has_pay}}</strong>
-    &nbsp&nbsp&nbsp&nbsp找零：<strong class="strong">{{select.charge}}</strong>
-  </div>
+  <!-- <div>应付：<strong>{{select.should_pay}}</strong></div> -->
+  <!-- <div>实付：<strong>{{select.has_pay}}</strong></div> -->
+  <!-- <div>找零：<strong>{{select.charge}}</strong></div> -->
+
+  <div>应付：{{select.should_pay}}</div>
+  <div>实付：{{select.has_pay}}</div>
+  <div>找零：{{-select.charge}}</div>
   
 </div>
 

@@ -279,7 +279,8 @@ var wsaleUtils = function(){
 		}
 
 		if (p.rule_id === 1){
-		    var rmoney = pmoneys[i].money / p.cmoney *  p.rmoney;
+		    var rmoney = Math.floor(
+			pmoneys[i].money / p.cmoney) *  p.rmoney;
 		    balance += pmoneys[i].money - rmoney;
 		    continue;
 		}
@@ -293,10 +294,12 @@ var wsaleUtils = function(){
 	    for ( var i=0, l=pscores.length; i<l; i++){
 		var s = pscores[i];
 		if (s.p && s.p.rule_id === 0){
-		    score += s.money * s.p.discount * 0.01
-			* s.score.score / s.score.balance; 
+		    score += Math.floor(
+			Math.round(s.money * s.p.discount * 0.01)
+			    / s.score.balance) * s.score.score; 
 		} else {
-		    score += s.money / s.score.balance * s.score.score; 
+		    score += Math.floor(
+			s.money / s.score.balance) * s.score.score; 
 		}
 	    }
 

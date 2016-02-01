@@ -60,17 +60,26 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	    $scope.select.abs_total  += Math.abs(parseInt(one.reject));
 	    
 	    if ($scope.setting.round === diablo_round_row){
-		one.calc = $scope.round(
-		    one.fprice * one.fdiscount * 0.01 * one.reject);
+		if (one.pid === -1){
+		    one.calc = $scope.round(
+			one.fprice * one.fdiscount * 0.01 * one.reject);
+		} else {
+		    one.calc = $scope.round(one.fprice * one.reject);
+		}
+		
 	    } else {
-		one.calc = $scope.f_mul(
-		    one.fprice,
-		    $scope.f_mul(one.fdiscount,
-				 $scope.f_mul(0.01, one.reject))
-		);
+		if (one.pid === -1){
+		    one.calc = $scope.f_mul(
+			one.fprice,
+			$scope.f_mul(one.fdiscount,
+				     $scope.f_mul(0.01, one.reject))
+		    );
+		} else {
+		    one.calc = $scope.f_mul(one.fprice, one.reject)
+		} 
 	    }
 
-	    if (!one.promotion){
+	    if (one.pid === -1){
 		// format_pmoney({id: -1, rule_id: -1}, one.calc);
 		wsaleUtils.sort_promotion(
 		    {id: -1, rule_id: -1}, one.calc, pmoneys);
@@ -79,7 +88,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 		// format_pmoney(one.promotion, one.calc);
 	    }
 
-	    if (one.score){
+	    if (one.sid !== -1){
 		wsaleUtils.sort_score(
 		    one.score, one.promotion, one.calc, pscores)
 		// format_score(one.score, one.promotion, one.calc);
@@ -249,6 +258,10 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	} 
 
 	return true;
+    };
+
+    $scope.disable_modify_discount = function(inv){
+	return inv.pid !== -1 ? true : false;
     };
 
 

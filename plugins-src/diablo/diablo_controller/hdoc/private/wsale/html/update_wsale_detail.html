@@ -312,6 +312,7 @@
 			  <input class="form-control"
 				 type="number" step="1" 
 				 required
+				 x-ng-readonly="disable_modify_discount(inv)"
 				 x-ng-model="inv.fdiscount"
 				 x-ng-pattern="/^\d{2}$|100$/"
 				 popover-placement="top"

@@ -536,22 +536,31 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 	    $scope.select.total += parseInt(one.reject);
 
 	    if ($scope.setting.round === diablo_round_row){
-		one.calc = $scope.round(
-		    one.reject * one.fdiscount * 0.01 * one.fprice);
+		if (one.pid === -1){
+		    one.calc = $scope.round(
+			one.reject * one.fdiscount * 0.01 * one.fprice);
+		} else {
+		    one.calc = $scope.round(one.reject * one.fprice);
+		}
+		
 	    } else {
-		one.calc = $scope.f_mul(
-		    one.reject * one.fprice,
-		    $scope.f_mul(one.fdiscount, 0.01));
+		if (one.pid === -1){
+		    one.calc = $scope.f_mul(
+			one.reject * one.fprice,
+			$scope.f_mul(one.fdiscount, 0.01));
+		} else {
+		    one.calc = $scope.f_mul(one.reject, one.fprice);
+		} 
 	    }
 
-	    if (!one.promotion){
+	    if (one.pid === -1){
 		wsaleUtils.sort_promotion(
 		    {id: -1, rule_id: -1}, one.calc, pmoneys);
 	    } else {
 		wsaleUtils.sort_promotion(one.promotion, one.calc, pmoneys);
 	    }
 
-	    if (one.score){
+	    if (one.sid !== -1){
 		wsaleUtils.sort_score(
 		    one.score, one.promotion, one.calc, pscores);
 	    }
