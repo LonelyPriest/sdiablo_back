@@ -1256,13 +1256,14 @@ wsale(reject_badrepo, RSN, DateTime, Merchant, {Shop, RealyShop}, Inventory, Amo
 	case ?sql_utils:execute(s_read, Sql00) of
 	    {ok, []} ->
 		["insert into w_sale_detail("
-		 "rsn, style_number, brand, type, s_group, free"
+		 "rsn, style_number, brand, merchant, type, s_group, free"
 		 ", season, firm, year, total, fdiscount"
 		 ", fprice, path, comment, entry_date)"
 		 " values("
 		 ++ "\"" ++ ?to_s(RSN) ++ "\","
 		 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
-		 ++ ?to_s(Brand) ++ "," 
+		 ++ ?to_s(Brand) ++ ","
+		 ++ ?to_s(Merchant) ++ ","
 		 ++ ?to_s(Type) ++ ","
 		 ++ "\"" ++ ?to_s(SizeGroup) ++ "\","
 		 ++ ?to_s(Free) ++ "," 
@@ -1412,13 +1413,14 @@ wsale(Action, RSN, DateTime, Merchant, Shop, Inventory, Amounts) ->
      case ?sql_utils:execute(s_read, Sql00) of
 	 {ok, []} ->
 	     "insert into w_sale_detail("
-		 "rsn, style_number, brand, type, s_group, free"
+		 "rsn, style_number, brand, merchant, type, s_group, free"
 		 ", season, firm, year, total, promotion, score"
 		 ", fdiscount, fprice, path, comment, entry_date)"
 		 " values("
 		 ++ "\"" ++ ?to_s(RSN) ++ "\","
 		 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
-		 ++ ?to_s(Brand) ++ "," 
+		 ++ ?to_s(Brand) ++ ","
+		 ++ ?to_s(Merchant) ++ ","
 		 ++ ?to_s(Type) ++ ","
 		 ++ "\"" ++ ?to_s(SizeGroup) ++ "\","
 		 ++ ?to_s(Free) ++ "," 

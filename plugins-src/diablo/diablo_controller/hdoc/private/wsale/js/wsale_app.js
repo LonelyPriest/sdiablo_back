@@ -104,8 +104,9 @@ wsaleApp.config(['$routeProvider', function($routeProvider){
 	when('/update_wsale_reject/:rsn?/:ppage?', {
 	    templateUrl: '/private/wsale/html/update_wsale_reject.html',
 	    controller: 'wsaleUpdateRejectCtrl',
-	    resolve: angular.extend({}, user, retailer, employee,
-				    s_group, brand, color, type, base)
+	    resolve: angular.extend(
+		{}, user, promotion, score, retailer, employee,
+		s_group, brand, color, type, base)
 	}). 
 	when('/wsale_print_preview/:rsn?', {
 	    templateUrl: '/private/wsale/html/wsale_print_preview.html',

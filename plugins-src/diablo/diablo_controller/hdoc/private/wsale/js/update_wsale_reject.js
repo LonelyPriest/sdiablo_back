@@ -1,11 +1,13 @@
 wsaleApp.controller("wsaleUpdateRejectCtrl", function(
     $scope, $q, $routeParams, dateFilter, diabloUtilsService, diabloPromise,
     diabloFilter, diabloPattern, wgoodService, purchaserService, wsaleService,
-    user, filterRetailer, filterEmployee, filterSizeGroup,
-    filterBrand, filterColor, filterType, base){
+    user, filterPromotion, filterScore, filterRetailer, filterEmployee,
+    filterSizeGroup, filterBrand, filterColor, filterType, base){
     // console.log(base);
     // console.log(user); 
     $scope.shops           = user.sortBadRepoes.concat(user.sortShops);
+    $scope.promotions    = filterPromotion;
+    $scope.scores        = filterScore;
     
     $scope.retailers       = filterRetailer; 
     $scope.employees       = filterEmployee;
@@ -76,14 +78,16 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 		$scope.employees,
 		$scope.types,
 		$scope.colors,
-		$scope.size_groups);
+		$scope.size_groups,
+		$scope.promotions,
+		$scope.scores);
 
 	    console.log(wsale);
-	    
 	    
 	    $scope.old_select = wsale.select;
 	    $scope.select = angular.extend($scope.select, wsale.select);
 
+	    $scope.show_promotions = wsale.show_promotions;
 	    // setting
 	    $scope.setting.round = wsaleUtils.get_round(
 		$scope.select.shop.id, $scope.base_settings); 
@@ -98,7 +102,7 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 	    // inventory
 	    $scope.old_inventories = wsale.details;
 	    $scope.inventories = angular.copy(wsale.details);
-	    // $scope.inventories.unshift({$edit:false, $new:true});
+	    $scope.inventories.unshift({$edit:false, $new:true});
 
 	    console.log($scope.old_inventories);
 	    console.log($scope.inventories);
@@ -463,44 +467,71 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
     };
     
     $scope.re_calculate = function(){
-	$scope.select.total = 0;
-	$scope.select.should_pay = 0.00;
+	$scope.select.total        = 0;
+	$scope.select.abs_total    = 0;
+	$scope.select.should_pay   = 0;
+	$scope.select.score        = 0;
+
+	var pmoneys = []; 
+	var pscores = [];
 	
-	for (var i=0, l=$scope.inventories.length; i<l; i++){
-	    var one = $scope.inventories[i];
-	    if (one.$new) {
-		continue;
-	    }
-	    
+	for (var i=1, l=$scope.inventories.length; i<l; i++){
+	    var one = $scope.inventories[i]; 
+	    one.calc = 0; 
 	    $scope.select.total += parseInt(one.reject);
+	    $scope.select.abs_total  += Math.abs(parseInt(one.reject));
+	    
 	    if ($scope.setting.round === diablo_round_row){
 		if (one.pid === -1){
-		    $scope.select.should_pay
-			+= $scope.round(
-			    one.reject * one.fprice * one.fdiscount * 0.01);
+		    one.calc = $scope.round(
+			one.fprice * one.fdiscount * 0.01 * one.reject); 
 		} else {
-		    $scope.select.should_pay
-			+= $scope.round(one.reject * one.fprice);
-		}
-		
+		    one.calc = $scope.round(one.fprice * one.reject); 
+		} 
 	    } else {
 		if (one.pid === -1){
-		    $scope.select.should_pay
-			+= one.reject * one.fprice * one.fdiscount * 0.01;
+		    one.calc = $scope.f_mul(
+			one.fprice,
+			$scope.f_mul(one.fdiscount,
+				     $scope.f_mul(0.01, one.reject))); 
 		} else {
-		    $scope.select.should_pay += one.reject * one.fprice;
-		}
-		
-	    } 
+		    one.calc = $scope.f_mul(one.fprice, one.reject);
+		} 
+	    }
+
+	    if (one.pid === -1){
+		wsaleUtils.sort_promotion(
+		    {id: -1, rule_id: -1}, Math.abs(one.calc), pmoneys);
+	    } else {
+		wsaleUtils.sort_promotion(
+		    one.promotion, Math.abs(one.calc), pmoneys);
+	    }
+
+	    if (one.sid !== -1){
+		wsaleUtils.sort_score(
+		    one.score, one.promotion, Math.abs(one.calc), pscores)
+		// format_score(one.score, one.promotion, one.calc);
+	    }
 	}
 
-	$scope.select.should_pay =
-	    $scope.round($scope.select.should_pay - $scope.select.withdraw);
-
+	console.log(pmoneys);
+	console.log(pscores); 
 	
-	$scope.select.left_balance
-	    = $scope.round(
-		$scope.select.surplus + $scope.select.withdraw);
+	$scope.select.should_pay = wsaleUtils.calc_with_promotion(pmoneys);
+	$scope.select.score = wsaleUtils.calc_with_score(pscores);
+
+	if ($scope.select.withdraw > $scope.select.should_pay){
+	    $scope.select.left_balance =
+		$scope.select.surplus - $scope.select.should_pay;
+	    $scope.select.withdraw = $scope.select.should_pay;
+
+	    $scope.select.charge = -($scope.select.cash + $scope.select.card);
+	} else {
+	    $scope.select.charge =
+		$scope.select.should_pay - $scope.select.has_pay; 
+	}
+
+	console.log($scope.select);
     }; 
 
     var valid_all = function(amounts){

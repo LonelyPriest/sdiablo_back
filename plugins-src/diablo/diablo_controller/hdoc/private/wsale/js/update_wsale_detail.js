@@ -22,10 +22,10 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
     
     $scope.sexs        = diablo_sex;
     $scope.seasons     = diablo_season;
-    $scope.sell_styles = diablo_sell_style;
-    $scope.e_pay_types = wsaleService.extra_pay_types;
+    // $scope.sell_styles = diablo_sell_style;
+    // $scope.e_pay_types = wsaleService.extra_pay_types;
     $scope.round       = diablo_round;
-    
+    $scope.has_saved   = false;
     $scope.setting     = {check_sale:true, round: diablo_round_record};
 
     $scope.old_select  = {};
@@ -72,10 +72,9 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 		    one.calc = $scope.f_mul(
 			one.fprice,
 			$scope.f_mul(one.fdiscount,
-				     $scope.f_mul(0.01, one.reject))
-		    );
+				     $scope.f_mul(0.01, one.reject)));
 		} else {
-		    one.calc = $scope.f_mul(one.fprice, one.reject)
+		    one.calc = $scope.f_mul(one.fprice, one.reject);
 		} 
 	    }
 
@@ -112,7 +111,9 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	} else {
 	    $scope.select.charge =
 		$scope.select.should_pay - $scope.select.has_pay; 
-	} 
+	}
+
+	// console.log($scope.select);
     };
     
     $scope.change_retailer = function(){

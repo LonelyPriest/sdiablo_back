@@ -456,6 +456,13 @@
 	    </div> <!--END table responsive--> 
 	  </div> <!--END panel-->
 
+	  <div x-ng-if="select.score!==0">
+	    <span class="fg-red">总积分：</span>
+	    <span class="fg-color-darken">
+	      <strong>{{select.score}}</strong>
+	    </span>
+	  </div>
+	  
 	  <div x-ng-repeat="p in show_promotions">
 	    <span>{{p.name}}&nbsp&nbsp&nbsp&nbsp
 	      <span class="bg-blue">促销：</span>

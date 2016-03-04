@@ -5,11 +5,11 @@ var wsaleUtils = function(){
 		&& sell.brand_id   === sorts[i].brand_id){
 
 		// sorts[i].total += sell.sell;
-		sorts[i].reject += Math.abs(sell.amount);
+		sorts[i].reject += sell.amount;
 		sorts[i].amounts.push({
 		    cid        :sell.color_id,
 		    size       :sell.size,
-		    sell_count :Math.abs(sell.amount)});
+		    sell_count :sell.amount});
 		return true;
 	    } 
 	}
@@ -61,8 +61,8 @@ var wsaleUtils = function(){
 
 		add.fprice    = s.fprice;
 		add.fdiscount = s.fdiscount;
-		add.reject    = Math.abs(s.amount);
-		add.total     = Math.abs(s.total);
+		add.reject    = s.amount;
+		add.total     = s.total;
 		
 		add.pid       = s.pid;
 		add.sid       = s.sid;
@@ -73,7 +73,7 @@ var wsaleUtils = function(){
 		add.amounts.push({
 		    cid: s.color_id,
 		    size:s.size,
-		    sell_count:Math.abs(s.amount)});
+		    sell_count:s.amount});
 
 		sorts.push(add);
 	    }
