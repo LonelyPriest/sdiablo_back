@@ -303,7 +303,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	round         :diablo_round_record};
 
     $scope.right = {
-	m_discount : rightAuthen.modify_discount_when_sale(user.type),
+	// m_discount : rightAuthen.modify_discount_when_sale(user.type),
+	m_discount : false,
 	m_price    : false
     };
 
@@ -340,7 +341,11 @@ wsaleApp.controller("wsaleNewCtrl", function(
 
     $scope.check_sale = function(shopId){
 	return wsaleUtils.check_sale(shopId, base); 
-    }; 
+    };
+
+    $scope.p_mode = function(shopId){
+	return wsaleUtils.print_mode(shopId, base);
+    };
 
     // console.log($scope.q_typeahead);
     
@@ -925,16 +930,16 @@ wsaleApp.controller("wsaleNewCtrl", function(
     };
 
     $scope.print_backend = function(result, im_print){
-	var print = function(result){
+	var print = function(status){
 	    var messsage = "";
-	    if (result.pcode == 0){
+	    if (status.pcode == 0){
 		messsage = "单号："
 		    + result.rsn + "，打印成功，请等待服务器打印！！";
 	    } else {
-		if (result.pinfo.length === 0){
-		    messsage += wsaleService.error[result.pcode]
+		if (status.pinfo.length === 0){
+		    messsage += wsaleService.error[status.pcode]
 		} else {
-		    angular.forEach(result.pinfo, function(p){
+		    angular.forEach(status.pinfo, function(p){
 			messsage += "[" + p.device + "] "
 			    + wsaleService.error[p.ecode]
 		    })
@@ -956,8 +961,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    show_dialog("销售开单", show_message); 
 	} else{
 	    var ok_print = function(){
-		wsaleService.print_w_sale(rsn).then(function(result){
-		    var show_message = "开单成功，" + print(result);
+		wsaleService.print_w_sale(result.rsn).then(function(presult){
+		    var show_message = "开单成功，" + print(presult);
 		    show_dialog("销售开单", show_message); 
 		})
 	    };
@@ -1115,7 +1120,12 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    if (result.ecode === 0){
 		$scope.select.rsn = result.rsn;
 		success_callback();
-		$scope.print_front(result, im_print); 
+
+		if (diablo_backend === $scope.p_mode($scope.select.shop.id)){
+		    $scope.print_backend(result, im_print);
+		} else {
+		    $scope.print_front(result, im_print); 
+		} 
 	    } else {
 		dialog.response_with_callback(
 	    	    false,
@@ -1877,7 +1887,7 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 	    console.log(result);
 	    $scope.disable_print = false; 
 	    if (result.ecode == 0){
-		var msg;
+		var msg = "";
 		if (result.pcode == 0){
 		    msg = "销售单打印成功！！单号："
 			+ result.rsn + "，请等待服务器打印";

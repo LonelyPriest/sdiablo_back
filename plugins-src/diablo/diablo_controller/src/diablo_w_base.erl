@@ -20,7 +20,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
--export([bank_card/2, bank_card/3, setting/2, setting/3]).
+-export([bank_card/2, bank_card/3, setting/2, setting/3, sys_config/0]).
 
 -define(SERVER, ?MODULE). 
 
@@ -136,7 +136,8 @@ handle_call({list_base_setting, Merchant, Conditions}, _From, State) ->
 	", remark, shop, entry_date from w_base_setting"
 	" where " ++ ?utils:to_sqls(proplists, Conditions)
 	++ " and merchant=" ++ ?to_s(Merchant)
-	++ " and deleted=" ++ ?to_s(?NO),
+	++ " and deleted=" ++ ?to_s(?NO)
+	++ " order by id",
 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State}; 
@@ -147,7 +148,8 @@ handle_call({list_base_setting, Merchant}, _From, State) ->
     Sql = "select id, ename, cname, value, type"
 	", remark, shop, entry_date from w_base_setting"
 	" where merchant=" ++ ?to_s(Merchant)
-	++ " and deleted=" ++ ?to_s(?NO),
+	++ " and deleted=" ++ ?to_s(?NO)
+	++ " order by id",
 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
@@ -214,30 +216,11 @@ handle_call({add_shop_setting, Merchant, Shop}, _From, State) ->
     Now = ?utils:current_time(localdate),
 
     %% one month default
-    {M, S, T} = erlang:now(),
-    {{YY, MM, DD}, _} = calendar:now_to_datetime({M, S - 86400 * 30, T}),
-    DefaultDate = lists:flatten(io_lib:format("~4..0w-~2..0w-~2..0w", [YY, MM, DD])), 
+    %% {M, S, T} = erlang:now(),
+    %% {{YY, MM, DD}, _} = calendar:now_to_datetime({M, S - 86400 * 30, T}),
+    %% DefaultDate = lists:flatten(io_lib:format("~4..0w-~2..0w-~2..0w", [YY, MM, DD])), 
     
-    %%        ename,              cname,          value,type
-    Values = [{"pum",             "打印份数",     "1",  "0"},
-	      {"ptype",           "打印方式",     "1",  "0"}, %% 0: front; 1:backend 
-	      {"pformat",         "打印格式",     "1",  "0"},
-	      {"ptable",          "表格打印",     "0",  "0"},
-	      {"pretailer",       "打印零售商",   "0",  "0"},
-	      {"pround",          "四舍五入",     "0",  "0"},
-	      {"ptrace_price",    "价格跟踪",     "0",  "0"},
-	      {"prompt",          "提示数目",     "8",  "0"},
-	      {"pim_print",       "立即打印",     "0",  "0"},
-	      {"qtime_start",     "查询开始时间", DefaultDate,  "0"},
-	      {"qtime_length",    "查询跨度",     "30",  "0"},
-	      {"qtypeahead",      "提示方式",     "1",   "0"}, %% 0: front; 1:backend
-	      {"reject_negative", "零库存退货",   "0",   "0"},
-	      {"check_sale",      "检测库存销售", "1",   "0"},
-	      {"show_discount",   "开单显示折扣", "1",   "0"},
-	      {"se_pagination",   "顺序翻页",     "0",   "0"},
-	      {"stock_alarm",     "库存告警",     "0",   "0"}
-	     ],
-
+    Values = sys_config(), 
     Sql0 = lists:foldr(
 	     fun({EName, CName, Value, Type}, Acc) ->
 		     Sql00 = "select id, ename, value from w_base_setting"
@@ -284,3 +267,32 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
+
+
+sys_config() ->
+    %% one month default
+    {M, S, T} = erlang:now(), 
+    {{YY, MM, DD}, _} = calendar:now_to_datetime({M, S - 86400 * 30, T}),
+    DefaultDate = lists:flatten(io_lib:format("~4..0w-~2..0w-~2..0w", [YY, MM, DD])),
+    
+    %%         ename,           cname,            value,type
+    Values = [{"pum",           "打印份数",       "1",  "0"},
+	      {"ptype",         "打印方式",       "1",  "0"}, %% 0: front; 1:backend 
+	      {"pretailer",     "打印客户",       "0",  "0"},
+	      {"pround",        "四舍五入",       "0",  "0"},
+	      {"prompt",        "提示数目",       "8",  "0"},
+	      {"pim_print",     "立即打印",       "0",  "0"},
+
+	      {"qtime_start",   "查询开始时间",   DefaultDate,  "0"},
+	      {"qtypeahead",    "提示方式",       "1",   "0"}, %% 0: front; 1:backend
+
+	      {"reject_negative", "零库存退货",    "0",  "0"},
+	      {"check_sale",      "检测库存销售",  "1",  "0"},
+	      {"show_discount",   "开单显示折扣",  "1",  "0"},
+	      {"se_pagination",   "顺序翻页",      "0",  "0"},
+	      {"stock_alarm",     "库存告警",      "0",  "0"},
+	      {"reject_rsn",      "单号退货",      "1",  "0"},
+	      {"m_discount",      "开单修改折扣",  "0",  "0"},
+	      {"m_price",         "开单修改价格",  "0",  "0"}
+	     ],
+    Values.

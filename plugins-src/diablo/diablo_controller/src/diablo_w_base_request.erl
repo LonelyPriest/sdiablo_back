@@ -145,14 +145,14 @@ action(Session, Req, {"destroy_login_user"}, Payload) ->
     ?utils:respond(200, Req, ?succ(destroy_login_user, User)).
 
 sidebar(Session) -> 
-    Card = 
-	case ?right_auth:authen(?new_w_bank_card, Session) of
-	    {ok, ?new_w_bank_card} ->
-		[{"new_bank_card", "新增银行卡", "glyphicon glyphicon-plus"},
-		 {"bank_card_detail", "银行卡详情", "glyphicon glyphicon-briefcase"}];
-	    _ ->
-		[{"bank_card_detail", "银行卡详情", "glyphicon glyphicon-briefcase"}]
-	end, 
+    %% Card = 
+    %% 	case ?right_auth:authen(?new_w_bank_card, Session) of
+    %% 	    {ok, ?new_w_bank_card} ->
+    %% 		[{"new_bank_card", "新增银行卡", "glyphicon glyphicon-plus"},
+    %% 		 {"bank_card_detail", "银行卡详情", "glyphicon glyphicon-briefcase"}];
+    %% 	    _ ->
+    %% 		[{"bank_card_detail", "银行卡详情", "glyphicon glyphicon-briefcase"}]
+    %% 	end, 
 
     Print =
 	case ?right_auth:authen(?new_w_printer_conn, Session) of
@@ -162,22 +162,22 @@ sidebar(Session) ->
 		 {"connect_detail", "绑定详情", "glyphicon glyphicon-briefcase"}];
 	    _ ->
 		[{"connect_detail", "绑定详情", "glyphicon glyphicon-leaf"}]
-	end,
-
-    SBase = [{{"bank", "银行卡设置", "glyphicon glyphicon-credit-card"}, Card},
+	end, 
+    
+    SBase = [
+	     %% {{"bank", "银行卡设置", "glyphicon glyphicon-credit-card"}, Card},
 	     {{"printer", "打印机", "glyphicon glyphicon-print"}, Print},
 	     {{"setting", "基本设置", "glyphicon glyphicon-cog"},
-	      [{"print_option", "系统设置", "glyphicon glyphicon-wrench"},
-	       {"print_format", "打印格式", "glyphicon glyphicon-text-width"}
-	       %% {"print_task", "打印任务",  "glyphicon glyphicon-tasks"}
-	       %% {"table_detail", "表单", "glyphicon glyphicon-list-alt"}
-	      ]
+	      case ?session:get(type, Session) of
+		  ?USER ->
+		      [{"print_format", "打印格式", "glyphicon glyphicon-text-width"}];
+		  ?MERCHANT ->
+		      [{"print_option", "系统设置", "glyphicon glyphicon-wrench"},
+		       {"print_format", "打印格式", "glyphicon glyphicon-text-width"}
+		      ]
+	      end
 	     }],
     
-    Passwd = [{"passwd", "重置密码", "glyphicon glyphicon-user"}],
-
-    %% STable = [{{"table", "表格设置", "glyphicon glyphicon-scale"},
-    %% 		[{"row_num", "表格行数"}]}],
-
+    Passwd = [{"passwd", "重置密码", "glyphicon glyphicon-user"}], 
     
     ?menu:sidebar(level_2_menu, SBase) ++ ?menu:sidebar(level_1_menu, Passwd).

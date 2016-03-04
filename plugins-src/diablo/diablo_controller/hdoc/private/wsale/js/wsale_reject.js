@@ -198,9 +198,14 @@ wsaleApp.controller("wsaleRejectCtrl", function(
     }; 
 
     $scope.setting.round = wsaleUtils.get_round(
-	$scope.select.shop.id, $scope.base_settings); 
+	$scope.select.shop.id, $scope.base_settings);
+    
     $scope.setting.q_backend = wsaleUtils.typeahead(
 	$scope.select.shop.id, $scope.base_settings);
+
+    $scope.p_mode = function(shopId){
+	return wsaleUtils.print_mode(shopId, base);
+    };
     
     if (!$scope.setting.q_backend){
 	diabloNormalFilter.match_all_w_inventory(
@@ -339,16 +344,16 @@ wsaleApp.controller("wsaleRejectCtrl", function(
     }; 
 
     $scope.print_backend = function(result, im_print){
-	var print = function(result){
+	var print = function(status){
 	    var messsage = "";
-	    if (result.pcode == 0){
+	    if (status.pcode == 0){
 		messsage = "单号："
 		    + result.rsn + "，打印成功，请等待服务器打印！！";
 	    } else {
-		if (result.pinfo.length === 0){
-		    messsage += wsaleService.error[result.pcode]
+		if (status.pinfo.length === 0){
+		    messsage += wsaleService.error[status.pcode]
 		} else {
-		    angular.forEach(result.pinfo, function(p){
+		    angular.forEach(status.pinfo, function(p){
 			messsage += "[" + p.device + "] "
 			    + wsaleService.error[p.ecode]
 		    })
@@ -365,37 +370,27 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 	    dialog.response(true, title, message, undefined)
 	};
 	
-	if (im_print === diablo_yes){
-	    var show_message = "退货成功！！" + print(result);
-	    show_dialog("销售退货", show_message); 
-	} else{
-	    var ok_print = function(){
-		wsaleService.print_w_sale(rsn).then(function(result){
-		    var show_message = "退货单打印" + print(result);
-		    show_dialog("销售退货", show_message); 
-		})
-	    };
+	var ok_print = function(){
+	    wsaleService.print_w_sale(result.rsn).then(function(result){
+		var show_message = "退货单打印" + print(result);
+		show_dialog("销售退货", show_message); 
+	    })
+	};
 	    
-	    dialog.request(
-		"销售退货", "退货成功，是否打印退货单？",
-		ok_print, undefined, $scope);
-	}
-	
+	dialog.request(
+	    "销售退货", "退货成功，是否打印退货单？",
+	    ok_print, undefined, $scope);
     };
 
     $scope.print_front = function(result, im_print){
-	if (im_print === diablo_yes){
+	var dialog = diabloUtilsService; 
+	var ok_print = function(){
 	    javascript:window.print();
-	} else {
-	    var dialog = diabloUtilsService; 
-	    var ok_print = function(){
-		javascript:window.print();
-	    };
+	};
 
-	    dialog.request(
-		"销售退货", "退货成功，是否打印销售单？",
-		ok_print, undefined, $scope);
-	}
+	dialog.request(
+	    "销售退货", "退货成功，是否打印销售单？",
+	    ok_print, undefined, $scope);
     };
     
     $scope.save_inventory = function(){
@@ -495,7 +490,13 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 	    if (result.ecode == 0){
 		$scope.select.retailer.balance = $scope.select.left_balance;
 		$scope.select.surplus = $scope.select.left_balance;
-		$scope.print_front(result, im_print);
+
+		if (diablo_backend === $scope.p_mode($scope.select.shop.id)){
+		    $scope.print_backend(result, im_print);
+		} else {
+		    $scope.print_front(result, im_print); 
+		}
+		
 	    } else{
 	    	dialog.response_with_callback(
 	    	    false,

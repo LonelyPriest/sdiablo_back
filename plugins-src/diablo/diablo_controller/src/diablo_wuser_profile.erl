@@ -616,7 +616,7 @@ handle_call({get_employee_profile, Merchant, EmpId}, _From, State) ->
 	   [Merchant, EmpId]),
     MS = ms(Merchant, employee),
     Select = select(MS, fun() -> ?employ:employ(list, Merchant) end), 
-    SelectEmployee = filter(Select, <<"number">>, EmpId), 
+    SelectEmployee = filter(Select, <<"id">>, EmpId), 
     {reply, {ok, SelectEmployee}, State};
 
 
@@ -684,37 +684,8 @@ handle_call({get_score, Merchant}, _From, State) ->
 handle_call({set_default, Merchant}, _From, State) ->
     ?DEBUG("set default value of merchant ~p", [Merchant]),
     %% base setting
-    Now = ?utils:current_time(localdate),
-    
-    %% one month default
-    {M, S, T} = erlang:now(), 
-    {{YY, MM, DD}, _} = calendar:now_to_datetime({M, S - 86400 * 30, T}),
-    DefaultDate = lists:flatten(io_lib:format("~4..0w-~2..0w-~2..0w", [YY, MM, DD])),
-    
-    %%         ename,           cname,            value,type
-    Values = [{"pum",           "打印份数",       "1",  "0"},
-	      {"ptype",         "打印方式",       "1",  "0"}, %% 0: front; 1:backend 
-	      {"pformat",       "打印格式",       "1",  "0"},
-	      {"ptable",        "表格打印",       "0",  "0"},
-	      {"pretailer",     "打印零售商",     "0",  "0"},
-	      {"pround",        "四舍五入",       "0",  "0"},
-	      {"ptrace_price",  "价格跟踪",       "0",  "0"},
-	      {"prompt",        "提示数目",       "8",  "0"},
-	      {"pim_print",     "立即打印",       "0",  "0"},
-	      
-	      {"qtime_start",   "查询开始时间",   DefaultDate,  "0"},
-	      {"qtime_length",  "查询跨度",       "30",  "0"},
-	      {"qtypeahead",    "提示方式",       "1",   "0"}, %% 0: front; 1:backend
-	      
-	      {"reject_negative", "零库存退货",    "0",  "0"},
-	      {"check_sale",      "检测库存销售",  "1",  "0"},
-	      {"show_discount",   "开单显示折扣",  "1",  "0"},
-	      {"se_pagination",   "顺序翻页",      "0",  "0"},
-	      {"stock_alarm",     "库存告警",      "0",  "0"},
-	      {"reject_rsn",      "单号退货",      "1",  "0"}
-	     ],
-    
-    
+    Now = ?utils:current_time(localdate), 
+    Values = ?w_base:sys_config(), 
     Sql0 = lists:foldr(
 	    fun({EName, CName, Value, Type}, Acc) ->
 		    Sql00 = "select id, ename, value from w_base_setting"
@@ -740,20 +711,7 @@ handle_call({set_default, Merchant}, _From, State) ->
 
     %% print format
     %% {name, isPrint, printWidth}
-    Formats = [{"brand",           "0",  "0"},
-	       {"style_number",    "0",  "0"},
-	       {"type",            "0",  "0"},
-	       {"color",           "0",  "0"},
-	       {"size_name",       "0",  "0"}, 
-	       {"size",            "0",  "0"},
-	       {"price",           "0",  "0"},
-	       {"discount",        "0",  "0"},
-	       {"dprice",          "0",  "0"},
-	       {"hand",            "0",  "0"},
-	       {"count",           "0",  "0"},
-	       {"calc",            "0",  "0"},
-	       {"comment",         "0",  "0"}
-	      ],
+    Formats = ?w_print:print_format(),
 
 
     Sql1 = lists:foldr(

@@ -69,11 +69,13 @@ baseApp.service("baseService", function($resource){
     this.table_setting = 1;
 
     this.option_names = [
-	{cname: "电话1", ename: "phone1"},
-	{cname: "电话2", ename: "phone2"},
+	// {cname: "电话1", ename: "phone1"},
+	// {cname: "电话2", ename: "phone2"},
 	{cname: "备注1", ename: "comment1"},
 	{cname: "备注2", ename: "comment2"},
-	{cname: "备注3", ename: "comment3"}];
+	{cname: "备注3", ename: "comment3"},
+	{cname: "备注4", ename: "comment4"},
+    ];
 
     this.print_types = [{cname:"前台打印", value: 0},
 			{cname:"后台打印", value: 1}];

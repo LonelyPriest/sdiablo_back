@@ -191,6 +191,11 @@ var wsaleUtils = function(){
 		"check_sale", shop, base, parseInt, diablo_yes);
 	},
 
+	print_mode: function(shop, base){
+	    return diablo_base_setting(
+		"ptype", shop, base, parseInt, diablo_backend);
+	},
+
 	sort_amount: function(invs, amounts, colors){
 	    var select_amounts = [];
 	    var used_colors = [];

@@ -62,12 +62,14 @@ wprintApp.service("wprintService", function($resource, dateFilter){
 	2423: "打印格式缺少尺码，请在打印格式设置中选中尺码！！",
 	9001: "数据库操作失败，请联系服务人员！！"};
 
-    this.printer_brands = [{chinese:"爱普生", name:"epson"},
-			   {chinese:"富士通", name:"fujitsu"},
-			   {chinese:"映美",   name:"jolimark"},
-			   {chinese:"飞鹅",   name:"feie"}];
+    this.printer_brands = [
+	{chinese:"飞鹅",   name:"feie"}
+	// {chinese:"爱普生", name:"epson"},
+	// {chinese:"富士通", name:"fujitsu"},
+	// {chinese:"映美",   name:"jolimark"},
+    ];
 
-    this.paper_columns  = [33, 50, 80, 106];
+    this.paper_columns  = [58, 76, 80];
     this.paper_heights  = [0, 14, 28];
     
     this.print_status = [{cname:"启动", value: 0},

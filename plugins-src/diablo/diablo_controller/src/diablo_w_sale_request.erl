@@ -237,7 +237,32 @@ action(Session, Req, {"new_w_sale"}, Payload) ->
 				    {<<"pcode">>, PCode},
 				    {<<"pinfo">>, PInfo}])
 			end,
-		    print(RSN, Merchant, Invs, Base, Print, SuccessRespone);
+
+		    NewInvs =
+			lists:foldr(
+			  fun({struct, Inv}, Acc) ->
+				  StyleNumber = ?v(<<"style_number">>, Inv),
+				  BrandId     = ?v(<<"brand">>, Inv),
+				  %% Total       = ?v(<<"total">>, Inv),
+				  FPrice      = ?v(<<"fprice">>, Inv),
+				  FDiscount   = ?v(<<"fdiscount">>, Inv),
+				  Amounts      = ?v(<<"amounts">>, Inv),
+
+				  P = [{<<"style_number">>, StyleNumber},
+				       {<<"brand_id">>, BrandId},
+				       {<<"fprice">>, FPrice},
+				       {<<"fdiscount">>, FDiscount}
+				      ],
+				  
+				  lists:foldr(
+				    fun({struct, A}, Acc1) ->
+					    SellTotal = ?v(<<"sell_count">>, A),
+					    [
+					     {[{<<"total">>, SellTotal}|P]}
+					     |Acc1] ++ Acc
+				    end, [], Amounts)
+			  end, [], Invs),
+		    print(RSN, Merchant, NewInvs, Base, Print, SuccessRespone);
 		?NO ->
 		    ?utils:respond(200, Req, ?succ(new_w_sale, RSN),
 				   [{<<"rsn">>, ?to_b(RSN)}])
@@ -285,10 +310,10 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
     try
 	{ok, Sale} = ?w_sale:sale(get_new, Merchant, RSN),
 	?DEBUG("sale ~p", [Sale]),
-	{ok, Details} =
+	{ok, SaleDetails} =
 	    ?w_sale:sale(trans_detail, Merchant, {<<"rsn">>, ?to_b(RSN)}),
 	%% {ok, Details} = ?w_sale:rsn_detail(rsn, Merchant, {<<"rsn">>, RSN}),
-	?DEBUG("details ~p", [Details]),
+	?DEBUG("details ~p", [SaleDetails]),
 
 	{ok, Retailer} = ?w_user_profile:get(
 			    retailer, Merchant, ?v(<<"retailer_id">>, Sale)),
@@ -304,20 +329,20 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
 		    end
 	    end,
 	    
-	SortInvs = sort_inventory(Merchant, GetBrand, Details, []),
+	%% SortInvs = sort_inventory(Merchant, GetBrand, Details, []),
 	%% ?DEBUG("sorts ~p", [SortInvs]),
 	RSNAttrs = [{<<"shop">>,       ?v(<<"shop_id">>, Sale)},
 		    {<<"datetime">>,   ?v(<<"entry_date">>, Sale)},
 		    {<<"balance">>,    ?v(<<"balance">>, Sale)},
 		    {<<"cash">>,       ?v(<<"cash">>, Sale)},
 		    {<<"card">>,       ?v(<<"card">>, Sale)},
-		    {<<"wire">>,       ?v(<<"wire">>, Sale)},
+		    %% {<<"wire">>,       ?v(<<"wire">>, Sale)},
 		    {<<"verificate">>, ?v(<<"verificate">>, Sale)},
 		    {<<"should_pay">>, ?v(<<"should_pay">>, Sale)},
 		    {<<"total">>,      ?v(<<"total">>, Sale)},
 		    {<<"comment">>,    ?v(<<"comment">>, Sale)},
-		    {<<"e_pay_type">>, ?v(<<"e_pay_type">>, Sale)},
-		    {<<"e_pay">>,      ?v(<<"e_pay">>, Sale)},
+		    %% {<<"e_pay_type">>, ?v(<<"e_pay_type">>, Sale)},
+		    %% {<<"e_pay">>,      ?v(<<"e_pay">>, Sale)},
 		    {<<"direct">>,     ?v(<<"type">>, Sale)}],
 
 	
@@ -335,7 +360,7 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
 			{<<"pinfo">>, PInfo}])
 	    end,
 
-	print(RSN, Merchant, SortInvs, RSNAttrs, PrintAttrs, SuccessRespone)
+	print(RSN, Merchant, SaleDetails, RSNAttrs, PrintAttrs, SuccessRespone)
 	
 	%% ?utils:respond(
 	%%    200, Req, ?succ(print_w_sale, RSN), {<<"rsn">>, ?to_b(RSN)}) 
@@ -352,25 +377,28 @@ action(Session, Req, {"reject_w_sale"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     Invs = ?v(<<"inventory">>, Payload),
     {struct, Base}   = ?v(<<"base">>, Payload),
-    {struct, Print}  = ?v(<<"print">>, Payload),
-    ImmediatelyPrint = ?v(<<"im_print">>, Print, ?YES),
+    %% {struct, Print}  = ?v(<<"print">>, Payload),
+    %% ImmediatelyPrint = ?v(<<"im_print">>, Print, ?YES),
     case ?w_sale:sale(reject, Merchant, lists:reverse(Invs), Base) of 
     	{ok, RSN} ->
-	    case ImmediatelyPrint of
-		?YES ->
-		    SuccessRespone =
-			fun(PCode, PInfo) ->
-				?utils:respond(
-				   200, Req, ?succ(reject_w_sale, RSN),
-				   [{<<"rsn">>, ?to_b(RSN)},
-				    {<<"pcode">>, PCode},
-				    {<<"pinfo">>, PInfo}])
-			end,
-		    print(RSN, Merchant, Invs, Base, Print, SuccessRespone);
-		?NO ->
-		    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
-				   [{<<"rsn">>, ?to_b(RSN)}])
-	    end;
+	    %% case ImmediatelyPrint of
+	    %% 	?YES ->
+	    %% 	    SuccessRespone =
+	    %% 		fun(PCode, PInfo) ->
+	    %% 			?utils:respond(
+	    %% 			   200, Req, ?succ(reject_w_sale, RSN),
+	    %% 			   [{<<"rsn">>, ?to_b(RSN)},
+	    %% 			    {<<"pcode">>, PCode},
+	    %% 			    {<<"pinfo">>, PInfo}])
+	    %% 		end,
+		    
+	    %% 	    print(RSN, Merchant, Invs, Base, Print, SuccessRespone);
+	    %% 	?NO ->
+	    %% 	    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
+	    %% 			   [{<<"rsn">>, ?to_b(RSN)}])
+	    %% end;
+	    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
+			   [{<<"rsn">>, ?to_b(RSN)}]);
     	{error, Error} ->
     	    ?utils:respond(200, Req, Error)
     end;
@@ -530,8 +558,7 @@ sidebar(Session) ->
 %% internal
 %% =============================================================================
 print(RSN, Merchant, Invs, Attrs, PrintAttrs, ResponseFun) ->
-    try ?wifi_print:print(RSN, Merchant, Invs, Attrs, PrintAttrs) of
-	
+    try ?wifi_print:print(RSN, Merchant, Invs, Attrs, PrintAttrs) of	
 	{Success, []} ->
 	    ResponseFun(0, Success); 
 	{[], Failed} ->
@@ -555,132 +582,6 @@ print(RSN, Merchant, Invs, Attrs, PrintAttrs, ResponseFun) ->
 	    ResponseFun(ECode, [])
     end.
 
-sort_inventory(_Merchant, _GetBrand, [], Sorts) ->
-    lists:reverse(Sorts);
-sort_inventory(Merchant, GetBrand, [{Inv}|T], Sorts) ->
-   case in_sort(Inv, Sorts) of
-       false  ->
-	   StyleNumber = ?v(<<"style_number">>, Inv),
-	   Brand       = ?v(<<"brand_id">>, Inv),
-	   ColorId     = ?v(<<"color_id">>, Inv), 
-	   Color =
-	       case ?w_user_profile:get(color, Merchant, ColorId) of
-		   {ok, []} -> [];
-		   {ok, [{Select}]} -> ?v(<<"name">>, Select)
-	       end,
-	   ?DEBUG("color ~p", [Color]),
-	   Size        = ?v(<<"size">>, Inv), 
-	   Count       = ?v(<<"amount">>, Inv),
-	   Hand        =  ?v(<<"hand">>, Inv),
-
-	   Type        = find_type(Merchant, ?v(<<"type_id">>, Inv)),
-
-	   Colors  = [{struct, [{<<"cid">>, ColorId},
-				{<<"cname">>, Color}]}],
-	   
-	   Amounts = [{struct, [{<<"cid">>, ColorId},
-				{<<"size">>, Size},
-				{<<"sell_count">>, Count},
-				{<<"hand">>, Hand}]}], 
-	   
-	   NewInv = {struct, [{<<"style_number">>, StyleNumber},
-			      {<<"brand_id">>, Brand},
-			      %% {<<"brand_name">>, ?v(<<"brand">>, Inv)},
-			      {<<"brand_name">>, GetBrand(Brand)},
-			      {<<"type_name">>,   Type},
-			      {<<"fdiscount">>,  ?v(<<"fdiscount">>, Inv)},
-			      {<<"fprice">>,     ?v(<<"fprice">>, Inv)}, 
-			      {<<"s_group">>,    ?v(<<"s_group">>, Inv)},
-			      {<<"amounts">>, Amounts},
-			      {<<"colors">>, Colors}]},
-	   sort_inventory(Merchant, GetBrand, T, [NewInv|Sorts]);
-       true ->
-	   NewSort = combine_inventory(Merchant, GetBrand, Inv, Sorts, []),
-	   sort_inventory(Merchant, GetBrand, T, NewSort)
-   end.
-
-in_sort(_Inv, []) ->
-    false;
-in_sort(Inv, [{struct, H}|T]) ->
-    StyleNumber = ?v(<<"style_number">>, H),
-    BrandId = ?v(<<"brand_id">>, H),
-    case ?v(<<"style_number">>, Inv) =:= StyleNumber
-	andalso ?v(<<"brand_id">>, Inv) =:= BrandId of
-	true ->
-	    true;
-	false ->
-	    in_sort(Inv, T)
-    end.
-
-combine_inventory(_Merchant, _GetBrand, _Inv, [], Combines) ->
-    Combines;
-combine_inventory(Merchant, GetBrand, Inv, [{struct, H}|T], Combines) ->
-    StyleNumber = ?v(<<"style_number">>, H),
-    BrandId = ?v(<<"brand_id">>, H),
-
-    case ?v(<<"style_number">>, Inv) =:= StyleNumber
-	andalso ?v(<<"brand_id">>, Inv) =:= BrandId of
-	true ->
-	    ColorId = ?v(<<"color_id">>, Inv),
-	    %% Color   = ?v(<<"color">>, Inv),
-	    Color =
-		case ?w_user_profile:get(color, Merchant, ColorId) of
-		    {ok, []} -> [];
-		    {ok, [{Select}]} -> ?v(<<"name">>, Select)
-		end,
-	    Size        = ?v(<<"size">>, Inv),
-	    Count       = ?v(<<"amount">>, Inv),
-	    Hand        = ?v(<<"hand">>, Inv),
-	    
-	    Amounts = ?v(<<"amounts">>, H),
-	    Colors  = ?v(<<"colors">>, H), 
-	    Type    = find_type(Merchant, ?v(<<"type_id">>, Inv)),
-	    
-	    NewColors = case find_color(ColorId, Colors) of
-			    true -> Colors;
-			    false ->
-				[{struct, [{<<"cid">>, ColorId},
-					   {<<"cname">>, Color}]}|Colors]
-			end,
-	    NewAmounts = [{struct, [{<<"cid">>, ColorId},
-				    {<<"size">>, Size}, 
-				    {<<"sell_count">>, Count},
-				    {<<"hand">>, Hand}]}
-			  |Amounts],
-	   combine_inventory(
-	     Merchant, GetBrand, Inv, T,
-	     [{struct, [{<<"style_number">>, StyleNumber},
-			{<<"brand_id">>, BrandId},
-			%% {<<"brand_name">>, ?v(<<"brand">>, Inv)},
-			{<<"brand_name">>, GetBrand(BrandId)},
-			{<<"type_name">>,  Type},
-			{<<"fdiscount">>,  ?v(<<"fdiscount">>, Inv)},
-			{<<"fprice">>,     ?v(<<"fprice">>, Inv)},
-			{<<"s_group">>,    ?v(<<"s_group">>, Inv)},
-			{<<"colors">>, NewColors},
-			{<<"amounts">> ,NewAmounts}]}|Combines]);
-	false ->
-	    combine_inventory(
-	      Merchant, GetBrand, Inv, T, [{struct, H}|Combines])
-    end.
-
-find_type(Merchant, TypeId) ->
-    case ?w_user_profile:get(type, Merchant, TypeId) of
-	{ok, []}     -> <<>>; 
-	{ok, [{Type}]} -> ?v(<<"name">>, Type)
-    end.
-
-find_color(_ColorId, []) ->
-    false;
-find_color(ColorId, [{struct, H}|T]) ->
-    case ColorId =:= ?v(<<"cid">>, H) of
-	true ->
-	    true;
-	false ->
-	    find_color(ColorId, T)
-    end.
-	    
-
 batch_responed(Fun, Req) ->
     case Fun() of
 	{ok, Values} ->
@@ -688,34 +589,6 @@ batch_responed(Fun, Req) ->
 	{error, _Error} ->
 	    ?utils:respond(200, batch, Req, [])
     end.
-
-%% filter_condition(trans_note, [], _Conditions) ->
-%%     [];
-%% filter_condition(trans_note, Rsns, Conditions) ->
-%%     [{<<"fields">>, {
-%% 	  struct, [{<<"rsn">>, Rsns}]
-%% 	  ++ lists:foldr(
-%% 	       fun({<<"style_number">>, _}=S, Acc) ->
-%% 		       [S|Acc];
-%% 		  ({<<"brand">>, _}=B, Acc) ->
-%% 		       [B|Acc];
-%% 		  ({<<"firm">>, _}=F, Acc) ->
-%% 		       [F|Acc];
-%% 		  ({<<"type">>, _}=T, Acc) ->
-%% 		       [T|Acc];
-%% 		  ({<<"year">>, _}=Y, Acc) ->
-%% 		       [Y|Acc];
-%% 		  (_, Acc) ->
-%% 		       Acc
-%% 	       end, [], Conditions)}}].
-
-%% object_responed(Fun, Req) ->
-%%     case Fun() of
-%% 	{ok, Value} ->
-%% 	    ?utils:respond(200, object, Req, {Value});
-%% 	{error, Error} ->
-%% 	    ?utils:respond(200, Req, Error)
-%%     end.
 
 csv_head(trans, Do) ->
     Do("序号,单号,交易类型,门店,店员,客户,数量,现金,刷卡,汇款,核销,费用,帐户欠款,应付,实付,本次欠款,备注,开单日期");

@@ -23,6 +23,7 @@
 -export([server/1, server/2]).
 -export([printer/1, printer/2, printer/3, printer/4]).
 -export([format/2, format/3, format/4]).
+-export([print_format/0]).
 
 -define(SERVER, ?MODULE). 
 
@@ -121,7 +122,7 @@ handle_call({new_printer, Attrs}, _From, State) ->
 		++ "\'" ++ ?to_s(Brand) ++ "\',"
 		++ "\'" ++ ?to_s(Model) ++ "\',"
 		%% ++ ?to_s(Column) ++ ","
-		++ "\'" ++ ?utils:current_time(localdate) ++ "\')",
+		++ "\'" ++ ?utils:current_time(format_localtime) ++ "\')",
 	    Reply = ?sql_utils:execute(insert, Sql1),
 	    {reply, Reply, State};
 	{ok, E} ->
@@ -259,7 +260,8 @@ handle_call({list_printer_format, Merchant}, _From, State) ->
     Sql = "select id, name, print, shop, width, entry_date"
 	" from w_print_format"
 	" where merchant=" ++ ?to_s(Merchant)
-	++ " and deleted=" ++ ?to_s(?NO),
+	++ " and deleted=" ++ ?to_s(?NO)
+	++ " order by id",
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
@@ -267,19 +269,7 @@ handle_call({add_format_to_shop, Merchant, Shop}, _From, State) ->
     ?DEBUG("add_format_to_shop with merchant ~p, shop ~p", [Merchant, Shop]),
     Now = ?utils:current_time(localdate),
     
-    Formats = [{"brand",           "0",  "0"},
-	       {"style_number",    "0",  "0"},
-	       {"type",            "0",  "0"},
-	       {"color",           "0",  "0"},
-	       {"size_name",       "0",  "0"}, 
-	       {"size",            "0",  "0"},
-	       {"price",           "0",  "0"},
-	       {"discount",        "0",  "0"},
-	       {"dprice",          "0",  "0"},
-	       {"hand",            "0",  "0"},
-	       {"count",           "0",  "0"},
-	       {"calc",            "0",  "0"}
-	      ], 
+    Formats = print_format(),
 
     Sqls = lists:foldr(
 	     fun({Name, Print, Width}, Acc) ->
@@ -350,3 +340,11 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
+
+print_format() ->
+    [{"brand",           "0",  "0"},
+     {"style_number",    "0",  "0"},
+     {"type",            "0",  "0"},
+     {"color",           "0",  "0"},
+     {"size",            "0",  "0"} 
+    ].
