@@ -91,13 +91,12 @@ shopApp.controller("shopDetailCtrl", function(
     // $scope.repertories = filterRepo;
     $scope.goto_page   = diablo_goto_page;
 
-    // console.log();
-    $scope.authen_list_repo = false; 
-    if (rightAuthen.authen("list_repo", user.right)){
-	$scope.authen_list_repo = true; 
-    };
+    // authen
     
-
+    var shop_actions = rightAuthen.shop_action();
+    $scope.authen_list_repo =
+	rightAuthen.authen(shop_actions["list_repo"], user.right); 
+    
     $scope.repertories = [];
     var deferred = $q.defer(); 
     if ($scope.authen_list_repo){

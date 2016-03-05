@@ -318,6 +318,10 @@ function filterProvider(){
 		} 
 	    },
 
+	    reset_color: function(){
+		_colors = [];
+	    },
+	    
 	    get_color: function(){
 		if (_colors.length !== 0){
 		    // console.log("cache color");
@@ -371,7 +375,8 @@ function filterProvider(){
 		    return _promotions;
 		} else {
 		    return wgoodService.list_w_promotion().then(function(
-			promotions){
+			promotions
+		    ){
 			console.log(promotions);
 			_promotions = promotions.map(function(p){
 			    return {

@@ -304,10 +304,18 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	round         :diablo_round_record};
 
     $scope.right = {
-	// m_discount : rightAuthen.modify_discount_when_sale(user.type),
-	m_discount : false,
-	m_price    : false
+	m_discount : rightAuthen.modify_onsale(
+	    user.type,
+	    rightAuthen.rainbow_action()['modify_discount_onsale'],
+	    user.right),
+	
+	m_price    : rightAuthen.modify_onsale(
+	    user.type,
+	    rightAuthen.rainbow_action()['modify_price_onsale'],
+	    user.right),
     };
+
+    console.log($scope.right);
 
     // all right of user
     // console.log(user); 
@@ -1619,7 +1627,8 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
     $scope, $routeParams, $location, dateFilter, diabloUtilsService,
     localStorageService, diabloFilter, wsaleService,
     user, filterRetailer, filterEmployee, base){
-    console.log(filterEmployee);
+    // console.log(filterEmployee);
+    // console.log(user.shop);
     
     $scope.shops     = user.sortShops.concat(user.sortBadRepoes);
     $scope.shopIds   = user.shopIds.concat(user.badrepoIds);
@@ -1633,6 +1642,25 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
     
     $scope.disable_print = false;
     $scope.allowed_slide = true;
+
+    /*
+     * authen
+     */
+    $scope.shop_right = {
+	update_w_sale: rightAuthen.authen_shop_action(
+	    user.type,
+	    rightAuthen.wsale_action()['update_w_sale'],
+	    user.shop
+	),
+
+	check_w_sale: rightAuthen.authen_shop_action(
+	    user.type,
+	    rightAuthen.wsale_action()['check_w_sale'],
+	    user.shop
+	),
+    };
+
+    console.log($scope.shop_right);
 
     /*
      * hidden

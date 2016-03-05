@@ -284,7 +284,9 @@ init([]) ->
 	[{?new_w_good,    <<"新增货品">>, <<"new_w_good">>,    ?right_w_good},
 	 {?del_w_good,    <<"删除货品">>, <<"delete_w_good">>, ?right_w_good},
 	 {?update_w_good, <<"修改货品">>, <<"update_w_good">>, ?right_w_good},
-	 {?list_w_good,   <<"查询货品">>, <<"list_w_good">>,   ?right_w_good},
+	 {?list_w_good,   <<"查询货品">>, <<"list_w_good">>,   ?right_w_good}, 
+	 {?lookup_good_orgprice,
+	  <<"查看货品进价">>, <<"lookup_good_orgprice">>,   ?right_w_good},
 	 
 	 %% size
 	 {?new_w_size, <<"新增尺码组">>, <<"new_w_size">>,    ?right_w_good},
@@ -328,8 +330,13 @@ init([]) ->
     
     %% rainbow
     Rainbow =
-	[{?inventory_fifo,
-	  <<"库存先进先出">>, <<"inventory_fifo">>,   ?right_rainbow}],
+	[{?inventory_eifo_onreject,
+	  <<"退货后进先出">>, <<"inventory_eifo">>, ?right_rainbow},
+	 {?wsale_modify_price_onsale,
+	  <<"开单修改价格">>, <<"wsale_modify_price">>,  ?right_rainbow},
+	 {?wsale_modify_discount_onsale,
+	  <<"开单修改折扣">>, <<"wsale_modify_discount">>, ?right_rainbow}
+	],
 
     %% base setting
     Base =

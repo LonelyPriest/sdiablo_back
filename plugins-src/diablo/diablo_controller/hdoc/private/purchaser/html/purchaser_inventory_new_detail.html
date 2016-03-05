@@ -180,12 +180,14 @@
 			      x-ng-click="trans_detail(r)">明细
 			<i class="glyphicon glyphicon-map-marker"></i></button>
 		      
-		      <button class="btn diablo-button yellow"
+		      <button x-ng-if="shop_right.update_w_stock"
+			      class="btn diablo-button yellow"
 		      	      x-ng-disabled="r.state===1"
 		      	      x-ng-click="update_detail(r)">修改
 		      	<i class="glyphicon glyphicon-edit"></i></button>
 		      
-		      <button class="btn diablo-button red"
+		      <button x-ng-if="shop_right.check_w_stock"
+			      class="btn diablo-button red"
 			      x-ng-disabled="r.state===1"
 		      	      x-ng-click="check_detail(r)">审核
 		      	<i class="glyphicon glyphicon-check"></i></button>

@@ -14,11 +14,12 @@ function shortCutGoodNewCtrl(
     diabloFilter, wgoodService, shortCutGoodService){
     // console.log($scope);
     $scope.firms      = shortCutGoodService.get_firm();
-    $scope.colorTypes = shortCutGoodService.get_color_type();
-    $scope.brands     = shortCutGoodService.get_brand();
-    $scope.types      = shortCutGoodService.get_type();
-    $scope.groups     = shortCutGoodService.get_size_group();
-    $scope.promotions = shortCutGoodService.get_promotion();
+    // $scope.colorTypes = shortCutGoodService.get_color_type();
+    // $scope.brands     = shortCutGoodService.get_brand();
+    // $scope.types      = shortCutGoodService.get_type();
+    // $scope.groups     = shortCutGoodService.get_size_group();
+    // $scope.promotions = shortCutGoodService.get_promotion();
+    
     $scope.colors     = [];
 
     $scope.seasons = diablo_season2objects;
@@ -30,7 +31,7 @@ function shortCutGoodNewCtrl(
 
     var dialog     = diabloUtilsService;
     var set_float  = diablo_set_float;
-    var colors     = shortCutGoodService.get_color();
+    // var colors     = shortCutGoodService.get_color();
 
     // get all color
     var in_sys_color = function(syscolors, color){
@@ -48,39 +49,47 @@ function shortCutGoodNewCtrl(
 
     $scope.select_good_tab = function(){
 	// console.log("select good table");
-	if ($scope.brands.length === 0){
-	    diabloFilter.get_brand().then(function(brands){
-		console.log(brands);
-		shortCutGoodService.set_brand(brands);
-		$scope.brands = brands;
-	    });
+	if (angular.isUndefined($scope.brands) || $scope.brands.length === 0){
+	    $scope.brands     = shortCutGoodService.get_brand();
+	    // diabloFilter.get_brand().then(function(brands){
+	    // 	console.log(brands);
+	    // 	shortCutGoodService.set_brand(brands);
+	    // 	$scope.brands = brands;
+	    // });
 	};
 
 	// console.log($scope.types);
-	if ($scope.types.length === 0){
-	    diabloFilter.get_type().then(function(types){
-		console.log(types);
-		shortCutGoodService.set_type(types);
-		$scope.types = types;
-	    })
+	if (angular.isUndefined($scope.types) || $scope.types.length === 0){
+	    $scope.types  = shortCutGoodService.get_type();
+	    // console.log($scope.types);
+	    // diabloFilter.get_type().then(function(types){
+	    // 	console.log(types);
+	    // 	shortCutGoodService.set_type(types);
+	    // 	$scope.types = types;
+	    // })
 	};
 
-	if ($scope.groups.length === 0){
-	    diabloFilter.get_size_group().then(function(gs){
-		shortCutGoodService.set_size_group(gs);
-		$scope.groups = gs;
-	    })
+	if (angular.isUndefined($scope.groups) || $scope.groups.length === 0){
+	    $scope.groups     = shortCutGoodService.get_size_group();
+	    // diabloFilter.get_size_group().then(function(gs){
+	    // 	shortCutGoodService.set_size_group(gs);
+	    // 	$scope.groups = gs;
+	    // })
 	};
 
-	if ($scope.colorTypes.length === 0){
-	    diabloFilter.get_color_type().then(function(ts){
-		shortCutGoodService.set_color_type(ts);
-		$scope.colorTypes = ts;
-	    });
+	if (angular.isUndefined($scope.colorTypes)
+	    || $scope.colorTypes.length === 0){
+	    $scope.colorTypes = shortCutGoodService.get_color_type();
+	    // console.log($scope.colorTypes);
+	    // diabloFilter.get_color_type().then(function(ts){
+	    // 	shortCutGoodService.set_color_type(ts);
+	    // 	$scope.colorTypes = ts;
+	    // });
 	}; 
 
 	if ($scope.colors.length === 0){
-	    angular.forEach(colors, function(color){
+	    $scope.org_colors     = shortCutGoodService.get_color();
+	    angular.forEach($scope.org_colors, function(color){
     		if (!in_sys_color($scope.colors, color)){
     		    $scope.colors.push(
     			{type:color.type, tid:color.tid,
@@ -136,7 +145,10 @@ function shortCutGoodNewCtrl(
     			"恭喜你，厂家 " + params.firm.name + " 成功创建！！",
     			$scope, function(){
 			    append_firm(state.id);
-			    diabloFilter.reset_firm()});
+			    shortCutGoodService.set_firm($scope.firms);
+			    // diabloFilter.reset_firm()
+			    $scope.$emit("reset_firm"); 
+			});
     		} else{
     		    dialog.response(
     	    		false, "新增厂家",
@@ -247,10 +259,10 @@ function shortCutGoodNewCtrl(
 			     tid:  newColor.tid,
 			     colors:[{name:newColor.name, id:newColor.id}]});
 			
-			shortCutGoodService.set_color(colors.push(newColor)); 
-		    }
-		    
-		    console.log($scope.colors); 
+			shortCutGoodService.set_color($scope.org_colors.push(newColor));
+			$scope.$emit("reset_color");
+		    } 
+		    // console.log($scope.colors); 
 		}; 
 		
 		if (state.ecode == 0){
@@ -548,6 +560,7 @@ function shortCutGoodNewCtrl(
 				py   :diablo_pinyin(good.brand)});
 			    
 			    shortCutGoodService.set_brand($scope.brands);
+			    $scope.$emit("reset_brand");
 			}; 
 			// console.log($scope.brands);
 
@@ -560,6 +573,7 @@ function shortCutGoodNewCtrl(
 				py   :diablo_pinyin(good.type)});
 
 			    shortCutGoodService.set_type($scope.types);
+			    $scope.$emit("reset_type");
 			};
 			// console.log($scope.types);
 		    });

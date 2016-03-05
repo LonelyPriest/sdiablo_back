@@ -1,13 +1,23 @@
 purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope, $timeout, dateFilter, diabloPattern, diabloUtilsService,
     diabloFilter, wgoodService, purchaserService, shortCutGoodService,
-    localStorageService, user, filterPromotion, filterBrand, filterFirm,
-    filterEmployee, filterColor, base){
+    localStorageService, user, filterPromotion, filterBrand, filterType,
+    filterSizeGroup, filterFirm, filterEmployee, filterColor,
+    filterColorType, base){
     // console.log(user);
-
+    // console.log(filterColor);
     shortCutGoodService.set_brand(filterBrand); 
     shortCutGoodService.set_firm(filterFirm);
     shortCutGoodService.set_color(filterColor);
+    shortCutGoodService.set_type(filterType);
+    shortCutGoodService.set_color_type(filterColorType);
+    shortCutGoodService.set_size_group(filterSizeGroup);
+
+    // $scope.$on("reset_brand",  function(e, d){
+        
+    // });
+
+    
     shortCutGoodService.set_promotion(filterPromotion);
     
     $scope.shops             = user.sortShops;
@@ -34,9 +44,9 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     
     $scope.q_prompt        = diablo_backend;
     
-    $scope.right_update_orgprice = function(){
-	$scope.modify_orgprice = true;
-    }();
+    // $scope.right_update_orgprice = function(){
+    // 	$scope.modify_orgprice = true;
+    // }();
 
     var now = $.now(); 
     $scope.q_typeahead = function(shopId){
@@ -54,6 +64,14 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 
     $scope.go_back = function(){
 	diablo_goto_page("#/inventory_new_detail");
+    };
+
+    /*
+     * authen
+     */
+    $scope.right = {
+	lookup_w_good_orgprice: rightAuthen.authen(
+	    rightAuthen.good_action()["lookup_w_good_orgprice"], user.right)
     };
 	
 
@@ -738,6 +756,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 			   org_price:    inv.org_price,
 			   ediscount:    inv.ediscount,
 			   path:         inv.path,
+			   right:        $scope.right,
 			   get_amount:   get_amount,
 			   valid_amount: valid_amount};
 
@@ -946,9 +965,13 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
     $scope.seasons   = diablo_season;
     $scope.goto_page = diablo_goto_page;
 
+    $scope.right = {
+	lookup_w_good_orgprice: rightAuthen.authen(
+	    rightAuthen.good_action()["lookup_w_good_orgprice"], user.right)
+    };
+
     $scope.setting = {
-	show_orgprice: rightAuthen.show_orgprice(user.type),
-	alarm:         false
+	alarm: false
     };
 
     $scope.$watch("tab_active", function(newValue, oldValue){
@@ -1328,6 +1351,23 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
     $scope.f_sub   = diablo_float_sub;
     $scope.round   = diablo_round; 
 
+    /*
+     * authen
+     */
+    $scope.shop_right = {
+	update_w_stock: rightAuthen.authen_shop_action(
+	    user.type,
+	    rightAuthen.stock_action()['update_w_stock'],
+	    user.shop
+	),
+
+	check_w_stock: rightAuthen.authen_shop_action(
+	    user.type,
+	    rightAuthen.stock_action()['check_w_stock'],
+	    user.shop
+	),
+    };
+    
     $scope.hidden = {base:true, balance:true, comment:true};
     $scope.toggle_base = function(){
 	$scope.hidden.base = !$scope.hidden.base;

@@ -301,8 +301,12 @@
 			<!-- <th class="text-center">性别</th> -->
 			<th class="text-center">年份</th>
 			<th class="text-center">季节</th>
-			<th class="text-center">进价</th>
-			<th class="text-center">折扣</th>
+			
+			<th x-ng-if="right.lookup_w_good_orgprice"
+			    class="text-center">进价</th>
+			<th x-ng-if="right.lookup_w_good_orgprice"
+			    class="text-center">折扣</th>
+			
 			<th class="text-center">数量</th>
 			<th class="text-center">合计</th>
 			<th class="text-center">操作</th>
@@ -366,7 +370,7 @@
 			<td class="vert-align">{{inv.year}}</td>
 			<td class="vert-align">{{seasons[inv.season]}}</td>
 			
-			<td class="col-md-1 vert-align">
+			<td x-ng-if="right.lookup_w_good_orgprice" class="col-md-1 vert-align">
 			  <span x-ng-if="!inv.$new && !inv.update_directory">
 		    	    {{inv.org_price}}</span>
 			  <form name="inv.form.orgprice"
@@ -387,7 +391,7 @@
 			  </form>
 			</td>
 
-			<td class="col-md-1 vert-align">
+			<td x-ng-if="right.lookup_w_good_orgprice" class="col-md-1 vert-align">
 			  <span x-ng-if="!inv.$new && !inv.update_directory">
 		    	    {{inv.ediscount}}
 			  </span>
@@ -503,7 +507,8 @@
 		      <tr>
 			<!--statistic-->
 		      <tr x-ng-if="inventories.length>1" class="text-center">
-			<td colspan="8"></td>
+			<td x-ng-if="right.lookup_w_good_orgprice" colspan="8"></td>
+			<td x-ng-if="!right.lookup_w_good_orgprice" colspan="6"></td>
 			<td class="vert-align fg-red">{{select.total}}</td>
 			<td
 			   class="vert-align fg-red">{{select.should_pay}}
@@ -925,7 +930,7 @@
 <script type="text/ng-template" id="inventory-new.html">
   <div class="modal-body">
     
-    <div class="row">
+    <div x-ng-if="param.right.lookup_w_good_orgprice" class="row">
       <div class="col-md-12 col-sm-12">
 	<div class="input-group">
 	  <span class="input-group-addon">

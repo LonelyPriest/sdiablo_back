@@ -235,13 +235,17 @@ wgoodApp.controller("wgoodNewCtrl", function(
 			     tid:  newColor.tid,
 			     colors:[{name:newColor.name, id:newColor.id}]})
 		    } 
-		    console.log($scope.colors); 
+		    // console.log($scope.colors); 
 		}; 
 		
 		if (state.ecode == 0){
 		    dialog.response_with_callback(
 			true, "新增颜色", "新增颜色成功！！", $scope,
-			function(){append_color(state.id)});
+			function(){
+			    append_color(state.id);
+			    diabloFilter.reset_color();
+			});
+		    
 		} else{
 		    dialog.response(
 			false, "新增颜色",
@@ -535,7 +539,8 @@ wgoodApp.controller("wgoodNewCtrl", function(
 				id   :state.brand,
 				name :good.brand,
 				py   :diablo_pinyin(good.brand)});
-			}; 
+			    diabloFilter.reset_brand(); 
+			};
 			// console.log($scope.brands);
 
 			// type
@@ -545,6 +550,8 @@ wgoodApp.controller("wgoodNewCtrl", function(
 				id   :state.type,
 				name :good.type,
 				py   :diablo_pinyin(good.type)});
+
+			    diabloFilter.reset_type();
 			};
 			// console.log($scope.types);
 		    });
@@ -594,14 +601,24 @@ wgoodApp.controller("wgoodDetailCtrl", function(
     // console.log(filterNumber);
     // console.log(firms);
     // console.log(filterBrand);
-    // console.log(filterType);
+    // console.log(filterType); 
 
-    // $scope.show_orgprice = rightAuthen.show_orgprice(user.type);
-    // $scope.hidden = {
-    // 	org_price:rightAuthen.show_orgprice(user.type),
-    // 	p3_5:true
-    // };
-    
+    /*
+     * authen
+     */
+    // console.log(user.right);
+    $scope.right = {
+	update_w_good: rightAuthen.authen(
+	    rightAuthen.good_action()["update_w_good"], user.right),
+
+	delete_w_good: rightAuthen.authen(
+	    rightAuthen.good_action()["delete_w_good"], user.right),
+
+	lookup_w_good_orgprice: rightAuthen.authen(
+	    rightAuthen.good_action()["lookup_w_good_orgprice"], user.right)
+    };
+
+    console.log($scope.right);
     /*
      * filter
      */ 

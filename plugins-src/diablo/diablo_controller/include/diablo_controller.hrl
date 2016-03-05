@@ -177,10 +177,10 @@
 -define(list_w_printer,   ?right_w_print + 7).
 
 %% good
--define(new_w_good,     ?right_w_good + 1).
--define(del_w_good,     ?right_w_good + 2).
--define(update_w_good,  ?right_w_good + 3).
--define(list_w_good,    ?right_w_good + 4).
+-define(new_w_good,           ?right_w_good + 1).
+-define(del_w_good,           ?right_w_good + 2).
+-define(update_w_good,        ?right_w_good + 3).
+-define(list_w_good,          ?right_w_good + 4).
 
 -define(new_w_size,     ?right_w_good + 5).
 -define(del_w_size,     ?right_w_good + 6).
@@ -193,7 +193,9 @@
 -define(new_w_promotion,    ?right_w_good + 11).
 -define(del_w_promotion,    ?right_w_good + 12).
 -define(update_w_promotion, ?right_w_good + 13).
--define(list_w_promotion,   ?right_w_good + 14).
+-define(list_w_promotion,   ?right_w_good + 14). 
+-define(lookup_good_orgprice, ?right_w_good + 15).
+
 
 %% report
 -define(daily_wreport,   ?right_w_report + 1).
@@ -207,7 +209,10 @@
 %% -----------------------------------------------------------------------------
 %% rainbow
 %% -----------------------------------------------------------------------------
--define(inventory_fifo, ?right_rainbow + 1).
+-define(inventory_eifo_onreject,      ?right_rainbow + 1).
+-define(wsale_modify_price_onsale,    ?right_rainbow + 2).
+-define(wsale_modify_discount_onsale, ?right_rainbow + 3).
+%% -define(lookup_orgprice,              ?right_rainbow + 4).
 
 %% =============================================================================
 %% base setting

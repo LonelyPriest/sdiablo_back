@@ -97,9 +97,9 @@
 			<th>厂商</th>
 			<th>季节</th>
 			<th>年度</th>
-			<th x-ng-if="setting.show_orgprice"
+			<th x-ng-if="right.lookup_w_good_orgprice"
 			    class="success">进价</th>
-			<th class="info">折扣进</th>
+			<th x-ng-if="right.lookup_w_good_orgprice" class="info">折扣进</th>
 			<th class="warning">吊牌价</th> 
 			<th class="danger">折扣卖</th>
 			<th class="info">数量</th> 
@@ -187,18 +187,16 @@
 			  </span>
 			</td>
 
-			<td>
-			  <span x-ng-if="inv.isAlarm && setting.alarm
-					 && setting.show_orgprice"
+			<td x-ng-if="right.lookup_w_good_orgprice">
+			  <span x-ng-if="inv.isAlarm && setting.alarm" 
 				class="danger">{{inv.org_price}}
 			    </span>
-			  <span x-ng-if="(!setting.alarm || !inv.isAlarm)
-					 && setting.show_orgprice">
+			  <span x-ng-if="!setting.alarm || !inv.isAlarm">
 			    {{inv.org_price}}
 			  </span>
 			</td>
 
-			<td>
+			<td x-ng-if="right.lookup_w_good_orgprice">
 			  <span
 			     x-ng-if="inv.isAlarm && setting.alarm"
 			     class="danger">{{inv.ediscount}}
@@ -291,7 +289,8 @@
 			</td>
 		      </tr>
 		      <tr x-ng-if="total_items!==0" class="bg-white">
-			<td colspan="12"></td>
+			<td x-ng-if="right.lookup_w_good_orgprice" colspan="12"></td>
+			<td x-ng-if="!right.lookup_w_good_orgprice" colspan="10"></td>
 			<td class="danger">{{total_amount}}</td>
 			<td><span x-ng-bind="total_sell"></span></td>
 			<td colspan="5"></td>
