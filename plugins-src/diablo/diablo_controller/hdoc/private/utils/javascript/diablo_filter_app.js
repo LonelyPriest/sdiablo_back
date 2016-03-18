@@ -429,10 +429,12 @@ function filterProvider(){
 		    return http.query(
 			{operation: 'list_w_retailer'}
 		    ).$promise.then(function(retailers){
-			// console.log(retailers); 
+			console.log(retailers); 
 			_retailers =  retailers.map(function(r){
 			    return {name:r.name,
 				    lname: r.mobile + "，" + r.name,
+				    type_id: r.type_id,
+				    score: r.score,
 				    id:r.id,
 				    py:diablo_pinyin(r.name), 
 				    balance:r.balance}

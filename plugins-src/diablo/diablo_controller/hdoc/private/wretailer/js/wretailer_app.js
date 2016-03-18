@@ -136,6 +136,11 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 	// {name: "金额赠送", id:2, remakr: "交易金额达到目标值赠送一定金额"}
     ];
 
+    this.retailer_types = [
+	{name: "系统会员",   id:0},
+	{name: "真实会员",   id:1}
+    ];
+
     this.sort_inventory = function(invs, orderSizes){
 	// console.log(invs);
 	// console.log(orderSizes);
@@ -203,6 +208,7 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 	return http.save(
 	    {operation:"new_w_retailer"},
 	    {name:     r.name,
+	     type:     r.type.id,
 	     password: diablo_set_string(r.password),
 	     balance:  diablo_set_float(r.balance),
 	     conusme:  diablo_set_float(r.consume),
@@ -222,6 +228,7 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 	return http.save(
 	    {operation: "update_w_retailer"},
 	    {id:       r.id,
+	     type:     r.type.id,
 	     name:     r.name,
 	     balance:  r.balance,
 	     mobile:   r.mobile,

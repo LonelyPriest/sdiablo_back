@@ -17,6 +17,12 @@ var diablo_reject = 1;
 var diablo_charge = 2;
 
 /*
+ * retailer
+ */
+var diablo_sys_retailer  = 0;
+var diablo_user_retailer = 1;
+
+/*
  * storage key
  */
 
@@ -333,6 +339,24 @@ var diablo_float_mul = function(arg1, arg2){
     catch(e){}
     
     return Number(s1.replace(".",""))*Number(s2.replace(".",""))/Math.pow(10,m);
+};
+
+var diablo_float_div = function(arg1, arg2){
+    var t1 = 0, t2 = 0;
+
+    try { t1 = arg1.toString().split(".")[1].length } catch (e) { }
+
+    try { t2 = arg2.toString().split(".")[1].length } catch (e) { }
+
+    with (Math) {
+
+        var r1 = Number(arg1.toString().replace(".", ""))
+
+        var r2 = Number(arg2.toString().replace(".", ""))
+
+        return (r1 / r2) * pow(10, t2 - t1);
+	
+    };
 };
 
 var diablo_round = function(value){

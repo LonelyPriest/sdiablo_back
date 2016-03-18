@@ -244,12 +244,14 @@ action(Session, Req, {"new_w_sale"}, Payload) ->
 				  StyleNumber = ?v(<<"style_number">>, Inv),
 				  BrandId     = ?v(<<"brand">>, Inv),
 				  %% Total       = ?v(<<"total">>, Inv),
+				  TagPrice    = ?v(<<"tag_price">>, Inv),
 				  FPrice      = ?v(<<"fprice">>, Inv),
 				  FDiscount   = ?v(<<"fdiscount">>, Inv),
-				  Amounts      = ?v(<<"amounts">>, Inv),
-
+				  Amounts     = ?v(<<"amounts">>, Inv),
+				  
 				  P = [{<<"style_number">>, StyleNumber},
 				       {<<"brand_id">>, BrandId},
+				       {<<"tag_price">>, TagPrice},
 				       {<<"fprice">>, FPrice},
 				       {<<"fdiscount">>, FDiscount}
 				      ],

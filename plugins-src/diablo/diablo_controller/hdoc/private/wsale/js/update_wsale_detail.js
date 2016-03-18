@@ -60,7 +60,8 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	    $scope.select.abs_total  += Math.abs(parseInt(one.reject));
 	    
 	    if ($scope.setting.round === diablo_round_row){
-		if (one.pid === -1){
+		if (one.pid === -1
+		    || $scope.select.retailer.type_id === diablo_sys_retailer){
 		    one.calc = $scope.round(
 			one.fprice * one.fdiscount * 0.01 * one.reject);
 		} else {
@@ -68,7 +69,8 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 		}
 		
 	    } else {
-		if (one.pid === -1){
+		if (one.pid === -1
+		    || $scope.select.retailer.type_id === diablo_sys_retailer){
 		    one.calc = $scope.f_mul(
 			one.fprice,
 			$scope.f_mul(one.fdiscount,
@@ -78,7 +80,8 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 		} 
 	    }
 
-	    if (one.pid === -1){
+	    if (one.pid === -1
+		|| $scope.select.retailer.type_id === diablo_sys_retailer){
 		// format_pmoney({id: -1, rule_id: -1}, one.calc);
 		wsaleUtils.sort_promotion(
 		    {id: -1, rule_id: -1}, one.calc, pmoneys);
@@ -87,7 +90,8 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 		// format_pmoney(one.promotion, one.calc);
 	    }
 
-	    if (one.sid !== -1){
+	    if (one.sid !== -1
+		&& $scope.select.retailer.type_id !== diablo_sys_retailer){
 		wsaleUtils.sort_score(
 		    one.score, one.promotion, one.calc, pscores)
 		// format_score(one.score, one.promotion, one.calc);
@@ -99,6 +103,17 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 
 	// $scope.select.should_pay = $scope.round($scope.select.should_pay);
 	$scope.select.should_pay = wsaleUtils.calc_with_promotion(pmoneys);
+	// calculate rmoney, all the promotion change to discount
+	for (var i=1, l=$scope.inventories.length; i<l; i++){
+	    var one = $scope.inventories[i];
+	    if (one.pid !== -1
+		&& $scope.select.retailer.type_id !== diablo_sys_retailer){
+		one.fdiscount =
+		    wsaleUtils.calc_discount_of_rmoney(one.promotion, pmoneys);
+		console.log(one, one.fdiscount);
+	    } 
+	}
+	
 	$scope.select.score = wsaleUtils.calc_with_score(pscores);
 
 	// back
@@ -197,7 +212,8 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	add.promotion    = diablo_get_object(src.pid, $scope.promotions);
 	add.sid          = src.sid;
 	add.score        = diablo_get_object(src.pid, $scope.scores);
-	
+
+	add.org_price    = add.org_price;
 	add.tag_price    = src.tag_price; 
 	add.discount     = src.discount;
 	add.path         = src.path;
@@ -753,7 +769,14 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 		console.log(inv.colors);
 		console.log(inv.amounts); 
 
-		inv.fdiscount   = inv.discount;
+		inv.fdiscount   = inv.fdiscount   = function(){
+		    if (inv.promotion.rule_id === 0){
+			return inv.promotion.discount;
+		    } else {
+			return inv.discount;
+		    }
+		}();
+		
 		inv.fprice      = inv.tag_price;
 
 		if(inv.free === 0){

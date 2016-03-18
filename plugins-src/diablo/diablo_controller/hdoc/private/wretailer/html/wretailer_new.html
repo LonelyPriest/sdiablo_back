@@ -49,6 +49,16 @@
 	    </div>
 
 	    <div class="form-group">
+	      <label class="col-sm-3 col-md-3 control-label">会员类型</label>
+	      <div class="col-sm-6 col-md-6">
+		<select class="form-control" type="text"
+	  		x-ng-model="retailer.type" 
+	  		x-ng-options="t as t.name for t in retailer_types">
+		</select>
+	      </div>
+	    </div>
+
+	    <div class="form-group">
 	      <label class="col-sm-3 col-md-3 control-label">取现密码</label>
 	      <div class="col-sm-6 col-md-6">
 		<div x-ng-class="{'has-error': retailerNewForm.pass.$invalid
@@ -142,18 +152,14 @@
 	    <div class="form-group">
 	      <label class="col-sm-3 col-md-3 control-label">联系地址</label>
 	      <div class="col-sm-6 col-md-6">
-		<div class="input-group">
-		  <div x-ng-class="{'has-error':retailerNewForm.address.$invalid
-				   && !retailerNewForm.address.$pristine}">
-		    <input type="text"
-			   class="form-control"
-			   name="address"
-			   required
-			   placeholder="请输入您的联系地址"
-			   x-ng-model="retailer.address"
-			   x-ng-pattern="pattern.name_address"/>
-		  </div>
-		  <span class="input-group-addon bg-white fg-red">*</span> 
+		<div x-ng-class="{'has-error':retailerNewForm.address.$invalid
+				 && !retailerNewForm.address.$pristine}">
+		  <input type="text"
+			 class="form-control"
+			 name="address"
+			 placeholder="请输入您的联系地址"
+			 x-ng-model="retailer.address"
+			 x-ng-pattern="pattern.name_address"/>
 		</div>
 	      </div>
 	      <div ng-show="retailerNewForm.address.$invalid

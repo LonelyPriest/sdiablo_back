@@ -124,6 +124,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 	   [Merchant, Inventories, Props]),
 
     Retailer   = ?v(<<"retailer">>, Props),
+    RetailerType = ?v(<<"retailer_type">>, Props, 0),
     Shop       = ?v(<<"shop">>, Props), 
     DateTime   = ?v(<<"datetime">>, Props, ?utils:current_time(localtime)),
     Employe    = ?v(<<"employee">>, Props),
@@ -136,6 +137,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
     
     ShouldPay  = ?v(<<"should_pay">>, Props, 0),
     Total      = ?v(<<"total">>, Props, 0),
+    LastScore  = ?v(<<"last_score">>, Props, 0),
     Score      = ?v(<<"score">>, Props, 0),
 
     Sql0 = "select id, name, balance from w_retailer"
@@ -180,7 +182,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 	    Sql2 = "insert into w_sale(rsn"
 		", employ, retailer, shop, merchant"
 		", balance, should_pay, cash, card, withdraw, total"
-		", score, comment, type, entry_date) values("
+		", lscore, score, comment, type, entry_date) values("
 		++ "\"" ++ ?to_s(SaleSn) ++ "\","
 		++ "\"" ++ ?to_s(Employe) ++ "\","
 		++ ?to_s(Retailer) ++ ","
@@ -195,6 +197,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 		++ ?to_s(NewCard) ++ ","
 		++ ?to_s(Withdraw) ++ ","
 		++ ?to_s(Total) ++ ","
+		++ ?to_s(LastScore) ++ ","
 		++ ?to_s(Score) ++ ","
 		
 		++ "\"" ++ ?to_s(Comment) ++ "\"," 
@@ -204,7 +207,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 	    Sql3 =
 		case Withdraw =< 0  of
 		    true  -> 
-			case Score =:= 0 of
+			case Score =:= 0 orelse RetailerType =:= 0 of
 			    true -> [];
 			    false ->
 				["update w_retailer set score=score+"
@@ -213,7 +216,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 				 ++ "id=" ++ ?to_s(?v(<<"id">>, Account))]
 			end;
 		    false ->
-			case Score =:= 0 of
+			case Score =:= 0 orelse RetailerType =:= 0 of
 			    true ->
 				["update w_retailer set balance=balance-"
 				 ++ ?to_s(Withdraw)
@@ -591,14 +594,15 @@ handle_call({trans_detail, Merchant, Conditions}, _From, State) ->
     Sql =
 	" select a.id, a.rsn, a.style_number, a.brand_id, a.type_id"
 	", a.s_group, a.free, a.season, a.firm_id, a.year"
-	", a.total, a.pid, a.sid, a.fdiscount, a.fprice, a.path"
+	", a.total, a.pid, a.sid, a.tag_price, a.fdiscount, a.fprice, a.path"
 
 	", b.color as color_id, b.size, b.total as amount"
 	" from "
 
 	"(select id, rsn, style_number, brand as brand_id, type as type_id"
 	", s_group, free, season, firm as firm_id, year"
-	", total, promotion as pid, score as sid, fdiscount, fprice, path"
+	", total, promotion as pid, score as sid"
+	", tag_price, fdiscount, fprice, path"
 	" from w_sale_detail"
 	" where " ++ ?utils:to_sqls(proplists, Conditions) ++ ") a"
 
@@ -820,7 +824,7 @@ handle_call({filter_rsn_group, Merchant,
     Sql = "select b.id, b.rsn, b.style_number"
 	", b.brand as brand_id, b.type as type_id, b.firm as firm_id"
 	", b.s_group, b.free, b.total, b.promotion as pid, b.score as sid"
-	", b.fdiscount, b.fprice, b.path, b.comment, b.entry_date"
+	", b.tag_price, b.fdiscount, b.fprice, b.path, b.comment, b.entry_date"
 	
 	", a.shop as shop_id"
 	", a.retailer as retailer_id"
@@ -888,7 +892,7 @@ handle_call({new_trans_note_export, Merchant, Conditions}, _From, State)->
 	"select a.id, a.rsn, a.style_number, a.brand as brand_id"
 	", a.type as type_id, a.firm as firm_id"
 	", a.s_group, a.free, a.total, a.promotion as pid, a.score as sid"
-	",a.fdiscount, a.fprice, a.path, a.comment, a.entry_date"
+	", a.tag_price, a.fdiscount, a.fprice, a.path, a.comment, a.entry_date"
 
 	", b.shop as shop_id"
 	", b.retailer as retailer_id"
@@ -984,6 +988,8 @@ sql(update_wsale, RSN, Merchant, Shop, Datetime, _OldDatetime, Inventories) ->
 wsale(update, RSN, DateTime, Merchant, Shop, Inventory) -> 
     StyleNumber    = ?v(<<"style_number">>, Inventory),
     Brand          = ?v(<<"brand">>, Inventory),
+    OrgPrice       = ?v(<<"org_price">>, Inventory),
+    TagPrice       = ?v(<<"tag_price">>, Inventory),
     FPrice         = ?v(<<"fprice">>, Inventory),
     FDiscount      = ?v(<<"fdiscount">>, Inventory),
     ChangeAmounts  = ?v(<<"changed_amount">>, Inventory, []),
@@ -1024,8 +1030,11 @@ wsale(update, RSN, DateTime, Merchant, Shop, Inventory) ->
 
     Sql0 = 
 	case Metric of
-	    0 -> ["update w_sale_detail set fdiscount=" ++ ?to_s(FDiscount)
-		  ++ ",fprice=" ++ ?to_s(FPrice)
+	    0 -> ["update w_sale_detail set "
+		  ++ "org_price" ++ ?to_s(OrgPrice)
+		  ++ ", tag_price" ++ ?to_s(TagPrice)
+		  ++ ", fdiscount=" ++ ?to_s(FDiscount)
+		  ++ ", fprice=" ++ ?to_s(FPrice)
 		  ++ " where rsn=\"" ++ ?to_s(RSN) ++ "\""
 		  ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 		  ++ " and brand=" ++ ?to_s(Brand)];
@@ -1039,6 +1048,8 @@ wsale(update, RSN, DateTime, Merchant, Shop, Inventory) ->
 		 ++ " and merchant=" ++ ?to_s(Merchant),
 
 		 "update w_sale_detail set total=total+" ++ ?to_s(Metric)
+		 ++ ", org_price" ++ ?to_s(OrgPrice)
+		 ++ ", tag_price" ++ ?to_s(TagPrice)
 		 ++ ",fdiscount=" ++ ?to_s(FDiscount)
 		 ++ ",fprice=" ++ ?to_s(FPrice)
 		 ++ ",entry_date=\'" ++ ?to_s(DateTime) ++ "\'"
@@ -1361,8 +1372,12 @@ wsale(Action, RSN, DateTime, Merchant, Shop, Inventory, Amounts) ->
     StyleNumber = ?v(<<"style_number">>, Inventory),
     Brand       = ?v(<<"brand">>, Inventory),
     Type        = ?v(<<"type">>, Inventory),
+    
+    OrgPrice    = ?v(<<"org_price">>, Inventory),
+    TagPrice    = ?v(<<"tag_price">>, Inventory), 
     FDiscount   = ?v(<<"fdiscount">>, Inventory, 100), 
     FPrice      = ?v(<<"fprice">>, Inventory),
+    
     Firm        = ?v(<<"firm">>, Inventory),
     Season      = ?v(<<"season">>, Inventory),
     Year        = ?v(<<"year">>, Inventory),
@@ -1415,7 +1430,8 @@ wsale(Action, RSN, DateTime, Merchant, Shop, Inventory, Amounts) ->
 	     "insert into w_sale_detail("
 		 "rsn, style_number, brand, merchant, type, s_group, free"
 		 ", season, firm, year, total, promotion, score"
-		 ", fdiscount, fprice, path, comment, entry_date)"
+		 ", org_price, tag_price, fdiscount, fprice"
+		 ", path, comment, entry_date)"
 		 " values("
 		 ++ "\"" ++ ?to_s(RSN) ++ "\","
 		 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
@@ -1430,13 +1446,21 @@ wsale(Action, RSN, DateTime, Merchant, Shop, Inventory, Amounts) ->
 		 ++ ?to_s(Total) ++ ","
 		 ++ ?to_s(Promotion) ++ ","
 		 ++ ?to_s(Score) ++ ","
+		 
+		 ++ ?to_s(OrgPrice) ++ ","
+		 ++ ?to_s(TagPrice) ++ "," 
 		 ++ ?to_s(FDiscount) ++ ","
 		 ++ ?to_s(FPrice) ++ ","
+		 
 		 ++ "\"" ++ ?to_s(Path) ++ "\","
 		 ++ "\"" ++ ?to_s(Comment) ++ "\","
 		 ++ "\"" ++ ?to_s(DateTime) ++ "\")";
 	 {ok, _} ->
 	     "update w_sale_detail set total=total+" ++ ?to_s(Total)
+		 ++ ", org_price=" ++ ?to_s(OrgPrice)
+		 ++ ", tag_price=" ++ ?to_s(TagPrice)
+		 ++ ", fdiscount=" ++ ?to_s(FDiscount)
+		 ++ ", fprice=" ++ ?to_s(FPrice) 
 		 ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
 		 ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 		 ++ " and brand=" ++ ?to_s(Brand);

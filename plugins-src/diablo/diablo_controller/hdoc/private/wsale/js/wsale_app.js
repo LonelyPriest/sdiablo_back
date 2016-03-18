@@ -279,6 +279,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
     filterSizeGroup, filterBrand, filterType, filterColor, base){
     // console.log(filterPromotion);
     // console.log(filterScore);
+    console.log(filterRetailer);
     $scope.promotions = filterPromotion;
     $scope.scores     = filterScore;
     
@@ -689,8 +690,10 @@ wsaleApp.controller("wsaleNewCtrl", function(
 			inv.pid, $scope.promotions);
 		    
 		    inv.score = diablo_get_object(inv.sid, $scope.scores);
-		    
-		    wsaleUtils.format_promotion(inv, $scope.show_promotions);
+
+		    if ($scope.select.retailer.type_id !== diablo_sys_retailer){
+			wsaleUtils.format_promotion(inv, $scope.show_promotions); 
+		    }
 		});
 
 		console.log($scope.inventories); 
@@ -741,22 +744,27 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	add.type_id      = src.type_id;
 	add.type         = src.type;
 	
-	add.type_id      = src.type_id;
-	add.firm_id      = src.firm_id;
+	add.firm_id      = src.firm_id; 
+	
 	add.sex          = src.sex;
 	add.season       = src.season;
 	add.year         = src.year;
-
+	
 	add.pid          = src.pid;
 	add.promotion    = diablo_get_object(src.pid, $scope.promotions);
 	add.sid          = src.sid;
 	add.score        = diablo_get_object(src.sid, $scope.scores);
-	add.tag_price    = src.tag_price; 
+
+	add.org_price    = src.org_price; 
+	add.tag_price    = src.tag_price;
+	
 	add.discount     = src.discount;
 	add.path         = src.path;
 	
 	add.s_group      = src.s_group;
-	add.free         = src.free; 
+	add.free         = src.free;
+
+	// console.log(add);
 	return add;
 	
     };
@@ -1061,9 +1069,12 @@ wsaleApp.controller("wsaleNewCtrl", function(
 
 		promotion   : add.pid,
 		score       : add.sid,
-		
+
+		org_price   : add.org_price,
+		tag_price   : add.tag_price,
+
+		fprice      : setv(add.fprice), 
 		fdiscount   : seti(add.fdiscount),
-		fprice      : setv(add.fprice),
 		path        : sets(add.path),
 
 		sizes       : add.sizes,
@@ -1081,6 +1092,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	// console.log(im_print);
 	var base = {
 	    retailer:       $scope.select.retailer.id,
+	    retailer_type:  $scope.select.retailer.type_id,
 	    shop:           $scope.select.shop.id,
 	    datetime:       dateFilter($scope.select.datetime,
 				       "yyyy-MM-dd HH:mm:ss"),
@@ -1095,6 +1107,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    should_pay:     setv($scope.select.should_pay),
 	    has_pay:        setv($scope.select.has_pay), 
 	    total:          seti($scope.select.total),
+	    last_score:     $scope.select.retailer.score,
 	    score:          $scope.select.score
 	};
 
@@ -1217,12 +1230,16 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	for (var i=1, l=$scope.inventories.length; i<l; i++){
 
 	    var one = $scope.inventories[i];
+	    // console.log(one);
 	    one.calc = 0; 
 	    $scope.select.total      += parseInt(one.sell);
 	    $scope.select.abs_total  += Math.abs(parseInt(one.sell));
 
 	    if ($scope.setting.round === diablo_round_row){
-		if (one.pid === -1){
+		if (one.pid === -1
+		    || $scope.select.retailer.type_id === diablo_sys_retailer){
+		    // no promotion
+		    one.fdiscount = one.discount;
 		    one.calc = $scope.round(
 			one.fprice * one.fdiscount * 0.01 * one.sell);
 		} else {
@@ -1230,7 +1247,10 @@ wsaleApp.controller("wsaleNewCtrl", function(
 		}
 		
 	    } else {
-		if (one.pid === -1){
+		if (one.pid === -1
+		    || $scope.select.retailer.type_id === diablo_sys_retailer){
+		    // no promotion
+		    one.fdiscount = one.discount;
 		    one.calc = $scope.f_mul(
 			one.fprice,
 			$scope.f_mul(one.fdiscount,
@@ -1238,32 +1258,51 @@ wsaleApp.controller("wsaleNewCtrl", function(
 		    );
 		} else {
 		    one.calc = $scope.f_mul(one.fprice, one.sell) 
-		}
-		
+		} 
 	    }
 
-	    if (one.pid === -1){
+	    
+	    
+	    if (one.pid === -1
+		|| $scope.select.retailer.type_id === diablo_sys_retailer){
 		// format_pmoney({id: -1, rule_id: -1}, one.calc);
-		wsaleUtils.sort_promotion(
-		    {id: -1, rule_id: -1}, one.calc, pmoneys);
+		wsaleUtils.sort_promotion({id: -1, rule_id: -1}, one.calc, pmoneys);
+		wsaleUtils.delete_format_promotion(one, $scope.show_promotions);
 	    } else {
 		wsaleUtils.sort_promotion(one.promotion, one.calc, pmoneys);
-		// format_pmoney(one.promotion, one.calc);
+		wsaleUtils.format_promotion(one, $scope.show_promotions);
+		// one.fdiscount =
+		//     wsaleUtils.calc_discount_of_rmoney(one.promotion, pmoneys);
 	    }
 
-	    if (one.sid !== -1){
+	    // console.log(one);
+
+	    if (one.sid !== -1
+		&& $scope.select.retailer.type_id !== diablo_sys_retailer){
 		wsaleUtils.sort_score(
 		    one.score, one.promotion, one.calc, pscores)
 		// format_score(one.score, one.promotion, one.calc);
-	    }
+	    } 
 	}
 
 	console.log(pmoneys);
 	console.log(pscores); 
 
 	$scope.select.should_pay = wsaleUtils.calc_with_promotion(pmoneys);
+	
+	// calculate rmoney, all the promotion change to discount
+	for (var i=1, l=$scope.inventories.length; i<l; i++){
+	    var one = $scope.inventories[i];
+	    if (one.pid !== -1
+		&& $scope.select.retailer.type_id !== diablo_sys_retailer){
+		one.fdiscount =
+		    wsaleUtils.calc_discount_of_rmoney(one.promotion, pmoneys);
+		console.log(one, one.fdiscount);
+	    } 
+	}
+	
 	$scope.select.score = wsaleUtils.calc_with_score(pscores);
-
+	
 	$scope.select.charge =
 	    $scope.select.should_pay - $scope.select.has_pay;
 	
@@ -1354,7 +1393,9 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	$scope.re_calculate();
 
 	// promotions
-	wsaleUtils.format_promotion(inv, $scope.show_promotions);
+	if ($scope.select.retailer.type_id !== diablo_sys_retailer){
+	    wsaleUtils.format_promotion(inv, $scope.show_promotions);
+	} 
     };
     
     $scope.add_inventory = function(inv){
@@ -1407,7 +1448,14 @@ wsaleApp.controller("wsaleNewCtrl", function(
 		console.log(inv.colors);
 		console.log(inv.amounts);
 
-		inv.fdiscount   = inv.discount;
+		inv.fdiscount   = function(){
+		    if (inv.promotion.rule_id === 0
+			&& $scope.select.retailer.type_id !== diablo_sys_retailer){
+			return inv.promotion.discount;
+		    } else {
+			return inv.discount;
+		    }
+		}();
 		inv.fprice      = inv.tag_price;
 
 		if(inv.free === 0){
@@ -1428,8 +1476,9 @@ wsaleApp.controller("wsaleNewCtrl", function(
 			$scope.local_save();
 			$scope.re_calculate();
 
-			wsaleUtils.format_promotion(
-			    inv, $scope.show_promotions);
+			if ($scope.select.retailer.type_id !== diablo_sys_retailer){
+			    wsaleUtils.format_promotion(inv, $scope.show_promotions);
+			} 
 		    };
 		    
 		    var callback = function(params){

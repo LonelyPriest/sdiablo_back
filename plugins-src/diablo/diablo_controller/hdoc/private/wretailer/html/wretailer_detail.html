@@ -66,6 +66,7 @@
 		  <tr>
 		    <th>序号</th>
 		    <th>名称</th>
+		    <th>类型</th> 
 		    <th class="danger">余额</th>
 		    <th class="success">消费</th>
 		    <th class="info">积分</th>
@@ -79,6 +80,7 @@
 		  <tr ng-repeat="r in filter_retailers">
 		    <td>{{r.order_id}}</td>
 		    <td>{{r.name}}</td>
+		    <td>{{r.type.name}}</td>
 		    <td>{{round(r.balance)}}</td>
 		    <td>{{r.consume}}</td>
 		    <td>{{r.score}}</td>
@@ -112,7 +114,7 @@
 		  </tr>
 
 		  <tr x-ng-if="total_items!==0" class="bg-white">
-		    <td colspan="2"></td>
+		    <td colspan="3"></td>
 		    <td class="fg-red">{{total_balance}}</td> 
 		    <td colspan="6"></td>
 		  </tr>
@@ -194,7 +196,9 @@
 	  <div ng-show="rForm.name.$invalid && !rForm.name.$pristine">
 	    <span class="fg-red">必需以中文开头，只允许字母，数字</span>
 	  </div> 
-	</div> 
+	</div>
+
+	
 
 	<!-- <div class="form-group"> -->
 	<!--   <div class="input-group"> -->
@@ -215,6 +219,18 @@
 	<!--   </div>  -->
 	<!-- </div> -->
 
+	<div class="form-group">
+	  <div class="input-group">
+	    <span class="input-group-addon">
+	      <i class="glyphicon glyphicon-hand-right fg-red"></i>
+	      类型 </span>
+	    <select class="form-control" type="text"
+	  	    x-ng-model="params.retailer.type" 
+	  	    x-ng-options="t as t.name for t in params.types">
+	    </select>
+	  </div>
+	</div>
+	
 	<!--mobile-->
 	<div class="form-group"> 
 	  <div class="input-group">
@@ -241,7 +257,7 @@
 	</div> 
 
 	<div class="form-group"> 
-	    <div class="input-group">
+	  <div class="input-group">
 	      <span class="input-group-addon">
 		<i class="glyphicon glyphicon-hand-right fg-red"></i>
 		联系地址</span>
@@ -250,13 +266,11 @@
 		<input type="text"
 		       class="form-control"
 		       name="address"
-		       required
 		       placeholder="请输入您的联系地址"
 		       x-ng-model="params.retailer.address"
 		       x-ng-pattern="params.pattern.name_address"></input>
 	      </div>
-	      <span class="input-group-addon bg-white fg-red">*</span> 
-	    </div>
+	  </div>
 	    
 	  <div ng-show="rForm.address.$invalid && !rForm.address.$pristine">
 	    <span class="fg-red">必需以中文开头，只允许字母，数字</span>

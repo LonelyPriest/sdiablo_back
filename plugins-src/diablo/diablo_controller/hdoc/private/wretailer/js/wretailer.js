@@ -7,6 +7,9 @@ wretailerApp.controller("wretailerNewCtrl", function(
 		      score:        diabloPattern.number,
 		      password:       diabloPattern.num_passwd};
 
+    $scope.retailer_types = wretailerService.retailer_types;
+
+    $scope.retailer = {type: $scope.retailer_types[1]}; 
     
     $scope.new_wretailer = function(retailer){
 	console.log(retailer); 
@@ -40,6 +43,8 @@ wretailerApp.controller("wretailerDetailCtrl", function(
     $scope.employees  = filterEmployee;
     $scope.charges    = filterCharge;
     $scope.shops      = user.sortShops;
+    
+    $scope.retailer_types = wretailerService.retailer_types;
 
     // console.log($scope.employees);
     // console.log($scope.shops);
@@ -121,10 +126,9 @@ wretailerApp.controller("wretailerDetailCtrl", function(
     $scope.do_search = function(search){
 	console.log(search);
     	return $scope.retailers.filter(function(r){
+	    // console.log(r);
 	    return search === r.name
-		|| search === r.mobile
-		|| search === (r.pid === -1 ? undefined : r.province.name)
-		|| search === (r.cid === -1 ? undefined : r.city.name)
+		|| search === r.mobile 
 		|| search === r.address
 	})
     };
@@ -177,7 +181,8 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	    $scope.total_balance = 0;
 	    angular.forEach($scope.retailers, function(r){
 		$scope.total_balance =
-		    $scope.total_balance + $scope.round(r.balance);
+		    $scope.total_balance + $scope.round(r.balance); 
+		r.type = diablo_get_object(r.type_id, $scope.retailer_types);
 	    })
 	    
 	    diablo_order($scope.retailers);
@@ -360,7 +365,7 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 
 	var check_same = function(new_retailer){
 	    // console.log(angular.equals(new_retailer, old_retailer));
-	    return angular.equals(new_retailer, old_retailer); 
+	    return angular.equals(new_retailer, old_retailer);
 	};
 
 	var check_exist = function(new_retailer){
@@ -378,6 +383,7 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	    "update-wretailer.html", undefined, callback, $scope,
 	    {retailer:    old_retailer, 
 	     pattern:     pattern,
+	     types:       $scope.retailer_types,
 	     check_same:  check_same,
 	     check_exist: check_exist})
     };

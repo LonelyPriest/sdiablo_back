@@ -59,6 +59,7 @@ var wsaleUtils = function(){
 		add.s_group = s.s_group;
 		add.free_color_size = s.free === 0 ? true : false;
 
+		add.tag_price = s.tag_price;
 		add.fprice    = s.fprice;
 		add.fdiscount = s.fdiscount;
 		add.reject    = s.amount;
@@ -102,6 +103,13 @@ var wsaleUtils = function(){
     return {
 	format_promotion: function(inv, promotions){
 	    if (angular.isUndefined(inv.promotion)){
+		// for (var i=0, l=promotions.length; i<l; i++){
+		//     if (inv.order_id === promotions[i].order_id){
+		// 	break;
+		//     }
+		// }
+
+		// promotions.splice(i, 1); 
 		return promotions;
 	    }
 
@@ -113,8 +121,50 @@ var wsaleUtils = function(){
 		promotion: inv.promotion,
 		score:     inv.score,
 	    }; 
+
+	    var found = false;
+	    for (var i=0, l=promotions.length; i<l; i++){
+		if (inv.order_id === promotions[i].order_id){
+		    found = true;
+		    break;
+		}
+	    }
 	    
-	    promotions.unshift(format);
+	    if (!found){
+		promotions.unshift(format); 
+	    }
+	    
+	    console.log(promotions);
+	    return promotions;
+	},
+
+	delete_format_promotion: function(inv, promotions){
+	    if (angular.isUndefined(inv.promotion)){
+		// for (var i=0, l=promotions.length; i<l; i++){
+		//     if (inv.order_id === promotions[i].order_id){
+		// 	break;
+		//     }
+		// }
+
+		// promotions.splice(i, 1); 
+		return promotions;
+	    }
+
+	    
+
+	    var found = false;
+	    for (var i=0, l=promotions.length; i<l; i++){
+		if (inv.order_id === promotions[i].order_id){
+		    found = true;
+		    break;
+		}
+	    }
+	    
+	    if (found){
+		promotions.splice(i, 1); 
+		// promotions.unshift(format); 
+	    }
+	    
 	    console.log(promotions);
 	    return promotions;
 	},
@@ -238,12 +288,13 @@ var wsaleUtils = function(){
 		if (p.id === promotions[i].p.id){
 		    found = true;
 		    promotions[i].money += money;
+		    promotions[i].count += 1;
 		    break;
 		}
 	    }
 
 	    if (!found){
-		promotions.push({p:p, money: money});
+		promotions.push({p:p, money: money, count: 0});
 	    }
 
 	    return promotions;
@@ -292,6 +343,28 @@ var wsaleUtils = function(){
 	    }
 
 	    return diablo_round(balance);
+	},
+
+	calc_discount_of_rmoney: function(promotion, pmoneys){
+	    if (promotion.rule_id !==1 ){
+		return promotion.discount;
+	    } else {
+		var balance = 0;
+		var total_balance = 0;
+		var rmoney = 0;
+		var f_mul = diablo_float_mul;
+		for ( var i=0, l=pmoneys.length; i<l; i++ ){
+		    var p = pmoneys[i].p; 
+		    if (p.rule_id === 1 && promotion.id === p.id){
+			rmoney = Math.floor(pmoneys[i].money / p.cmoney) *  p.rmoney;
+			total_balance += pmoneys[i].money;
+			balance += pmoneys[i].money - rmoney;
+		    }
+		}
+		console.log(total_balance, balance, rmoney);
+		return diablo_float_div(balance, total_balance).toFixed(3) * 100;
+	    }
+	
 	},
 
 	calc_with_score: function(pscores){

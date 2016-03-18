@@ -352,7 +352,8 @@ create table w_retailer
     mobile          VARCHAR(11),
     address         VARCHAR(255), 
     merchant        INTEGER default -1, -- which merchant belong to
-    
+
+    type            TINYINT default 0,  -- 0: system 1: user
     change_date     DATETIME default 0, -- last changed
     entry_date      DATETIME default 0, -- last changed
     deleted         INTEGER default 0, -- 0: no;  1: yes
@@ -726,6 +727,7 @@ create table w_sale(
     sbalance       INTEGER not null default 0, -- send balance of charging
     
     total          INTEGER not null default 0,
+    lscore         INTEGER not null default 0,
     score          INTEGER not null default 0,
     comment        VARCHAR(255) default null, 
     
@@ -762,6 +764,10 @@ create table w_sale_detail(
     total          INTEGER default 0,
     promotion      INTEGER not null default -1, -- promotion
     score          INTEGER not null default -1, -- score
+
+    org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
+    tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
+    -- tag_discount   DECIMAL(3, 0), -- max: 100
     
     fdiscount      DECIMAL(3, 0), -- max: 100
     fprice         DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance 

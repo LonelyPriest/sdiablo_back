@@ -149,6 +149,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	has_pay: 0,
 	should_pay: 0,
 	extra_pay_type: $scope.extra_pay_types[0]};
+
+    // console.log($scope.select);
     
     // $scope.current_inventories = [];
     
@@ -231,18 +233,16 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	
 	var key_fix = draft_keys();
 	
-	// console.log(key); 
+	// console.log(key_fix); 
 	var drafts = key_fix.map(function(k){
 	    var p = k.split("-");
-	    // console.log(p);
 	    return {sn:k,
 		    firm:diablo_get_object(parseInt(p[1]), $scope.firms),
 		    shop:diablo_get_object(parseInt(p[2]), $scope.shops),
-		    employee:diablo_get_object(p[3], $scope.employees),
+		    employee:diablo_get_object(parseInt(p[3]), $scope.employees),
 		   }
 	});
 
-	// console.log(drafts) 
 	var callback = function(params){
 	    // console.log(params);
 	    var select_draft = params.drafts.filter(function(d){

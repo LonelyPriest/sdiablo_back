@@ -490,18 +490,18 @@ wgoodApp.controller("wgoodNewCtrl", function(
 		    function(){
 			// console.log("callback");
 			// reset size 
-			$scope.selectGroups = [];
-			$scope.good.sizes = "";
-			angular.forEach($scope.groups, function(g){
-			    if (angular.isDefined(g.select)){
-				g.select = false;
-			    }
-			});
+			// $scope.selectGroups = [];
+			// $scope.good.sizes = "";
+			// angular.forEach($scope.groups, function(g){
+			//     if (angular.isDefined(g.select)){
+			// 	g.select = false;
+			//     }
+			// });
 
 			// reset color
 			$scope.selectColors = [];
 			$scope.good.colors="";
-			console.log($scope.colors);
+			// console.log($scope.colors);
 			angular.forEach($scope.colors, function(colorInfo){
 			    angular.forEach(colorInfo, function(color){
 				// console.log(color);
@@ -513,7 +513,7 @@ wgoodApp.controller("wgoodNewCtrl", function(
 			    })
 			});
 
-			console.log($scope.colors);
+			// console.log($scope.colors);
 			
 			$scope.good.style_number = undefined;
 			$scope.good.type = undefined;
