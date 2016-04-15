@@ -147,7 +147,7 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 		    $scope.total_items = result.total;
 		    $scope.total_amounts = result.total === 0 ? 0 : result.t_amount;
 		    $scope.total_balance =
-			result.total === 0 ? 0 : $scope.round(result.t_balance*0.01);
+			result.total === 0 ? 0 : $scope.round(result.t_balance);
 		    $scope.inventories = [];
 		}
 		angular.forEach(result.data, function(d){
@@ -158,22 +158,8 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 		    d.employee = diablo_get_object(d.employee_id, filterEmployee);
 		    d.type      = diablo_get_object(d.type_id, filterType);
 		    d.promotion = diablo_get_object(d.pid, filterPromotion);
-		    d.score     = diablo_get_object(d.sid, filterScore);
-
-		    if ($scope.setting.round===1){
-			d.calc = $scope.round(
-			    d.fprice * d.fdiscount * 0.01 * d.total)
-		    } else {
-			d.calc = $scope.f_mul(
-			    d.fprice * d.total,
-			    $scope.f_mul(d.fdiscount, 0.01))
-		    }
-
-		    // d.cur_balance = function(){
-		    // 	if (d.type === 0){
-		    // 	    float_add(float_add(r.balance, r.should_pay + r.e_pay), -r.has_pay)
-		    // 	}
-		    // }()
+		    d.score     = diablo_get_object(d.sid, filterScore); 
+		    d.calc      = diablo_float_mul(d.rprice, d.total); 
 		});
 
 		if ($scope.setting.se_pagination === diablo_no){

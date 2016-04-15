@@ -16,6 +16,9 @@ var diablo_sell   = 0;
 var diablo_reject = 1;
 var diablo_charge = 2;
 
+var diablo_sale   = 0;
+var diablo_reject = 1;
+
 /*
  * retailer
  */
@@ -362,6 +365,19 @@ var diablo_float_div = function(arg1, arg2){
 var diablo_round = function(value){
     return Math.round(value);
 };
+
+var diablo_rdight = function(dight, how){  
+    var d = Math.round(dight * Math.pow(10,how)) / Math.pow(10,how);  
+    return dight;
+};
+
+var diablo_discount = function(fprice, tagPrice){
+    return parseFloat((diablo_float_div(fprice, tagPrice) * 100).toFixed(1));
+}
+
+var diablo_price = function(price, discount){
+    return diablo_float_mul(diablo_float_mul(price, discount), 0.01);
+}
 
 var diablo_full_year = [2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020];
 

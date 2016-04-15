@@ -98,10 +98,11 @@
 		    <th>厂商</th> 
 		    <!-- <th>颜色</th> -->
 		    <!-- <th>数量</th> -->
-		    <th class="info">折扣</th> 
-		    <th class="danger">价格</th>
+		    <th class="info">单价</th>
+		    <th class="danger">售价</th>
 		    <th>数量</th> 
 		    <th>小计</th>
+		    <th>折扣率</th> 
 		    <th>备注</th>
 		    <th>日期</th> 
 		    <th>操作</th>
@@ -122,10 +123,7 @@
 		    </td>
 		    
 		    <td>{{inv.shop.name}}</td>
-		    <td>{{inv.employee.name}}</td>
-		    
-		    <!-- <td x-ng-if="inv.sell_type===0" class="success">开单</td> -->
-		    <!-- <td x-ng-if="inv.sell_type===1" class="danger">退货</td> -->
+		    <td>{{inv.employee.name}}</td> 
 		    <td>{{inv.style_number}}</td>
 		    <td>{{inv.brand.name}}</td>
 		    <td>{{inv.type.name}}</td>
@@ -133,15 +131,14 @@
 
 		    <!-- <td>{{inv.color}}</td> -->
 		    <!-- <td>{{inv.total}}</td>  -->
-		    <td>{{inv.fdiscount}}</td>
-		    <td>{{inv.fprice}}</td>
-		    <td x-ng-switch on="inv.sell_type">
-		      <span x-ng-switch-when=0>{{inv.total}}</span>
-		      <span class="fg-red" x-ng-switch-when=1>
-			{{inv.total}}</span>
-		    </td>
-		    
-		    <td>{{inv.calc}} </td> 
+		    <td>{{inv.tag_price}}</td>
+		    <td>{{inv.rprice}}</td>
+		    <td x-ng-switch on="inv.sell_type"> 
+		      <span class="fg-red" x-ng-switch-when=1>{{inv.total}}</span>
+		      <span x-ng-switch-default>{{inv.total}}</span>
+		    </td> 
+		    <td>{{inv.calc}} </td>
+		    <td>{{inv.rdiscount}}</td> 
 		    <td>{{inv.comment}}</td>
 		    <td>{{inv.entry_date}}</td>
 		    <td>
@@ -162,36 +159,7 @@
 		  
 		</tbody>
 
-		<tfoot>
-		  <!-- <tr> -->
-		  <!--   <td x-ng-show="total_items>items_perpage" colspan={{colspan}}> -->
-		  <!--     <span class="pagination"> -->
-		  <!-- 	<span>显示第 {{current_page}} / {{num_pages}} 项结果， -->
-		  <!-- 	  共 {{total_items}} 项</span> -->
-		  <!--     </span> -->
-		  <!--     <pagination x-ng-if="!setting.se_pagination" -->
-		  <!-- 		  class="pagination-lg pull-right" -->
-		  <!-- 		  total-items="total_items" -->
-		  <!-- 		  items-per-page="items_perpage" -->
-		  <!-- 		  num-pages="num_pages" -->
-		  <!-- 		  max-size="max_page_size" -->
-		  <!-- 		  boundary-links="true" -->
-		  <!-- 		  previous-text="&lsaquo;" next-text="&rsaquo;" -->
-		  <!-- 		  first-text="&laquo;" last-text="&raquo;" -->
-		  <!-- 		  x-ng-model="current_page" -->
-		  <!-- 		  x-ng-change="page_changed()"></pagination> -->
-
-		  <!--     <span x-ng-if="setting.se_pagination" -->
-		  <!-- 	    class="pull-right"> -->
-		  <!-- 	<button class="btn red-sunglo btn-next-page" -->
-		  <!-- 		x-ng-disabled="current_page===num_pages" -->
-		  <!-- 		x-ng-click="auto_pagination()"> -->
-		  <!-- 	  <i class="glyphicon glyphicon-menu-down"></i> -->
-		  <!-- 	</button> -->
-		  <!--     </span> -->
-		      
-		  <!--   </td> -->
-		  <!-- </tr> -->
+		<tfoot> 
 		</tfoot>
 		
 	      </table> <!--END table--> 

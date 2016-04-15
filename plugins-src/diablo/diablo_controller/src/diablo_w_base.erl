@@ -278,8 +278,8 @@ sys_config() ->
     %%         ename,           cname,            value,type
     Values = [{"pum",           "打印份数",       "1",  "0"},
 	      {"ptype",         "打印方式",       "1",  "0"}, %% 0: front; 1:backend 
-	      {"pretailer",     "打印客户",       "0",  "0"},
-	      {"pround",        "四舍五入",       "0",  "0"},
+	      %% {"pretailer",     "打印客户",       "0",  "0"},
+	      %% {"pround",        "四舍五入",       "0",  "0"},
 	      {"prompt",        "提示数目",       "8",  "0"},
 	      {"pim_print",     "立即打印",       "0",  "0"},
 

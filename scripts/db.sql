@@ -716,12 +716,12 @@ create table w_sale(
     promotion     INTEGER not null default -1,
     charge        INTEGER not null default -1,
     
-
     balance        DECIMAL(10, 2) default 0, -- max: 99999999.99
     should_pay     DECIMAL(10, 2) default 0, -- max: 99999999.99
     cash           DECIMAL(10, 2) default 0, -- max: 99999999.99
     card           DECIMAL(10, 2) default 0, -- max: 99999999.99
-    withdraw       DECIMAL(10, 2) default 0, -- max: 99999999.99 
+    withdraw       DECIMAL(10, 2) default 0, -- max: 99999999.99
+    verificate     DECIMAL(10, 2) default 0, -- max: 99999999.99
 
     cbalance       INTEGER not null default 0, -- charge balance
     sbalance       INTEGER not null default 0, -- send balance of charging
@@ -767,10 +767,11 @@ create table w_sale_detail(
 
     org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
     tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
-    -- tag_discount   DECIMAL(3, 0), -- max: 100
     
-    fdiscount      DECIMAL(3, 0), -- max: 100
-    fprice         DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance 
+    fdiscount      DECIMAL(4, 1), -- max: 100
+    rdiscount      DECIMAL(4, 1), -- max: 100
+    fprice         DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
+    rpice          DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
     path           VARCHAR(255) default null, -- the image path
     comment        VARCHAR(127) default null,
     entry_date     DATETIME default 0,

@@ -116,26 +116,11 @@
 		    </th>
 		    <th x-ng-if="show.balance">现金</th>
 		    <th x-ng-if="show.balance">刷卡</th>
-		    <th x-ng-if="show.balance">提现</th>
-
+		    <th x-ng-if="show.balance">提现</th> 
 		    <th x-ng-if="show.balance">充值</th>
-		    <th x-ng-if="show.balance">赠送</th>
-		    
-		    
-		    <th>备注</th>
-
-		    <th>日期</th>
-		    <!-- <th x-ng-click="toggle_action()"> -->
-		    <!--   <span x-ng-if="show.action"> -->
-		    <!-- 	<i class="glyphicon glyphicon-backward fg-red"></i> -->
-		    <!-- 	开单日期 -->
-		    <!--   </span> -->
-		    <!--   <span x-ng-if="!show.action"> -->
-		    <!-- 	开单日期 -->
-		    <!-- 	<i class="glyphicon glyphicon-forward fg-red"></i> -->
-		    <!--   </span> -->
-		    <!-- </th> -->
-
+		    <th x-ng-if="show.balance">赠送</th> 
+		    <th>备注</th> 
+		    <th>日期</th> 
 		    <th>操作</th>
 		  </tr>
 		</thead>
@@ -193,13 +178,7 @@
 		    <td>{{r.entry_date}}</td>
 
 		    <!-- <td x-ng-if="show.action"> -->
-		    <td>
-		      <!-- <button class="btn diablo-button purple-plum" -->
-		      <!-- 	      x-ng-disabled="disable_print" -->
-		      <!-- 	      x-ng-click="print(r)"> -->
-		      <!-- 	打印<i class="glyphicon glyphicon-print"></i> -->
-		      <!-- </button> -->
-		      
+		    <td> 
 		      <button class="btn diablo-button btn-primary"
 		    	      x-ng-click="rsn_detail(r)">
 			明细<i class="glyphicon glyphicon-map-marker"></i>

@@ -19,6 +19,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
     $scope.colors        = filterColor;
     $scope.types         = filterType;
     $scope.base_settings = base;
+    $scope.vpays         = wsaleService.vpays;
     
     $scope.sexs        = diablo_sex;
     $scope.seasons     = diablo_season;
@@ -47,76 +48,28 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	$scope.select.total        = 0;
 	$scope.select.abs_total    = 0;
 	$scope.select.should_pay   = 0;
-	// $scope.select.left_balance = 0; 
-	$scope.select.score        = 0;
+	$scope.select.score        = 0; 
 
-	var pmoneys = []; 
-	var pscores = [];
+	var calc = wsaleCalc.calculate(
+	    $scope.select.o_retailer,
+	    $scope.select.retailer,
+	    $scope.inventories,
+	    $scope.select.has_pay,
+	    $scope.show_promotions,
+	    diablo_reject);
+
+	console.log(calc);
 	
-	for (var i=1, l=$scope.inventories.length; i<l; i++){
-	    var one = $scope.inventories[i];
-	    one.calc = 0; 
-	    $scope.select.total      += parseInt(one.reject);
-	    $scope.select.abs_total  += Math.abs(parseInt(one.reject));
-	    
-	    if ($scope.setting.round === diablo_round_row){
-		if (one.pid === -1
-		    || $scope.select.retailer.type_id === diablo_sys_retailer){
-		    one.calc = $scope.round(
-			one.fprice * one.fdiscount * 0.01 * one.reject);
-		} else {
-		    one.calc = $scope.round(one.fprice * one.reject);
-		}
-		
-	    } else {
-		if (one.pid === -1
-		    || $scope.select.retailer.type_id === diablo_sys_retailer){
-		    one.calc = $scope.f_mul(
-			one.fprice,
-			$scope.f_mul(one.fdiscount,
-				     $scope.f_mul(0.01, one.reject)));
-		} else {
-		    one.calc = $scope.f_mul(one.fprice, one.reject);
-		} 
-	    }
-
-	    if (one.pid === -1
-		|| $scope.select.retailer.type_id === diablo_sys_retailer){
-		// format_pmoney({id: -1, rule_id: -1}, one.calc);
-		wsaleUtils.sort_promotion(
-		    {id: -1, rule_id: -1}, one.calc, pmoneys);
-	    } else {
-		wsaleUtils.sort_promotion(one.promotion, one.calc, pmoneys);
-		// format_pmoney(one.promotion, one.calc);
-	    }
-
-	    if (one.sid !== -1
-		&& $scope.select.retailer.type_id !== diablo_sys_retailer){
-		wsaleUtils.sort_score(
-		    one.score, one.promotion, one.calc, pscores)
-		// format_score(one.score, one.promotion, one.calc);
-	    }
-	}
-
-	console.log(pmoneys);
-	console.log(pscores); 
-
-	// $scope.select.should_pay = $scope.round($scope.select.should_pay);
-	$scope.select.should_pay = wsaleUtils.calc_with_promotion(pmoneys);
-	// calculate rmoney, all the promotion change to discount
-	for (var i=1, l=$scope.inventories.length; i<l; i++){
-	    var one = $scope.inventories[i];
-	    if (one.pid !== -1
-		&& $scope.select.retailer.type_id !== diablo_sys_retailer){
-		one.fdiscount =
-		    wsaleUtils.calc_discount_of_rmoney(one.promotion, pmoneys);
-		console.log(one, one.fdiscount);
-	    } 
-	}
-	
-	$scope.select.score = wsaleUtils.calc_with_score(pscores);
+	$scope.select.total     = calc.total; 
+	$scope.select.abs_total = calc.abs_total;
+	$scope.select.should_pay= calc.should_pay;
+	$scope.select.score     = calc.score;
 
 	// back
+	if ($scope.select.withdraw > 0){
+	    $scope.select.left_balance = $scope.select.surplus - $scope.select.should_pay;
+	}
+	
 	if ($scope.select.withdraw > $scope.select.should_pay){
 	    $scope.select.left_balance =
 		$scope.select.surplus - $scope.select.should_pay;
@@ -128,12 +81,54 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 		$scope.select.should_pay - $scope.select.has_pay; 
 	}
 
+	$scope.select.charge -= $scope.select.verificate;
+
 	// console.log($scope.select);
     };
+
+    $scope.reset_payment = function(newValue){
+	$scope.select.has_pay = 0;
+	if(angular.isDefined($scope.select.cash) && $scope.select.cash){
+	    $scope.select.has_pay += parseFloat($scope.select.cash);
+	}
+
+	if(angular.isDefined($scope.select.card) && $scope.select.card){
+	    $scope.select.has_pay += parseFloat($scope.select.card);
+	}
+	
+	var withdraw = diablo_set_float($scope.select.withdraw);
+	
+	if(angular.isDefined(withdraw)){
+	    $scope.select.has_pay += parseFloat($scope.select.withdraw);
+	    $scope.select.left_balance = $scope.select.surplus - withdraw;
+	} 
+
+	$scope.select.charge =
+	    $scope.select.should_pay - $scope.select.has_pay - $scope.select.verificate;
+	console.log($scope.select.charge);
+    };
+    
+    $scope.$watch("select.cash", function(newValue, oldValue){
+	if (newValue === oldValue || angular.isUndefined(newValue)) return;
+	if ($scope.select.form.cashForm.$invalid) return; 
+	$scope.reset_payment(newValue);
+    });
+
+    $scope.$watch("select.card", function(newValue, oldValue){
+	if (newValue === oldValue || angular.isUndefined(newValue)) return;
+	if ($scope.select.form.cardForm.$invalid) return;
+	$scope.reset_payment(newValue); 
+    });
+
+    $scope.$watch("select.verificate", function(newValue, oldValue){
+	if (newValue === oldValue || angular.isUndefined(newValue)) return;
+	$scope.reset_payment(newValue);
+    });
     
     $scope.change_retailer = function(){
 	$scope.select.surplus = $scope.select.retailer.balance;
-	$scope.re_calculate(); 
+	$scope.re_calculate();
+	$scope.select.o_retailer = $scope.select.retailer;
     }
     
     // calender
@@ -166,9 +161,10 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 		$scope.scores);
 
 	    console.log(wsale);
-
+	    
 	    $scope.old_select = wsale.select;
 	    $scope.select = angular.extend($scope.select, wsale.select);
+	    $scope.select.o_retailer = $scope.select.retailer;
 
 	    $scope.show_promotions = wsale.show_promotions;
 
@@ -207,7 +203,6 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	add.season       = src.season;
 	add.year         = src.year;
 
-	// add.org_price    = good.org_price;
 	add.pid          = src.pid;
 	add.promotion    = diablo_get_object(src.pid, $scope.promotions);
 	add.sid          = src.sid;
@@ -462,8 +457,13 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 		sell_total     : parseInt(add.reject),
 		promotion      : add.pid,
 		score          : add.sid,
-		fdiscount      : parseInt(add.fdiscount),
-		fprice         : parseFloat(add.fprice),
+
+		org_price      : add.org_price,
+		tag_price      : add.tag_price,
+		fdiscount      : add.fdiscount,
+		rdiscount      : add.rdiscount,
+		fprice         : add.fprice,
+		rprice         : add.rprice,
 		path           : add.path,
 
 		sizes          : add.sizes,

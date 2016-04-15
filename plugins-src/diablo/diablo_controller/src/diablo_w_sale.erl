@@ -123,17 +123,18 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
     ?DEBUG("new_sale with merchant ~p~n~p, props ~p",
 	   [Merchant, Inventories, Props]),
 
-    Retailer   = ?v(<<"retailer">>, Props),
+    Retailer     = ?v(<<"retailer">>, Props),
     RetailerType = ?v(<<"retailer_type">>, Props, 0),
     Shop       = ?v(<<"shop">>, Props), 
     DateTime   = ?v(<<"datetime">>, Props, ?utils:current_time(localtime)),
     Employe    = ?v(<<"employee">>, Props),
     Comment    = ?v(<<"comment">>, Props, ""),
 
-    Balance    = ?v(<<"balance">>, Props, 0),
+    %% Balance    = ?v(<<"balance">>, Props, 0),
     Cash       = ?v(<<"cash">>, Props, 0),
     Card       = ?v(<<"card">>, Props, 0),
     Withdraw   = ?v(<<"withdraw">>, Props, 0),
+    Verificate = ?v(<<"verificate">>, Props, 0),
     
     ShouldPay  = ?v(<<"should_pay">>, Props, 0),
     Total      = ?v(<<"total">>, Props, 0),
@@ -176,30 +177,27 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 		      end,
 
 	    
-	    ?DEBUG("NewCard ~p, NewCard ~p, withdraw",
+	    ?DEBUG("NewCard ~p, NewCard ~p, withdraw ~p",
 		   [NewCash,  NewCard, Withdraw]), 
 
 	    Sql2 = "insert into w_sale(rsn"
 		", employ, retailer, shop, merchant"
-		", balance, should_pay, cash, card, withdraw, total"
-		", lscore, score, comment, type, entry_date) values("
+		", balance, should_pay, cash, card, withdraw, verificate"
+		", total, lscore, score, comment, type, entry_date) values("
 		++ "\"" ++ ?to_s(SaleSn) ++ "\","
 		++ "\"" ++ ?to_s(Employe) ++ "\","
 		++ ?to_s(Retailer) ++ ","
 		++ ?to_s(Shop) ++ ","
 		++ ?to_s(Merchant) ++ "," 
-		++ case ?to_f(CurrentBalance) =:= ?to_f(Balance) of
-                       true  -> ?to_s(Balance) ++ ",";
-                       false -> ?to_s(CurrentBalance) ++ ","
-                   end 
+		++ ?to_s(CurrentBalance) ++ ","
 		++ ?to_s(ShouldPay) ++ "," 
 		++ ?to_s(NewCash) ++ ","
 		++ ?to_s(NewCard) ++ ","
 		++ ?to_s(Withdraw) ++ ","
+		++ ?to_s(Verificate) ++ ","
 		++ ?to_s(Total) ++ ","
 		++ ?to_s(LastScore) ++ ","
-		++ ?to_s(Score) ++ ","
-		
+		++ ?to_s(Score) ++ "," 
 		++ "\"" ++ ?to_s(Comment) ++ "\"," 
 		++ ?to_s(type(new)) ++ ","
 		++ "\"" ++ ?to_s(DateTime) ++ "\");",
@@ -439,7 +437,7 @@ handle_call({get_new, Merchant, RSN}, _From, State) ->
     ?DEBUG("get_new with merchant ~p, rsn ~p", [Merchant, RSN]),
     Sql = "select id, rsn"
 	", employ as employ_id, retailer as retailer_id, shop as shop_id"
-	", balance, should_pay, cash, card, withdraw"
+	", balance, should_pay, cash, card, withdraw, verificate"
 	", total, score, comment, type, entry_date" 
 	" from w_sale" 
 	++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
@@ -777,7 +775,7 @@ handle_call({total_rsn_group, Merchant, Conditions}, _From, State) ->
 
     Sql = "select count(*) as total"
     	", SUM(b.total) as t_amount"
-    	", SUM(b.fprice * b.fdiscount * b.total) as t_balance"
+    	", SUM(b.rprice * b.total) as t_balance"
 	
     	" from w_sale_detail b, w_sale a"
 
@@ -824,7 +822,8 @@ handle_call({filter_rsn_group, Merchant,
     Sql = "select b.id, b.rsn, b.style_number"
 	", b.brand as brand_id, b.type as type_id, b.firm as firm_id"
 	", b.s_group, b.free, b.total, b.promotion as pid, b.score as sid"
-	", b.tag_price, b.fdiscount, b.fprice, b.path, b.comment, b.entry_date"
+	", b.tag_price, b.fdiscount, b.rdiscount, b.fprice, b.rprice"
+	", b.path, b.comment, b.entry_date"
 	
 	", a.shop as shop_id"
 	", a.retailer as retailer_id"
@@ -841,24 +840,7 @@ handle_call({filter_rsn_group, Merchant,
     	++ " and a.merchant=" ++ ?to_s(Merchant)
     	++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime)
     	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
-    	%% ++ ") a",
-	
-	%% " left join w_sale b on a.rsn=b.rsn", 
-	
-    %% CorrectCondition = ?utils:correct_condition(<<"a.">>, Conditions),
-    %% Sql = "select a.id, a.rsn, a.style_number"
-    %% 	", a.brand as brand_id, a.type as type_id, a.firm as firm_id"
-    %% 	", a.s_group, a.free, a.total, a.fdiscount"
-    %% 	", a.fprice, a.path, a.comment, a.entry_date"
-
-    %% 	", b.shop as shop_id"
-    %% 	", b.retailer as retailer_id"
-    %% 	", b.employ as employee_id"
-    %% 	", b.type as sell_type"
-    %% 	" from w_sale_detail a, w_sale b"
-    %% 	" where a.rsn=b.rsn" ++ ?sql_utils:condition(proplists, CorrectCondition)
-    %% 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage), 
-
+    
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State}; 
 
@@ -1375,8 +1357,10 @@ wsale(Action, RSN, DateTime, Merchant, Shop, Inventory, Amounts) ->
     
     OrgPrice    = ?v(<<"org_price">>, Inventory),
     TagPrice    = ?v(<<"tag_price">>, Inventory), 
-    FDiscount   = ?v(<<"fdiscount">>, Inventory, 100), 
+    FDiscount   = ?v(<<"fdiscount">>, Inventory),
+    RDiscount   = ?v(<<"rdiscount">>, Inventory),
     FPrice      = ?v(<<"fprice">>, Inventory),
+    RPrice      = ?v(<<"rprice">>, Inventory),
     
     Firm        = ?v(<<"firm">>, Inventory),
     Season      = ?v(<<"season">>, Inventory),
@@ -1430,9 +1414,8 @@ wsale(Action, RSN, DateTime, Merchant, Shop, Inventory, Amounts) ->
 	     "insert into w_sale_detail("
 		 "rsn, style_number, brand, merchant, type, s_group, free"
 		 ", season, firm, year, total, promotion, score"
-		 ", org_price, tag_price, fdiscount, fprice"
-		 ", path, comment, entry_date)"
-		 " values("
+		 ", org_price, tag_price, fdiscount, rdiscount, fprice, rprice"
+		 ", path, comment, entry_date) values("
 		 ++ "\"" ++ ?to_s(RSN) ++ "\","
 		 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
 		 ++ ?to_s(Brand) ++ ","
@@ -1450,7 +1433,9 @@ wsale(Action, RSN, DateTime, Merchant, Shop, Inventory, Amounts) ->
 		 ++ ?to_s(OrgPrice) ++ ","
 		 ++ ?to_s(TagPrice) ++ "," 
 		 ++ ?to_s(FDiscount) ++ ","
+		 ++ ?to_s(RDiscount) ++ ","
 		 ++ ?to_s(FPrice) ++ ","
+		 ++ ?to_s(RPrice) ++ ","
 		 
 		 ++ "\"" ++ ?to_s(Path) ++ "\","
 		 ++ "\"" ++ ?to_s(Comment) ++ "\","
@@ -1460,14 +1445,15 @@ wsale(Action, RSN, DateTime, Merchant, Shop, Inventory, Amounts) ->
 		 ++ ", org_price=" ++ ?to_s(OrgPrice)
 		 ++ ", tag_price=" ++ ?to_s(TagPrice)
 		 ++ ", fdiscount=" ++ ?to_s(FDiscount)
-		 ++ ", fprice=" ++ ?to_s(FPrice) 
+		 ++ ", rdiscount=" ++ ?to_s(RDiscount)
+		 ++ ", fprice=" ++ ?to_s(FPrice)
+		 ++ ", rprice=" ++ ?to_s(RPrice) 
 		 ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
 		 ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 		 ++ " and brand=" ++ ?to_s(Brand);
 	 {error, E00} ->
 	     throw({db_error, E00})
-     end] ++
-	
+     end] ++ 
 	lists:foldr(
 	  fun({struct, A}, Acc1)->
 		  Color    = ?v(<<"cid">>, A),
