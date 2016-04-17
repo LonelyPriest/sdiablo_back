@@ -6,39 +6,7 @@ userApp.factory("userService", function($resource, $q){
     var _shops     = [];
     var _rights    = [];
     var _loginType = undefined;
-
-    // var promise = function(callback, params){
-    // 	return function(){
-    // 	    var deferred = $q.defer();
-    // 	    callback(params).$promise.then(function(data){
-    // 		// console.log(data);
-    // 		deferred.resolve(data);
-    // 	    });
-    // 	    return deferred.promise;
-    // 	}
-    // };
-
-    // var get_right = function(){
-    // 	return user.query({operation: "list_login_user_right"}); 
-    // };
-
-    // var get_shop = function(){
-    // 	return user.query({operation: "list_login_user_shop"});
-    // };
-
-    // var get_type = function(){
-    // 	return user.query({op})
-    // };
-
-    // var setting = $resource("/wbase/:operation", {operation: '@operation'}); 
     
-    // var get_base_setting = function(){
-    // 	return setting.query({operation: "list_base_setting"})
-    // };
-
-    // var get_repo = function(){
-    // 	return user.query({operation: "list_login_user_repo"});
-    // };
     var sort = function(){
 	var shops = _shops;
 	return {
@@ -153,33 +121,11 @@ userApp.factory("userService", function($resource, $q){
 		    } 
 		})
 		return sort;
-	    }()
-
-	    // sortRepoes: function(){
-	    //     var sort = []; 
-	    //     angular.forEach(shops, function(s){
-	    // 	var repo = {id:  s.shop_id,
-	    // 		    name:s.name,
-	    // 		    repo:s.repo_id,
-	    // 		    py:diablo_pinyin(s.name)};
-	    // 	if (s.repo_id === -1 && !in_array(sort, repo)){
-	    // 	    sort.push(repo); 
-	    // 	}
-	    //     })
-	    //     return sort;
-	    // }()
+	    }() 
 	}
     };
 
     return function(){
-    	// return $q.all([
-    	//     promise(get_right)(),
-    	//     promise(get_shop)(),
-    	//     // promise(get_base_setting)()
-    	// ]).then(function(data){
-	//     var rights    = data[0];
-	//     var shops     = data[1];
-	//     console.log(shops);
 	if (_shops.length !== 0
 	    && _rights !== 0
 	    && angular.isDefined(_loginType)){

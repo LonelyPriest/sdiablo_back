@@ -32,7 +32,7 @@ var wsaleUtils = function(){
 	select.card       = Math.abs(base.card);
 	select.withdraw   = Math.abs(base.withdraw);
 	select.should_pay = Math.abs(base.should_pay);
-
+	
 	select.comment    = base.comment;
 	select.total      = Math.abs(base.total);
 	select.score      = Math.abs(base.score);
@@ -50,7 +50,7 @@ var wsaleUtils = function(){
 
 		add.brand_id = s.brand_id; 
 		add.type_id  = s.type_id;
-		
+		// add.sex     = s.sex;
 		add.season  = s.season;
 		add.firm_id = s.firm_id;
 		add.year    = s.year;
@@ -60,10 +60,11 @@ var wsaleUtils = function(){
 		add.s_group = s.s_group;
 		add.free_color_size = s.free === 0 ? true : false;
 
+		add.org_price = s.org_price;
 		add.tag_price = s.tag_price;
 		add.fprice    = s.fprice;
 		add.fdiscount = s.fdiscount;
-		add.o_fdiscount = s.discount;
+		add.o_fdiscount = s.fdiscount;
 		add.o_fprice    = s.fprice;
 		
 		add.reject    = s.amount;
@@ -107,13 +108,6 @@ var wsaleUtils = function(){
     return {
 	format_promotion: function(inv, promotions){
 	    if (angular.isUndefined(inv.promotion)){
-		// for (var i=0, l=promotions.length; i<l; i++){
-		//     if (inv.order_id === promotions[i].order_id){
-		// 	break;
-		//     }
-		// }
-
-		// promotions.splice(i, 1); 
 		return promotions;
 	    }
 
@@ -153,9 +147,7 @@ var wsaleUtils = function(){
 		// promotions.splice(i, 1); 
 		return promotions;
 	    }
-
 	    
-
 	    var found = false;
 	    for (var i=0, l=promotions.length; i<l; i++){
 		if (inv.order_id === promotions[i].order_id){
@@ -194,7 +186,8 @@ var wsaleUtils = function(){
 		d.brand = diablo_get_object(d.brand_id, brands);
 		d.type = diablo_get_object(d.type_id, types); 
 		d.promotion = diablo_get_object(d.pid, promotions);
-		d.score     = diablo_get_object(d.sid, scores); 
+		d.score     = diablo_get_object(d.sid, scores);
+		d.select   = true;
 		d.order_id = order_length;
 
 		wsaleUtils.format_promotion(d, show_promotions);
@@ -388,6 +381,10 @@ var wsaleUtils = function(){
 		score += Math.floor(s.money / s.score.balance) * s.score.score; 
 	    } 
 	    return diablo_round(score);
+	},
+
+	calc_score_of_money: function(money, score){
+	    return Math.floor(money / score.balance) * score.score;
 	}
 
 	//

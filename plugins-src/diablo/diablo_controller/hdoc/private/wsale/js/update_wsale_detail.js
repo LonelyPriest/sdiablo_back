@@ -64,66 +64,20 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	$scope.select.abs_total = calc.abs_total;
 	$scope.select.should_pay= calc.should_pay;
 	$scope.select.score     = calc.score;
-
-	// back
-	if ($scope.select.withdraw > 0){
-	    $scope.select.left_balance = $scope.select.surplus - $scope.select.should_pay;
-	}
 	
+	// back 
 	if ($scope.select.withdraw > $scope.select.should_pay){
-	    $scope.select.left_balance =
-		$scope.select.surplus - $scope.select.should_pay;
-	    $scope.select.withdraw = $scope.select.should_pay;
-
+	    $scope.select.left_balance = $scope.select.surplus - $scope.select.should_pay;
+	    $scope.select.withdraw = $scope.select.should_pay; 
 	    $scope.select.charge = -($scope.select.cash + $scope.select.card);
 	} else {
-	    $scope.select.charge =
-		$scope.select.should_pay - $scope.select.has_pay; 
+	    $scope.select.charge = $scope.select.should_pay - $scope.select.has_pay; 
 	}
 
 	$scope.select.charge -= $scope.select.verificate;
 
 	// console.log($scope.select);
     };
-
-    $scope.reset_payment = function(newValue){
-	$scope.select.has_pay = 0;
-	if(angular.isDefined($scope.select.cash) && $scope.select.cash){
-	    $scope.select.has_pay += parseFloat($scope.select.cash);
-	}
-
-	if(angular.isDefined($scope.select.card) && $scope.select.card){
-	    $scope.select.has_pay += parseFloat($scope.select.card);
-	}
-	
-	var withdraw = diablo_set_float($scope.select.withdraw);
-	
-	if(angular.isDefined(withdraw)){
-	    $scope.select.has_pay += parseFloat($scope.select.withdraw);
-	    $scope.select.left_balance = $scope.select.surplus - withdraw;
-	} 
-
-	$scope.select.charge =
-	    $scope.select.should_pay - $scope.select.has_pay - $scope.select.verificate;
-	console.log($scope.select.charge);
-    };
-    
-    $scope.$watch("select.cash", function(newValue, oldValue){
-	if (newValue === oldValue || angular.isUndefined(newValue)) return;
-	if ($scope.select.form.cashForm.$invalid) return; 
-	$scope.reset_payment(newValue);
-    });
-
-    $scope.$watch("select.card", function(newValue, oldValue){
-	if (newValue === oldValue || angular.isUndefined(newValue)) return;
-	if ($scope.select.form.cardForm.$invalid) return;
-	$scope.reset_payment(newValue); 
-    });
-
-    $scope.$watch("select.verificate", function(newValue, oldValue){
-	if (newValue === oldValue || angular.isUndefined(newValue)) return;
-	$scope.reset_payment(newValue);
-    });
     
     $scope.change_retailer = function(){
 	$scope.select.surplus = $scope.select.retailer.balance;
@@ -466,10 +420,11 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 		rprice         : add.rprice,
 		path           : add.path,
 
-		sizes          : add.sizes,
+		// sizes          : add.sizes,
 		s_group        : add.s_group,
 		colors         : add.colors,
-		free           : add.free,		
+		free           : add.free,
+		// alarm_day      : add.alarm_day
 	    })
 	};
 
@@ -571,26 +526,33 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	    $scope.select.has_pay
 		+= parseFloat($scope.select.card);
 	} 
-	
+
+	$scope.select.left_balance = $scope.select.surplus 
 	var withdraw = diablo_set_float($scope.select.withdraw);
 	if(angular.isDefined(withdraw)){
 	    $scope.select.has_pay += parseFloat($scope.select.withdraw);
-	    $scope.select.left_balance =
-		$scope.select.surplus - $scope.select.withdraw
-	} else {
-	    $scope.select.left_balance = $scope.select.surplus;
-	} 
+	    $scope.select.left_balance = $scope.select.surplus - $scope.select.withdraw
+	}
+	
+	
+	// if(angular.isDefined(withdraw)){
+	//     $scope.select.has_pay += parseFloat($scope.select.withdraw);
+	//     $scope.select.left_balance = $scope.select.surplus - $scope.select.withdraw
+	// } else {
+	//     $scope.select.left_balance = $scope.select.surplus;
+	// } 
 
 	// back
 	if ($scope.select.withdraw > $scope.select.should_pay){
-	    $scope.select.left_balance += $scope.select.withdraw
-		- $scope.select.should_pay;
-
+	    $scope.select.left_balance += $scope.select.withdraw - $scope.select.should_pay;
+	    // back to account
+	    $scope.select.withdraw = $scope.select.should_pay;
 	    $scope.select.charge = -($scope.select.cash + $scope.select.card);
 	} else {
-	    $scope.select.charge =
-		$scope.select.should_pay - $scope.select.has_pay; 
-	} 
+	    $scope.select.charge = $scope.select.should_pay - $scope.select.has_pay; 
+	}
+
+	$scope.select.charge -= $scope.select.verificate;
     };
     
     $scope.$watch("select.cash", function(newValue, oldValue){
@@ -605,10 +567,15 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	reset_payment(newValue); 
     });
 
-    $scope.$watch("select.withdraw", function(newValue, oldValue){
-	if (newValue === oldValue || angular.isUndefined(newValue)) return;
-	reset_payment(newValue); 
-    }); 
+    $scope.$watch("select.verificate", function(newValue, oldValue){
+    	if (newValue === oldValue || angular.isUndefined(newValue)) return;
+    	reset_payment(newValue);
+    });
+
+    // $scope.$watch("select.withdraw", function(newValue, oldValue){
+    // 	if (newValue === oldValue || angular.isUndefined(newValue)) return;
+    // 	reset_payment(newValue); 
+    // }); 
 
     /*
      * add

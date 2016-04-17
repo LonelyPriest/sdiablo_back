@@ -1619,7 +1619,7 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 	),
     };
 
-    console.log($scope.shop_right);
+    // console.log($scope.shop_right);
 
     /*
      * hidden
@@ -1629,11 +1629,7 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
     $scope.toggle_base = function(){
 	$scope.show.base = !$scope.show.base;
     };
-
-    // $scope.toggle_check = function(){
-    // 	$scope.show.check = !$scope.show.check;
-    // };
-
+    
     $scope.toggle_action = function(){
 	$scope.show.action = !$scope.show.action;
     };
@@ -1685,8 +1681,7 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 	}();
     };
 
-    $scope.time   = diabloFilter.default_time($scope.qtime_start);
-
+    $scope.time   = diabloFilter.default_time($scope.qtime_start); 
     //
     $scope.sequence_pagination = function(){
 	// var shop = -1;
@@ -1723,8 +1718,7 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
     // console.log($scope.current_page);
 
     $scope.do_search = function(page){
-	console.log(page);
-
+	console.log(page); 
 	$scope.current_page = page;
 
 	// save condition of query 
@@ -1732,9 +1726,8 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 	    diablo_key_wsale_trans,
 	    {filter:$scope.filters,
 	     start_time: diablo_get_time($scope.time.start_time),
-	     page:page, t:now});
+	     page:page, t:now}); 
 	
-
 	// console.log($scope.time); 
 	if (angular.isDefined(back_page)){
 	    var stastic = localStorageService.get("wsale-trans-stastic");
@@ -1826,7 +1819,7 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
     
     $scope.page_changed = function(){
 	// console.log($scope.num_pages);
-	console.log($scope.current_page);
+	// console.log($scope.current_page);
     	$scope.do_search($scope.current_page);
     };
 
@@ -1852,12 +1845,11 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 	     total_card:        $scope.total_card,
 	     total_withdraw:    $scope.total_withdraw,
 	     total_balance:     $scope.total_balance,
-	     t:                now});
+	     t:                 now});
     };
     
     $scope.rsn_detail = function(r){
 	// console.log(r);
-	// console.log($scope.current_page);
 	$scope.save_stastic();	
 	diablo_goto_page(
 	    "#/wsale_rsn_detail/"
@@ -1970,23 +1962,6 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 	}) 
     };
 });
-
-
-wsaleApp.controller("wsaleGuideCtrl", function($scope){
-    $scope.goto_page = diablo_goto_page;
-
-    $scope.new_wsale = function(){
-	$scope.goto_page("#/wsale/new_wsale");
-    }
-
-    $scope.reject_wsale = function(){
-	$scope.goto_page("#/wsale/reject_wsale");
-    }
-    
-    $scope.wsale_rsn_detail = function(){
-	$scope.goto_page("#/wsale_rsn_detail");
-    }
-})
 
 wsaleApp.controller("wsaleCtrl", function(
     $scope, localStorageService){

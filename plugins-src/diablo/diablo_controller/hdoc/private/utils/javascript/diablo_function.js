@@ -13,7 +13,6 @@ var diablo_round_record = 0;
 var diablo_round_row = 1;
 
 var diablo_sell   = 0;
-var diablo_reject = 1;
 var diablo_charge = 2;
 
 var diablo_sale   = 0;

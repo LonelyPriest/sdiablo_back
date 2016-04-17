@@ -71,11 +71,6 @@ sale(get_rsn, Merchant, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {get_sale_rsn, Merchant, Condition}).
 
-
-%% rsn_group(rsn, Merchant) ->
-%%     rsn_group(rsn, Merchant, []).
-%% rsn_group(rsn, Merchant, RSN) ->
-%%     gen_server:call(?SERVER, {rsn_group, Merchant, RSN}).
 rsn_detail(rsn, Merchant, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {rsn_detail, Merchant, Condition}).
@@ -84,8 +79,7 @@ rsn_detail(rsn, Merchant, Condition) ->
 filter(total_news, 'and', Merchant, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {total_news, Merchant, Fields});
-%% filter(total_rejects, 'and', Merchant, Fields) ->
-%%     gen_server:call(?SERVER, {total_rejects, Merchant, Fields});
+
 filter(total_rsn_group, 'and', Merchant, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {total_rsn_group, Merchant, Fields}).
@@ -94,9 +88,7 @@ filter(news, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(
       Name, {filter_news, Merchant, CurrentPage, ItemsPerPage, Fields});
-%% filter(rejects, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
-%%     gen_server:call(
-%%       ?SERVER, {filter_rejects, Merchant, CurrentPage, ItemsPerPage, Fields});
+
 filter(rsn_group, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(
@@ -124,7 +116,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 	   [Merchant, Inventories, Props]),
 
     Retailer     = ?v(<<"retailer">>, Props),
-    RetailerType = ?v(<<"retailer_type">>, Props, 0),
+    %% RetailerType = ?v(<<"retailer_type">>, Props, 0),
     Shop       = ?v(<<"shop">>, Props), 
     DateTime   = ?v(<<"datetime">>, Props, ?utils:current_time(localtime)),
     Employe    = ?v(<<"employee">>, Props),
@@ -138,10 +130,10 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
     
     ShouldPay  = ?v(<<"should_pay">>, Props, 0),
     Total      = ?v(<<"total">>, Props, 0),
-    LastScore  = ?v(<<"last_score">>, Props, 0),
+    %% LastScore  = ?v(<<"last_score">>, Props, 0),
     Score      = ?v(<<"score">>, Props, 0),
 
-    Sql0 = "select id, name, balance from w_retailer"
+    Sql0 = "select id, name, balance, score from w_retailer"
 	" where id=" ++ ?to_s(Retailer)
 	++ " and merchant=" ++ ?to_s(Merchant)
 	++ " and deleted=" ++ ?to_s(?NO) ++ ";",
@@ -161,10 +153,8 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 				Merchant, RealyShop, Inv, Amounts) ++ Acc0
 		  end, [], Inventories), 
 
-	    CurrentBalance = case ?v(<<"balance">>, Account) of
-				 <<>> -> 0;
-				 R    -> R
-			     end,
+	    CurrentBalance = retailer(balance, Account), 
+	    CurrentScore = retailer(score, Account),
 
 	    NewCash = case Cash >= ShouldPay of
 			  true  -> ShouldPay;
@@ -185,7 +175,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 		", balance, should_pay, cash, card, withdraw, verificate"
 		", total, lscore, score, comment, type, entry_date) values("
 		++ "\"" ++ ?to_s(SaleSn) ++ "\","
-		++ "\"" ++ ?to_s(Employe) ++ "\","
+		++ ?to_s(Employe) ++ ","
 		++ ?to_s(Retailer) ++ ","
 		++ ?to_s(Shop) ++ ","
 		++ ?to_s(Merchant) ++ "," 
@@ -196,7 +186,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 		++ ?to_s(Withdraw) ++ ","
 		++ ?to_s(Verificate) ++ ","
 		++ ?to_s(Total) ++ ","
-		++ ?to_s(LastScore) ++ ","
+		++ ?to_s(CurrentScore) ++ ","
 		++ ?to_s(Score) ++ "," 
 		++ "\"" ++ ?to_s(Comment) ++ "\"," 
 		++ ?to_s(type(new)) ++ ","
@@ -205,8 +195,8 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 	    Sql3 =
 		case Withdraw =< 0  of
 		    true  -> 
-			case Score =:= 0 orelse RetailerType =:= 0 of
-			    true -> [];
+			case Score =:= 0 of
+			    true  -> [];
 			    false ->
 				["update w_retailer set score=score+"
 				 ++ ?to_s(Score)
@@ -214,7 +204,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 				 ++ "id=" ++ ?to_s(?v(<<"id">>, Account))]
 			end;
 		    false ->
-			case Score =:= 0 orelse RetailerType =:= 0 of
+			case Score =:= 0 of
 			    true ->
 				["update w_retailer set balance=balance-"
 				 ++ ?to_s(Withdraw)
@@ -273,7 +263,6 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
 
     Sql1 = sql(update_wsale,
 	       RSN, Merchant, RealyShop, Datetime, OldDatetime, Inventories),
-
     
     NewCash = case Cash >= ShouldPay of
 		  true  -> ShouldPay;
@@ -285,14 +274,14 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
 		  false -> Card
 	      end, 
 
-    Updates = ?utils:v(employ, string, Employee)
+    Updates = ?utils:v(employ, integer, Employee)
 	++ ?utils:v(retailer, integer, Retailer) 
 	++ ?utils:v(shop, integer, Shop)
     %% ++ ?utils:v(balance, float, OldBalance)
 	++ ?utils:v(should_pay, float, ShouldPay)
 	++ ?utils:v(cash, float, NewCash)
 	++ ?utils:v(card, float, NewCard)
-	++ ?utils:v(withdraw, float, Withdraw) 
+	++ ?utils:v(withdraw, float, Withdraw)
 	++ ?utils:v(total, integer, Total)
 	++ ?utils:v(score, integer, Score)
 	++ ?utils:v(comment, string, Comment)
@@ -311,9 +300,18 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
 
 	    ?DEBUG("Sql2 ~p", [Sql2]),
 
-	    case  OldWithdraw - Withdraw of
+	    case OldWithdraw - Withdraw of
 		0 ->
-		    AllSql = Sql1 ++ [Sql2],
+		    AllSql = Sql1 ++ [Sql2]
+			++ case Score - OldScore of
+			       0 -> [];
+			       MScore ->
+				   ["update w_retailer set score=+" ++ ?to_s(MScore)
+			    ++ ", change_date=" ++ "\"" ++ ?to_s(CurTime) ++ "\""
+			    ++ " where id=" ++ ?to_s(Retailer)
+			    ++ " and merchant=" ++ ?to_s(Merchant)]
+			   end,
+		    
 		    Reply = ?sql_utils:execute(transaction, AllSql, RSN),
 		    {reply, Reply, State};
 		Metric ->
@@ -592,15 +590,17 @@ handle_call({trans_detail, Merchant, Conditions}, _From, State) ->
     Sql =
 	" select a.id, a.rsn, a.style_number, a.brand_id, a.type_id"
 	", a.s_group, a.free, a.season, a.firm_id, a.year"
-	", a.total, a.pid, a.sid, a.tag_price, a.fdiscount, a.fprice, a.path"
-
-	", b.color as color_id, b.size, b.total as amount"
-	" from "
-
+	", a.total, a.pid, a.sid, a.org_price, a.tag_price, a.fdiscount"
+	", a.rdiscount, a.fprice, a.rprice, a.path"
+	
+	", b.color as color_id"
+	", b.size, b.total as amount"
+	
+	" from " 
 	"(select id, rsn, style_number, brand as brand_id, type as type_id"
 	", s_group, free, season, firm as firm_id, year"
 	", total, promotion as pid, score as sid"
-	", tag_price, fdiscount, fprice, path"
+	", org_price, tag_price, fdiscount, rdiscount, fprice, rprice, path"
 	" from w_sale_detail"
 	" where " ++ ?utils:to_sqls(proplists, Conditions) ++ ") a"
 
@@ -634,14 +634,13 @@ handle_call({filter_news, Merchant, CurrentPage, ItemsPerPage, Fields}, _From, S
 %% =============================================================================
 handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
     ?DEBUG("reject_sale with merchant ~p~n~p, props ~p",
-	   [Merchant, Inventories, Props]),
-
+	   [Merchant, Inventories, Props]), 
     Retailer   = ?v(<<"retailer_id">>, Props),
     Shop       = ?v(<<"shop">>, Props), 
-    DateTime   = ?v(<<"datetime">>, Props, ?utils:current_time(localtime)),
+    Datetime   = ?v(<<"datetime">>, Props, ?utils:current_time(localtime)),
     Employe    = ?v(<<"employee">>, Props),
 
-    Balance    = ?v(<<"balance">>, Props), 
+    %% Balance    = ?v(<<"balance">>, Props), 
     Comment    = ?v(<<"comment">>, Props, ""),
     ShouldPay  = ?v(<<"should_pay">>, Props, 0),
     Withdraw   = ?v(<<"withdraw">>, Props, 0),
@@ -668,7 +667,7 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 				  Amounts = ?v(<<"amounts">>, Inv),
 				  wsale(reject_badrepo,
 					Sn,
-					DateTime,
+					Datetime,
 					Merchant,
 					{Shop, RealyShop},
 					Inv,
@@ -680,7 +679,7 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 				  Amounts = ?v(<<"amounts">>, Inv),
 				  wsale(reject,
 					Sn,
-					DateTime,
+					Datetime,
 					Merchant,
 					RealyShop,
 					Inv,
@@ -695,17 +694,14 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 		", should_pay, cash, withdraw, total, score"
 		", comment, type, entry_date) values("
 		++ "\"" ++ ?to_s(Sn) ++ "\","
-		++ "\"" ++ ?to_s(Employe) ++ "\","
+		++ ?to_s(Employe) ++ ","
 		++ ?to_s(Retailer) ++ ","
 		++ ?to_s(Shop) ++ ","
 		++ ?to_s(Merchant) ++ ","
-		++ case ?to_f(CurrentBalance) =:= ?to_f(Balance) of
-		       true -> ?to_s(Balance) ++ ",";
-		       false -> ?to_s(CurrentBalance) ++ ","
-		   end
+		++ ?to_s(CurrentBalance) ++ ","
 		++ ?to_s(-ShouldPay) ++ ","
 		++ case Withdraw == ShouldPay of
-		       true -> ?to_s(0) ++ ",";
+		       true  -> ?to_s(0) ++ ",";
 		       false -> ?to_s((Withdraw - ShouldPay)) ++ ","
 		   end
 		++ ?to_s(-Withdraw) ++ "," 
@@ -713,10 +709,10 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 		++ ?to_s(-Score) ++ ","
 		++ "\"" ++ ?to_s(Comment) ++ "\"," 
 		++ ?to_s(type(reject)) ++ ","
-		++ "\"" ++ ?to_s(DateTime) ++ "\");",
+		++ "\"" ++ ?to_s(Datetime) ++ "\");",
 
 	    Sql3 =
-		case Withdraw =< 0  andalso Score == 0 of
+		case Withdraw =< 0 andalso Score == 0 of
 		    true  -> [];
 		    false ->
 			["update w_retailer set "
@@ -732,7 +728,7 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 		    {reply, Error, State};
 		OK ->
 		    case Withdraw > 0 orelse Score =/= 0 of
-			true -> ?w_user_profile:update(retailer, Merchant);
+			true  -> ?w_user_profile:update(retailer, Merchant);
 			false -> ok
 		    end,
 		    {reply, OK, State}
@@ -741,27 +737,9 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 	    {reply, Error, State}
     end;
 
-%% handle_call({total_rejects, Merchant, Fields}, _From, State) -> 
-%%     CountSql = count_table(w_sale, Merchant, Fields),
-%%     Reply = ?sql_utils:execute(s_read, CountSql),
-%%     {reply, Reply, State}; 
-
-%% handle_call({filter_rejects, Merchant, CurrentPage, ItemsPerPage, Fields}, _From, State) ->
-%%     ?DEBUG("filter_rejects_with_and: currentPage ~p, ItemsPerpage ~p, Merchant ~p~n"
-%% 	   "fields ~p", [CurrentPage, ItemsPerPage, Merchant, Fields]), 
-
-%%     Sql = filter_table(w_sale, reject, Merchant, CurrentPage, ItemsPerPage, Fields),
-%%     Reply =  ?sql_utils:execute(read, Sql),
-%%     {reply, Reply, State}; 
-
-
-handle_call({total_rsn_group, Merchant, Conditions}, _From, State) -> 
-
-    %% Sql = "select count(*) as total"
-    %% 	", SUM(total) as t_amount"
-    %% 	", SUM(fprice * fdiscount * total) as t_balance"
-    %% 	" from w_sale_detail where " ++ ?utils:to_sqls(proplists, Conditions),
-    
+handle_call({total_rsn_group, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("total_rsn_group with merchant ~p, conditions ~p",
+	   [Merchant, Conditions]),
     {DConditions, SConditions} = filter_condition(wsale, Conditions, [], []),
 
     {StartTime, EndTime, CutSConditions}
@@ -970,10 +948,13 @@ sql(update_wsale, RSN, Merchant, Shop, Datetime, _OldDatetime, Inventories) ->
 wsale(update, RSN, DateTime, Merchant, Shop, Inventory) -> 
     StyleNumber    = ?v(<<"style_number">>, Inventory),
     Brand          = ?v(<<"brand">>, Inventory),
-    OrgPrice       = ?v(<<"org_price">>, Inventory),
-    TagPrice       = ?v(<<"tag_price">>, Inventory),
+    %% OrgPrice       = ?v(<<"org_price">>, Inventory),
+    %% TagPrice       = ?v(<<"tag_price">>, Inventory),
     FPrice         = ?v(<<"fprice">>, Inventory),
+    RPrice         = ?v(<<"rprice">>, Inventory),
     FDiscount      = ?v(<<"fdiscount">>, Inventory),
+    RDiscount      = ?v(<<"rdiscount">>, Inventory),
+    
     ChangeAmounts  = ?v(<<"changed_amount">>, Inventory, []),
 
     Metric = fun()->
@@ -1013,10 +994,12 @@ wsale(update, RSN, DateTime, Merchant, Shop, Inventory) ->
     Sql0 = 
 	case Metric of
 	    0 -> ["update w_sale_detail set "
-		  ++ "org_price" ++ ?to_s(OrgPrice)
-		  ++ ", tag_price" ++ ?to_s(TagPrice)
+		  %% ++ "org_price=" ++ ?to_s(OrgPrice)
+		  %% ++ ", tag_price=" ++ ?to_s(TagPrice)
+		  ++ " rdiscount=" ++ ?to_s(RDiscount)
 		  ++ ", fdiscount=" ++ ?to_s(FDiscount)
 		  ++ ", fprice=" ++ ?to_s(FPrice)
+		  ++ ", rprice=" ++ ?to_s(RPrice)
 		  ++ " where rsn=\"" ++ ?to_s(RSN) ++ "\""
 		  ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 		  ++ " and brand=" ++ ?to_s(Brand)];
@@ -1030,11 +1013,11 @@ wsale(update, RSN, DateTime, Merchant, Shop, Inventory) ->
 		 ++ " and merchant=" ++ ?to_s(Merchant),
 
 		 "update w_sale_detail set total=total+" ++ ?to_s(Metric)
-		 ++ ", org_price" ++ ?to_s(OrgPrice)
-		 ++ ", tag_price" ++ ?to_s(TagPrice)
-		 ++ ",fdiscount=" ++ ?to_s(FDiscount)
-		 ++ ",fprice=" ++ ?to_s(FPrice)
-		 ++ ",entry_date=\'" ++ ?to_s(DateTime) ++ "\'"
+		 %% ++ ", org_price=" ++ ?to_s(OrgPrice)
+		 %% ++ ", tag_price=" ++ ?to_s(TagPrice)
+		 ++ ", fdiscount=" ++ ?to_s(FDiscount)
+		 ++ ", fprice=" ++ ?to_s(FPrice)
+		 ++ ", entry_date=\'" ++ ?to_s(DateTime) ++ "\'"
 		 ++ " where rsn=\"" ++ ?to_s(RSN) ++ "\""
 		 ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 		 ++ " and brand=" ++ ?to_s(Brand)]
@@ -1350,7 +1333,7 @@ wsale(reject_badrepo, RSN, DateTime, Merchant, {Shop, RealyShop}, Inventory, Amo
 		    end|Acc1] 
 	  end, [], Amounts);
 
-wsale(Action, RSN, DateTime, Merchant, Shop, Inventory, Amounts) -> 
+wsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) -> 
     StyleNumber = ?v(<<"style_number">>, Inventory),
     Brand       = ?v(<<"brand">>, Inventory),
     Type        = ?v(<<"type">>, Inventory),
@@ -1376,10 +1359,6 @@ wsale(Action, RSN, DateTime, Merchant, Shop, Inventory, Amounts) ->
     Path        = ?v(<<"path">>, Inventory, []),
     Comment     = ?v(<<"comment">>, Inventory, []),
 
-    %% change repo
-    %% NewShop = get_repo(Merchant, Shop),
-    
-    %% CurrentDate = ?v(<<"datetime">>, Props, ?utils:current_time(localtime)),
     C1 =
 	fun() ->
 		?utils:to_sqls(proplists,
@@ -1406,7 +1385,7 @@ wsale(Action, RSN, DateTime, Merchant, Shop, Inventory, Amounts) ->
     
     ["update w_inventory set amount=amount-" ++ ?to_s(Total)
      ++ ", sell=sell+" ++ ?to_s(Total) 
-     ++ ", last_sell=" ++ "\'" ++ ?to_s(DateTime) ++ "\'"
+     ++ ", last_sell=" ++ "\'" ++ ?to_s(Datetime) ++ "\'"
      ++ " where " ++ C1(),
 
      case ?sql_utils:execute(s_read, Sql00) of
@@ -1439,7 +1418,7 @@ wsale(Action, RSN, DateTime, Merchant, Shop, Inventory, Amounts) ->
 		 
 		 ++ "\"" ++ ?to_s(Path) ++ "\","
 		 ++ "\"" ++ ?to_s(Comment) ++ "\","
-		 ++ "\"" ++ ?to_s(DateTime) ++ "\")";
+		 ++ "\"" ++ ?to_s(Datetime) ++ "\")";
 	 {ok, _} ->
 	     "update w_sale_detail set total=total+" ++ ?to_s(Total)
 		 ++ ", org_price=" ++ ?to_s(OrgPrice)
@@ -1464,8 +1443,7 @@ wsale(Action, RSN, DateTime, Merchant, Shop, Inventory, Amounts) ->
 			  reject -> -?v(<<"reject_count">>, A)
 		      end,
 
-		  Sql01 =
-		      "select rsn, style_number, brand, color, size"
+		  Sql01 = "select rsn, style_number, brand, color, size"
 		      " from w_sale_detail_amount"
 		      " where " ++ C2(Color, Size),
 		  
@@ -1488,12 +1466,12 @@ wsale(Action, RSN, DateTime, Merchant, Shop, Inventory, Amounts) ->
 			       ++ ?to_s(Color) ++ ","
 			       ++ "\"" ++ ?to_s(Size) ++ "\","
 			       ++ ?to_s(Count) ++ ","
-			       ++ "\"" ++ ?to_s(DateTime) ++ "\")";
+			       ++ "\"" ++ ?to_s(Datetime) ++ "\")";
 		       {ok, _} ->
 			   "update w_sale_detail_amount"
 			       " set total=total+" ++ ?to_s(Count)
 			       ++ ", entry_date="
-			       ++ "\'" ++ ?to_s(DateTime) ++ "\'"
+			       ++ "\'" ++ ?to_s(Datetime) ++ "\'"
 			       ++ " where " ++ C2(Color, Size);
 		       {error, E01} ->
 			   throw({db_error, E01})
@@ -1633,6 +1611,14 @@ filter_condition(wsale, [{<<"sell_type">>, ST}|T], Acc1, Acc2) ->
 filter_condition(wsale, [O|T], Acc1, Acc2) ->
     filter_condition(wsale, T, Acc1, [O|Acc2]).
 
+retailer(balance, Retailer) ->
+    case ?v(<<"balance">>, Retailer) of
+	<<>>    -> 0;
+	Balance -> Balance
+    end;
+retailer(score, Retailer) ->
+    case ?v(<<"score">>, Retailer) of
+	<<>>   -> 0;
+	Score  -> Score
+    end.
 
-
-    
