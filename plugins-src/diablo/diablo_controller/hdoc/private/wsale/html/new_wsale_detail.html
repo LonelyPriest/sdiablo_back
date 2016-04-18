@@ -102,8 +102,8 @@
 		    <th>店员</th> 
 		    <th>数量</th> 
 		    
+		    <th class="info">应收</th>
 		    <th class="info">实收</th>
-		    <!-- <th class="info">积分</th> -->
 		    <th x-ng-click="toggle_balance()" class="danger">
 		      <span x-ng-if="show.balance">
 		    	<i class="glyphicon glyphicon-backward fg-red"></i>
@@ -116,7 +116,8 @@
 		    </th>
 		    <th x-ng-if="show.balance">现金</th>
 		    <th x-ng-if="show.balance">刷卡</th>
-		    <th x-ng-if="show.balance">提现</th> 
+		    <th x-ng-if="show.balance">提现</th>
+		    <th x-ng-if="show.balance">核销</th> 
 		    <th x-ng-if="show.balance">充值</th>
 		    <th x-ng-if="show.balance">赠送</th> 
 		    <th>备注</th> 
@@ -143,21 +144,22 @@
 
 		    <td>{{r.total}}</td> 
 		    
-		    <td x-ng-switch on="r.type">
-		      <span x-ng-switch-when=0>{{round(r.should_pay)}}</span>
-		      <span class="fg-red" x-ng-switch-when=1>
-			{{round(r.should_pay)}}
-		      </span>
-		      <span class="fg-blue" x-ng-switch-when=2>
-			{{round(r.should_pay)}}
-		      </span>
+		    <td x-ng-switch on="r.type"> 
+		      <span class="fg-red" x-ng-switch-when=1>{{r.should_pay + r.verificate}}</span>
+		      <span x-ng-switch-default>{{r.should_pay + r.verificate}}</span>
 		    </td>
+
+		    <td x-ng-switch on="r.type"> 
+		      <span class="fg-red" x-ng-switch-when=1>{{r.should_pay}}</span>
+		      <span x-ng-switch-default>{{r.should_pay}}</span>
+		    </td> 
 
 		    <td>{{r.score}}</td>
 		    
 		    <td x-ng-if="show.balance">{{r.cash}}</td>
 		    <td x-ng-if="show.balance">{{r.card}}</td>
 		    <td x-ng-if="show.balance">{{r.withdraw}}</td>
+		    <td x-ng-if="show.balance">{{r.verificate}}</td>
 
 		    <td x-ng-if="show.balance">
 		      <span x-ng-if="r.cbalance !== 0" class="fg-blue">
@@ -211,6 +213,7 @@
 		    
 		    <td>{{total_amounts}}</td>
 		    <td>{{total_spay}}</td>
+		    <td>{{total_rpay}}</td>
 		    <td></td>
 		    <td x-ng-if="show.balance">{{total_cash}}</td>
 		    <td x-ng-if="show.balance">{{total_card}}</td>

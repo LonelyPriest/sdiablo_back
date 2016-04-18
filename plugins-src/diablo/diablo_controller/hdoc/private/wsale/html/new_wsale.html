@@ -276,10 +276,11 @@
 			<!-- <th class="text-center">性别</th> -->
 			<!-- <th class="text-center">厂商</th> -->
 			<!-- <th class="text-center">季节</th> --> 
-			<th class="text-center">单价</th>
+			<th class="text-center">吊牌价</th>
 			<th class="text-center">折扣</th> 
-			<th class="text-center">售价</th>
+			<th class="text-center">单价</th>
 			<th class="text-center">数量</th>
+			<th class="text-center">成交价</th>
 			<th class="text-center">折扣率</th> 
 			<!-- <th class="text-center">促销单价</th> -->
 			<th class="text-center">合计</th>
@@ -426,8 +427,9 @@
 			    </div> 
 			  </form> 
 			</td>
-			<td class="vert-align">{{inv.rdiscount}}</td> 
-			<!-- <td class="vert-align">{{inv.rprice}}</td>  -->
+			
+			<td class="vert-align"><span class="fg-red">{{inv.rprice}}<span></td> 
+			<td class="vert-align"><span class="fg-red">{{inv.rdiscount}}</span></td> 
 			<td class="vert-align"><span>{{inv.calc}}</span></td>
 			
 			<td class="vert-align col-md-1">
@@ -493,6 +495,7 @@
 		      <tr x-ng-if="inventories.length>1" class="text-center">
 			<td colspan=7></td>
 			<td class="vert-align">{{select.abs_total}}</td>
+			<td></td>
 			<td></td>
 			<!-- <td x-ng-if="!setting.show_discount" colspan=2></td> -->
 			<td class="vert-align">{{select.should_pay}}</td>

@@ -718,6 +718,7 @@ create table w_sale(
     
     balance        DECIMAL(10, 2) default 0, -- max: 99999999.99
     should_pay     DECIMAL(10, 2) default 0, -- max: 99999999.99
+    has_pay        DECIMAL(10, 2) default 0, -- max: 99999999.99
     cash           DECIMAL(10, 2) default 0, -- max: 99999999.99
     card           DECIMAL(10, 2) default 0, -- max: 99999999.99
     withdraw       DECIMAL(10, 2) default 0, -- max: 99999999.99

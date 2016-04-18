@@ -98,11 +98,12 @@
 		    <th>厂商</th> 
 		    <!-- <th>颜色</th> -->
 		    <!-- <th>数量</th> -->
+		    <th class="info">吊牌价</th>
 		    <th class="info">单价</th>
-		    <th class="danger">售价</th>
 		    <th>数量</th> 
-		    <th>小计</th>
+		    <th class="danger">成交价</th>
 		    <th>折扣率</th> 
+		    <th>小计</th>
 		    <th>备注</th>
 		    <th>日期</th> 
 		    <th>操作</th>
@@ -132,13 +133,14 @@
 		    <!-- <td>{{inv.color}}</td> -->
 		    <!-- <td>{{inv.total}}</td>  -->
 		    <td>{{inv.tag_price}}</td>
-		    <td>{{inv.rprice}}</td>
+		    <td>{{inv.fprice}}</td>
 		    <td x-ng-switch on="inv.sell_type"> 
 		      <span class="fg-red" x-ng-switch-when=1>{{inv.total}}</span>
 		      <span x-ng-switch-default>{{inv.total}}</span>
-		    </td> 
+		    </td>
+		    <td>{{inv.rprice}} </td>
+		    <td>{{inv.rdiscount}} </td>
 		    <td>{{inv.calc}} </td>
-		    <td>{{inv.rdiscount}}</td> 
 		    <td>{{inv.comment}}</td>
 		    <td>{{inv.entry_date}}</td>
 		    <td>
@@ -153,6 +155,8 @@
 		    <td x-ng-if="!hidden.base" colspan="14"></td>
 		    <td x-ng-if="hidden.base" colspan="11"></td>
 		    <td class="success">{{total_amounts}}</td>
+		    <td></td>
+		    <td></td>
 		    <td class="danger">{{total_balance}}</td>
 		    <td colspan="3"></td>
 		  </tr>

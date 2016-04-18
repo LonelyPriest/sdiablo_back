@@ -159,7 +159,7 @@ wsaleApp.service("wsaleService", function($http, $resource, dateFilter){
 
     this.export_type = {trans:0, trans_note:1};
 
-    this.vpays = [0, 1, 2, 3];
+    this.vpays = [0, 1, 2, 3, 60];
     
     // =========================================================================
     var http = $resource("/wsale/:operation/:id",
@@ -1085,7 +1085,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    verificate:     $scope.select.verificate,
 	    
 	    should_pay:     $scope.select.should_pay,
-	    has_pay:        $scope.select.has_pay, 
+	    has_pay:        $scope.select.has_pay,
+	    charge:         $scope.select.charge,
 	    total:          $scope.select.total,
 	    last_score:     $scope.select.retailer.score,
 	    score:          $scope.select.score
@@ -1151,11 +1152,10 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	if(angular.isDefined(withdraw)){
 	    $scope.select.has_pay += parseFloat($scope.select.withdraw);
 	    $scope.select.left_balance = $scope.select.surplus - withdraw;
-	} 
+	}
 	
-	$scope.select.charge =
-	    $scope.select.should_pay - $scope.select.has_pay - $scope.select.verificate; 
-    };
+	$scope.select.charge = $scope.select.should_pay - $scope.select.has_pay; 
+    }; 
     
     $scope.$watch("select.cash", function(newValue, oldValue){
 	if (newValue === oldValue || angular.isUndefined(newValue)) return;
@@ -1171,7 +1171,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
 
     $scope.$watch("select.verificate", function(newValue, oldValue){
 	if (newValue === oldValue || angular.isUndefined(newValue)) return;
-	$scope.reset_payment(newValue);
+	$scope.re_calculate();
+	$scope.reset_payment(newValue); 
     });
     
     var in_amount = function(amounts, inv){
@@ -1207,7 +1208,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    $scope.inventories,
 	    $scope.select.has_pay,
 	    $scope.show_promotions,
-	    diablo_sale);
+	    diablo_sale,
+	    $scope.select.verificate);
 	
 	$scope.select.total     = calc.total; 
 	$scope.select.abs_total = calc.abs_total;
@@ -1652,7 +1654,7 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
     diabloFilter.add_field("shop",     $scope.shops);
     diabloFilter.add_field("retailer", filterRetailer);
     diabloFilter.add_field("employee", filterEmployee);
-    diabloFilter.add_field("has_pay",  has_pay);
+    // diabloFilter.add_field("has_pay",  has_pay);
 
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
@@ -1660,8 +1662,7 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
     // console.log($scope.filter);
     // console.log($scope.prompt);
 
-    var now = $.now();
-
+    var now = $.now(); 
     var storage = localStorageService.get(diablo_key_wsale_trans);
     // console.log(storage);
     if (angular.isDefined(storage) && storage !== null){
@@ -1683,15 +1684,7 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 
     $scope.time   = diabloFilter.default_time($scope.qtime_start); 
     //
-    $scope.sequence_pagination = function(){
-	// var shop = -1;
-	// if ($scope.shopIds.length === 1){
-	//     shop = $scope.shopIds[0];
-	// };
-
-	return diablo_base_setting(
-	    "se_pagination", -1, base, parseInt, diablo_no)
-    }();
+    $scope.sequence_pagination = wsaleUtils.sequence_pagination(-1, base)
 
     // console.log($scope.time);
 
@@ -1735,6 +1728,7 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 	    $scope.total_items       = stastic.total_items;
 	    $scope.total_amounts     = stastic.total_amounts;
 	    $scope.total_spay        = stastic.total_spay;
+	    $scope.total_rpay        = stastic.total_rpay;
 	    // $scope.total_hpay        = stastic.total_hpay;
 	    $scope.total_cash        = stastic.total_cash;
 	    $scope.total_card        = stastic.total_card;
@@ -1774,8 +1768,8 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 		if (page === 1 && angular.isUndefined(back_page)){
 		    $scope.total_items       = result.total;
 		    $scope.total_amounts     = result.t_amount;
-		    $scope.total_spay        = $scope.round(result.t_spay);
-		    // $scope.total_hpay        = $scope.round(result.t_hpay);
+		    $scope.total_spay        = result.t_spay;
+		    $scope.total_rpay        = result.t_rpay;
 		    $scope.total_cash        = result.t_cash;
 		    $scope.total_card        = result.t_card;
 		    $scope.total_withdraw    = result.t_withdraw;
@@ -1784,8 +1778,7 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 		    $scope.records = [];
 		}
 		
-		// console.log($scope);
-
+		// console.log($scope); 
 		angular.forEach(result.data, function(d){
 		    d.shop     = diablo_get_object(d.shop_id, $scope.shops);
 		    d.employee =
@@ -1793,11 +1786,11 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 		    d.retailer =
 			diablo_get_object(d.retailer_id, filterRetailer);
 
-		    d.left_balance = d.balance - d.withdraw;
+		    // charge
+		    d.left_balance = d.balance - d.withdraw; 
 		    if (d.type === diablo_charge){
 			d.left_balance += d.cbalance + d.sbalance;
-		    }
-			
+		    } 
 		});
 
 		if ($scope.sequence_pagination === diablo_no){
@@ -1840,7 +1833,7 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 	    {total_items:       $scope.total_items,
 	     total_amounts:     $scope.total_amounts,
 	     total_spay:        $scope.total_spay,
-	     // total_hpay:        $scope.total_hpay,
+	     total_rpay:        $scope.total_rpay,
 	     total_cash:        $scope.total_cash,
 	     total_card:        $scope.total_card,
 	     total_withdraw:    $scope.total_withdraw,

@@ -307,6 +307,7 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 	    balance:       setv($scope.select.surplus),
 	    should_pay:    setv($scope.select.rcharge),
 	    withdraw:      setv($scope.select.withdraw),
+	    verificate:    $scope.select.verificate,
 	    direct:        wsaleService.direct.wreject,
 	    total:         seti($scope.select.rtotal),
 	    score:         $scope.select.rscore
@@ -373,7 +374,8 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 	    $scope.inventories,
 	    $scope.select.has_pay,
 	    $scope.show_promotions,
-	    diablo_reject);
+	    diablo_reject,
+	    $scope.select.verificate);
 	
 	console.log(calc);
 	

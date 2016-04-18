@@ -129,10 +129,13 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
     Verificate = ?v(<<"verificate">>, Props, 0),
     
     ShouldPay  = ?v(<<"should_pay">>, Props, 0),
+    %% Charge     = ?v(<<"charge">>, Props, 0),
     Total      = ?v(<<"total">>, Props, 0),
     %% LastScore  = ?v(<<"last_score">>, Props, 0),
     Score      = ?v(<<"score">>, Props, 0),
 
+    RPay       = ShouldPay,
+    
     Sql0 = "select id, name, balance, score from w_retailer"
 	" where id=" ++ ?to_s(Retailer)
 	++ " and merchant=" ++ ?to_s(Merchant)
@@ -156,13 +159,13 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 	    CurrentBalance = retailer(balance, Account), 
 	    CurrentScore = retailer(score, Account),
 
-	    NewCash = case Cash >= ShouldPay of
-			  true  -> ShouldPay;
+	    NewCash = case Cash >= RPay of
+			  true  -> RPay;
 			  false -> Cash
 		      end,
 
-	    NewCard = case Card >=  ShouldPay - NewCash of
-			  true  -> ShouldPay - NewCash;
+	    NewCard = case Card >= RPay - NewCash of
+			  true  -> RPay - NewCash;
 			  false -> Card
 		      end,
 
@@ -245,6 +248,7 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
     Cash       = ?v(<<"cash">>, Props, 0),
     Card       = ?v(<<"card">>, Props, 0),
     Withdraw   = ?v(<<"withdraw">>, Props, 0),
+    %% Verificate = ?v(<<"verificate">>, Props, 0),
 
     Comment    = ?v(<<"comment">>, Props),
     ShouldPay  = ?v(<<"should_pay">>, Props, 0),
@@ -257,22 +261,22 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
     OldScore     = ?v(<<"old_score">>, Props, 0),
 
     Total        = ?v(<<"total">>, Props),
-    Score        = ?v(<<"score">>, Props, 0),
-
+    Score        = ?v(<<"score">>, Props, 0), 
+    RPay         = ShouldPay, 
     RealyShop    = realy_shop(Merchant, Shop),
 
     Sql1 = sql(update_wsale,
 	       RSN, Merchant, RealyShop, Datetime, OldDatetime, Inventories),
     
-    NewCash = case Cash >= ShouldPay of
-		  true  -> ShouldPay;
+    NewCash = case Cash >= RPay of
+		  true  -> RPay;
 		  false -> Cash
 	      end,
 
-    NewCard = case Card >=  ShouldPay - NewCash of
-		  true  -> ShouldPay - NewCash;
+    NewCard = case Card >=  RPay - NewCash of
+		  true  -> RPay - NewCash;
 		  false -> Card
-	      end, 
+	      end,
 
     Updates = ?utils:v(employ, integer, Employee)
 	++ ?utils:v(retailer, integer, Retailer) 
@@ -296,8 +300,7 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
 		++ ?utils:to_sqls(
 		      proplists, comma,
 		      ?utils:v(balance, float, OldBalance) ++ Updates)
-		++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'",
-
+		++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'", 
 	    ?DEBUG("Sql2 ~p", [Sql2]),
 
 	    case OldWithdraw - Withdraw of
@@ -591,16 +594,18 @@ handle_call({trans_detail, Merchant, Conditions}, _From, State) ->
 	" select a.id, a.rsn, a.style_number, a.brand_id, a.type_id"
 	", a.s_group, a.free, a.season, a.firm_id, a.year"
 	", a.total, a.pid, a.sid, a.org_price, a.tag_price, a.fdiscount"
-	", a.rdiscount, a.fprice, a.rprice, a.path"
+	", a.rdiscount, a.fprice, a.rprice, a.path, a.comment"
 	
 	", b.color as color_id"
-	", b.size, b.total as amount"
+	", b.size"
+	", b.total as amount"
 	
 	" from " 
 	"(select id, rsn, style_number, brand as brand_id, type as type_id"
 	", s_group, free, season, firm as firm_id, year"
 	", total, promotion as pid, score as sid"
-	", org_price, tag_price, fdiscount, rdiscount, fprice, rprice, path"
+	", org_price, tag_price, fdiscount, rdiscount, fprice, rprice"
+	", path, comment"
 	" from w_sale_detail"
 	" where " ++ ?utils:to_sqls(proplists, Conditions) ++ ") a"
 
@@ -644,6 +649,7 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
     Comment    = ?v(<<"comment">>, Props, ""),
     ShouldPay  = ?v(<<"should_pay">>, Props, 0),
     Withdraw   = ?v(<<"withdraw">>, Props, 0),
+    Verificate = ?v(<<"verificate">>, Props, 0),
     Total      = ?v(<<"total">>, Props, 0),
     Score      = ?v(<<"score">>, Props, 0),
     
@@ -691,7 +697,7 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 
 	    Sql2 = "insert into w_sale(rsn"
 		", employ, retailer, shop, merchant, balance"
-		", should_pay, cash, withdraw, total, score"
+		", should_pay, cash, withdraw, verificate, total, score"
 		", comment, type, entry_date) values("
 		++ "\"" ++ ?to_s(Sn) ++ "\","
 		++ ?to_s(Employe) ++ ","
@@ -704,7 +710,8 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 		       true  -> ?to_s(0) ++ ",";
 		       false -> ?to_s((Withdraw - ShouldPay)) ++ ","
 		   end
-		++ ?to_s(-Withdraw) ++ "," 
+		++ ?to_s(-Withdraw) ++ ","
+		++ ?to_s(-Verificate) ++ ","
 		++ ?to_s(-Total) ++ ","
 		++ ?to_s(-Score) ++ ","
 		++ "\"" ++ ?to_s(Comment) ++ "\"," 
@@ -1483,8 +1490,8 @@ count_table(w_sale, Merchant, Conditions) ->
 
     CountSql = "select count(*) as total"
     	", sum(a.total) as t_amount"
-    	", sum(a.should_pay) as t_spay"
-	%% ", sum(a.has_pay) as t_hpay"
+    	", sum(a.should_pay + a.verificate) as t_spay"
+	", sum(a.should_pay) as t_rpay"
     	", sum(a.cash) as t_cash"
     	", sum(a.card) as t_card"
 	", sum(a.withdraw) as t_withdraw"
@@ -1523,7 +1530,7 @@ filter_table(w_sale_with_page,
     	", a.retailer as retailer_id, a.shop as shop_id"
     	", a.promotion as pid, a.charge as cid"
 	
-	", a.balance, a.should_pay, a.cash, a.card, a.withdraw"
+	", a.balance, a.should_pay, a.cash, a.card, a.withdraw, a.verificate"
 	", a.cbalance, a.sbalance, a.total, a.score"
 	
 	", a.comment, a.type, a.state, a.entry_date"

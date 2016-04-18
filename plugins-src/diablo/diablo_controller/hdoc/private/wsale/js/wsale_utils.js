@@ -5,11 +5,11 @@ var wsaleUtils = function(){
 		&& sell.brand_id   === sorts[i].brand_id){
 
 		// sorts[i].total += sell.sell;
-		sorts[i].reject += sell.amount;
+		sorts[i].reject += Math.abs(sell.amount);
 		sorts[i].amounts.push({
 		    cid        :sell.color_id,
 		    size       :sell.size,
-		    sell_count :sell.amount});
+		    sell_count :Math.abs(sell.amount)});
 		return true;
 	    } 
 	}
@@ -27,7 +27,7 @@ var wsaleUtils = function(){
 	select.employee_id     = base.employ_id; 
 	
 	select.surplus    = base.balance;
-	select.verificate = base.verificate; 
+	select.verificate = Math.abs(base.verificate); 
 	select.cash       = Math.abs(base.cash);
 	select.card       = Math.abs(base.card);
 	select.withdraw   = Math.abs(base.withdraw);
@@ -67,8 +67,8 @@ var wsaleUtils = function(){
 		add.o_fdiscount = s.fdiscount;
 		add.o_fprice    = s.fprice;
 		
-		add.reject    = s.amount;
-		add.total     = s.total;
+		add.reject    = Math.abs(s.amount);
+		add.total     = Math.abs(s.total);
 		
 		add.pid       = s.pid;
 		add.sid       = s.sid;
@@ -79,7 +79,7 @@ var wsaleUtils = function(){
 		add.amounts.push({
 		    cid: s.color_id,
 		    size:s.size,
-		    sell_count:s.amount});
+		    sell_count:Math.abs(s.amount)});
 
 		sorts.push(add);
 	    }
@@ -247,6 +247,11 @@ var wsaleUtils = function(){
 		"ptype", shop, base, parseInt, diablo_backend);
 	},
 
+	sequence_pagination: function(shop, base){
+	    return diablo_base_setting(
+		"se_pagination", shop, base, parseInt, diablo_no);
+	},
+
 	sort_amount: function(invs, amounts, colors){
 	    var select_amounts = [];
 	    var used_colors = [];
@@ -271,9 +276,13 @@ var wsaleUtils = function(){
 		    var s = amounts[j];
 		    if (inv.color_id === s.cid && inv.size === s.size){
 			// amount.old_reject = s.reject;
-			total += Math.abs(s.sell_count);
-			amount.count += Math.abs(s.sell_count);
-			amount.sell_count = Math.abs(s.sell_count); 
+			var sell_count = diablo_set_integer(s.sell_count);
+			if (angular.isDefined(sell_count)){
+			    total += Math.abs(s.sell_count);
+			    amount.count += Math.abs(s.sell_count);
+			    amount.sell_count = Math.abs(s.sell_count); 
+			}
+			
 			break;
 		    }
 		}
@@ -339,7 +348,11 @@ var wsaleUtils = function(){
 		// }
 
 		if (p.rule_id === 1){
-		    rbalance += Math.floor(pmoneys[i].money / p.cmoney) *  p.rmoney;
+		    if (pmoneys[i].money >= 0){
+			rbalance += Math.floor(pmoneys[i].money / p.cmoney) *  p.rmoney; 
+		    } else {
+			rbalance += Math.ceil(pmoneys[i].money / p.cmoney) *  p.rmoney; 
+		    }
 		    continue;
 		}
 	    }
@@ -349,9 +362,8 @@ var wsaleUtils = function(){
 
 	calc_discount_of_rmoney: function(discount, promotion, pmoneys){
 	    // var r = {};
-	    if (promotion.rule_id !==1 ){
-	    	return discount;
-		// return promotion.discount;
+	    if (promotion.rule_id === 0 ){
+		    return diablo_full_discount; 
 	    } else {
 		var balance = 0;
 		var total_balance = 0;
@@ -360,27 +372,37 @@ var wsaleUtils = function(){
 		for ( var i=0, l=pmoneys.length; i<l; i++ ){
 		    var p = pmoneys[i].p; 
 		    if (p.rule_id === 1 && promotion.id === p.id){
-			rmoney = Math.floor(pmoneys[i].money / p.cmoney) * p.rmoney;
+			if (pmoneys[i].money >= 0){
+			    rmoney = Math.floor(pmoneys[i].money / p.cmoney) * p.rmoney; 
+			} else {
+			    rmoney = Math.ceil(pmoneys[i].money / p.cmoney) * p.rmoney; 
+			}
 			total_balance += pmoneys[i].money;
 			balance += pmoneys[i].money - rmoney;
 		    }
 		}
 		console.log(total_balance, balance, rmoney);
-		if (rmoney > 0 ){
+		if (rmoney !== 0 ){
 		    return diablo_discount(balance, total_balance);
 		} else {
-		    return discount;
+		    return diablo_full_discount;
 		}
 	    } 
 	},
 
-	calc_with_score: function(pscores){
-	    var score = 0;
-	    for ( var i=0, l=pscores.length; i<l; i++){
-		var s = pscores[i];
-		score += Math.floor(s.money / s.score.balance) * s.score.score; 
-	    } 
-	    return diablo_round(score);
+	calc_with_score: function(pscores, verificate){
+	    console.log(pscores, verificate);
+	    var score = 0; 
+	    if (pscores.length > 0){
+		var s = pscores[0];
+		score = Math.floor((diablo_round(s.money) - verificate) / s.score.balance) * s.score.score; 
+		for ( var i=1, l=pscores.length; i<l; i++){
+		    s = pscores[i];
+		    score += Math.floor(diablo_round(s.money) / s.score.balance) * s.score.score; 
+		} 
+	    }
+	    
+	    return score;
 	},
 
 	calc_score_of_money: function(money, score){
@@ -395,7 +417,7 @@ var wsaleUtils = function(){
 
 var wsaleCalc = function(){
     return {
-	calculate: function(o_retailer, retailer, inventories, has_pay, show_promotions, mode){
+	calculate: function(o_retailer, retailer, inventories, has_pay, show_promotions, mode, verificate){
 	    var total        = 0;
 	    var abs_total    = 0;
 	    var should_pay   = 0;
@@ -406,9 +428,8 @@ var wsaleCalc = function(){
 	    var pscores = []; 
 	    for (var i=1, l=inventories.length; i<l; i++){
 		var one = inventories[i];
-		// console.log(one);
-		one.calc = 0;
-		var count = mode === 0 ? one.sell : one.reject;
+		var count = (mode === 0 ? one.sell : one.reject);
+		console.log(count);
 		
 		total      += parseInt(count);
 		abs_total  += Math.abs(parseInt(count));
@@ -427,7 +448,6 @@ var wsaleCalc = function(){
 		    }
 		}
 		
-		
 		if (one.o_fprice !== one.fprice){
 		    one.fdiscount = diablo_discount(one.fprice, one.tag_price);
 		} else if (one.o_fdiscount !== one.fdiscount){
@@ -436,9 +456,9 @@ var wsaleCalc = function(){
 
 		one.o_fprice    = one.fprice;
 		one.o_fdiscount = one.fdiscount;
-		one.rdiscount   = one.fdiscount;
+		one.rdiscount   = diablo_full_discount;
 		one.rprice      = one.fprice;
-		one.calc = diablo_float_mul(one.fprice, count);
+		one.calc        = diablo_float_mul(one.fprice, count);
 		
 		if (one.pid === -1 || retailer.type_id === diablo_sys_retailer){
 		    wsaleUtils.sort_promotion({id: -1, rule_id: -1}, one.calc, pmoneys);
@@ -447,7 +467,7 @@ var wsaleCalc = function(){
 		    wsaleUtils.sort_promotion(one.promotion, one.calc, pmoneys);
 		    wsaleUtils.format_promotion(one, show_promotions);
 		} 
-		console.log(one); 
+		console.log(one.calc); 
 	    }
 	    
 	    console.log(pmoneys);
@@ -455,36 +475,62 @@ var wsaleCalc = function(){
 	    // calculate rmoney, all the promotion change to discount
 	    for (var i=1, l=inventories.length; i<l; i++){
 		var one = inventories[i];
+
+		var count = (mode === 0 ? one.sell : one.reject);
+		
 		if (one.pid !== -1 && retailer.type_id !== diablo_sys_retailer){
-		    one.rdiscount = wsaleUtils.calc_discount_of_rmoney(one.fdiscount, one.promotion, pmoneys);
+		    one.rdiscount = wsaleUtils.calc_discount_of_rmoney(
+			one.fdiscount, one.promotion, pmoneys); 
 		    if (one.fdiscount !== one.rdiscount){
 			one.rprice  = diablo_price(one.fprice, one.rdiscount);
+			console.log(one.rprice);
 			one.calc    = diablo_float_mul(one.rprice, count);
-		    } 
-		    
+		    }		    
 		    wsaleUtils.sort_score(one.score, one.promotion, one.calc, pscores);
 		}
 		
-		console.log(one);
+		console.log(one.calc);
 	    }
 
-	    console.log(pscores);
-	    var calc_p = wsaleUtils.calc_with_promotion(pmoneys);
-	    should_pay = calc_p.balance;
+	    // calcuate with verificate
+	    wsaleCalc.calc_discount_of_verificate(inventories, mode, verificate); 
 	    
-	    score  = wsaleUtils.calc_with_score(pscores); 
+	    var calc_p = wsaleUtils.calc_with_promotion(pmoneys);
+	    should_pay = calc_p.balance; 
+	    score  = wsaleUtils.calc_with_score(pscores, verificate); 
 	    // charge = should_pay - has_pay;
 
 	    return {
 		total:      total,
 		abs_total:  abs_total,
-		should_pay: should_pay,
+		should_pay: should_pay - verificate,
 		score:      score,
-		should_pay: should_pay,
 		rbalance:   calc_p.rbalance
 		// charge:     charge 
-	    };
+	    }; 
+	},
 
+	calc_discount_of_verificate: function(inventories, mode, verificate){
+	    if (!angular.isDefined(verificate) || !verificate){
+		return;
+	    }
+	    
+	    var p1 = 0;
+	    for (var i=1, l=inventories.length; i<l; i++){
+		var one = inventories[i];
+		var count = mode === 0 ? one.sell : one.reject;
+		p1 += diablo_float_mul(one.fprice, count);
+	    }
+
+	    var vdiscount = diablo_discount(verificate, p1);
+	    for (var i=1, l=inventories.length; i<l; i++){
+		var one = inventories[i];
+		var count = mode === 0 ? one.sell : one.reject;
+		
+		one.rdiscount = diablo_float_sub(one.rdiscount, vdiscount);
+		one.rprice  = diablo_price(one.fprice, one.rdiscount);
+		one.calc    = diablo_float_mul(one.rprice, count);
+	    }
 	}
     }
 }();

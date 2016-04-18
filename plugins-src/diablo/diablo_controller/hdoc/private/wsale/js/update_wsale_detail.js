@@ -56,7 +56,8 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	    $scope.inventories,
 	    $scope.select.has_pay,
 	    $scope.show_promotions,
-	    diablo_reject);
+	    diablo_reject,
+	    $scope.select.verificate);
 
 	console.log(calc);
 	
@@ -73,10 +74,6 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	} else {
 	    $scope.select.charge = $scope.select.should_pay - $scope.select.has_pay; 
 	}
-
-	$scope.select.charge -= $scope.select.verificate;
-
-	// console.log($scope.select);
     };
     
     $scope.change_retailer = function(){
@@ -122,9 +119,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 
 	    $scope.show_promotions = wsale.show_promotions;
 
-	    // setting
-	    $scope.setting.round = wsaleUtils.get_round(
-		$scope.select.shop.id, $scope.base_settings); 
+	    // setting 
 	    $scope.setting.check_sale = wsaleUtils.check_sale(
 		$scope.select.shop.id, $scope.base_settings);
 
@@ -160,7 +155,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	add.pid          = src.pid;
 	add.promotion    = diablo_get_object(src.pid, $scope.promotions);
 	add.sid          = src.sid;
-	add.score        = diablo_get_object(src.pid, $scope.scores);
+	add.score        = diablo_get_object(src.sid, $scope.scores);
 
 	add.org_price    = add.org_price;
 	add.tag_price    = src.tag_price; 
@@ -392,7 +387,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 		type           : add.type.id,
 		// type_name   : add.type,
 		firm           : add.firm_id,
-		sex            : add.sex,
+		// sex            : add.sex,
 		season         : add.season,
 		year           : add.year,
 		changed_amount : add.changed_amounts,
@@ -445,6 +440,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	    cash:          setv($scope.select.cash),
 	    card:          setv($scope.select.card),
 	    withdraw:      setv($scope.select.withdraw),
+	    verificate:    setv($scope.select.verificate),
 	    should_pay:    setv($scope.select.should_pay),
 	    comment:       sets($scope.select.comment),
 
@@ -532,15 +528,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	if(angular.isDefined(withdraw)){
 	    $scope.select.has_pay += parseFloat($scope.select.withdraw);
 	    $scope.select.left_balance = $scope.select.surplus - $scope.select.withdraw
-	}
-	
-	
-	// if(angular.isDefined(withdraw)){
-	//     $scope.select.has_pay += parseFloat($scope.select.withdraw);
-	//     $scope.select.left_balance = $scope.select.surplus - $scope.select.withdraw
-	// } else {
-	//     $scope.select.left_balance = $scope.select.surplus;
-	// } 
+	} 
 
 	// back
 	if ($scope.select.withdraw > $scope.select.should_pay){
@@ -551,8 +539,6 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	} else {
 	    $scope.select.charge = $scope.select.should_pay - $scope.select.has_pay; 
 	}
-
-	$scope.select.charge -= $scope.select.verificate;
     };
     
     $scope.$watch("select.cash", function(newValue, oldValue){
@@ -757,10 +743,9 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 			// oreder
 			inv.order_id = $scope.inventories.length; 
 			// add new line
-			$scope.inventories.unshift({$edit:false, $new:true});
-
-			wsaleUtils.format_promotion(
-			    inv, $scope.show_promotions);
+			$scope.inventories.unshift({$edit:false, $new:true}); 
+			wsaleUtils.format_promotion(inv, $scope.show_promotions);
+			
 			$scope.re_calculate(); 
 		    };
 		    

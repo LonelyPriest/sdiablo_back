@@ -4,8 +4,9 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
     user, filterPromotion, filterScore, filterRetailer, filterEmployee,
     filterSizeGroup, filterBrand, filterColor, filterType, base){
     // console.log(base);
-    // console.log(user); 
-    $scope.shops           = user.sortBadRepoes.concat(user.sortShops);
+    // console.log(user);
+    // console.log(filterScore);
+    $scope.shops         = user.sortBadRepoes.concat(user.sortShops);
     $scope.promotions    = filterPromotion;
     $scope.scores        = filterScore;
     
@@ -26,9 +27,7 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
     $scope.get_object      = diablo_get_object;
     $scope.round           = diablo_round;
     
-    $scope.setting         = {q_backend   :true,
-			      check_sale  :true,
-			      round       :diablo_round_record};
+    $scope.setting         = {q_backend:true, check_sale:true};
 
     $scope.pattern         = {discount:diabloPattern.discount,
 			      positive_num:diabloPattern.positive_num,
@@ -40,12 +39,10 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 	diablo_goto_page("#/new_wsale_detail/" + $routeParams.ppage);
     };
     
-    
     $scope.select      = {}; 
     $scope.change_retailer = function(){
 	$scope.select.surplus = parseFloat($scope.select.retailer.balance);
 	$scope.re_calculate();
-	// $scope.refresh();
     };
     
     // calender
@@ -67,8 +64,7 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 	    // result[0] is the record detail
 	    // result[1] are the inventory detail that the record is included
 	    var base        = result.sale;
-	    var sells       = result.detail;
-
+	    var sells       = result.detail; 
 	    var wsale = wsaleUtils.cover_wsale(
 		base,
 		sells,
@@ -83,22 +79,20 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 		$scope.scores);
 
 	    console.log(wsale);
+
+	    $scope.show_promotions = wsale.show_promotions;
 	    
 	    $scope.old_select = wsale.select;
 	    $scope.select = angular.extend($scope.select, wsale.select);
 
-	    $scope.show_promotions = wsale.show_promotions;
-	    // setting
-	    $scope.setting.round = wsaleUtils.get_round(
-		$scope.select.shop.id, $scope.base_settings); 
+	    $scope.select.has_pay = $scope.select.cash
+		+ $scope.select.card + $scope.select.withdraw; 
+	    // $scope.select.left_balance = $scope.select.surplus;
+	    
+	    // setting 
 	    $scope.setting.check_sale = wsaleUtils.check_sale(
-		$scope.select.shop.id, $scope.base_settings);
-
-	    // balance
-	    // $scope.select.left_balance =
-	    // 	$scope.select.surplus - $scope.select.withdraw; 
-	    // console.log($scope.select);
-
+	    	$scope.select.shop.id, $scope.base_settings);
+	    
 	    // inventory
 	    $scope.old_inventories = wsale.details;
 	    $scope.inventories = angular.copy(wsale.details);
@@ -120,18 +114,23 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 	// console.log(src);
 	add.id           = src.id;
 	add.style_number = src.style_number;
+	add.brand_id     = src.brand_id;
 	add.brand        = $scope.get_object(src.brand_id, $scope.brands);
+	add.type_id      = src.type_id;
 	add.type         = $scope.get_object(src.type_id, $scope.types); 
 	add.firm_id      = src.firm_id;
 	add.sex          = src.sex;
 	add.season       = src.season;
 	add.year         = src.year;
 
-	// add.org_price    = src.org_price;
-	add.tag_price    = src.tag_price; 
-	add.discount     = src.discount;
-	// add.alarm_day    = src.alarm_day;
+	add.pid          = src.pid;
+	add.promotion    = diablo_get_object(src.pid, $scope.promotions);
+	add.sid          = src.sid;
+	add.score        = diablo_get_object(src.sid, $scope.scores);
 	
+	add.org_price    = src.org_price;
+	add.tag_price    = src.tag_price; 
+	add.discount     = src.discount; 
 	add.path         = src.path;
 	add.s_group      = src.s_group;
 	add.free         = src.free;
@@ -139,8 +138,6 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
     };
     
     $scope.on_select_good = function(item, model, label){
-	// console.log(item);
-
 	// one good can be add only once at the same time
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    if (item.style_number === $scope.inventories[i].style_number
@@ -262,16 +259,14 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 			    return true;
 			}
 		    });
-		    var change_amouts = get_update_amount(
-			sort_amounts, oldInv.amounts);
+		    var change_amouts = get_update_amount(sort_amounts, oldInv.amounts);
 		    if (change_amouts.length !== 0){
 			newInv.operation = 'u'; 
 			newInv.changed_amounts = change_amouts;
 			changedInvs.push(newInv);
 		    } else {
 			if (parseFloat(newInv.fprice) !== oldInv.fprice
-			    || parseFloat(newInv.fdiscount)
-			    !== oldInv.fdiscount){
+			    || parseFloat(newInv.fdiscount) !== oldInv.fdiscount){
 			    newInv.operation = 'u';
 			    changedInvs.push(newInv);
 			}
@@ -326,25 +321,13 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 	for(var i=0, l=updates.length; i<l; i++){
 	    var add = updates[i];
 	    added.push({
-		// id             : add.id,
 		style_number   : add.style_number,
 		brand          : add.brand.id,
-		// brand_name     : add.brand,
 		type           : add.type.id,
-		// type_name   : add.type,
 		firm           : add.firm_id,
 		// sex            : add.sex,
 		season         : add.season,
-		year           : add.year,
-		s_group        : add.s_group,
-		free           : add.free,
-		path           : add.path,
-
-		// org_price      : add.org_price,
-		// tag_price      : add.tag_price, 
-		// discount       : add.discount,
-		// alarm_day      : add.alarm_day,
-		
+		year           : add.year, 
 		changed_amount : add.changed_amounts,
 		operation      : add.operation,
 		amount         : function(){
@@ -361,9 +344,20 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 				    sell_count: -parseInt(m.sell_count)};
 			}); 
 		    }}(),
+
+		promotion      : add.pid,
+		score          : add.sid,
 		
-		fdiscount      : parseInt(add.fdiscount),
-		fprice         : parseFloat(add.fprice) 
+		org_price      : add.org_price,
+		tag_price      : add.tag_price,
+		fdiscount      : add.fdiscount,
+		rdiscount      : add.rdiscount,
+		fprice         : add.fprice,
+		rprice         : add.rprice,
+		path           : add.path, 
+
+		s_group        : add.s_group,
+		free           : add.free
 	    })
 	};
 	
@@ -376,8 +370,7 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 	    rsn :           $scope.select.rsn,
 	    retailer:       $scope.select.retailer.id,
 	    shop:           $scope.select.shop.id,
-	    datetime:       dateFilter($scope.select.rsn_datetime,
-				       "yyyy-MM-dd HH:mm:ss"),
+	    datetime:       dateFilter($scope.select.rsn_datetime, "yyyy-MM-dd HH:mm:ss"),
 	    employee:       $scope.select.employee.id,
 	    
 	    balance:        parseFloat($scope.select.surplus), 
@@ -398,6 +391,7 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 	console.log(added);
 	console.log(base);
 
+	return;
 	// console.log($scope.old_select);
 	if ($scope.select.shop.id !== $scope.old_select.shop.id){
 	    dialog.response_with_callback(
@@ -471,66 +465,25 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 	$scope.select.abs_total    = 0;
 	$scope.select.should_pay   = 0;
 	$scope.select.score        = 0;
-
-	var pmoneys = []; 
-	var pscores = [];
 	
-	for (var i=1, l=$scope.inventories.length; i<l; i++){
-	    var one = $scope.inventories[i]; 
-	    one.calc = 0; 
-	    $scope.select.total += parseInt(one.reject);
-	    $scope.select.abs_total  += Math.abs(parseInt(one.reject));
-	    
-	    if ($scope.setting.round === diablo_round_row){
-		if (one.pid === -1){
-		    one.calc = $scope.round(
-			one.fprice * one.fdiscount * 0.01 * one.reject); 
-		} else {
-		    one.calc = $scope.round(one.fprice * one.reject); 
-		} 
-	    } else {
-		if (one.pid === -1){
-		    one.calc = $scope.f_mul(
-			one.fprice,
-			$scope.f_mul(one.fdiscount,
-				     $scope.f_mul(0.01, one.reject))); 
-		} else {
-		    one.calc = $scope.f_mul(one.fprice, one.reject);
-		} 
-	    }
+	var calc = wsaleCalc.calculate(
+	    $scope.old_select.retailer,
+	    $scope.select.retailer,
+	    $scope.inventories,
+	    $scope.select.has_pay,
+	    $scope.show_promotions,
+	    diablo_reject,
+	    $scope.select.verificate);
 
-	    if (one.pid === -1){
-		wsaleUtils.sort_promotion(
-		    {id: -1, rule_id: -1}, Math.abs(one.calc), pmoneys);
-	    } else {
-		wsaleUtils.sort_promotion(
-		    one.promotion, Math.abs(one.calc), pmoneys);
-	    }
+	$scope.select.total     = calc.total; 
+	$scope.select.abs_total = calc.abs_total;
+	$scope.select.should_pay= calc.should_pay;
+	$scope.select.score     = calc.score;
 
-	    if (one.sid !== -1){
-		wsaleUtils.sort_score(
-		    one.score, one.promotion, Math.abs(one.calc), pscores)
-		// format_score(one.score, one.promotion, one.calc);
-	    }
-	}
-
-	console.log(pmoneys);
-	console.log(pscores); 
+	// back to retailer
+	$scope.select.left_balance =
+	    $scope.select.surplus - $scope.select.withdraw; 
 	
-	$scope.select.should_pay = wsaleUtils.calc_with_promotion(pmoneys);
-	$scope.select.score = wsaleUtils.calc_with_score(pscores);
-
-	if ($scope.select.withdraw > $scope.select.should_pay){
-	    $scope.select.left_balance =
-		$scope.select.surplus - $scope.select.should_pay;
-	    $scope.select.withdraw = $scope.select.should_pay;
-
-	    $scope.select.charge = -($scope.select.cash + $scope.select.card);
-	} else {
-	    $scope.select.charge =
-		$scope.select.should_pay - $scope.select.has_pay; 
-	}
-
 	console.log($scope.select);
     }; 
 
@@ -576,8 +529,7 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
     };
     
     $scope.add_inventory = function(inv){
-	// console.log(inv);
-
+	// console.log(inv); 
 	if ($scope.setting.check_sale === diablo_no
 	    && $scope.setting.trace_price === diablo_no
 	    && inv.free === 0){

@@ -2,6 +2,8 @@
 var diablo_delay = 1000; //ms
 var diablo_delay_300ms = 300;
 
+var diablo_full_discount = 100;
+
 var diablo_yes = 1;
 var diablo_no = 0;
 

@@ -30,6 +30,8 @@
 	  <div class="row diablo-form-group">
 	    <div class="col-xs-3 col-md-3 ">
 	      <div class="input-group">
+		<span class="input-group-addon">
+	  	  <i class="icon-user fg-red"></i></span>
 	  	<input class="form-control"
 		       type="text"
 		       readonly
@@ -38,19 +40,7 @@
 	  	       typeahead-editable="false"
 		       typeahead-on-select="change_retailer()"
 	  	       typeahead="r as r.name for r in
-	  			  retailers|filter:$viewValue|limitTo:8"/>
-	  	<!-- <span class="input-group-btn"> -->
-	  	<!--   <button class="btn btn-success" -->
-	  	<!-- 	  x-ng-click="add_retailer()"> -->
-		<!--     <i class="glyphicon glyphicon-plus"></i></button>  -->
-	  	<!-- </span> -->
-		
-		<span class="input-group-btn">
-		  <button class="btn default fg-red"
-			  x-ng-disabled="!select.retailer"
-	  		  x-ng-click="select.retailer=undefined">
-		    <i class="glyphicon glyphicon-pushpin"></i></button>
-		</span>
+	  			  retailers|filter:$viewValue|limitTo:8"/> 
 	      </div>
 	    </div>
 
@@ -255,14 +245,11 @@
 		    <th class="text-center">序号</th>
 		    <th class="text-center">货号</th>
 		    <th class="text-center">品名</th>
-		    <th x-ng-if="setting.check_sale"
-			class="text-center">库存
-		    </th>
-		    
-		    <th class="text-center">单价</th>
+		    <th class="text-center">吊牌价</th> 
 		    <th class="text-center">折扣</th> 
-		    <th class="text-center">售价</th> 
-		    <th class="text-center">数量</th>
+		    <th class="text-center">单价</th>
+		    <th class="text-center">数量</th> 
+		    <th class="text-center">成交价</th> 
 		    <th class="text-center">折扣率</th>
 		    <th class="text-center">合计</th>
 		    <th class="text-center">操作</th>
@@ -297,10 +284,8 @@
 		    
 		    <!-- <td>{{inv.style_number}}</td> -->
 		    <td class="vert-align">{{inv.brand.name}}</td>
-		    <td x-ng-if="setting.check_sale" class="vert-align">{{inv.total}}</td> 
-
-		    <td class="col-md-1 vert-align">{{inv.tag_price}}</td>
-
+		    
+		    <td class="col-md-1 vert-align">{{inv.tag_price}}</td> 
 		    <td class="col-md-1 vert-align">
 		      <div ng-if="!inv.$new && !inv.free_update">{{inv.fdiscount}}</div> 
 		      <form name="inv.form.fdiscount"
@@ -338,13 +323,9 @@
 		      </form>
 		    </td>
 		    
-		    <!-- <td class="vert-align">{{inv.total}}</td> -->
-
 		    <!-- sell count-->
 		    <td class="col-md-1 vert-align">
-		      <div ng-if="!inv.$new && !inv.free_update">
-			{{inv.reject}}
-		      </div>
+		      <div ng-if="!inv.$new && !inv.free_update">{{inv.reject}}</div>
 		      <form name="inv.form.sell"
 			    ng-if="inv.$new && inv.free_color_size
 				   || !inv.$new && inv.free_update">
@@ -355,15 +336,13 @@
 				 placeholder="数量"
 				 required
 				 x-ng-pattern="/^[+|\-]?[1-9][0-9]*$/"
-				 x-ng-model="inv.reject"
-				 popover-placement="top"
-				 popover-trigger="focus"
-				 popover="均色均码直接输入数量">
+				 x-ng-model="inv.reject" />
 			</div>
 		      </form>
 		    </td>
 
-		    <td class="vert-align">{{inv.rdiscount}}</td> 
+		    <td class="vert-align"><span class="fg-red">{{inv.rprice}}<span></td> 
+		    <td class="vert-align"><span class="fg-red">{{inv.rdiscount}}</span></td> 
 		    <td class="vert-align">{{inv.calc}}</td>
 		    
 		    <td class="text-left vert-align">
@@ -425,8 +404,9 @@
 		  </tr>
 
 		  <tr class="text-center">
-		    <td colspan="7"></td>
+		    <td colspan="6"></td>
 		    <td class="vert-align">{{select.abs_total}}</td>
+		    <td></td>
 		    <td></td>
 		    <td class="vert-align">{{select.should_pay}}</td>
 		    <td></td>
