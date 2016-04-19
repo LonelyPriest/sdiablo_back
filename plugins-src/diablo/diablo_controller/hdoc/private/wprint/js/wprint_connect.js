@@ -39,11 +39,11 @@ wprintApp.controller("printerConnectNewCtrl", function(
 
     // merchant
     $scope.merchants = []; 
-    merchantService.list().$promise.then(function(merchants){
+    wprintService.list_merchant().then(function(merchants){
     	console.log(merchants);
-	angular.forEach(merchants, function(m){
-	    $scope.merchants.push({id:m.id, name:m.name, py:diablo_pinyin(m.name)});
-	})
+	$scope.merchants = merchants.map(merchants, function(m){
+	    return {id:m.id, name:m.name, py:diablo_pinyin(m.name)}
+	}) 
     });
 
     $scope.shops = [];

@@ -159,12 +159,12 @@ init([]) ->
 	 {?update_repo, <<"修改仓库">>, <<"update_repo">>, ?right_shop},
 	 {?list_repo,   <<"查询仓库">>, <<"list_repo">>,   ?right_shop},
 	 
-	 {?new_badrepo, <<"新增次品仓">>, <<"new_badrepo">>, ?right_shop},
-	 {?del_badrepo, <<"删除次品仓">>, <<"del_badrepo">>, ?right_shop},
-	 {?update_badrepo,
-	  <<"修改次品仓">>, <<"update_badrepo">>, ?right_shop},
-	 {?list_badrepo,
-	  <<"查询次品仓">>, <<"list_badrepo">>,   ?right_shop}, 
+	 %% {?new_badrepo, <<"新增次品仓">>, <<"new_badrepo">>, ?right_shop},
+	 %% {?del_badrepo, <<"删除次品仓">>, <<"del_badrepo">>, ?right_shop},
+	 %% {?update_badrepo,
+	 %%  <<"修改次品仓">>, <<"update_badrepo">>, ?right_shop},
+	 %% {?list_badrepo,
+	 %%  <<"查询次品仓">>, <<"list_badrepo">>,   ?right_shop}, 
 	 {?add_shop_promotion, 
 	  <<"编辑促销方案">>, <<"add_shop_promotion">>, ?right_shop}
 	],

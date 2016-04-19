@@ -9,7 +9,7 @@
 <script src="/public/assets/pinyin/pinyin.js"           type="text/javascript"></script>
 
 <!-- Merchant -->
-<script src="/private/merchant/javascript/merchant_app.js" type="text/javascript"></script>
+<!-- <script src="/private/merchant/javascript/merchant_app.js" type="text/javascript"></script> -->
 
 <!-- self -->
 <script src="/private/wprint/js/wprint_app.js"         type="text/javascript"></script>

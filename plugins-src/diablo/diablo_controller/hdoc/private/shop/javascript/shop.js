@@ -2,9 +2,8 @@ shopApp.controller("newShopCtrl", function(
     $scope, shopService, diabloPattern, diabloUtilsService,
     filterEmployee, user){
     $scope.name_address_pattern = diabloPattern.ch_name_address;
-    $scope.shop_types = shopService.shop_type;
-
     $scope.employees = filterEmployee;
+    // console.log($scope.employees);
 
     var dialog = diabloUtilsService;
     // employService.list().$promise.then(function(employees){
@@ -21,7 +20,7 @@ shopApp.controller("newShopCtrl", function(
 	$scope.authen_list_repo = true; 
     };
 
-    console.log($scope.authen_list_repo);
+    // console.log($scope.authen_list_repo);
     
 
     $scope.repertories = [];
@@ -145,6 +144,7 @@ shopApp.controller("shopDetailCtrl", function(
 			
 			address:      s.address,
 			open_date:    s.open_date,
+			entry_date:   s.entry_date,
 			
 			repo_id:s.repo,
 			repo:$scope.authen_list_repo
@@ -379,6 +379,9 @@ shopApp.controller("shopDetailCtrl", function(
     };
 
     $scope.charge = function (shop){
+	dialog.response(false, "充值方案", "暂不支持此操作！！");
+	return;
+	
 	// console.log(shop);
 	var check_only = function(select, charges){
 	    // console.log(select);

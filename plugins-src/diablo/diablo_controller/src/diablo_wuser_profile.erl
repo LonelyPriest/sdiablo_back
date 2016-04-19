@@ -684,7 +684,7 @@ handle_call({get_score, Merchant}, _From, State) ->
 handle_call({set_default, Merchant}, _From, State) ->
     ?DEBUG("set default value of merchant ~p", [Merchant]),
     %% base setting
-    Now = ?utils:current_time(localdate), 
+    Now = ?utils:current_time(format_localtime), 
     Values = ?w_base:sys_config(), 
     Sql0 = lists:foldr(
 	    fun({EName, CName, Value, Type}, Acc) ->
@@ -710,12 +710,10 @@ handle_call({set_default, Merchant}, _From, State) ->
 	    end, [], Values),
 
     %% print format
-    %% {name, isPrint, printWidth}
-    Formats = ?w_print:print_format(),
-
-
+    %% {name, isPrint}
+    Formats = ?w_print:print_format(), 
     Sql1 = lists:foldr(
-	     fun({Name, Print, Width}, Acc) ->
+	     fun({Name, Print}, Acc) ->
 		     Sql01 = "select id, name, print from w_print_format"
 			 " where name=\'" ++ Name ++ "\'"
 			 " and shop=-1"
@@ -723,13 +721,11 @@ handle_call({set_default, Merchant}, _From, State) ->
 		     case ?sql_utils:execute(s_read, Sql01) of
 			 {ok, []} ->
 			     ["insert into w_print_format("
-			      "name, print, width"
-			      ", merchant, entry_date) values("
+			      "name, print, merchant, entry_date) values("
 			      "\'" ++ Name ++ "\',"
 			      ++ Print ++ ","
-			      ++ Width  ++ ","
 			      ++ ?to_s(Merchant) ++ "," 
-			      "\'" ++ Now ++ "\');"|Acc];
+			      "\'" ++ Now ++ "\')"|Acc];
 			 {ok, _} ->
 			     Acc
 		     end

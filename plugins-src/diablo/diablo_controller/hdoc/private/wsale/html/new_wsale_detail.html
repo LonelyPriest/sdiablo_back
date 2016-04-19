@@ -97,8 +97,8 @@
 			客户<i class="glyphicon glyphicon-forward fg-red"></i>
 		      </span>
 		    </th>
-		    <th x-ng-if="show.base" class="info">余额</th>
-		    <th x-ng-if="show.base" class="info">结余</th>
+		    <th x-ng-if="show.base" class="info">上次结余</th>
+		    <th x-ng-if="show.base" class="info">累计结余</th>
 		    <th>店员</th> 
 		    <th>数量</th> 
 		    
@@ -138,7 +138,7 @@
 		    <td>{{r.shop.name}}</td>
 		    <td>{{r.retailer.name}}</td>
 		    <td x-ng-if="show.base">{{r.balance}}</td>
-		    <td x-ng-if="show.base">{{r.left_balance}} </td>
+		    <td x-ng-if="show.base">{{r.left_balance}}</td>
 		    
 		    <td >{{r.employee.name}}</td>
 

@@ -15,22 +15,6 @@ shopman(1..*)---------(1)shops(0..*)--------(0..*)stocks
 */
 
 /* ***BEING*** CRM *** */
--- create table province(
---     id              INTEGER AUTO_INCREMENT,
---     name            VARCHAR(64),
---     deleted         INTEGER default 0, -- 0: no;  1: yes
---     primary key     (id)
--- )default charset=utf8;
-
--- create table city(
---     id              INTEGER AUTO_INCREMENT,
---     name            VARCHAR(64),
---     province        INTEGER default -1,
---     deleted         INTEGER default 0, -- 0: no;  1: yes
---     primary key     (id)
--- )default charset=utf8;
-
-
 create table employees
 (
     id              INTEGER AUTO_INCREMENT,	
@@ -72,11 +56,13 @@ create table shops
     name               VARCHAR(255) not null,
     address            VARCHAR(255),
     open_date          DATE,
-    shopowner          INTEGER default -1, -- Leader of the shop, choice from employ, default is no owner
+    master             VARCHAR(8) default null, -- Leader of the shop, choice from employ, default is no owner
 
     charge             INTEGER default -1, -- charge promotion
     merchant           INTEGER default -1, -- which merchant belong to
     deleted            INTEGER default 0, -- 0: no;  1: yes
+    entry_date         DATETIME not null,
+    
     unique key index_mn (merchant, name),
     -- key        index_s  (merchant),
     primary key        (id)
@@ -111,7 +97,6 @@ create table size_group(
    merchant         INTEGER,
    deleted          INTEGER default 0, -- 0: no;  1: yes
    unique key       index_nm (merchant, name),
-   -- key              index_m (merchant),
    primary key      (id)
 )default charset=utf8;
 
@@ -124,7 +109,6 @@ create table colors
     merchant         INTEGER default null,
     deleted          INTEGER default 0, -- 0: no;  1: yes
     unique key       index_mn (merchant, name),
-    -- key              index_m  (merchant),
     primary key      (id)
 ) default charset=utf8;
 
@@ -148,19 +132,16 @@ create table brands(
     entry            DATETIME NOT NULL DEFAULT 0,
     
     unique  key      index_nm (merchant, name, supplier),
-    -- key              index_m (supplier),
     primary key      (id)
 )default charset=utf8;
 
 create table inv_types(
     id               INTEGER AUTO_INCREMENT,
     name             VARCHAR(64),
-    -- pinyin           VARCHAR(16) not null,
     merchant         INTEGER, -- type belong to
     deleted          INTEGER default 0, -- 0: no;  1: yes
 
     unique  key     index_nm (merchant, name),
-    -- key             index_m (merchant),
     primary key      (id)
 )default charset=utf8;
 
@@ -293,19 +274,19 @@ create table w_printer_conn(
 )default charset=utf8;
 
 
--- create table w_bank_card(
---    id              INTEGER AUTO_INCREMENT,
---    name            VARCHAR(16) not null,
---    no              VARCHAR(32) not null,
---    bank            VARCHAR(64) not null,
---    remark          VARCHAR(64) default null,
---    merchant        INTEGER not null,
---    entry_date      DATE, 
---    deleted         INTEGER default 0, -- 0: no;  1: yes
+create table w_bank_card(
+   id              INTEGER AUTO_INCREMENT,
+   name            VARCHAR(16) not null,
+   no              VARCHAR(32) not null,
+   bank            VARCHAR(64) not null,
+   remark          VARCHAR(64) default null,
+   merchant        INTEGER not null,
+   entry_date      DATE, 
+   deleted         INTEGER default 0, -- 0: no;  1: yes
    
---    unique  key     index_nm (no, merchant), 
---    primary key     (id)
--- )default charset=utf8;
+   unique  key     index_nm (no, merchant), 
+   primary key     (id)
+)default charset=utf8;
 
 -- about base setting
 create table w_base_setting(
@@ -328,7 +309,7 @@ create table w_print_format(
    id              INTEGER AUTO_INCREMENT,
    name            VARCHAR(16) not null,
    print           TINYINT default 1,  -- 1: yes, print 0; no
-   width           TINYINT default -1,
+   -- width           TINYINT default -1,
    shop            INTEGER default -1, 
    merchant        INTEGER default -1,
    entry_date      DATETIME default 0,
@@ -353,7 +334,7 @@ create table w_retailer
     address         VARCHAR(255), 
     merchant        INTEGER default -1, -- which merchant belong to
 
-    type            TINYINT default 0,  -- 0: system 1: user
+    -- type            TINYINT default 0,  -- 0: system 1: user
     change_date     DATETIME default 0, -- last changed
     entry_date      DATETIME default 0, -- last changed
     deleted         INTEGER default 0, -- 0: no;  1: yes
@@ -435,18 +416,6 @@ create table shop_promotion(
     
 ) default charset=utf8;
 
--- create table shop_charge(
---     id              INTEGER AUTO_INCREMENT,
---     merchant        INTEGER not null default -1,
---     shop            INTEGER not null default -1,
---     cid             INTEGER not null default -1, -- reference to charge
---     entry           DATETIME default 0,
---     deleted         INTEGER default 0, -- 0: no;  1: yes
-
---     unique  key uk  (merchant, shop, pid),
---     primary key     (id)
-    
--- ) default charset=utf8;
 
 /*
 * invnentory
@@ -553,7 +522,7 @@ create table w_inventory_amount(
 create table w_inventory_new(
     id             INTEGER AUTO_INCREMENT,
     rsn            VARCHAR(32) not null, -- record sn
-    employ         INTEGER not null default -1,
+    employ         VARCHAR(8) not null,
     firm           INTEGER default -1, 
     shop           INTEGER default -1,  -- which shop saled the goods
     merchant       INTEGER default -1,
@@ -638,7 +607,7 @@ create table w_inventory_fix(
     rsn            VARCHAR(32) not null, -- record sn
     
     shop           INTEGER,                 -- which shop saled the goods
-    employ         INTEGER not null default -1, 
+    employ         VARCHAR(8) not null, 
     
     exist          INTEGER,
     fixed          INTEGER default 0,
@@ -708,13 +677,13 @@ create table w_inventory_fix_detail_amount(
 create table w_sale(
     id             INTEGER AUTO_INCREMENT,
     rsn            VARCHAR(32) not null, -- record sn
-    employ         INTEGER not null default -1,
+    employ         VARCHAR(8) not null,
     retailer       INTEGER not null default -1, 
     shop           INTEGER not null default -1, 
     merchant       INTEGER not null default -1,
 
     promotion     INTEGER not null default -1,
-    charge        INTEGER not null default -1,
+    -- charge        INTEGER not null default -1,
     
     balance        DECIMAL(10, 2) default 0, -- max: 99999999.99
     should_pay     DECIMAL(10, 2) default 0, -- max: 99999999.99
@@ -724,8 +693,8 @@ create table w_sale(
     withdraw       DECIMAL(10, 2) default 0, -- max: 99999999.99
     verificate     DECIMAL(10, 2) default 0, -- max: 99999999.99
 
-    cbalance       INTEGER not null default 0, -- charge balance
-    sbalance       INTEGER not null default 0, -- send balance of charging
+    -- cbalance       INTEGER not null default 0, -- charge balance
+    -- sbalance       INTEGER not null default 0, -- send balance of charging
     
     total          INTEGER not null default 0,
     lscore         INTEGER not null default 0,
@@ -767,12 +736,12 @@ create table w_sale_detail(
     score          INTEGER not null default -1, -- score
 
     org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
-    tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
-    
+    tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance 
     fdiscount      DECIMAL(4, 1), -- max: 100
     rdiscount      DECIMAL(4, 1), -- max: 100
     fprice         DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
     rpice          DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
+    
     path           VARCHAR(255) default null, -- the image path
     comment        VARCHAR(127) default null,
     entry_date     DATETIME default 0,
@@ -798,3 +767,24 @@ create table w_sale_detail_amount(
     unique  key  uk (merchant, rsn, style_number, brand, color, size),
     primary key    (id)
 )default charset=utf8;
+
+/* charge */
+create table w_charge_detail(
+    id              INTEGER AUTO_INCREMENT,
+    rsn             VARCHAR(32) not null, -- record sn
+    merchant        INTEGER not null default -1,
+    shop            INTEGER not null default -1, 
+    employ          VARCHAR(8) not null,
+    cid             INTEGER not null default -1, -- charge
+
+    retailer        INTEGER not null default -1, 
+    cbalance        INTEGER not null default 0, -- charge balance
+    sbalance        INTEGER not null default 0, -- send balance
+    
+    entry_date      DATETIME default 0,
+    deleted         INTEGER default 0, -- 0: no;  1: yes
+
+    unique  key uk  (merchant, shop, employ, retailer),
+    primary key     (id)
+    
+) default charset=utf8;

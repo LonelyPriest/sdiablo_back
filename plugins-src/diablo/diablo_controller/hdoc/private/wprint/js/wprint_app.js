@@ -1,6 +1,6 @@
 var wprintApp = angular.module(
     'wprintApp', ['ui.bootstrap', 'ngRoute', 'ngResource', 'diabloAuthenApp',
-		  'diabloPattern', 'diabloUtils', 'merchantApp'])
+		  'diabloPattern', 'diabloUtils'])
 // .config(diablo_authen);
 .config(function($httpProvider, authenProvider){
     // $httpProvider.responseInterceptors.push(authenProvider.interceptor);
@@ -177,6 +177,12 @@ wprintApp.service("wprintService", function($resource, dateFilter){
 			  merchant: p.merchant_id,
 			  shop    : p.shop_id}).$promise;
     };
+
+    // merchant
+    var merchantHttp = $resource("/merchant/:operation/:id",
+    				 {operation: '@operation', id: '@id'});
+    this.list_merchant = function(){
+	return merchant.query({operation: "list_merchant"}).$promise};
     
 });
 

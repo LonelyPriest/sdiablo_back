@@ -12,15 +12,20 @@ shortCutGoodNewCtrl.$inject = [
 function shortCutGoodNewCtrl(
     $scope, $timeout, diabloPattern, diabloUtilsService,
     diabloFilter, wgoodService, shortCutGoodService){
-    // console.log($scope);
-    $scope.firms      = shortCutGoodService.get_firm();
-    // $scope.colorTypes = shortCutGoodService.get_color_type();
-    // $scope.brands     = shortCutGoodService.get_brand();
-    // $scope.types      = shortCutGoodService.get_type();
-    // $scope.groups     = shortCutGoodService.get_size_group();
-    // $scope.promotions = shortCutGoodService.get_promotion();
-    
-    $scope.colors     = [];
+    console.log($scope);
+    // $scope.gfirms       = shortCutGoodService.get_firm(); 
+    // $scope.gcolors      = shortCutGoodService.get_color();
+    // $scope.gbrands      = shortCutGoodService.get_brand();
+    // $scope.gtypes       = shortCutGoodService.get_type();
+    // $scope.gcolor_types = shortCutGoodService.get_color_type();
+    // $scope.gsize_groups = shortCutGoodService.get_size_group();
+
+    // console.log($scope.gfirms);
+    // console.log($scope.gcolors);
+    // console.log($scope.gbrands);
+    // console.log($scope.gtypes);
+    // console.log($scope.gcolor_types);
+    // console.log($scope.gsize_groups);
 
     $scope.seasons = diablo_season2objects;
     $scope.sexs    = diablo_sex2object;
@@ -41,57 +46,38 @@ function shortCutGoodNewCtrl(
 		    {name: color.name, id:color.id});
 		return true;
 	    }
-	}
-
+	} 
 	return false;
     };
     
 
     $scope.select_good_tab = function(){
 	// console.log("select good table");
-	if (angular.isUndefined($scope.brands) || $scope.brands.length === 0){
-	    $scope.brands     = shortCutGoodService.get_brand();
-	    // diabloFilter.get_brand().then(function(brands){
-	    // 	console.log(brands);
-	    // 	shortCutGoodService.set_brand(brands);
-	    // 	$scope.brands = brands;
-	    // });
+	if (angular.isUndefined($scope.gfirms) || $scope.gfirms.length === 0){
+	    $scope.gfirms  = shortCutGoodService.get_firm();
+	}
+	if (angular.isUndefined($scope.gbrands) || $scope.gbrands.length === 0){
+	    $scope.gbrands = shortCutGoodService.get_brand(); 
+	}; 
+	if (angular.isUndefined($scope.gtypes) || $scope.gtypes.length === 0){
+	    $scope.gtypes  = shortCutGoodService.get_type(); 
+	}; 
+	if (angular.isUndefined($scope.gsize_groups)
+	    || $scope.gsize_groups.length === 0){
+	    $scope.gsize_groups = shortCutGoodService.get_size_group(); 
 	};
 
-	// console.log($scope.types);
-	if (angular.isUndefined($scope.types) || $scope.types.length === 0){
-	    $scope.types  = shortCutGoodService.get_type();
-	    // console.log($scope.types);
-	    // diabloFilter.get_type().then(function(types){
-	    // 	console.log(types);
-	    // 	shortCutGoodService.set_type(types);
-	    // 	$scope.types = types;
-	    // })
-	};
-
-	if (angular.isUndefined($scope.groups) || $scope.groups.length === 0){
-	    $scope.groups     = shortCutGoodService.get_size_group();
-	    // diabloFilter.get_size_group().then(function(gs){
-	    // 	shortCutGoodService.set_size_group(gs);
-	    // 	$scope.groups = gs;
-	    // })
-	};
-
-	if (angular.isUndefined($scope.colorTypes)
-	    || $scope.colorTypes.length === 0){
-	    $scope.colorTypes = shortCutGoodService.get_color_type();
-	    // console.log($scope.colorTypes);
-	    // diabloFilter.get_color_type().then(function(ts){
-	    // 	shortCutGoodService.set_color_type(ts);
-	    // 	$scope.colorTypes = ts;
-	    // });
+	if (angular.isUndefined($scope.gcolor_types)
+	    || $scope.gcolor_types.length === 0){
+	    $scope.gcolor_types = shortCutGoodService.get_color_type(); 
 	}; 
 
-	if ($scope.colors.length === 0){
-	    $scope.org_colors     = shortCutGoodService.get_color();
+	if (angular.isUndefined($scope.gcolors) || $scope.gcolors.length === 0){
+	    $scope.gcolors = [];
+	    $scope.org_colors = shortCutGoodService.get_color();
 	    angular.forEach($scope.org_colors, function(color){
-    		if (!in_sys_color($scope.colors, color)){
-    		    $scope.colors.push(
+    		if (!in_sys_color($scope.gcolors, color)){
+    		    $scope.gcolors.push(
     			{type:color.type, tid:color.tid,
     			 colors:[{name:color.name, id:color.id}]})
     		}
@@ -109,7 +95,6 @@ function shortCutGoodNewCtrl(
     // 		];
 
     // brands
-    // $scope.brands = angular.copy(filterBrand); 
     var get_brand = function(brand_name){
 	for (var i=0, l=$scope.brands.length; i<l; i++){
 	    if (brand_name === $scope.brands[i].name){
@@ -135,7 +120,7 @@ function shortCutGoodNewCtrl(
     			py:      diablo_pinyin(params.firm.name),
     			balance: params.firm.balance};
 		    
-    		    $scope.firms.push(newFirm);
+    		    $scope.gfirms.push(newFirm);
     		    $scope.good.firm = newFirm; 
     		};
 		
@@ -145,8 +130,7 @@ function shortCutGoodNewCtrl(
     			"恭喜你，厂家 " + params.firm.name + " 成功创建！！",
     			$scope, function(){
 			    append_firm(state.id);
-			    shortCutGoodService.set_firm($scope.firms);
-			    // diabloFilter.reset_firm()
+			    shortCutGoodService.set_firm($scope.gfirms);
 			    $scope.$emit("reset_firm"); 
 			});
     		} else{
@@ -154,8 +138,7 @@ function shortCutGoodNewCtrl(
     	    		false, "新增厂家",
     	    		"新增厂家失败：" + wgoodService.error[state.ecode]);
     		};
-    	    })
-	    
+    	    }) 
     	};
 
     	dialog.edit_with_modal(
@@ -216,24 +199,6 @@ function shortCutGoodNewCtrl(
 	    check_same_good($scope.good.style_number, newValue);
 	}, diablo_delay_300ms) 
     });
-   
-    // color
-    // $scope.colors = [];
-    
-    // angular.forEach(colors, function(color){
-    // 	if (!in_sys_color($scope.colors, color)){
-    // 	    $scope.colors.push(
-    // 		{type:color.type, tid:color.tid,
-    // 		 colors:[{name:color.name, id:color.id}]})
-    // 	}
-    // });
-    // console.log($scope.colors);
-
-    
-    // wgoodService.list_color_type().then(function(data){
-    // 	console.log(data);
-    // 	$scope.colorTypes = data;
-    // });
     
     $scope.new_color = function(){
 	var callback = function(params){
@@ -253,8 +218,8 @@ function shortCutGoodNewCtrl(
 			// remark:  params.color.remark
 		    };
 		    
-		    if (!in_sys_color($scope.colors, newColor)){
-			$scope.colors.push(
+		    if (!in_sys_color($scope.gcolors, newColor)){
+			$scope.gcolors.push(
 			    {type: newColor.type,
 			     tid:  newColor.tid,
 			     colors:[{name:newColor.name, id:newColor.id}]});
@@ -262,7 +227,6 @@ function shortCutGoodNewCtrl(
 			shortCutGoodService.set_color($scope.org_colors.push(newColor));
 			$scope.$emit("reset_color");
 		    } 
-		    // console.log($scope.colors); 
 		}; 
 		
 		if (state.ecode == 0){
@@ -279,7 +243,7 @@ function shortCutGoodNewCtrl(
 	
 	dialog.edit_with_modal(
 	    'new-color.html', undefined, callback,
-	    $scope, {color: {types: $scope.colorTypes}})
+	    $scope, {color: {types: $scope.gcolor_types}})
     }
     
 
@@ -301,21 +265,18 @@ function shortCutGoodNewCtrl(
 	    console.log($scope.selectColors);
 
 	    // save select info
-	    $scope.colors = angular.copy(params.colors);
-
-	    
+	    $scope.colors = angular.copy(params.colors); 
 	}; 
 	
 	diabloUtilsService.edit_with_modal(
 	    "select-color.html", undefined,
-	    callback, $scope, {colors:$scope.colors});
+	    callback, $scope, {colors:$scope.gcolors});
     }; 
 
     /*
      * size group
      */
-    // $scope.groups = angular.copy(filterSizeGroup);
-
+    // $scope.groups = angular.copy(filterSizeGroup); 
     $scope.new_size = function(){
 	var valid_group = function(size){
 	    var all_size = [];
@@ -365,7 +326,9 @@ function shortCutGoodNewCtrl(
 	        console.log(state);
 	        if (state.ecode == 0){
 		    var append_size_group = function(gid){
-			$scope.groups.push(angular.extend({id:gid}, size));
+			$scope.gsize_groups.push(angular.extend({id:gid}, size));
+			shortCutGoodService.set_size_group($scope.gsize_groups);
+			$scope.$emit("reset_size_group");
 		    }
 		    
 		    dialog.response_with_callback(
@@ -413,7 +376,7 @@ function shortCutGoodNewCtrl(
 
 	diabloUtilsService.edit_with_modal(
 	    "select-size.html", undefined,
-	    callback, $scope, {groups: $scope.groups,
+	    callback, $scope, {groups: $scope.gsize_groups,
 			       select_group: select_group});
     };
 
@@ -520,8 +483,8 @@ function shortCutGoodNewCtrl(
 			// reset color
 			$scope.selectColors = [];
 			$scope.good.colors="";
-			console.log($scope.colors);
-			angular.forEach($scope.colors, function(colorInfo){
+			console.log($scope.gcolors);
+			angular.forEach($scope.gcolors, function(colorInfo){
 			    angular.forEach(colorInfo, function(color){
 				// console.log(color);
 				angular.forEach(color, function(c){
@@ -532,7 +495,7 @@ function shortCutGoodNewCtrl(
 			    })
 			});
 
-			console.log($scope.colors);
+			console.log($scope.gcolors);
 			
 			$scope.good.style_number = undefined;
 			$scope.good.type = undefined;
@@ -552,27 +515,27 @@ function shortCutGoodNewCtrl(
 			};
 			
 			// brand
-			if (!in_prompts($scope.brands, good.brand)){
+			if (!in_prompts($scope.gbrands, good.brand)){
 		    	    $scope.brands.push({
 				// id   :$scope.brands.length + 1,
 				id   :state.brand,
 				name :good.brand,
 				py   :diablo_pinyin(good.brand)});
 			    
-			    shortCutGoodService.set_brand($scope.brands);
+			    shortCutGoodService.set_brand($scope.gbrands);
 			    $scope.$emit("reset_brand");
 			}; 
 			// console.log($scope.brands);
 
 			// type
-			if (!in_prompts($scope.types, good.type)){
+			if (!in_prompts($scope.gtypes, good.type)){
 		    	    $scope.types.push({
 				// id   :$scope.types.length + 1,
 				id   :state.type,
 				name :good.type,
 				py   :diablo_pinyin(good.type)});
 
-			    shortCutGoodService.set_type($scope.types);
+			    shortCutGoodService.set_type($scope.gtypes);
 			    $scope.$emit("reset_type");
 			};
 			// console.log($scope.types);

@@ -1,16 +1,21 @@
 var baseApp = angular.module(
     'baseApp', ['ngRoute', 'ngResource', 'ui.bootstrap',
-		'diabloPattern', 'diabloUtils', 'diabloAuthenApp',
-		'userApp', 'wprintApp'])
+		// 'frapontillo.bootstrap-switch',
+		'diabloPattern',
+		'diabloUtils', 'diabloAuthenApp', 'userApp', 'wprintApp'])
     .config(function($httpProvider, authenProvider){
 	$httpProvider.interceptors.push(authenProvider.interceptor); 
-    });
+    }); 
 
 baseApp.config(['$routeProvider', function($routeProvider){
     $routeProvider.
 	when('/passwd', {
 	    templateUrl: '/private/base/html/reset_password.html',
             controller: 'resetPasswdCtrl'
+	}).
+	when('/del_data', {
+	    templateUrl: '/private/base/html/delete_data.html',
+            controller: 'delDataCtrl'
 	}).
 	when('/bank/new_bank_card/:cardId?', {
 	    templateUrl: '/private/base/html/bank_card_new.html',
@@ -63,45 +68,27 @@ baseApp.service("baseService", function($resource){
 		  8001: "该银行卡已存在！！",
 		  8002: "该设置项已存在，请选择其它设置项！！",
 		  8003: "旧密码不正确，请重新输入！！",
+		  8004: "用户权限不足！！",
 		  9001: "数据库操作失败，请联系服务人员！！"};
 
     this.print_setting = 0;
     this.table_setting = 1;
 
     this.option_names = [
-	// {cname: "电话1", ename: "phone1"},
-	// {cname: "电话2", ename: "phone2"},
 	{cname: "备注1", ename: "comment1"},
 	{cname: "备注2", ename: "comment2"},
-	{cname: "备注3", ename: "comment3"},
-	{cname: "备注4", ename: "comment4"},
-    ];
+	{cname: "备注3", ename: "comment3"}];
 
     this.print_types = [{cname:"前台打印", value: 0},
-			{cname:"后台打印", value: 1}];
-    this.print_formats = [
-	{cname:"尺码竖打", value: 0},
-	{cname:"尺码横打", value: 1}, 
-    ];
+			{cname:"后台打印", value: 1}]; 
 
     this.yes_no = [
 	{cname:"否", value: 0},
 	{cname:"是", value: 1}, 
     ];
 
-    this.prompt_types = [{cname:"前台查找", value: 0},
-			 {cname:"后台查找", value: 1}];
-
-    this.time_length = [{cname:"1个月", value: 30},
-			{cname:"1季度", value: 90},
-			{cname:"半年",  value: 180},
-			{cname:"1年",   value: 365},
-			{cname:"2年",   value: 730}];
-
-    this.round_names = [
-	{cname:"整单四舍五入", value: 0},
-	{cname:"单款四舍五入", value: 1}
-    ];
+    this.prompt_types = [{cname:"前台联想", value: 0},
+			 {cname:"后台联想", value: 1}]; 
 
     var http = $resource("/wbase/:operation/:id", {operation: '@operation'},
 			 {
@@ -141,7 +128,11 @@ baseApp.service("baseService", function($resource){
     
     this.update_setting = function(s){
 	return http.save({operation: 'update_base_setting'},
-			 {id: s.id, ename: s.ename, value: s.value, shop:s.shop}).$promise;
+			 {id:     s.id,
+			  ename:  s.ename,
+			  value:  s.value,
+			  remark: s.remark,
+			  shop:   s.shop}).$promise;
     };
 
     this.add_shop_setting = function(shop) {
@@ -153,12 +144,33 @@ baseApp.service("baseService", function($resource){
      */
     this.reset_passwd = function(p){
 	return http.save({operation: 'update_user_passwd'},p).$promise;
+    };
+
+    this.delete_expire_data = function(
+	expire_date, delete_stock_data, delete_sell_data){
+	return http.save(
+	    {operation: 'delete_expire_data'},
+	    {expire: expire_date,
+	     stock: delete_stock_data,
+	     sell: delete_sell_data}).$promise;
+    };
+
+    var httpGood = $resource("/wgood/:operation/:id",
+    			     {operation: '@operation', id: '@id'});
+    
+    this.list_purchaser_size = function(){
+	return httpGood.query({operation: 'list_w_size'}).$promise;
+    };
+
+    var retailerHttp = $resource("/wretailer/:operation", {operation: '@operation'});
+    this.list_retailer = function(){
+	return retailerHttp.query({operation: 'list_w_retailer'}).$promise;
     }
     
 });
     
 baseApp.controller("bankCardNewCtrl", function($scope, baseService, diabloUtilsService){
-    console.log($scope);
+    // console.log($scope);
 
     $scope.new_card = function(){
 	console.log($scope.card);
@@ -216,11 +228,16 @@ baseApp.controller("bankCardDetailCtrl", function($scope, baseService, diabloUti
 		    console.log(state);
 		    if (state.ecode == 0){
 			dialog.response_with_callback(
-			    true, "银行卡编辑", "银行卡 " + card.no + " 修改成功！！",
+			    true,
+			    "银行卡编辑",
+			    "银行卡 " + card.no + " 修改成功！！",
 			    $scope, function(){$scope.refresh()});
 		    } else{
 			dialog.response(
-			    false, "银行卡编辑", "银行卡编辑失败：" + baseService.error[state.ecode]); 
+			    false,
+			    "银行卡编辑",
+			    "银行卡编辑失败："
+				+ baseService.error[state.ecode]); 
 		    }
 		})
 	    } 
@@ -237,54 +254,50 @@ baseApp.controller("bankCardDetailCtrl", function($scope, baseService, diabloUti
 		console.log(state);
 		if (state.ecode == 0){
 		    dialog.response_with_callback(
-			true, "银行卡删除", "银行卡 " + card.no + " 删除成功！！",
+			true,
+			"银行卡删除",
+			"银行卡 " + card.no + " 删除成功！！",
 			$scope, function(){$scope.refresh()});
 		} else{
 		    dialog.response(
-			false, "银行卡删除", "银行卡删除失败：" + baseService.error[state.ecode]); 
+			false,
+			"银行卡删除",
+			"银行卡删除失败：" + baseService.error[state.ecode]); 
 		}
 	    }) 
 	};
 
 	dialog.request(
-	    "删除银行卡", "确定要删除该银行卡吗？", callback, undefined, $scope);
-	
-	
+	    "删除银行卡",
+	    "确定要删除该银行卡吗？", callback, undefined, $scope); 
     }
 });
 
 
 baseApp.controller("printOptionCtrl", function(
     $scope, dateFilter, baseService, diabloPattern, diabloUtilsService, user){
-    $scope.shops = [{id: -1, name:"== 请选择店铺或仓库，默认所有店铺配置相同 =="}]
-	.concat(user.sortShops, user.sortRepoes);
+
+    // retailer
+    baseService.list_retailer().then(function(retailers){
+	$scope.retailers = retailers.map(function(r){
+	    return {name: r.name, id:r.id, py:diablo_pinyin(r.name)};
+	}).concat([{name:"== 系统默认 ==", id:0}]);
+	console.log($scope.retailers);
+    });
+
+    // baseService.list_purchaser_size().then(function(sizes){
+    // 	console.log(sizes);
+    // 	$scope.size_groups = [{id:0, name:"== 无尺码组 =="}].concat(sizes); 
+    // });
+    
+    $scope.shops = [
+	{id: -1, name:"== 请选择店铺或仓库，默认所有店铺配置相同 =="}]
+	.concat(user.sortShops, user.sortRepoes); 
     
     $scope.print_types   = baseService.print_types;
-    $scope.print_formats = baseService.print_formats;
     $scope.yes_no        = baseService.yes_no;
-    $scope.time_length   = baseService.time_length;
     $scope.prompt_types  = baseService.prompt_types;
-    $scope.round_names   = baseService.round_names;
-    console.log($scope.print_formats);
-
-    $scope.show_switch = function(name){
-	if (name === 'pum'
-	    || name === 'qtime_start'
-	    || name === 'qtime_length'
-	    || name === 'phone1'
-	    || name === 'phone2'
-	    || name === 'comment1'
-	    || name === 'comment2'
-	    || name === 'comment3'
-	   ){
-	    return false;
-	}
-
-	return true;
-    };
     
-    // console.log($scope.print_types);
-
     var dialog = diabloUtilsService;
 
     $scope.shop_setting = function(shop){
@@ -294,7 +307,9 @@ baseApp.controller("printOptionCtrl", function(
 	    if (shop.id === s.shop.id){
 		if (s.setting.length === 0){
 		    var callback = function(){
-			baseService.add_shop_setting(shop.id).then(function(result){
+			baseService.add_shop_setting(
+			    shop.id
+			).then(function(result){
 			    if (result.ecode == 0){
 				dialog.response_with_callback(
 				    true, "新增打印选项", "店铺 " + shop.name
@@ -302,15 +317,18 @@ baseApp.controller("printOptionCtrl", function(
 				    $scope, function(){$scope.refresh(shop)});
 			    } else {
 				dialog.response(
-				    false, "新增打印选项",
-				    "店铺 " + shop.name + " 打印选项新增失败："
+				    false,
+				    "新增打印选项",
+				    "店铺 " + shop.name
+					+ " 打印选项新增失败："
 					+ baseService.error[result.ecode]); 
 			    }
 			})
 		    };
 		    
 		    dialog.request(
-			"新增打印选项", "该店铺无打印选项，确定要新增打印选项吗？",
+			"新增打印选项",
+			"该店铺无打印选项，确定要新增打印选项吗？",
 			callback, undefined, $scope);
 		}
 		// $scope.pformats[i].$new = false;
@@ -318,10 +336,16 @@ baseApp.controller("printOptionCtrl", function(
 	    }
 	}
     };
+
+    $scope.get_object = function(id, objs){
+	return diablo_get_object(parseInt(id), objs);
+    };
     
     $scope.refresh = function(shop){
-	baseService.list_setting(baseService.print_setting).then(function(data){
-	    console.log(data);
+	baseService.list_setting(
+	    baseService.print_setting
+	).then(function(data){
+	    // console.log(data); 
 	    $scope.settings = 
 		$scope.shops.map(function(s){
 		    setting = data.filter(function(d){
@@ -331,7 +355,7 @@ baseApp.controller("printOptionCtrl", function(
 		    return {shop:s, setting:diablo_order(setting)};
 		})
 	    
-	    console.log($scope.settings); 
+	    console.log($scope.settings);
 	    $scope.select = {shop:shop,
 			     setting: $scope.shop_setting(shop)};
 	})
@@ -340,22 +364,41 @@ baseApp.controller("printOptionCtrl", function(
     $scope.refresh($scope.shops[0]);
     // console.log($scope.select.shop);
 
+    var get_set_v = function(name){
+	// console.log(name);
+	var v = {value:undefined, comment:undefined};
+	for (var i=0, l=$scope.select.setting.length; i<l; i++){
+	    if (name === $scope.select.setting[i].ename){
+		v.value = $scope.select.setting[i].value;
+		v.comment = $scope.select.setting[i].comment;
+		break;
+	    }
+	}
+	
+	return v;
+    };
+    
     $scope.add_setting = function(){
 	var callback = function(params){
 	    console.log(params.setting);
 	    var s = params.setting;
 	    baseService.add_setting({
-		cname: s.name.cname,
-		ename: s.name.ename,
-		value: s.value,
+		cname:   s.name.cname,
+		ename:   s.name.ename,
+		value:   s.value,
+		remark:  s.remark,
 		type:  baseService.print_setting,
 		shop:  $scope.select.shop.id
 	    }).then(function(result){
 		console.log(result)
 		if (result.ecode === 0){
 		    dialog.response_with_callback(
-			true, "新增系统选项", "系统选项 " + s.name.cname + " 新增成功！！",
-			$scope, function(){$scope.refresh($scope.select.shop)});
+			true,
+			"新增系统选项",
+			"系统选项 " + s.name.cname + " 新增成功！！",
+			$scope,
+			function(){
+			    $scope.refresh($scope.select.shop)});
 		} else {
 		    dialog.response(
 			false, "新增系统选项", "新增系统选项失败："
@@ -364,12 +407,18 @@ baseApp.controller("printOptionCtrl", function(
 	    })
 	}
 
+	// console.log(baseService.option_names[0].ename);
+	var default_set = get_set_v(baseService.option_names[0].ename);
+	console.log(default_set);
 	dialog.edit_with_modal(
 	    "add-setting.html", undefined, callback, $scope,
 	    {names:    baseService.option_names,
 	     patterns: {tel_mobile: diabloPattern.tel_mobile,
 			comment:    diabloPattern.comment},
-	     setting:  {name: baseService.option_names[0]}
+	     setting:  {name: baseService.option_names[0],
+			value: default_set.value,
+			remark: default_set.remark},
+	     get_set_v: get_set_v
 	    });
     }
     
@@ -384,66 +433,76 @@ baseApp.controller("printOptionCtrl", function(
 	    var update;
 	    if (s.ename==="qtime_start"){
 		update = dateFilter(setting.value, "yyyy-MM-dd");
+	    } else if (s.ename === 's_customer'){
+		update = setting.value.id;
 	    } else {
-		update = typeof(setting.value) === 'object' ? setting.value.value : setting.value;
+		update = typeof(setting.value) === 'object'
+		    ? setting.value.value : setting.value;
 	    };
-	    
+
+	    console.log(update);
 	    baseService.update_setting({
-		id:    setting.id,
-		ename: setting.ename,
-		value: update,
-		shop:  $scope.select.shop.id
+		id:      setting.id,
+		ename:   setting.ename,
+		value:   update,
+		remark:  setting.remark,
+		shop:    $scope.select.shop.id
 	    }).then(function(state){
 		console.log(state);
 		if (state.ecode == 0){
 		    dialog.response_with_callback(
-			true, "系统选项编辑", "系统选项 " + s.cname + " 编辑成功！！",
-			$scope, function(){$scope.refresh($scope.select.shop)});
+			true,
+			"系统选项编辑",
+			"系统选项 " + s.cname + " 编辑成功！！",
+			$scope,
+			function(){$scope.refresh($scope.select.shop)});
 		} else{
 		    dialog.response(
-			false, "系统选项编辑", "系统选项 " + s.cname + " 编辑失败："
+			false,
+			"系统选项编辑",
+			"系统选项 " + s.cname + " 编辑失败："
 			    + baseService.error[state.ecode]); 
 		}
 	    })
 	};
 
-	var v;
 	if (s.ename === 'ptype'){
 	    angular.extend(s, {ptypes: $scope.print_types}); 
 	};
-	if (s.ename === 'pformat'){
-	    angular.extend(s, {pformats: $scope.print_formats}); 
-	};
+	
 	if (s.ename === 'qtypeahead'){
 	    angular.extend(s, {prompt_types: $scope.prompt_types}); 
 	};
-	if (s.ename === 'pround'){
-	    angular.extend(s, {round_names: $scope.round_names}); 
+	
+	// if (s.ename === 'e_sgroup1'
+	//     || s.ename === 'e_sgroup2'
+	//     || s.ename === 'e_sgroup3'){
+	//     angular.extend(s, {sgroups: $scope.size_groups});
+	// };
+	if (s.ename === 's_customer'){
+	    angular.extend(s, {retailers: $scope.retailers});
 	};
 	
-	if (s.ename === 'ptable'
-	    || s.ename === 'pretailer'
-	    // || s.ename === 'pround'
-	    || s.ename === 'ptrace_price'
-	    || s.ename === 'pim_print'
+	if (s.ename === 'pim_print'
 	    || s.ename === 'reject_negative'
 	    || s.ename === 'check_sale'
-	    || s.ename === 'show_discount'
 	    || s.ename === 'se_pagination'
-	    || s.ename === 'stock_alarm'){
+	    || s.ename === 'stock_alarm'
+	   ){
 	    angular.extend(s, {yes_no: $scope.yes_no}); 
 	};
-	if (s.ename === 'qtime_length'){
-	    v = function(){
-		for (var i=0, l=$scope.time_length.length; i<l; i++){
-		    if (parseInt(s.value) === $scope.time_length[i].value){
-			return $scope.time_length[i]
-		    }
-		}
 
-		return undefined;
-	    }(),
-	    angular.extend(s, {time_length: $scope.time_length}); 
+	var v; 
+	// if (s.ename === 'e_sgroup1'
+	//     || s.ename === 'e_sgroup2'
+	//     || s.ename === 'e_sgroup3'){
+	//     console.log(s.value, $scope.size_groups);
+	//     v = $scope.get_object(s.value, $scope.size_groups);
+	// };
+
+	if (s.ename === 's_customer'){
+	    // console.log(s.value, $scope.size_groups);
+	    v = $scope.get_object(s.value, $scope.retailers);
 	};
 
 	var qtime = {};
@@ -454,16 +513,16 @@ baseApp.controller("printOptionCtrl", function(
 		event.stopPropagation();
 		// qtime.isOpened = true;
 	    };
-	};
-	
+	}; 
 	
 	dialog.edit_with_modal(
 	    "edit-setting.html", undefined, callback, $scope,
-	    {setting: s,
-	     init_v: v,
-	     qtime: qtime,
+	    {setting:    s,
+	     init_v:     v,
+	     qtime:      qtime,
+	     to_i:       diablo_set_integer,
 	     patterns: {tel_mobile: diabloPattern.tel_mobile,
-			comment:    diabloPattern.comment}});
+			remark:    diabloPattern.comment}});
     }
 });
 
@@ -473,15 +532,6 @@ baseApp.controller("printFormatCtrl", function(
     // shop and repo
     $scope.shops = [{id: -1, name:"== 请选择店铺或仓库，默认所有配置相同 =="}]
 	.concat(user.sortShops, user.sortRepoes); 
-
-    // var gen_format = function(shopId){
-    // 	console.log($scope.shop_format($scope.shops[0]));
-    // 	$scope.shop_format($scope.shops[0]).pformat.map(function(p){
-    // 	    return {name:p.name, print:0, width:0, shop:shopId}
-    // 	})
-    // };
-        
-    // $scope.print_types = baseService.print_types;
 
     $scope.select       = {shop: $scope.shops[0]};
     $scope.print_fields = diablo_print_field;
@@ -499,7 +549,9 @@ baseApp.controller("printFormatCtrl", function(
 	    if (shop.id === p.shop.id){
 		if (p.pformat.length === 0){
 		    var callback = function(){
-			wprintService.add_shop_format(shop.id).then(function(result){
+			wprintService.add_shop_format(
+			    shop.id
+			).then(function(result){
 			    if (result.ecode == 0){
 				dialog.response_with_callback(
 				    true, "新增打印格式", "店铺 " + shop.name
@@ -508,14 +560,16 @@ baseApp.controller("printFormatCtrl", function(
 			    } else {
 				dialog.response(
 				    false, "新增打印格式",
-				    "店铺 " + shop.name + " 打印格式新增失败："
+				    "店铺 " + shop.name
+					+ " 打印格式新增失败："
 					+ baseService.error[result.ecode]); 
 			    }
 			})
 		    };
 		    
 		    dialog.request(
-			"新增打印格式", "该店铺无打印格式，确定要新增打印格式吗？",
+			"新增打印格式",
+			"该店铺无打印格式，确定要新增打印格式吗？",
 			callback, undefined, $scope);
 		}
 		return p.pformat;
@@ -547,23 +601,7 @@ baseApp.controller("printFormatCtrl", function(
     $scope.refresh($scope.select.shop);
         
     $scope.update_printer_format = function(f){
-	console.log(f);
-
-	// check format
-	// var check_format = function(format){
-	//     if (format.name === "hand"){
-	// 	get_field("size").print = 0;
-	//     }
-
-	//     if (format.name === "size_name"){
-	// 	get_field("size").print = 0;
-	//     }
-
-	//     if (format.name === "size"){
-	// 	get_field("hand").print = 0;
-	// 	get_field("size_name").print = 0;
-	//     }
-	// }
+	console.log(f); 
 	
 	var callback = function(params){
 	    console.log(params);
@@ -574,6 +612,7 @@ baseApp.controller("printFormatCtrl", function(
 		name:   f.name,
 		print:  params.pformat.print.value,
 		width:  params.pformat.width,
+		seq:    params.pformat.seq,
 		shop:   $scope.select.shop.id
 	    }).then(function(state){
 		console.log(state);
@@ -584,6 +623,7 @@ baseApp.controller("printFormatCtrl", function(
 			$scope, function(){
 			    f.print = params.pformat.print.value;
 			    f.width = params.pformat.width;
+			    f.seq   = params.pformat.seq;
 			});
 		} else{
 		    dialog.response(
@@ -594,7 +634,9 @@ baseApp.controller("printFormatCtrl", function(
 	}; 
 
 	var check_same = function(newValue){
-	    if (newValue.print == f.print && newValue.width == f.width){
+	    if (newValue.print == f.print
+		&& newValue.width == f.width
+		&& newValue.seq === f.seq){
 		return true;
 	    }
 	    return false;
@@ -615,19 +657,22 @@ baseApp.controller("printFormatCtrl", function(
 	dialog.edit_with_modal(
 	    "update-print-format.html", undefined, callback, $scope,
 	    {
-		pformat:    {name:f.name, print:print_action[0], width:f.width},
-		fields:     $scope.print_fields,
-		actions:    $scope.actions,
-		// shops:      $scope.shops,
-		check_same: check_same,
+		pformat:       {name:  f.name,
+				print: print_action[0],
+				width: f.width,
+				seq:   f.seq},
+		fields:        $scope.print_fields,
+		actions:       $scope.actions,
+		check_same:    check_same,
 		change_format: change_format
 	    });
     }
 });
 
 
-baseApp.controller("tableDetailCtrl", function($scope, baseService, diabloUtilsService){
-    
+baseApp.controller("tableDetailCtrl", function(
+    $scope, baseService, diabloUtilsService
+){    
     $scope.refresh = function(){
 	baseService.list_setting(baseService.table_setting).then(function(data){
 	    console.log(data);
@@ -672,8 +717,9 @@ baseApp.controller("tableDetailCtrl", function($scope, baseService, diabloUtilsS
 
 baseApp.controller("basePrinterConnectNewCtrl", function(
     $scope, diabloPattern, wprintService, diabloUtilsService, user){
-
+    // console.log(user);
     $scope.shops = [].concat(user.sortShops, user.sortRepoes);
+    // console.log($scope.shops);
 
     $scope.paper_columns = wprintService.paper_columns;
     $scope.paper_heights = wprintService.paper_heights;
@@ -939,6 +985,60 @@ baseApp.controller("resetPasswdCtrl", function(
 	    });
 	}
     }
+});
+
+baseApp.controller("delDataCtrl", function($scope, dateFilter, diabloUtilsService, baseService){
+    
+    $scope.open_calendar = function(event){
+	event.preventDefault();
+	event.stopPropagation();
+	$scope.isOpened = true; 
+    }
+
+    $scope.today = function(){
+	return $.now();
+    };
+
+    $scope.sure = {
+	date:      $scope.today() - diablo_day_millisecond * 90,
+	select_in: false,
+	select:    false};
+
+    var dialog = diabloUtilsService;
+    $scope.sure_delete = function(){
+	console.log($scope.sure);
+
+	var callback = function(){
+	    baseService.delete_expire_data(
+		dateFilter($scope.sure.date, "yyyy-MM-dd"),
+		$scope.sure.select_in,
+		$scope.sure.select
+	    ).then(function(result){
+		    console.log(result);
+		    if (result.ecode === 0){
+			dialog.response(
+			    true,
+			    "数据删除",
+			    "数据删除成功，请注销该用户后再登录！！",
+			    undefined); 
+		    } else {
+			diablo.response(
+			    false, "数据删除", "数据删除失败："
+				+ baseService.error[result.ecode], undefined);
+		    }
+		    
+		})
+	};
+	
+	dialog.request(
+	    "数据删除",
+	    "数据删除后无法恢复，确认要删除 ["
+		+ dateFilter($scope.sure.date, "yyyy-MM-dd")
+		+ "] 之前的数据吗？",
+	    callback, undefined, undefined);
+	
+    };
+    // diablo_goto_page("#/printer/connect_detail");
 });
 
 baseApp.controller("baseCtrl", function($scope){

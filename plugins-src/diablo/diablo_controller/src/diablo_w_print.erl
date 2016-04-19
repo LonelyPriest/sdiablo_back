@@ -257,7 +257,7 @@ handle_call({list_printer_conn, Merchant}, _From, State) ->
     {reply, Reply, State};
 
 handle_call({list_printer_format, Merchant}, _From, State) ->
-    Sql = "select id, name, print, shop, width, entry_date"
+    Sql = "select id, name, print, shop, entry_date"
 	" from w_print_format"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and deleted=" ++ ?to_s(?NO)
@@ -272,7 +272,7 @@ handle_call({add_format_to_shop, Merchant, Shop}, _From, State) ->
     Formats = print_format(),
 
     Sqls = lists:foldr(
-	     fun({Name, Print, Width}, Acc) ->
+	     fun({Name, Print}, Acc) ->
 		     Sql01 = "select id, name, print from w_print_format"
 			 " where name=\'" ++ Name ++ "\'"
 			 ++ " and shop=" ++ ?to_s(Shop)
@@ -280,11 +280,9 @@ handle_call({add_format_to_shop, Merchant, Shop}, _From, State) ->
 		     case ?sql_utils:execute(s_read, Sql01) of
 			 {ok, []} ->
 			     ["insert into w_print_format("
-			      "name, print, width"
-			      ", shop, merchant, entry_date) values("
+			      "name, print, shop, merchant, entry_date) values("
 			      "\'" ++ Name ++ "\',"
 			      ++ Print ++ ","
-			      ++ Width  ++ ","
 			      ++ ?to_s(Shop) ++ "," 
 			      ++ ?to_s(Merchant) ++ "," 
 			      "\'" ++ Now ++ "\');"|Acc];
@@ -301,12 +299,9 @@ handle_call({update_printer_format, Merchant, Id, Attrs}, _From, State) ->
     ?DEBUG("update_printer_format with id ~p~n, attrs ~p", [Id, Attrs]),
     Name     = ?v(<<"name">>, Attrs),
     Print    = ?v(<<"print">>, Attrs),
-    Width    = ?v(<<"width">>, Attrs),
     Shop     = ?v(<<"shop">>, Attrs),
-    %% Fish     = ?v(<<"fish">>, Attrs),
-
+    
     Updates = ?utils:v(print, integer, Print)
-	++ ?utils:v(width, integer, Width)
 	++ ?utils:v(entry_date, string, ?utils:current_time(localtime)), 
 
     UpdateSql = "update w_print_format set "
@@ -342,9 +337,9 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 
 print_format() ->
-    [{"brand",           "0",  "0"},
-     {"style_number",    "0",  "0"},
-     {"type",            "0",  "0"},
-     {"color",           "0",  "0"},
-     {"size",            "0",  "0"} 
+    [{"brand",           "0"},
+     {"style_number",    "0"},
+     {"type",            "0"},
+     {"color",           "0"},
+     {"size",            "0"} 
     ].

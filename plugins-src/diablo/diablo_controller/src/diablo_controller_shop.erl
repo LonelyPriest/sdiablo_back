@@ -87,10 +87,11 @@ init([]) ->
 handle_call({new_shop, Merchant, Props}, _From, State)->
     ?DEBUG("new shop with props ~p", [Props]),
     Name      = ?v(<<"name">>, Props),
-    Shopowner = ?v(<<"shopowner">>, Props, -1),
+    Shopowner = ?v(<<"shopowner">>, Props, []),
     Address   = ?v(<<"address">>, Props),
     OpenDate  = ?v(<<"open_date">>, Props),
     Repo      = ?v(<<"repo">>, Props, -1),
+    Datetime  = ?utils:current_time(format_localtime),
     
     %% name can not be same
     Sql = "select id, name"
@@ -102,7 +103,8 @@ handle_call({new_shop, Merchant, Props}, _From, State)->
     case ?sql_utils:execute(s_read, Sql) of
 	{ok, []} -> 
 	    Sql1 = "insert into shops"
-		++ "(repo, type, name, address, open_date, shopowner, merchant)"
+		++ "(repo, type, name, address, open_date, master"
+		", merchant, entry_date)"
 		++ " values ("
 		++ ?to_s(Repo) ++ ","
 		++ ?to_s(?SHOP) ++ ","
@@ -110,8 +112,9 @@ handle_call({new_shop, Merchant, Props}, _From, State)->
 		++ "\"" ++ ?to_s(Address) ++ "\","
 		%% ++ ?to_s(Type) ++ ","
 		++ "\"" ++ ?to_s(OpenDate) ++ "\","
-		++ "\"" ++ ?to_s(Shopowner) ++ "\","
-		++ ?to_s(Merchant) ++ ");",
+		++ "\"" ++ ?to_s(Shopowner) ++ "\"," 
+		++ ?to_s(Merchant) ++ ","
+		++ "\"" ++ ?to_s(Datetime) ++ "\")",
 		
 	    ?DEBUG("sql to shop ~ts", [?to_b(Sql1)]),
 	    Reply = ?sql_utils:execute(insert, Sql1),
@@ -156,7 +159,7 @@ handle_call({update_shop, Merchant, ShopId, Attrs}, _From, State) ->
 	    Updates = ?utils:v(repo, integer, Repo) 
 		++ ?utils:v(name, string, Name)
 		++ ?utils:v(address, string, Address)
-		++ ?utils:v(shopowner, integer, Master)
+		++ ?utils:v(master, string, Master)
 		++ ?utils:v(charge, integer, Charge),
 	    Sql1 = "update shops set "
 		++ ?utils:to_sqls(proplists, comma, Updates)
@@ -203,7 +206,8 @@ handle_call({list_shop, Merchant, Conditions}, _From, State) ->
 	   [Merchant, Conditions]),
 
     Sql1 = "select a.id, a.repo, a.name, a.address, a.type"
-	", a.open_date, a.shopowner as shopowner_id, a.charge as charge_id"
+	", a.open_date, a.master as shopowner_id, a.charge as charge_id"
+	", a.entry_date"
 	%% ", b.name as shopowner"
 	++ " from shops a"
 	%% ++ " left join employees b on a.shopowner=b.number"
@@ -268,8 +272,6 @@ handle_call({get_repo, Merchant, RepoId}, _From, State) ->
 	++ " and type=" ++ ?to_s(?REPERTORY),
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
-
-
 
 %% bad repertory
 handle_call({new_badrepo, Merchant, Attrs}, _From, State) ->

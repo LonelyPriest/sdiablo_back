@@ -63,7 +63,9 @@ var wsaleUtils = function(){
 		add.org_price = s.org_price;
 		add.tag_price = s.tag_price;
 		add.fprice    = s.fprice;
+		add.rprice    = s.rprice;
 		add.fdiscount = s.fdiscount;
+		add.rdiscount   = s.rdiscount;
 		add.o_fdiscount = s.fdiscount;
 		add.o_fprice    = s.fprice;
 		

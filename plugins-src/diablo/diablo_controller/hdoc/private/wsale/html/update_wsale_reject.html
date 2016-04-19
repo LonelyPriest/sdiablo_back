@@ -116,7 +116,8 @@
 	      <div class="input-group">
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>实付</span>
-	  	<input class="form-control" readonly
+	  	<input class="form-control"
+		       x-ng-pulsate
 	  	       x-ng-model="select.has_pay"/>
 	      </div>
 	    </div>
@@ -137,19 +138,32 @@
 	      <div class="input-group"> 
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-plane fg-red"></i>退款</span>
-	  	<input class="form-control" type="text" readonly
-	  	       x-ng-model="select.has_pay"
-		       x-ng-pulsate/>
+	  	<input class="form-control" type="text"
+		       readonly
+	  	       x-ng-model="select.has_pay" />
 	      </div>
 	    </div>
 
-	    <div class="col-xs-9 col-md-9"> 
+	    <div class="col-xs-3 col-md-3"> 
 	      <div class="input-group"> 
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-yen fg-red"></i>返卡</span>
+	  	<input class="form-control" readonly
+	  	       x-ng-model="select.withdraw"/>
+	      </div>
+	    </div>
+	    
+	    <div class="col-xs-3 col-md-3"> 
+	      <div class="input-group">
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>帐户余额</span>
 	  	<input class="form-control" readonly
-	  	       x-ng-model="select.surplus"/> 
-		
+	  	       x-ng-model="select.surplus"/>
+	      </div>
+	    </div>
+	    
+	    <div class="col-xs-3 col-md-3"> 
+	      <div class="input-group">
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>本次结余</span>
 	  	<input class="form-control" type="text" readonly

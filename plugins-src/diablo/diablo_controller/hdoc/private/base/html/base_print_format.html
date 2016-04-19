@@ -20,28 +20,14 @@
       <!--BEGIN table container-->
       <div class="portlet-body">
 	<!--BEGIN table-toolbar-->
-	<div class="table-toolbar">
-	  <div class="alert alert-warning" role="alert">
-	    <p>
-	      <span class="fg-blue">打印宽度之和不能超过真实打印宽度。</span>
-	      <span class="fg-red">注意：打印机设置横打时，尺码长度为尺码宽度 * 尺码个数</span>
-	    </p>
-	    <p>
-	      <span class="fg-red">
-		特别注意：手与尺码选项不能同时选；尺码组名称与尺码不能同时选！！</span>
-	    </p>
-	  </div>
-
+	<div class="table-toolbar"> 
 	  <div class="row form-group"> 
 	    <div class="col-sm-12 col-md-12">
 	      <select class="form-control"
 		      x-ng-model="select.shop"
 		      x-ng-change="select.pformat=shop_format(select.shop)"
 		      x-ng-options="s as s.name for s
-				      in shops|filter:$viewValue|limitTo:8">
-		  <!-- <option value=""> -->
-		  <!--     == 请选择店铺或仓库，默认所有配置相同 == -->
-		  <!-- <option> -->
+				      in shops|filter:$viewValue|limitTo:8"> 
 		</select> 
 	    </div> 
 	  
@@ -61,7 +47,6 @@
 		    <th>序号</th>
 		    <th>名称</th>
 		    <th>是否打印</th>
-		    <th>打印宽度</th>
 		    <th>日期</th>
 		    <th>操作</th>
 		  </tr>
@@ -76,7 +61,6 @@
 			  <span ng-switch-when="0">否</span>
 		      </span>
 		    </td>
-		    <td>{{f.width}}</td>
 		    <td>{{f.entry_date}}</td>
 
 		    <td class="col-md-2"> 
@@ -167,11 +151,6 @@
 	    x-ng-click="cancel()">取消</button>
   </div>
 </script>
-
-
-
-
-
 
 
 

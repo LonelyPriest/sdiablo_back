@@ -66,6 +66,7 @@
 		    <th>地址</th>
 		    <th x-ng-show="authen_list_repo">所属仓库</th>
 		    <th>开张日期</th>
+		    <th>创建日期</th>
 		    <th>操作</th>
 		  </tr>
 		</thead>
@@ -73,7 +74,10 @@
 		  <tr ng-repeat="shop in shops">
 		    <td>{{shop.order_id}}</td> 
 		    <td>{{shop.name}}</td>
-		    <td>{{shop.charge.name}}</td> 
+		    <td>
+		      <sapn x-ng-if="shop.charge_id === -1">暂无</span>
+		      <span x-ng-if="shop.charge_id !== -1">{{shop.charge.name}}</span>
+		    </td> 
 		    <td>
 		      <span x-ng-if="!shop.shopowner.name">暂无</span>
 		      <span x-ng-if="shop.shopowner.name">
@@ -92,14 +96,15 @@
 		      <!-- {{shop.repo}} -->
 		    </td>
 		    <td>{{shop.open_date}}</td>
+		    <td>{{shop.entry_date}}</td>
 
 		    <td>
-		      <button class="btn btn-success diablo-button"
-			      x-ng-click="on_sale(shop)">促销
-			<i class="glyphicon glyphicon-exclamation-sign"></i>
+		      <!-- <button class="btn btn-success diablo-button" -->
+		      <!-- 	      x-ng-click="on_sale(shop)">促销 -->
+		      <!-- 	<i class="glyphicon glyphicon-exclamation-sign"></i> -->
 		      </button>
 		      <button class="btn red-sunglo diablo-button"
-			      x-ng-click="charge(shop)">充值
+			      x-ng-click="charge(shop)">充值方案
 			<i class="glyphicon glyphicon-upload"></i></button>
                       <button class="btn diablo-button btn-warning"
 			      x-ng-click="edit_shop(shop)">修改
@@ -375,9 +380,6 @@
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>  
 </script>
-
-
-
 
 
 

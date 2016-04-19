@@ -167,7 +167,8 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
      */
     $scope.disable_save = function(){
 	// save one time only
-	if ($scope.has_saved){
+	if ($scope.has_saved
+	    || $scope.select.should_pay > $scope.select.has_pay){
 	    return true;
 	}; 
 
@@ -179,6 +180,7 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
     };
 
     var get_update_amount = function(newAmounts, oldAmounts){
+	console.log(newAmounts, oldAmounts);
 	var changedAmounts = [];
 	var found = false;
 	for (var i=0, l1=newAmounts.length; i < l1; i++){
@@ -297,7 +299,7 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 		    && oldInv.brand.id === newInv.brand.id){
 		    found = true;
 		    break;
-		} 
+		}
 	    }
 	    
 	    if ( !found ){
@@ -373,25 +375,27 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 	    datetime:       dateFilter($scope.select.rsn_datetime, "yyyy-MM-dd HH:mm:ss"),
 	    employee:       $scope.select.employee.id,
 	    
-	    balance:        parseFloat($scope.select.surplus), 
+	    balance:        parseFloat($scope.select.surplus),
+	    withdraw:       -$scope.select.withdraw, 
 	    should_pay:     -setv($scope.select.should_pay),
-	    withdraw:       -$scope.select.withdraw,
 	    comment:        sets($scope.select.comment),
 	    
-	    old_shop:       $scope.old_select.shop.id,
+	    // old_shop:       $scope.old_select.shop.id,
 	    old_retailer:   $scope.old_select.retailer.id, 
 	    old_balance:    $scope.old_select.surplus,
 	    old_should_pay: -$scope.old_select.should_pay,
 	    old_withdraw:   -$scope.old_select.withdraw,
 	    old_datetime:   dateFilter($scope.old_select.rsn_datetime,
-				       "yyyy-MM-dd HH:mm:ss"), 
-	    total:         -seti($scope.select.total)
+				       "yyyy-MM-dd HH:mm:ss"),
+	    old_score:      -$scope.old_select.score,
+	    
+	    total:          -seti($scope.select.total),
+	    score:          -$scope.select.score
 	};
 	
 	console.log(added);
-	console.log(base);
-
-	return;
+	console.log(base); 
+	
 	// console.log($scope.old_select);
 	if ($scope.select.shop.id !== $scope.old_select.shop.id){
 	    dialog.response_with_callback(
@@ -519,7 +523,7 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 	console.log(inv);
 	inv.$edit = true;
 	inv.$new  = false;
-	inv.amounts[0].sell_count = inv.sell;
+	inv.amounts[0].sell_count = inv.reject;
 	// oreder
 	inv.order_id = $scope.inventories.length; 
 	// add new line
@@ -732,7 +736,7 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
     $scope.save_free_update = function(inv){
 	inv.free_update = false;
 	// console.log(inv);
-	inv.amounts[0].sell_count = inv.sell;
+	inv.amounts[0].sell_count = inv.reject;
 	$scope.re_calculate(); 
     }
 
@@ -741,7 +745,7 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 	inv.fdiscount = inv.o_fdiscount;
 	inv.fprice    = inv.o_fprice;
 	
-	inv.sell = inv.amounts[0].sell_count;
+	inv.reject = inv.amounts[0].sell_count;
 	$scope.re_calculate(); 
     }
 

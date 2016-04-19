@@ -66,10 +66,9 @@
 		  <tr>
 		    <th>序号</th>
 		    <th>名称</th>
-		    <th>类型</th> 
-		    <th class="danger">余额</th>
-		    <th class="success">消费</th>
-		    <th class="info">积分</th>
+		    <th class="danger">帐户余额</th>
+		    <th class="success">累计消费</th>
+		    <th class="info">累计积分</th>
 		    <th>联系方式</th> 
 		    <th>联系地址</th>
 		    <th>日期</th>
@@ -80,8 +79,7 @@
 		  <tr ng-repeat="r in filter_retailers">
 		    <td>{{r.order_id}}</td>
 		    <td>{{r.name}}</td>
-		    <td>{{r.type.name}}</td>
-		    <td>{{round(r.balance)}}</td>
+		    <td>{{r.balance}}</td>
 		    <td>{{r.consume}}</td>
 		    <td>{{r.score}}</td>
 		    <td>
@@ -94,12 +92,11 @@
 		    <td>{{r.entry_date}}</td>
 
 		    <td>
-		      <button class="btn diablo-button green"
+		      <button class="btn red-sunglo diablo-button "
 			      x-ng-click="charge(r)">充值
 			<i class="glyphicon glyphicon-yen"></i></button>
 		      
 		      <button class="btn diablo-button purple"
-			      x-ng-disabled="true"
 			      x-ng-click="trans_info(r)">对帐
 			<i class="glyphicon glyphicon-check"></i></button>
 		      
@@ -196,10 +193,8 @@
 	  <div ng-show="rForm.name.$invalid && !rForm.name.$pristine">
 	    <span class="fg-red">必需以中文开头，只允许字母，数字</span>
 	  </div> 
-	</div>
-
+	</div> 
 	
-
 	<!-- <div class="form-group"> -->
 	<!--   <div class="input-group"> -->
 	<!--     <span class="input-group-addon"> -->
@@ -219,17 +214,17 @@
 	<!--   </div>  -->
 	<!-- </div> -->
 
-	<div class="form-group">
-	  <div class="input-group">
-	    <span class="input-group-addon">
-	      <i class="glyphicon glyphicon-hand-right fg-red"></i>
-	      类型 </span>
-	    <select class="form-control" type="text"
-	  	    x-ng-model="params.retailer.type" 
-	  	    x-ng-options="t as t.name for t in params.types">
-	    </select>
-	  </div>
-	</div>
+	<!-- <div class="form-group"> -->
+	<!--   <div class="input-group"> -->
+	<!--     <span class="input-group-addon"> -->
+	<!--       <i class="glyphicon glyphicon-hand-right fg-red"></i> -->
+	<!--       类型 </span> -->
+	<!--     <select class="form-control" type="text" -->
+	<!--   	    x-ng-model="params.retailer.type"  -->
+	<!--   	    x-ng-options="t as t.name for t in params.types"> -->
+	<!--     </select> -->
+	<!--   </div> -->
+	<!-- </div> -->
 	
 	<!--mobile-->
 	<div class="form-group"> 

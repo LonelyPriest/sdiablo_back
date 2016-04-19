@@ -147,12 +147,12 @@ sidebar(Session) ->
 		     {"repo_detail", "仓库详情", "glyphicon glyphicon-book"}}
 		   ]),
 
-    BadRepoAuthen = AuthenFun(
-		   [{?new_badrepo,
-		     {"badrepo_new", "新增次品仓", "glyphicon glyphicon-plus"}},
-		    {?list_badrepo,
-		     {"badrepo_detail", "次品仓详情", "glyphicon glyphicon-book"}}
-		   ]), 
+    %% BadRepoAuthen = AuthenFun(
+    %% 		   [{?new_badrepo,
+    %% 		     {"badrepo_new", "新增次品仓", "glyphicon glyphicon-plus"}},
+    %% 		    {?list_badrepo,
+    %% 		     {"badrepo_detail", "次品仓详情", "glyphicon glyphicon-book"}}
+    %% 		   ]), 
 
     SidebarShop = 
 	case ShopAuthen of
@@ -165,24 +165,17 @@ sidebar(Session) ->
 	case RepoAuthen of
 	    []   -> [];
 	    Repo ->
-		[{{"repo", "仓库", "icon icon-twitter"}, Repo}]
-		%% ?menu:sidebar(level_1_menu, Sidebar)
-		%% ?menu:sidebar(
-		%%    level_2_menu,
-		%%    [{{"shop", "店铺管理", "glyphicon glyphicon-shopping-cart"}, Shops}])
+		[{{"repo", "仓库", "icon icon-twitter"}, Repo}] 
 	end,
 
-    SidebarBadRepo =
-	case BadRepoAuthen of
-	    []   -> [];
-	    BadRepo ->
-		[{{"repo", "次品仓", "glyphicon glyphicon-fire"}, BadRepo}]
-		%% ?menu:sidebar(level_1_menu, Sidebar)
-		%% ?menu:sidebar(
-		%%    level_2_menu,
-		%%    [{{"shop", "店铺管理", "glyphicon glyphicon-shopping-cart"}, Shops}])
-	end,
+    %% SidebarBadRepo =
+    %% 	case BadRepoAuthen of
+    %% 	    []   -> [];
+    %% 	    BadRepo ->
+    %% 		[{{"repo", "次品仓", "glyphicon glyphicon-fire"}, BadRepo}] 
+    %% 	end,
 
-    ?menu:sidebar(level_2_menu, SidebarShop ++ SidebarRepo ++ SidebarBadRepo).
+    %% ?menu:sidebar(level_2_menu, SidebarShop ++ SidebarRepo ++ SidebarBadRepo).
+    ?menu:sidebar(level_2_menu, SidebarShop ++ SidebarRepo).
 
 

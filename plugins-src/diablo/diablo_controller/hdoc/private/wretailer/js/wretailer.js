@@ -7,10 +7,6 @@ wretailerApp.controller("wretailerNewCtrl", function(
 		      score:        diabloPattern.number,
 		      password:       diabloPattern.num_passwd};
 
-    $scope.retailer_types = wretailerService.retailer_types;
-
-    $scope.retailer = {type: $scope.retailer_types[1]}; 
-    
     $scope.new_wretailer = function(retailer){
 	console.log(retailer); 
 
@@ -43,9 +39,6 @@ wretailerApp.controller("wretailerDetailCtrl", function(
     $scope.employees  = filterEmployee;
     $scope.charges    = filterCharge;
     $scope.shops      = user.sortShops;
-    
-    $scope.retailer_types = wretailerService.retailer_types;
-
     // console.log($scope.employees);
     // console.log($scope.shops);
     
@@ -182,7 +175,6 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	    angular.forEach($scope.retailers, function(r){
 		$scope.total_balance =
 		    $scope.total_balance + $scope.round(r.balance); 
-		r.type = diablo_get_object(r.type_id, $scope.retailer_types);
 	    })
 	    
 	    diablo_order($scope.retailers);
@@ -242,6 +234,9 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 
     $scope.charge = function(retailer){
 	console.log($scope.charges);
+	dialog.response(false, "会员充值", "暂不支持此操作！！");
+	return;
+	
 	var get_charge = function(charge_id) {
 	    for (var i=0, l=$scope.charges.length; i<l; i++){
 		if (charge_id === $scope.charges[i].id){
@@ -383,7 +378,6 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	    "update-wretailer.html", undefined, callback, $scope,
 	    {retailer:    old_retailer, 
 	     pattern:     pattern,
-	     types:       $scope.retailer_types,
 	     check_same:  check_same,
 	     check_exist: check_exist})
     };

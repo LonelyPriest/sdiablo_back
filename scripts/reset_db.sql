@@ -49,12 +49,12 @@ drop table w_printer;
 -- drop table color_type;
 
 
--- insert into users(name, password, type, max_create, create_date) values('admin', 'admin123', 0, 1, now());
--- insert into color_type(name) values('红色');
--- insert into color_type(name) values('黄色');
--- insert into color_type(name) values('绿色');
--- insert into color_type(name) values('蓝色');
--- insert into color_type(name) values('黑色');
--- insert into color_type(name) values('白色');
--- insert into color_type(name) values('紫色');
--- insert into color_type(name) values('灰色');
+insert into users(name, password, type, max_create, create_date) values('admin', 'admin123', 0, 1, now());
+insert into color_type(name) values('红色');
+insert into color_type(name) values('黄色');
+insert into color_type(name) values('绿色');
+insert into color_type(name) values('蓝色');
+insert into color_type(name) values('黑色');
+insert into color_type(name) values('白色');
+insert into color_type(name) values('紫色');
+insert into color_type(name) values('灰色');

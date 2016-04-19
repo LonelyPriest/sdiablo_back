@@ -89,7 +89,7 @@ init([]) ->
 handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
     ?DEBUG("new_retailer with attrs ~p", [Attrs]),
     Name     = ?v(<<"name">>, Attrs),
-    Type     = ?v(<<"type">>, Attrs, 0),
+    %% Type     = ?v(<<"type">>, Attrs, 0),
     Passwd   = ?v(<<"password">>, Attrs, []),
     Balance  = ?v(<<"balance">>, Attrs, 0), 
     Consume  = ?v(<<"consume">>, Attrs, 0),
@@ -108,11 +108,11 @@ handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
     case ?sql_utils:execute(read, Sql) of
 	{ok, []} -> 
 	    Sql2 = "insert into w_retailer("
-		"name, type, password, balance, consume, score"
+		"name, password, balance, consume, score"
 		" ,mobile, address, merchant, entry_date)"
 		++ " values ("
 		++ "\"" ++ ?to_s(Name) ++ "\","
-		++ ?to_s(Type) ++ ","
+		%% ++ ?to_s(Type) ++ ","
 		++ "\"" ++ ?to_s(Passwd) ++ "\","
 		++ ?to_s(Balance) ++ ","
 		++ ?to_s(Consume) ++ "," 
@@ -120,7 +120,7 @@ handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
 		++ "\"" ++ ?to_s(Mobile) ++ "\","
 		++ "\"" ++ ?to_s(Address) ++ "\"," 
 		++ ?to_s(Merchant) ++ ","
-		++ "\"" ++ ?utils:current_time(localtime) ++ "\");", 
+		++ "\"" ++ ?utils:current_time(format_localtime) ++ "\");", 
 	    Reply = ?sql_utils:execute(insert, Sql2),
 	    ?w_user_profile:update(retailer, Merchant),
 	    {reply, Reply, State}; 
@@ -138,7 +138,7 @@ handle_call({update_retailer, Merchant, RetailerId, Attrs}, _From, State) ->
     Mobile   = ?v(<<"mobile">>, Attrs),
     Address  = ?v(<<"address">>, Attrs), 
     Balance  = ?v(<<"balance">>, Attrs),
-    Type     = ?v(<<"type">>, Attrs),
+    %% Type     = ?v(<<"type">>, Attrs),
 
     NameExist =
 	case Name of
@@ -158,7 +158,7 @@ handle_call({update_retailer, Merchant, RetailerId, Attrs}, _From, State) ->
     case NameExist of
 	{ok, []} ->
 	    Updates = ?utils:v(name, string, Name)
-		++ ?utils:v(type, integer, Type)
+		%% ++ ?utils:v(type, integer, Type)
 		++ ?utils:v(balance, float, Balance)
 		++ ?utils:v(mobile, string, Mobile)
 		++ ?utils:v(address, string, Address), 
@@ -195,7 +195,7 @@ handle_call({check_password, Merchant, RetailerId, Password}, _From, State) ->
 handle_call({get_retailer, Merchant, RetailerId}, _From, State) ->
     ?DEBUG("get_retailer with merchant ~p, retailerId ~p",
 	   [Merchant, RetailerId]),
-    Sql = "select id, name, type as type_id, mobile, address"
+    Sql = "select id, name, mobile, address"
 	", balance, merchant, entry_date"
 	" from w_retailer where id=" ++ ?to_s(RetailerId)
 	++ " and merchant=" ++ ?to_s(Merchant), 
@@ -214,8 +214,7 @@ handle_call({delete_retailer, Merchant, RetailerId}, _From, State) ->
 
 handle_call({list_retailer, Merchant}, _From, State) ->
     ?DEBUG("lookup retail with merchant ~p", [Merchant]),
-    Sql = "select id, name, type as type_id"
-	", balance, consume, score, mobile, address"
+    Sql = "select id, name, balance, consume, score, mobile, address"
 	", merchant, entry_date"
 	" from w_retailer"
 	" where merchant=" ++ ?to_s(Merchant)
@@ -401,8 +400,8 @@ handle_call({new_score, Merchant, Attrs}, _From, State) ->
     end;
 
 handle_call({list_score, Merchant}, _From, State) ->
-    Sql = "select id, name, balance, score, type as type_id, sdate, edate"
-	", remark, entry"
+    Sql = "select id, name, balance, score, type as type_id"
+	", sdate, edate, remark, entry"
 	" from w_score"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and deleted=" ++ ?to_s(?NO),

@@ -145,14 +145,14 @@ action(Session, Req, {"destroy_login_user"}, Payload) ->
     ?utils:respond(200, Req, ?succ(destroy_login_user, User)).
 
 sidebar(Session) -> 
-    %% Card = 
-    %% 	case ?right_auth:authen(?new_w_bank_card, Session) of
-    %% 	    {ok, ?new_w_bank_card} ->
-    %% 		[{"new_bank_card", "新增银行卡", "glyphicon glyphicon-plus"},
-    %% 		 {"bank_card_detail", "银行卡详情", "glyphicon glyphicon-briefcase"}];
-    %% 	    _ ->
-    %% 		[{"bank_card_detail", "银行卡详情", "glyphicon glyphicon-briefcase"}]
-    %% 	end, 
+    Card = 
+    	case ?right_auth:authen(?new_w_bank_card, Session) of
+    	    {ok, ?new_w_bank_card} ->
+    		[{"new_bank_card", "新增银行卡", "glyphicon glyphicon-plus"},
+    		 {"bank_card_detail", "银行卡详情", "glyphicon glyphicon-briefcase"}];
+    	    _ ->
+    		[{"bank_card_detail", "银行卡详情", "glyphicon glyphicon-briefcase"}]
+    	end, 
 
     Print =
 	case ?right_auth:authen(?new_w_printer_conn, Session) of
@@ -165,7 +165,7 @@ sidebar(Session) ->
 	end, 
     
     SBase = [
-	     %% {{"bank", "银行卡设置", "glyphicon glyphicon-credit-card"}, Card},
+	     {{"bank", "银行卡设置", "glyphicon glyphicon-credit-card"}, Card},
 	     {{"printer", "打印机", "glyphicon glyphicon-print"}, Print},
 	     {{"setting", "基本设置", "glyphicon glyphicon-cog"},
 	      case ?session:get(type, Session) of

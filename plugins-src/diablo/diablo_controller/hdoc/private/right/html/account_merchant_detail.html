@@ -54,24 +54,20 @@
 		    <th>商户</th>
 		    <th>经营人</th>
 		    <th>帐号类型</th>
-		    <th>允许在线人数</th>
+		    <th>同时在线人数</th>
 		    <th>帐号说明</th>
+		    <th>创建日期</th>
 		    <th>操作</th>
 		  </tr>
 		</th>
 		<tbody>
 		  <tr ng-repeat="account in accounts">
-		    <td>{{account.order_id}}</td>
-		    
-		    <td>{{account.name}}</td>
-		    
-		    <td>{{account.merchant}}</td>
-		    
-		    <td>{{account.owner}}</td>
-		    
+		    <td>{{account.order_id}}</td> 
+		    <td>{{account.name}}</td> 
+		    <td>{{account.merchant}}</td> 
+		    <td>{{account.owner}}</td> 
 		    <td>{{accountDesc[account.type]}}</td>
-
-		    <td>
+		    <td class="text-center">
 		      <div x-ng-switch on="account.max_create">
 			<span x-ng-switch-when="-1">不涉及</span>
 			<span x-ng-switch-default>{{account.max_create}}</span>
@@ -79,6 +75,7 @@
 		    </td>
 		    
 		    <td>{{roleDesc[account.type]}}</td>
+		    <td>{{account.create_date}}</td> 
 		    
 		    <td class="col-md-3"> 
 		      <button class="btn btn-primary btn-xs red-stripe" 
