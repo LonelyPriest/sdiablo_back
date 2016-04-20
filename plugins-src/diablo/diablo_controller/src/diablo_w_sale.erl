@@ -1498,10 +1498,10 @@ filter_table(w_sale_with_page,
     
     Sql = "select a.id, a.rsn, a.employ as employee_id"
     	", a.retailer as retailer_id, a.shop as shop_id"
-    	", a.promotion as pid, a.charge as cid"
+    	", a.promotion as pid"
 	
 	", a.balance, a.should_pay, a.cash, a.card, a.withdraw, a.verificate"
-	", a.cbalance, a.sbalance, a.total, a.score"
+	", a.total, a.score"
 	
 	", a.comment, a.type, a.state, a.entry_date"
     	" from w_sale a"

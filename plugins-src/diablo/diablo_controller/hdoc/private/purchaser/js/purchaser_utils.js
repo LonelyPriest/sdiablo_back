@@ -13,8 +13,7 @@ var stockUtils = function(){
 	},
 
 	prompt_name: function(style_number, brand, type) {
-	    var name = inv.style_number
-                + "，" + inv.brand + "，" + inv.type;
+	    var name = style_number + "，" + brand + "，" + type;
 	    var prompt = name + "," + diablo_pinyin(name); 
 	    return {name: name, prompt: prompt};
 	}

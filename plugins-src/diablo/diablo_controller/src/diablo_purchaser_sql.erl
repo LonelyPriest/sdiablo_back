@@ -200,14 +200,19 @@ good(detail_with_pagination,
 
 good(detail_no_join, Merchant, StyleNumber, Brand) ->
     "select a.id, a.style_number, a.brand as brand_id"
-	", a.firm as firm_id, a.type as type_id"
-	", a.sex, a.color, a.season, a.size" 
-	++ " from w_inventory_good a" 
-	++ " where "
-	++ " a.style_number=" ++ "\"" ++ ?to_s(StyleNumber) ++ "\""
+	", a.type as type_id, a.firm as firm_id"
+	", a.sex, a.color, a.year, a.season, a.size, a.s_group, a.free"
+	", a.org_price, a.tag_price, a.ediscount"
+	", a.discount, a.path, a.alarm_day, a.entry_date" 
+	", b.name as brand"
+	", c.name as type"
+	" from w_inventory_good a, brands b, inv_types c"
+	" where a.merchant=" ++ ?to_s(Merchant)
+	++ " and a.style_number='" ++ ?to_s(StyleNumber) ++ "'" 
 	++ " and brand=" ++ ?to_s(Brand)
-	++ " and a.merchant=" ++ ?to_s(Merchant)
-	++ " and a.deleted=" ++ ?to_s(?NO);
+	++ " and a.deleted=" ++ ?to_s(?NO)
+	++ " and a.brand=b.id"
+	++ " and a.type=c.id" ;
 
 good(used_detail, Merchant, StyleNumber, Brand) ->
     "select a.id, a.style_number, a.brand as brand_id"

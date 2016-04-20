@@ -740,7 +740,7 @@ create table w_sale_detail(
     fdiscount      DECIMAL(4, 1), -- max: 100
     rdiscount      DECIMAL(4, 1), -- max: 100
     fprice         DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
-    rpice          DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
+    rprice         DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
     
     path           VARCHAR(255) default null, -- the image path
     comment        VARCHAR(127) default null,

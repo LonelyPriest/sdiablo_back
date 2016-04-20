@@ -557,15 +557,15 @@
 		      <span class="input-group-addon bg-white fg-red">*</span>
 		    </div>
 		  </div>
-		  <div ng-if="goodForm.style_number.$invalid 
-			      && !goodForm.style_number.$pristine">
+		  <div ng-if="form.gForm.style_number.$invalid 
+			      && !form.gForm.style_number.$pristine">
 		    <span class="fg-red">
 		      款号只能是字母，数字或横杠，2-10个字符
 		    </span>
 		  </div>
 		  <div ng-if="is_same_good">
 		    <span class="fg-red">
-		      该款号，品牌所对应的货品已存在，请重新输入
+		      该款号，品牌所对应的货品已存在，请直接录入数量
 		    </span>
 		  </div>
 		</div>
@@ -577,8 +577,8 @@
 		  </label>
 		  <div class="col-sm-6 col-md-6"> 
 		    <div class="input-group">
-		      <div x-ng-class="{'has-error':goodForm.brand.$invalid
-				       && !goodForm.brand.$pristine
+		      <div x-ng-class="{'has-error':form.gForm.brand.$invalid
+				       && !form.gForm.brand.$pristine
 				       || is_same_good}">
 			<input type="text"
 			       class="form-control"
@@ -594,15 +594,15 @@
 		      <span class="input-group-addon bg-white fg-red">*</span> 
 		    </div>
 		  </div>	      
-		  <div ng-if="goodForm.brand.$invalid
-			      && !goodForm.brand.$pristine">
+		  <div ng-if="form.gForm.brand.$invalid
+			      && !form.gForm.brand.$pristine">
 		    <span style="color:red">
 		      品牌只能是中文，字母或数字
 		    </span>
 		  </div>
 		  <div ng-if="is_same_good">
 		    <span class="fg-red">
-		      该款号，品牌所对应的货品已存在，请重新输入
+		      该款号，品牌所对应的货品已存在，请直接录入数量
 		    </span>
 		  </div>
 		</div>
@@ -614,8 +614,8 @@
 		  </label>
 		  <div class="col-sm-6 col-md-6"> 
 		    <div class="input-group">
-		      <div x-ng-class="{'has-error':goodForm.type.$invalid
-				       && !goodForm.type.$pristine}">
+		      <div x-ng-class="{'has-error':form.gForm.type.$invalid
+				       && !form.gForm.type.$pristine}">
 			<input type="text"
 			       class="form-control"
 			       name="type"
@@ -630,8 +630,8 @@
 		      <span class="input-group-addon bg-white fg-red">*</span>
 		    </div>
 		  </div>
-		  <div ng-show="goodForm.type.$invalid
-				&& !goodForm.type.$pristine">
+		  <div ng-show="form.gForm.type.$invalid
+				&& !form.gForm.type.$pristine">
 		    <span style="color:red">
 		      请输入中文，字母或数字，必须以中文开头
 		    </span>
@@ -694,8 +694,8 @@
 		      <span class="input-group-addon bg-white fg-red">*</span> 
 		    </div>
 		  </div>
-		  <div ng-if="goodForm.tag_price.$invalid
-			      && !goodForm.tag_price.$pristine">
+		  <div ng-if="form.gForm.tag_price.$invalid
+			      && !form.gForm.tag_price.$pristine">
 		    <span style="color:red">
 		      格式（dd.dd）支持二位小数
 		    </span>
@@ -708,8 +708,8 @@
 		  </label>
 		  <div class="col-sm-6 col-md-6"> 
 		    <div class="input-group">
-		      <div ng-class="{'has-error':goodForm.discount.$invalid
-				     && !goodForm.discount.$pristine}">
+		      <div ng-class="{'has-error':form.gForm.discount.$invalid
+				     && !form.gForm.discount.$pristine}">
 			<input class="form-control"
 			       type="number" step="1" 
 			       name="discount"
@@ -721,50 +721,39 @@
 		      <span class="input-group-addon bg-white fg-red">*</span>
 		    </div>
 		  </div>
-		  <div ng-if="goodForm.discount.$invalid
-			      && !goodForm.discount.$pristine">
+		  <div ng-if="form.gForm.discount.$invalid
+			      && !form.gForm.discount.$pristine">
 		    <span style="color:red">
 		      两位整数，无折扣请输入100
 		    </span>
 		  </div>
-		</div>
-
-		<!-- <div class="form-group diablo-good-form-group"> -->
-		<!--   <label class="col-sm-3 col-md-3 control-label"> -->
-		<!-- 	促销方案</label> -->
-		<!--   <div class="col-sm-6 col-md-6"> -->
-	    	<!-- 	<select class="form-control" -->
-	    	<!-- 		x-ng-model="good.promotion" -->
-	    	<!-- 		x-ng-options="p as p.name for p in promotions"> -->
-	    	<!-- 	</select> -->
-		<!--   </div> -->
-		<!-- </div> -->
+		</div> 
 
 		<!-- alarm day-->
-		<div class="form-group diablo-good-form-group">
-		  <label class="col-sm-3 col-md-3 control-label">
-		    预警天数
-		  </label>
-		  <div class="col-sm-6 col-md-6"> 
-		    <div class="input-group">
-		      <div ng-class="{'has-error':goodForm.alarm.$invalid
-				     && !goodForm.discount.$pristine}">
-			<input class="form-control"
-			       type="number" step="1" 
-			       name="alarm"
-			       required
-			       placeholder="请输入1到2位数字"
-			       x-ng-pattern="/^\d{1,2}$/"
-			       x-ng-model="good.alarm_day"/>
-		      </div>
-		      <span class="input-group-addon bg-white fg-red">*</span>
-		    </div>
-		  </div>
-		  <div ng-if="goodForm.alarm.$invalid
-			      && !goodForm.alarm.$pristine">
-		    <span style="color:red">请输入1到2位数字</span>
-		  </div>
-		</div>
+		<!-- <div class="form-group diablo-good-form-group"> -->
+		<!--   <label class="col-sm-3 col-md-3 control-label"> -->
+		<!--     预警天数 -->
+		<!--   </label> -->
+		<!--   <div class="col-sm-6 col-md-6">  -->
+		<!--     <div class="input-group"> -->
+		<!--       <div ng-class="{'has-error':form.gForm.alarm.$invalid -->
+		<!-- 		     && !form.gForm.discount.$pristine}"> -->
+		<!-- 	<input class="form-control" -->
+		<!-- 	       type="number" step="1"  -->
+		<!-- 	       name="alarm" -->
+		<!-- 	       required -->
+		<!-- 	       placeholder="请输入1到2位数字" -->
+		<!-- 	       x-ng-pattern="/^\d{1,2}$/" -->
+		<!-- 	       x-ng-model="good.alarm_day"/> -->
+		<!--       </div> -->
+		<!--       <span class="input-group-addon bg-white fg-red">*</span> -->
+		<!--     </div> -->
+		<!--   </div> -->
+		<!--   <div ng-if="form.gForm.alarm.$invalid -->
+		<!-- 	      && !form.gForm.alarm.$pristine"> -->
+		<!--     <span style="color:red">请输入1到2位数字</span> -->
+		<!--   </div> -->
+		<!-- </div> -->
 
 		<div class="form-group diablo-good-form-group">
 		  <label class="col-sm-3 col-md-3 control-label">
@@ -807,28 +796,6 @@
 		      </span>
 		    </div>
 		  </div> 
-		</div>
-
-		<div class="form-group diablo-good-form-group">
-		  <label class="col-sm-3 col-md-3 control-label">
-		    数量
-		  </label>
-		  <div class="col-sm-6 col-md-6"> 
-		    <div class="input-group">
-		      <input type="text" readonly
-			     class="form-control"
-			     x-ng-model="good.total"/>
-		      <span class="input-group-btn">
-			<button class="btn btn-primary"
-				x-ng-click="good_amount_detail()">
-			  <i class="glyphicon glyphicon-arrow-right"></i>
-			</button>
-			<button class="btn btn-success" x-ng-click="new_good_amount()">
-			  <i class="glyphicon glyphicon-plus"></i>
-			</button>
-		      </span>
-		    </div>
-		  </div> 
 		</div> 
 		
 		<!--BEGIN form action-->
@@ -837,7 +804,7 @@
 			      col-sm-4 col-md-offset-3 col-md-6">
 		    <div class="pull-right">
 		      <button type="submit" class="btn btn-primary"
-			      ng-disabled="goodForm.$invalid
+			      ng-disabled="form.gForm.$invalid
 					   || is_same_good"
 			      x-ng-click="new_good()">确定</button>
 		      <button type="button" class="btn btn-warning"
