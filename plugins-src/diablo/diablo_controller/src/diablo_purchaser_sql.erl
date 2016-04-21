@@ -518,10 +518,11 @@ inventory(new_rsn_groups, new, Merchant, Conditions, PageFun) ->
 	", b.type as type_id"
 	", b.season, b.amount"
 	", b.firm as firm_id"
-	", b.discount, b.s_group, b.free, b.year, b.path, b.entry_date"
+	", b.org_price, b.ediscount"
+	", b.s_group, b.free, b.year, b.path, b.entry_date"
 
 	", a.shop as shop_id"
-	", a.employ as employ_id"
+	", a.employ as employee_id"
 	", a.type"
 	
     	" from w_inventory_new_detail b, w_inventory_new a" 
@@ -533,30 +534,7 @@ inventory(new_rsn_groups, new, Merchant, Conditions, PageFun) ->
     	++ " and a.merchant=" ++ ?to_s(Merchant)
     	++ " and " ++ ?sql_utils:condition(
 			 time_with_prfix, StartTime, EndTime)
-	++ PageFun();
-    
-    %% CorrectCondition = ?utils:correct_condition(<<"a.">>, Conditions),
-    %% "select a.id, a.rsn, a.style_number, a.brand_id, a.type_id, a.season"
-    %% 	", a.amount, a.firm_id, a.discount, a.s_group"
-    %% 	", a.free, a.year, a.path, a.entry_date"
-
-    %% 	%% ", b.shop as shop_id, b.employ as employee_id, b.type"
-	
-    %% 	", a.shop_id, a.employee_id, a.type"
-
-    %% 	" from ("
-    %% 	"select a.id, a.rsn, a.style_number, a.brand as brand_id"
-    %% 	", a.type as type_id, a.season, a.amount, a.firm as firm_id"
-    %% 	", a.discount, a.s_group, a.free, a.year, a.path, a.entry_date"
-
-    %% 	", b.shop as shop_id, b.employ as employee_id, b.type"
-	
-    %% 	" from w_inventory_new_detail a"
-    %% 	%% " where " ++ ?utils:to_sqls(proplists, Conditions) ++ PageFun() ++ ") a" 
-    %% 	" inner join w_inventory_new b on a.rsn=b.rsn"
-	
-    %% 	" where "
-    %% 	++ ?utils:to_sqls(proplists, CorrectCondition) ++ PageFun() ++ ") a"; 
+	++ PageFun(); 
 
 inventory(new_detail, new, Merchant, Conditions, PageFun) ->
     SortConditions = sort_condition(w_inventory_new, Merchant, Conditions),
@@ -728,8 +706,7 @@ inventory_match(Merchant, StyleNumber, Shop, Firm) ->
 inventory_match(all_reject, Merchant, Shop, Firm, StartTime) ->
     "select a.id, a.style_number, a.brand as brand_id, a.type as type_id"
 	", a.sex, a.season, a.firm as firm_id, a.s_group, a.free, a.year"
-	", a.org_price, a.tag_price, a.pkg_price"
-	", a.price3, a.price4, a.price5, a.discount, a.path, a.alarm_day"
+	", a.org_price, a.tag_price, a.ediscount, a.discount, a.path, a.alarm_day"
 
 	", b.name as brand" 
 	", c.name as type"
@@ -737,10 +714,7 @@ inventory_match(all_reject, Merchant, Shop, Firm, StartTime) ->
 
 	" left join brands b on a.brand=b.id" 
 	" left join inv_types c on a.type=c.id"
-
-    %% " (select id, style_number, brand, type, sex, season"
-    %% ", firm, s_group, free, org_price, tag_price, pkg_price"
-    %% ", price3, price4, price5, discount, path from w_inventory"
+	
 	" where a.shop=" ++ ?to_s(Shop)
 	++ case Firm of
 	       [] -> [];
@@ -1031,7 +1005,7 @@ amount_reject(RSN, Merchant, Shop, Firm, Datetime, Inv, Amounts) ->
     Total       = ?v(<<"total">>, Inv),
     OrgPrice    = ?v(<<"org_price">>, Inv),
     TagPrice    = ?v(<<"tag_price">>, Inv), 
-    EDiscount   = ?v(<<"fdiscount">>, Inv),
+    EDiscount   = ?v(<<"ediscount">>, Inv),
     Discount    = ?v(<<"discount">>, Inv),
     Path        = ?v(<<"path">>, Inv, []), 
 

@@ -92,6 +92,8 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 	    // setting 
 	    $scope.setting.check_sale = wsaleUtils.check_sale(
 	    	$scope.select.shop.id, $scope.base_settings);
+	    $scope.setting.no_vip = wsaleUtils.no_vip(
+		$scope.select.shop.id, $scope.base_settings);
 	    
 	    // inventory
 	    $scope.old_inventories = wsale.details;
@@ -358,6 +360,7 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 		rprice         : add.rprice,
 		path           : add.path, 
 
+		sell_total     : diablo_set_integer(add.reject),
 		s_group        : add.s_group,
 		free           : add.free
 	    })
@@ -473,8 +476,8 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 	var calc = wsaleCalc.calculate(
 	    $scope.old_select.retailer,
 	    $scope.select.retailer,
+	    $scope.setting.no_vip,
 	    $scope.inventories,
-	    $scope.select.has_pay,
 	    $scope.show_promotions,
 	    diablo_reject,
 	    $scope.select.verificate);

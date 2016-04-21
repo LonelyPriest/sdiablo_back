@@ -27,7 +27,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
     // $scope.e_pay_types = wsaleService.extra_pay_types;
     $scope.round       = diablo_round;
     $scope.has_saved   = false;
-    $scope.setting     = {check_sale:true, round: diablo_round_record};
+    $scope.setting     = {check_sale:true, q_backend:true};
 
     $scope.old_select  = {};
     
@@ -53,8 +53,8 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	var calc = wsaleCalc.calculate(
 	    $scope.select.o_retailer,
 	    $scope.select.retailer,
+	    $scope.setting.no_vip,
 	    $scope.inventories,
-	    $scope.select.has_pay,
 	    $scope.show_promotions,
 	    diablo_reject,
 	    $scope.select.verificate);
@@ -121,6 +121,8 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 
 	    // setting 
 	    $scope.setting.check_sale = wsaleUtils.check_sale(
+		$scope.select.shop.id, $scope.base_settings);
+	    $scope.setting.no_vip = wsaleUtils.no_vip(
 		$scope.select.shop.id, $scope.base_settings);
 
 	    // inventory
@@ -679,7 +681,9 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	$scope.inventories.unshift({$edit:false, $new:true});
 	
 	$scope.re_calculate();
-	wsaleUtils.format_promotion(inv, $scope.show_promotions);
+	if ($scope.select.retailer.id !== $scope.setting.no_vip){
+	    wsaleUtils.format_promotion(inv, $scope.show_promotions); 
+	};
     };
     
     $scope.add_inventory = function(inv){
@@ -743,8 +747,9 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 			// oreder
 			inv.order_id = $scope.inventories.length; 
 			// add new line
-			$scope.inventories.unshift({$edit:false, $new:true}); 
-			wsaleUtils.format_promotion(inv, $scope.show_promotions);
+			$scope.inventories.unshift({$edit:false, $new:true});
+			if ($scope.select.retailer.id !== $scope.setting.no_vip){
+			    wsaleUtils.format_promotion(inv, $scope.show_promotions);}
 			
 			$scope.re_calculate(); 
 		    };
@@ -803,6 +808,16 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	}
 
 	$scope.re_calculate(); 
+	for (var i=0, l=$scope.show_promotions.length; i<l; i++){
+	    if (inv.order_id === $scope.show_promotions[i].order_id){
+		break;
+	    }
+	}
+
+	$scope.show_promotions.splice(i, 1);
+	for (var i=0, l=$scope.show_promotions.length; i<l; i++){
+	    $scope.show_promotions[i].order_id = l - i; 
+	}
 	
     };
 

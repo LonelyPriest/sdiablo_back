@@ -739,7 +739,7 @@
 		     type="number" step="0.01"
 		     required
 		     x-ng-model="params.fdiscount"
-		     placeholder="dd.d" />
+		     placeholder="dd.dd" />
 	    </div>
 	  </form>
 	</div>
@@ -816,7 +816,6 @@
   </div>
 </script>
 
-
 <script type="text/ng-template" id="wsale-detail.html">
   <div class="modal-body">
 
@@ -872,99 +871,6 @@
     <button class="btn btn-primary" x-ng-click="ok()">保存</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>
-</script>
-
-
-<script type="text/ng-template" id="new-retailer.html">
-  <div class="modal-header">
-    <button class="close" x-ng-click="cancel()" type="button">
-      <span aria-hidden="true">&times;</span>
-      <span class="sr-only"></span>
-    </button>
-    
-    <h4 class="modal-title"><span class="label label-sm label-primary">
-	新增会员</span></h4>
-  </div>
-
-  <div class="modal-body">
-    <form class="form-horizontal" name="retailerNewForm" novalidate>
-      <div class="form-body"> 
-	<!--Name-->
-	<div class="form-group">
-	  <label class="col-sm-3 col-md-3 control-label">名称</label>
-	  <div class="col-sm-6 col-md-6">
-	    <div class="input-group">
-	      <input type="text"
-		     class="form-control"
-		     name="name"
-		     required
-		     placeholder="请输入会员名称"
-		     x-ng-model="params.retailer.name"
-		     x-ng-minlength="2"
-		     x-ng-maxlength="8"/>
-	      <span class="input-group-addon bg-white fg-red">*</span>
-	    </div>
-	  </div>
-	  <!-- <span class="fg-red">*</span> -->
-	  <div ng-show="retailerNewForm.name.$error.minlength
-			|| retailerNewForm.name.$error.maxlength">
-	    <span class="fg-red">名称太短，请输入2-8个字符</span>
-	  </div> 
-	</div>
-
-	<!--mobile-->
-	<div class="form-group"
-	     ng-class="{'has-error': retailerNewForm.mobile.$invalid
-		       && !retailerNewForm.mobile.$pristine}">
-	  <label class="col-sm-3 col-md-3 control-label">联系方式</label>
-	  <div class="col-sm-6 col-md-6">
-	    <!-- <div class="input-group"> -->
-	    <input type="text"
-		   name="mobile"
-		   ng-pattern="/^\d{3,4}\d{7,8}$/"
-		   placeholder="请输入电话或手机号码，默认为空"
-		   class="form-control"
-		   x-ng-model="params.retailer.mobile"/>
-	    <!-- <span class="input-group-addon bg-white fg-red">*</span>  -->
-	    <!-- </div> -->
-	  </div>
-	  <div ng-show="retailerNewForm.mobile.$invalid
-			&& !retailerNewForm.mobile.$pristine">
-	    <span class="fg-red">请输入正确的电话或手机号码</span>
-	  </div>
-	</div>
-
-	<div class="form-group">
-	  <label class="col-sm-3 col-md-3 control-label">联系地址</label>
-	  <div class="col-sm-6 col-md-6">
-	    <div class="input-group">
-	      <input type="text"
-		     class="form-control"
-		     name="params.address"
-		     required
-		     placeholder="请输入零售商联系地址"
-		     x-ng-model="params.retailer.address"
-		     x-ng-minlength="2"
-		     x-ng-maxlength="20"/>
-	      <span class="input-group-addon bg-white fg-red">*</span> 
-	    </div>
-	  </div>
-	  <div ng-show="retailerNewForm.address.$error.minlength
-			|| retailerNewForm.address.$error.maxlength">
-	    <span class="fg-red">名称太短，请输入2-20个字符</span>
-	  </div> 
-	</div> 
-      </div>
-    </form>
-  </div>
-
-  <div class="modal-footer">
-    <button class="btn btn-primary"
-	    x-ng-disabled="retailerNewForm.$invalid"
-	    x-ng-click="ok()">确认</button>
-    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
-  </div>
-  
 </script>
 
 <script type="text/ng-template" id="new-withdraw.html">

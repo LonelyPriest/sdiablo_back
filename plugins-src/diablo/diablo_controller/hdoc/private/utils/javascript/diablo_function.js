@@ -23,8 +23,8 @@ var diablo_reject = 1;
 /*
  * retailer
  */
-var diablo_sys_retailer  = 0;
-var diablo_user_retailer = 1;
+// var diablo_sys_retailer  = 0;
+// var diablo_user_retailer = 1;
 
 /*
  * storage key
@@ -373,6 +373,10 @@ var diablo_rdight = function(dight, how){
 };
 
 var diablo_discount = function(fprice, tagPrice){
+    if (tagPrice == 0){
+	return diablo_full_discount;
+    };
+    
     return parseFloat((diablo_float_div(fprice, tagPrice) * 100).toFixed(1));
 }
 

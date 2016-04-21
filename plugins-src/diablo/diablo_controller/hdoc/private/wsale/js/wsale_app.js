@@ -123,8 +123,9 @@ wsaleApp.config(['$routeProvider', function($routeProvider){
 wsaleApp.service("wsaleService", function($http, $resource, dateFilter){
     this.error = {
 	2190: "该款号库存不存在！！请确认本店是否进货该款号！！",
-	2191: "该货号已存在，请选择新的货号！！",
+	2191: "该款号已存在，请选择新的款号！！",
 	2192: "客户或营业员不存在，请建立客户或营业员资料！！",
+	2193: "该款号吊牌价为零，无法出售，请定价后再出售！！",
 	2401: "店铺打印机不存在或打印处理暂停状态！！",
 	
 	2411: "打印机编号错误！！",
@@ -304,8 +305,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
 
     $scope.setting = {
 	q_backend     :true,
-	check_sale    :true,
-	round         :diablo_round_record};
+	check_sale    :true 
+    };
 
     $scope.right = {
 	m_discount : rightAuthen.modify_onsale(
@@ -341,14 +342,6 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	return wsaleUtils.typeahead($scope.select.shop.id, base); 
     };
     
-    $scope.p_round = function(){
-	return wsaleUtils.get_round($scope.select.shop.id, base); 
-    };
-
-    $scope.check_sale = function(shopId){
-	return wsaleUtils.check_sale(shopId, base); 
-    };
-
     $scope.p_mode = function(shopId){
 	return wsaleUtils.print_mode(shopId, base);
     };
@@ -389,14 +382,16 @@ wsaleApp.controller("wsaleNewCtrl", function(
     $scope.shops = user.sortShops;
     if ($scope.shops.length !== 0){
 	$scope.select.shop        = $scope.shops[0]; 
-	$scope.setting.check_sale = $scope.check_sale($scope.select.shop.id); 
+	$scope.setting.check_sale = wsaleUtils.check_sale($scope.select.shop_id, base)
+	$scope.setting.no_vip = wsaleUtils.no_vip($scope.select.shop.id, base);
     } 
 
     $scope.change_shop = function(){
 	$scope.local_save();
-	$scope.setting.check_sale = $scope.check_sale($scope.select.shop.id); 
+	$scope.setting.check_sale = wsaleUtils.check_sale($scope.select.shop_id, base);
+	$scope.setting.no_vip = wsaleUtils.no_vip($scope.select.shop.id, base);
     } 
-
+    
     // employees
     $scope.employees = filterEmployee;
     if ($scope.employees.length !== 0){
@@ -567,7 +562,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 
     var now = $scope.today(); 
     $scope.qtime_start = function(shopId){
-	return wsaleUtils.start_time(shopId, base, now)
+	return wsaleUtils.start_time(shopId, base, now, dateFilter);
     }
     
     $scope.setting.q_backend = $scope.q_typeahead($scope.select.shop.id);
@@ -682,7 +677,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 		    inv.promotion = diablo_get_object(inv.pid, $scope.promotions); 
 		    inv.score = diablo_get_object(inv.sid, $scope.scores);
 
-		    if ($scope.select.retailer.type_id !== diablo_sys_retailer){
+		    if ($scope.select.retailer.id !== $scope.setting.no_vip){
 			wsaleUtils.format_promotion(inv, $scope.show_promotions); 
 		    }
 		});
@@ -753,21 +748,32 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	add.free         = src.free; 
 	return add; 
     };
+
+    var fail_response = function(code, callback){
+	diabloUtilsService.response_with_callback(
+	    false,
+	    "销售开单",
+	    "开单失败：" + wsaleService.error[code],
+	    undefined,
+	    callback);
+    };
     
     $scope.on_select_good = function(item, model, label){
 	console.log(item);
 
+	if (item.tag_price <= 0){
+	    fail_response(2193, function(){
+		$scope.inventories[0] = {$edit:false, $new:true}});
+	    return;
+	};
+	
 	// one good can be add only once at the same time
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    if (item.style_number === $scope.inventories[i].style_number
 		&& item.brand_id  === $scope.inventories[i].brand_id){
-		diabloUtilsService.response_with_callback(
-		    false,
-		    "销售开单",
-		    "开单失败：" + wsaleService.error[2191],
-		    $scope, function(){
-			$scope.inventories[0] = {$edit:false, $new:true}});
-		return;
+		fail_response(2191, function(){
+		    $scope.inventories[0] = {$edit:false, $new:true}});
+		return; 
 	    }
 	}; 
 	
@@ -1072,7 +1078,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	// console.log(im_print);
 	var base = {
 	    retailer:       $scope.select.retailer.id,
-	    retailer_type:  $scope.select.retailer.type_id,
+	    vip:            $scope.select.retailer.id === $scope.setting.no_vip,
 	    shop:           $scope.select.shop.id,
 	    datetime:       dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),
 	    employee:       $scope.select.employee.id,
@@ -1205,8 +1211,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	var calc = wsaleCalc.calculate(
 	    $scope.select.o_retailer,
 	    $scope.select.retailer,
+	    $scope.setting.no_vip, 
 	    $scope.inventories,
-	    $scope.select.has_pay,
 	    $scope.show_promotions,
 	    diablo_sale,
 	    $scope.select.verificate);
@@ -1302,14 +1308,14 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	$scope.re_calculate();
 
 	// promotions
-	if ($scope.select.retailer.type_id !== diablo_sys_retailer){
+	if ($scope.select.retailer.id !== $scope.setting.no_vip){
 	    wsaleUtils.format_promotion(inv, $scope.show_promotions);
 	} 
     };
 
     $scope.calc_discount = function(inv){
 	if (inv.pid !== -1 && inv.promotion.rule_id === 0
-	    && $scope.select.retailer.type_id !== diablo_sys_retailer){
+	    && $scope.select.retailer.type_id !== $scope.setting.no_vip){
 	    return inv.promotion.discount;
 	} else {
 	    return inv.discount;
@@ -1388,7 +1394,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 			$scope.local_save();
 			$scope.re_calculate();
 
-			if ($scope.select.retailer.type_id !== diablo_sys_retailer){
+			if ($scope.select.retailer.id !== $scope.setting.no_vip){
 			    wsaleUtils.format_promotion(inv, $scope.show_promotions);
 			} 
 		    };

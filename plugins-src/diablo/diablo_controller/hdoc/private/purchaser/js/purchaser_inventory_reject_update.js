@@ -11,6 +11,7 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
     $scope.types           = filterType;
     $scope.firms           = filterFirm;
     $scope.employees       = filterEmployee;
+    $scope.ubase           = base;
     
     // $scope.shops     = user.sortAvailabeShops;
     $scope.f_add           = diablo_float_add;
@@ -18,6 +19,7 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
     $scope.f_mul           = diablo_float_mul;
     $scope.get_object      = diablo_get_object;
     $scope.round           = diablo_round;
+    $scope.calc_row        = stockUtils.calc_row;
     
     $scope.pattern           = {
 	price:    diabloPattern.positive_decimal_2,
@@ -29,22 +31,8 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
     $scope.seasons         = diablo_season; 
     $scope.e_pay_types     = purchaserService.extra_pay_types;
 
-    $scope.setting         = {
-	reject_negative: false,
-	round: diablo_round_record
-    };
-
-    $scope.reject_negative = function(shopId){
-	return diablo_base_setting(
-	    "reject_negative", shopId, base, parseInt, diablo_no)
-    };
+    $scope.setting = {reject_negative: false}; 
     
-    $scope.p_round = function(shopId){
-	// console.log(shopId);
-	return diablo_base_setting(
-	    "pround", shopId, base, parseInt, diablo_round_record);
-    };
-
     $scope.go_back = function(){
 	diablo_goto_page("#/inventory_new_detail/" + $routeParams.ppage);
     };
@@ -60,32 +48,22 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 
     $scope.re_calculate = function(){
 	$scope.select.total = 0;
-	$scope.select.should_pay = 0.00;
+	$scope.select.should_pay = 0;
 
 	for (var i=1, l=$scope.inventories.length; i<l; i++){
 	    var one = $scope.inventories[i];
 	    $scope.select.total      += parseInt(one.reject);
-	    if ($scope.setting.round === diablo_round_row){
-		$scope.select.should_pay +=
-		$scope.round(
-		    one.org_price * one.reject * one.ediscount * 0.01);
-	    } else {
-		$scope.select.should_pay +=
-		one.org_price * one.reject * one.ediscount * 0.01;
-	    }
+
+	    $scope.select.should_pay += stockUtils.calc_row(
+		one.org_price, one.reject, one.ediscount); 
 	};
 
 	$scope.select.should_pay = $scope.round($scope.select.should_pay);
 
-	var e_pay = 0.00;
-	if(angular.isDefined($scope.select.e_pay)
-	   && $scope.select.extra_pay){
-	    e_pay = parseFloat($scope.select.e_pay);
-	}
-
+	var e_pay = stockUtils.to_float($scope.select.e_pay);
+	
 	$scope.select.left_balance =
 	    $scope.select.surplus - $scope.select.should_pay - e_pay;
-
 	$scope.select.left_balance = $scope.round($scope.select.left_balance);
     };
 
@@ -95,12 +73,12 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	$scope.re_calculate();
     }
     
-    // $scope.$watch("select.extra_pay", function(newValue, oldValue){
-    // 	// console.log(newValue);
-    // 	if (newValue === oldValue || angular.isUndefined(newValue)) return;
-    // 	if ($scope.select.form.extraForm.$invalid) return; 
-    // 	$scope.re_calculate(); 
-    // }); 
+    $scope.$watch("select.e_pay", function(newValue, oldValue){
+    	// console.log(newValue);
+    	if (newValue === oldValue || angular.isUndefined(newValue)) return;
+    	if ($scope.select.form.extraForm.$invalid) return; 
+    	$scope.re_calculate(); 
+    }); 
     
     // calender
     $scope.open_calendar = function(event){
@@ -180,10 +158,18 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	$scope.select = angular.extend($scope.select, $scope.old_select);
 
 	// base setting
-	$scope.setting.reject_negative
-	    = $scope.reject_negative($scope.select.shop.id);
-	$scope.setting.round = $scope.p_round($scope.select.shop.id);
+	$scope.setting.reject_negative =
+	    stockUtils.reject_negative(base.shop_id, $scope.ubase);
+	$scope.prompt_limit = stockUtils.prompt_limit(base.shop_id, $scope.ubase); 
+	$scope.q_prompt = stockUtils.typeahead(base.shop_id, $scope.ubase);
 
+	console.log($scope.q_prompt);
+	
+	if ($scope.q_prompt === diablo_frontend){
+	    $scope.get_all_prompt_inventory(base.shop_id, base.firm_id);
+	}
+	
+	
 	var length = invs.length;
 	var sorts  = [];
 	for(var i = 0; i < length; i++){
@@ -248,11 +234,33 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
     $scope.match_prompt_inventory = function(viewValue){
 	return diabloFilter.match_w_reject_inventory(
 	    viewValue, $scope.select.shop.id, $scope.select.firm.id); 
-    }; 
+    };
+
+    $scope.qtime_start = function(shopId){
+	var now = $.now();
+	return stockUtils.start_time(shopId, base, now, dateFilter); 
+    };
+    
+    $scope.get_all_prompt_inventory = function(shop, firm){
+	diabloFilter.match_all_w_reject_inventory(
+	    $scope.qtime_start(shop),
+	    shop,
+	    firm
+	).then(function(invs){
+	    // console.log(invs);
+	    $scope.all_prompt_inventory = invs.map(function(inv){
+		var p = stockUtils.prompt_name(
+		    inv.style_number, inv.brand, inv.type);
+		return angular.extend(inv, {name:p.name, prompt:p.prompt}); 
+	    });
+	});
+    };
+
+    
 
     $scope.on_select_inventory = function(item, model, label){
-	console.log(item);
-
+	console.log($scope.q_prompt);
+	console.log(item); 
 	// has been added
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    if (item.style_number === $scope.inventories[i].style_number
@@ -278,9 +286,6 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	    };
 	}
 	
-	// add at first allways 
-	var add = $scope.inventories[0];
-
 	// add at first allways 
 	var add = $scope.inventories[0];
 	add.id           = item.id;

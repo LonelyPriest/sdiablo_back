@@ -34,8 +34,9 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 
     $scope.inventories = [];
     $scope.show_promotions = [];
-    $scope.select = {datetime: $.now()};
-
+    $scope.setting = {};
+    $scope.select = {datetime: $.now()}; 
+    
     // rsn 
     var time = diabloFilter.default_time();
     wsaleService.get_wsale_rsn(
@@ -43,7 +44,6 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 	 start_time :diablo_filter_time(time.start_time, 0, dateFilter),
 	 end_time   :diablo_filter_time(time.end_time, 1, dateFilter)}
     ).then(function(result){
-	// console.log(result);
 	$scope.rsns = result.map(function(result){
 	    return result.rsn;
 	});
@@ -73,15 +73,17 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 		    $scope.scores);
 		
 		console.log(wsale); 
-		// setting 
 		$scope.show_promotions = wsale.show_promotions; 
 		// $scope.old_select = wsale.select;
 		$scope.select = angular.extend($scope.select, wsale.select);
 		$scope.select.has_pay = $scope.select.cash
 		    + $scope.select.card + $scope.select.withdraw; 
-		$scope.select.left_balance = $scope.select.surplus;
-		
+		$scope.select.left_balance = $scope.select.surplus; 
 		console.log($scope.select);
+
+		// setting
+		$scope.setting.no_vip = wsaleUtils.no_vip(
+		    $scope.select.shop.id, $scope.base_settings);
 	    
 		$scope.old_inventories = wsale.details;
 		$scope.inventories = angular.copy(wsale.details);
@@ -371,8 +373,8 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 	var calc = wsaleCalc.calculate(
 	    $scope.select.retailer,
 	    $scope.select.retailer,
+	    $scope.setting.no_vip,
 	    $scope.inventories,
-	    $scope.select.has_pay,
 	    $scope.show_promotions,
 	    diablo_reject,
 	    $scope.select.verificate);

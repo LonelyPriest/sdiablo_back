@@ -210,8 +210,7 @@ var wsaleUtils = function(){
 	},
 
 	prompt_name: function(style_number, brand, type) {
-	    var name = inv.style_number
-                + "，" + inv.brand + "，" + inv.type;
+	    var name = style_number + "，" + brand + "，" + type;
 	    var prompt = name + "," + diablo_pinyin(name); 
 	    return {name: name, prompt: prompt};
 	},
@@ -232,11 +231,10 @@ var wsaleUtils = function(){
 		"pim_print", shop, base, parseInt, diablo_no); 
 	},
 
-	start_time: function(shop, base, now){
+	start_time: function(shop, base, now, dateFun){
 	    return diablo_base_setting(
 		"qtime_start", shop, base, function(v){return v},
-		dateFilter(
-		    diabloFilter.default_start_time(now), "yyyy-MM-dd"));
+		dateFun(now - diablo_day_millisecond * 30, "yyyy-MM-dd"));
 	},
 
 	check_sale: function(shop, base){
@@ -252,6 +250,11 @@ var wsaleUtils = function(){
 	sequence_pagination: function(shop, base){
 	    return diablo_base_setting(
 		"se_pagination", shop, base, parseInt, diablo_no);
+	},
+
+	no_vip: function(shop, base){
+	    return diablo_base_setting(
+		"s_customer", shop, base, parseInt, diablo_no);
 	},
 
 	sort_amount: function(invs, amounts, colors){
@@ -419,7 +422,7 @@ var wsaleUtils = function(){
 
 var wsaleCalc = function(){
     return {
-	calculate: function(o_retailer, retailer, inventories, has_pay, show_promotions, mode, verificate){
+	calculate: function(o_retailer, retailer, no_vip, inventories, show_promotions, mode, verificate){
 	    var total        = 0;
 	    var abs_total    = 0;
 	    var should_pay   = 0;
@@ -437,14 +440,14 @@ var wsaleCalc = function(){
 		abs_total  += Math.abs(parseInt(count));
 
 		if (retailer.id !== o_retailer.id){
-		    if (o_retailer.type_id === diablo_sys_retailer){
-			if (retailer.type_id !== diablo_sys_retailer){
+		    if (o_retailer.id === no_vip){
+			if (retailer.id !== no_vip){
 			    if (one.pid !== -1 && one.promotion.rule_id === 0){
 				one.fdiscount = one.promotion.discount;
 			    }	
 			}
 		    } else {
-			if (retailer.type_id === diablo_sys_retailer){
+			if (retailer.id === no_vip){
 			    one.fdiscount = one.discount;
 			}
 		    }
@@ -453,7 +456,11 @@ var wsaleCalc = function(){
 		if (one.o_fprice !== one.fprice){
 		    one.fdiscount = diablo_discount(one.fprice, one.tag_price);
 		} else if (one.o_fdiscount !== one.fdiscount){
-		    one.fprice = diablo_price(one.tag_price, one.fdiscount); 
+		    if (one.tag_price == 0){
+			one.fprice = diablo_price(one.fprice, one.fdiscount); 
+		    } else {
+			one.fprice = diablo_price(one.tag_price, one.fdiscount); 
+		    }
 		}
 
 		one.o_fprice    = one.fprice;
@@ -462,7 +469,7 @@ var wsaleCalc = function(){
 		one.rprice      = one.fprice;
 		one.calc        = diablo_float_mul(one.fprice, count);
 		
-		if (one.pid === -1 || retailer.type_id === diablo_sys_retailer){
+		if (one.pid === -1 || retailer.id === no_vip){
 		    wsaleUtils.sort_promotion({id: -1, rule_id: -1}, one.calc, pmoneys);
 		    wsaleUtils.delete_format_promotion(one, show_promotions); 
 		} else {
@@ -480,7 +487,7 @@ var wsaleCalc = function(){
 
 		var count = (mode === 0 ? one.sell : one.reject);
 		
-		if (one.pid !== -1 && retailer.type_id !== diablo_sys_retailer){
+		if (one.pid !== -1 && retailer.id !== no_vip){
 		    one.rdiscount = wsaleUtils.calc_discount_of_rmoney(
 			one.fdiscount, one.promotion, pmoneys); 
 		    if (one.fdiscount !== one.rdiscount){

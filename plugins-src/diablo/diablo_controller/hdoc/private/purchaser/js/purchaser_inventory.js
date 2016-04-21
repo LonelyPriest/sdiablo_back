@@ -116,6 +116,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     	$scope.select.surplus = $scope.select.firm.balance;
 	$scope.select.left_balance = $scope.select.surplus;
     }
+
+    $scope.prompt_limit = stockUtils.prompt_limit($scope.select.shop.id, base);
     
     // calender
     $scope.open_calendar = function(event){
@@ -256,7 +258,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope.q_prompt = $scope.q_typeahead($scope.select.shop.id, base); 
     $scope.qtime_start = function(shopId){
 	var now = $.now();
-	return stockUtils.start_time(shopId, base, now); 
+	return stockUtils.start_time(shopId, base, now, dateFilter); 
     };
 
     $scope.get_all_w_good = function(){
@@ -268,7 +270,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		var p = stockUtils.prompt_name(g.style_number, g.brand, g.type);
 		return angular.extend(g, {name:p.name, prompt:p.prompt}); 
 	    }); 
-	    console.log($scope.all_w_goods);
+	    // console.log($scope.all_w_goods);
 	});
     };
     
@@ -480,6 +482,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		tag_price   : parseFloat(add.tag_price), 
 		ediscount   : parseInt(add.ediscount),
 		discount    : parseInt(add.discount),
+		
 		path        : add.path,
 		alarm_day   : add.alarm_day,
 		total       : add.total
@@ -1215,7 +1218,12 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 			    s_group:   sg,
 			    size:      ss,
 			    color:     sc
-			}; 
+			};
+
+			if ($scope.q_prompt === diablo_frontend){
+			    $scope.all_w_goods.splice(0, 0, agood);
+			};
+			
 			$scope.on_select_good(agood, undefined, undefined);
 		    });		
 	    } else{

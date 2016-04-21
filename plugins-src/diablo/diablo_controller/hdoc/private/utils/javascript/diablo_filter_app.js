@@ -179,9 +179,11 @@ function filterProvider(){
 		    .$promise.then(function(invs){
 			console.log(invs);
 			return invs.map(function(inv){
-			    return angular.extend(
-				inv, {name:inv.style_number
-				      + "，" + inv.brand + "，" + inv.type})
+			    var name = inv.style_number + "，"
+				+ inv.brand + "，"
+				+ inv.type;
+			    // var prompt = name + "," + diablo_pinyin(name); 
+			    return angular.extend(inv, {name:name});
 			})
 		    })
 	    },

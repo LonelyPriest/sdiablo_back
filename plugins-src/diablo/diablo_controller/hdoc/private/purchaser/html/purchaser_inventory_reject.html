@@ -172,10 +172,7 @@
 			   type="number" step="0.01" 
 			   x-ng-pattern="pattern.price"
 	  		   x-ng-model="select.extra_pay"
-			   placeholder="关联费用" 
-			   popover-placement="top"
-			   popover-trigger="focus"
-			   popover="支持二位小数"/>
+			   placeholder="关联费用"/>
 		  </div>
 		</form> 
 	      </div>
@@ -203,9 +200,7 @@
 		    <th class="text-center">序号</th>
 		    <th class="text-center">货号</th>
 		    <th class="text-center">品名</th>
-		    <th class="text-center">类别</th>
-		    <!-- <th class="text-center">性别</th> -->
-		    <!-- <th class="text-center">厂商</th> -->
+		    <th class="text-center">类别</th> 
 		    <th class="text-center">季节</th>
 		    <th class="text-center">库存</th>
 		    <th class="text-center">进价</th> 
@@ -216,8 +211,7 @@
 		  </tr>
 		</thead>
 		<tbody>
-		  <tr class="text-center" ng-repeat="inv in inventories">
-		    
+		  <tr class="text-center" ng-repeat="inv in inventories"> 
 		    <td>{{inv.order_id}}</td>
 
 		    <td x-ng-if="q_prompt===0"
@@ -234,8 +228,7 @@
 				 typeahead-on-select="on_select_inventory(
 						      $item, $model, $label)"
 				 typeahead="g as g.name for g in
-					    all_prompt_inventory|filter:
-					    {name:$viewValue}|limitTo:20"/>
+					    all_prompt_inventory|filter:{prompt:$viewValue}|limitTo:prompt_limit"/>
 			</div>
 		      </form>
 		    </td>
@@ -255,8 +248,7 @@
 				 typeahead-on-select="on_select_inventory(
 						      $item, $model, $label)"
 				 typeahead="g as g.name for g in
-					    match_prompt_inventory(
-					    $viewValue)"/>
+					    match_prompt_inventory($viewValue)"/>
 			</div>
 		      </form>
 		    </td>
@@ -336,39 +328,18 @@
 
 		    <td class="vert-align">
 		      <span x-ng-if="inv.$new"></span>
-		      <span x-ng-if="!inv.$new">
-			<span x-ng-if="setting.round===1">
-			  <span x-ng-if="(inv.org_price || inv.org_price===0)
-					 && inv.ediscount
-					 && inv.reject">
-			    {{round(
-			    inv.org_price * inv.reject
-			    * inv.ediscount * 0.01)}}
+		      <span x-ng-if="!inv.$new"> 
+			<span x-ng-if="(inv.org_price || inv.org_price===0)
+				       && inv.ediscount
+				       && inv.reject">
+			    {{calc_row(inv.org_price, inv.ediscount, inv.reject)}}
 			  </span>
-			</span>
-			<span x-ng-if="setting.round===0">
-			  <span x-ng-if="(inv.org_price || inv.org_price===0)
-					 && inv.ediscount
-					 && inv.reject">
-			    {{f_mul(
-			    f_mul(inv.org_price, inv.reject),
-			    f_mul(inv.ediscount, 0.01))}}
-			  </span>
-			</span>
 		      </span>
 		    </td>
 		    
 		    
 		    <td class="text-left vert-align">
-		      <div x-ng-if="inv.$new">
-			<!-- <a class="btn btn-success btn-xs" -->
-			<!--    x-ng-if="inv.free_color_size" -->
-			<!--    x-ng-disabled="inv.form.good.$invalid -->
-			<!-- 		  || inv.form.reject.$invalid -->
-			<!-- 		  || !valid_free_size_reject(inv)" -->
-			<!--    x-ng-click="add_free_inventory(inv)">保存 -->
-			<!--   <i class="glyphicon glyphicon-plus"></i></a> -->
-			
+		      <div x-ng-if="inv.$new"> 
 			<a class="btn diablo-input-button btn-success"
 			   x-ng-if="!inv.free_color_size"
 			   x-ng-disabled="inv.form.good.$invalid"

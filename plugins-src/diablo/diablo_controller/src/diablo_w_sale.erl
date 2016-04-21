@@ -178,7 +178,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 		", balance, should_pay, cash, card, withdraw, verificate"
 		", total, lscore, score, comment, type, entry_date) values("
 		++ "\"" ++ ?to_s(SaleSn) ++ "\","
-		++ ?to_s(Employe) ++ ","
+		++ "\'" ++ ?to_s(Employe) ++ "\',"
 		++ ?to_s(Retailer) ++ ","
 		++ ?to_s(Shop) ++ ","
 		++ ?to_s(Merchant) ++ "," 
@@ -278,7 +278,7 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
 		  false -> Card
 	      end,
 
-    Updates = ?utils:v(employ, integer, Employee)
+    Updates = ?utils:v(employ, string, Employee)
 	++ ?utils:v(retailer, integer, Retailer) 
 	++ ?utils:v(shop, integer, Shop)
     %% ++ ?utils:v(balance, float, OldBalance)
@@ -671,7 +671,7 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 		", should_pay, cash, withdraw, verificate, total, score"
 		", comment, type, entry_date) values("
 		++ "\"" ++ ?to_s(Sn) ++ "\","
-		++ ?to_s(Employe) ++ ","
+		++ "\'" ++ ?to_s(Employe) ++ "\',"
 		++ ?to_s(Retailer) ++ ","
 		++ ?to_s(Shop) ++ ","
 		++ ?to_s(Merchant) ++ ","
@@ -908,7 +908,15 @@ sql(update_wsale, RSN, Merchant, Shop, Datetime, _OldDatetime, Inventories) ->
 		      wsale(delete, RSN, Datetime, Merchant,
 			    Shop, Inv, Amounts) ++ Acc0; 
 		  <<"a">> ->
-		      Amounts = lists:reverse(?v(<<"amount">>, Inv)),
+		      Amounts = ?v(<<"amount">>, Inv),
+		      %% lists:foldr(
+		      %%   fun({struct, A}, Acc)->
+		      %% 	    [{struct,
+		      %% 	      [{<<"cid">>, ?v(<<"cid">>, A)},
+		      %% 	       {<<"size">>, ?v(<<"size">>, A)},
+		      %% 	       {<<"sell_total">>, ?v(<<"sell_count">>, A)}]}
+		      %% 	     |Acc]
+		      %%   end, [], ?v(<<"amount">>, Inv, [])),
 		      wsale(new, RSN, Datetime, Merchant,
 			    Shop, Inv, Amounts) ++ Acc0; 
 		  <<"u">> -> 
@@ -1311,6 +1319,8 @@ wsale(reject_badrepo, RSN, DateTime, Merchant, {Shop, RealyShop}, Inventory, Amo
 	  end, [], Amounts);
 
 wsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) -> 
+    ?DEBUG("wsale ~p with inv ~p, amounts ~p", [Action, Inventory, Amounts]),
+    
     StyleNumber = ?v(<<"style_number">>, Inventory),
     Brand       = ?v(<<"brand">>, Inventory),
     Type        = ?v(<<"type">>, Inventory),

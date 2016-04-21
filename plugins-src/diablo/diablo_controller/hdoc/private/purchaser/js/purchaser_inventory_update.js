@@ -22,59 +22,34 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
     $scope.select      = {};
     $scope.inventories = [];
 
-    $scope.float_add  = diablo_float_add;
-    $scope.float_sub  = diablo_float_sub;
-    $scope.float_mul  = diablo_float_mul;
     $scope.get_object = diablo_get_object;
-    $scope.round      = diablo_round;
+    $scope.round      = diablo_round; 
 
-    $scope.setting    = {
-	round: diablo_round_record
-    };
-
+    $scope.calc_row   = function(price, discount, count){
+	return stockUtils.calc_row(price, discount, count)};
+    
     $scope.go_back = function(){
 	diablo_goto_page("#/inventory_new_detail/" + $routeParams.ppage);
-    };
-
-    $scope.p_round = function(shopId){
-	// console.log(shopId);
-	return diablo_base_setting(
-	    "pround", shopId, base, parseInt, diablo_round_record);
-    };
+    }; 
     
     // pagination
     $scope.items_perpage = diablo_items_per_page();
 
     $scope.re_calculate = function(){
 	$scope.select.total = 0;
-	$scope.select.should_pay = 0.00;
+	$scope.select.should_pay = 0;
 
-	// var e_pay = 0;
-	// if(angular.isDefined($scope.select.extra_pay)
-	//    && $scope.select.extra_pay){
-	//     e_pay = $scope.select.extra_pay;
-	// }
-	
 	for (var i=1, l=$scope.inventories.length; i<l; i++){
 	    var one = $scope.inventories[i];
-	    $scope.select.total += parseInt(one.total);
-	    if ($scope.setting.round === diablo_round_row){
-		$scope.select.should_pay
-		    += $scope.round(
-			one.org_price * one.total * one.ediscount * 0.01); 
-	    } else {
-		$scope.select.should_pay
-		    += one.org_price * one.total * one.ediscount * 0.01; 
-	    }
+	    $scope.select.total += parseInt(one.total); 
+	    $scope.select.should_pay += stockUtils.calc_row(
+		one.org_price, one.ediscount, one.total); 
 	};
-
+	
 	$scope.select.should_pay = $scope.round($scope.select.should_pay);
 
-	var e_pay = angular.isDefined($scope.select.e_pay)
-	    ? parseFloat($scope.select.e_pay) : 0.00;
-
-	var verificate = angular.isDefined($scope.select.verificate)
-	    ? parseFloat($scope.select.verificate) : 0.00;
+	var e_pay = stockUtils.to_float($scope.select.e_pay); 
+	var verificate = stockUtils.to_float($scope.select.verificate); 
 	
 	$scope.select.left_balance =
 	    $scope.select.surplus + $scope.select.should_pay
@@ -89,17 +64,25 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	$scope.select.surplus = parseFloat($scope.select.firm.balance);
 	$scope.re_calculate();
 	// $scope.refresh();
-    };
-
-    // $scope.today = function(){
-    // 	return $.now();
-    // };
+    }; 
 
     // calender
     $scope.open_calendar = function(event){
 	event.preventDefault();
 	event.stopPropagation();
 	$scope.isOpened = true;
+    };
+
+    $scope.row_change_price = function(inv){
+	if (angular.isDefined(diablo_set_float(inv.org_price))){
+	    $scope.re_calculate(); 
+	}
+    };
+
+    $scope.row_change_ediscount = function(inv){
+	if (angular.isDefined(diablo_set_integer(inv.ediscount))){
+	    $scope.re_calculate();
+	}
     };
     
     var in_sort = function(sorts, tag){
@@ -180,8 +163,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	$scope.select = angular.extend($scope.select, $scope.old_select);
 	// console.log($scope.select);
 	// base setting
-	$scope.setting.round = $scope.p_round($scope.select.shop.id);
-
+	
 	var length = invs.length;
 	var sorts  = [];
 	for(var i = 0; i < length; i++){
@@ -247,37 +229,19 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
     var reset_payment = function(newValue){
 	// console.log("reset_payment", $scope.select);
 	$scope.select.has_pay = 0.00;
-	
-	if(angular.isDefined($scope.select.cash) && $scope.select.cash){
-	    $scope.select.has_pay += parseFloat($scope.select.cash);
-	}
 
-	if(angular.isDefined($scope.select.card) && $scope.select.card){
-	    $scope.select.has_pay += parseFloat($scope.select.card);
-	}
+	$scope.select.has_pay += stockUtils.to_float($scope.select.cash); 
+	$scope.select.has_pay += stockUtils.to_float($scope.select.card);
+	$scope.select.has_pay += stockUtils.to_float($scope.select.wire); 
 
-	if(angular.isDefined($scope.select.wire) && $scope.select.wire){
-	    $scope.select.has_pay += parseFloat($scope.select.wire);
-	}
-
-	var verificate = 0.00; 
-	if(angular.isDefined($scope.select.verificate)
-	   && $scope.select.verificate){
-	    verificate = parseFloat($scope.select.verificate); 
-	}
-
-	var e_pay = angular.isDefined($scope.select.e_pay)
-	    ? $scope.select.e_pay : 0;
+	var verificate = stockUtils.to_float($scope.select.verificate);
+	var e_pay = stockUtils.to_float($scope.select.e_pay); 
 	
 	$scope.select.left_balance =
 	    $scope.select.surplus + $scope.select.should_pay
 	    + e_pay - $scope.select.has_pay - verificate;
 
-	$scope.select.left_balance = $scope.round($scope.select.left_balance);
-	
-	// $scope.select.left_balance = $scope.float_add(
-	//     $scope.select.should_pay,
-	//     $scope.float_sub($scope.select.surplus, $scope.select.has_pay)); 
+	$scope.select.left_balance = $scope.round($scope.select.left_balance); 
     };
 
     $scope.$watch("select.cash", function(newValue, oldValue){
@@ -304,6 +268,11 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	reset_payment(newValue); 
     });
 
+    $scope.$watch("select.e_pay", function(newValue, oldValue){
+	if (newValue === oldValue || angular.isUndefined(newValue)) return;
+	if ($scope.select.form.extraForm.$invalid) return;
+	reset_payment(newValue);
+    });
     
     $scope.match_prompt_good = function(viewValue){
 	return diabloFilter.match_wgood_with_firm(
