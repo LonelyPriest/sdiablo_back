@@ -1078,7 +1078,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	// console.log(im_print);
 	var base = {
 	    retailer:       $scope.select.retailer.id,
-	    vip:            $scope.select.retailer.id === $scope.setting.no_vip,
+	    vip:            $scope.select.retailer.id !== $scope.setting.no_vip,
 	    shop:           $scope.select.shop.id,
 	    datetime:       dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),
 	    employee:       $scope.select.employee.id,
@@ -1474,9 +1474,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	$scope.show_promotions.splice(i, 1);
 	for (var i=0, l=$scope.show_promotions.length; i<l; i++){
 	    $scope.show_promotions[i].order_id = l - i; 
-	}
-	
-	
+	} 
     };
 
     /*
@@ -1606,9 +1604,10 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
     $scope.f_sub     = diablo_float_sub;
     $scope.f_mul     = diablo_float_mul;
     $scope.round     = diablo_round;
+    $scope.total_items = 0;
     
     $scope.disable_print = false;
-    $scope.allowed_slide = true;
+    // $scope.allowed_slide = true;
 
     /*
      * authen
@@ -1655,13 +1654,12 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
     		    {name:"=0", id:1, py:diablo_pinyin("等于0")}];
     
     // initial 
-    diabloFilter.reset_field(); 
+    diabloFilter.reset_field();
+    diabloFilter.add_field("retailer", filterRetailer);
+    diabloFilter.add_field("employee", filterEmployee); 
     diabloFilter.add_field("rsn", []);
     diabloFilter.add_field("shop",     $scope.shops);
-    diabloFilter.add_field("retailer", filterRetailer);
-    diabloFilter.add_field("employee", filterEmployee);
-    // diabloFilter.add_field("has_pay",  has_pay);
-
+    
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
 
@@ -1831,7 +1829,7 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 	} 
     };
 
-    $scope.do_search($scope.current_page);
+    // $scope.do_search($scope.current_page);
 
     $scope.save_stastic = function(){
 	localStorageService.set(

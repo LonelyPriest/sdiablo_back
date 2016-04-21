@@ -317,8 +317,9 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
 	%% {ok, Details} = ?w_sale:rsn_detail(rsn, Merchant, {<<"rsn">>, RSN}),
 	?DEBUG("details ~p", [SaleDetails]),
 
-	{ok, Retailer} = ?w_user_profile:get(
-			    retailer, Merchant, ?v(<<"retailer_id">>, Sale)),
+	%% {ok, Retailer} = ?w_user_profile:get(
+	%% 		    retailer, Merchant, ?v(<<"retailer_id">>, Sale)),
+	
 	{ok, Employee} = ?w_user_profile:get(
 			    employee, Merchant, ?v(<<"employ_id">>, Sale)),
 	{ok, Brands}   = ?w_user_profile:get(brand, Merchant),
@@ -338,19 +339,17 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
 		    {<<"balance">>,    ?v(<<"balance">>, Sale)},
 		    {<<"cash">>,       ?v(<<"cash">>, Sale)},
 		    {<<"card">>,       ?v(<<"card">>, Sale)},
-		    %% {<<"wire">>,       ?v(<<"wire">>, Sale)},
 		    {<<"verificate">>, ?v(<<"verificate">>, Sale)},
 		    {<<"should_pay">>, ?v(<<"should_pay">>, Sale)},
 		    {<<"total">>,      ?v(<<"total">>, Sale)},
-		    {<<"comment">>,    ?v(<<"comment">>, Sale)},
-		    %% {<<"e_pay_type">>, ?v(<<"e_pay_type">>, Sale)},
-		    %% {<<"e_pay">>,      ?v(<<"e_pay">>, Sale)},
+		    {<<"comment">>,    ?v(<<"comment">>, Sale)}, 
 		    {<<"direct">>,     ?v(<<"type">>, Sale)}],
 
 	
 	%% ?DEBUG("retailer ~p", [Retailer]),
 	%% ?DEBUG("employee ~p", [Employee]),
-	PrintAttrs = [{<<"retailer">>, ?v(<<"name">>, Retailer)},
+	PrintAttrs = [
+		      %% {<<"retailer">>, ?v(<<"name">>, Retailer)},
 		      {<<"retailer_id">>, ?v(<<"retailer_id">>, Sale)},
 		      {<<"employ">>, ?v(<<"name">>, Employee)}], 
 

@@ -9,9 +9,10 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
     $scope.shops    = user.sortShops.concat(user.sortBadRepoes);
     $scope.shopIds  = user.shopIds.concat(user.badrepoIds);
     
-    $scope.f_mul    = diablo_float_mul;
-    $scope.round    = diablo_round;
-    $scope.setting  = {round:diablo_round_record};
+    $scope.f_mul       = diablo_float_mul;
+    $scope.round       = diablo_round;
+    $scope.setting     = {round:diablo_round_record};
+    $scope.total_items = 0;
 
     /*
      * hidden
@@ -45,23 +46,12 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 	    $scope.goto_page("#/new_wsale_detail") 
 	}
     };
-
-
+    
     var sell_type =  [{name:"销售开单", id:0, py:diablo_pinyin("销售开单")},
     		      {name:"销售退货", id:1, py:diablo_pinyin("销售退货")}];
 
     var now = $.now(); 
-
-
-    // $scope.q_typeahead = function(){
-    // 	// default prompt comes from backend
-    // 	return diablo_base_setting(
-    // 	    "qtypeahead", -1, base, parseInt, diablo_backend);
-    // }();
     
-    // initial
-    // $scope.filters = [];
-
     var storage = localStorageService.get(diablo_key_wsale_trans_detail);
     console.log(storage);
     
@@ -69,8 +59,7 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
     	$scope.filters     = storage.filter;
     	$scope.qtime_start = storage.start_time;
     } else{
-	$scope.filters = [];
-	
+	$scope.filters = []; 
 	$scope.qtime_start =
 	    diablo_base_setting("qtime_start", -1, base, diablo_set_date,
 				diabloFilter.default_start_time(now)); 
@@ -78,42 +67,32 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 
     $scope.time   = diabloFilter.default_time($scope.qtime_start);
 
-    // base setting
-    $scope.setting.round = diablo_base_setting(
-	"pround", -1, base, parseInt, diablo_round_record);
-    
-    $scope.setting.se_pagination = 
-	diablo_base_setting("se_pagination", -1, base, parseInt, diablo_no);
+    // base setting 
+    $scope.setting.se_pagination = wsaleUtils.sequence_pagination(-1, base);
 
     // console.log($scope.setting);
-    
-
     // filter
-    diabloFilter.reset_field(); 
-    diabloFilter.add_field("sell_type", sell_type);
-    diabloFilter.add_field("rsn", []); 
+    diabloFilter.reset_field();
+    diabloFilter.add_field("retailer", filterRetailer);
     diabloFilter.add_field("style_number", $scope.match_style_number); 
     diabloFilter.add_field("brand",    filterBrand);
     diabloFilter.add_field("type",     filterType);
-    diabloFilter.add_field("year",     diablo_full_year); 
+    diabloFilter.add_field("year",     diablo_full_year);
+    diabloFilter.add_field("firm",     filterFirm); 
+    diabloFilter.add_field("employee", filterEmployee); 
+    diabloFilter.add_field("sell_type", sell_type);
+    diabloFilter.add_field("rsn", []); 
     diabloFilter.add_field("shop",     $scope.shops);
-    diabloFilter.add_field("retailer", filterRetailer);
-    diabloFilter.add_field("employee", filterEmployee);
-    diabloFilter.add_field("firm",     filterFirm);
-
+   
     $scope.filter = diabloFilter.get_filter();
-    $scope.prompt = diabloFilter.get_prompt();
-
-    
-    // console.log($scope.qtime_start); 
-    // $scope.time   = diabloFilter.default_time($scope.qtime_start);
+    $scope.prompt = diabloFilter.get_prompt(); 
     
     /*
      * pagination 
      */
     $scope.colspan = 17;
     $scope.items_perpage = diablo_items_per_page();
-    $scope.max_page_size = 10;
+    $scope.max_page_size = 15;
     $scope.default_page = 1;
     $scope.current_page = $scope.default_page;
 
@@ -179,7 +158,7 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
     }; 
 
     // default the first page
-    $scope.do_search($scope.default_page);
+    // $scope.do_search($scope.default_page);
 
     $scope.auto_pagination = function(){
 	$scope.current_page += 1;
@@ -231,8 +210,7 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 	    && angular.isDefined(inv.colors)
 	    && angular.isDefined(inv.order_sizes)){
 
-	    color_sorts     = sort_amounts_by_color(inv.colors, inv.amounts),
-	    
+	    color_sorts = sort_amounts_by_color(inv.colors, inv.amounts); 
 	    dialog.edit_with_modal(
 		"rsn-detail.html", undefined, undefined, $scope,
 		{colors:        inv.colors,

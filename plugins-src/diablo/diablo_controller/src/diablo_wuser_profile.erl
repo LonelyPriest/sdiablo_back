@@ -616,7 +616,7 @@ handle_call({get_employee_profile, Merchant, EmpId}, _From, State) ->
 	   [Merchant, EmpId]),
     MS = ms(Merchant, employee),
     Select = select(MS, fun() -> ?employ:employ(list, Merchant) end), 
-    SelectEmployee = filter(Select, <<"id">>, EmpId), 
+    SelectEmployee = filter(Select, <<"number">>, EmpId), 
     {reply, {ok, SelectEmployee}, State};
 
 

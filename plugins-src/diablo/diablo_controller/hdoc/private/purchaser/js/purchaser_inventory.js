@@ -31,7 +31,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     
     $scope.disable_refresh   = true;
     $scope.timeout_auto_save = undefined;
-
+    
     $scope.q_typeahead = function(shopId, base){
 	return stockUtils.typeahead(shopId, base); 
     };
@@ -1309,7 +1309,8 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
     $scope.sexs      = diablo_sex;
     $scope.seasons   = diablo_season;
     $scope.goto_page = diablo_goto_page;
-
+    $scope.total_items = 0;
+    
     $scope.right = {
 	lookup_w_good_orgprice: rightAuthen.authen(
 	    rightAuthen.good_action()["lookup_w_good_orgprice"], user.right)
@@ -1319,9 +1320,9 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 	alarm: false
     };
 
-    $scope.$watch("tab_active", function(newValue, oldValue){
-	console.log(newValue, oldValue);
-    }, false)
+    // $scope.$watch("tab_active", function(newValue, oldValue){
+    // 	console.log(newValue, oldValue);
+    // }, false)
     // console.log($scope.show_orgprice); 
 
     $scope.match_style_number = function(viewValue){
@@ -1378,7 +1379,7 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
      */
     $scope.colspan = 18;
     $scope.items_perpage = diablo_items_per_page();
-    $scope.max_page_size = 10;
+    $scope.max_page_size = 15;
     
     // default the first page
     $scope.default_page = 1;
@@ -1402,12 +1403,6 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 	$scope.do_search($scope.tab_page.page_of_chart);
     }; 
 
-    // $scope.is_alarm = function(alarm){
-    // 	// console.log(alarm);
-    // 	return alarm ? "danger" : "";
-    // }
-    
-    
     // filter
     var add_search_condition = function(search){
 	if (angular.isUndefined(search.shop)
@@ -1486,7 +1481,7 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 	});
     };
     
-    $scope.do_search($scope.tab_page.page_of_time);
+    // $scope.do_search($scope.tab_page.page_of_time);
         
     /*
      * detail
@@ -1694,7 +1689,8 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
 
     $scope.f_add   = diablo_float_add;
     $scope.f_sub   = diablo_float_sub;
-    $scope.round   = diablo_round; 
+    $scope.round   = diablo_round;
+    $scope.total_items  = 0; 
 
     /*
      * authen
@@ -1850,24 +1846,13 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
     };
     
     $scope.time   = diabloFilter.default_time($scope.qtime_start);
-    // console.log($scope.time); 
-
-    // console.log($scope.prompt);
-    // $scope.qtime_start = function(shopId){
-    // 	return diablo_base_setting(
-    // 	    "qtime_start", shopId, base, diablo_set_date, diabloFilter.default_start_time(now));
-    // }();
-    // console.log($scope.qtime_start);
-    
-    // $scope.time   = diabloFilter.default_time($scope.qtime_start); 
-    //$scope.time   = diabloFilter.default_time();
     
     /*
      * pagination 
      */
     $scope.colspan = 18;
     $scope.items_perpage = diablo_items_per_page();
-    $scope.max_page_size = 10;
+    $scope.max_page_size = 15;
     $scope.default_page = 1;
 
     var back_page = diablo_set_integer($routeParams.page);
@@ -1944,7 +1929,7 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
 	})
     };
 			
-    $scope.do_search($scope.current_page);
+    // $scope.do_search($scope.current_page);
 
     $scope.page_changed = function(){
 	// console.log($scope.current_page);

@@ -360,7 +360,7 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 		rprice         : add.rprice,
 		path           : add.path, 
 
-		sell_total     : diablo_set_integer(add.reject),
+		sell_total     : -diablo_set_integer(add.reject),
 		s_group        : add.s_group,
 		free           : add.free
 	    })

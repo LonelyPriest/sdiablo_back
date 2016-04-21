@@ -158,18 +158,7 @@ call(Parent, {print, RSN, Merchant, Invs, Attrs, Print}) ->
 		       end,
 
 	    ShopAddr = ?v(<<"address">>, ShopInfo),
-
-	    %% profile
-	    %% {ok, MerchantInfo} = detail(merchant, Merchant), 
-	    %% {ok, Banks}        = detail(bank, Merchant),
-	    %% {ok, Setting}      = detail(base_setting, Merchant, ShopId),
-	    %% PrintRetailer      = ?to_i(?v(<<"pretailer">>, Setting, ?NO)),
-	    %% PrintTable         = ?to_i(?v(<<"ptable">>, Setting, ?STRING)),
-	    %% IsRound            = ?to_i(?v(<<"pround">>, Setting, ?NO)),
-	    %% Mobile             = ?v(<<"mobile">>, MerchantInfo),
-
-	    %% ?DEBUG("PrintRetailer ~p, PrintTable ~p", [PrintRetailer, PrintTable]), 
-
+	    
 	    try
 		lists:foldr(
 		  fun(P, Acc) ->
@@ -191,7 +180,7 @@ call(Parent, {print, RSN, Merchant, Invs, Attrs, Print}) ->
 			  {ok, Setting}
 			      = detail(base_setting, Merchant, PShop),
 			  %% ?DEBUG("setting ~p", [Setting]),
-			  
+			  Vip = RetailerId =/= ?v(<<"s_customer">>, Setting), 
 
 			  Head = title(Brand, Model, ShopName)
 			      ++ address(Brand, Model, ShopAddr)
@@ -203,8 +192,8 @@ call(Parent, {print, RSN, Merchant, Invs, Attrs, Print}) ->
 			  	   Merchant, Setting, Invs), 
 
 			  Stastic = body_stastic(
-				      Brand, Model, Column,
-				      TotalBalance, Attrs, STotal, RTotal),
+				      Brand, Model, Column, TotalBalance,
+				      Attrs, Vip, STotal, RTotal),
 			  
 			  Foot = body_foot(
 				   Brand, Model, Column, Setting),
@@ -240,8 +229,11 @@ print_content(ShopId, PBrand, Model, 58, Merchant, Setting, Invs) ->
 	      BrandId     = ?v(<<"brand_id">>, Inv),
 	      SellTotal   = ?v(<<"total">>, Inv),
 	      TagPrice    = ?v(<<"tag_price">>, Inv),
-	      Fprice      = ?v(<<"fprice">>, Inv),
-	      FDiscount   = ?v(<<"fdiscount">>, Inv),
+	      RPrice      = ?v(<<"rprice">>, Inv),
+	      %% rDiscount   = ?v(<<"rdiscount">>, Inv), 
+	      Discount   =
+		  binary_to_float(
+		    float_to_binary(RPrice / TagPrice, [{decimals, 3}])) * 100,
 	      
 	      {NewSTotal, NewRTotal } =
 		  case SellTotal > 0 of
@@ -252,11 +244,47 @@ print_content(ShopId, PBrand, Model, 58, Merchant, Setting, Invs) ->
 	      {"款号：" ++ ?to_s(StyleNumber) ++ br(PBrand)
 	       ++ "品名：" ++ ?to_s(get_brand(Brands, BrandId)) ++ br(PBrand)
 	       ++ "单价：" ++ ?to_s(TagPrice) ++ br(PBrand)
+	       ++ "售价：" ++ ?to_s(RPrice) ++ br(PBrand)
 	       ++ "数量：" ++ ?to_s(SellTotal) ++ br(PBrand)
-	       ++ "折扣：" ++ ?to_s(FDiscount) ++ br(PBrand) 
-	       ++ "折后价：" ++ ?to_s(round(Fprice * FDiscount * 0.01)) ++ br(PBrand)
+	       ++ "小计：" ++ ?to_s(RPrice * SellTotal) ++ br(PBrand)
+	       ++ "折扣率：" ++ ?to_s(Discount) ++ br(PBrand)
 	       ++ line(minus, 32) ++ br(PBrand)
-	       ++ Acc, Balance + Fprice * FDiscount * SellTotal * 0.01, NewSTotal, NewRTotal}
+	       ++ Acc, Balance +RPrice * SellTotal, NewSTotal, NewRTotal}
+      end, {[], 0, 0, 0}, Invs);
+
+print_content(ShopId, PBrand, Model, 80, Merchant, Setting, Invs) ->
+    ?DEBUG("print_content with shop ~p, pbrand ~p, model ~p"
+	   ", merchant ~p~nsetting ~p~ninvs ~p",
+	   [ShopId, PBrand, Model, Merchant, Setting, Invs]),
+
+    {ok, Brands} = ?w_user_profile:get(brand, Merchant),
+    lists:foldr(
+      fun(Inv, {Acc, Balance, STotal, RTotal})->
+	      StyleNumber = ?v(<<"style_number">>, Inv),
+	      BrandId     = ?v(<<"brand_id">>, Inv),
+	      SellTotal   = ?v(<<"total">>, Inv),
+	      TagPrice    = ?v(<<"tag_price">>, Inv),
+	      RPrice      = ?v(<<"rprice">>, Inv),
+	      %% rDiscount   = ?v(<<"rdiscount">>, Inv), 
+	      Discount   =
+		  binary_to_float(
+		    float_to_binary(RPrice / TagPrice, [{decimals, 3}])) * 100,
+
+	      {NewSTotal, NewRTotal } =
+		  case SellTotal > 0 of
+		      true  -> {STotal + SellTotal, RTotal};
+		      false -> {STotal, RTotal + SellTotal}
+		  end,
+
+	      {"款号：" ++ ?to_s(StyleNumber) ++ br(PBrand)
+	       ++ "品名：" ++ ?to_s(get_brand(Brands, BrandId)) ++ br(PBrand)
+	       ++ "单价：" ++ ?to_s(TagPrice) ++ br(PBrand)
+	       ++ "售价：" ++ ?to_s(RPrice) ++ br(PBrand)
+	       ++ "数量：" ++ ?to_s(SellTotal) ++ br(PBrand)
+	       ++ "小计：" ++ ?to_s(RPrice * SellTotal) ++ br(PBrand)
+	       ++ "折扣率：" ++ ?to_s(Discount) ++ br(PBrand)
+	       ++ line(minus, 32) ++ br(PBrand)
+	       ++ Acc, Balance +RPrice * SellTotal, NewSTotal, NewRTotal}
       end, {[], 0, 0, 0}, Invs).
     
 %% =============================================================================
@@ -279,13 +307,20 @@ head(<<"feie">> = Brand, _Model, 58, RSN, Retailer, Employee, Date) ->
 	++ pading(32 - 12 - width(chinese, Retailer) - width(chinese, Employee))
 	++ "店员：" ++ ?to_s(Employee) ++ br(Brand)
 	++ "日期：" ++ ?to_s(Date) ++ br(Brand)
+	++ line(equal, 32) ++ br(Brand);
+
+head(<<"feie">> = Brand, _Model, 80, RSN, Retailer, Employee, Date) ->
+    "单号：" ++ ?to_s(RSN)
+	++ pading(48 - 6 - width(latin1, RSN) - 25)
+	++ "日期：" ++ ?to_s(Date) ++ br(Brand)
+	
+	++ "客户：" ++ ?to_s(Retailer)
+	++ pading(48 - 6 - width(chinese, Retailer) - 6 - width(chinese, Employee))
+	++ "店员：" ++ ?to_s(Employee) ++ br(Brand)
+	
 	++ line(equal, 32) ++ br(Brand).
 
-	
-	%% ++ "客户：" ++ ?to_s(Retailer) ++ br(Brand).
-	%% ++ "店员：" ++ ?to_s(Employee) ++ ?f_print:br(Brand).
-
-body_stastic(Brand, _Model, 58, _TotalBalance, Attrs, STotal, RTotal) ->
+body_stastic(Brand, _Model, 58, _TotalBalance, Attrs, Vip, STotal, RTotal) ->
     %% ?DEBUG("Brand ~p", [Brand]),
     Cash         = ?v(<<"cash">>, Attrs, 0),
     Card         = ?v(<<"card">>, Attrs, 0), 
@@ -295,10 +330,10 @@ body_stastic(Brand, _Model, 58, _TotalBalance, Attrs, STotal, RTotal) ->
     Comment      = ?v(<<"comment">>, Attrs, []),
     Direct       = ?v(<<"direct">>, Attrs, 0),
 
-    RetailerType = ?v(<<"retailer_type">>, Attrs, 0), 
+    %% RetailerType = ?v(<<"retailer_type">>, Attrs, 0), 
     LastScore    = ?v(<<"last_score">>, Attrs, 0),
     Score        = ?v(<<"score">>, Attrs, 0),
-
+    
     case RTotal =/= 0 of
 	true -> "销售：" ++ ?to_s(STotal)
 		    ++ pading(length(?to_s(ShouldPay)) - length(?to_s(STotal)) + 2)
@@ -314,19 +349,13 @@ body_stastic(Brand, _Model, 58, _TotalBalance, Attrs, STotal, RTotal) ->
 	   end
 	++ ?to_s(abs(ShouldPay)) ++ pay(style, abs(Cash), abs(Card)) ++ br(Brand)
 
-	++ case RetailerType of
-	       0 -> [];
-	       1 -> "本次积分：" ++ ?to_s(Score) ++ br(Brand)
-			++ "累计积分：" ++ ?to_s(Score + LastScore) ++ br(Brand)
+	++ case Vip of 
+	       true -> "上次积分：" ++ ?to_s(LastScore) ++ br(Brand)
+			   ++ "本次积分：" ++ ?to_s(Score) ++ br(Brand)
+			   ++ "累计积分：" ++ ?to_s(Score + LastScore) ++ br(Brand);
+	       false -> []
 	   end
-		   
-	       
-
-	%% ++ case TotalBalance - ShouldPay of
-	%%        0      -> [];
-	%%        Metric ->
-	%% 	   "促销减免：" ++ ?to_s(abs(clean_zero(Metric))) ++ br(Brand)
-	%%    end
+	
 	++ line(minus, 32).
     
 body_foot(Brand, _Model, Column, Setting) ->
@@ -606,14 +635,7 @@ field_name(<<"brand">>) -> "品牌";
 field_name(<<"style_number">>) -> "款号";
 field_name(<<"type">>)         -> "类型";
 field_name(<<"color">>)        -> "颜色";
-field_name(<<"size_name">>)    -> "尺码组";
-field_name(<<"size">>)         -> "尺码";
-field_name(<<"price">>)        -> "单价";
-field_name(<<"discount">>)     -> "折扣";
-field_name(<<"dprice">>)       -> "折后价";
-field_name(<<"hand">>)         -> "手";
-field_name(<<"count">>)        -> "数量";
-field_name(<<"calc">>)         -> "小计".    
+field_name(<<"size">>)         -> "尺码".
 
 pay(style, Cash, Card) -> 
     Pays = [pay(cash, Cash), pay(card, Card)],

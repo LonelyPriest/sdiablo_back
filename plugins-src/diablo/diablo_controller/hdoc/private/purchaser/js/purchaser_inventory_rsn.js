@@ -300,8 +300,8 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
 	}) 
     }
 
-    
-    $scope.do_search($scope.default_page);
+    $scope.total_items = 0;
+    // $scope.do_search($scope.default_page);
 
     $scope.page_changed = function(){
 	$scope.do_search($scope.current_page);

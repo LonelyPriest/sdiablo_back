@@ -118,8 +118,8 @@
 		    <th x-ng-if="show.balance">刷卡</th>
 		    <th x-ng-if="show.balance">提现</th>
 		    <th x-ng-if="show.balance">核销</th> 
-		    <th x-ng-if="show.balance">充值</th>
-		    <th x-ng-if="show.balance">赠送</th> 
+		    <!-- <th x-ng-if="show.balance">充值</th> -->
+		    <!-- <th x-ng-if="show.balance">赠送</th>  -->
 		    <th>备注</th> 
 		    <th>日期</th> 
 		    <th>操作</th>
@@ -161,16 +161,16 @@
 		    <td x-ng-if="show.balance">{{r.withdraw}}</td>
 		    <td x-ng-if="show.balance">{{r.verificate}}</td>
 
-		    <td x-ng-if="show.balance">
-		      <span x-ng-if="r.cbalance !== 0" class="fg-blue">
-			{{r.cbalance}}</span>
-		      <span x-ng-if="r.cbalance === 0">{{r.cbalance}}</span>
-		    </td>
-		    <td x-ng-if="show.balance">
-		      <span x-ng-if="r.sbalance !== 0" class="fg-blue">
-			{{r.sbalance}}</span>
-		      <span x-ng-if="r.sbalance === 0">{{r.sbalance}}</span>
-		    </td>
+		    <!-- <td x-ng-if="show.balance"> -->
+		    <!--   <span x-ng-if="r.cbalance !== 0" class="fg-blue"> -->
+		    <!-- 	{{r.cbalance}}</span> -->
+		    <!--   <span x-ng-if="r.cbalance === 0">{{r.cbalance}}</span> -->
+		    <!-- </td> -->
+		    <!-- <td x-ng-if="show.balance"> -->
+		    <!--   <span x-ng-if="r.sbalance !== 0" class="fg-blue"> -->
+		    <!-- 	{{r.sbalance}}</span> -->
+		    <!--   <span x-ng-if="r.sbalance === 0">{{r.sbalance}}</span> -->
+		    <!-- </td> -->
 
 		    <td>
 		      <span x-ng-if="r.comment">{{r.comment}}</span>

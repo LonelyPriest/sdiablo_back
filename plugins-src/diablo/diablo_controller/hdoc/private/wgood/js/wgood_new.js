@@ -625,11 +625,10 @@ wgoodApp.controller("wgoodDetailCtrl", function(
     // initial
     $scope.filters = [];
     diabloFilter.reset_field();
-    diabloFilter.add_field("firm", filterFirm);
     diabloFilter.add_field("style_number", diabloFilter.match_style_number);
     diabloFilter.add_field("brand", filterBrand);
     diabloFilter.add_field("type", filterType);
-
+    diabloFilter.add_field("firm", filterFirm); 
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
 
@@ -643,7 +642,7 @@ wgoodApp.controller("wgoodDetailCtrl", function(
     // pagination
     $scope.colspan = 15;
     $scope.items_perpage = diablo_items_per_page();
-    $scope.max_page_size = 10;
+    $scope.max_page_size = 15;
     $scope.default_page = 1;
 
     $scope.do_search = function(page){
@@ -673,10 +672,9 @@ wgoodApp.controller("wgoodDetailCtrl", function(
     }
     
     $scope.default_page = 1;
-    $scope.do_search($scope.default_page); 
-
-    // $scope.goto_page = diablo_goto_page; 
-
+    $scope.total_items  = 0;
+    // $scope.do_search($scope.default_page);
+    
     var dialog = diabloUtilsService;
     $scope.lookup_detail = function(good){
 	console.log(good);
