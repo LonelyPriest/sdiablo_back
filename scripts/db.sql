@@ -393,8 +393,6 @@ create table w_promotion(
     edate           DATE default 0,
 
     remark          VARCHAR(128) default null,
-
-    
     entry           DATETIME default 0,
     deleted         INTEGER default 0, -- 0: no;  1: yes
 
@@ -687,7 +685,7 @@ create table w_sale(
     
     balance        DECIMAL(10, 2) default 0, -- max: 99999999.99
     should_pay     DECIMAL(10, 2) default 0, -- max: 99999999.99
-    has_pay        DECIMAL(10, 2) default 0, -- max: 99999999.99
+    -- has_pay        DECIMAL(10, 2) default 0, -- max: 99999999.99
     cash           DECIMAL(10, 2) default 0, -- max: 99999999.99
     card           DECIMAL(10, 2) default 0, -- max: 99999999.99
     withdraw       DECIMAL(10, 2) default 0, -- max: 99999999.99

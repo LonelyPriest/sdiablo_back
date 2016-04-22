@@ -212,7 +212,7 @@
 -define(inventory_eifo_onreject,      ?right_rainbow + 1).
 -define(wsale_modify_price_onsale,    ?right_rainbow + 2).
 -define(wsale_modify_discount_onsale, ?right_rainbow + 3).
-%% -define(lookup_orgprice,              ?right_rainbow + 4).
+-define(stock_show_orgprice,          ?right_rainbow + 4).
 
 %% =============================================================================
 %% base setting

@@ -1,6 +1,5 @@
 
 var rightAuthen = {
-
     account: {
 	_master: 1,
 	_user: 2
@@ -26,7 +25,8 @@ var rightAuthen = {
     rainbow_action: function(){
 	return {
 	    modify_price_onsale  : rightAuthen.root_right._rainbow + 2,
-	    modify_discount_onsale : rightAuthen.root_right._rainbow + 3
+	    modify_discount_onsale : rightAuthen.root_right._rainbow + 3,
+	    show_orgprice: rightAuthen.root_right._rainbow + 4,
 	}
     },
 
@@ -51,15 +51,29 @@ var rightAuthen = {
 	    check_w_stock:  rightAuthen.root_right._stock + 13
 	}
     },
-    
-    authen: function(authenAction, rights){
-	//console.log(authenAction, rights); 
+
+    authen_menu: function(authenAction, rights){
     	for (var i = 0, l = rights.length; i < l; i++){
     	    if (rights[i].id === authenAction){
     		return true;
     	    };
     	};
-
+	
+    	return false;
+    },
+    
+    authen: function(user_type, authenAction, rights){
+	//console.log(authenAction, rights);
+	if (user_type === rightAuthen.account._master) {
+	    return true;
+	};
+	
+    	for (var i = 0, l = rights.length; i < l; i++){
+    	    if (rights[i].id === authenAction){
+    		return true;
+    	    };
+    	};
+	
     	return false;
     },
 

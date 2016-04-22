@@ -243,26 +243,27 @@ action(Session, Req, {"new_w_sale"}, Payload) ->
 			  fun({struct, Inv}, Acc) ->
 				  StyleNumber = ?v(<<"style_number">>, Inv),
 				  BrandId     = ?v(<<"brand">>, Inv),
-				  %% Total       = ?v(<<"total">>, Inv),
+				  Total       = ?v(<<"sell_total">>, Inv),
 				  TagPrice    = ?v(<<"tag_price">>, Inv),
-				  FPrice      = ?v(<<"fprice">>, Inv),
-				  FDiscount   = ?v(<<"fdiscount">>, Inv),
-				  Amounts     = ?v(<<"amounts">>, Inv),
+				  RPrice      = ?v(<<"rprice">>, Inv),
+				  %% FDiscount   = ?v(<<"fdiscount">>, Inv),
+				  %% Amounts     = ?v(<<"amounts">>, Inv),
 				  
 				  P = [{<<"style_number">>, StyleNumber},
 				       {<<"brand_id">>, BrandId},
 				       {<<"tag_price">>, TagPrice},
-				       {<<"fprice">>, FPrice},
-				       {<<"fdiscount">>, FDiscount}
+				       {<<"rprice">>, RPrice},
+				       {<<"total">>, Total}
 				      ],
-				  
-				  lists:foldr(
-				    fun({struct, A}, Acc1) ->
-					    SellTotal = ?v(<<"sell_count">>, A),
-					    [
-					     {[{<<"total">>, SellTotal}|P]}
-					     |Acc1] ++ Acc
-				    end, [], Amounts)
+
+				  [P|Acc]
+				  %% lists:foldr(
+				  %%   fun({struct, A}, Acc1) ->
+				  %% 	    SellTotal = ?v(<<"sell_count">>, A),
+				  %% 	    [
+				  %% 	     {[{<<"total">>, SellTotal}|P]}
+				  %% 	     |Acc1] ++ Acc
+				  %%  end, [], Amounts)
 			  end, [], Invs),
 		    print(RSN, Merchant, NewInvs, Base, Print, SuccessRespone);
 		?NO ->
@@ -317,6 +318,9 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
 	%% {ok, Details} = ?w_sale:rsn_detail(rsn, Merchant, {<<"rsn">>, RSN}),
 	?DEBUG("details ~p", [SaleDetails]),
 
+	CombineInvs = combine_inv(SaleDetails, []),
+	?DEBUG("combineinvs ~p", [CombineInvs]),
+
 	%% {ok, Retailer} = ?w_user_profile:get(
 	%% 		    retailer, Merchant, ?v(<<"retailer_id">>, Sale)),
 	
@@ -340,8 +344,10 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
 		    {<<"cash">>,       ?v(<<"cash">>, Sale)},
 		    {<<"card">>,       ?v(<<"card">>, Sale)},
 		    {<<"verificate">>, ?v(<<"verificate">>, Sale)},
-		    {<<"should_pay">>, ?v(<<"should_pay">>, Sale)},
+		    {<<"should_pay">>, ?v(<<"should_pay">>, Sale)}, 
 		    {<<"total">>,      ?v(<<"total">>, Sale)},
+		    {<<"last_score">>, ?v(<<"lscore">>, Sale)},
+		    {<<"score">>,      ?v(<<"score">>, Sale)},
 		    {<<"comment">>,    ?v(<<"comment">>, Sale)}, 
 		    {<<"direct">>,     ?v(<<"type">>, Sale)}],
 
@@ -361,7 +367,7 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
 			{<<"pinfo">>, PInfo}])
 	    end,
 
-	print(RSN, Merchant, SaleDetails, RSNAttrs, PrintAttrs, SuccessRespone)
+	print(RSN, Merchant, CombineInvs, RSNAttrs, PrintAttrs, SuccessRespone)
 	
 	%% ?utils:respond(
 	%%    200, Req, ?succ(print_w_sale, RSN), {<<"rsn">>, ?to_b(RSN)}) 
@@ -558,6 +564,56 @@ sidebar(Session) ->
 %% =============================================================================
 %% internal
 %% =============================================================================
+combine_inv([], Acc) ->
+    Acc;
+combine_inv([{Inv}|T], Acc) ->
+    S = ?v(<<"style_number">>, Inv),
+    B = ?v(<<"brand_id">>, Inv),
+    Amount   = ?v(<<"amount">>, Inv),
+    
+    case in_sort(Inv, Acc) of
+	true ->
+	    NewAcc = 
+		lists:foldr(
+		  fun({A}, Acc1) ->
+			  S1 = ?v(<<"style_number">>, A),
+			  B1 = ?v(<<"brand_id">>, A),
+			  TagPrice = ?v(<<"tag_price">>, A),
+			  RPrice   = ?v(<<"rprice">>, A),
+			  Amount1  = ?v(<<"amount">>, A),
+
+			  case S =:= S1 andalso B =:= B1 of
+			      true ->
+				  [{[{<<"style_number">>, S1},
+				     {<<"brand_id">>, B1},
+				     {<<"tag_price">>, TagPrice},
+				     {<<"rprice">>, RPrice},
+				     {<<"total">>, Amount + Amount1}
+				    ]}|Acc1];
+			      false ->
+				  [{A}|Acc1]
+			  end
+		  end, [], Acc),
+	    combine_inv(T, NewAcc);
+	false ->
+	    combine_inv(T, [{Inv}|Acc])
+    end.
+
+in_sort(_In, []) ->
+    false;
+in_sort(In, [{TInv}|T]) ->
+    S = ?v(<<"style_number">>, In),
+    B = ?v(<<"brand_id">>, In),
+
+    S1 = ?v(<<"style_number">>, TInv),
+    B1 = ?v(<<"brand_id">>, TInv),
+
+    case S =:= S1 andalso B =:= B1 of
+	true -> true;
+	false -> in_sort(In, T)
+    end.
+	    
+    
 print(RSN, Merchant, Invs, Attrs, PrintAttrs, ResponseFun) ->
     try ?wifi_print:print(RSN, Merchant, Invs, Attrs, PrintAttrs) of	
 	{Success, []} ->

@@ -1061,6 +1061,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 		rprice      : add.rprice,
 		fdiscount   : add.fdiscount,
 		rdiscount   : add.rdiscount,
+		stock       : add.total,
 		
 		path        : sets(add.path), 
 		sizes       : add.sizes,
@@ -1085,13 +1086,13 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    comment:        sets($scope.select.comment),
 
 	    balance:        $scope.select.surplus, 
-	    cash:           $scope.select.cash,
-	    card:           $scope.select.card,
-	    withdraw:       $scope.select.withdraw,
-	    verificate:     $scope.select.verificate,
+	    cash:           setv($scope.select.cash),
+	    card:           setv($scope.select.card),
+	    withdraw:       setv($scope.select.withdraw),
+	    verificate:     setv($scope.select.verificate),
 	    
-	    should_pay:     $scope.select.should_pay,
-	    has_pay:        $scope.select.has_pay,
+	    should_pay:     setv($scope.select.should_pay),
+	    // has_pay:        $scope.select.has_pay,
 	    charge:         $scope.select.charge,
 	    total:          $scope.select.total,
 	    last_score:     $scope.select.retailer.score,
@@ -1650,8 +1651,8 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
      * filter operation
      */
     // 0: >0 1: <0
-    var has_pay =  [{name:">0", id:0, py:diablo_pinyin("大于0")},
-    		    {name:"=0", id:1, py:diablo_pinyin("等于0")}];
+    // var has_pay =  [{name:">0", id:0, py:diablo_pinyin("大于0")},
+    // 		    {name:"=0", id:1, py:diablo_pinyin("等于0")}];
     
     // initial 
     diabloFilter.reset_field();

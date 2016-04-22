@@ -20,7 +20,7 @@ sale(new_by_shop, Merchant, Conditions) ->
 	", sum(should_pay) as t_spay" 
 	", sum(cash) as t_cash"
 	", sum(card) as t_card"
-	", sum(cbalance) as t_cbalance" 
+	%% ", sum(cbalance) as t_cbalance" 
 	", sum(withdraw) as t_withdraw"
 	
 	" from w_sale"
@@ -33,9 +33,7 @@ sale(new_by_shop, Merchant, Conditions) ->
 sale(new_by_retailer, Merchant, Conditions) ->
     ?DEBUG("new_by_retailer with merchant ~p, conditions ~p",
 	   [Merchant, Conditions]), 
-    %% 0: has_pay > 0 
-    SortConditions = ?w_sale:sort_condition(
-			wsale, Merchant, [{<<"has_pay">>, 0}|Conditions]),
+    SortConditions = ?w_sale:sort_condition(wsale, Merchant, Conditions),
     
     %% {StartTime, EndTime, NewConditions} = 
     %% 	?sql_utils:cut(fields_no_prifix, Conditions), 
@@ -43,10 +41,11 @@ sale(new_by_retailer, Merchant, Conditions) ->
 	
 	", a.employ as employee_id"
 	", a.retailer as retailer_id"
-	
+
+	", sum(a.should_pay) as t_spay" 
 	", sum(a.cash) as t_cash"
 	", sum(a.card) as t_card"
-	", sum(cbalance) as t_cbalance" 
+    %% ", sum(cbalance) as t_cbalance" 
 	", sum(withdraw) as t_withdraw"
 	
 	" from w_sale a"

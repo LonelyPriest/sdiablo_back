@@ -94,7 +94,7 @@ shopApp.controller("shopDetailCtrl", function(
     
     var shop_actions = rightAuthen.shop_action();
     $scope.authen_list_repo =
-	rightAuthen.authen(shop_actions["list_repo"], user.right); 
+	rightAuthen.authen_menu(shop_actions["list_repo"], user.right); 
     
     $scope.repertories = [];
     var deferred = $q.defer(); 

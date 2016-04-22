@@ -77,7 +77,7 @@ function filterProvider(){
 		    _filter.fields.push({name:"employ", chinese:"店员"});
 		    _prompt.employee = promptValues;
 		}else if(name === 'retailer'){
-		    _filter.fields.push({name:"retailer", chinese:"零售商"});
+		    _filter.fields.push({name:"retailer", chinese:"客户"});
 		    _prompt.retailer = promptValues;
 		}else if (name === 'sell_type') {
 		    _filter.fields.push({name:"sell_type", chinese:"销售类型"});

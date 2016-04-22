@@ -75,8 +75,7 @@ purchaserApp.controller("stockPromotionNew", function(
 purchaserApp.controller("stockPromotionDetail", function(
     $scope, dateFilter, diabloPattern, diabloUtilsService,
     purchaserService, wgoodService){
-    $scope.rules = purchaserService.promotion_rules;
-
+    $scope.rules = purchaserService.promotion_rules; 
     $scope.refresh = function(){
 	wgoodService.list_w_promotion().then(function(promotions){
 	    console.log(promotions);
@@ -96,6 +95,15 @@ purchaserApp.controller("stockPromotionDetail", function(
 
     $scope.new_promotion = function(){
 	diablo_goto_page("#/promotion/promotion_new");
+    };
+
+    var dialog = diabloUtilsService;
+    $scope.update_promotion = function(p){
+	dialog.response(false, "修改促销方案", "暂不支持此操作！！");
+    };
+
+    $scope.delete_promotion = function(p){
+	dialog.response(false, "删除促销方案", "暂不支持此操作！！");
     };
     
 });

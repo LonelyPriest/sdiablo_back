@@ -172,9 +172,8 @@ wreportApp.controller("dailyByRetailer", function(
 		    $scope.r_stastic.total_items = result.total;
 		    $scope.r_stastic.total_cash  = result.t_cash;
 		    $scope.r_stastic.total_card  = result.t_card;
-		    $scope.r_stastic.total_wire  = result.t_wire;
 		    $scope.r_stastic.total_verificate = result.t_verificate;
-		    $scope.r_stastic.total_hpay = $scope.round(result.t_hpay);
+		    $scope.r_stastic.total_spay = result.t_spay;
 		    
 		    $scope.r_data = [];
 		}

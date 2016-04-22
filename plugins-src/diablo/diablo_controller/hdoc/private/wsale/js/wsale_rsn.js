@@ -92,7 +92,7 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
      */
     $scope.colspan = 17;
     $scope.items_perpage = diablo_items_per_page();
-    $scope.max_page_size = 15;
+    $scope.max_page_size = 10;
     $scope.default_page = 1;
     $scope.current_page = $scope.default_page;
 

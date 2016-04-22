@@ -86,7 +86,7 @@
 		    <th class="success">品牌</th>
 		    <th class="warning">类型</th>
 		    <th>年度</th>
-		    <th>进价</th>
+		    <th x-ng-if="stock_right.show_orgprice">进价</th>
 		    <th>折扣</th>
 		    <th class="info">数量</th>
 		    
@@ -111,7 +111,7 @@
 		    <td>{{inv.brand.name}}</td>
 		    <td>{{inv.itype.name}}</td>
 		    <td>{{inv.year}}</td>
-		    <td>{{inv.org_price}}</td>
+		    <td x-ng-if="stock_right.show_orgprice">{{inv.org_price}}</td>
 		    <td>{{inv.ediscount}}</td>
 
 		    <td x-ng-switch on="inv.type">

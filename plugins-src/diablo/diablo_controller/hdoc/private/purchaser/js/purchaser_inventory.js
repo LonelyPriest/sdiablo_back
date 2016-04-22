@@ -43,11 +43,13 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     /*
      * authen
      */
-    $scope.right = {
-	lookup_w_good_orgprice: rightAuthen.authen(
-	    rightAuthen.good_action()["lookup_w_good_orgprice"], user.right)
-    };
-
+    $scope.stock_right = {
+	show_orgprice: rightAuthen.authen(
+	    user.type,
+	    rightAuthen.rainbow_action()['show_orgprice'],
+	    user.right
+	)
+    }; 
        
     $scope.change_firm = function(){
 	console.log($scope.select.firm); 
@@ -1310,12 +1312,15 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
     $scope.seasons   = diablo_season;
     $scope.goto_page = diablo_goto_page;
     $scope.total_items = 0;
-    
-    $scope.right = {
-	lookup_w_good_orgprice: rightAuthen.authen(
-	    rightAuthen.good_action()["lookup_w_good_orgprice"], user.right)
-    };
 
+    $scope.stock_right = {
+	show_orgprice: rightAuthen.authen(
+	    user.type,
+	    rightAuthen.rainbow_action()['show_orgprice'],
+	    user.right
+	)
+    };
+    
     $scope.setting = {
 	alarm: false
     };
@@ -1379,7 +1384,7 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
      */
     $scope.colspan = 18;
     $scope.items_perpage = diablo_items_per_page();
-    $scope.max_page_size = 15;
+    $scope.max_page_size = 10;
     
     // default the first page
     $scope.default_page = 1;
@@ -1852,7 +1857,7 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
      */
     $scope.colspan = 18;
     $scope.items_perpage = diablo_items_per_page();
-    $scope.max_page_size = 15;
+    $scope.max_page_size = 10;
     $scope.default_page = 1;
 
     var back_page = diablo_set_integer($routeParams.page);

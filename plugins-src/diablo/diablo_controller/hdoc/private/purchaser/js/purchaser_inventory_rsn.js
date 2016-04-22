@@ -50,7 +50,7 @@ purchaserApp.controller("purchaserInventoryFixRsnDetailCtrl", function(
      * pagination 
      */
     $scope.colspan = 17;
-    $scope.items_perpage = 10;
+    $scope.items_perpage = diablo_items_per_page();
     $scope.max_page_size = 10;
     $scope.default_page = 1;
 
@@ -168,7 +168,9 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
     wgoodService, purchaserService, localStorageService,
     user, filterBrand, filterFirm, filterType,
     filterEmployee, filterSizeGroup, filterColor, base){
-    
+
+    // console.log(user.right);
+
     // var permitShops      = user.shopIds;
     $scope.shops     = user.sortShops.concat(user.sortBadRepoes);
     $scope.shopIds   = user.shopIds.concat(user.badrepoIds);
@@ -181,6 +183,19 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
     $scope.toggle_base = function(){
 	$scope.hidden.base = !$scope.hidden.base
     };
+
+    /*
+     * authen
+     */
+    $scope.stock_right = {
+	show_orgprice: rightAuthen.authen(
+	    user.type,
+	    rightAuthen.rainbow_action()['show_orgprice'],
+	    user.right
+	)
+    };
+
+    console.log($scope.stock_right);
 
     var dialog       = diabloUtilsService;
     var use_storage  = $routeParams.rsn ? false : true;

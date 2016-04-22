@@ -367,7 +367,7 @@
 			<td class="vert-align">{{inv.year}}</td>
 			<td class="vert-align">{{seasons[inv.season]}}</td>
 			
-			<td x-ng-if="right.lookup_w_good_orgprice" class="col-md-1 vert-align">
+			<td x-ng-if="stock_right.show_orgprice" class="col-md-1 vert-align">
 			  <span x-ng-if="!inv.$new && !inv.update_directory">
 		    	    {{inv.org_price}}</span>
 			  <form name="inv.form.orgprice"
@@ -388,7 +388,7 @@
 			  </form>
 			</td>
 
-			<td x-ng-if="right.lookup_w_good_orgprice" class="col-md-1 vert-align">
+			<td x-ng-if="stock_right.show_orgprice" class="col-md-1 vert-align">
 			  <span x-ng-if="!inv.$new && !inv.update_directory">
 		    	    {{inv.ediscount}}
 			  </span>
@@ -504,8 +504,8 @@
 		      <tr>
 			<!--statistic-->
 		      <tr x-ng-if="inventories.length>1" class="text-center">
-			<td x-ng-if="right.lookup_w_good_orgprice" colspan="8"></td>
-			<td x-ng-if="!right.lookup_w_good_orgprice" colspan="6"></td>
+			<td x-ng-if="stock_right.show_orgprice" colspan="8"></td>
+			<td x-ng-if="!stock_right.show_orgprice" colspan="6"></td>
 			<td class="vert-align fg-red">{{select.total}}</td>
 			<td
 			   class="vert-align fg-red">{{select.should_pay}}

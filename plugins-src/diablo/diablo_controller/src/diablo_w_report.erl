@@ -63,7 +63,7 @@ handle_call({total, by_shop, Merchant, Conditions}, _From, State) ->
     %% ", sum(has_pay) as t_hpay"
 	", sum(cash) as t_cash"
 	", sum(card) as t_card"
-	", sum(cbalance) as t_cbalance" 
+    %% ", sum(cbalance) as t_cbalance"
 	", sum(withdraw) as t_withdraw", 
     %% ", sum(wire) as t_wire"
     %% ", sum(verificate) as t_verificate",
@@ -72,16 +72,14 @@ handle_call({total, by_shop, Merchant, Conditions}, _From, State) ->
     {reply, Reply, State};
 
 handle_call({total, by_retailer, Merchant, Conditions}, _From, State) ->
-    %% 0: has_pay > 0
-    SortConditions = ?w_sale:sort_condition(
-			wsale, Merchant, [{<<"has_pay">>, 0}|Conditions]),
+    SortConditions = ?w_sale:sort_condition(wsale, Merchant, Conditions),
     
     CountSql = "select count(distinct shop, merchant, retailer) as total"
     %% ", sum(total) as t_amount"
-    %% ", sum(should_pay) as t_spay"
+	", sum(should_pay) as t_spay"
 	", sum(cash) as t_cash"
 	", sum(card) as t_card"
-	", sum(cbalance) as t_cbalance" 
+    %% ", sum(cbalance) as t_cbalance" 
 	", sum(withdraw) as t_withdraw"
 	" from w_sale a"
 	" where " ++ SortConditions,
