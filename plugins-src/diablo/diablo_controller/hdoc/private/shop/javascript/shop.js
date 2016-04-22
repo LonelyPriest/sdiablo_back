@@ -14,11 +14,11 @@ shopApp.controller("newShopCtrl", function(
     // });
 
     // repo
-    $scope.authen_list_repo = false;
-    if (rightAuthen.authen(
-	rightAuthen.shop_action()["list_repo"], user.right)){
-	$scope.authen_list_repo = true; 
-    };
+    $scope.authen_list_repo =
+	rightAuthen.authen_menu(
+	    rightAuthen.shop_action["list_repo"],
+	    user.right); 
+    
 
     // console.log($scope.authen_list_repo);
     
@@ -90,11 +90,11 @@ shopApp.controller("shopDetailCtrl", function(
     // $scope.repertories = filterRepo;
     $scope.goto_page   = diablo_goto_page;
 
-    // authen
-    
-    var shop_actions = rightAuthen.shop_action();
+    // authen    
     $scope.authen_list_repo =
-	rightAuthen.authen_menu(shop_actions["list_repo"], user.right); 
+	rightAuthen.authen_menu(
+	    rightAuthen.shop_action["list_repo"],
+	    user.right); 
     
     $scope.repertories = [];
     var deferred = $q.defer(); 

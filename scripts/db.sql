@@ -59,6 +59,7 @@ create table shops
     master             VARCHAR(8) default null, -- Leader of the shop, choice from employ, default is no owner
 
     charge             INTEGER default -1, -- charge promotion
+    score              INTEGER default -1, -- score promotion
     merchant           INTEGER default -1, -- which merchant belong to
     deleted            INTEGER default 0, -- 0: no;  1: yes
     entry_date         DATETIME not null,
@@ -401,18 +402,18 @@ create table w_promotion(
     
 ) default charset=utf8;
 
-create table shop_promotion(
-    id              INTEGER AUTO_INCREMENT,
-    merchant        INTEGER not null default -1,
-    shop            INTEGER not null default -1,
-    pid             INTEGER not null default -1, -- reference to promotion
-    entry           DATETIME default 0,
-    deleted         INTEGER default 0, -- 0: no;  1: yes
+-- create table shop_promotion(
+--     id              INTEGER AUTO_INCREMENT,
+--     merchant        INTEGER not null default -1,
+--     shop            INTEGER not null default -1,
+--     pid             INTEGER not null default -1, -- reference to promotion
+--     entry           DATETIME default 0,
+--     deleted         INTEGER default 0, -- 0: no;  1: yes
 
-    unique  key uk  (merchant, shop, pid),
-    primary key     (id)
+--     unique  key uk  (merchant, shop, pid),
+--     primary key     (id)
     
-) default charset=utf8;
+-- ) default charset=utf8;
 
 
 /*
