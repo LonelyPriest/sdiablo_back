@@ -353,6 +353,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
     $scope.f_add           = diablo_float_add;
     $scope.f_sub           = diablo_float_sub;
     $scope.f_mul           = diablo_float_mul;
+    $scope.f_discount      = diablo_discount;
     $scope.wsale_mode      = wsaleService.wsale_mode;
     $scope.show_promotions = [];
     $scope.disable_refresh = true;
@@ -1075,7 +1076,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 
 	// console.log($scope.select);
 	var im_print = $scope.immediately_print($scope.select.shop.id);
-
+	var p_mode = $scope.p_mode($scope.select.shop.id);
 	// console.log(im_print);
 	var base = {
 	    retailer:       $scope.select.retailer.id,
@@ -1101,6 +1102,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 
 	var print = {
 	    im_print:    im_print,
+	    p_mode:      p_mode,
 	    shop:        $scope.select.shop.name,
 	    employ:      $scope.select.employee.name,
 	    retailer_id: $scope.select.retailer.id,
@@ -1129,7 +1131,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 		$scope.select.rsn = result.rsn;
 		success_callback();
 
-		if (diablo_backend === $scope.p_mode($scope.select.shop.id)){
+		if (diablo_backend === p_mode){
 		    $scope.print_backend(result, im_print);
 		} else {
 		    $scope.print_front(result, im_print); 

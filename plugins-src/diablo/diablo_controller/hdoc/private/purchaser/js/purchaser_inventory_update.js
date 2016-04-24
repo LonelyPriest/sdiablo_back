@@ -30,7 +30,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
     
     $scope.go_back = function(){
 	diablo_goto_page("#/inventory_new_detail/" + $routeParams.ppage);
-    }; 
+    };
     
     // pagination
     $scope.items_perpage = diablo_items_per_page();

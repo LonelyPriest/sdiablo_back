@@ -1122,6 +1122,7 @@ amount_update(RSN, Merchant, Shop, Datetime, Inv) ->
     StyleNumber    = ?v(<<"style_number">>, Inv),
     Brand          = ?v(<<"brand">>, Inv),
     OrgPrice       = ?v(<<"org_price">>, Inv, 0),
+    TagPrice       = ?v(<<"tag_price">>, Inv),
     EDiscount      = ?v(<<"ediscount">>, Inv, 0),
     Discount       = ?v(<<"discount">>, Inv, 0),
     %% OldTotal       = ?v(<<"old_total">>, Inv),
@@ -1153,6 +1154,7 @@ amount_update(RSN, Merchant, Shop, Datetime, Inv) ->
 	case update_metric(ChangeAmounts) of
 	    0 -> ["update w_inventory_new_detail"
 		  " set org_price=" ++ ?to_s(OrgPrice)
+		  ++ ",tag_price=" ++ ?to_s(TagPrice)
 		  ++ ",ediscount=" ++ ?to_s(EDiscount)
 		  ++ ",discount=" ++ ?to_s(Discount)
 		  ++ " where rsn=\"" ++ ?to_s(RSN) ++ "\""
@@ -1161,6 +1163,7 @@ amount_update(RSN, Merchant, Shop, Datetime, Inv) ->
 		  
 		  "update w_inventory"
 		  " set org_price=" ++ ?to_s(OrgPrice)
+		  ++ ",tag_price=" ++ ?to_s(TagPrice)
 		  ++ ",ediscount=" ++ ?to_s(EDiscount)
 		  ++ ",discount=" ++ ?to_s(Discount)
 		  ++ " where "
@@ -1171,6 +1174,7 @@ amount_update(RSN, Merchant, Shop, Datetime, Inv) ->
 		 ];
 	    Metric -> 
 		["update w_inventory set amount=amount+" ++ ?to_s(Metric)
+		 ++ ",tag_price=" ++ ?to_s(TagPrice)
 		 ++ ",org_price=" ++ ?to_s(OrgPrice)
 		 ++ ",ediscount=" ++ ?to_s(EDiscount) 
 		 ++ ",discount=" ++ ?to_s(Discount) 
@@ -1182,6 +1186,7 @@ amount_update(RSN, Merchant, Shop, Datetime, Inv) ->
 
 		 "update w_inventory_new_detail"
 		 " set amount=amount+" ++ ?to_s(Metric)
+		 ++ ",tag_price=" ++ ?to_s(TagPrice)
 		 ++ ",org_price=" ++ ?to_s(OrgPrice)
 		 ++ ",ediscount=" ++ ?to_s(EDiscount) 
 		 ++ ",discount=" ++ ?to_s(Discount) 

@@ -660,10 +660,10 @@
   <div class="text-center"><strong>{{select.shop.name}}</strong></div>
   <div class="text-left">
     <p>
-      <span>单号：{{select.rsn}}</span>
-      <span class="pull-right">
+      <div>单号：<span x-ng-bind="select.rsn"></span></div>
+      <div>
 	日期：{{select.datetime|date: "yyyy-MM-dd HH:mm:ss"}}
-      </span>
+      </div>
     </p>
   </div>
 
@@ -671,24 +671,25 @@
     <div x-ng-if="!inv.$new">
       <div>款号：<span>{{inv.style_number}}</span></div>
       <!-- <div>品牌：<span>{{inv.brand}}</span></div> -->
-      <div>单价：<span>{{inv.fprice}}</span></div>
-      <div>折扣：<span>{{inv.fdiscount}}</span></div>
+      <div>单价：<span>{{inv.tag_price}}</span></div>
+      <div>成交价：<span>{{inv.rprice}}</span></div>
       <div>数量：<span>{{inv.sell}}</span></div>
-      <!-- <div>小计： -->
-      <!-- 	<span x-ng-if="setting.round===1"> -->
-      <!-- 	  {{round(inv.fprice * inv.sell * inv.fdiscount * 0.01)}} -->
-      <!-- 	</span> -->
-      <!-- 	<span x-ng-if="setting.round===0"> -->
-      <!-- 	  {{f_mul(f_mul(inv.fprice, inv.fdiscount), -->
-      <!-- 	  f_mul(inv.sell, 0.01))}}</span> -->
-      <!-- </div> -->
+      <div>小计:<span>{{inv.calc}}</span></div>
+      <div>折扣率：
+	<span>{{f_discount(inv.rprice, inv.tag_price)}}</span>
+      </div> 
     </div>
   </div> 
 
-  <div>应付：{{select.should_pay}}</div>
-  <div>实付：{{select.has_pay}}</div>
-  <div>找零：{{-select.charge}}</div>
-  
+  <div>总计：{{select.total}}</div>
+  <div>实付：{{select.should_pay}}</div>
+  <div x-ng-if="select.retailer.id !== setting.no_vip">
+    <div>上次积分：<span>{{select.retailer.score}}</span></div>
+    <div>本次积分：<span>{{select.score}}</span></div>
+    <div>累计积分：
+      <span>{{select.retailer.score + select.score}}</span>
+    </div>
+  </div>
 </div>
 
 

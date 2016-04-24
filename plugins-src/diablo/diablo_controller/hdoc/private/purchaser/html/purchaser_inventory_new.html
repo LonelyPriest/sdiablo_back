@@ -170,7 +170,7 @@
 		  </div> 
 		</form>
 
-		<span class="input-group-addon">
+		<span x-ng-if="stock_right.show_balance" class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>欠款</span>
 	  	<input class="form-control" readonly
 	  	       x-ng-model="select.surplus"/> 
@@ -221,7 +221,7 @@
 	  	<input class="form-control" readonly
 	  	       x-ng-model="select.has_pay"></input>
 
-		<span class="input-group-addon">
+		<span x-ng-if="stock_right.show_balance" class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>结余</span>
 	  	<input class="form-control" type="text" readonly
 	  	       x-ng-model="select.left_balance"></input> 
@@ -302,7 +302,10 @@
 			<th x-ng-if="stock_right.show_orgprice"
 			    class="text-center">进价</th>
 			<th x-ng-if="stock_right.show_orgprice"
-			    class="text-center">折扣</th>
+			    class="text-center">折扣进</th>
+
+			<th class="text-center">吊牌价</th>
+			<th class="text-center">折扣卖</th>
 			
 			<th class="text-center">数量</th>
 			<th class="text-center">合计</th>
@@ -408,8 +411,11 @@
 		    		     popover="请输入进价折扣"/>
 		    	    </div>
 			  </form>
-			</td>
-			
+			</td> 
+
+			<td class="vert-align">{{inv.tag_price}}</td>
+			<td class="vert-align">{{inv.discount}}</td>
+
 			<td class="col-md-1 vert-align">
 			  <span x-ng-if="!inv.$new && !inv.update_directory">
 			    {{inv.total}}
@@ -429,7 +435,7 @@
 				     x-ng-change="auto_save_free(inv)"
 				     popover-placement="top"
 				     popover-trigger="focus"
-				     popover="均色均码直接输入数量"></input>
+				     popover="均色均码直接输入数量"/>
 			    </div>
 			  </form>
 			</td>
@@ -437,15 +443,7 @@
 			<td class="vert-align">
 			  <span x-ng-if="inv.$new"></span>
 			  <span x-ng-if="!inv.$new">
-			    <span x-ng-if="setting.round===1">
-			      {{round(
-			      inv.total * inv.org_price * inv.ediscount * 0.01)}}
-			    </span>
-			    <span x-ng-if="setting.round===0">
-			      {{float_mul(
-			      inv.total * inv.ediscount,
-			      float_mul(inv.org_price, 0.01))}}
-			    </span>
+			    {{calc_row(inv.org_price, inv.ediscount, inv.total)}} 
 			  </span>
 			</td>
 			
@@ -504,12 +502,11 @@
 		      <tr>
 			<!--statistic-->
 		      <tr x-ng-if="inventories.length>1" class="text-center">
-			<td x-ng-if="stock_right.show_orgprice" colspan="8"></td>
-			<td x-ng-if="!stock_right.show_orgprice" colspan="6"></td>
+			<td x-ng-if="stock_right.show_orgprice" colspan="10"></td>
+			<td x-ng-if="!stock_right.show_orgprice" colspan="8"></td>
 			<td class="vert-align fg-red">{{select.total}}</td>
-			<td
-			   class="vert-align fg-red">{{select.should_pay}}
-			</td>
+			<td x-ng-if="stock_right.show_orgprice"
+			    class="vert-align fg-red">{{select.should_pay}}</td>
 			<td colspan="1"></td>
 		      </tr>
 		    </tbody>

@@ -223,12 +223,16 @@ action(Session, Req, {"new_w_sale"}, Payload) ->
     {struct, Base}  = ?v(<<"base">>, Payload),
     {struct, Print} = ?v(<<"print">>, Payload),
 
-    ImmediatelyPrint = ?v(<<"im_print">>, Print, ?YES),
+    %% Shop = ?v(<<"shop">>, Base, -1),
+    %% {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, Shop),
+    
+    ImmediatelyPrint = ?v(<<"im_print">>, Print, ?NO),
+    PMode            = ?v(<<"p_mode">>, Print, ?PRINT_FRONTE),
     
     case ?w_sale:sale(new, Merchant, lists:reverse(Invs), Base) of 
     	{ok, RSN} ->
-	    case ImmediatelyPrint of
-		?YES ->
+	    case ImmediatelyPrint =:= ?YES andalso PMode =:= ?PRINT_BACKEND of
+		true ->
 		    SuccessRespone =
 			fun(PCode, PInfo) ->
 				?utils:respond(
@@ -266,7 +270,7 @@ action(Session, Req, {"new_w_sale"}, Payload) ->
 				  %%  end, [], Amounts)
 			  end, [], Invs),
 		    print(RSN, Merchant, NewInvs, Base, Print, SuccessRespone);
-		?NO ->
+		false ->
 		    ?utils:respond(200, Req, ?succ(new_w_sale, RSN),
 				   [{<<"rsn">>, ?to_b(RSN)}])
 	    end,

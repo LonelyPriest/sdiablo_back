@@ -27,6 +27,7 @@ var rightAuthen = {
 	    modify_price_onsale  : rightAuthen.root_right._rainbow + 2,
 	    modify_discount_onsale : rightAuthen.root_right._rainbow + 3,
 	    show_orgprice: rightAuthen.root_right._rainbow + 4,
+	    show_balance_onstock: rightAuthen.root_right._rainbow + 5
 	}
     },
 

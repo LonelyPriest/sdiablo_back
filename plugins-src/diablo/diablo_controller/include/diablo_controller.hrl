@@ -43,6 +43,8 @@
 -define(STOP, 1).
 -define(TABLE, 1).
 -define(STRING, 0).
+-define(PRINT_FRONTE, 0).
+-define(PRINT_BACKEND, 1).
 
 %% pagination
 -define(DEFAULT_ITEMS_PERPAGE, 5).
@@ -209,7 +211,7 @@
 %% -----------------------------------------------------------------------------
 %% rainbow
 %% -----------------------------------------------------------------------------
--define(inventory_eifo_onreject,      ?right_rainbow + 1).
+%% -define(inventory_eifo_onreject,      ?right_rainbow + 1).
 -define(wsale_modify_price_onsale,    ?right_rainbow + 2).
 -define(wsale_modify_discount_onsale, ?right_rainbow + 3).
 -define(stock_show_orgprice,          ?right_rainbow + 4).

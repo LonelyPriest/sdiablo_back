@@ -1090,7 +1090,7 @@ wsale(delete, RSN, _DateTime, Merchant, Shop, Inventory, Amounts)
 	     end(),
 
     ["update w_inventory set amount=amount+" ++ ?to_s(Metric)
-     ++ ",sell=sell+" ++ ?to_s(Metric) 
+     ++ ",sell=sell-" ++ ?to_s(Metric) 
      ++ " where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
      ++ " and brand=" ++ ?to_s(Brand)
      ++ " and shop=" ++ ?to_s(Shop)

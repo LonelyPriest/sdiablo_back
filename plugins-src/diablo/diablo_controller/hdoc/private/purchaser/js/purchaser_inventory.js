@@ -28,6 +28,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope.float_mul         = diablo_float_mul;
     $scope.round             = diablo_round;
     $scope.full_years        = diablo_full_year;
+    $scope.calc_row          = stockUtils.calc_row;
     
     $scope.disable_refresh   = true;
     $scope.timeout_auto_save = undefined;
@@ -39,7 +40,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope.go_back = function(){
 	diablo_goto_page("#/inventory_new_detail");
     };
-
+    
     /*
      * authen
      */
@@ -47,6 +48,12 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	show_orgprice: rightAuthen.authen(
 	    user.type,
 	    rightAuthen.rainbow_action()['show_orgprice'],
+	    user.right
+	),
+
+	show_balance: rightAuthen.authen(
+	    user.type,
+	    rightAuthen.rainbow_action()['show_balance_onstock'],
 	    user.right
 	)
     }; 
@@ -1814,18 +1821,19 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
     * filter
     */
 
-    var has_pay =  [{name:">0", id:0, py:diablo_pinyin("大于0")},
-    		    {name:"=0", id:1, py:diablo_pinyin("等于0")}];
+    // var has_pay =  [{name:">0", id:0, py:diablo_pinyin("大于0")},
+    // 		    {name:"=0", id:1, py:diablo_pinyin("等于0")}];
     
     // initial
     // $scope.filters = []; 
-    diabloFilter.reset_field(); 
-    diabloFilter.add_field("purchaser_type", purchaserService.purchaser_type);
-    diabloFilter.add_field("rsn", []);
+    diabloFilter.reset_field();
+    diabloFilter.add_field("firm",     filterFirm); 
     diabloFilter.add_field("shop",     $scope.shops);
-    diabloFilter.add_field("firm",     filterFirm);
     diabloFilter.add_field("employee", filterEmployee);
-    diabloFilter.add_field("has_pay",  has_pay);
+    diabloFilter.add_field("rsn", []); 
+    diabloFilter.add_field("purchaser_type", purchaserService.purchaser_type);
+
+    // diabloFilter.add_field("has_pay",  has_pay);
 
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
@@ -1933,8 +1941,10 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
 		}) 
 	})
     };
-			
-    // $scope.do_search($scope.current_page);
+
+    if (angular.isDefined(back_page)){
+	$scope.do_search($scope.current_page); 
+    }
 
     $scope.page_changed = function(){
 	// console.log($scope.current_page);
