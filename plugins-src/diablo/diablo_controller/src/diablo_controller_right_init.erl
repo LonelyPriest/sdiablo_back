@@ -238,9 +238,12 @@ init([]) ->
 	  <<"退货">>, <<"reject_w_inventory">>,      ?right_w_inventory}, 
 	 {?fix_w_inventory,
 	  <<"盘点">>, <<"fix_w_inventory">>,         ?right_w_inventory},
+	 
 	 {?set_w_inventory_promotion,
-	  <<"促销方案设置">>,
-	  <<"set_w_inventory_promotion">>, ?right_w_inventory} 
+	  <<"促销方案设置">>, <<"set_w_inventory_promotion">>, ?right_w_inventory},
+	 
+	 {?update_w_inventory_batch,
+	  <<"批量修改库存">>, <<"update_w_inventory_batch">>, ?right_w_inventory}
 	],
 
     %% firm
@@ -330,8 +333,9 @@ init([]) ->
     
     %% rainbow
     Rainbow =
-	[{?inventory_eifo_onreject,
-	  <<"退货后进先出">>, <<"inventory_eifo">>, ?right_rainbow},
+	[
+	 %% {?inventory_eifo_onreject,
+	 %% <<"退货后进先出">>, <<"inventory_eifo">>, ?right_rainbow},
 	 {?wsale_modify_price_onsale,
 	  <<"开单修改价格">>, <<"wsale_modify_price">>,  ?right_rainbow},
 	 {?wsale_modify_discount_onsale,
@@ -757,6 +761,7 @@ pass_action(wholesaler) ->
      <<"match_w_inventory">>,
      <<"match_all_w_inventory">>,
      <<"match_all_reject_w_inventory">>,
+     %% <<"update_w_inventory_batch">>,
 
      %% inventory new
      <<"get_w_inventory_new">>,

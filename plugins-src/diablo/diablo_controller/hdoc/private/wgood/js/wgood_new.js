@@ -609,13 +609,19 @@ wgoodApp.controller("wgoodDetailCtrl", function(
     // console.log(user.right);
     $scope.right = {
 	update_w_good: rightAuthen.authen(
-	    rightAuthen.good_action()["update_w_good"], user.right),
+	    user.type,
+	    rightAuthen.good_action()["update_w_good"],
+	    user.right),
 
 	delete_w_good: rightAuthen.authen(
-	    rightAuthen.good_action()["delete_w_good"], user.right),
+	    user.type,
+	    rightAuthen.good_action()["delete_w_good"],
+	    user.right),
 
 	lookup_w_good_orgprice: rightAuthen.authen(
-	    rightAuthen.good_action()["lookup_w_good_orgprice"], user.right)
+	    user.type,
+	    rightAuthen.good_action()["lookup_w_good_orgprice"],
+	    user.right)
     };
 
     console.log($scope.right);

@@ -41,9 +41,8 @@
 	      <div class="input-group"> 
 	  	<input class="form-control" type="text"
 	  	       x-ng-model="select.firm" 
-	  	       placeholder="请选择厂商"
+	  	       placeholder="请选择厂商，默认为空"
 	  	       typeahead-editable="false"
-		       typeahead-on-select="change_firm()"
 	  	       typeahead="f as f.name for f in
 	  			  firms|filter:$viewValue|limitTo:15"/>
 		<span class="input-group-btn">
@@ -412,11 +411,42 @@
 		    	    </div>
 			  </form>
 			</td> 
-
-			<td class="vert-align">{{inv.tag_price}}</td>
-			<td class="vert-align">{{inv.discount}}</td>
-
-			<td class="col-md-1 vert-align">
+			
+			<td class="vert-align">
+			  <form name="inv.form.tagprice">
+		    	    <div ng-class="{'has-error':inv.form.tagprice.$invalid
+		    			   && !inv.form.tagprice.$pristine}">
+		    	      <input class="form-control"
+		    		     type="number" step="0.01"
+		    		     placeholder="吊牌价"
+		    		     required
+		    		     x-ng-pattern="/^\d+(.\d{1,2})?$/"
+		    		     x-ng-model="inv.tag_price"
+		    		     popover-placement="top"
+		    		     popover-trigger="focus"
+		    		     popover="请输入吊牌价"/>
+		    	    </div>
+			  </form>
+			</td>
+			
+			<td class="vert-align">
+			  <form name="inv.form.discount">
+		    	    <div ng-class="{'has-error':inv.form.discount.$invalid
+		    			   && !inv.form.discount.$pristine}">
+		    	      <input class="form-control"
+		    		     type="number" step="1"
+		    		     placeholder="售价折扣"
+		    		     required
+				     x-ng-pattern="/^\d{2}$|100$/"
+		    		     x-ng-model="inv.discount"
+		    		     popover-placement="top"
+		    		     popover-trigger="focus"
+		    		     popover="请输入售价折扣"/>
+		    	    </div>
+			  </form>
+			</td>
+			
+			<td class="vert-align">
 			  <span x-ng-if="!inv.$new && !inv.update_directory">
 			    {{inv.total}}
 			  </span> 
@@ -448,13 +478,7 @@
 			</td>
 			
 			<td class="text-left vert-align">
-			  <div x-ng-if="inv.$new">
-			    <!-- <a class="btn btn-success btn-xs" -->
-			    <!-- 	x-ng-if="inv.free_color_size" -->
-			    <!-- 	x-ng-disabled="inv.form.good.$invalid -->
-			    <!-- 		       || inv.form.amount.$invalid" -->
-			    <!-- 	x-ng-click="add_inventory(inv)">保存 -->
-			    <!--   <i class="glyphicon glyphicon-plus"></i></a>  -->
+			  <div x-ng-if="inv.$new"> 
 			    <a class="btn diablo-input-button btn-success"
 			       x-ng-if="!inv.free_color_size"
 			       x-ng-disabled="inv.form.good.$invalid
@@ -500,7 +524,6 @@
 		      </tr>
 
 		      <tr>
-			<!--statistic-->
 		      <tr x-ng-if="inventories.length>1" class="text-center">
 			<td x-ng-if="stock_right.show_orgprice" colspan="10"></td>
 			<td x-ng-if="!stock_right.show_orgprice" colspan="8"></td>
@@ -552,6 +575,13 @@
 			       x-ng-enter=""/>
 		      </div>
 		      <span class="input-group-addon bg-white fg-red">*</span>
+		      <span class="input-group-btn">
+			<button class="btn default fg-red"
+				x-ng-disabled="!good.style_number"
+				x-ng-click="reset_style_number()"> 
+			  <i class="glyphicon glyphicon-pushpin"></i>
+			</button>
+	  	      </span>
 		    </div>
 		  </div>
 		  <div ng-if="form.gForm.style_number.$invalid 
@@ -588,7 +618,13 @@
 			       typeahead="b.name for b in
 					  brands|filter:$viewValue|limitTo:8"/> 
 		      </div> 
-		      <span class="input-group-addon bg-white fg-red">*</span> 
+		      <span class="input-group-addon bg-white fg-red">*</span>
+		      <span class="input-group-btn">
+			<button class="btn fg-red"
+				x-ng-disabled="!good.brand"
+				x-ng-click="reset_brand()"> 
+			  <i class="glyphicon glyphicon-pushpin"></i>
+			</button>
 		    </div>
 		  </div>	      
 		  <div ng-if="form.gForm.brand.$invalid
@@ -725,32 +761,6 @@
 		    </span>
 		  </div>
 		</div> 
-
-		<!-- alarm day-->
-		<!-- <div class="form-group diablo-good-form-group"> -->
-		<!--   <label class="col-sm-3 col-md-3 control-label"> -->
-		<!--     预警天数 -->
-		<!--   </label> -->
-		<!--   <div class="col-sm-6 col-md-6">  -->
-		<!--     <div class="input-group"> -->
-		<!--       <div ng-class="{'has-error':form.gForm.alarm.$invalid -->
-		<!-- 		     && !form.gForm.discount.$pristine}"> -->
-		<!-- 	<input class="form-control" -->
-		<!-- 	       type="number" step="1"  -->
-		<!-- 	       name="alarm" -->
-		<!-- 	       required -->
-		<!-- 	       placeholder="请输入1到2位数字" -->
-		<!-- 	       x-ng-pattern="/^\d{1,2}$/" -->
-		<!-- 	       x-ng-model="good.alarm_day"/> -->
-		<!--       </div> -->
-		<!--       <span class="input-group-addon bg-white fg-red">*</span> -->
-		<!--     </div> -->
-		<!--   </div> -->
-		<!--   <div ng-if="form.gForm.alarm.$invalid -->
-		<!-- 	      && !form.gForm.alarm.$pristine"> -->
-		<!--     <span style="color:red">请输入1到2位数字</span> -->
-		<!--   </div> -->
-		<!-- </div> -->
 
 		<div class="form-group diablo-good-form-group">
 		  <label class="col-sm-3 col-md-3 control-label">
@@ -986,7 +996,7 @@
 	  <tr>
 	    <th></th>
 	    <th>单号</th>
-	    <th>厂商</th>
+	    <!-- <th>厂商</th> -->
 	    <th>店铺</th>
 	    <th>店员</th>
 	  </tr>
@@ -1003,7 +1013,7 @@
 	      </div>
 	    </td>
 	    <td>{{d.sn}}</td>
-	    <td>{{d.firm.name}}</td>
+	    <!-- <td>{{d.firm.name}}</td> -->
 	    <td>{{d.shop.name}}</td> 
 	    <td>{{d.employee.name}}</td>
 	  </tr>

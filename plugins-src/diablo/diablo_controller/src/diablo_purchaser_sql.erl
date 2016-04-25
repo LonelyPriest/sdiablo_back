@@ -379,7 +379,45 @@ inventory(set_promotion, Merchant, Promotions, Conditions) ->
 	       [] -> [];
 	       TimeSql ->  " and " ++ TimeSql
 	   end
-	++ " and deleted=" ++ ?to_s(?NO).
+	++ " and deleted=" ++ ?to_s(?NO);
+
+inventory(update_batch, Merchant, Attrs, Conditions) ->
+    {StartTime, EndTime, NewConditions} =
+	?sql_utils:cut(fields_no_prifix, Conditions),
+
+    Season = ?v(<<"season">>, Attrs),
+    Year     = ?v(<<"year">>, Attrs),
+
+    Updates = ?utils:v(season, integer, Season)
+	++ ?utils:v(year, integer, Year),
+
+    ?DEBUG("updates ~p", [Updates]),
+
+    ["update w_inventory set " ++ ?utils:to_sqls(proplists, comma, Updates)
+     ++ " where " 
+     ++ ?sql_utils:condition(proplists_suffix, NewConditions)
+     ++ "merchant=" ++ ?to_s(Merchant)
+     ++ case ?sql_utils:condition(time_no_prfix, StartTime, EndTime) of
+	    [] -> [];
+	    TimeSql ->  " and " ++ TimeSql
+	end
+     ++ " and deleted=" ++ ?to_s(?NO),
+     
+     "update w_inventory_good set " ++ ?utils:to_sqls(proplists, comma, Updates)
+     ++ " where " 
+     ++ ?sql_utils:condition(
+	   proplists_suffix,
+	   lists:foldr(fun({<<"shop">>, _}, Acc)->
+			       Acc;
+			  (A, Acc) ->
+			       [A|Acc]
+		       end, [], NewConditions))
+     ++ "merchant=" ++ ?to_s(Merchant)
+     %% ++ case ?sql_utils:condition(time_no_prfix, StartTime, EndTime) of
+     %% 	    [] -> [];
+     %% 	    TimeSql ->  " and " ++ TimeSql
+     %% 	end
+     ++ " and deleted=" ++ ?to_s(?NO)].
 
 inventory(inventory_new_rsn, Merchant, Conditions) ->
     {DetailConditions, SaleConditions} = 

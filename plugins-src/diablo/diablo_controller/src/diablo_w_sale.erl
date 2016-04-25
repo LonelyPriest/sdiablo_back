@@ -75,7 +75,6 @@ rsn_detail(rsn, Merchant, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {rsn_detail, Merchant, Condition}).
 
-
 filter(total_news, 'and', Merchant, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {total_news, Merchant, Fields});

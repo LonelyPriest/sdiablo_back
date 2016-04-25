@@ -129,6 +129,9 @@ success(fix_w_inventory, Rsn) ->
     {0, "Success to fix inventory with record no  " ++ ?to_s(Rsn)};
 success(set_w_inventory_promotion, Merchant) ->
     {0, "Success to set promotion of merchant  " ++ ?to_s(Merchant)};
+success(update_w_inventory_batch, Merchant) ->
+    {0, "Success to update inventory of merchant  " ++ ?to_s(Merchant)};
+
 
 %% promotion
 success(new_promotion, Promotion) ->

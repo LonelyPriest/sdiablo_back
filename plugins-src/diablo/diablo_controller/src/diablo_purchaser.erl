@@ -88,6 +88,11 @@ purchaser_inventory(set_promotion, Merchant, Promotions, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {set_promotion, Merchant, Promotions, Conditions});
 
+purchaser_inventory(update_batch, Merchant, Attrs, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {update_batch, Merchant, Attrs, Conditions});
+    
+
 purchaser_inventory(abstract, Merchant, Shop, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {abstract_inventory, Merchant, Shop, Conditions}). 
@@ -745,7 +750,7 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
     %% Year       = ?utils:current_time(year),
     
     Shop       = ?v(<<"shop">>, Props),
-    Firm       = ?v(<<"firm">>, Props),
+    Firm       = ?v(<<"firm">>, Props, -1),
     Employee   = ?v(<<"employee">>, Props),
     Cash       = ?v(<<"cash">>, Props, 0),
     Card       = ?v(<<"card">>, Props, 0),
@@ -758,11 +763,10 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
     EPayType   = ?v(<<"e_pay_type">>, Props, -1),
     EPay       = ?v(<<"e_pay">>, Props, 0),
     
-    Balance    = ?v(<<"balance">>, Props),
+    %% Balance    = ?v(<<"balance">>, Props),
     %% Date       = ?v(<<"date">>, Props, ?utils:current_time(localdate)),
     Total      = ?v(<<"total">>, Props, 0),
-
-
+    
     Sql0 = "select id, merchant, balance from suppliers"
 	" where id=" ++ ?to_s(Firm)
 	++ " and merchant=" ++ ?to_s(Merchant)
@@ -778,7 +782,7 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
 	    Sql1 = sql(wnew,
 		       RSn, Merchant, Shop, Firm, DateTime, Inventories),
 
-	    CurrentBalance = ?v(<<"balance">>, Account),
+	    CurrentBalance = ?v(<<"balance">>, Account, 0),
 	    
 	    Sql2 = "insert into w_inventory_new(rsn"
 		", employ, firm, shop, merchant, balance"
@@ -790,10 +794,7 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
 		++ ?to_s(Firm) ++ ","
 		++ ?to_s(Shop) ++ ","
 		++ ?to_s(Merchant) ++ ","
-		++ case ?to_f(CurrentBalance) =:= ?to_f(Balance) of
-		       true -> ?to_s(Balance) ++ ",";
-		       false -> ?to_s(CurrentBalance) ++ ","
-		   end
+		++ ?to_s(CurrentBalance) ++ "," 
 		++ ?to_s(ShouldPay) ++ ","
 		++ ?to_s(HasPay) ++ ","
 		++ ?to_s(Cash) ++ ","
@@ -818,7 +819,11 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
 			++ ", change_date=" ++ "\"" ++ ?to_s(DateTime) ++ "\""
 			++ " where id=" ++ ?to_s(?v(<<"id">>, Account)),
 
-		    AllSql = [Sql2, Sql3|Sql1], 
+		    AllSql = case Firm of
+				 -1 -> [Sql2|Sql1];
+				 _ -> [Sql2, Sql3|Sql1]
+			     end,
+		    
 		    Reply = ?sql_utils:execute(transaction, AllSql, RSn),
 		    ?w_user_profile:update(firm, Merchant),
 		    {reply, Reply, State}
@@ -1168,6 +1173,15 @@ handle_call({set_promotion, Merchant, Promotions, Conditions}, _From, State) ->
 	     set_promotion, Merchant, Promotions, Conditions),
     
     Reply = ?sql_utils:execute(write, Sql, ok),
+    {reply, Reply, State};
+
+handle_call({update_batch, Merchant, Attrs, Conditions}, _From, State) ->
+    ?DEBUG("update_batch with merchant ~p, attrs ~p, conditions ~p",
+	   [Merchant, Attrs, Conditions]), 
+    Sqls = ?w_good_sql:inventory(
+	     update_batch, Merchant, Attrs, Conditions),
+
+    Reply = ?sql_utils:execute(transaction, Sqls, Merchant),
     {reply, Reply, State};
 
 handle_call({get_new, Merchant, RSN}, _From, State) ->

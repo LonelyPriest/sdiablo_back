@@ -558,7 +558,8 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	    should_pay:     setv($scope.select.should_pay),
 	    has_pay:        setv($scope.select.has_pay),
 	    
-	    old_firm:       $scope.old_select.firm.id,
+	    old_firm:       angular.isDefined($scope.old_select.firm)
+		&& $scope.old_select.firm ? $scope.old_select.firm.id : -1,
 	    old_balance:    setv($scope.old_select.surplus),
 	    old_verify_pay: setv($scope.old_select.verificate),
 	    old_should_pay: setv($scope.old_select.should_pay),

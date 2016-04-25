@@ -466,6 +466,16 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
 	     promotion: promotion,
 	     score:     score}).$promise;
     };
+
+    /*
+     * update batch
+     */
+    this.update_w_inventory_batch = function(condition, attrs){
+	return http.save(
+	    {operation: "update_w_inventory_batch"},
+	    {condition: condition,
+	     attrs: attrs}).$promise;
+    };
     
 });
 

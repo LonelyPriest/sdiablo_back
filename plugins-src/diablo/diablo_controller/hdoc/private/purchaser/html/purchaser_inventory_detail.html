@@ -9,29 +9,29 @@
 	</div>	
 
 	<div class="actions">
-	  <div class="btn-group btn-group-solid">
-	    <!-- <a type="button" class="btn green red-stripe" -->
-	    <!-- 	    x-ng-click="goto_page('#/inventory_new')">入库 -->
-	    <!--   <i class="glyphicon glyphicon-plus"></i></a> -->
-
+	  <div class="btn-group btn-group-solid"> 
 	    <a type="button" class="btn green"
-		    x-ng-click="promotion()">促销
+	       x-ng-click="promotion()">促销
+	      <i class="glyphicon glyphicon-pencil"></i></a>
+
+	    <a type="button" class="btn yellow"
+	       x-ng-click="update_batch()">批改
 	      <i class="glyphicon glyphicon-edit"></i></a>
 
-	    <a type="button" class="btn red purple-stripe"
-		    x-ng-click="goto_page('#/inventory_reject')">退货
+	    <a type="button" class="btn red"
+	       x-ng-click="goto_page('#/inventory_reject')">退货
 	      <i class="glyphicon glyphicon-minus"></i></a> 
 
-	    <a type="button" class="btn yellow purple-stripe"
-		    x-ng-click="goto_page('#/inventory/inventory_fix')">盘点
+	    <a type="button" class="btn yellow"
+	       x-ng-click="goto_page('#/inventory/inventory_fix')">盘点
 	      <i class="glyphicon glyphicon-check"></i></a>
 
-	    <a type="button" class="btn blue purple-stripe"
-		    x-ng-click="export_to()">导出
+	    <a type="button" class="btn blue"
+	       x-ng-click="export_to()">导出
 	      <i class="glyphicon glyphicon-export"></i></a> 
 
-	    <a type="button" class="btn yellow reload purple-stripe"
-		    x-ng-click="do_search(default_page)">刷新
+	    <a type="button" class="btn yellow reload"
+	       x-ng-click="do_search(default_page)">刷新
 	      <i class="icon icon-spinner fg-white"></i></a>
 	  </div>
 	</div>
@@ -81,9 +81,9 @@
 	  <tabset> 
 	    <tab active="tab_active.time">
 	      <tab-heading>时间分布</tab-heading>
+	      
 	      <div class="panel panel-default table-panel"> 
 		<div class="table-responsive">
-		  <!--EBGIN table supplier-->
 		  <table class="table table-bordered
 				table-striped table-hover
 				table-condensed table-advanced">
@@ -99,7 +99,8 @@
 			<th>年度</th>
 			<th x-ng-if="stock_right.show_orgprice"
 			    class="success">进价</th>
-			<th x-ng-if="stock_right.show_orgprice" class="info">折扣进</th>
+			<th x-ng-if="stock_right.show_orgprice"
+			    class="info">折扣进</th>
 			<th class="warning">吊牌价</th> 
 			<th class="danger">折扣卖</th>
 			<th class="info">数量</th> 
@@ -133,7 +134,7 @@
 
 			<td>
 			  <span x-ng-if="inv.isAlarm && setting.alarm"
-			    class="danger">{{inv.brand.name}}
+				class="danger">{{inv.brand.name}}
 			  </span>
 			  <span x-ng-if="!setting.alarm || !inv.isAlarm">
 			    {{inv.brand.name}}
@@ -161,7 +162,7 @@
 
 			<td>
 			  <span x-ng-if="inv.isAlarm && setting.alarm"
-			    class="danger">{{inv.firm.name}}
+				class="danger">{{inv.firm.name}}
 			  </span> 
 			  <span x-ng-if="!setting.alarm || !inv.isAlarm">
 			    {{inv.firm.name}}
@@ -180,7 +181,7 @@
 
 			<td>
 			  <span x-ng-if="inv.isAlarm && setting.alarm"
-			    class="danger">{{inv.year}}
+				class="danger">{{inv.year}}
 			  </span> 
 			  <span x-ng-if="!setting.alarm || !inv.isAlarm">
 			    {{inv.year}}
@@ -190,7 +191,7 @@
 			<td x-ng-if="stock_right.show_orgprice">
 			  <span x-ng-if="inv.isAlarm && setting.alarm" 
 				class="danger">{{inv.org_price}}
-			    </span>
+			  </span>
 			  <span x-ng-if="!setting.alarm || !inv.isAlarm">
 			    {{inv.org_price}}
 			  </span>
@@ -208,7 +209,7 @@
 
 			<td>
 			  <span x-ng-if="inv.isAlarm && setting.alarm"
-			    class="danger">{{inv.tag_price}}</span>
+				class="danger">{{inv.tag_price}}</span>
 			  <span x-ng-if="!setting.alarm || !inv.isAlarm">
 			    {{inv.tag_price}}
 			  </span>
@@ -216,8 +217,8 @@
 
 			<td>
 			  <span x-ng-if="inv.isAlarm && setting.alarm"
-			    class="danger">{{inv.discount}}
-			    </span>
+				class="danger">{{inv.discount}}
+			  </span>
 			  <span x-ng-if="!setting.alarm || !inv.isAlarm">
 			    {{inv.discount}}
 			  </span>
@@ -226,7 +227,7 @@
 
 			<td>
 			  <span x-ng-if="inv.isAlarm && setting.alarm"
-			    class="danger">{{inv.amount}}
+				class="danger">{{inv.amount}}
 			  </span>
 			  <span x-ng-if="!setting.alarm || !inv.isAlarm">
 			    {{inv.amount}}
@@ -250,7 +251,7 @@
 			    <span x-ng-switch-default>
 			      {{inv.promotion.name}}
 			    </span>
-			  <div>
+			  </div>
 			</td> 
 			<td>
 			  <div x-ng-switch on="inv.sid">
@@ -258,7 +259,7 @@
 			    <span x-ng-switch-default>
 			      {{inv.score.name}} 
 			    </span>
-			  <div>
+			  </div>
 			</td> 
 
 			<td>
@@ -272,7 +273,7 @@
 
 			<td>
 			  <span x-ng-if="inv.isAlarm && setting.alarm"
-			    class="danger">{{inv.entry_date}}
+				class="danger">{{inv.entry_date}}
 			  </span>
 			  <span x-ng-if="!setting.alarm || !inv.isAlarm">
 			    {{inv.entry_date}}
@@ -295,15 +296,9 @@
 			<td><span x-ng-bind="total_sell"></span></td>
 			<td colspan="5"></td>
 		      </tr>
-		    </tbody>
-
-		    <tfoot> 
-		    </tfoot>
-		    
+		    </tbody> 
 		  </table> <!--END supplier table-->
-		</div> <!--END table responsive-->
-
-		
+		</div> <!--END table responsive--> 
 	      </div> <!--END panel-->
 
 	      <div x-ng-show="total_items>items_perpage" class="row">
@@ -324,12 +319,12 @@
 		  	      x-ng-change="page_changed(current_page)">
 		  </pagination>
 		</div>
-	      </div> 
+	      </div>
 	    </tab>
-
+	    
 	    <tab heading="销售分布"
-		 active="tab_active.chart"
-		 select="chart_mode(default_page)"> 
+	    	 active="tab_active.chart"
+	    	 select="chart_mode(default_page)">
 	    </tab>
 	    
 	  </tabset> 
@@ -359,30 +354,20 @@
 		    <i class="glyphicon glyphicon-menu-right"></i></button>
 		</div>
 	      </div>
-	    </div>
-	    
+	    </div> 
 	    <bar-chart ng-touchstart="touch_start()"
-		       chart-data="chart_data.bar"></bar-chart>
+		       chart-data="chart_data.bar">
+	    </bar-chart>
 	  </div>
-	      
-	</div> <!--END portlet body--> 
-		  
-      </div> <!--END table container-->
+	</div>
+      </div>
       
     </div>
-  </div>
-</div>
+  </div> 
+</div> 
 
 
-<script type="text/ng-template" id="inventory-detail.html">
-  <!-- <div class="modal-header"> -->
-  <!--   <button class="close" x-ng-click="cancel()" type="button"> -->
-  <!--     <span aria-hidden="true">&times;</span> -->
-  <!--     <span class="sr-only"></span> -->
-  <!--   </button> -->
-  <!--   <h4 class="modal-title"> -->
-  <!--     <span class="label label-sm label-primary">库存明细</span></h4> -->
-  <!-- </div> --> 
+<script type="text/ng-template" id="inventory-detail.html"> 
   <div class="modal-body">
     <div class="table-responsive">
       <table class="table table-bordered table-striped table-condensed table-advanced">
@@ -561,5 +546,59 @@
 			   params.promotions, params.scores)"
 	    x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>  
+</script>
+
+
+<script type="text/ng-template" id="stock-update-batch.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    
+    <h4 class="modal-title">
+      <span class="label label-sm label-primary">库存批量修改</span>
+    </h4>
+  </div>
+  
+  <div class="modal-body">
+    <form class="form-horizontal" name="sForm" novalidate> 
+      <div class="form-body">
+	
+	<div class="form-group"> 
+	  <div class="input-group">
+	    <span class="input-group-addon">
+	      <i class="glyphicon glyphicon-hand-right fg-red"></i>
+	      年度</span> 
+	      <select class="form-control"
+		      x-ng-model="params.select.year"
+		      x-ng-options="y for y in params.years">
+	      </select>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	  </div>
+	</div>
+	
+	<div class="form-group"> 
+	  <div class="input-group">
+	    <span class="input-group-addon">
+	      <i class="glyphicon glyphicon-hand-right fg-red"></i>
+	      季节</span> 
+	      <select class="form-control"
+		      x-ng-model="params.select.season"
+		      x-ng-options="s as s.name for s
+				    in params.seasons">
+	      </select>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	  </div>
+	</div> 
+	
+      </div> <!-- END form body --> 
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary" x-ng-click="ok()">确认</button>
+    <!-- <button class="btn btn-warning" x-ng-click="cancel()">取消</button> -->
   </div>  
 </script>
