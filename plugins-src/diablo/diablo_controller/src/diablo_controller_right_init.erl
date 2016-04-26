@@ -229,7 +229,7 @@ init([]) ->
 	 {?new_w_inventory,
 	  <<"新增库存">>, <<"new_w_inventory">>,     ?right_w_inventory},
 	 {?del_w_inventory,
-	  <<"删除库存">>, <<"delete_w_inventoryy">>, ?right_w_inventory},
+	  <<"删除库存">>, <<"del_w_inventory">>,    ?right_w_inventory},
 	 {?update_w_inventory,
 	  <<"修改库存">>, <<"update_w_inventory">>,  ?right_w_inventory}, 
 	 {?check_w_inventory,

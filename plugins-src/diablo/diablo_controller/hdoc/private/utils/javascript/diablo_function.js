@@ -20,6 +20,19 @@ var diablo_charge = 2;
 var diablo_sale   = 0;
 var diablo_reject = 1;
 
+var diablo_check = 1;
+var diablo_uncheck = 0;
+
+var diablo_delete = 0;
+var diablo_abandon = 1;
+
+/*
+ * stock
+ */
+var diablo_stock_has_abandoned = 7;
+var diablo_stock_has_checked = 1;
+var diablo_stock_has_unchecked = 0;
+
 /*
  * retailer
  */
@@ -626,5 +639,15 @@ var diablo_items_per_page = function(){
 	return 15;
     } else {
 	return 10;
+    }
+};
+
+diablo_stock_css = function(state){
+    if (diablo_stock_has_abandoned === state){
+	return "bg-yellow";
+    } else if (diablo_stock_has_checked === state){
+	return "bg-lightGreen";
+    } else {
+	return "none"; 
     }
 };

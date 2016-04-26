@@ -478,14 +478,14 @@ inventory(get_new_amount, _Merchant, Conditions) ->
     "select a.rsn, a.style_number, a.brand_id, a.type_id, a.sex"
 	", a.season, a.firm_id, a.s_group, a.free, a.year"
 	", a.org_price, a.tag_price, a.ediscount"
-	", a.discount, a.path"
+	", a.discount, a.over, a.path"
 
 	", b.color as color_id, b.size, b.total as amount"
 	" from "
 	
-	"(select rsn, style_number, brand as brand_id, type as type_id, sex"
-	", season, firm as firm_id, s_group, free, year"
-	", org_price, tag_price, ediscount, discount, path"
+	"(select rsn, style_number, brand as brand_id, type as type_id"
+	", sex, season, firm as firm_id, s_group, free, year"
+	", org_price, tag_price, ediscount, discount, over, path"
 	" from w_inventory_new_detail"
 	" where "++ ?utils:to_sqls(proplists, Conditions)
 	++ " and deleted=" ++ ?to_s(?NO) ++ ") a"
@@ -557,6 +557,7 @@ inventory(new_rsn_groups, new, Merchant, Conditions, PageFun) ->
 	", b.season, b.amount"
 	", b.firm as firm_id"
 	", b.org_price, b.ediscount"
+	", b.tag_price, b.discount"
 	", b.s_group, b.free, b.year, b.path, b.entry_date"
 
 	", a.shop as shop_id"
@@ -844,6 +845,7 @@ amount_new(RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
     SizeGroup   = ?v(<<"s_group">>, Inv),
     Free        = ?v(<<"free">>, Inv),
     Total       = ?v(<<"total">>, Inv),
+    Over        = ?v(<<"over">>, Inv, 0),
     %% Promotion   = ?v(<<"promotion">>, Inv),
     OrgPrice    = ?v(<<"org_price">>, Inv),
     TagPrice    = ?v(<<"tag_price">>, Inv),
@@ -919,8 +921,8 @@ amount_new(RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 	case ?sql_utils:execute(s_read, Sql20) of
 	    {ok, []} ->
 		["insert into w_inventory_new_detail(rsn, style_number"
-		 ", brand, type, sex, season, amount, firm"
-		 ", s_group, free, year"
+		 ", brand, type, sex, season, amount, over"
+		 ", firm, s_group, free, year"
 		 ", org_price, tag_price, ediscount, discount"
 		 " , path, merchant, entry_date) values("
 		 ++ "\"" ++ ?to_s(RSN) ++ "\","
@@ -930,6 +932,7 @@ amount_new(RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		 ++ ?to_s(Sex) ++ ","
 		 ++ ?to_s(Season) ++ ","
 		 ++ ?to_s(Total) ++ ","
+		 ++ ?to_s(Over) ++ ","
 		 ++ ?to_s(Firm) ++ ","
 
 		 ++ "\"" ++ ?to_s(SizeGroup) ++ "\","
@@ -1163,6 +1166,8 @@ amount_update(RSN, Merchant, Shop, Datetime, Inv) ->
     TagPrice       = ?v(<<"tag_price">>, Inv),
     EDiscount      = ?v(<<"ediscount">>, Inv, 0),
     Discount       = ?v(<<"discount">>, Inv, 0),
+    Over           = ?v(<<"over">>, Inv),
+    
     %% OldTotal       = ?v(<<"old_total">>, Inv),
     %% Total          = ?v(<<"total">>, Inv),
     ChangeAmounts  = ?v(<<"changed_amount">>, Inv, []),
@@ -1195,6 +1200,7 @@ amount_update(RSN, Merchant, Shop, Datetime, Inv) ->
 		  ++ ",tag_price=" ++ ?to_s(TagPrice)
 		  ++ ",ediscount=" ++ ?to_s(EDiscount)
 		  ++ ",discount=" ++ ?to_s(Discount)
+		  ++ ",over=" ++ ?to_s(Over)
 		  ++ " where rsn=\"" ++ ?to_s(RSN) ++ "\""
 		  ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 		  ++ " and brand=" ++ ?to_s(Brand),
@@ -1227,7 +1233,8 @@ amount_update(RSN, Merchant, Shop, Datetime, Inv) ->
 		 ++ ",tag_price=" ++ ?to_s(TagPrice)
 		 ++ ",org_price=" ++ ?to_s(OrgPrice)
 		 ++ ",ediscount=" ++ ?to_s(EDiscount) 
-		 ++ ",discount=" ++ ?to_s(Discount) 
+		 ++ ",discount=" ++ ?to_s(Discount)
+		 ++ ",over=" ++ ?to_s(Over)
 		 ++ " where rsn=\"" ++ ?to_s(RSN) ++ "\""
 		 ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 		 ++ " and brand=" ++ ?to_s(Brand)]

@@ -43,7 +43,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	    var one = $scope.inventories[i];
 	    $scope.select.total += parseInt(one.total); 
 	    $scope.select.should_pay += stockUtils.calc_row(
-		one.org_price, one.ediscount, one.total); 
+		one.org_price, one.ediscount, one.total - one.over); 
 	};
 	
 	$scope.select.should_pay = $scope.round($scope.select.should_pay);
@@ -81,6 +81,12 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 
     $scope.row_change_ediscount = function(inv){
 	if (angular.isDefined(diablo_set_integer(inv.ediscount))){
+	    $scope.re_calculate();
+	}
+    };
+
+    $scope.row_change_over = function(inv){
+	if (angular.isDefined(diablo_set_integer(inv.over))){
 	    $scope.re_calculate();
 	}
     };
@@ -190,6 +196,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 		add.ediscount       = invs[i].ediscount;
 		add.discount        = invs[i].discount;
 		add.total           = invs[i].amount;
+		add.over            = invs[i].over;
 		
 		add.sizes.push(invs[i].size);
 		add.colors.push(
@@ -324,6 +331,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	add.free         = item.free;
 	add.sizes        = item.size.split(",");
 	add.colors       = item.color.split(",");
+	add.over         = 0;
 	
 	if ( add.free === 0 ){
 	    add.free_color_size = true;
@@ -420,10 +428,14 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 		    } else {
 			// console.log(newInv);
 			// console.log(oldInv);
-			if (parseFloat(newInv.org_price)
-			    !== oldInv.org_price
-			    || parseFloat(newInv.ediscount)
-			    !== oldInv.ediscount){
+			if (stockUtils.to_float(newInv.org_price)
+			    !== stockUtils.to_float(oldInv.org_price)
+			    
+			    || stockUtils.to_float(newInv.ediscount)
+			    !== stockUtils.to_float(oldInv.ediscount)
+			    
+			    || stockUtils.to_integer(newInv.over)
+			    !== stockUtils.to_integer(oldInv.over)){
 			    newInv.operation = 'u';
 			    changedInvs.push(newInv);
 			}
@@ -507,11 +519,12 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 		    }}(),
 		s_group        : add.s_group,
 		free           : add.free,
-		org_price      : parseFloat(add.org_price),
-		tag_price      : parseFloat(add.tag_price), 
-		ediscount      : parseInt(add.ediscount),
-		discount       : parseInt(add.discount),
-		total          : add.total
+		org_price      : stockUtils.to_float(add.org_price),
+		tag_price      : stockUtils.to_float(add.tag_price), 
+		ediscount      : stockUtils.to_integer(add.ediscount),
+		discount       : stockUtils.to_integer(add.discount),
+		total          : stockUtils.to_integer(add.total),
+		over           : stockUtils.to_integer(add.over)
 	    })
 	};
 

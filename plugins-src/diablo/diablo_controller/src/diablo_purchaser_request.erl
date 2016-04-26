@@ -79,16 +79,34 @@ action(Session, Req, {"update_w_inventory"}, Payload) ->
     end;
 
 action(Session, Req, {"check_w_inventory"}, Payload) ->
-    ?DEBUG("update purchaser inventory with session ~p, paylaod~n~p",
+    ?DEBUG("check purchaser inventory with session ~p, paylaod~n~p",
 	   [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
     RSN = ?v(<<"rsn">>, Payload, []),
+    Mode = ?v(<<"mode">>, Payload, ?CHECK),
     
-    case ?w_inventory:purchaser_inventory(check, Merchant, RSN) of
+    case ?w_inventory:purchaser_inventory(check, Merchant, RSN, Mode) of
     	{ok, RSN} -> 
     	    ?utils:respond(
 	       200, Req,
 	       ?succ(check_w_inventory, RSN), {<<"rsn">>, ?to_b(RSN)});
+    	{error, Error} ->
+    	    ?utils:respond(200, Req, Error)
+    end;
+
+
+action(Session, Req, {"del_w_inventory"}, Payload) ->
+    ?DEBUG("delete inventory with session ~p, paylaod~n~p",
+	   [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    RSN = ?v(<<"rsn">>, Payload, []),
+    Mode = ?v(<<"mode">>, Payload, ?DELETE), 
+
+    case ?w_inventory:purchaser_inventory(delete_new, Merchant, RSN, Mode) of
+    	{ok, RSN} -> 
+    	    ?utils:respond(
+	       200, Req,
+	       ?succ(delete_w_inventory, RSN), {<<"rsn">>, ?to_b(RSN)});
     	{error, Error} ->
     	    ?utils:respond(200, Req, Error)
     end;
@@ -582,7 +600,7 @@ csv_head(trans, Do) ->
 csv_head(trans_note, Do) ->
     Do("序号,单号,厂商,门店,店员,交易类型,款号,品牌,类型,折扣,数量,日期");
 csv_head(stock, Do) ->
-    Do("序号,款号,品牌,类别,性别,厂商,季节,年度,进货价,吊牌价,批发价,价3,价4,价5,折扣,数量,店铺,上架日期").
+    Do("序号,款号,品牌,类别,性别,厂商,季节,年度,吊牌价,折扣,进价,进折扣,数量,店铺,上架日期").
 
 
 
@@ -697,11 +715,8 @@ do_write(stock, Do, Count, [H|T]) ->
     Year        = ?v(<<"year">>, H),
 
     OrgPrice    = ?v(<<"org_price">>, H),
-    TagPrice    = ?v(<<"tag_price">>, H),
-    PkgPrice    = ?v(<<"pkg_price">>, H),
-    P3          = ?v(<<"price3">>, H),
-    P4          = ?v(<<"price4">>, H),
-    P5          = ?v(<<"price5">>, H),
+    EDiscount   = ?v(<<"ediscount">>, H),
+    TagPrice    = ?v(<<"tag_price">>, H), 
     Discount    = ?v(<<"discount">>, H), 
     Total       = ?v(<<"amount">>, H), 
 
@@ -709,23 +724,17 @@ do_write(stock, Do, Count, [H|T]) ->
 
     L = "\r\n"
 	++ ?to_s(Count) ++ ?d
-	++ " " ++ string:strip(?to_s(StyleNumber)) ++ ?d
+	++ "\'" ++ string:strip(?to_s(StyleNumber)) ++ "\'" ++ ?d
 	++ ?to_s(Brand) ++ ?d
-	++ ?to_s(Type) ++ ?d
-    %% ++ ?to_s(Color) ++ ?d
-    %% ++ ?to_s(Size) ++ ?d
+	++ ?to_s(Type) ++ ?d 
 	++ sex(Sex) ++ ?d
 	++ ?to_s(Firm) ++ ?d
 	++ season(Season) ++ ?d
 	++ ?to_s(Year) ++ ?d
-
-	++ ?to_s(OrgPrice) ++ ?d
-	++ ?to_s(PkgPrice) ++ ?d
 	++ ?to_s(TagPrice) ++ ?d
-	++ ?to_s(P3) ++ ?d
-	++ ?to_s(P4) ++ ?d
-	++ ?to_s(P5) ++ ?d
 	++ ?to_s(Discount) ++ ?d
+	++ ?to_s(OrgPrice) ++ ?d
+	++ ?to_s(EDiscount) ++ ?d 
 	++ ?to_s(Total) ++ ?d
 	
 	++ ?to_s(Shop) ++ ?d 

@@ -318,6 +318,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	add.free         = src.free;
 	add.sizes        = src.size.split(",");
 	add.colors       = src.color.split(",");
+	add.over         = 0;
 	
 	if ( add.free === 0 ){
 	    add.free_color_size = true;
@@ -499,6 +500,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		year        : add.year,
 		season      : add.season,
 		amount      : add.amount,
+		over        : add.over,
 		s_group     : add.s_group,
 		free        : add.free,
 		// promotion   : add.pid,
@@ -604,22 +606,15 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	$scope.select.total = 0;
 	$scope.select.should_pay = 0.00;
 
-	var e_pay = 0;
-	if(angular.isDefined($scope.select.extra_pay) && $scope.select.extra_pay){
-	    e_pay = parseFloat($scope.select.extra_pay);
-	}
-
-	var verificate = 0.00;
-	if(angular.isDefined($scope.select.verificate) && $scope.select.verificate){
-	    verificate = parseFloat($scope.select.verificate);
-	}
+	var e_pay = stockUtils.to_float($scope.select.extra_pay); 
+	var verificate = stockUtils.to_float($scope.select.verificate); 
 
 	for (var i=1, l=$scope.inventories.length; i<l; i++){
 	    var one = $scope.inventories[i];
-	    $scope.select.total      += parseInt(one.total);
-
-	    var eprice = diablo_price(one.org_price, one.ediscount);
-	    $scope.select.should_pay += diablo_float_mul(eprice, one.total); 
+	    $scope.select.total  += stockUtils.to_integer(one.total);
+	    
+	    $scope.select.should_pay += $scope.calc_row(
+		one.org_price, one.ediscount, one.total - one.over);
 	};
 	
 	$scope.select.should_pay = $scope.round($scope.select.should_pay);
@@ -649,11 +644,14 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	angular.forEach(new_amount, function(a){
 	    total += parseFloat(a.count);
 	})
-
+	
 	return {amount:    new_amount,
 		total:     total,
 		org_price: params.org_price,
-		ediscount: params.ediscount};
+		ediscount: params.ediscount,
+		tag_price: params.tag_price,
+		discount:  params.discount,
+		over:      stockUtils.to_integer(params.over)};
 	// inv.total = total; 
 	// reset(); 
     };
@@ -682,6 +680,9 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    inv.total     = result.total;
 	    inv.org_price = result.org_price;
 	    inv.ediscount = result.ediscount;
+	    inv.tag_price = result.tag_price;
+	    inv.discount  = result.discount;
+	    inv.over      = result.over;
 	    after_add();
 	} 
 	
@@ -696,8 +697,11 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 			   amount:       inv.amount,
 			   org_price:    inv.org_price,
 			   ediscount:    inv.ediscount,
+			   tag_price:    inv.tag_price,
+			   discount:     inv.discount,
+			   over:         inv.over,
 			   path:         inv.path,
-			   right:        $scope.right,
+			   right:        $scope.stock_right,
 			   get_amount:   get_amount,
 			   valid_amount: valid_amount}; 
 	    
@@ -758,6 +762,10 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		       amount:     inv.amount,
 		       org_price:  inv.org_price,
 		       ediscount:  inv.ediscount,
+		       tag_price:  inv.tag_price,
+		       discount:   inv.discount,
+		       over:       inv.over,
+		       right:      $scope.stock_right,
 		       colors:     inv.colors_info,
 		       path:       inv.path,
 		       get_amount: get_amount};
@@ -772,6 +780,9 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	inv.$update = true;
 	inv.o_org_price = inv.org_price;
 	inv.o_ediscount = inv.ediscount;
+	inv.o_tag_price = inv.tag_price;
+	inv.o_discount  = inv.discount;
+	inv.o_over      = inv.over;
 	
 	if (inv.free_color_size){
 	    inv.update_directory = true;
@@ -784,6 +795,9 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    inv.total     = result.total;
 	    inv.org_price = result.org_price;
 	    inv.ediscount = result.ediscount;
+	    inv.tag_price = result.tag_price;
+	    inv.discount  = result.discount;
+	    inv.over      = result.over;
 
 	    // save to local
 	    $scope.local_save(); 
@@ -798,8 +812,12 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		       amount:     inv.amount,
 		       org_price:  inv.org_price,
 		       ediscount:  inv.ediscount,
+		       tag_price:  inv.tag_price,
+		       discount:   inv.discount,
+		       over:       inv.over,
 		       colors:     inv.colors_info,
 		       path:       inv.path,
+		       right:      $scope.stock_right,
 		       get_amount: get_amount,
 		       valid_amount: valid_amount};
 	diabloUtilsService.edit_with_modal(
@@ -824,16 +842,15 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	inv.$update          = false;
 	inv.org_price        = inv.o_org_price;
 	inv.ediscount        = inv.o_ediscount;
+	inv.tag_price        = inv.o_tag_price;
+	inv.discount         = inv.o_discount;
+	inv.over             = inv.o_over;
 	inv.amount[0].count  = inv.total; 
-	// $scope.re_calculate(); 
     };
 
     $scope.reset_inventory = function(inv){
-	// inv.$reset = true; 
-	// console.log($scope.inventories);
 	$timeout.cancel($scope.timeout_auto_save);
 	$scope.inventories[0] = {$edit:false, $new:true};
-	// $scope.current_inventories = $scope.get_page($scope.current_page);
     }
 
     $scope.auto_save_free = function(inv){
@@ -891,6 +908,10 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope.is_same_good = false;
     var check_same_good = function(style_number, brand_name){
 	// console.log(brand_name);
+	if ($scope.is_same_good){
+	    return;
+	}
+	
 	var brand = get_brand(brand_name);
 	if (angular.isUndefined(brand)
 	    || angular.isUndefined(style_number) || !style_number){
@@ -1369,17 +1390,16 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 	    user.type,
 	    rightAuthen.rainbow_action()['show_orgprice'],
 	    user.right
-	)
+	),
+
+	export_stock: rightAuthen.authen_master(user.type),
+	set_promotion: rightAuthen.authen_master(user.type),
+	update_batch: rightAuthen.authen_master(user.type), 
     };
     
     $scope.setting = {
 	alarm: false
-    };
-
-    // $scope.$watch("tab_active", function(newValue, oldValue){
-    // 	console.log(newValue, oldValue);
-    // }, false)
-    // console.log($scope.show_orgprice); 
+    }; 
 
     $scope.match_style_number = function(viewValue){
 	return diabloFilter.match_w_inventory(viewValue, $scope.shopIds);
@@ -1424,7 +1444,7 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 	}();
     };
 
-    $scope.time   = diabloFilter.default_time($scope.qtime_start);
+    $scope.time = diabloFilter.default_time($scope.qtime_start);
 
     // alarm, use default shop
     $scope.setting.alarm = diablo_base_setting(
@@ -1805,7 +1825,8 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
     $scope.f_add   = diablo_float_add;
     $scope.f_sub   = diablo_float_sub;
     $scope.round   = diablo_round;
-    $scope.total_items  = 0; 
+    $scope.total_items  = 0;
+    $scope.css = diablo_stock_css; 
 
     /*
      * authen
@@ -1822,6 +1843,12 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
 	    rightAuthen.stock_action()['check_w_stock'],
 	    user.shop
 	),
+
+	delete_w_stock: rightAuthen.authen_shop_action(
+	    user.type,
+	    rightAuthen.stock_action()['delete_w_stock'],
+	    user.shop
+	),
     };
     
     $scope.hidden = {base:true, balance:true, comment:true};
@@ -1836,6 +1863,7 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
     $scope.toggle_comment = function(){
 	$scope.hidden.comment = !$scope.hidden.comment;
     };
+
 
     var now    = $.now();
     var dialog = diabloUtilsService;
@@ -1887,36 +1915,93 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
     
     $scope.check_detail = function(r){
 	console.log(r);
-	var callback = function(){
-	    purchaserService.check_w_inventory_new(r.rsn).then(function(state){
-		console.log(state);
-		if (state.ecode == 0){
-		    dialog.response_with_callback(
-			true, "入库单审核", "入库单审核成功！！单号：" + state.rsn,
-			$scope, function(){r.state = 1})
-	    	    return;
-		} else{
-	    	    diabloUtilsService.response(
-	    		false, "入库单审核",
-	    		"入库单审核失败：" + purchaserService.error[state.ecode]);
-		}
-	    })
-	};
+	// var callback = function(){
+	purchaserService.check_w_inventory_new(r.rsn).then(function(state){
+	    console.log(state);
+	    if (state.ecode == 0){
+		dialog.response_with_callback(
+		    true, "入库单审核", "入库单审核成功！！单号：" + state.rsn,
+		    $scope, function(){r.state = 1})
+	    	return;
+	    } else{
+	    	diabloUtilsService.response(
+	    	    false, "入库单审核",
+	    	    "入库单审核失败：" + purchaserService.error[state.ecode]);
+	    }
+	})
+	// };
 
-	dialog.request(
-	    "入库单审核", "审核完成后，入库单将无法修改，确定要审核吗？",
-	    callback, undefined, $scope);
+	// dialog.request(
+	//     "入库单审核", "审核完成后，入库单将无法修改，确定要审核吗？",
+	//     callback, undefined, $scope);
 	
+    };
+
+    $scope.uncheck_detail = function(r){
+	console.log(r);
+	purchaserService.uncheck_w_inventory_new(
+	    r.rsn, diablo_uncheck
+	).then(function(state){
+	    console.log(state);
+	    if (state.ecode == 0){
+		dialog.response_with_callback(
+		    true, "入库单反审", "入库单反审成功！！单号：" + state.rsn,
+		    $scope, function(){r.state = 0})
+	    	return;
+	    } else{
+	    	diabloUtilsService.response(
+	    	    false, "入库单反审",
+	    	    "入库反审失败：" + purchaserService.error[state.ecode]);
+	    }
+	})
     };
 
     $scope.delete_detail = function(r){
 	var callback = function(){
-	    
+	    purchaserService.delete_w_inventory_new(
+		r.rsn, diablo_delete
+	    ).then(function(state){
+		console.log(state);
+		if (state.ecode == 0){
+		    dialog.response_with_callback(
+			true, "入库单删除", "入库单删除成功！！单号：" + state.rsn,
+			$scope, function(){$scope.do_search($scope.current_page)})
+	    	    return;
+		} else{
+	    	    diabloUtilsService.response(
+	    		false, "入库单删除",
+	    		"入库删除失败：" + purchaserService.error[state.ecode]);
+		}
+	    })
 	}
 	
 	dialog.request(
 	    "入库单删除", "入库单删除后，无法恢复，确认要删除吗？",
-	    callback, undefined, $scope);
+	    callback, undefined, undefined);
+    };
+
+    $scope.abandon_detail = function(r){
+	var callback = function(){
+	    purchaserService.delete_w_inventory_new(
+		r.rsn, diablo_abandon
+	    ).then(function(state){
+		console.log(state);
+		if (state.ecode == 0){
+		    dialog.response_with_callback(
+			true, "入库单废弃", "入库单废弃成功！！单号：" + state.rsn,
+			$scope, function(){r.state=7})
+	    	    return;
+		} else{
+	    	    diabloUtilsService.response(
+	    		false, "入库单废弃",
+	    		"入库废弃失败：" + purchaserService.error[state.ecode]);
+		}
+	    })
+	}
+	
+	dialog.request(
+	    "入库单废弃", "入库单废弃后，无法恢复，确认要废弃吗？",
+	    callback, undefined, undefined);
     };
 
     

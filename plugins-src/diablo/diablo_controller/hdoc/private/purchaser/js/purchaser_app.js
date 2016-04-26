@@ -164,7 +164,8 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 	}).
 	when('/promotion/promotion_detail', {
 	    templateUrl: '/private/purchaser/html/purchaser_promotion_detail.html',
-	    controller: 'stockPromotionDetail' 
+	    controller: 'stockPromotionDetail' ,
+	    resolve: angular.extend({}, user) 
 	}).
 	// default
 	otherwise({
@@ -179,6 +180,8 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
     // error information
     this.error = {
 	2001: "货品资料已存在！！",
+	2003: "获取入库记录失败，请检查该入库记录！！",
+	2004: "该入库记录已废弃，请选择其它入库记录！！",
 	2093: "厂商信息不一致，请重新选择货品！！", 
 	2094: "修改前后信息一致，请重新编辑修改项！！", 
 	2095: "请先选择厂商！！",
@@ -315,7 +318,20 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
 
     this.check_w_inventory_new = function(rsn){
 	return http.save({operation: "check_w_inventory"},
-			 {rsn: rsn}).$promise;
+			 {rsn: rsn,
+			  mode: diablo_check}).$promise;
+    };
+
+    this.uncheck_w_inventory_new = function(rsn){
+	return http.save({operation: "check_w_inventory"},
+			 {rsn: rsn,
+			  mode: diablo_uncheck}).$promise;
+    };
+
+    this.delete_w_inventory_new = function(rsn, mode){
+	return http.save({operation: "del_w_inventory"},
+			 {rsn: rsn,
+			  mode: mode}).$promise;
     };
     
     this.filter_purchaser_inventory_group = function(

@@ -571,6 +571,7 @@ create table w_inventory_new_detail(
     ediscount      DECIMAL(3, 0)  default 100, -- max: 100
     discount       DECIMAL(3, 0)  default 100, -- max: 100
     amount         INTEGER default 0,
+    over           INTEGER default 0, -- overflow
     
     path           VARCHAR(255) default null, -- the image path
     merchant       INTEGER default -1,

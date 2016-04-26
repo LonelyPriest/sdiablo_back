@@ -35,7 +35,7 @@ var rightAuthen = {
 	return {
 	    update_w_good : rightAuthen.root_right._good + 3,
 	    delete_w_good : rightAuthen.root_right._good + 4,
-	    lookup_w_good_orgprice: rightAuthen.root_right._good + 15
+	    new_promotion:  rightAuthen.root_right._good + 11 
 	}
     },
 
@@ -48,6 +48,7 @@ var rightAuthen = {
 
     stock_action: function(){
 	return {
+	    delete_w_stock: rightAuthen.root_right._stock + 5,
 	    update_w_stock: rightAuthen.root_right._stock + 6,
 	    check_w_stock:  rightAuthen.root_right._stock + 13
 	}
@@ -90,6 +91,10 @@ var rightAuthen = {
     	};
 
     	return false;
+    },
+
+    authen_master: function(user_type){
+	return user_type === rightAuthen.account._master;
     },
 
     // show_orgprice: function(userType) {

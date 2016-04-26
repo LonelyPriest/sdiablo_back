@@ -1,6 +1,6 @@
 <div class="row">
   <div class="col-md-12">
-    <div class="portlet box purple">
+    <div class="portlet box purple diablo-margin-bottom-5">
       
       <div class="portlet-title">
 	<div class="caption"><i class="glyphicon glyphicon-menu-hamburger"></i>
@@ -118,85 +118,87 @@
 		  </tr>
 		</thead>
 		<tbody>
-		  <tr ng-repeat="r in records">
-		    <td>{{r.order_id}}</td>
-		    <td>{{r.rsn}}</td>
-		    <td x-ng-if="!hidden.base" x-ng-switch on="r.type">
+		  <tr x-ng-repeat="r in records">
+		    <td class="{{css(r.state)}}">{{r.order_id}}</td>
+		    <td class="{{css(r.state)}}">{{r.rsn}}</td>
+		    <td class="{{css(r.state)}}" x-ng-if="!hidden.base"
+			x-ng-switch on="r.type">
 		      <span x-ng-switch-when=0>入库</span>
 		      <span class="fg-red" x-ng-switch-when=1>退货</span>
 		    </td>
-		    <td x-ng-if="!hidden.base">{{r.shop.name}}</td>
-		    <td x-ng-if="!hidden.base">{{r.employee.name}}</td>
+		    <td class="{{css(r.state)}}" x-ng-if="!hidden.base">{{r.shop.name}}</td>
+		    <td class="{{css(r.state)}}" x-ng-if="!hidden.base">{{r.employee.name}}</td>
 		    
-		    <td>{{r.firm.name}}</td>
-		    <td>{{r.total}}</td>
+		    <td class="{{css(r.state)}}">{{r.firm.name}}</td>
+		    <td class="{{css(r.state)}}">{{r.total}}</td>
 		    
-		    <td x-ng-if="!hidden.balance">{{r.cash}}</td>
-		    <td x-ng-if="!hidden.balance">{{r.card}}</td>
-		    <td x-ng-if="!hidden.balance">{{r.wire}}</td>
-		    <td x-ng-if="!hidden.balance">{{r.verificate}}</td>
-		    <td x-ng-if="!hidden.balance">
+		    <td class="{{css(r.state)}}" x-ng-if="!hidden.balance">{{r.cash}}</td>
+		    <td class="{{css(r.state)}}" x-ng-if="!hidden.balance">{{r.card}}</td>
+		    <td class="{{css(r.state)}}" x-ng-if="!hidden.balance">{{r.wire}}</td>
+		    <td class="{{css(r.state)}}" x-ng-if="!hidden.balance">{{r.verificate}}</td>
+		    <td class="{{css(r.state)}}" x-ng-if="!hidden.balance">
 		      <span x-ng-if="r.e_pay!==0" class="fg-darkBlue">{{r.e_pay}}</span>
 		      <span x-ng-if="r.e_pay===0">{{r.e_pay}}</span>
 		    </td>
 
-		    <td>{{r.balance}}</td>
+		    <td class="{{css(r.state)}}">{{r.balance}}</td>
 		    
-		    <td x-ng-switch on="r.type">
-		      <span x-ng-switch-when=0>
-			{{round(r.should_pay)}}
-		      </span>
-		      <span class="fg-red" x-ng-switch-when=1>
-			{{round(r.should_pay)}}
-		      </span>
+		    <td class="{{css(r.state)}}" x-ng-switch on="r.type">
+		      <span x-ng-switch-when=0>{{r.should_pay}}</span>
+		      <span class="fg-red" x-ng-switch-when=1>{{r.should_pay}}</span>
 		    </td>
 		    
-		    <td>{{r.has_pay}}</td>
-		    <!-- r.should_pay + (r.balance - r.has_pay)-->
-		    <td>
-		      {{r.balance + round(r.should_pay) + r.e_pay
-		      - r.has_pay - r.verificate}}
-		    </td>
-		    <!-- <td x-ng-switch on="r.type"> -->
-		    <!--   <span x-ng-switch-when=0> -->
-		    <!-- 	{{f_sub(f_add(r.balance, r.should_pay + r.e_pay), r.has_pay)}} -->
-		    <!--   </span> -->
-		    <!--   <span x-ng-switch-when=1> -->
-		    <!-- 	{{f_sub(f_add(r.balance, r.should_pay + r.e_pay), r.has_pay)}} -->
-		    <!--   </span> -->
-		    <!-- </td> -->
-		    
-		    <!-- <td>{{f_add(r.should_pay, f_sub(r.balance, r.has_pay))}}</td> -->
-		    <!-- <td>{{r.price5}}</td> -->
-		    <td x-ng-if="!hidden.comment">
+		    <td class="{{css(r.state)}}" >{{r.has_pay}}</td>
+		    <td class="{{css(r.state)}}" >
+		      {{r.balance + r.should_pay + r.e_pay - r.has_pay - r.verificate}}
+		    </td> 
+		    <td class="{{css(r.state)}}" x-ng-if="!hidden.comment">
 		      <span x-ng-switch on="r.comment">
 			<span x-ng-switch-when="null">无</span>
 			<span x-ng-switch-default>{{r.comment}}</span>
 		      </span>
 		    </td>
-		    <td>{{r.entry_date}}</td>
+		    <td class="{{css(r.state)}}" >{{r.entry_date}}</td>
 		    <td> 
                       <button class="btn diablo-button btn-primary"
 			      x-ng-click="trans_detail(r)">明细
-			<i class="glyphicon glyphicon-map-marker"></i></button>
+			<i class="glyphicon glyphicon-map-marker"></i>
+		      </button>
 		      
 		      <button x-ng-if="shop_right.update_w_stock"
 			      class="btn diablo-button yellow"
-		      	      x-ng-disabled="r.state===1"
+		      	      x-ng-disabled="r.state===1 || r.state==7"
 		      	      x-ng-click="update_detail(r)">修改
-		      	<i class="glyphicon glyphicon-edit"></i></button>
+		      	<i class="glyphicon glyphicon-edit"></i>
+		      </button>
 		      
 		      <button x-ng-if="shop_right.check_w_stock"
 			      class="btn diablo-button red"
 			      x-ng-disabled="r.state===1"
 		      	      x-ng-click="check_detail(r)">审核
-		      	<i class="glyphicon glyphicon-check"></i></button>
+		      	<i class="glyphicon glyphicon-check"></i>
+		      </button>
 
-		      <!-- <button class="btn dark btn-xs red-stripe" -->
-		      <!-- 	      x-ng-disabled="true" -->
-		      <!-- 	      x-ng-click="delete_detail(r)">删除 -->
-		      <!-- 	<i class="glyphicon glyphicon-trash"></i></button> -->
+		      <button x-ng-if="shop_right.check_w_stock"
+			      class="btn diablo-button purple-plum"
+			      x-ng-disabled="r.state===0"
+		      	      x-ng-click="uncheck_detail(r)">反审
+		      	<i class="glyphicon glyphicon-remove-circle"></i>
+		      </button>
+
+		      <button x-ng-if="shop_right.delete_w_stock"
+			      class="btn diablo-button blue-hoki"
+			      x-ng-disabled="r.state===7"
+		      	      x-ng-click="abandon_detail(r)">废弃
+		      	<i class="glyphicon glyphicon-ban-circle"></i>
+		      </button>
 		      
+		      <button x-ng-if="shop_right.delete_w_stock"
+			      class="btn diablo-button red"
+			      x-ng-disabled="r.state===7"
+		      	      x-ng-click="delete_detail(r)">删除
+		      	<i class="glyphicon glyphicon-erase"></i>
+		      </button> 
 		    </td>
 		  </tr>
 
@@ -216,34 +218,9 @@
 		    <td colspan="4"></td>
 		  </tr>
 		  
-		</tbody>
-
-		<tfoot>
-		  <!-- <tr> -->
-		  <!--   <td x-ng-show="total_items>items_perpage" colspan={{colspan}}> -->
-		  <!--     <span class="pagination"> -->
-		  <!-- 	<span>显示第 {{current_page}} / {{num_pages}} 项结果， -->
-		  <!-- 	  共 {{total_items}} 项</span> -->
-		  <!--     </span> -->
-		  <!--     <pagination class="pagination-lg pull-right" -->
-		  <!-- 		  total-items="total_items" -->
-		  <!-- 		  items-per-page="items_perpage" -->
-		  <!-- 		  num-pages="num_pages" -->
-		  <!-- 		  max-size="max_page_size" -->
-		  <!-- 		  boundary-links="true" -->
-		  <!-- 		  previous-text="&lsaquo;" next-text="&rsaquo;" -->
-		  <!-- 		  first-text="&laquo;" last-text="&raquo;" -->
-		  <!-- 		  x-ng-model="current_page" -->
-		  <!-- 		  x-ng-change="page_changed()"></pagination> -->
-		  <!--   </td> -->
-		  <!-- </tr> -->
-		</tfoot> 
-		
+		</tbody> 
 	      </table> <!--END supplier table-->
-	    </div> <!--END table responsive-->
-
-	    
-	    
+	    </div> <!--END table responsive--> 
 	  </div> <!--END panel-->
 	</div> <!--END portlet body-->
 
@@ -266,8 +243,15 @@
 	  </div>
 	</div>
 		  
-      </div> <!--END table container-->
-      
+      </div> <!--END table container--> 
+    </div>
+  </div>
+
+  <div class="col-md-12">
+    <div>
+      <p><span class="bg-yellow">黄色表示已废弃</span>
+	<span class="bg-lightGreen">浅绿色表示已审核</span>
+      </p>
     </div>
   </div>
 </div>

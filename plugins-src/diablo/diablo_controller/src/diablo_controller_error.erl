@@ -127,6 +127,8 @@ success(reject_w_inventory, Total) ->
      ++ ?to_s(Total)};
 success(fix_w_inventory, Rsn) ->
     {0, "Success to fix inventory with record no  " ++ ?to_s(Rsn)};
+success(delete_w_inventory, Rsn) ->
+    {0, "Success to delete inventory with record no  " ++ ?to_s(Rsn)};
 success(set_w_inventory_promotion, Merchant) ->
     {0, "Success to set promotion of merchant  " ++ ?to_s(Merchant)};
 success(update_w_inventory_batch, Merchant) ->
@@ -320,6 +322,10 @@ error(purchaser_good_exist, Number) ->
     {2001, "purchaser good of number " ++ ?to_s(Number) ++ " does exist."};
 error(promotion_exist, Promotion) ->
     {2002, "promotion " ++ ?to_s(Promotion) ++ " is been exist."};
+error(failed_to_get_stock_new, RSN) ->
+    {2003, "failed to get new stock of rsn " ++ ?to_s(RSN)};
+error(stock_been_discard, RSN) ->
+    {2004, "stock of rsn " ++ ?to_s(RSN) ++ " has been discard."};
 
 %% retailer
 error(retailer_exist, Retailer) ->
@@ -329,21 +335,18 @@ error(retailer_invalid_password, Retailer) ->
 error(retailer_charge_exist, Charge) ->
     {2103, "retailer of charge promotion " ++ ?to_s(Charge) ++ " does exist."};
 error(retailer_score_exist, Score) ->
-    {2103, "retailer of score promotion " ++ ?to_s(Score) ++ " does exist."};
+    {2104, "retailer of score promotion " ++ ?to_s(Score) ++ " does exist."};
 
 
 %% wprint
 error(wprint_server_exist, Server) ->
-    {2201, "wprint server " ++ ?to_s(Server) ++ " does exist."};
-
+    {2201, "wprint server " ++ ?to_s(Server) ++ " does exist."}; 
 error(wprinter_exist, PId) ->
-    {2301, "wprinter " ++ ?to_s(PId) ++ " does exist."};
-
+    {2202, "wprinter " ++ ?to_s(PId) ++ " does exist."}; 
 error(wprinter_conn_exist, CId) ->
-    {2301, "wprinter connection " ++ ?to_s(CId) ++ " does exist."};
-
+    {2203, "wprinter connection " ++ ?to_s(CId) ++ " does exist."}; 
 error(wprinter_conn_used, CId) ->
-    {2302, "wprinter connection " ++ ?to_s(CId) ++ " has been used."};
+    {2204, "wprinter connection " ++ ?to_s(CId) ++ " has been used."};
 
 %% wsale
 error(shop_not_printer, Shop) ->

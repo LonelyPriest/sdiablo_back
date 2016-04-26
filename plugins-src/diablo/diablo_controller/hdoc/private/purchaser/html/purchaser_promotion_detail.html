@@ -10,8 +10,10 @@
 
 	<div class="actions">
 	  <div class="btn-group btn-group-solid">
-	    <a type="button" class="btn btn-success purple-stripe"
-		    x-ng-click="new_promotion()">新增
+	    <a x-ng-if="good_right.new_promotion"
+	       class="btn btn-success purple-stripe"
+	       type="button"
+	       x-ng-click="new_promotion()">新增
 	      <i class="glyphicon glyphicon-plus"></i></a> 
 
 	    <a type="button" class="btn blue reload purple-stripe"

@@ -10,11 +10,15 @@
 
 	<div class="actions">
 	  <div class="btn-group btn-group-solid"> 
-	    <a type="button" class="btn green"
+	    <a x-ng-if="stock_right.set_promotion"
+	       class="btn green"
+	       type="button"
 	       x-ng-click="promotion()">促销
 	      <i class="glyphicon glyphicon-pencil"></i></a>
 
-	    <a type="button" class="btn yellow"
+	    <a x-ng-if="stock_right.update_batch"
+	       class="btn yellow"
+	       type="button"
 	       x-ng-click="update_batch()">批改
 	      <i class="glyphicon glyphicon-edit"></i></a>
 
@@ -22,11 +26,13 @@
 	       x-ng-click="goto_page('#/inventory_reject')">退货
 	      <i class="glyphicon glyphicon-minus"></i></a> 
 
-	    <a type="button" class="btn yellow"
+	    <a type="button" class="btn green-meadow"
 	       x-ng-click="goto_page('#/inventory/inventory_fix')">盘点
 	      <i class="glyphicon glyphicon-check"></i></a>
 
-	    <a type="button" class="btn blue"
+	    <a x-ng-if="stock_right.export_stock"
+	       class="btn blue"
+	       type="button"
 	       x-ng-click="export_to()">导出
 	      <i class="glyphicon glyphicon-export"></i></a> 
 
@@ -290,8 +296,8 @@
 			</td>
 		      </tr>
 		      <tr x-ng-if="total_items!==0" class="bg-white">
-			<td x-ng-if="right.lookup_w_good_orgprice" colspan="12"></td>
-			<td x-ng-if="!right.lookup_w_good_orgprice" colspan="10"></td>
+			<td x-ng-if="right.lookup_w_good_orgprice" colspan="14"></td>
+			<td x-ng-if="!right.lookup_w_good_orgprice" colspan="12"></td>
 			<td class="danger">{{total_amount}}</td>
 			<td><span x-ng-bind="total_sell"></span></td>
 			<td colspan="5"></td>

@@ -14,7 +14,6 @@
 -define(REPERTORY, 1).
 -define(BAD_REPERTORY, 2).
 
-
 %% merchant type
 -define(SALER, 0).
 -define(WHOLESALER, 1).
@@ -26,6 +25,13 @@
 %% check state
 -define(CHECKING, 0).
 -define(CHECKED, 1).
+-define(DISCARD, 7).
+
+-define(CHECK, 0).
+-define(UNCHECK, 1).
+
+-define(DELETE, 0).
+-define(ABANDON, 1).
 
 %% inventory action
 -define(NEW_INVENTORY, 0).

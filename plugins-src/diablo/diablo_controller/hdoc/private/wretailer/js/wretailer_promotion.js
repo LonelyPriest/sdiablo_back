@@ -48,7 +48,8 @@ wretailerApp.controller("wretailerRechargeNewCtrl", function(
 
 
 wretailerApp.controller("wretailerRechargeDetailCtrl", function(
-    $scope, diabloPattern, diabloUtilsService, wretailerService){
+    $scope, diabloPattern, diabloUtilsService, wretailerService, user
+){
 
     var dialog = diabloUtilsService;
     
@@ -57,7 +58,10 @@ wretailerApp.controller("wretailerRechargeDetailCtrl", function(
 	$scope.promotions = result;
 	diablo_order($scope.promotions);
     });
-    
+
+    $scope.right = {
+	new_score: rightAuthen.authen_master(user.type)
+    };
     
     $scope.new_recharge = function(){
 	diablo_goto_page("#/promotion/recharge_new");

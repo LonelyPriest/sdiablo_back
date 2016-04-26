@@ -300,6 +300,7 @@
 		    
 		    <th class="text-center">合计</th>
 		    <th class="text-center">操作</th>
+		    <th class="text-center">溢出</th>
 		  </tr>
 		</thead>
 		<tbody>
@@ -307,7 +308,7 @@
 		    <td>{{inv.order_id}}</td>
 		    <td class="col-md-2 text-left vert-align">
 		      <span ng-if="!inv.$new">{{inv.style_number}}</span>
-		      <form name="inv.form.good" ng-if="inv.$new">
+		      <form name="inv.form.good" x-ng-if="inv.$new">
 			<div ng-class="{'has-error':inv.form.good.$invalid
 				       && !inv.form.good.$pristine}">
 			  <input class="form-control text-left" type="text"
@@ -333,8 +334,9 @@
 		    <!-- <td class="vert-align">{{sexs[inv.sex]}}</td> -->
 		    <td class="vert-align">{{seasons[inv.season]}}</td>
 
-		    <td class="col-md-1 vert-align"> 
-		      <form name="inv.form.orgprice">
+		    <td class="col-md-1 vert-align">
+		      <span x-ng-if="inv.$new">{{inv.tag_price}}</span>
+		      <form x-ng-if="!inv.$new" name="inv.form.orgprice">
 			<div ng-class="{'has-error':inv.form.orgprice.$invalid
 				       && !inv.form.orgprice.$pristine}">
 			  <input class="form-control"
@@ -347,10 +349,11 @@
 		      </form> 
 		    </td>
 		    
-		    <td class="col-md-1 vert-align"> 
-		      <form name="inv.form.ediscount">
-		    	<div ng-class="{'has-error':inv.form.ediscount.$invalid
-		    		       && !inv.form.ediscount.$pristine}">
+		    <td class="col-md-1 vert-align">
+		      <span x-ng-if="inv.$new">{{inv.discount}}</span>
+		      <form x-ng-if="!inv.$new" name="inv.form.discount">
+		    	<div ng-class="{'has-error':inv.form.discount.$invalid
+		    		       && !inv.form.discount.$pristine}">
 		    	  <input class="form-control"
 		    		 type="number" step="1"
 		    		 placeholder="卖价折扣"
@@ -362,14 +365,11 @@
 		    </td>
 		    
 		    <td class="col-md-1 vert-align">
-		      <div ng-if="!inv.$new
-				  && !inv.update_directory">
+		      <div ng-if="!inv.$new && !inv.update_directory">
 			{{inv.total}}
 		      </div> 
 		      <form name="inv.form.amount"
-			    ng-if="inv.$new
-				   && inv.free_color_size
-				   || inv.update_directory">
+			    x-ng-if="inv.$new && inv.free_color_size || inv.update_directory">
 			<div ng-class="{'has-error':inv.form.amount.$invalid
 				       && !inv.form.amount.$pristine}">
 			  <input class="form-control"
@@ -382,8 +382,9 @@
 		      </form>
 		    </td>
 
-		    <td class="col-md-1 vert-align"> 
-		      <form name="inv.form.orgprice">
+		    <td class="col-md-1 vert-align">
+		      <span x-ng-if="inv.$new">{{inv.org_price}}</span>
+		      <form x-ng-if="!inv.$new" name="inv.form.orgprice">
 			<div ng-class="{'has-error':inv.form.orgprice.$invalid
 				       && !inv.form.orgprice.$pristine}">
 			  <input class="form-control"
@@ -398,8 +399,9 @@
 		      </form> 
 		    </td>
 		    
-		    <td class="col-md-1 vert-align"> 
-		      <form name="inv.form.ediscount">
+		    <td class="col-md-1 vert-align">
+		      <span x-ng-if="inv.$new">{{inv.ediscount}}</span>
+		      <form x-ng-if="!inv.$new" name="inv.form.ediscount">
 		    	<div ng-class="{'has-error':inv.form.ediscount.$invalid
 		    		       && !inv.form.ediscount.$pristine}">
 		    	  <input class="form-control"
@@ -420,11 +422,25 @@
 			<span x-ng-if="(inv.org_price || inv.org_price==0)
 				       && inv.ediscount
 				       && inv.total">
-			  {{calc_row(inv.org_price, inv.ediscount, inv.total)}}
+			  {{calc_row(inv.org_price, inv.ediscount, inv.total - inv.over)}}
 			</span>
 		      </span> 
-		      </span>
 		    </td>
+
+		    <td class="col-md-1 vert-align"> 
+		      <form name="inv.form.over">
+			<div ng-class="{'has-error':inv.form.over.$invalid
+				       && !inv.form.over.$pristine}">
+			  <input class="form-control"
+				 type="number" step="1"
+				 placeholder="溢出数量"
+				 required
+				 x-ng-model="inv.over" 
+				 ng-model-options="{debounce:300}"
+				 x-ng-change="row_change_over(inv)"/>
+			</div>
+		      </form>
+		    </td> 
 		    
 		    <td class="text-left vert-align">
 		      <div x-ng-if="inv.$new">
@@ -510,41 +526,39 @@
 <script type="text/ng-template" id="inventory-new.html">
   <div class="modal-body">
 
-    <div class="row diablo-margin-bottom-5">
-      <div class="col-md-12 col-sm-12">
-	<div class="input-group">
-	  <span class="input-group-addon">
-	    <i class="glyphicon glyphicon-yen fg-red"></i>进价
-	  </span>
-	  <form name="fprice">
-	    <div ng-class="{'has-error':fprice.$invalid
-			   && !fprice.$pristine}"> 
-	      <input class="form-control text-center"
-		     type="number" step="0.01" 
-		     x-ng-pattern="/^\d+(.\d{1,2})?$/"
-		     x-ng-model="params.org_price"/>
-	    </div>
-	  </form> 
+    <!-- <div class="row diablo-margin-bottom-5"> -->
+    <!--   <div class="col-md-12 col-sm-12"> -->
+    <!-- 	<div class="input-group"> -->
+    <!-- 	  <span class="input-group-addon"> -->
+    <!-- 	    <i class="glyphicon glyphicon-yen fg-red"></i>进价 -->
+    <!-- 	  </span> -->
+    <!-- 	  <form name="fprice"> -->
+    <!-- 	    <div ng-class="{'has-error':fprice.$invalid -->
+    <!-- 			   && !fprice.$pristine}">  -->
+    <!-- 	      <input class="form-control text-center" -->
+    <!-- 		     type="number" step="0.01"  -->
+    <!-- 		     x-ng-pattern="/^\d+(.\d{1,2})?$/" -->
+    <!-- 		     x-ng-model="params.org_price"/> -->
+    <!-- 	    </div> -->
+    <!-- 	  </form>  -->
 
-	  <span class="input-group-addon">
-	    <i class="glyphicon glyphicon-sort-by-attributes-alt fg-red"></i>
-	    折扣
-	  </span>
-	  <form name="ediscount">
-	    <div ng-class="{'has-error':ediscount.$invalid
-			   && !ediscount.$pristine}"> 
-	      <input class="form-control"
-		     type="number" step="0.01" 
-		     required
-		     x-ng-pattern="/^\d{2}$|100$/"
-		     x-ng-model="params.ediscount"/>
-	    </div> 
-	  </form> 
-	</div>
-      </div>
-    </div>
-
-    
+    <!-- 	  <span class="input-group-addon"> -->
+    <!-- 	    <i class="glyphicon glyphicon-sort-by-attributes-alt fg-red"></i> -->
+    <!-- 	    折扣 -->
+    <!-- 	  </span> -->
+    <!-- 	  <form name="ediscount"> -->
+    <!-- 	    <div ng-class="{'has-error':ediscount.$invalid -->
+    <!-- 			   && !ediscount.$pristine}">  -->
+    <!-- 	      <input class="form-control" -->
+    <!-- 		     type="number" step="0.01"  -->
+    <!-- 		     required -->
+    <!-- 		     x-ng-pattern="/^\d{2}$|100$/" -->
+    <!-- 		     x-ng-model="params.ediscount"/> -->
+    <!-- 	    </div>  -->
+    <!-- 	  </form>  -->
+    <!-- 	</div> -->
+    <!--   </div> -->
+    <!-- </div> --> 
     
     <div class="table-responsive">
       <table class="table table-bordered
@@ -594,29 +608,27 @@
 <script type="text/ng-template" id="inventory-detail.html">
   <div class="modal-body">
     
-    <div class="row">
-      <div class="col-md-12 col-sm-12">
-	<div class="input-group">
-	  <span class="input-group-addon">
-	    <i class="glyphicon glyphicon-yen fg-red"></i>进价</span>
-	  <input class="form-control text-center" readonly
-		 x-ng-model="params.org_price"/>
+    <!-- <div class="row"> -->
+    <!--   <div class="col-md-12 col-sm-12"> -->
+    <!-- 	<div class="input-group"> -->
+    <!-- 	  <span class="input-group-addon"> -->
+    <!-- 	    <i class="glyphicon glyphicon-yen fg-red"></i>进价</span> -->
+    <!-- 	  <input class="form-control text-center" readonly -->
+    <!-- 		 x-ng-model="params.org_price"/> -->
 
-	  <span class="input-group-addon">
-	    <i class="glyphicon glyphicon-sort-by-attributes-alt fg-red"></i>
-	    折扣
-	  </span> 
-	  <input class="form-control"
-		 required
-		 readonly
-		 x-ng-model="params.ediscount"/>
+    <!-- 	  <span class="input-group-addon"> -->
+    <!-- 	    <i class="glyphicon glyphicon-sort-by-attributes-alt fg-red"></i> -->
+    <!-- 	    折扣 -->
+    <!-- 	  </span>  -->
+    <!-- 	  <input class="form-control" -->
+    <!-- 		 required -->
+    <!-- 		 readonly -->
+    <!-- 		 x-ng-model="params.ediscount"/> -->
 	  
 	  
-	</div>
-      </div>
-    </div>
-
-    </br>
+    <!-- 	</div> -->
+    <!--   </div> -->
+    <!-- </div> -->
     
     <div class="table-responsive">
       <table class="table table-bordered

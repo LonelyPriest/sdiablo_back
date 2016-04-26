@@ -74,7 +74,7 @@ purchaserApp.controller("stockPromotionNew", function(
 
 purchaserApp.controller("stockPromotionDetail", function(
     $scope, dateFilter, diabloPattern, diabloUtilsService,
-    purchaserService, wgoodService){
+    purchaserService, wgoodService, user){
     $scope.rules = purchaserService.promotion_rules; 
     $scope.refresh = function(){
 	wgoodService.list_w_promotion().then(function(promotions){
@@ -89,6 +89,14 @@ purchaserApp.controller("stockPromotionDetail", function(
 	    $scope.promotions = promotions;
 	    
 	})
+    };
+
+    $scope.good_right = {
+	new_promotion: rightAuthen.authen(
+	    user.type,
+	    rightAuthen.good_action()['new_promotion'],
+	    user.right
+	)
     };
 
     $scope.refresh();

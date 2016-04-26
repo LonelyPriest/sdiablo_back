@@ -93,7 +93,8 @@ wretailerApp.config(['$routeProvider', function($routeProvider){
 	}). 
 	when('/promotion/recharge_detail', {
 	    templateUrl: '/private/wretailer/html/recharge_detail.html',
-	    controller: 'wretailerRechargeDetailCtrl'
+	    controller: 'wretailerRechargeDetailCtrl',
+	    resolve: angular.extend({}, user)
 	}).
 	when('/promotion/score_new', {
 	    templateUrl: '/private/wretailer/html/score_new.html',
