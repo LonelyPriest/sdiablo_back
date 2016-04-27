@@ -171,8 +171,8 @@
 
 		<span x-ng-if="stock_right.show_balance" class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>欠款</span>
-	  	<input class="form-control" readonly
-	  	       x-ng-model="select.surplus"/> 
+	  	<input x-ng-if="stock_right.show_balance" class="form-control" readonly
+	  	       x-ng-model="select.surplus"/>
 	      </div>
 	    </div> 
 	  </div> <!--END row-->
@@ -222,7 +222,7 @@
 
 		<span x-ng-if="stock_right.show_balance" class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>结余</span>
-	  	<input class="form-control" type="text" readonly
+	  	<input x-ng-if="stock_right.show_balance" class="form-control" type="text" readonly
 	  	       x-ng-model="select.left_balance"></input> 
 		
 	      </div>

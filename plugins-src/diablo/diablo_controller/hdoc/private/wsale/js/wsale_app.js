@@ -1627,6 +1627,8 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 	    rightAuthen.wsale_action()['check_w_sale'],
 	    user.shop
 	),
+
+	show_stastic: rightAuthen.authen_master(user.type)
     };
 
     // console.log($scope.shop_right);

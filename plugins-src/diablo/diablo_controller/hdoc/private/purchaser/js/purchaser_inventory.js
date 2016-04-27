@@ -1849,6 +1849,8 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
 	    rightAuthen.stock_action()['delete_w_stock'],
 	    user.shop
 	),
+
+	show_balance: rightAuthen.authen_master(user.type)
     };
     
     $scope.hidden = {base:true, balance:true, comment:true};

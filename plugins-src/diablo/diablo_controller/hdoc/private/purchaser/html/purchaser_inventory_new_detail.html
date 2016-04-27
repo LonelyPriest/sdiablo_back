@@ -94,25 +94,27 @@
 		    <th x-ng-if="!hidden.balance" class="warning">核销</th>
 		    <th x-ng-if="!hidden.balance" class="danger">费用</th>
 
-		    <th class="info">
+		    <th x-ng-if="shop_right.show_balance" class="info">
 		      <span x-ng-click="toggle_balance()">
 			<span x-ng-if="!hidden.balance">
-			  <i class="glyphicon glyphicon-backward fg-red"></i>帐户欠款</span>
+			  <i class="glyphicon glyphicon-backward fg-red"></i>上次欠款</span>
 			<span x-ng-if="hidden.balance">
 			  帐户欠款<i class="glyphicon glyphicon-forward fg-red"></i></span>
 		      </span>
 		    </th>
 		    
-		    <th class="success">应付</th>
-		    <th>实付</th>
-		    <th x-ng-click="toggle_comment()" class="danger">
-		      <span x-ng-if="!hidden.comment">
-			<i class="glyphicon glyphicon-backward fg-red"></i>本次欠款</span>
-		      <span x-ng-if="hidden.comment">
-			本次欠款<i class="glyphicon glyphicon-forward fg-red"></i></span>
-		    </th>
+		    <th x-ng-if="shop_right.show_balance" class="success">应付</th>
+		    <th x-ng-if="shop_right.show_balance">实付</th>
+		    <!-- <th x-ng-click="toggle_comment()" class="danger"> -->
+		    <!--   <span x-ng-if="!hidden.comment"> -->
+		    <!-- 	<i class="glyphicon glyphicon-backward fg-red"></i>本次欠款</span> -->
+		    <!--   <span x-ng-if="hidden.comment"> -->
+		    <!-- 	本次欠款<i class="glyphicon glyphicon-forward fg-red"></i></span> -->
+		    <!-- </th> -->
 		    <!-- <th>总数</th> -->
-		    <th x-ng-if="!hidden.comment">备注</th>
+		    <th x-ng-if="shop_right.show_balance" class="danger">累计欠款</span>
+		    </th>
+		    <th>备注</th>
 		    <th>采购日期</th> 
 		    <th>操作</th>
 		  </tr>
@@ -141,18 +143,23 @@
 		      <span x-ng-if="r.e_pay===0">{{r.e_pay}}</span>
 		    </td>
 
-		    <td class="{{css(r.state)}}">{{r.balance}}</td>
+		    <td x-ng-if="shop_right.show_balance" class="{{css(r.state)}}">{{r.balance}}</td>
 		    
-		    <td class="{{css(r.state)}}" x-ng-switch on="r.type">
+		    <td x-ng-if="shop_right.show_balance"
+			class="{{css(r.state)}}" x-ng-switch on="r.type">
 		      <span x-ng-switch-when=0>{{r.should_pay}}</span>
 		      <span class="fg-red" x-ng-switch-when=1>{{r.should_pay}}</span>
 		    </td>
 		    
-		    <td class="{{css(r.state)}}" >{{r.has_pay}}</td>
-		    <td class="{{css(r.state)}}" >
+		    <td x-ng-if="shop_right.show_balance"
+			class="{{css(r.state)}}">{{r.has_pay}}
+		    </td>
+		    
+		    <td x-ng-if="shop_right.show_balance" class="{{css(r.state)}}">
 		      {{r.balance + r.should_pay + r.e_pay - r.has_pay - r.verificate}}
-		    </td> 
-		    <td class="{{css(r.state)}}" x-ng-if="!hidden.comment">
+		    </td>
+		    
+		    <td class="{{css(r.state)}}">
 		      <span x-ng-switch on="r.comment">
 			<span x-ng-switch-when="null">无</span>
 			<span x-ng-switch-default>{{r.comment}}</span>
@@ -213,8 +220,8 @@
 		    <td x-ng-if="!hidden.balance">{{total_verificate}}</td>
 		    <td x-ng-if="!hidden.balance"></td> 
 		    <td colspan="1"></td> 
-		    <td class="danger">{{total_spay}}</td>
-		    <td class="info">{{total_hpay}}</td>
+		    <td x-ng-if="shop_right.show_balance" class="danger">{{total_spay}}</td>
+		    <td x-ng-if="shop_right.show_balance" class="info">{{total_hpay}}</td>
 		    <td colspan="4"></td>
 		  </tr>
 		  

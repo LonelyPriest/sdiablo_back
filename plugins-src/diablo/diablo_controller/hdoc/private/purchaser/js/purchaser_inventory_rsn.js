@@ -195,7 +195,7 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
 	)
     };
 
-    console.log($scope.stock_right);
+    // console.log($scope.stock_right);
 
     var dialog       = diabloUtilsService;
     var use_storage  = $routeParams.rsn ? false : true;
@@ -218,12 +218,12 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
     // initial
     // $scope.filters = [];    
     diabloFilter.reset_field();
-    diabloFilter.add_field("rsn", []);
     diabloFilter.add_field("style_number", $scope.match_style_number);
     diabloFilter.add_field("brand", filterBrand);
     diabloFilter.add_field("type",  filterType);
-    diabloFilter.add_field("year",  diablo_full_year); 
     diabloFilter.add_field("firm", filterFirm);
+    diabloFilter.add_field("year",  diablo_full_year); 
+    diabloFilter.add_field("rsn", []); 
     diabloFilter.add_field("shop", user.sortShops);
 
     $scope.filter = diabloFilter.get_filter();
@@ -316,7 +316,9 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
     }
 
     $scope.total_items = 0;
-    // $scope.do_search($scope.default_page);
+    if (angular.isDefined($routeParams.rsn) && $routeParams.rsn){
+	$scope.do_search($scope.default_page); 
+    }
 
     $scope.page_changed = function(){
 	$scope.do_search($scope.current_page);

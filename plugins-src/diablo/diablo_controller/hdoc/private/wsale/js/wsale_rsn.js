@@ -22,6 +22,13 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 	$scope.hidden.base = !$scope.hidden.base;
     };
 
+    /*
+     * right
+     */
+    $scope.right = {
+	show_stastic: rightAuthen.authen_master(user.type)
+    };
+
     var dialog      = diabloUtilsService; 
     var use_storage = $routeParams.rsn ? false : true;
     
