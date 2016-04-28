@@ -85,7 +85,8 @@ action(Session, Req, {"update_shop", Id}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     case ?shop:shop(update, Merchant, Id, Payload) of
     	{ok, Id} ->
-	    ?w_user_profile:update(user_shop, Merchant, Session),
+	    ?w_user_profile:update(shop, Merchant), 
+	    ?w_user_profile:update(user_shop, Merchant, Session), 
     	    ?utils:respond(200, Req, ?succ(update_shop, Id));
     	{error, Error} ->
     	    ?utils:respond(200, Req, Error)

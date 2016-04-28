@@ -74,16 +74,17 @@ shopApp.controller("newShopCtrl", function(
 
 shopApp.controller("shopDetailCtrl", function(
     $scope, $q, diabloUtilsService, shopService,
-    filterPromotion, filterShopPromotion, filterCharge, filterEmployee, user){
+    filterPromotion, filterScore, filterCharge, filterEmployee, user){
     // console.log(filterPromotion);
-    // console.log(filterShopPromotion);
     // console.log(filterEmployee);
+    console.log(filterScore);
     // console.log(user);
     
     $scope.promotions      = filterPromotion;
-    $scope.shop_promotions = filterShopPromotion.map(
-	function(p){return p.pid});
+    // $scope.shop_promotions = filterShopPromotion.map(
+    // 	function(p){return p.pid});
     $scope.charges         = filterCharge;
+    $scope.scores          = filterScore;
     
     // employees
     $scope.employees   = filterEmployee;
@@ -141,6 +142,9 @@ shopApp.controller("shopDetailCtrl", function(
 			
 			charge_id: s.charge_id,
 			charge: diablo_get_object(s.charge_id, $scope.charges),
+
+			score_id: s.score_id,
+			score: diablo_get_object(s.score_id, $scope.scores),
 			
 			address:      s.address,
 			open_date:    s.open_date,
@@ -443,6 +447,75 @@ shopApp.controller("shopDetailCtrl", function(
 	    undefined,
 	    {shop: shop,
 	     charges: $scope.charges,
+	     check_only: check_only,
+	     check_same: check_same});
+    };
+
+    $scope.score = function (shop){
+	// console.log(shop);
+	var check_only = function(select, scores){
+	    // console.log(select);
+	    angular.forEach(scores, function(s){
+		if (s.id !== select.id){
+		    s.select = false;
+		};
+	    });
+	};
+
+	var check_same = function(scores) {
+	    for (var i=0, l=scores.length; i<l; i++){
+		if (scores[i].select && scores[i].id === shop.score_id){
+		    return true;
+		}
+	    }
+	    return false; 
+	};
+	
+	var callback = function(params){
+	    //console.log(params);
+
+	    var select = params.scores.filter(function(s){
+		return s.select;
+	    })[0];
+
+	    console.log(select);
+
+	    shopService.update_score(
+		shop.id,
+		angular.isDefined(select) ? select.id : -1)
+		.then(function(result){
+		    console.log(result);
+		
+		if (result.ecode === 0){
+		    shop.score_id = angular.isDefined(select) ? select.id : -1;
+		    shop.score = diablo_get_object(shop.score_id, $scope.scores);
+		    dialog.response(true, "积分方案", "编辑积分方案成功！！");
+		} else {
+		    dialog.response(
+			false,
+			"积分方案",
+			"编辑积分方案失败："
+			    + shopService.error[result.ecode]);
+		}
+	    });
+	};  
+	
+	angular.forEach($scope.scores, function(s){
+	    s.select = false;
+	    if (s.id === shop.score_id){
+		s.select = true;
+	    }
+	});
+
+	console.log($scope.scores);
+	
+	dialog.edit_with_modal(
+	    "score.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {shop: shop,
+	     scores: $scope.scores,
 	     check_only: check_only,
 	     check_same: check_same});
     };

@@ -67,6 +67,7 @@ userApp.factory("userService", function($resource, $q){
 				name:s.name,
 				repo:s.repo_id,
 				charge_id: s.charge_id,
+				score_id: s.score_id,
 				py:diablo_pinyin(s.name)};
 		    if (s.type === 0 && !in_array(sort, shop)){
 			sort.push(shop); 
@@ -82,6 +83,8 @@ userApp.factory("userService", function($resource, $q){
 		    var repo = {id:  s.shop_id,
 				name:s.name,
 				repo:s.repo_id,
+				charge_id: s.charge_id,
+				score_id: s.score_id,
 				py:diablo_pinyin(s.name)};
 		    if (s.type === 1 && !in_array(sort, repo)){
 			sort.push(repo); 
@@ -96,6 +99,8 @@ userApp.factory("userService", function($resource, $q){
 		    var shop = {id:  s.shop_id,
 				name:s.name,
 				repo:s.repo_id,
+				charge_id: s.charge_id,
+				score_id: s.score_id,
 				py:diablo_pinyin(s.name)};
 		    if (s.type === 2 && !in_array(sort, shop)){
 			sort.push(shop); 
@@ -113,6 +118,7 @@ userApp.factory("userService", function($resource, $q){
 				name:s.name,
 				repo:s.repo_id,
 				charge_id: s.charge_id,
+				score_id: s.score_id,
 				py:diablo_pinyin(s.name)};
 
 		    if ( ((s.type === 0 && s.repo_id === -1) || s.type === 1)

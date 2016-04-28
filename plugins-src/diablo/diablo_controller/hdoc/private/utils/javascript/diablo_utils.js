@@ -15,6 +15,27 @@ var diabloUtils = angular.module("diabloUtils", []);
 //     }
 // ]);
 
+diabloUtils.directive('focusAuto', function($timeout, $parse) {
+    return {
+	link: function(scope, element, attrs) {
+	    var model = $parse(attrs.focusAuto);
+	    scope.$watch(model, function(value) {
+		// console.log('value=',value);
+		if(value === true) { 
+		    $timeout(function(){
+			element[0].focus(); 
+		    }, 100);
+		} else {
+		    $timeout(function() {
+			// console.log("blur");
+			element[0].blur(); 
+		    }, 100);
+		}
+	    }); 
+	}
+    };
+});
+
 diabloUtils.directive('ngEnter', function () {
     return function (scope, element, attrs) {
         element.bind("keydown keypress", function (event) {
@@ -1172,3 +1193,5 @@ diabloUtils.directive('imageUpload', function ($q) {
 	}
     }
 });
+
+

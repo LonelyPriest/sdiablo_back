@@ -852,11 +852,11 @@ amount_new(RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
     EDiscount   = ?v(<<"ediscount">>, Inv),
     Discount    = ?v(<<"discount">>, Inv),
     Path        = ?v(<<"path">>, Inv, []),
-    AlarmDay    = ?v(<<"alarm_day">>, Inv, 7), 
+    AlarmDay    = ?v(<<"alarm_day">>, Inv, 7),
+    Score       = ?v(<<"score">>, Inv, -1),
 
     %% InventoryExist = ?sql_utils:execute(s_read, Sql0),
 
-	
     Sql0 = "select id, style_number, brand from w_inventory"
 	" where style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
 	++ " and brand=" ++ ?to_s(Brand)
@@ -869,7 +869,7 @@ amount_new(RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 	    {ok, []} ->
 		["insert into w_inventory(rsn"
 		 ", style_number, brand, type, sex, season, amount"
-		 ", firm, s_group, free, year"
+		 ", firm, s_group, free, year, score"
 		 ", org_price, tag_price, ediscount, discount"
 		 ", path, alarm_day, shop, merchant"
 		 ", last_sell, change_date, entry_date)"
@@ -885,6 +885,7 @@ amount_new(RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		 ++ "\"" ++ ?to_s(SizeGroup) ++ "\","
 		 ++ ?to_s(Free) ++ ","
 		 ++ ?to_s(Year) ++ ","
+		 ++ ?to_s(Score) ++ ","
 		 %% ++ ?to_s(Promotion) ++ ","
 		 ++ ?to_s(OrgPrice) ++ ","
 		 ++ ?to_s(TagPrice) ++ ","

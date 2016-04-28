@@ -160,7 +160,7 @@ wsaleApp.service("wsaleService", function($http, $resource, dateFilter){
 
     this.export_type = {trans:0, trans_note:1};
 
-    this.vpays = [0, 1, 2, 3, 60];
+    this.vpays = [0, 1, 2, 3];
     
     // =========================================================================
     var http = $resource("/wsale/:operation/:id",
@@ -282,7 +282,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
     filterSizeGroup, filterBrand, filterType, filterColor, base){
     // console.log(filterPromotion);
     // console.log(filterScore);
-    console.log(filterRetailer);
+    // console.log(filterRetailer);
     $scope.promotions = filterPromotion;
     $scope.scores     = filterScore;
     $scope.vpays      = wsaleService.vpays;
@@ -293,7 +293,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	discount: diabloPattern.discount};
     
     $scope.timeout_auto_save = undefined;
-    $scope.round             = diablo_round;
+    $scope.round  = diablo_round;
+    $scope.focus  = {sell: true};
 
     $scope.today = function(){
 	return $.now();
@@ -548,7 +549,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	$scope.select.charge       = 0;
 	$scope.select.surplus      = $scope.select.retailer.balance;
 	$scope.select.left_balance = $scope.select.surplus;
-	$scope.verificate          = $scope.vpays[0],
+	$scope.select.verificate   = $scope.vpays[0],
 	
 	$scope.select.total        = 0;
 	$scope.select.abs_total    = 0;
@@ -1344,8 +1345,10 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	inv.o_fprice    = inv.fprice;
 	
 	if ($scope.setting.check_sale === diablo_no && inv.free === 0){
-	    inv.free_color_size = true; 
+	    inv.free_color_size = true;
 	    inv.amounts         = [{cid:0, size:0}];
+	    $scope.focus.sell = true;
+	    // $scope.focus.good = false;
 	} else {
 	    // avoid uncheck sale, but inventory is not free
 	    var promise = diabloPromise.promise; 
@@ -1572,7 +1575,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
     $scope.auto_save_free = function(inv){
 	if (angular.isUndefined(inv.sell)
 	    || !inv.sell
-	    || parseInt(inv.sell) === 0){
+	    || parseInt(inv.sell) === 0
+	    || angular.isUndefined(inv.style_number)){
 	    return;
 	} 
 

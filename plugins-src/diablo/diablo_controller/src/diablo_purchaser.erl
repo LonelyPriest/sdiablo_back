@@ -755,6 +755,8 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
     Shop       = ?v(<<"shop">>, Props),
     Firm       = ?v(<<"firm">>, Props, -1),
     Employee   = ?v(<<"employee">>, Props),
+
+    
     Cash       = ?v(<<"cash">>, Props, 0),
     Card       = ?v(<<"card">>, Props, 0),
     Wire       = ?v(<<"wire">>, Props, 0),

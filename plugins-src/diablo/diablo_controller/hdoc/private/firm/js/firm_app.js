@@ -81,7 +81,8 @@ firmApp.config(['$routeProvider', function($routeProvider){
 	}).
 	when('/brand_detail', {
 	    templateUrl: '/private/firm/html/brand_detail.html',
-            controller: 'brandDetailCtrl' 
+            controller: 'brandDetailCtrl', 
+	    resolve: angular.extend({}, firm)
 	}).
 	// default
 	otherwise({

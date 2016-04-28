@@ -1,12 +1,12 @@
 purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope, $timeout, dateFilter, diabloPattern, diabloUtilsService,
     diabloFilter, wgoodService, purchaserService, shortCutGoodService,
-    localStorageService, user, filterPromotion, filterBrand, filterType,
+    localStorageService, user, filterBrand, filterType,
     filterSizeGroup, filterFirm, filterEmployee, filterColor,
     filterColorType, base){
     // console.log(user);
     // console.log(filterColor);
-    $scope.promotions  = filterPromotion;
+    // $scope.promotions  = filterPromotion;
     $scope.brands      = filterBrand;
     $scope.types       = filterType;
     $scope.size_groups = filterSizeGroup;
@@ -40,6 +40,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope.go_back = function(){
 	diablo_goto_page("#/inventory_new_detail");
     };
+
+    $scope.focus = {sale: true};
     
     /*
      * authen
@@ -199,7 +201,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    var p = k.split("-");
 	    return {sn:k,
 		    shop:diablo_get_object(parseInt(p[1]), $scope.shops),
-		    employee:diablo_get_object(parseInt(p[2]), $scope.employees),
+		    employee:diablo_get_object(p[2], $scope.employees),
 		   }
 	});
 
@@ -209,7 +211,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		return angular.isDefined(d.select) && d.select
 	    })[0];
 
-	    // console.log(select_draft); 
+	    console.log(select_draft); 
 	    // $scope.select.firm =
 	    // 	diablo_get_object(select_draft.firm.id, $scope.firms);
 	    $scope.select.shop =
@@ -332,7 +334,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     };
     
     $scope.on_select_good = function(item, model, label){
-	console.log(item); 
+	// console.log(item); 
 	// has been added
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    if (item.style_number === $scope.inventories[i].style_number
@@ -511,7 +513,9 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		
 		path        : add.path,
 		alarm_day   : add.alarm_day,
-		total       : add.total
+		total       : add.total,
+		score       : $scope.select.shop.score_id
+
 	    })
 	};
 
@@ -611,6 +615,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 
 	for (var i=1, l=$scope.inventories.length; i<l; i++){
 	    var one = $scope.inventories[i];
+	    console.log(one);
 	    $scope.select.total  += stockUtils.to_integer(one.total);
 	    
 	    $scope.select.should_pay += $scope.calc_row(
@@ -625,7 +630,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     };
     
     var add_callback = function(params){
-	console.log(params);
+	// console.log(params);
 	// delete empty
 	var new_amount = [];
 	for(var i=0, l=params.amount.length; i<l; i++){
@@ -638,7 +643,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    } 
 	}
 	
-	console.log(new_amount);
+	// console.log(new_amount);
 	// inv.amount = new_amount;
 	var total = 0;
 	angular.forEach(new_amount, function(a){
@@ -668,6 +673,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    // backup
 	    $scope.local_save();
 	    // add new line
+	    console.log("add new line");
 	    $scope.inventories.unshift({$edit:false, $new:true}); 
 	    
 	    $scope.disable_refresh = false;

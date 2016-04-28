@@ -409,7 +409,7 @@
 
 			<!-- sell count-->
 			<td class="col-md-1 vert-align">
-			  <div ng-if="!inv.$new && !inv.free_update"> 
+			  <div x-ng-if="!inv.$new && !inv.free_update"> 
 			    {{inv.sell}}
 			  </div> 
 			  <form name="inv.form.sell"
@@ -423,7 +423,8 @@
 				     required
 				     x-ng-pattern="pattern.sell"
 				     x-ng-model="inv.sell"
-				     x-ng-change="auto_save_free(inv)"/>
+				     focus-auto="focus.sell" 
+				     x-ng-change="auto_save_free(inv)" />
 			    </div> 
 			  </form> 
 			</td>
@@ -476,7 +477,8 @@
 
 			    <a class="btn diablo-input-button btn-success"
 			       x-ng-show="inv.free_update"
-			       x-ng-disabled="inv.form.sell.$invalid
+			       x-ng-disabled="inv.form.good.$invalid
+					      || inv.form.sell.$invalid
 			    		      || inv.form.fprice.$invalid
 			    		      || inv.form.fdiscount.$invalid"
 			       x-ng-click="save_free_update(inv)">保存
@@ -486,7 +488,7 @@
 			       ng-if="inv.free_update"
 			       x-ng-disabled=" inv.form.sell.$invalid"
 			       x-ng-click="cancel_free_update(inv)">取消
-			      <i class="glyphicon glyphicon-erase"></i></a> 
+			      <i class="glyphicon glyphicon-off"></i></a> 
 			  </span>
 			  
 			</td>
@@ -790,7 +792,10 @@
 		      <input x-ng-if="amount"
 			     class="form-control modal-input text-center"
 			     type="number" step="1"
-			     x-ng-model="amount.sell_count"/>
+			     x-ng-model="amount.sell_count"
+			     focus-auto="s===params.sizes[0]
+					 && c.cid===params.colors[0].cid"
+			     />
 		    </div>
 		  </form>
 		</div>

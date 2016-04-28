@@ -142,6 +142,7 @@ handle_call({update_shop, Merchant, ShopId, Attrs}, _From, State) ->
     %% Type    = ?v(<<"type">>, Attrs),
     Master  = ?v(<<"shopowner">>, Attrs),
     Charge  = ?v(<<"charge">>, Attrs),
+    Score   = ?v(<<"score">>, Attrs),
 
     ShopExist = 
 	case Name of
@@ -160,7 +161,8 @@ handle_call({update_shop, Merchant, ShopId, Attrs}, _From, State) ->
 		++ ?utils:v(name, string, Name)
 		++ ?utils:v(address, string, Address)
 		++ ?utils:v(master, string, Master)
-		++ ?utils:v(charge, integer, Charge),
+		++ ?utils:v(charge, integer, Charge)
+		++ ?utils:v(score, integer, Score),
 	    Sql1 = "update shops set "
 		++ ?utils:to_sqls(proplists, comma, Updates)
 		++ " where id=" ++ ?to_s(ShopId)
@@ -169,7 +171,7 @@ handle_call({update_shop, Merchant, ShopId, Attrs}, _From, State) ->
 	    case Master of
 		undefined ->
 		    Reply = ?sql_utils:execute(write, Sql1, ShopId),
-		    ?w_user_profile:update(shop, Merchant), 
+		    %% ?w_user_profile:update(shop, Merchant), 
 		    {reply, Reply, State};
 		Master ->
 		    Trans = [Sql1,
@@ -177,7 +179,6 @@ handle_call({update_shop, Merchant, ShopId, Attrs}, _From, State) ->
 			     "update employees set position=" ++ ?to_s(?SHOP_MASTER)
 			     ++ " where number=" ++ ?to_s(Master)
 			     ++ " and merchant=" ++ ?to_s(Merchant)],
-		    ?w_user_profile:update(shop, Merchant),
 		    Reply = ?sql_utils:execute(transaction, Trans, ShopId),
 		    {reply, Reply, State}
 	    end;
@@ -207,7 +208,7 @@ handle_call({list_shop, Merchant, Conditions}, _From, State) ->
 
     Sql1 = "select a.id, a.repo, a.name, a.address, a.type"
 	", a.open_date, a.master as shopowner_id, a.charge as charge_id"
-	", a.entry_date"
+	", a.score as score_id, a.entry_date"
 	%% ", b.name as shopowner"
 	++ " from shops a"
 	%% ++ " left join employees b on a.shopowner=b.number"

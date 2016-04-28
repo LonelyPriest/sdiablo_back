@@ -19,11 +19,14 @@ shopApp.config(['$routeProvider', function($routeProvider){
     var promotion = {"filterPromotion": function(diabloNormalFilter){
 	return diabloNormalFilter.get_promotion()}};
 
-    var shop_promotion = {"filterShopPromotion": function(diabloNormalFilter){
-	return diabloNormalFilter.get_shop_promotion()}};
+    // var shop_promotion = {"filterShopPromotion": function(diabloNormalFilter){
+    // 	return diabloNormalFilter.get_shop_promotion()}};
 
     var charge = {"filterCharge": function(diabloNormalFilter){
 	return diabloNormalFilter.get_charge()}};
+
+    var score = {"filterScore": function(diabloNormalFilter){
+	return diabloNormalFilter.get_score()}};
     
     // var repo = {"filterRepo": function(diabloNormalFilter){
     // 	return diabloNormalFilter.get_repo()}};
@@ -33,7 +36,7 @@ shopApp.config(['$routeProvider', function($routeProvider){
 	    templateUrl: '/private/shop/html/shop_detail.html',
             controller: 'shopDetailCtrl',
 	    resolve: angular.extend(
-		{}, promotion, shop_promotion, charge, employee, user)
+		{}, promotion, score, charge, employee, user)
 	}).
 	when('/shop/shop_new', {
 	    templateUrl: '/private/shop/html/shop_new.html',
@@ -62,7 +65,7 @@ shopApp.config(['$routeProvider', function($routeProvider){
 	    templateUrl: '/private/shop/html/shop_detail.html',
             controller: 'shopDetailCtrl' ,
 	    resolve: angular.extend(
-		{}, promotion, shop_promotion, charge, employee, user)
+		{}, promotion, score, charge, employee, user)
         })
 }]);
 
@@ -133,6 +136,12 @@ shopApp.service("shopService", function($resource, dateFilter){
 	return shop.save(
 	    {operation: "update_shop"},
 	    {id:shopId, charge:charge}).$promise;
+    };
+
+    this.update_score = function(shopId, score) {
+	return shop.save(
+	    {operation: "update_shop"},
+	    {id:shopId, score:score}).$promise;
     };
 
     this.new_repo = function(repo){

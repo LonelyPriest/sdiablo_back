@@ -539,7 +539,9 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 		&& $scope.select.card === $scope.old_select.card
 		&& $scope.select.wire === $scope.old_select.wire
 		&& $scope.select.verificate === $scope.old_select.verificate
-		&& $scope.select.firm.id === $scope.old_select.firm.id
+		&& (angular.isDefined($scope.select.old_firm)
+		    && $scope.select.old_firm
+		    && $scope.old_select.firm.id === $scope.select.firm.id)
 		&& $scope.select.employee.id === $scope.old_select.employee.id
 		&& $scope.select.shop.id === $scope.old_select.shop.id
 		&& $scope.select.comment === $scope.old_select.comment
