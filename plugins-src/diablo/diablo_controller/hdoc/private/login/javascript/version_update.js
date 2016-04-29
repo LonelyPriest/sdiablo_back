@@ -1,6 +1,12 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2016-04-30",
+	 content: [
+	     "修改入库记录时，同步修改货品资料"
+	 ]
+	},
+	
 	{date: "2016-04-29",
 	 content: [
 	     "增加店铺默认积分方案设置，入库时，所有货品都设置成默认积分方案",

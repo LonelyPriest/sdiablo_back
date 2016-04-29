@@ -235,7 +235,7 @@ good_match(style_number, Merchant, StyleNumber) ->
     "select distinct style_number from w_inventory_good"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and deleted=" ++ ?to_s(?NO) 
-	++ " and style_number like \'" ++ ?to_s(StyleNumber) ++ "\%'"
+	++ " and style_number like \'" ++ ?to_s(StyleNumber) ++ "%\'"
 	++ " limit " ++ ?to_s(P).
 
 good_match(style_number_with_firm, Merchant, StyleNumber, Firm) ->
@@ -253,7 +253,7 @@ good_match(style_number_with_firm, Merchant, StyleNumber, Firm) ->
 	++ " and a.deleted=" ++ ?to_s(?NO)
 	++ " and a.brand=b.id"
 	++ " and a.type=c.id" 
-	++ " and a.style_number like \'" ++ ?to_s(StyleNumber) ++ "\%'"
+	++ " and a.style_number like \'" ++ ?to_s(StyleNumber) ++ "%\'"
 	++ " order by id desc"
 	++ " limit " ++ ?to_s(P);
 
@@ -681,7 +681,7 @@ inventory(new_rsn_group_with_pagination, Merchant, Conditions, CurrentPage, Item
 inventory_match(Merchant, StyleNumber, Shop) ->
     P = prompt_num(Merchant),
     "select style_number from w_inventory"
-	++ " where style_number like \'" ++ ?to_s(StyleNumber) ++ "\%'"
+	++ " where style_number like \'" ++ ?to_s(StyleNumber) ++ "%\'"
 	++ ?sql_utils:condition(proplists, [{<<"shop">>, Shop}])
 	++ " and merchant=" ++ ?to_s(Merchant)
 	++ " and deleted=" ++ ?to_s(?NO)
@@ -731,7 +731,7 @@ inventory_match(Merchant, StyleNumber, Shop, Firm) ->
 	%% " (select id, style_number, brand, type, sex, season"
 	%% ", firm, s_group, free, org_price, tag_price, pkg_price"
 	%% ", price3, price4, price5, discount, path from w_inventory"
-	" where a.style_number like \'" ++ ?to_s(StyleNumber) ++ "\%'"
+	" where a.style_number like \'" ++ ?to_s(StyleNumber) ++ "%\'"
 	" and a.shop=" ++ ?to_s(Shop)
 	++ case Firm of
 	       [] -> [];
@@ -765,17 +765,81 @@ inventory_match(all_reject, Merchant, Shop, Firm, StartTime) ->
 	++ " order by a.id".
 	
 
-inventory(update, RSN, _Merchant, _Shop, _Firm,
-	  Datetime,  OldDatetime, _Curtime, []) ->
-    case Datetime =:= OldDatetime of
-	true -> [];
-	false ->
-	    ["update w_inventory_new set entry_date=\'"
-	     ++ ?to_s(Datetime) ++ "\'"
-	     ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'",
-	     "update w_inventory_new_detail set entry_date=\'"
-	     ++ ?to_s(Datetime) ++ "\' where rsn=\'" ++ ?to_s(RSN) ++ "\'"]
-    end;
+inventory(update, RSN, Merchant, Shop, Firm, OldFirm, Datetime,  OldDatetime) ->
+    UpdateDate = case Datetime =/= OldDatetime of
+		     true -> ?utils:v(entry_date, string, Datetime);
+		     false -> []
+		 end,
+
+    UpdateFirm = case Firm =/= OldFirm of
+		     true -> ?utils:v(firm, integer, Firm);
+		     false -> []
+		 end,
+
+    case UpdateDate ++ UpdateFirm of
+	[] -> [];
+	Updates ->
+	    ["update w_inventory_new set "
+	     ++ ?utils:to_sqls(proplists, comma, Updates)
+	     ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'",
+
+	     "update w_inventory_new_detail set "
+	     ++ ?utils:to_sqls(proplists, comma, Updates)
+	     ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"]
+		++ case UpdateDate of
+		       [] -> []; 
+		       _  -> ["update w_inventory_new_detail_amount set "
+			      ++ ?utils:to_sqls(proplists, comma, UpdateDate)
+			      ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"]
+		   end
+		
+		%% stock
+		++ ["update w_inventory a inner join "
+		    "(select style_number, brand"
+		    " from w_inventory_new_detail"
+		    " where rsn=\'" ++ ?to_s(RSN) ++ "\') b"
+		    " on a.style_number=b.style_number and a.brand=b.brand"
+		    " set " ++?utils:to_sqls(proplists, comma, Updates)
+		    ++ " where a.merchant=" ++ ?to_s(Merchant)
+		    ++ " and a.shop=" ++ ?to_s(Shop)]
+		++ case UpdateDate of
+		       [] -> []; 
+		       _  ->
+			   ["update w_inventory_amount a inner join "
+			    "(select style_number, brand"
+			    " from w_inventory_new_detail"
+			    " where rsn=\'" ++ ?to_s(RSN) ++ "\') b"
+			    " on a.style_number=b.style_number and a.brand=b.brand"
+			    " set " ++?utils:to_sqls(proplists, comma, Updates)
+			    ++ " where a.merchant=" ++ ?to_s(Merchant)
+			    ++ " and a.shop=" ++ ?to_s(Shop) 
+			   ]
+		   end
+
+		%% good
+		++ ["update w_inventory_good a inner join "
+		    "(select style_number, brand"
+		    " from w_inventory_new_detail"
+		    " where rsn=\'" ++ ?to_s(RSN) ++ "\') b"
+		    " on a.style_number=b.style_number and a.brand=b.brand"
+		    " set " ++?utils:to_sqls(proplists, comma, Updates)
+		    ++ " where a.merchant=" ++ ?to_s(Merchant)]
+
+		%% sale
+		++ case UpdateFirm of
+		       [] -> [];
+		       _  ->
+			   ["update w_sale_detail a inner join "
+			    "(select style_number, brand"
+			    " from w_inventory_new_detail"
+			    " where rsn=\'" ++ ?to_s(RSN) ++ "\') b"
+			    " on a.style_number=b.style_number and a.brand=b.brand"
+			    " set " ++?utils:to_sqls(proplists, comma, Updates)
+			    ++ " where a.merchant=" ++ ?to_s(Merchant)
+			    ++ " and rsn like \'M-" ++ ?to_s(Merchant) ++ "-S-"
+			    ++ ?to_s(Shop) ++ "-%\'"]
+		   end
+    end.
 
 inventory(update, RSN, Merchant, Shop, Firm,
 	  Datetime, _OldDatetime, Curtime, Inventories) ->
@@ -831,7 +895,6 @@ join_with_comma([Last], Acc) ->
     join_with_comma([], Acc ++ ?to_s(Last));
 join_with_comma([H|T], Acc) ->
     join_with_comma(T, Acc ++ ?to_s(H) ++ ",").
-
 
 amount_new(RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
     ?DEBUG("new inventory with rsn ~p~namounts ~p", [RSN, Amounts]), 
@@ -1163,6 +1226,7 @@ amount_update(RSN, Merchant, Shop, Datetime, Inv) ->
 	   [RSN, ?v(<<"changed_amount">>, Inv)]),
     StyleNumber    = ?v(<<"style_number">>, Inv),
     Brand          = ?v(<<"brand">>, Inv),
+    Firm           = ?v(<<"firm">>, Inv),
     OrgPrice       = ?v(<<"org_price">>, Inv, 0),
     TagPrice       = ?v(<<"tag_price">>, Inv),
     EDiscount      = ?v(<<"ediscount">>, Inv, 0),
@@ -1176,12 +1240,12 @@ amount_update(RSN, Merchant, Shop, Datetime, Inv) ->
     C1 =
 	fun(Color, Size) ->
 		?utils:to_sqls(proplists,
-			       [{<<"style_number">>, StyleNumber},
+			       [{<<"merchant">>, Merchant}, 
+				{<<"shop">>, Shop}, 
+				{<<"style_number">>, StyleNumber},
 				{<<"brand">>, Brand},
 				{<<"color">>, Color},
-				{<<"size">>, Size},
-				{<<"shop">>, Shop}, 
-				{<<"merchant">>, Merchant}])
+				{<<"size">>, Size}])
 	end,
 
     C2 =
@@ -1194,52 +1258,71 @@ amount_update(RSN, Merchant, Shop, Datetime, Inv) ->
 			       {<<"size">>, Size}])
 	end,
 
-    Sql0 = 
+    Updates = ?utils:v(firm, integer, Firm)
+	++ ?utils:v(org_price, float, OrgPrice)
+	++ ?utils:v(tag_price, float, TagPrice)
+	++ ?utils:v(ediscount, float, EDiscount)
+	++ ?utils:v(discount, float, Discount),
+    
+    Sql0 =
 	case update_metric(ChangeAmounts) of
-	    0 -> ["update w_inventory_new_detail"
-		  " set org_price=" ++ ?to_s(OrgPrice)
-		  ++ ",tag_price=" ++ ?to_s(TagPrice)
-		  ++ ",ediscount=" ++ ?to_s(EDiscount)
-		  ++ ",discount=" ++ ?to_s(Discount)
-		  ++ ",over=" ++ ?to_s(Over)
+	    0 -> ["update w_inventory_new_detail set "
+		  ++ ?utils:to_sqls(
+			proplists,
+			comma,
+			Updates ++ ?utils:v(over, integer, Over))
 		  ++ " where rsn=\"" ++ ?to_s(RSN) ++ "\""
 		  ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 		  ++ " and brand=" ++ ?to_s(Brand),
 		  
-		  "update w_inventory"
-		  " set org_price=" ++ ?to_s(OrgPrice)
-		  ++ ",tag_price=" ++ ?to_s(TagPrice)
-		  ++ ",ediscount=" ++ ?to_s(EDiscount)
-		  ++ ",discount=" ++ ?to_s(Discount)
+		  "update w_inventory set "
+		  ++ ?utils:to_sqls(proplists, comma, Updates) 
 		  ++ " where "
-		  ++ "style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
-		  ++ " and brand=" ++ ?to_s(Brand)
+		  ++ " merchant=" ++ ?to_s(Merchant) 
 		  ++ " and shop=" ++ ?to_s(Shop)
-		  ++ " and merchant=" ++ ?to_s(Merchant)
-		 ];
+		  ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+		  ++ " and brand=" ++ ?to_s(Brand)];
 	    Metric -> 
-		["update w_inventory set amount=amount+" ++ ?to_s(Metric)
-		 ++ ",tag_price=" ++ ?to_s(TagPrice)
-		 ++ ",org_price=" ++ ?to_s(OrgPrice)
-		 ++ ",ediscount=" ++ ?to_s(EDiscount) 
-		 ++ ",discount=" ++ ?to_s(Discount) 
-		 ++ " where "
-		 "style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
-		 ++ " and brand=" ++ ?to_s(Brand)
-		 ++ " and shop=" ++ ?to_s(Shop)
-		 ++ " and merchant=" ++ ?to_s(Merchant),
-
-		 "update w_inventory_new_detail"
-		 " set amount=amount+" ++ ?to_s(Metric)
-		 ++ ",tag_price=" ++ ?to_s(TagPrice)
-		 ++ ",org_price=" ++ ?to_s(OrgPrice)
-		 ++ ",ediscount=" ++ ?to_s(EDiscount) 
-		 ++ ",discount=" ++ ?to_s(Discount)
-		 ++ ",over=" ++ ?to_s(Over)
+		["update w_inventory_new_detail set "
+		 "amount=amount+" ++ ?to_s(Metric)
+		 ++ ", " ++ ?utils:to_sqls(
+			       proplists,
+			       comma,
+			       Updates ++ ?utils:v(over, integer, Over)) 
 		 ++ " where rsn=\"" ++ ?to_s(RSN) ++ "\""
 		 ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+		 ++ " and brand=" ++ ?to_s(Brand),
+		 
+		 "update w_inventory set "
+		 ++ "amount=amount+" ++ ?to_s(Metric)
+		 ++ ", " ++ ?utils:to_sqls(proplists, comma, Updates) 
+		 ++ " where "
+		 ++ " merchant=" ++ ?to_s(Merchant) 
+		 ++ " and shop=" ++ ?to_s(Shop)
+		 ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 		 ++ " and brand=" ++ ?to_s(Brand)]
-	end,
+	end
+	
+	%% sale
+	++ ["update w_sale_detail set "
+	    ++ ?utils:to_sqls(
+		  proplists,
+		  comma,
+		  ?utils:v(firm, integer, Firm)
+		  ++ ?utils:v(org_price, integer, OrgPrice))
+	    ++ " where "
+	    ++ "rsn like \'M-" ++ ?to_s(Merchant) ++ "-S-" ++ ?to_s(Shop) ++ "-%\'"
+	    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+	    ++ " and brand=" ++ ?to_s(Brand)
+	    ++ " and org_price=0",
+	    
+	    "update w_inventory_good set "
+	    ++ ?utils:to_sqls(proplists, comma, Updates) 
+	    ++ " where "
+	    ++ " merchant=" ++ ?to_s(Merchant)
+	    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+	    ++ " and brand=" ++ ?to_s(Brand) 
+	   ], 
 
     %% Metric = ?to_i(Total) - ?to_i(OldTotal), 
     %% Metric = update_metric(ChangeAmounts), 

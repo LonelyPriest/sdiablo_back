@@ -518,22 +518,28 @@
 	      </div>
 	      <div x-ng-repeat="p in show_promotions">
 	      	<span>{{p.name}}&nbsp&nbsp&nbsp&nbsp
-	      	  <span class="bg-blue">促销：</span>
-	      	  <span x-ng-switch on="p.promotion.rule_id">
-	      	    <span x-ng-switch-when=0>
-	      	      <span class="fg-red">{{p.promotion.discount}}</span>折
-	      	    </span>
-			    
-	      	    <span x-ng-switch-when=1>
-	      	      满<span class="fg-red">{{p.promotion.cmoney}}</span>
-	      	      送<span class="fg-red">{{p.promotion.rmoney}}</span>
-	      	    </span>
-	      	  </span>
-
-	      	  &nbsp&nbsp&nbsp&nbsp<span class="bg-blue">积分：</span>
-	      	  <span class="fg-red">{{p.score.name}}</span>
 		  
-	      	</span>
+		  <span x-ng-if="p.promotion">
+	      	    <span class="bg-blue">促销：</span>
+	      	    <span x-ng-switch on="p.promotion.rule_id">
+	      	      <span x-ng-switch-when=0>
+	      		<span class="fg-red">{{p.promotion.discount}}</span>折
+	      	      </span>
+		      
+	      	      <span x-ng-switch-when=1>
+	      		满<span class="fg-red">{{p.promotion.cmoney}}</span>
+	      		送<span class="fg-red">{{p.promotion.rmoney}}</span>
+	      	      </span>
+	      	    </span>
+		  </span>
+
+		  <span x-ng-if="p.score">
+	      	    &nbsp&nbsp&nbsp&nbsp<span class="bg-blue">积分：</span>
+	      	    <span class="fg-red">{{p.score.name}}</span>
+		  </span>
+		  
+		</span>
+		
 	      </div>
 	    </tab> 
 

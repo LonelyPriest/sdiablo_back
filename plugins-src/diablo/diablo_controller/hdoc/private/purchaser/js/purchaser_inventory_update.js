@@ -435,7 +435,14 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 			    !== stockUtils.to_float(oldInv.ediscount)
 			    
 			    || stockUtils.to_integer(newInv.over)
-			    !== stockUtils.to_integer(oldInv.over)){
+			    !== stockUtils.to_integer(oldInv.over)
+
+			    || stockUtils.to_float(newInv.tag_price)
+			    !== stockUtils.to_float(oldInv.tag_price)
+			    
+			    || stockUtils.to_float(newInv.discount)
+			    !== stockUtils.to_float(oldInv.discount)
+			   ){
 			    newInv.operation = 'u';
 			    changedInvs.push(newInv);
 			}
@@ -506,7 +513,8 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 		// good           : add.id,
 		style_number   : add.style_number,
 		brand          : add.brand.id,
-		// firm           : add.firm.id,
+		// firm           : add.firm_id,
+		firm           : $scope.select.firm.id,
 		type           : add.type.id,
 		sex            : add.sex,
 		year           : add.year, 
@@ -539,8 +547,8 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 		&& $scope.select.card === $scope.old_select.card
 		&& $scope.select.wire === $scope.old_select.wire
 		&& $scope.select.verificate === $scope.old_select.verificate
-		&& (angular.isDefined($scope.select.old_firm)
-		    && $scope.select.old_firm
+		&& (angular.isDefined($scope.old_select.firm)
+		    && $scope.old_select.firm
 		    && $scope.old_select.firm.id === $scope.select.firm.id)
 		&& $scope.select.employee.id === $scope.old_select.employee.id
 		&& $scope.select.shop.id === $scope.old_select.shop.id

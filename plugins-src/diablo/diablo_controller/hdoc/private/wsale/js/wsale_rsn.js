@@ -26,7 +26,8 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
      * right
      */
     $scope.right = {
-	show_stastic: rightAuthen.authen_master(user.type)
+	show_stastic:  rightAuthen.authen_master(user.type),
+	show_orgprice: rightAuthen.authen_master(user.type)
     };
 
     var dialog      = diabloUtilsService; 

@@ -787,7 +787,8 @@ handle_call({filter_rsn_group, Merchant,
     Sql = "select b.id, b.rsn, b.style_number"
 	", b.brand as brand_id, b.type as type_id, b.firm as firm_id"
 	", b.s_group, b.free, b.total, b.promotion as pid, b.score as sid"
-	", b.tag_price, b.fdiscount, b.rdiscount, b.fprice, b.rprice"
+	", b.org_price, b.ediscount, b.tag_price, b.fdiscount, b.rdiscount"
+	", b.fprice, b.rprice"
 	", b.path, b.comment, b.entry_date"
 	
 	", a.shop as shop_id"
@@ -1386,11 +1387,12 @@ wsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
 
      case ?sql_utils:execute(s_read, Sql00) of
 	 {ok, []} ->
-	     ValidOrgPrice = valid_orgprice(stock, Merchant, Shop, Inventory),
+	     {ValidOrgPrice, ValidEDiscount}
+		 = valid_orgprice(stock, Merchant, Shop, Inventory),
 	     "insert into w_sale_detail("
 		 "rsn, style_number, brand, merchant, type, s_group, free"
 		 ", season, firm, year, total, promotion, score"
-		 ", org_price, tag_price, fdiscount, rdiscount, fprice, rprice"
+		 ", org_price, ediscount, tag_price, fdiscount, rdiscount, fprice, rprice"
 		 ", path, comment, entry_date) values("
 		 ++ "\"" ++ ?to_s(RSN) ++ "\","
 		 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
@@ -1407,6 +1409,7 @@ wsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
 		 ++ ?to_s(Score) ++ ","
 		 
 		 ++ ?to_s(ValidOrgPrice) ++ ","
+		 ++ ?to_s(ValidEDiscount) ++ ","
 		 ++ ?to_s(TagPrice) ++ "," 
 		 ++ ?to_s(FDiscount) ++ ","
 		 ++ ?to_s(RDiscount) ++ ","
@@ -1623,9 +1626,10 @@ valid_orgprice(stock, Merchant, Shop, Inventory) ->
     StyleNumber = ?v(<<"style_number">>, Inventory),
     Brand       = ?v(<<"brand">>, Inventory),
     OrgPrice    = ?v(<<"org_price">>, Inventory),
+    EDiscount   = ?v(<<"ediscount">>, Inventory),
     Stock       = ?v(<<"stock">>, Inventory, 0),
 
-    Sql = "select style_number, brand, org_price, amount"
+    Sql = "select style_number, brand, org_price, ediscount, amount"
 	" from w_inventory_new_detail"
 	" where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 	++ " and brand=" ++ ?to_s(Brand)
@@ -1634,17 +1638,17 @@ valid_orgprice(stock, Merchant, Shop, Inventory) ->
 
     case ?sql_utils:execute(read, Sql) of
 	{ok, StockNews} ->
-	    filter_stock(news, StockNews, Stock, OrgPrice);
+	    filter_stock(news, StockNews, Stock, OrgPrice, EDiscount);
 	_ -> OrgPrice
     end.
 
-filter_stock(news, [], _Stock, OrgPrice) ->
-    OrgPrice;
-filter_stock(news, [{H}|T], Stock, OrgPrice) ->
+filter_stock(news, [], _Stock, OrgPrice, EDiscount) ->
+    {OrgPrice, EDiscount};
+filter_stock(news, [{H}|T], Stock, OrgPrice, EDiscount) ->
     Amount = ?v(<<"amount">>, H),
     case Stock - Amount =< 0 of
-	true -> ?v(<<"org_price">>, H);
-	false -> filter_stock(news, T, Stock - Amount, OrgPrice)
+	true -> {?v(<<"org_price">>, H), ?v(<<"ediscount">>, H)};
+	false -> filter_stock(news, T, Stock - Amount, OrgPrice, EDiscount)
     end.
 		
 	    

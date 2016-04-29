@@ -109,9 +109,9 @@ var wsaleUtils = function(){
 
     return {
 	format_promotion: function(inv, promotions){
-	    if (angular.isUndefined(inv.promotion)){
-		return promotions;
-	    }
+	    // if (angular.isUndefined(inv.promotion)){
+	    // 	return promotions;
+	    // }
 
 	    var format = {
 		order_id:  inv.order_id,
@@ -119,7 +119,7 @@ var wsaleUtils = function(){
 		    + "，" + (inv.brand.name ? inv.brand.name : inv.brand)
 		    + "，" + (inv.type.name  ? inv.type.name: inv.type),
 		promotion: inv.promotion,
-		score:     inv.score,
+		score:     inv.score
 	    }; 
 
 	    var found = false;
@@ -468,14 +468,31 @@ var wsaleCalc = function(){
 		one.rdiscount   = diablo_full_discount;
 		one.rprice      = one.fprice;
 		one.calc        = diablo_float_mul(one.fprice, count);
-		
-		if (one.pid === -1 || retailer.id === no_vip){
+
+		if (retailer.id === no_vip){
 		    wsaleUtils.sort_promotion({id: -1, rule_id: -1}, one.calc, pmoneys);
-		    wsaleUtils.delete_format_promotion(one, show_promotions); 
+		    wsaleUtils.delete_format_promotion(one, show_promotions);
 		} else {
-		    wsaleUtils.sort_promotion(one.promotion, one.calc, pmoneys);
-		    wsaleUtils.format_promotion(one, show_promotions);
-		} 
+		    if (one.pid === -1){
+			wsaleUtils.sort_promotion({id: -1, rule_id: -1}, one.calc, pmoneys);
+			if (one.sid === -1){
+			    wsaleUtils.delete_format_promotion(one, show_promotions);
+			} else {
+			    wsaleUtils.format_promotion(one, show_promotions);
+			}
+		    } else {
+			wsaleUtils.sort_promotion(one.promotion, one.calc, pmoneys);
+			wsaleUtils.format_promotion(one, show_promotions);
+		    }
+		}
+		
+		// if (one.pid === -1 || retailer.id === no_vip){
+		//     wsaleUtils.sort_promotion({id: -1, rule_id: -1}, one.calc, pmoneys);
+		//     wsaleUtils.delete_format_promotion(one, show_promotions); 
+		// } else {
+		//     wsaleUtils.sort_promotion(one.promotion, one.calc, pmoneys);
+		//     wsaleUtils.format_promotion(one, show_promotions);
+		// } 
 		console.log(one.calc); 
 	    }
 	    
@@ -489,16 +506,20 @@ var wsaleCalc = function(){
 		
 		if (one.pid !== -1 && retailer.id !== no_vip){
 		    one.rdiscount = wsaleUtils.calc_discount_of_rmoney(
-			one.fdiscount, one.promotion, pmoneys); 
+			one.fdiscount, one.promotion, pmoneys);
+		    
 		    if (one.fdiscount !== one.rdiscount){
 			one.rprice  = diablo_price(one.fprice, one.rdiscount);
 			console.log(one.rprice);
 			one.calc    = diablo_float_mul(one.rprice, count);
 		    }		    
-		    wsaleUtils.sort_score(one.score, one.promotion, one.calc, pscores);
+		    // wsaleUtils.sort_score(one.score, one.promotion, one.calc, pscores);
 		}
-		
-		console.log(one.calc);
+
+		if (one.sid !== -1 && retailer.id !== no_vip){
+		    wsaleUtils.sort_score(one.score, one.promotion, one.calc, pscores);
+		} 
+		// console.log(one.calc);
 	    }
 
 	    // calcuate with verificate

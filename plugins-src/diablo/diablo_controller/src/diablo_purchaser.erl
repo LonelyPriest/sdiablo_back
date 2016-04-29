@@ -874,9 +874,16 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
     
     RealyShop = realy_shop(Merchant, Shop),
     
-    Sql1 = ?w_good_sql:inventory(
-	      update, RSN, Merchant, RealyShop, Firm,
-	      Datetime, OldDatatime, CurTime, Inventories), 
+    Sql1 = case Inventories of
+	       [] ->
+		   ?w_good_sql:inventory(
+		      update, RSN, Merchant, RealyShop,
+		      Firm, OldFirm, Datetime, OldDatatime);
+	       _ ->
+		   ?w_good_sql:inventory(
+		      update, RSN, Merchant, RealyShop, Firm,
+		      Datetime, OldDatatime, CurTime, Inventories)
+	   end,
 
     Updates =?utils:v(employ, string, Employee)
 	++ ?utils:v(firm, integer, Firm) 
@@ -964,29 +971,33 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 		= ShouldPay + EPay - HasPay - VerifyPay,
 		
 	    AllSql = Sql1 ++ [Sql2] ++
-		["update suppliers set balance=balance-"
-		 ++ ?to_s(BackBalanceOfOldFirm)
-		 ++ " where id=" ++ ?to_s(OldFirm),
-		 
-		 "update suppliers set balance=balance+"
+		["update suppliers set balance=balance+"
 		 ++ ?to_s(BalanceOfNewFirm) 
-		 ++ " where id="++ ?to_s(Firm),
-
-		 "update w_inventory_new set balance=balance-"
-		 ++ ?to_s(BackBalanceOfOldFirm)
-		 ++ " where shop=" ++ ?to_s(Shop)
-		 ++ " and merchant=" ++ ?to_s(Merchant)
-		 ++ " and firm=" ++ ?to_s(OldFirm)
-		 ++ " and id>" ++ ?to_s(Id),
-	    
+		    ++ " where id="++ ?to_s(Firm),
+		 
 		 "update w_inventory_new set balance=balance+"
 		 %% ++ ?to_s(ShouldPay + EPay - HasPay)
 		 ++ ?to_s(BalanceOfNewFirm)
 		 ++ " where shop=" ++ ?to_s(Shop)
 		 ++ " and merchant=" ++ ?to_s(Merchant)
 		 ++ " and firm=" ++ ?to_s(Firm)
-		 ++ " and id>" ++ ?to_s(Id)
-		],
+		 ++ " and id>" ++ ?to_s(Id)] ++
+
+		case OldFirm =/= ?INVALID_OR_EMPTY of
+		    true -> 
+			["update suppliers set balance=balance-"
+			 ++ ?to_s(BackBalanceOfOldFirm)
+			 ++ " where id=" ++ ?to_s(OldFirm), 
+
+			 "update w_inventory_new set balance=balance-"
+			 ++ ?to_s(BackBalanceOfOldFirm)
+			 ++ " where shop=" ++ ?to_s(Shop)
+			 ++ " and merchant=" ++ ?to_s(Merchant)
+			 ++ " and firm=" ++ ?to_s(OldFirm)
+			 ++ " and id>" ++ ?to_s(Id) 
+			];
+		    false -> []
+		end,
 	    
 	    Reply = ?sql_utils:execute(transaction, AllSql, RSN),
 	    ?w_user_profile:update(firm, Merchant),

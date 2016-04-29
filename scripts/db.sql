@@ -736,6 +736,8 @@ create table w_sale_detail(
     score          INTEGER not null default -1, -- score
 
     org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
+    ediscount      DECIMAL(3, 0)  default 0, -- max: 100
+    
     tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance 
     fdiscount      DECIMAL(4, 1), -- max: 100
     rdiscount      DECIMAL(4, 1), -- max: 100

@@ -36,6 +36,7 @@
 %% inventory action
 -define(NEW_INVENTORY, 0).
 -define(REJECT_INVENTORY, 1).
+-define(INVALID_OR_EMPTY, -1).
 
 %% free size
 -define(FREE_SIZE, 0).

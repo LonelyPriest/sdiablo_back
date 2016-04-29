@@ -679,9 +679,9 @@ wsaleApp.controller("wsaleNewCtrl", function(
 		    inv.promotion = diablo_get_object(inv.pid, $scope.promotions); 
 		    inv.score = diablo_get_object(inv.sid, $scope.scores);
 
-		    if ($scope.select.retailer.id !== $scope.setting.no_vip){
-			wsaleUtils.format_promotion(inv, $scope.show_promotions); 
-		    }
+		    // if ($scope.select.retailer.id !== $scope.setting.no_vip){
+		    // 	wsaleUtils.format_promotion(inv, $scope.show_promotions); 
+		    // }
 		});
 
 		console.log($scope.inventories); 
@@ -740,12 +740,12 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	add.sid          = src.sid;
 	add.score        = diablo_get_object(src.sid, $scope.scores);
 
-	add.org_price    = src.org_price; 
-	add.tag_price    = src.tag_price;
-	
+	add.org_price    = src.org_price;
+	add.ediscount    = src.ediscount;
+	add.tag_price    = src.tag_price; 
 	add.discount     = src.discount;
-	add.path         = src.path;
 	
+	add.path         = src.path; 
 	add.s_group      = src.s_group;
 	add.free         = src.free; 
 	return add; 
@@ -1058,6 +1058,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 		score       : add.sid,
 
 		org_price   : add.org_price,
+		ediscount   : add.ediscount,
 		tag_price   : add.tag_price,
 		fprice      : add.fprice,
 		rprice      : add.rprice,
@@ -1220,6 +1221,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    $scope.show_promotions,
 	    diablo_sale,
 	    $scope.select.verificate);
+
+	console.log($scope.show_promotions);
 	
 	$scope.select.total     = calc.total; 
 	$scope.select.abs_total = calc.abs_total;

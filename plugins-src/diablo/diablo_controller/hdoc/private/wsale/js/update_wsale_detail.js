@@ -59,7 +59,8 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	    diablo_reject,
 	    $scope.select.verificate);
 
-	console.log(calc);
+	console.log($scope.show_promotions);
+	// console.log(calc);
 	
 	$scope.select.total     = calc.total; 
 	$scope.select.abs_total = calc.abs_total;
@@ -681,9 +682,9 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	$scope.inventories.unshift({$edit:false, $new:true});
 	
 	$scope.re_calculate();
-	if ($scope.select.retailer.id !== $scope.setting.no_vip){
-	    wsaleUtils.format_promotion(inv, $scope.show_promotions); 
-	};
+	// if ($scope.select.retailer.id !== $scope.setting.no_vip){
+	//     wsaleUtils.format_promotion(inv, $scope.show_promotions); 
+	// };
     };
     
     $scope.add_inventory = function(inv){
@@ -748,8 +749,9 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 			inv.order_id = $scope.inventories.length; 
 			// add new line
 			$scope.inventories.unshift({$edit:false, $new:true});
-			if ($scope.select.retailer.id !== $scope.setting.no_vip){
-			    wsaleUtils.format_promotion(inv, $scope.show_promotions);}
+			// if ($scope.select.retailer.id !== $scope.setting.no_vip){
+			//     wsaleUtils.format_promotion(inv, $scope.show_promotions);
+			// }
 			
 			$scope.re_calculate(); 
 		    };
