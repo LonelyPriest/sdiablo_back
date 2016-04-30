@@ -193,35 +193,19 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 		++ "\"" ++ ?to_s(Comment) ++ "\"," 
 		++ ?to_s(type(new)) ++ ","
 		++ "\"" ++ ?to_s(DateTime) ++ "\");",
-
-	    Sql3 =
-		case Withdraw =< 0  of
-		    true  -> 
-			case Score =:= 0 of
-			    true  -> [];
-			    false ->
-				["update w_retailer set"
-				 " score=score+" ++ ?to_s(Score)
-				 ++ ", consume=consume+" ++ ?to_s(ShouldPay)
-				 ++ " where "
-				 ++ "id=" ++ ?to_s(?v(<<"id">>, Account))]
-			end;
-		    false ->
-			case Score =:= 0 of
-			    true ->
-				["update w_retailer set balance=balance-"
-				 ++ ?to_s(Withdraw)
-				 ++ " where "
-				 ++ "id=" ++ ?to_s(?v(<<"id">>, Account))];
-			    false ->
-				["update w_retailer set "
-				 "balance=balance-"++ ?to_s(Withdraw)
-				 ++ ", score=score+" ++ ?to_s(Score)
-				 ++ ", consume=consume+" ++ ?to_s(ShouldPay)
-				 ++ " where "
-				 ++ "id=" ++ ?to_s(?v(<<"id">>, Account))]
-			end
-		end,
+		
+	    Sql3 = ["update w_retailer set " 
+		    ++ "consume=consume+" ++ ?to_s(ShouldPay)
+		    ++ case Withdraw =< 0 of
+			   true  -> [];
+			   false -> ", balance=balance-" ++ ?to_s(Withdraw)
+		       end
+		    ++ case Score == 0 of
+			   true  -> [];
+			   false -> ", score=score+" ++ ?to_s(Score)
+		       end
+		    ++ " where "
+		    ++ "id=" ++ ?to_s(?v(<<"id">>, Account))], 
 	    
 	    AllSql = Sql1 ++ [Sql2] ++ Sql3,
 	    Reply = ?sql_utils:execute(transaction, AllSql, SaleSn),
