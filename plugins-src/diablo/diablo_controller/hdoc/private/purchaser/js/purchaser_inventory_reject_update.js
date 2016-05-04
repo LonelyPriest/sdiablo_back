@@ -195,6 +195,7 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 		add.free_color_size = invs[i].free === 0 ? true : false;
 		add.org_price       = invs[i].org_price;
 		add.ediscount       = invs[i].ediscount;
+		add.tag_price       = invs[i].tag_price;
 		add.discount        = invs[i].discount; 
 		add.reject          = Math.abs(invs[i].amount);
 		
@@ -255,9 +256,7 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	    });
 	});
     };
-
     
-
     $scope.on_select_inventory = function(item, model, label){
 	console.log($scope.q_prompt);
 	console.log(item); 
@@ -289,12 +288,8 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	// add at first allways 
 	var add = $scope.inventories[0];
 	add.id           = item.id;
-	add.style_number = item.style_number;
-	// add.brand        = item.brand;
-	// add.brand_id     = item.brand_id;
-	add.brand        = $scope.get_object(item.brand_id, $scope.brands);
-	// add.type         = item.type;
-	// add.type_id      = item.type_id;
+	add.style_number = item.style_number; 
+	add.brand        = $scope.get_object(item.brand_id, $scope.brands); 
 	add.type         = $scope.get_object(item.type_id, $scope.types);
 	add.firm_id      = item.firm_id;
 	add.s_group      = item.s_group;
@@ -485,9 +480,10 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 			// console.log(add.amounts);
 			var filter =  add.amounts.filter(function(m){
 			    // console.log(m);
-			    return angular.isDefined(m.reject)
-				&& !isNaN(parseInt(m.reject))
-				&& parseInt(m.reject) !== 0;
+			    return stockUtils.to_integer(m.reject) !== 0;
+			    // return angular.isDefined(m.reject)
+			    // 	&& !isNaN(parseInt(m.reject))
+			    // 	&& parseInt(m.reject) !== 0;
 			});
 
 			return filter.map(function(m){
@@ -496,10 +492,10 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 		    }}(),
 		s_group        : add.s_group,
 		free           : add.free,
-		org_price      : parseFloat(add.org_price),
-		tag_price      : parseFloat(add.tag_price), 
-		ediscount      : add.ediscount,
-		discount       : add.discount,
+		org_price      : stockUtils.to_float(add.org_price),
+		// tag_price      : parseFloat(add.tag_price), 
+		ediscount      : stockUtils.to_integer(add.ediscount),
+		// discount       : add.discount,
 		year           : add.year,
 		path           : add.path,
 		total          : -add.reject
@@ -527,12 +523,12 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 
 	var base = {
 	    id:             $scope.select.rsn_id,
+	    mode:           diablo_stock_reject,
 	    rsn :           $scope.select.rsn,
 	    firm:           $scope.select.firm.id,
 	    shop:           $scope.select.shop.id,
 	    datetime:       dateFilter(
 		$scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),
-	    // date:           dateFilter($scope.select.date, "yyyy-MM-dd"),
 	    employee:       $scope.select.employee.id,
 	    comment:        diablo_set_string($scope.select.comment),
 	    total:          -diablo_set_integer($scope.select.total),
@@ -542,24 +538,19 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	    e_pay:         function(){
 		var e = setv($scope.select.e_pay);
 		return angular.isUndefined(e) ? undefined : -e;
-	    },
-	    
-	    // has_pay:        setv($scope.select.has_pay),
-
+	    }, 
 
 	    old_firm:       $scope.old_select.firm.id,
 	    old_balance:    setv($scope.old_select.surplus), 
 	    old_should_pay: -setv($scope.old_select.should_pay),
 	    old_datetime:   dateFilter(
 		$scope.old_select.datetime, "yyyy-MM-dd HH:mm:ss")
-	    // old_has_pay:    setv($scope.old_select.has_pay)
 	};
 
 	console.log(added);
 	console.log(base);
 
-	// $scope.has_saved = false;
-	
+	// $scope.has_saved = false; 
 	purchaserService.update_w_inventory_new({
 	    inventory: added.length === 0 ? undefined: added, base: base
 	}).then(function(state){

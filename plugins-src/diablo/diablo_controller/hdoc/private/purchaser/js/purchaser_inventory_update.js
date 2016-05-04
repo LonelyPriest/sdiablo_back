@@ -564,6 +564,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 
 	var base = {
 	    id:             $scope.select.rsn_id,
+	    mode:           diablo_stock_new,
 	    rsn:            $scope.select.rsn,
 	    firm:           $scope.select.firm.id,
 	    shop:           $scope.select.shop.id,

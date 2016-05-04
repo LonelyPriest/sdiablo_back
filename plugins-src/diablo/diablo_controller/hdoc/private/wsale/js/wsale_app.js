@@ -280,6 +280,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
     user, filterPromotion, filterScore,
     filterFirm, filterRetailer, filterEmployee,
     filterSizeGroup, filterBrand, filterType, filterColor, base){
+    console.log(user);
     // console.log(filterPromotion);
     // console.log(filterScore);
     // console.log(filterRetailer);
@@ -405,16 +406,23 @@ wsaleApp.controller("wsaleNewCtrl", function(
     console.log($scope.retailers);
     if ($scope.retailers.length !== 0){
 	$scope.select.retailer = $scope.retailers[0];
-	$scope.select.o_retailer = $scope.select.retailer;
+	if (user.loginRetailer !== -1){
+            for (var i=0, l=$scope.retailers.length; i<l; i++){
+                if (user.loginRetailer === $scope.retailers[i].id){
+                    $scope.select.retailer = $scope.retailers[i]
+                    break;
+                }
+            }
+        }
 	
-	var balance = diablo_set_float($scope.select.retailer.balance);
-	$scope.select.surplus = angular.isDefined(balance) ? balance : 0;
+	// $scope.select.retailer = $scope.retailers[0];
+	$scope.select.surplus = wsaleUtils.to_float($scope.select.retailer.balance);
 	$scope.select.left_balance = $scope.select.surplus;
+	$scope.select.o_retailer = $scope.select.retailer; 
     }; 
 
     $scope.change_retailer = function(){
-	var balance = diablo_set_float($scope.select.retailer.balance);
-	$scope.select.surplus = angular.isDefined(balance) ? balance : 0;
+	$scope.select.surplus = wsaleUtils.to_float($scope.select.retailer.balance);
 	$scope.select.left_balance = $scope.select.surplus;
 	
 	$scope.local_save();

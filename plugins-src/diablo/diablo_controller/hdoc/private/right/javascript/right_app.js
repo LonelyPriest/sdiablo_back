@@ -1,64 +1,4 @@
-// var rightApp = angular.module(
-//     "rightApp", ['ngRoute', 'ngResource', 'diabloUtils',
-// 		 'ui.bootstrap', 'merchantApp', 'employApp', 'shopApp']).config(diablo_authen);
-
 var rightApp = angular.module("rightApp", []);
-
-// rightApp.config(['$routeProvider', function($routeProvider){
-//     //console.log($rootScope);
-//     $routeProvider.
-// 	when('/account_user/account_detail', {
-// 	    templateUrl: '/private/right/html/account_user_detail.html',
-// 	    controller: 'accountUserDetailCtrl'
-// 	}).
-// 	when('/account_user/account_new', {
-// 	    templateUrl: '/private/right/html/account_user_new.html',
-// 	    controller: 'accountUserNewCtrl'
-// 	}).
-// 	when('/role_user/role_new', {
-// 	    templateUrl: '/private/right/html/role_user_new.html',
-// 	    controller: 'roleUserNewCtrl'
-// 	}).
-// 	when('/role_user/role_detail', {
-// 	    templateUrl: '/private/right/html/role_user_detail.html',
-// 	    controller: 'roleUserDetailCtrl'
-// 	}).
-// 	when('/account_merchant/account_new', {
-// 	    templateUrl: '/private/right/html/account_merchant_new.html',
-// 	    controller: 'accountMerchantNewCtrl'
-// 	}).
-// 	when('/account_merchant/account_detail', {
-// 	    templateUrl: '/private/right/html/account_merchant_detail.html',
-// 	    controller: 'accountMerchantDetailCtrl'
-// 	}).
-// 	when('/role_merchant/role_detail', {
-// 	    templateUrl: '/private/right/html/role_merchant_detail.html',
-// 	    controller: 'roleMerchantDetailCtrl'
-// 	}).
-// 	when('/role_merchant/role_new', {
-// 	    templateUrl: '/private/right/html/role_merchant_new.html',
-// 	    controller: 'roleMerchantNewCtrl'
-// 	}).
-// 	otherwise({
-// 	    templateUrl: function(rd){
-// 		console.log(rd);
-// 	    }
-// 	    // templateUrl: '/private/right/html/account_user_detail.html',
-// 	    // controller: 'accountUserDetailCtrl'
-// 	})
-// 	// otherwise({
-// 	//     redirectTo: '/'
-// 	// })
-// }]);
- //.run( function($rootScope, $location) {
- //    // register listener to watch route changes
- //    $rootScope.$on( "$routeChangeStart", function(event, next, current) {
- // 	console.log(event);
- // 	console.log(next);
- // 	console.log(current);
- // 	console.log($rootScope); 
- //    });
- // })
 
 rightApp.directive("dynaTree", function(){
     return{
@@ -204,6 +144,9 @@ rightApp.service("rightService", function($resource, $q, $modal, dateFilter){
 	2: "用户帐户"
     };
 
+    this.hours = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+                  13, 14, 15, 16, 17, 18, 19, 20, 21, 22,23, 24];
+    
     // error information
     this.error = {
 	1501: "系统不支持创建该类型的帐户！！",
@@ -211,6 +154,7 @@ rightApp.service("rightService", function($resource, $q, $modal, dateFilter){
 	1503: "该商家账户已存在！！",
 	1504: "角色创建失败，已存在同样的角色名称！！",
 	1507: "帐户超过用户购买量限制！！",
+	1599: "修改前后数据一致！！",
 	6001: "权限修改失败，权限相同，不需要修改！！",
 	7001: "系统暂不支持该操作！！",
 	9001: "数据库操作失败，请联系服务人员！！"};
@@ -395,6 +339,17 @@ rightApp.service("rightService", function($resource, $q, $modal, dateFilter){
 	    {account: account.id, role: role.id})
     };
 
+    this.update_user_account = function(account){
+        return right.save(
+            {operation: "update_account"},
+            {account:  account.id,
+             role:     account.role_id, 
+             retailer: account.retailer_id,
+             stime:    account.stime,
+             etime:    account.etime,
+             type: this.roleType.user})
+    };
+
     // /////////////////////////////////////////////////////////////////////////////
 
     this.list = function(){
@@ -409,13 +364,21 @@ rightApp.service("rightService", function($resource, $q, $modal, dateFilter){
 	return right.query({operation: "list_sales_children"})
     };
 
-    // shop
+    
+    /*
+     * extra http
+     */
     var HttpShop = $resource("/shop/:operation/:id",
     			 {operation: '@operation', id: '@id'});
-    // var members = $resource("/member/:operation/:number");
 
     this.list_shop = function(){
 	return HttpShop.query({operation: "list_shop"})};
+
+    var httpRetailer = $resource("/wretailer/:operation/:id",
+                         {operation: '@operation', id: '@id'});
+    this.list_retailer = function(){
+        return httpRetailer.query({operation: "list_w_retailer"});
+    };
 
 });
 

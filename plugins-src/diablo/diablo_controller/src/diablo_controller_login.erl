@@ -63,7 +63,11 @@ handle_call({login, User, Passwd}, _From, State) ->
 		    {reply, {ok, [{<<"merchant">>, 0}, {<<"mtype">>, -1}|User0]}, State};
 		_ ->
 		    Sql1 = "select a.id, a.name, a.type, a.merchant"
+			", a.retailer as retailer_id"
+                        ", a.stime, a.etime"
+			
 			", b.type as mtype from users a, merchants b"
+			
 			++ " where a.merchant=b.id"
 			++ " and a.name=" ++ "\"" ++ ?to_s(User) ++ "\""
 			++ " and a.password=" ++ "\"" ++ ?to_s(Passwd) ++ "\""

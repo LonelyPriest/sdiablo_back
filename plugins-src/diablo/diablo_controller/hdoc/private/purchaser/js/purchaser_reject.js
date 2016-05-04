@@ -34,10 +34,25 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	diablo_goto_page("#/inventory_new_detail");
     };
 
-    var now = $.now();
+    $scope.stock_right = {
+	show_orgprice: rightAuthen.authen(
+	    user.type,
+	    rightAuthen.rainbow_action()['show_orgprice'],
+	    user.right
+	),
 
+	show_balance: rightAuthen.authen(
+	    user.type,
+	    rightAuthen.rainbow_action()['show_balance_onstock'],
+	    user.right
+	)
+    };
+
+    $scope.focus = {sale: true};
+    
     // init
-    $scope.has_saved       = false; 
+    var now = $.now(); 
+    $scope.has_saved    = false; 
     $scope.inventories = [];
     $scope.inventories.push({$edit:false, $new:true});
     

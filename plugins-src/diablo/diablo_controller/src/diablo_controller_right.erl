@@ -53,14 +53,16 @@ right(role, RoleId) ->
 
 %% account
 right(new_account, Attrs) ->
-    gen_server:call(?MODULE, {new_account, Attrs}).
+    gen_server:call(?MODULE, {new_account, Attrs});
+right(update_account, Attrs) -> 
+    gen_server:call(?MODULE, {update_account, Attrs}).
+
 right(update_account_role, Account, NewRole) ->
     gen_server:call(?MODULE, {update_account_role, Account, NewRole});
 right(update_account_passwd, Account, Attrs) ->
     gen_server:call(?MODULE, {update_account_passwd, Account, Attrs});
 right(delete_account, Account, AccountType) ->
     gen_server:call(?MODULE, {delete_account, Account, AccountType}).
-
 
 get(account, Merchant) ->
     gen_server:call(?MODULE, {get_account, Merchant});
@@ -489,6 +491,50 @@ handle_call({update_account_role, Account, NewRole}, _From, State) ->
     Reply = ?sql_utils:execute(write, Sql, Account),
     {reply, Reply, State};
 
+handle_call({update_account, Attrs}, _From, State) ->
+    ?DEBUG("update_account with attrs ~p", [Attrs]),
+    Account       = ?v(<<"account">>, Attrs),
+    %% LoginShop     = ?v(<<"shop">>, Attrs),
+    %% LoginFirm     = ?v(<<"firm">>, Attrs),
+    %% LoginEmployee = ?v(<<"employee">>, Attrs),
+    LoginRetailer = ?v(<<"retailer">>, Attrs),
+    StartTime     = ?v(<<"stime">>, Attrs),
+    EndTime       = ?v(<<"etime">>, Attrs),
+    
+    Sql1 = case ?v(<<"role">>, Attrs) of
+              undefined -> [];
+              Role ->
+                  ["update user_to_role set role_id=" ++ ?to_s(Role)
+                   ++ " where user_id=" ++ ?to_s(Account)]
+	   end,
+    Updates =
+	%% ?utils:v(shop, integer, LoginShop)
+        %% ++ ?utils:v(firm, integer, LoginFirm)
+        %% ++ ?utils:v(employee, integer, LoginEmployee)
+        ?utils:v(retailer, integer, LoginRetailer)
+        ++ ?utils:v(stime, integer, StartTime)
+        ++ ?utils:v(etime, integer, EndTime),
+
+    Sql2 =
+        case Updates of
+            [] ->
+		[];
+	    _ ->
+		["update users set "
+		 ++ ?utils:to_sqls(proplists, comma, Updates)
+                 ++ " where id=" ++ ?to_s(Account)]
+        end,
+
+    AllSqls = Sql1 ++ Sql2,
+    Reply =
+        case erlang:length(AllSqls) of
+            1 ->  ?sql_utils:execute(write, AllSqls, Account);
+            _ ->  ?sql_utils:execute(transaction, AllSqls, Account)
+	end,
+
+    {reply, Reply, State};
+    
+
 handle_call({update_account_passwd, Account, Attrs}, _From, State) ->
     ?DEBUG("update_account_passwd with account ~p, attrs ~p", [Account, Attrs]), 
     Oldp = ?v(<<"oldp">>, Attrs),
@@ -611,10 +657,11 @@ code_change(_OldVsn, State, _Extra) ->
 account(Conditions) ->
     CorrectConditions = ?utils:correct_condition(<<"a.">>, Conditions),
     Sql1 = "select a.id, a.name, a.type, a.merchant"
-	", a.max_create, a.create_date"
+	", a.retailer as retailer_id"
+	", a.stime, a.etime, a.max_create, a.create_date"
+	
 	", tc.user_id, tc.role_id, tc.role_name"
-	%% ", b.role_id as role"
-	%% ", c.name as role_name"
+	
 	" from users a,"
 	" (select b.user_id, b.role_id, c.name as role_name"
 	" from user_to_role b, roles c"

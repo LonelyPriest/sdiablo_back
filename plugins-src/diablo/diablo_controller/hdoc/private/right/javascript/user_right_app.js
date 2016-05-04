@@ -6,6 +6,7 @@ userApp.factory("userService", function($resource, $q){
     var _shops     = [];
     var _rights    = [];
     var _loginType = undefined;
+    var _loginRetailer = -1;
     
     var sort = function(){
 	var shops = _shops;
@@ -13,6 +14,7 @@ userApp.factory("userService", function($resource, $q){
     	    right: _rights,
 	    type:  _loginType,
 	    shop:  _shops,
+	    loginRetailer: _loginRetailer,
 
 	    // shops exclude the shop that bind to the repository,
 	    // or repository itself
@@ -145,6 +147,7 @@ userApp.factory("userService", function($resource, $q){
 		_shops     = result.shop;
 		_rights    = result.right;
 		_loginType = result.type;
+		_loginRetailer = result.login_retailer;
 		return sort();
     	    });
 	}

@@ -993,7 +993,9 @@
 			 x-ng-model="amount.count"
 			 x-ng-pattern="/^[1-9][0-9]*$/"
 			 x-ng-init="amount=params.get_amount(
-				    c.cid, s, params.amount)"/>
+				    c.cid, s, params.amount)"
+			 focus-auto="s===params.sizes[0]
+				     && c.cid===params.colors[0].cid" />
 		</div>
 	      </form> 
 	    </td>

@@ -412,6 +412,22 @@ var wsaleUtils = function(){
 
 	calc_score_of_money: function(money, score){
 	    return Math.floor(money / score.balance) * score.score;
+	},
+
+	to_float: function(v) {
+	    if (angular.isUndefined(v) || isNaN(v) || (!v && v != 0)){
+		return 0;
+	    } else{
+		return parseFloat(v)
+	    }
+	},
+
+	to_integer: function(v){
+	    if (angular.isUndefined(v) || isNaN(v) || (!v && v != 0)){
+		return 0;
+	    } else{
+		return parseInt(v)
+	    }
 	}
 
 	//

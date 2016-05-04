@@ -341,19 +341,14 @@
 
 -define(SESSION, tbl_session).
 -record(session, {
-	  id          = <<>>  :: binary(),
-	  %% user id
-	  user_id     = -1    :: integer(), 
-	  %% user name
-	  user_name   = ""    :: string(),  
-	  %% user level, 0:super, 1:merchant, 2:user
-	  user_type   = -1    :: integer(),
-	  %% which merchant belong to
-	  merchant    = -1    :: integer(),
-	  %% merhcant type 0: saler, 1: wholesaler
-	  mtype       = -1    :: integer(),
-	  %% start time of login
-	  login_time          :: string()   
+	  id          = <<>>       :: binary(),
+	  user_id     = -1         :: integer(), 
+	  user_name   = ""         :: string(),  
+	  user_type   = -1         :: integer(),
+	  merchant    = -1         :: integer(),
+	  retailer_id = -1         :: integer(),
+	  mtype       = -1         :: integer(),
+	  login_time  = undefined  :: string()   
 	 }).
 
 -define(WSALE_DRAFT, tbl_wsale_draft).

@@ -844,6 +844,7 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
     CurTime    = ?utils:current_time(localtime),
     
     Id         = ?v(<<"id">>, Props),
+    Mode       = ?v(<<"mode">>, Props),
     RSN        = ?v(<<"rsn">>, Props),
     Shop       = ?v(<<"shop">>, Props),
     Datetime   = ?v(<<"datetime">>, Props),
@@ -860,7 +861,6 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
     ShouldPay  = ?v(<<"should_pay">>, Props),
     HasPay     = ?v(<<"has_pay">>, Props, 0),
     
-
     OldFirm      = ?v(<<"old_firm">>, Props),
     OldBalance   = ?v(<<"old_balance">>, Props), 
     OldVerifyPay = ?v(<<"old_verify_pay">>, Props, 0),
@@ -877,11 +877,11 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
     Sql1 = case Inventories of
 	       [] ->
 		   ?w_good_sql:inventory(
-		      update, RSN, Merchant, RealyShop,
+		      update, Mode, RSN, Merchant, RealyShop,
 		      Firm, OldFirm, Datetime, OldDatatime);
 	       _ ->
 		   ?w_good_sql:inventory(
-		      update, RSN, Merchant, RealyShop, Firm,
+		      update, Mode, RSN, Merchant, RealyShop, Firm,
 		      Datetime, OldDatatime, CurTime, Inventories)
 	   end,
 

@@ -69,6 +69,7 @@ action(Session, Req, {"list_right_catlog"}) ->
 action(Session, Req, {"get_login_user_info"}) ->
     ?DEBUG("get_login_user_info with session ~p", [Session]),
     Merchant = ?session:get(merchant, Session),
+    LoginRetailer = ?session:get(login_retailer, Session),
     {ok, Catlogs} = ?w_user_profile:get(user_right, Merchant, Session),
     {ok, Shops} = ?w_user_profile:get(user_shop, Merchant, Session),
 
@@ -76,6 +77,7 @@ action(Session, Req, {"get_login_user_info"}) ->
 		   {[{<<"ecode">>, 0},
 		     {<<"right">>, Catlogs},
 		     {<<"shop">>, Shops},
+		     {<<"login_retailer">>, LoginRetailer},
 		     {<<"type">>, ?session:get(type, Session)}]});
     
 action(Session, Req, {"list_login_user_right"}) ->
@@ -164,7 +166,8 @@ action(Session, Req, {"list_account"}) ->
 	?MERCHANT ->
 	    Merchant = ?session:get(merchant, Session),
 	    Accounts = ?right:lookup_account(
-			  [{<<"type">>, ?USER}, {<<"merchant">>, Merchant}]),
+			  [{<<"type">>, [?MERCHANT, ?USER]},
+			   {<<"merchant">>, Merchant}]),
 	    ?utils:respond(200, batch, Req, Accounts);
 	_ ->
 	    Req:respond({598,
@@ -362,14 +365,28 @@ action(Session, Req, {"new_account"}, Payload) ->
 action(Session, Req, {"update_account"}, Payload) ->
     ?DEBUG("update_account_role with session ~p~npayload ~p", [Session, Payload]),
     Account = ?value(<<"account">>, Payload),
-    Role    = ?value(<<"role">>, Payload),
-    case ?right:right(update_account_role, Account, Role) of
-	{ok, Account} ->
-	    ?utils:respond(200, Req, ?succ(update_account_role, Role));
-	{error, Error} ->
-	    ?utils:respond(200, Req, Error)
-    end;
+    Role    = ?value(<<"role">>, Payload), 
+    Type    = ?value(<<"type">>, Payload),
 
+    UpdateFun =
+        case Type of
+            ?MERCHANT ->
+                fun() ->
+                        ?right:right(update_account_role, Account, Role)
+                end;
+            ?USER ->
+                fun() ->
+                        ?right:right(update_account, Payload)
+		end
+        end,
+
+    case UpdateFun() of
+        {ok, Account} ->
+            ?utils:respond(
+               200, Req, ?succ(update_account_role, Account));
+        {error, Error} ->
+            ?utils:respond(200, Req, Error)
+    end;
 
 action(Session, _Req, Args, Payload) ->
     ?DEBUG("unkown action with session ~p, args ~p, payload ~p",

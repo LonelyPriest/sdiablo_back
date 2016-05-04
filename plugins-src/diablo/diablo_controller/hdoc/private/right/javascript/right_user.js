@@ -633,11 +633,77 @@ rightUserApp.controller(
 	$scope.accountDesc = rightService.accountDesc;
 
 	// list
-	rightService.list_account().$promise.then(function(accounts){
-	    console.log(accounts);
-	    diablo_order(accounts);
-	    $scope.accounts = accounts; 
-	});
+	var promise = rightService.promise;
+	$scope.refresh = function(){
+            $q.all([
+		promise(rightService.list_account)(),
+		// promise(rightService.list_shop)(),
+		// promise(rightService.list_firm)(),
+		// promise(rightService.list_employee)(),
+		promise(rightService.list_retailer)()
+	    ]).then(function(data){
+		console.log(data);
+		// $scope.shops = data[1].map(function(shop){
+                //     return {
+		// 	id: shop.id,
+		// 	name: shop.name,
+		// 	py: diablo_pinyin(shop.name)
+		//     };
+		// });
+
+		// $scope.firms = data[2].map(function(firm){
+                //     return {
+		// 	id: firm.id,
+		// 	name: firm.name,
+		// 	py: diablo_pinyin(firm.name)
+                //     };
+		// });
+
+		// $scope.employees = data[3].map(function(e){
+                //     return {
+		// 	id:   e.id,
+		// 	name: e.name,
+		// 	py:   diablo_pinyin(e.name)
+                //     };
+		// });
+
+		$scope.retailers = data[1].map(function(r){
+                    return {
+			id: r.id,
+			name: r.name,
+			py: diablo_pinyin(r.name)
+                    };
+		});
+
+		// console.log($scope.shops);
+		$scope.accounts = data[0].map(function(account){
+		    return {
+			id:          account.id,
+			name:        account.name,
+			owner:       account.owner,
+			type:        account.type,
+			// shop_id:     account.shop_id,
+			// shop:        diablo_get_object(account.shop_id, $scope.shops),
+			// firm_id:     account.firm_id,
+			// firm:        diablo_get_object(account.firm_id, $scope.firms),
+			// employee_id: account.employee_id,
+			// employee:    diablo_get_object(account.employee_id, $scope.employees),
+		        retailer_id: account.retailer_id,
+			retailer:    diablo_get_object(account.retailer_id, $scope.retailers),
+			stime:       account.stime,
+			etime:       account.etime,
+			role_name:   account.role_name,
+			create_date: account.create_date
+                    }
+		});
+
+		diablo_order($scope.accounts);
+		console.log($scope.accounts);
+
+            });
+	};
+	
+	$scope.refresh();
 
 	$scope.goto_page = function(path){
 	    window.location = path;
@@ -702,6 +768,7 @@ rightUserApp.controller(
 	    $q.all([
 		promise(rightService.list_role)(),
 		promise(rightService.list_account_right, account)()
+		// promise(rightService.list_retailer)()
 	    ]).then(function(data){
 		console.log(data);
 		// data[0] are all the roles;
@@ -720,26 +787,72 @@ rightUserApp.controller(
 			}
 		    }();
 
-		var callback = function(newRole){
-		    if (newRole.id === current_role.role_id){
-			return;
+		var callback = function(new_account){
+		    console.log(new_account);
+		    
+		    new_account.retailer_id =
+			angular.isDefined(new_account.retailer)
+			&&  new_account.retailer ? new_account.retailer.id : -1;
+
+		    if (new_account.type === 2 ){
+			if (new_account.role.id === current_role.role_id 
+                            && new_account.retailer_id === account.retailer_id 
+                            && new_account.stime  === account.stime
+                            && new_account.etime === account.etime){
+                            diabloUtilsService.response(
+			        false, "用户帐户修改",
+				"用户帐户修改失败：" + rightService.error[1599]);
+                            return;
+			}
+		    } else {
+			if (new_account.retailer_id === account.retailer_id){
+                            diabloUtilsService.response(
+				false, "用户帐户修改",
+				"用户帐户修改失败：" + rightService.error[1599]);
+                            return;
+			}
+		    };
+		    
+		    var update = {
+			id: account.id,
+			stime: new_account.stime === account.stime
+                            ? undefined : new_account.stime,
+			etime: new_account.etime === account.etime
+                            ? undefined : new_account.etime
 		    };
 
-		    rightService.update_account_role(account, newRole)
-			.$promise.then(function(state){
-			    console.log(state);
-			    if (state.ecode == 0){
-				diabloUtilsService.response_with_callback(
-				    true, "帐户权限修改",
-				    "帐户 " + account.name + "权限修改成功！！",
-				    $scope, function(){location.reload()})
-			    } else{
-				diabloUtilsService.response(
-				    false, "帐户权限修改",
-				    "帐户 " + account.name + "权限修改失败："
-					+ rightService.error[state.ecode], $scope)
-			    }
-			});
+		    update.role_id = function(){
+			if (new_account.type !== 2){
+                            return undefined;
+			} else {
+                            return new_account.role.id !== current_role.role_id
+				? new_account.role.id : undefined;
+			}
+                    }();
+
+		    update.retailer_id =
+			new_account.retailer_id !== account.retailer_id
+			? new_account.retailer_id : undefined;
+
+                    console.log(update);
+
+		    rightService.update_user_account(update).$promise.then(function(state){
+			console.log(state);
+			if (state.ecode == 0){
+                            diabloUtilsService.response_with_callback(
+				true, "帐户权限修改", "帐户 "
+                                    + account.name
+                                    + "权限修改成功！！",
+				$scope, function(){$scope.refresh()})
+			} else{
+                            diabloUtilsService.response(
+				false, "帐户权限修改",
+				"帐户 "
+                                    + account.name + "权限修改失败："
+                                    + rightService.error[state.ecode],
+				$scope)
+			}
+                    }); 
 		};
 		
 		$modal.open({
@@ -752,6 +865,8 @@ rightUserApp.controller(
 			    return {
 				account: editAccount,
 				roles:   roles,
+				hours:   rightService.hours,
+				desc:    $scope.accountDesc,
 				callback: callback
 			    }
 			}
@@ -767,6 +882,8 @@ rightUserApp.controller("accountUserModalCtrl", function($scope, $modalInstance,
     console.log(params);
     $scope.account = params.account;
     $scope.roles   = params.roles;
+    $scope.hours   = params.hours;
+    $scope.desc    = params.desc;
 
     $scope.cancel = function(){
 	$modalInstance.dismiss('cancel');
@@ -776,7 +893,7 @@ rightUserApp.controller("accountUserModalCtrl", function($scope, $modalInstance,
 	$modalInstance.dismiss('ok');
 	var callback = params.callback;
 	if (angular.isDefined(callback) && typeof(callback) === "function"){
-	    callback($scope.account.role);
+	    callback($scope.account);
 	}	    
     };
 }); 

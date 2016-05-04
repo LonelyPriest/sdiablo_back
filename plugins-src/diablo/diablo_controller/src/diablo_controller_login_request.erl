@@ -194,23 +194,7 @@ start(with_new_session, UserDetail) ->
 
     Cookie = mochiweb_cookies:cookie(
     	       ?QZG_DY_SESSION, CookieData, [{max_age, 3600 * 24 * 2}]),
-
-    %% Cookie = mochiweb_cookies:cookie(
-    %% 	       ?QZG_DY_SESSION, CookieData, [{max_age, -1}]),
-
-    %% Cookie = mochiweb_cookies:cookie(?QZG_DY_SESSION, CookieData),
-
-    %% Cookie = mochiweb_cookies:cookie(
-    %% 	       "id", CookieDate,
-    %% 	       [{path, "/"},
-    %% 		{max_page, 20000},
-    %% 		{local_time, calendar:universal_time_to_local_time(
-    %% 			       calendar:universal_time())}
-    %% 	       ]),
-
-    %% Cookie = mochiweb_session:generate_session_cookie(
-    %% 	       0, SessionId, fun(A) -> A end, ?QZG_DY_SESSION),
-
+    
     %% use the first navigation
     [{Path, _Name, _Module, _Hidden}|_] =
 	case ?v(<<"type">>, UserDetail) of

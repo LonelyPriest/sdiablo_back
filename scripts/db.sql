@@ -157,6 +157,11 @@ create table users
     password       VARCHAR(128) not null, -- should be encrypt
     type           TINYINT default -1, -- type to user 0: supper, 1: merchant 2:user
     merchant       INTEGER default -1, -- which merchant belong to, 0: means super
+    
+    retailer       INTEGER default -1,
+    stime          INTEGER default 0,
+    etime          INTEGER default 0,
+    
     max_create     INTEGER default -1, -- max users can be created of the user
     create_date    DATETIME,
     deleted        INTEGER default 0,  -- 0: no;  1: yes

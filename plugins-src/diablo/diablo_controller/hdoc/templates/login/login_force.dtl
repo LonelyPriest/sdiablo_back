@@ -96,11 +96,11 @@
 	    <!-- 	    x-ng-click="cancel_login()">  -->
 	    <!--   取消 <i class="m-icon-swapright m-icon-white"></i> -->
 	    <!-- </button> -->
-	    <button class="btn btn-warning"
-		    type="button"
-		    href="/"> 
+	    <a class="btn btn-warning"
+	       type="button"
+	       href="/"> 
 	      取消 <i class="m-icon-swapright m-icon-white"></i>
-	    </button>
+	    </a>
 	  </span>
 	</div>
 	

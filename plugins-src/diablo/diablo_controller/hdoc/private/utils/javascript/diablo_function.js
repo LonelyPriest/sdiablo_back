@@ -26,6 +26,9 @@ var diablo_uncheck = 0;
 var diablo_delete = 0;
 var diablo_abandon = 1;
 
+var diablo_stock_new = 0;
+var diablo_stock_reject = 1;
+
 /*
  * stock
  */
