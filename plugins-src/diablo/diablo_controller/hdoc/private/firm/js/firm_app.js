@@ -50,6 +50,9 @@ firmApp.config(['$routeProvider', function($routeProvider){
     var employee = {"filterEmployee": function(diabloFilter){
 	return diabloFilter.get_employee()}};
 
+    var card = {"filterCard": function(diabloNormalFilter){
+	return diabloNormalFilter.get_card()}};
+    
     var base = {"base": function(diabloNormalFilter){
 	return diabloNormalFilter.get_base_setting()}};
     
@@ -84,6 +87,12 @@ firmApp.config(['$routeProvider', function($routeProvider){
             controller: 'brandDetailCtrl', 
 	    resolve: angular.extend({}, firm)
 	}).
+	// bill
+	when('/firm/bill', {
+	    templateUrl: '/private/firm/html/firm_bill_check.html',
+            controller: 'firmBillCtrl', 
+	    resolve: angular.extend({}, card, employee, user)
+	}). 
 	// default
 	otherwise({
 	    templateUrl: '/private/firm/html/firm_detail.html',
@@ -100,7 +109,11 @@ firmApp.service("firmService", function($resource, dateFilter){
 	1699: "修改前后信息一致，请重新编辑修改项！！",
 	9001: "数据库操作失败，请联系服务人员！！"};
 
-    // =========================================================================    
+    // =========================================================================
+    this.bill_modes = [{id:0, name:"现金"},
+		       {id:1, name:"刷卡"},
+		       {id:2, name:"汇款"}];
+    
     var http = $resource("/firm/:operation/:id",
     			 {operation: '@operation', id: '@id'});
 
@@ -150,6 +163,10 @@ firmApp.service("firmService", function($resource, dateFilter){
 	     firm:      brand.firm,
 	     remark:    brand.remark}).$promise
     };
+
+    this.bill_w_firm = function(bill){
+	return http.save({operation:"bill_w_firm"}, bill).$promise
+    }
 
     /*
      * transaction

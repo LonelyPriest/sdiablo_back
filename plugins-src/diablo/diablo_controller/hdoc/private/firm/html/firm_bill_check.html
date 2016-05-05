@@ -1,0 +1,218 @@
+<div class="row">
+  <div class="col-sm-12 col-md-12">
+    <ul class="page-breadcrumb breadcrumb">
+      <li>
+        <i class="glyphicon glyphicon-menu-hamburger fg-red"></i>
+	<a href="javascript:;">厂商结帐</a>
+        <i class="glyphicon glyphicon-menu-right fg-red"></i>
+      </li>
+      <li>
+        <a href="javascript:;">结帐</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!--BEGIN row -->
+<div class="row">
+  <div class="col-xs-12 col-sm-12 col-md-12">
+    <div class="portlet box blue">
+      <!--BEGIN portlet-body-->
+      <div class="portlet-body form">
+	<!--BEGIN from -->
+	<form class="form-horizontal" name="rForm" novalidate>
+	  <!--BEGIN form body-->
+	  <div class="form-body">
+	    
+	    <div class="form-group diablo-good-form-group">
+	      <label class="col-sm-3 col-md-3 control-label">结账店铺</label>
+	      <div class="col-sm-6 col-md-6">
+		<select class="form-control" type="text"
+	  		x-ng-model="shop"
+	  		x-ng-options="s as s.name for s in shops">
+		</select> 
+	      </div> 
+	    </div>
+	    
+	    <!--Name-->
+	    <div class="form-group">
+	      <label class="col-sm-3 col-md-3 control-label">结帐厂商</label>
+	      <div class="col-sm-6 col-md-6">
+		<div class="input-group">
+		  <div x-ng-class="{'has-error':rForm.name.$invalid
+				   && !rForm.name.$pristine}">
+		    <input type="text"
+			   class="form-control"
+			   name="name"
+			   required
+			   placeholder="请选择厂商"
+			   x-ng-model="firm"
+			   typeahead-editable="false"
+			   typeahead="f as f.name for f in
+				      firms|filter:{prompt:$viewValue}|limitTo:15"/>
+		  </div>
+		  <span class="input-group-addon bg-white fg-red">*</span>
+		</div>
+	      </div>
+	      <div ng-show="rForm.name.$invalid
+			    && !rForm.name.$pristine">
+		<span class="fg-red">厂商必须从下拉列表中选择</span>
+	      </div> 
+	    </div> 
+
+	    <div class="form-group">
+	      <label class="col-sm-3 col-md-3 control-label">帐户欠款</label>
+	      <div class="col-sm-6 col-md-6">
+		<input class="form-control"
+		       type="text"
+		       readonly
+		       x-ng-model="firm.balance" />
+	      </div> 
+	    </div>
+
+	    <!--mobile-->
+	    <!-- <div class="form-group"> -->
+	    <!--   <label class="col-sm-3 col-md-3 control-label">联系方式</label> -->
+	    <!--   <div class="col-sm-6 col-md-6">  -->
+	    <!-- 	<input type="text"  -->
+	    <!-- 	       class="form-control" -->
+	    <!-- 	       readonly -->
+	    <!-- 	       x-ng-model="retailer.mobile"/> -->
+	    <!--   </div>  -->
+	    <!-- </div> -->
+
+	    <div class="form-group">
+	      <label class="col-sm-3 col-md-3 control-label">联系地址</label>
+	      <div class="col-sm-6 col-md-6">
+		<input type="text"
+		       class="form-control"
+		       readonly
+		       x-ng-model="firm.address" />
+	      </div> 
+	    </div>
+
+	    <div class="form-group diablo-good-form-group">
+	      <label class="col-sm-3 col-md-3 control-label">结账方式</label>
+	      <div class="col-sm-6 col-md-6">
+		<select class="form-control" type="text"
+	  		x-ng-model="bill_mode"
+	  		x-ng-options="m as m.name for m in bill_modes">
+		</select> 
+	      </div> 
+	    </div>
+	    
+	    <div class="form-group">
+	      <label class="col-sm-3 col-md-3 control-label">结账金额</label>
+	      <div class="col-sm-6 col-md-6">
+		<div class="input-group">
+		  <input class="form-control"
+			 type="number" step="1"
+			 name="bill"
+			 required
+			 placeholder="请输入结账金额，支持两位小数"
+			 x-ng-model="bill"
+			 x-ng-pattern="pattern.decimal_2"/>
+		  <span class="input-group-addon bg-white fg-red">*</span> 
+		</div>
+	      </div>
+	      <div ng-show="rForm.bill.$invalid && !rForm.bill.$pristine">
+		<span class="fg-red">请输入正确的数字，支持两位小数</span>
+	      </div> 
+	    </div>
+
+	    <div x-ng-show="bill_mode.id!==0" class="form-group diablo-good-form-group">
+	      <label class="col-sm-3 col-md-3 control-label">结账卡号</label>
+	      <div class="col-sm-6 col-md-6">
+		<div class="input-group">
+		  <select class="form-control"
+			  x-ng-model="bill_card"
+			  x-ng-options="c as c.no for c in cards">
+		  </select>
+		  <span class="input-group-addon bg-white fg-red">*</span>
+		</div>
+	      </div>
+	    </div>
+
+	    <div x-ng-show="bill_mode.id!==0" class="form-group">
+	      <label class="col-sm-3 col-md-3 control-label">结帐银行</label>
+	      <div class="col-sm-6 col-md-6">
+		<input type="text"
+		       class="form-control"
+		       readonly
+		       x-ng-model="bill_card.bank" />
+	      </div> 
+	    </div>
+
+	    <div x-ng-show="bill_mode.id!==0" class="form-group">
+	      <label class="col-sm-3 col-md-3 control-label">银行户主</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<input type="text"
+		       class="form-control"
+		       readonly
+		       x-ng-model="bill_card.name" />
+	      </div> 
+	    </div> 
+
+	    <div class="form-group diablo-good-form-group">
+	      <label class="col-sm-3 col-md-3 control-label">经手人</label>
+	      <div class="col-sm-6 col-md-6">
+		<select class="form-control" type="text"
+			x-ng-model="employee"
+			x-ng-options="e as e.name for e in employees">
+		</select> 
+	      </div> 
+	    </div>
+
+	    <div class="form-group diablo-good-form-group">
+	      <label class="col-sm-3 col-md-3 control-label">备注</label>
+	      <div class="col-sm-6 col-md-6">
+		<input class="form-control" type="text"
+		       x-ng-model="comment"/>
+	      </div> 
+	    </div>
+
+	    <div class="form-group">
+	      <label class="col-sm-3 col-md-3 control-label">结帐日期</label>
+	      <div class="col-sm-6 col-md-6">
+		<div class="input-group">
+		  <input type="text"
+			 class="form-control"
+			 required
+			 placeholder="年/月/日"
+			 datepicker-popup="yyyy/MM/dd"
+			 is-open="isOpened"
+			 close-text="关闭"
+			 clear-text="清除"
+			 current-text="今天"
+			 show-weeks="false"
+			 x-ng-model="bill_date"/>
+		  <span class="input-group-btn">
+		    <button type="button" class="btn btn-default" ng-click="open_calendar($event)">
+		      <i class="glyphicon glyphicon-calendar"></i>
+		    </button>
+		  </span>
+		  <span class="input-group-addon bg-white fg-red">*</span>
+		</div>
+	      </div> 
+	    </div>
+
+	  </div><!--END form body-->
+
+	  <!--BEGIN form action-->
+	  <div class="form-actions fluid">
+	    <div class="col-md-offset-3 col-md-6">
+	      <span class="pull-right">
+		<button class="btn btn-primary"
+			ng-disabled="rForm.$invalid || has_billed"
+			x-ng-click="check_bill()">确认</button>
+		<button class="btn btn-warning"
+			x-ng-click="cancel()">取消</button>
+	      </span>
+	    </div>
+	  </div> <!--END form action-->
+
+	</form> <!--END form-->
+      </div> <!--END portlet body from-->
+    </div> <!--END portlet box-->
+  </div> <!--END col-md-12-->
+</div><!--END row-->

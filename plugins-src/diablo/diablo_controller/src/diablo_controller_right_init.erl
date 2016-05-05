@@ -264,7 +264,10 @@ init([]) ->
 	 {?update_w_brand,
 	  <<"修改品牌">>,     <<"update_brand">>, ?right_w_firm},
 	 {?list_w_brand,
-	  <<"查看品牌">>,     <<"list_brand">>,   ?right_w_firm}
+	  <<"查看品牌">>,     <<"list_brand">>,   ?right_w_firm},
+
+	 {?bill_w_firm,
+	  <<"厂商对帐">>,     <<"bill_w_firm">>,   ?right_w_firm}
 	], 
     
     %% print
@@ -347,6 +350,13 @@ init([]) ->
     %% base setting
     Base =
     	[
+	 {?new_w_bank_card,
+          <<"新增银行卡">>, <<"new_w_bank_card">>,   ?right_w_base},
+         {?del_w_bank_card,
+          <<"删除银行卡">>, <<"del_w_bank_card">>,   ?right_w_base},
+         {?update_w_bank_card,
+          <<"修改银行卡">>, <<"update_w_bank_card">>,?right_w_base},
+	 
 	 {?new_w_printer_conn,
 	  <<"关联打印机">>,    <<"new_w_printer_conn">>,   ?right_w_base},
 	 {?del_w_printer_conn,

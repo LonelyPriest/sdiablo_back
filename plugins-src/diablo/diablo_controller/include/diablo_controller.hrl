@@ -36,7 +36,13 @@
 %% inventory action
 -define(NEW_INVENTORY, 0).
 -define(REJECT_INVENTORY, 1).
+-define(FIRM_BILL, 9).
 -define(INVALID_OR_EMPTY, -1).
+
+%% bill mode
+-define(CASH, 0).
+-define(CARD, 1).
+-define(WIRE, 2).
 
 %% free size
 -define(FREE_SIZE, 0).
@@ -175,6 +181,7 @@
 -define(del_w_brand,   ?right_w_firm + 6).
 -define(update_w_brand,?right_w_firm + 7).
 -define(list_w_brand,  ?right_w_firm + 8).
+-define(bill_w_firm,   ?right_w_firm + 9).
 
 %% wprint
 -define(new_w_print_server,  ?right_w_print + 1).

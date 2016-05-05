@@ -1652,7 +1652,7 @@ sql(wnew, RSN, Merchant, Shop, Firm, DateTime, Inventories) ->
       fun({struct, Inv}, Acc0)->
 	      Amounts      = lists:reverse(?v(<<"amount">>, Inv)),
 	      ?w_good_sql:amount_new(
-		 RSN, Merchant, RealyShop, Firm, DateTime, Inv, Amounts)
+		 ?NEW_INVENTORY, RSN, Merchant, RealyShop, Firm, DateTime, Inv, Amounts)
 		  ++ Acc0 
       end, [], Inventories);
 
@@ -1662,8 +1662,7 @@ sql(wreject, RSN, Merchant, Shop, Firm, DateTime, Inventories) ->
     lists:foldr(
       fun({struct, Inv}, Acc0)->
 	      Amounts = lists:reverse(?v(<<"amounts">>, Inv)),
-	      ?w_good_sql:amount_reject(
-		 RSN, Merchant, RealyShop, Firm, DateTime, Inv, Amounts)
+	      ?w_good_sql:amount_reject(RSN, Merchant, RealyShop, Firm, DateTime, Inv, Amounts)
 		  ++ Acc0 
       end, [], Inventories). 
 

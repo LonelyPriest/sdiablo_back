@@ -712,7 +712,7 @@ inventory_match(all_inventory, Merchant, Shop, Conditions) ->
 	       [] -> [];
 	       TimeSql -> " and " ++ TimeSql
 	   end
-	++ " order by id";
+	++ " order by id desc";
 
 inventory_match(Merchant, StyleNumber, Shop, Firm) ->
     P = prompt_num(Merchant),
@@ -739,7 +739,7 @@ inventory_match(Merchant, StyleNumber, Shop, Firm) ->
 	   end
 	++ " and a.merchant=" ++ ?to_s(Merchant)
 	%% ++ " and deleted=" ++ ?to_s(?NO)
-	++ " order by a.id"
+	++ " order by a.id desc"
 	++ " limit " ++ ?to_s(P).
 
 inventory_match(all_reject, Merchant, Shop, Firm, StartTime) ->
@@ -762,7 +762,7 @@ inventory_match(all_reject, Merchant, Shop, Firm, StartTime) ->
 	++ " and a.merchant=" ++ ?to_s(Merchant)
 	++ " and entry_date>=\'" ++ ?to_s(StartTime) ++ "\'"
     %% ++ " and deleted=" ++ ?to_s(?NO)
-	++ " order by a.id".
+	++ " order by a.id desc".
 	
 
 inventory(update, Mode, RSN, Merchant, Shop, Firm, OldFirm, Datetime,  OldDatetime) ->

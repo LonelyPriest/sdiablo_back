@@ -67,6 +67,9 @@ success(add_brand, Name) ->
     {0, "Success to create the brand " ++ ?to_s(Name)};
 success(update_brand, Name) ->
     {0, "Success to update the brand " ++ ?to_s(Name)};
+success(bill_check, Id) ->
+    {0, "Success to bill of supplier " ++ ?to_s(Id)};
+
 
 %% inventory
 success(add_inventory, Number) ->

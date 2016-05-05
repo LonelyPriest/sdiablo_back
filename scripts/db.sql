@@ -795,3 +795,27 @@ create table w_charge_detail(
     primary key     (id)
     
 ) default charset=utf8;
+
+/* bill to supplier */
+create table w_bill_detail(
+    id              INTEGER AUTO_INCREMENT,
+    rsn             VARCHAR(32) not null, -- record sn
+
+    shop            INTEGER not null default -1, 
+    firm            INTEGER not null default -1, -- charge
+    mode            TINYINT not null default -1,
+    bill            DECIMAL(10, 2) not null default 0,
+    card            INTEGER not null default -1,
+    employee        VARCHAR(8) not null,
+    comment         VARCHAR(127) default null,
+    
+    merchant        INTEGER not null default -1, 
+    entry_date      DATETIME default 0,
+    deleted         INTEGER default 0, -- 0: no;  1: yes
+
+    unique  key uk (rsn),
+    key         dk (merchant, shop, firm, employee),
+    primary key     (id)
+    
+) default charset=utf8;
+

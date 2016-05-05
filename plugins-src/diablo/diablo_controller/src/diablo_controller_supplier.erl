@@ -38,7 +38,9 @@ supplier(w_list, Merchant) ->
 supplier(w_delete, Merchant, Id) ->
     gen_server:call(?MODULE, {w_delete_supplier, Merchant, Id});
 supplier(w_update, Merchant, Attrs) ->
-    gen_server:call(?MODULE, {w_update_supplier, Merchant, Attrs}).
+    gen_server:call(?MODULE, {w_update_supplier, Merchant, Attrs});
+supplier(bill, Merchant, Attrs) ->
+    gen_server:call(?MODULE, {bill_supplier, Merchant, Attrs}).
 
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
@@ -221,6 +223,78 @@ handle_call({lookup_unconnect_brand, Condition}, _From, State) ->
 	++ " and a.deleted = " ++ ?to_string(?NO) ++ ";",
     {ok, Suppliers} = ?mysql:fetch(read, Sql),
     {reply, ?to_tuplelist(Suppliers), State};
+
+handle_call({bill_supplier, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("bill_supplier with merchant ~p, attrs ~p", [Merchant, Attrs]), 
+    ShopId = ?v(<<"shop">>, Attrs),
+    FirmId = ?v(<<"firm">>, Attrs),
+    Mode   = ?v(<<"mode">>, Attrs),
+    Bill   = ?v(<<"bill">>, Attrs),
+    BankCard   = ?v(<<"card">>, Attrs),
+    Employee = ?v(<<"employee">>, Attrs),
+    Comment  = ?v(<<"comment">>, Attrs, []),
+
+    CurrentDatetime = ?utils:current_time(format_localtime),
+    Datetime = ?v(<<"datetime">>, Attrs, CurrentDatetime),
+
+    Sql0 = "select id, merchant, balance from suppliers"
+	" where id=" ++ ?to_s(FirmId)
+	++ " and merchant=" ++ ?to_s(Merchant)
+	++ " and deleted=" ++ ?to_s(?NO) ++ ";",
+
+    case ?sql_utils:execute(s_read, Sql0) of
+	{ok, Firm} ->
+	    RSN = lists:concat(
+		    ["M-", ?to_i(Merchant),
+		     "-S-", ?to_i(ShopId), "-C-",
+		     ?inventory_sn:sn(w_firm_bill, Merchant)]), 
+	    CurrentBalance = ?v(<<"balance">>, Firm, 0),
+
+	    Sql1 = "insert into w_bill_detail("
+		"rsn, shop, firm, mode, bill, card, employee"
+		", comment, merchant, entry_date) values("
+		++ "\'" ++ ?to_s(RSN) ++ "\',"
+		++ ?to_s(ShopId) ++ ","
+		++ ?to_s(FirmId) ++ ","
+		++ ?to_s(Mode) ++ ","
+		++ ?to_s(Bill) ++ ","
+		++ ?to_s(BankCard) ++ ","
+		++ "\'" ++ ?to_s(Employee) ++ "\',"
+		++ "\'" ++ ?to_s(Comment) ++ "\',"
+		++ ?to_s(Merchant) ++ ","
+		++ "\'" ++ ?to_s(Datetime) ++ "\')",
+
+	    {Cash, Card, Wire} = bill_mode(Mode, Bill),
+	    
+	    Sql2 = "insert into w_inventory_new(rsn"
+		", employ, firm, shop, merchant, balance"
+		", has_pay, cash, card, wire"
+		", comment, type, entry_date) values("
+		++ "\"" ++ ?to_s(RSN) ++ "\","
+		++ "\"" ++ ?to_s(Employee) ++ "\","
+		++ ?to_s(FirmId) ++ ","
+		++ ?to_s(ShopId) ++ ","
+		++ ?to_s(Merchant) ++ ","
+		++ ?to_s(CurrentBalance) ++ ","
+		++ ?to_s(Bill) ++ ","
+		++ ?to_s(Cash) ++ ","
+		++ ?to_s(Card) ++ ","
+		++ ?to_s(Wire) ++ ","
+		++ "\"" ++ ?to_s(Comment) ++ "\"," 
+		++ ?to_s(?FIRM_BILL) ++ ","
+		++ "\"" ++ ?to_s(Datetime) ++ "\");",
+
+	    Sql3 = "update suppliers set "
+		"balance=balance-" ++ ?to_s(Bill)
+		++ ", change_date=" ++ "\"" ++ ?to_s(Datetime) ++ "\""
+		++ " where id=" ++ ?to_s(FirmId),
+
+	    Reply = ?sql_utils:execute(transaction, [Sql1, Sql2, Sql3], FirmId),
+	    ?w_user_profile:update(firm, Merchant),
+	    {reply, Reply, State};
+	Error ->
+    	    {reply, Error, State}
+    end;
     
 handle_call(_Request, _From, State) ->
     Reply = ok,
@@ -243,15 +317,11 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
-fields() ->
-    "name, mobile, address, merchant".
+bill_mode(?CASH, Balance) ->
+    {Balance, 0, 0};
+bill_mode(?CARD, Balance) ->
+    {0, Balance, 0};
+bill_mode(?WIRE, Balance) ->
+    {0, 0, Balance}.
     
-
-%% sql_fun_reply(SqlFun, SuccReply) ->
-%%     case SqlFun() of
-%% 	{error, Error} ->
-%% 	    ?DEBUG("failed to sql fun ~p, error: ~p", [SqlFun, Error]),
-%% 	    {error, ?err(db_error, Error)};
-%% 	{ok, _} -> 
-%% 	    {ok, SuccReply}
-%%     end.
+fields() -> "name, mobile, address, merchant".

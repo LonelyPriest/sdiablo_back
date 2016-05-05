@@ -97,13 +97,23 @@ action(Session, Req, {"new_brand"}, Payload) ->
     end;
 
 action(Session, Req, {"update_brand"}, Payload) ->
-    ?DEBUG("update brand with session ~p,  payload ~p", [Session, Payload]),
-
+    ?DEBUG("update brand with session ~p,  payload ~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
     case ?attr:brand(update, Merchant, Payload) of
 	{ok, BrandId} ->
 	    ?utils:respond(
 	       200, Req, ?succ(update_brand, BrandId), {<<"id">>, BrandId});
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"bill_w_firm"}, Payload) ->
+    ?DEBUG("bill_w_firm with session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    
+    case ?supplier:supplier(bill, Merchant, Payload) of
+	{ok, FirmId} ->
+	    ?utils:respond(200, Req, ?succ(bill_check, FirmId));
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end.
@@ -139,8 +149,21 @@ sidebar(Session) ->
 		[{"brand_detail", "品牌详情", "glyphicon glyphicon-bold"}];
 	    _ ->
 		[]
-	end, 
-    ?menu:sidebar(level_1_menu, NewFrim ++ ListFirm ++ NewBrand ++ ListBrand).
+	end,
+    
+    Bill =
+        case ?right_auth:authen(?bill_w_firm, Session) of 
+            {ok, ?bill_w_firm} ->
+                [{{"firm", "厂商结账", "glyphicon glyphicon-check"},
+                  [{"bill", "结帐", "glyphicon glyphicon-check"},
+                   {"bill_detail", "结帐详情", "glyphicon glyphicon-leaf"}
+                  ]
+                 }];
+            _ ->
+                []
+        end,
+    ?menu:sidebar(level_1_menu, NewFrim ++ ListFirm ++ NewBrand ++ ListBrand)
+	++ ?menu:sidebar(level_2_menu, Bill).
 
 batch_responed(Fun, Req) ->
     case Fun() of

@@ -35,6 +35,7 @@ var diablo_stock_reject = 1;
 var diablo_stock_has_abandoned = 7;
 var diablo_stock_has_checked = 1;
 var diablo_stock_has_unchecked = 0;
+var diablo_firm_bill = 9;
 
 /*
  * retailer
@@ -645,12 +646,15 @@ var diablo_items_per_page = function(){
     }
 };
 
-diablo_stock_css = function(state){
-    if (diablo_stock_has_abandoned === state){
-	return "bg-yellow";
-    } else if (diablo_stock_has_checked === state){
-	return "bg-lightGreen";
+diablo_stock_css = function(state, type){
+    if (diablo_firm_bill === type){
+	return "bg-orange"
     } else {
-	return "none"; 
+	if (diablo_stock_has_abandoned === state){
+	    return "bg-grayLight";
+	}
+	if (diablo_stock_has_checked === state){
+	    return "bg-success";
+	}
     }
 };

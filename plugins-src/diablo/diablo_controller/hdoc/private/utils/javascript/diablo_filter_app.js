@@ -469,6 +469,8 @@ function normalFilterProvider(){
     var _charges        = [];
     var _shopCharges    = [];
     var _scores         = [];
+
+    var _cards          = [];
     
     this.$get = function($resource){
 	var _employeeHttp =
@@ -488,7 +490,7 @@ function normalFilterProvider(){
 
 	var _shopHttp =
 	    $resource("/shop/:operation", {operation: '@operation'});
-	
+
 	return{
 	    match_all_w_inventory: function(condition){
 		return _invHttp.post_get(
@@ -557,9 +559,24 @@ function normalFilterProvider(){
 			    return {name:s.ename, value:s.value, shop:s.shop}; 
 			});
 			return _baseSettings;
-		    })    
+		    })
 		}
 		
+	    },
+
+	    get_card: function(){
+		if (_cards.length !== 0){
+		    return _cards;
+		} else {
+		    return _baseHttp.query(
+			{operation: "list_w_bank_card"}
+		    ).$promise.then(function(cs){
+			_cards = cs.map(function(c){
+			    return {id:c.id, name:c.name, bank:c.bank, no:c.no};
+			});
+			return _cards;
+		    })
+		}
 	    },
 
 	    get_promotion: function(){

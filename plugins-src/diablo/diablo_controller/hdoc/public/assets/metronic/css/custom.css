@@ -358,3 +358,7 @@ ul.page-sidebar-menu > li.active > a {
     margin: 0 auto !important;
     float: none !important;
 }
+
+.bg-success {
+    background-color: #dff0d8 !important;
+}
