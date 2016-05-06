@@ -67,8 +67,14 @@ success(add_brand, Name) ->
     {0, "Success to create the brand " ++ ?to_s(Name)};
 success(update_brand, Name) ->
     {0, "Success to update the brand " ++ ?to_s(Name)};
-success(bill_check, Id) ->
-    {0, "Success to bill of supplier " ++ ?to_s(Id)};
+success(bill_firm, FirmId) ->
+    {0, "Success to bill of firm " ++ ?to_s(FirmId)};
+success(bill_check, RSN) ->
+    {0, "Success to check bill of rsn " ++ ?to_s(RSN)};
+success(bill_abandon, RSN) ->
+    {0, "Success to abandon bill of rsn " ++ ?to_s(RSN)};
+success(update_bill_check, RSN) ->
+    {0, "Success to update bill detail with rsn " ++ ?to_s(RSN)};
 
 
 %% inventory
@@ -285,6 +291,10 @@ error(role_empty_shop, Merchant) ->
 %% supplier
 error(supplier_exist, Name) ->
     {1601, "supplier " ++ ?to_s(Name) ++ " has been exist."};
+error(supplier_bill_not_exist, RSN) ->
+    {1602, "bill " ++ ?to_s(RSN) ++ " of supplier is not exist."};
+error(supplier_bill_discard, RSN) ->
+    {1602, "bill " ++ ?to_s(RSN) ++ " of supplier has been discarded."};
 
 %% inventory
 error(inventory_exist, Name) ->

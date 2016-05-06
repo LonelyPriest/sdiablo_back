@@ -1997,7 +1997,7 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
 		if (state.ecode == 0){
 		    dialog.response_with_callback(
 			true, "入库单废弃", "入库单废弃成功！！单号：" + state.rsn,
-			$scope, function(){r.state=7})
+			$scope, function(){r.state=diablo_stock_abandoned})
 	    	    return;
 		} else{
 	    	    diabloUtilsService.response(

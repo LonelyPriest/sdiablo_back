@@ -113,10 +113,84 @@ action(Session, Req, {"bill_w_firm"}, Payload) ->
     
     case ?supplier:supplier(bill, Merchant, Payload) of
 	{ok, FirmId} ->
-	    ?utils:respond(200, Req, ?succ(bill_check, FirmId));
+	    ?utils:respond(200, Req, ?succ(bill_firm, FirmId));
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
-    end.
+    end;
+
+action(Session, Req, {"update_bill_w_firm"}, Payload) ->
+    ?DEBUG("update_bill_w_firm with session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+
+    case ?supplier:supplier(update_bill, Merchant, Payload) of
+	{ok, RSN} ->
+	    ?utils:respond(200, Req, ?succ(update_bill_check, RSN));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"check_w_firm_bill"}, Payload) ->
+    ?DEBUG("check_w_firm_bill with session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+
+    case ?supplier:supplier(check_bill, Merchant, Payload) of
+	{ok, RSN} ->
+	    ?utils:respond(200, Req, ?succ(bill_check, RSN));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"abandon_w_firm_bill"}, Payload) ->
+    ?DEBUG("check_w_firm_bill with session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    RSN = ?v(<<"rsn">>, Payload),
+    case ?supplier:bill(lookup, Merchant, [{<<"rsn">>, RSN}]) of
+	{ok, []} ->
+	    ?utils:respond(200, Req, ?err(supplier_bill_not_exist, RSN));
+	{ok, TheBill} ->
+	    BillId  = ?v(<<"id">>, TheBill),
+	    StockId = ?v(<<"sid">>, TheBill),
+	    State   = ?v(<<"state">>, TheBill),
+	    Bill    = ?v(<<"bill">>, TheBill),
+	    Firm    = ?v(<<"firm_id">>, TheBill),
+	    
+	    Attrs = [{<<"rsn">>, RSN},
+		     {<<"bill_id">>, BillId},
+		     {<<"stock_id">>, StockId},
+		     {<<"state">>, State},
+		     {<<"bill">>, ?to_f(Bill)},
+		     {<<"firm">>, Firm}],
+	    case ?supplier:supplier(abandon_bill, Merchant, Attrs) of
+		{ok, RSN} ->
+		    ?w_user_profile:update(firm, Merchant), 
+		    ?utils:respond(200, Req, ?succ(bill_abandon, RSN));
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end;
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"get_firm_bill"}, Payload) ->
+    ?DEBUG("get_firm_bill with session ~p, paylaod~n~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    ?utils:respond(
+       object, fun() -> ?supplier:bill(lookup, Merchant, Payload) end, Req); 
+
+action(Session, Req, {"filter_firm_bill_detail"}, Payload) -> 
+    ?DEBUG("filter_firm_bill_detail with session ~p, paylaod~n~p",
+	   [Session, Payload]),
+
+    Merchant = ?session:get(merchant, Session),
+    ?pagination:pagination(
+       fun(Match, Conditions) ->
+	       ?supplier:filter(
+		  total_bill, ?to_a(Match), Merchant, Conditions)
+       end,
+       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
+	       ?supplier:filter(
+		  bill, Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
+       end, Req, Payload).
 
 sidebar(Session) -> 
     NewFrim =

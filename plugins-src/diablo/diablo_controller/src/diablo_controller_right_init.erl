@@ -267,7 +267,13 @@ init([]) ->
 	  <<"查看品牌">>,     <<"list_brand">>,   ?right_w_firm},
 
 	 {?bill_w_firm,
-	  <<"厂商对帐">>,     <<"bill_w_firm">>,   ?right_w_firm}
+	  <<"厂商结帐">>,     <<"bill_w_firm">>,   ?right_w_firm},
+	 {?update_bill_w_firm,
+	  <<"厂商结帐单编辑">>, <<"update_bill_w_firm">>, ?right_w_firm},
+	 {?check_w_firm_bill,
+	  <<"厂商结帐单审核">>, <<"check_w_firm_bill">>,  ?right_w_firm},
+	 {?abandon_w_firm_bill,
+	  <<"厂商结帐单废弃">>, <<"abandon_w_firm_bill">>,  ?right_w_firm}
 	], 
     
     %% print
@@ -833,6 +839,8 @@ pass_action(wholesaler) ->
 
      %% firm
      <<"list_firm">>,
+     <<"get_firm_bill">>, 
+     <<"filter_firm_bill_detail">>,
 
      <<"update_user_passwd">>,
 

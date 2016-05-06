@@ -127,7 +127,7 @@
 			x-ng-switch on="r.type">
 		      <span x-ng-switch-when=0>入库</span>
 		      <span class="fg-red" x-ng-switch-when=1>退货</span>
-		      <span class="fg-blue" x-ng-switch-when=9>结帐</span>
+		      <span class="fg-pink" x-ng-switch-when=9>结帐</span>
 		    </td>
 		    <td class="{{css(r.state, r.type)}}" x-ng-if="!hidden.base">{{r.shop.name}}</td>
 		    <td class="{{css(r.state, r.type)}}"
@@ -262,7 +262,7 @@
     <div>
       <p><span class="bg-grayLight">灰色表示已废弃</span>
 	<span class="bg-success">浅绿色表示已审核</span>
-	<span class="bg-orange">桔色表示结帐</span>
+	<span class="bg-lightOrange">浅桔色表示结帐</span>
       </p>
     </div>
   </div>

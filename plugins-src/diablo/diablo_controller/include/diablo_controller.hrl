@@ -182,6 +182,9 @@
 -define(update_w_brand,?right_w_firm + 7).
 -define(list_w_brand,  ?right_w_firm + 8).
 -define(bill_w_firm,   ?right_w_firm + 9).
+-define(update_bill_w_firm,   ?right_w_firm + 10).
+-define(check_w_firm_bill,    ?right_w_firm + 11).
+-define(abandon_w_firm_bill,  ?right_w_firm + 12).
 
 %% wprint
 -define(new_w_print_server,  ?right_w_print + 1).

@@ -92,6 +92,17 @@ firmApp.config(['$routeProvider', function($routeProvider){
 	    templateUrl: '/private/firm/html/firm_bill_check.html',
             controller: 'firmBillCtrl', 
 	    resolve: angular.extend({}, card, employee, user)
+	}).
+	when('/firm/bill_detail', {
+	    templateUrl: '/private/firm/html/firm_bill_detail.html',
+            controller: 'firmBillDetailCtrl', 
+	    resolve: angular.extend({}, firm, card, employee, user, base)
+	}).
+	when('/firm/bill_update/:rsn?', {
+	    templateUrl: '/private/firm/html/firm_bill_update.html',
+            controller: 'firmBillUpdateCtrl',
+	    resolve: angular.extend({}, firm, card, employee, user)
+	    // resolve: angular.extend({}, firm, card, employee, user, base)
 	}). 
 	// default
 	otherwise({
@@ -166,7 +177,40 @@ firmApp.service("firmService", function($resource, dateFilter){
 
     this.bill_w_firm = function(bill){
 	return http.save({operation:"bill_w_firm"}, bill).$promise
-    }
+    };
+
+    this.filter_bill_detail = function(match, fields, currentPage, itemsPerpage){
+	return http.save(
+	    {operation: "filter_firm_bill_detail"},
+	    {match:  angular.isDefined(match) ? match.op : undefined,
+	     fields: fields,
+	     page:   currentPage,
+	     count:  itemsPerpage}).$promise;
+    };
+
+    this.get_bill_by_rsn = function(rsn){
+	return http.save({operation:"get_firm_bill"}, {rsn:rsn}).$promise;
+    };
+
+    this.update_bill_w_firm = function(bill){
+	return http.save({operation:"update_bill_w_firm"}, bill).$promise
+    };
+
+    this.check_bill_w_firm = function(rsn){
+	return http.save({operation:"check_w_firm_bill"},
+			 {rsn:rsn,
+			  mode: diablo_check}).$promise;
+    };
+
+    this.uncheck_bill_w_firm = function(rsn){
+	return http.save({operation:"check_w_firm_bill"},
+			 {rsn:rsn,
+			  mode: diablo_uncheck}).$promise;
+    };
+
+    this.abandon_bill_w_firm = function(rsn){
+	return http.save({operation:"abandon_w_firm_bill"}, {rsn:rsn}).$promise;
+    };
 
     /*
      * transaction

@@ -6,6 +6,7 @@ var diablo_full_discount = 100;
 
 var diablo_yes = 1;
 var diablo_no = 0;
+var diablo_invalid = -1;
 
 var diablo_frontend = 0;
 var diablo_backend = 1;
@@ -36,6 +37,13 @@ var diablo_stock_has_abandoned = 7;
 var diablo_stock_has_checked = 1;
 var diablo_stock_has_unchecked = 0;
 var diablo_firm_bill = 9;
+
+/*
+ * bill mode
+ */
+var diablo_bill_cash = 0;
+var diablo_bill_card = 1;
+var diablo_bill_wire = 2;
 
 /*
  * retailer
@@ -647,8 +655,8 @@ var diablo_items_per_page = function(){
 };
 
 diablo_stock_css = function(state, type){
-    if (diablo_firm_bill === type){
-	return "bg-orange"
+    if (diablo_firm_bill === type && diablo_stock_has_abandoned !== state){
+	return "bg-lightOrange"
     } else {
 	if (diablo_stock_has_abandoned === state){
 	    return "bg-grayLight";
@@ -658,3 +666,13 @@ diablo_stock_css = function(state, type){
 	}
     }
 };
+
+diablo_bill_css = function(mode){
+    if (diablo_bill_cash === mode){
+	return "bg-success";
+    } else if (diablo_bill_card === mode) {
+	return "bg-lightOrange";
+    } else if (diablo_bill_wire === mode) {
+	return "bg-cyan";
+    }
+}

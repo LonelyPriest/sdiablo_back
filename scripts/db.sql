@@ -804,11 +804,12 @@ create table w_bill_detail(
     shop            INTEGER not null default -1, 
     firm            INTEGER not null default -1, -- charge
     mode            TINYINT not null default -1,
+    balance         DECIMAL(10, 2) not null default 0,
     bill            DECIMAL(10, 2) not null default 0,
     card            INTEGER not null default -1,
     employee        VARCHAR(8) not null,
     comment         VARCHAR(127) default null,
-    
+    state           INTEGER not null default 0,
     merchant        INTEGER not null default -1, 
     entry_date      DATETIME default 0,
     deleted         INTEGER default 0, -- 0: no;  1: yes

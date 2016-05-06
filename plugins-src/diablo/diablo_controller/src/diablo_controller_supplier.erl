@@ -20,7 +20,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
--export([supplier/2, supplier/3]).
+-export([supplier/2, supplier/3, filter/4, filter/6, bill/3]).
 
 -define(SERVER, ?MODULE). 
 -define(tbl_supplier, "suppliers").
@@ -40,7 +40,22 @@ supplier(w_delete, Merchant, Id) ->
 supplier(w_update, Merchant, Attrs) ->
     gen_server:call(?MODULE, {w_update_supplier, Merchant, Attrs});
 supplier(bill, Merchant, Attrs) ->
-    gen_server:call(?MODULE, {bill_supplier, Merchant, Attrs}).
+    gen_server:call(?MODULE, {bill_supplier, Merchant, Attrs});
+supplier(update_bill, Merchant, Attrs) ->
+    gen_server:call(?MODULE, {update_bill_supplier, Merchant, Attrs});
+supplier(check_bill, Merchant, Attrs) ->
+    gen_server:call(?MODULE, {check_bill_supplier, Merchant, Attrs});
+supplier(abandon_bill, Merchant, Attrs) ->
+    gen_server:call(?MODULE, {abandon_bill_supplier, Merchant, Attrs}).
+
+filter(total_bill, 'and', Merchant, Conditions) ->
+    gen_server:call(?MODULE, {total_bill, Merchant, Conditions}).
+filter(bill, 'and', Merchant, CurrentPage, ItemsPerPage, Conditions) ->
+    gen_server:call(?MODULE, {bill_detail,
+			      Merchant, CurrentPage, ItemsPerPage, Conditions}).
+
+bill(lookup, Merchant, Conditions) ->
+    gen_server:call(?MODULE, {bill_lookup, Merchant, Conditions}).
 
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
@@ -226,11 +241,14 @@ handle_call({lookup_unconnect_brand, Condition}, _From, State) ->
 
 handle_call({bill_supplier, Merchant, Attrs}, _From, State) ->
     ?DEBUG("bill_supplier with merchant ~p, attrs ~p", [Merchant, Attrs]), 
-    ShopId = ?v(<<"shop">>, Attrs),
-    FirmId = ?v(<<"firm">>, Attrs),
-    Mode   = ?v(<<"mode">>, Attrs),
-    Bill   = ?v(<<"bill">>, Attrs),
-    BankCard   = ?v(<<"card">>, Attrs),
+    ShopId   = ?v(<<"shop">>, Attrs),
+    FirmId   = ?v(<<"firm">>, Attrs),
+    Mode     = ?v(<<"mode">>, Attrs),
+    Bill     = ?v(<<"bill">>, Attrs),
+    BankCard = case Mode of
+		     ?CASH -> -1;
+		     _     -> ?v(<<"card">>, Attrs)
+		 end,
     Employee = ?v(<<"employee">>, Attrs),
     Comment  = ?v(<<"comment">>, Attrs, []),
 
@@ -251,12 +269,13 @@ handle_call({bill_supplier, Merchant, Attrs}, _From, State) ->
 	    CurrentBalance = ?v(<<"balance">>, Firm, 0),
 
 	    Sql1 = "insert into w_bill_detail("
-		"rsn, shop, firm, mode, bill, card, employee"
+		"rsn, shop, firm, mode, balance, bill, card, employee"
 		", comment, merchant, entry_date) values("
 		++ "\'" ++ ?to_s(RSN) ++ "\',"
 		++ ?to_s(ShopId) ++ ","
 		++ ?to_s(FirmId) ++ ","
 		++ ?to_s(Mode) ++ ","
+		++ ?to_s(CurrentBalance) ++ ","
 		++ ?to_s(Bill) ++ ","
 		++ ?to_s(BankCard) ++ ","
 		++ "\'" ++ ?to_s(Employee) ++ "\',"
@@ -295,7 +314,178 @@ handle_call({bill_supplier, Merchant, Attrs}, _From, State) ->
 	Error ->
     	    {reply, Error, State}
     end;
+
+handle_call({update_bill_supplier, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("update_bill_supplier with merchant ~p, attrs ~p", [Merchant, Attrs]),
+    BillId   = ?v(<<"bill_id">>, Attrs),
+    StockId  = ?v(<<"stock_id">>, Attrs),
+    FirmId   = ?v(<<"firm">>, Attrs),
+    RSN      = ?v(<<"rsn">>, Attrs),
+    Shop     = ?v(<<"shop">>, Attrs),
+    Mode     = ?v(<<"mode">>, Attrs),
+    Bill     = ?v(<<"bill">>, Attrs),
+    OBill    = ?v(<<"o_bill">>, Attrs),
+    BankCard = case Mode of
+		   ?CASH -> -1;
+		   _     -> ?v(<<"card">>, Attrs)
+	       end,
+    Employee = ?v(<<"employee">>, Attrs),
+    Comment  = ?v(<<"comment">>, Attrs, []),
+    Datetime = ?v(<<"datetime">>, Attrs),
+
+    {Cash, Card, Wire} = bill_mode(Mode, Bill),
+    Updates
+	= ?utils:v(shop, integer, Shop)
+	%% ++ ?utils:v(mode, integer, Mode)
+	%% ++ ?utils:v(bill, integer, Bill)
+	%% ++ ?utils:v(card, integer, BankCard)
+	++ ?utils:v(employee, string, Employee)
+	%% ++ ?utils:v(cash, float, Cash)
+	%% ++ ?utils:v(card, float, Card)
+	%% ++ ?utils:v(wire, float, Wire)
+	++ ?utils:v(comment, string, Comment)
+	++ ?utils:v(entry_date, string, Datetime), 
+
+    Sql1 = ["update w_bill_detail set "
+	     ++ ?utils:to_sqls(
+		   proplists,
+		   comma,
+		   Updates ++ ?utils:v(mode, integer, Mode)
+		   ++ ?utils:v(bill, integer, Bill)
+		   ++ ?utils:v(card, integer, BankCard))
+	     ++ " where merchant=" ++ ?to_s(Merchant)
+	     ++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'",
+
+	    "update w_inventory_new set "
+	     ++ ?utils:to_sqls(
+		   proplists,
+		   comma, Updates ++ ?utils:v(cash, float, Cash)
+		   ++ ?utils:v(card, float, Card)
+		   ++ ?utils:v(wire, float, Wire))
+	     ++ " where merchant=" ++ ?to_s(Merchant)
+	     ++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'"],
+
+    Sql2 =
+	case Bill - OBill of
+	    0 -> [] ;
+	    Metric -> 
+		["update suppliers set balance=balance-" ++ ?to_s(Metric)
+		 ++ " where id=" ++ ?to_s(FirmId),
+		 
+		 "update w_bill_detail set "
+		 "balance=balance-" ++ ?to_s(Metric)
+		 ++ " where merchant=" ++ ?to_s(Merchant)
+		 ++ " and id>" ++ ?to_s(BillId),
+
+		"update w_inventory_new set "
+		"balance=balance-" ++ ?to_s(Metric)
+		 ++ " where merchant=" ++ ?to_s(Merchant)
+		 ++ " and id>" ++ ?to_s(StockId)]
+	end,
+
+    Reply = ?sql_utils:execute(transaction, Sql1 ++ Sql2, RSN),
+    ?w_user_profile:update(firm, Merchant),
+    {reply, Reply, State};
+
+handle_call({check_bill_supplier, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("check_bill_supplier with merchant ~p, attrs ~p", [Merchant, Attrs]),
+    RSN  = ?v(<<"rsn">>, Attrs),
+    Mode = ?v(<<"mode">>, Attrs),
+
+    Sql = "update w_bill_detail set "
+	"state=" ++ ?to_s(Mode)
+	++ " where merchant=" ++ ?to_s(Merchant)
+	++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'",
+
+    Reply = ?sql_utils:execute(write, Sql, RSN),
+    {reply, Reply, State};
+
+handle_call({abandon_bill_supplier, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("abandon_bill_supplier with merchant ~p, attrs ~p", [Merchant, Attrs]),
+    RSN       = ?v(<<"rsn">>, Attrs),
+    BillId    = ?v(<<"bill_id">>, Attrs),
+    StockId   = ?v(<<"stock_id">>, Attrs),
+    BillState = ?v(<<"state">>, Attrs),
+    Bill      = ?v(<<"bill">>, Attrs),
+    FirmId    = ?v(<<"firm">>, Attrs),
+    case BillState =:= ?DISCARD of
+	true  -> {reply, ?err(supplier_bill_discard, RSN)};
+	false ->
+	    Sqls = ["update w_bill_detail set "
+		    "state=" ++ ?to_s(?DISCARD)
+		    ++ " where merchant=" ++ ?to_s(Merchant)
+		    ++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'",
+
+		    "update w_inventory_new set "
+		    "state=" ++ ?to_s(?DISCARD)
+		    ++ " where merchant=" ++ ?to_s(Merchant)
+		    ++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'",
+
+		    "update suppliers set balance=balance+" ++ ?to_s(Bill)
+		    ++ " where id=" ++ ?to_s(FirmId),
+
+		    "update w_bill_detail set "
+		    "balance=balance+" ++ ?to_s(Bill)
+		    ++ " where merchant=" ++ ?to_s(Merchant)
+		    ++ " and id>" ++ ?to_s(BillId),
+
+		    "update w_inventory_new set "
+		    "balance=balance+" ++ ?to_s(Bill)
+		    ++ " where merchant=" ++ ?to_s(Merchant)
+		    ++ " and id>" ++ ?to_s(StockId)],
+
+	    Reply = ?sql_utils:execute(transaction, Sqls, RSN),
+	    {reply, Reply, State}
+    end;
+
+handle_call({bill_lookup, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("bill_lookup with merchant ~p, conditions ~p", [Merchant, Conditions]),
+    RSN = ?v(<<"rsn">>, Conditions),
+    NewConditions = ?utils:correct_condition(
+		       <<"a.">>, proplists:delete(<<"rsn">>, Conditions)),
+    Sql = "select a.id, a.rsn"
+	", a.shop as shop_id, a.firm as firm_id"
+	", a.mode, a.balance, a.bill"
+	", a.card as card_id, a.employee as employee_id"
+	", a.comment, a.state, a.merchant, a.entry_date"
+
+	", b.id as sid"
+	" from w_bill_detail a, w_inventory_new b"
+	" where a.merchant=b.merchant and a.rsn=b.rsn"
+	" and a.merchant="++ ?to_s(Merchant)
+	++ " and a.rsn=\'" ++ ?to_s(RSN) ++ "\'"
+	++ ?sql_utils:condition(proplists, NewConditions),
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+handle_call({total_bill, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("total_bill with merchant ~p, conditions ~p", [Merchant, Conditions]),
+    CountSql = "count(*) as total"
+	", sum(bill) as t_bill" ,
+    Sql = ?sql_utils:count_table(
+	     w_bill_detail, CountSql, Merchant, Conditions), 
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+handle_call({bill_detail,
+	     Merchant, CurrentPage, ItemsPerPage, Conditions}, _From, State) ->
+    ?DEBUG("bill_detail:  merchant ~p, currentPage ~p, ItemsPerpage ~p~nfields ~p",
+	   [Merchant, CurrentPage, ItemsPerPage, Conditions]),
+
+    {StartTime, EndTime, NewConditions} =
+	?sql_utils:cut(fields_no_prifix, Conditions),
+    Sql = "select rsn, shop as shop_id, firm as firm_id, mode, balance, bill"
+	", card as card_id, employee as employee_id"
+	", comment, state, merchant, entry_date"
+	" from w_bill_detail"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime)
+	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
     
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.

@@ -1,0 +1,188 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="portlet box purple diablo-margin-bottom-5">
+      
+      <div class="portlet-title">
+	<div class="caption">
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>
+	  结帐详情
+	</div>	
+
+	<div class="actions">
+	  <div class="btn-group btn-group-solid">
+	    <a type="button" class="btn btn-success purple-stripe"
+	       x-ng-click="bill_check()">结帐
+	      <i class="glyphicon glyphicon-plus"></i></a> 
+
+	    <a type="button" class="btn blue reload purple-stripe"
+	       x-ng-click="do_search(default_page)">刷新
+	      <i class="icon icon-spinner fg-white"></i></a>
+	  </div>
+	</div>
+	
+      </div>
+
+      <div class="portlet-body">
+	<!--BEGIN table-toolbar-->
+	<div class="table-toolbar">
+
+	  <div class="table-toolbar util-btn-margin-bottom-5">
+	    <!--BEGIN row-->
+	    <div class="row">
+              <div class="col-md-4 col-sm-4 col-xs-6">
+		<time-search
+                   glyphicon="glyphicon glyphicon-arrow-left fg-red"
+                   time="time.start_time" ok="do_search(default_page)"></time-search>
+              </div>
+
+              <div class="col-md-4 col-sm-4 col-xs-6">
+		<time-search
+                   glyphicon="glyphicon glyphicon-arrow-right fg-red"
+                   time="time.end_time" ok="do_search(default_page)"></time-search>
+              </div> 
+
+              <div class="col-md-4 col-sm-4 col-xs-12">
+		<query-pattern ng-model="match"
+                               filters="filters"
+                               filter="filter">
+		</query-pattern>
+              </div>
+	    </div>
+
+	    <query-group filters="filters" prompt="prompt"
+			 ok="do_search(default_page)">
+	    </query-group> 
+	    
+	  </div> <!--END table-toolbar-->
+	</div>
+	
+	<div class="portlet-body">
+	  <!--BEGIN panel-->
+	  <div class="panel panel-default table-panel">
+	    <div class="table-responsive">
+	      <!--EBGIN table supplier-->
+	      <table class="table table-bordered
+			    table-striped table-hover table-condensed table-advanced">
+		<thead>
+		  <tr>
+		    <th>序号</th>
+		    <th>单号</th>
+		    <th>店铺</th>
+		    <th>经手人</th>
+		    
+		    <th>厂商</th>
+		    <th>累计欠款</th>
+		    
+		    <th>结帐金额</th>
+		    <th>本次结余</th>
+		    
+		    <th>现金</th>
+		    <th>刷卡</th>
+		    <th>汇款</th> 
+		    <th>结帐银行</th>
+		    <th>银行卡号</th> 
+		    
+		    <th>备注</th>
+		    <th>结帐日期</th> 
+		    <th>操作</th>
+		  </tr>
+		</thead>
+		<tbody>
+		  <tr ng-repeat="b in bills">
+		    <td class="{{state_css(b.state)}}">{{b.order_id}}</td>
+		    <td class="{{state_css(b.state)}}">{{b.rsn}}</td>
+		    <td class="{{state_css(b.state)}}">{{b.shop.name}}</td>
+		    <td class="{{state_css(b.state)}}">{{b.employee.name}}</td>
+
+		    <td class="{{state_css(b.state)}}">{{b.firm.name}}</td>
+		    <td class="{{state_css(b.state)}}">{{b.balance}}</td>
+		    
+		    <td class="{{state_css(b.state)}}">{{b.bill}}</td>
+		    <td class="{{state_css(b.state)}}">{{b.balance - b.bill}}</td>
+
+		    <td class="{{css(b.mode)}}">{{b.cash}}</td>
+		    <td class="{{css(b.mode)}}">{{b.card}}</td>
+		    <td class="{{css(b.mode)}}">{{b.wire}}</td>
+		    <td class="{{css(b.mode)}}">{{b.bank_card.name}}</td>
+		    <td class="{{css(b.mode)}}">{{b.bank_card.no}}</td>
+
+		    <td>{{b.comment}}</td>
+		    <td>{{b.entry_date}}</td>
+
+		    <td> 
+                      <button class="btn diablo-button yellow"
+			      x-ng-disabled="b.state!==0"
+			      x-ng-click="update(b)">修改 
+			<i class="glyphicon glyphicon-edit"></i>
+		      </button>
+
+		      <button class="btn diablo-button red"
+			      x-ng-disabled="b.state!==0"
+		      	      x-ng-click="check_detail(b)">审核
+		      	<i class="glyphicon glyphicon-check"></i>
+		      </button>
+
+		      <button class="btn diablo-button purple-plum"
+			      x-ng-disabled="b.state!==1"
+		      	      x-ng-click="uncheck_detail(b)">反审
+		      	<i class="glyphicon glyphicon-remove-circle"></i>
+		      </button>
+		      
+                      <button class="btn diablo-button btn-danger"
+			      x-ng-disabled="b.state!==0"
+			      x-ng-click="abandon_detail(b)">废弃
+			<i class="glyphicon glyphicon-ban-circle"></i>
+		      </button>
+
+		    </td>
+		  </tr>
+
+		  <tr x-ng-if="total_items!==0" class="bg-white">
+		    <td colspan="6"></td>
+		    <td class="fg-magenta">{{total_bill}}</td> 
+		    <td colspan="9"></td>
+		  </tr> 
+		</tbody> 
+		
+	      </table> <!--END supplier table-->
+	    </div> <!--END table responsive-->
+	    
+	  </div> <!--END panel-->
+
+	  <div x-ng-show="total_items>items_perpage" class="row">
+	    <div class="col-md-12, col-sm-12, col-xs-12">
+	      
+	      <span>显示第 {{current_page}} / {{num_pages}} 项结果，
+		共 {{total_items}} 项</span>
+	      
+	      <pagination class="pagination-lg table-pagination pull-right"
+		      	  total-items="total_items"
+		      	  items-per-page="items_perpage"
+		      	  num-pages="num_pages"
+		      	  max-size="max_page_size"
+		      	  boundary-links="true"
+		      	  previous-text="&lsaquo;" next-text="&rsaquo;"
+		      	  first-text="&laquo;" last-text="&raquo;"
+		      	  x-ng-model="current_page"
+		      	  x-ng-change="page_changed()">
+	      </pagination>
+	    </div>
+	  </div>
+	  
+	</div> <!--END portlet body--> 
+      </div>
+      
+    </div>
+  </div>
+
+  <div class="col-md-12">
+    <div>
+      <p><span class="bg-cyan">青色表示汇款</span>
+	<span class="bg-success">浅绿色表示现金</span>
+	<span class="bg-lightOrange">浅桔色表示刷卡</span>
+	<span class="bg-grayLight">灰色表示已废弃</span>
+      </p>
+    </div>
+  </div>
+  
+</div>

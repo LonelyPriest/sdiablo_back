@@ -47,8 +47,14 @@ var stockUtils = function(){
 	    } else{
 		return parseInt(v)
 	    }
+	},
+
+	start_time_of_second: function(shop, base, now, dateFun){
+	    return diablo_base_setting(
+		"qtime_start", shop, base, diablo_set_date,
+		dateFun.default_start_time(now));
 	}
 	    
-	    //
+	//
     }
 }();
