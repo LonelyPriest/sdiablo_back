@@ -223,7 +223,9 @@ wretailerApp.controller("wretailerDetailCtrl", function(
     };
 
     $scope.trans_info = function(r){
-	diablo_goto_page("#/wretailer_trans/" +r.id.toString());
+	dialog.response(false, "会员充值", "暂不支持此操作！！");
+	return;
+	// diablo_goto_page("#/wretailer_trans/" +r.id.toString());
     };
 
     var pattern = {name_address: diabloPattern.ch_name_address,

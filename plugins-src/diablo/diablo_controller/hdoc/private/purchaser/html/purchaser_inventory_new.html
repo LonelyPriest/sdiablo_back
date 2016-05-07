@@ -318,7 +318,8 @@
 			<th class="text-center">折扣卖</th>
 			
 			<th class="text-center">数量</th>
-			<th class="text-center">合计</th>
+			<th x-ng-if="stock_right.show_orgprice"
+			    class="text-center">合计</th>
 			<th class="text-center">溢出</th> 
 			<th class="text-center">操作</th>
 		      </tr>
@@ -494,7 +495,7 @@
 			  </form>
 			</td> 
 
-			<td class="vert-align">
+			<td x-ng-if="stock_right.show_orgprice" class="vert-align">
 			  <span x-ng-if="inv.$new"></span>
 			  <span x-ng-if="!inv.$new">
 			    {{calc_row(inv.org_price, inv.ediscount, inv.total - inv.over)}} 

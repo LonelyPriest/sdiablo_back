@@ -1,6 +1,6 @@
 <div class="row">
   <div class="col-md-12">
-    <div class="portlet box purple">
+    <div class="portlet box purple diablo-margin-bottom-5">
       
       <div class="portlet-title">
 	<div class="caption"><i class="glyphicon glyphicon-menu-hamburger"></i>
@@ -69,9 +69,8 @@
 		    <th x-ng-if="!hidden.base">店铺</th>
 		    <th x-ng-if="!hidden.base">店员</th> 
 		    
-		    <!-- <th class="danger">厂商</th>  -->
 		    <th class="danger">数量</th>
-
+		    
 		    <th x-ng-if="!hidden.balance">现金</th>
 		    <th x-ng-if="!hidden.balance">刷卡</th>
 		    <th x-ng-if="!hidden.balance">汇款</th>
@@ -90,86 +89,71 @@
 		    <th class="success">应付</th>
 		    <th>实付</th>
 
-		    <th x-ng-click="toggle_comment()" class="danger">
-		      <span x-ng-if="!hidden.comment">
-			<i class="glyphicon glyphicon-backward fg-red"></i>本次欠款</span>
-		      <span x-ng-if="hidden.comment">
-			本次欠款<i class="glyphicon glyphicon-forward fg-red"></i></span>
-		    </th>
+		    <th class="danger">累计欠款</th>
 		    
-		    <!-- <th>总数</th> -->
-		    <th x-ng-if="!hidden.comment">备注</th>
-		    <th>开单日期</th> 
+		    <th>备注</th>
+		    <th>采购日期</th> 
 		    <th>操作</th>
 		  </tr>
 		</thead>
 		<tbody>
 		  <tr ng-repeat="r in records track by r.id">
 		    <td>{{r.order_id}}</td>
-		    <td>{{r.rsn}}</td>
+		    <td class="{{css(r.state, r.type)}}">{{r.rsn}}</td>
 		    
-		    <td x-ng-if="!hidden.base" x-ng-switch on="r.type">
+		    <td class="{{css(r.state, r.type)}}"
+			x-ng-if="!hidden.base" x-ng-switch on="r.type">
 		      <span x-ng-switch-when=0>入库</span>
 		      <span class="fg-red" x-ng-switch-when=1>退货</span>
+		      <span class="fg-pink" x-ng-switch-when=9>结帐</span>
 		    </td>
-		    <td x-ng-if="!hidden.base">{{r.shop.name}}</td>
-		    <td x-ng-if="!hidden.base">{{r.employee.name}}</td>
+		    
+		    <td class="{{css(r.state, r.type)}}" x-ng-if="!hidden.base">{{r.shop.name}}</td>
+		    <td class="{{css(r.state, r.type)}}"
+			x-ng-if="!hidden.base">{{r.employee.name}}</td>
 		    
 		    <!-- <td>{{r.firm.name}}</td>  -->
-		    <td>{{r.total}}</td>
+		    <td class="{{css(r.state, r.type)}}">{{r.total}}</td>
 
-		    <td x-ng-if="!hidden.balance">{{r.cash}}</td>
-		    <td x-ng-if="!hidden.balance">{{r.card}}</td>
-		    <td x-ng-if="!hidden.balance">{{r.wire}}</td>
-		    <td x-ng-if="!hidden.balance">{{r.verificate}}</td>
+		    <td class="{{css(r.state, r.type)}}" x-ng-if="!hidden.balance">{{r.cash}}</td>
+		    <td class="{{css(r.state, r.type)}}" x-ng-if="!hidden.balance">{{r.card}}</td>
+		    <td class="{{css(r.state, r.type)}}" x-ng-if="!hidden.balance">{{r.wire}}</td>
+		    <td class="{{css(r.state, r.type)}}"
+			x-ng-if="!hidden.balance">{{r.verificate}}</td>
 		    <td x-ng-if="!hidden.balance"> 
 		      <span x-ng-if="r.e_pay!==0" class="bg-blue">{{r.e_pay}}</span>
 		      <span x-ng-if="r.e_pay===0">{{r.e_pay}}</span>
 		    </td>
 		    
-		    <td>{{r.balance}}</td>
+		    <td class="{{css(r.state, r.type)}}">{{r.balance}}</td>
 
-		    <td x-ng-switch on="r.type">
-		      <span x-ng-switch-when=0>
-			{{round(r.should_pay)}}
-		      </span>
-		      <span class="fg-red" x-ng-switch-when=1>
-			{{round(r.should_pay)}}
-		      </span>
-		    </td> 
-		    <!-- <td>{{r.should_pay}}</td> -->
-		    <td>{{r.has_pay}}</td>
-
-		    <td>
-		      {{r.balance + round(r.should_pay) + r.e_pay
-		      - r.has_pay - r.verificate}} 
+		    <td class="{{css(r.state, r.type)}}" x-ng-switch on="r.type">
+		      <span class="fg-red" x-ng-switch-when=1>{{r.should_pay}}</span>
+		      <span x-ng-switch-default>{{r.should_pay}}</span> 
 		    </td>
 		    
-		    <!-- r.should_pay + (r.balance - r.has_pay)-->
-		    <!-- <td x-ng-switch on="r.type"> -->
-		    <!--   <span x-ng-switch-when=0> -->
-		    <!-- 	{{f_sub(f_add(r.balance, r.should_pay + r.e_pay), r.has_pay)}} -->
-		    <!--   </span> -->
-		    <!--   <span class="bg-red" x-ng-switch-when=1> -->
-		    <!-- 	{{f_sub(f_add(r.balance, r.should_pay + r.e_pay), r.has_pay)}} -->
-		    <!--   </span> -->
-		    <!-- </td> -->
-		    <!-- <td>{{r.price5}}</td> -->
-		    
-		    <td x-ng-if="!hidden.comment">
+		    <td class="{{css(r.state, r.type)}}">{{r.has_pay}}</td>
+
+		    <td class="{{css(r.state, r.type)}}">
+		      {{r.balance + r.should_pay + r.e_pay - r.has_pay - r.verificate}} 
+		    </td>
+
+
+		    <td class="{{css(r.state, r.type)}}">
 		      <span x-ng-switch on="r.comment">
 			<span x-ng-switch-when="null">无</span>
 			<span x-ng-switch-default>{{r.comment}}</span>
 		      </span>
 		    </td>
-		    <td>{{r.entry_date}}</td>
+		    
+		    <td class="{{css(r.state, r.type)}}">{{r.entry_date}}</td>
 		    <td>
 		      <button class="btn diablo-button btn-primary"
 		    	 x-ng-click="trans_rsn_detail(r)">
 			明细<i class="glyphicon glyphicon-map-marker"></i></button>
                       
 		      <button class="btn diablo-button btn-danger"
-			      x-ng-disabled="r.state===1"
+			      x-ng-disabled="r.state===1 || r.type===9"
 		      	      x-ng-click="check_trans(r)">审核
 		      	<i class="glyphicon glyphicon-check"></i></button>
 		    </td>
@@ -185,35 +169,12 @@
 		    <td x-ng-if="!hidden.balance">{{total_wire}}</td>
 		    <td x-ng-if="!hidden.balance">{{total_verificate}}</td>
 		    <td x-ng-if="!hidden.balance"></td> 
-		    <!-- <td x-ng-if="!hidden.balance" colspan="2"></td> -->
 		    <td colspan="1"></td> 
 		    <td class="danger">{{total_spay}}</td>
 		    <td class="info">{{total_hpay}}</td>
 		    <td colspan="4"></td>
-		  </tr>
-		  
+		  </tr> 
 		</tbody>
-
-		<tfoot>
-		  <!-- <tr> -->
-		  <!--   <td x-ng-show="total_items>items_perpage" colspan={{colspan}}> -->
-		  <!--     <span class="pagination"> -->
-		  <!-- 	<span>显示第 {{current_page}} / {{num_pages}} 项结果， -->
-		  <!-- 	  共 {{total_items}} 项</span> -->
-		  <!--     </span> -->
-		  <!--     <pagination class="pagination-lg pull-right" -->
-		  <!-- 		  total-items="total_items" -->
-		  <!-- 		  items-per-page="items_perpage" -->
-		  <!-- 		  num-pages="num_pages" -->
-		  <!-- 		  max-size="max_page_size" -->
-		  <!-- 		  boundary-links="true" -->
-		  <!-- 		  previous-text="&lsaquo;" next-text="&rsaquo;" -->
-		  <!-- 		  first-text="&laquo;" last-text="&raquo;" -->
-		  <!-- 		  x-ng-model="current_page" -->
-		  <!-- 		  x-ng-change="page_changed()"></pagination> -->
-		  <!--   </td> -->
-		  <!-- </tr> -->
-		</tfoot> 
 		
 	      </table> <!--END supplier table-->
 	    </div> <!--END table responsive-->
@@ -240,8 +201,16 @@
 	  </div>
 	</div>
 	
-      </div> <!--END table container-->
-      
+      </div> <!--END table container--> 
+    </div>
+  </div>
+  
+  <div class="col-md-12">
+    <div>
+      <p><span class="bg-grayLight">灰色表示已废弃</span>
+	<span class="bg-success">浅绿色表示已审核</span>
+	<span class="bg-lightOrange">浅桔色表示结帐</span>
+      </p>
     </div>
   </div>
 </div>

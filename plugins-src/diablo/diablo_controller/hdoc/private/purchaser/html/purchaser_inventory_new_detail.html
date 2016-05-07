@@ -99,21 +99,14 @@
 			<span x-ng-if="!hidden.balance">
 			  <i class="glyphicon glyphicon-backward fg-red"></i>上次欠款</span>
 			<span x-ng-if="hidden.balance">
-			  帐户欠款<i class="glyphicon glyphicon-forward fg-red"></i></span>
+			  上次欠款<i class="glyphicon glyphicon-forward fg-red"></i></span>
 		      </span>
 		    </th>
 		    
 		    <th x-ng-if="shop_right.show_balance" class="success">应付</th>
 		    <th x-ng-if="shop_right.show_balance">实付</th>
-		    <!-- <th x-ng-click="toggle_comment()" class="danger"> -->
-		    <!--   <span x-ng-if="!hidden.comment"> -->
-		    <!-- 	<i class="glyphicon glyphicon-backward fg-red"></i>本次欠款</span> -->
-		    <!--   <span x-ng-if="hidden.comment"> -->
-		    <!-- 	本次欠款<i class="glyphicon glyphicon-forward fg-red"></i></span> -->
-		    <!-- </th> -->
-		    <!-- <th>总数</th> -->
-		    <th x-ng-if="shop_right.show_balance" class="danger">累计欠款</span>
-		    </th>
+		    
+		    <th x-ng-if="shop_right.show_balance" class="danger">累计欠款</span></th>
 		    <th>备注</th>
 		    <th>采购日期</th> 
 		    <th>操作</th>
@@ -121,14 +114,16 @@
 		</thead>
 		<tbody>
 		  <tr x-ng-repeat="r in records">
-		    <td class="{{css(r.state, r.type)}}">{{r.order_id}}</td>
+		    <td>{{r.order_id}}</td>
 		    <td class="{{css(r.state, r.type)}}">{{r.rsn}}</td>
-		    <td class="{{css(r.state, r.type)}}" x-ng-if="!hidden.base"
-			x-ng-switch on="r.type">
+		    
+		    <td class="{{css(r.state, r.type)}}"
+			x-ng-if="!hidden.base" x-ng-switch on="r.type">
 		      <span x-ng-switch-when=0>入库</span>
 		      <span class="fg-red" x-ng-switch-when=1>退货</span>
 		      <span class="fg-pink" x-ng-switch-when=9>结帐</span>
 		    </td>
+		    
 		    <td class="{{css(r.state, r.type)}}" x-ng-if="!hidden.base">{{r.shop.name}}</td>
 		    <td class="{{css(r.state, r.type)}}"
 			x-ng-if="!hidden.base">{{r.employee.name}}</td>
@@ -141,6 +136,7 @@
 		    <td class="{{css(r.state, r.type)}}" x-ng-if="!hidden.balance">{{r.wire}}</td>
 		    <td class="{{css(r.state, r.type)}}"
 			x-ng-if="!hidden.balance">{{r.verificate}}</td>
+		    
 		    <td class="{{css(r.state, r.type)}}" x-ng-if="!hidden.balance">
 		      <span x-ng-if="r.e_pay!==0" class="fg-darkBlue">{{r.e_pay}}</span>
 		      <span x-ng-if="r.e_pay===0">{{r.e_pay}}</span>

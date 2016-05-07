@@ -669,7 +669,7 @@ diablo_stock_css = function(state, type){
 
 diablo_bill_css = function(mode){
     if (diablo_bill_cash === mode){
-	return "bg-success";
+	return "bg-lightOlive";
     } else if (diablo_bill_card === mode) {
 	return "bg-lightOrange";
     } else if (diablo_bill_wire === mode) {

@@ -13,7 +13,7 @@ firmApp.controller('firmTransCtrl', function(
     $scope.goto_page    = diablo_goto_page; 
     $scope.f_add        = diablo_float_add;
     $scope.f_sub        = diablo_float_sub;
-    $scope.round        = diablo_round;
+    // $scope.round        = diablo_round;
     $scope.default_page = 1;
 
     /*
@@ -34,8 +34,8 @@ firmApp.controller('firmTransCtrl', function(
     };
     
     
-    var now             = $.now(); 
-
+    $scope.css = diablo_stock_css;
+    
     $scope.go_back = function(){
 	localStorageService.remove(diablo_key_firm_trans);
 	$scope.goto_page("#/firm_detail")
@@ -43,7 +43,8 @@ firmApp.controller('firmTransCtrl', function(
     
     /*
      * local sate
-     */ 
+     */
+    var now             = $.now(); 
     $scope.save_to_local = function(filter, time){
 	var s = localStorageService.get(diablo_key_firm_trans);
 
