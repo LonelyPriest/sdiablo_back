@@ -101,13 +101,14 @@
 		    
 		    <th x-ng-if="right.show_orgprice">进价</th>
 		    <th x-ng-if="right.show_orgprice">折扣进</th>
-		    
+
 		    <th class="info">吊牌价</th>
-		    <th class="info">单价</th>
-		    <th>数量</th> 
+		    <!-- <th class="info">单价</th> -->
 		    <th class="danger">成交价</th>
-		    <th>折扣率</th> 
+		    <th>数量</th> 
 		    <th>小计</th>
+		    <th>折扣率</th>
+		    <th x-ng-if="right.show_orgprice">毛利率</th> 
 		    <th>备注</th>
 		    <th>日期</th> 
 		    <th>操作</th>
@@ -138,19 +139,23 @@
 		    <!-- <td>{{inv.total}}</td>  -->
 		    <td x-ng-if="right.show_orgprice" class="fg-pink">{{inv.org_price}}</td>
 		    <td x-ng-if="right.show_orgprice" class="fg-pink">{{inv.ediscount}}</td>
-		    <td>{{inv.tag_price}}</td>
-		    <td>{{inv.fprice}}</td>
+		    <!-- <td>{{inv.fprice}}</td> -->
+
+		    <td>{{inv.tag_price}}</td> 
+		    <td>{{inv.rprice}} </td>
+		    
 		    <td x-ng-switch on="inv.sell_type"> 
 		      <span class="fg-red" x-ng-switch-when=1>{{inv.total}}</span>
 		      <span x-ng-switch-default>{{inv.total}}</span>
 		    </td>
-		    <td>{{inv.rprice}} </td>
-		    <td>{{inv.rdiscount}} </td>
 		    <td>{{inv.calc}} </td>
+		    <!-- <td>{{inv.rdiscount}} </td> -->
+		    <td class="fg-blue">{{inv.drate}} </td>
+		    <td x-ng-if="right.show_orgprice" class="fg-magenta">{{inv.gprofit}} </td>
 		    <td>{{inv.comment}}</td>
 		    <td>{{inv.entry_date}}</td>
 		    <td>
-		      <a class="btn diablo-button btn-primary"
+		      <a class="btn 为diablo-button btn-primary"
 			 x-ng-disabled="inv.free === 0"
 		    	 x-ng-click="rsn_detail(inv)">
 			明细<i class="glyphicon glyphicon-map-marker"></i></a>
@@ -158,11 +163,8 @@
 		  </tr>
 
 		  <tr x-ng-if="total_items!==0" class="bg-white">
-		    <td x-ng-if="!hidden.base" colspan="16"></td>
-		    <td x-ng-if="hidden.base" colspan="13"></td>
+		    <td colspan={{calc_colspan()}}></td>
 		    <td class="success">{{total_amounts}}</td>
-		    <td></td>
-		    <td></td>
 		    <td x-ng-if="right.show_stastic" class="danger">{{total_balance}}</td>
 		    <td colspan="3"></td>
 		  </tr>

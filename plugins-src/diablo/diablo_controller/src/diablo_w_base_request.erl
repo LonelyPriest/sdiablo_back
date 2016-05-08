@@ -142,7 +142,7 @@ action(Session, Req, {"destroy_login_user"}, Payload) ->
     User = ?session:get(name, Session), 
     %% SessionId = Req:get_cookie_value("session"),
     Ok = ?session:delete(Session#session.id),
-    ?DEBUG("ok ~p", [Ok]),
+    %% ?DEBUG("ok ~p", [Ok]),
     case Ok of
 	ok -> ?utils:respond(200, Req, ?succ(destroy_login_user, User));
 	_ ->

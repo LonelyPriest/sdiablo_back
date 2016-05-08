@@ -86,14 +86,29 @@
 			 type="number" step="1"
 			 name="bill"
 			 required
-			 placeholder="请输入结账金额，支持两位小数"
+			 placeholder="请输入结账金额"
 			 x-ng-model="bill"
-			 x-ng-pattern="pattern.decimal_2"/>
+			 x-ng-pattern="pattern.number"/>
 		  <span class="input-group-addon bg-white fg-red">*</span> 
 		</div>
 	      </div>
 	      <div ng-show="rForm.bill.$invalid && !rForm.bill.$pristine">
-		<span class="fg-red">请输入正确的数字，支持两位小数</span>
+		<span class="fg-red">请输入正确的数字</span>
+	      </div> 
+	    </div>
+
+	    <div class="form-group">
+	      <label class="col-sm-3 col-md-3 control-label">核销金额</label>
+	      <div class="col-sm-6 col-md-6">
+		<input class="form-control"
+		       type="number" step="1"
+		       name="veri"
+		       placeholder="请输入核销金额，只支持整数"
+		       x-ng-model="veri"
+		       x-ng-pattern="pattern.integer_except_zero"/>
+	      </div>
+	      <div ng-show="rForm.veri.$invalid && !rForm.veri.$pristine">
+		<span class="fg-red">请输入正确的数字</span>
 	      </div> 
 	    </div>
 

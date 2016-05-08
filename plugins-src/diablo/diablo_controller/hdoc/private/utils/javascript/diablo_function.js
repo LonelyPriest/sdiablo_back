@@ -3,6 +3,7 @@ var diablo_delay = 1000; //ms
 var diablo_delay_300ms = 300;
 
 var diablo_full_discount = 100;
+var diablo_pfree = 0.01;
 
 var diablo_yes = 1;
 var diablo_no = 0;
@@ -656,20 +657,20 @@ var diablo_items_per_page = function(){
 
 diablo_stock_css = function(state, type){
     if (diablo_firm_bill === type && diablo_stock_has_abandoned !== state){
-	return "bg-lightOrange"
+	return "bg-cyan"
     } else {
 	if (diablo_stock_has_abandoned === state){
 	    return "bg-grayLight";
 	}
 	if (diablo_stock_has_checked === state){
-	    return "bg-success";
+	    return "bg-lightOlive";
 	}
     }
 };
 
 diablo_bill_css = function(mode){
     if (diablo_bill_cash === mode){
-	return "bg-lightOlive";
+	return "";
     } else if (diablo_bill_card === mode) {
 	return "bg-lightOrange";
     } else if (diablo_bill_wire === mode) {

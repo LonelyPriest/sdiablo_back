@@ -46,6 +46,19 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
     $scope.select          = {};
     $scope.inventories     = [];
 
+    $scope.row_change_price = function(inv){
+	// inv.org_price = stockUtils.to_float(inv.org_price);
+	if (angular.isDefined(diablo_set_float(inv.org_price))){
+	    $scope.re_calculate(); 
+	}
+    };
+
+    $scope.row_change_ediscount = function(inv){
+	if (angular.isDefined(diablo_set_integer(inv.ediscount))){
+	    $scope.re_calculate();
+	}
+    };
+    
     $scope.re_calculate = function(){
 	$scope.select.total = 0;
 	$scope.select.should_pay = 0;
@@ -55,7 +68,9 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	    $scope.select.total      += parseInt(one.reject);
 
 	    $scope.select.should_pay += stockUtils.calc_row(
-		one.org_price, one.reject, one.ediscount); 
+		stockUtils.to_float(one.org_price),
+		one.reject,
+		stockUtils.to_float(one.ediscount)); 
 	};
 
 	$scope.select.should_pay = $scope.round($scope.select.should_pay);
@@ -95,11 +110,6 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 		if (!in_array(sorts[i].sizes, tag.size)){
 		    sorts[i].sizes.push(tag.size)
 		}
-
-		// var color = diablo_find_color(tag.color_id, filterColor);
-		// if (!diablo_in_colors(color, sorts[i].colors)){
-		//     sorts[i].colors.push(color)
-		// }; 
 		
 		sorts[i].amounts.push({
 		    cid:tag.color_id,
@@ -169,7 +179,6 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	    $scope.get_all_prompt_inventory(base.shop_id, base.firm_id);
 	}
 	
-	
 	var length = invs.length;
 	var sorts  = [];
 	for(var i = 0; i < length; i++){
@@ -200,8 +209,7 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 		add.reject          = Math.abs(invs[i].amount);
 		
 		add.sizes.push(invs[i].size);
-		add.colors.push(
-		    diablo_find_color(invs[i].color_id, filterColor));
+		add.colors.push(diablo_find_color(invs[i].color_id, filterColor));
 		
 		add.amounts.push({
 		    cid:invs[i].color_id,
@@ -330,14 +338,14 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 		    
 		    var update_count = parseInt(filterNewAmounts[i].reject)
 			- parseInt(oldAmounts[j].reject);
+		    
 		    if ( update_count !== 0 ){
 			changedAmounts.push(
 			    {operation: 'u',
 			     cid:       filterNewAmounts[i].cid,
 			     size:      filterNewAmounts[i].size,
 			     count:     -update_count})
-		    }
-		    
+		    } 
 		    break;
 		} 
 	    }
@@ -479,11 +487,7 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 		    if (add.operation === 'd' || add.operation === "a"){
 			// console.log(add.amounts);
 			var filter =  add.amounts.filter(function(m){
-			    // console.log(m);
-			    return stockUtils.to_integer(m.reject) !== 0;
-			    // return angular.isDefined(m.reject)
-			    // 	&& !isNaN(parseInt(m.reject))
-			    // 	&& parseInt(m.reject) !== 0;
+			    return stockUtils.to_integer(m.reject) !== 0; 
 			});
 
 			return filter.map(function(m){
@@ -802,8 +806,8 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	inv.$update = true; 
 	if (inv.free_color_size){
 	    inv.free_update = true;
-	    inv.o_org_price = inv.org_price;
-	    inv.o_ediscount = inv.ediscount;
+	    // inv.o_org_price = inv.org_price;
+	    // inv.o_ediscount = inv.ediscount;
 	    return;
 	}
 
@@ -877,8 +881,8 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
     $scope.cancel_free_update = function(inv){
 	inv.free_update = false;
 	inv.amounts[0].reject_count = inv.reject;
-	inv.org_price   = inv.o_org_price;
-	inv.ediscount   = inv.o_ediscount;
+	// inv.org_price   = inv.o_org_price;
+	// inv.ediscount   = inv.o_ediscount;
     };
 
     $scope.reset_inventory = function(inv){

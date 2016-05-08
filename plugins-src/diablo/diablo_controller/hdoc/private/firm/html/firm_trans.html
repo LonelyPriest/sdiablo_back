@@ -120,7 +120,7 @@
 		    <td class="{{css(r.state, r.type)}}" x-ng-if="!hidden.balance">{{r.wire}}</td>
 		    <td class="{{css(r.state, r.type)}}"
 			x-ng-if="!hidden.balance">{{r.verificate}}</td>
-		    <td x-ng-if="!hidden.balance"> 
+		    <td class="{{css(r.state, r.type)}}" x-ng-if="!hidden.balance"> 
 		      <span x-ng-if="r.e_pay!==0" class="bg-blue">{{r.e_pay}}</span>
 		      <span x-ng-if="r.e_pay===0">{{r.e_pay}}</span>
 		    </td>

@@ -223,7 +223,8 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	    $scope.inventories.push(tag);
 	    order_length--;
 	})
-	
+
+	$scope.focus_row = sorts.length; 
 	$scope.inventories.unshift({$edit:false, $new:true});
 
 	// $scope.total_items = $scope.inventories.length; 
@@ -232,6 +233,18 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	console.log($scope.old_inventories);
 	console.log($scope.inventories);
     });
+
+    $scope.focus_row_auto_up = function(){
+	if ($scope.focus_row < $scope.inventories.length - 1){
+	    $scope.focus_row += 1; 
+	}
+    };
+    
+    $scope.focus_row_auto_down = function(){
+	if ($scope.focus_row > 1){
+	    $scope.focus_row -= 1; 
+	}
+    };
     
     var reset_payment = function(newValue){
 	// console.log("reset_payment", $scope.select);

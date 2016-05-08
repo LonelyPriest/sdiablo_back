@@ -176,6 +176,14 @@
 		   typeahead-editable="false"
 		   typeahead="s as s.name for s in
 			      prompt.retailer|filter:$viewValue|limitTo:8"/>
+	  </span>
+
+	  <span x-ng-switch-when="card">
+	    <input type="text" class="form-control" placeholder="请输入银行卡号"
+		   x-ng-model="f.value"
+		   typeahead-editable="false"
+		   typeahead="c as c.no for c in
+			      prompt.cards|filter:$viewValue|limitTo:8"/>
 	  </span> 
 	  
 	</div> 

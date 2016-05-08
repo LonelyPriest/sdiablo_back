@@ -88,6 +88,9 @@ function filterProvider(){
 		} else if (name === 'has_pay'){
 		    _filter.fields.push({name:"has_pay", chinese:"实付查询"});
 		    _prompt.has_pay = promptValues;
+		} else if (name === 'card'){
+		    _filter.fields.push({name:"card", chinese:"银行卡号"});
+		    _prompt.cards = promptValues;
 		}
 
 		return _filter;

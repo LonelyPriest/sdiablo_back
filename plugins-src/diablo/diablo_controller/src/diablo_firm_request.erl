@@ -152,6 +152,7 @@ action(Session, Req, {"abandon_w_firm_bill"}, Payload) ->
 	    StockId = ?v(<<"sid">>, TheBill),
 	    State   = ?v(<<"state">>, TheBill),
 	    Bill    = ?v(<<"bill">>, TheBill),
+	    Veri    = ?v(<<"veri">>, TheBill),
 	    Firm    = ?v(<<"firm_id">>, TheBill),
 	    
 	    Attrs = [{<<"rsn">>, RSN},
@@ -159,6 +160,7 @@ action(Session, Req, {"abandon_w_firm_bill"}, Payload) ->
 		     {<<"stock_id">>, StockId},
 		     {<<"state">>, State},
 		     {<<"bill">>, ?to_f(Bill)},
+		     {<<"veri">>, Veri},
 		     {<<"firm">>, Firm}],
 	    case ?supplier:supplier(abandon_bill, Merchant, Attrs) of
 		{ok, RSN} ->

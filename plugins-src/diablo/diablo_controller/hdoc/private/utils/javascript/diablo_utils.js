@@ -15,9 +15,45 @@ var diabloUtils = angular.module("diabloUtils", []);
 //     }
 // ]);
 
+diabloUtils.directive('goRowDown', function() {
+    return function (scope, element, attrs) {
+	// console.log(attrs);
+        element.bind("keydown", function (event) {
+	    // down
+            if(event.which === 40) {
+                scope.$apply(function (){
+		    var v = scope.$eval(attrs.goRowDown)
+		    // console.log(v);
+                    // scope.$eval(attrs.goRowDown);
+                });
+		
+                event.preventDefault();
+            }
+        });
+    }; 
+});
+
+diabloUtils.directive('goRowUp', function() {
+    return function (scope, element, attrs) {
+	// console.log(attrs);
+        element.bind("keydown", function (event) {
+	    // down
+            if(event.which === 38) {
+                scope.$apply(function (){
+                    scope.$eval(attrs.goRowUp);
+		    // console.log(v);
+                });
+		
+                event.preventDefault();
+            }
+        });
+    }; 
+});
+
 diabloUtils.directive('focusAuto', function($timeout, $parse) {
     return {
 	link: function(scope, element, attrs) {
+	    // console.log(attrs);
 	    var model = $parse(attrs.focusAuto);
 	    scope.$watch(model, function(value) {
 		// console.log('value=',value);

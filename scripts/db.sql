@@ -806,6 +806,7 @@ create table w_bill_detail(
     mode            TINYINT not null default -1,
     balance         DECIMAL(10, 2) not null default 0,
     bill            DECIMAL(10, 2) not null default 0,
+    veri            INTEGER not null default 0,
     card            INTEGER not null default -1,
     employee        VARCHAR(8) not null,
     comment         VARCHAR(127) default null,

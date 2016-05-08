@@ -71,10 +71,11 @@
 		    <th>经手人</th>
 		    
 		    <th>厂商</th>
-		    <th>累计欠款</th>
+		    <th>本次欠款</th>
 		    
 		    <th>结帐金额</th>
-		    <th>本次结余</th>
+		    <th>核销</th>
+		    <th>累计欠款</th>
 		    
 		    <th>现金</th>
 		    <th>刷卡</th>
@@ -89,7 +90,7 @@
 		</thead>
 		<tbody>
 		  <tr ng-repeat="b in bills">
-		    <td class="{{state_css(b.state)}}">{{b.order_id}}</td>
+		    <td>{{b.order_id}}</td>
 		    <td class="{{state_css(b.state)}}">{{b.rsn}}</td>
 		    <td class="{{state_css(b.state)}}">{{b.shop.name}}</td>
 		    <td class="{{state_css(b.state)}}">{{b.employee.name}}</td>
@@ -98,12 +99,13 @@
 		    <td class="{{state_css(b.state)}}">{{b.balance}}</td>
 		    
 		    <td class="{{state_css(b.state)}}">{{b.bill}}</td>
-		    <td class="{{state_css(b.state)}}">{{b.balance - b.bill}}</td>
+		    <td class="{{state_css(b.state)}}">{{b.veri}}</td>
+		    <td class="{{state_css(b.state)}}">{{b.balance-b.bill-b.veri}}</td>
 
 		    <td class="{{css(b.mode)}}">{{b.cash}}</td>
 		    <td class="{{css(b.mode)}}">{{b.card}}</td>
 		    <td class="{{css(b.mode)}}">{{b.wire}}</td>
-		    <td class="{{css(b.mode)}}">{{b.bank_card.name}}</td>
+		    <td class="{{css(b.mode)}}">{{b.bank_card.bank}}</td>
 		    <td class="{{css(b.mode)}}">{{b.bank_card.no}}</td>
 
 		    <td>{{b.comment}}</td>
@@ -139,7 +141,8 @@
 
 		  <tr x-ng-if="total_items!==0" class="bg-white">
 		    <td colspan="6"></td>
-		    <td class="fg-magenta">{{total_bill}}</td> 
+		    <td class="fg-magenta">{{total_bill}}</td>
+		    <td class="fg-magenta">{{total_veri}}</td> 
 		    <td colspan="9"></td>
 		  </tr> 
 		</tbody> 
@@ -178,9 +181,9 @@
   <div class="col-md-12">
     <div>
       <p><span class="bg-cyan">青色表示汇款</span>
-	<span class="bg-lightOlive">草绿色表示现金</span>
+	<!-- <span class="bg-lightOlive">草绿色表示现金</span> -->
 	<span class="bg-lightOrange">浅桔色表示刷卡</span>
-	<span class="bg-success">浅绿色表示已审核</span>
+	<span class="bg-lightOlive">浅绿色表示已审核</span> 
 	<span class="bg-grayLight">灰色表示已废弃</span>
       </p>
     </div>

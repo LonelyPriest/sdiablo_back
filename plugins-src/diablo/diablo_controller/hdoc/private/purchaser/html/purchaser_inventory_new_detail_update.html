@@ -299,8 +299,8 @@
 		    <th class="text-center">折扣进</th> 
 		    
 		    <th class="text-center">合计</th>
-		    <th class="text-center">操作</th>
 		    <th class="text-center">溢出</th>
+		    <th class="text-center">操作</th> 
 		  </tr>
 		</thead>
 		<tbody>
@@ -340,8 +340,8 @@
 			<div ng-class="{'has-error':inv.form.tagprice.$invalid
 				       && !inv.form.tagprice.$pristine}">
 			  <input class="form-control"
-				 type="number" step="0.01" 
-				 placeholder="吊牌价"
+				 type="number" step="0.01"
+				 placeholder="吊牌价" 
 				 required
 				 x-ng-pattern="/^\d+(.\d{1,2})?$/"
 				 x-ng-model="inv.tag_price" />
@@ -391,6 +391,10 @@
 				 type="number" step="0.01" 
 				 placeholder="进价"
 				 required
+				 go-row-down="focus_row_auto_down()"
+				 go-row-up="focus_row_auto_up()"
+				 focus-auto="focus_row===inv.order_id"
+				 
 				 x-ng-pattern="/^\d+(.\d{1,2})?$/"
 				 x-ng-model="inv.org_price"
 				 ng-model-options="{debounce:300}"
@@ -407,7 +411,7 @@
 		    	  <input class="form-control"
 		    		 type="number" step="1"
 		    		 placeholder="进价折扣"
-		    		 required
+		    		 required 
 				 x-ng-pattern="/^\d{2}$|100$/"
 		    		 x-ng-model="inv.ediscount"
 				 ng-model-options="{debounce:300}"

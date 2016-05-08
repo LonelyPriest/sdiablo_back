@@ -30,6 +30,19 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 	show_orgprice: rightAuthen.authen_master(user.type)
     };
 
+    $scope.calc_colspan = function(){
+	var column = 16;
+	if ($scope.hidden.base) {
+	    column -= 3;
+	}
+	if (!$scope.right.show_orgprice){
+	    column -= 2;
+	}
+
+	// console.log(column);
+	return column;
+    }
+
     var dialog      = diabloUtilsService; 
     var use_storage = $routeParams.rsn ? false : true;
     
@@ -145,7 +158,10 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 		    d.employee = diablo_get_object(d.employee_id, filterEmployee);
 		    d.type      = diablo_get_object(d.type_id, filterType);
 		    d.promotion = diablo_get_object(d.pid, filterPromotion);
-		    d.score     = diablo_get_object(d.sid, filterScore); 
+		    d.score     = diablo_get_object(d.sid, filterScore);
+		    d.drate     = diablo_discount(d.rprice, d.tag_price);
+		    d.gprofit   = d.rprice <= diablo_pfree ? 0 : diablo_discount(
+			diablo_float_sub(d.rprice, d.org_price), d.rprice);
 		    d.calc      = diablo_float_mul(d.rprice, d.total); 
 		});
 

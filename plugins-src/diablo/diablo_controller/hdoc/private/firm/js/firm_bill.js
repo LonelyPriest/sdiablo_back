@@ -4,7 +4,8 @@ firmApp.controller("firmBillCtrl", function(
     // console.log(filterCard);
     // $scope.retailer = {};
     $scope.pattern = {
-	decimal_2:    diabloPattern.decimal_2
+	// decimal_2:    diabloPattern.decimal_2,
+	number:       diabloPattern.integer_except_zero
     };
 
     // $scope.full_years = diablo_full_year; 
@@ -52,6 +53,7 @@ firmApp.controller("firmBillCtrl", function(
 	    firm:       $scope.firm.id,
 	    mode:       $scope.bill_mode.id,
 	    bill:       $scope.bill,
+	    veri:       diablo_set_integer($scope.verificate),
 	    card:       $scope.bill_card.id,
 	    employee:   $scope.employee.id,
 	    comment:    $scope.comment,
@@ -72,6 +74,8 @@ firmApp.controller("firmBillCtrl", function(
 			$scope.rForm.name.$pristine = true;
 			$scope.bill = undefined;
 			$scope.rForm.bill.$pristine = true;
+			$scope.verificate = undefined;
+			$scope.rForm.veri.$pristine = true;
 		    });
 	    } else {
 		dialog.response(
@@ -80,7 +84,11 @@ firmApp.controller("firmBillCtrl", function(
 		    "厂商结账失败！！" + firmService.error[status.ecode]);
 	    }
 	})
-    }; 
+    };
+
+    $scope.cancel_bill = function(){
+	diablo_goto_page("#/firm/bill_detail");
+    };
 });
 
 firmApp.controller("firmBillDetailCtrl", function(
@@ -93,6 +101,8 @@ firmApp.controller("firmBillDetailCtrl", function(
     $scope.state_css = function(state){
 	return diablo_stock_css(state, diablo_invalid);
     };
+    $scope.bill_check = function(){
+	diablo_goto_page("#/firm/bill")};
 
     /*
      * filter
@@ -100,6 +110,9 @@ firmApp.controller("firmBillDetailCtrl", function(
 
     // initial
     $scope.filters = [];
+    diabloFilter.reset_field();
+    diabloFilter.add_field("card", filterCard);
+    diabloFilter.add_field("firm", filterFirm);
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
 
@@ -141,6 +154,7 @@ firmApp.controller("firmBillDetailCtrl", function(
 		if (page === 1){
 		    $scope.total_items = result.total;
 		    $scope.total_bill  = result.t_bill;
+		    $scope.total_veri  = result.t_veri;
 		}
 
 		angular.forEach(result.data, function(d){
@@ -212,7 +226,7 @@ firmApp.controller("firmBillDetailCtrl", function(
 			"结帐单废弃",
 			"结帐单废弃成功！！单号：" + bill.rsn,
 			undefined,
-			function() {bill.state = diablo_stock_abandoned});
+			function() {bill.state = diablo_stock_has_abandoned});
 		} else {
 		    dialog.response(
 			false,
@@ -235,14 +249,16 @@ firmApp.controller("firmBillUpdateCtrl", function(
     $scope, $routeParams, dateFilter, diabloPattern, diabloUtilsService,
     firmService, filterFirm, filterCard, filterEmployee, user){
     $scope.pattern = {
-	decimal_2:    diabloPattern.decimal_2
+	// decimal_2:    diabloPattern.decimal_2
+	number: diabloPattern.integer_except_zero
     };
 
     // $scope.full_years = diablo_full_year; 
     // $scope.check_year = diablo_now_year();
     $scope.cards = [{no:"== 请选择银行卡号 ==", id:-1}] .concat(filterCard);
     $scope.employees  = filterEmployee;
-    $scope.shops      = user.sortShops; 
+    $scope.shops      = user.sortShops;
+    $scope.firms      = angular.copy(filterFirm);
     $scope.bill_modes = firmService.bill_modes;
     // console.log($scope.cards);
     
@@ -270,9 +286,10 @@ firmApp.controller("firmBillUpdateCtrl", function(
 	$scope.bill_id   = result.id;
 	$scope.stock_id  = result.sid;
 	$scope.shop      = diablo_get_object(result.shop_id, $scope.shops);
-	$scope.firm      = diablo_get_object(result.firm_id, filterFirm);
+	$scope.firm      = diablo_get_object(result.firm_id, $scope.firms);
 	$scope.bill_mode = diablo_get_object(result.mode, $scope.bill_modes);
 	$scope.bill      = result.bill;
+	$scope.veri      = result.veri;      
 	$scope.employee  = diablo_get_object(result.employee_id, $scope.employees); 
 	$scope.bill_date = diablo_set_datetime(result.entry_date);
 	$scope.bill_card = diablo_get_object(result.card_id, $scope.cards);
@@ -282,6 +299,7 @@ firmApp.controller("firmBillUpdateCtrl", function(
 	$scope.o_shop      = angular.copy($scope.shop);
 	$scope.o_bill_mode = angular.copy($scope.bill_mode);
 	$scope.o_bill      = $scope.bill;
+	$scope.o_veri      = $scope.veri;
 	$scope.o_employee  = angular.copy($scope.employee);
 	$scope.o_bill_date = angular.copy($scope.bill_date);
 	$scope.o_bill_card = angular.copy($scope.bill_card);
@@ -300,6 +318,7 @@ firmApp.controller("firmBillUpdateCtrl", function(
 	if ($scope.shop.id === $scope.o_shop.id
 	    &&$scope.bill_mode.id === $scope.o_bill_mode.id
 	    && $scope.bill === $scope.o_bill
+	    && stockUtils.to_integer($scope.veri) === $scope.o_veri
 	    && $scope.employee.id === $scope.o_employee.id
 	    && $scope.bill_date.getTime() === $scope.o_bill_date.getTime()
 	    && $scope.bill_card.id === $scope.o_bill_card.id
@@ -330,7 +349,8 @@ firmApp.controller("firmBillUpdateCtrl", function(
 	firmService.update_bill_w_firm({
 	    rsn:      $routeParams.rsn, 
 	    
-	    bill:     $scope.bill, 
+	    bill:     $scope.bill,
+	    veri:     stockUtils.to_integer($scope.veri),
 	    shop:     get_modified($scope.shop, $scope.o_shop),
 	    mode:     get_modified($scope.bill_mode, $scope.o_bill_mode),
 	    card:     get_modified($scope.bill_card, $scope.o_bill_card),
@@ -344,6 +364,7 @@ firmApp.controller("firmBillUpdateCtrl", function(
 	    mode:     $scope.bill_mode.id,
 	    
 	    o_bill:   $scope.o_bill,
+	    o_veri:   $scope.o_veri
 	}).then(function(status){
 	    console.log(status);
 	    if (status.ecode === 0){

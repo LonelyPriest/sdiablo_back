@@ -184,6 +184,17 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
 	$scope.hidden.base = !$scope.hidden.base
     };
 
+    $scope.calc_colspan = function(){
+	var column = 14;
+	if ($scope.hidden.base){
+	    column -= 3;
+	}
+	if (!$scope.stock_right.show_orgprice){
+	    column -=2;
+	}
+	return column;
+    };
+
     /*
      * authen
      */

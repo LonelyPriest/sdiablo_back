@@ -771,7 +771,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
     $scope.on_select_good = function(item, model, label){
 	console.log(item);
 
-	if (item.tag_price <= 0){
+	if (item.tag_price < 0){
 	    fail_response(2193, function(){
 		$scope.inventories[0] = {$edit:false, $new:true}});
 	    return;
