@@ -12,6 +12,7 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
     $scope.f_sub             = diablo_float_sub;
     $scope.f_mul             = diablo_float_mul;
     $scope.calc_row          = stockUtils.calc_row;
+    $scope.calc_drate        = stockUtils.calc_drate_of_org_price;
 
     $scope.pattern           = {
 	price:    diabloPattern.positive_decimal_2,
@@ -48,7 +49,15 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	)
     };
 
-    $scope.focus = {sale: true};
+    $scope.focus = {style_number:true, reject: false};
+    $scope.auto_focus = function(attr){
+	if (!$scope.focus[attr]){
+	    $scope.focus[attr] = true;
+	}
+	for (var o in $scope.focus){
+	    if (o !== attr) $scope.focus[o] = false;
+	} 
+    };
     
     // init
     var now = $.now(); 
@@ -220,10 +229,12 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	add.discount     = item.discount;
 	add.year         = item.year;
 	add.path         = item.path;
-
 	console.log(add);
 
 	$scope.add_inventory(add);
+
+	// auto focus
+	$scope.auto_focus("reject");
 	
 	return;
     }; 
@@ -389,7 +400,10 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	// add new line
 	$scope.inventories.unshift({$edit:false, $new:true});
 	
-	$scope.re_calculate(); 
+	$scope.re_calculate();
+
+	// auto_focus
+	$scope.auto_focus("style_number");
     };
     
     $scope.add_inventory = function(inv){
@@ -435,7 +449,10 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 		$scope.inventories.unshift({$edit:false, $new:true});
 
 		$scope.disable_refresh   = false;
-		$scope.re_calculate(); 
+		$scope.re_calculate();
+
+		// auto focus
+		$scope.auto_focus("style_number");
 	    };
 	    
 	    var callback = function(params){

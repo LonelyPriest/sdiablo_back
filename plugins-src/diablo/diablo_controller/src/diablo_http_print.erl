@@ -23,7 +23,7 @@
 -export([print/4, print/5, call/2]).
 
 -export([server/1, head/7, detail/2, detail/3,
-	 start_print/8, start_print/5,
+	 start_print/8, start_print/6,
 	 multi_print/1, get_printer_state/4, multi_send/5]).
 
 -import(?f_print,
@@ -43,22 +43,34 @@
 %% print(Merchant, Shop, Content) ->
 %%     gen_server:call(?SERVER, {print, Merchant, Shop, Content}).
 
-print(test, Merchant, Shop, PId) ->
-    gen_server:call(?SERVER, {print_test, Merchant, Shop, PId}).
+print(test, Merchant, Shop, _PId) ->
+    %% gen_server:call(?SERVER, {print_test, Merchant, Shop, PId}).
 
-print(RSn, Merchant, Inventories, Attrs, Print) ->
+    RSN = "88888888",
+    Attrs = [{<<"shop">>, Shop}],
+    Self = self(),
+    spawn(?MODULE, call,
+	  [Self, {print, test, RSN, Merchant, [], Attrs, []}]),
+
+    receive
+	{Self, Any} -> Any
+    after 3000 ->
+	    {error, ?err(print_timeout, RSN)}
+    end.
+
+print(RSN, Merchant, Inventories, Attrs, Print) ->
     %% call({print, RSn, Merchant, Inventories, Attrs, Print}).
     %% gen_server:call(
     %% ?SERVER, {print, RSn, Merchant, Inventories, Attrs, Print}).
     
     Self = self(),
     spawn(?MODULE, call,
-	  [Self, {print, RSn, Merchant, Inventories, Attrs, Print}]),
+	  [Self, {print, normal, RSN, Merchant, Inventories, Attrs, Print}]),
 
     receive
 	{Self, Any} -> Any
     after 3000 ->
-	    {error, ?err(print_timeout, RSn)}
+	    {error, ?err(print_timeout, RSN)}
     end.
     
 
@@ -97,12 +109,7 @@ code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
 
-call(Parent, {print, RSN, Merchant, Invs, Attrs, Print}) ->
-    ?DEBUG("print with RSN ~p, merchant ~p~ninventory ~p~nAttrs ~p"
-	   ", Print  ~p", [RSN, Merchant, Invs, Attrs, Print]),
-
-    ShopId = ?v(<<"shop">>, Attrs), 
-
+get_printer(Merchant, ShopId) ->
     {Printers, ShopInfo} =
 	case ?w_user_profile:get(shop, Merchant, ShopId) of
 	    {ok, []} -> {[], []};
@@ -126,9 +133,51 @@ call(Parent, {print, RSN, Merchant, Invs, Attrs, Print}) ->
 			  end], Shop}
 		end
 	end,
-
-    %% ?DEBUG("printers ~p", [Printers]),
     VPrinters = [P || P <- Printers, length(P) =/= 0 ],
+    {VPrinters, ShopInfo}.
+
+content(test, {Brand, Model, Column}, Shop, Setting) ->
+    title(Brand, Model, Shop)
+	++ body_foot(
+	     Brand, Model, Column, Setting);
+
+content(normal, {Brand, Model, Column},
+	{Merchant, Shop, RSN, Retailer, Setting}, {Invs, Attrs, Print}) ->
+
+    Datetime     = ?v(<<"datetime">>, Attrs),
+    RetailerName = ?v(<<"name">>, Retailer, []),
+    Employee     = ?v(<<"employ">>, Print), 
+    RetailerId = ?v(<<"retailer_id">>, Print),
+    Vip = RetailerId =/= ?to_i(?v(<<"s_customer">>, Setting)),
+    
+    Head = title(Brand, Model, Shop)
+    %% ++ address(Brand, Model, ShopAddr)
+	++ head(Brand, Model, Column, RSN,
+		RetailerName, Employee, Datetime),
+
+    {Body, TotalBalance, STotal, RTotal} =
+	print_content(
+	  -1, Brand, Model, Column,
+	  Merchant, Setting, Invs), 
+
+    Stastic = body_stastic(
+		Brand, Model, Column, TotalBalance,
+		Attrs, Vip, STotal, RTotal),
+
+    Foot = body_foot(
+	     Brand, Model, Column, Setting),
+
+    Head ++ Body ++ Stastic ++ Foot.
+
+call(Parent, {print, Action, RSN, Merchant, Invs, Attrs, Print}) ->
+    ?DEBUG("print with action ~p, RSN ~p, merchant ~p~ninventory ~p~nAttrs ~p"
+	   ", Print  ~p", [Action, RSN, Merchant, Invs, Attrs, Print]),
+
+    ShopId = ?v(<<"shop">>, Attrs), 
+
+    {VPrinters, ShopInfo} = get_printer(Merchant, ShopId), 
+    %% ?DEBUG("printers ~p", [Printers]),
+    %% VPrinters = [P || P <- Printers, length(P) =/= 0 ],
     ?DEBUG("printers ~p", [VPrinters]),
     case VPrinters of
 	[] ->
@@ -139,11 +188,11 @@ call(Parent, {print, RSN, Merchant, Invs, Attrs, Print}) ->
 	    RetailerId = ?v(<<"retailer_id">>, Print),
 	    {ok, Retailer}
 		= ?w_user_profile:get(retailer, Merchant, RetailerId),
-	    RetailerName = ?v(<<"name">>, Retailer, []),
+	    %% RetailerName = ?v(<<"name">>, Retailer, []),
 	    
 	    %% ?DEBUG("retailer  ~p", [Retailer]),
-	    Employee     = ?v(<<"employ">>, Print), 
-	    Datetime     = ?v(<<"datetime">>, Attrs),
+	    %% Employee     = ?v(<<"employ">>, Print), 
+	    %% Datetime     = ?v(<<"datetime">>, Attrs),
 	    %% Total        = ?v(<<"total">>, Attrs, 0),
 	    Direct       = ?v(<<"direct">>, Attrs, 0),
 	    %%  [Date, _]    = string:tokens(?to_s(DateTime), " "),
@@ -171,36 +220,52 @@ call(Parent, {print, RSN, Merchant, Invs, Attrs, Print}) ->
 			  Column = ?v(<<"pcolumn">>, P),
 			  %% Height = ?v(<<"pheight">>, P),
 			  PShop  = ?v(<<"pshop">>, P),
-
+			  
 			  %% ?DEBUG("P ~p", [P]),
 			  Server = server(?v(<<"server_id">>, P)),
 
 			  {ok, Setting}
 			      = detail(base_setting, Merchant, PShop),
+
+			  Content =
+			      case Action of
+				  normal ->
+				      content(
+					normal, 
+					{Brand, Model, Column},
+					{Merchant, ShopName, RSN, Retailer, Setting},
+					{Invs, Attrs, Print});
+				  test ->
+				      content(test,
+					      {Brand, Model, Column},
+					      ShopName,
+					      Setting)
+			      end,
 			  %% ?DEBUG("setting ~p", [Setting]),
-			  Vip = RetailerId =/= ?to_i(?v(<<"s_customer">>, Setting)), 
+			  %% Vip = RetailerId =/= ?to_i(?v(<<"s_customer">>, Setting)),
+			  %% Num = ?to_i(?v(<<"pum">>, Setting, 1)),
 
-			  Head = title(Brand, Model, ShopName)
-			      %% ++ address(Brand, Model, ShopAddr)
-			      ++ head(Brand, Model, Column, RSN,
-			      	      RetailerName, Employee, Datetime),
+			  %% Head = title(Brand, Model, ShopName)
+			  %%     %% ++ address(Brand, Model, ShopAddr)
+			  %%     ++ head(Brand, Model, Column, RSN,
+			  %%     	      RetailerName, Employee, Datetime),
 
-			  {Body, TotalBalance, STotal, RTotal} = print_content(
-			  	   PShop, Brand, Model, Column,
-			  	   Merchant, Setting, Invs), 
+			  %% {Body, TotalBalance, STotal, RTotal} = print_content(
+			  %% 	   PShop, Brand, Model, Column,
+			  %% 	   Merchant, Setting, Invs), 
 
-			  Stastic = body_stastic(
-				      Brand, Model, Column, TotalBalance,
-				      Attrs, Vip, STotal, RTotal),
+			  %% Stastic = body_stastic(
+			  %% 	      Brand, Model, Column, TotalBalance,
+			  %% 	      Attrs, Vip, STotal, RTotal),
 			  
-			  Foot = body_foot(
-				   Brand, Model, Column, Setting),
+			  %% Foot = body_foot(
+			  %% 	   Brand, Model, Column, Setting),
 			  
-			  Content = Head ++ Body ++ Stastic ++ Foot,
-			  
+			  %% Content = Head ++ Body ++ Stastic ++ Foot,
+			  Num = ?to_i(?v(<<"pum">>, Setting, 1)),
 			  [{SN, fun() when Server =:= fcloud ->
 					start_print(
-					  fcloud, SN, Key, Path, Content) 
+					  fcloud, SN, Key, Path, Num, Content) 
 				end}|Acc]
 		  end, [], VPrinters) of
 		PrintInfo ->
@@ -412,15 +477,16 @@ body_foot(Brand, _Model, Column, Setting) ->
 	end ++ "打印日期：" ++ ?utils:current_time(format_localtime), 
     FirstComment ++ OtherComment ++ PrintDatetime.
 
-start_print(fcloud, SN, Key, Path, Body) ->
-    ?DEBUG("fcloud with sn ~p, key ~p, path ~p, body~n~ts",
-	   [SN, Key, Path, ?to_b(Body)]),
+start_print(fcloud, SN, Key, Path, Num, Body) ->
+    ?DEBUG("fcloud with sn ~p, key ~p, path ~p, num ~p, body~n~ts",
+	   [SN, Key, Path, Num, ?to_b(Body)]),
     
     UTF8Body = unicode:characters_to_list(?to_s(Body), utf8),
     
     FormatBody = lists:concat(["sn=", ?to_s(SN),
 			       "&key=", ?to_s(Key),
-			       "&printContent=", ?to_s(UTF8Body)]),
+			       "&printContent=", ?to_s(UTF8Body),
+			       "&times=", ?to_s(Num)]),
 
     %% ?DEBUG("format body ~ts", [?to_b(FormatBody)]),
 

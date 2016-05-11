@@ -102,7 +102,8 @@ wretailerApp.config(['$routeProvider', function($routeProvider){
 	}).
 	when('/promotion/score_detail', {
 	    templateUrl: '/private/wretailer/html/score_detail.html',
-	    controller: 'wretailerScoreDetailCtrl'
+	    controller: 'wretailerScoreDetailCtrl',
+	    resolve: angular.extend({}, user)
 	}).
 	// default
 	otherwise({

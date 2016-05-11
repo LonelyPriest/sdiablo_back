@@ -126,6 +126,7 @@
 				 && !select.form.cashForm.$pristine}">
 	  	    <input class="form-control"
 			   type="number" step="0.01"
+			   disable-key
 			   placeholder="现金"
 			   x-ng-pattern="/^\d+(.\d{1,2})?$/"
 	  		   x-ng-model="select.cash"
@@ -144,6 +145,7 @@
 				 && !select.form.cardForm.$pristine}">
 	  	    <input class="form-control"
 			   type="number" step="0.01"
+			   disable-key
 			   placeholder="刷卡"
 			   x-ng-pattern="/^\d+(.\d{1,2})?$/"
 	  		   x-ng-model="select.card"
@@ -163,6 +165,7 @@
 				 && !select.form.wireForm.$pristine}">
 	  	    <input class="form-control"
 			   type="number" step="0.01"
+			   disable-key
 			   placeholder="汇款"
 			   x-ng-pattern="/^\d+(.\d{1,2})?$/" 
 	  		   x-ng-model="select.wire"/>
@@ -286,7 +289,8 @@
 	<!--BEGN portlet body--> 
 	<div class="portlet-body">
 	  <tabset>
-	    <tab active="tab_active[0].active">
+	    <tab active="tab_active[0].active"
+		 select="focus.style_number=false; auto_focus('style_number')">
 	      <tab-heading>
 	      	入库<i class="glyphicon glyphicon-plus fg-red"></i>
 	      </tab-heading>
@@ -320,7 +324,8 @@
 			<th class="text-center">数量</th>
 			<th x-ng-if="stock_right.show_orgprice"
 			    class="text-center">合计</th>
-			<th class="text-center">溢出</th> 
+			<th class="text-center">溢出</th>
+			<th x-ng-if="stock_right.show_orgprice" class="text-center">折扣率</th>
 			<th class="text-center">操作</th>
 		      </tr>
 		    </thead>
@@ -337,6 +342,7 @@
 					   && !inv.form.good.$pristine}">
 			      <input class="form-control text-left" type="text"
 				     required
+				     focus-auto="focus_of_inv.style_number"
 				     x-ng-model="inv.style_number"
 				     placeholder="货号"
 				     typeahead-editable="false"
@@ -359,6 +365,7 @@
 					   && !inv.form.good.$pristine}">
 			      <input class="form-control text-left" type="text"
 				     required
+				     focus-auto="focus_of_inv.style_number"
 				     x-ng-model="inv.style_number"
 				     placeholder="货号"
 				     typeahead-editable="false"
@@ -394,6 +401,7 @@
 		    		     type="number" step="0.01"
 		    		     placeholder="进价"
 		    		     required
+				     disable-key
 		    		     x-ng-pattern="/^\d+(.\d{1,2})?$/"
 		    		     x-ng-model="inv.org_price"
 		    		     popover-placement="top"
@@ -416,6 +424,7 @@
 		    		     type="number" step="1"
 		    		     placeholder="进价折扣"
 		    		     required
+				     disable-key
 				     x-ng-pattern="/^\d{2}$|100$/"
 		    		     x-ng-model="inv.ediscount"
 		    		     popover-placement="top"
@@ -425,7 +434,7 @@
 			  </form>
 			</td> 
 			
-			<td class="vert-align">
+			<td class="col-md-1 vert-align">
 			  <span x-ng-if="!inv.$new && !inv.update_directory">
 			    {{inv.tag_price}}</span>
 			  <form name="inv.form.tagprice"
@@ -438,6 +447,7 @@
 		    		     type="number" step="0.01"
 		    		     placeholder="吊牌价"
 		    		     required
+				     disable-key
 		    		     x-ng-pattern="/^\d+(.\d{1,2})?$/"
 		    		     x-ng-model="inv.tag_price"
 		    		     popover-placement="top"
@@ -447,7 +457,7 @@
 			  </form>
 			</td>
 			
-			<td class="vert-align">
+			<td class="col-md-1 vert-align">
 			  <span x-ng-if="!inv.$new && !inv.update_directory">
 			    {{inv.discount}}
 			  </span> 
@@ -461,6 +471,7 @@
 		    		     type="number" step="1"
 		    		     placeholder="售价折扣"
 		    		     required
+				     disable-key
 				     x-ng-pattern="/^\d{2}$|100$/"
 		    		     x-ng-model="inv.discount"
 		    		     popover-placement="top"
@@ -470,7 +481,7 @@
 			  </form>
 			</td>
 			
-			<td class="vert-align">
+			<td class="col-md-1 vert-align">
 			  <span x-ng-if="!inv.$new && !inv.update_directory">
 			    {{inv.total}}
 			  </span> 
@@ -484,10 +495,11 @@
 				     type="number" step="1"
 				     placeholder="数量"
 				     required
+				     focus-auto="focus_of_inv.sale" 
+				     disable-key
 				     x-ng-pattern="/^[1-9][0-9]*$/"
 				     x-ng-model="inv.amount[0].count"
 				     x-ng-change="auto_save_free(inv)"
-				     focus-auto="focus.sale"
 				     popover-placement="top"
 				     popover-trigger="focus"
 				     popover="均色均码直接输入数量"/>
@@ -495,17 +507,17 @@
 			  </form>
 			</td> 
 
-			<td x-ng-if="stock_right.show_orgprice" class="vert-align">
+			<td x-ng-if="stock_right.show_orgprice" class="col-md-1 vert-align">
 			  <span x-ng-if="inv.$new"></span>
 			  <span x-ng-if="!inv.$new">
 			    {{calc_row(inv.org_price, inv.ediscount, inv.total - inv.over)}} 
 			  </span>
 			</td>
 
-			<td class="vert-align">
+			<td class="col-md-1 vert-align">
 			  <span x-ng-if="!inv.$new && !inv.update_directory">
 			    {{inv.over}}</span> 
-			  <form name="inv.form.amount"
+			  <form name="inv.form.over"
 				x-ng-if="inv.$new
 					 && inv.free_color_size
 					 || inv.update_directory">
@@ -515,6 +527,7 @@
 				     type="number" step="1"
 				     placeholder="溢出数量"
 				     required
+				     disable-key
 				     x-ng-model="inv.over"
 				     popover-placement="top"
 				     popover-trigger="focus"
@@ -522,8 +535,15 @@
 			    </div>
 			  </form>
 			</td>
+
+			<td x-ng-if="stock_right.show_orgprice" class="vert-align">
+			  <span x-ng-if="inv.org_price && inv.ediscount && inv.tag_price"
+				class="fg-magenta">
+			    {{calc_drate(inv.org_price, inv.ediscount, inv.tag_price)}}
+			  </span>
+			</td>
 			
-			<td class="text-left vert-align">
+			<td class="text-left vert-align col-md-1">
 			  <div x-ng-if="inv.$new"> 
 			    <a class="btn diablo-input-button btn-success"
 			       x-ng-if="!inv.free_color_size"
@@ -589,7 +609,8 @@
 	      </div> <!--END panel-->
 	    </tab>
 
-	    <tab active="tab_active[1].active">
+	    <tab active="tab_active[1].active"
+		 select="focus_of_inv.style_number=false; focus.style_number=true">
 	      <tab-heading>
 		货品<i class="glyphicon glyphicon-plus fg-red"></i>
 	      </tab-heading> 
@@ -615,18 +636,20 @@
 			       name="style_number"
 			       required
 			       capitalize
-			       placeholder="请输入2-10位款号" 
+			       focus-auto="focus.style_number"
+			       placeholder="请输入2-10位款号"
+			       x-ng-blur="focus.style_number=false"
 			       x-ng-model="good.style_number"
 			       x-ng-pattern="pattern.style_number" 
 			       x-ng-enter=""/>
 		      </div>
 		      <span class="input-group-addon bg-white fg-red">*</span>
 		      <span class="input-group-btn">
-			<button class="btn default fg-red"
+			<a type="button" class="btn default fg-red"
 				x-ng-disabled="!good.style_number"
 				x-ng-click="reset_style_number()"> 
 			  <i class="glyphicon glyphicon-pushpin"></i>
-			</button>
+			</a>
 	  	      </span>
 		    </div>
 		  </div>
@@ -666,11 +689,11 @@
 		      </div> 
 		      <span class="input-group-addon bg-white fg-red">*</span>
 		      <span class="input-group-btn">
-			<button class="btn fg-red"
+			<a type="button" class="btn default fg-red"
 				x-ng-disabled="!good.brand"
 				x-ng-click="reset_brand()"> 
 			  <i class="glyphicon glyphicon-pushpin"></i>
-			</button>
+			</a>
 		    </div>
 		  </div>	      
 		  <div ng-if="form.gForm.brand.$invalid
@@ -766,6 +789,7 @@
 			     type="number" step="0.01" 
 			     name="tag_price"
 			     required
+			     disable-key
 			     placeholder="吊牌价，支持二位小数"
 			     x-ng-pattern="/^\d+(.\d{1,2})?$/"
 			     x-ng-enter=""
@@ -793,6 +817,7 @@
 			       type="number" step="1" 
 			       name="discount"
 			       required
+			       disable-key
 			       placeholder="两位整数，无折扣请输入100"
 			       x-ng-pattern="/^\d{2}$|100$/"
 			       x-ng-model="good.discount"/>

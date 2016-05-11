@@ -29,10 +29,11 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope.round             = diablo_round;
     $scope.full_years        = diablo_full_year;
     $scope.calc_row          = stockUtils.calc_row;
+    $scope.calc_drate        = stockUtils.calc_drate_of_org_price;
     
     $scope.disable_refresh   = true;
     $scope.timeout_auto_save = undefined;
-    
+
     $scope.q_typeahead = function(shopId, base){
 	return stockUtils.typeahead(shopId, base); 
     };
@@ -41,7 +42,18 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	diablo_goto_page("#/inventory_new_detail");
     };
 
-    $scope.focus = {sale: true};
+    $scope.focus_of_inv = {style_number: true, sale:false};
+    $scope.auto_focus = function(attr){
+	// console.log(attr);
+	if (!$scope.focus_of_inv[attr]){
+	    $scope.focus_of_inv[attr] = true;
+	}
+	for (var o in $scope.focus_of_inv){
+	    if (o !== attr) $scope.focus_of_inv[o] = false;
+	}
+
+	// console.log($scope.focus_of_inv);
+    };
     
     /*
      * authen
@@ -227,6 +239,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	        $scope.inventories.unshift({$edit:false, $new:true}); 
 		$scope.disable_refresh = false;
 	        $scope.re_calculate();
+
+		$scope.auto_focus("style_number");
 	    } 
 	}
 
@@ -361,11 +375,13 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    };
 	}
 
+	// auto focus
+	$scope.auto_focus("sale");
+	
 	// add at first allways 
 	var add          = $scope.inventories[0];
 	add = copy_select(add, item); 
-	console.log(add);
-
+	console.log(add); 
 	if (!add.free_color_size || $scope.tab_active[1].active){
 	    $scope.add_inventory(add)
 	};
@@ -615,7 +631,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 
 	for (var i=1, l=$scope.inventories.length; i<l; i++){
 	    var one = $scope.inventories[i];
-	    console.log(one);
+	    // console.log(one);
 	    $scope.select.total  += stockUtils.to_integer(one.total);
 	    
 	    $scope.select.should_pay += $scope.calc_row(
@@ -673,11 +689,17 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    // backup
 	    $scope.local_save();
 	    // add new line
-	    console.log("add new line");
+	    // console.log("add new line");
 	    $scope.inventories.unshift({$edit:false, $new:true}); 
-	    
 	    $scope.disable_refresh = false;
-	    $scope.re_calculate(); 
+	    $scope.re_calculate();
+
+	    // auto focus
+	    if ($scope.tab_active[1].active){
+		$scope.focus.style_number = true;
+	    } else {
+		$scope.auto_focus("style_number");
+	    }
 	};
 	
 	var callback = function(params){
@@ -882,10 +904,12 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 
     /*
      * good new
-     */
+     */ 
     $scope.pattern = {style_number: diabloPattern.style_number,
 		      brand: diabloPattern.ch_en_num,
 		      type:  diabloPattern.head_ch_en_num};
+    
+    $scope.focus = {style_number:true};
     
     $scope.gcolors = [];
     var dialog = diabloUtilsService;
@@ -1289,7 +1313,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 				$scope.all_w_goods.splice(0, 0, agood); 
 			    }
 			};
-			
+
+			// $scope.focus.style_number = true;
 			$scope.on_select_good(agood, undefined, undefined);
 		    });		
 	    } else{
@@ -1340,6 +1365,9 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	$scope.form.gForm.discount.$pristine  = true;
 	// $scope.form.gForm.alarm.$pristine     = true;
 	$scope.image = undefined;
+
+	//focus
+	$scope.focus.style_number = true;
     };
     
 });

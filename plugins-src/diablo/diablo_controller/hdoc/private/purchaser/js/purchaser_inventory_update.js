@@ -13,8 +13,8 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
     $scope.sexs        = diablo_sex;
     $scope.seasons     = diablo_season;
     $scope.e_pay_types = purchaserService.extra_pay_types;
-
-    console.log($scope.firms);
+    
+    // console.log($scope.firms);
 
     $scope.has_saved   = false;
 
@@ -23,13 +23,46 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
     $scope.inventories = [];
 
     $scope.get_object = diablo_get_object;
-    $scope.round      = diablo_round; 
+    $scope.round      = diablo_round;
+    $scope.calc_drate = stockUtils.calc_drate_of_org_price;
 
     $scope.calc_row   = function(price, discount, count){
 	return stockUtils.calc_row(price, discount, count)};
     
+    
     $scope.go_back = function(){
 	diablo_goto_page("#/inventory_new_detail/" + $routeParams.ppage);
+    };
+
+    $scope.focus_attrs = {org_price:true, ediscount:false};
+    $scope.on_focus_attr = function(attr, order){
+	// console.log(attr, $scope.focus_row, order);
+	// force syn
+	if (angular.isDefined(diablo_set_integer(order))
+	    && order !== $scope.focus_row){
+	    $scope.focus_row = order; 
+	}
+	if (!$scope.focus_attrs[attr]){
+	    $scope.focus_attrs[attr] = true;
+	    for (o in $scope.focus_attrs){
+		if (o !== attr) $scope.focus_attrs[o] = false;
+	    }
+	}	
+    };
+    
+    $scope.focus_row_auto = function(direction){
+	if (diablo_up === direction){
+	    if ($scope.focus_row < $scope.inventories.length - 1){
+		$scope.focus_row += 1; 
+	    }
+	}
+
+	if (diablo_down === direction){
+	    if ($scope.focus_row > 1){
+		$scope.focus_row -= 1; 
+	    }
+	} 
+	return $scope.focus_row;
     };
     
     // pagination
@@ -230,21 +263,9 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	// $scope.total_items = $scope.inventories.length; 
 	// $scope.current_page_index = $scope.get_page($scope.default_page);
 
-	console.log($scope.old_inventories);
-	console.log($scope.inventories);
+	// console.log($scope.old_inventories);
+	// console.log($scope.inventories);
     });
-
-    $scope.focus_row_auto_up = function(){
-	if ($scope.focus_row < $scope.inventories.length - 1){
-	    $scope.focus_row += 1; 
-	}
-    };
-    
-    $scope.focus_row_auto_down = function(){
-	if ($scope.focus_row > 1){
-	    $scope.focus_row -= 1; 
-	}
-    };
     
     var reset_payment = function(newValue){
 	// console.log("reset_payment", $scope.select);

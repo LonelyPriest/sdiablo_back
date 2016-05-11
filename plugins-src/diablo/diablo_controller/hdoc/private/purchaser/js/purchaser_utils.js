@@ -28,9 +28,26 @@ var stockUtils = function(){
 	},
 
 	calc_row: function(price, discount, count){
+	    if ( 0 === stockUtils.to_float(price)
+		 || 0 === stockUtils.to_float(discount)
+		 || 0 === stockUtils.to_float(count)){
+		return 0;
+	    }
+	    
 	    return diablo_float_mul(
 		diablo_price(price, discount),
 		stockUtils.to_integer(count));
+	},
+
+	calc_drate_of_org_price: function(org_price, ediscount, tag_price){
+	    // console.log(org_price, ediscount, tag_price);
+	    if ( 0 === stockUtils.to_float(org_price)
+		|| 0 === stockUtils.to_float(ediscount)
+		 || 0 === stockUtils.to_float(tag_price)){
+		return 0;
+	    }
+	    return diablo_discount(
+		diablo_price(org_price, ediscount), tag_price);
 	},
 
 	to_float: function(v) {

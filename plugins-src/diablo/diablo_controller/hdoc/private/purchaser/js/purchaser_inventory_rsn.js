@@ -176,6 +176,9 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
     $scope.shopIds   = user.shopIds.concat(user.badrepoIds);
     $scope.goto_page = diablo_goto_page;
 
+    $scope.calc_row   = stockUtils.calc_row;
+    $scope.calc_drate = stockUtils.calc_drate_of_org_price;
+
     /*
      * hidden
      */
@@ -271,7 +274,7 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
      */
     $scope.colspan = 17;
     $scope.items_perpage = diablo_items_per_page();
-    $scope.max_page_size = 15;
+    $scope.max_page_size = 10;
     
     // default the first page
     $scope.default_page = 1;

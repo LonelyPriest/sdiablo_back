@@ -105,7 +105,7 @@
 	  <!--BEGIN row-->
 	  <div class="row diablo-form-group">
 
-	    <div x-ng-if="!stock.show_balance">
+	    <div x-ng-if="!stock_right.show_orgprice">
 	      <div class="col-xs-6 col-md-6"> 
 		<div class="input-group">
 		  <span class="input-group-addon">
@@ -130,7 +130,7 @@
 	      
 	    </div>
 	    
-	    <div x-ng-if="stock.show_balance">
+	    <div x-ng-if="stock_right.show_orgprice">
 	      <div class="col-xs-3 col-md-3"> 
 		<div class="input-group">
 		  <span class="input-group-addon">
@@ -236,6 +236,7 @@
 		    <th x-ng-if="stock_right.show_orgprice" class="text-center">折扣</th>
 		    <th class="text-center">数量</th>
 		    <th x-ng-if="stock_right.show_orgprice" class="text-center">合计</th>
+		    <th x-ng-if="stock_right.show_orgprice" class="text-center">折扣率</th>
 		    <th class="text-center">操作</th>
 		  </tr>
 		</thead>
@@ -251,6 +252,7 @@
 				       && !inv.form.good.$pristine}">
 			  <input class="form-control text-left" type="text"
 				 required
+				 focus-auto="focus.style_number"
 				 x-ng-model="inv.style_number"
 				 placeholder="货号"
 				 typeahead-editable="false"
@@ -302,6 +304,7 @@
 			  <input class="form-control"
 				 type="number" step="0.01" 
 				 required
+				 disable-key
 				 x-ng-pattern="pattern.price"
 				 x-ng-model="inv.org_price"
 				 placeholder="进价"
@@ -323,6 +326,7 @@
 			  <input class="form-control"
 				 type="number" step="1" 
 				 required
+				 disable-key
 				 x-ng-pattern="pattern.discount"
 				 x-ng-model="inv.ediscount"
 				 placeholder="折扣"
@@ -345,10 +349,11 @@
 			  <input class="form-control"
 				 type="number" step="1" 
 				 required
+				 disable-key
 				 x-ng-pattern="pattern.amount"
 				 x-ng-model="inv.amounts[0].reject_count"
 				 x-ng-change="auto_save_free(inv)"
-				 focus-auto="focus.sale"
+				 focus-auto="focus.reject"
 				 placeholder="数量"
 				 popover-placement="top"
 				 popover-trigger="focus"
@@ -364,6 +369,13 @@
 				       && inv.reject">
 			    {{calc_row(inv.org_price, inv.ediscount, inv.reject)}}
 			  </span>
+		      </span>
+		    </td>
+
+		    <td x-ng-if="stock_right.show_orgprice" class="vert-align">
+		      <span x-ng-if="inv.org_price && inv.ediscount && inv.tag_price"
+			    class="fg-magenta">
+			{{calc_drate(inv.org_price, inv.ediscount, inv.tag_price)}}
 		      </span>
 		    </td>
 		    

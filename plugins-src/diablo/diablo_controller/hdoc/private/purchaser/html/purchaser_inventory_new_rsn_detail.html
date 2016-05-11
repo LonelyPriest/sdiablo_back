@@ -92,6 +92,8 @@
 		    <th x-ng-if="stock_right.show_orgprice">进价</th>
 		    <th x-ng-if="stock_right.show_orgprice">折扣进</th>
 		    <th class="info">数量</th>
+		    <th x-ng-if="stock_right.show_orgprice">小计</th>
+		    <th x-ng-if="stock_right.show_orgprice">折扣率</th>
 		    
 		    <th>日期</th> 
 		    <th>操作</th>
@@ -120,13 +122,17 @@
 		    <td x-ng-if="stock_right.show_orgprice">{{inv.ediscount}}</td>
 
 		    <td x-ng-switch on="inv.type">
-		      <span x-ng-switch-when=0>
-			{{inv.amount}}
-		      </span>
-		      <span class="fg-red" x-ng-switch-when=1>
-			{{inv.amount}}
-		      </span>
+		      <span x-ng-switch-when=0>{{inv.amount}}</span>
+		      <span class="fg-red" x-ng-switch-when=1>{{inv.amount}}</span>
 		    </td>
+
+		    <td x-ng-if="stock_right.show_orgprice" class="vert-align"> 
+		      {{calc_row(inv.org_price, inv.ediscount, inv.amount)}}
+		    </td>
+
+		    <td x-ng-if="stock_right.show_orgprice" class="vert-align fg-magenta"> 
+		      {{calc_drate(inv.org_price, inv.ediscount, inv.tag_price)}} 
+		    </td> 
 		    		    
 		    <td>{{inv.entry_date}}</td>
 		    <td>

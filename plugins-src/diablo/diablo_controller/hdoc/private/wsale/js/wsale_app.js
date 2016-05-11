@@ -295,7 +295,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
     
     $scope.timeout_auto_save = undefined;
     $scope.round  = diablo_round;
-    $scope.focus  = {sell: true};
+    // $scope.focus  = {sell: true};
 
     $scope.today = function(){
 	return $.now();
@@ -322,7 +322,17 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    user.right),
     };
 
-    console.log($scope.right);
+    $scope.focus_attr = {style_number:true, sell:false};
+    $scope.auto_focus = function(attr){
+	if (!$scope.focus_attr[attr]){
+	    $scope.focus_attr[attr] = true;
+	}
+	for (var o in $scope.focus_attr){
+	    if (o !== attr) $scope.focus_attr[o] = false;
+	} 
+    };
+
+    // console.log($scope.right);
 
     // all right of user
     // console.log(user); 
@@ -786,11 +796,14 @@ wsaleApp.controller("wsaleNewCtrl", function(
 		return; 
 	    }
 	}; 
+
+	// auto focus
+	$scope.auto_focus("sell");
 	
 	// add at first allways 
 	var add = $scope.inventories[0];
-	add = $scope.copy_select(add, item); 
-	console.log(add); 
+	add = $scope.copy_select(add, item);
+	console.log(add);
 	$scope.add_inventory(add);
 	
 	return;
@@ -1325,7 +1338,9 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	// promotions
 	if ($scope.select.retailer.id !== $scope.setting.no_vip){
 	    wsaleUtils.format_promotion(inv, $scope.show_promotions);
-	} 
+	}
+
+	$scope.auto_focus("style_number");
     };
 
     $scope.calc_discount = function(inv){
@@ -1353,12 +1368,11 @@ wsaleApp.controller("wsaleNewCtrl", function(
 
 	// save
 	inv.o_fdiscount = inv.discount;
-	inv.o_fprice    = inv.fprice;
+	inv.o_fprice    = inv.fprice; 
 	
 	if ($scope.setting.check_sale === diablo_no && inv.free === 0){
 	    inv.free_color_size = true;
-	    inv.amounts         = [{cid:0, size:0}];
-	    $scope.focus.sell = true;
+	    inv.amounts         = [{cid:0, size:0}]; 
 	    // $scope.focus.good = false;
 	} else {
 	    // avoid uncheck sale, but inventory is not free
@@ -1406,14 +1420,16 @@ wsaleApp.controller("wsaleNewCtrl", function(
 			inv.order_id = $scope.inventories.length; 
 			// add new line 
 			$scope.inventories.unshift({$edit:false, $new:true});
-
+			
 			$scope.disable_refresh = false;
 			$scope.local_save();
 			$scope.re_calculate();
 
 			if ($scope.select.retailer.id !== $scope.setting.no_vip){
 			    wsaleUtils.format_promotion(inv, $scope.show_promotions);
-			} 
+			}
+
+			$scope.auto_focus("style_number");
 		    };
 		    
 		    var callback = function(params){

@@ -20,6 +20,7 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
     $scope.get_object      = diablo_get_object;
     $scope.round           = diablo_round;
     $scope.calc_row        = stockUtils.calc_row;
+    $scope.calc_drate      = stockUtils.calc_drate_of_org_price;
     
     $scope.pattern           = {
 	price:    diabloPattern.positive_decimal_2,
@@ -35,6 +36,37 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
     
     $scope.go_back = function(){
 	diablo_goto_page("#/inventory_new_detail/" + $routeParams.ppage);
+    };
+
+    $scope.focus_attrs = {org_price:true, ediscount:false};
+    $scope.on_focus_attr = function(attr, order){
+	// console.log(attr);
+	if (angular.isDefined(diablo_set_integer(order))
+	    && order !== $scope.focus_row){
+	    $scope.focus_row = order; 
+	}
+	
+	if (!$scope.focus_attrs[attr]){
+	    $scope.focus_attrs[attr] = true;
+	    for (o in $scope.focus_attrs){
+		if (o !== attr) $scope.focus_attrs[o] = false;
+	    }
+	}	
+    };
+
+    $scope.focus_row_auto = function(direction){
+	if (diablo_up === direction){
+	    if ($scope.focus_row < $scope.inventories.length - 1){
+		$scope.focus_row += 1; 
+	    }
+	}
+
+	if (diablo_down === direction){
+	    if ($scope.focus_row > 1){
+		$scope.focus_row -= 1; 
+	    }
+	} 
+	return $scope.focus_row;
     };
 
     var dialog = diabloUtilsService;
@@ -233,8 +265,10 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	    $scope.inventories.push(tag);
 	    order_length--;
 	})
-	
-	$scope.inventories.unshift({$edit:false, $new:true}); 
+
+	$scope.inventories.unshift({$edit:false, $new:true});
+	$scope.focus_row = sorts.length; 
+
 	console.log($scope.old_inventories);
 	console.log($scope.inventories);
     });

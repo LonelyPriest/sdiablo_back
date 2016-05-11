@@ -45,6 +45,8 @@
 			   class="form-control"
 			   name="name"
 			   required
+			   focus-auto="focus.firm"
+			   x-ng-blur="focus.firm=false"
 			   placeholder="请选择厂商"
 			   x-ng-model="firm"
 			   typeahead-editable="false"

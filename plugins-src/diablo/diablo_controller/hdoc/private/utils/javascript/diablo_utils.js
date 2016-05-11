@@ -15,34 +15,50 @@ var diabloUtils = angular.module("diabloUtils", []);
 //     }
 // ]);
 
-diabloUtils.directive('goRowDown', function() {
-    return function (scope, element, attrs) {
-	// console.log(attrs);
-        element.bind("keydown", function (event) {
-	    // down
-            if(event.which === 40) {
-                scope.$apply(function (){
-		    var v = scope.$eval(attrs.goRowDown)
-		    // console.log(v);
-                    // scope.$eval(attrs.goRowDown);
-                });
-		
-                event.preventDefault();
-            }
-        });
-    }; 
+diabloUtils.directive('goRow', function() {
+    return {
+	restrict: 'AE',
+	scope: {
+	    autoRow: '&'
+	    // leftAttr: '='
+	},
+	
+	link:function (scope, element, attrs) {
+	    // console.log(modelCtrl);
+
+            element.bind("keydown", function (event) {
+		if(event.which === 40) {
+		    event.preventDefault();
+		    var f = scope.autoRow(); 
+                    scope.$apply(function(){
+			if (angular.isFunction(f)) {
+			    scope.autoRow()(2)
+			}
+		    }); 
+		}
+		if(event.which === 38) {
+		    event.preventDefault();
+		    var f = scope.autoRow();
+                    scope.$apply(function(){
+			if (angular.isFunction(f)) {
+			    scope.autoRow()(0) 
+			}
+		    }); 
+		} 
+            });
+	}
+    } 
 });
 
-diabloUtils.directive('goRowUp', function() {
+diabloUtils.directive('disableKey', function() {
     return function (scope, element, attrs) {
 	// console.log(attrs);
         element.bind("keydown", function (event) {
 	    // down
-            if(event.which === 38) {
-                scope.$apply(function (){
-                    scope.$eval(attrs.goRowUp);
-		    // console.log(v);
-                });
+            if(event.which === 38 || event.which === 40) {
+                // scope.$apply(function (){
+                //     scope.$eval(attrs.goRowUp);
+                // });
 		
                 event.preventDefault();
             }

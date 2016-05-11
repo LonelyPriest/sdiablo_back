@@ -84,9 +84,15 @@
 		    <th class="success">品牌</th>
 		    <th class="warning">类型</th>
 		    <th>年度</th>
-		    <!-- <th>价格</th>  -->
-		    <th>折扣</th>
-		    <th class="info">数量</th> 
+		    
+		    <th>吊牌价</th>
+		    <th>折扣卖</th> 
+		    <th>进价</th>
+		    <th>折扣进</th>
+		    <th class="info">数量</th>
+		    
+		    <th>小计</th>
+		    <th>折扣率</th>
 		    
 		    <th>日期</th> 
 		    <th>操作</th>
@@ -110,15 +116,25 @@
 		    <td>{{inv.brand.name}}</td>
 		    <td>{{inv.itype.name}}</td>
 		    <td>{{inv.year}}</td>
-		    <!-- <td>{{inv.price}}</td>  -->
+
+		    <td>{{inv.tag_price}}</td>
 		    <td>{{inv.discount}}</td>
 
+		    <td>{{inv.org_price}}</td>
+		    <td>{{inv.ediscount}}</td>
+		    
 		    <td x-ng-switch on="inv.type">
 		      <span x-ng-switch-when=0>{{inv.amount}}</span>
-		      <span class="fg-red" x-ng-switch-when=1>
-			{{inv.amount}}
-		      </span>
+		      <span class="fg-red" x-ng-switch-when=1>{{inv.amount}} </span>
 		    </td>
+
+		    <td class="vert-align"> 
+		      {{calc_row(inv.org_price, inv.ediscount, inv.amount)}}
+		    </td>
+
+		    <td class="vert-align fg-magenta"> 
+		      {{calc_drate(inv.org_price, inv.ediscount, inv.tag_price)}} 
+		    </td> 
 		    
 		    <td>{{inv.entry_date}}</td>
 		    
@@ -134,34 +150,12 @@
 		    </td>
 		  </tr>
 		  <tr x-ng-if="total_items!==0" class="bg-white">
-		    <td x-ng-if="!hidden.base" colspan="11"></td>
-		    <td x-ng-if="hidden.base" colspan="8"></td>
+		    <td x-ng-if="!hidden.base" colspan="14"></td>
+		    <td x-ng-if="hidden.base" colspan="11"></td>
 		    <td class="danger">{{total_amounts}}</td>
 		    <td colspan="2"></td>
 		  </tr>
-		</tbody>
-
-		<tfoot>
-		  <!-- <tr> -->
-		  <!--   <td x-ng-show="total_items>items_perpage" colspan={{colspan}}> -->
-		  <!--     <span class="pagination"> -->
-		  <!-- 	<span>显示第 {{current_page}} / {{num_pages}} 项结果， -->
-		  <!-- 	  共 {{total_items}} 项</span> -->
-		  <!--     </span> -->
-		  <!--     <pagination class="pull-right" -->
-		  <!-- 		  total-items="total_items" -->
-		  <!-- 		  items-per-page="items_perpage" -->
-		  <!-- 		  num-pages="num_pages" -->
-		  <!-- 		  max-size="max_page_size" -->
-		  <!-- 		  boundary-links="true" -->
-		  <!-- 		  previous-text="&lsaquo;" next-text="&rsaquo;" -->
-		  <!-- 		  first-text="&laquo;" last-text="&raquo;" -->
-		  <!-- 		  x-ng-model="current_page" -->
-		  <!-- 		  x-ng-init="current_page=default_page" -->
-		  <!-- 		  x-ng-change="page_changed()"></pagination> -->
-		  <!--   </td> -->
-		  <!-- </tr> -->
-		</tfoot>
+		</tbody> 
 		
 	      </table> <!--END supplier table-->
 	    </div> <!--END table responsive-->

@@ -304,6 +304,7 @@
 			      <input class="form-control text-left"
 				     type="text"
 				     required
+				     focus-auto="focus_attr.style_number" 
 				     x-ng-model="inv.style_number"
 				     placeholder="货号"
 				     typeahead-editable="false"
@@ -328,6 +329,7 @@
 				     type="text"
 				     required
 				     x-ng-model="inv.style_number"
+				     focus-auto="focus_attr.style_number"
 				     placeholder="货号"
 				     typeahead-editable="false"
 				     typeahead-on-select="on_select_good(
@@ -423,7 +425,7 @@
 				     required
 				     x-ng-pattern="pattern.sell"
 				     x-ng-model="inv.sell"
-				     focus-auto="focus.sell" 
+				     focus-auto="focus_attr.sell" 
 				     x-ng-change="auto_save_free(inv)" />
 			    </div> 
 			  </form> 

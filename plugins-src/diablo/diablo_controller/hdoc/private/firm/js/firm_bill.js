@@ -8,6 +8,8 @@ firmApp.controller("firmBillCtrl", function(
 	number:       diabloPattern.integer_except_zero
     };
 
+    $scope.focus = {firm:true},
+
     // $scope.full_years = diablo_full_year; 
     // $scope.check_year = diablo_now_year();
     $scope.cards = [{no:"== 请选择银行卡号 ==", id:-1}] .concat(filterCard);
@@ -76,6 +78,8 @@ firmApp.controller("firmBillCtrl", function(
 			$scope.rForm.bill.$pristine = true;
 			$scope.verificate = undefined;
 			$scope.rForm.veri.$pristine = true;
+
+			$scope.focus.firm = true;
 		    });
 	    } else {
 		dialog.response(

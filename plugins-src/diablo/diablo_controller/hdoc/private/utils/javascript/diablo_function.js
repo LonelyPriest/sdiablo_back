@@ -47,6 +47,14 @@ var diablo_bill_card = 1;
 var diablo_bill_wire = 2;
 
 /*
+ * direction
+ */
+diablo_up = 0;
+diablo_right = 1;
+diablo_down = 2;
+diablo_left = 3;
+
+/*
  * retailer
  */
 // var diablo_sys_retailer  = 0;

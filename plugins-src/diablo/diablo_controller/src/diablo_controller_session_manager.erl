@@ -294,4 +294,3 @@ get(mtype, Session) ->
     Session#session.mtype;
 get(time, Session) ->
     Session#session.login_time.
-

@@ -147,14 +147,16 @@ wretailerApp.controller("wretailerScoreNewCtrl", function(
 });
 
 wretailerApp.controller("wretailerScoreDetailCtrl", function(
-    $scope, diabloPattern, diabloUtilsService, wretailerService){
+    $scope, diabloPattern, diabloUtilsService, wretailerService, user){
 
     $scope.rules = wretailerService.score_rules;
     $scope.promotion = {balance2score: [], score2balance: []};
     $scope.select = {balance2score: false, score2balance: false};
-    
-    var dialog = diabloUtilsService;
 
+    $scope.right = {
+	new_score: rightAuthen.authen_master(user.type)
+    };
+    
     wretailerService.list_score_promotion().then(function(result){
     	console.log(result);
 
@@ -174,7 +176,8 @@ wretailerApp.controller("wretailerScoreDetailCtrl", function(
 	diablo_order($scope.promotion.score2balance);
     });
     
-    
+
+    var dialog = diabloUtilsService;
     $scope.new_score = function(){
 	diablo_goto_page("#/promotion/score_new");
     }

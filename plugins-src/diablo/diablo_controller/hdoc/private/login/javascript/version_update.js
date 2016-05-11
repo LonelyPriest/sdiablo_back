@@ -1,6 +1,13 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2016-05-11",
+	 content: [
+	     "电脑上智能光标跟随，增强用户体验",
+	     "增加打印测试功能"
+	 ]
+	},
+	
 	{date: "2016-05-09",
 	 content: [
 	     "编辑采购退货单时，自动进入编辑模式",

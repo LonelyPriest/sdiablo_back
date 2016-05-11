@@ -285,6 +285,9 @@ firmApp.controller("firmTransRsnDetailCtrl", function(
 			 + "/" + $routeParams.ppage.toString());
     };
 
+    $scope.calc_row   = stockUtils.calc_row;
+    $scope.calc_drate = stockUtils.calc_drate_of_org_price;
+
     // initial
     $scope.filters = [];
     diabloFilter.reset_field();
