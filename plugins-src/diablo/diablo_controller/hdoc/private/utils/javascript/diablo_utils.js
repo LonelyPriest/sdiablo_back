@@ -15,6 +15,20 @@ var diabloUtils = angular.module("diabloUtils", []);
 //     }
 // ]);
 
+diabloUtils.directive('ngAffix', function(){
+    return  function(scope, element, attrs){
+	element.affix({
+	    offset: 20
+	    // {
+		// top: 50,
+		// bottom: function () {
+		//     return (this.bottom = $('.footer').outerHeight(true))
+		// };
+	    // }
+	})
+    }
+});
+
 diabloUtils.directive('goRow', function() {
     return {
 	restrict: 'AE',

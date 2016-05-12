@@ -14,13 +14,13 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
     $scope.seasons     = diablo_season;
     $scope.e_pay_types = purchaserService.extra_pay_types;
     
-    // console.log($scope.firms);
-
     $scope.has_saved   = false;
 
-    $scope.old_select  = {};
-    $scope.select      = {};
-    $scope.inventories = [];
+    $scope.old_select      = {};
+    $scope.select          = {};
+    $scope.inventories     = [];
+    $scope.h_inventories   = [];
+    // $scope.select_history  = [];
 
     $scope.get_object = diablo_get_object;
     $scope.round      = diablo_round;
@@ -28,26 +28,70 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 
     $scope.calc_row   = function(price, discount, count){
 	return stockUtils.calc_row(price, discount, count)};
-    
-    
+
     $scope.go_back = function(){
 	diablo_goto_page("#/inventory_new_detail/" + $routeParams.ppage);
     };
 
+    $scope.base_setting = {
+	start_time: stockUtils.start_time(-1, base, $.now(), dateFilter)
+    };
+
+    /*
+     * auto focus
+     */
     $scope.focus_attrs = {org_price:true, ediscount:false};
-    $scope.on_focus_attr = function(attr, order){
-	// console.log(attr, $scope.focus_row, order);
+    $scope.on_focus_attr = function(attr, inv){
+	// console.log("focus");
 	// force syn
-	if (angular.isDefined(diablo_set_integer(order))
-	    && order !== $scope.focus_row){
-	    $scope.focus_row = order; 
+	if (angular.isDefined(diablo_set_integer(inv.order_id))
+	    && inv.order_id !== $scope.focus_row){
+	    $scope.focus_row = inv.order_id;
+	    
 	}
 	if (!$scope.focus_attrs[attr]){
 	    $scope.focus_attrs[attr] = true;
 	    for (o in $scope.focus_attrs){
 		if (o !== attr) $scope.focus_attrs[o] = false;
 	    }
-	}	
+	}
+
+	// flow
+	// console.log("focus:", inv.style_number);
+	var filter_history = $scope.h_inventories.filter(function(h){
+	    return h.style_number === inv.style_number
+		&& h.brand_id === inv.brand.id
+	});
+	
+	if (filter_history.length === 0){
+	    purchaserService.list_w_inventory_new_detail({
+		style_number:inv.style_number,
+		brand:inv.brand_id,
+		start_time: $scope.base_setting.start_time
+	    }).then(function(result){
+		// console.log(result);
+		if (result.ecode === 0){
+		    var history = result.data.filter(function(d){
+			return d.rsn !== $routeParams.rsn;
+		    });
+
+		    angular.forEach(history, function(h){
+			h.brand = diablo_get_object(h.brand_id, $scope.brands);
+			h.firm  = diablo_get_object(h.firm_id, $scope.firms);
+		    });
+
+		    $scope.select_history = {style_number:inv.style_number,
+					     brand_id:    inv.brand_id,
+					     history: history};
+		    
+		    $scope.h_inventories.push($scope.select_history);
+
+		    // console.log($scope.h_inventories); 
+		}
+	    }) 
+	} else {
+	    $scope.select_history = filter_history[0];
+	}
     };
     
     $scope.focus_row_auto = function(direction){
@@ -64,10 +108,11 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	} 
 	return $scope.focus_row;
     };
-    
-    // pagination
-    $scope.items_perpage = diablo_items_per_page();
 
+    $scope.focus_css = function(order){
+	return $scope.focus_row === order ? "vert-align bg-cyan" : "vert-align";
+    };
+    
     $scope.re_calculate = function(){
 	$scope.select.total = 0;
 	$scope.select.should_pay = 0;

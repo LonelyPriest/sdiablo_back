@@ -111,6 +111,9 @@ purchaser_inventory(delete_new, Merchant, RSN, Mode) ->
 purchaser_inventory(list, Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {list_inventory, Merchant, Conditions});
+purchaser_inventory(list_new_detail, Merchant, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {list_new_detail, Merchant, Conditions}); 
 %% purchaser_inventory(last_reject, Merchant, Conditions) ->
 %%     gen_server:call(?SERVER, {last_reject, Merchant, Conditions});
 purchaser_inventory(get_new, Merchant, RSN) ->
@@ -1252,6 +1255,14 @@ handle_call({list_inventory, Merchant, Conditions}, _From, State) ->
     
 		   
     Sql = ?w_good_sql:inventory(list, Merchant, NewConditions),
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({list_new_detail, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("list_new_detail  with merchant ~p, conditions ~p",
+	   [Merchant, Conditions]),
+    Sql = ?w_good_sql:inventory(
+	     new_rsn_groups, new, Merchant, Conditions, fun() -> [] end),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 

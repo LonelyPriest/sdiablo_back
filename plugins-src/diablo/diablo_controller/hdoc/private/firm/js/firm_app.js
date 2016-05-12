@@ -88,7 +88,7 @@ firmApp.config(['$routeProvider', function($routeProvider){
 	    resolve: angular.extend({}, firm)
 	}).
 	// bill
-	when('/firm/bill', {
+	when('/firm/bill/:firm?/:page?', {
 	    templateUrl: '/private/firm/html/firm_bill_check.html',
             controller: 'firmBillCtrl', 
 	    resolve: angular.extend({}, card, employee, user)
@@ -447,6 +447,10 @@ firmApp.controller("firmDetailCtrl", function(
 	$scope.save_to_local(); 
 	diablo_goto_page("#/firm_trans/" + f.id.toString());
     };
+
+    $scope.bill_firm = function(f){
+	diablo_goto_page("#/firm/bill/" + f.id.toString());
+    }
 
     var dialog = diabloUtilsService; 
     $scope.update_firm = function(old_firm){

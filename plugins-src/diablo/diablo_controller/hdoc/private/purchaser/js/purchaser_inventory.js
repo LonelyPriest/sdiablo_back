@@ -82,13 +82,17 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 
 	$scope.select.surplus = 0;
 	$scope.left_balance   = 0;
-	if (angular.isDefined($scope.select.firm) && $scope.select.firm){
+	if (angular.isDefined($scope.select.firm)
+	    && $scope.select.firm && $scope.select.firm !== -1){
 	    $scope.select.surplus = $scope.select.firm.balance;
-	    $scope.left_balance = $scope.select.surplus;
+	    $scope.select.left_balance = $scope.select.surplus;
+	} else {
+	    $scope.select.surplus = undefined;
+	    $scope.select.left_balance = undefined;
 	}
 	
-	$scope.local_save();
-	$scope.re_calculate();
+	// $scope.local_save();
+	// $scope.re_calculate();
 
 	if ($scope.q_prompt === diablo_frontend){
 	    $scope.get_all_w_good();
@@ -295,9 +299,15 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     };
 
     $scope.get_all_w_good = function(){
-	var select_firm = angular.isDefined($scope.select.firm)
-	    && $scope.select.firm ? $scope.select.firm.id : -1;
-	console.log(select_firm);
+	var select_firm = function(){
+	    if (angular.isDefined($scope.select.firm) && $scope.select.firm){
+		return [$scope.select.firm.id, -1];
+	    } else {
+		return -1;
+	    }
+	}();
+	
+	// console.log(select_firm);
 	diabloFilter.match_all_w_good(
 	    $scope.qtime_start($scope.select.shop.id),
 	    select_firm
@@ -370,7 +380,11 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		    "新增库存",
 		    "新增库存失败：" + purchaserService.error[2093],
 		    $scope, function(){
-			$scope.inventories[0] = {$edit:false, $new:true}});
+			$scope.inventories[0] = {$edit:false, $new:true};
+			if ($scope.tab_active[1].active){
+			    $scope.reset_style_number();
+			}
+		    });
 		return;
 	    };
 	}
@@ -696,6 +710,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 
 	    // auto focus
 	    if ($scope.tab_active[1].active){
+		$scope.reset_style_number(); 
 		$scope.focus.style_number = true;
 	    } else {
 		$scope.auto_focus("style_number");
@@ -908,9 +923,49 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope.pattern = {style_number: diabloPattern.style_number,
 		      brand: diabloPattern.ch_en_num,
 		      type:  diabloPattern.head_ch_en_num};
-    
+
     $scope.focus = {style_number:true};
+
+    $scope.select_tab_of_new_good = function(){
+	$scope.focus_of_inv.style_number=false;
+	$scope.focus.style_number=true;
+
+	if (angular.isUndefined($scope.all_w_goods)
+	    || $scope.all_w_goods.length.length === 0){
+	    $scope.get_all_w_good();
+	}
+    };
+
+    $scope.on_select_good_new = function(item, model, label){
+	console.log(item);
+	$scope.good.style_number = item.style_number;
+	$scope.good.type  = item.type;
+	$scope.good.brand = item.brand;
+	$scope.good.sex   = $scope.sex2objs[item.sex];
+	$scope.good.year  = item.year;
+	$scope.good.season    = $scope.season2objs[item.season];
+	$scope.good.tag_price = item.tag_price;
+	$scope.good.discount  = item.discount; 
+	$scope.select.firm    = diablo_get_object(item.firm_id, $scope.firms);
+
+	$scope.is_same_good = true;
+	$scope.on_select_good(item, model, label);
+    };
+
+    $scope.is_same_good = false;
     
+    /*
+     * color
+     */
+    // $scope.gcolors = [{type:"红色", tid:1
+    // 		  colors:[{name:"深红", id:1},
+    // 			  {name:"粉红", id:2}]},
+    // 		 {type:"蓝色", tid:2
+    // 		  colors:[{name:"深蓝", id:3},
+    // 			  {name:"浅蓝", id:4}]}, 
+    
+    // 		];
+
     $scope.gcolors = [];
     var dialog = diabloUtilsService;
 
@@ -924,91 +979,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	} 
 	return false;
     };
-
-    var get_brand = function(brand_name){
-	for (var i=0, l=$scope.brands.length; i<l; i++){
-	    if (brand_name === $scope.brands[i].name){
-		return $scope.brands[i];
-	    }
-	}
-
-	return undefined;
-    }; 
     
-    $scope.is_same_good = false;
-    var check_same_good = function(style_number, brand_name){
-	// console.log(brand_name);
-	if ($scope.is_same_good){
-	    return;
-	}
-	
-	var brand = get_brand(brand_name);
-	if (angular.isUndefined(brand)
-	    || angular.isUndefined(style_number) || !style_number){
-	    $scope.is_same_good = false;
-	} else {
-	    wgoodService.get_purchaser_good({
-		style_number:style_number, brand:brand.id
-	    }).then(function(result){
-		console.log(result); 
-		if (angular.isDefined(result.style_number)){
-		    $scope.good.type = result.type;
-		    $scope.good.sex = $scope.sex2objs[result.sex];
-		    $scope.good.year = result.year;
-		    $scope.good.season = $scope.season2objs[result.season];
-		    $scope.good.tag_price = result.tag_price;
-		    $scope.good.discount = result.discount;
-		    
-		    $scope.select.firm = diablo_get_object(
-			result.firm_id, $scope.firms);
-		    $scope.is_same_good = true;
-		    $scope.on_select_good(result, undefined, undefined); 
-		} else {
-		    $scope.is_same_good = false;
-		} 
-	    })
-	} 
-    };
-
-    var timeout_sytle_number = undefined;
-    $scope.$watch("good.style_number", function(newValue, oldValue){
-	if(angular.isUndefined(newValue)
-	   || angular.equals(newValue, oldValue)){
-	    return;
-	};
-
-	$timeout.cancel(timeout_sytle_number);
-	timeout_sytle_number = $timeout(function(){
-	    // console.log(newValue, oldValue);
-	    check_same_good(newValue, $scope.good.brand);
-	}, diablo_delay)
-    });
-    
-    var timeout_brand = undefined;
-    $scope.$watch("good.brand", function(newValue, oldValue){
-	if(angular.isUndefined(newValue)
-	   || angular.equals(newValue, oldValue)){
-	    return;
-	}
-
-	$timeout.cancel(timeout_brand);
-	timeout_brand = $timeout(function(){
-	    // console.log(newValue, oldValue); 
-	    check_same_good($scope.good.style_number, newValue);
-	}, diablo_delay_300ms) 
-    });
-
-    /*
-     * color
-     */
-    // $scope.gcolors = [{type:"红色", tid:1
-    // 		  colors:[{name:"深红", id:1},
-    // 			  {name:"粉红", id:2}]},
-    // 		 {type:"蓝色", tid:2
-    // 		  colors:[{name:"深蓝", id:3},
-    // 			  {name:"浅蓝", id:4}]}, 
-    
-    // 		];
     angular.forEach($scope.colors, function(color){
     	if (!in_sys_color($scope.gcolors, color)){
     	    $scope.gcolors.push(

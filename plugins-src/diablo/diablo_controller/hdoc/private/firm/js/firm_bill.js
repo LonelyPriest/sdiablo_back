@@ -1,5 +1,5 @@
 firmApp.controller("firmBillCtrl", function(
-    $scope, dateFilter, diabloPattern, diabloUtilsService,
+    $scope, $routeParams, dateFilter, diabloPattern, diabloUtilsService,
     firmService, filterCard, filterEmployee, user){
     // console.log(filterCard);
     // $scope.retailer = {};
@@ -44,8 +44,25 @@ firmApp.controller("firmBillCtrl", function(
 		    address :f.address,
 		    prompt  :f.name + diablo_pinyin(f.name)}
 	});
+
+	// console.log($routeParams.firm);
 	// console.log($scope.firms);
+	if (angular.isDefined($routeParams.firm)){
+	    for (var i=0, l=$scope.firms.length; i<l; i++){
+		if ($scope.firms[i].id === stockUtils.to_integer($routeParams.firm)){
+		    $scope.firm = $scope.firms[i];
+		}
+	    }
+	}
     });
+
+    $scope.go_back = function(){
+	if (angular.isDefined($routeParams.firm)){
+	    diablo_goto_page("#/firm_detail");
+	} else {
+	    diablo_goto_page("#/firm/bill_detail");
+	}
+    }
 
     $scope.check_bill = function(){
 	// console.log($scope.firm, $scope.bill, $scope.bill_mode, $scope.bill_card);
@@ -90,9 +107,9 @@ firmApp.controller("firmBillCtrl", function(
 	})
     };
 
-    $scope.cancel_bill = function(){
-	diablo_goto_page("#/firm/bill_detail");
-    };
+    // $scope.cancel_bill = function(){
+    // 	diablo_goto_page("#/firm/bill_detail");
+    // };
 });
 
 firmApp.controller("firmBillDetailCtrl", function(

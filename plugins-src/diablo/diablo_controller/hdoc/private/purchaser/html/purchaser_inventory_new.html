@@ -610,7 +610,7 @@
 	    </tab>
 
 	    <tab active="tab_active[1].active"
-		 select="focus_of_inv.style_number=false; focus.style_number=true">
+		 select="select_tab_of_new_good()">
 	      <tab-heading>
 		货品<i class="glyphicon glyphicon-plus fg-red"></i>
 	      </tab-heading> 
@@ -641,7 +641,10 @@
 			       x-ng-blur="focus.style_number=false"
 			       x-ng-model="good.style_number"
 			       x-ng-pattern="pattern.style_number" 
-			       x-ng-enter=""/>
+			       x-ng-enter=""
+			       typeahead-on-select="on_select_good_new($item, $model, $label)"
+			       typeahead="g as g.name for g in
+					  all_w_goods|filter:{prompt:$viewValue}|limitTo:prompt_limit"/>
 		      </div>
 		      <span class="input-group-addon bg-white fg-red">*</span>
 		      <span class="input-group-btn">

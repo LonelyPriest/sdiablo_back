@@ -272,7 +272,8 @@ good_match(all_style_number_with_firm, Merchant, StartTime, Firm) ->
 	" where a.merchant=" ++ ?to_s(Merchant)
 	++ case Firm of
 	       [] -> [];
-	       _ -> " and a.firm=" ++ ?to_s(Firm)
+	       -1 -> [];
+	       _ -> ?sql_utils:condition(proplists, {<<"a.firm">>, Firm})
 	   end
 	++ " and a.entry_date>=\'" ++ ?to_s(StartTime) ++ "\'"
 	++ " and a.deleted=" ++ ?to_s(?NO)
@@ -1204,7 +1205,7 @@ amount_delete(RSN, Merchant, Shop, Inv, Amounts) ->
     StyleNumber = ?v(<<"style_number">>, Inv),
     Brand       = ?v(<<"brand">>, Inv),
     Metric      = update_metric(Amounts),
-		     
+    
     ["update w_inventory set amount=amount-" ++ ?to_s(Metric)
      ++ " where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
      ++ " and brand=" ++ ?to_s(Brand)

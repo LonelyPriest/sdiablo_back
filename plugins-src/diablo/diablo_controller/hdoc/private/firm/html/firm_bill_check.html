@@ -9,6 +9,14 @@
       <li>
         <a href="javascript:;">结帐</a>
       </li>
+      
+      <li class="pull-right">
+	<button class="btn red btn-page-breadcrumb"
+		type="button"
+		x-ng-click="go_back()">返回
+	  <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
+      </li>
+      
     </ul>
   </div>
 </div>
@@ -223,7 +231,7 @@
 			ng-disabled="rForm.$invalid || has_billed"
 			x-ng-click="check_bill()">确认</button>
 		<button class="btn btn-warning"
-			x-ng-click="cancel_bill()">取消</button>
+			x-ng-click="go_back()">取消</button>
 	      </span>
 	    </div>
 	  </div> <!--END form action-->

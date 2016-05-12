@@ -126,6 +126,18 @@ action(Session, Req, {"filter_w_inventory_new"}, Payload) ->
 		  news, Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
        end, Req, Payload);
 
+action(Session, Req, {"list_w_inventory_new_detail"}, Payload) ->
+    ?DEBUG("list_w_inventory_new_detail with session ~p, paylaod ~p",
+	   [Session, Payload]),
+    Merchant  = ?session:get(merchant, Session),
+    case ?w_inventory:purchaser_inventory(list_new_detail, Merchant, Payload) of
+	{ok, Details} ->
+	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
+					       {<<"data">>, Details}]}); 
+    	{error, Error} ->
+    	    ?utils:respond(200, Req, Error)
+    end;
+
 
 action(Session, Req, {"filter_w_inventory_new_rsn_group"}, Payload) ->
     ?DEBUG("filter_w_inventory_new_rsn_group with session ~p, paylaod~n~p",

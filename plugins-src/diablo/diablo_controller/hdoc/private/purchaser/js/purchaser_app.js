@@ -492,6 +492,11 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
 	    {condition: condition,
 	     attrs: attrs}).$promise;
     };
+
+
+    this.list_w_inventory_new_detail = function(conditions){
+	return http.save(
+	    {operation: "list_w_inventory_new_detail"}, conditions).$promise};
     
 });
 

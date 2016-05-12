@@ -362,3 +362,8 @@ ul.page-sidebar-menu > li.active > a {
 .bg-success {
     background-color: #dff0d8 !important;
 }
+
+.btn-page-breadcrumb {
+    margin-top:-8px !important;
+    margin-right: -25px !important;
+}

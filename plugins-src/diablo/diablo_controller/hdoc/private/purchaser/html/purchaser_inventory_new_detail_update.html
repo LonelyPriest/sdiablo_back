@@ -268,7 +268,63 @@
 	</div> <!--END table-toolbar-->
 	
 	<!--BEGN portlet body--> 
-	<div class="portlet-body"> 
+	<div class="portlet-body">
+	  <div class="panel panel-default" ng-affix>
+	    <div class="table-responsive">
+	      <table class="table table-bordered table-striped table-hover
+			    table-condensed table-advanced">
+		<thead>
+		  <tr>
+		      <!-- <th class="text-center">序号</th> -->
+		      <th class="text-center">货号</th>
+		      <th class="text-center">品名</th>
+		      <th class="text-center">厂商</th> 
+		      <!-- <th class="text-center">季节</th> --> 
+		      <th class="text-center">吊牌价</th>
+		      <th class="text-center">折扣卖</th>
+		    
+		      <th class="text-center">数量</th> 
+		      <th class="text-center">进价</th>
+		      <th class="text-center">折扣进</th>
+
+		      <th class="text-center">类型</th>
+		      <th class="text-center">日期</th>
+		      <th class="text-center">折扣率</th>
+
+		  </tr>
+		</thead>
+
+		<tbody>
+		  <tr x-ng-repeat="h in select_history.history">
+		    <td>{{h.style_number}}</td>
+		    <td>{{h.brand.name}}</td>
+		    <td class="bg-lightOrange">{{h.firm.name}}</td>
+		    
+		    <td>{{h.tag_price}}</td>
+		    <td>{{h.discount}}</td>
+		    <td>{{h.amount}}</td>
+		    <td class="bg-lightOrange">{{h.org_price}}</td>
+		    <td class="bg-lightOrange">{{h.ediscount}}</td> 
+
+		    <td>
+		      <div x-ng-switch on="h.type">
+			<span x-ng-switch-when=0>入库</span>
+			<span x-ng-switch-when=1 class="bg-red">退货</span>
+		      </div>
+		    </td>
+
+		    <td>{{h.entry_date}}</td>
+		    <td class="fg-red">
+		      {{calc_drate(h.org_price, h.ediscount, h.tag_price)}}
+		    </td>
+		    
+		  </tr>
+		</tbody>
+
+	      </table>
+	    </div>
+	  </div>
+	  
 	  <!--BEGIN panel-->
 	  <div class="panel panel-default">
 	    <div class="table-responsive">
@@ -306,9 +362,11 @@
 		</thead>
 		<tbody>
 		  <tr class="text-center" ng-repeat="inv in inventories"> 
-		    <td>{{inv.order_id}}</td>
+		    <td class="{{focus_css(inv.order_id)}}">{{inv.order_id}}</td>
+		    
 		    <td class="col-md-2 text-left vert-align">
-		      <span ng-if="!inv.$new">{{inv.style_number}}</span>
+		      <span x-ng-if="!inv.$new">{{inv.style_number}}</span>
+		      
 		      <form name="inv.form.good" x-ng-if="inv.$new">
 			<div ng-class="{'has-error':inv.form.good.$invalid
 				       && !inv.form.good.$pristine}">
@@ -330,10 +388,10 @@
 		      </form>
 		    </td>
 		    
-		    <td class="vert-align">{{inv.brand.name}}</td>
-		    <td class="vert-align">{{inv.type.name}}</td>
+		    <td class="{{focus_css(inv.order_id)}}">{{inv.brand.name}}</td>
+		    <td class="{{focus_css(inv.order_id)}}">{{inv.type.name}}</td>
 		    <!-- <td class="vert-align">{{sexs[inv.sex]}}</td> -->
-		    <td class="vert-align">{{seasons[inv.season]}}</td>
+		    <td class="{{focus_css(inv.order_id)}}">{{seasons[inv.season]}}</td>
 
 		    <td class="col-md-1 vert-align">
 		      <span x-ng-if="inv.$new">{{inv.tag_price}}</span>
@@ -399,7 +457,7 @@
 				 go-row
 				 auto-row="focus_row_auto"
 				 focus-auto="focus_attrs.org_price && inv.order_id===focus_row"
-				 x-ng-focus="on_focus_attr('org_price', inv.order_id)"
+				 x-ng-focus="on_focus_attr('org_price', inv)"
 				 x-ng-pattern="/^\d+(.\d{1,2})?$/"
 				 x-ng-model="inv.org_price"
 				 ng-model-options="{debounce:300}"
@@ -420,7 +478,7 @@
 				 go-row
 				 auto-row="focus_row_auto"
 				 focus-auto="focus_attrs.ediscount && inv.order_id===focus_row"
-				 x-ng-focus="on_focus_attr('ediscount', inv.order_id)"
+				 x-ng-focus="on_focus_attr('ediscount', inv)"
 				 x-ng-pattern="/^\d{2}$|100$/"
 		    		 x-ng-model="inv.ediscount"
 				 ng-model-options="{debounce:300}"
@@ -456,9 +514,8 @@
 		      </form>
 		    </td>
 
-		    <td class="vert-align">
-		      <span x-ng-if="inv.org_price && inv.ediscount && inv.tag_price"
-			    class="fg-magenta">
+		    <td class="{{focus_css(inv.order_id)}}">
+		      <span x-ng-if="inv.org_price && inv.ediscount && inv.tag_price">
 			{{calc_drate(inv.org_price, inv.ediscount, inv.tag_price)}}
 		      </span>
 		    </td>
