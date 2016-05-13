@@ -833,6 +833,13 @@ var App = function () {
 	FastClick.attach(document.body);  
     }
 
+    // var disableMousewheelOnNumberOfInput = function(){
+    // 	$(':input[type=number]').on('mousewheel', function(e){
+    // 	    console.log("mosewhell");
+    // 	    e.preventDefault();
+    // 	});
+    // }
+
     // var handleStickNavbar = function(){
     // 	$('.navwrapper').stickUp();
     // }
@@ -1050,6 +1057,8 @@ var App = function () {
             handleFullScreenMode(); // handles full screen
 
 	    handleFastJs();
+
+	    // disableMousewheelOnNumberOfInput();
 	    
 	    // handleColosedSidebarMouseLeave();
         }, 

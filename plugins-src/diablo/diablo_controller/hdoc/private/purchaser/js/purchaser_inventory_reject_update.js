@@ -22,6 +22,9 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
     $scope.calc_row        = stockUtils.calc_row;
     $scope.calc_drate      = stockUtils.calc_drate_of_org_price;
     
+    var dialog             = diabloUtilsService;
+    var setv               = diablo_set_float;
+    
     $scope.pattern           = {
 	price:    diabloPattern.positive_decimal_2,
 	discount: diabloPattern.discount,
@@ -38,12 +41,19 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	diablo_goto_page("#/inventory_new_detail/" + $routeParams.ppage);
     };
 
+    // init
+    $scope.has_saved       = false;
+    $scope.old_select      = {};
+    $scope.select          = {};
+    $scope.inventories     = [];
+    $scope.h_inventories   = [];
+
     $scope.focus_attrs = {org_price:true, ediscount:false};
-    $scope.on_focus_attr = function(attr, order){
+    $scope.on_focus_attr = function(attr, inv){
 	// console.log(attr);
-	if (angular.isDefined(diablo_set_integer(order))
-	    && order !== $scope.focus_row){
-	    $scope.focus_row = order; 
+	if (angular.isDefined(diablo_set_integer(inv.order_id))
+	    && inv.order_id !== $scope.focus_row){
+	    $scope.focus_row = inv.order_id; 
 	}
 	
 	if (!$scope.focus_attrs[attr]){
@@ -51,7 +61,43 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	    for (o in $scope.focus_attrs){
 		if (o !== attr) $scope.focus_attrs[o] = false;
 	    }
-	}	
+	}
+	// flow
+	var filter_history = $scope.h_inventories.filter(function(h){
+	    return h.style_number === inv.style_number
+		&& h.brand_id === inv.brand.id
+	});
+
+	// console.log(inv);
+	if (filter_history.length === 0){
+	    purchaserService.list_w_inventory_new_detail({
+		style_number:inv.style_number,
+		brand:inv.brand.id,
+		end_time: dateFilter($scope.old_select.datetime, "yyyy-MM-dd")
+	    }).then(function(result){
+		// console.log(result);
+		if (result.ecode === 0){
+		    var history = result.data.filter(function(d){
+			return d.rsn !== $routeParams.rsn;
+		    });
+
+		    angular.forEach(history, function(h){
+			// h.brand = diablo_get_object(h.brand_id, $scope.brands);
+			h.firm  = diablo_get_object(h.firm_id, $scope.firms);
+		    });
+
+		    $scope.select_history = {style_number:inv.style_number,
+					     brand_id:    inv.brand.id,
+					     history: history};
+		    
+		    $scope.h_inventories.push($scope.select_history);
+
+		    // console.log($scope.h_inventories); 
+		}
+	    }) 
+	} else {
+	    $scope.select_history = filter_history[0];
+	}
     };
 
     $scope.focus_row_auto = function(direction){
@@ -69,14 +115,9 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	return $scope.focus_row;
     };
 
-    var dialog = diabloUtilsService;
-    var setv   = diablo_set_float;
-
-    // init
-    $scope.has_saved       = false;
-    $scope.old_select      = {};
-    $scope.select          = {};
-    $scope.inventories     = [];
+    $scope.focus_css = function(order){
+	return $scope.focus_row === order ? "vert-align bg-cyan" : "vert-align";
+    }; 
 
     $scope.row_change_price = function(inv){
 	// inv.org_price = stockUtils.to_float(inv.org_price);
@@ -269,8 +310,8 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	$scope.inventories.unshift({$edit:false, $new:true});
 	$scope.focus_row = sorts.length; 
 
-	console.log($scope.old_inventories);
-	console.log($scope.inventories);
+	// console.log($scope.old_inventories);
+	// console.log($scope.inventories);
     });
 
     // match

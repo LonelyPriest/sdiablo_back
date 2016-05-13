@@ -24,18 +24,16 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 
     $scope.get_object = diablo_get_object;
     $scope.round      = diablo_round;
-    $scope.calc_drate = stockUtils.calc_drate_of_org_price;
-
-    $scope.calc_row   = function(price, discount, count){
-	return stockUtils.calc_row(price, discount, count)};
+    $scope.calc_drate = stockUtils.calc_drate_of_org_price; 
+    $scope.calc_row   = stockUtils.calc_row;
 
     $scope.go_back = function(){
 	diablo_goto_page("#/inventory_new_detail/" + $routeParams.ppage);
     };
 
-    $scope.base_setting = {
-	start_time: stockUtils.start_time(-1, base, $.now(), dateFilter)
-    };
+    // $scope.base_setting = {
+    // 	start_time: stockUtils.start_time(-1, base, $.now(), dateFilter)
+    // };
 
     /*
      * auto focus
@@ -67,7 +65,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	    purchaserService.list_w_inventory_new_detail({
 		style_number:inv.style_number,
 		brand:inv.brand_id,
-		start_time: $scope.base_setting.start_time
+		end_time: dateFilter($scope.old_select.datetime, "yyyy-MM-dd")
 	    }).then(function(result){
 		// console.log(result);
 		if (result.ecode === 0){

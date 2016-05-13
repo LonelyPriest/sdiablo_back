@@ -77,8 +77,40 @@ diabloUtils.directive('disableKey', function() {
                 event.preventDefault();
             }
         });
+
+	element.bind("mousewheel", function (event) {
+	    // console.log("mousewheel");
+            event.preventDefault();
+        });
     }; 
 });
+
+diabloUtils.directive('disableWheel', function() {
+    return function (scope, element, attrs) {
+	// console.log(attrs);
+        element.bind("mousewheel", function (event) {
+	    // console.log("mousewheel");
+            event.preventDefault();
+        });
+    }; 
+});
+
+
+// diabloUtils.directive('disableWheel',function() {
+//     return {
+// 	link : function (scope, $element) {
+//             $element.on('focus', function () {
+//                 angular.element(this).on('mousewheel', function (e) {
+//                     e.preventDefault();
+//                 });
+//             });
+//             $element.on('blur', function () {
+//                 angular.element(this).off('mousewheel');
+//             });
+//         }
+//     }
+// });
+
 
 diabloUtils.directive('focusAuto', function($timeout, $parse) {
     return {
