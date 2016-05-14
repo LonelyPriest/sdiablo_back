@@ -232,11 +232,11 @@
 		    <th class="text-center">类别</th> 
 		    <th class="text-center">季节</th>
 		    <th class="text-center">库存</th>
-		    <th x-ng-if="stock_right.show_orgprice" class="text-center">进价</th> 
-		    <th x-ng-if="stock_right.show_orgprice" class="text-center">折扣</th>
-		    <th class="text-center">数量</th>
-		    <th x-ng-if="stock_right.show_orgprice" class="text-center">合计</th>
+		    <th class="text-center">吊牌价</th> 
+		    <th x-ng-if="stock_right.show_orgprice" class="text-center">退货价</th> 
 		    <th x-ng-if="stock_right.show_orgprice" class="text-center">折扣率</th>
+		    <th class="text-center">数量</th> 
+		    <th x-ng-if="stock_right.show_orgprice" class="text-center">小计</th> 
 		    <th class="text-center">操作</th>
 		  </tr>
 		</thead>
@@ -290,6 +290,7 @@
 		    <!-- <td>{{inv.firm}}</td> -->
 		    <td class="vert-align">{{seasons[inv.season]}}</td>
 		    <td class="vert-align">{{inv.total}}</td>
+		    <td class="vert-align">{{inv.tag_price}}</td>
 
 
 		    <td x-ng-if="stock_right.show_orgprice" class="col-md-1 vert-align">
@@ -305,12 +306,15 @@
 				 type="number" step="0.01" 
 				 required
 				 disable-key
+				 placeholder="默认上次进价"
+
 				 x-ng-pattern="pattern.price"
 				 x-ng-model="inv.org_price"
-				 placeholder="进价"
+				 ng-model-options="{debounce:300}"
+				 x-ng-change="row_change_price(inv)"
 				 popover-placement="top"
 				 popover-trigger="focus"
-				 popover="请输入进价"/>
+				 popover="默认上次进价"/>
 		      </form>
 		    </td>
 
@@ -318,21 +322,23 @@
 		      <div x-ng-if="!inv.$new && !inv.free_update">
 			{{inv.ediscount}}
 		      </div> 
-		      <form name="inv.form.discount"
+		      <form name="inv.form.ediscount"
 			    ng-if="inv.$new && inv.free_color_size
 				   || !inv.$new && inv.free_update">
-			<div ng-class="{'has-error':inv.form.discount.$invalid
-				       && !inv.form.discount.$pristine}">
+			<div ng-class="{'has-error':inv.form.ediscount.$invalid
+				       && !inv.form.ediscount.$pristine}">
 			  <input class="form-control"
-				 type="number" step="1" 
+				 type="number" step="0.1" 
 				 required
 				 disable-key
-				 x-ng-pattern="pattern.discount"
+				 placeholder="默认上次折扣率" 
 				 x-ng-model="inv.ediscount"
-				 placeholder="折扣"
+				 x-ng-pattern="/^\d{2}(.\d{1,2})?$|100$/"
+				 ng-model-options="{debounce:300}"
+				 x-ng-change="row_change_ediscount(inv)"
 				 popover-placement="top"
 				 popover-trigger="focus"
-				 popover="请输入折扣"/>
+				 popover="默认上次折扣率"/>
 		      </form>
 		    </td>
 		    
@@ -364,21 +370,11 @@
 		    <td x-ng-if="stock_right.show_orgprice" class="vert-align">
 		      <span x-ng-if="inv.$new"></span>
 		      <span x-ng-if="!inv.$new"> 
-			<span x-ng-if="(inv.org_price || inv.org_price===0)
-				       && inv.ediscount
-				       && inv.reject">
-			    {{calc_row(inv.org_price, inv.ediscount, inv.reject)}}
+			<span x-ng-if="(inv.org_price || inv.org_price===0) && inv.reject">
+			    {{calc_row(inv.org_price, 100, inv.reject)}}
 			  </span>
 		      </span>
-		    </td>
-
-		    <td x-ng-if="stock_right.show_orgprice" class="vert-align">
-		      <span x-ng-if="inv.org_price && inv.ediscount && inv.tag_price"
-			    class="fg-magenta">
-			{{calc_drate(inv.org_price, inv.ediscount, inv.tag_price)}}
-		      </span>
-		    </td>
-		    
+		    </td> 
 		    
 		    <td class="text-left vert-align">
 		      <div x-ng-if="inv.$new"> 
@@ -431,8 +427,8 @@
 		  </tr>
 
 		  <tr x-ng-if="select.total!==0" class="text-center">
-		    <td x-ng-if="stock_right.show_orgprice" colspan="8"></td>
-		    <td x-ng-if="!stock_right.show_orgprice" colspan="6"></td>
+		    <td x-ng-if="stock_right.show_orgprice" colspan="9"></td>
+		    <td x-ng-if="!stock_right.show_orgprice" colspan="7"></td>
 		    <td class="vert-align">{{select.total}}</td>
 		    <td x-ng-if="stock_right.show_orgprice" class="vert-align">
 		      {{select.should_pay}}
@@ -459,6 +455,13 @@
       <div class="col-md-12 col-sm-12 col-xs-12">
 	<div class="input-group">
 	  <span class="input-group-addon">
+	    <i class="glyphicon glyphicon-jpy fg-red"></i>吊牌价
+	  </span>
+	  <input class="form-control"
+		 readonly
+		 x-ng-model="params.tag_price"/>
+	  
+	  <span class="input-group-addon">
 	    <i class="glyphicon glyphicon-jpy fg-red"></i>进价
 	  </span>
 	  
@@ -468,24 +471,30 @@
               <input class="form-control"
                      type="number" step="0.01"
                      required
+		     disable-key
                      x-ng-pattern="/^\d+(.\d{1,2})?$/"
-                     x-ng-model="params.fprice"/>
+		     ng-model-options="{debounce:300}"
+		     x-ng-change="params.get_price_info(params.tag_price, params, 1)"
+                     x-ng-model="params.org_price"/>
             </div>
 	  </form>
 
 	  <span class="input-group-addon">
 	    <i class="glyphicon glyphicon-sort-by-attributes-alt fg-red"></i>
-	    折扣
+	    折扣率
 	  </span>
 
 	  <form name="fdiscount">
 	    <div ng-class="{'has-error':ediscount.$invalid
 			   && !ediscount.$pristine}"> 
 	      <input class="form-control"
-		     type="number" step="0.01" 
+		     type="number" step="0.1" 
 		     required
-		     x-ng-pattern="/^\d{2}$|100$/"
-		     x-ng-model="params.fdiscount"/>
+		     disable-key
+		     x-ng-pattern="/^\d{2}(.\d{1,2})?$|100$/"
+		     ng-model-options="{debounce:300}"
+		     x-ng-change="params.get_price_info(params.tag_price, params, 0)"
+		     x-ng-model="params.ediscount"/>
 	    </div> 
 	  </form> 
 	  
@@ -554,20 +563,28 @@
     <div class="row diablo-form-group">
       <div class="col-md-12 col-sm-12 col-xs-12">
 	<div class="input-group">
+	  
 	  <span class="input-group-addon">
-	    <i class="glyphicon glyphicon-jpy fg-red"></i>进价
+	    <i class="glyphicon glyphicon-jpy fg-red"></i>吊牌价
+	  </span>
+	  <input class="form-control"
+		 readonly
+		 x-ng-model="params.tag_price"/>
+	  
+	  <span class="input-group-addon">
+	    <i class="glyphicon glyphicon-jpy fg-red"></i>退货价
 	  </span> 
           <input class="form-control"
                  readonly
-                 x-ng-model="params.fprice"/>
+                 x-ng-model="params.org_price"/>
 	  
 	  <span class="input-group-addon">
 	    <i class="glyphicon glyphicon-sort-by-attributes-alt fg-red"></i>
-	    折扣
+	    折扣率
 	  </span> 
 	  <input class="form-control"
 		 readonly
-		 x-ng-model="params.fdiscount"/> 
+		 x-ng-model="params.ediscount"/> 
 	</div>
       </div>
     </div>

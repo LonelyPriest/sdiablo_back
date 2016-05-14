@@ -31,13 +31,13 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
     };
 
     $scope.calc_colspan = function(){
-	var column = 16;
+	var column = 14;
 	if ($scope.hidden.base) {
 	    column -= 3;
 	}
-	if (!$scope.right.show_orgprice){
-	    column -= 2;
-	}
+	// if (!$scope.right.show_orgprice){
+	//     column -= 2;
+	// }
 
 	// console.log(column);
 	return column;

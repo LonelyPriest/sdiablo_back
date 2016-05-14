@@ -39,15 +39,39 @@ var stockUtils = function(){
 		stockUtils.to_integer(count));
 	},
 
-	calc_drate_of_org_price: function(org_price, ediscount, tag_price){
+	/*
+	 * get stock price info: org_price, ediscount
+	 * 0: get org_price by ediscount
+	 * 1: get ediscount by org_price
+	 */
+	calc_stock_orgprice_info: function(tag_price, stock, direction){
 	    // console.log(org_price, ediscount, tag_price);
-	    if ( 0 === stockUtils.to_float(org_price)
-		|| 0 === stockUtils.to_float(ediscount)
-		 || 0 === stockUtils.to_float(tag_price)){
-		return 0;
+	    if (!stock.hasOwnProperty('org_price')
+	       || !stock.hasOwnProperty('ediscount')){
+		return stock;
+	    } 
+
+	    if (0 === direction){
+		if (0 === stockUtils.to_float(stock.ediscount)
+		    || 0 === stockUtils.to_float(tag_price)){
+		    return stock;
+		}
+		
+		stock.org_price =  diablo_price(
+		    stockUtils.to_float(stock.tag_price),
+		    stockUtils.to_float(stock.ediscount));
+	    } else {
+		if ( 0 === stockUtils.to_float(stock.org_price)
+		     || 0 === stockUtils.to_float(tag_price)){
+		    return stock;
+		}
+		
+		stock.ediscount = diablo_discount(
+		    stockUtils.to_float(stock.org_price),
+		    stockUtils.to_float(stock.tag_price));
 	    }
-	    return diablo_discount(
-		diablo_price(org_price, ediscount), tag_price);
+
+	    return stock;
 	},
 
 	to_float: function(v) {

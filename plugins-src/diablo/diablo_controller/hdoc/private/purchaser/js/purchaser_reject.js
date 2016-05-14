@@ -12,7 +12,7 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
     $scope.f_sub             = diablo_float_sub;
     $scope.f_mul             = diablo_float_mul;
     $scope.calc_row          = stockUtils.calc_row;
-    $scope.calc_drate        = stockUtils.calc_drate_of_org_price;
+    // $scope.calc_drate        = stockUtils.calc_drate_of_org_price;
 
     $scope.pattern           = {
 	price:    diabloPattern.positive_decimal_2,
@@ -58,6 +58,7 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	    if (o !== attr) $scope.focus[o] = false;
 	} 
     };
+
     
     // init
     var now = $.now(); 
@@ -121,6 +122,20 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 
     };
 
+    $scope.row_change_price = function(inv){
+	stockUtils.calc_stock_orgprice_info(inv.tag_price, inv, 1); 
+	if (angular.isDefined(diablo_set_float(inv.org_price))){
+	    $scope.re_calculate(); 
+	}
+    };
+
+    $scope.row_change_ediscount = function(inv){
+	stockUtils.calc_stock_orgprice_info(inv.tag_price, inv, 0); 
+	if (angular.isDefined(diablo_set_float(inv.ediscount))){
+	    $scope.re_calculate();
+	}
+    };
+
     $scope.re_calculate = function(){
 	$scope.select.total = 0;
 	$scope.select.should_pay = 0;
@@ -130,7 +145,7 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	    
 	    $scope.select.total  += parseInt(one.reject); 
 	    $scope.select.should_pay -= stockUtils.calc_row(
-		one.org_price, one.ediscount, one.reject); 
+		one.org_price, 100, one.reject); 
 	} 
 	$scope.select.should_pay = $scope.round($scope.select.should_pay);
 
@@ -436,8 +451,8 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 
 		return {amounts:   params.amounts,
 			reject:    reject_total,
-			fprice:    params.fprice,
-		        fdiscount: params.fdiscount};
+			org_price: params.org_price,
+		        ediscount: params.ediscount};
 	    };
 
 	    var after_add = function(){
@@ -459,8 +474,8 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 		var result = add_callback(params);
 		inv.amounts   = result.amounts;
 		inv.reject    = result.reject;
-		inv.org_price = result.fprice;
-		inv.ediscount = result.fdiscount;
+		inv.org_price = result.org_price;
+		inv.ediscount = result.ediscount;
 		after_add();
 	    };
 
@@ -470,11 +485,13 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 		inv.free_color_size = false;
 		var payload = {sizes:        inv.sizes,
 			       colors:       inv.colors,
-			       fprice:       inv.org_price,
-			       fdiscount:    inv.ediscount,
+			       tag_price:    inv.tag_price,
+			       org_price:    inv.org_price,
+			       ediscount:    inv.ediscount,
 			       amounts:      inv.amounts,
 			       get_amount:   get_amount,
-			       valid:        valid_all};
+			       valid:        valid_all,
+			       get_price_info: stockUtils.calc_stock_orgprice_info};
 		
 		diabloUtilsService.edit_with_modal(
 		    "inventory-new.html",
@@ -516,8 +533,8 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
     $scope.inventory_detail = function(inv){
 	var payload = {sizes:        inv.sizes,
 		       colors:       inv.colors,
-		       fprice:       inv.org_price,
-		       fdiscount:    inv.ediscount,
+		       org_price:    inv.org_price,
+		       ediscount:    inv.ediscount,
 		       amounts:      inv.amounts,
 		       get_amount:   get_amount};
 	diabloUtilsService.edit_with_modal(
@@ -545,20 +562,22 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 		}
 	    });
 
-	    inv.org_price = params.fprice;
-	    inv.ediscount = params.fdiscount;
+	    inv.org_price = params.org_price;
+	    inv.ediscount = params.ediscount;
 	    
 	    $scope.re_calculate(); 
 	};
 
 	var payload = {sizes:        inv.sizes,
 		       colors:       inv.colors,
-		       fprice:       inv.org_price,
-		       fdiscount:    inv.ediscount,
+		       tag_price:    inv.tag_price,
+		       org_price:    inv.org_price,
+		       ediscount:    inv.ediscount,
 		       amounts:      inv.amounts,
 		       get_amount:   get_amount,
 		       // valid_reject: valid_reject,
-		       valid:        valid_all}; 
+		       valid:        valid_all,
+		       get_price_info: stockUtils.calc_stock_orgprice_info}; 
 	diabloUtilsService.edit_with_modal(
 	    "inventory-new.html",
 	    inv.sizes.length >= 6 ? "lg" : undefined,
@@ -592,6 +611,7 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
     var timeout_auto_save = undefined;
     $scope.auto_save_free = function(inv){
 
+	console.log(inv);
 	$timeout.cancel($scope.timeout_auto_save); 
 	if (angular.isUndefined(inv.amounts[0].reject_count)
 	    || !inv.amounts[0].reject_count

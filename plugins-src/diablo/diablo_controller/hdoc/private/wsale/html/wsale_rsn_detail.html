@@ -99,14 +99,12 @@
 		    <!-- <th>颜色</th> -->
 		    <!-- <th>数量</th> -->
 		    
-		    <th x-ng-if="right.show_orgprice">进价</th>
-		    <th x-ng-if="right.show_orgprice">折扣进</th>
-
 		    <th class="info">吊牌价</th>
 		    <!-- <th class="info">单价</th> -->
 		    <th class="danger">成交价</th>
 		    <th>数量</th> 
 		    <th>小计</th>
+		    <th x-ng-if="right.show_orgprice">进价</th> 
 		    <th>折扣率</th>
 		    <th x-ng-if="right.show_orgprice">毛利率</th> 
 		    <th>备注</th>
@@ -136,9 +134,7 @@
 		    <td>{{inv.firm.name}}</td>
 
 		    <!-- <td>{{inv.color}}</td> -->
-		    <!-- <td>{{inv.total}}</td>  -->
-		    <td x-ng-if="right.show_orgprice" class="fg-pink">{{inv.org_price}}</td>
-		    <td x-ng-if="right.show_orgprice" class="fg-pink">{{inv.ediscount}}</td>
+		    <!-- <td>{{inv.total}}</td>  --> 
 		    <!-- <td>{{inv.fprice}}</td> -->
 
 		    <td>{{inv.tag_price}}</td> 
@@ -150,8 +146,11 @@
 		    </td>
 		    <td>{{inv.calc}} </td>
 		    <!-- <td>{{inv.rdiscount}} </td> -->
-		    <td class="fg-blue">{{inv.drate}} </td>
-		    <td x-ng-if="right.show_orgprice" class="fg-magenta">{{inv.gprofit}} </td>
+		    <!-- <td class="fg-blue">{{inv.drate}} </td> -->
+		    
+		    <td x-ng-if="right.show_orgprice" class="fg-pink">{{inv.org_price}}</td>
+		    <td x-ng-if="right.show_orgprice" class="fg-pink">{{inv.ediscount}}</td>
+		    <td x-ng-if="right.show_orgprice" class="fg-orange">{{inv.gprofit}} </td>
 		    <td>{{inv.comment}}</td>
 		    <td>{{inv.entry_date}}</td>
 		    <td>

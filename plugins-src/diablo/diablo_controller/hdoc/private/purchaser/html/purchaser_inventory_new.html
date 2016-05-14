@@ -312,20 +312,21 @@
 			<!-- <th class="text-center">性别</th> -->
 			<th class="text-center">年份</th>
 			<th class="text-center">季节</th>
+
+			<th class="text-center">吊牌价</th>
+			<th class="text-center">折扣</th>
 			
 			<th x-ng-if="stock_right.show_orgprice"
 			    class="text-center">进价</th>
 			<th x-ng-if="stock_right.show_orgprice"
-			    class="text-center">折扣进</th>
+			    class="text-center">折扣率</th>
 
-			<th class="text-center">吊牌价</th>
-			<th class="text-center">折扣卖</th>
 			
 			<th class="text-center">数量</th>
 			<th x-ng-if="stock_right.show_orgprice"
 			    class="text-center">合计</th>
 			<th class="text-center">溢出</th>
-			<th x-ng-if="stock_right.show_orgprice" class="text-center">折扣率</th>
+			<!-- <th x-ng-if="stock_right.show_orgprice" class="text-center">折扣率</th> -->
 			<th class="text-center">操作</th>
 		      </tr>
 		    </thead>
@@ -387,52 +388,7 @@
 			<!-- <td class="vert-align">{{sexs[inv.sex]}}</td> -->
 			<!-- <td>{{inv.firm}}</td> -->
 			<td class="vert-align">{{inv.year}}</td>
-			<td class="vert-align">{{seasons[inv.season]}}</td>
-			
-			<td x-ng-if="stock_right.show_orgprice" class="col-md-1 vert-align">
-			  <span x-ng-if="!inv.$new && !inv.update_directory">
-		    	    {{inv.org_price}}</span>
-			  <form name="inv.form.orgprice"
-		    		x-ng-if="inv.$new && inv.free_color_size
-		    			 || inv.update_directory">
-		    	    <div ng-class="{'has-error':inv.form.orgprice.$invalid
-		    			   && !inv.form.orgprice.$pristine}">
-		    	      <input class="form-control"
-		    		     type="number" step="0.01"
-		    		     placeholder="进价"
-		    		     required
-				     disable-key
-		    		     x-ng-pattern="/^\d+(.\d{1,2})?$/"
-		    		     x-ng-model="inv.org_price"
-		    		     popover-placement="top"
-		    		     popover-trigger="focus"
-		    		     popover="请输入进价"/>
-		    	    </div>
-			  </form>
-			</td>
-
-			<td x-ng-if="stock_right.show_orgprice" class="col-md-1 vert-align">
-			  <span x-ng-if="!inv.$new && !inv.update_directory">
-		    	    {{inv.ediscount}}
-			  </span>
-			  <form name="inv.form.ediscount"
-		    		x-ng-if="inv.$new && inv.free_color_size
-		    			 || inv.update_directory">
-		    	    <div ng-class="{'has-error':inv.form.ediscount.$invalid
-		    			   && !inv.form.ediscount.$pristine}">
-		    	      <input class="form-control"
-		    		     type="number" step="1"
-		    		     placeholder="进价折扣"
-		    		     required
-				     disable-key
-				     x-ng-pattern="/^\d{2}$|100$/"
-		    		     x-ng-model="inv.ediscount"
-		    		     popover-placement="top"
-		    		     popover-trigger="focus"
-		    		     popover="请输入进价折扣"/>
-		    	    </div>
-			  </form>
-			</td> 
+			<td class="vert-align">{{seasons[inv.season]}}</td> 
 			
 			<td class="col-md-1 vert-align">
 			  <span x-ng-if="!inv.$new && !inv.update_directory">
@@ -480,6 +436,55 @@
 		    	    </div>
 			  </form>
 			</td>
+
+			<td x-ng-if="stock_right.show_orgprice" class="col-md-1 vert-align">
+			  <span x-ng-if="!inv.$new && !inv.update_directory">
+		    	    {{inv.org_price}}</span>
+			  <form name="inv.form.orgprice"
+		    		x-ng-if="inv.$new && inv.free_color_size
+		    			 || inv.update_directory">
+		    	    <div ng-class="{'has-error':inv.form.orgprice.$invalid
+		    			   && !inv.form.orgprice.$pristine}">
+		    	      <input class="form-control"
+		    		     type="number" step="0.01"
+		    		     placeholder="进价"
+		    		     required
+				     disable-key
+		    		     x-ng-pattern="/^\d+(.\d{1,2})?$/"
+		    		     x-ng-model="inv.org_price"
+				     ng-model-options="{debounce:300}"
+				     x-ng-change="row_change_price(inv)"
+		    		     popover-placement="top"
+		    		     popover-trigger="focus"
+		    		     popover="请输入进价"/>
+		    	    </div>
+			  </form>
+			</td>
+
+			<td x-ng-if="stock_right.show_orgprice" class="col-md-1 vert-align">
+			  <span x-ng-if="!inv.$new && !inv.update_directory">
+		    	    {{inv.ediscount}}
+			  </span>
+			  <form name="inv.form.ediscount"
+		    		x-ng-if="inv.$new && inv.free_color_size
+		    			 || inv.update_directory">
+		    	    <div ng-class="{'has-error':inv.form.ediscount.$invalid
+		    			   && !inv.form.ediscount.$pristine}">
+		    	      <input class="form-control"
+		    		     type="number" step="0.1"
+		    		     placeholder="进价折扣率"
+		    		     required
+				     disable-key
+		    		     x-ng-model="inv.ediscount"
+				     x-ng-pattern="/^\d{2}(.\d{1,2})?$|100$/"
+				     ng-model-options="{debounce:300}"
+				     x-ng-change="row_change_ediscount(inv)"
+		    		     popover-placement="top"
+		    		     popover-trigger="focus"
+		    		     popover="请输入进价折扣率"/>
+		    	    </div>
+			  </form>
+			</td>
 			
 			<td class="col-md-1 vert-align">
 			  <span x-ng-if="!inv.$new && !inv.update_directory">
@@ -510,7 +515,7 @@
 			<td x-ng-if="stock_right.show_orgprice" class="col-md-1 vert-align">
 			  <span x-ng-if="inv.$new"></span>
 			  <span x-ng-if="!inv.$new">
-			    {{calc_row(inv.org_price, inv.ediscount, inv.total - inv.over)}} 
+			    {{calc_row(inv.org_price, 100, inv.total - inv.over)}} 
 			  </span>
 			</td>
 
@@ -536,12 +541,12 @@
 			  </form>
 			</td>
 
-			<td x-ng-if="stock_right.show_orgprice" class="vert-align">
-			  <span x-ng-if="inv.org_price && inv.ediscount && inv.tag_price"
-				class="fg-magenta">
-			    {{calc_drate(inv.org_price, inv.ediscount, inv.tag_price)}}
-			  </span>
-			</td>
+			<!-- <td x-ng-if="stock_right.show_orgprice" class="vert-align"> -->
+			<!--   <span x-ng-if="inv.org_price && inv.ediscount && inv.tag_price" -->
+			<!-- 	class="fg-magenta"> -->
+			<!--     {{calc_drate(inv.org_price, inv.ediscount, inv.tag_price)}} -->
+			<!--   </span> -->
+			<!-- </td> -->
 			
 			<td class="text-left vert-align col-md-1">
 			  <div x-ng-if="inv.$new"> 
@@ -907,44 +912,11 @@
 
 <script type="text/ng-template" id="inventory-new.html">
   <div class="modal-body">
-    <div class="diablo-form-group" x-ng-if="params.right.show_orgprice"> 
-      <div class="input-group">
-	<span class="input-group-addon">
-	  <i class="glyphicon glyphicon-yen fg-red"></i>进价
-	</span>
-	<form name="fprice">
-	  <div ng-class="{'has-error':fprice.$invalid
-			 && !fprice.$pristine}"> 
-	    <input class="form-control text-center"
-		   type="number" step="0.01"
-		   disable-key
-		   x-ng-pattern="/^\d+(.\d{1,2})?$/"
-		   x-ng-model="params.org_price"/>
-	  </div>
-	</form>
-	
-	<span class="input-group-addon">
-	  <i class="glyphicon glyphicon-sort-by-attributes-alt fg-red"></i>
-	  折扣
-	</span>
-	<form name="ediscount">
-	  <div ng-class="{'has-error':ediscount.$invalid
-			 && !ediscount.$pristine}"> 
-	    <input class="form-control"
-		   type="number" step="1" 
-		   required
-		   disable-key
-		   x-ng-pattern="/^\d{2}$|100$/"
-		   x-ng-model="params.ediscount"/>
-	  </div> 
-	</form>
-      </div> 
-    </div>
 
     <div class="diablo-form-group"> 
       <div class="input-group">
 	<span class="input-group-addon">
-	  <i class="glyphicon glyphicon-yen fg-red"></i>售价
+	  <i class="glyphicon glyphicon-yen fg-red"></i>吊牌价
 	</span>
 	<form name="tprice">
 	  <div ng-class="{'has-error':tprice.$invalid
@@ -974,6 +946,44 @@
 	</form>
       </div>
     </div>
+    
+    <div class="diablo-form-group" x-ng-if="params.right.show_orgprice"> 
+      <div class="input-group">
+	<span class="input-group-addon">
+	  <i class="glyphicon glyphicon-yen fg-red"></i>进货价
+	</span>
+	<form name="fprice">
+	  <div ng-class="{'has-error':fprice.$invalid
+			 && !fprice.$pristine}"> 
+	    <input class="form-control text-center"
+		   type="number" step="0.01"
+		   disable-key
+		   x-ng-pattern="/^\d+(.\d{1,2})?$/"
+		   ng-model-options="{debounce:300}"
+		   x-ng-change="params.get_price_info(params.tag_price, params, 1)"
+		   x-ng-model="params.org_price"/>
+	  </div>
+	</form>
+	
+	<span class="input-group-addon">
+	  <i class="glyphicon glyphicon-sort-by-attributes-alt fg-red"></i>
+	  折扣率
+	</span>
+	<form name="ediscount">
+	  <div ng-class="{'has-error':ediscount.$invalid
+			 && !ediscount.$pristine}"> 
+	    <input class="form-control"
+		   type="number" step="0.1" 
+		   required
+		   disable-key
+		   x-ng-pattern="/^\d{2}(.\d{1,2})?$|100$/"
+		   ng-model-options="{debounce:300}"
+		   x-ng-change="params.get_price_info(params.tag_price, params, 0)"
+		   x-ng-model="params.ediscount"/>
+	  </div> 
+	</form>
+      </div> 
+    </div> 
 
     <div class="diablo-form-group"> 
       <div class="input-group">

@@ -69,18 +69,20 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	});
 
 	// console.log(inv);
+	var end_time = $scope.old_select.datetime.getTime() + diablo_day_millisecond;
 	if (filter_history.length === 0){
 	    purchaserService.list_w_inventory_new_detail({
 		style_number:inv.style_number,
 		brand:inv.brand.id,
-		end_time: dateFilter($scope.old_select.datetime, "yyyy-MM-dd")
+		end_time: dateFilter(end_time, "yyyy-MM-dd")
 	    }).then(function(result){
 		// console.log(result);
 		if (result.ecode === 0){
-		    var history = result.data.filter(function(d){
-			return d.rsn !== $routeParams.rsn;
-		    });
+		    // var history = result.data.filter(function(d){
+		    // 	return d.rsn !== $routeParams.rsn;
+		    // });
 
+		    var history = angular.copy(result.data);
 		    angular.forEach(history, function(h){
 			// h.brand = diablo_get_object(h.brand_id, $scope.brands);
 			h.firm  = diablo_get_object(h.firm_id, $scope.firms);
@@ -121,13 +123,21 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 
     $scope.row_change_price = function(inv){
 	// inv.org_price = stockUtils.to_float(inv.org_price);
+	inv.ediscount = diablo_discount(
+	    stockUtils.to_float(inv.org_price),
+	    stockUtils.to_float(inv.tag_price));
+	
 	if (angular.isDefined(diablo_set_float(inv.org_price))){
 	    $scope.re_calculate(); 
 	}
     };
 
     $scope.row_change_ediscount = function(inv){
-	if (angular.isDefined(diablo_set_integer(inv.ediscount))){
+	inv.org_price = diablo_price(
+	    stockUtils.to_float(inv.tag_price),
+	    stockUtils.to_float(inv.ediscount));
+	
+	if (angular.isDefined(diablo_set_float(inv.ediscount))){
 	    $scope.re_calculate();
 	}
     };
@@ -141,9 +151,7 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	    $scope.select.total      += parseInt(one.reject);
 
 	    $scope.select.should_pay += stockUtils.calc_row(
-		stockUtils.to_float(one.org_price),
-		one.reject,
-		stockUtils.to_float(one.ediscount)); 
+		stockUtils.to_float(one.org_price), 100, one.reject); 
 	};
 
 	$scope.select.should_pay = $scope.round($scope.select.should_pay);
@@ -573,7 +581,7 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 		free           : add.free,
 		org_price      : stockUtils.to_float(add.org_price),
 		// tag_price      : parseFloat(add.tag_price), 
-		ediscount      : stockUtils.to_integer(add.ediscount),
+		ediscount      : stockUtils.to_float(add.ediscount),
 		// discount       : add.discount,
 		year           : add.year,
 		path           : add.path,

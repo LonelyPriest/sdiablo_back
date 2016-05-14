@@ -29,7 +29,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope.round             = diablo_round;
     $scope.full_years        = diablo_full_year;
     $scope.calc_row          = stockUtils.calc_row;
-    $scope.calc_drate        = stockUtils.calc_drate_of_org_price;
+    // $scope.calc_drate        = stockUtils.calc_drate_of_org_price;
     
     $scope.disable_refresh   = true;
     $scope.timeout_auto_save = undefined;
@@ -371,9 +371,12 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 			$scope.inventories[0] = {$edit:false, $new:true}});
 		return;
 	    }
-
-	    if ((angular.isDefined($scope.inventories[i].firm_id)
-		 &&  $scope.inventories[i].firm_id !== -1)
+	    
+	    if ($scope.inventories[i].firm_id === -1) {
+		continue;
+	    }
+	    
+	    if (item.firm_id !== -1
 		&& item.firm_id !== $scope.inventories[i].firm_id){
 		diabloUtilsService.response_with_callback(
 		    false,
@@ -389,11 +392,19 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    };
 	}
 
+	// console.log($scope.select.firm);
+
+	if (angular.isUndefined($scope.select.firm)
+	    || !$scope.select.firm
+	    || $scope.select.firm.id === -1){
+	    $scope.select.firm = diablo_get_object(item.firm_id, $scope.firms);
+	}
+
 	// auto focus
 	$scope.auto_focus("sale");
 	
 	// add at first allways 
-	var add          = $scope.inventories[0];
+	var add = $scope.inventories[0];
 	add = copy_select(add, item); 
 	console.log(add); 
 	if (!add.free_color_size || $scope.tab_active[1].active){
@@ -536,10 +547,10 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		s_group     : add.s_group,
 		free        : add.free,
 		// promotion   : add.pid,
-		org_price   : parseFloat(add.org_price),
-		tag_price   : parseFloat(add.tag_price), 
-		ediscount   : parseInt(add.ediscount),
-		discount    : parseInt(add.discount),
+		org_price   : diablo_set_float(add.org_price),
+		tag_price   : diablo_set_float(add.tag_price), 
+		ediscount   : diablo_set_float(add.ediscount),
+		discount    : diablo_set_float(add.discount),
 		
 		path        : add.path,
 		alarm_day   : add.alarm_day,
@@ -636,6 +647,20 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	return unchanged === l ? false : true;
     };
 
+    $scope.row_change_price = function(inv){
+	stockUtils.calc_stock_orgprice_info(inv.tag_price, inv, 1); 
+	if (angular.isDefined(diablo_set_float(inv.org_price))){
+	    $scope.re_calculate(); 
+	}
+    };
+
+    $scope.row_change_ediscount = function(inv){
+	stockUtils.calc_stock_orgprice_info(inv.tag_price, inv, 0); 
+	if (angular.isDefined(diablo_set_float(inv.ediscount))){
+	    $scope.re_calculate();
+	}
+    };
+    
     $scope.re_calculate = function(){
 	$scope.select.total = 0;
 	$scope.select.should_pay = 0.00;
@@ -649,7 +674,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    $scope.select.total  += stockUtils.to_integer(one.total);
 	    
 	    $scope.select.should_pay += $scope.calc_row(
-		one.org_price, one.ediscount, one.total - one.over);
+		one.org_price, 100, one.total - one.over);
 	};
 	
 	$scope.select.should_pay = $scope.round($scope.select.should_pay);
@@ -745,8 +770,9 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 			   over:         inv.over,
 			   path:         inv.path,
 			   right:        $scope.stock_right,
-			   get_amount:   get_amount,
-			   valid_amount: valid_amount}; 
+			   get_amount:    get_amount,
+			   valid_amount:  valid_amount,
+			   get_price_info: stockUtils.calc_stock_orgprice_info};
 	    
 	    if (inv.colors.length === 1 && inv.colors[0] === "0"){
 		inv.colors_info = [{cid:0}];
@@ -862,7 +888,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		       path:       inv.path,
 		       right:      $scope.stock_right,
 		       get_amount: get_amount,
-		       valid_amount: valid_amount};
+		       valid_amount: valid_amount,
+		       get_price_info: stockUtils.calc_stock_orgprice_info};
 	diabloUtilsService.edit_with_modal(
 	    "inventory-new.html", modal_size, callback, $scope, payload)
     };
@@ -902,7 +929,11 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 
 	if (angular.isUndefined(inv.amount[0].count)
 	    || !inv.amount[0].count
-	    || parseInt(inv.amount[0].count) === 0){
+	    || parseInt(inv.amount[0].count) === 0
+	    || angular.isUndefined(inv.ediscount)
+	    || angular.isUndefined(inv.org_price)
+	    || angular.isUndefined(inv.tag_price)
+	    || angular.isUndefined(inv.discount)){
 	    return;
 	} 
 	

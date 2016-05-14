@@ -1147,7 +1147,7 @@ amount_reject(RSN, Merchant, Shop, Firm, Datetime, Inv, Amounts) ->
 	    ", brand, type, sex, season, amount, firm"
 	    ", s_group, free, year"
 	    ", org_price, tag_price, ediscount, discount"
-	    ", path, entry_date) values("
+	    ", path, merchant, entry_date) values("
 	    ++ "\"" ++ ?to_s(RSN) ++ "\","
 	    ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
 	    ++ ?to_s(Brand) ++ ","
@@ -1165,7 +1165,8 @@ amount_reject(RSN, Merchant, Shop, Firm, Datetime, Inv, Amounts) ->
 	    ++ ?to_s(TagPrice) ++ ","
 	    ++ ?to_s(EDiscount) ++ ","
 	    ++ ?to_s(Discount) ++ ","
-	    ++ "\"" ++ ?to_s(Path) ++ "\"," 
+	    ++ "\"" ++ ?to_s(Path) ++ "\","
+	    ++ ?to_s(Merchant) ++ ","
 	    ++ "\"" ++ ?to_s(Datetime) ++ "\")"],
 
     NewFun =
@@ -1319,7 +1320,7 @@ amount_update(Mode, RSN, Merchant, Shop, Datetime, Inv) ->
 			  comma,
 			  ?utils:v(firm, integer, Firm)
 			  ++ ?utils:v(org_price, integer, OrgPrice)
-			  ++ ?utils:v(ediscount, float, OrgPrice)
+			  ++ ?utils:v(ediscount, float, EDiscount)
 			 )
 		    ++ " where "
 		    ++ "rsn like \'M-" ++ ?to_s(Merchant) ++ "-S-" ++ ?to_s(Shop) ++ "-%\'"

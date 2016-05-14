@@ -415,7 +415,9 @@ var diablo_discount = function(fprice, tagPrice){
 }
 
 var diablo_price = function(price, discount){
-    return diablo_float_mul(diablo_float_mul(price, discount), 0.01);
+    // return diablo_float_mul(diablo_float_mul(price, discount), 0.01);
+    var p = diablo_float_mul(diablo_float_mul(price, discount), 0.01);
+    return parseFloat(p.toFixed(2));
 }
 
 var diablo_full_year = [2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020];

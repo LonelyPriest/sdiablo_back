@@ -86,13 +86,11 @@
 		    <th>年度</th>
 		    
 		    <th>吊牌价</th>
-		    <th>折扣卖</th> 
+		    <th>折扣</th> 
 		    <th>进价</th>
-		    <th>折扣进</th>
-		    <th class="info">数量</th>
-		    
-		    <th>小计</th>
 		    <th>折扣率</th>
+		    <th class="info">数量</th> 
+		    <th>小计</th>
 		    
 		    <th>日期</th> 
 		    <th>操作</th>
@@ -121,7 +119,7 @@
 		    <td>{{inv.discount}}</td>
 
 		    <td>{{inv.org_price}}</td>
-		    <td>{{inv.ediscount}}</td>
+		    <td class="fg-pink">{{inv.ediscount}}</td>
 		    
 		    <td x-ng-switch on="inv.type">
 		      <span x-ng-switch-when=0>{{inv.amount}}</span>
@@ -129,12 +127,12 @@
 		    </td>
 
 		    <td class="vert-align"> 
-		      {{calc_row(inv.org_price, inv.ediscount, inv.amount)}}
+		      {{calc_row(inv.org_price, 100, inv.amount)}}
 		    </td>
 
-		    <td class="vert-align fg-magenta"> 
-		      {{calc_drate(inv.org_price, inv.ediscount, inv.tag_price)}} 
-		    </td> 
+		    <!-- <td class="vert-align fg-magenta">  -->
+		    <!--   {{calc_drate(inv.org_price, inv.ediscount, inv.tag_price)}}  -->
+		    <!-- </td>  -->
 		    
 		    <td>{{inv.entry_date}}</td>
 		    

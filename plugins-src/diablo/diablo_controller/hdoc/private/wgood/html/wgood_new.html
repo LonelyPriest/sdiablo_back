@@ -181,50 +181,7 @@
 	      </div>
 	    </div> 
 	    
-	    <div class="form-group diablo-good-form-group">
-	      <label class="col-sm-3 col-md-3 control-label">进货价</label>
-	      <div class="col-sm-6 col-md-6"> 
-		<div class="input-group">
-		  <input class="form-control"
-			 type="number" step="0.01" 
-			 name="org_price"
-			 required
-			 placeholder="进货价，支持二位小数"
-			 x-ng-pattern="pattern.price"
-			 x-ng-enter=""
-			 x-ng-model="good.org_price"/>
-		  <span class="input-group-addon bg-white fg-red">*</span>
-		</div> 
-	      </div>
-	      <div ng-if="goodForm.org_price.$invalid
-			  && !goodForm.org_price.$pristine">
-		  <span style="color:red">格式（dd.dd）支持二位小数</span>
-	      </div>
-	    </div>
-
-	    <div class="form-group diablo-good-form-group">
-	      <label class="col-sm-3 col-md-3 control-label">折扣（进）</label>
-	      <div class="col-sm-6 col-md-6"> 
-		<div class="input-group">
-		  <div ng-class="{'has-error':goodForm.ediscount.$invalid
-				 && !goodForm.ediscount.$pristine}">
-		    <input class="form-control"
-			   type="number" step="1" 
-			   name="ediscount"
-			   required
-			   placeholder="两位整数，无折扣请输入100"
-			   x-ng-pattern="pattern.discount"
-			   x-ng-model="good.ediscount"/>
-		  </div>
-		  <span class="input-group-addon bg-white fg-red">*</span>
-		</div>
-	      </div>
-	      <div ng-if="goodForm.ediscount.$invalid
-			  && !goodForm.ediscount.$pristine">
-		<span style="color:red">两位整数，无折扣请输入100</span>
-	      </div>
-	    </div>
-
+	    
 	    <div class="form-group diablo-good-form-group">
 	      <label class="col-sm-3 col-md-3 control-label">吊牌价</label>
 	      <div class="col-sm-6 col-md-6"> 
@@ -247,7 +204,7 @@
 	    </div> 
 	    
 	    <div class="form-group diablo-good-form-group">
-	      <label class="col-sm-3 col-md-3 control-label">折扣（卖）</label>
+	      <label class="col-sm-3 col-md-3 control-label">折扣</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
 		  <div ng-class="{'has-error':goodForm.discount.$invalid
@@ -265,6 +222,56 @@
 	      </div>
 	      <div ng-if="goodForm.discount.$invalid
 			    && !goodForm.discount.$pristine">
+		<span style="color:red">两位整数，无折扣请输入100</span>
+	      </div>
+	    </div>
+
+	    <div class="form-group diablo-good-form-group">
+	      <label class="col-sm-3 col-md-3 control-label">进货价</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<div class="input-group">
+		  <input class="form-control"
+			 type="number" step="0.01" 
+			 name="org_price"
+			 required
+			 placeholder="进货价，支持二位小数"
+			 
+			 ng-model-options="{debounce:300}"
+			 x-ng-change="row_change_price(good)"
+			 x-ng-pattern="pattern.price"
+			 x-ng-enter=""
+			 x-ng-model="good.org_price"/>
+		  <span class="input-group-addon bg-white fg-red">*</span>
+		</div> 
+	      </div>
+	      <div ng-if="goodForm.org_price.$invalid
+			  && !goodForm.org_price.$pristine">
+		  <span style="color:red">格式（dd.dd）支持二位小数</span>
+	      </div>
+	    </div> 
+
+	    <div class="form-group diablo-good-form-group">
+	      <label class="col-sm-3 col-md-3 control-label">进价折扣率</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<div class="input-group">
+		  <div ng-class="{'has-error':goodForm.ediscount.$invalid
+				 && !goodForm.ediscount.$pristine}">
+		    <input class="form-control"
+			   type="number" step="1" 
+			   name="ediscount"
+			   required
+			   placeholder="两位整数，无折扣请输入100"
+			   x-ng-model="good.ediscount"
+			   x-ng-pattern="/^\d{2}(.\d{1,2})?$|100$/"
+			   ng-model-options="{debounce:300}"
+			   x-ng-change="row_change_ediscount(good)"
+			   x-ng-enter=""/>
+		  </div>
+		  <span class="input-group-addon bg-white fg-red">*</span>
+		</div>
+	      </div>
+	      <div ng-if="goodForm.ediscount.$invalid
+			  && !goodForm.ediscount.$pristine">
 		<span style="color:red">两位整数，无折扣请输入100</span>
 	      </div>
 	    </div>

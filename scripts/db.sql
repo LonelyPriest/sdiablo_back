@@ -444,7 +444,7 @@ create table w_inventory_good
     -- promotion        INTEGER not null default -1,
     org_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
     tag_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
-    ediscount        DECIMAL(3, 0), -- max: 100, discount of entry
+    ediscount        DECIMAL(4, 1), -- max: 100, discount of entry
     discount         DECIMAL(3, 0), -- max: 100, discount of sell
     path             VARCHAR(255) default null, -- the image path
     alarm_day        TINYINT default -1,  -- the days of alarm
@@ -483,7 +483,7 @@ create table w_inventory
     org_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
     tag_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
     
-    ediscount        DECIMAL(3, 0), -- max: 100, discount of entry
+    ediscount        DECIMAL(4, 1), -- max: 100, discount of entry
     discount         DECIMAL(3, 0), -- max: 100
     
     path             VARCHAR(255) default null, -- the image path
@@ -573,7 +573,7 @@ create table w_inventory_new_detail(
     -- promotion      INTEGER not null default -1,
     org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
     tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
-    ediscount      DECIMAL(3, 0)  default 100, -- max: 100
+    ediscount      DECIMAL(4, 1)  default 100, -- max: 100
     discount       DECIMAL(3, 0)  default 100, -- max: 100
     amount         INTEGER default 0,
     over           INTEGER default 0, -- overflow
@@ -741,7 +741,7 @@ create table w_sale_detail(
     score          INTEGER not null default -1, -- score
 
     org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
-    ediscount      DECIMAL(3, 0)  default 0, -- max: 100
+    ediscount      DECIMAL(4, 1)  default 0, -- max: 100
     
     tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance 
     fdiscount      DECIMAL(4, 1), -- max: 100

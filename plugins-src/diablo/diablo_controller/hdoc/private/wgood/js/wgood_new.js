@@ -416,6 +416,19 @@ wgoodApp.controller("wgoodNewCtrl", function(
 	season    : $scope.seasons[0]
     };
 
+    $scope.row_change_price = function(good){
+	// inv.org_price = stockUtils.to_float(inv.org_price);
+	good.ediscount = diablo_discount(
+	    stockUtils.to_float(good.org_price),
+	    stockUtils.to_float(good.tag_price)); 
+    };
+
+    $scope.row_change_ediscount = function(good){
+	good.org_price = diablo_price(
+	    stockUtils.to_float(good.tag_price),
+	    stockUtils.to_float(good.ediscount)); 
+    };
+
     // $scope.on_select_brand = function(item, model, label){
     // 	// console.log(item, model, label)
     // 	$scope.good.firm = diablo_get_object(item.firm_id, $scope.firms);

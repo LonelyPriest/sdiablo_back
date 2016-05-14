@@ -60,19 +60,21 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	    return h.style_number === inv.style_number
 		&& h.brand_id === inv.brand.id
 	});
-	
+
+	// console.log($scope.old_select.datetime.getTime());
+	var end_time = $scope.old_select.datetime.getTime() + diablo_day_millisecond;
 	if (filter_history.length === 0){
 	    purchaserService.list_w_inventory_new_detail({
 		style_number:inv.style_number,
 		brand:inv.brand_id,
-		end_time: dateFilter($scope.old_select.datetime, "yyyy-MM-dd")
+		end_time: dateFilter(end_time, "yyyy-MM-dd")
 	    }).then(function(result){
 		// console.log(result);
 		if (result.ecode === 0){
-		    var history = result.data.filter(function(d){
-			return d.rsn !== $routeParams.rsn;
-		    });
-
+		    // var history = result.data.filter(function(d){
+		    // 	return d.rsn !== $routeParams.rsn;
+		    // }); 
+		    var history = angular.copy(result.data);
 		    angular.forEach(history, function(h){
 			h.brand = diablo_get_object(h.brand_id, $scope.brands);
 			h.firm  = diablo_get_object(h.firm_id, $scope.firms);
@@ -118,8 +120,10 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	for (var i=1, l=$scope.inventories.length; i<l; i++){
 	    var one = $scope.inventories[i];
 	    $scope.select.total += parseInt(one.total); 
+	    // $scope.select.should_pay += stockUtils.calc_row(
+	    // 	one.org_price, one.ediscount, one.total - one.over);
 	    $scope.select.should_pay += stockUtils.calc_row(
-		one.org_price, one.ediscount, one.total - one.over); 
+	    	one.org_price, 100, one.total - stockUtils.to_integer(one.over)); 
 	};
 	
 	$scope.select.should_pay = $scope.round($scope.select.should_pay);
@@ -150,21 +154,28 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
     };
 
     $scope.row_change_price = function(inv){
+	// inv.ediscount = diablo_discount(
+	//     stockUtils.to_float(inv.org_price),
+	//     stockUtils.to_float(inv.tag_price)); 
+	stockUtils.calc_stock_orgprice_info(inv.tag_price, inv, 1);
 	if (angular.isDefined(diablo_set_float(inv.org_price))){
 	    $scope.re_calculate(); 
 	}
     };
 
     $scope.row_change_ediscount = function(inv){
-	if (angular.isDefined(diablo_set_integer(inv.ediscount))){
+	// inv.org_price = diablo_price(
+	//     stockUtils.to_float(inv.tag_price),
+	//     stockUtils.to_float(inv.ediscount));
+	stockUtils.calc_stock_orgprice_info(inv.tag_price, inv, 0);
+	if (angular.isDefined(diablo_set_float(inv.ediscount))){
 	    $scope.re_calculate();
 	}
     };
 
     $scope.row_change_over = function(inv){
-	if (angular.isDefined(diablo_set_integer(inv.over))){
-	    $scope.re_calculate();
-	}
+	// inv.over = stockUtils.to_integer(inv.over)
+	$scope.re_calculate();
     };
     
     var in_sort = function(sorts, tag){
@@ -606,8 +617,8 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 		free           : add.free,
 		org_price      : stockUtils.to_float(add.org_price),
 		tag_price      : stockUtils.to_float(add.tag_price), 
-		ediscount      : stockUtils.to_integer(add.ediscount),
-		discount       : stockUtils.to_integer(add.discount),
+		ediscount      : stockUtils.to_float(add.ediscount),
+		discount       : stockUtils.to_float(add.discount),
 		total          : stockUtils.to_integer(add.total),
 		over           : stockUtils.to_integer(add.over)
 	    })
