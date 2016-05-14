@@ -86,6 +86,7 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 		    angular.forEach(history, function(h){
 			// h.brand = diablo_get_object(h.brand_id, $scope.brands);
 			h.firm  = diablo_get_object(h.firm_id, $scope.firms);
+			h.brand = inv.brand;
 		    });
 
 		    $scope.select_history = {style_number:inv.style_number,

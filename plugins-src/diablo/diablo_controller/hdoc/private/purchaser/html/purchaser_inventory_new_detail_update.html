@@ -289,7 +289,7 @@
 		      <th class="text-center">折扣</th>
 		    
 		      <th class="text-center">数量</th> 
-		      <th class="text-center">进价</th>
+		      <th class="text-center">进/退价</th>
 		      <th class="text-center">折扣率</th>
 
 		      <th class="text-center">类型</th>
@@ -475,11 +475,10 @@
 		    <td class="col-md-1 vert-align">
 		      <span x-ng-if="inv.$new">{{inv.ediscount}}</span>
 		      <form x-ng-if="!inv.$new" name="inv.form.ediscount">
-		    	<div ng-class="{'has-error':inv.form.ediscount.$invalid
-		    		       && !inv.form.ediscount.$pristine}">
+		    	<div ng-class="{'has-error':inv.form.ediscount.$invalid}">
 		    	  <input class="form-control"
 		    		 type="number" step="0.1"
-		    		 placeholder="进价折扣"
+		    		 placeholder="进价折扣率"
 		    		 required
 				 go-row
 				 disable-wheel
@@ -487,6 +486,7 @@
 				 focus-auto="focus_attrs.ediscount && inv.order_id===focus_row"
 				 x-ng-focus="on_focus_attr('ediscount', inv)"
 		    		 x-ng-model="inv.ediscount"
+				 x-ng-pattern="/^\d{1,2}(\.\d{1,2})?$|100$/"
 				 ng-model-options="{debounce:300}"
 				 x-ng-change="row_change_ediscount(inv)"/>
 		    	</div>

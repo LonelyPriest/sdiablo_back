@@ -476,7 +476,7 @@
 		    		     required
 				     disable-key
 		    		     x-ng-model="inv.ediscount"
-				     x-ng-pattern="/^\d{2}(.\d{1,2})?$|100$/"
+				     x-ng-pattern="/^\d{1,2}(\.\d{1,2})?$|100$/"
 				     ng-model-options="{debounce:300}"
 				     x-ng-change="row_change_ediscount(inv)"
 		    		     popover-placement="top"
@@ -976,7 +976,7 @@
 		   type="number" step="0.1" 
 		   required
 		   disable-key
-		   x-ng-pattern="/^\d{2}(.\d{1,2})?$|100$/"
+		   x-ng-pattern="/^\d{1,2}(.\d{1,2})?$|100$/"
 		   ng-model-options="{debounce:300}"
 		   x-ng-change="params.get_price_info(params.tag_price, params, 0)"
 		   x-ng-model="params.ediscount"/>
