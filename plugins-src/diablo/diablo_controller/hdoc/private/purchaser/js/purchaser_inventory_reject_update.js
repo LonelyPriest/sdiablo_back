@@ -29,18 +29,16 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	price:    diabloPattern.positive_decimal_2,
 	discount: diabloPattern.discount,
 	amount:   diabloPattern.positive_num
-    };
-
-    $scope.base_setting = {
-    	// start_time: stockUtils.start_time(-1, base, $.now(), dateFilter)
-	history_stok: stockUtils.history_stok(-1, base)
-    };
+    }; 
     
     $scope.sexs            = diablo_sex;
     $scope.seasons         = diablo_season; 
     $scope.e_pay_types     = purchaserService.extra_pay_types;
 
-    $scope.setting = {reject_negative: false}; 
+    $scope.setting = {
+	reject_negative: false,
+	history_stock: false
+    }; 
     
     $scope.go_back = function(){
 	diablo_goto_page("#/inventory_new_detail/" + $routeParams.ppage);
@@ -68,7 +66,7 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	    }
 	}
 
-	if ($scope.base_setting.history_stok){
+	if ($scope.setting.history_stock){
 	    // flow
 	    var filter_history = $scope.h_inventories.filter(function(h){
 		return h.style_number === inv.style_number
@@ -260,6 +258,9 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	// base setting
 	$scope.setting.reject_negative =
 	    stockUtils.reject_negative(base.shop_id, $scope.ubase);
+	$scope.setting.history_stock =
+	    stockUtils.history_stock(base.shop_id, $scope.ubase);
+	
 	$scope.prompt_limit = stockUtils.prompt_limit(base.shop_id, $scope.ubase); 
 	$scope.q_prompt = stockUtils.typeahead(base.shop_id, $scope.ubase);
 

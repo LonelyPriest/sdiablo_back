@@ -21,7 +21,7 @@ var stockUtils = function(){
 		"prompt", shop, base, parseInt, 8);
 	},
 
-	history_stok: function(shop, base){
+	history_stock: function(shop, base){
 	    return diablo_base_setting(
 		"h_stock_edit", shop, base, parseInt, diablo_no);
 	},

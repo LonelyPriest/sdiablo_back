@@ -10,6 +10,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
     $scope.types       = filterType;
     $scope.employees   = filterEmployee;
     $scope.size_groups = filterSizeGroup;
+    $scope.ubase       = base;
     $scope.sexs        = diablo_sex;
     $scope.seasons     = diablo_season;
     $scope.e_pay_types = purchaserService.extra_pay_types;
@@ -31,10 +32,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	diablo_goto_page("#/inventory_new_detail/" + $routeParams.ppage);
     };
 
-    $scope.base_setting = {
-    	// start_time: stockUtils.start_time(-1, base, $.now(), dateFilter)
-	history_stok: stockUtils.history_stok(-1, base)
-    };
+    $scope.setting = {history_stock: false};
     
     /*
      * auto focus
@@ -55,7 +53,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	    }
 	}
 
-	if ($scope.base_setting.history_stok){
+	if ($scope.setting.history_stock){
 	    // flow
 	    // console.log("focus:", inv.style_number);
 	    var filter_history = $scope.h_inventories.filter(function(h){
@@ -259,6 +257,8 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	$scope.select = angular.extend($scope.select, $scope.old_select);
 	// console.log($scope.select);
 	// base setting
+	$scope.setting.history_stock =
+	    stockUtils.history_stock(base.shop_id, $scope.ubase);
 	
 	var length = invs.length;
 	var sorts  = [];
