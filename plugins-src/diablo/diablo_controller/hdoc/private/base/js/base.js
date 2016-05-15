@@ -317,6 +317,7 @@ baseApp.controller("printOptionCtrl", function(
 	    || s.ename === 'check_sale'
 	    || s.ename === 'se_pagination'
 	    || s.ename === 'stock_alarm'
+	    || s.ename === 'h_stock_edit'
 	   ){
 	    angular.extend(s, {yes_no: $scope.yes_no}); 
 	};

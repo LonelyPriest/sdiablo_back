@@ -31,10 +31,11 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	diablo_goto_page("#/inventory_new_detail/" + $routeParams.ppage);
     };
 
-    // $scope.base_setting = {
-    // 	start_time: stockUtils.start_time(-1, base, $.now(), dateFilter)
-    // };
-
+    $scope.base_setting = {
+    	// start_time: stockUtils.start_time(-1, base, $.now(), dateFilter)
+	history_stok: stockUtils.history_stok(-1, base)
+    };
+    
     /*
      * auto focus
      */
@@ -54,44 +55,46 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	    }
 	}
 
-	// flow
-	// console.log("focus:", inv.style_number);
-	var filter_history = $scope.h_inventories.filter(function(h){
-	    return h.style_number === inv.style_number
-		&& h.brand_id === inv.brand.id
-	});
+	if ($scope.base_setting.history_stok){
+	    // flow
+	    // console.log("focus:", inv.style_number);
+	    var filter_history = $scope.h_inventories.filter(function(h){
+		return h.style_number === inv.style_number
+		    && h.brand_id === inv.brand.id
+	    });
 
-	// console.log($scope.old_select.datetime.getTime());
-	var end_time = $scope.old_select.datetime.getTime() + diablo_day_millisecond;
-	if (filter_history.length === 0){
-	    purchaserService.list_w_inventory_new_detail({
-		style_number:inv.style_number,
-		brand:inv.brand_id,
-		end_time: dateFilter(end_time, "yyyy-MM-dd")
-	    }).then(function(result){
-		// console.log(result);
-		if (result.ecode === 0){
-		    // var history = result.data.filter(function(d){
-		    // 	return d.rsn !== $routeParams.rsn;
-		    // }); 
-		    var history = angular.copy(result.data);
-		    angular.forEach(history, function(h){
-			h.brand = diablo_get_object(h.brand_id, $scope.brands);
-			h.firm  = diablo_get_object(h.firm_id, $scope.firms);
-		    });
+	    // console.log($scope.old_select.datetime.getTime());
+	    var end_time = $scope.old_select.datetime.getTime() + diablo_day_millisecond;
+	    if (filter_history.length === 0){
+		purchaserService.list_w_inventory_new_detail({
+		    style_number:inv.style_number,
+		    brand:inv.brand_id,
+		    end_time: dateFilter(end_time, "yyyy-MM-dd")
+		}).then(function(result){
+		    // console.log(result);
+		    if (result.ecode === 0){
+			// var history = result.data.filter(function(d){
+			// 	return d.rsn !== $routeParams.rsn;
+			// }); 
+			var history = angular.copy(result.data);
+			angular.forEach(history, function(h){
+			    h.brand = diablo_get_object(h.brand_id, $scope.brands);
+			    h.firm  = diablo_get_object(h.firm_id, $scope.firms);
+			});
 
-		    $scope.select_history = {style_number:inv.style_number,
-					     brand_id:    inv.brand_id,
-					     history: history};
-		    
-		    $scope.h_inventories.push($scope.select_history);
+			$scope.select_history = {style_number:inv.style_number,
+						 brand_id:    inv.brand_id,
+						 history: history};
+			
+			$scope.h_inventories.push($scope.select_history);
 
-		    // console.log($scope.h_inventories); 
-		}
-	    }) 
-	} else {
-	    $scope.select_history = filter_history[0];
-	}
+			// console.log($scope.h_inventories); 
+		    }
+		}) 
+	    } else {
+		$scope.select_history = filter_history[0];
+	    }
+	} 
     };
     
     $scope.focus_row_auto = function(direction){

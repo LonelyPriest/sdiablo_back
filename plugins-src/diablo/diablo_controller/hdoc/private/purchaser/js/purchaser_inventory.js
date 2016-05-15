@@ -1139,7 +1139,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	sex       : $scope.sex2objs[0],
 	org_price : 0, 
 	tag_price : 0, 
-	ediscount : 100,
+	ediscount : 0,
 	discount  : 100,
 	alarm_day : 7,
 	year      : diablo_now_year(),

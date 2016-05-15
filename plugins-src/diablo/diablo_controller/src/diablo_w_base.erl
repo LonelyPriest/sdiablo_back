@@ -276,20 +276,22 @@ sys_config() ->
     DefaultDate = lists:flatten(io_lib:format("~4..0w-~2..0w-~2..0w", [YY, MM, DD])),
     
     %%         ename,           cname,            value,type
-    Values = [{"pum",           "打印份数",       "1",  "0"},
-	      {"ptype",         "打印方式",       "1",  "0"}, %% 0: front; 1:backend
-	      {"pim_print",     "立即打印",       "0",  "0"},
+    Values = [{"pum",             "打印份数",            "1",  "0"},
+	      {"ptype",           "打印方式",            "1",  "0"}, %% 0: front; 1:backend
+	      {"pim_print",       "立即打印",            "0",  "0"},
 
-	      {"qtime_start",   "联想开始时间",   DefaultDate,  "0"}, 
-	      {"qtypeahead",    "联想方式",       "1",   "0"}, %% 0: front; 1:backend 
-	      {"prompt",        "联想数目",       "8",  "0"},
+	      {"qtime_start",     "联想开始时间",        DefaultDate,  "0"}, 
+	      {"qtypeahead",      "联想方式",            "1",   "0"}, %% 0: front; 1:backend 
+	      {"prompt",          "联想数目",            "8",  "0"},
 
 
-	      {"stock_alarm",     "库存告警",      "0",  "0"},
-	      {"reject_negative", "零库存退货",    "0",  "0"},
-	      {"check_sale",      "检测库存销售",  "1",  "0"},
+	      {"stock_alarm",     "库存告警",             "0",  "0"},
+	      {"reject_negative", "零库存退货",           "0",  "0"},
+	      {"check_sale",      "检测库存销售",         "1",  "0"},
 	      
-	      {"se_pagination",   "顺序翻页",      "0",  "0"}, 
-	      {"s_customer",      "非VIP客户",     "0",   "0"} 
+	      {"se_pagination",   "顺序翻页",             "0",  "0"}, 
+	      {"s_customer",      "非VIP客户",            "0",   "0"},
+
+	      {"h_stock_edit",    "采购编辑展示历史记录", "0",   "0"}
 	     ],
     Values.

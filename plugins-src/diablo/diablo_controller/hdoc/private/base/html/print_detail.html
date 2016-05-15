@@ -113,8 +113,12 @@
 			 {{get_object(s.value, retailers).name}}
 		       </span>
 
-		      <!--default-->
-		      <span ng-switch-default>{{s.value}}</span>
+		       <span ng-switch-when="h_stock_edit">
+			 {{yes_no[s.value].cname}}
+		       </span>
+
+		       <!--default-->
+		       <span ng-switch-default>{{s.value}}</span>
 		    </td>
 
 		    <td x-ng-switch on="s.remark">
@@ -382,7 +386,17 @@
 				    r in params.setting.yes_no"
 		      x-ng-init="params.setting.value=
 				 params.setting.yes_no[params.setting.value]">
-	      </select> 
+	      </select>
+
+	      <select x-ng-switch-when="h_stock_edit"
+		      class="form-control" required
+		      name="value"
+		      x-ng-model="params.setting.value"
+		      x-ng-options="y as y.cname for
+				    y in params.setting.yes_no"
+		      x-ng-init="params.setting.value=
+				 params.setting.yes_no[params.setting.value]">
+	      </select>
 
 	      <input x-ng-switch-when="s_customer" type="text"
 		     class="form-control" required

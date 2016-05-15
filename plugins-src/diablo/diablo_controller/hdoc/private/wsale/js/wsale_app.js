@@ -305,10 +305,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	diablo_goto_page("#/new_wsale_detail");
     };
 
-    $scope.setting = {
-	q_backend     :true,
-	check_sale    :true 
-    };
+    $scope.setting = {q_backend:true, check_sale:true};
 
     $scope.right = {
 	m_discount : rightAuthen.modify_onsale(
@@ -1253,22 +1250,15 @@ wsaleApp.controller("wsaleNewCtrl", function(
     };
 
     var valid_sell = function(amount){
-	var count = amount.sell_count; 
-	if (angular.isUndefined(count)){
-	    return true;
-	}
-
-	if (!count) {
+	var sell = diablo_set_integer(amount.sell_count); 
+	if (angular.isUndefined(sell)){
 	    return true;
 	}
 	
-	var renumber = /^[+|\-]?[1-9][0-9]*$/; 
-
-	if (renumber.test(count)){
-	    return true;
+	if ($scope.setting.check_sale){
+	    if (0 === sell || sell > amount.count) return false;
 	}
-	
-	return false
+	return true;
     };
     
     var valid_all_sell = function(amounts){
@@ -1340,6 +1330,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    wsaleUtils.format_promotion(inv, $scope.show_promotions);
 	}
 
+	$timeout.cancel($scope.timeout_auto_save);
 	$scope.auto_focus("style_number");
     };
 
@@ -1600,14 +1591,17 @@ wsaleApp.controller("wsaleNewCtrl", function(
     };
 
     $scope.auto_save_free = function(inv){
-	if (angular.isUndefined(inv.sell)
-	    || !inv.sell
-	    || parseInt(inv.sell) === 0
-	    || angular.isUndefined(inv.style_number)){
-	    return;
-	} 
-
 	$timeout.cancel($scope.timeout_auto_save);
+	
+	var sell = wsaleUtils.to_integer(inv.sell);
+	if (sell === 0) return
+	if (angular.isUndefined(inv.style_number)) return;
+
+	if ($scope.setting.check_sale && sell > inv.total){
+	    inv.form.sell.$invalid = true;
+	    return;
+	}
+
 	$scope.timeout_auto_save = $timeout(function(){
 	    // console.log(inv); 
 	    if (inv.$new && inv.free_color_size){

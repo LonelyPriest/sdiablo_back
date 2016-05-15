@@ -21,6 +21,11 @@ var stockUtils = function(){
 		"prompt", shop, base, parseInt, 8);
 	},
 
+	history_stok: function(shop, base){
+	    return diablo_base_setting(
+		"h_stock_edit", shop, base, parseInt, diablo_no);
+	},
+
 	prompt_name: function(style_number, brand, type) {
 	    var name = style_number + "，" + brand + "，" + type;
 	    var prompt = name + "," + diablo_pinyin(name); 
