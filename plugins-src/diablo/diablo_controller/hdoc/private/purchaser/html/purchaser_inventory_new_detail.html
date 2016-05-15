@@ -81,7 +81,7 @@
 			<span x-ng-if="hidden.base">
 			  单号<i class="glyphicon glyphicon-forward fg-red"></i></span>
 		    </th>
-		    <th x-ng-if="!hidden.base">交易</th> 
+		    <th>交易</th> 
 		    <th x-ng-if="!hidden.base">店铺</th>
 		    <th x-ng-if="!hidden.base">店员</th>
 		    
@@ -117,8 +117,7 @@
 		    <td>{{r.order_id}}</td>
 		    <td class="{{css(r.state, r.type)}}">{{r.rsn}}</td>
 		    
-		    <td class="{{css(r.state, r.type)}}"
-			x-ng-if="!hidden.base" x-ng-switch on="r.type">
+		    <td class="{{css(r.state, r.type)}}" x-ng-switch on="r.type">
 		      <span x-ng-switch-when=0>入库</span>
 		      <span class="fg-red" x-ng-switch-when=1>退货</span>
 		      <span class="fg-pink" x-ng-switch-when=9>结帐</span>
@@ -211,7 +210,7 @@
 
 		  <!--Total info-->
 		  <tr x-ng-if="total_items!==0" class="bg-white">
-		    <td x-ng-if="hidden.base" colspan="3"></td>
+		    <td x-ng-if="hidden.base" colspan="4"></td>
 		    <td x-ng-if="!hidden.base" colspan="6"></td>
 		    <td class="danger">{{total_amounts}}</td>
 		    <td x-ng-if="!hidden.balance">{{total_cash}}</td>

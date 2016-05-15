@@ -687,3 +687,8 @@ diablo_bill_css = function(mode){
 	return "bg-cyan";
     }
 }
+
+diablo_stock_alarm_css = function(is_set_alarm, alarm){
+    if (is_set_alarm && alarm) return "danger"
+    else return "";
+}

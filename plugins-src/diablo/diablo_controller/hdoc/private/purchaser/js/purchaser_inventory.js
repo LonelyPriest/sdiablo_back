@@ -1435,7 +1435,12 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
     
     $scope.setting = {
 	alarm: false
-    }; 
+    };
+
+    $scope.css =  function(isAlarm){
+	return diablo_stock_alarm_css($scope.setting.alarm, isAlarm);
+    };
+
 
     $scope.match_style_number = function(viewValue){
 	return diabloFilter.match_w_inventory(viewValue, $scope.shopIds);

@@ -102,13 +102,13 @@
 			<th>性别</th>
 			<th>厂商</th>
 			<th>季节</th>
-			<th>年度</th>
+			<th>年度</th> 
+			<th class="warning">吊牌价</th> 
+			<th class="danger">折扣</th>
 			<th x-ng-if="stock_right.show_orgprice"
 			    class="success">进价</th>
 			<th x-ng-if="stock_right.show_orgprice"
-			    class="info">折扣进</th>
-			<th class="warning">吊牌价</th> 
-			<th class="danger">折扣卖</th>
+			    class="info">折扣率</th>
 			<th class="info">数量</th> 
 			<th>已售</th>
 			<th>促销</th>
@@ -120,136 +120,27 @@
 		    </thead>
 		    <tbody>
 		      <tr ng-repeat="inv in inventories track by inv.id">
-			<td>
-			  <span x-ng-if="inv.isAlarm && setting.alarm"
-				class="danger">{{inv.order_id}}
-			  </span>
-			  <span x-ng-if="!setting.alarm || !inv.isAlarm">
-			    {{inv.order_id}}
-			  </span>
-			</td>
+			<td class="css(inv.isAlarm)">{{inv.order_id}}</td> 
+			<td class="css(inv.isAlarm)">{{inv.style_number}}</td> 
+			<td class="css(inv.isAlarm)">{{inv.brand.name}}</td> 
+			<td class="css(inv.isAlarm)">{{inv.type.name}}</td> 
+			<td class="css(inv.isAlarm)">{{sexs[inv.sex]}}</td> 
+			<td class="css(inv.isAlarm)">{{inv.firm.name}}</td> 
+			<td class="css(inv.isAlarm)">{{seasons[inv.season]}}</td> 
+			<td class="css(inv.isAlarm)">{{inv.year}}</td> 
+			<td class="css(inv.isAlarm)">{{inv.tag_price}}</td> 
+			<td class="css(inv.isAlarm)">{{inv.discount}}</td>
+			  
 
-			<td>
-			  <span x-ng-if="inv.isAlarm && setting.alarm"
-				class="danger">{{inv.style_number}}
-			  </span> 
-			  <span x-ng-if="!setting.alarm || !inv.isAlarm">
-			    {{inv.style_number}}
-			  </span>
-			</td>
+			<td x-ng-if="stock_right.show_orgprice" class="css(inv.isAlarm)">
+			  {{inv.org_price}}
+			</td> 
 
-			<td>
-			  <span x-ng-if="inv.isAlarm && setting.alarm"
-				class="danger">{{inv.brand.name}}
-			  </span>
-			  <span x-ng-if="!setting.alarm || !inv.isAlarm">
-			    {{inv.brand.name}}
-			  </span>
-			</td>
-
-			<td>
-			  <span x-ng-if="inv.isAlarm && setting.alarm"
-				class="danger">{{inv.type.name}}
-			  </span>
-			  <span x-ng-if="!setting.alarm || !inv.isAlarm">
-			    {{inv.type.name}}
-			  </span>
-			</td>
-			
-
-			<td>
-			  <span x-ng-if="inv.isAlarm && setting.alarm"
-				class="danger">{{sexs[inv.sex]}}
-			  </span>
-			  <span x-ng-if="!setting.alarm || !inv.isAlarm">
-			    {{sexs[inv.sex]}}
-			  </span>
-			</td>
-
-			<td>
-			  <span x-ng-if="inv.isAlarm && setting.alarm"
-				class="danger">{{inv.firm.name}}
-			  </span> 
-			  <span x-ng-if="!setting.alarm || !inv.isAlarm">
-			    {{inv.firm.name}}
-			  </span>
-			</td>
-
-			<td>
-			  <span x-ng-if="inv.isAlarm && setting.alarm"
-				class="danger">
-			    {{seasons[inv.season]}}
-			  </span>
-			  <span x-ng-if="!setting.alarm || !inv.isAlarm">
-			    {{seasons[inv.season]}}
-			  </span>
-			</td>
-
-			<td>
-			  <span x-ng-if="inv.isAlarm && setting.alarm"
-				class="danger">{{inv.year}}
-			  </span> 
-			  <span x-ng-if="!setting.alarm || !inv.isAlarm">
-			    {{inv.year}}
-			  </span>
-			</td>
-
-			<td x-ng-if="stock_right.show_orgprice">
-			  <span x-ng-if="inv.isAlarm && setting.alarm" 
-				class="danger">{{inv.org_price}}
-			  </span>
-			  <span x-ng-if="!setting.alarm || !inv.isAlarm">
-			    {{inv.org_price}}
-			  </span>
-			</td>
-
-			<td x-ng-if="stock_right.show_orgprice">
-			  <span
-			     x-ng-if="inv.isAlarm && setting.alarm"
-			     class="danger">{{inv.ediscount}}
-			  </span>
-			  <span x-ng-if="!setting.alarm || !inv.isAlarm">
-			    {{inv.ediscount}}
-			  </span>
-			</td>
-
-			<td>
-			  <span x-ng-if="inv.isAlarm && setting.alarm"
-				class="danger">{{inv.tag_price}}</span>
-			  <span x-ng-if="!setting.alarm || !inv.isAlarm">
-			    {{inv.tag_price}}
-			  </span>
-			</td>
-
-			<td>
-			  <span x-ng-if="inv.isAlarm && setting.alarm"
-				class="danger">{{inv.discount}}
-			  </span>
-			  <span x-ng-if="!setting.alarm || !inv.isAlarm">
-			    {{inv.discount}}
-			  </span>
-			</td>
-			
-
-			<td>
-			  <span x-ng-if="inv.isAlarm && setting.alarm"
-				class="danger">{{inv.amount}}
-			  </span>
-			  <span x-ng-if="!setting.alarm || !inv.isAlarm">
-			    {{inv.amount}}
-			  </span>
-			</td>
-
-			
-			<td>
-			  <span x-ng-if="inv.isAlarm && setting.alarm"
-				class="danger">
-			    <span class="fg-darkBlue">{{inv.sell}}</span>
-			  </span>
-			  <span x-ng-if="!setting.alarm || !inv.isAlarm">
-			    <span class="fg-darkBlue">{{inv.sell}}</span>
-			  </span>
-			</td>
+			<td x-ng-if="stock_right.show_orgprice" class="css(inv.isAlarm)"> 
+			  {{inv.ediscount}}
+			</td> 
+			<td class="css(inv.isAlarm)">{{inv.amount}}</td> 
+			<td class="css(inv.isAlarm)">{{inv.sell}}</td>
 
 			<td>
 			  <div x-ng-switch on="inv.pid">
@@ -268,23 +159,8 @@
 			  </div>
 			</td> 
 
-			<td>
-			  <span x-ng-if="inv.isAlarm && setting.alarm"
-				class="danger">{{inv.shop}}
-			  </span>
-			  <span x-ng-if="!setting.alarm || !inv.isAlarm">
-			    {{inv.shop}}
-			  </span>
-			</td>
-
-			<td>
-			  <span x-ng-if="inv.isAlarm && setting.alarm"
-				class="danger">{{inv.entry_date}}
-			  </span>
-			  <span x-ng-if="!setting.alarm || !inv.isAlarm">
-			    {{inv.entry_date}}
-			  </span>
-			</td>
+			<td class="css(inv.isAlarm)">{{inv.shop}}</td> 
+			<td>{{inv.entry_date}}</td>
 			
 			
 			<td data-title="'操作'"> 
@@ -295,6 +171,7 @@
 			  </button>
 			</td>
 		      </tr>
+		      
 		      <tr x-ng-if="total_items!==0" class="bg-white">
 			<td x-ng-if="stock_right.show_orgprice" colspan="12"></td>
 			<td x-ng-if="!stock_right.show_orgprice" colspan="10"></td>
@@ -605,6 +482,6 @@
 
   <div class="modal-footer">
     <button class="btn btn-primary" x-ng-click="ok()">确认</button>
-    <!-- <button class="btn btn-warning" x-ng-click="cancel()">取消</button> -->
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>  
 </script>

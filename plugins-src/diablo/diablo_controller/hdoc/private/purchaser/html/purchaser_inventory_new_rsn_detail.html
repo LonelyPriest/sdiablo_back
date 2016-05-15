@@ -77,7 +77,7 @@
 		    	  单号<i class="glyphicon glyphicon-forward fg-red"></i></span>
 		    </th>
 		    
-		    <th x-ng-if="!hidden.base">采购</th> 
+		    <th>交易</th> 
 		    <th x-ng-if="!hidden.base">店铺</th>
 		    <th x-ng-if="!hidden.base">店员</th>
 		    
@@ -103,7 +103,7 @@
 		  <tr ng-repeat="inv in inventories">
 		    <td>{{inv.order_id}}</td>
 		    <td>{{inv.rsn}}</td>
-		    <td x-ng-if="!hidden.base" x-ng-switch on="inv.type">
+		    <td x-ng-switch on="inv.type">
 		      <span x-ng-switch-when=0>入库</span>
 		      <span class="fg-red" x-ng-switch-when=1>退货</span>
 		    </td>
@@ -118,14 +118,19 @@
 		    <td>{{inv.year}}</td>
 		    <td>{{inv.tag_price}}</td>
 		    <td>{{inv.discount}}</td>
-		    <td x-ng-if="stock_right.show_orgprice">{{inv.org_price}}</td>
+		    <td x-ng-if="stock_right.show_orgprice">
+		      <div x-ng-switch on="inv.type">
+			<span x-ng-switch-when=0>{{inv.org_price}}</span>
+			<span class="fg-red" x-ng-switch-when=1>{{inv.org_price}}</span>
+		      </div>
+		    </td>
 		    <td x-ng-if="stock_right.show_orgprice" class="fg-pink">{{inv.ediscount}}</td>
 
 		    <td x-ng-switch on="inv.type">
 		      <span x-ng-switch-when=0>{{inv.amount}}</span>
 		      <span class="fg-red" x-ng-switch-when=1>{{inv.amount}}</span>
 		    </td>
-
+		    
 		    <td x-ng-if="stock_right.show_orgprice" class="vert-align"> 
 		      {{calc_row(inv.org_price, 100, inv.amount)}}
 		    </td>

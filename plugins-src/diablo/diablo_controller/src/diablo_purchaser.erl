@@ -1451,7 +1451,7 @@ handle_call({total_new_rsn_groups, Merchant, Conditions}, _From, State) ->
     
     CountSql = "select count(*) as total"
     	", SUM(b.amount) as t_amount"
-	%% ", SUM(b.org_price * b.ediscount * b.amount * 0.01) as t_balance" 
+	%% ", SUM(b.org_price * b.amount) as t_balance" 
     	" from w_inventory_new_detail b, w_inventory_new a" 
     	" where "
 	++ ?sql_utils:condition(proplists_suffix, CorrectCutDConditions)

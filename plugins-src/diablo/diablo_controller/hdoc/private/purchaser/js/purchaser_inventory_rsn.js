@@ -190,7 +190,7 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
     $scope.calc_colspan = function(){
 	var column = 14;
 	if ($scope.hidden.base){
-	    column -= 3;
+	    column -= 2;
 	}
 	if (!$scope.stock_right.show_orgprice){
 	    column -=2;

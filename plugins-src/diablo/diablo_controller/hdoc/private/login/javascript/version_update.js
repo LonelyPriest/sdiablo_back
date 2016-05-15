@@ -1,6 +1,12 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2016-05-15",
+	 content: [
+	     "增加采购入库，退货时进价，折扣率相互计算能力"
+	 ]
+	},
+	
 	{date: "2016-05-13",
 	 content: [
 	     "采购入库智能提示",
