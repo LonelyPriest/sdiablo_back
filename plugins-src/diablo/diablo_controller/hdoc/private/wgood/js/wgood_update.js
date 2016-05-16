@@ -10,7 +10,9 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
     $scope.pattern = {
 	style_number: diabloPattern.style_number,
 	brand: diabloPattern.ch_en_num,
-	type:  diabloPattern.head_ch_en_num};
+	type:  diabloPattern.head_ch_en_num,
+	discount: diabloPattern.discount,
+	price: diabloPattern.positive_decimal_2};
 
     $scope.shops      = user.sortShops;
     $scope.promotions = filterPromotion;
@@ -72,6 +74,7 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	$scope.good.firm      = diablo_get_object(good.firm_id, $scope.firms);
 	$scope.good.sex       = diablo_get_object(good.sex, $scope.sexs);
 	$scope.good.season    = diablo_get_object(good.season, $scope.seasons);
+	$scope.good.shop      = $scope.shops[0];
 	// $scope.good.promotion = diablo_get_object(good.pid, $scope.promotions);
 	// $scope.good.shop      = $scope.shops[0];
 
@@ -147,8 +150,7 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	}
 	
 	var re = diabloPattern.ch_en_num;
-	if (!re.test(typeof(newValue) === "object"
-		     ? newValue.name : newValue)){
+	if (!re.test(typeof(newValue) === "object" ? newValue.name : newValue)){
 	    $scope.goodForm.brand.$invalid = true;
 	} else{
 	    $scope.goodForm.brand.$invalid = false;
@@ -162,8 +164,7 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
     	}
 	
     	var re = $scope.pattern.type;
-    	if (!re.test(typeof(newValue) === "object"
-		     ? newValue.name : newValue)){
+    	if (!re.test(typeof(newValue) === "object" ? newValue.name : newValue)){
     	    $scope.goodForm.type.$invalid = true;
     	}else{
     	    $scope.goodForm.type.$invalid = false;
@@ -247,7 +248,18 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	    callback, $scope, {colors:$scope.colors});
     };
 
-    
+    $scope.row_change_price = function(good){
+	// inv.org_price = stockUtils.to_float(inv.org_price);
+	good.ediscount = diablo_discount(
+	    stockUtils.to_float(good.org_price),
+	    stockUtils.to_float(good.tag_price)); 
+    };
+
+    $scope.row_change_ediscount = function(good){
+	good.org_price = diablo_price(
+	    stockUtils.to_float(good.tag_price),
+	    stockUtils.to_float(good.ediscount)); 
+    };
     
     /*
      * update good
@@ -262,22 +274,15 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	// update_good.shop         = good.shop.id;
 	update_good.style_number = good.style_number;
 	// update_good.brand_id     = good.brand_id;
-	update_good.brand  = typeof(good.barnd)
-	    === "object" ? good.brand.name: good.brand;
-	update_good.type  = typeof(good.type)
-	    === "object" ? good.type.name: good.type;
+	update_good.brand  = typeof(good.barnd) === "object" ? good.brand.name: good.brand;
+	update_good.type  = typeof(good.type) === "object" ? good.type.name: good.type;
 
 	update_good.firm_id   = good.firm.id;
 	update_good.sex       = good.sex.id;
 	update_good.year      = good.year;
 	update_good.season    = good.season.id;
-	// update_good.pid       = good.promotion.id;
 	update_good.org_price = parseFloat(good.org_price);
-	update_good.tag_price = parseFloat(good.tag_price);
-	// update_good.pkg_price = parseFloat(good.pkg_price);
-	// update_good.price3    = parseFloat(good.price3);
-	// update_good.price4    = parseFloat(good.price4);
-	// update_good.price5    = parseFloat(good.price5);
+	update_good.tag_price = parseFloat(good.tag_price); 
 	update_good.ediscount = parseInt(good.ediscount);
 	update_good.discount  = parseInt(good.discount);
 	update_good.color     = function(){
@@ -310,16 +315,11 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	    ? $scope.image.dataUrl.replace(
 		    /^data:image\/(png|jpg);base64,/, "") : undefined;
 	
-	// changed_good.brand_id = update_good.brand_id;
-	// changed_good.style_number = update_good.style_number;
-	
-	console.log(changed_good);
-	
 	if (diablo_is_empty(changed_good) && angular.isUndefined(image)){
 	    diabloUtilsService.response(
 		false, "修改货品",
 		"修改货品资料失败：" + wgoodService.error[2099]);
-	} else{
+	} else {
 	    changed_good.good_id        = update_good.id;
 	    // changed_good.shop           = update_good.shop;
 	    
@@ -327,8 +327,11 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	    changed_good.o_brand        = $scope.src_good.brand_id;
 	    changed_good.o_path         = $scope.src_good.path;
 	    changed_good.o_firm         = $scope.src_good.firm_id; 
-
 	    changed_good.image          = $scope.src_good.image;
+	    changed_good.shop           = $scope.good.shop.id;
+
+	    console.log(changed_good);
+
 	    wgoodService.update_purchaser_good(
 		changed_good, image
 	    ).then(function(state){

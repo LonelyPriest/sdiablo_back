@@ -11,11 +11,12 @@ angular.module("diabloPattern", []).service("diabloPattern", [function(){
     this.positive_num = /^[1-9][0-9]*$/;
     
     this.positive_decimal_2 = /^\d+(.\d{1,2})?$/;
-
+    
     this.decimal_2 = /^[+|\-]?\d+(.\d{1,2})?$/;
 
     // 
-    this.discount = /^\d{2}$|100$/;
+    // this.discount = /^\d{2}$|100$/;
+    this.discount = /^\d{1,2}(\.\d{1,2})?$|100$/;
 
     this.integer_except_zero = /^[+|\-]?[1-9][0-9]*$/
 

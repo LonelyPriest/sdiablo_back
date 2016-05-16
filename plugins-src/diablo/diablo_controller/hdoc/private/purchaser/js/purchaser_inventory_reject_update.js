@@ -79,7 +79,7 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 		purchaserService.list_w_inventory_new_detail({
 		    style_number:inv.style_number,
 		    brand:inv.brand.id,
-		    end_time: dateFilter(end_time, "yyyy-MM-dd")
+		    start_time: $scope.setting.q_start_time
 		}).then(function(result){
 		    // console.log(result);
 		    if (result.ecode === 0){
@@ -260,6 +260,8 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	    stockUtils.reject_negative(base.shop_id, $scope.ubase);
 	$scope.setting.history_stock =
 	    stockUtils.history_stock(base.shop_id, $scope.ubase);
+	$scope.setting.q_start_time =
+	    stockUtils.start_time(base.shop_id, $scope.ubase, $.now(), dateFilter);
 	
 	$scope.prompt_limit = stockUtils.prompt_limit(base.shop_id, $scope.ubase); 
 	$scope.q_prompt = stockUtils.typeahead(base.shop_id, $scope.ubase);

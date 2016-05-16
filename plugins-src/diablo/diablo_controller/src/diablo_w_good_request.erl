@@ -260,14 +260,12 @@ action(Session, Req, {"update_w_good"}, Payload) ->
     UpdateOrNewBrand = 
     	fun(undefined) ->
     		case Firm =:= OFirm of
-    		    true  ->
-    			undefined;
-    		    false ->
-    			?attr:brand(
-    			   update,
-    			   Merchant,
-    			   [{<<"bid">>, OBrandId}, {<<"firm">>, Firm}]),
-    			undefined
+    		    true  -> undefined;
+    		    false -> ?attr:brand(
+				update,
+				Merchant,
+				[{<<"bid">>, OBrandId}, {<<"firm">>, Firm}]),
+			     undefined
     		end;
     	   (NewBrand) ->
     		{ok, BId} =
@@ -281,9 +279,8 @@ action(Session, Req, {"update_w_good"}, Payload) ->
     try
 	TypeId = case ?v(<<"type">>, Good) of
 		     undefined -> undefined;
-		     Type ->
-			 {ok, TId} = ?attr:type(new, Merchant, Type),
-			 TId
+		     Type -> {ok, TId} = ?attr:type(new, Merchant, Type),
+			     TId
 		 end,
 
 	BrandId = UpdateOrNewBrand(?v(<<"brand">>, Good)), 

@@ -67,7 +67,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 		purchaserService.list_w_inventory_new_detail({
 		    style_number:inv.style_number,
 		    brand:inv.brand_id,
-		    end_time: dateFilter(end_time, "yyyy-MM-dd")
+		    start_time: $scope.setting.q_start_time
 		}).then(function(result){
 		    // console.log(result);
 		    if (result.ecode === 0){
@@ -259,6 +259,8 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	// base setting
 	$scope.setting.history_stock =
 	    stockUtils.history_stock(base.shop_id, $scope.ubase);
+	$scope.setting.q_start_time =
+	    stockUtils.start_time(base.shop_id, $scope.ubase, $.now(), dateFilter);
 	
 	var length = invs.length;
 	var sorts  = [];
