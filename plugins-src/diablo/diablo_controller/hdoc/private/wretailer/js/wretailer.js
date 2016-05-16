@@ -169,12 +169,13 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	$scope.search = search;
 	
 	wretailerService.list_retailer().then(function(data){
-	    // console.log(data);
+	    console.log(data);
 	    $scope.retailers = angular.copy(data);
 	    $scope.total_balance = 0;
+	    $scope.total_consume = 0;
 	    angular.forEach($scope.retailers, function(r){
-		$scope.total_balance =
-		    $scope.total_balance + $scope.round(r.balance); 
+		$scope.total_balance += $scope.round(r.balance);
+		$scope.total_consume += $scope.round(r.consume); 
 	    })
 	    
 	    diablo_order($scope.retailers);
@@ -187,8 +188,7 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	    }
 	    
 	    diabloPagination.set_data(filters);
-	    diabloPagination.set_items_perpage(
-		$scope.pagination.items_perpage);
+	    diabloPagination.set_items_perpage($scope.pagination.items_perpage);
 	    $scope.total_items      = diabloPagination.get_length();
 	    $scope.filter_retailers = diabloPagination.get_page(
 		$scope.pagination.current_page);
