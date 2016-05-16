@@ -171,9 +171,9 @@
 		  </div> 
 		</form>
 
-		<span class="input-group-addon">
+		<span x-ng-if="stock_right.show_balance" class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>欠款</span>
-	  	<input class="form-control" readonly
+	  	<input x-ng-if="stock_right.show_balance" class="form-control" readonly
 	  	       x-ng-model="select.surplus"/>
 	      </div>
 	    </div> 
@@ -223,9 +223,10 @@
 	  	<input class="form-control" readonly
 	  	       x-ng-model="select.has_pay"></input>
 
-		<span class="input-group-addon">
+		<span x-ng-if="stock_right.show_balance" class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>结余</span>
-	  	<input class="form-control" type="text" readonly
+	  	<input x-ng-if="stock_right.show_balance" class="form-control"
+		       type="text" readonly
 	  	       x-ng-model="select.left_balance"></input> 
 		
 	      </div>
@@ -274,7 +275,8 @@
 	
 	<!--BEGN portlet body--> 
 	<div class="portlet-body">
-	  <div x-ng-if="setting.history_stock" class="panel panel-default" ng-affix>
+	  <div x-ng-if="stock_right.show_orgprice && setting.history_stock"
+	       class="panel panel-default" ng-affix>
 	    <div class="table-responsive">
 	      <table class="table table-bordered table-striped table-hover
 			    table-condensed table-advanced">
@@ -333,7 +335,6 @@
 	  <!--BEGIN panel-->
 	  <div class="panel panel-default">
 	    <div class="table-responsive">
-	      <!--EBGIN table supplier-->
 	      <table id="t_new_update"
 		     class="table
 			    table-bordered
@@ -347,21 +348,18 @@
 		    <th class="text-center">序号</th>
 		    <th class="text-center">货号</th>
 		    <th class="text-center">品名</th>
-		    <th class="text-center">类别</th>
-		    <!-- <th class="text-center">性别</th> -->
-		    <!-- <th class="text-center">厂商</th> -->
+		    <th class="text-center">类别</th> 
 		    <th class="text-center">季节</th>
 
 		    <th class="text-center">吊牌价</th>
 		    <th class="text-center">折扣</th>
 		    
 		    <th class="text-center">数量</th> 
-		    <th class="text-center">进价</th>
-		    <th class="text-center">折扣率</th> 
+		    <th x-ng-if="stock_right.show_orgprice" class="text-center">进价</th>
+		    <th x-ng-if="stock_right.show_orgprice" class="text-center">折扣率</th>
 		    
-		    <th class="text-center">合计</th>
+		    <th x-ng-if="stock_right.show_orgprice" class="text-center">合计</th>
 		    <th class="text-center">溢出</th>
-		    <!-- <th class="text-center">折扣率</th> -->
 		    <th class="text-center">操作</th> 
 		  </tr>
 		</thead>
@@ -408,6 +406,7 @@
 				 placeholder="吊牌价" 
 				 required
 				 disable-key
+				 x-ng-focus="on_focus_attr('tag_price', inv)"
 				 x-ng-pattern="/^\d+(.\d{1,2})?$/"
 				 x-ng-model="inv.tag_price" />
 			</div>
@@ -424,6 +423,7 @@
 		    		 placeholder="卖价折扣"
 		    		 required
 				 disable-key
+				 x-ng-focus="on_focus_attr('discount', inv)"
 				 x-ng-pattern="/^\d{2}$|100$/"
 		    		 x-ng-model="inv.discount" />
 		    	</div>
@@ -449,7 +449,7 @@
 		      </form>
 		    </td>
 
-		    <td class="col-md-1 vert-align">
+		    <td x-ng-if="stock_right.show_orgprice" class="col-md-1 vert-align">
 		      <span x-ng-if="inv.$new">{{inv.org_price}}</span>
 		      <form x-ng-if="!inv.$new" name="inv.form.orgprice">
 			<div ng-class="{'has-error':inv.form.orgprice.$invalid
@@ -472,7 +472,7 @@
 		      </form> 
 		    </td>
 		    
-		    <td class="col-md-1 vert-align">
+		    <td x-ng-if="stock_right.show_orgprice" class="col-md-1 vert-align">
 		      <span x-ng-if="inv.$new">{{inv.ediscount}}</span>
 		      <form x-ng-if="!inv.$new" name="inv.form.ediscount">
 		    	<div ng-class="{'has-error':inv.form.ediscount.$invalid}">
@@ -493,7 +493,7 @@
 		      </form>
 		    </td> 
 		    
-		    <td class="vert-align">
+		    <td x-ng-if="stock_right.show_orgprice" class="vert-align">
 		      <span x-ng-if="inv.$new"></span>
 		      <span x-ng-if="!inv.$new">
 			<span x-ng-if="(inv.org_price || inv.org_price==0) && inv.total">
@@ -516,13 +516,7 @@
 				 x-ng-change="row_change_over(inv)"/>
 			</div>
 		      </form>
-		    </td>
-
-		    <!-- <td class="{{focus_css(inv.order_id)}}"> -->
-		    <!--   <span x-ng-if="inv.org_price && inv.ediscount && inv.tag_price"> -->
-		    <!-- 	{{calc_drate(inv.org_price, inv.ediscount, inv.tag_price)}} -->
-		    <!--   </span> -->
-		    <!-- </td> -->
+		    </td> 
 		    
 		    <td class="text-left vert-align">
 		      <div x-ng-if="inv.$new">
@@ -583,9 +577,10 @@
 		  <tr x-ng-if="select.total!==0" class="text-center">
 		    <td colspan="7"></td>
 		    <td class="vert-align">{{select.total}}</td>
-		    <td></td>
-		    <td></td>
-		    <td class="vert-align">{{select.should_pay}}</td>
+		    <td x-ng-if="stock_right.show_orgprice"></td>
+		    <td x-ng-if="stock_right.show_orgprice"></td>
+		    <td x-ng-if="stock_right.show_orgprice"
+			class="vert-align">{{select.should_pay}}</td>
 		    <td colspan="1"></td>
 		  </tr> 
 		</tbody>

@@ -363,6 +363,10 @@ ul.page-sidebar-menu > li.active > a {
     background-color: #dff0d8 !important;
 }
 
+.bg-checked {
+    background-color: #33CCCC !important;
+}
+
 .btn-page-breadcrumb {
     margin-top:-8px !important;
     margin-right: -25px !important;

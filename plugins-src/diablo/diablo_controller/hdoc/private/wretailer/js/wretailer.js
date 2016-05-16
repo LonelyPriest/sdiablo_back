@@ -169,7 +169,7 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	$scope.search = search;
 	
 	wretailerService.list_retailer().then(function(data){
-	    console.log(data);
+	    // console.log(data);
 	    $scope.retailers = angular.copy(data);
 	    $scope.total_balance = 0;
 	    $scope.total_consume = 0;

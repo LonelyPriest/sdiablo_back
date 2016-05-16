@@ -32,12 +32,31 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	diablo_goto_page("#/inventory_new_detail/" + $routeParams.ppage);
     };
 
+    /*
+     * authen
+     */
+    $scope.stock_right = {
+	show_orgprice: rightAuthen.authen(
+	    user.type,
+	    rightAuthen.rainbow_action()['show_orgprice'],
+	    user.right
+	),
+
+	show_balance: rightAuthen.authen(
+	    user.type,
+	    rightAuthen.rainbow_action()['show_balance_onstock'],
+	    user.right
+	)
+    };
+    // console.log($scope.stock_right);
+
     $scope.setting = {history_stock: false};
     
     /*
      * auto focus
      */
-    $scope.focus_attrs = {org_price:true, ediscount:false};
+    $scope.focus_attrs = {
+	org_price:true, ediscount:false, tag_price:false, discount:false};
     $scope.on_focus_attr = function(attr, inv){
 	// console.log("focus");
 	// force syn
@@ -53,7 +72,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	    }
 	}
 
-	if ($scope.setting.history_stock){
+	if ($scope.stock_right.show_orgprice && $scope.setting.history_stock){
 	    // flow
 	    // console.log("focus:", inv.style_number);
 	    var filter_history = $scope.h_inventories.filter(function(h){

@@ -99,43 +99,71 @@
 
 	  <!--BEGIN row-->
 	  <div class="row diablo-form-group">
-	    <div class="col-xs-3 col-md-3"> 
-	      <div class="input-group">
-		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-comment fg-red"></i>备注</span>
-	  	<input class="form-control"
-		       type="text"
-		       placeholder="备注"
-	  	       x-ng-model="select.comment"/> 
+
+	    <div x-ng-if="!stock_right.show_orgprice">
+	      <div class="col-xs-6 col-md-6"> 
+		<div class="input-group">
+		  <span class="input-group-addon">
+		    <i class="icon icon-comment fg-red"></i>备注</span>
+	  	  <input class="form-control"
+			 type="text"
+			 placeholder="备注"
+	  		 x-ng-model="select.comment"/>
+		</div>
+	      </div>
+
+	      <div class="col-xs-6 col-md-6"> 
+		<div class="input-group">
+		  <span class="input-group-addon">
+		    <i class="glyphicon glyphicon-map-marker fg-red"></i>
+		    总数
+		  </span>
+	  	  <input class="form-control" type="text" readonly
+	  		 x-ng-model="select.total"/>
+		</div>
+	      </div> 
+	    </div>
+
+	    <div x-ng-if="stock_right.show_orgprice">
+	      <div class="col-xs-3 col-md-3"> 
+		<div class="input-group">
+		  <span class="input-group-addon">
+		    <i class="glyphicon glyphicon-comment fg-red"></i>备注</span>
+	  	  <input class="form-control"
+			 type="text"
+			 placeholder="备注"
+	  		 x-ng-model="select.comment"/> 
+		</div>
+	      </div>
+
+	      
+	      <div class="col-xs-9 col-md-9"> 
+		<div class="input-group">
+		  
+		  <span class="input-group-addon">
+		    <i class="glyphicon glyphicon-map-marker fg-red"></i>
+		    总数
+		  </span>
+	  	  <input class="form-control" type="text" readonly
+	  		 x-ng-model="select.total"/>
+		  
+		  <span class="input-group-addon">
+		    <i class="glyphicon glyphicon-yen fg-red"></i>欠款</span>
+	  	  <input class="form-control" readonly
+	  		 x-ng-model="select.surplus"/>
+
+		  <span class="input-group-addon">
+		    <i class="glyphicon glyphicon-yen fg-red"></i>退款</span>
+	  	  <input class="form-control" readonly
+	  		 x-ng-model="select.should_pay"/>
+		  
+		  <span class="input-group-addon">
+		    <i class="glyphicon glyphicon-yen fg-red"></i>结余</span>
+	  	  <input class="form-control" type="text" readonly
+	  		 x-ng-model="select.left_balance"/>
+		</div>
 	      </div>
 	    </div>
-	    
-	    <div class="col-xs-9 col-md-9"> 
-	      <div class="input-group">
-		
-		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-map-marker fg-red"></i>
-		  总数
-		</span>
-	  	<input class="form-control" type="text" readonly
-	  	       x-ng-model="select.total"/>
-		
-		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-yen fg-red"></i>欠款</span>
-	  	<input class="form-control" readonly
-	  	       x-ng-model="select.surplus"/>
-
-		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-yen fg-red"></i>退款</span>
-	  	<input class="form-control" readonly
-	  	       x-ng-model="select.should_pay"/>
-		
-		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-yen fg-red"></i>结余</span>
-	  	<input class="form-control" type="text" readonly
-	  	       x-ng-model="select.left_balance"/>
-	      </div>
-	    </div> 
 	  </div> <!--END row-->
 
 	  <!--BEGIN row-->
@@ -186,7 +214,8 @@
 	<!--BEGN portlet body--> 
 	<div class="portlet-body">
 
-	  <div x-ng-if="setting.history_stock" class="panel panel-default" ng-affix>
+	  <div x-ng-if="stock_right.show_orgprice && setting.history_stock"
+	       class="panel panel-default" ng-affix>
 	    <div class="table-responsive">
 	      <table class="table table-bordered table-striped table-hover
 			    table-condensed table-advanced">
@@ -265,10 +294,12 @@
 		    
 		    <th class="text-center">吊牌价</th>
 		    <th class="text-center">折扣</th> 
-		    <th class="text-center">退货价</th> 
-		    <th class="text-center">折扣率</th>
+		    <th x-ng-if="stock_right.show_orgprice"
+			class="text-center">退货价</th> 
+		    <th x-ng-if="stock_right.show_orgprice"
+			class="text-center">折扣率</th>
 		    <th class="text-center">数量</th>
-		    <th class="text-center">合计</th>
+		    <th x-ng-if="stock_right.show_orgprice" class="text-center">合计</th>
 		    <!-- <th class="text-center">折扣率</th> -->
 		    <th class="text-center">操作</th>
 		  </tr>
@@ -318,7 +349,7 @@
 		    <td class="{{focus_css(inv.order_id)}}">{{inv.tag_price}}</td>
 		    <td class="{{focus_css(inv.order_id)}}">{{inv.discount}}</td>
 		    
-		    <td class="col-md-1 vert-align">
+		    <td x-ng-if="stock_right.show_orgprice" class="col-md-1 vert-align">
 		      <div x-ng-if="inv.$new">{{inv.org_price}}</div> 
 		      <form x-ng-if="!inv.$new" name="inv.form.price">
 			<div ng-class="{'has-error':inv.form.price.$invalid
@@ -340,7 +371,7 @@
 		      </form>
 		    </td>
 
-		    <td class="col-md-1 vert-align">
+		    <td x-ng-if="stock_right.show_orgprice" class="col-md-1 vert-align">
 		      <div x-ng-if="inv.$new">{{inv.ediscount}}</div> 
 		      <form x-ng-if="!inv.$new" name="inv.form.ediscount">
 			<div ng-class="{'has-error':inv.form.ediscount.$invalid}">
@@ -386,10 +417,11 @@
 		      </form>
 		    </td>
 
-		    <td class="vert-align">
+		    <td x-ng-if="stock_right.show_orgprice" class="vert-align">
 		      <span x-ng-if="inv.$new"></span>
 		      <span x-ng-if="!inv.$new">
-			<span x-ng-if="(inv.org_price || inv.org_price===0) && inv.reject">
+			<span x-ng-if="(inv.org_price || inv.org_price===0)
+				       && inv.reject">
 			  {{calc_row(inv.org_price, 100, inv.reject)}} 
 			</span>
 		      </span>
@@ -461,9 +493,11 @@
 		  </tr>
 
 		  <tr x-ng-if="select.total!==0" class="text-center">
-		    <td colspan=9></td>
+		    <td x-ng-if="stock_right.show_orgprice" colspan=9></td>
+		    <td x-ng-if="!stock_right.show_orgprice" colspan=7></td>
 		    <td class="vert-align">{{select.total}}</td>
-		    <td class="vert-align">{{select.should_pay}}</td>
+		    <td x-ng-if="stock_right.show_orgprice"
+			class="vert-align">{{select.should_pay}}</td>
 		    <td></td>
 		  </tr>
 		</tbody>
