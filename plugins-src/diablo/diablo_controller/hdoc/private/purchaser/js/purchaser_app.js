@@ -64,6 +64,9 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 
     var base = {"base": function(diabloNormalFilter){
 	return diabloNormalFilter.get_base_setting()}};
+
+    var shop = {"filterShop": function(diabloNormalFilter){
+        return diabloNormalFilter.get_shop()}};
     
     $routeProvider.
 	// new
@@ -167,6 +170,32 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 	    controller: 'stockPromotionDetail' ,
 	    resolve: angular.extend({}, user) 
 	}).
+	//transfer
+        when('/inventory/inventory_transfer', {
+            templateUrl: '/private/purchaser/html/purchaser_inventory_transfer.html',
+            controller: 'purchaserInventoryTransferCtrl',
+            resolve: angular.extend({}, user, shop, firm, employee, s_group, color, base)
+        }).
+        when('/inventory/inventory_transfer_to_detail', {
+            templateUrl: '/private/purchaser/html/purchaser_inventory_transfer_to_detail.html',
+            controller: 'purchaserInventoryTransferToDetailCtrl' ,
+	        resolve: angular.extend({}, user, shop, employee, base)
+        }).
+	when('/inventory/inventory_transfer_from_detail', {
+            templateUrl: '/private/purchaser/html/purchaser_inventory_transfer_from_detail.html',
+            controller: 'purchaserInventoryTransferFromDetailCtrl' ,
+            resolve: angular.extend({}, user, shop, employee, base)
+	    }).
+        when('/inventory/inventory_rsn_detail/transfer_to/:rsn?', {
+	        templateUrl: '/private/purchaser/html/purchaser_inventory_transfer_to_rsn_detail.html',
+            controller: 'purchaserInventoryTransferToRsnDetailCtrl',
+            resolve: angular.extend({}, user, shop, brand, type, firm, s_group, color, base)
+	    }).
+	when('/inventory/inventory_rsn_detail/transfer_from/:rsn?', {
+            templateUrl: '/private/purchaser/html/purchaser_inventory_transfer_from_rsn_detail.html',
+	        controller: 'purchaserInventoryTransferFromRsnDetailCtrl',
+	    resolve: angular.extend({}, user, shop, brand, type, firm, s_group, color, base)
+        }).
 	// default
 	otherwise({
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_new_detail.html',

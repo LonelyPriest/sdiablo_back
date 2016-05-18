@@ -243,7 +243,14 @@ init([]) ->
 	  <<"促销方案设置">>, <<"set_w_inventory_promotion">>, ?right_w_inventory},
 	 
 	 {?update_w_inventory_batch,
-	  <<"批量修改库存">>, <<"update_w_inventory_batch">>, ?right_w_inventory}
+	  <<"批量修改库存">>, <<"update_w_inventory_batch">>, ?right_w_inventory},
+
+	 {?transfer_w_inventory,
+          <<"库存调出">>, <<"transfer_w_inventory">>, ?right_w_inventory},
+         {?check_w_inventory_transfer,
+          <<"库存调入确认">>, <<"check_w_inventory_transfer">>, ?right_w_inventory},
+         {?cancel_w_inventory_transfer,
+          <<"库存调入取消">>, <<"cancel_w_inventory_transfer">>, ?right_w_inventory} 
 	],
 
     %% firm
@@ -796,6 +803,11 @@ pass_action(wholesaler) ->
      <<"filter_fix_w_inventory">>, 
      <<"filter_w_inventory_fix_rsn_group">>,
      <<"w_inventory_fix_rsn_detail">>,
+
+     %% transfer
+     <<"filter_transfer_w_inventory">>,
+     <<"filter_transfer_rsn_w_inventory">>,
+     <<"w_inventory_transfer_rsn_detail">>,
 
      %% export
      <<"w_inventory_export">>,

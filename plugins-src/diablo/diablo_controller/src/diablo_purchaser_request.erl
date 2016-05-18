@@ -488,7 +488,32 @@ sidebar(Session) ->
 		       "采购明细", "glyphicon glyphicon-map-marker"}],
 
 	    InvDetail = [{"inventory_detail",
-			  "库存详情", "glyphicon glyphicon-book"}], 
+			  "库存详情", "glyphicon glyphicon-book"}],
+
+	    Transfer =
+                [
+                 {{"inventory", "调入调出", "glyphicon glyphicon-transfer"},
+                  authen_shop_action(
+                    {?transfer_w_inventory, 
+                     "inventory_transfer",
+                     "调出",
+                     "glyphicon glyphicon-transfer"},
+                    Shops)
+                  ++ [{"inventory_transfer_from_detail",
+                       "调出记录",
+                       "glyphicon glyphicon-circle-arrow-left"},
+                      {"inventory_transfer_to_detail",
+                       "调入记录",
+                       "glyphicon glyphicon-circle-arrow-right"},
+
+                      {"inventory_rsn_detail/transfer_from",
+                       "调出明细",
+                       "glyphicon glyphicon-superscript"},
+                      {"inventory_rsn_detail/transfer_to",
+                       "调入明细",
+                       "glyphicon glyphicon-subscript"}
+                      ]
+                 }],
 
 	    InvMgr =
 		[{{"inventory", "库存盘点", "glyphicon glyphicon-check"},
@@ -540,7 +565,7 @@ sidebar(Session) ->
 			level_1_menu,
 			Record ++ Reject ++ TransR ++ TransD ++ InvDetail),
 	    Level2 = ?menu:sidebar(
-			level_2_menu, InvMgr ++ GoodMgr ++ PromotionMgr),
+			level_2_menu, InvMgr ++ Transfer ++ GoodMgr ++ PromotionMgr),
 
 	    Level1 ++ Level2
     end.

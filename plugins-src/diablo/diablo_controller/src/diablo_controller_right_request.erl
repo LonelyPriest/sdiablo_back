@@ -197,7 +197,12 @@ action(Session, Req, {"list_inventory_children"}) ->
 				?update_w_inventory,
 				?reject_w_inventory,
 				?fix_w_inventory,
-				?check_w_inventory]}, 
+				?check_w_inventory,
+				
+				?transfer_w_inventory,
+				?check_w_inventory_transfer,
+				?cancel_w_inventory_transfer 
+			       ]}, 
     
     {ok, Children} = ?right_init:get_children(
 			children_only, [{<<"id">>, RightId}]),

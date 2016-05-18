@@ -445,7 +445,7 @@ create table w_inventory_good
     org_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
     tag_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
     ediscount        DECIMAL(4, 1), -- max: 100, discount of entry
-    discount         DECIMAL(3, 0), -- max: 100, discount of sell
+    discount         DECIMAL(4, 1), -- max: 100, discount of sell
     path             VARCHAR(255) default null, -- the image path
     alarm_day        TINYINT default -1,  -- the days of alarm
     merchant         INTEGER default -1,
@@ -574,7 +574,7 @@ create table w_inventory_new_detail(
     org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
     tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
     ediscount      DECIMAL(4, 1)  default 100, -- max: 100
-    discount       DECIMAL(3, 0)  default 100, -- max: 100
+    discount       DECIMAL(4, 1)  default 100, -- max: 100
     amount         INTEGER default 0,
     over           INTEGER default 0, -- overflow
     
@@ -675,6 +675,76 @@ create table w_inventory_fix_detail_amount(
     primary key    (id)
 )default charset=utf8;
 
+
+/*
+* transfer
+*/
+create table w_inventory_transfer(
+    id		   INTEGER AUTO_INCREMENT,
+    rsn            VARCHAR(32) not null, -- record sn
+    fshop          INTEGER default -1,                 -- which shop saled the goods
+    tshop          INTEGER default -1,                 -- which shop saled the goods
+    employ         VARCHAR(8) not null,     -- employ
+    total          INTEGER default 0,
+
+    comment        VARCHAR(255) default null,
+
+    merchant       INTEGER,
+    state          TINYINT  default 0,  -- 0: wait for check, 1: checked
+    check_date     DATETIME default null, -- date of last change
+    entry_date     DATETIME,
+    deleted        INTEGER default 0, -- 0: no;  1: yes
+
+    unique  key  index_rsn (rsn),
+    key     index_ms (merchant, fshop, tshop, employ),
+    primary key    (id)
+)default charset=utf8;
+
+create table w_inventory_transfer_detail(
+    id             INTEGER AUTO_INCREMENT,
+    rsn            VARCHAR(32) not null, -- record sn
+    style_number   VARCHAR(64) not null,
+    brand          INTEGER default -1,
+
+    type           INTEGER default -1, -- reference to inv_type
+    sex            TINYINT default -1, -- 0: man, 1:woman
+    season         TINYINT, -- 0:spring, 1:summer, 2:autumn, 3:winter
+    firm           INTEGER default -1,
+    s_group        VARCHAR(32) default 0,  -- which size group
+    free           TINYINT default 0,  -- free color and free size
+    year           YEAR(4),
+
+    org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
+    tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
+    
+    discount       DECIMAL(4, 1)  default 100, -- max: 100
+    ediscount      DECIMAL(4, 1)  default 100, -- max: 100
+    amount         INTEGER default 0,
+
+    path           VARCHAR(255) default null, -- the image path
+    merchant       INTEGER default -1,
+    
+    entry_date     DATETIME, 
+    deleted        INTEGER default 0, -- 0: no;  1: yes
+
+    unique  key uk (merchant, rsn, style_number, brand),
+    primary key    (id)
+)default charset=utf8;
+
+create table w_inventory_transfer_detail_amount(
+    id             INTEGER AUTO_INCREMENT,
+    rsn            VARCHAR(32) not null, -- record sn
+    style_number   VARCHAR(64) not null,
+    brand          INTEGER default -1,
+    color          INTEGER default -1,
+    size           VARCHAR(8) default null, -- S/26, M/27....
+    total          INTEGER default 0,
+    merchant       INTEGER default -1,
+    entry_date     DATETIME,
+    deleted        INTEGER default 0, -- 0: no;  1: yes
+    unique key uk  (merchant, rsn, style_number, brand, color, size),
+    primary key    (id)
+)default charset=utf8;
 
 /*
 * sale

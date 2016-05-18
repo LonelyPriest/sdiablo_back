@@ -474,6 +474,7 @@ function normalFilterProvider(){
     var _scores         = [];
 
     var _cards          = [];
+    var _shops          = [];
     
     this.$get = function($resource){
 	var _employeeHttp =
@@ -655,26 +656,26 @@ function normalFilterProvider(){
 		
 	    },
 
-	    get_shop_charge: function(){
-		if (_shopCharges.length !== 0){
-		    return _shopCharges;
-		} else {
-		    return _shopHttp.query(
-			{operation:'list_shop_charge'}
-		    ).$promise.then(function(cs){
-			_shopCharges = cs.map(function(c){
-			    return {
-				id:       c.id,
-				shop_id:  c.shop_id,
-				cid:      c.cid,
-				entry:    c.entry
-			    }
-			});
+	    get_shop: function(){
+                if (_shops.length !== 0){
+                    return _shops;
+                } else {
+                    return _shopHttp.query(
+                        {operation: "list_shop"}
+                    ).$promise.then(function(shops){
+                        // console.log(shops);
+                        _shops = shops.map(function(s){
+                            return {id: s.id,
+                                    name:s.name,
+                                    repo: s.repo,
+                                    py:diablo_pinyin(s.name)};
+                        });
 
-			return _shopCharges;
-		    });
-		}
-	    },
+                        return _shops;
+
+                    })
+                }
+            }, 
 
 	    get_score: function(){
 		if (_scores.length !== 0){
