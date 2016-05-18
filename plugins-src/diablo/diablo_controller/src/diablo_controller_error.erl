@@ -131,6 +131,8 @@ success(update_w_inventory, RSN) ->
     {0, "Success to update purchaser inventory with rsn " ++ ?to_s(RSN)};
 success(check_w_inventory, RSN) ->
     {0, "Success to check purchaser inventory with rsn " ++ ?to_s(RSN)};
+success(check_w_inventory_transfer, RSN) ->
+    {0, "Success to check transfer inventory with rsn " ++ ?to_s(RSN)};
 success(reject_w_inventory, Total) ->
     {0, "Success to reject purchaser inventory of total amount "
      ++ ?to_s(Total)};
@@ -142,7 +144,8 @@ success(set_w_inventory_promotion, Merchant) ->
     {0, "Success to set promotion of merchant  " ++ ?to_s(Merchant)};
 success(update_w_inventory_batch, Merchant) ->
     {0, "Success to update inventory of merchant  " ++ ?to_s(Merchant)};
-
+success(transfer_w_inventory, Rsn) ->    
+    {0, "Success to transfer inventory with rsn  " ++ ?to_s(Rsn)};
 
 %% promotion
 success(new_promotion, Promotion) ->

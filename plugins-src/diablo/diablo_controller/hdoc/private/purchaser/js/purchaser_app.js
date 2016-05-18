@@ -501,6 +501,42 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
 	    {condition: condition, e_type:e_type}).$promise;
     };
 
+    // transfer
+    this.transfer_purchaser_inventory = function(inventory){
+        return http.save(
+            {operation: "transfer_w_inventory"}, inventory).$promise;
+    };
+
+    this.filter_transfer_w_inventory = function(match, fields, currentPage, itemsPerpage){
+        return http.save(
+            {operation: "filter_transfer_w_inventory"},
+            {match:  angular.isDefined(match) ? match.op : undefined,
+             fields: fields,
+             page:   currentPage,
+             count:  itemsPerpage}).$promise;
+    };
+
+    this.filter_transfer_rsn_w_inventory = function(match, fields, currentPage, itemsPerpage){
+        return http.save(
+            {operation: "filter_transfer_rsn_w_inventory"},
+            {match:  angular.isDefined(match) ? match.op : undefined,
+             fields: fields,
+             page:   currentPage,
+             count:  itemsPerpage}).$promise;
+    };
+
+    this.w_invnetory_transfer_rsn_detail = function(inv){
+        return http.save(
+            {operation: "w_inventory_transfer_rsn_detail"},
+            {rsn:inv.rsn, style_number:inv.style_number,
+             brand:inv.brand}).$promise;
+    };
+
+     this.check_w_inventory_transfer = function(check){
+        return http.save(
+            {operation: "check_w_inventory_transfer"}, check).$promise;
+    };
+    
     /*
      * promotion 
      */

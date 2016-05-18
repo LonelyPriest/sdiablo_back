@@ -33,6 +33,11 @@
 -define(DELETE, 0).
 -define(ABANDON, 1).
 
+%% transfer
+-define(IN_ROAD, 0).
+-define(IN_STOCK, 1).
+-define(IN_BACK, 2).
+
 %% inventory action
 -define(NEW_INVENTORY, 0).
 -define(REJECT_INVENTORY, 1).
@@ -58,6 +63,8 @@
 -define(STRING, 0).
 -define(PRINT_FRONTE, 0).
 -define(PRINT_BACKEND, 1).
+
+-define(DEFAULT_ALARM_DAY, 7).
 
 %% pagination
 -define(DEFAULT_ITEMS_PERPAGE, 5).
@@ -223,7 +230,6 @@
 -define(list_w_promotion,   ?right_w_good + 14). 
 -define(lookup_good_orgprice, ?right_w_good + 15).
 
-
 %% report
 -define(daily_wreport,   ?right_w_report + 1).
 -define(weekly_wreport,  ?right_w_report + 2).
@@ -322,6 +328,7 @@
 -define(w_good_request, diablo_w_good_request).
 -define(w_good, diablo_w_good).
 -define(w_good_sql, diablo_purchaser_sql).
+-define(w_transfer_sql, diablo_purchaser_transfer).
 
 %% report
 -define(w_report_request, diablo_w_report_request).

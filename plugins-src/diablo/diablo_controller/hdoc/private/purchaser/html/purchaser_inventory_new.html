@@ -332,9 +332,8 @@
 		      </tr>
 		    </thead>
 		    <tbody>
-		      <tr class="text-center"
-			  ng-repeat="inv in inventories">  
-			<td>{{inv.order_id}}</td>
+		      <tr class="text-center" x-ng-repeat="inv in inventories">  
+			<td class="vert-align">{{inv.order_id}}</td>
 
 			<td x-ng-if="q_prompt===0"
 			    class="col-md-2 text-left vert-align">

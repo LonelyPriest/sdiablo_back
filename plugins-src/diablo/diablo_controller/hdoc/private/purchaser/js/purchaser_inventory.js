@@ -1295,7 +1295,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 			    name:      p.name,
 			    prompt:    p.prompt,
 			    sex:       good.sex,
-			    firm_id:   good.firm,
+			    firm_id:   angular.isDefined(good.firm) ? good.firm : -1,
 			    year:      good.year,
 			    season:    good.season,
 			    org_price: good.org_price,

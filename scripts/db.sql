@@ -484,7 +484,7 @@ create table w_inventory
     tag_price        DECIMAL(10, 2) default 0, -- max: 99999999.99
     
     ediscount        DECIMAL(4, 1), -- max: 100, discount of entry
-    discount         DECIMAL(3, 0), -- max: 100
+    discount         DECIMAL(4, 0), -- max: 100
     
     path             VARCHAR(255) default null, -- the image path
     alarm_day        TINYINT default -1,  -- the days of alarm 
@@ -686,10 +686,9 @@ create table w_inventory_transfer(
     tshop          INTEGER default -1,                 -- which shop saled the goods
     employ         VARCHAR(8) not null,     -- employ
     total          INTEGER default 0,
-
     comment        VARCHAR(255) default null,
-
     merchant       INTEGER,
+    
     state          TINYINT  default 0,  -- 0: wait for check, 1: checked
     check_date     DATETIME default null, -- date of last change
     entry_date     DATETIME,
@@ -715,10 +714,9 @@ create table w_inventory_transfer_detail(
     year           YEAR(4),
 
     org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
-    tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
-    
+    tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99 
     discount       DECIMAL(4, 1)  default 100, -- max: 100
-    ediscount      DECIMAL(4, 1)  default 100, -- max: 100
+    ediscount      DECIMAL(4, 1)  default 100, -- max: 100 
     amount         INTEGER default 0,
 
     path           VARCHAR(255) default null, -- the image path

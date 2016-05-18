@@ -9,9 +9,8 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
     console.log($scope.shops);
     $scope.to_shops          = [];
     
-    // $scope.shops     = user.sortAvailabeShops;
-    $scope.f_add             = diablo_float_add;
-    $scope.f_sub             = diablo_float_sub;
+    // $scope.f_add             = diablo_float_add;
+    // $scope.f_sub             = diablo_float_sub;
     
     $scope.sexs              = diablo_sex;
     $scope.seasons           = diablo_season;
@@ -19,11 +18,11 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
     $scope.employees         = filterEmployee;
     $scope.extra_pay_types   = purchaserService.extra_pay_types;
     $scope.timeout_auto_save = undefined;
-    $scope.round             = diablo_round;
-    $scope.setting           = {
-	reject_negative: false,
-	round: diablo_round_record
-    };
+    // $scope.round             = diablo_round;
+    // $scope.setting           = {
+    // 	reject_negative: false,
+    // 	round: diablo_round_record
+    // };
 
     $scope.go_back = function(){
 	diablo_goto_page("#inventory/inventory_transfer_detail");
@@ -42,7 +41,7 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
 	// extra_pay_type: $scope.extra_pay_types[0]
     };
 
-    $scope.get_transfer_sthop = function(){
+    $scope.get_transfer_shop = function(){
 	$scope.to_shops = [];
 	for (var i=0, l=filterShop.length; i<l; i++){
 	    if ($scope.select.shop.id !== filterShop[i].id){
@@ -60,7 +59,7 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
     }; 
 
     $scope.change_shop = function(){
-	$scope.get_transfer_sthop();
+	$scope.get_transfer_shop();
 	if ($scope.q_prompt === diablo_frontend){
 	    $scope.get_all_prompt_inventory();
 	}
@@ -85,7 +84,7 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
 	$scope.select.employee = $scope.employees[0];
     }
 
-    $scope.get_transfer_sthop(); 
+    $scope.get_transfer_shop(); 
     
     // calender
     $scope.open_calendar = function(event){
@@ -107,6 +106,7 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
     // console.log($scope.setting);
 
     $scope.get_all_prompt_inventory = function(){
+	console.log($scope.select.shop);
 	diabloNormalFilter.match_all_w_inventory(
 	    {start_time:$scope.qtime_start($scope.select.shop.id),
 	     shop:$scope.select.shop.id} 
@@ -114,7 +114,7 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
 	    // console.log(invs);
 	    $scope.all_prompt_inventory = invs.map(function(v){
 		var p = stockUtils.prompt_name(v.style_number, v.brand, v.type);
-		return angular.extend(v, {name:v.name, prompt:v.prompt}); 
+		return angular.extend(v, {name:p.name, prompt:p.prompt}); 
 	    });
 
 	    // console.log($scope.all_prompt_inventory);
@@ -200,7 +200,7 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
 	    for(var i=0, l=amounts.length; i<l; i++){
 		if (angular.isDefined(amounts[i].reject_count)
 		    && amounts[i].reject_count){
-		    amounts[i].reject_Pcount
+		    amounts[i].reject_count
 			= parseInt(amounts[i].reject_count);
 		    reject_amounts.push({
 			cid:amounts[i].cid,
@@ -239,7 +239,7 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
 		
 		amounts     : get_transfer_amount(add.amounts),
 		total       : seti(add.reject),
-		discount    : add.discount,
+		// discount    : add.discount,
 		path        : add.path,
 		alarm_day   : add.alarm_day
 	    })
@@ -518,8 +518,12 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
 	    return;
 	}
 
-	if (!$scope.setting.reject_negative
-	    && parseInt(inv.amounts[0].reject_count) > inv.total){
+	// if (!$scope.setting.reject_negative
+	//     && parseInt(inv.amounts[0].reject_count) > inv.total){
+	//     return;
+	// }
+
+	if (parseInt(inv.amounts[0].reject_count) > inv.total){
 	    return;
 	}
 

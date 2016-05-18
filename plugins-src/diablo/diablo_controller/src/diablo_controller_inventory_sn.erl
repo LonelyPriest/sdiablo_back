@@ -52,6 +52,10 @@ sn(w_inventory_reject_sn, Merchant) ->
     Key = ?to_atom("w-inv-reject-sn" ++ ?to_s(Merchant)),
     gen_server:call(?SERVER, {new, Key});
 
+sn(w_inventory_transfer_sn_from, Merchant) ->
+    Key = ?to_atom("w-inv-transfer-sn-f-" ++ ?to_s(Merchant)),
+    gen_server:call(?SERVER, {new, Key});
+
 sn(w_inventory_fix_sn, Merchant) ->
     Key = ?to_atom("w-inv-fix-sn" ++ ?to_s(Merchant)),
     gen_server:call(?SERVER, {new, Key});
@@ -154,6 +158,8 @@ handle_call({init, Merchant}, _From, State) ->
 		mnesia:write(#unique_ids{merchant=?to_atom("w-inv-fix-sn-" ++ M) , id=0}), 
 		mnesia:write(#unique_ids{merchant=?to_atom("w-sale-new-sn-" ++ M) , id=0}),
 		mnesia:write(#unique_ids{merchant=?to_atom("w-sale-reject-sn-" ++ M) , id=0}),
+		
+		mnesia:write(#unique_ids{merchant=?to_atom("w-inv-transfer-sn-f-" ++ M) , id=0}),
 		mnesia:write(#unique_ids{merchant=?to_atom("w-firm-bill-sn" ++ M) , id=0})
 	end,
     {atomic, _} = mnesia:transaction(F),
