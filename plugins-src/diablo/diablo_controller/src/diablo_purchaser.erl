@@ -1307,21 +1307,23 @@ handle_call({check_inventory_transfer, Merchant, CheckProps}, _From, State) ->
     ?DEBUG("check_inventory_transfer: checkprops ~p", [CheckProps]),
     %% Now = ?utils:current_time(format_localtime),
     RSN = ?v(<<"rsn">>, CheckProps),
-    Sql = "select rsn, state from w_inventory_transfer"
+    Sql = "select rsn, fshop, tshop, state from w_inventory_transfer"
         " where rsn=\"" ++ ?to_s(RSN) ++ "\"",
     Reply =
         case ?sql_utils:execute(s_read, Sql) of
-            {ok, []} ->
-		
+            {ok, []} -> 
                 {error, ?err(stock_sn_not_exist, RSN)};
-	                {ok, R} ->
+	    {ok, R} ->
                 case ?v(<<"state">>, R) of
                     ?IN_STOCK ->
                         {error, ?err(stock_been_checked, RSN)};
                     ?IN_BACK ->
                         {error, ?err(stock_been_canceled, RSN)};
                     ?IN_ROAD ->
-                        Sqls = ?w_transfer_sql:check_transfer(Merchant, CheckProps),
+			FShop = ?v(<<"fshop">>, R),
+			TShop = ?v(<<"tshop">>, R), 
+                        Sqls = ?w_transfer_sql:check_transfer(
+				  Merchant, FShop, TShop, CheckProps),
                         ?sql_utils:execute(transaction, Sqls, RSN)
                 end
         end,

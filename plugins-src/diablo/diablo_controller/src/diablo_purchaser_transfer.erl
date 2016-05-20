@@ -222,12 +222,13 @@ amount_transfer(transfer_from, RSN, Merchant, _Shop, Datetime, Inv) ->
     Sql2 ++ Sql3.
 
 
-check_transfer(Merchant, CheckProps) ->
-    ?DEBUG("check_inventory_transfer: checkprops ~p", [CheckProps]), 
+check_transfer(Merchant, FShop, TShop, CheckProps) ->
+    ?DEBUG("check_inventory_transfer: FShop, TShop, checkprops ~p",
+	   [FShop, TShop, CheckProps]), 
     %% Now = ?utils:current_time(format_localtime),
 
     RSN = ?v(<<"rsn">>, CheckProps),
-    TShop = ?v(<<"tshop">>, CheckProps),
+    %% TShop = ?v(<<"tshop">>, CheckProps),
     Now = ?v(<<"datetime">>, CheckProps,
 	     ?utils:current_time(format_localtime)), 
     
@@ -236,13 +237,18 @@ check_transfer(Merchant, CheckProps) ->
 	++ ", check_date=\"" ++ ?to_s(Now) ++ "\""
 	++ " where rsn=\"" ++ ?to_s(RSN) ++ "\"",
 
-    Sql2 = "select style_number, brand, type, sex, season, amount"
+    Sql2 = "select style_number, brand, type, sex, season"
     	", firm, s_group, free, year"
-    	", org_price, tag_price, pkg_price, price3"
-    	", price4, price5, discount, path, alarm_day"
+    	", org_price, tag_price, discount, ediscount, amount, path"
 	" from w_inventory_transfer_detail"
 	" where rsn=\"" ++ ?to_s(RSN) ++ "\"",
 
+    DefaultScore = case ?w_user_profile:get(shop, Merchant, TShop) of
+		       [] -> -1;
+		       {ok, [{Setting}]} ->
+			   %% ?DEBUG("setting ~p", [Setting]),
+			   ?v(<<"score_id">>, Setting)
+		   end,
     CheckFun = 
 	fun({Transfer}, Acc)->
 		StyleNumber = ?v(<<"style_number">>, Transfer),
@@ -252,13 +258,6 @@ check_transfer(Merchant, CheckProps) ->
 		Season      = ?v(<<"season">>, Transfer),
 		Firm        = ?v(<<"firm">>, Transfer),
 
-		OrgPrice    = ?v(<<"org_price">>, Transfer),
-		TagPrice    = ?v(<<"tag_price">>, Transfer),
-		PkgPrice    = ?v(<<"pkg_price">>, Transfer),
-		P3          = ?v(<<"price3">>, Transfer),
-		P4          = ?v(<<"price4">>, Transfer),
-		P5          = ?v(<<"price5">>, Transfer),
-
 		SizeGroup   = ?v(<<"s_group">>, Transfer),
 		Free        = ?v(<<"free">>, Transfer),
 		Year        = case ?v(<<"year">>, Transfer) of
@@ -266,13 +265,14 @@ check_transfer(Merchant, CheckProps) ->
 				      ?utils:current_time(year);
 				  CurYear -> CurYear
 			      end,
-
-		Amount       = ?v(<<"amount">>, Transfer),
-
+		
+		OrgPrice    = ?v(<<"org_price">>, Transfer),
+		TagPrice    = ?v(<<"tag_price">>, Transfer),
 		Discount    = ?v(<<"discount">>, Transfer),
+		EDiscount   = ?v(<<"ediscount">>, Transfer), 
+		Amount      = ?v(<<"amount">>, Transfer), 
 		Path        = ?v(<<"path">>, Transfer, []),
-		AlarmDay    =
-		    ?v(<<"alarm_day">>, Transfer, ?DEFAULT_ALARM_DAY),
+		AlarmDay    = ?v(<<"alarm_day">>, Transfer, ?DEFAULT_ALARM_DAY),
 
 		Sql21 = "select id, style_number, brand, shop, merchant"
 		    " from w_inventory"
@@ -285,33 +285,31 @@ check_transfer(Merchant, CheckProps) ->
 		case ?sql_utils:execute(s_read, Sql21) of
 		    {ok, []} ->
 			["insert into w_inventory(rsn"
-			 ", style_number, brand, type, sex, season"
-			 ", amount, firm, s_group, free, year"
-			 ", org_price, tag_price, pkg_price, price3"
-			 ", price4, price5, discount, path, alarm_day"
-			 ", shop, merchant"
+			 ", style_number, brand, firm, type, sex, season, year"
+			 ", amount, s_group, free, promotion, score"
+			 ", org_price, tag_price, ediscount, discount"
+			 ", path, alarm_day, shop, merchant"
 			 ", last_sell, change_date, entry_date)"
 			 " values("
 			 ++ "\"" ++ ?to_s(-1) ++ "\","
 			 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
 			 ++ ?to_s(Brand) ++ ","
+			 ++ ?to_s(Firm) ++ "," 
 			 ++ ?to_s(Type) ++ ","
 			 ++ ?to_s(Sex) ++ ","
 			 ++ ?to_s(Season) ++ ","
-			 ++ ?to_s(Amount) ++ ","
-			 ++ ?to_s(Firm) ++ "," 
-			 %% ++ ?to_s(Color) ++ ","
-			 %% ++ "\"" ++ ?to_s(Size) ++ "\","
+			 ++ ?to_s(Year) ++ "," 
+			 ++ ?to_s(Amount) ++ "," 
 			 ++ "\"" ++ ?to_s(SizeGroup) ++ "\","
 			 ++ ?to_s(Free) ++ ","
-			 ++ ?to_s(Year) ++ ","
+			 ++ ?to_s(-1) ++ ","
+			 ++ ?to_s(DefaultScore) ++ ","
+			 
 			 ++ ?to_s(OrgPrice) ++ ","
 			 ++ ?to_s(TagPrice) ++ ","
-			 ++ ?to_s(PkgPrice) ++ ","
-			 ++ ?to_s(P3) ++ ","
-			 ++ ?to_s(P4) ++ ","
-			 ++ ?to_s(P5) ++ ","
+			 ++ ?to_s(EDiscount) ++ "," 
 			 ++ ?to_s(Discount) ++ ","
+			 
 			 ++ "\"" ++ ?to_s(Path) ++ "\","
 			 ++ ?to_s(AlarmDay) ++ ","
 			 ++ ?to_s(TShop) ++ ","
@@ -341,17 +339,10 @@ check_transfer(Merchant, CheckProps) ->
 		    {ok, R} ->
 			["update w_inventory set"
 			 " amount=amount+" ++ ?to_s(Amount)
-			 ++ ", org_price=" ++ ?to_s(OrgPrice)
-			 ++ ", tag_price=" ++ ?to_s(TagPrice)
-			 ++ ", pkg_price=" ++ ?to_s(PkgPrice)
-			 %% ++ ", price3=" ++ ?to_s(P3)
-			 %% ++ ", price4=" ++ ?to_s(P4)
-			 %% ++ ", price5=" ++ ?to_s(P5)
-			 %% ++ ", discount=" ++ ?to_s(Discount)
+			 %% ++ ", org_price=" ++ ?to_s(OrgPrice) 
+			 %% ++ ", ediscount=" ++ ?to_s(eDiscount)
 			 ++ ", change_date="
-			 ++ "\"" ++ ?to_s(Now) ++ "\""
-			 %% ++ ", entry_date="
-			 %% ++ "\"" ++ ?to_s(Now) ++ "\""
+			 ++ "\"" ++ ?to_s(Now) ++ "\"" 
 			 ++ " where id=" ++ ?to_s(?v(<<"id">>, R))
 
 			 %% "update w_inventory_amount a inner join("
@@ -440,7 +431,35 @@ check_transfer(Merchant, CheckProps) ->
 
     Sql3 = case ?sql_utils:execute(read, Sql2) of
 	       {ok, []} -> []; 
-	       {ok, Transfers} -> lists:foldr(CheckFun, [], Transfers)
+	       {ok, Transfers} ->
+		   lists:foldr(CheckFun, [], Transfers)
+		       ++ ["update w_inventory_amount a inner join("
+			   "select style_number, brand, color"
+			   ", size, total"
+			   " from w_inventory_transfer_detail_amount"
+			   " where rsn=\"" ++ ?to_s(RSN) ++ "\") b"
+			   " on a.style_number=b.style_number"
+			   " and a.brand=b.brand"
+			   " and a.size=b.size"
+			   " and a.color=b.color"
+			   %% " and a.shop=b.fshop" 
+			   " set a.total=a.total-b.total" 
+			   " where "
+			   ++ "a.merchant=" ++ ?to_s(Merchant) 
+			   ++ " and a.shop=" ++ ?to_s(FShop),
+
+			   "update w_inventory a inner join("
+			   "select style_number, brand, amount"
+			   " from w_inventory_transfer_detail"
+			   " where rsn=\"" ++ ?to_s(RSN) ++ "\") b"
+			   " on a.style_number=b.style_number"
+			   " and a.brand=b.brand" 
+			   %% " and a.shop=b.fshop" 
+			   " set a.amount=a.amount-b.amount" 
+			   " where "
+			   ++ "a.merchant=" ++ ?to_s(Merchant) 
+			   ++ " and a.shop=" ++ ?to_s(FShop)
+			  ]
 	   end,
 	    
     %% ?DEBUG("Sql3 ~p", [Sql3]),

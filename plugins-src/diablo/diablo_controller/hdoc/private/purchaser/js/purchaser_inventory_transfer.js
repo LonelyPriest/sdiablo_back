@@ -18,11 +18,8 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
     $scope.employees         = filterEmployee;
     $scope.extra_pay_types   = purchaserService.extra_pay_types;
     $scope.timeout_auto_save = undefined;
-    // $scope.round             = diablo_round;
-    // $scope.setting           = {
-    // 	reject_negative: false,
-    // 	round: diablo_round_record
-    // };
+    $scope.base_settings     = {};
+    $scope.focus             = {style_number:true, transfer: false};
 
     $scope.go_back = function(){
 	diablo_goto_page("#inventory/inventory_transfer_detail");
@@ -60,7 +57,7 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
 
     $scope.change_shop = function(){
 	$scope.get_transfer_shop();
-	if ($scope.q_prompt === diablo_frontend){
+	if ($scope.base_settings.q_prompt === diablo_frontend){
 	    $scope.get_all_prompt_inventory();
 	}
     };
@@ -74,7 +71,16 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
 
 	$scope.has_saved = false;
 
-    }; 
+    };
+
+    $scope.auto_focus = function(attr){
+	if (!$scope.focus[attr]){
+	    $scope.focus[attr] = true;
+	}
+	for (var o in $scope.focus){
+	    if (o !== attr) $scope.focus[o] = false;
+	} 
+    };
     
     // if ($scope.firms.length !== 0){
     // 	$scope.select.firm = $scope.firms[0]; 
@@ -97,7 +103,8 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
 	return now;
     };
 
-    $scope.q_prompt = stockUtils.typeahead($scope.select.shop.id, base);
+    $scope.base_settings.q_prompt = stockUtils.typeahead($scope.select.shop.id, base);
+    $scope.base_settings.plimit = stockUtils.prompt_limit($scope.select.shop.id, base);
     
     $scope.qtime_start = function(shopId){
 	return stockUtils.start_time(shopId, base, now, dateFilter); 
@@ -121,7 +128,7 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
 	});
     };
     
-    if ($scope.q_prompt === diablo_frontend){
+    if ($scope.base_settings.q_prompt === diablo_frontend){
 	// console.log($scope.select);
 	$scope.get_all_prompt_inventory()
     };
@@ -170,6 +177,7 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
 
 	console.log(add);
 
+	$scope.auto_focus("transfer");
 	$scope.add_inventory(add);
 	
 	return;
@@ -339,7 +347,8 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
 	inv.order_id = $scope.inventories.length; 
 	// add new line
 	$scope.inventories.unshift({$edit:false, $new:true}); 
-	$scope.re_calculate(); 
+	$scope.re_calculate();
+	$scope.auto_focus("style_number");
     };
     
     $scope.add_inventory = function(inv){
@@ -383,7 +392,8 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
 		// add new line
 		$scope.inventories.unshift({$edit:false, $new:true});
 
-		$scope.re_calculate(); 
+		$scope.re_calculate();
+		$scope.auto_focus("style_number");
 	    };
 	    
 	    var callback = function(params){
@@ -596,7 +606,7 @@ purchaserApp.controller("purchaserInventoryTransferFromDetailCtrl", function(
      * pagination 
      */
     $scope.colspan = 15;
-    $scope.items_perpage = 10;
+    $scope.items_perpage = 15;
     $scope.default_page = 1;
     // $scope.current_page = $scope.default_page;
 
@@ -628,16 +638,12 @@ purchaserApp.controller("purchaserInventoryTransferFromDetailCtrl", function(
 			$scope.total_items = result.total
 		    }
 		    angular.forEach(result.data, function(d){
-			d.fshop = diablo_get_object(
-			    d.fshop_id, $scope.from_shops);
-			d.tshop = diablo_get_object(
-			    d.tshop_id, filterShop);
-			d.employee = diablo_get_object(
-			    d.employee_id, filterEmployee);
+			d.fshop = diablo_get_object(d.fshop_id, $scope.from_shops);
+			d.tshop = diablo_get_object(d.tshop_id, filterShop);
+			d.employee = diablo_get_object(d.employee_id, filterEmployee);
 		    })
 		    $scope.records = result.data;
-		    diablo_order_page(
-			page, $scope.items_perpage, $scope.records);
+		    diablo_order_page(page, $scope.items_perpage, $scope.records);
 		})
 
 	    $scope.current_page = page;
@@ -661,39 +667,7 @@ purchaserApp.controller("purchaserInventoryTransferFromDetailCtrl", function(
     };
 
     // check
-    var dialog = diabloUtilsService;
-    $scope.check_transfer = function(r){
-	var callback = function(){
-	    var check_date = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss");
-	    purchaserService.check_w_inventory_transfer(
-		{rsn:r.rsn, tshop:r.tshop_id, datetime:check_date}
-	    ).then(function(state){
-		console.log(state);
-		if (state.ecode == 0){
-		    dialog.response_with_callback(
-			true,
-			"移仓调入确认",
-			"确认成功，请检查店铺 ["
-			    + r.tshop.name + "] 库存！！",
-			$scope, function(){
-			    r.state=1; r.check_date=check_date;})
-	    	    return;
-		} else{
-	    	    dialog.response(
-	    		false,
-			"移仓调入确认",
-	    		"确认失败："
-			    + purchaserService.error[state.ecode]);
-		}
-	    })
-	};
-
-	dialog.request(
-	    "移仓调入确认",
-	    "移仓只能确认一次，确认后货品自动增加，请在货品到达到后确认！！",
-	    callback, undefined, $scope);
-    };
-
+    var dialog = diabloUtilsService; 
     $scope.cancel_transfer = function(r){
 	dialog.response(false, "移仓取消", "系统暂不支持此操作！！", undefined);
     };

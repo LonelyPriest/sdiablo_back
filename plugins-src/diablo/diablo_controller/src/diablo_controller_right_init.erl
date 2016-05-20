@@ -861,5 +861,6 @@ pass_action(wholesaler) ->
      <<"get_w_print_content">>,
 
      %% shop
+     <<"list_shop">>,
      <<"list_shop_promotion">>
     ].

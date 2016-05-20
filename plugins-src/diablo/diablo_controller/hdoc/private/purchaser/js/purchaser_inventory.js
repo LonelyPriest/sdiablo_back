@@ -555,8 +555,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		path        : add.path,
 		alarm_day   : add.alarm_day,
 		total       : add.total,
-		score       : $scope.select.shop.score_id
-
+		score       : $scope.select.shop.score_id 
 	    })
 	};
 

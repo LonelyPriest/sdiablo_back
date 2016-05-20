@@ -694,9 +694,9 @@ create table w_inventory_transfer(
     entry_date     DATETIME,
     deleted        INTEGER default 0, -- 0: no;  1: yes
 
-    unique  key  index_rsn (rsn),
-    key     index_ms (merchant, fshop, tshop, employ),
-    primary key    (id)
+    unique  key  uk (rsn),
+    key          dk (merchant, fshop, tshop, employ),
+    primary key     (id)
 )default charset=utf8;
 
 create table w_inventory_transfer_detail(
@@ -725,7 +725,7 @@ create table w_inventory_transfer_detail(
     entry_date     DATETIME, 
     deleted        INTEGER default 0, -- 0: no;  1: yes
 
-    unique  key uk (merchant, rsn, style_number, brand),
+    unique  key    uk (rsn, merchant, style_number, brand),
     primary key    (id)
 )default charset=utf8;
 
@@ -740,7 +740,7 @@ create table w_inventory_transfer_detail_amount(
     merchant       INTEGER default -1,
     entry_date     DATETIME,
     deleted        INTEGER default 0, -- 0: no;  1: yes
-    unique key uk  (merchant, rsn, style_number, brand, color, size),
+    unique key uk  (rsn, merchant, style_number, brand, color, size),
     primary key    (id)
 )default charset=utf8;
 
