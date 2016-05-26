@@ -4,10 +4,28 @@
       
       <div class="portlet-title">
 	<div class="caption"><i class="glyphicon glyphicon-map-marker"></i>
-	  <span>日报表</span>
-	</div> 
-	<div class="tools">
-	</div>
+          <span>日报表{{current_day|date: 'yyyy-MM-dd'}}</span>
+        </div>
+
+        <div class="actions">
+          <button class="btn red"
+                  x-ng-click="pre_daily()">前一天
+            <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
+
+          <button class="btn btn-success"
+                  x-ng-disabled="disable_after_daily()"
+                  x-ng-click="after_daily()">后一天
+            <i class="glyphicon glyphicon-circle-arrow-right"></i></button>
+
+          <button class="btn blue reload "
+                  x-ng-click="refresh()">刷新
+            <i class="icon icon-spinner fg-white"></i></button>
+
+          <button class="btn yellow-crusta hidden-sm"
+                  x-ng-click="print()">打印
+            <i class="glyphicon glyphicon-print"></i></button>
+
+        </div> 
       </div>
 
       <div class="portlet-body">
@@ -78,95 +96,10 @@
 	      </div> <!--END table-responsive-->
 	    </div>
 	  </tab>
-
-	  <tab x-ng-controller="dailyByRetailer"
-	       heading="按客户"
-	       select="do_search(r_pagination.current_page)">
-	    <div class="panel panel-default table-panel">
-	      <div class="table-responsive">
-		<table id="by_retailer"
-		       class="table table-bordered 
-			      table-striped table-hover
-			      table-condensed table-advanced">
-		  <thead class="stick-thead"
-			 fsm-sticky-header
-			 scroll-body="'#by_retailer'"
-			 scroll-stop="50">
-		    <tr>
-		      <th>序号</th>
-		      <th>客户</th>
-		      <th>余额</th>
-		      <th class="danger">实收</th>
-		      <th>现金</th>
-		      <th>刷卡</th>
-		      <!-- <th>充值</th> -->
-		      <!-- <th>提现</th> -->
-		    </tr>
-		  </thead>
-		  <tbody>
-		    <tr x-ng-repeat="r in r_data">
-		      <td>{{r.order_id}}</td>
-		      <td>{{r.retailer.name}}</td>
-		      <td>{{r.retailer.balance}}</td>
-		      <td>{{r.t_spay}}</td>
-		      <td>{{r.t_cash}}</td>
-		      <td>{{r.t_card}}</td>
-		      <!-- <td>{{r.t_cbalance}}</td> -->
-		      <!-- <td>{{r.t_withdraw}}</td> -->
-		    </tr>
-		    <tr x-ng-if="r_stastic.total_items!==0">
-		      <td colspan=3></td>
-		      <td class="danger">{{r_stastic.total_spay}}</td>
-		      <td>{{r_stastic.total_cash}}</td>
-		      <td>{{r_stastic.total_card}}</td>
-		      <!-- <td>{{r_stastic.total_wire}}</td> -->
-		      <!-- <td>{{r_stastic.total_verificate}}</td> -->
-		    </tr>
-		  </tbody>
-		  
-		  <tfoot> 
-		  </tfoot>
-		  
-		</table> <!--END table-->
-	      </div> <!--END table-responsive-->
-	    </div>
-
-	    <div x-ng-show="r_stastic.total_items>r_pagination.items_perpage"
-		 class="row">
-	      <div class="col-md-12, col-sm-12, col-xs-12"> 
-	    
-		<span>显示第 {{r_pagination.current_page}} / {{r_pagination.total_page}} 页结果， 共 {{r_stastic.total_items}} 项
-		</span>
-
-		<span class="pull-right">
-		  <span class="btn-group btn-group-solid">
-		    <!-- <button class="btn purple-plum btn-left-page" -->
-		    <!-- 	    x-ng-disabled="r_pagination.current_page===1" -->
-		    <!-- 	    x-ng-click="pre()"> -->
-		    <!--   <i class="glyphicon glyphicon-menu-left"></i> -->
-		    <!-- </button> -->
-		    <button class="btn red-sunglo btn-next-page"
-		    	    x-ng-disabled="r_pagination.current_page
-					   ===r_pagination.total_page"
-		    	    x-ng-click="next()">
-		      <i class="glyphicon glyphicon-menu-down"></i>
-		    </button>
-		  </span>
-		</span>
-	
-	      </div>
-	    </div>
-		    
-	  </tab>
-
-	  <!-- <tab heading="按厂商"> -->
-	  <!--   <div class="panel panel-default"> -->
-	  <!--   </div> -->
-	  <!-- </tab> -->
 	  
 	  <tab x-ng-controller="dailyByGood"
 	       heading="按款号"
-	       select="do_search(s_pagination.current_page)">
+	       select="do_search(s_pagination.current_page, current_day)">
 	    
 	    <div class="panel panel-default table-panel">
 	      

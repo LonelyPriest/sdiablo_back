@@ -54,6 +54,9 @@ diablo_right = 1;
 diablo_down = 2;
 diablo_left = 3;
 
+
+var diablo_by_shop     = "by_shop";
+
 /*
  * retailer
  */

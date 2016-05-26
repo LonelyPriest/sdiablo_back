@@ -177,6 +177,7 @@
 -define(check_w_inventory,           ?right_w_inventory + 13).
 -define(set_w_inventory_promotion,   ?right_w_inventory + 14).
 -define(update_w_inventory_batch,    ?right_w_inventory + 15).
+-define(adjust_w_inventory_price,    ?right_w_inventory + 16).
 
 %% transfer
 -define(transfer_w_inventory,            ?right_w_inventory + 16).
@@ -232,11 +233,12 @@
 
 %% report
 -define(daily_wreport,   ?right_w_report + 1).
--define(weekly_wreport,  ?right_w_report + 2).
--define(monthly_wreport, ?right_w_report + 3).
--define(quarter_wreport, ?right_w_report + 4).
--define(half_wreport,    ?right_w_report + 5).
--define(year_wreport,    ?right_w_report + 6).
+-define(stock_stastic,   ?right_w_report + 2).
+%% -define(weekly_wreport,  ?right_w_report + 2).
+%% -define(monthly_wreport, ?right_w_report + 3).
+%% -define(quarter_wreport, ?right_w_report + 4).
+%% -define(half_wreport,    ?right_w_report + 5).
+%% -define(year_wreport,    ?right_w_report + 6).
 
 
 %% -----------------------------------------------------------------------------

@@ -1242,8 +1242,7 @@ handle_call({fix_inventory, Merchant, Inventories, Props}, _From, State) ->
     TotalFixed      = ?v(<<"total_fixed">>, Props),
     TotalMetric     = ?v(<<"total_metric">>, Props), 
     
-    RSN = rsn(fix, Merchant, Shop,
-	      ?inventory_sn:sn(w_inventory_fix_sn, Merchant)),
+    RSN = rsn(fix, Merchant, Shop, ?inventory_sn:sn(w_inventory_fix_sn, Merchant)),
 
     RealyShop = realy_shop(Merchant, Shop),
     Sql1 = sql(wfix, RSN, DateTime, Merchant, RealyShop, Inventories),
@@ -1293,7 +1292,7 @@ handle_call({transfer_inventory, Merchant, Inventories, Props}, _From, State) ->
             ++ ?to_s(0) ++ ","
 
 	    ++ "\"" ++ ?to_s(DateTime) ++ "\")"],
-    Sql2 = sql(transfer_from, TRSN, Merchant, Shop, DateTime, Inventories),
+    Sql2 = sql(transfer_from, TRSN, Merchant, Shop, ToShop, DateTime, Inventories),
     ?DEBUG("Sql2 ~p", [Sql2]),
     %% Sql3 = sql(transfer_to,
     %%         ToRSN, Merchant, ToShop, Firm, DateTime, Inventories),
@@ -1797,7 +1796,7 @@ rsn(reject, Merchant, Shop, Rsn) ->
 rsn(transfer_from, Merchant, Shop, Rsn) ->
     lists:concat(["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-F-", Rsn]);
 rsn(fix, Merchant, Shop, Rsn) ->
-    lists:concat(["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-", Rsn]).
+    lists:concat(["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-x-", Rsn]).
 
 %% @desc: geratte a sql
 sql(wnew, RSN, Merchant, Shop, Firm, DateTime, Inventories) ->
@@ -1819,17 +1818,17 @@ sql(wreject, RSN, Merchant, Shop, Firm, DateTime, Inventories) ->
 	      ?w_good_sql:amount_reject(
 		 RSN, Merchant, RealyShop, Firm, DateTime, Inv, Amounts)
 		  ++ Acc0 
-      end, [], Inventories).
+      end, [], Inventories);
 
-sql(transfer_from, RSN, Merchant, Shop, Datetime, Inventories) ->
+sql(transfer_from, RSN, Merchant, Shop, TShop, Datetime, Inventories) ->
     RealyShop = realy_shop(true, Merchant, Shop),
     lists:foldr(
       fun({struct, Inv}, Acc0)->
               %% Amounts = lists:reverse(?v(<<"amounts">>, Inv)),
               ?w_transfer_sql:amount_transfer(
-                 transfer_from, RSN, Merchant, RealyShop,
+                 transfer_from, RSN, Merchant, RealyShop, TShop,
                  Datetime, Inv) ++ Acc0
-      end, [], Inventories);
+      end, [], Inventories).
 
 sql(wfix, RSN, DateTime, Merchant, Shop, Inventories) ->
     %% Shop       = ?v(<<"shop">>, Props),
@@ -1841,6 +1840,7 @@ sql(wfix, RSN, DateTime, Merchant, Shop, Inventories) ->
 	      Brand       = ?v(<<"brand">>, Inv),
 	      Type        = ?v(<<"type">>, Inv),
 	      Firm        = ?v(<<"firm">>, Inv),
+	      Year        = ?v(<<"year">>, Inv),
 	      Season      = ?v(<<"season">>, Inv),
 	      SizeGroup   = ?v(<<"s_group">>, Inv),
 	      Free        = ?v(<<"free">>, Inv),
@@ -1851,8 +1851,8 @@ sql(wfix, RSN, DateTime, Merchant, Shop, Inventories) ->
 
 	      Sql0 = 
 		  ["insert into w_inventory_fix_detail(rsn, style_number, brand"
-		   ", type, s_group, free, season, firm, path"
-		   ", exist, fixed, metric, entry_date)"
+		   ", type, s_group, free, year, season, firm, path"
+		   ", exist, fixed, metric, merchant, shop, entry_date)"
 		   " values("
 		   ++ "\"" ++ ?to_s(RSN) ++ "\","
 		   ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
@@ -1860,26 +1860,24 @@ sql(wfix, RSN, DateTime, Merchant, Shop, Inventories) ->
 		   ++ ?to_s(Type) ++ ","
 		   ++ "\"" ++ ?to_s(SizeGroup) ++ "\","
 		   ++ ?to_s(Free) ++ ","
+		   ++ ?to_s(Year) ++ ","
 		   ++ ?to_s(Season) ++ ","
 		   ++ ?to_s(Firm) ++ ","
-		   ++ "\'" ++ ?to_s(Path) ++ "\',"
-		   %% ++ ?to_s(Shop) ++ ","
-		   %% ++ ?to_s(Merchant) ++ ","
-		   %% ++ ?to_s(Season) ++ ","
-		   %% ++ ?to_s(Firm) ++ ","
-		   %% ++ "\"" ++ ?to_s(Path) ++ "\","
-		   %% ++ "\"" ++ ?to_s(Employe) ++ "\","
+		   ++ "\'" ++ ?to_s(Path) ++ "\'," 
 		   ++ ?to_s(Exist) ++ ","
 		   ++ ?to_s(Fixed) ++ ","
 		   ++ ?to_s(Metric) ++ ","
+		   ++ ?to_s(Merchant) ++ ","
+		   ++ ?to_s(Shop) ++ ","
 		   ++ "\'" ++ ?to_s(DateTime) ++ "\')",
+		   
 		  "update w_inventory set amount=amount+" ++ ?to_s(Metric)
 		   ++ " where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 		   ++ " and brand=" ++ ?to_s(Brand)
 		   ++ " and shop=" ++ ?to_s(Shop)
 		   ++ " and merchant=" ++ ?to_s(Merchant)],
 
-	      Amounts     = lists:reverse(?v(<<"amounts">>, Inv)),
+	      Amounts  = lists:reverse(?v(<<"amounts">>, Inv)),
 	      
 	      Sql0 ++ 
 		  lists:foldr(
@@ -1890,26 +1888,32 @@ sql(wfix, RSN, DateTime, Merchant, Shop, Inventories) ->
 			    AFixed  = ?v(<<"fixed_count">>, A), 
 			    AMetric = AFixed - AExist,
 
-			    ["update w_inventory_amount set total=total+" ++ ?to_s(AMetric)
-			     ++ " where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
-			     ++ " and brand=" ++ ?to_s(Brand)
-			     ++ " and color=" ++ ?to_s(Color)
-			     ++ " and size=" ++ "\'" ++ ?to_s(Size) ++ "\'"
-			     ++ " and shop=" ++ ?to_s(Shop)
-			     ++ " and merchant=" ++ ?to_s(Merchant),
-			     "insert into w_inventory_fix_detail_amount(rsn"
-			     ", style_number, brand, color, size"
-			     ", exist, fixed, metric, entry_date)"
-			     " values("
-			     ++ "\'" ++ ?to_s(RSN) ++ "\',"
-			     ++ "\'" ++ ?to_s(StyleNumber) ++ "\',"
-			     ++ ?to_s(Brand) ++ ","
-			     ++ ?to_s(Color) ++ ","
-			     ++ "\'" ++ ?to_s(Size) ++ "\'," 
-			     ++ ?to_s(AExist) ++ ","
-			     ++ ?to_s(AFixed) ++ ","
-			     ++ ?to_s(AMetric) ++ ","
-			     ++ "\'" ++ ?to_s(DateTime) ++ "\')"|Acc1] 
+			    case AMetric of
+				0 -> [];
+				_ ->
+				    ["update w_inventory_amount set total=total+" ++ ?to_s(AMetric)
+				     ++ " where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+				     ++ " and brand=" ++ ?to_s(Brand)
+				     ++ " and color=" ++ ?to_s(Color)
+				     ++ " and size=" ++ "\'" ++ ?to_s(Size) ++ "\'"
+				     ++ " and shop=" ++ ?to_s(Shop)
+				     ++ " and merchant=" ++ ?to_s(Merchant)]
+			    end ++ 
+				["insert into w_inventory_fix_detail_amount(rsn"
+				 ", merchant, shop, style_number, brand, color, size"
+				 ", exist, fixed, metric, entry_date)"
+				 " values("
+				 ++ "\'" ++ ?to_s(RSN) ++ "\',"
+				 ++ ?to_s(Merchant) ++ ","
+				 ++ ?to_s(Shop) ++ ","
+				 ++ "\'" ++ ?to_s(StyleNumber) ++ "\',"
+				 ++ ?to_s(Brand) ++ ","
+				 ++ ?to_s(Color) ++ ","
+				 ++ "\'" ++ ?to_s(Size) ++ "\'," 
+				 ++ ?to_s(AExist) ++ ","
+				 ++ ?to_s(AFixed) ++ ","
+				 ++ ?to_s(AMetric) ++ ","
+				 ++ "\'" ++ ?to_s(DateTime) ++ "\')"|Acc1] 
 		    end, [], Amounts) ++ Acc0
 
       end, [], Inventories).

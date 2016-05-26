@@ -347,8 +347,7 @@
 				     x-ng-model="inv.style_number"
 				     placeholder="货号"
 				     typeahead-editable="false"
-				     typeahead-on-select="on_select_good(
-							  $item, $model, $label)" 
+				     typeahead-on-select="on_select_good($item, $model, $label)" 
 				     typeahead="g as g.name for g in
 						all_w_goods|filter:{prompt:$viewValue}|limitTo:prompt_limit"/>
 			      <span x-ng-show="loading">

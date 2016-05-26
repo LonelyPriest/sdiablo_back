@@ -318,7 +318,8 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 			// console.log(newInv);
 			// console.log(oldInv);
 			if (parseFloat(newInv.fprice) !== oldInv.fprice
-			    || parseFloat(newInv.fdiscount) !== oldInv.fdiscount){
+			    || parseFloat(newInv.fdiscount) !== oldInv.fdiscount
+			    || diablo_set_string(newInv.comment) !== oldInv.comment){
 			    newInv.operation = 'u';
 			    changedInvs.push(newInv);
 			}
@@ -417,6 +418,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 		fprice         : add.fprice,
 		rprice         : add.rprice,
 		path           : add.path,
+		comment        : add.comment,
 
 		// sizes          : add.sizes,
 		s_group        : add.s_group,
@@ -891,5 +893,10 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 
     $scope.reset_inventory = function(inv){
 	$scope.inventories[0] = {$edit:false, $new:true};;
+    }
+
+    $scope.gift = function(inv){
+	inv.fprice = 0;
+	$scope.re_calculate();
     }
 })

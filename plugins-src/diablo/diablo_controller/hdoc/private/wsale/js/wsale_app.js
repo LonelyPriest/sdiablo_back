@@ -1859,7 +1859,9 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 	} 
     };
 
-    // $scope.do_search($scope.current_page);
+    if (angular.isDefined(back_page)){
+	$scope.do_search($scope.current_page); 
+    }
 
     $scope.save_stastic = function(){
 	localStorageService.set(

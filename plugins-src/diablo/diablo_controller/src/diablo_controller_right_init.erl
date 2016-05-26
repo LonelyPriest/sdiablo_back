@@ -245,6 +245,9 @@ init([]) ->
 	 {?update_w_inventory_batch,
 	  <<"批量修改库存">>, <<"update_w_inventory_batch">>, ?right_w_inventory},
 
+	 {?adjust_w_inventory_price,
+	  <<"库存调价">>, <<"adjust_w_inventory_price">>, ?right_w_inventory},
+
 	 {?transfer_w_inventory,
           <<"库存调出">>, <<"transfer_w_inventory">>, ?right_w_inventory},
          {?check_w_inventory_transfer,
@@ -335,16 +338,18 @@ init([]) ->
     WReport =
 	[{?daily_wreport,
 	  <<"日报表">>,   <<"daily_wreport">>, ?right_w_report},
-	 {?weekly_wreport,
-	  <<"周报表">>,   <<"weekly_wreport">>, ?right_w_report},
-	 {?monthly_wreport,
-	  <<"月报表">>,   <<"monthly_wreport">>, ?right_w_report},
-	 {?quarter_wreport,
-	  <<"季度报表">>, <<"quarter_wreport">>, ?right_w_report},
-	 {?half_wreport,
-	  <<"年中报表">>, <<"half_wreport">>, ?right_w_report},
-	 {?year_wreport,
-	  <<"年报表">>,  <<"year_wreport">>, ?right_w_report} 
+	 {?stock_stastic,
+	  <<"进销存">>,   <<"stock_stastic">>, ?right_w_report}
+	 %% {?weekly_wreport,
+	 %%  <<"周报表">>,   <<"weekly_wreport">>, ?right_w_report},
+	 %% {?monthly_wreport,
+	 %%  <<"月报表">>,   <<"monthly_wreport">>, ?right_w_report},
+	 %% {?quarter_wreport,
+	 %%  <<"季度报表">>, <<"quarter_wreport">>, ?right_w_report},
+	 %% {?half_wreport,
+	 %%  <<"年中报表">>, <<"half_wreport">>, ?right_w_report},
+	 %% {?year_wreport,
+	 %%  <<"年报表">>,  <<"year_wreport">>, ?right_w_report} 
 	],
     
     %% rainbow

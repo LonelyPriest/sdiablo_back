@@ -59,7 +59,8 @@ var wsaleUtils = function(){
 
 		add.s_group = s.s_group;
 		add.free_color_size = s.free === 0 ? true : false;
-
+		add.comment = s.comment;
+		
 		add.org_price = s.org_price;
 		add.tag_price = s.tag_price;
 		add.fprice    = s.fprice;
@@ -139,16 +140,7 @@ var wsaleUtils = function(){
 	},
 
 	delete_format_promotion: function(inv, promotions){
-	    if (angular.isUndefined(inv.promotion)){
-		// for (var i=0, l=promotions.length; i<l; i++){
-		//     if (inv.order_id === promotions[i].order_id){
-		// 	break;
-		//     }
-		// }
-
-		// promotions.splice(i, 1); 
-		return promotions;
-	    }
+	    if (-1 === inv.pid) return promotions;
 	    
 	    var found = false;
 	    for (var i=0, l=promotions.length; i<l; i++){
@@ -173,7 +165,7 @@ var wsaleUtils = function(){
 	    var wsale         = sort_wsale(base, sells);
 	    var details       = wsale.details;
 	    var order_length  = details.length;
-
+	    
 	    var show_promotions = [];
 	    angular.forEach(details, function(d){
 
@@ -192,18 +184,17 @@ var wsaleUtils = function(){
 		d.select   = true;
 		d.order_id = order_length;
 
-		wsaleUtils.format_promotion(d, show_promotions);
+		if (-1 !== d.pid && -1 !== d.sid){
+		    wsaleUtils.format_promotion(d, show_promotions); 
+		}
 		
 		order_length--; 
 		
 	    });
 
-	    wsale.select.shop = diablo_get_object(
-		wsale.select.shop_id, shops); 
-	    wsale.select.retailer = diablo_get_object(
-		wsale.select.retailer_id, retailers);
-	    wsale.select.employee = diablo_get_object(
-		wsale.select.employee_id, employees);
+	    wsale.select.shop = diablo_get_object(wsale.select.shop_id, shops); 
+	    wsale.select.retailer = diablo_get_object(wsale.select.retailer_id, retailers);
+	    wsale.select.employee = diablo_get_object(wsale.select.employee_id, employees);
 	    
 	    wsale.show_promotions = show_promotions;
 	    return wsale;

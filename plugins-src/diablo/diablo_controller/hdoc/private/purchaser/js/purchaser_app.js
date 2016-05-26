@@ -118,7 +118,7 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 	when('/inventory/inventory_fix', {
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_fix.html',
             controller: 'purchaserInventoryFixCtrl' ,
-	    resolve: angular.extend({}, user, employee, s_group, color)
+	    resolve: angular.extend({}, user, employee, s_group, color, base)
 	}).
 	when('/inventory/inventory_fix_detail', {
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_fix_detail.html',
@@ -195,6 +195,12 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
             templateUrl: '/private/purchaser/html/purchaser_inventory_transfer_from_rsn_detail.html',
 	        controller: 'purchaserInventoryTransferFromRsnDetailCtrl',
 	    resolve: angular.extend({}, user, shop, brand, type, firm, s_group, color, base)
+        }).
+	// adjust price
+	when('/inventory_price', {
+            templateUrl: '/private/purchaser/html/purchaser_inventory_price.html',
+            controller: 'purchaserInventoryPriceCtrl',
+            resolve: angular.extend({}, user, firm, employee, s_group, color, base)
         }).
 	// default
 	otherwise({

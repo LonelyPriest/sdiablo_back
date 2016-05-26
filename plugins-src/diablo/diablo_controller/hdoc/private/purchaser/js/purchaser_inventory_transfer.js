@@ -417,8 +417,7 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
 			       valid:        valid_all};
 		
 		diabloUtilsService.edit_with_modal(
-		    "inventory-new.html", 'normal',
-		    callback, $scope, payload); 
+		    "inventory-new.html", 'normal', callback, $scope, payload); 
 	    }
 	}) 
     };
@@ -518,25 +517,14 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
     }
 
 
-    var timeout_auto_save = undefined;
+    //var timeout_auto_ = undefined;
     $scope.auto_save_free = function(inv){
-
-	$timeout.cancel($scope.timeout_auto_save); 
-	if (angular.isUndefined(inv.amounts[0].reject_count)
-	    || !inv.amounts[0].reject_count
-	    || parseInt(inv.amounts[0].reject_count) === 0){
+	$timeout.cancel($scope.timeout_auto_save);
+	var reject = stockUtils.to_integer(inv.amounts[0].reject_count);
+	if (0 === reject || reject > inv.total){
 	    return;
 	}
-
-	// if (!$scope.setting.reject_negative
-	//     && parseInt(inv.amounts[0].reject_count) > inv.total){
-	//     return;
-	// }
-
-	if (parseInt(inv.amounts[0].reject_count) > inv.total){
-	    return;
-	}
-
+	
 	$scope.timeout_auto_save = $timeout(function(){
 	    if (inv.$new && inv.free_color_size){
 		$scope.add_free_inventory(inv);

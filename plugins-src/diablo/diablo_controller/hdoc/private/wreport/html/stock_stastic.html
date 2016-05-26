@@ -1,0 +1,144 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="portlet box purple">
+      
+      <div class="portlet-title">
+	<div class="caption">
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>
+	  进销存统计
+	</div>
+	
+	<div class="actions">
+	  <div class="btn-group btn-group-solid">
+	<!--     <button type="button" class="btn btn-success purple-stripe" -->
+	<!--   	    x-ng-click="go_transfer()">移仓 -->
+	<!--       <i class="glyphicon glyphicon-plus"></i></button> -->
+	    
+	<!--     <button type="button" class="btn btn-warning purple-stripe" -->
+	<!--   	    x-ng-click="go_transfer_rsn()">调出明细 -->
+	<!--       <i class="glyphicon glyphicon-leaf"></i></button> -->
+
+	    <button type="button" class="btn blue reload purple-stripe"
+		    x-ng-click="do_search()">刷新
+	      <i class="icon icon-spinner fg-white"></i></button>
+	  </div>
+	</div>
+      </div>
+
+      <!--BEGIN table container-->
+      <div class="portlet-body">
+	<!--BEGIN table-toolbar-->
+	<div class="table-toolbar util-btn-margin-bottom-5">
+	  <!--BEGIN row-->
+	  <div class="row">
+            <div class="col-md-4 col-sm-4 col-xs-12">
+              <time-search
+                 glyphicon="glyphicon glyphicon-arrow-left fg-red"
+                 time="time.start_time" ok="do_search(default_page)">
+	      </time-search>
+            </div>
+
+            <div class="col-md-4 col-sm-4 col-xs-12
+			diablo-pannel-padding-left
+			diablo-pannel-padding-right">
+              <time-search
+                 glyphicon="glyphicon glyphicon-arrow-right fg-red"
+                 time="time.end_time" ok="do_search(default_page)">
+	      </time-search>
+            </div> 
+
+            <div class="col-md-4 col-sm-4 col-xs-12">
+              <query-pattern ng-model="match"
+                             filters="filters"
+                             filter="filter"></query-pattern>
+            </div>
+	  </div> <!--END row-->
+
+	  <query-group filters="filters"
+		       prompt="prompt"
+		       ok="do_search(default_page)">
+	  </query-group>
+	</div> <!--END table-toolbar-->
+	
+	<!--BEGN portlet body--> 
+	<div class="portlet-body">
+	  <!--BEGIN panel-->
+	  <div class="panel panel-default table-panel">
+	    <div class="table-responsive"> 
+	      <!--EBGIN table -->
+	      <table class="table table-bordered
+			    table-striped table-hover
+			    table-condensed table-advanced">
+		<thead>
+		  <tr>
+		    <th class="text-center">序号</th>
+		    <th class="text-center">店铺</th>
+		    
+		    <th class="text-center">营业额</th>
+		    <th class="text-center">毛利</th>
+		    <th class="text-center">现金</th>
+		    <th class="text-center">刷卡</th>
+		    <th class="text-center">核销</th>
+
+		    <th class="text-center">库存进</th>
+		    <th class="text-center">移进</th> 
+		    <th class="text-center">库存退</th>
+		    <th class="text-center">销售</th> 
+		    <th class="text-center">移出</th> 
+		    <th class="text-center">盘点盈余</th> 
+		    
+		  </tr>
+		</thead>
+		<tbody>
+		  <tr x-ng-repeat="s in stastics">
+		    <td class="text-center">{{s.order_id}}</td>
+		    <td class="text-center">{{s.shop.name}}</td>
+		    <td class="text-center">{{s.sale.spay}}</td>
+		    <td class="text-center">{{s.sale.p}}</td>
+		    <td class="text-center">{{s.sale.cash}}</td>
+		    <td class="text-center">{{s.sale.card}}</td>
+		    <td class="text-center">{{s.sale.veri}}</td>
+
+		    <td class="bg-lightOlive text-center">{{s.pin.total}}</td>
+		    <td class="text-center">{{s.tin.total}}</td>
+		    <td class="bg-lightPink text-center">{{s.pout.total}}</td>
+		    <td class="bg-magenta text-center">{{s.sale.total}}</td> 
+		    <td class="text-center">{{s.tout.total}}</td> 
+		    <td class="text-center">{{s.fix.total}}</td>
+		  </tr>
+		</tbody>
+
+		<tfoot> 
+		</tfoot> 
+		
+	      </table> <!--END supplier table-->
+	    </div> <!--END table responsive-->
+	    
+	  </div> <!--END panel-->
+	</div> <!--END portlet body-->
+
+	<div x-ng-show="total_items>items_perpage" class="row">
+	  <div class="col-md-12, col-sm-12, col-xs-12">
+	
+	    <span>显示第 {{current_page}} / {{num_pages}} 项结果，
+	      共 {{total_items}} 项</span>
+	    
+	    <pagination class="pagination-lg table-pagination pull-right"
+		      	total-items="total_items"
+		      	items-per-page="items_perpage"
+		      	num-pages="num_pages"
+		      	max-size="max_page_size"
+		      	boundary-links="true"
+		      	previous-text="&lsaquo;" next-text="&rsaquo;"
+		      	first-text="&laquo;" last-text="&raquo;"
+		      	x-ng-model="current_page"
+		      	x-ng-change="page_changed()">
+	    </pagination>
+	  </div>
+	</div>
+	
+      </div> <!--END table container-->
+      
+    </div>
+  </div>
+</div>

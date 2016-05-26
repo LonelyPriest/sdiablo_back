@@ -76,7 +76,33 @@ action(Session, Req, {"daily_wreport", Type}, Payload) ->
        fun(_Match, CurrentPage, ItemsPerPage, Conditions) ->
 	       ?w_report:report(
 		  ?to_a(Type), Merchant, CurrentPage, ItemsPerPage, Conditions)
-       end, Req, Payload).
+       end, Req, Payload);
+
+action(Session, Req, {"stock_stastic"}, Payload) ->
+    ?DEBUG("stock_stastic with session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    try 
+	{ok, StockSale} = ?w_report:stastic(stock_sale, Merchant, Payload),
+	{ok, StockProfit} = ?w_report:stastic(stock_profit, Merchant, Payload),
+	{ok, StockIn}  = ?w_report:stastic(stock_in, Merchant, Payload),
+	{ok, StockOut} = ?w_report:stastic(stock_out, Merchant, Payload),
+	{ok, StockTransferIn} = ?w_report:stastic(stock_transfer_in, Merchant, Payload),
+	{ok, StockTransferOut} = ?w_report:stastic(stock_transfer_out, Merchant, Payload),
+	{ok, StockFix} = ?w_report:stastic(stock_fix, Merchant, Payload),
+	
+	?utils:respond(200, object, Req,
+		       {[{<<"ecode">>, 0},
+			 {<<"sale">>, StockSale},
+			 {<<"profit">>, StockProfit},
+			 {<<"pin">>, StockIn},
+			 {<<"pout">>, StockOut},
+			 {<<"tin">>, StockTransferIn},
+			 {<<"tout">>, StockTransferOut},
+			 {<<"fix">>, StockFix}
+			]})
+    catch
+	_:{badmatch, {error, Error}} -> ?utils:respond(200, Req, Error)
+    end. 
 
 sidebar(Session) ->
     AuthenFun =
@@ -93,7 +119,10 @@ sidebar(Session) ->
 
     ReportAuthen = AuthenFun(
 		   [{?daily_wreport,
-		     {"wreport_daily", "日报表", "wi wi-moon-new"}}
+		     {"wreport_daily", "日报表", "wi wi-moon-waxing-cresent-6"}},
+		    {?stock_stastic,
+		     {"stastic", "进销存", "wi wi-moon-full"}}
+		    
 		    %% {?weekly_wreport,
 		    %%  {"wreport_weekly", "周报表", "wi wi-moon-waxing-cresent-1"}}, 
 		    %% {?monthly_wreport,

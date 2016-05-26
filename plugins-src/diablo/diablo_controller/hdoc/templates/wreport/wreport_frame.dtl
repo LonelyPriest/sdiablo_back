@@ -34,7 +34,8 @@
 
 <script src="/private/wreport/js/wreport_comm_service.js" type="text/javascript"></script>
 
-<script src="/private/wreport/js/wreport_daily.js" type="text/javascript"></script> 
+<script src="/private/wreport/js/wreport_daily.js" type="text/javascript"></script>
+<script src="/private/wreport/js/stock_stastic.js" type="text/javascript"></script> 
 
 
 {% endblock %}

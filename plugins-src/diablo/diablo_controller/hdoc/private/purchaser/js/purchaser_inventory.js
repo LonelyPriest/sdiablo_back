@@ -315,7 +315,9 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    $scope.all_w_goods = goods.map(function(g){
 		var p = stockUtils.prompt_name(g.style_number, g.brand, g.type);
 		return angular.extend(g, {name:p.name, prompt:p.prompt}); 
-	    }); 
+	    });
+
+	    // console.log($scope.all_w_goods);
 	});
     };
     

@@ -252,6 +252,7 @@
 		    <th class="text-center">成交价</th> 
 		    <th class="text-center">折扣率</th>
 		    <th class="text-center">合计</th>
+		    <th class="text-center">备注</th>
 		    <th class="text-center">操作</th>
 		  </tr>
 		</thead>
@@ -344,6 +345,14 @@
 		    <td class="vert-align"><span class="fg-red">{{inv.rprice}}<span></td> 
 		    <td class="vert-align"><span class="fg-red">{{inv.rdiscount}}</span></td> 
 		    <td class="vert-align">{{inv.calc}}</td>
+		    <td class="vert-align col-md-1">
+		      <div> 
+			<input class="form-control input-xs"
+			       type="text"
+			       placeholder="备注"
+			       x-ng-model="inv.comment"/>
+		      </div>
+		    </td>
 		    
 		    <td class="text-left vert-align">
 		      <span x-ng-if="inv.$new">
@@ -380,11 +389,16 @@
 			   x-ng-if="!inv.free_update"
 			   x-ng-click="update_inventory(inv)">修改
 			  <i class="glyphicon glyphicon-edit"></i></a>
+
+			<a class="btn diablo-input-button blue-hoki"
+			   x-ng-if="!inv.free_update"
+			   x-ng-click="gift(inv)">赠送
+			  <i class="glyphicon glyphicon-gift"></i></a>
 			
 			<a class="btn diablo-input-button btn-danger"
 			   x-ng-if="!inv.free_update"
 			   x-ng-click="delete_inventory(inv)">删除
-			  <i class="glyphicon glyphicon-erase"></i></a>
+			  <i class="glyphicon glyphicon-erase"></i></a> 
 
 			<a class="btn diablo-input-button btn-success"
 			   ng-if="inv.free_update"

@@ -580,6 +580,7 @@ create table w_inventory_new_detail(
     
     path           VARCHAR(255) default null, -- the image path
     merchant       INTEGER default -1,
+    shop           INTEGER default -1,
 
     entry_date     DATETIME default 0,
     deleted        INTEGER default 0, -- 0: no;  1: yes
@@ -600,6 +601,7 @@ create table w_inventory_new_detail_amount(
     
     total          INTEGER default 0,
     merchant       INTEGER default -1,
+    shop           INTEGER default -1,
     entry_date     DATETIME default 0,
     deleted        INTEGER default 0, -- 0: no;  1: yes
     unique  key uk (merchant, rsn, style_number, brand, color, size),
@@ -611,7 +613,7 @@ create table w_inventory_fix(
     id             INTEGER AUTO_INCREMENT,
     rsn            VARCHAR(32) not null, -- record sn
     
-    shop           INTEGER,                 -- which shop saled the goods
+    shop           INTEGER default -1,                 -- which shop saled the goods
     employ         VARCHAR(8) not null, 
     
     exist          INTEGER,
@@ -635,6 +637,7 @@ create table w_inventory_fix_detail(
     brand          INTEGER default -1,
     
     type           INTEGER default -1,
+    year           YEAR(4),
     season         TINYINT, -- 0:spring, 1:summer, 2:autumn, 3:winter 
     firm           INTEGER default -1,
     
@@ -647,6 +650,7 @@ create table w_inventory_fix_detail(
     metric         INTEGER default 0,
 
     merchant       INTEGER default -1,
+    shop           INTEGER default -1,
     
     entry_date     DATETIME default 0,
     deleted        INTEGER default 0, -- 0: no;  1: yes
@@ -660,6 +664,7 @@ create table w_inventory_fix_detail_amount(
     id             INTEGER AUTO_INCREMENT,
     rsn            VARCHAR(32) not null, -- record sn
     merchant       INTEGER default -1,
+    shop           INTEGER default -1,
     style_number   VARCHAR(64) not null,
     brand          INTEGER default -1,
     color          INTEGER default -1,
@@ -671,7 +676,8 @@ create table w_inventory_fix_detail_amount(
     
     entry_date     DATETIME default 0,
     deleted        INTEGER default 0, -- 0: no;  1: yes
-    unique  key uk (merchant, rsn, style_number, brand, color, size),
+    unique  key uk (rsn, style_number, brand, color, size),
+    key dk (merchant, style_number, brand, color, size),
     primary key    (id)
 )default charset=utf8;
 
@@ -721,11 +727,14 @@ create table w_inventory_transfer_detail(
 
     path           VARCHAR(255) default null, -- the image path
     merchant       INTEGER default -1,
+    fshop          INTEGER default -1,                 -- which shop saled the goods
+    tshop          INTEGER default -1,                 -- which shop saled the goods
     
     entry_date     DATETIME, 
     deleted        INTEGER default 0, -- 0: no;  1: yes
 
     unique  key    uk (rsn, merchant, style_number, brand),
+    key            dk (merchant, fshop, tshop, style_number, brand),
     primary key    (id)
 )default charset=utf8;
 
@@ -738,9 +747,12 @@ create table w_inventory_transfer_detail_amount(
     size           VARCHAR(8) default null, -- S/26, M/27....
     total          INTEGER default 0,
     merchant       INTEGER default -1,
+    fshop          INTEGER default -1,                 -- which shop saled the goods
+    tshop          INTEGER default -1,                 -- which shop saled the goods
     entry_date     DATETIME,
     deleted        INTEGER default 0, -- 0: no;  1: yes
     unique key uk  (rsn, merchant, style_number, brand, color, size),
+    key        dk  (merchant, fshop, tshop, style_number, brand, color, size),
     primary key    (id)
 )default charset=utf8;
 
@@ -795,6 +807,7 @@ create table w_sale_detail(
     style_number   VARCHAR(64) not null,
     brand          INTEGER not null default -1,
     merchant       INTEGER not null default -1,
+    shop           INTEGER not null default -1,
     
     type           INTEGER default -1, -- reference to inv_type 
     s_group        VARCHAR(32) default 0,  -- which size group
@@ -823,7 +836,7 @@ create table w_sale_detail(
     deleted        INTEGER default 0, -- 0: no;  1: yes
 
     unique  key uk (rsn, style_number, brand),
-    key     dk     (merchant, style_number, brand, type, firm, year),
+    key     dk     (merchant, shop, style_number, brand, type, firm, year),
     primary key    (id)
 )default charset=utf8;
 
@@ -837,9 +850,11 @@ create table w_sale_detail_amount(
     total          INTEGER default 0,
     entry_date     DATETIME default 0,
     merchant       INTEGER default -1,
+    shop           INTEGER default -1,
     deleted        INTEGER default 0, -- 0: no;  1: yes
 
-    unique  key  uk (merchant, rsn, style_number, brand, color, size),
+    unique  key  uk (rsn, style_number, brand, color, size),
+    key     dk      (merchant, shop),
     primary key    (id)
 )default charset=utf8;
 

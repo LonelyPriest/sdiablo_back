@@ -383,8 +383,7 @@ action(Session, Req, {"check_w_inventory_transfer"}, Payload) ->
            [Session, Payload]),    Merchant = ?session:get(merchant, Session),
     %% RSN = ?v(<<"rsn">>, Payload),
     %% TShop = ?v(<<"tshop">>, Payload), 
-    case ?w_inventory:purchaser_inventory(
-            check_transfer, Merchant, Payload) of
+    case ?w_inventory:purchaser_inventory(check_transfer, Merchant, Payload) of
         {ok, RSN} ->
             ?utils:respond(
                200,
@@ -557,13 +556,10 @@ sidebar(Session) ->
 			"inventory_reject",
 			"采购退货", "glyphicon glyphicon-arrow-left"}, Shops),
 
-	    TransR = [{"inventory_new_detail",
-		       "采购记录", "glyphicon glyphicon-download"}],
-	    TransD = [{"inventory_rsn_detail",
-		       "采购明细", "glyphicon glyphicon-map-marker"}],
-
-	    InvDetail = [{"inventory_detail",
-			  "库存详情", "glyphicon glyphicon-book"}],
+	    TransR = [{"inventory_new_detail", "采购记录", "glyphicon glyphicon-download"}],
+	    TransD = [{"inventory_rsn_detail", "采购明细", "glyphicon glyphicon-map-marker"}], 
+	    InvDetail = [{"inventory_detail", "库存详情", "glyphicon glyphicon-book"}], 
+	    InvPrice = [{"inventory_price", "库存调价", "glyphicon glyphicon-sort"}],
 
 	    Transfer =
                 [
@@ -638,7 +634,7 @@ sidebar(Session) ->
 
 	    Level1 = ?menu:sidebar(
 			level_1_menu,
-			Record ++ Reject ++ TransR ++ TransD ++ InvDetail),
+			Record ++ Reject ++ TransR ++ TransD ++ InvDetail ++ InvPrice),
 	    Level2 = ?menu:sidebar(
 			level_2_menu, InvMgr ++ Transfer ++ GoodMgr ++ PromotionMgr),
 

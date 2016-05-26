@@ -1093,7 +1093,7 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		 ", brand, type, sex, season, amount, over"
 		 ", firm, s_group, free, year"
 		 ", org_price, tag_price, ediscount, discount"
-		 " , path, merchant, entry_date) values("
+		 " , path, merchant, shop, entry_date) values("
 		 ++ "\"" ++ ?to_s(RSN) ++ "\","
 		 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
 		 ++ ?to_s(Brand) ++ ","
@@ -1115,6 +1115,7 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		 ++ ?to_s(Discount) ++ ","
 		 ++ "\"" ++ ?to_s(Path) ++ "\","
 		 ++ ?to_s(Merchant) ++ ","
+		 ++ ?to_s(Shop) ++ ","
 		 ++ "\"" ++ ?to_s(CurDateTime) ++ "\")"];
 	    {ok, R20} ->
 		["update w_inventory_new_detail" 
@@ -1184,14 +1185,15 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		     {ok, []} ->
 			 "insert into w_inventory_new_detail_amount(rsn"
 			     ", style_number, brand, color, size"
-			     ", total, merchant, entry_date) values("
+			     ", total, merchant, shop, entry_date) values("
 			     ++ "\"" ++ ?to_s(RSN) ++ "\","
 			     ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
 			     ++ ?to_s(Brand) ++ ","
 			     ++ ?to_s(Color) ++ ","
 			     ++ "\'" ++ ?to_s(Size)  ++ "\',"
 			     ++ ?to_s(Count) ++ ","
-			     ++ ?to_s(Merchant) ++ "," 
+			     ++ ?to_s(Merchant) ++ ","
+			     ++ ?to_s(Shop) ++ "," 
 			     ++ "\"" ++ ?to_s(CurDateTime) ++ "\")";
 		     {ok, R01} ->
 			 "update w_inventory_new_detail_amount"

@@ -1,8 +1,8 @@
 wreportApp.controller("wreportDailyCtrl", function(
-    $scope, diabloFilter, wreportService, wreportCommService,
-    filterEmployee, filterRetailer, user){
+    $scope, dateFilter, diabloFilter, wreportService, wreportCommService,
+    filterEmployee, user){
     wreportCommService.set_employee(filterEmployee);
-    wreportCommService.set_retailer(filterRetailer);
+    // wreportCommService.set_retailer(filterRetailer);
     wreportCommService.set_user(user);
     
     // $scope.employees = filterEmployee;
@@ -10,7 +10,7 @@ wreportApp.controller("wreportDailyCtrl", function(
     // $scope.sortShops = user.sortShops;
 
     $scope.employees = wreportCommService.get_employee();
-    $scope.retailers = wreportCommService.get_retailer();
+    // $scope.retailers = wreportCommService.get_retailer();
     $scope.sortShops = wreportCommService.get_sort_shop();
 
     // pagination
@@ -19,24 +19,45 @@ wreportApp.controller("wreportDailyCtrl", function(
     $scope.items_perpage       = diablo_items_per_page();
 
     // shop
-    $scope.report_shop_colspan = 5;
+    $scope.report_shop_colspan = 5; 
+    $scope.current_day         = $.now();
     $scope.current_shop_page   = 1;
     
-    var now = $.now();
     // var day = {start_time:now - diablo_day_millisecond, end_time:now};
-    var day = {start_time:now, end_time:now}; 
-    var one_shop_report =
-	{t_amount:0, t_hpay:0, t_spay:0,
-	 t_cash:0, t_card:0, t_wire:0, t_verificate:0};
+    // var day = {start_time:now, end_time:now};
+    var now_day = dateFilter($scope.current_day, "yyyy-MM-dd");
+    var one_shop_report = {t_amount:0, t_hpay:0, t_spay:0, t_cash:0, t_card:0, t_verificate:0};
+    
     var last_shop_page = 0;
     var unused_shops = angular.copy(user.sortShops);
-    
-    $scope.do_search_by_shop = function(page){
-	// console.log(page); 
-	if (page === last_shop_page){
-	    return;
-	}
 
+    $scope.refresh = function(){
+        $scope.current_day = $.now();
+        $scope.do_search_by_shop($scope.current_shop_page, true);
+    };
+
+    $scope.disable_after_daily = function(){
+        return dateFilter($scope.current_day, "yyyy-MM-dd") === now_day;
+    };
+
+    $scope.after_daily = function(){
+        $scope.current_day = $scope.current_day + diablo_day_millisecond;
+        $scope.do_search_by_shop($scope.current_shop_page, true);
+    }
+
+    $scope.pre_daily = function(){
+        $scope.current_day = $scope.current_day - diablo_day_millisecond;
+        $scope.do_search_by_shop($scope.current_shop_page, true);
+    }
+    
+    $scope.do_search_by_shop = function(page, force){
+	// console.log(page);
+	if (page === last_shop_page && !force){
+            return;
+        } 
+
+	var day = {start_time:$scope.current_day, end_time:$scope.current_day};
+	
 	diabloFilter.do_filter([], day, function(search){
 	    search.shop = wreportCommService.get_shop_id(); 
 	    wreportService.daily_report(
@@ -97,7 +118,37 @@ wreportApp.controller("wreportDailyCtrl", function(
 		last_shop_page = page;
 	    })
 	}) 
-    }; 
+    };
+
+    $scope.print = function(){
+        wreportService.print_wreport(
+            diablo_by_shop, {shop: wreportCommService.get_shop_id()[0],
+                             datetime: dateFilter($scope.current_day, "yyyy-MM-dd HH:mm:ss"),
+                             // hpay: $scope.total_hpay,
+			     total: $scope.total_amount,
+                             cash: $scope.total_cash,
+                             card: $scope.total_card,
+                             vpay: $scope.total_verificate}
+        ).then(function(status){
+            console.log(status);
+            var messsage = "";
+            if (status.pcode === 0){
+                messsage = "打印成功！！请等待服务器打印．．．";
+                diabloUtilsService.response(true, "日报表打印", messsage);
+            } else {
+                message = "打印失败！！"
+                if (status.pinfo.length === 0){
+                    messsage += common_error[status.pcode]
+                } else {
+                    angular.forEach(status.pinfo, function(p){
+                        messsage += "[" + p.device + "] " + common_error[p.ecode]
+                    })
+                };
+                diabloUtilsService.response(false, "日报表打印", messsage);
+            }
+
+        })
+    };
 });
 
 wreportApp.controller("dailyByRetailer", function(
@@ -199,9 +250,8 @@ wreportApp.controller("dailyByRetailer", function(
 		$scope.r_pagination.last_page = page;
 		
 	    })
-	})
-	
-    };
+	}) 
+    }; 
 });
 
 
@@ -236,9 +286,9 @@ wreportApp.controller("dailyByGood", function(
     // $scope.current_page = $scope.default_page;
 
     var last_page = 0;
-    var now = $.now();
+    // var now = $.now();
     // var day = {start_time:now - 30*diablo_day_millisecond, end_time:now};
-    var day = {start_time:now, end_time:now};
+    // var day = {start_time:now, end_time:now};
     
     $scope.pre = function(){
 	$scope.s_pagination.current_page -= 1;
@@ -250,11 +300,13 @@ wreportApp.controller("dailyByGood", function(
 	$scope.do_search($scope.s_pagination.current_page);
     };
     
-    $scope.do_search = function(page){
+    $scope.do_search = function(page, current_day){
 	// console.log(page); 
 	if (page === $scope.s_pagination.last_page){
 	    return;
 	};
+
+	var day = {start_time:$scope.current_day, end_time:$scope.current_day};
 
 	diabloFilter.do_filter([], day, function(search){
 	    search.shop = wreportCommService.get_shop_id(); 

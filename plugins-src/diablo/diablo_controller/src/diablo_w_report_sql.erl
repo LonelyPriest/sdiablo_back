@@ -73,9 +73,10 @@ sale(new_by_good, Merchant, Conditions) ->
 
 	", b.shop as shop_id"
 	", b.type as sell_type"
-	", c.amount as t_stock"
+    %% ", c.amount as t_stock"
 	
-	" from w_sale_detail a, w_sale b, w_inventory c, brands d"
+	%% " from w_sale_detail a, w_sale b, w_inventory c, brands d"
+	" from w_sale_detail a, w_sale b, brands d"
 	" where "
 	++ ?sql_utils:condition(proplists_suffix, CorrectCutDConditions)
 	++ "a.rsn=b.rsn"
@@ -83,10 +84,10 @@ sale(new_by_good, Merchant, Conditions) ->
 	++ ?sql_utils:condition(proplists, CorrectCutSConditions)
     	++ " and b.merchant=" ++ ?to_s(Merchant)
     	++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime) 
-	++ " and a.style_number=c.style_number"
-	++ " and a.brand=c.brand"
-	++ " and b.merchant=c.merchant"
-	++ " and b.shop=c.shop"
+    %% ++ " and a.style_number=c.style_number"
+    %% ++ " and a.brand=c.brand"
+    %% ++ " and b.merchant=c.merchant"
+    %% ++ " and b.shop=c.shop"
 	++ " and a.brand=d.id"
 	++ " group by a.style_number, a.brand, b.merchant, b.shop".
 

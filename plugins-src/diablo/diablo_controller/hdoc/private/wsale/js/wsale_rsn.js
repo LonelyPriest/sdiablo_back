@@ -182,7 +182,9 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
     }; 
 
     // default the first page
-    // $scope.do_search($scope.default_page);
+    if (!use_storage){
+	$scope.do_search($scope.default_page);
+    }
 
     $scope.auto_pagination = function(){
 	$scope.current_page += 1;

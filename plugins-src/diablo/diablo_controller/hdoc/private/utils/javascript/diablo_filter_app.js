@@ -206,7 +206,7 @@ function filterProvider(){
 		    {operation:'match_w_inventory'},
 		    {prompt:viewValue, shop:shop, firm:firm})
 		    .$promise.then(function(invs){
-			console.log(invs);
+			// console.log(invs);
 			if (angular.isUndefined(firm)){
 			    return invs.map(function(inv){
 				return inv.style_number;
@@ -215,8 +215,7 @@ function filterProvider(){
 			    return invs.map(function(inv){
 				return angular.extend(
 				    inv,
-				    {name:inv.style_number
-				     + "，" + inv.brand + "，" + inv.type})
+				    {name:inv.style_number + "，" + inv.brand + "，" + inv.type})
 			    })
 			}
 		    })
@@ -227,11 +226,10 @@ function filterProvider(){
 		    {operation:'match_w_inventory'},
 		    {prompt:viewValue, shop:shop, firm:[]})
 		    .$promise.then(function(invs){
-			console.log(invs);
+			// console.log(invs);
 			return invs.map(function(inv){
 			    return angular.extend(
-				inv, {name:inv.style_number
-				      + "，" + inv.brand + "，" + inv.type})
+				inv, {name:inv.style_number + "，" + inv.brand + "，" + inv.type})
 			})
 		    })
 	    },

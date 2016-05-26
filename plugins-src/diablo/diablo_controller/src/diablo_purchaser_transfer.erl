@@ -13,7 +13,7 @@
 
 -compile(export_all).
 
-amount_transfer(transfer_from, RSN, Merchant, _Shop, Datetime, Inv) ->
+amount_transfer(transfer_from, RSN, Merchant, Shop, TShop, Datetime, Inv) ->
     ?DEBUG("transfer inventory with rsn ~p~nInv ~p", [RSN, Inv]), 
     Amounts     = ?v(<<"amounts">>, Inv),
     StyleNumber = ?v(<<"style_number">>, Inv),
@@ -130,7 +130,7 @@ amount_transfer(transfer_from, RSN, Merchant, _Shop, Datetime, Inv) ->
 			 ", brand, type, sex, season, amount"
 			 ", firm, s_group, free, year"
 			 ", org_price, tag_price, discount"
-			 ", ediscount, path, merchant, entry_date) values("
+			 ", ediscount, path, merchant, fshop, tshop, entry_date) values("
 			 ++ "\"" ++ ?to_s(RSN) ++ "\","
 			 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
 			 ++ ?to_s(Brand) ++ ","
@@ -150,7 +150,9 @@ amount_transfer(transfer_from, RSN, Merchant, _Shop, Datetime, Inv) ->
 			 ++ ?to_s(Discount) ++ ","
 			 ++ ?to_s(EDiscount) ++ "," 
 			 ++ "\"" ++ ?to_s(Path) ++ "\","
-			 ++ ?to_s(Merchant) ++ "," 
+			 ++ ?to_s(Merchant) ++ ","
+			 ++ ?to_s(Shop) ++ ","
+			 ++ ?to_s(TShop) ++ "," 
 			 ++ "\"" ++ ?to_s(Datetime) ++ "\")";
 		 {ok, R0} ->
 		     "update w_inventory_transfer_detail"
@@ -188,13 +190,16 @@ amount_transfer(transfer_from, RSN, Merchant, _Shop, Datetime, Inv) ->
 		     {ok, []} ->
 			 "insert into w_inventory_transfer_detail_amount(rsn"
 			     ", style_number, brand, color, size"
-			     ", total, entry_date) values("
+			     ", total, merchant, fshop, tshop, entry_date) values("
 			     ++ "\"" ++ ?to_s(RSN) ++ "\","
 			     ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
 			     ++ ?to_s(Brand) ++ ","
 			     ++ ?to_s(Color) ++ ","
 			     ++ "\'" ++ ?to_s(Size)  ++ "\'," 
-			     ++ ?to_s(Count) ++ "," 
+			     ++ ?to_s(Count) ++ ","
+			     ++ ?to_s(Merchant) ++ ","
+			     ++ ?to_s(Shop) ++ ","
+			     ++ ?to_s(TShop) ++ "," 
 			     ++ "\"" ++ ?to_s(Datetime) ++ "\")"; 
 		     {ok, R1} ->
 			 "update w_inventory_transfer_detail_amount set"
@@ -205,7 +210,7 @@ amount_transfer(transfer_from, RSN, Merchant, _Shop, Datetime, Inv) ->
 			     ++ ?to_s(?v(<<"id">>, R1));
 		     {error, E01} ->
 			 throw({db_error, E01})
-		 end 
+		 end
 		 %% "update w_inventory_amount "
 		 %% "set total=total-" ++ ?to_s(Count)
 		 %% ++ " where style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
@@ -221,7 +226,6 @@ amount_transfer(transfer_from, RSN, Merchant, _Shop, Datetime, Inv) ->
     %% ?DEBUG("all sqls ~p", [Sql1 ++ Sql2 ++ Sql3]),
     Sql2 ++ Sql3.
 
-
 check_transfer(Merchant, FShop, TShop, CheckProps) ->
     ?DEBUG("check_inventory_transfer: FShop, TShop, checkprops ~p",
 	   [FShop, TShop, CheckProps]), 
@@ -229,8 +233,7 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 
     RSN = ?v(<<"rsn">>, CheckProps),
     %% TShop = ?v(<<"tshop">>, CheckProps),
-    Now = ?v(<<"datetime">>, CheckProps,
-	     ?utils:current_time(format_localtime)), 
+    Now = ?v(<<"datetime">>, CheckProps, ?utils:current_time(format_localtime)), 
     
     Sql1 = "update w_inventory_transfer set"
 	" state=" ++ ?to_s(?IN_STOCK)

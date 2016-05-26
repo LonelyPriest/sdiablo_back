@@ -21,12 +21,17 @@ wreportApp.config(['$routeProvider', function($routeProvider){
     	when('/wreport_daily', {
     	    templateUrl: '/private/wreport/html/wreport_daily.html',
             controller: 'wreportDailyCtrl',
-    	    resolve: angular.extend({}, employee, retailer, user)
+    	    resolve: angular.extend({}, employee, user)
     	}). 
+	when('/stastic', {
+    	    templateUrl: '/private/wreport/html/stock_stastic.html',
+            controller: 'stockStasticCtrl',
+    	    resolve: angular.extend({}, employee, user)
+	}). 
     	otherwise({
 	    templateUrl: '/private/wreport/html/wreport_daily.html',
             controller: 'wreportDailyCtrl',
-    	    resolve: angular.extend({}, employee, retailer, user) 
+    	    resolve: angular.extend({}, employee, user) 
         })
 }]);
 
@@ -45,6 +50,10 @@ wreportApp.service("wreportService", function($resource, dateFilter){
 			 {condition: condition,
 			  page:      currentPage,
 			  count:     itemsPerpage}).$promise;
+    };
+
+    this.stock_stastic = function(match, conditions){
+	return http.save({operation: "stock_stastic"}, conditions).$promise;
     };
     
 });

@@ -929,6 +929,7 @@ wsale(update, RSN, Datetime, Merchant, Shop, Inventory) ->
     RPrice         = ?v(<<"rprice">>, Inventory),
     FDiscount      = ?v(<<"fdiscount">>, Inventory),
     RDiscount      = ?v(<<"rdiscount">>, Inventory),
+    Comment        = ?v(<<"comment">>, Inventory),
     
     ChangeAmounts  = ?v(<<"changed_amount">>, Inventory, []),
 
@@ -975,6 +976,7 @@ wsale(update, RSN, Datetime, Merchant, Shop, Inventory) ->
 		  ++ ", rdiscount=" ++ ?to_s(RDiscount) 
 		  ++ ", fprice=" ++ ?to_s(FPrice)
 		  ++ ", rprice=" ++ ?to_s(RPrice)
+		  ++ ", comment=\'" ++ ?to_s(Comment) ++ "\'"
 		  ++ ", entry_date=\'" ++ ?to_s(Datetime) ++ "\'"
 		  ++ " where rsn=\"" ++ ?to_s(RSN) ++ "\""
 		  ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
@@ -995,6 +997,7 @@ wsale(update, RSN, Datetime, Merchant, Shop, Inventory) ->
 		 ++ ", rdiscount=" ++ ?to_s(RDiscount) 
 		 ++ ", fprice=" ++ ?to_s(FPrice)
 		 ++ ", rprice=" ++ ?to_s(RPrice)
+		 ++ ", comment=\'" ++ ?to_s(Comment) ++ "\'"
 		 ++ ", entry_date=\'" ++ ?to_s(Datetime) ++ "\'"
 		 ++ " where rsn=\"" ++ ?to_s(RSN) ++ "\""
 		 ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
@@ -1374,7 +1377,7 @@ wsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
 	     {ValidOrgPrice, ValidEDiscount}
 		 = valid_orgprice(stock, Merchant, Shop, Inventory),
 	     "insert into w_sale_detail("
-		 "rsn, style_number, brand, merchant, type, s_group, free"
+		 "rsn, style_number, brand, merchant, shop, type, s_group, free"
 		 ", season, firm, year, total, promotion, score"
 		 ", org_price, ediscount, tag_price, fdiscount, rdiscount, fprice, rprice"
 		 ", path, comment, entry_date) values("
@@ -1382,6 +1385,7 @@ wsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
 		 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
 		 ++ ?to_s(Brand) ++ ","
 		 ++ ?to_s(Merchant) ++ ","
+		 ++ ?to_s(Shop) ++ ","
 		 ++ ?to_s(Type) ++ ","
 		 ++ "\"" ++ ?to_s(SizeGroup) ++ "\","
 		 ++ ?to_s(Free) ++ "," 
@@ -1443,13 +1447,15 @@ wsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
 		       {ok, []} ->
 			   "insert into w_sale_detail_amount(rsn"
 			       ", style_number, brand, color, size"
-			       ", total, entry_date) values("
+			       ", total, merchant, shop, entry_date) values("
 			       ++ "\"" ++ ?to_s(RSN) ++ "\","
 			       ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
 			       ++ ?to_s(Brand) ++ ","
 			       ++ ?to_s(Color) ++ ","
 			       ++ "\"" ++ ?to_s(Size) ++ "\","
 			       ++ ?to_s(Count) ++ ","
+			       ++ ?to_s(Merchant) ++ ","
+			       ++ ?to_s(Shop) ++ ","
 			       ++ "\"" ++ ?to_s(Datetime) ++ "\")";
 		       {ok, _} ->
 			   "update w_sale_detail_amount"
