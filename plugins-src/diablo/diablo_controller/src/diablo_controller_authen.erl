@@ -81,6 +81,8 @@ authen(FunId, Session) ->
     UserId = ?session:get(id, Session),
     gen_server:call(?SERVER, {authen_id, FunId, UserId}).
 
+authen(only, FunId, UserId) ->
+    gen_server:call(?SERVER, {authen_id, FunId, UserId}); 
 authen(action, Action, Session) ->
     UserId = ?session:get(id, Session),
     gen_server:call(?SERVER, {authen_action, Action, UserId});

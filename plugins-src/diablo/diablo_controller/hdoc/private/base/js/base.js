@@ -620,9 +620,10 @@ baseApp.controller("basePrinterConnectDetailCtrl", function(
     $scope.shops = [].concat(user.sortShops, user.sortRepoes);
     $scope.goto_page = diablo_goto_page;
     $scope.print_status = wprintService.print_status;
-    
-    var dialog = diabloUtilsService;
 
+    $scope.master = user.type === 1 ? true : false;
+    
+    var dialog = diabloUtilsService; 
     $scope.refresh = function(){
 	wprintService.list_wprinter_conn().then(function(printers){
 	    console.log(printers); 

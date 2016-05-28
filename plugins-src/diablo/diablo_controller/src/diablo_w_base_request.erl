@@ -155,9 +155,11 @@ sidebar(Session) ->
     	case ?right_auth:authen(?new_w_bank_card, Session) of
     	    {ok, ?new_w_bank_card} ->
     		[{"new_bank_card", "新增银行卡", "glyphicon glyphicon-plus"},
-    		 {"bank_card_detail", "银行卡详情", "glyphicon glyphicon-briefcase"}];
+    		 {"bank_card_detail", "银行卡详情", "glyphicon glyphicon-briefcase"},
+		 {"bank_card_detail", "银行卡详情", "glyphicon glyphicon-briefcase"}
+		];
     	    _ ->
-    		[{"bank_card_detail", "银行卡详情", "glyphicon glyphicon-briefcase"}]
+		[]
     	end, 
 
     Print =
@@ -165,24 +167,41 @@ sidebar(Session) ->
 	    {ok, ?new_w_printer_conn} ->
 		[
 		 {"connect_new",    "打印机绑定", "glyphicon glyphicon-plus"},
-		 {"connect_detail", "绑定详情", "glyphicon glyphicon-briefcase"}];
-	    _ ->
-		[{"connect_detail", "绑定详情", "glyphicon glyphicon-leaf"}]
+		 {"connect_detail", "绑定详情", "glyphicon glyphicon-briefcase"},
+		 {"connect_detail", "绑定详情", "glyphicon glyphicon-leaf"}]; 
+	    _ -> []
 	end, 
     
-    SBase = [
-	     {{"bank", "银行卡设置", "glyphicon glyphicon-credit-card"}, Card},
-	     {{"printer", "打印机", "glyphicon glyphicon-print"}, Print},
-	     {{"setting", "基本设置", "glyphicon glyphicon-cog"},
-	      case ?session:get(type, Session) of
-		  ?USER ->
-		      [{"print_format", "打印格式", "glyphicon glyphicon-text-width"}];
-		  ?MERCHANT ->
-		      [{"print_option", "系统设置", "glyphicon glyphicon-wrench"},
-		       {"print_format", "打印格式", "glyphicon glyphicon-text-width"}
-		      ]
-	      end
-	     }],
+    SBase =
+	case Card of
+	    [] -> [];
+	    _ ->
+		[{{"bank", "银行卡设置", "glyphicon glyphicon-credit-card"}, Card}]
+	end ++
+
+	case Print of
+	    [] -> [];
+	    _ ->  [{{"printer", "打印机", "glyphicon glyphicon-print"}, Print}]
+	end ++
+
+	case ?session:get(type, Session) of
+	    ?USER -> [];
+	    ?MERCHANT ->
+		[{{"setting", "基本设置", "glyphicon glyphicon-cog"},
+		 [{"print_option", "系统设置", "glyphicon glyphicon-wrench"},
+		  {"print_format", "打印格式", "glyphicon glyphicon-text-width"}
+		 ]}]
+	end,
+	%% [{{"setting", "基本设置", "glyphicon glyphicon-cog"},
+	%%       case ?session:get(type, Session) of
+	%% 	  ?USER ->
+	%% 	      [{"print_format", "打印格式", "glyphicon glyphicon-text-width"}];
+	%% 	  ?MERCHANT ->
+	%% 	      [{"print_option", "系统设置", "glyphicon glyphicon-wrench"},
+	%% 	       {"print_format", "打印格式", "glyphicon glyphicon-text-width"}
+	%% 	      ]
+	%%       end
+	%%  }],
     
     Passwd = [{"passwd", "重置密码", "glyphicon glyphicon-user"}], 
     

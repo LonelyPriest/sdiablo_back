@@ -43,8 +43,7 @@ action(Session, _Req, Unkown) ->
 %% new
 %% =============================================================================
 action(Session, Req, {"new_w_inventory"}, Payload) ->
-    ?DEBUG("new purchaser inventory with session ~p, paylaod~n~p",
-	   [Session, Payload]),
+    ?DEBUG("new purchaser inventory with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
     Invs = ?v(<<"inventory">>, Payload, []),
     {struct, Base} = ?v(<<"base">>, Payload),
@@ -537,7 +536,24 @@ action(Session, Req, {"update_w_inventory_batch"}, Payload) ->
 	       ?succ(update_w_inventory_batch, Merchant));
 	{error, Error} ->
     	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"adjust_w_inventory_price"}, Payload) ->
+    ?DEBUG("adjust_w_inventory_price with session ~p, paylaod~n~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    Invs = ?v(<<"inventory">>, Payload, []),
+    {struct, Base} = ?v(<<"base">>, Payload),
+
+    case ?w_inventory:purchaser_inventory(adjust_price, Merchant, Invs, Base) of
+    	{ok, Merchant} -> 
+    	    ?utils:respond(
+	       200,
+	       Req,
+	       ?succ(adjust_w_inventory_price, Merchant));
+    	{error, Error} ->
+    	    ?utils:respond(200, Req, Error)
     end.
+
 
 
 sidebar(Session) -> 
@@ -559,7 +575,14 @@ sidebar(Session) ->
 	    TransR = [{"inventory_new_detail", "采购记录", "glyphicon glyphicon-download"}],
 	    TransD = [{"inventory_rsn_detail", "采购明细", "glyphicon glyphicon-map-marker"}], 
 	    InvDetail = [{"inventory_detail", "库存详情", "glyphicon glyphicon-book"}], 
-	    InvPrice = [{"inventory_price", "库存调价", "glyphicon glyphicon-sort"}],
+		
+	    InvPrice =
+		case ?right_auth:authen(?adjust_w_inventory_price, Session) of
+		    {ok, ?adjust_w_inventory_price} ->
+			[{"inventory_price", "库存调价", "glyphicon glyphicon-sort"}]; 
+		    _ -> []
+		end, 
+	    %% InvPrice = [{"inventory_price", "库存调价", "glyphicon glyphicon-sort"}],
 
 	    Transfer =
                 [

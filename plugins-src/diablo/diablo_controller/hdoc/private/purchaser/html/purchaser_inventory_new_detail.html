@@ -23,8 +23,9 @@
 	  	    x-ng-click="inventory_detail()">库存
 	      <i class="glyphicon glyphicon-book"></i></button>
 
-	    <button type="button"
-		    class="btn blue purple-stripe hidden-xs hidden-sm"
+	    <button x-ng-if="shop_right.show_balance"
+		    class="btn blue purple-stripe hidden-xs hidden-sm" 
+		    type="button"
 		  x-ng-click="export_to()">导出
 	    <i class="glyphicon glyphicon-export"></i></button> 
 	    

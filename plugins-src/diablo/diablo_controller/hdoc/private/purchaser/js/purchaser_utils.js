@@ -104,3 +104,84 @@ var stockUtils = function(){
 	//
     }
 }();
+
+
+var stockDraft = function(storage, shop, employee, model){
+    this.storage  = storage;
+    this.shop     = shop;
+    this.employee = employee;
+    this.model    = model;
+    if (diablo_dkey_stock_price === this.model)
+	this.key = "wx-" + this.shop.toString() + "-" + this.employee.toString();
+};
+
+stockDraft.prototype.key = function() {
+    return this.key;
+    // if (diablo_dkey_stock_price === this.model)
+    // 	this.key = "wx-" + this.shop.toString() + "-" + this.employee.toString();
+};
+
+stockDraft.prototype.keys = function(){
+    if (diablo_dkey_stock_price === this.model){
+	var re = /^wx-[0-9-]+$/;
+	var keys = this.storage.keys(); 
+	return keys.filter(function(k){
+	    return re.test(k)
+	});
+    }
+},
+
+stockDraft.prototype.save = function(resources){
+    var key = this.key;
+    var now = $.now();
+    this.storage.set(key, {t:now, v:resources});
+},
+
+stockDraft.prototype.list = function(draftFilter){
+    var keys = this.keys();
+    return draftFilter(keys); 
+},
+
+stockDraft.prototype.remove = function(){
+    this.storage.remove(this.key);
+},
+
+stockDraft.prototype.select = function(dialog, template, draftFilter, selectCallback){
+    var storage = this.storage;
+    
+    var callback = function(params){
+	var select_draft = params.drafts.filter(function(d){
+	    return angular.isDefined(d.select) && d.select
+	})[0];
+	
+	console.log(storage);
+	var one = storage.get(select_draft.sn); 
+	if (angular.isDefined(one) && null !== one){
+	    selectCallback(select_draft, one.v);
+	} 
+    };
+
+    var drafts = this.list(draftFilter); 
+    dialog.edit_with_modal(
+	template, undefined, callback, undefined,
+	{drafts:drafts,
+	 valid: function(drafts){
+	     for (var i=0, l=drafts.length; i<l; i++){
+		 if (angular.isDefined(drafts[i].select) && drafts[i].select){
+		     return true;
+		 }
+	     } 
+	     return false;
+	 },
+	 select: function(drafts, d){
+	     for (var i=0, l=drafts.length; i<l; i++){
+		 if (d.sn !== drafts[i].sn){
+		     drafts[i].select = false;
+		 }
+	     }
+	 }
+	});
+} 
+
+    
+

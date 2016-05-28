@@ -1,6 +1,15 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2016-05-28",
+	 content: [
+	     "增加批量调价功能",
+	     "增加商品赠送功能",
+	     "增加销售统计功能",
+	     "修改部分用户体验功能"
+	 ]
+	},
+	
 	{date: "2016-05-20",
 	 content: [
 	     "增加多店铺之间的移仓能力"

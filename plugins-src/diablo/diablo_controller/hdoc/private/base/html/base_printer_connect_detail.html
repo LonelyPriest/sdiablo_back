@@ -7,7 +7,7 @@
 	  打印机绑定详情
 	</div>	
 
-	<div class="actions">
+	<div x-ng-if="master" class="actions">
 	  <div class="btn-group btn-group-solid"> 
 	    <button type="button" class="btn btn-success"
 		    x-ng-click="goto_page('#/printer/connect_new')">绑定

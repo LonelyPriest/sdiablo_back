@@ -200,7 +200,7 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 	when('/inventory_price', {
             templateUrl: '/private/purchaser/html/purchaser_inventory_price.html',
             controller: 'purchaserInventoryPriceCtrl',
-            resolve: angular.extend({}, user, firm, employee, s_group, color, base)
+            resolve: angular.extend({}, user, firm, employee, base)
         }).
 	// default
 	otherwise({
@@ -562,6 +562,10 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
 	    {operation: "update_w_inventory_batch"},
 	    {condition: condition,
 	     attrs: attrs}).$promise;
+    };
+
+    this.adjust_price = function(inventory){
+	return http.save({operation: "adjust_w_inventory_price"}, inventory).$promise;
     };
 
 

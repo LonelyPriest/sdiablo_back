@@ -59,7 +59,7 @@ wreportApp.controller("stockStasticCtrl", function(
 
 		    var order_id = 1;
 		    angular.forEach($scope.shops, function(shop){
-			var s = {shop: shop, order_id};
+			var s = {shop: shop, order_id:order_id};
 			s.sale    = filter_by_shop(shop.id, stockSale);
 			s.profit  = filter_by_shop(shop.id, stockProfit);
 			s.sale.p  = calc_profit(s.profit.org_price, s.profit.rprice);

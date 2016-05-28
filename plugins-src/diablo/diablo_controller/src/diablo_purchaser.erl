@@ -93,6 +93,9 @@ purchaser_inventory(set_promotion, Merchant, Promotions, Conditions) ->
 purchaser_inventory(update_batch, Merchant, Attrs, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {update_batch, Merchant, Attrs, Conditions});
+purchaser_inventory(adjust_price, Merchant, Inventories, Attrs) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {adjust_price, Merchant, Inventories, Attrs});
     
 purchaser_inventory(abstract, Merchant, Shop, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -1393,6 +1396,26 @@ handle_call({update_batch, Merchant, Attrs, Conditions}, _From, State) ->
     Reply = ?sql_utils:execute(transaction, Sqls, Merchant),
     {reply, Reply, State};
 
+handle_call({adjust_price, Merchant, Inventories, Attrs}, _From, State) ->
+    ?DEBUG("adjust_price with merchant ~p, inventories ~p, attrs ~p",
+	   [Merchant, Inventories, Attrs]),
+
+    Shop = ?v(<<"shop">>, Attrs),
+    Sqls = 
+	lists:foldr(
+	  fun({struct, Inv}, Acc) ->
+		  StyleNumber = ?v(<<"style_number">>, Inv),
+		  Brand = ?v(<<"brand">>, Inv),
+		  Discount = ?v(<<"discount">>, Inv),
+		  ["update w_inventory set discount=" ++ ?to_s(Discount)
+		   ++ " where merchant=" ++ ?to_s(Merchant)
+		   ++ " and shop=" ++ ?to_s(Shop)
+		   ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+		   ++ " and brand=" ++ ?to_s(Brand)|Acc]
+	  end, [], Inventories),
+    Reply = ?sql_utils:execute(transaction, Sqls, Merchant),
+    {reply, Reply, State};
+    
 handle_call({get_new, Merchant, RSN}, _From, State) ->
     ?DEBUG("get_new_inventory wht merchant ~p, RSN ~p", [Merchant, RSN]),
     Sql = ?w_good_sql:inventory(

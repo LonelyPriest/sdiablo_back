@@ -9,13 +9,15 @@
 
 	<div class="actions">
 	  <div class="btn-group btn-group-solid">
-	    <button type="button" class="btn red purple-stripe"
+	    <button class="btn red purple-stripe"
+		    type="button"
 		    x-ng-click="go_back()">返回
 	      <i class="glyphicon glyphicon-circle-arrow-left"></i>
 	    </button>
 
-	    <button type="button"
-		    class="btn blue purple-stripe hidden-xs hidden-sm"
+	    <button x-ng-if="stock_right.show_orgprice"
+		    class="btn blue purple-stripe hidden-xs hidden-sm" 
+		    type="button"
 		    x-ng-click="export_to()">导出
 	      <i class="glyphicon glyphicon-export"></i>
 	    </button> 

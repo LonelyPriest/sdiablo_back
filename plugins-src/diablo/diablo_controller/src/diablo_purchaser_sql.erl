@@ -786,8 +786,11 @@ inventory_match(all_inventory, Merchant, Shop, Conditions) ->
 
     "select a.id, a.style_number, a.brand as brand_id, a.type as type_id"
 	", a.sex, a.season, a.firm as firm_id, a.s_group, a.free, a.year"
-	", a.promotion as pid, a.score as sid, a.org_price, a.tag_price"
-	", a.ediscount, a.discount, a.path, a.alarm_day"
+	", a.amount as total"
+	", a.promotion as pid"
+	", a.score as sid"
+	", a.org_price, a.tag_price, a.ediscount, a.discount"
+	", a.path, a.alarm_day"
 
 	", b.name as brand" 
 	", c.name as type"

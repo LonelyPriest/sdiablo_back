@@ -177,7 +177,6 @@
 -define(check_w_inventory,           ?right_w_inventory + 13).
 -define(set_w_inventory_promotion,   ?right_w_inventory + 14).
 -define(update_w_inventory_batch,    ?right_w_inventory + 15).
--define(adjust_w_inventory_price,    ?right_w_inventory + 16).
 
 %% transfer
 -define(transfer_w_inventory,            ?right_w_inventory + 16).
@@ -185,6 +184,8 @@
 -define(filter_transfer_rsn_w_inventory, ?right_w_inventory + 18).
 -define(check_w_inventory_transfer,      ?right_w_inventory + 19).
 -define(cancel_w_inventory_transfer,     ?right_w_inventory + 20).
+-define(adjust_w_inventory_price,        ?right_w_inventory + 21).
+
 
 %% firm
 -define(new_w_firm,    ?right_w_firm + 1).

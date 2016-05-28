@@ -146,6 +146,8 @@ success(update_w_inventory_batch, Merchant) ->
     {0, "Success to update inventory of merchant  " ++ ?to_s(Merchant)};
 success(transfer_w_inventory, Rsn) ->    
     {0, "Success to transfer inventory with rsn  " ++ ?to_s(Rsn)};
+success(adjust_w_inventory_price, Merchant) ->
+    {0, "Success to adjust price of merchant  " ++ ?to_s(Merchant)};
 
 %% promotion
 success(new_promotion, Promotion) ->

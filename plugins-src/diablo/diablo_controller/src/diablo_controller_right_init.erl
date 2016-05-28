@@ -247,7 +247,7 @@ init([]) ->
 
 	 {?adjust_w_inventory_price,
 	  <<"库存调价">>, <<"adjust_w_inventory_price">>, ?right_w_inventory},
-
+	 
 	 {?transfer_w_inventory,
           <<"库存调出">>, <<"transfer_w_inventory">>, ?right_w_inventory},
          {?check_w_inventory_transfer,
@@ -850,6 +850,7 @@ pass_action(wholesaler) ->
      %% print
      <<"list_w_printer">>, 
      <<"list_w_print_server">>,
+     <<"list_w_printer_conn">>,
      <<"test_w_printer">>,
      <<"list_w_printer_format">>,
      <<"update_w_printer_format">>,
