@@ -248,7 +248,7 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	    base.firm_id, $scope.firms); 
 	$scope.old_select.datetime   = diablo_set_datetime(base.entry_date);
 	
-	console.log($scope.e_pay_types);
+	// console.log($scope.e_pay_types);
 	if (base.e_pay_type === -1){
 	    $scope.old_select.e_pay_type = $scope.e_pay_types[0];
 	    $scope.old_select.e_pay      = undefined;
@@ -629,6 +629,8 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 		&& $scope.select.employee.id === $scope.old_select.employee.id
 		&& $scope.select.comment === $scope.old_select.comment
 		&& $scope.select.firm.id === $scope.old_select.firm.id
+		&& (angular.isDefined($scope.old_select.e_pay)
+		    && $scope.select.e_pay === $scope.old_select.e_pay)
 		&& new_datetime === old_datetime)){
 	    dialog.response_with_callback(
 	    	false,
@@ -637,31 +639,32 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	    $scope, function(){$scope.has_saved = false});
 	    return;
 	}
-
+	
 	var base = {
 	    id:             $scope.select.rsn_id,
 	    mode:           diablo_stock_reject,
 	    rsn :           $scope.select.rsn,
 	    firm:           $scope.select.firm.id,
 	    shop:           $scope.select.shop.id,
-	    datetime:       dateFilter(
-		$scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),
+	    datetime:       dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),
 	    employee:       $scope.select.employee.id,
 	    comment:        diablo_set_string($scope.select.comment),
 	    total:          -diablo_set_integer($scope.select.total),
 	    
 	    balance:        parseFloat($scope.select.surplus), 
-	    should_pay:     -setv($scope.select.should_pay),
-	    e_pay:         function(){
-		var e = setv($scope.select.e_pay);
-		return angular.isUndefined(e) ? undefined : -e;
-	    }, 
+	    should_pay:     stockUtils.get_opposite(setv($scope.select.should_pay)),
+	    e_pay: stockUtils.get_opposite(setv($scope.select.e_pay)), 
+
+	    e_pay_type:     function(){
+		if (stockUtils.to_float($scope.select.e_pay) === 0) return undefined;
+		return $scope.select.e_pay_type.id; 
+	    }(),
 
 	    old_firm:       $scope.old_select.firm.id,
-	    old_balance:    setv($scope.old_select.surplus), 
-	    old_should_pay: -setv($scope.old_select.should_pay),
-	    old_datetime:   dateFilter(
-		$scope.old_select.datetime, "yyyy-MM-dd HH:mm:ss")
+	    old_balance:    setv($scope.old_select.surplus),
+	    old_should_pay: stockUtils.get_opposite(setv($scope.old_select.should_pay)),
+	    old_epay:       stockUtils.get_opposite(setv($scope.old_select.e_pay)),
+	    old_datetime:   dateFilter($scope.old_select.datetime, "yyyy-MM-dd HH:mm:ss")
 	};
 
 	console.log(added);

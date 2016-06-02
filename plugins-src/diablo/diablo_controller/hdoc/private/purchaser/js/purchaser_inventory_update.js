@@ -649,16 +649,16 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	};
 
 	var setv = diablo_set_float; 
-	var new_datetime = dateFilter(
-	    $scope.select.datetime, "yyyy-MM-dd");
-	var old_datetime = dateFilter(
-	    $scope.old_select.datetime, "yyyy-MM-dd");
+	var new_datetime = dateFilter($scope.select.datetime, "yyyy-MM-dd");
+	var old_datetime = dateFilter($scope.old_select.datetime, "yyyy-MM-dd");
 	
 	if (added.length === 0
 	    && ($scope.select.cash === $scope.old_select.cash
 		&& $scope.select.card === $scope.old_select.card
 		&& $scope.select.wire === $scope.old_select.wire
 		&& $scope.select.verificate === $scope.old_select.verificate
+		&& (angular.isDefined($scope.old_select.e_pay)
+		    && $scope.select.e_pay === $scope.old_select.epay)
 		&& (angular.isDefined($scope.old_select.firm)
 		    && $scope.old_select.firm
 		    && $scope.old_select.firm.id === $scope.select.firm.id)
@@ -680,8 +680,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	    rsn:            $scope.select.rsn,
 	    firm:           $scope.select.firm.id,
 	    shop:           $scope.select.shop.id,
-	    datetime:       dateFilter(
-		$scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),
+	    datetime:       dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),
 	    employee:       $scope.select.employee.id,
 	    comment:        diablo_set_string($scope.select.comment),
 	    total:          diablo_set_integer($scope.select.total),
@@ -693,6 +692,10 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	    e_pay:          setv($scope.select.e_pay),
 	    should_pay:     setv($scope.select.should_pay),
 	    has_pay:        setv($scope.select.has_pay),
+	    e_pay_type:     function(){
+		if (stockUtils.to_float($scope.select.e_pay) === 0) return undefined;
+		return $scope.select.e_pay_type.id; 
+	    }(),
 	    
 	    old_firm:       angular.isDefined($scope.old_select.firm)
 		&& $scope.old_select.firm ? $scope.old_select.firm.id : -1,
@@ -700,8 +703,8 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	    old_verify_pay: setv($scope.old_select.verificate),
 	    old_should_pay: setv($scope.old_select.should_pay),
 	    old_has_pay:    setv($scope.old_select.has_pay),
-	    old_datetime:   dateFilter(
-		$scope.old_select.datetime, "yyyy-MM-dd HH:mm:ss"),
+	    old_epay:       setv($scope.old_select.e_pay),
+	    old_datetime:   dateFilter($scope.old_select.datetime, "yyyy-MM-dd HH:mm:ss"),
 	};
 
 	console.log(added);

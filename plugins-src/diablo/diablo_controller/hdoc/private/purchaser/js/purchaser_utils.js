@@ -99,6 +99,24 @@ var stockUtils = function(){
 	    return diablo_base_setting(
 		"qtime_start", shop, base, diablo_set_date,
 		dateFun.default_start_time(now));
+	},
+
+	get_modified: function(newValue, oldValue){
+	    if (angular.isNumber(newValue) || angular.isString(newValue)){
+		return newValue !== oldValue ? newValue : undefined;
+	    }
+	    if (angular.isDate(newValue)){
+		return newValue.getTime() !== oldValue.getTime()
+		    ? dateFilter($scope.bill_date, "yyyy-MM-dd hh:mm:ss") : undefined; 
+	    }
+	    if (angular.isObject(newValue)){
+		return newValue.id !== oldValue.id ? newValue.id : undefined; 
+	    }
+	},
+
+	get_opposite: function(value) {
+	    if (angular.isUndefined(value)) return undefined;
+	    return -value;
 	}
 	    
 	//

@@ -891,6 +891,8 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
     Wire       = ?v(<<"wire">>, Props, 0),
     VerifyPay  = ?v(<<"verificate">>, Props, 0),
     EPay       = ?v(<<"e_pay">>, Props, 0),
+    EPayType   = ?v(<<"e_pay_type">>, Props),
+
     Comment    = ?v(<<"comment">>, Props, []), 
     ShouldPay  = ?v(<<"should_pay">>, Props),
     HasPay     = ?v(<<"has_pay">>, Props, 0),
@@ -901,6 +903,7 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
     OldShouldPay = ?v(<<"old_should_pay">>, Props),
     OldHasPay    = ?v(<<"old_has_pay">>, Props, 0), 
     OldDatatime  = ?v(<<"old_datetime">>, Props),
+    OldEPay      = ?v(<<"old_epay">>, Props, 0),
 
     Total      = ?v(<<"total">>, Props),
     
@@ -919,34 +922,48 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 		      Datetime, OldDatatime, CurTime, Inventories)
 	   end,
 
+    IsSame = fun(New, Old) when New =:= Old -> undefined;
+		(New, _Old) -> New
+	     end,
+    
     Updates =?utils:v(employ, string, Employee)
-	++ ?utils:v(firm, integer, Firm) 
+	++ ?utils:v(firm, integer, IsSame(Firm, OldFirm)) 
 	++ ?utils:v(shop, integer, Shop)
     %% ++ ?utils:v(balance, float, OldBalance)
-	++ ?utils:v(should_pay, float, ShouldPay)
-	++ ?utils:v(has_pay, float, HasPay)
+	++ ?utils:v(should_pay, float, IsSame(ShouldPay, OldShouldPay))
+	++ ?utils:v(has_pay, float, IsSame(HasPay, OldHasPay))
 	++ ?utils:v(cash, float, Cash)
 	++ ?utils:v(card, float, Card)
 	++ ?utils:v(wire, float, Wire)
 	++ ?utils:v(verificate, float, VerifyPay)
+	++ ?utils:v(e_pay, float, IsSame(EPay, OldEPay))
+	++ ?utils:v(e_pay_type, integer, EPayType)
 	++ ?utils:v(total, integer, Total)
 	++ ?utils:v(comment, string, Comment)
-	++ case Datetime =:= OldDatatime of
-	       true -> [];
-	       false ->
-		   ?utils:v(entry_date, string, Datetime)
-	   end,
-    
+	++ ?utils:v(entry_date, string, IsSame(Datetime, OldDatatime)),
+	%% ++ case Datetime =:= OldDatatime of
+	%%        true -> [];
+	%%        false ->
+	%% 	   ?utils:v(entry_date, string, Datetime)
+	%%    end,
+
+    %% CalcMetric = fun(undefined, undefined) -> 0;
+    %% 		    (New, undefined) -> New;
+    %% 		    (New, Old) -> New - Old
+    %% 		 end,
+			 
+    %% MetricEPay = CalcMetric(EPay, OldEPay),
+		     
     case Firm =:= OldFirm of
 	true ->
 	    Sql2 = "update w_inventory_new set "
 		++ ?utils:to_sqls(
 		      proplists, comma,
-		      ?utils:v(balance, float, OldBalance) ++ Updates)
+		      ?utils:v(balance, float, IsSame(Balance, OldBalance)) ++ Updates)
 		++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'",
 
-	    case (ShouldPay - HasPay - VerifyPay)
-		- (OldShouldPay - OldHasPay - OldVerifyPay) of
+	    case (ShouldPay + EPay - HasPay - VerifyPay)
+		- (OldShouldPay + OldEPay - OldHasPay - OldVerifyPay) of
 		0 ->
 		    AllSql = Sql1 ++ [Sql2],
 		    Reply = ?sql_utils:execute(transaction, AllSql, RSN), 
