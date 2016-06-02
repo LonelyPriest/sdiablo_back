@@ -101,10 +101,13 @@
 			<th class="warning">类别</th>
 			<th>性别</th>
 			<th>厂商</th>
-			<th>季节</th>
-			<th>年度</th> 
+			<th x-ng-click="use_order(order_fields.season)">季节
+			  <i class="glyphicon glyphicon-triangle-bottom fg-red"></i></th>
+			<th x-ng-click="use_order(order_fields.year)">年度
+			  <i class="glyphicon glyphicon-triangle-bottom fg-red"></i></th> 
 			<th class="warning">吊牌价</th> 
-			<th class="danger">折扣</th>
+			<th x-ng-click="use_order(order_fields.discount)">折扣
+			  <i class="glyphicon glyphicon-triangle-bottom fg-red"></i></th>
 			<th x-ng-if="stock_right.show_orgprice"
 			    class="success">进价</th>
 			<th x-ng-if="stock_right.show_orgprice"

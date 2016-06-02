@@ -1,6 +1,13 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2016-06-02",
+	 content: [
+	     "采购单可修改费用",
+	     "增加库存按字货排序"
+	 ]
+	},
+	
 	{date: "2016-05-28",
 	 content: [
 	     "增加批量调价功能",

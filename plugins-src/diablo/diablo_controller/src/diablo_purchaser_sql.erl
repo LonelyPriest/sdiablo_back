@@ -725,12 +725,11 @@ inventory(transfer_rsn_groups, transfer, Merchant, Conditions, PageFun) ->
                          time_with_prfix, StartTime, EndTime)
         ++ PageFun();
 
-inventory({group_detail_with_pagination, Mode},
+inventory({group_detail_with_pagination, Mode, Sort},
 	  Merchant, Conditions, CurrentPage, ItemsPerPage) -> 
     inventory(group_detail, Merchant, Conditions,
 	fun() ->
-		?sql_utils:condition(
-		   page_desc, Mode, CurrentPage, ItemsPerPage)
+		?sql_utils:condition(page_desc, {Mode, Sort}, CurrentPage, ItemsPerPage)
 	end);
 
 inventory(new_detail_with_pagination, Merchant, Conditions, CurrentPage, ItemsPerPage) -> 

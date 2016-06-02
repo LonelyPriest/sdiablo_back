@@ -1407,11 +1407,7 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
     /*
      * tab-set
      */ 
-    $scope.tab_active = {
-	time: true,
-	chart:false,
-    };
-
+    $scope.tab_active = {time: true, chart:false}; 
     $scope.chart_data = {};
     
     $scope.shops     = user.sortShops.concat(user.sortBadRepoes);
@@ -1421,6 +1417,13 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
     $scope.seasons   = diablo_season;
     $scope.goto_page = diablo_goto_page;
     $scope.total_items = 0;
+
+    /*
+     * order
+     */
+    $scope.order_fields = stockUtils.order_fields();
+    $scope.mode = $scope.order_fields.id;
+    $scope.sort = 0;
 
     $scope.stock_right = {
 	show_orgprice: rightAuthen.authen(
@@ -1434,9 +1437,7 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 	update_batch: rightAuthen.authen_master(user.type), 
     };
     
-    $scope.setting = {
-	alarm: false
-    };
+    $scope.setting = {alarm: false};
 
     $scope.css =  function(isAlarm){
 	return diablo_stock_alarm_css($scope.setting.alarm, isAlarm);
@@ -1521,6 +1522,13 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 	$scope.do_search($scope.tab_page.page_of_chart);
     }; 
 
+    $scope.use_order = function(mode){
+	$scope.mode = mode;
+	if ($scope.sort === 0) $scope.sort = 1;
+	else if ($scope.sort === 1) $scope.sort = 0;
+	$scope.do_search($scope.tab_page.page_of_time);
+    }
+    
     // filter
     var add_search_condition = function(search){
 	if (angular.isUndefined(search.shop)
@@ -1528,15 +1536,15 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 	    // search.shop = user.shopIds;
 	    search.shop = $scope.shopIds
 		=== 0 ? undefined : $scope.shopIds; ;
-	};
+	}; 
     };
 
     var now_date = diablo_now_date();
-    
+ 
     $scope.do_search = function(page){
-	var mode;
 	if ($scope.tab_active.chart){
-	    mode = 1;
+	    $scope.mode = $scope.order_fields.sell;
+	    $scope.sort =0;
 	    $scope.tab_page.page_of_chart = page;
 	} else {
 	    $scope.tab_page.page_of_time = page; 
@@ -1552,11 +1560,12 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 	    add_search_condition(search);
 	    
 	    purchaserService.filter_purchaser_inventory_group(
-		mode, $scope.match, search, page, $scope.items_perpage
+		{mode:$scope.mode, sort:$scope.sort},
+		$scope.match, search, page, $scope.items_perpage
 	    ).then(function(result){
 		console.log(result);
 
-		if (mode === 1){
+		if ($scope.mode === 1){
 		    var labels  = [];
 		    var totals  = [];
 		    var sells   = [];

@@ -267,20 +267,17 @@ filter(groups, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant),
     %% default use id
     gen_server:call(
-      Name, {filter_groups, use_id, Merchant,
-	     CurrentPage, ItemsPerPage, Fields});
+      Name, {filter_groups, {use_id, 0}, Merchant, CurrentPage, ItemsPerPage, Fields});
 
-filter({groups, Mode}, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
+filter({groups, Mode, Sort}, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(
-      Name, {filter_groups, Mode, Merchant,
-	     CurrentPage, ItemsPerPage, Fields});
+      Name, {filter_groups, {Mode, Sort}, Merchant, CurrentPage, ItemsPerPage, Fields});
 
 %% good
 filter(goods, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(
-      Name, {filter_goods, Merchant, CurrentPage, ItemsPerPage, Fields}).
+    gen_server:call(Name, {filter_goods, Merchant, CurrentPage, ItemsPerPage, Fields}).
 
 %% rsn
 rsn_detail(new_rsn, Merchant, Condition) ->
@@ -1563,15 +1560,14 @@ handle_call({total_groups, Merchant, Fields}, _From, State) ->
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State}; 
 
-handle_call({filter_groups, Mode, Merchant,
+handle_call({filter_groups, {Mode, Sort}, Merchant,
 	     CurrentPage, ItemsPerPage, Fields}, _From, State) ->
-    ?DEBUG("filter_groups_with_and: mode ~p, currentPage ~p, ItemsPerpage ~p"
+    ?DEBUG("filter_groups_with_and: mode ~p, sort ~p, currentPage ~p, ItemsPerpage ~p"
 	   ", Merchant ~p~nfields ~p",
-	   [Mode, CurrentPage, ItemsPerPage, Merchant, Fields]),
+	   [Mode, Sort, CurrentPage, ItemsPerPage, Merchant, Fields]),
     C = realy_conditions(Merchant, Fields),
-    Sql = ?w_good_sql:inventory(
-	     {group_detail_with_pagination, Mode},
-	     Merchant, C, CurrentPage, ItemsPerPage), 
+    Sql = ?w_good_sql:inventory({group_detail_with_pagination, Mode, Sort},
+				Merchant, C, CurrentPage, ItemsPerPage), 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 

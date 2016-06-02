@@ -233,7 +233,16 @@ action(Session, Req, {"filter_w_inventory_group"}, Payload) ->
     ?DEBUG("filter_w_inventory_group with session ~p, paylaod~n~p",
 	   [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
-    Mode     = ?v(<<"mode">>, Payload, 0),
+    {struct, Mode}     = ?v(<<"mode">>, Payload),
+    Order = ?v(<<"mode">>, Mode),
+    Sort  = ?v(<<"sort">>, Mode),
+
+    %% {struct, P}  = ?v(<<"fields">>, Payload),
+
+    %% Order = ?v(<<"order">>, P),
+    NewPayload = proplists:delete(<<"mode">>, Payload),
+    %% 	++ [{<<"fields">>, {struct, proplists:delete(<<"order">>, P)}}],
+    %% ?DEBUG("new payload ~p", [NewPayload]),
     
     ?pagination:pagination(
        fun(Match, Conditions) ->
@@ -241,9 +250,9 @@ action(Session, Req, {"filter_w_inventory_group"}, Payload) ->
        end,
        fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
 	       ?w_inventory:filter(
-		  {groups, mode(Mode)}, Match, Merchant,
-		  CurrentPage, ItemsPerPage, Conditions)
-       end, Req, Payload); 
+		  {groups, mode(Order), Sort},
+		  Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
+       end, Req, NewPayload); 
 
 action(Session, Req, {"list_w_inventory"}, Payload) ->
     ?DEBUG("list purchaser inventory with session ~p, paylaod~n~p",
@@ -889,5 +898,9 @@ season(2) -> "秋";
 season(3) -> "冬".
 
 mode(0) -> use_id;
-mode(1) -> use_sell.
+mode(1) -> use_sell;
+mode(2) -> use_discount;
+mode(3) -> use_year;
+mode(4) -> use_season.
+
     

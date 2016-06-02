@@ -58,14 +58,29 @@ condition(page_desc, CurrentPage, ItemsPerPage) ->
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
     	++ ", " ++ ?to_s(ItemsPerPage).
 
-condition(page_desc, use_id, CurrentPage, ItemsPerPage) ->
+condition(page_desc, {use_id, 0}, CurrentPage, ItemsPerPage) ->
     condition(page_desc, CurrentPage, ItemsPerPage);
-condition(page_desc, use_sell, CurrentPage, ItemsPerPage) ->
-    " order by sell desc"
+condition(page_desc, {use_sell, Sort}, CurrentPage, ItemsPerPage) ->
+    " order by sell " ++ ?MODULE:sort(Sort)
+	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
+    	++ ", " ++ ?to_s(ItemsPerPage);
+condition(page_desc, {use_discount, Sort}, CurrentPage, ItemsPerPage) ->
+    " order by discount " ++ ?MODULE:sort(Sort)
+	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
+    	++ ", " ++ ?to_s(ItemsPerPage);
+condition(page_desc, {use_year, Sort}, CurrentPage, ItemsPerPage) ->
+    " order by year " ++ ?MODULE:sort(Sort)
+	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
+    	++ ", " ++ ?to_s(ItemsPerPage);
+condition(page_desc, {use_season, Sort}, CurrentPage, ItemsPerPage) ->
+    " order by season " ++ ?MODULE:sort(Sort)
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
     	++ ", " ++ ?to_s(ItemsPerPage).
 
 
+sort(0) -> "desc";
+sort(1) -> "asc".
+    
 condition(proplists, []) ->
     [];
 condition(proplists, Conditions) -> 

@@ -117,6 +117,10 @@ var stockUtils = function(){
 	get_opposite: function(value) {
 	    if (angular.isUndefined(value)) return undefined;
 	    return -value;
+	},
+
+	order_fields:function(){
+	    return {id:0, sell:1, discount:2, year:3, season:4};
 	}
 	    
 	//
