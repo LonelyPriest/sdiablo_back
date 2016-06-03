@@ -21,9 +21,9 @@
                   x-ng-click="refresh()">刷新
             <i class="icon icon-spinner fg-white"></i></button>
 
-          <button class="btn yellow-crusta hidden-sm"
-                  x-ng-click="print()">打印
-            <i class="glyphicon glyphicon-print"></i></button>
+          <!-- <button class="btn yellow-crusta hidden-sm" -->
+          <!--         x-ng-click="print()">打印 -->
+          <!--   <i class="glyphicon glyphicon-print"></i></button> -->
 
         </div> 
       </div>
@@ -41,9 +41,10 @@
 		      <th>序号</th>
 		      <th>店铺</th>
 		      <th>数量</th>
-		      <th class="danger">营业额</th> 
+		      <th>营业额</th> 
 		      <th>现金</th>
 		      <th>刷卡</th>
+		      <th>操作</th>
 		      <!-- <th>充值</th> -->
 		      <!-- <th>提现</th>  -->
 		    </tr>
@@ -56,6 +57,11 @@
 		      <td>{{r.t_spay}}</td>
 		      <td>{{r.t_cash}}</td>
 		      <td>{{r.t_card}}</td>
+		      <td>
+		      	<button class="btn diablo-button yellow-crusta"
+				x-ng-click="print_shop(r)">交班
+			  <i class="glyphicon glyphicon-print"></i></button>
+		      </td>
 		      <!-- <td>{{r.t_cbalance}}</td> -->
 		      <!-- <td>{{r.t_withdraw}}</td> -->
 		    </tr>
@@ -65,6 +71,7 @@
 		      <td>{{total_spay}}</td>
 		      <td>{{total_cash}}</td>
 		      <td>{{total_card}}</td>
+		      <td></td>
 		      <!-- <td>{{total_cbalance}}</td> -->
 		      <!-- <td>{{total_withdraw}}</td> -->
 		    </tr>
@@ -201,3 +208,45 @@
     </div> <!--END portlet box-->
   </div> <!--END col-md-12-->
 </div> <!--END row-->
+
+<script type="text/ng-template" id="select-employee.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    <h4 class="modal-title">
+      <span class="label label-sm label-primary">营业员选择</span>
+    </h4>
+  </div>
+
+  <!--BEGIN modal body-->
+  <div class="modal-body">
+
+    <form class="form-horizontal" name="sForm" novalidate>
+      <div class="form-body"> 
+	<div class="form-group">
+	  <div class="input-group">
+	    <span class="input-group-addon"> 营业员</span>
+	    <select class="form-control"
+		    name="shopowner"
+		    type="text"
+		    x-ng-model="params.employee"
+		    x-ng-options="e as e.name for e in params.employees">
+	    </select>
+	  </div> 
+	</div>
+      </div>
+    </form>
+    
+  </div>
+    
+
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="pForm.$invalid
+			   || params.check_same(params.scores)"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
+</script>

@@ -206,6 +206,8 @@ success(update_wprinter_format, FId) ->
     {0, "Success to update print format of " ++ ?to_s(FId)};
 success(add_wprinter_format_to_shop, Shop) ->
     {0, "Success to add wprint format of shop " ++ ?to_s(Shop)};
+success(print_wreport, Shop) ->
+    {0, "Success to add print content of shop " ++ ?to_s(Shop)};
 
 
 

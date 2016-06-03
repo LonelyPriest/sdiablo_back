@@ -88,7 +88,9 @@
 		    <th class="text-center">调出</th>
 		    
 		    <th class="text-center">销售</th> 
-		    <th class="text-center">盘点盈余</th> 
+		    <th class="text-center">盘点</th>
+
+		    <th class="text-center">库存</th>
 		    
 		  </tr>
 		</thead>
@@ -102,14 +104,15 @@
 		    <td class="text-center">{{s.sale.card}}</td>
 		    <td class="text-center">{{s.sale.veri}}</td>
 
-		    <td class="bg-lightOlive text-center">{{s.pin.total}}</td>
-		    <td class="text-center">{{s.pout.total}}</td>
+		    <td class="text-center">{{s.pin.total}}</td>
+		    <td class="text-center fg-magenta">{{s.pout.total}}</td>
 
-		    <td class="bg-lightPink text-center">{{s.tin.total}}</td>
-		    <td class="text-center">{{s.tout.total}}</td> 
+		    <td class="text-center">{{s.tin.total}}</td>
+		    <td class="text-center fg-magenta">{{s.tout.total}}</td> 
 
-		    <td class="bg-magenta text-center">{{s.sale.total}}</td> 
+		    <td class="text-center fg-magenta">{{s.sale.total}}</td> 
 		    <td class="text-center">{{s.fix.total}}</td>
+		    <td class="text-center bg-cyan">{{s.stock}}</td>
 		  </tr>
 		</tbody>
 

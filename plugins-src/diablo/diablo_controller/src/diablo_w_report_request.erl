@@ -102,7 +102,107 @@ action(Session, Req, {"stock_stastic"}, Payload) ->
 			]})
     catch
 	_:{badmatch, {error, Error}} -> ?utils:respond(200, Req, Error)
-    end. 
+    end;
+
+action(Session, Req, {"print_wreport", Type}, Payload) -> 
+    ?DEBUG("print_wreport with session ~p, type ~p, payload~n~p",[Session, Type, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    {struct, Content}  = ?v(<<"content">>, Payload),
+    ShopId   = ?v(<<"shop">>, Content, []),
+    EmployeeId = ?v(<<"employee">>, Content),
+    Datetime = ?v(<<"datetime">>, Content),
+    Total    = ?v(<<"total">>, Content),
+    SPay     = ?v(<<"spay">>, Content), 
+    Cash     = ?v(<<"cash">>, Content),
+    Card     = ?v(<<"card">>, Content), 
+
+    {ok, EmployeeInfo} = ?w_user_profile:get(employee, Merchant, EmployeeId),
+    {VPrinters, ShopInfo} = ?wifi_print:get_printer(Merchant, ShopId),
+    %% ?DEBUG("VPrinters ~p", [VPrinters]),
+    
+    ResponseFun =
+        fun(PCode, PInfo) -> 
+                ?utils:respond(200, Req, ?succ(print_wreport, ShopId),
+                               [{<<"pcode">>, PCode},
+                                {<<"pinfo">>, PInfo}])
+        end,
+
+
+    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, ShopId),
+
+    QTimeStart = ?v(<<"qtime_start">>, BaseSetting),
+
+    {ok, StockInfo} =
+	?w_inventory:filter(
+	   total_groups,
+	   'and',
+	   Merchant,
+	   [{<<"shop">>, ShopId},
+	    {<<"start_time">>, QTimeStart}]),
+
+    LeftStock = ?v(<<"t_amount">>, StockInfo),
+    %% ?DEBUG("stock info ~p", [StockInfo]),
+
+    case VPrinters of
+        [] ->
+	    {ECode, _} = ?err(shop_not_printer, ShopId), 
+	    ResponseFun(ECode, []);
+	_  ->
+	    ShopName = ?to_s(?v(<<"name">>, ShopInfo)),
+	    Employee = ?v(<<"name">>, EmployeeInfo),
+	    PrintInfo = 
+		lists:foldr(
+		  fun(P, Acc) ->
+			  ?DEBUG("p ~p", [P]),
+			  SN     = ?v(<<"sn">>, P),
+			  Key    = ?v(<<"code">>, P),
+			  Path   = ?v(<<"server_path">>, P),
+
+			  Brand  = ?v(<<"brand">>, P),
+			  Model  = ?v(<<"model">>, P),
+
+			  %% Column = ?v(<<"pcolumn">>, P),
+			  %% PShop  = ?v(<<"pshop">>, P),
+
+			  %% ?DEBUG("P ~p", [P]),
+			  Server = ?wifi_print:server(?v(<<"server_id">>, P)), 
+
+			  Title = ?wifi_print:title(Brand, Model, ShopName)
+			      ++ ?f_print:br(Brand)
+			      ++ ?wifi_print:title(Brand, Model, "（交班报表）"),
+
+			  Body = "日期：" ++ ?to_s(Datetime) ++ ?f_print:br(Brand)
+			      ++ "营业员：" ++ ?to_s(Employee) ++ ?f_print:br(Brand)
+			      ++ "营业额：" ++ ?to_s(SPay) ++ ?f_print:br(Brand) 
+			      ++ "数量：" ++ ?to_s(Total) ++ ?f_print:br(Brand)
+                              ++ "现金：" ++ ?to_s(Cash) ++ ?f_print:br(Brand)
+                              ++ "刷卡：" ++ ?to_s(Card) ++ ?f_print:br(Brand) 
+			      ++ "库存：" ++ ?to_s(LeftStock) ++ ?f_print:br(Brand),
+			  
+			  PrintContent = Title ++ Body,
+
+			  [{SN, fun() when Server =:= fcloud ->
+					?wifi_print:start_print(
+					   fcloud, SN, Key, Path, 1, PrintContent) 
+				end}|Acc]
+		  end, [], VPrinters),
+
+
+	    case ?wifi_print:multi_print(PrintInfo) of
+                {Success, []} -> 
+                    ResponseFun(0, Success);
+		                {[], Failed} ->
+                    PInfo = [{[{<<"device">>, DeviceId}, {<<"ecode">>, ECode}]}
+                             || {DeviceId, ECode} <- Failed],
+                    ResponseFun(1, PInfo);
+                {_Success, Failed} when is_list(Failed)->
+                    PInfo = [{[{<<"device">>, DeviceId}, {<<"ecode">>, ECode}]}
+                             || {DeviceId, ECode} <- Failed],
+                    ResponseFun(2, PInfo);
+                {error, {ECode, _EInfo}} ->
+                    ResponseFun(ECode, [])
+            end
+    end.
 
 sidebar(Session) ->
     AuthenFun =

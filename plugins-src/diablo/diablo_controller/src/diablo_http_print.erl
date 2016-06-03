@@ -24,7 +24,10 @@
 
 -export([server/1, head/7, detail/2, detail/3,
 	 start_print/8, start_print/6,
-	 multi_print/1, get_printer_state/4, multi_send/5]).
+	 multi_print/1, get_printer_state/4,
+	 multi_send/5]).
+
+-export([title/3, get_printer/2]).
 
 -import(?f_print,
 	[width/2, pading/1, clean_zero/1, br/1, line/2]).
@@ -58,11 +61,7 @@ print(test, Merchant, Shop, _PId) ->
 	    {error, ?err(print_timeout, RSN)}
     end.
 
-print(RSN, Merchant, Inventories, Attrs, Print) ->
-    %% call({print, RSn, Merchant, Inventories, Attrs, Print}).
-    %% gen_server:call(
-    %% ?SERVER, {print, RSn, Merchant, Inventories, Attrs, Print}).
-    
+print(RSN, Merchant, Inventories, Attrs, Print) -> 
     Self = self(),
     spawn(?MODULE, call,
 	  [Self, {print, normal, RSN, Merchant, Inventories, Attrs, Print}]),
@@ -138,8 +137,7 @@ get_printer(Merchant, ShopId) ->
 
 content(test, {Brand, Model, Column}, Shop, Setting) ->
     title(Brand, Model, Shop)
-	++ body_foot(
-	     Brand, Model, Column, Setting);
+	++ body_foot(Brand, Model, Column, Setting);
 
 content(normal, {Brand, Model, Column},
 	{Merchant, Shop, RSN, Retailer, Setting}, {Invs, Attrs, Print}) ->

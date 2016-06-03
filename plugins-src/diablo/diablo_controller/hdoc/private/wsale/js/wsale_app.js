@@ -966,8 +966,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 			    + wsaleService.error[p.ecode]
 		    })
 		};
-		messsage = "单号："
-		    + result.rsn + "，打印失败：" + messsage;
+		messsage = "单号：" + result.rsn + "，打印失败：" + messsage;
 	    }
 
 	    return messsage;

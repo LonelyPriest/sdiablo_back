@@ -865,6 +865,8 @@ pass_action(wholesaler) ->
 
      %% print
      <<"get_w_print_content">>,
+     %% report
+     <<"print_wreport">>,
 
      %% shop
      <<"list_shop">>,

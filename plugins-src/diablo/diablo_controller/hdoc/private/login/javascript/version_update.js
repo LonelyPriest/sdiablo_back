@@ -1,6 +1,13 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2016-06-04",
+	 content: [
+	     "增加交班打印",
+	     "进销存统计时，增加剩余库存字段"
+	 ]
+	},
+	
 	{date: "2016-06-02",
 	 content: [
 	     "采购单可修改费用",

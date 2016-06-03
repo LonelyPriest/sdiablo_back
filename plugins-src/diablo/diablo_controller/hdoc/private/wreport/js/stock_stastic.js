@@ -1,5 +1,5 @@
 wreportApp.controller("stockStasticCtrl", function(
-    $scope, dateFilter, diabloFilter, wreportService, filterEmployee, user){
+    $scope, dateFilter, diabloFilter, wreportService, filterEmployee, user, base){
     // console.log(user);
     $scope.shops = user.sortShops;
     $scope.shopIds = user.shopIds;
@@ -9,7 +9,15 @@ wreportApp.controller("stockStasticCtrl", function(
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
 
-    $scope.time = diabloFilter.default_time($.now());
+
+    var now = $.now();
+    $scope.qtime_start = function(){
+	return diablo_base_setting(
+	    "qtime_start", -1, base, diablo_set_date,
+	    diabloFilter.default_start_time(now));
+    }();
+    
+    $scope.time = diabloFilter.default_time($scope.qtime_start);
 
     var calc_profit = function(m1, m2){
 	if ( angular.isUndefined(m1) || angular.isUndefined(m2)) return undefined;
@@ -35,6 +43,14 @@ wreportApp.controller("stockStasticCtrl", function(
 
 	if (s.length === 1) return s[0];
 	else return {};
+    };
+
+    var to_i =  function(v){
+	if (angular.isUndefined(v) || isNaN(v) || (!v && v != 0)){
+	    return 0;
+	} else{
+	    return parseInt(v)
+	}
     };
     
     $scope.do_search = function(){
@@ -68,6 +84,10 @@ wreportApp.controller("stockStasticCtrl", function(
 			s.tin     = filter_by_shop(shop.id, stockTransferIn);
 			s.tout    = filter_by_shop(shop.id, stockTransferOut);
 			s.fix     = filter_by_shop(shop.id, stockFix);
+			s.stock   = to_i(s.pin.total) + to_i(s.pout.total)
+			    + to_i(s.tin.total) - to_i(s.tout.total)
+			    + to_i(s.fix.total)
+			    - to_i(s.sale.total);
 			$scope.stastics.push(s);
 			order_id++;
 		    });

@@ -1,25 +1,25 @@
 <div class="row">
   <div class="col-md-12">
     <div class="portlet box purple">
-      
+
       <div class="portlet-title">
 	<div class="caption">
 	  <i class="glyphicon glyphicon-menu-hamburger"></i>
 	  店铺详情
-	</div>	
+	</div>
 
 	<div class="actions">
 	  <div class="btn-group btn-group-solid">
 	    <a type="button" class="btn btn-success purple-stripe"
 		    x-ng-click="goto_page('#/shop/shop_new')">新增
-	      <i class="glyphicon glyphicon-plus"></i></a> 
+	      <i class="glyphicon glyphicon-plus"></i></a>
 
 	    <a type="button" class="btn blue reload purple-stripe"
 		    x-ng-click="refresh()">刷新
 	      <i class="icon icon-spinner fg-white"></i></a>
 	  </div>
 	</div>
-	
+
 	<!-- <div class="tools"> -->
 	<!--   <a class="reload" href="javascript:;" x-ng-click="refresh()"></a> -->
 	<!-- </div> -->
@@ -33,32 +33,32 @@
 
 	  <!--   <div class="col-sm-12 col-md-12"> -->
 	  <!--     <div class="input-group"> -->
-	  <!-- 	<div class="input-cont"> -->
-	  <!-- 	  <input type="text" class="form-control" placeholder="请输入店铺名称" -->
-	  <!-- 		 x-ng-model="filter.number"></input> -->
-	  <!-- 	</div> -->
-	  <!-- 	<span class="input-group-btn"> -->
-	  <!-- 	  <button type="button" class="btn green"> -->
-	  <!-- 	    <i class="m-icon-swapright m-icon-white"></i> -->
-	  <!-- 	</span> -->
+	  <!--	<div class="input-cont"> -->
+	  <!--	  <input type="text" class="form-control" placeholder="请输入店铺名称" -->
+	  <!--		 x-ng-model="filter.number"></input> -->
+	  <!--	</div> -->
+	  <!--	<span class="input-group-btn"> -->
+	  <!--	  <button type="button" class="btn green"> -->
+	  <!--	    <i class="m-icon-swapright m-icon-white"></i> -->
+	  <!--	</span> -->
 	  <!--     </div> -->
 	  <!--   </div>  -->
-	    
+
 	  <!-- </div>  -->
 	</div> <!--END table-toolbar-->
-		  
-	<!--BEGN portlet body--> 
+
+	<!--BEGN portlet body-->
 	<div class="portlet-body">
 	  <!--BEGIN panel-->
 	  <div class="panel panel-default">
 	    <!--EBGIN table responsive-->
 	    <div class="table-responsive">
-	      <!--BEGIN member table--> 
+	      <!--BEGIN member table-->
 	      <table class="table table-bordered table-striped table-hover
 			    table-condensed table-advanced">
 		<thead>
 		  <tr>
-		    <th>序号</th> 
+		    <th>序号</th>
 		    <th>名称</th>
 		    <th>积分方案</th>
 		    <th>充值方案</th>
@@ -73,7 +73,7 @@
 		</thead>
 		<tbody>
 		  <tr ng-repeat="shop in shops">
-		    <td>{{shop.order_id}}</td> 
+		    <td>{{shop.order_id}}</td>
 		    <td>{{shop.name}}</td>
 		    <td>
 		      <span x-ng-if="shop.score_id===-1">暂无</span>
@@ -84,16 +84,16 @@
 		      <span x-ng-if="shop.charge_id === -1">暂无</span>
 		      <span x-ng-if="shop.charge_id !== -1">{{shop.charge.name}}</span>
 		    </td>
-		    
+
 		    <td>
 		      <span x-ng-if="!shop.shopowner.name">暂无</span>
 		      <span x-ng-if="shop.shopowner.name">{{shop.shopowner.name}}</span>
 		    </td>
-		    
+
 		    <!-- <td data-title="'经营人'"> -->
 		    <!--   <span>{{shop.owner}}</span> -->
 		    <!-- </td> -->
-		    
+
 		    <td>{{shop.address}}</td>
 		    <td x-ng-show="authen_list_repo"
 			x-ng-switch on="shop.repo">
@@ -106,8 +106,8 @@
 
 		    <td>
 		      <!-- <button class="btn btn-success diablo-button" -->
-		      <!-- 	      x-ng-click="on_sale(shop)">促销 -->
-		      <!-- 	<i class="glyphicon glyphicon-exclamation-sign"></i> -->
+		      <!--	      x-ng-click="on_sale(shop)">促销 -->
+		      <!--	<i class="glyphicon glyphicon-exclamation-sign"></i> -->
 		      <!-- </button> -->
 		      <button class="btn red-sunglo diablo-button"
 			      x-ng-click="charge(shop)">充值方案
@@ -115,24 +115,24 @@
 		      <button class="btn green-meadow diablo-button"
 			      x-ng-click="score(shop)">积分方案
 			<i class="glyphicon glyphicon-upload"></i></button>
-                      <button class="btn diablo-button btn-warning"
+		      <button class="btn diablo-button btn-warning"
 			      x-ng-click="edit_shop(shop)">修改
 			<i class="glyphicon glyphicon-edit"></i></button>
-                      <button class="btn diablo-button red"
+		      <button class="btn diablo-button red"
 			      x-ng-click="delete_shop(shop)">删除
 			<i class="glyphicon glyphicon-erase"></i></button>
 		    </td>
-		    
+
 		  </tr>
 		</tbody>
-		
+
 	      </table> <!--END VM table-->
 	    </div> <!--END table responsive-->
 
 	  </div> <!--END panel-->
 	</div> <!--END portlet body-->
       </div> <!--END table container-->
-      
+
     </div>
   </div>
 </div>
@@ -142,17 +142,17 @@
     <button class="close" x-ng-click="cancel()" type="button">
       <span aria-hidden="true">&times;</span>
       <span class="sr-only"></span>
-    </button> 
+    </button>
     <h4 class="modal-title">
       <span class="label label-sm label-primary">店铺编辑</span>
     </h4>
   </div>
 
-  <!--BEGIN modal body--> 
+  <!--BEGIN modal body-->
   <div class="modal-body">
     <form class="form-horizontal" name="sForm" novalidate>
       <div class="form-body">
-	
+
 	<div class="form-group">
 	  <div class="input-group">
 	      <span class="input-group-addon">
@@ -164,12 +164,12 @@
 	      <input class="form-control"
 		     name="name"
 		     type="text" required
-                     x-ng-model="params.shop.name"
+		     x-ng-model="params.shop.name"
 		     x-ng-minlength="2"
 		     x-ng-maxlength="16"/>
 	      </div>
-	      <span class="input-group-addon bg-white fg-red">*</span> 
-	  </div> 
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	  </div>
 	  <div>
 	    <span ng-show="sForm.name.$error.minlength
 			   || sForm.name.$error.maxlength">
@@ -180,7 +180,7 @@
 	      <span class="fg-red">店铺名已存在，请重新输入</span>
 	    </span>
 	  </div>
-	  
+
 	</div>
 
 	<div class="form-group">
@@ -189,11 +189,11 @@
 		<i class="glyphicon glyphicon-hand-right fg-red"></i>地址</span>
 	      <input class="form-control"
 		     type="text" required
-                     x-ng-model="params.shop.address"></input>
-	      <span class="input-group-addon bg-white fg-red">*</span> 
+		     x-ng-model="params.shop.address"></input>
+	      <span class="input-group-addon bg-white fg-red">*</span>
 	  </div>
 	</div>
-	
+
 	<div class="form-group">
 	  <div class="input-group">
 	      <span class="input-group-addon">
@@ -224,11 +224,11 @@
 	    </select>
 	  </div>
 	</div>
-	
+
       </div>
     </form>
   </div>
-  
+
   <div class="modal-footer">
     <button class="btn btn-primary"
 	    x-ng-disabled="sForm.$invalid
@@ -236,7 +236,7 @@
 			   || !params.check_shop(params.shop)"
 	    x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
-  </div>  
+  </div>
 </script>
 
 
@@ -245,7 +245,7 @@
     <button class="close" x-ng-click="cancel()" type="button">
       <span aria-hidden="true">&times;</span>
       <span class="sr-only"></span>
-    </button> 
+    </button>
     <h4 class="modal-title">
       <span class="label label-sm label-primary">
 	促销方案（<span >{{params.shop.name}}</span>）
@@ -253,7 +253,7 @@
     </h4>
   </div>
 
-  <!--BEGIN modal body--> 
+  <!--BEGIN modal body-->
   <div class="modal-body">
 
     <div class="table-responsive">
@@ -263,12 +263,12 @@
 	  <tr>
 	    <th></th>
 	    <th>名称</th>
-	    <th>方案</th> 
+	    <th>方案</th>
 	    <th>折扣</th>
 	    <th>消费金额</th>
 	    <th>减免金额</th>
 	    <th>开始日期</th>
-	    <th>结束日期</th> 
+	    <th>结束日期</th>
 	  </tr>
 	</thead>
 	<tbody>
@@ -281,7 +281,7 @@
 		<label for={{p.id}}></label>
 	      </div>
 	    </td>
-	    
+
 	    <td class="vert-align">{{p.name}}</td>
 	    <td class="vert-align">
 	      <div x-ng-switch on="p.rule_id">
@@ -301,30 +301,30 @@
 		<span x-ng-switch-default>不涉及</span>
 	      </div>
 	    </td>
-	    
+
 	    <td class="vert-align">
 	      <div x-ng-switch on="p.rule_id">
 		<span x-ng-switch-when=1>{{p.rmoney}}</span>
 		<span x-ng-switch-default>不涉及</span>
 	      </div>
 	    </td>
-	    
+
 	    <td class="vert-align">{{p.sdate}}</td>
 	    <td class="vert-align">{{p.edate}}</td>
-	    
+
 	  </tr>
 	</tbody>
       </table>
-    </div> 
+    </div>
   </div>
-  
+
   <div class="modal-footer">
     <button class="btn btn-primary"
 	    x-ng-disabled="pForm.$invalid
 			   || !params.check_select(params.promotions)"
 	    x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
-  </div>  
+  </div>
 </script>
 
 
@@ -333,7 +333,7 @@
     <button class="close" x-ng-click="cancel()" type="button">
       <span aria-hidden="true">&times;</span>
       <span class="sr-only"></span>
-    </button> 
+    </button>
     <h4 class="modal-title">
       <span class="label label-sm label-primary">
 	充值方案（<span >{{params.shop.name}}</span>）
@@ -341,7 +341,7 @@
     </h4>
   </div>
 
-  <!--BEGIN modal body--> 
+  <!--BEGIN modal body-->
   <div class="modal-body">
 
     <div class="table-responsive">
@@ -354,7 +354,7 @@
 	    <th>充值金额</th>
 	    <th>赠送金额</th>
 	    <th>开始日期</th>
-	    <th>结束日期</th> 
+	    <th>结束日期</th>
 	  </tr>
 	</thead>
 	<tbody>
@@ -368,19 +368,19 @@
 		<label for={{p.id}}></label>
 	      </div>
 	    </td>
-	    
+
 	    <td class="vert-align">{{p.name}}</td>
 	    <td class="vert-align">{{p.charge}}</td>
-	    <td class="vert-align">{{p.balance}}</td> 
+	    <td class="vert-align">{{p.balance}}</td>
 	    <td class="vert-align">{{p.sdate}}</td>
 	    <td class="vert-align">{{p.edate}}</td>
-	    
+
 	  </tr>
 	</tbody>
       </table>
-    </div> 
+    </div>
   </div>
-  
+
   <div class="modal-footer">
     <button class="btn btn-primary"
 	    x-ng-disabled="pForm.$invalid
@@ -395,7 +395,7 @@
     <button class="close" x-ng-click="cancel()" type="button">
       <span aria-hidden="true">&times;</span>
       <span class="sr-only"></span>
-    </button> 
+    </button>
     <h4 class="modal-title">
       <span class="label label-sm label-primary">
 	默认积分方案设置（<span >{{params.shop.name}}</span>）
@@ -403,7 +403,7 @@
     </h4>
   </div>
 
-  <!--BEGIN modal body--> 
+  <!--BEGIN modal body-->
   <div class="modal-body">
 
     <div class="table-responsive">
@@ -430,19 +430,19 @@
 		<label for={{s.id}}></label>
 	      </div>
 	    </td>
-	    
+
 	    <td class="vert-align">{{s.name}}</td>
 	    <td class="vert-align">{{s.balance}}</td>
-	    <td class="vert-align">{{s.score}}</td> 
+	    <td class="vert-align">{{s.score}}</td>
 	    <td class="vert-align">{{s.sdate}}</td>
 	    <td class="vert-align">{{s.edate}}</td>
-	    
+
 	  </tr>
 	</tbody>
       </table>
-    </div> 
+    </div>
   </div>
-  
+
   <div class="modal-footer">
     <button class="btn btn-primary"
 	    x-ng-disabled="pForm.$invalid
@@ -451,11 +451,3 @@
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>
 </script>
-
-
-
-
-
-
-
-
