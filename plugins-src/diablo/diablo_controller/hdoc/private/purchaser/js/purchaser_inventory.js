@@ -82,8 +82,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 
 	$scope.select.surplus = 0;
 	$scope.left_balance   = 0;
-	if (angular.isDefined($scope.select.firm)
-	    && $scope.select.firm && $scope.select.firm !== -1){
+	if (-1 !== stockUtils.invalid_firm($scope.select.firm)){
 	    $scope.select.surplus = $scope.select.firm.balance;
 	    $scope.select.left_balance = $scope.select.surplus;
 	} else {
@@ -123,7 +122,11 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 
 	$scope.select.total   = 0;
 	$scope.select.comment = undefined;
-	$scope.select.left_balance = $scope.select.firm.balance;
+
+	$scope.select.left_balance = undefined;
+	if (-1 !== stockUtils.invalid_firm($scope.select.firm)){
+	    $scope.select.left_balance = $scope.select.firm.balance;
+	}
 
 	$scope.disable_refresh = true;
 	$scope.has_saved = false;
@@ -155,6 +158,10 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     // }
 
     $scope.prompt_limit = stockUtils.prompt_limit($scope.select.shop.id, base);
+
+    $scope.base_settings = {
+	m_sgroup:stockUtils.multi_sizegroup($scope.select.shop.id, base)
+    };
     
     // calender
     $scope.open_calendar = function(event){
@@ -277,19 +284,9 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
      * match
      */
     $scope.match_prompt_good = function(viewValue){
-	if (angular.isUndefined($scope.select.firm)){
-	    diabloUtilsService.response_with_callback(
-		false,
-		"新增库存",
-		"新增库存失败：" + purchaserService.error[2095],
-		$scope,
-		function(){
-		    $scope.inventories[0] = {$edit:false, $new:true}});
-	    return;
-	} else {
-	    return diabloFilter.match_wgood_with_firm(
-		viewValue, $scope.select.firm.id); 
-	} 
+	return diabloFilter.match_wgood_with_firm(
+	    viewValue,
+	    stockUtils.match_firm($scope.select.firm)); 
     };
 
     $scope.q_prompt = $scope.q_typeahead($scope.select.shop.id, base); 
@@ -299,18 +296,10 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     };
 
     $scope.get_all_w_good = function(){
-	var select_firm = function(){
-	    if (angular.isDefined($scope.select.firm) && $scope.select.firm){
-		return [$scope.select.firm.id, -1];
-	    } else {
-		return -1;
-	    }
-	}();
-	
 	// console.log(select_firm);
 	diabloFilter.match_all_w_good(
 	    $scope.qtime_start($scope.select.shop.id),
-	    select_firm
+	    stockUtils.match_firm($scope.select.firm)
 	).then(function(goods){
 	    $scope.all_w_goods = goods.map(function(g){
 		var p = stockUtils.prompt_name(g.style_number, g.brand, g.type);
@@ -360,7 +349,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     };
     
     $scope.on_select_good = function(item, model, label){
-	// console.log(item); 
+	console.log(item);
+	console.log($scope.inventories); 
 	// has been added
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    if (item.style_number === $scope.inventories[i].style_number
@@ -374,12 +364,11 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		return;
 	    }
 	    
-	    if ($scope.inventories[i].firm_id === -1) {
+	    if (item.firm_id === -1 || $scope.inventories[i].firm_id === -1) {
 		continue;
 	    }
 	    
-	    if (item.firm_id !== -1
-		&& item.firm_id !== $scope.inventories[i].firm_id){
+	    if (item.firm_id !== $scope.inventories[i].firm_id){
 		diabloUtilsService.response_with_callback(
 		    false,
 		    "新增库存",
@@ -396,9 +385,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 
 	// console.log($scope.select.firm);
 
-	if (angular.isUndefined($scope.select.firm)
-	    || !$scope.select.firm
-	    || $scope.select.firm.id === -1){
+	if (-1 !== item.firm_id){
 	    $scope.select.firm = diablo_get_object(item.firm_id, $scope.firms);
 	}
 
@@ -430,9 +417,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    || angular.isDefined($scope.select.extra_pay) && $scope.select.extra_pay
 	    || $scope.inventories.length !== 1){
 	    return false;
-	}
-
-
+	} 
 	return true;
     };
 
@@ -505,10 +490,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	$scope.has_saved = true;
 	console.log($scope.inventories);
 
-	if (
-	    // angular.isUndefined($scope.select.firm)
-	    // || diablo_is_empty($scope.select.firm)
-	    angular.isUndefined($scope.select.shop)
+	if (angular.isUndefined($scope.select.shop)
 	    || diablo_is_empty($scope.select.shop)
 	    || angular.isUndefined($scope.select.employee)
 	    || diablo_is_empty($scope.select.employee)){
@@ -523,9 +505,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	var added = [];
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    var add = $scope.inventories[i];
-	    if (angular.isDefined($scope.select.firm)
-		&& $scope.select.firm
-		&& add.firm_id !== $scope.select.firm.id){
+	    if (add.firm_id !== -1
+		&& add.firm_id !== stockUtils.invalid_firm($scope.select.firm)){
 		$scope.has_saved = false;
 		diabloUtilsService.response(
 		    false,
@@ -603,8 +584,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		    $scope, function(){
 			// $scope.has_saved = true;
 			// modify current balance of retailer
-			if (angular.isDefined($scope.select.firm)
-			    && $scope.select.firm){
+			if (-1 !== stockUtils.invalid_firm($scope.select.firm)){
 			    $scope.select.firm.balance = $scope.select.left_balance;
 			    $scope.select.surplus = $scope.select.firm.balance;
 			} 
@@ -978,7 +958,10 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	$scope.good.season    = $scope.season2objs[item.season];
 	$scope.good.tag_price = item.tag_price;
 	$scope.good.discount  = item.discount; 
-	$scope.select.firm    = diablo_get_object(item.firm_id, $scope.firms);
+	// if (angular.isDefined(diablo_set_integer(item.firm_id))
+	//     && -1 !== item.firm_id){
+	//     $scope.select.firm  = diablo_get_object(item.firm_id, $scope.firms)
+	// };
 
 	$scope.is_same_good = true;
 	$scope.on_select_good(item, model, label);
@@ -1111,7 +1094,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 
 	var select_group = function(groups, g){
 	    for(var i=0, l=groups.length; i<l; i++){
-		if (groups[i].id !== g.id){
+		if (groups[i].id !== g.id
+		    && diablo_no === $scope.base_settings.m_sgroup){
 		    groups[i].select = false;
 		}
 	    }
@@ -1296,7 +1280,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 			    name:      p.name,
 			    prompt:    p.prompt,
 			    sex:       good.sex,
-			    firm_id:   angular.isDefined(good.firm) ? good.firm : -1,
+			    firm_id:   stockUtils.invalid_firm(good.firm),
 			    year:      good.year,
 			    season:    good.season,
 			    org_price: good.org_price,
@@ -1565,7 +1549,7 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 	    ).then(function(result){
 		console.log(result);
 
-		if ($scope.mode === 1){
+		if ($scope.tab_active.chart && $scope.mode === 1){
 		    var labels  = [];
 		    var totals  = [];
 		    var sells   = [];
@@ -1582,6 +1566,7 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 			$scope.total_items = result.total;
 			$scope.total_amount = result.t_amount;
 			$scope.total_sell   = result.t_sell;
+			$scope.total_lmoney = result.t_lmoney;
 		    }
 		    angular.forEach(result.data, function(d){
 			if (now_date.getTime() - diablo_set_date(d.last_sell)
@@ -1599,10 +1584,13 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 			d.firm  = diablo_get_object(d.firm_id, filterFirm);
 			d.promotion = diablo_get_object(d.pid, filterPromotion);
 			d.score = diablo_get_object(d.sid, filterScore);
+			d.calc  = diablo_float_mul(d.org_price, d.amount);
 			// d.shop  = diablo_get_object(d.shop_id, user.sortShops);
 		    })
 		    diablo_order_page(
-			page, $scope.items_perpage, $scope.inventories); 
+			page, $scope.items_perpage, $scope.inventories);
+
+		    console.log($scope.inventories);
 		}
 	    })
 	});

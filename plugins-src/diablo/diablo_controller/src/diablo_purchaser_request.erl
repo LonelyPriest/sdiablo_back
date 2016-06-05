@@ -901,6 +901,7 @@ mode(0) -> use_id;
 mode(1) -> use_sell;
 mode(2) -> use_discount;
 mode(3) -> use_year;
-mode(4) -> use_season.
+mode(4) -> use_season;
+mode(5) -> use_amount.
 
     

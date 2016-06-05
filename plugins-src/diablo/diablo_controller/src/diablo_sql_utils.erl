@@ -75,6 +75,10 @@ condition(page_desc, {use_year, Sort}, CurrentPage, ItemsPerPage) ->
 condition(page_desc, {use_season, Sort}, CurrentPage, ItemsPerPage) ->
     " order by season " ++ ?MODULE:sort(Sort)
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
+    	++ ", " ++ ?to_s(ItemsPerPage);
+condition(page_desc, {use_amount, Sort}, CurrentPage, ItemsPerPage) ->
+    " order by amount " ++ ?MODULE:sort(Sort)
+	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
     	++ ", " ++ ?to_s(ItemsPerPage).
 
 

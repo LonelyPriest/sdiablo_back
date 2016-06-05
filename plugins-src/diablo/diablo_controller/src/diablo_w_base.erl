@@ -292,6 +292,7 @@ sys_config() ->
 	      {"se_pagination",   "顺序翻页",             "0",  "0"}, 
 	      {"s_customer",      "非VIP客户",            "0",   "0"},
 
-	      {"h_stock_edit",    "采购编辑展示历史记录", "0",   "0"}
+	      {"h_stock_edit",    "采购编辑展示历史记录", "0",   "0"},
+	      {"m_sgroup",        "允许多尺码组",         "0",   "0"}
 	     ],
     Values.

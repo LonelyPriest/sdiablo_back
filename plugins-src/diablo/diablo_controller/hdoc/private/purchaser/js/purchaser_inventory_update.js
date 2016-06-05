@@ -395,7 +395,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
     
     $scope.match_prompt_good = function(viewValue){
 	return diabloFilter.match_wgood_with_firm(
-	    viewValue, $scope.select.firm.id); 
+	    viewValue, stockUtils.match_firm($scope.select.firm)); 
     }; 
     
     $scope.on_select_good = function(item, model, label){
@@ -414,6 +414,10 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 		return;
 	    }
 
+	    if (item.firm_id === -1 || $scope.inventories[i].firm_id === -1) {
+		continue;
+	    }
+	    
 	    if (item.firm_id !== $scope.inventories[i].firm_id){
 		diabloUtilsService.response_with_callback(
 		    false,
@@ -423,6 +427,10 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 			$scope.inventories[0] = {$edit:false, $new:true}});
 		return;
 	    }
+	}
+
+	if (-1 !== item.firm_id){
+	    $scope.select.firm = diablo_get_object(item.firm_id, $scope.firms);
 	}
 
 	// add at first allways 
@@ -554,6 +562,8 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 			    
 			    || stockUtils.to_float(newInv.discount)
 			    !== stockUtils.to_float(oldInv.discount)
+
+			    || newInv.firm_id !== stockUtils.invalid_firm($scope.select.firm)
 			   ){
 			    newInv.operation = 'u';
 			    changedInvs.push(newInv);
@@ -601,9 +611,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	$scope.has_saved = true; 
 	console.log($scope.inventories);
 
-	if (angular.isUndefined($scope.select.firm)
-	    || diablo_is_empty($scope.select.firm)
-	    || angular.isUndefined($scope.select.shop)
+	if (angular.isUndefined($scope.select.shop)
 	    || diablo_is_empty($scope.select.shop)
 	    || angular.isUndefined($scope.select.employee)
 	    || diablo_is_empty($scope.select.employee)){
@@ -626,7 +634,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 		style_number   : add.style_number,
 		brand          : add.brand.id,
 		// firm           : add.firm_id,
-		firm           : $scope.select.firm.id,
+		firm           : stockUtils.invalid_firm($scope.select.firm),
 		type           : add.type.id,
 		sex            : add.sex,
 		year           : add.year, 
@@ -647,25 +655,19 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 		over           : stockUtils.to_integer(add.over)
 	    })
 	};
-
-	var setv = diablo_set_float; 
-	var new_datetime = dateFilter($scope.select.datetime, "yyyy-MM-dd");
-	var old_datetime = dateFilter($scope.old_select.datetime, "yyyy-MM-dd");
 	
 	if (added.length === 0
-	    && ($scope.select.cash === $scope.old_select.cash
-		&& $scope.select.card === $scope.old_select.card
-		&& $scope.select.wire === $scope.old_select.wire
-		&& $scope.select.verificate === $scope.old_select.verificate
-		&& (angular.isDefined($scope.old_select.e_pay)
-		    && $scope.select.e_pay === $scope.old_select.epay)
-		&& (angular.isDefined($scope.old_select.firm)
-		    && $scope.old_select.firm
-		    && $scope.old_select.firm.id === $scope.select.firm.id)
-		&& $scope.select.employee.id === $scope.old_select.employee.id
-		&& $scope.select.shop.id === $scope.old_select.shop.id
-		&& $scope.select.comment === $scope.old_select.comment
-		&& new_datetime === old_datetime)){
+	    && (stockUtils.is_same($scope.select.cash, $scope.old_select.cash)
+		&& stockUtils.is_same($scope.select.card, $scope.old_select.card)
+		&& stockUtils.is_same($scope.select.wire, $scope.old_select.wire)
+		&& stockUtils.is_same($scope.select.verificate, $scope.old_select.verificate)
+		&& stockUtils.is_same($scope.select.e_pay, $scope.old_select.e_pay) 
+		&& stockUtils.is_same(stockUtils.invalid_firm($scope.old_select.firm),
+				      stockUtils.invalid_firm($scope.select.firm))
+		&& stockUtils.is_same($scope.select.employee, $scope.old_select.employee)
+		&& stockUtils.is_same($scope.select.shop.id, $scope.old_select.shop.id)
+		&& stockUtils.is_same($scope.select.comment, $scope.old_select.comment)
+		&& stockUtils.is_same($scope.select.datetime, $scope.old_select.datetime))){
 	    diabloUtilsService.response_with_callback(
 	    	false,
 		"采购单编辑",
@@ -674,11 +676,12 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	    return;
 	}
 
+	var setv = diablo_set_float;
 	var base = {
 	    id:             $scope.select.rsn_id,
 	    mode:           diablo_stock_new,
 	    rsn:            $scope.select.rsn,
-	    firm:           $scope.select.firm.id,
+	    firm:           stockUtils.invalid_firm($scope.select.firm),
 	    shop:           $scope.select.shop.id,
 	    datetime:       dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),
 	    employee:       $scope.select.employee.id,
@@ -697,8 +700,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 		return $scope.select.e_pay_type.id; 
 	    }(),
 	    
-	    old_firm:       angular.isDefined($scope.old_select.firm)
-		&& $scope.old_select.firm ? $scope.old_select.firm.id : -1,
+	    old_firm:       stockUtils.invalid_firm($scope.old_select.firm), 
 	    old_balance:    setv($scope.old_select.surplus),
 	    old_verify_pay: setv($scope.old_select.verificate),
 	    old_should_pay: setv($scope.old_select.should_pay),
@@ -790,7 +792,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
     };
     
     $scope.add_inventory = function(inv){
-	// console.log(inv);
+	console.log(inv);
 	// var add = $scope.inventories[0]; 
 
 	var after_add = function(){
@@ -835,6 +837,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 		    "inventory-new.html", undefined, callback, $scope, payload)
 	    } else{
 		inv.colors = inv.colors.map(function(cid){
+		    if (angular.isObject(cid)) return cid;
 		    return diablo_find_color(parseInt(cid), filterColor); 
 		});
 		

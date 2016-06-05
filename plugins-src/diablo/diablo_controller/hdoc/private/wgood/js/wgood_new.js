@@ -1,7 +1,7 @@
 wgoodApp.controller("wgoodNewCtrl", function(
     $scope, $timeout, diabloPattern, diabloUtilsService, diabloFilter,
     wgoodService, filterPromotion, filterFirm, filterBrand,
-    filterType, filterSizeGroup){
+    filterType, filterSizeGroup, base){
     // console.log(filterPromotion);
     $scope.promotions = filterPromotion;
     
@@ -18,6 +18,10 @@ wgoodApp.controller("wgoodNewCtrl", function(
 
     var dialog     = diabloUtilsService;
     var set_float  = diablo_set_float;
+
+    $scope.base_settings = {
+	m_sgroup:stockUtils.multi_sizegroup(-1, base)
+    };
 
     // $scope.colors = [{type:"红色", tid:1
     // 		  colors:[{name:"深红", id:1},
@@ -385,7 +389,8 @@ wgoodApp.controller("wgoodNewCtrl", function(
 
 	var select_group = function(groups, g){
 	    for(var i=0, l=groups.length; i<l; i++){
-		if (groups[i].id !== g.id){
+		if (groups[i].id !== g.id
+		    && diablo_no === $scope.base_settings.m_sgroup){
 		    groups[i].select = false;
 		}
 	    }
@@ -771,6 +776,10 @@ wgoodApp.controller("wgoodDetailCtrl", function(
 
     $scope.add_good = function(){
 	diablo_goto_page("#/good/wgood_new");
+    };
+
+    $scope.add_inventory = function(){
+	diablo_goto_page("#/inventory_new");
     };
     
 });

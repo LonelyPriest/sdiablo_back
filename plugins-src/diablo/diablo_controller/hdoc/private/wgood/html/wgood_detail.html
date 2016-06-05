@@ -10,14 +10,18 @@
 
 	<div class="actions">
 	  <div class="btn-group btn-group-solid">
-	    <button type="button"
-		    class="btn btn-success purple-stripe hidden-xs"
+	    <a type="button" class="btn green-meadow purple-stripe"
+	       x-ng-click="add_inventory()">入库
+	      <i class="glyphicon glyphicon-plus"></i></a>
+	    
+	    <a type="button"
+		    class="btn btn-success purple-stripe"
 	  	    x-ng-click="add_good()">新增
-	      <i class="glyphicon glyphicon-plus"></i></button>
+	      <i class="glyphicon glyphicon-plus"></i></a>
 
-	    <button type="button" class="btn blue reload purple-stripe"
+	    <a type="button" class="btn blue reload purple-stripe"
 		    x-ng-click="do_search(default_page)">刷新
-	      <i class="icon icon-spinner fg-white"></i></button> 
+	      <i class="icon icon-spinner fg-white"></i></a> 
 	  </div>
 	</div>
 	

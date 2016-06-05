@@ -22,6 +22,14 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
     
     $scope.colors     = [];
 
+    $scope.stock_right = {
+	show_orgprice: rightAuthen.authen(
+	    user.type,
+	    rightAuthen.rainbow_action()['show_orgprice'],
+	    user.right
+	)
+    };
+
     // [{type:"红色", tid:1
     // 	    colors:[{name:"深红", id:1},
     // 		    {name:"粉红", id:2}]},
@@ -85,14 +93,15 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 
 	// get selected color
 	$scope.selectColors = []; 
-	$scope.good.color_desc="";
-	
+	// $scope.good.color_desc=""; 
+	var descs = []; 
 	angular.forEach($scope.colors, function(colorInfo){
 	    angular.forEach(colorInfo.colors, function(color){
 		var selectColorIds = $scope.good.color.split(",");
 		for(var i=0, l=selectColorIds.length; i<l; i++){
 		    if (color.id === parseInt(selectColorIds[i])){
-			$scope.good.color_desc += color.name + "；";
+			// $scope.good.color_desc += color.name + "；";
+			descs.push(color.name);
 			color.select = true;
 			color.disabled = true;
 			$scope.selectColors.push(angular.copy(color));
@@ -102,9 +111,11 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	});
 
 	if ($scope.selectColors.length === 0){
-	    $scope.good.color_desc = "均色";
-	} 
-
+	    descs.push("均色");
+	}
+	
+	$scope.good.color_desc = descs.toString();
+	$scope.src_good.color_desc = descs.toString();
 	// console.log($scope.selectColors);
 	// console.log($scope.good);
     });
@@ -225,20 +236,24 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	var callback = function(params){
 	    console.log(params.colors);
 	    
-	    // $scope.selectColors = []; 
+	    $scope.selectColors = []; 
 	    // $scope.good.color_desc="";
+	    var descs = [];
 	    angular.forEach(params.colors, function(colorInfo){
 		angular.forEach(colorInfo.colors, function(color){
 		    if(angular.isDefined(color.select)
 		       && color.select
 		       && !color.disabled){
-			$scope.good.color_desc += color.name + "；";
+			descs.push(color.name);
 			$scope.selectColors.push(angular.copy(color));
 		    }
 		})
-	    }); 
-	    console.log($scope.selectColors);
-
+	    });
+	    
+	    $scope.good.color_desc = $scope.src_good.color_desc;
+	    if (descs.length !== 0) $scope.good.color_desc += "," + descs.toString();
+	    
+	    console.log($scope.selectColors); 
 	    // save select info
 	    $scope.colors = params.colors; 
 	}; 
@@ -277,7 +292,9 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	update_good.brand  = typeof(good.barnd) === "object" ? good.brand.name: good.brand;
 	update_good.type  = typeof(good.type) === "object" ? good.type.name: good.type;
 
-	update_good.firm_id   = good.firm.id;
+	update_good.firm_id   = function() {
+	    return angular.isDefined(good.firm) && good.firm.id ? good.firm.id : -1;
+	}();
 	update_good.sex       = good.sex.id;
 	update_good.year      = good.year;
 	update_good.season    = good.season.id;
@@ -286,14 +303,15 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	update_good.ediscount = parseInt(good.ediscount);
 	update_good.discount  = parseInt(good.discount);
 	update_good.color     = function(){
-	    if (angular.isDefined($scope.selectColors)
-		&& $scope.selectColors.length > 0){
-		var colors = "";
-		for (var i=0, l=$scope.selectColors.length - 1; i<l; i++){
-		    colors += $scope.selectColors[i].id.toString() + ",";
-		} 
-		colors += $scope.selectColors[l].id.toString();
-		return colors;
+	    if (angular.isDefined($scope.selectColors) && $scope.selectColors.length > 0){
+		var colors = $scope.src_good.color.split(",").map(function(cid){return parseInt(cid)});
+
+		for (var i=0, l=$scope.selectColors.length; i<l; i++)
+		    if (!in_array(colors, $scope.selectColors[i])){
+			colors.push($scope.selectColors[i].id); 
+		    }
+		
+		return colors.toString();
 	    } else{
 		return wgoodService.free_color.toString();;
 	    }

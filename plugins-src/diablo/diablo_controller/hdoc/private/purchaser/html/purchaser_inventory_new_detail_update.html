@@ -29,7 +29,7 @@
 	<div class="table-toolbar">
 	  
 	  <div class="row diablo-form-group">
-	    <div class="col-xs-3 col-md-3">
+	    <div x-ng-if="stock_right.show_orgprice" class="col-xs-3 col-md-3">
 	      <div class="input-group">
 		<!-- <span class="input-group-addon"> -->
 		<!--   <i class="glyphicon glyphicon-bold fg-red"></i>厂商 -->
@@ -41,7 +41,7 @@
 	  	       typeahead-editable="false"
 		       typeahead-on-select="change_firm()"
 	  	       typeahead="f as f.name for f in
-	  			  firms|filter:$viewValue|limitTo:15"/>
+	  			  firms|filter:$viewValue|limitTo:15"/> 
 		
 		<span class="input-group-btn">
 		  <button class="btn default fg-red"
@@ -50,6 +50,21 @@
 		    <i class="glyphicon glyphicon-pushpin"></i>
 		  </button>
 	  	</span>
+	      </div>
+	    </div>
+
+	    <div x-ng-if="!stock_right.show_orgprice" class="col-xs-3 col-md-3">
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-bold fg-red"></i>厂商
+		</span>
+	  	<input class="form-control"
+		       type="text"
+		       readonly
+	  	       x-ng-model="select.firm" 
+	  	       placeholder="厂商自动选择"
+		       typeahead="f as f.name for f in
+	  			  firms|filter:$viewValue|limitTo:15"/> 
 	      </div>
 	    </div>
 

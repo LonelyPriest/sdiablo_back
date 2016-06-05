@@ -249,8 +249,11 @@ good_match(style_number_with_firm, Merchant, StyleNumber, Firm) ->
 	", c.name as type"
 	" from w_inventory_good a, brands b, inv_types c"
 	" where a.merchant=" ++ ?to_s(Merchant)
-	++ " and a.firm=" ++ ?to_s(Firm)
-	++ " and a.deleted=" ++ ?to_s(?NO)
+	++ case Firm of
+	       [] -> [];
+	       -1 -> [];
+	       _ -> ?sql_utils:condition(proplists, {<<"a.firm">>, Firm})
+	   end 
 	++ " and a.brand=b.id"
 	++ " and a.type=c.id" 
 	++ " and a.style_number like \'" ++ ?to_s(StyleNumber) ++ "%\'"
@@ -276,7 +279,7 @@ good_match(all_style_number_with_firm, Merchant, StartTime, Firm) ->
 	       _ -> ?sql_utils:condition(proplists, {<<"a.firm">>, Firm})
 	   end
 	++ " and a.entry_date>=\'" ++ ?to_s(StartTime) ++ "\'"
-	++ " and a.deleted=" ++ ?to_s(?NO)
+    %% ++ " and a.deleted=" ++ ?to_s(?NO)
 	++ " and a.brand=b.id"
 	" and a.type=c.id"
 	" order by id desc".
@@ -981,7 +984,16 @@ decompose_size(Sizes) ->
     decompose_size(Sizes, [], []).
 
 decompose_size([], GIds, GNames) ->
-    {lists:sort(GIds), GNames};
+    %%  {lists:sort(GIds), GNames};
+    {lists:sort(GIds),
+     lists:foldr(
+       fun(G, Acc)->
+               case lists:member(G, Acc) of
+                   true -> Acc;
+                   false -> [G|Acc]
+               end
+       end, [], GNames)};
+
 decompose_size([{struct, SizeGroup}|T], GIds, GNames) ->
 
     decompose_size(

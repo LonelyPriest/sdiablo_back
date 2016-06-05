@@ -94,7 +94,6 @@
 		  <input type="text"
 			 class="form-control"
 			 name="firm"
-			 required
 			 placeholder="请输入厂商"
 			 x-ng-model="good.firm"
 			 x-ng-enter=""
@@ -106,7 +105,7 @@
 		      <i class="glyphicon glyphicon-plus"></i>
 		    </button>
 		  </span>
-		  <span class="input-group-addon bg-white fg-red">*</span> 
+		  <!-- <span class="input-group-addon bg-white fg-red">*</span>  -->
 		</div>
 	      </div>	      
 	      <div ng-if="goodForm.firm.$invalid && !goodForm.firm.$pristine">
@@ -230,7 +229,7 @@
 
 	    <!--BEGIN row-->
 	    <!--original price-->
-	    <div class="form-group">
+	    <div x-ng-if="stock_right.show_orgprice" class="form-group">
 	      <label class="col-sm-3 col-md-3 control-label">进货价</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
@@ -255,7 +254,7 @@
 	      </div>
 	    </div>
 
-	    <div class="form-group">
+	    <div x-ng-if="stock_right.show_orgprice" class="form-group">
 	      <label class="col-sm-3 col-md-3 control-label">进货折扣率</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
@@ -314,12 +313,12 @@
 		  <div x-ng-switch on="good.s_group">
 		    <input x-ng-switch-when="0" type="text" readonly
 			   class="form-control"
-			   value="均码">
+			   value="均码"/>
 		    <input x-ng-switch-default type="text" readonly
 			   class="form-control"
-			   x-ng-model="good.size">
+			   x-ng-model="good.size"/>
 		  </div> 
-		  <span class="input-group-addon bg-white fg-red">*</span> 
+		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div>
 	      </div> 
 	    </div>

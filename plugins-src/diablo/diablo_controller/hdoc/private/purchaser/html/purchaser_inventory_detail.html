@@ -22,6 +22,10 @@
 	       x-ng-click="update_batch()">批改
 	      <i class="glyphicon glyphicon-edit"></i></a>
 
+	    <a type="button" class="btn green"
+	       x-ng-click="goto_page('#/inventory_new')">入库
+	      <i class="glyphicon glyphicon-plus"></i></a>
+	    
 	    <a type="button" class="btn red"
 	       x-ng-click="goto_page('#/inventory_reject')">退货
 	      <i class="glyphicon glyphicon-minus"></i></a> 
@@ -112,8 +116,11 @@
 			    class="success">进价</th>
 			<th x-ng-if="stock_right.show_orgprice"
 			    class="info">折扣率</th>
-			<th class="info">数量</th> 
-			<th>已售</th>
+			<th x-ng-click="use_order(order_fields.amount)">数量
+			  <i class="glyphicon glyphicon-triangle-bottom fg-red"></i></th>
+			<th x-ng-if="stock_right.show_orgprice">小计</th> 
+			<th x-ng-click="use_order(order_fields.sell)">已售
+			  <i class="glyphicon glyphicon-triangle-bottom fg-red"></i></th>
 			<th>促销</th>
 			<th>积分</th>
 			<th>店铺</th>
@@ -142,7 +149,10 @@
 			<td x-ng-if="stock_right.show_orgprice" class="css(inv.isAlarm)"> 
 			  {{inv.ediscount}}
 			</td> 
-			<td class="css(inv.isAlarm)">{{inv.amount}}</td> 
+			<td class="css(inv.isAlarm)">{{inv.amount}}</td>
+			<td x-ng-if="stock_right.show_orgprice" class="css(inv.isAlarm)"> 
+			  {{inv.calc}}
+			</td> 
 			<td class="css(inv.isAlarm)">{{inv.sell}}</td>
 
 			<td>
@@ -179,6 +189,7 @@
 			<td x-ng-if="stock_right.show_orgprice" colspan="12"></td>
 			<td x-ng-if="!stock_right.show_orgprice" colspan="10"></td>
 			<td class="danger">{{total_amount}}</td>
+			<td x-ng-if="stock_right.show_orgprice">{{total_lmoney}}</td>
 			<td><span x-ng-bind="total_sell"></span></td>
 			<td colspan="5"></td>
 		      </tr>

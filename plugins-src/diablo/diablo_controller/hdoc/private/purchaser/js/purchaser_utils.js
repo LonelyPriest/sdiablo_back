@@ -26,6 +26,11 @@ var stockUtils = function(){
 		"h_stock_edit", shop, base, parseInt, diablo_no);
 	},
 
+	multi_sizegroup: function(shop, base){
+	    return diablo_base_setting(
+		"m_sgroup", shop, base, parseInt, diablo_no);
+	},
+
 	prompt_name: function(style_number, brand, type) {
 	    var name = style_number + "，" + brand + "，" + type;
 	    var prompt = name + "," + diablo_pinyin(name); 
@@ -120,7 +125,42 @@ var stockUtils = function(){
 	},
 
 	order_fields:function(){
-	    return {id:0, sell:1, discount:2, year:3, season:4};
+	    return {id:0, sell:1, discount:2, year:3, season:4, amount:5};
+	},
+
+	invalid_firm:function(firm) {
+	    if (angular.isDefined(firm)
+		&& angular.isObject(firm)
+		&& angular.isDefined(firm.id))
+		return firm.id
+	    
+	    return -1;
+	},
+
+	match_firm: function(firm){
+	    if (-1 !== stockUtils.invalid_firm(firm)) return [firm.id, -1];
+	    return -1;
+	},
+
+	is_same: function(newValue, oldValue){
+	    if (angular.isNumber(newValue)){
+		return stockUtils.to_float(newValue) === stockUtils.to_float(oldValue) ? true:false;
+	    }
+
+	    else if (angular.isString(newValue)){
+		return newValue === oldValue ? true:false;
+	    }
+	    
+	    else if (angular.isDate(newValue)){
+		return newValue.getTime() === oldValue.getTime() ? true:false;
+	    }
+	    
+	    else if (angular.isObject(newValue)){
+		return newValue.id === oldValue.id ?  true : false; 
+	    }
+	    else {
+		return newValue === oldValue ? true : false; 
+	    }
 	}
 	    
 	//

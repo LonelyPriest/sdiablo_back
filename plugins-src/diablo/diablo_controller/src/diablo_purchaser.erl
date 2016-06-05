@@ -720,7 +720,7 @@ handle_call({match_style_number_with_firm, Merchant, PromptNumber, Firm},
 handle_call({match_all_style_number_with_firm, Merchant, StartTime, Firm},
 	    _Form, State) ->
     ?DEBUG("match_all_style_number_with_firm with merchant ~p, start time ~p"
-	   ",brand ~p", [Merchant, StartTime, Firm]),
+	   ",firm ~p", [Merchant, StartTime, Firm]),
     Sql = ?w_good_sql:good_match(
 	     all_style_number_with_firm, Merchant, StartTime, Firm),
     Reply =  ?sql_utils:execute(read, Sql),
@@ -1554,7 +1554,8 @@ handle_call({filter_goods, Merchant, CurrentPage, ItemsPerPage, Fields}, _From, 
 handle_call({total_groups, Merchant, Fields}, _From, State) ->
     CountSql = "count(*) as total"
 	", sum(amount) as t_amount"
-	", sum(sell) as t_sell",
+	", sum(sell) as t_sell"
+	", sum(amount * org_price) as t_lmoney",
     Sql = ?sql_utils:count_table(
 	     w_inventory, CountSql, Merchant, realy_conditions(Merchant, Fields)), 
     Reply = ?sql_utils:execute(s_read, Sql),
