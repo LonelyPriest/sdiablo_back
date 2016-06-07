@@ -7,6 +7,7 @@ userApp.factory("userService", function($resource, $q){
     var _rights    = [];
     var _loginType = undefined;
     var _loginRetailer = -1;
+    var _loginEmployee = undefined;
     
     var sort = function(){
 	var shops = _shops;
@@ -15,6 +16,7 @@ userApp.factory("userService", function($resource, $q){
 	    type:  _loginType,
 	    shop:  _shops,
 	    loginRetailer: _loginRetailer,
+	    loginEmployee: _loginEmployee,
 
 	    // shops exclude the shop that bind to the repository,
 	    // or repository itself
@@ -143,11 +145,12 @@ userApp.factory("userService", function($resource, $q){
 	    return _user.get(
 		{operation: "get_login_user_info"}
 	    ).$promise.then(function(result){
-		// console.log(result);
+		console.log(result);
 		_shops     = result.shop;
 		_rights    = result.right;
 		_loginType = result.type;
 		_loginRetailer = result.login_retailer;
+		_loginEmployee = result.login_employee;
 		return sort();
     	    });
 	}

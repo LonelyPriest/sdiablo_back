@@ -639,8 +639,8 @@ rightUserApp.controller(
 		promise(rightService.list_account)(),
 		// promise(rightService.list_shop)(),
 		// promise(rightService.list_firm)(),
-		// promise(rightService.list_employee)(),
-		promise(rightService.list_retailer)()
+		promise(rightService.list_retailer)(),
+		promise(rightService.list_employee)() 
 	    ]).then(function(data){
 		console.log(data);
 		// $scope.shops = data[1].map(function(shop){
@@ -659,14 +659,14 @@ rightUserApp.controller(
                 //     };
 		// });
 
-		// $scope.employees = data[3].map(function(e){
-                //     return {
-		// 	id:   e.id,
-		// 	name: e.name,
-		// 	py:   diablo_pinyin(e.name)
-                //     };
-		// });
-
+		$scope.employees = [{id: "-1", name:"== 请选择登录员工，默认由系统选择 =="}]
+		    .concat(data[2].map(function(e){
+			return {
+			    id:   e.number,
+			    name: e.name
+			};
+		    }));
+		
 		$scope.retailers = data[1].map(function(r){
                     return {
 			id: r.id,
@@ -686,8 +686,8 @@ rightUserApp.controller(
 			// shop:        diablo_get_object(account.shop_id, $scope.shops),
 			// firm_id:     account.firm_id,
 			// firm:        diablo_get_object(account.firm_id, $scope.firms),
-			// employee_id: account.employee_id,
-			// employee:    diablo_get_object(account.employee_id, $scope.employees),
+			employee_id: account.employee_id,
+			employee:    diablo_get_object(account.employee_id, $scope.employees), 
 		        retailer_id: account.retailer_id,
 			retailer:    diablo_get_object(account.retailer_id, $scope.retailers),
 			stime:       account.stime,
@@ -790,13 +790,13 @@ rightUserApp.controller(
 		var callback = function(new_account){
 		    console.log(new_account);
 		    
-		    new_account.retailer_id =
-			angular.isDefined(new_account.retailer)
-			&&  new_account.retailer ? new_account.retailer.id : -1;
+		    new_account.retailer_id = rightService.get_object_id(new_account.retailer);
+		    new_account.employee_id = rightService.get_object_id(new_account.employee); 
 
 		    if (new_account.type === 2 ){
 			if (new_account.role.id === current_role.role_id 
-                            && new_account.retailer_id === account.retailer_id 
+                            && new_account.retailer_id === account.retailer_id
+			    && new_account.employee_id === account.employee_id
                             && new_account.stime  === account.stime
                             && new_account.etime === account.etime){
                             diabloUtilsService.response(
@@ -805,7 +805,8 @@ rightUserApp.controller(
                             return;
 			}
 		    } else {
-			if (new_account.retailer_id === account.retailer_id){
+			if (new_account.retailer_id === account.retailer_id
+			    && new_account.employee_id === account.employee_id){
                             diabloUtilsService.response(
 				false, "用户帐户修改",
 				"用户帐户修改失败：" + rightService.error[1599]);
@@ -815,25 +816,24 @@ rightUserApp.controller(
 		    
 		    var update = {
 			id: account.id,
-			stime: new_account.stime === account.stime
-                            ? undefined : new_account.stime,
-			etime: new_account.etime === account.etime
-                            ? undefined : new_account.etime
+			stime: rightService.get_modified(new_account.stime, account.stime),
+			etime: rightService.get_modified(new_account.etime, account.etime) 
 		    };
 
 		    update.role_id = function(){
-			if (new_account.type !== 2){
-                            return undefined;
-			} else {
-                            return new_account.role.id !== current_role.role_id
-				? new_account.role.id : undefined;
+			if (new_account.type !== 2) return undefined;
+			else {
+			    return rightService.get_modified(
+				new_account.role.id, current_role.role_id); 
 			}
                     }();
 
 		    update.retailer_id =
-			new_account.retailer_id !== account.retailer_id
-			? new_account.retailer_id : undefined;
-
+			rightService.get_modified(new_account.retailer_id, account.retailer_id); 
+		    
+		    update.employee_id =
+			rightService.get_modified(new_account.employee_id, account.employee_id); 
+		    
                     console.log(update);
 
 		    rightService.update_user_account(update).$promise.then(function(state){
@@ -859,15 +859,16 @@ rightUserApp.controller(
 		    templateUrl: 'account_user_edit.html',
 		    controller: 'accountUserModalCtrl',
 		    backdrop: 'static',
-		    scope: $scope,
+		    // scope: $scope,
 		    resolve:{
 			params: function(){
 			    return {
-				account: editAccount,
-				roles:   roles,
-				hours:   rightService.hours,
-				desc:    $scope.accountDesc,
-				callback: callback
+				account:   editAccount,
+				roles:     roles,
+				hours:     rightService.hours,
+				employees: $scope.employees,
+				desc:      $scope.accountDesc,
+				callback:  callback
 			    }
 			}
 		    }
@@ -880,10 +881,14 @@ rightUserApp.controller(
 rightUserApp.controller("accountUserModalCtrl", function($scope, $modalInstance, params){
     // console.log($scope);
     console.log(params);
-    $scope.account = params.account;
-    $scope.roles   = params.roles;
-    $scope.hours   = params.hours;
-    $scope.desc    = params.desc;
+    $scope.account   = params.account;
+    $scope.roles     = params.roles;
+    $scope.hours     = params.hours;
+    $scope.desc      = params.desc;
+    $scope.employees = params.employees;
+    $scope.account.employee = diablo_get_object($scope.account.employee_id, $scope.employees);
+
+    console.log($scope);
 
     $scope.cancel = function(){
 	$modalInstance.dismiss('cancel');

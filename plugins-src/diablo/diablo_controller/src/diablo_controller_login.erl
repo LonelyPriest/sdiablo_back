@@ -64,6 +64,7 @@ handle_call({login, User, Passwd}, _From, State) ->
 		_ ->
 		    Sql1 = "select a.id, a.name, a.type, a.merchant"
 			", a.retailer as retailer_id"
+			", a.employee as employee_id"
                         ", a.stime, a.etime"
 			
 			", b.type as mtype from users a, merchants b"
@@ -72,10 +73,10 @@ handle_call({login, User, Passwd}, _From, State) ->
 			++ " and a.name=" ++ "\"" ++ ?to_s(User) ++ "\""
 			++ " and a.password=" ++ "\"" ++ ?to_s(Passwd) ++ "\""
 			++ " and a.deleted=" ++ ?to_string(?NO),
-		    case ?mysql:fetch(read, Sql1) of
+		    case ?sql_utils:execute(s_read, Sql1) of
 			{ok, []} ->
 			    {reply, {error, ?err(login_error, none)}, State};
-			{ok, {User1}} ->
+			{ok, User1} ->
 			    {reply, {ok, User1}, State}
 		    end
 	    end;

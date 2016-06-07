@@ -129,37 +129,37 @@
 		<tbody>
 		  <tr x-ng-repeat="r in records track by r.id">
 		    <td>{{r.order_id}}</td>
-		    <td>{{r.rsn}}</td>
-		    <td x-ng-switch on="r.type">
+		    <td class="{{css(r.state, r.type)}}">{{r.rsn}}</td>
+		    <td class="{{css(r.state, r.type)}}" x-ng-switch on="r.type">
 		      <span x-ng-switch-when=0>开单</span>
 		      <span class="fg-red" x-ng-switch-when=1>退货</span>
 		      <span class="fg-blue" x-ng-switch-when=2>充值</span>
 		    </td>
-		    <td>{{r.shop.name}}</td>
-		    <td>{{r.retailer.name}}</td>
-		    <td x-ng-if="show.base">{{r.balance}}</td>
-		    <td x-ng-if="show.base">{{r.left_balance}}</td>
+		    <td class="{{css(r.state, r.type)}}">{{r.shop.name}}</td>
+		    <td class="{{css(r.state, r.type)}}">{{r.retailer.name}}</td>
+		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.base">{{r.balance}}</td>
+		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.base">{{r.left_balance}}</td>
 		    
-		    <td >{{r.employee.name}}</td>
+		    <td class="{{css(r.state, r.type)}}">{{r.employee.name}}</td>
 
-		    <td>{{r.total}}</td> 
+		    <td class="{{css(r.state, r.type)}}">{{r.total}}</td> 
 		    
-		    <td x-ng-switch on="r.type"> 
+		    <td class="{{css(r.state, r.type)}}" x-ng-switch on="r.type"> 
 		      <span class="fg-red" x-ng-switch-when=1>{{r.should_pay + r.verificate}}</span>
 		      <span x-ng-switch-default>{{r.should_pay + r.verificate}}</span>
 		    </td>
 
-		    <td x-ng-switch on="r.type"> 
+		    <td class="{{css(r.state, r.type)}}" x-ng-switch on="r.type"> 
 		      <span class="fg-red" x-ng-switch-when=1>{{r.should_pay}}</span>
 		      <span x-ng-switch-default>{{r.should_pay}}</span>
 		    </td> 
 
-		    <td>{{r.score}}</td>
+		    <td class="{{css(r.state, r.type)}}">{{r.score}}</td>
 		    
-		    <td x-ng-if="show.balance">{{r.cash}}</td>
-		    <td x-ng-if="show.balance">{{r.card}}</td>
-		    <td x-ng-if="show.balance">{{r.withdraw}}</td>
-		    <td x-ng-if="show.balance">{{r.verificate}}</td>
+		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.cash}}</td>
+		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.card}}</td>
+		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.withdraw}}</td>
+		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.verificate}}</td>
 
 		    <!-- <td x-ng-if="show.balance"> -->
 		    <!--   <span x-ng-if="r.cbalance !== 0" class="fg-blue"> -->
@@ -172,12 +172,12 @@
 		    <!--   <span x-ng-if="r.sbalance === 0">{{r.sbalance}}</span> -->
 		    <!-- </td> -->
 
-		    <td>
+		    <td class="{{css(r.state, r.type)}}">
 		      <span x-ng-if="r.comment">{{r.comment}}</span>
 		      <span x-ng-if="!r.comment"></span> 
 		    </td>
 		    
-		    <td>{{r.entry_date}}</td>
+		    <td class="{{css(r.state, r.type)}}">{{r.entry_date}}</td>
 
 		    <!-- <td x-ng-if="show.action"> -->
 		    <td> 
@@ -202,12 +202,17 @@
 			      class="btn diablo-button btn-danger"
 			      x-ng-disabled="r.state===1"
 		      	      x-ng-click="check_detail(r)">审核
-			<i class="glyphicon glyphicon-check"></i></button> 
+			<i class="glyphicon glyphicon-check"></i></button>
+		      <button x-ng-if="shop_right.check_w_sale"
+			      class="btn diablo-button purple-plum"
+			      x-ng-disabled="r.state===0"
+		      	      x-ng-click="uncheck_detail(r)">反核
+			<i class="glyphicon glyphicon-ban-circle"></i></button> 
 		    </td> 
 		  </tr>
 
 		  <!--Total info-->
-		  <tr x-ng-if="total_items!==0" class="info"> 
+		  <tr x-ng-if="total_items!==0" class="bg-white"> 
 		    <td x-ng-if="show.base" colspan="8"></td>
 		    <td x-ng-if="!show.base" colspan="6"></td>
 		    
@@ -228,7 +233,7 @@
 	      </table> <!--END table-->
 	      
 	    </div> <!--END table-responsive-->
-	  </div> <!--END panel-->
+	  </div> <!--END panel--> 
 	</div> <!--END portlet body-->
 
 	<div x-ng-show="total_items>items_perpage" class="row">
@@ -265,6 +270,10 @@
 	
       </div> <!--END table container-->
       
+    </div>
+    <div class="col-md-12">
+    <div>
+      <span class="bg-lightOlive">浅绿色表示已审核</span> 
     </div>
   </div>
 </div>

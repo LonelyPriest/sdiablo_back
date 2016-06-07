@@ -47,7 +47,7 @@ angular.module("diabloPattern", []).service("diabloPattern", [function(){
 
     this.ch_en_num_beside_underline_bars = /^[\u4e00-\u9fa5A-Za-z0-9\-_]{4,20}$/;
 
-    this.style_number = /^[A-Za-z0-9-]{2,10}$/;
+    this.style_number = /^[A-Za-z0-9-#]{2,20}$/;
 
     // this.passwd = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])[a-zA-Z0-9]{6,15}/;
     this.passwd = /^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]{6,15}/;

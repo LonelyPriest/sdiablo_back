@@ -179,7 +179,12 @@ wsaleApp.service("wsaleService", function($http, $resource, dateFilter){
 
     this.check_w_sale_new = function(rsn){
 	return http.save({operation: "check_w_sale"},
-			 {rsn: rsn}).$promise;
+			 {rsn: rsn, mode:diablo_check}).$promise;
+    };
+
+    this.uncheck_w_sale_new = function(rsn){
+	return http.save({operation: "check_w_sale"},
+			 {rsn: rsn, mode:diablo_uncheck}).$promise;
     };
 
     this.new_w_sale_draft = function(inventory){
@@ -404,8 +409,14 @@ wsaleApp.controller("wsaleNewCtrl", function(
     
     // employees
     $scope.employees = filterEmployee;
+    
+    
     if ($scope.employees.length !== 0){
 	$scope.select.employee = $scope.employees[0];
+
+	if (diablo_invalid_employee !== user.loginEmployee){
+	    $scope.select.employee = diablo_get_object(user.loginEmployee, $scope.employees); 
+        }
     } 
 
     // retailer;
@@ -1631,8 +1642,9 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
     $scope.f_sub     = diablo_float_sub;
     $scope.f_mul     = diablo_float_mul;
     $scope.round     = diablo_round;
-    $scope.total_items = 0;
+    $scope.css       = diablo_stock_css;
     
+    $scope.total_items   = 0; 
     $scope.disable_print = false;
     // $scope.allowed_slide = true;
 
@@ -1937,29 +1949,41 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 
     $scope.check_detail = function(r){
 	// console.log(r);
-	var callback = function(){
-	    wsaleService.check_w_sale_new(r.rsn).then(function(state){
-		console.log(state);
-		if (state.ecode == 0){
-		    dialog.response_with_callback(
-			true,
-			"销售单审核",
-			"销售单审核成功！！单号：" + state.rsn,
-			$scope, function(){r.state = 1})
-	    	    return;
-		} else{
-	    	    dialog.response(
-	    		false,
-			"销售单审核",
-	    		"销售单审核失败：" + wsaleService.error[state.ecode]);
-		}
-	    })
-	};
-
-	diabloUtilsService.request(
-	    "销售单审核", "审核完成后，销售单将无法修改，确定要审核吗？",
-	    callback, undefined, $scope);
+	wsaleService.check_w_sale_new(r.rsn).then(function(state){
+	    console.log(state);
+	    if (state.ecode == 0){
+		dialog.response_with_callback(
+		    true,
+		    "销售单审核",
+		    "销售单审核成功！！单号：" + state.rsn,
+		    $scope, function(){r.state = 1})
+	    	return;
+	    } else{
+	    	dialog.response(
+	    	    false,
+		    "销售单审核",
+	    	    "销售单审核失败：" + wsaleService.error[state.ecode]);
+	    }
+	})
     };
+
+    $scope.uncheck_detail = function(r){
+	// console.log(r);
+	wsaleService.uncheck_w_sale_new(r.rsn, diablo_uncheck).then(function(state){
+	    console.log(state);
+	    if (state.ecode == 0){
+		dialog.response_with_callback(
+		    true, "销售单反审", "销售单反审成功！！单号：" + state.rsn,
+		    $scope, function(){r.state = 0})
+	    	return;
+	    } else{
+	    	diabloUtilsService.response(
+	    	    false, "销售单反审",
+	    	    "销售反审失败：" + wsaleService.error[state.ecode]);
+	    }
+	})
+    };
+    
 
     $scope.export_to = function(){
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){

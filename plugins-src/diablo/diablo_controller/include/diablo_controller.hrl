@@ -370,10 +370,11 @@
 -record(session, {
 	  id          = <<>>       :: binary(),
 	  user_id     = -1         :: integer(), 
-	  user_name   = ""         :: string(),  
+	  user_name   = <<>>       :: binary(),  
 	  user_type   = -1         :: integer(),
 	  merchant    = -1         :: integer(),
 	  retailer_id = -1         :: integer(),
+	  employee_id = <<>>       :: binary(),
 	  mtype       = -1         :: integer(),
 	  login_time  = undefined  :: string()   
 	 }).

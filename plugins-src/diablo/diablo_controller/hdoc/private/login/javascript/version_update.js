@@ -1,6 +1,14 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2016-06-07",
+	 content: [
+	     "增加员工与店铺对应关系",
+	     "增加通过折扣过滤库存",
+	     "交易记录增加反审能力"
+	 ]
+	},
+	
 	{date: "2016-06-04",
 	 content: [
 	     "增加交班打印",

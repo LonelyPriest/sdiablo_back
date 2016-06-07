@@ -145,11 +145,17 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     
     $scope.select = {
 	shop: $scope.shops.length !== 0 ? $scope.shops[0]:undefined,
-	employee:$scope.employees.length !== 0 ? $scope.employees[0]:undefined,
 	total: 0,
 	has_pay: 0,
 	should_pay: 0,
 	extra_pay_type: $scope.extra_pay_types[0]};
+
+    if ($scope.employees.length !== 0){
+	$scope.select.employee = $scope.employees[0]; 
+	if (diablo_invalid_employee !== user.loginEmployee){
+	    $scope.select.employee = diablo_get_object(user.loginEmployee, $scope.employees); 
+        }
+    } 
 
     // if ($scope.firms.length !== 0){
     // 	$scope.select.firm = $scope.firms[0]; 
@@ -1444,6 +1450,7 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
     diabloFilter.add_field("brand", filterBrand);
     diabloFilter.add_field("type", filterType);
     diabloFilter.add_field("year", diablo_full_year);
+    diabloFilter.add_field("discount", []);
     diabloFilter.add_field("shop", $scope.shops);
     diabloFilter.add_field("firm", filterFirm);
 
@@ -1454,25 +1461,7 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
     var storage = localStorageService.get(diablo_key_inventory_detail);
     console.log(storage);
     
-    if (angular.isDefined(storage) && storage !== null){
-    	$scope.filters       = storage.filter;
-    	$scope.qtime_start   = storage.start_time;
-    } else{
-	$scope.filters = [];
-	
-	$scope.qtime_start = function(){
-	    var shop = -1
-	    if ($scope.shopIds.length === 1){
-		shop = $scope.shopIds[0];
-	    };
-	    return diablo_base_setting(
-		"qtime_start", shop, base, diablo_set_date,
-		diabloFilter.default_start_time(now));
-	}();
-    };
-
-    $scope.time = diabloFilter.default_time($scope.qtime_start);
-
+    
     // alarm, use default shop
     $scope.setting.alarm = diablo_base_setting(
 	"stock_alarm", -1, base, parseInt, diablo_no); 
@@ -1486,6 +1475,26 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
     
     // default the first page
     $scope.default_page = 1;
+
+    if (angular.isDefined(storage) && storage !== null){
+    	$scope.filters       = storage.filter;
+	// $scope.current_page  = storage.page; 
+    	$scope.qtime_start   = storage.start_time;
+    } else{
+	$scope.filters = [];
+	// $scope.current_page  = $scope.default_page;
+	$scope.qtime_start = function(){
+	    var shop = -1
+	    if ($scope.shopIds.length === 1){
+		shop = $scope.shopIds[0];
+	    };
+	    return diablo_base_setting(
+		"qtime_start", shop, base, diablo_set_date,
+		diabloFilter.default_start_time(now));
+	}();
+    };
+
+    $scope.time = diabloFilter.default_time($scope.qtime_start);
     
     $scope.tab_page = {
 	page_of_time: $scope.default_page,

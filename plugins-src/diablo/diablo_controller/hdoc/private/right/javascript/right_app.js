@@ -174,6 +174,23 @@ rightApp.service("rightService", function($resource, $q, $modal, dateFilter){
 	})
     };
 
+    this.get_object_id = function(obj){
+	if (angular.isDefined(obj) && angular.isObject(obj) && angular.isDefined(obj.id))
+	    return obj.id 
+	return -1;
+    };
+
+    this.get_modified = function(newValue, oldValue){
+	if (angular.isNumber(newValue) || angular.isString(newValue)){
+	    return newValue !== oldValue ? newValue : undefined;
+	} 
+	else if (angular.isObject(newValue)){
+	    return newValue.id !== oldValue.id ? newValue.id : undefined; 
+	} else {
+	    return newValue !== oldValue ? newValue : undefined;
+	}
+    };
+
     // =========================================================================
     var right = $resource("/right/:operation/:id",
 			  {operation: '@operation', id: '@id'},
@@ -345,9 +362,10 @@ rightApp.service("rightService", function($resource, $q, $modal, dateFilter){
             {account:  account.id,
              role:     account.role_id, 
              retailer: account.retailer_id,
+	     employee: account.employee_id,
              stime:    account.stime,
              etime:    account.etime,
-             type: this.roleType.user})
+             type:     this.roleType.user})
     };
 
     // /////////////////////////////////////////////////////////////////////////////
@@ -379,7 +397,11 @@ rightApp.service("rightService", function($resource, $q, $modal, dateFilter){
     this.list_retailer = function(){
         return httpRetailer.query({operation: "list_w_retailer"});
     };
-
+    
+    var httpEmploy = $resource("/employ/:operation/:id");
+    this.list_employee = function(){
+        return httpEmploy.query({operation: "list_employe"});
+    }; 
 });
 
 

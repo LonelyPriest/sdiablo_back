@@ -263,6 +263,12 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	    callback, $scope, {colors:$scope.colors});
     };
 
+    $scope.row_change_tag = function(good){
+	good.ediscount = diablo_discount(
+	    stockUtils.to_float(good.org_price),
+	    stockUtils.to_float(good.tag_price));
+    }
+
     $scope.row_change_price = function(good){
 	// inv.org_price = stockUtils.to_float(inv.org_price);
 	good.ediscount = diablo_discount(
@@ -307,7 +313,7 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 		var colors = $scope.src_good.color.split(",").map(function(cid){return parseInt(cid)});
 
 		for (var i=0, l=$scope.selectColors.length; i<l; i++)
-		    if (!in_array(colors, $scope.selectColors[i])){
+		    if (!in_array(colors, $scope.selectColors[i].id)){
 			colors.push($scope.selectColors[i].id); 
 		    }
 		
@@ -319,7 +325,7 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	
 	console.log(update_good);
 	console.log($scope.src_good);
-
+	
 	// get changed
 	var changed_good = {};
 	for (var o in update_good){

@@ -192,7 +192,8 @@
 			 placeholder="吊牌价，支持二位小数"
 			 x-ng-pattern="pattern.price"
 			 x-ng-enter=""
-			 x-ng-model="good.tag_price"/>
+			 x-ng-model="good.tag_price"
+			 x-ng-change="row_change_tag(good)"/>
 		  <span class="input-group-addon bg-white fg-red">*</span> 
 		</div>
 	      </div>

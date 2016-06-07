@@ -45,11 +45,11 @@ sale(history_retailer, Merchant, Retailer, Goods) ->
     gen_server:call(Name, {history_retailer, Merchant, Retailer, Goods});
 sale(reject, Merchant, Inventories, Props) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {reject_sale, Merchant, Inventories, Props}).
-
-sale(check, Merchant, RSN) ->
+    gen_server:call(Name, {reject_sale, Merchant, Inventories, Props});
+sale(check, Merchant, RSN, Mode) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {check_new, Merchant, RSN});
+    gen_server:call(Name, {check_new, Merchant, RSN, Mode}).
+
 sale(list_new, Merchant, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {list_new, Merchant, Condition});
@@ -391,9 +391,9 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
 
     end; 
 
-handle_call({check_new, Merchant, RSN}, _From, State) ->
-    ?DEBUG("check_new with merchant ~p, RSN ~p", [Merchant, RSN]),
-    Sql = "update w_sale set state=" ++ ?to_s(?CHECKED)
+handle_call({check_new, Merchant, RSN, Mode}, _From, State) ->
+    ?DEBUG("check_new with merchant ~p, RSN ~p, mode ~p", [Merchant, RSN, Mode]),
+    Sql = "update w_sale set state=" ++ ?to_s(Mode)
 	++ ", check_date=\'" ++ ?utils:current_time(localtime) ++ "\'"
 	++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
 	++ " and merchant=" ++ ?to_s(Merchant),

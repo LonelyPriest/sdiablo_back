@@ -91,6 +91,9 @@ function filterProvider(){
 		} else if (name === 'card'){
 		    _filter.fields.push({name:"card", chinese:"银行卡号"});
 		    _prompt.cards = promptValues;
+		} else if (name === 'discount'){
+		    _filter.fields.push({name:"discount", chinese:"折扣"});
+		    // _prompt.rsn = promptValues;
 		}
 
 		return _filter;

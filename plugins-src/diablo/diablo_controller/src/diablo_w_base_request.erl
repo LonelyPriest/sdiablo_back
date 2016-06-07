@@ -140,7 +140,6 @@ action(Session, Req, {"destroy_login_user"}, Payload) ->
     ?DEBUG("destroy_login_user with session ~p, payload ~p",
 	   [Session, Payload]),
     User = ?session:get(name, Session), 
-    %% SessionId = Req:get_cookie_value("session"),
     Ok = ?session:delete(Session#session.id),
     %% ?DEBUG("ok ~p", [Ok]),
     case Ok of

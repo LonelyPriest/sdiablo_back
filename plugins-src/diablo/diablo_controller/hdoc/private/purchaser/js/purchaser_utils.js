@@ -129,9 +129,13 @@ var stockUtils = function(){
 	},
 
 	invalid_firm:function(firm) {
-	    if (angular.isDefined(firm)
-		&& angular.isObject(firm)
-		&& angular.isDefined(firm.id))
+	   return stockUtils.get_object_id(firm);
+	},
+
+	get_object_id: function(obj){
+	    if (angular.isDefined(obj)
+		&& angular.isObject(obj)
+		&& angular.isDefined(obj.id))
 		return firm.id
 	    
 	    return -1;

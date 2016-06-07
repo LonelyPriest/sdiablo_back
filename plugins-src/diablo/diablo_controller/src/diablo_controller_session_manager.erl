@@ -82,6 +82,7 @@ handle_call({new, User}, _From, State) ->
     UserType     = ?v(<<"type">>, User),
     Merchant     = ?v(<<"merchant">>, User),
     Retailer     = ?v(<<"retailer_id">>, User),
+    Employee     = ?v(<<"employee_id">>, User),
     MerchantType = ?v(<<"mtype">>, User),
 
     MS = [{{'_', #session{user_name='$1', _='_'}},
@@ -89,24 +90,24 @@ handle_call({new, User}, _From, State) ->
 	   ['$_']
 	  }],
     case ets:select(?SESSION, MS) of
-	[] ->
-	    ok;
+	[] -> ok;
 	[{OldSessionId, _}] ->
 	    true = ets:delete(?SESSION, ?to_b(OldSessionId))
     end,
 
     SessionId = ?to_b(knife_uuid:v5(string, ?to_s(UserId))),
-    true = ets:insert(?SESSION,
-		      {?to_b(SessionId),
-		       #session{
-			      id          = ?to_b(SessionId), 
-			      user_id     = ?to_i(UserId),
-			      user_name   = ?to_b(UserName),
-			      user_type   = ?to_i(UserType),
-			      merchant    = ?to_i(Merchant),
-			      retailer_id = ?to_i(Retailer),
-			      mtype       = ?to_i(MerchantType),
-			      login_time  = ?utils:current_time(timestamp)}}),
+    true = ets:insert(
+	     ?SESSION, {?to_b(SessionId),
+			#session{
+			       id          = ?to_b(SessionId), 
+			       user_id     = ?to_i(UserId),
+			       user_name   = ?to_b(UserName),
+			       user_type   = ?to_i(UserType),
+			       merchant    = ?to_i(Merchant),
+			       retailer_id = ?to_i(Retailer),
+			       employee_id = ?to_b(Employee),
+			       mtype       = ?to_i(MerchantType),
+			       login_time  = ?utils:current_time(timestamp)}}),
     {reply, {ok, SessionId}, State};
 
 handle_call({lookup, SessionId}, _From, State) ->
@@ -289,7 +290,9 @@ get(type, Session) ->
 get(merchant, Session) ->
     Session#session.merchant;
 get(login_retailer, Session) ->
-    Session#session.retailer_id; 
+    Session#session.retailer_id;
+get(login_employee, Session) ->
+    Session#session.employee_id;
 get(mtype, Session) ->
     Session#session.mtype;
 get(time, Session) ->

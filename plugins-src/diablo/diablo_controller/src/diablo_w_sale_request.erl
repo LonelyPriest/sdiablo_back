@@ -300,8 +300,9 @@ action(Session, Req, {"check_w_sale"}, Payload) ->
     ?DEBUG("chekc_w_sale with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
     RSN = ?v(<<"rsn">>, Payload, []),
+    Mode = ?v(<<"mode">>, Payload, ?CHECK),
 
-    case ?w_sale:sale(check, Merchant, RSN) of
+    case ?w_sale:sale(check, Merchant, RSN, Mode) of
     	{ok, RSN} -> 
     	    ?utils:respond(
 	       200, Req, ?succ(check_w_sale, RSN), {<<"rsn">>, ?to_b(RSN)});

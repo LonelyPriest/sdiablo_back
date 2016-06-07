@@ -159,6 +159,7 @@ create table users
     merchant       INTEGER default -1, -- which merchant belong to, 0: means super
     
     retailer       INTEGER default -1,
+    employee       VARCHAR(8) not null,
     stime          INTEGER default 0,
     etime          INTEGER default 0,
     
