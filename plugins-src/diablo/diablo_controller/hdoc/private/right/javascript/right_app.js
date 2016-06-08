@@ -140,7 +140,7 @@ rightApp.service("rightService", function($resource, $q, $modal, dateFilter){
     };
 
     this.accountDesc = {
-	1: "商户帐户",
+	1: "系统帐户",
 	2: "用户帐户"
     };
 

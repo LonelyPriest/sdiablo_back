@@ -1,6 +1,6 @@
 <div class="row">
   <div class="col-md-12">
-    <div class="portlet box purple">
+    <div class="portlet box purple diablo-margin-bottom-5">
 
       <div class="portlet-title">
 	<div class="caption"><i class="glyphicon glyphicon-menu-hamburger"></i>
@@ -53,42 +53,42 @@
 		</thead>
 		<tbody>
 		  <tr ng-repeat="account in accounts">
-		    <td>{{account.order_id}}</td>
-		    <td>{{account.name}}</td>
+		    <td class="{{css(account.type)}}">{{account.order_id}}</td>
+		    <td class="{{css(account.type)}}">{{account.name}}</td>
 		    <!-- <td>{{account.merchant}}</td> -->
-		    <td>{{account.owner}}</td>
+		    <td class="{{css(account.type)}}">{{account.owner}}</td>
 
-		    <td>{{accountDesc[account.type]}}</td>
+		    <td class="{{css(account.type)}}">{{accountDesc[account.type]}}</td>
 
-		    <td>
+		    <td class="{{css(account.type)}}">
                       <div x-ng-switch on="account.employee_id">
                         <span x-ng-switch-when="-1">系统默认</span>
                         <span x-ng-switch-default>{{account.employee.name}}</span>
                       </div>
                     </td>
 
-		    <td>
+		    <td class="{{css(account.type)}}">
                       <div x-ng-switch on="account.shop_id">
                         <span x-ng-switch-when=-1>系统默认</span>
                         <span x-ng-switch-default>{{account.shop.name}}</span>
                       </div>
                     </td> 
 		    
-		    <td>
+		    <td class="{{css(account.type)}}">
                       <div x-ng-switch on="account.retailer_id">
                         <span x-ng-switch-when=-1>系统默认</span>
                         <span x-ng-switch-default>{{account.retailer.name}}</span>
                       </div>
                     </td> 
 
-                    <td>
+                    <td class="{{css(account.type)}}">
                       <div x-ng-switch on="account.stime">
                         <span x-ng-switch-when=0>无限制</span>
                         <span x-ng-switch-default>{{account.stime}}</span>
                       </div>
                     </td>
 
-                    <td>
+                    <td class="{{css(account.type)}}">
                       <div x-ng-switch on="account.etime">
                         <span x-ng-switch-when=0>无限制</span>
                         <span x-ng-switch-default>{{account.etime}}</span>
@@ -96,9 +96,8 @@
                     </td>
 		    
 		    <!-- <td>{{roleDesc[account.type]}}</td> -->
-		    <td>{{account.role_name}}</td>
-
-		    <td>{{account.create_date}}</td>
+		    <td class="{{css(account.type)}}">{{account.role_name}}</td> 
+		    <td class="{{css(account.type)}}">{{account.create_date}}</td>
 
 		    <td data-title="'操作'">
 		      <button href="" class="btn diablo-button btn-primary"
@@ -124,6 +123,9 @@
       </div> <!--END table container-->
 
     </div>
+  </div>
+  <div class="col-md-12">
+    <span class="bg-magenta">梅红色表示系统帐户，只能有一个，用户不能自行创建</span> 
   </div>
 </div>
 
@@ -180,7 +182,7 @@
 
 	<div class="form-group">
 	  <label class="col-md-3 control-label">帐号</label>
-	  <div class="col-md-4">
+	  <div class="col-md-6">
 	    <input type="text" class="form-control" readonly
 		   data-ng-model="account.name"/>
 	  </div>
@@ -188,7 +190,7 @@
 
 	<div class="form-group">
 	  <label class="col-md-3 control-label">类型</label>
-	  <div class="col-md-4">
+	  <div class="col-md-6">
 	    <input type="text" class="form-control" readonly
 		   data-ng-model="account.type"/>
 	  </div>
@@ -196,7 +198,7 @@
 
 	<div class="form-group">
 	  <label class="col-md-3 control-label">经营人</label>
-	  <div class="col-md-4">
+	  <div class="col-md-6">
 	    <input type="text" class="form-control" readonly
 		   data-ng-model="account.owner"/>
 	  </div>
@@ -204,7 +206,7 @@
 
 	<div class="form-group">
           <label class="col-md-3 control-label">登录客户</label>
-          <div class="col-sm-4 col-md-4">
+          <div class="col-sm-4 col-md-6">
             <input class="form-control"
                    type="text"
                    x-ng-model="account.retailer"
@@ -217,7 +219,7 @@
 
 	<div class="form-group">
           <label class="col-md-3 control-label">登录员工</label>
-          <div class="col-sm-4 col-md-4">
+          <div class="col-sm-4 col-md-6">
             <select class="form-control"
                     x-ng-model="account.employee"
                     x-ng-options="e as e.name for e in employees">
@@ -227,7 +229,7 @@
 
 	<div class="form-group">
           <label class="col-md-3 control-label">登录店铺</label>
-          <div class="col-sm-4 col-md-4">
+          <div class="col-sm-4 col-md-6">
             <select class="form-control"
                     x-ng-model="account.shop"
                     x-ng-options="s as s.name for s in shops">
@@ -237,7 +239,7 @@
 
 	<div x-ng-if="account.type===2" class="form-group">
           <label class="col-md-3 control-label">登录开始时间</label>
-          <div class="col-sm-4 col-md-4">
+          <div class="col-sm-4 col-md-6">
             <select class="form-control"
                     x-ng-model="account.stime"
                     x-ng-options="s for s in hours">
@@ -247,7 +249,7 @@
 
         <div x-ng-if="account.type===2" class="form-group">
           <label class="col-md-3 control-label">登录结束时间</label>
-          <div class="col-sm-4 col-md-4">
+          <div class="col-sm-4 col-md-6">
             <select class="form-control"
                     x-ng-model="account.etime"
                     x-ng-options="s for s in hours">
@@ -257,7 +259,7 @@
 
 	<div x-ng-if="account.type===2" class="form-group">
 	  <label class="col-md-3 control-label">权限</label>
-	  <div class="col-md-4"
+	  <div class="col-md-6"
 	       ng-class="{'has-error':editForm.right.$invalid
 			 && !editForm.right.$pristine}">
 	    <input type="text"
@@ -272,7 +274,7 @@
 
 	<div class="form-group">
 	  <label class="col-md-3 control-label">帐号描述</label>
-	  <div class="col-md-4">
+	  <div class="col-md-6">
 	    <input type="text" class="form-control" readonly
 		   data-ng-model="account.desc"/>
 	  </div>

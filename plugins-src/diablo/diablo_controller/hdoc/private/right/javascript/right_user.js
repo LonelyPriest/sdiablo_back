@@ -631,6 +631,7 @@ rightUserApp.controller(
     function($scope, $routeParams, $q, $modal, rightService, diabloUtilsService){
 	$scope.roleDesc = rightService.roleTypeDesc;
 	$scope.accountDesc = rightService.accountDesc;
+	$scope.css = function(type) {return type === 1 ? "bg-magenta" : ""};
 
 	// list
 	var promise = rightService.promise;
