@@ -41,7 +41,7 @@
                     <th>所属人</th>
                     <th>类型</th>
                     <th>登录员工</th>
-                    <!-- <th>登录店铺</th> -->
+                    <th>登录店铺</th>
                     <th>登录客户</th> 
                     <!-- <th>登录厂商</th> -->
                     <th>登录开始时间</th>
@@ -66,6 +66,13 @@
                         <span x-ng-switch-default>{{account.employee.name}}</span>
                       </div>
                     </td>
+
+		    <td>
+                      <div x-ng-switch on="account.shop_id">
+                        <span x-ng-switch-when=-1>系统默认</span>
+                        <span x-ng-switch-default>{{account.shop.name}}</span>
+                      </div>
+                    </td> 
 		    
 		    <td>
                       <div x-ng-switch on="account.retailer_id">
@@ -214,6 +221,16 @@
             <select class="form-control"
                     x-ng-model="account.employee"
                     x-ng-options="e as e.name for e in employees">
+            </select>
+          </div>
+        </div>
+
+	<div class="form-group">
+          <label class="col-md-3 control-label">登录店铺</label>
+          <div class="col-sm-4 col-md-4">
+            <select class="form-control"
+                    x-ng-model="account.shop"
+                    x-ng-options="s as s.name for s in shops">
             </select>
           </div>
         </div>

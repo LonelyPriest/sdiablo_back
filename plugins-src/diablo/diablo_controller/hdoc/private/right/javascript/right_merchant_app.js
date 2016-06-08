@@ -2,8 +2,7 @@
 var rightMerchantApp = angular.module(
     "rightMerchantApp",
     ['ngRoute', 'ngResource', 'diabloUtils', 'diabloAuthenApp',
-     'ui.bootstrap', 'rightApp', 'merchantApp',
-     'employApp'])
+     'ui.bootstrap', 'rightApp', 'merchantApp'])
 // .config(diablo_authen);
 .config(function($httpProvider, authenProvider){
     // $httpProvider.responseInterceptors.push(authenProvider.interceptor);

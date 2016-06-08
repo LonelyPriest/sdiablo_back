@@ -637,19 +637,13 @@ rightUserApp.controller(
 	$scope.refresh = function(){
             $q.all([
 		promise(rightService.list_account)(),
-		// promise(rightService.list_shop)(),
 		// promise(rightService.list_firm)(),
 		promise(rightService.list_retailer)(),
-		promise(rightService.list_employee)() 
+		promise(rightService.list_employee)(),
+		promise(rightService.list_shop)() 
 	    ]).then(function(data){
 		console.log(data);
-		// $scope.shops = data[1].map(function(shop){
-                //     return {
-		// 	id: shop.id,
-		// 	name: shop.name,
-		// 	py: diablo_pinyin(shop.name)
-		//     };
-		// });
+		
 
 		// $scope.firms = data[2].map(function(firm){
                 //     return {
@@ -659,12 +653,15 @@ rightUserApp.controller(
                 //     };
 		// });
 
+		$scope.shops = [{id:-1, name:"== 请选择登录让铺，默认由系统选择 =="}]
+		    .concat(data[3].map(function(shop){
+			return {id: shop.id, name: shop.name}
+		    }));
+		console.log($scope.shops);
+
 		$scope.employees = [{id: "-1", name:"== 请选择登录员工，默认由系统选择 =="}]
 		    .concat(data[2].map(function(e){
-			return {
-			    id:   e.number,
-			    name: e.name
-			};
+			return {id:   e.number, name: e.name}
 		    }));
 		
 		$scope.retailers = data[1].map(function(r){
@@ -674,22 +671,24 @@ rightUserApp.controller(
 			py: diablo_pinyin(r.name)
                     };
 		});
+		console.log($scope.retailers);
 
-		// console.log($scope.shops);
 		$scope.accounts = data[0].map(function(account){
 		    return {
 			id:          account.id,
 			name:        account.name,
 			owner:       account.owner,
 			type:        account.type,
-			// shop_id:     account.shop_id,
-			// shop:        diablo_get_object(account.shop_id, $scope.shops),
+			
+			shop_id:     account.shop_id,
+			shop:        diablo_get_object(account.shop_id, $scope.shops),
 			// firm_id:     account.firm_id,
 			// firm:        diablo_get_object(account.firm_id, $scope.firms),
 			employee_id: account.employee_id,
 			employee:    diablo_get_object(account.employee_id, $scope.employees), 
 		        retailer_id: account.retailer_id,
 			retailer:    diablo_get_object(account.retailer_id, $scope.retailers),
+			
 			stime:       account.stime,
 			etime:       account.etime,
 			role_name:   account.role_name,
@@ -705,12 +704,9 @@ rightUserApp.controller(
 	
 	$scope.refresh();
 
-	$scope.goto_page = function(path){
-	    window.location = path;
-	};
-
-
+	$scope.goto_page = diablo_goto_page; 
 	$scope.show_account_right = false;
+	
 	// lookup account right
 	$scope.right_detail = function(account){
 	    console.log(account); 
@@ -791,12 +787,14 @@ rightUserApp.controller(
 		    console.log(new_account);
 		    
 		    new_account.retailer_id = rightService.get_object_id(new_account.retailer);
-		    new_account.employee_id = rightService.get_object_id(new_account.employee); 
+		    new_account.employee_id = rightService.get_object_id(new_account.employee);
+		    new_account.shop_id = rightService.get_object_id(new_account.shop);
 
 		    if (new_account.type === 2 ){
 			if (new_account.role.id === current_role.role_id 
                             && new_account.retailer_id === account.retailer_id
 			    && new_account.employee_id === account.employee_id
+			    && new_account.shop_id === account.shop_id
                             && new_account.stime  === account.stime
                             && new_account.etime === account.etime){
                             diabloUtilsService.response(
@@ -806,7 +804,8 @@ rightUserApp.controller(
 			}
 		    } else {
 			if (new_account.retailer_id === account.retailer_id
-			    && new_account.employee_id === account.employee_id){
+			    && new_account.employee_id === account.employee_id
+			    && new_account.shop_id === account.shop_id){
                             diabloUtilsService.response(
 				false, "用户帐户修改",
 				"用户帐户修改失败：" + rightService.error[1599]);
@@ -832,7 +831,9 @@ rightUserApp.controller(
 			rightService.get_modified(new_account.retailer_id, account.retailer_id); 
 		    
 		    update.employee_id =
-			rightService.get_modified(new_account.employee_id, account.employee_id); 
+			rightService.get_modified(new_account.employee_id, account.employee_id);
+		    
+		    update.shop_id = rightService.get_modified(new_account.shop, account.shop);
 		    
                     console.log(update);
 
@@ -866,7 +867,9 @@ rightUserApp.controller(
 				account:   editAccount,
 				roles:     roles,
 				hours:     rightService.hours,
+				retailers: $scope.retailers,
 				employees: $scope.employees,
+				shops:     $scope.shops,
 				desc:      $scope.accountDesc,
 				callback:  callback
 			    }
@@ -885,10 +888,13 @@ rightUserApp.controller("accountUserModalCtrl", function($scope, $modalInstance,
     $scope.roles     = params.roles;
     $scope.hours     = params.hours;
     $scope.desc      = params.desc;
+    $scope.retailers = params.retailers;
     $scope.employees = params.employees;
+    $scope.shops     = params.shops;
     $scope.account.employee = diablo_get_object($scope.account.employee_id, $scope.employees);
+    $scope.account.shop = diablo_get_object($scope.account.shop_id, $scope.shops);
 
-    console.log($scope);
+    // console.log($scope);
 
     $scope.cancel = function(){
 	$modalInstance.dismiss('cancel');

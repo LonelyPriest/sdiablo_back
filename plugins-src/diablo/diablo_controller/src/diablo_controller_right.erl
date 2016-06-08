@@ -494,7 +494,7 @@ handle_call({update_account_role, Account, NewRole}, _From, State) ->
 handle_call({update_account, Attrs}, _From, State) ->
     ?DEBUG("update_account with attrs ~p", [Attrs]),
     Account       = ?v(<<"account">>, Attrs),
-    %% LoginShop     = ?v(<<"shop">>, Attrs),
+    LoginShop     = ?v(<<"shop">>, Attrs),
     %% LoginFirm     = ?v(<<"firm">>, Attrs),
     LoginEmployee = ?v(<<"employee">>, Attrs),
     LoginRetailer = ?v(<<"retailer">>, Attrs),
@@ -508,9 +508,9 @@ handle_call({update_account, Attrs}, _From, State) ->
                    ++ " where user_id=" ++ ?to_s(Account)]
 	   end,
     Updates =
-	%% ?utils:v(shop, integer, LoginShop)
+	?utils:v(shop, integer, LoginShop)
         %% ++ ?utils:v(firm, integer, LoginFirm)
-        ?utils:v(employee, string, LoginEmployee)
+        ++ ?utils:v(employee, string, LoginEmployee)
         ++ ?utils:v(retailer, integer, LoginRetailer)
         ++ ?utils:v(stime, integer, StartTime)
         ++ ?utils:v(etime, integer, EndTime),
@@ -658,6 +658,7 @@ account(Conditions) ->
     Sql1 = "select a.id, a.name, a.type, a.merchant"
 	", a.retailer as retailer_id"
 	", a.employee as employee_id"
+	", a.shop as shop_id"
 	", a.stime, a.etime, a.max_create, a.create_date"
 	
 	", tc.user_id, tc.role_id, tc.role_name"

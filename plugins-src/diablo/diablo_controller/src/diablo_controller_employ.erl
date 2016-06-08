@@ -127,6 +127,7 @@ handle_call({update_employee, Merchant, EmployeeId, Attrs}, _From, State) ->
     Sex     = ?v(<<"sex">>, Attrs),
     Mobile  = ?v(<<"mobile">>, Attrs),
     Address = ?v(<<"address">>, Attrs),
+    Shop    = ?v(<<"shop">>, Attrs),
     
     NameExist =
 	case Name of
@@ -136,10 +137,9 @@ handle_call({update_employee, Merchant, EmployeeId, Attrs}, _From, State) ->
 		    " where name=" ++ "\'" ++ ?to_s(Name) ++ "\'"
 		    ++ " and merchant=" ++ ?to_s(Merchant)
 		    ++ " and deleted=" ++ ?to_s(?NO),
-		case ?mysql:fetch(read, Sql) of
+		case ?sql_utils:execute(s_read, Sql) of
 		    {ok, R} -> {ok, R};
-		    {error, {_, Err}} ->
-			{error, ?err(db_error, Err)}
+		    Error1 -> Error1
 		end
 	end,
 
@@ -148,20 +148,19 @@ handle_call({update_employee, Merchant, EmployeeId, Attrs}, _From, State) ->
 	    Updates = ?utils:v(name, string, Name)
 		++ ?utils:v(sex, integer, Sex)
 		++ ?utils:v(mobile, string, Mobile)
-		++ ?utils:v(address, string, Address),
+		++ ?utils:v(address, string, Address)
+		++ ?utils:v(shop, integer, Shop),
 
+	    
 	    Sql1 = "update employees set "
 		++ ?utils:to_sqls(proplists, comma, Updates)
 		++ " where id=" ++ ?to_s(EmployeeId)
 		++ " and merchant=" ++ ?to_s(Merchant),
 
-	    case ?mysql:fetch(write, Sql1) of
-		{ok, _} -> {reply, {ok, EmployeeId}, State};
-		{error, {_, Error}} ->
-		    {reply, {error, ?err(db_error, Error)}, State}
-	    end;
-	{error, Error} ->
-	    {reply, {error, Error}, State}
+	    Reply = ?sql_utils:execute(write, Sql1, EmployeeId), 
+	    {reply, Reply, State};
+	Error ->
+	    {reply, Error, State}
     end;
 
 handle_call({list_employee, Merchant, Conditions}, _From, State) ->
@@ -207,7 +206,7 @@ code_change(_OldVsn, State, _Extra) ->
 %%% Internal functions
 %%%===================================================================
 fields() ->
-    "id, number, name, sex, entry, position, mobile, address".
+    "id, number, name, sex, entry, position, mobile, address, shop as shop_id".
 
 new_number(Merchant) ->
     ?inventory_sn:sn(member, Merchant). 

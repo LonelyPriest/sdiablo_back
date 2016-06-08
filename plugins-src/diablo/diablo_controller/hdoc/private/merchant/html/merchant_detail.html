@@ -8,11 +8,11 @@
 	</div>	
 
 	<div class="actions">
-	  <button type="button" class="btn btn-success red-stripe"
+	  <button type="button" class="btn btn-success"
 		  x-ng-click="goto_page('#/merchant_new')">新增
 	    <i class="glyphicon glyphicon-plus"></i></button> 
 
-	  <button type="button" class="btn blue reload red-stripe"
+	  <button type="button" class="btn blue reload"
 		  x-ng-click="refresh()">刷新
 	    <i class="glyphicon glyphicon-refresh"></i></button> 
 	</div> 
@@ -28,7 +28,7 @@
 	      <div class="input-group">
 		<div class="input-cont">
 		  <input type="text" class="form-control" placeholder="请输入商家名称"
-			 x-ng-model="filter.name"></input>
+			 x-ng-model="filter.name"/>
 		</div>
 		<span class="input-group-btn">
 		  <button type="button" class="btn green">
@@ -41,7 +41,7 @@
 	      <div class="input-group">
 		<div class="input-cont">
 		  <input type="text" class="form-control" placeholder="请输入商家联系方式"
-			 x-ng-model="filter.name"></input>
+			 x-ng-model="filter.name"/>
 		</div>
 		<span class="input-group-btn">
 		  <button type="button" class="btn green">
@@ -85,10 +85,10 @@
 		    <td>{{merchant.entry_date}}</td>
 
 		    <td class="col-md-2" data-title="'操作'"> 
-                      <a class="btn btn-primary btn-xs red-stripe" 
+                      <a class="btn btn-primary diablo-button red-stripe" 
 			 x-ng-click="update_merchant(merchant)">修改
-			<i class="glyphicon glyphicon-pencil"></i></a>
-                      <a href="" class="btn btn-danger btn-xs green-stripe" 
+			<i class="glyphicon glyphicon-edit"></i></a>
+                      <a class="btn red diablo-button" 
 			 x-ng-click="delete_merchant(merchant)">删除
 			<i class="glyphicon glyphicon-erase"></i></a>
 		    </td>
@@ -96,9 +96,9 @@
 		  </tr>
 		</tbody>
 		
-	      </table> <!--END VM table-->
+	      </table> <!--END table-->
 	    </div> <!--END table responsive-->
-
+	    
 	  </div> <!--END panel-->
 	</div> <!--END portlet body-->
       </div> <!--END table container-->

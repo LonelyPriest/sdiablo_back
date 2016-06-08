@@ -6,8 +6,9 @@ userApp.factory("userService", function($resource, $q){
     var _shops     = [];
     var _rights    = [];
     var _loginType = undefined;
-    var _loginRetailer = -1;
+    var _loginRetailer = -1; 
     var _loginEmployee = undefined;
+    var _loginShop = -1;
     
     var sort = function(){
 	var shops = _shops;
@@ -17,6 +18,7 @@ userApp.factory("userService", function($resource, $q){
 	    shop:  _shops,
 	    loginRetailer: _loginRetailer,
 	    loginEmployee: _loginEmployee,
+	    loginShop: _loginShop,
 
 	    // shops exclude the shop that bind to the repository,
 	    // or repository itself
@@ -33,12 +35,16 @@ userApp.factory("userService", function($resource, $q){
 
 	    // shops, include the shop that bind to the repository but not repository
 	    shopIds: function(){
-		var ids   = []; 
+		var ids   = [];
 		angular.forEach(shops, function(s){
-		    if (s.type === 0 && !in_array(ids, s.shop_id)){
-			ids.push(s.shop_id);
-		    }
-		})
+                    if (s.type === 0 && !in_array(ids, s.shop_id)){
+                        if (s.shop_id === _loginShop){
+                            ids.splice(0, 0, s.shop_id);
+                        } else {
+                            ids.push(s.shop_id);
+                        }
+                    }
+                }) 
 		return ids;
 	    }(),
 
@@ -74,7 +80,11 @@ userApp.factory("userService", function($resource, $q){
 				score_id: s.score_id,
 				py:diablo_pinyin(s.name)};
 		    if (s.type === 0 && !in_array(sort, shop)){
-			sort.push(shop); 
+			if (shop.id === _loginShop){
+                            sort.splice(0, 0, shop);
+                        } else {
+                            sort.push(shop);
+                        }
 		    }
 		})
 		return sort;
@@ -127,7 +137,11 @@ userApp.factory("userService", function($resource, $q){
 
 		    if ( ((s.type === 0 && s.repo_id === -1) || s.type === 1)
 			 && !in_array(sort, repo)){
-			sort.push(repo); 
+			if (s.shop_id === _loginShop){
+                            sort.splice(0, 0, repo);
+                        } else {
+                            sort.push(repo);
+                        }
 		    } 
 		})
 		return sort;
@@ -142,15 +156,14 @@ userApp.factory("userService", function($resource, $q){
 	    return sort();
 	    
 	} else {
-	    return _user.get(
-		{operation: "get_login_user_info"}
-	    ).$promise.then(function(result){
-		console.log(result);
+	    return _user.get({operation: "get_login_user_info"}).$promise.then(function(result){
+		// console.log(result);
 		_shops     = result.shop;
 		_rights    = result.right;
 		_loginType = result.type;
 		_loginRetailer = result.login_retailer;
 		_loginEmployee = result.login_employee;
+		_loginShop = result.login_shop;
 		return sort();
     	    });
 	}
@@ -158,48 +171,3 @@ userApp.factory("userService", function($resource, $q){
     }; 
     
 });
-
-/*
-* use to get common field, such as firm, shop, employee
-*/
-// userApp.factory("commonFieldService", function($resource, $q){
-//     var user = $resource("/right/:operation", {operation: '@operation'});
-
-//     var promise = function(callback, params){
-// 	return function(){
-// 	    var deferred = $q.defer();
-// 	    callback(params).$promise.then(function(data){
-// 		// console.log(data);
-// 		deferred.resolve(data);
-// 	    });
-// 	    return deferred.promise;
-// 	}
-//     };
-
-//     var get_right = function(){
-//     	return user.query({operation: "list_login_user_right"}); 
-//     };
-
-//     var get_shop = function(){
-//     	return user.query({operation: "list_login_user_shop"});
-//     };
-
-//     // var get_rainbow = function(){
-//     // 	return user.query({operation: "list_login_user_rainbow"});
-//     // }
-
-//     return function(){
-//     	return $q.all([
-// 	    promise(get_right)(), promise(get_shop)()
-// 	]).then(function(data){
-//     	    return {
-//     		right: data[0],
-//     		shop: data[1]
-//     	    };
-//     	});
-//     }; 
-    
-// });
-
-
-

@@ -66,6 +66,7 @@ action(Session, Req, {"update_employe", Id}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     case ?employ:employ(update, Merchant, Id, Payload) of
 	{ok, EmployId} ->
+	    ?w_user_profile:update(employee, Merchant),
 	    ?utils:respond(200, Req, ?succ(update_employ, EmployId));
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
@@ -76,24 +77,19 @@ sidebar(Session) ->
 	case ?right_auth:authen(?list_employe, Session) of
 	    {ok, ?list_employe} ->
 		[{"employ_detail", "员工详情", "glyphicon glyphicon-book"}];
-	    _ ->
-		[]
+	    _ -> []
 	end,
 
     S2 = 
 	case ?right_auth:authen(?new_employe, Session) of
 	    {ok, ?new_employe} ->
 		[{"employ_new", "新增员工", "glyphicon glyphicon-plus"}];
-	    _ ->
-		[]
+	    _ -> []
 	end,
 
     case S2 ++ S1 of
-	[] -> "";
-	Sidebar ->
-	    ?menu:sidebar(level_1_menu, Sidebar)
-	    %% ?menu:sidebar(level_2_menu,
-	    %% 		  [{{"employ", "员工管理", "glyphicon glyphicon-map-marker"}, Sidebar}])
+	[] -> [];
+	Sidebar -> ?menu:sidebar(level_1_menu, Sidebar)
     end.
 
 

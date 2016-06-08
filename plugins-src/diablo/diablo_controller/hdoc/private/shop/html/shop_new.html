@@ -37,13 +37,13 @@
 			   required
 			   placeholder="请输入店铺名称"
 			   x-ng-model="shop.name"
-			   x-ng-pattern="name_address_pattern"></input>
+			   x-ng-pattern="pattern.address"></input>
 		  </div>
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div> 
 	      </div> 
 	      <div ng-show="sForm.name.$invalid && !sForm.name.$pristine">
-		<span class="fg-red">必需以中文开头，只允许字母，数字</span>
+		<span class="fg-red">中文，字母，数字或横杠</span>
 	      </div> 
 	    </div>
 

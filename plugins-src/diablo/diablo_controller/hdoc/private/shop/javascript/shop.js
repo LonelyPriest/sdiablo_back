@@ -1,7 +1,7 @@
 shopApp.controller("newShopCtrl", function(
-    $scope, shopService, diabloPattern, diabloUtilsService,
-    filterEmployee, user){
-    $scope.name_address_pattern = diabloPattern.ch_name_address;
+    $scope, shopService, diabloPattern, diabloUtilsService, filterEmployee, user){
+    $scope.pattern = {address:diabloPattern.ch_name_address};
+    
     $scope.employees = filterEmployee;
     // console.log($scope.employees);
 

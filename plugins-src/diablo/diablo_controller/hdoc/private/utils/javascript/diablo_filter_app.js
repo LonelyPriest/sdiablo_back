@@ -416,6 +416,7 @@ function filterProvider(){
 			_employees =  employees.map(function(e){
 			    return {name:e.name,
 				    id:e.number,
+				    shop:e.shop_id,
 				    py:diablo_pinyin(e.name)}
 			});
 
@@ -512,7 +513,9 @@ function normalFilterProvider(){
 			// console.log(employees);
 			_employees = employees.map(function(e){
 			    return {name:e.name,
-				    id:e.number, py:diablo_pinyin(e.name)}
+				    shop:e.shop_id,
+				    id:e.number,
+				    py:diablo_pinyin(e.name)}
 			});
 
 			return _employees;

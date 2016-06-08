@@ -49,48 +49,29 @@
 		    <th>职位</th>
 		    <th>联系方式</th>
 		    <th>联系地址</th>
+		    <th>所属店铺</th>
 		    <th>入职日期</th>
 		    <th>操作</th>
 		  </tr>
 		</thead>
 		<tbody>
 		  <tr ng-repeat="employ in employees">
-		    <td data-title="'序号'"
-			sortable="'id'">
-		      <span>{{employ.order_id}}</span>
-		    </td>
-
-		    <td data-title="'工号'">
-		      <span>{{employ.number}}</span>
-		    </td>
-		    
-		    <td data-title="'名称'">
-		      <span>{{employ.name}}</span>
-		    </td>
-
+		    <td>{{employ.order_id}}</td> 
+		    <td>{{employ.number}}</td> 
+		    <td>{{employ.name}}</td> 
 		    <td>{{employ.sex.name}}</td>
 		    
-		    <td data-title="'职位'" ng-switch on={{employ.position}}>
+		    <td ng-switch on="{{employ.position}}">
 		      <span ng-switch-when=1>店长</span>
 		      <span ng-switch-when=2>普通员工</span>
 		    </td>
 		    
-		    <td data-title="'联系方式'">
-                      <span>{{employ.mobile}}</span>
-		    </td>
-
-		    <td data-title="'联系地址'">
-                      <span>{{employ.address}}</span>
-		    </td>
-
-		    <td data-title="'入职日期'">
-                      <span>{{employ.entry}}</span>
-		    </td>
-
-		    <td data-title="'操作'">
-		      <!-- <a class="btn btn-success btn-xs" -->
-		      <!-- 	 ng-click="goto_page('#/employ/employ_new')">新增 -->
-		      <!-- 	<i class="glyphicon glyphicon-plus"></i></a> -->
+		    <td>{{employ.mobile}}</td> 
+		    <td>{{employ.address}}</td>
+		    <td>{{employ.shop.name}}</td>
+		    <td>{{employ.entry}}</td>
+		    
+		    <td> 
 		      <a class="btn diablo-button btn-warning"
 			 x-ng-click="edit_employ(employ)">修改
 			<i class="glyphicon glyphicon-edit"></i></a>
@@ -135,7 +116,7 @@
 	      <span class="input-group-addon">
 		<i class="glyphicon glyphicon-hand-right fg-red"></i>工号</span>
 	      <input class="form-control" type="text" readonly
-                     x-ng-model="params.employ.number"></input>
+                     x-ng-model="params.employee.number"/>
 	  </div>
 	</div>
 
@@ -145,14 +126,14 @@
 		<i class="glyphicon glyphicon-hand-right fg-red"></i>姓名</span>
 	      <input class="form-control" type="text" required
 		     name="name"
-                     x-ng-model="params.employ.name"
-		     x-ng-pattern="params.pattern.name"></input>
+                     x-ng-model="params.employee.name"
+		     x-ng-pattern="params.pattern.name"/>
 	      <span class="input-group-addon bg-white fg-red">*</span>
 	  </div> 
 	  <div x-ng-show="eForm.name.$invalid && !eForm.name.$pristine">
 	    <span class="fg-red">请输入2到3个中文字符</span>
 	  </div>
-	  <div x-ng-show="params.check_exist(params.employ)">
+	  <div x-ng-show="params.check_exist(params.employee)">
 	    <span class="fg-red">该用户名已存在</span>
 	  </div> 
 	</div>
@@ -161,8 +142,8 @@
 	  <div class="input-group">
 	      <span class="input-group-addon">
 		<i class="glyphicon glyphicon-hand-right fg-red"></i>性别</span>
-	      <select class="form-control select-medium"
-			x-ng-model="params.employ.sex"
+	      <select class="form-control"
+			x-ng-model="params.employee.sex"
 			x-ng-options="s as s.name for s in params.sexes">
 		</select> 
 	  </div>
@@ -178,7 +159,7 @@
 		     type="text" required
 		     x-ng-pattern="params.pattern.mobile"
 		     placeholder="请输入手机号码"
-		     x-ng-model="params.employ.mobile"></input>
+		     x-ng-model="params.employee.mobile"/>
 	      <span class="input-group-addon bg-white fg-red">*</span>
 	  </div>
 	  <div ng-show="eForm.mobile.$invalid && ! eForm.mobile.$pristine">
@@ -186,7 +167,7 @@
 	   </div>
 	</div>
 
-	<div class="form-group"> 
+	<div class="form-group">
 	  <div class="input-group">
 	    <span class="input-group-addon">
 		<i class="glyphicon glyphicon-hand-right fg-red"></i>地址</span>
@@ -197,8 +178,27 @@
 		     name="address"
 		     required
 		     placeholder="请输入您的联系地址"
-		     x-ng-model="params.employ.address"
-		     x-ng-pattern="params.pattern.address"></input>
+		     x-ng-model="params.employee.address"
+		     x-ng-pattern="params.pattern.address"/>
+	    </div>
+	    <span class="input-group-addon bg-white fg-red">*</span>
+	  </div> 
+	  <div ng-show="eForm.address.$invalid && !eForm.address.$pristine">
+	    <span class="fg-red">必需以中文开头，只允许字母，数字</span>
+	  </div> 
+	</div>
+
+
+	<div class="form-group">
+	  <div class="input-group">
+	    <span class="input-group-addon">
+	      <i class="glyphicon glyphicon-hand-right fg-red"></i>店铺</span>
+	    <div ng-class="{'has-error': eForm.shop.$invalid
+			   && !eForm.shop.$pristine}">
+	      <select class="form-control" type="text"
+	  	      x-ng-model="params.employee.shop" 
+	  	      x-ng-options="s as s.name for s in params.shops">
+	      </select>
 	    </div>
 	    <span class="input-group-addon bg-white fg-red">*</span>
 	  </div> 
@@ -213,8 +213,8 @@
   
   <div class="modal-footer">
     <button class="btn btn-primary"
-	    x-ng-disabled="params.check_same(params.employ)
-			   || params.check_exist(params.employ)
+	    x-ng-disabled="params.check_same(params.employee)
+			   || params.check_exist(params.employee)
 			   || eForm.$invalid"
 	    x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>

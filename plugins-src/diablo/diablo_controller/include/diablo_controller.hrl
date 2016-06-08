@@ -375,6 +375,7 @@
 	  merchant    = -1         :: integer(),
 	  retailer_id = -1         :: integer(),
 	  employee_id = <<>>       :: binary(),
+	  shop_id     = -1         :: integer(),
 	  mtype       = -1         :: integer(),
 	  login_time  = undefined  :: string()   
 	 }).

@@ -402,22 +402,30 @@ wsaleApp.controller("wsaleNewCtrl", function(
     } 
 
     $scope.change_shop = function(){
-	$scope.local_save();
+	$scope.get_employee();
+	$scope.local_save(); 
 	$scope.setting.check_sale = wsaleUtils.check_sale($scope.select.shop_id, base);
 	$scope.setting.no_vip = wsaleUtils.no_vip($scope.select.shop.id, base);
-    } 
-    
-    // employees
-    $scope.employees = filterEmployee;
-    
-    
-    if ($scope.employees.length !== 0){
-	$scope.select.employee = $scope.employees[0];
+    }
 
-	if (diablo_invalid_employee !== user.loginEmployee){
-	    $scope.select.employee = diablo_get_object(user.loginEmployee, $scope.employees); 
-        }
-    } 
+    $scope.get_employee = function(){
+	$scope.employees = filterEmployee.filter(function(e){
+	    return e.shop === $scope.select.shop.id;
+	});
+	
+	if ($scope.employees.length !== 0){
+	    $scope.select.employee = $scope.employees[0]; 
+	    if (diablo_invalid_employee !== user.loginEmployee){
+		$scope.select.employee = diablo_get_object(user.loginEmployee, $scope.employees); 
+            }
+
+	    if (angular.isUndefined($scope.select.employee))
+		$scope.select.employee = $scope.employees[0];
+	} 
+    }
+    
+    $scope.get_employee();
+    console.log($scope.employees); 
 
     // retailer;
     $scope.retailers = filterRetailer;

@@ -5,6 +5,7 @@ var diablo_delay_300ms = 300;
 var diablo_full_discount = 100;
 var diablo_pfree = 0.01;
 var diablo_invalid_employee = "-1";
+var diablo_invalid_index = -1;
 
 var diablo_yes = 1;
 var diablo_no = 0;
@@ -649,6 +650,29 @@ var diablo_in_colors = function(color, colors){
     }
 
     return false;
+};
+
+var diablo_is_same = function(newValue, oldValue){
+    if (angular.isNumber(newValue) || angular.isString(newValue))
+	return newValue === oldValue ? true:false;
+    else if (angular.isDate(newValue))
+	return newValue.getTime() !== oldValue.getTime() ? true : false; 
+    else if (angular.isObject(newValue))
+	return newValue.id === oldValue.id ? true : false; 
+    else 
+	return newValue === oldValue ? true : false;
+};
+
+var diablo_get_modified = function(newValue, oldValue){
+    if (angular.isNumber(newValue) || angular.isString(newValue))
+	return newValue !== oldValue ? newValue : undefined;
+    else if (angular.isDate(newValue))
+	return newValue.getTime() !== oldValue.getTime()
+	    ? dateFilter($scope.bill_date, "yyyy-MM-dd hh:mm:ss") : undefined; 
+    else if (angular.isObject(newValue))
+	return newValue.id !== oldValue.id ? newValue.id : undefined;
+    else
+	return newValue !== oldValue ? newValue : undefined;
 };
 
 

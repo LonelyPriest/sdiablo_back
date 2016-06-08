@@ -1,7 +1,7 @@
 
 var employApp = angular.module(
     "employApp", ['ngRoute', 'ngResource', 'diabloPattern',
-		  'diabloAuthenApp', 'diabloUtils', 'ui.bootstrap'])
+		  'diabloAuthenApp', 'userApp', 'diabloUtils', 'ui.bootstrap'])
 // .config(diablo_authen);
 .config(function($httpProvider, authenProvider){
     // $httpProvider.responseInterceptors.push(authenProvider.interceptor);
@@ -9,18 +9,24 @@ var employApp = angular.module(
  });
 
 employApp.config(['$routeProvider', function($routeProvider){
+    var user = {"user": function(userService){
+	return userService()}};
+    
     $routeProvider.
 	when('/employ_detail', {
 	    templateUrl: '/private/employ/html/employ_detail.html',
-            controller: 'employDetailCtrl'
+            controller: 'employDetailCtrl',
+	    resolve: angular.extend({}, user)
 	}).
 	when('/employ_new', {
 	    templateUrl: '/private/employ/html/employ_new.html',
-            controller: 'employNewCtrl'
+            controller: 'employNewCtrl',
+	    resolve: angular.extend({}, user)
 	}).
 	otherwise({
 	    templateUrl: '/private/employ/html/employ_detail.html',
-            controller: 'employDetailCtrl' 
+            controller: 'employDetailCtrl',
+	    resolve: angular.extend({}, user)
         })
 }]);
 
@@ -62,60 +68,50 @@ employApp.service("employService", function($resource, dateFilter){
 
     this.edit = function(one){
 	return employ.save(
-	    {operation: "update_employe", id: one.id},
-	    {
-		name:    one.name,
-		sex:     angular.isDefined(one.sex) ? one.sex.id : undefined,
-		mobile:  one.mobile,
-		address: one.address,
-	    }
-	)};
+	    {operation: "update_employe", id: one.id}, one).$promise;
+    };
 });
 
 
 employApp.controller("employDetailCtrl", function(
-    $scope, diabloPattern, diabloUtilsService, employService){
-    // filters segment
-    // $scope.filter = {number: '', name: '', mobile: ''};
-
+    $scope, diabloPattern, diabloUtilsService, employService, user){
+    $scope.shops = user.sortShops;
+    $scope.goto_page = diablo_goto_page;
+    
     $scope.refresh = function(){
 	employService.list().$promise.then(function(employees){
+	    // console.log(employees)
 	    angular.forEach(employees, function(e){
 		e.sex = diablo_sex2object[e.sex];
-	    });
-	    
+		e.shop = diablo_get_object(e.shop_id, $scope.shops);
+	    });	    
 	    $scope.employees = employees;
 	    diablo_order($scope.employees);
 	}); 
     }
 
-    $scope.goto_page = diablo_goto_page;
-
-    $scope.refresh();
-
-    // edit
-    $scope.edit_employ = function(old_employ){
-	// console.log(employ);
+    $scope.edit_employ = function(employee){
+	var o_employee = angular.copy(employee); 
 	var callback = function(params){
-	    // console.log(params);
-	    console.log(params.employ);
-
-	    var update_employ = {};
-	    for (var o in params.employ){
-		if (!angular.equals(params.employ[o], old_employ[o])){
-		    update_employ[o] = params.employ[o];
-		}
-	    }
+	    // console.log(employee);
+	    console.log(params.employee); 
+	    var n_employee = params.employee;
+	    var u_employee = {
+		id: employee.id,
+		name: diablo_get_modified(n_employee.name, o_employee.name),
+		sex:  diablo_get_modified(n_employee.sex, o_employee.sex),
+		mobile: diablo_get_modified(n_employee.mobile, o_employee.mobile),
+		address: diablo_get_modified(n_employee.address, o_employee.address),
+		shop: diablo_get_modified(n_employee.shop, o_employee.shop)
+	    }; 
+	    console.log(u_employee);
 	    
-	    update_employ.id = params.employ.id;
-	    console.log(update_employ);
-	    
-	    employService.edit(update_employ).$promise.then(function(state){
+	    employService.edit(u_employee).then(function(state){
     		console.log(state);
     		if (state.ecode == 0){
 		    diabloUtilsService.response_with_callback(
 			true, "员工编辑",
-			"恭喜你，员工 [" + old_employ.name + "] 信息修改成功！！",
+			"恭喜你，员工 [" + employee.name + "] 信息修改成功！！",
 			$scope, function(){$scope.refresh()});
     		} else{
 		    diabloUtilsService.response(
@@ -125,28 +121,37 @@ employApp.controller("employDetailCtrl", function(
     	    })
 	};
 
-	var check_same = function(new_employ){
-	    return angular.equals(new_employ, old_employ); 
+	var check_same = function(new_employee){
+	    return diablo_is_same(new_employee.name, o_employee.name)
+		&& diablo_is_same(new_employee.sex, o_employee.sex)
+		&& diablo_is_same(new_employee.mobile, o_employee.mobile)
+		&& diablo_is_same(new_employee.address, o_employee.address)
+		&& diablo_is_same(new_employee.shop, o_employee.shop)
 	};
-
-	var check_exist = function(new_employ){
+		
+	
+	var check_exist = function(new_employee){
 	    for(var i=0, l=$scope.employees.length; i<l; i++){
-		if(new_employ.name === $scope.employees[i].name
-		   && new_employ.name !== old_employ.name){
+		if(new_employee.name === $scope.employees[i].name
+		   && new_employee.name !== o_employee.name){
 		    return true;
 		}
 	    }
 
 	    return false;
 	}
+
+	o_employee.sex = diablo_sex2object[o_employee.sex.id];
+	o_employee.shop = diablo_get_object(o_employee.shop_id, $scope.shops); 
 	
 	diabloUtilsService.edit_with_modal(
-	    "edit-employ.html", "sm", callback, $scope,
-	    {employ:      old_employ,
+	    "edit-employ.html", undefined, callback, $scope,
+	    {employee:    o_employee,
 	     pattern:     {name:    diabloPattern.chinese_name,
 			   mobile:  diabloPattern.mobile,
 			   address: diabloPattern.ch_name_address},
 	     sexes:       diablo_sex2object,
+	     shops:       $scope.shops,
 	     check_same:  check_same,
 	     check_exist: check_exist});
     };
@@ -194,7 +199,10 @@ employApp.controller("employDetailCtrl", function(
     		    }
     		}
     	    })
-    };	
+    };
+
+    $scope.refresh();
+
 });
 
 employApp.controller("employNewCtrl", function(
@@ -242,9 +250,3 @@ employApp.controller("loginOutCtrl", function($scope, $resource){
 	diablo_login_out($resource)
     };
 });
-
-
-
-
-
-

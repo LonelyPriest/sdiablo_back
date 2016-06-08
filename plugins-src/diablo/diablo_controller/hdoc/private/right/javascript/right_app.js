@@ -363,6 +363,7 @@ rightApp.service("rightService", function($resource, $q, $modal, dateFilter){
              role:     account.role_id, 
              retailer: account.retailer_id,
 	     employee: account.employee_id,
+	     shop:     account.shop_id,
              stime:    account.stime,
              etime:    account.etime,
              type:     this.roleType.user})
