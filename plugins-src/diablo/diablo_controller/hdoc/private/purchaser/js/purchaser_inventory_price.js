@@ -139,9 +139,10 @@ purchaserApp.controller("purchaserInventoryPriceCtrl", function(
     };
 
     var sDraft = new stockDraft(localStorageService,
-			       $scope.select.shop.id,
-			       $scope.select.employee.id,
-			       diablo_dkey_stock_price);
+				undefined,
+				$scope.select.shop.id,
+				$scope.select.employee.id,
+				diablo_dkey_stock_price);
     
     $scope.disable_draft = function(){
 	if (sDraft.keys().length === 0) return true; 
@@ -165,7 +166,7 @@ purchaserApp.controller("purchaserInventoryPriceCtrl", function(
 	    $scope.inventories = angular.copy(resource);
 	    $scope.inventories.unshift({$edit:false, $new:true}); 
 	    re_calculate(); 
-	}
+	};
 
 	sDraft.select(diabloUtilsService, "wfix-draft.html", draft_filter, select); 
     };
@@ -260,8 +261,7 @@ purchaserApp.controller("purchaserInventoryPriceCtrl", function(
 		$scope.inventories.unshift({$edit:false, $new:true});
 		re_calculate();
 		
-		sDraft.save($scope.inventories.filter(function(r){
-		    return !r.$new}));
+		sDraft.save($scope.inventories.filter(function(r){return !r.$new}));
 		
 		$scope.auto_focus("style_number");
 		$timeout.cancel($scope.timeout_auto_save);
@@ -292,7 +292,7 @@ purchaserApp.controller("purchaserInventoryPriceCtrl", function(
 	    $scope.inventories[i].order_id = l - i;
 	}
 	
-	sDraft.remove();
+	sDraft.save($scope.inventories.filter(function(r){return !r.$new}));
 	re_calculate();
 	
     }; 

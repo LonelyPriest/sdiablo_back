@@ -1017,6 +1017,7 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
     Sex         = ?v(<<"sex">>, Inv),
     Year        = ?v(<<"year">>, Inv), 
     Season      = ?v(<<"season">>, Inv),
+    SFirm       = ?v(<<"firm">>, Inv, -1),
     %% Amount   = lists:reverse(?v(<<"amount">>, Inv)),
     SizeGroup   = ?v(<<"s_group">>, Inv),
     Free        = ?v(<<"free">>, Inv),
@@ -1029,7 +1030,7 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
     Discount    = ?v(<<"discount">>, Inv),
     Path        = ?v(<<"path">>, Inv, []),
     AlarmDay    = ?v(<<"alarm_day">>, Inv, 7),
-    Score       = ?v(<<"score">>, Inv, -1),
+    Score       = ?v(<<"score">>, Inv, -1), 
 
     %% InventoryExist = ?sql_utils:execute(s_read, Sql0),
 
@@ -1088,7 +1089,15 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 			?REJECT_INVENTORY -> []
 		    end
 		 ++ ", change_date=" ++ "\"" ++ ?to_s(CurDateTime) ++ "\""
-		 ++ " where id=" ++ ?to_s(?v(<<"id">>, R))];
+		 ++ " where id=" ++ ?to_s(?v(<<"id">>, R))]
+		    ++ case SFirm =/= Firm of
+			   true ->
+			       ["update w_inventory_good set firm=" ++ ?to_s(Firm)
+				++ " where merchant="  ++ ?to_s(Merchant)
+				++ " and style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
+				++ " and brand=" ++ ?to_s(Brand)];
+			   false -> []
+		       end;
 	    {error, Error} ->
 		throw({db_error, Error})
 	end,

@@ -164,13 +164,21 @@ var stockUtils = function(){
 }();
 
 
-var stockDraft = function(storage, shop, employee, model){
+var stock_gen_draft_key = function(firm, shop, employee, model){
+    if (diablo_dkey_stock_price === model)
+	return "wx-" + shop.toString() + "-" + employee.toString();
+    else if (diablo_dkey_stock_in === model)
+	return "wp-" + shop.toString() + "-" + employee.toString();
+}
+
+var stockDraft = function(storage, firm, shop, employee, model){
     this.storage  = storage;
+    this.firm     = firm;
     this.shop     = shop;
     this.employee = employee;
     this.model    = model;
-    if (diablo_dkey_stock_price === this.model)
-	this.key = "wx-" + this.shop.toString() + "-" + this.employee.toString();
+
+    this.key = stock_gen_draft_key(firm, shop, employee, model);
 };
 
 stockDraft.prototype.key = function() {
@@ -179,14 +187,32 @@ stockDraft.prototype.key = function() {
     // 	this.key = "wx-" + this.shop.toString() + "-" + this.employee.toString();
 };
 
+// stockDraft.prototype.gen_key = function(){
+//     if (diablo_dkey_stock_price === this.model)
+// 	return "wx-" + this.shop.toString() + "-" + this.employee.toString();
+//     else if (diablo_dkey_stock_in === this.mode)
+// 	return "wp-" + "-" + this.shop.toString() + "-" + this.employee.id.toString();
+// };
+
+stockDraft.prototype.change_key = function(firm, shop, employee){
+    this.firm = firm;
+    this.shop = shop;
+    this.employee = employee;
+    this.key = stock_gen_draft_key(firm, shop, employee, this.model);
+};
+
 stockDraft.prototype.keys = function(){
+    var re;
     if (diablo_dkey_stock_price === this.model){
-	var re = /^wx-[0-9-]+$/;
-	var keys = this.storage.keys(); 
-	return keys.filter(function(k){
-	    return re.test(k)
-	});
+	re = /^wx-[0-9-]+$/; 
+    } else if (diablo_dkey_stock_in === this.model){
+	re = /^wp-[0-9-]+$/; 
     }
+    
+    var keys = this.storage.keys(); 
+    return keys.filter(function(k){
+	return re.test(k)
+    });
 },
 
 stockDraft.prototype.save = function(resources){

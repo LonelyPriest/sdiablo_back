@@ -58,12 +58,11 @@
 	    <div class="col-xs-3 col-md-3">
 	      <div class="input-group">
 		<span class="input-group-addon">店铺</span>
-	  	<input class="form-control" type="text"
-	  	       x-ng-model="select.shop"
-	  	       placeholder="请选择店铺"
-	  	       typeahead-editable="false"
-	  	       typeahead="s as s.name for s in
-	  			  shops|filter:$viewValue|limitTo:8"/>
+	  	<select class="form-control" type="text" 
+	  		x-ng-model="select.shop"
+			x-ng-change="change_shop()"
+			x-ng-options="s as s.name for s in shops">
+		</select>
 	      </div>
 	    </div>
 
