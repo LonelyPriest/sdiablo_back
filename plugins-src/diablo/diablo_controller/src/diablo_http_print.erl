@@ -293,8 +293,12 @@ print_content(ShopId, PBrand, Model, 58, Merchant, Setting, Invs) ->
 	      RPrice      = ?v(<<"rprice">>, Inv),
 	      %% rDiscount   = ?v(<<"rdiscount">>, Inv), 
 	      Discount   =
-		  binary_to_float(
-		    float_to_binary(RPrice / TagPrice, [{decimals, 3}])) * 100,
+		  case TagPrice == 0 of
+		      true -> 0;
+		      false ->
+			  binary_to_float(
+			    float_to_binary(RPrice / TagPrice, [{decimals, 3}])) * 100
+		  end,
 	      
 	      {NewSTotal, NewRTotal } =
 		  case SellTotal > 0 of
@@ -447,7 +451,7 @@ body_stastic(Brand, _Model, Column, _TotalBalance, Attrs, Vip, STotal, RTotal) -
 	++ br(Brand).
     
 body_foot(Brand, _Model, Column, Setting) ->
-    ?DEBUG("body_foot with setting ~p", [Setting]), 
+    %% ?DEBUG("body_foot with setting ~p", [Setting]), 
     [CH|CT] = [?v(<<"comment1">>, Setting, []),
 	       ?v(<<"comment2">>, Setting, []),
 	       ?v(<<"comment3">>, Setting, []),
@@ -456,6 +460,8 @@ body_foot(Brand, _Model, Column, Setting) ->
     %% comment
     FirstComment = "顾客须知：" ++ br(Brand) 
 	++ "1：" ++ ?to_s(CH) ++ br(Brand),
+
+    Len = erlang:length(CT),
     
     {OtherComment, _Order} =
 	lists:foldr(
@@ -463,9 +469,9 @@ body_foot(Brand, _Model, Column, Setting) ->
 		  {Acc, Sequence};
 	     (M, {Acc, Sequence}) ->
 		  {?to_s(Sequence) ++ "："
-		   ++ ?to_s(M) ++ br(Brand) ++ Acc, Sequence + 1}
-	  end, {[], 2}, CT), 
-    ?DEBUG("OtherComment ~p, order ~p", [OtherComment, _Order]),
+		   ++ ?to_s(M) ++ br(Brand) ++ Acc, Sequence - 1}
+	  end, {[], Len + 1}, CT), 
+    %% ?DEBUG("OtherComment ~p, order ~p", [OtherComment, _Order]),
     
     PrintDatetime =
 	case Column of

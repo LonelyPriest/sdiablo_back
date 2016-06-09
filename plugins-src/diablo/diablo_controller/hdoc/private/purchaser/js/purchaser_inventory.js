@@ -82,7 +82,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 
 	$scope.select.surplus = 0;
 	$scope.left_balance   = 0;
-	if (-1 !== stockUtils.invalid_firm($scope.select.firm)){
+	if (diablo_invalid_firm !== stockUtils.invalid_firm($scope.select.firm)){
 	    $scope.select.surplus = $scope.select.firm.balance;
 	    $scope.select.left_balance = $scope.select.surplus;
 	} else {
@@ -511,16 +511,20 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	var added = [];
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    var add = $scope.inventories[i];
-	    if (add.firm_id !== -1
+	    if (diablo_invalid_firm !== add.firm_id
 		&& add.firm_id !== stockUtils.invalid_firm($scope.select.firm)){
 		$scope.has_saved = false;
 		diabloUtilsService.response(
 		    false,
 		    "新增库存",
-		    "新增库存失败：" + purchaserService.error[2093],
+		    "新增库存失败：["
+			+ $scope.select.firm.name + "，"
+			+ diablo_get_object(add.firm_id, $scope.firms).name
+			+ "]" + purchaserService.error[2093]
+		    	+ "款号：" + add.style_number + "！！", 
 		    undefined);
 		return;
-	    };
+	    }
 	    
 	    added.push({
 		// good        : add.id,
@@ -908,6 +912,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope.reset_inventory = function(inv){
 	$timeout.cancel($scope.timeout_auto_save);
 	$scope.inventories[0] = {$edit:false, $new:true};
+	$scope.auto_focus("style_number");
     }
 
     $scope.auto_save_free = function(inv){
@@ -1971,7 +1976,7 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
 	    if (state.ecode == 0){
 		dialog.response_with_callback(
 		    true, "入库单审核", "入库单审核成功！！单号：" + state.rsn,
-		    $scope, function(){r.state = 1})
+		    $scope, function(){r.state = diablo_stock_has_checked})
 	    	return;
 	    } else{
 	    	diabloUtilsService.response(
@@ -2039,7 +2044,7 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
 		if (state.ecode == 0){
 		    dialog.response_with_callback(
 			true, "入库单废弃", "入库单废弃成功！！单号：" + state.rsn,
-			$scope, function(){r.state=diablo_stock_abandoned})
+			$scope, function(){r.state=diablo_stock_has_abandoned})
 	    	    return;
 		} else{
 	    	    diabloUtilsService.response(

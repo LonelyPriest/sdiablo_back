@@ -127,14 +127,15 @@ var stockUtils = function(){
 	    if (angular.isDefined(obj)
 		&& angular.isObject(obj)
 		&& angular.isDefined(obj.id))
-		return firm.id
+		return obj.id
 	    
-	    return -1;
+	    return diablo_invalid_firm;
 	},
 
 	match_firm: function(firm){
-	    if (-1 !== stockUtils.invalid_firm(firm)) return [firm.id, -1];
-	    return -1;
+	    if (diablo_invalid_firm !== stockUtils.invalid_firm(firm))
+		return [firm.id, diablo_invalid_firm];
+	    return diablo_invalid_firm;
 	},
 
 	is_same: function(newValue, oldValue){

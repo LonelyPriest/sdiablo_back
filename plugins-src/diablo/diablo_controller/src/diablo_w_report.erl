@@ -210,6 +210,7 @@ handle_call({stock_in, Merchant, Conditions}, _From, State)->
 	" from w_inventory_new "
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and type=" ++ ?to_s(?NEW_INVENTORY)
+	++ " and state in(0,1)"
 	++ ?sql_utils:condition(proplists, NewConditions)
 	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime)
 	++ " group by shop",
@@ -229,6 +230,7 @@ handle_call({stock_out, Merchant, Conditions}, _From, State)->
 	" from w_inventory_new "
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and type=" ++ ?to_s(?REJECT_INVENTORY)
+	++ " and state in(0,1)"
 	++ ?sql_utils:condition(proplists, NewConditions)
 	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime)
 	++ " group by shop",

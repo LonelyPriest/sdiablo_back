@@ -1539,15 +1539,14 @@ update_metric(Amounts) ->
 type(new) -> 0;
 type(reject) -> 1.
 
-
 sort_condition(w_inventory_new, Merchant, Conditions) ->
     HasPay = ?v(<<"has_pay">>, Conditions, []),
 
     C = proplists:delete(<<"has_pay">>, Conditions),
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_with_prifix, C),
 
-    ?sql_utils:condition(proplists_suffix, NewConditions)
-	++ "a.merchant=" ++ ?to_s(Merchant)
+    "a.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
 	++ case HasPay of
 	       [] -> [];
 	       0 -> " and a.has_pay>0";

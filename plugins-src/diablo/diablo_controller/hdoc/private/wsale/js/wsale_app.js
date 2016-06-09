@@ -285,7 +285,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
     user, filterPromotion, filterScore,
     filterFirm, filterRetailer, filterEmployee,
     filterSizeGroup, filterBrand, filterType, filterColor, base){
-    console.log(user);
+    // console.log(user);
     // console.log(filterPromotion);
     // console.log(filterScore);
     // console.log(filterRetailer);
@@ -324,7 +324,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    user.right),
     };
 
-    $scope.focus_attr = {style_number:true, sell:false};
+    $scope.focus_attr = {style_number:true, sell:false, cash:false};
     $scope.auto_focus = function(attr){
 	if (!$scope.focus_attr[attr]){
 	    $scope.focus_attr[attr] = true;
@@ -402,10 +402,13 @@ wsaleApp.controller("wsaleNewCtrl", function(
     } 
 
     $scope.change_shop = function(){
+	$scope.setting.check_sale = wsaleUtils.check_sale($scope.select.shop_id, base);
+	$scope.setting.no_vip = wsaleUtils.no_vip($scope.select.shop.id, base); 
+	$scope.setting.q_backend = $scope.q_typeahead($scope.select.shop.id);
+	
+	$scope.match_all_w_inventory(); 
 	$scope.get_employee();
 	$scope.local_save(); 
-	$scope.setting.check_sale = wsaleUtils.check_sale($scope.select.shop_id, base);
-	$scope.setting.no_vip = wsaleUtils.no_vip($scope.select.shop.id, base);
     }
 
     $scope.get_employee = function(){
@@ -602,23 +605,26 @@ wsaleApp.controller("wsaleNewCtrl", function(
     }
     
     $scope.setting.q_backend = $scope.q_typeahead($scope.select.shop.id);
-    if (!$scope.setting.q_backend){
-	diabloNormalFilter.match_all_w_inventory(
-	    {shop:$scope.select.shop.id,
-	     start_time:$scope.qtime_start($scope.select.shop.id)}
-	).$promise.then(function(invs){
-	    $scope.all_w_inventory = 
-		invs.map(function(inv){
-		    var p = wsaleUtils.prompt_name(
-			inv.style_number, inv.brand, inv.type); 
-		    return angular.extend(
-                        inv, {name:p.name, prompt:p.prompt}); 
-		})
-	});
-    };
-
     console.log($scope.setting);
     
+    $scope.match_all_w_inventory = function(){
+	if (!$scope.setting.q_backend){
+	    diabloNormalFilter.match_all_w_inventory(
+		{shop:$scope.select.shop.id,
+		 start_time:$scope.qtime_start($scope.select.shop.id)}
+	    ).$promise.then(function(invs){
+		$scope.all_w_inventory = 
+		    invs.map(function(inv){
+			var p = wsaleUtils.prompt_name(
+			    inv.style_number, inv.brand, inv.type); 
+			return angular.extend(
+                            inv, {name:p.name, prompt:p.prompt}); 
+		    })
+	    });
+	};
+    }
+
+    $scope.match_all_w_inventory();
     // init
     // $scope.refresh();
     $scope.inventories = [];
@@ -797,7 +803,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
     $scope.on_select_good = function(item, model, label){
 	console.log(item);
 
-	if (item.tag_price < 0){
+	if (item.tag_price <= 0){
 	    fail_response(2193, function(){
 		$scope.inventories[0] = {$edit:false, $new:true}});
 	    return;
@@ -1354,7 +1360,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 
     $scope.calc_discount = function(inv){
 	if (inv.pid !== -1 && inv.promotion.rule_id === 0
-	    && $scope.select.retailer.type_id !== $scope.setting.no_vip){
+	    && $scope.select.retailer.id !== $scope.setting.no_vip){
 	    return inv.promotion.discount;
 	} else {
 	    return inv.discount;
@@ -1605,7 +1611,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
 
     $scope.reset_inventory = function(inv){
 	$timeout.cancel($scope.timeout_auto_save);
-	$scope.inventories[0] = {$edit:false, $new:true};;
+	$scope.inventories[0] = {$edit:false, $new:true};
+	$scope.auto_focus("style_number");
     };
 
     $scope.auto_save_free = function(inv){

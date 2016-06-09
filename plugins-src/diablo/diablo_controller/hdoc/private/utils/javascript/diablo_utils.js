@@ -29,6 +29,28 @@ diabloUtils.directive('ngAffix', function(){
     }
 });
 
+diabloUtils.directive('ngShortcut', function(){
+    return {
+	restrict: 'AE',
+	scope: {
+	    go: '&'
+	},
+	
+	link:function (scope, element, attrs) {
+            element.bind("keydown", function (event) {
+		console.log(scope);
+		if(event.which === scope.key) {
+		    event.preventDefault();
+		    var f = scope.go; 
+                    scope.$apply(function(){
+			if (angular.isFunction(f)) f()
+		    });
+		}
+            });
+	}
+    }
+});
+
 diabloUtils.directive('goRow', function() {
     return {
 	restrict: 'AE',

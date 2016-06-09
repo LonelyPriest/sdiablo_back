@@ -1971,7 +1971,10 @@ count_table(w_inventory_new, Merchant, Conditions) ->
     	", sum(a.wire) as t_wire"
     	", sum(a.verificate) as t_verificate"
 	" from w_inventory_new a where "
-	++ ?w_good_sql:sort_condition(w_inventory_new, Merchant, Conditions),
+	++ ?w_good_sql:sort_condition(
+	      w_inventory_new,
+	      Merchant,
+	      Conditions ++ [{<<"state">>, [0,1]}]),
     CountSql.
 
 
