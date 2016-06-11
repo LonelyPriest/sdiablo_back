@@ -58,6 +58,7 @@ employApp.service("employService", function($resource, dateFilter){
 	     mobile:    one.mobile,
 	     address:   one.address,
 	     entry:     dateFilter(one.entry, "yyyy-MM-dd"),
+	     shop:      one.shop.id
 	    }
 	)};
 
@@ -206,12 +207,13 @@ employApp.controller("employDetailCtrl", function(
 });
 
 employApp.controller("employNewCtrl", function(
-    $scope, $location, diabloPattern, diabloUtilsService, employService){
-
+    $scope, $location, diabloPattern, diabloUtilsService, employService, user){
     $scope.name_pattern = diabloPattern.chinese_name;
     $scope.mobile_pattern = diabloPattern.mobile;
-    $scope.address_pattern = diabloPattern.ch_name_address;
-    
+    $scope.address_pattern = diabloPattern.ch_name_address; 
+    $scope.shops = user.sortShops;
+    $scope.sexes = diablo_sex2object;
+
     // canlendar
     $scope.open_calendar = function(event){
 	event.preventDefault();
@@ -219,7 +221,7 @@ employApp.controller("employNewCtrl", function(
 	$scope.isOpened = true; 
     }
 
-    $scope.sexes = diablo_sex2object;
+    $scope.employ = {shop: $scope.shops[0]};
     
     // new merchant
     var dialog = diabloUtilsService;

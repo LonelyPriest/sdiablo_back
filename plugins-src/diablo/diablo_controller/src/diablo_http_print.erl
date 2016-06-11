@@ -466,7 +466,7 @@ body_foot(Brand, _Model, Column, Setting) ->
     {OtherComment, _Order} =
 	lists:foldr(
 	  fun([], {Acc, Sequence}) ->
-		  {Acc, Sequence};
+		  {Acc, Sequence - 1};
 	     (M, {Acc, Sequence}) ->
 		  {?to_s(Sequence) ++ "："
 		   ++ ?to_s(M) ++ br(Brand) ++ Acc, Sequence - 1}

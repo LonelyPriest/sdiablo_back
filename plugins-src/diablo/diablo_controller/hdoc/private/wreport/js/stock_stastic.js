@@ -63,8 +63,6 @@ wreportApp.controller("stockStasticCtrl", function(
 	    wreportService.stock_stastic($scope.match, search).then(function(result){
 		console.log(result);
 		if (result.ecode === 0){
-		    $scope.stastics = [];
-		    
 		    var stockSale        = result.sale;
 		    var stockProfit      = result.profit;
 		    var stockIn          = result.pin;
@@ -73,7 +71,19 @@ wreportApp.controller("stockStasticCtrl", function(
 		    var stockTransferOut = result.tout;
 		    var stockFix         = result.fix;
 
-		    var order_id = 1;
+		    $scope.stastics = [];
+		    $scope.total = {spay:0,
+				    cash:0,
+				    card:0,
+				    veri:0,
+				    pin:0,
+				    pout:0,
+				    tin:0,
+				    tout:0,
+				    sale:0,
+				    stock:0};
+		    
+		    var order_id = 1; 
 		    angular.forEach($scope.shops, function(shop){
 			var s = {shop: shop, order_id:order_id};
 			s.sale    = filter_by_shop(shop.id, stockSale);
@@ -88,6 +98,18 @@ wreportApp.controller("stockStasticCtrl", function(
 			    + to_i(s.tin.total) - to_i(s.tout.total)
 			    + to_i(s.fix.total)
 			    - to_i(s.sale.total);
+
+			$scope.total.spay += s.sale.spay;
+			$scope.total.cash += s.sale.cash;
+			$scope.total.card += s.sale.card;
+			$scope.total.veri += s.sale.veri;
+			$scope.total.pin  += to_i(s.pin.total);
+			$scope.total.pout += to_i(s.pout.total);
+			$scope.total.tin  += to_i(s.tin.total);
+			$scope.total.tout += to_i(s.tout.total);
+			$scope.total.sale += to_i(s.sale.total);
+			$scope.total.stock += s.stock;
+			
 			$scope.stastics.push(s);
 			order_id++;
 		    });

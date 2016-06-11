@@ -64,6 +64,7 @@ handle_call({new_employee, Props}, _From, State)->
     Mobile   = ?v(<<"mobile">>, Props),
     Address  = ?v(<<"address">>, Props),
     Entry    = ?v(<<"entry">>, Props),
+    Shop     = ?v(<<"shop">>, Props),
     Merchant = ?v(<<"merchant">>, Props),
 
     %% name can not be same
@@ -79,13 +80,14 @@ handle_call({new_employee, Props}, _From, State)->
 	{ok, []} ->
 	    Number = ?utils:pack_string(new_number(Merchant), 0),
 	    Sql1 = "insert into " ++ ?tbl_employ
-		++ "(number, name, sex, mobile, address, entry, merchant)"
+		++ "(number, name, sex, mobile, address, shop, entry, merchant)"
 		++ " values ("
 		++ "\"" ++ ?to_s(Number) ++ "\","
 		++ "\"" ++ ?to_s(Name) ++ "\","
 		++ ?to_s(Sex) ++ ","
 		++ "\"" ++ ?to_s(Mobile) ++ "\","
 		++ "\"" ++ ?to_s(Address) ++ "\","
+		++ ?to_s(Shop) ++ ","
 		++ "\"" ++ ?to_s(Entry) ++ "\","
 		++ ?to_s(Merchant) ++ ");",
 		

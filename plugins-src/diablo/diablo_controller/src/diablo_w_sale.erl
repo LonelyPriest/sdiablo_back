@@ -725,6 +725,7 @@ handle_call({total_rsn_group, Merchant, Conditions}, _From, State) ->
     Sql = "select count(*) as total"
     	", SUM(b.total) as t_amount"
     	", SUM(b.rprice * b.total) as t_balance"
+	", SUM(b.org_price * b.total) as t_obalance"
 	
     	" from w_sale_detail b, w_sale a"
 

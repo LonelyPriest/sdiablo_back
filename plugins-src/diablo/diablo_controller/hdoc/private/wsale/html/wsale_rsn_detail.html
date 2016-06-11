@@ -163,8 +163,9 @@
 
 		  <tr x-ng-if="total_items!==0" class="bg-white">
 		    <td colspan={{calc_colspan()}}></td>
-		    <td class="success">{{total_amounts}}</td>
-		    <td x-ng-if="right.show_stastic" class="danger">{{total_balance}}</td>
+		    <td>{{total_amounts}}</td>
+		    <td x-ng-if="right.show_stastic">{{total_balance}}</td>
+		    <td x-ng-if="right.show_stastic">{{total_obalance}}</td>
 		    <td colspan="3"></td>
 		  </tr>
 		  

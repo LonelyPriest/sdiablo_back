@@ -1350,9 +1350,9 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	$scope.re_calculate();
 
 	// promotions
-	if ($scope.select.retailer.id !== $scope.setting.no_vip){
-	    wsaleUtils.format_promotion(inv, $scope.show_promotions);
-	}
+	// if ($scope.select.retailer.id !== $scope.setting.no_vip){
+	//     wsaleUtils.format_promotion(inv, $scope.show_promotions);
+	// }
 
 	$timeout.cancel($scope.timeout_auto_save);
 	$scope.auto_focus("style_number");
@@ -1440,9 +1440,9 @@ wsaleApp.controller("wsaleNewCtrl", function(
 			$scope.local_save();
 			$scope.re_calculate();
 
-			if ($scope.select.retailer.id !== $scope.setting.no_vip){
-			    wsaleUtils.format_promotion(inv, $scope.show_promotions);
-			}
+			// if ($scope.select.retailer.id !== $scope.setting.no_vip){
+			//     wsaleUtils.format_promotion(inv, $scope.show_promotions);
+			// }
 
 			$scope.auto_focus("style_number");
 		    };

@@ -25,6 +25,7 @@ create table employees
     position        SMALLINT(1) default 2, -- 0:supper, 1: shopowner; 2: saler
     mobile          VARCHAR(11),
     address         VARCHAR(64),
+    shop            INTEGER default -1,
     merchant        INTEGER, -- which merchant belong to
     deleted         INTEGER default 0, -- 0: no;  1: yes
     unique  key     index_mn (merchant, name),

@@ -146,8 +146,8 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 		if (page === 1){
 		    $scope.total_items = result.total;
 		    $scope.total_amounts = result.total === 0 ? 0 : result.t_amount;
-		    $scope.total_balance =
-			result.total === 0 ? 0 : $scope.round(result.t_balance);
+		    $scope.total_balance = result.total === 0 ? 0 : $scope.round(result.t_balance);
+		    $scope.total_obalance = result.total === 0 ? 0 : $scope.round(result.t_obalance);
 		    $scope.inventories = [];
 		}
 		angular.forEach(result.data, function(d){

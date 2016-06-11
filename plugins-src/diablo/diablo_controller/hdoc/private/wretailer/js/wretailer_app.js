@@ -224,7 +224,6 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 	return http.save(
 	    {operation: "update_w_retailer"},
 	    {id:       r.id,
-	     type:     r.type.id,
 	     name:     r.name,
 	     balance:  r.balance,
 	     mobile:   r.mobile,

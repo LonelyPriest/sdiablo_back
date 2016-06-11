@@ -133,6 +133,16 @@
 	      </div> 
 	    </div>
 
+	    <div class="form-group">
+	      <label class="col-sm-3 col-md-3 control-label">所属店铺</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<select class="form-control" type="text"
+	  		x-ng-model="employ.shop" 
+	  		x-ng-options="s as s.name for s in shops">
+		</select>
+	      </div> 
+	    </div>
+
 	  </div><!--END form body-->
 
 	  <!--BEGIN form action-->
