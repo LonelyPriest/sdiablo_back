@@ -1,6 +1,13 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2016-06-13",
+	 content: [
+	     "增加入库时，价格跟踪选项",
+	     "修正入库时，折扣率自动运算"
+	 ]
+	},
+	
 	{date: "2016-06-09",
 	 content: [
 	     "增加用户登录时的默认店铺选择",

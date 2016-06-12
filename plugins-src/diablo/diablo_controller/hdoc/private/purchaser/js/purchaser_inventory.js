@@ -759,10 +759,16 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    }).then(function(result){
 		console.log(result);
 		if (result.ecode === 0){
-		    inv.org_price = result.data.org_price;
-		    inv.tag_price = result.data.tag_price;
-		    inv.discount  = result.data.discount;
-		    inv.ediscount = result.data.ediscount;
+		    if (!diablo_is_empty(result.data)){
+			inv.org_price = result.data.org_price;
+			inv.tag_price = result.data.tag_price;
+			inv.discount  = rsult.data.discount;
+			inv.ediscount = result.data.ediscount;
+		    } else {
+			inv.tag_price = 0;
+			inv.discount  = 0;
+		    }
+		    
 		}
 		add_stock();
 	    })
