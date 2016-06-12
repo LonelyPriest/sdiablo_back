@@ -138,9 +138,10 @@ purchaser_inventory(get_new_amount, Merchant, Conditions) ->
     
 purchaser_inventory(amount, Merchant, Shop, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {get_amount, Merchant, Shop, StyleNumber, Brand}).
-
-
+    gen_server:call(Name, {get_amount, Merchant, Shop, StyleNumber, Brand});
+purchaser_inventory(tag_price, Merchant, Shop, StyleNumber, Brand) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {get_tagprice, Merchant, Shop, StyleNumber, Brand}). 
 
 %%
 %% match
@@ -1447,6 +1448,20 @@ handle_call({get_amount, Merchant, Shop, StyleNumber, Brand}, _From, State) ->
 
     RealyShop = realy_shop(true, Merchant, Shop),
     Sql = "select amount as total from w_inventory"
+	" where style_number=" ++ "\'" ++ ?to_s(StyleNumber) ++ "\'"
+	" and brand=" ++ ?to_s(Brand)
+	++ " and shop=" ++ ?to_s(RealyShop) 
+	++ " and merchant=" ++ ?to_s(Merchant),
+
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+handle_call({get_tagprice, Merchant, Shop, StyleNumber, Brand}, _From, State) ->
+    ?DEBUG("get_tagprice, with Merchant ~p, Shop ~p, StyleNumber ~p, Brand ~p",
+	   [Merchant, Shop, StyleNumber, Brand]),
+
+    RealyShop = realy_shop(true, Merchant, Shop),
+    Sql = "select style_number, brand, org_price, tag_price, discount, ediscount from w_inventory"
 	" where style_number=" ++ "\'" ++ ?to_s(StyleNumber) ++ "\'"
 	" and brand=" ++ ?to_s(Brand)
 	++ " and shop=" ++ ?to_s(RealyShop) 

@@ -406,7 +406,9 @@
 		    		     x-ng-model="inv.tag_price"
 		    		     popover-placement="top"
 		    		     popover-trigger="focus"
-		    		     popover="请输入吊牌价"/>
+		    		     popover="请输入吊牌价"
+				     ng-model-options="{debounce:300}"
+				     x-ng-change="row_change_price(inv)"/>
 		    	    </div>
 			  </form>
 			</td>
@@ -466,8 +468,7 @@
 			  <form name="inv.form.ediscount"
 		    		x-ng-if="inv.$new && inv.free_color_size
 		    			 || inv.update_directory">
-		    	    <div ng-class="{'has-error':inv.form.ediscount.$invalid
-		    			   && !inv.form.ediscount.$pristine}">
+		    	    <div ng-class="{'has-error':inv.form.ediscount.$invalid}">
 		    	      <input class="form-control"
 		    		     type="number" step="0.1"
 		    		     placeholder="进价折扣率"
@@ -923,7 +924,9 @@
 		   disable-key
 		   type="number" step="0.01" 
 		   x-ng-pattern="/^\d+(.\d{1,2})?$/"
-		   x-ng-model="params.tag_price"/>
+		   ng-model-options="{debounce:300}"
+		   x-ng-model="params.tag_price"
+		   x-ng-change="params.get_price_info(params.tag_price, params, 1)" />
 	  </div>
 	</form>
 	
@@ -968,13 +971,12 @@
 	  折扣率
 	</span>
 	<form name="ediscount">
-	  <div ng-class="{'has-error':ediscount.$invalid
-			 && !ediscount.$pristine}"> 
+	  <div ng-class="{'has-error':ediscount.$invalid}"> 
 	    <input class="form-control"
-		   type="number" step="0.1" 
+		   type="number" step="0.1"
 		   required
 		   disable-key
-		   x-ng-pattern="/^\d{1,2}(.\d{1,2})?$|100$/"
+		   x-ng-pattern="/^\d{1,2}(\.\d{1,2})?$|100$/"
 		   ng-model-options="{debounce:300}"
 		   x-ng-change="params.get_price_info(params.tag_price, params, 0)"
 		   x-ng-model="params.ediscount"/>
@@ -1054,7 +1056,7 @@
 
   <div class="modal-footer">
     <button class="btn btn-primary"
-	    x-ng-disabled="!params.valid_amount(params.amount)"
+	    x-ng-disabled="!params.valid_amount(params.amount, params.ediscount)"
 	    x-ng-click="ok()">保存</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>

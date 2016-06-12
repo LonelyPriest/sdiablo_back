@@ -31,6 +31,11 @@ var stockUtils = function(){
 		"m_sgroup", shop, base, parseInt, diablo_no);
 	},
 
+	t_trace: function(shop, base){
+	    return diablo_base_setting(
+		"t_trace", shop, base, parseInt, diablo_no);
+	},
+
 	prompt_name: function(style_number, brand, type) {
 	    var name = style_number + "，" + brand + "，" + type;
 	    var prompt = name + "," + diablo_pinyin(name); 
@@ -57,7 +62,8 @@ var stockUtils = function(){
 	calc_stock_orgprice_info: function(tag_price, stock, direction){
 	    // console.log(org_price, ediscount, tag_price);
 	    if (!stock.hasOwnProperty('org_price')
-	       || !stock.hasOwnProperty('ediscount')){
+	       || !stock.hasOwnProperty('ediscount')
+	       || !stock.hasOwnProperty('tag_price')){
 		return stock;
 	    } 
 
@@ -79,7 +85,7 @@ var stockUtils = function(){
 		stock.ediscount = diablo_discount(
 		    stockUtils.to_float(stock.org_price),
 		    stockUtils.to_float(stock.tag_price));
-	    }
+	    } 
 
 	    return stock;
 	},
@@ -98,6 +104,11 @@ var stockUtils = function(){
 	    } else{
 		return parseInt(v)
 	    }
+	},
+
+	ediscount: function(org_price, tag_price){
+	    if (tagPrice == 0) return 0; 
+	    return parseFloat((diablo_float_div(org_price, tagPrice) * 100).toFixed(1));
 	},
 
 	start_time_of_second: function(shop, base, now, dateFun){

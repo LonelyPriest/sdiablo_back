@@ -803,6 +803,7 @@ pass_action(wholesaler) ->
      <<"filter_w_inventory_reject">>,
      <<"filter_w_inventory_reject_rsn_group">>,
      <<"w_inventory_reject_rsn_detail">>,
+     <<"get_w_inventory_tagprice">>,
      
      %% inventory fix
      <<"filter_fix_w_inventory">>, 

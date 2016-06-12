@@ -11,7 +11,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope.types       = filterType;
     $scope.size_groups = filterSizeGroup;
     $scope.firms       = filterFirm;
-    $scope.employees   = filterEmployee;
+    // $scope.employees   = filterEmployee;
     $scope.colors      = filterColor;
     $scope.color_types = filterColorType;
     
@@ -119,10 +119,9 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	$scope.select.comment = undefined;
 
 	$scope.select.left_balance = undefined;
-	if (-1 !== stockUtils.invalid_firm($scope.select.firm)){
-	    $scope.select.left_balance = $scope.select.firm.balance;
-	}
-
+	$scope.select.firm = undefined;
+	$scope.select.left_balance = 0;
+	
 	$scope.disable_refresh = true;
 	$scope.has_saved = false;
 	
@@ -145,12 +144,31 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	should_pay: 0,
 	extra_pay_type: $scope.extra_pay_types[0]};
 
-    if ($scope.employees.length !== 0){
-	$scope.select.employee = $scope.employees[0]; 
-	if (diablo_invalid_employee !== user.loginEmployee){
-	    $scope.select.employee = diablo_get_object(user.loginEmployee, $scope.employees); 
-        }
-    }
+
+    $scope.get_employee = function(){
+	$scope.employees = filterEmployee.filter(function(e){
+	    return e.shop === $scope.select.shop.id;
+	});
+	
+	if ($scope.employees.length !== 0){
+	    $scope.select.employee = $scope.employees[0]; 
+	    if (diablo_invalid_employee !== user.loginEmployee){
+		$scope.select.employee = diablo_get_object(user.loginEmployee, $scope.employees); 
+            }
+
+	    if (angular.isUndefined($scope.select.employee))
+		$scope.select.employee = $scope.employees[0];
+	} 
+    };
+
+    $scope.get_employee();
+    
+    // if ($scope.employees.length !== 0){
+    // 	$scope.select.employee = $scope.employees[0]; 
+    // 	if (diablo_invalid_employee !== user.loginEmployee){
+    // 	    $scope.select.employee = diablo_get_object(user.loginEmployee, $scope.employees); 
+    //     }
+    // }
 
     /*
      * draft
@@ -206,12 +224,16 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 
     $scope.change_shop = function(){
 	sDraft.change_key(undefined, $scope.select.shop.id, $scope.select.employee.id);
+	$scope.base_settings.m_sgroup = stockUtils.multi_sizegroup($scope.select.shop.id, base);
+	$scope.base_settings.t_trace = stockUtils.t_trace($scope.select.shop.id, base);
+	$scope.get_employee();
     };
     
     $scope.prompt_limit = stockUtils.prompt_limit($scope.select.shop.id, base);
 
     $scope.base_settings = {
-	m_sgroup:stockUtils.multi_sizegroup($scope.select.shop.id, base)
+	m_sgroup: stockUtils.multi_sizegroup($scope.select.shop.id, base),
+	t_trace: stockUtils.t_trace($scope.select.shop.id, base)
     };
     
     // calender
@@ -534,10 +556,10 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		    $scope, function(){
 			// $scope.has_saved = true;
 			// modify current balance of retailer
-			if (-1 !== stockUtils.invalid_firm($scope.select.firm)){
-			    $scope.select.firm.balance = $scope.select.left_balance;
-			    $scope.select.surplus = $scope.select.firm.balance;
-			}
+			// if (-1 !== stockUtils.invalid_firm($scope.select.firm)){
+			//     $scope.select.firm.balance = $scope.select.left_balance;
+			//     $scope.select.surplus = $scope.select.firm.balance;
+			// }
 
 			sDraft.remove(); 
 			// $scope.local_remove();
@@ -565,7 +587,10 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	amounts.push(m); return m;
     };
 
-    var valid_amount = function(amounts){
+    var valid_amount = function(amounts, ediscount){
+	var re = diabloPattern.discount;
+	if (!re.test(ediscount)) return false;
+	
 	var unchanged = 0;
 	for (var i=0, l=amounts.length; i<l; i++){
 	    if(angular.isUndefined(amounts[i])
@@ -579,7 +604,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	// console.log(amounts);
 	return unchanged === l ? false : true;
     };
-
+    
     $scope.row_change_price = function(inv){
 	stockUtils.calc_stock_orgprice_info(inv.tag_price, inv, 1); 
 	if (angular.isDefined(diablo_set_float(inv.org_price))){
@@ -652,7 +677,6 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope.add_inventory = function(inv){
 	console.log(inv);
 	// var add = $scope.inventories[0]; 
-
 	var after_add = function(){
 	    inv.$edit = true;
 	    inv.$new = false;
@@ -681,48 +705,72 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    inv.amount    = result.amount;
 	    inv.total     = result.total;
 	    inv.org_price = result.org_price;
-	    inv.ediscount = result.ediscount;
-	    inv.tag_price = result.tag_price;
+	    // inv.ediscount = result.ediscount;
+	    inv.tag_price = result.tag_price; 
 	    inv.discount  = result.discount;
+	    inv.ediscount = diablo_discount(inv.org_price, inv.tag_price);
 	    inv.over      = result.over;
 	    after_add();
 	} 
-	
-	if(inv.free_color_size && $scope.tab_active[0].active){
-	    inv.total = inv.amount[0].count;
-	    after_add();
-	} else{
-	    var modal_size = diablo_valid_dialog(inv.sizes);
-	    var large_size = modal_size === 'lg' ? true : false
-	    var payload = {sizes:        inv.sizes,
-			   large_size:   large_size,
-			   amount:       inv.amount,
-			   org_price:    inv.org_price,
-			   ediscount:    inv.ediscount,
-			   tag_price:    inv.tag_price,
-			   discount:     inv.discount,
-			   over:         inv.over,
-			   path:         inv.path,
-			   right:        $scope.stock_right,
-			   get_amount:    get_amount,
-			   valid_amount:  valid_amount,
-			   get_price_info: stockUtils.calc_stock_orgprice_info};
-	    
-	    if (inv.colors.length === 1 && inv.colors[0] === "0"){
-		inv.colors_info = [{cid:0}];
-		payload.colors = inv.colors_info;
-		diabloUtilsService.edit_with_modal(
-		    "inventory-new.html",
-		    modal_size, callback, $scope, payload)
+
+	var add_stock = function(){
+	    if(inv.free_color_size && $scope.tab_active[0].active){
+		inv.total = inv.amount[0].count;
+		after_add();
 	    } else{
-		inv.colors_info = inv.colors.map(function(cid){
-		    return diablo_find_color(parseInt(cid), $scope.colors)});
+		var modal_size = diablo_valid_dialog(inv.sizes);
+		var large_size = modal_size === 'lg' ? true : false
+		var payload = {sizes:        inv.sizes,
+			       large_size:   large_size,
+			       amount:       inv.amount,
+			       org_price:    inv.org_price,
+			       ediscount:    inv.ediscount,
+			       tag_price:    inv.tag_price,
+			       discount:     inv.discount,
+			       over:         inv.over,
+			       path:         inv.path,
+			       right:        $scope.stock_right,
+			       get_amount:    get_amount,
+			       valid_amount:  valid_amount,
+			       get_price_info: stockUtils.calc_stock_orgprice_info};
 		
-		payload.colors = inv.colors_info;
-		diabloUtilsService.edit_with_modal(
-		    "inventory-new.html", modal_size, callback, $scope, payload);
-	    } 
-	} 
+		if (inv.colors.length === 1 && inv.colors[0] === "0"){
+		    inv.colors_info = [{cid:0}];
+		    payload.colors = inv.colors_info;
+		    diabloUtilsService.edit_with_modal(
+			"inventory-new.html",
+			modal_size, callback, $scope, payload)
+		} else{
+		    inv.colors_info = inv.colors.map(function(cid){
+			return diablo_find_color(parseInt(cid), $scope.colors)});
+		    
+		    payload.colors = inv.colors_info;
+		    diabloUtilsService.edit_with_modal(
+			"inventory-new.html", modal_size, callback, $scope, payload);
+		} 
+	    }
+	};
+	
+	if (diablo_yes === $scope.base_settings.t_trace){
+	    purchaserService.get_purchaser_tagprice({
+		style_number: inv.style_number,
+		brand:        inv.brand_id,
+		shop:         $scope.select.shop.id
+	    }).then(function(result){
+		console.log(result);
+		if (result.ecode === 0){
+		    inv.org_price = result.data.org_price;
+		    inv.tag_price = result.data.tag_price;
+		    inv.discount  = result.data.discount;
+		    inv.ediscount = result.data.ediscount;
+		}
+		add_stock();
+	    })
+	} else {
+	    add_stock();
+	}
+	
+	
     };
     
     /*
@@ -798,9 +846,10 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    inv.amount    = result.amount;
 	    inv.total     = result.total;
 	    inv.org_price = result.org_price;
-	    inv.ediscount = result.ediscount;
+	    // inv.ediscount = result.ediscount;
 	    inv.tag_price = result.tag_price;
 	    inv.discount  = result.discount;
+	    inv.ediscount = stockUtils.ediscount(inv.org_price, inv.tag_price);
 	    inv.over      = result.over;
 
 	    // save to local
@@ -834,8 +883,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	$timeout.cancel($scope.timeout_auto_save);
 	inv.$update          = false;
 	inv.update_directory = false; 
-	inv.total            = inv.amount[0].count;
-	
+	inv.total            = inv.amount[0].count; 
 	// $scope.local_save();
 	sDraft.save($scope.inventories.filter(function(r){return !r.$new}));
 	$scope.re_calculate()
@@ -871,7 +919,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    || angular.isUndefined(inv.ediscount)
 	    || angular.isUndefined(inv.org_price)
 	    || angular.isUndefined(inv.tag_price)
-	    || angular.isUndefined(inv.discount)){
+	    || angular.isUndefined(inv.discount)
+	    || inv.form.ediscount.$invalid){
 	    return;
 	} 
 	

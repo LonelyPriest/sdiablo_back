@@ -1026,7 +1026,15 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
     %% Promotion   = ?v(<<"promotion">>, Inv),
     OrgPrice    = ?v(<<"org_price">>, Inv),
     TagPrice    = ?v(<<"tag_price">>, Inv),
-    EDiscount   = ?v(<<"ediscount">>, Inv),
+    %% EDiscount   = ?v(<<"ediscount">>, Inv),
+    EDiscount   = case TagPrice == 0 of
+		      true -> 0;
+		      false ->
+			  ?to_f(float_to_binary(
+				  OrgPrice / TagPrice, [{decimals, 3}])) * 100
+		  end,
+    %% ?DEBUG("ediscount ~p", [EDiscount]),
+			  
     Discount    = ?v(<<"discount">>, Inv),
     Path        = ?v(<<"path">>, Inv, []),
     AlarmDay    = ?v(<<"alarm_day">>, Inv, 7),
@@ -1082,7 +1090,7 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		 ++ case Mode of
 			?NEW_INVENTORY ->
 			    ", org_price=" ++ ?to_s(OrgPrice)
-				++ ", ediscount=" ++ ?to_s(Discount)
+				++ ", ediscount=" ++ ?to_s(EDiscount)
 				++ ", tag_price=" ++ ?to_s(TagPrice)
 				++ ", discount=" ++ ?to_s(Discount);
 			%%++ ", entry_date=" ++ "\"" ++ ?to_s(CurDateTime) ++ "\""; 
@@ -1144,7 +1152,7 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		["update w_inventory_new_detail" 
 		 " set amount=amount+" ++ ?to_s(Total) 
 		 ++ ", org_price=" ++ ?to_s(OrgPrice)
-		 ++ ", ediscount=" ++ ?to_s(Discount)
+		 ++ ", ediscount=" ++ ?to_s(EDiscount)
 		 ++ ", tag_price=" ++ ?to_s(TagPrice)
 		 ++ ", discount=" ++ ?to_s(Discount)
 		 ++ ", entry_date=" ++ "\"" ++ ?to_s(CurDateTime) ++ "\"" 
@@ -1245,7 +1253,14 @@ amount_reject(RSN, Merchant, Shop, Firm, Datetime, Inv, Amounts) ->
     Total       = ?v(<<"total">>, Inv),
     OrgPrice    = ?v(<<"org_price">>, Inv),
     TagPrice    = ?v(<<"tag_price">>, Inv), 
-    EDiscount   = ?v(<<"ediscount">>, Inv),
+    %% EDiscount   = ?v(<<"ediscount">>, Inv),
+    EDiscount   = case TagPrice == 0 of
+		      true -> 0;
+		      false ->
+			  ?to_f(float_to_binary(
+				  OrgPrice / TagPrice, [{decimals, 3}])) * 100
+		  end,
+    
     Discount    = ?v(<<"discount">>, Inv),
     Path        = ?v(<<"path">>, Inv, []), 
 

@@ -97,6 +97,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 			angular.forEach(history, function(h){
 			    h.brand = diablo_get_object(h.brand_id, $scope.brands);
 			    h.firm  = diablo_get_object(h.firm_id, $scope.firms);
+			    h.shop  = diablo_get_object(h.shop_id, $scope.shops);
 			});
 
 			$scope.select_history = {style_number:inv.style_number,
@@ -304,7 +305,8 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 		add.free_color_size = invs[i].free === 0 ? true : false;
 		add.org_price       = invs[i].org_price;
 		add.tag_price       = invs[i].tag_price;
-		add.ediscount       = invs[i].ediscount;
+		// add.ediscount       = invs[i].ediscount;
+		add.ediscount       = diablo_discount(add.org_price, add.tag_price);
 		add.discount        = invs[i].discount;
 		add.total           = invs[i].amount;
 		add.over            = invs[i].over;

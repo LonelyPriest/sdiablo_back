@@ -109,6 +109,7 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 			    // h.brand = diablo_get_object(h.brand_id, $scope.brands);
 			    h.firm  = diablo_get_object(h.firm_id, $scope.firms);
 			    h.brand = inv.brand;
+			    h.shop = diablo_get_object(h.shop_id, $scope.shops);
 			});
 
 			$scope.select_history = {style_number:inv.style_number,

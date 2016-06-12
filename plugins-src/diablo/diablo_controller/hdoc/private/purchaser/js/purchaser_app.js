@@ -387,6 +387,11 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
     	    {operation: "list_w_inventory"}, condition).$promise;
     };
 
+    this.get_purchaser_tagprice = function(condition){
+	return http.save(
+	    {operation: "get_w_inventory_tagprice"}, condition).$promise;
+    };
+
     this.get_w_invnetory_new = function(RSN){
     	return http.get({operation: "get_w_inventory_new", id: RSN}).$promise;
     };

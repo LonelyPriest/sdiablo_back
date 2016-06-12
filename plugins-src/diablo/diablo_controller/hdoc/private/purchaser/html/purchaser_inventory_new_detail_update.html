@@ -311,6 +311,7 @@
 
 		      <th class="text-center">类型</th>
 		      <th class="text-center">日期</th>
+		      <th class="text-center">店铺</th>
 		      <!-- <th class="text-center">折扣率</th> -->
 
 		  </tr>
@@ -336,6 +337,7 @@
 		    </td>
 
 		    <td>{{h.entry_date}}</td>
+		    <td>{{h.shop.name}}</td>
 		    <!-- <td class="fg-red"> -->
 		    <!--   {{calc_drate(h.org_price, h.ediscount, h.tag_price)}} -->
 		    <!-- </td> -->
@@ -423,7 +425,9 @@
 				 disable-key
 				 x-ng-focus="on_focus_attr('tag_price', inv)"
 				 x-ng-pattern="/^\d+(.\d{1,2})?$/"
-				 x-ng-model="inv.tag_price" />
+				 x-ng-model="inv.tag_price"
+				 ng-model-options="{debounce:300}"
+				 x-ng-change="row_change_price(inv)"/>
 			</div>
 		      </form> 
 		    </td>

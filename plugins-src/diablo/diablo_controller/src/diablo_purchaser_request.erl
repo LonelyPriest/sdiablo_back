@@ -207,6 +207,22 @@ action(Session, Req, {"get_w_inventory_new_amount"}, Payload) ->
     	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"get_w_inventory_tagprice"}, Payload) ->
+    Merchant = ?session:get(merchant, Session),
+    Shop = ?v(<<"shop">>, Payload),
+    StyleNumber = ?v(<<"style_number">>, Payload),
+    Brand = ?v(<<"brand">>, Payload),
+    
+    case ?w_inventory:purchaser_inventory(
+	    tag_price, Merchant, Shop, StyleNumber, Brand) of 
+    	{ok, Detail} ->
+	    %% ?DEBUG("detail ~p", [Detail]),
+	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
+					       {<<"data">>, {Detail}}]}); 
+    	{error, Error} ->
+    	    ?utils:respond(200, Req, Error)
+    end;
+
     
 %% =============================================================================
 %% reject
