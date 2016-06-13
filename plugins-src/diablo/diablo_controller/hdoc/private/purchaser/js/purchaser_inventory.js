@@ -262,7 +262,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	var now = $.now();
 	return stockUtils.start_time(shopId, base, now, dateFilter); 
     };
-
+    
     $scope.get_all_w_good = function(){
 	// console.log(select_firm);
 	diabloFilter.match_all_w_good(
@@ -283,6 +283,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     };
 
     var copy_select = function(add, src){
+	add.$new_good    = src.$new_good;
 	add.style_number = src.style_number;
 	add.brand        = src.brand;
 	add.brand_id     = src.brand_id;
@@ -363,11 +364,33 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	// add at first allways 
 	var add = $scope.inventories[0];
 	add = copy_select(add, item); 
-	console.log(add); 
+	console.log(add);
 	if (!add.free_color_size || $scope.tab_active[1].active){
 	    $scope.add_inventory(add)
-	};
-    }; 
+	} else {
+	    if (diablo_yes === $scope.base_settings.t_trace
+		&& (angular.isUndefined(add.$new_good) || !add.$new_good) ){
+		purchaserService.get_purchaser_tagprice({
+		    style_number: add.style_number,
+		    brand:        add.brand_id,
+		    shop:         $scope.select.shop.id
+		}).then(function(result){
+		    console.log(result);
+		    if (result.ecode === 0){
+			if (!diablo_is_empty(result.data)){
+			    add.org_price = result.data.org_price;
+			    add.tag_price = result.data.tag_price;
+			    add.discount  = result.data.discount;
+			    add.ediscount = result.data.ediscount;
+			} else {
+			    add.tag_price = 0;
+			    add.discount  = 0;
+			} 
+		    }
+		})
+	    }
+	}
+    };
     
     /*
      * save all
@@ -749,9 +772,11 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 			"inventory-new.html", modal_size, callback, $scope, payload);
 		} 
 	    }
-	};
+	}; 
 	
-	if (diablo_yes === $scope.base_settings.t_trace){
+	if (diablo_yes === $scope.base_settings.t_trace
+	    && (!inv.free_color_size || $scope.tab_active[1].active)
+	    && (angular.isUndefined(inv.$new_good) || !inv.$new_good) ){
 	    purchaserService.get_purchaser_tagprice({
 		style_number: inv.style_number,
 		brand:        inv.brand_id,
@@ -762,7 +787,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		    if (!diablo_is_empty(result.data)){
 			inv.org_price = result.data.org_price;
 			inv.tag_price = result.data.tag_price;
-			inv.discount  = rsult.data.discount;
+			inv.discount  = result.data.discount;
 			inv.ediscount = result.data.ediscount;
 		    } else {
 			inv.tag_price = 0;
@@ -774,9 +799,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    })
 	} else {
 	    add_stock();
-	}
-	
-	
+	} 
     };
     
     /*
@@ -962,6 +985,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 
     $scope.on_select_good_new = function(item, model, label){
 	console.log(item);
+	$scope.good.$new_good = false;
 	$scope.good.style_number = item.style_number;
 	$scope.good.type  = item.type;
 	$scope.good.brand = item.brand;
@@ -1284,6 +1308,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 			    good.style_number, good.brand, good.type);
 			
 			var agood = {
+			    $new_good: true,
 			    style_number: good.style_number,
 			    brand:     good.brand,
 			    brand_id:  state.brand,

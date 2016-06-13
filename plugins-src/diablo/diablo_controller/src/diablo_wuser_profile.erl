@@ -21,7 +21,7 @@
 	 terminate/2, code_change/3]).
 
 -export([new/1, new/2, get/1, get/2, get/3,
-	 update/2, update/3, set_default/1]).
+	 update/2, update/3, set_default/1, set_default/2]).
 -export([filter/3]).
 
 -define(SERVER, ?MODULE). 
@@ -115,7 +115,9 @@ get(user, Merchant, UserId) ->
 
 
 set_default(Merchant) ->
-    gen_server:call(?SERVER, {set_default, Merchant}).
+    set_default(Merchant, -1).
+set_default(Merchant, Shop) ->
+    gen_server:call(?SERVER, {set_default, Merchant, Shop}).
 
 update(good, Merchant) ->
     gen_server:cast(?SERVER, {update_good, Merchant}); 
@@ -681,8 +683,8 @@ handle_call({get_score, Merchant}, _From, State) ->
     {reply, {ok, Select}, State};
 
 
-handle_call({set_default, Merchant}, _From, State) ->
-    ?DEBUG("set default value of merchant ~p", [Merchant]),
+handle_call({set_default, Merchant, Shop}, _From, State) ->
+    ?DEBUG("set default value of merchant ~p, shop ~p", [Merchant, Shop]),
     %% base setting
     Now = ?utils:current_time(format_localtime), 
     Values = ?w_base:sys_config(), 
@@ -690,18 +692,19 @@ handle_call({set_default, Merchant}, _From, State) ->
 	    fun({EName, CName, Value, Type}, Acc) ->
 		    Sql00 = "select id, ename, value from w_base_setting"
 			" where ename=\'" ++ EName ++ "\'"
-			" and shop=-1"
-			" and merchant=" ++ ?to_s(Merchant),
+			" and shop=" ++ ?to_s(Shop)
+			++ " and merchant=" ++ ?to_s(Merchant),
 		    case ?sql_utils:execute(s_read, Sql00) of
 			{ok, []} ->
 			    ["insert into w_base_setting("
 			     "ename, cname, value, type"
-			     ", remark, merchant, entry_date) values("
+			     ", remark, shop, merchant, entry_date) values("
 			     "\'" ++ EName ++ "\',"
 			     "\'" ++ CName ++ "\',"
 			     ++ "\'" ++ ?to_s(Value) ++ "\',"
 			     ++ Type  ++ ","
 			     ++ "\'\',"
+			     ++ ?to_s(Shop)  ++ ","
 			     ++ ?to_s(Merchant) ++ "," 
 			     "\'" ++ Now ++ "\');"|Acc];
 			{ok, _} ->
@@ -716,14 +719,15 @@ handle_call({set_default, Merchant}, _From, State) ->
 	     fun({Name, Print}, Acc) ->
 		     Sql01 = "select id, name, print from w_print_format"
 			 " where name=\'" ++ Name ++ "\'"
-			 " and shop=-1"
-			 " and merchant=" ++ ?to_s(Merchant),
+			 " and shop=" ++ ?to_s(Shop)
+			 ++ " and merchant=" ++ ?to_s(Merchant),
 		     case ?sql_utils:execute(s_read, Sql01) of
 			 {ok, []} ->
 			     ["insert into w_print_format("
-			      "name, print, merchant, entry_date) values("
+			      "name, print, shop, merchant, entry_date) values("
 			      "\'" ++ Name ++ "\',"
 			      ++ Print ++ ","
+			      ++ ?to_s(Shop) ++ ","
 			      ++ ?to_s(Merchant) ++ "," 
 			      "\'" ++ Now ++ "\')"|Acc];
 			 {ok, _} ->

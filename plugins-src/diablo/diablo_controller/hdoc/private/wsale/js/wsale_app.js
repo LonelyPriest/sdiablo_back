@@ -125,7 +125,7 @@ wsaleApp.service("wsaleService", function($http, $resource, dateFilter){
 	2190: "该款号库存不存在！！请确认本店是否进货该款号！！",
 	2191: "该款号已存在，请选择新的款号！！",
 	2192: "客户或营业员不存在，请建立客户或营业员资料！！",
-	2193: "该款号吊牌价为零，无法出售，请定价后再出售！！",
+	2193: "该款号吊牌价小于零，无法出售，请定价后再出售！！",
 	2401: "店铺打印机不存在或打印处理暂停状态！！",
 	
 	2411: "打印机编号错误！！",
@@ -803,7 +803,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
     $scope.on_select_good = function(item, model, label){
 	console.log(item);
 
-	if (item.tag_price <= 0){
+	if (item.tag_price < 0){
 	    fail_response(2193, function(){
 		$scope.inventories[0] = {$edit:false, $new:true}});
 	    return;

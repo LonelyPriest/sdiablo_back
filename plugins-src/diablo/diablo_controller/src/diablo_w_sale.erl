@@ -292,7 +292,10 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
 		0 ->
 		    AllSql = Sql1 ++ [Sql2]
 			++ case Score - OldScore of
-			       0 -> [];
+			       0 -> ["update w_retailer set consume=consume+" ++ ?to_s(MShouldPay)
+				     ++ ", change_date=" ++ "\"" ++ ?to_s(Curtime) ++ "\""
+				     ++ " where id=" ++ ?to_s(Retailer)
+				     ++ " and merchant=" ++ ?to_s(Merchant)];
 			       MScore ->
 				   ["update w_retailer set score=score+" ++ ?to_s(MScore)
 				    ++ ", consume=consume+" ++ ?to_s(MShouldPay)
