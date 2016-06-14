@@ -38,20 +38,16 @@
 	  
 	  <div class="row diablo-form-group">
 	    <div class="col-xs-3 col-md-3">
-	      <div class="input-group"> 
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="icon icon-rss fg-red"></i>厂商</span>
 	  	<input class="form-control" type="text"
+		       ng-edit
 	  	       x-ng-model="select.firm" 
 	  	       placeholder="请选择厂商，默认为空"
 	  	       typeahead-editable="false"
 	  	       typeahead="f as f.name for f in
-	  			  firms|filter:$viewValue|limitTo:15"/>
-		<span class="input-group-btn">
-		  <button class="btn default fg-red"
-			  x-ng-disabled="!select.firm"
-			  x-ng-click="select.firm=undefined"> 
-		    <i class="glyphicon glyphicon-pushpin"></i>
-		  </button>
-	  	</span>
+	  			  firms|filter:$viewValue|limitTo:15"/> 
 	      </div>
 	    </div>
 
@@ -111,6 +107,7 @@
 		</span>
 	  	<input class="form-control"
 		       type="text"
+		       ng-edit
 		       placeholder="备注"
 	  	       x-ng-model="select.comment"/>
 	      </div>
@@ -126,6 +123,7 @@
 	  	    <input class="form-control"
 			   type="number" step="0.01"
 			   disable-key
+			   ng-edit
 			   placeholder="现金"
 			   x-ng-pattern="/^\d+(.\d{1,2})?$/"
 	  		   x-ng-model="select.cash"
@@ -145,6 +143,7 @@
 	  	    <input class="form-control"
 			   type="number" step="0.01"
 			   disable-key
+			   ng-edit
 			   placeholder="刷卡"
 			   x-ng-pattern="/^\d+(.\d{1,2})?$/"
 	  		   x-ng-model="select.card"
@@ -165,6 +164,7 @@
 	  	    <input class="form-control"
 			   type="number" step="0.01"
 			   disable-key
+			   ng-edit
 			   placeholder="汇款"
 			   x-ng-pattern="/^\d+(.\d{1,2})?$/" 
 	  		   x-ng-model="select.wire"/>
@@ -256,6 +256,7 @@
 	  	    <input class="form-control"
 			   type="number" step="0.01"
 			   placeholder="关联费用"
+			   ng-edit
 			   x-ng-pattern="/^\d+(.\d{1,2})?$/"
 	  		   x-ng-model="select.extra_pay"
 			   popover-placement="top"
@@ -264,24 +265,7 @@
 		  </div>
 		</form> 
 	      </div>
-	    </div>
-
-	    <!-- <div class="col-xs-6 col-md-6"> -->
-	    <!--   <div class="input-group">  -->
-	    <!-- 	<span class="input-group-addon"> -->
-	    <!-- 	  <i class="glyphicon glyphicon-map-marker fg-red"></i>溢出库存</span>  -->
-	    <!-- 	<form name="select.form.overForm"> -->
-	    <!-- 	  <div ng-class="{'has-error':select.form.overForm.$invalid -->
-	    <!-- 			 && !select.form.overForm.$pristine}"> -->
-	    <!-- 	    <input class="form-control" -->
-	    <!-- 		   type="number" step="1" -->
-	    <!-- 		   placeholder="请输入溢出库存，默认为0" -->
-	    <!-- 		   x-ng-model="select.over"/> -->
-	    <!-- 	  </div> -->
-	    <!-- 	</form>  -->
-	    <!--   </div> -->
-	    <!-- </div> -->
-	    
+	    </div> 
 	  </div> <!--END row-->
 	  
 	</div> <!--END table-toolbar-->
@@ -326,7 +310,6 @@
 			<th x-ng-if="stock_right.show_orgprice"
 			    class="text-center">合计</th>
 			<th class="text-center">溢出</th>
-			<!-- <th x-ng-if="stock_right.show_orgprice" class="text-center">折扣率</th> -->
 			<th class="text-center">操作</th>
 		      </tr>
 		    </thead>
@@ -342,6 +325,7 @@
 					   && !inv.form.good.$pristine}">
 			      <input class="form-control text-left" type="text"
 				     required
+				     ng-edit
 				     focus-auto="focus_of_inv.style_number"
 				     x-ng-model="inv.style_number"
 				     placeholder="货号"
@@ -402,6 +386,7 @@
 		    		     placeholder="吊牌价"
 		    		     required
 				     disable-key
+				     ng-edit
 		    		     x-ng-pattern="/^\d+(.\d{1,2})?$/"
 		    		     x-ng-model="inv.tag_price"
 		    		     popover-placement="top"
@@ -428,6 +413,7 @@
 		    		     placeholder="售价折扣"
 		    		     required
 				     disable-key
+				     ng-edit
 				     x-ng-pattern="/^\d{2}$|100$/"
 		    		     x-ng-model="inv.discount"
 		    		     popover-placement="top"
@@ -450,6 +436,7 @@
 		    		     placeholder="进价"
 		    		     required
 				     disable-key
+				     ng-edit
 		    		     x-ng-pattern="/^\d+(.\d{1,2})?$/"
 		    		     x-ng-model="inv.org_price"
 				     ng-model-options="{debounce:300}"
@@ -474,6 +461,7 @@
 		    		     placeholder="进价折扣率"
 		    		     required
 				     disable-key
+				     ng-edit
 		    		     x-ng-model="inv.ediscount"
 				     x-ng-pattern="/^\d{1,2}(\.\d{1,2})?$|100$/"
 				     ng-model-options="{debounce:300}"
@@ -499,6 +487,7 @@
 				     type="number" step="1"
 				     placeholder="数量"
 				     required
+				     ng-edit
 				     focus-auto="focus_of_inv.sale" 
 				     disable-key
 				     x-ng-pattern="/^[1-9][0-9]*$/"
@@ -538,14 +527,7 @@
 				     popover="均色均码直接输入数量"/>
 			    </div>
 			  </form>
-			</td>
-
-			<!-- <td x-ng-if="stock_right.show_orgprice" class="vert-align"> -->
-			<!--   <span x-ng-if="inv.org_price && inv.ediscount && inv.tag_price" -->
-			<!-- 	class="fg-magenta"> -->
-			<!--     {{calc_drate(inv.org_price, inv.ediscount, inv.tag_price)}} -->
-			<!--   </span> -->
-			<!-- </td> -->
+			</td> 
 			
 			<td class="text-left vert-align col-md-1">
 			  <div x-ng-if="inv.$new"> 
@@ -638,11 +620,15 @@
 			<input type="text"
 			       class="form-control"
 			       name="style_number"
-			       required
+			       required 
 			       capitalize
-			       focus-auto="focus.style_number"
+			       ng-edit
+			       focus-auto="focus_attrs.style_number"
+			       go-next-field
+			       next="brand"
+			       auto-row="go_next_good_field"
 			       placeholder="请输入2-10位款号"
-			       x-ng-blur="focus.style_number=false"
+			       x-ng-blur="focus_attrs.style_number=false"
 			       x-ng-model="good.style_number"
 			       x-ng-pattern="pattern.style_number"
 			       x-ng-enter=""
@@ -653,8 +639,8 @@
 		      <span class="input-group-addon bg-white fg-red">*</span>
 		      <span class="input-group-btn">
 			<a type="button" class="btn default fg-red"
-				x-ng-disabled="!good.style_number"
-				x-ng-click="reset_style_number()"> 
+			   x-ng-disabled="!good.style_number"
+			   x-ng-click="reset_style_number()"> 
 			  <i class="glyphicon glyphicon-pushpin"></i>
 			</a>
 	  	      </span>
@@ -687,7 +673,14 @@
 			       class="form-control"
 			       name="brand"
 			       required
-			       placeholder="请输入品牌" 
+			       focus-auto="focus_attrs.brand"
+			       ng-edit 
+			       go-next-field
+			       next="type"
+			       pre="style_number"
+			       auto-row="go_next_good_field"
+			       x-ng-blur="focus_attrs.brand=false" 
+			       placeholder="请输入品牌"
 			       x-ng-model="good.brand"
 			       x-ng-pattern="pattern.brand"
 			       x-ng-enter=""
@@ -729,10 +722,16 @@
 			       class="form-control"
 			       name="type"
 			       required
+			       focus-auto="focus_attrs.type"
+			       ng-edit 
+			       go-next-field
+			       next="sex"
+			       pre="brand"
+			       auto-row="go_next_good_field"
 			       placeholder="豹纹马甲等"
 			       x-ng-model="good.type"
 			       x-ng-pattern="pattern.type"
-			       x-ng-enter="" 
+			       x-ng-enter=""
 			       typeahead="t.name for t in
 					  types|filter:$viewValue|limitTo:15"/>
 		      </div> 
@@ -753,7 +752,13 @@
 		  </label>
 		  <div class="col-sm-6 col-md-6"> 
 		    <select class="form-control"
+			    focus-auto="focus_attrs.sex"
+			    go-next-field
+			    next="year"
+			    pre="type"
+			    auto-row="go_next_good_field"
 			    x-ng-model="good.sex"
+			    x-ng-enter=""
 			    x-ng-options="s as s.name for s in sex2objs">
 		    </select>
 		  </div>
@@ -766,7 +771,13 @@
 		  <div class="col-sm-6 col-md-6">
 		    <div class="input-group">
 		      <select class="form-control"
+			      focus-auto="focus_attrs.year"
+			      go-next-field
+			      next="season"
+			      pre="sex"
+			      auto-row="go_next_good_field"
 			      x-ng-model="good.year"
+			      x-ng-enter=""
 			      x-ng-options="y for y in full_years">
 		      </select> 
 		      <span class="input-group-addon bg-white fg-red">*</span>
@@ -780,7 +791,13 @@
 		  </label>
 		  <div class="col-sm-6 col-md-6"> 
 		    <select class="form-control"
+			    focus-auto="focus_attrs.season"
+			    go-next-field
+			    next="tag_price"
+			    pre="year"
+			    auto-row="go_next_good_field"
 			    x-ng-model="good.season"
+			    x-ng-enter=""
 			    x-ng-options="s as s.name for s in season2objs">
 		    </select>
 		  </div>
@@ -797,6 +814,12 @@
 			     name="tag_price"
 			     required
 			     disable-key
+			     ng-edit
+			     focus-auto="focus_attrs.tag_price"
+			     go-next-field
+			     next="discount"
+			     pre="season"
+			     auto-row="go_next_good_field"
 			     placeholder="吊牌价，支持二位小数"
 			     x-ng-pattern="/^\d+(.\d{1,2})?$/"
 			     x-ng-enter=""
@@ -825,8 +848,17 @@
 			       name="discount"
 			       required
 			       disable-key
+			       ng-edit
+			       focus-auto="focus_attrs.discount"
+			       go-next-field
+			       next="color"
+			       pre="tag_price"
+			       auto-row="go_next_good_field"
+			       placeholder="吊牌价，支持二位小数"
+			       x-ng-pattern="/^\d+(.\d{1,2})?$/"
 			       placeholder="两位整数，无折扣请输入100"
 			       x-ng-pattern="/^\d{2}$|100$/"
+			       x-ng-enter=""
 			       x-ng-model="good.discount"/>
 		      </div>
 		      <span class="input-group-addon bg-white fg-red">*</span>
@@ -848,7 +880,15 @@
 		    <div class="input-group">
 		      <input type="text" readonly
 			     class="form-control"
+			     focus-auto="focus_attrs.color"
+			     go-next-field
+			     next="size"
+			     pre="discount"
+			     auto-row="go_next_good_field"
+			     placeholder="吊牌价，支持二位小数"
+			     x-ng-pattern="/^\d+(.\d{1,2})?$/"
 			     placeholder="均色均码无需选择"
+			     x-ng-enter="select_color()"
 			     x-ng-model="good.colors"/> 
 		      <span class="input-group-btn">
 			<button class="btn btn-primary"
@@ -871,8 +911,14 @@
 		    <div class="input-group">
 		      <input type="text" readonly
 			     class="form-control"
+			     focus-auto="focus_attrs.size"
+			     go-next-field
+			     pre="color"
+			     next="ok"
+			     auto-row="go_next_good_field"
 			     placeholder="均色均码无需选择"
-			     x-ng-model="good.sizes"/>
+			     x-ng-enter="select_size()"
+			     x-ng-model="good.sizes" />
 		      <span class="input-group-btn">
 			<button class="btn btn-primary"
 				x-ng-click="select_size()">
@@ -888,9 +934,13 @@
 		  <div class="col-sm-offset-3
 			      col-sm-4 col-md-offset-3 col-md-6">
 		    <div class="pull-right">
-		      <button type="submit" class="btn btn-primary"
-			      ng-disabled="form.gForm.$invalid
-					   || is_same_good"
+		      <button type="submit"
+			      class="btn btn-primary"
+			      ng-disabled="form.gForm.$invalid || is_same_good"
+			      focus-auto="focus_attrs.ok"
+			      go-next-field
+			      pre="size"
+			      auto-row="go_next_good_field"
 			      x-ng-click="new_good()">确定</button>
 		      <button type="button" class="btn btn-warning"
 			      x-ng-click="reset()">重置</button>
@@ -922,6 +972,7 @@
 			 && !tprice.$pristine}"> 
 	    <input class="form-control text-center"
 		   disable-key
+		   ng-edit
 		   type="number" step="0.01" 
 		   x-ng-pattern="/^\d+(.\d{1,2})?$/"
 		   ng-model-options="{debounce:300}"
@@ -939,7 +990,8 @@
 			 && !discount.$pristine}"> 
 	    <input class="form-control"
 		   type="number" step="1"
-		   required 
+		   required
+		   ng-edit
 		   disable-key
 		   x-ng-pattern="/^\d{2}$|100$/"
 		   x-ng-model="params.discount"/>
@@ -959,6 +1011,7 @@
 	    <input class="form-control text-center"
 		   type="number" step="0.01"
 		   disable-key
+		   ng-edit
 		   x-ng-pattern="/^\d+(.\d{1,2})?$/"
 		   ng-model-options="{debounce:300}"
 		   x-ng-change="params.get_price_info(params.tag_price, params, 1)"
@@ -975,6 +1028,7 @@
 	    <input class="form-control"
 		   type="number" step="0.1"
 		   required
+		   ng-edit
 		   disable-key
 		   x-ng-pattern="/^\d{1,2}(\.\d{1,2})?$|100$/"
 		   ng-model-options="{debounce:300}"
@@ -996,6 +1050,7 @@
 	    <input class="form-control text-center"
 		   type="number" step="1"
 		   disable-key
+		   ng-edit
 		   x-ng-pattern="/^\d+$/"
 		   x-ng-model="params.over"/>
 	  </div>
@@ -1035,10 +1090,12 @@
 		  <input class="form-control text-center modal-input"
 			 type="number" step="1"
 			 disable-key
+			 ng-edit
 			 x-ng-model="amount.count"
 			 x-ng-pattern="/^[1-9][0-9]*$/"
 			 x-ng-init="amount=params.get_amount(
 				    c.cid, s, params.amount)"
+			 x-ng-enter="params.valid_amount(params.amount, params.ediscount) && ok()"
 			 focus-auto="s===params.sizes[0]
 				     && c.cid===params.colors[0].cid" />
 		</div>

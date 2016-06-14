@@ -146,29 +146,13 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 
 
     $scope.get_employee = function(){
-	$scope.employees = filterEmployee.filter(function(e){
-	    return e.shop === $scope.select.shop.id;
-	});
-	
-	if ($scope.employees.length !== 0){
-	    $scope.select.employee = $scope.employees[0]; 
-	    if (diablo_invalid_employee !== user.loginEmployee){
-		$scope.select.employee = diablo_get_object(user.loginEmployee, $scope.employees); 
-            }
-
-	    if (angular.isUndefined($scope.select.employee))
-		$scope.select.employee = $scope.employees[0];
-	} 
+	var select = stockUtils.get_login_employee(
+	    $scope.select.shop.id, user.loginEmployee, filterEmployee); 
+	$scope.select.employee = select.login;
+	$scope.employees = select.filter; 
     };
 
     $scope.get_employee();
-    
-    // if ($scope.employees.length !== 0){
-    // 	$scope.select.employee = $scope.employees[0]; 
-    // 	if (diablo_invalid_employee !== user.loginEmployee){
-    // 	    $scope.select.employee = diablo_get_object(user.loginEmployee, $scope.employees); 
-    //     }
-    // }
 
     /*
      * draft
@@ -182,8 +166,9 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    diablo_dkey_stock_in)
     };
 
+    
     var sDraft = gen_draft();
-    console.log(sDraft);
+    // console.log(sDraft);
     $scope.disable_draft = function(){
 	if (sDraft.keys().length === 0) return true; 
 	if ($scope.inventories.length !== 1) return true; 
@@ -716,8 +701,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 
 	    // auto focus
 	    if ($scope.tab_active[1].active){
-		$scope.reset_style_number(); 
-		$scope.focus.style_number = true;
+		$scope.reset_style_number();
 	    } else {
 		$scope.auto_focus("style_number");
 	    }
@@ -948,10 +932,13 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    || angular.isUndefined(inv.ediscount)
 	    || angular.isUndefined(inv.org_price)
 	    || angular.isUndefined(inv.tag_price)
-	    || angular.isUndefined(inv.discount)
-	    || inv.form.ediscount.$invalid){
+	    || angular.isUndefined(inv.discount) ){
 	    return;
-	} 
+	}
+
+	if (angular.isDefined(inv.form.ediscount)
+	    && inv.form.ediscount.$invalid)
+	    return   
 	
 	$scope.timeout_auto_save = $timeout(function(){
 	    if (inv.$new && inv.free_color_size){
@@ -971,11 +958,30 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		      brand: diabloPattern.ch_en_num,
 		      type:  diabloPattern.head_ch_en_num};
 
-    $scope.focus = {style_number:true};
+    $scope.focus_attrs = {style_number:true,
+			  brand:false,
+			  type:false,
+			  sex:false,
+			  year:false,
+			  season:false,
+			  tag_price:false,
+			  discount:false,
+			  color:false,
+			  size:false,
+			  ok:false};
+    $scope.on_focus_attr = function(attr){
+	stockUtils.on_focus_attr(attr, $scope.focus_attrs);
+    };
+
+    $scope.go_next_good_field = function(direct, attr){
+	console.log(direct, attr)
+	if (angular.isDefined(attr)) $scope.on_focus_attr(attr);
+    }
 
     $scope.select_tab_of_new_good = function(){
 	$scope.focus_of_inv.style_number=false;
-	$scope.focus.style_number=true;
+	$scope.on_focus_attr("style_number");
+	console.log($scope.focus_attrs);
 
 	if (angular.isUndefined($scope.all_w_goods)
 	    || $scope.all_w_goods.length.length === 0){
@@ -1056,15 +1062,14 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 			type:    params.color.type.name
 			// remark:  params.color.remark
 		    };
-		    
+
+		    $scope.colors.push(newColor);
+		    // console.log($scope.colors); 
 		    if (!in_sys_color($scope.gcolors, newColor)){
 			$scope.gcolors.push(
 			    {type: newColor.type,
 			     tid:  newColor.tid,
-			     colors:[{name:newColor.name, id:newColor.id}]});
-			
-			$scope.colors.push(newColor);
-			console.log($scope.colors);
+			     colors:[{name:newColor.name, id:newColor.id}]}); 
 		    } 
 		}; 
 		
@@ -1168,6 +1173,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     };
 
     $scope.new_good = function(){
+	if ($scope.form.gForm.$invalid || $scope.is_same_good) return;
 	console.log($scope.good);
 	console.log($scope.image);
 	var good       = angular.copy($scope.good);
@@ -1234,113 +1240,109 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	wgoodService.add_purchaser_good(good, image).then(function(state){
 	    console.log(state);
 	    if (state.ecode == 0){
-		dialog.response_with_callback(
-		    true, "新增货品", "新增货品资料成功！！", $scope,
-		    function(){
-			// console.log("callback");
-			// reset size 
-			$scope.selectGroups = [];
-			$scope.good.sizes = "";
-			angular.forEach($scope.size_groups, function(g){
-			    if (angular.isDefined(g.select)){
-				g.select = false;
+		// console.log("callback");
+		// reset size 
+		$scope.selectGroups = [];
+		$scope.good.sizes = "";
+		angular.forEach($scope.size_groups, function(g){
+		    if (angular.isDefined(g.select)){
+			g.select = false;
+		    }
+		});
+
+		// reset color
+		$scope.selectColors = [];
+		$scope.good.colors="";
+		angular.forEach($scope.gcolors, function(colorInfo){
+		    angular.forEach(colorInfo, function(color){
+			// console.log(color);
+			angular.forEach(color, function(c){
+			    if (angular.isDefined(c.select)){
+				c.select = false;
 			    }
-			});
+			}) 
+		    })
+		});
 
-			// reset color
-			$scope.selectColors = [];
-			$scope.good.colors="";
-			angular.forEach($scope.gcolors, function(colorInfo){
-			    angular.forEach(colorInfo, function(color){
-				// console.log(color);
-				angular.forEach(color, function(c){
-				    if (angular.isDefined(c.select)){
-					c.select = false;
-				    }
-				}) 
-			    })
-			});
+		console.log($scope.gcolors);
+		// reset
+		$scope.good.style_number = undefined;
+		// $scope.good.type = undefined;
+		// $scope.form.gForm.type.$pristine = true;
+		$scope.form.gForm.style_number.$pristine = true;
+		
+		/*
+		 * add prompt
+		 */
+		var in_prompts = function(prompts, item){
+		    for(var i=0, l=prompts.length; i<l; i++){
+			if (prompts[i].name === item){
+			    return true;
+			}
+		    };
+		    return false;
+		};
+		
+		// brand
+		if (!in_prompts($scope.brands, good.brand)){
+		    $scope.brands.push({
+			// id   :$scope.brands.length + 1,
+			id   :state.brand,
+			name :good.brand,
+			py   :diablo_pinyin(good.brand)}); 
+		}; 
+		// console.log($scope.brands);
 
-			console.log($scope.gcolors);
-			// reset
-			$scope.good.style_number = undefined;
-			// $scope.good.type = undefined;
-			// $scope.form.gForm.type.$pristine = true;
-			$scope.form.gForm.style_number.$pristine = true;
-			
-			/*
-			 * add prompt
-			 */
-			var in_prompts = function(prompts, item){
-			    for(var i=0, l=prompts.length; i<l; i++){
-				if (prompts[i].name === item){
-				    return true;
-				}
-			    };
-			    return false;
-			};
-			
-			// brand
-			if (!in_prompts($scope.brands, good.brand)){
-		    	    $scope.brands.push({
-				// id   :$scope.brands.length + 1,
-				id   :state.brand,
-				name :good.brand,
-				py   :diablo_pinyin(good.brand)}); 
-			}; 
-			// console.log($scope.brands);
+		// type
+		if (!in_prompts($scope.types, good.type)){
+		    $scope.types.push({
+			id   :state.type,
+			name :good.type,
+			py   :diablo_pinyin(good.type)});
+		};
 
-			// type
-			if (!in_prompts($scope.types, good.type)){
-		    	    $scope.types.push({
-				id   :state.type,
-				name :good.type,
-				py   :diablo_pinyin(good.type)});
-			};
+		// cons.log($scope.types); 
+		var sg = s_groups.length === 0 ? "0":s_groups.toString();
+		var ss = s_sizes.length === 0 ? "0":s_sizes.toString();
+		var sc = angular.isUndefined(good.colors)
+		    ? "0" : good.colors.toString();
+		var free = (sg === "0" && ss === "0" && sc === "0") ? 0:1;
+		var p = stockUtils.prompt_name(
+		    good.style_number, good.brand, good.type);
+		
+		var agood = {
+		    $new_good: true,
+		    style_number: good.style_number,
+		    brand:     good.brand,
+		    brand_id:  state.brand,
+		    type:      good.type,
+		    type_id:   state.type,
+		    name:      p.name,
+		    prompt:    p.prompt,
+		    sex:       good.sex,
+		    firm_id:   stockUtils.invalid_firm(good.firm),
+		    year:      good.year,
+		    season:    good.season,
+		    org_price: good.org_price,
+		    tag_price: good.tag_price,
+		    ediscount: good.ediscount,
+		    discount:  good.discount,
+		    alarm_day: good.alarm_day,
 
-			// cons.log($scope.types); 
-			var sg = s_groups.length === 0 ? "0":s_groups.toString();
-			var ss = s_sizes.length === 0 ? "0":s_sizes.toString();
-			var sc = angular.isUndefined(good.colors)
-			    ? "0" : good.colors.toString();
-			var free = (sg === "0" && ss === "0" && sc === "0") ? 0:1;
-			var p = stockUtils.prompt_name(
-			    good.style_number, good.brand, good.type);
-			
-			var agood = {
-			    $new_good: true,
-			    style_number: good.style_number,
-			    brand:     good.brand,
-			    brand_id:  state.brand,
-			    type:      good.type,
-			    type_id:   state.type,
-			    name:      p.name,
-			    prompt:    p.prompt,
-			    sex:       good.sex,
-			    firm_id:   stockUtils.invalid_firm(good.firm),
-			    year:      good.year,
-			    season:    good.season,
-			    org_price: good.org_price,
-			    tag_price: good.tag_price,
-			    ediscount: good.ediscount,
-			    discount:  good.discount,
-			    alarm_day: good.alarm_day,
+		    free:      free,
+		    s_group:   sg,
+		    size:      ss,
+		    color:     sc
+		};
 
-			    free:      free,
-			    s_group:   sg,
-			    size:      ss,
-			    color:     sc
-			};
+		if ($scope.q_prompt === diablo_frontend){
+		    if (angular.isDefined($scope.all_w_goods)){
+			$scope.all_w_goods.splice(0, 0, agood); 
+		    }
+		};
 
-			if ($scope.q_prompt === diablo_frontend){
-			    if (angular.isDefined($scope.all_w_goods)){
-				$scope.all_w_goods.splice(0, 0, agood); 
-			    }
-			};
-
-			// $scope.focus.style_number = true;
-			$scope.on_select_good(agood, undefined, undefined);
-		    });		
+		// $scope.focus.style_number = true;
+		$scope.on_select_good(agood, undefined, undefined); 
 	    } else{
 		diabloUtilsService.response(
 		    false, "新增货品",
@@ -1353,12 +1355,15 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     };
 
     $scope.reset_style_number = function(){
+	$scope.on_focus_attr("style_number");
 	$scope.good.style_number = undefined;
 	$scope.is_same_good = false;
 	$scope.form.gForm.style_number.$pristine = true; 
+	// console.log($scope.focus);
     };
 
     $scope.reset_brand = function(){
+	$scope.on_focus_attr("brand");
 	$scope.good.brand = undefined;
 	$scope.is_same_good = false;
 	$scope.form.gForm.brand.$pristine = true;

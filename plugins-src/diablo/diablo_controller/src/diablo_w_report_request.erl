@@ -89,6 +89,7 @@ action(Session, Req, {"stock_stastic"}, Payload) ->
 	{ok, StockTransferIn} = ?w_report:stastic(stock_transfer_in, Merchant, Payload),
 	{ok, StockTransferOut} = ?w_report:stastic(stock_transfer_out, Merchant, Payload),
 	{ok, StockFix} = ?w_report:stastic(stock_fix, Merchant, Payload),
+	{ok, StockR} = ?w_report:stastic(stock_real, Merchant, Payload),
 	
 	?utils:respond(200, object, Req,
 		       {[{<<"ecode">>, 0},
@@ -98,7 +99,8 @@ action(Session, Req, {"stock_stastic"}, Payload) ->
 			 {<<"pout">>, StockOut},
 			 {<<"tin">>, StockTransferIn},
 			 {<<"tout">>, StockTransferOut},
-			 {<<"fix">>, StockFix}
+			 {<<"fix">>, StockFix},
+			 {<<"rstock">>, StockR}
 			]})
     catch
 	_:{badmatch, {error, Error}} -> ?utils:respond(200, Req, Error)

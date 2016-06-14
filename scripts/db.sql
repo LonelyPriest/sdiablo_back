@@ -339,9 +339,8 @@ create table w_retailer
     consume         DECIMAL(10, 2) default 0, -- max: 99999999.99
     score           INTEGER not null default 0,
     mobile          VARCHAR(11),
-    address         VARCHAR(255), 
+    address         VARCHAR(255),
     merchant        INTEGER default -1, -- which merchant belong to
-
     -- type            TINYINT default 0,  -- 0: system 1: user
     change_date     DATETIME default 0, -- last changed
     entry_date      DATETIME default 0, -- last changed
@@ -621,7 +620,8 @@ create table w_inventory_fix(
     exist          INTEGER,
     fixed          INTEGER default 0,
     metric         INTEGER default 0,
-    
+    cost           DECIMAL(10, 2) default 0, -- max: 99999999.99
+        
     merchant       INTEGER, 
     entry_date     DATETIME default 0,
     deleted        INTEGER default 0, -- 0: no;  1: yes
@@ -650,6 +650,7 @@ create table w_inventory_fix_detail(
     exist          INTEGER not null,
     fixed          INTEGER default 0,
     metric         INTEGER default 0,
+    org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
 
     merchant       INTEGER default -1,
     shop           INTEGER default -1,
@@ -694,6 +695,7 @@ create table w_inventory_transfer(
     tshop          INTEGER default -1,                 -- which shop saled the goods
     employ         VARCHAR(8) not null,     -- employ
     total          INTEGER default 0,
+    cost           DECIMAL(10, 2) default 0, -- max: 99999999.99
     comment        VARCHAR(255) default null,
     merchant       INTEGER,
     

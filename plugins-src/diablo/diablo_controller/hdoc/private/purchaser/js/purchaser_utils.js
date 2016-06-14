@@ -107,8 +107,8 @@ var stockUtils = function(){
 	},
 
 	ediscount: function(org_price, tag_price){
-	    if (tagPrice == 0) return 0; 
-	    return parseFloat((diablo_float_div(org_price, tagPrice) * 100).toFixed(1));
+	    if (tag_price == 0) return 0; 
+	    return parseFloat((diablo_float_div(org_price, tag_price) * 100).toFixed(1));
 	},
 
 	start_time_of_second: function(shop, base, now, dateFun){
@@ -168,6 +168,30 @@ var stockUtils = function(){
 	    else {
 		return newValue === oldValue ? true : false; 
 	    }
+	},
+
+	on_focus_attr: function(attr, attrs){
+	    if (!attrs[attr]){
+		attrs[attr] = true;
+		for (o in attrs){
+		    if (o !== attr) attrs[o] = false;
+		}
+	    }
+	},
+
+	get_login_employee:function(shop, loginEmployee, employees){
+	    var filterEmployees = employees.filter(function(e){
+		return e.shop === shop;
+	    });
+	    
+	    var select = undefined;
+	    if (diablo_invalid_employee !== loginEmployee)
+		select = diablo_get_object(loginEmployee, filterEmployees); 
+	    
+	    if (angular.isUndefined(select)) select = filterEmployees[0];
+
+	    console.log(select);
+	    return {login:select, filter:filterEmployees};
 	}
 	    
 	//
@@ -180,6 +204,8 @@ var stock_gen_draft_key = function(firm, shop, employee, model){
 	return "wx-" + shop.toString() + "-" + employee.toString();
     else if (diablo_dkey_stock_in === model)
 	return "wp-" + shop.toString() + "-" + employee.toString();
+    else if (diablo_dkey_stock_fix === model)
+	return "wf-" + shop.toString() + "-" + employee.toString();
 }
 
 var stockDraft = function(storage, firm, shop, employee, model){
@@ -193,17 +219,8 @@ var stockDraft = function(storage, firm, shop, employee, model){
 };
 
 stockDraft.prototype.key = function() {
-    return this.key;
-    // if (diablo_dkey_stock_price === this.model)
-    // 	this.key = "wx-" + this.shop.toString() + "-" + this.employee.toString();
+    return this.key; 
 };
-
-// stockDraft.prototype.gen_key = function(){
-//     if (diablo_dkey_stock_price === this.model)
-// 	return "wx-" + this.shop.toString() + "-" + this.employee.toString();
-//     else if (diablo_dkey_stock_in === this.mode)
-// 	return "wp-" + "-" + this.shop.toString() + "-" + this.employee.id.toString();
-// };
 
 stockDraft.prototype.change_key = function(firm, shop, employee){
     this.firm = firm;
@@ -218,8 +235,10 @@ stockDraft.prototype.keys = function(){
 	re = /^wx-[0-9-]+$/; 
     } else if (diablo_dkey_stock_in === this.model){
 	re = /^wp-[0-9-]+$/; 
+    } else if (diablo_dkey_stock_fix === this.model){
+	re = /^wf-[0-9-]+$/; 
     }
-    
+
     var keys = this.storage.keys(); 
     return keys.filter(function(k){
 	return re.test(k)

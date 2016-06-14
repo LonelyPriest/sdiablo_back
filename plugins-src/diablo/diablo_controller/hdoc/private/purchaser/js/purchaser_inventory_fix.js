@@ -6,9 +6,8 @@ purchaserApp.controller("purchaserInventoryFixCtrl", function(
     $scope.shops   = user.sortShops;    
     $scope.sexs    = diablo_sex;
     $scope.seasons = diablo_season;
+    $scope.calc_row = stockUtils.calc_row;
 
-    // employees
-    $scope.employees = filterEmployee; 
     $scope.refresh = function(){
 	$scope.inventories = [];
 	$scope.inventories.push({$edit:false, $new:true}); 
@@ -26,6 +25,14 @@ purchaserApp.controller("purchaserInventoryFixCtrl", function(
 	} 
     };
 
+    $scope.right = {
+	master: rightAuthen.authen(
+	    user.type,
+	    rightAuthen.rainbow_action()['show_orgprice'],
+	    user.right
+	)
+    };
+
     /*
      * init
      */ 
@@ -33,13 +40,19 @@ purchaserApp.controller("purchaserInventoryFixCtrl", function(
     $scope.inventories = [];
     $scope.inventories.push({$edit:false, $new:true});
     $scope.current_inventories = [];
-    $scope.select = {
-	shop:$scope.shops[0],
-	employee: $scope.employees[0]
-    }; 
+    $scope.select = {shop:$scope.shops[0]}
     $scope.has_saved = false;
-    var now = $.now();
 
+    $scope.get_employee = function(){
+	var select = stockUtils.get_login_employee(
+	    $scope.select.shop.id, user.loginEmployee, filterEmployee); 
+	$scope.select.employee = select.login;
+	$scope.employees = select.filter;
+    };
+
+    $scope.get_employee();
+    
+    var now = $.now(); 
     $scope.base_settings = {
 	plimit : stockUtils.prompt_limit($scope.select.shop.id, base),
 	prompt : stockUtils.typeahead($scope.select.shop.id, base),
@@ -119,125 +132,72 @@ purchaserApp.controller("purchaserInventoryFixCtrl", function(
 	return;
     };
 
-    var current_key = function(){
-	return "wd-" + $scope.select.shop.id.toString()
-	    + "-" + $scope.select.employee.id.toString();
+    $scope.re_calculate = function(){
+	$scope.select.total_exist = 0; 
+    	$scope.select.total_fixed = 0;
+	$scope.select.total_metric = 0;
+	$scope.select.total_cost   = 0;
+	
+    	for (var i=1, l=$scope.inventories.length; i<l; i++){
+    	    var one = $scope.inventories[i];
+	    one.calc = stockUtils.calc_row(one.org_price, 100, one.metric);
+	    $scope.select.total_exist += stockUtils.to_integer(one.total); 
+	    $scope.select.total_fixed += stockUtils.to_integer(one.fixed);
+	    $scope.select.total_cost  += one.calc;
+    	}
+	
+	$scope.select.total_metric = $scope.select.total_fixed - $scope.select.total_exist; 
     };
 
-    var draft_keys = function(){
-	var key_re = /^wd-[0-9-]+$/;
-	var keys = localStorageService.keys();
-
-	return keys.filter(function(k){
-	    return key_re.test(k)
-	});
+    /*
+     * draft
+     */
+    var gen_draft = function() {
+	return new stockDraft(
+	    localStorageService,
+	    undefined,
+	    $scope.select.shop.id,
+	    $scope.select.employee.id,
+	    diablo_dkey_stock_fix)
     };
 
-    $scope.local_save = function(){
-	var key = current_key();
-	var now = $.now();
-	// console.log($scope.inventories);
-	localStorageService.set(
-	    key,
-	    {t:now, v:$scope.inventories.filter(function(inv){
-		return inv.$new === false;})
-	    });
-    };
+    $scope.sDraft = gen_draft();
 
-    $scope.local_remove = function(){
-	var key = current_key();
-	localStorageService.remove(key);
-    }
-    
     $scope.disable_draft = function(){
-	if (draft_keys().length === 0){
-	    return true;
-	}
-	
-	if ($scope.inventories.length !== 1){
-	    return true;
-	};
-	
+	if ($scope.sDraft.keys().length === 0) return true; 
+	if ($scope.inventories.length !== 1) return true; 
 	return false;
     };
 
-
     $scope.list_draft = function(){
-	var key_fix = draft_keys();
-	
-	// console.log(key); 
-	var drafts = key_fix.map(function(k){
-	    var p = k.split("-");
-	    return {sn:k,
-		    employee:diablo_get_object(p[2], $scope.employees),
-		    shop:diablo_get_object(parseInt(p[1]), $scope.shops)}
-	});
+	var draft_filter = function(keys){
+	    return keys.map(function(k){
+		var p = k.split("-");
+		return {sn:k,
+			shop:diablo_get_object(parseInt(p[1]), $scope.shops),
+		       	employee:diablo_get_object(p[2], $scope.employees)}
+	    });
+	};
 
-	// console.log(drafts)
+	var select = function(draft, resource){
+	    $scope.select.employee = diablo_get_object(draft.employee.id, $scope.employees);
+	    $scope.select.shop = diablo_get_object(draft.shop.id, $scope.shops);
+	    // $scope.select.frim = diablo_get_object(draft.firm.id, $scope.firms);
+	    $scope.inventories = angular.copy(resource); 
+	    $scope.inventories.unshift({$edit:false, $new:true});
+	    $scope.disable_refresh = false;
+	    $scope.re_calculate();
+	    $scope.auto_focus("style_number");
+	};
 
-	var callback = function(params){
-	    var select_draft = params.drafts.filter(function(d){
-		return angular.isDefined(d.select) && d.select
-	    })[0];
-
-	    // console.log($scope.select);
-	    $scope.select.employee =
-		diablo_get_object(select_draft.employee.id, $scope.employees);
-	    $scope.select.shop =
-		diablo_get_object(select_draft.shop.id, $scope.shops);
-
-	    var one = localStorageService.get(select_draft.sn);
-	    
-	    if (angular.isDefined(one) && null !== one){
-	        $scope.inventories = angular.copy(one.v);
-	        console.log($scope.inventories); 
-	        $scope.inventories.unshift({$edit:false, $new:true});
-
-		// page again
-		$scope.total_items = $scope.inventories.length;
-		$scope.current_inventories = $scope.get_page($scope.current_page);
-		
-	        re_calculate();
-	    
-	        // $scope.draft = true;
-	    } 
-	}
-
-	diabloUtilsService.edit_with_modal(
-	    "wfix-draft.html", undefined, callback, $scope,
-	    {drafts:drafts,
-	     valid: function(drafts){
-		 for (var i=0, l=drafts.length; i<l; i++){
-		     if (angular.isDefined(drafts[i].select) && drafts[i].select){
-			 return true;
-		     }
-		 } 
-		 return false;
-	     },
-	     select: function(drafts, d){
-		 for (var i=0, l=drafts.length; i<l; i++){
-		     if (d.sn !== drafts[i].sn){
-			 drafts[i].select = false;
-		     }
-		 }
-	     }
-	    }); 
-    }
+	$scope.sDraft.select(diabloUtilsService, "wfix-draft.html", draft_filter, select); 
+    };
     
     /*
      * save all
      */
     $scope.disable_save = function(){
-	// save one time only
-	if ($scope.has_saved){
-	    return true;
-	}; 
-
-	if ($scope.inventories.length === 1){
-	    return true;
-	};
-
-	return false;
+	return $scope.has_saved || $scope.inventories.length === 1 ? true : false;
     }; 
     
     $scope.save_inventory = function(){
@@ -248,8 +208,8 @@ purchaserApp.controller("purchaserInventoryFixCtrl", function(
 	    var fixed_amounts = []; 
 	    angular.forEach(amounts, function(a){
 		if (angular.isDefined(a.fixed_count) && a.fixed_count){
-		    if (parseInt(a.fixed_count) !== a.count){
-			a.fixed_count = parseInt(a.fixed_count);
+		    if (stockUtils.to_integer(a.fixed_count) !== a.count){
+			a.fixed_count = stockUtils.to_integer(a.fixed_count);
 			fixed_amounts.push(a)
 		    }
 		}
@@ -275,22 +235,23 @@ purchaserApp.controller("purchaserInventoryFixCtrl", function(
 		    exist           : add.total,
 		    fixed           : add.fixed,
 		    metric          : add.metric,
+		    org_price       : add.org_price,
 		    amounts         : fixed_amounts,
-		    fprice          : add.org_price,
-		    fdiscount       : add.discount,
+		    // fprice          : add.org_price,
+		    // fdiscount       : add.discount,
 		    path            : add.path 
 		})
 	    } 
 	}; 
 
 	var base = {
-	    // firm:          $scope.select.firm.id,
 	    shop:             $scope.select.shop.id,
 	    date:             dateFilter($scope.select.date, "yyyy-MM-dd HH:mm:ss"),
 	    employee:         $scope.select.employee.id,
 	    total_exist:      $scope.select.total_exist,
 	    total_fixed:      $scope.select.total_fixed,
 	    total_metric:     $scope.select.total_metric,
+	    total_cost:       $scope.select.total_cost
 	};
 
 	console.log(added);
@@ -303,9 +264,10 @@ purchaserApp.controller("purchaserInventoryFixCtrl", function(
 	}).then(function(state){
 	    console.log(state);
 	    if (state.ecode == 0){
+		$scope.sDraft.remove();
 	    	diabloUtilsService.response_with_callback(
 	    	    true, "库存盘点", "盘点成功！！盘点单号：" + state.rsn,
-		    $scope, $scope.local_remove)
+		    $scope, undefined)
 	    	return;
 	    } else{
 	    	diabloUtilsService.response(
@@ -337,20 +299,6 @@ purchaserApp.controller("purchaserInventoryFixCtrl", function(
 	}
     };
     
-    var re_calculate = function(){
-	$scope.select.total_exist = 0; 
-    	$scope.select.total_fixed = 0;
-	$scope.select.total_metric = 0;
-	
-    	for (var i=1, l=$scope.inventories.length; i<l; i++){
-    	    var one = $scope.inventories[i]; 
-	    $scope.select.total_exist += one.total; 
-	    $scope.select.total_fixed += stockUtils.to_integer(one.fixed); 
-    	}
-
-	$scope.select.total_metric = $scope.select.total_fixed - $scope.select.total_exist; 
-    }; 
-
     var valid_fixed = function(amount){
 	var re = /^[+|\-]?\d+$/;
 	// var re = /^\d+$/;
@@ -385,18 +333,7 @@ purchaserApp.controller("purchaserInventoryFixCtrl", function(
 	// console.log(unchanged);
 	return unchanged !== 0 ? false : true;
     };
-
-    // var amount_change = function(amounts){
-    // 	var fixed = 0;
-    // 	for(var i=0, l=amounts.length; i<l; i++) {
-    // 	    if (angular.isDefined(amounts[i].fixed_count)
-    // 		&& amounts[i].fixed_count
-    // 		&& !re.test(amounts[i].fixed_count)){
-    // 		fixed += parseInt(amounts[i].fixed_count);
-    // 	    }
-    // 	}
-    // }
-
+    
     $scope.add_free_inventory = function(inv){
 	console.log(inv);
 	inv.$edit = true;
@@ -407,13 +344,13 @@ purchaserApp.controller("purchaserInventoryFixCtrl", function(
 	
 	// oreder
 	inv.order_id = $scope.inventories.length;
-	$scope.local_save();
+	$scope.sDraft.save($scope.inventories.filter(function(r){return !r.$new}));
 	
 	// add new line
 	$scope.inventories.unshift({$edit:false, $new:true}); 
 
 	$scope.auto_focus("style_number");
-	re_calculate(); 
+	$scope.re_calculate(); 
     };
     
     $scope.add_inventory = function(inv){
@@ -438,13 +375,12 @@ purchaserApp.controller("purchaserInventoryFixCtrl", function(
 		inv.order_id = $scope.inventories.length;
 		
 		// save to local storage
-		$scope.local_save();
-		
+		$scope.sDraft.save($scope.inventories.filter(function(r){return !r.$new})); 
 		// add new line
 		$scope.inventories.unshift({$edit:false, $new:true}); 
 
 		$scope.auto_focus("style_number");
-		re_calculate(); 
+		$scope.re_calculate(); 
 	    };
 	    
 	    var callback = function(params){
@@ -503,9 +439,9 @@ purchaserApp.controller("purchaserInventoryFixCtrl", function(
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    $scope.inventories[i].order_id = l - i;
 	}
-	
-	$scope.local_save();
-	re_calculate();
+
+	$scope.sDraft.save($scope.inventories.filter(function(r){return !r.$new}));
+	$scope.re_calculate();
 	
     };
 
@@ -545,8 +481,8 @@ purchaserApp.controller("purchaserInventoryFixCtrl", function(
 	    })
 	    inv.metric  = parseInt(inv.fixed) - inv.total; 
 	    // save to local
-	    $scope.local_save(); 
-	    re_calculate(); 
+	    $scope.sDraft.save($scope.inventories.filter(function(r){return !r.$new}));
+	    $scope.re_calculate(); 
 	};
 
 	var modal_size = diablo_valid_dialog(inv.sizes);
@@ -570,7 +506,7 @@ purchaserApp.controller("purchaserInventoryFixCtrl", function(
 	inv.fixed = inv.amounts[0].fixed_count;
 	inv.metric = parseInt(inv.fixed) - inv.total;
 	$scope.local_save();
-	re_calculate(); 
+	$scope.re_calculate(); 
     }
 
     $scope.cancel_free_update = function(inv){

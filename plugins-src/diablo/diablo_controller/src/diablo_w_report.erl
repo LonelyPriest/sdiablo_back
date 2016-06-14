@@ -60,7 +60,10 @@ stastic(stock_transfer_in, Merchant, Conditions)->
 stastic(stock_transfer_out, Merchant, Conditions)->
     gen_server:call(?SERVER, {stock_transfer_out, Merchant, Conditions});
 stastic(stock_fix, Merchant, Conditions)->
-    gen_server:call(?SERVER, {stock_fix, Merchant, Conditions}).
+    gen_server:call(?SERVER, {stock_fix, Merchant, Conditions});
+stastic(stock_real, Merchant, Conditions) ->
+    gen_server:call(?SERVER, {stock_real, Merchant, Conditions}).
+
 
 
 start_link() ->
@@ -186,7 +189,6 @@ handle_call({stock_profit, Merchant, Conditions}, _From, State)->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
 
     Sql = "select SUM(total) as total"
-	", SUM(rprice * total) as rprice"
 	", SUM(org_price * total) as org_price" 
 	", shop as shop_id"
 	" from w_sale_detail "
@@ -202,12 +204,9 @@ handle_call({stock_in, Merchant, Conditions}, _From, State)->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
 
     Sql = "select SUM(total) as total"
-	%% ", SUM(should_pay) as spay"
-	%% ", SUM(cash) as cash"
-	%% ", SUM(Card) as card"
-	%% ", SUM(Verificate) as veri"
+	", SUM(should_pay) as cost"
 	", shop as shop_id"
-	" from w_inventory_new "
+	" from w_inventory_new"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and type=" ++ ?to_s(?NEW_INVENTORY)
 	++ " and state in(0,1)"
@@ -222,10 +221,7 @@ handle_call({stock_out, Merchant, Conditions}, _From, State)->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
 
     Sql = "select SUM(total) as total"
-    %% ", SUM(should_pay) as spay"
-    %% ", SUM(cash) as cash"
-    %% ", SUM(Card) as card"
-    %% ", SUM(Verificate) as veri"
+	", SUM(should_pay) as cost"
 	", shop as shop_id"
 	" from w_inventory_new "
 	" where merchant=" ++ ?to_s(Merchant)
@@ -248,7 +244,8 @@ handle_call({stock_transfer_in, Merchant, Conditions}, _From, State)->
 			      [C|Acc] 
 		      end, [], NewConditions),
     
-    Sql = "select SUM(total) as total" 
+    Sql = "select SUM(total) as total"
+	", SUM(cost) as cost"
 	", tshop as tshop_id"
 	" from w_inventory_transfer"
 	" where merchant=" ++ ?to_s(Merchant)
@@ -270,8 +267,10 @@ handle_call({stock_transfer_out, Merchant, Conditions}, _From, State)->
 			      [C|Acc] 
 		      end, [], NewConditions),
     
-    Sql = "select SUM(total) as total" 
+    Sql = "select SUM(total) as total"
+	", SUM(cost) as cost"
 	", fshop as fshop_id"
+	
 	" from w_inventory_transfer"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and state=1"
@@ -285,9 +284,25 @@ handle_call({stock_transfer_out, Merchant, Conditions}, _From, State)->
 handle_call({stock_fix, Merchant, Conditions}, _From, State)->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
 
-    Sql = "select SUM(metric) as total" 
+    Sql = "select SUM(metric) as total"
+	", SUM(cost) as cost"
 	", shop as shop_id"
 	" from w_inventory_fix"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime)
+	++ " group by shop",
+
+    R = ?sql_utils:execute(read, Sql),
+    {reply, R, State};
+
+handle_call({stock_real, Merchant, Conditions}, _From, State)->
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
+
+    Sql = "select SUM(amount) as total"
+	", SUM(org_price * amount) as cost"
+	", shop as shop_id"
+	" from w_inventory"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions)
 	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime)

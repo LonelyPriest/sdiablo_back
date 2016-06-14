@@ -354,6 +354,10 @@ ul.page-sidebar-menu > li.active > a {
     margin-bottom:5px !important;
 }
 
+.diablo-margin-bottom-30 {
+    margin-bottom:30px !important;
+}
+
 .diablo-table-center {
     margin: 0 auto !important;
     float: none !important;

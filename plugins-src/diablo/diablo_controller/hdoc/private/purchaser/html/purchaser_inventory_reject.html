@@ -36,22 +36,17 @@
 	  
 	  <div class="row diablo-form-group">
 	    <div class="col-xs-3 col-md-3">
-	      <div class="input-group"> 
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="icon icon-rss fg-red"></i>厂商</span>
 	  	<input class="form-control" type="text"
 	  	       x-ng-model="select.firm"
 	  	       placeholder="请选择厂商"
+		       ng-edit
 	  	       typeahead-editable="false"
 		       typeahead-on-select="change_firm()"
 	  	       typeahead="f as f.name for f in
-	  			  firms|filter:$viewValue|limitTo:8"/>
-		<span class="input-group-btn">
-		  <button class="btn default fg-red"
-			  x-ng-disabled="!select.firm"
-			  x-ng-click="select.firm=undefined"> 
-		    <i class="glyphicon glyphicon-pushpin"></i>
-		  </button>
-	  	</span>
-	  	
+	  			  firms|filter:$viewValue|limitTo:8"/> 
 	      </div>
 	    </div>
 
@@ -470,6 +465,7 @@
               <input class="form-control"
                      type="number" step="0.01"
                      required
+		     ng-edit
 		     disable-key
                      x-ng-pattern="/^\d+(.\d{1,2})?$/"
 		     ng-model-options="{debounce:300}"
@@ -490,6 +486,7 @@
 		     type="number" step="0.1" 
 		     required
 		     disable-key
+		     ng-edit
 		     x-ng-pattern="/^\d{1,2}(\.\d{1,2})?$|100$/"
 		     ng-model-options="{debounce:300}"
 		     x-ng-change="params.get_price_info(params.tag_price, params, 0)"
@@ -533,6 +530,8 @@
 			     type="number" step="1" 
 			     x-ng-pattern="/^[1-9][0-9]*$/"
 			     x-ng-model="amount.reject_count"
+			     ng-edit
+			     ng-enter="params.valid(params.amounts) && ok()"
 			     focus-auto="s===params.sizes[0]
 					 && c.cid===params.colors[0].cid" />
 		    </div>

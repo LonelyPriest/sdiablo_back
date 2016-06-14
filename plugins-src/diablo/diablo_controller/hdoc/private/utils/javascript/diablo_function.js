@@ -93,7 +93,8 @@ var diablo_key_retailer_trans_detail  = "q-retailer-trans-detail";
  * draft key
 */
 var diablo_dkey_stock_price = 9;
-var diablo_dkey_stock_in = 8;
+var diablo_dkey_stock_in  = 8;
+var diablo_dkey_stock_fix = 7;
 
 function diablo_range(n){
     if (n < 0) return;

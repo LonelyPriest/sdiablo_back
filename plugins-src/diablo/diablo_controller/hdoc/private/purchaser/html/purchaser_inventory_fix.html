@@ -9,7 +9,7 @@
 	<div class="actions">
 	  <button class="btn btn-info"
 		    x-ng-disabled="disable_draft()"
-		    x-ng-click="list_draft()">获取草稿
+		    x-ng-click="list_draft()">草稿
 	      <i class="glyphicon glyphicon-send"></i></button> 
 	  <button class="btn btn-success"
 		  x-ng-disabled="disable_save()"
@@ -99,6 +99,7 @@
 		    <th class="text-center">库存数</th>
 		    <th class="text-center">盘点数</th>
 		    <th class="text-center">盈亏数</th>
+		    <th x-ng-if="right.master" class="text-center">小计</th>
 		    <th class="text-center">操作</th>
 		  </tr>
 		</thead>
@@ -177,16 +178,14 @@
 		    </td>
 
 		    <td class="vert-align">{{inv.metric}}</td>
+		    <td x-ng-if="right.master" class="vert-align">
+		      <div x-ng-if="!inv.$new">
+			{{inv.calc}}
+		      </div>
+		    </td>
 		    
 		    <td class="text-left vert-align">
-		      <div x-ng-if="inv.$new">
-			<!-- <a class="btn diablo-input-button btn-success" -->
-			<!--    x-ng-if="inv.free_color_size" -->
-			<!--    x-ng-disabled="inv.form.good.$invalid -->
-			<!-- 		  || inv.form.fix.$invalid" -->
-			<!--    x-ng-click="add_free_inventory(inv)">保存 -->
-			<!--   <i class="glyphicon glyphicon-plus"></i></a> -->
-			
+		      <div x-ng-if="inv.$new"> 
 			<a class="btn diablo-input-button btn-success"
 			   x-ng-if="!inv.free_color_size"
 			   x-ng-disabled="inv.form.good.$invalid"
@@ -238,6 +237,7 @@
 		    <td class="vert-align">{{select.total_exist}}</td>
 		    <td class="vert-align danger">{{select.total_fixed}}</td>
 		    <td class="vert-align warning">{{select.total_metric}}</td>
+		    <td x-ng-if="right.master">{{select.total_cost}}</td>
 		    <td colspan="1"></td>
 		  </tr>
 		</tbody>
@@ -271,22 +271,6 @@
 
 <script type="text/ng-template" id="inventory-fix.html">
   <div class="modal-body"> 
-    <!-- <div class="input-group"> -->
-    <!--   <span class="input-group-addon">盘点数量</span> -->
-    <!--   <form name="fixForm"> -->
-    <!-- 	<div ng-class="{'has-error':fixForm.$invalid -->
-    <!-- 		       && !fixForm.$pristine}">  -->
-    <!-- 	  <input class="form-control" type="text" -->
-    <!-- 		 required -->
-    <!-- 		 placeholder="请输入盘点数量" -->
-    <!-- 		 x-ng-pattern="/^[0-9]+$/" -->
-    <!-- 		 x-ng-model="params.fixed"></input> -->
-    <!-- 	</div> -->
-    <!--   </form> -->
-    <!-- </div> -->
-    
-    <!-- <span class="label label-sm label-danger">负数：丢失的库存</span> -->
-    <!-- <span class="label label-sm label-warning">正数：多余的库存</span> -->
     <div class="table-responsive">
       <table class="table table-bordered table-striped table-condensed table-advanced">
 	<tbody>
@@ -319,6 +303,7 @@
 			   class="form-control modal-input text-center"
 			   type="text"
 			   x-ng-model="amount.fixed_count"
+			   x-ng-enter="params.valid_all(params.amounts) && ok()"
 			   focus-auto="s===params.sizes[0] && c.cid===params.colors[0].cid"/>
 		  </span>
 		</div>
@@ -340,13 +325,7 @@
 
 
 <script type="text/ng-template" id="inventory-fix-detail.html">
-  <div class="modal-body">
-    <!-- <div class="input-group"> -->
-    <!--   <span class="input-group-addon">盘点数量</span>  -->
-    <!-- 	  <input class="form-control" type="text" -->
-    <!-- 		 required readonly -->
-    <!-- 		 x-ng-model="params.fixed"></input>  -->
-    <!-- </div> -->
+  <div class="modal-body">    
     <div class="table-responsive">
       <table class="table table-bordered table-striped table-condensed table-advanced">
 	<tbody>
@@ -378,10 +357,7 @@
 		<span x-ng-if="amount.fixed_count-amount.count>0">
 		  <span class="badge bg-yellow">{{amount.fixed_count}}</span>
 		</span>
-	      </div>
-	      <!-- <input class="form-control" type="text" -->
-	      <!-- 	     x-ng-model="amount.count" -->
-	      <!-- 	     x-ng-init="amount=params.get_amount(c.cid, s, params.amount)"></input> -->
+	      </div> 
 	    </td>
 	  </tr>
 	</tbody>

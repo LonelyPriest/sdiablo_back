@@ -253,7 +253,8 @@ handle_call({list_size_group, Merchant}, _From, State) ->
     Sql = "select id, name, si, sii, siii, siv, sv, svi, svii"
 	++ " from size_group"
 	++ " where merchant = " ++ ?to_string(Merchant)
-	++ " and deleted = " ++ ?to_string(?NO) ++ ";",
+	++ " and deleted = " ++ ?to_string(?NO)
+	++ " order by id",
 
     Reply = ?sql_utils:execute(read, Sql), 
     {reply, Reply, State};

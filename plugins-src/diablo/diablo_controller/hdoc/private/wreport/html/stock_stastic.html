@@ -62,8 +62,14 @@
 	
 	<!--BEGN portlet body--> 
 	<div class="portlet-body">
-	  <!--BEGIN panel-->
-	  <div class="panel panel-default table-panel">
+	  <div class="panel panel-default table-panel diablo-margin-bottom-30">
+	    <div>
+	      <div class="fg-darkBlue">
+		<span>计算库存：系统根据进销存数据自动计算得到</span>
+		&nbsp&nbsp&nbsp&nbsp<span>实际库存：系统目前实际存储的库存</span>
+	      </div>
+	      <div class="fg-red">注：实际库存原则上等于计算库存</span>
+	    </div>
 	    <div class="table-responsive"> 
 	      <!--EBGIN table -->
 	      <table class="table table-bordered
@@ -75,7 +81,10 @@
 		    <th class="text-center">店铺</th>
 		    
 		    <th class="text-center">营业额</th>
+		    <th class="text-center">成本</th>
 		    <th class="text-center">毛利</th>
+		    <th class="text-center">利润率</th>
+		    
 		    <th class="text-center">现金</th>
 		    <th class="text-center">刷卡</th>
 		    <th class="text-center">核销</th>
@@ -90,7 +99,8 @@
 		    <th class="text-center">销售</th> 
 		    <th class="text-center">盘点</th>
 
-		    <th class="text-center">库存</th>
+		    <th class="text-center">计算库存</th>
+		    <th class="text-center">实际库存</th>
 		    
 		  </tr>
 		</thead>
@@ -99,12 +109,14 @@
 		    <td class="text-center">{{s.order_id}}</td>
 		    <td class="text-center">{{s.shop.name}}</td>
 		    <td class="text-center">{{s.sale.spay}}</td>
+		    <td class="text-center fg-darkBlue">{{s.profit.org_price}}</td>
+		    <td class="text-center fg-magenta">{{s.sale.s}}</td> 
 		    <td class="text-center">{{s.sale.p}}</td>
 		    <td class="text-center">{{s.sale.cash}}</td>
 		    <td class="text-center">{{s.sale.card}}</td>
 		    <td class="text-center">{{s.sale.veri}}</td>
 
-		    <td class="text-center">{{s.pin.total}}</td>
+		    <td class="text-center fg-darkBlue">{{s.pin.total}}</td>
 		    <td class="text-center fg-magenta">{{s.pout.total}}</td>
 
 		    <td class="text-center">{{s.tin.total}}</td>
@@ -112,22 +124,41 @@
 
 		    <td class="text-center fg-magenta">{{s.sale.total}}</td> 
 		    <td class="text-center">{{s.fix.total}}</td>
-		    <td class="text-center bg-cyan">{{s.stock}}</td>
+		    <td class="text-center fg-darkBlue">{{s.stock}}</td>
+		    <td class="text-center fg-darkBlue">{{s.rstock.total}}</td>
 		  </tr>
 		  <tr>
 		    <td colspan=2></td>
 		    <td class="text-center">{{total.spay}}</td>
-		    <td></td>
+		    <td colspan=3></td>
 		    <td class="text-center">{{total.cash}}</td>
 		    <td class="text-center">{{total.card}}</td>
 		    <td class="text-center">{{total.veri}}</td>
-		    <td class="text-center">{{total.pin}}</td>
-		    <td class="text-center">{{total.pout}}</td>
-		    <td class="text-center">{{total.tin}}</td>
-		    <td class="text-center">{{total.tout}}</td>
-		    <td class="text-center">{{total.sale}}</td>
-		    <td></td>
-		    <td class="text-center">{{total.stock}}</td>
+		    <td class="text-center">
+		      <span x-ng-if="total.pin">{{total.pin}}</span>
+		    </td>
+		    <td class="text-center">
+		      <span x-ng-if="total.pout">{{total.pout}}</span>
+		    </td>
+		    <td class="text-center">
+		      <span x-ng-if="total.tin">{{total.tin}}</span>
+		    </td>
+		    <td class="text-center">
+		      <span x-ng-if="total.tout">{{total.tout}}</span>
+		    </td>
+		    <td class="text-center">
+		      <span x-ng-if="total.sale">{{total.sale}}</span>
+		    </td>
+		    <td class="text-center">
+		      <span x-ng-if="total.fix">{{total.fix}}</span>
+		    </td>
+		    <td class="text-center">
+		      <span x-ng-if="total.stock">{{total.stock}}</span>
+		    </td> 
+		    <td class="text-center">
+		      <span x-ng-if="total.rstock">{{total.rstock}}</span>
+		    </td> 
+		    
 		  </tr>
 		</tbody>
 
@@ -135,31 +166,139 @@
 		</tfoot> 
 		
 	      </table> <!--END supplier table-->
-	    </div> <!--END table responsive-->
-	    
+	    </div> <!--END table responsive--> 
 	  </div> <!--END panel-->
-	</div> <!--END portlet body-->
 
-	<div x-ng-show="total_items>items_perpage" class="row">
-	  <div class="col-md-12, col-sm-12, col-xs-12">
-	
-	    <span>显示第 {{current_page}} / {{num_pages}} 项结果，
-	      共 {{total_items}} 项</span>
-	    
-	    <pagination class="pagination-lg table-pagination pull-right"
-		      	total-items="total_items"
-		      	items-per-page="items_perpage"
-		      	num-pages="num_pages"
-		      	max-size="max_page_size"
-		      	boundary-links="true"
-		      	previous-text="&lsaquo;" next-text="&rsaquo;"
-		      	first-text="&laquo;" last-text="&raquo;"
-		      	x-ng-model="current_page"
-		      	x-ng-change="page_changed()">
-	    </pagination>
-	  </div>
-	</div>
-	
+	  <div class="panel panel-default table-panel">
+	    <div class="table-responsive"> 
+	      <!--EBGIN table -->
+	      <table class="table table-bordered
+			    table-striped table-hover
+			    table-condensed table-advanced">
+		<thead>
+		  <tr class="bg-checked">
+		    <th class="text-center">序号</th>
+		    <th class="text-center">店铺</th> 
+		    <th class="text-center">入库（成本）</th>
+		    <th class="text-center">出库（成本）</th>
+		    <th class="text-center">调入（成本）</th> 
+		    <th class="text-center">调出（成本）</th> 
+		    <th class="text-center">销售（成本）</th> 
+		    <th class="text-center">盘点（成本）</th> 
+		    <th class="text-center">计算库存（成本）</th>
+		    <th class="text-center">实际库存（成本）</th> 
+		  </tr>
+		</thead>
+		<tbody>
+		  <tr x-ng-repeat="s in stastics">
+		    <td class="text-center">{{s.order_id}}</td>
+		    <td class="text-center">{{s.shop.name}}</td>
+		    
+		    <td class="text-center">{{s.pin.total}} 
+		      （<span class="fg-magenta">{{s.pin.cost}}</span>）
+		    </td>
+		    
+		    <td class="text-center">{{s.pout.total}}
+		      <span x-ng-if="s.pout.total">
+		      （<span class="fg-magenta">{{s.pout.cost}}</span>）
+		      </span>
+		    </td>
+		    
+		    <td class="text-center">{{s.tin.total}}
+		      <span x-ng-if="s.tin.total">
+		      （<span class="fg-magenta">{{s.tin.cost}}</span>）
+		      </span>
+		    </td>
+		    
+		    <td class="text-center">{{s.tout.total}}
+		      <span x-ng-if="s.tout.total">
+		      （<span class="fg-magenta">{{s.tout.cost}}</span>）
+		      </span>
+		    </td>
+		    
+		    <td class="text-center">{{s.sale.total}}
+		      <span x-ng-if="s.sale.total">
+		      （<span class="fg-magenta">{{s.profit.org_price}}</span>）
+		      </span>
+		    </td>
+		    
+		    <td class="text-center">{{s.fix.total}}
+		      <span x-ng-if="s.fix.total">
+			（<span class="fg-magenta">{{s.fix.cost}}</span>）
+		      </span>
+		    </td>
+		    
+		    <td class="text-center">{{s.stock}}
+		      （<span class="fg-magenta">{{s.stock_cost}}</span>）
+		    </td>
+		    
+		    <td class="text-center">{{s.rstock.total}}
+		      （<span class="fg-magenta">{{s.rstock.cost}}</span>）
+		    </td>
+		    
+		  </tr>
+
+		  <tr>
+		    <td colspan=2></td>
+		    <td class="text-center">{{total.pin}}
+		      <span x-ng-if="total.pin && total.pin!==0">
+		      （<span class="fg-magenta">{{total.pin_cost}}</span>）
+		      </span>
+		    </td>
+		    
+		    <td class="text-center">
+		      <span x-ng-if="total.pout">
+			{{total.pout}}（<span class="fg-magenta">{{total.pout_cost}}</span>）
+		      </span>
+		    </td>
+		    
+		    <td class="text-center">
+		      <span x-ng-if="total.tin">
+		      {{total.tin}}（<span class="fg-magenta">{{total.tin_cost}}</span>）
+		      </span>
+		    </td>
+		    
+		    <td class="text-center">
+		      <span x-ng-if="total.tout">
+			{{total.tout}}（<span class="fg-magenta">{{total.tout_cost}}</span>）
+		      </span>
+		    </td>
+		    
+		    <td class="text-center">
+		      <span x-ng-if="total.sale">
+			{{total.sale}}（<span class="fg-magenta">{{total.sale_cost}}</span>）
+		      </span>
+		    </td>
+		    
+		    <td class="text-center">
+		      <span x-ng-if="total.fix">
+			{{total.fix}}（<span class="fg-magenta">{{total.fix_cost}}</span>）
+		      </span>
+		    </td>
+		    
+		    <td class="text-center">
+		      <span x-ng-if="total.stock">
+			{{total.stock}}（<span class="fg-magenta">{{total.stock_cost}}</span>）
+		      </span>
+		    </td>
+
+		    <td class="text-center">
+		      <span x-ng-if="total.rstock">
+			{{total.rstock}}（<span class="fg-magenta">{{total.rstock_cost}}</span>）
+		      </span>
+		    </td>
+		    
+		  </tr>
+		</tbody>
+
+		<tfoot> 
+		</tfoot> 
+		
+	      </table> <!--END supplier table-->
+	    </div> <!--END table responsive--> 
+	  </div> <!-- END panel-->
+	  
+	</div> <!--END portlet body--> 
       </div> <!--END table container-->
       
     </div>

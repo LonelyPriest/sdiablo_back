@@ -30,26 +30,18 @@
 	  
 	  <div class="row diablo-form-group">
 	    <div x-ng-if="stock_right.show_orgprice" class="col-xs-3 col-md-3">
-	      <div class="input-group">
-		<!-- <span class="input-group-addon"> -->
-		<!--   <i class="glyphicon glyphicon-bold fg-red"></i>厂商 -->
-		<!-- </span> -->
+	      <div class="input-group"> 
+		<span class="input-group-addon">
+		  <i class="icon icon-rss fg-red"></i>厂商</span>
 	  	<input class="form-control"
 		       type="text"
+		       ng-edit 
 	  	       x-ng-model="select.firm" 
 	  	       placeholder="请选择厂商"
 	  	       typeahead-editable="false"
 		       typeahead-on-select="change_firm()"
 	  	       typeahead="f as f.name for f in
 	  			  firms|filter:$viewValue|limitTo:15"/> 
-		
-		<span class="input-group-btn">
-		  <button class="btn default fg-red"
-			  x-ng-disabled="!select.firm"
-			  x-ng-click="select.firm=undefined">
-		    <i class="glyphicon glyphicon-pushpin"></i>
-		  </button>
-	  	</span>
 	      </div>
 	    </div>
 
@@ -61,8 +53,8 @@
 	  	<input class="form-control"
 		       type="text"
 		       readonly
-	  	       x-ng-model="select.firm" 
-	  	       placeholder="厂商自动选择"
+	  	       x-ng-model="select.firm"
+	  	       placeholder="厂商自动选择" 
 		       typeahead="f as f.name for f in
 	  			  firms|filter:$viewValue|limitTo:15"/> 
 	      </div>
@@ -128,6 +120,7 @@
 	  	<input class="form-control"
 		       type="text"
 		       placeholder="备注"
+		       ng-edit
 	  	       x-ng-model="select.comment"/>
 	      </div>
 	    </div>
@@ -143,6 +136,7 @@
 			   type="number" step="0.01" 
 			   placeholder="现金"
 			   disable-key
+			   ng-edit
 			   x-ng-pattern="/^\d+(.\d{1,2})?$/"
 	  		   x-ng-model="select.cash"
 			   popover-placement="top"
@@ -161,6 +155,7 @@
 	  	    <input class="form-control"
 			   type="number" step="0.01" 
 			   placeholder="刷卡"
+			   ng-edit
 			   disable-key
 			   x-ng-pattern="/^\d+(.\d{1,2})?$/"
 	  		   x-ng-model="select.card"
@@ -180,6 +175,7 @@
 	  	    <input class="form-control"
 			   type="number" step="0.01"
 			   disable-key
+			   ng-edit
 			   placeholder="汇款"
 			   x-ng-pattern="/^\d+(.\d{1,2})?$/" 
 	  		   x-ng-model="select.wire"/>
@@ -220,6 +216,7 @@
 			   type="number" step="0.01"
 			   disable-key 
 			   placeholder="核销"
+			   ng-edit
 			   x-ng-pattern="/^\d+(.\d{1,2})?$/"
 	  		   x-ng-model="select.verificate"
 			   popover-placement="top"
@@ -276,6 +273,7 @@
 				 && !select.form.extraForm.$pristine}">
 	  	    <input class="form-control" 
 			   type="number" step="0.01"
+			   ng-edit
 			   disable-wheel
 			   placeholder="关联费用，支持二位小数"
 			   x-ng-pattern="/^\d+(.\d{1,2})?$/"
@@ -423,6 +421,10 @@
 				 placeholder="吊牌价" 
 				 required
 				 disable-key
+				 ng-edit
+				 go-row
+				 auto-row="focus_row_auto"
+				 focus-auto="focus_attrs.tag_price && inv.order_id===focus_row"
 				 x-ng-focus="on_focus_attr('tag_price', inv)"
 				 x-ng-pattern="/^\d+(.\d{1,2})?$/"
 				 x-ng-model="inv.tag_price"
@@ -442,6 +444,10 @@
 		    		 placeholder="卖价折扣"
 		    		 required
 				 disable-key
+				 ng-edit
+				 go-row
+				 auto-row="focus_row_auto"
+				 focus-auto="focus_attrs.discount && inv.order_id===focus_row"
 				 x-ng-focus="on_focus_attr('discount', inv)"
 				 x-ng-pattern="/^\d{2}$|100$/"
 		    		 x-ng-model="inv.discount" />
@@ -480,6 +486,7 @@
 				 required 
 				 go-row
 				 disable-wheel
+				 ng-edit 
 				 auto-row="focus_row_auto"
 				 focus-auto="focus_attrs.org_price && inv.order_id===focus_row"
 				 x-ng-focus="on_focus_attr('org_price', inv)"
@@ -501,6 +508,7 @@
 		    		 required
 				 go-row
 				 disable-wheel
+				 ng-edit
 				 auto-row="focus_row_auto"
 				 focus-auto="focus_attrs.ediscount && inv.order_id===focus_row"
 				 x-ng-focus="on_focus_attr('ediscount', inv)"
@@ -530,6 +538,7 @@
 				 placeholder="溢出数量"
 				 required
 				 disable-key
+				 ng-edit
 				 x-ng-model="inv.over" 
 				 ng-model-options="{debounce:300}"
 				 x-ng-change="row_change_over(inv)"/>

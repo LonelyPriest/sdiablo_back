@@ -1,19 +1,12 @@
 var diabloUtils = angular.module("diabloUtils", []);
 
-// diabloUtils.directive('input', [
-//     function(){
-// 	return {
-// 	    restrict: 'E',
-//             link: function(scope, element, attrs){
-// 		element.bind("blur", function(event){
-// 		    console.log("blur");
-// 		    // event.preventDefault();
-// 		    // event.stopPropagation();
-// 		})
-// 	    }
-// 	}
-//     }
-// ]);
+diabloUtils.directive('ngEdit', function () {
+    return function (scope, element, attrs) {
+        element.bind("focus", function (event) {
+            element[0].select();
+        });
+    };
+});
 
 diabloUtils.directive('ngAffix', function(){
     return  function(scope, element, attrs){
@@ -86,6 +79,44 @@ diabloUtils.directive('goRow', function() {
     } 
 });
 
+
+diabloUtils.directive('goNextField', function() {
+    return {
+	restrict: 'AE',
+	scope: {
+	    autoRow: '&',
+	    pre: '@',
+	    next: '@'
+	    // leftAttr: '='
+	},
+	
+	link:function (scope, element, attrs) {
+	    // console.log(modelCtrl);
+            element.bind("keydown", function (event) {
+		// console.log("keydown", event.which);
+		if(event.which === 40) {
+		    event.preventDefault();
+		    var f = scope.autoRow(); 
+                    scope.$apply(function(){
+			if (angular.isFunction(f)) {
+			    scope.autoRow()(2, scope.next)
+			}
+		    }); 
+		}
+		if(event.which === 38) {
+		    event.preventDefault();
+		    var f = scope.autoRow();
+                    scope.$apply(function(){
+			if (angular.isFunction(f)) {
+			    scope.autoRow()(0, scope.pre) 
+			}
+		    }); 
+		} 
+            });
+	}
+    } 
+});
+
 diabloUtils.directive('disableKey', function() {
     return function (scope, element, attrs) {
 	// console.log(attrs);
@@ -116,23 +147,6 @@ diabloUtils.directive('disableWheel', function() {
         });
     }; 
 });
-
-
-// diabloUtils.directive('disableWheel',function() {
-//     return {
-// 	link : function (scope, $element) {
-//             $element.on('focus', function () {
-//                 angular.element(this).on('mousewheel', function (e) {
-//                     e.preventDefault();
-//                 });
-//             });
-//             $element.on('blur', function () {
-//                 angular.element(this).off('mousewheel');
-//             });
-//         }
-//     }
-// });
-
 
 diabloUtils.directive('focusAuto', function($timeout, $parse) {
     return {
@@ -343,246 +357,6 @@ diabloUtils.directive('ngModelOnblur', function() {
         }
     };
 });
-
-diabloUtils.directive("diabloMap", function($parse, $compile){
-    function postLinkFn (scope, element, attrs){
-	// console.log(element);
-	// $compile(element);
-	// if (scope.active){
-	var ctx = element[0]; 
-	var map = new BMap.Map(ctx, {});
-	var style = {
-	    styleJson:[
-		{
-                    "featureType": "land",
-                    "elementType": "geometry",
-                    "stylers": {
-                        // "color": "#e7f7fc"
-			"color": "#ccccccc"
-                    }
-		},
-		{
-                    "featureType": "water",
-                    "elementType": "all",
-                    "stylers": {
-                        "color": "#96b5d6"
-                    }
-		},
-		{
-                    "featureType": "green",
-                    "elementType": "all",
-                    "stylers": {
-                        "color": "#b0d3dd"
-                    }
-		},
-		{
-                    "featureType": "highway",
-                    "elementType": "geometry.fill",
-                    "stylers": {
-                        "color": "#a6cfcf"
-                    }
-		},
-		{
-                    "featureType": "highway",
-                    "elementType": "geometry.stroke",
-                    "stylers": {
-                        "color": "#7dabb3"
-                    }
-		},
-		{
-                    "featureType": "arterial",
-                    "elementType": "geometry.fill",
-                    "stylers": {
-                        "color": "#e7f7fc"
-                    }
-		},
-		{
-                    "featureType": "arterial",
-                    "elementType": "geometry.stroke",
-                    "stylers": {
-                        "color": "#b0d5d4"
-                    }
-		},
-		{
-                    "featureType": "local",
-                    "elementType": "labels.text.fill",
-                    "stylers": {
-                        "color": "#7a959a"
-                    }
-		},
-		{
-                    "featureType": "local",
-                    "elementType": "labels.text.stroke",
-                    "stylers": {
-                        "color": "#d6e4e5"
-                    }
-		},
-		{
-                    "featureType": "arterial",
-                    "elementType": "labels.text.fill",
-                    "stylers": {
-                        "color": "#374a46"
-                    }
-		},
-		{
-                    "featureType": "highway",
-                    "elementType": "labels.text.fill",
-                    "stylers": {
-                        "color": "#374a46"
-                    }
-		},
-		{
-                    "featureType": "railway",
-                    "elementType": "labels.icon",
-                    "stylers": {
-                        "color": "#ffffff",
-                        "hue": "#ffffff"
-                    }
-		},
-		{
-                    "featureType": "road",
-                    "elementType": "all",
-                    "stylers": {
-                        "visibility": "off"
-                    }
-		}
-	    ]
-	};
-
-	map.setMapStyle(style);
-	
-	map.disableScrollWheelZoom();
-
-	// map.centerAndZoom(new BMap.Point(116.404, 39.915), 8); 
-	map.centerAndZoom("株洲", 8);
-
-	// var cr = new BMap.CopyrightControl({anchor: BMAP_ANCHOR_TOP_RIGHT});
-	// map.addControl(cr);
-	// var bs = map.getBounds(); 
-	
-	// map.addControl(new BMap.NavigationControl());
-	
-	var geo = new BMap.Geocoder();
-	geo.getPoint("株洲", function(p){
-	    if (p){
-		map.centerAndZoom(p, 8);
-		 var myIcon =
-		    new BMap.Icon(
-			"http://api.map.baidu.com/img/markers.png",
-			new BMap.Size(23, 25), {  
-			    offset: new BMap.Size(10, 25),
-			    imageOffset: new BMap.Size(0, 0 - 10 * 25)});
-		
-		var marker = new BMap.Marker(p, {icon:myIcon});
-		// marker.setAnimation(BMAP_ANIMATION_BOUNCE);
-		marker.setZIndex(10000);
-		map.addOverlay(marker);
-	    }
-	}, "湖南省");
-
-	// console.log(scope.retailer);
-	angular.forEach(scope.retailer, function(r){
-	    if (r.pid !== -1 && r.cid !== -1){
-		geo.getPoint(r.city.name, function(p){
-		    if (p){
-			var marker = new BMap.Marker(p);
-			// marker.setTitle(r.address);
-			map.addOverlay(marker);
-		    } else {
-			// console.log(r);
-		    } 
-		}, r.province.name)
-	    } 
-	})
-	
-    };
-    
-    return{
-	restrict: 'E',
-	// template: '<canvas width="800" height="400"></canvas>',
-	// template: '<div style="width:800px;height:400px"></div>',
-	template: '<div></div>', 
-	replace: true,
-	transclude: true,
-	// require: "ngModel",
-	scope: {
-	    retailer: '=',
-	},
-
-	compile: function(element, attrs){
-	    // console.log(element);
-	    element.css({height:diablo_viewport().height});
-	    // element.css({height:"100%"} );
-	    // element.css({height:"880px", width:"800px"});
-	    // element.attr("width", $(document).width()/2);
-	    // element.attr("height", $(document).height()/2);
-	    return postLinkFn;
-	}
-    }
-});
-
-diabloUtils.directive('infiniteScroll', ['$rootScope', '$window', '$timeout', function($rootScope, $window, $timeout){
-    return {
-	link: function(scope, elem, attrs) {
-	    var checkWhenEnabled, handler, scrollDistance, scrollEnabled;
-	    $window = angular.element($window);
-	    scrollDistance = 0;
-	    if (attrs.infiniteScrollDistance != null) {
-		scope.$watch(attrs.infiniteScrollDistance, function(value) {
-		    return scrollDistance = parseInt(value, 10);
-		});
-	    }
-	    scrollEnabled = true;
-	    checkWhenEnabled = false;
-	    if (attrs.infiniteScrollDisabled != null) {
-		scope.$watch(attrs.infiniteScrollDisabled, function(value) {
-		    scrollEnabled = !value;
-		    if (scrollEnabled && checkWhenEnabled) {
-			checkWhenEnabled = false;
-			return handler();
-		    }
-		});
-	    }
-	    handler = function() {
-		var elementBottom, remaining, shouldScroll, windowBottom;
-		windowBottom = $window.height() + $window.scrollTop();
-		elementBottom = elem.offset().top + elem.height();
-		remaining = elementBottom - windowBottom;
-
-		// console.log(windowBottom);
-		// console.log(elementBottom);
-		// console.log(remaining);
-		shouldScroll = remaining + 110 <= $window.height() * scrollDistance;
-		// shouldScroll = remaining <= -110;
-		// shouldScroll = 
-		if (shouldScroll && scrollEnabled) {
-		    if ($rootScope.$$phase) {
-			return scope.$eval(attrs.infiniteScroll);
-		    } else {
-			return scope.$apply(attrs.infiniteScroll);
-		    }
-		} else if (shouldScroll) {
-		    return checkWhenEnabled = true;
-		}
-	    };
-	    
-	    $window.on('scroll', handler);
-	    scope.$on('$destroy', function() {
-		return $window.off('scroll', handler);
-	    });
-	    
-	    return $timeout((function() {
-		if (attrs.infiniteScrollImmediateCheck) {
-		    if (scope.$eval(attrs.infiniteScrollImmediateCheck)) {
-			return handler();
-		    }
-		} else {
-		    return handler();
-		}
-	    }), 0);
-	}
-    };
-}]);
 
 diabloUtils.directive('queryGroup', function () {
     return {
@@ -882,7 +656,6 @@ diabloUtils.controller("diabloEditDialogCtrl", function($scope, $modalInstance, 
     
     var deviceAgent = navigator.userAgent.toLowerCase();
     if (deviceAgent.match(/iphone|ipod|ipad/i)
-    	// && (navigator.sayswho.match(/^Chrome\s+\d+/i).length !== 0 )
        ) {
     	$modalInstance.opened.then(function(){
     	    $('.header').hide();
@@ -891,48 +664,7 @@ diabloUtils.controller("diabloEditDialogCtrl", function($scope, $modalInstance, 
 	    var styleEl = document.createElement('style'), styleSheet;
             document.head.appendChild(styleEl);
             styleSheet = styleEl.sheet;
-            styleSheet.insertRule(".modal { position:absolute}", 0);
-	    
-    	    // setTimeout(function () {
-    	    // 	$('.modal')
-    	    // 	    .addClass('modal-ios')
-    	    // 	    .height($(window).height())
-    	    // 	    .css({'margin-top': $(window).scrollTop() + 'px'});
-
-
-    	    // $('.modal-backdrop').css({
-            //     position: 'absolute', 
-            //     top: 0, 
-            //     left: 0,
-            //     width: '100%',
-            //     height: Math.max(
-    	    // 	document.body.scrollHeight,
-    	    // 	document.documentElement.scrollHeight,
-	    
-    	    // 	document.body.offsetHeight,
-    	    // 	document.documentElement.offsetHeight,
-	    
-    	    // 	document.body.clientHeight,
-    	    // 	document.documentElement.clientHeight
-            //     ) + 'px'
-    	    // });
-	    
-    	    // }, 0);
-
-    	    // $('input').on('blur', 'input, select, textarea', function(){
-    	    // 	setTimeout(function() {
-    	    // 	    // This causes iOS to refresh, fixes problems when virtual keyboard closes
-    	    // 	    $(window).scrollLeft(0);
-
-    	    // 	    var $focused = $(':focus');
-    	    // 	    // Needed in case user clicks directly from one input to another
-    	    // 	    if(!$focused.is('input')) {
-    	    // 		// Otherwise reset the scoll to the top of the modal
-    	    // 		$(window).scrollTop($(window).scrollTop());
-    	    // 	    }
-    	    // 	}, 0);
-    	    // });
-	    
+            styleSheet.insertRule(".modal { position:absolute}", 0); 
     	});
 
 	var unbind = function(){
@@ -1015,51 +747,10 @@ diabloUtils.service("diabloPagination", function(){
     this.get_page = function(currentPage){
 	var begin = (currentPage - 1) * _itemsPerpage;
 	var end = begin + _itemsPerpage > this.get_length()
-	    ? (this.get_length()) : begin + _itemsPerpage;
-	
-	// console.log(begin);
-	// console.log(end);
-	// console.log(_pageData.slice(begin, end));
-	
-	// _index = [];
-	// for (var i=begin; i<end; i++){
-	//     _index.push(i);
-	// }
-	// return _index;
+	    ? (this.get_length()) : begin + _itemsPerpage; 
 	return _pageData.slice(begin, end);
     };
 });
-
-
-diabloUtils.directive('diabloItmesPerpage', function(diabloPagination) {
-    return {
-	restrict: 'AE',
-	template: '<ul class="pagination" x-ng-repeat="p in [5, 10, 25, 50]">'
-	    + '<li><a href="javascript:;" x-ng-click="change(p)">{{p}}</a></li>'
-	    + '</ul>',
-	replace: true,
-	transclude: true,
-	scope:{
-	    afterChange: '&'
-	},
-	
-	link: function(scope, element, attr){
-	    scope.change = function(p){
-		// console.log(p);
-		diabloPagination.set_items_perpage(p);
-		if (diabloPagination.get_data() !== null){
-		    scope.afterChange();
-		}
-	    }
-	    
-	    scope.pages = [5, 10, 25, 50];
-	    diabloPagination.set_items_perpage(scope.pages[0]);
-	    // scope.change(scope.pages[0]);
-	    
-	}
-    }
-});
-
 
 diabloUtils.directive('diabloSwitch', function(){
     return {

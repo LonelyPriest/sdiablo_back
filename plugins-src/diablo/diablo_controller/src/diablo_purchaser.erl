@@ -1258,7 +1258,8 @@ handle_call({fix_inventory, Merchant, Inventories, Props}, _From, State) ->
     Employe         = ?v(<<"employee">>, Props), 
     TotalExist      = ?v(<<"total_exist">>, Props),
     TotalFixed      = ?v(<<"total_fixed">>, Props),
-    TotalMetric     = ?v(<<"total_metric">>, Props), 
+    TotalMetric     = ?v(<<"total_metric">>, Props),
+    TotalCost       = ?v(<<"total_cost">>, Props),
     
     RSN = rsn(fix, Merchant, Shop, ?inventory_sn:sn(w_inventory_fix_sn, Merchant)),
 
@@ -1266,7 +1267,7 @@ handle_call({fix_inventory, Merchant, Inventories, Props}, _From, State) ->
     Sql1 = sql(wfix, RSN, DateTime, Merchant, RealyShop, Inventories),
     
     Sql2 = "insert into w_inventory_fix(rsn"
-	", shop, employ, exist, fixed, metric, merchant, entry_date)"
+	", shop, employ, exist, fixed, metric, cost, merchant, entry_date)"
 	" values("
 	++ "\"" ++ ?to_s(RSN) ++ "\","
 	++ ?to_s(Shop) ++ ","
@@ -1274,6 +1275,7 @@ handle_call({fix_inventory, Merchant, Inventories, Props}, _From, State) ->
 	++ ?to_s(TotalExist) ++ ","
 	++ ?to_s(TotalFixed) ++ ","
 	++ ?to_s(TotalMetric) ++ ","
+	++ ?to_s(TotalCost) ++ ","
 	++ ?to_s(Merchant) ++ "," 
 	++ "\"" ++ ?to_s(DateTime) ++ "\");", 
 
@@ -1291,20 +1293,22 @@ handle_call({transfer_inventory, Merchant, Inventories, Props}, _From, State) ->
     DateTime    = ?v(<<"datetime">>, Props, Now),
     Employe     = ?v(<<"employee">>, Props),
     Total       = ?v(<<"total">>, Props),
-    Comment     = ?v(<<"comment">>, Props, ""),
+    Cost        = ?v(<<"cost">>, Props),
+    Comment     = ?v(<<"comment">>, Props, []),
     TRSN        = rsn(transfer_from, Merchant, Shop,
 		      ?inventory_sn:sn(w_inventory_transfer_sn_from, Merchant)),
     %% ToRSN = rsn(transfer_to, Merchant, ToShop,
     %%        ?inventory_sn:sn(w_inventory_transfer_sn_to, Merchant)),
 
     Sql1 = ["insert into w_inventory_transfer(rsn"
-            ", fshop, tshop, employ, total"
+            ", fshop, tshop, employ, total, cost"
             ", comment, merchant, state, entry_date) values("
             ++ "\"" ++ ?to_s(TRSN) ++ "\","
             ++ ?to_s(Shop) ++ ","
             ++ ?to_s(ToShop) ++ ","
             ++ "\"" ++ ?to_s(Employe) ++ "\","
             ++ ?to_s(Total) ++ ","
+	    ++ ?to_s(Cost) ++ ","
             ++ "\"" ++ ?to_s(Comment) ++ "\","
             ++ ?to_s(Merchant) ++ ","
             ++ ?to_s(0) ++ ","
@@ -1900,11 +1904,14 @@ sql(wfix, RSN, DateTime, Merchant, Shop, Inventories) ->
 	      Exist       = ?v(<<"exist">>, Inv),
 	      Fixed       = ?v(<<"fixed">>, Inv),
 	      Metric      = ?v(<<"metric">>, Inv),
+	      OrgPrice    = ?v(<<"org_price">>, Inv),
 
 	      Sql0 = 
-		  ["insert into w_inventory_fix_detail(rsn, style_number, brand"
-		   ", type, s_group, free, year, season, firm, path"
-		   ", exist, fixed, metric, merchant, shop, entry_date)"
+		  ["insert into w_inventory_fix_detail("
+		   "rsn, style_number, brand, type, s_group, free"
+		   ", year, season, firm, path"
+		   ", exist, fixed, metric, org_price"
+		   ", merchant, shop, entry_date)"
 		   " values("
 		   ++ "\"" ++ ?to_s(RSN) ++ "\","
 		   ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
@@ -1919,6 +1926,7 @@ sql(wfix, RSN, DateTime, Merchant, Shop, Inventories) ->
 		   ++ ?to_s(Exist) ++ ","
 		   ++ ?to_s(Fixed) ++ ","
 		   ++ ?to_s(Metric) ++ ","
+		   ++ ?to_s(OrgPrice) ++ ","
 		   ++ ?to_s(Merchant) ++ ","
 		   ++ ?to_s(Shop) ++ ","
 		   ++ "\'" ++ ?to_s(DateTime) ++ "\')",

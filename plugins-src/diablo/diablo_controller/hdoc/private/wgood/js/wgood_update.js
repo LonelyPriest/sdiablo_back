@@ -30,6 +30,8 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	)
     };
 
+    $scope.price_readonly = $scope.stock_right.show_orgprice ? false : true;
+    
     // [{type:"红色", tid:1
     // 	    colors:[{name:"深红", id:1},
     // 		    {name:"粉红", id:2}]},

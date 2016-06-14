@@ -25,6 +25,16 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
 	diablo_goto_page("#inventory/inventory_transfer_detail");
     };
 
+    $scope.stock_right = {
+	show_orgprice: rightAuthen.authen(
+	    user.type,
+	    rightAuthen.rainbow_action()['show_orgprice'],
+	    user.right
+	)
+    };
+
+    $scope.calc_row = stockUtils.calc_row;
+
     var now = $.now();
 
     // init
@@ -82,12 +92,14 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
 	} 
     };
     
-    // if ($scope.firms.length !== 0){
-    // 	$scope.select.firm = $scope.firms[0]; 
-    // }
-    
     if ($scope.employees.length !== 0){
 	$scope.select.employee = $scope.employees[0];
+
+	if (diablo_invalid_employee !== user.loginEmployee)
+	    $scope.select.employee = diablo_get_object(user.loginEmployee, $scope.employees); 
+	
+	if (angular.isUndefined($scope.select.employee))
+	    $scope.select.employee = $scope.employees[0];
     }
 
     $scope.get_transfer_shop(); 
@@ -259,7 +271,8 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
 	    datetime:      dateFilter($scope.select.date, "yyyy-MM-dd HH:mm:ss"),
 	    employee:      $scope.select.employee.id,
 	    comment:       sets($scope.select.comment), 
-	    total:         seti($scope.select.total) 
+	    total:         stockUtils.to_integer($scope.select.total),
+	    cost:          stockUtils.to_float($scope.select.cost)
 	};
 
 	console.log(added);
@@ -284,10 +297,13 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
     };
 
     $scope.re_calculate = function(){
-	$scope.select.total = 0; 
+	$scope.select.total = 0;
+	$scope.select.cost = 0;
 	for (var i=1, l=$scope.inventories.length; i<l; i++){
 	    var one = $scope.inventories[i];
-	    $scope.select.total      += parseInt(one.reject); 
+	    // console.log(one);
+	    $scope.select.cost += stockUtils.to_float(one.org_price);
+	    $scope.select.total += stockUtils.to_integer(one.reject); 
 	} 
     };
     

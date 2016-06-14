@@ -191,6 +191,7 @@
 			 disable-key
 			 placeholder="吊牌价，支持二位小数"
 			 x-ng-pattern="pattern.price"
+			 x-ng-readonly="price_readonly"
 			 x-ng-enter=""
 			 x-ng-model="good.tag_price"
 			 x-ng-change="row_change_tag(good)"/>
@@ -217,6 +218,7 @@
 			   disable-key
 			   placeholder="支持二位小数，无折扣请输入100"
 			   x-ng-pattern="pattern.discount"
+			   x-ng-readonly="price_readonly"
 			   x-ng-model="good.discount" />
 		  </div>
 		  <span class="input-group-addon bg-white fg-red">*</span>
