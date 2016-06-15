@@ -244,11 +244,17 @@ purchaserApp.controller("purchaserInventoryPriceCtrl", function(
 	$timeout.cancel($scope.timeout_auto_save);
 	if (0 === direct){
 	    if ( 0 === stockUtils.to_float(inv.n_tag_price)
-		 || inv.n_tag_price === inv.tag_price) return; 
+		 || inv.n_tag_price === inv.tag_price) {
+		inv.n_discount = inv.discount;
+		return
+	    }; 
 	    inv.n_discount = diablo_discount(inv.n_tag_price, inv.tag_price);
 	} else if (1 === direct){
 	    if (0 === stockUtils.to_float(inv.n_discount)
-		|| inv.n_discount === inv.discount) return;
+		|| inv.n_discount === inv.discount) {
+		inv.n_tag_price = inv.tag_price;
+		return;
+	    };
 	    inv.n_tag_price = diablo_price(inv.tag_price, inv.n_discount);
 	}
 	

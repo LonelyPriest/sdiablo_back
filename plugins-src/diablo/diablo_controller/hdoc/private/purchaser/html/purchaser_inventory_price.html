@@ -188,6 +188,7 @@
 		    			 && !inv.form.tag_price.$pristine}">
 		    	    <input class="form-control" type="number"
 		    		   required
+				   disable-key
 		    		   placeholder="吊牌价"
 				   focus-auto="focus.tag_price"
 				   x-ng-pattern="pattern.price"
@@ -198,7 +199,6 @@
 		      </div>
 		    </td>
 		    
-		    <!-- <td class="vert-align">{{inv.tag_price}}</td> -->
 		    <td class="col-md-1 vert-align">
 		      <div class="input-group">
 			<span class="input-group-addon modal-input-group-addon">
@@ -209,7 +209,8 @@
 		    			 && !inv.form.discount.$pristine}">
 		    	    <input class="form-control" type="number"
 		    		   required
-		    		   placeholder="折扣"
+				   disable-key
+		    		   placeholder="折扣" 
 				   x-ng-pattern="pattern.discount"
 		    		   x-ng-model="inv.n_discount"
 				   x-ng-change="add_inventory(inv, 1)"/>
@@ -221,27 +222,7 @@
 		    <td class="vert-align">{{inv.org_price}}</td>
 		    <td class="vert-align">{{inv.ediscount}}</td> 
 		    
-		    <td class="text-left vert-align">
-		      <!-- <div x-ng-if="inv.$new"> -->
-		      <!-- 	<a class="btn diablo-input-button btn-success" -->
-		      <!-- 	   x-ng-if="inv.free_color_size" -->
-		      <!-- 	   x-ng-disabled="inv.form.good.$invalid -->
-		      <!-- 			  || inv.form.fix.$invalid" -->
-		      <!-- 	   x-ng-click="add_free_inventory(inv)">保存 -->
-		      <!-- 	  <i class="glyphicon glyphicon-plus"></i></a> -->
-			
-		      <!-- 	<a class="btn diablo-input-button btn-success" -->
-		      <!-- 	   x-ng-if="!inv.free_color_size" -->
-		      <!-- 	   x-ng-disabled="inv.form.good.$invalid" -->
-		      <!-- 	   x-ng-click="add_inventory(inv)">新增 -->
-		      <!-- 	  <i class="glyphicon glyphicon-plus"></i></a> -->
-			
-		      <!-- 	<a class="btn diablo-input-button btn-warning" -->
-		      <!-- 	   x-ng-disabled="!inv.style_number" -->
-		      <!-- 	   x-ng-click="reset_inventory(inv)">重置 -->
-		      <!-- 	  <i class="glyphicon glyphicon-pushpin"></i></a> -->
-		      <!-- </div> -->
-
+		    <td class="text-left vert-align"> 
 		      <div ng-if="!inv.$new"> 
 			<a class="btn diablo-input-button btn-danger"
 			   x-ng-if="!inv.free_update"

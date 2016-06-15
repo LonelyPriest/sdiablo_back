@@ -1152,15 +1152,14 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
      * good amount
      */
     $scope.new_good_amount = function(){
-	var add = $scope.inventories[0];
-
-	
+	var add = $scope.inventories[0]; 
     };
 
     /*
      * new good
      */
     $scope.form = {};
+    $scope.good_saving = false;
     $scope.good = {
 	sex       : $scope.sex2objs[0],
 	org_price : 0, 
@@ -1173,9 +1172,13 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     };
 
     $scope.new_good = function(){
-	if ($scope.form.gForm.$invalid || $scope.is_same_good) return;
+	if ($scope.form.gForm.$invalid
+	    || $scope.is_same_good
+	    || $scope.good_has_saved) return;
 	console.log($scope.good);
 	console.log($scope.image);
+
+	$scope.good_saving = true; 
 	var good       = angular.copy($scope.good);
 	good.firm      = angular.isDefined($scope.select.firm)
 	    && $scope.select.firm ? $scope.select.firm.id : undefined;
@@ -1239,16 +1242,17 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	
 	wgoodService.add_purchaser_good(good, image).then(function(state){
 	    console.log(state);
+	    $scope.good_saving = false;
 	    if (state.ecode == 0){
 		// console.log("callback");
 		// reset size 
-		$scope.selectGroups = [];
-		$scope.good.sizes = "";
-		angular.forEach($scope.size_groups, function(g){
-		    if (angular.isDefined(g.select)){
-			g.select = false;
-		    }
-		});
+		// $scope.selectGroups = [];
+		// $scope.good.sizes = "";
+		// angular.forEach($scope.size_groups, function(g){
+		//     if (angular.isDefined(g.select)){
+		// 	g.select = false;
+		//     }
+		// });
 
 		// reset color
 		$scope.selectColors = [];
@@ -1373,6 +1377,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	$scope.selectGroups = [];
 	$scope.selectColors = [];
 	$scope.is_same_good = false;
+	$scope.good_saving = false;
 	
 	$scope.good = {
 	    brand:     $scope.good.brand,

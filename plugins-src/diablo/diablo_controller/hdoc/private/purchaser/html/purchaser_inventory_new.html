@@ -853,9 +853,7 @@
 			       go-next-field
 			       next="color"
 			       pre="tag_price"
-			       auto-row="go_next_good_field"
-			       placeholder="吊牌价，支持二位小数"
-			       x-ng-pattern="/^\d+(.\d{1,2})?$/"
+			       auto-row="go_next_good_field" 
 			       placeholder="两位整数，无折扣请输入100"
 			       x-ng-pattern="/^\d{2}$|100$/"
 			       x-ng-enter=""
@@ -878,16 +876,16 @@
 		  </label>
 		  <div class="col-sm-6 col-md-6"> 
 		    <div class="input-group">
-		      <input type="text" readonly
+		      <input type="text"
+			     readonly
+			     name="color"
 			     class="form-control"
 			     focus-auto="focus_attrs.color"
 			     go-next-field
 			     next="size"
 			     pre="discount"
 			     auto-row="go_next_good_field"
-			     placeholder="吊牌价，支持二位小数"
-			     x-ng-pattern="/^\d+(.\d{1,2})?$/"
-			     placeholder="均色均码无需选择"
+			     placeholder="均码无需选择"
 			     x-ng-enter="select_color()"
 			     x-ng-model="good.colors"/> 
 		      <span class="input-group-btn">
@@ -936,7 +934,7 @@
 		    <div class="pull-right">
 		      <button type="submit"
 			      class="btn btn-primary"
-			      ng-disabled="form.gForm.$invalid || is_same_good"
+			      ng-disabled="form.gForm.$invalid || is_same_good || good_saving"
 			      focus-auto="focus_attrs.ok"
 			      go-next-field
 			      pre="size"
