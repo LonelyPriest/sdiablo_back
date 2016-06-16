@@ -34,6 +34,9 @@ var diablo_abandon = 1;
 var diablo_stock_new = 0;
 var diablo_stock_reject = 1;
 
+var diablo_common_retailer = 0;
+var diablo_charge_retailer = 1;
+
 /*
  * stock
  */
@@ -466,9 +469,14 @@ var diablo_now_date = function(){
 
 var diablo_set_date = function(date){
     // console.log(date);
-    var a = date.split("-");
+    var a = date.split("-"); 
     return new Date(parseInt(a[0]), parseInt(a[1]) - 1, parseInt(a[2]))
 	.getTime();
+};
+
+var diablo_set_date_obj = function(date){
+    var a = date.split("-"); 
+    return new Date(parseInt(a[0]), parseInt(a[1]) - 1, parseInt(a[2])); 
 };
 
 var diablo_set_datetime = function(datetime){

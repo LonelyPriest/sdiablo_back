@@ -63,18 +63,19 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	// console.log(calc);
 	
 	$scope.select.total     = calc.total; 
-	$scope.select.abs_total = calc.abs_total;
+	// $scope.select.abs_total = calc.abs_total;
 	$scope.select.should_pay= calc.should_pay;
 	$scope.select.score     = calc.score;
 	
 	// back 
-	if ($scope.select.withdraw > $scope.select.should_pay){
-	    $scope.select.left_balance = $scope.select.surplus - $scope.select.should_pay;
-	    $scope.select.withdraw = $scope.select.should_pay; 
-	    $scope.select.charge = -($scope.select.cash + $scope.select.card);
-	} else {
-	    $scope.select.charge = $scope.select.should_pay - $scope.select.has_pay; 
-	}
+	// if ($scope.select.should_pay > 0
+	//     && $scope.select.withdraw > $scope.select.should_pay){
+	//     $scope.select.left_balance = $scope.select.surplus - $scope.select.should_pay;
+	//     $scope.select.withdraw = $scope.select.should_pay; 
+	//     $scope.select.charge = -($scope.select.cash + $scope.select.card);
+	// } else {
+	//     $scope.select.charge = $scope.select.should_pay - $scope.select.has_pay; 
+	// }
     };
     
     $scope.change_retailer = function(){
@@ -536,7 +537,8 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	} 
 
 	// back
-	if ($scope.select.withdraw > $scope.select.should_pay){
+	if ($scope.select.should_pay > 0
+	    && $scope.select.withdraw > $scope.select.should_pay){
 	    $scope.select.left_balance += $scope.select.withdraw - $scope.select.should_pay;
 	    // back to account
 	    $scope.select.withdraw = $scope.select.should_pay;

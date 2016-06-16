@@ -3,13 +3,12 @@ var wsaleUtils = function(){
 	for (var i=0, l=sorts.length; i<l; i++){
 	    if (sell.style_number === sorts[i].style_number 
 		&& sell.brand_id   === sorts[i].brand_id){
-
 		// sorts[i].total += sell.sell;
-		sorts[i].reject += Math.abs(sell.amount);
+		sorts[i].reject += sell.amount;
 		sorts[i].amounts.push({
 		    cid        :sell.color_id,
 		    size       :sell.size,
-		    sell_count :Math.abs(sell.amount)});
+		    sell_count :sell.amount});
 		return true;
 	    } 
 	}
@@ -27,15 +26,15 @@ var wsaleUtils = function(){
 	select.employee_id     = base.employ_id; 
 	
 	select.surplus    = base.balance;
-	select.verificate = Math.abs(base.verificate); 
-	select.cash       = Math.abs(base.cash);
-	select.card       = Math.abs(base.card);
-	select.withdraw   = Math.abs(base.withdraw);
-	select.should_pay = Math.abs(base.should_pay);
+	select.verificate = base.verificate; 
+	select.cash       = base.cash;
+	select.card       = base.card;
+	select.withdraw   = base.withdraw;
+	select.should_pay = base.should_pay;
 	
 	select.comment    = base.comment;
-	select.total      = Math.abs(base.total);
-	select.score      = Math.abs(base.score);
+	select.total      = base.total;
+	select.score      = base.score;
 
 	var sorts = [];
 	for (var i=0, l=sells.length; i<l; i++){
@@ -70,8 +69,8 @@ var wsaleUtils = function(){
 		add.o_fdiscount = s.fdiscount;
 		add.o_fprice    = s.fprice;
 		
-		add.reject    = Math.abs(s.amount);
-		add.total     = Math.abs(s.total);
+		add.reject    = s.amount;
+		add.total     = s.total;
 		
 		add.pid       = s.pid;
 		add.sid       = s.sid;
@@ -82,7 +81,7 @@ var wsaleUtils = function(){
 		add.amounts.push({
 		    cid: s.color_id,
 		    size:s.size,
-		    sell_count:Math.abs(s.amount)});
+		    sell_count:s.amount});
 
 		sorts.push(add);
 	    }
@@ -246,6 +245,21 @@ var wsaleUtils = function(){
 	no_vip: function(shop, base){
 	    return diablo_base_setting(
 		"s_customer", shop, base, parseInt, diablo_no);
+	},
+
+	get_login_employee:function(shop, loginEmployee, employees){
+	    var filterEmployees = employees.filter(function(e){
+		return e.shop === shop;
+	    });
+	    
+	    var select = undefined;
+	    if (diablo_invalid_employee !== loginEmployee)
+		select = diablo_get_object(loginEmployee, filterEmployees); 
+	    
+	    if (angular.isUndefined(select)) select = filterEmployees[0];
+
+	    console.log(select);
+	    return {login:select, filter:filterEmployees};
 	},
 
 	sort_amount: function(invs, amounts, colors){
@@ -445,20 +459,20 @@ var wsaleCalc = function(){
 		
 		total      += parseInt(count);
 		abs_total  += Math.abs(parseInt(count));
-
-		if (retailer.id !== o_retailer.id){
-		    if (o_retailer.id === no_vip){
-			if (retailer.id !== no_vip){
-			    if (one.pid !== -1 && one.promotion.rule_id === 0){
-				one.fdiscount = one.promotion.discount;
-			    }	
-			}
-		    } else {
-			if (retailer.id === no_vip){
-			    one.fdiscount = one.discount;
-			}
-		    }
-		}
+		
+		// if (retailer.id !== o_retailer.id){
+		//     if (o_retailer.id === no_vip){
+		// 	if (retailer.id !== no_vip){
+		// 	    if (one.pid !== -1 && one.promotion.rule_id === 0){
+		// 		one.fdiscount = one.promotion.discount;
+		// 	    }	
+		// 	}
+		//     } else {
+		// 	if (retailer.id === no_vip){
+		// 	    one.fdiscount = one.discount;
+		// 	}
+		//     }
+		// }
 		
 		if (one.o_fprice !== one.fprice){
 		    one.fdiscount = diablo_discount(one.fprice, one.tag_price);
@@ -476,30 +490,22 @@ var wsaleCalc = function(){
 		one.rprice      = one.fprice;
 		one.calc        = diablo_float_mul(one.fprice, count);
 
-		if (retailer.id === no_vip){
+		// if (retailer.id === no_vip){
+		//     wsaleUtils.sort_promotion({id: -1, rule_id: -1}, one.calc, pmoneys);
+		//     wsaleUtils.delete_format_promotion(one, show_promotions);
+		// } else {
+		if (one.pid === -1){
 		    wsaleUtils.sort_promotion({id: -1, rule_id: -1}, one.calc, pmoneys);
-		    wsaleUtils.delete_format_promotion(one, show_promotions);
-		} else {
-		    if (one.pid === -1){
-			wsaleUtils.sort_promotion({id: -1, rule_id: -1}, one.calc, pmoneys);
-			if (one.sid === -1){
-			    wsaleUtils.delete_format_promotion(one, show_promotions);
-			} else {
-			    wsaleUtils.format_promotion(one, show_promotions);
-			}
+		    if (one.sid === -1){
+			wsaleUtils.delete_format_promotion(one, show_promotions);
 		    } else {
-			wsaleUtils.sort_promotion(one.promotion, one.calc, pmoneys);
 			wsaleUtils.format_promotion(one, show_promotions);
 		    }
+		} else {
+		    wsaleUtils.sort_promotion(one.promotion, one.calc, pmoneys);
+		    wsaleUtils.format_promotion(one, show_promotions);
 		}
-		
-		// if (one.pid === -1 || retailer.id === no_vip){
-		//     wsaleUtils.sort_promotion({id: -1, rule_id: -1}, one.calc, pmoneys);
-		//     wsaleUtils.delete_format_promotion(one, show_promotions); 
-		// } else {
-		//     wsaleUtils.sort_promotion(one.promotion, one.calc, pmoneys);
-		//     wsaleUtils.format_promotion(one, show_promotions);
-		// } 
+		// }
 		console.log(one.calc); 
 	    }
 	    
@@ -571,4 +577,100 @@ var wsaleCalc = function(){
 	}
     }
 }();
+
+var gen_wsale_key = function(shop, retailer, employee, dateFilter){
+    return "ws-"
+	+ employee.toString()
+	+ "-" + retailer.toString()
+	+ "-" + shop.toString()
+	+ "-" + dateFilter($.now(), 'mediumTime'); 
+};
+
+var wsaleDraft = function(storage, shop, retailer, employee, dateFilter){
+    this.storage  = storage;
+    this.shop     = shop;
+    this.retailer = retailer;
+    this.employee = employee;
+    this.dateFilter = dateFilter;
+    this.key = gen_wsale_key(this.shop, this.retailer, this.employee, this.dateFilter);
+};
+
+wsaleDraft.prototype.reset = function(){
+    this.key = gen_wsale_key(this.shop, this.retailer, this.employee, this.dateFilter);
+};
+
+wsaleDraft.prototype.change_shop = function(shop){
+    this.shop = shop;
+    this.reset();
+};
+
+wsaleDraft.prototype.change_employee = function(employee){
+    this.employee = employee;
+    this.reset();
+};
+
+wsaleDraft.prototype.change_retailer = function(retailer){
+    this.retailer = retailer;
+    this.reset();
+};
+
+wsaleDraft.prototype.keys = function(){
+    var re = /^ws-\d+-\d+-\d+.*$/; 
+    var keys = this.storage.keys();
+    return keys.filter(function(k){
+	return re.test(k)
+    });
+};
+
+wsaleDraft.prototype.save = function(resources){
+    var key = this.key;
+    var now = $.now();
+    this.storage.set(key, {t:now, v:resources});
+};
+
+wsaleDraft.prototype.list = function(draftFilter){
+    var keys = this.keys();
+    return draftFilter(keys); 
+};
+
+wsaleDraft.prototype.remove = function(key){
+    this.storage.remove(key);
+};
+
+wsaleDraft.prototype.select = function(dialog, template, draftFilter, selectCallback){
+    var storage = this.storage;
+    
+    var callback = function(params){
+	var select_draft = params.drafts.filter(function(d){
+	    return angular.isDefined(d.select) && d.select
+	})[0];
+	
+	console.log(storage);
+	var one = storage.get(select_draft.sn); 
+	if (angular.isDefined(one) && null !== one){
+	    selectCallback(select_draft, one.v);
+	} 
+    };
+
+    var drafts = this.list(draftFilter); 
+    dialog.edit_with_modal(
+	template, undefined, callback, undefined,
+	{drafts:drafts,
+	 valid: function(drafts){
+	     for (var i=0, l=drafts.length; i<l; i++){
+		 if (angular.isDefined(drafts[i].select) && drafts[i].select){
+		     return true;
+		 }
+	     } 
+	     return false;
+	 },
+	 select: function(drafts, d){
+	     for (var i=0, l=drafts.length; i<l; i++){
+		 if (d.sn !== drafts[i].sn){
+		     drafts[i].select = false;
+		 }
+	     }
+	 }
+	});
+};
 

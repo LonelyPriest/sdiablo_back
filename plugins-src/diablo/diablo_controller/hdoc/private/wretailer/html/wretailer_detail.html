@@ -66,29 +66,35 @@
 		  <tr>
 		    <th>序号</th>
 		    <th>名称</th>
+		    <th>生日</th>
+		    <th>会员类型</th> 
+		    <th>联系方式</th>
+		    <th>联系地址</th> 
 		    <th class="danger">帐户余额</th>
 		    <th class="success">累计消费</th>
 		    <th class="info">累计积分</th>
-		    <th>联系方式</th> 
-		    <th>联系地址</th>
 		    <th>日期</th>
 		    <th>操作</th>
 		  </tr>
 		</thead>
 		<tbody>
 		  <tr ng-repeat="r in filter_retailers">
-		    <td>{{r.order_id}}</td>
+		    <td>{{r.order_id}}</td> 
 		    <td>{{r.name}}</td>
-		    <td>{{r.balance}}</td>
-		    <td>{{r.consume}}</td>
-		    <td>{{r.score}}</td>
+		    <td>{{r.birth|date:'yyyy-MM-dd'}}</td>
 		    <td>
-		      <div x-ng-switch on="r.mobile">
-			<span x-ng-switch-when="">暂无</span>
-			<span x-ng-switch-default>{{r.mobile}}</span>
-		      </div>
+		      <span x-ng-if="r.type.id===1" class="bg-magenta">{{r.type.name}}</span>
+		      <span x-ng-if="r.type.id===0">{{r.type.name}}</span>
 		    </td> 
-		    <td>{{r.address}}</td>
+		    <td><div x-ng-if="r.mobile">{{r.mobile}}</div></td>
+		    <td>{{r.address}}</td> 
+		    <td>
+		      <div x-ng-if="r.type_id===1">{{r.balance}}</div>
+		    </td>
+		    <td>{{r.consume}}</td>
+		    <td>
+		      <div x-ng-if="!r.no_vip">{{r.score}}</div>
+		    </td> 
 		    <td>{{r.entry_date}}</td>
 
 		    <td>
@@ -111,9 +117,9 @@
 		  </tr>
 
 		  <tr x-ng-if="total_items!==0" class="bg-white">
-		    <td colspan="3"></td>
+		    <td colspan="7"></td>
 		    <td class="fg-red">{{total_consume}}</td> 
-		    <td colspan="6"></td>
+		    <td colspan="3"></td>
 		  </tr>
 		  
 		</tbody>
@@ -168,24 +174,23 @@
     <form class="form-horizontal" name="rForm" novalidate> 
       <div class="form-body">
 	<!--Name-->
-	<div class="form-group"> 
-	  <div class="input-group">
-	    <span class="input-group-addon">
-	      <i class="glyphicon glyphicon-hand-right fg-red"></i>
-	      会员名称
-	    </span>
-	    <div x-ng-class="{'has-error': rForm.name.$invalid
-			     && !rForm.name.$pristine
-			     || params.check_exist(params.retailer)}">
-	      <input type="text"
-		     class="form-control"
-		     name="name"
-		     required
-		     placeholder="请输入会员名称"
-		     x-ng-model="params.retailer.name"
-		     x-ng-pattern="params.pattern.name_address"></input>
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">名称</label>
+	  <div class="col-sm-10 col-md-10">
+	    <div class="input-group"> 
+	      <div x-ng-class="{'has-error': rForm.name.$invalid
+			       && !rForm.name.$pristine
+			       || params.check_exist(params.retailer)}">
+		<input type="text"
+		       class="form-control"
+		       name="name"
+		       required
+		       placeholder="请输入会员名称"
+		       x-ng-model="params.retailer.name"
+		       x-ng-pattern="params.pattern.name_address"/>
+	      </div>
+	      <span class="input-group-addon bg-white fg-red">*</span>
 	    </div>
-	    <span class="input-group-addon bg-white fg-red">*</span>
 	  </div>
 	  <div ng-show="params.check_exist(params.retailer)">
 	    <span class="fg-red">客户名称已存在，请重新输入</span>
@@ -195,81 +200,91 @@
 	  </div> 
 	</div> 
 	
-	<!-- <div class="form-group"> -->
-	<!--   <div class="input-group"> -->
-	<!--     <span class="input-group-addon"> -->
-	<!--       <i class="glyphicon glyphicon-hand-right fg-red"></i> -->
-	<!--       帐户结余 -->
-	<!--     </span> -->
-	<!--     <input type="text" required -->
-	<!-- 	   class="form-control" -->
-	<!-- 	   name="balance" -->
-	<!-- 	   placeholder="默认为0，支持两位小数" -->
-	<!-- 	   x-ng-model="params.retailer.balance" -->
-	<!-- 	   x-ng-pattern="params.pattern.decimal_2"/> -->
-	<!--     <span class="input-group-addon bg-white fg-red">*</span> -->
-	<!--   </div> -->
-	<!--   <div ng-show="rForm.balance.$invalid && !rForm.balance.$pristine"> -->
-	<!--     <span class="fg-red">请输入正确的数字，支持两位小数</span> -->
-	<!--   </div>  -->
-	<!-- </div> -->
-
-	<!-- <div class="form-group"> -->
-	<!--   <div class="input-group"> -->
-	<!--     <span class="input-group-addon"> -->
-	<!--       <i class="glyphicon glyphicon-hand-right fg-red"></i> -->
-	<!--       类型 </span> -->
-	<!--     <select class="form-control" type="text" -->
-	<!--   	    x-ng-model="params.retailer.type"  -->
-	<!--   	    x-ng-options="t as t.name for t in params.types"> -->
-	<!--     </select> -->
-	<!--   </div> -->
-	<!-- </div> -->
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">生日</label>
+	  <div class="col-sm-10 col-md-10">
+	    <time-search time="params.retailer.birth"></time-search>
+	  </div>
+	</div>
 	
 	<!--mobile-->
-	<div class="form-group"> 
-	  <div class="input-group">
-	    <span class="input-group-addon">
-	      <i class="glyphicon glyphicon-hand-right fg-red"></i>
-	      联系方式
-	    </span>
-	    <div x-ng-class="{'has-error': rForm.mobile.$invalid
-			     && !rForm.mobile.$pristine}">
-	      <input class="form-control"
-		     type="tel"
-		     name="mobile"
-		     required
-		     placeholder="请输入电话或手机号码"
-		     class="form-control"
-		     x-ng-model="params.retailer.mobile"
-		     x-ng-pattern="params.pattern.tel_mobile"></input>
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">联系方式</label>
+	  <div class="col-sm-10 col-md-10">
+	    <div class="input-group"> 
+	      <div x-ng-class="{'has-error': rForm.mobile.$invalid
+			       && !rForm.mobile.$pristine}">
+		<input class="form-control"
+		       type="tel"
+		       name="mobile"
+		       required
+		       placeholder="请输入电话或手机号码"
+		       class="form-control"
+		       x-ng-model="params.retailer.mobile"
+		       x-ng-pattern="params.pattern.tel_mobile"/>
+	      </div>
+	      <span class="input-group-addon bg-white fg-red">*</span>
 	    </div>
-	    <span class="input-group-addon bg-white fg-red">*</span>
-	  </div>
-	  <div ng-show="rForm.mobile.$invalid && !rForm.mobile.$pristine">
-	    <span class="fg-red">请输入正确的电话或手机号码</span>
+	    <div ng-show="rForm.mobile.$invalid && !rForm.mobile.$pristine">
+	      <span class="fg-red">请输入正确的电话或手机号码</span>
+	    </div>
 	  </div>
 	</div> 
 
-	<div class="form-group"> 
-	  <div class="input-group">
-	      <span class="input-group-addon">
-		<i class="glyphicon glyphicon-hand-right fg-red"></i>
-		联系地址</span>
-	      <div x-ng-class="{'has-error': rForm.address.$invalid
-			       && !rForm.address.$pristine}">
-		<input type="text"
-		       class="form-control"
-		       name="address"
-		       placeholder="请输入您的联系地址"
-		       x-ng-model="params.retailer.address"
-		       x-ng-pattern="params.pattern.name_address"></input>
-	      </div>
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">联系地址</label>
+	  <div class="col-sm-10 col-md-10">
+	    <div x-ng-class="{'has-error': rForm.address.$invalid
+			     && !rForm.address.$pristine}">
+	      <input type="text"
+		     class="form-control"
+		     name="address"
+		     placeholder="请输入您的联系地址"
+		     x-ng-model="params.retailer.address"
+		     x-ng-pattern="params.pattern.name_address"/>
+	    </div>
+	    <div ng-show="rForm.address.$invalid && !rForm.address.$pristine">
+	      <span class="fg-red">必需以中文开头，只允许字母，数字</span>
+	    </div>
 	  </div>
-	    
-	  <div ng-show="rForm.address.$invalid && !rForm.address.$pristine">
-	    <span class="fg-red">必需以中文开头，只允许字母，数字</span>
+	</div>
+
+	<div x-ng-if="!params.retailer.no_vip
+		      && params.retailer.type_id===0" class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">会员类型</label>
+	  <div class="col-sm-10 col-md-10">
+	    <select class="form-control"
+		    x-ng-model="params.retailer.type"
+		    x-ng-options="t as t.name for t in params.types"
+		    x-ng-change="params.retailer.password=undifined">
+	    </select>
 	  </div> 
+	</div>
+
+	<div x-ng-if="!params.retailer.no_vip
+		      && params.retailer.type_id===0
+		      && params.retailer.type.id===1"
+	     class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">取现密码</label>
+	  <div class="col-sm-10 col-md-10"> 
+	  <div class="input-group"> 
+	    <div x-ng-class="{'has-error': retailerNewForm.pass.$invalid
+			       && !retailerNewForm.pass.$pristine}">
+		<input type="password"
+		       class="form-control"
+		       name="pass"
+		       required
+		       placeholder="请输入取现密码，默认为空"
+		       x-ng-model="params.retailer.password"
+		       x-ng-pattern="pattern.password"/>
+	      </div>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	  </div>
+	  <div ng-show="retailerNewForm.pass.$invalid
+			&& !retailerNewForm.pass.$pristine">
+	    <span class="fg-red">请输入6位数字串</span>
+	  </div>
 	</div>
 	
       </div> 

@@ -206,7 +206,7 @@ var stock_gen_draft_key = function(firm, shop, employee, model){
 	return "wp-" + shop.toString() + "-" + employee.toString();
     else if (diablo_dkey_stock_fix === model)
 	return "wf-" + shop.toString() + "-" + employee.toString();
-}
+};
 
 var stockDraft = function(storage, firm, shop, employee, model){
     this.storage  = storage;
@@ -243,22 +243,22 @@ stockDraft.prototype.keys = function(){
     return keys.filter(function(k){
 	return re.test(k)
     });
-},
+};
 
 stockDraft.prototype.save = function(resources){
     var key = this.key;
     var now = $.now();
     this.storage.set(key, {t:now, v:resources});
-},
+};
 
 stockDraft.prototype.list = function(draftFilter){
     var keys = this.keys();
     return draftFilter(keys); 
-},
+};
 
 stockDraft.prototype.remove = function(){
     this.storage.remove(this.key);
-},
+};
 
 stockDraft.prototype.select = function(dialog, template, draftFilter, selectCallback){
     var storage = this.storage;
@@ -295,7 +295,7 @@ stockDraft.prototype.select = function(dialog, template, draftFilter, selectCall
 	     }
 	 }
 	});
-} 
+};
 
     
 

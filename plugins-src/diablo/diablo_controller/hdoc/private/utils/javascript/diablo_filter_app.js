@@ -438,9 +438,9 @@ function filterProvider(){
 		    ).$promise.then(function(retailers){
 			console.log(retailers); 
 			_retailers =  retailers.map(function(r){
-			    return {name:r.name,
+			    return {name:  r.name,
 				    lname: r.mobile + "，" + r.name,
-				    type_id: r.type_id,
+				    type:  r.type_id,
 				    score: r.score,
 				    id:r.id,
 				    py:diablo_pinyin(r.name), 
@@ -537,7 +537,8 @@ function normalFilterProvider(){
 				    py:diablo_pinyin(r.name),
 				    balance:r.balance,
 				    cid: r.cid,
-				    pid: r.pid}
+				    pid: r.pid,
+				    type: r.type_id}
 			    });
 			return _retailers;
 		    });

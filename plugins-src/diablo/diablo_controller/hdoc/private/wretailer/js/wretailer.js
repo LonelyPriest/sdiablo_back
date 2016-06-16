@@ -1,15 +1,16 @@
 wretailerApp.controller("wretailerNewCtrl", function(
     $scope, wretailerService, diabloPattern, diabloUtilsService){
-    
     $scope.pattern = {name_address: diabloPattern.ch_name_address,
 		      tel_mobile:   diabloPattern.tel_mobile,
 		      decimal_2:    diabloPattern.decimal_2,
 		      score:        diabloPattern.number,
-		      password:       diabloPattern.num_passwd};
+		      password:     diabloPattern.num_passwd};
+
+    $scope.retailer_types = wretailerService.retailer_types;
+    $scope.retailer = {birth:$.now(), type:$scope.retailer_types[0]};
 
     $scope.new_wretailer = function(retailer){
-	console.log(retailer); 
-
+	// console.log(retailer); 
 	wretailerService.new_wretailer(retailer).then(function(state){
 	    console.log(state);
 	    if (state.ecode == 0){
@@ -35,16 +36,22 @@ wretailerApp.controller("wretailerNewCtrl", function(
 wretailerApp.controller("wretailerDetailCtrl", function(
     $scope, $location, diabloPattern, diabloUtilsService,
     diabloPagination, localStorageService, wretailerService,
-    filterEmployee, filterCharge, user){
-    $scope.employees  = filterEmployee;
-    $scope.charges    = filterCharge;
-    $scope.shops      = user.sortShops;
+    filterEmployee, filterCharge, user, base){
+    $scope.employees      = filterEmployee;
+    $scope.charges        = filterCharge;
+    $scope.shops          = user.sortShops;
+    $scope.retailer_types = wretailerService.retailer_types;
     // console.log($scope.employees);
     // console.log($scope.shops);
+    // console.log(base);
+    $scope.no_vips = base.filter(function(s){
+	return 's_customer' === s.name
+    }).map(function(c){return parseInt(c.value)});
+
+    // console.log($scope.no_vips);
     
     $scope.round      = diablo_round;
     $scope.pagination = {};
-    $scope.map        = {active:false};
     
     var dialog = diabloUtilsService;
     var f_add  = diablo_float_add;
@@ -169,16 +176,20 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	$scope.search = search;
 	
 	wretailerService.list_retailer().then(function(data){
-	    // console.log(data);
-	    $scope.retailers = angular.copy(data);
+	    console.log(data);
+	    $scope.retailers = data;
 	    $scope.total_balance = 0;
 	    $scope.total_consume = 0;
 	    angular.forEach($scope.retailers, function(r){
+		r.type = diablo_get_object(r.type_id, $scope.retailer_types);
+		r.birth = diablo_set_date_obj(r.birth);
+		r.no_vip = in_array($scope.no_vips, r.id) ? true : false;
 		$scope.total_balance += $scope.round(r.balance);
 		$scope.total_consume += $scope.round(r.consume); 
 	    })
 	    
 	    diablo_order($scope.retailers);
+	    console.log($scope.retailers);
 
 	    var filters;
 	    if (angular.isDefined(search)){
@@ -315,15 +326,17 @@ wretailerApp.controller("wretailerDetailCtrl", function(
     $scope.update_retailer = function(old_retailer){
 	console.log(old_retailer);
 	var callback = function(params){
-	    console.log(params);
-
-	    var update_retailer = {};
-	    for (var o in params.retailer){
-		if (!angular.equals(params.retailer[o], old_retailer[o])){
-		    update_retailer[o] = params.retailer[o];
-		}
-	    }
-	    
+	    console.log(params); 
+	    var update_retailer = {
+		name: diablo_get_modified(params.retailer.name, old_retailer.name),
+		mobile: diablo_get_modified(params.retailer.mobile, old_retailer.mobile),
+		address: diablo_get_modified(params.retailer.address, old_retailer.address),
+		type: diablo_get_modified(params.retailer.type, old_retailer.type),
+		password:diablo_get_modified(params.retailer.password, old_retailer.password),
+		birth:diablo_get_modified(params.retailer.birth.getTime(),
+					  old_retailer.birth.getTime())
+	    };
+	    console.log(update_retailer); 
 	    update_retailer.id = params.retailer.id; 
 	    // console.log(update_retailer);
 
@@ -335,22 +348,7 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 			true, "会员编辑",
 			"恭喜你，会员 ["
 			    + old_retailer.name + "] 信息修改成功！！",
-			$scope, function(){
-			    if (typeof(update_retailer.city) !== 'object'
-				&& update_retailer.city){
-				if (angular.isUndefined(
-				    diablo_get_object(
-					result.cid, $scope.cities))){
-				    $scope.cities.push({
-					id:   result.cid,
-					name: update_retailer.city,
-					py:   diablo_pinyin(
-					    update_retailer.city)})
-				} 
-			    }
-			    console.log($scope.cities);
-			    $scope.refresh()
-			});
+			$scope, function(){$scope.refresh()});
     		} else{
 		    dialog.response(
 			false, "会员编辑",
@@ -361,7 +359,6 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	};
 
 	var check_same = function(new_retailer){
-	    // console.log(angular.equals(new_retailer, old_retailer));
 	    return angular.equals(new_retailer, old_retailer);
 	};
 
@@ -374,11 +371,18 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	    }
 
 	    return false;
-	}; 
+	};
+
+	// var get_valid_date = function(dateString){
+	//     if (dateString === $scope.invalid_date)
+	// 	return $.now();
+	//     return diablo_set_date(dateString);
+	// };
 	
 	dialog.edit_with_modal(
 	    "update-wretailer.html", undefined, callback, $scope,
-	    {retailer:    old_retailer, 
+	    {retailer:    old_retailer,
+	     types:       $scope.retailer_types,
 	     pattern:     pattern,
 	     check_same:  check_same,
 	     check_exist: check_exist})

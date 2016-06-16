@@ -334,6 +334,7 @@ create table w_retailer
 (
     id              INTEGER AUTO_INCREMENT,
     name            VARCHAR(64) not null,
+    birth           DATE default 0,
     password        VARCHAR(128) default null,
     balance         DECIMAL(10, 2) default 0, -- max: 99999999.99
     consume         DECIMAL(10, 2) default 0, -- max: 99999999.99
@@ -341,7 +342,7 @@ create table w_retailer
     mobile          VARCHAR(11),
     address         VARCHAR(255),
     merchant        INTEGER default -1, -- which merchant belong to
-    -- type            TINYINT default 0,  -- 0: system 1: user
+    type            TINYINT default 0,  -- 0: common, 1: charge
     change_date     DATETIME default 0, -- last changed
     entry_date      DATETIME default 0, -- last changed
     deleted         INTEGER default 0, -- 0: no;  1: yes

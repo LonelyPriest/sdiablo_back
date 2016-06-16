@@ -68,7 +68,7 @@ wretailerApp.config(['$routeProvider', function($routeProvider){
 	when('/wretailer_detail', {
 	    templateUrl: '/private/wretailer/html/wretailer_detail.html',
 	    controller: 'wretailerDetailCtrl',
-	    resolve: angular.extend({}, employee, charge, user)
+	    resolve: angular.extend({}, employee, charge, user, base)
 	}).
 	when('/wretailer_trans/:retailer?/:page?', {
 	    templateUrl: '/private/wretailer/html/wretailer_trans.html',
@@ -109,22 +109,11 @@ wretailerApp.config(['$routeProvider', function($routeProvider){
 	otherwise({
 	    templateUrl: '/private/wretailer/html/wretailer_detail.html',
 	    controller: 'wretailerDetailCtrl',
-	    resolve: angular.extend({}, employee, charge, user)
+	    resolve: angular.extend({}, employee, charge, user, base)
         })
 }]);
 
 wretailerApp.service("wretailerService", function($resource, dateFilter){
-    // error information
-    // this._retailers = undefined;
-
-    // this.set_retailer = function(retailers){
-    // 	this._retailers = retailers;
-    // };
-
-    // this.get_retailer = function(){
-    // 	return this._retailers;
-    // };
-    
     this.error = {
      	2101: "会员信息重复！！",
 	2102: "会员密码不正确，请重新输入！！",
@@ -135,8 +124,9 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
     this.score_rules = [
 	{name: "钱兑换积分", id:0, remark: "钱到积分"},
 	{name: "积分兑换钱", id:1, remakr: "积分到钱"}
-	// {name: "金额赠送", id:2, remakr: "交易金额达到目标值赠送一定金额"}
-    ]; 
+    ];
+
+    this.retailer_types = [{name: "普通会员", id:0}, {name: "充值会员", id:1}];
 
     this.sort_inventory = function(invs, orderSizes){
 	// console.log(invs);
@@ -171,8 +161,7 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 	    };
 
 	    if (!in_sort(sorts, inv)){
-		sorts.push({
-		    cid:inv.color_id, size:inv.size, count:inv.amount})
+		sorts.push({cid:inv.color_id, size:inv.size, count:inv.amount})
 	    }; 
 	});
 
@@ -185,11 +174,6 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 	} else{
 	    order_used_sizes = used_sizes;
 	};
-	
-
-	// console.log(order_used_sizes);
-	// console.log(colors);
-	// console.log(sorts);
 	
 	return {total: total,
 		size:  order_used_sizes,
@@ -206,11 +190,13 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 	    {operation:"new_w_retailer"},
 	    {name:     r.name,
 	     password: diablo_set_string(r.password),
-	     balance:  diablo_set_float(r.balance),
-	     conusme:  diablo_set_float(r.consume),
-	     score:    diablo_set_integer(r.score),
+	     // balance:  diablo_set_float(r.balance),
+	     // conusme:  diablo_set_float(r.consume),
+	     score:    diablo_set_float(r.score),
 	     mobile:   r.mobile,
-	     address:  r.address 
+	     address:  r.address,
+	     type:     r.type.id,
+	     birth:    dateFilter(r.birth, "yyyy-MM-dd")
 	    }).$promise;
     };
 
@@ -225,9 +211,11 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 	    {operation: "update_w_retailer"},
 	    {id:       r.id,
 	     name:     r.name,
-	     balance:  r.balance,
 	     mobile:   r.mobile,
-	     address:  r.address 
+	     address:  r.address,
+	     password: r.password,
+	     type:     r.type,
+	     birth:    dateFilter(r.birth, "yyyy-MM-dd")
 	    }).$promise;
     };
 

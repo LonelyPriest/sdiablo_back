@@ -40,36 +40,21 @@
 	    <div class="col-xs-3 col-md-3 ">
 	      <div class="input-group">
 	  	<input class="form-control" type="text"
+		       ng-edit
 	  	       x-ng-model="select.retailer"
 	  	       placeholder="请选择会员" 
 	  	       typeahead-editable="false"
 		       typeahead-on-select="change_retailer()"
 	  	       typeahead="r as r.lname for r in
 	  			  retailers|filter:$viewValue|limitTo:20"/>
-	  	<!-- <span class="input-group-btn btn-group-solid"> -->
-		<!--   <div class="btn-group"> -->
-	  	<!--     <button class="btn green-meadow" -->
-	  	<!-- 	    x-ng-click="add_retailer()"> -->
-		<!--       <i class="glyphicon glyphicon-plus"></i> -->
-		<!--     </button>  -->
-		<!--   </div> -->
-	  	<!-- </span> -->
-		
+
 		<span class="input-group-btn">
 		  <button class="btn"
 			  x-ng-disabled="disable_withdraw()"
 			  x-ng-click="withdraw()">
 		    <i class="glyphicon glyphicon-piggy-bank fg-red"></i>
 		  </button>
-		</span>
-
-		<span class="input-group-btn">
-		  <button class="btn yellow-crusta"
-			  x-ng-disabled="!select.retailer"
-	  		  x-ng-click="select.retailer=undefined">
-		    <i class="glyphicon glyphicon-pushpin"></i>
-		  </button>
-		</span>
+		</span> 
 		
 	      </div>
 	    </div>
@@ -86,25 +71,7 @@
 	    </div>
 
 	    <div class="col-xs-3 col-md-3">
-	      <div class="input-group"> 
-		<input type="text" class="form-control"
-		       placeholder="年/月/日"
-		       datepicker-popup="yyyy/MM/dd"
-		       is-open="isOpened"
-		       close-text="关闭"
-		       clear-text="清除"
-		       current-text="今天"
-		       show-weeks="false"
-		       x-ng-model="select.date"
-		       x-ng-init="select.date=today()"/>
-	  	<span class="input-group-btn">
-		  <button type="button"
-			  class="btn btn-default"
-			  x-ng-click="open_calendar($event)">
-		    <i class="glyphicon glyphicon-calendar"></i>
-		  </button>
-		</span>
-	      </div>
+	      <time-search time="select.data"></time-search> 
 	    </div>
 
 	    <div class="col-xs-3 col-md-3 ">
@@ -974,10 +941,8 @@
 	    <th></th>
 	    <th>单号</th>
 	    <th>会员</th>
-	    <!-- <th>数量</th>  -->
 	    <th>店员</th>
 	    <th>店铺</th>
-	    <!-- <th>时间</th> -->
 	  </tr>
 	</thead>
 	<tbody>

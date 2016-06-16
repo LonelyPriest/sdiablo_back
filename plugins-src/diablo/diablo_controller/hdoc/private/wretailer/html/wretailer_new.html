@@ -44,88 +44,10 @@
 	      </div>
 	      <div ng-show="retailerNewForm.name.$invalid
 			    && !retailerNewForm.name.$pristine">
-		<span class="fg-red">必需以中文开头，只允许字母，数字</span>
+		<span class="fg-red">中文，只允许字母，数字，不支持特殊字符</span>
 	      </div> 
 	    </div>
 
-	    <!-- <div class="form-group"> -->
-	    <!--   <label class="col-sm-3 col-md-3 control-label">会员类型</label> -->
-	    <!--   <div class="col-sm-6 col-md-6"> -->
-	    <!-- 	<select class="form-control" type="text" -->
-	    <!-- 		x-ng-model="retailer.type"  -->
-	    <!-- 		x-ng-options="t as t.name for t in retailer_types"> -->
-	    <!-- 	</select> -->
-	    <!--   </div> -->
-	    <!-- </div> -->
-
-	    <div class="form-group">
-	      <label class="col-sm-3 col-md-3 control-label">取现密码</label>
-	      <div class="col-sm-6 col-md-6">
-		<div x-ng-class="{'has-error': retailerNewForm.pass.$invalid
-				 && !retailerNewForm.pass.$pristine}">
-		  <input type="password"
-			 class="form-control"
-			 name="pass"
-			 placeholder="请输入取现密码，默认为空"
-			 x-ng-model="retailer.password"
-			 x-ng-pattern="pattern.password"/>
-		</div>
-	      </div>
-	      <div ng-show="retailerNewForm.pass.$invalid
-			    && !retailerNewForm.pass.$pristine">
-		<span class="fg-red">请输入6位数字串</span>
-	      </div> 
-	    </div> 
-
-	    <div class="form-group">
-	      <label class="col-sm-3 col-md-3 control-label">帐户余额</label>
-	      <div class="col-sm-6 col-md-6">
-		<input class="form-control"
-		       type="number" step="0.01"
-		       name="balance"
-		       placeholder="默认为0，支持两位小数"
-		       x-ng-model="retailer.balance"
-		       x-ng-pattern="pattern.decimal_2"/>
-	      </div>
-	      <div ng-show="retailerNewForm.balance.$invalid
-			    && !retailerNewForm.balance.$pristine">
-		<span class="fg-red">请输入正确的数字，支持两位小数</span>
-	      </div> 
-	    </div>
-	    
-	    <div class="form-group">
-	      <label class="col-sm-3 col-md-3 control-label">累计消费</label>
-	      <div class="col-sm-6 col-md-6">
-		<input class="form-control"
-		       type="number" step="0.01"
-		       name="consume"
-		       placeholder="默认为0，支持两位小数"
-		       x-ng-model="retailer.consume"
-		       x-ng-pattern="pattern.decimal_2"/>
-	      </div>
-	      <div ng-show="retailerNewForm.consume.$invalid
-			    && !retailerNewForm.consume.$pristine">
-		<span class="fg-red">请输入正确的数字，支持两位小数</span>
-	      </div> 
-	    </div>
-
-	    <div class="form-group">
-	      <label class="col-sm-3 col-md-3 control-label">积分</label>
-	      <div class="col-sm-6 col-md-6">
-		<input class="form-control"
-		       type="number" step="1"
-		       name="score"
-		       placeholder="默认为0"
-		       x-ng-model="retailer.score"
-		       x-ng-pattern="pattern.score"/>
-	      </div>
-	      <div ng-show="retailerNewForm.score.$invalid
-			    && !retailerNewForm.score.$pristine">
-		<span class="fg-red">请输入数字串</span>
-	      </div> 
-	    </div>
-
-	    <!--mobile-->
 	    <div class="form-group">
 	      <label class="col-sm-3 col-md-3 control-label">联系方式</label>
 	      <div class="col-sm-6 col-md-6"> 
@@ -147,6 +69,95 @@
 			    && !retailerNewForm.mobile.$pristine">
 		<span class="fg-red">请输入正确的电话或手机号码</span>
 	      </div>
+	    </div>
+
+	    <div class="form-group">
+	      <label class="col-sm-3 col-md-3 control-label">生日</label>
+	      <div class="col-sm-6 col-md-6">
+		<time-search time="retailer.birth"></time-search>
+	      </div> 
+	    </div>
+
+	    <div class="form-group">
+	      <label class="col-sm-3 col-md-3 control-label">会员类型</label>
+	      <div class="col-sm-6 col-md-6">
+	    	<select class="form-control" type="text"
+	    		x-ng-model="retailer.type"
+	    		x-ng-options="t as t.name for t in retailer_types"
+			x-ng-change="retailer.password=undefined">
+	    	</select>
+	      </div>
+	    </div>
+
+	    <div x-ng-if="retailer.type.id===1" class="form-group">
+	      <label class="col-sm-3 col-md-3 control-label">取现密码</label>
+	      <div class="col-sm-6 col-md-6">
+		<div class="input-group">
+		  <div x-ng-class="{'has-error': retailerNewForm.pass.$invalid
+				   && !retailerNewForm.pass.$pristine}">
+		    <input type="password"
+			   class="form-control"
+			   name="pass"
+			   required
+			   placeholder="请输入取现密码，默认为空"
+			   x-ng-model="retailer.password"
+			   x-ng-pattern="pattern.password"/>
+		  </div>
+		  <span class="input-group-addon bg-white fg-red">*</span>
+		</div>
+	      </div>
+	      <div ng-show="retailerNewForm.pass.$invalid
+			    && !retailerNewForm.pass.$pristine">
+		<span class="fg-red">请输入6位数字串</span>
+	      </div> 
+	    </div> 
+
+	    <!-- <div x-ng-if="retailer.type.id===0" class="form-group"> -->
+	    <!--   <label class="col-sm-3 col-md-3 control-label">帐户余额</label> -->
+	    <!--   <div class="col-sm-6 col-md-6"> -->
+	    <!-- 	<input class="form-control" -->
+	    <!-- 	       type="number" step="0.01" -->
+	    <!-- 	       name="balance" -->
+	    <!-- 	       placeholder="默认为0，支持两位小数" -->
+	    <!-- 	       x-ng-model="retailer.balance" -->
+	    <!-- 	       x-ng-pattern="pattern.decimal_2"/> -->
+	    <!--   </div> -->
+	    <!--   <div ng-show="retailerNewForm.balance.$invalid -->
+	    <!-- 		    && !retailerNewForm.balance.$pristine"> -->
+	    <!-- 	<span class="fg-red">请输入正确的数字，支持两位小数</span> -->
+	    <!--   </div>  -->
+	    <!-- </div> -->
+	    
+	    <!-- <div class="form-group"> -->
+	    <!--   <label class="col-sm-3 col-md-3 control-label">累计消费</label> -->
+	    <!--   <div class="col-sm-6 col-md-6"> -->
+	    <!-- 	<input class="form-control" -->
+	    <!-- 	       type="number" step="0.01" -->
+	    <!-- 	       name="consume" -->
+	    <!-- 	       placeholder="默认为0，支持两位小数" -->
+	    <!-- 	       x-ng-model="retailer.consume" -->
+	    <!-- 	       x-ng-pattern="pattern.decimal_2"/> -->
+	    <!--   </div> -->
+	    <!--   <div ng-show="retailerNewForm.consume.$invalid -->
+	    <!-- 		    && !retailerNewForm.consume.$pristine"> -->
+	    <!-- 	<span class="fg-red">请输入正确的数字，支持两位小数</span> -->
+	    <!--   </div>  -->
+	    <!-- </div> -->
+
+	    <div class="form-group">
+	      <label class="col-sm-3 col-md-3 control-label">初始积分</label>
+	      <div class="col-sm-6 col-md-6">
+		<input class="form-control"
+		       type="number" step="1"
+		       name="score"
+		       placeholder="默认为0"
+		       x-ng-model="retailer.score"
+		       x-ng-pattern="pattern.score"/>
+	      </div>
+	      <div ng-show="retailerNewForm.score.$invalid
+			    && !retailerNewForm.score.$pristine">
+		<span class="fg-red">请输入数字串</span>
+	      </div> 
 	    </div>
 
 	    <div class="form-group">
