@@ -198,6 +198,11 @@ wgoodApp.service("wgoodService", function($resource, $http){
 	    {operation: "new_w_promotion"}, promotion).$promise;
     };
 
+    this.update_w_promotion = function(promotion){
+	return http.save(
+	    {operation: "update_w_promotion"}, promotion).$promise;
+    };
+
     this.list_w_promotion = function(){
 	return http.query({operation: 'list_w_promotion'}).$promise;
     };

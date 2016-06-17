@@ -454,8 +454,11 @@ var wsaleCalc = function(){
 	    var pscores = []; 
 	    for (var i=1, l=inventories.length; i<l; i++){
 		var one = inventories[i];
+		
+		if (angular.isDefined(one.select) && !one.select) continue;
+		
 		var count = (mode === 0 ? one.sell : one.reject);
-		console.log(count);
+		// console.log(count);
 		
 		total      += parseInt(count);
 		abs_total  += Math.abs(parseInt(count));
@@ -473,7 +476,8 @@ var wsaleCalc = function(){
 		// 	}
 		//     }
 		// }
-		
+
+		// console.log(one);
 		if (one.o_fprice !== one.fprice){
 		    one.fdiscount = diablo_discount(one.fprice, one.tag_price);
 		} else if (one.o_fdiscount !== one.fdiscount){
@@ -496,11 +500,12 @@ var wsaleCalc = function(){
 		// } else {
 		if (one.pid === -1){
 		    wsaleUtils.sort_promotion({id: -1, rule_id: -1}, one.calc, pmoneys);
-		    if (one.sid === -1){
-			wsaleUtils.delete_format_promotion(one, show_promotions);
-		    } else {
-			wsaleUtils.format_promotion(one, show_promotions);
-		    }
+		    wsaleUtils.format_promotion(one, show_promotions);
+		    // if (one.sid === -1){
+		    // 	wsaleUtils.delete_format_promotion(one, show_promotions);
+		    // } else {
+		    // 	wsaleUtils.format_promotion(one, show_promotions);
+		    // }
 		} else {
 		    wsaleUtils.sort_promotion(one.promotion, one.calc, pmoneys);
 		    wsaleUtils.format_promotion(one, show_promotions);
@@ -517,7 +522,8 @@ var wsaleCalc = function(){
 
 		var count = (mode === 0 ? one.sell : one.reject);
 		
-		if (one.pid !== -1 && retailer.id !== no_vip){
+		// if (one.pid !== -1 && retailer.id !== no_vip){
+		if (one.pid !== diablo_invalid_index){
 		    one.rdiscount = wsaleUtils.calc_discount_of_rmoney(
 			one.fdiscount, one.promotion, pmoneys);
 		    
@@ -529,7 +535,8 @@ var wsaleCalc = function(){
 		    // wsaleUtils.sort_score(one.score, one.promotion, one.calc, pscores);
 		}
 
-		if (one.sid !== -1 && retailer.id !== no_vip){
+		// if (one.sid !== -1 && retailer.id !== no_vip){
+		if (one.sid !== diablo_invalid_index){
 		    wsaleUtils.sort_score(one.score, one.promotion, one.calc, pscores);
 		} 
 		// console.log(one.calc);
@@ -579,11 +586,13 @@ var wsaleCalc = function(){
 }();
 
 var gen_wsale_key = function(shop, retailer, employee, dateFilter){
+    var now = $.now();
     return "ws-"
 	+ employee.toString()
 	+ "-" + retailer.toString()
 	+ "-" + shop.toString()
-	+ "-" + dateFilter($.now(), 'mediumTime'); 
+	+ "-" + dateFilter(now, 'mediumTime')
+	+ "-" + now;
 };
 
 var wsaleDraft = function(storage, shop, retailer, employee, dateFilter){
@@ -595,22 +604,35 @@ var wsaleDraft = function(storage, shop, retailer, employee, dateFilter){
     this.key = gen_wsale_key(this.shop, this.retailer, this.employee, this.dateFilter);
 };
 
+wsaleDraft.prototype.get_key = function(){
+    return this.key;
+};
+
+wsaleDraft.prototype.set_key = function(key){
+    return this.key = key;
+};
+
 wsaleDraft.prototype.reset = function(){
+    console.log(this.key);
+    // this.remove(this.key);
     this.key = gen_wsale_key(this.shop, this.retailer, this.employee, this.dateFilter);
 };
 
 wsaleDraft.prototype.change_shop = function(shop){
     this.shop = shop;
+    // this.remove(this.key);
     this.reset();
 };
 
 wsaleDraft.prototype.change_employee = function(employee){
-    this.employee = employee;
+    // this.remove(this.key);
+    this.employee = employee; 
     this.reset();
 };
 
 wsaleDraft.prototype.change_retailer = function(retailer){
-    this.retailer = retailer;
+    // this.remove(this.key);
+    this.retailer = retailer; 
     this.reset();
 };
 
@@ -619,18 +641,23 @@ wsaleDraft.prototype.keys = function(){
     var keys = this.storage.keys();
     return keys.filter(function(k){
 	return re.test(k)
-    });
+    }).filter(function(k){
+	return wsaleUtils.to_integer(k.split("-")[3]) === this.shop;
+    }, this);
 };
 
 wsaleDraft.prototype.save = function(resources){
     var key = this.key;
-    var now = $.now();
-    this.storage.set(key, {t:now, v:resources});
+    // var now = $.now();
+    this.storage.set(key, {v:resources});
 };
 
 wsaleDraft.prototype.list = function(draftFilter){
     var keys = this.keys();
-    return draftFilter(keys); 
+    return draftFilter(keys).sort(function(k1, k2){
+	// console.log(k1.sn.split("-")[5], k2.sn.split("-")[5]);
+	return k2.sn.split("-")[5] - k1.sn.split("-")[5];
+    }); 
 };
 
 wsaleDraft.prototype.remove = function(key){

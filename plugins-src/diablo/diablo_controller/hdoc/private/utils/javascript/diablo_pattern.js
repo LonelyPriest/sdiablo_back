@@ -3,7 +3,7 @@ angular.module("diabloPattern", []).service("diabloPattern", [function(){
     this.mobile = /^0?(13[0-9]|15[0-35-9]|18[0236-9]|14[57])[0-9]{8}$/;
 
     // telphone or mobile
-    this.tel_mobile = /^\d{3,4}\d{7,8}(-\d{3,4})?$|^0?(13[0-9]|15[0-35-9]|18[0236-9]|14[57])[0-9]{8}$/;
+    this.tel_mobile = /^\d{3,4}[\-]?\d{7,8}(-\d{3,4})?$|^0?(13[0-9]|15[0-35-9]|18[0236-9]|14[57])[0-9]{8}$/;
 
     // only number
     this.number = /^[0-9]*$/;
@@ -43,7 +43,7 @@ angular.module("diabloPattern", []).service("diabloPattern", [function(){
     
     this.head_ch_en_num  = /^[\u4e00-\u9fa5][\u4e00-\u9fa5A-Za-z0-9\s]+$/;
 
-    this.ch_name_address = /^[\u4e00-\u9fa5A-Za-z0-9\-\s]+$/;
+    this.ch_name_address = /^[\u4e00-\u9fa5A-Za-z0-9\-_\s]+$/;
 
     this.ch_en_num_beside_underline_bars = /^[\u4e00-\u9fa5A-Za-z0-9\-_]{4,20}$/;
 

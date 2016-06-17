@@ -182,11 +182,11 @@ wretailerApp.controller("wretailerScoreDetailCtrl", function(
 	diablo_goto_page("#/promotion/score_new");
     }
 
-    $scope.update_score = function(p){
+    $scope.update_score = function(old_score){
 	dialog.response(false, "修改积分方案", "暂不支持此操作！！");
     };
 
-    $scope.delete_score = function(p){
+    $scope.delete_score = function(old_score){
 	dialog.response(false, "删除积分方案", "暂不支持此操作！！");
     };
 });

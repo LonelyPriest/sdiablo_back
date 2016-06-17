@@ -34,15 +34,13 @@
 		       name="name"
 		       required
 		       placeholder="请输入厂商名称"
-		       x-ng-model="firm.name"
-		       x-ng-minlength="2"
-		       x-ng-maxlength="8"></input>
+		       x-ng-pattern="pattern.name"
+		       x-ng-model="firm.name">
 		<span class="input-group-addon bg-white fg-red">*</span>
 		</div>
 	      </div>
-	      <div ng-show="firmNewForm.name.$error.minlength
-			    || firmNewForm.name.$error.maxlength">
-		<span style="color:red">厂商名称太短，请输入2-8个字符</span>
+	      <div ng-show="firmNewForm.name.$invalid && !firmNewForm.name.$pristine">
+		<span class="fg-red">中文，字母，数字，不支持特殊字符</span>
 	      </div> 
 	    </div>
 
@@ -56,13 +54,11 @@
 		       name="balance"
 		       placeholder="默认为0，支持两位小数"
 		       x-ng-model="firm.balance"
-		       x-ng-pattern="/^[+|\-]?\d+(.\d{1,2})?$/"></input>
-		<!-- <span class="input-group-addon bg-white fg-red">*</span> -->
-		<!-- </div> -->
+		       x-ng-pattern="pattern.balance"/> 
 	      </div>
 	      <div ng-show="firmNewForm.balance.$invalid && !firmNewForm.balance.$pristine">
-		<span class="fg-red">请输入正确的数字，支持两位小数</span>
-	      </div> 
+		<span class="fg-red">只支持两位小数</span>
+	      </div>
 	    </div>
 
 	    <!--mobile-->
@@ -74,35 +70,47 @@
 		<!-- <div class="input-group"> -->
 		<input type="tel"
 		       name="mobile"
-		       ng-pattern="/^\d{3,4}\d{7,8}$/"
+		       ng-pattern="pattern.tel_mobile"
 		       placeholder="请输入电话或手机号码，默认为空"
 		       class="form-control"
 		       x-ng-model="firm.mobile"/>
 		<!-- </div> -->
 	      </div>
 	      <div ng-show="firmNewForm.mobile.$invalid && !firmNewForm.mobile.$pristine">
-		<span style="color:red">请输入正确的电话或手机号码</span>
+		<span class="fg-red">请输入正确的电话或手机号码</span>
 	      </div>
 	    </div>
 
 	    <div class="form-group">
 	      <label class="col-sm-3 col-md-3 control-label">联系地址</label>
 	      <div class="col-sm-6 col-md-6">
-		<div class="input-group">
+		<!-- <div class="input-group"> -->
 		<input type="text"
 		       class="form-control"
 		       name="address"
-		       required
 		       placeholder="请输入厂商联系地址"
 		       x-ng-model="firm.address"
-		       x-ng-minlength="2"
-		       x-ng-maxlength="20"></input>
-		<span class="input-group-addon bg-white fg-red">*</span>
-		</div>
+		       x-ng-pattern="pattern.address"/>
+		<!-- <span class="input-group-addon bg-white fg-red">*</span> -->
+		<!-- </div> -->
 	      </div>
-	      <div ng-show="firmNewForm.address.$error.minlength
-			    || firmNewForm.address.$error.maxlength">
-		<span style="color:red">名称太短，请输入2-20个字符</span>
+	      <div ng-show="firmNewForm.address.$invalid && !firmNewForm.address.$pristine">
+		<span class="fg-red">中文，字母，数字，不支持特殊字符</span> 
+	      </div> 
+	    </div>
+
+	    <div class="form-group">
+	      <label class="col-sm-3 col-md-3 control-label">备注</label>
+	      <div class="col-sm-6 col-md-6">
+		<input type="text"
+		       class="form-control"
+		       name="comment"
+		       placeholder="请输入备注"
+		       x-ng-model="firm.comment"
+		       x-ng-pattern="pattern.comment"/> 
+	      </div>
+	      <div ng-show="firmNewForm.comment.$invalid && !firmNewForm.comment.$pristine">
+		<span class="fg-red">中文，字母，数字，不支持特殊字符</span> 
 	      </div> 
 	    </div>
 	    

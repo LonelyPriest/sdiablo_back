@@ -446,7 +446,7 @@
 <script type="text/ng-template" id="inventory-new.html">
   <div class="modal-body">
     <div class="row diablo-form-group">
-      <div class="col-md-12 col-sm-12 col-xs-12">
+      <div x-ng-if="stock_right.show_orgprice" class="col-md-12 col-sm-12 col-xs-12">
 	<div class="input-group">
 	  <span class="input-group-addon">
 	    <i class="glyphicon glyphicon-jpy fg-red"></i>吊牌价
@@ -496,6 +496,18 @@
 	  
 	</div>
       </div>
+
+      <div x-ng-if="!stock_right.show_orgprice" class="col-md-12 col-sm-12 col-xs-12">
+	<div class="input-group">
+	  <span class="input-group-addon">
+	    <i class="glyphicon glyphicon-jpy fg-red"></i>吊牌价
+	  </span>
+	  <input class="form-control"
+		 readonly
+		 x-ng-model="params.tag_price"/> 
+	</div>
+      </div>
+      
     </div>
     
     <div class="table-responsive">

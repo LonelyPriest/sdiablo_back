@@ -129,13 +129,13 @@ firmApp.service("firmService", function($resource, dateFilter){
     			 {operation: '@operation', id: '@id'});
 
     this.new_firm = function(firm){
-	var balance = firm.balance;
 	return http.save(
 	    {operation:"new_firm"},
 	    {name:    firm.name,
-	     balance: angular.isDefined(balance) ? parseInt(balance) : 0,
+	     balance: firm.balance ? parseInt(firm.balance) : 0,
 	     mobile:  firm.mobile,
-	     address: firm.address}).$promise
+	     address: firm.address,
+	     comment: diablo_set_string(firm.comment)}).$promise
     };
 
     this.update_firm = function(firm){
@@ -251,9 +251,14 @@ firmApp.service("firmService", function($resource, dateFilter){
 
 firmApp.controller("firmNewCtrl", function(
     $scope, diabloPattern, firmService, diabloUtilsService){
+
+    $scope.pattern = {name: diabloPattern.ch_name_address,
+		      balance: diabloPattern.decimal_2,
+		      tel_mobile: diabloPattern.tel_mobile,
+		      address: diabloPattern.ch_name_address,
+		      comment: diabloPattern.comment};
     
-    // new firm
-    
+    // new firm 
     $scope.new_firm = function(){
 	$scope.firm.balance = diablo_set_float($scope.firm.balance);
 	firmService.new_firm($scope.firm).then(function(state){
@@ -263,7 +268,7 @@ firmApp.controller("firmNewCtrl", function(
 	    	    true, "新增厂家",
 		    "恭喜你，厂家 " + $scope.firm.name + " 成功创建！！",
 	    	    $scope,
-		    function(){location.href = "#/firm_detail";});
+		    function(){diablo_goto_page("#/firm_detail")});
 	    } else{
 		diabloUtilsService.response(
 	    	    false, "新增厂家",
@@ -273,14 +278,21 @@ firmApp.controller("firmNewCtrl", function(
     };
     
     $scope.cancel = function(){
-	location.href = "#/firm_detail";
+	diablo_goto_page("#/firm_detail");
     };
 });
 
 
 firmApp.controller("firmDetailCtrl", function(
     $scope, $location, $routeParams, firmService, diabloUtilsService,
-    diabloPagination, localStorageService){
+    diabloPagination, diabloPattern, localStorageService){
+
+    $scope.pattern = {
+	name: diabloPattern.ch_name_address,
+	balance: diabloPattern.decimal_2,
+	tel_mobile: diabloPattern.tel_mobile,
+	address: diabloPattern.ch_name_address,
+	comment: diabloPattern.comment};
 
     var f_add = diablo_float_add;
     var now   = $.now();
@@ -454,12 +466,13 @@ firmApp.controller("firmDetailCtrl", function(
 
     var dialog = diabloUtilsService; 
     $scope.update_firm = function(old_firm){
+	// console.log(old_firm);
 	var callback = function(params){
 	    console.log(params.firm);
 	    
 	    if (angular.equals(params.firm, old_firm)){
 		dialog.response(
-		    false, "厂商编辑", "厂商编辑失败：" + firmService.error[1699], $scope);
+		    false, "厂商编辑", "厂商编辑失败：" + firmService.error[1699], undefined);
 	    } else{
 		var update = {};
 		for (var o in params.firm){
@@ -468,14 +481,7 @@ firmApp.controller("firmDetailCtrl", function(
 		    }
 		}
 
-		if (angular.isDefined(update.balance)){
-		    if (update.balance){
-			update.balance = parseFloat(update.balance)
-		    } else{
-			update.balance = 0;
-		    };
-		}
-
+		update.balance = update.balance ? update.balance : 0; 
 		update.firm_id = params.firm.id;
 		console.log(update);
 
@@ -498,30 +504,28 @@ firmApp.controller("firmDetailCtrl", function(
 	}
 
 	var valid_firm = function(new_firm){
-	    // name can not be same
 	    for (var i=0, l=$scope.firms.length; i<l; i++){
 		if (new_firm.name === $scope.firms[i].name
 		    && new_firm.name !== old_firm.name){
 		    return false;
 		}
-	    } 
+	    }
 	    
 	    return true;
 	}
 
-	var has_update = function(new_firm){
-	    // none changed
-	    if (angular.equals(new_firm, old_firm)){
-		return false;
-	    }
-
-	    return true;
-	}
-	
 	dialog.edit_with_modal(
-	    'update-firm.html', undefined, callback, $scope,
-	    {firm:old_firm, valid_firm:valid_firm, has_update:has_update})
-	// diabloUtilsService.response(false, "修改厂家", "暂不支持此操作！！", $scope);
+	    'update-firm.html', undefined, callback, undefined,
+	    {firm:old_firm,
+	     valid_firm:valid_firm,
+	     has_update: function(new_firm){
+		 return diablo_is_same(new_firm.name, old_firm.name)
+		     && diablo_is_same(new_firm.balance ? new_firm.balance:0, old_firm.balance)
+		     && diablo_is_same(new_firm.address, old_firm.address)
+		     && diablo_is_same(new_firm.mobile, old_firm.mobile)
+		     && diablo_is_same(new_firm.comment, old_firm.comment) ? false : true;
+	     },
+	     pattern: $scope.pattern})
     };
 
     $scope.delete_firm = function(f){

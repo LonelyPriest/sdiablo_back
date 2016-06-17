@@ -77,6 +77,7 @@ create table suppliers
     balance         DECIMAL(10, 2) default 0, -- max: 99999999.99
     mobile          VARCHAR(11),
     address         VARCHAR(256),
+    comment         VARCHAR(256),
     merchant        INTEGER default -1, -- which merchant belong to
     change_date     DATETIME,
     entry_date      DATETIME,

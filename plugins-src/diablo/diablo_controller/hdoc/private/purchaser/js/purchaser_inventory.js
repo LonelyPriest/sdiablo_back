@@ -1431,8 +1431,8 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
     // };
 
     // $scope.chart.data = data;
-
-    $scope.promotions = filterPromotion;
+    console.log($scope.promotions);
+    $scope.promotions = filterPromotion.concat({id:diablo_invalid_index, name:"重置促销方案"});
     $scope.scores     = filterScore;
 
     /*
@@ -1500,9 +1500,8 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 
     var now = $.now();
     var storage = localStorageService.get(diablo_key_inventory_detail);
-    console.log(storage);
-    
-    
+    // console.log(storage);
+        
     // alarm, use default shop
     $scope.setting.alarm = diablo_base_setting(
 	"stock_alarm", -1, base, parseInt, diablo_no); 

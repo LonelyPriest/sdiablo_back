@@ -103,3 +103,128 @@
     </div>
   </div>
 </div>
+
+<script type="text/ng-template" id="update-promotion.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    
+    <h4 class="modal-title"><span class="label label-sm label-primary">促销方案编辑</span></h4>
+  </div>
+
+  <div class="modal-body">
+    <form class="form-horizontal" name="pForm" novalidate> 
+      <div class="form-body">
+	    <!--Name-->
+	    <div class="form-group">
+	      <label class="col-sm-1 col-md-1 control-label">名称</label> 
+	      <div class="col-sm-10 col-md-10">
+		<div class="input-group">
+		  <div ng-class="{'has-error':pForm.name.$invalid && !pForm.name.$pristine
+				 || !params.valid_promotion(params.promotion)}">
+		    <input type="text"
+			   class="form-control"
+			   name="name"
+			   required
+			   placeholder="请输入厂商名称"
+			   x-ng-pattern="pattern.name"
+			   x-ng-model="params.promotion.name"/>
+		  </div>
+		  <span class="input-group-addon bg-white fg-red">*</span>
+		</div>
+	      </div>
+	      <div>
+		<div ng-show="pForm.name.$invalid && !pForm.name.$pristine">
+		  <span class="fg-red">中文，字母，数字，不支持特殊字符</span>
+		</div> 
+		<div ng-show="!params.valid_promotion(params.promotion)">
+		  <span class="fg-red">名称已存在，请重新输入</span>
+		</div>
+	      </div>
+	      
+	    </div>
+
+	    <!--balance-->
+	    <div x-ng-if="params.promotion.rule_id===0" class="form-group">
+	      <label class="col-sm-1 col-md-1 control-label">折扣</label>
+	      <div class="col-sm-10 col-md-10">
+		<input type="number" step="1"
+		       class="form-control"
+		       name="discount"
+		       required
+		       disable-key
+		       disable-wheel
+		       placeholder="请输入折扣，无折扣请输入100"
+		       x-ng-model="params.promotion.discount"
+		       x-ng-pattern="pattern.discount"/>
+	      </div>
+	      <div ng-show="pForm.discount.$invalid && !pForm.discount.$pristine">
+		<span class="fg-red">两位整数，无折扣请输入100</span>
+	      </div> 
+	    </div>
+
+	    <div x-ng-if="params.promotion.rule_id===1" class="form-group">
+	      <label class="col-sm-1 col-md-1 control-label">消费金额</label>
+	      <div class="col-sm-10 col-md-10">
+		<input type="number" step="1"
+		       class="form-control"
+		       name="cmoney"
+		       disable-key
+		       disable-wheel
+		       placeholder="请输入消费金额"
+		       x-ng-model="params.promotion.cmoney"
+		       x-ng-pattern="pattern.balance"/>
+	      </div>
+	      <div ng-show="pForm.cmoney.$invalid && !pForm.cmoney.$pristine">
+		<span class="fg-red">只能是整数，不支持小数</span>
+	      </div> 
+	    </div>
+
+	    <div x-ng-if="params.promotion.rule_id===1" class="form-group">
+	      <label class="col-sm-1 col-md-1 control-label">赠送金额</label>
+	      <div class="col-sm-10 col-md-10">
+		<input type="number" step="1"
+		       class="form-control"
+		       name="rmoney"
+		       disable-key
+		       disable-wheel
+		       placeholder="请输入赠送金额"
+		       x-ng-model="params.promotion.rmoney"
+		       x-ng-pattern="pattern.balance"/>
+	      </div>
+	      <div ng-show="pForm.rmoney.$invalid && !pForm.rmoney.$pristine">
+		<span class="fg-red">只能是整数，不支持小数</span>
+	      </div> 
+	    </div>
+
+	    <div class="form-group">
+	      <label class="col-sm-1 col-md-1 control-label">描述</label>
+	      <div class="col-sm-10 col-md-10">
+		<input type="text"
+		       class="form-control"
+		       name="comment"
+		       placeholder="请输入描述"
+		       x-ng-model="params.promotion.remark"
+		       x-ng-pattern="pattern.comment"/> 
+	      </div>
+	      <div ng-show="pForm.comment.$invalid && !pForm.comment.$pristine">
+		<span class="fg-red">中文，字母，数字，不支持特殊字符</span> 
+	      </div> 
+	    </div>
+	    
+	  </div> 
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="pForm.$invalid
+			   || !params.has_update(params.promotion)
+			   || !params.valid_promotion(params.promotion)"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
+  
+</script>

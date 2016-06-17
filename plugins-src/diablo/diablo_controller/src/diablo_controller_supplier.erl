@@ -72,8 +72,9 @@ handle_call({w_new_supplier, Attrs}, _From, State)->
     %% Pinyin   = ?v(<<"pinyin">>, Attrs),
     Balance  = ?v(<<"balance">>, Attrs, 0),
     Mobile   = ?v(<<"mobile">>, Attrs, []),
-    Address  = ?v(<<"address">>, Attrs),
+    Address  = ?v(<<"address">>, Attrs, []),
     Merchant = ?v(<<"merchant">>, Attrs),
+    Comment  = ?v(<<"comment">>, Attrs, []),
     
     %% name can not be same
     Sql = "select id, " ++ fields()
@@ -86,12 +87,13 @@ handle_call({w_new_supplier, Attrs}, _From, State)->
     case ?sql_utils:execute(read, Sql) of
 	{ok, []} ->
 	    Sql1 = "insert into " ++ ?tbl_supplier
-		++ "(name, balance, mobile, address, merchant, change_date, entry_date)"
+		++ "(name, balance, mobile, address, comment, merchant, change_date, entry_date)"
 		++ " values ("
 		++ "\"" ++ ?to_s(Name) ++ "\","
 		++ ?to_s(Balance) ++ ","
 		++ "\"" ++ ?to_s(Mobile) ++ "\","
 		++ "\"" ++ ?to_s(Address) ++ "\","
+		++ "\"" ++ ?to_s(Comment) ++ "\","
 		++ ?to_s(Merchant) ++ ","
 		++ "\"" ++ ?utils:current_time(localtime) ++ "\","
 		++ "\"" ++ ?utils:current_time(localtime) ++ "\");",
@@ -114,6 +116,7 @@ handle_call({w_update_supplier, Merchant, Attrs}, _From, State) ->
     Balance  = ?v(<<"balance">>, Attrs), 
     Mobile   = ?v(<<"mobile">>, Attrs),
     Address  = ?v(<<"address">>, Attrs),
+    Comment  = ?v(<<"comment">>, Attrs),
 
     Sql = "select id, " ++ fields()
 	++ " from " ++ ?tbl_supplier
@@ -128,7 +131,8 @@ handle_call({w_update_supplier, Merchant, Attrs}, _From, State) ->
 	    Updates = ?utils:v(name, string, Name)
 		++ ?utils:v(balance, float, Balance)
 		++ ?utils:v(mobile,  string, Mobile)
-		++ ?utils:v(address, string, Address),
+		++ ?utils:v(address, string, Address)
+		++ ?utils:v(comment, string, Comment),
 	    Sql1 = 
 		"update " ++ ?tbl_supplier ++ " set "
 		++ ?utils:to_sqls(proplists, comma, Updates)
@@ -153,22 +157,10 @@ handle_call({w_delete_supplier, Merchant, Id}, _From, State) ->
     ?w_user_profile:update(firm, Merchant),
     {reply, Reply, State}; 
 
-handle_call({update_supplier, Condition, Fields}, _From, State) ->
-    ?DEBUG("Update supplier with condtion: condition ~p, fields ~p", [Condition, Fields]),
-    C = ?utils:to_sqls(proplists, Condition),
-    ?DEBUG("C ~p", [C]),
-
-    Values = ?utils:to_sqls(proplists, Fields),
-    ?DEBUG("U ~p", [Values]),
-    
-    Sql = "update " ++ ?tbl_supplier ++ " set " ++ Values ++ " where " ++ C ++ ";",    
-    ?DEBUG("sql ~p", [Sql]),
-    {ok, _} = ?mysql:fetch(write, Sql),
-    {reply, ok, State};
-
 handle_call({w_list, Merchant}, _From, State) ->
     ?DEBUG("w_list with merchant ~p", [Merchant]),
-    Sql = "select id, name, mobile, address, balance, entry_date from suppliers"
+    Sql = "select id, name, mobile, address, comment"
+	", balance, entry_date from suppliers"
 	++ " where "
 	++ " merchant=" ++ ?to_s(Merchant)
 	++ " and deleted = " ++ ?to_s(?NO)

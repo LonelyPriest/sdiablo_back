@@ -376,6 +376,19 @@ action(Session, Req, {"new_w_promotion"}, Payload) ->
 	       200, Req, ?succ(new_promotion, PId), {<<"id">>, PId});
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"update_w_promotion"}, Payload) ->
+    ?DEBUG("update_w_promotion with session ~p~nPayload ~p", [Session, Payload]), 
+    Merchant  = ?session:get(merchant, Session),
+
+    case ?promotion:promotion(update, Merchant, Payload) of 
+	{ok, PId} ->
+	    ?w_user_profile:update(promotion, Merchant),
+	    ?utils:respond(
+	       200, Req, ?succ(update_promotion, PId), {<<"id">>, PId});
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
     end.
     
 

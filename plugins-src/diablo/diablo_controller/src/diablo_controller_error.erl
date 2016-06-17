@@ -151,7 +151,9 @@ success(adjust_w_inventory_price, Merchant) ->
 
 %% promotion
 success(new_promotion, Promotion) ->
-    {0, "Success to add a promotion " ++ ?to_s(Promotion)};
+    {0, "Success to add promotion " ++ ?to_s(Promotion)};
+success(update_promotion, Promotion) ->
+    {0, "Success to update promotion " ++ ?to_s(Promotion)};
 
 %% retailer
 success(add_w_retailer, Retailer) ->

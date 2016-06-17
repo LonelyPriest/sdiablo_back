@@ -61,9 +61,7 @@ handle_call({new_promotion, Merchant, Attrs}, _From, State) ->
     Reduce   = ?v(<<"reduce">>, Attrs, 0),
     SDate    = ?v(<<"sdate">>, Attrs),
     EDate    = ?v(<<"edate">>, Attrs),
-    Remark   = ?v(<<"remark">>, Attrs, []),
-
-    
+    Remark   = ?v(<<"remark">>, Attrs, []), 
 
     Sql = "select id, name from w_promotion"
 	" where merchant=" ++ ?to_s(Merchant)
@@ -97,6 +95,45 @@ handle_call({new_promotion, Merchant, Attrs}, _From, State) ->
 	    {reply, Reply, State};
 	{ok, E} ->
 	    {reply, {error, ?err(promotion_exist, ?v(<<"id">>, E))}, State}
+    end;
+
+handle_call({update_promotion, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("update_promotion with merhcant ~p, attrs ~p", [Merchant, Attrs]),
+    Id       = ?v(<<"pid">>, Attrs),
+    Name     = ?v(<<"name">>, Attrs),
+    Discount = ?v(<<"discount">>, Attrs, 100),
+    CMoney   = ?v(<<"cmoney">>, Attrs, 0),
+    RMoney   = ?v(<<"rmoney">>, Attrs, 0),
+    %% SDate    = ?v(<<"sdate">>, Attrs),
+    %% EDate    = ?v(<<"edate">>, Attrs),
+    Remark   = ?v(<<"remark">>, Attrs), 
+
+    Sql = "select id, name from w_promotion"
+	++ " where "
+	++ " name=" ++ "\"" ++ ?to_s(Name) ++ "\""
+	++ " and merchant=" ++ ?to_s(Merchant)
+	++ " and deleted=" ++ ?to_s(?NO),
+    
+    case ?sql_utils:execute(s_read, Sql) of
+	{ok, []} ->
+	    Updates = ?utils:v(name, string, Name)
+		++ ?utils:v(discount, integer, Discount)
+		++ ?utils:v(cmoney,  float, CMoney)
+		++ ?utils:v(rmoney,  float, RMoney)
+		++ ?utils:v(remark, string, Remark),
+	    Sql1 = 
+		"update w_promotion set "
+		++ ?utils:to_sqls(proplists, comma, Updates)
+		++ " where id=" ++ ?to_s(Id)
+		++ " and merchant=" ++ ?to_s(Merchant),
+
+	    Reply = ?sql_utils:execute(write, Sql1, Id),
+	    ?w_user_profile:update(firm, Merchant),
+	    {reply, Reply, State};
+	{ok, _} ->
+	    {reply, {error, ?err(promotion_exist, Name)}, State};
+	Error ->
+	    {reply, Error, State}
     end;
 
 handle_call({list_promotion, Merchant}, _From, State) ->

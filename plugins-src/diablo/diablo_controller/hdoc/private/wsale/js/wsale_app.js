@@ -126,6 +126,7 @@ wsaleApp.service("wsaleService", function($http, $resource, dateFilter){
 	2191: "该款号已存在，请选择新的款号！！",
 	2192: "客户或营业员不存在，请建立客户或营业员资料！！",
 	2193: "该款号吊牌价小于零，无法出售，请定价后再出售！！",
+	2194: "该款号无入库记录，请先入库后再出售或重新选择货品！！",
 	2401: "店铺打印机不存在或打印处理暂停状态！！",
 	
 	2411: "打印机编号错误！！",
@@ -376,8 +377,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	left_balance: 0,
 	verificate:   $scope.vpays[0],
 	datetime:     $scope.today()
-    }; 
-
+    };
+    
     // shops
     $scope.shops = user.sortShops;
     if ($scope.shops.length !== 0){
@@ -394,10 +395,11 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	
 	$scope.match_all_w_inventory(); 
 	$scope.get_employee();
-	
-	$scope.wsaleStorage.gen_key($scope.select.employee.id, $scope.select.shop.id);
+
+	// $scope.wsaleStorage.remove($scope.wsaleStorage.get_key());
 	$scope.wsaleStorage.change_shop($scope.select.shop.id);
-	$scope.wsaleStorage.save($scope.inventories.filter(function(r){return !r.$new}));
+	$scope.wsaleStorage.change_employee($scope.select.employee.id);
+	// $scope.wsaleStorage.save($scope.inventories.filter(function(r){return !r.$new}));
     };
 
     $scope.get_employee = function(){
@@ -421,6 +423,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
     
     $scope.change_retailer = function(){
 	$scope.set_retailer();
+	$scope.wsaleStorage.remove($scope.wsaleStorage.get_key());
 	$scope.wsaleStorage.change_retailer($scope.select.retailer.id);
 	$scope.wsaleStorage.save($scope.inventories.filter(function(r){return !r.$new}));
 	$scope.re_calculate();
@@ -573,6 +576,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	$scope.select.shop.id,
 	$scope.select.retailer.id,
 	$scope.select.employee.id, dateFilter);
+    console.log($scope.wsaleStorage);
     
     $scope.disable_draft = function(){
 	if ($scope.wsaleStorage.keys().length === 0 || $scope.inventories.length !== 1)
@@ -592,10 +596,15 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	};
 
 	var select = function(draft, resource){
+	    if (draft.shop.id !== $scope.select.shop.id){
+		$scope.select.shop = diablo_get_object(draft.shop.id, $scope.shops); 
+		$scope.get_employee(); 
+	    };
+	    
 	    $scope.select_draft_key = draft.sn;
+	    $scope.wsaleStorage.set_key(draft.sn);
 	    $scope.select.employee = diablo_get_object(draft.employee.id, $scope.employees);
 	    $scope.select.retailer = diablo_get_object(draft.retailer.id, $scope.retailers);
-	    $scope.select.shop = diablo_get_object(draft.shop.id, $scope.shops); 
 	    
 	    $scope.inventories = angular.copy(resource); 
 	    $scope.inventories.unshift({$edit:false, $new:true});
@@ -808,14 +817,9 @@ wsaleApp.controller("wsaleNewCtrl", function(
      */
     $scope.disable_save = function(){
 	// save one time only
-	if ($scope.has_saved || $scope.draft){
+	if ($scope.has_saved || $scope.draft || $scope.select.charge > 0)
 	    return true;
-	};
-
-	if ($scope.select.charge > 0 ){
-	    return true;
-	}
-
+	
 	// console.log($scope.select);
 	// any payment of cash, card or wire or any inventory
 	if (angular.isDefined($scope.select.cash) && $scope.select.cash
@@ -1016,6 +1020,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    var success_callback = function(){
 		// clear local storage
 		if (angular.isDefined($scope.select_draft_key)){
+		    // console.log($scope.select_draft_key);
 		    $scope.wsaleStorage.remove($scope.select_draft_key);
 		    $scope.select_draft_key = undefined;
 		};
@@ -1110,6 +1115,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	$scope.select.should_pay   = 0;
 	$scope.select.score        = 0; 
 
+	// console.log($scope.inventoyies);
 	var calc = wsaleCalc.calculate(
 	    $scope.select.o_retailer,
 	    $scope.select.retailer,
@@ -1145,20 +1151,17 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	var unchanged = 0;
 
 	for(var i=0, l=amounts.length; i<l; i++){
-	    var count = amounts[i].sell_count; 
-	    if (angular.isUndefined(count)){
+	    var sell = amounts[i].sell_count;
+	    if (0 == wsaleUtils.to_integer(sell)){
 		unchanged++;
 		continue;
 	    }
-
-	    if (!count){
-		unchanged++;
-		continue;
-	    }
-
-	    if (!renumber.test(count)){
-		return false;
-	    } 
+	    
+	    if (!renumber.test(sell)) return false;
+	    
+	    if ($scope.setting.check_sale)
+		if (0 === sell || sell > amounts[i].count) return false;
+	    
 	};
 
 	return unchanged === l ? false : true;
@@ -1234,16 +1237,22 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    inv.amounts         = [{cid:0, size:0}]; 
 	} else {
 	    var promise = diabloPromise.promise; 
-	    var calls = [].push(promise(purchaserService.list_purchaser_inventory,
-					{style_number: inv.style_number,
-					 brand:        inv.brand_id,
-					 shop:         $scope.select.shop.id
-					})());
+	    var calls = [promise(purchaserService.list_purchaser_inventory,
+				 {style_number: inv.style_number,
+				  brand:        inv.brand_id,
+				  shop:         $scope.select.shop.id
+				 })()];
 	    
 	    $q.all(calls).then(function(data){
 		console.log(data);
 		// data[0] is the inventory belong to the shop
-		// data[1] is the last sale of the shop		
+		// data[1] is the last sale of the shop
+		if (data.length === 0 ){
+		    diabloUtilsService.response(
+			false, "销售开单", "开单失败：" + wsaleService.error[2194]);
+		    return; 
+		};
+		
 		var shop_now_inv = data[0];
 		
 		var order_sizes = wgoodService.format_size_group(inv.s_group, filterSizeGroup);

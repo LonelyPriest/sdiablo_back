@@ -423,6 +423,7 @@ var diablo_rdight = function(dight, how){
 };
 
 var diablo_discount = function(fprice, tagPrice){
+    // console.log(fprice, tagPrice);
     if (tagPrice == 0){
 	return diablo_full_discount;
     };

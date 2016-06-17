@@ -388,9 +388,10 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 
 	var nscore = 0;
 	for (var i=1, l=$scope.inventories.length; i<l; i++){
-	    var inv = $scope.inventories[i];
+	    var inv = $scope.inventories[i]; 
 	    if (!inv.select){
-		nscore += wsaleUtils.calc_score_of_money(inv.calc, inv.score);
+		if (diablo_invalid_index !== inv.sid)
+		    nscore += wsaleUtils.calc_score_of_money(inv.calc, inv.score);
 	    } else {
 		$scope.select.rcharge += inv.calc;
 		$scope.select.rtotal += inv.reject;

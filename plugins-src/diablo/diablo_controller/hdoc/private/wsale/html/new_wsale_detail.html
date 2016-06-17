@@ -188,7 +188,7 @@
 
 		      <button x-ng-if="shop_right.update_w_sale"
 			      class="btn diablo-button yellow-crusta"
-			      x-ng-disabled="r.state===1"
+			      x-ng-disabled="r.state===1 || r.type===1"
 		      	      x-ng-click="update_detail(r)">修改
 			<i class="glyphicon glyphicon-edit"></i></button>
 		      
@@ -218,7 +218,7 @@
 		    
 		    <td>{{total_amounts}}</td>
 		    <td x-ng-if="shop_right.show_stastic">{{total_spay}}</td>
-		    <td x-ng-if="shop_right.show_stastic">{{total_rpay}}</td>
+		    <td>{{total_rpay}}</td>
 		    <td></td>
 		    <td x-ng-if="show.balance">{{total_cash}}</td>
 		    <td x-ng-if="show.balance">{{total_card}}</td>
@@ -273,7 +273,8 @@
     </div>
     <div class="col-md-12">
     <div>
-      <span class="bg-lightOlive">浅绿色表示已审核</span> 
+      <span class="fg-red">注：客户退货单不能修改</span>
+      &nbsp&nbsp&nbsp&nbsp<span class="bg-lightOlive">浅绿色表示已审核</span> 
     </div>
   </div>
 </div>
