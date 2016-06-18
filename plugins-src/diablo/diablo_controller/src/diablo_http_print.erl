@@ -402,18 +402,28 @@ head(<<"feie">> = Brand, _Model, 80, RSN, Retailer, Employee, Date) ->
 body_stastic(Brand, _Model, Column, _TotalBalance, Attrs, Vip, STotal, RTotal) ->
     ?DEBUG("body_stastic with Attrs ~p, Column ~p, Vip ~p", [Column, Attrs, Vip]),
     Cash         = ?v(<<"cash">>, Attrs, 0),
-    Card         = ?v(<<"card">>, Attrs, 0), 
+    Card         = ?v(<<"card">>, Attrs, 0),
+    Withdraw     = ?v(<<"withdraw">>, Attrs, 0),
     ShouldPay    = clean_zero(?v(<<"should_pay">>, Attrs, 0)),
-    %% Total        = ?v(<<"total">>, Attrs, 0),
     Total        = abs(STotal) + abs(RTotal),
     Comment      = ?v(<<"comment">>, Attrs, []),
     Direct       = ?v(<<"direct">>, Attrs, 0),
 
-    %% RetailerType = ?v(<<"retailer_type">>, Attrs, 0), 
     LastScore    = ?v(<<"last_score">>, Attrs, 0),
     Score        = ?v(<<"score">>, Attrs, 0),
 
     AccScore     = Score + LastScore,
+
+    RPay         = ShouldPay - Withdraw,
+    NewCash      = case Cash >= RPay of
+		       true  -> RPay;
+		       false -> Cash
+		   end,
+
+    NewCard      = case Card >= RPay - NewCash of
+		       true  -> RPay - NewCash;
+		       false -> Card
+		   end,
 
     case RTotal =/= 0 of
 	true -> "销售：" ++ ?to_s(STotal)
@@ -428,7 +438,10 @@ body_stastic(Brand, _Model, Column, _TotalBalance, Attrs, Vip, STotal, RTotal) -
 	       0 -> "实付：";
 	       1 -> "退款："
 	   end
-	++ ?to_s(abs(ShouldPay)) ++ pay(style, abs(Cash), abs(Card)) ++ br(Brand)
+	
+	++ ?to_s(abs(ShouldPay))
+	++ pay(style, abs(NewCash), abs(NewCard), abs(Withdraw))
+	++ br(Brand)
 
 	++ case Vip of 
 	       true ->
@@ -732,9 +745,9 @@ field_name(<<"type">>)         -> "类型";
 field_name(<<"color">>)        -> "颜色";
 field_name(<<"size">>)         -> "尺码".
 
-pay(style, Cash, Card) -> 
-    Pays = [pay(cash, Cash), pay(card, Card)],
-
+pay(style, Cash, Card, Withdraw) ->
+    ?DEBUG("cash ~p, card ~p, withdraw ~p", [Cash, Card, Withdraw]),
+    Pays = [pay(cash, Cash), pay(card, Card), pay(withdraw, Withdraw)], 
     lists:foldr(fun([], Acc) -> Acc;
 		   (S, Acc) -> pading(2) ++ S ++ Acc
 		end, [], Pays).
@@ -743,8 +756,8 @@ pay(card, Card) when Card == 0 -> [];
 pay(card, Card) -> "刷卡：" ++ ?to_s(clean_zero(Card));
 pay(cash, Cash)  when Cash == 0-> [];
 pay(cash, Cash) -> "现金：" ++ ?to_s(clean_zero(Cash));
-pay(wire, Wire) when Wire == 0 -> [];
-pay(wire, Wire) -> "汇款：" ++ ?to_s(clean_zero(Wire));
+pay(withdraw, Withdraw) when Withdraw == 0 -> [];
+pay(withdraw, Withdraw) -> "提现：" ++ ?to_s(clean_zero(Withdraw));
 pay(veri, Veri) when Veri == 0-> [];
 pay(veri, Veri) -> "核销：" ++ ?to_s(clean_zero(Veri)).
 

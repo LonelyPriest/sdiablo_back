@@ -434,7 +434,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	}
     };
 
-    $scope.retailers = filterRetailer; 
+    $scope.retailers = filterRetailer;
     if ($scope.retailers.length !== 0){
 	$scope.select.retailer = $scope.retailers[0];
 	if (user.loginRetailer !== diablo_invalid){
@@ -485,25 +485,24 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    undefined,
 	    callback,
 	    undefined,
-	    {retailer:
-	     {id: $scope.select.retailer.id,
-	      name: $scope.select.retailer.name,
+	    {retailer: {
+		id        :$scope.select.retailer.id,
+		name      :$scope.select.retailer.name,
+		surplus   :$scope.select.surplus,
+		
+		withdraw  :function() {
+		    if ($scope.select.surplus >= $scope.select.charge)
+			return $scope.select.charge;
+		    return $scope.select.surplus;}()
+	    },
 	      
-	      withdraw: function() {
-		  if ($scope.select.surplus >= $scope.select.charge)
-		      return $scope.select.charge;
-		  return $scope.select.surplus;
-	      }(),
-	      
-	      check_withdraw: function(balance){
-		 var pay = $scope.select.should_pay - wsaleUtils.to_integer($scope.select.has_pay);
-		 return balance > pay ? false : true;
+	     check_withdraw: function(balance){
+		 return balance > $scope.select.charge ? false : true;
 	     },
 	      
 	      check_zero: function(balance) {return balance === 0 ? true:false}
 	     }
-	    }
-	);
+	)
     };
     
     $scope.refresh = function(){
@@ -1062,7 +1061,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	
 	var withdraw = diablo_set_float($scope.select.withdraw);
 	
-	if(angular.isDefined(withdraw)){
+	if($scope.select.retailer.type === diablo_charge_retailer
+	   && angular.isDefined(withdraw) && withdraw){
 	    $scope.select.has_pay += parseFloat($scope.select.withdraw);
 	    $scope.select.left_balance = $scope.select.surplus - withdraw;
 	}
@@ -1125,13 +1125,14 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    diablo_sale,
 	    $scope.select.verificate);
 
-	console.log($scope.show_promotions);
+	// console.log($scope.show_promotions);
 	
 	$scope.select.total     = calc.total; 
 	$scope.select.abs_total = calc.abs_total;
 	$scope.select.should_pay= calc.should_pay;
 	$scope.select.score     = calc.score;
 	$scope.select.charge    = $scope.select.should_pay - $scope.select.has_pay;
+	console.log($scope.select);
     };
 
     var valid_sell = function(amount){

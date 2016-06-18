@@ -250,8 +250,6 @@ action(Session, Req, {"new_w_sale"}, Payload) ->
 				  Total       = ?v(<<"sell_total">>, Inv),
 				  TagPrice    = ?v(<<"tag_price">>, Inv),
 				  RPrice      = ?v(<<"rprice">>, Inv),
-				  %% FDiscount   = ?v(<<"fdiscount">>, Inv),
-				  %% Amounts     = ?v(<<"amounts">>, Inv),
 				  
 				  P = [{<<"style_number">>, StyleNumber},
 				       {<<"brand_id">>, BrandId},
@@ -260,23 +258,14 @@ action(Session, Req, {"new_w_sale"}, Payload) ->
 				       {<<"total">>, Total}
 				      ],
 
-				  [P|Acc]
-				  %% lists:foldr(
-				  %%   fun({struct, A}, Acc1) ->
-				  %% 	    SellTotal = ?v(<<"sell_count">>, A),
-				  %% 	    [
-				  %% 	     {[{<<"total">>, SellTotal}|P]}
-				  %% 	     |Acc1] ++ Acc
-				  %%  end, [], Amounts)
+				  [P|Acc] 
 			  end, [], Invs),
 		    print(RSN, Merchant, NewInvs, Base, Print, SuccessRespone);
 		false ->
-		    ?utils:respond(200, Req, ?succ(new_w_sale, RSN),
-				   [{<<"rsn">>, ?to_b(RSN)}])
+		    ?utils:respond(
+		       200, Req, ?succ(new_w_sale, RSN), [{<<"rsn">>, ?to_b(RSN)}])
 	    end,
-	    ?w_user_profile:update(retailer, Merchant);
-	    %% delete draft
-	    %% ?w_sale_draft:delete(wsale_draft, Merchant, Base);
+	    ?w_user_profile:update(retailer, Merchant); 
     	{error, Error} ->
     	    ?utils:respond(200, Req, Error)
     end;
@@ -348,6 +337,7 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
 		    {<<"balance">>,    ?v(<<"balance">>, Sale)},
 		    {<<"cash">>,       ?v(<<"cash">>, Sale)},
 		    {<<"card">>,       ?v(<<"card">>, Sale)},
+		    {<<"withdraw">>,   ?v(<<"withdraw">>, Sale)},
 		    {<<"verificate">>, ?v(<<"verificate">>, Sale)},
 		    {<<"should_pay">>, ?v(<<"should_pay">>, Sale)}, 
 		    {<<"total">>,      ?v(<<"total">>, Sale)},

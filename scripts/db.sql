@@ -870,17 +870,20 @@ create table w_charge_detail(
     rsn             VARCHAR(32) not null, -- record sn
     merchant        INTEGER not null default -1,
     shop            INTEGER not null default -1, 
-    employ          VARCHAR(8) not null,
+    employee 	    VARCHAR(8) not null,
     cid             INTEGER not null default -1, -- charge
 
-    retailer        INTEGER not null default -1, 
+    retailer        INTEGER not null default -1,
+    lbalance        INTEGER not null default 0, -- last balance
     cbalance        INTEGER not null default 0, -- charge balance
     sbalance        INTEGER not null default 0, -- send balance
+    comment         VARCHAR(256) default null,
     
     entry_date      DATETIME default 0,
     deleted         INTEGER default 0, -- 0: no;  1: yes
 
-    unique  key uk  (merchant, shop, employ, retailer),
+    unique  key uk (rsn),
+    unique  key dk  (merchant, shop, retailer, employee),
     primary key     (id)
     
 ) default charset=utf8;

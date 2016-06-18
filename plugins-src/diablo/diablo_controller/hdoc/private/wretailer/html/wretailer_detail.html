@@ -99,6 +99,7 @@
 
 		    <td>
 		      <button class="btn red-sunglo diablo-button "
+			      x-ng-disabled="r.type_id===0"
 			      x-ng-click="charge(r)">充值
 			<i class="glyphicon glyphicon-yen"></i></button>
 		      
@@ -116,9 +117,10 @@
 		    </td>
 		  </tr>
 
-		  <tr x-ng-if="total_items!==0" class="bg-white">
-		    <td colspan="7"></td>
-		    <td class="fg-red">{{total_consume}}</td> 
+		  <tr x-ng-if="right.show_stastic && total_items!==0" class="bg-white">
+		    <td colspan="6"></td>
+		    <td class="fg-red">{{total_balance}}</td>
+		    <td class="fg-red">{{total_consume}}</td>
 		    <td colspan="3"></td>
 		  </tr>
 		  
@@ -384,6 +386,8 @@
 	      <input type="number" step="1"
 		     class="form-control"
 		     required
+		     diable-key
+		     disable-wheel
 		     name="charge"
 		     placeholder="请输入充值金额"
 		     x-ng-model="params.charge"
@@ -393,6 +397,21 @@
 	    <div ng-show="cForm.charge.$invalid && !cForm.charge.$pristine"> 
 	      <span class="fg-red">金额只能是整数</span>
 	    </div>
+	  </div> 
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-3 col-md-3 control-label">备注</label>
+	  <div class="col-sm-6 col-md-6">
+	    <input type="text"
+		   class="form-control"
+		   name="comment"
+		   placeholder="请输入备注"
+		   x-ng-model="params.comment"
+		   x-ng-pattern="params.pattern.comment"/> 
+	  </div>
+	  <div ng-show="firmNewForm.comment.$invalid && !firmNewForm.comment.$pristine">
+	    <span class="fg-red">中文，字母，数字，不支持特殊字符</span> 
 	  </div> 
 	</div>
 

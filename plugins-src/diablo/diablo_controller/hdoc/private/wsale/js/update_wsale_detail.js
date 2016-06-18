@@ -42,13 +42,25 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 
     $scope.go_back = function(){
 	diablo_goto_page("#/new_wsale_detail/" + $routeParams.ppage);
-    }; 
+    };
 
+    $scope.calc_withdraw = function(){
+	if ($scope.select.retailer.type === diablo_charge_retailer && $scope.select.withdraw > 0){
+	    $scope.select.save_to_back = $scope.select.withdraw
+		+ $scope.select.cash + $scope.select.card - $scope.select.should_pay;
+	    $scope.select.left_balance += $scope.select.save_to_back;
+	} else {
+	    $scope.select.charge = $scope.select.should_pay - $scope.select.has_pay;
+	}
+    };
+    
     $scope.re_calculate = function(){
 	$scope.select.total        = 0;
 	$scope.select.abs_total    = 0;
 	$scope.select.should_pay   = 0;
-	$scope.select.score        = 0; 
+	$scope.select.score        = 0;
+	$scope.select.charge       = 0;
+	$scope.select.save_to_back = 0;
 
 	var calc = wsaleCalc.calculate(
 	    $scope.select.o_retailer,
@@ -59,38 +71,20 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	    diablo_reject,
 	    $scope.select.verificate);
 
-	console.log($scope.show_promotions);
-	// console.log(calc);
-	
+	// console.log($scope.show_promotions); 
 	$scope.select.total     = calc.total; 
-	// $scope.select.abs_total = calc.abs_total;
 	$scope.select.should_pay= calc.should_pay;
 	$scope.select.score     = calc.score;
 	
-	// back 
-	// if ($scope.select.should_pay > 0
-	//     && $scope.select.withdraw > $scope.select.should_pay){
-	//     $scope.select.left_balance = $scope.select.surplus - $scope.select.should_pay;
-	//     $scope.select.withdraw = $scope.select.should_pay; 
-	//     $scope.select.charge = -($scope.select.cash + $scope.select.card);
-	// } else {
-	//     $scope.select.charge = $scope.select.should_pay - $scope.select.has_pay; 
-	// }
+	$scope.calc_withdraw();
     };
     
-    $scope.change_retailer = function(){
-	$scope.select.surplus = $scope.select.retailer.balance;
-	$scope.re_calculate();
-	$scope.select.o_retailer = $scope.select.retailer;
-    }
+    // $scope.change_retailer = function(){
+    // 	$scope.select.surplus = $scope.select.retailer.balance;
+    // 	$scope.re_calculate();
+    // 	$scope.select.o_retailer = $scope.select.retailer;
+    // }
     
-    // calender
-    $scope.open_calendar = function(event){
-	event.preventDefault();
-	event.stopPropagation();
-	$scope.isOpened = true;
-    }; 
-
     // rsn detail
     var rsn     = $routeParams.rsn
     var promise = diabloPromise.promise;
@@ -203,25 +197,17 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
      */
     $scope.disable_save = function(){
 	// save one time only
-	if ($scope.has_saved){
+	if ($scope.has_saved || $scope.select.charge > 0 || $scope.select.save_to_back < 0)
 	    return true;
-	};
-
-	if ($scope.select.charge > 0){
-	    return true;
-	};
-
-	// console.log($scope.select);
+	
 	// any payment of cash, card or wire or any inventory
 	if (angular.isDefined(diablo_set_float($scope.select.cash))
 	    || angular.isDefined(diablo_set_float($scope.select.card))
 	    || angular.isDefined(diablo_set_float($scope.select.withdraw)) 
 	    || angular.isDefined(diablo_set_string($scope.select.comment))
 	    || $scope.inventories.length !== 1
-	   ){
-	    return false;
-	} 
-
+	   ) return false;
+	
 	return true;
     };
 
@@ -517,35 +503,19 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
     var reset_payment = function(newValue){
 	// console.log("reset_payment newValue ", newValue);
 	$scope.select.has_pay = 0.00;
-	$scope.select.left_balance = 0.00;
+	$scope.select.left_balance = $scope.select.surplus
 	
-	if(angular.isDefined($scope.select.cash) && $scope.select.cash){
-	    $scope.select.has_pay
-		+= parseFloat($scope.select.cash);
+	$scope.select.has_pay += wsaleUtils.to_float($scope.select.cash); 
+	$scope.select.has_pay += wsaleUtils.to_float($scope.select.card);
+
+	if ($scope.select.retailer.type === diablo_charge_retailer){
+	    if (wsaleUtils.to_float($scope.select.withdraw) > 0 ){
+		$scope.select.has_pay += wsaleUtils.to_float($scope.select.withdraw);
+		// $scope.select.left_balance -= $scope.select.withdraw
+	    }
 	}
 	
-	if(angular.isDefined($scope.select.card) && $scope.select.card){
-	    $scope.select.has_pay
-		+= parseFloat($scope.select.card);
-	} 
-
-	$scope.select.left_balance = $scope.select.surplus 
-	var withdraw = diablo_set_float($scope.select.withdraw);
-	if(angular.isDefined(withdraw)){
-	    $scope.select.has_pay += parseFloat($scope.select.withdraw);
-	    $scope.select.left_balance = $scope.select.surplus - $scope.select.withdraw
-	} 
-
-	// back
-	if ($scope.select.should_pay > 0
-	    && $scope.select.withdraw > $scope.select.should_pay){
-	    $scope.select.left_balance += $scope.select.withdraw - $scope.select.should_pay;
-	    // back to account
-	    $scope.select.withdraw = $scope.select.should_pay;
-	    $scope.select.charge = -($scope.select.cash + $scope.select.card);
-	} else {
-	    $scope.select.charge = $scope.select.should_pay - $scope.select.has_pay; 
-	}
+	$scope.calc_withdraw(); 
     };
     
     $scope.$watch("select.cash", function(newValue, oldValue){
@@ -565,22 +535,6 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
     	reset_payment(newValue);
     });
 
-    // $scope.$watch("select.withdraw", function(newValue, oldValue){
-    // 	if (newValue === oldValue || angular.isUndefined(newValue)) return;
-    // 	reset_payment(newValue); 
-    // }); 
-
-    /*
-     * add
-     */
-    // $scope.valid_free_size_sell = function(inv){
-    // 	if (angular.isDefined(inv.sell)
-    // 	    && inv.sell > inv.total){
-    // 	    return false;
-    // 	}
-    // 	return true;
-    // };
-    
     var in_amount = function(amounts, inv){
 	for(var i=0, l=amounts.length; i<l; i++){
 	    if(amounts[i].cid === inv.color_id
@@ -603,24 +557,11 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 
     var valid_sell = function(amount){
 	var count = amount.sell_count; 
-	if (angular.isUndefined(count)){
-	    return true;
-	}
+	if (angular.isUndefined(count) || !count) return true;
 
-	if (!count) {
-	    return true;
-	}
-	
 	var renumber = /^[+|\-]?[1-9][0-9]*$/; 
-	// if (renumber.test(count) && amount.count >= amount.sell_count){
-	// 	return true;
-	// } 
-
-	if (renumber.test(count)){
-	    return true;
-	}
+	return renumber.test(count) ? true : false;
 	
-	return false
     };
     
     var valid_all_sell = function(amounts){
@@ -629,23 +570,12 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 
 	for(var i=0, l=amounts.length; i<l; i++){
 	    var count = amounts[i].sell_count; 
-	    if (angular.isUndefined(count)){
+	    if (angular.isUndefined(count) || !count){
 		unchanged++;
 		continue;
 	    }
-
-	    if (!count){
-		unchanged++;
-		continue;
-	    }
-
-	    // console.log(count)
-	    // if (!renumber.test(count) || amounts[i].count < parseInt(count)){
-	    // 	return false;
-	    // }
-	    if (!renumber.test(count)){
-		return false;
-	    } 
+	    
+	    if (!renumber.test(count)) return false;
 	};
 
 	return unchanged === l ? false : true;
@@ -673,7 +603,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	if (angular.isUndefined($scope.select.retailer)
 	    || diablo_is_empty($scope.select.retailer)){
 	    diabloUtilsService.response(
-		false, "销售开单", "开单失败：" + wsaleService.error[2192]);
+		false, "销售开单编辑", "开单编辑失败：" + wsaleService.error[2192]);
 	    return;
 	};
 	
@@ -683,12 +613,8 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	// oreder
 	inv.order_id = $scope.inventories.length; 
 	// add new line
-	$scope.inventories.unshift({$edit:false, $new:true});
-	
-	$scope.re_calculate();
-	// if ($scope.select.retailer.id !== $scope.setting.no_vip){
-	//     wsaleUtils.format_promotion(inv, $scope.show_promotions); 
-	// };
+	$scope.inventories.unshift({$edit:false, $new:true}); 
+	$scope.re_calculate(); 
     };
     
     $scope.add_inventory = function(inv){
@@ -703,24 +629,18 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	    var condition = {style_number: inv.style_number,
 			     brand: inv.brand.id,
 			     shop: $scope.select.shop.id}; 
-	    var calls     = [];
-
+	    var calls     = []; 
 	    calls.push(promise(
 		purchaserService.list_purchaser_inventory,
 		condition)()); 
-	    
 	    $q.all(calls).then(function(data){
 		console.log(data);
 		// data[0] is the inventory belong to the shop
-		// data[1] is the last sale of the shop
-
-		
+		// data[1] is the last sale of the shop 
 		var shop_now_inv = data[0];
 
-		var order_sizes = wgoodService.format_size_group(
-		    inv.s_group, filterSizeGroup);
-		var sort = purchaserService.sort_inventory(
-		    shop_now_inv, order_sizes, filterColor);
+		var order_sizes = wgoodService.format_size_group(inv.s_group, filterSizeGroup);
+		var sort = purchaserService.sort_inventory(shop_now_inv, order_sizes, filterColor);
 		
 		inv.total   = sort.total;
 		inv.sizes   = sort.size;
@@ -752,11 +672,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 			// oreder
 			inv.order_id = $scope.inventories.length; 
 			// add new line
-			$scope.inventories.unshift({$edit:false, $new:true});
-			// if ($scope.select.retailer.id !== $scope.setting.no_vip){
-			//     wsaleUtils.format_promotion(inv, $scope.show_promotions);
-			// }
-			
+			$scope.inventories.unshift({$edit:false, $new:true}); 
 			$scope.re_calculate(); 
 		    };
 		    
@@ -783,7 +699,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 
 		    diabloUtilsService.edit_with_modal(
 			"wsale-new.html",
-			inv.sizes.length > 6 ? "lg":undefined,
+			inv.sizes.length > 7 ? "lg":undefined,
 			callback, $scope, payload); 
 		}; 
 	    });
@@ -795,17 +711,11 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
      */
     $scope.delete_inventory = function(inv){
 	console.log(inv);
-	// console.log($scope.inventories)
-
-	// var deleteIndex = -1;
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    if(inv.order_id === $scope.inventories[i].order_id){
-		// $scope.inventories.splice(i, 1)
-		// deleteIndex = i;
 		break;
 	    }
-	}
-
+	} 
 	$scope.inventories.splice(i, 1);
 	
 	// reorder

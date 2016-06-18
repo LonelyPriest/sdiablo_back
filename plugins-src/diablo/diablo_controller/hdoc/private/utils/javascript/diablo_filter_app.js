@@ -443,7 +443,7 @@ function filterProvider(){
 				    type:  r.type_id,
 				    score: r.score,
 				    id:r.id,
-				    py:diablo_pinyin(r.name), 
+				    py:diablo_pinyin(r.name),
 				    balance:r.balance}
 			})
 

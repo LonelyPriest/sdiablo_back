@@ -127,6 +127,7 @@ action(Session, Req, {"new_recharge"}, Payload) ->
 
     case ?w_retailer:charge(recharge, Merchant, Payload) of
 	{ok, SN} ->
+	    ?w_user_profile:update(retailer, Merchant),
 	    ?utils:respond(
 	       200, Req, ?succ(new_recharge, SN));
 	{error, Error} ->
@@ -150,10 +151,6 @@ action(Session, Req, {"add_w_retailer_score"}, Payload) ->
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end.
-
-
-
-
 
 sidebar(Session) -> 
     S1 = [{"wretailer_detail", "会员详情", "glyphicon glyphicon-book"}],

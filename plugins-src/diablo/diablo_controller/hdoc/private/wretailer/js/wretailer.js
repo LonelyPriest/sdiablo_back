@@ -57,6 +57,8 @@ wretailerApp.controller("wretailerDetailCtrl", function(
     var f_add  = diablo_float_add;
     var now    = $.now();
 
+    $scope.right = {show_stastic: rightAuthen.authen_master(user.type)};
+
     $scope.save_to_local = function(search, t_retailer){
 	var s = localStorageService.get(diablo_key_retailer);
 	if (angular.isDefined(s) && s !== null){
@@ -242,21 +244,18 @@ wretailerApp.controller("wretailerDetailCtrl", function(
     var pattern = {name_address: diabloPattern.ch_name_address,
 		   tel_mobile:   diabloPattern.tel_mobile,
 		   decimal_2:    diabloPattern.decimal_2,
-		   number:       diabloPattern.number};
+		   number:       diabloPattern.number,
+		   comment:      diabloPattern.comment};
 
 
     $scope.charge = function(retailer){
-	console.log($scope.charges);
-	dialog.response(false, "会员充值", "暂不支持此操作！！");
-	return;
-	
+	console.log($scope.charges); 
 	var get_charge = function(charge_id) {
 	    for (var i=0, l=$scope.charges.length; i<l; i++){
 		if (charge_id === $scope.charges[i].id){
 		    return $scope.charges[i];
 		}
-	    }
-
+	    } 
 	    return undefined;
 	};
 	
@@ -266,27 +265,23 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	    var promotion       = params.promotion;
 	    var charge_balance  = diablo_set_integer(params.charge);
 	    var send_balance    = function(){
-		if (promotion.charge !== 0){
+		if (promotion.charge !== 0 && charge_balance > promotion.charge){
 		    return $scope.round(
 			charge_balance / promotion.charge * promotion.balance);
 		} else {
 		    return 0;
 		}
 	    }();
-
-	    var comment = "充" + promotion.charge.toString()
-		+ "送" + promotion.balance.toString();
 	    
 	    wretailerService.new_recharge({
 		retailer: retailer.id, 
 		shop: params.select_shop.id,
-		employee: params.select_employee.id,
-
-		old_balance:  retailer.balance,
+		employee: params.select_employee.id, 
+		// old_balance:  retailer.balance,
 		charge_balance: charge_balance,
 		send_balance: send_balance,
 		charge: promotion.id,
-		comment: send_balance !== 0 ? comment : send_balance})
+		comment: params.comment})
 		.then(function(result){
 		    console.log(result); 
 		    if (result.ecode == 0){

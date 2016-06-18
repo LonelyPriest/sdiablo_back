@@ -83,7 +83,7 @@ shopApp.controller("shopDetailCtrl", function(
     $scope.promotions      = filterPromotion;
     // $scope.shop_promotions = filterShopPromotion.map(
     // 	function(p){return p.pid});
-    $scope.charges         = filterCharge;
+    $scope.charges         = filterCharge.concat([{id:-1, name:"重置充值方案"}]);
     $scope.scores          = filterScore;
     
     // employees
@@ -215,12 +215,7 @@ shopApp.controller("shopDetailCtrl", function(
 	};
 
 	var has_update = function(new_shop){
-	    // none changed
-	    if (angular.equals(new_shop, old_shop)){
-		return false;
-	    }
-
-	    return true;
+	    return angular.equals(new_shop, old_shop) ? false : true; 
 	};
 
 	dialog.edit_with_modal(
@@ -383,10 +378,6 @@ shopApp.controller("shopDetailCtrl", function(
     };
 
     $scope.charge = function (shop){
-	dialog.response(false, "充值方案", "暂不支持此操作！！");
-	return;
-	
-	// console.log(shop);
 	var check_only = function(select, charges){
 	    // console.log(select);
 	    angular.forEach(charges, function(c){
@@ -401,13 +392,12 @@ shopApp.controller("shopDetailCtrl", function(
 		if (charges[i].select && charges[i].id === shop.charge_id){
 		    return true;
 		}
-	    } 
+	    }
 	    return false; 
 	};
 	
 	var callback = function(params){
-	    //console.log(params);
-
+	    //console.log(params); 
 	    var select = params.charges.filter(function(c){
 		return c.select;
 	    })[0];
@@ -420,6 +410,7 @@ shopApp.controller("shopDetailCtrl", function(
 		
 		if (result.ecode === 0){
 		    shop.charge_id = select.id;
+		    shop.charge = diablo_get_object(shop.charge_id, $scope.charges);
 		    dialog.response(true, "充值方案", "编辑充值方案成功！！");
 		} else {
 		    dialog.response(

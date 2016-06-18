@@ -176,12 +176,12 @@ var wsaleUtils = function(){
 		    return diablo_find_color(id, colors)
 		});
 		
-		d.brand = diablo_get_object(d.brand_id, brands);
-		d.type = diablo_get_object(d.type_id, types); 
+		d.brand     = diablo_get_object(d.brand_id, brands);
+		d.type      = diablo_get_object(d.type_id, types); 
 		d.promotion = diablo_get_object(d.pid, promotions);
 		d.score     = diablo_get_object(d.sid, scores);
-		d.select   = true;
-		d.order_id = order_length;
+		d.select    = true;
+		d.order_id  = order_length;
 
 		if (-1 !== d.pid && -1 !== d.sid){
 		    wsaleUtils.format_promotion(d, show_promotions); 
@@ -401,7 +401,7 @@ var wsaleUtils = function(){
 	},
 
 	calc_with_score: function(pscores, verificate){
-	    console.log(pscores, verificate);
+	    // console.log(pscores, verificate);
 	    var score = 0; 
 	    if (pscores.length > 0){
 		var s = pscores[0];
@@ -511,7 +511,7 @@ var wsaleCalc = function(){
 		    wsaleUtils.format_promotion(one, show_promotions);
 		}
 		// }
-		console.log(one.calc); 
+		// console.log(one.calc); 
 	    }
 	    
 	    console.log(pmoneys);
@@ -672,7 +672,7 @@ wsaleDraft.prototype.select = function(dialog, template, draftFilter, selectCall
 	    return angular.isDefined(d.select) && d.select
 	})[0];
 	
-	console.log(storage);
+	// console.log(storage);
 	var one = storage.get(select_draft.sn); 
 	if (angular.isDefined(one) && null !== one){
 	    selectCallback(select_draft, one.v);
