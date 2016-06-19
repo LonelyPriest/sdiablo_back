@@ -1420,13 +1420,34 @@ handle_call({adjust_price, Merchant, Inventories, Attrs}, _From, State) ->
 	   [Merchant, Inventories, Attrs]),
 
     Shop = ?v(<<"shop">>, Attrs),
+    PMode = ?v(<<"pmode">>, Attrs),
+    SMode = ?v(<<"smode">>, Attrs),
     Sqls = 
 	lists:foldr(
 	  fun({struct, Inv}, Acc) ->
 		  StyleNumber = ?v(<<"style_number">>, Inv),
 		  Brand = ?v(<<"brand">>, Inv),
-		  Discount = ?v(<<"discount">>, Inv),
+		  OrgPrice = ?v(<<"org_price">>, Inv),
+		  TagPrice = ?v(<<"tag_price">>, Inv),
+		  Discount = ?v(<<"discount">>, Inv), 
+		  EDiscount   =
+		      case TagPrice == 0 of
+			  true -> 0;
+			  false ->
+			      ?to_f(float_to_binary(
+				      OrgPrice / TagPrice, [{decimals, 3}])) * 100
+		      end,
+		  
 		  ["update w_inventory set discount=" ++ ?to_s(Discount)
+		   ++ case PMode of
+			  1 -> ", tag_price=" ++ ?to_s(TagPrice)
+				   ++ ", ediscount=" ++ ?to_s(EDiscount);
+			  0 -> []
+		      end
+		   ++ case SMode of
+			  1 -> ", score=-1";
+			  0 -> []
+		      end
 		   ++ " where merchant=" ++ ?to_s(Merchant)
 		   ++ " and shop=" ++ ?to_s(Shop)
 		   ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"

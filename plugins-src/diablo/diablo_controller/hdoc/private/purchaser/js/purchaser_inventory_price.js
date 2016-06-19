@@ -8,6 +8,8 @@ purchaserApp.controller("purchaserInventoryPriceCtrl", function(
     $scope.seasons = diablo_season; 
     $scope.employees = filterEmployee;
     $scope.firms     = filterFirm;
+    $scope.p_modes   = [{id:0, name:"价格关联模式"}, {id:1, name: "价格独立模式"}];
+    $scope.s_modes   = [{id:0, name:"参与积分"}, {id:1, name:"不参与积分"}];
 
     $scope.pattern = {
 	price: diabloPattern.positive_decimal_2,
@@ -41,8 +43,13 @@ purchaserApp.controller("purchaserInventoryPriceCtrl", function(
     $scope.current_inventories = [];
     $scope.select = {
 	shop:$scope.shops[0],
-	employee: $scope.employees[0]
+	employee: $scope.employees[0],
+	p_mode:   $scope.p_modes[0],
+	s_mode:   $scope.s_modes[0],
+	datetime: $.now()
     };
+
+    console.log($scope.select);
     
     $scope.has_saved = false;
     var now = $.now();
@@ -190,27 +197,18 @@ purchaserApp.controller("purchaserInventoryPriceCtrl", function(
 	    added.push({
 		style_number    : add.style_number,
 		brand           : add.brand_id,
+		org_price       : add.org_price,
+		tag_price       : add.n_tag_price,
 		discount        : add.n_discount
-		// firm            : add.firm_id,
-		// type            : add.type_id,
-		// year            : add.year,
-		// season          : add.season,
-		// s_group         : add.s_group,
-		// free            : add.free,
-		// exist           : add.total,
-		// fixed           : add.fixed,
-		// metric          : add.metric,
-		// amounts         : fixed_amounts,
-		// fprice          : add.org_price,
-		// fdiscount       : add.discount,
-		// path            : add.path
 	    })
 	}; 
 
 	var base = {
 	    shop:             $scope.select.shop.id,
-	    date:             dateFilter($scope.select.date, "yyyy-MM-dd HH:mm:ss"),
-	    employee:         $scope.select.employee.id 
+	    date:             dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),
+	    employee:         $scope.select.employee.id ,
+	    smode:            $scope.select.s_mode.id,
+	    pmode:            $scope.select.p_mode.id
 	};
 
 	console.log(added);
@@ -224,7 +222,7 @@ purchaserApp.controller("purchaserInventoryPriceCtrl", function(
 	    console.log(state);
 	    if (state.ecode == 0){
 	    	diabloUtilsService.response_with_callback(
-	    	    true, "库存调价", "调点成功！！", undefined, function(){sDraft.remove()})
+	    	    true, "库存调价", "库存调价成功！！", undefined, function(){sDraft.remove()})
 	    	return;
 	    } else{
 	    	diabloUtilsService.response(
@@ -242,20 +240,25 @@ purchaserApp.controller("purchaserInventoryPriceCtrl", function(
     $scope.timeout_auto_save = undefined; 
     $scope.add_inventory = function(inv, direct){
 	$timeout.cancel($scope.timeout_auto_save);
-	if (0 === direct){
-	    if ( 0 === stockUtils.to_float(inv.n_tag_price)
-		 || inv.n_tag_price === inv.tag_price) {
-		inv.n_discount = inv.discount;
-		return
-	    }; 
-	    inv.n_discount = diablo_discount(inv.n_tag_price, inv.tag_price);
-	} else if (1 === direct){
-	    if (0 === stockUtils.to_float(inv.n_discount)
-		|| inv.n_discount === inv.discount) {
-		inv.n_tag_price = inv.tag_price;
-		return;
-	    };
-	    inv.n_tag_price = diablo_price(inv.tag_price, inv.n_discount);
+	if ($scope.select.p_mode.id === 0){
+	    if (0 === direct){
+		if ( 0 === stockUtils.to_float(inv.n_tag_price)
+		     || inv.n_tag_price === inv.tag_price) {
+		    inv.n_discount = inv.discount;
+		    return
+		}; 
+		inv.n_discount = diablo_discount(inv.n_tag_price, inv.tag_price);
+	    } else if (1 === direct){
+		if (0 === stockUtils.to_float(inv.n_discount)
+		    || inv.n_discount === inv.discount) {
+		    inv.n_tag_price = inv.tag_price;
+		    return;
+		};
+		inv.n_tag_price = diablo_price(inv.tag_price, inv.n_discount);
+	    }
+	} else {
+	    if (0 === stockUtils.to_float(inv.n_tag_price)) return;
+	    inv.ediscount = stockUtils.ediscount(inv.org_price, inv.n_tag_price);
 	}
 	
 	if (angular.isUndefined(inv.order_id)){

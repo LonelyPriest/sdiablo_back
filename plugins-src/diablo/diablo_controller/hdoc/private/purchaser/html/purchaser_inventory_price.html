@@ -1,6 +1,6 @@
 <div class="row">
-  <div class="col-md-12">
-    <div class="portlet box purple">
+  <div class="col-md-12 col-sm-12">
+    <div class="portlet box purple diablo-margin-bottom-5">
       
       <div class="portlet-title">
 	<div class="caption"><i class="glyphicon glyphicon-menu-hamburger"></i>
@@ -35,31 +35,13 @@
 		  <i class="glyphicon glyphicon-map-marker fg-red"></i>店铺</span>
 	  	<select class="form-control" type="text"
 	  		x-ng-model="select.shop"
-	  		x-ng-options="s as s.name for s in
-	  			      shops|filter:$viewValue|limitTo:8">
+	  		x-ng-options="s as s.name for s in shops">
 		</select>
 	      </div>
 	    </div>
 
 	    <div class="col-xs-4 col-md-4">
-	      <div class="input-group">
-		<input type="text" class="form-control"
-		       placeholder="年/月/日"
-		       datepicker-popup="yyyy/MM/dd"
-		       is-open="isOpened"
-		       close-text="关闭"
-		       clear-text="清除"
-		       current-text="今天"
-		       show-weeks="false"
-		       x-ng-model="select.date"
-		       x-ng-init="select.date=today()"></input>
-	  	<span class="input-group-btn">
-		  <button type="button"
-			  class="btn btn-default"
-			  x-ng-click="open_calendar($event)">
-		    <i class="glyphicon glyphicon-calendar"></i></button>
-		</span>
-	      </div>
+	      <time-search time=select.datetime></time-search> 
 	    </div>
 
 	    <div class="col-xs-4 col-md-4">
@@ -69,8 +51,7 @@
 	  	</span>
 	  	<select class="form-control" type="text"
 	  		x-ng-model="select.employee"
-	  		x-ng-options="e as e.name for e in
-	  			  employees|filter:$viewValue|limitTo:8">
+	  		x-ng-options="e as e.name for e in employees">
 		</select> 
 	      </div>
 	    </div>
@@ -78,7 +59,7 @@
 	  </div> <!--END from-group-->
 
 	  <div class="row diablo-form-group"> 
-	    <div class="col-xs-6 col-md-6">
+	    <div class="col-xs-3 col-md-3">
 	      <div class="input-group">
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-map-marker fg-red"></i>总数</span>
@@ -87,19 +68,40 @@
 	      </div>
 	    </div>
 
-	    <div class="col-xs-6 col-md-6">
+	    <div class="col-xs-3 col-md-3">
 	      <div class="input-group">
 		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-map-marker fg-red"></i>备注</span>
+		  <i class="glyphicon glyphicon-comment fg-red"></i>备注</span>
 	  	<input class="form-control" type="text"
 		       x-ng-pattern="pattern.comment"
 		       x-ng-model="select.comment" />
 	      </div>
-	    </div>
-	    
+	    </div> 
+
+	    <div class="col-xs-3 col-md-3">
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-magnet fg-red"></i>模式</span> 
+	  	<select class="form-control"
+			x-ng-model="select.p_mode",
+			x-ng-options="p as p.name for p in p_modes">
+		</select>
+	      </div>
+	    </div> 
+
+	    <div class="col-xs-3 col-md-3">
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-star-empty fg-red"></i>积分</span> 
+		<select class="form-control"
+			x-ng-model="select.s_mode"
+			x-ng-options="s as s.name for s in s_modes">
+		</select>
+	      </div>
+	    </div> 
 	  </div>
 	  
-	</div> <!--END table-toolbar-->
+      </div> <!--END table-toolbar-->
 	
 	<!--BEGN portlet body--> 
 	<div class="portlet-body">
@@ -178,7 +180,7 @@
 		    <td class="vert-align">{{seasons[inv.season]}}</td>
 		    <td class="vert-align">{{inv.total}}</td>
 
-		    <td class="col-md-1 vert-align">
+		    <td class="col-md-2 vert-align">
 		      <div class="input-group">
 			<span class="input-group-addon modal-input-group-addon">
 			  <span class="fg-red">{{inv.tag_price}}</span>
@@ -199,7 +201,7 @@
 		      </div>
 		    </td>
 		    
-		    <td class="col-md-1 vert-align">
+		    <td class="col-md-2 vert-align">
 		      <div class="input-group">
 			<span class="input-group-addon modal-input-group-addon">
 			  <span class="fg-red">{{inv.discount}}</span>
@@ -241,6 +243,13 @@
       </div> <!--END table container-->
       
     </div>
+  </div>
+
+  <div class="col-md-12 col-sm-12">
+    <p class="fg-red">
+      <span class="bg-success">注：价格关联模式-价格或折扣改动的同进，折扣与价格会关联改动
+	&nbsp&nbsp&nbsp&nbsp独立模式-价格与折扣分别独立</span>
+    </p>
   </div>
 </div>
 
