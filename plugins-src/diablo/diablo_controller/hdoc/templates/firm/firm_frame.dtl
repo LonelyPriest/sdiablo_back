@@ -17,6 +17,7 @@
 	type="text/javascript"></script>
 
 <script src="/private/firm/js/firm_app.js"   type="text/javascript"></script>
+<script src="/private/firm/js/firm.js"   type="text/javascript"></script>
 <script src="/private/firm/js/brand.js"      type="text/javascript"></script>
 <script src="/private/firm/js/firm_trans.js" type="text/javascript"></script>
 <script src="/private/firm/js/firm_bill.js"  type="text/javascript"></script>
