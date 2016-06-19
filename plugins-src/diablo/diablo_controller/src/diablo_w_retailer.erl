@@ -97,6 +97,7 @@ handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
     Score    = ?v(<<"score">>, Attrs, 0),
     Mobile   = ?v(<<"mobile">>, Attrs, []),
     Address  = ?v(<<"address">>, Attrs, []),
+    Shop     = ?v(<<"shop">>, Attrs, -1),
 
     %% name can not be same
     Sql = "select id, name, mobile, address"
@@ -110,7 +111,7 @@ handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
 	{ok, []} -> 
 	    Sql2 = "insert into w_retailer("
 		"name, birth, type, password, score"
-		" ,mobile, address, merchant, entry_date)"
+		" ,mobile, address, shop, merchant, entry_date)"
 		++ " values ("
 		++ "\"" ++ ?to_s(Name) ++ "\","
 		++ "\"" ++ ?to_s(Birth) ++ "\","
@@ -118,7 +119,8 @@ handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
 		++ "\"" ++ ?to_s(Passwd) ++ "\"," 
 		++ ?to_s(Score) ++ "," 
 		++ "\"" ++ ?to_s(Mobile) ++ "\","
-		++ "\"" ++ ?to_s(Address) ++ "\"," 
+		++ "\"" ++ ?to_s(Address) ++ "\","
+		++ ?to_s(Shop) ++ ","
 		++ ?to_s(Merchant) ++ ","
 		++ "\"" ++ ?utils:current_time(format_localtime) ++ "\");", 
 	    Reply = ?sql_utils:execute(insert, Sql2),
@@ -136,6 +138,7 @@ handle_call({update_retailer, Merchant, RetailerId, Attrs}, _From, State) ->
 
     Name     = ?v(<<"name">>, Attrs),
     Mobile   = ?v(<<"mobile">>, Attrs),
+    Shop     = ?v(<<"shop">>, Attrs),
     Address  = ?v(<<"address">>, Attrs), 
     Birth    = ?v(<<"birth">>, Attrs),
     Type     = ?v(<<"type">>, Attrs),
@@ -163,7 +166,8 @@ handle_call({update_retailer, Merchant, RetailerId, Attrs}, _From, State) ->
 		++ ?utils:v(birth, string, Birth)
 		++ ?utils:v(type, integer, Type)
 		++ ?utils:v(mobile, string, Mobile)
-		++ ?utils:v(address, string, Address),
+		++ ?utils:v(address, string, Address)
+		++ ?utils:v(shop, integer, Shop),
 
 	    Sql1 = "update w_retailer set "
 		++ ?utils:to_sqls(proplists, comma, Updates)
@@ -217,7 +221,8 @@ handle_call({delete_retailer, Merchant, RetailerId}, _From, State) ->
 handle_call({list_retailer, Merchant}, _From, State) ->
     ?DEBUG("lookup retail with merchant ~p", [Merchant]),
     Sql = "select id, name, birth, type as type_id"
-	", balance, consume, score, mobile, address, merchant, entry_date"
+	", balance, consume, score, mobile, address"
+	", shop as shop_id, merchant, entry_date"
 	" from w_retailer"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and deleted=" ++ ?to_s(?NO)

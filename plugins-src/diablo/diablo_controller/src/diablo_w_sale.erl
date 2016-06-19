@@ -234,7 +234,6 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
     Total        = ?v(<<"total">>, Props),
     Score        = ?v(<<"score">>, Props, 0),
     
-    RPay         = ShouldPay - OldWithdraw,
     MShouldPay   = ShouldPay - OldShouldPay,
     RealyShop    = realy_shop(Merchant, Shop),
 
@@ -244,17 +243,24 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
 	    false -> 0
 	end,
 
-    Sql1 = sql(update_wsale, RSN, Merchant, RealyShop, Datetime, OldDatetime, Inventories),
-    
-    NewCash = case Cash >= RPay of
-		  true  -> RPay;
-		  false -> Cash
-	      end,
+    {NewCash, NewCard, Withdraw} =
+	case OldWithdraw >= ShouldPay of
+	    true  -> {0, 0, ShouldPay};
+	    false ->
+		RPay  = ShouldPay - OldWithdraw,
+		Cash1 = case Cash >= RPay of
+			    true  -> RPay;
+			    false -> Cash
+			end,
 
-    NewCard = case Card >=  RPay - NewCash of
-		  true  -> RPay - Card;
-		  false -> Card
-	      end,
+		Card1 = case Card >=  RPay - Cash1 of
+			    true  -> RPay - Cash1;
+			    false -> Card
+			end,
+		{Cash1, Card1, OldWithdraw}
+	end,
+
+    Sql1 = sql(update_wsale, RSN, Merchant, RealyShop, Datetime, OldDatetime, Inventories),
 
     Updates = ?utils:v(employ, string, Employee)
 	++ ?utils:v(retailer, integer, Retailer) 
@@ -262,7 +268,7 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
 	++ ?utils:v(should_pay, float, ShouldPay)
 	++ ?utils:v(cash, float, NewCash)
 	++ ?utils:v(card, float, NewCard)
-	++ ?utils:v(withdraw, float, OldWithdraw - BackToCard)
+	++ ?utils:v(withdraw, float, Withdraw)
 	++ ?utils:v(total, integer, Total)
 	++ ?utils:v(score, integer, Score)
 	++ ?utils:v(comment, string, Comment)
@@ -275,6 +281,11 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
 	true ->
 	    Sql2 = "update w_sale set "
 		++ ?utils:to_sqls(proplists, comma, Updates)
+		++ case OldWithdraw >= ShouldPay of
+		       true ->
+			   ", balance=balance+" ++ ?to_s(Cash + Card);
+		       false -> []
+		   end
 		++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'", 
 	    ?DEBUG("Sql2 ~ts", [Sql2]),
 

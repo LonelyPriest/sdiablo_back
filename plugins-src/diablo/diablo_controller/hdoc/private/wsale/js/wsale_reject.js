@@ -137,12 +137,7 @@ wsaleApp.controller("wsaleRejectCtrl", function(
      * withdraw
      */ 
     $scope.disable_withdraw = function(){
-
-	if (angular.isUndefined($scope.select.has_pay) || $scope.has_withdrawed){
-	    return true;
-	}
-	
-	return $scope.select.has_pay <= 0 ? true : false;
+	return $scope.select.has_pay <= 0 || $scope.has_withdrawed;
     };
 
     $scope.withdraw = function(){
@@ -186,9 +181,13 @@ wsaleApp.controller("wsaleRejectCtrl", function(
      */
     $scope.disable_save = function(){
 	// save one time only
-	return $scope.has_saved
-	    || $scope.inventories.length === 0
-	    || $scope.select.rcharge === 0 ? true : false;
+	if ($scope.has_saved || $scope.inventories.length === 0 || $scope.select.rcharge === 0)
+	    return true;
+
+	if ($scope.select.retailer.type===1 && !$scope.has_withdrawed)
+	    return true;
+
+	return false; 
     }; 
 
     $scope.print_backend = function(result, im_print){
@@ -302,8 +301,7 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 	var base = {
 	    retailer_id:   $scope.select.retailer.id,
 	    shop:          $scope.select.shop.id,
-	    datetime:      dateFilter($scope.select.datetime,
-				      "yyyy-MM-dd HH:mm:ss"),
+	    datetime:      dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),
 	    employee:      $scope.select.employee.id,
 	    comment:       $scope.select.comment,
 	    balance:       setv($scope.select.surplus),

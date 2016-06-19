@@ -1,13 +1,17 @@
 wretailerApp.controller("wretailerNewCtrl", function(
-    $scope, wretailerService, diabloPattern, diabloUtilsService){
+    $scope, wretailerService, diabloPattern, diabloUtilsService, user){
     $scope.pattern = {name_address: diabloPattern.ch_name_address,
 		      tel_mobile:   diabloPattern.tel_mobile,
 		      decimal_2:    diabloPattern.decimal_2,
 		      score:        diabloPattern.number,
 		      password:     diabloPattern.num_passwd};
 
+    $scope.shops = user.sortShops;
     $scope.retailer_types = wretailerService.retailer_types;
-    $scope.retailer = {birth:$.now(), type:$scope.retailer_types[0]};
+    $scope.retailer = {
+	birth:$.now(),
+	type:$scope.retailer_types[0],
+	shop:$scope.shops[0]};
 
     $scope.new_wretailer = function(retailer){
 	// console.log(retailer); 
@@ -39,7 +43,7 @@ wretailerApp.controller("wretailerDetailCtrl", function(
     filterEmployee, filterCharge, user, base){
     $scope.employees      = filterEmployee;
     $scope.charges        = filterCharge;
-    $scope.shops          = user.sortShops;
+    $scope.shops          = [{id: -1, name: "== 请选择店铺 =="}].concat(user.sortShops);
     $scope.retailer_types = wretailerService.retailer_types;
     // console.log($scope.employees);
     // console.log($scope.shops);
@@ -185,6 +189,7 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	    angular.forEach($scope.retailers, function(r){
 		r.type = diablo_get_object(r.type_id, $scope.retailer_types);
 		r.birth = diablo_set_date_obj(r.birth);
+		r.shop  = diablo_get_object(r.shop_id, $scope.shops);
 		r.no_vip = in_array($scope.no_vips, r.id) ? true : false;
 		$scope.total_balance += $scope.round(r.balance);
 		$scope.total_consume += $scope.round(r.consume); 
@@ -326,6 +331,7 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 		name: diablo_get_modified(params.retailer.name, old_retailer.name),
 		mobile: diablo_get_modified(params.retailer.mobile, old_retailer.mobile),
 		address: diablo_get_modified(params.retailer.address, old_retailer.address),
+		shop: diablo_get_modified(params.retailer.shop, old_retailer.shop),
 		type: diablo_get_modified(params.retailer.type, old_retailer.type),
 		password:diablo_get_modified(params.retailer.password, old_retailer.password),
 		birth:diablo_get_modified(params.retailer.birth.getTime(),
@@ -378,6 +384,7 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	    "update-wretailer.html", undefined, callback, $scope,
 	    {retailer:    old_retailer,
 	     types:       $scope.retailer_types,
+	     shops:       $scope.shops,
 	     pattern:     pattern,
 	     check_same:  check_same,
 	     check_exist: check_exist})

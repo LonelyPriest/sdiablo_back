@@ -1279,9 +1279,11 @@ wsaleApp.controller("wsaleNewCtrl", function(
 			inv.order_id = $scope.inventories.length; 
 			$scope.inventories.unshift({$edit:false, $new:true}); 
 			$scope.disable_refresh = false;
+
+			$scope.wsaleStorage.save(
+			    $scope.inventories.
+				filter(function(r){return !r.$new}));
 			
-			$scope.wsaleStorage.save($scope.inventories.
-						 filter(function(r){return !r.$new}));
 			$scope.re_calculate(); 
 			$scope.auto_focus("style_number");
 		    };
@@ -1341,7 +1343,13 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    $scope.inventories[i].order_id = l - i;
 	}
 
-	$scope.wsaleStorage.save($scope.inventories.filter(function(r){return !r.$new}));
+	if ($scope.inventories.length > 1){
+	    $scope.wsaleStorage.save(
+		$scope.inventories.filter(function(r){return !r.$new})); 
+	} else {
+	    $scope.wsaleStorage.remove($scope.wsaleStorage.get_key());
+	}
+	
 	$scope.re_calculate();
 
 	// promotion

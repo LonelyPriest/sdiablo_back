@@ -342,6 +342,7 @@ create table w_retailer
     score           INTEGER not null default 0,
     mobile          VARCHAR(11),
     address         VARCHAR(255),
+    shop            INTEGER default -1,
     merchant        INTEGER default -1, -- which merchant belong to
     type            TINYINT default 0,  -- 0: common, 1: charge
     change_date     DATETIME default 0, -- last changed
@@ -883,7 +884,7 @@ create table w_charge_detail(
     deleted         INTEGER default 0, -- 0: no;  1: yes
 
     unique  key uk (rsn),
-    unique  key dk  (merchant, shop, retailer, employee),
+    key dk  (merchant, shop, retailer, employee),
     primary key     (id)
     
 ) default charset=utf8;

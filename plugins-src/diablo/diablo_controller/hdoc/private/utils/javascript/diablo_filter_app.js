@@ -443,6 +443,7 @@ function filterProvider(){
 				    type:  r.type_id,
 				    score: r.score,
 				    id:r.id,
+				    shop:  r.shop_id,
 				    py:diablo_pinyin(r.name),
 				    balance:r.balance}
 			})
@@ -536,8 +537,7 @@ function normalFilterProvider(){
 				    id:r.id,
 				    py:diablo_pinyin(r.name),
 				    balance:r.balance,
-				    cid: r.cid,
-				    pid: r.pid,
+				    shop: r.shop_id,
 				    type: r.type_id}
 			    });
 			return _retailers;

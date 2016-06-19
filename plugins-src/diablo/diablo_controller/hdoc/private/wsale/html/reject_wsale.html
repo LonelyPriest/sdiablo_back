@@ -11,6 +11,12 @@
 	  <button type="button" class="btn red"
 		    x-ng-click="go_back()">返回
 	      <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
+
+	  <button x-ng-if="select.retailer.type===1"
+		  class="btn yellow-crusta purple-stripe"
+		  x-ng-disabled="disable_withdraw()"
+		  x-ng-click="withdraw()">存现
+	      <i class="glyphicon glyphicon-piggy-bank"></i></button>
 	  
 	  <button class="btn btn-success purple-stripe"
 		  x-ng-disabled="disable_save()"
@@ -92,6 +98,22 @@
 	      </div>
 	    </div>
 
+	    <div class="col-xs-4 col-md-4"> 
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="icon icon-user fg-red"></i>
+		</span> 
+		<input class="form-control" type="text"
+	  	       x-ng-model="select.retailer"
+	  	       placeholder="请选择客户"
+		       readonly
+	  	       typeahead-editable="false"
+		       typeahead-on-select="change_retailer()"
+	  	       typeahead="r as r.name for r in
+	  			  retailers|filter:$viewValue|limitTo:8"/> 
+	      </div>
+	    </div> 
+
 	    <div class="col-xs-4 col-md-4">
 	      <div class="input-group">
 		<span class="input-group-addon">
@@ -104,25 +126,25 @@
 	      </div>
 	    </div>
 
-	    <div class="col-xs-4 col-md-4"> 
-	      <div class="input-group">
-		<span class="input-group-btn">
-		  <button class="btn"
-			  x-ng-disabled="disable_withdraw()"
-			  x-ng-click="withdraw()">
-		    <i class="glyphicon glyphicon-piggy-bank fg-red"></i>钱包
-		  </button>
-		</span> 
-		<input class="form-control" type="text"
-	  	       x-ng-model="select.retailer"
-	  	       placeholder="请选择客户"
-		       readonly
-	  	       typeahead-editable="false"
-		       typeahead-on-select="change_retailer()"
-	  	       typeahead="r as r.name for r in
-	  			  retailers|filter:$viewValue|limitTo:8"/> 
-	      </div>
-	    </div> 
+	    <!-- <div class="col-xs-4 col-md-4">  -->
+	    <!--   <div class="input-group"> -->
+	    <!-- 	<span class="input-group-btn"> -->
+	    <!-- 	  <button class="btn" -->
+	    <!-- 		  x-ng-disabled="disable_withdraw()" -->
+	    <!-- 		  x-ng-click="withdraw()"> -->
+	    <!-- 	    <i class="glyphicon glyphicon-piggy-bank fg-red"></i>钱包 -->
+	    <!-- 	  </button> -->
+	    <!-- 	</span>  -->
+	    <!-- 	<input class="form-control" type="text" -->
+	    <!-- 	       x-ng-model="select.retailer" -->
+	    <!-- 	       placeholder="请选择客户" -->
+	    <!-- 	       readonly -->
+	    <!-- 	       typeahead-editable="false" -->
+	    <!-- 	       typeahead-on-select="change_retailer()" -->
+	    <!-- 	       typeahead="r as r.name for r in -->
+	    <!-- 			  retailers|filter:$viewValue|limitTo:8"/>  -->
+	    <!--   </div> -->
+	    <!-- </div>  -->
 	  </div> <!--END row-->
 
 	  <!--BEGIN row--> 
@@ -160,7 +182,7 @@
 	  </div> <!--END row-->
 
 	  <!--BEGIN row-->
-	  <div x-ng-if="!hidden.travel" class="row diablo-form-group">
+	  <div x-ng-if="!hidden.travel && select.retailer.type===1" class="row diablo-form-group">
 	    <div class="col-xs-4 col-md-4"> 
 	      <div class="input-group"> 
 		<span class="input-group-addon">

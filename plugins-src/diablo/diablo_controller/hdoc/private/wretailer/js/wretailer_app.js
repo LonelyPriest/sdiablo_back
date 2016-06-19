@@ -213,6 +213,7 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 	     name:     r.name,
 	     mobile:   r.mobile,
 	     address:  r.address,
+	     shop:     r.shop,
 	     password: r.password,
 	     type:     r.type,
 	     birth:    dateFilter(r.birth, "yyyy-MM-dd")

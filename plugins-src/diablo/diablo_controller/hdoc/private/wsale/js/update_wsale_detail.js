@@ -47,11 +47,14 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
     $scope.calc_withdraw = function(){
 	if ($scope.select.retailer.type === diablo_charge_retailer && $scope.select.withdraw > 0){
 	    $scope.select.save_to_back = $scope.select.withdraw
-		+ $scope.select.cash + $scope.select.card - $scope.select.should_pay;
-	    $scope.select.left_balance += $scope.select.save_to_back;
+		+ $scope.select.cash + $scope.select.card - $scope.select.should_pay; 
+	    $scope.select.left_balance = $scope.select.surplus - $scope.select.withdraw
+		+ $scope.select.save_to_back;
+	    
 	} else {
 	    $scope.select.charge = $scope.select.should_pay - $scope.select.has_pay;
-	}
+	} 
+	// console.log($scope.select);
     };
     
     $scope.re_calculate = function(){
@@ -501,17 +504,13 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 
     // watch balance
     var reset_payment = function(newValue){
-	// console.log("reset_payment newValue ", newValue);
-	$scope.select.has_pay = 0.00;
-	$scope.select.left_balance = $scope.select.surplus
-	
+	$scope.select.has_pay = 0.00;	
 	$scope.select.has_pay += wsaleUtils.to_float($scope.select.cash); 
 	$scope.select.has_pay += wsaleUtils.to_float($scope.select.card);
 
 	if ($scope.select.retailer.type === diablo_charge_retailer){
 	    if (wsaleUtils.to_float($scope.select.withdraw) > 0 ){
 		$scope.select.has_pay += wsaleUtils.to_float($scope.select.withdraw);
-		// $scope.select.left_balance -= $scope.select.withdraw
 	    }
 	}
 	
