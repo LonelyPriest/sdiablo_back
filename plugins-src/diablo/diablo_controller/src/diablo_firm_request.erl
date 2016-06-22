@@ -76,6 +76,7 @@ action(Session, Req, {"update_firm"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     case ?supplier:supplier(w_update, Merchant, Payload) of
 	{ok, FirmId} ->
+	    ?w_user_profile:update(firm, Merchant), 
 	    ?utils:respond(200, Req, ?succ(update_supplier, FirmId));
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)

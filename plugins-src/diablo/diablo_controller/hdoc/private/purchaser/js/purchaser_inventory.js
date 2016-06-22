@@ -6,12 +6,10 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     filterColorType, base){
     // console.log(user);
     // console.log(filterColor);
-    // $scope.promotions  = filterPromotion;
     $scope.brands      = filterBrand;
     $scope.types       = filterType;
     $scope.size_groups = filterSizeGroup;
     $scope.firms       = filterFirm;
-    // $scope.employees   = filterEmployee;
     $scope.colors      = filterColor;
     $scope.color_types = filterColorType;
     
@@ -29,11 +27,14 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope.round             = diablo_round;
     $scope.full_years        = diablo_full_year;
     $scope.calc_row          = stockUtils.calc_row;
-    // $scope.calc_drate        = stockUtils.calc_drate_of_org_price;
     
     $scope.disable_refresh   = true;
     $scope.timeout_auto_save = undefined;
 
+    $scope.today = function(){
+	return $.now();
+    };
+    
     $scope.q_typeahead = function(shopId, base){
 	return stockUtils.typeahead(shopId, base); 
     };
@@ -123,14 +124,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	$scope.select.left_balance = 0;
 	
 	$scope.disable_refresh = true;
-	$scope.has_saved = false;
-	
-	// $scope.get_firm();
-
-	// pagination
-	// $scope.current_page = $scope.default_page;
-	// $scope.total_items = $scope.inventories.length; 
-	// $scope.current_inventories = $scope.get_page($scope.current_page);
+	$scope.has_saved = false; 
     };
     
     // init
@@ -142,7 +136,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	total: 0,
 	has_pay: 0,
 	should_pay: 0,
-	extra_pay_type: $scope.extra_pay_types[0]};
+	extra_pay_type: $scope.extra_pay_types[0],
+	date: $scope.today()};
 
 
     $scope.get_employee = function(){
@@ -226,12 +221,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	event.preventDefault();
 	event.stopPropagation();
 	$scope.isOpened = true;
-    };
-
-    $scope.today = function(){
-	return $.now();
-    };
-
+    }; 
     
     /*
      * match
@@ -563,12 +553,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		    true, "新增库存", "新增库存成功！！单号：" + state.rsn,
 		    $scope, function(){
 			// $scope.has_saved = true;
-			// modify current balance of retailer
-			// if (-1 !== stockUtils.invalid_firm($scope.select.firm)){
-			//     $scope.select.firm.balance = $scope.select.left_balance;
-			//     $scope.select.surplus = $scope.select.firm.balance;
-			// }
-
+			// modify current balance of retailer 
 			sDraft.remove(); 
 			// $scope.local_remove();
 		    })
@@ -1431,8 +1416,8 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
     // };
 
     // $scope.chart.data = data;
-    console.log($scope.promotions);
-    $scope.promotions = filterPromotion.concat({id:diablo_invalid_index, name:"重置促销方案"});
+    // console.log($scope.promotions);
+    $scope.promotions = filterPromotion.concat([{id:diablo_invalid_index, name:"重置促销方案"}]);
     $scope.scores     = filterScore;
 
     /*
@@ -1490,6 +1475,7 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
     diabloFilter.add_field("style_number", $scope.match_style_number);
     diabloFilter.add_field("brand", filterBrand);
     diabloFilter.add_field("type", filterType);
+    diabloFilter.add_field("sex",  diablo_sex2object);
     diabloFilter.add_field("year", diablo_full_year);
     diabloFilter.add_field("discount", []);
     diabloFilter.add_field("shop", $scope.shops);

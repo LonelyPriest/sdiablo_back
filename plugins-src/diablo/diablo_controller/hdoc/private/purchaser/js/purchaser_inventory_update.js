@@ -724,6 +724,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 		    "采购单修改",
 		    "采购单修改成功！！单号：" + state.rsn,
 		    $scope, function(){
+			diabloFilter.reset_firm();
 			diablo_goto_page("#/inventory_new_detail")})
 	    	return;
 	    } else{

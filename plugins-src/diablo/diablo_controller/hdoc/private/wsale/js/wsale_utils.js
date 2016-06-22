@@ -613,19 +613,16 @@ wsaleDraft.prototype.set_key = function(key){
 };
 
 wsaleDraft.prototype.reset = function(){
-    console.log(this.key);
-    // this.remove(this.key);
+    // console.log(this.key);
     this.key = gen_wsale_key(this.shop, this.retailer, this.employee, this.dateFilter);
 };
 
 wsaleDraft.prototype.change_shop = function(shop){
     this.shop = shop;
-    // this.remove(this.key);
     this.reset();
 };
 
 wsaleDraft.prototype.change_employee = function(employee){
-    // this.remove(this.key);
     this.employee = employee; 
     this.reset();
 };

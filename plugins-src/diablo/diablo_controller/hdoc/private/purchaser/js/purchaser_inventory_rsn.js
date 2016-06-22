@@ -188,7 +188,7 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
     };
 
     $scope.calc_colspan = function(){
-	var column = 14;
+	var column = 15;
 	if ($scope.hidden.base){
 	    column -= 2;
 	}
@@ -235,9 +235,10 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
     diabloFilter.add_field("style_number", $scope.match_style_number);
     diabloFilter.add_field("brand", filterBrand);
     diabloFilter.add_field("type",  filterType);
-    diabloFilter.add_field("firm", filterFirm);
+    diabloFilter.add_field("sex",   diablo_sex2object); 
+    diabloFilter.add_field("firm",  filterFirm);
     diabloFilter.add_field("year",  diablo_full_year); 
-    diabloFilter.add_field("rsn", []); 
+    diabloFilter.add_field("rsn",   []); 
     diabloFilter.add_field("shop", user.sortShops);
 
     $scope.filter = diabloFilter.get_filter();
@@ -322,6 +323,7 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
 			inv.firm     = diablo_get_object(inv.firm_id, filterFirm);
 			inv.brand    = diablo_get_object(inv.brand_id, filterBrand);
 			inv.itype    = diablo_get_object(inv.type_id, filterType);
+			inv.sex      = diablo_get_object(inv.sex_id, diablo_sex2object);
 		    });
 		    
 		    diablo_order_page(page, $scope.items_perpage, $scope.inventories);

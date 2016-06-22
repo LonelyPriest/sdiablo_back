@@ -41,6 +41,10 @@
 %% inventory action
 -define(NEW_INVENTORY, 0).
 -define(REJECT_INVENTORY, 1).
+-define(UPDATE_INVENTORY, 2).
+-define(UPDATE_FIRM, 3).
+-define(DELETE_INVENTORY, 4).
+
 -define(FIRM_BILL, 9).
 -define(INVALID_OR_EMPTY, -1).
 

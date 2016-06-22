@@ -86,6 +86,11 @@ firmApp.controller("brandDetailCtrl", function(
 	return false;
     };
 
+    $scope.page_changed = function(){
+	console.log($scope.current_page);
+	$scope.filter_brands = diabloPagination.get_page($scope.current_page);
+    };
+    
     $scope.do_search = function(search){
 	console.log(search);
     	return $scope.brands.filter(function(b){
@@ -113,22 +118,17 @@ firmApp.controller("brandDetailCtrl", function(
 	    
 	    // pagination
 	    var filters;
-	    if (angular.isDefined(search)){
+	    if (angular.isDefined(search))
 		filters = $scope.do_search(search);
-	    } else {
-		filters = $scope.brands;
-	    }
+	     else 
+		 filters = $scope.brands;
 
-	    // console.log(filters);
+	    diablo_order(filters);
 	    
 	    diabloPagination.set_data(filters);
 	    diabloPagination.set_items_perpage($scope.items_perpage);
-	    $scope.total_items =
-		diabloPagination.get_length();
-	    $scope.filter_brands =
-		diabloPagination.get_page($scope.current_page);
-
-	    diablo_order($scope.filter_brands);
+	    $scope.total_items   = diabloPagination.get_length();
+	    $scope.filter_brands = diabloPagination.get_page($scope.current_page); 
 	    // console.log($scope.filter_brands);
 
 	    
@@ -168,7 +168,7 @@ firmApp.controller("brandDetailCtrl", function(
 
 	var has_update = function(newBrand) {
 	    if (newBrand.name === brand.name
-		&& newBrand.firm.id === brand.supplier_id
+		&& diablo_is_same(newBrand.firm, brand.supplier)
 		&& newBrand.remark === brand.remark){
 		return false;
 	    }

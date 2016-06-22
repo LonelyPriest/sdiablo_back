@@ -149,8 +149,8 @@
       <div class="form-body">
 	<!--Name-->
 	<div class="form-group">
-	  <label class="col-sm-3 col-md-3 control-label">名称</label> 
-	  <div class="col-sm-6 col-md-6">
+	  <label class="col-sm-1 col-md-1 control-label">名称</label> 
+	  <div class="col-sm-10 col-md-10">
 	    <div class="input-group">
 	      <div ng-class="{'has-error':bForm.name.$invalid
 			     && !bForm.name.$pristine
@@ -160,9 +160,7 @@
 		       name="name"
 		       required
 		       placeholder="请输入品牌名称"
-		       x-ng-model="params.brand.name"
-		       x-ng-minlength="2"
-		       x-ng-maxlength="8"></input>
+		       x-ng-model="params.brand.name" />
 	      </div>
 	      <span class="input-group-addon bg-white fg-red">*</span>
 	    </div>
@@ -180,30 +178,25 @@
 	</div>
 
 	<div class="form-group">
-	  <label class="col-sm-3 col-md-3 control-label">厂商</label>
-	  <div class="col-sm-6 col-md-6">
-	    <div class="input-group">
-	      <input type="text"
-		     class="form-control"
-		     name="firm"
-		     required
-		     placeholder="请选择品牌所属厂商"
-		     typeahead="f as f.name for f in
-				params.firms|filter:$viewValue|limitTo:15"
-		     typeahead-editable="false"
-		     x-ng-model="params.brand.firm" />
-	      <span class="input-group-addon bg-white fg-red">*</span>
-	    </div>
+	  <label class="col-sm-1 col-md-1 control-label">厂商</label>
+	  <div class="col-sm-10 col-md-10">
+	    <input type="text"
+		   class="form-control"
+		   name="firm"
+		   placeholder="请选择品牌所属厂商"
+		   typeahead="f as f.name for f in
+			      params.firms|filter:$viewValue|limitTo:15"
+		   typeahead-editable="false"
+		   x-ng-model="params.brand.firm" />
 	  </div>
-	  <div ng-show="bForm.firm.$invalid
-			&& !bForm.firm.$pristine">
+	  <div ng-show="bForm.firm.$invalid && !bForm.firm.$pristine">
 	    <span style="color:red">厂商只能从提示列表中选择</span>
 	  </div> 
 	</div>
 
 	<div class="form-group">
-	  <label class="col-sm-3 col-md-3 control-label">备注</label>
-	  <div class="col-sm-6 col-md-6">
+	  <label class="col-sm-1 col-md-1 control-label">备注</label>
+	  <div class="col-sm-10 col-md-10">
 	    <input type="text"
 		   class="form-control"
 		   name="remark"
@@ -211,8 +204,7 @@
 		   placeholder="请输入备注"
 		   x-ng-model="params.brand.remark" />
 	  </div> 
-	  <div x-ng-if="bForm.remark.$invalid
-			&& !bForm.remark.$pristine">
+	  <div x-ng-if="bForm.remark.$invalid && !bForm.remark.$pristine">
 	    <span class="fg-red">请输入汉字，字母，下划线或数字</span>
 	  </div> 
 	</div>

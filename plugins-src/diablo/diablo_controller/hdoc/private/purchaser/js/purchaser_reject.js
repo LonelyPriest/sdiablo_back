@@ -144,14 +144,12 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	    var one = $scope.inventories[i];
 	    
 	    $scope.select.total  += parseInt(one.reject); 
-	    $scope.select.should_pay -= stockUtils.calc_row(
-		one.org_price, 100, one.reject); 
+	    $scope.select.should_pay -= stockUtils.calc_row(one.org_price, 100, one.reject); 
 	} 
 	$scope.select.should_pay = $scope.round($scope.select.should_pay);
 
 	var e_pay = stockUtils.to_float($scope.select.extra_pay); 
-	$scope.select.left_balance =
-	    $scope.select.surplus + $scope.select.should_pay - e_pay;
+	$scope.select.left_balance = $scope.select.surplus + $scope.select.should_pay - e_pay;
 
 	$scope.select.left_balance = $scope.round($scope.select.left_balance);
     };
@@ -346,6 +344,7 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	}).then(function(state){
 	    console.log(state);
 	    if (state.ecode == 0){
+		// diabloFilter.reset_firm(); 
 		$scope.disable_refresh     = false;
 		$scope.select.firm.balance = $scope.select.left_balance;
 		$scope.select.surplus = $scope.select.firm.balance;

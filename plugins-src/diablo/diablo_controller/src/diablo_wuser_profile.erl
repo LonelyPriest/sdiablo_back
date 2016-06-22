@@ -96,6 +96,8 @@ get(type, Merchant, TypeId) ->
     gen_server:call(?SERVER, {get_type_profile, Merchant, TypeId});
 get(retailer, Merchant, Retailer) -> 
     gen_server:call(?SERVER, {get_retailer_profile, Merchant, Retailer});
+get(firm, Merchant, Firm) ->
+    gen_server:call(?SERVER, {get_firm_profile, Merchant, Firm});
 get(employee, Merchant, Employee) ->
     gen_server:call(?SERVER, {get_employee_profile, Merchant, Employee});
 get(brand, Merchant, BrandId) ->
@@ -604,6 +606,11 @@ handle_call({get_firm_profile, Merchant}, _From, State) ->
     Select = select(MS, fun() -> ?supplier:supplier(w_list, Merchant) end),
     {reply, {ok, Select}, State};
 
+handle_call({get_firm_profile, Merchant, FirmId}, _From, State) ->
+    MS = ms(Merchant, firm),
+    Select = select(MS, fun() -> ?supplier:supplier(w_list, Merchant) end),
+    SelectFirm = filter(Select, <<"id">>, FirmId),
+    {reply, {ok, SelectFirm}, State};
 %%
 %% employee
 %%

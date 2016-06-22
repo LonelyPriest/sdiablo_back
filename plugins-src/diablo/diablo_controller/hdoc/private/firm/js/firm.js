@@ -230,8 +230,9 @@ firmApp.controller("firmDetailCtrl", function(
 		    }
 		}
 
-		update.balance = update.balance ? update.balance : 0; 
-		update.firm_id = params.firm.id;
+		update.balance     = update.balance ? update.balance : 0;
+		update.old_balance = old_firm.balance;
+		update.firm_id     = params.firm.id;
 		console.log(update);
 
 		// update.name    = params.firm.name;

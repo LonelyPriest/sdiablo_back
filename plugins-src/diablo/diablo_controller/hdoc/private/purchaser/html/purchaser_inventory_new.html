@@ -63,24 +63,7 @@
 	    </div>
 
 	    <div class="col-xs-3 col-md-3">
-	      <div class="input-group">
-		<input type="text" class="form-control"
-		       placeholder="年/月/日"
-		       datepicker-popup="yyyy/MM/dd"
-		       is-open="isOpened"
-		       close-text="关闭"
-		       clear-text="清除"
-		       current-text="今天"
-		       show-weeks="false"
-		       x-ng-model="select.date"
-		       x-ng-init="select.date=today()"/>
-	  	<span class="input-group-btn">
-		  <button type="button"
-			  class="btn btn-default"
-			  x-ng-click="open_calendar($event)">
-		    <i class="glyphicon glyphicon-calendar"></i></button>
-		</span>
-	      </div>
+	      <time-search time="select.date"></time-search> 
 	    </div>
 
 	    <div class="col-xs-3 col-md-3">
@@ -212,22 +195,21 @@
 		  </div>
 		</form>
 		
-		<span class="input-group-addon">
+		<span x-ng-if="stock_right.show_balance" class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>应付</span>
-		<input class="form-control" type="text" readonly
-		       x-ng-model="select.should_pay"></input>
+		<input x-ng-if="stock_right.show_balance" class="form-control" type="text" readonly
+		       x-ng-model="select.should_pay"/>
 
-		<span class="input-group-addon">
+		<span x-ng-if="stock_right.show_balance" class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>实付</span>
-	  	<input class="form-control" readonly
-	  	       x-ng-model="select.has_pay"></input>
+	  	<input x-ng-if="stock_right.show_balance" class="form-control" readonly
+	  	       x-ng-model="select.has_pay"/>
 
 		<span x-ng-if="stock_right.show_balance" class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>结余</span>
 	  	<input x-ng-if="stock_right.show_balance" class="form-control"
 		       type="text" readonly
-	  	       x-ng-model="select.left_balance"></input> 
-		
+	  	       x-ng-model="select.left_balance"/> 
 	      </div>
 	    </div> 
 	    

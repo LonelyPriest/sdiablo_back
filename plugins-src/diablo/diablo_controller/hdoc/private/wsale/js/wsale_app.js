@@ -396,9 +396,10 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	$scope.match_all_w_inventory(); 
 	$scope.get_employee();
 
-	// $scope.wsaleStorage.remove($scope.wsaleStorage.get_key());
+	$scope.wsaleStorage.remove($scope.wsaleStorage.get_key());
 	$scope.wsaleStorage.change_shop($scope.select.shop.id);
 	$scope.wsaleStorage.change_employee($scope.select.employee.id);
+	$scope.refresh(); 
 	// $scope.wsaleStorage.save($scope.inventories.filter(function(r){return !r.$new}));
     };
 

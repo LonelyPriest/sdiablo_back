@@ -62,6 +62,15 @@
 	  	   typeahead="t as t.name for t in prompt.type|filter:$viewValue|limitTo:8"/>
 	  </span>
 
+	  <span x-ng-switch-when="sex">
+	    <select type="text" class="form-control"
+		    x-ng-model="f.value"
+		    typeahead-editable="false"
+	  	    x-ng-options="s as s.name for s in prompt.sex"
+		    x-ng-init="f.value=prompt.sex[0]">
+	    </select>
+	  </span>
+
 	  <span x-ng-switch-when="sell_type">
 	    <input type="text" class="form-control" placeholder="请输入销售类别"
 		   x-ng-model="f.value"

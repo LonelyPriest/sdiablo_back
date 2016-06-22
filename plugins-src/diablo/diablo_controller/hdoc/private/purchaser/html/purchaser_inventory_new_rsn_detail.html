@@ -87,6 +87,7 @@
 		    <th class="danger">款号</th>
 		    <th class="success">品牌</th>
 		    <th class="warning">类型</th>
+		    <th class="warning">性别</th>
 		    <th>年度</th>
 		    <th>吊牌价</th>
 		    <th>折扣</th>
@@ -117,6 +118,7 @@
 		    <td>{{inv.style_number}}</td>
 		    <td>{{inv.brand.name}}</td>
 		    <td>{{inv.itype.name}}</td>
+		    <td>{{inv.sex.name}}</td>
 		    <td>{{inv.year}}</td>
 		    <td>{{inv.tag_price}}</td>
 		    <td>{{inv.discount}}</td>
@@ -136,11 +138,7 @@
 		    <td x-ng-if="stock_right.show_orgprice" class="vert-align"> 
 		      {{calc_row(inv.org_price, 100, inv.amount)}}
 		    </td>
-
-		    <!-- <td x-ng-if="stock_right.show_orgprice" class="vert-align fg-magenta">  -->
-		    <!--   {{calc_drate(inv.org_price, inv.ediscount, inv.tag_price)}}  -->
-		    <!-- </td>  -->
-		    		    
+		    
 		    <td>{{inv.entry_date}}</td>
 		    <td>
 		      <button class="btn diablo-button btn-primary"

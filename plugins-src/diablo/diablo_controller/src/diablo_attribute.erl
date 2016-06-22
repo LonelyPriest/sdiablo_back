@@ -83,7 +83,8 @@ init([]) ->
 handle_call(list_w_color_type, _Form, State) ->
     ?DEBUG("list_w_color_type", []),
     Sql = "select id, name from color_type"
-	++ " where deleted=" ++ ?to_string(?NO) ++ ";",
+	++ " where deleted=" ++ ?to_string(?NO)
+	++ " order by id desc",
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
@@ -326,7 +327,8 @@ handle_call({list_brand, Merchant}, _From, State) ->
 	++ " from brands a"
 	++ " left join suppliers b on a.supplier=b.id"
 	++ " where a.merchant=" ++ ?to_s(Merchant)
-	++ " and a.deleted = " ++ ?to_string(?NO) ++ ";",
+	++ " and a.deleted = " ++ ?to_string(?NO)
+	++ " order by id desc",
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
@@ -361,7 +363,8 @@ handle_call({list_type, Merchant}, _From, State) ->
     Sql = "select id, name from inv_types"
 	++ " where "
 	++ " merchant = " ++ ?to_string(Merchant)
-	++ " and deleted = " ++ ?to_string(?NO) ++ ";",
+	++ " and deleted = " ++ ?to_string(?NO)
+	++ " order by id desc",
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 

@@ -682,7 +682,10 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 		    "采购退货编辑",
 		    "采购退货编辑成功！！单号：" + state.rsn,
 		    undefined,
-		    function(){diablo_goto_page("#/inventory_new_detail")})
+		    function(){
+			diabloFilter.reset_firm();
+			diablo_goto_page("#/inventory_new_detail")
+		    })
 	    	return;
 	    } else{
 	    	dialog.response_with_callback(

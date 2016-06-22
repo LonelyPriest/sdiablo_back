@@ -113,7 +113,8 @@ handle_call({w_update_supplier, Merchant, Attrs}, _From, State) ->
     ?DEBUG("w_update_supplier with merhcant ~p, attrs ~p", [Merchant, Attrs]),
     FirmId   = ?v(<<"firm_id">>, Attrs),
     Name     = ?v(<<"name">>, Attrs), 
-    Balance  = ?v(<<"balance">>, Attrs), 
+    Balance  = ?v(<<"balance">>, Attrs),
+    OldBalance  = ?v(<<"old_balance">>, Attrs), 
     Mobile   = ?v(<<"mobile">>, Attrs),
     Address  = ?v(<<"address">>, Attrs),
     Comment  = ?v(<<"comment">>, Attrs),
@@ -134,13 +135,29 @@ handle_call({w_update_supplier, Merchant, Attrs}, _From, State) ->
 		++ ?utils:v(address, string, Address)
 		++ ?utils:v(comment, string, Comment),
 	    Sql1 = 
-		"update " ++ ?tbl_supplier ++ " set "
-		++ ?utils:to_sqls(proplists, comma, Updates)
-		++ " where id=" ++ ?to_s(FirmId)
-		++ " and merchant=" ++ ?to_s(Merchant),
+		["update " ++ ?tbl_supplier ++ " set "
+		 ++ ?utils:to_sqls(proplists, comma, Updates)
+		 ++ " where id=" ++ ?to_s(FirmId)
+		 ++ " and merchant=" ++ ?to_s(Merchant)],
+	    Sql2 = 
+		case Balance =/= 0 of
+		    true ->
+			Datetime = ?utils:current_time(format_localtime),
+			["insert into firm_balance_history("
+			 "firm, balance, metric, action, merchant, entry_date) values("
+			 ++ ?to_s(FirmId) ++ ","
+			 ++ ?to_s(OldBalance) ++ ","
+			 ++ ?to_s(Balance - OldBalance) ++ "," 
+			 ++ ?to_s(?UPDATE_FIRM) ++ "," 
+			 ++ ?to_s(Merchant) ++ ","
+			 ++ "\"" ++ ?to_s(Datetime) ++ "\")"];
+		    false -> []
+		end,
 
-	    Reply = ?sql_utils:execute(write, Sql1, FirmId),
-	    ?w_user_profile:update(firm, Merchant),
+	    Reply = case Sql2 of
+			[] -> ?sql_utils:execute(write, Sql1, FirmId);
+			_ -> ?sql_utils:execute(transaction, Sql1 ++ Sql2, FirmId)
+		    end,
 	    {reply, Reply, State};
 	{ok, _} ->
 	    {reply, {error, ?err(supplier_exist, Name)}, State};
@@ -303,7 +320,18 @@ handle_call({bill_supplier, Merchant, Attrs}, _From, State) ->
 		++ ", change_date=" ++ "\"" ++ ?to_s(Datetime) ++ "\""
 		++ " where id=" ++ ?to_s(FirmId),
 
-	    Reply = ?sql_utils:execute(transaction, [Sql1, Sql2, Sql3], FirmId),
+	    Sql4 = "insert into firm_balance_history("
+		"rsn, firm, balance, metric, action, shop, merchant, entry_date) values("
+		++ "\'" ++ ?to_s(RSN) ++ "\',"
+		++ ?to_s(FirmId) ++ ","
+		++ ?to_s(CurrentBalance) ++ ","
+		++ ?to_s(-Bill) ++ ","
+		++ ?to_s(?FIRM_BILL) ++ ","
+		++ ?to_s(ShopId) ++ ","
+		++ ?to_s(Merchant) ++ ","
+		++ "\"" ++ ?to_s(Datetime) ++ "\")",
+
+	    Reply = ?sql_utils:execute(transaction, [Sql1, Sql2, Sql3, Sql4], FirmId),
 	    ?w_user_profile:update(firm, Merchant),
 	    {reply, Reply, State};
 	Error ->
@@ -332,14 +360,8 @@ handle_call({update_bill_supplier, Merchant, Attrs}, _From, State) ->
 
     {Cash, Card, Wire} = bill_mode(Mode, Bill),
     Updates
-	= ?utils:v(shop, integer, Shop)
-	%% ++ ?utils:v(mode, integer, Mode)
-	%% ++ ?utils:v(bill, integer, Bill)
-	%% ++ ?utils:v(card, integer, BankCard)
-	++ ?utils:v(employee, string, Employee)
-	%% ++ ?utils:v(cash, float, Cash)
-	%% ++ ?utils:v(card, float, Card)
-	%% ++ ?utils:v(wire, float, Wire)
+	= ?utils:v(shop, integer, Shop) 
+	++ ?utils:v(employee, string, Employee) 
 	++ ?utils:v(comment, string, Comment)
 	++ ?utils:v(entry_date, string, Datetime), 
 

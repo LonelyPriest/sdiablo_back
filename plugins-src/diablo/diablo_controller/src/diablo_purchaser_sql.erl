@@ -580,6 +580,7 @@ inventory(new_rsn_groups, new, Merchant, Conditions, PageFun) ->
     "select b.id, b.rsn, b.style_number"
 	", b.brand as brand_id"
 	", b.type as type_id"
+	", b.sex as sex_id"
 	", b.season, b.amount"
 	", b.firm as firm_id"
 	", b.org_price, b.ediscount"
@@ -1035,7 +1036,7 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		  end,
     %% ?DEBUG("ediscount ~p", [EDiscount]),
 			  
-    Discount    = ?v(<<"discount">>, Inv),
+    Discount    = ?v(<<"discount">>, Inv, 100),
     Path        = ?v(<<"path">>, Inv, []),
     AlarmDay    = ?v(<<"alarm_day">>, Inv, 7),
     Score       = ?v(<<"score">>, Inv, -1), 
@@ -1591,20 +1592,14 @@ filter_condition(inventory_new, [{<<"firm">>, _} = F|T], Acc1, Acc2) ->
     filter_condition(inventory_new, T, [F|Acc1], [F|Acc2]);
 filter_condition(inventory_new, [{<<"type">>, _} = OT|T], Acc1, Acc2) ->
     filter_condition(inventory_new, T, [OT|Acc1], Acc2);
+filter_condition(inventory_new, [{<<"sex">>, _} = OT|T], Acc1, Acc2) ->
+    filter_condition(inventory_new, T, [OT|Acc1], Acc2);
 filter_condition(inventory_new, [{<<"year">>, _} = OT|T], Acc1, Acc2) ->
     filter_condition(inventory_new, T, [OT|Acc1], Acc2);
 
 
-%% filter_condition(inventory_new, [{<<"rsn">>, _} = R|T], Acc1, Acc2) ->
-%%     filter_condition(inventory_new, T, Acc1, [R|Acc2]); 
-%% filter_condition(inventory_new, [{<<"start_time">>, _} = SS|T], Acc1, Acc2) ->
-%%     filter_condition(inventory_new, T, Acc1, [SS|Acc2]);
-%% filter_condition(inventory_new, [{<<"end_time">>, _} = SE|T], Acc1, Acc2) ->
-%%     filter_condition(inventory_new, T, Acc1, [SE|Acc2]);
 filter_condition(inventory_new, [{<<"purchaser_type">>, OT}|T], Acc1, Acc2) ->
     filter_condition(inventory_new, T, Acc1, [{<<"type">>, OT}|Acc2]);
-%% filter_condition(inventory_new, [{<<"shop">>, _} = S|T], Acc1, Acc2) ->
-%%     filter_condition(inventory_new, T, Acc1, [S|Acc2]);
 
 
 filter_condition(inventory_new, [O|T], Acc1, Acc2) ->

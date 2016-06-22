@@ -87,6 +87,21 @@ create table suppliers
     primary key     (id)
 ) default charset=utf8;
 
+create table firm_balance_history
+(
+    id              INTEGER AUTO_INCREMENT,
+    rsn             VARCHAR(32) default -1, 
+    firm            INTEGER default -1,
+    balance         DECIMAL(10, 2) default 0, -- max: 99999999.99
+    metric          DECIMAL(10, 2) default 0, -- max: 99999999.99
+    action          TINYINT default -1,
+    shop            INTEGER default -1,
+    merchant        INTEGER default -1,
+    entry_date      DATETIME,
+    key     dk (merchant, firm, shop),
+    primary key     (id)
+) default charset=utf8;
+
 create table size_group(
    id               INTEGER AUTO_INCREMENT,
    name             VARCHAR(16),
