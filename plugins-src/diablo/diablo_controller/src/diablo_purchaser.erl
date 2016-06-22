@@ -1047,7 +1047,7 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 		    {ok, []} -> 0;
 		    {ok, OldFirmProfile} ->
 			?v(<<"balance">>, OldFirmProfile, 0)
-		end, 
+		end,
 	    
 	    BackBalanceOfOldFirm = OldShouldPay + EPay - OldVerifyPay - OldHasPay,
 	    BalanceOfNewFirm = ShouldPay + EPay - HasPay - VerifyPay,

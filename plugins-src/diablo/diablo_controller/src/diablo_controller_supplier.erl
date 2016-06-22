@@ -114,7 +114,7 @@ handle_call({w_update_supplier, Merchant, Attrs}, _From, State) ->
     FirmId   = ?v(<<"firm_id">>, Attrs),
     Name     = ?v(<<"name">>, Attrs), 
     Balance  = ?v(<<"balance">>, Attrs),
-    OldBalance  = ?v(<<"old_balance">>, Attrs), 
+    %% OldBalance  = ?v(<<"old_balance">>, Attrs), 
     Mobile   = ?v(<<"mobile">>, Attrs),
     Address  = ?v(<<"address">>, Attrs),
     Comment  = ?v(<<"comment">>, Attrs),
@@ -143,11 +143,19 @@ handle_call({w_update_supplier, Merchant, Attrs}, _From, State) ->
 		case Balance =/= 0 of
 		    true ->
 			Datetime = ?utils:current_time(format_localtime),
+
+			CurBalance = 
+			    case ?w_user_profile:get(firm, Merchant, FirmId) of
+				{ok, []} -> 0;
+				{ok, FirmProfile} ->
+				    ?v(<<"balance">>, FirmProfile, 0)
+			    end,
+			
 			["insert into firm_balance_history("
 			 "firm, balance, metric, action, merchant, entry_date) values("
 			 ++ ?to_s(FirmId) ++ ","
-			 ++ ?to_s(OldBalance) ++ ","
-			 ++ ?to_s(Balance - OldBalance) ++ "," 
+			 ++ ?to_s(CurBalance) ++ ","
+			 ++ ?to_s(Balance - CurBalance) ++ "," 
 			 ++ ?to_s(?UPDATE_FIRM) ++ "," 
 			 ++ ?to_s(Merchant) ++ ","
 			 ++ "\"" ++ ?to_s(Datetime) ++ "\")"];
