@@ -1147,32 +1147,47 @@ handle_call({delete_new, Merchant, RSN, Mode}, _From, State) ->
 	    VPay = ?v(<<"verificate">>, New),
 	    EPay = ?v(<<"e_pay">>, New),
 
-	    case Mode =:= ?ABANDON andalso StockState =:= ?DISCARD of
-		true ->
-		    {reply, {error, ?err(stock_been_discard, RSN)}};
-		false ->
-		    BackBalance = SPay + EPay - HPay - VPay, 
-		    Sqls = ["update w_inventory a inner join "
-			    "(select style_number, brand, amount"
-			    " from w_inventory_new_detail"
-			    " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
-			    ") b"
-			    " on a.style_number=b.style_number and a.brand=b.brand"
-			    " set a.amount=a.amount-b.amount"
-			    " where a.merchant=" ++ ?to_s(Merchant)
-			    ++ " and shop=" ++ ?to_s(Shop),
+	    DeleteNewSqls = ["delete from w_inventory_new_detail_amount"
+			     " where rsn=\'" ++ ?to_s(RSN) ++ "\'",
 
-			    "update w_inventory_amount a inner join "
-			    "(select style_number, brand, color, size, total"
-			    " from w_inventory_new_detail_amount"
-			    " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
-			    ") b"
-			    " on a.style_number=b.style_number and a.brand=b.brand"
-			    " and a.color=b.color and a.size=b.size"
-			    " set a.total=a.total-b.total"
-			    " where a.merchant=" ++ ?to_s(Merchant)
-			    ++ " and shop=" ++ ?to_s(Shop)
-			   ] ++ 
+			     "delete from w_inventory_new_detail"
+			     " where rsn=\'" ++ ?to_s(RSN) ++ "\'",
+
+			     "delete from w_inventory_new"
+			     " where rsn=\'" ++ ?to_s(RSN) ++ "\'"],
+	    
+	    case {Mode, StockState} of
+		{?ABANDON, ?DISCARD} ->
+		    {reply, {error, ?err(stock_been_discard, RSN)}};
+		{?DELETE, ?DISCARD} ->
+		    DeleteNewSqls;
+		{_, ?CHECKING} ->
+		    Sql1 =
+			[
+			 "update w_inventory a inner join "
+			 "(select style_number, brand, amount"
+			 " from w_inventory_new_detail"
+			 " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+			 ") b"
+			 " on a.style_number=b.style_number and a.brand=b.brand"
+			 " set a.amount=a.amount-b.amount"
+			 " where a.merchant=" ++ ?to_s(Merchant)
+			 ++ " and shop=" ++ ?to_s(Shop),
+
+			 "update w_inventory_amount a inner join "
+			 "(select style_number, brand, color, size, total"
+			 " from w_inventory_new_detail_amount"
+			 " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+			 ") b"
+			 " on a.style_number=b.style_number and a.brand=b.brand"
+			 " and a.color=b.color and a.size=b.size"
+			 " set a.total=a.total-b.total"
+			 " where a.merchant=" ++ ?to_s(Merchant)
+			 ++ " and shop=" ++ ?to_s(Shop)
+			],
+
+		    BackBalance = SPay + EPay - HPay - VPay,
+		    Sql2 = 
 			case BackBalance == 0 orelse Firm == ?INVALID_OR_EMPTY of
 			    true -> [];
 			    false-> 
@@ -1204,24 +1219,20 @@ handle_call({delete_new, Merchant, RSN, Mode}, _From, State) ->
 				 ++ ?to_s(Shop) ++ ","
 				 ++ ?to_s(Merchant) ++ ","
 				 ++ "\"" ++ ?to_s(Datetime) ++ "\")"]
-			    end ++ 
+			end,
+
+		    Reply = 
 			case Mode of
 			    ?DELETE ->
-				["delete from w_inventory_new_detail_amount"
-				 " where rsn=\'" ++ ?to_s(RSN) ++ "\'",
-
-				 "delete from w_inventory_new_detail"
-				 " where rsn=\'" ++ ?to_s(RSN) ++ "\'",
-
-				 "delete from w_inventory_new"
-				 " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
-				];
+				Sqls = Sql1 ++ Sql2 ++ DeleteNewSqls,
+				?sql_utils:execute(transaction, Sqls, RSN);
 			    ?ABANDON ->
-				["update w_inventory_new set state=" ++ ?to_s(?DISCARD)
-				 ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"]
+				Sqls = Sql1 ++ Sql2 ++
+				    ["update w_inventory_new set state=" ++ ?to_s(?DISCARD)
+				     ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"],
+				?sql_utils:execute(transaction, Sqls, RSN)
 			end,
-		    Reply = ?sql_utils:execute(transaction, Sqls, RSN),
-
+		    
 		    case BackBalance == 0 of
 			true -> ok;
 			false -> ?w_user_profile:update(firm, Merchant)
