@@ -26,18 +26,19 @@ diabloUtils.directive('ngShortcut', function(){
     return {
 	restrict: 'AE',
 	scope: {
+	    key: "=",
 	    go: '&'
 	},
 	
 	link:function (scope, element, attrs) {
-            element.bind("keydown", function (event) {
-		console.log(scope);
+            element.bind("keydown keypress", function (event) {
 		if(event.which === scope.key) {
-		    event.preventDefault();
 		    var f = scope.go; 
                     scope.$apply(function(){
 			if (angular.isFunction(f)) f()
 		    });
+
+		    event.preventDefault(); 
 		}
             });
 	}

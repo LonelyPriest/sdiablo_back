@@ -552,10 +552,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		diabloUtilsService.response_with_callback(
 		    true, "新增库存", "新增库存成功！！单号：" + state.rsn,
 		    $scope, function(){
-			// $scope.has_saved = true;
-			// modify current balance of retailer 
+			
 			sDraft.remove(); 
-			// $scope.local_remove();
 		    })
 	    } else{
 	    	diabloUtilsService.response_with_callback(
@@ -946,9 +944,9 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope.focus_attrs = {style_number:true,
 			  brand:false,
 			  type:false,
-			  sex:false,
-			  year:false,
-			  season:false,
+			  // sex:false,
+			  // year:false,
+			  // season:false,
 			  tag_price:false,
 			  discount:false,
 			  color:false,
@@ -959,7 +957,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     };
 
     $scope.go_next_good_field = function(direct, attr){
-	console.log(direct, attr)
+	// console.log(direct, attr)
 	if (angular.isDefined(attr)) $scope.on_focus_attr(attr);
     }
 
@@ -1143,25 +1141,26 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     /*
      * new good
      */
+    var current_month = new Date().getMonth();
     $scope.form = {};
-    $scope.good_saving = false;
+    $scope.good_saving = false; 
     $scope.good = {
-	sex       : $scope.sex2objs[0],
+	sex       : $scope.sex2objs[stockUtils.d_sex($scope.select.shop, base)],
 	org_price : 0, 
 	tag_price : 0, 
 	ediscount : 0,
 	discount  : 100,
 	alarm_day : 7,
 	year      : diablo_now_year(),
-	season    : $scope.season2objs[0]
+	season    : $scope.season2objs[stockUtils.valid_season(current_month)]
     };
 
     $scope.new_good = function(){
 	if ($scope.form.gForm.$invalid
 	    || $scope.is_same_good
 	    || $scope.good_has_saved) return;
-	console.log($scope.good);
-	console.log($scope.image);
+	// console.log($scope.good);
+	// console.log($scope.image);
 
 	$scope.good_saving = true; 
 	var good       = angular.copy($scope.good);
@@ -1369,7 +1368,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    type:      $scope.good.type,
 	    sex:       $scope.good.sex,
 	    year:      $scope.good.year,
-	    season:    $scope.good.season,
+	    season:    $scope.season2objs[stockUtils.valid_season(current_month)],
 	    org_price: $scope.good.org_price,
 	    tag_price: $scope.good.tag_price, 
 	    ediscount: $scope.good.ediscount,
@@ -1386,7 +1385,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	$scope.image = undefined;
 
 	//focus
-	$scope.focus.style_number = true;
+	$scope.on_focus_attr("style_number");
     };
     
 });

@@ -137,6 +137,6 @@ input[type="number"] {
 .nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
 
 
-/* .table tbody tr:hover td, .table tbody tr:hover th { */
-/*     background-color: #FF9999 !important; */
-/* } */
+.diablo-table table tbody tr:hover td, .table tbody tr:hover th {
+    background-color: #3399CC !important;
+}

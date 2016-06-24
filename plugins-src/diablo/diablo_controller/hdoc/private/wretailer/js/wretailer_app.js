@@ -189,13 +189,12 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 	return http.save(
 	    {operation:"new_w_retailer"},
 	    {name:     r.name,
-	     password: diablo_set_string(r.password),
-	     // balance:  diablo_set_float(r.balance),
-	     // conusme:  diablo_set_float(r.consume),
+	     password: diablo_set_string(r.password), 
 	     score:    diablo_set_float(r.score),
 	     mobile:   r.mobile,
 	     address:  r.address,
 	     type:     r.type.id,
+	     shop:     r.shop.id,
 	     birth:    dateFilter(r.birth, "yyyy-MM-dd")
 	    }).$promise;
     };

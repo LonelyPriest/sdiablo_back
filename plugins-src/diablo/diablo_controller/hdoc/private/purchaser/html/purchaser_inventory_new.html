@@ -262,7 +262,7 @@
 	      </tab-heading>
 	      <!--BEGIN panel-->
 	      <div class="panel panel-default">
-		<div class="table-responsive">
+		<div class="table-responsive diablo-table">
 		  <!--EBGIN table supplier-->
 		  <table id="t_new"
 			 class="table table-bordered
@@ -589,7 +589,10 @@
 	    <!--BEGIN from -->
 	    <form class="form-horizontal" name="form.gForm" novalidate>
 	      <!--BEGIN form body-->
-	      <div class="form-body">
+	      <div class="form-body"
+		   ng-shortcut
+		   key="114"
+		   go="new_good()">
 		<div class="form-group diablo-good-form-group">
 		  <label class="col-sm-3 col-md-3 control-label">
 		    款号
@@ -707,7 +710,7 @@
 			       focus-auto="focus_attrs.type"
 			       ng-edit 
 			       go-next-field
-			       next="sex"
+			       next="tag_price"
 			       pre="brand"
 			       auto-row="go_next_good_field"
 			       placeholder="豹纹马甲等"
@@ -733,12 +736,7 @@
 		    性别
 		  </label>
 		  <div class="col-sm-6 col-md-6"> 
-		    <select class="form-control"
-			    focus-auto="focus_attrs.sex"
-			    go-next-field
-			    next="year"
-			    pre="type"
-			    auto-row="go_next_good_field"
+		    <select class="form-control" 
 			    x-ng-model="good.sex"
 			    x-ng-enter=""
 			    x-ng-options="s as s.name for s in sex2objs">
@@ -752,12 +750,7 @@
 		  </label>
 		  <div class="col-sm-6 col-md-6">
 		    <div class="input-group">
-		      <select class="form-control"
-			      focus-auto="focus_attrs.year"
-			      go-next-field
-			      next="season"
-			      pre="sex"
-			      auto-row="go_next_good_field"
+		      <select class="form-control" 
 			      x-ng-model="good.year"
 			      x-ng-enter=""
 			      x-ng-options="y for y in full_years">
@@ -772,12 +765,7 @@
 		  <label class="col-sm-3 col-md-3 control-label">季节
 		  </label>
 		  <div class="col-sm-6 col-md-6"> 
-		    <select class="form-control"
-			    focus-auto="focus_attrs.season"
-			    go-next-field
-			    next="tag_price"
-			    pre="year"
-			    auto-row="go_next_good_field"
+		    <select class="form-control" 
 			    x-ng-model="good.season"
 			    x-ng-enter=""
 			    x-ng-options="s as s.name for s in season2objs">
@@ -800,7 +788,7 @@
 			     focus-auto="focus_attrs.tag_price"
 			     go-next-field
 			     next="discount"
-			     pre="season"
+			     pre="type"
 			     auto-row="go_next_good_field"
 			     placeholder="吊牌价，支持二位小数"
 			     x-ng-pattern="/^\d+(.\d{1,2})?$/"
@@ -1320,13 +1308,14 @@
 		    table-condensed table-advanced">
 	<tbody>
 	  <tr x-ng-repeat="c in params.colors">
-	    <td class="text-center vert-align">{{c.type}}</td>
+	    <td class="text-center vert-align col-md-1">{{c.type}}</td>
 	    <td x-ng-repeat="s in c.colors">
 	      <div class="checkbox checkbox-danger checkbox-circle">
 		<input id={{s.id}}
 		       type="checkbox"
 		       x-ng-model="s.select"
-		       x-ng-click="$event.stopPropagation()"></input>
+		       x-ng-click="$event.stopPropagation()"
+		       x-ng-enter="ok()"></input>
 		<label for={{s.id}}>{{s.name}}</label>
 	      </div>
 	    </td>

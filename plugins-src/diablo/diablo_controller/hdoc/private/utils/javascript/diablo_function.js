@@ -12,6 +12,9 @@ var diablo_yes = 1;
 var diablo_no = 0;
 var diablo_invalid = -1;
 
+var diablo_female = 0;
+var diablo_male = 1;
+
 var diablo_frontend = 0;
 var diablo_backend = 1;
 var diablo_badrepo = 1;
