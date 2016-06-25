@@ -35,6 +35,7 @@
      %% diablo_controller_sale_request,      diablo_controller_sale,
      diablo_controller_shop_request,      diablo_controller_shop,
      diablo_firm_request,                 diablo_controller_supplier,
+     diablo_purchaser_transfer,
 
      %% about wholesale model
      diablo_purchaser_request, diablo_purchaser,

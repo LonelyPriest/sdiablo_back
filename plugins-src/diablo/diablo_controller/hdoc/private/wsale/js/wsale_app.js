@@ -349,7 +349,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
     $scope.p_mode = function(shopId){
 	return wsaleUtils.print_mode(shopId, base);
     };
-
+    
     $scope.sexs            = diablo_sex;
     $scope.seasons         = diablo_season;
     $scope.f_add           = diablo_float_add;
@@ -400,9 +400,13 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	$scope.wsaleStorage.change_shop($scope.select.shop.id);
 	$scope.wsaleStorage.change_employee($scope.select.employee.id);
 	$scope.refresh(); 
-	// $scope.wsaleStorage.save($scope.inventories.filter(function(r){return !r.$new}));
     };
 
+    if ($scope.p_mode($scope.select.shop.id) === diablo_frontend){
+	$scope.comments = wsaleUtils.comment($scope.select.shop.id, base);
+	console.log($scope.comments);
+    }
+    
     $scope.get_employee = function(){
 	var select = wsaleUtils.get_login_employee(
 	    $scope.select.shop.id, user.loginEmployee, filterEmployee);
@@ -880,19 +884,15 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    javascript:window.print();
 	} else {
 	    var dialog = diabloUtilsService; 
-	    var ok_print = function(){
-		javascript:window.print();
-	    };
+	    var ok_print = function(){javascript:window.print()};
 
 	    var request = dialog.request(
 		"销售开单", "开单成功，是否打印销售单？",
-		undefined, undefined, $scope);
+		undefined, undefined, undefined);
 
 	    request.result.then(function(close){
 		ok_print();
 	    })
-
-	    // ok_print();
 	}
     };
     
@@ -1020,7 +1020,6 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    var success_callback = function(){
 		// clear local storage
 		if (angular.isDefined($scope.select_draft_key)){
-		    // console.log($scope.select_draft_key);
 		    $scope.wsaleStorage.remove($scope.select_draft_key);
 		    $scope.select_draft_key = undefined;
 		};
@@ -1038,8 +1037,10 @@ wsaleApp.controller("wsaleNewCtrl", function(
 		if (diablo_backend === p_mode){
 		    $scope.print_backend(result, im_print);
 		} else {
-		    $scope.print_front(result, im_print); 
-		} 
+		    $timeout(function(){
+			$scope.print_front(result, im_print); 
+		    }, 300);
+		}
 	    } else {
 		dialog.response_with_callback(
 	    	    false,

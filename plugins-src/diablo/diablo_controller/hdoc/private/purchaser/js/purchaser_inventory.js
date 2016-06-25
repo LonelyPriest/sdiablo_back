@@ -1170,10 +1170,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	good.sex       = good.sex.id;
 	// good.promotion = good.promotion.id;
 	
-	good.brand    = typeof(good.brand) === "object"
-	    ? good.brand.name: good.brand; 
-	good.type     = typeof(good.type) === "object"
-	    ? good.type.name: good.type;
+	good.brand    = typeof(good.brand) === "object" ? good.brand.name: good.brand; 
+	good.type     = typeof(good.type) === "object" ? good.type.name: good.type;
 	
 	good.colors   = function(){
 	    if (angular.isDefined($scope.selectColors)
@@ -1219,25 +1217,14 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	
 	console.log(good);
 	var image  = angular.isDefined($scope.image) && $scope.image
-	    ? $scope.image.dataUrl.replace(
-		    /^data:image\/(png|jpg);base64,/, "") : undefined;
+	    ? $scope.image.dataUrl.replace(/^data:image\/(png|jpg);base64,/, "") : undefined;
 	
 	// console.log(image);
 	
 	wgoodService.add_purchaser_good(good, image).then(function(state){
-	    console.log(state);
+	    // console.log(state);
 	    $scope.good_saving = false;
 	    if (state.ecode == 0){
-		// console.log("callback");
-		// reset size 
-		// $scope.selectGroups = [];
-		// $scope.good.sizes = "";
-		// angular.forEach($scope.size_groups, function(g){
-		//     if (angular.isDefined(g.select)){
-		// 	g.select = false;
-		//     }
-		// });
-
 		// reset color
 		$scope.selectColors = [];
 		$scope.good.colors="";
