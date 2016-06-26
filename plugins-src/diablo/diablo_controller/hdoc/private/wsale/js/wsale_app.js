@@ -1540,11 +1540,7 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
     
     /* 
      * filter operation
-     */
-    // 0: >0 1: <0
-    // var has_pay =  [{name:">0", id:0, py:diablo_pinyin("大于0")},
-    // 		    {name:"=0", id:1, py:diablo_pinyin("等于0")}];
-    
+     */ 
     // initial 
     diabloFilter.reset_field();
     diabloFilter.add_field("retailer", filterRetailer);
@@ -1579,24 +1575,18 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
     };
 
     $scope.time   = diabloFilter.default_time($scope.qtime_start); 
-    //
-    $scope.sequence_pagination = wsaleUtils.sequence_pagination(-1, base)
-
-    // console.log($scope.time);
-
+    $scope.sequence_pagination = wsaleUtils.sequence_pagination(-1, base);
+    
     /*
      * pagination 
      */
     $scope.colspan = 19;
     $scope.items_perpage = diablo_items_per_page();
-    $scope.max_page_size = 10;
-
-    // console.log($routeParams);
+    $scope.max_page_size = 10; 
     $scope.default_page = 1;
 
     console.log($routeParams);
     var back_page = diablo_set_integer($routeParams.page);
-    // console.log(back_page);
     
     if (angular.isDefined(back_page)){
 	$scope.current_page = back_page;

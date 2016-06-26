@@ -1791,16 +1791,17 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 		}
 	    });
 	};
-	
+
+	var select_shops = angular.isNumber(condition.shop)
+	    ? [].push(diablo_get_object(condition.shop, $scope.shops))
+	    : condition.shop.map(
+		function(s){return diablo_get_object(s, $scope.shops)});
 	dialog.edit_with_modal(
 	    "purchaser-on-sale.html",
 	    undefined,
 	    callback,
 	    undefined,
-	    {shops: condition.shop.map(
-		function(s){
-		    return diablo_get_object(s, $scope.shops);
-		}),
+	    {shops: select_shops,
 	     promotions:   $scope.promotions,
 	     scores:       $scope.scores.filter(
 		 function(s){return s.type_id===0}),
