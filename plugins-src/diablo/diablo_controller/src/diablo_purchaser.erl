@@ -1314,7 +1314,7 @@ handle_call({reject_inventory, Merchant, Inventories, Props}, _From, State) ->
 		 ++ " where id=" ++ ?to_s(?v(<<"id">>, Account)),
 
 		 "insert into firm_balance_history("
-		 "firm, balance, metric, action"
+		 "rsn, firm, balance, metric, action"
 		 ", shop, merchant, entry_date) values("
 		 ++ "\'" ++ ?to_s(RSN) ++ "\',"
 		 ++ ?to_s(Firm) ++ ","

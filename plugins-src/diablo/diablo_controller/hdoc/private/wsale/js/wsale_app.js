@@ -1559,22 +1559,22 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
     // console.log(storage);
     if (angular.isDefined(storage) && storage !== null){
     	$scope.filters        = storage.filter;
-    	$scope.qtime_start    = storage.start_time;
+    	// $scope.qtime_start    = storage.start_time;
     } else{
-	$scope.filters = [];
-	
-	$scope.qtime_start = function(){
-	    var shop = -1;
-	    if ($scope.shopIds.length === 1){
-		shop = $scope.shopIds[0];
-	    };
-	    return diablo_base_setting(
-		"qtime_start", shop, base, diablo_set_date,
-		diabloFilter.default_start_time(now));
-	}();
+	$scope.filters = []; 
+	// $scope.qtime_start = function(){
+	//     var shop = -1;
+	//     if ($scope.shopIds.length === 1){
+	// 	shop = $scope.shopIds[0];
+	//     };
+	//     return diablo_base_setting(
+	// 	"qtime_start", shop, base, diablo_set_date,
+	// 	diabloFilter.default_start_time(now));
+	// }();
     };
 
-    $scope.time   = diabloFilter.default_time($scope.qtime_start); 
+    // $scope.time   = diabloFilter.default_time($scope.qtime_start);
+    $scope.time   = diabloFilter.default_time(now); 
     $scope.sequence_pagination = wsaleUtils.sequence_pagination(-1, base);
     
     /*

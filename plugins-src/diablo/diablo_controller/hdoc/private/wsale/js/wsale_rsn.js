@@ -78,16 +78,16 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
     
     if (use_storage && angular.isDefined(storage) && storage !== null){
     	$scope.filters     = storage.filter;
-    	$scope.qtime_start = storage.start_time;
+    	// $scope.qtime_start = storage.start_time;
     } else{
 	$scope.filters = []; 
-	$scope.qtime_start =
-	    diablo_base_setting("qtime_start", -1, base, diablo_set_date,
-				diabloFilter.default_start_time(now)); 
+	// $scope.qtime_start =
+	//     diablo_base_setting("qtime_start", -1, base, diablo_set_date,
+	// 			diabloFilter.default_start_time(now)); 
     };
 
-    $scope.time   = diabloFilter.default_time($scope.qtime_start);
-
+    // $scope.time   = diabloFilter.default_time($scope.qtime_start);
+    $scope.time   = diabloFilter.default_time(now); 
     // base setting 
     $scope.setting.se_pagination = wsaleUtils.sequence_pagination(-1, base);
 
