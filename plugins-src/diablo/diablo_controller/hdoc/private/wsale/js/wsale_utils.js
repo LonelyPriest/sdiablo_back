@@ -654,8 +654,14 @@ wsaleDraft.prototype.keys = function(){
 };
 
 wsaleDraft.prototype.save = function(resources){
+    var keys = this.keys().sort(function(k1, k2){
+	return k2.split("-")[5] - k1.split("-")[5];
+    });
+
+    for (var i=3, l=keys.length; i<l; i++)
+	this.remove(keys[i]);
+    
     var key = this.key;
-    // var now = $.now();
     this.storage.set(key, {v:resources});
 };
 

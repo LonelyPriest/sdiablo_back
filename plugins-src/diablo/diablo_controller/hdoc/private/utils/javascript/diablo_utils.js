@@ -33,9 +33,35 @@ diabloUtils.directive('ngShortcut', function(){
 	link:function (scope, element, attrs) {
             element.bind("keydown keypress", function (event) {
 		if(event.which === scope.key) {
+		    // console.log(scope.key);
 		    var f = scope.go; 
                     scope.$apply(function(){
 			if (angular.isFunction(f)) f()
+		    });
+
+		    event.preventDefault(); 
+		}
+            });
+	}
+    }
+});
+
+diabloUtils.directive('saleShortcut', function(){
+    return {
+	restrict: 'AE',
+	scope: {
+	    go: '&'
+	},
+	
+	link:function (scope, element, attrs) {
+            element.bind("keydown keypress", function (event) {
+		if(event.which === 112
+		   || event.which === 113
+		   || event.which === 114
+		   || event.which === 117) {
+		    var f = scope.go(); 
+                    scope.$apply(function(){
+			if (angular.isFunction(f)) f(event.which)
 		    });
 
 		    event.preventDefault(); 

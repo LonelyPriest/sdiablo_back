@@ -1093,7 +1093,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	}; 
 	
 	diabloUtilsService.edit_with_modal(
-	    "select-color.html", undefined,
+	    "select-color.html", 'lg',
 	    callback, $scope, {colors:$scope.gcolors});
     };
 

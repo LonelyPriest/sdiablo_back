@@ -320,7 +320,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    user.right),
     };
 
-    $scope.focus_attr = {style_number:true, sell:false, cash:false};
+    $scope.focus_attr = {style_number:true, sell:false, cash:false, card:false};
     $scope.auto_focus = function(attr){
 	if (!$scope.focus_attr[attr]){
 	    $scope.focus_attr[attr] = true;
@@ -329,6 +329,17 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    if (o !== attr) $scope.focus_attr[o] = false;
 	} 
     };
+
+    $scope.key_action = function(key){
+	if (key === 112) $scope.auto_focus('cash');
+	if (key === 113) $scope.auto_focus('card');
+	if (key === 114) {
+	    if (!$scope.disable_save()) $scope.save_wsale();
+	}
+	if (key === 117){
+	    if (!$scope.disable_refresh) $scope.refresh();
+	}
+    }
     
     wsaleGoodService.set_brand(filterBrand);
     wsaleGoodService.set_type(filterType);
@@ -539,7 +550,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	
 	$scope.disable_refresh     = true;
 	$scope.has_saved           = false;
-	$scope.has_withdrawed      = false; 
+	$scope.has_withdrawed      = false;
+	$scope.auto_focus("style_number");
 	$scope.wsaleStorage.reset();
     }; 
 
@@ -580,7 +592,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	$scope.select.shop.id,
 	$scope.select.retailer.id,
 	$scope.select.employee.id, dateFilter);
-    console.log($scope.wsaleStorage);
+    // console.log($scope.wsaleStorage);
     
     $scope.disable_draft = function(){
 	if ($scope.wsaleStorage.keys().length === 0 || $scope.inventories.length !== 1)
@@ -610,7 +622,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    $scope.select.employee = diablo_get_object(draft.employee.id, $scope.employees);
 	    $scope.select.retailer = diablo_get_object(draft.retailer.id, $scope.retailers);
 	    
-	    $scope.inventories = angular.copy(resource); 
+	    $scope.inventories = angular.copy(resource);
+	    // console.log($scope.inventoyies);
 	    $scope.inventories.unshift({$edit:false, $new:true});
 	    $scope.disable_refresh = false;
 	    $scope.re_calculate(); 
@@ -821,7 +834,10 @@ wsaleApp.controller("wsaleNewCtrl", function(
      */
     $scope.disable_save = function(){
 	// save one time only
-	if ($scope.has_saved || $scope.draft || $scope.select.charge > 0)
+	if ($scope.has_saved
+	    || $scope.draft
+	    || $scope.inventories.length === 1
+	    || $scope.select.charge > 0)
 	    return true;
 	
 	// console.log($scope.select);
@@ -862,8 +878,10 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	};
 	
 	if (im_print === diablo_yes){
-	    var show_message = "开单成功！！" + print(result);
-	    show_dialog("销售开单", show_message); 
+	    if (result.pcode !== 0){
+		var show_message = "开单成功！！" + print(result); 
+		show_dialog("销售开单", show_message);
+	    }
 	} else{
 	    var ok_print = function(){
 		wsaleService.print_w_sale(result.rsn).then(function(presult){
@@ -1205,7 +1223,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	
 	// save
 	$scope.disable_refresh = false;
-	$scope.wsaleStorage.save();
+	$scope.wsaleStorage.save(
+	    $scope.inventories. filter(function(r){return !r.$new}));
 	$scope.re_calculate();
 	
 	$timeout.cancel($scope.timeout_auto_save);

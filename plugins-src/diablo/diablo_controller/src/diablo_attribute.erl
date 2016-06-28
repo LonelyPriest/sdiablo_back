@@ -84,7 +84,7 @@ handle_call(list_w_color_type, _Form, State) ->
     ?DEBUG("list_w_color_type", []),
     Sql = "select id, name from color_type"
 	++ " where deleted=" ++ ?to_string(?NO)
-	++ " order by id desc",
+	++ " order by id",
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
@@ -150,9 +150,9 @@ handle_call({list_w_color, Merchant}, _Form, State) ->
     ?DEBUG("list colors with merchant ~p", [Merchant]),
     Sql = "select a.id, a.name, a.type as tid, a.remark, b.name as type"
 	++ " from colors a, color_type b"
-	++ " where a.deleted = " ++ ?to_string(?NO)
-	++ " and a.merchant=" ++ ?to_s(Merchant)
-	++ " and a.type=b.id;",
+	++ " where "
+	++ " a.merchant=" ++ ?to_s(Merchant)
+	++ " and a.type=b.id order by a.id",
 
     Reply = ?sql_utils:execute(read, Sql),
     ?DEBUG("reply ~p", [Reply]),
@@ -163,7 +163,8 @@ handle_call({list_w_color, Merchant, ColorIds}, _Form, State) ->
     Sql = "select id, name from colors"
 	" where " ++ ?utils:to_sqls(proplists, [{<<"id">>, ColorIds}])
 	++ " and merchant=" ++ ?to_s(Merchant)
-	++ " and deleted=" ++ ?to_s(?NO) ++ ";", 
+	++ " and deleted=" ++ ?to_s(?NO)
+	++ " order by id", 
     Reply = ?sql_utils:execute(read, Sql),
     ?DEBUG("reply ~p", [Reply]),
     {reply, Reply, State};
@@ -239,7 +240,7 @@ handle_call({update_size_group, Merchant, Attrs}, _From, State) ->
 	++ ?utils:v(svi, string, SVI)
 	++ ?utils:v(svii, string, SVII),
     
-    ?DEBUG("updates ~p", [Updates]),
+    %% ?DEBUG("updates ~p", [Updates]),
 
     Sql  = "update size_group set "
 	++ ?utils:to_sqls(proplists, comma, Updates)

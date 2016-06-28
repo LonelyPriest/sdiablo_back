@@ -1308,7 +1308,16 @@
 		    table-condensed table-advanced">
 	<tbody>
 	  <tr x-ng-repeat="c in params.colors">
-	    <td class="text-center vert-align col-md-1">{{c.type}}</td>
+	    <td class="text-center vert-align col-md-1">
+	      <div x-ng-switch on="c.tid">
+		<span x-ng-switch-when=1 style="background-color:#CC3333">{{c.type}}</span>
+		<span x-ng-switch-when=2 style="background-color:#CCCC33">{{c.type}}</span>
+		<span x-ng-switch-when=3 style="background-color:#33CC00">{{c.type}}</span>
+		<span x-ng-switch-when=4 style="background-color:#0066FF">{{c.type}}</span>
+		<span x-ng-switch-when=7 style="background-color:#9966FF">{{c.type}}</span>
+		<span x-ng-switch-default>{{c.type}}</span>
+	      </div>
+	    </td>
 	    <td x-ng-repeat="s in c.colors">
 	      <div class="checkbox checkbox-danger checkbox-circle">
 		<input id={{s.id}}
