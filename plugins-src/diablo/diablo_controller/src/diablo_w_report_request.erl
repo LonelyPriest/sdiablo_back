@@ -63,20 +63,36 @@ action(Session, Req, {"delete_shop", Id}) ->
 %% POST
 %% ================================================================================
 action(Session, Req, {"daily_wreport", Type}, Payload) ->
-    ?DEBUG("daily_wrport with session ~p, type ~p, paylaod~n~p",
-	   [Session, Type, Payload]), 
+    ?DEBUG("daily_wrport with session ~p, type ~p, paylaod~n~p", [Session, Type, Payload]), 
     Merchant = ?session:get(merchant, Session),
     %% {struct, C} = ?v(<<"condition">>, Payload),
-    
-    ?pagination:pagination(
-       fun(_Match, Conditions) ->
-	       ?w_report:report(total, ?to_a(Type), Merchant, Conditions)
-       end,
-       
-       fun(_Match, CurrentPage, ItemsPerPage, Conditions) ->
-	       ?w_report:report(
-		  ?to_a(Type), Merchant, CurrentPage, ItemsPerPage, Conditions)
-       end, Req, Payload);
+
+    case ?to_a(Type) of
+	by_shop ->
+	    try
+		{struct, Conditions} = ?v(<<"condition">>, Payload),
+		{ok, StockSale} = ?w_report:stastic(stock_sale, Merchant, Conditions),
+		{ok, StockProfit} = ?w_report:stastic(stock_profit, Merchant, Conditions),
+
+		?utils:respond(200, object, Req,
+			       {[{<<"ecode">>, 0},
+				 {<<"sale">>, StockSale},
+				 {<<"profit">>, StockProfit} 
+				]})
+	    catch
+		_:{badmatch, {error, Error}} -> ?utils:respond(200, Req, Error)
+	    end;
+	_ -> 
+	    ?pagination:pagination(
+	       fun(_Match, Conditions) ->
+		       ?w_report:report(total, ?to_a(Type), Merchant, Conditions)
+	       end,
+
+	       fun(_Match, CurrentPage, ItemsPerPage, Conditions) ->
+		       ?w_report:report(
+			  ?to_a(Type), Merchant, CurrentPage, ItemsPerPage, Conditions)
+	       end, Req, Payload)
+    end;
 
 action(Session, Req, {"stock_stastic"}, Payload) ->
     ?DEBUG("stock_stastic with session ~p, payload ~p", [Session, Payload]),

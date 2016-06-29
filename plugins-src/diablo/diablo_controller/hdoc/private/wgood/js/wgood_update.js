@@ -370,7 +370,7 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 			    diabloFilter.reset_firm();
 			    diabloFilter.reset_brand();
 			    diabloFilter.reset_type();
-			    diablo_goto_page("#/good/wgood_detail");
+			    $scope.go_back();
 			});
 		} else{
 		    diabloUtilsService.response(
@@ -384,6 +384,14 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
     };
 
     $scope.cancel = function(){
-	diablo_goto_page("#/good/wgood_detail");
+	$scope.go_back();
+    };
+
+    $scope.go_back = function(){
+	if (angular.isDefined($routeParams.from)
+	    && diablo_from_stock_new === stockUtils.to_integer($routeParams.from))
+	    diablo_goto_page("#/inventory_new");
+	else
+	    diablo_goto_page("#/good/wgood_detail");
     }
 });

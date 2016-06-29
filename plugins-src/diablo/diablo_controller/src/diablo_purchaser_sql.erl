@@ -855,6 +855,7 @@ inventory_match(all_reject, Merchant, Shop, Firm, StartTime) ->
 	" where a.shop=" ++ ?to_s(Shop)
 	++ case Firm of
 	       [] -> [];
+	       -1 -> [];
 	       Firm -> " and a.firm=" ++ ?to_s(Firm)
 	   end
 	++ " and a.merchant=" ++ ?to_s(Merchant)

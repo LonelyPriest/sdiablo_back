@@ -161,7 +161,7 @@ wsaleApp.service("wsaleService", function($http, $resource, dateFilter){
 
     this.export_type = {trans:0, trans_note:1};
 
-    this.vpays = [0, 1, 2, 3];
+    this.vpays = [0, 1, 2, 3, -1, -2, -3];
     
     // =========================================================================
     var http = $resource("/wsale/:operation/:id",

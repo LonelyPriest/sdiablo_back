@@ -338,9 +338,12 @@ handle_call({new_good, Merchant, Attrs}, _Form, State) ->
 	case ?sql_utils:execute(s_read, Sql) of
 	    {ok, []} ->
 		GetShop = fun() -> realy_shop(Merchant, Shop) end,
-		Sql1 = ?w_good_sql:good_new(
-			  Merchant, UseZero, GetShop, Attrs),
-		?sql_utils:execute(transaction, Sql1, StyleNumber);
+		Sql1 = ?w_good_sql:good_new(Merchant, UseZero, GetShop, Attrs),
+		case erlang:length(Sql1) =:= 1 of
+		    true ->
+			[SqlH] = Sql1, ?sql_utils:execute(insert, SqlH);
+		    false -> ?sql_utils:execute(transaction, Sql1, StyleNumber)
+		end;
 	    {ok, _} ->
 		{error, ?err(purchaser_good_exist, StyleNumber)};
 	    Error ->

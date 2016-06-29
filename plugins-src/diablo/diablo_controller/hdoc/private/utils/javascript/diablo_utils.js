@@ -721,8 +721,16 @@ diabloUtils.controller("diabloEditDialogCtrl", function($scope, $modalInstance, 
 	$modalInstance.dismiss('ok');
 	if (angular.isDefined(callback) && typeof(callback) === "function"){
 	    callback($scope.params);
-	}	    
+	}
     };
+
+    var edit_callback = $scope.params.edit;
+    $scope.edit = function(){
+	$modalInstance.dismiss('ok');
+	if (angular.isDefined(edit_callback) && typeof(edit_callback) === "function"){
+	    edit_callback();
+	}
+    }
 });
 
 // =============================================================================

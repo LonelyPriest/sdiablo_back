@@ -41,64 +41,52 @@
 		      <th>序号</th>
 		      <th>店铺</th>
 		      <th>数量</th>
-		      <th>营业额</th> 
+		      <th>营业额</th>
+		      <th x-ng-if="right.master">成本</th>
+		      <th x-ng-if="right.master">毛利</th>
+		      <th x-ng-if="right.master">毛利率</th>
 		      <th>现金</th>
 		      <th>刷卡</th>
-		      <th>操作</th>
+		      <th>核销</th>
+		      <th>操作</th> 
 		      <!-- <th>充值</th> -->
 		      <!-- <th>提现</th>  -->
 		    </tr>
 		  </thead>
 		  <tbody>
-		    <tr x-ng-repeat="r in shop_reports">
+		    <tr x-ng-repeat="r in report_data">
 		      <td>{{r.order_id}}</td>
 		      <td>{{r.shop.name}}</td>
-		      <td>{{r.t_amount}}</td>
-		      <td>{{r.t_spay}}</td>
-		      <td>{{r.t_cash}}</td>
-		      <td>{{r.t_card}}</td>
+		      <td>{{r.sale.total}}</td> 
+		      <td>{{r.sale.spay}}</td>
+		      <td x-ng-if="right.master">{{r.profit.org_price}}</td>
+		      <td x-ng-if="right.master">{{r.sale.s}}</td>
+		      <td x-ng-if="right.master">{{r.sale.p}}</td>
+		      <td>{{r.sale.cash}}</td>
+		      <td>{{r.sale.card}}</td>
+		      <td>{{r.sale.veri}}</td>
 		      <td>
 		      	<button class="btn diablo-button yellow-crusta"
-				x-ng-click="print_shop(r)">交班
-			  <i class="glyphicon glyphicon-print"></i></button>
+		      		x-ng-click="print_shop(r)">交班
+		      	  <i class="glyphicon glyphicon-print"></i></button>
 		      </td>
-		      <!-- <td>{{r.t_cbalance}}</td> -->
-		      <!-- <td>{{r.t_withdraw}}</td> -->
+		      
 		    </tr>
 		    <tr>
 		      <td colspan=2></td>
-		      <td>{{total_amounts}}</td>
-		      <td>{{total_spay}}</td>
-		      <td>{{total_cash}}</td>
-		      <td>{{total_card}}</td>
+		      <td>{{total.amount}}</td>
+		      <td>{{total.spay}}</td> 
+		      <td x-ng-if="right.master">{{total.org_price}}</td>
+		      <td x-ng-if="right.master">{{total.money}}</td>
+		      <td x-ng-if="right.master">{{total.profit}}</td>
+		      <td>{{total.cash}}</td>
+		      <td>{{total.card}}</td>
+		      <td>{{total.veri}}</td>
 		      <td></td>
 		      <!-- <td>{{total_cbalance}}</td> -->
 		      <!-- <td>{{total_withdraw}}</td> -->
 		    </tr>
-		  </tbody>
-		  <tfoot>
-		    <tr> 
-		      <td x-ng-show="total_items>items_perpage"
-			  colspan={{report_shop_colspan}}>
-			<span class="pagination">
-			  <span>显示第 {{current_shop_page}} / {{num_pages}} 项结果，
-			    共 {{total_items}} 项</span>
-			</span>
-			<pagination
-			   class="pull-right"
-			   total-items="total_items"
-			   items-per-page="items_perpage"
-			   num-pages="num_pages"
-			   max-size="max_page_size"
-			   boundary-links="true"
-			   previous-text="&lsaquo;" next-text="&rsaquo;"
-			   first-text="&laquo;" last-text="&raquo;"
-			   x-ng-model="current_shop_page"
-			   x-ng-change="do_search_by_shop(current_shop_page)">
-			</pagination>
-		      </td>
-		    </tr>
-		  </tfoot>
+		  </tbody> 
 		</table> <!--END table-->
 	      </div> <!--END table-responsive-->
 	    </div>

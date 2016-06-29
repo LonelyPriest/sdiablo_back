@@ -80,33 +80,24 @@ handle_call({total, by_shop, Merchant, Conditions}, _From, State) ->
     CountSql = "count(distinct shop, merchant) as total"
 	", sum(total) as t_amount"
 	", sum(should_pay) as t_spay"
-    %% ", sum(has_pay) as t_hpay"
 	", sum(cash) as t_cash"
 	", sum(card) as t_card"
-    %% ", sum(cbalance) as t_cbalance"
 	", sum(withdraw) as t_withdraw", 
-    %% ", sum(wire) as t_wire"
-    %% ", sum(verificate) as t_verificate",
     Sql = ?sql_utils:count_table(w_sale, CountSql, Merchant, Conditions), 
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
 handle_call({total, by_retailer, Merchant, Conditions}, _From, State) ->
-    SortConditions = ?w_sale:sort_condition(wsale, Merchant, Conditions),
-    
+    SortConditions = ?w_sale:sort_condition(wsale, Merchant, Conditions), 
     CountSql = "select count(distinct shop, merchant, retailer) as total"
-    %% ", sum(total) as t_amount"
 	", sum(should_pay) as t_spay"
 	", sum(cash) as t_cash"
 	", sum(card) as t_card"
-    %% ", sum(cbalance) as t_cbalance" 
 	", sum(withdraw) as t_withdraw"
 	" from w_sale a"
 	" where " ++ SortConditions,
-    %% Sql = ?sql_utils:count_table(w_sale, CountSql, Merchant, Conditions), 
     Reply = ?sql_utils:execute(s_read, CountSql),
     {reply, Reply, State};
-
 
 handle_call({total, by_good, Merchant, Conditions}, _From, State) ->
     {DConditions, SConditions}
@@ -124,7 +115,6 @@ handle_call({total, by_good, Merchant, Conditions}, _From, State) ->
 	"select count(distinct a.style_number, a.brand, b.shop, b.merchant)"
 	" as total"
 	", sum(a.total) as t_sell"
-	%% ", sum(c.amount) as t_stock"
 	" from w_sale_detail a, w_sale b"
 	" where "
 	++ ?sql_utils:condition(proplists_suffix, CorrectCutDConditions)

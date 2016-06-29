@@ -10,115 +10,94 @@ wreportApp.controller("wreportDailyCtrl", function(
     // $scope.sortShops = user.sortShops;
 
     $scope.employees = wreportCommService.get_employee();
-    // $scope.retailers = wreportCommService.get_retailer();
     $scope.sortShops = wreportCommService.get_sort_shop();
-
-    // pagination
-    $scope.max_page_size       = wreportService.max_page_size;
-    // $scope.items_perpage     = wreportService.items_perpage;
-    $scope.items_perpage       = diablo_items_per_page();
-
-    // shop
-    $scope.report_shop_colspan = 5; 
     $scope.current_day         = $.now();
-    $scope.current_shop_page   = 1;
-    
-    // var day = {start_time:now - diablo_day_millisecond, end_time:now};
-    // var day = {start_time:now, end_time:now};
+
+    var to_f = reportUtils.to_float;
+    var to_i = reportUtils.to_integer;
+
     var now_day = dateFilter($scope.current_day, "yyyy-MM-dd");
     var one_shop_report = {t_amount:0, t_hpay:0, t_spay:0, t_cash:0, t_card:0, t_verificate:0};
-    
-    var last_shop_page = 0;
-    var unused_shops = angular.copy(user.sortShops);
 
+    $scope.right = {
+	master: rightAuthen.authen(
+	    user.type,
+	    rightAuthen.rainbow_action()['show_orgprice'],
+	    user.right
+	)
+    };
+    
     $scope.refresh = function(){
         $scope.current_day = $.now();
-        $scope.do_search_by_shop($scope.current_shop_page, true);
+        $scope.do_search_by_shop(true);
     };
 
     $scope.disable_after_daily = function(){
-        return dateFilter($scope.current_day, "yyyy-MM-dd") === now_day;
+        return dateFilter("yyyy-MM-dd") === now_day;
     };
 
     $scope.after_daily = function(){
         $scope.current_day = $scope.current_day + diablo_day_millisecond;
-        $scope.do_search_by_shop($scope.current_shop_page, true);
+        $scope.do_search_by_shop(true);
     }
 
     $scope.pre_daily = function(){
         $scope.current_day = $scope.current_day - diablo_day_millisecond;
-        $scope.do_search_by_shop($scope.current_shop_page, true);
-    }
-    
-    $scope.do_search_by_shop = function(page, force){
-	// console.log(page);
-	if (page === last_shop_page && !force){
-            return;
-        } 
+        $scope.do_search_by_shop(true);
+    } 
 
-	var day = {start_time:$scope.current_day, end_time:$scope.current_day};
+    $scope.do_search_by_shop = function(force){
+	// console.log(page);
+	if (!force) return;
 	
+	var day = {start_time:$scope.current_day, end_time:$scope.current_day}; 
 	diabloFilter.do_filter([], day, function(search){
 	    search.shop = wreportCommService.get_shop_id(); 
-	    wreportService.daily_report(
-		"by_shop", search, $scope.items_perpage, page
-	    ).then(function(result){
-		console.log(result);
+	    wreportService.daily_report("by_shop", search).then(function(result){
+		// console.log(result);
+		if (result.ecode === 0){
+		    var sale = result.sale;
+		    var profit = result.profit; 
+		    var order_id = 1;
 
-		var report_data = angular.copy(result.data);
-		
-		unused_shops = 
-		    unused_shops.filter(function(s){
-			for (var i=0, l=report_data.length; i<l; i++){
-			    if (s.id === report_data[i].shop_id){
-				return false;
-			    }
-			} 
-			return true;
-		    })
-		console.log(unused_shops);
+		    $scope.report_data = [];
+		    $scope.total = {
+			amount:0, spay: 0, org_price:0, money:0, cash:0, card:0, veri:0};
+		    angular.forEach($scope.sortShops, function(shop){
+			var s = {shop: shop, order_id: order_id};
 
-		$scope.shop_reports = result.data.map(function(d){
-		    return {t_amount: d.t_amount,
-			    t_spay:   d.t_spay,
-			    t_cash:   d.t_cash,
-			    t_card:   d.t_card,
-			    t_cbalance:   d.t_cbalance,
-			    t_withdraw: d.t_withdraw,
-			    shop: diablo_get_object(d.shop_id, $scope.sortShops)}
-		});
+			s.sale = reportUtils.filter_by_shop(shop.id, sale);
+			s.profit = reportUtils.filter_by_shop(shop.id, profit);
 
-		angular.forEach(unused_shops, function(s){
-		    $scope.shop_reports.push(
-			angular.extend({shop:s}, one_shop_report))
-		});
-		
-		
-		if (page === 1){
-		    $scope.total_items =
-			result.total === user.sortShops.length
-			? result.total : user.sortShops.length;
-		    $scope.total_amounts
-			= result.t_amount ? result.t_amount : 0;
-		    $scope.total_spay
-			= result.t_spay ? result.t_spay : 0; 
-		    $scope.total_cash
-			=  result.t_cash ? result.t_cash : 0;
-		    $scope.total_card
-			=  result.t_card ? result.t_card : 0;
-		    $scope.total_cbalance
-			=  result.t_cbalance ? result.t_cbalance : 0;
-		    $scope.total_withdraw
-			=  result.t_withdraw ? result.t_withdraw : 0;
+			s.sale.s = diablo_float_sub(
+			    to_f(s.sale.spay), to_f(s.profit.org_price));
+			s.sale.p = reportUtils.calc_profit(
+			    to_f(s.profit.org_price), to_f(s.sale.spay));
+
+			$scope.total.amount += to_i(s.sale.total);
+			$scope.total.spay += reportUtils.to_float(s.sale.spay);
+			$scope.total.cash += reportUtils.to_float(s.sale.cash);
+			$scope.total.card += reportUtils.to_float(s.sale.card);
+			$scope.total.veri += reportUtils.to_float(s.sale.veri);
+			$scope.total.org_price += reportUtils.to_float(s.profit.org_price);
+			$scope.total.money += to_f(s.sale.s);
+			
+			$scope.report_data.push(s); 
+			order_id++;
+			
+		    });
+
+		    $scope.total.profit = reportUtils.calc_profit(
+			$scope.total.org_price, $scope.total.spay); 
+		    // console.log($scope.report_data);
+		    // console.log($scope.total);
 		}
-
-		console.log($scope.shop_reports);
-		diablo_order_page(
-		    page, $scope.items_perpage, $scope.shop_reports); 
-		last_shop_page = page;
+		
 	    })
 	}) 
     };
+
+    $scope.refresh();
 
     var dialog = diabloUtilsService;
     $scope.print_shop = function(d){

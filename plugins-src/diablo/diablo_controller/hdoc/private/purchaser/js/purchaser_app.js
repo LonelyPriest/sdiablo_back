@@ -147,7 +147,7 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 	    controller: 'wgoodNewCtrl',
 	    resolve: angular.extend({}, promotion, firm, brand, type, s_group, base)
 	}).
-	when('/good/wgood_update/:id?', {
+	when('/good/wgood_update/:id?/:from?', {
 	    templateUrl: '/private/wgood/html/wgood_update.html',
 	    controller: 'wgoodUpdateCtrl',
 	    resolve: angular.extend(

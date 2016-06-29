@@ -13,7 +13,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope.colors      = filterColor;
     $scope.color_types = filterColorType;
     
-    $scope.tab_active  = [{active:true}, {active:false}]; 
+    $scope.tab_active  = [{active:true}, {active:false}, {active:false}]; 
     $scope.shops             = user.sortShops; 
     $scope.sexs              = diablo_sex;
     $scope.seasons           = diablo_season;
@@ -82,7 +82,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	console.log($scope.select.firm);
 
 	$scope.select.surplus = 0;
-	$scope.left_balance   = 0;
+	$scope.select.left_balance   = 0;
 	if (diablo_invalid_firm !== stockUtils.invalid_firm($scope.select.firm)){
 	    $scope.select.surplus = $scope.select.firm.balance;
 	    $scope.select.left_balance = $scope.select.surplus;
@@ -119,12 +119,18 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	$scope.select.total   = 0;
 	$scope.select.comment = undefined;
 
-	$scope.select.left_balance = undefined;
-	$scope.select.firm = undefined;
+	$scope.select.surplus = 0;
 	$scope.select.left_balance = 0;
+	$scope.select.firm = undefined;
+	// $scope.select.left_balance = 0;
 	
 	$scope.disable_refresh = true;
-	$scope.has_saved = false; 
+	$scope.has_saved = false;
+
+	if ($scope.tab_active[0].active)
+	    $scope.auto_focus("style_number");
+	else if ($scope.tab_active[1].active)
+	    $scope.on_focus_attr("style_number");
     };
     
     // init
@@ -136,6 +142,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	total: 0,
 	has_pay: 0,
 	should_pay: 0,
+	surplus: 0,
+	left_balance: 0,
 	extra_pay_type: $scope.extra_pay_types[0],
 	date: $scope.today()};
 
@@ -259,6 +267,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 
     var copy_select = function(add, src){
 	add.$new_good    = src.$new_good;
+	add.id           = src.id; 
 	add.style_number = src.style_number;
 	add.brand        = src.brand;
 	add.brand_id     = src.brand_id;
@@ -302,7 +311,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		diabloUtilsService.response_with_callback(
 		    false,
 		    "新增库存",
-		    "新增库存失败：" + purchaserService.error[2099],
+		    "新增库存失败：" + purchaserService.error[2099]
+			+ "入库编号：" + $scope.inventories[i].order_id,
 		    $scope, function(){
 			$scope.inventories[0] = {$edit:false, $new:true}});
 		return;
@@ -326,9 +336,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		return;
 	    };
 	}
-
-	// console.log($scope.select.firm);
-
+	
 	if (-1 !== item.firm_id){
 	    $scope.select.firm = diablo_get_object(item.firm_id, $scope.firms);
 	}
@@ -552,8 +560,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		diabloUtilsService.response_with_callback(
 		    true, "新增库存", "新增库存成功！！单号：" + state.rsn,
 		    $scope, function(){
-			
-			sDraft.remove(); 
+			sDraft.remove();
+			$scope.refresh();
 		    })
 	    } else{
 	    	diabloUtilsService.response_with_callback(
@@ -722,21 +730,27 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 			       right:        $scope.stock_right,
 			       get_amount:    get_amount,
 			       valid_amount:  valid_amount,
-			       get_price_info: stockUtils.calc_stock_orgprice_info};
+			       get_price_info: stockUtils.calc_stock_orgprice_info,
+			       edit: function(){
+				   diablo_goto_page(
+				       "#/good/wgood_update/"
+					   + inv.id + "/"
+					   + diablo_from_stock_new.toString())}
+			      };
 		
 		if (inv.colors.length === 1 && inv.colors[0] === "0"){
 		    inv.colors_info = [{cid:0}];
 		    payload.colors = inv.colors_info;
 		    diabloUtilsService.edit_with_modal(
 			"inventory-new.html",
-			modal_size, callback, $scope, payload)
+			modal_size, callback, undefined, payload)
 		} else{
 		    inv.colors_info = inv.colors.map(function(cid){
 			return diablo_find_color(parseInt(cid), $scope.colors)});
 		    
 		    payload.colors = inv.colors_info;
 		    diabloUtilsService.edit_with_modal(
-			"inventory-new.html", modal_size, callback, $scope, payload);
+			"inventory-new.html", modal_size, callback, undefined, payload);
 		} 
 	    }
 	}; 
@@ -982,14 +996,13 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	$scope.good.year  = item.year;
 	$scope.good.season    = $scope.season2objs[item.season];
 	$scope.good.tag_price = item.tag_price;
-	$scope.good.discount  = item.discount; 
-	// if (angular.isDefined(diablo_set_integer(item.firm_id))
-	//     && -1 !== item.firm_id){
-	//     $scope.select.firm  = diablo_get_object(item.firm_id, $scope.firms)
-	// };
+	$scope.good.discount  = item.discount;
+	// $scope.good.color     = item.color;
 
-	$scope.is_same_good = true;
-	$scope.on_select_good(item, model, label);
+	if ($scope.tab_active[1].active){
+	    $scope.on_select_good(item, model, label); 
+	    $scope.is_same_good = true;
+	} 
     };
 
     $scope.is_same_good = false;
@@ -1097,6 +1110,11 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    callback, $scope, {colors:$scope.gcolors});
     };
 
+    $scope.update_good_color = function(){
+	console.log($scope.good);
+	
+    };
+
     /*
      * size group
      */
@@ -1156,11 +1174,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     };
 
     $scope.new_good = function(){
-	if ($scope.form.gForm.$invalid
-	    || $scope.is_same_good
-	    || $scope.good_has_saved) return;
-	// console.log($scope.good);
-	// console.log($scope.image);
+	if ($scope.form.gForm.$invalid || $scope.is_same_good || $scope.good_has_saved) return; 
 
 	$scope.good_saving = true; 
 	var good       = angular.copy($scope.good);
@@ -1174,8 +1188,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	good.type     = typeof(good.type) === "object" ? good.type.name: good.type;
 	
 	good.colors   = function(){
-	    if (angular.isDefined($scope.selectColors)
-		&& $scope.selectColors.length > 0){
+	    if (angular.isDefined($scope.selectColors) && $scope.selectColors.length > 0){
 		var colors = [];
 		angular.forEach($scope.selectColors, function(color){
 		    colors.push(color.id)
@@ -1189,8 +1202,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	var s_groups = [];
 	var s_sizes  = [];
 	good.sizes = function(){
-	    if (angular.isDefined($scope.selectGroups)
-		&& $scope.selectGroups.length > 0){
+	    if (angular.isDefined($scope.selectGroups) && $scope.selectGroups.length > 0){
 		var groups = [];
 		angular.forEach($scope.selectGroups, function(group){
 		    s_groups.push(group.id);
@@ -1287,6 +1299,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		
 		var agood = {
 		    $new_good: true,
+		    id          : good.db,
 		    style_number: good.style_number,
 		    brand:     good.brand,
 		    brand_id:  state.brand,

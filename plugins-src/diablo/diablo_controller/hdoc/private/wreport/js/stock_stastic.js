@@ -15,57 +15,19 @@ wreportApp.controller("stockStasticCtrl", function(
 	return diablo_base_setting(
 	    "qtime_start", -1, base, diablo_set_date,
 	    diabloFilter.default_start_time(now));
-    }();
-    
+    }(); 
     $scope.time = diabloFilter.default_time($scope.qtime_start);
 
-    var calc_profit = function(m1, m2){
-	if ( angular.isUndefined(m1) || angular.isUndefined(m2)) return undefined;
-	if ( 0 === m1 || 0 === m2 ) return 0;
-	return parseFloat(diablo_float_div((m2 - m1), m2) * 100).toFixed(1);
-    }
-
-    var filter_by_shop = function(shopId, stastics) {
-	if (!angular.isArray(stastics)) return {};
-	
-	var s = stastics.filter(function(s){
-	    if (s.hasOwnProperty("shop_id")){
-		return s.shop_id === shopId; 
-	    } else if (s.hasOwnProperty("fshop_id")){
-		return s.fshop_id === shopId; 
-	    }
-	    else if (s.hasOwnProperty("tshop_id")){
-		return s.tshop_id === shopId; 
-	    } else {
-		return false;
-	    } 
-	});
-
-	if (s.length === 1) return s[0];
-	else return {};
-    };
-
-    var to_i =  function(v){
-	if (angular.isUndefined(v) || isNaN(v) || (!v && v != 0)){
-	    return 0;
-	} else{
-	    return parseInt(v)
-	}
-    };
-
-    var to_f =  function(v){
-	if (angular.isUndefined(v) || isNaN(v) || (!v && v != 0)){
-	    return 0;
-	} else{
-	    return parseFloat(v)
-	}
-    };
+    var calc_profit = reportUtils.calc_profit; 
+    var filter_by_shop = reportUtils.filter_by_shop; 
+    var to_i =  reportUtils.to_integer; 
+    var to_f =  reportUtils.to_float;
     
     $scope.do_search = function(){
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
 	    if (angular.isUndefined(search.shop)
 		|| !search.shop || search.shop.length === 0){
-		search.shop = $scope.shopIds === 0 ? undefined : $scope.shopIds; ;
+		search.shop = $scope.shopIds === 0 ? undefined : $scope.shopIds;
 	    };
 
 	    wreportService.stock_stastic($scope.match, search).then(function(result){
@@ -101,7 +63,8 @@ wreportApp.controller("stockStasticCtrl", function(
 			s.sale    = filter_by_shop(shop.id, stockSale);
 			s.profit  = filter_by_shop(shop.id, stockProfit);
 			// s.sale.s  = diablo_float_sub(s.profit.rprice, s.profit.org_price);
-			s.sale.s  = diablo_float_sub(s.sale.spay, s.profit.org_price);
+			s.sale.s  = diablo_float_sub(
+			    to_f(s.sale.spay), to_f(s.profit.org_price));
 			// s.sale.p  = calc_profit(s.profit.org_price, s.profit.rprice);
 			s.sale.p  = calc_profit(s.profit.org_price, s.sale.spay);
 			s.pin     = filter_by_shop(shop.id, stockIn);
@@ -120,11 +83,11 @@ wreportApp.controller("stockStasticCtrl", function(
 			    + to_f(s.tin.cost) - to_f(s.tout.cost)
 			    + to_f(s.fix.cost) - to_f(s.profit.org_price);
 
-			$scope.total.spay += s.sale.spay;
-			$scope.total.oprice += s.profit.oprice;
-			$scope.total.cash += s.sale.cash;
-			$scope.total.card += s.sale.card;
-			$scope.total.veri += s.sale.veri;
+			$scope.total.spay += to_f(s.sale.spay);
+			// $scope.total.oprice += to_f(s.profit.oprice);
+			$scope.total.cash += to_f(s.sale.cash);
+			$scope.total.card += to_f(s.sale.card);
+			$scope.total.veri += to_f(s.sale.veri);
 			$scope.total.pin  += to_i(s.pin.total);
 			$scope.total.pout += to_i(s.pout.total);
 			$scope.total.tin  += to_i(s.tin.total);

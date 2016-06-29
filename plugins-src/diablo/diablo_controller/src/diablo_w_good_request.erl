@@ -227,7 +227,13 @@ action(Session, Req, {"new_w_good"}, Payload) ->
 	    {ok, DBId} -> 
 		?utils:respond(200, Req,
 			       ?succ(add_purchaser_good, DBId),
-			       [{<<"brand">>, BrandId}, {<<"type">>, TypeId}]); 
+			       [{<<"brand">>, BrandId},
+				{<<"type">>, TypeId}]
+			       ++ case DBId of
+				      StyleNumber -> [];
+				      _ -> [{<<"db">>, DBId}]
+				  end
+			      ); 
 	    {error, Error} ->
 		?utils:respond(200, Req, Error)
 	end 
