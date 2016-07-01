@@ -1160,7 +1160,7 @@ handle_call({delete_new, Merchant, RSN, Mode}, _From, State) ->
 		{?DELETE, ?DISCARD} ->
 		    DeleteNewSqls;
 		{_, ?CHECKING} ->
-		    Sql1 =
+		    Sql11 =
 			[
 			 "update w_inventory a inner join "
 			 "(select style_number, brand, amount"
@@ -1185,7 +1185,7 @@ handle_call({delete_new, Merchant, RSN, Mode}, _From, State) ->
 			],
 
 		    BackBalance = SPay + EPay - HPay - VPay,
-		    Sql2 = 
+		    Sql21 = 
 			case BackBalance == 0 orelse Firm == ?INVALID_OR_EMPTY of
 			    true -> [];
 			    false-> 
@@ -1222,10 +1222,10 @@ handle_call({delete_new, Merchant, RSN, Mode}, _From, State) ->
 		    Reply = 
 			case Mode of
 			    ?DELETE ->
-				Sqls = Sql1 ++ Sql2 ++ DeleteNewSqls,
+				Sqls = Sql11 ++ Sql21 ++ DeleteNewSqls,
 				?sql_utils:execute(transaction, Sqls, RSN);
 			    ?ABANDON ->
-				Sqls = Sql1 ++ Sql2 ++
+				Sqls = Sql11 ++ Sql21 ++
 				    ["update w_inventory_new set state=" ++ ?to_s(?DISCARD)
 				     ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"],
 				?sql_utils:execute(transaction, Sqls, RSN)

@@ -451,18 +451,23 @@ wsaleApp.controller("wsaleNewCtrl", function(
     };
 
     $scope.retailers = filterRetailer;
-    if ($scope.retailers.length !== 0){
-	$scope.select.retailer = $scope.retailers[0];
-	if (user.loginRetailer !== diablo_invalid){
-            for (var i=0, l=$scope.retailers.length; i<l; i++){
-                if (user.loginRetailer === $scope.retailers[i].id){
-                    $scope.select.retailer = $scope.retailers[i]
-                    break;
-                }
-            }
-        } 
-	$scope.set_retailer(); 
-    }; 
+    $scope.reset_retailer = function(){
+	if ($scope.retailers.length !== 0){
+	    $scope.select.retailer = $scope.retailers[0];
+	    if (user.loginRetailer !== diablo_invalid){
+		for (var i=0, l=$scope.retailers.length; i<l; i++){
+                    if (user.loginRetailer === $scope.retailers[i].id){
+			$scope.select.retailer = $scope.retailers[i]
+			break;
+                    }
+		}
+            } 
+	    $scope.set_retailer(); 
+	};
+    };
+
+    $scope.reset_retailer();
+    
 
     /*
      * with draw
@@ -553,6 +558,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	$scope.has_withdrawed      = false;
 	$scope.auto_focus("style_number");
 	$scope.wsaleStorage.reset();
+	$scope.reset_retailer();
     }; 
 
     var now = $scope.today(); 

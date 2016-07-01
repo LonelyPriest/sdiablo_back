@@ -145,7 +145,8 @@ content(normal, {Brand, Model, Column},
     Datetime     = ?v(<<"datetime">>, Attrs),
     RetailerName = ?v(<<"name">>, Retailer, []),
     Employee     = ?v(<<"employ">>, Print), 
-    RetailerId = ?v(<<"retailer_id">>, Print),
+    RetailerId   = ?v(<<"retailer_id">>, Print), 
+    LastScore   = ?v(<<"score">>, Retailer, 0),
     Vip = RetailerId =/= ?to_i(?v(<<"s_customer">>, Setting)),
     
     Head = title(Brand, Model, Shop)
@@ -160,7 +161,7 @@ content(normal, {Brand, Model, Column},
 
     Stastic = body_stastic(
 		Brand, Model, Column, TotalBalance,
-		Attrs, Vip, STotal, RTotal),
+		Attrs, Vip, LastScore, STotal, RTotal),
 
     Foot = body_foot(
 	     Brand, Model, Column, Setting),
@@ -399,7 +400,7 @@ head(<<"feie">> = Brand, _Model, 80, RSN, Retailer, Employee, Date) ->
 	
 	++ line(equal, 48) ++ br(Brand).
 
-body_stastic(Brand, _Model, Column, _TotalBalance, Attrs, Vip, STotal, RTotal) ->
+body_stastic(Brand, _Model, Column, _TotalBalance, Attrs, Vip, LastScore, STotal, RTotal) ->
     ?DEBUG("body_stastic with Attrs ~p, Column ~p, Vip ~p", [Column, Attrs, Vip]),
     Cash         = ?v(<<"cash">>, Attrs, 0),
     Card         = ?v(<<"card">>, Attrs, 0),
@@ -409,7 +410,7 @@ body_stastic(Brand, _Model, Column, _TotalBalance, Attrs, Vip, STotal, RTotal) -
     Comment      = ?v(<<"comment">>, Attrs, []),
     Direct       = ?v(<<"direct">>, Attrs, 0),
 
-    LastScore    = ?v(<<"last_score">>, Attrs, 0),
+    %% LastScore    = ?v(<<"last_score">>, Attrs, 0),
     Score        = ?v(<<"score">>, Attrs, 0),
 
     AccScore     = Score + LastScore,
