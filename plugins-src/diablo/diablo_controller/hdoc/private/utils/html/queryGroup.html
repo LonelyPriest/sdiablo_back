@@ -17,14 +17,7 @@
 	    <i class="glyphicon glyphicon-chevron-right fg-red"></i></button>
 	</div>
 
-	<div x-ng-switch on="f.field.name">
-	  <!-- <span x-ng-switch-when="style_number"> -->
-	  <!--   <input type="text" class="form-control" placeholder="请输入款号" -->
-	  <!-- 	   x-ng-model="f.value" -->
-	  <!-- 	   typeahead-editable="false" -->
-	  <!-- 	   typeahead="s for s in prompt.style_number|filter:$viewValue|limitTo:8"></input> -->
-	  <!-- </span> -->
-
+	<div x-ng-switch on="f.field.name"> 
 	  <span x-ng-switch-when="style_number">
 	    <div class="has-feedback">
 	      <input type="text" class="form-control" placeholder="请输入款号"
@@ -33,7 +26,7 @@
 		     typeahead-wait-ms="300"
 		     typeahead-loading="loading"
 		     typeahead-on-select="prompt.on_select_style_number($item, $model, $label)"
-	  	     typeahead="s for s in prompt.style_number($viewValue)|limitTo:8" />
+	  	     typeahead="s for s in prompt.style_number($viewValue)|limitTo:20" />
 	      <span x-ng-show="loading">
 		<i class="icon-spinner icon-spin icon-2x
 			  form-control-feedback"></i>
@@ -52,14 +45,14 @@
 	    <input type="text" class="form-control" placeholder="请输入品名"
 		   x-ng-model="f.value"
 		   typeahead-editable="false"
-	  	   typeahead="b as b.name for b in prompt.brand|filter:$viewValue|limitTo:8"/>
+	  	   typeahead="b as b.name for b in prompt.brand|filter:$viewValue|limitTo:20"/>
 	  </span>
 
 	  <span x-ng-switch-when="type">
 	    <input type="text" class="form-control" placeholder="请输入类别"
 		   x-ng-model="f.value"
 		   typeahead-editable="false"
-	  	   typeahead="t as t.name for t in prompt.type|filter:$viewValue|limitTo:8"/>
+	  	   typeahead="t as t.name for t in prompt.type|filter:$viewValue|limitTo:20"/>
 	  </span>
 
 	  <span x-ng-switch-when="sex">
@@ -80,11 +73,19 @@
 	  </span>
 
 	  <span x-ng-switch-when="purchaser_type">
-	    <input type="text" class="form-control" placeholder="请输入采购类别"
-		   x-ng-model="f.value"
-		   typeahead-editable="false"
-	  	   typeahead="pt as pt.name for pt in
-			      prompt.purchaser_type|filter:$viewValue|limitTo:8"/>
+	    <select type="text" class="form-control"
+		    x-ng-model="f.value"
+	  	    x-ng-options="pt as pt.name for pt in prompt.purchaser_type|filter:$viewValue"
+		    x-ng-init="f.value=prompt.purchaser_type[0]">
+	    </select> 
+	  </span>
+
+	  <span x-ng-switch-when="check_state">
+	    <select type="text" class="form-control"
+		    x-ng-model="f.value"
+	  	    x-ng-options="c as c.name for c in prompt.check_state|filter:$viewValue"
+		    x-ng-init="f.value=prompt.check_state[0]">
+	    </select> 
 	  </span>
 
 	  <span x-ng-switch-when="color">
@@ -95,34 +96,27 @@
 	  </span>
 
 	  <span x-ng-switch-when="year">
-	    <input type="text" class="form-control" placeholder="请选择年度"
-		   x-ng-model="f.value"
-		   typeahead-editable="false"
-	  	   typeahead="y for y in prompt.year|filter:$viewValue|limitTo:8"/>
-	    <!-- <input type="text" class="form-control" placeholder="请输入年度" -->
-	    <!-- 	   x-ng-maxlength="4" -->
-	    <!-- 	   x-ng-minlength="4" -->
-	    <!-- 	   x-ng-pattern="/^2[0][1-9][0-9]$/" -->
-	    <!-- 	   x-ng-model="f.value"></input> -->
+	    <select type="text" class="form-control"
+		    x-ng-model="f.value"
+		    typeahead-editable="false"
+		    x-ng-options="y for y in prompt.year|filter:$viewValue"
+		    x-ng-init="f.value=prompt.year[0]">
+	    </select> 
 	  </span>
 
 	  <span x-ng-switch-when="has_pay">
 	    <input type="text" class="form-control" placeholder="请选择实付方式（>0或<0）"
 		   x-ng-model="f.value"
 		   typeahead-editable="false"
-	  	   typeahead="p as p.name for p in prompt.has_pay|filter:$viewValue|limitTo:8"/>
-	    <!-- <input type="text" class="form-control" placeholder="请输入年度" -->
-	    <!-- 	   x-ng-maxlength="4" -->
-	    <!-- 	   x-ng-minlength="4" -->
-	    <!-- 	   x-ng-pattern="/^2[0][1-9][0-9]$/" -->
-	    <!-- 	   x-ng-model="f.value"></input> -->
+	  	   typeahead="p as p.name for p in prompt.has_pay|filter:$viewValue|limitTo:8"/> 
 	  </span>
 
 	  <span x-ng-switch-when="season">
-	    <input type="text" class="form-control" placeholder="请输入季节"
-		   x-ng-model="f.value"
-		   typeahead-editable="false"
-	  	   typeahead="s as s.name for s in prompt.season|filter:$viewValue|limitTo:8"/>
+	    <select type="text" class="form-control"
+		    x-ng-model="f.value"
+	  	    x-ng-options="s as s.name for s in prompt.season|filter:$viewValue"
+		    x-ng-init="f.value=prompt.season[0]">
+	    </select> 
 	  </span>
 
 	  <span x-ng-switch-when="size">
@@ -133,11 +127,11 @@
 	  </span>
 
 	  <span x-ng-switch-when="shop">
-	    <input type="text" class="form-control" placeholder="请输入店铺"
-		   x-ng-model="f.value"
-		   typeahead-editable="false"
-	  	   typeahead="s as s.name for s in
-			      prompt.shop|filter:$viewValue|limitTo:8"/>
+	    <select type="text" class="form-control"
+		    x-ng-model="f.value"
+	  	    x-ng-options="s as s.name for s in prompt.shop|filter:$viewValue"
+		    x-ng-init="f.value=prompt.shop[0]">
+	    </select>
 	  </span>
 
 	  <span x-ng-switch-when="supplier">
@@ -145,7 +139,7 @@
 		   x-ng-model="f.value"
 		   typeahead-editable="false"
 	  	   typeahead="s as s.name for s in
-			      prompt.supplier|filter:$viewValue|limitTo:8"/>
+			      prompt.supplier|filter:$viewValue|limitTo:20"/>
 	  </span>
 	  
 	  <span x-ng-switch-when="running_no">
@@ -188,7 +182,7 @@
 		   x-ng-model="f.value"
 		   typeahead-editable="false"
 	  	   typeahead="s as s.name for s in
-			      prompt.firm|filter:$viewValue|limitTo:8"/>
+			      prompt.firm|filter:$viewValue|limitTo:20"/>
 	  </span>
 	  
 	  <span x-ng-switch-when="retailer">
@@ -196,7 +190,7 @@
 		   x-ng-model="f.value"
 		   typeahead-editable="false"
 		   typeahead="s as s.name for s in
-			      prompt.retailer|filter:$viewValue|limitTo:8"/>
+			      prompt.retailer|filter:$viewValue|limitTo:20"/>
 	  </span>
 
 	  <span x-ng-switch-when="card">

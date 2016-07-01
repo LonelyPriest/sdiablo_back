@@ -98,6 +98,9 @@ function filterProvider(){
 		} else if (name === 'discount'){
 		    _filter.fields.push({name:"discount", chinese:"折扣"});
 		    // _prompt.rsn = promptValues;
+		} else if (name === 'check_state'){
+		    _filter.fields.push({name:"check_state", chinese:"审核状态"});
+		    _prompt.check_state = promptValues;
 		}
 
 		return _filter;

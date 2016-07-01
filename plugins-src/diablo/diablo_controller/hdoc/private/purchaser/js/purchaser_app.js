@@ -228,9 +228,8 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
 	2702: "文件导出失败，没有任何数据需要导出，请重新设置查询条件！！",
 	9001: "数据库操作失败，请联系服务人员！！"};
 
-    this.purchaser_type =  [
-	{name:"采购开单", id:0, py:diablo_pinyin("采购开单")}, 
-    	{name:"采购退货", id:1, py:diablo_pinyin("采购退货")}];
+    this.purchaser_type =  [{name:"采购开单", id:0},{name:"采购退货", id:1}]; 
+    this.check_state = [{name:"未审核", id:0},	{name:"已审核", id:1}];
 
     this.extra_pay_types = [
 	{id:0, name: "代付运费"},

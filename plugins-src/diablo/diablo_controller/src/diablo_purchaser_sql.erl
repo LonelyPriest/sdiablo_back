@@ -1588,6 +1588,8 @@ filter_condition(inventory_new, [{<<"year">>, _} = OT|T], Acc1, Acc2) ->
 
 filter_condition(inventory_new, [{<<"purchaser_type">>, OT}|T], Acc1, Acc2) ->
     filter_condition(inventory_new, T, Acc1, [{<<"type">>, OT}|Acc2]);
+filter_condition(inventory_new, [{<<"check_state">>, OT}|T], Acc1, Acc2) ->
+    filter_condition(inventory_new, T, Acc1, [{<<"state">>, OT}|Acc2]);
 
 
 filter_condition(inventory_new, [O|T], Acc1, Acc2) ->

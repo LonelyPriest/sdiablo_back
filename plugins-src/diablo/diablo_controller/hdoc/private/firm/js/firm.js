@@ -81,7 +81,7 @@ firmApp.controller("firmDetailCtrl", function(
     $scope.default_page  = 1;
 
     var storage = localStorageService.get(diablo_key_firm);
-    console.log(storage);
+    // console.log(storage);
     if (angular.isDefined(storage) && storage !== null){
 	$scope.current_page = storage.page;
 	$scope.search       = storage.search;
@@ -93,41 +93,59 @@ firmApp.controller("firmDetailCtrl", function(
     }
 
     $scope.page_changed = function(){
-	// console.log(page);
-	// $scope.current_page = page;
-	console.log($scope.current_page);
+	// console.log($scope.current_page);
 	$scope.save_to_local();
 	$scope.filter_firms = diabloPagination.get_page($scope.current_page);
     }
+
+    // console.log($scope.search);
     
     $scope.do_search = function(search){
-	console.log(search);
+	// console.log(search); 
+	$scope.search = search;
     	return $scope.firms.filter(function(f){
 	    return search === f.name
 		|| search === f.mobile 
 		|| search === f.address
-	})
+	}) 
     };
 
-    $scope.on_select_firm = function(item, model, label){
-	console.log(model); 
-	// $scope.save_to_local(model.name); 
-	
-	var filters = $scope.do_search(model.name);
-	diablo_order(filters);
-	console.log(filters);
-
-	$scope.total_balance = 0;
-	angular.forEach(filters, function(f){
-	    $scope.total_balance = f_add($scope.total_balance, f.balance);
-	});
-	
-	// re pagination
-	diabloPagination.set_data(filters);
+    var reset_pagination = function(firms, search){
+	diabloPagination.set_data(firms);
+	diabloPagination.set_items_perpage($scope.items_perpage);
 	$scope.total_items  = diabloPagination.get_length();
-	$scope.filter_firms = diabloPagination.get_page($scope.default_page);
-	// save
-	$scope.save_to_local(model.name, $scope.total_items);
+	$scope.filter_firms = diabloPagination.get_page($scope.current_page);
+	$scope.save_to_local(search, $scope.total_items);
+    }
+
+    var get_filter_firm = function(search){
+	var filters;
+	if (angular.isDefined(search)){
+	    filters = $scope.do_search(search);
+	} else {
+	    filters = $scope.firms; 
+	};
+
+	filters = filters.sort(function(f1, f2){
+	    if ($scope.sort_field.balance.sort_desc){
+	    	return f2.balance - f1.balance; 
+	    } else {
+	    	return f1.balance - f2.balance; 
+	    }
+	});
+
+	$scope.sort_field.balance.sort_desc = !$scope.sort_field.balance.sort_desc;
+
+	return filters;
+    }
+
+    $scope.on_select_firm = function(item, model, label){
+	var filters = $scope.do_search(model.name); 
+	$scope.total_balance = 0;
+	angular.forEach(filters, function(f){$scope.total_balance += f.balance});
+	
+	$scope.total_balance = diablo_rdight($scope.total_balance, 2); 
+	reset_pagination(filters, model.name);
     }
     
     var in_prompt = function(p, prompts){
@@ -155,27 +173,12 @@ firmApp.controller("firmDetailCtrl", function(
 	    $scope.firms = angular.copy(data);
 	    $scope.total_balance = 0;
 	    angular.forEach($scope.firms, function(f){
-		$scope.total_balance = f_add($scope.total_balance, f.balance);
-	    })
+		$scope.total_balance += f.balance;
+	    }); 
+	    $scope.total_balance = diablo_rdight($scope.total_balance, 2);
 
-	    var filters;
-	    if (angular.isDefined(search)){
-		filters = $scope.do_search(search);
-	    } else {
-		filters = $scope.firms;
-	    }
-	    
-	    diablo_order(filters);
-
-	    // pagination
-	    diabloPagination.set_data(filters);
-	    diabloPagination.set_items_perpage($scope.items_perpage);
-	    $scope.total_items  =
-		diabloPagination.get_length();
-	    $scope.filter_firms =
-		diabloPagination.get_page($scope.current_page);
-	    // save
-	    $scope.save_to_local($scope.search, $scope.total_items);
+	    var filters = get_filter_firm(search); 
+	    reset_pagination(filters, search);
 	    
 	    $scope.prompts = [];
 	    for(var i=0, l=$scope.firms.length; i<l; i++){
@@ -196,15 +199,20 @@ firmApp.controller("firmDetailCtrl", function(
 	});
     }
 
-    $scope.do_refresh($scope.current_page, $scope.search);
-    
-
-    $scope.new_firm = function(){
-	location.href = "#/new_firm"; 
+    $scope.sort_field ={balance:{sort_desc:true}};
+    $scope.sort_balance = function(){
+	// console.log($scope.search);
+	var filters = get_filter_firm($scope.search);
+	// console.log(filters);
+	reset_pagination(filters, undefined);
     };
+    
+    $scope.do_refresh($scope.current_page, $scope.search); 
+
+    $scope.new_firm = function(){location.href = "#/new_firm";};
 
     $scope.trans_info = function(f){
-	console.log(f);
+	// console.log(f);
 	$scope.save_to_local(); 
 	diablo_goto_page("#/firm_trans/" + f.id.toString());
     };

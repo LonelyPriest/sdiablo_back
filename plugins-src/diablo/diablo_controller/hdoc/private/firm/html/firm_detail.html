@@ -47,8 +47,8 @@
 		   placeholder="支持名称/手机/地址查询"
 		   typeahead-editable="false"
 		   typeahead-on-select="on_select_firm($item, $model, $label)"
-		   typeahead="s as s.name for s in prompts|filter:$viewValue|limitTo:8"
-		   x-ng-model="search"></input>
+		   typeahead="s as s.name for s in prompts|filter:$viewValue|limitTo:20"
+		   x-ng-model="search"/>
 	      </div>
 	    </div>
 	    
@@ -67,7 +67,14 @@
 		  <tr>
 		    <th>序号</th>
 		    <th>名称</th>
-		    <th class="danger">欠款</th>
+		    <th x-ng-click="sort_balance()">欠款
+		      <span x-ng-if="sort_field.balance.sort_desc">
+			<i class="glyphicon glyphicon-triangle-top fg-red"></i>
+		      </span>
+		      <span x-ng-if="!sort_field.balance.sort_desc">
+			<i class="glyphicon glyphicon-triangle-bottom fg-red"></i>
+		      </span>
+		    </th>
 		    <th>联系方式</th>
 		    <th>联系地址</th>
 		    <th>备注</th>
@@ -80,15 +87,13 @@
 		    <td>{{f.order_id}}</td>
 		    <td>{{f.name}}</td>
 		    <td>{{f.balance}}</td>
+		    
 		    <td>{{f.mobile}}</td>
 		    <td>{{f.address}}</td>
 		    <td>{{f.comment}}</td>
 		    <td>{{f.entry_date}}</td>
 
-		    <td>
-		      <!-- <a class="btn btn-success btn-xs" -->
-		      <!-- 	 x-ng-click="new_firm()">新增 -->
-		      <!-- 	<i class="glyphicon glyphicon-plus"></i></a> -->
+		    <td> 
 		      <button class="btn diablo-button purple"
 			      x-ng-click="trans_info(f)">对帐
 			<i class="glyphicon glyphicon-check"></i></button>
@@ -113,30 +118,7 @@
 		    <td colspan="4"></td>
 		  </tr>
 		  
-		</tbody>
-
-		<tfoot>
-		  <!-- <tr>  -->
-		  <!--   <td x-ng-show="total_items>items_perpage" colspan={{colspan}}> -->
-		  <!--     <span class="pagination"> -->
-		  <!-- 	<span>显示第 {{current_page}} / {{num_pages}} 项结果， -->
-		  <!-- 	  共 {{total_items}} 项</span> -->
-		  <!--     </span> -->
-		  <!--     <pagination -->
-		  <!-- 	 class="pagination-lg pull-right" -->
-		  <!-- 	 total-items="total_items" -->
-		  <!-- 	 items-per-page="items_perpage" -->
-		  <!-- 	 num-pages="num_pages" -->
-		  <!-- 	 max-size="max_page_size" -->
-		  <!-- 	 boundary-links="true" -->
-		  <!-- 	 previous-text="&lsaquo;" next-text="&rsaquo;" -->
-		  <!-- 	 first-text="&laquo;" last-text="&raquo;" -->
-		  <!-- 	 x-ng-model="current_page" -->
-		  <!-- 	 x-ng-change="page_changed()"></pagination> -->
-		  <!--   </td> -->
-		  <!-- </tr> -->
-		</tfoot>
-		
+		</tbody> 
 	      </table> <!--END supplier table-->
 	    </div> <!--END table responsive-->
 	    

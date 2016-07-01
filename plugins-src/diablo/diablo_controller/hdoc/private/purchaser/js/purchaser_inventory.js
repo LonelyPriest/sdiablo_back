@@ -2092,8 +2092,11 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
     diabloFilter.add_field("firm",     filterFirm); 
     diabloFilter.add_field("shop",     $scope.shops);
     diabloFilter.add_field("employee", filterEmployee);
-    diabloFilter.add_field("rsn", []); 
+    diabloFilter.add_field("check_state", purchaserService.check_state);
     diabloFilter.add_field("purchaser_type", purchaserService.purchaser_type);
+    
+    diabloFilter.add_field("rsn", []); 
+    
 
     // diabloFilter.add_field("has_pay",  has_pay);
 
