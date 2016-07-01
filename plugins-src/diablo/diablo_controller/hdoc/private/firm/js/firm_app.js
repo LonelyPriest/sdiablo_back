@@ -212,6 +212,10 @@ firmApp.service("firmService", function($resource, dateFilter){
 	return http.save({operation:"abandon_w_firm_bill"}, {rsn:rsn}).$promise;
     };
 
+    this.export_w_firm = function(){
+	return http.save({operation: "export_w_firm"}).$promise;
+    };
+
     /*
      * transaction
      */

@@ -19,12 +19,12 @@ current_time(localtime) ->
 		    [Year, Month, Date, Hour, Minute, Second]));
 
 current_time(format_localtime) ->
-    {{Year, Month, Date}, {Hour, Minute, _Second}} =
+    {{Year, Month, Date}, {Hour, Minute, Second}} =
 	calendar:now_to_local_time(erlang:now()),
 
     lists:flatten(
-      io_lib:format("~4..0w-~2..0w-~2..0w ~2..0w:~2..0w",
-		    [Year, Month, Date, Hour, Minute]));
+      io_lib:format("~4..0w-~2..0w-~2..0w ~2..0w:~2..0w:~2..0w",
+		    [Year, Month, Date, Hour, Minute, Second]));
 
 current_time(localdate) ->
     {{Year, Month, Date}, {_, _, _}} = calendar:now_to_local_time(erlang:now()),
@@ -44,6 +44,23 @@ current_time(db) ->
 
 current_time(db_unix_timestamp) ->
     "UNIX_TIMESTAMP()".
+
+correct_datetime(datetime, Datetime) ->
+    {{Year, Month, Date}, {Hour, Minute, Second}} = calendar:now_to_local_time(erlang:now()),
+    case Datetime of
+	undefined ->
+	    Time = lists:flatten(
+		     io_lib:format("~4..0w-~2..0w-~2..0w ~2..0w:~2..0w:~2..0w",
+				   [Year, Month, Date, Hour, Minute, Second])),
+	    %% ?DEBUG("time ~p", [Time]),
+	    Time;
+	Datetime -> 
+	    Time = ?to_b(
+		      lists:flatten(
+			io_lib:format("~2..0w:~2..0w:~2..0w", [Hour, Minute, Second]))), 
+	    <<YYMMDD:10/binary, _/binary>> = Datetime, 
+	    <<YYMMDD/binary, <<" ">>/binary, Time/binary>>
+    end.
 
 respond(batch, Fun, Req) ->
     case Fun() of

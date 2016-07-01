@@ -866,7 +866,10 @@ inventory_match(all_reject, Merchant, Shop, Firm, StartTime) ->
 
 inventory(update, Mode, RSN, Merchant, Shop, Firm, OldFirm, Datetime,  OldDatetime) ->
     UpdateDate = case Datetime =/= OldDatetime of
-		     true -> ?utils:v(entry_date, string, Datetime);
+		     true ->
+			 ?utils:v(entry_date,
+				  string,
+				  ?utils:correct_datetime(datetime, Datetime));
 		     false -> []
 		 end,
 
@@ -952,10 +955,7 @@ inventory(update, Mode, RSN, Merchant, Shop, Firm,
     
     lists:foldr(
       fun({struct, Inv}, Acc0)-> 
-	      Operation   = ?v(<<"operation">>, Inv),
-	      %% StyleNumber = ?v(<<"style_number">>, Inv),
-	      %% Brand       = ?v(<<"brand">>, Inv),
-
+	      Operation   = ?v(<<"operation">>, Inv), 
 	      Amounts = case Operation of
 			    <<"d">> -> ?v(<<"amount">>, Inv);
 			    <<"a">> -> ?v(<<"amount">>, Inv);
@@ -1029,12 +1029,7 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
     OrgPrice    = ?v(<<"org_price">>, Inv),
     TagPrice    = ?v(<<"tag_price">>, Inv),
     %% EDiscount   = ?v(<<"ediscount">>, Inv),
-    EDiscount   = case TagPrice == 0 of
-		      true -> 0;
-		      false ->
-			  ?to_f(float_to_binary(
-				  OrgPrice / TagPrice, [{decimals, 3}])) * 100
-		  end,
+    EDiscount   = stock(ediscount, OrgPrice, TagPrice), 
     %% ?DEBUG("ediscount ~p", [EDiscount]),
 			  
     Discount    = ?v(<<"discount">>, Inv, 100),
@@ -1256,12 +1251,7 @@ amount_reject(RSN, Merchant, Shop, Firm, Datetime, Inv, Amounts) ->
     OrgPrice    = ?v(<<"org_price">>, Inv),
     TagPrice    = ?v(<<"tag_price">>, Inv), 
     %% EDiscount   = ?v(<<"ediscount">>, Inv),
-    EDiscount   = case TagPrice == 0 of
-		      true -> 0;
-		      false ->
-			  ?to_f(float_to_binary(
-				  OrgPrice / TagPrice, [{decimals, 3}])) * 100
-		  end,
+    EDiscount   = stock(ediscount, OrgPrice, TagPrice),
     
     Discount    = ?v(<<"discount">>, Inv),
     Path        = ?v(<<"path">>, Inv, []), 
@@ -1382,14 +1372,11 @@ amount_update(Mode, RSN, Merchant, Shop, Datetime, Inv) ->
     Firm           = ?v(<<"firm">>, Inv),
     OrgPrice       = ?v(<<"org_price">>, Inv, 0),
     TagPrice       = ?v(<<"tag_price">>, Inv),
-    EDiscount      = ?v(<<"ediscount">>, Inv, 0),
     Discount       = ?v(<<"discount">>, Inv, 0),
-    Over           = ?v(<<"over">>, Inv),
-    
-    %% OldTotal       = ?v(<<"old_total">>, Inv),
-    %% Total          = ?v(<<"total">>, Inv),
+    Over           = ?v(<<"over">>, Inv), 
     ChangeAmounts  = ?v(<<"changed_amount">>, Inv, []),
-
+    EDiscount      = stock(ediscount, OrgPrice, TagPrice),
+    
     Metric = update_metric(ChangeAmounts), 
 
     C1 =
@@ -1613,3 +1600,6 @@ prompt_num(Merchant) ->
     PromptNum.
     %% {ok, Settings} = ?w_user_profile:get(setting, Merchant, -1),
     
+stock(ediscount, _OrgPrice, TagPrice) when TagPrice == 0 -> 0; 
+stock(ediscount, OrgPrice, TagPrice) ->
+    ?to_f(float_to_binary(OrgPrice / TagPrice, [{decimals, 3}])) * 100.

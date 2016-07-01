@@ -41,7 +41,7 @@
 	  	       typeahead-editable="false"
 		       typeahead-on-select="change_firm()"
 	  	       typeahead="f as f.name for f in
-	  			  firms|filter:$viewValue|limitTo:15"/> 
+	  			  firms|filter:{py:$viewValue}|limitTo:20"/> 
 	      </div>
 	    </div>
 

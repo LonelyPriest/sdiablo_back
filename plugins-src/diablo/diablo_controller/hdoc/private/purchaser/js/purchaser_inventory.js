@@ -79,8 +79,6 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     });
     
     $scope.change_firm = function(){
-	console.log($scope.select.firm);
-
 	$scope.select.surplus = 0;
 	$scope.select.left_balance   = 0;
 	if (diablo_invalid_firm !== stockUtils.invalid_firm($scope.select.firm)){
@@ -98,9 +96,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 
     $scope.refresh = function(){
 	$scope.inventories = [];
-	$scope.inventories.push({$edit:false, $new:true});
-	// $scope.sexs = diablo_sex;
-	// $scope.seasons = diablo_season;
+	$scope.inventories.push({$edit:false, $new:true}); 
 	$scope.select.form.cardForm.$invalid  = false;
 	$scope.select.form.cashForm.$invalid  = false;
 	$scope.select.form.vForm.$invalid     = false;
@@ -425,8 +421,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	$scope.select.left_balance =
 	    $scope.select.surplus + $scope.select.should_pay + e_pay
 	    - $scope.select.has_pay - verificate;
-
-	$scope.select.left_balance = $scope.round($scope.select.left_balance); 
+	
+	$scope.select.left_balance = stockUtils.to_decimal($scope.select.left_balance);
     };
     
     $scope.$watch("select.cash", function(newValue, oldValue){
@@ -634,11 +630,13 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		one.org_price, 100, one.total - one.over);
 	};
 	
-	$scope.select.should_pay = $scope.round($scope.select.should_pay);
+	$scope.select.should_pay = stockUtils.to_decimal($scope.select.should_pay);
 	
 	$scope.select.left_balance =
 	    $scope.select.surplus + $scope.select.should_pay + e_pay
-	    - $scope.select.has_pay - verificate; 
+	    - $scope.select.has_pay - verificate;
+	
+	$scope.select.left_balance = stockUtils.to_decimal($scope.select.left_balance);
     };
     
     var add_callback = function(params){

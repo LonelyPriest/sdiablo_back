@@ -424,7 +424,7 @@ var diablo_round = function(value){
 
 var diablo_rdight = function(dight, how){  
     var d = Math.round(dight * Math.pow(10,how)) / Math.pow(10,how);  
-    return dight;
+    return d;
 };
 
 var diablo_discount = function(fprice, tagPrice){

@@ -96,8 +96,13 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
     
     $scope.change_firm = function(){
 	console.log($scope.select.firm);
-	$scope.select.surplus  = parseFloat($scope.select.firm.balance);
-	$scope.select.left_balance   = $scope.select.surplus;
+	$scope.select.surplus = 0;
+	$scope.select.left_balance = 0;
+	if (diablo_invalid_firm !== stockUtils.invalid_firm($scope.select.firm)){
+	    $scope.select.surplus = parseFloat($scope.select.firm.balance);
+	    $scope.select.left_balance = $scope.select.surplus; 
+	}
+	
 	$scope.re_calculate();
 
 	if ($scope.q_prompt === diablo_frontend){
@@ -153,11 +158,11 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	    $scope.select.total  += parseInt(one.reject); 
 	    $scope.select.should_pay -= stockUtils.calc_row(one.org_price, 100, one.reject); 
 	} 
-	$scope.select.should_pay = $scope.round($scope.select.should_pay);
+	$scope.select.should_pay = stockUtils.to_decimal($scope.select.should_pay);
 
 	var e_pay = stockUtils.to_float($scope.select.extra_pay); 
-	$scope.select.left_balance = $scope.select.surplus + $scope.select.should_pay - e_pay; 
-	$scope.select.left_balance = $scope.round($scope.select.left_balance);
+	$scope.select.left_balance = $scope.select.surplus + $scope.select.should_pay - e_pay;
+	$scope.select.left_balance = stockUtils.to_decimal($scope.select.left_balance);
     };
 
     $scope.$watch("select.extra_pay", function(newValue, oldValue){

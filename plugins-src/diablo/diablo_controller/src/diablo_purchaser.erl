@@ -782,10 +782,8 @@ handle_call({match_all_inventory, Merchant, Shop, Conditions}, _From, State) ->
 %% new
 handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
     ?DEBUG("new_inventory: merchant ~p~n, Inventories ~p, props ~p",
-	   [Merchant, Inventories, Props]),
-    
-    DateTime  = ?v(<<"datetime">>, Props, ?utils:current_time(localtime)),
-    %% Year       = ?utils:current_time(year),
+	   [Merchant, Inventories, Props]), 
+    DateTime = ?utils:correct_datetime(datetime, ?v(<<"datetime">>, Props)),
     
     Shop       = ?v(<<"shop">>, Props),
     Firm       = ?v(<<"firm">>, Props, -1),
@@ -879,7 +877,7 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
 handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
     ?DEBUG("update_inventory: merchant ~p~n, inventories ~p, props ~p",
 	   [Merchant, Inventories, Props]), 
-    CurTime    = ?utils:current_time(localtime),
+    CurTime    = ?utils:current_time(format_localtime),
     
     Id         = ?v(<<"id">>, Props),
     Mode       = ?v(<<"mode">>, Props),
@@ -889,7 +887,7 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
     Firm       = ?v(<<"firm">>, Props),
     Employee   = ?v(<<"employee">>, Props),
 
-    Balance    = ?v(<<"balance">>, Props), 
+    Balance    = ?v(<<"balance">>, Props),
     Cash       = ?v(<<"cash">>, Props, 0),
     Card       = ?v(<<"card">>, Props, 0),
     Wire       = ?v(<<"wire">>, Props, 0),
@@ -1112,9 +1110,6 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 	    ?w_user_profile:update(firm, Merchant),
 	    {reply, Reply, State}
     end; 
-%% Error ->
-%% 	    {reply, Error, State}
-%% end;
 
 handle_call({check_inventory, Merchant, RSN, Mode}, _From, State) ->
     ?DEBUG("check_inventory with merchant ~p, RSN ~p, Mode ~p",
@@ -1254,7 +1249,8 @@ handle_call({reject_inventory, Merchant, Inventories, Props}, _From, State) ->
     Now         = ?utils:current_time(format_localtime),
     Shop        = ?v(<<"shop">>, Props),
     Firm        = ?v(<<"firm">>, Props),
-    DateTime    = ?v(<<"datetime">>, Props, Now),
+    %% DateTime    = ?v(<<"datetime">>, Props, Now),
+    DateTime = ?utils:correct_datetime(datetime, ?v(<<"datetime">>, Props)),
     Cash        = ?v(<<"cash">>, Props, 0),
     Card        = ?v(<<"card">>, Props, 0),
     Wire        = ?v(<<"wire">>, Props, 0),

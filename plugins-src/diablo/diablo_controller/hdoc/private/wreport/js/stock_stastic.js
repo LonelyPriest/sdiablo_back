@@ -84,7 +84,7 @@ wreportApp.controller("stockStasticCtrl", function(
 			    + to_f(s.fix.cost) - to_f(s.profit.org_price);
 
 			$scope.total.spay += to_f(s.sale.spay);
-			// $scope.total.oprice += to_f(s.profit.oprice);
+			//$scope.total.oprice += to_f(s.profit.oprice);
 			$scope.total.cash += to_f(s.sale.cash);
 			$scope.total.card += to_f(s.sale.card);
 			$scope.total.veri += to_f(s.sale.veri);
@@ -107,8 +107,7 @@ wreportApp.controller("stockStasticCtrl", function(
 			$scope.total.rstock_cost += to_f(s.rstock.cost);
 			
 			$scope.stastics.push(s); 
-			// $scope.stastic_cost.push(s);
-			
+			// $scope.stastic_cost.push(s); 
 			order_id++;
 		    });
 
@@ -119,5 +118,9 @@ wreportApp.controller("stockStasticCtrl", function(
     };
 
     $scope.do_search();
+
+    $scope.go_back = function(){
+	diablo_goto_page("#/wreport_daily");
+    }
     
 });

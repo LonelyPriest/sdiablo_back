@@ -6,6 +6,8 @@
 -behaviour(gen_request).
 
 -export([action/2, action/3, action/4]).
+
+-define(d, ?utils:seperator(csv)).
 %%--------------------------------------------------------------------
 %% @desc: GET action
 %%--------------------------------------------------------------------
@@ -193,7 +195,43 @@ action(Session, Req, {"filter_firm_bill_detail"}, Payload) ->
        fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
 	       ?supplier:filter(
 		  bill, Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
-       end, Req, Payload).
+       end, Req, Payload);
+
+action(Session, Req, {"export_w_firm"}, Payload) ->
+    ?DEBUG("export_w_firm with session ~p, payload ~p", [Session, Payload]),
+    Merchant    = ?session:get(merchant, Session),
+    UserId      = ?session:get(id, Session),
+    case ?supplier:supplier(w_list, Merchant) of
+	[] -> ?utils:respond(200, Req, ?err(wsale_export_none, Merchant));
+	{ok, Firms} ->
+	    {ok, ExportFile, Url}
+		= ?utils:create_export_file("firm", Merchant, UserId),
+
+	    case file:open(ExportFile, [append, raw]) of
+		{ok, Fd} ->
+		    try
+			DoFun = fun(C) -> ?utils:write(Fd, C) end,
+			csv_head(firm, DoFun),
+			do_write(firm, DoFun, 1, Firms),
+			ok = file:datasync(Fd),
+			ok = file:close(Fd)
+		    catch
+			T:W -> 
+			    file:close(Fd),
+			    ?DEBUG("trace export:T ~p, W ~p~n~p",
+				   [T, W, erlang:get_stacktrace()]),
+			    ?utils:respond(
+			       200, Req, ?err(wsale_export_error, W)) 
+		    end,
+		    ?utils:respond(200, object, Req,
+				   {[{<<"ecode">>, 0},
+				     {<<"url">>, ?to_b(Url)}]}); 
+		{error, Error} ->
+		    ?utils:respond(200, Req, ?err(wsale_export_error, Error))
+	    end;
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end.
 
 sidebar(Session) -> 
     NewFrim =
@@ -250,11 +288,25 @@ batch_responed(Fun, Req) ->
 	    ?utils:respond(200, batch, Req, [])
     end.
 
-%% object_responed(Fun, Req) ->
-%%     case Fun() of
-%% 	{ok, Value} ->
-%% 	    ?utils:respond(200, object, Req, {Value});
-%% 	{error, Error} ->
-%% 	    ?utils:respond(200, Req, Error)
-%%     end.
+csv_head(firm, Do) ->
+    Do("序号,名称,编号,联系方式,联系地址,备注").
 
+do_write(firm, _Do, _Count, []) ->
+    ok;
+do_write(firm, Do, Count, [{H}|T]) ->
+    ?DEBUG("firm ~p", [H]),
+    Id      = ?v(<<"id">>, H),
+    Name    = ?v(<<"name">>, H),
+    Mobile  = ?v(<<"mobile">>, H, []),
+    Address = ?v(<<"address">>, H, []),
+    Comment = ?v(<<"comment">>, H, []),
+
+    L = "\r\n"
+	++ ?to_s(Count) ++ ?d
+	++ ?to_s(Name) ++ ?d
+	++ ?to_s(Id) ++ ?d
+	++ ?to_s(Mobile) ++ ?d
+	++ ?to_s(Address) ++ ?d
+	++ ?to_s(Comment) ++ ?d,
+    Do(L),
+    do_write(firm, Do, Count + 1, T).

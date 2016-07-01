@@ -205,6 +205,7 @@
 -define(update_bill_w_firm,   ?right_w_firm + 10).
 -define(check_w_firm_bill,    ?right_w_firm + 11).
 -define(abandon_w_firm_bill,  ?right_w_firm + 12).
+-define(export_w_firm,        ?right_w_firm + 13).
 
 %% wprint
 -define(new_w_print_server,  ?right_w_print + 1).

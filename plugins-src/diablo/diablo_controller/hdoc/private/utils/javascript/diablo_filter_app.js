@@ -246,7 +246,7 @@ function filterProvider(){
 		    {operation:'match_w_inventory'},
 		    {prompt:viewValue, shop:shop, firm:[]})
 		    .$promise.then(function(invs){
-			console.log(invs);
+			// console.log(invs);
 			return invs.map(function(inv){
 			    return angular.extend(
 				inv, {name:inv.style_number
@@ -268,9 +268,10 @@ function filterProvider(){
 		    ).then(function(firms){
 			// console.log(firms); 
 			_firms = firms.map(function(f){
+			    var prompt = f.name + "，" + f.id.toString();
 			    return {id: f.id,
 				    name:f.name,
-				    py:diablo_pinyin(f.name),
+				    py:diablo_pinyin(prompt),
 				    balance:f.balance};
 			}); 
 			return _firms; 

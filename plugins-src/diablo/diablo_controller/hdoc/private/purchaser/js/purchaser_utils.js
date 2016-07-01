@@ -90,6 +90,10 @@ var stockUtils = function(){
 		stockUtils.to_integer(count));
 	},
 
+	to_decimal:function(v){
+	    return diablo_rdight(v, 2);
+	},
+
 	/*
 	 * get stock price info: org_price, ediscount
 	 * 0: get org_price by ediscount

@@ -114,9 +114,10 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
     ?DEBUG("new_sale with merchant ~p~n~p, props ~p",
 	   [Merchant, Inventories, Props]),
 
-    Retailer     = ?v(<<"retailer">>, Props),
+    Retailer   = ?v(<<"retailer">>, Props),
     Shop       = ?v(<<"shop">>, Props), 
-    DateTime   = ?v(<<"datetime">>, Props, ?utils:current_time(localtime)),
+    %% DateTime   = ?v(<<"datetime">>, Props, ?utils:current_time(localtime)),
+    DateTime   = ?utils:correct_datetime(datetime, ?v(<<"datetime">>, Props)),
     Employe    = ?v(<<"employee">>, Props),
     Comment    = ?v(<<"comment">>, Props, ""),
 
@@ -210,13 +211,12 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
     ?DEBUG("update_sale with merchant ~p~n~p, props ~p",
 	   [Merchant, Inventories, Props]),
 
-    Curtime    = ?utils:current_time(format_localtime),
-
+    Curtime    = ?utils:current_time(format_localtime), 
     RSNId      = ?v(<<"id">>, Props),
     RSN        = ?v(<<"rsn">>, Props),
     Retailer   = ?v(<<"retailer">>, Props),
     Shop       = ?v(<<"shop">>, Props), 
-    Datetime   = ?v(<<"datetime">>, Props, Curtime),
+    Datetime   = ?v(<<"datetime">>, Props, Curtime), 
     Employee   = ?v(<<"employee">>, Props),
 
     Balance    = ?v(<<"balance">>, Props),
@@ -609,7 +609,8 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 	   [Merchant, Inventories, Props]), 
     Retailer   = ?v(<<"retailer_id">>, Props),
     Shop       = ?v(<<"shop">>, Props), 
-    Datetime   = ?v(<<"datetime">>, Props, ?utils:current_time(localtime)),
+    %% Datetime   = ?v(<<"datetime">>, Props, ?utils:current_time(localtime)),
+    Datetime   = ?utils:correct_datetime(datetime, ?v(<<"datetime">>, Props)),
     Employe    = ?v(<<"employee">>, Props),
 
     %% Balance    = ?v(<<"balance">>, Props), 
@@ -889,37 +890,31 @@ sql(update_wsale, RSN, _Merchant, _Shop, Datetime, OldDatetime, []) ->
     case Datetime =:= OldDatetime of
 	true -> [];
 	false ->
+	    NewDatetime = ?utils:correct_datetime(datetime, Datetime),
 	    ["update w_sale_detail set entry_date=\'"
-	     ++ ?to_s(Datetime) ++ "\'"
+	     ++ ?to_s(NewDatetime) ++ "\'"
 	     ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'",
 	     "update w_sale_detail_amount set entry_date=\'"
-	     ++ ?to_s(Datetime) ++ "\'"
+	     ++ ?to_s(NewDatetime) ++ "\'"
 	     ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"]
     end;
     
-sql(update_wsale, RSN, Merchant, Shop, Datetime, _OldDatetime, Inventories) -> 
+sql(update_wsale, RSN, Merchant, Shop, Datetime, _OldDatetime, Inventories) ->
+    NewDatetime = ?utils:correct_datetime(datetime, Datetime),
     lists:foldr(
       fun({struct, Inv}, Acc0)-> 
 	      Operation   = ?v(<<"operation">>, Inv), 
 	      case Operation of
 		  <<"d">> ->
 		      Amounts = ?v(<<"amount">>, Inv),
-		      wsale(delete, RSN, Datetime, Merchant,
+		      wsale(delete, RSN, NewDatetime, Merchant,
 			    Shop, Inv, Amounts) ++ Acc0; 
 		  <<"a">> ->
-		      Amounts = ?v(<<"amount">>, Inv),
-		      %% lists:foldr(
-		      %%   fun({struct, A}, Acc)->
-		      %% 	    [{struct,
-		      %% 	      [{<<"cid">>, ?v(<<"cid">>, A)},
-		      %% 	       {<<"size">>, ?v(<<"size">>, A)},
-		      %% 	       {<<"sell_total">>, ?v(<<"sell_count">>, A)}]}
-		      %% 	     |Acc]
-		      %%   end, [], ?v(<<"amount">>, Inv, [])),
-		      wsale(new, RSN, Datetime, Merchant,
+		      Amounts = ?v(<<"amount">>, Inv), 
+		      wsale(new, RSN, NewDatetime, Merchant,
 			    Shop, Inv, Amounts) ++ Acc0; 
 		  <<"u">> -> 
-		      wsale(update, RSN, Datetime, Merchant,
+		      wsale(update, RSN, NewDatetime, Merchant,
 			    Shop, Inv) ++ Acc0
 	      end
       end, [], Inventories).

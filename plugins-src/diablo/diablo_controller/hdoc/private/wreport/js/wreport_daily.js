@@ -98,20 +98,21 @@ wreportApp.controller("wreportDailyCtrl", function(
     };
 
     $scope.refresh();
+    $scope.go_stastic = function(){diablo_goto_page("#/stastic")};
 
     var dialog = diabloUtilsService;
     $scope.print_shop = function(d){
-
+	
 	var callback = function(params){
             wreportService.print_wreport(
 		diablo_by_shop,
 		{shop:     d.shop.id,
 		 employee: params.employee.id,
 		 datetime: dateFilter($scope.current_day, "yyyy-MM-dd HH:mm:ss"),
-		 total:    d.t_amount,
-		 spay:     d.t_spay,
-		 cash:     d.t_cash,
-		 card:     d.t_card}
+		 total:    d.sale.total,
+		 spay:     d.sale.spay,
+		 cash:     d.sale.cash,
+		 card:     d.sale.card}
             ).then(function(status){
 		console.log(status);
 		var messsage = "";

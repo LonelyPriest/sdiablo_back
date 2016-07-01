@@ -47,7 +47,7 @@
 	  	       placeholder="请选择厂商，默认为空"
 	  	       typeahead-editable="false"
 	  	       typeahead="f as f.name for f in
-	  			  firms|filter:$viewValue|limitTo:15"/> 
+	  			  firms|filter:{py:$viewValue}|limitTo:20"/> 
 	      </div>
 	    </div>
 

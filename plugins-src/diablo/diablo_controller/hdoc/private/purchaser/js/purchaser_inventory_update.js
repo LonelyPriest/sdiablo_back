@@ -3,7 +3,6 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
     diabloUtilsService, diabloFilter, wgoodService, purchaserService,
     user, filterBrand, filterFirm, filterType, filterEmployee,
     filterSizeGroup, filterColor, base){
-
     $scope.shops       = user.sortShops;
     $scope.brands      = filterBrand;
     $scope.firms       = filterFirm;
@@ -147,7 +146,8 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	    	one.org_price, 100, one.total - stockUtils.to_integer(one.over)); 
 	};
 	
-	$scope.select.should_pay = $scope.round($scope.select.should_pay);
+	// $scope.select.should_pay = $scope.round($scope.select.should_pay);
+	$scope.select.should_pay = stockUtils.to_decimal($scope.select.should_pay);
 
 	var e_pay = stockUtils.to_float($scope.select.e_pay); 
 	var verificate = stockUtils.to_float($scope.select.verificate); 
@@ -156,7 +156,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	    $scope.select.surplus + $scope.select.should_pay
 	    + e_pay - $scope.select.has_pay - $scope.select.verificate;
 
-	$scope.select.left_balance = $scope.round($scope.select.left_balance); 
+	$scope.select.left_balance = stockUtils.to_decimal($scope.select.left_balance);
     };
     
     $scope.change_firm = function(){
@@ -362,7 +362,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	    $scope.select.surplus + $scope.select.should_pay
 	    + e_pay - $scope.select.has_pay - verificate;
 
-	$scope.select.left_balance = $scope.round($scope.select.left_balance); 
+	$scope.select.left_balance = stockUtils.to_decimal($scope.select.left_balance);
     };
 
     $scope.$watch("select.cash", function(newValue, oldValue){

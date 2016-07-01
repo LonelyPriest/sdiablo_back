@@ -296,7 +296,24 @@ firmApp.controller("firmDetailCtrl", function(
 
 	dialog.request("删除厂商", "确定要删除该厂商吗？", callback, undefined, $scope);
 	
-    }
+    };
+
+    $scope.export_firm = function() {
+	firmService.export_w_firm().then(function(state){
+	    if (state.ecode === 0){
+		dialog.response_with_callback(
+		    true,
+		    "文件导出成功",
+		    "创建文件成功，请点击确认下载！！",
+		    undefined,
+		    function(){window.location.href = state.url;})
+	    } else {
+		dialog.response(
+		    false, "文件导出失败", "创建文件失败："
+			+ firmService.error[state.ecode]);
+	    }
+	})
+    };
 });
 
 firmApp.controller("firmCtrl", function($scope, localStorageService){
