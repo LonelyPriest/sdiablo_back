@@ -232,6 +232,11 @@ var wsaleUtils = function(){
 		"check_sale", shop, base, parseInt, diablo_yes);
 	},
 
+	only_show_current: function(shop, base){
+	    return diablo_base_setting(
+		"d_sale", shop, base, parseInt, diablo_yes);
+	},
+
 	print_mode: function(shop, base){
 	    return diablo_base_setting(
 		"ptype", shop, base, parseInt, diablo_backend);

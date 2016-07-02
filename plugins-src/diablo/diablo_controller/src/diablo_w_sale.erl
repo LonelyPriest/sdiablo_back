@@ -1531,19 +1531,17 @@ direct(_) -> wsale.
 
 
 sort_condition(wsale, Merchant, Conditions) ->
-    HasPay = ?v(<<"has_pay">>, Conditions, []),
-
-    C = proplists:delete(<<"has_pay">>, Conditions),
+    C = lists:foldr(
+	  fun({K, V}, Acc) when K =:= <<"check_state">>->
+		  [{<<"state">>, V}|Acc];
+	     (KV, Acc)->
+		  [KV|Acc]
+	  end, [], Conditions),
+    
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_with_prifix, C),
 
-    ?sql_utils:condition(proplists_suffix, NewConditions)
-	++ "a.merchant=" ++ ?to_s(Merchant)
-	%% 0: has_pay > 0, 1: has_pay < 0
-	++ case HasPay of
-	       [] -> [];
-	       0 -> " and a.has_pay>0";
-	       1 -> " and a.has_pay<0"
-	   end
+    "a.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions) 
 	++ case ?sql_utils:condition(time_with_prfix, StartTime, EndTime) of
 	       [] -> [];
 	       TimeSql -> " and " ++ TimeSql

@@ -154,10 +154,9 @@ wsaleApp.service("wsaleService", function($http, $resource, dateFilter){
 
     this.direct = {wsale: 0, wreject: 1};
 
-    this.wsale_mode = [
-	{title: "普通模式"},
-	{title: "图片模式"},
-    ]; 
+    this.wsale_mode = [{title: "普通模式"}, {title: "图片模式"}];
+
+    this.check_state = [{name:"未审核", id:0},	{name:"已审核", id:1}];
 
     this.export_type = {trans:0, trans_note:1};
 
@@ -1506,8 +1505,6 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
     $scope, $routeParams, $location, dateFilter, diabloUtilsService,
     localStorageService, diabloFilter, wsaleService,
     user, filterRetailer, filterEmployee, base){
-    // console.log(filterEmployee);
-    // console.log(user.shop);
     
     $scope.shops     = user.sortShops.concat(user.sortBadRepoes);
     $scope.shopIds   = user.shopIds.concat(user.badrepoIds);
@@ -1522,8 +1519,7 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
     
     $scope.total_items   = 0; 
     $scope.disable_print = false;
-    // $scope.allowed_slide = true;
-
+    
     /*
      * authen
      */
@@ -1542,8 +1538,6 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 
 	show_stastic: rightAuthen.authen_master(user.type)
     };
-
-    // console.log($scope.shop_right);
 
     /*
      * hidden
@@ -1566,12 +1560,13 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
     /* 
      * filter operation
      */ 
-    // initial 
+    // initial
     diabloFilter.reset_field();
     diabloFilter.add_field("retailer", filterRetailer);
     diabloFilter.add_field("employee", filterEmployee); 
     diabloFilter.add_field("rsn", []);
     diabloFilter.add_field("shop",     $scope.shops);
+    diabloFilter.add_field("check_state", wsaleService.check_state);
     
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
@@ -1579,27 +1574,28 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
     // console.log($scope.filter);
     // console.log($scope.prompt);
 
-    var now = $.now(); 
+    var now = $.now();
+    var shopId = $scope.shopIds.length === 1 ? $scope.shopIds[0]: -1;
+    var only_day = wsaleUtils.only_show_current(shopId, base);
     var storage = localStorageService.get(diablo_key_wsale_trans);
-    // console.log(storage);
+    
     if (angular.isDefined(storage) && storage !== null){
-    	$scope.filters        = storage.filter;
-    	// $scope.qtime_start    = storage.start_time;
+    	$scope.filters      = storage.filter;
+	if (angular.isUndefined(storage.start_time))
+	    $scope.qtime_start = wsaleUtils.start_time(shopId, base, now, dateFilter);
+	else
+    	    $scope.qtime_start  = storage.start_time; 
     } else{
-	$scope.filters = []; 
-	// $scope.qtime_start = function(){
-	//     var shop = -1;
-	//     if ($scope.shopIds.length === 1){
-	// 	shop = $scope.shopIds[0];
-	//     };
-	//     return diablo_base_setting(
-	// 	"qtime_start", shop, base, diablo_set_date,
-	// 	diabloFilter.default_start_time(now));
-	// }();
+	$scope.filters = [];
+	$scope.qtime_start = wsaleUtils.start_time(shopId, base, now, dateFilter); 
     };
 
-    // $scope.time   = diabloFilter.default_time($scope.qtime_start);
-    $scope.time   = diabloFilter.default_time(now); 
+    if ($scope.shop_right.check_w_sale && diablo_no === only_day){
+	$scope.time   = diabloFilter.default_time($scope.qtime_start, now); 
+    } else {
+	$scope.time   = diabloFilter.default_time(now, now); 
+    } 
+    
     $scope.sequence_pagination = wsaleUtils.sequence_pagination(-1, base);
     
     /*
@@ -1629,7 +1625,12 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 	localStorageService.set(
 	    diablo_key_wsale_trans,
 	    {filter:$scope.filters,
-	     start_time: diablo_get_time($scope.time.start_time),
+	     start_time: function(){
+		 if ($scope.shop_right.check_w_sale && diablo_no === only_day){
+		     return diablo_get_time($scope.time.start_time);
+		 }
+		 return undefined;
+	     }(),
 	     page:page, t:now}); 
 	
 	// console.log($scope.time); 
@@ -1712,9 +1713,7 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 		    diablo_order(
 			result.data,
 			(page_num - 1) * $scope.items_perpage + 1);
-		    $scope.records = $scope.records.concat(result.data);
-
-		    // console.log($scope.records); 
+		    $scope.records = $scope.records.concat(result.data); 
 		}
 		
 	    })
@@ -1722,8 +1721,6 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
     };
     
     $scope.page_changed = function(){
-	// console.log($scope.num_pages);
-	// console.log($scope.current_page);
     	$scope.do_search($scope.current_page);
     };
 

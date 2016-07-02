@@ -32,24 +32,13 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 
     $scope.calc_colspan = function(){
 	var column = 14;
-	if ($scope.hidden.base) {
-	    column -= 3;
-	}
-	// if (!$scope.right.show_orgprice){
-	//     column -= 2;
-	// }
-
-	// console.log(column);
+	if ($scope.hidden.base) column -= 3;
+	
 	return column;
     }
 
     var dialog      = diabloUtilsService; 
     var use_storage = $routeParams.rsn ? false : true;
-    
-    // $scope.wsale_rsn_title = wsaleService.rsn_title[$routeParams.type];
-    // if (angular.isUndefined($scope.wsale_rsn_title)){
-    // 	$scope.wsale_rsn_title = wsaleService.rsn_title[wsaleService.rsn_title.length-1];
-    // }
 
     // style_number
     $scope.match_style_number = function(viewValue){
@@ -72,25 +61,29 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
     		      {name:"销售退货", id:1, py:diablo_pinyin("销售退货")}];
 
     var now = $.now(); 
-    
+    var shopId = $scope.shopIds.length === 1 ? $scope.shopIds[0]: -1; 
+    // base setting 
+    $scope.setting.se_pagination = wsaleUtils.sequence_pagination(shopId, base);
+    $scope.setting.only_day = wsaleUtils.only_show_current(shopId, base);
     var storage = localStorageService.get(diablo_key_wsale_trans_detail);
-    console.log(storage);
     
     if (use_storage && angular.isDefined(storage) && storage !== null){
     	$scope.filters     = storage.filter;
-    	// $scope.qtime_start = storage.start_time;
+	if (angular.isUndefined(storage.start_time))
+	    $scope.qtime_start = wsaleUtils.start_time(shopId, base, now, dateFilter);
+	else
+    	    $scope.qtime_start  = storage.start_time; 
     } else{
 	$scope.filters = []; 
-	// $scope.qtime_start =
-	//     diablo_base_setting("qtime_start", -1, base, diablo_set_date,
-	// 			diabloFilter.default_start_time(now)); 
+	$scope.qtime_start = wsaleUtils.start_time(shopId, base, now, dateFilter);
     };
 
-    // $scope.time   = diabloFilter.default_time($scope.qtime_start);
-    $scope.time   = diabloFilter.default_time(now); 
-    // base setting 
-    $scope.setting.se_pagination = wsaleUtils.sequence_pagination(-1, base);
-
+    if ($scope.right.show_orgprice && diablo_no === $scope.setting.only_day){
+	$scope.time   = diabloFilter.default_time($scope.qtime_start, now); 
+    } else {
+	$scope.time   = diabloFilter.default_time(now, now); 
+    }
+    
     // console.log($scope.setting);
     // filter
     diabloFilter.reset_field();
@@ -123,7 +116,12 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 	    localStorageService.set(
 		diablo_key_wsale_trans_detail,
 		{filter:$scope.filters,
-		 start_time:diablo_get_time($scope.time.start_time),
+		 start_time: function(){
+		     if ($scope.right.show_orgprice && diablo_no === $scope.setting.only_day){
+			 return diablo_get_time($scope.time.start_time);
+		     }
+		     return undefined;
+		 }(),
 		 page:page, t:now});
 	};
 	

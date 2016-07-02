@@ -923,7 +923,8 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 	   end,
 
     IsSame = fun(New, Old) when New == Old -> undefined;
-		(New, _Old) -> New
+		(New, _Old) ->
+		     ?utils:correct_datetime(datetime, New)
 	     end,
     
     Updates = ?utils:v(employ, string, Employee)

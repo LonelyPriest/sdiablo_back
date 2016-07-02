@@ -29,8 +29,11 @@ function filterProvider(){
 	    {query_by_post: {method: 'POST', isArray:true}});
 
 	return{
-	    default_time: function(start){
-		var now = $.now();
+	    default_time: function(start, end){
+		var now = end;
+		if (angular.isUndefined(now)){
+		    now = $.now();
+		}
 		if (angular.isUndefined(start)){
 		    return {start_time: now - diablo_day_millisecond * 30,
 			    end_time: now}; 
