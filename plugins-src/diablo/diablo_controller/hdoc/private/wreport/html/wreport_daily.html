@@ -37,7 +37,7 @@
 	  <tab heading="按店铺"
 	       select="do_search_by_shop(current_shop_page)">
 	    <div class="panel panel-default">
-	      <div class="table-responsive">
+	      <div class="table-responsive diablo-table">
 		<table class="table table-bordered 
 			      table-striped table-hover table-condensed table-advanced">
 		  <thead>
@@ -219,15 +219,25 @@
       <div class="form-body"> 
 	<div class="form-group">
 	  <div class="input-group">
-	    <span class="input-group-addon"> 营业员</span>
+	    <span class="input-group-addon">员工</span>
 	    <select class="form-control"
 		    name="shopowner"
 		    type="text"
 		    x-ng-model="params.employee"
 		    x-ng-options="e as e.name for e in params.employees">
 	    </select>
+	  </div>
+	</div>
+
+	<div class="form-group">
+	  <div class="input-group">
+	    <span class="input-group-addon">备注</span>
+	    <input class="form-control"
+		   type="text"
+		   x-ng-model="params.comment"/>
 	  </div> 
 	</div>
+	
       </div>
     </form>
     

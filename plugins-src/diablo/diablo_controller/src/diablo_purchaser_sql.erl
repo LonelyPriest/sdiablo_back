@@ -833,6 +833,7 @@ inventory_match(Merchant, StyleNumber, Shop, Firm) ->
 	" and a.shop=" ++ ?to_s(Shop)
 	++ case Firm of
 	       [] -> [];
+	       -1 -> [];
 	       Firm -> " and a.firm=" ++ ?to_s(Firm)
 	   end
 	++ " and a.merchant=" ++ ?to_s(Merchant)

@@ -272,12 +272,10 @@ function filterProvider(){
 		} else {
 		    return wgoodService.list_purchaser_firm(
 		    ).then(function(firms){
-			// console.log(firms); 
 			_firms = firms.map(function(f){
-			    var prompt = f.name + "，" + f.id.toString();
 			    return {id: f.id,
 				    name:f.name,
-				    py:diablo_pinyin(prompt),
+				    py:diablo_pinyin(f.name),
 				    balance:f.balance};
 			}); 
 			return _firms; 

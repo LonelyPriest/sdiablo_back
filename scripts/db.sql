@@ -73,6 +73,7 @@ create table shops
 create table suppliers
 (
     id              INTEGER AUTO_INCREMENT,
+    code            INTEGER default -1,
     name            VARCHAR(128) not null,
     balance         DECIMAL(10, 2) default 0, -- max: 99999999.99
     mobile          VARCHAR(11),
@@ -928,4 +929,74 @@ create table w_bill_detail(
     primary key     (id)
     
 ) default charset=utf8;
+
+/*
+* change shift
+*/
+create table w_change_shift(
+    id              INTEGER AUTO_INCREMENT,
+    
+    merchant        INTEGER not null default -1, 
+    employ          VARCHAR(8) not null, 
+    shop            INTEGER not null default -1,
+        
+    total           INTEGER not null default -1, 
+    balance         DECIMAL(10, 2) not null default 0,
+    cash            DECIMAL(10, 2) not null default 0,
+    card            DECIMAL(10, 2) not null default 0,
+
+    y_stock         INTEGER not null default -1, 
+    stock           INTEGER not null default -1, 
+    stock_in        INTEGER not null default -1,
+    stock_out       INTEGER not null default -1,
+
+    comment         VARCHAR(127) default null,
+    entry_date      DATETIME default 0,
+    
+    key     dk (merchant, shop, employ),
+    primary key    (id)
+    
+) default charset=utf8;
+
+/*
+* daily record
+*/
+create table w_daily_report(
+    id              INTEGER AUTO_INCREMENT,
+    
+    merchant        INTEGER not null default -1, 
+    shop            INTEGER not null default -1,
+        
+    sell            INTEGER not null default -1,
+    sell_cost       DECIMAL(10, 2) not null default 0,
+    balance         DECIMAL(10, 2) not null default 0,
+    cash            DECIMAL(10, 2) not null default 0,
+    card            DECIMAL(10, 2) not null default 0,
+    veri            DECIMAL(10, 2) not null default 0,
+
+    stock           INTEGER not null default -1,
+    stock_cost      DECIMAL(10, 2) not null default 0,
+    
+    stock_in        INTEGER not null default -1,
+    stock_out       INTEGER not null default -1,
+    stock_in_cost   DECIMAL(10, 2) not null default 0,
+    stock_out_cost  DECIMAL(10, 2) not null default 0,
+
+    t_stock_in       INTEGER not null default -1,
+    t_stock_in_cost  DECIMAL(10, 2) not null default 0,
+    t_stock_out      INTEGER not null default -1,
+    t_stock_out_cost DECIMAL(10, 2) not null default 0,
+    
+    stock_fix        INTEGER not null default -1,
+    stock_fix_ocst   DECIMAL(10, 2) not null default 0,
+
+    entry_date      DATETIME default 0,
+    
+    key     dk (merchant, shop),
+    primary key    (id)
+    
+) default charset=utf8;
+
+
+
 

@@ -55,7 +55,9 @@ action(Session, Req, {"new_firm"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     case ?supplier:supplier(w_new, [{<<"merchant">>, Merchant}|Payload]) of
 	{ok, FirmId} ->
-	    ?utils:respond(200, Req, ?succ(add_supplier, FirmId), {<<"id">>, FirmId});
+	    %% ?supplier:update(code, Merchant, FirmId),
+	    ?w_user_profile:update(firm, Merchant),
+	    ?utils:respond(200, Req, ?succ(add_supplier, FirmId), {<<"id">>, FirmId}); 
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;
@@ -304,7 +306,7 @@ do_write(firm, Do, Count, [{H}|T]) ->
     L = "\r\n"
 	++ ?to_s(Count) ++ ?d
 	++ ?to_s(Name) ++ ?d
-	++ ?to_s(Id) ++ ?d
+	++ ?to_s(?FIRM_PREFIX + Id) ++ ?d 
 	++ ?to_s(Mobile) ++ ?d
 	++ ?to_s(Address) ++ ?d
 	++ ?to_s(Comment) ++ ?d,

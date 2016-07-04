@@ -922,32 +922,33 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 		      Datetime, OldDatatime, CurTime, Inventories)
 	   end,
 
-    IsSame = fun(New, Old) when New == Old -> undefined;
-		(New, _Old) ->
+    IsSame = fun(_, New, Old) when New == Old -> undefined;
+		(number, New, _Old) -> New; 
+		(datetime, New, _Old) ->
 		     ?utils:correct_datetime(datetime, New)
 	     end,
     
     Updates = ?utils:v(employ, string, Employee)
-	++ ?utils:v(firm, integer, IsSame(Firm, OldFirm)) 
+	++ ?utils:v(firm, integer, IsSame(number, Firm, OldFirm)) 
 	++ ?utils:v(shop, integer, Shop)
-	++ ?utils:v(should_pay, float, IsSame(ShouldPay, OldShouldPay))
-	++ ?utils:v(has_pay, float, IsSame(HasPay, OldHasPay))
+	++ ?utils:v(should_pay, float, IsSame(number, ShouldPay, OldShouldPay))
+	++ ?utils:v(has_pay, float, IsSame(number, HasPay, OldHasPay))
 	++ ?utils:v(cash, float, Cash)
 	++ ?utils:v(card, float, Card)
 	++ ?utils:v(wire, float, Wire)
 	++ ?utils:v(verificate, float, VerifyPay)
-	++ ?utils:v(e_pay, float, IsSame(EPay, OldEPay))
+	++ ?utils:v(e_pay, float, IsSame(number, EPay, OldEPay))
 	++ ?utils:v(e_pay_type, integer, EPayType)
 	++ ?utils:v(total, integer, Total)
 	++ ?utils:v(comment, string, Comment)
-	++ ?utils:v(entry_date, string, IsSame(Datetime, OldDatatime)), 
+	++ ?utils:v(entry_date, string, IsSame(datetime, Datetime, OldDatatime)), 
 		     
     case Firm =:= OldFirm of
 	true ->
 	    Sql2 = "update w_inventory_new set "
 		++ ?utils:to_sqls(
 		      proplists, comma,
-		      ?utils:v(balance, float, IsSame(Balance, OldBalance)) ++ Updates)
+		      ?utils:v(balance, float, IsSame(number, Balance, OldBalance)) ++ Updates)
 		++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'",
 
 	    case (ShouldPay + EPay - HasPay - VerifyPay)

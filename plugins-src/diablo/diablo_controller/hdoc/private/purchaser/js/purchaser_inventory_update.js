@@ -7,7 +7,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
     $scope.brands      = filterBrand;
     $scope.firms       = filterFirm;
     $scope.types       = filterType;
-    $scope.employees   = filterEmployee;
+    // $scope.employees   = filterEmployee;
     $scope.size_groups = filterSizeGroup;
     $scope.ubase       = base;
     $scope.sexs        = diablo_sex;
@@ -246,6 +246,11 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	$scope.old_select.datetime = diablo_set_datetime(base.entry_date); 
 	
 	// $scope.old_select.surplus    = $scope.old_select.firm.balance;
+	var select = stockUtils.get_login_employee(
+	    base.shop_id, user.loginEmployee, filterEmployee); 
+	$scope.select.employee = select.login;
+	$scope.employees = select.filter;
+	
 	$scope.old_select.shop =
 	    $scope.get_object(base.shop_id, $scope.shops);
 	$scope.old_select.employee =

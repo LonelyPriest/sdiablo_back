@@ -23,7 +23,7 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
     $scope.sexs              = diablo_sex;
     $scope.seasons           = diablo_season;
     $scope.firms             = filterFirm;
-    $scope.employees         = filterEmployee;
+    // $scope.employees         = filterEmployee;
     $scope.extra_pay_types   = purchaserService.extra_pay_types;
     $scope.timeout_auto_save = undefined;
     $scope.round             = diablo_round;
@@ -67,6 +67,7 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
     $scope.inventories.push({$edit:false, $new:true});
     
     $scope.select = {
+	shop: $scope.shops.length !== 0 ? $scope.shops[0]:undefined,
 	datetime:   now,
 	total:      0,
 	should_pay: 0,
@@ -80,15 +81,15 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
     // 	$scope.select.surplus = parseFloat($scope.select.firm.balance);
     // 	$scope.select.left_balance   = $scope.select.surplus;
     // }
+
+    $scope.get_employee = function(){
+	var select = stockUtils.get_login_employee(
+	    $scope.select.shop.id, user.loginEmployee, filterEmployee); 
+	$scope.select.employee = select.login;
+	$scope.employees = select.filter; 
+    }; 
+    $scope.get_employee();
     
-    if ($scope.employees.length !== 0){
-	$scope.select.employee = $scope.employees[0];
-    }
-
-    if ($scope.shops.length !== 0){
-	$scope.select.shop = $scope.shops[0];
-    }
-
     $scope.$watch("select.firm", function(newValue, oldValue){
     	if (newValue === oldValue) return;
     	$scope.change_firm();
@@ -112,11 +113,14 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 
     $scope.change_shop = function(){
 	$scope.setting.reject_negative = stockUtils.reject_negative(
-	    $scope.select.shop.id, base);
+	    $scope.select.shop.id, base); 
+	$scope.q_prompt = stockUtils.typeahead($scope.select.shop.id, base);
 	
 	if ($scope.q_prompt === diablo_frontend){
 	    $scope.get_all_prompt_inventory();
 	}
+
+	$scope.get_employee();
     };
 
     $scope.refresh = function(){
@@ -206,7 +210,7 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 
     $scope.match_prompt_inventory = function(viewValue){
 	return diabloFilter.match_w_reject_inventory(
-	    viewValue, $scope.select.shop.id, $scope.select.firm.id); 
+	    viewValue, $scope.select.shop.id, stockUtils.invalid_firm($scope.select.firm)); 
     }; 
 
     $scope.on_select_inventory = function(item, model, label){

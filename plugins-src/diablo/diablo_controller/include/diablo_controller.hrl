@@ -48,6 +48,8 @@
 -define(FIRM_BILL, 9).
 -define(INVALID_OR_EMPTY, -1).
 
+-define(FIRM_PREFIX, 1000).
+
 %% bill mode
 -define(CASH, 0).
 -define(CARD, 1).

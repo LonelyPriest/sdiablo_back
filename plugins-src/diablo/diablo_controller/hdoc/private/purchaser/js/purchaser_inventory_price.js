@@ -55,9 +55,9 @@ purchaserApp.controller("purchaserInventoryPriceCtrl", function(
     var now = $.now();
 
     $scope.base_settings = {
-	plimit : stockUtils.prompt_limit($scope.select.shop.id, base),
-	prompt : stockUtils.typeahead($scope.select.shop.id, base),
-	start_time : stockUtils.start_time($scope.select.shop.id, base, now, dateFilter)
+	plimit : stockUtils.prompt_limit(-1, base),
+	prompt : stockUtils.typeahead(-1, base),
+	start_time : stockUtils.start_time(-1, base, now, dateFilter)
     };
     
     
@@ -73,7 +73,7 @@ purchaserApp.controller("purchaserInventoryPriceCtrl", function(
     }
 
     $scope.change_shop = function(){
-	if ($scope.q_prompt === diablo_frontend){
+	if ($scope.base_settings.prompt === diablo_frontend){
 	    $scope.get_all_prompt_inventory();
 	}
     };

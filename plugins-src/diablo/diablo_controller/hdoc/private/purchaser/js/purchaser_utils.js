@@ -1,5 +1,7 @@
 var stockUtils = function(){
     return {
+	firm_prefix: 1000,
+	
 	typeahead: function(shop, base){
 	    return diablo_base_setting(
 		"qtypeahead", shop, base, parseInt, diablo_backend);
@@ -71,7 +73,7 @@ var stockUtils = function(){
 		break;
 	    }
 	},
-
+	
 	prompt_name: function(style_number, brand, type) {
 	    var name = style_number + "，" + brand + "，" + type;
 	    var prompt = name + "," + diablo_pinyin(name); 
@@ -230,7 +232,7 @@ var stockUtils = function(){
 	    
 	    if (angular.isUndefined(select)) select = filterEmployees[0];
 
-	    console.log(select);
+	    // console.log(select);
 	    return {login:select, filter:filterEmployees};
 	}
 	    

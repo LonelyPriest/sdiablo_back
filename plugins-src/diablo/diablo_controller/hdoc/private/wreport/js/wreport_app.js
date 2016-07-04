@@ -54,10 +54,10 @@ wreportApp.service("wreportService", function($resource, dateFilter){
 	2419: "打印机未连接！！",
 	2420: "打印机缺纸！！",
 	2421: "打印状态未知，请联系服务人员！！",
-	2422: "打印机连接设备不存在，请检查设备编号是否正确！！"
+	2422: "打印机连接设备不存在，请检查设备编号是否正确！！",
 
-    };
-
+	9001: "数据库操作失败，请联系服务人员！！"};
+    
     var http = $resource("/wreport/:operation/:type",
     			 {operation: '@operation', type: '@type'});
     

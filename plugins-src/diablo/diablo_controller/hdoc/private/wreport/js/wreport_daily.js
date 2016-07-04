@@ -2,14 +2,14 @@ wreportApp.controller("wreportDailyCtrl", function(
     $scope, dateFilter, diabloFilter, diabloUtilsService, wreportService,
     wreportCommService, filterEmployee, user){
     wreportCommService.set_employee(filterEmployee);
-    // wreportCommService.set_retailer(filterRetailer);
-    wreportCommService.set_user(user);
-    
-    // $scope.employees = filterEmployee;
-    // $scope.retailers = filterRetailer;
-    // $scope.sortShops = user.sortShops;
+    wreportCommService.set_user(user); 
 
-    $scope.employees = wreportCommService.get_employee();
+    $scope.employees = wreportCommService.get_employee().filter(function(e){
+	return in_array(user.shopIds, e.shop)
+    });
+    
+    console.log($scope.employees);
+    
     $scope.sortShops = wreportCommService.get_sort_shop();
     $scope.current_day         = $.now();
 
@@ -102,45 +102,46 @@ wreportApp.controller("wreportDailyCtrl", function(
 
     var dialog = diabloUtilsService;
     $scope.print_shop = function(d){
-	
 	var callback = function(params){
             wreportService.print_wreport(
 		diablo_by_shop,
 		{shop:     d.shop.id,
 		 employee: params.employee.id,
-		 datetime: dateFilter($scope.current_day, "yyyy-MM-dd HH:mm:ss"),
-		 total:    d.sale.total,
-		 spay:     d.sale.spay,
-		 cash:     d.sale.cash,
-		 card:     d.sale.card}
+		 comment:  params.comment}
             ).then(function(status){
 		console.log(status);
-		var messsage = "";
-		if (status.pcode === 0){
-                    messsage = "打印成功！！请等待服务器打印．．．";
-                    dialog.response(true, "交班报表打印", messsage);
+		if (status.ecode === 0){
+		    var messsage = "";
+		    if (status.pcode === 0){
+			messsage = "打印成功！！请等待服务器打印．．．";
+			dialog.response(true, "交班报表打印", messsage);
+		    } else {
+			message = "打印失败！！"
+			if (status.pinfo.length === 0){
+			    messsage += wreportService.error[status.pcode]
+			} else {
+			    angular.forEach(status.pinfo, function(p){
+				messsage += "[" + p.device + "] " + wreportService.error[p.ecode]
+			    })
+			};
+			dialog.response(false, "交班报表打印", messsage);
+		    }
 		} else {
-                    message = "打印失败！！"
-                    if (status.pinfo.length === 0){
-			messsage += wreportService.error[status.pcode]
-                    } else {
-			angular.forEach(status.pinfo, function(p){
-                            messsage += "[" + p.device + "] " + wreportService.error[p.ecode]
-			})
-                    };
-                    dialog.response(false, "交班报表打印", messsage);
+		    dialog.response(
+			false, "交班失败", "交班失败：" + wreportService.error[status.ecode]);
 		}
-
             })
 	}
-
+	
+	var loginEmployee = user.loginEmployee === diablo_invalid_employee ?
+	    $scope.employees[0] : diablo_get_object(user.loginEmployee, $scope.employees);
 	dialog.edit_with_modal(
 	    "select-employee.html",
 	    'normal',
 	    callback,
 	    undefined,
 	    {employees:$scope.employees,
-	     employee: $scope.employees[0]});
+	     employee: loginEmployee});
     };
 });
 

@@ -31,6 +31,25 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope.disable_refresh   = true;
     $scope.timeout_auto_save = undefined;
 
+    $scope.get_prompt_firm = function(prompt){
+	var pfirms = [];
+	angular.forEach($scope.firms, function(f){
+	    if (-1 !== f.name.indexOf(prompt)){
+		pfirms.push(f); 
+	    } else {
+		if (-1 !== f.py.indexOf(prompt.toUpperCase())){
+		    pfirms.push(f);    
+		} else {
+		    if ((f.id + stockUtils.firm_prefix).toString() === prompt){
+			pfirms.push(f);
+		    }
+		}
+	    }
+	});
+
+	return pfirms;
+    };
+    
     $scope.today = function(){
 	return $.now();
     };
@@ -87,11 +106,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	} else {
 	    $scope.select.surplus = undefined;
 	    $scope.select.left_balance = undefined;
-	}
-
-	if ($scope.q_prompt === diablo_frontend){
-	    $scope.get_all_w_good();
 	} 
+	$scope.get_prompt_good(); 
     };
 
     $scope.refresh = function(){
@@ -210,6 +226,9 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	sDraft.change_key(undefined, $scope.select.shop.id, $scope.select.employee.id);
 	$scope.base_settings.m_sgroup = stockUtils.multi_sizegroup($scope.select.shop.id, base);
 	$scope.base_settings.t_trace = stockUtils.t_trace($scope.select.shop.id, base);
+
+	$scope.q_prompt = $scope.q_typeahead($scope.select.shop.id, base);
+	$scope.get_prompt_good(); 
 	$scope.get_employee();
     };
     
@@ -256,10 +275,13 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    // console.log($scope.all_w_goods);
 	});
     };
-    
-    if ($scope.q_prompt === diablo_frontend){
-    	$scope.get_all_w_good();
-    };
+
+    $scope.get_prompt_good = function(){
+	if ($scope.q_prompt === diablo_frontend){
+    	    $scope.get_all_w_good();
+	}
+    }; 
+    $scope.get_prompt_good();
 
     var copy_select = function(add, src){
 	add.$new_good    = src.$new_good;
@@ -979,7 +1001,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	console.log($scope.focus_attrs);
 
 	if (angular.isUndefined($scope.all_w_goods)
-	    || $scope.all_w_goods.length.length === 0){
+	    || $scope.all_w_goods.length === 0){
 	    $scope.get_all_w_good();
 	}
     };

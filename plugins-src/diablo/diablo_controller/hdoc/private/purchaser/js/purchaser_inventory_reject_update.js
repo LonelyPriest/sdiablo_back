@@ -10,7 +10,7 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
     $scope.brands          = filterBrand;
     $scope.types           = filterType;
     $scope.firms           = filterFirm;
-    $scope.employees       = filterEmployee;
+    // $scope.employees       = filterEmployee;
     $scope.ubase           = base;
     
     // $scope.shops     = user.sortAvailabeShops;
@@ -258,8 +258,13 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	}
 	
 	// $scope.old_select.surplus    = $scope.old_select.firm.balance;
+	var select = stockUtils.get_login_employee(
+	    base.shop_id, user.loginEmployee, filterEmployee); 
+	$scope.select.employee = select.login;
+	$scope.employees = select.filter;
+	
 	$scope.old_select.shop         = $scope.get_object(
-	    base.shop_id,   $scope.shops);
+	    base.shop_id,   $scope.shops); 
 	$scope.old_select.employee     = $scope.get_object(
 	    base.employee_id, $scope.employees);
 	
@@ -609,7 +614,7 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 		s_group        : add.s_group,
 		free           : add.free,
 		org_price      : stockUtils.to_float(add.org_price),
-		// tag_price      : parseFloat(add.tag_price), 
+		tag_price      : parseFloat(add.tag_price), 
 		ediscount      : stockUtils.to_float(add.ediscount),
 		// discount       : add.discount,
 		year           : add.year,

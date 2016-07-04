@@ -31,7 +31,7 @@ diabloUtils.directive('ngShortcut', function(){
 	},
 	
 	link:function (scope, element, attrs) {
-            element.bind("keydown keypress", function (event) {
+            element.bind("keydown", function (event) {
 		if(event.which === scope.key) {
 		    // console.log(scope.key);
 		    var f = scope.go; 
@@ -54,7 +54,8 @@ diabloUtils.directive('saleShortcut', function(){
 	},
 	
 	link:function (scope, element, attrs) {
-            element.bind("keydown keypress", function (event) {
+            element.bind("keydown", function (event) {
+		console.log(event.keyCode);
 		if(event.which === 112
 		   || event.which === 113
 		   || event.which === 114

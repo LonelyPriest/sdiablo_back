@@ -126,100 +126,161 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
     ?DEBUG("print_wreport with session ~p, type ~p, payload~n~p",[Session, Type, Payload]),
     Merchant = ?session:get(merchant, Session),
     {struct, Content}  = ?v(<<"content">>, Payload),
-    ShopId   = ?v(<<"shop">>, Content, []),
+    ShopId     = ?v(<<"shop">>, Content),
     EmployeeId = ?v(<<"employee">>, Content),
-    Datetime = ?v(<<"datetime">>, Content),
-    Total    = ?v(<<"total">>, Content),
-    SPay     = ?v(<<"spay">>, Content), 
-    Cash     = ?v(<<"cash">>, Content),
-    Card     = ?v(<<"card">>, Content), 
-
-    {ok, EmployeeInfo} = ?w_user_profile:get(employee, Merchant, EmployeeId),
-    {VPrinters, ShopInfo} = ?wifi_print:get_printer(Merchant, ShopId),
-    %% ?DEBUG("VPrinters ~p", [VPrinters]),
+    Comment    = ?v(<<"comment">>, Content, []),
     
-    ResponseFun =
-        fun(PCode, PInfo) -> 
-                ?utils:respond(200, Req, ?succ(print_wreport, ShopId),
-                               [{<<"pcode">>, PCode},
-                                {<<"pinfo">>, PInfo}])
-        end,
+    Currenttime = ?utils:current_time(format_localtime), 
+    TimeEnd = time_of_end_day(),
+    TodayStart = ?utils:current_time(localdate),
+    TodayEnd = TodayStart ++ " " ++ TimeEnd,
+    
+    {ok, EmployeeInfo} = ?w_user_profile:get(employee, Merchant, EmployeeId),
+    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, ShopId), 
+
+    {VPrinters, ShopInfo} = ?wifi_print:get_printer(Merchant, ShopId),
+    ShopName = ?to_s(?v(<<"name">>, ShopInfo)),
+    EmployeeName = ?v(<<"name">>, EmployeeInfo),
+    
+    Conditions = [{<<"shop">>, ShopId},
+		  {<<"employ">>, EmployeeId},
+		  {<<"start_time">>, ?to_b(TodayStart)},
+		  {<<"end_time">>, ?to_b(TodayEnd)}],
+
+    DropConditions = lists:keydelete(<<"employ">>, 1, Conditions),
+    ?DEBUG("dropconditions ~p", [DropConditions]),
+    
+    {ok, SaleInfo} = ?w_report:stastic(stock_sale, Merchant, Conditions), 
+    {ok, StockIn}  = ?w_report:stastic(stock_in, Merchant, DropConditions),
+    {ok, StockOut} = ?w_report:stastic(stock_out, Merchant, DropConditions),
+    %% {ok, StockTransferIn} = ?w_report:stastic(stock_transfer_in, Merchant, Conditions),
+    %% {ok, StockTransferOut} = ?w_report:stastic(stock_transfer_out, Merchant, Conditions),
+    %% {ok, StockFix} = ?w_report:stastic(stock_fix, Merchant, Conditions), 
+    {ok, StockR} = ?w_report:stastic(
+		      stock_real, Merchant,
+		      [{<<"shop">>, ShopId},
+		       {<<"start_time">>, ?v(<<"qtime_start">>, BaseSetting)}
+		      ]),
 
 
-    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, ShopId),
+    {SellTotal, SellBalance, SellCash, SellCard} = sell(info, SaleInfo),
+    CurrentStockTotal = stock(total, StockR),
+    StockInTotal = stock(total, StockIn),
+    StockOutTotal = stock(total, StockOut),
+    %% ?DEBUG("stockr ~p", [StockR]),
+    
+    Sql = "select id, merchant, shop, employ entry_date"
+	" from w_change_shift"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and shop=" ++ ?to_s(ShopId)
+	++ " and employ=\'" ++ ?to_s(EmployeeId) ++ "\'"
+	++ " and entry_date>\'" ++ TodayStart ++ "\'"
+	++ " and entry_date<=\'" ++ TodayEnd ++ "\'",
 
-    QTimeStart = ?v(<<"qtime_start">>, BaseSetting),
+    ShiftSql = 
+	case ?sql_utils:execute(s_read, Sql) of
+	    {ok, []} -> 
+		{insert,
+		 "insert into w_change_shift(merchant, employ, shop"
+		 ", total, balance, cash, card"
+		 ", stock, y_stock, stock_in, stock_out"
+		 ", comment, entry_date) values("
+		 ++ ?to_s(Merchant) ++ ","
+		 ++ "\'" ++ ?to_s(EmployeeId) ++ "\',"
+		 ++ ?to_s(ShopId) ++ ","
 
-    {ok, StockInfo} =
-	?w_inventory:filter(
-	   total_groups,
-	   'and',
-	   Merchant,
-	   [{<<"shop">>, ShopId},
-	    {<<"start_time">>, QTimeStart}]),
+		 ++ ?to_s(SellTotal) ++ ","
+		 ++ ?to_s(SellBalance) ++ ","
+		 ++ ?to_s(SellCash) ++ ","
+		 ++ ?to_s(SellCard) ++ ","
 
-    LeftStock = ?v(<<"t_amount">>, StockInfo),
-    %% ?DEBUG("stock info ~p", [StockInfo]),
+		 ++ ?to_s(CurrentStockTotal) ++ "," 
+		 ++ "0,"
+		 ++ ?to_s(StockInTotal) ++ ","
+		 ++ ?to_s(StockOutTotal) ++ ","
 
-    case VPrinters of
-        [] ->
-	    {ECode, _} = ?err(shop_not_printer, ShopId), 
-	    ResponseFun(ECode, []);
-	_  ->
-	    ShopName = ?to_s(?v(<<"name">>, ShopInfo)),
-	    Employee = ?v(<<"name">>, EmployeeInfo),
-	    PrintInfo = 
-		lists:foldr(
-		  fun(P, Acc) ->
-			  ?DEBUG("p ~p", [P]),
-			  SN     = ?v(<<"sn">>, P),
-			  Key    = ?v(<<"code">>, P),
-			  Path   = ?v(<<"server_path">>, P),
+		 ++ "\'" ++ ?to_s(Comment) ++ "\',"
+		 ++ "\'" ++ ?to_s(Currenttime) ++ "\')"};
+	    {ok, Shift} ->
+		{update,
+		 "update w_change_shift set "
+		 ++ "total=" ++ ?to_s(SellTotal)
+		 ++ ", balance="++ ?to_s(SellBalance)
+		 ++ ", cash="++ ?to_s(SellCash)
+		 ++ ", card="++ ?to_s(SellCard)
 
-			  Brand  = ?v(<<"brand">>, P),
-			  Model  = ?v(<<"model">>, P),
+		 ++ ", stock=" ++ ?to_s(CurrentStockTotal)
+		 ++ ", stock_in=" ++ ?to_s(StockInTotal)
+		 ++ ", stock_out=" ++ ?to_s(StockOutTotal)
 
-			  %% Column = ?v(<<"pcolumn">>, P),
-			  %% PShop  = ?v(<<"pshop">>, P),
+		 ++ ", comment=\'" ++ ?to_s(Comment) ++ "\'"
+		 ++ ", entry_date=\'" ++ ?to_s(Currenttime) ++ "\'"
+		 " where id=" ++ ?to_s(?v(<<"id">>, Shift))}
+	end,
 
-			  %% ?DEBUG("P ~p", [P]),
-			  Server = ?wifi_print:server(?v(<<"server_id">>, P)), 
+    TitleFun =
+	fun(Brand, Model) ->
+		?wifi_print:title(Brand, Model, ShopName)
+		    ++ ?f_print:br(Brand)
+		    ++ ?wifi_print:title(Brand, Model, "（交班报表）")
+	end,
+    
+    BodyFun =
+	fun(Brand, _Model, Column) ->
+		FillLen = case Column of
+			      58 -> 
+				  (32 - 8) div 2;
+			      80 ->
+				  (49 - 8) div 2
+			  end,
+		"日期：" ++ ?to_s(Currenttime) ++ ?f_print:br(Brand)
+		    ++ "员工：" ++ ?to_s(EmployeeName)
+		    ++ ?f_print:br(Brand)
+		    ++ ?f_print:br(Brand)
+		    
+		    ++ "<C>" ++ ?f_print:line(equal, FillLen)
+		    ++ "营业状况" ++ ?f_print:line(equal, FillLen)
+		    ++ "</C>" ++ ?f_print:br(Brand)
+		    
+		    ++ "数量：" ++ ?to_s(SellTotal) ++ ?f_print:br(Brand) 
+		    ++ "营业额：" ++ ?to_s(SellBalance) ++ ?f_print:br(Brand) 
+		    ++ "现金：" ++ ?to_s(SellCash) ++ ?f_print:br(Brand)
+		    ++ "刷卡：" ++ ?to_s(SellCard) ++ ?f_print:br(Brand)
+		    ++ ?f_print:br(Brand)
 
-			  Title = ?wifi_print:title(Brand, Model, ShopName)
-			      ++ ?f_print:br(Brand)
-			      ++ ?wifi_print:title(Brand, Model, "（交班报表）"),
+		    ++ "<C>" ++ ?f_print:line(equal, FillLen)
+		    ++ "库存状况"
+		    ++ ?f_print:line(equal, FillLen) ++ "</C>" ++ ?f_print:br(Brand)
+		    
+		    ++ "昨日库存：" ++ ?to_s(0) ++ ?f_print:br(Brand)
+		    ++ "当前库存：" ++ ?to_s(CurrentStockTotal) ++ ?f_print:br(Brand)
 
-			  Body = "日期：" ++ ?to_s(Datetime) ++ ?f_print:br(Brand)
-			      ++ "营业员：" ++ ?to_s(Employee) ++ ?f_print:br(Brand)
-			      ++ "营业额：" ++ ?to_s(SPay) ++ ?f_print:br(Brand) 
-			      ++ "数量：" ++ ?to_s(Total) ++ ?f_print:br(Brand)
-                              ++ "现金：" ++ ?to_s(Cash) ++ ?f_print:br(Brand)
-                              ++ "刷卡：" ++ ?to_s(Card) ++ ?f_print:br(Brand) 
-			      ++ "库存：" ++ ?to_s(LeftStock) ++ ?f_print:br(Brand),
-			  
-			  PrintContent = Title ++ Body,
+		    ++ "入库数量：" ++ ?to_s(StockInTotal) ++ ?f_print:br(Brand)
+		    ++ "退货数量：" ++ ?to_s(StockOutTotal) ++ ?f_print:br(Brand)
 
-			  [{SN, fun() when Server =:= fcloud ->
-					?wifi_print:start_print(
-					   fcloud, SN, Key, Path, 1, PrintContent) 
-				end}|Acc]
-		  end, [], VPrinters),
+		    ++ lists:foldl(
+			 fun(_Inc, Acc) -> ?f_print:br(Brand) ++ Acc end, [], lists:seq(1, 8))
+	end,
 
-
-	    case ?wifi_print:multi_print(PrintInfo) of
-                {Success, []} -> 
-                    ResponseFun(0, Success);
-		                {[], Failed} ->
-                    PInfo = [{[{<<"device">>, DeviceId}, {<<"ecode">>, ECode}]}
-                             || {DeviceId, ECode} <- Failed],
-                    ResponseFun(1, PInfo);
-                {_Success, Failed} when is_list(Failed)->
-                    PInfo = [{[{<<"device">>, DeviceId}, {<<"ecode">>, ECode}]}
-                             || {DeviceId, ECode} <- Failed],
-                    ResponseFun(2, PInfo);
-                {error, {ECode, _EInfo}} ->
-                    ResponseFun(ECode, [])
-            end
+    %% ResponseFun =
+    %%     fun(PCode, PInfo) -> 
+    %%             ?utils:respond(200, Req, ?succ(print_wreport, ShopId),
+    %%                            [{<<"pcode">>, PCode},
+    %%                             {<<"pinfo">>, PInfo}])
+    %%     end,
+    case
+	case ShiftSql of
+	    {insert, InsertSql} ->
+		?sql_utils:execute(insert, InsertSql);
+	    {update, UpdateSql} ->
+		?sql_utils:execute(write, UpdateSql, ok)
+	end
+    of
+	{ok, _} -> 
+	    PrintInfo = s_print(VPrinters, ShopId, TitleFun, BodyFun, []),
+	    m_print(Req, ShopId, PrintInfo);
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
     end.
 
 sidebar(Session) ->
@@ -261,7 +322,84 @@ sidebar(Session) ->
 	    ?menu:sidebar(level_1_menu, R) 
     end.
 
+
+s_print([], Shop, _TitleFun, _BodyFun, []) ->
+    ?err(shop_not_printer, Shop);
+s_print([], _Shop, _TitleFun, _BodyFun, Acc) ->
+    Acc;
+s_print([P|Printers], Shop, TitleFun, BodyFun, Acc) ->
+    SN     = ?v(<<"sn">>, P),
+    Key    = ?v(<<"code">>, P),
+    Path   = ?v(<<"server_path">>, P),
+
+    Brand  = ?v(<<"brand">>, P),
+    Model  = ?v(<<"model">>, P),
+    Column = ?v(<<"pcolumn">>, P),
     
+    Server = ?wifi_print:server(?v(<<"server_id">>, P)),
+
+    PrintContent = TitleFun(Brand, Model) ++ BodyFun(Brand, Model, Column),
+
+    s_print(Printers,
+	    Shop,
+	    TitleFun,
+	    BodyFun,
+	    [{SN,
+	      fun() when Server =:= fcloud ->
+		      ?wifi_print:start_print(fcloud, SN, Key, Path, 1, PrintContent)
+	      end}|Acc]).
+
+m_print(Req, ShopId, PrintInfo) ->
+    ResponseFun =
+        fun(PCode, PInfo) -> 
+                ?utils:respond(200, Req, ?succ(print_wreport, ShopId),
+                               [{<<"pcode">>, PCode},
+                                {<<"pinfo">>, PInfo}])
+        end,
+    m_print(PrintInfo, ResponseFun).
+
+m_print({2401, _}, ResponseFun) ->
+    ResponseFun(2401, []);
+m_print(PrintInfo, ResponseFun) ->
+    case ?wifi_print:multi_print(PrintInfo) of
+	{Success, []} -> 
+	    ResponseFun(0, Success);
+	{[], Failed} ->
+	    PInfo = [{[{<<"device">>, DeviceId}, {<<"ecode">>, ECode}]}
+		     || {DeviceId, ECode} <- Failed],
+	    ResponseFun(1, PInfo);
+	{_Success, Failed} when is_list(Failed)->
+	    PInfo = [{[{<<"device">>, DeviceId}, {<<"ecode">>, ECode}]}
+		     || {DeviceId, ECode} <- Failed],
+	    ResponseFun(2, PInfo);
+	{error, {ECode, _EInfo}} ->
+	    ResponseFun(ECode, [])
+    end.
 
 
+time_of_end_day() ->
+    {H, M, S} = calendar:seconds_to_time(86399), 
+    Correntfun = fun(V) when V < 10->
+			 "0" ++ ?to_s(V);
+		    (V) -> ?to_s(V)
+		 end,
+	     
+   Correntfun(H) ++ ":" ++ Correntfun(M) ++ ":" ++ Correntfun(S).
 
+
+sell(info, [])->
+    {0, 0, 0, 0};
+sell(info, [{SaleInfo}])->
+    {?v(<<"total">>, SaleInfo, 0),
+     ?v(<<"spay">>, SaleInfo, 0),
+     ?v(<<"cash">>, SaleInfo, 0),
+     ?v(<<"card">>, SaleInfo, 0)}.
+
+stock(total, []) ->
+    0;
+stock(total, [{StockInfo}]) ->
+    ?DEBUG("stock info ~p", [StockInfo]),
+    V = ?v(<<"total">>, StockInfo, 0),
+    ?DEBUG("v ~p", [V]),
+    V.
+    

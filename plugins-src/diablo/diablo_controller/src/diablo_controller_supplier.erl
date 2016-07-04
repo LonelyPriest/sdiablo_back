@@ -21,6 +21,7 @@
 	 terminate/2, code_change/3]).
 
 -export([supplier/2, supplier/3, filter/4, filter/6, bill/3]).
+-export([update/3]).
 
 -define(SERVER, ?MODULE). 
 -define(tbl_supplier, "suppliers").
@@ -56,6 +57,9 @@ filter(bill, 'and', Merchant, CurrentPage, ItemsPerPage, Conditions) ->
 
 bill(lookup, Merchant, Conditions) ->
     gen_server:call(?MODULE, {bill_lookup, Merchant, Conditions}).
+
+update(code, Merchant, FirmId) ->
+    gen_server:cast(?MODULE, {update_code, Merchant, FirmId}).
 
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
@@ -100,7 +104,7 @@ handle_call({w_new_supplier, Attrs}, _From, State)->
 
 	    %% ?DEBUG("sql to supplier ~tp", [?to_b(Sql1)]),
 	    Reply = ?sql_utils:execute(insert, Sql1),
-	    ?w_user_profile:update(firm, Merchant),
+	    %% ?w_user_profile:update(firm, Merchant),
 	    {reply, Reply, State};
 	{ok, _Any} ->
 	    ?DEBUG("merchant ~p has been exist", [Name]),
@@ -189,7 +193,7 @@ handle_call({w_list, Merchant}, _From, State) ->
 	++ " where "
 	++ " merchant=" ++ ?to_s(Merchant)
 	++ " and deleted = " ++ ?to_s(?NO)
-	++ " order by id desc",
+	++ " order by id",
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
@@ -542,6 +546,13 @@ handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
 
+
+handle_cast({update_code, Merchant, FirmId}, State) ->
+    Sql = "update suppliers set code=1000 + id"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and id=" ++ ?to_s(FirmId), 
+    ?sql_utils:execute(write, Sql, FirmId),
+    {noreply, State};
 
 handle_cast(_Msg, State) ->
     {noreply, State}.

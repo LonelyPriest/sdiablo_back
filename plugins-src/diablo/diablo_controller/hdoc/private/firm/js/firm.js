@@ -107,10 +107,12 @@ firmApp.controller("firmDetailCtrl", function(
 	    return search === f.name
 		|| search === f.mobile 
 		|| search === f.address
+		|| search === f.code
 	}) 
     };
 
     var reset_pagination = function(firms, search){
+	diablo_order(firms);
 	diabloPagination.set_data(firms);
 	diabloPagination.set_items_perpage($scope.items_perpage);
 	$scope.total_items  = diabloPagination.get_length();
@@ -172,17 +174,10 @@ firmApp.controller("firmDetailCtrl", function(
 	    // console.log(data);
 	    $scope.firms = angular.copy(data);
 	    $scope.total_balance = 0;
+	    $scope.prompts = []; 
 	    angular.forEach($scope.firms, function(f){
 		$scope.total_balance += f.balance;
-	    }); 
-	    $scope.total_balance = diablo_rdight($scope.total_balance, 2);
-
-	    var filters = get_filter_firm(search); 
-	    reset_pagination(filters, search);
-	    
-	    $scope.prompts = [];
-	    for(var i=0, l=$scope.firms.length; i<l; i++){
-		var f = $scope.firms[i];
+		f.code = 1000 + f.id;
 
 		if (!in_prompt(f.name, $scope.prompts)){
 		    $scope.prompts.push({name: f.name, py:diablo_pinyin(f.name)}); 
@@ -192,8 +187,30 @@ firmApp.controller("firmDetailCtrl", function(
 		}
 		if (!in_prompt(f.mobile, $scope.prompts)){
 		    $scope.prompts.push({name: f.mobile, py:diablo_pinyin(f.mobile)}); 
-		} 
-	    } 
+		}
+
+		if (!in_prompt(f.code, $scope.prompts)){
+		    $scope.prompts.push({name: f.code, py:f.code}); 
+		}
+	    }); 
+	    $scope.total_balance = diablo_rdight($scope.total_balance, 2);
+
+	    var filters = get_filter_firm(search); 
+	    reset_pagination(filters, search);
+	    
+	    // for(var i=0, l=$scope.firms.length; i<l; i++){
+	    // 	var f = $scope.firms[i];
+
+	    // 	if (!in_prompt(f.name, $scope.prompts)){
+	    // 	    $scope.prompts.push({name: f.name, py:diablo_pinyin(f.name)}); 
+	    // 	}
+	    // 	if (!in_prompt(f.address, $scope.prompts)){
+	    // 	    $scope.prompts.push({name: f.address, py:diablo_pinyin(f.address)}); 
+	    // 	}
+	    // 	if (!in_prompt(f.mobile, $scope.prompts)){
+	    // 	    $scope.prompts.push({name: f.mobile, py:diablo_pinyin(f.mobile)}); 
+	    // 	} 
+	    // } 
 
 	    // console.log($scope.current_page);
 	});
