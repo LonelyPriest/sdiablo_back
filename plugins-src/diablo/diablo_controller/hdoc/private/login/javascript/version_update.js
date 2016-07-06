@@ -1,6 +1,12 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2016-07-05",
+         content: [
+	     "修正厂商编号联想功能，精确编号检索结果" 
+         ]
+        },
+	
 	{date: "2016-07-03",
          content: [
 	     "增加管理员是否只查看当天销售记录的系统设置项" 

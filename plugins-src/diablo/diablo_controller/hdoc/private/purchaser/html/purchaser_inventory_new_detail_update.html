@@ -40,8 +40,7 @@
 	  	       placeholder="请选择厂商"
 	  	       typeahead-editable="false"
 		       typeahead-on-select="change_firm()"
-	  	       typeahead="f as f.name for f in
-	  			  firms|filter:{py:$viewValue}|limitTo:20"/> 
+	  	       typeahead="f as f.name for f in get_prompt_firm($viewValue)"/> 
 	      </div>
 	    </div>
 
@@ -398,7 +397,7 @@
 				 typeahead-wait-ms="500"
 				 typeahead-loading="loading"
 				 typeahead="g as g.name for g in
-					    match_prompt_good($viewValue)|limitTo:8"/>
+					    match_prompt_good($viewValue)|limitTo:20"/>
 			  <span x-ng-show="loading">
 			    <i class="glyphicon glyphicon-refresh"></i>
 			  </span>

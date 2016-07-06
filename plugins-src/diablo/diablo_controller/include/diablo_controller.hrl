@@ -49,6 +49,7 @@
 -define(INVALID_OR_EMPTY, -1).
 
 -define(FIRM_PREFIX, 1000).
+-define(ONE_DAY, (24 * 60 * 60)).
 
 %% bill mode
 -define(CASH, 0).
@@ -357,6 +358,11 @@
 
 %% profile
 -define(w_user_profile, diablo_wuser_profile).
+
+-define(cron_agent, diablo_cron_agent).
+-define(cron_control, diablo_cron_control).
+-define(cron_job_regist, diablo_cron_job_register).
+-define(cron, diablo_cron).
 
 %% pool
 -define(wpool, diablo_work_pool_sup).

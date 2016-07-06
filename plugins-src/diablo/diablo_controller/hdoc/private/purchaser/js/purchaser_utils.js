@@ -234,6 +234,25 @@ var stockUtils = function(){
 
 	    // console.log(select);
 	    return {login:select, filter:filterEmployees};
+	},
+
+	get_prompt_firm: function(prompt, firms){
+	    var pfirms = [];
+	    angular.forEach(firms, function(f){
+		if (-1 !== f.name.indexOf(prompt)){
+		    pfirms.push(f); 
+		} else {
+		    if (-1 !== f.py.indexOf(prompt.toUpperCase())){
+			pfirms.push(f);    
+		    } else {
+			if ((f.id + stockUtils.firm_prefix).toString() === prompt){
+			    pfirms.push(f);
+			}
+		    }
+		}
+	    });
+
+	    return pfirms;
 	}
 	    
 	//

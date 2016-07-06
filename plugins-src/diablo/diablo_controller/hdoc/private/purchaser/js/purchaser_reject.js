@@ -68,6 +68,7 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
     
     $scope.select = {
 	shop: $scope.shops.length !== 0 ? $scope.shops[0]:undefined,
+	firm: undefined,
 	datetime:   now,
 	total:      0,
 	should_pay: 0,
@@ -89,6 +90,9 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	$scope.employees = select.filter; 
     }; 
     $scope.get_employee();
+
+    $scope.get_prompt_firm = function(prompt){
+	return stockUtils.get_prompt_firm(prompt, $scope.firms)};
     
     $scope.$watch("select.firm", function(newValue, oldValue){
     	if (newValue === oldValue) return;
@@ -126,7 +130,8 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
     $scope.refresh = function(){
 	$scope.inventories = [];
 	$scope.inventories.push({$edit:false, $new:true});
-	
+
+	$scope.select.firm = undefined;
 	$scope.select.should_pay = 0;
 	$scope.select.total      = 0;
 	$scope.select.comment    = undefined;

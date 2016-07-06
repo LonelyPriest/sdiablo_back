@@ -287,3 +287,9 @@ pack_string(String, _Pack, ?MAX_EMPLOYEE_ID) ->
     String;
 pack_string(String, Pack, Length) ->
     pack_string(Pack ++ String, Pack, Length + length(Pack)).
+
+
+-spec epoch_seconds/0 :: () -> diablo_cron:seconds().
+epoch_seconds() -> 
+    {Megasecs, Secs, Microsecs} = os:timestamp(),
+    erlang:trunc((Megasecs * 1000000) + Secs + (Microsecs / 1000000)).

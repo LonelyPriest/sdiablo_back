@@ -165,7 +165,10 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	$scope.select.surplus = parseFloat($scope.select.firm.balance);
 	$scope.re_calculate();
 	// $scope.refresh();
-    }; 
+    };
+
+    $scope.get_prompt_firm = function(prompt){
+	return stockUtils.get_prompt_firm(prompt, $scope.firms)};
 
     // calender
     $scope.open_calendar = function(event){

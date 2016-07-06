@@ -32,23 +32,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope.timeout_auto_save = undefined;
 
     $scope.get_prompt_firm = function(prompt){
-	var pfirms = [];
-	angular.forEach($scope.firms, function(f){
-	    if (-1 !== f.name.indexOf(prompt)){
-		pfirms.push(f); 
-	    } else {
-		if (-1 !== f.py.indexOf(prompt.toUpperCase())){
-		    pfirms.push(f);    
-		} else {
-		    if ((f.id + stockUtils.firm_prefix).toString() === prompt){
-			pfirms.push(f);
-		    }
-		}
-	    }
-	});
-
-	return pfirms;
-    };
+	return stockUtils.get_prompt_firm(prompt, $scope.firms)};
     
     $scope.today = function(){
 	return $.now();

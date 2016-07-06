@@ -983,15 +983,17 @@ create table w_daily_report(
     stock_out_cost  DECIMAL(10, 2) not null default 0,
 
     t_stock_in       INTEGER not null default -1,
-    t_stock_in_cost  DECIMAL(10, 2) not null default 0,
     t_stock_out      INTEGER not null default -1,
+    t_stock_in_cost  DECIMAL(10, 2) not null default 0, 
     t_stock_out_cost DECIMAL(10, 2) not null default 0,
     
     stock_fix        INTEGER not null default -1,
-    stock_fix_ocst   DECIMAL(10, 2) not null default 0,
+    stock_fix_cost   DECIMAL(10, 2) not null default 0,
 
+    day             DATE default 0,
     entry_date      DATETIME default 0,
-    
+
+    unique key uk (merchant, shop, day),
     key     dk (merchant, shop),
     primary key    (id)
     

@@ -187,6 +187,9 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	$scope.select.left_balance = stockUtils.to_decimal($scope.select.left_balance);
     };
 
+    $scope.get_prompt_firm = function(prompt){
+	return stockUtils.get_prompt_firm(prompt, $scope.firms)};
+    
     $scope.change_firm = function(){
 	console.log($scope.select.firm);
 	$scope.select.surplus = parseFloat($scope.select.firm.balance);

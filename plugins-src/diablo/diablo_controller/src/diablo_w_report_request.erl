@@ -12,6 +12,7 @@
 -behaviour(gen_request).
 
 -export([action/2, action/3, action/4]).
+-export([sell/2, stock/2]).
 
 action(Session, Req) ->
     ?DEBUG("req ~p", [Req]),
@@ -398,8 +399,6 @@ sell(info, [{SaleInfo}])->
 stock(total, []) ->
     0;
 stock(total, [{StockInfo}]) ->
-    ?DEBUG("stock info ~p", [StockInfo]),
     V = ?v(<<"total">>, StockInfo, 0),
-    ?DEBUG("v ~p", [V]),
     V.
     

@@ -14,7 +14,8 @@
 -behaviour(supervisor).
 
 %% API
--export([start_link/1, get/2]).
+-export([start_link/1, get/2, get/3]).
+-export([add_cron_job/2]).
 
 %% Supervisor callbacks
 -export([init/1]).
@@ -31,37 +32,39 @@ start_link(M) ->
 get(M, Merchant) ->
     %% RegisterName = ?to_a(?to_s(Module) ++ ?to_s(Name)),
     %% Spec = child_spec(Module, RegisterName),
-    RModule = ?to_a(?to_s(M) ++ "-" ++ ?to_s(Merchant)),
+    %% RModule = ?to_a(?to_s(M) ++ "-" ++ ?to_s(Merchant)),
     
+    %% case is_module_alive(RModule) of
+    %% 	[] ->
+    %% 	    Sup = ?to_a(?to_s(M) ++ "_sup"),
+    %% 	    {ok, _PId} = supervisor:start_child(Sup, [RModule]),
+    %% 	    RModule;
+    %% 	_PId ->
+    %% 	    RModule
+    %% end,
+    get(M, Merchant, []).
+    
+get(M, Merchant, Args) ->
+    RModule = ?to_a(?to_s(M) ++ "-" ++ ?to_s(Merchant)), 
     case is_module_alive(RModule) of
 	[] ->
 	    Sup = ?to_a(?to_s(M) ++ "_sup"),
-	    ?DEBUG("start new child ~p with supervisor ~p", [RModule, Sup]),
-	    {ok, _PId} = supervisor:start_child(Sup, [RModule]),
+	    {ok, _PId} = supervisor:start_child(Sup, [RModule|Args]),
 	    RModule;
 	_PId ->
 	    RModule
     end.
 
+
+add_cron_job(JobRef, Job) ->
+    Sup = ?to_a( "diablo_cron_agent" ++ "_sup"),
+    {ok, _PId} = supervisor:start_child(Sup, [JobRef, Job]),
+    JobRef.
 %%%===================================================================
 %%% Supervisor callbacks
 %%%===================================================================
 
-init([M]) ->
-    %% ?DEBUG("M ~p", [M]),
-    %% RestartStrategy = simple_one_for_one,
-    %% MaxRestarts = 1000,
-    %% MaxSecondsBetweenRestarts = 3600,
-
-    %% SupFlags = {RestartStrategy, MaxRestarts, MaxSecondsBetweenRestarts},
-
-    %% Restart = permanent,
-    %% Shutdown = 2000,
-    %% Type = worker,
-
-    %% AChild = {'AName', {'AModule', start_link, []},
-    %% 	      Restart, Shutdown, Type, ['AModule']},
-
+init([M]) -> 
     Spec = {M, {M, start_link, []}, temporary, 2000, worker, [M]},
 
     {ok, {{simple_one_for_one, 0, 1}, [Spec]}}.
