@@ -15,7 +15,7 @@
 
 %% API
 -export([start_link/0]).
--export([lookup/1, report/2, cancel_report/1, task/3]).
+-export([lookup/1, report/2, cancel_report/1, task/3, add/3]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -38,23 +38,40 @@ report(stastic_per_shop, TriggerTime) ->
 cancel_report(stastic_per_shop) ->
     gen_server:cast(?SERVER, cancel_stastic_per_shop).
 
+add(report_task, Merchant, TriggerTime) ->
+    gen_server:call(?SERVER, {add_report_task, Merchant, TriggerTime}).
+
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
 init([]) ->
-    Sql = "select id, name from merchants order by id",
-    
+    Sql = "select id, name from merchants order by id", 
     case ?sql_utils:execute(read, Sql) of
 	{ok, Merchants} ->
 	    L = lists:foldr(
 		  fun({Merchant}, Acc) ->
 			  [?v(<<"id">>, Merchant)|Acc]
 		  end, [], Merchants),
+	    ?INFO("start cron task to genarate report ....~n", []),
 	    {ok, #state{merchant=L, task_of_per_shop=[]}};
 	{error, _Error} ->
 	    {ok, #state{}}
     end.
 
+handle_call({add_report_task, Merchant, TriggerTime},
+	    _From, #state{merchant=Merchants, task_of_per_shop=Tasks} = State) ->
+    case lists:member(Merchant, Merchants) of
+	true -> {reply, ok, State};
+	false ->
+	    CronTask = {{daily, TriggerTime},
+			fun(_Ref, Datetime) ->
+				task(stastic_per_shop, Datetime, Merchant)
+			end},
+	    NewTask = ?cron:cron(CronTask),
+	    {reply, ok, #state{merchant=[Merchant|Merchants],
+			       task_of_per_shop=[NewTask|Tasks]}}
+    end;
+    
 handle_call(lookup_state, _From, #state{merchant=Merchants,
 					task_of_per_shop=Tasks} = State) ->
     {reply, {Merchants, Tasks}, State};
@@ -67,18 +84,17 @@ handle_cast({stastic_per_shop, TriggerTime}, #state{merchant=Merchants,
 				     task_of_per_shop=Tasks} = State) ->
     ?DEBUG("stastic_per_shop ~p", [TriggerTime]),
     case Tasks of
-	[] ->
-	    CronTask =
-		{{daily, TriggerTime},
-		 fun(_Ref, Datetime) ->
-			 task(stastic_per_shop, Datetime, Merchants)
-		 end}, 
+	[] -> 
 	    NewTasks = 
 		lists:foldr(
-		  fun(_M, Acc) ->
+		  fun(M, Acc) ->
+			  CronTask = {{daily, TriggerTime},
+				      fun(_Ref, Datetime) ->
+					      task(stastic_per_shop, Datetime, M)
+				      end}, 
 			  [?cron:cron(CronTask)|Acc] 
 		  end, [], Merchants),
-	    ?DEBUG("new tasks ~p", [NewTasks]),
+	    ?DEBUG("new tasks ~p with merchants ~p", [NewTasks, Merchants]),
 	    {noreply, #state{merchant=Merchants, task_of_per_shop=NewTasks}};
 	_ -> {noreply, State}
     end;
@@ -93,11 +109,11 @@ handle_cast(cancel_stastic_per_shop, #state{merchant=Merchants,
     {noreply, #state{merchant=Merchants, task_of_per_shop=[]}};
 
 handle_cast(_Msg, State) ->
-    ?DEBUG("handle_cast receive unkown message ~p", [_Msg]),
+    %% ?DEBUG("handle_cast receive unkown message ~p", [_Msg]),
     {noreply, State}.
 
 handle_info(_Info, State) ->
-    ?DEBUG("handle_info receive unkown message ~p", [_Info]),
+    %% ?DEBUG("handle_info receive unkown message ~p", [_Info]),
     {noreply, State}.
 
 terminate(_Reason, _State) ->
@@ -107,7 +123,7 @@ code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
 
-task(stastic_per_shop, Datetime, Merchants)->
+task(stastic_per_shop, Datetime, Merchants) when is_list(Merchants)->
     {YestodayStart, YestodayEnd} = yestoday(Datetime),
     FormatDatetime = format_datetime(Datetime),
 
@@ -115,7 +131,7 @@ task(stastic_per_shop, Datetime, Merchants)->
 	gen_report(stastic_per_shop,
 		   {YestodayStart, YestodayEnd, FormatDatetime}, Merchants), 
     ?DEBUG("SqlsOfAllMerchant ~p", [SqlsOfAllMerchant]),
-
+    
     lists:foreach(
       fun({_M, Sqls}) ->
 	      lists:foreach(
@@ -126,7 +142,9 @@ task(stastic_per_shop, Datetime, Merchants)->
 				?WARN("sql error to create daily report: ~p", [Error])
 			end
 		end, Sqls)
-      end, SqlsOfAllMerchant).
+      end, SqlsOfAllMerchant);
+task(stastic_per_shop, Datetime, Merchant) when is_number(Merchant)->
+    task(stastic_per_shop, Datetime, [Merchant]).
 
 gen_report(stastic_per_shop, Datetime, Merchants) ->
     gen_report(stastic_per_shop, Datetime, Merchants, []).
@@ -135,88 +153,103 @@ gen_report(stastic_per_shop, _Datetime, [], Acc) ->
     Acc;
 gen_report(stastic_per_shop, {StartTime, EndTime, GenDatetime} , [M|Merchants], Acc) ->
     {ok, Shops} = ?w_user_profile:get(shop, M),
+    ?DEBUG("merchant ~p with shops ~p",
+	   [M, lists:foldr(fun({Shop}, Acc1)-> [?v(<<"id">>, Shop)|Acc1] end, [], Shops)]),
     {M, Sqls} = gen_shop_report({StartTime, EndTime, GenDatetime}, M, Shops, []),
     gen_report(stastic_per_shop, {StartTime, EndTime, GenDatetime} , Merchants, [{M, Sqls}|Acc]).
-    
 
 gen_shop_report(_Datetime, M, [], Sqls) ->
+    ?DEBUG("merchant ~p gen sql ~p", [M, Sqls]),
     {M, Sqls};
 gen_shop_report({StartTime, EndTime, GenDatetime}, M, [S|Shops], Sqls) ->
     ShopId  = ?v(<<"id">>, S),
-    {ok, BaseSetting} = ?wifi_print:detail(base_setting, M, ShopId),
-
-    %% {YestodayStart, YestodyEnd} = yestoday(Datetime),
-    %% FormatDatetime = format_datetime(Datetime),
+    {ok, BaseSetting} = ?wifi_print:detail(base_setting, M, ShopId), 
+    IsShopDailyReport = ?v(<<"d_report">>, BaseSetting, 1),
     
-    Conditions = [{<<"shop">>, ShopId},
-		  {<<"start_time">>, ?to_b(StartTime)},
-		  {<<"end_time">>, ?to_b(EndTime)}],
+    case IsShopDailyReport of
+	1 -> 
+	    Conditions = [{<<"shop">>, ShopId},
+			  {<<"start_time">>, ?to_b(StartTime)},
+			  {<<"end_time">>, ?to_b(EndTime)}],
 
-    {ok, SaleInfo} = ?w_report:stastic(stock_sale, M, Conditions),
-    {ok, SaleProfit} = ?w_report:stastic(stock_profit, M, Conditions),
-    
-    {ok, StockIn}  = ?w_report:stastic(stock_in, M, Conditions),
-    {ok, StockOut} = ?w_report:stastic(stock_out, M, Conditions),
-    
-    {ok, StockTransferIn} = ?w_report:stastic(stock_transfer_in, M, Conditions),
-    {ok, StockTransferOut} = ?w_report:stastic(stock_transfer_out, M, Conditions),
-    
-    {ok, StockFix} = ?w_report:stastic(stock_fix, M, Conditions),
+	    {ok, SaleInfo} = ?w_report:stastic(stock_sale, M, Conditions),
+	    {ok, SaleProfit} = ?w_report:stastic(stock_profit, M, Conditions),
 
-    {ok, StockR} = ?w_report:stastic(
-		      stock_real, M,
-		      [{<<"shop">>, ShopId},
-		       {<<"start_time">>, ?v(<<"qtime_start">>, BaseSetting)}
-		      ]),
+	    {ok, StockIn}  = ?w_report:stastic(stock_in, M, Conditions),
+	    {ok, StockOut} = ?w_report:stastic(stock_out, M, Conditions),
 
-    {SellTotal, SellBalance, SellCash, SellCard, SellVeri} = sell(info, SaleInfo),
-    {SellCost} = sell(cost, SaleProfit),
-    
-    {CurrentStockTotal, CurrentStockCost} = stock(current, StockR), 
-    {StockInTotal, StockInCost} = stock(in, StockIn),
-    {StockOutTotal, StockOutCost} = stock(out, StockOut),
+	    {ok, StockTransferIn} = ?w_report:stastic(stock_transfer_in, M, Conditions),
+	    {ok, StockTransferOut} = ?w_report:stastic(stock_transfer_out, M, Conditions),
 
-    {StockTransferInTotal, StockTransferInCost}  = stock(t_in, StockTransferIn),
-    {StockTransferOutTotal, StockTransferOutCost} = stock(t_out, StockTransferOut), 
-    {StockFixTotal, StockFixCost} = stock(fix, StockFix),
+	    {ok, StockFix} = ?w_report:stastic(stock_fix, M, Conditions),
 
-    Sql = "insert into w_daily_report(merchant, shop"
-	", sell, sell_cost, balance, cash, card, veri"
-	", stock, stock_cost"
-	", stock_in, stock_out, stock_in_cost, stock_out_cost"
-	", t_stock_in, t_stock_out, t_stock_in_cost, t_stock_out_cost"
-	", stock_fix, stock_fix_cost"
-	", day, entry_date) values("
-	++ ?to_s(M) ++ ","
-	++ ?to_s(ShopId) ++ ","
-	
-	++ ?to_s(SellTotal) ++ ","
-	++ ?to_s(SellCost) ++ ","
-	++ ?to_s(SellBalance) ++ ","
-	++ ?to_s(SellCash) ++ ","
-	++ ?to_s(SellCard) ++ ","
-	++ ?to_s(SellVeri) ++ ","
+	    {ok, StockR} = ?w_report:stastic(
+			      stock_real, M,
+			      [{<<"shop">>, ShopId},
+			       {<<"start_time">>, ?v(<<"qtime_start">>, BaseSetting)}
+			      ]),
 
-	++ ?to_s(CurrentStockTotal) ++ ","
-	++ ?to_s(CurrentStockCost) ++ ","
+	    {SellTotal, SellBalance, SellCash, SellCard, SellVeri} = sell(info, SaleInfo),
+	    {SellCost} = sell(cost, SaleProfit),
 
-	++ ?to_s(StockInTotal) ++ ","
-	++ ?to_s(StockOutTotal) ++ ","
-	++ ?to_s(StockInCost) ++ ","
-	++ ?to_s(StockOutCost) ++ ","
+	    {CurrentStockTotal, CurrentStockCost} = stock(current, StockR), 
+	    {StockInTotal, StockInCost} = stock(in, StockIn),
+	    {StockOutTotal, StockOutCost} = stock(out, StockOut),
 
-	++ ?to_s(StockTransferInTotal) ++ ","
-	++ ?to_s(StockTransferOutTotal) ++ ","
-	++ ?to_s(StockTransferInCost) ++ ","
-	++ ?to_s(StockTransferOutCost) ++ ","
+	    {StockTransferInTotal, StockTransferInCost}  = stock(t_in, StockTransferIn),
+	    {StockTransferOutTotal, StockTransferOutCost} = stock(t_out, StockTransferOut), 
+	    {StockFixTotal, StockFixCost} = stock(fix, StockFix),
 
-	++ ?to_s(StockFixTotal) ++ ","
-	++ ?to_s(StockFixCost) ++ ","
+	    case SellTotal == 0
+		andalso StockInTotal == 0
+		andalso StockOutTotal == 0
+		andalso StockTransferInTotal == 0
+		andalso StockTransferOutTotal == 0
+		andalso StockFixTotal == 0 of
+		true ->
+		    gen_shop_report({StartTime, EndTime, GenDatetime}, M, Shops, Sqls);
+		false ->
+		    Sql = 
+			"insert into w_daily_report(merchant, shop"
+			", sell, sell_cost, balance, cash, card, veri"
+			", stock, stock_cost"
+			", stock_in, stock_out, stock_in_cost, stock_out_cost"
+			", t_stock_in, t_stock_out, t_stock_in_cost, t_stock_out_cost"
+			", stock_fix, stock_fix_cost"
+			", day, entry_date) values("
+			++ ?to_s(M) ++ ","
+			++ ?to_s(ShopId) ++ ","
 
-	++ "\'" ++ StartTime ++ "\',"
-	++ "\'" ++ GenDatetime ++ "\')",
-    
-	gen_shop_report({StartTime, EndTime, GenDatetime}, M, Shops, [Sql|Sqls]).
+			++ ?to_s(SellTotal) ++ ","
+			++ ?to_s(SellCost) ++ ","
+			++ ?to_s(SellBalance) ++ ","
+			++ ?to_s(SellCash) ++ ","
+			++ ?to_s(SellCard) ++ ","
+			++ ?to_s(SellVeri) ++ ","
+
+			++ ?to_s(CurrentStockTotal) ++ ","
+			++ ?to_s(CurrentStockCost) ++ ","
+
+			++ ?to_s(StockInTotal) ++ ","
+			++ ?to_s(StockOutTotal) ++ ","
+			++ ?to_s(StockInCost) ++ ","
+			++ ?to_s(StockOutCost) ++ ","
+
+			++ ?to_s(StockTransferInTotal) ++ ","
+			++ ?to_s(StockTransferOutTotal) ++ ","
+			++ ?to_s(StockTransferInCost) ++ ","
+			++ ?to_s(StockTransferOutCost) ++ ","
+
+			++ ?to_s(StockFixTotal) ++ ","
+			++ ?to_s(StockFixCost) ++ ","
+
+			++ "\'" ++ StartTime ++ "\',"
+			++ "\'" ++ GenDatetime ++ "\')", 
+		    gen_shop_report({StartTime, EndTime, GenDatetime}, M, Shops, [Sql|Sqls])
+	    end;
+	0 ->
+	    gen_shop_report({StartTime, EndTime, GenDatetime}, M, Shops, Sqls)
+    end.
     
 
 format_datetime({{Year, Month, Day}, {Hour, Minute, Second}}) ->

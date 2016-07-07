@@ -918,6 +918,7 @@ mode(1) -> use_sell;
 mode(2) -> use_discount;
 mode(3) -> use_year;
 mode(4) -> use_season;
-mode(5) -> use_amount.
+mode(5) -> use_amount;
+mode(6) -> use_style_number.
 
     

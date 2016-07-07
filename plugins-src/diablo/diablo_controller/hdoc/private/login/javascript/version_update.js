@@ -3,7 +3,8 @@ var version_update = function(){
     var updates = [
 	{date: "2016-07-05",
          content: [
-	     "修正厂商编号联想功能，精确编号检索结果" 
+	     "修正厂商编号联想功能，精确编号检索结果",
+	     "库存增加款号排序功能"
          ]
         },
 	

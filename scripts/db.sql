@@ -49,6 +49,16 @@ create table merchants
 ) default charset=utf8;
 
 
+-- create table region
+-- {
+--     id               INTEGER AUTO_INCREMENT,
+--     merchant         INTEGER not null default -1, 
+--     name             VARCHAR(64) not null,
+--     entry_date       DATETIME not null,
+--     unique  key   uk (merchant, name),
+--     primary key      (id)
+-- } default charset=utf8;
+
 create table shops
 (
     id                 INTEGER AUTO_INCREMENT,

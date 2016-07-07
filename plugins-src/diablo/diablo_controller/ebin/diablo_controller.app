@@ -32,7 +32,7 @@
                         diablo_w_print_request,diablo_format_print,
                         diablo_w_good_request,diablo_w_promotion,
                         diablo_w_report_request,diablo_w_report,
-                        diablo_cron_agent,diablo_cron,
+                        diablo_auto_gen_report,diablo_cron_agent,diablo_cron,
                         diablo_cron_job_register,diablo_cron_control,
                         diablo_w_base_request,diablo_w_base,
                         diablo_controller_right_init,diablo_controller_authen,

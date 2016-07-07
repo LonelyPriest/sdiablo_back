@@ -46,6 +46,7 @@
      diablo_w_promotion,
      %% report
      diablo_w_report_request, diablo_w_report,
+     diablo_auto_gen_report,
      %% cron
      diablo_cron_agent, diablo_cron,
      diablo_cron_job_register, diablo_cron_control,
