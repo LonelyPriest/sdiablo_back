@@ -273,6 +273,8 @@ error(shop_exist, Name) ->
     {1301, "shop " ++ ?to_s(Name) ++ " has been exist."};
 error(repo_exist, Name) ->
     {1302, "repo " ++ ?to_s(Name) ++ " has been exist."};
+error(region_exist, Name) ->
+    {1303, "region " ++ ?to_s(Name) ++ " has been exist."};
 
 %% employ
 error(employ_exist, Name) ->

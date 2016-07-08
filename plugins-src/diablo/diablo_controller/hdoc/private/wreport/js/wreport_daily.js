@@ -107,7 +107,9 @@ wreportApp.controller("wreportDailyCtrl", function(
 		diablo_by_shop,
 		{shop:     d.shop.id,
 		 employee: params.employee.id,
-		 comment:  params.comment}
+		 pcash:    diablo_set_float(params.pcash),
+		 pcash_in: diablo_set_float(params.pcash_in),
+		 comment:  diablo_set_string(params.comment)}
             ).then(function(status){
 		console.log(status);
 		if (status.ecode === 0){

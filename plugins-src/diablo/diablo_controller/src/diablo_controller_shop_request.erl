@@ -43,6 +43,11 @@ action(Session, Req, {"list_shop_promotion"}) ->
     Merchant = ?session:get(merchant, Session),
     ?utils:respond(batch, fun() -> ?shop:promotion(list, Merchant) end, Req);
 
+action(Session, Req, {"list_region"}) ->
+    ?DEBUG("list_shop with session ~p", [Session]),
+    Merchant = ?session:get(merchant, Session),
+    ?utils:respond(batch, fun() -> ?w_user_profile:get(region, Merchant) end, Req);
+
 %%--------------------------------------------------------------------
 %% @desc: DELTE action
 %%-------------------------------------------------------------------- 
@@ -118,8 +123,15 @@ action(Session, Req, {"add_shop_promotion"}, Payload) ->
     ?utils:respond(normal,
 		   fun()-> ?shop:promotion(new, Merchant, Payload) end,
 		   fun(ShopId)-> ?succ(add_shop_promotion, ShopId) end,
-		   Req).
+		   Req);
 
+action(Session, Req, {"new_region"}, Payload) ->
+    ?DEBUG("new region with session ~p, paylaod ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    ?utils:respond(normal,
+		   fun()-> ?shop:region(new, Merchant, Payload) end,
+		   fun(RegionId)-> ?succ(add_shop, RegionId) end,
+		   Req).
 
 sidebar(Session) ->
     AuthenFun =
@@ -148,13 +160,10 @@ sidebar(Session) ->
 		     {"repo_detail", "仓库详情", "glyphicon glyphicon-book"}}
 		   ]),
 
-    %% BadRepoAuthen = AuthenFun(
-    %% 		   [{?new_badrepo,
-    %% 		     {"badrepo_new", "新增次品仓", "glyphicon glyphicon-plus"}},
-    %% 		    {?list_badrepo,
-    %% 		     {"badrepo_detail", "次品仓详情", "glyphicon glyphicon-book"}}
-    %% 		   ]), 
-
+    
+    Region = [{"region_detail", "区域", "glyphicon glyphicon-th-list"}] ,
+    L1 = ?menu:sidebar(level_1_menu, Region),
+    
     SidebarShop = 
 	case ShopAuthen of
 	    []   -> [];
@@ -168,15 +177,7 @@ sidebar(Session) ->
 	    Repo ->
 		[{{"repo", "仓库", "icon icon-twitter"}, Repo}] 
 	end,
-
-    %% SidebarBadRepo =
-    %% 	case BadRepoAuthen of
-    %% 	    []   -> [];
-    %% 	    BadRepo ->
-    %% 		[{{"repo", "次品仓", "glyphicon glyphicon-fire"}, BadRepo}] 
-    %% 	end,
-
-    %% ?menu:sidebar(level_2_menu, SidebarShop ++ SidebarRepo ++ SidebarBadRepo).
-    ?menu:sidebar(level_2_menu, SidebarShop ++ SidebarRepo).
+    
+    ?menu:sidebar(level_2_menu, SidebarShop ++ SidebarRepo) ++ L1.
 
 

@@ -49,15 +49,17 @@ create table merchants
 ) default charset=utf8;
 
 
--- create table region
--- {
---     id               INTEGER AUTO_INCREMENT,
---     merchant         INTEGER not null default -1, 
---     name             VARCHAR(64) not null,
---     entry_date       DATETIME not null,
---     unique  key   uk (merchant, name),
---     primary key      (id)
--- } default charset=utf8;
+create table region
+(
+    id               INTEGER AUTO_INCREMENT, 
+    merchant         INTEGER not null default -1, 
+    name             VARCHAR(64) not null,
+    comment          VARCHAR(256) default null,
+    entry_date       DATETIME not null,
+    deleted          INTEGER default 0, -- 0: no;  1: yes
+    unique  key   uk (merchant, name),
+    primary key      (id)
+) default charset=utf8;
 
 create table shops
 (
@@ -67,7 +69,8 @@ create table shops
     name               VARCHAR(255) not null,
     address            VARCHAR(255),
     open_date          DATE,
-    master             VARCHAR(8) default null, -- Leader of the shop, choice from employ, default is no owner
+    master             VARCHAR(8) default null,
+    region             INTEGER default -1, -- which repertory
 
     charge             INTEGER default -1, -- charge promotion
     score              INTEGER default -1, -- score promotion
@@ -959,7 +962,10 @@ create table w_change_shift(
     stock           INTEGER not null default -1, 
     stock_in        INTEGER not null default -1,
     stock_out       INTEGER not null default -1,
-
+    
+    pcash           DECIMAL(10, 2) not null default 0,
+    pcash_in        DECIMAL(10, 2) not null default 0,
+    
     comment         VARCHAR(127) default null,
     entry_date      DATETIME default 0,
     

@@ -232,9 +232,9 @@ var wsaleUtils = function(){
 		"check_sale", shop, base, parseInt, diablo_yes);
 	},
 
-	only_show_current: function(shop, base){
-	    return diablo_base_setting(
-		"d_sale", shop, base, parseInt, diablo_yes);
+	show_sale_day: function(shop, base){
+	    // default current day
+	    return diablo_base_setting("d_sale", shop, base, parseInt, 0);
 	},
 
 	print_mode: function(shop, base){
@@ -448,6 +448,20 @@ var wsaleUtils = function(){
 	    } else{
 		return parseInt(v)
 	    }
+	},
+
+	authen_shop: function(user_type, shop, action){
+	    return rightAuthen.authen_shop_action(
+		user_type,
+		rightAuthen.wsale_action()[action],
+		shop)
+	},
+
+	correct_query_time: function(isMaster, configDays, start_time, now, dateFilter){
+	    if (isMaster)
+		return dateFilter.default_time(start_time, now);
+	    else
+		return dateFilter.default_time(now - diablo_day_millisecond * configDays, now);
 	}
 
 	//

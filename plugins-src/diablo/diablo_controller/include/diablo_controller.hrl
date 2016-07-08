@@ -135,6 +135,8 @@
 -define(update_badrepo,      ?right_shop + 11).
 -define(list_badrepo,        ?right_shop + 12).
 -define(add_shop_promotion,  ?right_shop + 13).
+-define(new_region,          ?right_shop + 14).
+-define(list_region,         ?right_shop + 15).
 
 %% employ
 -define(new_employe,    ?right_employe + 1).
@@ -417,6 +419,7 @@
 	  info        = [] :: list(),
 	  shop        = [] :: list(), %% all shop of merchant
 	  repo        = [] :: list(), %% all repository of merchant
+	  region      = [] :: list(),
 	  print       = [] :: list(),
 	  pformat     = [] :: list(),
 	  %% bank        = [] :: list(), %% all bank of merchant

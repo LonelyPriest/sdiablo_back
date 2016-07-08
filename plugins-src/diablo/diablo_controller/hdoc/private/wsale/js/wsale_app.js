@@ -1524,37 +1524,19 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
      * authen
      */
     $scope.shop_right = {
-	update_w_sale: rightAuthen.authen_shop_action(
-	    user.type,
-	    rightAuthen.wsale_action()['update_w_sale'],
-	    user.shop
-	),
-
-	check_w_sale: rightAuthen.authen_shop_action(
-	    user.type,
-	    rightAuthen.wsale_action()['check_w_sale'],
-	    user.shop
-	),
-
-	show_stastic: rightAuthen.authen_master(user.type)
-    };
+	update_w_sale: wsaleUtils.authen_shop(user.type, user.shop, 'update_w_sale'),
+	check_w_sale: wsaleUtils.authen_shop(user.type, user.shop, 'check_w_sale'),
+	master:rightAuthen.authen_master(user.type),
+	show_stastic: rightAuthen.authen_master(user.type) 
+    }; 
 
     /*
      * hidden
      */
-    $scope.show = {base:false, action:false, balance:false};
-
-    $scope.toggle_base = function(){
-	$scope.show.base = !$scope.show.base;
-    };
-    
-    $scope.toggle_action = function(){
-	$scope.show.action = !$scope.show.action;
-    };
-
-    $scope.toggle_balance = function(){
-	$scope.show.balance = !$scope.show.balance;
-    }; 
+    $scope.show = {base:false, action:false, balance:false}; 
+    $scope.toggle_base = function(){$scope.show.base = !$scope.show.base;}; 
+    $scope.toggle_action = function(){$scope.show.action = !$scope.show.action;}; 
+    $scope.toggle_balance = function(){$scope.show.balance = !$scope.show.balance;}; 
 
     
     /* 
@@ -1576,25 +1558,20 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 
     var now = $.now();
     var shopId = $scope.shopIds.length === 1 ? $scope.shopIds[0]: -1;
-    var only_day = wsaleUtils.only_show_current(shopId, base);
+    var show_sale_days = wsaleUtils.show_sale_day(shopId, base);
     var storage = localStorageService.get(diablo_key_wsale_trans);
     
     if (angular.isDefined(storage) && storage !== null){
-    	$scope.filters      = storage.filter;
-	if (angular.isUndefined(storage.start_time))
-	    $scope.qtime_start = wsaleUtils.start_time(shopId, base, now, dateFilter);
-	else
-    	    $scope.qtime_start  = storage.start_time; 
+    	$scope.filters      = storage.filter; 
+    	$scope.qtime_start  = storage.start_time;
     } else{
 	$scope.filters = [];
 	$scope.qtime_start = wsaleUtils.start_time(shopId, base, now, dateFilter); 
     };
 
-    if ($scope.shop_right.check_w_sale && diablo_no === only_day){
-	$scope.time   = diabloFilter.default_time($scope.qtime_start, now); 
-    } else {
-	$scope.time   = diabloFilter.default_time(now, now); 
-    } 
+    //console.log($scope.qtime_start);
+    $scope.time = wsaleUtils.correct_query_time(
+	$scope.shop_right.master, show_sale_days, $scope.qtime_start, now, diabloFilter);
     
     $scope.sequence_pagination = wsaleUtils.sequence_pagination(-1, base);
     
@@ -1606,7 +1583,7 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
     $scope.max_page_size = 10; 
     $scope.default_page = 1;
 
-    console.log($routeParams);
+    // console.log($routeParams);
     var back_page = diablo_set_integer($routeParams.page);
     
     if (angular.isDefined(back_page)){
@@ -1614,24 +1591,24 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
     } else{
 	$scope.current_page = $scope.default_page; 
     };
-    
-    // console.log($scope.current_page);
 
     $scope.do_search = function(page){
-	console.log(page); 
+	// console.log(page); 
 	$scope.current_page = page;
 
+	// console.log($scope.time); 
+	if (!$scope.shop_right.master){
+	    var diff = now - diablo_get_time($scope.time.start_time);
+	    console.log(diff);
+	    if (diff > diablo_day_millisecond * show_sale_days){
+	    	$scope.time.start_time = now - show_sale_days * diablo_day_millisecond;
+	    }
+	} 
+	
 	// save condition of query 
 	localStorageService.set(
 	    diablo_key_wsale_trans,
-	    {filter:$scope.filters,
-	     start_time: function(){
-		 if ($scope.shop_right.check_w_sale && diablo_no === only_day){
-		     return diablo_get_time($scope.time.start_time);
-		 }
-		 return undefined;
-	     }(),
-	     page:page, t:now}); 
+	    {filter:$scope.filters, start_time: $scope.time.start_time, page:page, t:now}); 
 	
 	// console.log($scope.time); 
 	if (angular.isDefined(back_page)){

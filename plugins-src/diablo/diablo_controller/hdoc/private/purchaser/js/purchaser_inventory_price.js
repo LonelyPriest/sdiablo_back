@@ -1,15 +1,18 @@
 purchaserApp.controller("purchaserInventoryPriceCtrl", function(
     $scope, $q, $timeout, dateFilter, localStorageService, diabloPattern,
-    diabloUtilsService, diabloFilter, diabloNormalFilter,
-    purchaserService, wgoodService, user, filterFirm, filterEmployee, base){
+    diabloUtilsService, diabloFilter, diabloNormalFilter, purchaserService, wgoodService,
+    user, filterBrand, filterFirm, filterEmployee, filterRegion, base){
     // console.log(user); 
-    $scope.shops   = user.sortShops;    
-    $scope.sexs    = diablo_sex;
-    $scope.seasons = diablo_season; 
+    $scope.shops     = user.sortShops;
+    $scope.sexs      = diablo_sex;
+    $scope.seasons   = diablo_season;
+    $scope.brands    = filterBrand;
     $scope.employees = filterEmployee;
     $scope.firms     = filterFirm;
-    $scope.p_modes   = [{id:0, name:"价格关联模式"}, {id:1, name: "价格独立模式"}];
+    $scope.regions   = filterRegion;
+    $scope.p_modes   = [{id:0, name:"价格关联"}, {id:1, name:"价格独立"}];
     $scope.s_modes   = [{id:0, name:"参与积分"}, {id:1, name:"不参与积分"}];
+    $scope.u_modes   = [{id:0, name:"店铺调价"}, {id:1, name:"区域调价"}];
 
     $scope.pattern = {
 	price: diabloPattern.positive_decimal_2,
@@ -18,39 +21,49 @@ purchaserApp.controller("purchaserInventoryPriceCtrl", function(
     };
     
     $scope.refresh = function(){
+	$scope.h_inventories = [];
 	$scope.inventories = [];
 	$scope.inventories.push({$edit:false, $new:true}); 
-	$scope.has_saved = false; 
+	$scope.has_saved = false;
+	$scope.select.total = 0;
+	$scope.select.datetime = $.now();
     }; 
 
     // focus
     $scope.focus      = {style_number:true, tag_price:false, discount:false};
+    
     $scope.auto_focus = function(attr){
-	if (!$scope.focus[attr]){
-	    $scope.focus[attr] = true;
-	}
-	for (var o in $scope.focus){
-	    if (o !== attr) $scope.focus[o] = false;
-	} 
+	console.log(attr);
+	stockUtils.on_focus_attr(attr, $scope.focus)
     };
-
+    
+    $scope.on_focus_attr = function(attr, inv){
+	// $scope.auto_focus(attr);
+	// if ($scope.select.u_mode.id === 1){
+	//     $scope.select_history = $scope.h_inventories.filter(function(h){
+	// 	return h.style_number === inv.style_number
+	// 	    && h.brand_id === inv.brand.id
+	//     })[0];
+	// }
+    }
+    
     /*
      * init
-     */ 
-    // $scope.refresh();
+     */
     $scope.inventories = [];
     $scope.inventories.push({$edit:false, $new:true});
-    $scope.current_inventories = [];
+    $scope.h_inventories = [];
     $scope.select = {
 	shop:$scope.shops[0],
 	employee: $scope.employees[0],
+	region:   $scope.regions[0],
 	p_mode:   $scope.p_modes[0],
 	s_mode:   $scope.s_modes[0],
+	u_mode:   $scope.u_modes[0],
 	datetime: $.now()
     };
 
-    console.log($scope.select);
-    
+    console.log($scope.select);    
     $scope.has_saved = false;
     var now = $.now();
 
@@ -59,33 +72,23 @@ purchaserApp.controller("purchaserInventoryPriceCtrl", function(
 	prompt : stockUtils.typeahead(-1, base),
 	start_time : stockUtils.start_time(-1, base, now, dateFilter)
     };
-    
-    
-    // calender
-    $scope.open_calendar = function(event){
-	event.preventDefault();
-	event.stopPropagation();
-	$scope.isOpened = true;
-    };
 
-    $scope.today = function(){
-	return now;
-    }
-
-    $scope.change_shop = function(){
-	if ($scope.base_settings.prompt === diablo_frontend){
-	    $scope.get_all_prompt_inventory();
-	}
+    $scope.get_select_shop = function(){
+	if ($scope.select.u_mode.id === 0)
+	    return $scope.select.shop.id;
+	else if ($scope.select.u_mode.id === 1)
+	    return $scope.shops.filter(function(s){
+		return s.region === $scope.select.region.id;
+	    }).map(function(s){return s.id});
     };
 
     $scope.match_style_number = function(viewValue){
-	// console.log(viewValue);
 	return diabloFilter.match_w_fix(viewValue, $scope.select.shop.id);
     }
-
+    
     $scope.get_all_prompt_inventory = function(){
 	diabloNormalFilter.match_all_w_inventory(
-	    {shop:$scope.select.shop.id,
+	    {shop:$scope.get_select_shop(),
 	     start_time:$scope.base_settings.start_time}
 	).$promise.then(function(invs){
 	    $scope.all_w_inventory = 
@@ -96,12 +99,30 @@ purchaserApp.controller("purchaserInventoryPriceCtrl", function(
 	}); 
     };
 
-    if (diablo_frontend === $scope.base_settings.prompt){
-	$scope.get_all_prompt_inventory();
+    $scope.fronted_prompt_inventory = function(){
+	if ($scope.base_settings.prompt === diablo_frontend){
+	    $scope.get_all_prompt_inventory();
+	}
     };
     
+    $scope.change_mode = function(){
+	console.log($scope.select.u_mode);
+	$scope.fronted_prompt_inventory();
+    };
+
+    $scope.change_shop = function(){
+	$scope.fronted_prompt_inventory();
+    };
+
+    $scope.change_region = function(){
+	$scope.fronted_prompt_inventory();
+    };
+
+
+    $scope.fronted_prompt_inventory();
+    
     $scope.on_select_good = function(item, model, label){
-	// console.log(item); 
+	console.log(item); 
 	// one good can be add only once at the same time
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    if (item.style_number === $scope.inventories[i].style_number
@@ -142,6 +163,44 @@ purchaserApp.controller("purchaserInventoryPriceCtrl", function(
 	add.n_tag_price  = diablo_price(item.tag_price, item.discount); 
 
 	$scope.auto_focus("tag_price");
+
+	if ($scope.select.u_mode.id === 1){
+	    // flow
+	    var filter_history = $scope.h_inventories.filter(function(h){
+		return h.style_number === add.style_number
+		    && h.brand_id === add.brand.id
+	    });
+
+	    // console.log($scope.old_select.datetime.getTime());
+	    if (filter_history.length === 0){
+		purchaserService.list_w_inventory_info({
+		    style_number:add.style_number,
+		    brand:add.brand_id,
+		    shop:$scope.get_select_shop(),
+		    start_time: $scope.base_settings.start_time
+		}).then(function(result){
+		    console.log(result);
+		    if (result.ecode === 0){
+			var history = angular.copy(result.data);
+			angular.forEach(history, function(h){
+			    h.brand = diablo_get_object(h.brand_id, $scope.brands);
+			    h.firm  = diablo_get_object(h.firm_id, $scope.firms);
+			    h.shop  = diablo_get_object(h.shop_id, $scope.shops);
+			});
+
+			$scope.select_history = {style_number:add.style_number,
+						 brand_id:    add.brand_id,
+						 history: history};
+			
+			$scope.h_inventories.push($scope.select_history); 
+			// console.log($scope.h_inventories); 
+		    }
+		}) 
+	    } else {
+		$scope.select_history = filter_history[0];
+	    }
+	}
+	
 	return;
     };
 
@@ -204,7 +263,7 @@ purchaserApp.controller("purchaserInventoryPriceCtrl", function(
 	}; 
 
 	var base = {
-	    shop:             $scope.select.shop.id,
+	    shop:             $scope.get_select_shop(),
 	    date:             dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),
 	    employee:         $scope.select.employee.id ,
 	    smode:            $scope.select.s_mode.id,
@@ -283,20 +342,15 @@ purchaserApp.controller("purchaserInventoryPriceCtrl", function(
      */
     $scope.delete_inventory = function(inv){
 	console.log(inv);
-	// console.log($scope.inventories)
-
-	// var deleteIndex = -1;
+	
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    if(inv.order_id === $scope.inventories[i].order_id){
-		// $scope.inventories.splice(i, 1)
-		// deleteIndex = i;
 		break;
 	    }
 	}
 
 	$scope.inventories.splice(i, 1);
 	
-	// reorder
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    $scope.inventories[i].order_id = l - i;
 	}

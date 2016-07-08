@@ -73,7 +73,7 @@ action(Session, Req, {"get_login_user_info"}) ->
     LoginEmployee = ?session:get(login_employee, Session),
     LoginShop     = ?session:get(login_shop, Session),
     {ok, Catlogs} = ?w_user_profile:get(user_right, Merchant, Session),
-    {ok, Shops} = ?w_user_profile:get(user_shop, Merchant, Session),
+    {ok, Shops}   = ?w_user_profile:get(user_shop, Merchant, Session),
 
     ?utils:respond(200, object, Req,
 		   {[{<<"ecode">>, 0},
@@ -480,6 +480,7 @@ get_shops(Session, Module) ->
 			     {<<"repo_id">>,  ?v(<<"repo">>, AShop)},
 			     {<<"charge_id">>,?v(<<"charge_id">>, AShop)},
 			     {<<"score_id">>, ?v(<<"score_id">>, AShop)},
+			     {<<"region_id">>, ?v(<<"region_id">>, AShop)},
 			     {<<"type">>,     ?v(<<"type">>, AShop)},
 			     {<<"func_id">>, 
 			      case Module of
@@ -501,8 +502,9 @@ get_shops(Session, Module) ->
 		  RepoId = ?v(<<"repo_id">>, Shop),
 		  Charge = ?v(<<"charge_id">>, Shop),
 		  Score  = ?v(<<"score_id">>, Shop),
+		  Region = ?v(<<"region_id">>, Shop),
 		  Type   = ?v(<<"type">>, Shop),
-		  S = {Id, Name, FunId, RepoId, Charge, Score, Type},
+		  S = {Id, Name, FunId, RepoId, Charge, Score, Region, Type},
 		  case lists:member(S, Acc) of
 		      true  ->  Acc;
 		      false -> [S|Acc]
@@ -545,13 +547,14 @@ login_user(shop, Session) ->
 	    {ok, S} = ?shop:lookup(?session:get(merchant, Session)),
 	    lists:foldr(
 	      fun({AShop}, Acc) ->
-		      [{[{<<"shop_id">>, ?v(<<"id">>,   AShop)},
-			 {<<"name">>,    ?v(<<"name">>, AShop)},
-			 {<<"repo_id">>, ?v(<<"repo">>, AShop)},
-			 {<<"charge_id">>,  ?v(<<"charge_id">>, AShop)},
+		      [{[{<<"shop_id">>,   ?v(<<"id">>,   AShop)},
+			 {<<"name">>,      ?v(<<"name">>, AShop)},
+			 {<<"repo_id">>,   ?v(<<"repo">>, AShop)},
+			 {<<"charge_id">>, ?v(<<"charge_id">>, AShop)},
 			 {<<"score_id">>,  ?v(<<"score_id">>, AShop)},
-			 {<<"type">>,    ?v(<<"type">>, AShop)},
-			 {<<"func_id">>, ?right_w_inventory}]}
+			 {<<"region_id">>, ?v(<<"region_id">>, AShop)},
+			 {<<"type">>,      ?v(<<"type">>, AShop)},
+			 {<<"func_id">>,   ?right_w_inventory}]}
 		       | Acc]
 	      end, [], S);
 	?USER ->

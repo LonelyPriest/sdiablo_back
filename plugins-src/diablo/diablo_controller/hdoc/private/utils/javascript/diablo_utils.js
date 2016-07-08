@@ -526,7 +526,8 @@ diabloUtils.directive('timeSearch', function (){
 	    glyphicon: '@',
 	    time:      '=',
 	    ok:        '&',
-	    clickOk:   '='
+	    clickOk:   '=',
+	    change:    '&'
 	},
 	
 	link: function(scope, element, attrs){
@@ -535,8 +536,6 @@ diabloUtils.directive('timeSearch', function (){
 		event.stopPropagation();
 		scope.opened = true;
 	    };
-
-	    // scope.time = $.now();
 	}
     }
 });

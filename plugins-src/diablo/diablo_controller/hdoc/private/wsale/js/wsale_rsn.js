@@ -26,6 +26,7 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
      * right
      */
     $scope.right = {
+	master:        rightAuthen.authen_master(user.type),
 	show_stastic:  rightAuthen.authen_master(user.type),
 	show_orgprice: rightAuthen.authen_master(user.type)
     };
@@ -61,28 +62,23 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
     		      {name:"销售退货", id:1, py:diablo_pinyin("销售退货")}];
 
     var now = $.now(); 
-    var shopId = $scope.shopIds.length === 1 ? $scope.shopIds[0]: -1; 
+    var shopId = $scope.shopIds.length === 1 ? $scope.shopIds[0]: -1;
+    
     // base setting 
     $scope.setting.se_pagination = wsaleUtils.sequence_pagination(shopId, base);
-    $scope.setting.only_day = wsaleUtils.only_show_current(shopId, base);
+    $scope.setting.show_sale_day = wsaleUtils.show_sale_day(shopId, base); 
     var storage = localStorageService.get(diablo_key_wsale_trans_detail);
     
     if (use_storage && angular.isDefined(storage) && storage !== null){
     	$scope.filters     = storage.filter;
-	if (angular.isUndefined(storage.start_time))
-	    $scope.qtime_start = wsaleUtils.start_time(shopId, base, now, dateFilter);
-	else
-    	    $scope.qtime_start  = storage.start_time; 
+	$scope.qtime_start  = storage.start_time; 
     } else{
 	$scope.filters = []; 
 	$scope.qtime_start = wsaleUtils.start_time(shopId, base, now, dateFilter);
     };
 
-    if ($scope.right.show_orgprice && diablo_no === $scope.setting.only_day){
-	$scope.time   = diabloFilter.default_time($scope.qtime_start, now); 
-    } else {
-	$scope.time   = diabloFilter.default_time(now, now); 
-    }
+    $scope.time = wsaleUtils.correct_query_time(
+	$scope.right.master, $scope.setting.show_sale_day, $scope.qtime_start, now, diabloFilter); 
     
     // console.log($scope.setting);
     // filter
@@ -111,18 +107,19 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
     $scope.current_page = $scope.default_page;
 
     $scope.do_search = function(page){
+	if (!$scope.right.master){
+	    var diff = now - diablo_get_time($scope.time.start_time);
+	    console.log(diff);
+	    if (diff > diablo_day_millisecond * show_sale_days){
+	    	$scope.time.start_time = now - show_sale_days * diablo_day_millisecond;
+	    }
+	}
+	
 	// save condition of query
 	if (use_storage){
 	    localStorageService.set(
 		diablo_key_wsale_trans_detail,
-		{filter:$scope.filters,
-		 start_time: function(){
-		     if ($scope.right.show_orgprice && diablo_no === $scope.setting.only_day){
-			 return diablo_get_time($scope.time.start_time);
-		     }
-		     return undefined;
-		 }(),
-		 page:page, t:now});
+		{filter:$scope.filters, start_time: $scope.time.start_time, page:page, t:now});
 	};
 	
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){

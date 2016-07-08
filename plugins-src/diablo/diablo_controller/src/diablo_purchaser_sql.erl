@@ -454,8 +454,7 @@ inventory(inventory_new_rsn, Merchant, Conditions) ->
     end;
 
 inventory(list, Merchant, Conditions) ->
-    {StartTime, EndTime, NewConditions} =
-	?sql_utils:cut(fields_with_prifix, Conditions),
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_with_prifix, Conditions),
 
     "select a.style_number, a.brand_id, a.type_id, a.sex, a.season, a.total"
 	", a.org_price, a.tag_price, a.ediscount, a.discount"
@@ -476,7 +475,18 @@ inventory(list, Merchant, Conditions) ->
 
 	" left join w_inventory_amount b on"
 	" a.style_number=b.style_number and a.brand_id=b.brand"
-	" and a.shop_id=b.shop and b.merchant=" ++ ?to_s(Merchant); 
+	" and a.shop_id=b.shop and b.merchant=" ++ ?to_s(Merchant);
+
+inventory(list_info, Merchant, Conditions) ->
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_with_prifix, Conditions), 
+    "select a.style_number, a.brand as brand_id, a.firm as firm_id"
+	", a.type as type_id, a.season, a.amount as total"
+	", a.org_price, a.tag_price, a.ediscount, a.discount"
+	", a.shop as shop_id, a.entry_date"
+	" from w_inventory a"
+	" where a.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions) 
+	++ ?sql_utils:fix_condition(time, time_with_prfix, StartTime, EndTime); 
 
 inventory(get_new_amount, _Merchant, Conditions) ->
     "select a.rsn, a.style_number, a.brand_id, a.type_id, a.sex"
@@ -803,12 +813,15 @@ inventory_match(all_inventory, Merchant, Shop, Conditions) ->
 	" left join inv_types c on a.type=c.id"
 	
 	" where "
-	++ ?sql_utils:condition(
-	      proplists_suffix, [{<<"a.shop">>, Shop}|NewConditions]) 
+	++ ?sql_utils:condition(proplists_suffix, [{<<"a.shop">>, Shop}|NewConditions]) 
 	++ "a.merchant=" ++ ?to_s(Merchant)
 	++ case ?sql_utils:condition(time_with_prfix, StartTime, EndTime) of
 	       [] -> [];
 	       TimeSql -> " and " ++ TimeSql
+	   end
+	++ case is_list(Shop) of
+	       true -> " group by a.style_number, a.brand";
+	       false -> []
 	   end
 	++ " order by id desc";
 

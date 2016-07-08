@@ -74,20 +74,20 @@ shopApp.controller("newShopCtrl", function(
 
 shopApp.controller("shopDetailCtrl", function(
     $scope, $q, diabloUtilsService, shopService,
-    filterPromotion, filterScore, filterCharge, filterEmployee, user){
+    filterPromotion, filterScore, filterCharge, filterEmployee, filterRegion, user){
     // console.log(filterPromotion);
-    // console.log(filterEmployee);
-    console.log(filterScore);
+    // console.log(filterEmployee); 
+    // console.log(filterScore);
+    console.log(filterRegion);
     // console.log(user);
     
     $scope.promotions      = filterPromotion;
     // $scope.shop_promotions = filterShopPromotion.map(
     // 	function(p){return p.pid});
     $scope.charges         = filterCharge.concat([{id:-1, name:"重置充值方案"}]);
-    $scope.scores          = filterScore;
-    
-    // employees
-    $scope.employees   = filterEmployee;
+    $scope.scores          = filterScore;    
+    $scope.employees       = filterEmployee;
+    $scope.regions         = filterRegion.concat([{id:-1, name:"===请选择区域==="}]);
     // $scope.repertories = filterRepo;
     $scope.goto_page   = diablo_goto_page;
 
@@ -127,7 +127,7 @@ shopApp.controller("shopDetailCtrl", function(
     $scope.refresh = function(){
 	$scope.shops = [];
 	shopService.list().$promise.then(function(shops){
-	    console.log(shops);
+	    // console.log(shops);
 	    // $scope.shops = angular.copy(shops);
 	    // angular.forEach($scope.shops, function(s){
 	    // 	$scope.repo = $scope.get_repo(s.repo);
@@ -145,6 +145,9 @@ shopApp.controller("shopDetailCtrl", function(
 
 			score_id: s.score_id,
 			score: diablo_get_object(s.score_id, $scope.scores),
+
+			region_id: s.region_id,
+			region: diablo_get_object(s.region_id, $scope.regions),
 			
 			address:      s.address,
 			open_date:    s.open_date,
@@ -159,8 +162,8 @@ shopApp.controller("shopDetailCtrl", function(
 			    s.shopowner_id, $scope.employees)})
 		}
 	    }) 
-	    diablo_order($scope.shops);
-	    console.log($scope.shops);
+	    // diablo_order($scope.shops);
+	    // console.log($scope.shops);
 	});
     };
 
@@ -223,9 +226,9 @@ shopApp.controller("shopDetailCtrl", function(
 	    {shop:angular.extend(
 		old_shop,
 		{employee:$scope.get_employee(old_shop.shopowner_id)}),
-	     // {repo:$scope.get_repo(old_shop.repo)}),
 	     employees:        $scope.employees,
 	     repertories:      $scope.repertories,
+	     regions:          $scope.regions,
 	     authen_list_repo: $scope.authen_list_repo,
 	     check_shop:       check_shop,
 	     has_update:       has_update});
@@ -512,7 +515,48 @@ shopApp.controller("shopDetailCtrl", function(
     };
 });
 
+shopApp.controller("regionDetailCtrl", function($scope, shopService, diabloUtilsService){
+    var dialog = diabloUtilsService;
 
+    $scope.refresh = function(){
+	shopService.list_region().then(function(data){
+	    console.log(data); 
+	    $scope.regions = angular.copy(data);
+	    diablo_order($scope.regions);
+	});	
+    };
+
+    $scope.refresh();
+
+    $scope.new_region = function(){
+	var callback = function(params){
+	    console.log(params);
+
+	    shopService.add_region(params.name, params.comment).then(function(state){
+		if (state.ecode === 0){
+		    dialog.response_with_callback
+		    (true,
+		     "新增区域",
+		     "新增区域 [" + params.name + "] 成功",
+		     undefined,
+		     function() {$scope.refresh()});
+		} else {
+		    dialog.response(
+			false,
+			"新增区域",
+			"新增区域失败：" + shopService.error[state.ecode]);
+		}
+	    });
+	};
+
+	dialog.edit_with_modal("new-region.html", undefined, callback, undefined, {});
+    };
+
+    $scope.update_region = function(region){
+	dialog.response(false, "修改区域", "修改区域失败：暂不支持此操作！！")
+    };
+	
+});
 
 shopApp.controller("shopCtrl", function($scope){});
 

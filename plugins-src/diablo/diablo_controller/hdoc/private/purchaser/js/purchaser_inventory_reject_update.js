@@ -35,10 +35,7 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
     $scope.seasons         = diablo_season; 
     $scope.e_pay_types     = purchaserService.extra_pay_types;
 
-    $scope.setting = {
-	reject_negative: false,
-	history_stock: false
-    }; 
+    $scope.setting = {reject_negative: false, history_stock: false}; 
     
     $scope.go_back = function(){
 	diablo_goto_page("#/inventory_new_detail/" + $routeParams.ppage);
@@ -48,18 +45,9 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
      * authen
      */
     $scope.stock_right = {
-	show_orgprice: rightAuthen.authen(
-	    user.type,
-	    rightAuthen.rainbow_action()['show_orgprice'],
-	    user.right
-	),
-
-	show_balance: rightAuthen.authen(
-	    user.type,
-	    rightAuthen.rainbow_action()['show_balance_onstock'],
-	    user.right
-	)
-    };
+	show_orgprice: stockUtils.authen_rainbow(user.type, user.right, 'show_orgprice'),
+	show_balance: stockUtils.authen_rainbow(user.type, user.right, 'show_balance_onstock'), 
+    }; 
 
     // init
     $scope.has_saved       = false;
@@ -100,13 +88,8 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 		}).then(function(result){
 		    // console.log(result);
 		    if (result.ecode === 0){
-			// var history = result.data.filter(function(d){
-			// 	return d.rsn !== $routeParams.rsn;
-			// });
-
 			var history = angular.copy(result.data);
 			angular.forEach(history, function(h){
-			    // h.brand = diablo_get_object(h.brand_id, $scope.brands);
 			    h.firm  = diablo_get_object(h.firm_id, $scope.firms);
 			    h.brand = inv.brand;
 			    h.shop = diablo_get_object(h.shop_id, $scope.shops);
@@ -262,14 +245,13 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	
 	// $scope.old_select.surplus    = $scope.old_select.firm.balance;
 	var select = stockUtils.get_login_employee(
-	    base.shop_id, user.loginEmployee, filterEmployee); 
+	    base.shop_id, user.loginEmployee, filterEmployee);
+	
 	$scope.select.employee = select.login;
 	$scope.employees = select.filter;
 	
-	$scope.old_select.shop         = $scope.get_object(
-	    base.shop_id,   $scope.shops); 
-	$scope.old_select.employee     = $scope.get_object(
-	    base.employee_id, $scope.employees);
+	$scope.old_select.shop = $scope.get_object(base.shop_id,   $scope.shops); 
+	$scope.old_select.employee = $scope.get_object(base.employee_id, $scope.employees);
 	
 	$scope.old_select.surplus      = base.balance;
 	$scope.old_select.comment      = base.comment;
@@ -281,10 +263,8 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	$scope.select = angular.extend($scope.select, $scope.old_select);
 
 	// base setting
-	$scope.setting.reject_negative =
-	    stockUtils.reject_negative(base.shop_id, $scope.ubase);
-	$scope.setting.history_stock =
-	    stockUtils.history_stock(base.shop_id, $scope.ubase);
+	$scope.setting.reject_negative = stockUtils.reject_negative(base.shop_id, $scope.ubase);
+	$scope.setting.history_stock = stockUtils.history_stock(base.shop_id, $scope.ubase);
 	$scope.setting.q_start_time =
 	    stockUtils.start_time(base.shop_id, $scope.ubase, $.now(), dateFilter);
 	
@@ -308,10 +288,8 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 			   amounts:[]};
 		
 		add.style_number    = invs[i].style_number;
-		add.brand           = $scope.get_object(
-		    invs[i].brand_id, $scope.brands);
-		add.type            = $scope.get_object(
-		    invs[i].type_id, $scope.types);
+		add.brand           = $scope.get_object(invs[i].brand_id, $scope.brands);
+		add.type            = $scope.get_object(invs[i].type_id, $scope.types);
 		add.firm_id         = invs[i].firm_id;
 		add.sex             = invs[i].sex;
 		add.free            = invs[i].free;
@@ -329,10 +307,8 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 		add.sizes.push(invs[i].size);
 		add.colors.push(diablo_find_color(invs[i].color_id, filterColor));
 		
-		add.amounts.push({
-		    cid:invs[i].color_id,
-		    size:invs[i].size,
-		    reject:Math.abs(invs[i].amount)})
+		add.amounts.push(
+		    {cid:invs[i].color_id, size:invs[i].size, reject:Math.abs(invs[i].amount)})
 		sorts.push(add); 
 	    } 
 	}
@@ -690,7 +666,7 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 		    undefined,
 		    function(){
 			diabloFilter.reset_firm();
-			diablo_goto_page("#/inventory_new_detail")
+			$scope.go_back();
 		    })
 	    	return;
 	    } else{

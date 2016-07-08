@@ -56,7 +56,7 @@ action(Session, Req, {"list_w_retailer_score"}) ->
     %% ?utils:respond(
     %%    batch, fun() -> ?w_user_profile:get(retailer, Merchant) end, Req).
     ?utils:respond(
-       batch, fun() -> ?w_retailer:score(list, Merchant) end, Req).
+       batch, fun() -> ?w_user_profile:get(score, Merchant) end, Req).
 
 
 

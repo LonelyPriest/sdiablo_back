@@ -18,35 +18,11 @@
 		    x-ng-click="refresh()">刷新
 	      <i class="icon icon-spinner fg-white"></i></a>
 	  </div>
-	</div>
-
-	<!-- <div class="tools"> -->
-	<!--   <a class="reload" href="javascript:;" x-ng-click="refresh()"></a> -->
-	<!-- </div> -->
+	</div> 
       </div>
 
       <!--BEGIN table container-->
-      <div class="portlet-body">
-	<!--BEGIN table-toolbar-->
-	<div class="table-toolbar">
-	  <!-- <div class="row form-group"> -->
-
-	  <!--   <div class="col-sm-12 col-md-12"> -->
-	  <!--     <div class="input-group"> -->
-	  <!--	<div class="input-cont"> -->
-	  <!--	  <input type="text" class="form-control" placeholder="请输入店铺名称" -->
-	  <!--		 x-ng-model="filter.number"></input> -->
-	  <!--	</div> -->
-	  <!--	<span class="input-group-btn"> -->
-	  <!--	  <button type="button" class="btn green"> -->
-	  <!--	    <i class="m-icon-swapright m-icon-white"></i> -->
-	  <!--	</span> -->
-	  <!--     </div> -->
-	  <!--   </div>  -->
-
-	  <!-- </div>  -->
-	</div> <!--END table-toolbar-->
-
+      <div class="portlet-body"> 
 	<!--BEGN portlet body-->
 	<div class="portlet-body">
 	  <!--BEGIN panel-->
@@ -65,6 +41,7 @@
 		    <th>店长</th>
 		    <!-- <th>归属人</th> -->
 		    <th>地址</th>
+		    <th>区域</th>
 		    <th x-ng-show="authen_list_repo">所属仓库</th>
 		    <th>开张日期</th>
 		    <th>创建日期</th>
@@ -95,11 +72,14 @@
 		    <!-- </td> -->
 
 		    <td>{{shop.address}}</td>
+		    <td>
+		      <span x-ng-if="shop.region_id===-1"></span>
+		      <span x-ng-if="shop.region_id!==-1">{{shop.region.name}}</span>
+		    </td>
 		    <td x-ng-show="authen_list_repo"
 			x-ng-switch on="shop.repo">
 		      <span ng-switch-when=undefined>暂无</span>
 		      <span ng-switch-default>{{shop.repo.name}}</span>
-		      <!-- {{shop.repo}} -->
 		    </td>
 		    <td>{{shop.open_date}}</td>
 		    <td>{{shop.entry_date}}</td>
@@ -194,6 +174,17 @@
 	  </div>
 	</div>
 
+	<div class="form-group">
+	  <div class="input-group">
+	    <span class="input-group-addon">
+	      <i class="glyphicon glyphicon-hand-right fg-red"></i>区域</span>
+	    <select class="form-control"
+		    x-ng-model="params.shop.region"
+		    x-ng-options="r as r.name for r in params.regions">
+	    </select>
+	  </div>
+	</div>
+	
 	<div class="form-group">
 	  <div class="input-group">
 	      <span class="input-group-addon">

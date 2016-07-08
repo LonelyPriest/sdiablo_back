@@ -71,11 +71,12 @@ userApp.factory("userService", function($resource, $q){
 
 	    // shops only, include the shop bind to repository
 	    sortShops: function(){
-		var sort = []; 
+		var sort = [];
 		angular.forEach(shops, function(s){
 		    var shop = {id:  s.shop_id,
 				name:s.name,
 				repo:s.repo_id,
+				region: s.region_id,
 				charge_id: s.charge_id,
 				score_id: s.score_id,
 				py:diablo_pinyin(s.name)};
@@ -133,6 +134,7 @@ userApp.factory("userService", function($resource, $q){
 				repo:s.repo_id,
 				charge_id: s.charge_id,
 				score_id: s.score_id,
+				region: s.region_id,
 				py:diablo_pinyin(s.name)};
 
 		    if ( ((s.type === 0 && s.repo_id === -1) || s.type === 1)

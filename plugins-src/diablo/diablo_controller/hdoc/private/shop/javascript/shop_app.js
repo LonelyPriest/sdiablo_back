@@ -27,6 +27,9 @@ shopApp.config(['$routeProvider', function($routeProvider){
 
     var score = {"filterScore": function(diabloNormalFilter){
 	return diabloNormalFilter.get_score()}};
+
+    var region = {"filterRegion": function(diabloNormalFilter){
+	return diabloNormalFilter.get_region()}};
     
     // var repo = {"filterRepo": function(diabloNormalFilter){
     // 	return diabloNormalFilter.get_repo()}};
@@ -36,7 +39,7 @@ shopApp.config(['$routeProvider', function($routeProvider){
 	    templateUrl: '/private/shop/html/shop_detail.html',
             controller: 'shopDetailCtrl',
 	    resolve: angular.extend(
-		{}, promotion, score, charge, employee, user)
+		{}, promotion, score, charge, employee, region, user)
 	}).
 	when('/shop/shop_new', {
 	    templateUrl: '/private/shop/html/shop_new.html',
@@ -61,11 +64,15 @@ shopApp.config(['$routeProvider', function($routeProvider){
             controller: 'badRepoNewCtrl',
 	    resolve: angular.extend({}, user)
 	}).
+	when('/region_detail', {
+	    templateUrl: '/private/shop/html/region_detail.html',
+            controller: 'regionDetailCtrl' 
+	}).
 	otherwise({
 	    templateUrl: '/private/shop/html/shop_detail.html',
             controller: 'shopDetailCtrl' ,
 	    resolve: angular.extend(
-		{}, promotion, score, charge, employee, user)
+		{}, promotion, score, charge, employee, region, user)
         })
 }]);
 
@@ -125,6 +132,7 @@ shopApp.service("shopService", function($resource, dateFilter){
 	    {id:        ashop.id,
 	     name:      ashop.name,
 	     address:   ashop.address,
+	     region:    ashop.region.id,
 	     shopowner: angular.isDefined(ashop.employee)
 	     && ashop.employee ? ashop.employee.id : undefined,
 	     repo: angular.isDefined(ashop.repo)
@@ -172,5 +180,16 @@ shopApp.service("shopService", function($resource, dateFilter){
 	    {type: type,
 	     shop: shopId,
 	     promotion: promotion}).$promise;
+    };
+
+    this.add_region = function(name, comment) {
+	return shop.save(
+	    {operation: "new_region"},
+	    {name: name,
+	     comment: comment}).$promise;
+    };
+
+    this.list_region = function() {
+	return shop.query({operation: "list_region"}).$promise;
     };
 });

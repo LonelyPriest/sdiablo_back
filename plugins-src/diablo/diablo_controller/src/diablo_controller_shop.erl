@@ -21,6 +21,7 @@
 	 terminate/2, code_change/3]).
 
 -export([shop/3, shop/4, lookup/1, lookup/2]).
+-export([region/2, region/3]).
 
 -export([repo/2, repo/3, badrepo/2, badrepo/3, promotion/2, promotion/3]).
 
@@ -40,6 +41,11 @@ shop(delete, Merchant, ShopId) ->
 
 shop(update, Merchant, ShopId, Attrs) ->
     gen_server:call(?MODULE, {update_shop, Merchant, ShopId, Attrs}).
+
+region(new, Merchant, Attrs) ->
+    gen_server:call(?MODULE, {new_region, Merchant, Attrs}).
+region(list, Merchant) ->
+    gen_server:call(?MODULE, {list_region, Merchant, []}).
 
 lookup(Merchant) ->
     lookup(Merchant, []).
@@ -143,6 +149,7 @@ handle_call({update_shop, Merchant, ShopId, Attrs}, _From, State) ->
     Master  = ?v(<<"shopowner">>, Attrs),
     Charge  = ?v(<<"charge">>, Attrs),
     Score   = ?v(<<"score">>, Attrs),
+    Region  = ?v(<<"region">>, Attrs),
 
     ShopExist = 
 	case Name of
@@ -160,6 +167,7 @@ handle_call({update_shop, Merchant, ShopId, Attrs}, _From, State) ->
 	    Updates = ?utils:v(repo, integer, Repo) 
 		++ ?utils:v(name, string, Name)
 		++ ?utils:v(address, string, Address)
+		++ ?utils:v(region, integer, Region)
 		++ ?utils:v(master, string, Master)
 		++ ?utils:v(charge, integer, Charge)
 		++ ?utils:v(score, integer, Score),
@@ -208,7 +216,7 @@ handle_call({list_shop, Merchant, Conditions}, _From, State) ->
 
     Sql1 = "select a.id, a.repo, a.name, a.address, a.type"
 	", a.open_date, a.master as shopowner_id, a.charge as charge_id"
-	", a.score as score_id, a.entry_date"
+	", a.score as score_id, a.region as region_id, a.entry_date"
 	%% ", b.name as shopowner"
 	++ " from shops a"
 	%% ++ " left join employees b on a.shopowner=b.number"
@@ -377,6 +385,45 @@ handle_call({list_promotion, Merchant, Conditions}, _From, State) ->
 	++ ?sql_utils:condition(proplists, Conditions)
 	++ " and deleted=" ++ ?to_s(?NO),
 
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({new_region, Merchant, Attrs}, _From, State)->
+    ?DEBUG("new region with props ~p", [Attrs]),
+    Name      = ?v(<<"name">>, Attrs),
+    Comment   = ?v(<<"comment">>, Attrs, []),
+    Datetime  = ?utils:current_time(format_localtime),
+
+    %% name can not be same
+    Sql = "select id, name"
+	++ " from region"
+	++ " where merchant=" ++ ?to_s(Merchant)
+	++ " and name = " ++ "\"" ++ ?to_string(Name) ++ "\""
+	++ " and deleted=" ++ ?to_s(?NO),
+
+    case ?sql_utils:execute(s_read, Sql) of
+	{ok, []} -> 
+	    Sql1 = "insert into region"
+		++ "(merchant, name, comment, entry_date)"
+		++ " values ("
+		++ ?to_s(Merchant) ++ ","
+		++ "\'" ++ ?to_s(Name) ++ "\',"
+		++ "\'" ++ ?to_s(Comment) ++ "\'," 
+		++ "\"" ++ ?to_s(Datetime) ++ "\")", 
+	    Reply = ?sql_utils:execute(insert, Sql1),
+	    ?w_user_profile:update(region, Merchant),
+	    {reply, Reply, State};
+	{ok, _Any} ->
+	    {reply, {error, ?err(region_exist, Name)}, State};
+	Error ->
+	    {reply, Error, State}
+    end;
+
+handle_call({list_region, Merchant, Conditions}, _From, State) ->
+    Sql = "select id, name, comment, entry_date from region"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, Conditions)
+	++ " and deleted=" ++ ?to_s(?NO), 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 	

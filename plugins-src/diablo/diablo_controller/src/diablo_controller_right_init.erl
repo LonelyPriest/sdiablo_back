@@ -158,6 +158,8 @@ init([]) ->
 	 {?del_repo,    <<"删除仓库">>, <<"del_repo">>,    ?right_shop},
 	 {?update_repo, <<"修改仓库">>, <<"update_repo">>, ?right_shop},
 	 {?list_repo,   <<"查询仓库">>, <<"list_repo">>,   ?right_shop},
+
+	 {?new_region,  <<"新增区域">>, <<"new_region">>,  ?right_shop},
 	 
 	 %% {?new_badrepo, <<"新增次品仓">>, <<"new_badrepo">>, ?right_shop},
 	 %% {?del_badrepo, <<"删除次品仓">>, <<"del_badrepo">>, ?right_shop},
@@ -787,6 +789,7 @@ pass_action(wholesaler) ->
 
      %% inventnory
      <<"list_w_inventory">>,
+     <<"list_w_inventory_info">>,
      <<"filter_w_inventory_group">>, 
      <<"match_w_inventory">>,
      <<"match_all_w_inventory">>,
@@ -873,5 +876,6 @@ pass_action(wholesaler) ->
 
      %% shop
      <<"list_shop">>,
-     <<"list_shop_promotion">>
+     <<"list_shop_promotion">>,
+     <<"list_region">>
     ].

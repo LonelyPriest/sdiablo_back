@@ -28,8 +28,21 @@
       <div class="portlet-body">
 	<!--BEGIN table-toolbar-->
 	<div class="table-toolbar"> 
-	  <div class="row diablo-form-group"> 
-	    <div class="col-xs-4 col-md-4">
+	  <div class="row diablo-form-group">
+
+	    <div class="col-xs-3 col-md-3">
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-adjust fg-red"></i>模式</span>
+	  	<select class="form-control"
+			x-ng-model="select.u_mode",
+			x-ng-change="change_mode()" 
+			x-ng-options="u as u.name for u in u_modes">
+		</select>
+	      </div>
+	    </div>
+	      
+	    <div x-ng-if="select.u_mode.id===0" class="col-xs-3 col-md-3">
 	      <div class="input-group">
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-map-marker fg-red"></i>店铺</span>
@@ -41,11 +54,23 @@
 	      </div>
 	    </div>
 
-	    <div class="col-xs-4 col-md-4">
+	    <div x-ng-if="select.u_mode.id===1" class="col-xs-3 col-md-3">
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-map-marker fg-red"></i>区域</span>
+	  	<select class="form-control" type="text"
+	  		x-ng-model="select.region"
+			x-ng-change="change_region()"
+	  		x-ng-options="r as r.name for r in regions">
+		</select>
+	      </div>
+	    </div>
+
+	    <div class="col-xs-3 col-md-3">
 	      <time-search time=select.datetime></time-search> 
 	    </div>
 
-	    <div class="col-xs-4 col-md-4">
+	    <div class="col-xs-3 col-md-3">
 	      <div class="input-group">
 		<span class="input-group-addon">
 	  	  <i class="icon-user fg-red"></i>
@@ -63,7 +88,7 @@
 	    <div class="col-xs-3 col-md-3">
 	      <div class="input-group">
 		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-map-marker fg-red"></i>总数</span>
+		  <i class="glyphicon glyphicon-plane fg-red"></i>总数</span>
 	  	<input class="form-control" type="number" readonly
 		       x-ng-model="select.total" />
 	      </div>
@@ -82,7 +107,7 @@
 	    <div class="col-xs-3 col-md-3">
 	      <div class="input-group">
 		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-magnet fg-red"></i>模式</span> 
+		  <i class="glyphicon glyphicon-yen fg-red"></i>价格</span> 
 	  	<select class="form-control"
 			x-ng-model="select.p_mode",
 			x-ng-options="p as p.name for p in p_modes">
@@ -106,6 +131,50 @@
 	
 	<!--BEGN portlet body--> 
 	<div class="portlet-body">
+
+	  <div x-ng-if="select.u_mode.id===1" class="panel panel-default" ng-affix>
+	    <div class="table-responsive">
+	      <table class="table table-bordered table-striped table-hover
+			    table-condensed table-advanced">
+		<thead>
+		  <tr>
+		    <th class="text-center">货号</th>
+		    <th class="text-center">品名</th>
+		    <th class="text-center">厂商</th>
+		    
+		    <th class="text-center">吊牌价</th>
+		    <th class="text-center">折扣</th>
+		    
+		    <th class="text-center">数量</th> 
+		    <th class="text-center">进价</th>
+		    <th class="text-center">折扣率</th>
+
+		    <th class="text-center">日期</th>
+		    <th class="text-center">店铺</th>
+		  </tr>
+		</thead>
+
+		<tbody>
+		  <tr x-ng-repeat="h in select_history.history">
+		    <td>{{h.style_number}}</td>
+		    <td>{{h.brand.name}}</td>
+		    <td class="bg-lightOrange">{{h.firm.name}}</td>
+		    
+		    <td>{{h.tag_price}}</td>
+		    <td>{{h.discount}}</td>
+		    <td>{{h.total}}</td>
+		    <td class="bg-lightOrange">{{h.org_price}}</td>
+		    <td class="bg-lightPink">{{h.ediscount}}</td> 
+
+		    <td>{{h.entry_date}}</td>
+		    <td>{{h.shop.name}}</td> 
+		  </tr>
+		</tbody>
+
+	      </table>
+	    </div>
+	  </div>
+	  
 	  <!--BEGIN panel-->
 	  <div class="panel panel-default">
 	    <div class="table-responsive diablo-table">
@@ -192,10 +261,12 @@
 		    	    <input class="form-control" type="number"
 		    		   required
 				   disable-key
+				   ng-edit
 		    		   placeholder="吊牌价"
 				   focus-auto="focus.tag_price"
 				   x-ng-pattern="pattern.price"
 		    		   x-ng-model="inv.n_tag_price"
+				   x-ng-focus="on_focus_attr('tag_price', inv)"
 				   x-ng-change="add_inventory(inv, 0)"/>
 		    	  </div>
 			</form>
@@ -213,9 +284,11 @@
 		    	    <input class="form-control" type="number"
 		    		   required
 				   disable-key
+				   ng-edit
 		    		   placeholder="折扣" 
 				   x-ng-pattern="pattern.discount"
 		    		   x-ng-model="inv.n_discount"
+				   x-ng-focus="on_focus_attr('discount', inv)"
 				   x-ng-change="add_inventory(inv, 1)"/>
 		    	  </div>
 			</form>

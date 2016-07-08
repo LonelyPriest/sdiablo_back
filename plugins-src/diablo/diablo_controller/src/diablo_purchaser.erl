@@ -121,9 +121,13 @@ purchaser_inventory(check_transfer, Merchant, CheckProps) ->
 purchaser_inventory(list, Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {list_inventory, Merchant, Conditions});
+purchaser_inventory(list_inventory_info, Merchant, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {list_inventory_info, Merchant, Conditions});
 purchaser_inventory(list_new_detail, Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {list_new_detail, Merchant, Conditions}); 
+    gen_server:call(Name, {list_new_detail, Merchant, Conditions});
+
 %% purchaser_inventory(last_reject, Merchant, Conditions) ->
 %%     gen_server:call(?SERVER, {last_reject, Merchant, Conditions});
 purchaser_inventory(get_new, Merchant, RSN) ->
@@ -1446,23 +1450,27 @@ handle_call({check_inventory_transfer, Merchant, CheckProps}, _From, State) ->
     {reply, Reply, State};
 
 handle_call({list_inventory, Merchant, Conditions}, _From, State) ->
-    ?DEBUG("list_inventory  with merchant ~p, conditions ~p",
-	   [Merchant, Conditions]), 
+    ?DEBUG("list_inventory  with merchant ~p, conditions ~p", [Merchant, Conditions]), 
     QType = ?v(<<"qtype">>, Conditions, 0), 
     NewConditions = 
-	lists:foldr(fun({<<"shop">>, Shop}, Acc) ->
-			    [{<<"shop">>, case QType of
-					      1 -> realy_shop(true, Merchant, Shop);
-					      _ -> realy_shop(Merchant, Shop)
-					  end}|Acc];
-		       ({<<"qtype">>, _}, Acc) ->
-			    Acc;
-		       (C, Acc) ->
-			    [C|Acc]
-		    end, [], Conditions),
-    
+	lists:foldr(
+	  fun({<<"shop">>, Shop}, Acc) ->
+		  [{<<"shop">>, case QType of
+				    1 -> realy_shop(true, Merchant, Shop);
+				    _ -> realy_shop(Merchant, Shop)
+				end}|Acc];
+	     ({<<"qtype">>, _}, Acc) ->
+		  Acc;
+	     (C, Acc) ->
+		  [C|Acc]
+	  end, [], Conditions), 
 		   
     Sql = ?w_good_sql:inventory(list, Merchant, NewConditions),
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({list_inventory_info, Merchant, Conditions}, _From, State) ->
+    Sql = ?w_good_sql:inventory(list_info, Merchant, Conditions),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
@@ -1544,7 +1552,7 @@ handle_call({adjust_price, Merchant, Inventories, Attrs}, _From, State) ->
 			  0 -> []
 		      end
 		   ++ " where merchant=" ++ ?to_s(Merchant)
-		   ++ " and shop=" ++ ?to_s(Shop)
+		   ++ " and " ++ ?utils:to_sqls(proplists, {<<"shop">>, Shop})
 		   ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 		   ++ " and brand=" ++ ?to_s(Brand)|Acc]
 	  end, [], Inventories),

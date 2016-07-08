@@ -129,6 +129,8 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
     {struct, Content}  = ?v(<<"content">>, Payload),
     ShopId     = ?v(<<"shop">>, Content),
     EmployeeId = ?v(<<"employee">>, Content),
+    PCash      = ?v(<<"pcash">>, Content, 0),
+    PCashIn    = ?v(<<"pcash_in">>, Content, 0),
     Comment    = ?v(<<"comment">>, Content, []),
     
     Currenttime = ?utils:current_time(format_localtime), 
@@ -149,7 +151,6 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 		  {<<"end_time">>, ?to_b(TodayEnd)}],
 
     DropConditions = lists:keydelete(<<"employ">>, 1, Conditions),
-    ?DEBUG("dropconditions ~p", [DropConditions]),
     
     {ok, SaleInfo} = ?w_report:stastic(stock_sale, Merchant, Conditions), 
     {ok, StockIn}  = ?w_report:stastic(stock_in, Merchant, DropConditions),
@@ -163,9 +164,11 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 		       {<<"start_time">>, ?v(<<"qtime_start">>, BaseSetting)}
 		      ]),
 
+    {ok, LastStockInfo} = ?w_report:stastic(last_stock_of_shop, Merchant, ShopId), 
 
     {SellTotal, SellBalance, SellCash, SellCard} = sell(info, SaleInfo),
     CurrentStockTotal = stock(total, StockR),
+    LastStockTotal = stock(last_total, LastStockInfo),
     StockInTotal = stock(total, StockIn),
     StockOutTotal = stock(total, StockOut),
     %% ?DEBUG("stockr ~p", [StockR]),
@@ -185,6 +188,7 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 		 "insert into w_change_shift(merchant, employ, shop"
 		 ", total, balance, cash, card"
 		 ", stock, y_stock, stock_in, stock_out"
+		 ", pcash, pcash_in"
 		 ", comment, entry_date) values("
 		 ++ ?to_s(Merchant) ++ ","
 		 ++ "\'" ++ ?to_s(EmployeeId) ++ "\',"
@@ -195,11 +199,14 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 		 ++ ?to_s(SellCash) ++ ","
 		 ++ ?to_s(SellCard) ++ ","
 
-		 ++ ?to_s(CurrentStockTotal) ++ "," 
-		 ++ "0,"
+		 ++ ?to_s(CurrentStockTotal) ++ ","
+		 ++ ?to_s(LastStockTotal) ++ "," 
 		 ++ ?to_s(StockInTotal) ++ ","
 		 ++ ?to_s(StockOutTotal) ++ ","
 
+		 ++ ?to_s(PCash) ++ ","
+		 ++ ?to_s(PCashIn) ++ ","
+		 
 		 ++ "\'" ++ ?to_s(Comment) ++ "\',"
 		 ++ "\'" ++ ?to_s(Currenttime) ++ "\')"};
 	    {ok, Shift} ->
@@ -213,6 +220,9 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 		 ++ ", stock=" ++ ?to_s(CurrentStockTotal)
 		 ++ ", stock_in=" ++ ?to_s(StockInTotal)
 		 ++ ", stock_out=" ++ ?to_s(StockOutTotal)
+
+		 ++ ", pcash=" ++ ?to_s(PCash)
+		 ++ ", pcash_in=" ++ ?to_s(PCashIn)
 
 		 ++ ", comment=\'" ++ ?to_s(Comment) ++ "\'"
 		 ++ ", entry_date=\'" ++ ?to_s(Currenttime) ++ "\'"
@@ -243,24 +253,35 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 		    ++ "营业状况" ++ ?f_print:line(equal, FillLen)
 		    ++ "</C>" ++ ?f_print:br(Brand)
 		    
-		    ++ "数量：" ++ ?to_s(SellTotal) ++ ?f_print:br(Brand) 
+		    ++ "数量  ：" ++ ?to_s(SellTotal) ++ ?f_print:br(Brand) 
 		    ++ "营业额：" ++ ?to_s(SellBalance) ++ ?f_print:br(Brand) 
-		    ++ "现金：" ++ ?to_s(SellCash) ++ ?f_print:br(Brand)
-		    ++ "刷卡：" ++ ?to_s(SellCard) ++ ?f_print:br(Brand)
+		    ++ "现金  ：" ++ ?to_s(SellCash) ++ ?f_print:br(Brand)
+		    ++ "刷卡  ：" ++ ?to_s(SellCard) ++ ?f_print:br(Brand)
 		    ++ ?f_print:br(Brand)
 
 		    ++ "<C>" ++ ?f_print:line(equal, FillLen)
 		    ++ "库存状况"
 		    ++ ?f_print:line(equal, FillLen) ++ "</C>" ++ ?f_print:br(Brand)
 		    
-		    ++ "昨日库存：" ++ ?to_s(0) ++ ?f_print:br(Brand)
+		    ++ "昨日库存：" ++ ?to_s(LastStockTotal) ++ ?f_print:br(Brand)
 		    ++ "当前库存：" ++ ?to_s(CurrentStockTotal) ++ ?f_print:br(Brand)
 
 		    ++ "入库数量：" ++ ?to_s(StockInTotal) ++ ?f_print:br(Brand)
 		    ++ "退货数量：" ++ ?to_s(StockOutTotal) ++ ?f_print:br(Brand)
+		    ++ ?f_print:br(Brand)
 
+		    ++ "<C>" ++ ?f_print:line(equal, FillLen)
+		    ++ "备用金"
+		    ++ ?f_print:line(equal, FillLen) ++ "</C>" ++ ?f_print:br(Brand)
+
+		    ++ "备用金：" ++ ?to_s(PCash) ++ ?f_print:br(Brand)
+		    ++ "余额  ：" ++ ?to_s(PCashIn) ++ ?f_print:br(Brand)
+
+		    ++ ?f_print:br(Brand)
+		    ++ "备注  ：" ++ ?to_s(Comment)
+		    
 		    ++ lists:foldl(
-			 fun(_Inc, Acc) -> ?f_print:br(Brand) ++ Acc end, [], lists:seq(1, 8))
+			 fun(_Inc, Acc) -> ?f_print:br(Brand) ++ Acc end, [], lists:seq(1, 2))
 	end,
 
     %% ResponseFun =
@@ -399,6 +420,9 @@ sell(info, [{SaleInfo}])->
 stock(total, []) ->
     0;
 stock(total, [{StockInfo}]) ->
-    V = ?v(<<"total">>, StockInfo, 0),
-    V.
+    ?v(<<"total">>, StockInfo, 0);
+
+stock(last_total, StockInfo) ->
+    ?v(<<"total">>, StockInfo, 0).
+
     

@@ -67,6 +67,9 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 
     var shop = {"filterShop": function(diabloNormalFilter){
         return diabloNormalFilter.get_shop()}};
+
+    var region = {"filterRegion": function(diabloNormalFilter){
+	return diabloNormalFilter.get_region()}};
     
     $routeProvider.
 	// new
@@ -200,7 +203,7 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 	when('/inventory_price', {
             templateUrl: '/private/purchaser/html/purchaser_inventory_price.html',
             controller: 'purchaserInventoryPriceCtrl',
-            resolve: angular.extend({}, user, firm, employee, base)
+            resolve: angular.extend({}, user, brand, firm, employee, region, base)
         }).
 	// default
 	otherwise({
@@ -384,6 +387,11 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
     this.list_purchaser_inventory = function(condition){
     	return http.get_inventory(
     	    {operation: "list_w_inventory"}, condition).$promise;
+    };
+
+    this.list_w_inventory_info = function(condition){
+    	return http.save(
+    	    {operation: "list_w_inventory_info"}, condition).$promise;
     };
 
     this.get_purchaser_tagprice = function(condition){

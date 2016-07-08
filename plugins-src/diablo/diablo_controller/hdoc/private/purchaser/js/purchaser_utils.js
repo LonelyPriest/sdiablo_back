@@ -253,6 +253,10 @@ var stockUtils = function(){
 	    });
 
 	    return pfirms;
+	},
+
+	authen_rainbow: function(user_type, user_right, action){
+	    return rightAuthen.authen(user_type, rightAuthen.rainbow_action()[action], user_right);
 	}
 	    
 	//

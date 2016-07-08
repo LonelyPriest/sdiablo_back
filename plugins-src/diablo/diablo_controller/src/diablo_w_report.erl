@@ -62,7 +62,10 @@ stastic(stock_transfer_out, Merchant, Conditions)->
 stastic(stock_fix, Merchant, Conditions)->
     gen_server:call(?SERVER, {stock_fix, Merchant, Conditions});
 stastic(stock_real, Merchant, Conditions) ->
-    gen_server:call(?SERVER, {stock_real, Merchant, Conditions}).
+    gen_server:call(?SERVER, {stock_real, Merchant, Conditions});
+
+stastic(last_stock_of_shop, Merchant, ShopId) ->
+    gen_server:call(?SERVER, {last_stock_of_shop, Merchant, ShopId}).
 
 
 
@@ -301,6 +304,14 @@ handle_call({stock_real, Merchant, Conditions}, _From, State)->
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 
+handle_call({last_stock_of_shop, Merchant, ShopId}, _From, State) ->
+    Sql = "select id, merchant, shop, stock as total from w_daily_report"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and shop=" ++ ?to_s(ShopId)
+	++ " order by id desc limit 1",
+
+    R = ?sql_utils:execute(s_read, Sql),
+    {reply, R, State};
 
 
 handle_call(_Request, _From, State) ->

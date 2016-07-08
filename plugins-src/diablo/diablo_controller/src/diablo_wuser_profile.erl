@@ -53,6 +53,8 @@ get(shop, Merchant) ->
     gen_server:call(?SERVER, {get_shop_profile, Merchant});
 get(repo, Merchant) ->
     gen_server:call(?SERVER, {get_repo_profile, Merchant});
+get(region, Merchant) ->
+    gen_server:call(?SERVER, {get_region_profile, Merchant});
 get(print, Merchant) ->
     gen_server:call(?SERVER, {get_print_profile, Merchant});
 get(print_format, Merchant) ->
@@ -148,7 +150,12 @@ update(color, Merchant) ->
 update(size_group, Merchant) ->
     gen_server:cast(?SERVER, {update_sizegroup, Merchant});
 update(promotion, Merchant) ->
-    gen_server:cast(?SERVER, {update_promotion, Merchant}).
+    gen_server:cast(?SERVER, {update_promotion, Merchant});
+update(score, Merchant) ->
+    gen_server:cast(?SERVER, {update_score, Merchant});
+update(region, Merchant) ->
+    gen_server:cast(?SERVER, {update_region, Merchant}).
+
 
 
 update(user_shop, Merchant, Session) ->
@@ -175,6 +182,7 @@ handle_call({new_profile, Merchant}, _From, State) ->
 	{ok, MerchantInfo} = ?merchant:merchant(get, Merchant),
 	{ok, Shops}        = ?shop:lookup(Merchant),
 	{ok, Repoes}       = ?shop:repo(list, Merchant),
+	{ok, Regions}      = ?shop:region(list, Merchant),
 	
 	%% {ok, Cards}        = ?w_base:bank_card(list, Merchant), 
 	%% base stting
@@ -203,6 +211,7 @@ handle_call({new_profile, Merchant}, _From, State) ->
 				  info        = MerchantInfo,
 				  shop        = Shops,
 				  repo        = Repoes,
+				  region      = Regions, 
 				  print       = Prints,
 				  pformat     = PFormats,
 				  %% bank        = ?to_tl(Cards),
@@ -493,6 +502,19 @@ handle_call({get_repo_profile, Merchant, Repo}, _From, State) ->
 		GetFun(Repoes)
 	end, 
     {reply, {ok, NewRepoes}, State};
+
+
+handle_call({get_region_profile, Merchant}, _From, State) ->
+    ?DEBUG("get_region_profile of merchant ~p", [Merchant]),
+    MS = ms(Merchant, region), 
+    case ets:select(?WUSER_PROFILE, MS) of
+	[] ->
+	    {ok, Regions} = ?shop:rgion(list, Merchant),
+	    {reply, {ok, Regions}, State};
+	[Regions] ->
+	    ?DEBUG("regions ~p of merchant ~p", [Regions, Merchant]),
+	    {reply, {ok, Regions}, State}
+    end;
 
 handle_call({get_print_profile, Merchant}, _From, State) ->
     ?DEBUG("get_print_profile of merchant ~p", [Merchant]),
@@ -810,7 +832,14 @@ handle_cast({Update, Merchant}, State) ->
 		    update_promotion ->
 			{ok, Promotions}
 			    = ?promotion:promotion(list, Merchant),
-			Profile#wuser_profile{promotion=Promotions}
+			Profile#wuser_profile{promotion=Promotions};
+		    update_score ->
+			{ok, scores} = ?w_retailer:score(list, Merchant),
+			Profile#wuser_profile{score=score};
+		    update_region ->
+			{ok, Regions}
+			    = ?shop:region(list, Merchant),
+			Profile#wuser_profile{region=Regions}
 		end 
 	end,
 
@@ -967,8 +996,12 @@ ms(Merchant, score) ->
     [{{'$1', #wuser_profile{merchant='$1', score='$2', _='_'}},
       [{'==', '$1', ?to_i(Merchant)}],
       ['$2']
+     }];
+ms(Merchant, region) ->
+    [{{'$1', #wuser_profile{merchant='$1', region='$2', _='_'}},
+      [{'==', '$1', ?to_i(Merchant)}],
+      ['$2']
      }].
-
 
 select(user, MS, RetryFun) ->
     Select = 

@@ -392,7 +392,7 @@ function filterProvider(){
 		    return wgoodService.list_w_promotion().then(function(
 			promotions
 		    ){
-			console.log(promotions);
+			// console.log(promotions);
 			_promotions = promotions.map(function(p){
 			    return {
 				id:       p.id,
@@ -445,7 +445,7 @@ function filterProvider(){
 		    return http.query(
 			{operation: 'list_w_retailer'}
 		    ).$promise.then(function(retailers){
-			console.log(retailers); 
+			// console.log(retailers); 
 			_retailers =  retailers.map(function(r){
 			    return {name:  r.name,
 				    lname: r.mobile + "，" + r.name,
@@ -562,6 +562,17 @@ function normalFilterProvider(){
 		    return repo.map(function(r){
 			return {name: r.name,
 				id:r.id, py:diablo_pinyin(r.name)};
+		    })
+		});
+	    },
+
+	    get_region: function(){
+		return _shopHttp.query(
+		    {operation: "list_region"}
+		).$promise.then(function(regions){
+		    // console.log(regions);
+		    return regions.map(function(r){
+			return {name: r.name, id:r.id};
 		    })
 		});
 	    },
