@@ -64,8 +64,11 @@ stastic(stock_fix, Merchant, Conditions)->
 stastic(stock_real, Merchant, Conditions) ->
     gen_server:call(?SERVER, {stock_real, Merchant, Conditions});
 
-stastic(last_stock_of_shop, Merchant, ShopId) ->
-    gen_server:call(?SERVER, {last_stock_of_shop, Merchant, ShopId}).
+
+stastic(last_stock_of_shop, Merchant, ShopId) when is_number(ShopId) ->
+    gen_server:call(?SERVER, {last_stock_of_shop, Merchant, [ShopId]});
+stastic(last_stock_of_shop, Merchant, ShopIds)->
+    gen_server:call(?SERVER, {last_stock_of_shop, Merchant, ShopIds}).
 
 
 
@@ -304,13 +307,14 @@ handle_call({stock_real, Merchant, Conditions}, _From, State)->
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 
-handle_call({last_stock_of_shop, Merchant, ShopId}, _From, State) ->
-    Sql = "select id, merchant, shop, stock as total from w_daily_report"
+handle_call({last_stock_of_shop, Merchant, ShopIds}, _From, State) ->
+    Sql = "select max(day) as day"
+	", id, merchant, shop as shop_id, stock as total"
+	" from w_daily_report"
 	" where merchant=" ++ ?to_s(Merchant)
-	++ " and shop=" ++ ?to_s(ShopId)
-	++ " order by id desc limit 1",
-
-    R = ?sql_utils:execute(s_read, Sql),
+	++ " and " ++ ?utils:to_sqls(proplists, {<<"shop">>, ShopIds})
+	++ " group by merchant, shop",
+    R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 
 

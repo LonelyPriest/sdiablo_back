@@ -65,20 +65,35 @@ action(Session, Req, {"delete_shop", Id}) ->
 %% ================================================================================
 action(Session, Req, {"daily_wreport", Type}, Payload) ->
     ?DEBUG("daily_wrport with session ~p, type ~p, paylaod~n~p", [Session, Type, Payload]), 
-    Merchant = ?session:get(merchant, Session),
+    Merchant = ?session:get(merchant, Session), 
     %% {struct, C} = ?v(<<"condition">>, Payload),
 
     case ?to_a(Type) of
 	by_shop ->
 	    try
-		{struct, Conditions} = ?v(<<"condition">>, Payload),
+		{struct, Conditions} = ?v(<<"condition">>, Payload), 
+		ShopIds = ?v(<<"shop">>, Conditions),
+		
+		{ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
+
 		{ok, StockSale} = ?w_report:stastic(stock_sale, Merchant, Conditions),
 		{ok, StockProfit} = ?w_report:stastic(stock_profit, Merchant, Conditions),
+		
+		{ok, StockR} = ?w_report:stastic(
+				  stock_real,
+				  Merchant,
+				  lists:keydelete(<<"start_time">>, 1,
+						  lists:keydelete(<<"end_time">>, 1, Conditions))
+				  ++ [{<<"start_time">>, ?v(<<"qtime_start">>, BaseSetting)}]),
+		
+		{ok, LastStockInfo} = ?w_report:stastic(last_stock_of_shop, Merchant, ShopIds), 
 
 		?utils:respond(200, object, Req,
 			       {[{<<"ecode">>, 0},
 				 {<<"sale">>, StockSale},
-				 {<<"profit">>, StockProfit} 
+				 {<<"profit">>, StockProfit},
+				 {<<"rstock">>, StockR},
+				 {<<"lstock">>, LastStockInfo}
 				]})
 	    catch
 		_:{badmatch, {error, Error}} -> ?utils:respond(200, Req, Error)
@@ -320,9 +335,9 @@ sidebar(Session) ->
 
     ReportAuthen = AuthenFun(
 		   [{?daily_wreport,
-		     {"wreport_daily", "日报表", "wi wi-moon-waxing-cresent-6"}},
+		     {"wreport_daily", "实时报表", "glyphicon glyphicon-time"}},
 		    {?stock_stastic,
-		     {"stastic", "进销存", "wi wi-moon-full"}}
+		     {"stastic", "日报表", "glyphicon glyphicon-calendar"}}
 		    
 		    %% {?weekly_wreport,
 		    %%  {"wreport_weekly", "周报表", "wi wi-moon-waxing-cresent-1"}}, 
@@ -422,7 +437,7 @@ stock(total, []) ->
 stock(total, [{StockInfo}]) ->
     ?v(<<"total">>, StockInfo, 0);
 
-stock(last_total, StockInfo) ->
+stock(last_total, [{StockInfo}]) ->
     ?v(<<"total">>, StockInfo, 0).
 
     

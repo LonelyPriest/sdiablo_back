@@ -24,7 +24,7 @@ wreportApp.config(['$routeProvider', function($routeProvider){
     	when('/wreport_daily', {
     	    templateUrl: '/private/wreport/html/wreport_daily.html',
             controller: 'wreportDailyCtrl',
-    	    resolve: angular.extend({}, employee, user)
+    	    resolve: angular.extend({}, employee, user, base)
     	}). 
 	when('/stastic', {
     	    templateUrl: '/private/wreport/html/stock_stastic.html',
@@ -34,7 +34,7 @@ wreportApp.config(['$routeProvider', function($routeProvider){
     	otherwise({
 	    templateUrl: '/private/wreport/html/wreport_daily.html',
             controller: 'wreportDailyCtrl',
-    	    resolve: angular.extend({}, employee, user) 
+    	    resolve: angular.extend({}, employee, user, base) 
         })
 }]);
 

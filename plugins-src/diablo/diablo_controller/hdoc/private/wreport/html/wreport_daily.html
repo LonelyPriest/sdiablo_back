@@ -3,28 +3,26 @@
     <div class="portlet box purple">
       
       <div class="portlet-title">
-	<div class="caption"><i class="glyphicon glyphicon-map-marker"></i>
-          <span>日报表{{current_day|date: 'yyyy-MM-dd'}}</span>
+	<div class="caption"><i class="glyphicon glyphicon-time"></i>
+          <span>实时销售日报表－{{current_day|date: 'yyyy-MM-dd'}}</span>
         </div>
 
         <div class="actions">
-          <button class="btn red"
-                  x-ng-click="pre_daily()">前一天
-            <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
+          <!-- <button class="btn red" -->
+          <!--         x-ng-click="pre_daily()">前一天 -->
+          <!--   <i class="glyphicon glyphicon-circle-arrow-left"></i></button> -->
 
-          <button class="btn btn-success"
-                  x-ng-disabled="disable_after_daily()"
-                  x-ng-click="after_daily()">后一天
-            <i class="glyphicon glyphicon-circle-arrow-right"></i></button>
+          <!-- <button class="btn btn-success" -->
+          <!--         x-ng-disabled="disable_after_daily()" -->
+          <!--         x-ng-click="after_daily()">后一天 -->
+          <!--   <i class="glyphicon glyphicon-circle-arrow-right"></i></button> -->
 
-	  <button x-ng-if="right.master" class="btn yellow"
-                  x-ng-click="go_stastic()">进销存
-            <i class="glyphicon glyphicon-map-marker"></i></button>
-
+	  <!-- <button x-ng-if="right.master" class="btn yellow" -->
+          <!--         x-ng-click="go_stastic()">进销存 -->
+          <!--   <i class="glyphicon glyphicon-map-marker"></i></button> --> 
           <button class="btn blue reload "
                   x-ng-click="refresh()">刷新
-            <i class="icon icon-spinner fg-white"></i></button>
-
+            <i class="icon icon-spinner fg-white"></i></button> 
           <!-- <button class="btn yellow-crusta hidden-sm" -->
           <!--         x-ng-click="print()">打印 -->
           <!--   <i class="glyphicon glyphicon-print"></i></button> -->
@@ -34,7 +32,7 @@
 
       <div class="portlet-body">
 	<tabset>
-	  <tab heading="按店铺"
+	  <tab heading="销售统计"
 	       select="do_search_by_shop(current_shop_page)">
 	    <div class="panel panel-default">
 	      <div class="table-responsive diablo-table">
@@ -44,14 +42,21 @@
 		    <tr>
 		      <th>序号</th>
 		      <th>店铺</th>
+		      
+		      <th>上期库存</th>
+		      <th>当前库存</th>
+		      
 		      <th>数量</th>
 		      <th>营业额</th>
-		      <th x-ng-if="right.master">成本</th>
-		      <th x-ng-if="right.master">毛利</th>
-		      <th x-ng-if="right.master">毛利率</th>
+		      
 		      <th>现金</th>
 		      <th>刷卡</th>
 		      <th>核销</th>
+		      
+		      <th x-ng-if="right.master">销售成本</th>
+		      <th x-ng-if="right.master">毛利</th>
+		      <th x-ng-if="right.master">毛利率</th>
+		      
 		      <th>操作</th> 
 		      <!-- <th>充值</th> -->
 		      <!-- <th>提现</th>  -->
@@ -61,14 +66,20 @@
 		    <tr x-ng-repeat="r in report_data">
 		      <td>{{r.order_id}}</td>
 		      <td>{{r.shop.name}}</td>
+
+		      <td>{{r.sale.lastStock.total}}</td>
+		      <td>{{r.sale.currentStock.total}}</td>
+		      
 		      <td>{{r.sale.total}}</td> 
-		      <td>{{r.sale.spay}}</td>
-		      <td x-ng-if="right.master">{{r.profit.org_price}}</td>
-		      <td x-ng-if="right.master">{{r.sale.s}}</td>
-		      <td x-ng-if="right.master">{{r.sale.p}}</td>
+		      <td>{{r.sale.spay}}</td> 
 		      <td>{{r.sale.cash}}</td>
 		      <td>{{r.sale.card}}</td>
 		      <td>{{r.sale.veri}}</td>
+
+		      <td x-ng-if="right.master">{{r.sale.cost}}</td>
+		      <td x-ng-if="right.master">{{r.sale.gross}}</td>
+		      <td x-ng-if="right.master">{{r.sale.margins}}</td>
+		      
 		      <td>
 		      	<button class="btn diablo-button yellow-crusta"
 		      		x-ng-click="print_shop(r)">交班
@@ -76,16 +87,16 @@
 		      </td>
 		      
 		    </tr>
-		    <tr>
-		      <td colspan=2></td>
-		      <td>{{total.amount}}</td>
+		    <tr x-ng-if="report_data.length>1">
+		      <td colspan=4></td>
+		      <td>{{total.sale}}</td>
 		      <td>{{total.spay}}</td> 
-		      <td x-ng-if="right.master">{{total.org_price}}</td>
-		      <td x-ng-if="right.master">{{total.money}}</td>
-		      <td x-ng-if="right.master">{{total.profit}}</td>
 		      <td>{{total.cash}}</td>
 		      <td>{{total.card}}</td>
 		      <td>{{total.veri}}</td>
+		      <td x-ng-if="right.master">{{total.sale_cost}}</td>
+		      <td x-ng-if="right.master">{{total.gross}}</td>
+		      <td x-ng-if="right.master">{{total.margins}}</td>
 		      <td></td>
 		      <!-- <td>{{total_cbalance}}</td> -->
 		      <!-- <td>{{total_withdraw}}</td> -->
@@ -93,11 +104,11 @@
 		  </tbody> 
 		</table> <!--END table-->
 	      </div> <!--END table-responsive-->
-	    </div>
+	    </div> 
 	  </tab>
 	  
 	  <tab x-ng-controller="dailyByGood"
-	       heading="按款号"
+	       heading="货品统计"
 	       select="do_search(s_pagination.current_page, current_day)">
 	    
 	    <div class="panel panel-default table-panel">
@@ -135,34 +146,6 @@
 		      <td>{{s_stastic.total_stock}}</td>
 		    </tr>
 		  </tbody>
-
-		  <tfoot>
-		    <!-- <tr>  -->
-		    <!--   <td x-ng-show="s_stastic.total_items>s_pagination.items_perpage" colspan=9> -->
-		    <!-- 	<span class="pagination"> -->
-		    <!-- 	  <span>显示第 {{s_pagination.current_page}} / {{s_pagination.total_page}} 页结果， -->
-		    <!-- 	    共 {{s_stastic.total_items}} 项</span> -->
-		    <!-- 	</span> -->
-
-		    <!-- 	<\!-- <span class="pull-right"> -\-> -->
-		    <!-- 	  <span class="btn-toolbar pull-right"> -->
-		    <!-- 	    <span class="btn-group btn-group-solid"> -->
-		    <!-- 	      <button class="btn purple-plum" -->
-		    <!-- 		      x-ng-disabled="s_pagination.current_page===1" -->
-		    <!-- 		      x-ng-click="pre()"> -->
-		    <!-- 		<i class="glyphicon glyphicon-menu-left"></i> -->
-		    <!-- 	      </button> -->
-		    <!-- 		<button class="btn red-sunglo" -->
-		    <!-- 			x-ng-disabled="s_pagination.current_page===s_pagination.total_page" -->
-		    <!-- 			x-ng-click="next()"> -->
-		    <!-- 		  <i class="glyphicon glyphicon-menu-right"></i> -->
-		    <!-- 		</button> -->
-		    <!-- 	    </span> -->
-		    <!-- 	  </span>  -->
-		    <!-- 	<\!-- </span>  -\-> -->
-		    <!--   </td> -->
-		    <!-- </tr> -->
-		  </tfoot> 
 		</table> <!--END table-->
 	      </div> <!--END table-responsive--> 
 	    </div> <!-- END panel-->
@@ -196,8 +179,162 @@
 	  
 	</tabset>
       </div>
-      
     </div> <!--END portlet box-->
+
+    <div x-ng-if="right.master" x-ng-controller="realStasticController" class="portlet box green">
+      <div class="portlet-title">
+	<div class="caption"><i class="glyphicon glyphicon-time"></i>
+          <span>实时进销存统计－{{current_day|date: 'yyyy-MM-dd'}}</span>
+	</div>
+	
+	<div class="actions">
+          <button class="btn red reload "
+                  x-ng-click="do_search()">刷新
+            <i class="icon icon-spinner fg-white"></i></button> 
+        </div>
+      </div> 
+      <div class="portlet-body">
+
+	<div class="panel panel-default">
+	  <div class="table-responsive diablo-table">
+	    <table class="table table-bordered
+			  table-striped table-hover table-condensed table-advanced">
+	      <thead>
+		<tr>
+		  <th>序号</th>
+		  <th>店铺</th> 
+		  <th>销售数量</th>
+		  <th>销售金额</th>
+		  <th>现金</th>
+		  <th>刷卡</th>
+		  <th>核销</th>
+		  <!-- <th class="success">销售成本</th> -->
+		  <th>毛利</th>
+		  <th>毛利率</th>
+		</tr>
+	      </thead>
+	      <tbody>
+		<tr x-ng-repeat="d in d_sale_stastics">
+		  <td>{{d.order_id}}</td>
+		  <td>{{d.shop.name}}</td>
+		  <td>{{d.stockSale.total}}</td>
+		  <td>{{d.stockSale.spay}}</td>
+		  <td>{{d.stockSale.cash}}</td>
+		  <td>{{d.stockSale.card}}</td>
+		  <td>{{d.stockSale.veri}}</td>
+		  <!-- <td>{{d.stockProfit.org_price}}</td> -->
+		  <td class="fg-magenta">{{d.stockSale.gross}}</td>
+		  <td>{{d.stockSale.margins}}</td>
+		</tr>
+		<tr x-ng-if="d_sale_stastics.length>1">
+		  <td colspan=2></td>
+		  <td>{{total.sale}}</td>
+		  <td>{{total.spay}}</td>
+		  <td>{{total.cash}}</td>
+		  <td>{{total.card}}</td>
+		  <td>{{total.veri}}</td>
+		  <td>{{total.gross}}</td>
+		  <td>{{total.margins}}</td>
+		</tr>
+	      </tbody>
+	    </table> <!--END table-->
+	  </div> <!--END table-responsive-->
+	</div>
+	
+	<div class="panel panel-default">
+	  <div class="table-responsive diablo-table">
+	    <table class="table table-bordered
+			  table-striped table-hover table-condensed table-advanced">
+	      <thead>
+		<tr>
+		  <th>序号</th>
+		  <th>店铺</th>
+		  <th style="background-color:#CCFFCC">计算库存</th>
+		  <th style="background-color:#CCFFCC">计算库存成本</th>
+		  
+		  <th style="background-color:#FFCCFF">当前实时库存</th>
+		  <th style="background-color:#FFCCFF">当前库存成本</th>
+		  
+		  <th style="background-color:#FFCC66">入库数量</th>
+		  <th style="background-color:#FFCC66">入库成本</th>
+		  <th>退货数量</th>
+		  <th style="background-color:#FFCCCC">退货成本</th>
+		  
+		  <th>销售数量</th>
+		  <th style="background-color:#FFCCCC">销售成本</th>
+		  
+		  <th>调入数量</th>
+		  <th style="background-color:#FFCCCC">调入成本</th>
+		  <th>调出数量</th>
+		  <th style="background-color:#FFCCCC">调出成本</th>
+		  
+		  <th>盘点数量</th>
+		  <th style="background-color:#FFCCCC">盘点成本</th> 
+		</tr>
+	      </thead>
+	      <tbody>
+		<tr x-ng-repeat="ss in d_stock_stastics">
+		  <td>{{ss.order_id}}</td>
+		  <td>{{ss.shop.name}}</td>
+
+		  <td style="background-color:#CCFFCC">{{ss.cstock}}</td>
+		  <td style="background-color:#CCFFCC">{{ss.cstock_cost}}</td>
+
+		  <td style="background-color:#FFCCFF">{{ss.rstock.total}}</td>
+		  <td style="background-color:#FFCCFF">{{ss.rstock.cost}}</td>
+		  
+		  <td style="background-color:#FFCC66">{{ss.stockIn.total}}</td>
+		  <td style="background-color:#FFCC66">{{ss.stockIn.cost}}</td>
+		  
+		  <td>{{ss.stockOut.total}}</td>
+		  <td class="fg-magenta">{{ss.stockOut.cost}}</td>
+
+		  <td>{{ss.saleTotal}}</td>
+		  <td class="fg-magenta">{{ss.saleCost}}</td>
+
+		  <td>{{ss.t_stockIn.total}}</td>
+		  <td class="fg-magenta">{{ss.t_stockIn.cost}}</td>
+		  <td>{{ss.t_stockOut.total}}</td>
+		  <td class="fg-magenta">{{ss.t_stockOut.cost}}</td>
+
+		  <td>{{ss.stockFix.total}}</td>
+		  <td class="fg-magenta">{{ss.stockFix.cost}}</td> 
+		</tr>
+		<tr x-ng-if="d_stock_stastics.length>1">
+		  <td colspan=2></td>
+		  <td>{{total.cstock}}</td>
+		  <td>{{total.cstock_cost}}</td>
+
+		  <td>{{total.rstock}}</td>
+		  <td>{{total.rstock_cost}}</td>
+
+		  <td>{{total.stock_in}}</td>
+		  <td>{{total.stock_in_cost}}</td>
+
+		  <td>{{total.stock_out}}</td>
+		  <td>{{total.stock_out_cost}}</td>
+
+		  <td>{{total.sale}}</td>
+		  <td>{{total.sale_cost}}</td>
+
+		  <td>{{total.t_stock_in}}</td>
+		  <td>{{total.t_stock_in_cost}}</td>
+
+		  <td>{{total.t_stock_out}}</td>
+		  <td>{{total.t_stock_out_cost}}</td>
+
+		  <td>{{total.stock_fix}}</td>
+		  <td>{{total.stock_fix_cost}}</td>
+		  
+		</tr>
+	      </tbody>
+	    </table> <!--END table-->
+	  </div> <!--END table-responsive-->
+	</div>
+	
+      </div>
+    </div>
+    
   </div> <!--END col-md-12-->
 </div> <!--END row-->
 

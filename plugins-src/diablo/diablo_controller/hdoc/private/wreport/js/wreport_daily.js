@@ -1,17 +1,18 @@
 wreportApp.controller("wreportDailyCtrl", function(
     $scope, dateFilter, diabloFilter, diabloUtilsService, wreportService,
-    wreportCommService, filterEmployee, user){
+    wreportCommService, filterEmployee, user, base){
     wreportCommService.set_employee(filterEmployee);
-    wreportCommService.set_user(user); 
+    wreportCommService.set_user(user);
+    wreportCommService.set_base_setting(base);
 
     $scope.employees = wreportCommService.get_employee().filter(function(e){
 	return in_array(user.shopIds, e.shop)
     });
     
-    console.log($scope.employees);
-    
+    // console.log($scope.employees); 
     $scope.sortShops = wreportCommService.get_sort_shop();
-    $scope.current_day         = $.now();
+    $scope.shopIds = user.shopIds;
+    $scope.current_day = $.now();
 
     var to_f = reportUtils.to_float;
     var to_i = reportUtils.to_integer;
@@ -54,42 +55,61 @@ wreportApp.controller("wreportDailyCtrl", function(
 	diabloFilter.do_filter([], day, function(search){
 	    search.shop = wreportCommService.get_shop_id(); 
 	    wreportService.daily_report("by_shop", search).then(function(result){
-		// console.log(result);
+		console.log(result);
 		if (result.ecode === 0){
 		    var sale = result.sale;
-		    var profit = result.profit; 
+		    var profit = result.profit;
+		    var currentStock = result.rstock;
+		    var lastStock = result.lstock;
 		    var order_id = 1;
 
 		    $scope.report_data = [];
 		    $scope.total = {
-			amount:0, spay: 0, org_price:0, money:0, cash:0, card:0, veri:0};
+			sale:0,
+			sale_cost:0,
+			gross:0,
+			margins:0,
+			
+			spay: 0,
+			cash:0,
+			card:0,
+			veri:0,
+		    };
+		    
 		    angular.forEach($scope.sortShops, function(shop){
 			var s = {shop: shop, order_id: order_id};
 
 			s.sale = reportUtils.filter_by_shop(shop.id, sale);
 			s.profit = reportUtils.filter_by_shop(shop.id, profit);
-
-			s.sale.s = diablo_float_sub(
+			s.sale.cost = s.profit.org_price;
+			
+			s.sale.gross = reportUtils.f_sub(
 			    to_f(s.sale.spay), to_f(s.profit.org_price));
-			s.sale.p = reportUtils.calc_profit(
+			
+			s.sale.margins = reportUtils.calc_profit(
 			    to_f(s.profit.org_price), to_f(s.sale.spay));
 
-			$scope.total.amount += to_i(s.sale.total);
+			s.sale.currentStock = reportUtils.filter_by_shop(shop.id, currentStock);
+			s.sale.lastStock = reportUtils.filter_by_shop(shop.id, lastStock);
+
+			
+			$scope.total.sale += to_i(s.sale.total);
+			$scope.total.sale_cost += reportUtils.to_float(s.sale.cost);
+			$scope.total.gross += to_f(s.sale.gross); 
 			$scope.total.spay += reportUtils.to_float(s.sale.spay);
+			
 			$scope.total.cash += reportUtils.to_float(s.sale.cash);
 			$scope.total.card += reportUtils.to_float(s.sale.card);
 			$scope.total.veri += reportUtils.to_float(s.sale.veri);
-			$scope.total.org_price += reportUtils.to_float(s.profit.org_price);
-			$scope.total.money += to_f(s.sale.s);
 			
 			$scope.report_data.push(s); 
 			order_id++;
 			
 		    });
 
-		    $scope.total.profit = reportUtils.calc_profit(
-			$scope.total.org_price, $scope.total.spay); 
-		    // console.log($scope.report_data);
+		    $scope.total.margins = reportUtils.calc_profit(
+			$scope.total.sale_cost, $scope.total.spay);
+		    console.log($scope.report_data);
 		    // console.log($scope.total);
 		}
 		
@@ -146,110 +166,6 @@ wreportApp.controller("wreportDailyCtrl", function(
 	     employee: loginEmployee});
     };
 });
-
-wreportApp.controller("dailyByRetailer", function(
-    $scope, diabloFilter, wreportService, wreportCommService){
-
-    $scope.employees = wreportCommService.get_employee();
-    $scope.retailers = wreportCommService.get_retailer();
-    $scope.sortShops = wreportCommService.get_sort_shop();
-
-    $scope.round     = diablo_round;
-
-    /*
-     * pagination
-     */
-    $scope.r_pagination = {
-	items_perpage:  diablo_items_per_page(),
-	total_page:    0,
-	max_page_size: 5,
-	default_page:  1,
-	current_page:  1,
-	colspan:       5,
-	last_page:     0,
-    };
-
-    $scope.r_stastic = {
-	total_items: 0,
-	
-	total_card:       0,
-	total_cash:       0,
-	total_wire:       0,
-	total_verificate: 0,
-	total_hpay:       0
-    };
-
-    // $scope.retailer_colspan=5;
-    // $scope.current_page = $scope.default_page;
-
-    var last_page = 0;
-    var now = $.now();
-    // var day = {start_time:now - 30 * diablo_day_millisecond, end_time:now};
-
-    var day = {start_time:now, end_time:now};
-    $scope.pre = function(){
-	$scope.r_pagination.current_page -= 1;
-	$scope.do_search($scope.r_pagination.current_page);
-    };
-    
-    $scope.next = function(){
-	$scope.r_pagination.current_page += 1;
-	$scope.do_search($scope.r_pagination.current_page);
-    };
-    
-    $scope.do_search = function(page){
-	// console.log(page); 
-	if (page === $scope.r_pagination.last_page){
-	    return;
-	};
-
-	diabloFilter.do_filter([], day, function(search){
-	    search.shop = wreportCommService.get_shop_id(); 
-	    wreportService.daily_report(
-		"by_retailer", search, $scope.r_pagination.items_perpage, page
-	    ).then(function(result){
-		console.log(result); 
-		// var report_data = angular.copy(result.data);
-
-		if (page === 1){
-		    $scope.r_pagination.total_page =
-			Math.ceil(
-			    result.total / $scope.r_pagination.items_perpage);
-
-		    $scope.r_stastic.total_items = result.total;
-		    $scope.r_stastic.total_cash  = result.t_cash;
-		    $scope.r_stastic.total_card  = result.t_card;
-		    $scope.r_stastic.total_verificate = result.t_verificate;
-		    $scope.r_stastic.total_spay = result.t_spay;
-		    
-		    $scope.r_data = [];
-		}
-
-		// $scope.r_data = angular.copy(result.data);
-
-		angular.forEach(result.data, function(r){
-		    r.shop = diablo_get_object(r.shop_id, $scope.sortShops);
-		    r.retailer = diablo_get_object(
-			r.retailer_id, $scope.retailers);
-		});
-
-		diablo_order(
-		    result.data,
-		    (page - 1) * $scope.r_pagination.items_perpage + 1);
-
-		$scope.r_data = $scope.r_data.concat(result.data);
-		
-		// diablo_order_page(
-		//     page, $scope.r_pagination.items_perpage, $scope.r_data);
-		
-		// console.log($scope.r_data);
-		$scope.r_pagination.last_page = page;
-		
-	    })
-	}) 
-    }; 
-});
-
 
 wreportApp.controller("dailyByGood", function(
     $scope, diabloFilter, wreportService, wreportCommService){
@@ -344,4 +260,168 @@ wreportApp.controller("dailyByGood", function(
 	})
 	
     };
+});
+
+wreportApp.controller("realStasticController", function(
+    $scope, diabloFilter, wreportCommService, wreportService){
+    // console.log($scope); 
+    // console.log($scope.sortShops);
+    $scope.base_setting = wreportCommService.get_base_setting();
+    $scope.shops = wreportCommService.get_sort_shop();
+    $scope.shopIds = wreportCommService.get_shop_id();
+
+    var query_start_time = reportUtils.start_time(
+	$scope.base_setting, $scope.current_day, diabloFilter) 
+    $scope.time = diabloFilter.default_time(query_start_time);
+
+    // console.log($scope.time);
+
+    $scope.filters = [];
+    // diabloFilter.add_field("shop", $scope.sortShops);
+    // $scope.filter = diabloFilter.get_filter();
+    // $scope.prompt = diabloFilter.get_prompt();
+
+    var calc_profit = reportUtils.calc_profit; 
+    var filter_by_shop = reportUtils.filter_by_shop;
+    var f_sub = reportUtils.f_sub;
+    var to_i =  reportUtils.to_integer; 
+    var to_f =  reportUtils.to_float;
+
+    $scope.do_search = function(){
+	diabloFilter.do_filter([], $scope.time, function(search){
+	    if (angular.isUndefined(search.shop)
+		|| !search.shop || search.shop.length === 0){
+		search.shop = $scope.shopIds === 0 ? undefined : $scope.shopIds;
+	    };
+
+	    wreportService.stock_stastic($scope.match, search).then(function(result){
+		console.log(result);
+		if (result.ecode === 0){
+		    var stockSale        = result.sale;
+		    var stockProfit      = result.profit;
+		    var stockIn          = result.pin;
+		    var stockOut         = result.pout;
+		    var stockTransferIn  = result.tin;
+		    var stockTransferOut = result.tout;
+		    var stockFix         = result.fix;
+		    var stockReal        = result.rstock;
+		    
+		    $scope.total = {
+			sale:0,
+			sale_cost:0,
+			gross:0,
+			margins:0,
+			spay:0,
+			cost:0,
+			cash:0,
+			card:0,
+			veri:0,
+
+			rstock:0,
+			rstock_cost:0,
+
+			cstock:0,
+			cstock_cost:0,
+			
+			stock_in:0,
+			stock_out:0,
+			stock_in_cost:0,
+			stock_out_cost:0,
+			
+			t_stock_in:0,
+			t_stock_out:0,
+			t_stock_in_cost:0,
+			t_stock_out_cost:0,
+
+			stock_fix:0,
+			stock_fix_cost:0
+		    };
+		    
+		    var order_id = 1;
+		    $scope.d_sale_stastics = [];
+		    $scope.d_stock_stastics = [];
+		    
+		    angular.forEach($scope.shops, function(shop){
+			// sale stastic
+			var s = {shop: shop, order_id:order_id};
+			
+			s.stockSale = filter_by_shop(shop.id, stockSale);
+			s.stockProfit = filter_by_shop(shop.id, stockProfit); 
+			s.stockSale.gross = f_sub(s.stockSale.spay, s.stockProfit.org_price); 
+			s.stockSale.margins = calc_profit(s.stockProfit.org_price, s.stockSale.spay);
+
+			$scope.d_sale_stastics.push(s);
+
+			// stock statstic
+			var ss = {shop: shop, order_id:order_id};
+
+			ss.stockIn = filter_by_shop(shop.id, stockIn);
+			ss.stockOut = filter_by_shop(shop.id, stockOut);
+			
+			ss.t_stockIn = filter_by_shop(shop.id, stockTransferIn);
+			ss.t_stockOut = filter_by_shop(shop.id, stockTransferOut);
+			
+			ss.stockFix = filter_by_shop(shop.id, stockFix); 
+			ss.rstock  = filter_by_shop(shop.id, stockReal);
+
+			ss.saleTotal = s.stockSale.total;
+			ss.saleCost = s.stockProfit.org_price;
+			
+			ss.cstock = to_i(ss.stockIn.total) + to_i(ss.stockOut.total)
+			    + to_i(ss.t_stockIn.total) - to_i(ss.t_stockOut.total)
+			    + to_i(ss.stockFix.total)
+			    - to_i(s.stockSale.total);
+			
+			ss.cstock_cost =
+			    to_f(ss.stockIn.cost) + to_f(ss.stockOut.cost)
+			    + to_f(ss.t_stockIn.cost) - to_f(ss.t_stockOut.cost)
+			    + to_f(ss.stockFix.cost) - to_f(ss.saleCost);
+			ss.cstock_cost = reportUtils.to_decimal(ss.cstock_cost);
+
+			$scope.d_stock_stastics.push(ss);
+
+			// all
+			$scope.total.sale += to_i(ss.saleTotal);
+			$scope.total.sale_cost += to_f(ss.saleCost);
+			$scope.total.gross += to_f(s.stockSale.gross);
+			
+			$scope.total.spay += to_f(s.stockSale.spay);
+			$scope.total.cost += to_f(s.stockSale.cost);
+			$scope.total.cash += to_f(s.stockSale.cash);
+			$scope.total.card += to_f(s.stockSale.card);
+			$scope.total.veri += to_f(s.stockSale.veri);
+			
+			$scope.total.cstock += to_i(ss.cstock);
+			$scope.total.cstock_cost += to_f(ss.cstock_cost);
+
+			$scope.total.rstock += to_i(ss.rstock.total);
+			$scope.total.rstock_cost += to_f(ss.rstock.cost);
+
+			$scope.total.stock_in += to_i(ss.stockIn.total);
+			$scope.total.stock_in_cost += to_f(ss.stockIn.cost);
+
+			$scope.total.stock_out += to_i(ss.stockOut.total);
+			$scope.total.stock_out_cost += to_f(ss.stockOut.cost);
+
+			$scope.total.t_stock_in += to_i(ss.t_stockIn.total);
+			$scope.total.t_stock_in_cost += to_f(ss.t_stockIn.cost);
+
+			$scope.total.t_stock_out += to_i(ss.t_stockOut.total);
+			$scope.total.t_stock_out_cost += to_f(ss.t_stockOut.cost);
+			
+			$scope.total.stock_fix += to_i(ss.stockFix.total);
+			$scope.total.stock_fix_cost += to_f(ss.stockFix.cost); 
+			order_id++;
+		    });
+
+		    $scope.total.margins = calc_profit($scope.total.sale_cost, $scope.total.spay);
+		    // console.log($scope.stastics);
+		    // console.log($scope.d_sale_stastics);
+		    console.log($scope.d_stock_stastics);
+		}
+	    });
+	});
+    };
+
+    $scope.do_search();
 });
