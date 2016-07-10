@@ -477,6 +477,9 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		"新增库存失败：" + purchaserService.error[2096]);
 	    return;
 	};
+
+	// check all
+	$scope.re_calculate();
 	
 	var added = [];
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
@@ -494,7 +497,18 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		    	+ "款号：" + add.style_number + "！！", 
 		    undefined);
 		return;
-	    }
+	    };
+
+	    if (angular.isUndefined(add.style_number)){
+		diabloUtilsService.response(
+		    false,
+		    "新增库存",
+		    "新增库存失败：[" 
+			+ add.order_id + "]：" + purchaserService.error[2092]
+		    	+ "款号：" + add.style_number + "！！", 
+		    undefined);
+		return;
+	    };
 	    
 	    added.push({
 		// good        : add.id,
@@ -930,6 +944,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	if (angular.isUndefined(inv.amount[0].count)
 	    || !inv.amount[0].count
 	    || parseInt(inv.amount[0].count) === 0
+	    || angular.isUndefined(inv.style_number)
 	    || angular.isUndefined(inv.ediscount)
 	    || angular.isUndefined(inv.org_price)
 	    || angular.isUndefined(inv.tag_price)
@@ -1445,15 +1460,10 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
     $scope.sort = 0;
 
     $scope.stock_right = {
-	show_orgprice: rightAuthen.authen(
-	    user.type,
-	    rightAuthen.rainbow_action()['show_orgprice'],
-	    user.right
-	),
-
-	export_stock: rightAuthen.authen_master(user.type),
+	show_orgprice: stockUtils.authen_rainbow(user.type, user.right, 'show_orgprice'), 
+	export_stock:  rightAuthen.authen_master(user.type),
 	set_promotion: rightAuthen.authen_master(user.type),
-	update_batch: rightAuthen.authen_master(user.type), 
+	update_batch:  rightAuthen.authen_master(user.type), 
     };
     
     $scope.setting = {alarm: false};
@@ -1478,6 +1488,7 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
     diabloFilter.add_field("style_number", $scope.match_style_number);
     diabloFilter.add_field("brand", filterBrand);
     diabloFilter.add_field("type", filterType);
+    diabloFilter.add_field("season", diablo_season2objects);
     diabloFilter.add_field("sex",  diablo_sex2object);
     diabloFilter.add_field("year", diablo_full_year);
     diabloFilter.add_field("discount", []);
@@ -1486,7 +1497,7 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
-
+    
     var now = $.now();
     var storage = localStorageService.get(diablo_key_inventory_detail);
     // console.log(storage);
@@ -1840,32 +1851,39 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 	var callback = function(params){
 	    console.log(params);
 	    var update = {
-		season: params.select.season,
-		year: params.select.year
+		// season: params.select.season,
+		// year: params.select.year
+		tag_price: diablo_set_integer(params.select.tag_price),
+		discount: diablo_set_integer(params.select.discount)
 	    };
 	    
 	    purchaserService.update_w_inventory_batch(
-		condition,
-		{season: update.season.id,
-		 year: update.year
-		}
+		condition, update 
 	    ).then(function(result){
 		console.log(result);
-		var s = "年度[" + update.year.toString()
-		    + "]，季节[" + update.season.name + "]";
+		var s = "";
+		if ( 0 !== stockUtils.to_integer(update.tag_price))
+		    s += "吊牌价[" + update.tag_price.toString() + "]";
+		if (0 !== stockUtils.to_integer(update.discount)){
+		    if (s)
+			s += "  "
+		    s += "折扣[" + update.discount.toString() + "]"; 
+		};
+
+		console.log(s);
 		
 		if (result.ecode === 0){
-		    s += "批量修改成功！！";
+		    s += "批量修改价格成功！！";
 		    dialog.response_with_callback(
-			true, "批量修改库存", s, undefined,
+			true, "批量修改库存价格", s, undefined,
 			function(){
 			    $scope.do_search($scope.tab_page.page_of_time)
 			});
 		} else {
 		    dialog.response(
 			false,
-			"批量修改库存",
-			"批量修改库存失败："
+			"批量修改库存价格",
+			"批量修改库存价格失败："
 			    + purchaserService.error[result.ecode]);
 		}
 	    })
@@ -1876,16 +1894,47 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 	    undefined,
 	    callback,
 	    undefined,
-	    {years: diablo_full_year,
-	     sexs: diablo_sex2object,
-	     seasons: diablo_season2objects,
-	     select: {
-		 // sex: diablo_sex2object[0],
-		 season: diablo_season2objects[0],
-		 year: diablo_now_year()},
+	    {
+		check_valid: function(select){
+		    for (o in select){
+			if ( 0 !== stockUtils.to_integer(select[o]))
+			    return false;
+		    };
+
+		    return true;
+		},
+		// years: diablo_full_year,
+		// sexs: diablo_sex2object,
+		// seasons: diablo_season2objects,
+		select: {
+		    // sex: diablo_sex2object[0],
+		    // season: diablo_season2objects[0],
+		    // year: diablo_now_year()},
+		}
 	    }
 	)
-    }
+    };
+
+    $scope.update_stock = function(inv){
+	// console.log(inv); 
+	wgoodService.get_purchaser_good(
+	    {style_number:inv.style_number, brand:inv.brand.id}
+	).then(function(result){
+	    console.log(result);
+	    if (result.ecode === 0){
+		diablo_goto_page(
+		    "#/good/wgood_update/"
+			+ result.data.id + "/"
+			+ inv.shop_id + "/"
+			+ diablo_from_stock.toString())
+	    } else {
+		dialog.response(
+		    false,
+		    "获取货品资料",
+		    "获取货品资料失败：" + wgoodService.error[result.ecode]);
+	    }
+	}) 
+    };
 });
 
 

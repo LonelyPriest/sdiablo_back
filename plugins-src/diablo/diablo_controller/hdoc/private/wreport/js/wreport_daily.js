@@ -286,6 +286,7 @@ wreportApp.controller("realStasticController", function(
     var f_sub = reportUtils.f_sub;
     var to_i =  reportUtils.to_integer; 
     var to_f =  reportUtils.to_float;
+    var to_decimal = reportUtils.to_decimal;
 
     $scope.do_search = function(){
 	diabloFilter.do_filter([], $scope.time, function(search){
@@ -415,13 +416,40 @@ wreportApp.controller("realStasticController", function(
 		    });
 
 		    $scope.total.margins = calc_profit($scope.total.sale_cost, $scope.total.spay);
+		    $scope.total.sale_cost = reportUtils.to_decimal($scope.total.sale_cost);
+		    $scope.total.gross = reportUtils.to_decimal($scope.total.gross);
+		    
+		    $scope.total.spay = to_decimal($scope.total.spay);
+		    $scope.total.cost = to_decimal($scope.total.cost);
+		    $scope.total.cash = to_decimal($scope.total.cash);
+		    $scope.total.card = to_decimal($scope.total.card);
+		    $scope.total.veri = to_decimal($scope.total.veri);
+
+		    $scope.total.cstock_cost = to_decimal($scope.total.cstock_cost);
+		    $scope.total.stock_in_cost = to_decimal($scope.total.stock_in_cost);
+		    $scope.total.stock_out_cost = to_decimal($scope.total.stock_out_cost);
+
+		    $scope.total.t_stock_in_cost = to_decimal($scope.total.t_stock_in_cost);
+		    $scope.total.t_stock_out_cost = to_decimal($scope.total.t_stock_out_cost);
+
+		    $scope.total.stock_fix_cost = to_decimal($scope.total.stock_fix_cost);
+		    
+		    
 		    // console.log($scope.stastics);
 		    // console.log($scope.d_sale_stastics);
-		    console.log($scope.d_stock_stastics);
+		    // console.log($scope.d_stock_stastics);
 		}
 	    });
 	});
     };
 
     $scope.do_search();
+
+    $scope.go_daily = function(){
+	diablo_goto_page("#/stastic");
+    };
+
+    $scope.go_shift = function(){
+	diablo_goto_page("#/switch_shift");
+    };
 });

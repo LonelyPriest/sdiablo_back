@@ -110,6 +110,34 @@ action(Session, Req, {"daily_wreport", Type}, Payload) ->
 	       end, Req, Payload)
     end;
 
+action(Session, Req, {"h_daily_wreport"}, Payload) ->
+    ?DEBUG("h_daily_wrport with session ~p, paylaod~n~p", [Session, Payload]), 
+    Merchant = ?session:get(merchant, Session), 
+    
+    ?pagination:pagination(
+       fun(_Match, Conditions) ->
+	       ?w_report:daily_report(total, Merchant, Conditions)
+       end,
+
+       fun(_Match, CurrentPage, ItemsPerPage, Conditions) ->
+	       ?w_report:daily_report(
+		  detail, Merchant, CurrentPage, ItemsPerPage, Conditions)
+       end, Req, Payload);
+
+action(Session, Req, {"switch_shift_report"}, Payload) ->
+    ?DEBUG("switch_shift_report with session ~p, paylaod~n~p", [Session, Payload]), 
+    Merchant = ?session:get(merchant, Session), 
+
+    ?pagination:pagination(
+       fun(_Match, Conditions) ->
+	       ?w_report:switch_shift_report(total, Merchant, Conditions)
+       end,
+
+       fun(_Match, CurrentPage, ItemsPerPage, Conditions) ->
+	       ?w_report:switch_shift_report(
+		  detail, Merchant, CurrentPage, ItemsPerPage, Conditions)
+       end, Req, Payload);
+
 action(Session, Req, {"stock_stastic"}, Payload) ->
     ?DEBUG("stock_stastic with session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
@@ -337,7 +365,10 @@ sidebar(Session) ->
 		   [{?daily_wreport,
 		     {"wreport_daily", "实时报表", "glyphicon glyphicon-time"}},
 		    {?stock_stastic,
-		     {"stastic", "日报表", "glyphicon glyphicon-calendar"}}
+		     {"stastic", "日报表", "glyphicon glyphicon-calendar"}},
+		    
+		    {?switch_shift_report,
+		     {"switch_shift", "交班报表", "glyphicon glyphicon-transfer"}}
 		    
 		    %% {?weekly_wreport,
 		    %%  {"wreport_weekly", "周报表", "wi wi-moon-waxing-cresent-1"}}, 

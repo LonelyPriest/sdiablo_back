@@ -1213,7 +1213,7 @@ handle_call({delete_new, Merchant, RSN, Mode}, _From, State) ->
 				 ++ " and id>" ++ ?to_s(NId),
 
 				 "insert into firm_balance_history("
-				 "firm, balance, metric, action"
+				 "rsn, firm, balance, metric, action"
 				 ", shop, merchant, entry_date) values("
 				 ++ "\'" ++ ?to_s(RSN) ++ "\',"
 				 ++ ?to_s(Firm) ++ ","

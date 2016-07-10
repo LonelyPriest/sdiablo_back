@@ -91,6 +91,58 @@ sale(new_by_good, Merchant, Conditions) ->
 	++ " and a.brand=d.id"
 	++ " group by a.style_number, a.brand, b.merchant, b.shop".
 
+daily(detail, Merchant, Conditions) ->
+    ?DEBUG("daily_detail with merchant ~p, conditions ~p", [Merchant, Conditions]),
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
+    
+    "select id, merchant, shop as shop_id"
+	", sell, sell_cost as sellCost, balance, cash, card, veri"
+	", stock, stock_cost as stockCost"
+	
+	", stock_in as stockIn, stock_in_cost as stockInCost"
+	", stock_out as stockOut, stock_out_cost as stockOutCost"
+	
+	", t_stock_in as tstockIn, t_stock_in_cost as tstockInCost"
+	", t_stock_out as tstockOut, t_stock_out_cost as tstockOutCost"
+	
+	", stock_fix as stockFix, stock_fix_cost as stockFixCost"
+
+	", day, entry_date"
+
+	" from w_daily_report"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions) 
+	++ case ?sql_utils:condition(time_no_prfix, StartTime, EndTime) of
+	       [] -> [];
+	       TimeSql ->
+		   " and " ++ TimeSql
+	   end.
+
+shift(detail, Merchant, Conditions) ->
+    ?DEBUG("shift_detail with merchant ~p, conditions ~p", [Merchant, Conditions]),
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
+
+    "select id, merchant, employ as employee_id, shop as shop_id"
+	", total as sell, balance, cash, card"
+	
+	", y_stock, stock"
+
+	", stock_in as stockIn"
+	", stock_out as stockOut"
+
+	", pcash, pcash_in as pcashIn"
+
+	", comment, entry_date"
+
+	" from w_change_shift"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions) 
+	++ case ?sql_utils:condition(time_no_prfix, StartTime, EndTime) of
+	       [] -> [];
+	       TimeSql ->
+		   " and " ++ TimeSql
+	   end.
+
 sale(new_by_shop_with_pagination,
      Merchant, Conditions, CurrentPage, ItemsPerPage) ->
     sale(new_by_shop, Merchant, Conditions)
@@ -104,5 +156,16 @@ sale(new_by_retailer_with_pagination,
 sale(new_by_good_with_pagination,
      Merchant, Conditions, CurrentPage, ItemsPerPage) ->
     sale(new_by_good, Merchant, Conditions)
+	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage).
+
+daily(daily_with_pagination,
+     Merchant, Conditions, CurrentPage, ItemsPerPage) ->
+    daily(detail, Merchant, Conditions)
+	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage).
+
+
+shift(shift_with_pagination,
+      Merchant, Conditions, CurrentPage, ItemsPerPage) ->
+    shift(detail, Merchant, Conditions)
 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage).
 

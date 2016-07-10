@@ -20,7 +20,7 @@
 	       class="btn yellow"
 	       type="button"
 	       x-ng-click="update_batch()">批改
-	      <i class="glyphicon glyphicon-edit"></i></a>
+	      <i class="glyphicon glyphicon-yen"></i></a>
 
 	    <a type="button" class="btn green"
 	       x-ng-click="goto_page('#/inventory_new')">入库
@@ -182,7 +182,12 @@
 			  <button class="btn diablo-button btn-primary"
 				  x-ng-disabled="inv.free === 0"
 				  x-ng-click="lookup_detail(inv)">详情
-			    <i class="glyphicon glyphicon-map-marker"></i>
+			    <i class="glyphicon glyphicon-map-marker"></i> 
+			  </button>
+			  
+			  <button class="btn diablo-button yellow"
+				  x-ng-click="update_stock(inv)">修改
+			    <i class="glyphicon glyphicon-edit"></i> 
 			  </button>
 			</td>
 		      </tr>
@@ -457,47 +462,80 @@
     </button>
     
     <h4 class="modal-title">
-      <span class="label label-sm label-primary">库存批量修改</span>
+      <span class="label label-sm label-primary">库存批量改价</span>
     </h4>
   </div>
   
   <div class="modal-body">
     <form class="form-horizontal" name="sForm" novalidate> 
       <div class="form-body">
-	
-	<div class="form-group"> 
+
+	<div class="form-group">
 	  <div class="input-group">
 	    <span class="input-group-addon">
-	      <i class="glyphicon glyphicon-hand-right fg-red"></i>
-	      年度</span> 
-	      <select class="form-control"
-		      x-ng-model="params.select.year"
-		      x-ng-options="y for y in params.years">
-	      </select>
-	      <span class="input-group-addon bg-white fg-red">*</span>
-	  </div>
+	      <i class="glyphicon glyphicon-yen fg-red"></i>
+	      吊牌价</span>
+	    <input class="form-control"
+		   type="number"
+		   step="1"
+		   disable-key
+		   disable-wheel
+		   x-ng-model="params.select.tag_price"/>
+	    <!-- <span class="input-group-addon bg-white fg-red">*</span> -->
+	  </div> 
+	</div>
+
+	<div class="form-group">
+	  <div class="input-group">
+	    <span class="input-group-addon">
+	      <i class="glyphicon glyphicon-sort-by-attributes-alt fg-red"></i>
+	      折扣</span>
+	    <input class="form-control"
+		   type="number"
+		   step="1"
+		   disable-key
+		   disable-wheel
+		   x-ng-model="params.select.discount"/>
+	    <!-- <span class="input-group-addon bg-white fg-red">*</span> -->
+	  </div> 
 	</div>
 	
-	<div class="form-group"> 
-	  <div class="input-group">
-	    <span class="input-group-addon">
-	      <i class="glyphicon glyphicon-hand-right fg-red"></i>
-	      季节</span> 
-	      <select class="form-control"
-		      x-ng-model="params.select.season"
-		      x-ng-options="s as s.name for s
-				    in params.seasons">
-	      </select>
-	      <span class="input-group-addon bg-white fg-red">*</span>
-	  </div>
-	</div> 
+	<!-- <div class="form-group">  -->
+	<!--   <div class="input-group"> -->
+	<!--     <span class="input-group-addon"> -->
+	<!--       <i class="glyphicon glyphicon-hand-right fg-red"></i> -->
+	<!--       年度</span>  -->
+	<!--       <select class="form-control" -->
+	<!-- 	      x-ng-model="params.select.year" -->
+	<!-- 	      x-ng-options="y for y in params.years"> -->
+	<!--       </select> -->
+	<!--       <span class="input-group-addon bg-white fg-red">*</span> -->
+	<!--   </div> -->
+	<!-- </div> -->
+	
+	<!-- <div class="form-group">  -->
+	<!--   <div class="input-group"> -->
+	<!--     <span class="input-group-addon"> -->
+	<!--       <i class="glyphicon glyphicon-hand-right fg-red"></i> -->
+	<!--       季节</span>  -->
+	<!--       <select class="form-control" -->
+	<!-- 	      x-ng-model="params.select.season" -->
+	<!-- 	      x-ng-options="s as s.name for s -->
+	<!-- 			    in params.seasons"> -->
+	<!--       </select> -->
+	<!--       <span class="input-group-addon bg-white fg-red">*</span> -->
+	<!--   </div> -->
+	<!-- </div>  -->
 	
       </div> <!-- END form body --> 
     </form>
   </div>
 
   <div class="modal-footer">
-    <button class="btn btn-primary" x-ng-click="ok()">确认</button>
-    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+    <button class="btn btn-primary"
+	    x-ng-disabled="params.check_valid(params.select)"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning"
+	    x-ng-click="cancel()">取消</button>
   </div>  
 </script>

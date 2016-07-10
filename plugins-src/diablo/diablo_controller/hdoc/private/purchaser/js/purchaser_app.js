@@ -150,7 +150,7 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 	    controller: 'wgoodNewCtrl',
 	    resolve: angular.extend({}, promotion, firm, brand, type, s_group, base)
 	}).
-	when('/good/wgood_update/:id?/:from?', {
+	when('/good/wgood_update/:id?/:shop?/:from?', {
 	    templateUrl: '/private/wgood/html/wgood_update.html',
 	    controller: 'wgoodUpdateCtrl',
 	    resolve: angular.extend(
@@ -220,6 +220,7 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
 	2001: "货品资料已存在！！",
 	2003: "获取入库记录失败，请检查该入库记录！！",
 	2004: "该入库记录已废弃，请选择其它入库记录！！",
+	2092: "空白款号，请重新选择款号！！",
 	2093: "厂商信息不一致，请重新选择货品！！", 
 	2094: "修改前后信息一致，请重新编辑修改项！！", 
 	2095: "请先选择厂商！！",

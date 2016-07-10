@@ -1,21 +1,17 @@
-wreportApp.controller("stockStasticCtrl", function(
-    $scope, dateFilter, diabloFilter, wreportService, filterEmployee, user, base){
+wreportApp.controller("switchShiftCtrl", function(
+    $scope, dateFilter, diabloFilter, wreportService, filterEmployee, user){
     // console.log(user);
     $scope.shops = user.sortShops;
     $scope.shopIds = user.shopIds;
+    $scope.employees = filterEmployee;
     
     $scope.filters = [];
-    diabloFilter.add_field("shop",     $scope.shops);
+    diabloFilter.add_field("shop", $scope.shops);
+    diabloFilter.add_field("employee", $scope.employees);
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
 
-    var now = reportUtils.first_day_of_month()
-    // var now = $.now();
-    // $scope.qtime_start = function(){
-    // 	return diablo_base_setting(
-    // 	    "qtime_start", -1, base, diablo_set_date,
-    // 	    diabloFilter.default_start_time(now));
-    // }(); 
+    var now = reportUtils.first_day_of_month() 
     $scope.time = diabloFilter.default_time(now.first, now.current);
 
     $scope.pagination = {
@@ -31,27 +27,12 @@ wreportApp.controller("stockStasticCtrl", function(
 	total_items: 0,
 
 	sell: 0,
-	sell_cost: 0,
 	balance: 0,
 	cash: 0,
 	card: 0,
-	veri: 0,
-
-	// stock: 0,
-	// stockCost: 0,
 
 	stockIn: 0,
-	stockInCost: 0,
-	stockOut: 0,
-	stockOutCost:0,
-
-	tstockIn: 0,
-	tstockOut: 0,
-	tstockInCost:0,
-	tstockOutCost:0,
-
-	stockFix: 0,
-	stockFixCost: 0 
+	stockOut: 0,	
     };
 
     $scope.refresh = function(){
@@ -71,7 +52,7 @@ wreportApp.controller("stockStasticCtrl", function(
 		search.shop = $scope.shopIds === 0 ? undefined : $scope.shopIds;
 	    };
 
-	    wreportService.h_daily_report(
+	    wreportService.switch_shift_report(
 		search, $scope.pagination.items_perpage, page
 	    ).then(function(result){
 		console.log(result);
@@ -80,40 +61,26 @@ wreportApp.controller("stockStasticCtrl", function(
 			$scope.s_stastic.total_items = result.total;
 			
 			$scope.s_stastic.sell = result.sell;
-			$scope.s_stastic.sell_cost = result.sell_cost;
 			$scope.s_stastic.balance = result.balance;
 			$scope.s_stastic.cash = result.cash;
 			$scope.s_stastic.card = result.card;
-			$scope.s_stastic.veri = result.veri;
 
-			// $scope.s_stastic.stock = result.stock;
-			// $scope.s_stastic.stockCost = result.stockCost;
+			// $scope.s_stastic.stockIn = result.stockIn;
+			// $scope.s_stastic.stockOut = result.stockOut;
 			
-			$scope.s_stastic.stockIn = result.stockIn;
-			$scope.s_stastic.stockInCost = result.stockInCost;
-			$scope.s_stastic.stockOut = result.stockOut;
-			$scope.s_stastic.stockOutCost = result.stockOutCost;
-
-			$scope.s_stastic.tstockIn = result.tstockIn;
-			$scope.s_stastic.tstockInCost = result.tstockInCost;
-			$scope.s_stastic.tstockOut = result.tstockOut;
-			$scope.s_stastic.tstockOutCost = result.tstockOutCost;
-
-			$scope.s_stastic.stockFix = result.stockFix;
-			$scope.s_stastic.stockFixCost = result.stockFixCost;
-
 			$scope.d_reports = [];
 		    }
 
 		    $scope.d_reports = angular.copy(result.data); 
 		    angular.forEach($scope.d_reports, function(d){
 			d.shop = diablo_get_object(d.shop_id, $scope.shops);
+			d.employee = diablo_get_object(d.employee_id, $scope.employees);
 		    });
-		    console.log(page);
-		    diablo_order_page(
-			page, $scope.pagination.items_perpage, $scope.d_reports);
+		    
+		    // console.log(page);
+		    diablo_order_page(page, $scope.pagination.items_perpage, $scope.d_reports);
 
-		    console.log($scope.d_reports);
+		    // console.log($scope.d_reports);
 		}
 	    });
 	});
@@ -124,5 +91,4 @@ wreportApp.controller("stockStasticCtrl", function(
     $scope.go_back = function(){
     	diablo_goto_page("#/wreport_daily");
     }
-    
 });

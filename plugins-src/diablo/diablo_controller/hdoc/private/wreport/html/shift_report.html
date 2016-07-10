@@ -5,7 +5,7 @@
       <div class="portlet-title">
 	<div class="caption">
 	  <i class="glyphicon glyphicon-menu-hamburger"></i>
-	  日报表
+	  交班报表
 	</div>
 	
 	<div class="actions">
@@ -66,68 +66,60 @@
 			    table-condensed table-advanced">
 		<thead>
 		  <tr>
-		    <th class="text-center">序号</th>
-		    <th class="text-center">店铺</th>
+		    <th>序号</th>
+		    <th>店铺</th>
+		    <th>员工</th>
 
-		    <th class="text-center">库存数量</th>
-		    <th class="text-center">库存成本</th>
+		    <th>上期库存</th>
+		    <th>交班库存</th>
 		    
-		    <th class="text-center">销售数量</th> 
-		    <th class="text-center">销售成本</th>
-		    <th class="text-center">销售金额</th>
-		    <th class="text-center" style="background-color:#CCCCCC">现金</th>
-		    <th class="text-center" style="background-color:#CCCCCC">刷卡</th>
-		    <th class="text-cente" style="background-color:#CCCCCC">核销</th>
-		    
-		    <th class="text-center">入库数量</th>
-		    <th class="text-center">入库成本</th>
-		    <th class="text-center">出库数量</th>
-		    <th class="text-center">出库成本</th>
+		    <th>销售数量</th> 
+		    <th>销售金额</th>
+		    <th style="background-color:#CCCCCC">现金</th>
+		    <th style="background-color:#CCCCCC">刷卡</th>
 
-		    <th class="text-center">调入数量</th>
-		    <th class="text-center">调入成本</th>
-		    <th class="text-center">调出数量</th>
-		    <th class="text-center">调出成本</th>
+		    <th>备用金</th> 
+		    <th>备用金结余</th>
 		    
-		    <th class="text-center">盘点数量</th>
-		    <th class="text-center">盘点成本</th>
+		    <th>入库数量</th>
+		    <th>出库数量</th>
 
-		    <th class="text-center">日期</th>
-		    <th class="text-center">创建日期</th> 
+		    <th>备注</th> 
+		    <th>日期</th> 
 		  </tr>
 		</thead>
 		<tbody>
 		  <tr x-ng-repeat="r in d_reports">
 		    <td>{{r.order_id}}</td>
 		    <td>{{r.shop.name}}</td>
+		    <td>{{r.employee.name}}</td>
 		    
+		    <td>{{r.y_stock}}</td>
 		    <td>{{r.stock}}</td>
-		    <td>{{r.stockCost}}</td>
 
 		    <td>{{r.sell}}</td>
-		    <td>{{r.sellCost}}</td>
 		    <td>{{r.balance}}</td>
 		    <td style="background-color:#CCCCCC">{{r.cash}}</td>
 		    <td style="background-color:#CCCCCC">{{r.card}}</td>
-		    <td style="background-color:#CCCCCC">{{r.veri}}</td>
+
+		    <td>{{r.pcash}}</td>
+		    <td>{{r.pcashIn}}</td>
 
 		    <td>{{r.stockIn}}</td>
-		    <td>{{r.stockInCost}}</td> 
 		    <td>{{r.stockOut}}</td>
-		    <td>{{r.stockOutCost}}</td>
-
-		    <td>{{r.tstockIn}}</td>
-		    <td>{{r.tstockInCost}}</td> 
-		    <td>{{r.tstockOut}}</td>
-		    <td>{{r.tstockOutCost}}</td>
-
-		    <td>{{r.stockFix}}</td>
-		    <td>{{r.stockFixCost}}</td>
-
-		    <td>{{r.day}}</td>
+		    
+		    <td>{{r.comment}}</td> 
 		    <td>{{r.entry_date}}</td>
 		    
-		  </tr> 
+		  </tr>
+		  <tr>
+		    <td colspan=5></td>
+		    <td>{{s_stastic.sell}}</td>
+		    <td>{{s_stastic.balance}}</td>
+		    <td>{{s_stastic.cash}}</td>
+		    <td>{{s_stastic.card}}</td>
+		    <td colspan=6></td>
+		  </tr>
 		</tbody> 
 	      </table> <!--END supplier table-->
 	    </div> <!--END table responsive--> 

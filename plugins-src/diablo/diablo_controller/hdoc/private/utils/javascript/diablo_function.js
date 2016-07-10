@@ -41,6 +41,7 @@ var diablo_common_retailer = 0;
 var diablo_charge_retailer = 1;
 
 var diablo_from_stock_new = 9;
+var diablo_from_stock = 8;
 
 /*
  * stock

@@ -245,6 +245,8 @@
 %% report
 -define(daily_wreport,   ?right_w_report + 1).
 -define(stock_stastic,   ?right_w_report + 2).
+-define(h_daily_wreport, ?right_w_report + 3).
+-define(switch_shift_report, ?right_w_report + 4).
 %% -define(weekly_wreport,  ?right_w_report + 2).
 %% -define(monthly_wreport, ?right_w_report + 3).
 %% -define(quarter_wreport, ?right_w_report + 4).

@@ -312,13 +312,28 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	    return reject_amounts;
 	};
 
+	// check
+	$scope.re_calculate();
+	
 	var setv = diablo_set_float;
 	var seti = diablo_set_integer;
 	var sets = diablo_set_string;
-	
+
 	var added = []; 
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    var add = $scope.inventories[i];
+	    
+	    if (angular.isUndefined(add.style_number)){
+		diabloUtilsService.response(
+		    false,
+		    "新增库存",
+		    "新增库存失败：[" 
+			+ add.order_id + "]：" + purchaserService.error[2092]
+		    	+ "款号：" + add.style_number + "！！", 
+		    undefined);
+		return;
+	    };
+	    
 	    added.push({
 		style_number: add.style_number,
 		brand       : add.brand_id,
@@ -634,12 +649,12 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 
     var timeout_auto_save = undefined;
     $scope.auto_save_free = function(inv){
-
 	console.log(inv);
 	$timeout.cancel($scope.timeout_auto_save);
 	if (0 === stockUtils.to_integer(inv.amounts[0].reject_count)
 	    || 0 === inv.ediscount
-	    || 0 === stockUtils.to_float(inv.org_price)){
+	    || 0 === stockUtils.to_float(inv.org_price)
+	    || angular.isUndefined(inv.style_number)){
 	    return;
 	}
 	

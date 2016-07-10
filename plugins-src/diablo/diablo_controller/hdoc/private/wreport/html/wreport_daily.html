@@ -188,7 +188,15 @@
 	</div>
 	
 	<div class="actions">
-          <button class="btn red reload "
+	  <button class="btn red reload "
+                  x-ng-click="go_daily()">日报表
+            <i class="glyphicon glyphicon-calendar"></i></button>
+
+	  <button class="btn yellow-crusta reload "
+                  x-ng-click="go_shift()">交班报表
+            <i class="glyphicon glyphicon-transfer"></i></button>
+	  
+          <button class="btn blue reload "
                   x-ng-click="do_search()">刷新
             <i class="icon icon-spinner fg-white"></i></button> 
         </div>
@@ -240,8 +248,16 @@
 	    </table> <!--END table-->
 	  </div> <!--END table-responsive-->
 	</div>
+
+	<div>
+	  <div class="fg-darkBlue">
+	    <span>计算库存：系统根据进销存数据自动计算得到</span>
+	    &nbsp&nbsp&nbsp&nbsp<span>实际库存：系统目前实际存储的库存</span>
+	  </div>
+	  <div class="fg-red">注：实际库存原则上等于计算库存，库存成本以计算库存成本为准</div>
+	</div>
 	
-	<div class="panel panel-default">
+	<div class="panel panel-default"> 
 	  <div class="table-responsive diablo-table">
 	    <table class="table table-bordered
 			  table-striped table-hover table-condensed table-advanced">

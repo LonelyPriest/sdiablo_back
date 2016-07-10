@@ -20,6 +20,8 @@
 
 %% daily
 -export([report/4, report/5, stastic/3]).
+-export([daily_report/3, daily_report/5]).
+-export([switch_shift_report/3, switch_shift_report/5]).
 
 -define(SERVER, ?MODULE). 
 
@@ -46,6 +48,17 @@ report(by_good, Merchant, CurrentPage, ItemsPerPage, Conditions) ->
     gen_server:call(
       ?SERVER, {by_good, Merchant, CurrentPage, ItemsPerPage, Conditions}).
 
+daily_report(total, Merchant, Conditions) ->
+    gen_server:call(?SERVER, {total_of_daily, Merchant, Conditions}).
+daily_report(detail, Merchant, CurrentPage, ItemsPerPage, Conditions) ->
+    gen_server:call(
+      ?SERVER, {detail_of_daily, Merchant, CurrentPage, ItemsPerPage, Conditions}).
+
+switch_shift_report(total, Merchant, Conditions) ->
+    gen_server:call(?SERVER, {total_of_shift, Merchant, Conditions}).
+switch_shift_report(detail, Merchant, CurrentPage, ItemsPerPage, Conditions) ->
+    gen_server:call(
+      ?SERVER, {detail_of_shift, Merchant, CurrentPage, ItemsPerPage, Conditions}).
 
 stastic(stock_sale, Merchant, Conditions)->
     gen_server:call(?SERVER, {stock_sale, Merchant, Conditions});
@@ -136,6 +149,89 @@ handle_call({total, by_good, Merchant, Conditions}, _From, State) ->
 	%% ++ " and a.brand=c.brand",
     
     Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+handle_call({total_of_daily, Merchant, Conditions}, _From, State) ->
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
+
+    Sql = "select count(1) as total"
+	", sum(sell) as sell"
+	", sum(sell_cost) as sellCost"
+	", sum(balance) as balance"
+	", sum(cash) as cash"
+	", sum(card) as card"
+	", sum(veri) as veri"
+	
+	%% ", sum(stock) as stock"
+	%% ", sum(stock_cost) as stockCost"
+	
+	", sum(stock_in) as stockIn"
+	", sum(stock_in_cost) as stockInCost"
+	", sum(stock_out) as stockOut"
+	", sum(stock_out_cost) as stockOutCost"
+
+	", sum(t_stock_in) as tstockIn"
+	", sum(t_stock_out) as tstockOut"
+	", sum(t_stock_in_cost) as tstockInCost"
+	", sum(t_stock_out_cost) as tstockOutCost"
+
+	", sum(stock_fix) as stockFix"
+	", sum(stock_fix_cost) as stockFixCost"
+	" from w_daily_report"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions) 
+	++ case ?sql_utils:condition(time_no_prfix, StartTime, EndTime) of
+	       [] -> [];
+	       TimeSql ->
+		   " and " ++ TimeSql
+	   end,
+
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+    
+handle_call({detail_of_daily, Merchant, CurrentPage, ItemsPerPage, Conditions},
+	    _From, State) ->
+    Sql = ?w_report_sql:daily(
+	     daily_with_pagination,
+	     Merchant, Conditions, CurrentPage, ItemsPerPage),
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({total_of_shift, Merchant, Conditions}, _From, State) ->
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
+
+    Sql = "select count(1) as total"
+	", sum(total) as sell"
+	", sum(balance) as balance"
+	", sum(cash) as cash"
+	", sum(card) as card"
+
+	%% ", sum(stock_in) as stockIn"
+	%% ", sum(stock_out) as stockOut"
+	
+	%% ", sum(t_stock_in) as tstockIn"
+	%% ", sum(t_stock_out) as tstockOut" 
+
+	%% ", sum(stock_fix) as stockFix"
+	
+	" from w_change_shift"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions) 
+	++ case ?sql_utils:condition(time_no_prfix, StartTime, EndTime) of
+	       [] -> [];
+	       TimeSql ->
+		   " and " ++ TimeSql
+	   end,
+
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+handle_call({detail_of_shift, Merchant, CurrentPage, ItemsPerPage, Conditions},
+	    _From, State) ->
+    Sql = ?w_report_sql:shift(
+	     shift_with_pagination,
+	     Merchant, Conditions, CurrentPage, ItemsPerPage),
+    Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
 
@@ -308,12 +404,12 @@ handle_call({stock_real, Merchant, Conditions}, _From, State)->
     {reply, R, State};
 
 handle_call({last_stock_of_shop, Merchant, ShopIds}, _From, State) ->
-    Sql = "select max(day) as day"
-	", id, merchant, shop as shop_id, stock as total"
-	" from w_daily_report"
+    Sql = "select a.id, a.merchant, a.shop as shop_id, stock as total"
+	" from w_daily_report a "
+	"inner join (select max(id) as id, merchant, shop from w_daily_report"
 	" where merchant=" ++ ?to_s(Merchant)
-	++ " and " ++ ?utils:to_sqls(proplists, {<<"shop">>, ShopIds})
-	++ " group by merchant, shop",
+	++ " and "++ ?utils:to_sqls(proplists, {<<"shop">>, ShopIds})
+	++ "group by merchant, shop) b on a.id=b.id", 
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 

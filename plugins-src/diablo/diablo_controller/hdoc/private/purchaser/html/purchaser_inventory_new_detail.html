@@ -181,14 +181,14 @@
 		      
 		      <button x-ng-if="shop_right.check_w_stock"
 			      class="btn diablo-button red"
-			      x-ng-disabled="r.state===1 || r.type===9"
+			      x-ng-disabled="r.state===1 || r.type===9 || r.state===7"
 		      	      x-ng-click="check_detail(r)">审核
 		      	<i class="glyphicon glyphicon-check"></i>
 		      </button>
 
 		      <button x-ng-if="shop_right.check_w_stock"
 			      class="btn diablo-button purple-plum"
-			      x-ng-disabled="r.state===0 || r.type===9"
+			      x-ng-disabled="r.state===0 || r.type===9 || r.state===7"
 		      	      x-ng-click="uncheck_detail(r)">反审
 		      	<i class="glyphicon glyphicon-remove-circle"></i>
 		      </button>
@@ -202,7 +202,7 @@
 		      
 		      <button x-ng-if="shop_right.delete_w_stock"
 			      class="btn diablo-button red"
-			      x-ng-disabled="r.state!==0 || r.type===9"
+			      x-ng-disabled="r.state===1 || r.type===9"
 		      	      x-ng-click="delete_detail(r)">删除
 		      	<i class="glyphicon glyphicon-erase"></i>
 		      </button> 

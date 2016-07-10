@@ -65,7 +65,11 @@ function filterProvider(){
 		} else if (name === 'type'){
 		    _filter.fields.push({name:"type", chinese:"类别"});
 		    _prompt.type = promptValues;
-		} else if (name === 'sex'){
+		} else if (name === 'season'){
+		    _filter.fields.push({name:"season", chinese:"季节"});
+		    _prompt.season = promptValues;
+		} 
+		else if (name === 'sex'){
 		    _filter.fields.push({name:"sex", chinese:"性别"});
 		    _prompt.sex = promptValues;
 		}

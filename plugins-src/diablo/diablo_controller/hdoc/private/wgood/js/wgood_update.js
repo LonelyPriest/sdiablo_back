@@ -2,7 +2,8 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
     $scope, $location, $routeParams, $q, diabloPattern,
     diabloUtilsService, diabloPromise, diabloFilter, wgoodService,
     filterPromotion, filterBrand, filterFirm, filterType, filterColor, user){
-    // console.log(filterBrand); 
+    // console.log(filterBrand);
+    console.log($routeParams);
     $scope.seasons    = diablo_season2objects;
     $scope.sexs       = diablo_sex2object;
     $scope.full_years = diablo_full_year;
@@ -31,6 +32,8 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
     };
 
     $scope.price_readonly = $scope.stock_right.show_orgprice ? false : true;
+
+    $scope.route_params = {shop:false};
     
     // [{type:"红色", tid:1
     // 	    colors:[{name:"深红", id:1},
@@ -84,7 +87,13 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	$scope.good.firm      = diablo_get_object(good.firm_id, $scope.firms);
 	$scope.good.sex       = diablo_get_object(good.sex, $scope.sexs);
 	$scope.good.season    = diablo_get_object(good.season, $scope.seasons);
-	$scope.good.shop      = $scope.shops[0];
+
+	if (angular.isDefined($routeParams.shop)){
+	    $scope.good.shop      = diablo_get_object(parseInt($routeParams.shop), $scope.shops);
+	    $scope.route_params.shop = true;
+	} else {
+	    $scope.good.shop      = $scope.shops[0];
+	}
 	// $scope.good.promotion = diablo_get_object(good.pid, $scope.promotions);
 	// $scope.good.shop      = $scope.shops[0];
 
@@ -388,9 +397,12 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
     };
 
     $scope.go_back = function(){
-	if (angular.isDefined($routeParams.from)
-	    && diablo_from_stock_new === stockUtils.to_integer($routeParams.from))
-	    diablo_goto_page("#/inventory_new");
+	if (angular.isDefined($routeParams.from)){
+	    if (diablo_from_stock_new === stockUtils.to_integer($routeParams.from))
+		diablo_goto_page("#/inventory_new");
+	    else if (diablo_from_stock === stockUtils.to_integer($routeParams.from))
+		diablo_goto_page("#/inventory_detail");
+	} 
 	else
 	    diablo_goto_page("#/good/wgood_detail");
     }

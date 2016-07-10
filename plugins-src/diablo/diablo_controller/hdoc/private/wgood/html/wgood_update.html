@@ -10,6 +10,14 @@
       <li class="active">
 	<a href="javascript:;">货品编辑</a>
       </li>
+
+      <li class="pull-right">
+	<button class="btn red btn-page-breadcrumb"
+		type="button"
+		x-ng-click="go_back()">返回
+	  <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
+      </li>
+      
     </ul>    
   </div>
 </div> <!--END row-->
@@ -25,13 +33,26 @@
 	  <!--BEGIN form body-->
 	  <div class="form-body">
 	    
-	    <div class="form-group">
+	    <div x-ng-if="!route_params.shop" class="form-group">
 	      <label class="col-sm-3 col-md-3 control-label">店铺</label>
 	      <div class="col-sm-6 col-md-6">
 	    	<div class="input-group">
 	    	  <select class="form-control"
 	    		  x-ng-model="good.shop"
 	    		  x-ng-options="s as s.name for s in shops"></select>
+	    	  <span class="input-group-addon bg-white fg-red">*</span>
+	    	</div>
+	      </div>
+	    </div>
+
+	    <div x-ng-if="route_params.shop" class="form-group">
+	      <label class="col-sm-3 col-md-3 control-label">店铺</label>
+	      <div class="col-sm-6 col-md-6">
+	    	<div class="input-group">
+	    	  <input class="form-control"
+			 type="text"
+			 readonly
+	    		 x-ng-model="good.shop.name"/>
 	    	  <span class="input-group-addon bg-white fg-red">*</span>
 	    	</div>
 	      </div>

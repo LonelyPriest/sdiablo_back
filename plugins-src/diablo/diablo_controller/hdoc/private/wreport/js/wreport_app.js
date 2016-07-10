@@ -31,6 +31,11 @@ wreportApp.config(['$routeProvider', function($routeProvider){
             controller: 'stockStasticCtrl',
     	    resolve: angular.extend({}, employee, user, base)
 	}). 
+	when('/switch_shift', {
+    	    templateUrl: '/private/wreport/html/shift_report.html',
+            controller: 'switchShiftCtrl',
+    	    resolve: angular.extend({}, employee, user)
+	}). 
     	otherwise({
 	    templateUrl: '/private/wreport/html/wreport_daily.html',
             controller: 'wreportDailyCtrl',
@@ -71,7 +76,7 @@ wreportApp.service("wreportService", function($resource, dateFilter){
 			  page:      currentPage,
 			  count:     itemsPerpage}).$promise;
     };
-
+    
     this.stock_stastic = function(match, conditions){
 	return http.save({operation: "stock_stastic"}, conditions).$promise;
     };
@@ -79,6 +84,20 @@ wreportApp.service("wreportService", function($resource, dateFilter){
     this.print_wreport = function(type, content) {
 	return http.save({operation: "print_wreport"},
                          {type:type, content: content}).$promise;
+    };
+
+    this.h_daily_report = function(conditions, itemsPerpage, currentPage){
+	return http.save({operation: "h_daily_wreport"},
+			 {condition: conditions,
+			  page: currentPage,
+			  count: itemsPerpage}).$promise;
+    };
+
+    this.switch_shift_report = function(conditions, itemsPerpage, currentPage){
+	return http.save({operation: "switch_shift_report"},
+			 {condition: conditions,
+			  page: currentPage,
+			  count: itemsPerpage}).$promise;
     };
     
 });

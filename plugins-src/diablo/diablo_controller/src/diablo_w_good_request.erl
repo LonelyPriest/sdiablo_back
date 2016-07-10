@@ -122,14 +122,14 @@ action(Session, Req, {"get_w_good"}, Payload) ->
     Merchant    = ?session:get(merchant, Session),
     StyleNumber = ?v(<<"style_number">>, Payload),
     Brand       = ?v(<<"brand">>, Payload),
-    object_responed(
+    object_responed_with_code(
       fun() ->
 	      ?w_inventory:purchaser_good(lookup, Merchant, StyleNumber, Brand)
       end, Req); 
 
 
 action(Session, Req, {"get_used_w_good"}, Payload) ->
-    ?DEBUG("get_w_good with session ~p, payload~n~p", [Session, Payload]),
+    ?DEBUG("get_used_w_good with session ~p, payload~n~p", [Session, Payload]),
     Merchant    = ?session:get(merchant, Session),
     StyleNumber = ?v(<<"style_number">>, Payload),
     Brand       = ?v(<<"brand">>, Payload),
@@ -433,6 +433,17 @@ object_responed(Fun, Req) ->
     case Fun() of
 	{ok, Value} ->
 	    ?utils:respond(200, object, Req, {Value});
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end.
+
+object_responed_with_code(Fun, Req) ->
+    case Fun() of
+	{ok, Value} ->
+	    ?utils:respond(200, object, Req,
+			   {[{<<"ecode">>, 0},
+			     {<<"data">>, {Value}}
+			    ]});
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end.

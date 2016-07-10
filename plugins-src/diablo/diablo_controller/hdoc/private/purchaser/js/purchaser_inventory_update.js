@@ -584,12 +584,27 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	    return;
 	};
 
+	// check
+	$scope.re_calculate();
+	
 	var updates = get_update_inventory();
 	console.log(updates);
 	
 	var added = [];
 	for(var i=0, l=updates.length; i<l; i++){
 	    var add = updates[i];
+
+	    if (angular.isUndefined(add.style_number)){
+		diabloUtilsService.response(
+		    false,
+		    "新增库存",
+		    "新增库存失败：[" 
+			+ add.order_id + "]：" + purchaserService.error[2092]
+		    	+ "款号：" + add.style_number + "！！", 
+		    undefined);
+		return;
+	    };
+	    
 	    added.push({
 		// good           : add.id,
 		style_number   : add.style_number,

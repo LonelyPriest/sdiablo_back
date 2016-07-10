@@ -389,17 +389,21 @@ inventory(update_batch, Merchant, Attrs, Conditions) ->
     {StartTime, EndTime, NewConditions} =
 	?sql_utils:cut(fields_no_prifix, Conditions),
 
-    Season = ?v(<<"season">>, Attrs),
-    Year     = ?v(<<"year">>, Attrs),
+    TagPrice = ?v(<<"tag_price">>, Attrs),
+    Discount = ?v(<<"discount">>, Attrs),
 
-    Updates = ?utils:v(season, integer, Season)
-	++ ?utils:v(year, integer, Year),
+    Updates = ?utils:v(tag_price, float, TagPrice)
+	++ ?utils:v(discount, float, Discount), 
 
     ?DEBUG("updates ~p", [Updates]),
 
     ["update w_inventory set " ++ ?utils:to_sqls(proplists, comma, Updates)
+     ++ case TagPrice of
+	    undefined -> [];
+	    _ ->", ediscount=(org_price/" ++ ?to_s(TagPrice) ++ ")*100"
+	end
      ++ " where " 
-     ++ ?sql_utils:condition(proplists_suffix, NewConditions)
+     ++ ?sql_utils:condition(proplists_suffix, NewConditions) 
      ++ "merchant=" ++ ?to_s(Merchant)
      ++ case ?sql_utils:condition(time_no_prfix, StartTime, EndTime) of
 	    [] -> [];
@@ -408,6 +412,10 @@ inventory(update_batch, Merchant, Attrs, Conditions) ->
      ++ " and deleted=" ++ ?to_s(?NO),
      
      "update w_inventory_good set " ++ ?utils:to_sqls(proplists, comma, Updates)
+     ++ case TagPrice of
+	    undefined -> [];
+	    _ ->", ediscount=(org_price/" ++ ?to_s(TagPrice) ++ ")*100"
+	end
      ++ " where " 
      ++ ?sql_utils:condition(
 	   proplists_suffix,
@@ -416,11 +424,7 @@ inventory(update_batch, Merchant, Attrs, Conditions) ->
 			  (A, Acc) ->
 			       [A|Acc]
 		       end, [], NewConditions))
-     ++ "merchant=" ++ ?to_s(Merchant)
-     %% ++ case ?sql_utils:condition(time_no_prfix, StartTime, EndTime) of
-     %% 	    [] -> [];
-     %% 	    TimeSql ->  " and " ++ TimeSql
-     %% 	end
+     ++ "merchant=" ++ ?to_s(Merchant) 
      ++ " and deleted=" ++ ?to_s(?NO)].
 
 inventory(inventory_new_rsn, Merchant, Conditions) ->
@@ -1284,7 +1288,7 @@ amount_reject(RSN, Merchant, Shop, Firm, Datetime, Inv, Amounts) ->
 	    ", brand, type, sex, season, amount, firm"
 	    ", s_group, free, year"
 	    ", org_price, tag_price, ediscount, discount"
-	    ", path, merchant, entry_date) values("
+	    ", path, merchant, shop, entry_date) values("
 	    ++ "\"" ++ ?to_s(RSN) ++ "\","
 	    ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
 	    ++ ?to_s(Brand) ++ ","
@@ -1304,6 +1308,7 @@ amount_reject(RSN, Merchant, Shop, Firm, Datetime, Inv, Amounts) ->
 	    ++ ?to_s(Discount) ++ ","
 	    ++ "\"" ++ ?to_s(Path) ++ "\","
 	    ++ ?to_s(Merchant) ++ ","
+	    ++ ?to_s(Shop) ++ ","
 	    ++ "\"" ++ ?to_s(Datetime) ++ "\")"],
 
     NewFun =
@@ -1320,17 +1325,18 @@ amount_reject(RSN, Merchant, Shop, Firm, Datetime, Inv, Amounts) ->
 		 ++ " and size=" ++ "\"" ++ ?to_s(Size) ++ "\""
 		 ++ " and shop=" ++ ?to_s(Shop)
 		 ++ " and merchant=" ++ ?to_s(Merchant), 
-		
-
+		 
 		 "insert into w_inventory_new_detail_amount(rsn"
-		 ", style_number, brand, color, size, total, entry_date)"
+		 ", style_number, brand, color, size, total, merchant, shop, entry_date)"
 		 " values("
 		 ++ "\"" ++ ?to_s(RSN) ++ "\","
 		 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
 		 ++ ?to_s(Brand) ++ ","
 		 ++ ?to_s(Color) ++ ","
 		 ++ "\'" ++ ?to_s(Size)  ++ "\',"
-		 ++ ?to_s(-Count) ++ "," 
+		 ++ ?to_s(-Count) ++ ","
+		 ++ ?to_s(Merchant) ++ ","
+		 ++ ?to_s(Shop) ++ ","
 		 ++ "\"" ++ ?to_s(Datetime) ++ "\")"|Acc] 
 	end,
 

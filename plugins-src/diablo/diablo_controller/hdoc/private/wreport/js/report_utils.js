@@ -57,6 +57,15 @@ var reportUtils = function(){
 
 	to_decimal:function(v){
 	    return diablo_rdight(v, 2);
+	},
+
+	first_day_of_month: function(){
+	    var now = new Date(); 
+	    var year = now.getFullYear();
+	    var month = now.getMonth();
+
+	    return {
+		first:new Date(year, month, 1).getTime(), current:now.getTime()};
 	}
     }
 }();
