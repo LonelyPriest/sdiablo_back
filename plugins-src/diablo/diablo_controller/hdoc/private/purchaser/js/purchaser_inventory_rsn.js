@@ -45,7 +45,8 @@ purchaserApp.controller("purchaserInventoryFixRsnDetailCtrl", function(
     $scope.time   = diabloFilter.default_time($scope.qtime_start);
     
     // $scope.time   = diabloFilter.default_time();
-    
+
+    // console.log($routeParams);
     /*
      * pagination 
      */
@@ -212,22 +213,11 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
     // console.log($scope.stock_right);
 
     var dialog       = diabloUtilsService;
-    var use_storage  = $routeParams.rsn ? false : true;
     
     // style_number
     $scope.match_style_number = function(viewValue){
 	return diabloFilter.match_w_inventory(viewValue, user.shopIds)
-    };
-
-    $scope.go_back = function(){
-	var ppage = diablo_set_integer($routeParams.ppage);
-	if(angular.isDefined(ppage)){
-	    localStorageService.remove(diablo_key_invnetory_trans_detail);
-	    $scope.goto_page("#/inventory_new_detail/" + ppage.toString()) 
-	} else{
-	    $scope.goto_page("#/inventory_new_detail") 
-	}
-    };
+    }; 
     
     // initial
     // $scope.filters = [];    
@@ -246,11 +236,24 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
 
     // console.log($scope.filter);
     // console.log($scope.prompt); 
+    // console.log($scope.time);
+    
+    /*
+     * pagination 
+     */
+    $scope.colspan = 17;
+    $scope.items_perpage = diablo_items_per_page();
+    $scope.max_page_size = 10;
+    
+    // default the first page
+    $scope.default_page = 1;
+    $scope.current_page = $scope.default_page;
 
     var now = $.now(); 
     var storage = localStorageService.get(diablo_key_invnetory_trans_detail);
     console.log(storage);
-    
+
+    var use_storage  = $routeParams.rsn && angular.isUndefined($routeParams.from) ? false : true; 
     if (use_storage && angular.isDefined(storage) && storage !== null){
     	$scope.filters      = storage.filter;
     	$scope.qtime_start  = storage.start_time;
@@ -267,19 +270,13 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
 	}(); 
     };
 
+    if (angular.isDefined($routeParams.from)){
+	$location.path("/inventory_rsn_detail", false);
+	$routeParams.rsn = undefined;
+	$routeParams.ppage = undefined;
+    };
+
     $scope.time = diabloFilter.default_time($scope.qtime_start);
-    // console.log($scope.time);
-    
-    /*
-     * pagination 
-     */
-    $scope.colspan = 17;
-    $scope.items_perpage = diablo_items_per_page();
-    $scope.max_page_size = 10;
-    
-    // default the first page
-    $scope.default_page = 1;
-    $scope.current_page = $scope.default_page;
 
     var add_search_condition = function(search){
 	if (angular.isUndefined(search.shop)
@@ -288,7 +285,7 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
 		=== 0 ? undefined : $scope.shopIds; 
 	};
 
-	if (angular.isUndefined(search.rsn)){
+	if (angular.isUndefined(search.rsn) && angular.isUndefined($routeParams.from)){
 	    search.rsn  =  $routeParams.rsn ? $routeParams.rsn : undefined; 
 	};
 
@@ -314,6 +311,7 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
 		    if (page === 1){
 			$scope.total_items = result.total;
 			$scope.total_amounts = result.t_amount;
+			// $location.path("/inventory_rsn_detail", false);
 		    }
 		    
 		    $scope.inventories = angular.copy(result.data);
@@ -332,7 +330,8 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
     }
 
     $scope.total_items = 0;
-    if (angular.isDefined($routeParams.rsn) && $routeParams.rsn){
+    if (angular.isDefined($routeParams.rsn) && $routeParams.rsn
+	|| angular.isDefined($routeParams.from)){
 	$scope.do_search($scope.default_page); 
     }
 
@@ -408,6 +407,28 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
 		 path:       inv.path,
 		 get_amount: get_amount});
 	}); 
+    };
+
+    $scope.update_rsn_detail = function(inv){
+	if (inv.type===0){
+	    diablo_goto_page("#/update_new_detail/" + inv.rsn
+			     + "/" + $scope.current_page.toString()
+			     + "/" + diablo_from_update_stock.toString()); 
+	} else if (inv.type === 1){
+	    diablo_goto_page("#/update_new_detail_reject/" + inv.rsn
+			     + "/" + $scope.current_page.toString()
+			     + "/" + diablo_from_update_stock.toString()); 
+	}
+    };
+
+    $scope.go_back = function(){
+	var ppage = diablo_set_integer($routeParams.ppage);
+	if(angular.isDefined(ppage) && angular.isUndefined($routeParams.from)){
+	    localStorageService.remove(diablo_key_invnetory_trans_detail);
+	    $scope.goto_page("#/inventory_new_detail/" + ppage.toString()) 
+	} else{
+	    $scope.goto_page("#/inventory_new_detail") 
+	}
     };
 
     $scope.export_to = function(){

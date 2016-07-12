@@ -42,6 +42,7 @@ var diablo_charge_retailer = 1;
 
 var diablo_from_stock_new = 9;
 var diablo_from_stock = 8;
+var diablo_from_update_stock=7;
 
 /*
  * stock
@@ -206,8 +207,27 @@ var diablo_remove_local_storage = function(l){
     console.log(keys);
     var now = $.now();
     angular.forEach(keys, function(k){
+	// console.log(k);
 	if (now > l.get(k).t + diablo_day_millisecond){
 	    l.remove(k);
+	}
+    });
+    
+    // console.log(keys);
+};
+
+var diablo_remove_wsale_local_storage = function(l){
+    var keys = l.keys();
+    console.log(keys);
+    var now = $.now();
+    var re = /^ws-\d+-\d+-\d+.*$/; 
+    angular.forEach(keys, function(k){
+	if (re.test(k)){
+	    var t = k.split("-");
+	    // console.log(t);
+	    if (now > t[t.length -1] + diablo_day_millisecond){
+		l.remove(k);
+	    }
 	}
     });
     

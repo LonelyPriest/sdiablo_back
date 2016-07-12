@@ -114,7 +114,8 @@
 		  </tr>
 		</thead>
 		<tbody>
-		  <tr x-ng-repeat="r in records">
+		  <tr x-ng-repeat="r in records"
+		      x-ng-dblclick="!(r.state===1 || r.type===9) && update_detail(r)">
 		    <td>{{r.order_id}}</td>
 		    <td class="{{css(r.state, r.type)}}">{{r.rsn}}</td>
 		    
@@ -155,7 +156,7 @@
 			class="{{css(r.state, r.type)}}">{{r.has_pay}}</td>
 		    
 		    <td x-ng-if="shop_right.show_balance" class="{{css(r.state, r.type)}}">
-		      {{r.balance + r.should_pay + r.e_pay - r.has_pay - r.verificate}}
+		      {{r.acc_balance}}
 		    </td>
 		    
 		    <td class="{{css(r.state, r.type)}}">

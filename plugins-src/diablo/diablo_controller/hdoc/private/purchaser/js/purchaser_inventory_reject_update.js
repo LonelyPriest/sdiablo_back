@@ -5,6 +5,7 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
     filterSizeGroup, filterColor, base){
     // console.log(user);
 
+    console.log($routeParams);
     // $scope.shops     = user.sortShops;
     $scope.shops           = user.sortBadRepoes.concat(user.sortShops);
     $scope.brands          = filterBrand;
@@ -38,7 +39,14 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
     $scope.setting = {reject_negative: false, history_stock: false}; 
     
     $scope.go_back = function(){
-	diablo_goto_page("#/inventory_new_detail/" + $routeParams.ppage);
+	if (diablo_from_update_stock === stockUtils.to_integer($routeParams.from)){
+	    diablo_goto_page("#/inventory_rsn_detail/" + $routeParams.rsn
+			     // + "/" + $routeParams.ppage
+			     + "/1"  // always bo back first page
+			     + "/" + diablo_from_update_stock.toString());
+	} else {
+	    diablo_goto_page("#/inventory_new_detail/" + $routeParams.ppage); 
+	}
     };
 
     /*
@@ -125,9 +133,8 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	return $scope.focus_row;
     };
 
-    $scope.focus_css = function(order){
-	return $scope.stock_right.show_orgprice
-	    && $scope.focus_row === order ? "vert-align bg-cyan" : "vert-align";
+    $scope.focus_css = function(order, render){
+	return render && $scope.focus_row === order ? "vert-align bg-cyan" : "vert-align";
     }; 
 
     $scope.row_change_price = function(inv){
@@ -257,7 +264,7 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	$scope.old_select.comment      = base.comment;
 	$scope.old_select.total        = Math.abs(base.total); 
 	$scope.old_select.should_pay   = Math.abs(base.should_pay);
-	$scope.old_select.left_balance = base.balance + base.should_pay;
+	$scope.old_select.left_balance = stockUtils.to_decimal(base.balance + base.should_pay);
 	// $scope.old_select.rsn          = base.rsn;
 
 	$scope.select = angular.extend($scope.select, $scope.old_select);

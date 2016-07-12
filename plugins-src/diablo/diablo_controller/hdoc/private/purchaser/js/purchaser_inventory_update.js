@@ -30,7 +30,14 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 
     $scope.go_back = function(){
 	console.log($routeParams.ppage);
-	diablo_goto_page("#/inventory_new_detail/" + $routeParams.ppage);
+	if (diablo_from_update_stock === stockUtils.to_integer($routeParams.from)){
+	    diablo_goto_page("#/inventory_rsn_detail/" + $routeParams.rsn
+			     // + "/" + $routeParams.ppage
+			     + "/1"  // always bo back first page
+			     + "/" + diablo_from_update_stock.toString());
+	} else {
+	    diablo_goto_page("#/inventory_new_detail/" + $routeParams.ppage); 
+	}
     };
 
     /*
@@ -112,8 +119,8 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	return $scope.focus_row;
     };
 
-    $scope.focus_css = function(order){
-	return $scope.focus_row === order ? "vert-align bg-cyan" : "vert-align";
+    $scope.focus_css = function(order, render){
+	return render && $scope.focus_row === order ? "vert-align bg-cyan" : "vert-align";
     };
     
     $scope.re_calculate = function(){

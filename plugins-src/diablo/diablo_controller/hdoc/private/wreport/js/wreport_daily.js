@@ -107,9 +107,9 @@ wreportApp.controller("wreportDailyCtrl", function(
 			
 		    });
 
-		    $scope.total.margins = reportUtils.calc_profit(
-			$scope.total.sale_cost, $scope.total.spay);
-		    console.log($scope.report_data);
+		    $scope.total.gross = reportUtils.to_decimal($scope.total.gross);
+		    $scope.total.margins = reportUtils.calc_profit($scope.total.sale_cost, $scope.total.spay); 
+		    // console.log($scope.report_data);
 		    // console.log($scope.total);
 		}
 		
@@ -426,6 +426,7 @@ wreportApp.controller("realStasticController", function(
 		    $scope.total.veri = to_decimal($scope.total.veri);
 
 		    $scope.total.cstock_cost = to_decimal($scope.total.cstock_cost);
+		    $scope.total.rstock_cost = to_decimal($scope.total.rstock_cost);
 		    $scope.total.stock_in_cost = to_decimal($scope.total.stock_in_cost);
 		    $scope.total.stock_out_cost = to_decimal($scope.total.stock_out_cost);
 

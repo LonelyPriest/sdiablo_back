@@ -66,14 +66,11 @@ action(Session, Req, {"delete_shop", Id}) ->
 action(Session, Req, {"daily_wreport", Type}, Payload) ->
     ?DEBUG("daily_wrport with session ~p, type ~p, paylaod~n~p", [Session, Type, Payload]), 
     Merchant = ?session:get(merchant, Session), 
-    %% {struct, C} = ?v(<<"condition">>, Payload),
-
     case ?to_a(Type) of
 	by_shop ->
 	    try
 		{struct, Conditions} = ?v(<<"condition">>, Payload), 
-		ShopIds = ?v(<<"shop">>, Conditions),
-		
+		ShopIds = ?v(<<"shop">>, Conditions), 
 		{ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
 
 		{ok, StockSale} = ?w_report:stastic(stock_sale, Merchant, Conditions),

@@ -231,7 +231,8 @@ handle_call({list_shop, Merchant, Conditions}, _From, State) ->
 	   end
 	++ "a.merchant=" ++ ?to_s(Merchant)
 	%% ++ " and a.type=" ++ ?to_s(?SHOP)
-	++ " and a.deleted = " ++ ?to_s(?NO),
+	++ " and a.deleted = " ++ ?to_s(?NO)
+	++ " order by id",
 
     Reply = ?sql_utils:execute(read, Sql1), 
     {reply, Reply, State};

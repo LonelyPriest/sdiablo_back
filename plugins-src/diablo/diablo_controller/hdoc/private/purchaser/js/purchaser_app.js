@@ -79,7 +79,7 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 	    resolve: angular.extend(
 		{}, user, brand, type, s_group, firm, employee, color, color_type, base)
 	}).
-	when('/update_new_detail/:rsn?/:ppage?', {
+	when('/update_new_detail/:rsn?/:ppage?/:from?', {
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_new_detail_update.html',
             controller: 'purchaserInventoryNewUpdateCtrl',
 	    resolve: angular.extend(
@@ -92,14 +92,14 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 	    resolve: angular.extend(
 		{}, user, firm, employee, s_group, color, base)
 	}). 
-	when('/update_new_detail_reject/:rsn?/:ppage?', {
+	when('/update_new_detail_reject/:rsn?/:ppage?/:from?', {
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_reject_update.html',
             controller: 'purchaserInventoryRejectUpdateCtrl',
 	    resolve: angular.extend(
 		{}, user, brand, firm, type, employee, s_group, color, base)
 	}).
 	// detail
-	when('/inventory_rsn_detail/:rsn?/:ppage?', {
+	when('/inventory_rsn_detail/:rsn?/:ppage?/:from?', {
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_new_rsn_detail.html',
 	    controller: 'purchaserInventoryNewRsnDetailCtrl',
 	    resolve: angular.extend(

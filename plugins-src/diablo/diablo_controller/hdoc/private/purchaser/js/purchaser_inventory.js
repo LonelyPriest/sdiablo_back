@@ -2025,21 +2025,18 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
 
     $scope.trans_detail = function(r){
 	$scope.save_stastic();
-	diablo_goto_page('#/inventory_rsn_detail/'
-			 + r.rsn + "/" + $scope.current_page.toString());
+	diablo_goto_page('#/inventory_rsn_detail/' + r.rsn + "/" + $scope.current_page.toString());
     };
 
     $scope.update_detail = function(r){
 	$scope.save_stastic(); 
 	if (r.type === 0){
 	    diablo_goto_page(
-		'#/update_new_detail/'
-		    + r.rsn + "/" + $scope.current_page.toString());
+		'#/update_new_detail/' + r.rsn + "/" + $scope.current_page.toString());
 	} else{
 	    diablo_goto_page(
-		'#/update_new_detail_reject/'
-		    + r.rsn + "/" + $scope.current_page.toString());
-	} 
+		'#/update_new_detail_reject/' + r.rsn + "/" + $scope.current_page.toString());
+	}
     };
     
     $scope.check_detail = function(r){
@@ -2255,6 +2252,9 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
 			d.firm = diablo_get_object(d.firm_id, filterFirm);
 			d.shop = diablo_get_object(d.shop_id, $scope.shops);
 			d.employee = diablo_get_object(d.employee_id, filterEmployee);
+			d.acc_balance =
+			    stockUtils.to_decimal(
+				d.balance + d.should_pay + d.e_pay - d.has_pay - d.verificate);
 		    });
 		    $scope.records = result.data;
 		    diablo_order_page(page, $scope.items_perpage, $scope.records);

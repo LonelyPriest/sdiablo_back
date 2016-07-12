@@ -145,7 +145,14 @@
 			      x-ng-disabled="inv.free==0"
 		    	      x-ng-click="rsn_detail(inv)">
 			详情<i class="glyphicon glyphicon-map-marker"></i>
-		      </button> 
+		      </button>
+
+		      <button x-ng-if="stock_right.show_orgprice"
+			      class="btn diablo-button btn-warning"
+		    	      x-ng-click="update_rsn_detail(inv)">
+			修改<i class="glyphicon glyphicon-edit"></i>
+		      </button>
+		      
 		    </td>
 		  </tr>
 		  <tr x-ng-if="total_items!==0" class="bg-white">

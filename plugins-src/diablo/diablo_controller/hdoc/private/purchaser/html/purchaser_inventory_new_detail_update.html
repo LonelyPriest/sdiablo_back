@@ -379,9 +379,10 @@
 		</thead>
 		<tbody>
 		  <tr class="text-center" ng-repeat="inv in inventories"> 
-		    <td class="{{focus_css(inv.order_id)}}">{{inv.order_id}}</td>
+		    <td class="{{focus_css(inv.order_id, true)}}">{{inv.order_id}}</td>
 		    
-		    <td class="col-md-2 text-left vert-align">
+		    <td class="{{focus_css(inv.order_id, !inv.$new)}}"
+		       class="col-md-2 text-left vert-align">
 		      <span x-ng-if="!inv.$new">{{inv.style_number}}</span>
 		      
 		      <form name="inv.form.good" x-ng-if="inv.$new">
@@ -405,12 +406,12 @@
 		      </form>
 		    </td>
 		    
-		    <td class="{{focus_css(inv.order_id)}}">{{inv.brand.name}}</td>
-		    <td class="{{focus_css(inv.order_id)}}">{{inv.type.name}}</td>
+		    <td class="{{focus_css(inv.order_id, true)}}">{{inv.brand.name}}</td>
+		    <td class="{{focus_css(inv.order_id, true)}}">{{inv.type.name}}</td>
 		    <!-- <td class="vert-align">{{sexs[inv.sex]}}</td> -->
-		    <td class="{{focus_css(inv.order_id)}}">{{seasons[inv.season]}}</td>
+		    <td class="{{focus_css(inv.order_id, true)}}">{{seasons[inv.season]}}</td>
 
-		    <td class="col-md-1 vert-align">
+		    <td class="{{focus_css(inv.order_id, inv.$new)}} col-md-1 vert-align">
 		      <span x-ng-if="inv.$new">{{inv.tag_price}}</span>
 		      <form x-ng-if="!inv.$new" name="inv.form.tagprice">
 			<div ng-class="{'has-error':inv.form.tagprice.$invalid
@@ -433,7 +434,7 @@
 		      </form> 
 		    </td>
 		    
-		    <td class="col-md-1 vert-align">
+		    <td class="{{focus_css(inv.order_id, inv.$new)}} col-md-1 vert-align">
 		      <span x-ng-if="inv.$new">{{inv.discount}}</span>
 		      <form x-ng-if="!inv.$new" name="inv.form.discount">
 		    	<div ng-class="{'has-error':inv.form.discount.$invalid
@@ -454,10 +455,9 @@
 		      </form>
 		    </td>
 		    
-		    <td class="col-md-1 vert-align">
-		      <div x-ng-if="!inv.$new && !inv.update_directory">
-			{{inv.total}}
-		      </div> 
+		    <td class="{{focus_css(inv.order_id, !inv.$new && !inv.update_directory)}}"
+			class="col-md-1 vert-align">
+		      <div x-ng-if="!inv.$new && !inv.update_directory">{{inv.total}}</div> 
 		      <form name="inv.form.amount"
 			    x-ng-if="inv.$new && inv.free_color_size || inv.update_directory">
 			<div ng-class="{'has-error':inv.form.amount.$invalid
@@ -519,7 +519,8 @@
 		      </form>
 		    </td> 
 		    
-		    <td x-ng-if="stock_right.show_orgprice" class="vert-align">
+		    <td x-ng-if="stock_right.show_orgprice"
+			class="{{focus_css(inv.order_id, !inv.$new)}}">
 		      <span x-ng-if="inv.$new"></span>
 		      <span x-ng-if="!inv.$new">
 			<span x-ng-if="(inv.org_price || inv.org_price==0) && inv.total">

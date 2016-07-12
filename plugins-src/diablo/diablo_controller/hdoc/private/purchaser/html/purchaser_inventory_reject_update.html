@@ -303,8 +303,8 @@
 		<tbody>
 		  <tr class="text-center" ng-repeat="inv in inventories">
 		    
-		    <td class="{{focus_css(inv.order_id)}}">{{inv.order_id}}</td>
-		    <td class="col-md-2 text-left vert-align">
+		    <td class="{{focus_css(inv.order_id, true)}}">{{inv.order_id}}</td>
+		    <td class="{{focus_css(inv.order_id, !inv.new)}} col-md-2 text-left">
 		      <span ng-if="!inv.$new">{{inv.style_number}}</span>
 		      <form name="inv.form.good" ng-if="inv.$new">
 			<div ng-class="{'has-error':inv.form.good.$invalid
@@ -338,12 +338,12 @@
 		      </form>
 		    </td>
 		    
-		    <td class="{{focus_css(inv.order_id)}}">{{inv.brand.name}}</td>
-		    <td class="{{focus_css(inv.order_id)}}">{{inv.type.name}}</td>
+		    <td class="{{focus_css(inv.order_id, true)}}">{{inv.brand.name}}</td>
+		    <td class="{{focus_css(inv.order_id, true)}}">{{inv.type.name}}</td>
 		    <!-- <td class="vert-align">{{sexs[inv.sex]}}</td> -->
-		    <td class="{{focus_css(inv.order_id)}}">{{seasons[inv.season]}}</td>
-		    <td class="{{focus_css(inv.order_id)}}">{{inv.tag_price}}</td>
-		    <td class="{{focus_css(inv.order_id)}}">{{inv.discount}}</td>
+		    <td class="{{focus_css(inv.order_id, true)}}">{{seasons[inv.season]}}</td>
+		    <td class="{{focus_css(inv.order_id, true)}}">{{inv.tag_price}}</td>
+		    <td class="{{focus_css(inv.order_id, true)}}">{{inv.discount}}</td>
 		    
 		    <td x-ng-if="stock_right.show_orgprice" class="col-md-1 vert-align">
 		      <div x-ng-if="inv.$new">{{inv.org_price}}</div> 
@@ -390,7 +390,7 @@
 		      </form>
 		    </td>
 		    
-		    <td class="col-md-1 vert-align">
+		    <td class="{{focus_css(inv.order_id, !inv.$new && !inv.free_update)}} col-md-1">
 		      <div x-ng-if="!inv.$new && !inv.free_update">
 			{{inv.reject}}
 		      </div> 
@@ -416,7 +416,8 @@
 		      </form>
 		    </td>
 
-		    <td x-ng-if="stock_right.show_orgprice" class="vert-align">
+		    <td x-ng-if="stock_right.show_orgprice"
+			class="{{focus_css(inv.order_id, !inv.new)}}">
 		      <span x-ng-if="inv.$new"></span>
 		      <span x-ng-if="!inv.$new">
 			<span x-ng-if="(inv.org_price || inv.org_price===0) && inv.reject">

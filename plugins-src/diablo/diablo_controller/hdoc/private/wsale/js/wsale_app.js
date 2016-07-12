@@ -1046,11 +1046,11 @@ wsaleApp.controller("wsaleNewCtrl", function(
 		    $scope.wsaleStorage.remove($scope.select_draft_key);
 		    $scope.select_draft_key = undefined;
 		};
-		
-		$scope.disable_refresh = false;
+		$scope.refresh();
+		// $scope.disable_refresh = false;
 		// modify current balance of retailer
-		$scope.select.retailer.balance = $scope.select.left_balance;
-		$scope.select.surplus = $scope.select.left_balance;
+		// $scope.select.retailer.balance = $scope.select.left_balance;
+		// $scope.select.surplus = $scope.select.left_balance;
 	    }
 
 	    if (result.ecode === 0){
@@ -1857,7 +1857,7 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 
 wsaleApp.controller("wsaleCtrl", function(
     $scope, localStorageService){
-    diablo_remove_local_storage(localStorageService); 
+    diablo_remove_wsale_local_storage(localStorageService); 
 });
 
 wsaleApp.controller("loginOutCtrl", function($scope, $resource){
