@@ -977,8 +977,9 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 
 				 "update w_inventory_new set balance=balance+"
 				 ++ ?to_s(Metric)
-				 ++ " where shop=" ++ ?to_s(Shop)
-				 ++ " and merchant=" ++ ?to_s(Merchant)
+				 ++ " where"
+				 %% " and shop=" ++ ?to_s(Shop)
+				 ++ " merchant=" ++ ?to_s(Merchant)
 				 ++ " and firm=" ++ ?to_s(Firm)
 				 ++ " and id>" ++ ?to_s(Id),
 
@@ -1008,8 +1009,9 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 			Sql0 = "select id, rsn, firm, shop, merchant, balance"
 			    ", verificate, should_pay, has_pay, e_pay"
 			    " from w_inventory_new"
-			    " where shop=" ++ ?to_s(Shop)
-			    ++ " and merchant=" ++ ?to_s(Merchant)
+			    " where"
+			    ++ " merchant=" ++ ?to_s(Merchant)
+			%% " and shop=" ++ ?to_s(Shop) 
 			    ++ " and firm=" ++ ?to_s(Firm)
 			    ++ " and id<" ++ ?to_s(Id)
 			    ++ " order by id desc limit 1", 
@@ -1018,8 +1020,9 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 				Sql00 = "select id, rsn, firm, shop, merchant, balance"
 				    ", verificate, should_pay, has_pay, e_pay"
 				    " from w_inventory_new"
-				    " where shop=" ++ ?to_s(Shop)
-				    ++ " and merchant=" ++ ?to_s(Merchant)
+				    " where"
+				    ++ " merchant=" ++ ?to_s(Merchant)
+				%% " and shop=" ++ ?to_s(Shop) 
 				    ++ " and firm=" ++ ?to_s(Firm)
 				    ++ " and id>" ++ ?to_s(Id)
 				    ++ " order by id limit 1",
@@ -1063,7 +1066,9 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 		case Firm =/= ?INVALID_OR_EMPTY of
 		    true ->
 			["update suppliers set balance=balance+"
-			 ++ ?to_s(BalanceOfNewFirm) ++ " where id="++ ?to_s(Firm),
+			 ++ ?to_s(BalanceOfNewFirm)
+			 ++ " where id="++ ?to_s(Firm)
+			 ++ " and merchant=" ++ ?to_s(Merchant),
 		 
 			 "insert into firm_balance_history("
 			 "rsn, firm, balance, metric, action, shop, merchant, entry_date) values("
@@ -1078,8 +1083,9 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 		 
 			 "update w_inventory_new set balance=balance+"
 			 ++ ?to_s(BalanceOfNewFirm)
-			 ++ " where shop=" ++ ?to_s(Shop)
-			 ++ " and merchant=" ++ ?to_s(Merchant)
+			 ++ " where"
+			 ++ " merchant=" ++ ?to_s(Merchant)
+			 %% " and shop=" ++ ?to_s(Shop) 
 			 ++ " and firm=" ++ ?to_s(Firm)
 			 ++ " and id>" ++ ?to_s(Id)];
 		    false -> []
@@ -1104,8 +1110,9 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 
 			 "update w_inventory_new set balance=balance-"
 			 ++ ?to_s(BackBalanceOfOldFirm)
-			 ++ " where shop=" ++ ?to_s(Shop)
-			 ++ " and merchant=" ++ ?to_s(Merchant)
+			 ++ " where"
+			 ++ " merchant=" ++ ?to_s(Merchant)
+			 %% ++ " and shop=" ++ ?to_s(Shop) 
 			 ++ " and firm=" ++ ?to_s(OldFirm)
 			 ++ " and id>" ++ ?to_s(Id) 
 			];
@@ -1120,13 +1127,30 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 handle_call({check_inventory, Merchant, RSN, Mode}, _From, State) ->
     ?DEBUG("check_inventory with merchant ~p, RSN ~p, Mode ~p",
 	   [Merchant, RSN, Mode]),
-    Sql = "update w_inventory_new set state=" ++ ?to_s(Mode)
-	++ ", check_date=\'" ++ ?utils:current_time(localtime) ++ "\'"
+    Sql0 = "select id, rsn, state from w_inventory_new"
 	++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
 	++ " and merchant=" ++ ?to_s(Merchant),
 
-    Reply = ?sql_utils:execute(write, Sql, RSN),
-    {reply, Reply, State};
+    case ?sql_utils:execute(s_read, Sql0) of
+	{ok, []} ->
+	    {reply, {error, ?err(failed_to_get_stock_new, RSN)}};
+	{ok, New} ->
+	    StockState = ?v(<<"state">>, New),
+	    case StockState == ?DISCARD
+		orelse StockState == ?FIRM_BILL of
+		true -> {reply, {error, ?err(error_state_of_check, RSN)}};
+		false ->
+		    Sql = "update w_inventory_new set state=" ++ ?to_s(Mode)
+			++ ", check_date=\'" ++ ?utils:current_time(localtime) ++ "\'"
+			++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+			++ " and merchant=" ++ ?to_s(Merchant),
+
+		    Reply = ?sql_utils:execute(write, Sql, RSN),
+		    {reply, Reply, State}
+	    end;
+	{error, Error} ->
+	    {reply, Error, State}
+    end;
 
 handle_call({delete_new, Merchant, RSN, Mode}, _From, State) ->
     ?DEBUG("delete_inventory_new with merchant ~p, RSN ~p, Mode ~p",
@@ -1164,7 +1188,8 @@ handle_call({delete_new, Merchant, RSN, Mode}, _From, State) ->
 		{?ABANDON, ?DISCARD} ->
 		    {reply, {error, ?err(stock_been_discard, RSN)}};
 		{?DELETE, ?DISCARD} ->
-		    DeleteNewSqls;
+		    Reply = ?sql_utils:execute(transaction, DeleteNewSqls, RSN),
+		    {reply, Reply, State};
 		{_, ?CHECKING} ->
 		    Sql11 =
 			[
@@ -1203,12 +1228,14 @@ handle_call({delete_new, Merchant, RSN, Mode}, _From, State) ->
 				    end,
 				Datetime = ?utils:current_time(format_localtime),
 				["update suppliers set "
-				 "balance=balance-" ++ ?to_s(BackBalance),
+				 "balance=balance-" ++ ?to_s(BackBalance)
+				 ++ " where merchant=" ++ ?to_s(Merchant)
+				 ++ " and id=" ++ ?to_s(Firm),
 
 				 "update w_inventory_new set "
 				 "balance=balance-" ++ ?to_s(BackBalance)
 				 ++ " where merchant=" ++ ?to_s(Merchant)
-				 ++ " and shop=" ++ ?to_s(Shop) 
+				 %% ++ " and shop=" ++ ?to_s(Shop) 
 				 ++ " and firm=" ++ ?to_s(Firm)
 				 ++ " and id>" ++ ?to_s(NId),
 

@@ -350,6 +350,8 @@ error(failed_to_get_stock_new, RSN) ->
     {2003, "failed to get new stock of rsn " ++ ?to_s(RSN)};
 error(stock_been_discard, RSN) ->
     {2004, "stock of rsn " ++ ?to_s(RSN) ++ " has been discard."};
+error(error_state_of_check, RSN) ->
+    {2005, "error_state_of_check " ++ ?to_s(RSN) ++ "."};
 
 %% retailer
 error(retailer_exist, Retailer) ->

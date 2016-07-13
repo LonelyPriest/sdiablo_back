@@ -60,31 +60,32 @@
 		    x-ng-model="f.value"
 		    typeahead-editable="false"
 	  	    x-ng-options="s as s.name for s in prompt.sex"
-		    x-ng-init="f.value=prompt.sex[0]">
+		    x-ng-init="f.value=f.value ? f.value : prompt.sex[0]">
 	    </select>
 	  </span>
 
 	  <span x-ng-switch-when="sell_type">
-	    <input type="text" class="form-control" placeholder="请输入销售类别"
-		   x-ng-model="f.value"
-		   typeahead-editable="false"
-	  	   typeahead="st as st.name for st in
-			      prompt.sell_type|filter:$viewValue|limitTo:8"/>
+	    <select type="text"
+		    class="form-control"
+		    x-ng-model="f.value"
+		    x-ng-options="st as st.name for st in prompt.sell_type"
+		    x-ng-init="f.value=f.value ? f.value : prompt.sell_type[0]">
+	    </select>
 	  </span>
 
 	  <span x-ng-switch-when="purchaser_type">
 	    <select type="text" class="form-control"
 		    x-ng-model="f.value"
-	  	    x-ng-options="pt as pt.name for pt in prompt.purchaser_type|filter:$viewValue"
-		    x-ng-init="f.value=prompt.purchaser_type[0]">
+	  	    x-ng-options="pt as pt.name for pt in prompt.purchaser_type"
+		    x-ng-init="f.value=f.value ? f.value : prompt.purchaser_type[0]">
 	    </select> 
 	  </span>
 
 	  <span x-ng-switch-when="check_state">
 	    <select type="text" class="form-control"
 		    x-ng-model="f.value"
-	  	    x-ng-options="c as c.name for c in prompt.check_state|filter:$viewValue"
-		    x-ng-init="f.value=prompt.check_state[0]">
+	  	    x-ng-options="c as c.name for c in prompt.check_state"
+		    x-ng-init="f.value=f.value ? f.value : prompt.check_state[0]">
 	    </select> 
 	  </span>
 
@@ -99,8 +100,8 @@
 	    <select type="text" class="form-control"
 		    x-ng-model="f.value"
 		    typeahead-editable="false"
-		    x-ng-options="y for y in prompt.year|filter:$viewValue"
-		    x-ng-init="f.value=prompt.year[0]">
+		    x-ng-options="y for y in prompt.year"
+		    x-ng-init="f.value=f.value ? f.value : prompt.year[0]">
 	    </select> 
 	  </span>
 
@@ -115,7 +116,7 @@
 	    <select type="text" class="form-control"
 		    x-ng-model="f.value"
 	  	    x-ng-options="s as s.name for s in prompt.season"
-		    x-ng-init="f.value=prompt.season[0]">
+		    x-ng-init="f.value=f.value ? f.value : prompt.season[0]">
 	    </select> 
 	  </span>
 
@@ -129,8 +130,8 @@
 	  <span x-ng-switch-when="shop">
 	    <select type="text" class="form-control"
 		    x-ng-model="f.value"
-	  	    x-ng-options="s as s.name for s in prompt.shop|filter:$viewValue"
-		    x-ng-init="f.value=prompt.shop[0]">
+	  	    x-ng-options="s as s.name for s in prompt.shop"
+		    x-ng-init="f.value=f.value ? f.value : prompt.shop[0]">
 	    </select>
 	  </span>
 

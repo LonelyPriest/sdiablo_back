@@ -429,11 +429,13 @@ handle_call({update_bill_supplier, Merchant, Attrs}, _From, State) ->
 		 "update w_bill_detail set "
 		 "balance=balance-" ++ ?to_s(Metric)
 		 ++ " where merchant=" ++ ?to_s(Merchant)
+		 ++ " and firm=" ++ ?to_s(FirmId)
 		 ++ " and id>" ++ ?to_s(BillId),
 
 		"update w_inventory_new set "
 		"balance=balance-" ++ ?to_s(Metric)
 		 ++ " where merchant=" ++ ?to_s(Merchant)
+		 ++ " and firm=" ++ ?to_s(FirmId)
 		 ++ " and id>" ++ ?to_s(StockId)]
 	end,
 
@@ -482,11 +484,13 @@ handle_call({abandon_bill_supplier, Merchant, Attrs}, _From, State) ->
 		    "update w_bill_detail set "
 		    "balance=balance+" ++ ?to_s(Bill+Veri)
 		    ++ " where merchant=" ++ ?to_s(Merchant)
+		    ++ " and firm=" ++ ?to_s(FirmId)
 		    ++ " and id>" ++ ?to_s(BillId),
 
 		    "update w_inventory_new set "
 		    "balance=balance+" ++ ?to_s(Bill+Veri)
 		    ++ " where merchant=" ++ ?to_s(Merchant)
+		    ++ " and firm=" ++ ?to_s(FirmId)
 		    ++ " and id>" ++ ?to_s(StockId)],
 
 	    Reply = ?sql_utils:execute(transaction, Sqls, RSN),

@@ -405,14 +405,56 @@ diabloUtils.directive('queryGroup', function () {
 	    // 	// console.log(oldValue);
 		
 	    // })
-
+	    // console.log(scope.filters);
 	    // console.log(scope.prompt);
-	    scope.is_even = function() {
-		console.log(scope.filters.length);
-		var even = scope.filters.length % 2 === 0;
-		console.log(even);
-		return even;
-	    }
+	    // scope.is_even = function() {
+	    // 	console.log(scope.filters.length);
+	    // 	var even = scope.filters.length % 2 === 0;
+	    // 	console.log(even);
+	    // 	return even;
+	    // }
+
+	    var get_prompt = function(value, prompts){
+		if (angular.isUndefined(value))
+		    return prompts[0]
+		var v = diablo_get_object(value.id, prompts);
+		return angular.isUndefined(v) ? prompts[0] : v;
+	    };
+
+	    angular.forEach(scope.filters, function(f){
+	    	angular.forEach(f.fields, function(e){
+	    	    if (e.name === f.field.name){
+			f.field = e;
+			switch (e.name){
+			case "sex":
+			    f.value = get_prompt(f.value, scope.prompt.sex);
+			    break;
+			case "purchaser_type":
+			    f.value = get_prompt(f.value, scope.prompt.purchaser_type);
+			    break;
+			case "sell_type":
+			    f.value = get_prompt(f.value, scope.prompt.sell_type);
+			    break;
+			case "check_state":
+			    f.value = get_prompt(f.value, scope.prompt.check_state);
+			    break;
+			case "year":
+			    // f.value = get_prompt(f.value, scope.prompt.year);
+			    break;
+			case "season":
+			    f.value = get_prompt(f.value, scope.prompt.season);
+			    break;
+			case "shop":
+			    f.value = get_prompt(f.value, scope.prompt.shop);
+			    break;
+			default:
+			    break;
+			}
+
+			// console.log(f);
+	    	    }
+	    	})
+	    });
 
 	    scope.change_field = function(field){
 		// console.log(field);
@@ -453,20 +495,21 @@ diabloUtils.directive('queryPattern', function () {
 
 	    // scope.increment = 0;
 	    scope.increment = scope.filters.length;
-	    angular.forEach(scope.filters, function(f){
-	    	angular.forEach(f.fields, function(e){
-	    	    if (e.name === f.field.name){
-	    		f.field = e;
-	    	    }
-	    	})
-	    });
-
-	    // console.log(scope.filters);
+	    // angular.forEach(scope.filters, function(f){
+	    // 	angular.forEach(f.fields, function(e){
+	    // 	    if (e.name === f.field.name){
+	    // 		f.field = e;
+	    // 		// console.log(f.value);
+	    // 	    }
+	    // 	})
+	    // });
 	    
 	    // add a filter
 	    scope.add_filter = function(){
 		// console.log("add_filter...");
-		scope.filters[scope.increment] = angular.copy(scope.filter);
+		// console.log(scope.filters);
+		// scope.filters[scope.increment] = angular.copy(scope.filter);
+		scope.filters.push(angular.copy(scope.filter));
 		// use first as default field
 		scope.filters[scope.increment].field
 		    = scope.filters[scope.increment].fields[scope.increment];
