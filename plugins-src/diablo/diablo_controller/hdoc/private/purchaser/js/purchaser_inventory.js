@@ -1568,7 +1568,7 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 	    || !search.shop || search.shop.length === 0){
 	    // search.shop = user.shopIds;
 	    search.shop = $scope.shopIds
-		=== 0 ? undefined : $scope.shopIds; ;
+		=== 0 ? undefined : $scope.shopIds;
 	}; 
     };
 

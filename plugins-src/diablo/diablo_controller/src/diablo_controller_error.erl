@@ -210,6 +210,8 @@ success(add_wprinter_format_to_shop, Shop) ->
     {0, "Success to add wprint format of shop " ++ ?to_s(Shop)};
 success(print_wreport, Shop) ->
     {0, "Success to add print content of shop " ++ ?to_s(Shop)};
+success(syn_daily_report, Merchant) ->
+    {0, "Success to syn daily report or merchant ~p " ++ ?to_s(Merchant)};
 
 
 

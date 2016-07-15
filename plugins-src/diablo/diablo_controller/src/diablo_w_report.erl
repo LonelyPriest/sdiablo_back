@@ -179,12 +179,13 @@ handle_call({total_of_daily, Merchant, Conditions}, _From, State) ->
 	", sum(stock_fix_cost) as stockFixCost"
 	" from w_daily_report"
 	" where merchant=" ++ ?to_s(Merchant)
-	++ ?sql_utils:condition(proplists, NewConditions) 
-	++ case ?sql_utils:condition(time_no_prfix, StartTime, EndTime) of
-	       [] -> [];
-	       TimeSql ->
-		   " and " ++ TimeSql
-	   end,
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ " and " ++ ?w_report_sql:day_condition(StartTime, EndTime),
+	%% ++ case ?sql_utils:condition(time_no_prfix, StartTime, EndTime) of
+	%%        [] -> [];
+	%%        TimeSql ->
+	%% 	   " and " ++ TimeSql
+	%%    end,
 
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
@@ -432,5 +433,6 @@ code_change(_OldVsn, State, _Extra) ->
 
 %%%===================================================================
 %%% Internal functions
-%%%===================================================================
-
+%%%===================================================================	
+    
+    

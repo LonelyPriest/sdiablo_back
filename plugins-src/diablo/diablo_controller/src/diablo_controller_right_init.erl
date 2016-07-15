@@ -347,7 +347,10 @@ init([]) ->
 	 {?h_daily_wreport,
 	  <<"日报表">>,     <<"h_daily_wreport">>, ?right_w_report}, 
 	 {?switch_shift_report,
-	  <<"交班报表">>,     <<"switch_shift_report">>, ?right_w_report}
+	  <<"交班报表">>,     <<"switch_shift_report">>, ?right_w_report},
+	 
+	 {?syn_daily_report,
+	  <<"同步日报表">>,   <<"syn_daily_report">>, ?right_w_report}
 	 
 	 %% {?weekly_wreport,
 	 %%  <<"周报表">>,   <<"weekly_wreport">>, ?right_w_report},

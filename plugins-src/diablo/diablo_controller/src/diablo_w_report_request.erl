@@ -121,6 +121,16 @@ action(Session, Req, {"h_daily_wreport"}, Payload) ->
 		  detail, Merchant, CurrentPage, ItemsPerPage, Conditions)
        end, Req, Payload);
 
+action(Session, Req, {"syn_daily_report"}, Payload) ->
+    ?DEBUG ("syn_daily_report with session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session), 
+    case ?gen_report:syn_report(stastic_per_shop, Merchant, Payload) of
+	{ok, Merchant} ->
+	    ?utils:respond(200, Req, ?succ(syn_daily_report, Merchant));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
 action(Session, Req, {"switch_shift_report"}, Payload) ->
     ?DEBUG("switch_shift_report with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session), 

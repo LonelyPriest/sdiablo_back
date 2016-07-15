@@ -62,6 +62,16 @@ correct_datetime(datetime, Datetime) ->
 	    <<YYMMDD/binary, <<" ">>/binary, Time/binary>>
     end.
 
+-spec to_date/2::(atom(), binary()|string()) -> calendar:date().
+to_date(datetime, Datetime) ->
+    <<YYMMDD:10/binary, _/binary>> = Datetime,
+    to_date(date, YYMMDD);
+
+to_date(date, Date) ->
+    SDate = ?to_s(Date),
+    [Y, M, D] = string:tokens(SDate, "-"),
+    {?to_i(Y), ?to_i(M), ?to_i(D)}. 
+    
 respond(batch, Fun, Req) ->
     case Fun() of
 	{ok, Values} ->

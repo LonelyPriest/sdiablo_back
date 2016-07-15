@@ -99,6 +99,10 @@ wreportApp.service("wreportService", function($resource, dateFilter){
 			  page: currentPage,
 			  count: itemsPerpage}).$promise;
     };
+
+    this.syn_daily_report = function(conditions){
+	return http.save({operation: "syn_daily_report"}, conditions).$promise;
+    };
     
 });
 

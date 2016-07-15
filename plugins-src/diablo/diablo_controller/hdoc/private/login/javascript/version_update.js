@@ -1,6 +1,12 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2016-07-14",
+         content: [
+	     "单据查询条件自动保留最后一次查询状态" 
+         ]
+        },
+	
 	{date: "2016-07-13",
          content: [
 	     "开单优化，开单完成后，自动清除当前记录开始下一单",

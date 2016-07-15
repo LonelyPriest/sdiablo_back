@@ -1,5 +1,5 @@
 wreportApp.controller("stockStasticCtrl", function(
-    $scope, dateFilter, diabloFilter, wreportService, filterEmployee, user, base){
+    $scope, dateFilter, diabloFilter, diabloUtilsService, wreportService, filterEmployee, user, base){
     // console.log(user);
     $scope.shops = user.sortShops;
     $scope.shopIds = user.shopIds;
@@ -61,16 +61,23 @@ wreportApp.controller("stockStasticCtrl", function(
     $scope.page_changed = function(){
 	$scope.do_search($scope.pagination.current_page);
     };
+
+    var add_shop_condition = function(search){
+	if (angular.isUndefined(search.shop)
+	    || !search.shop || search.shop.length === 0){
+	    // search.shop = user.shopIds;
+	    search.shop = $scope.shopIds === 0 ? undefined : $scope.shopIds;
+	};
+
+	return search;
+    };
     
     $scope.do_search = function(page){
 	console.log(page);
 	$scope.pagination.current_page = page;
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
-	    if (angular.isUndefined(search.shop)
-		|| !search.shop || search.shop.length === 0){
-		search.shop = $scope.shopIds === 0 ? undefined : $scope.shopIds;
-	    };
-
+	    add_shop_condition(search);
+	    
 	    wreportService.h_daily_report(
 		search, $scope.pagination.items_perpage, page
 	    ).then(function(result){
@@ -120,6 +127,27 @@ wreportApp.controller("stockStasticCtrl", function(
     };
 
     $scope.do_search($scope.pagination.default_page);
+
+    var dialog = diabloUtilsService;
+    $scope.syn_report = function(){
+	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+	    add_shop_condition(search);
+	    // console.log(search);
+	    
+	    wreportService.syn_daily_report(search).then(function(result){
+		console.log(result);
+		if (result.ecode === 0){
+		    dialog.response_with_callback(
+			true, "同步日报表", "同步日报表成功！！", undefined,
+			function(){$scope.do_search($scope.pagination.current_page)}) 
+		} else {
+		    dialog.response(
+			false, "同步日报表", "同步日报表失败："
+			    + wreportService.error[result.ecode]);
+		} 
+	    }); 
+	})
+    };
 
     $scope.go_back = function(){
     	diablo_goto_page("#/wreport_daily");

@@ -21,6 +21,8 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
+-export([syn_report/3]).
+
 -define(SERVER, ?MODULE).
 
 -record(state, {merchant :: [],
@@ -37,6 +39,9 @@ report(stastic_per_shop, TriggerTime) ->
 
 cancel_report(stastic_per_shop) ->
     gen_server:cast(?SERVER, cancel_stastic_per_shop).
+
+syn_report(stastic_per_shop, Merchant, Conditions) ->
+    gen_server:call(?SERVER, {syn_stastic_per_shop, Merchant, Conditions}).
 
 add(report_task, Merchant, TriggerTime) ->
     gen_server:call(?SERVER, {add_report_task, Merchant, TriggerTime}).
@@ -75,6 +80,28 @@ handle_call({add_report_task, Merchant, TriggerTime},
 handle_call(lookup_state, _From, #state{merchant=Merchants,
 					task_of_per_shop=Tasks} = State) ->
     {reply, {Merchants, Tasks}, State};
+
+handle_call({syn_stastic_per_shop, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("syn_stastic_per_shop: merchant ~p, conditions ~p", [Merchant, Conditions]),
+    StartTime = ?v(<<"start_time">>, Conditions),
+    EndTime = ?v(<<"end_time">>, Conditions),
+    Shops = ?v(<<"shop">>, Conditions),
+
+    StartDays = calendar:date_to_gregorian_days(?utils:to_date(datetime, StartTime)),
+    EndDays = calendar:date_to_gregorian_days(?utils:to_date(datetime, EndTime)),
+
+    ToListFun = fun(V) when is_list(V) -> V;
+		   (V) -> [V]
+		end,
+    try 
+	lists:foreach(
+	  fun(Shop) ->
+		  ok = syn_stastic_per_shop(Merchant, Shop, StartDays, EndDays)
+	  end, ToListFun(Shops)),
+	{reply, {ok, Merchant}, State}
+    catch
+	_:{badmatch, Error} -> {reply, Error, State}
+    end;
     
 handle_call(_Request, _From, State) ->
     Reply = ok,
@@ -121,7 +148,126 @@ terminate(_Reason, _State) ->
 
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
+    
+syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) when StartDay < EndDay ->
+    %% {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, Shop),
+    Date = calendar:gregorian_days_to_date(StartDay),
+    {BeginOfDay, EndOfDay} = day(begin_to_end, Date),
 
+    ?DEBUG("syn_stastic_per_shop: beginOfDay ~p, EndOfDay ~p", [BeginOfDay, EndOfDay]),
+
+    Conditions = [{<<"shop">>, Shop},
+		  {<<"start_time">>, ?to_b(BeginOfDay)},
+		  {<<"end_time">>, ?to_b(EndOfDay)}],
+
+    {ok, SaleInfo} = ?w_report:stastic(stock_sale, Merchant, Conditions),
+    {ok, SaleProfit} = ?w_report:stastic(stock_profit, Merchant, Conditions),
+
+    {ok, StockIn}  = ?w_report:stastic(stock_in, Merchant, Conditions),
+    {ok, StockOut} = ?w_report:stastic(stock_out, Merchant, Conditions),
+
+    {ok, StockTransferIn} = ?w_report:stastic(stock_transfer_in, Merchant, Conditions),
+    {ok, StockTransferOut} = ?w_report:stastic(stock_transfer_out, Merchant, Conditions),
+
+    {ok, StockFix} = ?w_report:stastic(stock_fix, Merchant, Conditions),
+
+    {SellTotal, SellBalance, SellCash, SellCard, SellVeri} = sell(info, SaleInfo),
+    {SellCost} = sell(cost, SaleProfit),
+
+    %% {CurrentStockTotal, CurrentStockCost} = stock(current, StockR), 
+    {StockInTotal, StockInCost} = stock(in, StockIn),
+    {StockOutTotal, StockOutCost} = stock(out, StockOut),
+
+    {StockTransferInTotal, StockTransferInCost}  = stock(t_in, StockTransferIn),
+    {StockTransferOutTotal, StockTransferOutCost} = stock(t_out, StockTransferOut), 
+    {StockFixTotal, StockFixCost} = stock(fix, StockFix),
+
+    case SellTotal == 0
+	andalso StockInTotal == 0
+	andalso StockOutTotal == 0
+	andalso StockTransferInTotal == 0
+	andalso StockTransferOutTotal == 0
+	andalso StockFixTotal == 0 of
+	true ->
+	    syn_stastic_per_shop(Merchant, Shop, StartDay + 1, EndDay);
+	false ->
+	    Sql="select id, merchant, shop, day from w_daily_report"
+		" where merchant=" ++ ?to_s(Merchant)
+		++ " and shop=" ++ ?to_s(Shop)
+		++ " and day=\'" ++ ?to_s(BeginOfDay) ++ "\'",
+
+	    case ?sql_utils:execute(s_read, Sql) of
+		{ok, []} ->
+		    Sql1 = 
+			"insert into w_daily_report(merchant, shop"
+			", sell, sell_cost, balance, cash, card, veri"
+			", stock, stock_cost"
+			", stock_in, stock_out, stock_in_cost, stock_out_cost"
+			", t_stock_in, t_stock_out, t_stock_in_cost, t_stock_out_cost"
+			", stock_fix, stock_fix_cost"
+			", day, entry_date) values("
+			++ ?to_s(Merchant) ++ ","
+			++ ?to_s(Shop) ++ ","
+
+			++ ?to_s(SellTotal) ++ ","
+			++ ?to_s(SellCost) ++ ","
+			++ ?to_s(SellBalance) ++ ","
+			++ ?to_s(SellCash) ++ ","
+			++ ?to_s(SellCard) ++ ","
+			++ ?to_s(SellVeri) ++ ","
+
+			++ ?to_s(0) ++ ","
+			++ ?to_s(0) ++ ","
+
+			++ ?to_s(StockInTotal) ++ ","
+			++ ?to_s(StockOutTotal) ++ ","
+			++ ?to_s(StockInCost) ++ ","
+			++ ?to_s(StockOutCost) ++ ","
+
+			++ ?to_s(StockTransferInTotal) ++ ","
+			++ ?to_s(StockTransferOutTotal) ++ ","
+			++ ?to_s(StockTransferInCost) ++ ","
+			++ ?to_s(StockTransferOutCost) ++ ","
+
+			++ ?to_s(StockFixTotal) ++ ","
+			++ ?to_s(StockFixCost) ++ ","
+
+			++ "\'" ++ ?to_s(BeginOfDay) ++ "\',"
+			++ "\'" ++ ?utils:current_time(format_localtime) ++ "\')",
+		    {ok, _} = ?sql_utils:execute(insert, Sql1), 
+		    syn_stastic_per_shop(Merchant, Shop, StartDay + 1, EndDay);
+		{ok, R} ->
+		    Updates = ?utils:v(sell, integer, SellTotal)
+			++ ?utils:v(sell_cost, integer, SellCost)
+			++ ?utils:v(balance, float, SellBalance)
+			++ ?utils:v(cash, float, SellCash)
+			++ ?utils:v(card, float, SellCard)
+			++ ?utils:v(veri, float, SellVeri)
+			
+			++ ?utils:v(stock_in, integer, StockInTotal)
+			++ ?utils:v(stock_out, integer, StockOutTotal)
+			++ ?utils:v(stock_in_cost, float, StockInCost)
+			++ ?utils:v(stock_out_cost, float, StockOutCost)
+
+			++ ?utils:v(t_stock_in, integer, StockTransferInTotal)
+			++ ?utils:v(t_stock_out, integer, StockTransferOutTotal)
+			++ ?utils:v(t_stock_in_cost, float, StockTransferInCost)
+			++ ?utils:v(t_stock_out_cost, float, StockTransferOutCost)
+
+			++ ?utils:v(stock_fix, integer, StockFixTotal)
+			++ ?utils:v(stock_fix_cost, float, StockFixCost),
+			
+		    Sql1 = "update w_daily_report set "
+			++ ?utils:to_sqls(proplists, comma, Updates)
+			++ " where id=" ++ ?to_s(?v(<<"id">>, R))
+			++ " and merchant=" ++ ?to_s(Merchant),
+		    {ok, _} = ?sql_utils:execute(write, Sql1, ?v(<<"id">>, R)),
+		    syn_stastic_per_shop(Merchant, Shop, StartDay + 1, EndDay)
+	    end
+	    
+    end;
+syn_stastic_per_shop(_Merchant, _Shop, StartDay, EndDay) when StartDay >= EndDay -> 
+    ok.
 
 task(stastic_per_shop, Datetime, Merchants) when is_list(Merchants)->
     {YestodayStart, YestodayEnd} = yestoday(Datetime),
@@ -166,7 +312,7 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [S|Shops], Sqls) ->
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, M, ShopId), 
     IsShopDailyReport = ?v(<<"d_report">>, BaseSetting, 1),
     
-    case IsShopDailyReport of
+    case ?to_i(IsShopDailyReport) of
 	1 -> 
 	    Conditions = [{<<"shop">>, ShopId},
 			  {<<"start_time">>, ?to_b(StartTime)},
@@ -274,6 +420,20 @@ yestoday(Datetime) ->
 			[Year, Month, Day, Hour, Minute, Second])),
     {Start, End}.
 
+
+-spec day/2::(atom(), calendar:date()) -> tuple(). 
+day(begin_to_end, {Year, Month, Day}) ->
+    {Hour, Minute, Second} = calendar:seconds_to_time(86399),
+    Start = 
+	lists:flatten(
+	  io_lib:format("~4..0w-~2..0w-~2..0w", [Year, Month, Day])),
+
+    End = 
+	lists:flatten(
+	  io_lib:format("~4..0w-~2..0w-~2..0w ~2..0w:~2..0w:~2..0w",
+			[Year, Month, Day, Hour, Minute, Second])),
+    {Start, End}.
+    
 
 
 sell(info, [])->

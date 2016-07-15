@@ -111,12 +111,13 @@ daily(detail, Merchant, Conditions) ->
 
 	" from w_daily_report"
 	" where merchant=" ++ ?to_s(Merchant)
-	++ ?sql_utils:condition(proplists, NewConditions) 
-	++ case ?sql_utils:condition(time_no_prfix, StartTime, EndTime) of
-	       [] -> [];
-	       TimeSql ->
-		   " and " ++ TimeSql
-	   end.
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ " and " ++ day_condition(StartTime, EndTime).
+	%% ++ case ?sql_utils:condition(time_no_prfix, StartTime, EndTime) of
+	%%        [] -> [];
+	%%        TimeSql ->
+	%% 	   " and " ++ TimeSql
+	%%    end.
 
 shift(detail, Merchant, Conditions) ->
     ?DEBUG("shift_detail with merchant ~p, conditions ~p", [Merchant, Conditions]),
@@ -169,3 +170,8 @@ shift(shift_with_pagination,
     shift(detail, Merchant, Conditions)
 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage).
 
+day_condition(StartDatetime, EndDatetime) ->
+    <<StartDay:10/binary, _/binary>> = ?to_b(StartDatetime),
+    <<EndDay:10/binary, _/binary>> = ?to_b(EndDatetime),
+    ?sql_utils:time_condition(StartDay, day, ge)
+	++ " and " ++ ?sql_utils:time_condition(EndDay, day, less).

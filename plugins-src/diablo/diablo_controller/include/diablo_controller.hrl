@@ -247,6 +247,7 @@
 -define(stock_stastic,   ?right_w_report + 2).
 -define(h_daily_wreport, ?right_w_report + 3).
 -define(switch_shift_report, ?right_w_report + 4).
+-define(syn_daily_report, ?right_w_report + 5).
 %% -define(weekly_wreport,  ?right_w_report + 2).
 %% -define(monthly_wreport, ?right_w_report + 3).
 %% -define(quarter_wreport, ?right_w_report + 4).
@@ -363,6 +364,10 @@
 %% profile
 -define(w_user_profile, diablo_wuser_profile).
 
+%% report
+-define(gen_report, diablo_auto_gen_report).
+
+%% cron
 -define(cron_agent, diablo_cron_agent).
 -define(cron_control, diablo_cron_control).
 -define(cron_job_regist, diablo_cron_job_register).
