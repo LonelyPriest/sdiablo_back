@@ -10,7 +10,7 @@ KNIFE_HOME=${SCRIPT_DIR}/..
 MNESIA_BASE=${KNIFE_HOME}/mnesia
 
 HOSTNAME=`env hostname`
-NODENAME=controller-knife@${HOSTNAME%%.*}
+NODENAME=controller-bxhui2@${HOSTNAME%%.*}
 
 MNESIA_DIR=${MNESIA_BASE}/${NODENAME}
 
@@ -23,6 +23,11 @@ cp -r ${MNESIA_DIR} ${BACKUP_DIR}/mnesia
 ## image
 IMAGE_DIR=${KNIFE_HOME}/plugins/diablo_controller-1.0.0/hdoc/image
 cp -r ${IMAGE_DIR} ${BACKUP_DIR}/image
+
+## unique.sn
+${SCRIPT_DIR}/knifectl controller dump
+cp ${KNIFE_HOME}/unique.sn ${BACKUP_DIR}
+
 
 ## db
 db=$1
