@@ -135,6 +135,14 @@
 	    </select>
 	  </span>
 
+	  <span x-ng-switch-when="stock">
+	    <select type="text" class="form-control"
+		    x-ng-model="f.value"
+	  	    x-ng-options="s as s.name for s in prompt.stock"
+		    x-ng-init="f.value=f.value ? f.value : prompt.stock[0]">
+	    </select>
+	  </span>
+
 	  <span x-ng-switch-when="supplier">
 	    <input type="text" class="form-control" placeholder="请输入供应商"
 		   x-ng-model="f.value"

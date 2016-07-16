@@ -168,41 +168,46 @@
 		    </td>
 		    <td class="{{css(r.state, r.type)}}" >{{r.entry_date}}</td>
 		    <td> 
-                      <button class="btn diablo-button btn-primary"
-			      x-ng-disabled="r.type===9"
+                      <button x-ng-if="r.type!==9" class="btn diablo-button btn-primary"
 			      x-ng-click="trans_detail(r)">明细
 			<i class="glyphicon glyphicon-map-marker"></i>
 		      </button>
 		      
-		      <button x-ng-if="shop_right.update_w_stock"
+		      <button x-ng-if="shop_right.update_w_stock
+				       && r.type!==9
+				       && r.state===0"
 			      class="btn diablo-button yellow"
-		      	      x-ng-disabled="r.state!==0 || r.type===9"
 		      	      x-ng-click="update_detail(r)">修改
 		      	<i class="glyphicon glyphicon-edit"></i>
 		      </button>
 		      
-		      <button x-ng-if="shop_right.check_w_stock"
+		      <button x-ng-if="shop_right.check_w_stock
+				       && r.type!==9
+				       && r.state===0"
 			      class="btn diablo-button red"
-			      x-ng-disabled="r.state===1 || r.type===9 || r.state===7"
 		      	      x-ng-click="check_detail(r)">审核
 		      	<i class="glyphicon glyphicon-check"></i>
 		      </button>
 
-		      <button x-ng-if="shop_right.check_w_stock"
+		      <button x-ng-if="shop_right.check_w_stock
+				       && r.type!==9
+				       && r.state==1"
 			      class="btn diablo-button purple-plum"
-			      x-ng-disabled="r.state===0 || r.type===9 || r.state===7"
 		      	      x-ng-click="uncheck_detail(r)">反审
 		      	<i class="glyphicon glyphicon-remove-circle"></i>
 		      </button>
 
-		      <button x-ng-if="shop_right.delete_w_stock"
+		      <button x-ng-if="shop_right.delete_w_stock
+				       && r.type!==9
+				       && r.state===0"
 			      class="btn diablo-button blue-hoki"
-			      x-ng-disabled="r.state!==0 || r.type===9"
 		      	      x-ng-click="abandon_detail(r)">废弃
 		      	<i class="glyphicon glyphicon-ban-circle"></i>
 		      </button>
 		      
-		      <button x-ng-if="shop_right.delete_w_stock"
+		      <button x-ng-if="shop_right.delete_w_stock
+				       && r.type !==9
+				       && r.state === 0"
 			      class="btn diablo-button red"
 			      x-ng-disabled="r.state===1 || r.type===9"
 		      	      x-ng-click="delete_detail(r)">删除

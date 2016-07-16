@@ -399,6 +399,7 @@
 	  employee_id = <<>>       :: binary(),
 	  shop_id     = -1         :: integer(),
 	  mtype       = -1         :: integer(),
+	  sdays       = 0          :: integer(),
 	  login_time  = undefined  :: string()   
 	 }).
 

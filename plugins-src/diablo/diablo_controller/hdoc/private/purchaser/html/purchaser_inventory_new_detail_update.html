@@ -224,9 +224,9 @@
 		  </div>
 		</form>
 		
-		<span class="input-group-addon">
+		<span x-ng-if="stock_right.show_balance" class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>应付</span>
-		<input class="form-control" type="text" readonly
+		<input x-ng-if="stock_right.show_balance" class="form-control" type="text" readonly
 		       x-ng-model="select.should_pay"></input>
 
 		<span class="input-group-addon">

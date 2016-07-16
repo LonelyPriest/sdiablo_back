@@ -46,6 +46,7 @@
                     <!-- <th>登录厂商</th> -->
                     <th>登录开始时间</th>
                     <th>登录结束时间</th>
+		    <th>查看销售天数</th>
                     <th>权限说明</th>
                     <th>创建时间</th>
                     <th>操作</th>
@@ -92,6 +93,14 @@
                       <div x-ng-switch on="account.etime">
                         <span x-ng-switch-when=0>无限制</span>
                         <span x-ng-switch-default>{{account.etime}}</span>
+                      </div>
+                    </td>
+
+		    <td class="{{css(account.type)}}">
+		      <div x-ng-if="account.type===1">无限制</div>
+                      <div x-ng-if="account.type!==1" x-ng-switch on="account.sdays">
+                        <span x-ng-switch-when=0>当天</span>
+                        <span x-ng-switch-default>{{account.sdays}}</span>
                       </div>
                     </td>
 		    
@@ -256,6 +265,16 @@
             </select>
           </div>
         </div>
+
+	<div x-ng-if="account.type===2" class="form-group">
+	  <label class="col-md-3 control-label">销售查看天数</label>
+	  <div class="col-md-6">
+	    <input class="form-control"
+		   type="number" step="1"
+		   placeholder="请输入销售查看天数，默认无限制"
+		   data-ng-model="account.sdays"/>
+	  </div>
+	</div>
 
 	<div x-ng-if="account.type===2" class="form-group">
 	  <label class="col-md-3 control-label">权限</label>

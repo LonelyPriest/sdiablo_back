@@ -193,6 +193,7 @@ create table users
     employee       VARCHAR(8) not null,
     stime          INTEGER default 0,
     etime          INTEGER default 0,
+    sdays          INTEGER default 0,
     
     max_create     INTEGER default -1, -- max users can be created of the user
     create_date    DATETIME,
@@ -990,6 +991,7 @@ create table w_daily_report(
     card            DECIMAL(10, 2) not null default 0,
     veri            DECIMAL(10, 2) not null default 0,
 
+    stockc          INTEGER not null default -1,
     stock           INTEGER not null default -1,
     stock_cost      DECIMAL(10, 2) not null default 0,
     

@@ -66,7 +66,7 @@ handle_call({login, User, Passwd}, _From, State) ->
 			", a.retailer as retailer_id"
 			", a.employee as employee_id"
 			", a.shop as shop_id"
-                        ", a.stime, a.etime"
+                        ", a.stime, a.etime, a.sdays"
 			
 			", b.type as mtype from users a, merchants b"
 			

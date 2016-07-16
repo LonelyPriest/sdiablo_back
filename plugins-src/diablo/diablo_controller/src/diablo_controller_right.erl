@@ -500,6 +500,7 @@ handle_call({update_account, Attrs}, _From, State) ->
     LoginRetailer = ?v(<<"retailer">>, Attrs),
     StartTime     = ?v(<<"stime">>, Attrs),
     EndTime       = ?v(<<"etime">>, Attrs),
+    SDays         = ?v(<<"sdays">>, Attrs),
     
     Sql1 = case ?v(<<"role">>, Attrs) of
               undefined -> [];
@@ -513,7 +514,8 @@ handle_call({update_account, Attrs}, _From, State) ->
         ++ ?utils:v(employee, string, LoginEmployee)
         ++ ?utils:v(retailer, integer, LoginRetailer)
         ++ ?utils:v(stime, integer, StartTime)
-        ++ ?utils:v(etime, integer, EndTime),
+        ++ ?utils:v(etime, integer, EndTime)
+	++ ?utils:v(sdays, integer, SDays),
 
     Sql2 =
         case Updates of
@@ -525,7 +527,7 @@ handle_call({update_account, Attrs}, _From, State) ->
         end,
 
     case Sql1 ++ Sql2 of
-	[] -> {reply, {o, Account}, State};
+	[] -> {reply, {ok, Account}, State};
 	AllSqls ->
 	    Reply = case erlang:length(AllSqls) of
 			1 ->  ?sql_utils:execute(write, AllSqls, Account);
@@ -659,7 +661,7 @@ account(Conditions) ->
 	", a.retailer as retailer_id"
 	", a.employee as employee_id"
 	", a.shop as shop_id"
-	", a.stime, a.etime, a.max_create, a.create_date"
+	", a.stime, a.etime, a.sdays, a.max_create, a.create_date"
 	
 	", tc.user_id, tc.role_id, tc.role_name"
 	

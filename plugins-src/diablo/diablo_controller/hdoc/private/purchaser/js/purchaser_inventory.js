@@ -1463,7 +1463,9 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 	show_orgprice: stockUtils.authen_rainbow(user.type, user.right, 'show_orgprice'), 
 	export_stock:  rightAuthen.authen_master(user.type),
 	set_promotion: rightAuthen.authen_master(user.type),
-	update_batch:  rightAuthen.authen_master(user.type), 
+	update_batch:  rightAuthen.authen_master(user.type),
+	update_good:   rightAuthen.authen(
+	    user.type, rightAuthen.good_action()["update_w_good"], user.right),
     };
     
     $scope.setting = {alarm: false};
@@ -1482,9 +1484,9 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
      */ 
 
     // initial
-    $scope.filters = [];
-
-    diabloFilter.reset_field();
+    var stocks =  [{name:">0", id:0}, {name:"=0", id:1}];
+    $scope.filters = []; 
+    diabloFilter.reset_field(); 
     diabloFilter.add_field("style_number", $scope.match_style_number);
     diabloFilter.add_field("brand", filterBrand);
     diabloFilter.add_field("type", filterType);
@@ -1494,6 +1496,7 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
     diabloFilter.add_field("discount", []);
     diabloFilter.add_field("shop", $scope.shops);
     diabloFilter.add_field("firm", filterFirm);
+    diabloFilter.add_field("stock", stocks);
 
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();

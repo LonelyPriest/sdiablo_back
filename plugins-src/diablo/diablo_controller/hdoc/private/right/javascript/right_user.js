@@ -692,6 +692,7 @@ rightUserApp.controller(
 			
 			stime:       account.stime,
 			etime:       account.etime,
+			sdays:       account.sdays,
 			role_name:   account.role_name,
 			create_date: account.create_date
                     }
@@ -797,7 +798,8 @@ rightUserApp.controller(
 			    && new_account.employee_id === account.employee_id
 			    && new_account.shop_id === account.shop_id
                             && new_account.stime  === account.stime
-                            && new_account.etime === account.etime){
+                            && new_account.etime === account.etime
+			    && new_account.sdays === account.sdays){
                             diabloUtilsService.response(
 			        false, "用户帐户修改",
 				"用户帐户修改失败：" + rightService.error[1599]);
@@ -817,7 +819,8 @@ rightUserApp.controller(
 		    var update = {
 			id: account.id,
 			stime: rightService.get_modified(new_account.stime, account.stime),
-			etime: rightService.get_modified(new_account.etime, account.etime) 
+			etime: rightService.get_modified(new_account.etime, account.etime),
+			sdays: rightService.get_modified(new_account.sdays, account.sdays),
 		    };
 
 		    update.role_id = function(){

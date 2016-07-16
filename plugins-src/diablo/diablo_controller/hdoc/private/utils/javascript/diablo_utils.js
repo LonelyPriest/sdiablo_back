@@ -55,7 +55,7 @@ diabloUtils.directive('saleShortcut', function(){
 	
 	link:function (scope, element, attrs) {
             element.bind("keydown", function (event) {
-		console.log(event.keyCode);
+		// console.log(event.keyCode);
 		if(event.which === 112
 		   || event.which === 113
 		   || event.which === 114

@@ -185,7 +185,8 @@
 			    <i class="glyphicon glyphicon-map-marker"></i> 
 			  </button>
 			  
-			  <button class="btn diablo-button yellow"
+			  <button x-ng-if="stock_right.update_good"
+				  class="btn diablo-button yellow"
 				  x-ng-click="update_stock(inv)">修改
 			    <i class="glyphicon glyphicon-edit"></i> 
 			  </button>

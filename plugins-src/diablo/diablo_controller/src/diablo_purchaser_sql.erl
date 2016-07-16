@@ -318,8 +318,11 @@ inventory(abstract, Merchant, Shop, [{S1, B1}|T] = _Conditions) ->
 	" and a.shop=b.shop";
 
 inventory(group_detail, Merchant, Conditions, PageFun) ->
-    {StartTime, EndTime, NewConditions} =
-	?sql_utils:cut(fields_with_prifix, Conditions),
+    ?DEBUG("group_detail:merchant ~p, Conditions ~p", [Merchant, Conditions]),
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions), 
+    RealyConditions = realy_conditions(Merchant, NewConditions),
+    %% ?DEBUG("RealyConditions ~p", [RealyConditions]),
+    ExtraCondtion = ?w_good_sql:sort_condition(stock, NewConditions, <<"a.">>),
     
     "select "
 	"a.id"
@@ -355,13 +358,11 @@ inventory(group_detail, Merchant, Conditions, PageFun) ->
 	" left join shops b on a.shop=b.id"
 
 	" where "
-	++ ?sql_utils:condition(proplists_suffix, NewConditions)
-	++ "a.merchant=" ++ ?to_s(Merchant)
-	++ case ?sql_utils:condition(time_with_prfix, StartTime, EndTime) of
-	       [] -> [];
-	       TimeSql ->  " and " ++ TimeSql
-	   end
-	++ " and a.deleted=" ++ ?to_s(?NO) ++ PageFun();
+	++ "a.merchant=" ++ ?to_s(Merchant) 
+	++ ?sql_utils:condition(
+	      proplists, ?utils:correct_condition(<<"a.">>, RealyConditions, []))
+	++ ExtraCondtion
+	++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime) ++  PageFun();
 
 inventory(set_promotion, Merchant, Promotions, Conditions) ->
     {StartTime, EndTime, NewConditions} =
@@ -790,7 +791,7 @@ inventory(new_rsn_group_with_pagination, Merchant, Conditions, CurrentPage, Item
 inventory_match(Merchant, StyleNumber, Shop) ->
     P = prompt_num(Merchant),
     "select style_number from w_inventory"
-	++ " where style_number like \'" ++ ?to_s(StyleNumber) ++ "%\'"
+	++ " where style_number like \'%" ++ ?to_s(StyleNumber) ++ "%\'"
 	++ ?sql_utils:condition(proplists, [{<<"shop">>, Shop}])
 	++ " and merchant=" ++ ?to_s(Merchant)
 	++ " and deleted=" ++ ?to_s(?NO)
@@ -1588,7 +1589,17 @@ sort_condition(w_inventory_new, Merchant, Conditions) ->
 	++ case ?sql_utils:condition(time_with_prfix, StartTime, EndTime) of
 	       [] -> [];
 	       TimeSql -> " and " ++ TimeSql
-	   end.
+	   end;
+
+sort_condition(stock, Conditions, Prefix) ->
+    case ?v(<<"stock">>, Conditions, []) of
+	[] -> [];
+	0 -> " and " ++ ?to_s(Prefix) ++ "amount>0";
+	1 -> " and " ++ ?to_s(Prefix) ++ "amount=0"
+    end.
+
+sort_condition(stock, Conditions) ->
+    sort_condition(stock, Conditions, []).
 
 filter_condition(inventory_new, [], Acc1, Acc2) ->
     {lists:reverse(Acc1), lists:reverse(Acc2)};
@@ -1625,3 +1636,63 @@ prompt_num(Merchant) ->
 stock(ediscount, _OrgPrice, TagPrice) when TagPrice == 0 -> 0; 
 stock(ediscount, OrgPrice, TagPrice) ->
     ?to_f(float_to_binary(OrgPrice / TagPrice, [{decimals, 3}])) * 100.
+
+
+realy_conditions(Merchant, Conditions) ->
+    lists:foldr(
+      fun({<<"shop">>, Shop}, Acc) -> 
+	      [{<<"shop">>, realy_shop(true, Merchant, Shop)}|Acc];
+	 ({<<"stock">>, _}, Acc) ->
+	      Acc;
+	 (C, Acc) ->
+	      [C|Acc]
+      end, [], Conditions).
+
+
+realy_shop(Merchant, ShopIds) when is_list(ShopIds) ->
+    realy_shop(false, Merchant, ShopIds);
+realy_shop(Merchant, ShopId) ->
+    realy_shop(false, Merchant, ShopId).
+
+realy_shop(UseBad, Merchant, ShopIds) when is_list(ShopIds) ->
+    %% get all shops 
+    case ?w_user_profile:get(shop, Merchant) of
+	{ok, []} -> ShopIds;
+	{ok, AllShops} ->
+	    AllIds = 
+		lists:foldr(
+		  fun({Shop}, Acc) ->
+			  ShopId = ?v(<<"id">>, Shop),
+			  case lists:member(ShopId, ShopIds) of
+			      true ->
+				  case ?v(<<"repo">>, Shop) of
+				      -1 ->
+					  [ShopId|Acc];
+				      Repo ->
+					  case ?v(<<"type">>, Shop)
+					      =:= ?BAD_REPERTORY
+					      andalso UseBad of
+					      true  -> [ShopId|Acc];
+					      false -> [Repo|Acc]
+					  end
+				  end;
+			      false -> Acc
+			  end
+		  end, [], AllShops),
+	    lists:usort(AllIds)
+    end;
+
+realy_shop(UseBad, Merchant, ShopId) ->
+    case ?w_user_profile:get(shop, Merchant, ShopId) of
+	{ok, []} -> ShopId;
+	{ok, [{ShopInfo}]} -> 
+	    case ?v(<<"repo">>, ShopInfo) of
+		-1 -> ShopId;
+		RepoId ->
+		    case ?v(<<"type">>, ShopInfo) =:= ?BAD_REPERTORY
+			andalso UseBad of
+			true -> ?v(<<"id">>, ShopInfo);
+			_ -> RepoId
+		    end
+	    end
+    end.

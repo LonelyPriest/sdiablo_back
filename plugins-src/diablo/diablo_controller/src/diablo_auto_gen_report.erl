@@ -150,15 +150,22 @@ code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
     
 syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) when StartDay < EndDay ->
-    %% {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, Shop),
+    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, Shop),
     Date = calendar:gregorian_days_to_date(StartDay),
     {BeginOfDay, EndOfDay} = day(begin_to_end, Date),
-
+    
     ?DEBUG("syn_stastic_per_shop: beginOfDay ~p, EndOfDay ~p", [BeginOfDay, EndOfDay]),
 
     Conditions = [{<<"shop">>, Shop},
 		  {<<"start_time">>, ?to_b(BeginOfDay)},
 		  {<<"end_time">>, ?to_b(EndOfDay)}],
+
+    {ok, StockCalcTotal, StockCalcCost} =
+	get_stock(calc, Merchant,
+		  [{<<"shop">>, Shop},
+		   {<<"start_time">>, ?v(<<"qtime_start">>, BaseSetting)},
+		   {<<"end_time">>, ?to_b(EndOfDay)}
+		  ]),
 
     {ok, SaleInfo} = ?w_report:stastic(stock_sale, Merchant, Conditions),
     {ok, SaleProfit} = ?w_report:stastic(stock_profit, Merchant, Conditions),
@@ -201,7 +208,7 @@ syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) when StartDay < EndDay ->
 		    Sql1 = 
 			"insert into w_daily_report(merchant, shop"
 			", sell, sell_cost, balance, cash, card, veri"
-			", stock, stock_cost"
+			", stock, stockc, stock_cost"
 			", stock_in, stock_out, stock_in_cost, stock_out_cost"
 			", t_stock_in, t_stock_out, t_stock_in_cost, t_stock_out_cost"
 			", stock_fix, stock_fix_cost"
@@ -217,7 +224,8 @@ syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) when StartDay < EndDay ->
 			++ ?to_s(SellVeri) ++ ","
 
 			++ ?to_s(0) ++ ","
-			++ ?to_s(0) ++ ","
+			++ ?to_s(StockCalcTotal) ++ ","
+			++ ?to_s(StockCalcCost) ++ ","
 
 			++ ?to_s(StockInTotal) ++ ","
 			++ ?to_s(StockOutTotal) ++ ","
@@ -243,6 +251,9 @@ syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) when StartDay < EndDay ->
 			++ ?utils:v(cash, float, SellCash)
 			++ ?utils:v(card, float, SellCard)
 			++ ?utils:v(veri, float, SellVeri)
+
+			++ ?utils:v(stockc, integer, StockCalcTotal)
+			++ ?utils:v(stock_cost, float, StockCalcCost)
 			
 			++ ?utils:v(stock_in, integer, StockInTotal)
 			++ ?utils:v(stock_out, integer, StockOutTotal)
@@ -329,6 +340,13 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [S|Shops], Sqls) ->
 
 	    {ok, StockFix} = ?w_report:stastic(stock_fix, M, Conditions),
 
+	    {ok, StockCalcTotal, StockCalcCost} =
+		get_stock(calc, M,
+			  [{<<"shop">>, ShopId},
+			   {<<"start_time">>, ?v(<<"qtime_start">>, BaseSetting)},
+			   {<<"end_time">>, ?to_b(EndTime)}
+			  ]),
+	    
 	    {ok, StockR} = ?w_report:stastic(
 			      stock_real, M,
 			      [{<<"shop">>, ShopId},
@@ -338,7 +356,7 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [S|Shops], Sqls) ->
 	    {SellTotal, SellBalance, SellCash, SellCard, SellVeri} = sell(info, SaleInfo),
 	    {SellCost} = sell(cost, SaleProfit),
 
-	    {CurrentStockTotal, CurrentStockCost} = stock(current, StockR), 
+	    {CurrentStockTotal, _CurrentStockCost} = stock(current, StockR), 
 	    {StockInTotal, StockInCost} = stock(in, StockIn),
 	    {StockOutTotal, StockOutCost} = stock(out, StockOut),
 
@@ -358,7 +376,7 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [S|Shops], Sqls) ->
 		    Sql = 
 			"insert into w_daily_report(merchant, shop"
 			", sell, sell_cost, balance, cash, card, veri"
-			", stock, stock_cost"
+			", stock, stockc, stock_cost"
 			", stock_in, stock_out, stock_in_cost, stock_out_cost"
 			", t_stock_in, t_stock_out, t_stock_in_cost, t_stock_out_cost"
 			", stock_fix, stock_fix_cost"
@@ -374,7 +392,9 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [S|Shops], Sqls) ->
 			++ ?to_s(SellVeri) ++ ","
 
 			++ ?to_s(CurrentStockTotal) ++ ","
-			++ ?to_s(CurrentStockCost) ++ ","
+			++ ?to_s(StockCalcTotal) ++ ","
+			++ ?to_s(StockCalcCost) ++ ","
+		    %% ++ ?to_s(CurrentStockCost) ++ ","
 
 			++ ?to_s(StockInTotal) ++ ","
 			++ ?to_s(StockOutTotal) ++ ","
@@ -396,7 +416,36 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [S|Shops], Sqls) ->
 	0 ->
 	    gen_shop_report({StartTime, EndTime, GenDatetime}, M, Shops, Sqls)
     end.
-    
+
+
+get_stock(calc, Merchant, Conditions) ->
+    {ok, SaleInfo} = ?w_report:stastic(stock_sale, Merchant, Conditions),
+    {ok, SaleProfit} = ?w_report:stastic(stock_profit, Merchant, Conditions),
+    {ok, StockIn}  = ?w_report:stastic(stock_in, Merchant, Conditions),
+    {ok, StockOut} = ?w_report:stastic(stock_out, Merchant, Conditions),
+    {ok, StockTransferIn} = ?w_report:stastic(stock_transfer_in, Merchant, Conditions),
+    {ok, StockTransferOut} = ?w_report:stastic(stock_transfer_out, Merchant, Conditions),
+    {ok, StockFix} = ?w_report:stastic(stock_fix, Merchant, Conditions),
+
+    {SellTotal, _SellBalance, _SellCash, _SellCard, _SellVeri} = sell(info, SaleInfo),
+    {SellCost} = sell(cost, SaleProfit),
+
+    {StockInTotal, StockInCost} = stock(in, StockIn),
+    {StockOutTotal, StockOutCost} = stock(out, StockOut),
+
+    {StockTransferInTotal, StockTransferInCost}  = stock(t_in, StockTransferIn),
+    {StockTransferOutTotal, StockTransferOutCost} = stock(t_out, StockTransferOut), 
+    {StockFixTotal, StockFixCost} = stock(fix, StockFix),
+
+    StockCalcTotal = StockInTotal + StockOutTotal - SellTotal
+	+ StockTransferInTotal - StockTransferOutTotal
+	+ StockFixTotal,
+
+    StockCalcCost = StockInCost + StockOutCost - SellCost
+	+ StockTransferInCost - StockTransferOutCost
+	+ StockFixCost,
+
+    {ok, StockCalcTotal, StockCalcCost}.
 
 format_datetime({{Year, Month, Day}, {Hour, Minute, Second}}) ->
     lists:flatten(

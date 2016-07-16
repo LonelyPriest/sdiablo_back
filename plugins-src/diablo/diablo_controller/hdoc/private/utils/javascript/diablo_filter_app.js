@@ -84,6 +84,9 @@ function filterProvider(){
 		} else if(name === 'shop'){
 		    _filter.fields.push({name:"shop", chinese:"店铺"});
 		    _prompt.shop = promptValues;
+		} else if(name === 'stock'){
+		    _filter.fields.push({name:"stock", chinese:"库存"});
+		    _prompt.stock = promptValues;
 		} else if(name === 'employee'){
 		    _filter.fields.push({name:"employ", chinese:"店员"});
 		    _prompt.employee = promptValues;

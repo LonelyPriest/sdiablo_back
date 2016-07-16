@@ -134,7 +134,7 @@ var wsaleUtils = function(){
 		promotions.unshift(format); 
 	    }
 	    
-	    console.log(promotions);
+	    // console.log(promotions);
 	    return promotions;
 	},
 
@@ -232,6 +232,11 @@ var wsaleUtils = function(){
 		"check_sale", shop, base, parseInt, diablo_yes);
 	},
 
+	negative_sale: function(shop, base){
+	    return diablo_base_setting(
+		"m_sale", shop, base, parseInt, diablo_yes);
+	},
+
 	show_sale_day: function(shop, base){
 	    // default current day
 	    return diablo_base_setting("d_sale", shop, base, parseInt, 0);
@@ -273,7 +278,7 @@ var wsaleUtils = function(){
 	    
 	    if (angular.isUndefined(select)) select = filterEmployees[0];
 
-	    console.log(select);
+	    // console.log(select);
 	    return {login:select, filter:filterEmployees};
 	},
 
@@ -543,7 +548,7 @@ var wsaleCalc = function(){
 		// console.log(one.calc); 
 	    }
 	    
-	    console.log(pmoneys);
+	    // console.log(pmoneys);
 	    
 	    // calculate rmoney, all the promotion change to discount
 	    for (var i=1, l=inventories.length; i<l; i++){

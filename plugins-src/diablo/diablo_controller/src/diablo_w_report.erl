@@ -154,7 +154,7 @@ handle_call({total, by_good, Merchant, Conditions}, _From, State) ->
 handle_call({total_of_daily, Merchant, Conditions}, _From, State) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
 
-    Sql = "select count(1) as total"
+    Sql = "select count(*) as total"
 	", sum(sell) as sell"
 	", sum(sell_cost) as sellCost"
 	", sum(balance) as balance"
@@ -201,7 +201,7 @@ handle_call({detail_of_daily, Merchant, CurrentPage, ItemsPerPage, Conditions},
 handle_call({total_of_shift, Merchant, Conditions}, _From, State) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
 
-    Sql = "select count(1) as total"
+    Sql = "select count(*) as total"
 	", sum(total) as sell"
 	", sum(balance) as balance"
 	", sum(cash) as cash"
@@ -261,7 +261,8 @@ handle_call({by_good, Merchant, CurrentPage, ItemsPerPage, Conditions},
     {reply, Reply, State};
 
 handle_call({stock_sale, Merchant, Conditions}, _From, State)->
-    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
+    ?DEBUG("stock_sale: merchant ~p, Conditions ~p", [Merchant, Conditions]),
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
     
     Sql = "select SUM(total) as total"
 	", SUM(should_pay) as spay"

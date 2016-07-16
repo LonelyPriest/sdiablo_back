@@ -72,6 +72,7 @@ action(Session, Req, {"get_login_user_info"}) ->
     LoginRetailer = ?session:get(login_retailer, Session),
     LoginEmployee = ?session:get(login_employee, Session),
     LoginShop     = ?session:get(login_shop, Session),
+    SDays         = ?session:get(sdays, Session),
     {ok, Catlogs} = ?w_user_profile:get(user_right, Merchant, Session),
     {ok, Shops}   = ?w_user_profile:get(user_shop, Merchant, Session),
 
@@ -82,6 +83,7 @@ action(Session, Req, {"get_login_user_info"}) ->
 		     {<<"login_retailer">>, LoginRetailer},
 		     {<<"login_employee">>, LoginEmployee},
 		     {<<"login_shop">>, LoginShop},
+		     {<<"sdays">>, SDays},
 		     {<<"type">>, ?session:get(type, Session)}]});
     
 action(Session, Req, {"list_login_user_right"}) ->

@@ -341,7 +341,7 @@ handle_call({new_good, Merchant, Attrs}, _Form, State) ->
     Reply = 
 	case ?sql_utils:execute(s_read, Sql) of
 	    {ok, []} ->
-		GetShop = fun() -> realy_shop(Merchant, Shop) end,
+		GetShop = fun() -> ?w_good_sql:realy_shop(Merchant, Shop) end,
 		Sql1 = ?w_good_sql:good_new(Merchant, UseZero, GetShop, Attrs),
 		case erlang:length(Sql1) =:= 1 of
 		    true ->
@@ -741,7 +741,7 @@ handle_call({match_inventory, QType, Merchant, StyleNumber, Shop},
 	   ", shop ~p", [QType, Merchant, StyleNumber, Shop]),
     RealyShop = case QType of
 		    1 -> Shop;
-		    _ -> realy_shop(Merchant, Shop)
+		    _ -> ?w_good_sql:realy_shop(Merchant, Shop)
 		end,
     
     Sql = ?w_good_sql:inventory_match(Merchant, StyleNumber, RealyShop),
@@ -753,8 +753,8 @@ handle_call({match_inventory,
     ?DEBUG("match_inventory with qtype ~p, merchant ~p, styleNumber ~p"
 	   ",shop ~p, firm ~p", [QType, Merchant, StyleNumber, Shop, Firm]),
     RealyShop = case QType of
-		    1 -> realy_shop(true, Merchant, Shop);
-		    _ -> realy_shop(Merchant, Shop)
+		    1 -> ?w_good_sql:realy_shop(true, Merchant, Shop);
+		    _ -> ?w_good_sql:realy_shop(Merchant, Shop)
 		end,
     %% RealyShop = realy_shop(Merchant, Shop),
     Sql = ?w_good_sql:inventory_match(Merchant, StyleNumber, RealyShop, Firm),
@@ -767,8 +767,8 @@ handle_call({match_all_reject_inventory,
 	   ", shop ~p, firm ~p, StartTime ~p",
 	   [QType, Merchant, Shop, Firm, StartTime]),
     RealyShop = case QType of
-		    1 -> realy_shop(true, Merchant, Shop);
-		    _ -> realy_shop(Merchant, Shop)
+		    1 -> ?w_good_sql:realy_shop(true, Merchant, Shop);
+		    _ -> ?w_good_sql:realy_shop(Merchant, Shop)
 		end,
     Sql = ?w_good_sql:inventory_match(
 	     all_reject, Merchant, RealyShop, Firm, StartTime),
@@ -778,7 +778,7 @@ handle_call({match_all_reject_inventory,
 handle_call({match_all_inventory, Merchant, Shop, Conditions}, _From, State) ->
     ?DEBUG("match_all_inventory  with merchant ~p, shop ~p, conditions ~p",
 	   [Merchant, Shop, Conditions]),
-    RealyShop = realy_shop(Merchant, Shop),
+    RealyShop = ?w_good_sql:realy_shop(Merchant, Shop),
     Sql = ?w_good_sql:inventory_match(all_inventory, Merchant, RealyShop, Conditions),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
@@ -913,7 +913,7 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 
     Total      = ?v(<<"total">>, Props),
     
-    RealyShop = realy_shop(Merchant, Shop),
+    RealyShop = ?w_good_sql:realy_shop(Merchant, Shop),
     
     Sql1 = case Inventories of
 	       [] ->
@@ -1389,7 +1389,7 @@ handle_call({fix_inventory, Merchant, Inventories, Props}, _From, State) ->
     
     RSN = rsn(fix, Merchant, Shop, ?inventory_sn:sn(w_inventory_fix_sn, Merchant)),
 
-    RealyShop = realy_shop(Merchant, Shop),
+    RealyShop = ?w_good_sql:realy_shop(Merchant, Shop),
     Sql1 = sql(wfix, RSN, DateTime, Merchant, RealyShop, Inventories),
     
     Sql2 = "insert into w_inventory_fix(rsn"
@@ -1483,8 +1483,8 @@ handle_call({list_inventory, Merchant, Conditions}, _From, State) ->
 	lists:foldr(
 	  fun({<<"shop">>, Shop}, Acc) ->
 		  [{<<"shop">>, case QType of
-				    1 -> realy_shop(true, Merchant, Shop);
-				    _ -> realy_shop(Merchant, Shop)
+				    1 -> ?w_good_sql:realy_shop(true, Merchant, Shop);
+				    _ -> ?w_good_sql:realy_shop(Merchant, Shop)
 				end}|Acc];
 	     ({<<"qtype">>, _}, Acc) ->
 		  Acc;
@@ -1601,7 +1601,7 @@ handle_call({get_amount, Merchant, Shop, StyleNumber, Brand}, _From, State) ->
     ?DEBUG("get_amount, with Merchant ~p, Shop ~p, StyleNumber ~p, Brand ~p",
 	   [Merchant, Shop, StyleNumber, Brand]),
 
-    RealyShop = realy_shop(true, Merchant, Shop),
+    RealyShop = ?w_good_sql:realy_shop(true, Merchant, Shop),
     Sql = "select amount as total from w_inventory"
 	" where style_number=" ++ "\'" ++ ?to_s(StyleNumber) ++ "\'"
 	" and brand=" ++ ?to_s(Brand)
@@ -1615,7 +1615,7 @@ handle_call({get_tagprice, Merchant, Shop, StyleNumber, Brand}, _From, State) ->
     ?DEBUG("get_tagprice, with Merchant ~p, Shop ~p, StyleNumber ~p, Brand ~p",
 	   [Merchant, Shop, StyleNumber, Brand]),
 
-    RealyShop = realy_shop(true, Merchant, Shop),
+    RealyShop = ?w_good_sql:realy_shop(true, Merchant, Shop),
     Sql = "select style_number, brand, org_price, tag_price, discount, ediscount from w_inventory"
 	" where style_number=" ++ "\'" ++ ?to_s(StyleNumber) ++ "\'"
 	" and brand=" ++ ?to_s(Brand)
@@ -1722,12 +1722,20 @@ handle_call({filter_goods, Merchant, CurrentPage, ItemsPerPage, Fields}, _From, 
 
 %% inventory
 handle_call({total_groups, Merchant, Fields}, _From, State) ->
-    CountSql = "count(*) as total"
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Fields),
+    RealyConditions = ?w_good_sql:realy_conditions(Merchant, NewConditions), 
+    ExtraCondtion = ?w_good_sql:sort_condition(stock, NewConditions),
+
+    Sql = "select count(*) as total"
 	", sum(amount) as t_amount"
 	", sum(sell) as t_sell"
-	", sum(amount * org_price) as t_lmoney",
-    Sql = ?sql_utils:count_table(
-	     w_inventory, CountSql, Merchant, realy_conditions(Merchant, Fields)), 
+	", sum(amount * org_price) as t_lmoney"
+	" from w_inventory"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, RealyConditions)
+	++ ExtraCondtion
+	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime),
+    
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State}; 
 
@@ -1736,9 +1744,9 @@ handle_call({filter_groups, {Mode, Sort}, Merchant,
     ?DEBUG("filter_groups_with_and: mode ~p, sort ~p, currentPage ~p, ItemsPerpage ~p"
 	   ", Merchant ~p~nfields ~p",
 	   [Mode, Sort, CurrentPage, ItemsPerPage, Merchant, Fields]),
-    C = realy_conditions(Merchant, Fields),
+    %% C = realy_conditions(Merchant, Fields),
     Sql = ?w_good_sql:inventory({group_detail_with_pagination, Mode, Sort},
-				Merchant, C, CurrentPage, ItemsPerPage), 
+				Merchant, Fields, CurrentPage, ItemsPerPage), 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
@@ -1936,7 +1944,7 @@ handle_call({new_trans_note_export, Merchant, Conditions}, _From, State)->
 
 handle_call({stock_export, Merchant, Conditions}, _From, State) ->
     {StartTime, EndTime, NewConditions} =
-	?sql_utils:cut(fields_with_prifix, realy_conditions(Merchant, Conditions)),
+	?sql_utils:cut(fields_with_prifix, ?w_good_sql:realy_conditions(Merchant, Conditions)),
     Sql =
 	"select a.id, a.style_number, a.brand as brand_id"
 	", a.type as type_id, a.sex, a.season, a.amount"
@@ -2001,7 +2009,7 @@ rsn(fix, Merchant, Shop, Rsn) ->
 
 %% @desc: geratte a sql
 sql(wnew, RSN, Merchant, Shop, Firm, DateTime, Inventories) ->
-    RealyShop = realy_shop(Merchant, Shop),
+    RealyShop = ?w_good_sql:realy_shop(Merchant, Shop),
     lists:foldr(
       fun({struct, Inv}, Acc0)->
 	      Amounts      = lists:reverse(?v(<<"amount">>, Inv)),
@@ -2012,7 +2020,7 @@ sql(wnew, RSN, Merchant, Shop, Firm, DateTime, Inventories) ->
 
 
 sql(wreject, RSN, Merchant, Shop, Firm, DateTime, Inventories) ->
-    RealyShop = realy_shop(true, Merchant, Shop),
+    RealyShop = ?w_good_sql:realy_shop(true, Merchant, Shop),
     lists:foldr(
       fun({struct, Inv}, Acc0)->
 	      Amounts = lists:reverse(?v(<<"amounts">>, Inv)),
@@ -2022,7 +2030,7 @@ sql(wreject, RSN, Merchant, Shop, Firm, DateTime, Inventories) ->
       end, [], Inventories);
 
 sql(transfer_from, RSN, Merchant, Shop, TShop, Datetime, Inventories) ->
-    RealyShop = realy_shop(true, Merchant, Shop),
+    RealyShop = ?w_good_sql:realy_shop(true, Merchant, Shop),
     lists:foldr(
       fun({struct, Inv}, Acc0)->
               %% Amounts = lists:reverse(?v(<<"amounts">>, Inv)),
@@ -2144,63 +2152,6 @@ count_table(w_inventory_new, Merchant, Conditions) ->
 	      Merchant,
 	      Conditions ++ [{<<"state">>, [0,1]}]),
     CountSql.
-
-
-realy_shop(Merchant, ShopIds) when is_list(ShopIds) ->
-    realy_shop(false, Merchant, ShopIds);
-realy_shop(Merchant, ShopId) ->
-    realy_shop(false, Merchant, ShopId).
-
-realy_shop(UseBad, Merchant, ShopIds) when is_list(ShopIds) ->
-    %% get all shops 
-    case ?w_user_profile:get(shop, Merchant) of
-	{ok, []} -> ShopIds;
-	{ok, AllShops} ->
-	    AllIds = 
-		lists:foldr(
-		  fun({Shop}, Acc) ->
-			  ShopId = ?v(<<"id">>, Shop),
-			  case lists:member(ShopId, ShopIds) of
-			      true ->
-				  case ?v(<<"repo">>, Shop) of
-				      -1 ->
-					  [ShopId|Acc];
-				      Repo ->
-					  case ?v(<<"type">>, Shop)
-					      =:= ?BAD_REPERTORY
-					      andalso UseBad of
-					      true  -> [ShopId|Acc];
-					      false -> [Repo|Acc]
-					  end
-				  end;
-			      false -> Acc
-			  end
-		  end, [], AllShops),
-	    lists:usort(AllIds)
-    end;
-    
-realy_shop(UseBad, Merchant, ShopId) ->
-    case ?w_user_profile:get(shop, Merchant, ShopId) of
-	{ok, []} -> ShopId;
-	{ok, [{ShopInfo}]} -> 
-	    case ?v(<<"repo">>, ShopInfo) of
-		-1 -> ShopId;
-		RepoId ->
-		    case ?v(<<"type">>, ShopInfo) =:= ?BAD_REPERTORY
-			andalso UseBad of
-			true -> ?v(<<"id">>, ShopInfo);
-			_ -> RepoId
-		    end
-	    end
-    end.
-
-realy_conditions(Merchant, Conditions) ->
-    lists:foldr(
-      fun({<<"shop">>, Shop}, Acc) -> 
-	      [{<<"shop">>, realy_shop(true, Merchant, Shop)}|Acc];
-	 (C, Acc) ->
-	      [C|Acc]
-      end, [], Conditions).
 
 %% get_setting([], _Key, Value) ->
 %%     Value;

@@ -246,7 +246,7 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
 	{name: "金额减免", id:1, remakr: "交易金额达到目标值减免一定金额"}
 	// {name: "金额赠送", id:2, remakr: "交易金额达到目标值赠送一定金额"}
     ];
-
+    
     this.export_type = {trans:0, trans_note:1, stock:2};
 
     this.get_inventory_from_sort = function(cid, size, sorts){

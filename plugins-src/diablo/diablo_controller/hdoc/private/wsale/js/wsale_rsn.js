@@ -66,7 +66,8 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
     
     // base setting 
     $scope.setting.se_pagination = wsaleUtils.sequence_pagination(shopId, base);
-    $scope.setting.show_sale_day = wsaleUtils.show_sale_day(shopId, base); 
+    // $scope.setting.show_sale_day = wsaleUtils.show_sale_day(shopId, base);
+    $scope.setting.show_sale_day = user.sdays; 
     var storage = localStorageService.get(diablo_key_wsale_trans_detail);
     
     if (use_storage && angular.isDefined(storage) && storage !== null){

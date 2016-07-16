@@ -305,7 +305,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	diablo_goto_page("#/new_wsale_detail");
     };
 
-    $scope.setting = {q_backend:true, check_sale:true};
+    $scope.setting = {q_backend:true, check_sale:true, negative_sale:true};
 
     $scope.right = {
 	m_discount : rightAuthen.modify_onsale(
@@ -388,20 +388,23 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	verificate:   $scope.vpays[0],
 	datetime:     $scope.today()
     };
+
+    var get_setting = function(shopId){
+	$scope.setting.check_sale = wsaleUtils.check_sale(shopId, base);
+	$scope.setting.negative_sale = wsaleUtils.negative_sale(shopId, base);
+	$scope.setting.no_vip     = wsaleUtils.no_vip(shopId, base);
+	$scope.setting.q_backend = $scope.q_typeahead(shopId);
+    };
     
     // shops
     $scope.shops = user.sortShops;
     if ($scope.shops.length !== 0){
-	$scope.select.shop        = $scope.shops[0]; 
-	$scope.setting.check_sale = wsaleUtils.check_sale($scope.select.shop.id, base)
-	$scope.setting.no_vip     = wsaleUtils.no_vip($scope.select.shop.id, base);
-	$scope.setting.q_backend = $scope.q_typeahead($scope.select.shop.id);
+	$scope.select.shop        = $scope.shops[0];
+	get_setting($scope.select.shop.id); 
     } 
 
     $scope.change_shop = function(){
-	$scope.setting.check_sale = wsaleUtils.check_sale($scope.select.shop.id, base);
-	$scope.setting.no_vip     = wsaleUtils.no_vip($scope.select.shop.id, base); 
-	$scope.setting.q_backend = $scope.q_typeahead($scope.select.shop.id);
+	get_setting($scope.select.shop.id);
 	
 	$scope.match_all_w_inventory(); 
 	$scope.get_employee();
@@ -1161,14 +1164,14 @@ wsaleApp.controller("wsaleNewCtrl", function(
     };
 
     var valid_sell = function(amount){
-	var sell = diablo_set_integer(amount.sell_count); 
-	if (angular.isUndefined(sell)){
-	    return true;
-	}
+	var sell = diablo_set_integer(amount.sell_count);
+	if (0 === wsaleUtils.to_integer(sell)) return true;
+
+	var valid = false; 
+	if ($scope.setting.check_sale && sell > amount.count) return false;
+
+	if (diablo_no === $scope.setting.negative_sale && sell < 0) return false;
 	
-	if ($scope.setting.check_sale){
-	    if (0 === sell || sell > amount.count) return false;
-	}
 	return true;
     };
     
@@ -1178,16 +1181,15 @@ wsaleApp.controller("wsaleNewCtrl", function(
 
 	for(var i=0, l=amounts.length; i<l; i++){
 	    var sell = amounts[i].sell_count;
-	    if (0 == wsaleUtils.to_integer(sell)){
+	    if (0 === wsaleUtils.to_integer(sell)){
 		unchanged++;
 		continue;
 	    }
 	    
 	    if (!renumber.test(sell)) return false;
-	    
-	    if ($scope.setting.check_sale)
-		if (0 === sell || sell > amounts[i].count) return false;
-	    
+
+	    if ($scope.setting.check_sale && sell > amounts[i].count) return false 
+	    if (diablo_no === $scope.setting.negative_sale && sell < 0) return false; 
 	};
 
 	return unchanged === l ? false : true;
@@ -1211,7 +1213,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
     };
     
     $scope.add_free_inventory = function(inv){
-	console.log(inv);
+	// console.log(inv);
 
 	if (angular.isUndefined($scope.select.retailer)
 	    || diablo_is_empty($scope.select.retailer)){
@@ -1271,7 +1273,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 				 })()];
 	    
 	    $q.all(calls).then(function(data){
-		console.log(data);
+		// console.log(data);
 		// data[0] is the inventory belong to the shop
 		// data[1] is the last sale of the shop
 		if (data.length === 0 ){
@@ -1487,6 +1489,11 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    return;
 	}
 
+	if (diablo_no === $scope.setting.negative_sale && sell < 0) {
+	    inv.form.sell.$invalid = true;
+	    return;
+	};
+	
 	$scope.timeout_auto_save = $timeout(function(){
 	    // console.log(inv); 
 	    if (inv.$new && inv.free_color_size){
@@ -1558,7 +1565,8 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 
     var now = $.now();
     var shopId = $scope.shopIds.length === 1 ? $scope.shopIds[0]: -1;
-    var show_sale_days = wsaleUtils.show_sale_day(shopId, base);
+    // var show_sale_days = wsaleUtils.show_sale_day(shopId, base);
+    var show_sale_days = user.sdays;
     var storage = localStorageService.get(diablo_key_wsale_trans);
     
     if (angular.isDefined(storage) && storage !== null){
