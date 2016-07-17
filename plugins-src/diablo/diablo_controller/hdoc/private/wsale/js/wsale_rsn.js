@@ -75,7 +75,7 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 	$scope.qtime_start  = storage.start_time; 
     } else{
 	$scope.filters = []; 
-	$scope.qtime_start = wsaleUtils.start_time(shopId, base, now, dateFilter);
+	$scope.qtime_start = diablo_set_date(wsaleUtils.start_time(shopId, base, now, dateFilter));
     };
 
     $scope.time = wsaleUtils.correct_query_time(
@@ -120,7 +120,8 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 	if (use_storage){
 	    localStorageService.set(
 		diablo_key_wsale_trans_detail,
-		{filter:$scope.filters, start_time: $scope.time.start_time, page:page, t:now});
+		{filter:$scope.filters,
+		 start_time: diablo_get_time($scope.time.start_time), page:page, t:now});
 	};
 	
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){

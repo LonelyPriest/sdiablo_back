@@ -145,10 +145,8 @@ function filterProvider(){
 		});
 
 		
-		search.start_time =
-		    diablo_filter_time(time.start_time, 0, dateFilter); 
-		search.end_time   =
-		    diablo_filter_time(time.end_time, 1, dateFilter);
+		search.start_time = diablo_filter_time(time.start_time, 0, dateFilter); 
+		search.end_time   = diablo_filter_time(time.end_time, 1, dateFilter);
 		console.log(search);
 
 		return callback(search);

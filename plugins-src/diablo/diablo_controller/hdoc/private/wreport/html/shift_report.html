@@ -112,7 +112,7 @@
 		    <td>{{r.entry_date}}</td>
 		    
 		  </tr>
-		  <tr>
+		  <tr x-ng-if="s_stastic.total_items>0">
 		    <td colspan=5></td>
 		    <td>{{s_stastic.sell}}</td>
 		    <td>{{s_stastic.balance}}</td>
