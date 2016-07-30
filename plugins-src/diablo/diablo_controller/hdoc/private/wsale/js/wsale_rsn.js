@@ -22,6 +22,8 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 	$scope.hidden.base = !$scope.hidden.base;
     };
 
+    var LODOP;
+
     /*
      * right
      */
@@ -40,12 +42,13 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 
     var dialog      = diabloUtilsService; 
     var use_storage = $routeParams.rsn ? false : true;
+    $scope.show_print_btn = $routeParams.rsn ? true : false;
 
     // style_number
     $scope.match_style_number = function(viewValue){
 	return diabloFilter.match_w_inventory(viewValue, $scope.shopIds);
     };
-
+    
     $scope.goto_page = diablo_goto_page;
 
     $scope.back = function(){
@@ -308,5 +311,97 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 		}
 	    });
 	}) 
+    };
+
+    var dialog = diabloUtilsService;
+    $scope.print = function(){
+	var rsn = $routeParams.rsn; 
+	var shop = diablo_get_object(parseInt(rsn.split("-")[3]), $scope.shops);
+	var p_mode = wsaleUtils.print_mode(shop.id, base);
+	
+	if (diablo_frontend === p_mode){
+	    if (angular.isUndefined(LODOP)) LODOP=getLodop();
+	    // console.log(LODOP);
+
+	    if (angular.isDefined(LODOP)){
+		wsaleService.get_w_sale_new(rsn).then(function(result){
+		    console.log(result);
+		    var sale = result.sale;
+		    var detail = result.detail;
+		    
+		    LODOP.PRINT_INIT("");
+		    LODOP.ADD_PRINT_TEXT(15,102,"58mm",30,shop.name); 
+		    LODOP.SET_PRINT_STYLEA(1,"FontSize",13);
+		    LODOP.SET_PRINT_STYLEA(1,"Bold",1);
+		    LODOP.SET_PRINT_STYLEA(0,"Horient",58)
+
+		    console.log(diablo_get_object(sale.retailer_id, filterRetailer));
+		    console.log(diablo_get_object(sale.employ_id, filterEmployee));
+		    LODOP.ADD_PRINT_TEXT(50,15,"58mm",20,"单号：" + rsn);
+		    LODOP.ADD_PRINT_TEXT(65,15,"58mm",20,"客户：" + diablo_get_object(sale.employ_id, filterEmployee).name);
+		    LODOP.ADD_PRINT_TEXT(80,15,"58mm",20,"店员：" + diablo_get_object(sale.retailer_id, filterRetailer).name);
+		    LODOP.ADD_PRINT_TEXT(95,15,"58mm",20,"日期：" + sale.entry_date);
+
+		    LODOP.ADD_PRINT_LINE(120,"3mm",120,"52mm",0,1);
+
+
+		    var hLine = 135;
+		    angular.forEach(result.detail, function(d){
+		    	LODOP.ADD_PRINT_TEXT(hLine,15,100,20,"款号：" + d.style_number);
+			hLine += 15;
+		    	LODOP.ADD_PRINT_TEXT(hLine,15,100,20,"品名：" + diablo_get_object(d.brand_id, filterBrand).name);
+			hLine += 15;
+		    	LODOP.ADD_PRINT_TEXT(hLine,15,100,20,"单价：" + d.tag_price.toString());
+			hLine += 15;
+		    	LODOP.ADD_PRINT_TEXT(hLine,15,100,20,"成交价：" + d.rprice.toString());
+			hLine += 15;
+		    	LODOP.ADD_PRINT_TEXT(hLine,15,100,20,"数量：" + d.total.toString());
+			hLine += 15;
+		    	LODOP.ADD_PRINT_TEXT(hLine,15,100,20,"小计：" + wsaleUtils.to_decimal(d.total * d.rprice).toString());
+			hLine += 15;
+		    	LODOP.ADD_PRINT_TEXT(hLine,15,100,20,"折扣率：" + wsaleUtils.ediscount(d.rprice, d.tag_price).toString());
+
+			hLine += 15;
+			
+		    });
+
+		    LODOP.ADD_PRINT_LINE(hLine,"3mm",hLine,"52mm",0,1);
+		    
+		    LODOP.SET_PRINT_PAGESIZE(3,58,5,""); 
+		    LODOP.PREVIEW(); 
+		}); 
+	    }	    
+	} else {
+	    $scope.disable_print = true;
+	    wsaleService.print_w_sale(r.rsn).then(function(result){
+		console.log(result);
+		$scope.disable_print = false; 
+		if (result.ecode == 0){
+		    var msg = "";
+		    if (result.pcode == 0){
+			msg = "销售单打印成功！！单号："
+			    + result.rsn + "，请等待服务器打印";
+			dialog.response(true, "销售单打印", msg, $scope); 
+		    } else {
+			if (result.pinfo.length === 0){
+			    msg += wsaleService.error[result.pcode]
+			} else {
+			    angular.forEach(result.pinfo, function(p){
+				msg += "[" + p.device + "] "
+				    + wsaleService.error[p.ecode]
+			    })
+			};
+			msg = "销售单打印失败！！单号："
+			    + result.rsn + "，打印失败：" + msg;
+			dialog.response(false, "销售单打印", msg, $scope); 
+		    }
+		    
+		} else{
+	    	    dialog.response(
+	    		false, "销售单打印",
+			"销售单打印失败：" + wsaleService.error[result.ecode]);
+		}
+	    })   
+	} 
     };
 });

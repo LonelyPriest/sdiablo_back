@@ -906,11 +906,20 @@ wsaleApp.controller("wsaleNewCtrl", function(
     };
 
     $scope.print_front = function(result, im_print){
+	// var oscript = document.createElement("script");
+	// oscript.src ="/public/assets/lodop/LodopFuncs.js";
+	// var head = document.head
+	//     || document.getElementsByTagName("head")[0]
+	//     || document.documentElement;
+	// head.insertBefore(oscript, head.firstChild);
+
 	if (im_print === diablo_yes){
-	    javascript:window.print();
+	    
+	    // javascript:window.print();
 	} else {
 	    var dialog = diabloUtilsService; 
-	    var ok_print = function(){javascript:window.print()};
+	    // var ok_print = function(){javascript:window.print()};
+	    var ok_print = function(){};
 
 	    var request = dialog.request(
 		"销售开单", "开单成功，是否打印销售单？",
@@ -1063,9 +1072,10 @@ wsaleApp.controller("wsaleNewCtrl", function(
 		if (diablo_backend === p_mode){
 		    $scope.print_backend(result, im_print);
 		} else {
-		    $timeout(function(){
-			$scope.print_front(result, im_print); 
-		    }, 300);
+		    $scope.print_front(result, im_print); 
+		    // $timeout(function(){
+		    // 	$scope.print_front(result, im_print); 
+		    // }, 300);
 		}
 	    } else {
 		dialog.response_with_callback(
@@ -1526,7 +1536,13 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
     
     $scope.total_items   = 0; 
     $scope.disable_print = false;
-    
+
+    // var im_print = function(shopId){
+    // 	return wsaleUtils.im_print(shopId, base); 
+    // };
+
+    // var print_mode = 
+    // console.log($scope.im_print); 
     /*
      * authen
      */
@@ -1743,45 +1759,10 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 	$scope.save_stastic();	
 	diablo_goto_page(
 	    "#/wsale_rsn_detail/"
-		+ r.rsn + "/" + $scope.current_page.toString()); 
-    };
-
-    $scope.f_print = function(r){
-	diablo_goto_page("#/wsale_print_preview/" + r.rsn); 
-    };
-
-    var dialog = diabloUtilsService;
-    $scope.print = function(r){
-	$scope.disable_print = true;
-	wsaleService.print_w_sale(r.rsn).then(function(result){
-	    console.log(result);
-	    $scope.disable_print = false; 
-	    if (result.ecode == 0){
-		var msg = "";
-		if (result.pcode == 0){
-		    msg = "销售单打印成功！！单号："
-			+ result.rsn + "，请等待服务器打印";
-		    dialog.response(true, "销售单打印", msg, $scope); 
-		} else {
-		    if (result.pinfo.length === 0){
-			msg += wsaleService.error[result.pcode]
-		    } else {
-			angular.forEach(result.pinfo, function(p){
-			    msg += "[" + p.device + "] "
-				+ wsaleService.error[p.ecode]
-			})
-		    };
-		    msg = "销售单打印失败！！单号："
-			+ result.rsn + "，打印失败：" + msg;
-		    dialog.response(false, "销售单打印", msg, $scope); 
-		}
-		
-	    } else{
-	    	dialog.response(
-	    	    false, "销售单打印",
-		    "销售单打印失败：" + wsaleService.error[result.ecode]);
-	    }
-	})
+		+ r.rsn
+		+ "/" + $scope.current_page.toString()
+		// + "/" + r.shop_id.toString()
+	);
     };
 
     $scope.update_detail = function(r){

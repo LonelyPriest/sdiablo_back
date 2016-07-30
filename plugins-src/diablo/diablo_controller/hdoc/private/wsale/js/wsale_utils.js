@@ -455,6 +455,15 @@ var wsaleUtils = function(){
 	    }
 	},
 
+	to_decimal:function(v){
+	    return diablo_rdight(v, 2);
+	},
+
+	ediscount: function(org_price, tag_price){
+	    if (tag_price == 0) return 0; 
+	    return parseFloat((diablo_float_div(org_price, tag_price) * 100).toFixed(1));
+	},
+
 	authen_shop: function(user_type, shop, action){
 	    return rightAuthen.authen_shop_action(
 		user_type,

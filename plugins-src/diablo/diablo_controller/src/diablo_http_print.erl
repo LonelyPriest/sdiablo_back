@@ -29,6 +29,8 @@
 
 -export([title/3, get_printer/2]).
 
+-export([test_barcode/1, bar_code/2, bar_code/5]).
+
 -import(?f_print,
 	[width/2, pading/1, clean_zero/1, br/1, line/2]).
 
@@ -763,3 +765,104 @@ pay(veri, Veri) when Veri == 0-> [];
 pay(veri, Veri) -> "核销：" ++ ?to_s(clean_zero(Veri)).
 
     
+bar_code(one, DigitString) ->
+
+    %% Len = length(DigitString) div 2,
+
+    {Status, Len}=bar_code(length, DigitString, true, 0, 0),
+
+    %% Encode = bar_code(encode, DigitString, <<>>, true, Status),
+    Encode = bar_code(encode, DigitString, <<>>, true, Status),
+
+    ?DEBUG("Status ~p, len ~p, encode ~p", [Status, Len, Encode]),
+
+    B1 = <<16#1b, 16#64, 16#02, 16#1d, 16#48, 16#32,
+	   16#1d, 16#68, 16#50, %% height
+	   16#1d, 16#77, 16#02, %% width
+	   16#1d, 16#6b, 16#49, Len>>,
+
+    ?DEBUG("B1 ~p", [B1]),
+
+    <<B1/binary, Encode/binary>>.
+
+
+bar_code(length, <<>>, _Bb1, Status, Size) ->
+    {Status, Size};
+bar_code(length, <<Sub:2/binary, T/binary>>, Bb1, Status, Size) ->
+    case Sub =:= <<"00">> of
+	true ->
+	    case Bb1 of
+		true -> 
+		    bar_code(length, T, false, 0, Size + 4);
+		false ->
+		    case Status =:= 0 of
+			true ->
+			    bar_code(length, T, Bb1, 0, Size + 2);
+			false ->
+			    bar_code(length, T, Bb1, 0, Size + 4)
+		    end
+	    end;
+	false ->
+	    case Bb1 of
+		true ->
+		    bar_code(length, T, false, 1, Size + 3);
+		false ->
+		    case Status =:= 1 of
+			true ->
+			    bar_code(length, T, Bb1, 1, Size + 1);
+			false ->
+			    bar_code(length, T, Bb1, 1, Size + 3)
+		    end
+	    end
+    end;
+
+bar_code(encode, <<>>, Encode, _InitZero, _Status) ->
+    Encode;
+bar_code(encode, <<Sub:2/binary, T/binary>>, Encode, InitZero, Status) ->
+    ?DEBUG("Sub ~p, InitZero ~p, Status ~p", [Sub, InitZero, Status]),
+    case Sub =:= <<"00">> of
+	true ->
+	    case InitZero of
+		true ->
+		    Code = <<16#7b, 16#42, 16#30, 16#30>>,
+		    bar_code(encode, T, <<Encode/binary, Code/binary>>, false, Status);
+		false ->
+		    case Status =:= 0 of
+			true ->
+			    Code = <<16#30, 16#30>>,
+			    bar_code(encode, T, <<Encode/binary, Code/binary>>, InitZero, 0);
+			false ->
+			    Code = <<16#7b, 16#42, 16#30, 16#30>>,
+			    bar_code(encode, T, <<Encode/binary, Code/binary>>, InitZero, 0)
+		    end
+	    end;
+	false ->
+	    case InitZero of
+		true ->
+		    Number = ?to_i(Sub),
+		    Code = <<16#7b, 16#43, Number>>, 
+		    bar_code(encode, T, <<Encode/binary, Code/binary>>, false, Status);
+		false ->
+		    case Status =:= 1 of
+			true ->
+			    Number = ?to_i(Sub),
+			    Code = <<Number>>,
+			    bar_code(encode, T, <<Encode/binary,  Code/binary>>, InitZero, 1);
+			false ->
+			    Number = ?to_i(Sub),
+			    Code = <<16#7b, 16#43, Number>>,
+			    bar_code(encode, T, <<Encode/binary, Code/binary>>, InitZero, 1)
+		    end
+	    end
+    end.
+
+test_barcode(DigitS) ->
+    Body = "<C>" ++ ?to_s(bar_code(one, DigitS)) ++ "</C>",
+    ?DEBUG("Body ~p", [Body]),
+    %% ok.
+    start_print(fcloud,
+    		<<"716500297">>,
+    		<<"Sd6ThU4d">>,
+    		<<"http://121.42.48.187:80/WPServer/printOrderAction">>,
+    		1,
+    		Body).
