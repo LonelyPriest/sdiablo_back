@@ -416,8 +416,11 @@ wsaleApp.controller("wsaleNewCtrl", function(
     };
 
     if ($scope.p_mode($scope.select.shop.id) === diablo_frontend){
+	if (needCLodop()) loadCLodop();
+	
 	$scope.comments = wsaleUtils.comment($scope.select.shop.id, base);
-	console.log($scope.comments);
+	$scope.p_num = wsaleUtils.print_num($scope.select.shop.id, base);
+	// console.log($scope.comments, $scope.p_num);
     }
     
     $scope.get_employee = function(){
@@ -905,6 +908,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	
     };
 
+    var LODOP;
     $scope.print_front = function(result, im_print){
 	// var oscript = document.createElement("script");
 	// oscript.src ="/public/assets/lodop/LodopFuncs.js";
@@ -912,15 +916,41 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	//     || document.getElementsByTagName("head")[0]
 	//     || document.documentElement;
 	// head.insertBefore(oscript, head.firstChild);
+	var pdate = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss");
+	
+	if (angular.isUndefined(LODOP)) LODOP = getLodop();
 
+	var ok_print = function(){
+	    console.log($scope.select);
+	    if (angular.isDefined(LODOP)){
+		for (var i=0; i<$scope.p_num; i++){
+		    wsalePrint.gen_head(
+			LODOP,
+			$scope.select.shop.name,
+			$scope.select.rsn,
+			$scope.select.employee.name,
+			$scope.select.retailer.name, 
+			dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"));
+
+		    var hLine = wsalePrint.gen_body(
+			LODOP,
+			$scope.inventories.filter(function(r){return !r.$new}),
+			filterBrand);
+		    
+		    var isVip = $scope.select.retailer.id !== $scope.setting.no_vip ? true : false;
+		    
+		    hLine = wsalePrint.gen_stastic(LODOP, hLine, 0, $scope.select, isVip); 
+		    wsalePrint.gen_foot(LODOP, hLine, $scope.comments, pdate);
+		    wsalePrint.start_print(LODOP);
+		}
+	    }
+	};
+	
 	if (im_print === diablo_yes){
-	    
+	    ok_print();
 	    // javascript:window.print();
 	} else {
 	    var dialog = diabloUtilsService; 
-	    // var ok_print = function(){javascript:window.print()};
-	    var ok_print = function(){};
-
 	    var request = dialog.request(
 		"销售开单", "开单成功，是否打印销售单？",
 		undefined, undefined, undefined);
@@ -1067,16 +1097,12 @@ wsaleApp.controller("wsaleNewCtrl", function(
 
 	    if (result.ecode === 0){
 		$scope.select.rsn = result.rsn;
-		success_callback();
-
 		if (diablo_backend === p_mode){
 		    $scope.print_backend(result, im_print);
 		} else {
 		    $scope.print_front(result, im_print); 
-		    // $timeout(function(){
-		    // 	$scope.print_front(result, im_print); 
-		    // }, 300);
 		}
+		success_callback();
 	    } else {
 		dialog.response_with_callback(
 	    	    false,
@@ -1170,7 +1196,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	$scope.select.should_pay= calc.should_pay;
 	$scope.select.score     = calc.score;
 	$scope.select.charge    = $scope.select.should_pay - $scope.select.has_pay;
-	console.log($scope.select);
+	// console.log($scope.select);
     };
 
     var valid_sell = function(amount){
@@ -1241,7 +1267,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	// save
 	$scope.disable_refresh = false;
 	$scope.wsaleStorage.save(
-	    $scope.inventories. filter(function(r){return !r.$new}));
+	    $scope.inventories.filter(function(r){return !r.$new}));
 	$scope.re_calculate();
 	
 	$timeout.cancel($scope.timeout_auto_save);
@@ -1756,7 +1782,7 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
     
     $scope.rsn_detail = function(r){
 	// console.log(r);
-	$scope.save_stastic();	
+	$scope.save_stastic(); 
 	diablo_goto_page(
 	    "#/wsale_rsn_detail/"
 		+ r.rsn

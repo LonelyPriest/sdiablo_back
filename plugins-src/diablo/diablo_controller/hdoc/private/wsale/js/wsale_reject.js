@@ -84,6 +84,11 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 		// setting
 		$scope.setting.no_vip = wsaleUtils.no_vip(
 		    $scope.select.shop.id, $scope.base_settings);
+		$scope.setting.comments = wsaleUtils.comment($scope.select.shop.id, $scope.base_settings);
+		$scope.setting.p_mode = wsaleUtils.print_mode($scope.select.shop.id, $scope.base_settings);
+		if (diablo_frontend === $scope.setting.p_mode) {
+		    if (needCLodop()) loadCLodop(); 
+		}
 	    
 		$scope.old_inventories = wsale.details;
 		$scope.inventories = angular.copy(wsale.details);
@@ -128,11 +133,7 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 	event.stopPropagation();
 	$scope.isOpened = true;
     }; 
-    
-    $scope.p_mode = function(shopId){
-	return wsaleUtils.print_mode(shopId, base);
-    };
-    
+
     /*
      * withdraw
      */ 
@@ -229,15 +230,38 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 	    ok_print, undefined, $scope);
     };
 
+    var LODOP;
     $scope.print_front = function(result, im_print){
 	var dialog = diabloUtilsService; 
 	var ok_print = function(){
-	    javascript:window.print();
+	    var pdate = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss"); 
+	    if (angular.isUndefined(LODOP)) LODOP = getLodop();
+
+	    console.log($scope.select);
+	    if (angular.isDefined(LODOP)){
+		wsalePrint.gen_head(
+		    LODOP,
+		    $scope.select.shop.name,
+		    result.rsn,
+		    $scope.select.employee.name,
+		    $scope.select.retailer.name, 
+		    dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"));
+
+		var hLine = wsalePrint.gen_body(
+		    LODOP,
+		    $scope.inventories.filter(function(r){return !r.$new}),
+		    filterBrand);
+		
+		var isVip = $scope.select.retailer.id !== $scope.setting.no_vip ? true : false;
+		
+		hLine = wsalePrint.gen_stastic(LODOP, hLine, wsaleService.direct.wreject, $scope.select, isVip); 
+		wsalePrint.gen_foot(LODOP, hLine, $scope.setting.comments, pdate);
+		wsalePrint.start_print(LODOP);
+	    };
 	};
 
 	dialog.request(
-	    "销售退货", "退货成功，是否打印销售单？",
-	    ok_print, undefined, $scope);
+	    "销售退货", "退货成功，是否打印销售单？", ok_print, undefined, undefined);
     };
     
     $scope.save_inventory = function(){
@@ -332,9 +356,10 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 		$scope.select.retailer.balance = $scope.select.left_balance;
 		$scope.select.surplus = $scope.select.left_balance;
 
-		if (diablo_backend === $scope.p_mode($scope.select.shop.id)){
+		if (diablo_backend === $scope.setting.p_mode){
 		    $scope.print_backend(result, false);
 		} else {
+		    console.log("print_front")
 		    $scope.print_front(result, false); 
 		} 
 	    } else{

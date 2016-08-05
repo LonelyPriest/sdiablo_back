@@ -4,6 +4,7 @@ var CreatedOKLodop7766=null;
 function needCLodop(){
     try{
 	var ua=navigator.userAgent;
+	console.log(ua);
 	// if (ua.match(/Windows\sPhone/i) !=null) return true;
 	// if (ua.match(/iPhone|iPod/i) != null) return true;
 	// if (ua.match(/Android/i) != null) return true;
@@ -14,6 +15,7 @@ function needCLodop(){
 	if (ua.match(/Android/i) != null) return false;
 	if (ua.match(/Edge\D?\d+/i) != null) return false;
 	if (ua.match(/QQBrowser/i) != null) return false;
+	if (ua.match(/Linux/i) !=null) return false;
 	var verTrident=ua.match(/Trident\D?\d+/i);
 	var verIE=ua.match(/MSIE\D?\d+/i);
 	var verOPR=ua.match(/OPR\D?\d+/i);
@@ -41,16 +43,24 @@ function needCLodop(){
 };
 
 //====页面引用CLodop云打印必须的JS文件：====
-if (needCLodop()) {
-	var head = document.head || document.getElementsByTagName("head")[0] || document.documentElement;
-	var oscript = document.createElement("script");
-	oscript.src ="http://localhost:8000/CLodopfuncs.js?priority=1";
-	head.insertBefore( oscript,head.firstChild );
-	//本机云打印的后补端口8001：
-	// oscript = document.createElement("script");
-	// oscript.src ="http://localhost:8001/CLodopfuncs.js?priority=2";
-	// head.insertBefore( oscript,head.firstChild );
+// if (needCLodop()) {
+// 	var head = document.head || document.getElementsByTagName("head")[0] || document.documentElement;
+// 	var oscript = document.createElement("script");
+// 	oscript.src ="http://localhost:63552/CLodopfuncs.js?priority=1";
+// 	head.insertBefore( oscript,head.firstChild );
+// 	//本机云打印的后补端口8001：
+// 	// oscript = document.createElement("script");
+// 	// oscript.src ="http://localhost:8001/CLodopfuncs.js?priority=2";
+// 	// head.insertBefore( oscript,head.firstChild );
+// };
+
+function loadCLodop() {
+    var head = document.head || document.getElementsByTagName("head")[0] || document.documentElement;
+    var oscript = document.createElement("script");
+    oscript.src ="http://localhost:63552/CLodopfuncs.js?priority=1";
+    head.insertBefore( oscript,head.firstChild );
 };
+
 
 //====获取LODOP对象的主过程：====
 function getLodop(oOBJECT,oEMBED){
