@@ -117,7 +117,6 @@ get(user_nav, Merchant, Session) ->
 get(user, Merchant, UserId) ->
     gen_server:call(?SERVER, {get_user_profile, Merchant, UserId}).
 
-
 set_default(Merchant) ->
     set_default(Merchant, -1).
 set_default(Merchant, Shop) ->
@@ -673,7 +672,7 @@ handle_call({get_brand_profile, Merchant, BrandId}, _From, State) ->
 handle_call({get_color_type_profile, Merchant}, _From, State) ->
     ?DEBUG("get_color_type_profile of merchant ~p", [Merchant]),
     MS = ms(Merchant, color_type),
-    Select = select(MS, fun() -> ?attr:color_type(list) end),
+    Select = select(MS, fun() -> ?attr:color_type(list, Merchant) end),
     {reply, {ok, Select}, State};
 handle_call({get_color_profile, Merchant}, _From, State) ->
     MS = ms(Merchant, color),

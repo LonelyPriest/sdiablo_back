@@ -399,7 +399,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
     // shops
     $scope.shops = user.sortShops;
     if ($scope.shops.length !== 0){
-	$scope.select.shop        = $scope.shops[0];
+	$scope.select.shop = $scope.shops[0];
 	get_setting($scope.select.shop.id); 
     } 
 
@@ -414,7 +414,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	$scope.wsaleStorage.change_employee($scope.select.employee.id);
 	$scope.refresh(); 
     };
-
+    
     if ($scope.p_mode($scope.select.shop.id) === diablo_frontend){
 	if (needCLodop()) loadCLodop();
 	
@@ -916,7 +916,15 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	//     || document.getElementsByTagName("head")[0]
 	//     || document.documentElement;
 	// head.insertBefore(oscript, head.firstChild);
+	// console.log($scope.inventories.filter(function(r){return !r.$new}));
 	var pdate = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss");
+	var pinvs = [];
+	for (var i=1, l=$scope.inventories.length; i<l; i++){
+	    $scope.inventories[i].total = $scope.inventories[i].sell;
+	    pinvs.push($scope.inventories[i]);
+	};
+
+	console.log(pinvs);
 	
 	if (angular.isUndefined(LODOP)) LODOP = getLodop();
 
@@ -932,10 +940,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 			$scope.select.retailer.name, 
 			dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"));
 
-		    var hLine = wsalePrint.gen_body(
-			LODOP,
-			$scope.inventories.filter(function(r){return !r.$new}),
-			filterBrand);
+		    var hLine = wsalePrint.gen_body(LODOP, pinvs, filterBrand);
 		    
 		    var isVip = $scope.select.retailer.id !== $scope.setting.no_vip ? true : false;
 		    

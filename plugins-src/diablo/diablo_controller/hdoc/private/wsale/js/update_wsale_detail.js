@@ -13,7 +13,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
     $scope.scores        = filterScore;
     
     $scope.retailers     = filterRetailer; 
-    $scope.employees     = filterEmployee;
+    // $scope.employees     = filterEmployee;
     $scope.size_groups   = filterSizeGroup;
     $scope.brands        = filterBrand;
     $scope.colors        = filterColor;
@@ -103,14 +103,14 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 		$scope.shops,
 		$scope.brands,
 		$scope.retailers,
-		$scope.employees,
+		filterEmployee,
 		$scope.types,
 		$scope.colors,
 		$scope.size_groups,
 		$scope.promotions,
 		$scope.scores);
 
-	    console.log(wsale);
+	    // console.log(wsale);
 	    
 	    $scope.old_select = wsale.select;
 	    $scope.select = angular.extend($scope.select, wsale.select);
@@ -123,6 +123,13 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 		$scope.select.shop.id, $scope.base_settings);
 	    $scope.setting.no_vip = wsaleUtils.no_vip(
 		$scope.select.shop.id, $scope.base_settings);
+
+	    $scope.employees = wsaleUtils.get_login_employee(
+		$scope.select.shop.id,
+		base.employ_id,
+		filterEmployee).filter;
+	    // console.log($scope.employees);
+
 
 	    // inventory
 	    $scope.old_inventories = wsale.details;

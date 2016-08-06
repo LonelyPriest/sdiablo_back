@@ -193,6 +193,7 @@ var wsaleUtils = function(){
 
 	    wsale.select.shop = diablo_get_object(wsale.select.shop_id, shops); 
 	    wsale.select.retailer = diablo_get_object(wsale.select.retailer_id, retailers);
+	    // console.log(wsale);
 	    wsale.select.employee = diablo_get_object(wsale.select.employee_id, employees);
 	    
 	    wsale.show_promotions = show_promotions;
@@ -823,7 +824,7 @@ var wsalePrint = function(){
 		hLine += 15;
 		LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"数量：" + d.total.toString());
 		hLine += 15;
-		LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"小计：" + wsaleUtils.to_decimal(d.total * d.rprice).toString());
+		LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"小计：" + diablo_round(d.total * d.rprice).toString());
 		hLine += 15;
 		LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"折扣率：" + wsaleUtils.ediscount(d.rprice, d.tag_price).toString()); 
 		hLine += 20;

@@ -454,12 +454,18 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 			    [] -> []; 
 			    _  ->
 				["update w_inventory_new_detail set "
-				 ++ ?utils:to_sqls(proplists, comma, UpdateBase)
-				 ++ " where " ++ C(true, OrgStyleNumber, OrgBrand),
-				 
-				 "update w_sale_detail set "
-				 ++ ?utils:to_sqls(proplists, comma, UpdateBase)
-				 ++ " where " ++ C(true, OrgStyleNumber, OrgBrand)]
+				  ++ ?utils:to_sqls(proplists, comma, UpdateBase)
+				 ++ " where "
+				 ++ C(true, OrgStyleNumber, OrgBrand)]
+				    ++ 
+				    case lists:keydelete(<<"sex">>, 1, UpdateBase) of
+					[] -> [];
+					U1 ->
+					    ["update w_sale_detail set "
+					     ++ ?utils:to_sqls(proplists, comma, U1)
+					     ++ " where "
+					     ++ C(true, OrgStyleNumber, OrgBrand)]
+				    end
 			end,
 		    
 		    {reply,

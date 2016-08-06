@@ -33,9 +33,33 @@ action(Session, Req, {"list_w_bank_card"}) ->
 action(Session, Req, {"list_base_setting"}) ->
     ?DEBUG("list_base_setting with session ~p", [Session]), 
     Merchant = ?session:get(merchant, Session),
-    {ok, S}    = ?w_user_profile:get(setting, Merchant),
-    %% {ok, S}    = ?w_base:setting(list, Merchant),
-    ?utils:respond(200, batch, Req, S).
+    case ?session:get(type, Session) of
+	?MERCHANT ->
+	    {ok, S}  = ?w_user_profile:get(setting, Merchant),
+	    ?utils:respond(200, batch, Req, S); 
+	?USER ->
+	    {ok, Shops} = ?w_user_profile:get(user_shop, Merchant, Session),
+	    %% ?DEBUG("Shops ~p", [Shops]),
+	    ShopIds = lists:foldr(
+			fun({Shop}, Acc) ->
+				ShopId = ?v(<<"shop_id">>, Shop),
+				case lists:member(ShopId, Acc) of
+				    true -> Acc;
+				    false -> [ShopId|Acc]
+				end
+			end, [], Shops),
+
+	    {ok, S}  = ?w_user_profile:get(setting, Merchant),
+
+	    Select =
+		case [{SS} || {SS} <- S, lists:member(?v(<<"shop">>, SS), ShopIds)] of
+		    [] -> [{SS} || {SS} <- S, ?v(<<"shop">>, SS) =:= -1];
+		    V -> V
+		end,
+	    %% lists:filter()
+	    ?utils:respond(200, batch, Req, Select)
+
+    end.
 
 %%--------------------------------------------------------------------
 %% @desc: POST action

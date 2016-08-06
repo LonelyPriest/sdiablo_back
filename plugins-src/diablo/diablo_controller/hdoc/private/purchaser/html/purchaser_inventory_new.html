@@ -1311,9 +1311,7 @@
       <table class="table table-bordered table-striped
 		    table-condensed table-advanced">
 	<tbody>
-	  <tr x-ng-repeat="c in params.colors"
-	      x-ng-if="c.tid===1 || c.tid===2 || c.tid===3 || c.tid===4
-		       || c.tid===5 || c.tid===6 || c.tid===7 || c.tid===8">
+	  <tr x-ng-repeat="c in params.colors">
 	    <td class="text-center vert-align col-md-1">
 	      <div x-ng-switch on="c.tid">
 		<span x-ng-switch-when=1 style="background-color:#CC3333">{{c.type}}</span>
@@ -1324,9 +1322,7 @@
 		<span x-ng-switch-default>{{c.type}}</span>
 	      </div>
 	    </td>
-	    <td x-ng-repeat="s in c.colors"
-		x-ng-if="c.tid===1 || c.tid===2 || c.tid===3 || c.tid===4
-			 || c.tid===5 || c.tid===6 || c.tid===7 || c.tid===8">
+	    <td x-ng-repeat="s in c.colors">
 	      <div class="checkbox checkbox-danger checkbox-circle">
 		<input id={{s.id}}
 		       type="checkbox"
@@ -1364,7 +1360,8 @@
 	   typeahead-editable="false"
 	   typeahead-on-select="params.on_select_ucolor($item, $model, $label);"
 	   typeahead="c as c.name for c in params.ucolors|filter:$viewValue|limitTo:20"
-	   x-ng-model="params.select_ucolor"/>
+	   x-ng-model="params.select_ucolor"
+	   x-ng-enter="params.select_ucolor?params.select_ucolor=undefined:ok()"/>
       </div>
     </div>
     
@@ -1373,7 +1370,7 @@
 		    table-condensed table-advanced">
 	<tbody>
 	  <tr x-ng-repeat="c in params.colors"> 
-	    <td x-ng-repeat="i in [0, 1, 2, 3, 4, 5, 6, 7]">
+	    <td x-ng-repeat="i in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]">
 	      <div x-ng-if="c[i].id" class="checkbox checkbox-danger checkbox-circle">
 		<input id={{c[i].id}}
 		       type="checkbox"

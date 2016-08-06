@@ -76,7 +76,7 @@ action(Session, Req, {"get_login_user_info"}) ->
     {ok, Catlogs} = ?w_user_profile:get(user_right, Merchant, Session),
     {ok, Shops}   = ?w_user_profile:get(user_shop, Merchant, Session),
 
-    ?DEBUG("login_user_info: shops ~p", [Shops]),
+    %% ?DEBUG("login_user_info: shops ~p", [Shops]),
     ?utils:respond(200, object, Req,
 		   {[{<<"ecode">>, 0},
 		     {<<"right">>, Catlogs},

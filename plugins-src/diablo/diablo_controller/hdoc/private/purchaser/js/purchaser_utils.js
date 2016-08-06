@@ -39,6 +39,7 @@ var stockUtils = function(){
 	},
 
 	d_sex: function(shop, base){
+	    // console.log(shop, base);
 	    return diablo_base_setting(
 		"d_sex", shop, base, parseInt, diablo_female);
 	},

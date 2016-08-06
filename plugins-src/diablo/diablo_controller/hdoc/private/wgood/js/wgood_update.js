@@ -22,6 +22,7 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
     $scope.types      = filterType;
     
     $scope.colors     = [];
+    $scope.grouped_colors = [];
 
     $scope.stock_right = {
 	show_orgprice: rightAuthen.authen(
@@ -41,28 +42,54 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
     //  {type:"蓝色", tid:2
     //      colors:[{name:"深蓝", id:3},
     // 	            {name:"浅蓝", id:4}]}, 
-    // ]; 
-    var in_sys_color = function(syscolors, color){
-	for(var i=0, l=syscolors.length; i<l; i++){
-	    if(syscolors[i].tid === color.tid){
-		syscolors[i].colors.push(
-		    {name: color.name, id:color.id});
-		return true;
-	    }
-	}
+    // ];
+    
+    // var in_sys_color = function(syscolors, color){
+    // 	for(var i=0, l=syscolors.length; i<l; i++){
+    // 	    if(syscolors[i].tid === color.tid){
+    // 		syscolors[i].colors.push(
+    // 		    {name: color.name, id:color.id});
+    // 		return true;
+    // 	    }
+    // 	}
 
-	return false;
-    };
+    // 	return false;
+    // };
 
     // colors
-    angular.forEach(filterColor, function(color){
-	if (!in_sys_color($scope.colors, color)){
-	    $scope.colors.push(
-		{type:color.type, tid:color.tid,
-		 colors:[{name:color.name, id:color.id}]})
-	}
-    });
+    // angular.forEach(filterColor, function(color){
+    // 	if (!in_sys_color($scope.colors, color)){
+    // 	    $scope.colors.push(
+    // 		{type:color.type, tid:color.tid,
+    // 		 colors:[{name:color.name, id:color.id}]})
+    // 	}
+    // });
 
+    $scope.colors = filterColor;
+    $scope.group_color_with_8 = function(){
+	var color = {};
+	$scope.grouped_colors = [];
+	for (var i=0, g=0, l=$scope.colors.length; i<l; i++){
+	    var gc = $scope.colors[i];
+	    var add_color = {id:gc.id, name:gc.name, py:diablo_pinyin(gc.name)};
+	    if (gc.select) {
+		add_color.select = true;
+		add_color.disabled = true; 
+	    };
+	    
+	    if (i <= (g+1)*10 - 1){
+		color[(i - g * 10).toString()] = add_color;
+	    } 
+	    if (i === (g+1) * 10){
+		$scope.grouped_colors.push(color);
+		g++;
+		color = {};
+		color[(i - g * 10).toString()] = add_color;
+	    }
+	} 
+	$scope.grouped_colors.push(color);
+	console.log($scope.grouped_colors);
+    };
     
     var dialog = diabloUtilsService;
     var promise = diabloPromise.promise;
@@ -103,31 +130,41 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 
 	// get selected color
 	$scope.selectColors = []; 
-	// $scope.good.color_desc=""; 
-	var descs = []; 
-	angular.forEach($scope.colors, function(colorInfo){
-	    angular.forEach(colorInfo.colors, function(color){
-		var selectColorIds = $scope.good.color.split(",");
-		for(var i=0, l=selectColorIds.length; i<l; i++){
-		    if (color.id === parseInt(selectColorIds[i])){
-			// $scope.good.color_desc += color.name + "；";
-			descs.push(color.name);
-			color.select = true;
-			color.disabled = true;
-			$scope.selectColors.push(angular.copy(color));
-		    } 
-		}
-	    })
-	});
+	var descs = [];
 
-	if ($scope.selectColors.length === 0){
-	    descs.push("均色");
-	}
+	angular.forEach($scope.colors, function(color){
+	    var selectColorIds = $scope.good.color.split(",");
+	    for(var i=0, l=selectColorIds.length; i<l; i++){
+		if (color.id === parseInt(selectColorIds[i])){
+		    descs.push(color.name);
+		    color.select = true;
+		    // color.disabled = true;
+		    $scope.selectColors.push(angular.copy(color));
+		} 
+	    }
+	});
+	
+	// angular.forEach($scope.colors, function(colorInfo){
+	//     angular.forEach(colorInfo.colors, function(color){
+	// 	var selectColorIds = $scope.good.color.split(",");
+	// 	for(var i=0, l=selectColorIds.length; i<l; i++){
+	// 	    if (color.id === parseInt(selectColorIds[i])){
+	// 		// $scope.good.color_desc += color.name + "；";
+	// 		descs.push(color.name);
+	// 		color.select = true;
+	// 		color.disabled = true;
+	// 		$scope.selectColors.push(angular.copy(color));
+	// 	    } 
+	// 	}
+	//     })
+	// });
+
+	if ($scope.selectColors.length === 0) descs.push("均色");
 	
 	$scope.good.color_desc = descs.toString();
 	$scope.src_good.color_desc = descs.toString();
-	// console.log($scope.selectColors);
-	// console.log($scope.good);
+
+	$scope.group_color_with_8(); 
     });
 
     $scope.delete_image = function(){
@@ -208,20 +245,27 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 		console.log(state);
 		if (state.ecode == 0){
 		    var append_color = function(newColorId){
-			var newColor = {
-			    id:      newColorId,
-			    name:    params.color.name,
-			    tid:     params.color.type.id,
-			    type:    params.color.type.name, 
-			    remark:  params.color.remark};
+			// var newColor = {
+			//     id:      newColorId,
+			//     name:    params.color.name,
+			//     tid:     params.color.type.id,
+			//     type:    params.color.type.name, 
+			//     remark:  params.color.remark};
 			
-			if (!in_sys_color($scope.colors, newColor)){
-			    $scope.colors.push(
-				{type:newColor.type,
-				 tid:newColor.tid,
-				 colors:[{name:newColor.name,id:newColor.id}]})
-			} 
-			console.log($scope.colors); 
+			// if (!in_sys_color($scope.colors, newColor)){
+			//     $scope.colors.push(
+			// 	{type:newColor.type,
+			// 	 tid:newColor.tid,
+			// 	 colors:[{name:newColor.name,id:newColor.id}]})
+			// } 
+			// console.log($scope.colors);
+			$scope.colors.push({
+			    id:newColorId,
+			    name:params.color.name,
+			    py:diablo_pinyin(params.color.name)
+			});
+
+			$scope.group_color_with_8();
 		    };
 		    
 		    dialog.response_with_callback(
@@ -236,41 +280,88 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	};
 	
 	dialog.edit_with_modal(
-	    'new-color.html', undefined, callback,
-	    $scope, {color: {types: $scope.colorTypes}})
+	    'new-color.html',
+	    undefined,
+	    callback,
+	    undefined,
+	    {color: {types: $scope.colorTypes}})
     }
-    
 
     // $scope.selectColors = []; 
+    // $scope.select_color = function(){
+    // 	var callback = function(params){
+    // 	    console.log(params.colors);
+	    
+    // 	    $scope.selectColors = []; 
+    // 	    // $scope.good.color_desc="";
+    // 	    var descs = [];
+    // 	    angular.forEach(params.colors, function(colorInfo){
+    // 		angular.forEach(colorInfo.colors, function(color){
+    // 		    if(angular.isDefined(color.select)
+    // 		       && color.select
+    // 		       && !color.disabled){
+    // 			descs.push(color.name);
+    // 			$scope.selectColors.push(angular.copy(color));
+    // 		    }
+    // 		})
+    // 	    });
+	    
+    // 	    $scope.good.color_desc = $scope.src_good.color_desc;
+    // 	    if (descs.length !== 0) $scope.good.color_desc += "," + descs.toString();
+	    
+    // 	    console.log($scope.selectColors); 
+    // 	    // save select info
+    // 	    $scope.colors = params.colors; 
+    // 	}; 
+	
+    // 	diabloUtilsService.edit_with_modal(
+    // 	    "select-color.html", undefined,
+    // 	    callback, $scope, {colors:$scope.colors});
+    // };
+
     $scope.select_color = function(){
 	var callback = function(params){
-	    console.log(params.colors);
-	    
-	    $scope.selectColors = []; 
-	    // $scope.good.color_desc="";
-	    var descs = [];
-	    angular.forEach(params.colors, function(colorInfo){
-		angular.forEach(colorInfo.colors, function(color){
-		    if(angular.isDefined(color.select)
-		       && color.select
-		       && !color.disabled){
-			descs.push(color.name);
-			$scope.selectColors.push(angular.copy(color));
+	    // console.log(params.colors);
+	    // console.log(params.ucolors); 
+	    $scope.selectColors = [];
+	    var descs = []; 
+	    for (var i=0, l1=params.colors.length; i<l1; i++){
+		for (j in params.colors[i]){
+		    var c = params.colors[i][j];
+		    if(c.select && !c.disabled){
+			descs.push(c.name);
+			$scope.selectColors.push(angular.copy(c));
 		    }
-		})
-	    });
-	    
+		}
+	    }
+
 	    $scope.good.color_desc = $scope.src_good.color_desc;
 	    if (descs.length !== 0) $scope.good.color_desc += "," + descs.toString();
 	    
 	    console.log($scope.selectColors); 
-	    // save select info
-	    $scope.colors = params.colors; 
+	    $scope.grouped_colors = angular.copy(params.colors);
 	}; 
+
+	var on_select_ucolor = function(item, model, label){
+	    model.select = true; 
+	};
 	
 	diabloUtilsService.edit_with_modal(
-	    "select-color.html", undefined,
-	    callback, $scope, {colors:$scope.colors});
+	    "select-color.html",
+	    'lg',
+	    callback,
+	    undefined,
+	    {colors:$scope.grouped_colors,
+	     ucolors: function(){
+		 var ucolors = [];
+		 for (var i=0, l1=$scope.grouped_colors.length; i<l1; i++){
+		     for (j in $scope.grouped_colors[i]){
+			 ucolors.push($scope.grouped_colors[i][j]); 
+		     }
+		 } 
+		 return ucolors;
+	     }(),
+	     on_select_ucolor: on_select_ucolor});
     };
 
     $scope.row_change_tag = function(good){
@@ -320,8 +411,9 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	update_good.discount  = parseInt(good.discount);
 	update_good.color     = function(){
 	    if (angular.isDefined($scope.selectColors) && $scope.selectColors.length > 0){
-		var colors = $scope.src_good.color.split(",").map(function(cid){return parseInt(cid)});
-
+		var colors = $scope.src_good.color.split(",").map(
+		    function(cid){return parseInt(cid)});
+		
 		for (var i=0, l=$scope.selectColors.length; i<l; i++)
 		    if (!in_array(colors, $scope.selectColors[i].id)){
 			colors.push($scope.selectColors[i].id); 

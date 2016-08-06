@@ -44,82 +44,12 @@ wgoodApp.controller("wgoodNewCtrl", function(
 	return undefined;
     };
 
-    // $scope.refresh_brand = function(){
-    // 	$scope.brands = wgoodService.list_purchaser_brand().then(
-    // 	    function(brands){
-    // 		// console.log(brands);
-    // 		return brands.map(function(b){
-    // 		    return {id: b.id, name:b.name, py:diablo_pinyin(b.name)};
-    // 		}) 
-    // 	    });
-    // }; 
-
     // firm
     $scope.firms = angular.copy(filterFirm);
-
-    // year
-    // $scope.$watch("good.year", function(newValue, oldValue){
-    // 	if(angular.isUndefined(newValue)){
-    // 	    $scope.good.year=diablo_now_year()
-    // 	}; 
-    // })
-    // $scope.get_firm_by_name = function(name){
-    // 	for(var i=0, l=$scope.firms.length; i<l; i++){
-    // 	    if (name === $scope.firms[i].name){
-    // 		return $scope.firms[i]
-    // 	    }
-    // 	}
-    // };
-
-    // $scope.refresh_firm = function(newFirmName){
-    // 	diabloFilter.get_firm().then(function(firms){
-    // 	    $scope.firms = firms;
-    // 	    $scope.good.firm = $scope.get_firm_by_name(newFirmName);
-    // 	})
-    // }; 
     
-    $scope.new_firm = function(){
-    	var callback = function(params){
-    	    console.log(params);
-
-    	    params.firm.balance = set_float(params.firm.balance);
-    	    wgoodService.new_firm(params.firm).then(function(state){
-    		console.log(state);
-
-    		var append_firm = function(newFirmId){
-    		    var newFirm = {
-    			id:      newFirmId,
-    			name:    params.firm.name,
-    			py:      diablo_pinyin(params.firm.name),
-    			balance: params.firm.balance};
-		    
-    		    $scope.firms.push(newFirm);
-    		    $scope.good.firm = newFirm; 
-    		};
-		
-    		if (state.ecode == 0){
-    		    dialog.response_with_callback(
-    			true, "新增厂家",
-    			"恭喜你，厂家 " + params.firm.name + " 成功创建！！",
-    			$scope, function(){
-			    append_firm(state.id);
-			    diabloFilter.reset_firm()});
-    		} else{
-    		    dialog.response(
-    	    		false, "新增厂家",
-    	    		"新增厂家失败：" + wgoodService.error[state.ecode]);
-    		};
-    	    })
-	    
-    	};
-
-    	dialog.edit_with_modal(
-    	    "new-firm.html", undefined, callback, $scope, {firm:{}});
-    };
-
     // type
     $scope.types = angular.copy(filterType);
-
+    
     $scope.refresh_type = function(){
 	$scope.types = wgoodService.list_purchaser_type().then(
 	    function(types){
@@ -185,36 +115,64 @@ wgoodApp.controller("wgoodNewCtrl", function(
     });
     
     // get all color
-    var in_sys_color = function(syscolors, color){
-	for(var i=0, l=syscolors.length; i<l; i++){
-	    if(syscolors[i].tid === color.tid){
-		syscolors[i].colors.push(
-		    {name: color.name, id:color.id});
-		return true;
-	    }
-	}
+    // var in_sys_color = function(syscolors, color){
+    // 	for(var i=0, l=syscolors.length; i<l; i++){
+    // 	    if(syscolors[i].tid === color.tid){
+    // 		syscolors[i].colors.push(
+    // 		    {name: color.name, id:color.id});
+    // 		return true;
+    // 	    }
+    // 	}
 
-	return false;
-    };
+    // 	return false;
+    // };
 
     // color
     $scope.colors = [];
     wgoodService.list_purchaser_color().then(function(colors){
 	// console.log(colors); 
 	angular.forEach(colors, function(color){
-	    if (!in_sys_color($scope.colors, color)){
-		$scope.colors.push(
-		    {type:color.type, tid:color.tid,
-		     colors:[{name:color.name, id:color.id}]})
-	    }
-	}); 
-	console.log($scope.colors);
+	    $scope.colors.push({id:color.id, name:color.name, py:diablo_pinyin(color.name)});
+	    // if (!in_sys_color($scope.colors, color)){
+	    // 	$scope.colors.push(
+	    // 	    {type:color.type, tid:color.tid,
+	    // 	     colors:[{name:color.name, id:color.id}]})
+	    // }
+	});
+
+	$scope.group_color_with_8();
+	// console.log($scope.colors);
     });
     
     wgoodService.list_color_type().then(function(data){
-	console.log(data);
-	$scope.colorTypes = data;
+    	// console.log(data);
+    	$scope.colorTypes = data;
     });
+
+    $scope.group_color_with_8 = function(){
+	var color = {};
+	$scope.grouped_colors = [];
+	for (var i=0, g=0, l=$scope.colors.length; i<l; i++){
+	    var gc = $scope.colors[i];
+	    var add_color = {id:gc.id, name:gc.name, py:diablo_pinyin(gc.name)};
+	    if (gc.select) {
+		add_color.select = true;
+		add_color.disabled = true; 
+	    };
+	    
+	    if (i <= (g+1)*10 - 1){
+		color[(i - g * 10).toString()] = add_color;
+	    } 
+	    if (i === (g+1) * 10){
+		$scope.grouped_colors.push(color);
+		g++;
+		color = {};
+		color[(i - g * 10).toString()] = add_color;
+	    }
+	} 
+	$scope.grouped_colors.push(color);
+	// console.log($scope.grouped_colors);
+    };
     
     $scope.new_color = function(){
 	var callback = function(params){
@@ -226,19 +184,27 @@ wgoodApp.controller("wgoodNewCtrl", function(
 		console.log(state);
 
 		var append_color = function(newColorId){
-		    var newColor = {
-			id:      newColorId,
-			name:    params.color.name,
-			tid:     params.color.type.id,
-			type:    params.color.type.name, 
-			remark:  params.color.remark};
+		    // var newColor = {
+		    // 	id:      newColorId,
+		    // 	name:    params.color.name,
+		    // 	tid:     params.color.type.id,
+		    // 	type:    params.color.type.name, 
+		    // 	remark:  params.color.remark};
 		    
-		    if (!in_sys_color($scope.colors, newColor)){
-			$scope.colors.push(
-			    {type: newColor.type,
-			     tid:  newColor.tid,
-			     colors:[{name:newColor.name, id:newColor.id}]})
-		    } 
+		    // if (!in_sys_color($scope.colors, newColor)){
+		    // 	$scope.colors.push(
+		    // 	    {type: newColor.type,
+		    // 	     tid:  newColor.tid,
+		    // 	     colors:[{name:newColor.name, id:newColor.id}]})
+		    // }
+
+		    $scope.colors.push({
+			id:newColorId,
+			name:params.color.name,
+			py:diablo_pinyin(params.color.name)
+		    });
+
+		    $scope.group_color_with_8();
 		    // console.log($scope.colors); 
 		}; 
 		
@@ -265,32 +231,74 @@ wgoodApp.controller("wgoodNewCtrl", function(
     
 
     // $scope.selectColors = []; 
+    // $scope.select_color = function(){
+    // 	var callback = function(params){
+    // 	    console.log(params.colors);
+	    
+    // 	    $scope.selectColors = []; 
+    // 	    $scope.good.colors="";
+    // 	    angular.forEach(params.colors, function(colorInfo){
+    // 		angular.forEach(colorInfo.colors, function(color){
+    // 		    if(angular.isDefined(color.select) && color.select){
+    // 			$scope.good.colors += color.name + "；";
+    // 			$scope.selectColors.push(angular.copy(color));
+    // 		    }
+    // 		})
+    // 	    }); 
+    // 	    console.log($scope.selectColors);
+
+    // 	    // save select info
+    // 	    $scope.colors = angular.copy(params.colors);
+
+	    
+    // 	}; 
+	
+    // 	diabloUtilsService.edit_with_modal(
+    // 	    "select-color.html", 'lg',
+    // 	    callback, $scope, {colors:$scope.colors});
+    // };
+
     $scope.select_color = function(){
 	var callback = function(params){
-	    console.log(params.colors);
-	    
-	    $scope.selectColors = []; 
+	    // console.log(params.colors);
+	    // console.log(params.ucolors); 
+	    $scope.selectColors = [];
 	    $scope.good.colors="";
-	    angular.forEach(params.colors, function(colorInfo){
-		angular.forEach(colorInfo.colors, function(color){
-		    if(angular.isDefined(color.select) && color.select){
-			$scope.good.colors += color.name + "；";
-			$scope.selectColors.push(angular.copy(color));
+	    for (var i=0, l1=params.colors.length; i<l1; i++){
+		for (j in params.colors[i]){
+		    var c = params.colors[i][j];
+		    if(c.select){
+			$scope.good.colors += c.name + "；";
+			$scope.selectColors.push(angular.copy(c));
 		    }
-		})
-	    }); 
-	    console.log($scope.selectColors);
-
-	    // save select info
-	    $scope.colors = angular.copy(params.colors);
-
+		}
+	    }
 	    
+	    console.log($scope.selectColors); 
+	    $scope.grouped_colors = angular.copy(params.colors);
 	}; 
+
+	var on_select_ucolor = function(item, model, label){
+	    model.select = true; 
+	};
 	
 	diabloUtilsService.edit_with_modal(
-	    "select-color.html", undefined,
-	    callback, $scope, {colors:$scope.colors});
-    }; 
+	    "select-color.html",
+	    'lg',
+	    callback,
+	    undefined,
+	    {colors:$scope.grouped_colors,
+	     ucolors: function(){
+		 var ucolors = [];
+		 for (var i=0, l1=$scope.grouped_colors.length; i<l1; i++){
+		     for (j in $scope.grouped_colors[i]){
+			 ucolors.push($scope.grouped_colors[i][j]); 
+		     }
+		 } 
+		 return ucolors;
+	     }(),
+	     on_select_ucolor: on_select_ucolor});
+    };
 
     /*
      * size group
@@ -414,13 +422,19 @@ wgoodApp.controller("wgoodNewCtrl", function(
 	    ? $scope.promotions[0]:undefined,
 	org_price : 0,
 	tag_price : 0,
-	ediscount : 0,
+	ediscount : 100,
 	discount  : 100,
 	alarm_day : 7,
 	year      : diablo_now_year(),
 	season    : $scope.seasons[0]
     };
 
+    $scope.row_change_tag = function(good){
+	good.ediscount = diablo_discount(
+	    stockUtils.to_float(good.org_price),
+	    stockUtils.to_float(good.tag_price));
+    }
+    
     $scope.row_change_price = function(good){
 	// inv.org_price = stockUtils.to_float(inv.org_price);
 	good.ediscount = diablo_discount(
@@ -519,17 +533,24 @@ wgoodApp.controller("wgoodNewCtrl", function(
 			// reset color
 			$scope.selectColors = [];
 			$scope.good.colors="";
+			
 			// console.log($scope.colors);
-			angular.forEach($scope.colors, function(colorInfo){
-			    angular.forEach(colorInfo, function(color){
-				// console.log(color);
-				angular.forEach(color, function(c){
-				    if (angular.isDefined(c.select)){
-					c.select = false;
-				    }
-				}) 
-			    })
+			angular.forEach($scope.colors, function(color){
+			    if (color.select) color.select = false;
 			});
+
+			console.log($scope.grouped_colors);
+			
+			// angular.forEach($scope.colors, function(colorInfo){
+			//     angular.forEach(colorInfo, function(color){
+			// 	// console.log(color);
+			// 	angular.forEach(color, function(c){
+			// 	    if (angular.isDefined(c.select)){
+			// 		c.select = false;
+			// 	    }
+			// 	}) 
+			//     })
+			// });
 
 			// console.log($scope.colors);
 			
@@ -616,11 +637,6 @@ wgoodApp.controller("wgoodDetailCtrl", function(
     $scope, $location, dateFilter, diabloUtilsService,
     diabloPagination, wgoodService, user, diabloFilter,
     filterPromotion, filterBrand, filterFirm, filterType, filterColor, base){
-    // console.log(filterNumber);
-    // console.log(firms);
-    // console.log(filterBrand);
-    // console.log(filterType); 
-
     /*
      * authen
      */

@@ -6,7 +6,7 @@
 -export([shop_action/2, get_shops/1, shops/2]).
 
 shop_action(Action, Shops) ->
-    ?DEBUG("shpos ~p", [Shops]),
+    %% ?DEBUG("shpos ~p", [Shops]),
     lists:foldr(
       fun({Id, Name, FunId, RepoId, Charge, Score, Region, Type}, Acc) ->
 	      {ok, Children} =
@@ -54,7 +54,7 @@ get_shops(Session) ->
 		  end
 		  %% [{?to_string(Id), ?to_string(Name)}|Acc]
 	  end, [],  Shops),
-    ?DEBUG("sort shops ~p", [SortShops]),
+    %% ?DEBUG("sort shops ~p", [SortShops]),
     SortShops.
 
 

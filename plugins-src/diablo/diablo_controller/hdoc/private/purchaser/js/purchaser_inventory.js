@@ -1072,19 +1072,17 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	$scope.grouped_colors = [];
 	for (var i=0, g=0, l=$scope.colors.length; i<l; i++){
 	    var gc = $scope.colors[i];
-	    if (i <= (g+1)*8 - 1){
-		color[(i - g * 8).toString()] = {id:gc.id, name:gc.name, py:diablo_pinyin(gc.name)};
+	    if (i <= (g+1)*10 - 1){
+		color[(i - g * 10).toString()] = {id:gc.id, name:gc.name, py:diablo_pinyin(gc.name)};
 	    } 
-	    if (i === (g+1) * 8){
+	    if (i === (g+1) * 10){
 		$scope.grouped_colors.push(color);
 		g++;
 		color = {};
-		color[(i - g * 8).toString()] = {id:gc.id, name:gc.name, py:diablo_pinyin(gc.name)};
+		color[(i - g * 10).toString()] = {id:gc.id, name:gc.name, py:diablo_pinyin(gc.name)};
 	    }
-	}
-
+	} 
 	$scope.grouped_colors.push(color); 
-	// console.log($scope.grouped_colors);
     };
 
     if (diablo_no === $scope.base_settings.group_color){
@@ -1258,7 +1256,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope.form = {};
     $scope.good_saving = false; 
     $scope.good = {
-	sex       : $scope.sex2objs[stockUtils.d_sex($scope.select.shop, base)],
+	sex       : $scope.sex2objs[stockUtils.d_sex($scope.select.shop.id, base)],
 	org_price : 0, 
 	tag_price : 0, 
 	ediscount : 0,

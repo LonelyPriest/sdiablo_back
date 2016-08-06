@@ -15,7 +15,7 @@ wsaleApp.controller("wsaleRejectCtrl", function(
     $scope.brands        = filterBrand;
     $scope.types         = filterType;
     $scope.retailers     = filterRetailer;
-    $scope.employees     = filterEmployee;
+    $scope.employees     = [];
     $scope.size_groups   = filterSizeGroup;
     $scope.colors        = filterColor;
     $scope.base_settings = base;
@@ -65,7 +65,7 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 		    $scope.shops,
 		    $scope.brands,
 		    $scope.retailers,
-		    $scope.employees,
+		    filterEmployee,
 		    $scope.types,
 		    $scope.colors,
 		    $scope.size_groups,
@@ -86,6 +86,12 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 		    $scope.select.shop.id, $scope.base_settings);
 		$scope.setting.comments = wsaleUtils.comment($scope.select.shop.id, $scope.base_settings);
 		$scope.setting.p_mode = wsaleUtils.print_mode($scope.select.shop.id, $scope.base_settings);
+
+		$scope.employees = wsaleUtils.get_login_employee(
+		    $scope.select.shop.id,
+		    base.employ_id,
+		    filterEmployee).filter;
+		
 		if (diablo_frontend === $scope.setting.p_mode) {
 		    if (needCLodop()) loadCLodop(); 
 		}
@@ -124,7 +130,7 @@ wsaleApp.controller("wsaleRejectCtrl", function(
     
     // employees
     if ($scope.employees.length !== 0){
-	$scope.select.employee = $scope.employees[0];
+    	$scope.select.employee = $scope.employees[0];
     };
     
     // calender

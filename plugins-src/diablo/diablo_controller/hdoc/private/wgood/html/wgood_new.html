@@ -193,7 +193,8 @@
 			 placeholder="吊牌价，支持二位小数"
 			 x-ng-pattern="pattern.price"
 			 x-ng-enter=""
-			 x-ng-model="good.tag_price"/>
+			 x-ng-model="good.tag_price"
+			 x-ng-change="row_change_tag(good)"/>
 		  <span class="input-group-addon bg-white fg-red">*</span> 
 		</div>
 	      </div>
@@ -274,41 +275,7 @@
 			  && !goodForm.ediscount.$pristine">
 		<span style="color:red">(dd.dd)，无折扣请输入100</span>
 	      </div>
-	    </div>
-
-	    <!-- <div class="form-group diablo-good-form-group"> -->
-	    <!--   <label class="col-sm-3 col-md-3 control-label">促销方案</label> -->
-	    <!--   <div class="col-sm-6 col-md-6"> -->
-	    <!-- 	<select class="form-control" -->
-	    <!-- 		x-ng-model="good.promotion" -->
-	    <!-- 		x-ng-options="p as p.name for p in promotions"> -->
-	    <!-- 	</select> -->
-	    <!--   </div> -->
-	    <!-- </div> -->
-
-	    <!-- alarm day-->
-	    <div class="form-group diablo-good-form-group">
-	      <label class="col-sm-3 col-md-3 control-label">预警天数</label>
-	      <div class="col-sm-6 col-md-6"> 
-		<div class="input-group">
-		  <div ng-class="{'has-error':goodForm.alarm.$invalid
-				 && !goodForm.discount.$pristine}">
-		    <input class="form-control"
-			   type="number" step="1" 
-			   name="alarm"
-			   required
-			   placeholder="请输入1到2位数字"
-			   x-ng-pattern="/^\d{1,2}$/"
-			   x-ng-model="good.alarm_day"></input>
-		  </div>
-		  <span class="input-group-addon bg-white fg-red">*</span>
-		</div>
-	      </div>
-	      <div ng-if="goodForm.alarm.$invalid
-			  && !goodForm.alarm.$pristine">
-		<span style="color:red">请输入1到2位数字</span>
-	      </div>
-	    </div>
+	    </div> 
 
 	    <div class="form-group diablo-good-form-group">
 	      <label class="col-sm-3 col-md-3 control-label">颜色</label>
@@ -399,114 +366,6 @@
   </div> <!--END col-md-12-->
 </div><!--END row-->
 
-
-<script type="text/ng-template" id="new-firm.html">
-  <div class="modal-header">
-    <button class="close" x-ng-click="cancel()" type="button">
-      <span aria-hidden="true">&times;</span>
-      <span class="sr-only"></span>
-    </button>
-    
-    <h4 class="modal-title"><span class="label label-sm label-primary">新增厂商</span></h4>
-  </div>
-
-  <div class="modal-body">
-    <form class="form-horizontal" name="firmForm" novalidate>
-      <div class="form-body">
-	<!--Name-->
-	<div class="form-group">
-	  <label class="col-sm-3 col-md-3 control-label">名称</label>
-	  <div class="col-sm-6 col-md-6">
-	    <div class="input-group">
-	      <input type="text"
-		     class="form-control"
-		     name="name"
-		     required
-		     placeholder="请输入厂商名称"
-		     x-ng-model="params.firm.name"
-		     x-ng-minlength="2"
-		     x-ng-maxlength="8"/>
-	      <span class="input-group-addon bg-white fg-red">*</span>
-	    </div>
-	  </div>
-	  <div ng-show="firmForm.name.$error.minlength
-			|| firmForm.name.$error.maxlength">
-	    <span style="color:red">厂商名称太短，请输入2-8个字符</span>
-	  </div>
-	</div>
-
-	<!--balance-->
-	<div class="form-group">
-	  <label class="col-sm-3 col-md-3 control-label">欠款</label>
-	  <div class="col-sm-6 col-md-6">
-	    <input class="form-control"
-		   type="number" step="0.01"
-		   name="balance"
-		   placeholder="默认为0，支持两位小数"
-		   x-ng-model="params.firm.balance"
-		   x-ng-pattern="/^[+|\-]?\d+(.\d{1,2})?$/"></input> 
-	  </div>
-	  <div ng-show="firmForm.balance.$invalid && !firmForm.balance.$pristine">
-	    <span class="fg-red">请输入正确的数字，支持两位小数</span>
-	  </div>
-	</div>
-
-	<!--mobile-->
-	<div class="form-group"
-	     ng-class="{'has-error': firmForm.mobile.$invalid
-		       && !firmForm.mobile.$pristine}">
-	  <label class="col-sm-3 col-md-3 control-label">联系方式</label>
-	  <div class="col-sm-6 col-md-6">
-	    <input type="tel"
-		   name="mobile"
-		   ng-pattern="/^\d{3,4}\d{7,8}$/"
-		   placeholder="请输入电话或手机号码"
-		   class="form-control"
-		   x-ng-model="params.firm.mobile" /> 
-	  </div>
-	  <div ng-show="firmForm.mobile.$invalid && !firmForm.mobile.$pristine">
-	    <span style="color:red">请输入正确的电话或手机号码</span>
-	  </div>
-	</div>
-
-	<div class="form-group">
-	  <label class="col-sm-3 col-md-3 control-label">联系地址</label>
-	  <div class="col-sm-6 col-md-6">
-	    <div class="input-group">
-	    <input type="text"
-		   class="form-control"
-		   name="address"
-		   required
-		   placeholder="请输入厂商地址"
-		   x-ng-model="params.firm.address"
-		   x-ng-minlength="2"
-		   x-ng-maxlength="20" />
-	      <span class="input-group-addon bg-white fg-red">*</span>
-	    </div>
-	  </div>
-	  <div ng-show="firmForm.address.$error.minlength
-			|| firmForm.address.$error.maxlength">
-	    <span style="color:red">名称太短，请输入2-20个字符</span>
-	  </div>
-	</div>
-	
-      </div>
-    </form>
-  </div>
-
-  <!--BEGIN modal-footer-->
-  <div class="modal-footer">
-    <button class="btn btn-primary"
-	    x-ng-disabled="firmForm.$invalid"
-	    x-ng-click="ok()">确认</button>
-    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
-  </div>
-  
-  <!--END modal-footer-->
-</script>
-
-
-
 <script type="text/ng-template" id="new-color.html">
   <div class="modal-header">
     <button class="close" x-ng-click="cancel()" type="button">
@@ -586,25 +445,73 @@
 </script>
 
 
+<!-- <script type="text/ng-template" id="select-color.html"> -->
+<!--   <div class="modal-body"> -->
+<!--     <div class="table-responsive"> -->
+<!--       <table class="table table-bordered table-striped table-condensed table-advanced"> -->
+<!-- 	<tbody> -->
+<!-- 	  <tr x-ng-repeat="c in params.colors"> -->
+<!-- 	    <td class="text-center vert-align">{{c.type}}</td> -->
+<!-- 	    <td x-ng-repeat="s in c.colors"> -->
+<!-- 	      <div class="checkbox checkbox-danger checkbox-circle"> -->
+<!-- 		<input id={{s.id}} -->
+<!-- 		       type="checkbox" -->
+<!-- 		       x-ng-model="s.select" -->
+<!-- 		       x-ng-click="$event.stopPropagation()"/> -->
+<!-- 		<label for={{s.id}}>{{s.name}}</label> -->
+<!-- 	      </div> -->
+<!-- 	    </td> -->
+<!-- 	  </tr> -->
+<!-- 	</tbody> -->
+<!--       </table> -->
+<!--     </div> -->
+<!--   </div> <\!--END modal-body-\-> -->
+
+<!--   <div class="modal-footer"> -->
+<!--     <button class="btn btn-primary" x-ng-click="ok()">确认</button> -->
+<!--     <button class="btn btn-warning" x-ng-click="cancel()">取消</button> -->
+<!--   </div>   -->
+<!-- </script> -->
+
 <script type="text/ng-template" id="select-color.html">
   <div class="modal-body">
-    <div class="table-responsive">
-      <table class="table table-bordered table-striped table-condensed table-advanced">
+    <div class="diablo-margin-bottom-5">
+      <div class="input-group">
+	<span class="input-group-addon">
+	  <i class="glyphicon glyphicon-search fg-red"></i>
+	</span>
+	<input
+	   class="form-control"
+	   placeholder="请输入颜色名称，支持首字母拼音查询"
+	   focus-auto=true
+	   ng-edit
+	   typeahead-editable="false"
+	   typeahead-on-select="params.on_select_ucolor($item, $model, $label)"
+	   typeahead="c as c.name for c in params.ucolors|filter:$viewValue|limitTo:20"
+	   x-ng-model="params.select_ucolor"
+	   x-ng-enter="params.select_ucolor?params.select_ucolor=undefined:ok()" />
+      </div>
+    </div>
+    
+    <div class="table-responsive"> 
+      <table class="table table-bordered table-striped
+		    table-condensed table-advanced">
 	<tbody>
-	  <tr x-ng-repeat="c in params.colors">
-	    <td class="text-center vert-align">{{c.type}}</td>
-	    <td x-ng-repeat="s in c.colors">
-	      <div class="checkbox checkbox-danger checkbox-circle">
-		<input id={{s.id}}
+	  <tr x-ng-repeat="c in params.colors"> 
+	    <td x-ng-repeat="i in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]">
+	      <div x-ng-if="c[i].id" class="checkbox checkbox-danger checkbox-circle">
+		<input id={{c[i].id}}
 		       type="checkbox"
-		       x-ng-model="s.select"
-		       x-ng-click="$event.stopPropagation()"/>
-		<label for={{s.id}}>{{s.name}}</label>
+		       x-ng-model="c[i].select"
+		       x-ng-click="$event.stopPropagation()"
+		       x-ng-enter="ok()"/>
+		<label for={{c[i].id}}>{{c[i].name}}</label>
 	      </div>
 	    </td>
 	  </tr>
 	</tbody>
-      </table>
+      </table> 
+      
     </div>
   </div> <!--END modal-body-->
 
@@ -613,7 +520,6 @@
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>  
 </script>
-
 
 
 <script type="text/ng-template" id="new-size.html">

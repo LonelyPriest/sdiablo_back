@@ -407,123 +407,6 @@
   </div> <!--END col-md-12-->
 </div><!--END row-->
 
-
-<script type="text/ng-template" id="new-firm.html">
-  <div class="modal-header">
-    <button class="close" x-ng-click="cancel()" type="button">
-      <span aria-hidden="true">&times;</span>
-      <span class="sr-only"></span>
-    </button>
-    
-    <h4 class="modal-title">
-      <span class="label label-sm label-primary">新增厂商</span>
-    </h4>
-  </div>
-
-  <div class="modal-body">
-    <form class="form-horizontal" name="firmForm" novalidate> 
-      <div class="form-body">
-	    <!--Name-->
-	    <div class="form-group">
-	      <label class="col-sm-3 col-md-3 control-label">名称</label>
-	      <div class="col-sm-6 col-md-6">
-		<div class="input-group">
-		<input type="text"
-		       class="form-control"
-		       name="name"
-		       required
-		       placeholder="请输入厂商名称"
-		       x-ng-model="params.firm.name"
-		       x-ng-minlength="2"
-		       x-ng-maxlength="8"></input>
-		<span class="input-group-addon bg-white fg-red">*</span>
-		</div>
-	      </div>
-	      <div ng-show="firmForm.name.$error.minlength
-			    || firmForm.name.$error.maxlength">
-		<span style="color:red">厂商名称太短，请输入2-8个字符</span>
-	      </div> 
-	    </div>
-
-	    <!--balance-->
-	    <div class="form-group">
-	      <label class="col-sm-3 col-md-3 control-label">欠款</label>
-	      <div class="col-sm-6 col-md-6">
-		<!-- <div class="input-group"> -->
-		<input type="text"
-		       class="form-control"
-		       name="params.balance"
-		       placeholder="默认为0，支持两位小数"
-		       x-ng-model="firm.balance"
-		       x-ng-pattern="/^[+|\-]?\d+(.\d{1,2})?$/"></input>
-		<!-- <span class="input-group-addon bg-white fg-red">*</span> -->
-		<!-- </div> -->
-	      </div>
-	      <div ng-show="firmForm.balance.$invalid
-			    && !firmForm.balance.$pristine">
-		<span class="fg-red">请输入正确的数字，支持两位小数</span>
-	      </div> 
-	    </div>
-
-	    <!--mobile-->
-	    <div class="form-group"
-		 ng-class="{'has-error': firmForm.mobile.$invalid
-			   && !firmForm.mobile.$pristine}">
-	      <label class="col-sm-3 col-md-3 control-label">联系方式</label>
-	      <div class="col-sm-6 col-md-6">
-		<!-- <div class="input-group"> -->
-		<input type="text"
-		       name="mobile"
-		       ng-pattern="/^\d{3,4}\d{7,8}$/"
-		       placeholder="请输入电话或手机号码"
-		       class="form-control"
-		       x-ng-model="params.firm.mobile"/>
-		<!-- </div> -->
-	      </div>
-	      <div ng-show="firmForm.mobile.$invalid
-			    && !firmForm.mobile.$pristine">
-		<span style="color:red">请输入正确的电话或手机号码</span>
-	      </div>
-	    </div>
-
-	    <div class="form-group">
-	      <label class="col-sm-3 col-md-3 control-label">联系地址</label>
-	      <div class="col-sm-6 col-md-6">
-		<div class="input-group">
-		<input type="text"
-		       class="form-control"
-		       name="address"
-		       required
-		       placeholder="请输入您的联系地址"
-		       x-ng-model="params.firm.address"
-		       x-ng-minlength="2"
-		       x-ng-maxlength="20"></input>
-		<span class="input-group-addon bg-white fg-red">*</span>
-		</div>
-	      </div>
-	      <div ng-show="firmForm.address.$error.minlength
-			    || firmForm.address.$error.maxlength">
-		<span style="color:red">名称太短，请输入2-20个字符</span>
-	      </div> 
-	    </div>
-	    
-	  </div> 
-    </form>
-  </div>
-
-  <!--BEGIN modal-footer-->
-  <div class="modal-footer">
-    <button class="btn btn-primary"
-	    x-ng-disabled="firmForm.$invalid"
-	    x-ng-click="ok()">确认</button>
-    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
-  </div>
-  
-  <!--END modal-footer-->
-</script>
-
-
-
 <script type="text/ng-template" id="new-color.html">
   <div class="modal-header">
     <button class="close" x-ng-click="cancel()" type="button">
@@ -601,25 +484,74 @@
 </script>
 
 
+<!-- <script type="text/ng-template" id="select-color.html"> -->
+<!--   <div class="modal-body"> -->
+<!--     <div class="table-responsive"> -->
+<!--       <table class="table table-bordered table-striped table-condensed table-advanced"> -->
+<!-- 	<tbody> -->
+<!-- 	  <tr x-ng-repeat="c in params.colors"> -->
+<!-- 	    <td class="text-center vert-align">{{c.type}}</td> -->
+<!-- 	    <td x-ng-repeat="s in c.colors"> -->
+<!-- 	      <div class="checkbox checkbox-danger checkbox-circle"> -->
+<!-- 		<input id={{s.id}} -->
+<!-- 		       type="checkbox" -->
+<!-- 		       x-ng-disabled="s.disabled" -->
+<!-- 		       x-ng-model="s.select"></input> -->
+<!-- 		<label for={{s.id}}>{{s.name}}</label> -->
+<!-- 	      </div> -->
+<!-- 	    </td> -->
+<!-- 	  </tr> -->
+<!-- 	</tbody> -->
+<!--       </table> -->
+<!--     </div> -->
+<!--   </div> <\!--END modal-body-\-> -->
+
+<!--   <div class="modal-footer"> -->
+<!--     <button class="btn btn-primary" x-ng-click="ok()">确认</button> -->
+<!--     <button class="btn btn-warning" x-ng-click="cancel()">取消</button> -->
+<!--   </div>   -->
+<!-- </script> -->
+
 <script type="text/ng-template" id="select-color.html">
   <div class="modal-body">
-    <div class="table-responsive">
-      <table class="table table-bordered table-striped table-condensed table-advanced">
+    <div class="diablo-margin-bottom-5">
+      <div class="input-group">
+	<span class="input-group-addon">
+	  <i class="glyphicon glyphicon-search fg-red"></i>
+	</span>
+	<input
+	   class="form-control"
+	   placeholder="请输入颜色名称，支持首字母拼音查询"
+	   focus-auto=true
+	   ng-edit
+	   typeahead-editable="false"
+	   typeahead-on-select="params.on_select_ucolor($item, $model, $label)"
+	   typeahead="c as c.name for c in params.ucolors|filter:$viewValue|limitTo:20"
+	   x-ng-model="params.select_ucolor"
+	   x-ng-enter="params.select_ucolor?params.select_ucolor=undefined:ok()" />
+      </div>
+    </div>
+    
+    <div class="table-responsive"> 
+      <table class="table table-bordered table-striped
+		    table-condensed table-advanced">
 	<tbody>
-	  <tr x-ng-repeat="c in params.colors">
-	    <td class="text-center vert-align">{{c.type}}</td>
-	    <td x-ng-repeat="s in c.colors">
-	      <div class="checkbox checkbox-danger checkbox-circle">
-		<input id={{s.id}}
+	  <tr x-ng-repeat="c in params.colors"> 
+	    <td x-ng-repeat="i in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]">
+	      <div x-ng-if="c[i].id" class="checkbox checkbox-danger checkbox-circle">
+		<input id={{c[i].id}}
 		       type="checkbox"
-		       x-ng-disabled="s.disabled"
-		       x-ng-model="s.select"></input>
-		<label for={{s.id}}>{{s.name}}</label>
+		       x-ng-disabled="c[i].disabled"
+		       x-ng-model="c[i].select"
+		       x-ng-click="$event.stopPropagation()"
+		       x-ng-enter="ok()"/>
+		<label for={{c[i].id}}>{{c[i].name}}</label>
 	      </div>
 	    </td>
 	  </tr>
 	</tbody>
-      </table>
+      </table> 
+      
     </div>
   </div> <!--END modal-body-->
 
@@ -628,226 +560,3 @@
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>  
 </script>
-
-
-
-<!-- <script type="text/ng-template" id="new-size.html"> -->
-<!--   <div class="modal-header"> -->
-<!--     <button class="close" x-ng-click="cancel()" type="button"> -->
-<!--       <span aria-hidden="true">&times;</span> -->
-<!--       <span class="sr-only"></span> -->
-<!--     </button> -->
-    
-<!--     <h4 class="modal-title"><span class="label label-sm label-primary">新增尺码组</span></h4> -->
-<!--   </div> -->
-
-<!--   <div class="modal-body"> -->
-<!--     <form class="form-horizontal" name="sizeForm" novalidate> -->
-<!--       <div class="form-body"> -->
-	
-<!-- 	<div class="form-group"> -->
-<!-- 	  <label class="col-sm-3 col-md-3 control-label">名称</label> -->
-<!-- 	  <div class="col-sm-6 col-md-6">  -->
-<!-- 	    <div class="input-group">  -->
-<!-- 	      <input class="form-control" type="text" -->
-<!-- 		     required -->
-<!-- 		     name="name" -->
-<!-- 		     placeholder="请输入尺码名称" -->
-<!-- 		     x-ng-maxlength="10" -->
-<!-- 		     x-ng-model="params.size.name" -->
-<!-- 		     x-ng-pattern="/^[A-Za-z0-9-_\u4e00-\u9fa5]+$/"</input>  -->
-<!-- 	      <span class="input-group-addon bg-white fg-red">*</span> -->
-<!-- 	    </div> -->
-<!-- 	  </div> -->
-<!-- 	  <div ng-show="sizeForm.name.$invalid && !sizeForm.name.$pristine"> -->
-<!-- 	    <span class="fg-red">请输入汉字，字母，下划线或数字</span> -->
-<!-- 	  </div> -->
-<!-- 	</div> -->
-
-<!-- 	<\!--SI-\-> -->
-<!-- 	<div class="form-group"> -->
-<!-- 	  <label class="col-sm-3 col-md-3 control-label">尺码I</label> -->
-<!-- 	  <div class="col-sm-6 col-md-6">  -->
-<!-- 	    <div class="input-group">  -->
-<!-- 	      <input class="form-control" type="text" -->
-<!-- 		     name="si" -->
-<!-- 		     placeholder="请输入尺码I" -->
-<!-- 		     capitalize -->
-<!-- 		     x-ng-maxlength="10" -->
-<!-- 		     x-ng-model="params.size.si" -->
-<!-- 		     x-ng-pattern="/^[A-Za-z0-9\/]+$/"></input>  -->
-<!-- 	      <span class="input-group-addon bg-white fg-red">*</span> -->
-<!-- 	    </div> -->
-<!-- 	  </div> -->
-<!-- 	  <div ng-show="sizeForm.si.$invalid && !sizeForm.si.$pristine"> -->
-<!-- 	    <span class="fg-red">请输入字母或数字</span> -->
-<!-- 	  </div> -->
-<!-- 	  <div ng-show="!params.check_same(params.size, 'si', params.size.si)"> -->
-<!-- 	    <span class="fg-red">尺码已存在，请重新输入</span> -->
-<!-- 	  </div> -->
-<!-- 	</div> -->
-
-<!-- 	<\!--SII-\-> -->
-<!-- 	<div class="form-group"> -->
-<!-- 	  <label class="col-sm-3 col-md-3 control-label">尺码II</label> -->
-<!-- 	  <div class="col-sm-6 col-md-6">  -->
-<!-- 	    <div class="input-group"> -->
-	      
-<!-- 	      <input class="form-control" type="text" -->
-<!-- 		     name="sii" -->
-<!-- 		     placeholder="请输入尺码II" -->
-<!-- 		     capitalize -->
-<!-- 		     x-ng-maxlength="10" -->
-<!-- 		     x-ng-model="params.size.sii" -->
-<!-- 		     x-ng-pattern="/^[A-Za-z0-9\/]+$/"></input>  -->
-<!-- 	      <span class="input-group-addon bg-white fg-red">*</span> -->
-<!-- 	    </div> -->
-<!-- 	  </div> -->
-<!-- 	  <div ng-show="sizeForm.sii.$invalid && !sizeForm.sii.$pristine"> -->
-<!-- 	    <span class="fg-red">请输入字母或数字</span> -->
-<!-- 	  </div> -->
-<!-- 	  <div ng-show="!params.check_same(params.size, 'sii', params.size.sii)"> -->
-<!-- 	    <span class="fg-red">尺码已存在，请重新输入</span> -->
-<!-- 	  </div> -->
-<!-- 	</div> -->
-
-<!-- 	<\!--SIII-\-> -->
-<!-- 	<div class="form-group"> -->
-<!-- 	  <label class="col-sm-3 col-md-3 control-label">尺码III</label> -->
-<!-- 	  <div class="col-sm-6 col-md-6">  -->
-<!-- 	    <div class="input-group"> -->
-<!-- 	      <input class="form-control" type="text" -->
-<!-- 		     name="siii" -->
-<!-- 		     placeholder="请输入尺码III" -->
-<!-- 		     capitalize -->
-<!-- 		     x-ng-maxlength="10" -->
-<!-- 		     x-ng-model="params.size.siii" -->
-<!-- 		     x-ng-pattern="/^[A-Za-z0-9\/]+$/"></input>  -->
-<!-- 	      <span class="input-group-addon bg-white fg-red">*</span> -->
-<!-- 	    </div> -->
-<!-- 	  </div> -->
-<!-- 	  <div ng-show="sizeForm.siii.$invalid && !sizeForm.siii.$pristine"> -->
-<!-- 	    <span class="fg-red">请输入字母或数字</span> -->
-<!-- 	  </div> -->
-<!-- 	  <div ng-show="!params.check_same(params.size, 'siii', params.size.siii)"> -->
-<!-- 	    <span class="fg-red">尺码已存在，请重新输入</span> -->
-<!-- 	  </div> -->
-<!-- 	</div> -->
-
-
-<!-- 	<\!--SIV-\-> -->
-<!-- 	<div class="form-group"> -->
-<!-- 	  <label class="col-sm-3 col-md-3 control-label">尺码IV</label> -->
-<!-- 	  <div class="col-sm-6 col-md-6">  -->
-<!-- 	    <div class="input-group">  -->
-<!-- 	      <input class="form-control" type="text" -->
-<!-- 		     name="siv" -->
-<!-- 		     placeholder="请输入尺码IV" -->
-<!-- 		     capitalize -->
-<!-- 		     x-ng-maxlength="10" -->
-<!-- 		     x-ng-model="params.size.siv" -->
-<!-- 		     x-ng-pattern="/^[A-Za-z0-9\/]+$/"></input>  -->
-<!-- 	      <span class="input-group-addon bg-white fg-red">*</span> -->
-<!-- 	    </div> -->
-<!-- 	  </div> -->
-<!-- 	  <div ng-show="sizeForm.siv.$invalid && !sizeForm.siv.$pristine"> -->
-<!-- 	    <span class="fg-red">请输入字母或数字</span> -->
-<!-- 	  </div> -->
-<!-- 	  <div ng-show="!params.check_same(params.size, 'siv', params.size.siv)"> -->
-<!-- 	    <span class="fg-red">尺码已存在，请重新输入</span> -->
-<!-- 	  </div> -->
-<!-- 	</div> -->
-
-<!-- 	<\!--SV-\-> -->
-<!-- 	<div class="form-group"> -->
-<!-- 	  <label class="col-sm-3 col-md-3 control-label">尺码V</label> -->
-<!-- 	  <div class="col-sm-6 col-md-6">  -->
-<!-- 	    <div class="input-group">  -->
-<!-- 	      <input class="form-control" type="text" -->
-<!-- 		     name="sv" -->
-<!-- 		     placeholder="请输入尺码IV" -->
-<!-- 		     capitalize -->
-<!-- 		     x-ng-maxlength="10" -->
-<!-- 		     x-ng-model="params.size.sv" -->
-<!-- 		     x-ng-pattern="/^[A-Za-z0-9\/]+$/"></input>  -->
-<!-- 	      <span class="input-group-addon bg-white fg-red">*</span> -->
-<!-- 	    </div> -->
-<!-- 	  </div>  -->
-<!-- 	  <div ng-show="sizeForm.sv.$invalid && !sizeForm.sv.$pristine"> -->
-<!-- 	    <span class="fg-red">请输入字母或数字</span> -->
-<!-- 	  </div> -->
-<!-- 	  <div ng-show="!params.check_same(params.size, 'sv', params.size.sv)"> -->
-<!-- 	    <span class="fg-red">尺码已存在，请重新输入</span> -->
-<!-- 	  </div> -->
-<!-- 	</div> -->
-
-<!-- 	<\!--SVI-\-> -->
-<!-- 	<div class="form-group"> -->
-<!-- 	  <label class="col-sm-3 col-md-3 control-label">尺码VI</label> -->
-<!-- 	  <div class="col-sm-6 col-md-6">  -->
-<!-- 	    <div class="input-group"> -->
-	      
-<!-- 	      <input class="form-control" type="text" -->
-<!-- 		     name="svi" -->
-<!-- 		     placeholder="请输入尺码VI" -->
-<!-- 		     capitalize -->
-<!-- 		     x-ng-maxlength="10" -->
-<!-- 		     x-ng-model="params.size.svi" -->
-<!-- 		     x-ng-pattern="/^[A-Za-z0-9\/]+$/"></input>  -->
-<!-- 	      <span class="input-group-addon bg-white fg-red">*</span> -->
-<!-- 	    </div> -->
-<!-- 	  </div> -->
-<!-- 	  <div ng-show="sizeForm.svi.$invalid && !sizeForm.svi.$pristine"> -->
-<!-- 	    <span class="fg-red">请输入字母或数字</span> -->
-<!-- 	  </div> -->
-<!-- 	  <div ng-show="!params.check_same(params.size, 'svi', params.size.svi)"> -->
-<!-- 	    <span class="fg-red">尺码已存在，请重新输入</span> -->
-<!-- 	  </div> -->
-<!-- 	</div>  -->
-	
-<!--       </div> -->
-<!--     </form> -->
-<!--   </div> -->
-
-<!--   <\!--BEGIN modal-footer-\-> -->
-<!--   <div class="modal-footer"> -->
-<!--     <button class="btn btn-primary" -->
-<!-- 	    x-ng-disabled="sizeForm.$invalid || !params.valid_group(params.size)" -->
-<!-- 	    x-ng-click="ok()">确认</button> -->
-<!--     <button class="btn btn-warning" x-ng-click="cancel()">取消</button> -->
-<!--   </div> -->
-  
-<!--   <\!--END modal-footer-\-> -->
-<!-- </script> -->
-
-<!-- <script type="text/ng-template" id="select-size.html">  -->
-<!--   <div class="modal-body"> -->
-<!--     <div class="table-responsive"> -->
-<!--       <table class="table table-bordered table-striped table-condensed table-advanced"> -->
-<!-- 	<tbody> -->
-<!-- 	  <tr class="text-center" x-ng-repeat="g in params.groups"> -->
-<!-- 	    <td class="vert-align"> -->
-<!-- 	      <div class="checkbox checkbox-danger checkbox-circle"> -->
-<!-- 		<input id={{g.id}} type="checkbox" -->
-<!-- 		       x-ng-model="g.select" -->
-<!-- 		       x-ng-click="params.select_group(params.groups, g)"></input> -->
-<!-- 		<label for={{g.id}}>{{g.name}}</label> -->
-<!-- 	      </div> -->
-<!-- 	    </td> -->
-<!-- 	    <td class="vert-align">{{g.si}}</td> -->
-<!-- 	    <td class="vert-align">{{g.sii}}</td> -->
-<!-- 	    <td class="vert-align">{{g.siii}}</td> -->
-<!-- 	    <td class="vert-align">{{g.siv}}</td> -->
-<!-- 	    <td class="vert-align">{{g.sv}}</td> -->
-<!-- 	    <td class="vert-align">{{g.svi}}</td> -->
-<!-- 	  </tr> -->
-<!-- 	</tbody> -->
-<!--       </table> -->
-<!--     </div> -->
-<!--   </div> -->
-
-<!--   <div class="modal-footer"> -->
-<!--     <button class="btn btn-primary" x-ng-click="ok()">确认</button> -->
-<!--     <button class="btn btn-warning" x-ng-click="cancel()">取消</button> -->
-<!--   </div>   -->
-<!-- </script> -->

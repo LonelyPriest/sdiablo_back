@@ -4,7 +4,7 @@ var CreatedOKLodop7766=null;
 function needCLodop(){
     try{
 	var ua=navigator.userAgent;
-	console.log(ua);
+	// console.log(ua);
 	// if (ua.match(/Windows\sPhone/i) !=null) return true;
 	// if (ua.match(/iPhone|iPod/i) != null) return true;
 	// if (ua.match(/Android/i) != null) return true;
@@ -16,6 +16,7 @@ function needCLodop(){
 	if (ua.match(/Edge\D?\d+/i) != null) return false;
 	if (ua.match(/QQBrowser/i) != null) return false;
 	if (ua.match(/Linux/i) !=null) return false;
+	if (ua.match(/WebKit/i) !=null) return false;
 	var verTrident=ua.match(/Trident\D?\d+/i);
 	var verIE=ua.match(/MSIE\D?\d+/i);
 	var verOPR=ua.match(/OPR\D?\d+/i);
