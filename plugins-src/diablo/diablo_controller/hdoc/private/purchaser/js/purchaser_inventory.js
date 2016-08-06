@@ -713,11 +713,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    $scope.re_calculate();
 
 	    // auto focus
-	    if ($scope.tab_active[1].active){
-		$scope.reset_style_number();
-	    } else {
-		$scope.auto_focus("style_number");
-	    }
+	    if ($scope.tab_active[1].active) $scope.reset_style_number();
+	    else $scope.auto_focus("style_number");
 	};
 	
 	var callback = function(params){
@@ -1357,10 +1354,10 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		};
 
 		// reset
-		$scope.good.style_number = undefined;
+		// $scope.good.style_number = undefined;
+		// $scope.form.gForm.style_number.$pristine = true; 
 		// $scope.good.type = undefined;
 		// $scope.form.gForm.type.$pristine = true;
-		$scope.form.gForm.style_number.$pristine = true;
 		
 		/*
 		 * add prompt
@@ -1448,9 +1445,9 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 
     $scope.reset_style_number = function(){
 	$scope.on_focus_attr("style_number");
-	$scope.good.style_number = undefined;
+	// $scope.good.style_number = undefined;
 	$scope.is_same_good = false;
-	$scope.form.gForm.style_number.$pristine = true; 
+	// $scope.form.gForm.style_number.$pristine = true; 
 	// console.log($scope.focus);
     };
 

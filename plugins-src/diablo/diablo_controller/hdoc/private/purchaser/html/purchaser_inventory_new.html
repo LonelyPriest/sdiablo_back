@@ -855,17 +855,13 @@
 			     pre="discount"
 			     auto-row="go_next_good_field"
 			     placeholder="均码无需选择"
-			     x-ng-enter="select_grouped_color()"
+			     x-ng-enter="base_settings.group_color?select_color():select_grouped_color()"
 			     x-ng-model="good.colors"/> 
 		      <span class="input-group-btn">
-			<button x-ng-if="base_settings.group_color" class="btn btn-primary"
-				x-ng-click="select_color()">
+			<button class="btn btn-primary"
+				x-ng-click="base_settings.group_color?select_color():select_grouped_color()">
 			  <i class="glyphicon glyphicon-arrow-right"></i>
-			</button>
-			<button x-ng-if="!base_settings.group_color" class="btn btn-primary"
-				x-ng-click="select_grouped_color()">
-			  <i class="glyphicon glyphicon-arrow-right"></i>
-			</button>
+			</button> 
 			<button class="btn btn-success" x-ng-click="new_color()">
 			  <i class="glyphicon glyphicon-plus"></i>
 			</button>
