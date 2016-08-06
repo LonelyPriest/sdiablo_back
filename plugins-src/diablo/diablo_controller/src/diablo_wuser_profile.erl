@@ -196,7 +196,7 @@ handle_call({new_profile, Merchant}, _From, State) ->
 	{ok, Employees}    = ?employ:employ(list, Merchant),
 	{ok, Brands}       = ?attr:brand(list, Merchant),
 	{ok, Firms}        = ?supplier:supplier(w_list, Merchant),
-	{ok, ColorTypes}   = ?attr:color_type(list),
+	{ok, ColorTypes}   = ?attr:color_type(list, Merchant),
 	{ok, Colors}       = ?attr:color(w_list, Merchant),
 
 	{ok, Promotions}   = ?promotion:promotion(list, Merchant),
@@ -245,7 +245,7 @@ handle_call({new_profile, Merchant, SessionId}, _From, State) ->
 	{ok, Session} = ?session:lookup(SessionId),
 	{ok, Catlogs} = ?right_request:login_user(right, Session),
 	Shops = ?right_request:login_user(shop, Session),
-
+	
 	Navs = user_nav(Session), 
 	UserId = ?session:get(id, Session),
 	UserType = ?session:get(type, Session),

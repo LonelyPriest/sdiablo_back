@@ -43,6 +43,11 @@ var stockUtils = function(){
 		"d_sex", shop, base, parseInt, diablo_female);
 	},
 
+	group_color: function(shop, base){
+	    return diablo_base_setting(
+		"group_color", shop, base, parseInt, diablo_yes);
+	},
+
 	valid_season: function(month){
 	    switch(month){
 	    case 0: 

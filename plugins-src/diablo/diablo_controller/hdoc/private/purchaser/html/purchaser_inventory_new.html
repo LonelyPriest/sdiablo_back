@@ -855,11 +855,15 @@
 			     pre="discount"
 			     auto-row="go_next_good_field"
 			     placeholder="均码无需选择"
-			     x-ng-enter="select_color()"
+			     x-ng-enter="select_grouped_color()"
 			     x-ng-model="good.colors"/> 
 		      <span class="input-group-btn">
-			<button class="btn btn-primary"
+			<button x-ng-if="base_settings.group_color" class="btn btn-primary"
 				x-ng-click="select_color()">
+			  <i class="glyphicon glyphicon-arrow-right"></i>
+			</button>
+			<button x-ng-if="!base_settings.group_color" class="btn btn-primary"
+				x-ng-click="select_grouped_color()">
 			  <i class="glyphicon glyphicon-arrow-right"></i>
 			</button>
 			<button class="btn btn-success" x-ng-click="new_color()">
@@ -1307,7 +1311,9 @@
       <table class="table table-bordered table-striped
 		    table-condensed table-advanced">
 	<tbody>
-	  <tr x-ng-repeat="c in params.colors">
+	  <tr x-ng-repeat="c in params.colors"
+	      x-ng-if="c.tid===1 || c.tid===2 || c.tid===3 || c.tid===4
+		       || c.tid===5 || c.tid===6 || c.tid===7 || c.tid===8">
 	    <td class="text-center vert-align col-md-1">
 	      <div x-ng-switch on="c.tid">
 		<span x-ng-switch-when=1 style="background-color:#CC3333">{{c.type}}</span>
@@ -1318,19 +1324,69 @@
 		<span x-ng-switch-default>{{c.type}}</span>
 	      </div>
 	    </td>
-	    <td x-ng-repeat="s in c.colors">
+	    <td x-ng-repeat="s in c.colors"
+		x-ng-if="c.tid===1 || c.tid===2 || c.tid===3 || c.tid===4
+			 || c.tid===5 || c.tid===6 || c.tid===7 || c.tid===8">
 	      <div class="checkbox checkbox-danger checkbox-circle">
 		<input id={{s.id}}
 		       type="checkbox"
 		       x-ng-model="s.select"
 		       x-ng-click="$event.stopPropagation()"
-		       x-ng-enter="ok()"></input>
+		       x-ng-enter="ok()"/>
 		<label for={{s.id}}>{{s.name}}</label>
 	      </div>
 	    </td>
 	  </tr>
 	</tbody>
-      </table>
+      </table> 
+      
+    </div>
+  </div> <!--END modal-body-->
+
+  <div class="modal-footer">
+    <button class="btn btn-primary" x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>  
+</script>
+
+<script type="text/ng-template" id="select-grouped-color.html">
+  <div class="modal-body">
+    <div class="diablo-margin-bottom-5">
+      <div class="input-group">
+	<span class="input-group-addon">
+	  <i class="glyphicon glyphicon-search fg-red"></i>
+	</span>
+	<input
+	   class="form-control"
+	   placeholder="请输入颜色名称，支持首字母拼音查询"
+	   focus-auto=true
+	   ng-edit
+	   typeahead-editable="false"
+	   typeahead-on-select="params.on_select_ucolor($item, $model, $label);"
+	   typeahead="c as c.name for c in params.ucolors|filter:$viewValue|limitTo:20"
+	   x-ng-model="params.select_ucolor"/>
+      </div>
+    </div>
+    
+    <div class="table-responsive"> 
+      <table class="table table-bordered table-striped
+		    table-condensed table-advanced">
+	<tbody>
+	  <tr x-ng-repeat="c in params.colors"> 
+	    <td x-ng-repeat="i in [0, 1, 2, 3, 4, 5, 6, 7]">
+	      <div x-ng-if="c[i].id" class="checkbox checkbox-danger checkbox-circle">
+		<input id={{c[i].id}}
+		       type="checkbox"
+		       x-ng-model="c[i].select"
+		       x-ng-click="$event.stopPropagation()"
+		       x-ng-enter="ok()"/>
+		<label for={{c[i].id}}>{{c[i].name}}</label>
+	      </div>
+	    </td>
+	  </tr>
+	</tbody>
+      </table> 
+      
     </div>
   </div> <!--END modal-body-->
 

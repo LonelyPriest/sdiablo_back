@@ -12,6 +12,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope.firms       = filterFirm;
     $scope.colors      = filterColor;
     $scope.color_types = filterColorType;
+    $scope.grouped_colors = [];
     
     $scope.tab_active  = [{active:true}, {active:false}, {active:false}]; 
     $scope.shops             = user.sortShops; 
@@ -132,7 +133,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     // init
     $scope.inventories = [];
     $scope.inventories.push({$edit:false, $new:true});
-    
+
+    // console.log($scope.shops);
     $scope.select = {
 	shop: $scope.shops.length !== 0 ? $scope.shops[0]:undefined,
 	total: 0,
@@ -210,6 +212,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	sDraft.change_key(undefined, $scope.select.shop.id, $scope.select.employee.id);
 	$scope.base_settings.m_sgroup = stockUtils.multi_sizegroup($scope.select.shop.id, base);
 	$scope.base_settings.t_trace = stockUtils.t_trace($scope.select.shop.id, base);
+	$scope.base_settings.group_color = stockUtils.group_color($scope.select.shop.id, base);
 
 	$scope.q_prompt = $scope.q_typeahead($scope.select.shop.id, base);
 	$scope.get_prompt_good(); 
@@ -220,7 +223,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 
     $scope.base_settings = {
 	m_sgroup: stockUtils.multi_sizegroup($scope.select.shop.id, base),
-	t_trace: stockUtils.t_trace($scope.select.shop.id, base)
+	t_trace: stockUtils.t_trace($scope.select.shop.id, base),
+	group_color: stockUtils.group_color($scope.select.shop.id, base)
     };
     
     // calender
@@ -751,9 +755,10 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 			       get_price_info: stockUtils.calc_stock_orgprice_info,
 			       edit: function(){
 				   diablo_goto_page(
-				       "#/good/wgood_update/"
-					   + inv.id + "/"
-					   + diablo_from_stock_new.toString())}
+				       "#/good/wgood_update"
+					   + "/" + inv.id.toString()
+					   + "/" + $scope.select.shop.id.toString()
+					   + "/" + diablo_from_stock_new.toString())}
 			      };
 		
 		if (inv.colors.length === 1 && inv.colors[0] === "0"){
@@ -1059,6 +1064,32 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     		 colors:[{name:color.name, id:color.id}]})
     	}
     });
+
+    // console.log($scope.colors);
+
+    $scope.group_color_with_8 = function(){
+	var color = {};
+	$scope.grouped_colors = [];
+	for (var i=0, g=0, l=$scope.colors.length; i<l; i++){
+	    var gc = $scope.colors[i];
+	    if (i <= (g+1)*8 - 1){
+		color[(i - g * 8).toString()] = {id:gc.id, name:gc.name, py:diablo_pinyin(gc.name)};
+	    } 
+	    if (i === (g+1) * 8){
+		$scope.grouped_colors.push(color);
+		g++;
+		color = {};
+		color[(i - g * 8).toString()] = {id:gc.id, name:gc.name, py:diablo_pinyin(gc.name)};
+	    }
+	}
+
+	$scope.grouped_colors.push(color); 
+	// console.log($scope.grouped_colors);
+    };
+
+    if (diablo_no === $scope.base_settings.group_color){
+	$scope.group_color_with_8(); 
+    }
     
     $scope.new_color = function(){
 	var callback = function(params){
@@ -1085,7 +1116,11 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 			    {type: newColor.type,
 			     tid:  newColor.tid,
 			     colors:[{name:newColor.name, id:newColor.id}]}); 
-		    } 
+		    }
+		    
+		    if (diablo_no === $scope.base_settings.group_color){
+			$scope.group_color_with_8(); 
+		    }
 		}; 
 		
 		if (state.ecode == 0){
@@ -1129,11 +1164,52 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    callback, $scope, {colors:$scope.gcolors});
     };
 
-    $scope.update_good_color = function(){
-	console.log($scope.good);
-	
-    };
+    $scope.select_grouped_color = function(){
+	var callback = function(params){
+	    // console.log(params.colors);
+	    // console.log(params.ucolors);
+	    
+	    $scope.selectColors = []; 
+	    $scope.good.colors="";
 
+	    for (var i=0, l1=params.colors.length; i<l1; i++){
+		for (j in params.colors[i]){
+		    var c = params.colors[i][j];
+		    if(angular.isDefined(c.select) && c.select){
+			$scope.good.colors += c.name + "；";
+			$scope.selectColors.push(angular.copy(c));
+		    }
+		}
+	    }
+	    
+	    console.log($scope.selectColors); 
+	    $scope.grouped_colors = angular.copy(params.colors);
+	}; 
+
+	var on_select_ucolor = function(item, model, label){
+	    // console.log(item);
+	    item.select = true; 
+	};
+	
+	diabloUtilsService.edit_with_modal(
+	    "select-grouped-color.html",
+	    'lg',
+	    callback,
+	    undefined,
+	    {colors:$scope.grouped_colors,
+	     ucolors: function(){
+		 var ucolors = [];
+		 for (var i=0, l1=$scope.grouped_colors.length; i<l1; i++){
+		     for (j in $scope.grouped_colors[i]){
+			 ucolors.push($scope.grouped_colors[i][j]); 
+		     }
+		 }
+
+		 return ucolors;
+	     }(),
+	     on_select_ucolor: on_select_ucolor});
+    };
+    
     /*
      * size group
      */
@@ -1269,8 +1345,19 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 			}) 
 		    })
 		});
+		console.log($scope.gcolors); 
 
-		console.log($scope.gcolors);
+		if (diablo_no === $scope.base_settings.group_color){
+		    for (var i=0, l1=$scope.grouped_colors.length; i<l1; i++){
+			for (j in $scope.grouped_colors[i]){
+			    if (angular.isDefined($scope.grouped_colors[i][j].select)){
+				$scope.grouped_colors[i][j].select = false;
+			    }
+			}
+		    }
+		    console.log($scope.grouped_colors); 
+		};
+
 		// reset
 		$scope.good.style_number = undefined;
 		// $scope.good.type = undefined;

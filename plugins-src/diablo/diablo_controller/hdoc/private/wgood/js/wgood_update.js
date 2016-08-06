@@ -69,8 +69,7 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 
     // console.log($scope.types);
     // console.log($scope.firms);
-    wgoodService.get_purchaser_good_by_id($routeParams.id).then(function(
-	good){
+    wgoodService.get_purchaser_good_by_id($routeParams.id).then(function(good){
 	console.log(good); 
 	
 	// old

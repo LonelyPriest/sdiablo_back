@@ -173,11 +173,11 @@ handle_call({list_employee, Merchant, Conditions}, _From, State) ->
 	case Conditions of
 	    [] -> [];
 	    Conditions ->
-		?utils:to_sqls(proplists, Conditions)
-		    ++ " and "
+		?utils:to_sqls(proplists, Conditions) ++ " and "
 	end
 	++ "merchant=" ++ ?to_s(Merchant)
-	++ " and deleted=" ++ ?to_s(?NO),
+	++ " and deleted=" ++ ?to_s(?NO)
+	++ " order by id",
     
     case ?mysql:fetch(read, Sql) of
 	{ok, Employees} ->

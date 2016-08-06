@@ -132,11 +132,9 @@ shopApp.service("shopService", function($resource, dateFilter){
 	    {id:        ashop.id,
 	     name:      ashop.name,
 	     address:   ashop.address,
-	     region:    ashop.region.id,
-	     shopowner: angular.isDefined(ashop.employee)
-	     && ashop.employee ? ashop.employee.id : undefined,
-	     repo: angular.isDefined(ashop.repo)
-	     && ashop.repo ? ashop.repo.id : undefined}
+	     region:    angular.isDefined(ashop.region) ? ashop.region : undefined,
+	     shopowner: angular.isDefined(ashop.employee) ? ashop.employee.id : undefined,
+	     repo: angular.isDefined(ashop.repo) ? ashop.repo.id : undefined}
 	).$promise;
     };
 

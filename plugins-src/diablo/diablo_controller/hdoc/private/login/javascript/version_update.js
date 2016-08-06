@@ -1,6 +1,14 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2016-08-06",
+         content: [
+	     "增加前台打印能力",
+	     "修正非管理员帐号入库时，默认积分设置不生效问题",
+	     "增加颜色不分组配置"
+         ]
+        },
+	
 	{date: "2016-07-17",
          content: [
 	     "日报表增加同步能力",

@@ -20,7 +20,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
--export([color_type/1, color/2, color/3]).
+-export([color_type/2, color/2, color/3]).
 -export([size_group/2, size_group/3]).
 -export([brand/2, brand/3]).
 -export([type/2, type/3]).
@@ -32,8 +32,8 @@
 %%%===================================================================
 %%% API
 %%%===================================================================
-color_type(list) ->
-    gen_server:call(?MODULE, list_w_color_type).
+color_type(list, Merchant) ->
+    gen_server:call(?MODULE, {list_w_color_type, Merchant}).
 
 color(w_list, Merchant) ->
     gen_server:call(?MODULE, {list_w_color, Merchant}). 
@@ -80,10 +80,11 @@ start_link() ->
 init([]) ->
     {ok, #state{}}.
 
-handle_call(list_w_color_type, _Form, State) ->
+handle_call({list_w_color_type, Merchant}, _Form, State) ->
     ?DEBUG("list_w_color_type", []),
     Sql = "select id, name from color_type"
-	++ " where deleted=" ++ ?to_string(?NO)
+	++ " where " ++ ?utils:to_sqls(proplists, {merchant, [0, Merchant]})
+	%% ++ " where deleted=" ++ ?to_string(?NO)
 	++ " order by id",
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};

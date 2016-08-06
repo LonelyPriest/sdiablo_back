@@ -398,7 +398,7 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 	    }	    
 	} else {
 	    $scope.disable_print = true;
-	    wsaleService.print_w_sale(r.rsn).then(function(result){
+	    wsaleService.print_w_sale(rsn).then(function(result){
 		console.log(result);
 		$scope.disable_print = false; 
 		if (result.ecode == 0){

@@ -456,6 +456,7 @@
 	  right = [] :: list(),
 	  shop  = [] :: list(),
 	  nav   = [] :: list()
+	  %% color_type  = [] :: list() 
 	 }).
 
 

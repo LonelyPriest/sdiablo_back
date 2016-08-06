@@ -75,6 +75,7 @@ userApp.factory("userService", function($resource, $q){
 	    sortShops: function(){
 		var sort = [];
 		angular.forEach(shops, function(s){
+		    // console.log(shops);
 		    var shop = {id:  s.shop_id,
 				name:s.name,
 				repo:s.repo_id,
