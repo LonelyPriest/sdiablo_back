@@ -330,11 +330,11 @@ wsaleApp.controller("wsaleNewCtrl", function(
     };
 
     $scope.key_action = function(key){
-	if (key === 112) $scope.auto_focus('cash');
-	if (key === 113) $scope.auto_focus('card');
-	if (key === 114) {
-	    if (!$scope.disable_save()) $scope.save_wsale();
-	}
+	if (key === 113) $scope.auto_focus('cash');
+	if (key === 114) $scope.auto_focus('card');
+	// if (key === 114) {
+	//     if (!$scope.disable_save()) $scope.save_wsale();
+	// }
 	if (key === 117){
 	    if (!$scope.disable_refresh) $scope.refresh();
 	}

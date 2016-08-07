@@ -1234,7 +1234,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	}
 
 	diabloUtilsService.edit_with_modal(
-	    "select-size.html", undefined,
+	    "select-size.html", 'lg',
 	    callback, $scope, {groups: $scope.size_groups,
 			       select_group: select_group});
     };
@@ -1242,9 +1242,9 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     /*
      * good amount
      */
-    $scope.new_good_amount = function(){
-	var add = $scope.inventories[0]; 
-    };
+    // $scope.new_good_amount = function(){
+    // 	var add = $scope.inventories[0]; 
+    // };
 
     /*
      * new good

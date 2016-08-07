@@ -400,11 +400,15 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 	++ ?utils:v(ediscount, integer, EDiscount) 
 	++ ?utils:v(discount, integer, Discount),
 
+    UpdateFree = case ?utils:v(color, string, Colors) of
+		     [] -> [];
+		     _ when Colors =/= <<"0">> -> ?utils:v(free, integer, 1);
+		     _ -> [] 
+		 end,
+
     UpdateGood = UpdateBase ++ UpdatePrice
-	++ case ?utils:v(color, string, Colors) of
-	       [] -> [];
-	       U -> U ++ ?utils:v(free, integer, 1)
-	   end ++ ?utils:v(change_date, string, DateTime),
+	++ ?utils:v(color, string, Colors) ++ UpdateFree
+	++ ?utils:v(change_date, string, DateTime),
     
     RBrand = fun(undefined) -> OrgBrand; (_) -> Brand end,
     RStyleNumber = fun(undefined) -> ?to_s(OrgStyleNumber);
@@ -436,14 +440,16 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 	++ ?utils:to_sqls(proplists, comma, UpdateGood)
 	++ " where id=" ++ ?to_s(GoodId) 
 	++ " and merchant=" ++ ?to_s(Merchant),
+    
     case StyleNumber =:= undefined andalso Brand =:= undefined of
-	true ->
-	    case UpdateBase ++ UpdatePrice of
+	true -> 
+	    case UpdateBase ++ UpdatePrice ++ UpdateFree of
 		[] -> 
 		    {reply, ?sql_utils:execute(write, Sql1, GoodId), State};
 		_  ->
 		    UpdateInv = UpdateBase
-			++ UpdatePrice ++?utils:v(change_date, string, DateTime),
+			++ UpdatePrice ++ UpdateFree
+			++ ?utils:v(change_date, string, DateTime),
 		    
 		    Sql2 = "update w_inventory set "
 			++ ?utils:to_sqls(proplists, comma, UpdateInv)
@@ -454,7 +460,7 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 			    [] -> []; 
 			    _  ->
 				["update w_inventory_new_detail set "
-				  ++ ?utils:to_sqls(proplists, comma, UpdateBase)
+				 ++ ?utils:to_sqls(proplists, comma, UpdateBase)
 				 ++ " where "
 				 ++ C(true, OrgStyleNumber, OrgBrand)]
 				    ++ 
@@ -588,7 +594,9 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 			{ok, []} ->
 			    %% new, update only
 			    ["update w_inventory set "
-			     ++ ?utils:to_sqls(proplists, comma, Update2 ++ UpdateInv)
+			     ++ ?utils:to_sqls(
+				   proplists, comma,
+				   Update2 ++ UpdateInv ++ UpdatePrice ++ UpdateFree)
 			     ++ " where "
 			     ++ C(true, OrgStyleNumber, OrgBrand),
 

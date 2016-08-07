@@ -1400,7 +1400,8 @@
 	      <div class="checkbox checkbox-danger checkbox-circle">
 		<input id={{g.id}} type="checkbox"
 		       x-ng-model="g.select"
-		       x-ng-click="params.select_group(params.groups, g)"/>
+		       x-ng-click="params.select_group(params.groups, g)"
+		       x-ng-enter="ok()"/>
 		<!-- <input id={{g.id}} type="checkbox" -->
 		<!--        x-ng-model="g.select"></input> -->
 		<label for={{g.id}}>{{g.name}}</label>
@@ -1412,6 +1413,7 @@
 	    <td class="vert-align">{{g.siv}}</td>
 	    <td class="vert-align">{{g.sv}}</td>
 	    <td class="vert-align">{{g.svi}}</td>
+	    <td class="vert-align">{{g.svii}}</td>
 	  </tr>
 	</tbody>
       </table>

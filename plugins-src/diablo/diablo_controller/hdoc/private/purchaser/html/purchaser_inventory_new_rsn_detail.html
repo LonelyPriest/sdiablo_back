@@ -103,7 +103,8 @@
 		  </tr>
 		</thead>
 		<tbody>
-		  <tr ng-repeat="inv in inventories">
+		  <tr ng-repeat="inv in inventories"
+		      x-ng-dblclick="stock_right.show_orgprice && stock_history(inv)">
 		    <td>{{inv.order_id}}</td>
 		    <td>{{inv.rsn}}</td>
 		    <td x-ng-switch on="inv.type">
@@ -148,6 +149,12 @@
 		      </button>
 
 		      <button x-ng-if="stock_right.show_orgprice"
+			      class="btn diablo-button purple-plum"
+		    	      x-ng-click="stock_history(inv)">
+			流水<i class="glyphicon glyphicon-leaf"></i>
+		      </button>
+
+		      <button x-ng-if="stock_right.show_orgprice"
 			      class="btn diablo-button btn-warning"
 		    	      x-ng-click="update_rsn_detail(inv)">
 			修改<i class="glyphicon glyphicon-edit"></i>
@@ -158,7 +165,7 @@
 		  <tr x-ng-if="total_items!==0" class="bg-white">
 		    <td colspan="{{calc_colspan()}}"></td>
 		    <td class="danger">{{total_amounts}}</td>
-		    <td colspan="2"></td>
+		    <td colspan="3"></td>
 		  </tr>
 		</tbody> 
 		

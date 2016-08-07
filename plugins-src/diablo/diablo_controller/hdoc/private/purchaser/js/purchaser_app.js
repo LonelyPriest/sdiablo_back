@@ -117,6 +117,11 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 		{}, promotion, score,
 		user, brand, firm, type, s_group, color, base)
 	}).
+	when('/inventory_new_history/:snumber/:brand?', {
+	    templateUrl: '/private/purchaser/html/purchaser_inventory_new_history.html',
+            controller: 'stockHistoryCtrl' ,
+	    resolve: angular.extend({}, user, brand, firm, base)
+	}). 
 	// fix
 	when('/inventory/inventory_fix', {
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_fix.html',

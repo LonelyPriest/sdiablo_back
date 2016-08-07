@@ -2,9 +2,9 @@
   <div class="col-md-12">
     <div>
       <span class="fg-magenta"><strong>键盘操作：</strong></span>
-      <span class="bg-orange">F1-现金</span>
-      <span class="bg-cyan">F2-刷卡</span>
-      <span class="bg-checked">F3-保存</span>
+      <span class="bg-orange">F2-现金</span>
+      <span class="bg-cyan">F3-刷卡</span>
+      <span class="bg-checked">回车-保存</span>
       <span class="bg-red">F6-下一单</span>
     </div>
     <div class="portlet box purple diablo-margin-bottom-5"
@@ -134,7 +134,8 @@
 			   focus-auto="focus_attr.cash" 
 	  		   x-ng-model="select.cash"
 			   x-ng-pattern="pattern.money"
-			   placeholder="现金" />
+			   placeholder="现金"
+			   x-ng-enter="disable_save() || save_wsale()"/>
 		  </div>
 		</form>
 	      </div>
@@ -155,7 +156,8 @@
 			   focus-auto="focus_attr.card" 
 			   x-ng-pattern="pattern.money"
 	  		   x-ng-model="select.card"
-			   placeholder="刷卡" />
+			   placeholder="刷卡"
+			   x-ng-enter="disable_save() || save_wsale()"/>
 		  </div>
 		</form>
 	      </div> 

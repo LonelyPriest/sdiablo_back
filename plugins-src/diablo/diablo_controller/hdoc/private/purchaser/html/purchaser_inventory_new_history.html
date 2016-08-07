@@ -1,0 +1,82 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="portlet box purple">
+      
+      <div class="portlet-title">
+	<div class="caption">
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>
+	  入库历史记录
+	</div>
+	
+	<div class="actions"> 
+	  <button class="btn red" type="button"
+		  x-ng-click="go_back()">返回
+	    <i class="glyphicon glyphicon-circle-arrow-left"></i></button> 
+	</div> 
+      </div> 
+      
+      <!--BEGN portlet body--> 
+      <div class="portlet-body">
+	<!--BEGIN panel-->
+	<div class="panel panel-default table-panel">
+	  <div class="table-responsive"> 
+	    <!--EBGIN table -->
+	    <table class="table table-bordered
+			  table-striped table-hover
+			  table-condensed table-advanced">
+
+	      <thead>
+		<tr>
+		  <th class="text-center">序号</th>
+		  <th class="text-center">货号</th>
+		  <th class="text-center">品名</th>
+		  <th class="text-center">厂商</th> 
+		  <!-- <th class="text-center">季节</th> --> 
+		  <th class="text-center">吊牌价</th>
+		  <th class="text-center">折扣</th>
+		  
+		  <th class="text-center">数量</th> 
+		  <th class="text-center">进/退价</th>
+		  <th class="text-center">折扣率</th>
+
+		  <th class="text-center">采购类型</th>
+		  <th class="text-center">店铺</th> 
+		  <th class="text-center">日期</th>
+		  <!-- <th class="text-center">折扣率</th> --> 
+		</tr>
+	      </thead>
+	      
+	      <tbody>
+		<tr x-ng-repeat="h in stock_history">
+		  <td class="text-center">{{h.order_id}}</td>
+		  <td class="text-center">{{h.style_number}}</td>
+		  <td class="text-center">{{h.brand.name}}</td>
+		  <td class="text-center">{{h.firm.name}}</td>
+		  
+		  <td class="text-center">{{h.tag_price}}</td>
+		  <td class="text-center">{{h.discount}}</td>
+		  <td class="text-center">{{h.amount}}</td>
+		  <td class="text-center">{{h.org_price}}</td>
+		  <td class="text-center bg-lightPink">{{h.ediscount}}</td> 
+
+		  <td class="text-center">
+		    <div x-ng-switch on="h.type">
+		      <span x-ng-switch-when=0>入库</span>
+		      <span x-ng-switch-when=1 class="bg-red">退货</span>
+		    </div>
+		  </td>
+
+		  <td class="text-center">{{h.entry_date}}</td>
+		  <td class="text-center">{{h.shop.name}}</td> 
+		</tr>
+	      </tbody> 
+	      
+	    </table> <!--END table-->
+	  </div> <!--END table responsive-->
+	  
+	</div> <!--END panel-->
+      </div> <!--END portlet body--> 
+    </div> <!--END table container-->
+    
+  </div>
+</div>

@@ -253,10 +253,12 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
     var storage = localStorageService.get(diablo_key_invnetory_trans_detail);
     console.log(storage);
 
-    var use_storage  = $routeParams.rsn && angular.isUndefined($routeParams.from) ? false : true; 
+    var use_storage  = $routeParams.rsn && angular.isUndefined($routeParams.from) ? false : true;
     if (use_storage && angular.isDefined(storage) && storage !== null){
     	$scope.filters      = storage.filter;
     	$scope.qtime_start  = storage.start_time;
+	// $scope.back_from_history = storage.backFromHistory;
+	// if (storage.backFromHistory) $scope.current_page = storage.page;
     } else{
 	$scope.filters = []; 
 	$scope.qtime_start = function(){
@@ -290,17 +292,24 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
 	};
 
 	// return search;
-    }
+    };
+
+    var set_storage = function(backFromHistory){
+	if (use_storage) {
+	    localStorageService.set(
+		diablo_key_invnetory_trans_detail,
+		{filter    :$scope.filters,
+		 start_time:diablo_get_time($scope.time.start_time),
+		 page      :$scope.current_page,
+		 t         :now,
+		 backFromHistory:backFromHistory
+		});
+	}
+    };
 
     $scope.do_search = function(page){
 	// save condition of query
-	if (use_storage){
-	    localStorageService.set(
-		diablo_key_invnetory_trans_detail,
-		{filter:$scope.filters,
-		 start_time:diablo_get_time($scope.time.start_time),
-		 page:page, t:now});
-	};
+	set_storage(false); 
 	
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
 	    add_search_condition(search);
@@ -337,7 +346,12 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
 
     $scope.page_changed = function(){
 	$scope.do_search($scope.current_page);
-    }
+    };
+
+    // if ($scope.back_from_history) {
+    // 	$scope.do_search($scope.current_page);
+    // 	set_storage(false);
+    // };
 
 
     var get_amount = purchaserService.get_inventory_from_sort;
@@ -384,30 +398,30 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
     };
 
 
-    $scope.edit_rsn_detail = function(inv){
-	console.log(inv);
+    // $scope.edit_rsn_detail = function(inv){
+    // 	console.log(inv);
 
-	purchaserService.w_inventory_new_rsn_detail(
-	    {rsn:inv.rsn, style_number:inv.style_number, brand:inv.brand_id}
-	).then(function(result){
-	    console.log(result);
-	    var order_sizes = wgoodService.format_size_group(inv.s_group, filterSizeGroup);
-	    var sort = purchaserService.sort_inventory(result.data, order_sizes);
-	    console.log(sort);
-	    inv.sizes   = sort.size;
-	    inv.colors  = sort.color;
-	    inv.amounts = sort.sort;
+    // 	purchaserService.w_inventory_new_rsn_detail(
+    // 	    {rsn:inv.rsn, style_number:inv.style_number, brand:inv.brand_id}
+    // 	).then(function(result){
+    // 	    console.log(result);
+    // 	    var order_sizes = wgoodService.format_size_group(inv.s_group, filterSizeGroup);
+    // 	    var sort = purchaserService.sort_inventory(result.data, order_sizes);
+    // 	    console.log(sort);
+    // 	    inv.sizes   = sort.size;
+    // 	    inv.colors  = sort.color;
+    // 	    inv.amounts = sort.sort;
 
-	    dialog.edit_with_modal(
-		"edit-rsn-detail.html", undefined, undefined, $scope,
-		{colors:     inv.colors,
-		 sizes:      inv.sizes,
-		 amounts:    inv.amounts,
-		 total:      inv.total,
-		 path:       inv.path,
-		 get_amount: get_amount});
-	}); 
-    };
+    // 	    dialog.edit_with_modal(
+    // 		"edit-rsn-detail.html", undefined, undefined, $scope,
+    // 		{colors:     inv.colors,
+    // 		 sizes:      inv.sizes,
+    // 		 amounts:    inv.amounts,
+    // 		 total:      inv.total,
+    // 		 path:       inv.path,
+    // 		 get_amount: get_amount});
+    // 	}); 
+    // };
 
     $scope.update_rsn_detail = function(inv){
 	if (inv.type===0){
@@ -431,6 +445,13 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
 	}
     };
 
+    $scope.stock_history = function(inv){
+	// set_storage(true);
+	$scope.goto_page("#/inventory_new_history"
+			 + "/" + inv.style_number
+			 + "/" + inv.brand_id.toString());
+    };
+
     $scope.export_to = function(){
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
 	    add_search_condition(search);
@@ -450,6 +471,45 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
 		}); 
 	}) 
     };
+});
+
+purchaserApp.controller("stockHistoryCtrl", function(
+    $scope, $routeParams, dateFilter, purchaserService,
+    user, filterBrand, filterFirm, base){
+    $scope.stock_history = [];
+
+    var shops = user.sortShops;
+    var shopIds = user.shopIds;
+    var style_number = $routeParams.snumber;
+    var brand_id = parseInt($routeParams.brand);
+    var q_start_time = stockUtils.start_time(-1, base, $.now(), dateFilter); 
+
+    purchaserService.list_w_inventory_new_detail({
+	style_number:style_number,
+	brand:brand_id,
+	shop: shopIds,
+	start_time: q_start_time
+    }).then(function(result){
+	// console.log(result);
+	if (result.ecode === 0){
+	    $scope.stock_history = angular.copy(result.data); 
+	    var order = 1;
+	    angular.forEach($scope.stock_history, function(h){
+		h.order_id = order;
+		h.brand = diablo_get_object(h.brand_id, filterBrand);
+		h.firm  = diablo_get_object(h.firm_id, filterFirm);
+		h.shop  = diablo_get_object(h.shop_id, shops);
+		order++;
+	    });
+
+	    console.log($scope.stock_history);
+	}
+    });
+
+    $scope.go_back = function(){
+	diablo_goto_page("#/inventory_rsn_detail");
+    };
+    
 });
 
 
