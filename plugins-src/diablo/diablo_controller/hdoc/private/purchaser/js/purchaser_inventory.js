@@ -213,6 +213,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	$scope.base_settings.m_sgroup = stockUtils.multi_sizegroup($scope.select.shop.id, base);
 	$scope.base_settings.t_trace = stockUtils.t_trace($scope.select.shop.id, base);
 	$scope.base_settings.group_color = stockUtils.group_color($scope.select.shop.id, base);
+	image_allowed: stockUtils.image_allowed($scope.select.shop.id, base);
 
 	$scope.q_prompt = $scope.q_typeahead($scope.select.shop.id, base);
 	$scope.get_prompt_good(); 
@@ -224,7 +225,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope.base_settings = {
 	m_sgroup: stockUtils.multi_sizegroup($scope.select.shop.id, base),
 	t_trace: stockUtils.t_trace($scope.select.shop.id, base),
-	group_color: stockUtils.group_color($scope.select.shop.id, base)
+	group_color: stockUtils.group_color($scope.select.shop.id, base),
+	image_allowed: stockUtils.image_allowed($scope.select.shop.id, base)
     };
     
     // calender
@@ -713,8 +715,12 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    $scope.re_calculate();
 
 	    // auto focus
-	    if ($scope.tab_active[1].active) $scope.reset_style_number();
-	    else $scope.auto_focus("style_number");
+	    if ($scope.tab_active[1].active) {
+		$scope.delete_image();
+		$scope.reset_style_number()
+	    } else {
+		$scope.auto_focus("style_number")
+	    };
 	};
 	
 	var callback = function(params){
@@ -1240,10 +1246,24 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     };
 
     /*
+     * image
+     */
+    // $scope.$watch("good.image", function(newValue, oldValue){
+    // 	console.log(newValue, oldValue);
+    // 	if ($scope.good.image) $scope.good.d_image = false; 
+    // });
+    
+    $scope.delete_image = function(){
+    	// $scope.good.d_image = true; 
+	// if (angular.isDefined($scope.good.image)) $scope.good.image.file = undefined;
+	$scope.good.image = undefined;
+    };
+
+    /*
      * good amount
      */
     // $scope.new_good_amount = function(){
-    // 	var add = $scope.inventories[0]; 
+    // 	var add = $scope.inventories[0];
     // };
 
     /*
@@ -1260,22 +1280,32 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	discount  : 100,
 	alarm_day : 7,
 	year      : diablo_now_year(),
-	season    : $scope.season2objs[stockUtils.valid_season(current_month)]
+	season    : $scope.season2objs[stockUtils.valid_season(current_month)],
+	image     : undefined
+	// d_image   : true
     };
 
     $scope.new_good = function(){
 	if ($scope.form.gForm.$invalid || $scope.is_same_good || $scope.good_has_saved) return; 
 
 	$scope.good_saving = true; 
-	var good       = angular.copy($scope.good);
-	good.firm      = angular.isDefined($scope.select.firm)
-	    && $scope.select.firm ? $scope.select.firm.id : undefined;
-	good.season    = good.season.id;
-	good.sex       = good.sex.id;
-	// good.promotion = good.promotion.id;
+	// var good       = angular.copy($scope.good);
+	var good       = {};
+	good.style_number = $scope.good.style_number;
+	good.brand =typeof($scope.good.brand)==="object" ? $scope.good.brand.name:$scope.good.brand; 
+	good.type = typeof($scope.good.type)==="object" ? $scope.good.type.name: $scope.good.type;
+	good.sex  = $scope.good.sex.id;
+	good.year = $scope.good.year; 
+	good.firm = angular.isDefined($scope.select.firm) && $scope.select.firm ? $scope.select.firm.id : undefined;
+	good.season    = $scope.good.season.id; 
+	good.alarm_day = $scope.good.alarm_day;
+
+	good.org_price = $scope.good.org_price;
+	good.tag_price = $scope.good.tag_price;
+	good.discount  = $scope.good.discount; 
+	good.ediscount = $scope.good.ediscount;
 	
-	good.brand    = typeof(good.brand) === "object" ? good.brand.name: good.brand; 
-	good.type     = typeof(good.type) === "object" ? good.type.name: good.type;
+	// good.promotion = good.promotion.id; 
 	
 	good.colors   = function(){
 	    if (angular.isDefined($scope.selectColors) && $scope.selectColors.length > 0){
@@ -1318,13 +1348,19 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	}();
 	
 	console.log(good);
-	var image  = angular.isDefined($scope.image) && $scope.image
-	    ? $scope.image.dataUrl.replace(/^data:image\/(png|jpg);base64,/, "") : undefined;
+	var image  = function() {
+	    if (angular.isDefined($scope.good.image) && $scope.good.image){
+		return $scope.good.image.dataUrl.replace(/^data:image\/(png|jpg);base64,/, "")
+	    }
+	    return undefined; 
+	}();
 	
 	// console.log(image);
+
+	// return;
 	
 	wgoodService.add_purchaser_good(good, image).then(function(state){
-	    // console.log(state);
+	    console.log(state);
 	    $scope.good_saving = false;
 	    if (state.ecode == 0){
 		// reset color
@@ -1400,7 +1436,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		
 		var agood = {
 		    $new_good: true,
-		    id          : good.db,
+		    id          : state.db,
 		    style_number: good.style_number,
 		    brand:     good.brand,
 		    brand_id:  state.brand,
@@ -1417,6 +1453,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		    ediscount: good.ediscount,
 		    discount:  good.discount,
 		    alarm_day: good.alarm_day,
+		    path:      state.path,
 
 		    free:      free,
 		    s_group:   sg,
@@ -1450,7 +1487,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	// $scope.form.gForm.style_number.$pristine = true; 
 	// console.log($scope.focus);
     };
-
+    
     $scope.reset_brand = function(){
 	$scope.on_focus_attr("brand");
 	$scope.good.brand = undefined;
@@ -1474,8 +1511,13 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    tag_price: $scope.good.tag_price, 
 	    ediscount: $scope.good.ediscount,
 	    discount:  $scope.good.discount,
-	    alarm_day: $scope.good.alarm_day
+	    alarm_day: $scope.good.alarm_day,
+	    image: undefined
+	    // image.file: undefined,
+	    // d_image: true
 	};
+
+	// if (angular.isDefined($scope.good.image)) $scope.good.image.file = undefined;
 
 	$scope.form.gForm.style_number.$pristine = true;
 	$scope.form.gForm.brand.$pristine = true;
@@ -1483,7 +1525,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	$scope.form.gForm.tag_price.$pristine = true; 
 	$scope.form.gForm.discount.$pristine  = true;
 	// $scope.form.gForm.alarm.$pristine     = true;
-	$scope.image = undefined;
+	// $scope.image = undefined;
 
 	//focus
 	$scope.on_focus_attr("style_number");

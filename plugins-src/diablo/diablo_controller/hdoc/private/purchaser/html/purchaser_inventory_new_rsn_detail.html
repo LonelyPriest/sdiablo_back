@@ -89,6 +89,7 @@
 		    <th class="warning">类型</th>
 		    <th class="warning">性别</th>
 		    <th>年度</th>
+		    <th>季节</th>
 		    <th>吊牌价</th>
 		    <th>折扣</th>
 		    
@@ -121,6 +122,7 @@
 		    <td>{{inv.itype.name}}</td>
 		    <td>{{inv.sex.name}}</td>
 		    <td>{{inv.year}}</td>
+		    <td>{{inv.dseason.name}}</td>
 		    <td>{{inv.tag_price}}</td>
 		    <td>{{inv.discount}}</td>
 		    <td x-ng-if="stock_right.show_orgprice">

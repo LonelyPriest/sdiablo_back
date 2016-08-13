@@ -894,7 +894,37 @@
 		      </span>
 		    </div>
 		  </div> 
-		</div> 
+		</div>
+
+		<div x-ng-if="base_settings.image_allowed"
+		     class="form-group diablo-good-form-group">
+		  <label class="col-sm-3 col-md-3 control-label">图片</label>
+		  <div class="col-sm-6 col-md-6">
+		    <div class="input-group">
+		      <input class="form-control" type="text"
+			     x-ng-readonly=true
+			     x-ng-model="good.image.file.name"/>
+		      <span class="input-group-btn"> 
+			<image-upload image="good.image"></image-upload>
+			<button class="btn btn-danger"
+				x-ng-disabled="!good.image"
+				x-ng-click="delete_image()">
+			  <i class="glyphicon glyphicon-minus"></i>
+			</button>
+		      </span>
+		    </div>
+		  </div>
+		</div>
+
+		<div x-ng-if="base_settings.image_allowed"
+		     class="form-group diablo-good-form-group">
+		  <div class="col-sm-offset-3 col-sm-6 col-md-offset-3 col-md-6">
+		    <image-draw x-ng-show="good.image"
+				class="img-responsive img-thumbnail"
+	      			org-image="good.image">
+		    </image-draw>
+		  </div>
+		</div>
 		
 		<!--BEGIN form action-->
 		<div class="form-actions fluid">

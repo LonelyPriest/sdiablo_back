@@ -49,6 +49,11 @@ var stockUtils = function(){
 		"group_color", shop, base, parseInt, diablo_yes);
 	},
 
+	image_allowed: function(shop, base){
+	    return diablo_base_setting(
+		"image_mode", shop, base, parseInt, diablo_no);
+	},
+
 	valid_season: function(month){
 	    switch(month){
 	    case 0: 
@@ -178,11 +183,8 @@ var stockUtils = function(){
 	},
 
 	get_object_id: function(obj){
-	    if (angular.isDefined(obj)
-		&& angular.isObject(obj)
-		&& angular.isDefined(obj.id))
-		return obj.id
-	    
+	    if (angular.isDefined(obj) && angular.isObject(obj) && angular.isDefined(obj.id))
+		return obj.id; 
 	    return diablo_invalid_firm;
 	},
 

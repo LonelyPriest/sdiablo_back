@@ -127,7 +127,8 @@
 		</thead>
 		
 		<tbody>
-		  <tr x-ng-repeat="r in records track by r.id">
+		  <tr x-ng-repeat="r in records track by r.id"
+		      x-ng-dblclick="(r.state!==1 && r.type!==1) && update_detail(r)">
 		    <td>{{r.order_id}}</td>
 		    <td class="{{css(r.state, r.type)}}">{{r.rsn}}</td>
 		    <td class="{{css(r.state, r.type)}}" x-ng-switch on="r.type">
@@ -200,7 +201,7 @@
 		      <button x-ng-if="shop_right.check_w_sale"
 			      class="btn diablo-button purple-plum"
 			      x-ng-disabled="r.state===0"
-		      	      x-ng-click="uncheck_detail(r)">反核
+		      	      x-ng-click="uncheck_detail(r)">反审
 			<i class="glyphicon glyphicon-ban-circle"></i></button> 
 		    </td> 
 		  </tr>

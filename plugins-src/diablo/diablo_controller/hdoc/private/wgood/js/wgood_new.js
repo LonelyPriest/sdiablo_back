@@ -411,6 +411,7 @@ wgoodApp.controller("wgoodNewCtrl", function(
     };
 
     $scope.delete_image = function(){
+	// console.log($scope.image);
 	$scope.image = undefined;
     };
 

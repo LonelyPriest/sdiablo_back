@@ -1615,6 +1615,8 @@ filter_condition(inventory_new, [{<<"sex">>, _} = OT|T], Acc1, Acc2) ->
     filter_condition(inventory_new, T, [OT|Acc1], Acc2);
 filter_condition(inventory_new, [{<<"year">>, _} = OT|T], Acc1, Acc2) ->
     filter_condition(inventory_new, T, [OT|Acc1], Acc2);
+filter_condition(inventory_new, [{<<"season">>, _} = OT|T], Acc1, Acc2) ->
+    filter_condition(inventory_new, T, [OT|Acc1], Acc2);
 
 
 filter_condition(inventory_new, [{<<"purchaser_type">>, OT}|T], Acc1, Acc2) ->

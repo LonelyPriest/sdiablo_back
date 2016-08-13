@@ -209,31 +209,33 @@ action(Session, Req, {"new_w_good"}, Payload) ->
 		ok = file:write_file(ImageFile, base64:decode(ImageData))
 	end, 
 	
-	{ok, TypeId} = ?attr:type(new, Merchant, Type), 
+	{ok, TypeId} = ?attr:type(new, Merchant, Type),
+	ImagePath = case ImageData of
+			<<>> -> [];
+			_ -> filename:join(["image", ?to_s(Merchant),
+					    ?to_s(StyleNumber)
+					    ++ "-" ++ ?to_s(BrandId) ++ ".png"])
+		    end,
 	case ?w_inventory:purchaser_good(
 		new, Merchant,
 		[{<<"brand_id">>, BrandId},
 		 {<<"type_id">>, TypeId},
-		 {<<"path">>,
-		  case ImageData of
-		      <<>> -> [];
-		      _ ->
-			  filename:join(
-			    ["image", ?to_s(Merchant),
-			     ?to_s(StyleNumber)
-			     ++ "-" ++ ?to_s(BrandId) ++ ".png"])
-		  end
-		 }|Good]) of
+		 {<<"path">>, ImagePath} |Good]) of
 	    {ok, DBId} -> 
-		?utils:respond(200, Req,
-			       ?succ(add_purchaser_good, DBId),
-			       [{<<"brand">>, BrandId},
-				{<<"type">>, TypeId}]
-			       ++ case DBId of
-				      StyleNumber -> [];
-				      _ -> [{<<"db">>, DBId}]
-				  end
-			      ); 
+		?utils:respond(
+		   200,
+		   Req,
+		   ?succ(add_purchaser_good, DBId),
+		   [{<<"brand">>, BrandId},
+		    {<<"type">>, TypeId}] 
+		   ++ case DBId of
+			  StyleNumber -> [];
+			  _ -> [{<<"db">>, DBId}]
+		      end
+		   ++ case ImagePath of
+			  [] -> [];
+			  _ -> [{<<"path">>, ?to_b(ImagePath)}] 
+		      end); 
 	    {error, Error} ->
 		?utils:respond(200, Req, Error)
 	end 
