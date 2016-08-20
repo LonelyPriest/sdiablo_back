@@ -78,7 +78,7 @@
 	    </div>
 
 	    <div class="col-xs-3 col-md-3">
-	      <time-search time="select.datetime"></time-search> 
+	      <time-search time="select.datetime" oread="!right.master"></time-search>
 	    </div>
 
 	    <div class="col-xs-3 col-md-3 ">
@@ -88,6 +88,7 @@
 	  	</span>
 	  	<select class="form-control" type="text"
 	  		x-ng-model="select.employee"
+			x-ng-change="change_employee()"
 	  		x-ng-options="e as e.name for e in
 	  			      employees|filter:$viewValue|limitTo:8">
 		</select> 
@@ -285,7 +286,7 @@
 		      <th class="text-center">成交价</th>
 		      <th class="text-center">折扣率</th> 
 		      <th class="text-center">合计</th>
-		      <th class="col-md-1 col-sm-1 col-xs-1">备注</th>
+		      <!-- <th class="col-md-1 col-sm-1 col-xs-1">备注</th> -->
 		      <th class="text-center">操作</th>
 		    </tr>
 		  </thead>
@@ -431,16 +432,16 @@
 		      <td class="vert-align"><span class="fg-red">{{inv.rdiscount}}</span></td> 
 		      <td class="vert-align"><span>{{inv.calc}}</span></td>
 		      
-		      <td class="vert-align col-md-1">
-			<form>
-			  <div> 
-			    <input class="form-control input-xs"
-				   type="text"
-				   placeholder="备注"
-				   x-ng-model="inv.comment"/>
-			  </div>
-			</form>
-		      </td>
+		      <!-- <td class="vert-align col-md-1"> -->
+		      <!-- 	<form> -->
+		      <!-- 	  <div>  -->
+		      <!-- 	    <input class="form-control input-xs" -->
+		      <!-- 		   type="text" -->
+		      <!-- 		   placeholder="备注" -->
+		      <!-- 		   x-ng-model="inv.comment"/> -->
+		      <!-- 	  </div> -->
+		      <!-- 	</form> -->
+		      <!-- </td> -->
 		      
 		      <td class="text-left vert-align">
 			<span x-ng-if="inv.$new"> 
@@ -543,7 +544,8 @@
 	    </div>
 	  </tab> 
 
-	  <tab heading="{{wsale_mode[1].title}}"
+	  <tab x-ng-if="false"
+	       heading="{{wsale_mode[1].title}}"
 	       active="wsale_mode[1].active"
 	       select="image_mode(current_page)">
 
@@ -981,7 +983,7 @@
 	    <th></th>
 	    <th>单号</th>
 	    <th>会员</th>
-	    <th>店员</th>
+	    <!-- <th>店员</th> -->
 	    <th>店铺</th>
 	  </tr>
 	</thead>
@@ -995,7 +997,7 @@
 	    </td>
 	    <td>{{d.sn}}</td>
 	    <td>{{d.retailer.name}}</td>
-	    <td>{{d.employee.name}}</td>
+	    <!-- <td>{{d.employee.name}}</td> -->
 	    <td>{{d.shop.name}}</td>
 	    <!-- <td>{{d.datetime}}</td>  -->
 	  </tr>

@@ -98,8 +98,7 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 	    // inventory
 	    $scope.old_inventories = wsale.details;
 	    $scope.inventories = angular.copy(wsale.details);
-	    $scope.inventories.unshift({$edit:false, $new:true});
-
+	    // $scope.inventories.unshift({$edit:false, $new:true});
 	    console.log($scope.old_inventories);
 	    console.log($scope.inventories);
 

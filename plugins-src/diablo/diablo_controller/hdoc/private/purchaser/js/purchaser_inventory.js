@@ -1560,7 +1560,7 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
     // $scope.chart.data = data;
     // console.log($scope.promotions);
     $scope.promotions = filterPromotion.concat([{id:diablo_invalid_index, name:"重置促销方案"}]);
-    $scope.scores     = filterScore;
+    $scope.scores     = filterScore.concat([{id:diablo_invalid_index, name:"重置积分方案", type_id:0}]);
 
     /*
      * tab-set
@@ -1608,7 +1608,7 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
      */ 
 
     // initial
-    var stocks =  [{name:">0", id:0}, {name:"=0", id:1}];
+    var stocks =  [{name:">0", id:0}, {name:"=0", id:1}, {name:"!=0", id:2}];
     $scope.filters = []; 
     diabloFilter.reset_field(); 
     diabloFilter.add_field("style_number", $scope.match_style_number);
@@ -1617,6 +1617,7 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
     diabloFilter.add_field("season", diablo_season2objects);
     diabloFilter.add_field("sex",  diablo_sex2object);
     diabloFilter.add_field("year", diablo_full_year);
+    diabloFilter.add_field("tag_price", []); 
     diabloFilter.add_field("discount", []);
     diabloFilter.add_field("shop", $scope.shops);
     diabloFilter.add_field("firm", filterFirm);
@@ -1951,6 +1952,7 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 	    ? [].push(diablo_get_object(condition.shop, $scope.shops))
 	    : condition.shop.map(
 		function(s){return diablo_get_object(s, $scope.shops)});
+
 	dialog.edit_with_modal(
 	    "purchaser-on-sale.html",
 	    undefined,
@@ -1981,7 +1983,8 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 		// season: params.select.season,
 		// year: params.select.year
 		tag_price: diablo_set_integer(params.select.tag_price),
-		discount: diablo_set_integer(params.select.discount)
+		discount: diablo_set_integer(params.select.discount),
+		score: params.select.score.id
 	    };
 	    
 	    purchaserService.update_w_inventory_batch(
@@ -1997,6 +2000,7 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 		    s += "折扣[" + update.discount.toString() + "]"; 
 		};
 
+		s += " 积分["  + params.select.score.name + "]"; 
 		console.log(s);
 		
 		if (result.ecode === 0){
@@ -2016,24 +2020,28 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 	    })
 	};
 
+	var yes_no = stockUtils.yes_no();
+	// console.log(yes_no);
 	dialog.edit_with_modal(
 	    "stock-update-batch.html",
 	    undefined,
 	    callback,
 	    undefined,
 	    {
-		check_valid: function(select){
-		    for (o in select){
-			if ( 0 !== stockUtils.to_integer(select[o]))
-			    return false;
-		    };
-
-		    return true;
+		check_invalid: function(select){
+		    if (0 === stockUtils.to_integer(select.tag_price)
+			&& 0 === stockUtils.to_integer(select.discount)
+			&& 1 === select.score.id){
+			return true;
+		    } 
+		    return false;
 		},
 		// years: diablo_full_year,
 		// sexs: diablo_sex2object,
 		// seasons: diablo_season2objects,
+		yes_no: yes_no,
 		select: {
+		    score: yes_no[0]
 		    // sex: diablo_sex2object[0],
 		    // season: diablo_season2objects[0],
 		    // year: diablo_now_year()},

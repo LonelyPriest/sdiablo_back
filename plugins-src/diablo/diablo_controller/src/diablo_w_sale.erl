@@ -775,7 +775,7 @@ handle_call({filter_rsn_group, Merchant,
     CorrectCutDConditions = ?utils:correct_condition(<<"b.">>, CutDCondtions),
     
     Sql = "select b.id, b.rsn, b.style_number"
-	", b.brand as brand_id, b.type as type_id, b.firm as firm_id"
+	", b.brand as brand_id, b.type as type_id, b.season, b.firm as firm_id"
 	", b.s_group, b.free, b.total, b.promotion as pid, b.score as sid"
 	", b.org_price, b.ediscount, b.tag_price, b.fdiscount, b.rdiscount"
 	", b.fprice, b.rprice"
@@ -1375,7 +1375,10 @@ wsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
      case ?sql_utils:execute(s_read, Sql00) of
 	 {ok, []} ->
 	     {ValidOrgPrice, ValidEDiscount}
-		 = valid_orgprice(stock, Merchant, Shop, Inventory),
+		 = case Action of
+		       new  -> valid_orgprice(stock, Merchant, Shop, Inventory);
+		       reject -> {OrgPrice, ?w_good_sql:stock(ediscount, OrgPrice, TagPrice)}
+		   end,
 	     "insert into w_sale_detail("
 		 "rsn, style_number, brand, merchant, shop, type, s_group, free"
 		 ", season, firm, year, total, promotion, score"

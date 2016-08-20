@@ -35,7 +35,11 @@ wsaleApp.controller("wsaleRejectCtrl", function(
     $scope.inventories = [];
     $scope.show_promotions = [];
     $scope.setting = {};
-    $scope.select = {datetime: $.now()}; 
+    $scope.select = {datetime: $.now()};
+
+    $scope.right = {
+	master:rightAuthen.authen_master(user.type)
+    };
     
     // rsn 
     var time = diabloFilter.default_time();
@@ -255,7 +259,7 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 
 		var hLine = wsalePrint.gen_body(
 		    LODOP,
-		    $scope.inventories.filter(function(r){return !r.$new}),
+		    $scope.inventories.filter(function(r){return !r.$new && r.select}),
 		    filterBrand);
 		
 		var isVip = $scope.select.retailer.id !== $scope.setting.no_vip ? true : false;

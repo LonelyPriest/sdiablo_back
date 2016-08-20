@@ -34,7 +34,7 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
     };
 
     $scope.calc_colspan = function(){
-	var column = 14;
+	var column = 15;
 	if ($scope.hidden.base) column -= 3;
 	
 	return column;
@@ -84,8 +84,11 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
     	$scope.filters     = storage.filter;
 	$scope.qtime_start  = storage.start_time; 
     } else{
-	$scope.filters = []; 
-	$scope.qtime_start = diablo_set_date(wsaleUtils.start_time(shopId, base, now, dateFilter));
+	$scope.filters = [];
+	if (angular.isDefined($routeParams.rsn))
+	    $scope.qtime_start = diablo_set_date(wsaleUtils.start_time(shopId, base, now, dateFilter));
+	else 
+	    $scope.qtime_start = now;
     };
 
     $scope.time = wsaleUtils.correct_query_time(
@@ -111,7 +114,7 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
     /*
      * pagination 
      */
-    $scope.colspan = 17;
+    // $scope.colspan = 17;
     $scope.items_perpage = diablo_items_per_page();
     $scope.max_page_size = 10;
     $scope.default_page = 1;
@@ -120,8 +123,8 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
     $scope.do_search = function(page){
 	if (!$scope.right.master){
 	    var diff = now - diablo_get_time($scope.time.start_time);
-	    console.log(diff);
-	    if (diff > diablo_day_millisecond * $scope.setting.show_sale_day){
+	    // console.log(diff);
+	    if (diff - diablo_day_millisecond * $scope.setting.show_sale_day > diablo_day_millisecond){
 	    	$scope.time.start_time = now - $scope.setting.show_sale_day * diablo_day_millisecond;
 	    }
 	}
@@ -136,7 +139,7 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 	
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
 	    if (angular.isUndefined(search.rsn)){
-		search.rsn  =  $routeParams.rsn ? $routeParams.rsn : undefined; 
+		search.rsn  =  $routeParams.rsn ? $routeParams.rsn : undefined;
 	    };
 	    
 	    if (angular.isUndefined(search.shop)
@@ -164,6 +167,7 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 		    d.retailer = diablo_get_object(d.retailer_id, filterRetailer);
 		    d.employee = diablo_get_object(d.employee_id, filterEmployee);
 		    d.type      = diablo_get_object(d.type_id, filterType);
+		    d.oseason    = diablo_get_object(d.season, diablo_season2objects);
 		    d.promotion = diablo_get_object(d.pid, filterPromotion);
 		    d.score     = diablo_get_object(d.sid, filterScore);
 		    d.drate     = diablo_discount(d.rprice, d.tag_price);
@@ -331,7 +335,7 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 	
 	if (diablo_frontend === p_mode){
 	    if (angular.isUndefined(LODOP)) LODOP=getLodop();
-	    // console.log(LODOP);
+	    console.log(LODOP);
 
 	    if (angular.isDefined(LODOP)){
 		wsaleService.get_w_sale_new(rsn).then(function(result){

@@ -108,6 +108,9 @@ function filterProvider(){
 		} else if (name === 'discount'){
 		    _filter.fields.push({name:"discount", chinese:"折扣"});
 		    // _prompt.rsn = promptValues;
+		}else if (name === 'tag_price'){
+		    _filter.fields.push({name:"tag_price", chinese:"吊牌价"});
+		    // _prompt.rsn = promptValues;
 		} else if (name === 'check_state'){
 		    _filter.fields.push({name:"check_state", chinese:"审核状态"});
 		    _prompt.check_state = promptValues;
@@ -144,9 +147,10 @@ function filterProvider(){
 		    }
 		});
 
-		
-		search.start_time = diablo_filter_time(time.start_time, 0, dateFilter); 
-		search.end_time   = diablo_filter_time(time.end_time, 1, dateFilter);
+		if (angular.isDefined(time)){
+		    search.start_time = diablo_filter_time(time.start_time, 0, dateFilter); 
+		    search.end_time   = diablo_filter_time(time.end_time, 1, dateFilter);    
+		} 
 		console.log(search);
 
 		return callback(search);

@@ -444,7 +444,7 @@ wreportApp.controller("realStasticController", function(
 	});
     };
 
-    $scope.do_search();
+    // $scope.do_search();
 
     $scope.go_daily = function(){
 	diablo_goto_page("#/stastic");

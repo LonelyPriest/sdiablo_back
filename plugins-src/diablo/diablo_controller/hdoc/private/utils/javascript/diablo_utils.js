@@ -570,10 +570,12 @@ diabloUtils.directive('timeSearch', function (){
 	    time:      '=',
 	    ok:        '&',
 	    clickOk:   '=',
-	    change:    '&'
+	    change:    '&',
+	    oread:      '='
 	},
 	
 	link: function(scope, element, attrs){
+	    // console.log(scope);
 	    scope.open_calendar = function(event){
 		event.preventDefault();
 		event.stopPropagation();

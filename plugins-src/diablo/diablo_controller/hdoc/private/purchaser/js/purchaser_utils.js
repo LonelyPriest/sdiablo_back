@@ -54,6 +54,10 @@ var stockUtils = function(){
 		"image_mode", shop, base, parseInt, diablo_no);
 	},
 
+	yes_no: function() {
+	    return [{name:"否", id: 0}, {name:"是", id: 1}]
+	},
+
 	valid_season: function(month){
 	    switch(month){
 	    case 0: 

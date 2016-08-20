@@ -365,6 +365,7 @@ create table w_retailer
 (
     id              INTEGER AUTO_INCREMENT,
     name            VARCHAR(64) not null,
+    card            VARCHAR(8) default null,
     birth           DATE default 0,
     password        VARCHAR(128) default null,
     balance         DECIMAL(10, 2) default 0, -- max: 99999999.99

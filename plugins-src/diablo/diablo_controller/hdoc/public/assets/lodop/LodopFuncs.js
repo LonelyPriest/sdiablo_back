@@ -59,6 +59,7 @@ function loadCLodop() {
     var head = document.head || document.getElementsByTagName("head")[0] || document.documentElement;
     var oscript = document.createElement("script");
     oscript.src ="http://localhost:63552/CLodopfuncs.js?priority=1";
+    // oscript.src ="http://192.168.1.108:8001/CLodopfuncs.js?priority=1";
     head.insertBefore( oscript,head.firstChild );
 };
 

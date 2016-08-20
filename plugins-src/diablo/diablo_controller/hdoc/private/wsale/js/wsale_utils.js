@@ -272,6 +272,22 @@ var wsaleUtils = function(){
 	    return diablo_base_setting("pum", shop, base, parseInt, 1);
 	},
 
+	round: function(shop, base){
+	    return diablo_base_setting("round", shop, base, parseInt, diablo_yes);
+	},
+
+	scanner: function(shop, base) {
+	    return diablo_base_setting("scanner", shop, base, parseInt, diablo_no);
+	},
+
+	s_member: function(shop, base) {
+	    return diablo_base_setting("s_member", shop, base, parseInt, diablo_no);
+	},
+
+	s_employee: function(shop, base) {
+	    return diablo_base_setting("s_employee", shop, base, parseInt, diablo_no);
+	},
+
 	get_login_employee:function(shop, loginEmployee, employees){
 	    var filterEmployees = employees.filter(function(e){
 		return e.shop === shop;
@@ -363,7 +379,7 @@ var wsaleUtils = function(){
 	    return scores;
 	},
 
-	calc_with_promotion: function(pmoneys){
+	calc_with_promotion: function(pmoneys, round){
 	    var balance = 0;
 	    var rbalance = 0;
 	    var f_mul = diablo_float_mul;
@@ -392,7 +408,11 @@ var wsaleUtils = function(){
 		}
 	    }
 
-	    return {balance: diablo_round(balance - rbalance), rbalance: rbalance};
+	    console.log(round);
+	    if (angular.isUndefined(round) || round) 
+		return {balance: diablo_round(balance - rbalance), rbalance: rbalance};
+	    else
+		return {balance: balance - rbalance, rbalance: rbalance};
 	},
 
 	calc_discount_of_rmoney: function(discount, promotion, pmoneys){
@@ -476,11 +496,25 @@ var wsaleUtils = function(){
 		shop)
 	},
 
+	authen_rainbow: function(user_type, action, right) {
+	    return rightAuthen.modify_onsale(
+		user_type,
+		rightAuthen.rainbow_action()[action],
+		right)
+	},
+
 	correct_query_time: function(isMaster, configDays, start_time, now, dateFilter){
 	    if (isMaster)
 		return dateFilter.default_time(start_time, now);
-	    else
-		return dateFilter.default_time(now - diablo_day_millisecond * configDays, now);
+	    else {
+		var diff = now - diablo_get_time(start_time);
+		// console.log(diff, diff - configDays * diablo_day_millisecond);
+		if (diff - configDays * diablo_day_millisecond <= diablo_day_millisecond) {
+		    return dateFilter.default_time(start_time, now);
+		} else {
+		    return dateFilter.default_time(now - diablo_day_millisecond * configDays, now); 
+		}
+	    } 
 	}
 
 	//
@@ -491,7 +525,14 @@ var wsaleUtils = function(){
 
 var wsaleCalc = function(){
     return {
-	calculate: function(o_retailer, retailer, no_vip, inventories, show_promotions, mode, verificate){
+	calculate: function(o_retailer,
+			    retailer,
+			    no_vip,
+			    inventories,
+			    show_promotions,
+			    mode,
+			    verificate,
+			    round){
 	    var total        = 0;
 	    var abs_total    = 0;
 	    var should_pay   = 0;
@@ -593,7 +634,7 @@ var wsaleCalc = function(){
 	    // calcuate with verificate
 	    wsaleCalc.calc_discount_of_verificate(inventories, mode, verificate); 
 	    
-	    var calc_p = wsaleUtils.calc_with_promotion(pmoneys);
+	    var calc_p = wsaleUtils.calc_with_promotion(pmoneys, round);
 	    should_pay = calc_p.balance; 
 	    score  = wsaleUtils.calc_with_score(pscores, verificate); 
 	    // charge = should_pay - has_pay;
@@ -633,23 +674,23 @@ var wsaleCalc = function(){
     }
 }();
 
-var gen_wsale_key = function(shop, retailer, employee, dateFilter){
+var gen_wsale_key = function(shop, retailer, dateFilter){
     var now = $.now();
     return "ws-"
-	+ employee.toString()
-	+ "-" + retailer.toString()
+    // + employee.toString()
+	+ retailer.toString()
 	+ "-" + shop.toString()
 	+ "-" + dateFilter(now, 'mediumTime')
 	+ "-" + now;
 };
 
-var wsaleDraft = function(storage, shop, retailer, employee, dateFilter){
+var wsaleDraft = function(storage, shop, retailer, dateFilter){
     this.storage  = storage;
     this.shop     = shop;
     this.retailer = retailer;
-    this.employee = employee;
+    // this.employee = employee;
     this.dateFilter = dateFilter;
-    this.key = gen_wsale_key(this.shop, this.retailer, this.employee, this.dateFilter);
+    this.key = gen_wsale_key(this.shop, this.retailer, this.dateFilter);
 };
 
 wsaleDraft.prototype.get_key = function(){
@@ -662,7 +703,7 @@ wsaleDraft.prototype.set_key = function(key){
 
 wsaleDraft.prototype.reset = function(){
     // console.log(this.key);
-    this.key = gen_wsale_key(this.shop, this.retailer, this.employee, this.dateFilter);
+    this.key = gen_wsale_key(this.shop, this.retailer, this.dateFilter);
 };
 
 wsaleDraft.prototype.change_shop = function(shop){
@@ -670,10 +711,10 @@ wsaleDraft.prototype.change_shop = function(shop){
     this.reset();
 };
 
-wsaleDraft.prototype.change_employee = function(employee){
-    this.employee = employee; 
-    this.reset();
-};
+// wsaleDraft.prototype.change_employee = function(employee){
+//     this.employee = employee; 
+//     this.reset();
+// };
 
 wsaleDraft.prototype.change_retailer = function(retailer){
     // this.remove(this.key);
@@ -682,12 +723,13 @@ wsaleDraft.prototype.change_retailer = function(retailer){
 };
 
 wsaleDraft.prototype.keys = function(){
-    var re = /^ws-\d+-\d+-\d+.*$/; 
+    // var re = /^ws-\d+-\d+-\d+.*$/;
+    var re = /^ws-\d+-\d+.*$/; 
     var keys = this.storage.keys();
     return keys.filter(function(k){
 	return re.test(k)
     }).filter(function(k){
-	return wsaleUtils.to_integer(k.split("-")[3]) === this.shop;
+	return wsaleUtils.to_integer(k.split("-")[2]) === this.shop;
     }, this);
 };
 
@@ -707,7 +749,7 @@ wsaleDraft.prototype.list = function(draftFilter){
     var keys = this.keys();
     return draftFilter(keys).sort(function(k1, k2){
 	// console.log(k1.sn.split("-")[5], k2.sn.split("-")[5]);
-	return k2.sn.split("-")[5] - k1.sn.split("-")[5];
+	return k2.sn.split("-")[4] - k1.sn.split("-")[4];
     }); 
 };
 
@@ -811,7 +853,7 @@ var wsalePrint = function(){
 	    return;
 	},
 
-	gen_body: function(LODOP, inventories, brands){
+	gen_body: function(LODOP, inventories, brands, round){
 	    var hLine = 100;
 	    angular.forEach(inventories, function(d){
 		LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"款号：" + d.style_number);
@@ -824,7 +866,13 @@ var wsalePrint = function(){
 		hLine += 15;
 		LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"数量：" + d.total.toString());
 		hLine += 15;
-		LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"小计：" + diablo_round(d.total * d.rprice).toString());
+		LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"小计："
+				     + function() {
+					 if (angular.isUndefined(round) || round)
+					     return diablo_round(d.total * d.rprice).toString();
+					 else
+					     return (d.total * d.rprice).toString();
+				     }())
 		hLine += 15;
 		LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"折扣率：" + wsaleUtils.ediscount(d.rprice, d.tag_price).toString()); 
 		hLine += 20;

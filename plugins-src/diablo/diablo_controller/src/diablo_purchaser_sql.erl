@@ -392,13 +392,19 @@ inventory(update_batch, Merchant, Attrs, Conditions) ->
 
     TagPrice = ?v(<<"tag_price">>, Attrs),
     Discount = ?v(<<"discount">>, Attrs),
+    Score = case ?v(<<"score">>, Attrs) of
+		0 -> -1;
+		1 -> undefined
+	    end,
 
-    Updates = ?utils:v(tag_price, float, TagPrice)
-	++ ?utils:v(discount, float, Discount), 
+    UpdateOfGood = ?utils:v(tag_price, float, TagPrice)
+	++ ?utils:v(discount, float, Discount),
 
-    ?DEBUG("updates ~p", [Updates]),
+    UpdateOfStock = UpdateOfGood ++ ?utils:v(score, integer, Score),
 
-    ["update w_inventory set " ++ ?utils:to_sqls(proplists, comma, Updates)
+    ?DEBUG("UpdateOfGood ~p, UpdateOfStock", [UpdateOfGood, UpdateOfStock]),
+
+    ["update w_inventory set " ++ ?utils:to_sqls(proplists, comma, UpdateOfStock)
      ++ case TagPrice of
 	    undefined -> [];
 	    _ ->", ediscount=(org_price/" ++ ?to_s(TagPrice) ++ ")*100"
@@ -410,23 +416,28 @@ inventory(update_batch, Merchant, Attrs, Conditions) ->
 	    [] -> [];
 	    TimeSql ->  " and " ++ TimeSql
 	end
-     ++ " and deleted=" ++ ?to_s(?NO),
-     
-     "update w_inventory_good set " ++ ?utils:to_sqls(proplists, comma, Updates)
-     ++ case TagPrice of
-	    undefined -> [];
-	    _ ->", ediscount=(org_price/" ++ ?to_s(TagPrice) ++ ")*100"
-	end
-     ++ " where " 
-     ++ ?sql_utils:condition(
-	   proplists_suffix,
-	   lists:foldr(fun({<<"shop">>, _}, Acc)->
-			       Acc;
-			  (A, Acc) ->
-			       [A|Acc]
-		       end, [], NewConditions))
-     ++ "merchant=" ++ ?to_s(Merchant) 
-     ++ " and deleted=" ++ ?to_s(?NO)].
+     ++ " and deleted=" ++ ?to_s(?NO)]
+	
+	++ case UpdateOfGood of
+	       [] -> [];
+	       _ ->
+		   ["update w_inventory_good set "
+		    ++ ?utils:to_sqls(proplists, comma, UpdateOfGood)
+		    ++ case TagPrice of
+			   undefined -> [];
+			   _ ->", ediscount=(org_price/" ++ ?to_s(TagPrice) ++ ")*100"
+		       end
+		    ++ " where " 
+		    ++ ?sql_utils:condition(
+			  proplists_suffix,
+			  lists:foldr(fun({<<"shop">>, _}, Acc)->
+					      Acc;
+					 (A, Acc) ->
+					      [A|Acc]
+				      end, [], NewConditions))
+		    ++ "merchant=" ++ ?to_s(Merchant) 
+		    ++ " and deleted=" ++ ?to_s(?NO)]
+	   end.
 
 inventory(inventory_new_rsn, Merchant, Conditions) ->
     {DetailConditions, SaleConditions} = 
@@ -1595,7 +1606,8 @@ sort_condition(stock, Conditions, Prefix) ->
     case ?v(<<"stock">>, Conditions, []) of
 	[] -> [];
 	0 -> " and " ++ ?to_s(Prefix) ++ "amount>0";
-	1 -> " and " ++ ?to_s(Prefix) ++ "amount=0"
+	1 -> " and " ++ ?to_s(Prefix) ++ "amount=0";
+	2 -> " and " ++ ?to_s(Prefix) ++ "amount!=0"	
     end.
 
 sort_condition(stock, Conditions) ->

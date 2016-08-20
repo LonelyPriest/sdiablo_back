@@ -189,7 +189,7 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
     };
 
     $scope.calc_colspan = function(){
-	var column = 15;
+	var column = 16;
 	if ($scope.hidden.base){
 	    column -= 2;
 	}

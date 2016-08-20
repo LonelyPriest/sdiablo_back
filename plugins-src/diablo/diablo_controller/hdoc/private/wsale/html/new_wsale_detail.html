@@ -128,7 +128,7 @@
 		
 		<tbody>
 		  <tr x-ng-repeat="r in records track by r.id"
-		      x-ng-dblclick="(r.state!==1 && r.type!==1) && update_detail(r)">
+		      x-ng-dblclick="(shop_right.update_w_sale && r.state!==1 && r.type!==1) && update_detail(r)">
 		    <td>{{r.order_id}}</td>
 		    <td class="{{css(r.state, r.type)}}">{{r.rsn}}</td>
 		    <td class="{{css(r.state, r.type)}}" x-ng-switch on="r.type">
@@ -139,12 +139,9 @@
 		    <td class="{{css(r.state, r.type)}}">{{r.shop.name}}</td>
 		    <td class="{{css(r.state, r.type)}}">{{r.retailer.name}}</td>
 		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.base">{{r.balance}}</td>
-		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.base">{{r.left_balance}}</td>
-		    
-		    <td class="{{css(r.state, r.type)}}">{{r.employee.name}}</td>
-
+		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.base">{{r.left_balance}}</td> 
+		    <td class="{{css(r.state, r.type)}}">{{r.employee.name}}</td> 
 		    <td class="{{css(r.state, r.type)}}">{{r.total}}</td> 
-		    
 		    <td class="{{css(r.state, r.type)}}" x-ng-switch on="r.type"> 
 		      <span class="fg-red" x-ng-switch-when=1>{{r.should_pay + r.verificate}}</span>
 		      <span x-ng-switch-default>{{r.should_pay + r.verificate}}</span>
@@ -187,11 +184,17 @@
 			明细<i class="glyphicon glyphicon-map-marker"></i>
 		      </button>
 
-		      <button x-ng-if="shop_right.update_w_sale"
+		      <button x-ng-if="shop_right.update_w_sale && r.state!==1 && r.type!==1"
 			      class="btn diablo-button yellow-crusta"
 			      x-ng-disabled="r.state===1 || r.type===1"
 		      	      x-ng-click="update_detail(r)">修改
-			<i class="glyphicon glyphicon-edit"></i></button> 
+			<i class="glyphicon glyphicon-edit"></i></button>
+		      
+		      <!-- <button x-ng-if="shop_right.update_w_sale && (r.state!==1 && r.type===1)" -->
+		      <!-- 	      class="btn diablo-button yellow-crusta" -->
+		      <!-- 	      x-ng-disabled="r.state===1 || r.type===1" -->
+		      <!-- 	      x-ng-click="update_detail(r)">废弃 -->
+		      <!-- 	<i class="glyphicon glyphicon-edit"></i></button> -->
 		      
 		      <button x-ng-if="shop_right.check_w_sale"
 			      class="btn diablo-button btn-danger"
