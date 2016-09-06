@@ -287,38 +287,60 @@ print_content(ShopId, PBrand, Model, 58, Merchant, Setting, Invs) ->
 	   [ShopId, PBrand, Model, Merchant, Setting, Invs]),
 
     {ok, Brands} = ?w_user_profile:get(brand, Merchant),
-    lists:foldr(
-      fun(Inv, {Acc, Balance, STotal, RTotal})->
-	      StyleNumber = ?v(<<"style_number">>, Inv),
-	      BrandId     = ?v(<<"brand_id">>, Inv),
-	      SellTotal   = ?v(<<"total">>, Inv),
-	      TagPrice    = ?v(<<"tag_price">>, Inv),
-	      RPrice      = ?v(<<"rprice">>, Inv),
-	      %% rDiscount   = ?v(<<"rdiscount">>, Inv), 
-	      Discount   =
-		  case TagPrice == 0 of
-		      true -> 0;
-		      false ->
-			  binary_to_float(
-			    float_to_binary(RPrice / TagPrice, [{decimals, 3}])) * 100
-		  end,
-	      
-	      {NewSTotal, NewRTotal } =
-		  case SellTotal > 0 of
-		      true  -> {STotal + SellTotal, RTotal};
-		      false -> {STotal, RTotal + SellTotal}
-		  end,
-	      
-	      {"款号：" ++ ?to_s(StyleNumber) ++ br(PBrand)
-	       ++ "品名：" ++ ?to_s(get_brand(Brands, BrandId)) ++ br(PBrand)
-	       ++ "单价：" ++ ?to_s(TagPrice) ++ br(PBrand)
-	       ++ "成交价：" ++ ?to_s(RPrice) ++ br(PBrand)
-	       ++ "数量：" ++ ?to_s(SellTotal) ++ br(PBrand)
-	       ++ "小计：" ++ ?to_s(RPrice * SellTotal) ++ br(PBrand)
-	       ++ "折扣率：" ++ ?to_s(Discount) ++ br(PBrand)
-	       ++ line(minus, 32) ++ br(PBrand)
-	       ++ Acc, Balance +RPrice * SellTotal, NewSTotal, NewRTotal}
-      end, {[], 0, 0, 0}, Invs);
+
+    H = "款号" ++ pading(8)
+	++ "单价" ++ pading(2)
+	%% ++ "成交价" ++ pading(2)
+	++ "数量" ++ pading(2)
+	%% ++ "小计" ++ pading(4)
+	++ "折扣率"
+	++ br(PBrand),
+
+    {Body, TB, ST, RT} =
+	lists:foldr(
+	  fun(Inv, {Acc, Balance, STotal, RTotal})->
+		  StyleNumber = ?v(<<"style_number">>, Inv),
+		  BrandId     = ?v(<<"brand_id">>, Inv),
+		  SellTotal   = ?v(<<"total">>, Inv),
+		  TagPrice    = ?v(<<"tag_price">>, Inv),
+		  RPrice      = ?v(<<"rprice">>, Inv),
+		  %% rDiscount   = ?v(<<"rdiscount">>, Inv),
+
+		  CleanTagPrice = clean_zero(TagPrice),
+
+		  Discount   =
+		      case TagPrice == 0 of
+			  true -> 0;
+			  false ->
+			      binary_to_float(
+				float_to_binary(RPrice / TagPrice, [{decimals, 3}])) * 100
+		      end,
+
+		  {NewSTotal, NewRTotal } =
+		      case SellTotal > 0 of
+			  true  -> {STotal + SellTotal, RTotal};
+			  false -> {STotal, RTotal + SellTotal}
+		      end,
+
+		  BrandName = ?to_s(get_brand(Brands, BrandId)),
+		  {?to_s(StyleNumber) ++ pading(12 - width(latin1, StyleNumber))
+		   %% ++ "品名：" ++ ?to_s(get_brand(Brands, BrandId)) ++ br(PBrand)
+		   ++ ?to_s(CleanTagPrice) ++ pading(6 - width(latin1, CleanTagPrice))
+		   ++ ?to_s(SellTotal) ++ pading(6 - width(latin1, SellTotal)) 
+		   ++ ?to_s(Discount) ++ br(PBrand)
+
+		   %% ++ ?to_s(RPrice) ++ pading(8 - width(latin1, RPrice)) ++ br(PBrand)
+		   ++ BrandName ++ pading(24 - width(chinese, BrandName)) ++ ?to_s(RPrice)
+		   ++ br(PBrand)
+		   ++ pading(24) ++ ?to_s(RPrice * SellTotal) ++ br(PBrand)
+		   %% ++ "单价：" ++ ?to_s(TagPrice) ++ br(PBrand)
+		   %% ++ "成交价：" ++ ?to_s(RPrice) ++ br(PBrand)
+		   %% ++ "数量：" ++ ?to_s(SellTotal) ++ br(PBrand)
+		   %% ++ "小计：" ++ ?to_s(RPrice * SellTotal) ++ "折扣率：" ++ ?to_s(Discount) ++ br(PBrand)
+		   ++ line(minus, 32) ++ br(PBrand)
+		   ++ Acc, Balance +RPrice * SellTotal, NewSTotal, NewRTotal}
+	  end, {[], 0, 0, 0}, Invs),
+    {H ++ Body, TB, ST, RT};
 
 print_content(ShopId, PBrand, Model, 80, Merchant, Setting, Invs) ->
     ?DEBUG("print_content with shop ~p, pbrand ~p, model ~p"
@@ -491,8 +513,8 @@ body_foot(Brand, _Model, Column, Setting) ->
     
     PrintDatetime =
 	case Column of
-	    58 -> pading(32 - 26);
-	    80 -> pading(48 - 26);
+	    58 -> pading(32 - 30);
+	    80 -> pading(48 - 30);
 	    _  -> []
 	end ++ "打印日期：" ++ ?utils:current_time(format_localtime), 
     FirstComment ++ OtherComment ++ PrintDatetime.

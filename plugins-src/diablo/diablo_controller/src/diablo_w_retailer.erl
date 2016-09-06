@@ -309,7 +309,7 @@ handle_call({recharge, Merchant, Attrs}, _From, State) ->
 	    
 	    Sql2 =
 		["insert into w_charge_detail(rsn"
-		 ", merchant, shop, employee, cid, retailer"
+		 ", merchant, shop, employ, cid, retailer"
 		 ", lbalance, cbalance, sbalance, comment, entry_date) values("
 		 ++ "\"" ++ ?to_s(SN) ++ "\","
 		 ++ ?to_s(Merchant) ++ ","

@@ -99,7 +99,7 @@
 	  	<input class="form-control"
 		       type="text"
 		       placeholder="备注"
-	  	       x-ng-model="select.comment"></input> 
+	  	       x-ng-model="select.comment"/>
 	      </div>
 	    </div>
 	    
@@ -107,7 +107,7 @@
 	      <div class="input-group"> 
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>应付</span>
-	  	<input class="form-control" type="text" readonly
+	  	<input class="form-control" type="number" readonly
 	  	       x-ng-model="select.should_pay"/>
 	      </div>
 	    </div>
@@ -117,7 +117,7 @@
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>实付</span>
 	  	<input class="form-control"
-		       x-ng-pulsate
+		       type="number"
 	  	       x-ng-model="select.has_pay"/>
 	      </div>
 	    </div>
@@ -133,7 +133,7 @@
 	  </div> <!--END row-->
 
 	  <!--BEGIN row-->
-	  <div x-ng-if="!hidden.travel" class="row diablo-form-group">
+	  <div x-ng-if="select.retailer.type===1" class="row diablo-form-group">
 	    <div class="col-xs-3 col-md-3"> 
 	      <div class="input-group"> 
 		<span class="input-group-addon">
@@ -207,21 +207,21 @@
 		    <td class="col-md-2 text-left vert-align">
 		      <span ng-if="!inv.$new">{{inv.style_number}}</span>
 		      <form name="inv.form.good" ng-if="inv.$new">
-			<div ng-class="{'has-error':inv.form.good.$invalid
-				       && !inv.form.good.$pristine}">
-			  <input class="form-control text-left" type="text"
-				 required
-				 x-ng-model="inv.style_number"
-				 placeholder="货号"
-				 typeahead-editable="false"
-				 typeahead-on-select="on_select_good($item, $model, $label)"
-				 typeahead-wait-ms="500"
-				 typeahead-loading="loading"
-				 typeahead="g as g.name for g in match_style_number($viewValue)"/>
-			  <span x-ng-show="loading">
-			    <i class="glyphicon glyphicon-refresh"></i>
-			  </span>
-			</div>
+		      	<div ng-class="{'has-error':inv.form.good.$invalid
+		      		       && !inv.form.good.$pristine}">
+		      	  <input class="form-control text-left" type="text"
+		      		 required
+		      		 x-ng-model="inv.style_number"
+		      		 placeholder="货号"
+		      		 typeahead-editable="false"
+		      		 typeahead-on-select="on_select_good($item, $model, $label)"
+		      		 typeahead-wait-ms="500"
+		      		 typeahead-loading="loading"
+		      		 typeahead="g as g.name for g in match_style_number($viewValue)"/>
+		      	  <span x-ng-show="loading">
+		      	    <i class="glyphicon glyphicon-refresh"></i>
+		      	  </span>
+		      	</div>
 		      </form>
 		    </td>
 		    <td class="vert-align">{{inv.brand.name}}</td>
@@ -263,23 +263,25 @@
 		    </td>
 		    
 		    <!-- sell count-->
-		    <td class="col-md-1 col-sm-1 vert-align">
-		      <div ng-if="!inv.$new && !inv.free_update">
-			{{inv.reject}}</div> 
-		      <form name="inv.form.reject"
-			    ng-if="inv.$new && inv.free_color_size
-				   || !inv.$new && inv.free_update">
-			<div ng-class="{'has-error':inv.form.reject.$invalid
-				       && !inv.form.reject.$pristine}"}> 
-			    <input class="form-control"
-				   type="number" step="1" 
-				   placeholder="数量"
-				   required
-				   x-ng-pattern="pattern.positive_num"
-				   x-ng-model="inv.reject" />
-			</div>
-		      </form>
-		    </td>
+		    <td class="col-md-1 col-sm-1 vert-align">{{inv.reject}}</td>
+		    
+		    <!-- <td class="col-md-1 col-sm-1 vert-align"> -->
+		    <!--   <div ng-if="!inv.$new && !inv.free_update"> -->
+		    <!-- 	{{inv.reject}}</div>  -->
+		    <!--   <form name="inv.form.reject" -->
+		    <!-- 	    ng-if="inv.$new && inv.free_color_size -->
+		    <!-- 		   || !inv.$new && inv.free_update"> -->
+		    <!-- 	<div ng-class="{'has-error':inv.form.reject.$invalid -->
+		    <!-- 		       && !inv.form.reject.$pristine}"}>  -->
+		    <!-- 	    <input class="form-control" -->
+		    <!-- 		   type="number" step="1"  -->
+		    <!-- 		   placeholder="数量" -->
+		    <!-- 		   required -->
+		    <!-- 		   x-ng-pattern="pattern.positive_num" -->
+		    <!-- 		   x-ng-model="inv.reject" /> -->
+		    <!-- 	</div> -->
+		    <!--   </form> -->
+		    <!-- </td> -->
 
 		    <td class="vert-align">{{inv.rprice}}</td>
 		    <td class="vert-align">{{inv.rdiscount}}</td> 
@@ -289,9 +291,7 @@
 		      <div x-ng-if="inv.$new">
 			<a class="btn diablo-input-button btn-success"
 			   x-ng-if="inv.free_color_size"
-			   x-ng-disabled="inv.form.good.$invalid
-					  || inv.form.reject.$invalid
-					  || has_saved"
+			   x-ng-disabled="inv.form.good.$invalid || has_saved"
 			   x-ng-click="add_free_inventory(inv)">保存
 			  <i class="glyphicon glyphicon-plus"></i></a>
 			
@@ -457,7 +457,8 @@
 			      c.cid, s, params.amounts))?true:false"
 		     ng-class="{'has-error':form.$invalid && !form.$pristine}">
 		  <input class="form-control modal-input text-center"
-			 type="number" step="1" 
+			 type="number" step="1"
+			 x-ng-disabled="true"
 			 x-ng-model="amount.sell_count"
 			 x-ng-pattern="/^[1-9][0-9]{0,2}$/"/>
 		</div>

@@ -234,9 +234,13 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
     Total        = ?v(<<"total">>, Props),
     Score        = ?v(<<"score">>, Props, 0),
     
-    MShouldPay   = ShouldPay - OldShouldPay,
+    MShouldPay   = abs(ShouldPay) - abs(OldShouldPay),
     RealyShop    = realy_shop(Merchant, Shop),
 
+    %% Setting = ?wifi_print:detail(base_setting, Merchant, RealyShop),
+    %% Vip = OldRetailer =/= ?to_i(?v(<<"s_customer">>, Setting)),
+
+    ?DEBUG("oldwithdraw ~p", [OldWithdraw]),
     BackToCard = 
 	case OldWithdraw > 0 of
 	    true  -> OldWithdraw + Cash + Card - ShouldPay;
@@ -244,7 +248,7 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
 	end,
 
     {NewCash, NewCard, Withdraw} =
-	case OldWithdraw >= ShouldPay of
+	case OldWithdraw =/= 0 andalso OldWithdraw >= ShouldPay of
 	    true  -> {0, 0, ShouldPay};
 	    false ->
 		RPay  = ShouldPay - OldWithdraw,
@@ -259,6 +263,7 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
 			end,
 		{Cash1, Card1, OldWithdraw}
 	end,
+    ?DEBUG("newCash ~p, newCard ~p, withdraw ~p", [NewCash, NewCard, Withdraw]),
 
     Sql1 = sql(update_wsale, RSN, Merchant, RealyShop, Datetime, OldDatetime, Inventories),
 
@@ -281,7 +286,7 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
 	true ->
 	    Sql2 = "update w_sale set "
 		++ ?utils:to_sqls(proplists, comma, Updates)
-		++ case OldWithdraw >= ShouldPay of
+		++ case OldWithdraw =/= 0 andalso OldWithdraw >= ShouldPay of
 		       true ->
 			   ", balance=balance+" ++ ?to_s(Cash + Card);
 		       false -> []
@@ -292,7 +297,7 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
 	    case BackToCard of
 		0 ->
 		    AllSql = Sql1 ++ [Sql2]
-			++ case Score - OldScore of
+			++ case abs(Score) - abs(OldScore) of
 			       0 -> ["update w_retailer set consume=consume+" ++ ?to_s(MShouldPay)
 				     ++ ", change_date=" ++ "\"" ++ ?to_s(Curtime) ++ "\""
 				     ++ " where id=" ++ ?to_s(Retailer)
@@ -944,6 +949,8 @@ wsale(update, RSN, Datetime, Merchant, Shop, Inventory) ->
 			       end
 		       end, 0, ChangeAmounts)
 	     end(),
+
+    ?DEBUG("metric ~p", [Metric]),
     
     C1 =
 	fun(Color, Size) ->

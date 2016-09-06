@@ -184,17 +184,11 @@
 			明细<i class="glyphicon glyphicon-map-marker"></i>
 		      </button>
 
-		      <button x-ng-if="shop_right.update_w_sale && r.state!==1 && r.type!==1"
+		      <button x-ng-if="shop_right.update_w_sale && r.state!==1"
 			      class="btn diablo-button yellow-crusta"
-			      x-ng-disabled="r.state===1 || r.type===1"
+			      x-ng-disabled="r.state===1"
 		      	      x-ng-click="update_detail(r)">修改
-			<i class="glyphicon glyphicon-edit"></i></button>
-		      
-		      <!-- <button x-ng-if="shop_right.update_w_sale && (r.state!==1 && r.type===1)" -->
-		      <!-- 	      class="btn diablo-button yellow-crusta" -->
-		      <!-- 	      x-ng-disabled="r.state===1 || r.type===1" -->
-		      <!-- 	      x-ng-click="update_detail(r)">废弃 -->
-		      <!-- 	<i class="glyphicon glyphicon-edit"></i></button> -->
+			<i class="glyphicon glyphicon-edit"></i></button> 
 		      
 		      <button x-ng-if="shop_right.check_w_sale"
 			      class="btn diablo-button btn-danger"

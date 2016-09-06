@@ -65,7 +65,7 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
     // 	}
     // });
 
-    $scope.colors = filterColor;
+    $scope.colors = angular.copy(filterColor);
     $scope.group_color_with_8 = function(){
 	var color = {};
 	$scope.grouped_colors = [];

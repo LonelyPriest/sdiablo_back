@@ -195,7 +195,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    for (var i=0, l=$scope.inventories.length; i<l; i++){
 		var inv = $scope.inventories[i];
 		if (diablo_invalid_firm !== inv.firm_id){
-		    $scope.select.firm = diablo_get_object(inv.firm_id, $scope.firms);
+		    $scope.select.firm = diablo_get_object(inv.firm_id, $scope.firms); 
 		}
 	    }
 	    
@@ -865,6 +865,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
      * update inventory
      */
     $scope.update_inventory = function(inv){
+	// console.log(inv);
 	inv.$update = true;
 	inv.o_org_price = inv.org_price;
 	inv.o_ediscount = inv.ediscount;
@@ -896,6 +897,21 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 
 	var modal_size = diablo_valid_dialog(inv.sizes);
 	var large_size = modal_size === 'lg' ? true : false;
+
+	// refresh colors
+	if ($scope.q_prompt === diablo_frontend){
+	    var f = $scope.all_w_goods.filter(function(g){
+		return g.id === inv.id
+		    && g.style_number === inv.style_number
+		    && g.brand_id === inv.brand_id
+	    });
+	    // console.log(f);
+	    if (f.length !== 0) {
+		inv.colors = f[0].color.split(",");
+		inv.colors_info = inv.colors.map(function(cid){
+		    return diablo_find_color(parseInt(cid), $scope.colors)});
+	    }
+	};
 	
 	var payload = {sizes:      inv.sizes,
 		       large_size: large_size,
@@ -910,9 +926,16 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		       right:      $scope.stock_right,
 		       get_amount: get_amount,
 		       valid_amount: valid_amount,
-		       get_price_info: stockUtils.calc_stock_orgprice_info};
+		       get_price_info: stockUtils.calc_stock_orgprice_info,
+		       edit: function(){
+			   diablo_goto_page(
+			       "#/good/wgood_update"
+				   + "/" + inv.id.toString()
+				   + "/" + $scope.select.shop.id.toString()
+				   + "/" + diablo_from_stock_new.toString())}
+		      };
 	diabloUtilsService.edit_with_modal(
-	    "inventory-new.html", modal_size, callback, $scope, payload)
+	    "inventory-new.html", modal_size, callback, undefined, payload)
     };
 
     $scope.save_free_update = function(inv){
