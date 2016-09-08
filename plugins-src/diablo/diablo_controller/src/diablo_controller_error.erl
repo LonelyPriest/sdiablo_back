@@ -164,6 +164,8 @@ success(delete_w_retailer, Retailer) ->
     {0, "Success to delete retailer " ++ ?to_s(Retailer)};
 success(check_w_retailer_password, Retailer) ->
     {0, "Success to check password of retailer " ++ ?to_s(Retailer)};
+success(reset_w_retailer_password, Retailer) ->
+    {0, "Success to reset password of retailer " ++ ?to_s(Retailer)};
 success(add_retailer_charge, Charge) ->
     {0, "Success to add the chare promotion "++?to_s(Charge)++" of retailer."};
 success(add_retailer_score, Score) ->

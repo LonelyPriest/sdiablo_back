@@ -100,8 +100,7 @@
 		    <td>{{r.entry_date}}</td>
 
 		    <td>
-		      <button class="btn red-sunglo diablo-button "
-			      x-ng-disabled="r.type_id===0"
+		      <button x-ng-if="r.type_id===1" class="btn green diablo-button"
 			      x-ng-click="charge(r)">充值
 			<i class="glyphicon glyphicon-yen"></i></button>
 		      
@@ -113,13 +112,17 @@
 			      x-ng-click="update_retailer(r)">修改
 			<i class="glyphicon glyphicon-edit"></i></button>
 		      
-		      <button href="" class="btn diablo-button btn-danger"
+		      <button class="btn diablo-button btn-danger"
 			      x-ng-click="delete_retailer(r)">删除
+			<i class="glyphicon glyphicon-erase"></i></button>
+
+		      <button x-ng-if="right.master && r.type_id===1" class="btn diablo-button blue-hoki"
+			      x-ng-click="reset_password(r)">重置密码
 			<i class="glyphicon glyphicon-erase"></i></button>
 		    </td>
 		  </tr>
 
-		  <tr x-ng-if="right.show_stastic && total_items!==0" class="bg-white">
+		  <tr x-ng-if="right.master && total_items!==0" class="bg-white">
 		    <td colspan="6"></td>
 		    <td class="fg-red">{{total_balance}}</td>
 		    <td class="fg-red">{{total_consume}}</td>
@@ -340,13 +343,9 @@
 	  <div class="col-md-6 col-sm-6 col-xs-6">
 	    <select type="text"
 		    class="form-control"
-		    x-ng-model="params.select_shop"
-		    x-ng-options="s as s.name for s in params.shops"
-		    x-ng-change="params.promotion=params.get_charge(
-				 params.select_shop.charge_id)"
-		    x-ng-init="params.select_shop=params.shops[0];
-			       params.promotion=params.get_charge(
-			       params.select_shop.charge_id)">
+		    x-ng-model="params.retailer.select_shop"
+		    x-ng-options="s as s.name for s in params.retailer.shops"
+		    x-ng-change="params.retailer.select_charge=params.get_charge(params.retailer.select_shop.charge_id)">
 	    </select>
 	  </div>
 	</div>
@@ -358,9 +357,8 @@
 	  <div class="col-md-6 col-sm-6 col-xs-6">
 	    <select type="text"
 		    class="form-control"
-		    x-ng-model="params.select_employee"
-		    x-ng-options="e as e.name for e in params.employees"
-		    x-ng-init="params.select_employee=params.employees[0]">
+		    x-ng-model="params.retailer.select_employee"
+		    x-ng-options="e as e.name for e in params.retailer.employees">
 	    </select>
 	  </div>
 	</div>
@@ -388,7 +386,21 @@
 		   readonly 
 		   x-ng-model="params.retailer.balance"/>
 	  </div>
-	</div> 
+	</div>
+
+	<div class="form-group">
+	  <span class="col-md-3 col-sm-3 col-xs-3 control-label">
+	    充值方案
+	  </span>
+	  <div class="col-md-6 col-sm-6 col-xs-6">
+	    <select type="text"
+		    class="form-control"
+		    x-ng-model="params.retailer.select_charge"
+		    x-ng-options="c as c.name for c in params.retailer.charges"
+		    x-ng-change="params.charge=params.retailer.select_charge.charge">
+	    </select>
+	  </div>
+	</div>
 	
 	<div class="form-group">
 	  <span class="col-md-3 col-sm-3 col-xs-3 control-label">
@@ -404,6 +416,7 @@
 		     name="charge"
 		     placeholder="请输入充值金额"
 		     x-ng-model="params.charge"
+		     x-ng-init="params.charge=params.retailer.select_charge.charge"
 		     x-ng-pattern="params.pattern.number"/>
 	      <span class="input-group-addon bg-white fg-red">*</span>
 	    </div>
@@ -433,9 +446,9 @@
 	  </span>
 	  <div class="col-md-6 col-sm-6 col-xs-6">
 	    <span>充&nbsp&nbsp&nbsp&nbsp
-	      <span class="bg-blue">{{params.promotion.charge}}</span>
+	      <span class="bg-blue">{{params.retailer.select_charge.charge}}</span>
 	      &nbsp&nbsp&nbsp&nbsp送&nbsp&nbsp&nbsp&nbsp
-	      <span class="bg-red">{{params.promotion.balance}}</span> 
+	      <span class="bg-red">{{params.retailer.select_charge.balance}}</span> 
 	  </div>
 	</div>
 	
@@ -446,6 +459,76 @@
   <div class="modal-footer"> 
     <button class="btn btn-primary"
 	    x-ng-disabled="cForm.$invalid"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
+  
+</script>
+
+<script type="text/ng-template" id="reset-password.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    
+    <h4 class="modal-title">
+      <span class="label label-sm label-primary">重置会员密码</span>
+    </h4>
+  </div>
+
+  <div class="modal-body">
+    <form class="form-horizontal" name="pForm" novalidate> 
+      <div class="form-body">
+	<!--Name-->
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">名称</label>
+	  <div class="col-sm-10 col-md-10">
+	    <input type="text"
+		   class="form-control"
+		   readonly
+		   x-ng-model="params.retailer.name"/>
+	  </div> 
+	</div> 
+	
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">新密码</label> 
+	  <div class="col-sm-10 col-md-10">
+	    <div x-ng-class="{'has-error':pForm.newp.$invalid && !pForm.newp.$pristine}">
+	      <input type="password"
+		     class="form-control"
+		     name="newp"
+		     required
+		     placeholder="请输入新密码"
+		     x-ng-model="params.newp"
+		     x-ng-pattern="params.password_pattern"/>
+	    </div>
+	    <div ng-show="pForm.newp.$invalid && !pForm.newp.$pristine">
+		<span class="fg-red">请输入6位数字密码</span>
+	    </div> 
+	  </div>
+	</div>
+	
+	<!--mobile-->
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">确认密码</label>
+	  <div class="col-sm-10 col-md-10">
+	    <input type="password" 
+		   class="form-control"
+		   required
+		   placeholder="请再输入一遍密码"
+		   x-ng-model="params.checkp"/> 
+	  </div>
+	</div> 
+      </div> 
+    </form>
+  </div>
+
+  <div class="modal-footer"> 
+    <button class="btn btn-primary"
+	    x-ng-disabled="params.check_same(params.retailer)
+			   || rForm.$invalid
+			   || params.check_exist(params.retailer) "
 	    x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>

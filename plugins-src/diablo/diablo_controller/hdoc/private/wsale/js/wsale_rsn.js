@@ -331,7 +331,11 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 	var p_mode = wsaleUtils.print_mode(shop.id, base);
 	var no_vip = wsaleUtils.no_vip(shop.id, base);
 	var comments = wsaleUtils.comment(shop.id, base);
+	var isRound = wsaleUtils.round(shop.id, base);
+	var cakeMode = wsaleUtils.cake_mode(shop.id, base);
 	var pdate = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss");
+
+	console.log(isRound, cakeMode);
 	
 	if (diablo_frontend === p_mode){
 	    if (angular.isUndefined(LODOP)) LODOP=getLodop();
@@ -341,7 +345,12 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 		wsaleService.get_w_sale_new(rsn).then(function(result){
 		    console.log(result);
 		    var sale = result.sale;
-		    var detail = result.detail;
+		    var detail = angular.copy(result.detail);
+		    angular.forEach(detail, function(d){
+			d.brand = diablo_get_object(d.brand_id, filterBrand);
+			d.type = diablo_get_object(d.type_id, filterType);
+		    })
+		    
 		    console.log(wsalePrint);
 		    wsalePrint.gen_head(LODOP,
 					shop.name,
@@ -350,11 +359,11 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 					diablo_get_object(sale.retailer_id, filterRetailer).name,
 					sale.entry_date);
 
-		    var hLine = wsalePrint.gen_body(LODOP, detail, filterBrand); 
+		    var hLine = wsalePrint.gen_body(LODOP, detail, isRound, cakeMode); 
 		    var isVip = sale.retailer_id !== no_vip ? true : false;
 		    
 		    hLine = wsalePrint.gen_stastic(LODOP, hLine, sale.direct, sale, isVip); 
-		    wsalePrint.gen_foot(LODOP, hLine, comments, pdate);
+		    wsalePrint.gen_foot(LODOP, hLine, comments, pdate, cakeMode);
 		    wsalePrint.start_print(LODOP);
 		    
 		    // LODOP.PRINT_INITA("");

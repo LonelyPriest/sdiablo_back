@@ -103,6 +103,18 @@ action(Session, Req, {"check_w_retailer_password", Id}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"reset_w_retailer_password", Id}, Payload) ->
+    Merchant = ?session:get(merchant, Session),
+    Password = ?v(<<"password">>, Payload),
+
+    case ?w_retailer:retailer(reset_password, Merchant, Id, Password) of
+	{ok, Id} ->
+	    ?utils:respond(
+	       200, Req, ?succ(reset_w_retailer_password, Id));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
 %% 
 %% charge
 %%

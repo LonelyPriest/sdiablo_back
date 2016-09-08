@@ -86,13 +86,16 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 		console.log($scope.select);
 
 		// setting
-		$scope.setting.no_vip = wsaleUtils.no_vip(
-		    $scope.select.shop.id, $scope.base_settings);
-		$scope.setting.comments = wsaleUtils.comment($scope.select.shop.id, $scope.base_settings);
-		$scope.setting.p_mode = wsaleUtils.print_mode($scope.select.shop.id, $scope.base_settings);
+		var shopId = $scope.select.shop.id;
+		var settings = $scope.base_settings;
+		$scope.setting.no_vip = wsaleUtils.no_vip(shopId, settings);
+		$scope.setting.comments = wsaleUtils.comment(shopId, settings);
+		$scope.setting.p_mode = wsaleUtils.print_mode(shopId, settings);
+		$scope.setting.round = wsaleUtils.round(shopId, settings);
+		$scope.setting.cakeMode = wsaleUtils.cake_mode(shopId, settings);
 
 		$scope.employees = wsaleUtils.get_login_employee(
-		    $scope.select.shop.id,
+		    shopId,
 		    base.employ_id,
 		    filterEmployee).filter;
 		
@@ -247,7 +250,8 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 	    var pdate = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss"); 
 	    if (angular.isUndefined(LODOP)) LODOP = getLodop();
 
-	    console.log($scope.select);
+	    // console.log($scope.select);
+	    
 	    if (angular.isDefined(LODOP)){
 		wsalePrint.gen_head(
 		    LODOP,
@@ -257,15 +261,21 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 		    $scope.select.retailer.name, 
 		    dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"));
 
+		var isRound = $scope.setting.round; 
+		var cakeMode = $scope.setting.cake_mode;
+		
 		var hLine = wsalePrint.gen_body(
 		    LODOP,
 		    $scope.inventories.filter(function(r){return !r.$new && r.select}),
-		    filterBrand);
+		    isRound,
+		    cakeMode);
 		
 		var isVip = $scope.select.retailer.id !== $scope.setting.no_vip ? true : false;
 		
-		hLine = wsalePrint.gen_stastic(LODOP, hLine, wsaleService.direct.wreject, $scope.select, isVip); 
-		wsalePrint.gen_foot(LODOP, hLine, $scope.setting.comments, pdate);
+		hLine = wsalePrint.gen_stastic(
+		    LODOP, hLine, wsaleService.direct.wreject, $scope.select, isVip);
+		
+		wsalePrint.gen_foot(LODOP, hLine, $scope.setting.comments, pdate, cakeMode);
 		wsalePrint.start_print(LODOP);
 	    };
 	};

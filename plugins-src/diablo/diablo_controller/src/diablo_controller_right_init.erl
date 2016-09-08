@@ -124,7 +124,7 @@ init([]) ->
 	 {?update_w_retailer,
 	  <<"修改会员">>, <<"update_w_retailer">>, ?right_w_retailer},
 	 {?list_w_retailer,
-	  <<"查询会员">>, <<"list_w_retailer">>,   ?right_w_retailer},
+	  <<"查询会员">>, <<"list_w_retailer">>,   ?right_w_retailer}, 
 
 	 {?add_w_retailer_charge, 
 	  <<"新增充值方案">>, <<"add_w_retailer_charge">>, ?right_w_retailer},
@@ -144,7 +144,10 @@ init([]) ->
 	 {?list_w_retailer_score,
 	  <<"查询积分方案">>, <<"list_w_retailer_score">>,?right_w_retailer},
 
-	 {?new_recharge, <<"会员充值">>, <<"new_recharge">>,?right_w_retailer}
+	 {?new_recharge, <<"会员充值">>, <<"new_recharge">>,?right_w_retailer},
+
+	 {?reset_w_retailer_password,
+	  <<"重置会员密码">>, <<"reset_w_retailer_password">>,   ?right_w_retailer}
 	],
 
     

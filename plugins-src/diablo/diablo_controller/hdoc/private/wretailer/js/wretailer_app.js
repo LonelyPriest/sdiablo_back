@@ -226,6 +226,13 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 	     password:   password}).$promise;
     };
 
+    this.reset_password = function(retailerId, password){
+	return http.save(
+	    {operation: "reset_w_retailer_password"},
+	    {id:         retailerId,
+	     password:   password}).$promise;
+    };
+
     this.list_retailer = function(){
 	return http.query({operation: "list_w_retailer"}).$promise
     };

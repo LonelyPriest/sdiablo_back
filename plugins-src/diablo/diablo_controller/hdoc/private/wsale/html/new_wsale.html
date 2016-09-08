@@ -311,7 +311,7 @@
 							$model,
 							$label)"
 				   typeahead="g as g.name for g in
-					      all_w_inventory|filter:{name:$viewValue}|limitTo:20"/>
+					      all_w_inventory|filter:{prompt:$viewValue}|limitTo:20"/>
 			  </div>
 			</form>
 		      </td>
@@ -494,7 +494,8 @@
 		    </tr>
 
 		    <tr x-ng-if="inventories.length>1" class="text-center">
-		      <td colspan=7></td>
+		      <td x-ng-if="setting.check_sale" colspan=7></td>
+		      <td x-ng-if="!setting.check_sale" colspan=6></td>
 		      <td class="vert-align">{{select.abs_total}}</td>
 		      <td></td>
 		      <td></td>

@@ -201,8 +201,8 @@ var wsaleUtils = function(){
 	},
 
 	prompt_name: function(style_number, brand, type) {
-	    var name = style_number + "，" + brand + "，" + type;
-	    var prompt = name + "," + diablo_pinyin(name); 
+	    var name = style_number + "/" + brand + "/" + type;
+	    var prompt = name + "/" + diablo_pinyin(name); 
 	    return {name: name, prompt: prompt};
 	},
 
@@ -286,6 +286,10 @@ var wsaleUtils = function(){
 
 	s_employee: function(shop, base) {
 	    return diablo_base_setting("s_employee", shop, base, parseInt, diablo_no);
+	},
+
+	cake_mode: function(shop, base){
+	    return diablo_base_setting("cake_mode", shop, base, parseInt, diablo_no);
 	},
 
 	get_login_employee:function(shop, loginEmployee, employees){
@@ -850,22 +854,34 @@ var wsalePrint = function(){
 	    // LODOP.ADD_PRINT_TEXT(70,5,"58mm",20,"店员：" + retailer);
 	    LODOP.ADD_PRINT_TEXT(70,0,"58mm",20,"日期：" + date); 
 	    LODOP.ADD_PRINT_LINE(90,0,90,178,0,1);
+
 	    return;
 	},
 
-	gen_body: function(LODOP, inventories, brands, round){
+	gen_body: function(LODOP, inventories, round, cakeMode){
 	    var hLine = 100;
 	    angular.forEach(inventories, function(d){
-		LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"款号：" + d.style_number);
-		hLine += 15;
-		LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"品名：" + diablo_get_object(d.brand_id, brands).name);
-		hLine += 15;
+		if (diablo_no === cakeMode){
+		    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"款号：" + d.style_number);
+		    hLine += 15;
+		    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"品名：" + d.brand);
+		    hLine += 15;
+		} else {
+		    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"类型：" + d.type);
+		    hLine += 15;
+		}
+		
 		LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"单价：" + d.tag_price.toString());
 		hLine += 15;
-		LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"成交价：" + d.rprice.toString());
-		hLine += 15;
+
+		if (diablo_no === cakeMode){
+		    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"成交价：" + d.rprice.toString());
+		    hLine += 15;
+		}
+		
 		LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"数量：" + d.total.toString());
 		hLine += 15;
+		
 		LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"小计："
 				     + function() {
 					 if (angular.isUndefined(round) || round)
@@ -874,9 +890,15 @@ var wsalePrint = function(){
 					     return (d.total * d.rprice).toString();
 				     }())
 		hLine += 15;
-		LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"折扣率：" + wsaleUtils.ediscount(d.rprice, d.tag_price).toString()); 
-		hLine += 20;
 
+		if (diablo_no === cakeMode){
+		    var ediscount = wsaleUtils.ediscount(d.rprice, d.tag_price).toString();
+		    LODOP.ADD_PRINT_TEXT(hLine,0,178,20, "折扣率：" + ediscount);
+		    hLine += 20; 
+		} else {
+		    hLine += 5;
+		}
+		
 		LODOP.ADD_PRINT_LINE(hLine,0,hLine,178,0,1);
 		hLine += 10;
 	    });
@@ -885,7 +907,7 @@ var wsalePrint = function(){
 	},
 
 	gen_stastic: function(LODOP, hLine, direct, sale, vip){
-	    console.log(sale);
+	    // console.log(sale);
 	    console.log(hLine);
 	    if (angular.isUndefined(direct)) direct = 0;
 	    var cash = sale.cash;
@@ -931,27 +953,28 @@ var wsalePrint = function(){
 	    return hLine + 15;
 	},
 	
-	gen_foot: function(LODOP, hLine, comments, date){
+	gen_foot: function(LODOP, hLine, comments, date, cakeMode){
 	    // console.log(hLine);
-	    console.log(comments);
+	    // console.log(comments);
 	    // console.log(date);
-	    var order = 1;
-	    // var height = 0;
-	    LODOP.ADD_PRINT_TEXT(hLine, 0, 178, 20, "顾客需知：");
-	    hLine += 20;
-	    angular.forEach(comments, function(c){
-		if (c){
-		    var s = order.toString() + "：" + c.name;
-		    LODOP.ADD_PRINT_TEXT(hLine, 0, "52mm", 40, order.toString() + "：" + c.name);
-		    hLine += 35;
+	    if (diablo_no === cakeMode){
+		var order = 1;
+		// var height = 0;
+		LODOP.ADD_PRINT_TEXT(hLine, 0, 178, 20, "顾客需知：");
+		hLine += 20;
+		angular.forEach(comments, function(c){
+		    if (c){
+			var s = order.toString() + "：" + c.name;
+			LODOP.ADD_PRINT_TEXT(hLine, 0, "52mm", 40, order.toString() + "：" + c.name);
+			hLine += 35;
 
-		    console.log(s.length); 
-		    if (s.length > 30) hLine += 15;
+			console.log(s.length); 
+			if (s.length > 30) hLine += 15;
 			
-		    order++;
-		}
-	    });
-	    
+			order++;
+		    }
+		});
+	    } 
 	    // console.log(s);
 	    // LODOP.ADD_PRINT_TEXT(hLine, 5, 178, 140, order.toString() + "：" + s);
 

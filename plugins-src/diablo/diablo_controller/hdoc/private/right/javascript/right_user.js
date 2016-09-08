@@ -672,7 +672,7 @@ rightUserApp.controller(
 			py: diablo_pinyin(r.name)
                     };
 		});
-		console.log($scope.retailers);
+		// console.log($scope.retailers);
 
 		$scope.accounts = data[0].map(function(account){
 		    return {

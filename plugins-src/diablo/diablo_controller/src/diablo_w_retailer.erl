@@ -51,7 +51,10 @@ retailer(update, Merchant, RetailerId, Attrs) ->
     gen_server:call(Name, {update_retailer, Merchant, RetailerId, Attrs});
 retailer(check_password, Merchant, RetailerId, Password) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {check_password, Merchant, RetailerId, Password}).
+    gen_server:call(Name, {check_password, Merchant, RetailerId, Password});
+retailer(reset_password, Merchant, RetailerId, Password) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {reset_password, Merchant, RetailerId, Password}).
 
 
 %% charge
@@ -195,6 +198,15 @@ handle_call({check_password, Merchant, RetailerId, Password}, _From, State) ->
 	Error ->
 	    {reply, Error, State}
     end;
+
+handle_call({reset_password, Merchant, RetailerId, Password}, _From, State) ->
+    Sql = "update w_retailer set password=\'" ++ ?to_s(Password) ++ "\'"
+	++ " where merchant=" ++ ?to_s(Merchant)
+	++ " and id=" ++ ?to_s(RetailerId),
+
+    Reply = ?sql_utils:execute(write, Sql, RetailerId),
+    {reply, Reply, State};
+
 
 handle_call({get_retailer, Merchant, RetailerId}, _From, State) ->
     ?DEBUG("get_retailer with merchant ~p, retailerId ~p",

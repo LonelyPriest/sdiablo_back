@@ -394,6 +394,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	$scope.setting.scanner = wsaleUtils.scanner(shopId, base);
 	$scope.setting.smember = wsaleUtils.s_member(shopId, base);
 	$scope.setting.semployee = wsaleUtils.s_employee(shopId, base);
+	$scope.setting.cake_mode = wsaleUtils.cake_mode(shopId, base);
 	// console.log($scope.setting);
     };
     
@@ -586,6 +587,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
     };
     
     $scope.setting.q_backend = $scope.q_typeahead($scope.select.shop.id);
+    console.log($scope.setting.q_backend);
     
     $scope.match_all_w_inventory = function(){
 	if (!$scope.setting.q_backend){
@@ -599,7 +601,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
 			    inv.style_number, inv.brand, inv.type); 
 			return angular.extend(
                             inv, {name:p.name, prompt:p.prompt}); 
-		    })
+		    });
+		// console.log($scope.all_w_inventory);
 	    });
 	};
     }
@@ -957,13 +960,15 @@ wsaleApp.controller("wsaleNewCtrl", function(
 			$scope.select.retailer.name, 
 			dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"));
 
-		    var hLine = wsalePrint.gen_body(LODOP, pinvs, filterBrand);
+		    var isRound = $scope.setting.round; 
+		    var cakeMode = $scope.setting.cake_mode;
+		    var hLine = wsalePrint.gen_body(LODOP, pinvs, isRound, cakeMode);
 		    
 		    var isVip = $scope.select.retailer.id !== $scope.setting.no_vip ? true : false;
-
+		    
 		    // console.log($scope.select);
 		    hLine = wsalePrint.gen_stastic(LODOP, hLine, 0, $scope.select, isVip); 
-		    wsalePrint.gen_foot(LODOP, hLine, $scope.comments, pdate);
+		    wsalePrint.gen_foot(LODOP, hLine, $scope.comments, pdate, cakeMode);
 		    wsalePrint.start_print(LODOP);
 
 		    if (angular.isDefined(timeout_to_print))
@@ -1331,7 +1336,11 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	
 	if ($scope.setting.check_sale === diablo_no && inv.free === 0){
 	    inv.free_color_size = true;
-	    inv.amounts         = [{cid:0, size:0}]; 
+	    inv.amounts         = [{cid:0, size:0}];
+	    if ($scope.setting.scanner) {
+		inv.sell = 1;
+		$scope.auto_save_free(inv);
+	    }
 	} else {
 	    var promise = diabloPromise.promise; 
 	    var calls = [promise(purchaserService.list_purchaser_inventory,

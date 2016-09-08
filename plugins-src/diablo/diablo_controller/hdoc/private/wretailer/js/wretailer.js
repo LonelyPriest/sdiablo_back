@@ -43,7 +43,8 @@ wretailerApp.controller("wretailerDetailCtrl", function(
     filterEmployee, filterCharge, user, base){
     $scope.employees      = filterEmployee;
     $scope.charges        = filterCharge;
-    $scope.shops          = [{id: -1, name: "== 请选择店铺 =="}].concat(user.sortShops);
+    // $scope.shops          = [{id: -1, name: "== 请选择店铺 =="}].concat(user.sortShops);
+    $scope.shops          = user.sortShops;
     $scope.retailer_types = wretailerService.retailer_types;
     // console.log($scope.employees);
     // console.log($scope.shops);
@@ -61,7 +62,7 @@ wretailerApp.controller("wretailerDetailCtrl", function(
     var f_add  = diablo_float_add;
     var now    = $.now();
 
-    $scope.right = {show_stastic: rightAuthen.authen_master(user.type)};
+    $scope.right = {master: rightAuthen.authen_master(user.type)};
 
     $scope.save_to_local = function(search, t_retailer){
 	var s = localStorageService.get(diablo_key_retailer);
@@ -191,6 +192,7 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 		r.birth = diablo_set_date_obj(r.birth);
 		r.shop  = diablo_get_object(r.shop_id, $scope.shops);
 		r.no_vip = in_array($scope.no_vips, r.id) ? true : false;
+		r.balance = diablo_rdight(r.balance, 2);
 		$scope.total_balance += $scope.round(r.balance);
 		$scope.total_consume += $scope.round(r.consume); 
 	    })
@@ -250,9 +252,26 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 		   tel_mobile:   diabloPattern.tel_mobile,
 		   decimal_2:    diabloPattern.decimal_2,
 		   number:       diabloPattern.number,
-		   comment:      diabloPattern.comment};
+		   comment:      diabloPattern.comment,
+		   password:     diabloPattern.num_passwd};
 
+    
+    // var get_login_employee = function(shop, loginEmployee, employees){
+    // 	var filterEmployees = employees.filter(function(e){
+    // 	    return e.shop === shop;
+    // 	});
+	
+    // 	var select = undefined;
+    // 	if (diablo_invalid_employee !== loginEmployee)
+    // 	    select = diablo_get_object(loginEmployee, filterEmployees); 
+	
+    // 	if (angular.isUndefined(select)) select = filterEmployees[0];
 
+    // 	// console.log(select);
+    // 	return {login:select, filter:filterEmployees};
+    // },
+
+    
     $scope.charge = function(retailer){
 	console.log($scope.charges); 
 	var get_charge = function(charge_id) {
@@ -267,21 +286,20 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	var callback = function(params){
 	    console.log(params);
 
-	    var promotion       = params.promotion;
+	    var promotion       = params.retailer.select_charge;
 	    var charge_balance  = diablo_set_integer(params.charge);
 	    var send_balance    = function(){
-		if (promotion.charge !== 0 && charge_balance > promotion.charge){
-		    return $scope.round(
-			charge_balance / promotion.charge * promotion.balance);
+		if (promotion.charge !== 0 && charge_balance >= promotion.charge){
+		    return Math.floor(charge_balance / promotion.charge) * promotion.balance;
 		} else {
 		    return 0;
 		}
 	    }();
-	    
+
 	    wretailerService.new_recharge({
 		retailer: retailer.id, 
-		shop: params.select_shop.id,
-		employee: params.select_employee.id, 
+		shop: params.retailer.select_shop.id,
+		employee: params.retailer.select_employee.id, 
 		// old_balance:  retailer.balance,
 		charge_balance: charge_balance,
 		send_balance: send_balance,
@@ -313,13 +331,23 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	    undefined,
 	    callback,
 	    undefined,
-	    {retailer:  {name: retailer.name, balance:retailer.balance},
-	     shops:      $scope.shops,
+	    {retailer:  {
+		name: retailer.name,
+		balance:retailer.balance,
+		shops: $scope.shops,
+		select_shop: $scope.shops[0],
+		employees: $scope.employees,
+		select_employee: $scope.employees[0],
+		charges: $scope.charges,
+		select_charge:get_charge($scope.shops[0].charge_id)
+	    },
+	     // shops:      $scope.shops,
 	     // select_shop: $scope.shops[0]; 
-	     employees:  $scope.employees,
+	     // employees:  $scope.employees,
 	     // select_employees:  $scope.employees[0];
 	     pattern:  pattern,
-	     get_charge: get_charge}
+	     get_charge: get_charge
+	    }
 	)
     };
     
@@ -414,7 +442,34 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	diabloUtilsService.request(
 	    "删除会员", "确定要删除该会员吗？",
 	    callback, undefined, $scope);
-    }
+    };
+
+    $scope.reset_password = function(retailer) {
+	var callback = function(params){
+	    console.log(params);
+	    
+	    if (params.newp !== params.checkp){
+		dialog.response(
+		    false, "密码重置", "密码重置失败：两次输入密码不匹配，请重新输入！！", undefined);
+	    } else {
+		wretailerService.reset_password(retailer.id, params.checkp).then(function(result){
+		    console.log(result);
+		    if (result.ecode == 0){
+			dialog.response(
+			    true, "密码重置", "密码重置成功！！", undefined);
+		    } else{
+			dialog.response(
+			    false, "密码重置失败", "密码重置失败："
+				+ wretailerService.error[result.ecode], undefined);
+		    }
+		});
+	    }
+	};
+	
+	dialog.edit_with_modal(
+	    "reset-password.html", undefined, callback, undefined,
+	    {retailer:retailer, password_pattern:pattern.password});
+    };
 }); 
 
 wretailerApp.controller("wretailerCtrl", function(
