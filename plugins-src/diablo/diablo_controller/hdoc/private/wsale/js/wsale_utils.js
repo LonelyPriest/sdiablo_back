@@ -416,7 +416,7 @@ var wsaleUtils = function(){
 	    if (angular.isUndefined(round) || round) 
 		return {balance: diablo_round(balance - rbalance), rbalance: rbalance};
 	    else
-		return {balance: balance - rbalance, rbalance: rbalance};
+		return {balance: wsaleUtils.to_decimal(balance - rbalance), rbalance: rbalance};
 	},
 
 	calc_discount_of_rmoney: function(discount, promotion, pmoneys){

@@ -62,25 +62,24 @@ action(Session, Req, {"get_w_good", Id}) ->
     ?DEBUG("get_w_good_by_id with session ~p, id ~p", [Session, Id]),
     Merchant    = ?session:get(merchant, Session),
     object_responed(
-      fun() -> ?w_inventory:purchaser_good(lookup, Merchant, Id) end, Req); 
+      fun() -> ?w_inventory:purchaser_good(lookup, Merchant, Id) end, Req).
 
-%%--------------------------------------------------------------------
-%% @desc: DELTE action
-%%--------------------------------------------------------------------
-action(Session, Req, {"delete_w_good", Id}) ->
-    ?DEBUG("delete_w_good with session ~p, id ~p", [Session, Id]),
-
-    Merchant = ?session:get(merchant, Session),
-    case ?w_inventory:purchaser_good(delete, Merchant, Id) of
-	{ok, GoodId} ->
-	    ?utils:respond(200, Req, ?succ(delete_purchaser_good, GoodId));
-	{error, Error} ->
-	    ?utils:respond(200, Req, Error)
-    end. 
 
 %%--------------------------------------------------------------------
 %% @desc: POST action
 %%--------------------------------------------------------------------
+action(Session, Req, {"delete_w_good", Id}, Payload) ->
+    ?DEBUG("delete_w_good with session ~p, id ~p", [Session, Id]),
+
+    StyleNumber = ?v(<<"style_number">>, Payload),
+    Brand = ?v(<<"brand">>, Payload),
+    Merchant = ?session:get(merchant, Session),
+    case ?w_inventory:purchaser_good(delete, Merchant, {Id, StyleNumber, Brand}) of
+	{ok, GoodId} ->
+	    ?utils:respond(200, Req, ?succ(delete_purchaser_good, GoodId));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
 %%
 %% size
 %%
@@ -134,10 +133,14 @@ action(Session, Req, {"get_used_w_good"}, Payload) ->
     StyleNumber = ?v(<<"style_number">>, Payload),
     Brand       = ?v(<<"brand">>, Payload),
     %% Shops       = ?v(<<"shops">>, Payload),
-    object_responed(
-      fun() ->
-	      ?w_inventory:purchaser_good(used, Merchant, StyleNumber, Brand)
-      end, Req); 
+    case ?w_inventory:purchaser_good(used, Merchant, StyleNumber, Brand) of
+	{ok, Details} ->
+	    ?DEBUG("details ~p", [Details]),
+	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
+					       {<<"data">>, Details}]});
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end; 
 
 action(Session, Req, {"match_w_good_style_number"}, Payload) ->
     ?DEBUG("match_w_good_style_number with session ~p, Payload ~p",

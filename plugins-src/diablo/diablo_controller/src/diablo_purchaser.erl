@@ -50,9 +50,9 @@ purchaser_good(update, Merchant, Attrs) ->
 purchaser_good(lookup, Merchant, GoodId) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {lookup_good, Merchant, GoodId});
-purchaser_good(delete, Merchant, GoodId) ->
+purchaser_good(delete, Merchant, {GoodId, StyleNumber, Brand}) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {delete_good, Merchant, GoodId});
+    gen_server:call(Name, {delete_good, Merchant, {GoodId, StyleNumber, Brand}});
 purchaser_good(price, Merchant, [{_StyleNumber, _Brand}|_] = Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {get_good_price, Merchant, Conditions}).
@@ -681,10 +681,11 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 	    end
     end;
 		
-handle_call({delete_good, Merchant, GoodId}, _Form, State) ->
-    ?DEBUG("delete_good with merchant ~p, goodId ~p", [Merchant, GoodId]),
-    Sql = ?w_good_sql:good(delete, Merchant, GoodId), 
-    Reply = ?sql_utils:execute(write, Sql, GoodId),
+handle_call({delete_good, Merchant, {GoodId, StyleNumber, Brand}}, _Form, State) ->
+    ?DEBUG("delete_good with merchant ~p, goodId ~p, StyleNumber ~p, Brand ~p",
+	   [Merchant, GoodId, StyleNumber, Brand]),
+    Sqls = ?w_good_sql:good(delete, Merchant, {GoodId, StyleNumber, Brand}), 
+    Reply = ?sql_utils:execute(transaction, Sqls, GoodId),
     {reply, Reply, State};
 
 handle_call({lookup_good, Merchant}, _Form, State) ->
@@ -711,7 +712,7 @@ handle_call({lookup_used_good, Merchant, StyleNumber, Brand}, _Form, State) ->
     ?DEBUG("lookup_used_good with merchant ~p, StyleNumber ~p, Brand ~p",
 	   [Merchant, StyleNumber, Brand]),
     Sql = ?w_good_sql:good(used_detail, Merchant, StyleNumber, Brand),
-    Reply =  ?sql_utils:execute(s_read, Sql),
+    Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
 handle_call({get_good_price, Merchant, Conditions}, _Form, State) ->

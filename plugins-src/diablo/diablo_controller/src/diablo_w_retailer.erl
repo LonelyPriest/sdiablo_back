@@ -23,6 +23,7 @@
 -export([retailer/2, retailer/3, retailer/4]).
 -export([charge/2, charge/3]).
 -export([score/2, score/3]).
+-export([filter/4, filter/6]).
 
 -define(SERVER, ?MODULE). 
 
@@ -64,7 +65,10 @@ charge(new, Merchant, Attrs) ->
 
 charge(recharge, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {recharge, Merchant, Attrs}).
+    gen_server:call(Name, {recharge, Merchant, Attrs});
+charge(delete_recharge, Merchant, ChargeId) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {delete_recharge, Merchant, ChargeId}).
 
 charge(list, Merchant) ->
     Name = ?wpool:get(?MODULE, Merchant),
@@ -78,6 +82,16 @@ score(new, Merchant, Attrs) ->
 score(list, Merchant) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {list_score, Merchant}).
+
+filter(total_charge_detail, 'and', Merchant, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {total_charge_detail, Merchant, Conditions}).
+
+filter(charge_detail, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name,
+		    {filter_charge_detail, Merchant, Conditions, CurrentPage, ItemsPerPage}).
+    
 
 start_link(Name) ->
     gen_server:start_link({local, Name}, ?MODULE, [], []).
@@ -144,6 +158,8 @@ handle_call({update_retailer, Merchant, RetailerId, Attrs}, _From, State) ->
     Birth    = ?v(<<"birth">>, Attrs),
     Type     = ?v(<<"type">>, Attrs),
     Password = ?v(<<"password">>, Attrs),
+    OBalance  = ?v(<<"obalance">>, Attrs),
+    NBalance  = ?v(<<"nbalance">>, Attrs),
 
     NameExist =
 	case Name of
@@ -163,24 +179,42 @@ handle_call({update_retailer, Merchant, RetailerId, Attrs}, _From, State) ->
     case NameExist of
 	{ok, []} ->
 	    Updates = ?utils:v(name, string, Name)
-		++ ?utils:v(password, string, Password)
-		++ ?utils:v(birth, string, Birth)
-		++ ?utils:v(type, integer, Type)
 		++ ?utils:v(mobile, string, Mobile)
+		++ ?utils:v(shop, integer, Shop)
 		++ ?utils:v(address, string, Address)
-		++ ?utils:v(shop, integer, Shop),
+		++ ?utils:v(birth, string, Birth)
+		++ ?utils:v(type, integer, Type) 
+		++ ?utils:v(password, string, Password)
+		++ ?utils:v(balance, float, NBalance),
 
 	    Sql1 = "update w_retailer set "
 		++ ?utils:to_sqls(proplists, comma, Updates)
 		++ " where id=" ++ ?to_s(RetailerId)
 		++ " and merchant=" ++ ?to_s(Merchant),
 
-	    Reply = ?sql_utils:execute(write, Sql1, RetailerId),
+	    Reply = 
+		case NBalance of
+		    undefined -> 
+			?sql_utils:execute(write, Sql1, RetailerId);
+		    _ ->
+			Datetime = ?utils:current_time(format_localtime),
+			Sqls = [Sql1, "insert into retailer_balance_history("
+				"retailer, obalance, nbalance"
+				", action, merchant, entry_date) values("
+				++ ?to_s(RetailerId) ++ ","
+				++ ?to_s(OBalance) ++ ","
+				++ ?to_s(NBalance) ++ "," 
+				++ ?to_s(?UPDATE_RETAILER) ++ "," 
+				++ ?to_s(Merchant) ++ ","
+				++ "\"" ++ ?to_s(Datetime) ++ "\")"], 
+			?sql_utils:execute(transaction, Sqls, RetailerId)
+		end, 
 	    ?w_user_profile:update(retailer, Merchant),
 	    {reply, Reply, State}; 
 	{error, Error} ->
 	    {reply, {error, Error}, State}
     end;
+
 
 handle_call({check_password, Merchant, RetailerId, Password}, _From, State) ->
     Sql = "select id, password from w_retailer"
@@ -345,6 +379,56 @@ handle_call({recharge, Merchant, Attrs}, _From, State) ->
 	Error ->
 	    {reply, Error, State}
     end;
+
+handle_call({delete_recharge, Merchant, ChargeId}, _From, State) ->
+    Sql0 =
+	"select a.id, a.rsn, a.retailer, a.cbalance, a.sbalance"
+	", b.balance"
+	" from w_charge_detail a"
+	" left join w_retailer b on a.retailer=b.id"
+	
+	" where a.id=" ++ ?to_s(ChargeId)
+	++ " and a.merchant=" ++ ?to_s(Merchant),
+
+    case ?sql_utils:execute(s_read, Sql0) of
+	{ok, Charge} ->
+	    ?DEBUG("charge ~p", [Charge]),
+	    
+	    RSN = ?v(<<"rsn">>, Charge),
+	    CBalance = ?v(<<"cbalance">>, Charge),
+	    SBalance = ?v(<<"sbalance">>, Charge),
+	    Retailer = ?v(<<"retailer">>, Charge),
+	    OBalance = ?v(<<"balance">>, Charge),
+	    Datetime = ?utils:current_time(format_localtime),
+
+	    Sqls = 
+		["delete from w_charge_detail where id=" ++ ?to_s(ChargeId)
+		 ++ " and merchant=" ++ ?to_s(Merchant),
+
+		 "update w_charge_detail set lbalance=lbalance-" ++ ?to_s(CBalance + SBalance) 
+		 ++ " where merchant=" ++ ?to_s(Merchant)
+		 ++ " and retailer=" ++ ?to_s(Retailer)
+		 ++ " and id>" ++ ?to_s(ChargeId),
+
+		 "update w_retailer set balance=balance-" ++ ?to_s(CBalance + SBalance)
+		 ++ " where id=" ++ ?to_s(Retailer),
+
+		 "insert into retailer_balance_history("
+		 "rsn, retailer, obalance, nbalance"
+		 ", action, merchant, entry_date) values("
+		 ++ "\'" ++ ?to_s(RSN) ++ "\',"
+		 ++ ?to_s(Retailer) ++ ","
+		 ++ ?to_s(OBalance) ++ ","
+		 ++ ?to_s(OBalance - CBalance - SBalance) ++ "," 
+		 ++ ?to_s(?DELETE_RECHARGE) ++ "," 
+		 ++ ?to_s(Merchant) ++ ","
+		 ++ "\"" ++ ?to_s(Datetime) ++ "\")"],
+	    
+	    Reply = ?sql_utils:execute(transaction, Sqls, ChargeId),
+	    {reply, Reply, State};
+	Error ->
+	    {reply, Error, State}
+    end;    
 	    
 
 handle_call({list_charge, Merchant}, _From, State) ->
@@ -419,6 +503,46 @@ handle_call({list_score, Merchant}, _From, State) ->
     {reply, Reply, State};
 
 
+handle_call({total_charge_detail, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("total_charge_detail: merchant ~p, conditions ~p", [Merchant, Conditions]),
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
+    Sql = "select count(*) as total"
+	", sum(cbalance) as cbalance"
+	", sum(sbalance) as sbalance"
+	" from w_charge_detail"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime),
+
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+handle_call({filter_charge_detail, Merchant, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
+    ?DEBUG("filter_charge_detail: merchant ~p, conditions ~p, page ~p",
+	   [Merchant, Conditions, CurrentPage]),
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
+    Sql = 
+	"select a.id, a.rsn"
+	", a.shop as shop_id"
+	", a.employ as employee_id"
+	", a.cid"
+	", a.retailer as retailer_id"
+	", a.lbalance, a.cbalance, a.sbalance"
+	", a.comment, a.entry_date"
+	", b.name as retailer"
+	", b.mobile as mobile"
+	", c.name as shop"
+	" from w_charge_detail a"
+	" left join w_retailer b on a.retailer=b.id"
+	" left join shops c on a.shop=c.id"
+
+	" where a.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime)
+	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
+    Reply =  ?sql_utils:execute(read, Sql),
+    {reply, Reply, State}; 
+    
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.

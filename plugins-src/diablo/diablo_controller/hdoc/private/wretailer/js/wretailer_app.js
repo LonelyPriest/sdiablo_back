@@ -70,6 +70,11 @@ wretailerApp.config(['$routeProvider', function($routeProvider){
 	    controller: 'wretailerDetailCtrl',
 	    resolve: angular.extend({}, employee, charge, user, base)
 	}).
+	when('/wretailer_charge_detail', {
+	    templateUrl: '/private/wretailer/html/wretailer_charge_detail.html',
+	    controller: 'wretailerChargeDetailCtrl',
+	    resolve: angular.extend({}, employee, retailer, charge, user, base)
+	}).
 	when('/wretailer_trans/:retailer?/:page?', {
 	    templateUrl: '/private/wretailer/html/wretailer_trans.html',
 	    controller: 'wretailerTransCtrl',
@@ -215,7 +220,9 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 	     shop:     r.shop,
 	     password: r.password,
 	     type:     r.type,
-	     birth:    dateFilter(r.birth, "yyyy-MM-dd")
+	     birth:    dateFilter(r.birth, "yyyy-MM-dd"),
+	     obalance: r.obalance,
+	     nbalance: r.balance, 
 	    }).$promise;
     };
 
@@ -285,6 +292,20 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 
     this.new_recharge = function(charge){
 	return http.save({operation:"new_recharge"}, charge).$promise;
+    };
+
+    this.delete_recharge = function(charge){
+	return http.save({operation:"delete_recharge"},
+			 {charge_id: charge}).$promise;
+    };
+
+    this.filter_charge_detail = function(match, fields, currentPage, itemsPerpage){
+	return http.save(
+	    {operation: "filter_charge_detail"},
+	    {match:  angular.isDefined(match) ? match.op : undefined,
+	     fields: fields,
+	     page:   currentPage,
+	     count:  itemsPerpage}).$promise;
     };
 
     /*

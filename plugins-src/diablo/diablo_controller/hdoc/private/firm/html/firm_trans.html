@@ -134,14 +134,12 @@
 		    
 		    <td class="{{css(r.state, r.type)}}">{{r.has_pay}}</td>
 
-		    <td class="{{css(r.state, r.type)}}">
-		      {{r.balance + r.should_pay + r.e_pay - r.has_pay - r.verificate}} 
-		    </td>
+		    <td class="{{css(r.state, r.type)}}">{{r.debt}}</td>
 
 
 		    <td class="{{css(r.state, r.type)}}">
 		      <span x-ng-switch on="r.comment">
-			<span x-ng-switch-when="null">无</span>
+			<span x-ng-switch-when="null"></span>
 			<span x-ng-switch-default>{{r.comment}}</span>
 		      </span>
 		    </td>

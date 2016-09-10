@@ -384,6 +384,21 @@ create table w_retailer
     primary key     (id)
 ) default charset=utf8;
 
+create table retailer_balance_history
+(
+    id              INTEGER AUTO_INCREMENT,
+    rsn             VARCHAR(32) default -1, 
+    retailer        INTEGER default -1,
+    obalance        DECIMAL(10, 2) default 0, -- max: 99999999.99
+    nbalance        DECIMAL(10, 2) default 0, -- max: 99999999.99
+    action          TINYINT default -1,
+    shop            INTEGER default -1,
+    merchant        INTEGER default -1,
+    entry_date      DATETIME,
+    key     dk (merchant, retailer, shop),
+    primary key     (id)
+) default charset=utf8;
+
 create table w_charge(
     id              INTEGER AUTO_INCREMENT,
     merchant        INTEGER not null default -1,

@@ -83,14 +83,16 @@ action(Session, Req, {"daily_wreport", Type}, Payload) ->
 						  lists:keydelete(<<"end_time">>, 1, Conditions))
 				  ++ [{<<"start_time">>, ?v(<<"qtime_start">>, BaseSetting)}]),
 		
-		{ok, LastStockInfo} = ?w_report:stastic(last_stock_of_shop, Merchant, ShopIds), 
+		{ok, LastStockInfo} = ?w_report:stastic(last_stock_of_shop, Merchant, ShopIds),
+		{ok, Recharges} = ?w_report:stastic(recharge, Merchant, Conditions),
 
 		?utils:respond(200, object, Req,
 			       {[{<<"ecode">>, 0},
 				 {<<"sale">>, StockSale},
 				 {<<"profit">>, StockProfit},
 				 {<<"rstock">>, StockR},
-				 {<<"lstock">>, LastStockInfo}
+				 {<<"lstock">>, LastStockInfo},
+				 {<<"recharge">>, Recharges}
 				]})
 	    catch
 		_:{badmatch, {error, Error}} -> ?utils:respond(200, Req, Error)

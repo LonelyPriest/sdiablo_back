@@ -184,6 +184,8 @@ firmApp.controller('firmTransCtrl', function(
 			d.firm = diablo_get_object(d.firm_id, filterFirm);
 			d.shop = diablo_get_object(d.shop_id, $scope.shops);
 			d.employee = diablo_get_object(d.employee_id, filterEmployee);
+			d.debt = diablo_rdight(
+			    d.balance + d.should_pay + d.e_pay - d.has_pay - d.verificate, 2);
 		    });
 		    $scope.records = result.data;
 		    diablo_order_page(page, $scope.items_perpage, $scope.records); 

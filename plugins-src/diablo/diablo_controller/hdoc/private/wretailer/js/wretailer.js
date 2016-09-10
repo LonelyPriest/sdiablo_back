@@ -148,10 +148,14 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	console.log(filters);
 
 	$scope.total_balance = 0;
+	$scope.total_consume = 0;
 	angular.forEach(filters, function(f){
-	    $scope.total_balance =$scope.total_balance
-		+ $scope.round(f.balance);
+	    $scope.total_balance += f.balance;
+	    $scope.total_consume += f.consume;
 	});
+
+	$scope.total_balance = diablo_rdight($scope.total_balance, 2);
+	$scope.total_consume = diablo_rdight($scope.total_consume, 2);
 
 	// re pagination
 	diabloPagination.set_data(filters);
@@ -193,9 +197,12 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 		r.shop  = diablo_get_object(r.shop_id, $scope.shops);
 		r.no_vip = in_array($scope.no_vips, r.id) ? true : false;
 		r.balance = diablo_rdight(r.balance, 2);
-		$scope.total_balance += $scope.round(r.balance);
-		$scope.total_consume += $scope.round(r.consume); 
+		$scope.total_balance += r.balance;
+		$scope.total_consume += r.consume; 
 	    })
+
+	    $scope.total_balance = diablo_rdight($scope.total_balance, 2);
+	    $scope.total_consume = diablo_rdight($scope.total_consume, 2);
 	    
 	    diablo_order($scope.retailers);
 	    // console.log($scope.retailers);
@@ -363,10 +370,12 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 		type: diablo_get_modified(params.retailer.type, old_retailer.type),
 		password:diablo_get_modified(params.retailer.password, old_retailer.password),
 		birth:diablo_get_modified(params.retailer.birth.getTime(),
-					  old_retailer.birth.getTime())
+					  old_retailer.birth.getTime()),
+		balance: diablo_get_modified(params.retailer.balance, old_retailer.balance),
 	    };
 	    console.log(update_retailer); 
-	    update_retailer.id = params.retailer.id; 
+	    update_retailer.id = params.retailer.id;
+	    update_retailer.obalance = old_retailer.balance;
 	    // console.log(update_retailer);
 
 	    wretailerService.update_retailer(update_retailer).then(function(
@@ -377,7 +386,9 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 			true, "会员编辑",
 			"恭喜你，会员 ["
 			    + old_retailer.name + "] 信息修改成功！！",
-			$scope, function(){$scope.refresh()});
+			$scope, function(){
+			    $scope.do_refresh($scope.pagination.current_page, $scope.search);
+			});
     		} else{
 		    dialog.response(
 			false, "会员编辑",
@@ -415,7 +426,8 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	     shops:       $scope.shops,
 	     pattern:     pattern,
 	     check_same:  check_same,
-	     check_exist: check_exist})
+	     check_exist: check_exist,
+	     right: $scope.right})
     };
 
     $scope.delete_retailer = function(r){
@@ -470,7 +482,93 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	    "reset-password.html", undefined, callback, undefined,
 	    {retailer:retailer, password_pattern:pattern.password});
     };
-}); 
+});
+
+wretailerApp.controller("wretailerChargeDetailCtrl", function(
+    $scope, diabloFilter, diabloUtilsService, localStorageService, wretailerService,
+    filterEmployee, filterRetailer, filterCharge, user, base){
+
+    var dialog = diabloUtilsService;
+    
+    $scope.items_perpage = diablo_items_per_page();
+    $scope.max_page_size = 10;
+    $scope.default_page = 1; 
+    $scope.current_page = $scope.default_page;
+    $scope.total_items = 0;
+
+    $scope.filters = []; 
+    diabloFilter.reset_field(); 
+    diabloFilter.add_field("retailer", filterRetailer);
+
+    $scope.filter = diabloFilter.get_filter();
+    $scope.prompt = diabloFilter.get_prompt();
+
+    $scope.right = {master: rightAuthen.authen_master(user.type)};
+    
+    var now = $.now();
+    var start_time = diablo_base_setting(
+	"qtime_start", -1, base, diablo_set_date, diabloFilter.default_start_time(now));
+    
+    $scope.time = diabloFilter.default_time($scope.qtime_start, now);
+    
+    $scope.do_search = function(page){
+	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+	    wretailerService.filter_charge_detail(
+		$scope.match, search, page, $scope.items_perpage
+	    ).then(function(result){
+		console.log(result);
+		if (result.ecode === 0){
+		    if (page === $scope.default_page){
+			$scope.total_items = result.total;
+			$scope.total_cbalance = result.cbalance;
+			$scope.total_sbalance = result.sbalance;
+		    }
+
+		    angular.forEach(result.data, function(d){
+			d.employee = diablo_get_object(d.employee_id, filterEmployee);
+			d.charge = diablo_get_object(d.cid, filterCharge);
+			d.accbalance = d.lbalance + d.cbalance + d.sbalance;
+		    });
+
+		    diablo_order(result.data, (page - 1) * $scope.items_perpage + 1);
+		    $scope.charges = result.data;
+		    $scope.current_page = page; 
+		} 
+	    })
+	})
+    };
+
+    $scope.refresh = function(){
+	$scope.do_search($scope.default_page)
+    };
+
+    $scope.page_changed = function(page){
+	$scope.do_search(page)
+    };
+
+    $scope.delete_charge = function(charge){
+	console.log(charge);
+	var callback = function(){
+	    wretailerService.delete_recharge(charge.id).then(function(result){
+		if (result.ecode === 0){
+		    dialog.response_with_callback(
+			true, "删除充值记录", "充值记录删除成功！！" ,
+			undefined,
+			function(){$scope.do_search($scope.current_page)})
+		} else {
+		    dialog.response(
+			false, "删除充值记录", "删除充值记录失败："
+			    + wretailerService.error[result.ecode]);
+		}
+	    })
+	};
+	
+	dialog.request(
+	    "删除充值记录",
+	    "充值记录删除时，会员余额会相应减少，确定要删除该充值记录吗？",
+	    callback);
+    };
+});
 
 wretailerApp.controller("wretailerCtrl", function(
     $scope, localStorageService){

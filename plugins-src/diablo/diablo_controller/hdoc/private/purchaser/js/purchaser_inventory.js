@@ -1654,8 +1654,7 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
     // console.log(storage);
         
     // alarm, use default shop
-    $scope.setting.alarm = diablo_base_setting(
-	"stock_alarm", -1, base, parseInt, diablo_no); 
+    $scope.setting.alarm = diablo_base_setting("stock_alarm", -1, base, parseInt, diablo_no); 
 
     /*
      * pagination 

@@ -153,9 +153,13 @@ good(detail, Merchant) ->
     good(detail, Merchant, []).
 
 
-good(delete, Merchant, GoodId) ->
-    "delete from w_inventory_good where id=" ++ ?to_s(GoodId)
-	++ " and merchant=" ++ ?to_s(Merchant);
+good(delete, Merchant, {GoodId, StyleNumber, Brand}) -> 
+    ["delete from w_inventory where merchant=" ++ ?to_s(Merchant)
+     ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+     ++ " and brand=" ++ ?to_s(Brand),
+     
+     "delete from w_inventory_good where id=" ++ ?to_s(GoodId)
+     ++ " and merchant=" ++ ?to_s(Merchant)];
 
 good(detail, Merchant, Conditions) ->
     {StartTime, EndTime, NewConditions} =
@@ -215,20 +219,32 @@ good(detail_no_join, Merchant, StyleNumber, Brand) ->
 	++ " and a.type=c.id" ;
 
 good(used_detail, Merchant, StyleNumber, Brand) ->
-    "select a.id, a.style_number, a.brand as brand_id"
+    "select a.id, style_number, a.brand as brand_id"
 	", a.firm as firm_id, a.type as type_id"
-	", a.sex, a.color, a.season, a.size" 
-	++ " from w_inventory_good a, w_inventory b" 
-	++ " where a.merchant=" ++ ?to_s(Merchant)
-	++ " and a.style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
-	++ " and a.brand=" ++ ?to_s(Brand) 
-	++ " and a.deleted=" ++ ?to_s(?NO)
+	", a.shop as shop_id, a.amount"
+	", b.name as shop"
+	" from w_inventory a"
+	" left join shops b on a.shop=b.id"
 	
-	++ " and a.style_number=b.style_number"
-	++ " and a.brand=b.brand"
-	++ " and b.merchant=" ++ ?to_s(Merchant)
-	++ " and b.deleted=" ++ ?to_s(?NO)
-	++ " group by a.style_number, a.brand".
+	" where a.merchant=" ++ ?to_s(Merchant)
+	++ " and a.style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+	++ " and a.brand=" ++ ?to_s(Brand).
+	
+    %% "select a.id, a.style_number, a.brand as brand_id"
+    %% 	", a.firm as firm_id, a.type as type_id"
+    %% 	", a.sex, a.color, a.season, a.size"
+    %% 	", b.shop, b.amount"
+    %% 	++ " from w_inventory_good a, w_inventory b" 
+    %% 	++ " where a.merchant=" ++ ?to_s(Merchant)
+    %% 	++ " and a.style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+    %% 	++ " and a.brand=" ++ ?to_s(Brand) 
+    %% 	++ " and a.deleted=" ++ ?to_s(?NO)
+	
+    %% 	++ " and a.style_number=b.style_number"
+    %% 	++ " and a.brand=b.brand"
+    %% 	++ " and b.merchant=" ++ ?to_s(Merchant)
+    %% 	++ " and b.deleted=" ++ ?to_s(?NO)
+    %% 	++ " group by a.style_number, a.brand".
 
 good_match(style_number, Merchant, StyleNumber) ->
     P = prompt_num(Merchant),

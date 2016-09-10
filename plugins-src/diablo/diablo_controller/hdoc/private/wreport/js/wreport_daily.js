@@ -61,6 +61,7 @@ wreportApp.controller("wreportDailyCtrl", function(
 		    var profit = result.profit;
 		    var currentStock = result.rstock;
 		    var lastStock = result.lstock;
+		    var recharge = result.recharge;
 		    var order_id = 1;
 
 		    $scope.report_data = [];
@@ -70,17 +71,20 @@ wreportApp.controller("wreportDailyCtrl", function(
 			gross:0,
 			margins:0,
 			
-			spay: 0,
+			spay:0,
 			cash:0,
 			card:0,
+			draw:0,
 			veri:0,
+
+			cbalance: 0
 		    };
 		    
 		    angular.forEach($scope.sortShops, function(shop){
 			var s = {shop: shop, order_id: order_id};
 
 			s.sale = reportUtils.filter_by_shop(shop.id, sale);
-			s.profit = reportUtils.filter_by_shop(shop.id, profit);
+			s.profit = reportUtils.filter_by_shop(shop.id, profit); 
 			s.sale.cost = s.profit.org_price;
 			
 			s.sale.gross = reportUtils.f_sub(
@@ -92,6 +96,9 @@ wreportApp.controller("wreportDailyCtrl", function(
 			s.sale.currentStock = reportUtils.filter_by_shop(shop.id, currentStock);
 			s.sale.lastStock = reportUtils.filter_by_shop(shop.id, lastStock);
 
+			s.recharge = reportUtils.filter_by_shop(shop.id, recharge);
+			s.sale.cbalance = s.recharge.cbalance;
+
 			
 			$scope.total.sale += to_i(s.sale.total);
 			$scope.total.sale_cost += reportUtils.to_float(s.sale.cost);
@@ -100,7 +107,10 @@ wreportApp.controller("wreportDailyCtrl", function(
 			
 			$scope.total.cash += reportUtils.to_float(s.sale.cash);
 			$scope.total.card += reportUtils.to_float(s.sale.card);
+			$scope.total.draw += reportUtils.to_float(s.sale.draw);
 			$scope.total.veri += reportUtils.to_float(s.sale.veri);
+
+			$scope.total.cbalance += reportUtils.to_float(s.sale.cbalance);
 			
 			$scope.report_data.push(s); 
 			order_id++;
@@ -186,6 +196,7 @@ wreportApp.controller("dailyByGood", function(
 	default_page:  1,
 	current_page:  1,
 	last_page:     0,
+	last_day:      ""    
     };
 
     $scope.s_stastic = {
@@ -213,8 +224,9 @@ wreportApp.controller("dailyByGood", function(
     };
     
     $scope.do_search = function(page, current_day){
-	// console.log(page); 
-	if (page === $scope.s_pagination.last_page){
+	// console.log(page, current_day); 
+	if (page === $scope.s_pagination.last_page
+	    && current_day === $scope.s_pagination.last_day){
 	    return;
 	};
 
@@ -255,6 +267,7 @@ wreportApp.controller("dailyByGood", function(
 		$scope.s_data = $scope.s_data.concat(result.data);
 		
 		$scope.s_pagination.last_page = page;
+		$scope.s_pagination.last_day = current_day;
 		
 	    })
 	})

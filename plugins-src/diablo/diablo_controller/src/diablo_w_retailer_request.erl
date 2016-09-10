@@ -133,8 +133,7 @@ action(Session, Req, {"add_w_retailer_charge"}, Payload) ->
     end;
 
 action(Session, Req, {"new_recharge"}, Payload) ->
-    ?DEBUG("new_recharge with session ~p, payload ~p",
-	   [Session, Payload]), 
+    ?DEBUG("new_recharge with session ~p, payload ~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
 
     case ?w_retailer:charge(recharge, Merchant, Payload) of
@@ -146,6 +145,32 @@ action(Session, Req, {"new_recharge"}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"delete_recharge"}, Payload) ->
+    ?DEBUG("delete_recharge with session ~p, payload ~p", [Session, Payload]), 
+    Merchant = ?session:get(merchant, Session), 
+    ChargeId = ?v(<<"charge_id">>, Payload),
+    
+    case ?w_retailer:charge(delete_recharge, Merchant, ChargeId) of
+	{ok, ChargeId} ->
+	    ?w_user_profile:update(retailer, Merchant),
+	    ?utils:respond(200, Req, ?succ(delete_recharge, ChargeId));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"filter_charge_detail"}, Payload) ->
+    ?DEBUG("filter_charge_detail with session ~p, paylaod~n~p", [Session, Payload]), 
+    Merchant  = ?session:get(merchant, Session),
+
+    ?pagination:pagination(
+       fun(Match, Conditions) ->
+	       ?w_retailer:filter(
+		  total_charge_detail, ?to_a(Match), Merchant, Conditions)
+       end,
+       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
+	       ?w_retailer:filter(
+		  charge_detail, Match, Merchant, Conditions, CurrentPage, ItemsPerPage)
+       end, Req, Payload);
 
 %% 
 %% charge
@@ -173,7 +198,10 @@ sidebar(Session) ->
 		[{"wretailer_new", "新增会员", "glyphicon glyphicon-plus"}];
 	    _ ->
 		[]
-	end, 
+	end,
+
+    S3 = [{"wretailer_charge_detail", "充值记录", "glyphicon glyphicon-bookmark"}],
+    
 
     Recharge =
 	[{{"promotion", "充值积分", "glyphicon glyphicon-superscript"},
@@ -183,7 +211,7 @@ sidebar(Session) ->
 	
 	 }],
     
-    L1 = ?menu:sidebar(level_1_menu, S2 ++ S1),
+    L1 = ?menu:sidebar(level_1_menu, S2 ++ S1 ++ S3),
     L2 = ?menu:sidebar(level_2_menu, Recharge),
 
     L1 ++ L2.

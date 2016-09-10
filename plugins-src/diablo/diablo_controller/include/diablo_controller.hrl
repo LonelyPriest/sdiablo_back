@@ -45,6 +45,10 @@
 -define(UPDATE_FIRM, 3).
 -define(DELETE_INVENTORY, 4).
 
+%% retailer action
+-define(UPDATE_RETAILER, 0).
+-define(DELETE_RECHARGE, 1).
+
 -define(FIRM_BILL, 9).
 -define(INVALID_OR_EMPTY, -1).
 
@@ -121,6 +125,7 @@
 -define(list_w_retailer_score,       ?right_w_retailer + 12).
 -define(new_recharge,                ?right_w_retailer + 13).
 -define(reset_w_retailer_password,   ?right_w_retailer + 14).
+-define(delete_recharge,             ?right_w_retailer + 15).
 
 %% shop
 -define(new_shop,       ?right_shop + 1).

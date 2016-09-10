@@ -81,7 +81,11 @@ stastic(stock_real, Merchant, Conditions) ->
 stastic(last_stock_of_shop, Merchant, ShopId) when is_number(ShopId) ->
     gen_server:call(?SERVER, {last_stock_of_shop, Merchant, [ShopId]});
 stastic(last_stock_of_shop, Merchant, ShopIds)->
-    gen_server:call(?SERVER, {last_stock_of_shop, Merchant, ShopIds}).
+    gen_server:call(?SERVER, {last_stock_of_shop, Merchant, ShopIds});
+
+stastic(recharge, Merchant, Conditions) ->
+    gen_server:call(?SERVER, {recharge, Merchant, Conditions}).
+
 
 
 
@@ -269,6 +273,7 @@ handle_call({stock_sale, Merchant, Conditions}, _From, State)->
 	", SUM(cash) as cash"
 	", SUM(Card) as card"
 	", SUM(Verificate) as veri"
+	", SUM(withdraw) as draw"
 	", shop as shop_id"
 	" from w_sale "
 	" where merchant=" ++ ?to_s(Merchant)
@@ -415,6 +420,19 @@ handle_call({last_stock_of_shop, Merchant, ShopIds}, _From, State) ->
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 
+handle_call({recharge, Merchant, Conditions}, _From, State) ->
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
+
+    Sql = "select SUM(cbalance) as cbalance"
+	", shop as shop_id"
+	" from w_charge_detail "
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime)
+	++ " group by shop",
+
+    R = ?sql_utils:execute(read, Sql),
+    {reply, R, State};
 
 handle_call(_Request, _From, State) ->
     Reply = ok,

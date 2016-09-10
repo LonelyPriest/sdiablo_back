@@ -133,7 +133,7 @@ init([]) ->
 	 {?update_w_retailer_charge,
 	  <<"修改充值方案">>,<<"update_w_retailer_charge">>,?right_w_retailer},
 	 {?list_w_retailer_charge,
-	  <<"查询充值方案">>, <<"list_w_retailer_charge">>,?right_w_retailer},
+	  <<"查询充值方案">>, <<"list_w_retailer_charge">>,?right_w_retailer}, 
 
 	 {?add_w_retailer_score, 
 	  <<"新增积分方案">>, <<"add_w_retailer_score">>, ?right_w_retailer},
@@ -145,6 +145,8 @@ init([]) ->
 	  <<"查询积分方案">>, <<"list_w_retailer_score">>,?right_w_retailer},
 
 	 {?new_recharge, <<"会员充值">>, <<"new_recharge">>,?right_w_retailer},
+	 {?delete_recharge, 
+	  <<"删除会员充值记录">>, <<"delete_recharge">>,?right_w_retailer},
 
 	 {?reset_w_retailer_password,
 	  <<"重置会员密码">>, <<"reset_w_retailer_password">>,   ?right_w_retailer}
@@ -840,6 +842,7 @@ pass_action(wholesaler) ->
      <<"check_w_retailer_password">>,
      <<"list_w_retailer_charge">>,
      <<"list_w_retailer_score">>,
+     <<"filter_charge_detail">>,
      
      %% wsale
      %% <<"list_w_sale_new">>,
