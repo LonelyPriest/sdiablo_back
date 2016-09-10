@@ -12,7 +12,9 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     $scope.firms       = filterFirm;
     $scope.colors      = filterColor;
     $scope.color_types = filterColorType;
-    $scope.grouped_colors = [];
+    $scope.grouped_colors = []; 
+    $scope.base_settings = {};
+
     
     $scope.tab_active  = [{active:true}, {active:false}, {active:false}]; 
     $scope.shops             = user.sortShops; 
@@ -208,26 +210,31 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	sDraft.select(diabloUtilsService, "inventory-draft.html", draft_filter, select); 
     };
 
+    $scope.get_setting = function(shopId){
+	$scope.base_settings.m_sgroup = stockUtils.multi_sizegroup(shopId, base);
+	$scope.base_settings.t_trace = stockUtils.t_trace(shopId, base);
+	$scope.base_settings.group_color = stockUtils.group_color(shopId, base);
+	$scope.base_settings.image_allowed = stockUtils.image_allowed(shopId, base);
+
+	$scope.base_settings.hide_color = stockUtils.hide_color(shopId, base);
+	$scope.base_settings.hide_size  = stockUtils.hide_size(shopId, base);
+	$scope.base_settings.hide_sex   = stockUtils.hide_sex(shopId, base);
+    }
+
     $scope.change_shop = function(){
 	sDraft.change_key(undefined, $scope.select.shop.id, $scope.select.employee.id);
-	$scope.base_settings.m_sgroup = stockUtils.multi_sizegroup($scope.select.shop.id, base);
-	$scope.base_settings.t_trace = stockUtils.t_trace($scope.select.shop.id, base);
-	$scope.base_settings.group_color = stockUtils.group_color($scope.select.shop.id, base);
-	image_allowed: stockUtils.image_allowed($scope.select.shop.id, base);
-
+	$scope.get_setting($scope.select.shop.id);
+	
 	$scope.q_prompt = $scope.q_typeahead($scope.select.shop.id, base);
 	$scope.get_prompt_good(); 
 	$scope.get_employee();
     };
+
+    $scope.get_setting($scope.select.shop.id);
+
+    // console.log($scope.base_settings);
     
     $scope.prompt_limit = stockUtils.prompt_limit($scope.select.shop.id, base);
-
-    $scope.base_settings = {
-	m_sgroup: stockUtils.multi_sizegroup($scope.select.shop.id, base),
-	t_trace: stockUtils.t_trace($scope.select.shop.id, base),
-	group_color: stockUtils.group_color($scope.select.shop.id, base),
-	image_allowed: stockUtils.image_allowed($scope.select.shop.id, base)
-    };
     
     // calender
     $scope.open_calendar = function(event){

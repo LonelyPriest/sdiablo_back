@@ -161,6 +161,7 @@ wsaleApp.service("wsaleService", function($http, $resource, dateFilter){
     this.export_type = {trans:0, trans_note:1};
 
     this.vpays = [0, 1, 2, 3, -1, -2, -3];
+    this.cake_vpays = [0, -0.1, -0.2, -0.3, -0.4, -0.5, -0.6];
     
     // =========================================================================
     var http = $resource("/wsale/:operation/:id",
@@ -286,8 +287,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
     filterFirm, filterRetailer, filterEmployee,
     filterSizeGroup, filterBrand, filterType, filterColor, base){
     $scope.promotions = filterPromotion;
-    $scope.scores     = filterScore;
-    $scope.vpays      = wsaleService.vpays;
+    $scope.scores     = filterScore; 
     
     $scope.pattern    = {
 	money:    diabloPattern.decimal_2,
@@ -381,7 +381,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	charge:       0,
 	surplus:      0,
 	left_balance: 0,
-	verificate:   $scope.vpays[0],
+	// verificate:   $scope.vpays[0],
 	datetime:     $scope.today()
     };
 
@@ -395,6 +395,14 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	$scope.setting.smember = wsaleUtils.s_member(shopId, base);
 	$scope.setting.semployee = wsaleUtils.s_employee(shopId, base);
 	$scope.setting.cake_mode = wsaleUtils.cake_mode(shopId, base);
+
+	if (diablo_no === $scope.setting.cake_mode) {
+	    $scope.vpays = wsaleService.vpays;
+	} else {
+	    $scope.vpays = wsaleService.cake_vpays;
+	}
+
+	$scope.select.verificate = $scope.vpays[0];
 	// console.log($scope.setting);
     };
     

@@ -20,8 +20,13 @@ wgoodApp.controller("wgoodNewCtrl", function(
     var set_float  = diablo_set_float;
 
     $scope.base_settings = {
-	m_sgroup:stockUtils.multi_sizegroup(-1, base)
+	m_sgroup    :stockUtils.multi_sizegroup(-1, base),
+	hide_color  :stockUtils.hide_color(-1, base),
+	hide_size   :stockUtils.hide_size(-1, base),
+	hide_sex    :stockUtils.hide_sex(-1, base)
     };
+
+    // console.log($scope.base_settings);
 
     // $scope.colors = [{type:"红色", tid:1
     // 		  colors:[{name:"深红", id:1},

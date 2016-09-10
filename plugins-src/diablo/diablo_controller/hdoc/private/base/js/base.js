@@ -111,7 +111,7 @@ baseApp.controller("printOptionCtrl", function(
 	$scope.retailers = retailers.map(function(r){
 	    return {name: r.name, id:r.id, py:diablo_pinyin(r.name)};
 	}).concat([{name:"== 系统默认 ==", id:0}]);
-	console.log($scope.retailers);
+	// console.log($scope.retailers);
     });
 
     // baseService.list_purchaser_size().then(function(sizes){
@@ -130,7 +130,7 @@ baseApp.controller("printOptionCtrl", function(
     var dialog = diabloUtilsService;
 
     $scope.shop_setting = function(shop){
-	console.log(shop);
+	// console.log(shop);
 	for(var i=0, l=$scope.settings.length; i<l; i++){
 	    var s = $scope.settings[i];
 	    if (shop.id === s.shop.id){
@@ -184,9 +184,8 @@ baseApp.controller("printOptionCtrl", function(
 		    return {shop:s, setting:diablo_order(setting)};
 		})
 	    
-	    console.log($scope.settings);
-	    $scope.select = {shop:shop,
-			     setting: $scope.shop_setting(shop)};
+	    // console.log($scope.settings);
+	    $scope.select = {shop:shop, setting: $scope.shop_setting(shop)};
 	})
     };
 

@@ -159,6 +159,8 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	//     })
 	// });
 
+	// $scope.src_selectColors = angular.copy($scope.selectColors);
+
 	if ($scope.selectColors.length === 0) descs.push("均色");
 	
 	$scope.good.color_desc = descs.toString();
@@ -265,6 +267,11 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 			    py:diablo_pinyin(params.color.name)
 			});
 
+			filterColor.push({
+			    id:newColorId,
+			    name:params.color.name,
+			    py:diablo_pinyin(params.color.name)});
+
 			$scope.group_color_with_8();
 		    };
 		    
@@ -323,6 +330,7 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	var callback = function(params){
 	    // console.log(params.colors);
 	    // console.log(params.ucolors); 
+	    // $scope.selectColors = angular.copy($scope.src_selectColors);
 	    $scope.selectColors = [];
 	    var descs = []; 
 	    for (var i=0, l1=params.colors.length; i<l1; i++){
@@ -421,12 +429,14 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 		
 		return colors.toString();
 	    } else{
-		return wgoodService.free_color.toString();;
+		return $scope.src_good.color;
+		// return wgoodService.free_color.toString();;
 	    }
 	}(); 
 	
 	console.log(update_good);
 	console.log($scope.src_good);
+	// return;
 	
 	// get changed
 	var changed_good = {};
@@ -440,7 +450,8 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	var image  = angular.isDefined($scope.image) && $scope.image
 	    ? $scope.image.dataUrl.replace(
 		    /^data:image\/(png|jpg);base64,/, "") : undefined;
-	
+
+	console.log(changed_good);
 	if (diablo_is_empty(changed_good) && angular.isUndefined(image)){
 	    diabloUtilsService.response(
 		false, "修改货品",
