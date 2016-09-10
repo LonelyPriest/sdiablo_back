@@ -1,6 +1,14 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2016-09-11",
+         content: [
+	     "客户退货单可以修改",
+	     "蛋糕店模式优化",
+	     "会员密码修改权限可控制"
+         ]
+        },
+	
 	{date: "2016-09-10",
          content: [
 	     "增加会员充值时可选择不同充值方案",

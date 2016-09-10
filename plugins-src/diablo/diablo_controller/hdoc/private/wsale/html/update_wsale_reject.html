@@ -211,6 +211,7 @@
 		      		       && !inv.form.good.$pristine}">
 		      	  <input class="form-control text-left" type="text"
 		      		 required
+				 readonly
 		      		 x-ng-model="inv.style_number"
 		      		 placeholder="货号"
 		      		 typeahead-editable="false"
@@ -319,10 +320,10 @@
 			   x-ng-click="update_inventory(inv)">修改
 			  <i class="glyphicon glyphicon-edit"></i></a>
 			
-			<a class="btn diablo-input-button btn-danger"
-			   x-ng-if="!inv.free_update"
-			   x-ng-click="delete_inventory(inv)">删除
-			  <i class="glyphicon glyphicon-erase"></i></a>
+			<!-- <a class="btn diablo-input-button btn-danger" -->
+			<!--    x-ng-if="!inv.free_update" -->
+			<!--    x-ng-click="delete_inventory(inv)">删除 -->
+			<!--   <i class="glyphicon glyphicon-erase"></i></a> -->
 
 			<a class="btn diablo-input-button btn-success"
 			   ng-if="inv.free_update"

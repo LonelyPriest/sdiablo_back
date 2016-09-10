@@ -62,7 +62,12 @@ wretailerApp.controller("wretailerDetailCtrl", function(
     var f_add  = diablo_float_add;
     var now    = $.now();
 
-    $scope.right = {master: rightAuthen.authen_master(user.type)};
+    $scope.right = {reset_password: rightAuthen.authen(
+	user.type,
+	rightAuthen.retailer_action()['reset_password'],
+	user.right)};
+
+    console.log($scope.right);
 
     $scope.save_to_local = function(search, t_retailer){
 	var s = localStorageService.get(diablo_key_retailer);

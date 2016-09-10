@@ -6,11 +6,12 @@ var rightAuthen = {
     },
 
     root_right : {
-    	_shop: 40000,
-	_rainbow: 800000,
-	_wsale: 90000,
-	_stock: 100000,
-	_good: 140000
+    	_shop     : 40000,
+	_rainbow  : 800000,
+	_wsale    : 90000,
+	_stock    : 100000,
+	_good     : 140000,
+	_retailer : 30000
     },
 
     shop_action: function(){
@@ -51,6 +52,12 @@ var rightAuthen = {
 	    delete_w_stock: rightAuthen.root_right._stock + 5,
 	    update_w_stock: rightAuthen.root_right._stock + 6,
 	    check_w_stock:  rightAuthen.root_right._stock + 13
+	}
+    },
+
+    retailer_action: function(){
+	return {
+	    reset_password: rightAuthen.root_right._retailer + 14
 	}
     },
 
