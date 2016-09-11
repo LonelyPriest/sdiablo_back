@@ -106,12 +106,12 @@
 		    <td>{{c.comment}}</td>
 		    <td>{{c.entry_date}}</td> 
 		    <td x-ng-if="right.master">
-		      <!-- <button class="btn diablo-button blue-hoki" -->
-		      <!-- 	      x-ng-click="abandon_charge(b)">废弃 -->
-		      <!-- 	<i class="glyphicon glyphicon-ban-circle"></i> -->
-		      <!-- </button> --> 
+		      <button class="btn diablo-button yellow-crusta"
+		      	      x-ng-click="update_recharge(c)">修改
+		      	<i class="glyphicon glyphicon-edit"></i>
+		      </button> 
 		      <button class="btn diablo-button btn-danger"
-			      x-ng-click="delete_charge(c)">删除
+			      x-ng-click="delete_recharge(c)">删除
 			<i class="glyphicon glyphicon-erase"></i></button> 
 		    </td>
 		  </tr>
@@ -156,3 +156,84 @@
     </div>
   </div>
 </div>
+
+
+<script type="text/ng-template" id="update-recharge.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    
+    <h4 class="modal-title">
+      <span class="label label-sm label-primary">修改充值记录</span>
+    </h4>
+  </div>
+
+  <div class="modal-body">
+    <form class="form-horizontal" name="cForm" novalidate> 
+      <div class="form-body">
+	<div class="form-group">
+	  <span class="col-md-3 col-sm-3 col-xs-3 control-label">
+	    店铺
+	  </span>
+	  <div class="col-md-6 col-sm-6 col-xs-6">
+	    <input type="text"
+		    class="form-control"
+		   x-ng-model="params.recharge.shop"/>
+	  </div>
+	</div>
+
+	<!--Name-->
+	<div class="form-group">
+	  <span class="col-md-3 col-sm-3 col-xs-3 control-label">
+	    会员名称
+	  </span>
+	  <div class="col-md-6 col-sm-6 col-xs-6">
+	    <input type="text"
+		   class="form-control"
+		   readonly 
+		   x-ng-model="params.recharge.retailer"/>
+	  </div>
+	</div>
+
+	<div class="form-group">
+	  <span class="col-md-3 col-sm-3 col-xs-3 control-label">
+	    经手人
+	  </span>
+	  <div class="col-md-6 col-sm-6 col-xs-6">
+	    <select type="text"
+		    class="form-control"
+		    x-ng-model="params.recharge.employee"
+		    x-ng-options="e as e.name for e in params.employees">
+	    </select>
+	  </div>
+	</div>
+	
+	<div class="form-group">
+	  <label class="col-sm-3 col-md-3 control-label">备注</label>
+	  <div class="col-sm-6 col-md-6">
+	    <input type="text"
+		   class="form-control"
+		   name="comment"
+		   placeholder="请输入备注"
+		   x-ng-model="params.comment"
+		   x-ng-pattern="params.pattern.comment"/> 
+	  </div>
+	  <div ng-show="cForm.comment.$invalid && !cForm.comment.$pristine">
+	    <span class="fg-red">中文，字母，数字，不支持特殊字符</span> 
+	  </div> 
+	</div> 
+	
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer"> 
+    <button class="btn btn-primary"
+	    x-ng-disabled="cForm.$invalid"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
+  
+</script>

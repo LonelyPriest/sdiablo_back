@@ -126,6 +126,7 @@
 -define(new_recharge,                ?right_w_retailer + 13).
 -define(reset_w_retailer_password,   ?right_w_retailer + 14).
 -define(delete_recharge,             ?right_w_retailer + 15).
+-define(update_recharge,             ?right_w_retailer + 16).
 
 %% shop
 -define(new_shop,       ?right_shop + 1).

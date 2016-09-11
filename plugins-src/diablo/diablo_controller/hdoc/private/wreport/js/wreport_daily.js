@@ -5,14 +5,25 @@ wreportApp.controller("wreportDailyCtrl", function(
     wreportCommService.set_user(user);
     wreportCommService.set_base_setting(base);
 
-    $scope.employees = wreportCommService.get_employee().filter(function(e){
-	return in_array(user.shopIds, e.shop)
-    });
+    // $scope.employees = wreportCommService.get_employee().filter(function(e){
+    // 	return in_array(user.shopIds, e.shop)
+    // });
+    $scope.employees = filterEmployee;
     
     // console.log($scope.employees); 
     $scope.sortShops = wreportCommService.get_sort_shop();
     $scope.shopIds = user.shopIds;
     $scope.current_day = $.now();
+
+    var print_mode = diablo_backend;
+    for (var i=0, l=$scope.shopIds; i<l; i++){
+	if (diablo_frontend === reportUtils.print_mode($scope.shopIds[i], base)){
+	    if (needCLodop()) {
+		loadCLodop();
+		break;
+	    };
+	}
+    };
 
     var to_f = reportUtils.to_float;
     var to_i = reportUtils.to_integer;
@@ -84,6 +95,7 @@ wreportApp.controller("wreportDailyCtrl", function(
 			var s = {shop: shop, order_id: order_id};
 
 			s.sale = reportUtils.filter_by_shop(shop.id, sale);
+			
 			s.profit = reportUtils.filter_by_shop(shop.id, profit); 
 			s.sale.cost = s.profit.org_price;
 			
@@ -113,8 +125,7 @@ wreportApp.controller("wreportDailyCtrl", function(
 			$scope.total.cbalance += reportUtils.to_float(s.sale.cbalance);
 			
 			$scope.report_data.push(s); 
-			order_id++;
-			
+			order_id++; 
 		    });
 
 		    $scope.total.gross = reportUtils.to_decimal($scope.total.gross);
@@ -131,12 +142,36 @@ wreportApp.controller("wreportDailyCtrl", function(
     $scope.go_stastic = function(){diablo_goto_page("#/stastic")};
 
     var dialog = diabloUtilsService;
-    $scope.print_shop = function(d){
+
+    var get_login_employee = function(shop, loginEmployee, employees){
+	var employees = [{id: "-1", name: "==不选择员工表示默认打印整天报表=="}].concat(
+	    employees.filter(function(e){
+		return e.shop === shop;
+	    })
+	);
+	
+	var select = undefined;
+	if (diablo_invalid_employee !== loginEmployee)
+	    select = diablo_get_object(loginEmployee, employees); 
+	
+	if (angular.isUndefined(select)) select = employees[0];
+	
+	return {login_employee:select, employees:employees};
+    };
+
+    $scope.shift_print = function(d) {
+	if (diablo_frontend === reportUtils.print_mode(d.shop.id, base))
+	    $scope.print_shop_fronted(d);
+	else
+	    $scope.print_shop_backend(d);
+    };
+    
+    $scope.print_shop_backend = function(d){
 	var callback = function(params){
             wreportService.print_wreport(
 		diablo_by_shop,
 		{shop:     d.shop.id,
-		 employee: params.employee.id,
+		 employee: params.employee.id === "-1" ? undefined : params.employee.id,
 		 pcash:    diablo_set_float(params.pcash),
 		 pcash_in: diablo_set_float(params.pcash_in),
 		 comment:  diablo_set_string(params.comment)}
@@ -163,18 +198,48 @@ wreportApp.controller("wreportDailyCtrl", function(
 			false, "交班失败", "交班失败：" + wreportService.error[status.ecode]);
 		}
             })
-	}
+	} 
 	
-	var loginEmployee = user.loginEmployee === diablo_invalid_employee ?
-	    $scope.employees[0] : diablo_get_object(user.loginEmployee, $scope.employees);
+	// var loginEmployee = user.loginEmployee === diablo_invalid_employee ?
+	//     $scope.employees[0] : diablo_get_object(user.loginEmployee, $scope.employees);
+	var login = get_login_employee(d.shop.id, user.loginEmployee, $scope.employees);
+	
 	dialog.edit_with_modal(
 	    "select-employee.html",
 	    'normal',
 	    callback,
 	    undefined,
-	    {employees:$scope.employees,
-	     employee: loginEmployee});
+	    {employees:login.employees,
+	     employee: login.login_employee});
     };
+
+    $scope.print_shop_fronted = function(d){
+	var login = get_login_employee(d.shop.id, user.loginEmployee, $scope.employees);
+
+	var callback = function(params){
+	    var sale = $scope.report_data.filter(function(r){
+		return r.shop.id === d.shop.id;
+	    })[0];
+
+	    var pdate = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss");
+	    
+	    if (angular.isUndefined(LODOP)) LODOP = getLodop();
+
+	    if (angular.isDefined(LODOP)){
+		var hLine = reportPrint.gen_head(LODOP, d.shop.name, login.loginEmployee, pdate);
+		hLine = reportPrint.gen_body(hLine, LODOP, sale, params); 
+		reportPrint.start_print(LODOP)
+	    } 
+	};
+
+	dialog.edit_with_modal(
+	    "select-employee.html",
+	    'normal',
+	    callback,
+	    undefined,
+	    {employees:login.employees,
+	     employee: login.login_employee});
+    }
 });
 
 wreportApp.controller("dailyByGood", function(

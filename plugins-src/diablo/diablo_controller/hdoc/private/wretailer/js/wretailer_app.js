@@ -299,6 +299,12 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 			 {charge_id: charge}).$promise;
     };
 
+    this.update_recharge = function(charge){
+	return http.save({operation:"update_recharge"},
+			 {charge_id: charge,
+			  employee: charge.employee}).$promise;
+    };
+
     this.filter_charge_detail = function(match, fields, currentPage, itemsPerpage){
 	return http.save(
 	    {operation: "filter_charge_detail"},

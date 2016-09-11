@@ -174,6 +174,8 @@ success(new_recharge, SN) ->
     {0, "Success to recharge of sn "++?to_s(SN)++"."};
 success(delete_recharge, Charge) ->
     {0, "Success to delete recharge of charge "++?to_s(Charge)++"."};
+success(update_recharge, Charge) ->
+    {0, "Success to update recharge of charge "++?to_s(Charge)++"."};
 
 
 

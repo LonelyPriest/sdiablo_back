@@ -158,6 +158,19 @@ action(Session, Req, {"delete_recharge"}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"update_recharge"}, Payload) ->
+    ?DEBUG("update_recharge with session ~p, payload ~p", [Session, Payload]), 
+    Merchant = ?session:get(merchant, Session), 
+    ChargeId = ?v(<<"charge_id">>, Payload),
+
+    case ?w_retailer:charge(delete_recharge, Merchant, {ChargeId, Payload}) of
+	{ok, ChargeId} ->
+	    %% ?w_user_profile:update(retailer, Merchant),
+	    ?utils:respond(200, Req, ?succ(update_recharge, ChargeId));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
 action(Session, Req, {"filter_charge_detail"}, Payload) ->
     ?DEBUG("filter_charge_detail with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant  = ?session:get(merchant, Session),

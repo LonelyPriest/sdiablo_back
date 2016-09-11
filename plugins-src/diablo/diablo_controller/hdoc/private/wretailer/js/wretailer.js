@@ -62,10 +62,11 @@ wretailerApp.controller("wretailerDetailCtrl", function(
     var f_add  = diablo_float_add;
     var now    = $.now();
 
-    $scope.right = {reset_password: rightAuthen.authen(
-	user.type,
-	rightAuthen.retailer_action()['reset_password'],
-	user.right)};
+    $scope.right = {
+	reset_password: rightAuthen.authen(
+	    user.type, rightAuthen.retailer_action()['reset_password'], user.right),
+	delete_retailer: rightAuthen.authen(
+	    user.type, rightAuthen.retailer_action()['delete_retailer'], user.right)};
 
     console.log($scope.right);
 
@@ -511,10 +512,11 @@ wretailerApp.controller("wretailerChargeDetailCtrl", function(
     $scope.right = {master: rightAuthen.authen_master(user.type)};
     
     var now = $.now();
-    var start_time = diablo_base_setting(
-	"qtime_start", -1, base, diablo_set_date, diabloFilter.default_start_time(now));
+    // var start_time = diablo_base_setting(
+    // 	"qtime_start", -1, base, diablo_set_date, diabloFilter.default_start_time(now));
     
-    $scope.time = diabloFilter.default_time($scope.qtime_start, now);
+    // $scope.time = diabloFilter.default_time($scope.qtime_start, now);
+    $scope.time = diabloFilter.default_time(now, now);
     
     $scope.do_search = function(page){
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
@@ -551,7 +553,9 @@ wretailerApp.controller("wretailerChargeDetailCtrl", function(
 	$scope.do_search(page)
     };
 
-    $scope.delete_charge = function(charge){
+    $scope.refresh();
+
+    $scope.delete_recharge = function(charge){
 	console.log(charge);
 	var callback = function(){
 	    wretailerService.delete_recharge(charge.id).then(function(result){
@@ -572,6 +576,45 @@ wretailerApp.controller("wretailerChargeDetailCtrl", function(
 	    "删除充值记录",
 	    "充值记录删除时，会员余额会相应减少，确定要删除该充值记录吗？",
 	    callback);
+    };
+
+    $scope.update_recharge = function(recharge) {
+	console.log(recharge)
+
+	var callback = function(params){
+	    console.log(params);
+
+	    var update = {
+		id: recharge.id,
+		employee: diablo_get_modified(params.recharge.employee, recharge.employee)
+	    };
+
+	    console.log(update);
+
+	    wretailerService.update_recharge(update).then(function(result){
+		if (result.ecode === 0){
+		    dialog.response_with_callback(
+			true, "充值记录修改", "充值记录修改成功！！" ,
+			undefined,
+			function(){$scope.do_search($scope.current_page)})
+		} else {
+		    dialog.response(
+			false, "删除充值记录", "充值记录删除失败："
+			    + wretailerService.error[result.ecode]);
+		}
+	    })
+	};
+
+	var employees = filterEmployee.filter(function(e){
+	    return e.shop === recharge.shop_id;
+	});
+	
+	var payload = {
+	    recharge: recharge,
+	    employees: employees
+	};
+	
+	dialog.edit_with_modal("update-recharge.html", undefined, callback, undefined, payload);
     };
 });
 

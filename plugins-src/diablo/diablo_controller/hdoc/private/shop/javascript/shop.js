@@ -179,14 +179,25 @@ shopApp.controller("shopDetailCtrl", function(
 	var callback = function(params){
 	    console.log(params);
 
-	    var update = {};
-	    for (var o in params.shop){
-		if (!angular.equals(params.shop[o], old_shop[o])){
-		    update[o] = params.shop[o];
-		}
-	    }
+	    // console.log(params.shop.name, old_shop.name);
+	    // console.log(params.shop.address, old_shop.address);
+	    // console.log(params.shop.region, old_shop.region);
+	    // console.log(params.shop.shopowner, old_shop.shopowner);
+	    var update = {
+		id: params.shop.id,
+		name: diablo_get_modified(params.shop.name, old_shop.name),
+		address: diablo_get_modified(params.shop.address, old_shop.address),
+		region: diablo_get_modified(params.shop.region, old_shop.region),
+		shopowner: diablo_get_modified(params.shop.shopowner, old_shop.shopowner)
+	    };
 	    
-	    update.id = params.shop.id; 
+	    // for (var o in params.shop){
+	    // 	if (!angular.equals(params.shop[o], old_shop[o])){
+	    // 	    update[o] = params.shop[o];
+	    // 	}
+	    // }
+	    
+	    // update.id = params.shop.id; 
 	    console.log(update);
 	    
     	    shopService.update(update).then(function(state){

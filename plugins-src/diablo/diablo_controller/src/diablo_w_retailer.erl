@@ -68,7 +68,11 @@ charge(recharge, Merchant, Attrs) ->
     gen_server:call(Name, {recharge, Merchant, Attrs});
 charge(delete_recharge, Merchant, ChargeId) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {delete_recharge, Merchant, ChargeId}).
+    gen_server:call(Name, {delete_recharge, Merchant, ChargeId});
+
+charge(update_recharge, Merchant, {ChargeId, Attrs}) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {update_recharge, Merchant, {ChargeId, Attrs}}).
 
 charge(list, Merchant) ->
     Name = ?wpool:get(?MODULE, Merchant),
@@ -428,7 +432,21 @@ handle_call({delete_recharge, Merchant, ChargeId}, _From, State) ->
 	    {reply, Reply, State};
 	Error ->
 	    {reply, Error, State}
-    end;    
+    end;
+
+handle_call({update_recharge, Merchant, {ChargeId, Attrs}}, _From, State) ->
+    Employee = ?v(<<"employee">>, Attrs),
+
+    Updates = ?utils:v(employ, string, Employee),
+    
+    Sql0 = "update w_charge_detail set"
+	++ ?utils:to_sqls(proplists, comma, Updates) 
+	++ " where a.id=" ++ ?to_s(ChargeId)
+	++ " and a.merchant=" ++ ?to_s(Merchant),
+
+    Reply = ?sql_utils:execute(write, Sql0, ChargeId), 
+    {reply, Reply, State};
+
 	    
 
 handle_call({list_charge, Merchant}, _From, State) ->

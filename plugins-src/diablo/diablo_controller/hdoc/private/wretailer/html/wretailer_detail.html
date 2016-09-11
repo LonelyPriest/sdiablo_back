@@ -112,7 +112,8 @@
 			      x-ng-click="update_retailer(r)">修改
 			<i class="glyphicon glyphicon-edit"></i></button>
 		      
-		      <button class="btn diablo-button btn-danger"
+		      <button x-ng-if="right.delete_retailer"
+			      class="btn diablo-button btn-danger"
 			      x-ng-click="delete_retailer(r)">删除
 			<i class="glyphicon glyphicon-erase"></i></button>
 
@@ -458,7 +459,7 @@
 		   x-ng-model="params.comment"
 		   x-ng-pattern="params.pattern.comment"/> 
 	  </div>
-	  <div ng-show="firmNewForm.comment.$invalid && !firmNewForm.comment.$pristine">
+	  <div ng-show="cForm.comment.$invalid && !cForm.comment.$pristine">
 	    <span class="fg-red">中文，字母，数字，不支持特殊字符</span> 
 	  </div> 
 	</div>

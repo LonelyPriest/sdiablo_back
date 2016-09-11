@@ -72,7 +72,8 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	    $scope.inventories,
 	    $scope.show_promotions,
 	    diablo_reject,
-	    $scope.select.verificate);
+	    $scope.select.verificate,
+	    $scope.setting.round);
 
 	// console.log($scope.show_promotions); 
 	$scope.select.total     = calc.total; 
@@ -118,11 +119,11 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 
 	    $scope.show_promotions = wsale.show_promotions;
 
-	    // setting 
-	    $scope.setting.check_sale = wsaleUtils.check_sale(
-		$scope.select.shop.id, $scope.base_settings);
-	    $scope.setting.no_vip = wsaleUtils.no_vip(
-		$scope.select.shop.id, $scope.base_settings);
+	    // setting
+	    var shopId = $scope.select.shop.id;
+	    $scope.setting.check_sale = wsaleUtils.check_sale(shopId, $scope.base_settings);
+	    $scope.setting.no_vip = wsaleUtils.no_vip(shopId, $scope.base_settings);
+	    $scope.setting.round = wsaleUtils.round(shopId, $scope.base_settings);
 
 	    $scope.employees = wsaleUtils.get_login_employee(
 		$scope.select.shop.id,

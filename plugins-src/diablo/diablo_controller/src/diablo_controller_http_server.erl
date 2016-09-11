@@ -52,7 +52,7 @@ valid_session(Req) ->
 		    case ?session:lookup(SessionId) of
 			{ok, []} -> %% session time out or lost
 			    ?INFO("invalid session ~p", [SessionId]),
-			    {error, {invalid_session}};
+			    {error, {invalid_session, MSession}};
 			{ok, _} -> %% valid session 
 			    {ok, valid_session}
 		    end;
@@ -60,7 +60,7 @@ valid_session(Req) ->
 		    {error, {no_session}};
 		{false, [_, SessionId]} ->
 		    ?INFO("failed to check session ~p", [SessionId]),
-		    {error, {invalid_session}}
+		    {error, {invalid_session, MSession}}
 	    end
     end.	    
 
@@ -181,8 +181,8 @@ url_dispatch(Req, [{Regexp,  Function}|T]) ->
 		%%     %% Function({Method, Req, [["login"]]});
 		%%     ?login_request:action(Req, login);
 		{error, _Error} ->
-		    %% ?INFO("failed to check session of url ~p,"
-		    %% 	  "reseaon ~p, redirect to login...", [Path, Error]),
+		    ?INFO("failed to check session of url ~p,"
+		    	  "reseaon ~p, redirect to login...", [Path, _Error]),
 		    %% {ECode, Error} = ?err(operation_invalid_session, Error),
 		    %% Req:respond({599,
 		    %% 		 [{"Content-Type", "application/json"}],
@@ -190,19 +190,27 @@ url_dispatch(Req, [{Regexp,  Function}|T]) ->
 		    %% 				{<<"einfo">>, ?to_b(Error)}]})})
 		    case length(string:tokens(Path, "/")) of
 			1 ->
-			    Req:respond(
-			      {301, [{"Location", "/"},
-			    	     {"Content-Type", "text/html; charset=UTF-8"}],
-			       "Redirecting /"});
+			    case _Error of
+				no_session ->
+				    Req:respond(
+				  {301, [{"Location", "/"},
+					 {"Content-Type", "text/html; charset=UTF-8"}], 
+				   "Redirecting /"});
+				{invalid_session, SessionId} ->
+				    Cookie = mochiweb_cookies:cookie(
+					       ?QZG_DY_SESSION,
+					       SessionId,
+					       [{max_age, 0}, {path, "/"}]),
+				    Req:respond(
+				      {301, [{"Location", "/"},
+					     {"Content-Type", "text/html; charset=UTF-8"}, Cookie], 
+				       "Redirecting /"})
+			    end;
+				
 			_ ->
 			    Req:respond({599, [{"Content-Type", "text/plain"}],
 					 "request failed, invalid session\n"})
-		    end
-		    %% Req:respond(
-		    %%   {301, [{"Location", "/"},
-		    %% 	     {"Content-Type", "text/html; charset=UTF-8"}], "Redirecting /"})
-		    %% ?utils:respond(200, object, Req, {[{<<"ecode">>, 301}]})
-		    %% root(Req)
+		    end 
 	    end;
 	nomatch when Path =:= "login" ->
 	    ?login_request:action(Req, login);

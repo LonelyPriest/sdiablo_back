@@ -147,6 +147,8 @@ init([]) ->
 	 {?new_recharge, <<"会员充值">>, <<"new_recharge">>,?right_w_retailer},
 	 {?delete_recharge, 
 	  <<"删除会员充值记录">>, <<"delete_recharge">>,?right_w_retailer},
+	 {?update_recharge, 
+	  <<"修改会员充值记录">>, <<"update_recharge">>,?right_w_retailer},
 
 	 {?reset_w_retailer_password,
 	  <<"重置会员密码">>, <<"reset_w_retailer_password">>,   ?right_w_retailer}
