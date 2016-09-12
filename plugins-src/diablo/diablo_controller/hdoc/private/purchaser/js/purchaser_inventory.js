@@ -6,6 +6,9 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     filterColorType, base){
     // console.log(user);
     // console.log(filterColor);
+    // var re = /^\d{1,2}(\.\d{1,2})?$|100$|0$/;
+    // console.log(re.test(8.1));
+    
     $scope.brands      = filterBrand;
     $scope.types       = filterType;
     $scope.size_groups = filterSizeGroup;

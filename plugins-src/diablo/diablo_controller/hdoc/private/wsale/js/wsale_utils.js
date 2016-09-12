@@ -860,49 +860,112 @@ var wsalePrint = function(){
 
 	gen_body: function(LODOP, inventories, round, cakeMode){
 	    var hLine = 100;
-	    angular.forEach(inventories, function(d){
-		if (diablo_no === cakeMode){
-		    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"款号：" + d.style_number);
-		    hLine += 15;
-		    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"品名：" + d.brand);
-		    hLine += 15;
-		} else {
-		    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"类型：" + d.type);
-		    hLine += 15;
-		}
-		
-		LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"单价：" + d.tag_price.toString());
-		hLine += 15;
+	    if (diablo_no === cakeMode) {
+		LODOP.ADD_PRINT_TEXT(hLine,0,67,20,"款号"); 
+		LODOP.ADD_PRINT_TEXT(hLine,67,100,20,"单价"); 
+		LODOP.ADD_PRINT_TEXT(hLine,100,133,20,"数量"); 
+		LODOP.ADD_PRINT_TEXT(hLine,133,178,20,"折扣率");
 
-		if (diablo_no === cakeMode){
-		    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"成交价：" + d.rprice.toString());
-		    hLine += 15;
-		}
-		
-		LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"数量：" + d.total.toString());
 		hLine += 15;
 		
-		LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"小计："
-				     + function() {
-					 if (angular.isUndefined(round) || round)
-					     return diablo_round(d.total * d.rprice).toString();
-					 else
-					     return (d.total * d.rprice).toString();
-				     }())
-		hLine += 15;
-
-		if (diablo_no === cakeMode){
+		angular.forEach(inventories, function(d){
+		    var calc = function() {
+			if (angular.isUndefined(round) || round)
+			    return diablo_round(d.total * d.rprice).toString();
+			else
+			    return (d.total * d.rprice).toString();
+		    }();
+		    
 		    var ediscount = wsaleUtils.ediscount(d.rprice, d.tag_price).toString();
-		    LODOP.ADD_PRINT_TEXT(hLine,0,178,20, "折扣率：" + ediscount);
-		    hLine += 20; 
-		} else {
+			
+		    LODOP.ADD_PRINT_TEXT(hLine,0,67,20, d.style_number);
+		    LODOP.ADD_PRINT_TEXT(hLine, 67, 100, 20, d.tag_price.toString());
+		    LODOP.ADD_PRINT_TEXT(hLine,100,133,20, d.total.toString());
+		    LODOP.ADD_PRINT_TEXT(hLine,133,178,20, ediscount.toString());
+		    
+		    hLine += 15;
+		    LODOP.ADD_PRINT_TEXT(hLine, 0, 67, 20, d.brand);
+		    LODOP.ADD_PRINT_TEXT(hLine, 133, 178, 20, d.rprice.toString());
+
+		    hLine += 15;
+		    LODOP.ADD_PRINT_TEXT(hLine, 133, 178, 20, calc.toString());
+
+		    hLine += 15;
+		    LODOP.ADD_PRINT_LINE(hLine,0,hLine,178,0,1);
 		    hLine += 5;
-		}
+			
+		    // LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"款号：" + d.style_number);
+		    // LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"品名：" + d.brand);
+		    // hLine += 15;
+		    // } else {
+		    // 	LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"类型：" + d.type);
+		    // 	hLine += 15;
+		    // }
+		    
+		    
+
+		    // if (diablo_no === cakeMode){
+		    //     LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"成交价：" + d.rprice.toString());
+		    //     hLine += 15;
+		    // }
+		    
+		    // LODOP.ADD_PRINT_TEXT(hLine,100,133,20, d.total.toString());
+		    // hLine += 15;
+		    
+		    // LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"小计："
+		    // 		     + function() {
+		    // 			 if (angular.isUndefined(round) || round)
+		    // 			     return diablo_round(d.total * d.rprice).toString();
+		    // 			 else
+		    // 			     return (d.total * d.rprice).toString();
+		    // 		     }())
+		    // hLine += 15;
+
+		    // if (diablo_no === cakeMode){
+		    //     var ediscount = wsaleUtils.ediscount(d.rprice, d.tag_price).toString();
+		    //     LODOP.ADD_PRINT_TEXT(hLine,133,178,20, ediscount);
+		    //     hLine += 20; 
+		    // } else {
+		    //     hLine += 5;
+		    // }
+		    
+		    // LODOP.ADD_PRINT_LINE(hLine,0,hLine,178,0,1);
+		    // hLine += 10;
+		});
+	    } else {
+		LODOP.ADD_PRINT_TEXT(hLine,0,80,20,"类型 "); 
+		LODOP.ADD_PRINT_TEXT(hLine,80,113,20,"数量"); 
+		LODOP.ADD_PRINT_TEXT(hLine,113,146,20,"单价"); 
+		LODOP.ADD_PRINT_TEXT(hLine,146,178,20,"小计");
+
+		hLine += 15;
 		
+		angular.forEach(inventories, function(d){
+		    var calc = function() {
+			if (angular.isUndefined(round) || round)
+			    return diablo_round(d.total * d.rprice).toString();
+			else
+			    return (d.total * d.rprice).toString();
+		    }();
+		    
+		    LODOP.ADD_PRINT_TEXT(hLine,0, 80, 20, d.type);
+		    LODOP.ADD_PRINT_TEXT(hLine, 80, 113, 20, d.total.toString());
+		    LODOP.ADD_PRINT_TEXT(hLine,113,146,20, d.tag_price.toString());
+		    LODOP.ADD_PRINT_TEXT(hLine,146,178,20, calc.toString());
+		    
+		    hLine += 15;
+		    // LODOP.ADD_PRINT_TEXT(hLine, 0, 67, 20, d.brand);
+		    // LODOP.ADD_PRINT_TEXT(hLine, 133, 178, 20, d.rprice.toString());
+		    
+		    // hLine += 15;
+		    // LODOP.ADD_PRINT_LINE(hLine,0,hLine,178,0,1);
+		    // hLine += 5; 
+		});
+
+		// hLine += 5;
 		LODOP.ADD_PRINT_LINE(hLine,0,hLine,178,0,1);
-		hLine += 10;
-	    });
-	    
+		hLine += 5;
+	    } 
 	    return hLine;
 	},
 
@@ -974,7 +1037,10 @@ var wsalePrint = function(){
 			order++;
 		    }
 		});
-	    } 
+	    } else {
+		LODOP.ADD_PRINT_TEXT(hLine, 50, 178, 20, "谢谢惠顾！！");
+		hLine += 15;
+	    }
 	    // console.log(s);
 	    // LODOP.ADD_PRINT_TEXT(hLine, 5, 178, 140, order.toString() + "：" + s);
 

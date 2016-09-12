@@ -81,7 +81,13 @@ var reportPrint = function(){
 	gen_head: function(LODOP, shop, employee, date){
 	    var hLine = 5;
 	    
-	    LODOP.ADD_PRINT_TEXT(hLine, 0, "58mm", 30, shop); 
+	    LODOP.ADD_PRINT_TEXT(hLine, 0, 178, 30, shop); 
+	    LODOP.SET_PRINT_STYLEA(1,"FontSize",13);
+	    LODOP.SET_PRINT_STYLEA(1,"bold",1);
+	    // LODOP.SET_PRINT_STYLEA(1,"Horient",2); 
+	    hLine += 35;
+
+	    LODOP.ADD_PRINT_TEXT(hLine, 0, 178, 30, "（交班报表）"); 
 	    LODOP.SET_PRINT_STYLEA(1,"FontSize",13);
 	    LODOP.SET_PRINT_STYLEA(1,"bold",1);
 	    // LODOP.SET_PRINT_STYLEA(1,"Horient",2); 
@@ -95,17 +101,23 @@ var reportPrint = function(){
 		hLine += 15
 	    }
 
-	    hLine += 5
-	    LODOP.ADD_PRINT_LINE(hLine,0,90,178,0,1); 
-	    // LODOP.ADD_PRINT_TEXT(70,5,"58mm",20,"店员：" + retailer);
-	    
-
+	    // hLine += 15
+	    // LODOP.ADD_PRINT_LINE(hLine,0,hLine,45,0,1);
+	    // LODOP.ADD_PRINT_TEXT(hLine,45,135,20, "营业状况");
+	    // LODOP.ADD_PRINT_LINE(hLine,135,hLine,178,0,1);
+	    // LODOP.ADD_PRINT_LINE(hLine,0,hLine,178,0,1); 
 	    return hLine;
 	},
 
 	gen_body: function(hLine, LODOP, sale, extra){
-	    hLine += 10;
+	    console.log(sale);
+	    var to_i = reportUtils.to_integer;
 
+	    LODOP.ADD_PRINT_LINE(hLine,0,hLine,45,0,1);
+	    LODOP.ADD_PRINT_TEXT(hLine,45,135,20, "营业状况");
+	    LODOP.ADD_PRINT_LINE(hLine,135,hLine,178,0,1); 
+	    hLine += 15;
+	    
 	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"数量：" + sale.total);
 	    hLine += 15;
 	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"营业额：" + sale.spay);
@@ -115,26 +127,34 @@ var reportPrint = function(){
 	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"刷卡：" + sale.card); 
 	    hLine += 15;
 
-	    
-	    LODOP.ADD_PRINT_LINE(hLine,0,90,178,0,1); 
+
+	    LODOP.ADD_PRINT_LINE(hLine,0,hLine,45,0,1);
+	    LODOP.ADD_PRINT_TEXT(hLine,45,135,20, "库存状况");
+	    LODOP.ADD_PRINT_LINE(hLine,135,hLine,178,0,1); 
+	    // LODOP.ADD_PRINT_LINE(hLine,0,hLine,178,0,1); 
 	    hLine += 15;
+	    
 	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"昨日库存：" + sale.lastStock.total);
 	    hLine += 15;
 	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"当前库存：" + sale.currentStock.total);
 	    hLine += 15;
-	    // LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"入库数量：" + d.style_number);
-	    // hLine += 15;
-	    // LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"退货数量：" + d.style_number); 
-	    // hLine += 15;
-
-	    
-	    LODOP.ADD_PRINT_LINE(hLine,0,90,178,0,1);
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"入库数量：" + to_i(sale.stock_in));
 	    hLine += 15;
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"退货数量：" + to_i(sale.stock_out)); 
+	    hLine += 15;
+
+	    LODOP.ADD_PRINT_LINE(hLine,0,hLine,45,0,1);
+	    LODOP.ADD_PRINT_TEXT(hLine,45,135,20, "备用金");
+	    LODOP.ADD_PRINT_LINE(hLine,135,hLine,178,0,1); 
+	    // LODOP.ADD_PRINT_LINE(hLine,0,hLine,178,0,1);
+	    hLine += 15;
+	    
 	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"备用金：" + extra.pcash);
 	    hLine += 15;
 	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"备用金余额：" + extra.pcash_in);
 	    hLine += 25;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"备注：" + extra.comment); 
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"备注："
+				 + angular.isUndefined(extra.comment)?"":extra.comment); 
 	    
 	    return hLine;
 	},

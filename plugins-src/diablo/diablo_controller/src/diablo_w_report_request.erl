@@ -76,6 +76,12 @@ action(Session, Req, {"daily_wreport", Type}, Payload) ->
 		{ok, StockSale} = ?w_report:stastic(stock_sale, Merchant, Conditions),
 		{ok, StockProfit} = ?w_report:stastic(stock_profit, Merchant, Conditions),
 		
+		{ok, StockIn}  = ?w_report:stastic(stock_in, Merchant, Conditions),
+		{ok, StockOut} = ?w_report:stastic(stock_out, Merchant, Conditions),
+		
+		{ok, StockTransferIn} = ?w_report:stastic(stock_transfer_in, Merchant, Conditions),
+		{ok, StockTransferOut} = ?w_report:stastic(stock_transfer_out, Merchant, Conditions),
+		
 		{ok, StockR} = ?w_report:stastic(
 				  stock_real,
 				  Merchant,
@@ -92,7 +98,11 @@ action(Session, Req, {"daily_wreport", Type}, Payload) ->
 				 {<<"profit">>, StockProfit},
 				 {<<"rstock">>, StockR},
 				 {<<"lstock">>, LastStockInfo},
-				 {<<"recharge">>, Recharges}
+				 {<<"recharge">>, Recharges},
+				 {<<"pin">>, StockIn},
+				 {<<"pout">>, StockOut},
+				 {<<"tin">>, StockTransferIn},
+				 {<<"tout">>, StockTransferOut}
 				]})
 	    catch
 		_:{badmatch, {error, Error}} -> ?utils:respond(200, Req, Error)
@@ -195,12 +205,22 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 
     {VPrinters, ShopInfo} = ?wifi_print:get_printer(Merchant, ShopId),
     ShopName = ?to_s(?v(<<"name">>, ShopInfo)),
-    EmployeeName = ?v(<<"name">>, EmployeeInfo),
+    EmployeeName = case ?v(<<"name">>, EmployeeInfo) of
+		       undefined -> [];
+		       EName -> EName
+		   end,
     
-    Conditions = [{<<"shop">>, ShopId},
-		  {<<"employ">>, EmployeeId},
-		  {<<"start_time">>, ?to_b(TodayStart)},
-		  {<<"end_time">>, ?to_b(TodayEnd)}],
+    Conditions = case EmployeeId of
+		     undefined ->
+			 [{<<"shop">>, ShopId},
+			  {<<"start_time">>, ?to_b(TodayStart)},
+			  {<<"end_time">>, ?to_b(TodayEnd)}];
+		     _ ->
+			 [{<<"shop">>, ShopId},
+			  {<<"employ">>, EmployeeId},
+			  {<<"start_time">>, ?to_b(TodayStart)},
+			  {<<"end_time">>, ?to_b(TodayEnd)}]
+		 end,
 
     DropConditions = lists:keydelete(<<"employ">>, 1, Conditions),
     
@@ -219,7 +239,7 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
     {ok, LastStockInfo} = ?w_report:stastic(last_stock_of_shop, Merchant, ShopId), 
 
     {SellTotal, SellBalance, SellCash, SellCard} = sell(info, SaleInfo),
-    CurrentStockTotal = stock(total, StockR),
+    CurrentStockTotal = stock(total, StockR), 
     LastStockTotal = stock(last_total, LastStockInfo),
     StockInTotal = stock(total, StockIn),
     StockOutTotal = stock(total, StockOut),
@@ -229,7 +249,10 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 	" from w_change_shift"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and shop=" ++ ?to_s(ShopId)
-	++ " and employ=\'" ++ ?to_s(EmployeeId) ++ "\'"
+	++ case EmployeeId of
+	       undefined -> [];
+	       _ -> " and employ=\'" ++ ?to_s(EmployeeId) ++ "\'"
+	   end
 	++ " and entry_date>\'" ++ TodayStart ++ "\'"
 	++ " and entry_date<=\'" ++ TodayEnd ++ "\'",
 
@@ -243,7 +266,10 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 		 ", pcash, pcash_in"
 		 ", comment, entry_date) values("
 		 ++ ?to_s(Merchant) ++ ","
-		 ++ "\'" ++ ?to_s(EmployeeId) ++ "\',"
+		 ++ case EmployeeId of
+			undefined -> "\'-1\',";
+			_ -> "\'" ++ ?to_s(EmployeeId) ++ "\',"
+		 end
 		 ++ ?to_s(ShopId) ++ ","
 
 		 ++ ?to_s(SellTotal) ++ ","
@@ -350,9 +376,14 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 		?sql_utils:execute(write, UpdateSql, ok)
 	end
     of
-	{ok, _} -> 
-	    PrintInfo = s_print(VPrinters, ShopId, TitleFun, BodyFun, []),
-	    m_print(Req, ShopId, PrintInfo);
+	{ok, _} ->
+	    case ?v(<<"ptype">>, BaseSetting) of
+		<<"0">> ->
+		    ?utils:respond(200, Req, ?succ(print_wreport, ShopId));
+		<<"1">> ->
+		    PrintInfo = s_print(VPrinters, ShopId, TitleFun, BodyFun, []),
+		    m_print(Req, ShopId, PrintInfo)
+	    end;
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end.

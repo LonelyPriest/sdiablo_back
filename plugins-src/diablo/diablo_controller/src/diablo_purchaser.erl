@@ -456,15 +456,15 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 			++ " where " ++ C(true, OrgStyleNumber, OrgBrand),
 
 		    Sql3 =
-			case UpdateBase of
+			case UpdateBase ++ UpdatePrice of
 			    [] -> []; 
-			    _  ->
+			    U3  ->
 				["update w_inventory_new_detail set "
-				 ++ ?utils:to_sqls(proplists, comma, UpdateBase)
+				 ++ ?utils:to_sqls(proplists, comma, U3)
 				 ++ " where "
 				 ++ C(true, OrgStyleNumber, OrgBrand)]
 				    ++ 
-				    case lists:keydelete(<<"sex">>, 1, UpdateBase) of
+				    case lists:keydelete(<<"sex">>, 1, U3) of
 					[] -> [];
 					U1 ->
 					    ["update w_sale_detail set "

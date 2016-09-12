@@ -45,8 +45,13 @@
 		      
 		      <th>上期库存</th>
 		      <th>当前库存</th>
+
+		      <th>入库</th>
+		      <th>退货</th>
+		      <th>调入</th>
+		      <th>调出</th>
 		      
-		      <th>数量</th>
+		      <th>销售</th>
 		      <th>营业额</th>
 		      
 		      <th style="background-color:#FFCC66">现金</th>
@@ -72,6 +77,11 @@
 
 		      <td>{{r.sale.lastStock.total}}</td>
 		      <td>{{r.sale.currentStock.total}}</td>
+
+		      <td>{{r.sale.stock_in}}</td>
+		      <td>{{r.sale.stock_out}}</td>
+		      <td>{{r.sale.transfer_in}}</td>
+		      <td>{{r.sale.transfer_out}}</td>
 		      
 		      <td>{{r.sale.total}}</td> 
 		      <td>{{r.sale.spay}}</td>
@@ -96,6 +106,23 @@
 		    </tr>
 		    <tr x-ng-if="report_data.length>1">
 		      <td colspan=4></td>
+		      <td>
+			<span x-ng-if="total.stock_in===0"></span>
+			<span x-ng-if="total.stock_in!==0">{{total.stock_in}}</span>
+		      </td> 
+		      <td>
+			<span x-ng-if="total.stock_out===0"></span>
+			<span x-ng-if="total.stock_out!==0">{{total.stock_out}}</span>
+		      </td>
+		      <td>
+			<span x-ng-if="total.transfer_in===0"></span>
+			<span x-ng-if="total.transfer_in!==0">{{total.transfer_in}}</span>
+		      </td> 
+		      <td>
+			<span x-ng-if="total.transfer_out===0"></span>
+			<span x-ng-if="total.transfer_out!==0">{{total.transfer_out}}</span>
+		      </td> 
+		      
 		      <td>{{total.sale}}</td>
 		      <td>{{total.spay}}</td> 
 		      <td>{{total.cash}}</td>

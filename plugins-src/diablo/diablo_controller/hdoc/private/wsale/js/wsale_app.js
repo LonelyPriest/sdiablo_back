@@ -959,7 +959,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	var ok_print = function(){
 	    console.log($scope.select);
 	    if (angular.isDefined(LODOP)){
-		for (var i=0; i<$scope.p_num; i++){
+		var start_print = function(){
 		    wsalePrint.gen_head(
 			LODOP,
 			$scope.select.shop.name,
@@ -977,12 +977,47 @@ wsaleApp.controller("wsaleNewCtrl", function(
 		    // console.log($scope.select);
 		    hLine = wsalePrint.gen_stastic(LODOP, hLine, 0, $scope.select, isVip); 
 		    wsalePrint.gen_foot(LODOP, hLine, $scope.comments, pdate, cakeMode);
-		    wsalePrint.start_print(LODOP);
+		    wsalePrint.start_print(LODOP); 
+		};
 
-		    if (angular.isDefined(timeout_to_print))
-			$timeout.cancel(timeout_to_print);
-		    timeout_to_print = $timeout(function(){}, 3000);
+		// if ($scope.p_num >= 1) {
+		//     start_print();
+		//     $scope.p_num -=1
+		// }
+
+		// if ($scope.p_num >= 1) {
+		//     if (angular.isDefined(timeout_to_print))
+		// 	$timeout.cancel(timeout_to_print);
+		//     timeout_to_print = $timeout(function(){
+		// 	console.log("start print");
+		// 	start_print();
+		//     }, 3000);
+		    
+		//     $scope.p_num -=1
+		// }
+
+		// if ($scope.p_num >= 1) {
+		//     if (angular.isDefined(timeout_to_print))
+		// 	$timeout.cancel(timeout_to_print);
+		//     timeout_to_print = $timeout(function(){
+		// 	console.log("start print");
+		// 	start_print();
+		//     }, 3000);
+		    
+		//     $scope.p_num -=1
+		// }
+		
+		
+		for (var i=0; i<$scope.p_num; i++){
+		    // if (angular.isDefined(timeout_to_print))
+		    // 	$timeout.cancel(timeout_to_print);
+
+		    start_print();
+		    // timeout_to_print = $timeout(function(){
+		    // 	console.log("start print"); 
+		    // }, 3000);
 		}
+		
 		if (angular.isDefined(timeout_to_print))
 		    $timeout.cancel(timeout_to_print);
 	    }
@@ -1132,7 +1167,13 @@ wsaleApp.controller("wsaleNewCtrl", function(
 		    $scope.select_draft_key = undefined;
 		};
 		$scope.wsaleStorage.remove($scope.wsaleStorage.get_key());
+
+		if ($scope.select.retailer.id !== $scope.setting.no_vip) {
+		    $scope.select.retailer.score += $scope.select.score;
+		}
+		
 		$scope.refresh();
+		
 		// $scope.disable_refresh = false;
 		// modify current balance of retailer
 		// $scope.select.retailer.balance = $scope.select.left_balance;

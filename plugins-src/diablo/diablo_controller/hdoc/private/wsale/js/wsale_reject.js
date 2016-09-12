@@ -375,11 +375,12 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 	    if (result.ecode == 0){
 		$scope.select.retailer.balance = $scope.select.left_balance;
 		$scope.select.surplus = $scope.select.left_balance;
+		$scope.select.retailer.score -= $scope.select.score;
 
 		if (diablo_backend === $scope.setting.p_mode){
 		    $scope.print_backend(result, false);
 		} else {
-		    console.log("print_front")
+		    // console.log("print_front")
 		    $scope.print_front(result, false); 
 		} 
 	    } else{

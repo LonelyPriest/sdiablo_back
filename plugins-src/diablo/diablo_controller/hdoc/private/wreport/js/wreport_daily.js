@@ -73,6 +73,11 @@ wreportApp.controller("wreportDailyCtrl", function(
 		    var currentStock = result.rstock;
 		    var lastStock = result.lstock;
 		    var recharge = result.recharge;
+		    var stockIn = result.pin;
+		    var stockOut = result.pout;
+		    var stockTransferIn = result.tin;
+		    var stockTransferOut = result.tout;
+		    
 		    var order_id = 1;
 
 		    $scope.report_data = [];
@@ -88,7 +93,12 @@ wreportApp.controller("wreportDailyCtrl", function(
 			draw:0,
 			veri:0,
 
-			cbalance: 0
+			cbalance: 0,
+
+			stock_in: 0,
+			stock_out: 0,
+			transfer_in: 0,
+			transfer_out: 0
 		    };
 		    
 		    angular.forEach($scope.sortShops, function(shop){
@@ -111,6 +121,16 @@ wreportApp.controller("wreportDailyCtrl", function(
 			s.recharge = reportUtils.filter_by_shop(shop.id, recharge);
 			s.sale.cbalance = s.recharge.cbalance;
 
+			s.stock_in = reportUtils.filter_by_shop(shop.id, stockIn);
+			s.stock_out = reportUtils.filter_by_shop(shop.id, stockOut);
+			s.sale.stock_in = s.stock_in.total;
+			s.sale.stock_out = s.stock_out.total;
+
+			s.transfer_in = reportUtils.filter_by_shop(shop.id, stockTransferIn);
+			s.transfer_out = reportUtils.filter_by_shop(shop.id, stockTransferOut);
+			s.sale.transfer_in = s.transfer_in.total;
+			s.sale.transfer_out = s.transfer_out.total;
+		
 			
 			$scope.total.sale += to_i(s.sale.total);
 			$scope.total.sale_cost += reportUtils.to_float(s.sale.cost);
@@ -123,6 +143,11 @@ wreportApp.controller("wreportDailyCtrl", function(
 			$scope.total.veri += reportUtils.to_float(s.sale.veri);
 
 			$scope.total.cbalance += reportUtils.to_float(s.sale.cbalance);
+
+			$scope.total.stock_in += reportUtils.to_integer(s.sale.stock_in);
+			$scope.total.stock_out += reportUtils.to_integer(s.sale.stock_out);
+			$scope.total.transfer_in += reportUtils.to_integer(s.sale.transfer_in);
+			$scope.total.transfer_out += reportUtils.to_integer(s.sale.transfer_out);
 			
 			$scope.report_data.push(s); 
 			order_id++; 
@@ -216,20 +241,37 @@ wreportApp.controller("wreportDailyCtrl", function(
     $scope.print_shop_fronted = function(d){
 	var login = get_login_employee(d.shop.id, user.loginEmployee, $scope.employees);
 
+	// console.log(login);
 	var callback = function(params){
-	    var sale = $scope.report_data.filter(function(r){
-		return r.shop.id === d.shop.id;
-	    })[0];
+	    wreportService.print_wreport(
+		diablo_by_shop,
+		{shop:     d.shop.id,
+		 employee: params.employee.id === "-1" ? undefined : params.employee.id,
+		 pcash:    diablo_set_float(params.pcash),
+		 pcash_in: diablo_set_float(params.pcash_in),
+		 comment:  diablo_set_string(params.comment)}
+            ).then(function(status){
+		if (status.ecode === 0){
+		    var report = $scope.report_data.filter(function(r){
+			return r.shop.id === d.shop.id;
+		    })[0];
 
-	    var pdate = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss");
-	    
-	    if (angular.isUndefined(LODOP)) LODOP = getLodop();
+		    var pdate = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss");
+		    
+		    if (angular.isUndefined(LODOP)) LODOP = getLodop();
 
-	    if (angular.isDefined(LODOP)){
-		var hLine = reportPrint.gen_head(LODOP, d.shop.name, login.loginEmployee, pdate);
-		hLine = reportPrint.gen_body(hLine, LODOP, sale, params); 
-		reportPrint.start_print(LODOP)
-	    } 
+		    if (angular.isDefined(LODOP)){
+			var hLine = reportPrint.gen_head(
+			    LODOP, d.shop.name, login.login_employee, pdate);
+			console.log(report.sale);
+			hLine = reportPrint.gen_body(hLine, LODOP, report.sale, params); 
+			reportPrint.start_print(LODOP)
+		    } 
+		} else {
+		    dialog.response(
+			false, "交班失败", "交班失败：" + wreportService.error[status.ecode]);
+		}
+	    }); 
 	};
 
 	dialog.edit_with_modal(

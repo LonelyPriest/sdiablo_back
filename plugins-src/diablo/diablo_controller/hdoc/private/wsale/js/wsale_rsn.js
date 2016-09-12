@@ -347,8 +347,8 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 		    var sale = result.sale;
 		    var detail = angular.copy(result.detail);
 		    angular.forEach(detail, function(d){
-			d.brand = diablo_get_object(d.brand_id, filterBrand);
-			d.type = diablo_get_object(d.type_id, filterType);
+			d.brand = diablo_get_object(d.brand_id, filterBrand).name;
+			d.type = diablo_get_object(d.type_id, filterType).name;
 		    })
 		    
 		    console.log(wsalePrint);

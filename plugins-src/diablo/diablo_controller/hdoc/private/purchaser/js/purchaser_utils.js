@@ -127,7 +127,7 @@ var stockUtils = function(){
 	 * 1: get ediscount by org_price
 	 */
 	calc_stock_orgprice_info: function(tag_price, stock, direction){
-	    // console.log(org_price, ediscount, tag_price);
+	    // console.log(tag_price, stock, direction);
 	    if (!stock.hasOwnProperty('org_price')
 	       || !stock.hasOwnProperty('ediscount')
 	       || !stock.hasOwnProperty('tag_price')){

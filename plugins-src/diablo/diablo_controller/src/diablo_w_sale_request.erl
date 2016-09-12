@@ -344,7 +344,8 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
 		    {<<"last_score">>, ?v(<<"lscore">>, Sale)},
 		    {<<"score">>,      ?v(<<"score">>, Sale)},
 		    {<<"comment">>,    ?v(<<"comment">>, Sale)}, 
-		    {<<"direct">>,     ?v(<<"type">>, Sale)}],
+		    {<<"direct">>,     ?v(<<"type">>, Sale)},
+		    {<<"im_print">>,   false}],
 
 	
 	%% ?DEBUG("retailer ~p", [Retailer]),

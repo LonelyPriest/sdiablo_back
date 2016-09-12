@@ -388,13 +388,18 @@ handle_call({delete_recharge, Merchant, ChargeId}, _From, State) ->
     Sql0 =
 	"select a.id, a.rsn, a.retailer, a.cbalance, a.sbalance"
 	", b.balance"
-	" from w_charge_detail a"
-	" left join w_retailer b on a.retailer=b.id"
+	" from w_charge_detail a, w_retailer b"
+	%% " left join w_retailer b on a.retailer=b.id"
 	
-	" where a.id=" ++ ?to_s(ChargeId)
+	" where a.retailer=b.id and a.id=" ++ ?to_s(ChargeId)
 	++ " and a.merchant=" ++ ?to_s(Merchant),
 
     case ?sql_utils:execute(s_read, Sql0) of
+	{ok, []} ->
+	    Sql = "delete from w_charge_detail where id=" ++ ?to_s(ChargeId)
+		++ " and merchant=" ++ ?to_s(Merchant),
+	    Reply = ?sql_utils:execute(write, Sql, ChargeId),
+	    {reply, Reply, State};
 	{ok, Charge} ->
 	    ?DEBUG("charge ~p", [Charge]),
 	    
@@ -403,8 +408,7 @@ handle_call({delete_recharge, Merchant, ChargeId}, _From, State) ->
 	    SBalance = ?v(<<"sbalance">>, Charge),
 	    Retailer = ?v(<<"retailer">>, Charge),
 	    OBalance = ?v(<<"balance">>, Charge),
-	    Datetime = ?utils:current_time(format_localtime),
-
+	    Datetime = ?utils:current_time(format_localtime), 
 	    Sqls = 
 		["delete from w_charge_detail where id=" ++ ?to_s(ChargeId)
 		 ++ " and merchant=" ++ ?to_s(Merchant),

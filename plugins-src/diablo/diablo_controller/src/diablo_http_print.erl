@@ -425,7 +425,7 @@ head(<<"feie">> = Brand, _Model, 80, RSN, Retailer, Employee, Date) ->
 	++ line(equal, 48) ++ br(Brand).
 
 body_stastic(Brand, _Model, Column, _TotalBalance, Attrs, Vip, LastScore, STotal, RTotal) ->
-    ?DEBUG("body_stastic with Attrs ~p, Column ~p, Vip ~p", [Column, Attrs, Vip]),
+    ?DEBUG("body_stastic with Attrs ~p, Column ~p, Vip ~p", [Attrs, Column, Vip]),
     Cash         = ?v(<<"cash">>, Attrs, 0),
     Card         = ?v(<<"card">>, Attrs, 0),
     Withdraw     = ?v(<<"withdraw">>, Attrs, 0),
@@ -437,8 +437,12 @@ body_stastic(Brand, _Model, Column, _TotalBalance, Attrs, Vip, LastScore, STotal
     %% LastScore    = ?v(<<"last_score">>, Attrs, 0),
     Score        = ?v(<<"score">>, Attrs, 0),
 
-    AccScore     = Score + LastScore,
-
+    RealLastScore = case ?v(<<"im_print">>, Attrs) of
+			false -> ?v(<<"last_score">>, Attrs);
+			_ -> LastScore
+		    end,
+    
+    AccScore     = Score + RealLastScore, 
     RPay         = ShouldPay - Withdraw,
     NewCash      = case Cash >= RPay of
 		       true  -> RPay;
@@ -471,11 +475,11 @@ body_stastic(Brand, _Model, Column, _TotalBalance, Attrs, Vip, LastScore, STotal
 	++ case Vip of 
 	       true ->
 		   case Column of
-		       80 -> "上次积分：" ++ ?to_s(LastScore) ++ pading(1)
+		       80 -> "上次积分：" ++ ?to_s(RealLastScore) ++ pading(1)
 			   ++ "本次积分：" ++ ?to_s(Score) ++ pading(1)
 			   ++ "累计积分：" ++ ?to_s(AccScore) ++ br(Brand);
 		       58 ->
-			   "上次积分：" ++ ?to_s(LastScore) ++ br(Brand)
+			   "上次积分：" ++ ?to_s(RealLastScore) ++ br(Brand)
 			       ++ "本次积分：" ++ ?to_s(Score) ++ br(Brand)
 			       ++ "累计积分：" ++ ?to_s(AccScore) ++ br(Brand)
 		   end;
