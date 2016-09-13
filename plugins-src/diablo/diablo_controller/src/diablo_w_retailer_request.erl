@@ -91,6 +91,21 @@ action(Session, Req, {"update_w_retailer", Id}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"update_retailer_score", Id}, Payload) ->
+    ?DEBUG("update_retailer_score with Session ~p~npaylaod ~p",
+	   [Session, Payload]),
+
+    Merchant = ?session:get(merchant, Session),
+    Score = ?v(<<"score">>, Payload),
+    case ?w_retailer:retailer(update_score, Merchant, Id, Score) of
+	{ok, RId} ->
+	    ?w_user_profile:update(retailer, Merchant),
+	    ?utils:respond(
+	       200, Req, ?succ(update_w_retailer, RId));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
 action(Session, Req, {"check_w_retailer_password", Id}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     Password = ?v(<<"password">>, Payload),

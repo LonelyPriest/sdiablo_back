@@ -15,6 +15,7 @@ wreportApp.controller("wreportDailyCtrl", function(
     $scope.shopIds = user.shopIds;
     $scope.current_day = $.now();
 
+    var LODOP;
     var print_mode = diablo_backend;
     for (var i=0, l=$scope.shopIds; i<l; i++){
 	if (diablo_frontend === reportUtils.print_mode($scope.shopIds[i], base)){

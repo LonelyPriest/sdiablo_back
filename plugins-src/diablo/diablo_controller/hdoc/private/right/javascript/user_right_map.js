@@ -58,7 +58,8 @@ var rightAuthen = {
     retailer_action: function(){
 	return {
 	    delete_retailer: rightAuthen.root_right._retailer + 2, 
-	    reset_password: rightAuthen.root_right._retailer + 14
+	    reset_password: rightAuthen.root_right._retailer + 14,
+	    update_score: rightAuthen.root_right._retailer + 17
 	}
     },
 

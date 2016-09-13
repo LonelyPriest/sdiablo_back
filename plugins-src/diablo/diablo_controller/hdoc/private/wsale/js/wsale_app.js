@@ -1816,16 +1816,15 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 		// console.log($scope); 
 		angular.forEach(result.data, function(d){
 		    d.shop     = diablo_get_object(d.shop_id, $scope.shops);
-		    d.employee =
-			diablo_get_object(d.employee_id, filterEmployee);
-		    d.retailer =
-			diablo_get_object(d.retailer_id, filterRetailer);
-
+		    d.employee = diablo_get_object(d.employee_id, filterEmployee);
+		    d.retailer = diablo_get_object(d.retailer_id, filterRetailer);
+		    d.has_pay  = d.should_pay;
+		    d.should_pay = wsaleUtils.to_decimal(d.should_pay + d.verificate);
 		    // charge
-		    d.left_balance = d.balance - d.withdraw; 
-		    if (d.type === diablo_charge){
-			d.left_balance += d.cbalance + d.sbalance;
-		    } 
+		    d.left_balance = wsaleUtils.to_decimal(d.balance - d.withdraw); 
+		    // if (d.type === diablo_charge){
+		    // 	d.left_balance += d.cbalance + d.sbalance;
+		    // } 
 		});
 
 		if ($scope.sequence_pagination === diablo_no){

@@ -57,7 +57,7 @@ valid_session(Req) ->
 			    {ok, valid_session}
 		    end;
 		{false, []} ->
-		    {error, {no_session}};
+		    {error, no_session};
 		{false, [_, SessionId]} ->
 		    ?INFO("failed to check session ~p", [SessionId]),
 		    {error, {invalid_session, MSession}}
@@ -192,6 +192,7 @@ url_dispatch(Req, [{Regexp,  Function}|T]) ->
 			1 ->
 			    case _Error of
 				no_session ->
+				    ?DEBUG("no session !!"),
 				    Req:respond(
 				  {301, [{"Location", "/"},
 					 {"Content-Type", "text/html; charset=UTF-8"}], 
@@ -213,8 +214,10 @@ url_dispatch(Req, [{Regexp,  Function}|T]) ->
 		    end 
 	    end;
 	nomatch when Path =:= "login" ->
+	    ?DEBUG("no match, login !!"),
 	    ?login_request:action(Req, login);
 	nomatch when Path =:= "login_force" ->
+	    ?DEBUG("login force!!"),
 	    ?login_request:action(Req, login_force);
 	%% nomatch when Path =:= "login_redirect" ->
 	%%     %% Payload = Req:recv_body(),

@@ -19,7 +19,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
     $scope.colors        = filterColor;
     $scope.types         = filterType;
     $scope.base_settings = base;
-    $scope.vpays         = wsaleService.vpays;
+    // $scope.vpays         = wsaleService.vpays;
     
     $scope.sexs        = diablo_sex;
     $scope.seasons     = diablo_season;
@@ -75,6 +75,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	    $scope.select.verificate,
 	    $scope.setting.round);
 
+	// console.log(calc);
 	// console.log($scope.show_promotions); 
 	$scope.select.total     = calc.total; 
 	$scope.select.should_pay= calc.should_pay;
@@ -123,8 +124,14 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	    var shopId = $scope.select.shop.id;
 	    $scope.setting.check_sale = wsaleUtils.check_sale(shopId, $scope.base_settings);
 	    $scope.setting.no_vip = wsaleUtils.no_vip(shopId, $scope.base_settings);
-	    $scope.setting.round = wsaleUtils.round(shopId, $scope.base_settings);
-
+	    $scope.setting.round = wsaleUtils.round(shopId, $scope.base_settings); 
+	    $scope.setting.cake_mode = wsaleUtils.cake_mode(shopId, $scope.base_settings);
+	    
+	    if (diablo_no === $scope.setting.cake_mode) 
+		$scope.vpays = wsaleService.vpays;
+	    else 
+		$scope.vpays = wsaleService.cake_vpays;
+	    
 	    $scope.employees = wsaleUtils.get_login_employee(
 		$scope.select.shop.id,
 		base.employ_id,

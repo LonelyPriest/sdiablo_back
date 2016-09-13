@@ -50,6 +50,9 @@ retailer(get, Merchant, RetailerId) ->
 retailer(update, Merchant, RetailerId, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {update_retailer, Merchant, RetailerId, Attrs});
+retailer(update_score, Merchant, RetailerId, Score) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {update_score, Merchant, RetailerId, Score});
 retailer(check_password, Merchant, RetailerId, Password) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {check_password, Merchant, RetailerId, Password});
@@ -218,6 +221,15 @@ handle_call({update_retailer, Merchant, RetailerId, Attrs}, _From, State) ->
 	{error, Error} ->
 	    {reply, {error, Error}, State}
     end;
+
+
+handle_call({update_score, Merchant, RetailerId, Score}, _From, State) ->
+    Sql = "update w_retailer set score=" ++ ?to_s(Score) ++ ""
+	++ " where merchant=" ++ ?to_s(Merchant)
+	++ " and id=" ++ ?to_s(RetailerId),
+
+    Reply = ?sql_utils:execute(write, Sql, RetailerId),
+    {reply, Reply, State};
 
 
 handle_call({check_password, Merchant, RetailerId, Password}, _From, State) ->

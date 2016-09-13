@@ -639,14 +639,14 @@ var wsaleCalc = function(){
 	    wsaleCalc.calc_discount_of_verificate(inventories, mode, verificate); 
 	    
 	    var calc_p = wsaleUtils.calc_with_promotion(pmoneys, round);
-	    should_pay = calc_p.balance; 
+	    should_pay = wsaleUtils.to_decimal(calc_p.balance - verificate); 
 	    score  = wsaleUtils.calc_with_score(pscores, verificate); 
 	    // charge = should_pay - has_pay;
 
 	    return {
 		total:      total,
 		abs_total:  abs_total,
-		should_pay: should_pay - verificate,
+		should_pay: should_pay,
 		score:      score,
 		rbalance:   calc_p.rbalance
 		// charge:     charge 

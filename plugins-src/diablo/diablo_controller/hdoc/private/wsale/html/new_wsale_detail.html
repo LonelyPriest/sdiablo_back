@@ -143,13 +143,13 @@
 		    <td class="{{css(r.state, r.type)}}">{{r.employee.name}}</td> 
 		    <td class="{{css(r.state, r.type)}}">{{r.total}}</td> 
 		    <td class="{{css(r.state, r.type)}}" x-ng-switch on="r.type"> 
-		      <span class="fg-red" x-ng-switch-when=1>{{r.should_pay + r.verificate}}</span>
-		      <span x-ng-switch-default>{{r.should_pay + r.verificate}}</span>
+		      <span class="fg-red" x-ng-switch-when=1>{{r.should_pay}}</span>
+		      <span x-ng-switch-default>{{r.should_pay}}</span>
 		    </td>
 
 		    <td class="{{css(r.state, r.type)}}" x-ng-switch on="r.type"> 
-		      <span class="fg-red" x-ng-switch-when=1>{{r.should_pay}}</span>
-		      <span x-ng-switch-default>{{r.should_pay}}</span>
+		      <span class="fg-red" x-ng-switch-when=1>{{r.has_pay}}</span>
+		      <span x-ng-switch-default>{{r.has_pay}}</span>
 		    </td> 
 
 		    <td class="{{css(r.state, r.type)}}">{{r.score}}</td>

@@ -240,6 +240,12 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 	     password:   password}).$promise;
     };
 
+    this.update_retailer_score = function(id, score){
+	return http.save(
+	    {operation: "update_retailer_score"},
+	    {id:id, score:score}).$promise;
+    };
+
     this.list_retailer = function(){
 	return http.query({operation: "list_w_retailer"}).$promise
     };

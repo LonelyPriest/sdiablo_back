@@ -3,6 +3,12 @@ wreportApp.controller("stockStasticCtrl", function(
     // console.log(user);
     $scope.shops = user.sortShops;
     $scope.shopIds = user.shopIds;
+
+    $scope.right = {
+	orgprice: rightAuthen.authen(user.type,
+				     rightAuthen.rainbow_action()['show_orgprice'],
+				     user.right)
+    }; 
     
     $scope.filters = [];
     diabloFilter.add_field("shop",     $scope.shops);
@@ -87,7 +93,7 @@ wreportApp.controller("stockStasticCtrl", function(
 			$scope.s_stastic.total_items = result.total;
 			
 			$scope.s_stastic.sell = result.sell;
-			$scope.s_stastic.sell_cost = result.sell_cost;
+			$scope.s_stastic.sellCost = result.sellCost;
 			$scope.s_stastic.balance = result.balance;
 			$scope.s_stastic.cash = result.cash;
 			$scope.s_stastic.card = result.card;

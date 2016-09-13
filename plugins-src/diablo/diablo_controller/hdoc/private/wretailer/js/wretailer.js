@@ -38,20 +38,32 @@ wretailerApp.controller("wretailerNewCtrl", function(
 
 
 wretailerApp.controller("wretailerDetailCtrl", function(
-    $scope, $location, diabloPattern, diabloUtilsService,
+    $scope, $location, dateFilter, diabloPattern, diabloUtilsService,
     diabloPagination, localStorageService, wretailerService,
     filterEmployee, filterCharge, user, base){
     $scope.employees      = filterEmployee;
     $scope.charges        = filterCharge;
-    // $scope.shops          = [{id: -1, name: "== 请选择店铺 =="}].concat(user.sortShops);
     $scope.shops          = user.sortShops;
+    $scope.shopIds = user.shopIds;
     $scope.retailer_types = wretailerService.retailer_types;
+    
     // console.log($scope.employees);
     // console.log($scope.shops);
     // console.log(base);
     $scope.no_vips = base.filter(function(s){
 	return 's_customer' === s.name
     }).map(function(c){return parseInt(c.value)});
+
+    var LODOP;
+    var print_mode = diablo_backend;
+    for (var i=0, l=$scope.shopIds; i<l; i++){
+	if (diablo_frontend === retailerUtils.print_mode($scope.shopIds[i], base)){
+	    if (needCLodop()) {
+		loadCLodop();
+		break;
+	    };
+	}
+    };
 
     // console.log($scope.no_vips);
     
@@ -66,7 +78,9 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	reset_password: rightAuthen.authen(
 	    user.type, rightAuthen.retailer_action()['reset_password'], user.right),
 	delete_retailer: rightAuthen.authen(
-	    user.type, rightAuthen.retailer_action()['delete_retailer'], user.right)};
+	    user.type, rightAuthen.retailer_action()['delete_retailer'], user.right),
+	update_retailer_score: rightAuthen.authen(
+	    user.type, rightAuthen.retailer_action()['update_score'], user.right)};
 
     console.log($scope.right);
 
@@ -322,13 +336,34 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 		    console.log(result); 
 		    if (result.ecode == 0){
 			retailer.balance += charge_balance + send_balance;
-			dialog.response(
+			dialog.response_with_callback(
 			    true,
 			    "会员充值",
 			    "会员 [" + retailer.name + "] 充分值成功，"
-			    + "帐余额 ["
-				+ retailer.balance.toString() + " ]！！",
-			    undefined);
+			    + "帐户余额 [" + retailer.balance.toString() + " ]！！",
+			    undefined, function(){
+				if (diablo_frontend === retailerUtils.print_mode(
+				    params.retailer.select_shop.id, base)){
+				    if (angular.isUndefined(LODOP)) LODOP = getLodop();
+				    if (angular.isDefined(LODOP)){
+					var pdate = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss");
+					var hLine = retailerPrint.gen_head(
+					    LODOP,
+					    params.retailer.name,
+					    params.retailer.select_shop.name,
+					    params.retailer.select_employee.name,
+					    pdate);
+					
+					hLine = retailerPrint.gen_body(
+					    hLine, LODOP,
+					    {cbalance:charge_balance,
+					     sbalance:send_balance,
+					     comment:params.comment});
+					
+					retailerPrint.start_print(LODOP)
+				    } 
+				} 
+			    });
     		    } else{
 			dialog.response(
 			    false,
@@ -487,6 +522,37 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	dialog.edit_with_modal(
 	    "reset-password.html", undefined, callback, undefined,
 	    {retailer:retailer, password_pattern:pattern.password});
+    };
+
+    $scope.update_score = function(retailer){
+	console.log(retailer);
+	var callback = function(params){
+	    console.log(params); 
+	    var score = diablo_get_modified(params.retailer.nscore, retailer.score); 
+	    // console.log(update_retailer);
+
+	    wretailerService.update_retailer_score(retailer.id, score).then(function(
+		result){
+    		console.log(result);
+    		if (result.ecode == 0){
+		    dialog.response_with_callback(
+			true, "会员积分修改",
+			"会员积分 [" +  score.toString() + "] 修改成功！！",
+			$scope, function(){
+			    $scope.do_refresh($scope.pagination.current_page, $scope.search);
+			});
+    		} else{
+		    dialog.response(
+			false, "会员积分修改",
+			"会员积分修改失败："
+			    + wretailerService.error[result.ecode]);
+    		}
+    	    }) 
+	};
+
+	dialog.edit_with_modal(
+	    "update-score.html", undefined, callback, undefined,
+	    {retailer:angular.extend(retailer, {nscore:retailer.score})});
     };
 });
 
