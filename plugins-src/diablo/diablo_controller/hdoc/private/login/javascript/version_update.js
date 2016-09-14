@@ -1,6 +1,14 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2016-09-15",
+         content: [
+	     "优化手机显示效果",
+	     "交易明细增加年度字段",
+	     "修正退货单修改保存时，库存总数量不同步问题",
+         ]
+        },
+	
 	{date: "2016-09-14",
          content: [
 	     "会员充值时，可打印单据",

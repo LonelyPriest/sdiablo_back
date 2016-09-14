@@ -1503,7 +1503,17 @@ amount_update(Mode, RSN, Merchant, Shop, Datetime, Inv) ->
 		    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 		    ++ " and brand=" ++ ?to_s(Brand)]; 
 	       ?REJECT_INVENTORY ->
-		   []
+		   case Metric of
+		       0 -> [];
+		       _ -> 
+			   ["update w_inventory set "
+			    "amount=amount+" ++ ?to_s(Metric)
+			    ++ " where "
+			    ++ " merchant=" ++ ?to_s(Merchant) 
+			    ++ " and shop=" ++ ?to_s(Shop)
+			    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+			    ++ " and brand=" ++ ?to_s(Brand)]
+		   end
 	   end,
 	
     ChangeFun =

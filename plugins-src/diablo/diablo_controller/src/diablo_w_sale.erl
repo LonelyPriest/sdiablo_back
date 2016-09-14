@@ -781,7 +781,7 @@ handle_call({filter_rsn_group, Merchant,
     
     Sql = "select b.id, b.rsn, b.style_number"
 	", b.brand as brand_id, b.type as type_id, b.season, b.firm as firm_id"
-	", b.s_group, b.free, b.total, b.promotion as pid, b.score as sid"
+	", b.year, b.s_group, b.free, b.total, b.promotion as pid, b.score as sid"
 	", b.org_price, b.ediscount, b.tag_price, b.fdiscount, b.rdiscount"
 	", b.fprice, b.rprice"
 	", b.path, b.comment, b.entry_date"

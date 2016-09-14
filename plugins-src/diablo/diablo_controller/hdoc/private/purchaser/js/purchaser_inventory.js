@@ -2176,6 +2176,10 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
 	diablo_goto_page('#/inventory_detail');
     }
 
+    $scope.inventory_rsn_detail = function(){
+	diablo_goto_page('#/inventory_rsn_detail');
+    }
+
     $scope.save_stastic = function(){
 	localStorageService.set(
 	    "inventory-trans-stastic",

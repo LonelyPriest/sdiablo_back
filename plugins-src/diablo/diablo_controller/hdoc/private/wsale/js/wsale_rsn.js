@@ -34,7 +34,7 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
     };
 
     $scope.calc_colspan = function(){
-	var column = 15;
+	var column = 16;
 	if ($scope.hidden.base) column -= 3;
 	
 	return column;

@@ -81,7 +81,7 @@
     <!-- <div class="header navbar navbar-inverse navbar-static-top"> -->
     <div class="header navbar navbar-fixed-top">
       <div class="header-inner">
-    	<span class="navbar-brand">
+    	<span class="navbar-brand hidden-xs hidden-xxs">
     	  <img src="/private/img/logo.png" alt="logo" class="img-responsive"></img>
     	</span>
 	
@@ -96,7 +96,7 @@
     	</div>
 
 	<!-- <ul class="nav navbar-nav navbar-right" x-ng-app="baseApp" x-ng-controller="baseCtrl"> -->
-	<ul class="nav navbar-nav navbar-right hidden-xs hidden-sm">
+	<ul class="nav navbar-nav navbar-right">
 	  {% autoescape off %}
 	  {% block base %}
 	  {{basebar}}

@@ -38,8 +38,8 @@
 	 ?right_right]).
 
 -define(hidden_sm,  [?right_employe, ?right_right]).
--define(hddine_xs,  [?right_employe, ?right_right]).
--define(hddine_xxs, [?right_w_good]). 
+-define(hddine_xs,  [?right_employe, ?right_right, ?right_shop]).
+-define(hddine_xxs, [?right_employe, ?right_right, ?right_shop, ?right_w_retailer, ?right_w_firm]). 
 
 -record(func_tree,
 	{tree   :: gb_tree(),

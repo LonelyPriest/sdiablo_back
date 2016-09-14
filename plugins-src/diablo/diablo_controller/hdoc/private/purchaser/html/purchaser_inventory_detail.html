@@ -11,31 +11,31 @@
 	<div class="actions">
 	  <div class="btn-group btn-group-solid"> 
 	    <a x-ng-if="stock_right.set_promotion"
-	       class="btn green"
+	       class="btn green hidden-xxs"
 	       type="button"
 	       x-ng-click="promotion()">促销
 	      <i class="glyphicon glyphicon-pencil"></i></a>
 
 	    <a x-ng-if="stock_right.update_batch"
-	       class="btn yellow"
+	       class="btn red-sunglo"
 	       type="button"
 	       x-ng-click="update_batch()">批改
 	      <i class="glyphicon glyphicon-yen"></i></a>
 
-	    <a type="button" class="btn green"
+	    <a type="button" class="btn green hidden-xs"
 	       x-ng-click="goto_page('#/inventory_new')">入库
 	      <i class="glyphicon glyphicon-plus"></i></a>
 	    
-	    <a type="button" class="btn red"
+	    <a type="button" class="btn red hidden-xs"
 	       x-ng-click="goto_page('#/inventory_reject')">退货
 	      <i class="glyphicon glyphicon-minus"></i></a> 
 
-	    <a type="button" class="btn green-meadow"
+	    <a type="button" class="btn green-meadow hidden-xs"
 	       x-ng-click="goto_page('#/inventory/inventory_fix')">盘点
 	      <i class="glyphicon glyphicon-check"></i></a>
 
 	    <a x-ng-if="stock_right.export_stock"
-	       class="btn blue"
+	       class="btn blue hidden-xs"
 	       type="button"
 	       x-ng-click="export_to()">导出
 	      <i class="glyphicon glyphicon-export"></i></a> 
@@ -55,23 +55,21 @@
 	  
 	  <!--BEGIN row-->
 	  <div class="row">
-            <div class="col-md-4 col-sm-4 col-xs-6">
+            <div class="col-md-4 col-sm-4 col-xs-12">
               <time-search
                  glyphicon="glyphicon glyphicon-arrow-left fg-red"
                  time="time.start_time"
-		 ok="do_search(default_page)">
-	      </time-search>
+		 ok="do_search(default_page)"></time-search>
             </div>
 
-            <div class="col-md-4 col-sm-4 col-xs-6">
+            <div class="col-md-4 col-sm-4 col-xs-12">
               <time-search
                  glyphicon="glyphicon glyphicon-arrow-right fg-red"
                  time="time.end_time"
-		 ok="do_search(default_page)">
-	      </time-search>
+		 ok="do_search(default_page)"></time-search>
             </div> 
 
-            <div class="col-md-4">
+            <div class="col-md-4 col-sm-4 col-xs-12">
               <query-pattern ng-model="match"
                              filters="filters"
                              filter="filter">

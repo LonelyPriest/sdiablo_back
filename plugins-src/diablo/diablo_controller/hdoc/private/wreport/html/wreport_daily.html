@@ -4,15 +4,15 @@
       
       <div class="portlet-title">
 	<div class="caption"><i class="glyphicon glyphicon-time"></i>
-          <span>实时销售日报表－{{current_day|date: 'yyyy-MM-dd'}}</span>
+          <span>{{current_day|date: 'yyyy-MM-dd'}}</span>
         </div>
 
         <div class="actions">
-          <button class="btn red"
+          <button class="btn red hidden-xxs"
                   x-ng-click="pre_daily()">前一天
             <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
 
-          <button class="btn btn-success"
+          <button class="btn btn-success hidden-xxs"
                   x-ng-disabled="disable_after_daily()"
                   x-ng-click="after_daily()">后一天
             <i class="glyphicon glyphicon-circle-arrow-right"></i></button>
@@ -217,15 +217,15 @@
     <div x-ng-if="right.master" x-ng-controller="realStasticController" class="portlet box green">
       <div class="portlet-title">
 	<div class="caption"><i class="glyphicon glyphicon-time"></i>
-          <span>实时进销存统计－{{current_day|date: 'yyyy-MM-dd'}}</span>
+          <span>{{current_day|date: 'yyyy-MM-dd'}}</span>
 	</div>
 	
 	<div class="actions">
-	  <button class="btn red reload "
+	  <button class="btn red reload hidden-xxs"
                   x-ng-click="go_daily()">日报表
             <i class="glyphicon glyphicon-calendar"></i></button>
 
-	  <button class="btn yellow-crusta reload "
+	  <button class="btn yellow-crusta reload hidden-xxs"
                   x-ng-click="go_shift()">交班报表
             <i class="glyphicon glyphicon-transfer"></i></button>
 	  

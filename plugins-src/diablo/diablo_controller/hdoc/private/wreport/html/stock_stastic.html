@@ -73,7 +73,7 @@
 		    <th class="text-center">序号</th>
 		    <th class="text-center">店铺</th>
 
-		    <!-- <th class="text-center" style="background-color:#FFCCFF">库存数量</th> -->
+		    <th class="text-center" style="background-color:#FFCCFF">库存数量</th>
 		    <th class="text-center" style="background-color:#FFCCFF">库存计算数量</th>
 		    <th x-ng-if="right.orgprice" class="text-center">库存计算成本</th>
 		    
@@ -107,7 +107,7 @@
 		    <td>{{r.order_id}}</td>
 		    <td>{{r.shop.name}}</td>
 		    
-		    <!-- <td style="background-color:#FFCCFF">{{r.stock}}</td> -->
+		    <td style="background-color:#FFCCFF">{{r.stock}}</td>
 		    <td style="background-color:#FFCCFF">{{r.stockc}}</td>
 		    <td x-ng-if="right.orgprice">{{r.stockCost}}</td>
 
@@ -137,8 +137,8 @@
 		    
 		  </tr>
 		  <tr>
-		    <td x-ng-if="right.orgprice" colspan=4></td>
-		    <td x-ng-if="!right.orgprice" colspan=3></td>
+		    <td x-ng-if="right.orgprice" colspan=5></td>
+		    <td x-ng-if="!right.orgprice" colspan=4></td>
 		    <td>{{s_stastic.sell}}</td>
 		    
 		    <td><div x-ng-if="right.orgprice">{{s_stastic.balance}}</div></td>

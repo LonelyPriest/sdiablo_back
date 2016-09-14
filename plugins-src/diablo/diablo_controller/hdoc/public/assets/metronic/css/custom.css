@@ -313,6 +313,18 @@ ul.page-sidebar-menu > li.active > a {
     }
 }
 
+/* @media (max-width: 320px) { */
+/*   .hidden-xxs { */
+/*     display: none !important; */
+/*   } */
+/* } */
+
+@media (max-width: 400px) {
+  .hidden-xxs {
+    display: none !important;
+  }
+}
+
 /* body, html { */
 /*     overflow-x:hidden; */
 /* } */
