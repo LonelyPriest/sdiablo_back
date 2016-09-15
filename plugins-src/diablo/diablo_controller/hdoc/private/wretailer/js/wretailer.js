@@ -56,7 +56,7 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 
     var LODOP;
     var print_mode = diablo_backend;
-    for (var i=0, l=$scope.shopIds; i<l; i++){
+    for (var i=0, l=$scope.shopIds.length; i<l; i++){
 	if (diablo_frontend === retailerUtils.print_mode($scope.shopIds[i], base)){
 	    if (needCLodop()) {
 		loadCLodop();
@@ -123,7 +123,7 @@ wretailerApp.controller("wretailerDetailCtrl", function(
      * pagination
      */
     // $scope.pagination.colspan = 9;
-    $scope.pagination.max_page_size = 10;
+    $scope.pagination.max_page_size = diablo_max_page_size();
     $scope.pagination.items_perpage = diablo_items_per_page();
     $scope.pagination.default_page  = 1;
 
@@ -287,11 +287,11 @@ wretailerApp.controller("wretailerDetailCtrl", function(
     // 	var filterEmployees = employees.filter(function(e){
     // 	    return e.shop === shop;
     // 	});
-	
+    
     // 	var select = undefined;
     // 	if (diablo_invalid_employee !== loginEmployee)
     // 	    select = diablo_get_object(loginEmployee, filterEmployees); 
-	
+    
     // 	if (angular.isUndefined(select)) select = filterEmployees[0];
 
     // 	// console.log(select);
@@ -340,11 +340,13 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 			    true,
 			    "会员充值",
 			    "会员 [" + retailer.name + "] 充分值成功，"
-			    + "帐户余额 [" + retailer.balance.toString() + " ]！！",
+				+ "帐户余额 [" + retailer.balance.toString() + " ]！！",
 			    undefined, function(){
 				if (diablo_frontend === retailerUtils.print_mode(
 				    params.retailer.select_shop.id, base)){
-				    if (angular.isUndefined(LODOP)) LODOP = getLodop();
+				    if (angular.isUndefined(LODOP)){
+					LODOP = getLodop(); 
+				    }
 				    if (angular.isDefined(LODOP)){
 					var pdate = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss");
 					var hLine = retailerPrint.gen_head(
@@ -354,14 +356,17 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 					    params.retailer.select_employee.name,
 					    pdate);
 					
-					hLine = retailerPrint.gen_body(
+					retailerPrint.gen_body(
 					    hLine, LODOP,
 					    {cbalance:charge_balance,
 					     sbalance:send_balance,
-					     comment:params.comment});
+					     comment:params.comment
+					    });
 					
-					retailerPrint.start_print(LODOP)
-				    } 
+					return retailerPrint.start_print(LODOP);
+				    } else {
+					console.log("get lodop failed...");
+				    }
 				} 
 			    });
     		    } else{

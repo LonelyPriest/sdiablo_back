@@ -766,8 +766,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
     $scope.default_image_row = 2;
     $scope.colspan = $scope.default_image_column;
     // $scope.image_inventories = [];
-    $scope.items_perpage = 12;
-    $scope.max_page_size = 10; 
+    $scope.items_perpage = diablo_items_per_page();
+    $scope.max_page_size = diablo_max_page_size(); 
     // default the first page
     $scope.default_page = 1;
     $scope.current_page = $scope.default_page;
@@ -1724,7 +1724,7 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
      */
     $scope.colspan = 19;
     $scope.items_perpage = diablo_items_per_page();
-    $scope.max_page_size = 10; 
+    $scope.max_page_size = diablo_max_page_size(); 
     $scope.default_page = 1;
 
     // console.log($routeParams);

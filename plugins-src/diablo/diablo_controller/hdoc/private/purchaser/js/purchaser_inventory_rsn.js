@@ -244,7 +244,7 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
      */
     $scope.colspan = 17;
     $scope.items_perpage = diablo_items_per_page();
-    $scope.max_page_size = 10;
+    $scope.max_page_size = diablo_max_page_size();
     
     // default the first page
     $scope.default_page = 1;

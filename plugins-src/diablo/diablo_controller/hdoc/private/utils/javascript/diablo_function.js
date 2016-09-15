@@ -70,6 +70,8 @@ diablo_left = 3;
 
 var diablo_by_shop     = "by_shop";
 
+var diablo_print_px   = 5.56;
+
 /*
  * retailer
  */
@@ -727,14 +729,21 @@ var diablo_viewport = function () {
 };
 
 var diablo_items_per_page = function(){
-    var h = diablo_viewport().height;
-
-    if (h > 767){
-	return 15;
-    } else {
-	return 10;
-    }
+    var h = diablo_viewport().height; 
+    // console.log(h);
+    if (h > 1023) return 15;
+     else return 10;
 };
+
+var diablo_max_page_size = function(){
+    var w = diablo_viewport().width;
+
+    console.log(w);
+    if (w > 1020) return 10;
+    else if (w > 767) return 8;
+    else if (w > 400) return 5;
+    else return 2;
+}
 
 diablo_stock_css = function(state, type){
     if (diablo_firm_bill === type && diablo_stock_has_abandoned !== state){

@@ -1671,7 +1671,7 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
      */
     $scope.colspan = 18;
     $scope.items_perpage = diablo_items_per_page();
-    $scope.max_page_size = 10;
+    $scope.max_page_size = diablo_max_page_size();
     
     // default the first page
     $scope.default_page = 1;
@@ -2353,7 +2353,7 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
      */
     $scope.colspan = 18;
     $scope.items_perpage = diablo_items_per_page();
-    $scope.max_page_size = 10;
+    $scope.max_page_size = diablo_max_page_size();
     $scope.default_page = 1;
 
     var back_page = diablo_set_integer($routeParams.page);

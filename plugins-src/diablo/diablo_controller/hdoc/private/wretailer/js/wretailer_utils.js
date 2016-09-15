@@ -40,17 +40,19 @@ var retailerPrint = function(){
     return {
 	gen_head: function(LODOP, retailer, shop, employee, date){
 	    var hLine = 5;
-	    
-	    LODOP.ADD_PRINT_TEXT(hLine, 0, 178, 30, shop); 
+
+	    // var left = diablo_round((178 - (shop.length * diablo_print_px * 2)) / 2);
+	    // console.log(diablo_round(left))
+	    LODOP.ADD_PRINT_TEXT(hLine, 0, 178, 30, shop);
 	    LODOP.SET_PRINT_STYLEA(1,"FontSize",13);
 	    LODOP.SET_PRINT_STYLEA(1,"bold",1);
-	    // LODOP.SET_PRINT_STYLEA(1,"Horient",2); 
+	    LODOP.SET_PRINT_STYLEA(1,"Horient",2); 
 	    hLine += 35;
 
 	    LODOP.ADD_PRINT_TEXT(hLine, 0, 178, 30, "（" + retailer + "-充值凭证）"); 
-	    LODOP.SET_PRINT_STYLEA(1,"FontSize",13);
-	    LODOP.SET_PRINT_STYLEA(1,"bold",1);
-	    // LODOP.SET_PRINT_STYLEA(1,"Horient",2); 
+	    // LODOP.SET_PRINT_STYLEA(1,"FontSize",13);
+	    // LODOP.SET_PRINT_STYLEA(1,"bold",1);
+	    LODOP.SET_PRINT_STYLEA(2,"Horient",2); 
 	    hLine += 35;
 
 	    LODOP.ADD_PRINT_TEXT(hLine, 0, 178, 20, "经手人：" + employee);
@@ -63,25 +65,26 @@ var retailerPrint = function(){
 	},
 
 	gen_body: function(hLine, LODOP, charge){
-	    var to_i = reportUtils.to_integer;
+	    var to_i = retailerUtils.to_integer;
 
-	    LODOP.ADD_PRINT_LINE(hLine,0,hLine,45,0,1); 
+	    LODOP.ADD_PRINT_LINE(hLine,0,hLine,178,0,1); 
 	    hLine += 15;
 	    
 	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"充值金额：" + charge.cbalance);
 	    hLine += 15;
 	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"赠送金额：" + charge.sbalance); 
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"备注："
-				 + angular.isUndefined(charge.comment)?"":charge.comment); 
+
+	    var comment = comment ? comment : "";
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"备注："+ comment); 
 	    
 	    return hLine;
 	},
 	
 	start_print: function(LODOP){
 	    LODOP.SET_PRINT_PAGESIZE(3, 178, 100, ""); 
-	    // LODOP.PREVIEW();
-	    LODOP.PRINT();
+	    LODOP.PREVIEW();
+	    // LODOP.PRINT();
 	}
     }
 }();
