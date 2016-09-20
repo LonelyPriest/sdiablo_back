@@ -393,6 +393,8 @@ error(wsale_export_error, Error) ->
     {2701, "failed to export file: " ++ ?to_s(Error)};
 error(wsale_export_no_date, Merchant) ->
     {2702, "no date to export of merchant: " ++ ?to_s(Merchant)};
+error(wsale_not_enought_balance, Retailer) ->
+    {2703, "no enought balance of retailer: " ++ ?to_s(Retailer)};
 
 %% about print
 error(invalid_sn, PrintSN) ->

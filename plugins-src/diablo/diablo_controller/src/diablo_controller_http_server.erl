@@ -167,7 +167,7 @@ url_dispatch(Req, [{Regexp,  Function}|T]) ->
 
     case Match of
 	{match, [MatchList]} ->
-	    ?DEBUG("Path ~p, Method ~p, Math ~p", [Path, Method, Match]),
+	    %% ?DEBUG("Path ~p, Method ~p, Math ~p", [Path, Method, Match]),
 	    case valid_session(Req) of
 		{ok, _} ->
 		    case length(MatchList) of
@@ -181,8 +181,8 @@ url_dispatch(Req, [{Regexp,  Function}|T]) ->
 		%%     %% Function({Method, Req, [["login"]]});
 		%%     ?login_request:action(Req, login);
 		{error, _Error} ->
-		    ?INFO("failed to check session of url ~p,"
-		    	  "reseaon ~p, redirect to login...", [Path, _Error]),
+		    %% ?INFO("failed to check session of url ~p,"
+		    %% 	  "reseaon ~p, redirect to login...", [Path, _Error]),
 		    %% {ECode, Error} = ?err(operation_invalid_session, Error),
 		    %% Req:respond({599,
 		    %% 		 [{"Content-Type", "application/json"}],

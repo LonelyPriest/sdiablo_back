@@ -77,7 +77,8 @@ action(Req, login, Force) ->
 	end,
 
     case UserName of
-	[] -> ?utils:respond(200, Req, ?err(login_no_user, none));
+	[] -> LoginResponseFun(?WRONG_USER_PASSWD);
+	    %% ?utils:respond(200, Req, ?err(login_no_user, none));
 	UserName ->
 	    case Passwd of
 		[] ->

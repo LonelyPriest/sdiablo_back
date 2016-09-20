@@ -83,8 +83,8 @@ var retailerPrint = function(){
 	
 	start_print: function(LODOP){
 	    LODOP.SET_PRINT_PAGESIZE(3, 178, 100, ""); 
-	    LODOP.PREVIEW();
-	    // LODOP.PRINT();
+	    // LODOP.PREVIEW();
+	    LODOP.PRINT();
 	}
     }
 }();

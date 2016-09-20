@@ -25,8 +25,7 @@
 
 -export([purchaser_inventory/3, purchaser_inventory/4, purchaser_inventory/5]).
 
-
--export([filter/4, filter/6, rsn_detail/3, export/3]).
+-export([filter/4, filter/6, rsn_detail/3, export/3, rsn/4]).
 -export([match/3, match/4, match/5, match/6]).
 
 -define(SERVER, ?MODULE). 

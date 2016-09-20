@@ -138,70 +138,74 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 	++ " and deleted=" ++ ?to_s(?NO),
 
     case ?sql_utils:execute(s_read, Sql0) of 
-	{ok, Account} -> 
-	    SaleSn = lists:concat(
-		       ["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-",
-			?inventory_sn:sn(w_sale_new_sn, Merchant)]),
-	    RealyShop = realy_shop(Merchant, Shop),
-	    Sql1 = 
-		lists:foldr(
-		  fun({struct, Inv}, Acc0)-> 
-			  Amounts = ?v(<<"amounts">>, Inv), 
-			  wsale(new, SaleSn, DateTime,
-				Merchant, RealyShop, Inv, Amounts) ++ Acc0
-		  end, [], Inventories), 
-
+	{ok, Account} ->
 	    CurrentBalance = retailer(balance, Account), 
 	    CurrentScore = retailer(score, Account),
 
-	    NewCash = case Cash >= RPay of
-			  true  -> RPay;
-			  false -> Cash
-		      end,
+	    case CurrentBalance < Withdraw of
+		true -> {reply, ?err(not_enought_balance, ?v(<<"id">>, Account))};
+		false -> 
+		    SaleSn = lists:concat(
+			       ["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-",
+				?inventory_sn:sn(w_sale_new_sn, Merchant)]),
+		    RealyShop = realy_shop(Merchant, Shop),
+		    Sql1 = 
+			lists:foldr(
+			  fun({struct, Inv}, Acc0)-> 
+				  Amounts = ?v(<<"amounts">>, Inv), 
+				  wsale(new, SaleSn, DateTime,
+					Merchant, RealyShop, Inv, Amounts) ++ Acc0
+			  end, [], Inventories), 
 
-	    NewCard = case Card >= RPay - NewCash of
-			  true  -> RPay - NewCash;
-			  false -> Card
-		      end,
-	    
-	    ?DEBUG("NewCard ~p, NewCard ~p, withdraw ~p", [NewCash,  NewCard, Withdraw]), 
+		    NewCash = case Cash >= RPay of
+				  true  -> RPay;
+				  false -> Cash
+			      end,
 
-	    Sql2 = "insert into w_sale(rsn"
-		", employ, retailer, shop, merchant"
-		", balance, should_pay, cash, card, withdraw, verificate"
-		", total, lscore, score, comment, type, entry_date) values("
-		++ "\"" ++ ?to_s(SaleSn) ++ "\","
-		++ "\'" ++ ?to_s(Employe) ++ "\',"
-		++ ?to_s(Retailer) ++ ","
-		++ ?to_s(Shop) ++ ","
-		++ ?to_s(Merchant) ++ "," 
-		++ ?to_s(CurrentBalance) ++ ","
-		++ ?to_s(ShouldPay) ++ "," 
-		++ ?to_s(NewCash) ++ ","
-		++ ?to_s(NewCard) ++ ","
-		++ ?to_s(Withdraw) ++ ","
-		++ ?to_s(Verificate) ++ ","
-		++ ?to_s(Total) ++ ","
-		++ ?to_s(CurrentScore) ++ ","
-		++ ?to_s(Score) ++ "," 
-		++ "\"" ++ ?to_s(Comment) ++ "\"," 
-		++ ?to_s(type(new)) ++ ","
-		++ "\"" ++ ?to_s(DateTime) ++ "\");",
-		
-	    Sql3 = ["update w_retailer set consume=consume+" ++ ?to_s(ShouldPay)
-		    ++ case Withdraw =< 0 of
-			   true  -> [];
-			   false -> ", balance=balance-" ++ ?to_s(Withdraw)
-		       end
-		    ++ case Score == 0 of
-			   true  -> [];
-			   false -> ", score=score+" ++ ?to_s(Score)
-		       end
-		    ++ " where id=" ++ ?to_s(?v(<<"id">>, Account))], 
-	    
-	    AllSql = Sql1 ++ [Sql2] ++ Sql3,
-	    Reply = ?sql_utils:execute(transaction, AllSql, SaleSn),
-	    {reply, Reply, State}; 
+		    NewCard = case Card >= RPay - NewCash of
+				  true  -> RPay - NewCash;
+				  false -> Card
+			      end,
+
+		    ?DEBUG("NewCard ~p, NewCard ~p, withdraw ~p", [NewCash,  NewCard, Withdraw]), 
+
+		    Sql2 = "insert into w_sale(rsn"
+			", employ, retailer, shop, merchant"
+			", balance, should_pay, cash, card, withdraw, verificate"
+			", total, lscore, score, comment, type, entry_date) values("
+			++ "\"" ++ ?to_s(SaleSn) ++ "\","
+			++ "\'" ++ ?to_s(Employe) ++ "\',"
+			++ ?to_s(Retailer) ++ ","
+			++ ?to_s(Shop) ++ ","
+			++ ?to_s(Merchant) ++ "," 
+			++ ?to_s(CurrentBalance) ++ ","
+			++ ?to_s(ShouldPay) ++ "," 
+			++ ?to_s(NewCash) ++ ","
+			++ ?to_s(NewCard) ++ ","
+			++ ?to_s(Withdraw) ++ ","
+			++ ?to_s(Verificate) ++ ","
+			++ ?to_s(Total) ++ ","
+			++ ?to_s(CurrentScore) ++ ","
+			++ ?to_s(Score) ++ "," 
+			++ "\"" ++ ?to_s(Comment) ++ "\"," 
+			++ ?to_s(type(new)) ++ ","
+			++ "\"" ++ ?to_s(DateTime) ++ "\");",
+
+		    Sql3 = ["update w_retailer set consume=consume+" ++ ?to_s(ShouldPay)
+			    ++ case Withdraw =< 0 of
+				   true  -> [];
+				   false -> ", balance=balance-" ++ ?to_s(Withdraw)
+			       end
+			    ++ case Score == 0 of
+				   true  -> [];
+				   false -> ", score=score+" ++ ?to_s(Score)
+			       end
+			    ++ " where id=" ++ ?to_s(?v(<<"id">>, Account))], 
+
+		    AllSql = Sql1 ++ [Sql2] ++ Sql3,
+		    Reply = ?sql_utils:execute(transaction, AllSql, SaleSn),
+		    {reply, Reply, State}
+	    end;
 	Error ->
 	    {reply, Error, State}
     end;

@@ -147,6 +147,7 @@ wsaleApp.service("wsaleService", function($http, $resource, dateFilter){
 	2601: "获取零售商历史记录失败！！",
 	2701: "文件导出失败，请重试或联系服务人员查找原因！！",
 	2702: "文件导出失败，没有任何数据需要导出，请重新设置查询条件！！",
+	2703: "用户余额不足！！",
 	2699: "修改前后信息一致，请重新编辑修改项！！",
 	9001: "数据库操作失败，请联系服务人员！！"};
 
@@ -539,11 +540,13 @@ wsaleApp.controller("wsaleNewCtrl", function(
 		withdraw  :function() {
 		    if ($scope.select.surplus >= $scope.select.charge)
 			return $scope.select.charge;
-		    return $scope.select.surplus;}()
+		    return $scope.select.surplus
+		}()
 	    },
 	      
 	     check_withdraw: function(balance){
-		 return balance > $scope.select.charge ? false : true;
+		 return balance > $scope.select.retailer.balance
+		     || balance > $scope.select.charge ? false : true;
 	     },
 	      
 	      check_zero: function(balance) {return balance === 0 ? true:false}
@@ -658,6 +661,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    $scope.wsaleStorage.set_key(draft.sn);
 	    // $scope.select.employee = diablo_get_object(draft.employee.id, $scope.employees);
 	    $scope.select.retailer = diablo_get_object(draft.retailer.id, $scope.retailers);
+	    $scope.select.surplus  = $scope.select.retailer.balance;
 	    $scope.get_employee(); 
 	    
 	    $scope.inventories = angular.copy(resource);

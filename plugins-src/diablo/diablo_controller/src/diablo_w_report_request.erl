@@ -508,6 +508,8 @@ stock(total, []) ->
 stock(total, [{StockInfo}]) ->
     ?v(<<"total">>, StockInfo, 0);
 
+stock(last_total, []) ->
+    0;
 stock(last_total, [{StockInfo}]) ->
     ?v(<<"total">>, StockInfo, 0).
 

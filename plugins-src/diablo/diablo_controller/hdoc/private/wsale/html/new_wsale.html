@@ -930,10 +930,7 @@
 	<div class="form-group">
 	  <label class="col-sm-3 col-md-3 control-label">提现金额</label>
 	  
-	  <div class="col-sm-6 col-md-6">
-	    <div ng-class="{'has-error':withdrawForm.balnce.$invalid
-			   && !withdrawForm.balance.$pristine
-			   || !params.check_withdraw(params.retailer.withdraw)}">
+	  <div class="col-sm-6 col-md-6"> 
 	      <input class="form-control"
 		     type="number" step="1"
 		     required
@@ -941,13 +938,12 @@
 		     name="balance"
 		     x-ng-pattern="/^\d+(.\d{1,2})?$/"
 		     x-ng-model="params.retailer.withdraw"/>
-	    </div>
 	    <div ng-show="withdrawForm.balance.$invalid && !withdrawForm.balance.$pristine">
 	      <span class="fg-red">金额只能是数字串</span>
 	    </div>
 	    <div ng-show="!params.check_withdraw(params.retailer.withdraw)">
-	      <span class="fg-red">提现金额 <= 应付 - 实付 </span>
-					       </div>
+	      <span class="fg-red">余额不足或提现金额超过应付款项</span> 
+	    </div>
 	  </div> 
 	</div>
 
@@ -968,7 +964,7 @@
   <div class="modal-footer">
     <button class="btn btn-primary"
 	    x-ng-disabled="withdrawForm.$invalid
-			   || !params.check_withdraw(params.retailer.withdraw) "
+			   || !params.check_withdraw(params.retailer.withdraw)"
 	    x-ng-click="ok()">确定</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div> 

@@ -177,7 +177,7 @@ handle_call({list_employee, Merchant, Conditions}, _From, State) ->
 	end
 	++ "merchant=" ++ ?to_s(Merchant)
 	++ " and deleted=" ++ ?to_s(?NO)
-	++ " order by id",
+	++ " order by shop",
     
     case ?mysql:fetch(read, Sql) of
 	{ok, Employees} ->
