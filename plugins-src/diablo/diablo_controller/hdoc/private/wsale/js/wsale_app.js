@@ -1742,10 +1742,9 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 
     $scope.do_search = function(page){
 	// console.log(page); 
-	$scope.current_page = page;
-
+	$scope.current_page = page; 
 	// console.log($scope.time); 
-	if (!$scope.shop_right.master){
+	if (!$scope.shop_right.master && show_sale_days !== diablo_nolimit_day){
 	    var diff = now - diablo_get_time($scope.time.start_time);
 	    // console.log(diff); 
 	    if (diff - diablo_day_millisecond * show_sale_days > diablo_day_millisecond){

@@ -121,7 +121,7 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
     $scope.current_page = $scope.default_page;
 
     $scope.do_search = function(page){
-	if (!$scope.right.master){
+	if (!$scope.right.master && $scope.setting.show_sale_day !== diablo_nolimit_day){
 	    var diff = now - diablo_get_time($scope.time.start_time);
 	    // console.log(diff);
 	    if (diff - diablo_day_millisecond * $scope.setting.show_sale_day > diablo_day_millisecond){

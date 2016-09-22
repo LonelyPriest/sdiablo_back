@@ -7,6 +7,7 @@ var diablo_pfree = 0.01;
 var diablo_invalid_employee = "-1";
 var diablo_invalid_index = -1;
 var diablo_invalid_firm = -1;
+var diablo_nolimit_day = -1;
 
 var diablo_yes = 1;
 var diablo_no = 0;

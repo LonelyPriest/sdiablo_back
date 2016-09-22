@@ -140,3 +140,13 @@ input[type="number"] {
 .diablo-table table tbody tr:hover td, .table tbody tr:hover th {
     background-color: #3399CC !important;
 }
+
+
+/* color selected date */
+.text-info {
+    color: #CC0000 !important;
+}
+
+.btn-info.active {
+    border-color: #cc0000; !important;
+}

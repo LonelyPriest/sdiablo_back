@@ -1717,8 +1717,9 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 
     $scope.use_order = function(mode){
 	$scope.mode = mode;
-	if ($scope.sort === 0) $scope.sort = 1;
-	else if ($scope.sort === 1) $scope.sort = 0;
+	$scope.sort = $scope.sort === 0 ? 1 : 0;
+	// if ($scope.sort === 0) $scope.sort = 1;
+	// else if ($scope.sort === 1) $scope.sort = 0;
 	$scope.do_search($scope.tab_page.page_of_time);
     }
     
@@ -1803,6 +1804,12 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 		}
 	    })
 	});
+    };
+
+    $scope.refresh = function(){
+	// $scope.mode = undefined;
+	$scope.mode = $scope.order_fields.id;
+	$scope.do_search($scope.default_page);
     };
     
     // $scope.do_search($scope.tab_page.page_of_time);
@@ -2108,7 +2115,7 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
     $scope, $routeParams, $location, dateFilter, diabloPattern,
     diabloUtilsService, localStorageService, diabloFilter, purchaserService,
-    user, filterFirm, filterEmployee, base){
+    user, filterFirm, filterEmployee, filterBrand, base){
     // console.log(user);
     // console.log(filterFirm);
     // console.log(filterEmployee);
@@ -2304,14 +2311,19 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
     
     /*
     * filter
-    */
-
+    */ 
+    $scope.match_style_number = function(viewValue){
+	return diabloFilter.match_w_inventory(viewValue, user.shopIds)
+    };
+    
     // var has_pay =  [{name:">0", id:0, py:diablo_pinyin("大于0")},
     // 		    {name:"=0", id:1, py:diablo_pinyin("等于0")}];
     
     // initial
     // $scope.filters = []; 
     diabloFilter.reset_field();
+    diabloFilter.add_field("style_number", $scope.match_style_number);
+    diabloFilter.add_field("brand",    filterBrand);
     diabloFilter.add_field("firm",     filterFirm); 
     diabloFilter.add_field("shop",     $scope.shops);
     diabloFilter.add_field("employee", filterEmployee);

@@ -100,6 +100,7 @@
 		      <div x-ng-if="account.type===1">无限制</div>
                       <div x-ng-if="account.type!==1" x-ng-switch on="account.sdays">
                         <span x-ng-switch-when=0>当天</span>
+			<span x-ng-switch-when=-1>无限制</span>
                         <span x-ng-switch-default>{{account.sdays}}</span>
                       </div>
                     </td>

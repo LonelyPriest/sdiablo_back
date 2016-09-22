@@ -108,7 +108,7 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 	when('/inventory_new_detail/:page?', {
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_new_detail.html',
             controller: 'purchaserInventoryNewDetailCtrl',
-	    resolve: angular.extend({}, user, firm, employee, base)
+	    resolve: angular.extend({}, user, firm, employee, brand, base)
 	}). 
 	when('/inventory_detail/:rsn?', {
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_detail.html',
@@ -214,7 +214,7 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 	otherwise({
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_new_detail.html',
             controller: 'purchaserInventoryNewDetailCtrl' ,
-	    resolve: angular.extend({}, user, firm, employee, base)
+	    resolve: angular.extend({}, user, firm, employee, brand, base)
         })
 }]);
 

@@ -113,17 +113,46 @@ action(Session, Req, {"del_w_inventory"}, Payload) ->
 action(Session, Req, {"filter_w_inventory_new"}, Payload) -> 
     ?DEBUG("filter_w_inventory_new with session ~p, paylaod~n~p",
 	   [Session, Payload]),
-    
+
+    {struct, Fields} = ?v(<<"fields">>, Payload),
+
     Merchant = ?session:get(merchant, Session),
-    ?pagination:pagination(
-       fun(Match, Conditions) ->
-	       ?w_inventory:filter(
-		  total_news, ?to_a(Match), Merchant, Conditions)
-       end,
-       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
-	       ?w_inventory:filter(
-		  news, Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
-       end, Req, Payload);
+
+
+    case
+	case ?utils:v(style_number, string, ?v(<<"style_number">>, Fields))
+	    ++ ?utils:v(brand, integer, ?v(<<"brand">>, Fields)) of
+	    [] -> {ok, []}; 
+	    _ ->
+		?w_inventory:purchaser_inventory(get_inventory_new_rsn, Merchant, Fields)
+	end
+    of
+	{ok, RSNs} ->
+	    NewConditions =
+		[{<<"fields">>, 
+		    {struct, lists:keydelete(<<"style_number">>, 1,
+				lists:keydelete(<<"brand">>, 1, Fields))
+		     ++ [{<<"rsn">>, lists:foldr(
+				      fun({RSN}, Acc) ->
+					      [?v(<<"rsn">>, RSN)|Acc]
+				      end, [], RSNs)}]}
+		 }] ++ lists:keydelete(<<"fields">>, 1, Payload),
+
+	    ?DEBUG("new conditions ~p", [NewConditions]),
+
+	    ?pagination:pagination(
+	       fun(Match, Conditions) ->
+		       ?w_inventory:filter(
+			  total_news, ?to_a(Match), Merchant, Conditions)
+	       end,
+	       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
+		       ?w_inventory:filter(
+			  news, Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
+	       end, Req, NewConditions);
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
 
 action(Session, Req, {"list_w_inventory_new_detail"}, Payload) ->
     ?DEBUG("list_w_inventory_new_detail with session ~p, paylaod ~p", [Session, Payload]),
@@ -903,6 +932,8 @@ mode(2) -> use_discount;
 mode(3) -> use_year;
 mode(4) -> use_season;
 mode(5) -> use_amount;
-mode(6) -> use_style_number.
+mode(6) -> use_style_number;
+mode(7) -> use_brand;
+mode(8) -> use_type.
 
     

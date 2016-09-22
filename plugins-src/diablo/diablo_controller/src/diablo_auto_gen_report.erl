@@ -41,7 +41,7 @@ cancel_report(stastic_per_shop) ->
     gen_server:cast(?SERVER, cancel_stastic_per_shop).
 
 syn_report(stastic_per_shop, Merchant, Conditions) ->
-    gen_server:call(?SERVER, {syn_stastic_per_shop, Merchant, Conditions}).
+    gen_server:call(?SERVER, {syn_stastic_per_shop, Merchant, Conditions}, 60000).
 
 add(report_task, Merchant, TriggerTime) ->
     gen_server:call(?SERVER, {add_report_task, Merchant, TriggerTime}).
@@ -109,7 +109,7 @@ handle_call(_Request, _From, State) ->
 
 handle_cast({stastic_per_shop, TriggerTime}, #state{merchant=Merchants,
 				     task_of_per_shop=Tasks} = State) ->
-    ?DEBUG("stastic_per_shop ~p", [TriggerTime]),
+    ?DEBUG("stastic_per_shop ~p, tasks ~p", [TriggerTime, Tasks]),
     case Tasks of
 	[] -> 
 	    NewTasks = 
@@ -120,7 +120,7 @@ handle_cast({stastic_per_shop, TriggerTime}, #state{merchant=Merchants,
 					      task(stastic_per_shop, Datetime, M)
 				      end}, 
 			  [?cron:cron(CronTask)|Acc] 
-		  end, [], Merchants),
+		  end, [], [Merchants]),
 	    ?DEBUG("new tasks ~p with merchants ~p", [NewTasks, Merchants]),
 	    {noreply, #state{merchant=Merchants, task_of_per_shop=NewTasks}};
 	_ -> {noreply, State}
@@ -148,8 +148,10 @@ terminate(_Reason, _State) ->
 
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
-    
-syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) when StartDay < EndDay ->
+
+syn_stastic_per_shop(_Merchant, _Shop, StartDay, EndDay) when StartDay >= EndDay -> 
+    ok;
+syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) ->
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, Shop),
     Date = calendar:gregorian_days_to_date(StartDay),
     {BeginOfDay, EndOfDay} = day(begin_to_end, Date),
@@ -166,6 +168,9 @@ syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) when StartDay < EndDay ->
 		   {<<"start_time">>, ?v(<<"qtime_start">>, BaseSetting)},
 		   {<<"end_time">>, ?to_b(EndOfDay)}
 		  ]),
+
+    %% {ok, LastStockInfo} = ?w_report:stastic(last_stock_of_shop, Merchant, Shop, BeginOfDay),
+    %% LastStockTotal = stock(last_stock, LastStockInfo),
 
     {ok, SaleInfo} = ?w_report:stastic(stock_sale, Merchant, Conditions),
     {ok, SaleProfit} = ?w_report:stastic(stock_profit, Merchant, Conditions),
@@ -204,7 +209,7 @@ syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) when StartDay < EndDay ->
 		++ " and day=\'" ++ ?to_s(BeginOfDay) ++ "\'",
 
 	    case ?sql_utils:execute(s_read, Sql) of
-		{ok, []} ->
+		{ok, []} ->		    
 		    Sql1 = 
 			"insert into w_daily_report(merchant, shop"
 			", sell, sell_cost, balance, cash, card, veri"
@@ -251,7 +256,8 @@ syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) when StartDay < EndDay ->
 			++ ?utils:v(cash, float, SellCash)
 			++ ?utils:v(card, float, SellCard)
 			++ ?utils:v(veri, float, SellVeri)
-
+			
+		    %% ++ ?utils:v(stock, integer, LastStockTotal) 
 			++ ?utils:v(stockc, integer, StockCalcTotal)
 			++ ?utils:v(stock_cost, float, StockCalcCost)
 			
@@ -276,9 +282,7 @@ syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) when StartDay < EndDay ->
 		    syn_stastic_per_shop(Merchant, Shop, StartDay + 1, EndDay)
 	    end
 	    
-    end;
-syn_stastic_per_shop(_Merchant, _Shop, StartDay, EndDay) when StartDay >= EndDay -> 
-    ok.
+    end.
 
 task(stastic_per_shop, Datetime, Merchants) when is_list(Merchants)->
     {YestodayStart, YestodayEnd} = yestoday(Datetime),
@@ -371,47 +375,88 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [S|Shops], Sqls) ->
 		andalso StockTransferOutTotal == 0
 		andalso StockFixTotal == 0 of
 		true ->
+		    ?DEBUG("no input, no daily report", []),
 		    gen_shop_report({StartTime, EndTime, GenDatetime}, M, Shops, Sqls);
 		false ->
-		    Sql = 
-			"insert into w_daily_report(merchant, shop"
-			", sell, sell_cost, balance, cash, card, veri"
-			", stock, stockc, stock_cost"
-			", stock_in, stock_out, stock_in_cost, stock_out_cost"
-			", t_stock_in, t_stock_out, t_stock_in_cost, t_stock_out_cost"
-			", stock_fix, stock_fix_cost"
-			", day, entry_date) values("
-			++ ?to_s(M) ++ ","
-			++ ?to_s(ShopId) ++ ","
+		    Sql0 = "select id, merchant, shop, day from w_daily_report"
+			" where merchant=" ++ ?to_s(M)
+			++ " and shop=" ++ ?to_s(ShopId)
+			++ " and day=\'" ++ ?to_s(StartTime) ++ "\'", 
+		    case ?sql_utils:execute(s_read, Sql0) of
+			{ok, []} ->
+			    Sql = 
+				"insert into w_daily_report(merchant, shop"
+				", sell, sell_cost, balance, cash, card, veri"
+				", stock, stockc, stock_cost"
+				", stock_in, stock_out, stock_in_cost, stock_out_cost"
+				", t_stock_in, t_stock_out, t_stock_in_cost, t_stock_out_cost"
+				", stock_fix, stock_fix_cost"
+				", day, entry_date) values("
+				++ ?to_s(M) ++ ","
+				++ ?to_s(ShopId) ++ ","
 
-			++ ?to_s(SellTotal) ++ ","
-			++ ?to_s(SellCost) ++ ","
-			++ ?to_s(SellBalance) ++ ","
-			++ ?to_s(SellCash) ++ ","
-			++ ?to_s(SellCard) ++ ","
-			++ ?to_s(SellVeri) ++ ","
+				++ ?to_s(SellTotal) ++ ","
+				++ ?to_s(SellCost) ++ ","
+				++ ?to_s(SellBalance) ++ ","
+				++ ?to_s(SellCash) ++ ","
+				++ ?to_s(SellCard) ++ ","
+				++ ?to_s(SellVeri) ++ ","
 
-			++ ?to_s(CurrentStockTotal) ++ ","
-			++ ?to_s(StockCalcTotal) ++ ","
-			++ ?to_s(StockCalcCost) ++ ","
-		    %% ++ ?to_s(CurrentStockCost) ++ ","
+				++ ?to_s(CurrentStockTotal) ++ ","
+				++ ?to_s(StockCalcTotal) ++ ","
+				++ ?to_s(StockCalcCost) ++ ","
+			    %% ++ ?to_s(CurrentStockCost) ++ ","
 
-			++ ?to_s(StockInTotal) ++ ","
-			++ ?to_s(StockOutTotal) ++ ","
-			++ ?to_s(StockInCost) ++ ","
-			++ ?to_s(StockOutCost) ++ ","
+				++ ?to_s(StockInTotal) ++ ","
+				++ ?to_s(StockOutTotal) ++ ","
+				++ ?to_s(StockInCost) ++ ","
+				++ ?to_s(StockOutCost) ++ ","
 
-			++ ?to_s(StockTransferInTotal) ++ ","
-			++ ?to_s(StockTransferOutTotal) ++ ","
-			++ ?to_s(StockTransferInCost) ++ ","
-			++ ?to_s(StockTransferOutCost) ++ ","
+				++ ?to_s(StockTransferInTotal) ++ ","
+				++ ?to_s(StockTransferOutTotal) ++ ","
+				++ ?to_s(StockTransferInCost) ++ ","
+				++ ?to_s(StockTransferOutCost) ++ ","
 
-			++ ?to_s(StockFixTotal) ++ ","
-			++ ?to_s(StockFixCost) ++ ","
+				++ ?to_s(StockFixTotal) ++ ","
+				++ ?to_s(StockFixCost) ++ ","
 
-			++ "\'" ++ StartTime ++ "\',"
-			++ "\'" ++ GenDatetime ++ "\')", 
-		    gen_shop_report({StartTime, EndTime, GenDatetime}, M, Shops, [Sql|Sqls])
+				++ "\'" ++ StartTime ++ "\',"
+				++ "\'" ++ GenDatetime ++ "\')", 
+			    gen_shop_report({StartTime, EndTime, GenDatetime}, M, Shops, [Sql|Sqls]);
+			{ok, R} ->
+			    Updates = ?utils:v(sell, integer, SellTotal)
+				++ ?utils:v(sell_cost, integer, SellCost)
+				++ ?utils:v(balance, float, SellBalance)
+				++ ?utils:v(cash, float, SellCash)
+				++ ?utils:v(card, float, SellCard)
+				++ ?utils:v(veri, float, SellVeri)
+
+				++ ?utils:v(stock, integer, CurrentStockTotal) 
+				++ ?utils:v(stockc, integer, StockCalcTotal)
+				++ ?utils:v(stock_cost, float, StockCalcCost)
+
+				++ ?utils:v(stock_in, integer, StockInTotal)
+				++ ?utils:v(stock_out, integer, StockOutTotal)
+				++ ?utils:v(stock_in_cost, float, StockInCost)
+				++ ?utils:v(stock_out_cost, float, StockOutCost)
+
+				++ ?utils:v(t_stock_in, integer, StockTransferInTotal)
+				++ ?utils:v(t_stock_out, integer, StockTransferOutTotal)
+				++ ?utils:v(t_stock_in_cost, float, StockTransferInCost)
+				++ ?utils:v(t_stock_out_cost, float, StockTransferOutCost)
+
+				++ ?utils:v(stock_fix, integer, StockFixTotal)
+				++ ?utils:v(stock_fix_cost, float, StockFixCost),
+
+			    Sql = "update w_daily_report set "
+				++ ?utils:to_sqls(proplists, comma, Updates)
+				++ " where id=" ++ ?to_s(?v(<<"id">>, R)),
+			    gen_shop_report({StartTime, EndTime, GenDatetime}, M, Shops, [Sql|Sqls]);
+			{error, _Error} ->
+			    ?INFO("failed to gen daily report merchant ~p, shop ~p, date ~p",
+				  [M, ShopId, GenDatetime]),
+			    gen_shop_report({StartTime, EndTime, GenDatetime}, M, Shops, Sqls)
+		    end
 	    end;
 	0 ->
 	    gen_shop_report({StartTime, EndTime, GenDatetime}, M, Shops, Sqls)
@@ -506,6 +551,11 @@ stock(current, [{StockCurrent}]) ->
     {?v(<<"total">>, StockCurrent, 0),
      ?v(<<"cost">>, StockCurrent, 0)};
 
+stock(last_stock, []) ->
+    0;
+stock(last_stock, [{StockInfo}]) ->
+    ?v(<<"total">>, StockInfo, 0);
+
 stock(in, []) ->
     {0, 0};
 stock(in, [{StockIn}]) ->
@@ -533,6 +583,4 @@ stock(fix, []) ->
 stock(fix, [{StockFix}]) ->
     {?v(<<"total">>, StockFix, 0),
      ?v(<<"cost">>, StockFix, 0)}.
-
-
 

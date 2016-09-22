@@ -508,7 +508,7 @@ var wsaleUtils = function(){
 	},
 
 	correct_query_time: function(isMaster, configDays, start_time, now, dateFilter){
-	    if (isMaster)
+	    if (isMaster || configDays === diablo_nolimit_day)
 		return dateFilter.default_time(start_time, now);
 	    else {
 		var diff = now - diablo_get_time(start_time);

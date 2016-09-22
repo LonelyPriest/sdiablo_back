@@ -154,6 +154,7 @@ wreportApp.controller("wreportDailyCtrl", function(
 			order_id++; 
 		    });
 
+		    $scope.total.sale_cost = reportUtils.to_decimal($scope.total.sale_cost);
 		    $scope.total.gross = reportUtils.to_decimal($scope.total.gross);
 		    $scope.total.margins = reportUtils.calc_profit($scope.total.sale_cost, $scope.total.spay); 
 		    // console.log($scope.report_data);

@@ -194,7 +194,15 @@ var stockUtils = function(){
 	},
 
 	order_fields:function(){
-	    return {id:0, sell:1, discount:2, year:3, season:4, amount:5, style_number:6};
+	    return {id:0,
+		    sell:1,
+		    discount:2,
+		    year:3,
+		    season:4,
+		    amount:5,
+		    style_number:6,
+		    brand:7,
+		    type:8};
 	},
 
 	invalid_firm:function(firm) {

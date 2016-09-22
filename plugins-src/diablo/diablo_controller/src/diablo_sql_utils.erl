@@ -87,6 +87,14 @@ condition(page_desc, {use_amount, Sort}, CurrentPage, ItemsPerPage) ->
 condition(page_desc, {use_style_number, Sort}, CurrentPage, ItemsPerPage) ->
     " order by style_number " ++ ?MODULE:sort(Sort)
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
+    	++ ", " ++ ?to_s(ItemsPerPage);
+condition(page_desc, {use_brand, Sort}, CurrentPage, ItemsPerPage) ->
+    " order by brand " ++ ?MODULE:sort(Sort)
+	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
+    	++ ", " ++ ?to_s(ItemsPerPage);
+condition(page_desc, {use_type, Sort}, CurrentPage, ItemsPerPage) ->
+    " order by a.type " ++ ?MODULE:sort(Sort)
+	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
     	++ ", " ++ ?to_s(ItemsPerPage).
 
 

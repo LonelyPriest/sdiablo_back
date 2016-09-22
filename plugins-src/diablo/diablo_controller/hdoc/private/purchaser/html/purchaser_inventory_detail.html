@@ -41,7 +41,7 @@
 	      <i class="glyphicon glyphicon-export"></i></a> 
 
 	    <a type="button" class="btn yellow reload"
-	       x-ng-click="do_search(default_page)">刷新
+	       x-ng-click="refresh()">刷新
 	      <i class="icon icon-spinner fg-white"></i></a>
 	  </div>
 	</div>
@@ -101,8 +101,10 @@
 			<th x-ng-click="use_order(order_fields.style_number)" class="danger">款号
 			  <i class="glyphicon glyphicon-triangle-bottom fg-red"></i>
 			</th>
-			<th class="success">品牌</th>
-			<th class="warning">类别</th>
+			<th x-ng-click="use_order(order_fields.brand)">品牌
+			  <i class="glyphicon glyphicon-triangle-bottom fg-red"></i></th> 
+			<th x-ng-click="use_order(order_fields.type)">类别
+			  <i class="glyphicon glyphicon-triangle-bottom fg-red"></i></th>
 			<th>性别</th>
 			<th>厂商</th>
 			<th x-ng-click="use_order(order_fields.season)">季节

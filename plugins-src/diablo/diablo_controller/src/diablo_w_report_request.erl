@@ -70,7 +70,8 @@ action(Session, Req, {"daily_wreport", Type}, Payload) ->
 	by_shop ->
 	    try
 		{struct, Conditions} = ?v(<<"condition">>, Payload), 
-		ShopIds = ?v(<<"shop">>, Conditions), 
+		ShopIds = ?v(<<"shop">>, Conditions),
+		CurrentDate = ?v(<<"start_time">>, Conditions),
 		{ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
 
 		{ok, StockSale} = ?w_report:stastic(stock_sale, Merchant, Conditions),
@@ -81,15 +82,34 @@ action(Session, Req, {"daily_wreport", Type}, Payload) ->
 		
 		{ok, StockTransferIn} = ?w_report:stastic(stock_transfer_in, Merchant, Conditions),
 		{ok, StockTransferOut} = ?w_report:stastic(stock_transfer_out, Merchant, Conditions),
+
+		{ok, StockR} =
+		    case ?to_s(CurrentDate) =:= ?utils:current_time(localdate) of
+			true ->
+			    ?w_report:stastic(
+			       stock_real,
+			       Merchant,
+			       lists:keydelete(<<"start_time">>, 1,
+					       lists:keydelete(<<"end_time">>, 1, Conditions))
+			       ++ [{<<"start_time">>, ?v(<<"qtime_start">>, BaseSetting)}]);
+			false ->
+			    case ?w_report:stastic(
+				    current_stock_of_shop, Merchant, ShopIds, CurrentDate) of
+				{ok, []} ->
+				    ?w_report:stastic(
+				       stock_real,
+				       Merchant,
+				       lists:keydelete(
+					 <<"start_time">>, 1,
+					 lists:keydelete(<<"end_time">>, 1, Conditions))
+				       ++ [{<<"start_time">>, ?v(<<"qtime_start">>, BaseSetting)}]);
+				{ok, HistoryStock} ->
+				    {ok, HistoryStock}
+			    end
+		    end,
 		
-		{ok, StockR} = ?w_report:stastic(
-				  stock_real,
-				  Merchant,
-				  lists:keydelete(<<"start_time">>, 1,
-						  lists:keydelete(<<"end_time">>, 1, Conditions))
-				  ++ [{<<"start_time">>, ?v(<<"qtime_start">>, BaseSetting)}]),
-		
-		{ok, LastStockInfo} = ?w_report:stastic(last_stock_of_shop, Merchant, ShopIds),
+		{ok, LastStockInfo} = ?w_report:stastic(
+					 last_stock_of_shop, Merchant, ShopIds, CurrentDate),
 		{ok, Recharges} = ?w_report:stastic(recharge, Merchant, Conditions),
 
 		?utils:respond(200, object, Req,
@@ -236,7 +256,7 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 		       {<<"start_time">>, ?v(<<"qtime_start">>, BaseSetting)}
 		      ]),
 
-    {ok, LastStockInfo} = ?w_report:stastic(last_stock_of_shop, Merchant, ShopId), 
+    {ok, LastStockInfo} = ?w_report:stastic(last_stock_of_shop, Merchant, ShopId, TodayStart), 
 
     {SellTotal, SellBalance, SellCash, SellCard} = sell(info, SaleInfo),
     CurrentStockTotal = stock(total, StockR), 

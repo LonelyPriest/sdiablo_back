@@ -162,7 +162,10 @@ sale(new_by_good_with_pagination,
 daily(daily_with_pagination,
      Merchant, Conditions, CurrentPage, ItemsPerPage) ->
     daily(detail, Merchant, Conditions)
-	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage).
+	++ " order by day desc"
+	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
+    	++ ", " ++ ?to_s(ItemsPerPage).
+	%% ++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage).
 
 
 shift(shift_with_pagination,

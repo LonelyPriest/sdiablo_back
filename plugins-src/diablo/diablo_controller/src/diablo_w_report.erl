@@ -19,7 +19,7 @@
 	 terminate/2, code_change/3]).
 
 %% daily
--export([report/4, report/5, stastic/3]).
+-export([report/4, report/5, stastic/3, stastic/4]).
 -export([daily_report/3, daily_report/5]).
 -export([switch_shift_report/3, switch_shift_report/5]).
 
@@ -76,15 +76,20 @@ stastic(stock_fix, Merchant, Conditions)->
     gen_server:call(?SERVER, {stock_fix, Merchant, Conditions});
 stastic(stock_real, Merchant, Conditions) ->
     gen_server:call(?SERVER, {stock_real, Merchant, Conditions});
-
-
-stastic(last_stock_of_shop, Merchant, ShopId) when is_number(ShopId) ->
-    gen_server:call(?SERVER, {last_stock_of_shop, Merchant, [ShopId]});
-stastic(last_stock_of_shop, Merchant, ShopIds)->
-    gen_server:call(?SERVER, {last_stock_of_shop, Merchant, ShopIds});
-
 stastic(recharge, Merchant, Conditions) ->
     gen_server:call(?SERVER, {recharge, Merchant, Conditions}).
+
+
+stastic(current_stock_of_shop, Merchant, ShopId, CurrentDay) when is_number(ShopId) ->
+    gen_server:call(?SERVER, {current_stock_of_shop, Merchant, [ShopId], CurrentDay});
+stastic(current_stock_of_shop, Merchant, ShopIds, CurrentDay)->
+    gen_server:call(?SERVER, {current_stock_of_shop, Merchant, ShopIds, CurrentDay});
+
+stastic(last_stock_of_shop, Merchant, ShopId, CurrentDay) when is_number(ShopId) ->
+    gen_server:call(?SERVER, {last_stock_of_shop, Merchant, [ShopId], CurrentDay});
+stastic(last_stock_of_shop, Merchant, ShopIds, CurrentDay)->
+    gen_server:call(?SERVER, {last_stock_of_shop, Merchant, ShopIds, CurrentDay}).
+
 
 
 
@@ -410,13 +415,24 @@ handle_call({stock_real, Merchant, Conditions}, _From, State)->
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 
-handle_call({last_stock_of_shop, Merchant, ShopIds}, _From, State) ->
+handle_call({last_stock_of_shop, Merchant, ShopIds, CurrentDay}, _From, State) ->
     Sql = "select a.id, a.merchant, a.shop as shop_id, stock as total"
 	" from w_daily_report a "
 	"inner join (select max(id) as id, merchant, shop from w_daily_report"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and "++ ?utils:to_sqls(proplists, {<<"shop">>, ShopIds})
-	++ "group by merchant, shop) b on a.id=b.id", 
+	++ " and day<\'"  ++ ?to_s(CurrentDay) ++ "\'"
+	++ " group by merchant, shop) b on a.id=b.id", 
+    R = ?sql_utils:execute(read, Sql),
+    {reply, R, State};
+
+handle_call({current_stock_of_shop, Merchant, ShopIds, CurrentDay}, _From, State) ->
+    Sql = "select id, merchant, shop as shop_id, stock as total"
+	" from w_daily_report "
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and "++ ?utils:to_sqls(proplists, {<<"shop">>, ShopIds})
+	++ " and day='"  ++ ?to_s(CurrentDay) ++ "\'"
+	++ " group by merchant, shop", 
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 
