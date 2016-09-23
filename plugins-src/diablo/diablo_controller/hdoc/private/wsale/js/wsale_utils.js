@@ -529,6 +529,13 @@ var wsaleUtils = function(){
 			      end_time: diablo_get_time(end_time),
 			      page: current_page,
 			      t: datetime});
+	},
+
+	remove_cache_page: function(stroage){
+	    stroage.remove(diablo_key_wsale_trans);
+	    stroage.remove("wsale-trans-stastic"); 
+	    stroage.remove(diablo_key_wsale_trans_detail);
+	    stroage.remove("wsale-note-stastic");
 	}
 
 	//

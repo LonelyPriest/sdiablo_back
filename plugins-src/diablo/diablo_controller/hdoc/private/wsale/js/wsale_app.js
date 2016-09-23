@@ -2001,8 +2001,9 @@ wsaleApp.controller("wsaleCtrl", function(
     diablo_remove_wsale_local_storage(localStorageService); 
 });
 
-wsaleApp.controller("loginOutCtrl", function($scope, $resource){
+wsaleApp.controller("loginOutCtrl", function($scope, $resource, localStorageService){
     $scope.home = function () {
-	diablo_login_out($resource)
+	wsaleUtils.remove_cache_page(localStorageService); 
+	diablo_login_out($resource);
     };
 });

@@ -223,12 +223,11 @@ var diablo_remove_wsale_local_storage = function(l){
     var keys = l.keys();
     console.log(keys);
     var now = $.now();
-    var re = /^ws-\d+-\d+-\d+.*$/; 
+    var re = /^ws-\d+-\d+-.*$/; 
     angular.forEach(keys, function(k){
 	if (re.test(k)){
 	    var t = k.split("-");
-	    // console.log(t);
-	    if (now > t[t.length -1] + diablo_day_millisecond){
+	    if (now > parseInt(t[t.length - 1]) + 3600 * 1000){
 		l.remove(k);
 	    }
 	}
