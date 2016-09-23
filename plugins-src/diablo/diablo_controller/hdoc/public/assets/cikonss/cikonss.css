@@ -7,7 +7,7 @@
  */
 
 /* Generals */
-.icon {
+.cicon {
 	/* don't change width and height in order to change the size of the icon,
 	you can control the size with font-size for different class(es) - below */
 	line-height: 100%;
@@ -18,8 +18,8 @@
 	float: left;
 }
 /* Button like icons */
-.icon-square,
-.icon-rounded {
+.cicon-square,
+.cicon-rounded {
 	border: .75em solid rgb(242, 242, 242); /* #f2f2f2 */
 	background-color: rgb(242, 242, 242); /* #f2f2f2 */
 	margin: 0 .5em .5em 0;
@@ -28,7 +28,7 @@
 	-moz-box-shadow: 0 0 0 .0625em rgb(226, 226, 226); /* #e2e2e2 */
 	box-shadow: 0 0 0 .0625em rgb(226, 226, 226); /* #e2e2e2 */
 }
-.icon-rounded {
+.cicon-rounded {
 	border-radius: 1.5em;
 }
 /*
@@ -37,19 +37,19 @@
  * 5 preset sizes, simply change the font-size or add your custom class.
  *
  */
-.icon-small {
+.cicon-small {
 	font-size: 1em;
 }
-.icon-mid {
+.cicon-mid {
 	font-size: 2em;
 }
-.icon-large {
+.cicon-large {
 	font-size: 4em;
 }
-.icon-extra-large {
+.cicon-extra-large {
 	font-size: 8em;
 }
-.icon-huge {
+.cicon-huge {
 	font-size: 12em;
 }
 
@@ -62,7 +62,7 @@
  */
 
 /* Home */
-.icon-home {
+.cicon-home {
 	position: absolute;
 	top: 0;
 	left: .125em;
@@ -70,13 +70,13 @@
 	height: .5em;
 	background-color: rgb(102, 102, 102); /* #666 */
 }
-.icon-home:before,
-.icon-home:after {
+.cicon-home:before,
+.cicon-home:after {
 	content: "";
 	position: absolute;
 	border-style: solid;
 }
-.icon-home:before {
+.cicon-home:before {
 	top: .5em;
 	left: 0;
 	width: .25em;
@@ -84,7 +84,7 @@
 	border-width: .1875em .25em 0 .25em;
 	border-color: rgb(102, 102, 102); /* #666 */
 }
-.icon-home:after {
+.cicon-home:after {
 	top: -.5em;
 	left: -.125em;
 	width: 0;
@@ -94,19 +94,19 @@
 }
 
 /* Arrows */
-.icon-arrowRight,
-.icon-arrowLeft,
-.icon-arrowDown,
-.icon-arrowUp {
+.cicon-arrowRight,
+.cicon-arrowLeft,
+.cicon-arrowDown,
+.cicon-arrowUp {
 	position: absolute;
 	width: .5em;
 	height: .5em;
 	background-color: rgb(102, 102, 102); /* #666 */
 }
-.icon-arrowRight:after,
-.icon-arrowLeft:after,
-.icon-arrowDown:after,
-.icon-arrowUp:after {
+.cicon-arrowRight:after,
+.cicon-arrowLeft:after,
+.cicon-arrowDown:after,
+.cicon-arrowUp:after {
 	content: "";
 	position: absolute;
 	width: 0;
@@ -115,55 +115,55 @@
 	border-style: solid;
 }
 /* Arrows - Left and Right */
-.icon-arrowRight,
-.icon-arrowLeft {
+.cicon-arrowRight,
+.cicon-arrowLeft {
 	top: .25em;
 }
-.icon-arrowRight {
+.cicon-arrowRight {
 	left: 0;
 }
-.icon-arrowLeft {
+.cicon-arrowLeft {
 	right: 0;
 }
-.icon-arrowRight:after,
-.icon-arrowLeft:after {
+.cicon-arrowRight:after,
+.cicon-arrowLeft:after {
 	top: -.25em;
 }
-.icon-arrowRight:after {
+.cicon-arrowRight:after {
 	left: .5em;
 	border-color: transparent transparent transparent rgb(102, 102, 102); /* #666 */
 }
-.icon-arrowLeft:after {
+.cicon-arrowLeft:after {
 	right: .5em;
 	border-color: transparent rgb(102, 102, 102) transparent transparent; /* #666 */
 }
 /* Arrows -  Down and Up */
-.icon-arrowDown,
-.icon-arrowUp {
+.cicon-arrowDown,
+.cicon-arrowUp {
 	left: .25em;
 }
-.icon-arrowDown {
+.cicon-arrowDown {
 	top: 0;
 }
-.icon-arrowUp,
-.icon-arrowDown:after {
+.cicon-arrowUp,
+.cicon-arrowDown:after {
 	top: .5em;
 }
-.icon-arrowDown:after,
-.icon-arrowUp:after {
+.cicon-arrowDown:after,
+.cicon-arrowUp:after {
 	left: -.25em;
 }
-.icon-arrowDown:after {
+.cicon-arrowDown:after {
 	border-color: rgb(102, 102, 102) transparent transparent transparent; /* #666 */
 }
-.icon-arrowUp:after {
+.cicon-arrowUp:after {
 	top: -1em;
 	border-color: transparent transparent rgb(102, 102, 102) transparent; /* #666 */
 }
 
 /* Comments */
-.icon-comment,
-.icon-comment-text {
+.cicon-comment,
+.cicon-comment-text {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -173,14 +173,14 @@
 	/* for browsers that supports */
 	border-radius: .125em;
 }
-.icon-comment:after,
-.icon-comment-text:before,
-.icon-comment-text:after {
+.cicon-comment:after,
+.cicon-comment-text:before,
+.cicon-comment-text:after {
 	content: "";
 	position: absolute;
 	border-style: solid;
 }
-.icon-comment-text:before {
+.cicon-comment-text:before {
 	top: .1875em;
 	left: .125em;
 	width: .75em;
@@ -188,8 +188,8 @@
 	border-width: .09375em 0;
 	border-color: rgb(249, 249, 249); /* #f9f9f9 */
 }
-.icon-comment:after,
-.icon-comment-text:after {
+.cicon-comment:after,
+.cicon-comment-text:after {
 	top: .75em;
 	left: .25em;
 	width: 0;
@@ -199,7 +199,7 @@
 }
 
 /* Mail */
-.icon-mail {
+.cicon-mail {
 	position: absolute;
 	top: .15625em;
 	left: 0;
@@ -207,8 +207,8 @@
 	height: .75em;
 	background-color: rgb(102, 102, 102); /*#666*/
 }
-.icon-mail:before,
-.icon-mail:after {
+.cicon-mail:before,
+.cicon-mail:after {
 	content: "";
 	position: absolute;
 	left: 0;
@@ -217,17 +217,17 @@
 	border-width: .4em .5em;
 	border-style: solid;
 }
-.icon-mail:before {
+.cicon-mail:before {
 	top: 0;
 	border-color: rgb(249, 249, 249) transparent transparent transparent; /* #f9f9f9 */
 }
-.icon-mail:after {
+.cicon-mail:after {
 	top: -.0625em;
 	border-color: rgb(102, 102, 102) transparent transparent transparent; /* #666 */
 }
 
 /* Calendar */
-.icon-calendar{
+.cicon-calendar{
 	position: absolute;
 	top: .125em;
 	left: 0;
@@ -240,7 +240,7 @@
 	/* for browsers that supports */
 	border-radius: .0625em;
 }
-.icon-calendar:before{
+.cicon-calendar:before{
 	content: "";
 	position: absolute;
 	top: -.25em;
@@ -251,7 +251,7 @@
 	border-style: solid;
 	border-color: rgb(102, 102, 102); /* #666 */
 }
-.icon-calendar:after{
+.cicon-calendar:after{
 	content: "15";
 	position: absolute;
 	top: -.25em;
@@ -263,20 +263,20 @@
 }
 
 /* Plus */
-.icon-plus,
-.icon-plus:after {
+.cicon-plus,
+.cicon-plus:after {
 	position: absolute;
 	width: .375em;
 	height: .375em;
 	border-style: solid;
 	border-color: rgb(102, 102, 102); /* #666 */
 }
-.icon-plus {
+.cicon-plus {
 	top: 0;
 	left: 0;
 	border-width: 0 .25em .25em 0;
 }
-.icon-plus:after {
+.cicon-plus:after {
 	content: "";
 	top: .375em;
 	left: .375em;
@@ -284,7 +284,7 @@
 }
 
 /* Minus */
-.icon-minus {
+.cicon-minus {
 	position: absolute;
 	top: .375em;
 	left: 0;
@@ -294,7 +294,7 @@
 }
 
 /* File */
-.icon-file {
+.cicon-file {
 	position: absolute;
 	top: 0;
 	left: .125em;
@@ -307,7 +307,7 @@
 	/* for browsers that supports */
 	border-radius: .0625em;
 }
-.icon-file:before {
+.cicon-file:before {
 	content: "";
 	position: absolute;
 	top: -.125em;
@@ -318,13 +318,13 @@
 	border-style: solid;
 	border-color: rgb(255, 255, 255) rgb(102, 102, 102) rgb(102, 102, 102) rgb(255, 255, 255); /* #fff and #666 - #fff has to mach body bg*/
 }
-.icon-square .icon-file:before,
-.icon-rounded .icon-file:before {
-	border-color: rgb(242, 242, 242) rgb(102, 102, 102) rgb(102, 102, 102) rgb(242, 242, 242); /* #f2f2f2 and #666 - #f2f2f2 has to mach with .icon-square and .icon-rounded bg*/
+.cicon-square .cicon-file:before,
+.cicon-rounded .cicon-file:before {
+	border-color: rgb(242, 242, 242) rgb(102, 102, 102) rgb(102, 102, 102) rgb(242, 242, 242); /* #f2f2f2 and #666 - #f2f2f2 has to mach with .cicon-square and .cicon-rounded bg*/
 }
 
 /* Folder */
-.icon-folder {
+.cicon-folder {
 	position: absolute;
 	top: .125em;
 	left: 0;
@@ -335,7 +335,7 @@
 	border-bottom-left-radius: .0625em;
 	border-bottom-right-radius: .0625em;
 }
-.icon-folder:before {
+.cicon-folder:before {
 	content: "";
 	position: absolute;
 	top: -.125em;
@@ -349,7 +349,7 @@
 }
 
 /* Tag */
-.icon-tag {
+.cicon-tag {
 	position: absolute;
 	top: 0;
 	left: .25em;
@@ -360,8 +360,8 @@
 	border-top-left-radius: .0625em;
 	border-top-right-radius: .0625em;
 }
-.icon-tag:before,
-.icon-tag:after {
+.cicon-tag:before,
+.cicon-tag:after {
 	content: "";
 	position: absolute;
 	top: .75em;
@@ -370,17 +370,17 @@
 	border-width: .125em;
 	border-style: solid;
 }
-.icon-tag:before {
+.cicon-tag:before {
 	left: 0;
 	border-color: rgb(102, 102, 102) transparent transparent rgb(102, 102, 102); /* #666 */
 }
-.icon-tag:after {
+.cicon-tag:after {
 	left: .25em;
 	border-color: rgb(102, 102, 102) rgb(102, 102, 102) transparent transparent; /* #666 */
 }
 
 /* Desktop */
-.icon-desktop {
+.cicon-desktop {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -393,19 +393,19 @@
 	/* for browsers that supports */
 	border-radius: .0625em;
 }
-.icon-desktop:before,
-.icon-desktop:after {
+.cicon-desktop:before,
+.cicon-desktop:after {
 	content: "";
 	position: absolute;
 	background-color: rgb(102, 102, 102); /* #666 */
 }
-.icon-desktop:before {
+.cicon-desktop:before {
 	top: .6875em;
 	left: .3125em;
 	width: .25em;
 	height: .1875em;
 }
-.icon-desktop:after {
+.cicon-desktop:after {
 	top: .875em;
 	left: .125em;
 	width: .625em;
@@ -413,7 +413,7 @@
 }
 
 /* Tablet */
-.icon-tablet {
+.cicon-tablet {
 	position: absolute;
 	top: .0625em;
 	left: 0;
@@ -426,7 +426,7 @@
 	/* for browsers that supports */
 	border-radius: .0625em;
 }
-.icon-tablet:before {
+.cicon-tablet:before {
 	content: "";
 	position: absolute;
 	top: .28125em;
@@ -439,7 +439,7 @@
 }
 
 /* Phone */
-.icon-phone {
+.cicon-phone {
 	position: absolute;
 	top: 0;
 	left: .1875em;
@@ -452,7 +452,7 @@
 	/* for browsers that supports */
 	border-radius: .0625em;
 }
-.icon-phone:after {
+.cicon-phone:after {
 	content: "";
 	position: absolute;
 	top: .78125em;
@@ -465,44 +465,44 @@
 }
 
 /* Menu */
-.icon-menu,
-.icon-menu:before,
-.icon-menu:after {
+.cicon-menu,
+.cicon-menu:before,
+.cicon-menu:after {
 	position: absolute;
 	left: 0;
 	width: 1em;
 	height: .25em;
 	background-color: rgb(102, 102, 102); /* #666 */
 }
-.icon-menu {
+.cicon-menu {
 	top: .0625em;
 }
-.icon-menu:before {
+.cicon-menu:before {
 	content: "";
 	top: .3125em;
 }
-.icon-menu:after {
+.cicon-menu:after {
 	content: "";
 	top: .625em;
 }
 
 /* Download  and Upload */
-.icon-download,
-.icon-upload {
+.cicon-download,
+.cicon-upload {
 	position: absolute;
 	left: .375em;
 	width: .25em;
 	height: .5em;
 	background-color: rgb(102, 102, 102); /* #666 */
 }
-.icon-download {
+.cicon-download {
 	top: 0;
 }
-.icon-upload {
+.cicon-upload {
 	top: .25em;
 }
-.icon-download:before,
-.icon-upload:before {
+.cicon-download:before,
+.cicon-upload:before {
 	content: "";
 	position: absolute;
 	left: -.125em;
@@ -511,16 +511,16 @@
 	border-width: .25em;
 	border-style: solid;
 }
-.icon-download:before {
+.cicon-download:before {
 	top: .5em;
 	border-color: rgb(102, 102, 102) transparent transparent transparent; /* #666 */
 }
-.icon-upload:before {
+.cicon-upload:before {
 	top: -.5em;
 	border-color: transparent transparent rgb(102, 102, 102) transparent; /* #666 */
 }
-.icon-download:after,
-.icon-upload:after {
+.cicon-download:after,
+.cicon-upload:after {
 	content: "";
 	position: absolute;
 	left: -.375em;
@@ -530,17 +530,17 @@
 	border-style: solid;
 	border-color: rgb(102, 102, 102); /* #666 */
 }
-.icon-download:after {
+.cicon-download:after {
 	top: .75em;
 }
-.icon-upload:after {
+.cicon-upload:after {
 	top: .5em;
 }
 
 /* Page Templates */
-.icon-tpl-full,
-.icon-tpl-side-r,
-.icon-tpl-side-l {
+.cicon-tpl-full,
+.cicon-tpl-side-r,
+.cicon-tpl-side-l {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -548,45 +548,45 @@
 	height: .25em;
 	background-color: rgb(102, 102, 102);
 }
-.icon-tpl-full:after,
-.icon-tpl-side-r:before,
-.icon-tpl-side-r:after,
-.icon-tpl-side-l:before,
-.icon-tpl-side-l:after {
+.cicon-tpl-full:after,
+.cicon-tpl-side-r:before,
+.cicon-tpl-side-r:after,
+.cicon-tpl-side-l:before,
+.cicon-tpl-side-l:after {
 	content: "";
 	position: absolute;
 	top: .3125em;
 	height: .6875em;
 	background-color: rgb(102, 102, 102);
 }
-.icon-tpl-full:after,
-.icon-tpl-side-r:before,
-.icon-tpl-side-l:before {
+.cicon-tpl-full:after,
+.cicon-tpl-side-r:before,
+.cicon-tpl-side-l:before {
 	left: 0;
 }
-.icon-tpl-full:after {
+.cicon-tpl-full:after {
 	width: 1em;
 }
-.icon-tpl-side-r:before,
-.icon-tpl-side-l:after {
+.cicon-tpl-side-r:before,
+.cicon-tpl-side-l:after {
 	width: .6875em;
 }
-.icon-tpl-side-r:after,
-.icon-tpl-side-l:before {
+.cicon-tpl-side-r:after,
+.cicon-tpl-side-l:before {
 	width: .25em;
 }
-.icon-tpl-side-r:after {
+.cicon-tpl-side-r:after {
 	left: .75em;
 }
-.icon-tpl-side-l:after {
+.cicon-tpl-side-l:after {
 	left: .3125em;
 }
 
 /* Views */
 /* List view */
-.icon-list-view,
-.icon-list-view:before,
-.icon-list-view:after {
+.cicon-list-view,
+.cicon-list-view:before,
+.cicon-list-view:after {
 	position: absolute;
 	width: .0625em;
 	height: .25em;
@@ -594,24 +594,24 @@
 	border-style: solid;
 	border-color: rgb(102, 102, 102);
 }
-.icon-list-view {
+.cicon-list-view {
 	top: .0625em;
 	left: 0;
 }
-.icon-list-view:before,
-.icon-list-view:after {
+.cicon-list-view:before,
+.cicon-list-view:after {
 	content: "";
 	left: -.25em;
 }
-.icon-list-view:before {
+.cicon-list-view:before {
 	top: .3125em;
 }
-.icon-list-view:after {
+.cicon-list-view:after {
 	top: .625em;
 }
 /* Grid view */
-.icon-grid-view,
-.icon-grid-view:before {
+.cicon-grid-view,
+.cicon-grid-view:before {
 	position: absolute;
 	width: .0625em;
 	height: .46875em;
@@ -619,18 +619,18 @@
 	border-style: solid;
 	border-color: rgb(102, 102, 102);
 }
-.icon-grid-view {
+.cicon-grid-view {
 	top: 0;
 	left: 0;
 }
-.icon-grid-view:before {
+.cicon-grid-view:before {
 	content: "";
 	top: .53125em;
 	left: -.46875em;
 }
 
 /* Camera */
-.icon-camera {
+.cicon-camera {
 	position: absolute;
 	top: .25em;
 	left: 0;
@@ -638,7 +638,7 @@
 	height: .5em;
 	background-color: rgb(102, 102, 102); /* #666 */
 }
-.icon-camera:after {
+.cicon-camera:after {
 	content: "";
 	position: absolute;
 	top: 0;
@@ -651,7 +651,7 @@
 }
 
 /* Image */
-.icon-image {
+.cicon-image {
 	position: absolute;
 	top: .125em;
 	left: 0;
@@ -663,8 +663,8 @@
 	/* for browsers that supports */
 	border-radius: .0625em;
 }
-.icon-image:before,
-.icon-image:after {
+.cicon-image:before,
+.cicon-image:after {
 	content: "";
 	position: absolute;
 	bottom: 0;
@@ -673,18 +673,18 @@
 	border-style: solid;
 	border-color: transparent transparent rgb(102, 102, 102) transparent; /* #666 */
 }
-.icon-image:before {
+.cicon-image:before {
 	left: 0;
 	border-width: .25em .25em .125em .125em;
 }
-.icon-image:after {
+.cicon-image:after {
 	right: 0;
 	border-width: .25em .25em .375em .375em;
 }
 
 /* Player controls */
 /* Play */
-.icon-play {
+.cicon-play {
 	position: absolute;
 	top: 0;
 	left: .1875em;
@@ -695,7 +695,7 @@
 	border-color: transparent transparent transparent rgb(102, 102, 102); /* #666 */
 }
 /* Stop */
-.icon-stop {
+.cicon-stop {
 	position: absolute;
 	top: .0625em;
 	left: .0625em;
@@ -704,115 +704,115 @@
 	background-color: rgb(102, 102, 102); /* #666 */
 }
 /* Pause */
-.icon-pause,
-.icon-pause:after {
+.cicon-pause,
+.cicon-pause:after {
 	position: absolute;
 	width: .25em;
 	height: .875em;
 	background-color: rgb(102, 102, 102); /* #666 */
 }
-.icon-pause {
+.cicon-pause {
 	top: .0625em;
 	left: .21875em;
 }
-.icon-pause:after {
+.cicon-pause:after {
 	content: "";
 	top: 0;
 	left: .3125em;
 }
 /* Forward, Next, Rewind and Prev */
-.icon-forward,
-.icon-next,
-.icon-rewind,
-.icon-prev,
-.icon-forward:after,
-.icon-next:before,
-.icon-rewind:after,
-.icon-prev:before {
+.cicon-forward,
+.cicon-next,
+.cicon-rewind,
+.cicon-prev,
+.cicon-forward:after,
+.cicon-next:before,
+.cicon-rewind:after,
+.cicon-prev:before {
 	position: absolute;
 	width: 0;
 	height: 0;
 	border-width: .4375em;
 	border-style: solid;
 }
-.icon-forward,
-.icon-next,
-.icon-rewind,
-.icon-prev {
+.cicon-forward,
+.cicon-next,
+.cicon-rewind,
+.cicon-prev {
 	top: .0625em;
 }
-.icon-forward:after,
-.icon-next:before,
-.icon-rewind:after,
-.icon-prev:before,
-.icon-next:after,
-.icon-prev:after {
+.cicon-forward:after,
+.cicon-next:before,
+.cicon-rewind:after,
+.cicon-prev:before,
+.cicon-next:after,
+.cicon-prev:after {
 	content: "";
 	top: -.4375em;
 }
-.icon-forward,
-.icon-next,
-.icon-forward:after,
-.icon-next:before {
+.cicon-forward,
+.cicon-next,
+.cicon-forward:after,
+.cicon-next:before {
 	border-color: transparent transparent transparent rgb(102, 102, 102); /* #666 */
 }
-.icon-rewind,
-.icon-prev,
-.icon-rewind:after,
-.icon-prev:before {
+.cicon-rewind,
+.cicon-prev,
+.cicon-rewind:after,
+.cicon-prev:before {
 	border-color: transparent rgb(102, 102, 102) transparent transparent; /* #666 */
 }
-.icon-forward {
+.cicon-forward {
 	left: .0625em;
 }
-.icon-rewind {
+.cicon-rewind {
 	right: .0625em;
 }
-.icon-next,
-.icon-forward:after,
-.icon-next:before {
+.cicon-next,
+.cicon-forward:after,
+.cicon-next:before {
 	left: 0;
 }
-.icon-prev,
-.icon-rewind:after,
-.icon-prev:before {
+.cicon-prev,
+.cicon-rewind:after,
+.cicon-prev:before {
 	right: 0;
 }
-.icon-next:after,
-.icon-prev:after {
+.cicon-next:after,
+.cicon-prev:after {
 	position: absolute;
 	width: .125em;
 	height: .875em;
 	background-color: rgb(102, 102, 102); /* #666 */
 }
-.icon-next:after {
+.cicon-next:after {
 	left: .4375em;
 }
-.icon-prev:after {
+.cicon-prev:after {
 	right: .4375em;
 }
 
 /* Stats */
-.icon-stats,
-.icon-stats:before {
+.cicon-stats,
+.cicon-stats:before {
 	position: absolute;
 	width: .3125em;
 	border-width: 0 .1875em;
 	border-style: solid;
 	border-color: rgb(102, 102, 102); /* #666 */
 }
-.icon-stats {
+.cicon-stats {
 	top: 0;
 	left: 0;
 	height: .875em;
 }
-.icon-stats:before {
+.cicon-stats:before {
 	content: "";
 	top: .3125em;
 	left: .0625em;
 	height: .5625em;
 }
-.icon-stats:after {
+.cicon-stats:after {
 	content: "";
 	position: absolute;
 	top: .875em;
@@ -823,11 +823,11 @@
 }
 
 /* Battery */
-.icon-battery-empty,
-.icon-battery-1_4,
-.icon-battery-half,
-.icon-battery-3_4,
-.icon-battery-full {
+.cicon-battery-empty,
+.cicon-battery-1_4,
+.cicon-battery-half,
+.cicon-battery-3_4,
+.cicon-battery-full {
 	position: absolute;
 	top: .25em;
 	left: 0;
@@ -838,11 +838,11 @@
 	border-color: rgb(102, 102, 102); /* #666 */
 	background-color: rgb(249, 249, 249); /* #f9f9f9 */
 }
-.icon-battery-empty:after,
-.icon-battery-1_4:after,
-.icon-battery-half:after,
-.icon-battery-3_4:after,
-.icon-battery-full:after {
+.cicon-battery-empty:after,
+.cicon-battery-1_4:after,
+.cicon-battery-half:after,
+.cicon-battery-3_4:after,
+.cicon-battery-full:after {
 	content: "";
 	position: absolute;
 	top: .0625em;
@@ -851,10 +851,10 @@
 	height: .25em;
 	background-color: rgb(102, 102, 102); /* #666 */
 }
-.icon-battery-1_4:before,
-.icon-battery-half:before,
-.icon-battery-3_4:before,
-.icon-battery-full:before {
+.cicon-battery-1_4:before,
+.cicon-battery-half:before,
+.cicon-battery-3_4:before,
+.cicon-battery-full:before {
 	content: "";
 	position: absolute;
 	top: 0;
@@ -862,23 +862,23 @@
 	height: .375em;
 	background-color: rgb(153, 153, 153); /* #999 */
 }
-.icon-battery-1_4:before {
+.cicon-battery-1_4:before {
 	width: .1875em;
 }
-.icon-battery-half:before {
+.cicon-battery-half:before {
 	width: .375em;
 }
-.icon-battery-3_4:before {
+.cicon-battery-3_4:before {
 	width: .5625em;
 }
-.icon-battery-full:before {
+.cicon-battery-full:before {
 	width: .75em;
 }
 
 /* Sound */
-.icon-sound-mute,
-.icon-sound-normal,
-.icon-sound-loud {
+.cicon-sound-mute,
+.cicon-sound-normal,
+.cicon-sound-loud {
 	position: absolute;
 	top: .375em;
 	left: .09375em;
@@ -886,9 +886,9 @@
 	height: .25em;
 	background-color: rgb(102, 102, 102);
 }
-.icon-sound-mute:before,
-.icon-sound-normal:before,
-.icon-sound-loud:before {
+.cicon-sound-mute:before,
+.cicon-sound-normal:before,
+.cicon-sound-loud:before {
 	content: "";
 	position: absolute;
 	top: -.3125em;
@@ -899,8 +899,8 @@
 	border-style: solid;
 	border-color: transparent rgb(102, 102, 102) transparent transparent;
 }
-.icon-sound-normal:after,
-.icon-sound-loud:after {
+.cicon-sound-normal:after,
+.cicon-sound-loud:after {
 	content: "";
 	position: absolute;
 	top: -.125em;
@@ -910,9 +910,9 @@
 	border-style: solid;
 	border-color: rgb(102, 102, 102);
 }
-.icon-sound-normal:after {
+.cicon-sound-normal:after {
 	border-width: 0 0 0 .0625em;
 }
-.icon-sound-loud:after {
+.cicon-sound-loud:after {
 	border-width: 0 .0625em;
 }

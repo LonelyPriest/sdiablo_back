@@ -346,7 +346,8 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
 	$scope.do_search($scope.default_page); 
     }
 
-    $scope.page_changed = function(){
+    $scope.page_changed = function(page){
+	$scope.current_page = page;
 	$scope.do_search($scope.current_page);
     };
 
@@ -358,7 +359,6 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
 
     var get_amount = purchaserService.get_inventory_from_sort;
 
-    var dialog = diabloUtilsService;
     $scope.rsn_detail = function(inv){
 	console.log(inv);
 	if (angular.isDefined(inv.amounts)

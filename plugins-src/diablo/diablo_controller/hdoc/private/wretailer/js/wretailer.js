@@ -68,7 +68,9 @@ wretailerApp.controller("wretailerDetailCtrl", function(
     // console.log($scope.no_vips);
     
     $scope.round      = diablo_round;
-    $scope.pagination = {};
+    $scope.pagination = {}; 
+    $scope.months     = ["===请选择会员生日月份==="].concat(retailerUtils.months());
+    $scope.birth_month = $scope.months[0];
     
     var dialog = diabloUtilsService;
     var f_add  = diablo_float_add;
@@ -117,6 +119,28 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	    ) 
 	};
     };
+
+    var repagination = function(filters){
+	diablo_order(filters);
+	$scope.total_balance = 0;
+	$scope.total_consume = 0;
+	
+	angular.forEach(filters, function(f){
+	    $scope.total_balance += f.balance;
+	    $scope.total_consume += f.consume;
+	});
+
+	$scope.total_balance = retailerUtils.to_decimal($scope.total_balance);
+	$scope.total_consume = retailerUtils.to_decimal($scope.total_consume);
+
+	// re pagination
+	diabloPagination.set_data(filters);
+	$scope.total_items      = diabloPagination.get_length();
+	$scope.filter_retailers = diabloPagination.get_page(
+	    $scope.pagination.default_page);
+
+	return filters;
+    };
     
 
     /*
@@ -163,25 +187,8 @@ wretailerApp.controller("wretailerDetailCtrl", function(
     $scope.on_select_retailer = function(item, model, label){
 	console.log(model);
 	
-	var filters = $scope.do_search(model.name);
-	diablo_order(filters);
-	console.log(filters);
-
-	$scope.total_balance = 0;
-	$scope.total_consume = 0;
-	angular.forEach(filters, function(f){
-	    $scope.total_balance += f.balance;
-	    $scope.total_consume += f.consume;
-	});
-
-	$scope.total_balance = diablo_rdight($scope.total_balance, 2);
-	$scope.total_consume = diablo_rdight($scope.total_consume, 2);
-
-	// re pagination
-	diabloPagination.set_data(filters);
-	$scope.total_items      = diabloPagination.get_length();
-	$scope.filter_retailers = diabloPagination.get_page(
-	    $scope.pagination.default_page);
+	var filters = $scope.do_search(model.name); 
+	repagination(filters);
 	// save
 	$scope.save_to_local(model.name, $scope.total_items);
     }
@@ -197,7 +204,8 @@ wretailerApp.controller("wretailerDetailCtrl", function(
     }
 
     $scope.refresh = function(){
-	$scope.reset_local_storage(); 
+	$scope.reset_local_storage();
+	$scope.birth_month = $scope.months[0];
 	$scope.do_refresh($scope.pagination.default_page, undefined);
     };
     
@@ -213,6 +221,7 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	    $scope.total_consume = 0;
 	    angular.forEach($scope.retailers, function(r){
 		r.type = diablo_get_object(r.type_id, $scope.retailer_types);
+		r.birthday = r.birth.substr(5,8); 
 		r.birth = diablo_set_date_obj(r.birth);
 		r.shop  = diablo_get_object(r.shop_id, $scope.shops);
 		r.no_vip = in_array($scope.no_vips, r.id) ? true : false;
@@ -269,19 +278,32 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	$location.path("/wretailer_new"); 
     };
 
+    $scope.charge_detail = function(){
+	diablo_goto_page("#/wretailer_charge_detail");
+    }
+
     $scope.trans_info = function(r){
-	dialog.response(false, "会员充值", "暂不支持此操作！！");
+	dialog.response(false, "会员对帐", "暂不支持此操作！！请在销售记录中查询！！");
 	return;
-	// diablo_goto_page("#/wretailer_trans/" +r.id.toString());
     };
 
+    $scope.change_birth_month = function(){
+	console.log($scope.birth_month);
+	if ($scope.birth_month !== $scope.months[0]) {
+	    var filters = $scope.retailers.filter(function(r){
+		return parseInt((dateFilter(r.birth, "yyyy-MM-dd").split("-")[1])) === $scope.birth_month;
+	    })
+	    // console.log(filter); 
+	    repagination(filters); 
+	}
+    };
+    
     var pattern = {name_address: diabloPattern.ch_name_address,
 		   tel_mobile:   diabloPattern.tel_mobile,
 		   decimal_2:    diabloPattern.decimal_2,
 		   number:       diabloPattern.number,
 		   comment:      diabloPattern.comment,
 		   password:     diabloPattern.num_passwd};
-
     
     // var get_login_employee = function(shop, loginEmployee, employees){
     // 	var filterEmployees = employees.filter(function(e){
@@ -296,9 +318,7 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 
     // 	// console.log(select);
     // 	return {login:select, filter:filterEmployees};
-    // },
-
-    
+    // },    
     $scope.charge = function(retailer){
 	console.log($scope.charges); 
 	var get_charge = function(charge_id) {

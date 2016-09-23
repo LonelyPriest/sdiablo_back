@@ -519,6 +519,16 @@ var wsaleUtils = function(){
 		    return dateFilter.default_time(now - diablo_day_millisecond * configDays, now); 
 		}
 	    } 
+	},
+
+	cache_page_condition: function(
+	    storage, key, conditions, start_time, end_time, current_page, datetime){
+	    storage.remove(key);
+	    storage.set(key, {filter:conditions,
+			      start_time:diablo_get_time(start_time),
+			      end_time: diablo_get_time(end_time),
+			      page: current_page,
+			      t: datetime});
 	}
 
 	//

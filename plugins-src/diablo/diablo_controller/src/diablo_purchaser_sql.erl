@@ -511,11 +511,13 @@ inventory(list, Merchant, Conditions) ->
 
 inventory(list_info, Merchant, Conditions) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_with_prifix, Conditions), 
-    "select a.style_number, a.brand as brand_id, a.firm as firm_id"
-	", a.type as type_id, a.season, a.amount as total"
+    "select a.id, a.style_number, a.brand as brand_id, a.firm as firm_id"
+	", a.type as type_id, a.year, a.season, a.amount as total"
 	", a.org_price, a.tag_price, a.ediscount, a.discount"
 	", a.shop as shop_id, a.entry_date"
+	", b.name as fname"
 	" from w_inventory a"
+	" left join suppliers b on a.firm=b.id"
 	" where a.merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions) 
 	++ ?sql_utils:fix_condition(time, time_with_prfix, StartTime, EndTime); 

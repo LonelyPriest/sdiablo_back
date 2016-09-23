@@ -405,15 +405,20 @@
 			   x-ng-click="update_inventory(inv)">修改
 			  <i class="glyphicon glyphicon-edit"></i></a>
 
-			<a class="btn diablo-input-button blue-hoki"
+			<a class="btn diablo-input-button green"
 			   x-ng-if="!inv.free_update"
 			   x-ng-click="gift(inv)">赠送
 			  <i class="glyphicon glyphicon-gift"></i></a>
 			
+			<a class="btn diablo-input-button btn-primary"
+			   x-ng-if="!inv.free_update"
+			   x-ng-click="stock_info(inv)">库存
+			  <i class="glyphicon glyphicon-leaf"></i></a>
+
 			<a class="btn diablo-input-button btn-danger"
 			   x-ng-if="!inv.free_update"
 			   x-ng-click="delete_inventory(inv)">删除
-			  <i class="glyphicon glyphicon-erase"></i></a> 
+			  <i class="glyphicon glyphicon-erase"></i></a>
 
 			<a class="btn diablo-input-button btn-success"
 			   ng-if="inv.free_update"
@@ -613,6 +618,43 @@
   <div class="modal-footer">
     <button class="btn btn-primary" x-ng-click="ok()">保存</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
+</script>
+
+<script type="text/ng-template" id="stock-info.html">
+  <div class="modal-body">
+    <div class="table-responsive">
+      <table class="table table-bordered
+		    table-striped table-condensed table-advanced">
+	<thead>
+	  <tr>
+	    <th>类别</th>
+	    <th>年度</th>
+	    <th>季节</th>
+	    <th>厂商</th>
+	    <th>当前库存</th>
+	    <th>入库日期</th>
+	  </tr>
+	</thead>
+	<tbody>
+	  <tr x-ng-repeat="s in params.stock">
+	    <td>{{s.type.name}}</td>
+	    <td>{{s.year}}</td>
+	    <td>{{s.seasonObj.name}}</td>
+	    <td>{{s.fname}}</td>
+	    <td>{{s.total}}</td>
+	    <td>{{s.entry_date}}</td>
+	  </tr>
+	</tbody>
+      </table>
+    </div> <!--END table-responsive-->
+    <image x-ng-show="params.path"
+	   class="img-responsive img-thumbnail"
+	   ng-src="{{params.path}}"></image>
+  </div>
+
+  <div class="modal-footer"> 
+    <button class="btn btn-primary" x-ng-click="cancel()">确定</button>
   </div>
 </script>
 

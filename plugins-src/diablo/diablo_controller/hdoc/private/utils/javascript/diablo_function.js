@@ -739,7 +739,7 @@ var diablo_items_per_page = function(){
 var diablo_max_page_size = function(){
     var w = diablo_viewport().width;
 
-    console.log(w);
+    // console.log(w);
     if (w > 1020) return 10;
     else if (w > 767) return 8;
     else if (w > 400) return 5;

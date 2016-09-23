@@ -22,7 +22,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
     // $scope.vpays         = wsaleService.vpays;
     
     $scope.sexs        = diablo_sex;
-    $scope.seasons     = diablo_season;
+    $scope.seasons     = diablo_season2objects;
     // $scope.sell_styles = diablo_sell_style;
     // $scope.e_pay_types = wsaleService.extra_pay_types;
     $scope.round       = diablo_round;
@@ -41,7 +41,8 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
     $scope.get_object = diablo_get_object; 
 
     $scope.go_back = function(){
-	diablo_goto_page("#/new_wsale_detail/" + $routeParams.ppage);
+	// diablo_goto_page("#/new_wsale_detail/" + $routeParams.ppage);
+	diablo_goto_page("#/new_wsale_detail");
     };
 
     $scope.calc_withdraw = function(){
@@ -751,6 +752,25 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	
     };
 
+    $scope.stock_info = function(inv){
+	purchaserService.list_w_inventory_info(
+	    {style_number: inv.style_number, brand: inv.brand.id, shop: $scope.select.shop.id}
+	).then(function(result){
+	    console.log(result);
+	    if (result.ecode === 0){
+		var stocks = angular.copy(result.data);
+		angular.forEach(stocks, function(s){
+		    s.type = diablo_get_object(s.type_id, $scope.types);
+		    s.seasonObj = diablo_get_object(s.season, $scope.seasons);
+		});
+		
+		diabloUtilsService.edit_with_modal(
+		    "stock-info.html", undefined, undefined, undefined, {stock: stocks}
+		);
+	    } 
+	})
+    };
+
     /*
      * lookup inventory 
      */
@@ -763,7 +783,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 		       path:         inv.path,
 		       get_amount:   get_amount};
 	diabloUtilsService.edit_with_modal(
-	    "wsale-detail.html", undefined, undefined, $scope, payload)
+	    "wsale-detail.html", undefined, undefined, undefined, payload)
     };
 
     /*
