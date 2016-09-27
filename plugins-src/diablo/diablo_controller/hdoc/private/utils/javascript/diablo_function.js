@@ -89,8 +89,9 @@ var diablo_key_wsale_trans_detail     = "q-wsale-trans-detail";
 
 // inventory
 var diablo_key_inventory_detail       = "q-inventory-detail"
-var diablo_key_invnetory_trans        = "q-inventory-trans";
-var diablo_key_invnetory_trans_detail = "q-inventory-trans-detail";
+var diablo_key_inventory_trans        = "q-inventory-trans";
+var diablo_key_inventory_note         = "q-inventory-trans-note";
+var diablo_key_inventory_note_link    = "q-inventory-trans-note-link";
 
 // firm
 var diablo_key_firm                   = "q-firm-detail";
@@ -210,7 +211,7 @@ var diablo_remove_local_storage = function(l){
     console.log(keys);
     var now = $.now();
     angular.forEach(keys, function(k){
-	// console.log(k);
+	// console.log(k, l.get(k));
 	if (now > l.get(k).t + diablo_day_millisecond){
 	    l.remove(k);
 	}

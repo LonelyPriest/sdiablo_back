@@ -455,7 +455,8 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 			++ " where " ++ C(true, OrgStyleNumber, OrgBrand),
 
 		    Sql3 =
-			case UpdateBase ++ UpdatePrice of
+			%% case UpdateBase ++ UpdatePrice of
+			case UpdateBase of
 			    [] -> []; 
 			    U3  ->
 				["update w_inventory_new_detail set "
@@ -1184,10 +1185,11 @@ handle_call({delete_new, Merchant, RSN, Mode}, _From, State) ->
 	    StockState = ?v(<<"state">>, New),
 	    Firm = ?v(<<"firm_id">>, New),
 	    Shop = ?v(<<"shop_id">>, New),
+	    Total = ?v(<<"total">>, New),
 	    SPay = ?v(<<"should_pay">>, New),
 	    HPay = ?v(<<"has_pay">>, New),
 	    VPay = ?v(<<"verificate">>, New),
-	    EPay = ?v(<<"e_pay">>, New),
+	    EPay = ?v(<<"e_pay">>, New), 
 
 	    DeleteNewSqls = ["delete from w_inventory_new_detail_amount"
 			     " where rsn=\'" ++ ?to_s(RSN) ++ "\'",
@@ -1272,9 +1274,13 @@ handle_call({delete_new, Merchant, RSN, Mode}, _From, State) ->
 				Sqls = Sql11 ++ Sql21 ++ DeleteNewSqls,
 				?sql_utils:execute(transaction, Sqls, RSN);
 			    ?ABANDON ->
-				Sqls = Sql11 ++ Sql21 ++
+				Sqls = case Total of
+					0 -> [];
+					_ -> Sql11 ++ Sql21
+				    end ++
 				    ["update w_inventory_new set state=" ++ ?to_s(?DISCARD)
 				     ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"],
+				
 				?sql_utils:execute(transaction, Sqls, RSN)
 			end,
 		    

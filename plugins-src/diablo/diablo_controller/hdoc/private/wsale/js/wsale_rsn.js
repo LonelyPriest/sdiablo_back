@@ -73,6 +73,7 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
     $scope.setting.show_sale_day = user.sdays;
     
     var storage = localStorageService.get(diablo_key_wsale_trans_detail);
+    console.log(storage);
     if (!$scope.is_linked && angular.isDefined(storage) && storage !== null){
     	$scope.filters      = storage.filter;
 	$scope.qtime_start  = storage.start_time;
@@ -354,14 +355,15 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
     };
 
     $scope.back = function(){
-	var ppage = diablo_set_integer($routeParams.ppage);
-	if(angular.isDefined(ppage)){
-	    localStorageService.remove(diablo_key_wsale_trans_detail);
-	    // $scope.goto_page("#/new_wsale_detail/" + ppage.toString());
-	    $scope.goto_page("#/new_wsale_detail/");
-	} else{
-	    $scope.goto_page("#/new_wsale_detail") 
-	}
+	// var ppage = diablo_set_integer($routeParams.ppage);
+	// if(angular.isDefined(ppage)){
+	//     localStorageService.remove(diablo_key_wsale_trans_detail);
+	//     $scope.goto_page("#/new_wsale_detail/" + ppage.toString());
+	// } else{
+	//     $scope.goto_page("#/new_wsale_detail") 
+	// }
+
+	$scope.goto_page("#/new_wsale_detail/");
     };
     
     var dialog = diabloUtilsService;

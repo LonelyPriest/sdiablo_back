@@ -117,7 +117,7 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 		{}, promotion, score,
 		user, brand, firm, type, s_group, color, base)
 	}).
-	when('/inventory_new_history/:snumber/:brand?', {
+	when('/inventory_new_history/:snumber?/:brand?/:rsn?', {
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_new_history.html',
             controller: 'stockHistoryCtrl' ,
 	    resolve: angular.extend({}, user, brand, firm, base)
@@ -225,6 +225,9 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
 	2001: "货品资料已存在！！",
 	2003: "获取入库记录失败，请检查该入库记录！！",
 	2004: "该入库记录已废弃，请选择其它入库记录！！",
+	2005: "该单已废弃或属于结帐单，无法进行审核操作！！",
+	2006: "该单已审核，请选择其它单据！！",
+	2007: "该单己废弃，请选择其它单据！！",
 	2092: "空白款号，请重新选择款号！！",
 	2093: "厂商信息不一致，请重新选择货品！！", 
 	2094: "修改前后信息一致，请重新编辑修改项！！", 
@@ -597,8 +600,9 @@ purchaserApp.controller("purchaserCtrl", function($scope, localStorageService){
     diablo_remove_local_storage(localStorageService);
 });
 
-purchaserApp.controller("loginOutCtrl", function($scope, $resource){
+purchaserApp.controller("loginOutCtrl", function($scope, $resource, localStorageService){
     $scope.home = function () {
+	stockUtils.remove_cache_page(localStorageService); 
 	diablo_login_out($resource)
     };
 });

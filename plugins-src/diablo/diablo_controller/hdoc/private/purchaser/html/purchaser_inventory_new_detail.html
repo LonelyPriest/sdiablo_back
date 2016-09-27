@@ -34,7 +34,7 @@
 	    <i class="glyphicon glyphicon-export"></i></button> 
 	    
 	    <button type="button" class="btn blue reload purple-stripe"
-		    x-ng-click="do_search(default_page)">刷新
+		    x-ng-click="refresh()">刷新
 	      <i class="icon icon-spinner fg-white"></i></button>
 	  </div> 
 	</div> 
@@ -120,8 +120,8 @@
 		</thead>
 		<tbody>
 		  <tr x-ng-repeat="r in records"
-		      x-ng-dblclick="!(r.state===1 || r.type===9) && update_detail(r)">
-		    <td>{{r.order_id}}</td>
+		      x-ng-dblclick="r.type!==9 && r.state===0 && update_detail(r)">
+		    <td>{{r.order_id}}, {{r.state}}, {{r.type}}</td>
 		    <td class="{{css(r.state, r.type)}}">{{r.rsn}}</td>
 		    
 		    <td class="{{css(r.state, r.type)}}" x-ng-switch on="r.type">

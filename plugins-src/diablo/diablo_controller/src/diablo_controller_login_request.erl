@@ -189,10 +189,12 @@ start(with_new_session, UserDetail) ->
 
     %% create a new session
     {ok, SessionId} = ?session:new(UserDetail),
+    ?DEBUG("SessionId ~p", [SessionId]),
 
-    CookieData = mochiweb_session:generate_session_data(
-		   3600 * 12, SessionId, fun(A) -> A end, ?QZG_DY_SESSION),
-
+    %% CookieData = mochiweb_session:generate_session_data(
+    %% 		   3600 * 12, SessionId, fun(A) -> A end, ?QZG_DY_SESSION),
+    
+    CookieData = mochiweb_base64url:encode(<<SessionId/binary>>),
     Cookie = mochiweb_cookies:cookie(?QZG_DY_SESSION, CookieData, [{path, "/"}]),
     ?DEBUG("Cookie ~p", [Cookie]),
     

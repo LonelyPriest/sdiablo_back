@@ -143,7 +143,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 	    CurrentScore = retailer(score, Account),
 
 	    case CurrentBalance < Withdraw of
-		true -> {reply, ?err(wsale_not_enought_balance, ?v(<<"id">>, Account))};
+		true -> {reply, ?err(wsale_not_enought_balance, ?v(<<"id">>, Account)), State};
 		false -> 
 		    SaleSn = lists:concat(
 			       ["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-",

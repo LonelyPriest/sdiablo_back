@@ -357,9 +357,13 @@ error(promotion_exist, Promotion) ->
 error(failed_to_get_stock_new, RSN) ->
     {2003, "failed to get new stock of rsn " ++ ?to_s(RSN)};
 error(stock_been_discard, RSN) ->
-    {2004, "stock of rsn " ++ ?to_s(RSN) ++ " has been discard."};
+    {2004, "stock of rsn " ++ ?to_s(RSN) ++ " has been discard."}; 
 error(error_state_of_check, RSN) ->
     {2005, "error_state_of_check " ++ ?to_s(RSN) ++ "."};
+error(stock_been_checked, RSN) ->
+    {2006, "stock of rsn " ++ ?to_s(RSN) ++ " has been checked."};
+error(stock_been_canceled, RSN) ->
+    {2007, "stock of rsn " ++ ?to_s(RSN) ++ " has been canceled."};
 
 %% retailer
 error(retailer_exist, Retailer) ->

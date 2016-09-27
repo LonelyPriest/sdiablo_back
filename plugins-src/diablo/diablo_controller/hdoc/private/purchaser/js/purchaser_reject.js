@@ -135,7 +135,7 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	$scope.select.should_pay = 0;
 	$scope.select.total      = 0;
 	$scope.select.comment    = undefined;
-	$scope.select.left_balance = $scope.select.firm.balance;
+	$scope.select.left_balance = 0;
 	$scope.select.extra_pay    = undefined;
 
 	$scope.disable_refresh   = true;

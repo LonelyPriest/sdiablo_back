@@ -2186,28 +2186,14 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
     $scope.inventory_rsn_detail = function(){
 	diablo_goto_page('#/inventory_rsn_detail');
     }
-
-    $scope.save_stastic = function(){
-	localStorageService.set(
-	    "inventory-trans-stastic",
-	    {total_items:      $scope.total_items,
-	     total_amounts:    $scope.total_amounts,
-	     total_spay:       $scope.total_spay,
-	     total_hpay:       $scope.total_hpay,
-	     total_cash:       $scope.total_cash,
-	     total_card:       $scope.total_card,
-	     total_wire:       $scope.total_wire,
-	     total_verificate: $scope.total_verificate,
-	     t:                now});
-    };
-
+    
     $scope.trans_detail = function(r){
-	$scope.save_stastic();
+	// $scope.save_stastic();
 	diablo_goto_page('#/inventory_rsn_detail/' + r.rsn + "/" + $scope.current_page.toString());
     };
 
     $scope.update_detail = function(r){
-	$scope.save_stastic(); 
+	// $scope.save_stastic(); 
 	if (r.type === 0){
 	    diablo_goto_page(
 		'#/update_new_detail/' + r.rsn + "/" + $scope.current_page.toString());
@@ -2218,8 +2204,7 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
     };
     
     $scope.check_detail = function(r){
-	console.log(r);
-	// var callback = function(){
+	// console.log(r);
 	purchaserService.check_w_inventory_new(r.rsn).then(function(state){
 	    console.log(state);
 	    if (state.ecode == 0){
@@ -2232,13 +2217,7 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
 	    	    false, "入库单审核",
 	    	    "入库单审核失败：" + purchaserService.error[state.ecode]);
 	    }
-	})
-	// };
-
-	// dialog.request(
-	//     "入库单审核", "审核完成后，入库单将无法修改，确定要审核吗？",
-	//     callback, undefined, $scope);
-	
+	}) 
     };
 
     $scope.uncheck_detail = function(r){
@@ -2315,6 +2294,20 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
     $scope.match_style_number = function(viewValue){
 	return diabloFilter.match_w_inventory(viewValue, user.shopIds)
     };
+
+    $scope.save_stastic = function(){
+	localStorageService.set(
+	    "inventory-trans-stastic",
+	    {total_items:      $scope.total_items,
+	     total_amounts:    $scope.total_amounts,
+	     total_spay:       $scope.total_spay,
+	     total_hpay:       $scope.total_hpay,
+	     total_cash:       $scope.total_cash,
+	     total_card:       $scope.total_card,
+	     total_wire:       $scope.total_wire,
+	     total_verificate: $scope.total_verificate,
+	     t:                now});
+    };
     
     // var has_pay =  [{name:">0", id:0, py:diablo_pinyin("大于0")},
     // 		    {name:"=0", id:1, py:diablo_pinyin("等于0")}];
@@ -2328,38 +2321,13 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
     diabloFilter.add_field("shop",     $scope.shops);
     diabloFilter.add_field("employee", filterEmployee);
     diabloFilter.add_field("check_state", purchaserService.check_state);
-    diabloFilter.add_field("purchaser_type", purchaserService.purchaser_type);
-    
+    diabloFilter.add_field("purchaser_type", purchaserService.purchaser_type); 
     diabloFilter.add_field("rsn", []); 
-    
-
     // diabloFilter.add_field("has_pay",  has_pay);
 
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
 
-    var storage = localStorageService.get(diablo_key_invnetory_trans);
-    console.log(storage);
-
-    if (angular.isDefined(storage) && storage !== null){
-    	$scope.filters     = storage.filter;
-    	$scope.qtime_start = storage.start_time;
-    } else{
-	$scope.filters = [];
-	
-	$scope.qtime_start = function(){
-	    var shop = -1;
-	    if ($scope.shopIds.length === 1){
-		shop = $scope.shopIds[0];
-	    };
-	    return diablo_base_setting(
-		"qtime_start", shop, base, diablo_set_date,
-		diabloFilter.default_start_time(now));
-	}();
-    };
-    
-    $scope.time   = diabloFilter.default_time($scope.qtime_start);
-    
     /*
      * pagination 
      */
@@ -2367,14 +2335,40 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
     $scope.items_perpage = diablo_items_per_page();
     $scope.max_page_size = diablo_max_page_size();
     $scope.default_page = 1;
+    $scope.current_page = $scope.default_page;
 
-    var back_page = diablo_set_integer($routeParams.page);
-    // console.log(back_page);
-    if (angular.isDefined(back_page)){
-	$scope.current_page = back_page;
+
+    var storage = localStorageService.get(diablo_key_inventory_trans);
+    console.log(storage);
+
+    if (angular.isDefined(storage) && storage !== null){
+    	$scope.filters      = storage.filter;
+    	$scope.qtime_start  = storage.start_time;
+	$scope.qtime_end    = storage.end_time;
+	$scope.current_page = storage.page;
     } else{
-	$scope.current_page = $scope.default_page; 
+	$scope.filters     = [];
+	$scope.qtime_start = now;
+	$scope.qtime_end   = now;
+	// $scope.qtime_start = function(){
+	//     var shop = -1;
+	//     if ($scope.shopIds.length === 1){
+	// 	shop = $scope.shopIds[0];
+	//     };
+	//     return diablo_base_setting(
+	// 	"qtime_start", shop, base, diablo_set_date,
+	// 	diabloFilter.default_start_time(now));
+	// }();
     };
+    
+    $scope.time   = diabloFilter.default_time($scope.qtime_start, $scope.qtime_end);
+
+    // var back_page = diablo_set_integer($routeParams.page);
+    // if (angular.isDefined(back_page)){
+    // 	$scope.current_page = back_page;
+    // } else{
+    // 	$scope.current_page = $scope.default_page; 
+    // };
     
     var add_search_condition = function(search){
 	if (angular.isUndefined(search.shop)
@@ -2386,16 +2380,17 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
     };
     
     $scope.do_search = function(page){
-	// console.log(page);
+	console.log(page);
 	$scope.current_page = page; 
-	
-	localStorageService.set(
-	    diablo_key_invnetory_trans,
-	    {filter:$scope.filters,
-	     start_time:diablo_get_time($scope.time.start_time),
-	     page:page, t:now});
 
-	if (angular.isDefined(back_page)){
+	stockUtils.cache_page_condition(
+	    localStorageService,
+	    diablo_key_inventory_trans,
+	    $scope.filters,
+	    $scope.time.start_time,
+	    $scope.time.end_time, page, now);
+
+	if (page !== $scope.default_page){
 	    var stastic = localStorageService.get("inventory-trans-stastic");
 	    console.log(stastic);
 	    $scope.total_items      = stastic.total_items;
@@ -2406,13 +2401,32 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
 	    $scope.total_card       = stastic.total_card;
 	    $scope.total_wire       = stastic.total_wire;
 	    $scope.total_verificate = stastic.total_verificate;
-
-	    // recover
-	    $location.path("/inventory_new_detail", false);
-	    $routeParams.page = undefined;
-	    back_page = undefined;
-	    localStorageService.remove("inventory-trans-stastic");
 	}
+	
+	// localStorageService.set(
+	//     diablo_key_invnetory_trans,
+	//     {filter:$scope.filters,
+	//      start_time:diablo_get_time($scope.time.start_time),
+	//      page:page, t:now});
+
+	// if (angular.isDefined(back_page)){
+	//     var stastic = localStorageService.get("inventory-trans-stastic");
+	//     console.log(stastic);
+	//     $scope.total_items      = stastic.total_items;
+	//     $scope.total_amounts    = stastic.total_amounts;
+	//     $scope.total_spay       = stastic.total_spay;
+	//     $scope.total_hpay       = stastic.total_hpay;
+	//     $scope.total_cash       = stastic.total_cash;
+	//     $scope.total_card       = stastic.total_card;
+	//     $scope.total_wire       = stastic.total_wire;
+	//     $scope.total_verificate = stastic.total_verificate;
+
+	//     // recover
+	//     $location.path("/inventory_new_detail", false);
+	//     $routeParams.page = undefined;
+	//     back_page = undefined;
+	//     localStorageService.remove("inventory-trans-stastic");
+	// }
 	
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
 	    add_search_condition(search);
@@ -2420,7 +2434,7 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
 	    purchaserService.filter_w_inventory_new(
 		$scope.match, search, page, $scope.items_perpage).then(function(result){
 		    console.log(result);
-		    if (page === 1 && angular.isUndefined(back_page)){
+		    if (page === 1){
 			$scope.total_items      = result.total
 			$scope.total_amounts    = result.t_amount;
 			$scope.total_spay       = result.t_spay;
@@ -2429,6 +2443,9 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
 			$scope.total_card       = result.t_card;
 			$scope.total_wire       = result.t_wire;
 			$scope.total_verificate = result.t_verificate;
+
+			$scope.records = [];
+			$scope.save_stastic();
 		    }
 		    
 		    angular.forEach(result.data, function(d){
@@ -2439,16 +2456,22 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
 			    stockUtils.to_decimal(
 				d.balance + d.should_pay + d.e_pay - d.has_pay - d.verificate);
 		    });
+		    
 		    $scope.records = result.data;
 		    diablo_order_page(page, $scope.items_perpage, $scope.records);
 		}) 
 	})
     };
 
-    if (angular.isDefined(back_page)){
+    if ($scope.current_page !== $scope.default_page){
 	$scope.do_search($scope.current_page); 
     }
 
+    $scope.refresh = function() {
+	$scope.do_search($scope.default_page);
+	// localStorageService.remove("inventory-trans-stastic"); 
+    };
+    
     $scope.page_changed = function(){
 	// console.log($scope.current_page);
 	$scope.do_search($scope.current_page);

@@ -6,6 +6,8 @@ wretailerApp.controller("wretailerNewCtrl", function(
 		      score:        diabloPattern.number,
 		      password:     diabloPattern.num_passwd};
 
+    $scope.right = {master: rightAuthen.authen_master(user.type)};
+    
     $scope.shops = user.sortShops;
     $scope.retailer_types = wretailerService.retailer_types;
     $scope.retailer = {
@@ -82,7 +84,8 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	delete_retailer: rightAuthen.authen(
 	    user.type, rightAuthen.retailer_action()['delete_retailer'], user.right),
 	update_retailer_score: rightAuthen.authen(
-	    user.type, rightAuthen.retailer_action()['update_score'], user.right)};
+	    user.type, rightAuthen.retailer_action()['update_score'], user.right),
+	master: rightAuthen.authen_master(user.type)};
 
     console.log($scope.right);
 
@@ -235,6 +238,7 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	    
 	    diablo_order($scope.retailers);
 	    // console.log($scope.retailers);
+	    console.log($scope.total_balance, $scope.total_consume);
 
 	    var filters;
 	    if (angular.isDefined(search)){

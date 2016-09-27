@@ -287,6 +287,24 @@ var stockUtils = function(){
 
 	authen_rainbow: function(user_type, user_right, action){
 	    return rightAuthen.authen(user_type, rightAuthen.rainbow_action()[action], user_right);
+	},
+
+	cache_page_condition: function(
+	    storage, key, conditions, start_time, end_time, current_page, datetime){
+	    storage.remove(key);
+	    storage.set(key, {filter:conditions,
+			      start_time:diablo_get_time(start_time),
+			      end_time: diablo_get_time(end_time),
+			      page: current_page,
+			      t: datetime});
+	},
+
+	remove_cache_page: function(stroage){
+	    stroage.remove(diablo_key_inventory_trans);
+	    stroage.remove(diablo_key_inventory_note);
+	    stroage.remove(diablo_key_inventory_note_link);
+	    stroage.remove("inventory-trans-stastic"); 
+	    stroage.remove("stock-note-stastic");
 	}
 	    
 	//

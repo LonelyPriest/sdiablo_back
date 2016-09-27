@@ -13,18 +13,118 @@
 
 -compile(export_all).
 
-import(Merchant, Shop, Path) ->
+delete(member_not_used, Merchant) ->
+    Sql = "select id, merchant from w_retailer where merchant=" ++ ?to_s(Merchant)
+	++ " and id>11883 and id<18912",
+    [_Total, Sqls] = 
+	case ?sql_utils:execute(read, Sql) of
+	    {ok, []} -> ok;
+	    {ok, Members} ->
+		lists:foldr(
+		  fun({Member}, [Inc, Acc])->
+			  Id = ?v(<<"id">>, Member),
+			  Sql1 = "select rsn from w_sale where retailer=" ++ ?to_s(Id)
+			      ++ " and merchant=" ++ ?to_s(Merchant),
+
+			  case ?sql_utils:execute(read, Sql1) of
+			      {ok, []} ->
+				  [ Inc + 1,
+				    [{Inc, "delete from w_retailer where id=" ++ ?to_s(Id)
+				     ++ " and merchant=" ++ ?to_s(Merchant)}|Acc]
+				  ];
+			      {ok, _} ->
+				  [Inc, Acc]
+			  end
+		  end, [1, []], Members)
+	end,
+    %% ?DEBUG("Sqls ~p", [Sqls]),
+
+    lists:foreach(fun({_, DSql})->
+    			  ?sql_utils:execute(write, DSql, Merchant)
+    		  end, Sqls),
+    {ok, Merchant, _Total-1}.
+	    
+
+import(member, Merchant, Path) ->
     ?DEBUG("current path ~p", [file:get_cwd()]),
-    %% {ok, Content} = file:read_file(Path),
-    
     {ok, Device} = file:open(Path, [read]),
-
     Content = read_line(Device, []),
-    file:close(Device), 
-    %% ?DEBUG("Content ~p", [Content]),
+    file:close(Device),
 
+    
+    {{Year, Month, Date}, {H, M, S}} = calendar:now_to_local_time(erlang:now()),
+    Time = lists:flatten(io_lib:format("~2..0w:~2..0w:~2..0w", [H, M, S])),
+
+    Datetime = 
+	lists:flatten(
+	  io_lib:format("~4..0w-~2..0w-~2..0w ~2..0w:~2..0w:~2..0w",
+			[Year, Month, Date, H, M, S])),
+    insert_into_member(Merchant, Datetime, Time, Content, [], []).
+
+
+insert_into_member(Merchant, _Datetime, _Time, [], _Sort, Acc) ->
+    %% ?DEBUG("Sqls ~p", [lists:reverse(Acc)]),
+    {ok, Merchant} = ?sql_utils:execute(transaction, lists:reverse(Acc), Merchant);
+
+insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
+    {Phone, Shop, Score, Consume, Date} = H,
+
+    NewScore = round(?to_f(Score)),
+
+    NewConsume = case Consume of
+		     <<>> -> 0;
+		     _ -> Consume
+		 end,
+
+    IsExist = 
+	case [ P || {P, _, _, _, _} <- Sort, P =:= Phone ] of
+	    [] -> false;
+	    _ -> true
+	end,
+    
+    case size(Phone) =/= 11 orelse IsExist of
+	true -> insert_into_member(Merchant, Datetime, Time, T, Sort, Acc);
+	false -> 
+	    Sql0 = "select id, name, mobile from w_retailer"
+		" where merchant=" ++ ?to_s(Merchant)
+		++ " and mobile=\'" ++ ?to_s(Phone) ++ "\'",
+
+	    case ?sql_utils:execute(s_read, Sql0) of
+		{ok, []} ->
+		    <<_:6/binary, Name:5/binary>> = Phone,
+		    Entry = case Date of
+				<<>> -> Datetime;
+				_ -> ?to_s(Date) ++ " " ++ Time
+			    end, 
+
+		    Sql = ["insert into w_retailer("
+			   "name, score, consume, mobile, shop, merchant, entry_date)"
+			   " values ("
+			   ++ "\"" ++ ?to_s(Name) ++ "\","
+			   ++ ?to_s(NewScore) ++ ","
+			   ++ ?to_s(NewConsume) ++ "," 
+			   ++ "\"" ++ ?to_s(Phone) ++ "\","
+			   ++ ?to_s(Shop) ++ ","
+			   ++ ?to_s(Merchant) ++ ","
+			   ++ "\"" ++ ?to_s(Entry) ++ "\")"],
+		    insert_into_member(Merchant, Datetime, Time, T, [H|Sort], Sql ++ Acc);
+		{ok, R} ->
+		    Sql = ["update w_retailer set score=score+" ++ ?to_s(NewScore)
+		     ++", consume=consume+" ++ ?to_s(NewConsume)
+		     ++ " where id=" ++ ?to_s(?v(<<"id">>, R))
+		     ++ " and merchant=" ++ ?to_s(Merchant)],
+		    insert_into_member(Merchant, Datetime, Time, T, [H|Sort], Sql ++ Acc)
+	    end
+    end.
+
+import(firm, Merchant, Shop, Path) ->
+    ?DEBUG("current path ~p", [file:get_cwd()]),
+    %% {ok, Content} = file:read_file(Path), 
+    {ok, Device} = file:open(Path, [read]), 
+    Content = read_line(Device, []),
+    file:close(Device),
     insert_into_db(Merchant, Shop, Content, <<>>, []).
-
+    
 read_line(Device, Content) ->
     case file:read_line(Device) of
 	eof -> read_line(Device, Content, eof);
@@ -383,8 +483,7 @@ new(Merchant, Shop, Content) ->
     ?DEBUG("employees ~p", [Employee]),
     EmployeeId = ?v(<<"number">>, Employee),
 
-    insert_int_db(
-      firm, Content, RSN, EmployeeId, Merchant, Shop, Datetime, [], 0, 0).
+    insert_int_db(firm, Content, RSN, EmployeeId, Merchant, Shop, Datetime, [], 0, 0).
     
 stock(ediscount, _OrgPrice, TagPrice) when TagPrice == 0 -> 0;
 stock(ediscount, OrgPrice, _TagPrice) when OrgPrice == 0 -> 0;

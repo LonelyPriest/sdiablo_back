@@ -89,7 +89,7 @@ create table suppliers
     code            INTEGER default -1,
     name            VARCHAR(128) not null,
     balance         DECIMAL(10, 2) default 0, -- max: 99999999.99
-    mobile          VARCHAR(11),
+    mobile          VARCHAR(12),
     address         VARCHAR(256),
     comment         VARCHAR(256),
     merchant        INTEGER default -1, -- which merchant belong to

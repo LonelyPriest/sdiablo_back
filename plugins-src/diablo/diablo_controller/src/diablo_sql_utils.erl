@@ -62,7 +62,7 @@ condition(page_desc, CurrentPage, ItemsPerPage) ->
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
     	++ ", " ++ ?to_s(ItemsPerPage).
 
-condition(page_desc, {use_id, 0}, CurrentPage, ItemsPerPage) ->
+condition(page_desc, {use_id, _Sort}, CurrentPage, ItemsPerPage) ->
     condition(page_desc, CurrentPage, ItemsPerPage);
 condition(page_desc, {use_sell, Sort}, CurrentPage, ItemsPerPage) ->
     " order by sell " ++ ?MODULE:sort(Sort)

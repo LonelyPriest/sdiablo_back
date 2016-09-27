@@ -416,13 +416,15 @@ handle_call({stock_real, Merchant, Conditions}, _From, State)->
     {reply, R, State};
 
 handle_call({last_stock_of_shop, Merchant, ShopIds, CurrentDay}, _From, State) ->
-    Sql = "select a.id, a.merchant, a.shop as shop_id, stock as total"
-	" from w_daily_report a "
-	"inner join (select max(id) as id, merchant, shop from w_daily_report"
-	" where merchant=" ++ ?to_s(Merchant)
-	++ " and "++ ?utils:to_sqls(proplists, {<<"shop">>, ShopIds})
-	++ " and day<\'"  ++ ?to_s(CurrentDay) ++ "\'"
-	++ " group by merchant, shop) b on a.id=b.id", 
+
+    Sql = "select a.id, a.day, a.merchant, a.shop as shop_id, stock as total"
+    	" from w_daily_report a "
+    	"inner join (select max(day) as day, merchant, shop from w_daily_report"
+    	" where merchant=" ++ ?to_s(Merchant)
+    	++ " and "++ ?utils:to_sqls(proplists, {<<"shop">>, ShopIds})
+    	++ " and day<\'"  ++ ?to_s(CurrentDay) ++ "\'"
+    	++ " group by merchant, shop) b on "
+	"a.merchant=b.merchant and a.shop=b.shop and a.day=b.day", 
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 
