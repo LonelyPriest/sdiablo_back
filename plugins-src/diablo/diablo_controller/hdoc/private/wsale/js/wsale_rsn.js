@@ -355,15 +355,15 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
     };
 
     $scope.back = function(){
-	// var ppage = diablo_set_integer($routeParams.ppage);
-	// if(angular.isDefined(ppage)){
-	//     localStorageService.remove(diablo_key_wsale_trans_detail);
-	//     $scope.goto_page("#/new_wsale_detail/" + ppage.toString());
-	// } else{
-	//     $scope.goto_page("#/new_wsale_detail") 
-	// }
+	var ppage = diablo_set_integer($routeParams.ppage);
+	if(angular.isDefined(ppage)){
+	    // localStorageService.remove(diablo_key_wsale_trans_detail);
+	    $scope.goto_page("#/new_wsale_detail/" + ppage.toString());
+	} else{
+	    $scope.goto_page("#/new_wsale_detail") 
+	}
 
-	$scope.goto_page("#/new_wsale_detail/");
+	// $scope.goto_page("#/new_wsale_detail/");
     };
     
     var dialog = diabloUtilsService;

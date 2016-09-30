@@ -41,8 +41,8 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
     $scope.get_object = diablo_get_object; 
 
     $scope.go_back = function(){
-	// diablo_goto_page("#/new_wsale_detail/" + $routeParams.ppage);
-	diablo_goto_page("#/new_wsale_detail");
+	diablo_goto_page("#/new_wsale_detail/" + $routeParams.ppage);
+	// diablo_goto_page("#/new_wsale_detail");
     };
 
     $scope.calc_withdraw = function(){

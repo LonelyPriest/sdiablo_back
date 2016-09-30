@@ -8,15 +8,16 @@ diabloUtils.directive('ngEdit', function () {
     };
 });
 
+
 diabloUtils.directive('ngAffix', function(){
     return  function(scope, element, attrs){
 	element.affix({
-	    offset: 20
+	    // offset: 20,
 	    // {
-		// top: 50,
-		// bottom: function () {
-		//     return (this.bottom = $('.footer').outerHeight(true))
-		// };
+		top: 50,
+		bottom: function () {
+		    return (this.bottom = $('.footer').outerHeight(true))
+		}()
 	    // }
 	})
     }
@@ -180,12 +181,12 @@ diabloUtils.directive('focusAuto', function($timeout, $parse) {
     return {
 	link: function(scope, element, attrs) {
 	    // console.log(attrs);
-	    var model = $parse(attrs.focusAuto);
+	    var model = $parse(attrs.focusAuto); 
+	    
 	    scope.$watch(model, function(value) {
-		// console.log('value=',value);
-		if(value === true) { 
+		if(value === true) {
 		    $timeout(function(){
-			element[0].focus(); 
+			element[0].focus();
 		    }, 100);
 		} else {
 		    $timeout(function() {

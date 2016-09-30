@@ -143,7 +143,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 	    CurrentScore = retailer(score, Account),
 
 	    case CurrentBalance < Withdraw of
-		true -> {reply, ?err(wsale_not_enought_balance, ?v(<<"id">>, Account)), State};
+		true -> {reply, {error, ?err(wsale_not_enought_balance, ?v(<<"id">>, Account))}, State};
 		false -> 
 		    SaleSn = lists:concat(
 			       ["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-",
@@ -283,7 +283,9 @@ handle_call({update_sale, Merchant, Inventories, Props}, _From, State) ->
 	++ ?utils:v(comment, string, Comment)
 	++ case Datetime =:= OldDatetime of
 	       true -> [];
-	       false -> ?utils:v(entry_date, string, Datetime)
+	       false ->
+		   CorrectDatetime = ?utils:correct_datetime(datetime, Datetime), 
+		   ?utils:v(entry_date, string, CorrectDatetime)
 	   end,
 
     case Retailer =:= OldRetailer of

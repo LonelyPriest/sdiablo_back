@@ -2170,6 +2170,8 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
 
     var now    = $.now();
     var dialog = diabloUtilsService;
+    var return_back_page = angular.isDefined($routeParams.page) ? true : false;
+    if (return_back_page) $location.path("/inventory_new_detail", false);
 
     $scope.add = function(){
 	diablo_goto_page('#/inventory_new');
@@ -2464,6 +2466,8 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
     };
 
     if ($scope.current_page !== $scope.default_page){
+	$scope.do_search($scope.current_page); 
+    } else if (return_back_page){
 	$scope.do_search($scope.current_page); 
     }
 

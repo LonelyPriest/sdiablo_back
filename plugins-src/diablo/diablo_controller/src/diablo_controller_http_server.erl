@@ -35,7 +35,6 @@ start() ->
     ?INFO("success to start http server on port, ~p", [Port]),
     ok.
 
-
 valid_session(Req) ->
     case Req:get_cookie_value(?QZG_DY_SESSION) of
 	undefined -> %% redirect to login page
@@ -46,7 +45,7 @@ valid_session(Req) ->
 	    case ?session:lookup(DSession) of
 		{ok, []} -> %% session time out or lost
 		    ?INFO("invalid session ~p", [DSession]),
-		    {error, {invalid_session, DSession}};
+		    {error, {invalid_session, ESession}};
 		{ok, _} -> %% valid session 
 		    {ok, valid_session}
 	    end
@@ -190,8 +189,8 @@ url_dispatch(Req, [{Regexp,  Function}|T]) ->
 		%%     %% Function({Method, Req, [["login"]]});
 		%%     ?login_request:action(Req, login);
 		{error, _Error} ->
-		    %% ?INFO("failed to check session of url ~p,"
-		    %% 	  "reseaon ~p, redirect to login...", [Path, _Error]),
+		    ?INFO("failed to check session of url ~p,"
+		    	  "reseaon ~p, redirect to login...", [Path, _Error]),
 		    %% {ECode, Error} = ?err(operation_invalid_session, Error),
 		    %% Req:respond({599,
 		    %% 		 [{"Content-Type", "application/json"}],
@@ -203,17 +202,21 @@ url_dispatch(Req, [{Regexp,  Function}|T]) ->
 				no_session ->
 				    ?DEBUG("no session !!"),
 				    Req:respond(
-				  {301, [{"Location", "/"},
-					 {"Content-Type", "text/html; charset=UTF-8"}], 
-				   "Redirecting /"});
-				{invalid_session, SessionId} ->
-				    Cookie = mochiweb_cookies:cookie(
-					       ?QZG_DY_SESSION,
-					       SessionId,
-					       [{max_age, 0}, {path, "/"}]),
+				      {301, [{"Location", "/"},
+					     {"Content-Type", "text/html; charset=UTF-8"}], 
+				       "Redirecting /"});
+				{invalid_session, _SessionId} ->
+				    %% Cookie = mochiweb_cookies:cookie(
+				    %% 	       ?QZG_DY_SESSION,
+				    %% 	       SessionId,
+				    %% 	       [{max_age, 0}, {path, "/"}]),
+				    %% Req:respond(
+				    %%   {301, [{"Location", "/"},
+				    %% 	     {"Content-Type", "text/html; charset=UTF-8"}, Cookie], 
+				    %%    "Redirecting /"})
 				    Req:respond(
 				      {301, [{"Location", "/"},
-					     {"Content-Type", "text/html; charset=UTF-8"}, Cookie], 
+					     {"Content-Type", "text/html; charset=UTF-8"}], 
 				       "Redirecting /"})
 			    end;
 				

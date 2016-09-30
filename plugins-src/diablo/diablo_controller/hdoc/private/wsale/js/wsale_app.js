@@ -1745,7 +1745,8 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
     $scope.max_page_size = diablo_max_page_size(); 
 
     // console.log($routeParams);
-    var back_page = diablo_set_integer($routeParams.page);
+    var return_back_page = angular.isDefined($routeParams.page) ? true : false;
+    if (return_back_page) $location.path("/new_wsale_detail", false);
     
     // if (angular.isDefined(back_page)){
     // 	$scope.current_page = back_page;
@@ -1886,6 +1887,8 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
     // console.log($scope.current_page, $scope.default_page);
     if ($scope.current_page !== $scope.default_page){
 	$scope.do_search($scope.current_page); 
+    } else if (return_back_page) {
+	$scope.do_search($scope.current_page);
     }
 
     $scope.save_stastic = function(){

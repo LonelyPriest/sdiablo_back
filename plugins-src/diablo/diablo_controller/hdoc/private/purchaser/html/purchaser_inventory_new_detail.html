@@ -121,7 +121,7 @@
 		<tbody>
 		  <tr x-ng-repeat="r in records"
 		      x-ng-dblclick="r.type!==9 && r.state===0 && update_detail(r)">
-		    <td>{{r.order_id}}, {{r.state}}, {{r.type}}</td>
+		    <td>{{r.order_id}}</td>
 		    <td class="{{css(r.state, r.type)}}">{{r.rsn}}</td>
 		    
 		    <td class="{{css(r.state, r.type)}}" x-ng-switch on="r.type">
