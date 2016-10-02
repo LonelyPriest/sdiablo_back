@@ -15,7 +15,8 @@
 
 %% API
 -export([start_link/0]).
--export([lookup/1, report/2, cancel_report/1, task/3, add/3, ticket/2]).
+-export([lookup/1, report/2, cancel_report/1, task/3, add/3,
+	 ticket/2, cancel_ticket/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -36,11 +37,9 @@ lookup(state) ->
     gen_server:call(?SERVER, lookup_state).
 
 report(stastic_per_shop, TriggerTime) ->
-    gen_server:cast(?SERVER, {stastic_per_shop, TriggerTime}).
-
+    gen_server:cast(?SERVER, {stastic_per_shop, TriggerTime}). 
 cancel_report(stastic_per_shop) ->
-    gen_server:cast(?SERVER, cancel_stastic_per_shop).
-
+    gen_server:cast(?SERVER, cancel_stastic_per_shop). 
 syn_report(stastic_per_shop, Merchant, Conditions) ->
     %% 30 minute
     gen_server:call(?SERVER, {syn_stastic_per_shop, Merchant, Conditions}, 60000 * 30).
@@ -50,6 +49,8 @@ add(report_task, Merchant, TriggerTime) ->
 
 ticket(preferential, TriggerTime) ->
     gen_server:cast(?SERVER, {gen_ticket, TriggerTime}).
+cancel_ticket(preferential) ->
+    gen_server:cast(?SERVER, cancel_ticket).
 
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
@@ -78,13 +79,14 @@ handle_call({add_report_task, Merchant, TriggerTime},
 				task(stastic_per_shop, Datetime, Merchant)
 			end},
 	    NewTask = ?cron:cron(CronTask),
-	    {reply, ok, #state{merchant=[Merchant|Merchants],
-			       task_of_per_shop=[NewTask|Tasks]}}
+	    {reply, ok, State#state{merchant=[Merchant|Merchants],
+				    task_of_per_shop=[NewTask|Tasks]}}
     end;
     
 handle_call(lookup_state, _From, #state{merchant=Merchants,
-					task_of_per_shop=Tasks} = State) ->
-    {reply, {Merchants, Tasks}, State};
+					task_of_per_shop=Tasks,
+					ticket_of_merchant=Tickets} = State) ->
+    {reply, {Merchants, Tasks, Tickets}, State};
 
 handle_call({syn_stastic_per_shop, Merchant, Conditions}, _From, State) ->
     ?DEBUG("syn_stastic_per_shop: merchant ~p, conditions ~p", [Merchant, Conditions]),
@@ -112,8 +114,8 @@ handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
 
-handle_cast({stastic_per_shop, TriggerTime}, #state{merchant=Merchants,
-				     task_of_per_shop=Tasks} = State) ->
+handle_cast({stastic_per_shop, TriggerTime},
+	    #state{merchant=Merchants, task_of_per_shop=Tasks} = State) ->
     ?DEBUG("stastic_per_shop ~p, tasks ~p", [TriggerTime, Tasks]),
     case Tasks of
 	[] -> 
@@ -125,23 +127,31 @@ handle_cast({stastic_per_shop, TriggerTime}, #state{merchant=Merchants,
 					      task(stastic_per_shop, Datetime, M)
 				      end}, 
 			  [?cron:cron(CronTask)|Acc] 
-		  end, [], [Merchants]),
+		  end, [], Merchants),
 	    ?DEBUG("new tasks ~p with merchants ~p", [NewTasks, Merchants]),
-	    {noreply, #state{merchant=Merchants, task_of_per_shop=NewTasks}};
+	    %% {noreply, #state{merchant=Merchants, task_of_per_shop=NewTasks}};
+	    {noreply, State#state{task_of_per_shop=NewTasks}};
 	_ -> {noreply, State}
     end;
 
-handle_cast(cancel_stastic_per_shop, #state{merchant=Merchants,
-					    task_of_per_shop=Tasks} = _State) ->
+handle_cast(cancel_stastic_per_shop, #state{task_of_per_shop=Tasks} = State) ->
     ?DEBUG("cancel_stastic_per_shop", []),
     lists:foreach(
       fun(Task) ->
 	      ?cron:cancel(Task)
       end, Tasks),
-    {noreply, #state{merchant=Merchants, task_of_per_shop=[]}};
+    {noreply, State#state{task_of_per_shop=[]}};
 
-handle_cast({gen_ticket, TriggerTime}, #state{merchant=Merchants,
-					      ticket_of_merchant=Tickets} = State) ->
+handle_cast(cancel_ticket, #state{ticket_of_merchant=Tickets} = State) ->
+    ?DEBUG("cancel_ticket", []),
+    lists:foreach(
+      fun(Ticket) ->
+	      ?cron:cancel(Ticket)
+      end, Tickets),
+    {noreply, State#state{ticket_of_merchant=[]}}; 
+
+handle_cast({gen_ticket, TriggerTime},
+	    #state{merchant=Merchants, ticket_of_merchant=Tickets} = State) ->
     ?DEBUG("gen_ticket time ~p, tickets ~p", [TriggerTime, Tickets]),
     case Tickets of
 	[] -> 
@@ -150,7 +160,7 @@ handle_cast({gen_ticket, TriggerTime}, #state{merchant=Merchants,
 		  fun(M, Acc) ->
 			  CronTask = {{daily, TriggerTime},
 				      fun(_Ref, Datetime) ->
-					      task(gen_ticket, Datetime, M)
+					      task(gen_ticket, Datetime, [M])
 				      end}, 
 			  [?cron:cron(CronTask)|Acc] 
 		  end, [], Merchants),
@@ -160,7 +170,7 @@ handle_cast({gen_ticket, TriggerTime}, #state{merchant=Merchants,
     end;
 
 handle_cast(_Msg, State) ->
-    %% ?DEBUG("handle_cast receive unkown message ~p", [_Msg]),
+    ?DEBUG("handle_cast receive unkown message ~p, State ~p", [_Msg, State]),
     {noreply, State}.
 
 handle_info(_Info, State) ->
