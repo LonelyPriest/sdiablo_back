@@ -537,7 +537,7 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
     $scope.auto_save_free = function(inv){
 	$timeout.cancel($scope.timeout_auto_save);
 	var reject = stockUtils.to_integer(inv.amounts[0].reject_count);
-	if (0 === reject || reject > inv.total){
+	if (inv.form.good.invalid || 0 === reject || reject > inv.total){
 	    return;
 	}
 	

@@ -15,18 +15,19 @@
 
 %% API
 -export([start_link/0]).
--export([lookup/1, report/2, cancel_report/1, task/3, add/3]).
+-export([lookup/1, report/2, cancel_report/1, task/3, add/3, ticket/2]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
--export([syn_report/3]).
+-export([syn_report/3, sys_vip_of/2]).
 
 -define(SERVER, ?MODULE).
 
 -record(state, {merchant :: [],
-		task_of_per_shop :: []}).
+		task_of_per_shop :: [],
+		ticket_of_merchant :: []}).
 
 %%%===================================================================
 %%% API
@@ -41,10 +42,14 @@ cancel_report(stastic_per_shop) ->
     gen_server:cast(?SERVER, cancel_stastic_per_shop).
 
 syn_report(stastic_per_shop, Merchant, Conditions) ->
-    gen_server:call(?SERVER, {syn_stastic_per_shop, Merchant, Conditions}, 60000).
+    %% 30 minute
+    gen_server:call(?SERVER, {syn_stastic_per_shop, Merchant, Conditions}, 60000 * 30).
 
 add(report_task, Merchant, TriggerTime) ->
     gen_server:call(?SERVER, {add_report_task, Merchant, TriggerTime}).
+
+ticket(preferential, TriggerTime) ->
+    gen_server:cast(?SERVER, {gen_ticket, TriggerTime}).
 
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
@@ -58,7 +63,7 @@ init([]) ->
 			  [?v(<<"id">>, Merchant)|Acc]
 		  end, [], Merchants),
 	    ?INFO("start cron task to genarate report ....~n", []),
-	    {ok, #state{merchant=L, task_of_per_shop=[]}};
+	    {ok, #state{merchant=L, task_of_per_shop=[], ticket_of_merchant=[]}};
 	{error, _Error} ->
 	    {ok, #state{}}
     end.
@@ -134,6 +139,25 @@ handle_cast(cancel_stastic_per_shop, #state{merchant=Merchants,
 	      ?cron:cancel(Task)
       end, Tasks),
     {noreply, #state{merchant=Merchants, task_of_per_shop=[]}};
+
+handle_cast({gen_ticket, TriggerTime}, #state{merchant=Merchants,
+					      ticket_of_merchant=Tickets} = State) ->
+    ?DEBUG("gen_ticket time ~p, tickets ~p", [TriggerTime, Tickets]),
+    case Tickets of
+	[] -> 
+	    NewTasks = 
+		lists:foldr(
+		  fun(M, Acc) ->
+			  CronTask = {{daily, TriggerTime},
+				      fun(_Ref, Datetime) ->
+					      task(gen_ticket, Datetime, M)
+				      end}, 
+			  [?cron:cron(CronTask)|Acc] 
+		  end, [], Merchants),
+	    ?DEBUG("new ticket ~p with merchants ~p", [NewTasks, Merchants]),
+	    {noreply, State#state{ticket_of_merchant=NewTasks}};
+	_ -> {noreply, State}
+    end;
 
 handle_cast(_Msg, State) ->
     %% ?DEBUG("handle_cast receive unkown message ~p", [_Msg]),
@@ -284,6 +308,78 @@ syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) ->
 	    
     end.
 
+task(gen_ticket, Datetime, Merchants) when is_list(Merchants) ->
+    Sqls = lists:foldr(fun(M, Acc) ->
+			       [task(gen_ticket, Datetime, M)|Acc]
+		       end, [], Merchants),
+    ?DEBUG("Sqls ~p", [Sqls]),
+
+    lists:foreach(
+      fun({_M, SqlsOfMerchant}) ->
+	      lists:foreach(
+		fun(Sql)->
+			case ?sql_utils:execute(insert, Sql) of
+			    {ok, _} -> ok;
+			    {error, Error} ->
+				?WARN("sql error to create daily report: ~p", [Error])
+			end
+		end, SqlsOfMerchant)
+      end, Sqls);
+
+task(gen_ticket, Datetime, Merchant) when is_number(Merchant) ->
+    FormatDatetime = format_datetime(Datetime),
+    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
+    {ok, Scores}=?w_user_profile:get(score, Merchant),
+    Score2Money = lists:filter(
+	      fun({S})-> ?v(<<"type_id">>, S) =:= 1
+	      end, Scores),
+    ?DEBUG("score2money ~p", [Score2Money]),
+
+    IsGenTicket = ?v(<<"gen_ticket">>, BaseSetting),
+    SysVips = sys_vip_of(merchant, Merchant),
+    ?DEBUG("IsGenTicket ~p, SysVips ~p", [IsGenTicket, SysVips]),
+
+    TicketSqls =
+	case ?to_i(IsGenTicket) =:= 1 andalso length(Score2Money) =:= 1 of
+	    true ->
+		AccScore = ?v(<<"score">>, lists:last(Score2Money)), 
+		Balance = ?v(<<"balance">>, lists:last(Score2Money)),
+		Sql = "select id, score from w_retailer where merchant=" ++ ?to_s(Merchant)
+		    ++ " and score>=" ++ ?to_s(AccScore),
+		case ?sql_utils:execute(read, Sql) of
+		    {ok, []} -> [];
+		    {ok, Retailers} ->
+			%% gen ticket
+			lists:foldr(
+			  fun({R}, Acc)->
+				  case lists:member(?v(<<"id">>, R), SysVips) of
+				      true -> Acc;
+				      false ->
+					  Batch = ?inventory_sn:sn(w_ticket, Merchant),
+					  RetailerScore = ?v(<<"score">>, R, 0), 
+					  ["insert into w_ticket(number, sid, balance"
+					   ", retailer, merchant, entry) values("
+					   ++ ?to_s(Batch) ++ ","
+					   ++ ?to_s(?v(<<"id">>, lists:last(Score2Money))) ++ ","
+					   ++ ?to_s(RetailerScore div AccScore * Balance) ++ ","
+					   ++ ?to_s(?v(<<"id">>, R)) ++ ","
+					   ++ ?to_s(Merchant) ++ ","
+					   ++ "\'" ++ FormatDatetime ++ "\')"|Acc]
+				  end
+			  end, [], Retailers)
+		end;
+	    false -> [] 
+	end,
+    %% lists:foreach(
+    %%   fun(GenSql) ->
+    %% 	      case ?sql_utils:execute(insert, GenSql) of
+    %% 		  {ok, _} -> ok;
+    %% 		  {error, Error} ->
+    %% 		      ?WARN("sql error to gen ticket: ~p", [Error])
+    %% 	      end
+    %%   end, TicketSqls);
+    {Merchant, lists:reverse(TicketSqls)}; 
+	
 task(stastic_per_shop, Datetime, Merchants) when is_list(Merchants)->
     {YestodayStart, YestodayEnd} = yestoday(Datetime),
     FormatDatetime = format_datetime(Datetime),
@@ -314,8 +410,8 @@ gen_report(stastic_per_shop, _Datetime, [], Acc) ->
     Acc;
 gen_report(stastic_per_shop, {StartTime, EndTime, GenDatetime} , [M|Merchants], Acc) ->
     {ok, Shops} = ?w_user_profile:get(shop, M),
-    ?DEBUG("merchant ~p with shops ~p",
-	   [M, lists:foldr(fun({Shop}, Acc1)-> [?v(<<"id">>, Shop)|Acc1] end, [], Shops)]),
+    %% ?DEBUG("merchant ~p with shops ~p",
+    %% 	   [M, lists:foldr(fun({Shop}, Acc1)-> [?v(<<"id">>, Shop)|Acc1] end, [], Shops)]),
     {M, Sqls} = gen_shop_report({StartTime, EndTime, GenDatetime}, M, Shops, []),
     gen_report(stastic_per_shop, {StartTime, EndTime, GenDatetime} , Merchants, [{M, Sqls}|Acc]).
 
@@ -584,3 +680,21 @@ stock(fix, [{StockFix}]) ->
     {?v(<<"total">>, StockFix, 0),
      ?v(<<"cost">>, StockFix, 0)}.
 
+
+sys_vip_of(merchant, Merchant) ->
+    {ok, Settings} = ?w_user_profile:get(setting, Merchant),
+    SysVips =
+	lists:foldr(
+	  fun({S}, Acc) ->
+		  case ?v(<<"ename">>, S) =:= <<"s_customer">> of
+		      true ->
+			  SysVip = ?to_i(?v(<<"value">>, S)),
+			  %% ?DEBUG("sysvip ~p", [SysVip]),
+			  case lists:member(SysVip, Acc) of
+			      true -> Acc;
+			      false -> [SysVip] ++ Acc
+			  end;
+		      false -> Acc
+		  end
+	  end, [], Settings),
+    SysVips.

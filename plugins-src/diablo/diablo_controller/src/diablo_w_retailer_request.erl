@@ -51,7 +51,7 @@ action(Session, Req, {"list_w_retailer_charge"}) ->
 
 
 action(Session, Req, {"list_w_retailer_score"}) ->
-    ?DEBUG("list w_retailer_charge with session ~p", [Session]), 
+    ?DEBUG("list w_retailer_score with session ~p", [Session]), 
     Merchant = ?session:get(merchant, Session), 
     %% ?utils:respond(
     %%    batch, fun() -> ?w_user_profile:get(retailer, Merchant) end, Req).
@@ -211,6 +211,7 @@ action(Session, Req, {"add_w_retailer_score"}, Payload) ->
 
     case ?w_retailer:score(new, Merchant, Payload) of
 	{ok, Id} ->
+	    ?w_user_profile:update(score, Merchant),
 	    ?utils:respond(
 	       200, Req, ?succ(add_retailer_score, Id));
 	{error, Error} ->

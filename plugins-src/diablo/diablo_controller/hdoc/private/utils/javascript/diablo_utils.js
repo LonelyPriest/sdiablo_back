@@ -586,10 +586,10 @@ diabloUtils.directive('timeSearch', function (){
     }
 });
 
-diabloUtils.service("diabloUtilsService", function($modal){
+diabloUtils.service("diabloUtilsService", function($uibModal){
     // response dialog
     this.response = function(result, title, body, scope){
-	return $modal.open({
+	return $uibModal.open({
 	    templateUrl: '/private/utils/html/modalResponse.html',
 	    controller: 'diabloDialogCtrl',
 	    // backdrop: 'false',
@@ -609,7 +609,7 @@ diabloUtils.service("diabloUtilsService", function($modal){
     };
 
     this.response_with_callback = function(result, title, body, scope, callback){
-	return $modal.open({
+	return $uibModal.open({
 	    templateUrl: '/private/utils/html/modalResponse.html',
 	    controller: 'diabloDialogCtrl',
 	    // backdrop: 'false',
@@ -630,7 +630,7 @@ diabloUtils.service("diabloUtilsService", function($modal){
     };
 
     this.request = function(title, body, callback, params, scope){
-	return $modal.open({
+	return $uibModal.open({
 	    templateUrl: '/private/utils/html/modalResponse.html',
 	    controller: 'diabloDialogCtrl',
 	    // backdrop: 'true',
@@ -656,7 +656,7 @@ diabloUtils.service("diabloUtilsService", function($modal){
 
     this.edit_with_modal = function(
 	templateUrl, size, callback, scope, params){
-	return $modal.open({
+	return $uibModal.open({
 	    templateUrl: templateUrl,
 	    controller: 'diabloEditDialogCtrl',
 	    // backdrop: 'false',
@@ -677,9 +677,9 @@ diabloUtils.service("diabloUtilsService", function($modal){
 });
 
 diabloUtils.controller("diabloDialogCtrl", function(
-    $scope, $modalInstance, message){
+    $scope, $uibModalInstance, message){
     // console.log($scope);
-    console.log($modalInstance);
+    console.log($uibModalInstance);
     console.log(message);
     $scope.success = message.success;
     $scope.title = message.title;
@@ -689,12 +689,12 @@ diabloUtils.controller("diabloDialogCtrl", function(
 	angular.isDefined(message.show_cancel) ? message.show_cancel : true;
     
     $scope.cancel = function(){
-	$modalInstance.dismiss('cancel');
+	$uibModalInstance.dismiss('cancel');
     };
 
     $scope.ok = function() {
 
-	$modalInstance.close('ok'); 
+	$uibModalInstance.close('ok'); 
 
 	var ok_call = function(){
 	    if (angular.isDefined(message.callback)
@@ -708,7 +708,7 @@ diabloUtils.controller("diabloDialogCtrl", function(
 	    }
 	}
 
-	$modalInstance.result.then(function(result) {
+	$uibModalInstance.result.then(function(result) {
 	    if (result === 'ok'){
 		ok_call() 
 	    }
@@ -721,7 +721,7 @@ diabloUtils.controller("diabloDialogCtrl", function(
 });
 
 
-diabloUtils.controller("diabloEditDialogCtrl", function($scope, $modalInstance, message){
+diabloUtils.controller("diabloEditDialogCtrl", function($scope, $uibModalInstance, message){
     // console.log($scope);
     // console.log($modalInstance);
     console.log(message); 
@@ -729,7 +729,7 @@ diabloUtils.controller("diabloEditDialogCtrl", function($scope, $modalInstance, 
     var deviceAgent = navigator.userAgent.toLowerCase();
     if (deviceAgent.match(/iphone|ipod|ipad/i)
        ) {
-    	$modalInstance.opened.then(function(){
+    	$uibModalInstance.opened.then(function(){
     	    $('.header').hide();
             $('.footer').hide();
 
@@ -744,7 +744,7 @@ diabloUtils.controller("diabloEditDialogCtrl", function($scope, $modalInstance, 
             $('.footer').show();
 	};
 	    
-    	$modalInstance.result.then(function () {
+    	$uibModalInstance.result.then(function () {
             unbind();
     	}, function () {
             unbind();
@@ -760,11 +760,11 @@ diabloUtils.controller("diabloEditDialogCtrl", function($scope, $modalInstance, 
     // console.log($scope.params);
         
     $scope.cancel = function(){
-	$modalInstance.dismiss('cancel');
+	$uibModalInstance.dismiss('cancel');
     };
 
     $scope.ok = function() {
-	$modalInstance.dismiss('ok');
+	$uibModalInstance.dismiss('ok');
 	if (angular.isDefined(callback) && typeof(callback) === "function"){
 	    callback($scope.params);
 	}
@@ -772,7 +772,7 @@ diabloUtils.controller("diabloEditDialogCtrl", function($scope, $modalInstance, 
 
     var edit_callback = $scope.params.edit;
     $scope.edit = function(){
-	$modalInstance.dismiss('ok');
+	$uibModalInstance.dismiss('ok');
 	if (angular.isDefined(edit_callback) && typeof(edit_callback) === "function"){
 	    edit_callback();
 	}

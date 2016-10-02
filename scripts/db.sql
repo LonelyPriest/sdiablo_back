@@ -399,6 +399,9 @@ create table retailer_balance_history
     primary key     (id)
 ) default charset=utf8;
 
+/*
+ * promotion
+*/
 create table w_charge(
     id              INTEGER AUTO_INCREMENT,
     merchant        INTEGER not null default -1,
@@ -456,6 +459,24 @@ create table w_promotion(
     primary key     (id)
     
 ) default charset=utf8;
+
+create table w_ticket(
+    id              INTEGER AUTO_INCREMENT,
+    number          INTEGER not null,
+    sid             INTEGER default -1, -- score promotion
+    balance         INTEGER not null,
+    retailer        INTEGER default -1, -- -1: means no retailer to related
+    state           INTEGER default 0, -- 0: checking; 1: checked; 2: consumed
+    remark          VARCHAR(128) default null,
+    merchant        INTEGER not null default -1, 
+    entry           DATETIME default 0, 
+    deleted         INTEGER default 0, -- 0: no;  1: yes
+
+    unique  key uk  (merchant, number),
+    primary key     (id)
+    
+) default charset=utf8;
+
 
 -- create table shop_promotion(
 --     id              INTEGER AUTO_INCREMENT,

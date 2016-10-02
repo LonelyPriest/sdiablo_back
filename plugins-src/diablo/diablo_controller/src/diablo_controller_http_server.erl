@@ -164,6 +164,20 @@ root(Req) ->
     {ok, HTMLOutput} = login:render([{show_error,   "false"}]),
     Req:respond({200, [{"Content-Type", "text/html"}], HTMLOutput}).
 
+root(no_session, Req) ->
+    {ok, HTMLOutput} = login:render([{show_error, "true"},
+				     {login_error, "用户会话已删除，请重新登录！！"}]),
+    Req:respond({200, [{"Content-Type", "text/html"}], HTMLOutput}). 
+
+root(invalid_session, Req, SessionId) ->
+    Cookie = mochiweb_cookies:cookie(
+    	       ?QZG_DY_SESSION,
+    	       SessionId,
+    	       [{max_age, 0}, {path, "/"}]),
+    {ok, HTMLOutput} = login:render([{show_error, "true"},
+				     {login_error, "用户会话非法，请重新登录！！"}, Cookie]),
+    Req:respond({200, [{"Content-Type", "text/html"}], HTMLOutput}).
+
 url_dispatch(_, []) ->
     none;
 url_dispatch(Req, [{Regexp,  Function}|T]) ->
@@ -196,33 +210,29 @@ url_dispatch(Req, [{Regexp,  Function}|T]) ->
 		    %% 		 [{"Content-Type", "application/json"}],
 		    %% 		 ejson:encode({[{<<"ecode">>, ?to_i(ECode)},
 		    %% 				{<<"einfo">>, ?to_b(Error)}]})})
-		    case length(string:tokens(Path, "/")) of
-			1 ->
-			    case _Error of
-				no_session ->
-				    ?DEBUG("no session !!"),
-				    Req:respond(
-				      {301, [{"Location", "/"},
-					     {"Content-Type", "text/html; charset=UTF-8"}], 
-				       "Redirecting /"});
-				{invalid_session, _SessionId} ->
-				    %% Cookie = mochiweb_cookies:cookie(
-				    %% 	       ?QZG_DY_SESSION,
-				    %% 	       SessionId,
-				    %% 	       [{max_age, 0}, {path, "/"}]),
-				    %% Req:respond(
-				    %%   {301, [{"Location", "/"},
-				    %% 	     {"Content-Type", "text/html; charset=UTF-8"}, Cookie], 
-				    %%    "Redirecting /"})
-				    Req:respond(
-				      {301, [{"Location", "/"},
-					     {"Content-Type", "text/html; charset=UTF-8"}], 
-				       "Redirecting /"})
-			    end;
-				
-			_ ->
-			    Req:respond({599, [{"Content-Type", "text/plain"}],
-					 "request failed, invalid session\n"})
+		    
+		    case _Error of
+			no_session ->
+			    ?DEBUG("no session !!"),
+			    %% Req:respond(
+			    %%   {301, [{"Location", "/"},
+			    %% 	     {"Content-Type", "text/html; charset=UTF-8"}], 
+			    %%    "Redirecting /"});
+			    root(no_session, Req);
+			{invalid_session, SessionId} ->
+			    %% Cookie = mochiweb_cookies:cookie(
+			    %% 	       ?QZG_DY_SESSION,
+			    %% 	       SessionId,
+			    %% 	       [{max_age, 0}, {path, "/"}]),
+			    %% Req:respond(
+			    %%   {301, [{"Location", "/"},
+			    %% 	     {"Content-Type", "text/html; charset=UTF-8"}, Cookie], 
+			    %%    "Redirecting /"})
+			    %% Req:respond(
+			    %%   {301, [{"Location", "/"},
+			    %% 	     {"Content-Type", "text/html; charset=UTF-8"}], 
+			    %%    "Redirecting /"})
+			    root(invalid_session, Req, SessionId)
 		    end 
 	    end;
 	nomatch when Path =:= "login" ->

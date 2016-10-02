@@ -3,6 +3,12 @@ var version_update = function(){
     var updates = [
 	{date: "2016-09-28",
          content: [
+	     "修正重复登录问题" 
+	 ]
+        },
+	
+	{date: "2016-09-28",
+         content: [
 	     "修正重复登录问题",
 	     "新增会员的初始积分只有管理员才能填入",
 	     "修正修改厂商资料时，余额会变0的问题",

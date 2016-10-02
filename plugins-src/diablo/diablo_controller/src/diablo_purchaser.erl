@@ -674,7 +674,45 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 		
 		?DEBUG("Sql14 ~p", [Sql14]),
 
-		AllSql = Sql00 ++ Sql10 ++ Sql12 ++ Sql14,
+		%% transfer
+		Sql15 =
+		    ["update w_inventory_transfer_detail "
+		     ++ ?utils:to_sqls(
+			   proplists,
+			   comma,
+			   Update2
+			   ++ ?utils:v(path, string, Path)
+			   ++ ?utils:v(firm, integer, Firm))
+		     ++ " where "
+		     ++ RC(OrgStyleNumber, OrgBrand),
+
+		     "update w_inventory_transfer_detail_amount set "
+		     ++ ?utils:to_sqls(proplists, comma, Update2)
+		     ++ " where "
+		     ++ RC(OrgStyleNumber, OrgBrand)],
+
+		?DEBUG("Sql15 ~p", [Sql15]),
+
+		%% fix
+		Sql16 =
+		    ["update w_inventory_fix_detail "
+		     ++ ?utils:to_sqls(
+			   proplists,
+			   comma,
+			   Update2
+			   ++ ?utils:v(path, string, Path)
+			   ++ ?utils:v(firm, integer, Firm))
+		     ++ " where "
+		     ++ RC(OrgStyleNumber, OrgBrand),
+
+		     "update w_inventory_fix_detail_amount set "
+		     ++ ?utils:to_sqls(proplists, comma, Update2)
+		     ++ " where "
+		     ++ RC(OrgStyleNumber, OrgBrand)],
+
+		?DEBUG("Sql16 ~p", [Sql16]),
+
+		AllSql = Sql00 ++ Sql10 ++ Sql12 ++ Sql14 ++ Sql15 ++ Sql16,
 		{reply, ?sql_utils:execute(transaction, AllSql, GoodId), State}
 	    catch
 		_:{badmatch, Error} -> {reply, Error, State}

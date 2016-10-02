@@ -156,25 +156,28 @@ wretailerApp.controller("wretailerScoreDetailCtrl", function(
     $scope.right = {
 	new_score: rightAuthen.authen_master(user.type)
     };
-    
-    wretailerService.list_score_promotion().then(function(result){
-    	console.log(result);
 
-	$scope.promotion.balance2score = [];
-	$scope.promotion.score2balance = [];
-	angular.forEach(result, function(s){
-	    if (s.type_id === $scope.rules[0].id){
-		s.type = $scope.rules[0];
-		$scope.promotion.balance2score.push(s);
-	    } else if (s.type_id === $scope.rules[1].id){
-		s.type = $scope.rules[1];
-		$scope.promotion.score2balance.push(s);
-	    }
-	});
-	
-    	diablo_order($scope.promotion.balance2score);
-	diablo_order($scope.promotion.score2balance);
-    });
+    $scope.refresh = function(){
+	wretailerService.list_score_promotion().then(function(result){
+    	    console.log(result);
+
+	    $scope.promotion.balance2score = [];
+	    $scope.promotion.score2balance = [];
+	    angular.forEach(result, function(s){
+		if (s.type_id === $scope.rules[0].id){
+		    s.type = $scope.rules[0];
+		    $scope.promotion.balance2score.push(s);
+		} else if (s.type_id === $scope.rules[1].id){
+		    s.type = $scope.rules[1];
+		    $scope.promotion.score2balance.push(s);
+		}
+	    });
+	    
+    	    diablo_order($scope.promotion.balance2score);
+	    diablo_order($scope.promotion.score2balance);
+	})
+    };
+    
     
 
     var dialog = diabloUtilsService;

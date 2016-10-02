@@ -60,7 +60,7 @@
 	  	       placeholder="请选择会员" 
 	  	       typeahead-editable="false"
 		       typeahead-on-select="change_retailer()"
-	  	       typeahead="r as r.lname for r in
+	  	       uib-typeahead="r as r.lname for r in
 	  			  retailers|filter:$viewValue|limitTo:20"/> 
 	      </div>
 	    </div>
@@ -262,8 +262,8 @@
       <!--BEGN portlet body--> 
       <div class="portlet-body">
 	<!--BEGIN panel-->
-	<tabset>
-	  <tab heading="{{wsale_mode[0].title}}"
+	<uib-tabset>
+	  <uib-tab heading="{{wsale_mode[0].title}}"
 	       active="wsale_mode[0].active">
 	    <div class="panel panel-default">
 	      
@@ -310,7 +310,7 @@
 							$item,
 							$model,
 							$label)"
-				   typeahead="g as g.name for g in
+				   uib-typeahead="g as g.name for g in
 					      all_w_inventory|filter:{prompt:$viewValue}|limitTo:20"/>
 			  </div>
 			</form>
@@ -334,7 +334,7 @@
 							$label)"
 				   typeahead-wait-ms="500"
 				   typeahead-loading="loading"
-				   typeahead="g as g.name for g in match_style_number($viewValue)"/>
+				   uib-typeahead="g as g.name for g in match_style_number($viewValue)"/>
 			    <span x-ng-show="loading">
 			      <i class="glyphicon glyphicon-refresh"></i>
 			    </span>
@@ -543,9 +543,9 @@
 	      </div>
 	      
 	    </div>
-	  </tab> 
+	  </uib-tab> 
 
-	  <tab x-ng-if="false"
+	  <uib-tab x-ng-if="false"
 	       heading="{{wsale_mode[1].title}}"
 	       active="wsale_mode[1].active"
 	       select="image_mode(current_page)">
@@ -655,9 +655,9 @@
 		</tfoot> 
 	      </table>
 	    </div> 
-	  </tab>
+	  </uib-tab>
 	  
-	</tabset>
+	</uib-tabset>
       </div> <!--END portlet body--> 
       
     </div> <!--END portlet box-->

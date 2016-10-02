@@ -255,6 +255,8 @@ var stockUtils = function(){
 	    var filterEmployees = employees.filter(function(e){
 		return e.shop === shop;
 	    });
+
+	    if (filterEmployees.length === 0) filterEmployees = angular.copy(employees);
 	    
 	    var select = undefined;
 	    if (diablo_invalid_employee !== loginEmployee)
