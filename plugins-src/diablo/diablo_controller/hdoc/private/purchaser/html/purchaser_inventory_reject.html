@@ -45,7 +45,7 @@
 		       ng-edit
 	  	       typeahead-editable="false"
 		       typeahead-on-select="change_firm()"
-	  	       typeahead="f as f.name for f in get_prompt_firm($viewValue)"/> 
+	  	       uib-typeahead="f as f.name for f in get_prompt_firm($viewValue)"/> 
 	      </div>
 	    </div>
 
@@ -65,7 +65,7 @@
 	      <div class="input-group"> 
 		<input type="text" class="form-control"
 		       placeholder="年/月/日"
-		       datepicker-popup="yyyy/MM/dd"
+		       uib-datepicker-popup="yyyy/MM/dd"
 		       is-open="isOpened"
 		       close-text="关闭"
 		       clear-text="清除"
@@ -251,7 +251,7 @@
 				 typeahead-editable="false"
 				 typeahead-on-select="on_select_inventory(
 						      $item, $model, $label)"
-				 typeahead="g as g.name for g in
+				 uib-typeahead="g as g.name for g in
 					    all_prompt_inventory|filter:{prompt:$viewValue}|limitTo:prompt_limit"/>
 			</div>
 		      </form>
@@ -271,7 +271,7 @@
 				 typeahead-wait-ms="500"
 				 typeahead-on-select="on_select_inventory(
 						      $item, $model, $label)"
-				 typeahead="g as g.name for g in
+				 uib-typeahead="g as g.name for g in
 					    match_prompt_inventory($viewValue)"/>
 			</div>
 		      </form>
@@ -299,15 +299,11 @@
 				 type="number" step="0.01" 
 				 required
 				 disable-key
-				 placeholder="默认上次进价"
-
+				 placeholder="默认上次进价" 
 				 x-ng-pattern="pattern.price"
 				 x-ng-model="inv.org_price"
 				 ng-model-options="{debounce:300}"
-				 x-ng-change="row_change_price(inv)"
-				 popover-placement="top"
-				 popover-trigger="focus"
-				 popover="默认上次进价"/>
+				 x-ng-change="row_change_price(inv)" />
 		      </form>
 		    </td>
 
@@ -328,10 +324,7 @@
 				 x-ng-model="inv.ediscount"
 				 x-ng-pattern="/^\d{1,2}(\.\d{1,2})?$|100$/"
 				 ng-model-options="{debounce:300}"
-				 x-ng-change="row_change_ediscount(inv)"
-				 popover-placement="top"
-				 popover-trigger="focus"
-				 popover="默认上次折扣率"/>
+				 x-ng-change="row_change_ediscount(inv)" />
 		      </form>
 		    </td>
 		    
@@ -353,10 +346,7 @@
 				 x-ng-model="inv.amounts[0].reject_count"
 				 x-ng-change="auto_save_free(inv)"
 				 focus-auto="focus.reject"
-				 placeholder="数量"
-				 popover-placement="top"
-				 popover-trigger="focus"
-				 popover="均色均码直接输入数量"/>
+				 placeholder="数量" />
 		      </form>
 		    </td>
 

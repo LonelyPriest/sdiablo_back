@@ -45,7 +45,7 @@ valid_session(Req) ->
 	    case ?session:lookup(DSession) of
 		{ok, []} -> %% session time out or lost
 		    ?INFO("invalid session ~p", [DSession]),
-		    {error, {invalid_session, ESession}};
+		    {error, {invalid_session, DSession}};
 		{ok, _} -> %% valid session 
 		    {ok, valid_session}
 	    end

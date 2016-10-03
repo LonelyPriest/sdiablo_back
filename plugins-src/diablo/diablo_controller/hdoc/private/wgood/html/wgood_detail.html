@@ -149,7 +149,7 @@
 	      共 {{total_items}} 项
 	    </span>
 	    
-	    <pagination
+	    <uib-pagination
 		 class="pagination-lg table-pagination pull-right"
 		 total-items="total_items"
 		 items-per-page="items_perpage"
@@ -161,7 +161,7 @@
 		 x-ng-model="current_page"
 		 x-ng-init="current_page=default_page"
 		 x-ng-change="page_changed(current_page)">
-	    </pagination>
+	    </uib-pagination>
 	    
 	  </div>
 	</div>

@@ -205,6 +205,7 @@ action(Session, Req, {"list_inventory_children"}) ->
 				?reject_w_inventory,
 				?fix_w_inventory,
 				?check_w_inventory,
+				?list_new_w_inventory,
 				
 				?transfer_w_inventory,
 				?check_w_inventory_transfer,
@@ -230,7 +231,8 @@ action(Session, Req, {"list_sales_children"}) ->
 			 ?reject_w_sale,
 			 ?print_w_sale,
 			 ?update_w_sale,
-			 ?check_w_sale]},
+			 ?check_w_sale,
+			 ?list_w_sale]},
     
     {ok, Children} =
 	?right_init:get_children(children_only, [{<<"id">>, RightId}]),

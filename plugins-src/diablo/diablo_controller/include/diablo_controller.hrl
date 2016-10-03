@@ -180,6 +180,7 @@
 -define(print_w_sale,       ?right_w_sale + 4).
 -define(update_w_sale,      ?right_w_sale + 5).
 -define(check_w_sale,       ?right_w_sale + 6).
+-define(list_w_sale,        ?right_w_sale + 7).
 
 %% inventory
 -define(new_w_inventory,             ?right_w_inventory + 4).

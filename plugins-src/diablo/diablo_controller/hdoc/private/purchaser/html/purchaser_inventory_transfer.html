@@ -52,7 +52,7 @@
 	  	<!-- </span> -->
 		<input type="text" class="form-control"
 		       placeholder="年/月/日"
-		       datepicker-popup="yyyy/MM/dd"
+		       uib-datepicker-popup="yyyy/MM/dd"
 		       is-open="isOpened"
 		       close-text="关闭"
 		       clear-text="清除"
@@ -168,7 +168,7 @@
 				 placeholder="货号"
 				 typeahead-editable="false"
 				 typeahead-on-select="on_select_inventory($item, $model, $label)"
-				 typeahead="g as g.name for g in
+				 uib-typeahead="g as g.name for g in
 					    all_prompt_inventory|filter:{name:$viewValue}|limitTo:base_settings.plimit"/>
 			</div>
 		      </form>
@@ -187,7 +187,7 @@
 				 typeahead-editable="false"
 				 typeahead-wait-ms="500"
 				 typeahead-on-select="on_select_inventory($item, $model, $label)"
-				 typeahead="g as g.name for g in match_prompt_inventory($viewValue)"/>
+				 uib-typeahead="g as g.name for g in match_prompt_inventory($viewValue)"/>
 			</div>
 		      </form>
 		    </td>
@@ -213,10 +213,7 @@
 				 x-ng-model="inv.amounts[0].reject_count"
 				 focus-auto="focus.transfer"
 				 x-ng-change="auto_save_free(inv)"
-				 placeholder="数量"
-				 popover-placement="top"
-				 popover-trigger="focus"
-				 popover="均色均码直接输入数量"/>
+				 placeholder="数量" />
 		      </form>
 		    </td>
 

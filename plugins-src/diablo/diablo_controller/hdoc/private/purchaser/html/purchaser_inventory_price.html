@@ -213,7 +213,7 @@
 				 placeholder="货号"
 				 typeahead-editable="false"
 				 typeahead-on-select="on_select_good($item, $model, $label)" 
-				 typeahead="g as g.name for g in
+				 uib-typeahead="g as g.name for g in
 					    all_w_inventory|filter:{prompt:$viewValue}|limitTo:base_settings.plimit"/>
 			  <span x-ng-show="loading">
 			    <i class="glyphicon glyphicon-refresh"></i>
@@ -236,7 +236,7 @@
 				 typeahead-on-select="on_select_good($item, $model, $label)"
 				 typeahead-wait-ms="500"
 				 typeahead-loading="loading"
-				 typeahead="g as g.name for g in match_style_number($viewValue)"/>
+				 uib-typeahead="g as g.name for g in match_style_number($viewValue)"/>
 			  <span x-ng-show="loading">
 			    <i class="glyphicon glyphicon-refresh"></i>
 			  </span>

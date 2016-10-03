@@ -40,7 +40,7 @@
 	  	       placeholder="请选择厂商"
 	  	       typeahead-editable="false"
 		       typeahead-on-select="change_firm()"
-	  	       typeahead="f as f.name for f in get_prompt_firm($viewValue)"/> 
+	  	       uib-typeahead="f as f.name for f in get_prompt_firm($viewValue)"/> 
 	      </div>
 	    </div>
 
@@ -54,7 +54,7 @@
 		       readonly
 	  	       x-ng-model="select.firm"
 	  	       placeholder="厂商自动选择" 
-		       typeahead="f as f.name for f in
+		       uib-typeahead="f as f.name for f in
 	  			  firms|filter:$viewValue|limitTo:15"/> 
 	      </div>
 	    </div>
@@ -70,7 +70,7 @@
 	  	       x-ng-model="select.shop"
 	  	       placeholder="请选择店铺"
 	  	       typeahead-editable="false"
-	  	       typeahead="s as s.name for s in
+	  	       uib-typeahead="s as s.name for s in
 	  			  shops|filter:$viewValue|limitTo:8"/>
 	      </div>
 	    </div>
@@ -137,10 +137,7 @@
 			   disable-key
 			   ng-edit
 			   x-ng-pattern="/^\d+(.\d{1,2})?$/"
-	  		   x-ng-model="select.cash"
-			   popover-placement="top"
-			   popover-trigger="focus"
-			   popover="支持二位小数"/>
+	  		   x-ng-model="select.cash" />
 		  </div>
 		</form>
 
@@ -157,10 +154,7 @@
 			   ng-edit
 			   disable-key
 			   x-ng-pattern="/^\d+(.\d{1,2})?$/"
-	  		   x-ng-model="select.card"
-			   popover-placement="top"
-			   popover-trigger="focus"
-			   popover="支持二位小数"/>
+	  		   x-ng-model="select.card" />
 		  </div>
 		</form>
 
@@ -217,10 +211,7 @@
 			   placeholder="核销"
 			   ng-edit
 			   x-ng-pattern="/^\d+(.\d{1,2})?$/"
-	  		   x-ng-model="select.verificate"
-			   popover-placement="top"
-			   popover-trigger="focus"
-			   popover="支持二位小数"/>
+	  		   x-ng-model="select.verificate" />
 		  </div>
 		</form>
 		
@@ -397,7 +388,7 @@
 						      $item, $model, $label)"
 				 typeahead-wait-ms="500"
 				 typeahead-loading="loading"
-				 typeahead="g as g.name for g in
+				 uib-typeahead="g as g.name for g in
 					    match_prompt_good($viewValue)|limitTo:20"/>
 			  <span x-ng-show="loading">
 			    <i class="glyphicon glyphicon-refresh"></i>

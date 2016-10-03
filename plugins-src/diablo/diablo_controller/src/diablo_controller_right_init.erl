@@ -231,7 +231,9 @@ init([]) ->
 	 {?update_w_sale,
 	  <<"销售单编辑">>,   <<"update_w_sale">>,    ?right_w_sale},
 	 {?check_w_sale,
-	  <<"销售单审核">>,   <<"check_w_sale">>,     ?right_w_sale} 
+	  <<"销售单审核">>,   <<"check_w_sale">>,     ?right_w_sale},
+	 {?list_w_sale,
+	  <<"销售单查询">>,   <<"filter_w_sale_new">>,  ?right_w_sale}
 	],
     
     %% inventory
@@ -250,6 +252,8 @@ init([]) ->
 	  <<"退货">>, <<"reject_w_inventory">>,      ?right_w_inventory}, 
 	 {?fix_w_inventory,
 	  <<"盘点">>, <<"fix_w_inventory">>,         ?right_w_inventory},
+	 {?list_new_w_inventory,
+	  <<"入库查询">>, <<"filter_w_inventory_new">>, ?right_w_inventory},
 	 
 	 {?set_w_inventory_promotion,
 	  <<"促销方案设置">>, <<"set_w_inventory_promotion">>, ?right_w_inventory},

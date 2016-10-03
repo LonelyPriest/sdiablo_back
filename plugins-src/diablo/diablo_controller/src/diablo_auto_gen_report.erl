@@ -340,20 +340,22 @@ task(gen_ticket, Datetime, Merchant) when is_number(Merchant) ->
     FormatDatetime = format_datetime(Datetime),
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
     {ok, Scores}=?w_user_profile:get(score, Merchant),
-    Score2Money = lists:filter(
-	      fun({S})-> ?v(<<"type_id">>, S) =:= 1
-	      end, Scores),
-    ?DEBUG("score2money ~p", [Score2Money]),
-
+    Score2Money =
+	case lists:filter(fun({S})-> ?v(<<"type_id">>, S) =:= 1 end, Scores) of
+	    [] -> [];
+	    [{_Score2Money}] -> _Score2Money
+	end, 
+    ?DEBUG("score2money ~p, ", [Score2Money]),
+    
     IsGenTicket = ?v(<<"gen_ticket">>, BaseSetting),
     SysVips = sys_vip_of(merchant, Merchant),
     ?DEBUG("IsGenTicket ~p, SysVips ~p", [IsGenTicket, SysVips]),
-
+    
     TicketSqls =
-	case ?to_i(IsGenTicket) =:= 1 andalso length(Score2Money) =:= 1 of
+	case ?to_i(IsGenTicket) =:= 1 andalso length(Score2Money) =/= [] of
 	    true ->
-		AccScore = ?v(<<"score">>, lists:last(Score2Money)), 
-		Balance = ?v(<<"balance">>, lists:last(Score2Money)),
+		AccScore = ?v(<<"score">>, Score2Money), 
+		Balance = ?v(<<"balance">>, Score2Money),
 		Sql = "select id, score from w_retailer where merchant=" ++ ?to_s(Merchant)
 		    ++ " and score>=" ++ ?to_s(AccScore),
 		case ?sql_utils:execute(read, Sql) of
@@ -366,15 +368,27 @@ task(gen_ticket, Datetime, Merchant) when is_number(Merchant) ->
 				      true -> Acc;
 				      false ->
 					  Batch = ?inventory_sn:sn(w_ticket, Merchant),
-					  RetailerScore = ?v(<<"score">>, R, 0), 
-					  ["insert into w_ticket(number, sid, balance"
-					   ", retailer, merchant, entry) values("
-					   ++ ?to_s(Batch) ++ ","
-					   ++ ?to_s(?v(<<"id">>, lists:last(Score2Money))) ++ ","
-					   ++ ?to_s(RetailerScore div AccScore * Balance) ++ ","
-					   ++ ?to_s(?v(<<"id">>, R)) ++ ","
-					   ++ ?to_s(Merchant) ++ ","
-					   ++ "\'" ++ FormatDatetime ++ "\')"|Acc]
+					  RetailerScore = ?v(<<"score">>, R, 0),
+					  RetailerId = ?v(<<"id">>, R),
+
+					  %% only one ticket unless the ticked was consumed
+					  case ?sql_utils:execute(
+						  s_read , "select id, batch, retailer from w_ticket"
+						  " where merchant=" ++ ?to_s(Merchant)
+						  ++ " and retailer=" ++ ?to_s(RetailerId)
+						  ++ " and state in (0, 1)") of
+					      {ok, []} ->
+						  ["insert into w_ticket(batch, sid, balance"
+						   ", retailer, merchant, entry) values("
+						   ++ ?to_s(Batch) ++ ","
+						   ++ ?to_s(?v(<<"id">>, Score2Money)) ++ ","
+						   ++ ?to_s(
+							 RetailerScore div AccScore * Balance) ++ ","
+						   ++ ?to_s(RetailerId) ++ ","
+						   ++ ?to_s(Merchant) ++ ","
+						   ++ "\'" ++ FormatDatetime ++ "\')"|Acc];
+					      {ok, _} -> Acc
+					  end
 				  end
 			  end, [], Retailers)
 		end;

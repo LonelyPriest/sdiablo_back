@@ -75,7 +75,7 @@
 			   x-ng-pattern="pattern.brand"
 			   x-ng-enter=""
 			   x-ng-change="on_select_brand()"
-			   typeahead="b.name for b in
+			   uib-typeahead="b.name for b in
 				      brands|filter:$viewValue|limitTo:8"/> 
 		  </div> 
 		  <span class="input-group-addon bg-white fg-red">*</span> 
@@ -104,7 +104,7 @@
 	    		 x-ng-model="good.firm"
 	    		 x-ng-enter=""
 	    		 typeahead-editable="false"
-	    		 typeahead="f as f.name for f in
+	    		 uib-typeahead="f as f.name for f in
 	    			    firms|filter:$viewValue|limitTo:8"/>
 	    	  <!-- <span class="input-group-btn"> -->
 	    	  <!--   <button class="btn btn-success" x-ng-click="new_firm()"> -->
@@ -134,7 +134,7 @@
 			   x-ng-model="good.type"
 			   x-ng-pattern="pattern.type"
 			   x-ng-enter="" 
-			   typeahead="t.name for t in
+			   uib-typeahead="t.name for t in
 				      types|filter:$viewValue|limitTo:15"/>
 		  </div> 
 		  <span class="input-group-addon bg-white fg-red">*</span>
@@ -487,7 +487,7 @@
 	   ng-edit
 	   typeahead-editable="false"
 	   typeahead-on-select="params.on_select_ucolor($item, $model, $label)"
-	   typeahead="c as c.name for c in params.ucolors|filter:$viewValue|limitTo:20"
+	   uib-typeahead="c as c.name for c in params.ucolors|filter:$viewValue|limitTo:20"
 	   x-ng-model="params.select_ucolor"
 	   x-ng-enter="params.select_ucolor?params.select_ucolor=undefined:ok()" />
       </div>

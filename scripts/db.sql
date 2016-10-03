@@ -462,7 +462,7 @@ create table w_promotion(
 
 create table w_ticket(
     id              INTEGER AUTO_INCREMENT,
-    number          INTEGER not null,
+    batch           INTEGER not null,
     sid             INTEGER default -1, -- score promotion
     balance         INTEGER not null,
     retailer        INTEGER default -1, -- -1: means no retailer to related
@@ -472,7 +472,7 @@ create table w_ticket(
     entry           DATETIME default 0, 
     deleted         INTEGER default 0, -- 0: no;  1: yes
 
-    unique  key uk  (merchant, number),
+    unique  key uk  (merchant, batch, retailer),
     primary key     (id)
     
 ) default charset=utf8;

@@ -86,8 +86,8 @@
 	<!--BEGN portlet body--> 
 	<div class="portlet-body">
 	  <!--BEGIN panel-->
-	  <tabset> 
-	    <tab active="tab_active.time">
+	  <uib-tabset> 
+	    <uib-tab active="tab_active.time">
 	      <tab-heading>时间分布</tab-heading>
 	      
 	      <div class="panel panel-default table-panel"> 
@@ -211,7 +211,7 @@
 		  <span>显示第 {{tab_page.page_of_time}} / {{num_pages}} 项结果，
 		    共 {{total_items}} 项
 		  </span>
-		  <pagination class="pagination-lg
+		  <uib-pagination class="pagination-lg
 				     table-pagination pull-right"
 		  	      total-items="total_items"
 		  	      items-per-page="items_perpage"
@@ -222,17 +222,17 @@
 		  	      first-text="&laquo;" last-text="&raquo;"
 		  	      x-ng-model="tab_page.page_of_time"
 		  	      x-ng-change="page_changed(tab_page.page_of_time)">
-		  </pagination>
+		  </uib-pagination>
 		</div>
 	      </div>
-	    </tab>
+	    </uib-tab>
 	    
-	    <tab heading="销售分布"
+	    <uib-tab heading="销售分布"
 	    	 active="tab_active.chart"
 	    	 select="chart_mode(default_page)">
-	    </tab>
+	    </uib-tab>
 	    
-	  </tabset> 
+	  </uib-tabset> 
 	  
 	  <div x-ng-if="tab_active.chart" class="panel panel-default">
 	    <div class="row">

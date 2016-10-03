@@ -38,7 +38,7 @@
 	  	       placeholder="请选择厂商"
 	  	       typeahead-editable="false"
 		       typeahead-on-select="change_firm()"
-	  	       typeahead="f as f.name for f in get_prompt_firm($viewValue)"/> 
+	  	       uib-typeahead="f as f.name for f in get_prompt_firm($viewValue)"/> 
 	      </div>
 	    </div>
 
@@ -59,7 +59,7 @@
 	      <div class="input-group"> 
 		<input type="text" class="form-control"
 		       placeholder="年/月/日"
-		       datepicker-popup="yyyy/MM/dd"
+		       uib-datepicker-popup="yyyy/MM/dd"
 		       is-open="isOpened"
 		       close-text="关闭"
 		       clear-text="清除"
@@ -193,10 +193,7 @@
 			   x-ng-pattern="/^\d+(.\d{1,2})?$/"
 	  		   x-ng-model="select.e_pay"
 			   placeholder="关联费用"
-			   ng-edit
-			   popover-placement="top"
-			   popover-trigger="focus"
-			   popover="支持二位小数"/>
+			   ng-edit />
 		  </div>
 		</form> 
 	      </div>
@@ -319,7 +316,7 @@
 				 typeahead-wait-ms="500"
 				 typeahead-on-select="on_select_inventory(
 						      $item, $model, $label)"
-				 typeahead="g as g.name for g in
+				 uib-typeahead="g as g.name for g in
 					    match_prompt_inventory($viewValue)"/>
 			  
 			  <input x-ng-if="q_prompt===0"
@@ -331,7 +328,7 @@
 				 typeahead-editable="false"
 				 typeahead-on-select="on_select_inventory(
 						      $item, $model, $label)"
-				 typeahead="g as g.name for g in
+				 uib-typeahead="g as g.name for g in
 					    all_prompt_inventory|filter:{prompt:$viewValue}|limitTo:prompt_limit"/>
 			  
 			</div>
@@ -407,10 +404,7 @@
 				 ng-edit 
 				 x-ng-pattern="pattern.amount"
 				 x-ng-model="inv.amounts[0].reject"
-				 placeholder="数量"
-				 popover-placement="top"
-				 popover-trigger="focus"
-				 popover="均色均码直接输入数量"/>
+				 placeholder="数量" />
 			  </div>
 			</div>
 		      </form>

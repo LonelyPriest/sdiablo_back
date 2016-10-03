@@ -236,7 +236,7 @@
 		<span>显示第 {{current_page}} / {{num_pages}} 项结果，
 		  共 {{total_items}} 项</span>
 		
-		<pagination x-ng-show="!sequence_pagination"
+		<uib-pagination x-ng-show="!sequence_pagination"
 			    class="table-pagination pagination-lg pull-right "
 	      		    total-items="total_items"
 	      		    items-per-page="items_perpage"
@@ -247,7 +247,7 @@
 	      		    first-text="&laquo;" last-text="&raquo;"
 	      		    x-ng-model="current_page"
 	      		    x-ng-change="page_changed()">
-		</pagination>
+		</uib-pagination>
 
 		<span x-ng-if="sequence_pagination"
 		      class="pull-right">

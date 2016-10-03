@@ -194,7 +194,7 @@
 	      共 {{total_items}} 项
 	    </span>
 	      
-	    <pagination x-ng-show="!setting.se_pagination"
+	    <uib-pagination x-ng-show="!setting.se_pagination"
 			  class="pagination-lg table-pagination pull-right"
 		  	  total-items="total_items"
 		  	  items-per-page="items_perpage"
@@ -205,7 +205,7 @@
 		  	  first-text="&laquo;" last-text="&raquo;"
 		  	  x-ng-model="current_page"
 		  	  x-ng-change="page_changed()">
-	    </pagination>
+	    </uib-pagination>
 	      
 	    <span x-ng-if="setting.se_pagination"
 		  class="pull-right">
