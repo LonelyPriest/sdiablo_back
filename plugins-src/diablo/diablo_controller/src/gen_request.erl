@@ -83,13 +83,14 @@ get_session(Req) ->
     %% end.
 
 authen(Req, Args, Session, ValidFun) ->
-    ?DEBUG("session ~p", [Session]),
+    %% ?DEBUG("session ~p", [Session]),
     
     case ?session:get(type, Session) of
 	?SUPER -> %% super pass directly
 	    ValidFun();
 	_ ->
-	    [Action|_] = erlang:tuple_to_list(Args), 
+	    [Action|_] = erlang:tuple_to_list(Args),
+	    %% ?DEBUG("Action ~p", [Action]),
 	    case ?right_auth:authen(action, Action, Session) of
 		{error, _Error} ->
 		    User = ?session:get(name, Session),
@@ -98,8 +99,8 @@ authen(Req, Args, Session, ValidFun) ->
 				 [{"Content-Type", "application/json"}],
 				 ejson:encode({[{<<"ecode">>, 9901},
 						{<<"action">>, ?to_b(Action)}]})});
-		{ok, FunId} -> 
-		    ?DEBUG("authen right action ~p with actionId ~p", [Action, FunId]),
+		{ok, _FunId} -> 
+		    %% ?DEBUG("authen right action ~p with actionId ~p", [Action, FunId]),
 		    ValidFun()
 	    end
     end.

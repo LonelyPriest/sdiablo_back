@@ -1155,6 +1155,9 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		    if (diablo_no === $scope.base_settings.group_color){
 			$scope.group_color_with_8(); 
 		    }
+
+		    // reset filter color
+		    diabloFilter.reset_color();
 		}; 
 		
 		if (state.ecode == 0){
@@ -1446,7 +1449,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 			// id   :$scope.brands.length + 1,
 			id   :state.brand,
 			name :good.brand,
-			py   :diablo_pinyin(good.brand)}); 
+			py   :diablo_pinyin(good.brand)});
+		    diabloFilter.reset_brand();
 		}; 
 		// console.log($scope.brands);
 

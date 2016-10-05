@@ -3,11 +3,13 @@ var diabloAuthenApp = angular.module('diabloAuthenApp', [], function($provide){
     $provide.provider('authen', function(){
 	this.interceptor = ['$q', function($q){
 	    
-	    // function success(response) {
-	    // 	return response;
-	    // }
+	    function success(response) {
+		console.log(response);
+	    	return response;
+	    }
 
 	    // function request(config){
+	    // 	console.log(config);
 	    // 	return config;
 	    // }
 
@@ -16,25 +18,30 @@ var diabloAuthenApp = angular.module('diabloAuthenApp', [], function($provide){
 	    // }
 
 	    // function response (response){
+	    // 	console.log(response.status);
 	    // 	return response;
 	    // }
 	    
 	    function responseError(response) {
-		// console.log(response);
+		console.log(response.status);
 		// 599 is the customer code of HTTP, means invalid session,
 		// so redirect to login
-		if(response.status === 401
-		   || response.status === 599) {
-		    // console.log(response);
+		if(response.status === 401) {
 		    diablo_goto_page("/");
 		    return $q.reject(response);
 		}
-
-		// else if (response.status === 599){
+		// else if (response.status === 530){
 		//     var injector = angular.element(document).injector();
 		//     var dialog = injector.get('diabloUtilsService');
 		//     dialog.response(
-		// 	false, "无效会话：", "无效的系统会话，请重新登录！！", undefined);
+		// 	false, "无用户会话：", "该用户会话已被删除，请注销后重新登录！！", undefined);
+		//     return $q.reject(response);
+		// }
+		// else if (response.status === 531){
+		//     var injector = angular.element(document).injector();
+		//     var dialog = injector.get('diabloUtilsService');
+		//     dialog.response(
+		// 	false, "无效用户会话：", "该用户会话已失效，请注销后重新登录！！", undefined);
 		//     return $q.reject(response);
 		// }
 		

@@ -168,7 +168,7 @@
 	    <div class="col-md-12, col-sm-12, col-xs-12">
 	      <span>显示第 {{pagination.current_page}} / {{num_pages}} 项结果，
 		共 {{total_items}} 项</span>
-	      <pagination
+	      <uib-pagination
 		 class="pagination-lg table-pagination pull-right"
 		 total-items="total_items"
 		 items-per-page="pagination.items_perpage"
@@ -179,7 +179,7 @@
 		 first-text="&laquo;" last-text="&raquo;"
 		 x-ng-model="pagination.current_page"
 		 x-ng-change="page_changed(pagination.current_page)">
-	      </pagination>
+	      </uib-pagination>
 	    </div>
 	  </div> 
 	</div> <!--END portlet body--> 

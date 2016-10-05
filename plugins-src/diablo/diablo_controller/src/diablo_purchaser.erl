@@ -1148,7 +1148,8 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 		    true -> 
 			["update suppliers set balance=balance-"
 			 ++ ?to_s(BackBalanceOfOldFirm)
-			 ++ " where id=" ++ ?to_s(OldFirm),
+			 ++ " where id=" ++ ?to_s(OldFirm)
+			 ++ " and merchant=" ++ ?to_s(Merchant),
 
 			 "insert into firm_balance_history("
 			 "rsn, firm, balance, metric, action, shop, merchant, entry_date) values("

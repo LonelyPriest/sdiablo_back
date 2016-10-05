@@ -21,13 +21,53 @@ function filterProvider(){
     var _promotions  = [];
     // var _chargs      = [];
     // var _scores      = [];
-    
-    
-    this.$get = function($resource, dateFilter, wgoodService){
+
+    var set_storage = function(key, name, value){
+	var storage = localStorage.getItem(key);
+	if (angular.isDefined(storage) && storage !== null) {
+	    var caches = JSON.parse(storage);
+	    caches[name] = value;
+	    // console.log(caches); 
+	    localStorage.setItem(key, JSON.stringify(caches));
+	} else {
+	    var obj = {};
+	    obj[name] = value;
+	    localStorage.setItem(key, JSON.stringify(obj));
+	}
+    };
+
+    var get_from_storage = function(key, name){
+	var storage = localStorage.getItem(key);
+	if (angular.isDefined(storage) && storage !== null) {
+	    var caches = JSON.parse(storage);
+	    // console.log(caches);
+	    // console.log(caches[name]);
+	    return angular.isDefined(caches[name]) ? caches[name] : [];
+	}
+	
+	return [];
+    };
+
+    var clear_from_storage = function(key, name){
+	var storage = localStorage.getItem(key);
+	if (angular.isDefined(storage) && storage !== null) {
+	    var caches = JSON.parse(storage);
+	    for (o in caches){
+		if (o === name) delete caches[o];
+	    }
+	    
+	    localStorage.setItem(key, JSON.stringify(caches));   
+	}
+
+    };
+        
+    this.$get = function($resource, $cookies, dateFilter, wgoodService){
 	var resource = $resource(
 	    "/purchaser/:operation", {operation: '@operation'},
 	    {query_by_post: {method: 'POST', isArray:true}});
 
+	var cookie = 'filter-' + $cookies.qzg_dyty_session; 
+	
 	return{
 	    default_time: function(start, end){
 		var now = end;
@@ -293,31 +333,51 @@ function filterProvider(){
 	    },
 
 	    reset_brand: function(){
-		_brands = [];
+		// _brands = [];
+		clear_from_storage(cookie, "brand");
 	    },
 	    
 	    get_brand: function(){
-		if (_brands.length !== 0 ){
-		    // console.log("cache brands");
-		    return _brands;
-		} else {
-		    return wgoodService.list_purchaser_brand(
-		    ).then(function(brands){
-			// console.log(brands);
-			_brands =  brands.map(function(b){
-			    return {id: b.id,
-				    name:b.name,
-				    py:diablo_pinyin(b.name),
-				    // firm: supplier,
-				    firm_id: b.supplier_id,
-				    // remark: b.remark,
-				    // entry: b.entry
-				   };
-			})
-
-			return _brands;
+		var cached = get_from_storage(cookie, "brand");
+		if (cached.length !== 0) return cached;
+		else {
+		    return wgoodService.list_purchaser_brand().then(function(brands){
+		    	// console.log(brands);
+		    	_brands =  brands.map(function(b){
+		    	    return {id: b.id,
+		    		    name:b.name,
+		    		    py:diablo_pinyin(b.name),
+		    		    // firm: supplier,
+		    		    firm_id: b.supplier_id,
+		    		    // remark: b.remark,
+		    		    // entry: b.entry
+		    		   };
+		    	})
+			set_storage(cookie, "brand", _brands)
+		    	return _brands;
 		    });    
 		}
+		// if (_brands.length !== 0 ){
+		//     // console.log("cache brands");
+		//     return _brands;
+		// } else {
+		//     return wgoodService.list_purchaser_brand(
+		//     ).then(function(brands){
+		// 	// console.log(brands);
+		// 	_brands =  brands.map(function(b){
+		// 	    return {id: b.id,
+		// 		    name:b.name,
+		// 		    py:diablo_pinyin(b.name),
+		// 		    // firm: supplier,
+		// 		    firm_id: b.supplier_id,
+		// 		    // remark: b.remark,
+		// 		    // entry: b.entry
+		// 		   };
+		// 	})
+
+		// 	return _brands;
+		//     });    
+		// }
 		
 	    },
 
@@ -343,37 +403,60 @@ function filterProvider(){
 	    },
 
 	    reset_color: function(){
-		_colors = [];
+		clear_from_storage(cookie, "color");
 	    },
 	    
 	    get_color: function(){
-		if (_colors.length !== 0){
-		    // console.log("cache color");
-		    return _colors;
-		} else {
-		    return wgoodService.list_purchaser_color(
-		    ).then(function(colors){
-			// console.log(colors);
+		var cached = get_from_storage(cookie, "color");
+		if (cached.length !== 0) return cached;
+		else {
+		    return wgoodService.list_purchaser_color().then(function(colors){
 			_colors = colors.map(function(c){
 			    return {id:c.id,
 				    name:c.name,
 				    tid:c.tid,
 				    type:c.type}
 			});
-
+			set_storage(cookie, "color", _colors)
 			return _colors;
-		    })   
-		} 
+		    })
+		}
+		// if (_colors.length !== 0){
+		//     // console.log("cache color");
+		//     return _colors;
+		// } else {
+		//     return wgoodService.list_purchaser_color(
+		//     ).then(function(colors){
+		// 	// console.log(colors);
+		// 	_colors = colors.map(function(c){
+		// 	    return {id:c.id,
+		// 		    name:c.name,
+		// 		    tid:c.tid,
+		// 		    type:c.type}
+		// 	});
+
+		// 	return _colors;
+		//     })   
+		// } 
 	    },
 
 	    get_color_type: function(){
-		if (_color_types.length !== 0){
-		    return _color_types;
+		var cached = get_from_storage(cookie, "color_type");
+		if (cached.length !== 0){
+		    return cached;
 		} else {
 		    return wgoodService.list_color_type().then(function(types){
+			set_storage(cookie, "color_type", types);
 			return types;
 		    }); 
-		} 
+		}
+		// if (_color_types.length !== 0){
+		//     return _color_types;
+		// } else {
+		//     return wgoodService.list_color_type().then(function(types){
+		// 	return types;
+		//     }); 
+		// } 
 	    },
 
 	    get_size_group: function(){

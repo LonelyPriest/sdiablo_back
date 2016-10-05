@@ -28,7 +28,7 @@ var purchaserApp = angular.module(
 			  });
 		  }
 		  return original.apply($location, [path]);
-	      };
+	      }; 
 	  }]);
 
 purchaserApp.config(['$routeProvider', function($routeProvider){
