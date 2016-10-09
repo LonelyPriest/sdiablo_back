@@ -55,6 +55,12 @@ action(Session, Req, {"new_w_inventory"}, Payload) ->
 	       200,
 	       Req,
 	       ?succ(add_purchaser_inventory, RSn), {<<"rsn">>, ?to_b(RSn)});
+	{invalid_balance, {Firm, CurrentBalance, LastBalance}} ->
+	    ?utils:respond(200,
+			   Req,
+			   ?err(invalid_balance, Firm),
+			   [{<<"cbalance">>, CurrentBalance},
+			    {<<"lbalance">>, LastBalance}]);
     	{error, Error} ->
     	    ?utils:respond(200, Req, Error)
     end;

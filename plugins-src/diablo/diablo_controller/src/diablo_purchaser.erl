@@ -859,73 +859,92 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
     
     Total      = ?v(<<"total">>, Props, 0),
     
-    Sql0 = "select id, merchant, balance from suppliers"
-	" where id=" ++ ?to_s(Firm)
-	++ " and merchant=" ++ ?to_s(Merchant)
-	++ " and deleted=" ++ ?to_s(?NO) ++ ";",
+    Sql0 = "select a.id, a.merchant, a.balance"
+	", b.balance as lbalance, b.should_pay, b.has_pay, b.verificate, b.e_pay"
+	" from suppliers a"
+	" left join "
+	"(select id, merchant, firm, balance, should_pay"
+	", has_pay, verificate, e_pay from w_inventory_new"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and firm=" ++ ?to_s(Firm)
+	++ " order by id desc limit 1) b on a.merchant=b.merchant and a.id=b.firm"
+	" where a.id=" ++ ?to_s(Firm)
+	++ " and a.merchant=" ++ ?to_s(Merchant)
+	++ " and a.deleted=" ++ ?to_s(?NO) ++ ";",
 
     case ?sql_utils:execute(s_read, Sql0) of 
 	{ok, Account} ->
-	    RSn = rsn(new,
-		      Merchant,
-		      Shop,
-		      ?inventory_sn:sn(w_inventory_new_sn, Merchant)),
-	    
-	    Sql1 = sql(wnew, RSn, Merchant, Shop, Firm, DateTime, Inventories),
-
+	    ?DEBUG("account ~p", [Account]),
+	    LastBalance = ?v(<<"lbalance">>, Account, 0)
+		+ ?v(<<"should_pay">>, Account, 0)
+		+ ?v(<<"e_pay">>, Account, 0)
+		- ?v(<<"has_pay">>, Account, 0)
+		- ?v(<<"verificate">>, Account, 0), 
 	    CurrentBalance = ?v(<<"balance">>, Account, 0),
-	    
-	    Sql2 = "insert into w_inventory_new(rsn"
-		", employ, firm, shop, merchant, balance"
-		", should_pay, has_pay, cash, card, wire"
-		", verificate, total, comment"
-		", e_pay_type, e_pay, type, entry_date) values("
-		++ "\"" ++ ?to_s(RSn) ++ "\","
-		++ "\"" ++ ?to_s(Employee) ++ "\","
-		++ ?to_s(Firm) ++ ","
-		++ ?to_s(Shop) ++ ","
-		++ ?to_s(Merchant) ++ ","
-		++ ?to_s(CurrentBalance) ++ "," 
-		++ ?to_s(ShouldPay) ++ ","
-		++ ?to_s(HasPay) ++ ","
-		++ ?to_s(Cash) ++ ","
-		++ ?to_s(Card) ++ ","
-		++ ?to_s(Wire) ++ ","
-		++ ?to_s(VerifyPay) ++ ","
-		++ ?to_s(Total) ++ ","
-		++ "\"" ++ ?to_s(Comment) ++ "\","
-		++ ?to_s(EPayType) ++ ","
-		++ ?to_s(EPay) ++ ","
-		++ ?to_s(?NEW_INVENTORY) ++ ","
-		++ "\"" ++ ?to_s(DateTime) ++ "\")",
-
-	    Metric = ShouldPay + EPay - (Cash + Card + Wire + VerifyPay),
-	    case Metric == 0 orelse Firm =:= -1 of
+	    case LastBalance == CurrentBalance of
 		true ->
-		    AllSql = [Sql2|Sql1],
-		    Reply = ?sql_utils:execute(transaction, AllSql, RSn),
-		    {reply, Reply, State};
-		false -> 
-		    Sql3 = ["update suppliers set balance=balance+" ++ ?to_s(Metric)
-			    ++ ", change_date=" ++ "\"" ++ ?to_s(DateTime) ++ "\""
-			    ++ " where id=" ++ ?to_s(?v(<<"id">>, Account)),
-			    
-			    "insert into firm_balance_history("
-			    "rsn, firm, balance, metric, action, shop, merchant, entry_date) values("
-			    ++ "\'" ++ ?to_s(RSn) ++ "\',"
-			    ++ ?to_s(Firm) ++ ","
-			    ++ ?to_s(CurrentBalance) ++ ","
-			    ++ ?to_s(Metric) ++ ","
-			    ++ ?to_s(?NEW_INVENTORY) ++ ","
-			    ++ ?to_s(Shop) ++ ","
-			    ++ ?to_s(Merchant) ++ ","
-			    ++ "\"" ++ ?to_s(DateTime) ++ "\")" 
-			   ],
-		    
-		    AllSql = [Sql2|Sql1] ++ Sql3, 
-		    Reply = ?sql_utils:execute(transaction, AllSql, RSn),
-		    ?w_user_profile:update(firm, Merchant),
-		    {reply, Reply, State}
+		    RSn = rsn(new,
+			      Merchant,
+			      Shop,
+			      ?inventory_sn:sn(w_inventory_new_sn, Merchant)),
+
+		    Sql1 = sql(wnew, RSn, Merchant, Shop, Firm, DateTime, Inventories), 
+
+		    Sql2 = "insert into w_inventory_new(rsn"
+			", employ, firm, shop, merchant, balance"
+			", should_pay, has_pay, cash, card, wire"
+			", verificate, total, comment"
+			", e_pay_type, e_pay, type, entry_date) values("
+			++ "\"" ++ ?to_s(RSn) ++ "\","
+			++ "\"" ++ ?to_s(Employee) ++ "\","
+			++ ?to_s(Firm) ++ ","
+			++ ?to_s(Shop) ++ ","
+			++ ?to_s(Merchant) ++ ","
+			++ ?to_s(CurrentBalance) ++ "," 
+			++ ?to_s(ShouldPay) ++ ","
+			++ ?to_s(HasPay) ++ ","
+			++ ?to_s(Cash) ++ ","
+			++ ?to_s(Card) ++ ","
+			++ ?to_s(Wire) ++ ","
+			++ ?to_s(VerifyPay) ++ ","
+			++ ?to_s(Total) ++ ","
+			++ "\"" ++ ?to_s(Comment) ++ "\","
+			++ ?to_s(EPayType) ++ ","
+			++ ?to_s(EPay) ++ ","
+			++ ?to_s(?NEW_INVENTORY) ++ ","
+			++ "\"" ++ ?to_s(DateTime) ++ "\")",
+
+		    Metric = ShouldPay + EPay - (Cash + Card + Wire + VerifyPay),
+		    case Metric == 0 orelse Firm =:= -1 of
+			true ->
+			    AllSql = [Sql2|Sql1],
+			    Reply = ?sql_utils:execute(transaction, AllSql, RSn),
+			    {reply, Reply, State};
+			false -> 
+			    Sql3 = ["update suppliers set balance=balance+" ++ ?to_s(Metric)
+				    ++ ", change_date=" ++ "\"" ++ ?to_s(DateTime) ++ "\""
+				    ++ " where id=" ++ ?to_s(?v(<<"id">>, Account)),
+
+				    "insert into firm_balance_history("
+				    "rsn, firm, balance, metric, action"
+				    ", shop, merchant, entry_date) values("
+				    ++ "\'" ++ ?to_s(RSn) ++ "\',"
+				    ++ ?to_s(Firm) ++ ","
+				    ++ ?to_s(CurrentBalance) ++ ","
+				    ++ ?to_s(Metric) ++ ","
+				    ++ ?to_s(?NEW_INVENTORY) ++ ","
+				    ++ ?to_s(Shop) ++ ","
+				    ++ ?to_s(Merchant) ++ ","
+				    ++ "\"" ++ ?to_s(DateTime) ++ "\")" 
+				   ],
+
+			    AllSql = [Sql2|Sql1] ++ Sql3, 
+			    Reply = ?sql_utils:execute(transaction, AllSql, RSn),
+			    ?w_user_profile:update(firm, Merchant),
+			    {reply, Reply, State}
+		    end;
+		false ->
+		    {reply, {invalid_balance, {Firm, CurrentBalance, LastBalance}}, State}
 	    end;
 	Error ->
 	    {reply, Error, State}

@@ -595,10 +595,16 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 			sDraft.remove();
 			$scope.refresh();
 		    })
-	    } else{
-	    	diabloUtilsService.response_with_callback(
+	    } else {
+		diabloUtilsService.response_with_callback(
 	    	    false, "新增库存",
-	    	    "新增库存失败：" + purchaserService.error[state.ecode],
+	    	    "新增库存失败：" + purchaserService.error[state.ecode]
+			+ function(){
+			    if (state.ecode===2008){
+				return "厂商欠款[" + state.cbalance + "]，"
+				    + "上次欠款[" + state.lbalance + "]！！"
+			    }
+			}(),
 		    $scope, function(){$scope.has_saved = false})
 	    }
 	})

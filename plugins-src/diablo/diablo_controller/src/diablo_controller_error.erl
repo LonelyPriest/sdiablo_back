@@ -364,6 +364,8 @@ error(stock_been_checked, RSN) ->
     {2006, "stock of rsn " ++ ?to_s(RSN) ++ " has been checked."};
 error(stock_been_canceled, RSN) ->
     {2007, "stock of rsn " ++ ?to_s(RSN) ++ " has been canceled."};
+error(invalid_balance, Firm) ->
+    {2008, "invalid balance of firm " ++ ?to_s(Firm)};
 
 %% retailer
 error(retailer_exist, Retailer) ->
