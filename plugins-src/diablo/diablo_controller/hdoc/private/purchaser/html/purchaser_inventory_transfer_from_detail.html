@@ -129,7 +129,8 @@
 		      <!-- 	      x-ng-click="check_transfer(r)">确认 -->
 		      <!-- 	<i class="glyphicon glyphicon-check"></i> -->
 		      <!-- </button> -->
-		      <button class="btn diablo-button red"
+		      <button x-ng-if="stock_right.master && r.state===0"
+			      class="btn diablo-button red"
 			      x-ng-click="cancel_transfer(r)">删除
 			<i class="glyphicon glyphicon-erase"></i>
 		      </button>

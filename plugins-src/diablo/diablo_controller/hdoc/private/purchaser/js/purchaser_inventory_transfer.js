@@ -573,6 +573,15 @@ purchaserApp.controller("purchaserInventoryTransferFromDetailCtrl", function(
 	$scope.goto_page('#/inventory/inventory_rsn_detail/transfer_from');
     };
 
+    $scope.stock_right = {
+	// show_orgprice: rightAuthen.authen(
+	//     user.type,
+	//     rightAuthen.rainbow_action()['show_orgprice'],
+	//     user.right
+	// )
+	master: rightAuthen.authen_master(user.type)
+    }; 
+
     /*
     ** filter
     */ 
