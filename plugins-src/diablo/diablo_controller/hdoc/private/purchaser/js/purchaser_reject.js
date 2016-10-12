@@ -188,7 +188,9 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
     }; 
 
     $scope.q_prompt = stockUtils.typeahead($scope.select.shop.id, base);
-    $scope.prompt_limit = stockUtils.prompt_limit($scope.select.shop.id, base); 
+    $scope.prompt_limit = stockUtils.prompt_limit($scope.select.shop.id, base);
+    $scope.setting.reject_negative = stockUtils.reject_negative(
+	$scope.select.shop.id, base); 
     $scope.qtime_start = function(shopId){
 	return stockUtils.start_time(shopId, base, now, dateFilter); 
     };
@@ -434,7 +436,7 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	    }
 	    else {
 		if ( !$scope.setting.reject_negative
-		     && diablo_set_integer(amount.reject_count)>amount.count){
+		     && stockUtils.to_integer(amount.reject_count)>amount.count){
 		    // unchanged++
 		    return false;
 		}

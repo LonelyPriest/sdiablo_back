@@ -383,10 +383,11 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 			    add.tag_price = result.data.tag_price;
 			    add.discount  = result.data.discount;
 			    add.ediscount = result.data.ediscount;
-			} else {
-			    add.tag_price = 0;
-			    add.discount  = 0;
-			} 
+			}
+			// else {
+			//     add.tag_price = 0;
+			//     add.discount  = 0;
+			// } 
 		    }
 		})
 	    }
@@ -604,6 +605,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 				return "厂商欠款[" + state.cbalance + "]，"
 				    + "上次欠款[" + state.lbalance + "]！！"
 			    }
+			    return "";
 			}(),
 		    $scope, function(){$scope.has_saved = false})
 	    }

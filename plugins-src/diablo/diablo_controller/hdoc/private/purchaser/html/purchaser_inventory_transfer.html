@@ -39,8 +39,7 @@
 	    	<select class="form-control" type="text"
 	    		x-ng-model="select.shop"
 	    		x-ng-change="change_shop()"
-	    		x-ng-options="s as s.name for s in
-	    			      shops|filter:$viewValue|limitTo:8">
+	    		x-ng-options="s as s.name for s in shops|filter:$viewValue">
 	    	</select>
 	      </div>
 	    </div>
@@ -77,7 +76,7 @@
 	  	<select class="form-control" type="text"
 	  		x-ng-model="select.employee"
 	  		x-ng-options="e as e.name for e in
-	  			  employees|filter:$viewValue|limitTo:8">
+	  			      employees|filter:$viewValue|limitTo:8">
 		</select> 
 	      </div>
 	    </div> 
@@ -93,8 +92,7 @@
 		  店铺</span>
 	    	<select class="form-control" type="text"
 	    		x-ng-model="select.to_shop" 
-	    		x-ng-options="s as s.name for s in
-	    			      to_shops|filter:$viewValue|limitTo:8">
+	    		x-ng-options="s as s.name for s in to_shops|filter:$viewValue">
 	    	</select>
 	      </div>
 	    </div>

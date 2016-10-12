@@ -237,15 +237,20 @@ transfer_to_float(E) when is_integer(E) ->
     erlang:float(E);
 transfer_to_float(E) when is_binary(E) ->
     try
-	erlang:binary_to_float(E)
+	round(erlang:binary_to_float(E) * 100) / 100
     catch
 	error:badarg ->
-	    erlang:binary_to_integer(E)
+	    float(erlang:binary_to_integer(E))
     end;
 transfer_to_float(E) when is_list(E)->
-    erlang:list_to_float(E);
+    try 
+	erlang:float(erlang:list_to_integer(E))
+    catch
+	error:badarg ->
+	    round(erlang:list_to_float(E) * 100) / 100
+    end;
 transfer_to_float(E) ->
-    E.
+    round(E * 100) / 100.
 
 
 transfer_to_tuple_list(E) when is_tuple(E) ->

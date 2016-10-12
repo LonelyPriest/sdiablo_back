@@ -422,8 +422,8 @@ action(Session, Req, {"w_inventory_transfer_rsn_detail"}, Payload) ->
 
 
 action(Session, Req, {"check_w_inventory_transfer"}, Payload) ->
-    ?DEBUG("check_w_inventory_transfer with session ~p, paylaod~n~p",
-           [Session, Payload]),    Merchant = ?session:get(merchant, Session),
+    ?DEBUG("check_w_inventory_transfer with session ~p, paylaod~n~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
     %% RSN = ?v(<<"rsn">>, Payload),
     %% TShop = ?v(<<"tshop">>, Payload), 
     case ?w_inventory:purchaser_inventory(check_transfer, Merchant, Payload) of
@@ -432,6 +432,23 @@ action(Session, Req, {"check_w_inventory_transfer"}, Payload) ->
                200,
                Req,
                ?succ(check_w_inventory_transfer, RSN),
+               {<<"rsn">>, ?to_b(RSN)});
+        {error, Error} ->
+            ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"cancel_w_inventory_transfer"}, Payload) ->
+    ?DEBUG("cancel_w_inventory_transfer with session ~p, paylaod~n~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    RSN = ?v(<<"rsn">>, Payload, []),
+    %% RSN = ?v(<<"rsn">>, Payload),
+    %% TShop = ?v(<<"tshop">>, Payload), 
+    case ?w_inventory:purchaser_inventory(cancel_transfer, Merchant, RSN) of
+        {ok, RSN} ->
+            ?utils:respond(
+               200,
+               Req,
+               ?succ(cancel_w_inventory_transfer, RSN),
                {<<"rsn">>, ?to_b(RSN)});
         {error, Error} ->
             ?utils:respond(200, Req, Error)

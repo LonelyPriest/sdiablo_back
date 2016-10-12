@@ -117,6 +117,11 @@ purchaser_inventory(check_transfer, Merchant, CheckProps) ->
     gen_server:call(
       Name, {check_inventory_transfer, Merchant, CheckProps});
 
+purchaser_inventory(cancel_transfer, Merchant, RSN) -> 
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(
+      Name, {cancel_inventory_transfer, Merchant, RSN});
+
 purchaser_inventory(list, Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {list_inventory, Merchant, Conditions});
@@ -676,7 +681,7 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 
 		%% transfer
 		Sql15 =
-		    ["update w_inventory_transfer_detail "
+		    ["update w_inventory_transfer_detail set "
 		     ++ ?utils:to_sqls(
 			   proplists,
 			   comma,
@@ -695,7 +700,7 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 
 		%% fix
 		Sql16 =
-		    ["update w_inventory_fix_detail "
+		    ["update w_inventory_fix_detail set "
 		     ++ ?utils:to_sqls(
 			   proplists,
 			   comma,
@@ -881,7 +886,9 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
 		- ?v(<<"has_pay">>, Account, 0)
 		- ?v(<<"verificate">>, Account, 0), 
 	    CurrentBalance = ?v(<<"balance">>, Account, 0),
-	    case LastBalance == CurrentBalance of
+	    ?DEBUG("current balance ~p, last balance ~p",
+		   [?to_f(CurrentBalance), ?to_f(LastBalance)]),
+	    case ?to_f(LastBalance) =:= ?to_f(CurrentBalance) of
 		true ->
 		    RSn = rsn(new,
 			      Merchant,
@@ -1554,6 +1561,27 @@ handle_call({check_inventory_transfer, Merchant, CheckProps}, _From, State) ->
         end,
     {reply, Reply, State};
 
+handle_call({cancel_inventory_transfer, Merchant, RSN}, _From, State) ->
+    ?DEBUG("cancel_inventory_transfer: rsn ~p", [RSN]),
+    Sql = "select rsn, fshop, tshop, state from w_inventory_transfer"
+        " where rsn=\"" ++ ?to_s(RSN) ++ "\"",
+    Reply =
+        case ?sql_utils:execute(s_read, Sql) of
+            {ok, []} -> 
+                {error, ?err(stock_sn_not_exist, RSN)};
+	    {ok, R} ->
+                case ?v(<<"state">>, R) of
+                    ?IN_STOCK ->
+                        {error, ?err(stock_been_checked, RSN)};
+                    ?IN_BACK ->
+                        {error, ?err(stock_been_canceled, RSN)};
+                    ?IN_ROAD -> 
+                        Sqls = ?w_transfer_sql:cancel_transfer(Merchant, RSN),
+                        ?sql_utils:execute(transaction, Sqls, RSN)
+                end
+        end,
+    {reply, Reply, State}; 
+
 handle_call({list_inventory, Merchant, Conditions}, _From, State) ->
     ?DEBUG("list_inventory  with merchant ~p, conditions ~p", [Merchant, Conditions]), 
     QType = ?v(<<"qtype">>, Conditions, 0), 
@@ -1850,7 +1878,7 @@ handle_call({total_new_rsn_groups, Merchant, Conditions}, _From, State) ->
     
     CountSql = "select count(*) as total"
     	", SUM(b.amount) as t_amount"
-	%% ", SUM(b.org_price * b.amount) as t_balance" 
+	", SUM(b.org_price * b.amount) as t_balance" 
     	" from w_inventory_new_detail b, w_inventory_new a" 
     	" where "
 	++ ?sql_utils:condition(proplists_suffix, CorrectCutDConditions)

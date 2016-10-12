@@ -3,6 +3,45 @@ var diabloFilterApp = angular.module("diabloFilterApp", [], function($provide){
 });
 
 
+var set_storage = function(key, name, value){
+    var storage = localStorage.getItem(key);
+    if (angular.isDefined(storage) && storage !== null) {
+	var caches = JSON.parse(storage);
+	caches[name] = value;
+	// console.log(caches); 
+	localStorage.setItem(key, JSON.stringify(caches));
+    } else {
+	var obj = {};
+	obj[name] = value;
+	localStorage.setItem(key, JSON.stringify(obj));
+    }
+};
+
+var get_from_storage = function(key, name){
+    var storage = localStorage.getItem(key);
+    if (angular.isDefined(storage) && storage !== null) {
+	var caches = JSON.parse(storage);
+	// console.log(caches);
+	// console.log(caches[name]);
+	return angular.isDefined(caches[name]) ? caches[name] : undefined;
+    }
+    
+    return undefined;
+};
+
+var clear_from_storage = function(key, name){
+    var storage = localStorage.getItem(key);
+    if (angular.isDefined(storage) && storage !== null) {
+	var caches = JSON.parse(storage);
+	for (o in caches){
+	    if (o === name) delete caches[o];
+	}
+	
+	localStorage.setItem(key, JSON.stringify(caches));   
+    }
+
+};
+
 function filterProvider(){
     // one filter include many fileds that used to filter
     var _filter = {fields: []}; 
@@ -22,45 +61,6 @@ function filterProvider(){
     // var _chargs      = [];
     // var _scores      = [];
 
-    var set_storage = function(key, name, value){
-	var storage = localStorage.getItem(key);
-	if (angular.isDefined(storage) && storage !== null) {
-	    var caches = JSON.parse(storage);
-	    caches[name] = value;
-	    // console.log(caches); 
-	    localStorage.setItem(key, JSON.stringify(caches));
-	} else {
-	    var obj = {};
-	    obj[name] = value;
-	    localStorage.setItem(key, JSON.stringify(obj));
-	}
-    };
-
-    var get_from_storage = function(key, name){
-	var storage = localStorage.getItem(key);
-	if (angular.isDefined(storage) && storage !== null) {
-	    var caches = JSON.parse(storage);
-	    // console.log(caches);
-	    // console.log(caches[name]);
-	    return angular.isDefined(caches[name]) ? caches[name] : [];
-	}
-	
-	return [];
-    };
-
-    var clear_from_storage = function(key, name){
-	var storage = localStorage.getItem(key);
-	if (angular.isDefined(storage) && storage !== null) {
-	    var caches = JSON.parse(storage);
-	    for (o in caches){
-		if (o === name) delete caches[o];
-	    }
-	    
-	    localStorage.setItem(key, JSON.stringify(caches));   
-	}
-
-    };
-        
     this.$get = function($resource, $cookies, dateFilter, wgoodService){
 	var resource = $resource(
 	    "/purchaser/:operation", {operation: '@operation'},
@@ -154,6 +154,9 @@ function filterProvider(){
 		} else if (name === 'check_state'){
 		    _filter.fields.push({name:"check_state", chinese:"审核状态"});
 		    _prompt.check_state = promptValues;
+		} else if(name === 'fshop'){
+		    _filter.fields.push({name:"fshop", chinese:"店铺"});
+		    _prompt.fshop = promptValues;
 		}
 
 		return _filter;
@@ -339,7 +342,7 @@ function filterProvider(){
 	    
 	    get_brand: function(){
 		var cached = get_from_storage(cookie, "brand");
-		if (cached.length !== 0) return cached;
+		if (angular.isArray(cached) && cached.length !== 0) return cached;
 		else {
 		    return wgoodService.list_purchaser_brand().then(function(brands){
 		    	// console.log(brands);
@@ -408,7 +411,7 @@ function filterProvider(){
 	    
 	    get_color: function(){
 		var cached = get_from_storage(cookie, "color");
-		if (cached.length !== 0) return cached;
+		if (angular.isArray(cached) && cached.length !== 0) return cached;
 		else {
 		    return wgoodService.list_purchaser_color().then(function(colors){
 			_colors = colors.map(function(c){
@@ -442,7 +445,7 @@ function filterProvider(){
 
 	    get_color_type: function(){
 		var cached = get_from_storage(cookie, "color_type");
-		if (cached.length !== 0){
+		if (angular.isArray(cached) && cached.length !== 0){
 		    return cached;
 		} else {
 		    return wgoodService.list_color_type().then(function(types){
@@ -504,12 +507,14 @@ function filterProvider(){
 	    },
 
 	    get_employee: function(){
-		if (_employees.length !== 0){
-		    return _employees;
-		} else {
+		var cached = get_from_storage(cookie, "employee");
+		if (angular.isArray(cached) && cached.length !== 0) return cached; 
+		// if (_employees.length !== 0){
+		//     return _employees;
+		// }
+		else {
 		    var http = $resource(
-			"/employ/:operation", {operation: '@operation'});
-		    
+			"/employ/:operation", {operation: '@operation'}); 
 		    return http.query(
 			{operation: 'list_employe'}
 		    ).$promise.then(function(employees){
@@ -519,8 +524,8 @@ function filterProvider(){
 				    id:e.number,
 				    shop:e.shop_id,
 				    py:diablo_pinyin(e.name)}
-			});
-
+			}); 
+			set_storage(cookie, "employee", _employees); 
 			return _employees;
 		    });
 		} 
@@ -579,8 +584,9 @@ function normalFilterProvider(){
 
     var _cards          = [];
     var _shops          = [];
+
     
-    this.$get = function($resource){
+    this.$get = function($resource, $cookies){
 	var _employeeHttp =
 	    $resource("/employ/:operation", {operation: '@operation'});
 	var _retailerHttp =
@@ -599,6 +605,8 @@ function normalFilterProvider(){
 	var _shopHttp =
 	    $resource("/shop/:operation", {operation: '@operation'});
 
+	var cookie = 'filter-' + $cookies.qzg_dyty_session;
+
 	return{
 	    match_all_w_inventory: function(condition){
 		return _invHttp.post_get(
@@ -606,9 +614,12 @@ function normalFilterProvider(){
 	    }, 
 	    
 	    get_employee: function(){
-		if (_employees.length !== 0){
-		    return _employees;
-		} else {
+		var cached = get_from_storage(cookie, "employee");
+		if (angular.isArray(cached) && cached.length !== 0) return cached; 
+		// if (_employees.length !== 0){
+		//     return _employees;
+		// }
+		else {
 		    return _employeeHttp.query(
 			{operation: 'list_employe'}
 		    ).$promise.then(function(employees){
@@ -619,7 +630,7 @@ function normalFilterProvider(){
 				    id:e.number,
 				    py:diablo_pinyin(e.name)}
 			});
-
+			set_storage(cookie, "employee", _employees);
 			return _employees;
 		    });   
 		} 
@@ -670,15 +681,20 @@ function normalFilterProvider(){
 	    },
 	    
 	    get_base_setting: function(){
-		if (_baseSettings.length !== 0 ){
-		    return _baseSettings;
-		} else {
+		var cached = get_from_storage(cookie, "base_setting");
+		if (angular.isArray(cached) && cached.length !== 0) return cached; 
+		// if (_baseSettings.length !== 0 ){
+		//     return _baseSettings;
+		// }
+		else {
 		    return _baseHttp.query(
 			{operation: "list_base_setting"}
 		    ).$promise.then(function(ss){
+			// console.log(ss);
 			_baseSettings = ss.map(function(s){
 			    return {name:s.ename, value:s.value, shop:s.shop}; 
 			});
+			set_storage(cookie, "base_setting", _baseSettings);
 			return _baseSettings;
 		    })
 		}
@@ -701,9 +717,12 @@ function normalFilterProvider(){
 	    },
 
 	    get_promotion: function(){
-		if (_promotions.length !== 0){
-		    return _promotions;
-		} else {
+		var cached = get_from_storage(cookie, "promotion");
+		if (angular.isArray(cached) && cached.length !== 0) return cached; 
+		// if (_promotions.length !== 0){
+		//     return _promotions;
+		// } 
+		else {
 		    return _goodHttp.query(
 			{operation: 'list_w_promotion'}
 		    ).$promise.then(function(ps){
@@ -719,7 +738,7 @@ function normalFilterProvider(){
 				edate:    p.edate
 			    }
 			});
-
+			set_storage(cookie, "promotion", _promotions); 
 			return _promotions;
 		    })
 		}

@@ -133,6 +133,8 @@ success(check_w_inventory, RSN) ->
     {0, "Success to check purchaser inventory with rsn " ++ ?to_s(RSN)};
 success(check_w_inventory_transfer, RSN) ->
     {0, "Success to check transfer inventory with rsn " ++ ?to_s(RSN)};
+success(cancel_w_inventory_transfer, RSN) ->
+    {0, "Success to cancel transfer inventory with rsn " ++ ?to_s(RSN)};
 success(reject_w_inventory, Total) ->
     {0, "Success to reject purchaser inventory of total amount "
      ++ ?to_s(Total)};

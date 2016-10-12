@@ -167,7 +167,9 @@
 		  <tr x-ng-if="total_items!==0" class="bg-white">
 		    <td colspan="{{calc_colspan()}}"></td>
 		    <td class="danger">{{total_amounts}}</td>
-		    <td colspan="3"></td>
+		    <td x-ng-if="stock_right.show_orgprice">{{total_balance}}</td>
+		    <td x-ng-if="!stock_right.show_orgprice"></td>
+		    <td colspan="2"></td>
 		  </tr>
 		</tbody> 
 		

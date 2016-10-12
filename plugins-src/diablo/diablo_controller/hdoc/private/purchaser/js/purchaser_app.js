@@ -560,9 +560,14 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
              brand:inv.brand}).$promise;
     };
 
-     this.check_w_inventory_transfer = function(check){
+    this.check_w_inventory_transfer = function(check){
         return http.save(
             {operation: "check_w_inventory_transfer"}, check).$promise;
+    };
+
+    this.cancel_w_inventory_transfer = function(rsn){
+	return http.save(
+            {operation: "cancel_w_inventory_transfer"}, {rsn:rsn}).$promise;
     };
     
     /*

@@ -448,6 +448,9 @@ diabloUtils.directive('queryGroup', function () {
 			case "shop":
 			    f.value = get_prompt(f.value, scope.prompt.shop);
 			    break;
+			case "fshop":
+			    f.value = get_prompt(f.value, scope.prompt.fshop);
+			    break;
 			default:
 			    break;
 			}

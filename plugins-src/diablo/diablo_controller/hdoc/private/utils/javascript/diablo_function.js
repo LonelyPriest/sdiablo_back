@@ -92,6 +92,7 @@ var diablo_key_inventory_detail       = "q-inventory-detail"
 var diablo_key_inventory_trans        = "q-inventory-trans";
 var diablo_key_inventory_note         = "q-inventory-trans-note";
 var diablo_key_inventory_note_link    = "q-inventory-trans-note-link";
+var diablo_key_inventory_transfer     = "q-inventory-transfer";
 
 // firm
 var diablo_key_firm                   = "q-firm-detail";

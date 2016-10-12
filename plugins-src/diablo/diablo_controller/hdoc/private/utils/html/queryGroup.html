@@ -133,6 +133,14 @@
 	    </select>
 	  </span>
 
+	  <span x-ng-switch-when="fshop">
+	    <select type="text" class="form-control"
+		    x-ng-model="f.value"
+	  	    x-ng-options="s as s.name for s in prompt.fshop"
+		    x-ng-init="f.value=f.value ? f.value : prompt.fshop[0]">
+	    </select>
+	  </span>
+
 	  <span x-ng-switch-when="stock">
 	    <select type="text" class="form-control"
 		    x-ng-model="f.value"

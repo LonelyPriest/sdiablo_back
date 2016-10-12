@@ -180,15 +180,19 @@ action(Session, Req, {"switch_shift_report"}, Payload) ->
 action(Session, Req, {"stock_stastic"}, Payload) ->
     ?DEBUG("stock_stastic with session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
+    %% ?DEBUG("baseSetting ~p", [BaseSetting]),
+    NewPayload = [{<<"start_time">>, ?v(<<"qtime_start">>, BaseSetting)}]
+	++ lists:keydelete(<<"start_time">>, 1, Payload),
     try 
-	{ok, StockSale} = ?w_report:stastic(stock_sale, Merchant, Payload),
-	{ok, StockProfit} = ?w_report:stastic(stock_profit, Merchant, Payload),
-	{ok, StockIn}  = ?w_report:stastic(stock_in, Merchant, Payload),
-	{ok, StockOut} = ?w_report:stastic(stock_out, Merchant, Payload),
-	{ok, StockTransferIn} = ?w_report:stastic(stock_transfer_in, Merchant, Payload),
-	{ok, StockTransferOut} = ?w_report:stastic(stock_transfer_out, Merchant, Payload),
-	{ok, StockFix} = ?w_report:stastic(stock_fix, Merchant, Payload),
-	{ok, StockR} = ?w_report:stastic(stock_real, Merchant, Payload),
+	{ok, StockSale} = ?w_report:stastic(stock_sale, Merchant, NewPayload),
+	{ok, StockProfit} = ?w_report:stastic(stock_profit, Merchant, NewPayload),
+	{ok, StockIn}  = ?w_report:stastic(stock_in, Merchant, NewPayload),
+	{ok, StockOut} = ?w_report:stastic(stock_out, Merchant, NewPayload),
+	{ok, StockTransferIn} = ?w_report:stastic(stock_transfer_in, Merchant, NewPayload),
+	{ok, StockTransferOut} = ?w_report:stastic(stock_transfer_out, Merchant, NewPayload),
+	{ok, StockFix} = ?w_report:stastic(stock_fix, Merchant, NewPayload),
+	{ok, StockR} = ?w_report:stastic(stock_real, Merchant, NewPayload),
 	
 	?utils:respond(200, object, Req,
 		       {[{<<"ecode">>, 0},

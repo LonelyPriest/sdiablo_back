@@ -496,4 +496,15 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 	
 	
     [Sql1] ++ Sql3.
+
+cancel_transfer(Merchant, RSN) ->
+    ["delete from w_inventory_transfer_detail_amount where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+     " and merchant=" ++ ?to_s(Merchant),
+     
+     "delete from w_inventory_transfer_detail where rsn=\'"++ ?to_s(RSN) ++ "\'"
+     " and merchant=" ++ ?to_s(Merchant),
+
+     "delete from w_inventory_transfer where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+     " and merchant=" ++ ?to_s(Merchant)
+    ].
     
