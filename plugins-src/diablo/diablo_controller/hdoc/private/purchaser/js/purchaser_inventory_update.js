@@ -1,6 +1,6 @@
 purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
     $scope, $q, $routeParams, diabloPromise, dateFilter, diabloPattern,
-    diabloUtilsService, diabloFilter, wgoodService, purchaserService,
+    diabloUtilsService, diabloFilter, diabloPagination, wgoodService, purchaserService,
     user, filterBrand, filterFirm, filterType, filterEmployee,
     filterSizeGroup, filterColor, base){
     $scope.shops       = user.sortShops;
@@ -20,6 +20,8 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
     $scope.select          = {};
     $scope.inventories     = [];
     $scope.h_inventories   = [];
+    $scope.h_items_perpage = 5;
+    $scope.h_current_page  = 1;
     // $scope.select_history  = [];
 
     $scope.get_object = diablo_get_object;
@@ -94,15 +96,31 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 						 brand_id:    inv.brand_id,
 						 history: history};
 			
-			$scope.h_inventories.push($scope.select_history); 
+			$scope.h_inventories.push($scope.select_history);
+			$scope.h_pagination($scope.select_history.history);
 			// console.log($scope.h_inventories); 
 		    }
 		}) 
 	    } else {
 		$scope.select_history = filter_history[0];
+		$scope.h_pagination($scope.select_history.history);
 	    }
 	} 
     };
+
+    $scope.h_pagination = function(history){
+	diabloPagination.set_data(history);
+	diabloPagination.set_items_perpage($scope.h_items_perpage);
+	$scope.h_total_items = diabloPagination.get_length(); 
+	$scope.h_current_page = 1;
+	$scope.p_history = diabloPagination.get_page($scope.h_current_page);
+	// console.log($scope.p_history);
+    };
+
+    $scope.h_page_changed = function(page) {
+	$scope.h_current_page = page;
+	$scope.p_history = diabloPagination.get_page($scope.h_current_page);
+    }
     
     $scope.focus_row_auto = function(direction){
 	if (diablo_up === direction){
