@@ -1,5 +1,5 @@
 var wgoodApp = angular.module(
-    "wgoodApp", ['ngResource', 'diabloUtils', 'diabloFilterApp',
+    "wgoodApp", ['ngResource', 'diabloUtils', 'diabloFilterApp', 'ngCookies',
 		 'diabloNormalFilterApp', 'diabloPattern', 'diabloAuthenApp',
 		 'ui.bootstrap', 'userApp'])
     .config(function($httpProvider, authenProvider){

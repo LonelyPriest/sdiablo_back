@@ -1602,9 +1602,9 @@ update_metric(Amounts) ->
       fun({struct, Attr}, Acc) ->
 	      Count = ?v(<<"count">>, Attr),
 	      case ?v(<<"operation">>, Attr) of
-		  <<"d">> -> Acc - Count;
-		  <<"a">> -> Acc + Count;
-		  <<"u">> -> Acc + Count;
+		  <<"d">> -> Acc - ?to_i(Count);
+		  <<"a">> -> Acc + ?to_i(Count);
+		  <<"u">> -> Acc + ?to_i(Count);
 		  _ -> Acc + Count 
 	      end
       end, 0, Amounts).

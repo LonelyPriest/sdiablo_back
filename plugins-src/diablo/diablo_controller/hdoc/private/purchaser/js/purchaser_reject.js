@@ -298,6 +298,14 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
     };
     
     $scope.save_inventory = function(){
+	if (diablo_invalid_firm === stockUtils.invalid_firm($scope.select.firm)){
+	    diabloUtilsService.response(
+		false,
+		"库存退回",
+		"库存退回失败：" + purchaserService.error[2091]);
+	    return;
+	}
+	
 	$scope.has_saved = true;
 	console.log($scope.inventories);
 	
@@ -328,8 +336,8 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	    if (angular.isUndefined(add.style_number)){
 		diabloUtilsService.response(
 		    false,
-		    "新增库存",
-		    "新增库存失败：[" 
+		    "库存退回",
+		    "库存退回失败：[" 
 			+ add.order_id + "]：" + purchaserService.error[2092]
 		    	+ "款号：" + add.style_number + "！！", 
 		    undefined);

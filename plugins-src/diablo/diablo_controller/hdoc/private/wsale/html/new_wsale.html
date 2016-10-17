@@ -354,8 +354,7 @@
 			{{inv.fdiscount}}
 		      </td>
 		      
-		      <td x-ng-if="right.m_discount"
-			  class="col-md-1 vert-align">
+		      <td x-ng-if="right.m_discount" class="col-md-1 vert-align">
 			<div x-ng-if="!inv.$new && !inv.free_update">
 			  {{inv.fdiscount}}
 			</div>
@@ -369,6 +368,7 @@
 				   type="number" step="0.1"
 				   required
 				   disable-key
+				   x-ng-pattern="pattern.discount"
 				   x-ng-model="inv.fdiscount" />
 			  </div>
 			</form>
@@ -665,47 +665,47 @@
 </div> <!--END row-->
 
 <!--print-->
-<div class="row visible-print-block">
-  <div class="text-center"><strong>{{select.shop.name}}</strong></div>
-  <div class="text-left">
-    <p>
-      <div>单号：<span x-ng-bind="select.rsn"></span></div>
-      <div>客户：<span x-ng-bind="select.retailer.name"></span>
-	<span>店员：<span x-ng-bind="select.employee.name"></span><span></div>
-      <div>
-	日期：{{select.datetime|date: "yyyy-MM-dd HH:mm:ss"}}
-      </div>
-      <div><span>================================</span></div> 
-    </p>
-  </div> 
-  <div x-ng-repeat="inv in inventories">
-    <div x-ng-if="!inv.$new">
-      <div>款号：<span>{{inv.style_number}}</span></div>
-      <div>品名：<span>{{inv.brand}}</span></div>
-      <div>单价：<span>{{inv.tag_price}}</span></div>
-      <div>成交价：<span>{{inv.rprice}}</span></div>
-      <div>数量：<span>{{inv.sell}}</span></div>
-      <div>小计:<span>{{inv.calc}}</span></div>
-      <div>折扣率： <span>{{f_discount(inv.rprice, inv.tag_price)}}</span></div>
-      <div>--------------------------------</div>
-    </div>
-  </div> 
+<!-- <div class="row visible-print-block"> -->
+<!--   <div class="text-center"><strong>{{select.shop.name}}</strong></div> -->
+<!--   <div class="text-left"> -->
+<!--     <p> -->
+<!--       <div>单号：<span x-ng-bind="select.rsn"></span></div> -->
+<!--       <div>客户：<span x-ng-bind="select.retailer.name"></span> -->
+<!-- 	<span>店员：<span x-ng-bind="select.employee.name"></span><span></div> -->
+<!--       <div> -->
+<!-- 	日期：{{select.datetime|date: "yyyy-MM-dd HH:mm:ss"}} -->
+<!--       </div> -->
+<!--       <div><span>================================</span></div>  -->
+<!--     </p> -->
+<!--   </div>  -->
+<!--   <div x-ng-repeat="inv in inventories"> -->
+<!--     <div x-ng-if="!inv.$new"> -->
+<!--       <div>款号：<span>{{inv.style_number}}</span></div> -->
+<!--       <div>品名：<span>{{inv.brand}}</span></div> -->
+<!--       <div>单价：<span>{{inv.tag_price}}</span></div> -->
+<!--       <div>成交价：<span>{{inv.rprice}}</span></div> -->
+<!--       <div>数量：<span>{{inv.sell}}</span></div> -->
+<!--       <div>小计:<span>{{inv.calc}}</span></div> -->
+<!--       <div>折扣率： <span>{{f_discount(inv.rprice, inv.tag_price)}}</span></div> -->
+<!--       <div>--------------------------------</div> -->
+<!--     </div> -->
+<!--   </div>  -->
 
-  <div>总计：{{select.total}}</div>
-  <div>实付：{{select.should_pay}}</div>
-  <div x-ng-if="select.retailer.id !== setting.no_vip">
-    <div>上次积分：<span>{{select.retailer.score}}</span></div>
-    <div>本次积分：<span>{{select.score}}</span></div>
-    <div>累计积分：<span>{{select.retailer.score + select.score}}</span></div>
-    <div>--------------------------------</div>
-  </div>
+<!--   <div>总计：{{select.total}}</div> -->
+<!--   <div>实付：{{select.should_pay}}</div> -->
+<!--   <div x-ng-if="select.retailer.id !== setting.no_vip"> -->
+<!--     <div>上次积分：<span>{{select.retailer.score}}</span></div> -->
+<!--     <div>本次积分：<span>{{select.score}}</span></div> -->
+<!--     <div>累计积分：<span>{{select.retailer.score + select.score}}</span></div> -->
+<!--     <div>--------------------------------</div> -->
+<!--   </div> -->
 
-  <div>顾客需知：</div>
-  <div x-ng-repeat="c in comments">
-    <div>{{c.id}}：{{c.name}}</div>
-  </div>
-  <div>打印日期：{{select.datetime|date: 'yyyy-MM-dd HH:mm'}}</div>
-</div>
+<!--   <div>顾客需知：</div> -->
+<!--   <div x-ng-repeat="c in comments"> -->
+<!--     <div>{{c.id}}：{{c.name}}</div> -->
+<!--   </div> -->
+<!--   <div>打印日期：{{select.datetime|date: 'yyyy-MM-dd HH:mm'}}</div> -->
+<!-- </div> -->
 
 
 <script type="text/ng-template" id="wsale-new.html">
@@ -755,7 +755,8 @@
 	      <input class="form-control text-center"
 		     type="number" step="0.01"
 		     required
-		     disable-key 
+		     disable-key
+		     x-ng-pattern="/^\d{1,2}(\.\d{1,2})?$|100$/"
 		     x-ng-model="params.fdiscount"
 		     placeholder="dd.dd" />
 	    </div>

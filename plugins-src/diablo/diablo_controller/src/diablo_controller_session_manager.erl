@@ -26,7 +26,7 @@
 
 %% second
 -define(INTERVAL, 60).
--define(TIMEOUT,  3600 * 2).
+-define(TIMEOUT,  3600 * 12).
 %% -define(TIMEOUT,  3600 * 12).
 
 -record(state, {tref}).

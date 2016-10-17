@@ -43,6 +43,7 @@
 	  	       x-ng-model="select.firm"
 	  	       placeholder="请选择厂商"
 		       ng-edit
+		       x-ng-disabled="true"
 	  	       typeahead-editable="false"
 		       typeahead-on-select="change_firm()"
 	  	       uib-typeahead="f as f.name for f in get_prompt_firm($viewValue)"/> 
@@ -532,9 +533,8 @@
 			     x-ng-pattern="/^[1-9][0-9]*$/"
 			     x-ng-model="amount.reject_count"
 			     ng-edit
-			     ng-enter="params.valid(params.amounts) && ok()"
-			     focus-auto="s===params.sizes[0]
-					 && c.cid===params.colors[0].cid" />
+			     ng-enter="params.org_price!=0 && params.valid(params.amounts) && ok()"
+			     focus-auto="s===params.sizes[0] && c.cid===params.colors[0].cid" />
 		    </div>
 		  </form>
 		</div>
@@ -549,7 +549,7 @@
 
   <div class="modal-footer">
     <button class="btn btn-primary"
-	    x-ng-disabled="!params.valid(params.amounts)"
+	    x-ng-disabled="params.org_price==0 || !params.valid(params.amounts)"
 	    x-ng-click="ok()">保存
     </button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
@@ -611,7 +611,6 @@
   </div>
 
   <div class="modal-footer">
-    <button class="btn btn-primary" x-ng-click="ok()">保存</button>
-    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+    <button class="btn btn-primary" x-ng-click="ok()">确认</button>
   </div>
 </script>

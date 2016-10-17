@@ -28,7 +28,8 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
     $scope.round      = diablo_round;
     $scope.calc_drate = stockUtils.calc_drate_of_org_price; 
     $scope.calc_row   = stockUtils.calc_row;
-    $scope.setting    = {history_stock: false}; 
+    $scope.setting    = {history_stock: false};
+    $scope.pattern    = {discount:diabloPattern.discount};
 
     $scope.go_back = function(){
 	console.log($routeParams.ppage);

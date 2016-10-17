@@ -380,11 +380,11 @@
 		    			   && !inv.form.discount.$pristine}">
 		    	      <input class="form-control"
 		    		     type="number" step="1"
-		    		     placeholder="售价折扣"
+		    		     placeholder="卖价折扣"
 		    		     required
 				     disable-key
 				     ng-edit
-				     x-ng-pattern="/^\d{2}$|100$/"
+				     x-ng-pattern="/^\d{1,2}(\.\d{1,2})?$|100$/"
 		    		     x-ng-model="inv.discount" />
 		    	    </div>
 			  </form>
@@ -798,7 +798,7 @@
 			       pre="tag_price"
 			       auto-row="go_next_good_field" 
 			       placeholder="两位整数，无折扣请输入100"
-			       x-ng-pattern="/^\d{2}$|100$/"
+			       x-ng-pattern="/^\d{1,2}(\.\d{1,2})?$|100$|0$/"
 			       x-ng-enter=""
 			       x-ng-model="good.discount"/>
 		      </div>
@@ -960,7 +960,7 @@
 		   required
 		   ng-edit
 		   disable-key
-		   x-ng-pattern="/^\d{2}$|100$/"
+		   x-ng-pattern="/^\d{1,2}(\.\d{1,2})?$|100$|0$/"
 		   x-ng-model="params.discount"/>
 	  </div> 
 	</form>

@@ -456,7 +456,7 @@
 				 auto-row="focus_row_auto"
 				 focus-auto="focus_attrs.discount && inv.order_id===focus_row"
 				 x-ng-focus="on_focus_attr('discount', inv)"
-				 x-ng-pattern="/^\d{2}$|100$/"
+				 x-ng-pattern="pattern.discount"
 		    		 x-ng-model="inv.discount" />
 		    	</div>
 		      </form>
@@ -519,7 +519,7 @@
 				 focus-auto="focus_attrs.ediscount && inv.order_id===focus_row"
 				 x-ng-focus="on_focus_attr('ediscount', inv)"
 		    		 x-ng-model="inv.ediscount"
-				 x-ng-pattern="/^\d{1,2}(\.\d{1,2})?$|100$/"
+				 x-ng-pattern="pattern.discount"
 				 ng-model-options="{debounce:300}"
 				 x-ng-change="row_change_ediscount(inv)"/>
 		    	</div>
