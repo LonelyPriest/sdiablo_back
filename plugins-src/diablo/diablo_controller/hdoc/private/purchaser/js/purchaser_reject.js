@@ -46,7 +46,13 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	    user.type,
 	    rightAuthen.rainbow_action()['show_balance_onstock'],
 	    user.right
-	)
+	),
+
+	update_price: rightAuthen.authen(
+	    user.type,
+	    rightAuthen.stock_action()['update_price_of_w_stock_reject'],
+	    user.right
+	),
     };
 
     $scope.focus = {style_number:true, reject: false};
@@ -119,7 +125,7 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	$scope.setting.reject_negative = stockUtils.reject_negative(
 	    $scope.select.shop.id, base); 
 	$scope.q_prompt = stockUtils.typeahead($scope.select.shop.id, base);
-	
+	$scope.select.firm = undefined; 
 	if ($scope.q_prompt === diablo_frontend){
 	    $scope.get_all_prompt_inventory();
 	}

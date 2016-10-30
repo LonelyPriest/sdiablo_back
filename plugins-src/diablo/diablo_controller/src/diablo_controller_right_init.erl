@@ -269,7 +269,13 @@ init([]) ->
          {?check_w_inventory_transfer,
           <<"库存调入确认">>, <<"check_w_inventory_transfer">>, ?right_w_inventory},
          {?cancel_w_inventory_transfer,
-          <<"库存调入取消">>, <<"cancel_w_inventory_transfer">>, ?right_w_inventory} 
+          <<"库存调入取消">>, <<"cancel_w_inventory_transfer">>, ?right_w_inventory},
+
+	 {?comment_w_inventory_new,
+	  <<"对帐备注">>, <<"comment_w_inventory_new">>, ?right_w_inventory},
+	 
+	 {?update_price_of_w_inventory_reject,
+	  <<"修改退货价格">>, <<"update_price_of_w_inventory_reject">>, ?right_w_inventory}
 	],
 
     %% firm

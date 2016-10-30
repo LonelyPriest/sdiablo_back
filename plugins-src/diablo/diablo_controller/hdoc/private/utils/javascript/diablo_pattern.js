@@ -30,7 +30,7 @@ angular.module("diabloPattern", []).service("diabloPattern", [function(){
     this.char_number_underline = /^\w+$/;
 
     // comment
-    this.comment = /^[\u4e00-\u9fa5A-Za-z0-9\-_\uFF00-\uFFFF]+$/;
+    this.comment = /^[\u4e00-\u9fa5A-Za-z0-9\-_\.\uFF00-\uFFFF]+$/;
 
     // size group
     this.size = /^[A-Za-z0-9\/]{1,3}$/

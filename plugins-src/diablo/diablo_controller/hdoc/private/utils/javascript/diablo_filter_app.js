@@ -61,12 +61,12 @@ function filterProvider(){
     // var _chargs      = [];
     // var _scores      = [];
 
-    this.$get = function($resource, $cookies, dateFilter, wgoodService){
+    this.$get = function($resource, dateFilter, wgoodService){
 	var resource = $resource(
 	    "/purchaser/:operation", {operation: '@operation'},
 	    {query_by_post: {method: 'POST', isArray:true}});
 
-	var cookie = 'filter-' + $cookies.qzg_dyty_session; 
+	var cookie = 'filter-' + diablo_get_cookie("qzg_dyty_session"); 
 	
 	return{
 	    default_time: function(start, end){
@@ -157,8 +157,10 @@ function filterProvider(){
 		} else if(name === 'fshop'){
 		    _filter.fields.push({name:"fshop", chinese:"店铺"});
 		    _prompt.fshop = promptValues;
-		}
-
+		} else if(name === 'region'){
+		    _filter.fields.push({name:"region", chinese:"区域"});
+		    _prompt.region = promptValues;
+		} 
 		return _filter;
 	    },
 
@@ -594,7 +596,7 @@ function normalFilterProvider(){
     var _shops          = [];
 
     
-    this.$get = function($resource, $cookies){
+    this.$get = function($resource){
 	var _employeeHttp =
 	    $resource("/employ/:operation", {operation: '@operation'});
 	var _retailerHttp =
@@ -613,7 +615,7 @@ function normalFilterProvider(){
 	var _shopHttp =
 	    $resource("/shop/:operation", {operation: '@operation'});
 
-	var cookie = 'filter-' + $cookies.qzg_dyty_session;
+	var cookie = 'filter-' + diablo_get_cookie("qzg_dyty_session");
 
 	return{
 	    match_all_w_inventory: function(condition){
@@ -666,9 +668,7 @@ function normalFilterProvider(){
 	    }, 
 
 	    get_repo: function(){
-		return _shopHttp.query(
-		    {operation: "list_repo"}
-		).$promise.then(function(repo){
+		return _shopHttp.query({operation: "list_repo"}).$promise.then(function(repo){
 		    console.log(repo);
 		    return repo.map(function(r){
 			return {name: r.name,
@@ -678,14 +678,20 @@ function normalFilterProvider(){
 	    },
 
 	    get_region: function(){
-		return _shopHttp.query(
-		    {operation: "list_region"}
-		).$promise.then(function(regions){
-		    // console.log(regions);
-		    return regions.map(function(r){
-			return {name: r.name, id:r.id};
+		var cached = get_from_storage(cookie, "region");
+		if (angular.isDefined(cached) && angular.isArray(cached)) return cached;
+		else {
+		    return _shopHttp.query({operation: "list_region"}).$promise.then(function(
+			regions){
+			// console.log(regions);
+			var rs =  regions.map(function(r){
+			    return {name: r.name, id:r.id};
+			});
+			
+			set_storage(cookie, "region", rs);
+			return rs;
 		    })
-		});
+		}
 	    },
 	    
 	    get_base_setting: function(){

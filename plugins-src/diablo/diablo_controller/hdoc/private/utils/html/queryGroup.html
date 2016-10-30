@@ -133,6 +133,14 @@
 	    </select>
 	  </span>
 
+	  <span x-ng-switch-when="region">
+	    <select type="text" class="form-control"
+		    x-ng-model="f.value"
+	  	    x-ng-options="s as s.name for s in prompt.region"
+		    x-ng-init="f.value=f.value ? f.value : prompt.region[0]">
+	    </select>
+	  </span>
+
 	  <span x-ng-switch-when="fshop">
 	    <select type="text" class="form-control"
 		    x-ng-model="f.value"

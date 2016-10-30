@@ -41,9 +41,10 @@ pagination(TotalFun, PageFun, Req, Payload) ->
 	    undefined ->
 		case ?value(<<"condition">>, Payload) of
 		    undefined -> {struct, []};
-		    Any -> Any
-		end;
-	    Any -> Any
+		   {struct, Any} -> {struct, lists:keydelete(<<"region">>, 1, Any)}
+		end; 
+	    {struct, Any} ->
+		{struct, lists:keydelete(<<"region">>, 1, Any)}
 	end,
 
     ?DEBUG("conditions ~p", [Conditions]),

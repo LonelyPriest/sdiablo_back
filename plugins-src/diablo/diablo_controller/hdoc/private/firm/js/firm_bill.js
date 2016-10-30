@@ -72,7 +72,7 @@ firmApp.controller("firmBillCtrl", function(
 	    firm:       $scope.firm.id,
 	    mode:       $scope.bill_mode.id,
 	    bill:       $scope.bill,
-	    veri:       diablo_set_integer($scope.verificate),
+	    veri:       diablo_set_float($scope.verificate),
 	    card:       $scope.bill_card.id,
 	    employee:   $scope.employee.id,
 	    comment:    $scope.comment,

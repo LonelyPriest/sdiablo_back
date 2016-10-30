@@ -47,7 +47,7 @@
 		   placeholder="支持名称/手机/地址查询"
 		   typeahead-editable="false"
 		   typeahead-on-select="on_select_firm($item, $model, $label)"
-		   typeahead="s as s.name for s in prompts|filter:$viewValue|limitTo:20"
+		   uib-typeahead="s as s.name for s in prompts|filter:$viewValue|limitTo:20"
 		   x-ng-model="search"/>
 	      </div>
 	    </div>
@@ -132,7 +132,7 @@
 	    <span>显示第 {{current_page}} / {{num_pages}} 项结果，
 	      共 {{total_items}} 项</span>
 	    
-	    <pagination class="pagination-lg table-pagination pull-right"
+	    <uib-pagination class="pagination-lg table-pagination pull-right"
 		      	total-items="total_items"
 		      	items-per-page="items_perpage"
 		      	num-pages="num_pages"
@@ -142,7 +142,7 @@
 		      	first-text="&laquo;" last-text="&raquo;"
 		      	x-ng-model="current_page"
 		      	x-ng-change="page_changed()">
-	    </pagination>
+	    </uib-pagination>
 	  </div>
 	</div>
 	  

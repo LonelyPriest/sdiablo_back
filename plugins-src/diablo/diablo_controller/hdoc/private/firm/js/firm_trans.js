@@ -1,6 +1,6 @@
 firmApp.controller('firmTransCtrl', function(
     $scope, $routeParams, $location, localStorageService,
-    diabloFilter, firmService, diabloUtilsService,
+    diabloFilter, diabloPattern, firmService, diabloUtilsService,
     filterFirm, filterEmployee, user, base){
 
     // console.log(filterFirm);
@@ -220,32 +220,64 @@ firmApp.controller('firmTransCtrl', function(
 			 + "/" + $scope.current_page.toString());
     };
 
+    var dialog = diabloUtilsService;
     $scope.check_trans = function(r){
 	console.log(r);
-	var callback = function(){
-	    firmService.check_w_inventory_new(r.rsn).then(function(state){
-		console.log(state);
-		if (state.ecode == 0){
-		    diabloUtilsService.response_with_callback(
-			true, "厂商对帐单审核", "厂商对帐单审核成功！！单号：" + state.rsn,
-			$scope, function(){r.state = 1})
-	    	    return;
-		} else{
-	    	    diabloUtilsService.response(
-	    		false, "厂商对帐单审核",
-	    		"厂商对帐单审核失败：" + firmService.error[state.ecode]);
-		}
-	    })
-	};
-
-	diabloUtilsService.request(
-	    "厂商对帐单审核", "审核完成后，对帐单将无法修改，确定要审核吗？",
-	    callback, undefined, $scope); 
+	firmService.check_w_inventory_new(r.rsn).then(function(state){
+	    console.log(state);
+	    if (state.ecode == 0){
+		dialog.response_with_callback(
+		    true, "厂商对帐单审核", "厂商对帐单审核成功！！单号：" + state.rsn,
+		    $scope, function(){r.state = 1})
+	    	return;
+	    } else{
+	    	dialog.response(
+	    	    false, "厂商对帐单审核",
+	    	    "厂商对帐单审核失败：" + firmService.error[state.ecode]);
+	    }
+	})
     };
 
-    $scope.print = function(r){
+    $scope.uncheck_trans = function(r){
+	console.log(r);
+	firmService.uncheck_w_inventory_new(r.rsn).then(function(state){
+	    console.log(state);
+	    if (state.ecode == 0){
+		dialog.response_with_callback(
+		    true, "厂商对帐单反审", "厂商对帐单反审核成功！！单号：" + state.rsn,
+		    $scope, function(){r.state = 0})
+	    	return;
+	    } else{
+	    	dialog.response(
+	    	    false, "厂商对帐单反审",
+	    	    "厂商对帐单反审核失败：" + firmService.error[state.ecode]);
+	    }
+	})
+    };
+
+    $scope.comment_rsn_detail = function(r){
+	var callback = function(params){
+	    console.log(params);
+	    firmService.comment_w_inventory_new(r.rsn, params.comment).then(function(state){
+		console.log(state);
+		if (state.ecode == 0){
+		    // dialog.response_with_callback(
+		    // 	true, "厂商对帐单审核", "厂商对帐单审核成功！！单号：" + state.rsn,
+		    // 	$scope, function(){r.state = 1})
+		    r.comment = params.comment;
+		} else{
+	    	    dialog.response(
+	    		false, "厂商对帐备注",
+	    		"修改厂商对帐备注失败：" + firmService.error[state.ecode]);
+		}
+	    });
+	};
+
 	
-    }; 
+	dialog.edit_with_modal(
+	    'comment-stock.html', 'lg', callback, undefined,
+	    {comment:r.comment, comment_pattern:diabloPattern.comment});
+    };
 })
 
 
@@ -344,6 +376,7 @@ firmApp.controller("firmTransRsnDetailCtrl", function(
 		    if (page === 1){
 			$scope.total_items = result.total;
 			$scope.total_amounts = result.t_amount;
+			$scope.total_balance = result.t_balance;
 		    }
 		    
 		    $scope.inventories = angular.copy(result.data);

@@ -65,6 +65,8 @@
 			  <i class="glyphicon glyphicon-backward fg-red"></i>单号</span>
 			<span x-ng-if="hidden.base">
 			  单号<i class="glyphicon glyphicon-forward fg-red"></i></span>
+		    </th>
+		    <th>采购日期</th> 
 		    <th x-ng-if="!hidden.base">类型</th> 
 		    <th x-ng-if="!hidden.base">店铺</th>
 		    <th x-ng-if="!hidden.base">店员</th> 
@@ -92,7 +94,7 @@
 		    <th class="danger">累计欠款</th>
 		    
 		    <th>备注</th>
-		    <th>采购日期</th> 
+		    <!-- <th>采购日期</th>  -->
 		    <th>操作</th>
 		  </tr>
 		</thead>
@@ -100,9 +102,10 @@
 		  <tr ng-repeat="r in records track by r.id">
 		    <td>{{r.order_id}}</td>
 		    <td class="{{css(r.state, r.type)}}">{{r.rsn}}</td>
+		    <td class="{{css(r.state, r.type)}}">{{r.entry_date}}</td>
+				    
 		    
-		    <td class="{{css(r.state, r.type)}}"
-			x-ng-if="!hidden.base" x-ng-switch on="r.type">
+		    <td class="{{css(r.state, r.type)}}" x-ng-if="!hidden.base" x-ng-switch on="r.type">
 		      <span x-ng-switch-when=0>入库</span>
 		      <span class="fg-red" x-ng-switch-when=1>退货</span>
 		      <span class="fg-pink" x-ng-switch-when=9>结帐</span>
@@ -144,23 +147,31 @@
 		      </span>
 		    </td>
 		    
-		    <td class="{{css(r.state, r.type)}}">{{r.entry_date}}</td>
+		    <!-- <td class="{{css(r.state, r.type)}}">{{r.entry_date}}</td> -->
 		    <td>
 		      <button class="btn diablo-button btn-primary"
 		    	 x-ng-click="trans_rsn_detail(r)">
 			明细<i class="glyphicon glyphicon-map-marker"></i></button>
+
+		      <button class="btn diablo-button yellow-crusta"
+		    	 x-ng-click="comment_rsn_detail(r)">
+			备注<i class="glyphicon glyphicon-comment"></i></button>
                       
-		      <button class="btn diablo-button btn-danger"
-			      x-ng-disabled="r.state===1 || r.type===9"
+		      <button x-ng-if="r.state===0" class="btn diablo-button btn-danger"
 		      	      x-ng-click="check_trans(r)">审核
 		      	<i class="glyphicon glyphicon-check"></i></button>
+
+		      <button x-ng-if="r.state===1" class="btn diablo-button purple-plum"
+		      	      x-ng-click="uncheck_trans(r)">反审
+		      	<i class="glyphicon glyphicon-remove-circle"></i></button>
+		      
 		    </td>
 		  </tr>
 
 		  <!--Total info-->
 		  <tr x-ng-if="total_items!==0" class="bg-white">
-		    <td x-ng-if="hidden.base" colspan="2"></td>
-		    <td x-ng-if="!hidden.base" colspan="5"></td>
+		    <td x-ng-if="hidden.base" colspan="3"></td>
+		    <td x-ng-if="!hidden.base" colspan="6"></td>
 		    <td class="danger">{{total_amounts}}</td>
 		    <td x-ng-if="!hidden.balance">{{total_cash}}</td>
 		    <td x-ng-if="!hidden.balance">{{total_card}}</td>
@@ -170,7 +181,7 @@
 		    <td colspan="1"></td> 
 		    <td class="danger">{{total_spay}}</td>
 		    <td class="info">{{total_hpay}}</td>
-		    <td colspan="4"></td>
+		    <td colspan="3"></td>
 		  </tr> 
 		</tbody>
 		
@@ -185,7 +196,7 @@
 	    <span>显示第 {{current_page}} / {{num_pages}} 项结果，
 		共 {{total_items}} 项
 	    </span>
-	    <pagination class="pagination-lg table-pagination pull-right"
+	    <uib-pagination class="pagination-lg table-pagination pull-right"
 			total-items="total_items"
 			items-per-page="items_perpage"
 			num-pages="num_pages"
@@ -195,7 +206,7 @@
 			first-text="&laquo;" last-text="&raquo;"
 			x-ng-model="current_page"
 			x-ng-change="page_changed()">
-	    </pagination>
+	    </uib-pagination>
 	  </div>
 	</div>
 	
@@ -214,15 +225,7 @@
 </div>
 
 
-<script type="text/ng-template" id="inventory-detail.html">
-  <!-- <div class="modal-header"> -->
-  <!--   <button class="close" x-ng-click="cancel()" type="button"> -->
-  <!--     <span aria-hidden="true">&times;</span> -->
-  <!--     <span class="sr-only"></span> -->
-  <!--   </button> -->
-  <!--   <h4 class="modal-title"> -->
-  <!--     <span class="label label-sm label-primary">库存明细</span></h4> -->
-  <!-- </div> --> 
+<script type="text/ng-template" id="inventory-detail.html"> 
   <div class="modal-body">
     <div class="table-responsive">
       <table class="table table-bordered table-striped table-condensed table-advanced">
@@ -253,6 +256,46 @@
 
   <div class="modal-footer">
     <button class="btn btn-primary" x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>  
+</script>
+
+
+<script type="text/ng-template" id="comment-stock.html"> 
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    <h4 class="modal-title">
+      <span class="label label-sm label-primary">对帐备注</span>
+    </h4>
+  </div>
+
+  <div class="modal-body">
+    <form class="form-horizontal" name="cForm" novalidate>
+      <div class="form-body">
+	
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">对帐备注</label> 
+	  <div class="col-md-10">
+	    <input class="form-control"
+		   name="comment"
+		   type="text"
+		   x-ng-model="params.comment"
+		   x-ng-pattern="params.comment_pattern"/>
+	    <div x-ng-if="cForm.comment.$invalid && !cForm.comment.$pristine">
+	    	<span class="fg-red">备注只能是数字，中文，字母，不能包含特殊字符</span>
+	    </div>
+	  </div>
+	</div>
+
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary" x-ng-disabled="cForm.$invalid" x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>  
 </script>

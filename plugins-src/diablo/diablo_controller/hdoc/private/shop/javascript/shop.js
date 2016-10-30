@@ -162,7 +162,7 @@ shopApp.controller("shopDetailCtrl", function(
 			    s.shopowner_id, $scope.employees)})
 		}
 	    }) 
-	    // diablo_order($scope.shops);
+	    diablo_order($scope.shops);
 	    // console.log($scope.shops);
 	});
     };

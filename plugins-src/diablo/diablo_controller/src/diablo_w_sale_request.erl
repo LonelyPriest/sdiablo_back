@@ -228,46 +228,66 @@ action(Session, Req, {"new_w_sale"}, Payload) ->
     
     ImmediatelyPrint = ?v(<<"im_print">>, Print, ?NO),
     PMode            = ?v(<<"p_mode">>, Print, ?PRINT_FRONTE),
-    
-    case ?w_sale:sale(new, Merchant, lists:reverse(Invs), Base) of 
-    	{ok, RSN} ->
-	    case ImmediatelyPrint =:= ?YES andalso PMode =:= ?PRINT_BACKEND of
-		true ->
-		    SuccessRespone =
-			fun(PCode, PInfo) ->
-				?utils:respond(
-				   200, Req, ?succ(new_w_sale, RSN),
-				   [{<<"rsn">>, ?to_b(RSN)},
-				    {<<"pcode">>, PCode},
-				    {<<"pinfo">>, PInfo}])
-			end,
+    Round            = ?v(<<"round">>, Base, 1),
+    ShouldPay        = ?v(<<"should_pay">>, Base),
 
-		    NewInvs =
-			lists:foldr(
-			  fun({struct, Inv}, Acc) ->
-				  StyleNumber = ?v(<<"style_number">>, Inv),
-				  BrandId     = ?v(<<"brand">>, Inv),
-				  Total       = ?v(<<"sell_total">>, Inv),
-				  TagPrice    = ?v(<<"tag_price">>, Inv),
-				  RPrice      = ?v(<<"rprice">>, Inv),
-				  
-				  P = [{<<"style_number">>, StyleNumber},
-				       {<<"brand_id">>, BrandId},
-				       {<<"tag_price">>, TagPrice},
-				       {<<"rprice">>, RPrice},
-				       {<<"total">>, Total}
-				      ],
+    %% check invs
+    case check_inventory(oncheck, Round, 0, ShouldPay, Invs) of
+        {ok, _} ->
+	    
+	    case ?w_sale:sale(new, Merchant, lists:reverse(Invs), Base) of 
+		{ok, RSN} ->
+		    case ImmediatelyPrint =:= ?YES andalso PMode =:= ?PRINT_BACKEND of
+			true ->
+			    SuccessRespone =
+				fun(PCode, PInfo) ->
+					?utils:respond(
+					   200, Req, ?succ(new_w_sale, RSN),
+					   [{<<"rsn">>, ?to_b(RSN)},
+					    {<<"pcode">>, PCode},
+					    {<<"pinfo">>, PInfo}])
+				end,
 
-				  [P|Acc] 
-			  end, [], Invs),
-		    print(RSN, Merchant, NewInvs, Base, Print, SuccessRespone);
-		false ->
-		    ?utils:respond(
-		       200, Req, ?succ(new_w_sale, RSN), [{<<"rsn">>, ?to_b(RSN)}])
-	    end,
-	    ?w_user_profile:update(retailer, Merchant); 
-    	{error, Error} ->
-    	    ?utils:respond(200, Req, Error)
+			    NewInvs =
+				lists:foldr(
+				  fun({struct, Inv}, Acc) ->
+					  StyleNumber = ?v(<<"style_number">>, Inv),
+					  BrandId     = ?v(<<"brand">>, Inv),
+					  Total       = ?v(<<"sell_total">>, Inv),
+					  TagPrice    = ?v(<<"tag_price">>, Inv),
+					  RPrice      = ?v(<<"rprice">>, Inv),
+
+					  P = [{<<"style_number">>, StyleNumber},
+					       {<<"brand_id">>, BrandId},
+					       {<<"tag_price">>, TagPrice},
+					       {<<"rprice">>, RPrice},
+					       {<<"total">>, Total}
+					      ],
+
+					  [P|Acc] 
+				  end, [], Invs),
+			    print(RSN, Merchant, NewInvs, Base, Print, SuccessRespone);
+			false ->
+			    ?utils:respond(
+			       200, Req, ?succ(new_w_sale, RSN), [{<<"rsn">>, ?to_b(RSN)}])
+		    end,
+		    ?w_user_profile:update(retailer, Merchant); 
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end;
+	{error, EInv} ->
+            StyleNumber = ?v(<<"style_number">>, EInv),
+	    ?utils:respond(
+               200,
+               Req,
+               ?err(wsale_invalid_inv, StyleNumber),
+               [{<<"style_number">>, StyleNumber},
+                {<<"order_id">>, ?v(<<"order_id">>, EInv)}]);
+	{error, Moneny, ShouldPay} ->
+            ?utils:respond(
+               200,
+               Req,
+               ?err(wsale_invalid_pay, Moneny))
     end;
 
 action(Session, Req, {"update_w_sale"}, Payload) ->
@@ -749,3 +769,51 @@ sale_type(1)-> "退货".
 
 export_type(0) -> trans;
 export_type(1) -> trans_note.
+
+%% inventory(check_style_number, []) ->
+%%     ok;
+%% inventory(check_style_number, [{struct, Inv}|T]) ->
+%%     case ?v(<<"style_number">>, Inv) of
+%% 	undefined -> throw({invalid_balance});
+%% 	_ -> inventory(check_style_number, T)
+%%     end.
+    
+check_inventory(oncheck, Round, Moneny, ShouldPay, []) ->
+    ?DEBUG("Moneny ~p, ShouldPay, ~p", [Moneny, ShouldPay]),
+    case Round of
+	1 -> 
+	    case round(Moneny) == ShouldPay of
+		true -> {ok, none};
+		false -> {error, round(Moneny), ShouldPay}
+	    end;
+	0 ->
+	    case Moneny == ShouldPay of
+		true -> {ok, none};
+		false -> {error, round(Moneny), ShouldPay}
+	    end
+    end;
+
+check_inventory(oncheck, Round, Money, ShouldPay, [{struct, Inv}|T]) ->
+    StyleNumber = ?v(<<"style_number">>, Inv),
+    Amounts = ?v(<<"amounts">>, Inv),
+    Count = ?v(<<"sell_total">>, Inv),
+    DCount = lists:foldr(
+              fun({struct, A}, Acc)->
+                      ?v(<<"sell_count">>, A) + Acc
+              end, 0, Amounts),
+
+    %% FDiscount = ?v(<<"rdiscount">>, Inv),
+    FPrice = ?v(<<"rprice">>, Inv),
+    Calc = FPrice * Count,
+    %% end,
+
+    case StyleNumber of
+	undefined -> {error, Inv};
+	_ ->
+	    case Count =:= DCount of
+		true -> check_inventory(oncheck, Round, Money + Calc, ShouldPay, T);
+		false -> {error, Inv}
+	    end
+    end.
+    
+    

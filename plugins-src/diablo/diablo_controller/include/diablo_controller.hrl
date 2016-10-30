@@ -203,6 +203,8 @@
 -define(check_w_inventory_transfer,      ?right_w_inventory + 19).
 -define(cancel_w_inventory_transfer,     ?right_w_inventory + 20).
 -define(adjust_w_inventory_price,        ?right_w_inventory + 21).
+-define(comment_w_inventory_new,         ?right_w_inventory + 22).
+-define(update_price_of_w_inventory_reject, ?right_w_inventory + 23).
 
 
 %% firm

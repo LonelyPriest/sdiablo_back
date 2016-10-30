@@ -106,7 +106,11 @@ purchaser_inventory(check, Merchant, RSN, Mode) ->
 
 purchaser_inventory(delete_new, Merchant, RSN, Mode) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {delete_new, Merchant, RSN, Mode}).
+    gen_server:call(Name, {delete_new, Merchant, RSN, Mode});
+purchaser_inventory(comment, Merchant, RSN, Comment) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {comment_new, Merchant, RSN, Comment}).
+
 
 
 %%
@@ -1364,6 +1368,14 @@ handle_call({delete_new, Merchant, RSN, Mode}, _From, State) ->
 	    {reply, {error, Error}, State}
     end;
 
+handle_call({comment_new, Merchant, RSN, Comment}, _From, State) ->
+    Sql = "update w_inventory_new set comment=\'" ++ ?to_s(Comment) ++ "\'"
+	" where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+	" and merchant=" ++ ?to_s(Merchant),
+
+    Reply = ?sql_utils:execute(write, Sql, RSN),
+    {reply, Reply, State};
+
 %% reject
 handle_call({reject_inventory, Merchant, Inventories, Props}, _From, State) ->
     ?DEBUG("reject_inventory with merchant ~p~n~p, props ~p",
@@ -2054,8 +2066,14 @@ handle_call({new_trans_note_export, Merchant, Conditions}, _From, State)->
     {reply, Reply, State};
 
 handle_call({stock_export, Merchant, Conditions}, _From, State) ->
-    {StartTime, EndTime, NewConditions} =
-	?sql_utils:cut(fields_with_prifix, ?w_good_sql:realy_conditions(Merchant, Conditions)),
+    %% {StartTime, EndTime, NewConditions} =
+    %% 	?sql_utils:cut(fields_with_prifix, ?w_good_sql:realy_conditions(Merchant, Conditions)),
+
+    ?DEBUG("stock export:merchant ~p, Conditions ~p", [Merchant, Conditions]),
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions), 
+    RealyConditions = ?w_good_sql:realy_conditions(Merchant, NewConditions), 
+    ExtraCondtion = ?w_good_sql:sort_condition(stock, NewConditions, <<"a.">>),
+    
     Sql =
 	"select a.id, a.style_number, a.brand as brand_id"
 	", a.type as type_id, a.sex, a.season, a.amount"
@@ -2075,15 +2093,22 @@ handle_call({stock_export, Merchant, Conditions}, _From, State) ->
 	" left join inv_types d on a.type=d.id"
 	" left join suppliers e on a.firm=e.id"
 
-	" where "
-	++ ?sql_utils:condition(proplists_suffix, NewConditions)
-	++ "a.merchant=" ++ ?to_s(Merchant)
-	++ case ?sql_utils:condition(time_with_prfix, StartTime, EndTime) of
-	       [] -> [];
-	       TimeSql ->  " and " ++ TimeSql
-	   end
-	++ " and a.deleted=" ++ ?to_s(?NO)
+	" where a.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(
+	      proplists, ?utils:correct_condition(<<"a.">>, RealyConditions, []))
+	++ ExtraCondtion
+	++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime)
 	++ " order by a.id desc",
+
+        %% ++ ?sql_utils:condition(proplists_suffix, NewConditions)
+	%% ++ "a.merchant=" ++ ?to_s(Merchant)
+	
+	%% ++ case ?sql_utils:condition(time_with_prfix, StartTime, EndTime) of
+	%%        [] -> [];
+	%%        TimeSql ->  " and " ++ TimeSql
+	%%    end
+	%% ++ " and a.deleted=" ++ ?to_s(?NO)
+	%% ++ " order by a.id desc",
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 

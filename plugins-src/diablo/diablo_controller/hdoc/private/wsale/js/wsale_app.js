@@ -156,6 +156,8 @@ wsaleApp.service("wsaleService", function($http, $resource, dateFilter){
 	2701: "文件导出失败，请重试或联系服务人员查找原因！！",
 	2702: "文件导出失败，没有任何数据需要导出，请重新设置查询条件！！",
 	2703: "用户余额不足！！",
+	2704: "款号或明细未知，请删除后重新添加！！",
+        2705: "应付款项与开单项计算有不符！！",
 	2699: "修改前后信息一致，请重新编辑修改项！！",
 	9001: "数据库操作失败，请联系服务人员！！"};
 
@@ -1151,7 +1153,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    charge:         $scope.select.charge,
 	    total:          $scope.select.total,
 	    last_score:     $scope.select.retailer.score,
-	    score:          $scope.select.score
+	    score:          $scope.select.score,
+	    round:          $scope.setting.round
 	};
 
 	var print = {

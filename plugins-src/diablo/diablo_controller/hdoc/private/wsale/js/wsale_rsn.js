@@ -181,13 +181,14 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 		$scope.match, search, page_num, items
 	    ).then(function(result){
 		console.log(result);
-		if (!$scope.is_linked && page === 1){
+		// if (!$scope.is_linked && page === 1){
+		if (page === 1){
 		    $scope.total_items = result.total;
 		    $scope.total_amounts = result.total === 0 ? 0 : result.t_amount;
 		    $scope.total_balance = result.total === 0 ? 0 : $scope.round(result.t_balance);
 		    $scope.total_obalance = result.total === 0 ? 0 : $scope.round(result.t_obalance);
 		    $scope.inventories = [];
-		    $scope.cache_stastic();
+		    if (!$scope.is_linked) $scope.cache_stastic();
 		}
 		
 		angular.forEach(result.data, function(d){

@@ -232,6 +232,16 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	var base = result[0];
 	var invs = result[1].data;
 
+	// console.log(base);
+	if (base.state === diablo_stock_has_abandoned) {
+	    diabloUtilsService.response_with_callback(
+		false,
+		"采购单修改",
+		"采购单修改失败：" + purchaserService.error[2090],
+		undefined,
+		function(){$scope.go_back()})
+	}
+
 	$scope.old_select.rsn     = rsn;
 	$scope.old_select.rsn_id  = base.id;
 	
@@ -262,6 +272,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	$scope.old_select.verificate = base.verificate;
 	$scope.old_select.should_pay = base.should_pay;
 	$scope.old_select.has_pay    = base.has_pay;
+	$scope.old_select.state      = base.state;
 
 
 	if (base.e_pay_type === -1){
@@ -408,8 +419,8 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	    if (item.firm_id !== $scope.inventories[i].firm_id){
 		diabloUtilsService.response_with_callback(
 		    false,
-		    "退货单修改",
-		    "退货单修改失败：" + purchaserService.error[2093],
+		    "采购单修改",
+		    "采购单修改失败：" + purchaserService.error[2093],
 		    $scope, function(){
 			$scope.inventories[0] = {$edit:false, $new:true}});
 		return;
@@ -609,6 +620,16 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 		undefined, function(){$scope.has_saved = false });
 	    return;
 	};
+
+	if ($scope.select.state === diablo_stock_has_abandoned) {
+	    diabloUtilsService.response_with_callback(
+		false,
+		"采购单修改",
+		"采购单修改失败：" + purchaserService.error[2090],
+		undefined,
+		function(){$scope.go_back()})
+	    return;
+	}
 
 	// check
 	$scope.re_calculate();

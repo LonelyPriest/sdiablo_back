@@ -233,7 +233,18 @@ firmApp.service("firmService", function($resource, dateFilter){
 
     this.check_w_inventory_new = function(rsn){
 	return http_p.save({operation: "check_w_inventory"},
-			 {rsn: rsn}).$promise;
+			   {rsn: rsn, mode:diablo_check}).$promise;
+    };
+
+    this.uncheck_w_inventory_new = function(rsn){
+	return http_p.save({operation: "check_w_inventory"},
+			 {rsn: rsn,
+			  mode: diablo_uncheck}).$promise;
+    };
+
+    this.comment_w_inventory_new = function(rsn, comment){
+	return http_p.save({operation: "comment_w_inventory_new"},
+			   {rsn:rsn, comment:comment}).$promise;
     };
 
     this.filter_w_inventory_new_rsn_group = function(match, fields, currentPage, itemsPerpage){

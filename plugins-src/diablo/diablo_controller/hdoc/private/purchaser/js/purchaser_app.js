@@ -108,7 +108,7 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 	when('/inventory_new_detail/:page?', {
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_new_detail.html',
             controller: 'purchaserInventoryNewDetailCtrl',
-	    resolve: angular.extend({}, user, firm, employee, brand, base)
+	    resolve: angular.extend({}, user, firm, employee, brand, region, base)
 	}). 
 	when('/inventory_detail/:rsn?', {
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_detail.html',
@@ -214,7 +214,7 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 	otherwise({
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_new_detail.html',
             controller: 'purchaserInventoryNewDetailCtrl' ,
-	    resolve: angular.extend({}, user, firm, employee, brand, base)
+	    resolve: angular.extend({}, user, firm, employee, brand, region, base)
         })
 }]);
 
@@ -229,6 +229,7 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
 	2006: "该单已审核，请选择其它单据！！",
 	2007: "该单己废弃，请选择其它单据！！",
 	2008: "厂商累计欠款不正确，请核对该厂商欠款！！",
+	2090: "已废弃单据，无法修改！！",
 	2091: "厂商不能为空，该单无厂商，需审核后再进行退货操作！！",
 	2092: "空白款号，请重新选择款号！！",
 	2093: "厂商信息不一致，请重新选择货品！！", 

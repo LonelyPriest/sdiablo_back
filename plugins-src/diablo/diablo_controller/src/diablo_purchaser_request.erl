@@ -83,6 +83,21 @@ action(Session, Req, {"update_w_inventory"}, Payload) ->
     	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"comment_w_inventory_new"}, Payload) ->
+    Merchant = ?session:get(merchant, Session),
+    RSN = ?v(<<"rsn">>, Payload),
+    Comment = ?v(<<"comment">>, Payload, []),
+    case ?w_inventory:purchaser_inventory(comment, Merchant, RSN, Comment) of
+    	{ok, RSn} -> 
+    	    ?utils:respond(
+	       200,
+	       Req,
+	       ?succ(update_w_inventory, RSn), {<<"rsn">>, ?to_b(RSn)});
+    	{error, Error} ->
+    	    ?utils:respond(200, Req, Error)
+    end;
+
+
 action(Session, Req, {"check_w_inventory"}, Payload) ->
     ?DEBUG("check purchaser inventory with session ~p, paylaod~n~p",
 	   [Session, Payload]),
@@ -138,10 +153,14 @@ action(Session, Req, {"filter_w_inventory_new"}, Payload) ->
 		[{<<"fields">>, 
 		    {struct, lists:keydelete(<<"style_number">>, 1,
 				lists:keydelete(<<"brand">>, 1, Fields))
-		     ++ [{<<"rsn">>, lists:foldr(
-				      fun({RSN}, Acc) ->
-					      [?v(<<"rsn">>, RSN)|Acc]
-				      end, [], RSNs)}]}
+		     ++ [{<<"rsn">>,
+			  case RSNs of [] -> <<"-1">>;
+			      _ ->
+				  lists:foldr(
+				    fun({RSN}, Acc) ->
+					    [?v(<<"rsn">>, RSN)|Acc]
+				    end, [], RSNs)
+			  end}]}
 		 }] ++ lists:keydelete(<<"fields">>, 1, Payload),
 
 	    ?DEBUG("new conditions ~p", [NewConditions]),

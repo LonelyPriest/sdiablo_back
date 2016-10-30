@@ -1,6 +1,6 @@
 "use strict";
-var userApp = angular.module("userApp", ['ngResource', 'ngCookies']); 
-userApp.factory("userService", function($resource, $q, $cookies){
+var userApp = angular.module("userApp", ['ngResource']); 
+userApp.factory("userService", function($resource, $q){
     var _user = $resource("/right/:operation", {operation: '@operation'});
     // console.log(_user);
     
@@ -164,7 +164,7 @@ userApp.factory("userService", function($resource, $q, $cookies){
 	//     && angular.isDefined(_loginType)){
 	//     return sort(); 
 	// } 
-	var cookie  = 'login-' + $cookies.qzg_dyty_session; 
+	var cookie  = 'login-' + diablo_get_cookie("qzg_dyty_session"); 
 	var storage = localStorage.getItem(cookie);
 	if (angular.isDefined(storage) && storage !== null) {
 	    return JSON.parse(storage);
