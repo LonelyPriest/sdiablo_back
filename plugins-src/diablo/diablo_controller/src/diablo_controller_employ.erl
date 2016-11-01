@@ -111,7 +111,7 @@ handle_call({new_employee, Props}, _From, State)->
 handle_call({delete_employee, Merchant, EmployeeId}, _From, State) ->
     ?DEBUG("delete_employee with merchant ~p, employeeId",
 	   [Merchant, EmployeeId]), 
-    Sql = "delete from employees where id=" ++ ?to_s(EmployeeId)
+    Sql = "update employees set delete=1 where where id=" ++ ?to_s(EmployeeId)
 	++ " and merchant=" ++ ?to_s(Merchant),
     
     case ?mysql:fetch(write, Sql) of
