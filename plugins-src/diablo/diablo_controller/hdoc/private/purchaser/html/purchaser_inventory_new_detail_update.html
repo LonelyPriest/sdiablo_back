@@ -79,7 +79,7 @@
 	      <div class="input-group">
 		<input type="text" class="form-control"
 		       placeholder="年/月/日"
-		       datepicker-popup="yyyy/MM/dd"
+		       uib-datepicker-popup="yyyy/MM/dd"
 		       is-open="isOpened"
 		       close-text="关闭"
 		       clear-text="清除"
@@ -356,15 +356,11 @@
 	  <!--BEGIN panel-->
 	  <div class="panel panel-default">
 	    <div class="table-responsive">
-	      <table id="t_new_update"
-		     class="table
+	      <table class="table
 			    table-bordered
-			    table-striped table-hover
-			    table-condensed table-advanced">
-		<thead class="stick-thead"
-		       fsm-sticky-header
-		       scroll-body="'#t_new_update'"
-		       scroll-stop="50">
+			    table-striped
+			    table-condensed">
+		<thead>
 		  <tr> 
 		    <th class="text-center">序号</th>
 		    <th class="text-center">货号</th>
@@ -492,7 +488,8 @@
 				 required 
 				 go-row
 				 disable-wheel
-				 ng-edit 
+				 ng-edit
+				 disable-key
 				 auto-row="focus_row_auto"
 				 focus-auto="focus_attrs.org_price && inv.order_id===focus_row"
 				 x-ng-focus="on_focus_attr('org_price', inv)"
@@ -515,6 +512,7 @@
 				 go-row
 				 disable-wheel
 				 ng-edit
+				 disable-key
 				 auto-row="focus_row_auto"
 				 focus-auto="focus_attrs.ediscount && inv.order_id===focus_row"
 				 x-ng-focus="on_focus_attr('ediscount', inv)"
@@ -546,6 +544,7 @@
 				 required
 				 disable-key
 				 ng-edit
+				 disable-wheel
 				 x-ng-model="inv.over" 
 				 ng-model-options="{debounce:300}"
 				 x-ng-change="row_change_over(inv)"/>

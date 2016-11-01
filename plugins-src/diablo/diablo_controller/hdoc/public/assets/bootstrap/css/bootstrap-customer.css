@@ -148,5 +148,5 @@ input[type="number"] {
 }
 
 .btn-info.active {
-    border-color: #cc0000; !important;
+    border-color: #cc0000 !important;
 }

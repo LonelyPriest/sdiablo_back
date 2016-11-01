@@ -153,14 +153,14 @@ action(Session, Req, {"filter_w_inventory_new"}, Payload) ->
 		[{<<"fields">>, 
 		    {struct, lists:keydelete(<<"style_number">>, 1,
 				lists:keydelete(<<"brand">>, 1, Fields))
-		     ++ [{<<"rsn">>,
-			  case RSNs of [] -> <<"-1">>;
-			      _ ->
-				  lists:foldr(
-				    fun({RSN}, Acc) ->
-					    [?v(<<"rsn">>, RSN)|Acc]
-				    end, [], RSNs)
-			  end}]}
+		     ++ case RSNs of
+			    [] -> []; 
+			    _ -> [{<<"rsn">>, lists:foldr(
+					fun({RSN}, Acc) ->
+						[?v(<<"rsn">>, RSN)|Acc]
+					end, [], RSNs)}]
+			end
+		    }
 		 }] ++ lists:keydelete(<<"fields">>, 1, Payload),
 
 	    ?DEBUG("new conditions ~p", [NewConditions]),

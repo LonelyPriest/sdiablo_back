@@ -356,6 +356,7 @@
 				 focus-auto="focus_attrs.org_price && inv.order_id===focus_row"
 				 x-ng-focus="on_focus_attr('org_price', inv)" 
 				 disable-wheel
+				 disable-key
 				 x-ng-pattern="pattern.price"
 				 x-ng-model="inv.org_price"
 				 ng-model-options="{debounce:300}"
@@ -378,6 +379,7 @@
 				 focus-auto="focus_attrs.ediscount && inv.order_id===focus_row"
 				 x-ng-focus="on_focus_attr('ediscount', inv)"
 				 disable-wheel
+				 disable-key
 				 x-ng-pattern="/^\d{1,2}(\.\d{1,2})?$|100$/"
 				 x-ng-model="inv.ediscount"
 				 placeholder="进价折扣率"
@@ -401,7 +403,9 @@
 			  <input class="form-control"
 				 type="number" step="1" 
 				 required
-				 ng-edit 
+				 ng-edit
+				 disable-key
+				 disable-wheel
 				 x-ng-pattern="pattern.amount"
 				 x-ng-model="inv.amounts[0].reject"
 				 placeholder="数量" />

@@ -387,6 +387,8 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
     Discount       = ?v(<<"discount">>, Attrs),
     
     Colors         = ?v(<<"color">>, Attrs),
+    SizeGroup      = ?v(<<"s_group">>, Attrs),
+    Sizes          = ?v(<<"size">>, Attrs),
     Path           = ?v(<<"path">>, Attrs),
     
     %% Date     = ?utils:current_time(localdate),
@@ -415,7 +417,10 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 		 end,
 
     UpdateGood = UpdateBase ++ UpdatePrice
-	++ ?utils:v(color, string, Colors) ++ UpdateFree
+	++ ?utils:v(color, string, Colors)
+	++ UpdateFree
+	++ ?utils:v(s_group, string, SizeGroup)
+	++ ?utils:v(size, string, Sizes)
 	++ ?utils:v(change_date, string, DateTime),
     
     RBrand = fun(undefined) -> OrgBrand; (_) -> Brand end,

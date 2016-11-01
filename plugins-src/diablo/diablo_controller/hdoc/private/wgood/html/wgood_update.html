@@ -39,7 +39,9 @@
 	    	<div class="input-group">
 	    	  <select class="form-control"
 	    		  x-ng-model="good.shop"
-	    		  x-ng-options="s as s.name for s in shops"></select>
+	    		  x-ng-options="s as s.name for s in shops"
+			  x-ng-change="on_change_shop()">
+		  </select>
 	    	  <span class="input-group-addon bg-white fg-red">*</span>
 	    	</div>
 	      </div>
@@ -96,7 +98,7 @@
 			 x-ng-model="good.brand"
 			 x-ng-pattern="pattern.brand"
 			 x-ng-enter=""
-			 typeahead="b.name for b in
+			 uib-typeahead="b.name for b in
 				    brands|filter:$viewValue|limitTo:8" />
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div>
@@ -119,7 +121,7 @@
 			 x-ng-model="good.firm"
 			 x-ng-enter=""
 			 typeahead-editable="false"
-			 typeahead="f as f.name for f in
+			 uib-typeahead="f as f.name for f in
 				    firms|filter:$viewValue|limitTo:8"/>
 		  <span class="input-group-btn">
 		    <button class="btn btn-success" x-ng-click="new_firm()">
@@ -146,7 +148,7 @@
 			 placeholder="豹纹马甲等"
 			 x-ng-enter=""
 			 x-ng-model="good.type"
-			 typeahead="t as t.name for t in
+			 uib-typeahead="t as t.name for t in
 				    types|filter:$viewValue|limitTo:8"/>
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div>
@@ -312,8 +314,7 @@
 		  <input type="text" readonly
 			 class="form-control"
 			 placeholder="均色均码无需选择"
-			 x-ng-model="good.color_desc">
-		  </input>
+			 x-ng-model="good.color_desc" />
 		  <span class="input-group-btn">
 		    <button class="btn btn-primary"
 			    x-ng-click="select_color()">
@@ -338,8 +339,14 @@
 			   value="均码"/>
 		    <input x-ng-switch-default type="text" readonly
 			   class="form-control"
-			   x-ng-model="good.size"/>
-		  </div> 
+			   x-ng-model="good.size"/> 
+		  </div>
+		  <span x-ng-if="good.free!==0 && setting.multi_sgroup!==0" class="input-group-btn">
+		    <button class="btn btn-primary" 
+			    x-ng-click="select_size()">
+		      <i class="glyphicon glyphicon-arrow-right"></i>
+		      </button>
+		  </span>
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div>
 	      </div> 
@@ -557,4 +564,40 @@
     <button class="btn btn-primary" x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>  
+</script>
+
+
+<script type="text/ng-template" id="select-size.html">
+  <div class="modal-body">
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped table-condensed">
+        <tbody>
+          <tr class="text-center" x-ng-repeat="g in params.groups">
+            <td class="vert-align">
+              <div class="checkbox checkbox-danger checkbox-circle">
+                <input id={{g.id}}
+                       type="checkbox"
+                       x-ng-disabled="g.disabled"
+                       x-ng-model="g.select"
+                       x-ng-click="params.select_group(params.groups, g)"/> 
+                <label for={{g.id}}>{{g.name}}</label>
+              </div>
+            </td>
+            <td class="vert-align">{{g.si}}</td>
+            <td class="vert-align">{{g.sii}}</td>
+            <td class="vert-align">{{g.siii}}</td>
+            <td class="vert-align">{{g.siv}}</td>
+            <td class="vert-align">{{g.sv}}</td>
+            <td class="vert-align">{{g.svi}}</td>
+	    <td class="vert-align">{{g.svii}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary" x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
 </script>

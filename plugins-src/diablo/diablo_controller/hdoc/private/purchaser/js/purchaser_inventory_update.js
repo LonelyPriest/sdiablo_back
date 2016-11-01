@@ -134,7 +134,9 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	    if ($scope.focus_row > 1){
 		$scope.focus_row -= 1; 
 	    }
-	} 
+	}
+
+	// console.log($scope.focus_row);
 	return $scope.focus_row;
     };
 

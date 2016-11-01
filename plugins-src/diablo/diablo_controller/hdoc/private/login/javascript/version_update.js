@@ -1,6 +1,13 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2016-11-01",
+         content: [
+	     "修正修改入库记录时，页面偶尔闪烁问题" ,
+	     "增加货品尺码动态增加能力" 
+	 ]
+        },
+	
 	{date: "2016-10-31",
          content: [
 	     "对帐备注可以输入小数点" ,

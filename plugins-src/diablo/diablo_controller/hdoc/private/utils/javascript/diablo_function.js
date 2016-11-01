@@ -623,8 +623,6 @@ var diablo_authen = function ($httpProvider) {
     $httpProvider.responseInterceptors.push(interceptor);
 };
 
-
-
 var diablo_base_setting = function(name, shop, base_settings, transfer, defaultValue){
     var found = false;
     for (var i=0, l=base_settings.length; i<l; i++){

@@ -12,13 +12,12 @@ diabloUtils.directive('ngEdit', function () {
 diabloUtils.directive('ngAffix', function(){
     return  function(scope, element, attrs){
 	element.affix({
-	    // offset: 20,
-	    // {
-		top: 50,
+	    offset: {
+		top: function() {return element.offset().top},
 		bottom: function () {
-		    return (this.bottom = $('.footer').outerHeight(true))
-		}()
-	    // }
+		    return (element.bottom = $('.footer').outerHeight(true))
+		}
+	    }
 	})
     }
 });
@@ -84,7 +83,7 @@ diabloUtils.directive('goRow', function() {
 	link:function (scope, element, attrs) {
 	    // console.log(modelCtrl);
 
-            element.bind("keydown", function (event) {
+            element.bind("keyup", function (event) {
 		if(event.which === 40) {
 		    event.preventDefault();
 		    var f = scope.autoRow(); 
@@ -103,7 +102,7 @@ diabloUtils.directive('goRow', function() {
 			}
 		    }); 
 		} 
-            });
+            }); 
 	}
     } 
 });

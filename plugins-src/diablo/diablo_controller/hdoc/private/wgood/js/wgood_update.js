@@ -1,9 +1,11 @@
 wgoodApp.controller("wgoodUpdateCtrl", function(
     $scope, $location, $routeParams, $q, diabloPattern,
     diabloUtilsService, diabloPromise, diabloFilter, wgoodService,
-    filterPromotion, filterBrand, filterFirm, filterType, filterColor, user){
-    // console.log(filterBrand);
-    console.log($routeParams);
+    filterPromotion, filterBrand, filterFirm, filterType, filterColor, filterSizeGroup,
+    user, base){
+    // console.log(filterSizeGroup);
+    // console.log($routeParams);
+    
     $scope.seasons    = diablo_season2objects;
     $scope.sexs       = diablo_sex2object;
     $scope.full_years = diablo_full_year;
@@ -20,6 +22,7 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
     $scope.brands     = filterBrand; 
     $scope.firms      = filterFirm;
     $scope.types      = filterType;
+    $scope.groups     = filterSizeGroup
     
     $scope.colors     = [];
     $scope.grouped_colors = [];
@@ -31,7 +34,7 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	    user.right
 	)
     };
-
+    
     $scope.price_readonly = $scope.stock_right.show_orgprice ? false : true;
 
     $scope.route_params = {shop:false};
@@ -120,6 +123,12 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	} else {
 	    $scope.good.shop      = $scope.shops[0];
 	}
+
+	$scope.setting = {
+	    multi_sgroup: diablo_base_setting(
+		"m_sgroup", $scope.good.shop.id, base, parseInt, 0)
+	};
+
 	// $scope.good.promotion = diablo_get_object(good.pid, $scope.promotions);
 	// $scope.good.shop      = $scope.shops[0];
 
@@ -166,7 +175,20 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	$scope.good.color_desc = descs.toString();
 	$scope.src_good.color_desc = descs.toString();
 
-	$scope.group_color_with_8(); 
+	$scope.group_color_with_8();
+
+	var select_groups = $scope.good.s_group.split(",").map(function(s){
+            return parseInt(s);
+	})
+
+        // console.log(select_groups);
+	$scope.selectGroups = angular.copy($scope.groups);
+	angular.forEach($scope.selectGroups, function(g){
+            if (in_array(select_groups, g.id)){
+                g.select = true;
+		g.disabled = true;
+            }
+        });
     });
 
     $scope.delete_image = function(){
@@ -372,6 +394,32 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	     on_select_ucolor: on_select_ucolor});
     };
 
+
+    $scope.select_size = function(){
+        var callback = function(params){
+            $scope.good.size = "";
+            angular.forEach(params.groups, function(g){
+                if (angular.isDefined(g.select) && g.select){
+                    $scope.good.size += g.name + "；";
+                }
+            });
+            $scope.selectGroups = params.groups;
+        };
+
+        var select_group = function(groups, g){
+            for(var i=0, l=groups.length; i<l; i++){
+                if (!groups[i].disabled && groups[i].id !== g.id){
+                    groups[i].select = false;
+                }
+            }
+        };
+
+        diabloUtilsService.edit_with_modal(
+            "select-size.html", 'lg',
+            callback,  undefined, {groups: $scope.selectGroups,
+                               select_group: select_group}, true);
+    }; 
+
     $scope.row_change_tag = function(good){
 	good.ediscount = diablo_discount(
 	    stockUtils.to_float(good.org_price),
@@ -389,6 +437,11 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	good.org_price = diablo_price(
 	    stockUtils.to_float(good.tag_price),
 	    stockUtils.to_float(good.ediscount)); 
+    };
+
+    $scope.on_change_shop = function(){
+	$scope.setting.multi_sgroup = diablo_base_setting(
+	    "m_sgroup", $scope.good.shop.id, base, parseInt, 0);
     };
     
     /*
@@ -432,11 +485,37 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 		return $scope.src_good.color;
 		// return wgoodService.free_color.toString();;
 	    }
-	}(); 
+	}();
+
+
+	update_good.s_group  = function(){
+            var s_group = $scope.selectGroups.filter(function(g){
+                return g.select;
+            }).map(function(g){
+		return g.id;
+            });
+
+            return s_group.length !== 0 ? s_group.toString() : $scope.src_good.s_group;
+        }();
+
+        update_good.size = function(){
+            var s_group = $scope.selectGroups.filter(function(g){
+                return g.select;
+            });
+
+            var groups = [];
+            angular.forEach(s_group, function(g){
+                for(var i=0, l=diablo_sizegroup.length; i<l; i++){
+                    var k = diablo_sizegroup[i];
+                    if(g[k] && !in_array(groups, g[k])) groups.push(g[k]);
+                }
+            })
+
+            return groups.length !== 0 ? groups.toString() : $scope.src_good.size;
+        }();
 	
 	console.log(update_good);
 	console.log($scope.src_good);
-	// return;
 	
 	// get changed
 	var changed_good = {};
@@ -448,8 +527,8 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	}; 
 	
 	var image  = angular.isDefined($scope.image) && $scope.image
-	    ? $scope.image.dataUrl.replace(
-		    /^data:image\/(png|jpg);base64,/, "") : undefined;
+	    ? $scope.image.dataUrl.replace(/^data:image\/(png|jpg);base64,/, "")
+	    : undefined;
 
 	console.log(changed_good);
 	if (diablo_is_empty(changed_good) && angular.isUndefined(image)){
