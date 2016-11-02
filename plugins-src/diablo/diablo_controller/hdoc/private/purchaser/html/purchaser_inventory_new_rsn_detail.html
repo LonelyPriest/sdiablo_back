@@ -106,43 +106,48 @@
 		<tbody>
 		  <tr ng-repeat="inv in inventories"
 		      x-ng-dblclick="stock_right.show_orgprice && stock_history(inv)">
-		    <td>{{inv.order_id}}</td>
-		    <td>{{inv.rsn}}</td>
-		    <td x-ng-switch on="inv.type">
+		    <td class="{{css(inv.state, inv.type)}}" >{{inv.order_id}}</td>
+		    <td class="{{css(inv.state, inv.type)}}" >{{inv.rsn}}</td>
+		    <td x-ng-switch on="inv.type" class="{{css(inv.state, inv.type)}}">
 		      <span x-ng-switch-when=0>入库</span>
 		      <span class="fg-red" x-ng-switch-when=1>退货</span>
 		    </td>
 		    
-		    <td x-ng-if="!hidden.base">{{inv.shop.name}}</td>
-		    <td x-ng-if="!hidden.base">{{inv.employee.name}}</td>
+		    <td x-ng-if="!hidden.base" class="{{css(inv.state, inv.type)}}" >
+		      {{inv.shop.name}}
+		    </td>
+		    <td x-ng-if="!hidden.base" class="{{css(inv.state, inv.type)}}" >
+		      {{inv.employee.name}}
+		    </td>
 		    
-		    <td>{{inv.firm.name}}</td> 
-		    <td>{{inv.style_number}}</td>
-		    <td>{{inv.brand.name}}</td>
-		    <td>{{inv.itype.name}}</td>
-		    <td>{{inv.sex.name}}</td>
-		    <td>{{inv.year}}</td>
-		    <td>{{inv.dseason.name}}</td>
-		    <td>{{inv.tag_price}}</td>
-		    <td>{{inv.discount}}</td>
-		    <td x-ng-if="stock_right.show_orgprice">
+		    <td class="{{css(inv.state, inv.type)}}">{{inv.firm.name}}</td> 
+		    <td class="{{css(inv.state, inv.type)}}">{{inv.style_number}}</td>
+		    <td class="{{css(inv.state, inv.type)}}">{{inv.brand.name}}</td>
+		    <td class="{{css(inv.state, inv.type)}}">{{inv.itype.name}}</td>
+		    <td class="{{css(inv.state, inv.type)}}">{{inv.sex.name}}</td>
+		    <td class="{{css(inv.state, inv.type)}}">{{inv.year}}</td>
+		    <td class="{{css(inv.state, inv.type)}}">{{inv.dseason.name}}</td>
+		    <td class="{{css(inv.state, inv.type)}}">{{inv.tag_price}}</td>
+		    <td class="{{css(inv.state, inv.type)}}">{{inv.discount}}</td>
+		    <td x-ng-if="stock_right.show_orgprice" class="{{css(inv.state, inv.type)}}">
 		      <div x-ng-switch on="inv.type">
 			<span x-ng-switch-when=0>{{inv.org_price}}</span>
 			<span class="fg-red" x-ng-switch-when=1>{{inv.org_price}}</span>
 		      </div>
 		    </td>
-		    <td x-ng-if="stock_right.show_orgprice" class="fg-pink">{{inv.ediscount}}</td>
+		    <td x-ng-if="stock_right.show_orgprice"
+			class="fg-pink {{css(inv.state, inv.type)}}">{{inv.ediscount}}</td>
 
-		    <td x-ng-switch on="inv.type">
+		    <td x-ng-switch on="inv.type" class="{{css(inv.state, inv.type)}}">
 		      <span x-ng-switch-when=0>{{inv.amount}}</span>
 		      <span class="fg-red" x-ng-switch-when=1>{{inv.amount}}</span>
 		    </td>
 		    
-		    <td x-ng-if="stock_right.show_orgprice" class="vert-align"> 
+		    <td x-ng-if="stock_right.show_orgprice"  class="{{css(inv.state, inv.type)}}"> 
 		      {{calc_row(inv.org_price, 100, inv.amount)}}
 		    </td>
 		    
-		    <td>{{inv.entry_date}}</td>
+		    <td class="{{css(inv.state, inv.type)}}">{{inv.entry_date}}</td>
 		    <td>
 		      <button class="btn diablo-button btn-primary"
 			      x-ng-disabled="inv.free==0"
@@ -156,7 +161,7 @@
 			流水<i class="glyphicon glyphicon-leaf"></i>
 		      </button>
 
-		      <button x-ng-if="stock_right.show_orgprice"
+		      <button x-ng-if="stock_right.show_orgprice && inv.state===0"
 			      class="btn diablo-button btn-warning"
 		    	      x-ng-click="update_rsn_detail(inv)">
 			修改<i class="glyphicon glyphicon-edit"></i>
@@ -200,6 +205,14 @@
       </div> <!--END table container--> 
     </div>
   </div>
+  
+  <div class="col-md-12">
+    <div>
+      <p><span class="bg-grayLight">灰色表示已废弃</span>
+	<span class="bg-lightOlive">浅绿色表示已审核</span>
+      </p>
+    </div>
+  </div> 
 </div>
 
 

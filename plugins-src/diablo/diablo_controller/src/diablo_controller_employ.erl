@@ -109,9 +109,8 @@ handle_call({new_employee, Props}, _From, State)->
     end;
 
 handle_call({delete_employee, Merchant, EmployeeId}, _From, State) ->
-    ?DEBUG("delete_employee with merchant ~p, employeeId",
-	   [Merchant, EmployeeId]), 
-    Sql = "update employees set delete=1 where where id=" ++ ?to_s(EmployeeId)
+    ?DEBUG("delete_employee with merchant ~p, employeeId ~p", [Merchant, EmployeeId]), 
+    Sql = "update employees set deleted=1 where id=" ++ ?to_s(EmployeeId)
 	++ " and merchant=" ++ ?to_s(Merchant),
     
     case ?mysql:fetch(write, Sql) of
@@ -176,7 +175,7 @@ handle_call({list_employee, Merchant, Conditions}, _From, State) ->
 		?utils:to_sqls(proplists, Conditions) ++ " and "
 	end
 	++ "merchant=" ++ ?to_s(Merchant)
-	++ " and deleted=" ++ ?to_s(?NO)
+	%% ++ " and deleted=" ++ ?to_s(?NO)
 	++ " order by shop",
     
     case ?mysql:fetch(read, Sql) of
@@ -208,7 +207,7 @@ code_change(_OldVsn, State, _Extra) ->
 %%% Internal functions
 %%%===================================================================
 fields() ->
-    "id, number, name, sex, entry, position, mobile, address, shop as shop_id".
+    "id, number, name, sex, entry, position, mobile, address, shop as shop_id, deleted as state".
 
 new_number(Merchant) ->
     ?inventory_sn:sn(member, Merchant). 

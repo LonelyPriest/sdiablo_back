@@ -81,7 +81,7 @@ employApp.controller("employDetailCtrl", function(
     
     $scope.refresh = function(){
 	employService.list().$promise.then(function(employees){
-	    // console.log(employees)
+	    console.log(employees)
 	    angular.forEach(employees, function(e){
 		e.sex = diablo_sex2object[e.sex];
 		e.shop = diablo_get_object(e.shop_id, $scope.shops);
@@ -166,7 +166,8 @@ employApp.controller("employDetailCtrl", function(
 		    diabloUtilsService.response_with_callback(
 			true, "删除员工",
 			"恭喜你，员工 [" + employ.name + "] 删除成功！！", $scope,
-			function(){$scope.refresh()});
+			function(){employ.state=1}
+		    );
     		} else{
 		    diabloUtilsService.response(
 			false, "删除员工",

@@ -190,6 +190,37 @@ action(Session, Req, {"list_w_inventory_new_detail"}, Payload) ->
     	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"list_w_inventory_flow"}, Payload) ->
+    ?DEBUG("list_w_inventory_flow with session ~p, paylaod ~p", [Session, Payload]),
+    Merchant  = ?session:get(merchant, Session),
+    
+    try
+	{ok, NewDetails} = ?w_inventory:purchaser_inventory(trace_new, Merchant, Payload),
+	?DEBUG("NewDetails ~p", [NewDetails]),
+	{ok, SellDetails} = ?w_sale:sale(trace, Merchant, Payload),
+	?DEBUG("SellDetails ~p", [SellDetails]),
+	{ok, TransferDetail} = ?w_inventory:purchaser_inventory(trace_transfer, Merchant, Payload),
+	?DEBUG("TransferDetail ~p", [TransferDetail]),
+
+	?utils:respond(200, object, Req,
+		       {[{<<"ecode">>, 0},
+			 {<<"new">>, NewDetails},
+			 {<<"sell">>, SellDetails},
+			 {<<"transfer">>, TransferDetail}
+			]})
+    catch
+	_:{badmatch, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+    %% case ?w_inventory:purchaser_inventory(flow, Merchant, Payload) of
+    %% 	{ok, Details} ->
+    %% 	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
+    %% 					       {<<"data">>, Details}]}); 
+    %% 	{error, Error} ->
+    %% 	    ?utils:respond(200, Req, Error)
+    %% end;
+
 action(Session, Req, {"list_w_inventory_info"}, Payload) ->
     ?DEBUG("list_w_inventory_info with session ~p, paylaod ~p", [Session, Payload]),
     Merchant  = ?session:get(merchant, Session),

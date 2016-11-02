@@ -281,7 +281,7 @@
 	  <div x-ng-if="stock_right.show_orgprice && setting.history_stock"
 	       class="panel panel-default" ng-affix>
 	    <div class="table-responsive">
-	      <table class="table table-bordered table-striped table-hover
+	      <table class="table table-bordered table-striped
 			    table-condensed table-advanced">
 		<thead>
 		  <tr>
@@ -609,7 +609,8 @@
 		  </tr>
 
 		  <tr x-ng-if="select.total!==0" class="text-center">
-		    <td colspan="7"></td>
+		    <td colspan="5"></td>
+		    <td colspan="2">{{select.acc_tag_price}}</td>
 		    <td class="vert-align">{{select.total}}</td>
 		    <td x-ng-if="stock_right.show_orgprice"></td>
 		    <td x-ng-if="stock_right.show_orgprice"></td>

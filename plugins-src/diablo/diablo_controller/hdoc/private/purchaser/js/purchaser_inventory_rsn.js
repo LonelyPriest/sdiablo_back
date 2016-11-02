@@ -179,6 +179,7 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
 
     $scope.calc_row   = stockUtils.calc_row;
     $scope.calc_drate = stockUtils.calc_drate_of_org_price;
+    $scope.css        = diablo_stock_css;
 
     /*
      * hidden
@@ -543,6 +544,155 @@ purchaserApp.controller("stockHistoryCtrl", function(
 	    diablo_goto_page("#/inventory_rsn_detail/" + $routeParams.rsn);
 	else
 	    diablo_goto_page("#/inventory_rsn_detail");
+    };
+    
+});
+
+
+purchaserApp.controller("purchaserInventoryFlowCtrl", function(
+    $scope, $routeParams, dateFilter, purchaserService,
+    user, filterBrand, filterFirm, base){
+
+    var shops = user.sortShops;
+    var shopIds = user.shopIds;
+    var style_number = $routeParams.snumber;
+    var brand_id = parseInt($routeParams.brand);
+
+    $scope.news = [];
+    $scope.sales = [];
+    $scope.transfers = [];
+    $scope.stock = {new_total: 0, sale_total: 0}; 
+    // var firm_id  = undefined;
+    // var q_start_time = stockUtils.start_time(-1, base, $.now(), dateFilter); 
+
+
+    var sort_by_date = function(stocks) {
+	return stocks.sort(function(s1, s2){
+	    return diablo_set_date(s1.entry_date) - diablo_set_date(s2.entry_date);
+	})
+    };
+
+    var order_with = function(stocks) {
+	var order = 1;
+	var total = 0;
+	angular.forEach(stocks, function(s){
+	    s.order_id = order; 
+	    if (order === 1){
+		s.style_number = style_number;
+		s.brand = diablo_get_object(brand_id, filterBrand);
+		s.firm  = diablo_get_object(s.firm_id, filterFirm);
+	    }
+	    total += s.total;
+	    order++;
+	});
+
+	return total;
+    }
+    
+    purchaserService.list_w_inventory_flow({
+	style_number:style_number,
+	brand:brand_id,
+	shop: shopIds
+	// start_time: q_start_time
+    }).then(function(result){
+	console.log(result);
+	
+	$scope.news = result.new.map(function(s){
+	    return {
+		// style_number:s.style_number,
+		// brand_id: s.brand_id,
+		firm_id:  s.firm_id,
+		
+		tag_price: s.tag_price,
+		discount: s.discount,
+		total: s.amount,
+		org_price: s.org_price,
+		ediscount: s.ediscount,
+		type: s.type,
+		shop: diablo_get_object(s.shop_id, shops),
+		entry_date:  s.entry_date}
+	});
+
+	$scope.sales = result.sell.map(function(s){
+	    return {
+		// style_number:s.style_number,
+		// brand_id: s.brand_id,
+		firm_id:  s.firm_id,
+		
+		tag_price: s.tag_price,
+		discount: s.discount,
+		rprice: s.rprice,
+		rdiscount: s.rdiscount,
+		
+		total: s.total,
+		org_price: s.org_price,
+		ediscount: s.ediscount,
+		type: s.sell_type,
+		shop: diablo_get_object(s.shop_id, shops),
+		entry_date: s.entry_date}
+	});
+	
+	$scope.transfers = result.transfer.map(function(s){
+	    return {
+		// style_number:s.style_number,
+		// brand_id: s.brand_id,
+		firm_id:  s.firm_id, 
+		total: s.amount, 
+		tshop: diablo_get_object(s.tshop_id, shops),
+		fshop: diablo_get_object(s.fshop_id, shops),
+		state: s.state,
+		entry_date: s.entry_date}
+	});
+	
+	// $scope.stocks = news.concat(sells, transfers);
+
+	sort_by_date($scope.news);
+	sort_by_date($scope.sales);
+	sort_by_date($scope.transfers);
+	// $scope.news.sort(function(s1, s2){
+	//     return diablo_set_date(s1.entry_date) - diablo_set_date(s2.entry_date); 
+	// });
+
+	$scope.stock.new_total = order_with($scope.news);
+	$scope.stock.sale_total = order_with($scope.sales);
+	
+	order_with($scope.transfers);
+	
+	// var order = 1; 
+	// angular.forEach($scope.news, function(h){
+	//     h.order_id = order; 
+	//     if (order === 1){
+	// 	h.style_number = style_number;
+	// 	h.brand = diablo_get_object(brand_id, filterBrand);
+	// 	h.firm  = diablo_get_object(h.firm_id, filterFirm);
+	//     }
+	    
+	//     order++;
+	// });
+
+	// console.log($scope.stocks); 
+	
+	// if (result.ecode === 0){
+	//     $scope.stock_history = angular.copy(result.data); 
+	//     var order = 1;
+	//     angular.forEach($scope.stock_history, function(h){
+	// 	h.order_id = order;
+	// 	h.brand = diablo_get_object(h.brand_id, filterBrand);
+	// 	h.firm  = diablo_get_object(h.firm_id, filterFirm);
+	// 	h.shop  = diablo_get_object(h.shop_id, shops);
+	// 	order++;
+	//     });
+
+	//     console.log($scope.stock_history);
+	//}
+    });
+
+    $scope.go_back = function(){
+	diablo_goto_page("#/inventory_detail");
+	// if ($routeParams.rsn)
+	//     diablo_goto_page("#/inventory_rsn_detail/" + $routeParams.rsn);
+	// else
+	//     diablo_goto_page("#/inventory_rsn_detail");
     };
     
 });

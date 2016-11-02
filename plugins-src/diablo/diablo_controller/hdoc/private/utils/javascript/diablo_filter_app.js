@@ -533,6 +533,7 @@ function filterProvider(){
 			    return {name:e.name,
 				    id:e.number,
 				    shop:e.shop_id,
+				    state: e.state,
 				    py:diablo_pinyin(e.name)}
 			}); 
 			set_storage(cookie, "employee", _employees); 
@@ -638,6 +639,7 @@ function normalFilterProvider(){
 			    return {name:e.name,
 				    shop:e.shop_id,
 				    id:e.number,
+				    state: e.state,
 				    py:diablo_pinyin(e.name)}
 			});
 			set_storage(cookie, "employee", _employees);

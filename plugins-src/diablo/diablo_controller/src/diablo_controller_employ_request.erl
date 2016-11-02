@@ -41,6 +41,7 @@ action(Session, Req, {"delete_employe", EmployId}) ->
     Merchant = ?session:get(merchant, Session),
     case ?employ:employ(delete, Merchant, EmployId) of
 	{ok, EmployId} ->
+	    ?w_user_profile:update(employee, Merchant),
 	    ?utils:respond(200, Req, ?succ(delete_employ, EmployId));
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)

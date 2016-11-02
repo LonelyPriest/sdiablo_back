@@ -1,6 +1,14 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2016-11-02",
+         content: [
+	     "增加库存流水跟踪" ,
+	     "增加员工状态（在职，离职）处理",
+	     "增加入库单吊牌价统计"
+	 ]
+        },
+	
 	{date: "2016-11-01",
          content: [
 	     "修正修改入库记录时，页面偶尔闪烁问题" ,

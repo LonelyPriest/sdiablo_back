@@ -59,6 +59,9 @@ sale(get_new, Merchant, RSN) ->
 sale(last, Merchant, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {last_sale, Merchant, Condition});
+sale(trace, Merchant, Condition) -> 
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {trace_sale, Merchant, Condition});
 
 sale(trans_detail, Merchant, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -485,6 +488,12 @@ handle_call({last_sale, Merchant, Conditions}, _From, State) ->
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
+handle_call({trace_sale, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("trance_sale with merchant ~p, Conditions ~p", [Merchant, Conditions]),
+    Sql = sale_new(rsn_groups, Merchant, Conditions, fun() -> [] end),
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State}; 
+
 handle_call({get_sale_rsn, Merchant, Conditions}, _From, State) ->
     ?DEBUG("get_sale_rsn with merchant=~p, conditions ~p",
 	   [Merchant, Conditions]),
@@ -769,44 +778,45 @@ handle_call({total_rsn_group, Merchant, Conditions}, _From, State) ->
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State}; 
 
-handle_call({filter_rsn_group, Merchant,
-	     CurrentPage, ItemsPerPage, Conditions}, _From, State) ->
-    ?DEBUG("filter_rsn_group_and: "
-	   "currentPage ~p, ItemsPerpage ~p, Merchant ~p~n"
-	   "", [CurrentPage, ItemsPerPage, Merchant]), 
+handle_call({filter_rsn_group, Merchant, CurrentPage, ItemsPerPage, Conditions}, _From, State) ->
+    ?DEBUG("filter_rsn_group_and: " "currentPage ~p, ItemsPerpage ~p, Merchant ~p~n",
+	   [CurrentPage, ItemsPerPage, Merchant]), 
+
+    Sql = sale_new(rsn_groups, Merchant, Conditions,
+	       fun() -> ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage) end),
+
+    %% {DConditions, SConditions} = filter_condition(wsale, Conditions, [], []),
+
+    %% {StartTime, EndTime, CutSConditions}
+    %% 	= ?sql_utils:cut(fields_with_prifix, SConditions),
+
+    %% {_, _, CutDCondtions}
+    %% 	= ?sql_utils:cut(fields_no_prifix, DConditions),
+
+    %% CorrectCutDConditions = ?utils:correct_condition(<<"b.">>, CutDCondtions),
     
-    {DConditions, SConditions} = filter_condition(wsale, Conditions, [], []),
-
-    {StartTime, EndTime, CutSConditions}
-    	= ?sql_utils:cut(fields_with_prifix, SConditions),
-
-    {_, _, CutDCondtions}
-    	= ?sql_utils:cut(fields_no_prifix, DConditions),
-
-    CorrectCutDConditions = ?utils:correct_condition(<<"b.">>, CutDCondtions),
-    
-    Sql = "select b.id, b.rsn, b.style_number"
-	", b.brand as brand_id, b.type as type_id, b.season, b.firm as firm_id"
-	", b.year, b.s_group, b.free, b.total, b.promotion as pid, b.score as sid"
-	", b.org_price, b.ediscount, b.tag_price, b.fdiscount, b.rdiscount"
-	", b.fprice, b.rprice"
-	", b.path, b.comment, b.entry_date"
+    %% Sql = "select b.id, b.rsn, b.style_number"
+    %% 	", b.brand as brand_id, b.type as type_id, b.season, b.firm as firm_id"
+    %% 	", b.year, b.s_group, b.free, b.total, b.promotion as pid, b.score as sid"
+    %% 	", b.org_price, b.ediscount, b.tag_price, b.fdiscount, b.rdiscount"
+    %% 	", b.fprice, b.rprice"
+    %% 	", b.path, b.comment, b.entry_date"
 	
-	", a.shop as shop_id"
-	", a.retailer as retailer_id"
-	", a.employ as employee_id"
-	", a.type as sell_type"
+    %% 	", a.shop as shop_id"
+    %% 	", a.retailer as retailer_id"
+    %% 	", a.employ as employee_id"
+    %% 	", a.type as sell_type"
 	
-    	" from w_sale_detail b, w_sale a"
+    %% 	" from w_sale_detail b, w_sale a"
 	
-    	" where "
-	++ ?sql_utils:condition(proplists_suffix, CorrectCutDConditions)
-	++ "b.rsn=a.rsn"
+    %% 	" where "
+    %% 	++ ?sql_utils:condition(proplists_suffix, CorrectCutDConditions)
+    %% 	++ "b.rsn=a.rsn"
 	
-    	++ ?sql_utils:condition(proplists, CutSConditions)
-    	++ " and a.merchant=" ++ ?to_s(Merchant)
-    	++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime)
-    	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
+    %% 	++ ?sql_utils:condition(proplists, CutSConditions)
+    %% 	++ " and a.merchant=" ++ ?to_s(Merchant)
+    %% 	++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime)
+    %% 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
     
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State}; 
@@ -1654,3 +1664,41 @@ filter_stock(news, [{H}|T], Stock, OrgPrice, EDiscount) ->
 	true -> {?v(<<"org_price">>, H), ?v(<<"ediscount">>, H)};
 	false -> filter_stock(news, T, Stock - Amount, OrgPrice, EDiscount)
     end.
+
+
+sale_new(rsn_groups, Merchant, Conditions, PageFun) ->
+    {DConditions, SConditions} = filter_condition(wsale, Conditions, [], []),
+
+    {StartTime, EndTime, CutSConditions}
+    	= ?sql_utils:cut(fields_with_prifix, SConditions),
+
+    {_, _, CutDCondtions}
+    	= ?sql_utils:cut(fields_no_prifix, DConditions),
+
+    CorrectCutDConditions = ?utils:correct_condition(<<"b.">>, CutDCondtions),
+
+    "select b.id, b.rsn, b.style_number"
+	", b.brand as brand_id, b.type as type_id, b.season, b.firm as firm_id"
+	", b.year, b.s_group, b.free, b.total, b.promotion as pid, b.score as sid"
+	", b.org_price, b.ediscount, b.tag_price, b.fdiscount, b.rdiscount"
+	", b.fprice, b.rprice"
+	", b.path, b.comment, b.entry_date"
+
+	", a.shop as shop_id"
+	", a.retailer as retailer_id"
+	", a.employ as employee_id"
+	", a.type as sell_type"
+
+    	" from w_sale_detail b, w_sale a"
+
+    	" where "
+	++ ?sql_utils:condition(proplists_suffix, CorrectCutDConditions)
+	++ "b.rsn=a.rsn"
+
+    	++ ?sql_utils:condition(proplists, CutSConditions)
+    	++ " and a.merchant=" ++ ?to_s(Merchant)
+    	++ case ?sql_utils:condition(time_with_prfix, StartTime, EndTime) of
+	       [] -> [];
+	       TimeSql -> " and " ++ TimeSql
+	   end
+    	++ PageFun().

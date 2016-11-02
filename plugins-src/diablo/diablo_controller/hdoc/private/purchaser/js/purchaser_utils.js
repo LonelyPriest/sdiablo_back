@@ -253,7 +253,7 @@ var stockUtils = function(){
 
 	get_login_employee:function(shop, loginEmployee, employees){
 	    var filterEmployees = employees.filter(function(e){
-		return e.shop === shop;
+		return e.shop === shop && e.state === 0;
 	    });
 
 	    if (filterEmployees.length === 0) filterEmployees = angular.copy(employees);

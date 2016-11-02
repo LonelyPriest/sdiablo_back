@@ -2121,6 +2121,12 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 	    }
 	}) 
     };
+
+    $scope.stock_flow = function(inv){
+	$scope.goto_page("#/inventory_detail/inventory_flow"
+			 + "/" + inv.style_number
+			 + "/" + inv.brand_id.toString());
+    };
 });
 
 
@@ -2404,7 +2410,8 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
 	    }
 	}
 	// only in and out
-	search.purchaser_type = [0, 1];
+	if (angular.isUndefined(search.purchaser_type))
+	    search.purchaser_type = [0, 1];
     };
     
     $scope.do_search = function(page){

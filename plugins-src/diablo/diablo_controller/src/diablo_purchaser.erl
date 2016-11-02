@@ -136,6 +136,13 @@ purchaser_inventory(list_new_detail, Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {list_new_detail, Merchant, Conditions});
 
+%% trace
+purchaser_inventory(trace_new, Merchant, Conditions) ->
+    purchaser_inventory(list_new_detail, Merchant, Conditions);
+purchaser_inventory(trace_transfer, Merchant, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {trace_transfer, Merchant, Conditions});
+
 %% purchaser_inventory(last_reject, Merchant, Conditions) ->
 %%     gen_server:call(?SERVER, {last_reject, Merchant, Conditions});
 purchaser_inventory(get_new, Merchant, RSN) ->
@@ -1637,6 +1644,14 @@ handle_call({list_new_detail, Merchant, Conditions}, _From, State) ->
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
+handle_call({trace_transfer, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("trace_transfer  with merchant ~p, conditions ~p",
+	   [Merchant, Conditions]), 
+    Sql = ?w_good_sql:inventory(
+	     transfer_rsn_groups, transfer, Merchant, Conditions, fun() -> [] end),
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
 %% handle_call({last_reject, Merchant, Conditions}, _From, State) ->
 %%     ?DEBUG("last_reject with merchant ~p, Conditions ~p", [Merchant, Conditions]),
 %%     Shop = ?v(<<"shop">>, Conditions),
@@ -1830,7 +1845,8 @@ handle_call({filter_transfer, Merchant, CurrentPage, ItemsPerPage, Fields}, _Fro
     Sql = ?w_good_sql:inventory(
 	     transfer_detail_with_pagination,
 	     Merchant, Fields, CurrentPage, ItemsPerPage),
-    Reply = ?sql_utils:execute(read, Sql),    {reply, Reply, State};
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
 
 
 %% good

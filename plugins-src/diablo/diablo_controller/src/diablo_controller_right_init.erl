@@ -831,6 +831,7 @@ pass_action(wholesaler) ->
      <<"filter_w_inventory_new_rsn_group">>,
      <<"w_inventory_new_rsn_detail">>,
      <<"list_w_inventory_new_detail">>,
+     <<"list_w_inventory_flow">>,
 
      %% inventnory reject 
      <<"filter_w_inventory_reject">>,

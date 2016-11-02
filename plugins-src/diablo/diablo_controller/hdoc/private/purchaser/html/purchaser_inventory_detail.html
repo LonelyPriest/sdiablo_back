@@ -9,41 +9,41 @@
 	</div>	
 
 	<div class="actions">
-	  <div class="btn-group btn-group-solid"> 
-	    <a x-ng-if="stock_right.set_promotion"
-	       class="btn green hidden-xxs"
-	       type="button"
-	       x-ng-click="promotion()">促销
-	      <i class="glyphicon glyphicon-pencil"></i></a>
+	  <!-- <div class="btn-group btn-group-solid">  -->
+	  <button x-ng-if="stock_right.set_promotion"
+		  class="btn green hidden-xxs"
+		  type="button"
+		  x-ng-click="promotion()">促销
+	    <i class="glyphicon glyphicon-pencil"></i></button>
 
-	    <a x-ng-if="stock_right.update_batch"
-	       class="btn red-sunglo"
-	       type="button"
-	       x-ng-click="update_batch()">批改
-	      <i class="glyphicon glyphicon-yen"></i></a>
+	  <button x-ng-if="stock_right.update_batch"
+		  class="btn red-sunglo"
+		  type="button"
+		  x-ng-click="update_batch()">批改
+	    <i class="glyphicon glyphicon-yen"></i></button>
 
-	    <a type="button" class="btn green hidden-xs"
-	       x-ng-click="goto_page('#/inventory_new')">入库
-	      <i class="glyphicon glyphicon-plus"></i></a>
-	    
-	    <a type="button" class="btn red hidden-xs"
-	       x-ng-click="goto_page('#/inventory_reject')">退货
-	      <i class="glyphicon glyphicon-minus"></i></a> 
+	  <!-- <a type="button" class="btn green hidden-xs" -->
+	  <!--    x-ng-click="goto_page('#/inventory_new')">入库 -->
+	  <!--   <i class="glyphicon glyphicon-plus"></i></a> -->
+	  
+	  <!-- <a type="button" class="btn red hidden-xs" -->
+	  <!--    x-ng-click="goto_page('#/inventory_reject')">退货 -->
+	  <!--   <i class="glyphicon glyphicon-minus"></i></a>  -->
 
-	    <a type="button" class="btn green-meadow hidden-xs"
-	       x-ng-click="goto_page('#/inventory/inventory_fix')">盘点
-	      <i class="glyphicon glyphicon-check"></i></a>
+	  <!-- <a type="button" class="btn green-meadow hidden-xs" -->
+	  <!--    x-ng-click="goto_page('#/inventory/inventory_fix')">盘点 -->
+	  <!--   <i class="glyphicon glyphicon-check"></i></a> -->
 
-	    <a x-ng-if="stock_right.export_stock"
-	       class="btn blue hidden-xs"
-	       type="button"
-	       x-ng-click="export_to()">导出
-	      <i class="glyphicon glyphicon-export"></i></a> 
+	  <button x-ng-if="stock_right.export_stock"
+		  class="btn blue hidden-xs"
+		  type="button"
+		  x-ng-click="export_to()">导出
+	    <i class="glyphicon glyphicon-export"></i></button> 
 
-	    <a type="button" class="btn yellow reload"
-	       x-ng-click="refresh()">刷新
-	      <i class="icon icon-spinner fg-white"></i></a>
-	  </div>
+	  <button type="button" class="btn yellow reload"
+		  x-ng-click="refresh()">刷新
+	    <i class="icon icon-spinner fg-white"></i></button>
+	  <!-- </div> -->
 	</div>
 
       </div>
@@ -190,6 +190,12 @@
 				  x-ng-click="update_stock(inv)">修改
 			    <i class="glyphicon glyphicon-edit"></i> 
 			  </button>
+
+			  <button class="btn diablo-button purple-plum"
+				  x-ng-click="stock_flow(inv)">流水
+			    <i class="glyphicon glyphicon-leaf"></i> 
+			  </button>
+			  
 			</td>
 		      </tr>
 		      

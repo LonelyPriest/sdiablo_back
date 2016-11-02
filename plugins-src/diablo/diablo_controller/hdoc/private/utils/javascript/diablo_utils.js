@@ -13,7 +13,9 @@ diabloUtils.directive('ngAffix', function(){
     return  function(scope, element, attrs){
 	element.affix({
 	    offset: {
-		top: function() {return element.offset().top},
+		// top: function() {return element.offset().top},
+		top: 50,
+		// bottom: 100
 		bottom: function () {
 		    return (element.bottom = $('.footer').outerHeight(true))
 		}

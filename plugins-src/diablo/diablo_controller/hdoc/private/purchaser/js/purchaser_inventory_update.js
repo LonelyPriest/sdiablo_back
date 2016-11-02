@@ -147,15 +147,20 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
     $scope.re_calculate = function(){
 	$scope.select.total = 0;
 	$scope.select.should_pay = 0;
+	$scope.select.acc_tag_price = 0;
 
 	for (var i=1, l=$scope.inventories.length; i<l; i++){
 	    var one = $scope.inventories[i];
-	    $scope.select.total += parseInt(one.total); 
+	    $scope.select.total += stockUtils.to_integer(one.total);
 	    $scope.select.should_pay += stockUtils.calc_row(
-	    	one.org_price, 100, one.total - stockUtils.to_integer(one.over)); 
+	    	one.org_price, 100, one.total - stockUtils.to_integer(one.over));
+	    $scope.select.acc_tag_price += one.tag_price * one.discount;
+	    
 	};
 	
-	$scope.select.should_pay = stockUtils.to_decimal($scope.select.should_pay); 
+	$scope.select.should_pay = stockUtils.to_decimal($scope.select.should_pay);
+	$scope.select.acc_tag_price = stockUtils.to_decimal($scope.select.acc_tag_price);
+	
 	var e_pay = stockUtils.to_float($scope.select.e_pay); 
 	var verificate = stockUtils.to_float($scope.select.verificate); 
 	
@@ -231,6 +236,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	// console.log(result);
 	// result[0] is the record detail
 	// result[1] are the inventory detail that the record is included
+	// console.log(result[1]);
 	var base = result[0];
 	var invs = result[1].data;
 
@@ -331,6 +337,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	$scope.old_inventories = sorts;
 	
 	var order_length = sorts.length;
+	$scope.select.acc_tag_price = 0; 
 	angular.forEach(sorts, function(s){
 	    var tag = angular.copy(s);
 	    tag.order_id = order_length;
@@ -338,11 +345,16 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 		tag.sizes = wgoodService.get_size_group(tag.s_group, filterSizeGroup); 
 	    }
 	    $scope.inventories.push(tag);
+	    $scope.select.acc_tag_price
+		+= stockUtils.calc_row(tag.tag_price, tag.discount, tag.total);
+	    
 	    order_length--;
-	})
+	});
+
+	$scope.select.acc_tag_price = stockUtils.to_decimal($scope.select.acc_tag_price);
 
 	$scope.focus_row = sorts.length; 
-	$scope.inventories.unshift({$edit:false, $new:true}); 
+	$scope.inventories.unshift({$edit:false, $new:true});
     });
     
     var reset_payment = function(newValue){

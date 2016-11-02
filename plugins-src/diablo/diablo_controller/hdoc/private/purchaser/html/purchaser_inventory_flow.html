@@ -1,0 +1,271 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="portlet box purple table-panel">
+      
+      <div class="portlet-title">
+	<div class="caption">
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>
+	  入（出）库流水跟踪
+	</div>
+	
+	<div class="actions"> 
+	  <button class="btn red" type="button"
+		  x-ng-click="go_back()">返回
+	    <i class="glyphicon glyphicon-circle-arrow-left"></i></button> 
+	</div> 
+      </div> 
+      
+      <!--BEGN portlet body--> 
+      <div class="portlet-body">
+	<!--BEGIN panel-->
+	<div class="panel panel-default table-panel">
+	  <div class="table-responsive"> 
+	    <!--EBGIN table -->
+	    <table class="table table-bordered
+			  table-striped table-hover
+			  table-condensed table-advanced">
+
+	      <thead>
+		<tr>
+		  <th class="text-center">序号</th>
+		  <th class="text-center">货号</th>
+		  <th class="text-center">品名</th>
+		  <th class="text-center">厂商</th> 
+		  <th class="text-center">吊牌</th>
+		  <th class="text-center">折扣</th>
+		  
+		  <th class="text-center">数量</th> 
+		  <th class="text-center">进/退价</th>
+		  <th class="text-center">折扣率</th>
+
+		  <th class="text-center">类型</th>
+		  <th class="text-center">店铺</th>
+		  <th class="text-center">日期</th>
+		</tr>
+	      </thead>
+	      
+	      <tbody>
+		<tr x-ng-repeat="h in news">
+		  <td class="text-center">{{h.order_id}}</td>
+		  <td class="text-center">{{h.style_number}}</td>
+		  <td class="text-center">{{h.brand.name}}</td>
+		  <td class="text-center">{{h.firm.name}}</td>
+		  
+		  <td class="text-center">{{h.tag_price}}</td>
+		  <td class="text-center">{{h.discount}}</td>
+		  <td class="text-center">{{h.total}}</td>
+		  <td class="text-center">{{h.org_price}}</td>
+		  <td class="text-center">{{h.ediscount}}</td> 
+
+		  <td class="text-center">
+		    <div x-ng-switch on="h.type">
+		      <span x-ng-switch-when=0>入库</span>
+		      <span x-ng-switch-when=1 class="bg-red">返厂</span>
+		      <!-- <span x-ng-switch-when=2>销售</span> -->
+		      <!-- <span x-ng-switch-when=3 class="bg-red">退货</span> -->
+		      <!-- <span x-ng-switch-when=4 class="fg-darkBlue">移仓</span> -->
+		    </div>
+		  </td>
+		  <td class="text-center">{{h.shop.name}}</td>
+		  <td class="text-center">{{h.entry_date}}</td>
+		</tr>
+		<tr>
+		  <td colspan="6"></td>
+		  <td class="text-center">{{stock.new_total}}</td>
+		  <td colspan="5"></td>
+		</tr>
+	      </tbody> 
+	      
+	    </table> <!--END table--> 
+	  </div> <!--END table responsive-->
+	  
+	</div> <!--END panel--> 
+	
+      </div> <!--END portlet body--> 
+    </div> <!--END table container-->
+    
+  </div>
+
+  <div class="col-md-12">
+    <div class="portlet box green table-panel">
+      
+      <div class="portlet-title">
+	<div class="caption">
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>
+	  销售（退货）流水跟踪
+	</div> 
+	<!-- <div class="actions">  -->
+	<!--   <button class="btn red" type="button" -->
+	<!-- 	  x-ng-click="go_back()">返回 -->
+	<!--     <i class="glyphicon glyphicon-circle-arrow-left"></i></button>  -->
+	<!-- </div>  -->
+      </div> 
+      
+      <!--BEGN portlet body--> 
+      <div class="portlet-body">
+	<!--BEGIN panel-->
+	<!--EBGIN table -->
+	<div class="panel panel-default table-panel">
+	  <div class="table-responsive"> 
+	    <!--EBGIN table -->
+	    <table class="table table-bordered
+			  table-striped table-hover
+			  table-condensed table-advanced">
+
+	      <thead>
+		<tr>
+		  <th class="text-center">序号</th>
+		  <th class="text-center">货号</th>
+		  <th class="text-center">品名</th>
+		  <th class="text-center">厂商</th> 
+		  <th class="text-center">吊牌价</th>
+		  <th class="text-center">折扣</th>
+
+		  <th class="text-center">成交价</th> 
+		  
+		  <th class="text-center">数量</th> 
+		  <th class="text-center">进价</th>
+		  <th class="text-center">折扣率</th>
+
+		  <th class="text-center">类型</th>
+		  <th class="text-center">店铺</th>
+		  <th class="text-center">日期</th>
+		</tr>
+	      </thead>
+	      
+	      <tbody>
+		<tr x-ng-repeat="h in sales">
+		  <td class="text-center">{{h.order_id}}</td>
+		  <td class="text-center">{{h.style_number}}</td>
+		  <td class="text-center">{{h.brand.name}}</td>
+		  <td class="text-center">{{h.firm.name}}</td>
+		  
+		  <td class="text-center">{{h.tag_price}}</td>
+		  <td class="text-center">{{h.discount}}</td>
+		  <td class="text-center">{{h.rprice}}</td>
+		  <td class="text-center">{{h.total}}</td>
+		  <td class="text-center">{{h.org_price}}</td>
+		  <td class="text-center">{{h.ediscount}}</td> 
+
+		  <td class="text-center">
+		    <div x-ng-switch on="h.type">
+		      <span x-ng-switch-when=0>销售</span>
+		      <span x-ng-switch-when=1 class="bg-red">退货</span>
+		      <!-- <span x-ng-switch-when=2>销售</span> -->
+		      <!-- <span x-ng-switch-when=3 class="bg-red">退货</span> -->
+		      <!-- <span x-ng-switch-when=4 class="fg-darkBlue">移仓</span> -->
+		    </div>
+		  </td>
+		  <td class="text-center">{{h.shop.name}}</td>
+		  <td class="text-center">{{h.entry_date}}</td>
+		</tr>
+		<tr>
+		  <td colspan="7"></td>
+		  <td class="text-center">{{stock.sale_total}}</td>
+		  <td colspan="5"></td>
+		</tr>
+	      </tbody> 
+	      
+	    </table> <!--END table--> 
+	  </div> <!--END table responsive-->
+	  
+	</div>
+	
+	
+      </div> <!--END portlet body--> 
+    </div> <!--END table container-->
+    
+  </div>
+
+
+  <div class="col-md-12">
+    <div class="portlet box yellow">
+      
+      <div class="portlet-title">
+	<div class="caption">
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>
+	  调入（出）流水跟踪
+	</div> 
+	<!-- <div class="actions">  -->
+	<!--   <button class="btn red" type="button" -->
+	<!-- 	  x-ng-click="go_back()">返回 -->
+	<!--     <i class="glyphicon glyphicon-circle-arrow-left"></i></button>  -->
+	<!-- </div>  -->
+      </div> 
+      
+      <!--BEGN portlet body--> 
+      <div class="portlet-body">
+	<!--BEGIN panel-->
+	<!--EBGIN table -->
+	<div class="panel panel-default table-panel">
+	  <div class="table-responsive"> 
+	    <!--EBGIN table -->
+	    <table class="table table-bordered
+			  table-striped table-hover
+			  table-condensed table-advanced">
+
+	      <thead>
+		<tr>
+		  <th class="text-center">序号</th>
+		  <th class="text-center">货号</th>
+		  <th class="text-center">品名</th>
+		  <th class="text-center">厂商</th> 
+		  <!-- <th class="text-center">吊牌价</th> -->
+		  <!-- <th class="text-center">折扣</th> -->
+
+		  <!-- <th class="text-center">成交价</th>  -->
+		  
+		  <th class="text-center">数量</th> 
+		  <!-- <th class="text-center">进价</th> -->
+		  <!-- <th class="text-center">折扣率</th> -->
+
+		  <!-- <th class="text-center">类型</th> -->
+		  <th class="text-center">调出店铺</th>
+		  <th class="text-center">调入店铺</th>
+		  <th class="text-center">状态</th>
+		  <th class="text-center">日期</th>
+		</tr>
+	      </thead>
+	      
+	      <tbody>
+		<tr x-ng-repeat="s in transfers">
+		  <td class="text-center">{{s.order_id}}</td>
+		  <td class="text-center">{{s.style_number}}</td>
+		  <td class="text-center">{{s.brand.name}}</td>
+		  <td class="text-center">{{s.firm.name}}</td> 
+		  <td class="text-center">{{s.total}}</td>
+		  <td class="text-center">{{s.fshop.name}}</td>
+		  <td class="text-center">{{s.tshop.name}}</td>
+		  <td class="text-center">
+		    <div x-ng-switch on="s.state">
+		      <span x-ng-switch-when=0 class="fg-red">未确认</span>
+		      <span x-ng-switch-when=1>己确认</span> 
+		    </div>
+		  </td>
+		  <td class="text-center">{{s.entry_date}}</td>
+		</tr>
+		<!-- <tr> -->
+		<!--   <td colspan="7"></td> -->
+		<!--   <td class="text-center">{{stock.sale_total}}</td> -->
+		<!--   <td colspan="5"></td> -->
+		<!-- </tr> -->
+	      </tbody> 
+	      
+	    </table> <!--END table--> 
+	  </div> <!--END table responsive-->
+	  
+	</div>
+	
+	
+      </div> <!--END portlet body--> 
+    </div> <!--END table container-->
+    
+  </div>
+  
+</div>
+
+
+
+
+
+

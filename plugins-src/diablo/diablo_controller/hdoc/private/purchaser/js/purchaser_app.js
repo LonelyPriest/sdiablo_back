@@ -117,6 +117,11 @@ purchaserApp.config(['$routeProvider', function($routeProvider){
 		{}, promotion, score,
 		user, brand, firm, type, s_group, color, base)
 	}).
+	when('/inventory_detail/inventory_flow/:snumber?/:brand?', {
+	    templateUrl: '/private/purchaser/html/purchaser_inventory_flow.html',
+            controller: 'purchaserInventoryFlowCtrl' ,
+	    resolve: angular.extend({}, user, brand, firm, base)
+	}).
 	when('/inventory_new_history/:snumber?/:brand?/:rsn?', {
 	    templateUrl: '/private/purchaser/html/purchaser_inventory_new_history.html',
             controller: 'stockHistoryCtrl' ,
@@ -597,10 +602,16 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
 	return http.save({operation: "adjust_w_inventory_price"}, inventory).$promise;
     };
 
-
+    /*
+     * trace
+     */
     this.list_w_inventory_new_detail = function(conditions){
-	return http.save(
-	    {operation: "list_w_inventory_new_detail"}, conditions).$promise};
+	return http.save({operation: "list_w_inventory_new_detail"}, conditions).$promise
+    };
+
+    this.list_w_inventory_flow = function(conditions){
+	return http.save({operation: "list_w_inventory_flow"}, conditions).$promise
+    };
     
 });
 

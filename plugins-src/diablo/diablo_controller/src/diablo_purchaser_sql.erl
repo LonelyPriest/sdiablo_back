@@ -634,6 +634,7 @@ inventory(new_rsn_groups, new, Merchant, Conditions, PageFun) ->
 	", a.shop as shop_id"
 	", a.employ as employee_id"
 	", a.type"
+	", a.state"
 	
     	" from w_inventory_new_detail b, w_inventory_new a" 
     	" where "
@@ -642,8 +643,10 @@ inventory(new_rsn_groups, new, Merchant, Conditions, PageFun) ->
 
     	++ ?sql_utils:condition(proplists, CutNConditions)
     	++ " and a.merchant=" ++ ?to_s(Merchant)
-    	++ " and " ++ ?sql_utils:condition(
-			 time_with_prfix, StartTime, EndTime)
+	++ case ?sql_utils:condition(time_with_prfix, StartTime, EndTime) of
+	       [] -> [];
+	       TimeSql -> " and " ++ TimeSql
+	   end 
 	++ PageFun(); 
 
 inventory(new_detail, new, Merchant, Conditions, PageFun) ->
@@ -715,7 +718,8 @@ inventory(fix_rsn_groups, fix, Merchant, Conditions, PageFun) ->
 
 inventory(transfer_detail, transfer, Merchant, Conditions, PageFun) ->
     {StartTime, EndTime, NewConditions} =
-        ?sql_utils:cut(fields_with_prifix, Conditions),    "select a.id, a.rsn, a.fshop as fshop_id"
+        ?sql_utils:cut(fields_with_prifix, Conditions),
+    "select a.id, a.rsn, a.fshop as fshop_id"
         ", a.tshop as tshop_id"
         ", a.employ as employee_id"
         ", a.total, a.comment, a.state"
@@ -742,13 +746,15 @@ inventory(transfer_rsn_groups, transfer, Merchant, Conditions, PageFun) ->
     FShop       = ?v(<<"fshop">>, Conditions, []),
     TShop       = ?v(<<"tshop">>, Conditions, []),
     C1 = [{<<"rsn">>, RSN}, {<<"fshop">>, FShop}, {<<"tshop">>, TShop}],
-    C11 = ?utils:correct_condition(<<"a.">>, C1),        %% ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime)
-        %% ++ " and merchant="++ ?to_s(Merchant),
+    C11 = ?utils:correct_condition(<<"a.">>, C1),
+    %% ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime)
+    %% ++ " and merchant="++ ?to_s(Merchant),
 
 
     C2 = [{<<"style_number">>, StyleNumber},
           {<<"brand">>, Brand},
-          {<<"firm">>, Firm}],    C21 = ?utils:correct_condition(<<"b.">>, C2),
+          {<<"firm">>, Firm}],
+    C21 = ?utils:correct_condition(<<"b.">>, C2),
 
         "select b.id, b.rsn, b.style_number"
         ", b.brand as brand_id"
@@ -769,8 +775,10 @@ inventory(transfer_rsn_groups, transfer, Merchant, Conditions, PageFun) ->
 
         ++ ?sql_utils:condition(proplists, C11)
         ++ " and a.merchant=" ++ ?to_s(Merchant)
-        ++ " and " ++ ?sql_utils:condition(
-                         time_with_prfix, StartTime, EndTime)
+	++ case ?sql_utils:condition(time_with_prfix, StartTime, EndTime) of
+	       [] -> [];
+	       TimeSql -> " and " ++ TimeSql
+	   end 
         ++ PageFun();
 
 inventory({group_detail_with_pagination, Mode, Sort},

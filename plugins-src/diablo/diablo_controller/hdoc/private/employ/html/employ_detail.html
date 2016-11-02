@@ -51,6 +51,7 @@
 		    <th>联系地址</th>
 		    <th>所属店铺</th>
 		    <th>入职日期</th>
+		    <th>状态</th>
 		    <th>操作</th>
 		  </tr>
 		</thead>
@@ -70,6 +71,12 @@
 		    <td>{{employ.address}}</td>
 		    <td>{{employ.shop.name}}</td>
 		    <td>{{employ.entry}}</td>
+		    <td>
+		      <div x-ng-switch on="employ.state">
+			<span x-ng-switch-when=0 class="fg-green">正常</span>
+			<span x-ng-switch-when=1 class="fg-red">离职</span>
+		      </div>
+		    </td>
 		    
 		    <td> 
 		      <a class="btn diablo-button btn-warning"
