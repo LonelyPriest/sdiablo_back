@@ -1,0 +1,185 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="portlet box purple">
+      
+      <div class="portlet-title">
+	<div class="caption">
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>电子卷</div>	
+
+	<div class="actions">
+	  <div class="btn-group btn-group-solid"> 
+	    <a type="button" class="btn blue reload purple-stripe"
+	       x-ng-click="refresh()">刷新
+	      <i class="icon icon-spinner fg-white"></i></a>
+	  </div>
+	</div>
+	
+	<!-- <div class="tools"> -->
+	<!--   <a class="reload" href="javascript:;"></a> -->
+	<!-- </div> -->
+      </div>
+
+      <!--BEGIN table container-->
+      <div class="portlet-body">
+	<!--BEGIN table-toolbar-->
+	<div class="table-toolbar"> 
+	</div> <!--END table-toolbar-->
+	
+	<!--BEGN portlet body--> 
+	<div class="portlet-body"> 
+	  <div class="table-toolbar util-btn-margin-bottom-5">
+	    <div class="row">
+              <div class="col-md-4 col-sm-4 col-xs-6">
+		<time-search
+                   glyphicon="glyphicon glyphicon-arrow-left fg-red"
+                   time="time.start_time"
+		   ok="do_search(default_page)">
+		</time-search>
+              </div>
+
+              <div class="col-md-4 col-sm-4 col-xs-6">
+		<time-search
+                   glyphicon="glyphicon glyphicon-arrow-right fg-red"
+                   time="time.end_time"
+		   ok="do_search(default_page)">
+		</time-search>
+              </div> 
+
+              <div class="col-md-4">
+		<query-pattern ng-model="match"
+                               filters="filters"
+                               filter="filter">
+		</query-pattern>
+              </div>
+	    </div> <!--END row-->
+
+	    <query-group filters="filters" prompt="prompt"
+			 ok="do_search(default_page)">
+	    </query-group>
+	  
+	  </div>
+
+	  <!--BEGIN panel-->
+
+	  <div class="panel panel-default table-panel"> 
+	    <div class="table-responsive">
+	      <!--EBGIN table supplier-->
+	      <table class="table table-bordered
+			    table-striped table-hover
+			    table-condensed table-advanced">
+		<thead>
+		  <tr>
+		    <th>序号</th>
+		    <th>批次号</th>
+		    <th>优惠方案</th>
+		    <th>会员</th>
+		    <th>金额</th>
+		    <th>状态</th> 
+		    <th>备注</th>
+		    <th>生成日期</th> 
+		    <th>操作</th>
+		  </tr>
+		</thead>
+		<tbody>
+		  <tr ng-repeat="t in tickets">
+		    <td x-ng-bind=t.order_id></td>
+		    <td x-ng-bind=t.batch></td>
+		    <td x-ng-bind=t.score></td>
+		    <td x-ng-bind=t.retailer></td>
+		    <td x-ng-bind=t.balance></td>
+		    <td>
+		      <div x-ng-switch on=t.state>
+			<span x-ng-switch-when=0 class="fg-red">未确认</span>
+			<span x-ng-switch-when=1>已确认</span>
+			<span x-ng-switch-when=2 class="fg-pink">已消费</span>
+		      </div>
+		    </td>
+		    <td x-ng-bind=t.remark></td>
+		    <td x-ng-bind=t.entry_date></td>
+		    <td>
+		      <button x-ng-if="t.state===0" class="btn green diablo-button"
+			      x-ng-click="effect(t)">确认
+			<i class="glyphicon glyphicon-check"></i></button>
+		      
+		      <button x-ng-if="t.state===1" class="btn diablo-button red"
+			      x-ng-click="consume(t)">消费
+			<i class="glyphicon glyphicon-map-marker"></i></button> 
+		    </td>
+		  </tr>
+
+		  <tr x-ng-if="total_items!==0" class="bg-white">
+		    <td colspan=4></td>
+		    <td>{{total_balance}}</td>
+		    <td></td>
+		  </tr> 
+		</tbody> 
+		<tfoot> </tfoot>
+		
+	      </table> <!--END table-->
+	    </div> <!--END table responsive-->
+	    
+	  </div> <!--END panel-->
+
+	  <div x-ng-show="total_items>items_perpage" class="row">
+	    <div class="col-md-12, col-sm-12, col-xs-12">
+	      <span>显示第 {{current_page}} / {{num_pages}} 项结果，
+		共 {{total_items}} 项</span>
+	      <uib-pagination
+		 class="pagination-lg table-pagination pull-right"
+		 total-items="total_items"
+		 items-per-page="items_perpage"
+		 num-pages="num_pages"
+		 max-size="max_page_size"
+		 boundary-links="true"
+		 previous-text="&lsaquo;" next-text="&rsaquo;"
+		 first-text="&laquo;" last-text="&raquo;"
+		 x-ng-model="current_page"
+		 x-ng-change="page_changed(current_page)">
+	      </uib-pagination>
+	    </div>
+	  </div> 
+	</div> <!--END portlet body--> 
+      </div> <!--END table container-->
+      
+    </div>
+  </div>
+</div>
+
+<script type="text/ng-template" id="effect-ticket.html"> 
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    <h4 class="modal-title">
+      <span class="label label-sm label-primary">电子卷消费</span>
+    </h4>
+  </div>
+
+  <div class="modal-body">
+    <form class="form-horizontal" name="cForm" novalidate>
+      <div class="form-body">
+	
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">备注</label> 
+	  <div class="col-md-10">
+	    <input class="form-control"
+		   name="comment"
+		   type="text"
+		   x-ng-model="params.comment"
+		   x-ng-pattern="params.comment_pattern"/>
+	    <div x-ng-if="cForm.comment.$invalid && !cForm.comment.$pristine">
+	    	<span class="fg-red">备注只能是数字，中文，字母，不能包含特殊字符</span>
+	    </div>
+	  </div>
+	</div>
+
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary" x-ng-disabled="cForm.$invalid" x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>  
+</script>

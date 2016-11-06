@@ -110,6 +110,12 @@ wretailerApp.config(['$routeProvider', function($routeProvider){
 	    controller: 'wretailerScoreDetailCtrl',
 	    resolve: angular.extend({}, user)
 	}).
+	// ticket
+	when('/wretailer_ticket_detail', {
+	    templateUrl: '/private/wretailer/html/ticket_detail.html',
+	    controller: 'wretailerTicketDetailCtrl',
+	    resolve: angular.extend({}, retailer, user)
+	}).
 	// default
 	otherwise({
 	    templateUrl: '/private/wretailer/html/wretailer_detail.html',
@@ -123,7 +129,11 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
      	2101: "会员信息重复！！",
 	2102: "会员密码不正确，请重新输入！！",
 	2103: "充值方案名称已存在，请重新输入方案名称!!",
-	2104: "积分方案名称已存在，请重新输入方案名称!!",
+	2104: "积分方案已存在，请重新输入方案，！！",
+	2105: "该电子卷不存在，请重新选择电子卷！！",
+	2106: "该电子卷已经确认过，无法再确认，请重新选择电子卷！！",
+	2107: "该电子卷已被消费，请重新选择电子卷",
+	2108: "积分况换钱的方案有且只能有一个！！",
 	9001: "数据库操作失败，请联系服务人员！！"};
 
     this.score_rules = [
@@ -131,7 +141,9 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 	{name: "积分兑换钱", id:1, remakr: "积分到钱"}
     ];
 
-    this.retailer_types = [{name: "普通会员", id:0}, {name: "充值会员", id:1}];
+    this.retailer_types = [{name: "普通会员", id:0},
+			   {name: "充值会员", id:1},
+			   {name: "系统会员", id:2}];
 
     this.sort_inventory = function(invs, orderSizes){
 	// console.log(invs);
@@ -330,6 +342,28 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 
     this.list_score_promotion = function(){
 	return http.query({operation:"list_w_retailer_score"}).$promise;
+    };
+
+    /*
+     * ticket
+     */
+    this.filter_ticket_detail = function(match, fields, currentPage, itemsPerpage){
+	return http.save(
+	    {operation: "filter_ticket_detail"},
+	    {match:  angular.isDefined(match) ? match.op : undefined,
+	     fields: fields,
+	     page:   currentPage,
+	     count:  itemsPerpage}).$promise;
+    };
+
+    this.effect_ticket = function(tid){
+	return http.save(
+	    {operation: "effect_w_retailer_ticket"}, {tid:tid}).$promise;
+    };
+
+    this.consume_ticket = function(tid, comment){
+	return http.save(
+	    {operation: "consume_w_retailer_ticket"}, {tid:tid, comment:comment}).$promise;
     };
     
 });

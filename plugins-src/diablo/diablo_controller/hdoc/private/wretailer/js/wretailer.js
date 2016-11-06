@@ -443,13 +443,13 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 					  old_retailer.birth.getTime()),
 		balance: diablo_get_modified(params.retailer.balance, old_retailer.balance),
 	    };
+	    
 	    console.log(update_retailer); 
 	    update_retailer.id = params.retailer.id;
 	    update_retailer.obalance = old_retailer.balance;
 	    // console.log(update_retailer);
 
-	    wretailerService.update_retailer(update_retailer).then(function(
-		result){
+	    wretailerService.update_retailer(update_retailer).then(function(result){
     		console.log(result);
     		if (result.ecode == 0){
 		    dialog.response_with_callback(
@@ -523,7 +523,7 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 
 	diabloUtilsService.request(
 	    "删除会员", "确定要删除该会员吗？",
-	    callback, undefined, $scope);
+	    callback, undefined, undefined);
     };
 
     $scope.reset_password = function(retailer) {
@@ -712,6 +712,116 @@ wretailerApp.controller("wretailerChargeDetailCtrl", function(
 	dialog.edit_with_modal("update-recharge.html", undefined, callback, undefined, payload);
     };
 });
+
+wretailerApp.controller("wretailerTicketDetailCtrl", function(
+    $scope, diabloFilter, diabloPattern, diabloUtilsService,
+    wretailerService, filterRetailer, user){
+
+    var dialog = diabloUtilsService;
+
+    $scope.pattern = {comment: diabloPattern.comment};
+    $scope.items_perpage = diablo_items_per_page();
+    $scope.max_page_size = 10;
+    $scope.default_page = 1; 
+    $scope.current_page = $scope.default_page;
+    $scope.total_items = 0; 
+
+    $scope.filters = []; 
+    diabloFilter.reset_field(); 
+    diabloFilter.add_field("retailer", filterRetailer);
+
+    $scope.filter = diabloFilter.get_filter();
+    $scope.prompt = diabloFilter.get_prompt();
+
+    // $scope.right = {master: rightAuthen.authen_master(user.type)};
+    
+    var now = retailerUtils.first_day_of_month();
+    // var start_time = diablo_base_setting(
+    // 	"qtime_start", -1, base, diablo_set_date, diabloFilter.default_start_time(now));
+    
+    // $scope.time = diabloFilter.default_time($scope.qtime_start, now);
+    $scope.time = diabloFilter.default_time(now.first, now.current);
+    
+    $scope.do_search = function(page){
+	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+	    wretailerService.filter_ticket_detail(
+		$scope.match, search, page, $scope.items_perpage
+	    ).then(function(result){
+		console.log(result);
+		$scope.tickets = angular.copy(result.data);
+		
+		if (result.ecode === 0){
+		    if (page === $scope.default_page){
+			$scope.total_items = result.total;
+			$scope.total_balance = result.balance;
+		    } 
+
+		    diablo_order($scope.tickets, (page - 1) * $scope.items_perpage + 1);
+		    $scope.current_page = page; 
+		} 
+	    })
+	})
+    };
+
+    $scope.refresh = function(){
+	$scope.do_search($scope.default_page)
+    };
+
+    $scope.page_changed = function(page){
+	$scope.do_search(page)
+    };
+
+    $scope.refresh();
+
+    $scope.consume = function(ticket){
+	console.log(ticket);
+	var callback = function(params){
+	    console.log(params);
+	    
+	    wretailerService.consume_ticket(ticket.id, params.comment).then(function(result){
+		if (result.ecode === 0){
+		    dialog.response_with_callback(
+			true, "电子卷消费", "电子卷消费成功！！" ,
+			undefined,
+			function(){ticket.state=2})
+		} else {
+		    dialog.response(
+			false, "电子卷消费", "电子卷消费失败："
+			    + wretailerService.error[result.ecode]);
+		}
+	    })
+	};
+
+	
+	dialog.edit_with_modal("effect-ticket.html", 'lg', callback, undefined,
+			       {comment_pattern: $scope.pattern.comment}); 
+    };
+
+    $scope.effect = function(ticket) {
+	console.log(ticket)
+
+	var callback = function(params){
+	    console.log(params);
+	    
+	    wretailerService.effect_ticket(ticket.id).then(function(result){
+		if (result.ecode === 0){
+		    dialog.response_with_callback(
+			true, "电子卷确认", "电子卷确认成功，该电子卷可正常使用！！" ,
+			undefined,
+			function(){ticket.state=1})
+		} else {
+		    dialog.response(
+			false, "电子", "电子卷确认失败："
+			    + wretailerService.error[result.ecode]);
+		}
+	    })
+	};
+
+	dialog.request("电子卷确认", "确定要使该电子卷生效吗？", callback, undefined, undefined);
+    };
+});
+
+
 
 wretailerApp.controller("wretailerCtrl", function(
     $scope, localStorageService){

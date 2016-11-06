@@ -455,10 +455,12 @@ var wsaleUtils = function(){
 	    var score = 0; 
 	    if (pscores.length > 0){
 		var s = pscores[0];
-		score = Math.floor((diablo_round(s.money) - verificate) / s.score.balance) * s.score.score; 
-		for ( var i=1, l=pscores.length; i<l; i++){
-		    s = pscores[i];
-		    score += Math.floor(diablo_round(s.money) / s.score.balance) * s.score.score; 
+		if (angular.isDefined(s.score)) {
+		    score = Math.floor((diablo_round(s.money) - verificate) / s.score.balance) * s.score.score; 
+		    for ( var i=1, l=pscores.length; i<l; i++){
+			s = pscores[i];
+			score += Math.floor(diablo_round(s.money) / s.score.balance) * s.score.score; 
+		    } 
 		} 
 	    }
 	    

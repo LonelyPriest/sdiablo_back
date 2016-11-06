@@ -508,7 +508,7 @@ handle_call({get_region_profile, Merchant}, _From, State) ->
     MS = ms(Merchant, region), 
     case ets:select(?WUSER_PROFILE, MS) of
 	[] ->
-	    {ok, Regions} = ?shop:rgion(list, Merchant),
+	    {ok, Regions} = ?shop:region(list, Merchant),
 	    {reply, {ok, Regions}, State};
 	[Regions] ->
 	    ?DEBUG("regions ~p of merchant ~p", [Regions, Merchant]),

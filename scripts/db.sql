@@ -469,10 +469,10 @@ create table w_ticket(
     state           INTEGER default 0, -- 0: checking; 1: checked; 2: consumed
     remark          VARCHAR(128) default null,
     merchant        INTEGER not null default -1, 
-    entry           DATETIME default 0, 
+    entry_date      DATETIME default 0, 
     deleted         INTEGER default 0, -- 0: no;  1: yes
 
-    unique  key uk  (merchant, batch, retailer),
+    key         dk  (merchant),
     primary key     (id)
     
 ) default charset=utf8;

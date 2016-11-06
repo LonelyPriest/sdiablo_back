@@ -40,12 +40,13 @@
 	      <div class="input-group">
 	    	<input type="text" class="form-control"
 	    	       placeholder="年/月/日"
-	    	       datepicker-popup="yyyy/MM/dd"
+	    	       uib-datepicker-popup="yyyy/MM/dd"
 	    	       is-open="isOpened"
 	    	       close-text="关闭"
 	    	       clear-text="清除"
 	    	       current-text="今天"
 	    	       show-weeks="false"
+		       readonly
 	    	       x-ng-model="select.datetime"/>
 	    	<span class="input-group-btn">
 	    	  <button type="button"
@@ -77,11 +78,10 @@
 		  单号</span>
 		<input class="form-control"
 		       type="text"
-		       placeholder="请选择单号"
-		       typeahead-editable="false"
+		       placeholder="请选择单号" 
 		       typeahead-on-select="select_rsn($item, $model, $label)"
-		       typeahead="r for r in
-				  rsns|filter:$viewValue|limitTo:30"
+		       x-ng-enter="select.rsn && select_rsn(select.rsn)"
+		       uib-typeahead="r for r in rsns|filter:$viewValue|limitTo:30"
 		       x-ng-model="select.rsn"/>
 	      </div>
 	    </div>
@@ -110,7 +110,7 @@
 		       readonly
 	  	       typeahead-editable="false"
 		       typeahead-on-select="change_retailer()"
-	  	       typeahead="r as r.name for r in
+	  	       uib-typeahead="r as r.name for r in
 	  			  retailers|filter:$viewValue|limitTo:8"/> 
 	      </div>
 	    </div> 
@@ -121,7 +121,7 @@
 		  <i class="glyphicon glyphicon-calendar fg-red"></i>日期
 		</span>
 		<input type="text" class="form-control"
-		       datepicker-popup="yyyy/MM/dd"
+		       uib-datepicker-popup="yyyy/MM/dd"
 		       readonly 
 		       x-ng-model="select.rsn_datetime"/> 
 	      </div>

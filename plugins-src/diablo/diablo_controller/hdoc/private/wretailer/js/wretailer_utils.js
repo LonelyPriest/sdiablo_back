@@ -89,6 +89,15 @@ var retailerPrint = function(){
 	    LODOP.SET_PRINT_PAGESIZE(3, 178, 100, ""); 
 	    // LODOP.PREVIEW();
 	    LODOP.PRINT();
-	}
+	},
+
+	// first_day_of_month: function(){
+	//     var now = new Date(); 
+	//     var year = now.getFullYear();
+	//     var month = now.getMonth();
+
+	//     return {
+	// 	first:new Date(year, month, 1).getTime(), current:now.getTime()};
+	// }
     }
 }();

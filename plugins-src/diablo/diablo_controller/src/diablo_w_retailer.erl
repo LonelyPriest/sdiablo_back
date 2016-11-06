@@ -22,7 +22,7 @@
 
 -export([retailer/2, retailer/3, retailer/4]).
 -export([charge/2, charge/3]).
--export([score/2, score/3]).
+-export([score/2, score/3, ticket/3]).
 -export([filter/4, filter/6]).
 
 -define(SERVER, ?MODULE). 
@@ -90,14 +90,30 @@ score(list, Merchant) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {list_score, Merchant}).
 
+%% ticket
+ticket(effect, Merchant, TicketId) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {effect_ticket, Merchant, TicketId});
+ticket(consume, Merchant, {TicketId, Comment, Score2Money}) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {consume_ticket, Merchant, {TicketId, Comment, Score2Money}}).
+
 filter(total_charge_detail, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {total_charge_detail, Merchant, Conditions}).
+    gen_server:call(Name, {total_charge_detail, Merchant, Conditions});
+filter(total_ticket_detail, 'and', Merchant, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {total_ticket_detail, Merchant, Conditions}).
 
 filter(charge_detail, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name,
-		    {filter_charge_detail, Merchant, Conditions, CurrentPage, ItemsPerPage}).
+		    {filter_charge_detail, Merchant, Conditions, CurrentPage, ItemsPerPage});
+
+filter(ticket_detail, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name,
+		    {filter_ticket_detail, Merchant, Conditions, CurrentPage, ItemsPerPage}).
     
 
 start_link(Name) ->
@@ -492,9 +508,18 @@ handle_call({new_score, Merchant, Attrs}, _From, State) ->
 
     Entry    = ?utils:current_time(localtime),
 
-    Sql = "select id, name from w_score"
-	" where merchant=" ++ ?to_s(Merchant)
-	++ " and name=\'" ++ ?to_s(Name) ++ "\'",
+    Sql = case Rule of
+	      0 ->
+		  "select id, balance, score, type from w_score"
+		      " where merchant=" ++ ?to_s(Merchant)
+		      ++ " and balance=" ++ ?to_s(Balance)
+		      ++ " and score=" ++ ?to_s(Score)
+		      ++ " and type=" ++ ?to_s(Rule);
+	      1 ->
+		  "select id, balance, score, type from w_score"
+		      " where merchant=" ++ ?to_s(Merchant)
+		      ++ " and type=" ++ ?to_s(Rule)
+	  end,
 
     case ?sql_utils:execute(s_read, Sql) of
 	{ok, []} ->
@@ -522,7 +547,10 @@ handle_call({new_score, Merchant, Attrs}, _From, State) ->
 	    {reply, Reply, State};
 	{ok, E} ->
 	    {reply,
-	     {error, ?err(retailer_score_exist, ?v(<<"id">>, E))}, State}
+	     case Rule of
+		 0 -> {error, ?err(retailer_score_exist, ?v(<<"id">>, E))};
+		 1 -> {error, ?err(retailer_score2money_exist, ?v(<<"id">>, E))}
+	     end , State}
     end;
 
 handle_call({list_score, Merchant}, _From, State) ->
@@ -535,6 +563,72 @@ handle_call({list_score, Merchant}, _From, State) ->
     Reply = ?sql_utils:execute(read, Sql),
 
     {reply, Reply, State};
+
+handle_call({effect_ticket, Merchant, TicketId}, _From, State) ->
+    Sql = "select id, balance, retailer, state from w_ticket"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and id=" ++ ?to_s(TicketId),
+
+    Reply = 
+	case ?sql_utils:execute(s_read, Sql) of
+	    {ok, []} -> ?err(ticket_not_exist, TicketId);
+	    {ok, R} ->
+		case ?v(<<"state">>, R) =/= 0 of
+		    true -> ?err(ticket_has_been_effect, TicketId);
+		    false ->
+			Sql1 = "update w_ticket set state=1"
+			    " where merchant=" ++ ?to_s(Merchant)
+			    ++ " and id=" ++ ?to_s(TicketId),
+			?sql_utils:execute(write, Sql1, TicketId)
+		end
+	end,
+
+    {reply, Reply, State};
+
+handle_call({consume_ticket, Merchant, {TicketId, Comment, Score2Money}}, _From, State) ->
+    Sql = "select id, balance, retailer, state from w_ticket"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and id=" ++ ?to_s(TicketId),
+
+    Reply = 
+	case ?sql_utils:execute(s_read, Sql) of
+	    {ok, []} -> ?err(ticket_not_exist, TicketId);
+	    {ok, R} ->
+		case ?v(<<"state">>, R) =/= 1 of
+		    true ->
+			?err(ticket_has_been_consume, TicketId);
+		    false ->
+			TicketBalance = ?v(<<"balance">>, R, 0),
+			RetailerId = ?v(<<"retailer">>, R),
+			%% {ok, Scores}=?w_user_profile:get(score, Merchant),
+			%% Score2Money =
+			%%     case lists:filter(fun({S})-> ?v(<<"type_id">>, S) =:= 1 end, Scores) of
+			%% 	[] -> [];
+			%% 	[{_Score2Money}] -> _Score2Money
+			%%     end, 
+			%% ?DEBUG("score2money ~p, ", [Score2Money]),
+
+			AccScore = ?v(<<"score">>, Score2Money), 
+			Balance = ?v(<<"balance">>, Score2Money),
+
+			RetailerScore = TicketBalance div Balance * AccScore,
+			
+			Sqls = ["update w_ticket set state=2"
+				", remark=\'" ++ ?to_s(Comment) ++ "\'"
+				" where merchant=" ++ ?to_s(Merchant)
+				++ " and id=" ++ ?to_s(TicketId),
+
+				"update w_retailer set score=score-" ++ ?to_s(RetailerScore)
+				++ " where merchant=" ++ ?to_s(Merchant)
+				++ " and id=" ++ ?to_s(RetailerId)
+			       ],
+			
+			?sql_utils:execute(transaction, Sqls, TicketId)
+		end
+	end,
+
+    {reply, Reply, State};
+
 
 
 handle_call({total_charge_detail, Merchant, Conditions}, _From, State) ->
@@ -575,7 +669,43 @@ handle_call({filter_charge_detail, Merchant, Conditions, CurrentPage, ItemsPerPa
 	++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime)
 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
     Reply =  ?sql_utils:execute(read, Sql),
-    {reply, Reply, State}; 
+    {reply, Reply, State};
+
+
+handle_call({total_ticket_detail, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("total_ticket_detail: merchant ~p, conditions ~p", [Merchant, Conditions]),
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
+    Sql = "select count(*) as total"
+	", sum(balance) as balance"
+	" from w_ticket"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime),
+
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+handle_call({filter_ticket_detail, Merchant, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
+    ?DEBUG("filter_ticket_detail: merchant ~p, conditions ~p, page ~p",
+	   [Merchant, Conditions, CurrentPage]),
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
+    Sql = 
+	"select a.id, a.batch, a.sid, a.balance"
+	", a.retailer as retailer_id" 
+	", a.state, a.remark, a.entry_date"
+	
+	", b.name as retailer" 
+	", c.name as score"
+	" from w_ticket a"
+	" left join w_retailer b on a.retailer=b.id"
+	" left join w_score c on a.sid=c.id"
+
+	" where a.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime)
+	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
+    Reply =  ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
     
 handle_call(_Request, _From, State) ->
     Reply = ok,

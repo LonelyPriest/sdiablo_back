@@ -129,6 +129,11 @@
 -define(update_recharge,             ?right_w_retailer + 16).
 -define(update_retailer_score,       ?right_w_retailer + 17).
 
+%% ticket
+-define(filter_ticket_detail,        ?right_w_retailer + 18).
+-define(effect_ticket,               ?right_w_retailer + 19).
+-define(consume_ticket,              ?right_w_retailer + 20).
+
 %% shop
 -define(new_shop,       ?right_shop + 1).
 -define(del_shop,       ?right_shop + 2).

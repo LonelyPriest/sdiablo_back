@@ -620,7 +620,7 @@ purchaserApp.controller("purchaserInventoryFlowCtrl", function(
 		firm_id:  s.firm_id,
 		
 		tag_price: s.tag_price,
-		discount: s.discount,
+		discount: s.fdiscount,
 		rprice: s.rprice,
 		rdiscount: s.rdiscount,
 		

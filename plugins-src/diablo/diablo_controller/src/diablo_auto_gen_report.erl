@@ -47,6 +47,7 @@ syn_report(stastic_per_shop, Merchant, Conditions) ->
 add(report_task, Merchant, TriggerTime) ->
     gen_server:call(?SERVER, {add_report_task, Merchant, TriggerTime}).
 
+%% triggerTime: {{12, 13, am}}
 ticket(preferential, TriggerTime) ->
     gen_server:cast(?SERVER, {gen_ticket, TriggerTime}).
 cancel_ticket(preferential) ->
@@ -164,6 +165,7 @@ handle_cast({gen_ticket, TriggerTime},
 				      end}, 
 			  [?cron:cron(CronTask)|Acc] 
 		  end, [], Merchants),
+		  %% end, [], [4]),
 	    ?DEBUG("new ticket ~p with merchants ~p", [NewTasks, Merchants]),
 	    {noreply, State#state{ticket_of_merchant=NewTasks}};
 	_ -> {noreply, State}
@@ -340,6 +342,7 @@ task(gen_ticket, Datetime, Merchant) when is_number(Merchant) ->
     FormatDatetime = format_datetime(Datetime),
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
     {ok, Scores}=?w_user_profile:get(score, Merchant),
+    ?DEBUG("scores ~p", [Scores]),
     Score2Money =
 	case lists:filter(fun({S})-> ?v(<<"type_id">>, S) =:= 1 end, Scores) of
 	    [] -> [];
@@ -347,17 +350,17 @@ task(gen_ticket, Datetime, Merchant) when is_number(Merchant) ->
 	end, 
     ?DEBUG("score2money ~p, ", [Score2Money]),
     
-    IsGenTicket = ?v(<<"gen_ticket">>, BaseSetting),
+    IsGenTicket = ?v(<<"gen_ticket">>, BaseSetting, 0),
     SysVips = sys_vip_of(merchant, Merchant),
     ?DEBUG("IsGenTicket ~p, SysVips ~p", [IsGenTicket, SysVips]),
     
     TicketSqls =
-	case ?to_i(IsGenTicket) =:= 1 andalso length(Score2Money) =/= [] of
+	case ?to_i(IsGenTicket) =:= 1 andalso length(Score2Money) =/= 0 of
 	    true ->
 		AccScore = ?v(<<"score">>, Score2Money), 
 		Balance = ?v(<<"balance">>, Score2Money),
 		Sql = "select id, score from w_retailer where merchant=" ++ ?to_s(Merchant)
-		    ++ " and score>=" ++ ?to_s(AccScore),
+		    ++ " and score>=" ++ ?to_s(AccScore) ++ " and type!=2",
 		case ?sql_utils:execute(read, Sql) of
 		    {ok, []} -> [];
 		    {ok, Retailers} ->
@@ -379,7 +382,7 @@ task(gen_ticket, Datetime, Merchant) when is_number(Merchant) ->
 						  ++ " and state in (0, 1)") of
 					      {ok, []} ->
 						  ["insert into w_ticket(batch, sid, balance"
-						   ", retailer, merchant, entry) values("
+						   ", retailer, merchant, entry_date) values("
 						   ++ ?to_s(Batch) ++ ","
 						   ++ ?to_s(?v(<<"id">>, Score2Money)) ++ ","
 						   ++ ?to_s(

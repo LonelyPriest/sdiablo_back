@@ -154,7 +154,14 @@ init([]) ->
 	  <<"重置会员密码">>, <<"reset_w_retailer_password">>, ?right_w_retailer},
 	 
 	 {?update_retailer_score, 
-	  <<"修改会员积分">>, <<"update_retailer_score">>, ?right_w_retailer}
+	  <<"修改会员积分">>, <<"update_retailer_score">>, ?right_w_retailer},
+
+	 {?filter_ticket_detail, 
+	  <<"查询电子卷">>, <<"filter_ticket_detail">>, ?right_w_retailer}, 
+	 {?effect_ticket, 
+	  <<"电子卷生效">>, <<"effect_w_retailer_ticket">>, ?right_w_retailer},
+	 {?consume_ticket, 
+	  <<"手动消费电子卷">>, <<"consume_w_retailer_ticket">>, ?right_w_retailer}
 	],
 
     

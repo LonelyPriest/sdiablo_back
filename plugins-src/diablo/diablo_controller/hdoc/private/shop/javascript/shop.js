@@ -78,14 +78,14 @@ shopApp.controller("shopDetailCtrl", function(
     // console.log(filterPromotion);
     // console.log(filterEmployee); 
     // console.log(filterScore);
-    console.log(filterRegion);
+    // console.log(filterRegion);
     // console.log(user);
     
     $scope.promotions      = filterPromotion;
     // $scope.shop_promotions = filterShopPromotion.map(
     // 	function(p){return p.pid});
     $scope.charges         = filterCharge.concat([{id:-1, name:"重置充值方案"}]);
-    $scope.scores          = filterScore;    
+    $scope.scores          = filterScore.filter(function(s){return s.type_id===0});    
     $scope.employees       = filterEmployee;
     $scope.regions         = filterRegion.concat([{id:-1, name:"===请选择区域==="}]);
     // $scope.repertories = filterRepo;

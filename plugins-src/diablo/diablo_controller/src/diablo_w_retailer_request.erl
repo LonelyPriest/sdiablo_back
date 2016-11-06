@@ -200,6 +200,55 @@ action(Session, Req, {"filter_charge_detail"}, Payload) ->
 		  charge_detail, Match, Merchant, Conditions, CurrentPage, ItemsPerPage)
        end, Req, Payload);
 
+
+action(Session, Req, {"filter_ticket_detail"}, Payload) ->
+    ?DEBUG("filter_ticket_detail with session ~p, paylaod~n~p", [Session, Payload]), 
+    Merchant  = ?session:get(merchant, Session),
+
+    ?pagination:pagination(
+       fun(Match, Conditions) ->
+	       ?w_retailer:filter(
+		  total_ticket_detail, ?to_a(Match), Merchant, Conditions)
+       end,
+       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
+	       ?w_retailer:filter(
+		  ticket_detail, Match, Merchant, Conditions, CurrentPage, ItemsPerPage)
+       end, Req, Payload);
+
+
+action(Session, Req, {"effect_w_retailer_ticket"}, Payload) ->
+    ?DEBUG("effect_ticket with session ~p, payload ~p", [Session, Payload]), 
+    Merchant = ?session:get(merchant, Session), 
+    TicketId = ?v(<<"tid">>, Payload),
+
+    case ?w_retailer:ticket(effect, Merchant, TicketId) of
+	{ok, TicketId} ->
+	    ?utils:respond(200, Req, ?succ(effect_ticket, TicketId));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"consume_w_retailer_ticket"}, Payload) ->
+    ?DEBUG("consume_ticket with session ~p, payload ~p", [Session, Payload]), 
+    Merchant = ?session:get(merchant, Session), 
+    TicketId = ?v(<<"tid">>, Payload),
+    Comment = ?v(<<"comment">>, Payload, []),
+
+    {ok, Scores}=?w_user_profile:get(score, Merchant),
+    Score2Money =
+	case lists:filter(fun({S})-> ?v(<<"type_id">>, S) =:= 1 end, Scores) of
+	    [] -> [];
+	    [{_Score2Money}] -> _Score2Money
+	end, 
+    ?DEBUG("score2money ~p, ", [Score2Money]),
+    
+    case ?w_retailer:ticket(consume, Merchant, {TicketId, Comment, Score2Money}) of
+	{ok, TicketId} ->
+	    ?utils:respond(200, Req, ?succ(consume_ticket, TicketId));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
 %% 
 %% charge
 %%
@@ -225,8 +274,7 @@ sidebar(Session) ->
 	case ?right_auth:authen(?new_w_retailer, Session) of
 	    {ok, ?new_w_retailer} ->
 		[{"wretailer_new", "新增会员", "glyphicon glyphicon-plus"}];
-	    _ ->
-		[]
+	    _ -> []
 	end,
 
     S3 = [{"wretailer_charge_detail", "充值记录", "glyphicon glyphicon-bookmark"}],
@@ -239,8 +287,14 @@ sidebar(Session) ->
 	   {"score_detail", "积分方案", "icon-large icon-lock"}]
 	
 	 }],
+
+    Ticket = case ?right_auth:authen(?filter_ticket_detail, Session) of
+		 {ok, ?filter_ticket_detail} ->
+		     [{"wretailer_ticket_detail", "电子卷", "glyphicon glyphicon-yen"}];
+		 _ -> []
+	     end,
     
-    L1 = ?menu:sidebar(level_1_menu, S2 ++ S1 ++ S3),
+    L1 = ?menu:sidebar(level_1_menu, S2 ++ S1 ++ S3 ++ Ticket),
     L2 = ?menu:sidebar(level_2_menu, Recharge),
 
     L1 ++ L2.

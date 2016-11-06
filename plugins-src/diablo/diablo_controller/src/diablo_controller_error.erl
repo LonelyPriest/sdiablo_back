@@ -178,8 +178,10 @@ success(delete_recharge, Charge) ->
     {0, "Success to delete recharge of charge "++?to_s(Charge)++"."};
 success(update_recharge, Charge) ->
     {0, "Success to update recharge of charge "++?to_s(Charge)++"."};
-
-
+success(effect_ticket, TicketId) ->
+    {0, "Success to effect ticket: "++?to_s(TicketId)++"."};
+success(consume_ticket, TicketId) ->
+    {0, "Success to consume ticket: "++?to_s(TicketId)++"."}; 
 
 %% wsale
 success(new_w_sale, RSn) ->
@@ -378,6 +380,14 @@ error(retailer_charge_exist, Charge) ->
     {2103, "retailer of charge promotion " ++ ?to_s(Charge) ++ " does exist."};
 error(retailer_score_exist, Score) ->
     {2104, "retailer of score promotion " ++ ?to_s(Score) ++ " does exist."};
+error(ticket_not_exist, TicketId)->
+    {2105, "tickiet " ++ ?to_s(TicketId) ++ " does exist."};
+error(ticket_has_been_effect, TicketId) ->
+    {2106, "tickiet " ++ ?to_s(TicketId) ++ " has been effected."};
+error(ticket_has_been_consume, TicketId) ->
+    {2107, "tickiet " ++ ?to_s(TicketId) ++ " has been consumed."};
+error(retailer_score2money_exist, Score) ->
+    {2108, "retailer of score promotion " ++ ?to_s(Score) ++ " does exist."};
 
 
 %% wprint
