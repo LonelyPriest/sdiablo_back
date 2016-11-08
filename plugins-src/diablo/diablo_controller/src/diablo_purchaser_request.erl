@@ -139,43 +139,86 @@ action(Session, Req, {"filter_w_inventory_new"}, Payload) ->
 
     Merchant = ?session:get(merchant, Session),
 
+    %% case
+    %% 	case ?utils:v(style_number, string, ?v(<<"style_number">>, Fields))
+    %% 	    ++ ?utils:v(brand, integer, ?v(<<"brand">>, Fields)) of
+    %% 	    [] -> {ok, []}; 
+    %% 	    _ ->
+    %% 		?w_inventory:purchaser_inventory(get_inventory_new_rsn, Merchant, Fields)
+    %% 	end
+    %% of
+    %% 	{ok, RSNs} ->
+    %% 	    NewConditions =
+    %% 		[{<<"fields">>, 
+    %% 		    {struct, lists:keydelete(<<"style_number">>, 1,
+    %% 				lists:keydelete(<<"brand">>, 1, Fields))
+    %% 		     ++ case RSNs of
+    %% 			    [] -> []; 
+    %% 			    _ -> [{<<"rsn">>, lists:foldr(
+    %% 					fun({RSN}, Acc) ->
+    %% 						[?v(<<"rsn">>, RSN)|Acc]
+    %% 					end, [], RSNs)}]
+    %% 			end
+    %% 		    }
+    %% 		 }] ++ lists:keydelete(<<"fields">>, 1, Payload),
 
-    case
+    %% 	    ?DEBUG("new conditions ~p", [NewConditions]),
+
+    %% 	    ?pagination:pagination(
+    %% 	       fun(Match, Conditions) ->
+    %% 		       ?w_inventory:filter(
+    %% 			  total_news, ?to_a(Match), Merchant, Conditions)
+    %% 	       end,
+    %% 	       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
+    %% 		       ?w_inventory:filter(
+    %% 			  news, Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
+    %% 	       end, Req, NewConditions);
+    %% 	{error, Error} ->
+    %% 	    ?utils:respond(200, Req, Error)
+    %% end;
+
+    NewFields =
 	case ?utils:v(style_number, string, ?v(<<"style_number">>, Fields))
 	    ++ ?utils:v(brand, integer, ?v(<<"brand">>, Fields)) of
-	    [] -> {ok, []}; 
+	    [] -> {ok,
+		   [{<<"fields">>, {struct, Fields}}]
+		   ++ lists:keydelete(<<"fields">>, 1, Payload)}; 
 	    _ ->
-		?w_inventory:purchaser_inventory(get_inventory_new_rsn, Merchant, Fields)
-	end
-    of
-	{ok, RSNs} ->
-	    NewConditions =
-		[{<<"fields">>, 
-		    {struct, lists:keydelete(<<"style_number">>, 1,
-				lists:keydelete(<<"brand">>, 1, Fields))
-		     ++ case RSNs of
-			    [] -> []; 
-			    _ -> [{<<"rsn">>, lists:foldr(
-					fun({RSN}, Acc) ->
-						[?v(<<"rsn">>, RSN)|Acc]
-					end, [], RSNs)}]
-			end
-		    }
-		 }] ++ lists:keydelete(<<"fields">>, 1, Payload),
+		case ?w_inventory:purchaser_inventory(get_inventory_new_rsn, Merchant, Fields) of
+		    {ok, []} -> {ok, []};
+		    {ok, RSNs} ->
+			{ok,
+			 [{<<"fields">>, 
+			   {struct, lists:keydelete(<<"style_number">>, 1,
+						    lists:keydelete(<<"brand">>, 1, Fields))
+			    ++ [{<<"rsn">>, lists:foldr(
+					      fun({RSN}, Acc) ->
+						      [?v(<<"rsn">>, RSN)|Acc]
+					      end, [], RSNs)}]
+			   }
+			  }] ++ lists:keydelete(<<"fields">>, 1, Payload)};
+		    Error -> Error
+		end
+	end,
 
-	    ?DEBUG("new conditions ~p", [NewConditions]),
+    ?DEBUG("NewFields ~p", [NewFields]),
 
-	    ?pagination:pagination(
-	       fun(Match, Conditions) ->
-		       ?w_inventory:filter(
-			  total_news, ?to_a(Match), Merchant, Conditions)
-	       end,
-	       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
-		       ?w_inventory:filter(
-			  news, Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
-	       end, Req, NewConditions);
-	{error, Error} ->
-	    ?utils:respond(200, Req, Error)
+    case NewFields of
+	{ok, []} ->
+	    ?utils:respond(
+	       200, object, Req, {[{<<"ecode">>, 0}, {<<"total">>, 0}, {<<"data">>, []}]});
+	{ok, NewConditions} ->
+	    	    ?pagination:pagination(
+	    	       fun(Match, Conditions) ->
+	    		       ?w_inventory:filter(
+	    			  total_news, ?to_a(Match), Merchant, Conditions)
+	    	       end,
+	    	       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
+	    		       ?w_inventory:filter(
+	    			  news, Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
+	    	       end, Req, NewConditions);
+	{error, ErrorS} ->
+	    ?utils:respond(200, Req, ErrorS)
     end;
 
 

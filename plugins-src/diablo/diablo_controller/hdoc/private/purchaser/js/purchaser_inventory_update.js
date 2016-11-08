@@ -154,8 +154,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	    $scope.select.total += stockUtils.to_integer(one.total);
 	    $scope.select.should_pay += stockUtils.calc_row(
 	    	one.org_price, 100, one.total - stockUtils.to_integer(one.over));
-	    $scope.select.acc_tag_price += one.tag_price * one.discount;
-	    
+	    $scope.select.acc_tag_price += one.tag_price * one.total; 
 	};
 	
 	$scope.select.should_pay = stockUtils.to_decimal($scope.select.should_pay);
@@ -345,8 +344,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 		tag.sizes = wgoodService.get_size_group(tag.s_group, filterSizeGroup); 
 	    }
 	    $scope.inventories.push(tag);
-	    $scope.select.acc_tag_price
-		+= stockUtils.calc_row(tag.tag_price, tag.discount, tag.total);
+	    $scope.select.acc_tag_price += tag.tag_price * tag.total;
 	    
 	    order_length--;
 	});

@@ -104,10 +104,14 @@ firmApp.controller("firmDetailCtrl", function(
 	// console.log(search); 
 	$scope.search = search;
     	return $scope.firms.filter(function(f){
-	    return search === f.name
-		|| search === f.mobile 
-		|| search === f.address
-		|| search === f.code
+	    // console.log(f);
+	    return -1 !== f.name.indexOf(search)
+		||  -1 !== f.address.indexOf(search)
+		|| -1 !== f.code.toString().indexOf(search);
+	    // search === f.name
+	    // // || search === f.mobile 
+	    // 	|| search === f.address
+	    // 	|| search === f.code
 	}) 
     };
 
@@ -142,13 +146,17 @@ firmApp.controller("firmDetailCtrl", function(
     }
 
     $scope.on_select_firm = function(item, model, label){
-	var filters = $scope.do_search(model.name); 
+	var filters = $scope.do_search(item.name); 
 	$scope.total_balance = 0;
 	angular.forEach(filters, function(f){$scope.total_balance += f.balance});
 	
 	$scope.total_balance = diablo_rdight($scope.total_balance, 2); 
-	reset_pagination(filters, model.name);
-    }
+	reset_pagination(filters, item.name);
+    };
+
+    $scope.match_firm = function(match){
+	$scope.on_select_firm({name:match});
+    };
     
     var in_prompt = function(p, prompts){
 	for (var i=0, l=prompts.length; i<l; i++){
@@ -185,9 +193,9 @@ firmApp.controller("firmDetailCtrl", function(
 		if (!in_prompt(f.address, $scope.prompts)){
 		    $scope.prompts.push({name: f.address, py:diablo_pinyin(f.address)}); 
 		}
-		if (!in_prompt(f.mobile, $scope.prompts)){
-		    $scope.prompts.push({name: f.mobile, py:diablo_pinyin(f.mobile)}); 
-		}
+		// if (!in_prompt(f.mobile, $scope.prompts)){
+		//     $scope.prompts.push({name: f.mobile, py:diablo_pinyin(f.mobile)}); 
+		// }
 
 		if (!in_prompt(f.code, $scope.prompts)){
 		    $scope.prompts.push({name: f.code, py:f.code}); 

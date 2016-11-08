@@ -96,6 +96,7 @@
 		    <th x-ng-if="stock_right.show_orgprice">进/退价</th>
 		    <th x-ng-if="stock_right.show_orgprice">折扣率</th>
 		    <th class="info">数量</th>
+		    <th class="info">溢出</th>
 		    <th x-ng-if="stock_right.show_orgprice">小计</th>
 		    <!-- <th x-ng-if="stock_right.show_orgprice">折扣率</th> -->
 		    
@@ -142,9 +143,11 @@
 		      <span x-ng-switch-when=0>{{inv.amount}}</span>
 		      <span class="fg-red" x-ng-switch-when=1>{{inv.amount}}</span>
 		    </td>
+
+		    <td class="{{css(inv.state, inv.type)}}">{{inv.over}}</td>
 		    
 		    <td x-ng-if="stock_right.show_orgprice"  class="{{css(inv.state, inv.type)}}"> 
-		      {{calc_row(inv.org_price, 100, inv.amount)}}
+		      {{calc_row(inv.org_price, 100, inv.amount - inv.over)}}
 		    </td>
 		    
 		    <td class="{{css(inv.state, inv.type)}}">{{inv.entry_date}}</td>
@@ -172,6 +175,7 @@
 		  <tr x-ng-if="total_items!==0" class="bg-white">
 		    <td colspan="{{calc_colspan()}}"></td>
 		    <td class="danger">{{total_amounts}}</td>
+		    <td>{{total_over}}</td>
 		    <td x-ng-if="stock_right.show_orgprice">{{total_balance}}</td>
 		    <td x-ng-if="!stock_right.show_orgprice"></td>
 		    <td colspan="2"></td>

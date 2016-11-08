@@ -890,6 +890,7 @@ create table w_sale_detail(
     season         TINYINT default -1, -- 0:spring, 1:summer, 2:autumn, 3:winter
     firm           INTEGER default -1,
     year           YEAR(4),
+    in_datetime    DATETIME default 0,
     
     total          INTEGER default 0,
     promotion      INTEGER not null default -1, -- promotion

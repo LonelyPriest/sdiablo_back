@@ -39,16 +39,21 @@
 
 	    <div class="col-xs-12 col-ms-12 col-md-12">
 	      <div class="input-group">
-		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-search fg-red"></i>
-		</span>
+		<!-- <span class="input-group-addon"> -->
+		<!--   <i class="glyphicon glyphicon-search fg-red"></i> -->
+		<!-- </span> -->
 		<input
 		   class="form-control"
-		   placeholder="支持名称/手机/地址查询"
-		   typeahead-editable="false"
+		   placeholder="支持名称/地址查询"
+		   ng-edit
 		   typeahead-on-select="on_select_firm($item, $model, $label)"
 		   uib-typeahead="s as s.name for s in prompts|filter:$viewValue|limitTo:20"
 		   x-ng-model="search"/>
+		<span class="input-group-btn">
+		  <button class="btn green" x-ng-click="search && match_firm(search)">
+		    <i class="glyphicon glyphicon-search"></i>
+		  </button>
+		</span>
 	      </div>
 	    </div>
 	    

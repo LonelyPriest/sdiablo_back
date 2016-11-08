@@ -89,7 +89,8 @@
 		    <th>折扣</th> 
 		    <th>进/退价</th>
 		    <th>折扣率</th>
-		    <th class="info">数量</th> 
+		    <th class="info">数量</th>
+		    <th class="info">溢出</th> 
 		    <th>小计</th>
 		    
 		    <th>日期</th> 
@@ -126,8 +127,10 @@
 		      <span class="fg-red" x-ng-switch-when=1>{{inv.amount}} </span>
 		    </td>
 
+		    <td>{{inv.over}}</td>
+
 		    <td class="vert-align"> 
-		      {{calc_row(inv.org_price, 100, inv.amount)}}
+		      {{calc_row(inv.org_price, 100, inv.amount - inv.over)}}
 		    </td>
 
 		    <!-- <td class="vert-align fg-magenta">  -->
@@ -151,8 +154,9 @@
 		    <td x-ng-if="!hidden.base" colspan="14"></td>
 		    <td x-ng-if="hidden.base" colspan="11"></td>
 		    <td class="danger">{{total_amounts}}</td>
+		    <td>{{total_over}}</td>
 		    <td class="info">{{total_balance}}</td>
-		    <td colspan="1"></td>
+		    <td colspan="2"></td>
 		  </tr>
 		</tbody> 
 		

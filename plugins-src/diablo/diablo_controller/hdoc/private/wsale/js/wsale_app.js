@@ -689,6 +689,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
     } 
 
     $scope.copy_select = function(add, src){
+	// console.log(src);
 	add.id           = src.id;
 	add.style_number = src.style_number;
 	
@@ -716,7 +717,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	
 	add.path         = src.path; 
 	add.s_group      = src.s_group;
-	add.free         = src.free; 
+	add.free         = src.free;
+	add.entry        = src.entry_date;
 	return add; 
     };
 
@@ -1106,6 +1108,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 		sex         : add.sex,
 		season      : add.season,
 		year        : add.year,
+		entry       : add.entry,
 		sell_total  : parseInt(add.sell),
 
 		promotion   : add.pid,

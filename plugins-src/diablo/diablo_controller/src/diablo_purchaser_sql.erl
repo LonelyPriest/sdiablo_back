@@ -625,7 +625,7 @@ inventory(new_rsn_groups, new, Merchant, Conditions, PageFun) ->
 	", b.brand as brand_id"
 	", b.type as type_id"
 	", b.sex as sex_id"
-	", b.season, b.amount"
+	", b.season, b.amount, b.over"
 	", b.firm as firm_id"
 	", b.org_price, b.ediscount"
 	", b.tag_price, b.discount"
@@ -845,7 +845,7 @@ inventory_match(all_inventory, Merchant, Shop, Conditions) ->
 	", a.promotion as pid"
 	", a.score as sid"
 	", a.org_price, a.tag_price, a.ediscount, a.discount"
-	", a.path, a.alarm_day"
+	", a.path, a.alarm_day, a.entry_date"
 
 	", b.name as brand" 
 	", c.name as type"
@@ -872,7 +872,7 @@ inventory_match(Merchant, StyleNumber, Shop, Firm) ->
     "select a.id, a.style_number, a.brand as brand_id, a.type as type_id"
 	", a.sex, a.season, a.firm as firm_id, a.s_group, a.free, a.year"
 	", a.promotion as pid, a.score as sid, a.org_price, a.tag_price"
-	", a.ediscount, a.discount, a.path, a.alarm_day"
+	", a.ediscount, a.discount, a.path, a.alarm_day, a.entry_date"
 	
 	", b.name as brand" 
 	", c.name as type"
@@ -899,7 +899,8 @@ inventory_match(Merchant, StyleNumber, Shop, Firm) ->
 inventory_match(all_reject, Merchant, Shop, Firm, StartTime) ->
     "select a.id, a.style_number, a.brand as brand_id, a.type as type_id"
 	", a.sex, a.season, a.firm as firm_id, a.s_group, a.free, a.year"
-	", a.org_price, a.tag_price, a.ediscount, a.discount, a.path, a.alarm_day"
+	", a.org_price, a.tag_price, a.ediscount, a.discount"
+	", a.path, a.alarm_day, a.entry_date"
 
 	", b.name as brand" 
 	", c.name as type"

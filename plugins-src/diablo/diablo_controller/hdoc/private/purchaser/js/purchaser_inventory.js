@@ -307,6 +307,8 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	add.sizes        = src.size.split(",");
 	add.colors       = src.color.split(",");
 	add.over         = 0;
+	// exist stock in shop
+	add.stock        = 0;
 	
 	if ( add.free === 0 ){
 	    add.free_color_size = true;
@@ -383,6 +385,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 			    add.tag_price = result.data.tag_price;
 			    add.discount  = result.data.discount;
 			    add.ediscount = result.data.ediscount;
+			    add.stock = result.data.amount;
 			}
 			// else {
 			//     add.tag_price = 0;
@@ -770,6 +773,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 			       discount:     inv.discount,
 			       over:         inv.over,
 			       path:         inv.path,
+			       stock:        inv.stock,
 			       right:        $scope.stock_right,
 			       get_amount:    get_amount,
 			       valid_amount:  valid_amount,
@@ -814,10 +818,12 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 			inv.tag_price = result.data.tag_price;
 			inv.discount  = result.data.discount;
 			inv.ediscount = result.data.ediscount;
-		    } else {
-			inv.tag_price = 0;
-			inv.discount  = 0;
+			inv.stock = result.data.amount;
 		    }
+		    // else {
+		    // 	inv.tag_price = 0;
+		    // 	inv.discount  = 0;
+		    // }
 		    
 		}
 		add_stock();
@@ -941,6 +947,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		       over:       inv.over,
 		       colors:     inv.colors_info,
 		       path:       inv.path,
+		       stock:      inv.stock,
 		       right:      $scope.stock_right,
 		       get_amount: get_amount,
 		       valid_amount: valid_amount,

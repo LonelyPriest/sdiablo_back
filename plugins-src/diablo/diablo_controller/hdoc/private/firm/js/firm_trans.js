@@ -377,6 +377,7 @@ firmApp.controller("firmTransRsnDetailCtrl", function(
 			$scope.total_items = result.total;
 			$scope.total_amounts = result.t_amount;
 			$scope.total_balance = result.t_balance;
+			$scope.total_over = result.t_over;
 		    }
 		    
 		    $scope.inventories = angular.copy(result.data);

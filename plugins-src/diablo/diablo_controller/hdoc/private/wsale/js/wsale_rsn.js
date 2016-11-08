@@ -43,7 +43,7 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
     };
     
     $scope.calc_colspan = function(){
-	var column = 16;
+	var column = 17;
 	if ($scope.hidden.base) column -= 3;
 	
 	return column;

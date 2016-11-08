@@ -325,6 +325,7 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
 	    key, {total_items:$scope.total_items,
 		  total_amounts:$scope.total_amounts,
 		  total_balance:$scope.total_balance,
+		  total_over: $scope.total_over,
 		  t:now})};
 
     $scope.do_search = function(page){
@@ -341,6 +342,7 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
 	    $scope.total_items       = stastic.total_items;
 	    $scope.total_amounts     = stastic.total_amounts;
 	    $scope.total_balance     = stastic.total_balance;
+	    $scope.total_over        = stastic.total_over;
 	}
 	
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
@@ -351,6 +353,7 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
 		    if (page === 1){
 			$scope.total_items = result.total;
 			$scope.total_amounts = result.t_amount;
+			$scope.total_over = result.t_over;
 			$scope.total_balance = result.t_balance;
 			$scope.cache_stastic(stastic_key);
 			// $location.path("/inventory_rsn_detail", false);

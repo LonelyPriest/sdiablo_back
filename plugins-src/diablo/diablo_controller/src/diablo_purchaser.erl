@@ -1759,7 +1759,8 @@ handle_call({get_tagprice, Merchant, Shop, StyleNumber, Brand}, _From, State) ->
 	   [Merchant, Shop, StyleNumber, Brand]),
 
     RealyShop = ?w_good_sql:realy_shop(true, Merchant, Shop),
-    Sql = "select style_number, brand, org_price, tag_price, discount, ediscount from w_inventory"
+    Sql = "select style_number, brand, amount, org_price, tag_price, discount, ediscount"
+	" from w_inventory"
 	" where style_number=" ++ "\'" ++ ?to_s(StyleNumber) ++ "\'"
 	" and brand=" ++ ?to_s(Brand)
 	++ " and shop=" ++ ?to_s(RealyShop) 
@@ -1916,7 +1917,8 @@ handle_call({total_new_rsn_groups, Merchant, Conditions}, _From, State) ->
     
     CountSql = "select count(*) as total"
     	", SUM(b.amount) as t_amount"
-	", SUM(b.org_price * b.amount) as t_balance" 
+	", SUM(b.over) as t_over"
+	", SUM(b.org_price * (b.amount - b.over)) as t_balance" 
     	" from w_inventory_new_detail b, w_inventory_new a" 
     	" where "
 	++ ?sql_utils:condition(proplists_suffix, CorrectCutDConditions)

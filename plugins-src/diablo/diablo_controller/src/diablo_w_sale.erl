@@ -146,7 +146,8 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 	    CurrentScore = retailer(score, Account),
 
 	    case CurrentBalance < Withdraw of
-		true -> {reply, {error, ?err(wsale_not_enought_balance, ?v(<<"id">>, Account))}, State};
+		true ->
+		    {reply, {error, ?err(wsale_not_enought_balance, ?v(<<"id">>, Account))}, State};
 		false -> 
 		    SaleSn = lists:concat(
 			       ["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-",
@@ -1355,6 +1356,7 @@ wsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
     Firm        = ?v(<<"firm">>, Inventory),
     Season      = ?v(<<"season">>, Inventory),
     Year        = ?v(<<"year">>, Inventory),
+    InDatetime  = ?v(<<"entry">>, Inventory),
     SizeGroup   = ?v(<<"s_group">>, Inventory),
     Total       = case Action of
 		      new    -> ?v(<<"sell_total">>, Inventory);
@@ -1404,7 +1406,7 @@ wsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
 		   end,
 	     "insert into w_sale_detail("
 		 "rsn, style_number, brand, merchant, shop, type, s_group, free"
-		 ", season, firm, year, total, promotion, score"
+		 ", season, firm, year, in_datetime, total, promotion, score"
 		 ", org_price, ediscount, tag_price, fdiscount, rdiscount, fprice, rprice"
 		 ", path, comment, entry_date) values("
 		 ++ "\"" ++ ?to_s(RSN) ++ "\","
@@ -1417,7 +1419,8 @@ wsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
 		 ++ ?to_s(Free) ++ "," 
 		 ++ ?to_s(Season) ++ ","
 		 ++ ?to_s(Firm) ++ ","
-		 ++ ?to_s(Year) ++ "," 
+		 ++ ?to_s(Year) ++ ","
+		 ++ "\'" ++ ?to_s(InDatetime) ++ "\'," 
 		 ++ ?to_s(Total) ++ ","
 		 ++ ?to_s(Promotion) ++ ","
 		 ++ ?to_s(Score) ++ ","
@@ -1682,7 +1685,7 @@ sale_new(rsn_groups, Merchant, Conditions, PageFun) ->
 	", b.year, b.s_group, b.free, b.total, b.promotion as pid, b.score as sid"
 	", b.org_price, b.ediscount, b.tag_price, b.fdiscount, b.rdiscount"
 	", b.fprice, b.rprice"
-	", b.path, b.comment, b.entry_date"
+	", b.in_datetime, b.path, b.comment, b.entry_date"
 
 	", a.shop as shop_id"
 	", a.retailer as retailer_id"

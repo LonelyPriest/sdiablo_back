@@ -265,6 +265,7 @@
 			<!-- <th class="text-center">性别</th> -->
 			<th class="text-center">年份</th>
 			<th class="text-center">季节</th>
+			<th x-ng-if="base_settings.t_trace" class="text-center">库存</th>
 
 			<th class="text-center">吊牌价</th>
 			<th class="text-center">折扣</th>
@@ -343,7 +344,8 @@
 			<!-- <td class="vert-align">{{sexs[inv.sex]}}</td> -->
 			<!-- <td>{{inv.firm}}</td> -->
 			<td class="vert-align">{{inv.year}}</td>
-			<td class="vert-align">{{seasons[inv.season]}}</td> 
+			<td class="vert-align">{{seasons[inv.season]}}</td>
+			<td x-ng-if="base_settings.t_trace" class="vert-align">{{inv.stock}}</td>
 			
 			<td class="col-md-1 vert-align">
 			  <span x-ng-if="!inv.$new && !inv.update_directory">
@@ -532,8 +534,10 @@
 
 		      <tr>
 		      <tr x-ng-if="inventories.length>1" class="text-center">
-			<td x-ng-if="stock_right.show_orgprice" colspan="10"></td>
-			<td x-ng-if="!stock_right.show_orgprice" colspan="8"></td>
+			<td colspan="6"></td>
+			<td x-ng-bind=inv.stock></td>
+			<td x-ng-if="stock_right.show_orgprice" colspan="4"></td>
+			<td x-ng-if="!stock_right.show_orgprice" colspan="2"></td>
 			<td class="vert-align fg-red">{{select.total}}</td>
 			<td x-ng-if="stock_right.show_orgprice"
 			    class="vert-align fg-red">{{select.should_pay}}</td>
@@ -1009,7 +1013,14 @@
     <div class="diablo-form-group"> 
       <div class="input-group">
 	<span class="input-group-addon">
-	  <i class="glyphicon glyphicon-yen fg-red"></i>溢出
+	  <i class="glyphicon glyphicon-plane fg-red"></i>库存
+	</span>
+	<input class="form-control text-center"
+	       readonly
+	       x-ng-model="params.stock"/>
+	
+	<span class="input-group-addon">
+	  <i class="glyphicon glyphicon-plane fg-red"></i>溢出
 	</span>
 	<form name="over">
 	  <div ng-class="{'has-error':over.$invalid
