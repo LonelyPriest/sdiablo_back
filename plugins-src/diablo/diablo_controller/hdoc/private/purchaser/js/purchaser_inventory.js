@@ -267,7 +267,9 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    $scope.qtime_start($scope.select.shop.id),
 	    stockUtils.match_firm($scope.select.firm)
 	).then(function(goods){
-	    $scope.all_w_goods = goods.map(function(g){
+	    $scope.all_w_goods = goods.sort(function(g1, g2){
+		return g1.style_number.length - g2.style_number.length;
+	    }).map(function(g){
 		var p = stockUtils.prompt_name(g.style_number, g.brand, g.type);
 		return angular.extend(g, {name:p.name, prompt:p.prompt}); 
 	    });

@@ -294,10 +294,14 @@ firmApp.controller("firmTransRsnDetailCtrl", function(
     /*
      * hidden
      */
-    $scope.hidden      = {base:true};
+    $scope.hidden      = {base:true, over:true};
     $scope.toggle_base = function(){
 	$scope.hidden.base = !$scope.hidden.base
     };
+
+    $scope.toggle_over = function(){
+	$scope.hidden.over = !$scope.hidden.over;
+    }
     
     var firm_id = parseInt($routeParams.firm);
     $scope.firm = diablo_get_object(firm_id, filterFirm);
@@ -378,6 +382,8 @@ firmApp.controller("firmTransRsnDetailCtrl", function(
 			$scope.total_amounts = result.t_amount;
 			$scope.total_balance = result.t_balance;
 			$scope.total_over = result.t_over;
+
+			$scope.total_amounts -= $scope.total_over;
 		    }
 		    
 		    $scope.inventories = angular.copy(result.data);

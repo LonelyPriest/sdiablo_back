@@ -827,8 +827,24 @@ inventory(new_rsn_group_with_pagination, Merchant, Conditions, CurrentPage, Item
 %%
 inventory_match(Merchant, StyleNumber, Shop) ->
     P = prompt_num(Merchant),
+    First = string:substr(?to_s(StyleNumber), 1, 1),
+    Last = string:substr(?to_s(StyleNumber), string:len(?to_s(StyleNumber))),
+    Match = string:strip(?to_s(StyleNumber), both, $/),
+    
     "select style_number from w_inventory"
-	++ " where style_number like \'%" ++ ?to_s(StyleNumber) ++ "%\'"
+	%% ++ " where style_number like \'%" ++ ?to_s(StyleNumber) ++ "%\'"
+	%% ++ " where style_number like \'%" ++ ?to_s(StyleNumber) ++ "\'"
+	++ 
+	case {First, Match, Last} of
+	    {"/", Match, "/"} ->
+		" where style_number like \'%" ++ Match ++ "%\'";
+	    {"/", Match, _} ->
+		" where style_number like \'" ++ Match ++ "%\'";
+	    {_, Match, "/"} ->
+		" where style_number like \'%" ++ Match ++ "\'";
+	    {_, Match, _}->
+		" where style_number like \'" ++ Match ++ "\'"
+	end
 	++ ?sql_utils:condition(proplists, [{<<"shop">>, Shop}])
 	++ " and merchant=" ++ ?to_s(Merchant)
 	++ " and deleted=" ++ ?to_s(?NO)
@@ -1666,6 +1682,8 @@ filter_condition(inventory_new, [{<<"year">>, _} = OT|T], Acc1, Acc2) ->
     filter_condition(inventory_new, T, [OT|Acc1], Acc2);
 filter_condition(inventory_new, [{<<"season">>, _} = OT|T], Acc1, Acc2) ->
     filter_condition(inventory_new, T, [OT|Acc1], Acc2);
+filter_condition(inventory_new, [{<<"region">>, _}|T], Acc1, Acc2) ->
+    filter_condition(inventory_new, T, Acc1, Acc2);
 
 
 filter_condition(inventory_new, [{<<"purchaser_type">>, OT}|T], Acc1, Acc2) ->

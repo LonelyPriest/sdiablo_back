@@ -22,8 +22,9 @@
 	    <div class="has-feedback">
 	      <input type="text" class="form-control" placeholder="请输入款号"
 		     x-ng-model="f.value"
+		     x-ng-edit
 		     typeahead-wait-ms="300"
-		     typeahead-loading="loading"
+		     typeahead-loading="loading" 
 		     typeahead-on-select="prompt.on_select_style_number($item, $model, $label)"
 	  	     uib-typeahead="s for s in prompt.style_number($viewValue)|limitTo:20"
 		     x-ng-enter="f.value && ok()" />

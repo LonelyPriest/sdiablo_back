@@ -611,24 +611,32 @@ wsaleApp.controller("wsaleNewCtrl", function(
     console.log($scope.setting.q_backend);
     
     $scope.match_all_w_inventory = function(){
+	// var as = ["a", "abcd", "abc", "df"].sort(function(a1, a2){
+	//     return a1.length - a2.length;
+	// });
+
+	// console.log(as);
+	
 	if (!$scope.setting.q_backend){
 	    diabloNormalFilter.match_all_w_inventory(
 		{shop:$scope.select.shop.id,
 		 start_time:$scope.qtime_start($scope.select.shop.id)}
 	    ).$promise.then(function(invs){
 		$scope.all_w_inventory = 
-		    invs.map(function(inv){
+		    invs.sort(function(inv1, inv2){
+			return inv1.style_number.length - inv2.style_number.length;
+		    }).map(function(inv){
 			var p = wsaleUtils.prompt_name(
 			    inv.style_number, inv.brand, inv.type); 
 			return angular.extend(
                             inv, {name:p.name, prompt:p.prompt}); 
 		    });
-		// console.log($scope.all_w_inventory);
 	    });
 	};
     }
 
     $scope.match_all_w_inventory();
+    
     // init
     $scope.inventories = [];
     $scope.inventories.push({$edit:false, $new:true});

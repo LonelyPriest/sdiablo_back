@@ -7082,6 +7082,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position'])
               ' but got "' + input + '".');
         }
 
+	  // console.log(match);
         return {
           itemName: match[3],
           source: $parse(match[4]),
@@ -7150,7 +7151,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position'])
 
     //expressions used by typeahead
     var parserResult = typeaheadParser.parse(attrs.uibTypeahead);
-
+    
     var hasFocus;
 
     //Used to avoid bug in iOS webview where iOS keyboard does not fire

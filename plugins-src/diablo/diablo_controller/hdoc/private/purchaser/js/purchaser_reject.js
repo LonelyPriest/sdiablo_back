@@ -209,9 +209,10 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	    stockUtils.invalid_firm($scope.select.firm)
 	).then(function(invs){
 	    // console.log(invs);
-	    $scope.all_prompt_inventory = invs.map(function(inv){
-		var p = stockUtils.prompt_name(
-		    inv.style_number, inv.brand, inv.type);
+	    $scope.all_prompt_inventory = invs.sort(function(inv1, inv2){
+		return inv1.style_number.length - inv2.style_number.length;
+	    }).map(function(inv){
+		var p = stockUtils.prompt_name(inv.style_number, inv.brand, inv.type);
 		return angular.extend(inv, {name:p.name, prompt:p.prompt}); 
 	    });
 	});
