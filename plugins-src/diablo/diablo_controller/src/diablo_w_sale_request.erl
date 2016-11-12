@@ -76,6 +76,33 @@ action(Session, Req, {"get_w_sale_new", RSN}) ->
 	{ok, Details} = ?w_sale:sale(
 			   trans_detail, Merchant, {<<"rsn">>, ?to_b(RSN)}),
 	?DEBUG("details ~p", [Details]),
+
+	{ok, TicketScore} =
+	    case ?v(<<"tbatch">>, Sale) of
+		-1 -> {ok, 0};
+		TicketBatch ->
+		    {ok, Ticket} = ?w_retailer:get_ticket(by_batch, Merchant, {TicketBatch, 1}),
+		    case ?v(<<"sid">>, Ticket) of
+			-1 -> {ok, 0};
+			TicketSId ->
+			    {ok, Scores} = ?w_user_profile:get(score, Merchant),
+			    case lists:filter(
+				   fun({S})->
+					   ?v(<<"type_id">>, S) =:= 1
+					       andalso ?v(<<"id">>, S) =:= TicketSId end, Scores) of
+				[] -> throw({wsale_invalid_ticket_score, TicketBatch}) ;
+				[{Score2Money}] ->
+
+				    AccScore = ?v(<<"score">>, Score2Money), 
+				    Balance = ?v(<<"balance">>, Score2Money),
+				    TicketBalance = ?v(<<"balance">>, Ticket),
+				    case ?w_sale:direct(?v(<<"type">>, Sale)) of
+					wreject -> {ok, -TicketBalance div Balance * AccScore};
+					_ -> {ok, TicketBalance div Balance * AccScore}
+				    end
+			    end
+		    end
+	    end,
 	
 	%% sort by style_number and brand
 	%% ShopId = ?v(<<"shop_id">>, Sale),
@@ -108,7 +135,7 @@ action(Session, Req, {"get_w_sale_new", RSN}) ->
 	?utils:respond(
 	   200, object, Req,
 	   {[{<<"ecode">>, 0},
-	     {<<"sale">>, {Sale}},
+	     {<<"sale">>, {Sale ++ [{<<"ticket_score">>, TicketScore}]}},
 	     {<<"detail">>, Details}
 	     %% {<<"inv">>, Abstracts}
 	    ]}) 
@@ -226,69 +253,117 @@ action(Session, Req, {"new_w_sale"}, Payload) ->
     %% Shop = ?v(<<"shop">>, Base, -1),
     %% {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, Shop),
     
-    ImmediatelyPrint = ?v(<<"im_print">>, Print, ?NO),
-    PMode            = ?v(<<"p_mode">>, Print, ?PRINT_FRONTE),
-    Round            = ?v(<<"round">>, Base, 1),
-    ShouldPay        = ?v(<<"should_pay">>, Base),
-
-    %% check invs
-    case check_inventory(oncheck, Round, 0, ShouldPay, Invs) of
-        {ok, _} ->
-	    
-	    case ?w_sale:sale(new, Merchant, lists:reverse(Invs), Base) of 
-		{ok, RSN} ->
-		    case ImmediatelyPrint =:= ?YES andalso PMode =:= ?PRINT_BACKEND of
-			true ->
-			    SuccessRespone =
-				fun(PCode, PInfo) ->
-					?utils:respond(
-					   200, Req, ?succ(new_w_sale, RSN),
-					   [{<<"rsn">>, ?to_b(RSN)},
-					    {<<"pcode">>, PCode},
-					    {<<"pinfo">>, PInfo}])
-				end,
-
-			    NewInvs =
-				lists:foldr(
-				  fun({struct, Inv}, Acc) ->
-					  StyleNumber = ?v(<<"style_number">>, Inv),
-					  BrandId     = ?v(<<"brand">>, Inv),
-					  Total       = ?v(<<"sell_total">>, Inv),
-					  TagPrice    = ?v(<<"tag_price">>, Inv),
-					  RPrice      = ?v(<<"rprice">>, Inv),
-
-					  P = [{<<"style_number">>, StyleNumber},
-					       {<<"brand_id">>, BrandId},
-					       {<<"tag_price">>, TagPrice},
-					       {<<"rprice">>, RPrice},
-					       {<<"total">>, Total}
-					      ],
-
-					  [P|Acc] 
-				  end, [], Invs),
-			    print(RSN, Merchant, NewInvs, Base, Print, SuccessRespone);
-			false ->
-			    ?utils:respond(
-			       200, Req, ?succ(new_w_sale, RSN), [{<<"rsn">>, ?to_b(RSN)}])
-		    end,
-		    ?w_user_profile:update(retailer, Merchant); 
-		{error, Error} ->
-		    ?utils:respond(200, Req, Error)
+    %% ImmediatelyPrint = ?v(<<"im_print">>, Print, ?NO),
+    %% PMode            = ?v(<<"p_mode">>, Print, ?PRINT_FRONTE),
+    %% Round            = ?v(<<"round">>, Base, 1),
+    %% ShouldPay        = ?v(<<"should_pay">>, Base),
+    
+    TicketBatch      = ?v(<<"ticket_batch">>, Base),
+    TicketBalance    = ?v(<<"ticket">>, Base),
+    
+    case TicketBatch =/= undefined andalso TicketBalance =/= undefined of
+	true ->
+	    {ok, Ticket} = ?w_retailer:get_ticket(by_batch, Merchant, TicketBatch), 
+	    case Ticket of
+		[] ->
+		    ?utils:respond(200, Req, ?err(ticket_not_exist, TicketBatch));
+		_ ->
+		    TicketSId = ?v(<<"sid">>, Ticket),
+		    case TicketSId of
+			-1 ->
+			    start(new_sale, Req, Merchant, Invs, Base, Print);
+			_ ->
+			    {ok, Scores} = ?w_user_profile:get(score, Merchant), 
+			    case lists:filter(
+				   fun({S})->
+					   ?v(<<"type_id">>, S) =:= 1
+					       andalso ?v(<<"id">>, S) =:= TicketSId end, Scores) of
+				[] ->
+				    ?utils:respond(
+				       200, Req, ?err(wsale_invalid_ticket_score, TicketSId));
+				[{Score2Money}] ->
+				    case TicketBalance /= ?v(<<"balance">>, Ticket) of
+					true ->
+					    ?utils:respond(
+					       200,
+					       Req,
+					       ?err(wsale_invalid_ticket_balance, TicketBalance));
+					false ->
+					    AccScore = ?v(<<"score">>, Score2Money), 
+					    Balance = ?v(<<"balance">>, Score2Money),
+					    TicketScore =TicketBalance div Balance * AccScore,
+					    start(
+					      new_sale,
+					      Req,
+					      Merchant,
+					      Invs,
+					      Base ++ [{<<"ticket_score">>, TicketScore}],
+					      Print)
+				    end
+			    end
+		    end
 	    end;
-	{error, EInv} ->
-            StyleNumber = ?v(<<"style_number">>, EInv),
-	    ?utils:respond(
-               200,
-               Req,
-               ?err(wsale_invalid_inv, StyleNumber),
-               [{<<"style_number">>, StyleNumber},
-                {<<"order_id">>, ?v(<<"order_id">>, EInv)}]);
-	{error, Moneny, ShouldPay} ->
-            ?utils:respond(
-               200,
-               Req,
-               ?err(wsale_invalid_pay, Moneny))
+	false ->
+	    start(new_sale, Req, Merchant, Invs, Base, Print)
     end;
+	
+    %% check invs
+    %% case check_inventory(oncheck, Round, 0, ShouldPay, Invs) of
+    %%     {ok, _} -> 
+    %% 	    case ?w_sale:sale(new, Merchant, lists:reverse(Invs), Base) of 
+    %% 		{ok, RSN} ->
+    %% 		    case ImmediatelyPrint =:= ?YES andalso PMode =:= ?PRINT_BACKEND of
+    %% 			true ->
+    %% 			    SuccessRespone =
+    %% 				fun(PCode, PInfo) ->
+    %% 					?utils:respond(
+    %% 					   200, Req, ?succ(new_w_sale, RSN),
+    %% 					   [{<<"rsn">>, ?to_b(RSN)},
+    %% 					    {<<"pcode">>, PCode},
+    %% 					    {<<"pinfo">>, PInfo}])
+    %% 				end,
+
+    %% 			    NewInvs =
+    %% 				lists:foldr(
+    %% 				  fun({struct, Inv}, Acc) ->
+    %% 					  StyleNumber = ?v(<<"style_number">>, Inv),
+    %% 					  BrandId     = ?v(<<"brand">>, Inv),
+    %% 					  Total       = ?v(<<"sell_total">>, Inv),
+    %% 					  TagPrice    = ?v(<<"tag_price">>, Inv),
+    %% 					  RPrice      = ?v(<<"rprice">>, Inv),
+
+    %% 					  P = [{<<"style_number">>, StyleNumber},
+    %% 					       {<<"brand_id">>, BrandId},
+    %% 					       {<<"tag_price">>, TagPrice},
+    %% 					       {<<"rprice">>, RPrice},
+    %% 					       {<<"total">>, Total}
+    %% 					      ],
+
+    %% 					  [P|Acc] 
+    %% 				  end, [], Invs),
+    %% 			    print(RSN, Merchant, NewInvs, Base, Print, SuccessRespone);
+    %% 			false ->
+    %% 			    ?utils:respond(
+    %% 			       200, Req, ?succ(new_w_sale, RSN), [{<<"rsn">>, ?to_b(RSN)}])
+    %% 		    end,
+    %% 		    ?w_user_profile:update(retailer, Merchant); 
+    %% 		{error, Error} ->
+    %% 		    ?utils:respond(200, Req, Error)
+    %% 	    end;
+    %% 	{error, EInv} ->
+    %%         StyleNumber = ?v(<<"style_number">>, EInv),
+    %% 	    ?utils:respond(
+    %%            200,
+    %%            Req,
+    %%            ?err(wsale_invalid_inv, StyleNumber),
+    %%            [{<<"style_number">>, StyleNumber},
+    %%             {<<"order_id">>, ?v(<<"order_id">>, EInv)}]);
+    %% 	{error, Moneny, ShouldPay} ->
+    %%         ?utils:respond(
+    %%            200,
+    %%            Req,
+    %%            ?err(wsale_invalid_pay, Moneny))
+    %% end;
 
 action(Session, Req, {"update_w_sale"}, Payload) ->
     ?DEBUG("update_w_sale with session ~p~npaylaod ~p", [Session, Payload]),
@@ -329,8 +404,36 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
 	?DEBUG("sale ~p", [Sale]),
 	{ok, SaleDetails} =
 	    ?w_sale:sale(trans_detail, Merchant, {<<"rsn">>, ?to_b(RSN)}),
+	?DEBUG("details ~p", [SaleDetails]), 
+
+	{ok, TicketScore} = 
+	    case ?v(<<"tbatch">>, Sale) of
+		-1 -> {ok, 0};
+		TicketBatch ->
+		    {ok, Ticket} = ?w_retailer:get_ticket(by_batch, Merchant, {TicketBatch, 1}),
+		    case ?v(<<"sid">>, Ticket) of
+			-1 -> {ok, 0};
+			TicketSId ->
+			    {ok, Scores} = ?w_user_profile:get(score, Merchant),
+			    case lists:filter(
+				   fun({S})->
+					   ?v(<<"type_id">>, S) =:= 1
+					       andalso ?v(<<"id">>, S) =:= TicketSId end, Scores) of
+				[] -> throw({wsale_invalid_ticket_score, TicketBatch}) ;
+				[{Score2Money}] ->
+				    
+				    AccScore = ?v(<<"score">>, Score2Money), 
+				    Balance = ?v(<<"balance">>, Score2Money),
+				    TicketBalance = ?v(<<"balance">>, Ticket),
+				    case ?w_sale:direct(?v(<<"type">>, Sale)) of
+					wreject -> {ok, -TicketBalance div Balance * AccScore};
+					_ ->{ ok, -TicketBalance div Balance * AccScore}
+				    end
+			    end
+		    end
+	    end,
+	
 	%% {ok, Details} = ?w_sale:rsn_detail(rsn, Merchant, {<<"rsn">>, RSN}),
-	?DEBUG("details ~p", [SaleDetails]),
 
 	CombineInvs = combine_inv(SaleDetails, []),
 	?DEBUG("combineinvs ~p", [CombineInvs]),
@@ -358,6 +461,8 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
 		    {<<"cash">>,       ?v(<<"cash">>, Sale)},
 		    {<<"card">>,       ?v(<<"card">>, Sale)},
 		    {<<"withdraw">>,   ?v(<<"withdraw">>, Sale)},
+		    {<<"ticket">>,     ?v(<<"ticket">>, Sale)},
+		    {<<"ticket_score">>, TicketScore},
 		    {<<"verificate">>, ?v(<<"verificate">>, Sale)},
 		    {<<"should_pay">>, ?v(<<"should_pay">>, Sale)}, 
 		    {<<"total">>,      ?v(<<"total">>, Sale)},
@@ -388,6 +493,8 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
 	%% ?utils:respond(
 	%%    200, Req, ?succ(print_w_sale, RSN), {<<"rsn">>, ?to_b(RSN)}) 
     catch
+	_:{wsale_invalid_ticket_score, TBatch} ->
+	    ?utils:respond(200, Req, ?err(wsale_invalid_ticket_score, TBatch));
 	_:{badmatch, {error, Error}} ->
 	    ?utils:respond(200, Req, Error)
     end;
@@ -777,6 +884,69 @@ export_type(1) -> trans_note.
 %% 	undefined -> throw({invalid_balance});
 %% 	_ -> inventory(check_style_number, T)
 %%     end.
+
+start(new_sale, Req, Merchant, Invs, Base, Print) ->
+    ImmediatelyPrint = ?v(<<"im_print">>, Print, ?NO),
+    PMode            = ?v(<<"p_mode">>, Print, ?PRINT_FRONTE),
+    Round            = ?v(<<"round">>, Base, 1),
+    ShouldPay        = ?v(<<"should_pay">>, Base),
+    
+    case check_inventory(oncheck, Round, 0, ShouldPay, Invs) of
+        {ok, _} -> 
+	    case ?w_sale:sale(new, Merchant, lists:reverse(Invs), Base) of 
+		{ok, RSN} ->
+		    case ImmediatelyPrint =:= ?YES andalso PMode =:= ?PRINT_BACKEND of
+			true ->
+			    SuccessRespone =
+				fun(PCode, PInfo) ->
+					?utils:respond(
+					   200, Req, ?succ(new_w_sale, RSN),
+					   [{<<"rsn">>, ?to_b(RSN)},
+					    {<<"pcode">>, PCode},
+					    {<<"pinfo">>, PInfo}])
+				end,
+
+			    NewInvs =
+				lists:foldr(
+				  fun({struct, Inv}, Acc) ->
+					  StyleNumber = ?v(<<"style_number">>, Inv),
+					  BrandId     = ?v(<<"brand">>, Inv),
+					  Total       = ?v(<<"sell_total">>, Inv),
+					  TagPrice    = ?v(<<"tag_price">>, Inv),
+					  RPrice      = ?v(<<"rprice">>, Inv),
+
+					  P = [{<<"style_number">>, StyleNumber},
+					       {<<"brand_id">>, BrandId},
+					       {<<"tag_price">>, TagPrice},
+					       {<<"rprice">>, RPrice},
+					       {<<"total">>, Total}
+					      ],
+
+					  [P|Acc] 
+				  end, [], Invs),
+			    print(RSN, Merchant, NewInvs, Base, Print, SuccessRespone);
+			false ->
+			    ?utils:respond(
+			       200, Req, ?succ(new_w_sale, RSN), [{<<"rsn">>, ?to_b(RSN)}])
+		    end,
+		    ?w_user_profile:update(retailer, Merchant); 
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end;
+	{error, EInv} ->
+            StyleNumber = ?v(<<"style_number">>, EInv),
+	    ?utils:respond(
+               200,
+               Req,
+               ?err(wsale_invalid_inv, StyleNumber),
+               [{<<"style_number">>, StyleNumber},
+                {<<"order_id">>, ?v(<<"order_id">>, EInv)}]);
+	{error, Moneny, ShouldPay} ->
+            ?utils:respond(
+               200,
+               Req,
+               ?err(wsale_invalid_pay, Moneny))
+    end.
     
 check_inventory(oncheck, Round, Moneny, ShouldPay, []) ->
     ?DEBUG("Moneny ~p, ShouldPay, ~p", [Moneny, ShouldPay]),

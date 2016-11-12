@@ -332,7 +332,7 @@ print_content(ShopId, PBrand, Model, 58, Merchant, Setting, Invs) ->
 		   %% ++ ?to_s(RPrice) ++ pading(8 - width(latin1, RPrice)) ++ br(PBrand)
 		   ++ BrandName ++ pading(24 - width(chinese, BrandName)) ++ ?to_s(RPrice)
 		   ++ br(PBrand)
-		   ++ pading(24) ++ ?to_s(RPrice * SellTotal) ++ br(PBrand)
+		   ++ pading(24 - 6) ++ "（合）" ++ ?to_s(RPrice * SellTotal) ++ br(PBrand)
 		   %% ++ "单价：" ++ ?to_s(TagPrice) ++ br(PBrand)
 		   %% ++ "成交价：" ++ ?to_s(RPrice) ++ br(PBrand)
 		   %% ++ "数量：" ++ ?to_s(SellTotal) ++ br(PBrand)
@@ -429,6 +429,7 @@ body_stastic(Brand, _Model, Column, _TotalBalance, Attrs, Vip, LastScore, STotal
     Cash         = ?v(<<"cash">>, Attrs, 0),
     Card         = ?v(<<"card">>, Attrs, 0),
     Withdraw     = ?v(<<"withdraw">>, Attrs, 0),
+    Ticket       = ?v(<<"ticket">>, Attrs, 0), 
     ShouldPay    = clean_zero(?v(<<"should_pay">>, Attrs, 0)),
     Total        = abs(STotal) + abs(RTotal),
     Comment      = ?v(<<"comment">>, Attrs, []),
@@ -436,20 +437,22 @@ body_stastic(Brand, _Model, Column, _TotalBalance, Attrs, Vip, LastScore, STotal
 
     %% LastScore    = ?v(<<"last_score">>, Attrs, 0),
     Score        = ?v(<<"score">>, Attrs, 0),
+    TicketScore  = ?v(<<"ticket_score">>, Attrs, 0),
 
     RealLastScore = case ?v(<<"im_print">>, Attrs) of
 			false -> ?v(<<"last_score">>, Attrs);
 			_ -> LastScore
 		    end,
     
-    AccScore     = Score + RealLastScore, 
-    RPay         = ShouldPay - Withdraw,
-    NewCash      = case Cash >= RPay of
+    AccScore     = Score + RealLastScore - TicketScore, 
+    RPay         = ShouldPay - Withdraw - Ticket,
+    
+    NewCash      = case RPay > 0 andalso Cash >= RPay of
 		       true  -> RPay;
 		       false -> Cash
 		   end,
 
-    NewCard      = case Card >= RPay - NewCash of
+    NewCard      = case RPay - NewCash > 0 andalso Card >= RPay - NewCash of
 		       true  -> RPay - NewCash;
 		       false -> Card
 		   end,
@@ -469,7 +472,7 @@ body_stastic(Brand, _Model, Column, _TotalBalance, Attrs, Vip, LastScore, STotal
 	   end
 	
 	++ ?to_s(abs(ShouldPay))
-	++ pay(style, abs(NewCash), abs(NewCard), abs(Withdraw))
+	++ pay(style, abs(NewCash), abs(NewCard), abs(Withdraw), abs(Ticket))
 	++ br(Brand)
 
 	++ case Vip of 
@@ -774,9 +777,9 @@ field_name(<<"type">>)         -> "类型";
 field_name(<<"color">>)        -> "颜色";
 field_name(<<"size">>)         -> "尺码".
 
-pay(style, Cash, Card, Withdraw) ->
-    ?DEBUG("cash ~p, card ~p, withdraw ~p", [Cash, Card, Withdraw]),
-    Pays = [pay(cash, Cash), pay(card, Card), pay(withdraw, Withdraw)], 
+pay(style, Cash, Card, Withdraw, Ticket) ->
+    ?DEBUG("cash ~p, card ~p, withdraw ~p, ticket", [Cash, Card, Withdraw, Ticket]),
+    Pays = [pay(cash, Cash), pay(card, Card), pay(withdraw, Withdraw), pay(ticket, Ticket)], 
     lists:foldr(fun([], Acc) -> Acc;
 		   (S, Acc) -> pading(2) ++ S ++ Acc
 		end, [], Pays).
@@ -788,7 +791,9 @@ pay(cash, Cash) -> "现金：" ++ ?to_s(clean_zero(Cash));
 pay(withdraw, Withdraw) when Withdraw == 0 -> [];
 pay(withdraw, Withdraw) -> "提现：" ++ ?to_s(clean_zero(Withdraw));
 pay(veri, Veri) when Veri == 0-> [];
-pay(veri, Veri) -> "核销：" ++ ?to_s(clean_zero(Veri)).
+pay(veri, Veri) -> "核销：" ++ ?to_s(clean_zero(Veri));
+pay(ticket, Ticket) when Ticket == 0 -> [];
+pay(ticket, Ticket) -> "卷：" ++ ?to_s(clean_zero(Ticket)).
 
     
 bar_code(one, DigitString) ->

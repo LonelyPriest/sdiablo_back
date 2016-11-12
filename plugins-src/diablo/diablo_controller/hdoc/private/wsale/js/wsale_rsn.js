@@ -83,12 +83,14 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 	$scope.filters = [];
 	if (angular.isDefined($routeParams.rsn)){
 	    $scope.qtime_start = diablo_set_date(
-		wsaleUtils.start_time(shopId, base, now, dateFilter))
+		wsaleUtils.start_time(shopId, base, now, dateFilter));
 	} else {
 	    $scope.qtime_start = now;
-	    $scope.qtime_end = now;
 	}
+
+	$scope.qtime_end = now; 
     };
+    // console.log($scope.qtime_start, $scope.qtime_end, now); 
 
     $scope.time = wsaleUtils.correct_query_time(
 	$scope.right.master,
@@ -96,6 +98,7 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 	$scope.qtime_start,
 	$scope.qtime_end,
 	diabloFilter);
+    console.log($scope.time);
     
     // console.log($scope.setting);
     // filter
@@ -392,8 +395,7 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 		    angular.forEach(detail, function(d){
 			d.brand = diablo_get_object(d.brand_id, filterBrand).name;
 			d.type = diablo_get_object(d.type_id, filterType).name;
-		    })
-		    
+		    }); 
 		    console.log(wsalePrint);
 		    wsalePrint.gen_head(LODOP,
 					shop.name,
@@ -404,6 +406,7 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 
 		    var hLine = wsalePrint.gen_body(LODOP, detail, isRound, cakeMode); 
 		    var isVip = sale.retailer_id !== no_vip ? true : false;
+
 		    
 		    hLine = wsalePrint.gen_stastic(LODOP, hLine, sale.direct, sale, isVip); 
 		    wsalePrint.gen_foot(LODOP, hLine, comments, pdate, cakeMode);

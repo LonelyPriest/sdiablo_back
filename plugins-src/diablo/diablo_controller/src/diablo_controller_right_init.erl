@@ -866,6 +866,7 @@ pass_action(wholesaler) ->
      <<"list_w_retailer_charge">>,
      <<"list_w_retailer_score">>,
      <<"filter_charge_detail">>,
+     <<"get_w_retailer_ticket">>,
      
      %% wsale
      %% <<"list_w_sale_new">>,

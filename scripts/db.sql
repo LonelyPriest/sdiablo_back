@@ -472,7 +472,8 @@ create table w_ticket(
     entry_date      DATETIME default 0, 
     deleted         INTEGER default 0, -- 0: no;  1: yes
 
-    key         dk  (merchant),
+    unique  key uk  (merchant, batch),
+    key         dk  (merchant, retailer),
     primary key     (id)
     
 ) default charset=utf8;
@@ -841,7 +842,8 @@ create table w_sale(
     shop           INTEGER not null default -1, 
     merchant       INTEGER not null default -1,
 
-    promotion     INTEGER not null default -1,
+    -- promotion     INTEGER not null default -1,
+    tbatch        INTEGER not null default -1,
     -- charge        INTEGER not null default -1,
     
     balance        DECIMAL(10, 2) default 0, -- max: 99999999.99
@@ -850,6 +852,7 @@ create table w_sale(
     cash           DECIMAL(10, 2) default 0, -- max: 99999999.99
     card           DECIMAL(10, 2) default 0, -- max: 99999999.99
     withdraw       DECIMAL(10, 2) default 0, -- max: 99999999.99
+    ticket         DECIMAL(10, 2) default 0, -- max: 99999999.99
     verificate     DECIMAL(10, 2) default 0, -- max: 99999999.99
 
     -- cbalance       INTEGER not null default 0, -- charge balance

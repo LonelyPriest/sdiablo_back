@@ -837,13 +837,13 @@ inventory_match(Merchant, StyleNumber, Shop) ->
 	++ 
 	case {First, Match, Last} of
 	    {"/", Match, "/"} ->
-		" where style_number like \'%" ++ Match ++ "%\'";
+		" where style_number=\'" ++ Match ++ "\'"; 
 	    {"/", Match, _} ->
 		" where style_number like \'" ++ Match ++ "%\'";
 	    {_, Match, "/"} ->
 		" where style_number like \'%" ++ Match ++ "\'";
 	    {_, Match, _}->
-		" where style_number like \'" ++ Match ++ "\'"
+		" where style_number like \'%" ++ Match ++ "%\'"
 	end
 	++ ?sql_utils:condition(proplists, [{<<"shop">>, Shop}])
 	++ " and merchant=" ++ ?to_s(Merchant)

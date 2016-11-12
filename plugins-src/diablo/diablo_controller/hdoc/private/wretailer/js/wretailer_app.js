@@ -365,5 +365,15 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 	return http.save(
 	    {operation: "consume_w_retailer_ticket"}, {tid:tid, comment:comment}).$promise;
     };
+
+    this.get_ticket_by_retailer = function(retailerId) {
+	return http.save(
+	    {operation: "get_w_retailer_ticket"}, {retailer:retailerId, mode:0}).$promise;
+    };
+
+    this.get_ticket_by_batch = function(batch) {
+	return http.save(
+	    {operation: "get_w_retailer_ticket"}, {batch:batch, mode:1}).$promise;
+    };
     
 });

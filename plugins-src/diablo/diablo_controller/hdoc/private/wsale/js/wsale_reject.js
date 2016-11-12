@@ -81,7 +81,7 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 		// $scope.old_select = wsale.select;
 		$scope.select = angular.extend($scope.select, wsale.select);
 		$scope.select.has_pay = $scope.select.cash
-		    + $scope.select.card + $scope.select.withdraw; 
+		    + $scope.select.card + $scope.select.withdraw + $scope.select.ticket; 
 		$scope.select.left_balance = $scope.select.surplus; 
 		console.log($scope.select);
 
@@ -163,7 +163,7 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 		    console.log(result); 
 		    if (result.ecode === 0){
 			// $scope.select.surplus  = params.retailer.balance 
-			$scope.select.withdraw = params.retailer.withdraw;
+			// $scope.select.withdraw = params.retailer.withdraw;
 			$scope.has_withdrawed  = true;
 			$scope.re_calculate();
 		    } else {
@@ -184,7 +184,7 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 	    {retailer:
 	     {id        :$scope.select.retailer.id,
 	      name      :$scope.select.retailer.name,
-	      withdraw  :$scope.select.should_pay,
+	      withdraw  :$scope.select.withdraw,
 	      pattern   :$scope.pattern.passwd},
 	    }
 	);
@@ -350,11 +350,16 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 	    comment:       $scope.select.comment,
 	    balance:       setv($scope.select.surplus),
 	    should_pay:    setv($scope.select.rcharge),
+	    cash:          setv($scope.select.cash),
+	    card:          setv($scope.select.card),
+	    ticket:        setv($scope.select.ticket),
 	    withdraw:      setv($scope.select.withdraw),
 	    verificate:    $scope.select.verificate,
 	    direct:        wsaleService.direct.wreject,
 	    total:         seti($scope.select.rtotal),
-	    score:         $scope.select.rscore
+	    score:         $scope.select.rscore, 
+	    tbatch:        $scope.select.tbatch,
+	    ticket_score:  $scope.select.ticket_score
 	};
 	
 	var print = {
@@ -376,6 +381,7 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 		$scope.select.retailer.balance = $scope.select.left_balance;
 		$scope.select.surplus = $scope.select.left_balance;
 		$scope.select.retailer.score -= $scope.select.score;
+		$scope.select.retailer.score += $scope.select.ticket_score;
 
 		if (diablo_backend === $scope.setting.p_mode){
 		    $scope.print_backend(result, false);

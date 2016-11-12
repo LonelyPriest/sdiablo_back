@@ -18,20 +18,23 @@
 	<div class="actions">
 	  <div class="btn-group">
 	    <button type="button" class="btn red"
-		    x-ng-click="back()">返回
-	      <i class="glyphicon glyphicon-circle-arrow-left"></i>
+		    x-ng-click="back()">返回<i class="glyphicon glyphicon-circle-arrow-left"></i>
 	    </button>
 	    
 	    <button class="btn btn-info purple-stripe"
 		    x-ng-disabled="disable_draft()"
-		    x-ng-click="list_draft()">草稿
-	      <i class="glyphicon glyphicon-send"></i></button>
+		    x-ng-click="list_draft()">草稿<i class="glyphicon glyphicon-send"></i>
+	    </button>
 
 	    <button x-ng-if="select.retailer.type===1"
-		    class="btn yellow-crusta purple-stripe"
+		    class="btn green-meadow purple-stripe"
 		    x-ng-disabled="disable_withdraw()"
-		    x-ng-click="withdraw()">提现
-	      <i class="glyphicon glyphicon-piggy-bank"></i></button>
+		    x-ng-click="withdraw()">提现<i class="glyphicon glyphicon-yen"></i>
+	    </button>
+
+	    <button class="btn red-sunglo purple-stripe"
+		    x-ng-click="ticket()">电子卷<i class="glyphicon glyphicon-bookmark"></i>
+	    </button>
 	    
 	    <button class="btn btn-success purple-stripe"
 		    x-ng-disabled="disable_save()"
@@ -213,14 +216,14 @@
 	  </div>
 	  
 	  <div x-ng-if="select.retailer.type===1" class="row diablo-form-group">
-	    <div class="col-sm-3 col-md-3">
-	      <div class="input-group">
-		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-copyright-mark fg-red"></i>积分</span>
-		<input class="form-control" readonly
-	  	       x-ng-model="select.score"/> 
-	      </div>
-	    </div>
+	    <!-- <div class="col-sm-3 col-md-3"> -->
+	    <!--   <div class="input-group"> -->
+	    <!-- 	<span class="input-group-addon"> -->
+	    <!-- 	  <i class="glyphicon glyphicon-copyright-mark fg-red"></i>积分</span> -->
+	    <!-- 	<input class="form-control" readonly -->
+	    <!-- 	       x-ng-model="select.score"/>  -->
+	    <!--   </div> -->
+	    <!-- </div> -->
 	    
 	    <div class="col-sm-3 col-md-3">
 	      <div class="input-group">
@@ -243,7 +246,7 @@
 	      </div>
 	    </div>
 
-	    <div class="col-sm-3 col-md-3">
+	    <div class="col-sm-6 col-md-6">
 	      <div class="input-group">
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>结余</span>
@@ -254,6 +257,37 @@
 	      </div>
 	    </div> 
 	  </div>
+
+	  <!-- ticket -->
+	  <div class="row diablo-form-group"> 
+	    <div class="col-sm-3 col-md-3">
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-copyright-mark fg-red"></i>积分</span>
+		<input class="form-control" readonly
+	  	       x-ng-model="select.retailer.score"/> 
+	      </div>
+	    </div>
+	    
+	    <div class="col-sm-3 col-md-3">
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-barcode fg-red"></i>批次</span>
+		<input class="form-control" readonly
+		       placeholder="电子卷批次号，由系统自动生成"
+	  	       x-ng-model="select.ticket_batch"/> 
+	      </div>
+	    </div>
+	    
+	    <div class="col-sm-6 col-md-6">
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-yen fg-red"></i>金额</span>
+		<input class="form-control" readonly
+		       placeholder="电子卷金额，由系统自动生成"
+	  	       x-ng-model="select.ticket_balance"/> 
+	      </div>
+	    </div> 
 	  
 	</div>
       </div>
@@ -1010,4 +1044,78 @@
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>
 </script>
+
+
+<script type="text/ng-template" id="new-ticket.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    
+    <h4 class="modal-title"><span class="label label-sm label-primary">电子卷信息</span></h4>
+  </div>
+  
+  <div class="modal-body">
+    <form class="form-horizontal" name="tForm" novalidate>
+      <div class="form-body">
+	
+	<div x-ng-if="params.auto_batch" class="form-group">
+	  <label class="col-sm-3 col-md-3 control-label">批次号</label> 
+	  <div class="col-sm-6 col-md-6">
+	    <input class="form-control"
+		   name="ticket"
+		   type="number"
+		   step="1"
+		   readonly
+		   required
+		   x-ng-model="params.ticket.batch"/> 
+	  </div>
+	</div>
+
+	<div x-ng-if="!params.auto_batch" class="form-group">
+	  <label class="col-sm-3 col-md-3 control-label">批次号</label> 
+	  <div class="col-sm-6 col-md-6">
+	    <!-- <div class="input-group"> -->
+	    <input class="form-control"
+		   name="ticket"
+		   type="number"
+		   step="1"
+		   placeholder="请输入电子卷批次号"
+		   x-ng-edit
+		   disable-key
+		   disable-wheel
+		   required
+		   x-ng-model="params.ticket.batch"/>
+	      <!-- <span class="input-group-btn"> -->
+	      <!-- 	<button class="btn green" -->
+	      <!-- 		x-ng-click="params.ticket=params.get_ticket(params.ticket.batch)"> -->
+	      <!-- 	    <i class="glyphicon glyphicon-search"></i> -->
+	      <!-- 	  </button> -->
+	      <!-- </span> -->
+	    <!-- </div> -->
+	  </div>
+	</div>
+
+	<div x-ng-if="params.auto_batch" class="form-group">
+	  <label class="col-sm-3 col-md-3 control-label">金额</label>
+	  <div class="col-sm-6 col-md-6">
+	    <input class="form-control"
+		   type="number"
+		   readonly
+		   x-ng-model="params.ticket.balance"/> 
+	  </div>
+	</div> 
+	
+      </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="tForm.$invalid"
+	    x-ng-click="ok()">确定</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div> 
+</script>
+
 

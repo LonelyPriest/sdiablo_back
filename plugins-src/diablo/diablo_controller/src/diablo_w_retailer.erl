@@ -22,7 +22,7 @@
 
 -export([retailer/2, retailer/3, retailer/4]).
 -export([charge/2, charge/3]).
--export([score/2, score/3, ticket/3]).
+-export([score/2, score/3, ticket/3, get_ticket/3]).
 -export([filter/4, filter/6]).
 
 -define(SERVER, ?MODULE). 
@@ -97,6 +97,17 @@ ticket(effect, Merchant, TicketId) ->
 ticket(consume, Merchant, {TicketId, Comment, Score2Money}) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {consume_ticket, Merchant, {TicketId, Comment, Score2Money}}).
+
+get_ticket(by_retailer, Merchant, RetailerId) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {ticket_by_retailer, Merchant, RetailerId});
+get_ticket(by_batch, Merchant, {Batch, Mode}) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {ticket_by_batch, Merchant, {Batch, Mode}});
+get_ticket(by_batch, Merchant, Batch) ->
+    get_ticket(by_batch, Merchant, {Batch, 0}).
+    %% Name = ?wpool:get(?MODULE, Merchant), 
+    %% gen_server:call(Name, {ticket_by_batch, Merchant, Batch}).
 
 filter(total_charge_detail, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
@@ -585,6 +596,7 @@ handle_call({effect_ticket, Merchant, TicketId}, _From, State) ->
 
     {reply, Reply, State};
 
+
 handle_call({consume_ticket, Merchant, {TicketId, Comment, Score2Money}}, _From, State) ->
     Sql = "select id, balance, retailer, state from w_ticket"
 	" where merchant=" ++ ?to_s(Merchant)
@@ -630,6 +642,34 @@ handle_call({consume_ticket, Merchant, {TicketId, Comment, Score2Money}}, _From,
     {reply, Reply, State};
 
 
+handle_call({ticket_by_retailer, Merchant, RetailerId}, _From, State) ->
+    Sql = "select id, batch, balance, retailer, sid, state from w_ticket"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and retailer=" ++ ?to_s(RetailerId)
+	++ " and state=1",
+
+    %% Reply =  case ?sql_utils:execute(s_read, Sql) of
+    %% 		 {ok, []} -> {error, ?err(ticket_not_exist, RetailerId)};
+    %% 		 R -> R 
+    %% 	     end,
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+handle_call({ticket_by_batch, Merchant, {Batch, Mode}}, _From, State) ->
+    Sql = "select id, batch, balance, retailer, sid, state from w_ticket"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and batch=" ++ ?to_s(Batch)
+	++ case Mode of
+	       0 -> " and state=1";
+	       1 -> []
+	   end,
+
+    %% Reply =  case ?sql_utils:execute(s_read, Sql) of
+    %% 		 {ok, []} -> {error, ?err(ticket_not_exist, Batch)};
+    %% 		 R -> R 
+    %% 	     end,
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
 
 handle_call({total_charge_detail, Merchant, Conditions}, _From, State) ->
     ?DEBUG("total_charge_detail: merchant ~p, conditions ~p", [Merchant, Conditions]),

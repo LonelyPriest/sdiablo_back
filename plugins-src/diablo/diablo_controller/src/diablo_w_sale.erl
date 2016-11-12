@@ -133,7 +133,11 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
     Total      = ?v(<<"total">>, Props, 0),
     Score      = ?v(<<"score">>, Props, 0),
 
-    RPay       = ShouldPay - Withdraw,
+    Ticket     = ?v(<<"ticket">>, Props, 0), 
+    TicketScore = ?v(<<"ticket_score">>, Props, 0),
+    TicketBatch = ?v(<<"ticket_batch">>, Props, -1),
+
+    RPay       = ShouldPay - Withdraw - Ticket,
     
     Sql0 = "select id, name, balance, score from w_retailer"
 	" where id=" ++ ?to_s(Retailer)
@@ -148,7 +152,21 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 	    case CurrentBalance < Withdraw of
 		true ->
 		    {reply, {error, ?err(wsale_not_enought_balance, ?v(<<"id">>, Account))}, State};
-		false -> 
+		false ->
+		    NewCash = case RPay > 0 andalso Cash >= RPay of
+				  true  -> RPay;
+				  false -> Cash
+			      end,
+
+		    NewRPay = RPay - NewCash,
+		    NewCard = case NewRPay > 0 andalso Card >= NewRPay of
+				  true  -> NewRPay;
+				  false -> Card
+			      end,
+
+		    ?DEBUG("NewCard ~p, NewCard ~p, withdraw ~p, ticket ~p",
+			   [NewCash,  NewCard, Withdraw, Ticket]),
+		    
 		    SaleSn = lists:concat(
 			       ["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-",
 				?inventory_sn:sn(w_sale_new_sn, Merchant)]),
@@ -161,32 +179,25 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 					Merchant, RealyShop, Inv, Amounts) ++ Acc0
 			  end, [], Inventories), 
 
-		    NewCash = case Cash >= RPay of
-				  true  -> RPay;
-				  false -> Cash
-			      end,
-
-		    NewCard = case Card >= RPay - NewCash of
-				  true  -> RPay - NewCash;
-				  false -> Card
-			      end,
-
-		    ?DEBUG("NewCard ~p, NewCard ~p, withdraw ~p", [NewCash,  NewCard, Withdraw]), 
-
 		    Sql2 = "insert into w_sale(rsn"
-			", employ, retailer, shop, merchant"
-			", balance, should_pay, cash, card, withdraw, verificate"
+			", employ, retailer, shop, merchant, tbatch"
+			", balance, should_pay, cash, card, withdraw, ticket, verificate"
 			", total, lscore, score, comment, type, entry_date) values("
 			++ "\"" ++ ?to_s(SaleSn) ++ "\","
 			++ "\'" ++ ?to_s(Employe) ++ "\',"
 			++ ?to_s(Retailer) ++ ","
 			++ ?to_s(Shop) ++ ","
-			++ ?to_s(Merchant) ++ "," 
+			++ ?to_s(Merchant) ++ ","
+			++ ?to_s(TicketBatch) ++ "," 
 			++ ?to_s(CurrentBalance) ++ ","
 			++ ?to_s(ShouldPay) ++ "," 
 			++ ?to_s(NewCash) ++ ","
 			++ ?to_s(NewCard) ++ ","
 			++ ?to_s(Withdraw) ++ ","
+			++ case ShouldPay > 0 andalso Ticket > ShouldPay of
+			       true -> ?to_s(ShouldPay) ++ ",";
+			       false -> ?to_s(Ticket) ++ ","
+			   end
 			++ ?to_s(Verificate) ++ ","
 			++ ?to_s(Total) ++ ","
 			++ ?to_s(CurrentScore) ++ ","
@@ -200,13 +211,23 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 				   true  -> [];
 				   false -> ", balance=balance-" ++ ?to_s(Withdraw)
 			       end
-			    ++ case Score == 0 of
+			    ++ case Score == 0 andalso TicketScore =< 0 of
 				   true  -> [];
 				   false -> ", score=score+" ++ ?to_s(Score)
-			       end
-			    ++ " where id=" ++ ?to_s(?v(<<"id">>, Account))], 
+						++ "-" ++ ?to_s(TicketScore)
+			       end 
+			    ++ " where id=" ++ ?to_s(?v(<<"id">>, Account))],
 
-		    AllSql = Sql1 ++ [Sql2] ++ Sql3,
+		    Sql4 = case TicketBatch of
+			       -1 -> [];
+			       _ ->
+				   ["update w_ticket set state=2"
+				    " where merchant=" ++ ?to_s(Merchant)
+				    ++ " and batch=" ++ ?to_s(TicketBatch)
+				    ++ " and retailer=" ++ ?to_s(Retailer)]
+			   end,
+
+		    AllSql = Sql1 ++ [Sql2] ++ Sql3 ++ Sql4,
 		    Reply = ?sql_utils:execute(transaction, AllSql, SaleSn),
 		    {reply, Reply, State}
 	    end;
@@ -443,8 +464,11 @@ handle_call({list_new, Merchant, Conditions}, _From, State) ->
 handle_call({get_new, Merchant, RSN}, _From, State) ->
     ?DEBUG("get_new with merchant ~p, rsn ~p", [Merchant, RSN]),
     Sql = "select id, rsn"
-	", employ as employ_id, retailer as retailer_id, shop as shop_id"
-	", balance, should_pay, cash, card, withdraw, verificate"
+	", employ as employ_id"
+	", retailer as retailer_id"
+	", shop as shop_id"
+	", tbatch"
+	", balance, should_pay, cash, card, withdraw, ticket, verificate"
 	", total, lscore, score, comment, type, entry_date" 
 	" from w_sale" 
 	++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
@@ -637,12 +661,20 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
     %% Balance    = ?v(<<"balance">>, Props), 
     Comment    = ?v(<<"comment">>, Props, ""),
     ShouldPay  = ?v(<<"should_pay">>, Props, 0),
+    Cash       = ?v(<<"cash">>, Props, 0),
+    Card       = ?v(<<"card">>, Props, 0),
+    
+    
     Withdraw   = ?v(<<"withdraw">>, Props, 0),
     Verificate = ?v(<<"verificate">>, Props, 0),
     Total      = ?v(<<"total">>, Props, 0),
     Score      = ?v(<<"score">>, Props, 0),
+
+    Ticket     = ?v(<<"ticket">>, Props, 0),
+    TicketScore = ?v(<<"ticket_score">>, Props, 0),
+    TicketBatch = ?v(<<"tbatch">>, Props, -1),
     
-    Sql0 = "select id, name, balance from w_retailer"
+    Sql0 = "select id, name, balance, score from w_retailer"
 	" where id=" ++ ?to_s(Retailer)
 	++ " and merchant=" ++ ?to_s(Merchant)
 	++ " and deleted=" ++ ?to_s(?NO) ++ ";",
@@ -682,49 +714,74 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 			  end, [], Inventories)
 		end,
 
-	    CurrentBalance = ?v(<<"balance">>, Account),
-
+	    CurrentBalance = retailer(balance, Account),
+	    CurrentScore = retailer(score, Account),
+	    
 	    Sql2 = "insert into w_sale(rsn"
-		", employ, retailer, shop, merchant, balance"
-		", should_pay, cash, withdraw, verificate, total, score"
-		", comment, type, entry_date) values("
+		", employ, retailer, shop, merchant, tbatch, balance"
+		", should_pay, cash, card, ticket, withdraw, verificate, total"
+		", lscore, score, comment, type, entry_date) values("
 		++ "\"" ++ ?to_s(Sn) ++ "\","
 		++ "\'" ++ ?to_s(Employe) ++ "\',"
 		++ ?to_s(Retailer) ++ ","
 		++ ?to_s(Shop) ++ ","
 		++ ?to_s(Merchant) ++ ","
+		++ ?to_s(TicketBatch) ++ "," 
 		++ ?to_s(CurrentBalance) ++ ","
 		++ ?to_s(-ShouldPay) ++ ","
-		++ case Withdraw == ShouldPay of
-		       true  -> ?to_s(0) ++ ",";
-		       false -> ?to_s((Withdraw - ShouldPay)) ++ ","
-		   end
+		++ ?to_s(-Cash) ++ ","
+		++ ?to_s(-Card) ++ ","
+		++ ?to_s(-Ticket) ++ ","
+		%% ++ case Withdraw == ShouldPay of
+		%%        true  -> ?to_s(0) ++ ",";
+		%%        false -> ?to_s((Withdraw - ShouldPay)) ++ ","
+		%%    end
 		++ ?to_s(-Withdraw) ++ ","
 		++ ?to_s(-Verificate) ++ ","
 		++ ?to_s(-Total) ++ ","
+		++ ?to_s(CurrentScore) ++ ","
 		++ ?to_s(-Score) ++ ","
 		++ "\"" ++ ?to_s(Comment) ++ "\"," 
 		++ ?to_s(type(reject)) ++ ","
 		++ "\"" ++ ?to_s(Datetime) ++ "\");",
 
-	    Sql3 =
-		case Withdraw =< 0 andalso Score == 0 of
-		    true  -> [];
+	    Sql3 = ["update w_retailer set consume=consume-" ++ ?to_s(ShouldPay)
+		++ case Withdraw > 0 of
+		       true -> ", balance=balance+" ++ ?to_s(Withdraw);
+		       false -> []
+		   end
+		++ case TicketScore - Score /= 0 of
+		       true -> ", score=score+" ++ ?to_s(TicketScore - Score);
+		       false -> []
+		   end
+		++ " where id=" ++ ?to_s(?v(<<"id">>, Account))],
+	    
+	    %% Sql3 =
+	    %% 	case Withdraw =< 0 andalso Score == 0 of
+	    %% 	    true  -> [];
+	    %% 	    false ->
+	    %% 		["update w_retailer set "
+	    %% 		 "balance=balance+" ++ ?to_s(Withdraw)
+	    %% 		 ++ ", score=score-" ++ ?to_s(Score) ++ "+" ++ ?to_s(TicketScore)
+	    %% 		 ++ ", consume=consume-" ++ ?to_s(ShouldPay)
+	    %% 		 ++ " where id=" ++ ?to_s(?v(<<"id">>, Account))]
+	    %% 	end,
+
+	    Sql4 =
+		case TicketBatch =:= -1 of
+		    true -> [];
 		    false ->
-			["update w_retailer set "
-			 "balance=balance+" ++ ?to_s(Withdraw)
-			 ++ ", score=score-" ++ ?to_s(Score)
-			 ++ ", consume=consume-" ++ ?to_s(ShouldPay)
-			 ++ " where id=" ++ ?to_s(?v(<<"id">>, Account))]
+			["update w_ticket set state=0 where merchant=" ++ ?to_s(Merchant)
+			 ++ " and batch=" ++ ?to_s(TicketBatch)]
 		end,
 
-	    AllSql = Sql1 ++ [Sql2] ++ Sql3,
+	    AllSql = Sql1 ++ [Sql2] ++ Sql3 ++ Sql4,
 
 	    case ?sql_utils:execute(transaction, AllSql, Sn) of
 		{error, _} = Error ->
 		    {reply, Error, State};
 		OK ->
-		    case Withdraw > 0 orelse Score =/= 0 of
+		    case Withdraw =/= 0 orelse TicketScore - Score =/= 0 of
 			true  -> ?w_user_profile:update(retailer, Merchant);
 			false -> ok
 		    end,
@@ -1507,6 +1564,7 @@ count_table(w_sale, Merchant, Conditions) ->
     	", sum(a.cash) as t_cash"
     	", sum(a.card) as t_card"
 	", sum(a.withdraw) as t_withdraw"
+	", sum(a.ticket) as t_ticket"
 	%% ", sum(a.balance) as t_balance"
 	" from w_sale a where " ++ SortConditions, 
     CountSql.
@@ -1516,9 +1574,9 @@ filter_table(w_sale, Merchant, Conditions) ->
 
     Sql = "select a.id, a.rsn, a.employ as employee_id"
 	", a.retailer as retailer_id, a.shop as shop_id"
-	", a.promotion as pid, a.charge as cid"
+    %% ", a.promotion as pid, a.charge as cid"
 	
-	", a.balance, a.should_pay, a.cash, a.card, a.withdraw"
+	", a.balance, a.should_pay, a.cash, a.card, a.withdraw, a.ticket"
 	", a.cbalance, a.sbalance, a.total, a.score"
 	
 	", a.comment, a.type, a.state, a.entry_date"
@@ -1540,9 +1598,9 @@ filter_table(w_sale_with_page,
     
     Sql = "select a.id, a.rsn, a.employ as employee_id"
     	", a.retailer as retailer_id, a.shop as shop_id"
-    	", a.promotion as pid"
+    %% ", a.promotion as pid"
 	
-	", a.balance, a.should_pay, a.cash, a.card, a.withdraw, a.verificate"
+	", a.balance, a.should_pay, a.cash, a.card, a.withdraw, a.ticket, a.verificate"
 	", a.total, a.score"
 	
 	", a.comment, a.type, a.state, a.entry_date"

@@ -417,6 +417,10 @@ error(wsale_invalid_inv, StyleNumber) ->
     {2704, "error style number " ++ ?to_s(StyleNumber) ++ "."};
 error(wsale_invalid_pay, Pay) ->
     {2705, "error should pay " ++ ?to_s(Pay) ++ "."};
+error(wsale_invalid_ticket_balance, Balance) ->
+    {2706, "invalid ticket balance: " ++ ?to_s(Balance) ++ "."};
+error(wsale_invalid_ticket_score, TicketSId) ->
+    {2707, "invalid ticket promotion score: " ++ ?to_s(TicketSId) ++ "."};
 
 %% about print
 error(invalid_sn, PrintSN) ->

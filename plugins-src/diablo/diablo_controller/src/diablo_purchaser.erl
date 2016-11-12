@@ -892,6 +892,7 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
 	", has_pay, verificate, e_pay from w_inventory_new"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and firm=" ++ ?to_s(Firm)
+	++ " and state in [0,1]"
 	++ " order by id desc limit 1) b on a.merchant=b.merchant and a.id=b.firm"
 	" where a.id=" ++ ?to_s(Firm)
 	++ " and a.merchant=" ++ ?to_s(Merchant)

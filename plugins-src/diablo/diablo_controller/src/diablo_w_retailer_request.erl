@@ -249,6 +249,27 @@ action(Session, Req, {"consume_w_retailer_ticket"}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+
+action(Session, Req, {"get_w_retailer_ticket"}, Payload) ->
+    ?DEBUG("get_w_retailer_ticket with session ~p, payload ~p", [Session, Payload]), 
+    Merchant = ?session:get(merchant, Session),
+
+    case 
+	case ?v(<<"mode">>, Payload, 0) of
+	    0 ->
+		RetailerId = ?v(<<"retailer">>, Payload),
+		?w_retailer:get_ticket(by_retailer, Merchant, RetailerId);
+	    1 ->
+		Batch = ?v(<<"batch">>, Payload),
+		?w_retailer:get_ticket(by_batch, Merchant, Batch)
+	end
+    of 
+	{ok, Value} ->
+	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0}, {<<"data">>, {Value}}]});
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
 %% 
 %% charge
 %%

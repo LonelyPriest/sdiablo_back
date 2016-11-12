@@ -35,6 +35,10 @@ var wsaleUtils = function(){
 	select.comment    = base.comment;
 	select.total      = base.total;
 	select.score      = base.score;
+	
+	select.tbatch     = base.tbatch;
+	select.ticket     = base.ticket; 
+	select.ticket_score = base.ticket_score;
 
 	var sorts = [];
 	for (var i=0, l=sells.length; i<l; i++){
@@ -194,8 +198,7 @@ var wsaleUtils = function(){
 	    wsale.select.shop = diablo_get_object(wsale.select.shop_id, shops); 
 	    wsale.select.retailer = diablo_get_object(wsale.select.retailer_id, retailers);
 	    // console.log(wsale);
-	    wsale.select.employee = diablo_get_object(wsale.select.employee_id, employees);
-	    
+	    wsale.select.employee = diablo_get_object(wsale.select.employee_id, employees); 
 	    wsale.show_promotions = show_promotions;
 	    return wsale;
 	},
@@ -819,7 +822,7 @@ wsaleDraft.prototype.select = function(dialog, template, draftFilter, selectCall
 };
 
 var wsalePrint = function(){
-    var pay = function(cash, card, withDraw, should_pay){
+    var pay = function(cash, card, withDraw, ticket, should_pay){
 	console.log(cash, card, withDraw);
 	var s = "";
 	var left = should_pay;
@@ -834,9 +837,7 @@ var wsalePrint = function(){
 	    }
 	}
 	if (wsaleUtils.to_float(card) != 0){
-	    if (s) {
-		s += " ";
-	    }
+	    if (s) s += " ";
 	    
 	    if (card >= left){
 		s += "刷卡：" + left.toString();
@@ -847,11 +848,12 @@ var wsalePrint = function(){
 	    }
 	}
 	if (wsaleUtils.to_float(withDraw) != 0){
-	    if (s) {
-		s += " ";
-	    }
-
+	    if (s) s += " "; 
 	    s += "提现：" + withDraw.toString();
+	}
+	if (wsaleUtils.to_float(ticket) != 0){
+	    if (s) s += " "; 
+	    s += "卷：" + ticket.toString();
 	}
 
 	return s;
@@ -996,10 +998,14 @@ var wsalePrint = function(){
 	    var cash = sale.cash;
 	    var card = sale.card;
 	    var withDraw = sale.withdraw;
+	    var Ticket = sale.ticket;
+	    
 	    var total = sale.total;
 	    var should_pay = sale.should_pay;
 	    var comment = angular.isUndefined(sale.comment) ? "" : sale.comment;
 	    var score = sale.score;
+	    var ticketScore = sale.ticket_score;
+	    
 	    var lscore = function(){
 		if (sale.hasOwnProperty("lscore")) return sale.lscore;
 		else if (sale.hasOwnProperty("last_score")) return sale.last_score;
@@ -1014,7 +1020,7 @@ var wsalePrint = function(){
 	    if (0 === direct) l1 = "实付：";
 	    if (1 === direct) l1 = "退款：";
 	    l1 += should_pay.toString(); 
-	    l1 += " " + pay(cash, card, withDraw, should_pay);
+	    l1 += " " + pay(cash, card, withDraw, ticket, should_pay);
 	    console.log(l1);
 	    LODOP.ADD_PRINT_TEXT(hLine, 0, "52mm", 20, l1);
 	    hLine += 15;
@@ -1026,7 +1032,7 @@ var wsalePrint = function(){
 		l1 = "本次积分：" + score.toString() + "\n";
 		LODOP.ADD_PRINT_TEXT(hLine, 0, 178, 20, l1);
 		hLine += 15;
-		l1 = "累积积分：" + (lscore + score).toString() + "\n";
+		l1 = "累积积分：" + (lscore + score - ticketScore).toString() + "\n";
 		LODOP.ADD_PRINT_TEXT(hLine, 0, 178, 20, l1);
 		hLine += 15;
 	    }

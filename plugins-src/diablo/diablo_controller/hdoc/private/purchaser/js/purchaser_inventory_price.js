@@ -22,6 +22,7 @@ purchaserApp.controller("purchaserInventoryPriceCtrl", function(
     
     $scope.refresh = function(){
 	$scope.h_inventories = [];
+	$scope.select_history = [];
 	$scope.inventories = [];
 	$scope.inventories.push({$edit:false, $new:true}); 
 	$scope.has_saved = false;
@@ -106,15 +107,18 @@ purchaserApp.controller("purchaserInventoryPriceCtrl", function(
     };
     
     $scope.change_mode = function(){
-	console.log($scope.select.u_mode);
+	// console.log($scope.select.u_mode);
+	$scope.refresh();
 	$scope.fronted_prompt_inventory();
     };
 
     $scope.change_shop = function(){
+	$scope.refresh();
 	$scope.fronted_prompt_inventory();
     };
 
     $scope.change_region = function(){
+	$scope.refresh();
 	$scope.fronted_prompt_inventory();
     };
 
