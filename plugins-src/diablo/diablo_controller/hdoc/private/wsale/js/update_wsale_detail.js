@@ -45,27 +45,25 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	// diablo_goto_page("#/new_wsale_detail");
     };
 
-    $scope.calc_withdraw = function(){
-	if ($scope.select.retailer.type === diablo_charge_retailer && $scope.select.withdraw > 0){
-	    $scope.select.save_to_back = $scope.select.withdraw
-		+ $scope.select.cash + $scope.select.card - $scope.select.should_pay; 
-	    $scope.select.left_balance = $scope.select.surplus - $scope.select.withdraw
-		+ $scope.select.save_to_back;
-	    
-	} else {
-	    $scope.select.charge = $scope.select.should_pay - $scope.select.has_pay;
-	} 
-	// console.log($scope.select);
-    };
+    // $scope.calc_withdraw = function(){
+    // 	if ($scope.select.retailer.type === diablo_charge_retailer && $scope.select.withdraw > 0){
+    // 	    $scope.select.save_to_back = $scope.select.withdraw
+    // 		+ $scope.select.cash + $scope.select.card - $scope.select.should_pay; 
+    // 	    $scope.select.left_balance = $scope.select.surplus - $scope.select.withdraw
+    // 		+ $scope.select.save_to_back; 
+    // 	} else {
+    // 	    $scope.select.charge = $scope.select.should_pay - $scope.select.has_pay;
+    // 	} 
+    // };
     
     $scope.re_calculate = function(){
-	$scope.select.total        = 0;
-	$scope.select.abs_total    = 0;
-	$scope.select.should_pay   = 0;
-	$scope.select.score        = 0;
-	$scope.select.charge       = 0;
-	$scope.select.save_to_back = 0;
-
+	$scope.select.total          = 0;
+	$scope.select.abs_total      = 0;
+	$scope.select.should_pay     = 0;
+	$scope.select.score          = 0;
+	$scope.select.charge         = 0;
+	// $scope.select.save_to_back   = 0;
+	
 	var calc = wsaleCalc.calculate(
 	    $scope.select.o_retailer,
 	    $scope.select.retailer,
@@ -81,8 +79,9 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	$scope.select.total     = calc.total; 
 	$scope.select.should_pay= calc.should_pay;
 	$scope.select.score     = calc.score;
+	$scope.select.charge    = $scope.select.should_pay - $scope.select.has_pay;
 	
-	$scope.calc_withdraw();
+	// $scope.calc_withdraw();
     };
     
     // $scope.change_retailer = function(){
@@ -216,8 +215,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
      */
     $scope.disable_save = function(){
 	// save one time only
-	if ($scope.has_saved || $scope.select.charge > 0 || $scope.select.save_to_back < 0)
-	    return true;
+	if ($scope.has_saved || $scope.select.charge > 0) return true;
 	
 	// any payment of cash, card or wire or any inventory
 	if (angular.isDefined(diablo_set_float($scope.select.cash))
@@ -450,6 +448,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	    balance:       $scope.select.surplus, 
 	    cash:          setv($scope.select.cash),
 	    card:          setv($scope.select.card),
+	    ticket:        setv($scope.select.ticket),
 	    withdraw:      setv($scope.select.withdraw),
 	    verificate:    setv($scope.select.verificate),
 	    should_pay:    setv($scope.select.should_pay),
@@ -457,7 +456,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 
 	    old_retailer:    $scope.old_select.retailer.id, 
 	    old_balance:     $scope.old_select.surplus,
-	    old_withdraw:    $scope.old_select.withdraw,
+	    // old_withdraw:    $scope.old_select.withdraw,
 	    old_should_pay:  $scope.old_select.should_pay,
 	    old_datetime:    dateFilter($scope.old_select.rsn_datetime,
 				       "yyyy-MM-dd HH:mm:ss"),
@@ -520,17 +519,12 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 
     // watch balance
     var reset_payment = function(newValue){
-	$scope.select.has_pay = 0.00;	
+	$scope.select.has_pay = 0;	
 	$scope.select.has_pay += wsaleUtils.to_float($scope.select.cash); 
 	$scope.select.has_pay += wsaleUtils.to_float($scope.select.card);
 
-	if ($scope.select.retailer.type === diablo_charge_retailer){
-	    if (wsaleUtils.to_float($scope.select.withdraw) > 0 ){
-		$scope.select.has_pay += wsaleUtils.to_float($scope.select.withdraw);
-	    }
-	}
-	
-	$scope.calc_withdraw(); 
+	if ($scope.select.retailer.type === diablo_charge_retailer)
+	    $scope.select.has_pay += wsaleUtils.to_float($scope.select.withdraw); 
     };
     
     $scope.$watch("select.cash", function(newValue, oldValue){

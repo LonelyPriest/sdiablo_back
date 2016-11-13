@@ -178,6 +178,15 @@ to_sqls(proplists, {K, V}) when is_integer(V) ->
 %% float
 to_sqls(proplists, {K, V}) when is_float(V)->
     ?to_string(K) ++ "=" ++ ?to_s(V);
+
+
+%% integer
+to_sqls(plus, {K, V}) when is_integer(V) ->
+    ?to_string(K) ++ "=" ++ ?to_string(K) ++ "+" ++ ?to_s(V);
+
+%% float
+to_sqls(plus, {K, V}) when is_float(V)->
+    ?to_string(K) ++ "=" ++ ?to_s(K) + "+" ++ ?to_s(V);
 	
 %% -----------------------------------------------------------------------------
 %% concat tuple list to a sql with 'and', such as
@@ -202,12 +211,19 @@ to_sqls(proplists, [Proplist|T], SQL) ->
 %% [{<<"a">>, 1}, {<<"b">, 2}] => a = 1 , b = 2
 %% -----------------------------------------------------------------------------
 to_sqls(proplists, comma, Proplists) when is_list(Proplists)->
-    to_sqls(proplists, comma, Proplists, "").
+    to_sqls(proplists, comma, Proplists, "");
+to_sqls(plus, comma, Proplists) when is_list(Proplists)->
+    to_sqls(plus, comma, Proplists, "").
+
 to_sqls(proplists, comma, [Proplist], SQL) ->
     SQL ++ to_sqls(proplists, Proplist);
 to_sqls(proplists, comma, [H|T], SQL) ->
-    to_sqls(proplists, comma, T, SQL ++ to_sqls(proplists, H) ++ ",").
+    to_sqls(proplists, comma, T, SQL ++ to_sqls(proplists, H) ++ ",");
 
+to_sqls(plus, comma, [Proplist], SQL) ->
+    SQL ++ to_sqls(plus, Proplist);
+to_sqls(plus, comma, [H|T], SQL) ->
+    to_sqls(plus, comma, T, SQL ++ to_sqls(plus, H) ++ ",").
 
 
 %% -----------------------------------------------------------------------------
@@ -246,6 +262,11 @@ v(Key, KeyType, Value) ->
 		      integer -> ?to_i(Value)
 		  end
      }].
+
+v_0(Key, KeyType, Value) when Value == 0 ->
+    v(Key, KeyType, []);
+v_0(Key, KeyType, Value) ->
+    v(Key, KeyType, Value).
 
 value_from_proplists(Key, {Proplists}) ->
     proplists:get_value(Key, Proplists); 

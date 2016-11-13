@@ -371,13 +371,20 @@ action(Session, Req, {"update_w_sale"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     Invs            = ?v(<<"inventory">>, Payload, []),
     {struct, Base}  = ?v(<<"base">>, Payload),
+    RSN             = ?v(<<"rsn">>, Base),
 
-    case ?w_sale:sale(update, Merchant, lists:reverse(Invs), Base) of
-    	{ok, RSN} -> 
-    	    ?utils:respond(
-	       200, Req, ?succ(update_w_sale, RSN), {<<"rsn">>, ?to_b(RSN)});
-    	{error, Error} ->
-    	    ?utils:respond(200, Req, Error)
+     
+    case ?w_sale:sale(get_new, Merchant, RSN) of
+	{ok, OldBase} -> 
+	    case ?w_sale:sale(update, Merchant, lists:reverse(Invs), Base, OldBase) of
+		{ok, RSN} -> 
+		    ?utils:respond(
+		       200, Req, ?succ(update_w_sale, RSN), {<<"rsn">>, ?to_b(RSN)});
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end;
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
     end;
 
 action(Session, Req, {"check_w_sale"}, Payload) ->

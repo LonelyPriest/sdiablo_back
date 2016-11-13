@@ -31,16 +31,16 @@
 	    <div class="col-xs-3 col-md-3 ">
 	      <div class="input-group">
 		<span class="input-group-addon">
-	  	  <i class="icon-user fg-red"></i></span>
+	  	  <i class="glyphicon glyphicon-star fg-red"></i>会员</span>
 	  	<input class="form-control"
 		       type="text"
 		       readonly
+		       placeholder="请选择会员"
 	  	       x-ng-model="select.retailer"
-	  	       placeholder="请选择会员" 
 	  	       typeahead-editable="false"
 		       typeahead-on-select="change_retailer()"
-	  	       typeahead="r as r.name for r in
-	  			  retailers|filter:$viewValue|limitTo:8"/> 
+	  	       uib-typeahead="r as r.name for r in
+	  			      retailers|filter:$viewValue|limitTo:20"/> 
 	      </div>
 	    </div>
 
@@ -53,10 +53,8 @@
 		       type="text"
 		       readonly
 	  	       x-ng-model="select.shop"
-	  	       placeholder="请选择店铺"
 	  	       typeahead-editable="false"
-	  	       typeahead="s as s.name for s in
-	  			  shops|filter:$viewValue|limitTo:8"/>
+	  	       uib-typeahead="s as s.name for s in shops|filter:$viewValue"/>
 	      </div>
 	    </div>
 
@@ -67,8 +65,7 @@
 	    <div class="col-xs-3 col-md-3 ">
 	      <div class="input-group">
 		<span class="input-group-addon">
-	  	  <i class="icon-user fg-red"></i>
-	  	</span>
+	  	  <i class="glyphicon glyphicon-user fg-red"></i>店员</span>
 	  	<select class="form-control" type="text"
 	  		x-ng-model="select.employee"
 	  		x-ng-options="e as e.name for e in
@@ -84,9 +81,7 @@
 	    <div class="col-xs-3 col-md-3"> 
 	      <div class="input-group">
 		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-comment fg-red"></i>
-		  备注
-		</span>
+		  <i class="glyphicon glyphicon-comment fg-red"></i>备注</span>
 	  	<input class="form-control"
 		       type="text"
 		       placeholder="备注"
@@ -114,10 +109,7 @@
 			   type="number" step="0.01"
 			   placeholder="现金"
 			   x-ng-pattern="pattern.money"
-	  		   x-ng-model="select.cash"
-			   popover-placement="top"
-			   popover-trigger="focus"
-			   popover="支持二位小数"/>
+	  		   x-ng-model="select.cash" />
 		  </div>
 		</form>
 	      </div>
@@ -126,9 +118,7 @@
 	    <div class="col-xs-3 col-md-3"> 
 	      <div class="input-group">
 		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-credit-card fg-red"></i>
-		  刷卡
-		</span>
+		  <i class="glyphicon glyphicon-credit-card fg-red"></i>刷卡</span>
 		<form name="select.form.cardForm">
 		  <div ng-class="{'has-error':select.form.cardForm.$invalid
 				 && !select.form.cardForm.$pristine}">
@@ -136,10 +126,7 @@
 			   type="number" step="0.01"
 			   placeholder="刷卡"
 			   x-ng-pattern="pattern.money"
-	  		   x-ng-model="select.card"
-			   popover-placement="top"
-			   popover-trigger="focus"
-			   popover="支持二位小数"/>
+	  		   x-ng-model="select.card" />
 		  </div>
 		</form>
 	      </div>
@@ -183,9 +170,7 @@
 	    <div class="col-sm-3 col-md-3">
 	      <div class="input-group">
 	    	<span class="input-group-addon">
-	    	  <i class="glyphicon glyphicon-ban-circle fg-red"></i>
-		  核销
-		</span>
+	    	  <i class="glyphicon glyphicon-ban-circle fg-red"></i>核销</span>
 	    	<select class="form-control" type="text"
 			disabled
 	  		x-ng-model="select.verificate" 
@@ -195,7 +180,39 @@
 	    </div> 
 	  </div> <!--END row-->
 
-	  <div x-ng-if="select.retailer.type===1" class="row diablo-form-group"> 
+	  <div x-ng-if="select.tbatch!==-1" class="row diablo-form-group"> 
+	    <div class="col-sm-3 col-md-3">
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-copyright-mark fg-red"></i>积分</span>
+		<input class="form-control" readonly
+	  	       x-ng-model="select.retailer.score"/> 
+	      </div>
+	    </div>
+	    
+	    <div class="col-sm-3 col-md-3">
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-barcode fg-red"></i>批次</span>
+		<input class="form-control" readonly
+		       placeholder="电子卷批次号，由系统自动生成"
+	  	       x-ng-model="select.tbatch"/> 
+	      </div>
+	    </div>
+	    
+	    <div class="col-sm-6 col-md-6">
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-yen fg-red"></i>金额</span>
+		<input class="form-control" readonly
+		       placeholder="电子卷金额，由系统自动生成"
+	  	       x-ng-model="select.ticket"/> 
+	      </div>
+	    </div>
+	  </div>
+
+	  <div x-ng-if="select.withdraw>0 && select.retailer.type===1"
+	       class="row diablo-form-group"> 
 	    <div class="col-sm-3 col-md-3">
 	      <div class="input-group">
 		<span class="input-group-addon">
@@ -208,8 +225,7 @@
 	    <div class="col-sm-3 col-md-3">
 	      <div class="input-group">
 		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-yen fg-red"></i>
-		  提现</span> 
+		  <i class="glyphicon glyphicon-yen fg-red"></i>提现</span> 
 	  	<input class="form-control"
 		       type="number"
 		       readonly
@@ -217,18 +233,18 @@
 	      </div>
 	    </div>
 
-	    <div class="col-sm-3 col-md-3">
-	      <div class="input-group">
-		<span class="input-group-addon">
-		<i class="glyphicon glyphicon-yen fg-red"></i>存现</span>
-		<input class="form-control"
-		       type="number"
-		       readonly
-	  	       x-ng-model="select.save_to_back"/> 
-	      </div>
-	    </div>
+	    <!-- <div class="col-sm-3 col-md-3"> -->
+	    <!--   <div class="input-group"> -->
+	    <!-- 	<span class="input-group-addon"> -->
+	    <!-- 	<i class="glyphicon glyphicon-yen fg-red"></i>返现</span> -->
+	    <!-- 	<input class="form-control" -->
+	    <!-- 	       type="number" -->
+	    <!-- 	       readonly -->
+	    <!-- 	       x-ng-model="select.save_to_back"/>  -->
+	    <!--   </div> -->
+	    <!-- </div> -->
 
-	    <div class="col-sm-3 col-md-3">
+	    <div class="col-sm-6 col-md-6">
 	      <div class="input-group">
 		<span class="input-group-addon">
 	          <i class="glyphicon glyphicon-yen fg-red"></i>结余</span>
@@ -290,7 +306,7 @@
 						      $item, $model, $label)"
 				 typeahead-wait-ms="500"
 				 typeahead-loading="loading"
-				 typeahead="g as g.name for g in
+				 uib-typeahead="g as g.name for g in
 					    match_style_number($viewValue)">
 			  <span x-ng-show="loading">
 			    <i class="glyphicon glyphicon-refresh"></i>
@@ -331,10 +347,7 @@
 		    		 type="number" step="0.01"
 		    		 required
 		    		 x-ng-pattern="/^\d+(.\d{1,2})?$/"
-		    		 x-ng-model="inv.fprice"
-		    		 popover-placement="top"
-		    		 popover-trigger="focus"
-		    		 popover="请输入单价"/>
+		    		 x-ng-model="inv.fprice" />
 		    	</div>
 		      </form>
 		    </td>
@@ -633,6 +646,8 @@
 	    <th>季节</th>
 	    <th>厂商</th>
 	    <th>当前库存</th>
+	    <th>进价</th>
+	    <th>吊牌价</th>
 	    <th>入库日期</th>
 	  </tr>
 	</thead>
@@ -643,6 +658,8 @@
 	    <td>{{s.seasonObj.name}}</td>
 	    <td>{{s.fname}}</td>
 	    <td>{{s.total}}</td>
+	    <td>{{s.org_price}}</td>
+	    <td>{{s.tag_price}}</td>
 	    <td>{{s.entry_date}}</td>
 	  </tr>
 	</tbody>

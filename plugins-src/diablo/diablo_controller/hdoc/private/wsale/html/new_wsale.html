@@ -215,16 +215,41 @@
 	    </div>
 	  </div>
 	  
-	  <div x-ng-if="select.retailer.type===1" class="row diablo-form-group">
-	    <!-- <div class="col-sm-3 col-md-3"> -->
-	    <!--   <div class="input-group"> -->
-	    <!-- 	<span class="input-group-addon"> -->
-	    <!-- 	  <i class="glyphicon glyphicon-copyright-mark fg-red"></i>积分</span> -->
-	    <!-- 	<input class="form-control" readonly -->
-	    <!-- 	       x-ng-model="select.score"/>  -->
-	    <!--   </div> -->
-	    <!-- </div> -->
+	  
+
+	  <!-- ticket -->
+	  <div class="row diablo-form-group"> 
+	    <div class="col-sm-3 col-md-3">
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-copyright-mark fg-red"></i>积分</span>
+		<input class="form-control" readonly
+	  	       x-ng-model="select.retailer.score"/> 
+	      </div>
+	    </div>
 	    
+	    <div class="col-sm-3 col-md-3">
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-barcode fg-red"></i>批次</span>
+		<input class="form-control" readonly
+		       placeholder="电子卷批次号，由系统自动生成"
+	  	       x-ng-model="select.ticket_batch"/> 
+	      </div>
+	    </div>
+	    
+	    <div class="col-sm-6 col-md-6">
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-yen fg-red"></i>金额</span>
+		<input class="form-control" readonly
+		       placeholder="电子卷金额，由系统自动生成"
+	  	       x-ng-model="select.ticket_balance"/> 
+	      </div>
+	    </div>
+	  </div>
+
+	  <div x-ng-if="select.retailer.type===1" class="row diablo-form-group"> 
 	    <div class="col-sm-3 col-md-3">
 	      <div class="input-group">
 		<span class="input-group-addon">
@@ -257,39 +282,8 @@
 	      </div>
 	    </div> 
 	  </div>
-
-	  <!-- ticket -->
-	  <div class="row diablo-form-group"> 
-	    <div class="col-sm-3 col-md-3">
-	      <div class="input-group">
-		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-copyright-mark fg-red"></i>积分</span>
-		<input class="form-control" readonly
-	  	       x-ng-model="select.retailer.score"/> 
-	      </div>
-	    </div>
-	    
-	    <div class="col-sm-3 col-md-3">
-	      <div class="input-group">
-		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-barcode fg-red"></i>批次</span>
-		<input class="form-control" readonly
-		       placeholder="电子卷批次号，由系统自动生成"
-	  	       x-ng-model="select.ticket_batch"/> 
-	      </div>
-	    </div>
-	    
-	    <div class="col-sm-6 col-md-6">
-	      <div class="input-group">
-		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-yen fg-red"></i>金额</span>
-		<input class="form-control" readonly
-		       placeholder="电子卷金额，由系统自动生成"
-	  	       x-ng-model="select.ticket_balance"/> 
-	      </div>
-	    </div> 
 	  
-	</div>
+	</div> 
       </div>
       
       <!--BEGN portlet body--> 
@@ -297,7 +291,7 @@
 	<!--BEGIN panel-->
 	<uib-tabset>
 	  <uib-tab heading="{{wsale_mode[0].title}}"
-	       active="wsale_mode[0].active">
+		   active="wsale_mode[0].active">
 	    <div class="panel panel-default">
 	      
 	      <div class="table-responsive">
@@ -344,7 +338,7 @@
 							$model,
 							$label)"
 				   uib-typeahead="g as g.name for g in
-					      all_w_inventory|filter:{prompt:$viewValue}|limitTo:20"/>
+						  all_w_inventory|filter:{prompt:$viewValue}|limitTo:20"/>
 			  </div>
 			</form>
 		      </td>
@@ -579,9 +573,9 @@
 	  </uib-tab> 
 
 	  <uib-tab x-ng-if="false"
-	       heading="{{wsale_mode[1].title}}"
-	       active="wsale_mode[1].active"
-	       select="image_mode(current_page)">
+		   heading="{{wsale_mode[1].title}}"
+		   active="wsale_mode[1].active"
+		   select="image_mode(current_page)">
 
 	    <div class="table-toolbar">
 	      <!--BEGIN row-->
