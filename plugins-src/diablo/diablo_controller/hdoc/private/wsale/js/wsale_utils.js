@@ -998,7 +998,7 @@ var wsalePrint = function(){
 	    var cash = sale.cash;
 	    var card = sale.card;
 	    var withDraw = sale.withdraw;
-	    var Ticket = sale.ticket;
+	    var ticket = sale.ticket;
 	    
 	    var total = sale.total;
 	    var should_pay = sale.should_pay;

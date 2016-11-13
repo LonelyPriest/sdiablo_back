@@ -179,8 +179,8 @@ sidebar(Session) ->
     	case ?right_auth:authen(?new_w_bank_card, Session) of
     	    {ok, ?new_w_bank_card} ->
     		[{"new_bank_card", "新增银行卡", "glyphicon glyphicon-plus"},
-    		 {"bank_card_detail", "银行卡详情", "glyphicon glyphicon-briefcase"},
-		 {"bank_card_detail", "银行卡详情", "glyphicon glyphicon-briefcase"}
+    		 {"bank_card_detail", "银行卡详情", "glyphicon glyphicon-briefcase"}
+		 %% {"bank_card_detail", "银行卡详情", "glyphicon glyphicon-briefcase"}
 		];
     	    _ ->
 		[]
@@ -191,8 +191,9 @@ sidebar(Session) ->
 	    {ok, ?new_w_printer_conn} ->
 		[
 		 {"connect_new",    "打印机绑定", "glyphicon glyphicon-plus"},
-		 {"connect_detail", "绑定详情", "glyphicon glyphicon-briefcase"},
-		 {"connect_detail", "绑定详情", "glyphicon glyphicon-leaf"}]; 
+		 {"connect_detail", "绑定详情", "glyphicon glyphicon-briefcase"}
+		 %% {"connect_detail", "绑定详情", "glyphicon glyphicon-leaf"}
+		]; 
 	    _ -> []
 	end, 
     
