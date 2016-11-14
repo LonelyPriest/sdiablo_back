@@ -46,6 +46,7 @@
 		  </span>
 		  <input
 		     class="form-control"
+		     ng-edit
 		     placeholder="支持名称/手机/地址查询"
 		     typeahead-editable="false"
 		     typeahead-on-select="on_select_retailer(
@@ -110,6 +111,7 @@
 		    <td>{{r.address}}</td> 
 		    <td>
 		      <div x-ng-if="r.type_id===1">{{r.balance}}</div>
+		      <div x-ng-if="r.type_id!==1" class="text-center">-</div>
 		    </td>
 		    <td>{{r.consume}}</td>
 		    <td>
@@ -150,9 +152,9 @@
 
 		  <tr x-ng-if="right.master && total_items!==0" class="bg-white">
 		    <td colspan="6"></td>
-		    <td class="fg-red">{{total_balance}}</td>
+		    <td class="fg-red text-center">{{total_balance}}</td>
 		    <td class="fg-red">{{total_consume}}</td>
-		    <td></td>
+		    <td colspan="4"></td>
 		  </tr> 
 		</tbody>
 

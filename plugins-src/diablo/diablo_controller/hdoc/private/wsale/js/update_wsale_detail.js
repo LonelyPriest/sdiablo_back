@@ -79,7 +79,13 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	$scope.select.total     = calc.total; 
 	$scope.select.should_pay= calc.should_pay;
 	$scope.select.score     = calc.score;
-	$scope.select.charge    = $scope.select.should_pay - $scope.select.has_pay;
+	
+	if (0 !== wsaleUtils.to_float($scope.select.has_pay))
+	    $scope.select.charge = $scope.select.should_pay
+	    - wsaleUtils.to_float($scope.select.has_pay)
+	    - wsaleUtils.to_float($scope.select.ticket);
+
+	// console.log($scope.select);
 	
 	// $scope.calc_withdraw();
     };
@@ -117,6 +123,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	    $scope.old_select = wsale.select;
 	    $scope.select = angular.extend($scope.select, wsale.select);
 	    $scope.select.o_retailer = $scope.select.retailer;
+	    $scope.select.left_balance = $scope.select.surplus - $scope.select.withdraw;
 
 	    $scope.show_promotions = wsale.show_promotions;
 
@@ -504,6 +511,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	    	diabloUtilsService.response_with_callback(
 	    	    true, "销售单编辑", msg, $scope,
 	    	    function(){
+			diabloFilter.reset_retailer();
 			$scope.go_back();
 		    })
 	    } else{
@@ -524,7 +532,11 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	$scope.select.has_pay += wsaleUtils.to_float($scope.select.card);
 
 	if ($scope.select.retailer.type === diablo_charge_retailer)
-	    $scope.select.has_pay += wsaleUtils.to_float($scope.select.withdraw); 
+	    $scope.select.has_pay += wsaleUtils.to_float($scope.select.withdraw);
+
+	$scope.select.charge = $scope.select.should_pay
+	    - wsaleUtils.to_float($scope.select.has_pay)
+	    - wsaleUtils.to_float($scope.select.ticket);
     };
     
     $scope.$watch("select.cash", function(newValue, oldValue){

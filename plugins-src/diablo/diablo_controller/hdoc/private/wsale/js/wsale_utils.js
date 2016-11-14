@@ -471,7 +471,8 @@ var wsaleUtils = function(){
 	},
 
 	calc_score_of_money: function(money, score){
-	    return Math.floor(money / score.balance) * score.score;
+	    // return Math.floor(money / score.balance) * score.score;
+	    return Math.ceil(money / score.balance) * score.score;
 	},
 
 	to_float: function(v) {

@@ -387,11 +387,16 @@ handle_call({get_setting_profile, Merchant}, _From, State) ->
 handle_call({get_setting_profile, Merchant, Shop}, _From, State) ->
     MS = ms(Merchant, setting),
     Select = select(MS, fun() -> ?w_base:setting(list, Merchant) end),
-    Setting = 
+    Setting =
 	case filter(Select, <<"shop">>, Shop) of
 	    [] -> filter(Select, <<"shop">>, -1);
-	    S  -> S
+	    S -> S
+	    %% S  -> case Shop =/= -1 of
+	    %% 	      true -> [{S}] ++ [{filter(Select, <<"shop">>, -1)}];
+	    %% 	      false -> S
+	    %% 	  end
 	end,
+    %% ?DEBUG("Setting ~p", [Setting]),
     {reply, {ok, Setting}, State};
 
 

@@ -542,6 +542,10 @@ function filterProvider(){
 		} 
 	    },
 
+	    reset_retailer: function(){
+		_retailers = [];
+	    },
+	    
 	    get_wretailer: function(){
 		if (_retailers.length !== 0 ){
 		    return _retailers;
@@ -648,6 +652,10 @@ function normalFilterProvider(){
 		} 
 	    },
 
+	    reset_retailer: function(){
+		_retailers = [];
+	    },
+	    
 	    get_wretailer: function(){
 		if (_retailers.length !== 0){
 		    return _retailers;

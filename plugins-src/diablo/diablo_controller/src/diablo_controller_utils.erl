@@ -186,7 +186,7 @@ to_sqls(plus, {K, V}) when is_integer(V) ->
 
 %% float
 to_sqls(plus, {K, V}) when is_float(V)->
-    ?to_string(K) ++ "=" ++ ?to_s(K) + "+" ++ ?to_s(V);
+    ?to_string(K) ++ "=" ++ ?to_s(K) ++ "+" ++ ?to_s(V);
 	
 %% -----------------------------------------------------------------------------
 %% concat tuple list to a sql with 'and', such as

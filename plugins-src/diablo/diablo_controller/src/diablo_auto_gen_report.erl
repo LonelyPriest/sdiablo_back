@@ -47,7 +47,7 @@ syn_report(stastic_per_shop, Merchant, Conditions) ->
 add(report_task, Merchant, TriggerTime) ->
     gen_server:call(?SERVER, {add_report_task, Merchant, TriggerTime}).
 
-%% triggerTime: {{12, 13, am}}
+%% triggerTime: {12, 13, am}
 ticket(preferential, TriggerTime) ->
     gen_server:cast(?SERVER, {gen_ticket, TriggerTime}).
 cancel_ticket(preferential) ->
@@ -348,11 +348,12 @@ task(gen_ticket, Datetime, Merchant) when is_number(Merchant) ->
 	    [] -> [];
 	    [{_Score2Money}] -> _Score2Money
 	end, 
-    ?DEBUG("score2money ~p, ", [Score2Money]),
+    %% ?DEBUG("score2money ~p, ", [Score2Money]),
     
     IsGenTicket = ?v(<<"gen_ticket">>, BaseSetting, 0),
     SysVips = sys_vip_of(merchant, Merchant),
-    ?DEBUG("IsGenTicket ~p, SysVips ~p", [IsGenTicket, SysVips]),
+    ?DEBUG("IsGenTicket ~p, SysVips ~p, Merchant ~p, score2money ~p",
+	   [IsGenTicket, SysVips, Merchant, Score2Money]),
     
     TicketSqls =
 	case ?to_i(IsGenTicket) =:= 1 andalso length(Score2Money) =/= 0 of

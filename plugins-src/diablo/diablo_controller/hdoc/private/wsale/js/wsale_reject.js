@@ -448,6 +448,7 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 	    }
 	}
 
+	// console.log(nscore);
 	$scope.select.rscore = $scope.select.score - nscore;
 	$scope.select.rcharge = diablo_round($scope.select.rcharge);
 

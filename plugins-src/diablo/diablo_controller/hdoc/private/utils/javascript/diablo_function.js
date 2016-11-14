@@ -626,8 +626,7 @@ var diablo_authen = function ($httpProvider) {
 var diablo_base_setting = function(name, shop, base_settings, transfer, defaultValue){
     var found = false;
     for (var i=0, l=base_settings.length; i<l; i++){
-	if (name === base_settings[i].name
-	    && shop === base_settings[i].shop){
+	if (name === base_settings[i].name && shop === base_settings[i].shop){
 	    var found = true;
 	    return transfer(base_settings[i].value);
 	}
@@ -635,9 +634,7 @@ var diablo_base_setting = function(name, shop, base_settings, transfer, defaultV
 
     if (!found){
 	var s_default = 
-	    base_settings.filter(function(s){
-		return name === s.name && s.shop ===  -1
-	    });
+	    base_settings.filter(function(s){return name === s.name && s.shop ===  -1});
 
 	if (s_default.length !== 0){
 	    return transfer(s_default[0].value);

@@ -56,6 +56,7 @@ action(Session, Req, {"list_base_setting"}) ->
 		    [] -> [{SS} || {SS} <- S, ?v(<<"shop">>, SS) =:= -1];
 		    V -> V
 		end,
+	    %% ?DEBUG("select ~p", [Select]),
 	    %% lists:filter()
 	    ?utils:respond(200, batch, Req, Select)
 

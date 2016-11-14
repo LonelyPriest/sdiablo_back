@@ -444,18 +444,13 @@ body_stastic(Brand, _Model, Column, _TotalBalance, Attrs, Vip, LastScore, STotal
 			_ -> LastScore
 		    end,
     
-    AccScore     = Score + RealLastScore - TicketScore, 
-    RPay         = ShouldPay - Withdraw - Ticket,
-    
-    NewCash      = case RPay > 0 andalso Cash >= RPay of
-		       true  -> RPay;
-		       false -> Cash
-		   end,
+    AccScore     = Score + RealLastScore - TicketScore,
 
-    NewCard      = case RPay - NewCash > 0 andalso Card >= RPay - NewCash of
-		       true  -> RPay - NewCash;
-		       false -> Card
-		   end,
+
+    [NewTicket, NewWithdraw, NewCard, NewCash] = NewPays =
+	?w_sale:pay_order(ShouldPay, [Ticket, Withdraw, Card, Cash], []),
+    
+    ?DEBUG("newPays ~p", [NewPays]), 
 
     case RTotal =/= 0 of
 	true -> "销售：" ++ ?to_s(STotal)
@@ -472,7 +467,7 @@ body_stastic(Brand, _Model, Column, _TotalBalance, Attrs, Vip, LastScore, STotal
 	   end
 	
 	++ ?to_s(abs(ShouldPay))
-	++ pay(style, abs(NewCash), abs(NewCard), abs(Withdraw), abs(Ticket))
+	++ pay(style, abs(NewCash), abs(NewCard), abs(NewWithdraw), abs(NewTicket))
 	++ br(Brand)
 
 	++ case Vip of 
@@ -778,7 +773,7 @@ field_name(<<"color">>)        -> "颜色";
 field_name(<<"size">>)         -> "尺码".
 
 pay(style, Cash, Card, Withdraw, Ticket) ->
-    ?DEBUG("cash ~p, card ~p, withdraw ~p, ticket", [Cash, Card, Withdraw, Ticket]),
+    ?DEBUG("cash ~p, card ~p, withdraw ~p, ticket ~p", [Cash, Card, Withdraw, Ticket]),
     Pays = [pay(cash, Cash), pay(card, Card), pay(withdraw, Withdraw), pay(ticket, Ticket)], 
     lists:foldr(fun([], Acc) -> Acc;
 		   (S, Acc) -> pading(2) ++ S ++ Acc

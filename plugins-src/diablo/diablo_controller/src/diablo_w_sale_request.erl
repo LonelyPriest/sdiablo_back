@@ -376,7 +376,7 @@ action(Session, Req, {"update_w_sale"}, Payload) ->
      
     case ?w_sale:sale(get_new, Merchant, RSN) of
 	{ok, OldBase} -> 
-	    case ?w_sale:sale(update, Merchant, lists:reverse(Invs), Base, OldBase) of
+	    case ?w_sale:sale(update, Merchant, lists:reverse(Invs), {Base, OldBase}) of
 		{ok, RSN} -> 
 		    ?utils:respond(
 		       200, Req, ?succ(update_w_sale, RSN), {<<"rsn">>, ?to_b(RSN)});

@@ -15,7 +15,7 @@
 
 %% API
 -export([start_link/1]).
--export([sale/3, sale/4]).
+-export([sale/3, sale/4, pay_order/3, pay_order/4]).
 -export([rsn_detail/3]).
 -export([filter/4, filter/6, export/3]).
 -export([direct/1]).
@@ -122,7 +122,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
     %% DateTime   = ?v(<<"datetime">>, Props, ?utils:current_time(localtime)),
     DateTime   = ?utils:correct_datetime(datetime, ?v(<<"datetime">>, Props)),
     Employe    = ?v(<<"employee">>, Props),
-    Comment    = ?v(<<"comment">>, Props, ""),
+    Comment    = ?v(<<"comment">>, Props, []),
 
     Cash       = ?v(<<"cash">>, Props, 0),
     Card       = ?v(<<"card">>, Props, 0),
@@ -137,7 +137,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
     TicketScore = ?v(<<"ticket_score">>, Props, 0),
     TicketBatch = ?v(<<"ticket_batch">>, Props, -1),
 
-    RPay       = ShouldPay - Withdraw - Ticket,
+    %% RPay       = ShouldPay - Withdraw - Ticket,
     
     Sql0 = "select id, name, balance, score from w_retailer"
 	" where id=" ++ ?to_s(Retailer)
@@ -153,19 +153,21 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 		true ->
 		    {reply, {error, ?err(wsale_not_enought_balance, ?v(<<"id">>, Account))}, State};
 		false ->
-		    NewCash = case RPay > 0 andalso Cash >= RPay of
-				  true  -> RPay;
-				  false -> Cash
-			      end,
+		    [NewTicket, NewWithdraw, NewCard, NewCash] =
+			pay_order(ShouldPay, [Ticket, Withdraw, Card, Cash], []),
+		    %% NewCash = case RPay > 0 andalso Cash >= RPay of
+		    %% 		  true  -> RPay;
+		    %% 		  false -> Cash
+		    %% 	      end,
 
-		    NewRPay = RPay - NewCash,
-		    NewCard = case NewRPay > 0 andalso Card >= NewRPay of
-				  true  -> NewRPay;
-				  false -> Card
-			      end,
+		    %% NewRPay = RPay - NewCash,
+		    %% NewCard = case NewRPay > 0 andalso Card >= NewRPay of
+		    %% 		  true  -> NewRPay;
+		    %% 		  false -> Card
+		    %% 	      end,
 
 		    ?DEBUG("NewCard ~p, NewCard ~p, withdraw ~p, ticket ~p",
-			   [NewCash,  NewCard, Withdraw, Ticket]),
+			   [NewCash,  NewCard, NewWithdraw, NewTicket]),
 		    
 		    SaleSn = lists:concat(
 			       ["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-",
@@ -193,11 +195,8 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 			++ ?to_s(ShouldPay) ++ "," 
 			++ ?to_s(NewCash) ++ ","
 			++ ?to_s(NewCard) ++ ","
-			++ ?to_s(Withdraw) ++ ","
-			++ case ShouldPay > 0 andalso Ticket > ShouldPay of
-			       true -> ?to_s(ShouldPay) ++ ",";
-			       false -> ?to_s(Ticket) ++ ","
-			   end
+			++ ?to_s(NewWithdraw) ++ ","
+			++ ?to_s(NewTicket) ++ ","
 			++ ?to_s(Verificate) ++ ","
 			++ ?to_s(Total) ++ ","
 			++ ?to_s(CurrentScore) ++ ","
@@ -207,20 +206,19 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 			++ "\"" ++ ?to_s(DateTime) ++ "\");",
 
 		    Sql3 = ["update w_retailer set consume=consume+" ++ ?to_s(ShouldPay)
-			    ++ case Withdraw =< 0 of
+			    ++ case NewWithdraw =< 0 of
 				   true  -> [];
 				   false -> ", balance=balance-" ++ ?to_s(Withdraw)
 			       end
 			    ++ case Score == 0 andalso TicketScore =< 0 of
 				   true  -> [];
-				   false -> ", score=score+" ++ ?to_s(Score)
-						++ "-" ++ ?to_s(TicketScore)
+				   false -> ", score=score+" ++ ?to_s(Score - TicketScore)
 			       end 
 			    ++ " where id=" ++ ?to_s(?v(<<"id">>, Account))],
 
 		    Sql4 = case TicketBatch of
 			       -1 -> [];
-			       _ ->
+			       _  ->
 				   ["update w_ticket set state=2"
 				    " where merchant=" ++ ?to_s(Merchant)
 				    ++ " and batch=" ++ ?to_s(TicketBatch)
@@ -241,70 +239,49 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 	   [Merchant, Inventories, Props, OldProps]),
 
     Curtime    = ?utils:current_time(format_localtime), 
-    RSNId      = ?v(<<"id">>, Props),
+    
     RSN        = ?v(<<"rsn">>, Props),
     Retailer   = ?v(<<"retailer">>, Props),
     Shop       = ?v(<<"shop">>, Props), 
     Datetime   = ?v(<<"datetime">>, Props, Curtime), 
     Employee   = ?v(<<"employee">>, Props),
 
-    Balance    = ?v(<<"balance">>, Props),
+    %% Balance    = ?v(<<"balance">>, Props),
     ShouldPay  = ?v(<<"should_pay">>, Props, 0), 
     Cash       = ?v(<<"cash">>, Props, 0),
     Card       = ?v(<<"card">>, Props, 0),
     Withdraw   = ?v(<<"withdraw">>, Props, 0),
     Ticket     = ?v(<<"ticket">>, Props, 0),
-    Comment       = ?v(<<"comment">>, Props),
-
-    %% OldRetailer  = ?v(<<"old_retailer">>, Props),
-    %% OldShouldPay = ?v(<<"old_should_pay">>, Props, 0),
-    %% OldDatetime  = ?v(<<"old_datetime">>, Props),
-    %% OldScore     = ?v(<<"old_score">>, Props, 0), 
-
+    Comment    = ?v(<<"comment">>, Props),
+    
     Total        = ?v(<<"total">>, Props),
     Score        = ?v(<<"score">>, Props, 0),
 
-    OldEmployee  = ?v(<<"employee">>, OldProps),
-    OldRetailer  = ?v(<<"retailer">>, OldProps),
+    RSNId        = ?v(<<"id">>, OldProps),
+    OldEmployee  = ?v(<<"employ_id">>, OldProps),
+    OldRetailer  = ?v(<<"retailer_id">>, OldProps),
     OldShouldPay = ?v(<<"should_pay">>, OldProps),
-    OldDatetime  = ?v(<<"datetime">>, OldProps),
+    OldDatetime  = ?v(<<"entry_date">>, OldProps),
     OldScore     = ?v(<<"score">>, OldProps),
+
+    OldCash       = ?v(<<"cash">>, OldProps),
+    OldCard       = ?v(<<"card">>, OldProps),
+    OldWithdraw   = ?v(<<"withdraw">>, OldProps),
+    OldTicket     = ?v(<<"ticket">>, OldProps),
+    
     %% OldComment   = ?v(<<"comment">>, OldProps),
     OldTotal     = ?v(<<"total">>, OldProps),
+    SellType     = ?v(<<"type">>, OldProps),
 
     MShouldPay   = ShouldPay - OldShouldPay,
     MScore       = Score - OldScore,
     RealyShop    = realy_shop(Merchant, Shop),
-
-    %% Setting = ?wifi_print:detail(base_setting, Merchant, RealyShop),
-    %% Vip = OldRetailer =/= ?to_i(?v(<<"s_customer">>, Setting)),
-
-    %% BackToCard = 
-    %% 	case OldWithdraw > 0 of
-    %% 	    true  -> OldWithdraw + Cash + Card - ShouldPay;
-    %% 	    false -> 0
-    %% 	end,
-
-    %% {NewCash, NewCard, Withdraw} =
-    %% 	case OldWithdraw =/= 0 andalso OldWithdraw >= ShouldPay of
-    %% 	    true  -> {0, 0, ShouldPay};
-    %% 	    false ->
-    %% 		RPay  = ShouldPay - OldWithdraw,
-    %% 		Cash1 = case Cash >= RPay of
-    %% 			    true  -> RPay;
-    %% 			    false -> Cash
-    %% 			end,
-
-    %% 		Card1 = case Card >=  RPay - Cash1 of
-    %% 			    true  -> RPay - Cash1;
-    %% 			    false -> Card
-    %% 			end,
-    %% 		{Cash1, Card1, OldWithdraw}
-    %% 	end,
-    %% ?DEBUG("newCash ~p, newCard ~p, withdraw ~p", [NewCash, NewCard, Withdraw]),
-
+    
     [NewTicket, NewWithdraw, NewCard, NewCash] = NewPays =
-	pay_order(ShouldPay, [Ticket, Withdraw, Card, Cash], []), 
+	case SellType of
+	    0 -> pay_order(ShouldPay, [Ticket, Withdraw, Card, Cash], []);
+	    1 -> pay_order(reject, ShouldPay, [Ticket, Withdraw, Card, Cash], [])
+	end,
     ?DEBUG("new pays ~p", [NewPays]),
 
     Sql1 = sql(update_wsale, RSN, Merchant, RealyShop, Datetime, OldDatetime, Inventories),
@@ -313,10 +290,10 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 	++ ?utils:v(retailer, integer, get_modified(Retailer, OldRetailer)) 
     %% ++ ?utils:v(shop, integer, Shop)
 	++ ?utils:v(should_pay, float, get_modified(ShouldPay, OldShouldPay))
-	++ ?utils:v(cash, float, get_modified(NewCash, Cash))
-	++ ?utils:v(card, float, get_modified(NewCard, Card))
-	++ ?utils:v(withdraw, float, get_modified(NewWithdraw, Withdraw))
-	++ ?utils:v(ticket, float, get_modified(NewTicket, Ticket))
+	++ ?utils:v(cash, float, get_modified(NewCash, OldCash))
+	++ ?utils:v(card, float, get_modified(NewCard, OldCard))
+	++ ?utils:v(withdraw, float, get_modified(NewWithdraw, OldWithdraw))
+	++ ?utils:v(ticket, float, get_modified(NewTicket, OldTicket))
 	++ ?utils:v(total, integer, get_modified(Total, OldTotal))
 	++ ?utils:v(score, integer, get_modified(Score, OldScore))
 	++ ?utils:v(comment, string, Comment)
@@ -336,9 +313,11 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 	    AllSql = Sql1 ++ [Sql2] ++
 		case ?utils:v_0(consume, float, MShouldPay)
 		    ++ ?utils:v_0(score, integer, MScore)
-		    ++ ?utils:v_0(balance, float, NewWithdraw, Withdraw) of
+		    ++ ?utils:v_0(balance, float, Withdraw - NewWithdraw) of
 		    [] -> [];
-		    U0 -> ["update w_retailer set " ++ ?utils:to_sqls(plus, comma, U0)
+		    U0 ->
+			?DEBUG("U0 ~p", [U0]),
+			["update w_retailer set " ++ ?utils:to_sqls(plus, comma, U0)
 			   ++ ", change_date=" ++ "\"" ++ ?to_s(Curtime) ++ "\""
 			   ++ " where id=" ++ ?to_s(Retailer)
 			   ++ " and merchant=" ++ ?to_s(Merchant)]
@@ -347,83 +326,47 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 		       true -> 
 			   ["update w_sale set balance=balance+" ++ ?to_s(Withdraw - NewWithdraw)
 			    %% ++ " where shop=" ++ ?to_s(Shop)
-			       ++ " and merchant=" ++ ?to_s(Merchant)
+			       ++ " where merchant=" ++ ?to_s(Merchant)
 			       ++ " and retailer=" ++ ?to_s(Retailer)
 			       ++ " and id>" ++ ?to_s(RSNId)];
 		       false -> []
 		   end,
-
-	    %% case NewWithdraw - Withdraw of
-	    %% 	0 ->
-	    %% 	    AllSql = Sql1 ++ [Sql2] 
-	    %% 		++ case MShouldPay == 0 andalso MScore == 0 of
-	    %% 		       true -> [];
-	    %% 		       false ->
-	    %% 			   case MShouldPay /= 0 of
-	    %% 			       true -> 
-	    %% 		       0 -> ["update w_retailer set consume=consume+" ++ ?to_s(MShouldPay)
-	    %% 			     ++ ", change_date=" ++ "\"" ++ ?to_s(Curtime) ++ "\""
-	    %% 			     ++ " where id=" ++ ?to_s(Retailer)
-	    %% 			     ++ " and merchant=" ++ ?to_s(Merchant)];
-	    %% 		       MScore ->
-	    %% 			   ["update w_retailer set score=score+" ++ ?to_s(MScore)
-	    %% 			    ++ ", consume=consume+" ++ ?to_s(MShouldPay)
-	    %% 			    ++ ", change_date=" ++ "\"" ++ ?to_s(Curtime) ++ "\""
-	    %% 			    ++ " where id=" ++ ?to_s(Retailer)
-	    %% 			    ++ " and merchant=" ++ ?to_s(Merchant)]
-	    %% 		   end,
-		    
+	    
 	    Reply = ?sql_utils:execute(transaction, AllSql, RSN),
 		    ?w_user_profile:update(retailer, Merchant),
-		    {reply, Reply, State};
-	%% BackToCmard ->
-	%% 	    ?DEBUG("Metric ~p", [BackToCard]),
-	%% 	    AllSql = Sql1 ++ [Sql2] ++
-	%% 		["update w_retailer set "
-	%% 		 "balance=balance+" ++ ?to_s(BackToCard)
-	%% 		 ++ ", score=score+" ++ ?to_s(Score - OldScore)
-	%% 		 ++ ", consume=consume+" ++ ?to_s(MShouldPay)
-	%% 		 ++ ", change_date=" ++ "\"" ++ ?to_s(Curtime) ++ "\""
-	%% 		 ++ " where id=" ++ ?to_s(Retailer)
-	%% 		 ++ " and merchant=" ++ ?to_s(Merchant),
-
-	%% 		 "update w_sale set balance=balance+" ++ ?to_s(BackToCard)
-	%% 		 ++ " where shop=" ++ ?to_s(Shop)
-	%% 		 ++ " and merchant=" ++ ?to_s(Merchant)
-	%% 		 ++ " and retailer=" ++ ?to_s(Retailer)
-	%% 		 ++ " and id>" ++ ?to_s(RSNId)],
-
-	%% 	    Reply = ?sql_utils:execute(transaction, AllSql, RSN),
-	%% 	    ?w_user_profile:update(retailer, Merchant),
-	%% 	    {reply, Reply, State}
-	%%     end;
+		    {reply, Reply, State}; 
 	false ->
 	    Sql0 = "select id, rsn, retailer, shop, merchant"
-		", balance, verificate, should_pay"
-		" from w_sale"
+		", balance, should_pay, withdraw, lscore, score from w_sale"
 	    %% " where shop=" ++ ?to_s(Shop)
-		++ " where merchant=" ++ ?to_s(Merchant)
+		" where merchant=" ++ ?to_s(Merchant)
 		++ " and retailer=" ++ ?to_s(Retailer)
 		++ " and id<" ++ ?to_s(RSNId)
 		++ " order by id desc limit 1",
-
-	    NewLastBalance = 
+	    
+	    {ok, RetailerInfo} = ?w_user_profile:get(retailer, Merchant, Retailer),
+	    
+	    {NewLastBalance, NewLastScore} = 
 		case ?sql_utils:execute(s_read, Sql0) of
-		    {ok, []} -> Balance;
+		    {ok, []} ->
+			{?v(<<"balance">>, RetailerInfo), 0};
 		    {ok, R}  ->
-			?v(<<"balance">>, R) - ?v(<<"withdraw">>, R, 0) 
+			{?v(<<"balance">>, R) - ?v(<<"withdraw">>, R),
+			 ?v(<<"lscore">>, R) + ?v(<<"score">>, R)}
 		end,
-
+	    
 	    Sql2 = 
 		"update w_sale set "
 		++ ?utils:to_sqls(
 		      proplists, comma,
-		      ?utils:v(balance, float, NewLastBalance) ++ Updates) 
+		      ?utils:v(balance, float, NewLastBalance)
+		      ++ ?utils:v(lscore, float, NewLastScore) ++ Updates) 
 		++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"
-		++ " and id=" ++ ?to_s(RSNId),
+		++ " and merchant=" ++ ?to_s(Merchant), 
+		%% ++ " and id=" ++ ?to_s(RSNId),
 
 	    BackBalanceOfOldRetailer = Withdraw,
-	    BalanceOfNewRetailer =  ShouldPay,
+	    BalanceOfNewRetailer =  NewWithdraw,
 
 	    AllSql = Sql1 ++ [Sql2] ++ 
 		["update w_retailer set balance=balance+"
@@ -435,8 +378,8 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 		 "update w_sale set balance=balance+"
 		 ++ ?to_s(BackBalanceOfOldRetailer)
 		 ++ ", score=score-" ++ ?to_s(OldScore)
-		 ++ " where shop=" ++ ?to_s(Shop)
-		 ++ " and merchant=" ++ ?to_s(Merchant)
+		 %% ++ " where shop=" ++ ?to_s(Shop)
+		 ++ " where merchant=" ++ ?to_s(Merchant)
 		 ++ " and retailer=" ++ ?to_s(OldRetailer)
 		 ++ " and id>" ++ ?to_s(RSNId),
 
@@ -450,8 +393,8 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 		 "update w_sale set balance=balance-"
 		 ++ ?to_s(BalanceOfNewRetailer)
 		 ++ ", score=score+" ++ ?to_s(Score)
-		 ++ " where shop=" ++ ?to_s(Shop)
-		 ++ " and merchant=" ++ ?to_s(Merchant)
+		 %% ++ " where shop=" ++ ?to_s(Shop)
+		 ++ " where merchant=" ++ ?to_s(Merchant)
 		 ++ " and retailer=" ++ ?to_s(Retailer)
 		 ++ " and id>" ++ ?to_s(RSNId)
 		],
@@ -1044,7 +987,7 @@ wsale(update, RSN, Datetime, Merchant, Shop, Inventory) ->
     RPrice         = ?v(<<"rprice">>, Inventory),
     FDiscount      = ?v(<<"fdiscount">>, Inventory),
     RDiscount      = ?v(<<"rdiscount">>, Inventory),
-    Comment        = ?v(<<"comment">>, Inventory),
+    Comment        = ?v(<<"comment">>, Inventory, []),
     
     ChangeAmounts  = ?v(<<"changed_amount">>, Inventory, []),
 
@@ -1808,10 +1751,22 @@ pay_order(ShouldPay, T, Pays) when ShouldPay =< 0 ->
     ?DEBUG("new pays ~p", [NewPays]),
     lists:reverse(NewPays);
 pay_order(ShouldPay, [Pay|T], Pays) ->
-    pay_order(ShouldPay - Pay, T, [case ShouldPay - Pay =< 0 of
+    pay_order(ShouldPay - Pay, T, [case Pay /= 0 andalso ShouldPay - Pay < 0 of
 					 true -> ShouldPay;
 					 false -> Pay end
 				     |Pays]).
+
+pay_order(reject, ShouldPay, T, Pays) when ShouldPay >= 0 ->
+    NewPays = 
+	lists:foldr(
+	  fun(_, Acc) -> [0|Acc] end, Pays, T),
+    ?DEBUG("new pays ~p", [NewPays]),
+    lists:reverse(NewPays);
+pay_order(reject, ShouldPay, [Pay|T], Pays) ->
+    pay_order(reject, ShouldPay - Pay, T, [case Pay /= 0 andalso ShouldPay - Pay >= 0 of
+				       true -> ShouldPay;
+				       false -> Pay end
+				   |Pays]).
 
 get_modified(NewValue, OldValue) when NewValue =/= OldValue -> NewValue;
 get_modified(_NewValue, _OldValue) ->  undefined.
