@@ -244,6 +244,7 @@ action(Session, Req, {"consume_w_retailer_ticket"}, Payload) ->
     
     case ?w_retailer:ticket(consume, Merchant, {TicketId, Comment, Score2Money}) of
 	{ok, TicketId} ->
+	    ?w_user_profile:update(retailer, Merchant),
 	    ?utils:respond(200, Req, ?succ(consume_ticket, TicketId));
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)

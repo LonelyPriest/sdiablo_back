@@ -838,8 +838,8 @@ handle_cast({Update, Merchant}, State) ->
 			    = ?promotion:promotion(list, Merchant),
 			Profile#wuser_profile{promotion=Promotions};
 		    update_score ->
-			{ok, scores} = ?w_retailer:score(list, Merchant),
-			Profile#wuser_profile{score=score};
+			{ok, Scores} = ?w_retailer:score(list, Merchant),
+			Profile#wuser_profile{score=Scores};
 		    update_region ->
 			{ok, Regions}
 			    = ?shop:region(list, Merchant),
