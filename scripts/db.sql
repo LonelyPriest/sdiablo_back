@@ -1031,6 +1031,8 @@ create table w_daily_report(
     cash            DECIMAL(10, 2) not null default 0,
     card            DECIMAL(10, 2) not null default 0,
     veri            DECIMAL(10, 2) not null default 0,
+    draw            DECIMAL(10, 2) not null default 0,
+    ticket          DECIMAL(10, 2) not null default 0,
 
     stockc          INTEGER not null default -1,
     stock           INTEGER not null default -1,

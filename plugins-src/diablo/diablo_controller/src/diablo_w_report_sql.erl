@@ -96,7 +96,7 @@ daily(detail, Merchant, Conditions) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
     
     "select id, merchant, shop as shop_id"
-	", sell, sell_cost as sellCost, balance, cash, card, veri"
+	", sell, sell_cost as sellCost, balance, cash, card, draw, ticket, veri"
 	", stock, stockc, stock_cost as stockCost"
 	
 	", stock_in as stockIn, stock_in_cost as stockInCost"

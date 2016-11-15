@@ -854,7 +854,7 @@ var wsalePrint = function(){
 	}
 	if (wsaleUtils.to_float(ticket) != 0){
 	    if (s) s += " "; 
-	    s += "卷：" + ticket.toString();
+	    s += "券：" + ticket.toString();
 	}
 
 	return s;

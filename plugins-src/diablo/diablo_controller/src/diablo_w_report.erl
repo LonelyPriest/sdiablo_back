@@ -110,7 +110,8 @@ handle_call({total, by_shop, Merchant, Conditions}, _From, State) ->
 	", sum(should_pay) as t_spay"
 	", sum(cash) as t_cash"
 	", sum(card) as t_card"
-	", sum(withdraw) as t_withdraw", 
+	", sum(withdraw) as t_withdraw"
+	", sum(ticket) as t_ticket",
     Sql = ?sql_utils:count_table(w_sale, CountSql, Merchant, Conditions), 
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
@@ -169,10 +170,12 @@ handle_call({total_of_daily, Merchant, Conditions}, _From, State) ->
 	", sum(balance) as balance"
 	", sum(cash) as cash"
 	", sum(card) as card"
+	", sum(draw) as draw" 
+	", sum(ticket) as ticket" 
 	", sum(veri) as veri"
 	
-	%% ", sum(stock) as stock"
-	%% ", sum(stock_cost) as stockCost"
+    %% ", sum(stock) as stock"
+    %% ", sum(stock_cost) as stockCost"
 	
 	", sum(stock_in) as stockIn"
 	", sum(stock_in_cost) as stockInCost"
@@ -279,6 +282,7 @@ handle_call({stock_sale, Merchant, Conditions}, _From, State)->
 	", SUM(Card) as card"
 	", SUM(Verificate) as veri"
 	", SUM(withdraw) as draw"
+	", SUM(ticket) as ticket"
 	", shop as shop_id"
 	" from w_sale "
 	" where merchant=" ++ ?to_s(Merchant)

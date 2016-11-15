@@ -30,7 +30,7 @@ wreportApp.controller("wreportDailyCtrl", function(
     var to_i = reportUtils.to_integer;
 
     var now_day = dateFilter($scope.current_day, "yyyy-MM-dd");
-    var one_shop_report = {t_amount:0, t_hpay:0, t_spay:0, t_cash:0, t_card:0, t_verificate:0};
+    // var one_shop_report = {t_amount:0, t_hpay:0, t_spay:0, t_cash:0, t_card:0, t_verificate:0};
 
     $scope.right = {
 	master: rightAuthen.authen(
@@ -92,6 +92,7 @@ wreportApp.controller("wreportDailyCtrl", function(
 			cash:0,
 			card:0,
 			draw:0,
+			ticket:0,
 			veri:0,
 
 			cbalance: 0,
@@ -141,6 +142,7 @@ wreportApp.controller("wreportDailyCtrl", function(
 			$scope.total.cash += reportUtils.to_float(s.sale.cash);
 			$scope.total.card += reportUtils.to_float(s.sale.card);
 			$scope.total.draw += reportUtils.to_float(s.sale.draw);
+			$scope.total.ticket += reportUtils.to_float(s.sale.ticket);
 			$scope.total.veri += reportUtils.to_float(s.sale.veri);
 
 			$scope.total.cbalance += reportUtils.to_float(s.sale.cbalance);
@@ -438,6 +440,8 @@ wreportApp.controller("realStasticController", function(
 			cost:0,
 			cash:0,
 			card:0,
+			draw:0,
+			ticket:0,
 			veri:0,
 
 			rstock:0,
@@ -512,6 +516,8 @@ wreportApp.controller("realStasticController", function(
 			$scope.total.cost += to_f(s.stockSale.cost);
 			$scope.total.cash += to_f(s.stockSale.cash);
 			$scope.total.card += to_f(s.stockSale.card);
+			$scope.total.draw += to_f(s.stockSale.draw);
+			$scope.total.ticket += to_f(s.stockSale.ticket);
 			$scope.total.veri += to_f(s.stockSale.veri);
 			
 			$scope.total.cstock += to_i(ss.cstock);
@@ -545,6 +551,8 @@ wreportApp.controller("realStasticController", function(
 		    $scope.total.cost = to_decimal($scope.total.cost);
 		    $scope.total.cash = to_decimal($scope.total.cash);
 		    $scope.total.card = to_decimal($scope.total.card);
+		    $scope.total.draw = to_decimal($scope.total.draw);
+		    $scope.total.card = to_decimal($scope.total.ticket);
 		    $scope.total.veri = to_decimal($scope.total.veri);
 
 		    $scope.total.cstock_cost = to_decimal($scope.total.cstock_cost);

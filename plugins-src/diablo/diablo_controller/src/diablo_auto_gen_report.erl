@@ -219,7 +219,8 @@ syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) ->
 
     {ok, StockFix} = ?w_report:stastic(stock_fix, Merchant, Conditions),
 
-    {SellTotal, SellBalance, SellCash, SellCard, SellVeri} = sell(info, SaleInfo),
+    {SellTotal, SellBalance, SellCash, SellCard, SellVeri, SellDraw, SellTicket}
+	= sell(info, SaleInfo),
     {SellCost} = sell(cost, SaleProfit),
 
     %% {CurrentStockTotal, CurrentStockCost} = stock(current, StockR), 
@@ -248,7 +249,7 @@ syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) ->
 		{ok, []} ->		    
 		    Sql1 = 
 			"insert into w_daily_report(merchant, shop"
-			", sell, sell_cost, balance, cash, card, veri"
+			", sell, sell_cost, balance, cash, card, veri, draw, ticket"
 			", stock, stockc, stock_cost"
 			", stock_in, stock_out, stock_in_cost, stock_out_cost"
 			", t_stock_in, t_stock_out, t_stock_in_cost, t_stock_out_cost"
@@ -263,6 +264,8 @@ syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) ->
 			++ ?to_s(SellCash) ++ ","
 			++ ?to_s(SellCard) ++ ","
 			++ ?to_s(SellVeri) ++ ","
+			++ ?to_s(SellDraw) ++ ","
+			++ ?to_s(SellTicket) ++ ","
 
 			++ ?to_s(0) ++ ","
 			++ ?to_s(StockCalcTotal) ++ ","
@@ -291,6 +294,8 @@ syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) ->
 			++ ?utils:v(balance, float, SellBalance)
 			++ ?utils:v(cash, float, SellCash)
 			++ ?utils:v(card, float, SellCard)
+			++ ?utils:v(draw, float, SellDraw)
+			++ ?utils:v(ticket, float, SellTicket)
 			++ ?utils:v(veri, float, SellVeri)
 			
 		    %% ++ ?utils:v(stock, integer, LastStockTotal) 
@@ -481,7 +486,8 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [S|Shops], Sqls) ->
 			       {<<"start_time">>, ?v(<<"qtime_start">>, BaseSetting)}
 			      ]),
 
-	    {SellTotal, SellBalance, SellCash, SellCard, SellVeri} = sell(info, SaleInfo),
+	    {SellTotal, SellBalance, SellCash, SellCard, SellVeri, SellDraw, SellTicket}
+		= sell(info, SaleInfo),
 	    {SellCost} = sell(cost, SaleProfit),
 
 	    {CurrentStockTotal, _CurrentStockCost} = stock(current, StockR), 
@@ -510,7 +516,7 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [S|Shops], Sqls) ->
 			{ok, []} ->
 			    Sql = 
 				"insert into w_daily_report(merchant, shop"
-				", sell, sell_cost, balance, cash, card, veri"
+				", sell, sell_cost, balance, cash, card, draw, ticket, veri"
 				", stock, stockc, stock_cost"
 				", stock_in, stock_out, stock_in_cost, stock_out_cost"
 				", t_stock_in, t_stock_out, t_stock_in_cost, t_stock_out_cost"
@@ -524,6 +530,8 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [S|Shops], Sqls) ->
 				++ ?to_s(SellBalance) ++ ","
 				++ ?to_s(SellCash) ++ ","
 				++ ?to_s(SellCard) ++ ","
+				++ ?to_s(SellDraw) ++ ","
+				++ ?to_s(SellTicket) ++ ","
 				++ ?to_s(SellVeri) ++ ","
 
 				++ ?to_s(CurrentStockTotal) ++ ","
@@ -553,6 +561,8 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [S|Shops], Sqls) ->
 				++ ?utils:v(balance, float, SellBalance)
 				++ ?utils:v(cash, float, SellCash)
 				++ ?utils:v(card, float, SellCard)
+				++ ?utils:v(draw, float, SellDraw)
+				++ ?utils:v(ticket, float, SellTicket)
 				++ ?utils:v(veri, float, SellVeri)
 
 				++ ?utils:v(stock, integer, CurrentStockTotal) 
@@ -596,7 +606,8 @@ get_stock(calc, Merchant, Conditions) ->
     {ok, StockTransferOut} = ?w_report:stastic(stock_transfer_out, Merchant, Conditions),
     {ok, StockFix} = ?w_report:stastic(stock_fix, Merchant, Conditions),
 
-    {SellTotal, _SellBalance, _SellCash, _SellCard, _SellVeri} = sell(info, SaleInfo),
+    {SellTotal, _SellBalance, _SellCash, _SellCard, _SellVeri, _SellDraw, _SellTicket}
+	= sell(info, SaleInfo),
     {SellCost} = sell(cost, SaleProfit),
 
     {StockInTotal, StockInCost} = stock(in, StockIn),
@@ -655,13 +666,15 @@ day(begin_to_end, {Year, Month, Day}) ->
 
 
 sell(info, [])->
-    {0, 0, 0, 0, 0};
+    {0, 0, 0, 0, 0, 0, 0};
 sell(info, [{SaleInfo}])->
     {?v(<<"total">>, SaleInfo, 0),
      ?v(<<"spay">>, SaleInfo, 0),
      ?v(<<"cash">>, SaleInfo, 0),
      ?v(<<"card">>, SaleInfo, 0),
-     ?v(<<"veri">>, SaleInfo, 0)
+     ?v(<<"veri">>, SaleInfo, 0),
+     ?v(<<"draw">>, SaleInfo, 0),
+     ?v(<<"ticket">>, SaleInfo, 0)
     };
 
 sell(cost, []) ->

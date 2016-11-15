@@ -83,6 +83,8 @@
 			style="background-color:#FFCCCC">销售成本</th> 
 		    <th class="text-center" style="background-color:#CCCCCC">现金</th>
 		    <th class="text-center" style="background-color:#CCCCCC">刷卡</th>
+		    <th class="text-center" style="background-color:#CCCCCC">提现</th>
+		    <th class="text-center" style="background-color:#CCCCCC">电子券</th>
 		    <th class="text-cente" style="background-color:#CCCCCC">核销</th>
 		    
 		    <th class="text-center">入库数量</th>
@@ -117,6 +119,8 @@
 			style="background-color:#FFCCCC">{{r.sellCost}}</td>
 		    <td style="background-color:#CCCCCC">{{r.cash}}</td>
 		    <td style="background-color:#CCCCCC">{{r.card}}</td>
+		    <td style="background-color:#CCCCCC">{{r.draw}}</td>
+		    <td style="background-color:#CCCCCC">{{r.ticket}}</td>
 		    <td style="background-color:#CCCCCC">{{r.veri}}</td>
 
 		    <td>{{r.stockIn}}</td>
@@ -137,7 +141,8 @@
 		    
 		  </tr>
 		  <tr>
-		    <td x-ng-if="right.orgprice" colspan=5></td>
+		    <td x-ng-if="right.orgprice" class="text-center" colspan=5>
+		      <span class="fg-red">毛利率：{{s_stastic.margins}}</span></td>
 		    <td x-ng-if="!right.orgprice" colspan=4></td>
 		    <td>{{s_stastic.sell}}</td>
 		    
@@ -145,6 +150,8 @@
 		    <td x-ng-if="right.orgprice">{{s_stastic.sellCost}}</td>
 		    <td><div x-ng-if="right.orgprice">{{s_stastic.cash}}</div></td>
 		    <td><div x-ng-if="right.orgprice">{{s_stastic.card}}</div></td>
+		    <td><div x-ng-if="right.orgprice">{{s_stastic.draw}}</div></td>
+		    <td><div x-ng-if="right.orgprice">{{s_stastic.ticket}}</div></td>
 		    <td><div x-ng-if="right.orgprice">{{s_stastic.veri}}</div></td>
 
 		    <td>{{s_stastic.stockIn}}</td>
@@ -175,7 +182,7 @@
 	      <sapn>
 		<span>显示第 {{pagination.current_page}} / {{num_pages}} 项结果，
 		  共 {{s_stastic.total_items}} 项</span> 
-		<pagination class="table-pagination pagination-lg pull-right "
+		<uib-pagination class="table-pagination pagination-lg pull-right "
 	      		    total-items="s_stastic.total_items"
 	      		    items-per-page="pagination.items_perpage"
 	      		    num-pages="num_pages"
@@ -185,7 +192,7 @@
 	      		    first-text="&laquo;" last-text="&raquo;"
 	      		    x-ng-model="pagination.current_page"
 	      		    x-ng-change="page_changed()">
-		</pagination> 
+		</uib-pagination> 
 	    </div>
 	  </div>
 	</div>

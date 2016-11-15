@@ -41,6 +41,8 @@ wreportApp.controller("stockStasticCtrl", function(
 	balance: 0,
 	cash: 0,
 	card: 0,
+	draw: 0,
+	ticket: 0,
 	veri: 0,
 
 	// stock: 0,
@@ -57,7 +59,9 @@ wreportApp.controller("stockStasticCtrl", function(
 	tstockOutCost:0,
 
 	stockFix: 0,
-	stockFixCost: 0 
+	stockFixCost: 0,
+
+	margins: 0
     };
 
     $scope.refresh = function(){
@@ -97,6 +101,8 @@ wreportApp.controller("stockStasticCtrl", function(
 			$scope.s_stastic.balance = result.balance;
 			$scope.s_stastic.cash = result.cash;
 			$scope.s_stastic.card = result.card;
+			$scope.s_stastic.draw = result.draw;
+			$scope.s_stastic.ticket = result.ticket;
 			$scope.s_stastic.veri = result.veri;
 
 			// $scope.s_stastic.stock = result.stock;
@@ -114,6 +120,9 @@ wreportApp.controller("stockStasticCtrl", function(
 
 			$scope.s_stastic.stockFix = result.stockFix;
 			$scope.s_stastic.stockFixCost = result.stockFixCost;
+
+			$scope.s_stastic.margins = reportUtils.calc_profit(
+			    $scope.s_stastic.sellCost, $scope.s_stastic.balance);
 
 			$scope.d_reports = [];
 		    }

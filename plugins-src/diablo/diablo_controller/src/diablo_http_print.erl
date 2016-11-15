@@ -788,7 +788,7 @@ pay(withdraw, Withdraw) -> "提现：" ++ ?to_s(clean_zero(Withdraw));
 pay(veri, Veri) when Veri == 0-> [];
 pay(veri, Veri) -> "核销：" ++ ?to_s(clean_zero(Veri));
 pay(ticket, Ticket) when Ticket == 0 -> [];
-pay(ticket, Ticket) -> "卷：" ++ ?to_s(clean_zero(Ticket)).
+pay(ticket, Ticket) -> "券：" ++ ?to_s(clean_zero(Ticket)).
 
     
 bar_code(one, DigitString) ->
