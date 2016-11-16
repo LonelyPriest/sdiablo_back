@@ -952,7 +952,9 @@ start(new_sale, Req, Merchant, Invs, Base, Print) ->
             ?utils:respond(
                200,
                Req,
-               ?err(wsale_invalid_pay, Moneny))
+               ?err(wsale_invalid_pay, Moneny),
+	       [{<<"should_pay">>, ShouldPay},
+		{<<"check_pay">>, Moneny}])
     end.
     
 check_inventory(oncheck, Round, Moneny, ShouldPay, []) ->
@@ -966,7 +968,7 @@ check_inventory(oncheck, Round, Moneny, ShouldPay, []) ->
 	0 ->
 	    case Moneny == ShouldPay of
 		true -> {ok, none};
-		false -> {error, round(Moneny), ShouldPay}
+		false -> {error, Moneny, ShouldPay}
 	    end
     end;
 

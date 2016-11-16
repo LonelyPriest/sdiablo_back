@@ -110,6 +110,11 @@ action(Session, Req, {"check_w_inventory"}, Payload) ->
     	    ?utils:respond(
 	       200, Req,
 	       ?succ(check_w_inventory, RSN), {<<"rsn">>, ?to_b(RSN)});
+	{error, {zero_org_price, _R}} ->
+	    ?utils:respond(
+               200,
+               Req,
+               ?err(zero_price_of_check, RSN));
     	{error, Error} ->
     	    ?utils:respond(200, Req, Error)
     end;

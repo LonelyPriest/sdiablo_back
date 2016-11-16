@@ -589,7 +589,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 			$scope.select.ticket_batch = result.data.batch;
 			$scope.select.ticket_balance = result.data.balance;
 			$scope.select.ticket_sid =  result.data.sid;
-			$scope.reset_payment();
+			$scope.reset_payment(); 
 		    } else {
 			if (diablo_is_empty(result.data)) ecode = 2105;
 			diabloUtilsService.response(
@@ -602,8 +602,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	    } else {
 		$scope.select.ticket_batch = params.ticket.batch;
 		$scope.select.ticket_balance = params.ticket.balance;
-		$scope.reset_payment();
-	    }
+		$scope.reset_payment(); 
+	    } 
 	};
 	
 	wretailerService.get_ticket_by_retailer($scope.select.retailer.id).then(function(result){
@@ -1264,7 +1264,16 @@ wsaleApp.controller("wsaleNewCtrl", function(
 		    $scope.print_front(result, im_print); 
 		}
 		success_callback();
-	    } else {
+	    } else if (result.ecode === 2705){
+		dialog.response_with_callback(
+	    	    false,
+		    "销售开单",
+		    "开单失败：" + wsaleService.error[result.ecode]
+			+ ["应付金额：" + result.should_pay.toString() +
+			   "，计算金额：" + result.check_pay.toString()],
+		    undefined, function(){$scope.has_saved = false});
+	    }
+	    else {
 		dialog.response_with_callback(
 	    	    false,
 		    "销售开单",
@@ -1363,8 +1372,18 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	
 	$scope.select.total     = calc.total; 
 	$scope.select.abs_total = calc.abs_total;
-	$scope.select.should_pay= calc.should_pay;
+	$scope.select.should_pay= calc.should_pay; 
 	$scope.select.score     = calc.score;
+	
+	// var sid = $scope.select.shop.score_id;
+	// if ( diablo_invalid_index !== sid
+	//      && 0 !== wsaleUtils.to_integer($scope.select.ticket_balance) ){
+	//     var s = diablo_get_object(sid, $scope.scores);
+	//     console.log(s);
+	//     $scope.select.score -=
+	// 	$scope.select.ticket_balance * s.balance / s.score;
+	// }
+	
 	$scope.select.charge    = $scope.select.should_pay - $scope.select.has_pay;
 	console.log($scope.select);
     };
