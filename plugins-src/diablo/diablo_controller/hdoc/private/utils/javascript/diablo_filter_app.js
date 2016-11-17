@@ -807,7 +807,8 @@ function normalFilterProvider(){
 				charge:   c.charge,
 				balance:  c.balance,
 				sdate:    c.sdate,
-				edate:    c.edate
+				edate:    c.edate,
+				deleted:  c.deleted
 			    }
 			});
 

@@ -724,7 +724,8 @@ wretailerApp.controller("wretailerTicketDetailCtrl", function(
     $scope.max_page_size = 10;
     $scope.default_page = 1; 
     $scope.current_page = $scope.default_page;
-    $scope.total_items = 0; 
+    $scope.total_items = 0;
+    $scope.retailers = filterRetailer.filter(function(r){return r.score > 10000});
 
     $scope.filters = []; 
     diabloFilter.reset_field(); 

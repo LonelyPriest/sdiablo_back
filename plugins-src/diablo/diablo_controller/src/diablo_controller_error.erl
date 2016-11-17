@@ -88,6 +88,8 @@ success(add_size_group, _) ->
     {0, "Success to add size group"};
 success(add_color, Name) ->
     {0, "Success to add color of name " ++ ?to_s(Name)};
+success(update_color, ColorId) ->
+    {0, "Success to update color: " ++ ?to_s(ColorId)};
 success(update_size_group, GroupId) ->
     {0, "Success to update size group [" ++ ?to_s(GroupId) ++ "]"};
 success(delete_size_group, GroupId) ->
@@ -170,6 +172,8 @@ success(reset_w_retailer_password, Retailer) ->
     {0, "Success to reset password of retailer " ++ ?to_s(Retailer)};
 success(add_retailer_charge, Charge) ->
     {0, "Success to add the chare promotion "++?to_s(Charge)++" of retailer."};
+success(delete_retailer_charge, Charge) ->
+    {0, "Success to delete the chare promotion "++?to_s(Charge)++" of retailer."};
 success(add_retailer_score, Score) ->
     {0, "Success to add the score promotion "++?to_s(Score)++" of retailer."};
 success(new_recharge, SN) ->
@@ -390,6 +394,11 @@ error(ticket_has_been_consume, TicketId) ->
     {2107, "tickiet " ++ ?to_s(TicketId) ++ " has been consumed."};
 error(retailer_score2money_exist, Score) ->
     {2108, "retailer of score promotion " ++ ?to_s(Score) ++ " does exist."};
+error(invalid_charge_id, ChargeId) ->
+    {2109, "invalid charge: " ++ ?to_s(ChargeId) ++ "."};
+error(charge_has_been_used, ChargeId) ->
+    {2110, "this charge " ++ ?to_s(ChargeId) ++ " has been used."};
+
 
 
 %% wprint

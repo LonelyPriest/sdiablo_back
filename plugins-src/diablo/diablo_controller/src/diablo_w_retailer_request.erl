@@ -147,6 +147,18 @@ action(Session, Req, {"add_w_retailer_charge"}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"del_w_retailer_charge"}, Payload) ->
+    Merchant = ?session:get(merchant, Session),
+    ChargeId = ?v(<<"cid">>, Payload),
+    case ?w_retailer:charge(delete, Merchant, ChargeId) of
+	{ok, Id} -> 
+	    ?utils:respond(
+	       200, Req, ?succ(delete_retailer_charge, Id)),
+	    ?w_user_profile:update(charge, Merchant);
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
 action(Session, Req, {"new_recharge"}, Payload) ->
     ?DEBUG("new_recharge with session ~p, payload ~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),

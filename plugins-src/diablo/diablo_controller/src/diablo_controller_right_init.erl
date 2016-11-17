@@ -812,7 +812,7 @@ pass_action(wholesaler) ->
      <<"list_w_color">>,
      <<"list_color_type">>, 
      <<"list_w_size">>,
-
+     
      %% good
      %% <<"list_w_good">>,
      <<"get_w_good">>,

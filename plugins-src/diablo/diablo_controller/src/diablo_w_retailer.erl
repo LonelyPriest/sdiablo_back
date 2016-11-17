@@ -65,6 +65,9 @@ retailer(reset_password, Merchant, RetailerId, Password) ->
 charge(new, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {new_charge, Merchant, Attrs});
+charge(delete, Merchant, ChargeId) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {delete_charge, Merchant, ChargeId});
 
 charge(recharge, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -365,6 +368,36 @@ handle_call({new_charge, Merchant, Attrs}, _From, State) ->
 	     {error, ?err(retailer_charge_exist, ?v(<<"id">>, E))}, State}
     end;
 
+handle_call({delete_charge, Merchant, ChargeId}, _From, State) ->
+    ?DEBUG("delete_charge with merchant ~p, chargeId ~p", [Merchant, ChargeId]), 
+    case erlang:is_number(ChargeId) of
+	true ->
+	    Sql0 = "select id, charge from shops"
+		" where merchant=" ++ ?to_s(Merchant)
+		++ " and charge=" ++ ?to_s(ChargeId),
+	    case ?sql_utils:execute(read, Sql0) of 
+		{ok, []} ->
+		    Sql = "update w_charge set deleted=1"
+			" where id=" ++ ?to_s(ChargeId)
+			++ " and merchant=" ++ ?to_s(Merchant),
+		    Reply = ?sql_utils:execute(write, Sql, ChargeId),
+		    {reply, Reply, State};
+		{ok, _Shops} ->
+		    {reply, {error, ?err(charge_has_been_used, ChargeId)}, State}
+	    end; 
+	false ->
+	    {reply, {error, ?err(invalid_charge_id, ChargeId)}, State}
+    end;
+
+handle_call({list_charge, Merchant}, _From, State) ->
+    Sql = "select id, name, charge, balance, sdate, edate"
+	", remark, entry, deleted"
+	" from w_charge"
+	" where merchant=" ++ ?to_s(Merchant),
+
+    Reply = ?sql_utils:execute(read, Sql),
+
+    {reply, Reply, State};
 
 handle_call({recharge, Merchant, Attrs}, _From, State) ->
     ?DEBUG("recharge with merchant ~p, paylaod ~p", [Merchant, Attrs]),
@@ -489,19 +522,6 @@ handle_call({update_recharge, Merchant, {ChargeId, Attrs}}, _From, State) ->
 
     Reply = ?sql_utils:execute(write, Sql0, ChargeId), 
     {reply, Reply, State};
-
-	    
-
-handle_call({list_charge, Merchant}, _From, State) ->
-    Sql = "select id, name, charge, balance, sdate, edate"
-	", remark, entry"
-	" from w_charge"
-	" where merchant=" ++ ?to_s(Merchant),
-
-    Reply = ?sql_utils:execute(read, Sql),
-    
-    {reply, Reply, State};
-
 
 %%
 %% score

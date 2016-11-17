@@ -1,6 +1,13 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2016-11-18",
+         content: [
+	     "增加颜色可编辑功能",
+	     "增加充值方案可以删除功能"
+	 ]
+        },
+	
 	{date: "2016-11-16",
          content: [
 	     "所有报表增加提现，电子券统计" 

@@ -149,6 +149,7 @@ create table colors
 create table color_type(
     id               INTEGER AUTO_INCREMENT,
     name             VARCHAR(8),
+    merchant         INTEGER default 0,
     deleted          INTEGER default 0, -- 0: no;  1: yes
     unique key name (name),
     primary key      (id)

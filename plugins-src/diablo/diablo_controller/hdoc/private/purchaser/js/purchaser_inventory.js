@@ -8,7 +8,6 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
     // console.log(filterColor);
     // var re = /^\d{1,2}(\.\d{1,2})?$|100$|0$/;
     // console.log(re.test(8.1));
-    
     $scope.brands      = filterBrand;
     $scope.types       = filterType;
     $scope.size_groups = filterSizeGroup;
@@ -1190,8 +1189,11 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	};
 	
 	dialog.edit_with_modal(
-	    'new-color.html', undefined, callback,
-	    $scope, {color: {types: $scope.color_types}})
+	    'new-color.html',
+	    undefined,
+	    callback,
+	    undefined,
+	    {color: {types: $scope.color_types}});
     };
 
     $scope.select_color = function(){

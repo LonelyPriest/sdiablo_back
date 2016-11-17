@@ -54,6 +54,8 @@ angular.module("diabloPattern", []).service("diabloPattern", [function(){
 
     this.num_passwd = /^\d{6}$/;
 
+    this.color=/^[A-Za-z0-9-_\u4e00-\u9fa5]{1,3}$/;
+
     this.url = '^((https|http|ftp|rtsp|mms)?://)'
 	+ '?(([0-9a-z_!~*\'().&=+$%-]+: )?[0-9a-z_!~*\'().&=+$%-]+@)?' //user@ of ftp
 	+ '(([0-9]{1,3}.){3}[0-9]{1,3}' // IP199.194.52.184

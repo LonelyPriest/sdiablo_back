@@ -861,7 +861,7 @@ purchaserApp.controller("purchaserInventoryTransferToDetailCtrl", function(
 	dialog.request(
 	    "移仓调入确认",
 	    "移仓只能确认一次，确认后货品自动增加，请在货品到达到后确认！！",
-	    callback, undefined, $scope);
+	    callback, undefined, undefined);
     };
 
     $scope.cancel_transfer = function(r){

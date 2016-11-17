@@ -38,11 +38,11 @@ color_type(list, Merchant) ->
 color(w_list, Merchant) ->
     gen_server:call(?MODULE, {list_w_color, Merchant}). 
 color(w_new, Merchant, Attrs) ->
-    gen_server:call(?MODULE, {new_w_clolor, Merchant, Attrs});
+    gen_server:call(?MODULE, {new_w_color, Merchant, Attrs});
 color(w_update, Merchant, Attrs) ->
-    gen_server:call(?MODULE, {update_w_clolor, Merchant, Attrs});
+    gen_server:call(?MODULE, {update_w_color, Merchant, Attrs});
 color(w_delete, Merchant, ColorId) ->
-    gen_server:call(?MODULE, {delete_w_clolor, Merchant, ColorId});
+    gen_server:call(?MODULE, {delete_w_color, Merchant, ColorId});
 color(w_list, Merchant, ColorIds) ->
     gen_server:call(?MODULE, {list_w_color, Merchant, ColorIds}). 
 
@@ -83,13 +83,13 @@ init([]) ->
 handle_call({list_w_color_type, Merchant}, _Form, State) ->
     ?DEBUG("list_w_color_type", []),
     Sql = "select id, name from color_type"
-	++ " where " ++ ?utils:to_sqls(proplists, {merchant, [0, Merchant]})
+	++ " where " ++ ?utils:to_sqls(proplists, {<<"merchant">>, [0, Merchant]})
 	%% ++ " where deleted=" ++ ?to_string(?NO)
 	++ " order by id",
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({new_w_clolor, Merchant, Attr}, _From, State) ->
+handle_call({new_w_color, Merchant, Attr}, _From, State) ->
     ?DEBUG("new color with merchant ~p, attr ~p ", [Merchant, Attr]),
     Name     = ?v(<<"name">>, Attr),
     Type     = ?v(<<"type">>, Attr),
@@ -119,8 +119,8 @@ handle_call({new_w_clolor, Merchant, Attr}, _From, State) ->
     {reply, Reply, State};
 
 handle_call({update_w_color, Merchant, Attrs}, _From, State) ->
-    ?DEBUG("update_w_color with Merchant, attrs ~p", [Merchant, Attrs]),
-    ColorId  = ?v(<<"color_id">>, Attrs),
+    ?DEBUG("update_w_color with Merchant ~p, attrs ~p", [Merchant, Attrs]),
+    ColorId  = ?v(<<"cid">>, Attrs),
     Name     = ?v(<<"name">>, Attrs),
     Type     = ?v(<<"type">>, Attrs),
     Remark   = ?v(<<"remark">>, Attrs),
@@ -156,7 +156,7 @@ handle_call({list_w_color, Merchant}, _Form, State) ->
 	++ " and a.type=b.id order by a.id",
 
     Reply = ?sql_utils:execute(read, Sql),
-    ?DEBUG("reply ~p", [Reply]),
+    %% ?DEBUG("reply ~p", [Reply]),
     {reply, Reply, State};
 
 handle_call({list_w_color, Merchant, ColorIds}, _Form, State) ->

@@ -400,9 +400,19 @@ action(Session, Req, {"update_w_promotion"}, Payload) ->
 	       200, Req, ?succ(update_promotion, PId), {<<"id">>, PId});
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
-    end.
-    
+    end;
 
+action(Session, Req, {"update_w_color"}, Payload) ->
+    ?DEBUG("update_w_color with session ~p, Payload ~p", [Session, Payload]), 
+    Merchant  = ?session:get(merchant, Session),
+
+    case ?attr:color(w_update, Merchant, Payload) of 
+	{ok, ColorId} ->
+	    ?w_user_profile:update(color, Merchant),
+	    ?utils:respond(200, Req, ?succ(update_color, ColorId));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end.
 
 %% sidebar(Session) -> 
 %%     G1 = 

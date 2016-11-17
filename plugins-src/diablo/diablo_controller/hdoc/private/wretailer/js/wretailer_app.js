@@ -134,6 +134,8 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 	2106: "该电子卷已经确认过，无法再确认，请重新选择电子卷！！",
 	2107: "该电子卷已被消费，请重新选择电子卷",
 	2108: "积分况换钱的方案有且只能有一个！！",
+	2109: "非法充值方案标识，请重新选择充值方案！！",
+	2110: "该充值方案正在使用，请解挂该充值方案后再删除！！",
 	9001: "数据库操作失败，请联系服务人员！！"};
 
     this.score_rules = [
@@ -302,6 +304,11 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
     this.new_charge_promotion = function(promotion){
 	return http.save(
 	    {operation: "add_w_retailer_charge"}, promotion).$promise;
+    };
+
+    this.delete_charge_promotion = function(chargeId){
+	return http.save(
+	    {operation: "del_w_retailer_charge"}, {cid:chargeId}).$promise;
     };
 
     this.list_charge_promotion = function(){

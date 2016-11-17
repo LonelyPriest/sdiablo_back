@@ -55,7 +55,8 @@ wretailerApp.controller("wretailerRechargeDetailCtrl", function(
     
     wretailerService.list_charge_promotion().then(function(result){
 	console.log(result);
-	$scope.promotions = result;
+	// $scope.promotions = result.filter(function(r){return r.deleted!==1});
+	$scope.promotions = angular.copy(result);
 	diablo_order($scope.promotions);
     });
 
@@ -72,7 +73,33 @@ wretailerApp.controller("wretailerRechargeDetailCtrl", function(
     };
 
     $scope.delete_charge = function(p){
-	dialog.response(false, "删除充值方案", "暂不支持此操作！！");
+	var callback = function() {
+	    wretailerService.delete_charge_promotion(p.id).then(function(result){
+		console.log(result);
+		if (result.ecode === 0){
+		    dialog.response_with_callback(
+			true,
+			"删除充分值方案",
+			"充值方案删除成功！！",
+			undefined,
+			function() {p.deleted=diablo_has_deleted});
+		} else {
+		    dialog.response(
+			false,
+			"删除充值方案",
+			"充值方案删除失败！！" + wretailerService.error[result.ecode],
+			undefined);
+		}
+	    });
+	};
+	
+	dialog.request(
+	    "删除充值方案",
+	    "确认要删除该充值方案吗？",
+	    callback,
+	    undefined,
+	    undefined
+	);
     };
 });
 

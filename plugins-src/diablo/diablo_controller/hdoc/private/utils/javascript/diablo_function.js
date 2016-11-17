@@ -16,6 +16,8 @@ var diablo_invalid = -1;
 var diablo_female = 0;
 var diablo_male = 1;
 
+var diablo_has_deleted=1;
+
 var diablo_frontend = 0;
 var diablo_backend = 1;
 var diablo_badrepo = 1;

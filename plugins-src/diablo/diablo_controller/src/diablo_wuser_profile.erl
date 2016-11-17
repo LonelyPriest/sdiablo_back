@@ -150,6 +150,8 @@ update(size_group, Merchant) ->
     gen_server:cast(?SERVER, {update_sizegroup, Merchant});
 update(promotion, Merchant) ->
     gen_server:cast(?SERVER, {update_promotion, Merchant});
+update(charge, Merchant) ->
+    gen_server:cast(?SERVER, {update_charge, Merchant});
 update(score, Merchant) ->
     gen_server:cast(?SERVER, {update_score, Merchant});
 update(region, Merchant) ->
@@ -837,6 +839,9 @@ handle_cast({Update, Merchant}, State) ->
 			{ok, Promotions}
 			    = ?promotion:promotion(list, Merchant),
 			Profile#wuser_profile{promotion=Promotions};
+		    update_charge ->
+			{ok, Charges} = ?w_retailer:charge(list, Merchant), 
+			Profile#wuser_profile{charge=Charges};
 		    update_score ->
 			{ok, Scores} = ?w_retailer:score(list, Merchant),
 			Profile#wuser_profile{score=Scores};

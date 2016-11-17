@@ -42,6 +42,7 @@
 		  <th>开始日期</th>
 		  <th>结束日期</th>
 		  <th>描述</th>
+		  <th>状态</th>
 		  <th>操作</th>
 		</tr>
 	      </thead>
@@ -53,16 +54,24 @@
 		  <td>{{p.charge}}</td>
 		  <td>{{p.balance}}</td>
 		  <td>{{p.sdate}}</td>
-		  <td>{{p.edate}}</td>
+		  <td>{{p.edate}}</td> 
 		  <td>
 		    <span x-ng-if="p.remark">{{p.remark}}</span>
 		    <span x-ng-if="!p.remark">暂无</span> 
 		  </td>
 		  <td>
-                    <button class="btn diablo-button btn-warning"
+		    <div x-ng-switch on="p.deleted">
+		      <span x-ng-switch-when=0>正常</span>
+		      <span x-ng-switch-when=1 class="fg-red">已删除</span>
+		    </div>
+		  </td>
+		  <td>
+                    <button x-ng-if="p.deleted!==1"
+			    class="btn diablo-button btn-warning"
 			    x-ng-click="update_charge(p)">修改
 		      <i class="glyphicon glyphicon-edit"></i></button>
-                    <button class="btn diablo-button btn-danger"
+                    <button x-ng-if="p.deleted!==1"
+			    class="btn diablo-button btn-danger"
 			    x-ng-click="delete_charge(p)">删除
 		      <i class="glyphicon glyphicon-erase"></i></button>
 		  </td>
