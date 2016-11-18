@@ -9,11 +9,11 @@
     <title>钱掌柜</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <meta name="MobileOptimized" content="320">
+    <!-- <meta name="MobileOptimized" content="320"> -->
 
-    <meta http-equiv="Expires"         CONTENT="0">
-    <meta http-equiv="Cache-Control"   CONTENT="no-cache">
-    <meta http-equiv="Pragma"          CONTENT="no-cache">
+    <!-- <meta http-equiv="Expires"         CONTENT="0"> -->
+    <!-- <meta http-equiv="Cache-Control"   CONTENT="no-cache"> -->
+    <!-- <meta http-equiv="Pragma"          CONTENT="no-cache"> -->
 
     <!-- BEGIN GLOBAL MANDATORY STYLES -->
     <link href="/public/assets/metronic/plugins/font-awesome/css/font-awesome.min.css"

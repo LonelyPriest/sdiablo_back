@@ -469,6 +469,7 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 		_  ->
 		    UpdateInv = UpdateBase
 			++ UpdatePrice ++ UpdateFree
+			++ ?utils:v(s_group, string, SizeGroup)
 			++ ?utils:v(change_date, string, DateTime),
 		    
 		    Sql2 = "update w_inventory set "
@@ -558,8 +559,7 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 		end,
 	    
 	    try
-		Update2 =
-		    ?utils:v(style_number, string, StyleNumber)
+		Update2 = ?utils:v(style_number, string, StyleNumber)
 		    ++ ?utils:v(brand, integer, Brand),
 		%% ++ ?utils:v(firm, integer, Firm),
 		
@@ -604,7 +604,9 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 		?DEBUG("Sql10 ~p", [Sql10]),
 		
 		%% update w_inventory
-		UpdateInv = UpdateBase ++?utils:v(change_date, string, DateTime), 
+		UpdateInv = UpdateBase
+		    ++ ?utils:v(s_group, string, SizeGroup)
+		    ++ ?utils:v(change_date, string, DateTime),
 
 		Sql12 = 
 		    case ?sql_utils:execute(
