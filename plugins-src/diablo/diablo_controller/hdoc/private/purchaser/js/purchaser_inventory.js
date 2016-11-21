@@ -388,10 +388,10 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 			    add.ediscount = result.data.ediscount;
 			    add.stock = result.data.amount;
 			}
-			// else {
-			//     add.tag_price = 0;
-			//     add.discount  = 0;
-			// } 
+			else {
+			    add.tag_price = 0;
+			    add.discount  = 0;
+			} 
 		    }
 		})
 	    }
@@ -821,10 +821,10 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 			inv.ediscount = result.data.ediscount;
 			inv.stock = result.data.amount;
 		    }
-		    // else {
-		    // 	inv.tag_price = 0;
-		    // 	inv.discount  = 0;
-		    // }
+		    else {
+		    	inv.tag_price = 0;
+		    	inv.discount  = 0;
+		    }
 		    
 		}
 		add_stock();
