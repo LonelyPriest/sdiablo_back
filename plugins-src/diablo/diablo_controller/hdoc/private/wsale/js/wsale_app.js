@@ -231,10 +231,11 @@ wsaleApp.service("wsaleService", function($http, $resource, dateFilter){
     };
 
     this.filter_w_sale_rsn_group = function(
-	match, fields, currentPage, itemsPerpage){
+	mode, match, fields, currentPage, itemsPerpage){
 	return http.save(
 	    {operation: "filter_w_sale_rsn_group"},
-	    {match:  angular.isDefined(match) ? match.op : undefined,
+	    {mode: mode,
+	     match:  angular.isDefined(match) ? match.op : undefined,
 	     fields: fields,
 	     page:   currentPage,
 	     count:  itemsPerpage}).$promise;

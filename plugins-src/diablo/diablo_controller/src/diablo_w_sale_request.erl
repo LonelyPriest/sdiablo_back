@@ -571,6 +571,11 @@ action(Session, Req, {"filter_w_sale_rsn_group"}, Payload) ->
     %% 	       end, Req, NewPayload)
     %% end;
 
+    {struct, Mode}     = ?v(<<"mode">>, Payload),
+    Order = ?v(<<"mode">>, Mode),
+    Sort  = ?v(<<"sort">>, Mode), 
+    NewPayload = proplists:delete(<<"mode">>, Payload),
+    
     ?pagination:pagination(
        fun(Match, Conditions) ->
     	       ?w_sale:filter(total_rsn_group,
@@ -578,9 +583,9 @@ action(Session, Req, {"filter_w_sale_rsn_group"}, Payload) ->
        end,
        fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
     	       ?w_sale:filter(
-    		  rsn_group,
+		  {rsn_group, mode(Order), Sort},
     		  Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
-       end, Req, Payload);
+       end, Req, NewPayload);
 
 action(Session, Req, {"w_sale_rsn_detail"}, Payload) ->
     ?DEBUG("w_sale_rsn_detail with session ~p, paylaod~n~p",
@@ -996,3 +1001,7 @@ check_inventory(oncheck, Round, Money, ShouldPay, [{struct, Inv}|T]) ->
     end.
     
     
+mode(0) -> use_id;
+mode(1) -> use_shop;
+mode(2) -> use_brand;
+mode(3) -> use_firm.

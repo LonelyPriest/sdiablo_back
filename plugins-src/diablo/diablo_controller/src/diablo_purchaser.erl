@@ -1243,22 +1243,27 @@ handle_call({check_inventory, Merchant, RSN, Mode}, _From, State) ->
 	    case StockState == ?DISCARD
 		orelse StockState == ?FIRM_BILL of
 		true -> {reply, {error, ?err(error_state_of_check, RSN)}, State};
-		false -> 
-		    Sql1 = "select style_number, brand, org_price from w_inventory_new_detail"
-			" where rsn=\'" ++ ?to_s(RSN) ++ "\'"
-			++ " and merchant=" ++ ?to_s(Merchant)
-			++ " and org_price=0",
-		    case ?sql_utils:execute(read, Sql1) of
-			{ok, []} -> 
-			    Sql = "update w_inventory_new set state=" ++ ?to_s(Mode)
-				++ ", check_date=\'" ++ ?utils:current_time(localtime) ++ "\'"
-				++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
-				++ " and merchant=" ++ ?to_s(Merchant),
-
+		false ->
+		    Sql = "update w_inventory_new set state=" ++ ?to_s(Mode)
+			++ ", check_date=\'" ++ ?utils:current_time(localtime) ++ "\'"
+			++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+			++ " and merchant=" ++ ?to_s(Merchant),
+		    case Mode of
+			0 ->
 			    Reply = ?sql_utils:execute(write, Sql, RSN),
 			    {reply, Reply, State};
-			{ok, R} ->
-			    {reply, {error, {zero_org_price, R}}, State}
+			1 ->
+			    Sql1 = "select style_number, brand, org_price from w_inventory_new_detail"
+				" where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+				++ " and merchant=" ++ ?to_s(Merchant)
+				++ " and org_price=0",
+			    case ?sql_utils:execute(read, Sql1) of
+				{ok, []} -> 
+				    Reply = ?sql_utils:execute(write, Sql, RSN),
+				    {reply, Reply, State};
+				{ok, R} ->
+				    {reply, {error, {zero_org_price, R}}, State}
+			    end
 		    end
 	    end;
 	{error, Error} ->

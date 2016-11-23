@@ -97,7 +97,6 @@ condition(page_desc, {use_type, Sort}, CurrentPage, ItemsPerPage) ->
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
     	++ ", " ++ ?to_s(ItemsPerPage).
 
-
 sort(0) -> "desc";
 sort(1) -> "asc".
     

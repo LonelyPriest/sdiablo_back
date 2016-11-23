@@ -543,6 +543,10 @@ var wsaleUtils = function(){
 	    stroage.remove("wsale-trans-stastic"); 
 	    stroage.remove(diablo_key_wsale_trans_detail);
 	    stroage.remove("wsale-note-stastic");
+	},
+
+	order_fields:function(){
+	    return {id:0, shop:1, brand:2, firm:3};
 	}
 
 	//

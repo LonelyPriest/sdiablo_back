@@ -95,13 +95,19 @@
 		    <th x-ng-if="!hidden.base">积分</th>
 		    
 		    <th>交易</th> 
-		    <th>店铺</th>
+		    <th x-ng-click="use_order(order_fields.shop)">店铺
+		      <i class="glyphicon glyphicon-triangle-bottom fg-red"></i>
+		    </th>
 		    <th>店员</th>
 		    <th class="danger">款号</th>
-		    <th class="info">品牌</th>
+		    <th x-ng-click="use_order(order_fields.brand)" class="danger">品牌
+		      <i class="glyphicon glyphicon-triangle-bottom fg-red"></i>
+		    </th>
 		    <th class="success">类型</th> 
 		    <th >季节</th>
-		    <th>厂商</th> 
+		    <th x-ng-click="use_order(order_fields.firm)" class="danger">厂商
+		      <i class="glyphicon glyphicon-triangle-bottom fg-red"></i>
+		    </th> 
 		    <th >年度</th>
 		    <th>上架日期</th> 
 		    <!-- <th>颜色</th> -->

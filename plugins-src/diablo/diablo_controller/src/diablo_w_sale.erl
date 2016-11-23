@@ -94,7 +94,12 @@ filter(news, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
 filter(rsn_group, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(
-      Name, {filter_rsn_group, Merchant, CurrentPage, ItemsPerPage, Fields}).
+      Name, {filter_rsn_group, {use_id, 0}, Merchant, CurrentPage, ItemsPerPage, Fields});
+
+filter({rsn_group, Mode, Sort}, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(
+      Name, {filter_rsn_group, {Mode, Sort}, Merchant, CurrentPage, ItemsPerPage, Fields}).
 
 export(trans, Merchant, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -490,7 +495,7 @@ handle_call({last_sale, Merchant, Conditions}, _From, State) ->
 
 handle_call({trace_sale, Merchant, Conditions}, _From, State) ->
     ?DEBUG("trance_sale with merchant ~p, Conditions ~p", [Merchant, Conditions]),
-    Sql = sale_new(rsn_groups, Merchant, Conditions, fun() -> [] end),
+    Sql = sale_new(rsn_group, Merchant, Conditions, fun() -> " order by id desc" end),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State}; 
 
@@ -815,12 +820,20 @@ handle_call({total_rsn_group, Merchant, Conditions}, _From, State) ->
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State}; 
 
-handle_call({filter_rsn_group, Merchant, CurrentPage, ItemsPerPage, Conditions}, _From, State) ->
-    ?DEBUG("filter_rsn_group_and: " "currentPage ~p, ItemsPerpage ~p, Merchant ~p~n",
-	   [CurrentPage, ItemsPerPage, Merchant]), 
+handle_call({filter_rsn_group, {Mode, Sort},
+	     Merchant, CurrentPage, ItemsPerPage, Conditions}, _From, State) ->
+    ?DEBUG("filter_rsn_group_and: mode ~p, sort ~p, currentPage ~p"
+	   ", ItemsPerpage ~p, Merchant ~p~n",
+	   [Mode, Sort, CurrentPage, ItemsPerPage, Merchant]), 
 
+    
+    
     Sql = sale_new(rsn_groups, Merchant, Conditions,
-	       fun() -> ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage) end),
+		   fun() ->
+			   rsn_order(Mode) ++ ?sql_utils:sort(Sort)
+			       ++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
+			       ++ ", " ++ ?to_s(ItemsPerPage)
+		   end),
 
     %% {DConditions, SConditions} = filter_condition(wsale, Conditions, [], []),
 
@@ -1772,3 +1785,7 @@ get_modified(NewValue, OldValue) when NewValue =/= OldValue -> NewValue;
 get_modified(_NewValue, _OldValue) ->  undefined.
 
 
+rsn_order(use_id)    -> " order by b.id ";
+rsn_order(use_shop)  -> " order by a.shop ";
+rsn_order(use_brand) -> " order by b.brand ";
+rsn_order(use_firm)  -> " order by b.firm ".

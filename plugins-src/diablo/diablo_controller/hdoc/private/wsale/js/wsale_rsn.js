@@ -47,6 +47,16 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 	if ($scope.hidden.base) column -= 3;
 	
 	return column;
+    };
+
+    $scope.order_fields = wsaleUtils.order_fields();
+    $scope.mode = $scope.order_fields.id;
+    $scope.sort = 0;
+
+    $scope.use_order = function(mode){
+	$scope.mode = mode;
+	$scope.sort = $scope.sort === 0 ? 1 : 0; 
+	$scope.do_search($scope.current_page);
     }
 
     // prepare of print
@@ -181,6 +191,7 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 	    };
 	    
 	    wsaleService.filter_w_sale_rsn_group(
+		{mode:$scope.mode, sort:$scope.sort},
 		$scope.match, search, page_num, items
 	    ).then(function(result){
 		console.log(result);
