@@ -366,7 +366,7 @@ task(gen_ticket, Datetime, Merchant) when is_number(Merchant) ->
 		AccScore = ?v(<<"score">>, Score2Money), 
 		Balance = ?v(<<"balance">>, Score2Money),
 		Sql = "select id, score from w_retailer where merchant=" ++ ?to_s(Merchant)
-		    ++ " and score>=" ++ ?to_s(AccScore) ++ " and type!=2",
+		    ++ " and score>=" ++ ?to_s(AccScore) ++ " and type!=2 and deleted=0",
 		case ?sql_utils:execute(read, Sql) of
 		    {ok, []} -> [];
 		    {ok, Retailers} ->
@@ -385,7 +385,7 @@ task(gen_ticket, Datetime, Merchant) when is_number(Merchant) ->
 						  s_read , "select id, batch, retailer from w_ticket"
 						  " where merchant=" ++ ?to_s(Merchant)
 						  ++ " and retailer=" ++ ?to_s(RetailerId)
-						  ++ " and state in (0, 1)") of
+						  ++ " and state in (0, 1)" ) of
 					      {ok, []} ->
 						  ["insert into w_ticket(batch, sid, balance"
 						   ", retailer, merchant, entry_date) values("

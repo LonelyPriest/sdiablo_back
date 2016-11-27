@@ -495,7 +495,7 @@ handle_call({last_sale, Merchant, Conditions}, _From, State) ->
 
 handle_call({trace_sale, Merchant, Conditions}, _From, State) ->
     ?DEBUG("trance_sale with merchant ~p, Conditions ~p", [Merchant, Conditions]),
-    Sql = sale_new(rsn_group, Merchant, Conditions, fun() -> " order by id desc" end),
+    Sql = sale_new(rsn_groups, Merchant, Conditions, fun() -> " order by id desc" end),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State}; 
 

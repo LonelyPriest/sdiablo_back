@@ -155,7 +155,7 @@ handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
     Sql = "select id, name, mobile, address"
 	++ " from w_retailer" 
 	++ " where merchant=" ++ ?to_s(Merchant) 
-	++ " and name = " ++ "\"" ++ ?to_s(Name) ++ "\""
+    %% ++ " and name = " ++ "\"" ++ ?to_s(Name) ++ "\""
 	++ " and mobile = " ++ "\"" ++ ?to_s(Mobile) ++ "\"" 
 	++ " and deleted = " ++ ?to_s(?NO),
 
