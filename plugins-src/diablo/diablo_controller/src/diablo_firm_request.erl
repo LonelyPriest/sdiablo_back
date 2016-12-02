@@ -126,12 +126,19 @@ action(Session, Req, {"bill_w_firm"}, Payload) ->
 action(Session, Req, {"update_bill_w_firm"}, Payload) ->
     ?DEBUG("update_bill_w_firm with session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    BillRSN  = ?v(<<"rsn">>, Payload),
 
-    case ?supplier:supplier(update_bill, Merchant, Payload) of
-	{ok, RSN} ->
-	    ?utils:respond(200, Req, ?succ(update_bill_check, RSN));
-	{error, Error} ->
-	    ?utils:respond(200, Req, Error)
+    try
+	{ok, OldBill} = ?supplier:bill(lookup, Merchant, [{<<"rsn">>, BillRSN}]),
+	case ?supplier:supplier(update_bill, Merchant, {Payload, OldBill}) of
+	    {ok, RSN} ->
+		?w_user_profile:update(firm, Merchant), 
+		?utils:respond(200, Req, ?succ(update_bill_check, RSN));
+	    {error, Error} ->
+		?utils:respond(200, Req, Error)
+	end
+    catch
+	_:{badmatch, Error1} -> ?utils:respond(200, Req, Error1)
     end;
 
 action(Session, Req, {"check_w_firm_bill"}, Payload) ->
@@ -149,6 +156,7 @@ action(Session, Req, {"abandon_w_firm_bill"}, Payload) ->
     ?DEBUG("check_w_firm_bill with session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
     RSN = ?v(<<"rsn">>, Payload),
+    
     case ?supplier:bill(lookup, Merchant, [{<<"rsn">>, RSN}]) of
 	{ok, []} ->
 	    ?utils:respond(200, Req, ?err(supplier_bill_not_exist, RSN));
@@ -159,6 +167,7 @@ action(Session, Req, {"abandon_w_firm_bill"}, Payload) ->
 	    Bill    = ?v(<<"bill">>, TheBill),
 	    Veri    = ?v(<<"veri">>, TheBill),
 	    Firm    = ?v(<<"firm_id">>, TheBill),
+	    Datetime = ?v(<<"entry_date">>, TheBill),
 	    
 	    Attrs = [{<<"rsn">>, RSN},
 		     {<<"bill_id">>, BillId},
@@ -166,7 +175,8 @@ action(Session, Req, {"abandon_w_firm_bill"}, Payload) ->
 		     {<<"state">>, State},
 		     {<<"bill">>, ?to_f(Bill)},
 		     {<<"veri">>, Veri},
-		     {<<"firm">>, Firm}],
+		     {<<"firm">>, Firm},
+		     {<<"datetime">>, Datetime}],
 	    case ?supplier:supplier(abandon_bill, Merchant, Attrs) of
 		{ok, RSN} ->
 		    ?w_user_profile:update(firm, Merchant), 

@@ -139,10 +139,10 @@ action(Session, Req, {"del_w_inventory"}, Payload) ->
 action(Session, Req, {"filter_w_inventory_new"}, Payload) -> 
     ?DEBUG("filter_w_inventory_new with session ~p, paylaod~n~p",
 	   [Session, Payload]),
-
+    Merchant = ?session:get(merchant, Session), 
     {struct, Fields} = ?v(<<"fields">>, Payload),
-
-    Merchant = ?session:get(merchant, Session),
+    SortMode = ?v(<<"mode">>, Payload, ?SORT_BY_ID), 
+    NewPayload = proplists:delete(<<"mode">>, Payload),
 
     %% case
     %% 	case ?utils:v(style_number, string, ?v(<<"style_number">>, Fields))
@@ -187,7 +187,7 @@ action(Session, Req, {"filter_w_inventory_new"}, Payload) ->
 	    ++ ?utils:v(brand, integer, ?v(<<"brand">>, Fields)) of
 	    [] -> {ok,
 		   [{<<"fields">>, {struct, Fields}}]
-		   ++ lists:keydelete(<<"fields">>, 1, Payload)}; 
+		   ++ lists:keydelete(<<"fields">>, 1, NewPayload)}; 
 	    _ ->
 		case ?w_inventory:purchaser_inventory(get_inventory_new_rsn, Merchant, Fields) of
 		    {ok, []} -> {ok, []};
@@ -201,7 +201,7 @@ action(Session, Req, {"filter_w_inventory_new"}, Payload) ->
 						      [?v(<<"rsn">>, RSN)|Acc]
 					      end, [], RSNs)}]
 			   }
-			  }] ++ lists:keydelete(<<"fields">>, 1, Payload)};
+			  }] ++ lists:keydelete(<<"fields">>, 1, NewPayload)};
 		    Error -> Error
 		end
 	end,
@@ -220,7 +220,8 @@ action(Session, Req, {"filter_w_inventory_new"}, Payload) ->
 	    	       end,
 	    	       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
 	    		       ?w_inventory:filter(
-	    			  news, Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
+	    			  {news, SortMode},
+				  Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
 	    	       end, Req, NewConditions);
 	{error, ErrorS} ->
 	    ?utils:respond(200, Req, ErrorS)

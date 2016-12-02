@@ -566,7 +566,11 @@ purchaserApp.controller("purchaserInventoryFlowCtrl", function(
     $scope.transfers = [];
     $scope.stock = {new_total: 0, sale_total: 0}; 
     // var firm_id  = undefined;
-    // var q_start_time = stockUtils.start_time(-1, base, $.now(), dateFilter); 
+    // var q_start_time = stockUtils.start_time(-1, base, $.now(), dateFilter);
+
+    $scope.stock_right = {
+	orgprice: stockUtils.authen_rainbow(user.type, user.right, 'show_orgprice')
+    };
 
 
     var sort_by_date = function(stocks) {

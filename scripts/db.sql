@@ -912,6 +912,7 @@ create table w_sale_detail(
     path           VARCHAR(255) default null, -- the image path
     comment        VARCHAR(127) default null,
     entry_date     DATETIME default 0,
+    op_date        DATETIME default 0,
     deleted        INTEGER default 0, -- 0: no;  1: yes
 
     unique  key uk (rsn, style_number, brand),
@@ -978,6 +979,7 @@ create table w_bill_detail(
     state           INTEGER not null default 0,
     merchant        INTEGER not null default -1, 
     entry_date      DATETIME default 0,
+    op_date         DATETIME default 0,
     deleted         INTEGER default 0, -- 0: no;  1: yes
 
     unique  key uk (rsn),

@@ -788,9 +788,12 @@ inventory({group_detail_with_pagination, Mode, Sort},
 		?sql_utils:condition(page_desc, {Mode, Sort}, CurrentPage, ItemsPerPage)
 	end);
 
-inventory(new_detail_with_pagination, Merchant, Conditions, CurrentPage, ItemsPerPage) -> 
+inventory({new_detail_with_pagination, Mode, Sort},
+	  Merchant, Conditions, CurrentPage, ItemsPerPage) -> 
     inventory(new_detail, new, Merchant, Conditions,
-	      fun() -> ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage) end);
+	      fun() -> 
+		      ?sql_utils:condition(page_desc, {Mode, Sort}, CurrentPage, ItemsPerPage)
+	      end);
 
 inventory(reject_detail_with_pagination, Merchant, Conditions, CurrentPage, ItemsPerPage) ->
     inventory(new_detail, reject, Merchant, Conditions,

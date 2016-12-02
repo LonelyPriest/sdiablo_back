@@ -252,9 +252,11 @@ filter(total_goods, 'and', Merchant, Fields) ->
 %%
 %% new stock
 filter(news, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
+    filter({news, ?SORT_BY_ID}, 'and', Merchant, CurrentPage, ItemsPerPage, Fields);
+filter({news, SortMode}, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(
-      Name, {filter_news, Merchant, CurrentPage, ItemsPerPage, Fields});
+      Name, {{filter_news, SortMode}, Merchant, CurrentPage, ItemsPerPage, Fields});
 
 filter(new_rsn_groups, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -864,6 +866,7 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
     ?DEBUG("new_inventory: merchant ~p~n, Inventories ~p, props ~p",
 	   [Merchant, Inventories, Props]), 
     DateTime = ?utils:correct_datetime(datetime, ?v(<<"datetime">>, Props)),
+    CurrentDatetime = ?utils:current_time(format_localtime),
     
     Shop       = ?v(<<"shop">>, Props),
     Firm       = ?v(<<"firm">>, Props, -1),
@@ -925,7 +928,7 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
 			", employ, firm, shop, merchant, balance"
 			", should_pay, has_pay, cash, card, wire"
 			", verificate, total, comment"
-			", e_pay_type, e_pay, type, entry_date) values("
+			", e_pay_type, e_pay, type, entry_date, op_date) values("
 			++ "\"" ++ ?to_s(RSn) ++ "\","
 			++ "\"" ++ ?to_s(Employee) ++ "\","
 			++ ?to_s(Firm) ++ ","
@@ -943,7 +946,8 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
 			++ ?to_s(EPayType) ++ ","
 			++ ?to_s(EPay) ++ ","
 			++ ?to_s(?NEW_INVENTORY) ++ ","
-			++ "\"" ++ ?to_s(DateTime) ++ "\")",
+			++ "\"" ++ ?to_s(DateTime) ++ "\""
+			++ "\"" ++ ?to_s(CurrentDatetime) ++ "\")",
 
 		    Metric = ShouldPay + EPay - (Cash + Card + Wire + VerifyPay),
 		    case Metric == 0 orelse Firm =:= -1 of
@@ -1797,13 +1801,16 @@ handle_call({total_news, Merchant, Fields}, _From, State) ->
     Reply = ?sql_utils:execute(s_read, CountSql),
     {reply, Reply, State}; 
 
-handle_call({filter_news, Merchant, CurrentPage, ItemsPerPage, Fields}, _From, State) ->
-    ?DEBUG("filter_new_with_and: currentPage ~p, ItemsPerpage ~p"
+handle_call({{filter_news, SortMode}, Merchant, CurrentPage, ItemsPerPage, Fields}, _From, State) ->
+    ?DEBUG("filter_new_with_and: SortMode ~p, currentPage ~p, ItemsPerpage ~p"
 	   ", Merchant ~p~nfields ~p",
-	   [CurrentPage, ItemsPerPage, Merchant, Fields]),
+	   [SortMode, CurrentPage, ItemsPerPage, Merchant, Fields]),
     {_, C} = ?w_good_sql:filter_condition(inventory_new, Fields, [], []),
     Sql = ?w_good_sql:inventory(
-	     new_detail_with_pagination,
+	     case SortMode of
+		 ?SORT_BY_ID -> {new_detail_with_pagination, use_id, 0};
+		 ?SORT_BY_DATE -> {new_detail_with_pagination, use_datetime, 0}
+	     end,
 	     Merchant, C, CurrentPage, ItemsPerPage), 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State}; 

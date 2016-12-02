@@ -77,6 +77,10 @@
 
 -define(DEFAULT_ALARM_DAY, 7).
 
+%% sort
+-define(SORT_BY_ID, 0).
+-define(SORT_BY_DATE, 1).
+
 %% pagination
 -define(DEFAULT_ITEMS_PERPAGE, 5).
 

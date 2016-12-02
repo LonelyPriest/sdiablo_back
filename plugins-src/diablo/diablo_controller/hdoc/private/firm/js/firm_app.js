@@ -225,7 +225,8 @@ firmApp.service("firmService", function($resource, dateFilter){
     this.filter_w_inventory_new = function(match, fields, currentPage, itemsPerpage){
 	return http_p.save(
 	    {operation: "filter_w_inventory_new"},
-	    {match:  angular.isDefined(match) ? match.op : undefined,
+	    {mode:   diablo_sort_by_date,
+	     match:  angular.isDefined(match) ? match.op : undefined,
 	     fields: fields,
 	     page:   currentPage,
 	     count:  itemsPerpage}).$promise;

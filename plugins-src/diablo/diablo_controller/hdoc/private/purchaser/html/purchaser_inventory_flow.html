@@ -35,7 +35,7 @@
 		  <th class="text-center">折扣</th>
 		  
 		  <th class="text-center">数量</th> 
-		  <th class="text-center">进/退价</th>
+		  <th x-ng-if="stock_right.orgprice" class="text-center">进/退价</th>
 		  <th class="text-center">折扣率</th>
 
 		  <th class="text-center">类型</th>
@@ -54,7 +54,7 @@
 		  <td class="text-center">{{h.tag_price}}</td>
 		  <td class="text-center">{{h.discount}}</td>
 		  <td class="text-center">{{h.total}}</td>
-		  <td class="text-center">{{h.org_price}}</td>
+		  <td x-ng-if="stock_right.orgprice" class="text-center">{{h.org_price}}</td>
 		  <td class="text-center">{{h.ediscount}}</td> 
 
 		  <td class="text-center">
@@ -124,7 +124,7 @@
 		  <th class="text-center">成交价</th> 
 		  
 		  <th class="text-center">数量</th> 
-		  <th class="text-center">进价</th>
+		  <th x-ng-if="stock_right.orgprice" class="text-center">进价</th>
 		  <th class="text-center">折扣率</th>
 
 		  <th class="text-center">类型</th>
@@ -144,7 +144,7 @@
 		  <td class="text-center">{{h.discount}}</td>
 		  <td class="text-center">{{h.rprice}}</td>
 		  <td class="text-center">{{h.total}}</td>
-		  <td class="text-center">{{h.org_price}}</td>
+		  <td x-ng-if="stock_right.orgprice" class="text-center">{{h.org_price}}</td>
 		  <td class="text-center">{{h.ediscount}}</td> 
 
 		  <td class="text-center">
