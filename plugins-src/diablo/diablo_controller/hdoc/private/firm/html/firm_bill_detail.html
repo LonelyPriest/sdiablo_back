@@ -67,6 +67,7 @@
 		  <tr>
 		    <th>序号</th>
 		    <th>单号</th>
+		    <th>结帐日期</th> 
 		    <th>店铺</th>
 		    <th>经手人</th>
 		    
@@ -84,7 +85,7 @@
 		    <th>银行卡号</th> 
 		    
 		    <th>备注</th>
-		    <th>结帐日期</th> 
+		    <th>操作日期</th> 
 		    <th>操作</th>
 		  </tr>
 		</thead>
@@ -92,6 +93,7 @@
 		  <tr ng-repeat="b in bills">
 		    <td>{{b.order_id}}</td>
 		    <td class="{{state_css(b.state)}}">{{b.rsn}}</td>
+		    <td class="{{state_css(b.state)}}">{{b.entry_date}}</td>
 		    <td class="{{state_css(b.state)}}">{{b.shop.name}}</td>
 		    <td class="{{state_css(b.state)}}">{{b.employee.name}}</td>
 
@@ -100,7 +102,7 @@
 		    
 		    <td class="{{state_css(b.state)}}">{{b.bill}}</td>
 		    <td class="{{state_css(b.state)}}">{{b.veri}}</td>
-		    <td class="{{state_css(b.state)}}">{{b.balance-b.bill-b.veri}}</td>
+		    <td class="{{state_css(b.state)}}">{{b.acc_balance}}</td>
 
 		    <td class="{{css(b.mode)}}">{{b.cash}}</td>
 		    <td class="{{css(b.mode)}}">{{b.card}}</td>
@@ -109,7 +111,7 @@
 		    <td class="{{css(b.mode)}}">{{b.bank_card.no}}</td>
 
 		    <td>{{b.comment}}</td>
-		    <td>{{b.entry_date}}</td>
+		    <td>{{b.op_date}}</td>
 
 		    <td> 
                       <button class="btn diablo-button yellow"
@@ -158,7 +160,7 @@
 	      <span>显示第 {{current_page}} / {{num_pages}} 项结果，
 		共 {{total_items}} 项</span>
 	      
-	      <pagination class="pagination-lg table-pagination pull-right"
+	      <uib-pagination class="pagination-lg table-pagination pull-right"
 		      	  total-items="total_items"
 		      	  items-per-page="items_perpage"
 		      	  num-pages="num_pages"
@@ -168,7 +170,7 @@
 		      	  first-text="&laquo;" last-text="&raquo;"
 		      	  x-ng-model="current_page"
 		      	  x-ng-change="page_changed(current_page)">
-	      </pagination>
+	      </uib-pagination>
 	    </div>
 	  </div>
 	  

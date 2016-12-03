@@ -118,6 +118,7 @@ action(Session, Req, {"bill_w_firm"}, Payload) ->
     
     case ?supplier:supplier(bill, Merchant, Payload) of
 	{ok, FirmId} ->
+	    ?w_user_profile:update(firm, Merchant), 
 	    ?utils:respond(200, Req, ?succ(bill_firm, FirmId));
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)

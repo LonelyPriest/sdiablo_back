@@ -43,7 +43,7 @@ supplier(w_update, Merchant, Attrs) ->
 supplier(bill, Merchant, Attrs) ->
     gen_server:call(?MODULE, {bill_supplier, Merchant, Attrs});
 supplier(update_bill, Merchant, {Attrs, OldAttrs}) ->
-    gen_server:call(?MODULE, {update_bill_supplier, Merchant, Attrs, OldAttrs});
+    gen_server:call(?MODULE, {update_bill_supplier, Merchant, {Attrs, OldAttrs}});
 supplier(check_bill, Merchant, Attrs) ->
     gen_server:call(?MODULE, {check_bill_supplier, Merchant, Attrs});
 supplier(abandon_bill, Merchant, Attrs) ->
@@ -275,8 +275,9 @@ handle_call({bill_supplier, Merchant, Attrs}, _From, State) ->
     Comment  = ?v(<<"comment">>, Attrs, []),
 
     CurrentDatetime = ?utils:current_time(format_localtime),
-    Datetime = ?v(<<"datetime">>, Attrs, CurrentDatetime),
-
+    Datetime = ?utils:correct_datetime(datetime, ?v(<<"datetime">>, Attrs)), 
+    DateEnd = date_end(Datetime),
+    
     Sql0 = "select id, merchant, balance from suppliers"
 	" where id=" ++ ?to_s(FirmId)
 	++ " and merchant=" ++ ?to_s(Merchant)
@@ -284,93 +285,102 @@ handle_call({bill_supplier, Merchant, Attrs}, _From, State) ->
 
     case ?sql_utils:execute(s_read, Sql0) of
 	{ok, Firm} ->
-	    %% Sql00 = "select id, rsn, firm, shop, merchant, entry_date"
-	    %% 	" from w_inventory_new"
-	    %% 	" where merchant=" ++ ?to_s(Merchant)
-	    %% 	++ " and firm=" ++ ?to_s(FirmId)
-	    %% 	++ " and entry_date>\'" ++ ?to_s(Datetime) ++ "\'"
-	    %% 	++ " order by id limit 1",
+	    Sql00 = "select id, rsn, firm, shop, merchant"
+		", balance, should_pay, has_pay, entry_date"
+	    	" from w_inventory_new"
+	    	" where merchant=" ++ ?to_s(Merchant)
+	    	++ " and firm=" ++ ?to_s(FirmId)
+		++ " and state in(0, 1)"
+	    	++ " and entry_date<\'" ++ ?to_s(DateEnd) ++ "\'"
+	    	++ " order by entry_date desc limit 1",
 
-	    %% case ?sql_utils:execute(s_read, Sql00) of
-	    %% 	{ok, StockIn} -> 
-	    RSN = lists:concat(
-		    ["M-", ?to_i(Merchant),
-		     "-S-", ?to_i(ShopId), "-C-",
-		     ?inventory_sn:sn(w_firm_bill, Merchant)]), 
-	    CurrentBalance = ?v(<<"balance">>, Firm, 0),
+	    case ?sql_utils:execute(s_read, Sql00) of
+		{ok, LastStockIn} ->
+		    LastBalance = case LastStockIn of
+				      [] -> 0;
+				      _ -> ?v(<<"balance">>, LastStockIn)
+					       + ?v(<<"should_pay">>, LastStockIn)
+				  end,
+		    CurrentBalance = ?v(<<"balance">>, Firm, 0), 
 
-	    Sql1 = "insert into w_bill_detail("
-		"rsn, shop, firm, mode, balance, bill, veri, card, employee"
-		", comment, merchant, entry_date, op_date) values("
-		++ "\'" ++ ?to_s(RSN) ++ "\',"
-		++ ?to_s(ShopId) ++ ","
-		++ ?to_s(FirmId) ++ ","
-		++ ?to_s(Mode) ++ ","
-		++ ?to_s(CurrentBalance) ++ ","
-		++ ?to_s(Bill) ++ ","
-		++ ?to_s(Veri) ++ ","
-		++ ?to_s(BankCard) ++ ","
-		++ "\'" ++ ?to_s(Employee) ++ "\',"
-		++ "\'" ++ ?to_s(Comment) ++ "\',"
-		++ ?to_s(Merchant) ++ ","
-		++ "\'" ++ ?to_s(Datetime) ++ "\'"
-		++ "\'" ++ ?to_s(CurrentDatetime) ++ "\')",
+		    RSN = lists:concat(
+			    ["M-", ?to_i(Merchant),
+			     "-S-", ?to_i(ShopId), "-C-",
+			     ?inventory_sn:sn(w_firm_bill, Merchant)]),
+		    
+		    Sql1 = "insert into w_bill_detail("
+			"rsn, shop, firm, mode, balance, bill, veri, card, employee"
+			", comment, merchant, entry_date, op_date) values("
+			++ "\'" ++ ?to_s(RSN) ++ "\',"
+			++ ?to_s(ShopId) ++ ","
+			++ ?to_s(FirmId) ++ ","
+			++ ?to_s(Mode) ++ ","
+			++ ?to_s(CurrentBalance) ++ ","
+			++ ?to_s(Bill) ++ ","
+			++ ?to_s(Veri) ++ ","
+			++ ?to_s(BankCard) ++ ","
+			++ "\'" ++ ?to_s(Employee) ++ "\',"
+			++ "\'" ++ ?to_s(Comment) ++ "\',"
+			++ ?to_s(Merchant) ++ "," 
+			++ "\'" ++ case LastStockIn of
+				       [] -> ?to_s(Datetime);
+				       _  -> ?to_s(DateEnd) end ++ "\',"
+			++ "\'" ++ ?to_s(CurrentDatetime) ++ "\')",
 
-	    {Cash, Card, Wire} = bill_mode(Mode, Bill),
+		    {Cash, Card, Wire} = bill_mode(Mode, Bill),
 
-	    Sql2 = "insert into w_inventory_new(rsn"
-		", employ, firm, shop, merchant, balance"
-		", has_pay, cash, card, wire, verificate"
-		", comment, type, entry_date) values("
-		++ "\"" ++ ?to_s(RSN) ++ "\","
-		++ "\"" ++ ?to_s(Employee) ++ "\","
-		++ ?to_s(FirmId) ++ ","
-		++ ?to_s(ShopId) ++ ","
-		++ ?to_s(Merchant) ++ ","
-		++ ?to_s(CurrentBalance) ++ ","
-		++ ?to_s(Bill) ++ ","
-		++ ?to_s(Cash) ++ ","
-		++ ?to_s(Card) ++ ","
-		++ ?to_s(Wire) ++ ","
-		++ ?to_s(Veri) ++ ","
-		++ "\"" ++ ?to_s(Comment) ++ "\"," 
-		++ ?to_s(?FIRM_BILL) ++ ","
-		++ "\"" ++ ?to_s(Datetime) ++ "\");",
+		    Sql2 = "insert into w_inventory_new(rsn"
+			", employ, firm, shop, merchant, balance"
+			", has_pay, cash, card, wire, verificate"
+			", comment, type, entry_date, op_date) values("
+			++ "\"" ++ ?to_s(RSN) ++ "\","
+			++ "\"" ++ ?to_s(Employee) ++ "\","
+			++ ?to_s(FirmId) ++ ","
+			++ ?to_s(ShopId) ++ ","
+			++ ?to_s(Merchant) ++ ","
+			++ ?to_s(LastBalance) ++ ","
+			++ ?to_s(Bill) ++ ","
+			++ ?to_s(Cash) ++ ","
+			++ ?to_s(Card) ++ ","
+			++ ?to_s(Wire) ++ ","
+			++ ?to_s(Veri) ++ ","
+			++ "\"" ++ ?to_s(Comment) ++ "\"," 
+			++ ?to_s(?FIRM_BILL) ++ ","
+			++ "\"" ++ ?to_s(DateEnd) ++ "\","
+			++ "\'" ++ ?to_s(CurrentDatetime) ++ "\')",
 
-	    Sql3 = "update suppliers set "
-		"balance=balance-" ++ ?to_s(Bill + Veri)
-		++ ", change_date=" ++ "\"" ++ ?to_s(Datetime) ++ "\""
-		++ " where merchant=" ++ ?to_s(Merchant)
-		++ " and id=" ++ ?to_s(FirmId),
+		    Sql3 = "update suppliers set balance=balance-" ++ ?to_s(Bill + Veri)
+			++ ", change_date=" ++ "\"" ++ ?to_s(CurrentDatetime) ++ "\""
+			++ " where merchant=" ++ ?to_s(Merchant)
+			++ " and id=" ++ ?to_s(FirmId),
 
-	    Sql4 = "update w_inventory_new set balance=balance-" ++ ?to_s(Bill + Veri)
-		++ " where merchant=" ++ ?to_s(Merchant)
-		++ " and firm=" ++ ?to_s(FirmId)
-		++ " and entry_date>\'" ++ ?to_s(Datetime) ++ "\'",
+		    Sql4 = "update w_inventory_new set balance=balance-" ++ ?to_s(Bill + Veri)
+			++ " where merchant=" ++ ?to_s(Merchant)
+			++ " and firm=" ++ ?to_s(FirmId)
+			++ " and entry_date>\'" ++ ?to_s(DateEnd) ++ "\'",
 
-	    Sql5 = "insert into firm_balance_history("
-		"rsn, firm, balance, metric, action, shop, merchant, entry_date) values("
-		++ "\'" ++ ?to_s(RSN) ++ "\',"
-		++ ?to_s(FirmId) ++ ","
-		++ ?to_s(CurrentBalance) ++ ","
-		++ ?to_s(-Bill) ++ ","
-		++ ?to_s(?FIRM_BILL) ++ ","
-		++ ?to_s(ShopId) ++ ","
-		++ ?to_s(Merchant) ++ ","
-		++ "\'" ++ ?to_s(Datetime) ++ "\')",
+		    Sql5 = "insert into firm_balance_history("
+			"rsn, firm, balance, metric, action, shop, merchant, entry_date) values("
+			++ "\'" ++ ?to_s(RSN) ++ "\',"
+			++ ?to_s(FirmId) ++ ","
+			++ ?to_s(CurrentBalance) ++ ","
+			++ ?to_s(-Bill) ++ ","
+			++ ?to_s(?FIRM_BILL) ++ ","
+			++ ?to_s(ShopId) ++ ","
+			++ ?to_s(Merchant) ++ ","
+			++ "\'" ++ ?to_s(CurrentDatetime) ++ "\')",
 
-	    Reply = ?sql_utils:execute(transaction, [Sql1, Sql2, Sql3, Sql4, Sql5], FirmId),
-	    ?w_user_profile:update(firm, Merchant),
-	    {reply, Reply, State};
-	%% {error, Error} ->
-	%%     {reply, Error, State}
-	    %% end;
+		    Reply = ?sql_utils:execute(transaction, [Sql1, Sql2, Sql3, Sql4, Sql5], FirmId),
+		    {reply, Reply, State};
+		{error, Error} ->
+		    {reply, Error, State}
+	    end;
 	Error ->
 	    {reply, Error, State}
     end;
 
 handle_call({update_bill_supplier, Merchant, {Attrs, OldAttrs}}, _From, State) ->
-    ?DEBUG("update_bill_supplier with merchant ~p, attrs ~p, oldattrs",
+    ?DEBUG("update_bill_supplier with merchant ~p, attrs ~p, oldattrs ~p",
 	   [Merchant, Attrs, OldAttrs]),
 
     BillId   = ?v(<<"id">>, OldAttrs),
@@ -385,12 +395,7 @@ handle_call({update_bill_supplier, Merchant, {Attrs, OldAttrs}}, _From, State) -
     Bill     = ?v(<<"bill">>, Attrs),
     OldBill  = ?v(<<"bill">>, OldAttrs),
     Veri     = ?v(<<"veri">>, Attrs),
-    OldVeri    = ?v(<<"veri">>, OldAttrs),
-
-    %% BankCard = case Mode of
-    %% 		   ?CASH -> -1;
-    %% 		   _     -> ?v(<<"card">>, Attrs)
-    %% 	       end,
+    OldVeri  = ?v(<<"veri">>, OldAttrs),
     
     BankCard = ?v(<<"card">>, Attrs),
     OldBankCard = ?v(<<"card_id">>, OldAttrs),
@@ -398,18 +403,19 @@ handle_call({update_bill_supplier, Merchant, {Attrs, OldAttrs}}, _From, State) -
     Employee = ?v(<<"employee">>, Attrs),
     OldEmployee = ?v(<<"employee_id">>, OldAttrs),
     
-    Comment  = ?v(<<"comment">>, Attrs, []),
+    Comment  = ?v(<<"comment">>, Attrs),
     OldComment = ?v(<<"comment">>, OldAttrs),
     
     Datetime = ?v(<<"datetime">>, Attrs),
     OldDatetime = ?v(<<"entry_date">>, OldAttrs),
+    DateEnd = date_end(Datetime),
 
     {Cash, Card, Wire} = bill_mode(Mode, Bill),
     Updates
 	= ?utils:v(shop, integer, get_modified(Shop, OldShop)) 
 	++ ?utils:v(employee, string, get_modified(Employee, OldEmployee))
 	++ ?utils:v(comment, string, get_modified(Comment, OldComment))
-	++ ?utils:v(entry_date, string, get_modified(Datetime, OldDatetime)), 
+	++ ?utils:v(entry_date, string, get_modified(DateEnd, OldDatetime)), 
 
     
     Sql10 = ["update w_bill_detail set "
@@ -418,81 +424,120 @@ handle_call({update_bill_supplier, Merchant, {Attrs, OldAttrs}}, _From, State) -
 		   comma,
 		   Updates
 		   ++ ?utils:v(mode, integer, Mode) 
-		   ++ ?utils:v(bill, integer, get_modified(Bill, OldBill))
-		   ++ ?utils:v(veri, integer, get_modified(Veri, OldVeri)) 
+		   ++ ?utils:v(bill, float, get_modified(Bill, OldBill))
+		   ++ ?utils:v(veri, float, get_modified(Veri, OldVeri)) 
 		   ++ ?utils:v(card, integer, get_modified(BankCard, OldBankCard)))
 	     ++ " where merchant=" ++ ?to_s(Merchant)
 	     ++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'"],
 
-    UpdatesOfStock = Updates
-	++ ?utils:v(cash, float, Cash)
+    UpdatesOfStock = Updates ++ ?utils:v(cash, float, Cash)
 	++ ?utils:v(card, float, Card)
 	++ ?utils:v(wire, float, Wire)
 	++ ?utils:v(has_pay, float, get_modified(Bill, OldBill))
-	++ ?utils:v(verificate, integer, get_modified(Veri, OldVeri)),
+	++ ?utils:v(verificate, float, get_modified(Veri, OldVeri)),
     
-    Sql11 = case UpdatesOfStock of
-		[] -> [];
-		_  ->
-		    ["update w_inventory_new set "
-		     ++ ?utils:to_sqls(proplists, comma, UpdatesOfStock)
-		     ++ " where merchant=" ++ ?to_s(Merchant)
-		     ++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'"]
-	    end,
-
-    Sql12 = 
-	case get_modified(Datetime, OldDatetime) of
+    Sqls = 
+	case get_modified(DateEnd, OldDatetime) of
 	    undefined ->
 		case Bill + Veri - OldBill - OldVeri of
 		    0 -> [];
-		    Metric -> 
-			["update suppliers set balance=balance-" ++ ?to_s(Metric)
-			 ++ " where id=" ++ ?to_s(FirmId),
+		    Metric ->
+			{ok,
+			 case UpdatesOfStock of
+			     [] -> [];
+			     _  ->
+				 ["update w_inventory_new set "
+				  ++ ?utils:to_sqls(proplists, comma, UpdatesOfStock)
+				  ++ " where merchant=" ++ ?to_s(Merchant)
+				  ++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'"]
+			 end ++ 
+			     ["update suppliers set balance=balance-" ++ ?to_s(Metric)
+			      ++ " where merchant=" ++ ?to_s(Merchant)
+			      ++ " and id=" ++ ?to_s(FirmId),
 
-			 "update w_bill_detail set "
-			 "balance=balance-" ++ ?to_s(Metric)
-			 ++ " where merchant=" ++ ?to_s(Merchant)
-			 ++ " and firm=" ++ ?to_s(FirmId)
-			 ++ " and id>" ++ ?to_s(BillId),
+			      "update w_bill_detail set "
+			      "balance=balance-" ++ ?to_s(Metric)
+			      ++ " where merchant=" ++ ?to_s(Merchant)
+			      ++ " and firm=" ++ ?to_s(FirmId)
+			      ++ " and id>" ++ ?to_s(BillId),
 
-			 "update w_inventory_new set "
-			 "balance=balance-" ++ ?to_s(Metric)
-			 ++ " where merchant=" ++ ?to_s(Merchant)
-			 ++ " and firm=" ++ ?to_s(FirmId)
-			 ++ " and entry_date>" ++ ?to_s(OldDatetime) ++ "\'"]
+			      "update w_inventory_new set "
+			      "balance=balance-" ++ ?to_s(Metric)
+			      ++ " where merchant=" ++ ?to_s(Merchant)
+			      ++ " and firm=" ++ ?to_s(FirmId)
+			      ++ " and entry_date>" ++ ?to_s(OldDatetime) ++ "\'"]
+			}
 		end;
 	    Datetime -> 
 		Metric = Bill + Veri - OldBill - OldVeri,
+		%% DateEnd = date_end(Datetime),
+		
+		Sql00 = "select id, rsn, firm, shop, merchant"
+		    ", balance, should_pay, has_pay, entry_date"
+		    " from w_inventory_new"
+		    " where merchant=" ++ ?to_s(Merchant)
+		    ++ " and firm=" ++ ?to_s(FirmId)
+		    ++ " and state in(0, 1)"
+		    ++ " and entry_date<\'" ++ ?to_s(DateEnd) ++ "\'"
+		    ++ " order by entry_date desc limit 1",
+		case ?sql_utils:execute(s_read, Sql00) of
+		    {ok, LastStockIn} ->
+			LastBalance = case LastStockIn of
+					  [] -> 0;
+					  _ -> ?v(<<"balance">>, LastStockIn)
+						   + ?v(<<"should_pay">>, LastStockIn)
+				      end,
 
-		["update suppliers set balance=balance-" ++ ?to_s(Metric)
-		 ++ " where merchant=" ++ ?to_s(Merchant)
-		 ++ " and id=" ++ ?to_s(FirmId),
+			AllUpdate = UpdatesOfStock ++ ?utils:v(balance, float, LastBalance),
+			?DEBUG("AllUpdate ~p", [AllUpdate]),
+			    
+			{ok, 
+			 case Metric == 0 of
+				true -> [];
+				false -> 
+				    ["update suppliers set balance=balance-" ++ ?to_s(Metric)
+				     ++ " where merchant=" ++ ?to_s(Merchant)
+				     ++ " and id=" ++ ?to_s(FirmId)]
+			    end
+			 ++ 
+			     ["update w_inventory_new set "
+			      "balance=balance+" ++ ?to_s(OldBill + OldVeri)
+			      ++ " where merchant=" ++ ?to_s(Merchant)
+			      ++ " and firm=" ++ ?to_s(FirmId)
+			      ++ " and entry_date>\'" ++ ?to_s(OldDatetime) ++ "\'",
 
-		 "update w_inventory_new set "
-		 "balance=balance+" ++ ?to_s(OldBill + OldVeri)
-		 ++ " where merchant=" ++ ?to_s(Merchant)
-		 ++ " and firm=" ++ ?to_s(FirmId)
-		 ++ " and entry_date>" ++ ?to_s(OldDatetime) ++ "\'",
+			      "update w_inventory_new set "
+			      "balance=balance-" ++ ?to_s(Bill + Veri)
+			      ++ " where merchant=" ++ ?to_s(Merchant)
+			      ++ " and firm=" ++ ?to_s(FirmId)
+			      ++ " and entry_date>\'" ++ ?to_s(DateEnd) ++ "\'",
 
-		 "update w_inventory_new set "
-		 "balance=balance-" ++ ?to_s(Bill + Veri)
-		 ++ " where merchant=" ++ ?to_s(Merchant)
-		 ++ " and firm=" ++ ?to_s(FirmId)
-		 ++ " and entry_date>" ++ ?to_s(Datetime) ++ "\'"]
-
-		    ++ case Metric of
-			   0 -> [];
-			   _ ->
-			       ["update w_bill_detail set "
-				"balance=balance-" ++ ?to_s(Metric)
-				++ " where merchant=" ++ ?to_s(Merchant)
-				++ " and firm=" ++ ?to_s(FirmId)
-				++ " and id>" ++ ?to_s(BillId)]
-		       end
+			      "update w_inventory_new set "
+			      ++ ?utils:to_sqls(proplists, comma, AllUpdate)
+			      ++ " where merchant=" ++ ?to_s(Merchant)
+			      ++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'"]
+			 
+			 ++ case Metric == 0 of
+				true -> [];
+				false ->
+				    ["update w_bill_detail set "
+				     "balance=balance-" ++ ?to_s(Metric)
+				     ++ " where merchant=" ++ ?to_s(Merchant)
+				     ++ " and firm=" ++ ?to_s(FirmId)
+				     ++ " and id>" ++ ?to_s(BillId)]
+			    end
+			};
+		    Error -> Error
+		end 
 	end,
 
-    Reply = ?sql_utils:execute(transaction, Sql10 ++ Sql11 ++ Sql12, RSN),
-    {reply, Reply, State};
+    case Sqls of
+	{ok, AllSql} -> 
+	    Reply = ?sql_utils:execute(transaction, Sql10 ++ AllSql, RSN),
+	    {reply, Reply, State};
+	Error1 -> 
+	    {reply, Error1, State}
+    end;
 
 handle_call({check_bill_supplier, Merchant, Attrs}, _From, State) ->
     ?DEBUG("check_bill_supplier with merchant ~p, attrs ~p", [Merchant, Attrs]),
@@ -532,7 +577,8 @@ handle_call({abandon_bill_supplier, Merchant, Attrs}, _From, State) ->
 		    ++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'",
 
 		    "update suppliers set balance=balance+" ++ ?to_s(Bill+Veri)
-		    ++ " where id=" ++ ?to_s(FirmId),
+		    ++ " where merchant=" ++ ?to_s(Merchant)
+		    ++ " and id=" ++ ?to_s(FirmId),
 
 		    "update w_bill_detail set "
 		    "balance=balance+" ++ ?to_s(Bill+Veri)
@@ -590,7 +636,7 @@ handle_call({bill_detail,
 	?sql_utils:cut(fields_no_prifix, Conditions),
     Sql = "select rsn, shop as shop_id, firm as firm_id, mode, balance, bill"
 	", veri, card as card_id, employee as employee_id"
-	", comment, state, merchant, entry_date"
+	", comment, state, merchant, entry_date, op_date"
 	" from w_bill_detail"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions)
@@ -637,6 +683,20 @@ bill_mode(?WIRE, Balance) ->
     
 fields() -> "name, mobile, address, merchant".
 
-
-get_modified(NewValue, OldValue) when NewValue =/= OldValue -> NewValue;
+get_modified(undefined, _OldValue) -> undefined; 
+get_modified(NewValue, OldValue) when NewValue /= OldValue ->
+    ?DEBUG("newValue ~p, oldValue ~p", [NewValue, OldValue]),
+    NewValue;
 get_modified(_NewValue, _OldValue) ->  undefined.
+
+date_end(Datetime) when is_binary(Datetime) ->
+    <<YYMMDD:10/binary, _/binary>> = ?to_b(Datetime), 
+    {Hour, Minute, Second} = calendar:seconds_to_time(86399),
+    Time = ?to_b(
+	      lists:flatten(
+		io_lib:format("~2..0w:~2..0w:~2..0w", [Hour, Minute, Second]))),
+    DateEnd = <<YYMMDD/binary, <<" ">>/binary, Time/binary>>,
+    DateEnd;
+date_end(Datetime) ->
+    date_end(?to_b(Datetime)).
+

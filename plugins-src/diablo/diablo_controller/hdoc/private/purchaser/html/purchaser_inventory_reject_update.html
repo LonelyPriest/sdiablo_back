@@ -59,6 +59,7 @@
 	      <div class="input-group"> 
 		<input type="text" class="form-control"
 		       placeholder="年/月/日"
+		       readonly="true"
 		       uib-datepicker-popup="yyyy/MM/dd"
 		       is-open="isOpened"
 		       close-text="关闭"
@@ -69,6 +70,7 @@
 	  	<span class="input-group-btn">
 		  <button type="button"
 			  class="btn btn-default"
+			  x-ng-disabled="true"
 			  x-ng-click="open_calendar($event)">
 		    <i class="glyphicon glyphicon-calendar"></i></button>
 		</span>

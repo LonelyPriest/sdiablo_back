@@ -85,9 +85,11 @@
 		       clear-text="清除"
 		       current-text="今天"
 		       show-weeks="false"
+		       x-ng-readonly="true"
 		       x-ng-model="select.datetime"/>
 	  	<span class="input-group-btn">
 		  <button type="button"
+			  x-ng-disabled="true"
 			  class="btn btn-default"
 			  x-ng-click="open_calendar($event)">
 		    <i class="glyphicon glyphicon-calendar"></i></button>

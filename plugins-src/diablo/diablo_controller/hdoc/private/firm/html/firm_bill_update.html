@@ -83,12 +83,12 @@
 	      <div class="col-sm-6 col-md-6">
 		<div class="input-group">
 		  <input class="form-control"
-			 type="number" step="1"
+			 type="number" step="0.01"
 			 name="bill"
 			 required
 			 placeholder="请输入结账金额"
 			 x-ng-model="bill"
-			 x-ng-pattern="pattern.number"/>
+			 x-ng-pattern="pattern.decimal_2"/>
 		  <span class="input-group-addon bg-white fg-red">*</span> 
 		</div>
 	      </div>
@@ -101,11 +101,11 @@
 	      <label class="col-sm-3 col-md-3 control-label">核销金额</label>
 	      <div class="col-sm-6 col-md-6">
 		<input class="form-control"
-		       type="number" step="1"
+		       type="number" step="0.01"
 		       name="veri"
 		       placeholder="请输入核销金额，只支持整数"
 		       x-ng-model="veri"
-		       x-ng-pattern="pattern.integer_except_zero"/>
+		       x-ng-pattern="pattern.decimal_2"/>
 	      </div>
 	      <div ng-show="rForm.veri.$invalid && !rForm.veri.$pristine">
 		<span class="fg-red">请输入正确的数字</span>
@@ -172,7 +172,7 @@
 			 required
 			 readonly
 			 placeholder="年/月/日"
-			 datepicker-popup="yyyy/MM/dd"
+			 uib-datepicker-popup="yyyy/MM/dd"
 			 is-open="isOpened"
 			 close-text="关闭"
 			 clear-text="清除"

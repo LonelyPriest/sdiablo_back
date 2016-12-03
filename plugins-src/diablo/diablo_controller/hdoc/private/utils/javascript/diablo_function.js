@@ -708,7 +708,7 @@ var diablo_get_modified = function(newValue, oldValue){
 	return newValue !== oldValue ? newValue : undefined;
     else if (angular.isDate(newValue))
 	return newValue.getTime() !== oldValue.getTime()
-	    ? dateFilter($scope.bill_date, "yyyy-MM-dd hh:mm:ss") : undefined; 
+	    ? dateFilter($scope.bill_date, "yyyy-MM-dd HH:mm:ss") : undefined; 
     else if (angular.isObject(newValue))
 	return newValue.id !== oldValue.id ? newValue.id : undefined;
     else

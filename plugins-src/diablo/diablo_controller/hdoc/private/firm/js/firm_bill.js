@@ -4,8 +4,8 @@ firmApp.controller("firmBillCtrl", function(
     // console.log(filterCard);
     // $scope.retailer = {};
     $scope.pattern = {
-	// decimal_2:    diabloPattern.decimal_2,
-	number:       diabloPattern.integer_except_zero
+	decimal_2:    diabloPattern.decimal_2,
+	// number:       diabloPattern.integer_except_zero
     };
 
     $scope.focus = {firm:true},
@@ -76,12 +76,12 @@ firmApp.controller("firmBillCtrl", function(
 	    card:       $scope.bill_card.id,
 	    employee:   $scope.employee.id,
 	    comment:    $scope.comment,
-	    datetime:   dateFilter($scope.bill_date, "yyyy-MM-dd hh:mm:ss")
+	    datetime:   dateFilter($scope.bill_date, "yyyy-MM-dd HH:mm:ss")
 	}).then(function(status){
 	    console.log(status);
 	    $scope.has_billed = false; 
 	    if (status.ecode === 0){
-		var left_balance = $scope.firm.balance - $scope.bill;
+		var left_balance = diablo_rdight($scope.firm.balance - $scope.bill, 2);
 		dialog.response_with_callback(
 		    true,
 		    "厂商结帐",
@@ -185,7 +185,8 @@ firmApp.controller("firmBillDetailCtrl", function(
 		    d.employee = diablo_get_object(d.employee_id, filterEmployee);
 		    d.cash = d.mode === diablo_bill_cash ? d.bill : 0;
 		    d.card = d.mode === diablo_bill_card ? d.bill : 0;
-		    d.wire = d.mode === diablo_bill_wire ? d.bill : 0; 
+		    d.wire = d.mode === diablo_bill_wire ? d.bill : 0;
+		    d.acc_balance = diablo_rdight(d.balance - d.bill - d.veri, 2);
 		})
 
 		$scope.bills = result.data;
@@ -270,8 +271,8 @@ firmApp.controller("firmBillUpdateCtrl", function(
     $scope, $routeParams, dateFilter, diabloPattern, diabloUtilsService,
     firmService, filterFirm, filterCard, filterEmployee, user){
     $scope.pattern = {
-	// decimal_2:    diabloPattern.decimal_2
-	number: diabloPattern.integer_except_zero
+	decimal_2:    diabloPattern.decimal_2
+	// number: diabloPattern.integer_except_zero
     };
 
     // $scope.full_years = diablo_full_year; 
@@ -357,14 +358,12 @@ firmApp.controller("firmBillUpdateCtrl", function(
 	    }
 	    if (angular.isDate(newValue)){
 		return newValue.getTime() !== oldValue.getTime()
-		    ? dateFilter($scope.bill_date, "yyyy-MM-dd hh:mm:ss") : undefined; 
+		    ? dateFilter($scope.bill_date, "yyyy-MM-dd HH:mm:ss") : undefined; 
 	    }
 	    if (angular.isObject(newValue)){
 		return newValue.id !== oldValue.id ? newValue.id : undefined; 
 	    }
 	};
-
-	// console.log();
 	
 	$scope.has_billed = true; 
 	firmService.update_bill_w_firm({

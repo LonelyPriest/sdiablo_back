@@ -59,7 +59,8 @@
 	      <div class="input-group"> 
 		<input type="text" class="form-control"
 		       placeholder="年/月/日"
-		       datepicker-popup="yyyy/MM/dd"
+		       readonly="true"
+		       uib-datepicker-popup="yyyy/MM/dd"
 		       is-open="isOpened"
 		       close-text="关闭"
 		       clear-text="清除"
@@ -216,7 +217,7 @@
 		      		 typeahead-on-select="on_select_good($item, $model, $label)"
 		      		 typeahead-wait-ms="500"
 		      		 typeahead-loading="loading"
-		      		 typeahead="g as g.name for g in match_style_number($viewValue)"/>
+		      		 uib-typeahead="g as g.name for g in match_style_number($viewValue)"/>
 		      	  <span x-ng-show="loading">
 		      	    <i class="glyphicon glyphicon-refresh"></i>
 		      	  </span>

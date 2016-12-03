@@ -622,6 +622,7 @@ create table w_inventory_new(
     state          TINYINT  default 0,  -- 0: wait for check, 1: checked
     check_date     DATETIME default 0, -- date of last change 
     entry_date     DATETIME default 0,
+    op_date        DATETIME default 0, 
     deleted        INTEGER  default 0, -- 0: no;  1: yes
     unique  key uk (rsn),
     key     dk (merchant, shop, firm, employ),

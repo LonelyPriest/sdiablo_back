@@ -946,7 +946,7 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
 			++ ?to_s(EPayType) ++ ","
 			++ ?to_s(EPay) ++ ","
 			++ ?to_s(?NEW_INVENTORY) ++ ","
-			++ "\"" ++ ?to_s(DateTime) ++ "\""
+			++ "\"" ++ ?to_s(DateTime) ++ "\","
 			++ "\"" ++ ?to_s(CurrentDatetime) ++ "\")",
 
 		    Metric = ShouldPay + EPay - (Cash + Card + Wire + VerifyPay),
