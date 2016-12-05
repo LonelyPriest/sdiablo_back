@@ -321,7 +321,9 @@ error(supplier_exist, Name) ->
 error(supplier_bill_not_exist, RSN) ->
     {1602, "bill " ++ ?to_s(RSN) ++ " of supplier is not exist."};
 error(supplier_bill_discard, RSN) ->
-    {1602, "bill " ++ ?to_s(RSN) ++ " of supplier has been discarded."};
+    {1603, "bill " ++ ?to_s(RSN) ++ " of supplier has been discarded."};
+error(bill_at_same_time, Firm) ->
+    {1604, "bill of firm " ++ ?to_s(Firm) ++ " at same time."};
 
 %% inventory
 error(inventory_exist, Name) ->

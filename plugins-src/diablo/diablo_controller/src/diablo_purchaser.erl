@@ -70,7 +70,7 @@ purchaser_good(used, Merchant, Shops, StyleNumber, Brand) ->
 
 purchaser_inventory(new, Merchant, Inventories, Props) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {new_inventory, Merchant, Inventories, Props});
+    gen_server:call(Name, {new_inventory, Merchant, Inventories, Props}, 30 * 1000);
 purchaser_inventory(update, Merchant, Inventories, Props) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {update_inventory, Merchant, Inventories, Props});

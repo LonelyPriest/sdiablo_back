@@ -8,7 +8,20 @@ firmApp.controller("firmBillCtrl", function(
 	// number:       diabloPattern.integer_except_zero
     };
 
-    $scope.focus = {firm:true},
+    $scope.hours = ["23", "22", "21", "20", "19", "18", "17", "16",
+		    "15", "14", "13", "12", "11", "10", "09", "08",
+		    "07", "06", "05", "04", "03", "02", "01", "00"];
+
+    $scope.ms = ["59", "58", "57", "56", "55", "54", "53", "52", "51", "50",
+		 "49", "48", "47", "46", "45", "44", "43", "42", "41", "40",
+		 "39", "38", "37", "36", "35", "34", "33", "32", "31", "30",
+		 "29", "28", "27", "26", "25", "24", "23", "22", "21", "20",
+		 "19", "18", "17", "16", "15", "14", "13", "12", "11", "10",
+		 "09", "08", "07", "06", "05", "04", "03", "02", "01", "00"];
+    // $scope.seconds = $scope.ms;
+
+
+    $scope.focus = {firm:true};
 
     // $scope.full_years = diablo_full_year; 
     // $scope.check_year = diablo_now_year();
@@ -23,6 +36,9 @@ firmApp.controller("firmBillCtrl", function(
     $scope.bill_mode  = $scope.bill_modes[0];
     $scope.bill_card  = $scope.cards[0];
     $scope.bill_date  = $.now();
+    $scope.time = {hh: dateFilter($scope.bill_date, "HH"),
+		   mm: dateFilter($scope.bill_date, "mm"),
+		   ss: dateFilter($scope.bill_date, "ss")};
     $scope.has_billed = false;
 
     // canlender
@@ -76,7 +92,8 @@ firmApp.controller("firmBillCtrl", function(
 	    card:       $scope.bill_card.id,
 	    employee:   $scope.employee.id,
 	    comment:    $scope.comment,
-	    datetime:   dateFilter($scope.bill_date, "yyyy-MM-dd HH:mm:ss")
+	    datetime:   dateFilter($scope.bill_date, "yyyy-MM-dd")
+		+ " " + $scope.time.hh + ":" + $scope.time.mm + ":" + $scope.time.ss
 	}).then(function(status){
 	    console.log(status);
 	    $scope.has_billed = false; 
@@ -275,6 +292,17 @@ firmApp.controller("firmBillUpdateCtrl", function(
 	// number: diabloPattern.integer_except_zero
     };
 
+    $scope.hours = ["23", "22", "21", "20", "19", "18", "17", "16",
+		    "15", "14", "13", "12", "11", "10", "09", "08",
+		    "07", "06", "05", "04", "03", "02", "01", "00"];
+
+    $scope.ms = ["59", "58", "57", "56", "55", "54", "53", "52", "51", "50",
+		 "49", "48", "47", "46", "45", "44", "43", "42", "41", "40",
+		 "39", "38", "37", "36", "35", "34", "33", "32", "31", "30",
+		 "29", "28", "27", "26", "25", "24", "23", "22", "21", "20",
+		 "19", "18", "17", "16", "15", "14", "13", "12", "11", "10",
+		 "09", "08", "07", "06", "05", "04", "03", "02", "01", "00"];
+
     // $scope.full_years = diablo_full_year; 
     // $scope.check_year = diablo_now_year();
     $scope.cards = [{no:"== 请选择银行卡号 ==", id:-1}] .concat(filterCard);
@@ -317,6 +345,10 @@ firmApp.controller("firmBillUpdateCtrl", function(
 	$scope.bill_card = diablo_get_object(result.card_id, $scope.cards);
 	$scope.comment   = result.comment; 
 	$scope.firm.balance += result.bill;
+
+	$scope.time = {hh: dateFilter($scope.bill_date, "HH"),
+		       mm: dateFilter($scope.bill_date, "mm"),
+		       ss: dateFilter($scope.bill_date, "ss")};
 
 	$scope.o_shop      = angular.copy($scope.shop);
 	$scope.o_bill_mode = angular.copy($scope.bill_mode);
@@ -365,7 +397,10 @@ firmApp.controller("firmBillUpdateCtrl", function(
 	    }
 	};
 	
-	$scope.has_billed = true; 
+	$scope.has_billed = true;
+	var new_bill_datet = dateFilter($scope.bill_date, "yyyy-MM-dd")
+	    + " " + $scope.time.hh + ":" + $scope.time.mm + ":" + $scope.time.ss;
+	
 	firmService.update_bill_w_firm({
 	    rsn:      $routeParams.rsn, 
 	    
@@ -376,7 +411,7 @@ firmApp.controller("firmBillUpdateCtrl", function(
 	    card:     get_modified($scope.bill_card, $scope.o_bill_card),
 	    employee: get_modified($scope.employee, $scope.o_employee),
 	    comment:  get_modified($scope.comment, $scope.o_comment),
-	    datetime: get_modified($scope.bill_date, $scope.o_bill_date),
+	    datetime: get_modified(diablo_set_datetime(new_bill_datet), $scope.o_bill_date),
 
 	    bill_id:  $scope.bill_id,
 	    stock_id: $scope.stock_id,

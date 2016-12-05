@@ -657,7 +657,7 @@ inventory(new_detail, new, Merchant, Conditions, PageFun) ->
 	", a.firm as firm_id, a.shop as shop_id"
 	", a.balance, a.should_pay, a.has_pay, a.cash, a.card, a.wire"
 	", a.verificate, a.total, a.comment, a.e_pay_type, a.e_pay"
-	", a.type, a.state, a.entry_date"
+	", a.type, a.state, a.entry_date, a.op_date"
 
 	" from w_inventory_new a"
 	" where " ++ SortConditions 

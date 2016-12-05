@@ -117,6 +117,7 @@ firmApp.service("firmService", function($resource, dateFilter){
     // error information
     this.error = {
     	1601: "厂商创建失败，已存在同样的厂商！！",
+	1604: "一个时间点只能结帐一次，请重新选择结帐时间！！",
 	1699: "修改前后信息一致，请重新编辑修改项！！",
 	9001: "数据库操作失败，请联系服务人员！！"};
 

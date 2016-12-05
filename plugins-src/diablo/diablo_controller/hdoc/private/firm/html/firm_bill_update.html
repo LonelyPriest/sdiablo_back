@@ -184,7 +184,22 @@
 		      <i class="glyphicon glyphicon-calendar"></i>
 		    </button>
 		  </span>
-		  <span class="input-group-addon bg-white fg-red">*</span>
+
+		  <select class="form-control"
+			  x-ng-model="time.hh" type="text"
+			  x-ng-options="hh for hh in hours"> 
+		  </select>
+		  <span class="input-group-addon">:</span>
+		  <select class="form-control" type="text"
+			  x-ng-model="time.mm"
+			  x-ng-options="mm for mm in ms"> 
+		  </select>
+		  <span class="input-group-addon">:</span>
+		  <select class="form-control" type="text"
+			  x-ng-model="time.ss"
+			  x-ng-options="ss for ss in ms"> 
+		  </select>
+		  
 		</div>
 	      </div> 
 	    </div>

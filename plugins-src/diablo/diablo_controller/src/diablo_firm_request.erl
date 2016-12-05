@@ -115,12 +115,19 @@ action(Session, Req, {"update_brand"}, Payload) ->
 action(Session, Req, {"bill_w_firm"}, Payload) ->
     ?DEBUG("bill_w_firm with session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
-    
-    case ?supplier:supplier(bill, Merchant, Payload) of
-	{ok, FirmId} ->
-	    ?w_user_profile:update(firm, Merchant), 
-	    ?utils:respond(200, Req, ?succ(bill_firm, FirmId));
-	{error, Error} ->
+    FirmId = ?v(<<"firm">>, Payload),
+    Datetime = ?v(<<"datetime">>, Payload),
+    %% check time
+    case ?supplier:bill(check_time, Merchant, {FirmId, Datetime}) of
+	{ok, check} -> 
+	    case ?supplier:supplier(bill, Merchant, Payload) of
+		{ok, FirmId} ->
+		    ?w_user_profile:update(firm, Merchant), 
+		    ?utils:respond(200, Req, ?succ(bill_firm, FirmId));
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end;
+	{error, Error} -> 
 	    ?utils:respond(200, Req, Error)
     end;
 
@@ -130,7 +137,7 @@ action(Session, Req, {"update_bill_w_firm"}, Payload) ->
     BillRSN  = ?v(<<"rsn">>, Payload),
 
     try
-	{ok, OldBill} = ?supplier:bill(lookup, Merchant, [{<<"rsn">>, BillRSN}]),
+	{ok, OldBill} = ?supplier:bill(lookup, Merchant, [{<<"rsn">>, BillRSN}]), 
 	case ?supplier:supplier(update_bill, Merchant, {Payload, OldBill}) of
 	    {ok, RSN} ->
 		?w_user_profile:update(firm, Merchant), 

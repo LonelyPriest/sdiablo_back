@@ -1,6 +1,12 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2016-12-06",
+         content: [
+	     "厂商对帐按时间顺序排序"
+	 ]
+        },
+	
 	{date: "2016-11-18",
          content: [
 	     "增加颜色可编辑功能",

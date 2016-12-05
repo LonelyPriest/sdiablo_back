@@ -94,7 +94,7 @@
 		    <th class="danger">累计欠款</th>
 		    
 		    <th>备注</th>
-		    <!-- <th>采购日期</th>  -->
+		    <!-- <th>操作日期</th> -->
 		    <th>操作</th>
 		  </tr>
 		</thead>
@@ -145,9 +145,9 @@
 			<span x-ng-switch-when="null"></span>
 			<span x-ng-switch-default>{{r.comment}}</span>
 		      </span>
-		    </td>
+		    </td> 
+		    <!-- <td class="{{css(r.state, r.type)}}">{{r.op_date}}</td> -->
 		    
-		    <!-- <td class="{{css(r.state, r.type)}}">{{r.entry_date}}</td> -->
 		    <td>
 		      <button class="btn diablo-button btn-primary"
 		    	 x-ng-click="trans_rsn_detail(r)">
