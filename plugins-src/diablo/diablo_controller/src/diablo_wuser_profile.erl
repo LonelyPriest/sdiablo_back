@@ -455,7 +455,7 @@ handle_call({get_shop_profile, Merchant, Shop}, _From, State) ->
 		{ok, Shops} = ?shop:lookup(Merchant, {<<"id">>, Shop}),
 		GetShop(Shops);
 	    [Shops] ->
-		?DEBUG("shop ~p of merchant ~p", [Shops, Merchant]),
+		%% ?DEBUG("shop ~p of merchant ~p", [Shops, Merchant]),
 		GetShop(Shops) 
 	end,
    

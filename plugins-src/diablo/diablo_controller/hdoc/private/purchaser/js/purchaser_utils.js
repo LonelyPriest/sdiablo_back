@@ -14,7 +14,7 @@ var stockUtils = function(){
 
 	start_time: function(shop, base, now, dateFun){
 	    return diablo_base_setting(
-		"qtime_start", shop, base, function(v){return v},
+		"qtime_start", shop, base, diablo_set_date,
 		dateFun(now - diablo_day_millisecond * 30, "yyyy-MM-dd")); 
 	},
 

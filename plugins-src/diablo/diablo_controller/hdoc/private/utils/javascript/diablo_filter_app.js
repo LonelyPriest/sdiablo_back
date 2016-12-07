@@ -75,8 +75,7 @@ function filterProvider(){
 		    now = $.now();
 		}
 		if (angular.isUndefined(start)){
-		    return {start_time: now - diablo_day_millisecond * 30,
-			    end_time: now}; 
+		    return {start_time: now - diablo_day_millisecond * 30, end_time: now}; 
 		} else{
 		    return {start_time: start, end_time: now}; 
 		}

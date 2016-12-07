@@ -71,9 +71,9 @@ purchaser_good(used, Merchant, Shops, StyleNumber, Brand) ->
 purchaser_inventory(new, Merchant, Inventories, Props) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {new_inventory, Merchant, Inventories, Props}, 30 * 1000);
-purchaser_inventory(update, Merchant, Inventories, Props) ->
+purchaser_inventory(update, Merchant, Inventories, {Props, OldProps}) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {update_inventory, Merchant, Inventories, Props});
+    gen_server:call(Name, {update_inventory, Merchant, Inventories, {Props, OldProps}});
 purchaser_inventory(reject, Merchant, Inventories, Props) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {reject_inventory, Merchant, Inventories, Props});
@@ -252,7 +252,8 @@ filter(total_goods, 'and', Merchant, Fields) ->
 %%
 %% new stock
 filter(news, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
-    filter({news, ?SORT_BY_ID}, 'and', Merchant, CurrentPage, ItemsPerPage, Fields);
+    %% filter({news, ?SORT_BY_ID}, 'and', Merchant, CurrentPage, ItemsPerPage, Fields);
+    filter({news, ?SORT_BY_DATE}, 'and', Merchant, CurrentPage, ItemsPerPage, Fields); 
 filter({news, SortMode}, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(
@@ -898,7 +899,7 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and firm=" ++ ?to_s(Firm)
 	++ " and state in (0,1)"
-	++ " order by id desc limit 1) b on a.merchant=b.merchant and a.id=b.firm"
+	++ " order by entry_date desc limit 1) b on a.merchant=b.merchant and a.id=b.firm"
 	" where a.id=" ++ ?to_s(Firm)
 	++ " and a.merchant=" ++ ?to_s(Merchant)
 	++ " and a.deleted=" ++ ?to_s(?NO) ++ ";",
@@ -985,9 +986,9 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
 	    {reply, Error, State}
     end;
 
-handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
-    ?DEBUG("update_inventory: merchant ~p~n, inventories ~p, props ~p",
-	   [Merchant, Inventories, Props]), 
+handle_call({update_inventory, Merchant, Inventories, {Props, OldProps}}, _From, State) ->
+    ?DEBUG("update_inventory: merchant ~p~n, inventories ~p, props ~p, OldProps ~p",
+	   [Merchant, Inventories, Props, OldProps]), 
     CurTime    = ?utils:current_time(format_localtime),
     
     Id         = ?v(<<"id">>, Props),
@@ -998,7 +999,7 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
     Firm       = ?v(<<"firm">>, Props),
     Employee   = ?v(<<"employee">>, Props),
 
-    Balance    = ?v(<<"balance">>, Props),
+    %% Balance    = ?v(<<"balance">>, Props),
     Cash       = ?v(<<"cash">>, Props, 0),
     Card       = ?v(<<"card">>, Props, 0),
     Wire       = ?v(<<"wire">>, Props, 0),
@@ -1009,16 +1010,22 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
     Comment    = ?v(<<"comment">>, Props, []), 
     ShouldPay  = ?v(<<"should_pay">>, Props),
     HasPay     = ?v(<<"has_pay">>, Props, 0),
-    
-    OldFirm      = ?v(<<"old_firm">>, Props),
-    OldBalance   = ?v(<<"old_balance">>, Props), 
-    OldVerifyPay = ?v(<<"old_verify_pay">>, Props, 0),
-    OldShouldPay = ?v(<<"old_should_pay">>, Props),
-    OldHasPay    = ?v(<<"old_has_pay">>, Props, 0), 
-    OldDatatime  = ?v(<<"old_datetime">>, Props),
-    OldEPay      = ?v(<<"old_epay">>, Props, 0),
-
     Total      = ?v(<<"total">>, Props),
+
+    OldFirm      = ?v(<<"firm_id">>, OldProps),
+    OldEmployee  = ?v(<<"employee_id">>, OldProps),
+    %% OldBalance   = ?v(<<"balance">>, OldProps),
+    OldCash      = ?v(<<"cash">>, OldProps),
+    OldCard      = ?v(<<"card">>, OldProps),
+    OldWire      = ?v(<<"wire">>, OldProps),
+    OldVerifyPay = ?v(<<"verificate">>, OldProps),
+    OldShouldPay = ?v(<<"should_pay">>, OldProps),
+    OldHasPay    = ?v(<<"has_pay">>, OldProps), 
+    OldDatatime  = ?v(<<"entry_date">>, OldProps),
+    OldEPay      = ?v(<<"e_pay">>, OldProps),
+    OldComment   = ?v(<<"comment">>, OldProps),
+    OldTotal     = ?v(<<"total">>, OldProps),
+
     
     RealyShop = ?w_good_sql:realy_shop(Merchant, Shop),
     
@@ -1035,23 +1042,23 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 
     IsSame = fun(_, New, Old) when New == Old -> undefined;
 		(number, New, _Old) -> New; 
-		(datetime, New, _Old) ->
-		     ?utils:correct_datetime(datetime, New)
+		(datetime, New, _Old) -> ?utils:correct_datetime(datetime, New);
+		(_, New, _Old) -> New
 	     end,
     
-    Updates = ?utils:v(employ, string, Employee)
+    Updates = ?utils:v(employ, string, IsSame(string, Employee, OldEmployee))
 	++ ?utils:v(firm, integer, IsSame(number, Firm, OldFirm)) 
-	++ ?utils:v(shop, integer, Shop)
+    %% ++ ?utils:v(shop, integer, Shop)
 	++ ?utils:v(should_pay, float, IsSame(number, ShouldPay, OldShouldPay))
 	++ ?utils:v(has_pay, float, IsSame(number, HasPay, OldHasPay))
-	++ ?utils:v(cash, float, Cash)
-	++ ?utils:v(card, float, Card)
-	++ ?utils:v(wire, float, Wire)
-	++ ?utils:v(verificate, float, VerifyPay)
+	++ ?utils:v(cash, float, IsSame(number, Cash, OldCash))
+	++ ?utils:v(card, float, IsSame(number, Card, OldCard))
+	++ ?utils:v(wire, float, IsSame(number, Wire, OldWire))
+	++ ?utils:v(verificate, float, IsSame(number, VerifyPay, OldVerifyPay))
 	++ ?utils:v(e_pay, float, IsSame(number, EPay, OldEPay))
 	++ ?utils:v(e_pay_type, integer, EPayType)
-	++ ?utils:v(total, integer, Total)
-	++ ?utils:v(comment, string, Comment)
+	++ ?utils:v(total, integer, IsSame(number, Total, OldTotal))
+	++ ?utils:v(comment, string, IsSame(string, Comment, OldComment))
 	++ ?utils:v(entry_date, string, IsSame(datetime, Datetime, OldDatatime)), 
 		     
     case Firm =:= OldFirm of
@@ -1059,7 +1066,8 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 	    Sql2 = "update w_inventory_new set "
 		++ ?utils:to_sqls(
 		      proplists, comma,
-		      ?utils:v(balance, float, IsSame(number, Balance, OldBalance)) ++ Updates)
+		      %% ?utils:v(balance, float, IsSame(number, Balance, OldBalance)) ++ Updates
+		      Updates)
 		++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'",
 
 	    case (ShouldPay + EPay - HasPay - VerifyPay)
@@ -1088,7 +1096,8 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 				 %% " and shop=" ++ ?to_s(Shop)
 				 ++ " merchant=" ++ ?to_s(Merchant)
 				 ++ " and firm=" ++ ?to_s(Firm)
-				 ++ " and id>" ++ ?to_s(Id),
+				 ++ " and entry_date>\'" ++ ?to_s(OldDatatime) ++ "\'",
+				 %% ++ " and id>" ++ ?to_s(Id),
 
 				 "insert into firm_balance_history("
 				 "rsn, firm, balance, metric, action"
@@ -1100,7 +1109,7 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 				 ++ ?to_s(?UPDATE_INVENTORY) ++ "," 
 				 ++ ?to_s(Shop) ++ ","
 				 ++ ?to_s(Merchant) ++ ","
-				 ++ "\"" ++ ?to_s(Datetime) ++ "\")"
+				 ++ "\"" ++ ?to_s(CurTime) ++ "\")"
 				];
 			    false -> []
 			end,
@@ -1110,6 +1119,19 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 		    {reply, Reply, State}
 	    end;
 	false ->
+	    NewCurBalance =
+	    	case ?w_user_profile:get(firm, Merchant, Firm) of
+	    	    {ok, []} -> 0;
+	    	    {ok, NewFirmProfile} -> ?v(<<"balance">>, NewFirmProfile, 0)
+	    	end,
+	    
+	    OldCurBalance =
+		case ?w_user_profile:get(firm, Merchant, OldFirm) of
+		    {ok, []} -> 0;
+		    {ok, OldFirmProfile} ->
+			?v(<<"balance">>, OldFirmProfile, 0)
+		end,
+	    
 	    NewBalance = 
 		case Firm =/= ?INVALID_OR_EMPTY of
 		    true ->
@@ -1120,7 +1142,8 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 			    ++ " merchant=" ++ ?to_s(Merchant)
 			%% " and shop=" ++ ?to_s(Shop) 
 			    ++ " and firm=" ++ ?to_s(Firm)
-			    ++ " and id<" ++ ?to_s(Id)
+			%% ++ " and id<" ++ ?to_s(Id)
+			    ++ " and entry_date<\'" ++ ?to_s(OldDatatime) ++ "\'"
 			    ++ " order by id desc limit 1", 
 			case ?sql_utils:execute(s_read, Sql0) of
 			    {ok, []}  ->
@@ -1131,18 +1154,21 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 				    ++ " merchant=" ++ ?to_s(Merchant)
 				%% " and shop=" ++ ?to_s(Shop) 
 				    ++ " and firm=" ++ ?to_s(Firm)
-				    ++ " and id>" ++ ?to_s(Id)
+				%% ++ " and id>" ++ ?to_s(Id)
+				    ++ " and entry_date>\'" ++ ?to_s(OldDatatime) ++ "\'"
 				    ++ " order by id limit 1",
 				case ?sql_utils:execute(s_read, Sql00) of
-				    {ok, []} -> Balance;
+				    {ok, []} ->
+					%% Balance;
+					NewCurBalance;
 				    {ok, R0} -> ?v(<<"balance">>, R0)
 				end; 
 			    {ok, R}   ->
 				?v(<<"balance">>, R)
-				    + ?v(<<"should_pay">>, R, 0)
-				    + ?v(<<"e_pay">>, R, 0)
-				    - ?v(<<"has_pay">>, R, 0)
-				    - ?v(<<"verificate">>, R, 0)
+				    + ?v(<<"should_pay">>, R)
+				    + ?v(<<"e_pay">>, R)
+				    - ?v(<<"has_pay">>, R)
+				    - ?v(<<"verificate">>, R)
 			end;
 		    false -> 0
 		end,
@@ -1154,19 +1180,19 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 		++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"
 		++ " and id=" ++ ?to_s(Id),
 
-	    NewCurBalance =
-		case ?w_user_profile:get(firm, Merchant, Firm) of
-		    {ok, []} -> 0;
-		    {ok, NewFirmProfile} -> ?v(<<"balance">>, NewFirmProfile, 0)
-		end,
-	    OldCurBalance =
-		case ?w_user_profile:get(firm, Merchant, OldFirm) of
-		    {ok, []} -> 0;
-		    {ok, OldFirmProfile} ->
-			?v(<<"balance">>, OldFirmProfile, 0)
-		end,
+	    %% NewCurBalance =
+	    %% 	case ?w_user_profile:get(firm, Merchant, Firm) of
+	    %% 	    {ok, []} -> 0;
+	    %% 	    {ok, NewFirmProfile} -> ?v(<<"balance">>, NewFirmProfile, 0)
+	    %% 	end,
+	    %% OldCurBalance =
+	    %% 	case ?w_user_profile:get(firm, Merchant, OldFirm) of
+	    %% 	    {ok, []} -> 0;
+	    %% 	    {ok, OldFirmProfile} ->
+	    %% 		?v(<<"balance">>, OldFirmProfile, 0)
+	    %% 	end,
 	    
-	    BackBalanceOfOldFirm = OldShouldPay + EPay - OldVerifyPay - OldHasPay,
+	    BackBalanceOfOldFirm = OldShouldPay + OldEPay - OldVerifyPay - OldHasPay,
 	    BalanceOfNewFirm = ShouldPay + EPay - HasPay - VerifyPay,
 		
 	    AllSql = Sql1 ++ [Sql2] ++
@@ -1186,7 +1212,7 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 			 ++ ?to_s(?UPDATE_INVENTORY) ++ "," 
 			 ++ ?to_s(Shop) ++ ","
 			 ++ ?to_s(Merchant) ++ ","
-			 ++ "\"" ++ ?to_s(Datetime) ++ "\")",
+			 ++ "\"" ++ ?to_s(CurTime) ++ "\")",
 		 
 			 "update w_inventory_new set balance=balance+"
 			 ++ ?to_s(BalanceOfNewFirm)
@@ -1194,7 +1220,8 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 			 ++ " merchant=" ++ ?to_s(Merchant)
 			 %% " and shop=" ++ ?to_s(Shop) 
 			 ++ " and firm=" ++ ?to_s(Firm)
-			 ++ " and id>" ++ ?to_s(Id)];
+			 %% ++ " and id>" ++ ?to_s(Id)
+			 ++ " and entry_date>\'" ++ ?to_s(OldDatatime) ++ "\'"];
 		    false -> []
 		end
 		++ 
@@ -1214,7 +1241,7 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 			 ++ ?to_s(?UPDATE_INVENTORY) ++ "," 
 			 ++ ?to_s(Shop) ++ ","
 			 ++ ?to_s(Merchant) ++ ","
-			 ++ "\"" ++ ?to_s(Datetime) ++ "\")",
+			 ++ "\"" ++ ?to_s(CurTime) ++ "\")",
 
 			 "update w_inventory_new set balance=balance-"
 			 ++ ?to_s(BackBalanceOfOldFirm)
@@ -1222,7 +1249,8 @@ handle_call({update_inventory, Merchant, Inventories, Props}, _From, State) ->
 			 ++ " merchant=" ++ ?to_s(Merchant)
 			 %% ++ " and shop=" ++ ?to_s(Shop) 
 			 ++ " and firm=" ++ ?to_s(OldFirm)
-			 ++ " and id>" ++ ?to_s(Id) 
+			 ++ " and entry_date>\'" ++ ?to_s(OldDatatime) ++ "\'"
+			 %% ++ " and id>" ++ ?to_s(Id) 
 			];
 		    false -> []
 		end,
@@ -1960,7 +1988,7 @@ handle_call({filter_new_rsn_groups, Merchant,
 	   "currentPage ~p, ItemsPerpage ~p, Merchant ~p~n"
 	   "fields ~p", [CurrentPage, ItemsPerPage, Merchant, Fields]), 
     Sql = ?w_good_sql:inventory(
-	     new_rsn_group_with_pagination, Merchant,
+	     {new_rsn_group_with_pagination, use_id, 0}, Merchant,
 	     Fields, CurrentPage, ItemsPerPage), 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};

@@ -821,9 +821,13 @@ inventory(transfer_rsn_group_with_pagination, Merchant, Conditions, CurrentPage,
     inventory(transfer_rsn_groups, transfer, Merchant, Conditions,
               fun() -> ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage) end);
 
-inventory(new_rsn_group_with_pagination, Merchant, Conditions, CurrentPage, ItemsPerPage) -> 
+inventory({new_rsn_group_with_pagination, Mode, Sort},
+	  Merchant, Conditions, CurrentPage, ItemsPerPage) -> 
     inventory(new_rsn_groups, new, Merchant, Conditions,
-	      fun() -> ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage) end).
+	      fun() ->
+		      ?sql_utils:condition(page_desc, {Mode, Sort}, CurrentPage, ItemsPerPage)
+		      %% ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage)
+	      end).
 
 %%
 %% match
@@ -974,60 +978,90 @@ inventory(update, Mode, RSN, Merchant, Shop, Firm, OldFirm, Datetime,  OldDateti
 			   ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"]
 		end,
 		
-	    Sql2 = 
-		["update w_inventory a inner join "
-		    "(select style_number, brand"
-		    " from w_inventory_new_detail"
-		    " where rsn=\'" ++ ?to_s(RSN) ++ "\') b"
-		    " on a.style_number=b.style_number and a.brand=b.brand"
-		    " set " ++?utils:to_sqls(proplists, comma, Updates)
-		    ++ " where a.merchant=" ++ ?to_s(Merchant)
-		    ++ " and a.shop=" ++ ?to_s(Shop)]
-		++ case UpdateDate of
-		       [] -> []; 
-		       _  ->
-			   ["update w_inventory_amount a inner join "
-			    "(select style_number, brand"
-			    " from w_inventory_new_detail"
-			    " where rsn=\'" ++ ?to_s(RSN) ++ "\') b"
-			    " on a.style_number=b.style_number and a.brand=b.brand"
-			    " set " ++?utils:to_sqls(proplists, comma, Updates)
-			    ++ " where a.merchant=" ++ ?to_s(Merchant)
-			    ++ " and a.shop=" ++ ?to_s(Shop) 
-			   ]
-		   end
+	    Sql2 =
+		case UpdateFirm of
+		    [] -> [];
+		    _ ->
+			["update w_inventory a inner join "
+			 "(select style_number, brand"
+			 " from w_inventory_new_detail"
+			 " where rsn=\'" ++ ?to_s(RSN) ++ "\') b"
+			 " on a.style_number=b.style_number and a.brand=b.brand"
+			 " set " ++?utils:to_sqls(proplists, comma, UpdateFirm)
+			 ++ " where a.merchant=" ++ ?to_s(Merchant)
+			 ++ " and a.shop=" ++ ?to_s(Shop),
+			 
+			 "update w_inventory_amount a inner join "
+			 "(select style_number, brand"
+			 " from w_inventory_new_detail"
+			 " where rsn=\'" ++ ?to_s(RSN) ++ "\') b"
+			 " on a.style_number=b.style_number and a.brand=b.brand"
+			 " set " ++?utils:to_sqls(proplists, comma, UpdateFirm)
+			 ++ " where a.merchant=" ++ ?to_s(Merchant)
+			 ++ " and a.shop=" ++ ?to_s(Shop),
 
-		%% good
-		++ ["update w_inventory_good a inner join "
-		    "(select style_number, brand"
-		    " from w_inventory_new_detail"
-		    " where rsn=\'" ++ ?to_s(RSN) ++ "\') b"
-		    " on a.style_number=b.style_number and a.brand=b.brand"
-		    " set " ++?utils:to_sqls(proplists, comma, Updates)
-		    ++ " where a.merchant=" ++ ?to_s(Merchant)]
+			 "update w_inventory_good a inner join "
+			 "(select style_number, brand"
+			 " from w_inventory_new_detail"
+			 " where rsn=\'" ++ ?to_s(RSN) ++ "\') b"
+			 " on a.style_number=b.style_number and a.brand=b.brand"
+			 " set " ++?utils:to_sqls(proplists, comma, Updates)
+			 ++ " where a.merchant=" ++ ?to_s(Merchant),
 
-		%% sale
-		++ case UpdateFirm of
-		       [] -> [];
-		       _  ->
-			   ["update w_sale_detail a inner join "
-			    "(select style_number, brand"
-			    " from w_inventory_new_detail"
-			    " where rsn=\'" ++ ?to_s(RSN) ++ "\') b"
-			    " on a.style_number=b.style_number and a.brand=b.brand"
-			    " set " ++?utils:to_sqls(proplists, comma, Updates)
-			    ++ " where a.merchant=" ++ ?to_s(Merchant)
-			    ++ " and rsn like \'M-" ++ ?to_s(Merchant) ++ "-S-"
-			    ++ ?to_s(Shop) ++ "-%\'"]
-		   end,
+			 "update w_sale_detail a inner join "
+			 "(select style_number, brand"
+			 " from w_inventory_new_detail"
+			 " where rsn=\'" ++ ?to_s(RSN) ++ "\') b"
+			 " on a.style_number=b.style_number and a.brand=b.brand"
+			 " set " ++?utils:to_sqls(proplists, comma, Updates)
+			 ++ " where a.merchant=" ++ ?to_s(Merchant)
+			 ++ " and rsn like \'M-" ++ ?to_s(Merchant) ++ "-S-"
+			 ++ ?to_s(Shop) ++ "-%\'"]
+		end,
+	    %% ++ case UpdateDate of
+	    %%        [] -> []; 
+	    %%        _  ->
+	    %% 	   ["update w_inventory_amount a inner join "
+	    %% 	    "(select style_number, brand"
+	    %% 	    " from w_inventory_new_detail"
+	    %% 	    " where rsn=\'" ++ ?to_s(RSN) ++ "\') b"
+	    %% 	    " on a.style_number=b.style_number and a.brand=b.brand"
+	    %% 	    " set " ++?utils:to_sqls(proplists, comma, Updates)
+	    %% 	    ++ " where a.merchant=" ++ ?to_s(Merchant)
+	    %% 	    ++ " and a.shop=" ++ ?to_s(Shop) 
+	    %% 	   ]
+	    %%    end
+
+	    %% good
+	    %% ++ ["update w_inventory_good a inner join "
+	    %%     "(select style_number, brand"
+	    %%     " from w_inventory_new_detail"
+	    %%     " where rsn=\'" ++ ?to_s(RSN) ++ "\') b"
+	    %%     " on a.style_number=b.style_number and a.brand=b.brand"
+	    %%     " set " ++?utils:to_sqls(proplists, comma, Updates)
+	    %%     ++ " where a.merchant=" ++ ?to_s(Merchant)]
+
+	    %% sale
+	    %% ++ case UpdateFirm of
+	    %%        [] -> [];
+	    %%        _  ->
+	    %% 	   ["update w_sale_detail a inner join "
+	    %% 	    "(select style_number, brand"
+	    %% 	    " from w_inventory_new_detail"
+	    %% 	    " where rsn=\'" ++ ?to_s(RSN) ++ "\') b"
+	    %% 	    " on a.style_number=b.style_number and a.brand=b.brand"
+	    %% 	    " set " ++?utils:to_sqls(proplists, comma, Updates)
+	    %% 	    ++ " where a.merchant=" ++ ?to_s(Merchant)
+	    %% 	    ++ " and rsn like \'M-" ++ ?to_s(Merchant) ++ "-S-"
+	    %% 	    ++ ?to_s(Shop) ++ "-%\'"]
+	    %%    end,
 	    case Mode of
 		?NEW_INVENTORY -> Sql1 ++ Sql2;
 		?REJECT_INVENTORY -> Sql1
 	    end
     end.
 
-inventory(update, Mode, RSN, Merchant, Shop, Firm,
-	  Datetime, _OldDatetime, Curtime, Inventories) ->
+inventory(update, Mode, RSN, Merchant, Shop, Firm, Datetime, _OldDatetime, Curtime, Inventories) ->
     
     lists:foldr(
       fun({struct, Inv}, Acc0)-> 

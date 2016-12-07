@@ -305,6 +305,7 @@ purchaserApp.controller("purchaserInventoryNewRsnDetailCtrl", function(
     // };
 
     $scope.time = diabloFilter.default_time($scope.qtime_start, $scope.qtime_end);
+    // console.log($scope.time);
 
     var add_search_condition = function(search){
 	if (angular.isUndefined(search.shop)

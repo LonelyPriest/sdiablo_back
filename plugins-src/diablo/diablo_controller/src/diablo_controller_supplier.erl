@@ -294,14 +294,18 @@ handle_call({bill_supplier, Merchant, Attrs}, _From, State) ->
 	    	" where merchant=" ++ ?to_s(Merchant)
 	    	++ " and firm=" ++ ?to_s(FirmId)
 		++ " and state in(0, 1)"
-	    	++ " and entry_date>\'" ++ ?to_s(Datetime) ++ "\'"
-	    	++ " order by entry_date limit 1",
+	    	++ " and entry_date<\'" ++ ?to_s(Datetime) ++ "\'"
+	    	++ " order by entry_date desc limit 1",
 
 	    case ?sql_utils:execute(s_read, Sql00) of
 		{ok, LastStockIn} ->
 		    LastBalance = case LastStockIn of
 				      [] -> 0;
 				      _ -> ?v(<<"balance">>, LastStockIn)
+					       + ?v(<<"should_pay">>, LastStockIn)
+					       + ?v(<<"e_pay">>, LastStockIn)
+					       - ?v(<<"has_pay">>, LastStockIn)
+					       - ?v(<<"verificate">>, LastStockIn)
 				  end,
 		    CurrentBalance = ?v(<<"balance">>, Firm, 0), 
 
@@ -506,13 +510,17 @@ handle_call({update_bill_supplier, Merchant, {Attrs, OldAttrs}}, _From, State) -
 		    " where merchant=" ++ ?to_s(Merchant)
 		    ++ " and firm=" ++ ?to_s(FirmId)
 		    ++ " and state in(0, 1)"
-		    ++ " and entry_date>\'" ++ ?to_s(Datetime) ++ "\'"
-		    ++ " order by entry_date limit 1",
+		    ++ " and entry_date<\'" ++ ?to_s(Datetime) ++ "\'"
+		    ++ " order by entry_date desc limit 1",
 		case ?sql_utils:execute(s_read, Sql00) of
 		    {ok, LastStockIn} ->
 			LastBalance = case LastStockIn of
 					  [] -> 0;
 					  _  -> ?v(<<"balance">>, LastStockIn)
+						    + ?v(<<"should_pay">>, LastStockIn)
+						    + ?v(<<"e_pay">>, LastStockIn)
+						    - ?v(<<"has_pay">>, LastStockIn)
+						    - ?v(<<"verificate">>, LastStockIn)
 				      end,
 
 			AllUpdate = UpdatesOfStock ++ ?utils:v(balance, float, LastBalance),

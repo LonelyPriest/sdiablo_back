@@ -72,8 +72,12 @@ action(Session, Req, {"update_w_inventory"}, Payload) ->
     Invs = ?v(<<"inventory">>, Payload, []),
     {struct, Base} = ?v(<<"base">>, Payload),
 
+    RSN = ?v(<<"rsn">>, Base),
+
+    {ok, OldBase} = ?w_inventory:purchaser_inventory(get_new, Merchant, RSN),
+
     case ?w_inventory:purchaser_inventory(
-	    update, Merchant, lists:reverse(Invs), Base) of
+	    update, Merchant, lists:reverse(Invs), {Base, OldBase}) of
     	{ok, RSn} -> 
     	    ?utils:respond(
 	       200,
@@ -141,7 +145,8 @@ action(Session, Req, {"filter_w_inventory_new"}, Payload) ->
 	   [Session, Payload]),
     Merchant = ?session:get(merchant, Session), 
     {struct, Fields} = ?v(<<"fields">>, Payload),
-    SortMode = ?v(<<"mode">>, Payload, ?SORT_BY_ID), 
+    SortMode = ?v(<<"mode">>, Payload, ?SORT_BY_ID),
+    %% SortMode = ?v(<<"mode">>, Payload, ?SORT_BY_DATE), 
     NewPayload = proplists:delete(<<"mode">>, Payload),
 
     %% case
