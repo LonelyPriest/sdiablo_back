@@ -1316,7 +1316,7 @@ handle_call({delete_new, Merchant, RSN, Mode}, _From, State) ->
 	{ok, []} ->
 	    {reply, {error, ?err(failed_to_get_stock_new, RSN)}};
 	{ok, New} ->
-	    NId = ?v(<<"id">>, New),
+	    %% NId = ?v(<<"id">>, New),
 	    StockState = ?v(<<"state">>, New),
 	    Firm = ?v(<<"firm_id">>, New),
 	    Shop = ?v(<<"shop_id">>, New),
@@ -1324,7 +1324,8 @@ handle_call({delete_new, Merchant, RSN, Mode}, _From, State) ->
 	    SPay = ?v(<<"should_pay">>, New),
 	    HPay = ?v(<<"has_pay">>, New),
 	    VPay = ?v(<<"verificate">>, New),
-	    EPay = ?v(<<"e_pay">>, New), 
+	    EPay = ?v(<<"e_pay">>, New),
+	    Entry = ?v(<<"entry_date">>, New),
 
 	    DeleteNewSqls = ["delete from w_inventory_new_detail_amount"
 			     " where rsn=\'" ++ ?to_s(RSN) ++ "\'",
@@ -1388,7 +1389,8 @@ handle_call({delete_new, Merchant, RSN, Mode}, _From, State) ->
 				 ++ " where merchant=" ++ ?to_s(Merchant)
 				 %% ++ " and shop=" ++ ?to_s(Shop) 
 				 ++ " and firm=" ++ ?to_s(Firm)
-				 ++ " and id>" ++ ?to_s(NId),
+				 ++ " and entry_date>\'" ++ ?to_s(Entry) ++ "\'",
+				 %% ++ " and id" ++ ?to_s(NId),
 
 				 "insert into firm_balance_history("
 				 "rsn, firm, balance, metric, action"

@@ -289,7 +289,7 @@ handle_call({bill_supplier, Merchant, Attrs}, _From, State) ->
     case ?sql_utils:execute(s_read, Sql0) of
 	{ok, Firm} ->
 	    Sql00 = "select id, rsn, firm, shop, merchant"
-		", balance, should_pay, has_pay, entry_date"
+		", balance, should_pay, has_pay, e_pay, verificate, entry_date"
 	    	" from w_inventory_new"
 	    	" where merchant=" ++ ?to_s(Merchant)
 	    	++ " and firm=" ++ ?to_s(FirmId)
@@ -505,7 +505,7 @@ handle_call({update_bill_supplier, Merchant, {Attrs, OldAttrs}}, _From, State) -
 		%% DateEnd = date_end(Datetime),
 		
 		Sql00 = "select id, rsn, firm, shop, merchant"
-		    ", balance, should_pay, has_pay, entry_date"
+		    ", balance, should_pay, has_pay, e_pay, verificate, entry_date"
 		    " from w_inventory_new"
 		    " where merchant=" ++ ?to_s(Merchant)
 		    ++ " and firm=" ++ ?to_s(FirmId)
