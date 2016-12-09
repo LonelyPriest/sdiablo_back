@@ -1013,6 +1013,7 @@ handle_call({update_inventory, Merchant, Inventories, {Props, OldProps}}, _From,
     Total      = ?v(<<"total">>, Props),
 
     OldFirm      = ?v(<<"firm_id">>, OldProps),
+    OldShop      = ?v(<<"shop_id">>, OldProps),
     OldEmployee  = ?v(<<"employee_id">>, OldProps),
     %% OldBalance   = ?v(<<"balance">>, OldProps),
     OldCash      = ?v(<<"cash">>, OldProps),
@@ -1048,7 +1049,7 @@ handle_call({update_inventory, Merchant, Inventories, {Props, OldProps}}, _From,
     
     Updates = ?utils:v(employ, string, IsSame(string, Employee, OldEmployee))
 	++ ?utils:v(firm, integer, IsSame(number, Firm, OldFirm)) 
-    %% ++ ?utils:v(shop, integer, Shop)
+	++ ?utils:v(shop, integer, OldShop)
 	++ ?utils:v(should_pay, float, IsSame(number, ShouldPay, OldShouldPay))
 	++ ?utils:v(has_pay, float, IsSame(number, HasPay, OldHasPay))
 	++ ?utils:v(cash, float, IsSame(number, Cash, OldCash))

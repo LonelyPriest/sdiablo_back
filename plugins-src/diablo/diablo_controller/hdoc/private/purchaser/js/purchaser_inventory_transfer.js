@@ -151,6 +151,13 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
     $scope.on_select_inventory = function(item, model, label){
 	console.log(item);
 
+	if (diablo_invalid_firm === item.firm_id){
+	    diabloUtilsService.response_with_callback(
+		false, "库存转移", "转移失败：" + purchaserService.error[2089],
+		$scope, function(){ $scope.inventories[0] = {$edit:false, $new:true}});
+	    return;
+	}
+	
 	// has been added
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    if (item.style_number === $scope.inventories[i].style_number

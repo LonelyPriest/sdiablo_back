@@ -43,7 +43,7 @@
 	  	   placeholder="支持厂商/品牌查询"
 	  	   typeahead-editable="false"
 	  	   typeahead-on-select="select_brand($item, $model, $label)"
-	  	   typeahead="s as s.name for s in
+	  	   uib-typeahead="s as s.name for s in
 	  		      prompts|filter:$viewValue|limitTo:8"
 	  	   x-ng-model="search">
 	      </div>
@@ -106,7 +106,7 @@
 	    <span>显示第 {{current_page}} / {{num_pages}} 项结果，
 	      共 {{total_items}} 项</span>
 	    
-	    <pagination class="pagination-lg table-pagination pull-right"
+	    <uib-pagination class="pagination-lg table-pagination pull-right"
 		      	total-items="total_items"
 		      	items-per-page="items_perpage"
 		      	num-pages="num_pages"
@@ -116,7 +116,7 @@
 		      	first-text="&laquo;" last-text="&raquo;"
 		      	x-ng-model="current_page"
 		      	x-ng-change="page_changed()">
-	    </pagination>
+	    </uib-pagination>
 	  </div>
 	</div>
 	  
@@ -184,7 +184,7 @@
 		   class="form-control"
 		   name="firm"
 		   placeholder="请选择品牌所属厂商"
-		   typeahead="f as f.name for f in
+		   uib-typeahead="f as f.name for f in
 			      params.firms|filter:$viewValue|limitTo:15"
 		   typeahead-editable="false"
 		   x-ng-model="params.brand.firm" />

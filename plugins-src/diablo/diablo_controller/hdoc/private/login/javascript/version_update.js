@@ -1,6 +1,13 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2016-12-10",
+         content: [
+	     "增加无厂商的货品不能进行移仓限制",
+	     "修正销售退货单无上架日期的问题"
+	 ]
+        },
+	
 	{date: "2016-12-06",
          content: [
 	     "厂商对帐按时间顺序排序"

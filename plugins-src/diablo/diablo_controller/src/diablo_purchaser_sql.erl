@@ -965,7 +965,7 @@ inventory(update, Mode, RSN, Merchant, Shop, Firm, OldFirm, Datetime,  OldDateti
 		["update w_inventory_new set "
 		 ++ ?utils:to_sqls(proplists, comma, Updates)
 		 ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'",
-
+		 
 		 "update w_inventory_new_detail set "
 		 ++ ?utils:to_sqls(proplists, comma, Updates)
 		 ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"]
@@ -1016,7 +1016,8 @@ inventory(update, Mode, RSN, Merchant, Shop, Firm, OldFirm, Datetime,  OldDateti
 			 " set " ++?utils:to_sqls(proplists, comma, Updates)
 			 ++ " where a.merchant=" ++ ?to_s(Merchant)
 			 ++ " and rsn like \'M-" ++ ?to_s(Merchant) ++ "-S-"
-			 ++ ?to_s(Shop) ++ "-%\'"]
+			 ++ ?to_s(Shop) ++ "-%\'"
+			]
 		end,
 	    %% ++ case UpdateDate of
 	    %%        [] -> []; 

@@ -61,7 +61,7 @@
 		       name="firm"
 		       required
 		       placeholder="请选择品牌所属厂商"
-		       typeahead="f as f.name for f in
+		       uib-typeahead="f as f.name for f in
 				  firms|filter:$viewValue|limitTo:15"
 		       typeahead-editable="false"
 		       x-ng-model="brand.firm" />

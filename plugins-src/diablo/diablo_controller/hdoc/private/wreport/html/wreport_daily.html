@@ -31,8 +31,8 @@
       </div>
 
       <div class="portlet-body">
-	<tabset>
-	  <tab heading="销售统计"
+	<uib-tabset>
+	  <uib-tab heading="销售统计"
 	       select="do_search_by_shop(current_shop_page)">
 	    <div class="panel panel-default">
 	      <div class="table-responsive diablo-table">
@@ -144,11 +144,11 @@
 		</table> <!--END table-->
 	      </div> <!--END table-responsive-->
 	    </div> 
-	  </tab>
+	  </uib-tab>
 	  
-	  <tab x-ng-controller="dailyByGood"
-	       heading="货品统计"
-	       select="do_search(s_pagination.current_page, current_day)">
+	  <uib-tab x-ng-if="fale" x-ng-controller="dailyByGood" 
+		   heading="货品统计"
+		   select="do_search(s_pagination.current_page, current_day)">
 	    
 	    <div class="panel panel-default table-panel">
 	      
@@ -211,9 +211,9 @@
 	
 	      </div>
 	    </div>
-	  </tab>
+	  </uib-tab>
 	  
-	</tabset>
+	</uib-tabset>
       </div>
     </div> <!--END portlet box-->
 

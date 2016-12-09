@@ -1,8 +1,8 @@
 firmApp.controller("brandNewCtrl", function(
     $scope, diabloUtilsService, diabloPattern,
     firmService, filterBrand, filterFirm){
-    console.log(filterFirm);
-    console.log(filterBrand);
+    // console.log(filterFirm);
+    // console.log(filterBrand);
     $scope.firms  = filterFirm;
     $scope.brands = angular.copy(filterBrand);
 

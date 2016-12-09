@@ -57,6 +57,7 @@ var wsaleUtils = function(){
 		add.season  = s.season;
 		add.firm_id = s.firm_id;
 		add.year    = s.year;
+		add.entry   = s.in_datetime;
 		add.free    = s.free;
 		add.path    = s.path;
 

@@ -318,6 +318,7 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 		// sex         : add.sex,
 		season      : add.season, 
 		year        : add.year,
+		entry       : add.entry,
 
 		amounts     : get_sales(add.amounts),
 		sell_total  : parseInt(add.reject), 
