@@ -80,8 +80,12 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	$scope.select.should_pay= calc.should_pay;
 	$scope.select.score     = calc.score;
 	
-	if (0 !== wsaleUtils.to_float($scope.select.has_pay))
-	    $scope.select.charge = $scope.select.should_pay
+	// if (0 !== wsaleUtils.to_float($scope.select.has_pay))
+	//     $scope.select.charge = $scope.select.should_pay
+	//     - wsaleUtils.to_float($scope.select.has_pay)
+	//     - wsaleUtils.to_float($scope.select.ticket);
+
+	$scope.select.charge = $scope.select.should_pay
 	    - wsaleUtils.to_float($scope.select.has_pay)
 	    - wsaleUtils.to_float($scope.select.ticket);
 
@@ -222,17 +226,25 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
      */
     $scope.disable_save = function(){
 	// save one time only
-	if ($scope.has_saved || $scope.select.charge > 0) return true;
+	if ($scope.has_saved || $scope.inventories.length === 1) return true;
+
+	if ($scope.select.should_pay >=0 && $scope.select.charge > 0)
+	    return true;
+
+	if ($scope.select.should_pay < 0 && $scope.select.charge < 0)
+	    return true;
+	
+	// if ($scope.has_saved || $scope.select.charge > 0) return true;
 	
 	// any payment of cash, card or wire or any inventory
-	if (angular.isDefined(diablo_set_float($scope.select.cash))
-	    || angular.isDefined(diablo_set_float($scope.select.card))
-	    || angular.isDefined(diablo_set_float($scope.select.withdraw)) 
-	    || angular.isDefined(diablo_set_string($scope.select.comment))
-	    || $scope.inventories.length !== 1
-	   ) return false;
+	// if (angular.isDefined(diablo_set_float($scope.select.cash))
+	//     || angular.isDefined(diablo_set_float($scope.select.card))
+	//     || angular.isDefined(diablo_set_float($scope.select.withdraw)) 
+	//     || angular.isDefined(diablo_set_string($scope.select.comment))
+	//     || $scope.inventories.length !== 1
+	//    ) return false;
 	
-	return true;
+	return false;
     };
 
     $scope.disable_modify_discount = function(inv){

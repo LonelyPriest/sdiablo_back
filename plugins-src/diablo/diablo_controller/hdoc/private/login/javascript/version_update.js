@@ -1,6 +1,12 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2016-12-11",
+         content: [
+	     "修正负数退货时，不输入退货金额也可以退单问题"
+	 ]
+        },
+	
 	{date: "2016-12-10",
          content: [
 	     "增加无厂商的货品不能进行移仓限制",

@@ -159,7 +159,13 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 		    {reply, {error, ?err(wsale_not_enought_balance, ?v(<<"id">>, Account))}, State};
 		false ->
 		    [NewTicket, NewWithdraw, NewCard, NewCash] =
-			pay_order(ShouldPay, [Ticket, Withdraw, Card, Cash], []),
+			case ShouldPay >= 0 of
+			    true ->
+				pay_order(ShouldPay, [Ticket, Withdraw, Card, Cash], []);
+			    false ->
+				pay_order(reject, ShouldPay,
+					  [Ticket, Withdraw, Card, Cash], [])
+			end,
 		    %% NewCash = case RPay > 0 andalso Cash >= RPay of
 		    %% 		  true  -> RPay;
 		    %% 		  false -> Cash
@@ -284,7 +290,13 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
     
     [NewTicket, NewWithdraw, NewCard, NewCash] = NewPays =
 	case SellType of
-	    0 -> pay_order(ShouldPay, [Ticket, Withdraw, Card, Cash], []);
+	    0 ->
+		case ShouldPay >= 0 of
+		    true ->
+			pay_order(ShouldPay, [Ticket, Withdraw, Card, Cash], []);
+		    false ->
+			pay_order(reject, ShouldPay, [Ticket, Withdraw, Card, Cash], [])
+		end;
 	    1 -> pay_order(reject, ShouldPay, [Ticket, Withdraw, Card, Cash], [])
 	end,
     ?DEBUG("new pays ~p", [NewPays]),

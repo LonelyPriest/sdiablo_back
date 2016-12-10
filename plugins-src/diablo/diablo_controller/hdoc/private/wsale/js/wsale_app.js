@@ -964,21 +964,24 @@ wsaleApp.controller("wsaleNewCtrl", function(
      */
     $scope.disable_save = function(){
 	// save one time only
-	if ($scope.has_saved
-	    || $scope.draft
-	    || $scope.inventories.length === 1
-	    || $scope.select.charge > 0)
+	if ($scope.has_saved || $scope.draft || $scope.inventories.length === 1)
 	    return true;
 	
+	if ($scope.select.should_pay >=0 && $scope.select.charge > 0)
+	    return true;
+
+	if ($scope.select.should_pay < 0 && $scope.select.charge < 0)
+	    return true;
+	    
 	// console.log($scope.select);
 	// any payment of cash, card or wire or any inventory
-	if (angular.isDefined($scope.select.cash) && $scope.select.cash
-	    || angular.isDefined($scope.select.card) && $scope.select.card 
-	    || $scope.inventories.length !== 1){
-	    return false;
-	} 
+	// if (angular.isDefined($scope.select.cash) && $scope.select.cash
+	//     || angular.isDefined($scope.select.card) && $scope.select.card 
+	//     || $scope.inventories.length !== 1){
+	//     return false;
+	// } 
 	
-	return true;
+	return false;
     };
 
     $scope.print_backend = function(result, im_print){
