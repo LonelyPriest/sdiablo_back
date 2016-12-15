@@ -991,7 +991,7 @@ handle_call({update_inventory, Merchant, Inventories, {Props, OldProps}}, _From,
 	   [Merchant, Inventories, Props, OldProps]), 
     CurTime    = ?utils:current_time(format_localtime),
     
-    Id         = ?v(<<"id">>, Props),
+    %% Id         = ?v(<<"id">>, Props),
     Mode       = ?v(<<"mode">>, Props),
     RSN        = ?v(<<"rsn">>, Props),
     Shop       = ?v(<<"shop">>, Props),
@@ -1022,28 +1022,28 @@ handle_call({update_inventory, Merchant, Inventories, {Props, OldProps}}, _From,
     OldVerifyPay = ?v(<<"verificate">>, OldProps),
     OldShouldPay = ?v(<<"should_pay">>, OldProps),
     OldHasPay    = ?v(<<"has_pay">>, OldProps), 
-    OldDatatime  = ?v(<<"entry_date">>, OldProps),
+    OldDatetime  = ?v(<<"entry_date">>, OldProps),
     OldEPay      = ?v(<<"e_pay">>, OldProps),
     OldComment   = ?v(<<"comment">>, OldProps),
     OldTotal     = ?v(<<"total">>, OldProps),
 
     
-    RealyShop = ?w_good_sql:realy_shop(Merchant, Shop),
-    
+    RealyShop = ?w_good_sql:realy_shop(Merchant, Shop), 
     Sql1 = case Inventories of
 	       [] ->
 		   ?w_good_sql:inventory(
 		      update, Mode, RSN, Merchant, RealyShop,
-		      Firm, OldFirm, Datetime, OldDatatime);
+		      Firm, OldFirm, Datetime, OldDatetime);
 	       _ ->
 		   ?w_good_sql:inventory(
 		      update, Mode, RSN, Merchant, RealyShop, Firm,
-		      Datetime, OldDatatime, CurTime, Inventories)
+		      Datetime, OldDatetime, CurTime, Inventories)
 	   end,
 
     IsSame = fun(_, New, Old) when New == Old -> undefined;
 		(number, New, _Old) -> New; 
-		(datetime, New, _Old) -> ?utils:correct_datetime(datetime, New);
+		%% (datetime, New, _Old) -> ?utils:correct_datetime(datetime, New);
+		(datetime, New, _Old) -> New;
 		(_, New, _Old) -> New
 	     end,
     
@@ -1060,206 +1060,278 @@ handle_call({update_inventory, Merchant, Inventories, {Props, OldProps}}, _From,
 	++ ?utils:v(e_pay_type, integer, EPayType)
 	++ ?utils:v(total, integer, IsSame(number, Total, OldTotal))
 	++ ?utils:v(comment, string, IsSame(string, Comment, OldComment))
-	++ ?utils:v(entry_date, string, IsSame(datetime, Datetime, OldDatatime)), 
-		     
-    case Firm =:= OldFirm of
-	true ->
-	    Sql2 = "update w_inventory_new set "
-		++ ?utils:to_sqls(
-		      proplists, comma,
-		      %% ?utils:v(balance, float, IsSame(number, Balance, OldBalance)) ++ Updates
-		      Updates)
-		++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'",
+	++ ?utils:v(entry_date, string, IsSame(datetime, Datetime, OldDatetime)),
 
-	    case (ShouldPay + EPay - HasPay - VerifyPay)
-		- (OldShouldPay + OldEPay - OldHasPay - OldVerifyPay) of
-		0 ->
-		    AllSql = Sql1 ++ [Sql2],
-		    Reply = ?sql_utils:execute(transaction, AllSql, RSN), 
-		    {reply, Reply, State};
-		Metric ->
-		    {ok, FirmProfile} = ?w_user_profile:get(firm, Merchant, Firm),
-		    CurBalance = ?v(<<"balance">>, FirmProfile, 0),
+    try
+	Sqls =  Sql1 ++ 
+	    case Firm =:= OldFirm of
+		true  -> update_stock(same_firm, Merchant, CurTime, Updates, {Props, OldProps});
+		false -> update_stock(diff_firm, Merchant, CurTime, Updates, {Props, OldProps})
+	    end,
+
+	Reply = ?sql_utils:execute(transaction, Sqls, RSN),
+	?w_user_profile:update(firm, Merchant),
+	{reply, Reply, State}
+    catch
+	_:{badmatch, Error} ->
+	    {reply, Error, State}
+    end;
+    
+    %% case Firm =:= OldFirm of
+    %% 	true -> 
+    %% 	    case (ShouldPay + EPay - HasPay - VerifyPay)
+    %% 		- (OldShouldPay + OldEPay - OldHasPay - OldVerifyPay) of
+    %% 		0 ->
+    %% 		    AllSql = Sql1
+    %% 			++ ["update w_inventory_new set "
+    %% 			    ++ ?utils:to_sqls(proplists, comma, Updates)
+    %% 			    ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"],
+    %% 		    Reply = ?sql_utils:execute(transaction, AllSql, RSN), 
+    %% 		    {reply, Reply, State};
+    %% 		Metric ->
+    %% 		    {ok, FirmProfile} = ?w_user_profile:get(firm, Merchant, Firm),
+    %% 		    CurBalance = ?v(<<"balance">>, FirmProfile, 0),
 		    
-		    AllSql = Sql1 ++ [Sql2]
-			++
-			case Firm =/= ?INVALID_OR_EMPTY of
-			    true ->
-				["update suppliers set balance=balance+"
-				 ++ ?to_s(Metric) 
-				 ++ ", change_date=" ++ "\"" ++ CurTime ++ "\""
-				 " where id=" ++ ?to_s(Firm)
-				 ++ " and merchant=" ++ ?to_s(Merchant),
+    %% 		    case Firm =/= ?INVALID_OR_EMPTY of
+    %% 			true ->
+    %% 			    case Datetime == OldDatetime of
+    %% 				true ->
+    %% 				    {ok,
+    %% 				     ["update w_inventory_new set "
+    %% 				      ++ ?utils:to_sqls(proplists, comma, Updates)
+    %% 				      ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'",
 
-				 "update w_inventory_new set balance=balance+"
-				 ++ ?to_s(Metric)
-				 ++ " where"
-				 %% " and shop=" ++ ?to_s(Shop)
-				 ++ " merchant=" ++ ?to_s(Merchant)
-				 ++ " and firm=" ++ ?to_s(Firm)
-				 ++ " and entry_date>\'" ++ ?to_s(OldDatatime) ++ "\'",
-				 %% ++ " and id>" ++ ?to_s(Id),
+    %% 				      "update w_inventory_new set balance=balance+"
+    %% 				      ++ ?to_s(Metric)
+    %% 				      ++ " where"
+    %% 				      ++ " merchant=" ++ ?to_s(Merchant)
+    %% 				      ++ " and firm=" ++ ?to_s(Firm)
+    %% 				      ++ " and entry_date>\'" ++ ?to_s(OldDatetime) ++ "\'"]};
+    %% 				false ->
+    %% 				    Sql00 = "select id, rsn, firm, shop, merchant"
+    %% 					", balance, should_pay, has_pay, e_pay"
+    %% 					", verificate, entry_date"
+    %% 					" from w_inventory_new"
+    %% 					" where merchant=" ++ ?to_s(Merchant)
+    %% 					++ " and firm=" ++ ?to_s(Firm)
+    %% 					++ " and state in(0, 1)"
+    %% 					++ " and entry_date<\'" ++ ?to_s(Datetime) ++ "\'"
+    %% 					++ " order by entry_date desc limit 1",
+    %% 				    case ?sql_utils:execute(s_read, Sql00) of
+    %% 					{ok, LastStockIn} ->
+    %% 					    LastBalance =
+    %% 						case LastStockIn of
+    %% 						    [] -> 0;
+    %% 						    _  -> ?v(<<"balance">>, LastStockIn)
+    %% 							      + ?v(<<"should_pay">>, LastStockIn)
+    %% 							      + ?v(<<"e_pay">>, LastStockIn)
+    %% 							      - ?v(<<"has_pay">>, LastStockIn)
+    %% 							      - ?v(<<"verificate">>, LastStockIn)
+    %% 						end,
 
-				 "insert into firm_balance_history("
-				 "rsn, firm, balance, metric, action"
-				 ", shop, merchant, entry_date) values("
-				 ++ "\'" ++ ?to_s(RSN) ++ "\',"
-				 ++ ?to_s(Firm) ++ ","
-				 ++ ?to_s(CurBalance) ++ ","
-				 ++ ?to_s(Metric) ++ ","
-				 ++ ?to_s(?UPDATE_INVENTORY) ++ "," 
-				 ++ ?to_s(Shop) ++ ","
-				 ++ ?to_s(Merchant) ++ ","
-				 ++ "\"" ++ ?to_s(CurTime) ++ "\")"
-				];
-			    false -> []
-			end,
+    %% 					    OldBackBalance = OldShouldPay + OldEPay
+    %% 						- (OldCash + OldCard + OldWire + OldVerifyPay),
+    %% 					    NewPayBalance = ShouldPay + EPay
+    %% 						- (Cash + Card + Wire + VerifyPay),
+
+    %% 					    {ok,
+    %% 					     case ?to_b(Datetime) > ?to_b(OldDatetime) of
+    %% 						 true -> 
+    %% 						     UpdateStock = Updates
+    %% 							 ++ ?utils:v(
+    %% 							       balance, float,
+    %% 							       LastBalance + OldBackBalance), 
+    %% 						     ["update w_inventory_new set "
+    %% 						      ++ ?utils:to_sqls(
+    %% 							    proplists, comma, UpdateStock)
+    %% 						      ++ " where rsn="
+    %% 						      ++ "\'" ++ ?to_s(RSN) ++ "\'"];
+    %% 						 false ->
+    %% 						     ["update w_inventory_new set "
+    %% 						      ++ ?utils:to_sqls(proplists, comma, Updates)
+    %% 						      ++ " where rsn="
+    %% 						      ++ "\'" ++ ?to_s(RSN) ++ "\'"]
+    %% 					     end
+
+    %% 					     ++ ["update w_inventory_new set "
+    %% 						 "balance=balance+" ++ ?to_s(OldBackBalance)
+    %% 						 ++ " where merchant=" ++ ?to_s(Merchant)
+    %% 						 ++ " and firm=" ++ ?to_s(Firm)
+    %% 						 ++ " and entry_date>\'"
+    %% 						 ++ ?to_s(OldDatetime) ++ "\'",
+
+    %% 						 "update w_inventory_new set "
+    %% 						 "balance=balance-" ++ ?to_s(NewPayBalance)
+    %% 						 ++ " where merchant=" ++ ?to_s(Merchant)
+    %% 						 ++ " and firm=" ++ ?to_s(Firm)
+    %% 						 ++ " and entry_date>\'"
+    %% 						 ++ ?to_s(Datetime) ++ "\'",
+
+    %% 						 "update suppliers set balance=balance+"
+    %% 						 ++ ?to_s(Metric) 
+    %% 						 ++ ", change_date=" ++ "\"" ++ CurTime ++ "\""
+    %% 						 " where id=" ++ ?to_s(Firm)
+    %% 						 ++ " and merchant=" ++ ?to_s(Merchant), 
+
+    %% 						 "insert into firm_balance_history("
+    %% 						 "rsn, firm, balance, metric, action"
+    %% 						 ", shop, merchant, entry_date) values("
+    %% 						 ++ "\'" ++ ?to_s(RSN) ++ "\',"
+    %% 						 ++ ?to_s(Firm) ++ ","
+    %% 						 ++ ?to_s(CurBalance) ++ ","
+    %% 						 ++ ?to_s(Metric) ++ ","
+    %% 						 ++ ?to_s(?UPDATE_INVENTORY) ++ "," 
+    %% 						 ++ ?to_s(Shop) ++ ","
+    %% 						 ++ ?to_s(Merchant) ++ ","
+    %% 						 ++ "\"" ++ ?to_s(CurTime) ++ "\")"]};
+    %% 					Error  ->
+    %% 					    {db_error, Error}
+    %% 				    end;
+    %% 				false  -> []
+    %% 			    end
+    %% 		    end,
 		    
-		    Reply = ?sql_utils:execute(transaction, AllSql, RSN),
-		    ?w_user_profile:update(firm, Merchant),
-		    {reply, Reply, State}
-	    end;
-	false ->
-	    NewCurBalance =
-	    	case ?w_user_profile:get(firm, Merchant, Firm) of
-	    	    {ok, []} -> 0;
-	    	    {ok, NewFirmProfile} -> ?v(<<"balance">>, NewFirmProfile, 0)
-	    	end,
+    %% 		    Reply = ?sql_utils:execute(transaction, AllSql, RSN),
+    %% 		    ?w_user_profile:update(firm, Merchant),
+    %% 		    {reply, Reply, State}
+    %% 	    end;
+    %% 	false ->
+    %% 	    NewCurBalance =
+    %% 	    	case ?w_user_profile:get(firm, Merchant, Firm) of
+    %% 	    	    {ok, []} -> 0;
+    %% 	    	    {ok, NewFirmProfile} -> ?v(<<"balance">>, NewFirmProfile, 0)
+    %% 	    	end,
 	    
-	    OldCurBalance =
-		case ?w_user_profile:get(firm, Merchant, OldFirm) of
-		    {ok, []} -> 0;
-		    {ok, OldFirmProfile} ->
-			?v(<<"balance">>, OldFirmProfile, 0)
-		end,
+    %% 	    OldCurBalance =
+    %% 		case ?w_user_profile:get(firm, Merchant, OldFirm) of
+    %% 		    {ok, []} -> 0;
+    %% 		    {ok, OldFirmProfile} ->
+    %% 			?v(<<"balance">>, OldFirmProfile, 0)
+    %% 		end,
 	    
-	    NewBalance = 
-		case Firm =/= ?INVALID_OR_EMPTY of
-		    true ->
-			Sql0 = "select id, rsn, firm, shop, merchant, balance"
-			    ", verificate, should_pay, has_pay, e_pay"
-			    " from w_inventory_new"
-			    " where"
-			    ++ " merchant=" ++ ?to_s(Merchant)
-			%% " and shop=" ++ ?to_s(Shop) 
-			    ++ " and firm=" ++ ?to_s(Firm)
-			%% ++ " and id<" ++ ?to_s(Id)
-			    ++ " and entry_date<\'" ++ ?to_s(OldDatatime) ++ "\'"
-			    ++ " order by id desc limit 1", 
-			case ?sql_utils:execute(s_read, Sql0) of
-			    {ok, []}  ->
-				Sql00 = "select id, rsn, firm, shop, merchant, balance"
-				    ", verificate, should_pay, has_pay, e_pay"
-				    " from w_inventory_new"
-				    " where"
-				    ++ " merchant=" ++ ?to_s(Merchant)
-				%% " and shop=" ++ ?to_s(Shop) 
-				    ++ " and firm=" ++ ?to_s(Firm)
-				%% ++ " and id>" ++ ?to_s(Id)
-				    ++ " and entry_date>\'" ++ ?to_s(OldDatatime) ++ "\'"
-				    ++ " order by id limit 1",
-				case ?sql_utils:execute(s_read, Sql00) of
-				    {ok, []} ->
-					%% Balance;
-					NewCurBalance;
-				    {ok, R0} -> ?v(<<"balance">>, R0)
-				end; 
-			    {ok, R}   ->
-				?v(<<"balance">>, R)
-				    + ?v(<<"should_pay">>, R)
-				    + ?v(<<"e_pay">>, R)
-				    - ?v(<<"has_pay">>, R)
-				    - ?v(<<"verificate">>, R)
-			end;
-		    false -> 0
-		end,
+    %% 	    NewBalance = 
+    %% 		case Firm =/= ?INVALID_OR_EMPTY of
+    %% 		    true ->
+    %% 			Sql0 = "select id, rsn, firm, shop, merchant, balance"
+    %% 			    ", verificate, should_pay, has_pay, e_pay"
+    %% 			    " from w_inventory_new"
+    %% 			    " where"
+    %% 			    ++ " merchant=" ++ ?to_s(Merchant)
+    %% 			%% " and shop=" ++ ?to_s(Shop) 
+    %% 			    ++ " and firm=" ++ ?to_s(Firm)
+    %% 			%% ++ " and id<" ++ ?to_s(Id)
+    %% 			    ++ " and entry_date<\'" ++ ?to_s(OldDatatime) ++ "\'"
+    %% 			    ++ " order by id desc limit 1", 
+    %% 			case ?sql_utils:execute(s_read, Sql0) of
+    %% 			    {ok, []}  ->
+    %% 				Sql00 = "select id, rsn, firm, shop, merchant, balance"
+    %% 				    ", verificate, should_pay, has_pay, e_pay"
+    %% 				    " from w_inventory_new"
+    %% 				    " where"
+    %% 				    ++ " merchant=" ++ ?to_s(Merchant)
+    %% 				%% " and shop=" ++ ?to_s(Shop) 
+    %% 				    ++ " and firm=" ++ ?to_s(Firm)
+    %% 				%% ++ " and id>" ++ ?to_s(Id)
+    %% 				    ++ " and entry_date>\'" ++ ?to_s(OldDatatime) ++ "\'"
+    %% 				    ++ " order by id limit 1",
+    %% 				case ?sql_utils:execute(s_read, Sql00) of
+    %% 				    {ok, []} ->
+    %% 					%% Balance;
+    %% 					NewCurBalance;
+    %% 				    {ok, R0} -> ?v(<<"balance">>, R0)
+    %% 				end; 
+    %% 			    {ok, R}   ->
+    %% 				?v(<<"balance">>, R)
+    %% 				    + ?v(<<"should_pay">>, R)
+    %% 				    + ?v(<<"e_pay">>, R)
+    %% 				    - ?v(<<"has_pay">>, R)
+    %% 				    - ?v(<<"verificate">>, R)
+    %% 			end;
+    %% 		    false -> 0
+    %% 		end,
 	    
 	    
-	    Sql2 = "update w_inventory_new set "
-		++ ?utils:to_sqls(
-		      proplists, comma, ?utils:v(balance, float, NewBalance) ++ Updates)
-		++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"
-		++ " and id=" ++ ?to_s(Id),
+    %% 	    Sql2 = "update w_inventory_new set "
+    %% 		++ ?utils:to_sqls(
+    %% 		      proplists, comma, ?utils:v(balance, float, NewBalance) ++ Updates)
+    %% 		++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"
+    %% 		++ " and id=" ++ ?to_s(Id),
 
-	    %% NewCurBalance =
-	    %% 	case ?w_user_profile:get(firm, Merchant, Firm) of
-	    %% 	    {ok, []} -> 0;
-	    %% 	    {ok, NewFirmProfile} -> ?v(<<"balance">>, NewFirmProfile, 0)
-	    %% 	end,
-	    %% OldCurBalance =
-	    %% 	case ?w_user_profile:get(firm, Merchant, OldFirm) of
-	    %% 	    {ok, []} -> 0;
-	    %% 	    {ok, OldFirmProfile} ->
-	    %% 		?v(<<"balance">>, OldFirmProfile, 0)
-	    %% 	end,
+    %% 	    %% NewCurBalance =
+    %% 	    %% 	case ?w_user_profile:get(firm, Merchant, Firm) of
+    %% 	    %% 	    {ok, []} -> 0;
+    %% 	    %% 	    {ok, NewFirmProfile} -> ?v(<<"balance">>, NewFirmProfile, 0)
+    %% 	    %% 	end,
+    %% 	    %% OldCurBalance =
+    %% 	    %% 	case ?w_user_profile:get(firm, Merchant, OldFirm) of
+    %% 	    %% 	    {ok, []} -> 0;
+    %% 	    %% 	    {ok, OldFirmProfile} ->
+    %% 	    %% 		?v(<<"balance">>, OldFirmProfile, 0)
+    %% 	    %% 	end,
 	    
-	    BackBalanceOfOldFirm = OldShouldPay + OldEPay - OldVerifyPay - OldHasPay,
-	    BalanceOfNewFirm = ShouldPay + EPay - HasPay - VerifyPay,
+    %% 	    BackBalanceOfOldFirm = OldShouldPay + OldEPay - OldVerifyPay - OldHasPay,
+    %% 	    BalanceOfNewFirm = ShouldPay + EPay - HasPay - VerifyPay,
 		
-	    AllSql = Sql1 ++ [Sql2] ++
-		case Firm =/= ?INVALID_OR_EMPTY of
-		    true ->
-			["update suppliers set balance=balance+"
-			 ++ ?to_s(BalanceOfNewFirm)
-			 ++ " where id="++ ?to_s(Firm)
-			 ++ " and merchant=" ++ ?to_s(Merchant),
+    %% 	    AllSql = Sql1 ++ [Sql2] ++
+    %% 		case Firm =/= ?INVALID_OR_EMPTY of
+    %% 		    true ->
+    %% 			["update suppliers set balance=balance+"
+    %% 			 ++ ?to_s(BalanceOfNewFirm)
+    %% 			 ++ " where id="++ ?to_s(Firm)
+    %% 			 ++ " and merchant=" ++ ?to_s(Merchant),
 		 
-			 "insert into firm_balance_history("
-			 "rsn, firm, balance, metric, action, shop, merchant, entry_date) values("
-			 ++ "\'" ++ ?to_s(RSN) ++ "\',"
-			 ++ ?to_s(Firm) ++ ","
-			 ++ ?to_s(NewCurBalance) ++ ","
-			 ++ ?to_s(BalanceOfNewFirm) ++ ","
-			 ++ ?to_s(?UPDATE_INVENTORY) ++ "," 
-			 ++ ?to_s(Shop) ++ ","
-			 ++ ?to_s(Merchant) ++ ","
-			 ++ "\"" ++ ?to_s(CurTime) ++ "\")",
+    %% 			 "insert into firm_balance_history("
+    %% 			 "rsn, firm, balance, metric, action, shop, merchant, entry_date) values("
+    %% 			 ++ "\'" ++ ?to_s(RSN) ++ "\',"
+    %% 			 ++ ?to_s(Firm) ++ ","
+    %% 			 ++ ?to_s(NewCurBalance) ++ ","
+    %% 			 ++ ?to_s(BalanceOfNewFirm) ++ ","
+    %% 			 ++ ?to_s(?UPDATE_INVENTORY) ++ "," 
+    %% 			 ++ ?to_s(Shop) ++ ","
+    %% 			 ++ ?to_s(Merchant) ++ ","
+    %% 			 ++ "\"" ++ ?to_s(CurTime) ++ "\")",
 		 
-			 "update w_inventory_new set balance=balance+"
-			 ++ ?to_s(BalanceOfNewFirm)
-			 ++ " where"
-			 ++ " merchant=" ++ ?to_s(Merchant)
-			 %% " and shop=" ++ ?to_s(Shop) 
-			 ++ " and firm=" ++ ?to_s(Firm)
-			 %% ++ " and id>" ++ ?to_s(Id)
-			 ++ " and entry_date>\'" ++ ?to_s(OldDatatime) ++ "\'"];
-		    false -> []
-		end
-		++ 
-		case OldFirm =/= ?INVALID_OR_EMPTY of
-		    true -> 
-			["update suppliers set balance=balance-"
-			 ++ ?to_s(BackBalanceOfOldFirm)
-			 ++ " where id=" ++ ?to_s(OldFirm)
-			 ++ " and merchant=" ++ ?to_s(Merchant),
+    %% 			 "update w_inventory_new set balance=balance+"
+    %% 			 ++ ?to_s(BalanceOfNewFirm)
+    %% 			 ++ " where"
+    %% 			 ++ " merchant=" ++ ?to_s(Merchant)
+    %% 			 %% " and shop=" ++ ?to_s(Shop) 
+    %% 			 ++ " and firm=" ++ ?to_s(Firm)
+    %% 			 %% ++ " and id>" ++ ?to_s(Id)
+    %% 			 ++ " and entry_date>\'" ++ ?to_s(OldDatatime) ++ "\'"];
+    %% 		    false -> []
+    %% 		end
+    %% 		++ 
+    %% 		case OldFirm =/= ?INVALID_OR_EMPTY of
+    %% 		    true -> 
+    %% 			["update suppliers set balance=balance-"
+    %% 			 ++ ?to_s(BackBalanceOfOldFirm)
+    %% 			 ++ " where id=" ++ ?to_s(OldFirm)
+    %% 			 ++ " and merchant=" ++ ?to_s(Merchant),
 
-			 "insert into firm_balance_history("
-			 "rsn, firm, balance, metric, action, shop, merchant, entry_date) values("
-			 ++ "\'" ++ ?to_s(RSN) ++ "\',"
-			 ++ ?to_s(OldFirm) ++ ","
-			 ++ ?to_s(OldCurBalance) ++ ","
-			 ++ ?to_s(-BackBalanceOfOldFirm) ++ ","
-			 ++ ?to_s(?UPDATE_INVENTORY) ++ "," 
-			 ++ ?to_s(Shop) ++ ","
-			 ++ ?to_s(Merchant) ++ ","
-			 ++ "\"" ++ ?to_s(CurTime) ++ "\")",
+    %% 			 "insert into firm_balance_history("
+    %% 			 "rsn, firm, balance, metric, action, shop, merchant, entry_date) values("
+    %% 			 ++ "\'" ++ ?to_s(RSN) ++ "\',"
+    %% 			 ++ ?to_s(OldFirm) ++ ","
+    %% 			 ++ ?to_s(OldCurBalance) ++ ","
+    %% 			 ++ ?to_s(-BackBalanceOfOldFirm) ++ ","
+    %% 			 ++ ?to_s(?UPDATE_INVENTORY) ++ "," 
+    %% 			 ++ ?to_s(Shop) ++ ","
+    %% 			 ++ ?to_s(Merchant) ++ ","
+    %% 			 ++ "\"" ++ ?to_s(CurTime) ++ "\")",
 
-			 "update w_inventory_new set balance=balance-"
-			 ++ ?to_s(BackBalanceOfOldFirm)
-			 ++ " where"
-			 ++ " merchant=" ++ ?to_s(Merchant)
-			 %% ++ " and shop=" ++ ?to_s(Shop) 
-			 ++ " and firm=" ++ ?to_s(OldFirm)
-			 ++ " and entry_date>\'" ++ ?to_s(OldDatatime) ++ "\'"
-			 %% ++ " and id>" ++ ?to_s(Id) 
-			];
-		    false -> []
-		end,
-	    
-	    Reply = ?sql_utils:execute(transaction, AllSql, RSN),
-	    ?w_user_profile:update(firm, Merchant),
-	    {reply, Reply, State}
-    end; 
+    %% 			 "update w_inventory_new set balance=balance-"
+    %% 			 ++ ?to_s(BackBalanceOfOldFirm)
+    %% 			 ++ " where"
+    %% 			 ++ " merchant=" ++ ?to_s(Merchant)
+    %% 			 %% ++ " and shop=" ++ ?to_s(Shop) 
+    %% 			 ++ " and firm=" ++ ?to_s(OldFirm)
+    %% 			 ++ " and entry_date>\'" ++ ?to_s(OldDatatime) ++ "\'"
+    %% 			 %% ++ " and id>" ++ ?to_s(Id) 
+    %% 			];
+    %% 		    false -> []
+    %% 		end, 
+    %% end; 
 
 handle_call({check_inventory, Merchant, RSN, Mode}, _From, State) ->
     ?DEBUG("check_inventory with merchant ~p, RSN ~p, Mode ~p",
@@ -2378,3 +2450,300 @@ count_table(w_inventory_new, Merchant, Conditions) ->
 %% rsn(shop, RSN) ->
 %%     S = lists:nth(4, string:tokens(?to_s(RSN), "-")),
 %%     S.
+
+update_stock(same_firm, Merchant, CurrentTime, Updates, {Props, OldProps})->
+    RSN        = ?v(<<"rsn">>, Props),
+    Shop      = ?v(<<"shop_id">>, OldProps),
+    
+    ShouldPay  = ?v(<<"should_pay">>, Props),
+    HasPay     = ?v(<<"has_pay">>, Props, 0),
+    VerifyPay  = ?v(<<"verificate">>, Props, 0),
+    EPay       = ?v(<<"e_pay">>, Props, 0),
+
+    OldShouldPay = ?v(<<"should_pay">>, OldProps),
+    OldHasPay    = ?v(<<"has_pay">>, OldProps),
+    OldVerifyPay = ?v(<<"verificate">>, OldProps),
+    OldEPay      = ?v(<<"e_pay">>, OldProps),
+
+    Datetime   = ?v(<<"datetime">>, Props),
+    OldDatetime  = ?v(<<"entry_date">>, OldProps),
+
+    Firm       = ?v(<<"firm">>, Props),
+    %% OldFirm    = ?v(<<"firm_id">>, OldProps),
+
+    Metricbalance = (ShouldPay + EPay - HasPay - VerifyPay)
+	- (OldShouldPay + OldEPay - OldHasPay - OldVerifyPay),
+
+    FirmCurBalance =
+	case ?w_user_profile:get(firm, Merchant, Firm) of
+	    {ok, []} -> 0;
+	    {ok, NewFirmProfile} -> ?v(<<"balance">>, NewFirmProfile, 0)
+	end,
+    
+    case ?to_b(Datetime) == ?to_b(OldDatetime) of
+	true ->
+	    ["update w_inventory_new set "
+	     ++ ?utils:to_sqls(proplists, comma, Updates)
+	     ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"]
+		++ 
+		case Metricbalance == 0 of
+		    true -> [] ;
+		    false ->
+			case Firm =/= ?INVALID_OR_EMPTY of
+			    true ->
+				["update w_inventory_new set balance=balance+"
+				 ++ ?to_s(Metricbalance)
+				 ++ " where"
+				 ++ " merchant=" ++ ?to_s(Merchant)
+				 ++ " and firm=" ++ ?to_s(Firm)
+				 ++ " and entry_date>\'" ++ ?to_s(OldDatetime) ++ "\'",
+
+				 "insert into firm_balance_history("
+				 "rsn, firm, balance, metric, action, shop"
+				 ", merchant, entry_date) values("
+				 ++ "\'" ++ ?to_s(RSN) ++ "\',"
+				 ++ ?to_s(Firm) ++ ","
+				 ++ ?to_s(FirmCurBalance) ++ ","
+				 ++ ?to_s(Metricbalance) ++ ","
+				 ++ ?to_s(?UPDATE_INVENTORY) ++ "," 
+				 ++ ?to_s(Shop) ++ ","
+				 ++ ?to_s(Merchant) ++ ","
+				 ++ "\"" ++ ?to_s(CurrentTime) ++ "\")"];
+			    false -> []
+			end
+		end;
+	false ->
+	    case Firm =/= ?INVALID_OR_EMPTY of
+		true ->
+		    Sql = "select id, rsn, firm, shop, merchant"
+			", balance, should_pay, has_pay, e_pay"
+			", verificate, entry_date"
+			" from w_inventory_new"
+			" where merchant=" ++ ?to_s(Merchant)
+			++ " and firm=" ++ ?to_s(Firm)
+			++ " and state in(0, 1)"
+			++ " and entry_date<\'" ++ ?to_s(Datetime) ++ "\'"
+			++ " order by entry_date desc limit 1",
+
+		    {ok, LastStockIn} = ?sql_utils:execute(s_read, Sql),
+
+		    LastBalance = case LastStockIn of
+				      [] -> 0;
+				      _  -> ?v(<<"balance">>, LastStockIn)
+						+ ?v(<<"should_pay">>, LastStockIn)
+						+ ?v(<<"e_pay">>, LastStockIn)
+						- ?v(<<"has_pay">>, LastStockIn)
+						- ?v(<<"verificate">>, LastStockIn)
+				  end,
+		    ?DEBUG("LastBalance ~p", [LastBalance]),
+		    OldBackBalance = OldShouldPay + OldEPay - OldHasPay,
+		    NewPayBalance = ShouldPay + EPay - HasPay,
+
+		    UpdateStock = 
+			case ?to_b(Datetime) > ?to_b(OldDatetime) of
+			    true ->
+				Updates ++ ?utils:v(balance, float, LastBalance - OldBackBalance);
+			    false ->
+				Updates ++ ?utils:v(balance, float, LastBalance)
+			end,
+		    
+		    ["update w_inventory_new set "
+		     "balance=balance-" ++ ?to_s(OldBackBalance)
+		     ++ " where merchant=" ++ ?to_s(Merchant)
+		     ++ " and firm=" ++ ?to_s(Firm)
+		     ++ " and entry_date>\'"
+		     ++ ?to_s(OldDatetime) ++ "\'",
+
+		     "update w_inventory_new set "
+		     "balance=balance+" ++ ?to_s(NewPayBalance)
+		     ++ " where merchant=" ++ ?to_s(Merchant)
+		     ++ " and firm=" ++ ?to_s(Firm)
+		     ++ " and entry_date>\'"
+		     ++ ?to_s(Datetime) ++ "\'",
+
+		     "update w_inventory_new set "
+		     ++ ?utils:to_sqls(proplists, comma, UpdateStock)
+		     ++ " where rsn="
+		     ++ "\'" ++ ?to_s(RSN) ++ "\'"]
+
+			++ case Metricbalance == 0 of
+			       true -> [];
+			       false -> 
+				   ["update suppliers set balance=balance+"
+				    ++ ?to_s(Metricbalance) 
+				    ++ ", change_date=" ++ "\"" ++ CurrentTime ++ "\""
+				    " where id=" ++ ?to_s(Firm)
+				    ++ " and merchant=" ++ ?to_s(Merchant),
+
+				    "insert into firm_balance_history("
+				    "rsn, firm, balance, metric, action, shop"
+				    ", merchant, entry_date) values("
+				    ++ "\'" ++ ?to_s(RSN) ++ "\',"
+				    ++ ?to_s(Firm) ++ ","
+				    ++ ?to_s(FirmCurBalance) ++ ","
+				    ++ ?to_s(Metricbalance) ++ ","
+				    ++ ?to_s(?UPDATE_INVENTORY) ++ "," 
+				    ++ ?to_s(Shop) ++ ","
+				    ++ ?to_s(Merchant) ++ ","
+				    ++ "\"" ++ ?to_s(CurrentTime) ++ "\")"]
+			   end;
+		false ->
+		    []
+	    end
+    end;
+
+update_stock(diff_firm, Merchant, CurrentTime, Updates, {Props, OldProps}) ->
+    RSN        = ?v(<<"rsn">>, Props),
+    Shop      = ?v(<<"shop_id">>, OldProps),
+    
+    ShouldPay  = ?v(<<"should_pay">>, Props),
+    HasPay     = ?v(<<"has_pay">>, Props, 0),
+    VerifyPay  = ?v(<<"verificate">>, Props, 0),
+    EPay       = ?v(<<"e_pay">>, Props, 0),
+
+    OldShouldPay = ?v(<<"should_pay">>, OldProps),
+    OldHasPay    = ?v(<<"has_pay">>, OldProps),
+    OldVerifyPay = ?v(<<"verificate">>, OldProps),
+    OldEPay      = ?v(<<"e_pay">>, OldProps),
+
+    Datetime   = ?v(<<"datetime">>, Props),
+    OldDatetime  = ?v(<<"entry_date">>, OldProps),
+
+    Firm       = ?v(<<"firm">>, Props),
+    OldFirm    = ?v(<<"firm_id">>, OldProps),
+
+    BackBalanceOfOldFirm = OldShouldPay + OldEPay - OldVerifyPay - OldHasPay,
+    PayBalanceOfNewFirm = ShouldPay + EPay - HasPay - VerifyPay,
+    
+    NewFirmCurBalance =
+	case ?w_user_profile:get(firm, Merchant, Firm) of
+	    {ok, []} -> 0;
+	    {ok, NewFirmProfile} -> ?v(<<"balance">>, NewFirmProfile, 0)
+	end,
+
+    OldFirmCurBalance =
+	case ?w_user_profile:get(firm, Merchant, OldFirm) of
+	    {ok, []} -> 0;
+	    {ok, OldFirmProfile} ->
+		?v(<<"balance">>, OldFirmProfile, 0)
+	end,
+    
+    case Firm /= ?INVALID_OR_EMPTY of
+	true ->
+	    Sql = "select id, rsn, firm, shop, merchant"
+		", balance, should_pay, has_pay, e_pay"
+		", verificate, entry_date"
+		" from w_inventory_new"
+		" where merchant=" ++ ?to_s(Merchant)
+		++ " and firm=" ++ ?to_s(Firm)
+		++ " and state in(0, 1)"
+		++ " and entry_date<\'" ++ ?to_s(Datetime) ++ "\'"
+		++ " order by entry_date desc limit 1",
+	    
+	    {ok, LastStockIn} = ?sql_utils:execute(s_read, Sql),
+
+	    LastBalance =
+		case LastStockIn of
+		    [] -> NewFirmCurBalance; 
+		    _  -> ?v(<<"balance">>, LastStockIn)
+			      + ?v(<<"should_pay">>, LastStockIn)
+			      + ?v(<<"e_pay">>, LastStockIn)
+			      - ?v(<<"has_pay">>, LastStockIn)
+			      - ?v(<<"verificate">>, LastStockIn)
+		end,
+
+	    UpdateStock = Updates ++ ?utils:v(balance, float, LastBalance),
+	    
+	    case OldFirm /= ?INVALID_OR_EMPTY of
+		true ->
+		    ["update w_inventory_new set "
+		     "balance=balance-" ++ ?to_s(BackBalanceOfOldFirm)
+		     ++ " where merchant=" ++ ?to_s(Merchant)
+		     ++ " and firm=" ++ ?to_s(OldFirm)
+		     ++ " and entry_date>\'" ++ ?to_s(OldDatetime) ++ "\'",
+		     
+		     "update suppliers set balance=balance-"
+		     ++ ?to_s(BackBalanceOfOldFirm)
+		     ++ " where id=" ++ ?to_s(OldFirm)
+		     ++ " and merchant=" ++ ?to_s(Merchant),
+		     
+		     "insert into firm_balance_history("
+		     "rsn, firm, balance, metric, action, shop, merchant, entry_date) values("
+		     ++ "\'" ++ ?to_s(RSN) ++ "\',"
+		     ++ ?to_s(OldFirm) ++ ","
+		     ++ ?to_s(OldFirmCurBalance) ++ ","
+		     ++ ?to_s(-BackBalanceOfOldFirm) ++ ","
+		     ++ ?to_s(?UPDATE_INVENTORY) ++ "," 
+		     ++ ?to_s(Shop) ++ ","
+		     ++ ?to_s(Merchant) ++ ","
+		     ++ "\"" ++ ?to_s(CurrentTime) ++ "\")"];
+		false -> []
+	    end ++ 
+		["update w_inventory_new set "
+		 "balance=balance+" ++ ?to_s(PayBalanceOfNewFirm)
+		 ++ " where merchant=" ++ ?to_s(Merchant)
+		 ++ " and firm=" ++ ?to_s(Firm)
+		 ++ " and entry_date>\'" ++ ?to_s(Datetime) ++ "\'",
+
+		 "update w_inventory_new set "
+		 ++ ?utils:to_sqls(proplists, comma, UpdateStock)
+		 ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'",
+
+		 "update suppliers set balance=balance+" ++ ?to_s(PayBalanceOfNewFirm)
+		 ++ " where id=" ++ ?to_s(Firm)
+		 ++ " and merchant=" ++ ?to_s(Merchant),
+
+		 "insert into firm_balance_history("
+		 "rsn, firm, balance, metric, action, shop, merchant, entry_date) values("
+		 ++ "\'" ++ ?to_s(RSN) ++ "\',"
+		 ++ ?to_s(Firm) ++ ","
+		 ++ ?to_s(NewFirmCurBalance) ++ ","
+		 ++ ?to_s(PayBalanceOfNewFirm) ++ ","
+		 ++ ?to_s(?UPDATE_INVENTORY) ++ "," 
+		 ++ ?to_s(Shop) ++ ","
+		 ++ ?to_s(Merchant) ++ ","
+		 ++ "\"" ++ ?to_s(CurrentTime) ++ "\")"];
+	false ->
+	    case OldFirm /= ?INVALID_OR_EMPTY of
+		true ->
+		    UpdateStock = Updates ++ ?utils:v(balance, float, 0),
+		    ["update w_inventory_new set "
+		     ++ ?utils:to_sqls(proplists, comma, UpdateStock)
+		     ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'",
+		     
+		     "update w_inventory_new set "
+		     "balance=balance-" ++ ?to_s(BackBalanceOfOldFirm)
+		     ++ " where merchant=" ++ ?to_s(Merchant)
+		     ++ " and firm=" ++ ?to_s(OldFirm)
+		     ++ " and entry_date>\'" ++ ?to_s(OldDatetime) ++ "\'",
+
+		     "update suppliers set balance=balance-"
+		     ++ ?to_s(BackBalanceOfOldFirm)
+		     ++ " where id=" ++ ?to_s(OldFirm)
+		     ++ " and merchant=" ++ ?to_s(Merchant),
+
+		     "insert into firm_balance_history("
+		     "rsn, firm, balance, metric, action, shop, merchant, entry_date) values("
+		     ++ "\'" ++ ?to_s(RSN) ++ "\',"
+		     ++ ?to_s(OldFirm) ++ ","
+		     ++ ?to_s(OldFirmCurBalance) ++ ","
+		     ++ ?to_s(-BackBalanceOfOldFirm) ++ ","
+		     ++ ?to_s(?UPDATE_INVENTORY) ++ "," 
+		     ++ ?to_s(Shop) ++ ","
+		     ++ ?to_s(Merchant) ++ ","
+		     ++ "\"" ++ ?to_s(CurrentTime) ++ "\")"];
+		false -> []
+	    end
+    end.
+
+	    
+
+			
+			
+			
+			    
+		    
+		    
+	    
+
+    

@@ -949,7 +949,9 @@ inventory(update, Mode, RSN, Merchant, Shop, Firm, OldFirm, Datetime,  OldDateti
 		     true ->
 			 ?utils:v(entry_date,
 				  string,
-				  ?utils:correct_datetime(datetime, Datetime));
+				  Datetime
+				  %% ?utils:correct_datetime(datetime, Datetime)
+				 );
 		     false -> []
 		 end,
 
@@ -962,9 +964,10 @@ inventory(update, Mode, RSN, Merchant, Shop, Firm, OldFirm, Datetime,  OldDateti
 	[] -> [];
 	Updates ->
 	    Sql1 = 
-		["update w_inventory_new set "
-		 ++ ?utils:to_sqls(proplists, comma, Updates)
-		 ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'",
+		[
+		 %% "update w_inventory_new set "
+		 %% ++ ?utils:to_sqls(proplists, comma, Updates)
+		 %% ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'",
 		 
 		 "update w_inventory_new_detail set "
 		 ++ ?utils:to_sqls(proplists, comma, Updates)

@@ -335,7 +335,8 @@
 		  <tr class="text-center" x-ng-if="!inv.$new" x-ng-repeat="inv in inventories">
 		    <td>
 		      <div class="checkbox checkbox-danger checkbox-circle">
-			<input id={{inv.order_id}} type="checkbox"
+			<input x-ng-if="inv.total>0" id={{inv.order_id}}
+			       type="checkbox"
 			       x-ng-model="inv.select"
 			       x-ng-click="re_calculate()"/> 
 			<label for={{inv.order_id}}></label>

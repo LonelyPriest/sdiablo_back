@@ -710,7 +710,12 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 	    CurrentScore = retailer(score, Account),
 
 	    [NewTicket, NewWithdraw, NewCard, NewCash] = NewPays =
-		pay_order(ShouldPay, [Ticket, Withdraw, Card, Cash], []), 
+		case ShouldPay >= 0 of
+		    true ->
+			pay_order(ShouldPay, [Ticket, Withdraw, Card, Cash], []);
+		    false ->
+			pay_order(reject, ShouldPay, [Ticket, Withdraw, Card, Cash], [])
+		end,
 	    ?DEBUG("new pays ~p", [NewPays]),
 	    
 	    Sql2 = "insert into w_sale(rsn"
@@ -1769,6 +1774,9 @@ sale_new(rsn_groups, Merchant, Conditions, PageFun) ->
     	++ PageFun().
 
 
+pay_order(ShouldPay, [], Pays) when ShouldPay > 0 ->
+    [H|T] = Pays,
+    lists:reverse([H + ShouldPay|T]);
 pay_order(ShouldPay, T, Pays) when ShouldPay =< 0 ->
     NewPays = 
 	lists:foldr(
