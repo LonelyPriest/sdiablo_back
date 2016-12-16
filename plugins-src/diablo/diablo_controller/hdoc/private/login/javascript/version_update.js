@@ -1,6 +1,10 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2016-12-17",
+         content: ["增加月报表"]
+        },
+	
 	{date: "2016-12-16",
          content: [
 	     "修正销售单数量为负数时，不允许进行退货处理",
