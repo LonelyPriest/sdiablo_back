@@ -185,8 +185,8 @@ var wsaleUtils = function(){
 		d.type      = diablo_get_object(d.type_id, types); 
 		d.promotion = diablo_get_object(d.pid, promotions);
 		d.score     = diablo_get_object(d.sid, scores);
-		// d.select    = true;
-		d.select    = d.total > 0 ? true : false;
+		d.select    = true;
+		// d.select    = d.total > 0 ? true : false;
 		d.order_id  = order_length;
 
 		if (-1 !== d.pid && -1 !== d.sid){

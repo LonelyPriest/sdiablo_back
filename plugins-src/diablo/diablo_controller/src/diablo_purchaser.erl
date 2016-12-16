@@ -25,7 +25,7 @@
 
 -export([purchaser_inventory/3, purchaser_inventory/4, purchaser_inventory/5]).
 
--export([filter/4, filter/6, rsn_detail/3, export/3, rsn/4]).
+-export([filter/4, filter/6, rsn_detail/3, export/4, rsn/4]).
 -export([match/3, match/4, match/5, match/6]).
 
 -define(SERVER, ?MODULE). 
@@ -322,15 +322,15 @@ rsn_detail(transfer_rsn, Merchant, Condition) ->
 %%
 %% export
 %%
-export(trans, Merchant, Condition) ->
+export(trans, Merchant, Condition, []) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {new_trans_export, Merchant, Condition});
-export(trans_note, Merchant, Condition) ->
+export(trans_note, Merchant, Condition, []) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {new_trans_note_export, Merchant, Condition});
-export(stock, Merchant, Condition) ->
+export(stock, Merchant, Condition, Mode) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {stock_export, Merchant, Condition}).
+    gen_server:call(Name, {stock_export, Merchant, Condition, Mode}).
 
 
 start_link(Name) ->
@@ -2215,15 +2215,25 @@ handle_call({new_trans_note_export, Merchant, Conditions}, _From, State)->
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({stock_export, Merchant, Conditions}, _From, State) ->
+handle_call({stock_export, Merchant, Conditions, Mode}, _From, State) ->
     %% {StartTime, EndTime, NewConditions} =
     %% 	?sql_utils:cut(fields_with_prifix, ?w_good_sql:realy_conditions(Merchant, Conditions)),
 
-    ?DEBUG("stock export:merchant ~p, Conditions ~p", [Merchant, Conditions]),
+    ?DEBUG("stock export:merchant ~p, Conditions ~p, mode ~p",
+	   [Merchant, Conditions, Mode]),
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions), 
     RealyConditions = ?w_good_sql:realy_conditions(Merchant, NewConditions), 
     ExtraCondtion = ?w_good_sql:sort_condition(stock, NewConditions, <<"a.">>),
-    
+
+    Order = ?v(<<"mode">>, Mode),
+    Sort  = ?v(<<"sort">>, Mode),
+
+    OrderFun = fun(use_brand) -> "a.brand";
+		  (use_year)  -> "a.year";
+		  (use_type)  -> "a.type";
+		  (use_style_number) -> "a.style_number";
+		  (_) -> "a.id"
+	       end,
     Sql =
 	"select a.id, a.style_number, a.brand as brand_id"
 	", a.type as type_id, a.sex, a.season, a.amount"
@@ -2248,17 +2258,10 @@ handle_call({stock_export, Merchant, Conditions}, _From, State) ->
 	      proplists, ?utils:correct_condition(<<"a.">>, RealyConditions, []))
 	++ ExtraCondtion
 	++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime)
-	++ " order by a.id desc",
-
-        %% ++ ?sql_utils:condition(proplists_suffix, NewConditions)
-	%% ++ "a.merchant=" ++ ?to_s(Merchant)
+	++ " order by " ++ OrderFun(Order) ++ " " ++ ?sql_utils:sort(Sort),
 	
-	%% ++ case ?sql_utils:condition(time_with_prfix, StartTime, EndTime) of
-	%%        [] -> [];
-	%%        TimeSql ->  " and " ++ TimeSql
-	%%    end
-	%% ++ " and a.deleted=" ++ ?to_s(?NO)
 	%% ++ " order by a.id desc",
+    
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
@@ -2498,6 +2501,12 @@ update_stock(same_firm, Merchant, CurrentTime, Updates, {Props, OldProps})->
 				 ++ " and firm=" ++ ?to_s(Firm)
 				 ++ " and entry_date>\'" ++ ?to_s(OldDatetime) ++ "\'",
 
+				 "update suppliers set balance=balance+"
+				 ++ ?to_s(Metricbalance) 
+				 ++ ", change_date=" ++ "\"" ++ CurrentTime ++ "\""
+				 " where id=" ++ ?to_s(Firm)
+				 ++ " and merchant=" ++ ?to_s(Merchant),
+
 				 "insert into firm_balance_history("
 				 "rsn, firm, balance, metric, action, shop"
 				 ", merchant, entry_date) values("
@@ -2551,15 +2560,13 @@ update_stock(same_firm, Merchant, CurrentTime, Updates, {Props, OldProps})->
 		     "balance=balance-" ++ ?to_s(OldBackBalance)
 		     ++ " where merchant=" ++ ?to_s(Merchant)
 		     ++ " and firm=" ++ ?to_s(Firm)
-		     ++ " and entry_date>\'"
-		     ++ ?to_s(OldDatetime) ++ "\'",
+		     ++ " and entry_date>\'" ++ ?to_s(OldDatetime) ++ "\'",
 
 		     "update w_inventory_new set "
 		     "balance=balance+" ++ ?to_s(NewPayBalance)
 		     ++ " where merchant=" ++ ?to_s(Merchant)
 		     ++ " and firm=" ++ ?to_s(Firm)
-		     ++ " and entry_date>\'"
-		     ++ ?to_s(Datetime) ++ "\'",
+		     ++ " and entry_date>\'" ++ ?to_s(Datetime) ++ "\'",
 
 		     "update w_inventory_new set "
 		     ++ ?utils:to_sqls(proplists, comma, UpdateStock)

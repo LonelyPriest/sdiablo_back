@@ -372,7 +372,9 @@ init([]) ->
 	 {?stock_stastic,
 	  <<"实时进销存统计">>, <<"stock_stastic">>, ?right_w_report},
 	 {?h_daily_wreport,
-	  <<"日报表">>,     <<"h_daily_wreport">>, ?right_w_report}, 
+	  <<"日报表">>,     <<"h_daily_wreport">>, ?right_w_report},
+	 {?h_month_wreport,
+	  <<"月报表">>,     <<"h_month_wreport">>, ?right_w_report}, 
 	 {?switch_shift_report,
 	  <<"交班报表">>,     <<"switch_shift_report">>, ?right_w_report},
 	 

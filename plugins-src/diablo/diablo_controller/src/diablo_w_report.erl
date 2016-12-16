@@ -20,7 +20,7 @@
 
 %% daily
 -export([report/4, report/5, stastic/3, stastic/4]).
--export([daily_report/3, daily_report/5]).
+-export([daily_report/3, daily_report/5, month_report/3]).
 -export([switch_shift_report/3, switch_shift_report/5]).
 
 -define(SERVER, ?MODULE). 
@@ -53,6 +53,9 @@ daily_report(total, Merchant, Conditions) ->
 daily_report(detail, Merchant, CurrentPage, ItemsPerPage, Conditions) ->
     gen_server:call(
       ?SERVER, {detail_of_daily, Merchant, CurrentPage, ItemsPerPage, Conditions}).
+
+month_report(by_shop, Merchant, Conditions) ->
+    gen_server:call(?SERVER, {month_report_by_shop, Merchant, Conditions}).
 
 switch_shift_report(total, Merchant, Conditions) ->
     gen_server:call(?SERVER, {total_of_shift, Merchant, Conditions}).
@@ -455,6 +458,41 @@ handle_call({recharge, Merchant, Conditions}, _From, State) ->
 
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
+
+handle_call({month_report_by_shop, Merchant, Conditions}, _From, State) ->
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
+
+    Sql = "select merchant, shop as shop_id"
+	", SUM(sell) as sell"
+	", SUM(sell_cost) as sell_cost"
+	", SUM(balance) as balance"
+	", SUM(cash) as cash"
+	", SUM(card) as card"
+	", SUM(veri) as veri"
+	", SUM(draw) as draw"
+	", SUM(ticket) as ticket"
+	
+	", SUM(stock_in) as stock_in"
+	", SUM(stock_out) as stock_out"
+	", SUM(stock_in_cost) as stock_in_cost"
+	", SUM(stock_out_cost) as stock_out_cost"
+
+	", SUM(t_stock_in) as tstock_in"
+	", SUM(t_stock_out) as tstock_out"
+	", SUM(t_stock_in_cost) as tstock_in_cost"
+	", SUM(t_stock_out_cost) as tstock_out_cost"
+
+	", SUM(stock_fix) as stock_fix"
+	", SUM(stock_fix_cost) as stock_fix_cost"
+
+	" from w_daily_report"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ " and " ++ ?w_report_sql:day_condition(StartTime, EndTime)
+	++ " group by shop",
+    R = ?sql_utils:execute(read, Sql),
+    {reply, R, State};
+	
 
 handle_call(_Request, _From, State) ->
     Reply = ok,

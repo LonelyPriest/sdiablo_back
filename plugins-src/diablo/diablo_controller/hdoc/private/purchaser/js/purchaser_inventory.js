@@ -1909,13 +1909,15 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
     };
 
     $scope.export_to = function(){
-	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
-	    add_search_condition(search); 
-	    // console.log(search);
-	    
-	    purchaserService.csv_export(
-		purchaserService.export_type.stock, search)
-		.then(function(result){
+	diabloFilter.do_filter(
+	    $scope.filters, $scope.time, function(search){
+		add_search_condition(search); 
+		// console.log(search); 
+		purchaserService.csv_export(
+		    purchaserService.export_type.stock,
+		    search,
+		    {mode:$scope.mode, sort:$scope.sort} 
+		).then(function(result){
 	    	    console.log(result);
 		    if (result.ecode === 0){
 			dialog.response_with_callback(
@@ -1930,7 +1932,7 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 				+ purchaserService.error[result.ecode]);
 		    } 
 		}); 
-	});
+	    });
     };
 
     $scope.promotion = function(){

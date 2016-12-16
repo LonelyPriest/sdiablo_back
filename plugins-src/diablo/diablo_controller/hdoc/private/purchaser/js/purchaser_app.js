@@ -532,10 +532,10 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
 	     brand:inv.brand}).$promise;
     };
 
-    this.csv_export = function(e_type, condition){
+    this.csv_export = function(e_type, condition, mode){
 	return http.save(
 	    {operation: "w_inventory_export"},
-	    {condition: condition, e_type:e_type}).$promise;
+	    {condition: condition, e_type:e_type, mode}).$promise;
     };
 
     // transfer

@@ -613,6 +613,17 @@ action(Session, Req, {"w_inventory_export"}, Payload) ->
     ExportType  = export_type(?v(<<"e_type">>, Payload, 0)),
 
     {struct, Conditions} = ?v(<<"condition">>, Payload),
+    
+    {struct, Mode}     = ?v(<<"mode">>, Payload, []),
+
+    UseMode = 
+	case ?v(<<"mode">>, Payload) of
+	    undefined -> [];
+	    {struct, Mode} ->
+		Order = ?v(<<"mode">>, Mode),
+		Sort  = ?v(<<"sort">>, Mode),
+		[{<<"mode">>, mode(Order)}, {<<"sort">>, Sort}]
+	end,
 
     NewConditions = 
 	case ExportType of
@@ -632,7 +643,7 @@ action(Session, Req, {"w_inventory_export"}, Payload) ->
 	end,
 
 
-    case ?w_inventory:export(ExportType, Merchant, NewConditions) of
+    case ?w_inventory:export(ExportType, Merchant, NewConditions, UseMode) of
 	{ok, []} ->
 	    ?utils:respond(200, Req, ?err(wsale_export_none, Merchant));
 	{ok, Transes} -> 

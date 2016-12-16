@@ -163,6 +163,19 @@ action(Session, Req, {"syn_daily_report"}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"h_month_wreport"}, Payload) ->
+    ?DEBUG("h_month_wrport with session ~p, paylaod~n~p", [Session, Payload]), 
+    Merchant = ?session:get(merchant, Session),
+    {struct, Conditions} = ?v(<<"condition">>, Payload),
+
+    case ?w_report:month_report(by_shop, Merchant, Conditions) of
+	{ok, Details} ->
+	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
+					       {<<"data">>, Details}]});
+	{error, Error} ->
+    	    ?utils:respond(200, Req, Error)
+    end;
+
 action(Session, Req, {"switch_shift_report"}, Payload) ->
     ?DEBUG("switch_shift_report with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session), 
@@ -430,6 +443,9 @@ sidebar(Session) ->
 		     {"wreport_daily", "实时报表", "glyphicon glyphicon-time"}},
 		    {?stock_stastic,
 		     {"stastic", "日报表", "glyphicon glyphicon-calendar"}},
+
+		    {?stock_stastic,
+		     {"m_stastic", "月报表", "glyphicon glyphicon-calendar"}},
 		    
 		    {?switch_shift_report,
 		     {"switch_shift", "交班报表", "glyphicon glyphicon-transfer"}}

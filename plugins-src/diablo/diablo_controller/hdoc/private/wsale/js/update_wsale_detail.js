@@ -104,7 +104,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
     var rsn     = $routeParams.rsn
     var promise = diabloPromise.promise;
     wsaleService.get_w_sale_new(rsn).then(function(result){
-	console.log(result);
+	// console.log(result);
 	if (result.ecode === 0){
 	    // result[0] is the record detail
 	    var base        = result.sale;
