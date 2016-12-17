@@ -113,6 +113,11 @@ wreportApp.service("wreportService", function($resource, dateFilter){
     this.syn_daily_report = function(conditions){
 	return http.save({operation: "syn_daily_report"}, conditions).$promise;
     };
+
+    // export
+    this.export_month_report = function(conditions){
+	return http.save({operation: "export_month_report"}, conditions).$promise;
+    };
     
 });
 

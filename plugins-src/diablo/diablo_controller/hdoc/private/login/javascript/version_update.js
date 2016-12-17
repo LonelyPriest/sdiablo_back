@@ -1,6 +1,10 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2016-12-18",
+         content: ["增加月报表导出功能"]
+        },
+	
 	{date: "2016-12-17",
          content: ["增加月报表"]
         },

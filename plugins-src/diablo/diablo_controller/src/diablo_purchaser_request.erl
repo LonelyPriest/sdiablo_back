@@ -732,7 +732,9 @@ action(Session, Req, {"adjust_w_inventory_price"}, Payload) ->
 
 
 
-sidebar(Session) -> 
+sidebar(Session) ->
+    UserType = ?session:get(type, Session),
+    
     case ?right_request:get_shops(Session, inventory) of
 	[] ->
 	    ?menu:sidebar(level_1_menu,[]);
@@ -787,10 +789,16 @@ sidebar(Session) ->
 
 	    InvMgr =
 		[{{"inventory", "库存盘点", "glyphicon glyphicon-check"},
-		  authen_shop_action(
-		    {?fix_w_inventory,
-		     "inventory_fix",
-		     "盘点", "glyphicon glyphicon-check"}, Shops) 
+		  case UserType of
+		      ?MERCHANT ->
+			  [{"inventory_fix", "盘点", "glyphicon glyphicon-check"}];
+		      _ -> []
+		  end
+			      
+		  %% authen_shop_action(
+		  %%   {?fix_w_inventory,
+		  %%    "inventory_fix",
+		  %%    "盘点", "glyphicon glyphicon-check"}, Shops) 
 		  ++ [{"inventory_fix_detail",
 		       "盘点记录", "glyphicon glyphicon-tasks"},
 		      {"inventory_rsn_detail/fix",

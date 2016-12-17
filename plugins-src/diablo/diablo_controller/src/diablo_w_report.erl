@@ -19,7 +19,7 @@
 	 terminate/2, code_change/3]).
 
 %% daily
--export([report/4, report/5, stastic/3, stastic/4]).
+-export([report/4, report/5, stastic/3, stastic/4, stock/4]).
 -export([daily_report/3, daily_report/5, month_report/3]).
 -export([switch_shift_report/3, switch_shift_report/5]).
 
@@ -94,8 +94,8 @@ stastic(last_stock_of_shop, Merchant, ShopIds, CurrentDay)->
     gen_server:call(?SERVER, {last_stock_of_shop, Merchant, ShopIds, CurrentDay}).
 
 
-
-
+stock(of_day, Merchant, ShopIds, Day) ->
+    gen_server:call(?SERVER, {stock_of_day, Merchant, ShopIds, Day}).
 
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
@@ -212,6 +212,18 @@ handle_call({detail_of_daily, Merchant, CurrentPage, ItemsPerPage, Conditions},
 	     Merchant, Conditions, CurrentPage, ItemsPerPage),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
+
+handle_call({stock_of_day, Merchant, ShopIds, Day}, _From, State) ->
+    Sql = "select a.day, a.merchant, a.shop as shop_id, a.stockc, a.stock_cost"
+    	" from w_daily_report a "
+    	"inner join (select max(day) as day, merchant, shop from w_daily_report"
+    	" where merchant=" ++ ?to_s(Merchant)
+    	++ " and "++ ?utils:to_sqls(proplists, {<<"shop">>, ShopIds})
+    	++ " and day<=\'"  ++ ?to_s(Day) ++ "\'"
+    	++ " group by merchant, shop) b on "
+	"a.merchant=b.merchant and a.shop=b.shop and a.day=b.day", 
+    R = ?sql_utils:execute(read, Sql),
+    {reply, R, State}; 
 
 handle_call({total_of_shift, Merchant, Conditions}, _From, State) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
@@ -489,7 +501,7 @@ handle_call({month_report_by_shop, Merchant, Conditions}, _From, State) ->
 	" where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions)
 	++ " and " ++ ?w_report_sql:day_condition(StartTime, EndTime)
-	++ " group by shop",
+	++ " group by merchant, shop",
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 	

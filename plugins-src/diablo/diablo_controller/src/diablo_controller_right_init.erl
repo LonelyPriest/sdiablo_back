@@ -367,19 +367,13 @@ init([]) ->
 	],
 
     WReport =
-	[{?daily_wreport,
-	  <<"实时日报表">>,   <<"daily_wreport">>, ?right_w_report},
-	 {?stock_stastic,
-	  <<"实时进销存统计">>, <<"stock_stastic">>, ?right_w_report},
-	 {?h_daily_wreport,
-	  <<"日报表">>,     <<"h_daily_wreport">>, ?right_w_report},
-	 {?h_month_wreport,
-	  <<"月报表">>,     <<"h_month_wreport">>, ?right_w_report}, 
-	 {?switch_shift_report,
-	  <<"交班报表">>,     <<"switch_shift_report">>, ?right_w_report},
-	 
-	 {?syn_daily_report,
-	  <<"同步日报表">>,   <<"syn_daily_report">>, ?right_w_report}
+	[{?daily_wreport, <<"实时日报表">>, <<"daily_wreport">>, ?right_w_report},
+	 {?stock_stastic, <<"实时进销存统计">>, <<"stock_stastic">>, ?right_w_report},
+	 {?h_daily_wreport, <<"日报表">>, <<"h_daily_wreport">>, ?right_w_report},
+	 {?h_month_wreport, <<"月报表">>, <<"h_month_wreport">>, ?right_w_report}, 
+	 {?switch_shift_report, <<"交班报表">>, <<"switch_shift_report">>, ?right_w_report}, 
+	 {?syn_daily_report, <<"同步日报表">>, <<"syn_daily_report">>, ?right_w_report}, 
+	 {?export_month_report, <<"导出月报表">>, <<"export_month_report">>, ?right_w_report}
 	 
 	 %% {?weekly_wreport,
 	 %%  <<"周报表">>,   <<"weekly_wreport">>, ?right_w_report},

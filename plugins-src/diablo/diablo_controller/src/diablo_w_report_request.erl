@@ -14,6 +14,8 @@
 -export([action/2, action/3, action/4]).
 -export([sell/2, stock/2]).
 
+-define(d, ?utils:seperator(csv)).
+
 action(Session, Req) ->
     ?DEBUG("req ~p", [Req]),
     {ok, HTMLOutput} = wreport_frame:render(
@@ -170,10 +172,125 @@ action(Session, Req, {"h_month_wreport"}, Payload) ->
 
     case ?w_report:month_report(by_shop, Merchant, Conditions) of
 	{ok, Details} ->
-	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
-					       {<<"data">>, Details}]});
+	    ShopIds = ?v(<<"shop">>, Conditions), 
+	    {_, EndTime, _} = ?sql_utils:cut(fields_no_prifix, Conditions),
+	    Yestoday = yestoday(EndTime),
+	    %% <<Y:4/binary, "-", M:2/binary, "-", D:2/binary, _/binary>> = EndTime,
+	    %% Seconds = calendar:datetime_to_gregorian_seconds(
+	    %% 		{{?to_i(Y), ?to_i(M), ?to_i(D)}, {0, 0, 0}}) - ?ONE_DAY,
+	    %% {{Year, Month, Day}, _} = calendar:gregorian_seconds_to_datetime(Seconds),
+	    %% FDay = lists:flatten(io_lib:format("~4..0w-~2..0w-~2..0w", [Year, Month, Day])),
+	    
+	    case ?w_report:stock(of_day, Merchant, ShopIds, Yestoday) of
+		{ok, Stock} ->
+		    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
+						       {<<"data">>, Details},
+						       {<<"stock">>, Stock}]});
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end;
 	{error, Error} ->
     	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"export_month_report"}, Payload) ->
+    Merchant    = ?session:get(merchant, Session),
+    UserId      = ?session:get(id, Session),
+    ShopIds     = ?to_l(?v(<<"shop">>, Payload)),
+		      
+    {_, EndTime, _} = ?sql_utils:cut(fields_no_prifix, Payload),
+    Yestoday = yestoday(EndTime),
+
+    {ok, AllShops} = ?w_user_profile:get(shop, Merchant),
+
+    ValidShops = case [Shop || Shop <- AllShops,
+			       lists:member(?v(<<"id">>, Shop), ShopIds)] of
+		     [] -> AllShops;
+		     VShops -> VShops
+		 end, 
+    %% ?DEBUG("valid shops ~p", [ValidShops]),
+    
+    try
+	{ok, Details} = ?w_report:month_report(by_shop, Merchant, Payload),
+	%% ?DEBUG("details ~p", [Details]),
+	{ok, Stocks} = ?w_report:stock(of_day, Merchant, ShopIds, Yestoday),
+	%% ?DEBUG("Stocks ~p", [Stocks]),
+
+	MonthReports = 
+	    lists:foldr(
+	      fun({Shop}, Acc) ->
+		      D = case lists:filter(
+				 fun({Detail}) ->
+					 ?v(<<"shop_id">>, Detail) =:= ?v(<<"id">>, Shop)
+				 end, Details) of
+			      []    -> [];
+			      [{V}] -> V
+			  end, 
+		      %% ?DEBUG("D ~p", [D]),
+
+		      S = case lists:filter(
+				fun({Stock}) ->
+					?v(<<"shop_id">>, Stock) =:= ?v(<<"id">>, Shop)
+				end, Stocks) of
+			     [] -> [];
+			     [{V2}] -> V2
+			 end, 
+		      %% ?DEBUG("S ~p", [S]),
+		      
+		      [
+		       {[{<<"shop">>, ?v(<<"name">>, Shop)},
+			 {<<"stockc">>, ?v(<<"stockc">>, S, 0)},
+			 {<<"stockCost">>, ?v(<<"stock_cost">>, S, 0)},
+
+			 {<<"sell">>, ?v(<<"sell">>, D, 0)},
+			 {<<"sellCost">>, ?v(<<"sell_cost">>, D, 0)},
+			 {<<"balance">>, ?v(<<"balance">>, D, 0)},
+			 {<<"cash">>, ?v(<<"cash">>, D, 0)},
+			 {<<"card">>, ?v(<<"card">>, D, 0)},
+			 {<<"veri">>, ?v(<<"veri">>, D, 0)},
+			 {<<"draw">>, ?v(<<"draw">>, D, 0)},
+			 {<<"ticket">>, ?v(<<"ticket">>, D, 0)},
+
+			 {<<"stockIn">>, ?v(<<"stock_in">>, D, 0)},
+			 {<<"stockOut">>, ?v(<<"stock_out">>, D, 0)},
+			 {<<"stockInCost">>, ?v(<<"stock_in_cost">>, D, 0)},
+			 {<<"stockOutCost">>, ?v(<<"stock_out_cost">>, D, 0)},
+
+			 {<<"tstockIn">>, ?v(<<"tstock_in">>, D, 0)},
+			 {<<"tstockOut">>, ?v(<<"tstock_out">>, D, 0)},
+			 {<<"tstockInCost">>, ?v(<<"tstock_in_cost">>, D, 0)},
+			 {<<"tstockOutCost">>, ?v(<<"tstock_out_cost">>, D, 0)},
+
+			 {<<"stockFix">>, ?v(<<"stock_fix">>, D, 0)},
+			 {<<"stockFixCost">>, ?v(<<"stock_fix_cost">>, D, 0)}]}
+		       |Acc] 
+	      end, [], ValidShops),
+
+	%% ?DEBUG("reports ~p", [MonthReports]),
+	
+	{ok, ExportFile, Url} = ?utils:create_export_file("mreport", Merchant, UserId),
+	Calcs = erlang:list_to_tuple(lists:duplicate(20, 0)),
+	case file:open(ExportFile, [append, raw]) of
+	    {ok, Fd} -> 
+		try
+		    DoFun = fun(C) -> ?utils:write(Fd, C) end,
+		    csv_head(month_report, DoFun), 
+		    do_write(month_report, DoFun, 1, MonthReports, Calcs),
+		    ok = file:datasync(Fd),
+		    ok = file:close(Fd)
+		catch
+		    T:W -> 
+			file:close(Fd),
+			?DEBUG("trace export:T ~p, W ~p~n~p", [T, W, erlang:get_stacktrace()]),
+			?utils:respond(200, Req, ?err(wsale_export_error, W)) 
+		end,
+		?utils:respond(200, object, Req, {[{<<"ecode">>, 0}, {<<"url">>, ?to_b(Url)}]}); 
+	    {error, Error} ->
+		?utils:respond(200, Req, ?err(wsale_export_error, Error))
+	end
+    catch
+	_:{badmatch, ErrorExport} ->
+	    ?utils:respond(200, Req, ErrorExport)
     end;
 
 action(Session, Req, {"switch_shift_report"}, Payload) ->
@@ -553,4 +670,142 @@ stock(last_total, []) ->
 stock(last_total, [{StockInfo}]) ->
     ?v(<<"total">>, StockInfo, 0).
 
+yestoday(Datetime) when is_binary(Datetime)->
+    <<Y:4/binary, "-", M:2/binary, "-", D:2/binary, _/binary>> = Datetime,
+    Seconds = calendar:datetime_to_gregorian_seconds(
+		{{?to_i(Y), ?to_i(M), ?to_i(D)}, {0, 0, 0}}) - ?ONE_DAY,
+    {{Year, Month, Day}, _} = calendar:gregorian_seconds_to_datetime(Seconds),
+    lists:flatten(io_lib:format("~4..0w-~2..0w-~2..0w", [Year, Month, Day])).
     
+csv_head(month_report, Do) ->
+    Do("序号,店铺,库存,库存成本"
+       ",销售数量,销售金额,销售成本,现金,刷卡,提现,电子卷,核销"
+       ",入库数量,入库成本,出库数量,出库成本"
+       ",调入数量,调入成本,调出数量,调出成本"
+       ",盘点数量,盘点成本").
+
+do_write(month_report, Do, _Count, [], Calcs) ->
+    {CStockc, CStockCost,
+     CSell, CSellCost, CBalance, CCash, CCard, CDraw, CTicket, CVeri,
+     CStockIn, CStockOut, CStockInCost, CStockOutCost,
+     CTStockIn, CTStockOut, CTStockInCost, CTStockOutCost,
+     CStockFix, CStockFixCost} = Calcs,
+
+    Do("\r\n"
+       ++ ?d
+       ++ ?d
+       ++ ?to_s(CStockc) ++ ?d
+       ++ ?to_s(CStockCost) ++ ?d
+
+       ++ ?to_s(CSell) ++ ?d
+       ++ ?to_s(CBalance) ++ ?d
+       ++ ?to_s(CSellCost) ++ ?d
+       ++ ?to_s(CCash) ++ ?d
+       ++ ?to_s(CCard) ++ ?d
+       ++ ?to_s(CDraw) ++ ?d
+       ++ ?to_s(CTicket) ++ ?d
+       ++ ?to_s(CVeri) ++ ?d
+
+       ++ ?to_s(CStockIn) ++ ?d
+       ++ ?to_s(CStockInCost) ++ ?d
+       ++ ?to_s(CStockOut) ++ ?d
+       ++ ?to_s(CStockOutCost) ++ ?d
+
+       ++ ?to_s(CTStockIn) ++ ?d
+       ++ ?to_s(CTStockInCost) ++ ?d
+       ++ ?to_s(CTStockOut) ++ ?d
+       ++ ?to_s(CTStockOutCost) ++ ?d
+
+       ++ ?to_s(CStockFix) ++ ?d
+       ++ ?to_s(CStockFixCost) ++ ?d);
+
+do_write(month_report, Do, Count, [{H}|T], Calcs) ->
+    Shop = ?v(<<"shop">>, H),
+    Stockc = ?v(<<"stockc">>, H),
+    StockCost = ?v(<<"stockCost">>, H),
+    
+    Sell = ?v(<<"sell">>, H),
+    SellCost = ?v(<<"sellCost">>, H),
+    Balance = ?v(<<"balance">>, H),
+    Cash = ?v(<<"cash">>, H),
+    Card = ?v(<<"card">>, H),
+    Draw = ?v(<<"draw">>, H),
+    Ticket = ?v(<<"ticket">>, H),
+    Veri = ?v(<<"veri">>, H), 
+
+    StockIn = ?v(<<"stockIn">>, H),
+    StockOut = ?v(<<"stockOut">>, H),
+    StockInCost = ?v(<<"stockInCost">>, H),
+    StockOutCost = ?v(<<"stockOutCost">>, H),
+
+    TStockIn = ?v(<<"tstockIn">>, H),
+    TStockOut = ?v(<<"tstockOut">>, H),
+    TStockInCost = ?v(<<"tstockInCost">>, H),
+    TStockOutCost = ?v(<<"tstockOutCost">>, H),
+
+    StockFix = ?v(<<"stockFix">>, H),
+    StockFixCost = ?v(<<"stockFixCost">>, H), 
+    
+    L = "\r\n"
+	++ ?to_s(Count) ++ ?d
+	++ ?to_s(Shop) ++ ?d
+	++ ?to_s(Stockc) ++ ?d
+	++ ?to_s(StockCost) ++ ?d
+
+	++ ?to_s(Sell) ++ ?d
+	++ ?to_s(Balance) ++ ?d
+	++ ?to_s(SellCost) ++ ?d
+	++ ?to_s(Cash) ++ ?d
+	++ ?to_s(Card) ++ ?d
+	++ ?to_s(Draw) ++ ?d
+	++ ?to_s(Ticket) ++ ?d
+	++ ?to_s(Veri) ++ ?d
+
+	++ ?to_s(StockIn) ++ ?d
+	++ ?to_s(StockInCost) ++ ?d
+	++ ?to_s(StockOut) ++ ?d
+	++ ?to_s(StockOutCost) ++ ?d
+
+	++ ?to_s(TStockIn) ++ ?d
+	++ ?to_s(TStockInCost) ++ ?d
+	++ ?to_s(TStockOut) ++ ?d
+	++ ?to_s(TStockOutCost) ++ ?d
+
+	++ ?to_s(StockFix) ++ ?d
+	++ ?to_s(StockFixCost) ++ ?d,
+
+    Do(L),
+
+    {CStockc, CStockCost,
+     CSell, CSellCost, CBalance, CCash, CCard, CDraw, CTicket, CVeri,
+     CStockIn, CStockOut, CStockInCost, CStockOutCost,
+     CTStockIn, CTStockOut, CTStockInCost, CTStockOutCost,
+     CStockFix, CStockFixCost} = Calcs,
+    
+    do_write(month_report, Do, Count + 1, T, {CStockc + Stockc,
+					      CStockCost + StockCost,
+
+					      CSell + Sell,
+					      CSellCost + SellCost,
+					      CBalance + Balance,
+					      CCash + Cash,
+					      CCard + Card,
+					      CDraw + Draw,
+					      CTicket + Ticket,
+					      CVeri + Veri,
+
+					      CStockIn + StockIn,
+					      CStockOut + StockOut,
+					      CStockInCost + StockInCost,
+					      CStockOutCost + StockOutCost,
+
+					      CTStockIn + TStockIn,
+					      CTStockOut + TStockOut,
+					      CTStockInCost + TStockInCost,
+					      CTStockOutCost + TStockOutCost,
+
+					      CStockFix + StockFix,
+					      CStockFixCost + StockFixCost}).
+	
+	
+

@@ -269,6 +269,7 @@
 -define(switch_shift_report, ?right_w_report + 4).
 -define(syn_daily_report, ?right_w_report + 5).
 -define(h_month_wreport, ?right_w_report + 6).
+-define(export_month_report, ?right_w_report + 7).
 %% -define(weekly_wreport,  ?right_w_report + 2).
 %% -define(monthly_wreport, ?right_w_report + 3).
 %% -define(quarter_wreport, ?right_w_report + 4).
