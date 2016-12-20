@@ -111,7 +111,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
     };
 
     $scope.h_pagination = function(history){
-	diabloPagination.set_data(history);
+	diabloPagination.set_data(history.reverse());
 	diabloPagination.set_items_perpage($scope.h_items_perpage);
 	$scope.h_total_items = diabloPagination.get_length(); 
 	$scope.h_current_page = 1;
