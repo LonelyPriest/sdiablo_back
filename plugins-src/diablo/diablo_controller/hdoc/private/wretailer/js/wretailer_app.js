@@ -58,6 +58,15 @@ wretailerApp.config(['$routeProvider', function($routeProvider){
 
     var charge = {"filterCharge": function(diabloNormalFilter){
 	return diabloNormalFilter.get_charge()}};
+
+    var promotion = {"filterPromotion": function(diabloFilter){
+	return diabloFilter.get_promotion()}};
+
+    var score = {"filterScore": function(diabloNormalFilter){
+	return diabloNormalFilter.get_score()}};
+
+    var color = {"filterColor": function(diabloFilter){
+	return diabloFilter.get_color()}};
     
     $routeProvider. 
 	when('/wretailer_new', {
@@ -79,17 +88,13 @@ wretailerApp.config(['$routeProvider', function($routeProvider){
 	    templateUrl: '/private/wretailer/html/wretailer_trans.html',
 	    controller: 'wretailerTransCtrl',
 	    resolve: angular.extend({}, retailer, employee, user, base)
-	}).
-	// when('/wretailer_top', {
-	//     templateUrl: '/private/wretailer/html/wretailer_top.html',
-	//     controller: 'wretailerTopCtrl',
-	//     resolve: angular.extend({}, retailer, province, city)
-	// }).
+	}). 
 	when('/wretailer_trans_rsn/:retailer?/:rsn?/:ppage?', {
 	    templateUrl: '/private/wretailer/html/wretailer_trans_rsn_detail.html',
 	    controller: 'wretailerTransRsnDetailCtrl',
 	    resolve: angular.extend(
-		{}, brand, firm, retailer, employee, s_group, type, user, base)
+		{}, brand, firm, retailer, employee, s_group, type,
+		promotion, score, color, user, base)
 	}).
 	// recharge and score
 	when('/promotion/recharge_new', {
@@ -147,7 +152,7 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 			   {name: "充值会员", id:1},
 			   {name: "系统会员", id:2}];
 
-    this.sort_inventory = function(invs, orderSizes){
+    this.sort_inventory = function(invs, orderSizes, allColors){
 	// console.log(invs);
 	// console.log(orderSizes);
 	var in_sort = function(sorts, inv){
@@ -174,8 +179,8 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 		used_sizes.push(inv.size);
 	    };
 	    
-	    var color = {cid:inv.color_id, cname: inv.color};
-	    if (!in_array(colors, color)){
+	    var color = diablo_find_color(inv.color_id, allColors); 
+	    if (!diablo_in_colors(color, colors)){
 		colors.push(color)
 	    };
 
@@ -277,10 +282,11 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
     };
 
     this.filter_w_sale_rsn_group = function(
-	match, fields, currentPage, itemsPerpage){
+	mode, match, fields, currentPage, itemsPerpage){
 	return http_wsale.save(
 	    {operation: "filter_w_sale_rsn_group"},
-	    {match:  angular.isDefined(match) ? match.op : undefined,
+	    {mode:   mode,
+	     match:  angular.isDefined(match) ? match.op : undefined,
 	     fields: fields,
 	     page:   currentPage,
 	     count:  itemsPerpage}).$promise;

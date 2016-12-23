@@ -46,23 +46,35 @@ action(Session, Req, {"new_w_inventory"}, Payload) ->
     ?DEBUG("new purchaser inventory with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
     Invs = ?v(<<"inventory">>, Payload, []),
-    {struct, Base} = ?v(<<"base">>, Payload),
+    {struct, Base} = ?v(<<"base">>, Payload), 
+    Datetime = ?v(<<"datetime">>, Base), 
+    CurrentDate = ?utils:current_time(format_localtime), 
+    %% Date = ?utils:to_date(datetime, Datetime),
     
-    case ?w_inventory:purchaser_inventory(
-	    new, Merchant, lists:reverse(Invs), Base) of
-    	{ok, RSn} -> 
-    	    ?utils:respond(
-	       200,
-	       Req,
-	       ?succ(add_purchaser_inventory, RSn), {<<"rsn">>, ?to_b(RSn)});
-	{invalid_balance, {Firm, CurrentBalance, LastBalance}} ->
+    case ?utils:to_date(datetime, Datetime) /= ?utils:to_date(datetime, CurrentDate) of
+	true ->
 	    ?utils:respond(200,
 			   Req,
-			   ?err(invalid_balance, Firm),
-			   [{<<"cbalance">>, CurrentBalance},
-			    {<<"lbalance">>, LastBalance}]);
-    	{error, Error} ->
-    	    ?utils:respond(200, Req, Error)
+			   ?err(invalid_date, "new_w_inventory"),
+			   [{<<"fdate">>, Datetime},
+			    {<<"bdate">>, CurrentDate}]);
+	false -> 
+	    case ?w_inventory:purchaser_inventory(
+		    new, Merchant, lists:reverse(Invs), Base) of
+		{ok, RSn} -> 
+		    ?utils:respond(
+		       200,
+		       Req,
+		       ?succ(add_purchaser_inventory, RSn), {<<"rsn">>, ?to_b(RSn)});
+		{invalid_balance, {Firm, CurrentBalance, LastBalance}} ->
+		    ?utils:respond(200,
+				   Req,
+				   ?err(invalid_balance, Firm),
+				   [{<<"cbalance">>, CurrentBalance},
+				    {<<"lbalance">>, LastBalance}]);
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end
     end;
 
 action(Session, Req, {"update_w_inventory"}, Payload) ->
@@ -72,20 +84,31 @@ action(Session, Req, {"update_w_inventory"}, Payload) ->
     Invs = ?v(<<"inventory">>, Payload, []),
     {struct, Base} = ?v(<<"base">>, Payload),
 
-    RSN = ?v(<<"rsn">>, Base),
+    %% Datetime = ?v(<<"datetime">>, Base), 
+    %% CurrentDate = ?utils:current_time(format_localtime),
 
+    %% case ?utils:to_date(datetime, Datetime) /= ?utils:to_date(datetime, CurrentDate) of
+    %% 	true ->
+    %% 	    ?utils:respond(200,
+    %% 			   Req,
+    %% 			   ?err(invalid_date, "update_w_inventory"),
+    %% 			   [{<<"fdatetime">>, Datetime},
+    %% 			    {<<"bdatetime">>, CurrentDate}]);
+    %% 	false -> 
+    RSN = ?v(<<"rsn">>, Base), 
     {ok, OldBase} = ?w_inventory:purchaser_inventory(get_new, Merchant, RSN),
 
     case ?w_inventory:purchaser_inventory(
 	    update, Merchant, lists:reverse(Invs), {Base, OldBase}) of
-    	{ok, RSn} -> 
-    	    ?utils:respond(
+	{ok, RSn} -> 
+	    ?utils:respond(
 	       200,
 	       Req,
 	       ?succ(update_w_inventory, RSn), {<<"rsn">>, ?to_b(RSn)});
-    	{error, Error} ->
-    	    ?utils:respond(200, Req, Error)
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
     end;
+    %% end;
 
 action(Session, Req, {"comment_w_inventory_new"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
@@ -355,14 +378,32 @@ action(Session, Req, {"reject_w_inventory"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     Invs = ?v(<<"inventory">>, Payload),
     {struct, Base} = ?v(<<"base">>, Payload),
-    case ?w_inventory:purchaser_inventory(
-	    reject, Merchant, lists:reverse(Invs), Base) of 
-    	{ok, RSn} ->
-	    ?utils:respond(
-	       200, Req,
-	       ?succ(reject_w_inventory, RSn), {<<"rsn">>, ?to_b(RSn)});
-    	{error, Error} ->
-    	    ?utils:respond(200, Req, Error)
+
+    Datetime = ?v(<<"datetime">>, Base), 
+    CurrentDatetime = ?utils:current_time(format_localtime),
+
+    case ?utils:to_date(datetime, Datetime) /= ?utils:to_date(datetime, CurrentDatetime) of
+	true ->
+	    ?utils:respond(200,
+			   Req,
+			   ?err(invalid_date, "update_w_inventory"),
+			   [{<<"fdate">>, Datetime},
+			    {<<"bdate">>, CurrentDatetime}]);
+	false -> 
+	    case ?w_inventory:purchaser_inventory(reject, Merchant, lists:reverse(Invs), Base) of 
+		{ok, RSn} ->
+		    ?utils:respond(
+		       200, Req,
+		       ?succ(reject_w_inventory, RSn), {<<"rsn">>, ?to_b(RSn)});
+		{invalid_balance, {Firm, CurrentBalance, LastBalance}} ->
+		    ?utils:respond(200,
+				   Req,
+				   ?err(invalid_balance, Firm),
+				   [{<<"cbalance">>, CurrentBalance},
+				    {<<"lbalance">>, LastBalance}]);
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error) 
+	    end
     end;
 
 %% =============================================================================

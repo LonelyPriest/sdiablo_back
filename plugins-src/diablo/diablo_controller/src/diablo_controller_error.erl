@@ -378,6 +378,8 @@ error(invalid_balance, Firm) ->
     {2008, "invalid balance of firm " ++ ?to_s(Firm)};
 error(zero_price_of_check, RSN) ->
     {2009, "zero price of check " ++ ?to_s(RSN) ++ "."};
+error(invalid_date, Action) ->
+    {2010, "invalid date of action: " ++ ?to_s(Action) ++ "."};
 
 %% retailer
 error(retailer_exist, Retailer) ->

@@ -608,10 +608,14 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 			    if (state.ecode===2008){
 				return "厂商欠款[" + state.cbalance + "]，"
 				    + "上次欠款[" + state.lbalance + "]！！"
+			    } else if (state.ecode === 2010) {
+				return "当前日期[" + state.fdate + "]，"
+				    + "服务器日期[" + state.bdate + "]！！"
+			    } else {
+				return ""; 
 			    }
-			    return "";
 			}(),
-		    $scope, function(){$scope.has_saved = false})
+		    undefined, function(){$scope.has_saved = false})
 	    }
 	})
     };

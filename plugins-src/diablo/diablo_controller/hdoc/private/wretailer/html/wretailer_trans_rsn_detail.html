@@ -64,102 +64,93 @@
 	      <table class="table table-bordered
 			    table-striped table-hover
 			    table-condensed table-advanced">
+		
 		<thead>
 		  <tr>
 		    <th>序号</th>
-
-		    <th x-ng-click="toggle_base()" class="danger">
-		      <span x-ng-if="!hidden.base">
-			<i class="glyphicon glyphicon-backward fg-red"></i>
-			单号</span>
-		      <span x-ng-if="hidden.base">
-			单号<i class="glyphicon glyphicon-forward fg-red"></i>
-		      </span>
-		    </th>
-
-		    <th x-ng-if="!hidden.base">交易</th> 
-		    <th x-ng-if="!hidden.base">店铺</th>
-		    <th x-ng-if="!hidden.base">店员</th>
+		    <th>单号</th>
+		    <th>促销</th>
+		    <th>积分</th>
 		    
-		    <th>款号</th>
+		    <th>交易</th> 
+		    <th>店铺</th>
+		    <th>店员</th>
+		    <th class="danger">款号</th>
 		    <th>品牌</th>
-		    <th>类型</th>
-		    <!-- <th>颜色</th> -->
-		    <!-- <th>数量</th> -->
-		    <th class="info">折扣</th>
-		    <th class="danger">价格</th>
-		    <th>数量</th>
+		    <th class="success">类型</th> 
+		    <th>季节</th>
+		    <th>厂商</th> 
+		    <th >年度</th>
+		    <th>上架日期</th> 
+		    
+		    <th class="info">吊牌价</th>
+		    <th class="danger">成交价</th>
+		    <th>数量</th> 
 		    <th>小计</th>
-		    <th>厂商</th>
+		    <th>折扣率</th> 
 		    <th>日期</th> 
 		    <th>操作</th>
 		  </tr>
 		</thead>
+
 		<tbody>
 		  <tr ng-repeat="inv in inventories">
 		    <td>{{inv.order_id}}</td> 
 		    <td>{{inv.rsn}}</td>
 		    
-		    <td x-ng-if="!hidden.base" x-ng-switch on="inv.sell_type">
+		    <td>
+		      <div x-ng-switch on="inv.pid">
+			<span x-ng-switch-when=-1>-</span>
+			<span x-ng-switch-default>{{inv.promotion.name}}</span>
+		      </div>
+		    </td>
+		    <td>{{inv.score.name}}</td>
+
+		    <td x-ng-switch on="inv.sell_type">
 		      <span x-ng-switch-when=0>开单</span>
 		      <span class="fg-red" x-ng-switch-when=1>退货</span>
 		    </td>
 		    
-		    <td x-ng-if="!hidden.base">{{inv.shop.name}}</td>
-		    <td x-ng-if="!hidden.base">{{inv.employee.name}}</td>
-		    
-		    <!-- <td x-ng-if="inv.sell_type===0" class="success">开单</td> -->
-		    <!-- <td x-ng-if="inv.sell_type===1" class="danger">退货</td> -->
+		    <td>{{inv.shop.name}}</td>
+		    <td>{{inv.employee.name}}</td> 
 		    <td>{{inv.style_number}}</td>
 		    <td>{{inv.brand.name}}</td>
-		    <td>{{inv.type.name}}</td>
-		    <!-- <td>{{inv.color}}</td> -->
-		    <!-- <td>{{inv.total}}</td>  -->
-		    <td>{{inv.fdiscount}}</td>
-		    <td>{{inv.fprice}}</td>
-		    <td>{{inv.total}}</td>
-		    <td>{{round(inv.fprice *inv.fdiscount * inv.total * 0.01)}}</td>
+		    <td>{{inv.type.name}}</td> 
+		    <td>{{inv.oseason.name}}</td> 
 		    <td>{{inv.firm.name}}</td>
+		    <td>{{inv.year}}</td>
+		    <td>{{inv.in_datetime}}</td>
+		    
+		    <!-- <td>{{inv.color}}</td> -->
+		    <!-- <td>{{inv.total}}</td>  --> 
+		    <!-- <td>{{inv.fprice}}</td> -->
+
+		    <td>{{inv.tag_price}}</td> 
+		    <td>{{inv.rprice}} </td>
+		    
+		    <td x-ng-switch on="inv.sell_type"> 
+		      <span class="fg-red" x-ng-switch-when=1>{{inv.total}}</span>
+		      <span x-ng-switch-default>{{inv.total}}</span>
+		    </td>
+		    <td>{{inv.calc}} </td> 
+		    <td>{{inv.drate}}</td>
 		    <td>{{inv.entry_date}}</td>
 		    <td>
 		      <a class="btn diablo-button btn-primary"
 			 x-ng-disabled="inv.free === 0"
 		    	 x-ng-click="rsn_detail(inv)">
-			详情<i class="glyphicon glyphicon-map-marker"></i></a>
+			明细<i class="glyphicon glyphicon-map-marker"></i></a> 
 		    </td>
 		  </tr>
 
 		  <tr x-ng-if="total_items!==0" class="bg-white">
-		    <td x-ng-if="!hidden.base" colspan="10"></td>
-		    <td x-ng-if="hidden.base" colspan="7"></td>
-		    <td class="success">{{total_amounts}}</td>
-		    <td class="danger">{{total_balance}}</td>
-		    <td colspan="3"></td>
-		  </tr>
-		  
-		</tbody>
-
-		<tfoot>
-		  <!-- <tr> -->
-		  <!--   <td x-ng-show="total_items>items_perpage" colspan={{colspan}}> -->
-		  <!--     <span class="pagination"> -->
-		  <!-- 	<span>显示第 {{current_page}} / {{num_pages}} 项结果， -->
-		  <!-- 	  共 {{total_items}} 项</span> -->
-		  <!--     </span> -->
-		  <!--     <pagination class="pagination-lg pull-right" -->
-		  <!-- 		  total-items="total_items" -->
-		  <!-- 		  items-per-page="items_perpage" -->
-		  <!-- 		  num-pages="num_pages" -->
-		  <!-- 		  max-size="max_page_size" -->
-		  <!-- 		  boundary-links="true" -->
-		  <!-- 		  previous-text="&lsaquo;" next-text="&rsaquo;" -->
-		  <!-- 		  first-text="&laquo;" last-text="&raquo;" -->
-		  <!-- 		  x-ng-model="current_page" -->
-		  <!-- 		  x-ng-init="current_page=default_page" -->
-		  <!-- 		  x-ng-change="page_changed()"></pagination> -->
-		  <!--   </td> -->
-		  <!-- </tr> -->
-		</tfoot>
+		    <td colspan=16></td>
+		    <td>{{total_amounts}}</td> 
+		    <!-- <td x-ng-if="right.show_stastic">{{total_balance}}</td> -->
+		    <!-- <td x-ng-if="right.show_stastic">{{total_obalance}}</td> -->
+		    <td colspan="5"></td>
+		  </tr> 
+		</tbody> 
 		
 	      </table> <!--END supplier table-->
 	    </div> <!--END table responsive-->
@@ -172,7 +163,7 @@
 	    <span>显示第 {{current_page}} / {{num_pages}} 项结果，
 	      共 {{total_items}} 项</span>
 	    
-	    <pagination class="pagination-lg table-pagination pull-right"
+	    <uib-pagination class="pagination-lg table-pagination pull-right"
 		  	total-items="total_items"
 		  	items-per-page="items_perpage"
 		  	num-pages="num_pages"
@@ -182,7 +173,7 @@
 		  	first-text="&laquo;" last-text="&raquo;"
 		  	x-ng-model="current_page"
 		  	x-ng-init="current_page=default_page"
-		  	x-ng-change="page_changed()"></pagination>
+		  	x-ng-change="page_changed()"></uib-pagination>
 	  </div>
 	</div>
 		  

@@ -299,14 +299,28 @@ handle_call({bill_supplier, Merchant, Attrs}, _From, State) ->
 
 	    case ?sql_utils:execute(s_read, Sql00) of
 		{ok, LastStockIn} ->
-		    LastBalance = case LastStockIn of
-				      [] -> 0;
-				      _ -> ?v(<<"balance">>, LastStockIn)
-					       + ?v(<<"should_pay">>, LastStockIn)
-					       + ?v(<<"e_pay">>, LastStockIn)
-					       - ?v(<<"has_pay">>, LastStockIn)
-					       - ?v(<<"verificate">>, LastStockIn)
-				  end,
+		    LastBalance =
+			case LastStockIn of
+			    [] ->
+				Sql01 = "select id, rsn, firm, shop, merchant"
+				    ", balance, should_pay, has_pay, e_pay, verificate, entry_date"
+				    " from w_inventory_new"
+				    " where merchant=" ++ ?to_s(Merchant)
+				    ++ " and firm=" ++ ?to_s(FirmId)
+				    ++ " and state in(0, 1)"
+				    ++ " and entry_date>\'" ++ ?to_s(Datetime) ++ "\'"
+				    ++ " order by entry_date limit 1",
+				{ok, LastStockInW} = ?sql_utils:execute(s_read, Sql01),
+				case LastStockInW of
+				    [] -> ?v(<<"balance">>, Firm, 0);
+				    _ -> ?v(<<"balance">>, LastStockInW)
+				end;
+			    _ -> ?v(<<"balance">>, LastStockIn)
+				     + ?v(<<"should_pay">>, LastStockIn)
+				     + ?v(<<"e_pay">>, LastStockIn)
+				     - ?v(<<"has_pay">>, LastStockIn)
+				     - ?v(<<"verificate">>, LastStockIn)
+			end,
 		    CurrentBalance = ?v(<<"balance">>, Firm, 0), 
 
 		    RSN = lists:concat(
@@ -449,14 +463,6 @@ handle_call({update_bill_supplier, Merchant, {Attrs, OldAttrs}}, _From, State) -
 		 ++ case Bill + Veri - OldBill - OldVeri of
 			0 -> [];
 			Metric -> 
-			    %% case UpdatesOfStock of
-			    %%     [] -> [];
-			    %%     _  ->
-			    %% 	 ["update w_inventory_new set "
-			    %% 	  ++ ?utils:to_sqls(proplists, comma, UpdatesOfStock)
-			    %% 	  ++ " where merchant=" ++ ?to_s(Merchant)
-			    %% 	  ++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'"]
-			    %% end ++ 
 			     ["update suppliers set balance=balance-" ++ ?to_s(Metric)
 			      ++ " where merchant=" ++ ?to_s(Merchant)
 			      ++ " and id=" ++ ?to_s(FirmId),
@@ -471,39 +477,10 @@ handle_call({update_bill_supplier, Merchant, {Attrs, OldAttrs}}, _From, State) -
 			      "balance=balance-" ++ ?to_s(Metric)
 			      ++ " where merchant=" ++ ?to_s(Merchant)
 			      ++ " and firm=" ++ ?to_s(FirmId)
-			      ++ " and entry_date>" ++ ?to_s(OldDatetime) ++ "\'"]
+			      ++ " and entry_date>\'" ++ ?to_s(OldDatetime) ++ "\'"]
 		     end
 		};
 	    Datetime -> 
-		%% {ok, ["update w_inventory_new set "
-		%%  "balance=balance+" ++ ?to_s(OldBill + OldVeri)
-		%%  ++ " where merchant=" ++ ?to_s(Merchant)
-		%%  ++ " and firm=" ++ ?to_s(FirmId)
-		%%  ++ " and entry_date>\'" ++ ?to_s(OldDatetime) ++ "\'",
-
-		%%  "update w_inventory_new set "
-		%%  "balance=balance-" ++ ?to_s(Bill + Veri)
-		%%  ++ " where merchant=" ++ ?to_s(Merchant)
-		%%  ++ " and firm=" ++ ?to_s(FirmId)
-		%%  ++ " and entry_date>\'" ++ ?to_s(Datetime) ++ "\'"]
-
-		%%     ++ case Bill + Veri - OldBill - OldVeri of
-		%% 	   0 -> []; 
-		%% 	   Metric ->
-		%% 	       ["update suppliers set balance=balance-" ++ ?to_s(Metric)
-		%% 		++ " where merchant=" ++ ?to_s(Merchant)
-		%% 		++ " and id=" ++ ?to_s(FirmId),
-
-		%% 		"update w_bill_detail set "
-		%% 		"balance=balance-" ++ ?to_s(Metric)
-		%% 		++ " where merchant=" ++ ?to_s(Merchant)
-		%% 		++ " and firm=" ++ ?to_s(FirmId)
-		%% 		++ " and id>" ++ ?to_s(BillId)]
-		%%        end
-		%% }
-		    
-		%% DateEnd = date_end(Datetime),
-		
 		Sql00 = "select id, rsn, firm, shop, merchant"
 		    ", balance, should_pay, has_pay, e_pay, verificate, entry_date"
 		    " from w_inventory_new"
@@ -514,14 +491,34 @@ handle_call({update_bill_supplier, Merchant, {Attrs, OldAttrs}}, _From, State) -
 		    ++ " order by entry_date desc limit 1",
 		case ?sql_utils:execute(s_read, Sql00) of
 		    {ok, LastStockIn} ->
-			LastBalance = case LastStockIn of
-					  [] -> 0;
-					  _  -> ?v(<<"balance">>, LastStockIn)
-						    + ?v(<<"should_pay">>, LastStockIn)
-						    + ?v(<<"e_pay">>, LastStockIn)
-						    - ?v(<<"has_pay">>, LastStockIn)
-						    - ?v(<<"verificate">>, LastStockIn)
-				      end,
+			LastBalance =
+			    case LastStockIn of
+				[] ->
+				    Sql01 = "select id, rsn, firm, shop, merchant"
+					", balance, should_pay, has_pay, e_pay, verificate"
+					", entry_date"
+					" from w_inventory_new"
+					" where merchant=" ++ ?to_s(Merchant)
+					++ " and firm=" ++ ?to_s(FirmId)
+					++ " and state in(0, 1)"
+					++ " and entry_date>\'" ++ ?to_s(Datetime) ++ "\'"
+					++ " order by entry_date limit 1",
+				    {ok, LastStockInW} = ?sql_utils:execute(s_read, Sql01),
+				    case LastStockInW of
+					[] ->
+					    case ?w_user_profile:get(firm, Merchant, FirmId) of
+						{ok, []} -> 0;
+						{ok, FirmProfile} ->
+						    ?v(<<"balance">>, FirmProfile, 0)
+					    end;
+					_ -> ?v(<<"balance">>, LastStockInW, 0)
+				    end;
+				_  -> ?v(<<"balance">>, LastStockIn)
+					  + ?v(<<"should_pay">>, LastStockIn)
+					  + ?v(<<"e_pay">>, LastStockIn)
+					  - ?v(<<"has_pay">>, LastStockIn)
+					  - ?v(<<"verificate">>, LastStockIn)
+			    end,
 
 			AllUpdate = UpdatesOfStock ++ ?utils:v(balance, float, LastBalance),
 			?DEBUG("AllUpdate ~p", [AllUpdate]),

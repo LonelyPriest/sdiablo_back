@@ -63,6 +63,10 @@ correct_datetime(datetime, Datetime) ->
     end.
 
 -spec to_date/2::(atom(), binary()|string()) -> calendar:date().
+to_date(datetime, Datetime) when is_list(Datetime)->
+    <<YYMMDD:10/binary, _/binary>> = ?to_b(Datetime), 
+    to_date(date, YYMMDD);
+
 to_date(datetime, Datetime) ->
     <<YYMMDD:10/binary, _/binary>> = Datetime,
     to_date(date, YYMMDD);

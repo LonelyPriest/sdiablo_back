@@ -411,8 +411,19 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	    } else{
 	    	diabloUtilsService.response_with_callback(
 	    	    false, "退货",
-	    	    "退货失败：" + purchaserService.error[state.ecode],
-		    $scope, function(){$scope.has_saved = false});
+	    	    "退货失败：" + purchaserService.error[state.ecode]
+			+ function(){
+			    if (state.ecode===2008){
+				return "厂商欠款[" + state.cbalance + "]，"
+				    + "上次欠款[" + state.lbalance + "]！！"
+			    } else if (state.ecode === 2010) {
+				return "当前日期[" + state.fdate + "]，"
+				    + "服务器日期[" + state.bdate + "]！！"
+			    } else {
+				return ""; 
+			    }
+			}(),
+		    undefined, function(){$scope.has_saved = false});
 	    }
 	})
     };

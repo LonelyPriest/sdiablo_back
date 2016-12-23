@@ -36,6 +36,24 @@ var retailerUtils = function(){
 
 	months: function(){
 	    return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+	},
+
+	to_decimal:function(v){
+	    return diablo_rdight(v, 2);
+	},
+
+	cache_page_condition: function(
+	    storage, key, conditions, start_time, end_time, current_page, datetime){
+	    storage.remove(key);
+	    storage.set(key, {filter:conditions,
+			      start_time:diablo_get_time(start_time),
+			      end_time: diablo_get_time(end_time),
+			      page: current_page,
+			      t: datetime});
+	},
+
+	remove_cache_page: function(storage, key){
+	    storage.remove(key);
 	}
     }
 }();

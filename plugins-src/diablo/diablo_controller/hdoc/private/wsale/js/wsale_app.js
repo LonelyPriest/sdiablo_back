@@ -1808,7 +1808,7 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
     // console.log($scope.prompt);
 
     var now = $.now();
-    var shopId = $scope.shopIds.length === 1 ? $scope.shopIds[0]: -1;
+    // var shopId = $scope.shopIds.length === 1 ? $scope.shopIds[0]: -1;
     // var show_sale_days = wsaleUtils.show_sale_day(shopId, base);
     var show_sale_days = user.sdays;
     var storage = localStorageService.get(diablo_key_wsale_trans);

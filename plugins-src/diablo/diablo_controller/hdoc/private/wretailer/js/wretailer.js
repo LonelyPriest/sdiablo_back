@@ -287,8 +287,9 @@ wretailerApp.controller("wretailerDetailCtrl", function(
     }
 
     $scope.trans_info = function(r){
-	dialog.response(false, "会员对帐", "暂不支持此操作！！请在销售记录中查询！！");
-	return;
+	// dialog.response(false, "会员对帐", "暂不支持此操作！！请在销售记录中查询！！");
+	// return;
+	diablo_goto_page("#/wretailer_trans/" +r.id.toString());
     };
 
     $scope.change_birth_month = function(){
