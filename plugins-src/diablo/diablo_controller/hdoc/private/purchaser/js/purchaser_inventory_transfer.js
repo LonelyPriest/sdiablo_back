@@ -629,7 +629,8 @@ purchaserApp.controller("purchaserInventoryTransferFromDetailCtrl", function(
      * pagination 
      */
     $scope.colspan = 15;
-    $scope.items_perpage = 15;
+    $scope.items_perpage = diablo_items_per_page();
+    $scope.max_page_size = diablo_max_page_size();
     $scope.default_page = 1;
     // $scope.current_page = $scope.default_page;
 
@@ -746,7 +747,7 @@ purchaserApp.controller("purchaserInventoryTransferToDetailCtrl", function(
     $scope.filters = [];
     
     diabloFilter.reset_field();
-    diabloFilter.add_field("rsn", []);
+    // diabloFilter.add_field("rsn", []);
     // diabloFilter.add_field("fshop",     user.sortShops);
     diabloFilter.add_field("tshop",     $scope.to_shops);
     // diabloFilter.add_field("firm",     filterFirm);
@@ -774,7 +775,8 @@ purchaserApp.controller("purchaserInventoryTransferToDetailCtrl", function(
      * pagination 
      */
     $scope.colspan = 15;
-    $scope.items_perpage = 10;
+    $scope.items_perpage = diablo_items_per_page();
+    $scope.max_page_size = diablo_max_page_size();
     $scope.default_page = 1;
     // $scope.current_page = $scope.default_page;
 

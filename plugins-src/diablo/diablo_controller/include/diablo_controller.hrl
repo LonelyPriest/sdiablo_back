@@ -270,11 +270,6 @@
 -define(syn_daily_report, ?right_w_report + 5).
 -define(h_month_wreport, ?right_w_report + 6).
 -define(export_month_report, ?right_w_report + 7).
-%% -define(weekly_wreport,  ?right_w_report + 2).
-%% -define(monthly_wreport, ?right_w_report + 3).
-%% -define(quarter_wreport, ?right_w_report + 4).
-%% -define(half_wreport,    ?right_w_report + 5).
-%% -define(year_wreport,    ?right_w_report + 6).
 
 
 %% -----------------------------------------------------------------------------
@@ -284,6 +279,7 @@
 -define(wsale_modify_price_onsale,    ?right_rainbow + 2).
 -define(wsale_modify_discount_onsale, ?right_rainbow + 3).
 -define(stock_show_orgprice,          ?right_rainbow + 4).
+-define(sms_notify,                   ?right_rainbow + 5).
 
 %% =============================================================================
 %% base setting

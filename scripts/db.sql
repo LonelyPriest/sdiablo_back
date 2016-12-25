@@ -40,7 +40,8 @@ create table merchants
     owner            VARCHAR(64) not null,  -- the merchant belonged to
     mobile           VARCHAR(11) not null,
     address          VARCHAR(256) not null,
-    type             TINYINT default 0, -- 0:saler 1:wholesaler
+    balance          INTEGER not null default 0, -- fen
+    type             TINYINT default 0,
     province         TINYINT default -1, -- which province
     entry_date       DATE,
     deleted          INTEGER default 0, -- 0: no;  1: yes
@@ -1065,5 +1066,12 @@ create table w_daily_report(
 ) default charset=utf8;
 
 
-
+create table sms_notify(
+    id              INTEGER AUTO_INCREMENT,
+    merchant        INTEGER not null default -1,
+    rate            INTEGER default 0, -- fen
+    send            INTEGER not null default 0,
+    unique  key uk (merchant),
+    primary key    (id)
+) default charset=utf8;
 

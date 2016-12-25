@@ -22,6 +22,11 @@ success(delete_merchant, Id) ->
     {0, "Success to delete the merchant " ++ ?to_s(Id)};
 success(update_merchant, Id) ->
     {0, "Success to update the merchant " ++ ?to_s(Id)};
+success(new_sms_rate, Merchant) ->
+    {0, "Success to add sms of merchant " ++ ?to_s(Merchant)};
+success(charge_sms, Merchant) ->
+    {0, "Success to charge sms of merchant " ++ ?to_s(Merchant)};
+
 
 %% employ
 success(add_employ, Name) ->
@@ -283,6 +288,8 @@ error(merchant_exist, Name) ->
     {1201, "Merchant " ++ ?to_s(Name) ++ " has been exist."};
 error(account_of_merchant_not_empty, Merchant) ->
     {1202, "Account of Merchant " ++ ?to_s(Merchant) ++ " is not empty."};
+error(sms_rate_exist, Merchant) ->
+    {1203, "sms rate of Merchant " ++ ?to_s(Merchant) ++ " has been exist."};
 
 %% shop
 error(shop_exist, Name) ->

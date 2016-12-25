@@ -101,6 +101,7 @@ var diablo_key_inventory_transfer     = "q-inventory-transfer";
 var diablo_key_firm                   = "q-firm-detail";
 var diablo_key_firm_trans             = "q-firm-trans";
 var diablo_key_firm_trans_detail      = "q-firm-trans-detail";
+var diablo_key_firm_bill_detail       = "q-firm-bill-detail";
 
 // retailer
 var diablo_key_retailer               = "q-retailer-detail";

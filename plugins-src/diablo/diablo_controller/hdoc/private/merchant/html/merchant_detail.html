@@ -68,6 +68,7 @@
 		    <td>名称</td>
 		    <td>类型</td>
 		    <td>经营人</td>
+		    <td>余额</td>
 		    <td>联系方式</td>
 		    <td>常驻地址</td>
 		    <td>注册日期</td>
@@ -80,17 +81,21 @@
 		    <td>{{merchant.name}}</td>
 		    <td>{{merchant.type_name}}</td>
 		    <td>{{merchant.owner}}</td>
+		    <td>{{merchant.balance}}</td>
 		    <td>{{merchant.mobile}} </td> 
 		    <td>{{merchant.address}}</td> 
 		    <td>{{merchant.entry_date}}</td>
 
-		    <td class="col-md-2" data-title="'操作'"> 
-                      <a class="btn btn-primary diablo-button red-stripe" 
+		    <td class="col-md-2" data-title="'操作'">
+		      <button class="btn green diablo-button" 
+			 x-ng-click="charge(merchant)">充值
+			<i class="glyphicon glyphicon-yen"></i></button>
+		      <button class="btn btn-primary diablo-button" 
 			 x-ng-click="update_merchant(merchant)">修改
-			<i class="glyphicon glyphicon-edit"></i></a>
-                      <a class="btn red diablo-button" 
+			<i class="glyphicon glyphicon-edit"></i></button>
+                      <button class="btn red diablo-button" 
 			 x-ng-click="delete_merchant(merchant)">删除
-			<i class="glyphicon glyphicon-erase"></i></a>
+			<i class="glyphicon glyphicon-erase"></i></button>
 		    </td>
 		    
 		  </tr>
@@ -215,10 +220,41 @@
 </script> 
 
 
+<script type="text/ng-template" id="charge-sms.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    <h4 class="modal-title">
+      <span class="label label-sm label-primary">
+	商户充值（<span >{{params.name}}</span>）
+      </span>
+    </h4>
+  </div>
 
+  <!--BEGIN modal body-->
+  <div class="modal-body">
+    <form class="form-horizontal" name="rForm" novalidate>
+      <div class="form-group">
+	<label class="col-sm-2 col-md-2 control-label">金额（分）</label>
+	<div class="col-sm-8 col-md-8">
+	  <input class="form-control"
+		 required
+		 type="number"
+		 step="1"
+		 name="rate"
+		 class="form-control"
+		 x-ng-model="params.balance" /> 
+	</div>
+      </div>
+    </form> 
+    </div>
 
-
-
-
-
-
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="rForm.$invalid"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
+</script>

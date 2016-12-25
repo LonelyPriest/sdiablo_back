@@ -130,7 +130,7 @@ firmApp.controller("firmBillCtrl", function(
 });
 
 firmApp.controller("firmBillDetailCtrl", function(
-    $scope, dateFilter, diabloPattern, diabloUtilsService, diabloFilter,
+    $scope, dateFilter, localStorageService, diabloPattern, diabloUtilsService, diabloFilter,
     firmService, filterFirm, filterCard, filterEmployee, user, base){
 
     $scope.shops     = user.sortShops;
@@ -154,17 +154,31 @@ firmApp.controller("firmBillDetailCtrl", function(
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
 
-    var now = $.now;
-    var shop = $scope.shopIds.length === 1 ? $scope.shopIds[0] : -1;
-    $scope.qtime_start = stockUtils.start_time_of_second(shop, base, now, diabloFilter);
-    $scope.time = diabloFilter.default_time($scope.qtime_start);
-    console.log($scope.time);
+    // var now = $.now;
+    // var shop = $scope.shopIds.length === 1 ? $scope.shopIds[0] : -1;
+    // $scope.qtime_start = stockUtils.start_time_of_second(shop, base, now, diabloFilter);
+    // $scope.time = diabloFilter.default_time($scope.qtime_start);
 
     $scope.items_perpage = diablo_items_per_page();
-    $scope.max_page_size = 10;
+    $scope.max_page_size = diablo_max_page_size();
     $scope.default_page  = 1;
     $scope.current_page  = $scope.default_page;
-    $scope.total_items      = 0;
+    $scope.total_items   = 0;
+
+    var storage = localStorageService.get(diablo_key_firm_bill_detail);
+    if (angular.isDefined(storage) && storage !== null){
+    	$scope.filters       = storage.filter;
+	// $scope.current_page  = storage.page; 
+    	$scope.qtime_start   = storage.start_time;
+	$scope.qtime_end     = storage.end_time;
+    } else{
+	var now = stockUtils.first_day_of_month(); 
+	$scope.filters = [];
+	$scope.qtime_start = now.first;
+	$scope.qtime_end   = now.current;
+    };
+    
+    $scope.time = diabloFilter.default_time($scope.qtime_start, $scope.qtime_end); 
 
     $scope.page_changed = function(page){
 	// console.log(page);
@@ -184,6 +198,13 @@ firmApp.controller("firmBillDetailCtrl", function(
     $scope.do_search = function(page){
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
 	    add_search_condition(search);
+
+	    stockUtils.cache_page_condition(
+		localStorageService,
+		diablo_key_firm_bill_detail,
+		$scope.filters,
+		$scope.time.start_time,
+		$scope.time.end_time, page, now);
 
 	    firmService.filter_bill_detail(
 		$scope.match, search, page, $scope.items_perpage

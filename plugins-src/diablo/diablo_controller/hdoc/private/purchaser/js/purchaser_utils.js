@@ -307,6 +307,15 @@ var stockUtils = function(){
 	    stroage.remove(diablo_key_inventory_note_link);
 	    stroage.remove("inventory-trans-stastic"); 
 	    stroage.remove("stock-note-stastic");
+	},
+
+	first_day_of_month: function(){
+	    var now = new Date(); 
+	    var year = now.getFullYear();
+	    var month = now.getMonth();
+
+	    return {
+		first:new Date(year, month, 1).getTime(), current:now.getTime()};
 	}
 	    
 	//

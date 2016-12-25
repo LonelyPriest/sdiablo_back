@@ -90,27 +90,19 @@ start_link() ->
 
 init([]) ->
     Catlog = [
-	      %% {?right_sale,      <<"销售管理">>,   <<"sale">>},
-	      %% {?right_inventory, <<"库存管理">>,   <<"inventory">>},
 	      {?right_w_retailer,<<"会员管理">>,   <<"member">>},
 	      {?right_shop,      <<"店铺管理">>,   <<"shop">>},
 	      {?right_employe,   <<"员工管理">>,   <<"employ">>},
 	      {?right_right,     <<"权限管理">>,   <<"right">>},
-	      %% {?right_supplier,  <<"供应商管理">>, <<"supplier">>},
 	      {?right_merchant,  <<"商家管理">>,   <<"merchant">>},
 	      
-	      %% about wholesale
 	      {?right_w_sale,      <<"销售管理">>,   <<"wsale">>},
 	      {?right_w_inventory, <<"采购管理">>,   <<"purchaser">>},
-	      {?right_w_firm,      <<"厂商管理">>,   <<"firm">>},
-	      %% {?right_w_retailer,  <<"批发零售商管理">>, <<"wretailer">>},
-	      %% {?right_w_print,     <<"打印机管理">>,     <<"wprint">>},
+	      {?right_w_firm,      <<"厂商管理">>,   <<"firm">>}, 
 	      {?right_w_good,      <<"货品管理">>,   <<"wgood">>},
-	      {?right_w_report,    <<"报表管理">>,   <<"wreport">>},
-
+	      {?right_w_report,    <<"报表管理">>,   <<"wreport">>}, 
 	      %% rainbow
 	      {?right_rainbow,     <<"高级功能">>,  <<"rainbow">>},
-	      
 	      %% base setting
 	      {?right_w_base,      <<"基本设置">>, <<"wbase">>}
 	      
@@ -373,31 +365,19 @@ init([]) ->
 	 {?h_month_wreport, <<"月报表">>, <<"h_month_wreport">>, ?right_w_report}, 
 	 {?switch_shift_report, <<"交班报表">>, <<"switch_shift_report">>, ?right_w_report}, 
 	 {?syn_daily_report, <<"同步日报表">>, <<"syn_daily_report">>, ?right_w_report}, 
-	 {?export_month_report, <<"导出月报表">>, <<"export_month_report">>, ?right_w_report}
-	 
-	 %% {?weekly_wreport,
-	 %%  <<"周报表">>,   <<"weekly_wreport">>, ?right_w_report},
-	 %% {?monthly_wreport,
-	 %%  <<"月报表">>,   <<"monthly_wreport">>, ?right_w_report},
-	 %% {?quarter_wreport,
-	 %%  <<"季度报表">>, <<"quarter_wreport">>, ?right_w_report},
-	 %% {?half_wreport,
-	 %%  <<"年中报表">>, <<"half_wreport">>, ?right_w_report},
-	 %% {?year_wreport,
-	 %%  <<"年报表">>,  <<"year_wreport">>, ?right_w_report} 
+	 {?export_month_report, <<"导出月报表">>, <<"export_month_report">>, ?right_w_report} 
 	],
     
     %% rainbow
     Rainbow =
-	[
-	 %% {?inventory_eifo_onreject,
-	 %% <<"退货后进先出">>, <<"inventory_eifo">>, ?right_rainbow},
-	 {?wsale_modify_price_onsale,
+	[{?wsale_modify_price_onsale,
 	  <<"开单修改价格">>, <<"wsale_modify_price">>,  ?right_rainbow},
 	 {?wsale_modify_discount_onsale,
-	  <<"开单修改折扣">>, <<"wsale_modify_discount">>, ?right_rainbow},
+	  <<"开单修改折扣">>, <<"wsale_modify_discount">>, ?right_rainbow}, 
 	 {?stock_show_orgprice,
-	  <<"查看成本价">>, <<"stock_show_orgprice">>, ?right_rainbow}
+	  <<"查看成本价">>, <<"stock_show_orgprice">>, ?right_rainbow},
+	 {?sms_notify,
+	  <<"短信提醒">>, <<"sms_notify">>, ?right_rainbow}
 	],
 
     %% base setting

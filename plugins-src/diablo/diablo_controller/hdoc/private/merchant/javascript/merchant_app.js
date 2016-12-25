@@ -17,6 +17,10 @@ merchantApp.config(['$routeProvider', function($routeProvider){
 	    templateUrl: '/private/merchant/html/merchant_new.html',
             controller: 'merchantNewCtrl'
 	}).
+	when('/merchant_sms', {
+	    templateUrl: '/private/merchant/html/merchant_sms.html',
+            controller: 'merchantSMSCtrl'
+	}).
 	otherwise({
 	    templateUrl: '/private/merchant/html/merchant_detail.html',
             controller: 'merchantDetailCtrl'
@@ -34,6 +38,7 @@ merchantApp.service("merchantService", function($resource, dateFilter){
     this.error = {
 	1201: "商家创建失败，已存在同样的商家名称！！",
 	1202: "删除商家失败，请先删除该商家对应的所有帐户！！",
+	1203: "商家费率信息已建立！！",
 	1299: "商家修改前后信息一致，无需修改！！",
 	9001: "数据库操作失败，请联系服务人员！！"};
 
@@ -85,11 +90,29 @@ merchantApp.service("merchantService", function($resource, dateFilter){
 	    {operation: "update_merchant", id: one.id},
 	    {mobile:    one.mobile}
 	)};
+
+    this.list_sms = function(){
+	return merchant.query({operation: "list_merchant_sms"}).$promise;
+    };
+
+    this.new_rate = function(merchantId, rate){
+	return merchant.save(
+	    {operation: "new_sms_rate"},
+	    {merchant: merchantId, rate: rate}).$promise;
+    };
+
+    this.charge_sms = function(merchantId, balance) {
+	return merchant.save(
+	    {operation: "charge_sms"},
+	    {merchant: merchantId, balance: balance}).$promise;
+    };
 });
 
 
 merchantApp.controller("merchantDetailCtrl", function(
     $scope, $routeParams, diabloUtilsService, merchantService){
+    var dialog = diabloUtilsService;
+    
     $scope.refresh = function(){
 	merchantService.list().$promise.then(function(merchants){
 	    console.log(merchants);
@@ -133,7 +156,36 @@ merchantApp.controller("merchantDetailCtrl", function(
 	
 	diabloUtilsService.edit_with_modal(
 	    "update-merchant.html", undefined, callback, $scope, {merchant: merchant});
-    }; 
+    };
+
+    $scope.charge = function(merchant){
+	var callback = function(params){
+	    console.log(params);
+	    merchantService.charge_sms(merchant.id, params.balance).then(function(result){
+		console.log(result);
+		if (result.ecode === 0){
+		    dialog.response_with_callback(
+	    		true,
+			"商家充值",
+			"商家 " + merchant.name + " 充值成功！！",
+	    		undefined,
+			function(){merchant.balance += params.balance});  
+		} else {
+		    dialog.response(
+	    		false,
+			"商家充值",
+	    		"商家充值失败：" + merchantService.error[result.ecode]);
+		}
+	    });
+	};
+	
+	dialog.edit_with_modal(
+	    "charge-sms.html",
+	    undefined,
+	    callback,
+	    undefined, 
+	    {name:merchant.name})
+    };
 
     $scope.delete_merchant = function(merchant){
 	diabloUtilsService.response(false, "删除商家", "暂不支持此操作！！", $scope);
@@ -143,14 +195,12 @@ merchantApp.controller("merchantDetailCtrl", function(
 merchantApp.controller("merchantNewCtrl", function(
     $scope, $location, merchantService, diabloPattern, diabloUtilsService){
     //$scope.merchant = {};
-    $scope.merchantTypes = merchantService.types;
-    // console.log($scope.merchantTypes);
-
+    var dialog = diabloUtilsService;
+    
+    $scope.merchantTypes = merchantService.types; 
     $scope.pattern_mobile=diabloPattern.mobile;
 
-    $scope.merchant = {
-	type: $scope.merchantTypes[0]
-    };
+    $scope.merchant = {type: $scope.merchantTypes[0]};
     
     // new merchant
     $scope.new_merchant = function(){
@@ -158,13 +208,13 @@ merchantApp.controller("merchantNewCtrl", function(
 	merchantService.add($scope.merchant).$promise.then(function(state){
 	    console.log(state);
 	    if (state.ecode == 0){
-	    	diabloUtilsService.response_with_callback(
+	    	dialog.response_with_callback(
 	    	    true, "新增商家",
 		    "恭喜你，商家 " + $scope.merchant.name + " 成功创建！！",
 	    	    $scope, function(){$location.path("/merchant_detail")}
 		);
 	    } else{
-	    	diabloUtilsService.response(
+	    	dialog.response(
 	    	    false, "新增商家",
 	    	    "新增商家失败：" + merchantService.error[state.ecode]);
 	    }
@@ -173,8 +223,51 @@ merchantApp.controller("merchantNewCtrl", function(
     
     $scope.cancel = function(){
 	$location.path("/merchant_detail")
-    };
+    }; 
+});
+
+merchantApp.controller("merchantSMSCtrl", function(
+    $scope, $routeParams, diabloUtilsService, merchantService){
+    var dialog = diabloUtilsService;
+    $scope.goto_page = diablo_goto_page;
     
+    $scope.refresh = function(){
+    	merchantService.list_sms().then(function(sms){
+	    console.log(sms);
+	    $scope.sms = sms;
+    	})
+    };
+
+    $scope.new_sms_rate = function(merchant){
+	var callback = function(params){
+	    console.log(params);
+	    merchantService.new_rate(merchant.id, params.rate).then(function(result){
+		console.log(result);
+		if (result.ecode === 0){
+		    dialog.response_with_callback(
+	    		true,
+			"新增短信费率",
+			"商家 " + merchant.name + " 短信费率创建成功！！",
+	    		undefined,
+			function(){merchant.rate = params.rate});  
+		} else {
+		    dialog.response(
+	    		false,
+			"新增短信费率",
+	    		"新增短信费率失败：" + merchantService.error[result.ecode]);
+		}
+	    });
+	};
+	
+	dialog.edit_with_modal(
+	    "new-rate.html",
+	    undefined,
+	    callback,
+	    undefined, 
+	    {name:merchant.name, rate: merchant.rate})
+    };
+
+    $scope.refresh();
 });
 
 merchantApp.controller("merchantCtrl", function($scope){});

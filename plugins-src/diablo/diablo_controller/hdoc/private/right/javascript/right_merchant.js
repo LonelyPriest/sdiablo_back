@@ -68,7 +68,7 @@ rightMerchantApp.controller(
 
 rightMerchantApp.controller(
     "roleMerchantDetailCtrl",
-    function($scope, $q, $modal, rightService, diabloUtilsService){
+    function($scope, $q, $uibModal, rightService, diabloUtilsService){
 	// console.log($scope);
 	$scope.roleTypeDesc = rightService.roleTypeDesc;
 	$scope.filter = {name:'', created_by:''};
@@ -77,7 +77,7 @@ rightMerchantApp.controller(
 
 	// get all role info
 	rightService.list_role().$promise.then(function(roles){
-	    console.log(roles);
+	    // console.log(roles);
 	    diablo_order(roles);
 	    $scope.roles = roles; 
 	});
@@ -89,7 +89,7 @@ rightMerchantApp.controller(
 	$scope.role_detail = function(role){
 	    console.log(role);
 	    rightService.get_right_by_role_id(role.id).$promise.then(function(data){
-		console.log(data);
+		// console.log(data);
 		var callback = function(rightTree){
 		    rightTree.reload();
 		    tree_utils.build_unselect_tree(rightTree, data);
@@ -124,7 +124,7 @@ rightMerchantApp.controller(
 	    $scope.modify_role = role;
 	    // build  role tree
 	    $q.all([all_right(), current_merchant_right(role)]).then(function(data){
-	    	console.log(data);
+	    	// console.log(data);
 
 		// data[0] is the all right
 	    	// data[1] is the current role's right
@@ -361,7 +361,7 @@ rightMerchantApp.controller(
 
 rightMerchantApp.controller(
     "accountMerchantDetailCtrl",
-    function($scope, $routeParams, $q, $modal, rightService, diabloUtilsService){
+    function($scope, $routeParams, $q, $uibModal, rightService, diabloUtilsService){
 	$scope.roleDesc = rightService.roleTypeDesc;
 	$scope.accountDesc = rightService.accountDesc;
 
@@ -370,7 +370,7 @@ rightMerchantApp.controller(
 	$scope.refresh = function(){
 	    // list
 	    rightService.list_account().$promise.then(function(accounts){
-		console.log(accounts);
+		// console.log(accounts);
 		diablo_order(accounts)
 		$scope.accounts = accounts;
 	    });
@@ -387,14 +387,14 @@ rightMerchantApp.controller(
 	    console.log(account);
 	    // get the roles of the account
 	    rightService.list_account_right(account).$promise.then(function(roles){
-		console.log(roles);
+		// console.log(roles);
 		// get the right of the role, now, one user has only one role
 		// so, use roles[0]
 		rightService.user_role_right(roles[0].role_id).then(function(data){
-		    console.log(data);
+		    // console.log(data);
 
 		    var callback = function(tree){
-			console.log(tree);
+			// console.log(tree);
 			tree.reload(); 
 			tree_utils.build_unselect_tree(tree, data[0]);
 			

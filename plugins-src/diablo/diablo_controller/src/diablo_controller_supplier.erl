@@ -667,7 +667,7 @@ handle_call({total_bill, Merchant, Conditions}, _From, State) ->
 	", sum(bill) as t_bill" 
 	", sum(veri) as t_veri" ,
     Sql = ?sql_utils:count_table(
-	     w_bill_detail, CountSql, Merchant, Conditions), 
+	     w_bill_detail, CountSql, Merchant, Conditions ++ [{<<"state">>, [0, 1]}]), 
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 

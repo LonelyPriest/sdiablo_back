@@ -20,7 +20,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
--export([merchant/2, merchant/3, lookup/0, lookup/1]).
+-export([merchant/2, merchant/3, lookup/0, lookup/1, sms/1, sms/3]).
 
 -define(SERVER, ?MODULE). 
 -define(tbl_merchant, "merchants").
@@ -48,7 +48,13 @@ lookup() ->
 lookup(Condition) ->
     gen_server:call(?MODULE, {lookup, Condition}).
 
+sms(list) ->
+    gen_server:call(?MODULE, list_sms).
 
+sms(new_rate, Merchant, Rate) ->
+    gen_server:call(?MODULE, {new_sms_rate, Merchant, Rate});
+sms(charge, Merchant, Balance) ->
+    gen_server:call(?MODULE, {charge_sms, Merchant, Balance}).
 
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
@@ -141,9 +147,8 @@ handle_call({update_merchant, Condition, Fields}, _From, State) ->
     {reply, ok, State};
 
 handle_call(lookup, _From, State) ->
-    ?DEBUG("lookup merchant all", []),
-    Sql = "select " ++ fields()
-	++ " from " ++ ?tbl_merchant ++ ";",
+    %% ?DEBUG("lookup merchant all", []),
+    Sql = "select " ++ fields() ++ " from " ++ ?tbl_merchant ++ ";",
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
@@ -162,7 +167,41 @@ handle_call({get_merchant, Merchant}, _From, State) ->
 	++ " where id=" ++  ?to_s(Merchant) ++";",
     {ok, Detail} = ?sql_utils:execute(s_read, Sql),
     {reply, {ok, Detail}, State};
-    
+
+handle_call(list_sms, _From, State) ->
+    Sql = "select a.id, a.name, a.mobile, a.balance, a.entry_date"
+	", b.rate, b.send"
+	" from merchants a"
+	" left join sms_notify b on a.id=b.merchant"
+	" order by a.id", 
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({new_sms_rate, Merchant, Rate}, _From, State) ->
+    Sql0 = "select id, merchant, rate from sms_notify"
+	" where merchant=" ++ ?to_s(Merchant),
+
+    case ?sql_utils:execute(s_read, Sql0) of
+	{ok, []} ->
+	    Sql = "insert into sms_notify(merchant, rate, send) values("
+		++ ?to_s(Merchant) ++ ","
+		++ ?to_s(Rate) ++ ","
+		++ ?to_s(0) ++ ")",
+	    Reply = ?sql_utils:execute(insert, Sql),
+	    {reply, Reply, State};
+	{ok, _} ->
+	    {reply, {error, ?err(sms_rate_exist, Merchant)}, State};
+	Error ->
+	    {reply, Error, State}
+    end;
+
+handle_call({charge_sms, Merchant, Balance}, _From, State) ->
+    Sql = "update merchants set balance=balance+" ++ ?to_s(Balance)
+	++ " where id=" ++ ?to_s(Merchant),
+
+    Reply = ?sql_utils:execute(write, Sql, Merchant),
+    {reply, Reply, State};
+
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
@@ -185,4 +224,4 @@ code_change(_OldVsn, State, _Extra) ->
 %%% Internal functions
 %%%===================================================================
 fields() ->
-    "id, name, owner, mobile, address, type, entry_date".
+    "id, name, owner, balance, mobile, address, type, entry_date".

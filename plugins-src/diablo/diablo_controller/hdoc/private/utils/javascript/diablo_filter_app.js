@@ -156,6 +156,9 @@ function filterProvider(){
 		} else if(name === 'fshop'){
 		    _filter.fields.push({name:"fshop", chinese:"店铺"});
 		    _prompt.fshop = promptValues;
+		} else if(name === 'tshop'){
+		    _filter.fields.push({name:"tshop", chinese:"店铺"});
+		    _prompt.tshop = promptValues;
 		} else if(name === 'region'){
 		    _filter.fields.push({name:"region", chinese:"区域"});
 		    _prompt.region = promptValues;

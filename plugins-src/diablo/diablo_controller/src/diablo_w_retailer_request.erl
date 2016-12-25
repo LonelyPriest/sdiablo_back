@@ -324,7 +324,7 @@ sidebar(Session) ->
 
     Ticket = case ?right_auth:authen(?filter_ticket_detail, Session) of
 		 {ok, ?filter_ticket_detail} ->
-		     [{"wretailer_ticket_detail", "电子卷", "glyphicon glyphicon-yen"}];
+		     [{"wretailer_ticket_detail", "电子卷", "glyphicon glyphicon-certificate"}];
 		 _ -> []
 	     end,
     

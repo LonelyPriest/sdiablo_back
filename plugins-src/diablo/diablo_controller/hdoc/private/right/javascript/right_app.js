@@ -127,7 +127,7 @@ rightApp.directive("roleEditTree", function(){
 });
 
 
-rightApp.service("rightService", function($resource, $q, $modal, dateFilter){
+rightApp.service("rightService", function($resource, $q, $uibModal, dateFilter){
     // right description
     this.roleType = {
 	merchant: 1,
@@ -160,7 +160,7 @@ rightApp.service("rightService", function($resource, $q, $modal, dateFilter){
 	9001: "数据库操作失败，请联系服务人员！！"};
 
     this.tree_modal = function(template, scope, tree_callback, tree_update){
-	$modal.open({
+	$uibModal.open({
             templateUrl: template,
             controller: 'roleTreeModalCtrl',
             backdrop: 'static',
@@ -408,9 +408,9 @@ rightApp.service("rightService", function($resource, $q, $modal, dateFilter){
 
 
 rightApp.controller("roleTreeModalCtrl", function(
-    $scope, $modalInstance, params, rightService){
-    console.log($scope);
-    console.log(params);
+    $scope, $uibModalInstance, params, rightService){
+    // console.log($scope);
+    // console.log(params);
     
     $scope.$watch("rightTree", function(newValue, oldValue){
 	if (angular.isUndefined(newValue)){
@@ -423,11 +423,11 @@ rightApp.controller("roleTreeModalCtrl", function(
     });
 
     $scope.cancel = function(){
-	$modalInstance.dismiss('cancel');
+	$uibModalInstance.dismiss('cancel');
     };
 
     $scope.ok = function() {
-	$modalInstance.dismiss('ok');
+	$uibModalInstance.dismiss('ok');
 	if (angular.isDefined(params.tree_update)
 	   && typeof(params.tree_update) === 'function'){
 	    params.tree_update();
