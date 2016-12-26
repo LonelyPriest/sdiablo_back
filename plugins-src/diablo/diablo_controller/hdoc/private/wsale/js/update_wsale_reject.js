@@ -97,7 +97,8 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 		filterEmployee).filter;
 
 	    $scope.select.has_pay = $scope.select.cash
-	    	+ $scope.select.card + $scope.select.withdraw; 
+	    	+ $scope.select.card + $scope.select.wxin
+		+ $scope.select.withdraw + $scope.select.ticket;
 	    $scope.select.left_balance = $scope.select.surplus;
 	    
 	    // inventory
@@ -384,6 +385,11 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 	    employee:       $scope.select.employee.id,
 	    
 	    balance:        parseFloat($scope.select.surplus),
+	    cash:           setv($scope.select.cash),
+	    card:           setv($scope.select.card),
+	    wxin:           setv($scope.select.wxin),
+	    ticket:         setv($scope.select.ticket),
+	    
 	    withdraw:       $scope.select.withdraw, 
 	    should_pay:     setv($scope.select.should_pay),
 	    comment:        sets($scope.select.comment),
@@ -391,8 +397,7 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 	    // old_shop:       $scope.old_select.shop.id,
 	    old_retailer:   $scope.old_select.retailer.id, 
 	    old_balance:    $scope.old_select.surplus,
-	    cash:           setv($scope.select.has_pay),
-	    // card:           setv($scope.select.card),
+	    
 	    old_should_pay: $scope.old_select.should_pay,
 	    old_withdraw:   $scope.old_select.withdraw,
 	    old_datetime:   dateFilter($scope.old_select.rsn_datetime, "yyyy-MM-dd HH:mm:ss"),
@@ -494,8 +499,9 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 	$scope.select.score     = calc.score;
 
 	// back to retailer
-	$scope.select.left_balance =
-	    $scope.select.surplus - $scope.select.withdraw; 
+	if ($scope.select.retailer.type===1){
+	    $scope.select.left_balance = $scope.select.surplus - $scope.select.withdraw; 
+	}
 	
 	console.log($scope.select);
     }; 
@@ -713,37 +719,7 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 	};
 
 	diabloUtilsService.edit_with_modal(
-	    "wsale-reject.html", modal_size, callback, undefined, payload);
-	    
-	// if (angular.isDefined(inv.has_query) && inv.has_query){
-	//     diabloUtilsService.edit_with_modal(
-	// 	"wsale-reject.html", modal_size, callback, undefined, payload)
-	// } else {
-	//     purchaserService.list_purchaser_inventory({
-	// 	style_number:inv.style_number,
-	// 	brand:inv.brand.id,
-	// 	shop:$scope.select.shop.id 
-	//     }).then(function(exists){
-	// 	console.log(exists);
-		
-	// 	var s = wsaleUtils.sort_amount(
-	// 	    exists, inv.amounts, $scope.colors);
-	// 	inv.amounts = s.amounts;
-	// 	inv.total   = s.total;
-	// 	inv.colors  = s.colors;
-	// 	inv.has_query = true;
-
-	// 	payload.colors = inv.colors;
-	// 	payload.amounts = inv.amounts; 
-	// 	dialog.edit_with_modal(
-	// 	    "wsale-reject.html",
-	// 	    modal_size,
-	// 	    callback,
-	// 	    undefined,
-	// 	    payload)
-	//     });
-	    
-	// } 
+	    "wsale-reject.html", modal_size, callback, undefined, payload); 
     };
 
     $scope.save_free_update = function(inv){

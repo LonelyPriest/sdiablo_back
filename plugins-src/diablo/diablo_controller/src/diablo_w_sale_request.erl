@@ -467,6 +467,7 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
 		    {<<"balance">>,    ?v(<<"balance">>, Sale)},
 		    {<<"cash">>,       ?v(<<"cash">>, Sale)},
 		    {<<"card">>,       ?v(<<"card">>, Sale)},
+		    {<<"wxin">>,       ?v(<<"wxin">>, Sale)},
 		    {<<"withdraw">>,   ?v(<<"withdraw">>, Sale)},
 		    {<<"ticket">>,     ?v(<<"ticket">>, Sale)},
 		    {<<"ticket_score">>, TicketScore},

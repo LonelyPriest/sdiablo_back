@@ -135,14 +135,26 @@
 	  
 	  <!--BEGIN row-->
 	  <div class="row diablo-form-group">
-	    <div class="col-sm-3 col-md-3"> 
+	    <!-- <div class="col-sm-3 col-md-3">  -->
+	    <!--   <div class="input-group"> -->
+	    <!-- 	<span class="input-group-addon"> -->
+	    <!-- 	  <i class="glyphicon glyphicon-plane fg-red"></i>总数</span>  -->
+	    <!-- 	<input class="form-control" -->
+	    <!-- 	       type="number" -->
+	    <!-- 	       readonly -->
+	    <!-- 	       x-ng-model="select.total"/ > -->
+	    <!--   </div> -->
+	    <!-- </div> -->
+
+	    <div class="col-sm-3 col-md-3">
 	      <div class="input-group">
-		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-plane fg-red"></i>总数</span> 
-		<input class="form-control"
-		       type="number"
-		       readonly
-	  	       x-ng-model="select.total"/ >
+	    	<span class="input-group-addon">
+	    	  <i class="glyphicon glyphicon-ban-circle fg-red"></i>核销</span>
+	    	<select class="form-control" type="text"
+			disabled
+	  		x-ng-model="select.verificate" 
+	  		x-ng-options="v for v in vpays">
+		</select>
 	      </div>
 	    </div>
 	    
@@ -167,17 +179,24 @@
 	      </div>
 	    </div>
 
-	    <div class="col-sm-3 col-md-3">
+	    <div class="col-xs-3 col-md-3"> 
 	      <div class="input-group">
-	    	<span class="input-group-addon">
-	    	  <i class="glyphicon glyphicon-ban-circle fg-red"></i>核销</span>
-	    	<select class="form-control" type="text"
-			disabled
-	  		x-ng-model="select.verificate" 
-	  		x-ng-options="v for v in vpays">
-		</select>
-	      </div>
-	    </div> 
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-qrcode fg-red"></i>微信</span>
+		<form name="select.form.wForm">
+		  <div ng-class="{'has-error':select.form.wForm.$invalid
+				 && !select.form.wForm.$pristine}">
+	  	    <input class="form-control"
+			   type="number" step="0.01"
+			   disable-key
+			   x-ng-pattern="pattern.money"
+	  		   x-ng-model="select.wxin"
+			   placeholder="微信" />
+		  </div>
+		</form>
+	      </div> 
+	    </div>
+	    
 	  </div> <!--END row-->
 
 	  <div x-ng-if="select.tbatch!==-1" class="row diablo-form-group"> 
@@ -255,6 +274,20 @@
 	      </div>
 	    </div>
 	  </div>
+
+	  <!-- <div class="row diablo-form-group">  -->
+	  <!--   <div class="col-sm-12 col-md-12"> -->
+	  <!--     <div class="input-group"> -->
+	  <!--   	<span class="input-group-addon"> -->
+	  <!--   	  <i class="glyphicon glyphicon-ban-circle fg-red"></i>核销</span> -->
+	  <!--   	<select class="form-control" type="text" -->
+	  <!-- 		disabled -->
+	  <!-- 		x-ng-model="select.verificate"  -->
+	  <!-- 		x-ng-options="v for v in vpays"> -->
+	  <!-- 	</select> -->
+	  <!--     </div> -->
+	  <!--   </div>  -->
+	  <!-- </div> -->
 	  
 	</div> <!--END table-toolbar-->
 	

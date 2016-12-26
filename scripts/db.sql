@@ -854,6 +854,7 @@ create table w_sale(
     -- has_pay        DECIMAL(10, 2) default 0, -- max: 99999999.99
     cash           DECIMAL(10, 2) default 0, -- max: 99999999.99
     card           DECIMAL(10, 2) default 0, -- max: 99999999.99
+    wxin           DECIMAL(10, 2) default 0, -- max: 99999999.99
     withdraw       DECIMAL(10, 2) default 0, -- max: 99999999.99
     ticket         DECIMAL(10, 2) default 0, -- max: 99999999.99
     verificate     DECIMAL(10, 2) default 0, -- max: 99999999.99
@@ -1004,6 +1005,9 @@ create table w_change_shift(
     balance         DECIMAL(10, 2) not null default 0,
     cash            DECIMAL(10, 2) not null default 0,
     card            DECIMAL(10, 2) not null default 0,
+    wxin            DECIMAL(10, 2) not null default 0,
+    withdraw        DECIMAL(10, 2) not null default 0,
+    ticket          DECIMAL(10, 2) not null default 0,
 
     y_stock         INTEGER not null default -1, 
     stock           INTEGER not null default -1, 
@@ -1035,6 +1039,7 @@ create table w_daily_report(
     balance         DECIMAL(10, 2) not null default 0,
     cash            DECIMAL(10, 2) not null default 0,
     card            DECIMAL(10, 2) not null default 0,
+    wxin            DECIMAL(10, 2) not null default 0,
     veri            DECIMAL(10, 2) not null default 0,
     draw            DECIMAL(10, 2) not null default 0,
     ticket          DECIMAL(10, 2) not null default 0,

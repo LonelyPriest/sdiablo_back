@@ -29,6 +29,7 @@ var wsaleUtils = function(){
 	select.verificate = base.verificate; 
 	select.cash       = base.cash;
 	select.card       = base.card;
+	select.wxin       = base.wxin;
 	select.withdraw   = base.withdraw;
 	select.should_pay = base.should_pay;
 	

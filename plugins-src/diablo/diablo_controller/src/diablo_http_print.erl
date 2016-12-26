@@ -428,6 +428,7 @@ body_stastic(Brand, _Model, Column, _TotalBalance, Attrs, Vip, LastScore, STotal
     ?DEBUG("body_stastic with Attrs ~p, Column ~p, Vip ~p", [Attrs, Column, Vip]),
     Cash         = ?v(<<"cash">>, Attrs, 0),
     Card         = ?v(<<"card">>, Attrs, 0),
+    Wxin         = ?v(<<"wxin">>, Attrs, 0),
     Withdraw     = ?v(<<"withdraw">>, Attrs, 0),
     Ticket       = ?v(<<"ticket">>, Attrs, 0), 
     ShouldPay    = clean_zero(?v(<<"should_pay">>, Attrs, 0)),
@@ -447,8 +448,8 @@ body_stastic(Brand, _Model, Column, _TotalBalance, Attrs, Vip, LastScore, STotal
     AccScore     = Score + RealLastScore - TicketScore,
 
 
-    [NewTicket, NewWithdraw, NewCard, NewCash] = NewPays =
-	?w_sale:pay_order(ShouldPay, [Ticket, Withdraw, Card, Cash], []),
+    [NewTicket, NewWithdraw, NewWxin, NewCard, NewCash] = NewPays =
+	?w_sale:pay_order(ShouldPay, [Ticket, Withdraw, Wxin, Card, Cash], []),
     
     ?DEBUG("newPays ~p", [NewPays]), 
 
@@ -467,7 +468,12 @@ body_stastic(Brand, _Model, Column, _TotalBalance, Attrs, Vip, LastScore, STotal
 	   end
 	
 	++ ?to_s(abs(ShouldPay))
-	++ pay(style, abs(NewCash), abs(NewCard), abs(NewWithdraw), abs(NewTicket))
+	++ pay(style,
+	       abs(NewCash),
+	       abs(NewCard),
+	       abs(NewWithdraw),
+	       abs(NewTicket),
+	       abs(NewWxin))
 	++ br(Brand)
 
 	++ case Vip of 
@@ -772,9 +778,14 @@ field_name(<<"type">>)         -> "类型";
 field_name(<<"color">>)        -> "颜色";
 field_name(<<"size">>)         -> "尺码".
 
-pay(style, Cash, Card, Withdraw, Ticket) ->
-    ?DEBUG("cash ~p, card ~p, withdraw ~p, ticket ~p", [Cash, Card, Withdraw, Ticket]),
-    Pays = [pay(cash, Cash), pay(card, Card), pay(withdraw, Withdraw), pay(ticket, Ticket)], 
+pay(style, Cash, Card, Withdraw, Ticket, Wxin) ->
+    ?DEBUG("cash ~p, card ~p, withdraw ~p, ticket ~p, Wxin ~p",
+	   [Cash, Card, Withdraw, Ticket, Wxin]),
+    Pays = [pay(cash, Cash),
+	    pay(card, Card),
+	    pay(withdraw, Withdraw),
+	    pay(ticket, Ticket),
+	    pay(wxin, Wxin)], 
     lists:foldr(fun([], Acc) -> Acc;
 		   (S, Acc) -> pading(2) ++ S ++ Acc
 		end, [], Pays).
@@ -788,7 +799,9 @@ pay(withdraw, Withdraw) -> "提现：" ++ ?to_s(clean_zero(Withdraw));
 pay(veri, Veri) when Veri == 0-> [];
 pay(veri, Veri) -> "核销：" ++ ?to_s(clean_zero(Veri));
 pay(ticket, Ticket) when Ticket == 0 -> [];
-pay(ticket, Ticket) -> "券：" ++ ?to_s(clean_zero(Ticket)).
+pay(ticket, Ticket) -> "券：" ++ ?to_s(clean_zero(Ticket));
+pay(wxin, Wxin) when Wxin == 0 -> [];
+pay(wxin, Wxin) -> "微信：" ++ ?to_s(clean_zero(Wxin)).
 
     
 bar_code(one, DigitString) ->

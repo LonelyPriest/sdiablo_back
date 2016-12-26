@@ -247,6 +247,7 @@ action(Session, Req, {"export_month_report"}, Payload) ->
 			 {<<"balance">>, ?v(<<"balance">>, D, 0)},
 			 {<<"cash">>, ?v(<<"cash">>, D, 0)},
 			 {<<"card">>, ?v(<<"card">>, D, 0)},
+			 {<<"wxin">>, ?v(<<"wxin">>, D, 0)},
 			 {<<"veri">>, ?v(<<"veri">>, D, 0)},
 			 {<<"draw">>, ?v(<<"draw">>, D, 0)},
 			 {<<"ticket">>, ?v(<<"ticket">>, D, 0)},
@@ -269,7 +270,7 @@ action(Session, Req, {"export_month_report"}, Payload) ->
 	%% ?DEBUG("reports ~p", [MonthReports]),
 	
 	{ok, ExportFile, Url} = ?utils:create_export_file("mreport", Merchant, UserId),
-	Calcs = erlang:list_to_tuple(lists:duplicate(20, 0)),
+	Calcs = erlang:list_to_tuple(lists:duplicate(21, 0)),
 	case file:open(ExportFile, [append, raw]) of
 	    {ok, Fd} -> 
 		try
@@ -392,7 +393,8 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 
     {ok, LastStockInfo} = ?w_report:stastic(last_stock_of_shop, Merchant, ShopId, TodayStart), 
 
-    {SellTotal, SellBalance, SellCash, SellCard} = sell(info, SaleInfo),
+    {SellTotal, SellBalance, SellCash, SellCard, SellWxin, SellDraw, SellTicket}
+	= sell(info, SaleInfo),
     CurrentStockTotal = stock(total, StockR), 
     LastStockTotal = stock(last_total, LastStockInfo),
     StockInTotal = stock(total, StockIn),
@@ -415,7 +417,7 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 	    {ok, []} -> 
 		{insert,
 		 "insert into w_change_shift(merchant, employ, shop"
-		 ", total, balance, cash, card"
+		 ", total, balance, cash, card, wxin, withdraw, ticket"
 		 ", stock, y_stock, stock_in, stock_out"
 		 ", pcash, pcash_in"
 		 ", comment, entry_date) values("
@@ -430,7 +432,10 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 		 ++ ?to_s(SellBalance) ++ ","
 		 ++ ?to_s(SellCash) ++ ","
 		 ++ ?to_s(SellCard) ++ ","
-
+		 ++ ?to_s(SellWxin) ++ ","
+		 ++ ?to_s(SellDraw) ++ ","
+		 ++ ?to_s(SellTicket) ++ ","
+		 
 		 ++ ?to_s(CurrentStockTotal) ++ ","
 		 ++ ?to_s(LastStockTotal) ++ "," 
 		 ++ ?to_s(StockInTotal) ++ ","
@@ -448,7 +453,10 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 		 ++ ", balance="++ ?to_s(SellBalance)
 		 ++ ", cash="++ ?to_s(SellCash)
 		 ++ ", card="++ ?to_s(SellCard)
-
+		 ++ ", wxin="++ ?to_s(SellWxin)
+		 ++ ", withdraw="++ ?to_s(SellDraw)
+		 ++ ", ticket="++ ?to_s(SellTicket)
+		 
 		 ++ ", stock=" ++ ?to_s(CurrentStockTotal)
 		 ++ ", stock_in=" ++ ?to_s(StockInTotal)
 		 ++ ", stock_out=" ++ ?to_s(StockOutTotal)
@@ -489,6 +497,9 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 		    ++ "营业额：" ++ ?to_s(SellBalance) ++ ?f_print:br(Brand) 
 		    ++ "现金  ：" ++ ?to_s(SellCash) ++ ?f_print:br(Brand)
 		    ++ "刷卡  ：" ++ ?to_s(SellCard) ++ ?f_print:br(Brand)
+		    ++ "微信  ：" ++ ?to_s(SellWxin) ++ ?f_print:br(Brand)
+		    ++ "提现  ：" ++ ?to_s(SellDraw) ++ ?f_print:br(Brand)
+		    ++ "电子券：" ++ ?to_s(SellTicket) ++ ?f_print:br(Brand)
 		    ++ ?f_print:br(Brand)
 
 		    ++ "<C>" ++ ?f_print:line(equal, FillLen)
@@ -653,12 +664,15 @@ time_of_end_day() ->
 
 
 sell(info, [])->
-    {0, 0, 0, 0};
+    {0, 0, 0, 0, 0, 0, 0};
 sell(info, [{SaleInfo}])->
     {?v(<<"total">>, SaleInfo, 0),
      ?v(<<"spay">>, SaleInfo, 0),
      ?v(<<"cash">>, SaleInfo, 0),
-     ?v(<<"card">>, SaleInfo, 0)}.
+     ?v(<<"card">>, SaleInfo, 0),
+     ?v(<<"wxin">>, SaleInfo, 0),
+     ?v(<<"draw">>, SaleInfo, 0),
+     ?v(<<"ticket">>, SaleInfo, 0)}.
 
 stock(total, []) ->
     0;
@@ -679,14 +693,14 @@ yestoday(Datetime) when is_binary(Datetime)->
     
 csv_head(month_report, Do) ->
     Do("序号,店铺,库存,库存成本"
-       ",销售数量,销售金额,销售成本,现金,刷卡,提现,电子卷,核销"
+       ",销售数量,销售金额,销售成本,现金,刷卡,微信,提现,电子卷,核销"
        ",入库数量,入库成本,出库数量,出库成本"
        ",调入数量,调入成本,调出数量,调出成本"
        ",盘点数量,盘点成本").
 
 do_write(month_report, Do, _Count, [], Calcs) ->
     {CStockc, CStockCost,
-     CSell, CSellCost, CBalance, CCash, CCard, CDraw, CTicket, CVeri,
+     CSell, CSellCost, CBalance, CCash, CCard, CWxin, CDraw, CTicket, CVeri,
      CStockIn, CStockOut, CStockInCost, CStockOutCost,
      CTStockIn, CTStockOut, CTStockInCost, CTStockOutCost,
      CStockFix, CStockFixCost} = Calcs,
@@ -702,6 +716,7 @@ do_write(month_report, Do, _Count, [], Calcs) ->
        ++ ?to_s(CSellCost) ++ ?d
        ++ ?to_s(CCash) ++ ?d
        ++ ?to_s(CCard) ++ ?d
+       ++ ?to_s(CWxin) ++ ?d
        ++ ?to_s(CDraw) ++ ?d
        ++ ?to_s(CTicket) ++ ?d
        ++ ?to_s(CVeri) ++ ?d
@@ -729,6 +744,7 @@ do_write(month_report, Do, Count, [{H}|T], Calcs) ->
     Balance = ?v(<<"balance">>, H),
     Cash = ?v(<<"cash">>, H),
     Card = ?v(<<"card">>, H),
+    Wxin = ?v(<<"wxin">>, H),
     Draw = ?v(<<"draw">>, H),
     Ticket = ?v(<<"ticket">>, H),
     Veri = ?v(<<"veri">>, H), 
@@ -757,6 +773,7 @@ do_write(month_report, Do, Count, [{H}|T], Calcs) ->
 	++ ?to_s(SellCost) ++ ?d
 	++ ?to_s(Cash) ++ ?d
 	++ ?to_s(Card) ++ ?d
+	++ ?to_s(Wxin) ++ ?d
 	++ ?to_s(Draw) ++ ?d
 	++ ?to_s(Ticket) ++ ?d
 	++ ?to_s(Veri) ++ ?d
@@ -777,7 +794,7 @@ do_write(month_report, Do, Count, [{H}|T], Calcs) ->
     Do(L),
 
     {CStockc, CStockCost,
-     CSell, CSellCost, CBalance, CCash, CCard, CDraw, CTicket, CVeri,
+     CSell, CSellCost, CBalance, CCash, CCard, CWxin, CDraw, CTicket, CVeri,
      CStockIn, CStockOut, CStockInCost, CStockOutCost,
      CTStockIn, CTStockOut, CTStockInCost, CTStockOutCost,
      CStockFix, CStockFixCost} = Calcs,
@@ -790,6 +807,7 @@ do_write(month_report, Do, Count, [{H}|T], Calcs) ->
 					      CBalance + Balance,
 					      CCash + Cash,
 					      CCard + Card,
+					      CWxin + Wxin,
 					      CDraw + Draw,
 					      CTicket + Ticket,
 					      CVeri + Veri,

@@ -132,6 +132,49 @@
 	  </div> <!--END row-->
 
 	  <!--BEGIN row-->
+	  <div class="row diablo-form-group">
+	    <div class="col-xs-3 col-md-3"> 
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-yen fg-red"></i>现金</span>
+	  	<input class="form-control"
+		       type="number"
+		       readonly
+	  	       x-ng-model="select.cash"/>
+	      </div>
+	    </div>
+	    
+	    <div class="col-xs-3 col-md-3"> 
+	      <div class="input-group"> 
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-credit-card fg-red"></i>刷卡</span>
+	  	<input class="form-control" type="number" readonly
+	  	       x-ng-model="select.card"/>
+	      </div>
+	    </div>
+
+	    <div class="col-xs-3 col-md-3"> 
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-qrcode fg-red"></i>微信</span>
+	  	<input class="form-control"
+		       type="number"
+		       readonly
+	  	       x-ng-model="select.wxin"/>
+	      </div>
+	    </div>
+
+	    <div class="col-xs-3 col-md-3"> 
+	      <div class="input-group"> 
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-file fg-red"></i>纸券</span>
+	  	<input class="form-control" type="number" readonly
+	  	       x-ng-model="select.ticket" />
+	      </div>
+	    </div> 
+	  </div> <!--END row-->
+
+	  <!--BEGIN row-->
 	  <div x-ng-if="select.retailer.type===1" class="row diablo-form-group">
 	    <div class="col-xs-3 col-md-3"> 
 	      <div class="input-group"> 

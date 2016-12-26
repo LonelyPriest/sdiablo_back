@@ -24,6 +24,8 @@
 
 -export([syn_report/3, sys_vip_of/2]).
 
+-export([gen_report/3]).
+
 -define(SERVER, ?MODULE).
 
 -record(state, {merchant :: [],
@@ -129,6 +131,7 @@ handle_cast({stastic_per_shop, TriggerTime},
 				      end}, 
 			  [?cron:cron(CronTask)|Acc] 
 		  end, [], Merchants),
+			  %% end, [], [4]),
 	    ?DEBUG("new tasks ~p with merchants ~p", [NewTasks, Merchants]),
 	    %% {noreply, #state{merchant=Merchants, task_of_per_shop=NewTasks}};
 	    {noreply, State#state{task_of_per_shop=NewTasks}};
@@ -219,7 +222,7 @@ syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) ->
 
     {ok, StockFix} = ?w_report:stastic(stock_fix, Merchant, Conditions),
 
-    {SellTotal, SellBalance, SellCash, SellCard, SellVeri, SellDraw, SellTicket}
+    {SellTotal, SellBalance, SellCash, SellCard, SellWxin, SellVeri, SellDraw, SellTicket}
 	= sell(info, SaleInfo),
     {SellCost} = sell(cost, SaleProfit),
 
@@ -249,7 +252,7 @@ syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) ->
 		{ok, []} ->		    
 		    Sql1 = 
 			"insert into w_daily_report(merchant, shop"
-			", sell, sell_cost, balance, cash, card, veri, draw, ticket"
+			", sell, sell_cost, balance, cash, card, wxin, veri, draw, ticket"
 			", stock, stockc, stock_cost"
 			", stock_in, stock_out, stock_in_cost, stock_out_cost"
 			", t_stock_in, t_stock_out, t_stock_in_cost, t_stock_out_cost"
@@ -263,6 +266,7 @@ syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) ->
 			++ ?to_s(SellBalance) ++ ","
 			++ ?to_s(SellCash) ++ ","
 			++ ?to_s(SellCard) ++ ","
+			++ ?to_s(SellWxin) ++ ","
 			++ ?to_s(SellVeri) ++ ","
 			++ ?to_s(SellDraw) ++ ","
 			++ ?to_s(SellTicket) ++ ","
@@ -294,6 +298,7 @@ syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) ->
 			++ ?utils:v(balance, float, SellBalance)
 			++ ?utils:v(cash, float, SellCash)
 			++ ?utils:v(card, float, SellCard)
+			++ ?utils:v(wxin, float, SellWxin)
 			++ ?utils:v(draw, float, SellDraw)
 			++ ?utils:v(ticket, float, SellTicket)
 			++ ?utils:v(veri, float, SellVeri)
@@ -452,6 +457,8 @@ gen_shop_report(_Datetime, M, [], Sqls) ->
     ?DEBUG("merchant ~p gen sql ~p", [M, Sqls]),
     {M, Sqls};
 gen_shop_report({StartTime, EndTime, GenDatetime}, M, [S|Shops], Sqls) ->
+    %% ?DEBUG("gen_shop_report with merchant ~p, shop ~p, startTime ~p, endTime ~p, genTime ~p",
+    %% 	   [M, S, StartTime, EndTime, GenDatetime]),
     ShopId  = ?v(<<"id">>, S),
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, M, ShopId), 
     IsShopDailyReport = ?v(<<"d_report">>, BaseSetting, 1),
@@ -486,7 +493,7 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [S|Shops], Sqls) ->
 			       {<<"start_time">>, ?v(<<"qtime_start">>, BaseSetting)}
 			      ]),
 
-	    {SellTotal, SellBalance, SellCash, SellCard, SellVeri, SellDraw, SellTicket}
+	    {SellTotal, SellBalance, SellCash, SellCard, SellWxin, SellVeri, SellDraw, SellTicket}
 		= sell(info, SaleInfo),
 	    {SellCost} = sell(cost, SaleProfit),
 
@@ -516,7 +523,7 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [S|Shops], Sqls) ->
 			{ok, []} ->
 			    Sql = 
 				"insert into w_daily_report(merchant, shop"
-				", sell, sell_cost, balance, cash, card, draw, ticket, veri"
+				", sell, sell_cost, balance, cash, card, wxin, draw, ticket, veri"
 				", stock, stockc, stock_cost"
 				", stock_in, stock_out, stock_in_cost, stock_out_cost"
 				", t_stock_in, t_stock_out, t_stock_in_cost, t_stock_out_cost"
@@ -530,6 +537,7 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [S|Shops], Sqls) ->
 				++ ?to_s(SellBalance) ++ ","
 				++ ?to_s(SellCash) ++ ","
 				++ ?to_s(SellCard) ++ ","
+				++ ?to_s(SellWxin) ++ ","
 				++ ?to_s(SellDraw) ++ ","
 				++ ?to_s(SellTicket) ++ ","
 				++ ?to_s(SellVeri) ++ ","
@@ -561,6 +569,7 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [S|Shops], Sqls) ->
 				++ ?utils:v(balance, float, SellBalance)
 				++ ?utils:v(cash, float, SellCash)
 				++ ?utils:v(card, float, SellCard)
+				++ ?utils:v(wxin, float, SellWxin)
 				++ ?utils:v(draw, float, SellDraw)
 				++ ?utils:v(ticket, float, SellTicket)
 				++ ?utils:v(veri, float, SellVeri)
@@ -593,6 +602,7 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [S|Shops], Sqls) ->
 		    end
 	    end;
 	0 ->
+	    %% ?DEBUG("daily report does not opend ~p", [S]),
 	    gen_shop_report({StartTime, EndTime, GenDatetime}, M, Shops, Sqls)
     end.
 
@@ -606,7 +616,7 @@ get_stock(calc, Merchant, Conditions) ->
     {ok, StockTransferOut} = ?w_report:stastic(stock_transfer_out, Merchant, Conditions),
     {ok, StockFix} = ?w_report:stastic(stock_fix, Merchant, Conditions),
 
-    {SellTotal, _SellBalance, _SellCash, _SellCard, _SellVeri, _SellDraw, _SellTicket}
+    {SellTotal, _SellBalance, _SellCash, _SellCard, _SellWxin, _SellVeri, _SellDraw, _SellTicket}
 	= sell(info, SaleInfo),
     {SellCost} = sell(cost, SaleProfit),
 
@@ -666,12 +676,13 @@ day(begin_to_end, {Year, Month, Day}) ->
 
 
 sell(info, [])->
-    {0, 0, 0, 0, 0, 0, 0};
+    {0, 0, 0, 0, 0, 0, 0, 0};
 sell(info, [{SaleInfo}])->
     {?v(<<"total">>, SaleInfo, 0),
      ?v(<<"spay">>, SaleInfo, 0),
      ?v(<<"cash">>, SaleInfo, 0),
      ?v(<<"card">>, SaleInfo, 0),
+     ?v(<<"wxin">>, SaleInfo, 0),
      ?v(<<"veri">>, SaleInfo, 0),
      ?v(<<"draw">>, SaleInfo, 0),
      ?v(<<"ticket">>, SaleInfo, 0)

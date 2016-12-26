@@ -118,13 +118,19 @@ var reportPrint = function(){
 	    LODOP.ADD_PRINT_LINE(hLine,135,hLine,178,0,1); 
 	    hLine += 15;
 	    
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"数量：" + sale.total);
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"数量  ：" + sale.total);
 	    hLine += 15;
 	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"营业额：" + sale.spay);
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"现金：" + sale.cash);
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"现金  ：" + sale.cash);
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"刷卡：" + sale.card); 
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"刷卡  ：" + sale.card); 
+	    hLine += 15;
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"微信  ：" + sale.wxin); 
+	    hLine += 15;
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"提现  ：" + sale.draw); 
+	    hLine += 15;
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"电子券：" + sale.ticket); 
 	    hLine += 15;
 
 

@@ -91,6 +91,7 @@ wreportApp.controller("wreportDailyCtrl", function(
 			spay:0,
 			cash:0,
 			card:0,
+			wxin:0,
 			draw:0,
 			ticket:0,
 			veri:0,
@@ -141,6 +142,7 @@ wreportApp.controller("wreportDailyCtrl", function(
 			
 			$scope.total.cash += reportUtils.to_float(s.sale.cash);
 			$scope.total.card += reportUtils.to_float(s.sale.card);
+			$scope.total.wxin += reportUtils.to_float(s.sale.wxin);
 			$scope.total.draw += reportUtils.to_float(s.sale.draw);
 			$scope.total.ticket += reportUtils.to_float(s.sale.ticket);
 			$scope.total.veri += reportUtils.to_float(s.sale.veri);
@@ -440,6 +442,7 @@ wreportApp.controller("realStasticController", function(
 			cost:0,
 			cash:0,
 			card:0,
+			wxin:0,
 			draw:0,
 			ticket:0,
 			veri:0,
@@ -516,6 +519,7 @@ wreportApp.controller("realStasticController", function(
 			$scope.total.cost += to_f(s.stockSale.cost);
 			$scope.total.cash += to_f(s.stockSale.cash);
 			$scope.total.card += to_f(s.stockSale.card);
+			$scope.total.wxin += to_f(s.stockSale.wxin);
 			$scope.total.draw += to_f(s.stockSale.draw);
 			$scope.total.ticket += to_f(s.stockSale.ticket);
 			$scope.total.veri += to_f(s.stockSale.veri);
@@ -551,6 +555,7 @@ wreportApp.controller("realStasticController", function(
 		    $scope.total.cost = to_decimal($scope.total.cost);
 		    $scope.total.cash = to_decimal($scope.total.cash);
 		    $scope.total.card = to_decimal($scope.total.card);
+		    $scope.total.wxin = to_decimal($scope.total.wxin);
 		    $scope.total.draw = to_decimal($scope.total.draw);
 		    $scope.total.card = to_decimal($scope.total.ticket);
 		    $scope.total.veri = to_decimal($scope.total.veri);

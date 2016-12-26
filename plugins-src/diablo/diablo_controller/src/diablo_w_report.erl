@@ -113,6 +113,7 @@ handle_call({total, by_shop, Merchant, Conditions}, _From, State) ->
 	", sum(should_pay) as t_spay"
 	", sum(cash) as t_cash"
 	", sum(card) as t_card"
+	", sum(wxin) as t_wxin"
 	", sum(withdraw) as t_withdraw"
 	", sum(ticket) as t_ticket",
     Sql = ?sql_utils:count_table(w_sale, CountSql, Merchant, Conditions), 
@@ -173,6 +174,7 @@ handle_call({total_of_daily, Merchant, Conditions}, _From, State) ->
 	", sum(balance) as balance"
 	", sum(cash) as cash"
 	", sum(card) as card"
+	", sum(wxin) as wxin"
 	", sum(draw) as draw" 
 	", sum(ticket) as ticket" 
 	", sum(veri) as veri"
@@ -233,6 +235,7 @@ handle_call({total_of_shift, Merchant, Conditions}, _From, State) ->
 	", sum(balance) as balance"
 	", sum(cash) as cash"
 	", sum(card) as card"
+	", sum(wxin) as wxin"
 
 	%% ", sum(stock_in) as stockIn"
 	%% ", sum(stock_out) as stockOut"
@@ -294,10 +297,11 @@ handle_call({stock_sale, Merchant, Conditions}, _From, State)->
     Sql = "select SUM(total) as total"
 	", SUM(should_pay) as spay"
 	", SUM(cash) as cash"
-	", SUM(Card) as card"
-	", SUM(Verificate) as veri"
+	", SUM(card) as card"
+	", SUM(wxin) as wxin"
 	", SUM(withdraw) as draw"
 	", SUM(ticket) as ticket"
+	", SUM(verificate) as veri" 
 	", shop as shop_id"
 	" from w_sale "
 	" where merchant=" ++ ?to_s(Merchant)
@@ -480,6 +484,7 @@ handle_call({month_report_by_shop, Merchant, Conditions}, _From, State) ->
 	", SUM(balance) as balance"
 	", SUM(cash) as cash"
 	", SUM(card) as card"
+	", SUM(wxin) as wxin"
 	", SUM(veri) as veri"
 	", SUM(draw) as draw"
 	", SUM(ticket) as ticket"

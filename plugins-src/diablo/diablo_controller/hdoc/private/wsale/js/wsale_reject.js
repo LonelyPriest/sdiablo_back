@@ -81,7 +81,8 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 		// $scope.old_select = wsale.select;
 		$scope.select = angular.extend($scope.select, wsale.select);
 		$scope.select.has_pay = $scope.select.cash
-		    + $scope.select.card + $scope.select.withdraw + $scope.select.ticket; 
+		    + $scope.select.card + $scope.select.wxin
+		    + $scope.select.withdraw + $scope.select.ticket;
 		$scope.select.left_balance = $scope.select.surplus; 
 		console.log($scope.select);
 
@@ -353,6 +354,7 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 	    should_pay:    setv($scope.select.rcharge),
 	    cash:          setv($scope.select.cash),
 	    card:          setv($scope.select.card),
+	    wxin:          setv($scope.select.wxin),
 	    ticket:        setv($scope.select.ticket),
 	    withdraw:      setv($scope.select.withdraw),
 	    verificate:    $scope.select.verificate,

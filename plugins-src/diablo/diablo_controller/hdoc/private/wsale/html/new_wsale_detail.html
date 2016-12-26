@@ -112,6 +112,7 @@
 		    </th>
 		    <th x-ng-if="show.balance">现金</th>
 		    <th x-ng-if="show.balance">刷卡</th>
+		    <th x-ng-if="show.balance">微信</th>
 		    <th x-ng-if="show.balance">提现</th>
 		    <th x-ng-if="show.balance">电子卷</th> 
 		    <th x-ng-if="show.balance">核销</th> 
@@ -153,6 +154,7 @@
 		    
 		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.cash}}</td>
 		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.card}}</td>
+		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.wxin}}</td>
 		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.withdraw}}</td>
 		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.ticket}}</td> 
 		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.verificate}}</td>
@@ -213,6 +215,7 @@
 		    <td></td>
 		    <td x-ng-if="show.balance">{{total_cash}}</td>
 		    <td x-ng-if="show.balance">{{total_card}}</td>
+		    <td x-ng-if="show.balance">{{total_wxin}}</td>
 		    <td x-ng-if="show.balance">{{total_withdraw}}</td>
 		    <td x-ng-if="show.balance">{{total_ticket}}</td>
 		    <!-- <td>{{total_balance - total_withdraw}}</td>  -->

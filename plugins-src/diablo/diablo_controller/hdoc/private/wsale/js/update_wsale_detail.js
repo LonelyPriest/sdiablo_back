@@ -467,6 +467,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	    balance:       $scope.select.surplus, 
 	    cash:          setv($scope.select.cash),
 	    card:          setv($scope.select.card),
+	    wxin:          setv($scope.select.wxin),
 	    ticket:        setv($scope.select.ticket),
 	    withdraw:      setv($scope.select.withdraw),
 	    verificate:    setv($scope.select.verificate),
@@ -496,6 +497,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	if (added.length === 0
 	    && ($scope.select.cash === $scope.old_select.cash
 		&& $scope.select.card === $scope.old_select.card
+		&& $scope.select.wxin === $scope.old_select.wxin
 		&& $scope.select.withdraw === $scope.old_select.withdraw 
 		&& $scope.select.employee.id === $scope.old_select.employee.id
 		&& $scope.select.shop.id === $scope.old_select.shop.id
@@ -542,6 +544,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	$scope.select.has_pay = 0;	
 	$scope.select.has_pay += wsaleUtils.to_float($scope.select.cash); 
 	$scope.select.has_pay += wsaleUtils.to_float($scope.select.card);
+	$scope.select.has_pay += wsaleUtils.to_float($scope.select.wxin);
 
 	if ($scope.select.retailer.type === diablo_charge_retailer)
 	    $scope.select.has_pay += wsaleUtils.to_float($scope.select.withdraw);
@@ -560,6 +563,12 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
     $scope.$watch("select.card", function(newValue, oldValue){
 	if (newValue === oldValue || angular.isUndefined(newValue)) return;
 	if ($scope.select.form.cardForm.$invalid) return;
+	reset_payment(newValue); 
+    });
+
+    $scope.$watch("select.wxin", function(newValue, oldValue){
+	if (newValue === oldValue || angular.isUndefined(newValue)) return;
+	if ($scope.select.form.wForm.$invalid) return;
 	reset_payment(newValue); 
     });
 

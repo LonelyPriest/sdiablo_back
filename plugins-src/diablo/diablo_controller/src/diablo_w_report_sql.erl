@@ -20,6 +20,7 @@ sale(new_by_shop, Merchant, Conditions) ->
 	", sum(should_pay) as t_spay" 
 	", sum(cash) as t_cash"
 	", sum(card) as t_card"
+	", sum(wxin) as t_wxin"
 	%% ", sum(cbalance) as t_cbalance" 
 	", sum(withdraw) as t_withdraw"
 	
@@ -96,7 +97,7 @@ daily(detail, Merchant, Conditions) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
     
     "select id, merchant, shop as shop_id"
-	", sell, sell_cost as sellCost, balance, cash, card, draw, ticket, veri"
+	", sell, sell_cost as sellCost, balance, cash, card, wxin, draw, ticket, veri"
 	", stock, stockc, stock_cost as stockCost"
 	
 	", stock_in as stockIn, stock_in_cost as stockInCost"
@@ -124,7 +125,7 @@ shift(detail, Merchant, Conditions) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
 
     "select id, merchant, employ as employee_id, shop as shop_id"
-	", total as sell, balance, cash, card"
+	", total as sell, balance, cash, card, wxin"
 	
 	", y_stock, stock"
 
