@@ -20,7 +20,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
--export([merchant/2, merchant/3, lookup/0, lookup/1, sms/1, sms/3]).
+-export([merchant/2, merchant/3, lookup/0, lookup/1, sms/1, sms/2, sms/3]).
 
 -define(SERVER, ?MODULE). 
 -define(tbl_merchant, "merchants").
@@ -42,14 +42,20 @@ merchant(get, Merchant) ->
 merchant(update, Condition, Fields) ->
     gen_server:call(?MODULE, {update_merchant, Condition, Fields}).
 
-
 lookup() ->
     gen_server:call(?MODULE, lookup).
 lookup(Condition) ->
     gen_server:call(?MODULE, {lookup, Condition}).
 
 sms(list) ->
-    gen_server:call(?MODULE, list_sms).
+    gen_server:call(?MODULE, list_sms);
+sms(list_center) ->
+    gen_server:call(?MODULE, list_sms_center).
+
+sms(list, Merchant) ->
+    gen_server:call(?MODULE, {list_sms, Merchant});
+sms(list_center, Merchant) ->
+    gen_server:call(?MODULE, {list_sms_center, Merchant}).
 
 sms(new_rate, Merchant, Rate) ->
     gen_server:call(?MODULE, {new_sms_rate, Merchant, Rate});
@@ -172,18 +178,63 @@ handle_call(list_sms, _From, State) ->
     Sql = "select a.id, a.name, a.mobile, a.balance, a.entry_date"
 	", b.rate, b.send"
 	" from merchants a"
-	" left join sms_notify b on a.id=b.merchant"
+	" left join sms_rate b on a.id=b.merchant"
 	" order by a.id", 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
+handle_call({list_sms, Merchant}, _From, State) ->
+    Sql = "select a.id, a.name, a.mobile, a.balance, a.entry_date"
+	", b.rate, b.send"
+	" from merchants a, sms_rate b"
+	" where a.id=b.merchant"
+	" and a.id=" ++ ?to_s(Merchant),
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+handle_call(list_sms_center, _From, State) ->
+    Sql = "select a.id, a.merchant as mid, a.url, a.app_key, a.app_secret"
+	", a.sms_sign_name"
+	", a.sms_sign_method"
+	", a.sms_send_method"
+	", a.sms_template"
+	", a.sms_type"
+	", a.sms_version"
+	", b.name as merchant"
+	" from sms_center a"
+	" left join merchants b on a.merchant=b.id"
+	" order by a.id", 
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({list_sms_center, Merchant}, _From, State) ->
+    Sql = "select a.id, a.merchant as mid, a.url, a.app_key, a.app_secret"
+	", a.sms_sign_name"
+	", a.sms_sign_method"
+	", a.sms_send_method"
+	", a.sms_template"
+	", a.sms_type"
+	", a.sms_version"
+	", b.name as merchant"
+	" from sms_center a"
+	" left join merchants b on a.merchant=b.id", 
+    case ?sql_utils:execute(s_read, Sql ++ " where a.merchant=" ++ ?to_s(Merchant)) of
+	{ok, []} ->
+	    Reply = ?sql_utils:execute(s_read, Sql ++ " where a.merchant=-1"),
+	    {reply, Reply, State};
+	{ok, Center} ->
+	    {reply, {ok, Center}, State};
+	Error ->
+	    {reply, Error, State}
+    end;
+
 handle_call({new_sms_rate, Merchant, Rate}, _From, State) ->
-    Sql0 = "select id, merchant, rate from sms_notify"
+    Sql0 = "select id, merchant, rate from sms_rate"
 	" where merchant=" ++ ?to_s(Merchant),
 
     case ?sql_utils:execute(s_read, Sql0) of
 	{ok, []} ->
-	    Sql = "insert into sms_notify(merchant, rate, send) values("
+	    Sql = "insert into sms_rate(merchant, rate, send) values("
 		++ ?to_s(Merchant) ++ ","
 		++ ?to_s(Rate) ++ ","
 		++ ?to_s(0) ++ ")",

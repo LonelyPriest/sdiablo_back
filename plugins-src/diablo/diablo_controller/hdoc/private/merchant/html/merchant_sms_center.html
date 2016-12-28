@@ -1,0 +1,113 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="portlet box purple">
+
+      <div class="portlet-title">
+	<div class="caption">
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>
+	  短信中心配置
+	</div>
+
+	<div class="actions"> 
+	  <button class="btn blue reload"
+		  x-ng-click="refresh()">刷新
+	    <i class="icon icon-spinner fg-white"></i></button>
+	</div>
+      </div> 
+
+      <div class="portlet-body"> 
+	<div class="portlet-body">
+	  <div class="panel panel-default">
+	    <div class="table-responsive">
+	      <table class="table table-bordered table-striped table-hover
+			    table-condensed table-advanced">
+		<thead>
+		  <tr>
+		    <th>序号</th>
+		    <th>商家</th>
+		    <th>请求URL</th>
+		    <th>商户AppKey</th>
+		    <th>商户AppSecret</th>
+		    <th>商户签名</th>
+		    <th>商户签名算法</th>
+		    <th>短信发送方法</th>
+		    <th>短信模板</th>
+		    <th>短信类型</th>
+		    <th>短信版本</th>
+		    <th>操作</th>
+		  </tr>
+		</thead>
+		<tbody>
+		  <tr ng-repeat="c in centers">
+		    <td x-ng-bind=c.id></td>
+		    <td x-ng-switch on="c.mid">
+		      <span x-ng-switch-when=-1>系统默认</span>
+		      <span x-ng-switch-default>c.name</span>
+		    </td>
+		    <td x-ng-bind=c.url></td>
+		    <td x-ng-bind=c.app_key></td>
+		    <td x-ng-bind=c.app_secret></td>
+		    <td x-ng-bind=c.sms_sign_name></td>
+		    <td x-ng-bind=c.sms_sign_method></td>
+		    <td x-ng-bind=c.sms_send_method></td>
+		    <td x-ng-bind=c.sms_template></td>
+		    <td x-ng-bind=c.sms_type></td>
+		    <td x-ng-bind=c.sms_version></td>
+		    
+		    <td> 
+		      <button class="btn diablo-button btn-warning"
+			      x-ng-click="update_sms_center(s)">
+			<i class="glyphicon glyphicon-edit"></i></button>
+		    </td>
+		  </tr>
+		</tbody>
+
+	      </table>
+	    </div>
+
+	  </div>
+	</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script type="text/ng-template" id="new-rate.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    <h4 class="modal-title">
+      <span class="label label-sm label-primary">
+	新增短信费率（<span >{{params.name}}</span>）
+      </span>
+    </h4>
+  </div>
+
+  <!--BEGIN modal body-->
+  <div class="modal-body">
+    <form class="form-horizontal" name="rForm" novalidate>
+      <div class="form-group">
+	<label class="col-sm-2 col-md-2 control-label">费率（分）</label>
+	<div class="col-sm-8 col-md-8">
+	  <input class="form-control"
+		 required
+		 type="number"
+		 step="1"
+		 name="rate"
+		 class="form-control"
+		 x-ng-model="params.rate" /> 
+	</div>
+      </div>
+    </form> 
+    </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="rForm.$invalid"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
+</script>

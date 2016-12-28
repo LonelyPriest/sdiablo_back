@@ -78,7 +78,11 @@ get(promotion, Merchant) ->
 get(charge, Merchant) ->
     gen_server:call(?SERVER, {get_charge, Merchant});
 get(score, Merchant) ->
-    gen_server:call(?SERVER, {get_score, Merchant}).
+    gen_server:call(?SERVER, {get_score, Merchant});
+get(sms_rate, Merchant) ->
+    gen_server:call(?SERVER, {get_sms_rate, Merchant});
+get(sms_center, Merchant) ->
+    gen_server:call(?SERVER, {get_sms_center, Merchant}).
 
 
 
@@ -154,6 +158,8 @@ update(charge, Merchant) ->
     gen_server:cast(?SERVER, {update_charge, Merchant});
 update(score, Merchant) ->
     gen_server:cast(?SERVER, {update_score, Merchant});
+update(sms_rate, Merchant) ->
+    gen_server:cast(?SERVER, {update_sms_rate, Merchant});
 update(region, Merchant) ->
     gen_server:cast(?SERVER, {update_region, Merchant}).
 
@@ -203,6 +209,9 @@ handle_call({new_profile, Merchant}, _From, State) ->
 	{ok, Promotions}   = ?promotion:promotion(list, Merchant),
 	{ok, Charges}      = ?w_retailer:charge(list, Merchant),
 	{ok, Scores}       = ?w_retailer:score(list, Merchant),
+
+	{ok, SMSRate}      = ?merchant:sms(list, Merchant),
+	{ok, SMSCenter}    = ?merchant:sms(list_center, Merchant),
 	
 	%% good
 	%% Goods = ?w_inventory:purchaser_good(lookup, Merchant), 
@@ -227,7 +236,10 @@ handle_call({new_profile, Merchant}, _From, State) ->
 				  color       = Colors,
 				  promotion   = Promotions,
 				  charge      = Charges,
-				  score       = Scores
+				  score       = Scores,
+
+				  sms_rate    = SMSRate,
+				  sms_center  = SMSCenter
 				  %% good     = ?to_tl(Goods)
 				 }
 			  })
@@ -392,11 +404,7 @@ handle_call({get_setting_profile, Merchant, Shop}, _From, State) ->
     Setting =
 	case filter(Select, <<"shop">>, Shop) of
 	    [] -> filter(Select, <<"shop">>, -1);
-	    S -> S
-	    %% S  -> case Shop =/= -1 of
-	    %% 	      true -> [{S}] ++ [{filter(Select, <<"shop">>, -1)}];
-	    %% 	      false -> S
-	    %% 	  end
+	    S -> S 
 	end,
     %% ?DEBUG("Setting ~p", [Setting]),
     {reply, {ok, Setting}, State};
@@ -717,6 +725,16 @@ handle_call({get_score, Merchant}, _From, State) ->
     Select = select(MS, fun() -> ?w_retailer:score(list, Merchant) end),
     {reply, {ok, Select}, State};
 
+handle_call({get_sms_rate, Merchant}, _From, State) ->
+    MS = ms(Merchant, sms_rate),
+    Select = select(MS, fun() -> ?merchant:sms(list, Merchant) end),
+    {reply, {ok, Select}, State};
+
+handle_call({get_sms_center, Merchant}, _From, State) ->
+    MS = ms(Merchant, sms_center),
+    Select = select(MS, fun() -> ?merchant:sms(list_center, Merchant) end),
+    {reply, {ok, Select}, State};
+
 
 handle_call({set_default, Merchant, Shop}, _From, State) ->
     ?DEBUG("set default value of merchant ~p, shop ~p", [Merchant, Shop]),
@@ -845,6 +863,9 @@ handle_cast({Update, Merchant}, State) ->
 		    update_score ->
 			{ok, Scores} = ?w_retailer:score(list, Merchant),
 			Profile#wuser_profile{score=Scores};
+		    update_sms_rate ->
+			{ok, SMSRate}      = ?merchant:sms(list, Merchant),
+			Profile#wuser_profile{sms_rate=SMSRate};
 		    update_region ->
 			{ok, Regions}
 			    = ?shop:region(list, Merchant),
@@ -1006,10 +1027,27 @@ ms(Merchant, score) ->
       [{'==', '$1', ?to_i(Merchant)}],
       ['$2']
      }];
+ms(Merchant, sms_rate) ->
+    [{{'$1', #wuser_profile{merchant='$1', sms_rate='$2', _='_'}},
+      [{'==', '$1', ?to_i(Merchant)}],
+      ['$2']
+     }];
+ms(Merchant, sms_center) ->
+    [{{'$1', #wuser_profile{merchant='$1', sms_center='$2', _='_'}},
+      [{'==', '$1', ?to_i(Merchant)}],
+      ['$2']
+     }];
+
 ms(Merchant, region) ->
     [{{'$1', #wuser_profile{merchant='$1', region='$2', _='_'}},
       [{'==', '$1', ?to_i(Merchant)}],
       ['$2']
+     }].
+
+ms(Merchant, UserId, user) ->
+    [{{{'$1', '$2'}, '$3'},
+      [{'==', '$1', Merchant}, {'==', '$2', UserId}],
+      ['$3']
      }].
 
 select(user, MS, RetryFun) ->
@@ -1026,12 +1064,6 @@ select(user, MS, RetryFun) ->
 	end,
     %% ?DEBUG("select ~p", [ets:select(?WUSER_PROFILE, MS)]),
     Select.
-
-ms(Merchant, UserId, user) ->
-    [{{{'$1', '$2'}, '$3'},
-      [{'==', '$1', Merchant}, {'==', '$2', UserId}],
-      ['$3']
-     }].
 
 filter(L, Key, MatchValue) ->
     %% ?DEBUG("filter with L ~p, Key ~p, MatchValue ~p", [L, Key, MatchValue]),

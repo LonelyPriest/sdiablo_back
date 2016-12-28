@@ -140,6 +140,10 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 	2107: "该电子卷已被消费，请重新选择电子卷",
 	2108: "积分况换钱的方案有且只能有一个！！",
 	2109: "非法充值方案标识，请重新选择充值方案！！",
+	2501: "短信中心不存在，请联系服务人员！！",
+	2502: "短信发送失败，余额不足，请联系服务人员充值！！",
+	2503: "短信提醒服务没有开通，请联系服务人员开通该功能！！",
+	2599: "短信发送失败，请核对号码后人工重新发送！！",
 	2110: "该充值方案正在使用，请解挂该充值方案后再删除！！",
 	9001: "数据库操作失败，请联系服务人员！！"};
 
@@ -387,6 +391,10 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
     this.get_ticket_by_batch = function(batch) {
 	return http.save(
 	    {operation: "get_w_retailer_ticket"}, {batch:batch, mode:1}).$promise;
+    };
+
+    this.export_w_retailer = function(){
+	return http.save({operation: "export_w_retailer"}).$promise;
     };
     
 });

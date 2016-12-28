@@ -7,6 +7,7 @@
 
 -export([action/2, action/3, action/4]).
 
+-define(d, ?utils:seperator(csv)).
 
 %%--------------------------------------------------------------------
 %% @desc: GET action
@@ -162,12 +163,27 @@ action(Session, Req, {"del_w_retailer_charge"}, Payload) ->
 action(Session, Req, {"new_recharge"}, Payload) ->
     ?DEBUG("new_recharge with session ~p, payload ~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
-
     case ?w_retailer:charge(recharge, Merchant, Payload) of
-	{ok, SN} ->
+	{ok, {SN, Mobile, CBalance, Balance, Score}} -> 
 	    ?w_user_profile:update(retailer, Merchant),
-	    ?utils:respond(
-	       200, Req, ?succ(new_recharge, SN));
+	    try
+		{ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1), 
+		case ?to_i(?v(<<"recharge_sms">>, Setting, 0)) of
+		    0 -> ?utils:respond(200, Req, ?succ(new_recharge, SN),
+					[{<<"sms_code">>, 0}]);
+		    1 ->
+			{SMSCode, _} = 
+			    ?notify:sms_notify(Merchant, {Mobile, 0, CBalance, Balance, Score}),
+			?utils:respond(200,
+				       Req,
+				       ?succ(new_recharge, SN),
+				       [{<<"sms_code">>, SMSCode}]) 
+		end
+	    catch
+		_:{badmatch, _Error} ->
+		    {Code1, _} =  ?err(sms_send_failed, Merchant),
+		    ?utils:respond(200, Req, ?succ(new_recharge, SN), [{<<"sms_code">>, Code1}])
+	    end;
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;
@@ -299,6 +315,45 @@ action(Session, Req, {"add_w_retailer_score"}, Payload) ->
 	       200, Req, ?succ(add_retailer_score, Id));
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"export_w_retailer"}, Payload) ->
+    ?DEBUG("export_w_retailer with session ~p, payload ~p", [Session, Payload]),
+    Merchant    = ?session:get(merchant, Session),
+    UserId      = ?session:get(id, Session),
+    case ?w_retailer:retailer(list, Merchant) of
+	[] -> ?utils:respond(200, Req, ?err(wretailer_export_none, Merchant));
+	{ok, Retailers} ->
+	    {ok, ExportFile, Url}
+		= ?utils:create_export_file("retailer", Merchant, UserId),
+	    SysVips = ?gen_report:sys_vip_of(merchant, Merchant),
+	    ?DEBUG("sysvips ~p", [SysVips]),
+	    NewRetailers = [{R} || {R} <- Retailers, not lists:member(?v(<<"id">>, R), SysVips)],
+	    %% ?DEBUG("NewRetailers ~p", [NewRetailers]),
+
+	    case file:open(ExportFile, [append, raw]) of
+		{ok, Fd} ->
+		    try
+			DoFun = fun(C) -> ?utils:write(Fd, C) end,
+			csv_head(retailer, DoFun),
+			do_write(retailer, DoFun, 1, NewRetailers),
+			ok = file:datasync(Fd),
+			ok = file:close(Fd)
+		    catch
+			T:W -> 
+			    file:close(Fd),
+			    ?DEBUG("trace export:T ~p, W ~p~n~p",
+				   [T, W, erlang:get_stacktrace()]),
+			    ?utils:respond(200, Req, ?err(wretailer_export_error, W)) 
+		    end,
+		    ?utils:respond(200, object, Req,
+				   {[{<<"ecode">>, 0},
+				     {<<"url">>, ?to_b(Url)}]}); 
+		{error, Error} ->
+		    ?utils:respond(200, Req, ?err(wretailer_export_error, Error))
+	    end;
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
     end.
 
 sidebar(Session) -> 
@@ -332,4 +387,38 @@ sidebar(Session) ->
     L2 = ?menu:sidebar(level_2_menu, Recharge),
 
     L1 ++ L2.
+
+csv_head(retailer, Do) ->
+    Do("序号,名称,类型,联系方式,累计消费,累计积分,所在店铺,日期").
+
+do_write(retailer, _Do, _Count, []) ->
+    ok;
+do_write(retailer, Do, Count, [{H}|T]) ->
+    %% ?DEBUG("retailer ~p", [H]),
+    %% Id      = ?v(<<"id">>, H),
+    Name    = ?v(<<"name">>, H),
+    Type    = retailer_type(?v(<<"type_id">>, H)),
+    Mobile  = ?v(<<"mobile">>, H, []),
+    Consume = ?v(<<"consume">>, H),
+    Score   = ?v(<<"score">>, H),
+    Shop    = ?v(<<"shop">>, H),
+    Entry   = ?v(<<"entry_date">>, H), 
+
+    L = "\r\n"
+	++ ?to_s(Count) ++ ?d
+	++ ?to_s(Name) ++ ?d
+	++ ?to_s(Type) ++ ?d
+	++ ?to_s(Mobile) ++ ?d
+	++ ?to_s(Consume) ++ ?d
+	++ ?to_s(Score) ++ ?d
+	++ ?to_s(Shop) ++ ?d
+	++ ?to_s(Entry) ++ ?d,
+    
+    Do(L),
+    do_write(retailer, Do, Count + 1, T).
+
+retailer_type(0) -> "普通会员";
+retailer_type(1) -> "充值会员";
+retailer_type(_) -> "未知类型".
+		    
        

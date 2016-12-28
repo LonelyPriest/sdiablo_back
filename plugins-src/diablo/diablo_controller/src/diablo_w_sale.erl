@@ -145,7 +145,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 
     %% RPay       = ShouldPay - Withdraw - Ticket,
     
-    Sql0 = "select id, name, balance, score from w_retailer"
+    Sql0 = "select id, name, mobile, balance, score from w_retailer"
 	" where id=" ++ ?to_s(Retailer)
 	++ " and merchant=" ++ ?to_s(Merchant)
 	++ " and deleted=" ++ ?to_s(?NO),
@@ -211,7 +211,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 		    Sql3 = ["update w_retailer set consume=consume+" ++ ?to_s(ShouldPay)
 			    ++ case NewWithdraw =< 0 of
 				   true  -> [];
-				   false -> ", balance=balance-" ++ ?to_s(Withdraw)
+				   false -> ", balance=balance-" ++ ?to_s(NewWithdraw)
 			       end
 			    ++ case Score == 0 andalso TicketScore =< 0 of
 				   true  -> [];
@@ -229,8 +229,18 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 			   end,
 
 		    AllSql = Sql1 ++ [Sql2] ++ Sql3 ++ Sql4,
-		    Reply = ?sql_utils:execute(transaction, AllSql, SaleSn),
-		    {reply, Reply, State}
+		    case ?sql_utils:execute(transaction, AllSql, SaleSn) of
+			{ok, SaleSn} -> 
+			    {reply, {ok,
+				     {SaleSn,
+				      ?v(<<"mobile">>, Account),
+				      ShouldPay,
+				      CurrentBalance - NewWithdraw,
+				      ?v(<<"score">>, Account) + Score - TicketScore} 
+				    }, State};
+			Error ->
+			    {reply, Error, State}
+		    end 
 	    end;
 	Error ->
 	    {reply, Error, State}

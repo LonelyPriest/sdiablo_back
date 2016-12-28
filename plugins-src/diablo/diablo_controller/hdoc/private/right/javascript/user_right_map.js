@@ -60,7 +60,8 @@ var rightAuthen = {
 	return {
 	    delete_retailer: rightAuthen.root_right._retailer + 2, 
 	    reset_password: rightAuthen.root_right._retailer + 14,
-	    update_score: rightAuthen.root_right._retailer + 17
+	    update_score: rightAuthen.root_right._retailer + 17,
+	    export_retailer: rightAuthen.root_right._retailer + 21,
 	}
     },
 

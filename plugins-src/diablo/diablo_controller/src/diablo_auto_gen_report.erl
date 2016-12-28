@@ -742,9 +742,9 @@ sys_vip_of(merchant, Merchant) ->
 		      true ->
 			  SysVip = ?to_i(?v(<<"value">>, S)),
 			  %% ?DEBUG("sysvip ~p", [SysVip]),
-			  case lists:member(SysVip, Acc) of
-			      true -> Acc;
-			      false -> [SysVip] ++ Acc
+			  case SysVip /= 0 andalso not lists:member(SysVip, Acc) of
+			      true -> [SysVip] ++ Acc;
+			      false -> Acc 
 			  end;
 		      false -> Acc
 		  end

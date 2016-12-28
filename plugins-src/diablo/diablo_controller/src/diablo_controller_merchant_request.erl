@@ -42,6 +42,15 @@ action(Session, Req, {"list_merchant_sms"}) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"list_merchant_sms_center"}) ->
+    ?DEBUG("list_merchant_sms_center with session ~p", [Session]),
+    case ?merchant:sms(list_center) of
+	{ok, Centers} ->
+	    ?utils:respond(200, batch, Req, Centers);
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
 %% action(Session, Req, {"list_w_merchant"}) ->
 %%     ?DEBUG("list_w_merchant with session ~p", [Session]),
 %%     case ?merchant:lookup({<<"type">>, ?WHOLESALER}) of
@@ -114,7 +123,8 @@ sidebar() ->
        level_1_menu, 
        [{"merchant_new", "新增商家", "glyphicon glyphicon-plus"},
 	{"merchant_detail", "商家详情", "glyphicon glyphicon-briefcase"},
-	{"merchant_sms", "短信费用", "glyphicon glyphicon-send"}
+	{"merchant_sms_rate", "短信费率", "glyphicon glyphicon-yen"},
+	{"merchant_sms_center", "短信中心", "glyphicon glyphicon-send"}
        ]).
 
 

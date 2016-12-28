@@ -17,9 +17,13 @@ merchantApp.config(['$routeProvider', function($routeProvider){
 	    templateUrl: '/private/merchant/html/merchant_new.html',
             controller: 'merchantNewCtrl'
 	}).
-	when('/merchant_sms', {
+	when('/merchant_sms_rate', {
 	    templateUrl: '/private/merchant/html/merchant_sms.html',
             controller: 'merchantSMSCtrl'
+	}).
+	when('/merchant_sms_center', {
+	    templateUrl: '/private/merchant/html/merchant_sms_center.html',
+            controller: 'merchantSMSCenterCtrl'
 	}).
 	otherwise({
 	    templateUrl: '/private/merchant/html/merchant_detail.html',
@@ -105,6 +109,10 @@ merchantApp.service("merchantService", function($resource, dateFilter){
 	return merchant.save(
 	    {operation: "charge_sms"},
 	    {merchant: merchantId, balance: balance}).$promise;
+    };
+
+    this.list_sms_center = function(){
+	return merchant.query({operation: "list_merchant_sms_center"}).$promise;
     };
 });
 
@@ -265,6 +273,22 @@ merchantApp.controller("merchantSMSCtrl", function(
 	    callback,
 	    undefined, 
 	    {name:merchant.name, rate: merchant.rate})
+    };
+
+    $scope.refresh();
+});
+
+
+merchantApp.controller("merchantSMSCenterCtrl", function(
+    $scope, $routeParams, diabloUtilsService, merchantService){
+    var dialog = diabloUtilsService;
+    $scope.goto_page = diablo_goto_page;
+    
+    $scope.refresh = function(){
+    	merchantService.list_sms_center().then(function(centers){
+	    console.log(centers);
+	    $scope.centers = centers;
+    	})
     };
 
     $scope.refresh();

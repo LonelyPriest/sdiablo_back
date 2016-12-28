@@ -137,6 +137,7 @@
 -define(filter_ticket_detail,        ?right_w_retailer + 18).
 -define(effect_ticket,               ?right_w_retailer + 19).
 -define(consume_ticket,              ?right_w_retailer + 20).
+-define(export_w_retailer,             ?right_w_retailer + 21).
 
 %% shop
 -define(new_shop,       ?right_shop + 1).
@@ -394,6 +395,9 @@
 %% pool
 -define(wpool, diablo_work_pool_sup).
 
+%% sms notify
+-define(notify, diablo_sms_notify).
+
 -define(value(Key, Proplists),
 	diablo_controller_utils:value_from_proplists(Key, Proplists)).
 -define(value(Key, Proplists, Default),
@@ -461,7 +465,9 @@
 	  good        = [] :: list(),
 	  promotion   = [] :: list(),
 	  charge      = [] :: list(),
-	  score       = [] :: list()
+	  score       = [] :: list(),
+	  sms_rate    = [] :: list(),
+	  sms_center  = [] :: list()
 	  %% login_right = [] :: list(),
 	  %% login_shop  = [] :: list()
 	 }).

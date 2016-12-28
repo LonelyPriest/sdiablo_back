@@ -27,7 +27,7 @@
 	 multi_print/1, get_printer_state/4,
 	 multi_send/5]).
 
--export([title/3, get_printer/2]).
+-export([title/3, get_printer/2, bin2hex/2]).
 
 -export([test_barcode/1, bar_code/2, bar_code/5]).
 
@@ -905,3 +905,4 @@ test_barcode(DigitS) ->
     		<<"http://121.42.48.187:80/WPServer/printOrderAction">>,
     		1,
     		Body).
+    

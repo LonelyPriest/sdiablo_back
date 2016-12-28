@@ -85,7 +85,10 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	    user.type, rightAuthen.retailer_action()['delete_retailer'], user.right),
 	update_retailer_score: rightAuthen.authen(
 	    user.type, rightAuthen.retailer_action()['update_score'], user.right),
-	master: rightAuthen.authen_master(user.type)};
+	export_retailer: rightAuthen.authen(
+	    user.type, rightAuthen.retailer_action()['export_retailer'], user.right), 
+	master: rightAuthen.authen_master(user.type) 
+    };
 
     console.log($scope.right);
 
@@ -226,7 +229,7 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 		r.type = diablo_get_object(r.type_id, $scope.retailer_types);
 		r.birthday = r.birth.substr(5,8); 
 		r.birth = diablo_set_date_obj(r.birth);
-		r.shop  = diablo_get_object(r.shop_id, $scope.shops);
+		// r.shop  = diablo_get_object(r.shop_id, $scope.shops);
 		r.no_vip = in_array($scope.no_vips, r.id) ? true : false;
 		r.balance = diablo_rdight(r.balance, 2);
 		$scope.total_balance += r.balance;
@@ -365,7 +368,13 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 			    true,
 			    "会员充值",
 			    "会员 [" + retailer.name + "] 充分值成功，"
-				+ "帐户余额 [" + retailer.balance.toString() + " ]！！",
+				+ "帐户余额 [" + retailer.balance.toString() + " ]！！"
+				+ function(){
+				    if (result.sms_code !== 0)
+					return "发送短消息失败："
+					+ wretailerService.error[result.sms_code];
+				    else return ""; 
+				}(),
 			    undefined, function(){
 				if (diablo_frontend === retailerUtils.print_mode(
 				    params.retailer.select_shop.id, base)){
@@ -583,6 +592,23 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	dialog.edit_with_modal(
 	    "update-score.html", undefined, callback, undefined,
 	    {retailer:angular.extend(retailer, {nscore:retailer.score})});
+    };
+
+    $scope.export_retailer = function(){
+	wretailerService.export_w_retailer().then(function(state){
+	    if (state.ecode === 0){
+		dialog.response_with_callback(
+		    true,
+		    "文件导出成功",
+		    "创建文件成功，请点击确认下载！！",
+		    undefined,
+		    function(){window.location.href = state.url;})
+	    } else {
+		dialog.response(
+		    false, "文件导出失败", "创建文件失败："
+			+ wretailerService.error[state.ecode]);
+	    }
+	})
     };
 });
 

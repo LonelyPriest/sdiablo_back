@@ -409,6 +409,11 @@ error(invalid_charge_id, ChargeId) ->
     {2109, "invalid charge: " ++ ?to_s(ChargeId) ++ "."};
 error(charge_has_been_used, ChargeId) ->
     {2110, "this charge " ++ ?to_s(ChargeId) ++ " has been used."};
+error(wretailer_export_none, Merchant) ->
+    {2111, "no date to export of merchant: " ++ ?to_s(Merchant)};
+error(wretailer_export_error, Error) ->
+    {2112, "failed to export file: " ++ ?to_s(Error)};
+
 
 
 
@@ -471,6 +476,16 @@ error(printer_conn_not_found, Printer) ->
     {2422, "printer device " ++ ?to_s(Printer) ++ " not found."};
 error(print_size_not_include, Shop) ->
     {2423, "print field size must be include of shop " ++ ?to_s(Shop)};
+
+%% sms notify
+error(sms_center_not_found, Merchant) ->
+    {2501, "SMS center does not found: " ++ ?to_s(Merchant)};
+error(sms_not_enought_blance, Merchant) ->
+    {2502, "there is not enought balance of merchant: " ++ ?to_s(Merchant)};
+error(sms_rate_not_found, Merchant) ->
+    {2503, "SMS rate does not found: " ++ ?to_s(Merchant)}; 
+error(sms_send_failed, Reason) ->
+    {2599, "aile to send SMS: " ++ ?to_s(Reason)};
 
 %% base
 error(base_card_exist, CardNo) ->

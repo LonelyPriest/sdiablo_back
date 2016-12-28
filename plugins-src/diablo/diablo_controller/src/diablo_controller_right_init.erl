@@ -148,6 +148,9 @@ init([]) ->
 	 {?update_retailer_score, 
 	  <<"修改会员积分">>, <<"update_retailer_score">>, ?right_w_retailer},
 
+	 {?export_w_retailer, 
+	  <<"会员导出">>, <<"export_w_retailer">>, ?right_w_retailer},
+
 	 {?filter_ticket_detail, 
 	  <<"查询电子卷">>, <<"filter_ticket_detail">>, ?right_w_retailer}, 
 	 {?effect_ticket, 

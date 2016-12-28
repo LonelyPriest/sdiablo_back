@@ -981,8 +981,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	var print = function(status){
 	    var messsage = "";
 	    if (status.pcode == 0){
-		messsage = "单号："
-		    + result.rsn + "，打印成功，请等待服务器打印！！";
+		messsage = "单号：" + result.rsn + "，打印成功，请等待服务器打印！！";
 	    } else {
 		if (status.pinfo.length === 0){
 		    messsage += wsaleService.error[status.pcode]
@@ -1002,16 +1001,24 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	var show_dialog = function(title, message){
 	    dialog.response(true, title, message, undefined)
 	};
-	
+
+	var sms_message = "";
+	if (result.sms_code !== 0) {
+	    sms_message = "发送短消息失败：" + wretailerService.error[result.sms_code];
+	}
+
 	if (im_print === diablo_yes){
 	    if (result.pcode !== 0){
-		var show_message = "开单成功！！" + print(result); 
-		show_dialog("销售开单", show_message);
+		var show_message = "开单成功！！" + print(result);
+		show_dialog("销售开单", show_message + sms_message); 
+	    }
+	    if (result.sms_code !== 0){
+		show_dialog("销售开单", "开单成功！！" + sms_message); 
 	    }
 	} else{
 	    var ok_print = function(){
 		wsaleService.print_w_sale(result.rsn).then(function(presult){
-		    var show_message = "开单成功，" + print(presult);
+		    var show_message = "开单成功，" + print(presult) + sms_message; 
 		    show_dialog("销售开单", show_message); 
 		})
 	    };

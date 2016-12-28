@@ -1071,12 +1071,30 @@ create table w_daily_report(
 ) default charset=utf8;
 
 
-create table sms_notify(
+create table sms_rate(
     id              INTEGER AUTO_INCREMENT,
     merchant        INTEGER not null default -1,
     rate            INTEGER default 0, -- fen
     send            INTEGER not null default 0,
+    
     unique  key uk (merchant),
     primary key    (id)
 ) default charset=utf8;
 
+
+create table sms_center(
+    id              INTEGER AUTO_INCREMENT,
+    merchant        INTEGER not null default -1, 
+    url             VARCHAR(128) not null,
+    app_key         VARCHAR(64) default -1,
+    app_secret      VARCHAR(64) default -1,
+    sms_sign_name   VARCHAR(64) default -1,
+    sms_sign_method VARCHAR(64) default -1, 
+    sms_send_method VARCHAR(128) default -1,
+    sms_template    VARCHAR(64) default -1,
+    sms_type        VARCHAR(64) default -1,
+    sms_version     VARCHAR(8) default -1, 
+    
+    unique  key uk (merchant),
+    primary key    (id)
+) default charset=utf8;

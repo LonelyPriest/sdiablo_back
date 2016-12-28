@@ -10,17 +10,21 @@
 
 	<div class="actions">
 	  <div class="btn-group btn-group-solid">
-	    <a type="button" class="btn green hidden-xxs"
-	       x-ng-click="new_retailer()">新增
-	      <i class="glyphicon glyphicon-plus"></i></a>
+	    <button class="btn green hidden-xxs"
+		    x-ng-click="new_retailer()">新增
+	      <i class="glyphicon glyphicon-plus"></i></button>
 
-	    <a type="button" class="btn yellow-crusta purple-stripe"
-	       x-ng-click="charge_detail()">充值记录
-	      <i class="glyphicon glyphicon-map-marker"></i></a> 
+	    <button x-ng-if="right.export_retailer" class="btn blue purple-stripe hidden-xs"
+		    x-ng-click="export_retailer()">导出
+	      <i class="glyphicon glyphicon-export"></i></button>
 
-	    <a type="button" class="btn blue reload purple-stripe"
-	       x-ng-click="refresh()">刷新
-	      <i class="icon icon-spinner fg-white"></i></a>
+	    <button class="btn yellow-crusta purple-stripe"
+		    x-ng-click="charge_detail()">充值记录
+	      <i class="glyphicon glyphicon-map-marker"></i></button> 
+
+	    <button class="btn blue reload purple-stripe"
+		    x-ng-click="refresh()">刷新
+	      <i class="icon icon-spinner fg-white"></i></button>
 	  </div>
 	</div>
 	
@@ -117,7 +121,7 @@
 		    <td>
 		      <div x-ng-if="!r.no_vip">{{r.score}}</div>
 		    </td>
-		    <td>{{r.shop.name}}</td>
+		    <td>{{r.shop}}</td>
 		    <td>{{r.entry_date}}</td>
 
 		    <td>

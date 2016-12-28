@@ -907,7 +907,27 @@ start(new_sale, Req, Merchant, Invs, Base, Print) ->
     case check_inventory(oncheck, Round, 0, ShouldPay, Invs) of
         {ok, _} -> 
 	    case ?w_sale:sale(new, Merchant, lists:reverse(Invs), Base) of 
-		{ok, RSN} ->
+		{ok, {RSN, Phone, _ShouldPay, Balance, Score}} ->
+		    {SMSCode, _} =
+			try
+			    {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),
+			    RetailerId   = ?v(<<"retailer">>, Base),
+			    Shop = ?v(<<"shop">>, Base),
+			    SysVips = sys_vip_of_shop(Merchant, Shop),
+			    ?DEBUG("SysVips ~p", [SysVips]),
+			    case not lists:member(RetailerId, SysVips)
+				andalso ?to_i(?v(<<"consume_sms">>, Setting, 0)) == 1 of
+				true -> ?notify:sms_notify(
+					   Merchant, {Phone, 1, ShouldPay, Balance, Score});
+				false -> {0, none} 
+			    end
+			catch
+			    _:{badmatch, _Error} ->
+				?INFO("failed to send sms phone:~p, merchant ~p, Error ~p",
+				      [Phone, Merchant, _Error]),
+				?err(sms_send_failed, Merchant)
+			end,
+			
 		    case ImmediatelyPrint =:= ?YES andalso PMode =:= ?PRINT_BACKEND of
 			true ->
 			    SuccessRespone =
@@ -915,6 +935,7 @@ start(new_sale, Req, Merchant, Invs, Base, Print) ->
 					?utils:respond(
 					   200, Req, ?succ(new_w_sale, RSN),
 					   [{<<"rsn">>, ?to_b(RSN)},
+					    {<<"sms_code">>, SMSCode},
 					    {<<"pcode">>, PCode},
 					    {<<"pinfo">>, PInfo}])
 				end,
@@ -1006,3 +1027,22 @@ mode(0) -> use_id;
 mode(1) -> use_shop;
 mode(2) -> use_brand;
 mode(3) -> use_firm.
+
+
+sys_vip_of_shop(Merchant, Shop) ->
+    {ok, Settings} = ?w_user_profile:get(setting, Merchant, Shop),
+    SysVips =
+	lists:foldr(
+	  fun({S}, Acc) ->
+		  case ?v(<<"ename">>, S) =:= <<"s_customer">> of
+		      true ->
+			  SysVip = ?to_i(?v(<<"value">>, S)),
+			  %% ?DEBUG("sysvip ~p", [SysVip]),
+			  case lists:member(SysVip, Acc) of
+			      true -> Acc;
+			      false -> [SysVip] ++ Acc
+			  end;
+		      false -> Acc
+		  end
+	  end, [], Settings),
+    SysVips.

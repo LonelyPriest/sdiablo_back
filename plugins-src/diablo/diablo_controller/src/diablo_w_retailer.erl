@@ -310,13 +310,26 @@ handle_call({delete_retailer, Merchant, RetailerId}, _From, State) ->
 
 handle_call({list_retailer, Merchant}, _From, State) ->
     ?DEBUG("lookup retail with merchant ~p", [Merchant]),
-    Sql = "select id, name, birth, type as type_id"
-	", balance, consume, score, mobile, address"
-	", shop as shop_id, merchant, entry_date"
-	" from w_retailer"
-	" where merchant=" ++ ?to_s(Merchant)
-	++ " and deleted=" ++ ?to_s(?NO)
-	++ " order by id desc",
+    Sql = "select a.id"
+	", a.name"
+	", a.birth"
+	", a.type as type_id"
+	", a.balance"
+	", a.consume"
+	", a.score"
+	", a.mobile"
+	", a.address"
+	", a.shop as shop_id"
+	", a. merchant"
+	", a.entry_date"
+
+	", b.name as shop"
+	
+	" from w_retailer a"
+	" left join shops b on a.shop=b.id"
+	" where a.merchant=" ++ ?to_s(Merchant)
+	++ " and a.deleted=" ++ ?to_s(?NO)
+	++ " order by a.id desc",
 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
@@ -412,7 +425,7 @@ handle_call({recharge, Merchant, Attrs}, _From, State) ->
     Comment     = ?v(<<"comment">>, Attrs, []), 
     Entry       = ?utils:current_time(format_localtime),
 
-    Sql0 = "select id, name, balance from w_retailer"
+    Sql0 = "select id, name, mobile, balance, score from w_retailer"
 	" where id=" ++ ?to_s(Retailer)
 	++ " and merchant=" ++ ?to_s(Merchant)
 	++ " and deleted=" ++ ?to_s(?NO) ++ ";",
@@ -428,6 +441,12 @@ handle_call({recharge, Merchant, Attrs}, _From, State) ->
 				 <<>> -> 0;
 				 R    -> R
 			     end,
+	    Score = case ?v(<<"score">>, Account) of
+			<<>> -> 0;
+			_Score -> _Score
+		    end,
+
+	    Mobile = ?v(<<"mobile">>, Account),
 	    
 	    Sql2 =
 		["insert into w_charge_detail(rsn"
@@ -449,7 +468,12 @@ handle_call({recharge, Merchant, Attrs}, _From, State) ->
 		 ++ ?to_s(CBalance + SBalance)
 		 ++ " where id=" ++ ?to_s(Retailer)],
 	    
-	    Reply = ?sql_utils:execute(transaction, Sql2, SN),
+	    Reply =
+		case ?sql_utils:execute(transaction, Sql2, SN) of
+		    {ok, SN} ->
+			{ok, {SN, Mobile, CBalance, CurrentBalance + CBalance + SBalance, Score}};
+		    Error -> Error
+		end,
 	    %% ?w_user_profile:update(retailer, Merchant),
 	    {reply, Reply, State};
 	Error ->
