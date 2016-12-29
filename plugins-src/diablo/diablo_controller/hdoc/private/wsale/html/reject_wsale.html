@@ -12,13 +12,13 @@
 		    x-ng-click="go_back()">返回
 	      <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
 
-	  <button x-ng-if="select.retailer.type===1"
+	  <button x-ng-if="select.retailer.type===1 && select.withdraw!==0"
 		  class="btn green-meadow purple-stripe"
 		  x-ng-disabled="disable_withdraw()"
 		  x-ng-click="withdraw()">返现
 	      <i class="glyphicon glyphicon-yen"></i></button>
 	  
-	  <button class="btn btn-success purple-stripe"
+	  <button x-ng-if="has_select_rsn" class="btn btn-success purple-stripe"
 		  x-ng-disabled="disable_save()"
 		  x-ng-click="save_inventory()">保存
 	    <i class="glyphicon glyphicon-save"></i></button>

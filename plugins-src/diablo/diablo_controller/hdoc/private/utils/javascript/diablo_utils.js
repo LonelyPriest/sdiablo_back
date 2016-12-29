@@ -455,6 +455,9 @@ diabloUtils.directive('queryGroup', function () {
 			case "fshop":
 			    f.value = get_prompt(f.value, scope.prompt.fshop);
 			    break;
+			case "month":
+			    f.value = get_prompt(f.value, scope.prompt.month);
+			    break;
 			default:
 			    break;
 			}
@@ -514,7 +517,7 @@ diabloUtils.directive('queryPattern', function () {
 	    
 	    // add a filter
 	    scope.add_filter = function(){
-		// console.log("add_filter...");
+		console.log("add_filter...");
 		// console.log(scope.filters);
 		// scope.filters[scope.increment] = angular.copy(scope.filter);
 		scope.filters.push(angular.copy(scope.filter));

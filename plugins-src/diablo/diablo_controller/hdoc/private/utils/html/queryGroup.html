@@ -166,6 +166,14 @@
 	    </select>
 	  </span>
 
+	  <span x-ng-switch-when="month">
+	    <select type="text" class="form-control"
+	  	    x-ng-model="f.value"
+	  	    x-ng-options="s for s in prompt.month"
+	  	    x-ng-init="f.value=f.value ? f.value : prompt.month[0]">
+	    </select>
+	  </span>
+
 	  <span x-ng-switch-when="supplier">
 	    <input type="text" class="form-control" placeholder="请输入供应商"
 		   x-ng-model="f.value"
@@ -228,12 +236,28 @@
 			      prompt.firm|filter:$viewValue|limitTo:20"/>
 	  </span>
 	  
+	  <!-- <span x-ng-switch-when="retailer"> -->
+	  <!--   <input type="text" class="form-control" placeholder="请输入客户名" -->
+	  <!-- 	   x-ng-model="f.value" -->
+	  <!-- 	   typeahead-editable="false" -->
+	  <!-- 	   uib-typeahead="s as s.name for s in -->
+	  <!-- 		      prompt.retailer|filter:$viewValue|limitTo:20"/> -->
+	  <!-- </span> -->
+
 	  <span x-ng-switch-when="retailer">
-	    <input type="text" class="form-control" placeholder="请输入客户名"
-		   x-ng-model="f.value"
-		   typeahead-editable="false"
-		   uib-typeahead="s as s.name for s in
-			      prompt.retailer|filter:$viewValue|limitTo:20"/>
+	    <div class="has-feedback">
+	      <input type="text" class="form-control" placeholder="请输入客户名"
+	  	     x-ng-model="f.value"
+	  	     x-ng-edit
+	  	     typeahead-wait-ms="300"
+	  	     typeahead-loading="loading"
+	  	     typeahead-on-select="prompt.on_select_retailer($item, $model, $label)"
+	  	     uib-typeahead="s as s.name for s in prompt.retailer($viewValue)"
+	  	     x-ng-enter="f.value && ok()" />
+	      <span x-ng-show="loading">
+	  	<i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
+	      </span>
+	    </div>
 	  </span>
 
 	  <span x-ng-switch-when="card">

@@ -41,8 +41,9 @@ create table merchants
     mobile           VARCHAR(11) not null,
     address          VARCHAR(256) not null,
     balance          INTEGER not null default 0, -- fen
+    sms_send         INTEGER not null default 0,
     type             TINYINT default 0,
-    province         TINYINT default -1, -- which province
+    -- province         TINYINT default -1, -- which province
     entry_date       DATE,
     deleted          INTEGER default 0, -- 0: no;  1: yes
     unique  key      name (name),
@@ -1075,8 +1076,7 @@ create table sms_rate(
     id              INTEGER AUTO_INCREMENT,
     merchant        INTEGER not null default -1,
     rate            INTEGER default 0, -- fen
-    send            INTEGER not null default 0,
-    
+    -- send            INTEGER not null default 0,    
     unique  key uk (merchant),
     primary key    (id)
 ) default charset=utf8;

@@ -210,7 +210,9 @@ var stockUtils = function(){
 	},
 
 	get_object_id: function(obj){
-	    if (angular.isDefined(obj) && angular.isObject(obj) && angular.isDefined(obj.id))
+	    if (angular.isDefined(obj)
+		&& angular.isObject(obj)
+		&& angular.isDefined(obj.id))
 		return obj.id; 
 	    return diablo_invalid_firm;
 	},

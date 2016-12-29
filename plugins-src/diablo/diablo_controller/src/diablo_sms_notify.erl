@@ -5,9 +5,10 @@
 
 -export([sms_notify/2, sign/1]).
 
-sms_notify(Merchant, {Phone, Action, Money, RetailerBalance, Score}) ->
-    ?DEBUG("sms_notify: merchants ~p, phone ~p, action ~p, money ~p, rbalance ~p score ~p",
-	   [Merchant, Phone, Action, Money, RetailerBalance, Score]),
+sms_notify(Merchant, {Shop, Phone, Action, Money, RetailerBalance, Score}) ->
+    ?DEBUG("sms_notify: merchants ~p, shop ~p, phone ~p, action ~p, money ~p"
+	   ", rbalance ~p score ~p",
+	   [Merchant, Shop, Phone, Action, Money, RetailerBalance, Score]),
     case ?w_user_profile:get(sms_rate, Merchant) of
 	{ok, []} -> ?err(sms_rate_not_found, Merchant);
 	{ok, SMSRate} ->
@@ -18,9 +19,10 @@ sms_notify(Merchant, {Phone, Action, Money, RetailerBalance, Score}) ->
 		false ->
 		    case sms_once(aliqin,
 				  Merchant,
-				  {Phone, Action, Money, RetailerBalance, Score}) of
+				  {Shop, Phone, Action, Money, RetailerBalance, Score}) of
 			{ok, {sms_send, Phone}} ->
 			    Sql = "update merchants set balance=balance-" ++ ?to_s(Rate)
+				++ ", sms_send=sms_send+1"
 				++ " where id=" ++ ?to_s(Merchant),
 			    case ?sql_utils:execute(write, Sql, Merchant) of
 				{ok, Merchant} ->
@@ -39,7 +41,8 @@ sms_notify(Merchant, {Phone, Action, Money, RetailerBalance, Score}) ->
 	    end
     end.
 	    
-sms_once(aliqin, Merchant, {Phone, Action, Money, Balance, Score}) ->
+sms_once(aliqin, Merchant, {Shop, Phone, Action, Money, Balance, Score}) ->
+    NewBalance = ?f_print:clean_zero(Balance),
     case ?w_user_profile:get(sms_center, Merchant) of
 	{ok, []} -> {error, {sms_center_not_found, Merchant}};
 	{ok, Center} ->
@@ -56,10 +59,11 @@ sms_once(aliqin, Merchant, {Phone, Action, Money, Balance, Score}) ->
 
 	    Timestamp = ?utils:current_time(format_localtime),
 
-	    SMSParams = ?to_s(ejson:encode({[{<<"action">>, action(Action)},
+	    SMSParams = ?to_s(ejson:encode({[{<<"shop">>, Shop},
+					     {<<"action">>, action(Action)},
 					     {<<"maction">>, action(Action)},
 					     {<<"money">>, ?to_b(Money)},
-					     {<<"balance">>, ?to_b(Balance)},
+					     {<<"balance">>, ?to_b(NewBalance)},
 					     {<<"score">>, ?to_b(Score)}]})),
 
 	    SortedParams = lists:sort(

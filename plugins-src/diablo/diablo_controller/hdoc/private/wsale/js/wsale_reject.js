@@ -40,6 +40,8 @@ wsaleApp.controller("wsaleRejectCtrl", function(
     $scope.right = {
 	master:rightAuthen.authen_master(user.type)
     };
+
+    $scope.has_select_rsn = false;
     
     // rsn 
     var time = diabloFilter.default_time();
@@ -61,6 +63,7 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 	wsaleService.get_w_sale_new(item).then(function(result){
 	    console.log(result);
 	    if (result.ecode === 0){
+		$scope.has_select_rsn = true;
 		var base        = result.sale;
 		var sells       = result.detail; 
 		var wsale = wsaleUtils.cover_wsale(
@@ -152,7 +155,7 @@ wsaleApp.controller("wsaleRejectCtrl", function(
      * withdraw
      */ 
     $scope.disable_withdraw = function(){
-	return $scope.select.has_pay <= 0 || $scope.has_withdrawed;
+	return $scope.has_withdrawed;
     };
 
     $scope.withdraw = function(){
@@ -195,14 +198,17 @@ wsaleApp.controller("wsaleRejectCtrl", function(
      * save all
      */
     $scope.disable_save = function(){
+	var invalid = false;
 	// save one time only
-	if ($scope.has_saved || $scope.inventories.length === 0 || $scope.select.rcharge === 0)
-	    return true;
+	if ($scope.has_saved || $scope.select.total === 0 || $scope.select.rcharge === 0)
+	    return invalid = true;
 
-	if ($scope.select.retailer.type===1 && !$scope.has_withdrawed)
-	    return true;
-
-	return false; 
+	if ($scope.select.retailer.type===1
+	    && $scope.select.withdraw!==0
+	    && !$scope.has_withdrawed)
+	    invalid = true; 
+	
+	return invalid; 
     }; 
 
     $scope.print_backend = function(result, im_print){

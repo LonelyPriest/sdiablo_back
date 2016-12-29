@@ -163,6 +163,12 @@ action(Session, Req, {"del_w_retailer_charge"}, Payload) ->
 action(Session, Req, {"new_recharge"}, Payload) ->
     ?DEBUG("new_recharge with session ~p, payload ~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
+    ShopId = ?v(<<"shop">>, Payload),
+    ShopName = case ?w_user_profile:get(shop, Merchant, ShopId) of
+		   {ok, []} -> ShopId;
+		   {ok, [{Shop}]} -> ?v(<<"name">>, Shop)
+	       end,
+    
     case ?w_retailer:charge(recharge, Merchant, Payload) of
 	{ok, {SN, Mobile, CBalance, Balance, Score}} -> 
 	    ?w_user_profile:update(retailer, Merchant),
@@ -172,8 +178,9 @@ action(Session, Req, {"new_recharge"}, Payload) ->
 		    0 -> ?utils:respond(200, Req, ?succ(new_recharge, SN),
 					[{<<"sms_code">>, 0}]);
 		    1 ->
-			{SMSCode, _} = 
-			    ?notify:sms_notify(Merchant, {Mobile, 0, CBalance, Balance, Score}),
+			{SMSCode, _} =
+			    ?notify:sms_notify(
+			       Merchant, {ShopName, Mobile, 0, CBalance, Balance, Score}),
 			?utils:respond(200,
 				       Req,
 				       ?succ(new_recharge, SN),
@@ -182,7 +189,10 @@ action(Session, Req, {"new_recharge"}, Payload) ->
 	    catch
 		_:{badmatch, _Error} ->
 		    {Code1, _} =  ?err(sms_send_failed, Merchant),
-		    ?utils:respond(200, Req, ?succ(new_recharge, SN), [{<<"sms_code">>, Code1}])
+		    ?utils:respond(
+		       200,
+		       Req,
+		       ?succ(new_recharge, SN), [{<<"sms_code">>, Code1}])
 	    end;
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
@@ -213,6 +223,20 @@ action(Session, Req, {"update_recharge"}, Payload) ->
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;
+
+action(Session, Req, {"filter_retailer_detail"}, Payload) ->
+    ?DEBUG("filter_retailer with session ~p, payload~n~p", [Session, Payload]), 
+    Merchant  = ?session:get(merchant, Session),
+
+    ?pagination:pagination(
+       fun(Match, Conditions) ->
+	       ?w_retailer:filter(
+		  total_retailer, ?to_a(Match), Merchant, Conditions)
+       end,
+       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
+	       ?w_retailer:filter(
+		  retailer, Match, Merchant, Conditions, CurrentPage, ItemsPerPage)
+       end, Req, Payload);
 
 action(Session, Req, {"filter_charge_detail"}, Payload) ->
     ?DEBUG("filter_charge_detail with session ~p, paylaod~n~p", [Session, Payload]), 
@@ -354,7 +378,13 @@ action(Session, Req, {"export_w_retailer"}, Payload) ->
 	    end;
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
-    end.
+    end;
+
+action(Session, Req, {"match_retailer_phone"}, Payload) ->
+    ?DEBUG("match_retailer_phone with session ~p, paylaod~n~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    Phone = ?v(<<"prompt">>, Payload),
+    ?utils:respond(batch, fun() -> ?w_retailer:match(phone, Merchant, Phone) end, Req).
 
 sidebar(Session) -> 
     S1 = [{"wretailer_detail", "会员详情", "glyphicon glyphicon-book"}],

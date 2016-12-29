@@ -48,7 +48,7 @@ pagination(TotalFun, PageFun, Req, Payload) ->
 	end,
 
     ?DEBUG("conditions ~p", [Conditions]),
-    CurrentPage          = ?value(<<"page">>, Payload), 
+    CurrentPage          = ?value(<<"page">>, Payload, 1), 
     ItemsPerPage         = ?value(<<"count">>, Payload, ?DEFAULT_ITEMS_PERPAGE),
     
 

@@ -40,18 +40,20 @@ wretailerApp.controller("wretailerNewCtrl", function(
 
 
 wretailerApp.controller("wretailerDetailCtrl", function(
-    $scope, $location, dateFilter, diabloPattern, diabloUtilsService,
-    diabloPagination, localStorageService, wretailerService,
+    $scope, $location, dateFilter, diabloFilter, diabloPattern,
+    diabloUtilsService, localStorageService, wretailerService,
     filterEmployee, filterCharge, user, base){
     $scope.employees      = filterEmployee;
     $scope.charges        = filterCharge;
     $scope.shops          = user.sortShops;
-    $scope.shopIds = user.shopIds;
+    $scope.shopIds        = user.shopIds;
     $scope.retailer_types = wretailerService.retailer_types;
-    
-    // console.log($scope.employees);
-    // console.log($scope.shops);
-    // console.log(base);
+    $scope.months         = retailerUtils.months();
+    $scope.select         = {phone:undefined};
+
+    var dialog = diabloUtilsService;
+    var now    = $.now();
+
     $scope.no_vips = base.filter(function(s){
 	return 's_customer' === s.name
     }).map(function(c){return parseInt(c.value)});
@@ -65,19 +67,8 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 		break;
 	    };
 	}
-    };
-
-    // console.log($scope.no_vips);
+    }; 
     
-    $scope.round      = diablo_round;
-    $scope.pagination = {}; 
-    $scope.months     = ["===请选择会员生日月份==="].concat(retailerUtils.months());
-    $scope.birth_month = $scope.months[0];
-    
-    var dialog = diabloUtilsService;
-    var f_add  = diablo_float_add;
-    var now    = $.now();
-
     $scope.right = {
 	reset_password: rightAuthen.authen(
 	    user.type, rightAuthen.retailer_action()['reset_password'], user.right),
@@ -90,197 +81,110 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	master: rightAuthen.authen_master(user.type) 
     };
 
-    console.log($scope.right);
-
-    $scope.save_to_local = function(search, t_retailer){
-	var s = localStorageService.get(diablo_key_retailer);
-	if (angular.isDefined(s) && s !== null){
-	    localStorageService.set(
-		diablo_key_retailer, {
-		    search:angular.isDefined(search) ? search:s.search,
-		    t_retailer:angular.isDefined(t_retailer)
-			? t_retailer:s.t_retailer,
-		    page:$scope.pagination.current_page,
-		    t:now}
-	    )
-	} else {
-	    localStorageService.set(
-		diablo_key_retailer, {
-		    search:     search,
-		    t_retailer: t_retailer,
-		    page:       $scope.pagination.current_page,
-		    t:          now})
-	}
-    };
-
-    $scope.reset_local_storage = function(){
-	var s = localStorageService.get(diablo_key_retailer);
-	if (angular.isDefined(s) && s !== null){
-	    localStorageService.set(
-		diablo_key_retailer, {
-		    search:     undefined,
-		    t_retailer: undefined,
-		    page:       $scope.pagination.current_page,
-		    t:          now}
-	    ) 
-	};
-    };
-
-    var repagination = function(filters){
-	diablo_order(filters);
-	$scope.total_balance = 0;
-	$scope.total_consume = 0;
-	
-	angular.forEach(filters, function(f){
-	    $scope.total_balance += f.balance;
-	    $scope.total_consume += f.consume;
-	});
-
-	$scope.total_balance = retailerUtils.to_decimal($scope.total_balance);
-	$scope.total_consume = retailerUtils.to_decimal($scope.total_consume);
-
-	// re pagination
-	diabloPagination.set_data(filters);
-	$scope.total_items      = diabloPagination.get_length();
-	$scope.filter_retailers = diabloPagination.get_page(
-	    $scope.pagination.default_page);
-
-	return filters;
-    };
+    /*
+     * filter
+     */
+    $scope.filters = [];
+    diabloFilter.reset_field();
+    diabloFilter.add_field("month", $scope.months);
+    $scope.filter = diabloFilter.get_filter();
+    $scope.prompt = diabloFilter.get_prompt();
     
-
     /*
      * pagination
      */
-    // $scope.pagination.colspan = 9;
-    $scope.pagination.max_page_size = diablo_max_page_size();
-    $scope.pagination.items_perpage = diablo_items_per_page();
-    $scope.pagination.default_page  = 1;
+    $scope.max_page_size = diablo_max_page_size();
+    $scope.items_perpage = diablo_items_per_page();
+    $scope.default_page  = 1;
+    $scope.current_page  = $scope.default_page;
+    $scope.total_items   = undefined;
 
+    
     var storage = localStorageService.get(diablo_key_retailer);
-    // console.log(storage);
-    
+    // console.log(storage); 
     if (angular.isDefined(storage) && storage !== null){
-	$scope.pagination.current_page = storage.page;
-	$scope.search                  = storage.search;
-	$scope.total_items             = storage.t_retailer;
-    } else {
-	$scope.pagination.current_page = $scope.pagination.default_page;
-	$scope.search                  = undefined;
-	$scope.total_items             = undefined;
-    } 
-    
-    $scope.page_changed = function(page){
-	// console.log(page);
-	// console.log($scope.pagination.current_page);
-	// $scope.current_page = page;
-	$scope.pagination.current_page = page;
-	$scope.save_to_local();
-	$scope.filter_retailers
-	    = diabloPagination.get_page($scope.pagination.current_page);
+	$scope.current_page = storage.page;
+	$scope.filters      = storage.filter;
     }
+
+    $scope.time = diabloFilter.default_time(now, now);
     
-    $scope.do_search = function(search){
-	console.log(search);
-    	return $scope.retailers.filter(function(r){
-	    // console.log(r);
-	    return search === r.name
-		|| search === r.mobile 
-		|| search === r.address
-	})
+    $scope.page_changed = function(){
+	$scope.do_search($scope.current_page);
     };
 
-    $scope.on_select_retailer = function(item, model, label){
-	console.log(model);
-	
-	var filters = $scope.do_search(model.name); 
-	repagination(filters);
-	// save
-	$scope.save_to_local(model.name, $scope.total_items);
-    }
+    $scope.save_stastic = function(){
+	localStorageService.remove("retailer-detail-stastic");
+	localStorageService.set(
+	    "retailer-detail-stastic",
+	    {total_items:       $scope.total_items, 
+	     total_balance:     $scope.total_balance,
+	     total_consume:     $scope.total_consume,
+	     t:                 now});
+    };
 
-    var in_prompt = function(p, prompts){
-	for (var i=0, l=prompts.length; i<l; i++){
-	    if (p === prompts[i].name){
-		return true;
-	    }
-	}
+    $scope.do_search = function(page){
+    	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+	    if (angular.isDefined($scope.select.phone)
+		&& angular.isObject($scope.select.phone))
+		search.mobile = $scope.select.phone.mobile;
 
-	return false;
-    }
+	    retailerUtils.cache_page_condition(
+		localStorageService,
+		diablo_key_retailer,
+		$scope.filters,
+		$scope.time.start_time,
+		$scope.time.end_time, page, now);
+
+	    if (page !== $scope.default_page) {
+		var stastic = localStorageService.get("retailer-detail-stastic");
+		// console.log(stastic);
+		$scope.total_items       = stastic.total_items; 
+		$scope.total_balance     = stastic.total_balance;
+		$scope.total_consume     = stastic.total_consume; 
+	    };
+	    
+    	    wretailerService.filter_retailer(
+    		$scope.match, search, page, $scope.items_perpage
+    	    ).then(function(result){
+    		console.log(result);
+    		if (result.ecode === 0){
+    		    if (page === $scope.default_page){
+			$scope.total_items   = result.total;
+			$scope.total_balance = result.balance;
+			$scope.total_consume = result.consume;
+			$scope.retailers = [];
+			$scope.save_stastic();
+    		    }
+
+		    $scope.retailers = angular.copy(result.data);
+		    angular.forEach($scope.retailers, function(r){
+			r.type = diablo_get_object(r.type_id, $scope.retailer_types);
+			r.birthday = r.birth.substr(5,8); 
+			r.birth = diablo_set_date_obj(r.birth);
+			r.shop = diablo_get_object(r.shop_id, $scope.shops);
+			r.no_vip = in_array($scope.no_vips, r.id) ? true : false;
+		    });
+		    
+    		    diablo_order($scope.retailers, (page - 1) * $scope.items_perpage + 1);
+    		    $scope.current_page = page;
+    		} 
+    	    })
+    	})
+    };
 
     $scope.refresh = function(){
-	$scope.reset_local_storage();
-	$scope.birth_month = $scope.months[0];
-	$scope.do_refresh($scope.pagination.default_page, undefined);
+	$scope.do_search($scope.default_page);
     };
-    
-    $scope.do_refresh = function(page, search){
-	// console.log(page);
-	$scope.pagination.current_page = page;
-	$scope.search = search;
-	
-	wretailerService.list_retailer().then(function(data){
-	    // console.log(data);
-	    $scope.retailers = data;
-	    $scope.total_balance = 0;
-	    $scope.total_consume = 0;
-	    angular.forEach($scope.retailers, function(r){
-		r.type = diablo_get_object(r.type_id, $scope.retailer_types);
-		r.birthday = r.birth.substr(5,8); 
-		r.birth = diablo_set_date_obj(r.birth);
-		// r.shop  = diablo_get_object(r.shop_id, $scope.shops);
-		r.no_vip = in_array($scope.no_vips, r.id) ? true : false;
-		r.balance = diablo_rdight(r.balance, 2);
-		$scope.total_balance += r.balance;
-		$scope.total_consume += r.consume; 
-	    })
 
-	    $scope.total_balance = diablo_rdight($scope.total_balance, 2);
-	    $scope.total_consume = diablo_rdight($scope.total_consume, 2);
-	    
-	    diablo_order($scope.retailers);
-	    // console.log($scope.retailers);
-	    console.log($scope.total_balance, $scope.total_consume);
-
-	    var filters;
-	    if (angular.isDefined(search)){
-		filters = $scope.do_search(search);
-	    } else {
-		filters = $scope.retailers;
-	    }
-	    
-	    diabloPagination.set_data(filters);
-	    diabloPagination.set_items_perpage($scope.pagination.items_perpage);
-	    $scope.total_items      = diabloPagination.get_length();
-	    $scope.filter_retailers = diabloPagination.get_page(
-		$scope.pagination.current_page);
-	    
-	    // save
-	    $scope.save_to_local($scope.search, $scope.total_items);
-	    
-	    $scope.prompts = [];
-	    for(var i=0, l=$scope.retailers.length; i<l; i++){
-		var r = $scope.retailers[i];
-
-		if (!in_prompt(r.name, $scope.prompts)){
-		    $scope.prompts.push(
-			{name: r.name, py:diablo_pinyin(r.name)}); 
-		}
-		if (!in_prompt(r.address, $scope.prompts)){
-		    $scope.prompts.push(
-			{name: r.address, py:diablo_pinyin(r.address)}); 
-		}
-		if (!in_prompt(r.mobile, $scope.prompts)){
-		    $scope.prompts.push(
-			{name: r.mobile, py:diablo_pinyin(r.mobile)}); 
-		} 
-	    }
-	})
+    $scope.match_retailer_phone = function(viewValue){
+	if (viewValue.length < 4) return;
+	return diabloFilter.match_retailer_phone(viewValue);
     }; 
-    
-    $scope.do_refresh($scope.pagination.current_page, $scope.search);
 
+    $scope.do_search($scope.current_page);
+
+    
     $scope.new_retailer = function(){
 	$location.path("/wretailer_new"); 
     };
@@ -290,43 +194,16 @@ wretailerApp.controller("wretailerDetailCtrl", function(
     }
 
     $scope.trans_info = function(r){
-	// dialog.response(false, "会员对帐", "暂不支持此操作！！请在销售记录中查询！！");
-	// return;
 	diablo_goto_page("#/wretailer_trans/" +r.id.toString());
     };
 
-    $scope.change_birth_month = function(){
-	console.log($scope.birth_month);
-	if ($scope.birth_month !== $scope.months[0]) {
-	    var filters = $scope.retailers.filter(function(r){
-		return parseInt((dateFilter(r.birth, "yyyy-MM-dd").split("-")[1])) === $scope.birth_month;
-	    })
-	    // console.log(filter); 
-	    repagination(filters); 
-	}
-    };
-    
     var pattern = {name_address: diabloPattern.ch_name_address,
 		   tel_mobile:   diabloPattern.tel_mobile,
 		   decimal_2:    diabloPattern.decimal_2,
 		   number:       diabloPattern.number,
 		   comment:      diabloPattern.comment,
-		   password:     diabloPattern.num_passwd};
+		   password:     diabloPattern.num_passwd}; 
     
-    // var get_login_employee = function(shop, loginEmployee, employees){
-    // 	var filterEmployees = employees.filter(function(e){
-    // 	    return e.shop === shop;
-    // 	});
-    
-    // 	var select = undefined;
-    // 	if (diablo_invalid_employee !== loginEmployee)
-    // 	    select = diablo_get_object(loginEmployee, filterEmployees); 
-    
-    // 	if (angular.isUndefined(select)) select = filterEmployees[0];
-
-    // 	// console.log(select);
-    // 	return {login:select, filter:filterEmployees};
-    // },    
     $scope.charge = function(retailer){
 	console.log($scope.charges); 
 	var get_charge = function(charge_id) {
@@ -467,7 +344,7 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 			"恭喜你，会员 ["
 			    + old_retailer.name + "] 信息修改成功！！",
 			$scope, function(){
-			    $scope.do_refresh($scope.pagination.current_page, $scope.search);
+			    $scope.do_refresh($scope.current_page, $scope.search);
 			});
     		} else{
 		    dialog.response(
@@ -578,7 +455,7 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 			true, "会员积分修改",
 			"会员积分 [" +  score.toString() + "] 修改成功！！",
 			$scope, function(){
-			    $scope.do_refresh($scope.pagination.current_page, $scope.search);
+			    $scope.do_refresh($scope.current_page, $scope.search);
 			});
     		} else{
 		    dialog.response(
@@ -614,7 +491,7 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 
 wretailerApp.controller("wretailerChargeDetailCtrl", function(
     $scope, diabloFilter, diabloUtilsService, localStorageService, wretailerService,
-    filterEmployee, filterRetailer, filterCharge, user, base){
+    filterEmployee, filterCharge, user, base){
 
     var dialog = diabloUtilsService;
     
@@ -626,21 +503,21 @@ wretailerApp.controller("wretailerChargeDetailCtrl", function(
 
     $scope.filters = []; 
     diabloFilter.reset_field(); 
-    diabloFilter.add_field("retailer", filterRetailer);
+    diabloFilter.add_field("retailer", function(viewValue){
+	if (viewValue.length < 4) return;
+	return diabloFilter.match_retailer_phone(viewValue)
+    });
 
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
 
     $scope.right = {master: rightAuthen.authen_master(user.type)};
     
-    var now = $.now();
-    // var start_time = diablo_base_setting(
-    // 	"qtime_start", -1, base, diablo_set_date, diabloFilter.default_start_time(now));
-    
-    // $scope.time = diabloFilter.default_time($scope.qtime_start, now);
+    var now = $.now(); 
     $scope.time = diabloFilter.default_time(now, now);
     
     $scope.do_search = function(page){
+	console.log($scope.filters);
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
 	    wretailerService.filter_charge_detail(
 		$scope.match, search, page, $scope.items_perpage
@@ -742,7 +619,7 @@ wretailerApp.controller("wretailerChargeDetailCtrl", function(
 
 wretailerApp.controller("wretailerTicketDetailCtrl", function(
     $scope, diabloFilter, diabloPattern, diabloUtilsService,
-    wretailerService, filterRetailer, user){
+    wretailerService, user){
 
     var dialog = diabloUtilsService;
 
@@ -752,12 +629,15 @@ wretailerApp.controller("wretailerTicketDetailCtrl", function(
     $scope.default_page = 1; 
     $scope.current_page = $scope.default_page;
     $scope.total_items = 0;
-    $scope.retailers = filterRetailer.filter(function(r){return r.score > 10000});
+    // $scope.retailers = filterRetailer.filter(function(r){return r.score > 10000});
 
     $scope.filters = []; 
-    diabloFilter.reset_field(); 
-    diabloFilter.add_field("retailer", filterRetailer);
-
+    diabloFilter.reset_field();
+    diabloFilter.add_field("retailer", function(viewValue){
+	if (viewValue.length < 4) return;
+	return diabloFilter.match_retailer_phone(viewValue)
+    });
+    
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
 

@@ -150,6 +150,8 @@ init([]) ->
 
 	 {?export_w_retailer, 
 	  <<"会员导出">>, <<"export_w_retailer">>, ?right_w_retailer},
+	 {?query_w_retailer_balance, 
+	  <<"查看会员余额">>, <<"query_w_retailer_balance">>, ?right_w_retailer},
 
 	 {?filter_ticket_detail, 
 	  <<"查询电子卷">>, <<"filter_ticket_detail">>, ?right_w_retailer}, 
@@ -841,11 +843,13 @@ pass_action(wholesaler) ->
      
      %% retailer
      <<"list_w_retailer">>,
+     <<"filter_retailer_detail">>,
      <<"check_w_retailer_password">>,
      <<"list_w_retailer_charge">>,
      <<"list_w_retailer_score">>,
      <<"filter_charge_detail">>,
      <<"get_w_retailer_ticket">>,
+     <<"match_retailer_phone">>,
      
      %% wsale
      %% <<"list_w_sale_new">>,

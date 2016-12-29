@@ -550,8 +550,15 @@ var wsaleUtils = function(){
 
 	order_fields:function(){
 	    return {id:0, shop:1, brand:2, firm:3};
-	}
+	},
 
+	get_object_id: function(obj){
+	    if (angular.isDefined(obj)
+		&& angular.isObject(obj)
+		&& angular.isDefined(obj.id))
+		return obj.id; 
+	    return diablo_invalid_firm;
+	} 
 	//
 	
     }

@@ -175,8 +175,10 @@ handle_call({get_merchant, Merchant}, _From, State) ->
     {reply, {ok, Detail}, State};
 
 handle_call(list_sms, _From, State) ->
-    Sql = "select a.id, a.name, a.mobile, a.balance, a.entry_date"
-	", b.rate, b.send"
+    Sql = "select a.id, a.name, a.mobile, a.balance"
+	", a.sms_send, a.entry_date" 
+	", b.rate"
+	
 	" from merchants a"
 	" left join sms_rate b on a.id=b.merchant"
 	" order by a.id", 
@@ -184,8 +186,10 @@ handle_call(list_sms, _From, State) ->
     {reply, Reply, State};
 
 handle_call({list_sms, Merchant}, _From, State) ->
-    Sql = "select a.id, a.name, a.mobile, a.balance, a.entry_date"
-	", b.rate, b.send"
+    Sql = "select a.id, a.name, a.mobile, a.balance"
+	", a.sms_send, a.entry_date" 
+	", b.rate"
+	
 	" from merchants a, sms_rate b"
 	" where a.id=b.merchant"
 	" and a.id=" ++ ?to_s(Merchant),
@@ -234,10 +238,9 @@ handle_call({new_sms_rate, Merchant, Rate}, _From, State) ->
 
     case ?sql_utils:execute(s_read, Sql0) of
 	{ok, []} ->
-	    Sql = "insert into sms_rate(merchant, rate, send) values("
+	    Sql = "insert into sms_rate(merchant, rate) values("
 		++ ?to_s(Merchant) ++ ","
-		++ ?to_s(Rate) ++ ","
-		++ ?to_s(0) ++ ")",
+		++ ?to_s(Rate) ++ ")",
 	    Reply = ?sql_utils:execute(insert, Sql),
 	    {reply, Reply, State};
 	{ok, _} ->
@@ -275,4 +278,4 @@ code_change(_OldVsn, State, _Extra) ->
 %%% Internal functions
 %%%===================================================================
 fields() ->
-    "id, name, owner, balance, mobile, address, type, entry_date".
+    "id, name, owner, balance, mobile, sms_send, address, type, entry_date".

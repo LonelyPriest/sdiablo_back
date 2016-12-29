@@ -1,10 +1,9 @@
 wretailerApp.controller('wretailerTransCtrl', function(
     $scope, $routeParams, $location, diabloFilter, wretailerService,
-    localStorageService, diabloUtilsService,
-    filterRetailer, filterEmployee, user, base){
+    localStorageService, diabloUtilsService, filterEmployee, user, base){
     
-    var retailer_id = parseInt($routeParams.retailer);
-    $scope.retailer = diablo_get_object(retailer_id, filterRetailer);
+    var retailer_id = parseInt($routeParams.retailer); 
+    // $scope.retailer = diablo_get_object(retailer_id, filterRetailer);
     
     $scope.shops     = user.sortBadRepoes.concat(user.sortShops);
     $scope.shopIds   = user.shopIds.concat(user.badrepoIds);
@@ -186,13 +185,13 @@ wretailerApp.controller('wretailerTransCtrl', function(
 wretailerApp.controller("wretailerTransRsnDetailCtrl", function(
     $scope, $routeParams, dateFilter, diabloUtilsService, diabloFilter,
     wgoodService, wretailerService,
-    filterBrand, filterFirm, filterRetailer, filterEmployee, filterSizeGroup,
+    filterBrand, filterFirm, filterEmployee, filterSizeGroup,
     filterType, filterPromotion, filterScore, filterColor, user, base){
     // console.log($routeParams); 
     // console.log(filterEmployee);
     // console.log(filterColor);
     var retailer_id  = parseInt($routeParams.retailer); 
-    $scope.retailer  = diablo_get_object(retailer_id, filterRetailer);
+    // $scope.retailer  = diablo_get_object(retailer_id, filterRetailer);
     $scope.shopIds   = user.shopIds;
     $scope.goto_page = diablo_goto_page;
     var now          = $.now(); 

@@ -159,6 +159,9 @@ function filterProvider(){
 		} else if(name === 'tshop'){
 		    _filter.fields.push({name:"tshop", chinese:"店铺"});
 		    _prompt.tshop = promptValues;
+		} else if(name === 'month'){
+		    _filter.fields.push({name:"month", chinese:"月份"});
+		    _prompt.month = promptValues;
 		} else if(name === 'region'){
 		    _filter.fields.push({name:"region", chinese:"区域"});
 		    _prompt.region = promptValues;
@@ -178,8 +181,13 @@ function filterProvider(){
 		var search = {};
 		angular.forEach(filters, function(f){
 		    if (angular.isDefined(f.value) && f.value){
-			var value = typeof(f.value) === 'object' ? f.value.id : f.value;
-			
+			var value = undefined;
+			if (angular.isObject(f.value))
+			    value = f.value.id;
+			else 
+			    value = f.value;
+			// var value = typeof(f.value) === 'object' ? f.value.id : f.value;
+
 			// employ use the number, not id
 			// value = f.field.name === "employ" ? f.value.number : value;
 			// repeat
@@ -315,7 +323,22 @@ function filterProvider(){
 				      + "，" + inv.brand + "，" + inv.type})
 			})
 		    })
-	    }, 
+	    },
+
+	    match_retailer_phone:function(viewValue) {
+		var http = $resource("/wretailer/:operation",
+				     {operation: '@operation'},
+				     {post: {method: 'POST', isArray: true}});
+		
+		return http.post({operation:'match_retailer_phone'}, {prompt:viewValue})
+		    .$promise.then(function(phones){
+			// console.log(phones);
+			return phones.map(function(p){
+			    return angular.extend(
+				p, {name:p.mobile + "，" + p.name})
+			})
+		    })
+	    },
 
 	    reset_firm: function(){
 		_firms = [];
@@ -552,10 +575,8 @@ function filterProvider(){
 		if (_retailers.length !== 0 ){
 		    return _retailers;
 		} else {
-		    var http =
-			$resource("/wretailer/:operation",
-				  {operation: '@operation'});
-		    
+		    var http = $resource("/wretailer/:operation",
+					 {operation: '@operation'}); 
 		    return http.query(
 			{operation: 'list_w_retailer'}
 		    ).$promise.then(function(retailers){

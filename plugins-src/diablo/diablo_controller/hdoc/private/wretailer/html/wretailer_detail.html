@@ -44,44 +44,44 @@
 	  <div class="table-toolbar util-btn-margin-bottom-5">
 	    <div class="row">
 	      <div class="col-xs-8 col-ms-8 col-md-8">
-		<div class="input-group">
-		  <span class="input-group-addon">
-		    <i class="glyphicon glyphicon-search fg-red"></i>
-		  </span>
-		  <input
-		     class="form-control"
-		     ng-edit
-		     placeholder="支持名称/手机/地址查询"
-		     typeahead-editable="false"
-		     typeahead-on-select="on_select_retailer(
-					  $item, $model, $label)"
-		     uib-typeahead="s as s.name for s in
-				prompts|filter:$viewValue|limitTo:20"
-		     x-ng-model="search"/>
-		</div>
-	      </div>
+	      	<div class="input-group"> 
+	      	  <input
+	      	     class="form-control"
+		     type ="text"
+	      	     ng-edit
+	      	     placeholder="请输入手机号码，至少输入4位"
+	      	     typeahead-editable="false"
+	      	     typeahead-on-select="on_select_retailer($item, $model, $label)"
+	      	     uib-typeahead="s as s.name for s in match_retailer_phone($viewValue)"
+	      	     x-ng-model="select.phone"/>
+		  <div class="input-group-btn">
+		    <button class="btn green">
+	      	      <i class="glyphicon glyphicon-search"></i>
+	      	    </button>
+		  </div> 
+	      	</div> 
+	      </div> 
 
-	      <div class="col-xs-4 col-ms-4 col-md-4">
-		<div class="input-group">
-		  <span class="input-group-addon">
-		    <i class="glyphicon glyphicon-registration-mark fg-red"></i>
-		  </span>
-		  <select class="form-control"
-			  x-ng-model="birth_month"
-			  x-ng-change="change_birth_month()"
-			  x-ng-options="m for m in months">
-		  </select>
-		</div>
-	      </div>
+	      <div class="col-md-4 col-sm-4 col-xs-12">
+		<query-pattern ng-model="match"
+                               filters="filters"
+                               filter="filter">
+		</query-pattern>
+              </div>
 	      
 	    </div> <!--END row-->
+
+	    <query-group filters="filters"
+			 prompt="prompt"
+			 ok="do_search(default_page)">
+	    </query-group>
+	    
 	  </div>
 
 	  <!--BEGIN panel-->
 
 	  <div class="panel panel-default table-panel"> 
 	    <div class="table-responsive">
-	      <!--EBGIN table supplier-->
 	      <table class="table table-bordered
 			    table-striped table-hover
 			    table-condensed table-advanced">
@@ -102,26 +102,29 @@
 		  </tr>
 		</thead>
 		<tbody>
-		  <tr ng-repeat="r in filter_retailers">
+		  <tr ng-repeat="r in retailers">
 		    <td>{{r.order_id}}</td> 
 		    <td>{{r.name}}</td>
 		    <!-- <td>{{r.birth|date:'yyyy-MM-dd'}}</td> -->
 		    <td>{{r.birthday}}</td>
 		    <td>
-		      <span x-ng-if="r.type.id===1" class="bg-magenta">{{r.type.name}}</span>
+		      <span x-ng-if="r.type.id===1" class="bg-magenta">
+			{{r.type.name}}
+		      </span>
 		      <span x-ng-if="r.type.id===0">{{r.type.name}}</span>
 		    </td> 
 		    <td><div x-ng-if="r.mobile">{{r.mobile}}</div></td>
 		    <td>{{r.address}}</td> 
-		    <td>
+		    <td class="text-center">
 		      <div x-ng-if="r.type_id===1">{{r.balance}}</div>
-		      <div x-ng-if="r.type_id!==1" class="text-center">-</div>
+		      <div x-ng-if="r.type_id!==1">-</div>
 		    </td>
-		    <td>{{r.consume}}</td>
-		    <td>
+		    <td class="text-center">{{r.consume}}</td>
+		    <td class="text-center">
 		      <div x-ng-if="!r.no_vip">{{r.score}}</div>
+		      <div x-ng-if="r.no_vip">-</div>
 		    </td>
-		    <td>{{r.shop}}</td>
+		    <td>{{r.shop_name}}</td>
 		    <td>{{r.entry_date}}</td>
 
 		    <td>
@@ -157,7 +160,7 @@
 		  <tr x-ng-if="right.master && total_items!==0" class="bg-white">
 		    <td colspan="6"></td>
 		    <td class="fg-red text-center">{{total_balance}}</td>
-		    <td class="fg-red">{{total_consume}}</td>
+		    <td class="fg-red text-center">{{total_consume}}</td>
 		    <td colspan="4"></td>
 		  </tr> 
 		</tbody>
@@ -167,28 +170,28 @@
 	      </table> <!--END table-->
 	    </div> <!--END table responsive-->
 	    
-	  </div> <!--END panel-->
+	  </div> <!--END panel--> 
+	</div> <!--END portlet body-->
 
-	  <div x-ng-show="total_items>pagination.items_perpage"
-	       class="row">
-	    <div class="col-md-12, col-sm-12, col-xs-12">
-	      <span>显示第 {{pagination.current_page}} / {{num_pages}} 项结果，
-		共 {{total_items}} 项</span>
-	      <uib-pagination
-		 class="pagination-lg table-pagination pull-right"
-		 total-items="total_items"
-		 items-per-page="pagination.items_perpage"
-		 num-pages="num_pages"
-		 max-size="pagination.max_page_size"
-		 boundary-links="true"
-		 previous-text="&lsaquo;" next-text="&rsaquo;"
-		 first-text="&laquo;" last-text="&raquo;"
-		 x-ng-model="pagination.current_page"
-		 x-ng-change="page_changed(pagination.current_page)">
-	      </uib-pagination>
-	    </div>
-	  </div> 
-	</div> <!--END portlet body--> 
+	<div x-ng-show="total_items>items_perpage" class="row">
+	  <div class="col-md-12, col-sm-12, col-xs-12">
+	    <span>显示第 {{current_page}} / {{num_pages}} 项结果，
+	      共 {{total_items}} 项</span>
+	    <uib-pagination
+	       class="pagination-lg table-pagination pull-right"
+	       total-items="total_items"
+	       items-per-page="items_perpage"
+	       num-pages="num_pages"
+	       max-size="max_page_size"
+	       boundary-links="true"
+	       previous-text="&lsaquo;" next-text="&rsaquo;"
+	       first-text="&laquo;" last-text="&raquo;"
+	       x-ng-model="current_page"
+	       x-ng-change="page_changed()">
+	    </uib-pagination>
+	  </div>
+	</div>
+	
       </div> <!--END table container-->
       
     </div>
@@ -407,11 +410,12 @@
 	    经手人
 	  </span>
 	  <div class="col-md-6 col-sm-6 col-xs-6">
-	    <select type="text"
-		    class="form-control"
-		    x-ng-model="params.retailer.select_employee"
-		    x-ng-options="e as e.name for e in params.retailer.employees">
-	    </select>
+	    <input type="text"
+		   class="form-control"
+		   placeholder="请输入经手人名称"
+		   typeahead-editable="false"
+		   x-ng-model="params.retailer.select_employee"
+		   uib-typeahead="e as e.name for e in params.retailer.employees|filter:$viewValue|limitTo:20" />
 	  </div>
 	</div>
 	

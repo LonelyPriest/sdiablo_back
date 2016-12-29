@@ -47,8 +47,8 @@ wretailerApp.config(['$routeProvider', function($routeProvider){
     var s_group = {"filterSizeGroup": function(diabloFilter){
 	return diabloFilter.get_size_group()}};
     
-    var retailer = {"filterRetailer": function(diabloNormalFilter){
-	return diabloNormalFilter.get_wretailer()}};
+    // var retailer = {"filterRetailer": function(diabloNormalFilter){
+    // 	return diabloNormalFilter.get_wretailer()}};
     
     var employee = {"filterEmployee": function(diabloNormalFilter){
 	return diabloNormalFilter.get_employee()}}; 
@@ -82,19 +82,18 @@ wretailerApp.config(['$routeProvider', function($routeProvider){
 	when('/wretailer_charge_detail', {
 	    templateUrl: '/private/wretailer/html/wretailer_charge_detail.html',
 	    controller: 'wretailerChargeDetailCtrl',
-	    resolve: angular.extend({}, employee, retailer, charge, user, base)
+	    resolve: angular.extend({}, employee, charge, user, base)
 	}).
 	when('/wretailer_trans/:retailer?/:page?', {
 	    templateUrl: '/private/wretailer/html/wretailer_trans.html',
 	    controller: 'wretailerTransCtrl',
-	    resolve: angular.extend({}, retailer, employee, user, base)
+	    resolve: angular.extend({}, employee, user, base)
 	}). 
 	when('/wretailer_trans_rsn/:retailer?/:rsn?/:ppage?', {
 	    templateUrl: '/private/wretailer/html/wretailer_trans_rsn_detail.html',
 	    controller: 'wretailerTransRsnDetailCtrl',
-	    resolve: angular.extend(
-		{}, brand, firm, retailer, employee, s_group, type,
-		promotion, score, color, user, base)
+	    resolve: angular.extend({}, brand, firm, employee, s_group, type,
+				    promotion, score, color, user, base)
 	}).
 	// recharge and score
 	when('/promotion/recharge_new', {
@@ -119,7 +118,7 @@ wretailerApp.config(['$routeProvider', function($routeProvider){
 	when('/wretailer_ticket_detail', {
 	    templateUrl: '/private/wretailer/html/ticket_detail.html',
 	    controller: 'wretailerTicketDetailCtrl',
-	    resolve: angular.extend({}, retailer, user)
+	    resolve: angular.extend({},  user)
 	}).
 	// default
 	otherwise({
@@ -271,6 +270,15 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 
     this.list_retailer = function(){
 	return http.query({operation: "list_w_retailer"}).$promise
+    };
+
+    this.filter_retailer = function(match, fields, currentPage, itemsPerpage){
+	return http.save(
+	    {operation: "filter_retailer_detail"},
+	    {match:  angular.isDefined(match) ? match.op : undefined,
+	     fields: fields,
+	     page:   currentPage,
+	     count:  itemsPerpage}).$promise;
     };
 
     var http_wsale = $resource(

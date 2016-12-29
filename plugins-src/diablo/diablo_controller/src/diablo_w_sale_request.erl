@@ -912,13 +912,20 @@ start(new_sale, Req, Merchant, Invs, Base, Print) ->
 			try
 			    {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),
 			    RetailerId   = ?v(<<"retailer">>, Base),
-			    Shop = ?v(<<"shop">>, Base),
-			    SysVips = sys_vip_of_shop(Merchant, Shop),
+			    ShopId = ?v(<<"shop">>, Base), 
+			    SysVips = sys_vip_of_shop(Merchant, ShopId), 
 			    ?DEBUG("SysVips ~p", [SysVips]),
 			    case not lists:member(RetailerId, SysVips)
 				andalso ?to_i(?v(<<"consume_sms">>, Setting, 0)) == 1 of
-				true -> ?notify:sms_notify(
-					   Merchant, {Phone, 1, ShouldPay, Balance, Score});
+				true ->
+				    ShopName = case ?w_user_profile:get(
+						       shop, Merchant, ShopId) of
+						   {ok, []} -> ShopId;
+						   {ok, [{Shop}]} -> ?v(<<"name">>, Shop)
+					       end,
+				    ?notify:sms_notify(
+				       Merchant,
+				       {ShopName, Phone, 1, ShouldPay, Balance, Score});
 				false -> {0, none} 
 			    end
 			catch

@@ -24,6 +24,7 @@
 -export([charge/2, charge/3]).
 -export([score/2, score/3, ticket/3, get_ticket/3]).
 -export([filter/4, filter/6]).
+-export([match/3]).
 
 -define(SERVER, ?MODULE). 
 
@@ -112,6 +113,9 @@ get_ticket(by_batch, Merchant, Batch) ->
     %% Name = ?wpool:get(?MODULE, Merchant), 
     %% gen_server:call(Name, {ticket_by_batch, Merchant, Batch}).
 
+filter(total_retailer, 'and', Merchant, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {total_retailer, Merchant, Conditions}); 
 filter(total_charge_detail, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {total_charge_detail, Merchant, Conditions});
@@ -119,15 +123,26 @@ filter(total_ticket_detail, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {total_ticket_detail, Merchant, Conditions}).
 
+
+filter(retailer, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(
+      Name, {filter_retailer, Merchant, Conditions, CurrentPage, ItemsPerPage});
+
 filter(charge_detail, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name,
-		    {filter_charge_detail, Merchant, Conditions, CurrentPage, ItemsPerPage});
+    gen_server:call(
+      Name, {filter_charge_detail, Merchant, Conditions, CurrentPage, ItemsPerPage});
 
 filter(ticket_detail, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name,
-		    {filter_ticket_detail, Merchant, Conditions, CurrentPage, ItemsPerPage}).
+    gen_server:call(
+      Name, {filter_ticket_detail, Merchant, Conditions, CurrentPage, ItemsPerPage}).
+
+%% match
+match(phone, Merchant, Phone) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {match_phone, Merchant, Phone}).
     
 
 start_link(Name) ->
@@ -715,6 +730,28 @@ handle_call({ticket_by_batch, Merchant, {Batch, Mode}}, _From, State) ->
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
+handle_call({total_retailer, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("total_retailer: merchant ~p, conditions ~p", [Merchant, Conditions]),
+    {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
+
+    Month = ?v(<<"month">>, Conditions, []),
+    SortConditions = lists:keydelete(<<"month">>, 1, NewConditions),
+    
+    Sql = "select count(*) as total"
+	", sum(balance) as balance"
+	", sum(consume) as consume"
+	", sum(score) as score" 
+	" from w_retailer"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ case Month of
+	       [] -> [];
+	       _ -> " and month(birth)=" ++ ?to_s(Month)
+	   end
+	++ ?sql_utils:condition(proplists, SortConditions),
+
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
 handle_call({total_charge_detail, Merchant, Conditions}, _From, State) ->
     ?DEBUG("total_charge_detail: merchant ~p, conditions ~p", [Merchant, Conditions]),
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
@@ -729,10 +766,44 @@ handle_call({total_charge_detail, Merchant, Conditions}, _From, State) ->
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
+handle_call({filter_retailer, Merchant, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
+    ?DEBUG("filter_retailer: merchant ~p, conditions ~p, page ~p",
+	   [Merchant, Conditions, CurrentPage]),
+    {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
+    Month = ?v(<<"month">>, Conditions, []),
+    SortConditions = lists:keydelete(<<"a.month">>, 1, NewConditions),
+    
+    Sql = "select a.id"
+	", a.merchant" 
+	", a.name"
+	", a.birth"
+	", a.type as type_id"
+	", a.balance"
+	", a.consume"
+	", a.score"
+	", a.mobile"
+	", a.address"
+	", a.shop as shop_id"
+	", a.entry_date"
+
+	", b.name as shop_name" 
+	" from w_retailer a"
+	" left join shops b on a.shop=b.id"
+	" where a.merchant=" ++ ?to_s(Merchant)
+	++ case Month of
+	       [] -> [];
+	       _ -> " and month(a.birth)=" ++ ?to_s(Month)
+	   end
+	++ ?sql_utils:condition(proplists, SortConditions)
+	++ " and a.deleted=" ++ ?to_s(?NO) 
+	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
+    Reply =  ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
 handle_call({filter_charge_detail, Merchant, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
     ?DEBUG("filter_charge_detail: merchant ~p, conditions ~p, page ~p",
 	   [Merchant, Conditions, CurrentPage]),
-    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions), 
     Sql = 
 	"select a.id, a.rsn"
 	", a.shop as shop_id"
@@ -748,7 +819,7 @@ handle_call({filter_charge_detail, Merchant, Conditions, CurrentPage, ItemsPerPa
 	" left join w_retailer b on a.retailer=b.id"
 	" left join shops c on a.shop=c.id"
 
-	" where a.merchant=" ++ ?to_s(Merchant)
+	" where a.merchant=" ++ ?to_s(Merchant) 
 	++ ?sql_utils:condition(proplists, NewConditions)
 	++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime)
 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
@@ -791,6 +862,32 @@ handle_call({filter_ticket_detail, Merchant, Conditions, CurrentPage, ItemsPerPa
 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
+
+handle_call({match_phone, Merchant, Phone}, _From, State) ->
+    ?DEBUG("match_phone: merchant ~p, Phone ~p", [Merchant, Phone]),
+    PromptNum = ?w_good_sql:prompt_num(Merchant),
+    
+    First = string:substr(?to_s(Phone), 1, 1),
+    Last  = string:substr(?to_s(Phone), string:len(?to_s(Phone))),
+    Match = string:strip(?to_s(Phone), both, $/),
+
+    Sql = "select id, name, mobile from w_retailer"
+	++ " where merchant=" ++ ?to_s(Merchant)
+	++ " and "
+	++ case {First, Match, Last} of
+	       {"/", Match, "/"} ->
+		   "mobile=\'" ++ Match ++ "\'"; 
+	       {"/", Match, _} ->
+		   "mobile like \'" ++ Match ++ "%\'";
+	       {_, Match, "/"} ->
+		   "mobile like \'%" ++ Match ++ "\'";
+	       {_, Match, _}->
+		   "mobile like \'%" ++ Match ++ "%\'"
+	   end
+	++ " limit " ++ ?to_s(PromptNum),
+
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
     
 handle_call(_Request, _From, State) ->
     Reply = ok,
@@ -813,5 +910,3 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
-
-
