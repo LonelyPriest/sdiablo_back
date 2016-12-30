@@ -26,7 +26,7 @@
 		    x-ng-click="list_draft()">草稿<i class="glyphicon glyphicon-send"></i>
 	    </button>
 
-	    <button x-ng-if="select.retailer.type===1"
+	    <button x-ng-if="select.retailer.type_id===1"
 		    class="btn green-meadow purple-stripe"
 		    x-ng-disabled="disable_withdraw()"
 		    x-ng-click="withdraw()">提现<i class="glyphicon glyphicon-yen"></i>
@@ -62,9 +62,13 @@
 	  	       x-ng-model="select.retailer"
 	  	       placeholder="请选择会员" 
 	  	       typeahead-editable="false"
-		       typeahead-on-select="change_retailer()"
-	  	       uib-typeahead="r as r.lname for r in
-	  			      retailers|filter:$viewValue|limitTo:20"/> 
+		       typeahead-wait-ms="300"
+		       typeahead-loading="loading"
+		       typeahead-on-select="on_select_retailer($item, $model, $label)"
+		       uib-typeahead="s as s.name for s in match_retailer_phone($viewValue)"/>
+		<span x-ng-show="loading">
+	  	  <i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
+		</span>
 	      </div>
 	    </div>
 
@@ -270,7 +274,7 @@
 	    
 	  </div>
 
-	  <div x-ng-if="select.retailer.type===1" class="row diablo-form-group"> 
+	  <div x-ng-if="select.retailer.type_id===1" class="row diablo-form-group"> 
 	    <div class="col-sm-3 col-md-3">
 	      <div class="input-group">
 		<span class="input-group-addon">

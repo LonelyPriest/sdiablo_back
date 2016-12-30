@@ -99,6 +99,16 @@ condition(page_desc, {use_type, Sort}, CurrentPage, ItemsPerPage) ->
 condition(page_desc, {use_datetime, Sort}, CurrentPage, ItemsPerPage) ->
     " order by a.entry_date " ++ ?MODULE:sort(Sort)
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
+    	++ ", " ++ ?to_s(ItemsPerPage);
+
+%% retailer use
+condition(page_desc, {use_balance, Sort}, CurrentPage, ItemsPerPage) ->
+    " order by a.balance " ++ ?MODULE:sort(Sort)
+	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
+    	++ ", " ++ ?to_s(ItemsPerPage);
+condition(page_desc, {use_consume, Sort}, CurrentPage, ItemsPerPage) ->
+    " order by a.consume " ++ ?MODULE:sort(Sort)
+	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
     	++ ", " ++ ?to_s(ItemsPerPage).
 
 sort(0) -> "desc";

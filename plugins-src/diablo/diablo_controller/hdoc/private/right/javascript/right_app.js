@@ -396,8 +396,10 @@ rightApp.service("rightService", function($resource, $q, $uibModal, dateFilter){
 
     var httpRetailer = $resource("/wretailer/:operation/:id",
                          {operation: '@operation', id: '@id'});
+    
     this.list_retailer = function(){
-        return httpRetailer.query({operation: "list_w_retailer"});
+	return httpRetailer.query({operation: 'list_sys_wretailer'});
+        // return httpRetailer.query({operation: "list_w_retailer"});
     };
     
     var httpEmploy = $resource("/employ/:operation/:id");

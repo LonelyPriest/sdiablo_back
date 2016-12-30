@@ -12,7 +12,9 @@
 		    x-ng-click="go_back()">返回
 	      <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
 
-	  <button x-ng-if="select.retailer.type===1 && select.withdraw!==0"
+	  <button x-ng-if="select.retailer.type_id===1
+			   && select.withdraw!==0
+			   && select.total!==0"
 		  class="btn green-meadow purple-stripe"
 		  x-ng-disabled="disable_withdraw()"
 		  x-ng-click="withdraw()">返现

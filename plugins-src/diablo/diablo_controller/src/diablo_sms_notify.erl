@@ -9,36 +9,48 @@ sms_notify(Merchant, {Shop, Phone, Action, Money, RetailerBalance, Score}) ->
     ?DEBUG("sms_notify: merchants ~p, shop ~p, phone ~p, action ~p, money ~p"
 	   ", rbalance ~p score ~p",
 	   [Merchant, Shop, Phone, Action, Money, RetailerBalance, Score]),
-    case ?w_user_profile:get(sms_rate, Merchant) of
-	{ok, []} -> ?err(sms_rate_not_found, Merchant);
-	{ok, SMSRate} ->
-	    MerchantBalance = ?v(<<"balance">>, SMSRate),
-	    Rate = ?v(<<"rate">>, SMSRate),
-	    case Rate > MerchantBalance of
-		true  -> ?err(sms_not_enought_blance, Merchant);
-		false ->
-		    case sms_once(aliqin,
-				  Merchant,
-				  {Shop, Phone, Action, Money, RetailerBalance, Score}) of
-			{ok, {sms_send, Phone}} ->
-			    Sql = "update merchants set balance=balance-" ++ ?to_s(Rate)
-				++ ", sms_send=sms_send+1"
-				++ " where id=" ++ ?to_s(Merchant),
-			    case ?sql_utils:execute(write, Sql, Merchant) of
-				{ok, Merchant} ->
-				    ?w_user_profile:update(sms_rate, Merchant),
-				    {0, Merchant};
-				_Error ->
-				    ?sql_utils:execute(write, Sql, Merchant),
-				    ?w_user_profile:update(sms_rate, Merchant),
-				    {0, Merchant}
-			    end;
-			{error, {sms_center_not_found, Merchant}} ->
-			    ?err(sms_center_not_found, Merchant);
-			{error, _} ->
-			    ?err(sms_send_failed, Merchant)
-		    end
-	    end
+    try
+	case ?w_user_profile:get(merchant, Merchant) of
+	    {ok, []} -> ?err(sms_rate_not_found, Merchant);
+	    {ok, MerchantInfo} ->
+		?DEBUG("MerchantInfo ~p", [MerchantInfo]),
+		MerchantBalance = ?v(<<"balance">>, MerchantInfo),
+
+		case ?w_user_profile:get(sms_rate, Merchant) of
+		    {ok, []} -> ?err(sms_rate_not_found, Merchant);
+		    {ok, SMSRate} ->
+			Rate = ?v(<<"rate">>, SMSRate),
+			?DEBUG("sms rate ~p, MerchantBalance ~p", [Rate, MerchantBalance]),
+			case Rate > MerchantBalance of
+			    true  -> ?err(sms_not_enought_blance, Merchant);
+			    false ->
+				case sms_once(aliqin,
+					      Merchant,
+					      {Shop, Phone, Action, Money, RetailerBalance, Score}) of
+				    {ok, {sms_send, Phone}} ->
+					Sql = "update merchants set balance=balance-" ++ ?to_s(Rate)
+					    ++ ", sms_send=sms_send+1"
+					    ++ " where id=" ++ ?to_s(Merchant),
+					case ?sql_utils:execute(write, Sql, Merchant) of
+					    {ok, Merchant} ->
+						?w_user_profile:update(sms_rate, Merchant),
+						{0, Merchant};
+					    _Error ->
+						?sql_utils:execute(write, Sql, Merchant),
+						?w_user_profile:update(sms_rate, Merchant),
+						{0, Merchant}
+					end;
+				    {error, {sms_center_not_found, Merchant}} ->
+					?err(sms_center_not_found, Merchant);
+				    {error, _} ->
+					?err(sms_send_failed, Merchant)
+				end
+			end
+		end
+	end
+    catch
+	_:_ ->
+	    ?err(sms_send_failed, Merchant)
     end.
 	    
 sms_once(aliqin, Merchant, {Shop, Phone, Action, Money, Balance, Score}) ->

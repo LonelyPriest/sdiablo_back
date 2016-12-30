@@ -838,9 +838,6 @@ handle_call({filter_rsn_group, {Mode, Sort},
     ?DEBUG("filter_rsn_group_and: mode ~p, sort ~p, currentPage ~p"
 	   ", ItemsPerpage ~p, Merchant ~p~n",
 	   [Mode, Sort, CurrentPage, ItemsPerPage, Merchant]), 
-
-    
-    
     Sql = sale_new(rsn_groups, Merchant, Conditions,
 		   fun() ->
 			   rsn_order(Mode) ++ ?sql_utils:sort(Sort)
@@ -1607,8 +1604,12 @@ filter_table(w_sale_with_page,
 	", a.balance, a.should_pay, a.cash, a.card, a.wxin, a.withdraw, a.ticket, a.verificate"
 	", a.total, a.score"
 	
-	", a.comment, a.type, a.state, a.entry_date"
-    	" from w_sale a"
+	", a.comment, a.type, a.state, a.entry_date" 
+	", b.name as retailer"
+	
+    	" from w_sale a" 
+	" left join w_retailer b on a.retailer=b.id"
+	
     	" where " ++ SortConditions
 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage), 
     Sql.
@@ -1754,7 +1755,10 @@ sale_new(rsn_groups, Merchant, Conditions, PageFun) ->
 	", a.employ as employee_id"
 	", a.type as sell_type"
 
+	", c.name as retailer"
+
     	" from w_sale_detail b, w_sale a"
+	" left join w_retailer c on c.id=a.retailer"
 
     	" where "
 	++ ?sql_utils:condition(proplists_suffix, CorrectCutDConditions)

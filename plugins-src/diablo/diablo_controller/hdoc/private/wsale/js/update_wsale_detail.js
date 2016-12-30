@@ -2,7 +2,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
     $scope, $routeParams, $q, dateFilter, diabloUtilsService,
     diabloPromise, diabloFilter, diabloPattern,
     wgoodService, purchaserService, wretailerService, wsaleService,
-    user, filterPromotion, filterScore, filterRetailer, filterEmployee,
+    user, filterPromotion, filterScore, filterEmployee,
     filterSizeGroup, filterBrand, filterColor, filterType, base){
     console.log(user);
 
@@ -12,7 +12,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
     $scope.promotions    = filterPromotion;
     $scope.scores        = filterScore;
     
-    $scope.retailers     = filterRetailer; 
+    // $scope.retailers     = filterRetailer; 
     // $scope.employees     = filterEmployee;
     $scope.size_groups   = filterSizeGroup;
     $scope.brands        = filterBrand;
@@ -108,63 +108,73 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	if (result.ecode === 0){
 	    // result[0] is the record detail
 	    var base        = result.sale;
-	    var sells       = result.detail;
-	    var wsale = wsaleUtils.cover_wsale(
-		base,
-		sells,
-		$scope.shops,
-		$scope.brands,
-		$scope.retailers,
-		filterEmployee,
-		$scope.types,
-		$scope.colors,
-		$scope.size_groups,
-		$scope.promotions,
-		$scope.scores);
 
-	    // console.log(wsale);
-	    
-	    $scope.old_select = wsale.select;
-	    $scope.select = angular.extend($scope.select, wsale.select);
-	    $scope.select.o_retailer = $scope.select.retailer;
-	    $scope.select.left_balance = $scope.select.surplus - $scope.select.withdraw;
+	    diabloFilter.get_wretailer_batch([base.retailer_id]).then(function(retailers){
+		console.log(retailers);
 
-	    $scope.show_promotions = wsale.show_promotions;
+		var sells       = result.detail;
+		var wsale = wsaleUtils.cover_wsale(
+		    base,
+		    sells,
+		    $scope.shops,
+		    $scope.brands,
+		    retailers,
+		    filterEmployee,
+		    $scope.types,
+		    $scope.colors,
+		    $scope.size_groups,
+		    $scope.promotions,
+		    $scope.scores);
 
-	    // setting
-	    var shopId = $scope.select.shop.id;
-	    $scope.setting.check_sale = wsaleUtils.check_sale(shopId, $scope.base_settings);
-	    $scope.setting.no_vip = wsaleUtils.no_vip(shopId, $scope.base_settings);
-	    $scope.setting.round = wsaleUtils.round(shopId, $scope.base_settings); 
-	    $scope.setting.cake_mode = wsaleUtils.cake_mode(shopId, $scope.base_settings);
-	    
-	    if (diablo_no === $scope.setting.cake_mode) 
-		$scope.vpays = wsaleService.vpays;
-	    else 
-		$scope.vpays = wsaleService.cake_vpays;
-	    
-	    $scope.employees = wsaleUtils.get_login_employee(
-		$scope.select.shop.id,
-		base.employ_id,
-		filterEmployee).filter;
-	    // console.log($scope.employees);
+		// console.log(wsale);
+		
+		$scope.old_select = wsale.select;
+		$scope.select = angular.extend($scope.select, wsale.select);
+		$scope.select.o_retailer = $scope.select.retailer;
+		$scope.select.left_balance = $scope.select.surplus - $scope.select.withdraw;
+
+		$scope.show_promotions = wsale.show_promotions;
+
+		// setting
+		var shopId = $scope.select.shop.id;
+		$scope.setting.check_sale = wsaleUtils.check_sale(shopId, $scope.base_settings);
+		$scope.setting.no_vip = wsaleUtils.no_vip(shopId, $scope.base_settings);
+		$scope.setting.round = wsaleUtils.round(shopId, $scope.base_settings); 
+		$scope.setting.cake_mode = wsaleUtils.cake_mode(shopId, $scope.base_settings);
+		
+		if (diablo_no === $scope.setting.cake_mode) 
+		    $scope.vpays = wsaleService.vpays;
+		else 
+		    $scope.vpays = wsaleService.cake_vpays;
+		
+		$scope.employees = wsaleUtils.get_login_employee(
+		    $scope.select.shop.id,
+		    base.employ_id,
+		    filterEmployee).filter;
+		// console.log($scope.employees);
 
 
-	    // inventory
-	    $scope.old_inventories = wsale.details;
-	    $scope.inventories = angular.copy(wsale.details);
-	    $scope.inventories.unshift({$edit:false, $new:true});
+		// inventory
+		$scope.old_inventories = wsale.details;
+		$scope.inventories = angular.copy(wsale.details);
+		$scope.inventories.unshift({$edit:false, $new:true});
 
-	    console.log($scope.old_inventories);
-	    console.log($scope.inventories);
+		console.log($scope.old_inventories);
+		console.log($scope.inventories);
 
-	    $scope.re_calculate(); 
+		$scope.re_calculate();
+	    }); 
 	}
 	
     });
 
     $scope.match_style_number = function(viewValue){
 	return diabloFilter.match_w_sale(viewValue, $scope.select.shop.id);
+    };
+
+    // retailer;
+    $scope.match_retailer_phone = function(viewValue){
+	return wsaleUtils.match_retailer_phone(viewValue, diabloFilter)
     };
 
     $scope.copy_select = function(add, src){
@@ -546,7 +556,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	$scope.select.has_pay += wsaleUtils.to_float($scope.select.card);
 	$scope.select.has_pay += wsaleUtils.to_float($scope.select.wxin);
 
-	if ($scope.select.retailer.type === diablo_charge_retailer)
+	if ($scope.select.retailer.type_id === diablo_charge_retailer)
 	    $scope.select.has_pay += wsaleUtils.to_float($scope.select.withdraw);
 
 	$scope.select.charge = $scope.select.should_pay

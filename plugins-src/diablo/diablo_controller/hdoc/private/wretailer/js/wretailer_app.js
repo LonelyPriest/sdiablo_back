@@ -130,7 +130,7 @@ wretailerApp.config(['$routeProvider', function($routeProvider){
 
 wretailerApp.service("wretailerService", function($resource, dateFilter){
     this.error = {
-     	2101: "会员信息重复！！",
+     	2101: "会员信息重复，该手机号码已注册！！",
 	2102: "会员密码不正确，请重新输入！！",
 	2103: "充值方案名称已存在，请重新输入方案名称!!",
 	2104: "积分方案已存在，请重新输入方案，！！",
@@ -206,8 +206,6 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 		size:  order_used_sizes,
 		color: colors, sort:sorts};
     };
-
-    
     
     var http = $resource("/wretailer/:operation/:id",
     			 {operation: '@operation', id: '@id'});
@@ -216,6 +214,8 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 	return http.save(
 	    {operation:"new_w_retailer"},
 	    {name:     r.name,
+	     py:       diablo_pinyin(r.name),
+	     id_card:  r.id_card,
 	     password: diablo_set_string(r.password), 
 	     score:    diablo_set_float(r.score),
 	     mobile:   r.mobile,
@@ -227,9 +227,7 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
     };
 
     this.delete_retailer = function(wretailerId){
-	return http.delete({
-	    operation: "del_w_retailer",
-	    id:wretailerId}).$promise;
+	return http.delete({operation: "del_w_retailer", id:wretailerId}).$promise;
     };
 
     this.update_retailer = function(r){
@@ -237,6 +235,8 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 	    {operation: "update_w_retailer"},
 	    {id:       r.id,
 	     name:     r.name,
+	     py:       r.py,
+	     id_card:  r.id_card,
 	     mobile:   r.mobile,
 	     address:  r.address,
 	     shop:     r.shop,
@@ -269,13 +269,18 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
     };
 
     this.list_retailer = function(){
-	return http.query({operation: "list_w_retailer"}).$promise
+	return http.query({operation: "list_w_retailer"}).$promise;
     };
 
-    this.filter_retailer = function(match, fields, currentPage, itemsPerpage){
+    this.get_retailer = function(retailerId){
+	return http.get({operation: "get_w_retailer", id:retailerId}).$promise;
+    };
+
+    this.filter_retailer = function(mode, match, fields, currentPage, itemsPerpage){
 	return http.save(
 	    {operation: "filter_retailer_detail"},
-	    {match:  angular.isDefined(match) ? match.op : undefined,
+	    {mode:   mode,
+	     match:  angular.isDefined(match) ? match.op : undefined,
 	     fields: fields,
 	     page:   currentPage,
 	     count:  itemsPerpage}).$promise;
@@ -403,6 +408,11 @@ wretailerApp.service("wretailerService", function($resource, dateFilter){
 
     this.export_w_retailer = function(){
 	return http.save({operation: "export_w_retailer"}).$promise;
+    };
+
+    this.syn_retailer_pinyin = function(retailers){
+	return http.save({operation: "syn_retailer_pinyin"},
+			 {retailer:retailers}).$promise;
     };
     
 });

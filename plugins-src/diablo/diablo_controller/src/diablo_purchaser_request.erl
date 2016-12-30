@@ -952,13 +952,20 @@ filter_condition(trans_note, Rsns, Conditions) ->
 
 
 csv_head(trans, Do) ->
-    Do("序号,单号,厂商,门店,入单员,采购,数量,现金,刷卡,汇款,核销,费用,帐户欠款,应付,实付,本次欠款,备注,日期");
+    H = "序号,单号,厂商,门店,入单员,采购,数量,现金,刷卡,汇款,核销,费用,帐户欠款,应付,实付,本次欠款,备注,日期",
+    UTF8 = unicode:characters_to_list(H, utf8),
+    GBK  = diablo_iconv:convert("utf-8", "gbk", UTF8), 
+    Do(GBK);
 csv_head(trans_note, Do) ->
-    Do("序号,单号,厂商,门店,店员,交易类型,款号,品牌,类型,折扣,数量,日期");
+    H = "序号,单号,厂商,门店,店员,交易类型,款号,品牌,类型,折扣,数量,日期",
+    UTF8 = unicode:characters_to_list(H, utf8),
+    GBK  = diablo_iconv:convert("utf-8", "gbk", UTF8), 
+    Do(GBK);
 csv_head(stock, Do) ->
-    Do("序号,款号,品牌,类别,性别,厂商,季节,年度,吊牌价,折扣,进价,进折扣,数量,店铺,上架日期").
-
-
+    H = "序号,款号,品牌,类别,性别,厂商,季节,年度,吊牌价,折扣,进价,进折扣,数量,店铺,上架日期",
+    UTF8 = unicode:characters_to_list(H, utf8),
+    GBK  = diablo_iconv:convert("utf-8", "gbk", UTF8), 
+    Do(GBK). 
 
 do_write(trans, _Do, _Count, [])->
     ok;
@@ -1005,7 +1012,10 @@ do_write(trans, Do, Count, [H|T]) ->
 	++ ?to_s(Comment) ++ ?d
 	++ ?to_s(Date),
     %% ++ ?to_s(Date),
-    Do(L),
+    %% Do(L),
+    UTF8 = unicode:characters_to_list(L, utf8),
+    GBK  = diablo_iconv:convert("utf-8", "gbk", UTF8), 
+    Do(GBK),
     do_write(trans, Do, Count + 1, T);
 
 do_write(trans_note, _Do, _Count, [])->
@@ -1052,7 +1062,11 @@ do_write(trans_note, Do, Count, [H|T]) ->
     %% ++ ?to_s(Comment) ++ ?d
 	++ ?to_s(Date),
     %% ++ ?to_s(Date),
-    Do(L),
+    
+    UTF8 = unicode:characters_to_list(L, utf8),
+    GBK  = diablo_iconv:convert("utf-8", "gbk", UTF8), 
+    Do(GBK),
+    
     do_write(trans_note, Do, Count + 1, T);
 
 do_write(stock, _Do, _Count, [])->
@@ -1095,7 +1109,10 @@ do_write(stock, Do, Count, [H|T]) ->
 	
 	++ ?to_s(Shop) ++ ?d 
 	++ ?to_s(Date),
-    Do(L),
+
+    UTF8 = unicode:characters_to_list(L, utf8),
+    GBK  = diablo_iconv:convert("utf-8", "gbk", UTF8), 
+    Do(GBK),    
     do_write(stock, Do, Count + 1, T).
 
 export_type(0) -> trans;

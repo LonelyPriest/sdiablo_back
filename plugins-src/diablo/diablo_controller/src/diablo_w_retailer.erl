@@ -24,7 +24,7 @@
 -export([charge/2, charge/3]).
 -export([score/2, score/3, ticket/3, get_ticket/3]).
 -export([filter/4, filter/6]).
--export([match/3]).
+-export([match/3, syn/3]).
 
 -define(SERVER, ?MODULE). 
 
@@ -46,7 +46,10 @@ retailer(delete, Merchant, RetailerId) ->
     gen_server:call(Name, {delete_retailer, Merchant, RetailerId});
 retailer(get, Merchant, RetailerId) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {get_retailer, Merchant, RetailerId}).
+    gen_server:call(Name, {get_retailer, Merchant, RetailerId});
+retailer(get_batch, Merchant, RetailerIds) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {get_retailer_batch, Merchant, RetailerIds}).
     
 retailer(update, Merchant, RetailerId, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -124,10 +127,10 @@ filter(total_ticket_detail, 'and', Merchant, Conditions) ->
     gen_server:call(Name, {total_ticket_detail, Merchant, Conditions}).
 
 
-filter(retailer, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
+filter({retailer, Order, Sort}, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(
-      Name, {filter_retailer, Merchant, Conditions, CurrentPage, ItemsPerPage});
+      Name, {{filter_retailer, Order, Sort}, Merchant, Conditions, CurrentPage, ItemsPerPage});
 
 filter(charge_detail, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
     Name = ?wpool:get(?MODULE, Merchant),
@@ -140,9 +143,13 @@ filter(ticket_detail, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
       Name, {filter_ticket_detail, Merchant, Conditions, CurrentPage, ItemsPerPage}).
 
 %% match
-match(phone, Merchant, Phone) ->
+match(phone, Merchant, {Mode, Phone}) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {match_phone, Merchant, Phone}).
+    gen_server:call(Name, {match_phone, Merchant, {Mode, Phone}}).
+
+syn(pinyin, Merchant, Retailers) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {syn_pinyin, Merchant, Retailers}, 30 * 1000).
     
 
 start_link(Name) ->
@@ -158,6 +165,8 @@ init([]) ->
 handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
     ?DEBUG("new_retailer with attrs ~p", [Attrs]),
     Name     = ?v(<<"name">>, Attrs),
+    Pinyin   = ?v(<<"py">>, Attrs, []),
+    IDCard   = ?v(<<"id_card">>, Attrs, []),
     Birth    = ?v(<<"birth">>, Attrs),
     Type     = ?v(<<"type">>, Attrs),
     Passwd   = ?v(<<"password">>, Attrs, []), 
@@ -166,30 +175,42 @@ handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
     Address  = ?v(<<"address">>, Attrs, []),
     Shop     = ?v(<<"shop">>, Attrs, -1),
 
-    %% name can not be same
-    Sql = "select id, name, mobile, address"
-	++ " from w_retailer" 
-	++ " where merchant=" ++ ?to_s(Merchant) 
-    %% ++ " and name = " ++ "\"" ++ ?to_s(Name) ++ "\""
-	++ " and mobile = " ++ "\"" ++ ?to_s(Mobile) ++ "\"" 
-	++ " and deleted = " ++ ?to_s(?NO),
+    %% mobile can not be same
+    Sql = case Type =:= ?SYSTEM_RETAILER of
+	      true -> 
+		  "select id, name, mobile, address"
+		      ++ " from w_retailer" 
+		      ++ " where merchant=" ++ ?to_s(Merchant)
+		      ++ " and name = " ++ "\'" ++ ?to_s(Name) ++ "\'" 
+		      ++ " and mobile = " ++ "\'" ++ ?to_s(Mobile) ++ "\'"
+		      ++ " and deleted = " ++ ?to_s(?NO);
+	      false ->
+		  "select id, name, mobile, address"
+		      ++ " from w_retailer" 
+		      ++ " where merchant=" ++ ?to_s(Merchant)
+		      ++ " and mobile = " ++ "\'" ++ ?to_s(Mobile) ++ "\'"
+		      ++ " and type !=" ++ ?to_s(?SYSTEM_RETAILER) 
+		      ++ " and deleted = " ++ ?to_s(?NO)
+	  end,
 
     case ?sql_utils:execute(read, Sql) of
 	{ok, []} -> 
 	    Sql2 = "insert into w_retailer("
-		"name, birth, type, password, score"
+		"name, py, id_card, birth, type, password, score"
 		" ,mobile, address, shop, merchant, entry_date)"
 		++ " values ("
-		++ "\"" ++ ?to_s(Name) ++ "\","
-		++ "\"" ++ ?to_s(Birth) ++ "\","
+		++ "\'" ++ ?to_s(Name) ++ "\',"
+		++ "\'" ++ ?to_s(Pinyin) ++ "\',"
+		++ "\'" ++ ?to_s(IDCard) ++ "\',"
+		++ "\'" ++ ?to_s(Birth) ++ "\',"
 		++ ?to_s(Type) ++ ","
-		++ "\"" ++ ?to_s(Passwd) ++ "\"," 
+		++ "\'" ++ ?to_s(Passwd) ++ "\'," 
 		++ ?to_s(Score) ++ "," 
-		++ "\"" ++ ?to_s(Mobile) ++ "\","
-		++ "\"" ++ ?to_s(Address) ++ "\","
+		++ "\'" ++ ?to_s(Mobile) ++ "\',"
+		++ "\'" ++ ?to_s(Address) ++ "\',"
 		++ ?to_s(Shop) ++ ","
 		++ ?to_s(Merchant) ++ ","
-		++ "\"" ++ ?utils:current_time(format_localtime) ++ "\");", 
+		++ "\'" ++ ?utils:current_time(format_localtime) ++ "\')", 
 	    Reply = ?sql_utils:execute(insert, Sql2),
 	    ?w_user_profile:update(retailer, Merchant),
 	    {reply, Reply, State};
@@ -204,6 +225,8 @@ handle_call({update_retailer, Merchant, RetailerId, Attrs}, _From, State) ->
 	   [Merchant, RetailerId, Attrs]),
 
     Name     = ?v(<<"name">>, Attrs),
+    Pinyin   = ?v(<<"py">>, Attrs),
+    IDCard   = ?v(<<"id_card">>, Attrs),
     Mobile   = ?v(<<"mobile">>, Attrs),
     Shop     = ?v(<<"shop">>, Attrs),
     Address  = ?v(<<"address">>, Attrs), 
@@ -213,24 +236,28 @@ handle_call({update_retailer, Merchant, RetailerId, Attrs}, _From, State) ->
     OBalance  = ?v(<<"obalance">>, Attrs),
     NBalance  = ?v(<<"nbalance">>, Attrs),
 
-    NameExist =
-	case Name of
-	    undefined -> {ok, []} ;
-	    Name ->
-		Sql = "select id, name from w_retailer"
-		    " where name=" ++ "\'" ++ ?to_s(Name) ++ "\'"
-		    ++ " and merchant=" ++ ?to_s(Merchant)
-		    ++ " and deleted=" ++ ?to_s(?NO),
-		case ?mysql:fetch(read, Sql) of
-		    {ok, R} -> {ok, R};
-		    {error, {_, Err}} ->
-			{error, ?err(db_error, Err)}
-		end
-	end,
+    Sql = case Type =:= ?SYSTEM_RETAILER of
+	      true ->
+		  "select id, name, mobile, address"
+		      ++ " from w_retailer" 
+		      ++ " where merchant=" ++ ?to_s(Merchant)
+		      ++ " and name = " ++ "\'" ++ ?to_s(Name) ++ "\'" 
+		      ++ " and mobile = " ++ "\'" ++ ?to_s(Mobile) ++ "\'" 
+		      ++ " and deleted = " ++ ?to_s(?NO);
+	      false ->
+		  "select id, name, mobile, address"
+		      ++ " from w_retailer" 
+		      ++ " where merchant=" ++ ?to_s(Merchant)
+		      ++ " and mobile = " ++ "\'" ++ ?to_s(Mobile) ++ "\'"
+		      ++ " and type !=" ++ ?to_s(?SYSTEM_RETAILER) 
+		      ++ " and deleted = " ++ ?to_s(?NO)
+	  end,
 
-    case NameExist of
+    case ?sql_utils:execute(read, Sql) of
 	{ok, []} ->
 	    Updates = ?utils:v(name, string, Name)
+		++ ?utils:v(py, string, Pinyin)
+		++ ?utils:v(id_card, string, IDCard)
 		++ ?utils:v(mobile, string, Mobile)
 		++ ?utils:v(shop, integer, Shop)
 		++ ?utils:v(address, string, Address)
@@ -263,8 +290,10 @@ handle_call({update_retailer, Merchant, RetailerId, Attrs}, _From, State) ->
 		end, 
 	    ?w_user_profile:update(retailer, Merchant),
 	    {reply, Reply, State}; 
-	{error, Error} ->
-	    {reply, {error, Error}, State}
+	{ok, _} ->
+	    {reply, {error, ?err(retailer_exist, Mobile)}, State};
+	Error ->
+	    {reply, Error, State}
     end;
 
 
@@ -313,6 +342,20 @@ handle_call({get_retailer, Merchant, RetailerId}, _From, State) ->
     Reply = ?sql_utils:execute(write, Sql, RetailerId),
     {reply, Reply, State};
 
+handle_call({get_retailer_batch, Merchant, RetailerIds}, _From, State) ->
+    ?DEBUG("get_retailer_batch with merchant ~p, retailerIds ~p",
+	   [Merchant, RetailerIds]),
+    Sql = "select id, merchant, name, py"
+	", shop as shop_id"
+	", type as type_id"
+	", balance, score, mobile"
+	" from w_retailer"
+	++ " where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, [{<<"id">>, lists:usort(RetailerIds)}]),
+    
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
 handle_call({delete_retailer, Merchant, RetailerId}, _From, State) ->
     ?DEBUG("delete_retailer with merchant ~p, retailerId ~p",
 	   [Merchant, RetailerId]),
@@ -327,6 +370,8 @@ handle_call({list_retailer, Merchant}, _From, State) ->
     ?DEBUG("lookup retail with merchant ~p", [Merchant]),
     Sql = "select a.id"
 	", a.name"
+	", a.id_card"
+	", a.py"
 	", a.birth"
 	", a.type as type_id"
 	", a.balance"
@@ -766,9 +811,10 @@ handle_call({total_charge_detail, Merchant, Conditions}, _From, State) ->
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
-handle_call({filter_retailer, Merchant, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
-    ?DEBUG("filter_retailer: merchant ~p, conditions ~p, page ~p",
-	   [Merchant, Conditions, CurrentPage]),
+handle_call({{filter_retailer, Order, Sort},
+	     Merchant, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
+    ?DEBUG("filter_retailer: order ~p, sort ~p, merchant ~p, conditions ~p, page ~p",
+	   [Order, Sort, Merchant, Conditions, CurrentPage]),
     {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
     Month = ?v(<<"month">>, Conditions, []),
     SortConditions = lists:keydelete(<<"a.month">>, 1, NewConditions),
@@ -776,6 +822,7 @@ handle_call({filter_retailer, Merchant, Conditions, CurrentPage, ItemsPerPage}, 
     Sql = "select a.id"
 	", a.merchant" 
 	", a.name"
+	", a.id_card"
 	", a.birth"
 	", a.type as type_id"
 	", a.balance"
@@ -796,7 +843,7 @@ handle_call({filter_retailer, Merchant, Conditions, CurrentPage, ItemsPerPage}, 
 	   end
 	++ ?sql_utils:condition(proplists, SortConditions)
 	++ " and a.deleted=" ++ ?to_s(?NO) 
-	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
+	++ ?sql_utils:condition(page_desc, {Order, Sort}, CurrentPage, ItemsPerPage),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
@@ -850,6 +897,7 @@ handle_call({filter_ticket_detail, Merchant, Conditions, CurrentPage, ItemsPerPa
 	", a.state, a.remark, a.entry_date"
 	
 	", b.name as retailer"
+	", b.shop as shop_id"
 	", b.mobile"
 	", c.name as score"
 	" from w_ticket a"
@@ -863,30 +911,56 @@ handle_call({filter_ticket_detail, Merchant, Conditions, CurrentPage, ItemsPerPa
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({match_phone, Merchant, Phone}, _From, State) ->
-    ?DEBUG("match_phone: merchant ~p, Phone ~p", [Merchant, Phone]),
+handle_call({match_phone, Merchant, {Mode, Phone}}, _From, State) ->
+    ?DEBUG("match_phone: merchant ~p, Mode ~p, Phone ~p", [Merchant, Mode, Phone]),
     PromptNum = ?w_good_sql:prompt_num(Merchant),
     
     First = string:substr(?to_s(Phone), 1, 1),
     Last  = string:substr(?to_s(Phone), string:len(?to_s(Phone))),
     Match = string:strip(?to_s(Phone), both, $/),
 
-    Sql = "select id, name, mobile from w_retailer"
+    Name = case Mode of
+	       0 -> "mobile";
+	       1 -> "py";
+	       2 -> "name"
+	   end,
+
+    Sql = "select id, merchant, name, py"
+	", shop as shop_id"
+	", type as type_id"
+	", balance, score, mobile"
+	" from w_retailer"
 	++ " where merchant=" ++ ?to_s(Merchant)
 	++ " and "
 	++ case {First, Match, Last} of
 	       {"/", Match, "/"} ->
-		   "mobile=\'" ++ Match ++ "\'"; 
+		   Name ++ " =\'" ++ Match ++ "\'"; 
 	       {"/", Match, _} ->
-		   "mobile like \'" ++ Match ++ "%\'";
+		   Name ++ " like \'" ++ Match ++ "%\'";
 	       {_, Match, "/"} ->
-		   "mobile like \'%" ++ Match ++ "\'";
+		   Name ++ " like \'%" ++ Match ++ "\'";
 	       {_, Match, _}->
-		   "mobile like \'%" ++ Match ++ "%\'"
+		   Name ++ " like \'%" ++ Match ++ "%\'"
 	   end
 	++ " limit " ++ ?to_s(PromptNum),
 
     Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({syn_pinyin, Merchant, Retailers}, _From, State) ->
+    ?DEBUG("syn_pinyin with merchant ~p", [Merchant]),
+    Sqls = 
+	lists:foldr(
+	  fun({struct, R}, Acc)->
+		  Id     = ?v(<<"id">>, R),
+		  Pinyin = ?v(<<"py">>, R, []),
+		  ["update w_retailer set py=\'" ++ ?to_s(Pinyin) ++ "\'"
+		   " where merchant=" ++ ?to_s(Merchant)
+		   ++ " and id=" ++ ?to_s(Id)|Acc]
+	  end, [], Retailers),
+
+    ?DEBUG("Sqls ~p", [Sqls]),
+    Reply = ?sql_utils:execute(transaction, Sqls, Merchant),
     {reply, Reply, State};
     
 handle_call(_Request, _From, State) ->
@@ -909,4 +983,4 @@ code_change(_OldVsn, State, _Extra) ->
 
 %%%===================================================================
 %%% Internal functions
-%%%===================================================================
+%%%===================================================================    

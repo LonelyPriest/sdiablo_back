@@ -190,7 +190,9 @@ success(update_recharge, Charge) ->
 success(effect_ticket, TicketId) ->
     {0, "Success to effect ticket: "++?to_s(TicketId)++"."};
 success(consume_ticket, TicketId) ->
-    {0, "Success to consume ticket: "++?to_s(TicketId)++"."}; 
+    {0, "Success to consume ticket: "++?to_s(TicketId)++"."};
+success(syn_retailer_pinyin, Merchant) ->
+    {0, "Success to syn retailer's pinyin of merchant: "++?to_s(Merchant)++"."}; 
 
 %% wsale
 success(new_w_sale, RSn) ->

@@ -47,14 +47,31 @@
 			   required
 			   placeholder="请输入会员名称"
 			   x-ng-model="retailer.name"
-			   x-ng-pattern="pattern.name_address"></input>
+			   x-ng-pattern="pattern.name"/>
 		  </div>
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div>
 	      </div>
-	      <div ng-show="retailerNewForm.name.$invalid
-			    && !retailerNewForm.name.$pristine">
-		<span class="fg-red">中文，只允许字母，数字，不支持特殊字符</span>
+	      <div ng-show="retailerNewForm.name.$invalid && !retailerNewForm.name.$pristine">
+		<span class="fg-red">中文，只允许字母，数字，最少2个字符，不超过6个字符</span>
+	      </div> 
+	    </div>
+
+	    <div class="form-group"> 
+	      <label class="col-sm-3 col-md-3 control-label">身份证号码</label>
+	      <div class="col-sm-6 col-md-6">
+		<div x-ng-class="{'has-error': retailerNewForm.card.$invalid
+				 && !retailerNewForm.card.$pristine}">
+		  <input type="text"
+			 class="form-control"
+			 name="card"
+			 placeholder="请输入身份证号码"
+			 x-ng-model="retailer.id_card"
+			 x-ng-pattern="pattern.id_card"/>
+		</div>
+	      </div>
+	      <div ng-show="retailerNewForm.card.$invalid && !retailerNewForm.card.$pristine">
+		<span class="fg-red">数字或字母，不少于8位</span>
 	      </div> 
 	    </div>
 

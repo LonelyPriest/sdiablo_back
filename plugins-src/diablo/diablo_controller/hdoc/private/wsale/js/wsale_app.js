@@ -49,8 +49,11 @@ wsaleApp.config(['$routeProvider', function($routeProvider){
     var employee = {"filterEmployee": function(diabloFilter){
 	return diabloFilter.get_employee()}};
 
-    var retailer = {"filterRetailer": function(diabloFilter){
-	return diabloFilter.get_wretailer()}};
+    // var retailer = {"filterRetailer": function(diabloFilter){
+    // 	return diabloFilter.get_wretailer()}};
+
+    var sysretailer = {"filterSysRetailer": function(diabloFilter){
+    	return diabloFilter.get_sys_wretailer()}};
 
     var color = {"filterColor": function(diabloFilter){
 	return diabloFilter.get_color()}};
@@ -72,51 +75,51 @@ wsaleApp.config(['$routeProvider', function($routeProvider){
 	    templateUrl: '/private/wsale/html/new_wsale.html',
 	    controller: 'wsaleNewCtrl',
 	    resolve: angular.extend(
-		{}, user, promotion, score, firm, retailer, employee,
+		{}, user, promotion, score, firm, sysretailer, employee,
 		s_group, brand, type, color, base)
 	}).
 	when('/new_wsale_detail/:page?', {
 	    templateUrl: '/private/wsale/html/new_wsale_detail.html',
 	    controller: 'wsaleNewDetailCtrl',
-	    resolve: angular.extend({}, user, retailer, employee, base) 
+	    resolve: angular.extend({}, user, employee, base) 
 	}).
 	when('/update_wsale_detail/:rsn?/:ppage?', {
 	    templateUrl: '/private/wsale/html/update_wsale_detail.html',
 	    controller: 'wsaleUpdateDetailCtrl',
 	    resolve: angular.extend(
-		{}, user, promotion, score, retailer, employee,
+		{}, user, promotion, score, employee,
 		s_group, brand, color, type, base)
 	}). 
 	when('/wsale_rsn_detail/:rsn?/:ppage?', {
 	    templateUrl: '/private/wsale/html/wsale_rsn_detail.html',
 	    controller: 'wsaleRsnDetailCtrl',
 	    resolve: angular.extend(
-		{}, user, promotion, score, brand, retailer, employee,
+		{}, user, promotion, score, brand, employee,
 		firm, s_group, type, color, base)
 	}).
 	when('/reject_wsale', {
 	    templateUrl: '/private/wsale/html/reject_wsale.html',
 	    controller: 'wsaleRejectCtrl',
 	    resolve: angular.extend(
-		{}, user, promotion, score, brand, type, retailer, employee,
+		{}, user, promotion, score, brand, type, employee,
 		s_group, color, base) 
 	}).
 	when('/update_wsale_reject/:rsn?/:ppage?', {
 	    templateUrl: '/private/wsale/html/update_wsale_reject.html',
 	    controller: 'wsaleUpdateRejectCtrl',
 	    resolve: angular.extend(
-		{}, user, promotion, score, retailer, employee,
+		{}, user, promotion, score, employee,
 		s_group, brand, color, type, base)
 	}). 
 	when('/wsale_print_preview/:rsn?', {
 	    templateUrl: '/private/wsale/html/wsale_print_preview.html',
 	    controller: 'wsalePrintPreviewCtrl',
-	    resolve: angular.extend({}, retailer, s_group, base) 
+	    resolve: angular.extend({}, s_group, base) 
 	}). 
 	otherwise({
 	    templateUrl: '/private/wsale/html/new_wsale_detail.html',
 	    controller: 'wsaleNewDetailCtrl',
-	    resolve: angular.extend({}, user, retailer, employee, base)
+	    resolve: angular.extend({}, user, employee, base)
         })
 	// otherwise({
 	//     templateUrl: '/private/wsale/html/new_wsale.html',
@@ -298,7 +301,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
     diabloPattern, wgoodService, purchaserService, 
     wretailerService, wsaleService, wsaleGoodService,
     user, filterPromotion, filterScore,
-    filterFirm, filterRetailer, filterEmployee,
+    filterFirm, filterSysRetailer, filterEmployee,
     filterSizeGroup, filterBrand, filterType, filterColor, base){
     $scope.promotions = filterPromotion;
     $scope.scores     = filterScore; 
@@ -469,17 +472,23 @@ wsaleApp.controller("wsaleNewCtrl", function(
     $scope.get_employee();
     
     // retailer;
-    $scope.set_retailer = function(){
-	if ($scope.select.retailer.type !== diablo_common_retailer){
-	    $scope.select.surplus = wsaleUtils.to_float($scope.select.retailer.balance);
-	    $scope.select.left_balance = $scope.select.surplus;
-	} 
-	$scope.select.o_retailer = $scope.select.retailer;
-	$scope.select.ticket_batch = undefined;
-	$scope.select.ticket_balance = undefined;
+    $scope.match_retailer_phone = function(viewValue){
+	return wsaleUtils.match_retailer_phone(viewValue, diabloFilter)
     };
     
-    $scope.change_retailer = function(){
+    $scope.set_retailer = function(){
+    	if ($scope.select.retailer.type_id === diablo_charge_retailer){
+    	    $scope.select.surplus = wsaleUtils.to_decimal($scope.select.retailer.balance);
+    	    $scope.select.left_balance = $scope.select.surplus;
+    	} 
+    	$scope.select.o_retailer = $scope.select.retailer;
+    	$scope.select.ticket_batch = undefined;
+    	$scope.select.ticket_balance = undefined;
+    };
+    
+    $scope.on_select_retailer = function(item, model, label){
+	// console.log(item);
+	console.log($scope.select.retailer);
 	$scope.set_retailer();
 	$scope.wsaleStorage.remove($scope.wsaleStorage.get_key());
 	$scope.wsaleStorage.change_retailer($scope.select.retailer.id);
@@ -490,38 +499,40 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	if ($scope.wsale_mode[1].active){
 	    $scope.page_changed($scope.current_page); 
 	}
-    };
+    }
 
-    $scope.retailers = filterRetailer; 
+    $scope.sysRetailers = filterSysRetailer;
+    console.log($scope.sysRetailers);
     $scope.reset_retailer = function(){
-	if (diablo_yes === $scope.setting.smember){
-	    $scope.retailers = $scope.retailers.filter(function(r){
-		return r.shop === $scope.select.shop.id;
-	    });
-	}; 
-	// console.log($scope.retailer);
-	if ($scope.retailers.length !== 0){
-	    $scope.select.retailer = $scope.retailers[0];
-	    if (user.loginRetailer !== diablo_invalid){
-		for (var i=0, l=$scope.retailers.length; i<l; i++){
-                    if (user.loginRetailer === $scope.retailers[i].id){
-			$scope.select.retailer = $scope.retailers[i]
-			break;
+    	if (diablo_yes === $scope.setting.smember){
+    	    $scope.sysRetailers = $scope.sysRetailers.filter(function(r){
+    		return r.shop_id === $scope.select.shop.id;
+    	    });
+    	};
+	
+    	// console.log($scope.retailer);
+    	if ($scope.sysRetailers.length !== 0){
+    	    $scope.select.retailer = $scope.sysRetailers[0];
+    	    if (user.loginRetailer !== diablo_invalid){
+    		for (var i=0, l=$scope.sysRetailers.length; i<l; i++){
+                    if (user.loginRetailer === $scope.sysRetailers[i].id){
+    			$scope.select.retailer = $scope.sysRetailers[i]
+    			break;
                     }
-		}
+    		}
             } 
-	    $scope.set_retailer(); 
-	};
+    	    $scope.set_retailer(); 
+    	};
     };
 
-    $scope.reset_retailer();    
+    $scope.reset_retailer();
 
     /*
      * with draw
      */ 
     $scope.disable_withdraw = function(){
 	return angular.isDefined($scope.select.retailer)
-	    && $scope.select.retailer.type === diablo_charge_retailer
+	    && $scope.select.retailer.type_id === diablo_charge_retailer
 	    && $scope.select.retailer.surplus <= 0
 	    || $scope.select.charge <= 0
 	    || $scope.has_withdrawed;
@@ -705,7 +716,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
     }
 
     $scope.match_all_w_inventory();
-    
+
     // init
     $scope.inventories = [];
     $scope.inventories.push({$edit:false, $new:true});
@@ -728,37 +739,47 @@ wsaleApp.controller("wsaleNewCtrl", function(
     };
 
     $scope.list_draft = function(){
-	var draft_filter = function(keys){
-	    return keys.map(function(k){
-		var p = k.split("-");
-		return {sn:k,
-			// employee:diablo_get_object(p[1], $scope.employees),
-			retailer:diablo_get_object(parseInt(p[1]), $scope.retailers),
-			shop:diablo_get_object(parseInt(p[2]), $scope.shops)}
-	    });
-	};
-
-	var select = function(draft, resource){
-	    if (draft.shop.id !== $scope.select.shop.id){
-		$scope.select.shop = diablo_get_object(draft.shop.id, $scope.shops); 
-		$scope.get_employee(); 
+	var keys = $scope.wsaleStorage.keys(); 
+	var retailerIds = keys.map(function(k){
+	    var p = k.split("-");
+	    return parseInt(p[1]);
+	}); 
+	// console.log(retailerIds);
+	
+	diabloFilter.get_wretailer_batch(retailerIds).then(function(retailers){
+	    console.log(retailers); 
+	    var draft_filter = function(keys){
+		return keys.map(function(k){
+		    var p = k.split("-");
+		    return {sn:k,
+			    // employee:diablo_get_object(p[1], $scope.employees),
+			    retailer:diablo_get_object(parseInt(p[1]), retailers),
+			    shop:diablo_get_object(parseInt(p[2]), $scope.shops)}
+		});
 	    };
-	    
-	    $scope.select_draft_key = draft.sn;
-	    $scope.wsaleStorage.set_key(draft.sn);
-	    // $scope.select.employee = diablo_get_object(draft.employee.id, $scope.employees);
-	    $scope.select.retailer = diablo_get_object(draft.retailer.id, $scope.retailers);
-	    $scope.select.surplus  = $scope.select.retailer.balance;
-	    $scope.get_employee(); 
-	    
-	    $scope.inventories = angular.copy(resource);
-	    // console.log($scope.inventoyies);
-	    $scope.inventories.unshift({$edit:false, $new:true});
-	    $scope.disable_refresh = false;
-	    $scope.re_calculate(); 
-	};
 
-	$scope.wsaleStorage.select(diabloUtilsService, "wsale-draft.html", draft_filter, select); 
+	    var select = function(draft, resource){
+		if (draft.shop.id !== $scope.select.shop.id){
+		    $scope.select.shop = diablo_get_object(draft.shop.id, $scope.shops); 
+		    $scope.get_employee(); 
+		};
+		
+		$scope.select_draft_key = draft.sn;
+		$scope.wsaleStorage.set_key(draft.sn);
+		// $scope.select.employee = diablo_get_object(draft.employee.id, $scope.employees);
+		$scope.select.retailer = diablo_get_object(draft.retailer.id, retailers);
+		$scope.select.surplus  = $scope.select.retailer.balance;
+		$scope.get_employee(); 
+		
+		$scope.inventories = angular.copy(resource);
+		// console.log($scope.inventoyies);
+		$scope.inventories.unshift({$edit:false, $new:true});
+		$scope.disable_refresh = false;
+		$scope.re_calculate(); 
+	    };
+
+	    $scope.wsaleStorage.select(diabloUtilsService, "wsale-draft.html", draft_filter, select);  
+	}); 
     };
     
     $scope.match_style_number = function(viewValue){
@@ -1294,8 +1315,8 @@ wsaleApp.controller("wsaleNewCtrl", function(
 	$scope.select.has_pay += wsaleUtils.to_float($scope.select.card);
 	$scope.select.has_pay += wsaleUtils.to_float($scope.select.wxin);
 	
-	var withdraw = wsaleUtils.to_float($scope.select.withdraw); 
-	if($scope.select.retailer.type === diablo_charge_retailer && withdraw > 0){
+	var withdraw = wsaleUtils.to_float($scope.select.withdraw);
+	if($scope.select.retailer.type_id === diablo_charge_retailer && withdraw > 0){
 	    $scope.select.has_pay += withdraw;
 	    $scope.select.left_balance = $scope.select.surplus - withdraw;
 	}
@@ -1736,7 +1757,7 @@ wsaleApp.controller("wsaleNewCtrl", function(
 wsaleApp.controller("wsaleNewDetailCtrl", function(
     $scope, $routeParams, $location, dateFilter, diabloUtilsService,
     localStorageService, diabloFilter, wsaleService,
-    user, filterRetailer, filterEmployee, base){
+    user, filterEmployee, base){
     
     $scope.shops     = user.sortShops.concat(user.sortBadRepoes);
     $scope.shopIds   = user.shopIds.concat(user.badrepoIds);
@@ -1783,10 +1804,12 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
      */ 
     // initial
     diabloFilter.reset_field();
-    diabloFilter.add_field("retailer", filterRetailer);
-    diabloFilter.add_field("employee", filterEmployee); 
-    diabloFilter.add_field("rsn", []);
     diabloFilter.add_field("shop",     $scope.shops);
+    diabloFilter.add_field("employee", filterEmployee); 
+    diabloFilter.add_field("retailer", function(viewValue){
+	return wsaleUtils.match_retailer_phone(viewValue, diabloFilter)
+    }); 
+    diabloFilter.add_field("rsn", []);
     diabloFilter.add_field("check_state", wsaleService.check_state);
     
     $scope.filter = diabloFilter.get_filter();
@@ -1932,7 +1955,7 @@ wsaleApp.controller("wsaleNewDetailCtrl", function(
 		angular.forEach(result.data, function(d){
 		    d.shop     = diablo_get_object(d.shop_id, $scope.shops);
 		    d.employee = diablo_get_object(d.employee_id, filterEmployee);
-		    d.retailer = diablo_get_object(d.retailer_id, filterRetailer);
+		    // d.retailer = diablo_get_object(d.retailer_id, filterRetailer);
 		    d.has_pay  = d.should_pay;
 		    d.should_pay = wsaleUtils.to_decimal(d.should_pay + d.verificate);
 		    // charge

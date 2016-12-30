@@ -30,6 +30,22 @@ action(Session, Req, {"list_w_retailer"}) ->
     ?utils:respond(
        batch, fun() -> ?w_user_profile:get(retailer, Merchant) end, Req);
 
+action(Session, Req, {"list_sys_wretailer"}) ->
+    ?DEBUG("list sys_retailer with session ~p", [Session]), 
+    Merchant = ?session:get(merchant, Session),
+    {ok, Shops}   = ?w_user_profile:get(user_shop, Merchant, Session),
+    ?DEBUG("Shops ~p", [Shops]),
+    ShopIds = lists:foldr(fun({Shop}, Acc) ->
+				  ShopId = ?v(<<"shop_id">>, Shop),
+				  case lists:member(ShopId, Acc) of
+				      true -> Acc;
+				      false ->[ShopId|Acc]
+				  end
+			  end, [], Shops),
+    ?DEBUG("ShopIds ~p", [ShopIds]),
+    ?utils:respond(
+       batch, fun() -> ?w_user_profile:get(sys_retailer, Merchant, ShopIds) end, Req);
+
 
 action(Session, Req, {"del_w_retailer", Id}) ->
     ?DEBUG("delete_w_retailer with session ~p, Id ~p", [Session, Id]),
@@ -41,6 +57,13 @@ action(Session, Req, {"del_w_retailer", Id}) ->
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;
+
+action(Session, Req, {"get_w_retailer", Id}) ->
+    ?DEBUG("get_w_retailer with session ~p, Id ~p", [Session, Id]),
+    Merchant = ?session:get(merchant, Session),
+    ?utils:respond(
+       object, fun() -> ?w_user_profile:get(retailer, Merchant, ?to_i(Id)) end, Req);
+
 
 action(Session, Req, {"list_w_retailer_charge"}) ->
     ?DEBUG("list w_retailer_charge with session ~p", [Session]), 
@@ -76,14 +99,11 @@ action(Session, Req, {"new_w_retailer"}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 	
-
 action(Session, Req, {"update_w_retailer", Id}, Payload) ->
     ?DEBUG("update_w_retailer with Session ~p~npaylaod ~p",
 	   [Session, Payload]),
     
-    Merchant = ?session:get(merchant, Session),
-    
-
+    Merchant = ?session:get(merchant, Session), 
     case ?w_retailer:retailer(update, Merchant, Id, Payload) of
 	{ok, RId} ->
 	    ?utils:respond(
@@ -91,6 +111,14 @@ action(Session, Req, {"update_w_retailer", Id}, Payload) ->
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;
+
+action(Session, Req, {"get_w_retailer_batch"}, Payload) ->
+    ?DEBUG("update_w_retailer with Session ~p~npaylaod ~p", [Session, Payload]), 
+    Merchant = ?session:get(merchant, Session),
+    RetailerIds = ?v(<<"retailer">>, Payload, []), 
+    ?utils:respond(
+       batch, fun() -> ?w_retailer:retailer(get_batch, Merchant, RetailerIds) end, Req);
+
 
 action(Session, Req, {"update_retailer_score", Id}, Payload) ->
     ?DEBUG("update_retailer_score with Session ~p~npaylaod ~p",
@@ -227,7 +255,12 @@ action(Session, Req, {"update_recharge"}, Payload) ->
 action(Session, Req, {"filter_retailer_detail"}, Payload) ->
     ?DEBUG("filter_retailer with session ~p, payload~n~p", [Session, Payload]), 
     Merchant  = ?session:get(merchant, Session),
-
+    {struct, Mode}     = ?v(<<"mode">>, Payload),
+    Order = ?v(<<"mode">>, Mode, ?SORT_BY_ID),
+    Sort  = ?v(<<"sort">>, Mode),
+    %% SortMode = ?v(<<"mode">>, Payload, ?SORT_BY_ID),
+    NewPayload = proplists:delete(<<"mode">>, Payload),
+    
     ?pagination:pagination(
        fun(Match, Conditions) ->
 	       ?w_retailer:filter(
@@ -235,8 +268,9 @@ action(Session, Req, {"filter_retailer_detail"}, Payload) ->
        end,
        fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
 	       ?w_retailer:filter(
-		  retailer, Match, Merchant, Conditions, CurrentPage, ItemsPerPage)
-       end, Req, Payload);
+		  {retailer, mode(Order), Sort},
+		  Match, Merchant, Conditions, CurrentPage, ItemsPerPage)
+       end, Req, NewPayload);
 
 action(Session, Req, {"filter_charge_detail"}, Payload) ->
     ?DEBUG("filter_charge_detail with session ~p, paylaod~n~p", [Session, Payload]), 
@@ -380,11 +414,26 @@ action(Session, Req, {"export_w_retailer"}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"syn_retailer_pinyin"}, Payload) ->
+    ?DEBUG("syn_retailer_pinyin with session ~p", [Session]),
+
+    Merchant = ?session:get(merchant, Session), 
+    Retailers = ?v(<<"retailer">>, Payload, []),
+    case ?w_retailer:syn(pinyin, Merchant, Retailers) of
+	{ok, Merchant} ->
+	    ?w_user_profile:update(retailer, Merchant),
+	    ?utils:respond(
+	       200, Req, ?succ(syn_retailer_pinyin, Merchant));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
 action(Session, Req, {"match_retailer_phone"}, Payload) ->
     ?DEBUG("match_retailer_phone with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
     Phone = ?v(<<"prompt">>, Payload),
-    ?utils:respond(batch, fun() -> ?w_retailer:match(phone, Merchant, Phone) end, Req).
+    Mode  = ?v(<<"mode">>, Payload, 0),
+    ?utils:respond(batch, fun() -> ?w_retailer:match(phone, Merchant, {Mode, Phone}) end, Req).
 
 sidebar(Session) -> 
     S1 = [{"wretailer_detail", "会员详情", "glyphicon glyphicon-book"}],
@@ -419,7 +468,10 @@ sidebar(Session) ->
     L1 ++ L2.
 
 csv_head(retailer, Do) ->
-    Do("序号,名称,类型,联系方式,累计消费,累计积分,所在店铺,日期").
+    Head = "序号,名称,类型,联系方式,累计消费,累计积分,所在店铺,日期",
+    UTF8 = unicode:characters_to_list(Head, utf8),
+    GBK = diablo_iconv:convert("utf-8", "gbk", UTF8),
+    Do(GBK).
 
 do_write(retailer, _Do, _Count, []) ->
     ok;
@@ -443,12 +495,17 @@ do_write(retailer, Do, Count, [{H}|T]) ->
 	++ ?to_s(Score) ++ ?d
 	++ ?to_s(Shop) ++ ?d
 	++ ?to_s(Entry) ++ ?d,
+
+    UTF8 = unicode:characters_to_list(L, utf8),
+    GBK  = diablo_iconv:convert("utf-8", "gbk", UTF8), 
+    Do(GBK),
     
-    Do(L),
     do_write(retailer, Do, Count + 1, T).
 
 retailer_type(0) -> "普通会员";
 retailer_type(1) -> "充值会员";
 retailer_type(_) -> "未知类型".
 		    
-       
+mode(0) -> use_id; 
+mode(1) -> use_balance;
+mode(2) -> use_consume.

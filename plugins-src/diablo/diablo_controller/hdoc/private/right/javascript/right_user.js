@@ -551,7 +551,7 @@ rightUserApp.controller(
 
 	$scope.delete_role = function(role){
 	    diabloUtilsService.response(
-		false, "权限编辑", "权限编辑失败：" + rightService.error[7001], $scope);
+		false, "权限删除", "权限删除失败：" + rightService.error[7001], $scope);
 	    return;
 	};
 
@@ -628,7 +628,7 @@ rightUserApp.controller(
 
 rightUserApp.controller(
     "accountUserDetailCtrl",
-    function($scope, $routeParams, $q, $modal, rightService, diabloUtilsService){
+    function($scope, $routeParams, $q, $uibModal, rightService, diabloUtilsService){
 	$scope.roleDesc = rightService.roleTypeDesc;
 	$scope.accountDesc = rightService.accountDesc;
 	$scope.css = function(type) {return type === 1 ? "bg-magenta" : ""};
@@ -643,17 +643,14 @@ rightUserApp.controller(
 		promise(rightService.list_employee)(),
 		promise(rightService.list_shop)() 
 	    ]).then(function(data){
-		console.log(data);
-		
-
+		console.log(data); 
 		// $scope.firms = data[2].map(function(firm){
                 //     return {
 		// 	id: firm.id,
 		// 	name: firm.name,
 		// 	py: diablo_pinyin(firm.name)
                 //     };
-		// });
-
+		// }); 
 		$scope.shops = [{id:-1, name:"== 请选择登录让铺，默认由系统选择 =="}]
 		    .concat(data[3].map(function(shop){
 			return {id: shop.id, name: shop.name}
@@ -860,7 +857,7 @@ rightUserApp.controller(
                     }); 
 		};
 		
-		$modal.open({
+		$uibModal.open({
 		    templateUrl: 'account_user_edit.html',
 		    controller: 'accountUserModalCtrl',
 		    backdrop: 'static',
@@ -885,7 +882,7 @@ rightUserApp.controller(
     });
 
 
-rightUserApp.controller("accountUserModalCtrl", function($scope, $modalInstance, params){
+rightUserApp.controller("accountUserModalCtrl", function($scope, $uibModalInstance, params){
     // console.log($scope);
     console.log(params);
     $scope.account   = params.account;
@@ -901,11 +898,11 @@ rightUserApp.controller("accountUserModalCtrl", function($scope, $modalInstance,
     // console.log($scope);
 
     $scope.cancel = function(){
-	$modalInstance.dismiss('cancel');
+	$uibModalInstance.dismiss('cancel');
     };
 
     $scope.ok = function() {
-	$modalInstance.dismiss('ok');
+	$uibModalInstance.dismiss('ok');
 	var callback = params.callback;
 	if (angular.isDefined(callback) && typeof(callback) === "function"){
 	    callback($scope.account);

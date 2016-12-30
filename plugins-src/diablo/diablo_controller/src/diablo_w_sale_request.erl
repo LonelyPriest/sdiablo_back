@@ -903,26 +903,28 @@ start(new_sale, Req, Merchant, Invs, Base, Print) ->
     PMode            = ?v(<<"p_mode">>, Print, ?PRINT_FRONTE),
     Round            = ?v(<<"round">>, Base, 1),
     ShouldPay        = ?v(<<"should_pay">>, Base),
-    
+    RetailerId       = ?v(<<"retailer">>, Base),
+    ShopId           = ?v(<<"shop">>, Base), 
+
     case check_inventory(oncheck, Round, 0, ShouldPay, Invs) of
         {ok, _} -> 
 	    case ?w_sale:sale(new, Merchant, lists:reverse(Invs), Base) of 
 		{ok, {RSN, Phone, _ShouldPay, Balance, Score}} ->
 		    {SMSCode, _} =
 			try
-			    {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),
-			    RetailerId   = ?v(<<"retailer">>, Base),
-			    ShopId = ?v(<<"shop">>, Base), 
-			    SysVips = sys_vip_of_shop(Merchant, ShopId), 
-			    ?DEBUG("SysVips ~p", [SysVips]),
+			    {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1), 
+			    {ok, Retailer} = ?w_user_profile:get(retailer, Merchant, RetailerId), 
+			    SysVips  = sys_vip_of_shop(Merchant, ShopId), 
+			    ?DEBUG("SysVips ~p, Retailer ~p", [SysVips, Retailer]),
 			    case not lists:member(RetailerId, SysVips)
+				andalso ?v(<<"type_id">>, Retailer) /= ?SYSTEM_RETAILER
 				andalso ?to_i(?v(<<"consume_sms">>, Setting, 0)) == 1 of
 				true ->
-				    ShopName = case ?w_user_profile:get(
-						       shop, Merchant, ShopId) of
-						   {ok, []} -> ShopId;
-						   {ok, [{Shop}]} -> ?v(<<"name">>, Shop)
-					       end,
+				    ShopName =
+					case ?w_user_profile:get(shop, Merchant, ShopId) of
+					    {ok, []} -> ShopId;
+					    {ok, [{Shop}]} -> ?v(<<"name">>, Shop)
+					end,
 				    ?notify:sms_notify(
 				       Merchant,
 				       {ShopName, Phone, 1, ShouldPay, Balance, Score});

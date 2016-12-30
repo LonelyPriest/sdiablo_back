@@ -2,7 +2,7 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
     $scope, $routeParams, dateFilter, diabloUtilsService, diabloFilter,
     purchaserService, wgoodService, wsaleService, localStorageService,
     user, filterPromotion, filterScore, filterBrand,
-    filterRetailer, filterEmployee, filterFirm, filterSizeGroup,
+    filterEmployee, filterFirm, filterSizeGroup,
     filterType, filterColor, base){
     // console.log($routeParams);
     // console.log(filterEmployee);
@@ -119,7 +119,10 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
     diabloFilter.add_field("year",     diablo_full_year);
     diabloFilter.add_field("firm",     filterFirm);
     diabloFilter.add_field("shop",     $scope.shops); 
-    diabloFilter.add_field("retailer", filterRetailer); 
+    // diabloFilter.add_field("retailer", filterRetailer);
+    diabloFilter.add_field("retailer", function(viewValue){
+	return wsaleUtils.match_retailer_phone(viewValue, diabloFilter)
+    }); 
     diabloFilter.add_field("employee", filterEmployee); 
     diabloFilter.add_field("sell_type", sell_type);
     diabloFilter.add_field("rsn", []); 
@@ -209,7 +212,7 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 		    d.brand    = diablo_get_object(d.brand_id, filterBrand);
 		    d.firm     = diablo_get_object(d.firm_id, filterFirm);
 		    d.shop     = diablo_get_object(d.shop_id, $scope.shops);
-		    d.retailer = diablo_get_object(d.retailer_id, filterRetailer);
+		    // d.retailer = diablo_get_object(d.retailer_id, filterRetailer);
 		    d.employee = diablo_get_object(d.employee_id, filterEmployee);
 		    d.type      = diablo_get_object(d.type_id, filterType);
 		    d.oseason    = diablo_get_object(d.season, diablo_season2objects);
@@ -377,9 +380,9 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 	var p_mode = wsaleUtils.print_mode(shop.id, base);
 	var no_vip = wsaleUtils.no_vip(shop.id, base);
 	var comments = wsaleUtils.comment(shop.id, base);
-	var isRound = wsaleUtils.round(shop.id, base);
+	var isRound  = wsaleUtils.round(shop.id, base);
 	var cakeMode = wsaleUtils.cake_mode(shop.id, base);
-	var pdate = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss");
+	var pdate    = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss");
 
 	console.log(isRound, cakeMode);
 	
@@ -395,64 +398,27 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 		    angular.forEach(detail, function(d){
 			d.brand = diablo_get_object(d.brand_id, filterBrand).name;
 			d.type = diablo_get_object(d.type_id, filterType).name;
-		    }); 
-		    console.log(wsalePrint);
-		    wsalePrint.gen_head(LODOP,
-					shop.name,
-					rsn,
-					diablo_get_object(sale.employ_id, filterEmployee).name,
-					diablo_get_object(sale.retailer_id, filterRetailer).name,
-					sale.entry_date);
+		    });
 
-		    var hLine = wsalePrint.gen_body(LODOP, detail, isRound, cakeMode); 
-		    var isVip = sale.retailer_id !== no_vip ? true : false;
+		    diabloFilter.get_wretailer_batch([sale.retailer_id]).then(function(retailers){
+			console.log(retailers);
+			console.log(diablo_get_object(sale.retailer_id, retailers).name);
+			wsalePrint.gen_head(
+			    LODOP,
+			    shop.name,
+			    rsn,
+			    diablo_get_object(sale.employ_id, filterEmployee).name,
+			    diablo_get_object(sale.retailer_id, retailers).name,
+			    sale.entry_date);
 
-		    
-		    hLine = wsalePrint.gen_stastic(LODOP, hLine, sale.direct, sale, isVip); 
-		    wsalePrint.gen_foot(LODOP, hLine, comments, pdate, cakeMode);
-		    wsalePrint.start_print(LODOP);
-		    
-		    // LODOP.PRINT_INITA("");
-		    // LODOP.ADD_PRINT_TEXT(15,5,"40mm",30,shop.name); 
-		    // LODOP.SET_PRINT_STYLEA(1,"FontSize",13);
-		    // LODOP.SET_PRINT_STYLEA(1,"bold",1);
-		    // // LODOP.SET_PRINT_STYLEA(0,"Horient",2);
+			var hLine = wsalePrint.gen_body(LODOP, detail, isRound, cakeMode); 
+			var isVip = sale.retailer_id !== no_vip ? true : false;
 
-		    // // console.log(diablo_get_object(sale.retailer_id, filterRetailer));
-		    // // console.log(diablo_get_object(sale.employ_id, filterEmployee));
-		    // LODOP.ADD_PRINT_TEXT(50,5,"58mm",20,"单号：" + rsn);
-		    // LODOP.ADD_PRINT_TEXT(65,5,"58mm",20,"客户：" + diablo_get_object(sale.employ_id, filterEmployee).name);
-		    // LODOP.ADD_PRINT_TEXT(80,5,"58mm",20,"店员：" + diablo_get_object(sale.retailer_id, filterRetailer).name);
-		    // LODOP.ADD_PRINT_TEXT(95,5,"58mm",20,"日期：" + sale.entry_date);
-
-		    // LODOP.ADD_PRINT_LINE(115,5,115,178,0,1);
-
-
-		    // var hLine = 125;
-		    // angular.forEach(result.detail, function(d){
-		    // 	LODOP.ADD_PRINT_TEXT(hLine,5,100,20,"款号：" + d.style_number);
-		    // 	hLine += 15;
-		    // 	LODOP.ADD_PRINT_TEXT(hLine,5,100,20,"品名：" + diablo_get_object(d.brand_id, filterBrand).name);
-		    // 	hLine += 15;
-		    // 	LODOP.ADD_PRINT_TEXT(hLine,5,100,20,"单价：" + d.tag_price.toString());
-		    // 	hLine += 15;
-		    // 	LODOP.ADD_PRINT_TEXT(hLine,5,100,20,"成交价：" + d.rprice.toString());
-		    // 	hLine += 15;
-		    // 	LODOP.ADD_PRINT_TEXT(hLine,5,100,20,"数量：" + d.total.toString());
-		    // 	hLine += 15;
-		    // 	LODOP.ADD_PRINT_TEXT(hLine,5,100,20,"小计：" + wsaleUtils.to_decimal(d.total * d.rprice).toString());
-		    // 	hLine += 15;
-		    // 	LODOP.ADD_PRINT_TEXT(hLine,5,100,20,"折扣率：" + wsaleUtils.ediscount(d.rprice, d.tag_price).toString());
-
-		    // 	hLine += 15;
 			
-		    // });
-
-		    // // LODOP.ADD_PRINT_LINE(hLine + 5,5,hLine + 5,178,0,1);
-		    
-		    // LODOP.SET_PRINT_PAGESIZE(3,"58mm",50,""); 
-		    // // LODOP.PREVIEW();
-		    // LODOP.PRINT();
+			hLine = wsalePrint.gen_stastic(LODOP, hLine, sale.direct, sale, isVip); 
+			wsalePrint.gen_foot(LODOP, hLine, comments, pdate, cakeMode);
+			wsalePrint.start_print(LODOP); 
+		    }); 
 		}); 
 	    }	    
 	} else {

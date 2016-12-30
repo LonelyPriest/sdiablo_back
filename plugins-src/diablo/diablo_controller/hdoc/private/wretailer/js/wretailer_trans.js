@@ -3,14 +3,15 @@ wretailerApp.controller('wretailerTransCtrl', function(
     localStorageService, diabloUtilsService, filterEmployee, user, base){
     
     var retailer_id = parseInt($routeParams.retailer); 
-    // $scope.retailer = diablo_get_object(retailer_id, filterRetailer);
+    wretailerService.get_retailer(retailer_id).then(function(retailer){
+	// console.log(retailer);
+	$scope.retailer = retailer;
+    });
     
     $scope.shops     = user.sortBadRepoes.concat(user.sortShops);
     $scope.shopIds   = user.shopIds.concat(user.badrepoIds);
     $scope.goto_page = diablo_goto_page;
-    // $scope.float_add = diablo_float_add;
-    // $scope.float_sub = diablo_float_sub;
-    // $scope.round     = diablo_round; 
+    
     
     $scope.go_back = function(){
 	retailerUtils.remove_cache_page(localStorageService, diablo_key_retailer_trans);
@@ -190,8 +191,11 @@ wretailerApp.controller("wretailerTransRsnDetailCtrl", function(
     // console.log($routeParams); 
     // console.log(filterEmployee);
     // console.log(filterColor);
-    var retailer_id  = parseInt($routeParams.retailer); 
-    // $scope.retailer  = diablo_get_object(retailer_id, filterRetailer);
+    var retailer_id  = parseInt($routeParams.retailer);
+    wretailerService.get_retailer(retailer_id).then(function(retailer){
+	console.log(retailer);
+	$scope.retailer = retailer;
+    });
     $scope.shopIds   = user.shopIds;
     $scope.goto_page = diablo_goto_page;
     var now          = $.now(); 

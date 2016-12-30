@@ -107,9 +107,9 @@ baseApp.controller("printOptionCtrl", function(
     $scope, dateFilter, baseService, diabloPattern, diabloUtilsService, user){
 
     // retailer
-    baseService.list_retailer().then(function(retailers){
+    baseService.list_sys_wretailer().then(function(retailers){
 	$scope.retailers = retailers.map(function(r){
-	    return {name: r.name, id:r.id, py:diablo_pinyin(r.name)};
+	    return {name: r.name, id:r.id, py:r.py};
 	}).concat([{name:"== 系统默认 ==", id:0}]);
 	// console.log($scope.retailers);
     });

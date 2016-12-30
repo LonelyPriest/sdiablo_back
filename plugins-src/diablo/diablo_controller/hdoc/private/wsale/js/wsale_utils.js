@@ -165,8 +165,8 @@ var wsaleUtils = function(){
 	},
 	
 	cover_wsale: function(
-	    base, sells, shops, brands, retailers, employees,
-	    types, colors, size_groups, promotions, scores){
+	    base, sells, shops, brands, retailers,
+	    employees, types, colors, size_groups, promotions, scores){
 	    var wsale         = sort_wsale(base, sells);
 	    var details       = wsale.details;
 	    var order_length  = details.length;
@@ -558,7 +558,20 @@ var wsaleUtils = function(){
 		&& angular.isDefined(obj.id))
 		return obj.id; 
 	    return diablo_invalid_firm;
-	} 
+	},
+
+	match_retailer_phone: function(viewValue, filterFun){
+	    if (diablo_is_digit_string(viewValue)){
+		if (viewValue.length < 4) return;
+		return filterFun.match_retailer_phone(viewValue, 0);
+	    } else if (diablo_is_letter_string(viewValue)){
+		return filterFun.match_retailer_phone(viewValue, 1);
+	    } else if (diablo_is_chinese_string(viewValue)){
+		return filterFun.match_retailer_phone(viewValue, 2);
+	    } else {
+		return;
+	    } 
+	}
 	//
 	
     }

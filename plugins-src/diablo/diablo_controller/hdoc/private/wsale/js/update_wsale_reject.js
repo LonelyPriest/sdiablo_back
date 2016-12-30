@@ -1,7 +1,7 @@
 wsaleApp.controller("wsaleUpdateRejectCtrl", function(
     $scope, $q, $routeParams, dateFilter, diabloUtilsService, diabloPromise,
     diabloFilter, diabloPattern, wgoodService, purchaserService, wsaleService,
-    user, filterPromotion, filterScore, filterRetailer, filterEmployee,
+    user, filterPromotion, filterScore, filterEmployee,
     filterSizeGroup, filterBrand, filterColor, filterType, base){
     // console.log(base);
     // console.log(user);
@@ -10,7 +10,7 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
     $scope.promotions    = filterPromotion;
     $scope.scores        = filterScore;
     
-    $scope.retailers       = filterRetailer; 
+    // $scope.retailers       = filterRetailer; 
     $scope.employees       = filterEmployee;
     $scope.size_groups     = filterSizeGroup;
     $scope.brands          = filterBrand;
@@ -64,51 +64,55 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 	    // result[0] is the record detail
 	    // result[1] are the inventory detail that the record is included
 	    var base        = result.sale;
-	    var sells       = result.detail; 
-	    var wsale = wsaleUtils.cover_wsale(
-		base,
-		sells,
-		$scope.shops,
-		$scope.brands,
-		$scope.retailers,
-		$scope.employees,
-		$scope.types,
-		$scope.colors,
-		$scope.size_groups,
-		$scope.promotions,
-		$scope.scores);
 
-	    console.log(wsale);
+	    diabloFilter.get_wretailer_batch([base.retailer_id]).then(function(retailers){
+		console.log(retailers);
+		var sells       = result.detail; 
+		var wsale = wsaleUtils.cover_wsale(
+		    base,
+		    sells,
+		    $scope.shops,
+		    $scope.brands,
+		    retailers,
+		    $scope.employees,
+		    $scope.types,
+		    $scope.colors,
+		    $scope.size_groups,
+		    $scope.promotions,
+		    $scope.scores);
 
-	    $scope.show_promotions = wsale.show_promotions;
-	    
-	    $scope.old_select = wsale.select;
-	    $scope.select = angular.extend($scope.select, wsale.select);
+		console.log(wsale);
 
-	    // setting 
-	    $scope.setting.check_sale = wsaleUtils.check_sale(
-	    	$scope.select.shop.id, $scope.base_settings);
-	    $scope.setting.no_vip = wsaleUtils.no_vip(
-		$scope.select.shop.id, $scope.base_settings);
-	    
-	    $scope.employees = wsaleUtils.get_login_employee(
-		$scope.select.shop.id,
-		base.employ_id,
-		filterEmployee).filter;
+		$scope.show_promotions = wsale.show_promotions;
+		
+		$scope.old_select = wsale.select;
+		$scope.select = angular.extend($scope.select, wsale.select);
 
-	    $scope.select.has_pay = $scope.select.cash
-	    	+ $scope.select.card + $scope.select.wxin
-		+ $scope.select.withdraw + $scope.select.ticket;
-	    $scope.select.left_balance = $scope.select.surplus;
-	    
-	    // inventory
-	    $scope.old_inventories = wsale.details;
-	    $scope.inventories = angular.copy(wsale.details);
-	    $scope.inventories.unshift({$edit:false, $new:true});
-	    console.log($scope.old_inventories);
-	    console.log($scope.inventories); 
-	    $scope.re_calculate(); 
-	}	    
+		// setting 
+		$scope.setting.check_sale = wsaleUtils.check_sale(
+	    	    $scope.select.shop.id, $scope.base_settings);
+		$scope.setting.no_vip = wsaleUtils.no_vip(
+		    $scope.select.shop.id, $scope.base_settings);
+		
+		$scope.employees = wsaleUtils.get_login_employee(
+		    $scope.select.shop.id,
+		    base.employ_id,
+		    filterEmployee).filter;
+
+		$scope.select.has_pay = $scope.select.cash
+	    	    + $scope.select.card + $scope.select.wxin
+		    + $scope.select.withdraw + $scope.select.ticket;
+		$scope.select.left_balance = $scope.select.surplus;
+		
+		// inventory
+		$scope.old_inventories = wsale.details;
+		$scope.inventories = angular.copy(wsale.details);
+		$scope.inventories.unshift({$edit:false, $new:true});
+		console.log($scope.old_inventories);
+		console.log($scope.inventories); 
+		$scope.re_calculate(); 
+	    }); 
+	};	    
 	
     });
 

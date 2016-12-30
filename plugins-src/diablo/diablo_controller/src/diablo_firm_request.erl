@@ -309,7 +309,10 @@ batch_responed(Fun, Req) ->
     end.
 
 csv_head(firm, Do) ->
-    Do("序号,名称,编号,联系方式,联系地址,备注").
+    H = "序号,名称,编号,联系方式,联系地址,备注",
+    UTF8 = unicode:characters_to_list(H, utf8),
+    GBK  = diablo_iconv:convert("utf-8", "gbk", UTF8), 
+    Do(GBK).
 
 do_write(firm, _Do, _Count, []) ->
     ok;
@@ -328,5 +331,8 @@ do_write(firm, Do, Count, [{H}|T]) ->
 	++ ?to_s(Mobile) ++ ?d
 	++ ?to_s(Address) ++ ?d
 	++ ?to_s(Comment) ++ ?d,
-    Do(L),
+    %% Do(L),
+    UTF8 = unicode:characters_to_list(L, utf8),
+    GBK  = diablo_iconv:convert("utf-8", "gbk", UTF8), 
+    Do(GBK),
     do_write(firm, Do, Count + 1, T).

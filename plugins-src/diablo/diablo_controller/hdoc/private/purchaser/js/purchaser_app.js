@@ -392,16 +392,14 @@ purchaserApp.service("purchaserService", function($resource, dateFilter){
     };
     
     this.filter_purchaser_inventory_group = function(
-	mode, match, fields, currentPage, itemsPerpage
-    ){
+	mode, match, fields, currentPage, itemsPerpage){
 	return http.save(
 	    {operation: "filter_w_inventory_group"},
-	    {
-		mode:   mode,
-		match:  angular.isDefined(match) ? match.op : undefined,
-		fields: fields,
-		page:   currentPage,
-		count:  itemsPerpage}).$promise;
+	    {mode:   mode,
+	     match:  angular.isDefined(match) ? match.op : undefined,
+	     fields: fields,
+	     page:   currentPage,
+	     count:  itemsPerpage}).$promise;
     };
 
     this.list_purchaser_inventory = function(condition){

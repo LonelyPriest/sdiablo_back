@@ -843,6 +843,9 @@ pass_action(wholesaler) ->
      
      %% retailer
      <<"list_w_retailer">>,
+     <<"list_sys_wretailer">>,
+     <<"get_w_retailer">>,
+     <<"get_w_retailer_batch">>,
      <<"filter_retailer_detail">>,
      <<"check_w_retailer_password">>,
      <<"list_w_retailer_charge">>,
@@ -850,6 +853,7 @@ pass_action(wholesaler) ->
      <<"filter_charge_detail">>,
      <<"get_w_retailer_ticket">>,
      <<"match_retailer_phone">>,
+     <<"syn_retailer_pinyin">>,
      
      %% wsale
      %% <<"list_w_sale_new">>,

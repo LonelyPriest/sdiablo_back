@@ -164,8 +164,8 @@ baseApp.service("baseService", function($resource){
     };
 
     var retailerHttp = $resource("/wretailer/:operation", {operation: '@operation'});
-    this.list_retailer = function(){
-	return retailerHttp.query({operation: 'list_w_retailer'}).$promise;
+    this.list_sys_wretailer = function(){
+	return retailerHttp.query({operation: 'list_sys_wretailer'}).$promise;
     }
     
 });    

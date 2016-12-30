@@ -403,8 +403,7 @@
 		     name="value"
 		     x-ng-model="params.setting.value"
 		     typeahead-editable="false"
-		     typeahead="c as c.name for c in
-				params.setting.retailers|filter:$viewValue|limitTo:8"
+		     uib-typeahead="c as c.name for c in params.setting.retailers|filter:$viewValue"
 		     x-ng-init="params.setting.value=params.init_v "/> 
 	      
 	      <input x-ng-switch-default

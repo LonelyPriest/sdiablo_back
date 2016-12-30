@@ -1,9 +1,9 @@
 angular.module("diabloPattern", []).service("diabloPattern", [function(){
     // mobile
-    this.mobile = /^0?(13[0-9]|15[0-35-9]|18[0236-9]|14[57])[0-9]{8}$/;
+    this.mobile = /^0?(13[0-9]|15[0-35-9]|17[35-8]|18[0236-9]|14[57])[0-9]{8}$/;
 
     // telphone or mobile
-    this.tel_mobile = /^\d{3,4}[\-]?\d{7,8}(-\d{3,4})?$|^0?(13[0-9]|15[0-35-9]|18[0236-9]|14[57])[0-9]{8}$/;
+    this.tel_mobile = /^\d{3,4}[\-]?\d{7,8}(-\d{3,4})?$|^0?(13[0-9]|15[0-35-9]|17[35-8]|18[0236-9]|14[57])[0-9]{8}$/;
 
     // only number
     this.number = /^[0-9]*$/;
@@ -26,6 +26,8 @@ angular.module("diabloPattern", []).service("diabloPattern", [function(){
     // character, number or -
     this.char_number_slash_bar = /^[A-Za-z0-9-\/]{2,20}$/;
 
+    this.id_card = /^[A-Za-z0-9]{8,18}$/
+
     // character, number or _
     this.char_number_underline = /^\w+$/;
 
@@ -37,7 +39,7 @@ angular.module("diabloPattern", []).service("diabloPattern", [function(){
 
     this.chinese = /^[\u4e00-\u9fa5]+$/;
     
-    this.chinese_name = /^[1-9\u4e00-\u9fa5]{2,15}$/;
+    this.chinese_name = /^[0-9\u4e00-\u9fa5]{2,6}$/;
 
     this.ch_en_num = /^[\u4e00-\u9fa5A-Za-z0-9]+$/;
     

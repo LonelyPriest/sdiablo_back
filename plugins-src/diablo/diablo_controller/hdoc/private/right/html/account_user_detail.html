@@ -222,8 +222,7 @@
                    x-ng-model="account.retailer"
                    placeholder="请选择登录客户，默认由系统选择"
                    typeahead-editable="false"
-                   typeahead="r as r.name for r in
-                              retailers|filter:$viewValue|limitTo:8"/>
+                   uib-typeahead="r as r.name for r in retailers|filter:$viewValue"/>
           </div>
         </div>
 
@@ -287,7 +286,7 @@
 		   name="right"
 		   data-ng-model="account.role"
 		   typeahead-editable="false"
-		   typeahead="role as role.name for role in
+		   uib-typeahead="role as role.name for role in
 			      roles|filter:$viewValue|limitTo:8"/>
 	  </div>
 	</div>

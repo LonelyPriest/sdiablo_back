@@ -32,15 +32,19 @@
 	      <div class="input-group">
 		<span class="input-group-addon">
 	  	  <i class="glyphicon glyphicon-star fg-red"></i>会员</span>
-	  	<input class="form-control"
-		       type="text"
-		       placeholder="请选择会员"
+	  	<input class="form-control" type="text"
 		       ng-edit
-	  	       x-ng-model="select.retailer"
-		       x-ng-readonly="select.withdraw!==0 || select.ticket!==0"
-	  	       typeahead-editable="false"
-		       typeahead-on-select="change_retailer()"
-	  	       uib-typeahead="r as r.name for r in retailers|filter:$viewValue|limitTo:20"/> 
+		       x-ng-readonly="select.withdraw!==0 || select.ticket!==0" 
+		       x-ng-model="select.retailer" 
+		       placeholder="请选择会员"
+		       typeahead-editable="false" 
+		       typeahead-wait-ms="300"
+		       typeahead-loading="loading"
+		       typeahead-on-select="on_select_retailer($item, $model, $label)"
+		       uib-typeahead="s as s.name for s in match_retailer_phone($viewValue)"/>
+		<span x-ng-show="loading">
+	  	  <i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
+		</span>
 	      </div>
 	    </div>
 
@@ -230,7 +234,7 @@
 	    </div>
 	  </div>
 
-	  <div x-ng-if="select.withdraw>0 && select.retailer.type===1"
+	  <div x-ng-if="select.withdraw>0 && select.retailer.type_id===1"
 	       class="row diablo-form-group"> 
 	    <div class="col-sm-3 col-md-3">
 	      <div class="input-group">

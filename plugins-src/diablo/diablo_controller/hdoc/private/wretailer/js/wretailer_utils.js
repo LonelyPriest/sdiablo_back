@@ -42,6 +42,19 @@ var retailerUtils = function(){
 	    return diablo_rdight(v, 2);
 	},
 
+	match_retailer_phone: function(viewValue, filterFun){
+	    if (diablo_is_digit_string(viewValue)){
+		if (viewValue.length < 4) return;
+		return filterFun.match_retailer_phone(viewValue, 0);
+	    } else if (diablo_is_letter_string(viewValue)){
+		return filterFun.match_retailer_phone(viewValue, 1);
+	    } else if (diablo_is_chinese_string(viewValue)){
+		return filterFun.match_retailer_phone(viewValue, 2);
+	    } else {
+		return;
+	    } 
+	}, 
+
 	cache_page_condition: function(
 	    storage, key, conditions, start_time, end_time, current_page, datetime){
 	    storage.remove(key);
@@ -54,7 +67,20 @@ var retailerUtils = function(){
 
 	remove_cache_page: function(storage, key){
 	    storage.remove(key);
+	},
+
+	order_fields: function(){
+	    return {id:0, balance:1, consume:2}
+	},
+
+	authen: function(user_type, right_tree, action) {
+	    return rightAuthen.authen(
+		user_type,
+		rightAuthen.retailer_action()[action],
+		right_tree);
 	}
+
+	//
     }
 }();
 

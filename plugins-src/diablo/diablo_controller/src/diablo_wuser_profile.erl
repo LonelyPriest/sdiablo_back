@@ -62,7 +62,7 @@ get(print_format, Merchant) ->
 get(type, Merchant) ->
     gen_server:call(?SERVER, {get_type_profile, Merchant});
 get(retailer, Merchant) ->
-    gen_server:call(?SERVER, {get_retailer_profile, Merchant});
+    gen_server:call(?SERVER, {get_retailer_profile, Merchant}); 
 get(firm, Merchant) ->
     gen_server:call(?SERVER, {get_firm_profile, Merchant});
 get(employee, Merchant) ->
@@ -102,6 +102,8 @@ get(type, Merchant, TypeId) ->
     gen_server:call(?SERVER, {get_type_profile, Merchant, TypeId});
 get(retailer, Merchant, Retailer) -> 
     gen_server:call(?SERVER, {get_retailer_profile, Merchant, Retailer});
+get(sys_retailer, Merchant, Shops) ->
+    gen_server:call(?SERVER, {get_sysretailer_profile, Merchant, Shops});
 get(firm, Merchant, Firm) ->
     gen_server:call(?SERVER, {get_firm_profile, Merchant, Firm});
 get(employee, Merchant, Employee) ->
@@ -126,6 +128,8 @@ set_default(Merchant) ->
 set_default(Merchant, Shop) ->
     gen_server:call(?SERVER, {set_default, Merchant, Shop}).
 
+update(merchant, Merchant) ->
+    gen_server:cast(?SERVER, {update_merchant, Merchant}); 
 update(good, Merchant) ->
     gen_server:cast(?SERVER, {update_good, Merchant}); 
 update(setting, Merchant) ->
@@ -356,14 +360,8 @@ handle_call({get_merchant_profile, Merchant}, _From, State) ->
 	   ['$2']
 	  }],
 
-    case ets:select(?WUSER_PROFILE, MS) of
-	[] ->
-	    {reply, {ok, []}, State};
-	[Info] ->
-	    ?DEBUG("info ~p of merchant ~p", [Info, Merchant]),
-	    {reply, {ok, Info}, State}
-    end;
-
+    Select = select(MS, fun() -> ?merchant:merchant(get, Merchant) end),
+    {reply, {ok, Select}, State};
 
 %% handle_call({get_bank_profile, Merchant}, _From, State) ->
 %%     ?DEBUG("get_bank_profile of merchant ~p", [Merchant]),
@@ -625,6 +623,74 @@ handle_call({get_retailer_profile, Merchant}, _From, State) ->
     Select = select(MS, fun() -> ?w_retailer:retailer(list, Merchant) end),
     {reply, {ok, Select}, State};
 
+handle_call({get_sysretailer_profile, Merchant, Shops}, _From, State) -> 
+    Settings = select(ms(Merchant, setting), fun() -> ?w_base:setting(list, Merchant) end),
+    %% ?DEBUG("Settings ~p", [Settings]),
+    FilterSettings = 
+	case lists:filter(
+	       fun({S})->
+		       lists:member(?v(<<"shop">>, S), Shops)
+			   orelse ?v(<<"shop">>, S) =:= -1
+	       end, ?to_tl(Settings)) of
+	    [] -> [];
+	    %% [{Filter}] -> Filter;
+	    Filter -> Filter
+	end, 
+    %% ?DEBUG("FilterSettings ~p", [FilterSettings]),
+    
+    SysVips = lists:foldr(
+		fun({S}, Acc) ->
+			case ?v(<<"ename">>, S) =:= <<"s_customer">> of
+			    true ->
+				SysVip = ?to_i(?v(<<"value">>, S)),
+				%% ?DEBUG("sysvip ~p", [SysVip]),
+				case lists:member(SysVip, Acc) of
+				    true -> Acc;
+				    false -> [SysVip] ++ Acc
+				end;
+			    false -> Acc
+			end
+		end, [], FilterSettings), 
+    ?DEBUG("SysVips ~p", [SysVips]),
+    
+    Retailers = select(ms(Merchant, retailer), fun() -> ?w_retailer:retailer(list, Merchant) end),
+    %% ?DEBUG("Retailers ~p", [Retailers]),
+    
+    FilterRetailers = 
+	case lists:filter(
+	       fun({R})->
+		       lists:member(?v(<<"shop_id">>, R), Shops)
+			   andalso
+			     (?v(<<"type">>, R) =:= ?SYSTEM_RETAILER
+			      orelse lists:member(?v(<<"id">>, R), SysVips)) end,
+	       ?to_tl(Retailers)) of
+	    [] -> [];
+	    %% [{RFilter}] -> RFilter;
+	    RFilter -> RFilter
+	end, 
+    %% ?DEBUG("FilterRetailers ~p", [FilterRetailers]),
+
+    SimpleRetailers = 
+	lists:foldr(
+	  fun({R}, Acc)->
+		  R1 = lists:keydelete(
+			 <<"address">>, 1,
+			 lists:keydelete(
+			   <<"birth">>, 1,
+			   lists:keydelete(
+			     <<"consume">>, 1,
+			     lists:keydelete(
+			       <<"entry_date">>, 1,
+			       lists:keydelete(
+				 <<"shop">>, 1,
+				 lists:keydelete(<<"merchant">>, 1, R)))))),
+		  [{R1}|Acc]
+	  end, [], FilterRetailers),
+
+    ?DEBUG("SimpleRetailers ~p", [SimpleRetailers]),
+    
+    {reply, {ok, SimpleRetailers}, State};
+
 handle_call({get_retailer_profile, Merchant, RetailerId}, _From, State) ->
     ?DEBUG("get_retailer_profile of merchant ~p, Retailer ~p",
 	   [Merchant, RetailerId]),
@@ -867,9 +933,11 @@ handle_cast({Update, Merchant}, State) ->
 			{ok, SMSRate}      = ?merchant:sms(list, Merchant),
 			Profile#wuser_profile{sms_rate=SMSRate};
 		    update_region ->
-			{ok, Regions}
-			    = ?shop:region(list, Merchant),
-			Profile#wuser_profile{region=Regions}
+			{ok, Regions} = ?shop:region(list, Merchant),
+			Profile#wuser_profile{region=Regions};
+		    update_merchant ->
+			{ok, Info} = ?merchant:merchant(get, Merchant),
+			Profile#wuser_profile{info=Info}
 		end 
 	end,
 

@@ -42,10 +42,14 @@ var diablo_stock_reject = 1;
 
 var diablo_common_retailer = 0;
 var diablo_charge_retailer = 1;
+var diablo_system_retailer = 2;
 
 var diablo_from_stock_new = 9;
 var diablo_from_stock = 8;
 var diablo_from_update_stock=7;
+
+var diablo_desc = 0;
+var diablo_asc  = 1;
 
 /*
  * stock
@@ -789,4 +793,31 @@ diablo_get_cookie = function(c_name){
     }
     
     return ""
+};
+
+diablo_is_digit_string = function(value){
+    for (var i=0, l=value.length; i<l; i++){
+	if (48 > value[i].charCodeAt(0) || 57 < value[i].charCodeAt(0))
+	    return false;
+    }
+    return true;
+};
+
+diablo_is_letter_string = function(value){
+    var invalid = true;
+    for (var i=0, l=value.length; i<l; i++){
+	var c = value[i];
+	if ( (65 <= c <= 90) || (97 <= c <=112)){
+	    invalid = false;
+	} else {
+	    invalid = true;
+	    break;
+	}
+	    
+    }
+    return !invalid;
+};
+
+diablo_is_chinese_string = function(value){
+    return /^[\u4e00-\u9fa5]+$/.test(value);
 };

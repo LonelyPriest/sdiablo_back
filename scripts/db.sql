@@ -379,6 +379,8 @@ create table w_retailer
     shop            INTEGER default -1,
     merchant        INTEGER default -1, -- which merchant belong to
     type            TINYINT default 0,  -- 0: common, 1: charge
+    py              VARCHAR(8) default null,
+    id_card         VARCHAR(18) default null,
     change_date     DATETIME default 0, -- last changed
     entry_date      DATETIME default 0, -- last changed
     deleted         INTEGER default 0, -- 0: no;  1: yes

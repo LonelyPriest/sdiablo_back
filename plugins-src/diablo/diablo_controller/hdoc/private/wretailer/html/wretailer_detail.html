@@ -20,7 +20,11 @@
 
 	    <button class="btn yellow-crusta purple-stripe"
 		    x-ng-click="charge_detail()">充值记录
-	      <i class="glyphicon glyphicon-map-marker"></i></button> 
+	      <i class="glyphicon glyphicon-map-marker"></i></button>
+
+	    <button x-ng-if="right.master" class="btn red purple-stripe"
+		    x-ng-click="syn_pinyin()">拼音
+	      <i class="glyphicon glyphicon-sort"></i></button> 
 
 	    <button class="btn blue reload purple-stripe"
 		    x-ng-click="refresh()">刷新
@@ -43,19 +47,22 @@
 	<div class="portlet-body"> 
 	  <div class="table-toolbar util-btn-margin-bottom-5">
 	    <div class="row">
-	      <div class="col-xs-8 col-ms-8 col-md-8">
+	      <div class="col-xs-12 col-ms-8 col-md-8">
 	      	<div class="input-group"> 
 	      	  <input
 	      	     class="form-control"
 		     type ="text"
 	      	     ng-edit
-	      	     placeholder="请输入手机号码，至少输入4位"
+	      	     placeholder="请输入手机号码/姓名或拼音，手机号码至少输入4位"
 	      	     typeahead-editable="false"
 	      	     typeahead-on-select="on_select_retailer($item, $model, $label)"
 	      	     uib-typeahead="s as s.name for s in match_retailer_phone($viewValue)"
-	      	     x-ng-model="select.phone"/>
+	      	     x-ng-model="select.phone"
+		     x-ng-enter="select.phone && do_search(default_page)"/>
 		  <div class="input-group-btn">
-		    <button class="btn green">
+		    <button class="btn green"
+			    x-ng-disabled="!select.phone"
+			    x-ng-click="do_search(default_page)">
 	      	      <i class="glyphicon glyphicon-search"></i>
 	      	    </button>
 		  </div> 
@@ -89,12 +96,17 @@
 		  <tr>
 		    <th>序号</th>
 		    <th>名称</th>
+		    <th>身份证号码</th>
 		    <th>生日</th>
 		    <th>会员类型</th> 
 		    <th>联系方式</th>
 		    <th>联系地址</th> 
-		    <th class="danger">帐户余额</th>
-		    <th class="success">累计消费</th>
+		    <th x-ng-click="use_order(order_fields.balance)" class="danger">帐户余额
+		      <i class="glyphicon glyphicon-triangle-bottom fg-red"></i>
+		    </th>
+		    <th x-ng-click="use_order(order_fields.consume)" class="success">累计消费
+		      <i class="glyphicon glyphicon-triangle-bottom fg-red"></i>
+		    </th>
 		    <th class="info">累计积分</th>
 		    <th>所在店铺</th>
 		    <th>日期</th>
@@ -105,13 +117,15 @@
 		  <tr ng-repeat="r in retailers">
 		    <td>{{r.order_id}}</td> 
 		    <td>{{r.name}}</td>
-		    <!-- <td>{{r.birth|date:'yyyy-MM-dd'}}</td> -->
+		    <td>
+		      <div x-ng-if="r.id_card">{{r.id_card}}</div>
+		      <div x-ng-if="!r.id_card" class="text-center">-</div>
+		    </td>
 		    <td>{{r.birthday}}</td>
 		    <td>
-		      <span x-ng-if="r.type.id===1" class="bg-magenta">
-			{{r.type.name}}
-		      </span>
-		      <span x-ng-if="r.type.id===0">{{r.type.name}}</span>
+		      <span x-ng-if="r.type.id===0">{{r.type.name}}</span> 
+		      <span x-ng-if="r.type.id===1" class="bg-magenta">{{r.type.name}}</span>
+		      <span x-ng-if="r.type.id===2" class="bg-lightOrange">{{r.type.name}}</span>
 		    </td> 
 		    <td><div x-ng-if="r.mobile">{{r.mobile}}</div></td>
 		    <td>{{r.address}}</td> 
@@ -157,8 +171,8 @@
 		    </td>
 		  </tr>
 
-		  <tr x-ng-if="right.master && total_items!==0" class="bg-white">
-		    <td colspan="6"></td>
+		  <tr x-ng-if="right.query_balance && total_items!==0" class="bg-white">
+		    <td colspan="7"></td>
 		    <td class="fg-red text-center">{{total_balance}}</td>
 		    <td class="fg-red text-center">{{total_consume}}</td>
 		    <td colspan="4"></td>
@@ -239,7 +253,24 @@
 	  <div ng-show="rForm.name.$invalid && !rForm.name.$pristine">
 	    <span class="fg-red">必需以中文开头，只允许字母，数字</span>
 	  </div> 
-	</div> 
+	</div>
+
+	<div x-ng-if="!params.retailer.no_vip && params.right.master " class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">身份证号码</label>
+	  <div class="col-sm-10 col-md-10">
+	    <div x-ng-class="{'has-error': rForm.card.$invalid && !rForm.card.$pristine}">
+	      <input type="text"
+		     class="form-control"
+		     name="card"
+		     placeholder="请输入身份证号码"
+		     x-ng-model="params.retailer.id_card"
+		     x-ng-pattern="params.pattern.id_card"/>
+	    </div>
+	    <div ng-show="rForm.card.$invalid && !rForm.card.$pristine">
+	      <span class="fg-red">数字或字母，不少于8位</span>
+	    </div>   
+	  </div> 
+	</div>
 	
 	<div class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label">生日</label>
@@ -314,16 +345,22 @@
 
 	<div class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label">所在店铺</label>
-	  <div class="col-sm-10 col-md-10">
+	  <div x-ng-if="params.retailer.edit_shop" class="col-sm-10 col-md-10">
 	    <select class="form-control"
 		    x-ng-model="params.retailer.shop"
 		    x-ng-options="s as s.name for s in params.shops">
 	    </select>
-	  </div> 
+	  </div>
+
+	  <div x-ng-if="!params.retailer.edit_shop" class="col-sm-10 col-md-10">
+	    <input class="form-control"
+		   readonly
+		   type="text"
+		   value="{{params.retailer.shop_name}}"/>
+	  </div>
 	</div>
 	
-	<div x-ng-if="!params.retailer.no_vip
-		      && params.retailer.type_id===0" class="form-group">
+	<div x-ng-if="params.retailer.type_id===0" class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label">会员类型</label>
 	  <div class="col-sm-10 col-md-10">
 	    <select class="form-control"

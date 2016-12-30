@@ -325,17 +325,23 @@ function filterProvider(){
 		    })
 	    },
 
-	    match_retailer_phone:function(viewValue) {
+	    match_retailer_phone:function(viewValue, mode) {
 		var http = $resource("/wretailer/:operation",
 				     {operation: '@operation'},
 				     {post: {method: 'POST', isArray: true}});
 		
-		return http.post({operation:'match_retailer_phone'}, {prompt:viewValue})
+		return http.post({operation:'match_retailer_phone'},
+				 {prompt:viewValue, mode:mode})
 		    .$promise.then(function(phones){
 			// console.log(phones);
-			return phones.map(function(p){
-			    return angular.extend(
-				p, {name:p.mobile + "，" + p.name})
+			return phones.map(function(r){
+			    return {name:    r.name+ "," + r.mobile, 
+				    id:      r.id,
+				    type_id: r.type_id,
+				    score:   r.score,
+				    shop_id: r.shop_id,
+				    py:      r.py,
+				    balance: r.balance} 
 			})
 		    })
 	    },
@@ -571,32 +577,77 @@ function filterProvider(){
 		_retailers = [];
 	    },
 	    
-	    get_wretailer: function(){
+	    // get_wretailer: function(){
+	    // 	if (_retailers.length !== 0 ){
+	    // 	    return _retailers;
+	    // 	} else {
+	    // 	    var http = $resource("/wretailer/:operation",
+	    // 				 {operation: '@operation'}); 
+	    // 	    return http.query(
+	    // 		{operation: 'list_w_retailer'}
+	    // 	    ).$promise.then(function(retailers){
+	    // 		// console.log(retailers); 
+	    // 		_retailers =  retailers.map(function(r){
+	    // 		    return {name:  r.name,
+	    // 			    lname: r.mobile + "，" + r.name,
+	    // 			    type:  r.type_id,
+	    // 			    score: r.score,
+	    // 			    id:r.id,
+	    // 			    shop:  r.shop_id,
+	    // 			    py:diablo_pinyin(r.name),
+	    // 			    balance:r.balance}
+	    // 		})
+
+	    // 		return _retailers;
+	    // 	    });    
+	    // 	},
+
+	    get_sys_wretailer: function(){
 		if (_retailers.length !== 0 ){
 		    return _retailers;
 		} else {
 		    var http = $resource("/wretailer/:operation",
 					 {operation: '@operation'}); 
 		    return http.query(
-			{operation: 'list_w_retailer'}
+			{operation: 'list_sys_wretailer'}
 		    ).$promise.then(function(retailers){
 			// console.log(retailers); 
 			_retailers =  retailers.map(function(r){
-			    return {name:  r.name,
-				    lname: r.mobile + "，" + r.name,
-				    type:  r.type_id,
-				    score: r.score,
-				    id:r.id,
-				    shop:  r.shop_id,
-				    py:diablo_pinyin(r.name),
-				    balance:r.balance}
+			    return {name:    r.name + "," + r.mobile, 
+				    id:      r.id,
+				    type_id: r.type_id,
+				    score:   r.score,
+				    shop_id: r.shop_id,
+				    py:      r.py,
+				    balance: r.balance}
 			})
 
 			return _retailers;
 		    });    
-		}
+		} 
+	    },
+
+	    get_wretailer_batch:function(retailerIds) {
+		var http = $resource("/wretailer/:operation",
+				     {operation: '@operation'},
+				     {post: {method: 'POST', isArray: true}});
 		
+		return http.post(
+		    {operation:'get_w_retailer_batch'}, {retailer:retailerIds}
+		).$promise;// .then(function(retailers){
+		//     return retailers.map(function(r){
+		// 	return {name:    r.name, 
+		// 		id:      r.id,
+		// 		type_id: r.type_id,
+		// 		score:   r.score,
+		// 		shop_id: r.shop_id,
+		// 		py:      r.py,
+		// 		balance: r.balance} 
+		//     })
+		// })
 	    }
+
+	    //
 	    
 	}
     }
