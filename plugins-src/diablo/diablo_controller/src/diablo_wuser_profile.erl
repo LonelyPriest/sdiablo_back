@@ -14,7 +14,7 @@
 -behaviour(gen_server).
 
 %% API
--export([start_link/0]).
+-export([start_link/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -24,7 +24,8 @@
 	 update/2, update/3, set_default/1, set_default/2]).
 -export([filter/3]).
 
--define(SERVER, ?MODULE). 
+%% -define(SERVER, ?MODULE).
+-define(SERVER(M), ?wpool:get(?MODULE, M)). 
 
 -record(state, {}).
 
@@ -33,148 +34,148 @@
 %%%===================================================================
 
 new(Merchant) ->
-    gen_server:call(?SERVER, {new_profile, Merchant}).
+    gen_server:call(?SERVER(Merchant), {new_profile, Merchant}).
 new(Merchant, SessionId) ->
-    gen_server:call(?SERVER, {new_profile, Merchant, SessionId}).
+    gen_server:call(?SERVER(Merchant), {new_profile, Merchant, SessionId}).
 
 get(Merchant) ->
-    gen_server:call(?SERVER, {get_profile, Merchant}).
+    gen_server:call(?SERVER(Merchant), {get_profile, Merchant}).
 
 %% about print
 get(merchant, Merchant) ->
-    gen_server:call(?SERVER, {get_merchant_profile, Merchant});
+    gen_server:call(?SERVER(Merchant), {get_merchant_profile, Merchant});
 get(bank, Merchant) ->
-    gen_server:call(?SERVER, {get_bank_profile, Merchant});
+    gen_server:call(?SERVER(Merchant), {get_bank_profile, Merchant});
 get(setting, Merchant) ->
-    gen_server:call(?SERVER, {get_setting_profile, Merchant});
+    gen_server:call(?SERVER(Merchant), {get_setting_profile, Merchant});
 get(size_group, Merchant) ->
-    gen_server:call(?SERVER, {get_size_group_profile, Merchant});
+    gen_server:call(?SERVER(Merchant), {get_size_group_profile, Merchant});
 get(shop, Merchant) ->
-    gen_server:call(?SERVER, {get_shop_profile, Merchant});
+    gen_server:call(?SERVER(Merchant), {get_shop_profile, Merchant});
 get(repo, Merchant) ->
-    gen_server:call(?SERVER, {get_repo_profile, Merchant});
+    gen_server:call(?SERVER(Merchant), {get_repo_profile, Merchant});
 get(region, Merchant) ->
-    gen_server:call(?SERVER, {get_region_profile, Merchant});
+    gen_server:call(?SERVER(Merchant), {get_region_profile, Merchant});
 get(print, Merchant) ->
-    gen_server:call(?SERVER, {get_print_profile, Merchant});
+    gen_server:call(?SERVER(Merchant), {get_print_profile, Merchant});
 get(print_format, Merchant) ->
-    gen_server:call(?SERVER, {get_print_format_profile, Merchant});
+    gen_server:call(?SERVER(Merchant), {get_print_format_profile, Merchant});
 get(type, Merchant) ->
-    gen_server:call(?SERVER, {get_type_profile, Merchant});
+    gen_server:call(?SERVER(Merchant), {get_type_profile, Merchant});
 get(retailer, Merchant) ->
-    gen_server:call(?SERVER, {get_retailer_profile, Merchant}); 
+    gen_server:call(?SERVER(Merchant), {get_retailer_profile, Merchant}); 
 get(firm, Merchant) ->
-    gen_server:call(?SERVER, {get_firm_profile, Merchant});
+    gen_server:call(?SERVER(Merchant), {get_firm_profile, Merchant});
 get(employee, Merchant) ->
-    gen_server:call(?SERVER, {get_employee_profile, Merchant});
+    gen_server:call(?SERVER(Merchant), {get_employee_profile, Merchant});
 get(brand, Merchant) ->
-    gen_server:call(?SERVER, {get_brand_profile, Merchant});
+    gen_server:call(?SERVER(Merchant), {get_brand_profile, Merchant});
 get(color_type, Merchant) ->
-    gen_server:call(?SERVER, {get_color_type_profile, Merchant});
+    gen_server:call(?SERVER(Merchant), {get_color_type_profile, Merchant});
 get(color, Merchant) ->
-    gen_server:call(?SERVER, {get_color_profile, Merchant});
+    gen_server:call(?SERVER(Merchant), {get_color_profile, Merchant});
 get(promotion, Merchant) ->
-    gen_server:call(?SERVER, {get_promotion, Merchant});
+    gen_server:call(?SERVER(Merchant), {get_promotion, Merchant});
 get(charge, Merchant) ->
-    gen_server:call(?SERVER, {get_charge, Merchant});
+    gen_server:call(?SERVER(Merchant), {get_charge, Merchant});
 get(score, Merchant) ->
-    gen_server:call(?SERVER, {get_score, Merchant});
+    gen_server:call(?SERVER(Merchant), {get_score, Merchant});
 get(sms_rate, Merchant) ->
-    gen_server:call(?SERVER, {get_sms_rate, Merchant});
+    gen_server:call(?SERVER(Merchant), {get_sms_rate, Merchant});
 get(sms_center, Merchant) ->
-    gen_server:call(?SERVER, {get_sms_center, Merchant}).
+    gen_server:call(?SERVER(Merchant), {get_sms_center, Merchant}).
 
 
 
 get(shop, Merchant, Shop) ->
-    gen_server:call(?SERVER, {get_shop_profile, Merchant, Shop});
+    gen_server:call(?SERVER(Merchant), {get_shop_profile, Merchant, Shop});
 get(repo, Merchant, Repo) ->
-    gen_server:call(?SERVER, {get_repo_profile, Merchant, Repo});
+    gen_server:call(?SERVER(Merchant), {get_repo_profile, Merchant, Repo});
 get(print, Merchant, Shop) ->
-    gen_server:call(?SERVER, {get_print_profile, Merchant, Shop});
+    gen_server:call(?SERVER(Merchant), {get_print_profile, Merchant, Shop});
 get(print_format, Merchant, Shop) ->
-    gen_server:call(?SERVER, {get_print_format_profile, Merchant, Shop});
+    gen_server:call(?SERVER(Merchant), {get_print_format_profile, Merchant, Shop});
 get(setting, Merchant, Shop) ->
-    gen_server:call(?SERVER, {get_setting_profile, Merchant, Shop}); 
+    gen_server:call(?SERVER(Merchant), {get_setting_profile, Merchant, Shop}); 
 get(size_group, Merchant, GId) ->
-    gen_server:call(?SERVER, {get_size_group_profile, Merchant, GId});
+    gen_server:call(?SERVER(Merchant), {get_size_group_profile, Merchant, GId});
 get(type, Merchant, TypeId) ->
-    gen_server:call(?SERVER, {get_type_profile, Merchant, TypeId});
+    gen_server:call(?SERVER(Merchant), {get_type_profile, Merchant, TypeId});
 get(retailer, Merchant, Retailer) -> 
-    gen_server:call(?SERVER, {get_retailer_profile, Merchant, Retailer});
+    gen_server:call(?SERVER(Merchant), {get_retailer_profile, Merchant, Retailer});
 get(sys_retailer, Merchant, Shops) ->
-    gen_server:call(?SERVER, {get_sysretailer_profile, Merchant, Shops});
+    gen_server:call(?SERVER(Merchant), {get_sysretailer_profile, Merchant, Shops});
 get(firm, Merchant, Firm) ->
-    gen_server:call(?SERVER, {get_firm_profile, Merchant, Firm});
+    gen_server:call(?SERVER(Merchant), {get_firm_profile, Merchant, Firm});
 get(employee, Merchant, Employee) ->
-    gen_server:call(?SERVER, {get_employee_profile, Merchant, Employee});
+    gen_server:call(?SERVER(Merchant), {get_employee_profile, Merchant, Employee});
 get(brand, Merchant, BrandId) ->
-    gen_server:call(?SERVER, {get_brand_profile, Merchant, BrandId});
+    gen_server:call(?SERVER(Merchant), {get_brand_profile, Merchant, BrandId});
 get(color, Merchant, ColorId) ->
-    gen_server:call(?SERVER, {get_color_profile, Merchant, ColorId});
+    gen_server:call(?SERVER(Merchant), {get_color_profile, Merchant, ColorId});
 
 %% about right of login user
 get(user_right, Merchant, Session) ->
-    gen_server:call(?SERVER, {get_user_right, Merchant, Session});
+    gen_server:call(?SERVER(Merchant), {get_user_right, Merchant, Session});
 get(user_shop, Merchant, Session) ->
-    gen_server:call(?SERVER, {get_user_shop, Merchant, Session});
+    gen_server:call(?SERVER(Merchant), {get_user_shop, Merchant, Session});
 get(user_nav, Merchant, Session) ->
-    gen_server:call(?SERVER, {get_user_nav, Merchant, Session});
+    gen_server:call(?SERVER(Merchant), {get_user_nav, Merchant, Session});
 get(user, Merchant, UserId) ->
-    gen_server:call(?SERVER, {get_user_profile, Merchant, UserId}).
+    gen_server:call(?SERVER(Merchant), {get_user_profile, Merchant, UserId}).
 
 set_default(Merchant) ->
     set_default(Merchant, -1).
 set_default(Merchant, Shop) ->
-    gen_server:call(?SERVER, {set_default, Merchant, Shop}).
+    gen_server:call(?SERVER(Merchant), {set_default, Merchant, Shop}).
 
 update(merchant, Merchant) ->
-    gen_server:cast(?SERVER, {update_merchant, Merchant}); 
+    gen_server:cast(?SERVER(Merchant), {update_merchant, Merchant}); 
 update(good, Merchant) ->
-    gen_server:cast(?SERVER, {update_good, Merchant}); 
+    gen_server:cast(?SERVER(Merchant), {update_good, Merchant}); 
 update(setting, Merchant) ->
-    gen_server:cast(?SERVER, {update_setting, Merchant});
+    gen_server:cast(?SERVER(Merchant), {update_setting, Merchant});
 update(bank, Merchant) ->
-    gen_server:cast(?SERVER, {update_bank, Merchant});
+    gen_server:cast(?SERVER(Merchant), {update_bank, Merchant});
 update(shop, Merchant) ->
-    gen_server:cast(?SERVER, {update_shop, Merchant});
+    gen_server:cast(?SERVER(Merchant), {update_shop, Merchant});
 update(employee, Merchant) ->
-    gen_server:cast(?SERVER, {update_employee, Merchant});
+    gen_server:cast(?SERVER(Merchant), {update_employee, Merchant});
 update(print, Merchant) ->
-    gen_server:cast(?SERVER, {update_print, Merchant});
+    gen_server:cast(?SERVER(Merchant), {update_print, Merchant});
 update(type, Merchant) ->
-    gen_server:cast(?SERVER, {update_type, Merchant});
+    gen_server:cast(?SERVER(Merchant), {update_type, Merchant});
 update(brand, Merchant) ->
-    gen_server:cast(?SERVER, {update_brand, Merchant});
+    gen_server:cast(?SERVER(Merchant), {update_brand, Merchant});
 update(print_format, Merchant) ->
-    gen_server:cast(?SERVER, {update_print_format, Merchant});
+    gen_server:cast(?SERVER(Merchant), {update_print_format, Merchant});
 update(firm, Merchant) ->
-    gen_server:cast(?SERVER, {update_firm_format, Merchant});
+    gen_server:cast(?SERVER(Merchant), {update_firm_format, Merchant});
 update(retailer, Merchant) ->
-    gen_server:cast(?SERVER, {update_retailer, Merchant});
+    gen_server:cast(?SERVER(Merchant), {update_retailer, Merchant});
 update(color, Merchant) ->
-    gen_server:cast(?SERVER, {update_color, Merchant});
+    gen_server:cast(?SERVER(Merchant), {update_color, Merchant});
 update(size_group, Merchant) ->
-    gen_server:cast(?SERVER, {update_sizegroup, Merchant});
+    gen_server:cast(?SERVER(Merchant), {update_sizegroup, Merchant});
 update(promotion, Merchant) ->
-    gen_server:cast(?SERVER, {update_promotion, Merchant});
+    gen_server:cast(?SERVER(Merchant), {update_promotion, Merchant});
 update(charge, Merchant) ->
-    gen_server:cast(?SERVER, {update_charge, Merchant});
+    gen_server:cast(?SERVER(Merchant), {update_charge, Merchant});
 update(score, Merchant) ->
-    gen_server:cast(?SERVER, {update_score, Merchant});
+    gen_server:cast(?SERVER(Merchant), {update_score, Merchant});
 update(sms_rate, Merchant) ->
-    gen_server:cast(?SERVER, {update_sms_rate, Merchant});
+    gen_server:cast(?SERVER(Merchant), {update_sms_rate, Merchant});
 update(region, Merchant) ->
-    gen_server:cast(?SERVER, {update_region, Merchant}).
+    gen_server:cast(?SERVER(Merchant), {update_region, Merchant}).
 
 
 
 update(user_shop, Merchant, Session) ->
-    gen_server:cast(?SERVER, {update_user_shop, Merchant, Session}).
+    gen_server:cast(?SERVER(Merchant), {update_user_shop, Merchant, Session}).
 
 
-start_link() ->
-    gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+start_link(Name) ->
+    gen_server:start_link({local, Name}, ?MODULE, [], []).
 
 %%%===================================================================
 %%% gen_server callbacks
