@@ -140,10 +140,10 @@ init([]) ->
 	 Restart, Shutdown, Type, [diablo_attribute]},
      
 
-    %% WProfile = 
-    %% 	{diablo_wuser_profile,
-    %% 	 {diablo_wuser_profile, start_link, []},
-    %% 	 Restart, Shutdown, Type, [diablo_wuser_profile]},
+    WProfile = 
+    	{diablo_wuser_profile,
+    	 {diablo_wuser_profile, start_link, []},
+    	 Restart, Shutdown, Type, [diablo_wuser_profile]},
     
     %% wifi printer
     HttpPrint =
@@ -173,20 +173,18 @@ init([]) ->
 	 {diablo_cron_control, start_link, []},
 	 Restart, Shutdown, Type, [diablo_cron_control]},
     
-    %% WholeSale = [WInventory, WRetailer, WSale, WSaleDraft,
-    %% 		 WPrint, WBase, WProfile, HttpPrint, WReport],
-
-    %% WholeSale = [WPrint, WBase, WProfile, HttpPrint, WReport, WGenReport,
-    %% 		 CronRegister, CronController],
-
-    WholeSale = [WPrint, WBase, HttpPrint, WReport, WGenReport,
+    
+    WholeSale = [WPrint, WBase, WProfile, HttpPrint, WReport, WGenReport,
     		 CronRegister, CronController],
 
-    WProfileSup = ?to_a(lists:concat([?w_user_profile, "_sup"])),
-    WProfilePoolSup = {
-      WProfileSup,
-      {diablo_work_pool_sup, start_link, [?w_user_profile]},
-      Restart, Shutdown, supervisor, [WProfileSup]},
+    %% WholeSale = [WPrint, WBase, HttpPrint, WReport, WGenReport,
+    %% 		 CronRegister, CronController],
+
+    %% WProfileSup = ?to_a(lists:concat([?w_user_profile, "_sup"])),
+    %% WProfilePoolSup = {
+    %%   WProfileSup,
+    %%   {diablo_work_pool_sup, start_link, [?w_user_profile]},
+    %%   Restart, Shutdown, supervisor, [WProfileSup]},
 
     WRetailerSup = ?to_a(lists:concat([?w_retailer, "_sup"])),
     WRetailerPoolSup = {
@@ -216,7 +214,8 @@ init([]) ->
 		   {diablo_work_pool_sup, start_link, [?cron_agent]},
 		   Restart, Shutdown, supervisor, [CronSup]},
     
-    PoolSup = [WProfilePoolSup,
+    PoolSup = [
+	       %% WProfilePoolSup,
 	       WRetailerPoolSup,
 	       WInvPoolSup,
 	       WSalePoolSup,
