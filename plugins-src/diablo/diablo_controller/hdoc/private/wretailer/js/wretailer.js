@@ -72,11 +72,12 @@ wretailerApp.controller("wretailerDetailCtrl", function(
     }; 
     
     $scope.right = {
-	reset_password        :retailerUtils.authen(user.type, 'reset_password', user.right),
-	delete_retailer       :retailerUtils.authen(user.type, 'delete_retailer', user.right),
-	update_retailer_score :retailerUtils.authen(user.type, 'update_score', user.right),
-	export_retailer       :retailerUtils.authen(user.type, 'export_retailer', user.right),
-	query_balance         :retailerUtils.authen(user.type, 'query_balance', user.right),
+	reset_password        :retailerUtils.authen(user.type, user.right, 'reset_password'),
+	delete_retailer       :retailerUtils.authen(user.type, user.right, 'delete_retailer'),
+	update_retailer_score :retailerUtils.authen(user.type, user.right, 'update_score'),
+	export_retailer       :retailerUtils.authen(user.type, user.right, 'export_retailer'),
+	query_balance         :retailerUtils.authen(user.type, user.right, 'query_balance'),
+	update_phone          :retailerUtils.authen(user.type, user.right, 'update_phone'),
 	master                :rightAuthen.authen_master(user.type)
 	
 	// reset_password: rightAuthen.authen(
@@ -91,6 +92,7 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	//     user.type, rightAuthen.retailer_action()['query_balance'], user.right), 
 	// master: rightAuthen.authen_master(user.type) 
     };
+    console.log($scope.right);
 
     /*
      * filter
@@ -140,6 +142,7 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 
     $scope.do_search = function(page){
     	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+	    console.log($scope.select.phone);
 	    if (angular.isDefined($scope.select.phone)
 		&& angular.isObject($scope.select.phone)){
 		search.mobile = $scope.select.phone.mobile;
@@ -351,7 +354,8 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 		id_card: diablo_get_modified(params.retailer.id_card, old_retailer.id_card),
 		mobile: diablo_get_modified(params.retailer.mobile, old_retailer.mobile),
 		address: diablo_get_modified(params.retailer.address, old_retailer.address),
-		shop: diablo_get_modified(params.retailer.shop.id, old_retailer.shop_id),
+		shop: params.retailer.edit_shop
+		    ? diablo_get_modified(params.retailer.shop.id, old_retailer.shop_id): undefined,
 		type: diablo_get_modified(params.retailer.type, old_retailer.type),
 		password:diablo_get_modified(params.retailer.password, old_retailer.password),
 		birth:diablo_get_modified(params.retailer.birth.getTime(),

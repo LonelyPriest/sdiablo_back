@@ -48,17 +48,24 @@
 	  <div class="table-toolbar util-btn-margin-bottom-5">
 	    <div class="row">
 	      <div class="col-xs-12 col-ms-8 col-md-8">
-	      	<div class="input-group"> 
-	      	  <input
-	      	     class="form-control"
-		     type ="text"
-	      	     ng-edit
-	      	     placeholder="请输入手机号码/姓名或拼音，手机号码至少输入4位"
-	      	     typeahead-editable="false"
-	      	     typeahead-on-select="on_select_retailer($item, $model, $label)"
-	      	     uib-typeahead="s as s.name for s in match_retailer_phone($viewValue)"
-	      	     x-ng-model="select.phone"
-		     x-ng-enter="select.phone && do_search(default_page)"/>
+	      	<div class="input-group">
+		  <div class="has-feedback">
+	      	    <input
+	      	       class="form-control"
+		       type ="text"
+	      	       ng-edit
+	      	       placeholder="请输入手机号码/姓名或拼音，手机号码至少输入4位"
+	      	       typeahead-editable="false"
+		       typeahead-wait-ms="300"
+		       typeahead-loading="loading"
+	      	       typeahead-on-select="on_select_retailer($item, $model, $label)"
+	      	       uib-typeahead="s as s.name for s in match_retailer_phone($viewValue)"
+	      	       x-ng-model="select.phone"
+		       x-ng-enter="select.phone && do_search(default_page)"/>
+		    <span x-ng-show="loading">
+	  	      <i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
+		    </span>
+		  </div>
 		  <div class="input-group-btn">
 		    <button class="btn green"
 			    x-ng-disabled="!select.phone"
@@ -301,7 +308,7 @@
 	</div> 
 	
 	<!--mobile-->
-	<div class="form-group">
+	<div x-ng-if="params.right.update_phone" class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label">联系方式</label>
 	  <div class="col-sm-10 col-md-10">
 	    <div class="input-group"> 

@@ -335,8 +335,9 @@ function filterProvider(){
 		    .$promise.then(function(phones){
 			// console.log(phones);
 			return phones.map(function(r){
-			    return {name:    r.name+ "," + r.mobile, 
-				    id:      r.id,
+			    return {id:      r.id,
+				    name:    r.name+ "," + r.mobile, 
+				    mobile:  r.mobile,
 				    type_id: r.type_id,
 				    score:   r.score,
 				    shop_id: r.shop_id,
@@ -613,8 +614,9 @@ function filterProvider(){
 		    ).$promise.then(function(retailers){
 			// console.log(retailers); 
 			_retailers =  retailers.map(function(r){
-			    return {name:    r.name + "," + r.mobile, 
-				    id:      r.id,
+			    return {id:      r.id,
+				    name:    r.name + "," + r.mobile,
+				    mobile:  r.mobile,
 				    type_id: r.type_id,
 				    score:   r.score,
 				    shop_id: r.shop_id,

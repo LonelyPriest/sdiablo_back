@@ -806,8 +806,8 @@ diablo_is_digit_string = function(value){
 diablo_is_letter_string = function(value){
     var invalid = true;
     for (var i=0, l=value.length; i<l; i++){
-	var c = value[i];
-	if ( (65 <= c <= 90) || (97 <= c <=112)){
+	var c = value[i].charCodeAt(0);
+	if ( (65 <= c && c <= 90) || (97 <= c && c <=122)){
 	    invalid = false;
 	} else {
 	    invalid = true;

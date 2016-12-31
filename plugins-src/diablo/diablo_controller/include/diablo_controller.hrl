@@ -142,6 +142,7 @@
 -define(consume_ticket,              ?right_w_retailer + 20).
 -define(export_w_retailer,           ?right_w_retailer + 21).
 -define(query_w_retailer_balance,    ?right_w_retailer + 22).
+-define(update_w_retailer_phone,     ?right_w_retailer + 23).
 
 %% shop
 -define(new_shop,       ?right_shop + 1).

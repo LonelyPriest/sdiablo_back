@@ -152,6 +152,8 @@ init([]) ->
 	  <<"会员导出">>, <<"export_w_retailer">>, ?right_w_retailer},
 	 {?query_w_retailer_balance, 
 	  <<"查看会员余额">>, <<"query_w_retailer_balance">>, ?right_w_retailer},
+	 {?update_w_retailer_phone, 
+	  <<"修改会员联系方式">>, <<"update_w_retailer_phone">>, ?right_w_retailer},
 
 	 {?filter_ticket_detail, 
 	  <<"查询电子卷">>, <<"filter_ticket_detail">>, ?right_w_retailer}, 

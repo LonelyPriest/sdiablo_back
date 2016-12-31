@@ -62,7 +62,8 @@ var rightAuthen = {
 	    reset_password    :rightAuthen.root_right._retailer + 14,
 	    update_score      :rightAuthen.root_right._retailer + 17,
 	    export_retailer   :rightAuthen.root_right._retailer + 21,
-	    query_balance     :rightAuthen.root_right._retailer + 22
+	    query_balance     :rightAuthen.root_right._retailer + 22,
+	    update_phone      :rightAuthen.root_right._retailer + 23
 	}
     },
 
