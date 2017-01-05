@@ -177,6 +177,7 @@ action(Session, Req, {"match_all_w_good"}, Payload) ->
       end, Req);
 
 action(Session, Req, {"new_w_good"}, Payload) ->
+    %% ?DEBUG("new_w_good with session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
     {struct, Good} = ?v(<<"good">>, Payload),
     ?DEBUG("new purchaser good with session ~p, good~n~p", [Session, Good]),

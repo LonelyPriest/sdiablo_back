@@ -20,41 +20,6 @@ wgoodApp.service("wgoodService", function($resource, $http){
     // free color, size
     this.free_color = 0;
     this.free_size  = 0;
-
-    this.format_size_group = function(gids, size_groups){
-	var gnames = [];
-	gids.split(",").map(function(id){
-	    angular.forEach(size_groups, function(g){
-		if (parseInt(id) === g.id){
-		    angular.forEach(diablo_sizegroup, function(sname){
-			if (g[sname] && !in_array(gnames, g[sname])){
-			    gnames.push(g[sname]);
-			}
-		    })
-		}
-	    })
-	}); 
-	
-	return gnames;
-    };
-
-
-    this.get_size_group = function(gids, size_groups){
-	var gnames = [];
-	gids.split(",").map(function(id){
-	    angular.forEach(size_groups, function(g){
-		if (parseInt(id) === g.id){
-		    angular.forEach(diablo_sizegroup, function(sname){
-			if (g[sname]){
-			    gnames.push(g[sname]);
-			}
-		    })
-		}
-	    })
-	}); 
-	
-	return gnames;
-    };
     
     // =========================================================================    
     var http = $resource("/wgood/:operation/:id",
@@ -111,9 +76,9 @@ wgoodApp.service("wgoodService", function($resource, $http){
 	return http.query({operation: 'list_w_size'}).$promise;
     };
 
-    this.add_purchaser_good = function(good){
-	return http.save({operation: "new_w_good"}, good).$promise;
-    };
+    // this.add_purchaser_good = function(good){
+    // 	return http.save({operation: "new_w_good"}, good).$promise;
+    // };
 
     this.add_purchaser_size = function(group){
 	return http.save(

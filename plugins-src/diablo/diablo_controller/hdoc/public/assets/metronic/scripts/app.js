@@ -1,6 +1,18 @@
 /**
 Core script to handle the entire theme and core functions
 **/
+
+// if (typeof(define) === 'functions'){
+//     define (function(){
+// 	return App;
+//     });
+// };
+
+define (function(){
+    return App;
+});
+
+
 var App = function () {
 
     // IE mode
@@ -830,7 +842,7 @@ var App = function () {
     }
 
     var handleFastJs = function(){
-	FastClick.attach(document.body);  
+	// FastClick.attach(document.body);  
     }
 
     // var disableMousewheelOnNumberOfInput = function(){

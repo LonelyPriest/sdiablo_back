@@ -1,6 +1,6 @@
-wsaleApp.controller("wsaleRsnDetailCtrl", function(
+function wsaleRsnDetailCtrlProvide (
     $scope, $routeParams, dateFilter, diabloUtilsService, diabloFilter,
-    purchaserService, wgoodService, wsaleService, localStorageService,
+    wsaleService, localStorageService,
     user, filterPromotion, filterScore, filterBrand,
     filterEmployee, filterFirm, filterSizeGroup,
     filterType, filterColor, base){
@@ -307,8 +307,8 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 	}).then(function(result){
 	    console.log(result);
 	    
-	    var order_sizes = wgoodService.format_size_group(inv.s_group, filterSizeGroup);
-	    var sort = purchaserService.sort_inventory(result.data, order_sizes, filterColor);
+	    var order_sizes = diabloHelp.usort_size_group(inv.s_group, filterSizeGroup);
+	    var sort = diabloHelp.sort_stock(result.data, order_sizes, filterColor);
 	    // inv.total    = sort.total;
 	    inv.colors      = sort.color;
 	    inv.sizes       = sort.size;
@@ -454,4 +454,8 @@ wsaleApp.controller("wsaleRsnDetailCtrl", function(
 	    })   
 	} 
     };
+};
+
+define (["wsaleApp"], function(app){
+    app.controller("wsaleRsnDetailCtrl", wsaleRsnDetailCtrlProvide);
 });

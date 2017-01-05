@@ -1,7 +1,7 @@
-purchaserApp.controller("purchaserInventoryFixCtrl", function(
+function purchaserInventoryFixCtrlProvide(
     $scope, $q, $timeout, dateFilter, localStorageService, diabloPattern,
     diabloUtilsService, diabloPromise, diabloFilter, diabloNormalFilter, purchaserService,
-    wgoodService, user, filterEmployee, filterSizeGroup, filterColor, base){
+    user, filterEmployee, filterSizeGroup, filterColor, base){
     // console.log(user); 
     $scope.shops   = user.sortShops;    
     $scope.sexs    = diablo_sex;
@@ -359,8 +359,8 @@ purchaserApp.controller("purchaserInventoryFixCtrl", function(
 	).then(function(invs){
 	    console.log(invs);
 	    
-	    var order_sizes = wgoodService.format_size_group(inv.s_group, filterSizeGroup);
-	    var sort = purchaserService.sort_inventory(invs, order_sizes, filterColor);
+	    var order_sizes = diabloHelp.usort_size_group(inv.s_group, filterSizeGroup);
+	    var sort = diabloHelp.sort_stock(invs, order_sizes, filterColor);
 	    
 	    inv.total   = sort.total;
 	    inv.sizes   = sort.size;
@@ -539,14 +539,13 @@ purchaserApp.controller("purchaserInventoryFixCtrl", function(
 	}, 1000); 
 	
     };
-});
+};
 
 
 
-purchaserApp.controller("purchaserInventoryFixDetailCtrl", function(
+function purchaserInventoryFixDetailCtrlProvide(
     $scope, dateFilter, diabloPattern, diabloUtilsService,
-    diabloFilter, purchaserService, wgoodService,
-    user, filterEmployee, base){
+    diabloFilter, purchaserService, user, filterEmployee, base){
     console.log(user);
 
     $scope.goto_page = diablo_goto_page;
@@ -637,4 +636,9 @@ purchaserApp.controller("purchaserInventoryFixDetailCtrl", function(
 	diablo_goto_page("#/inventory/inventory_rsn_detail/fix/" + r.rsn);
     }
     
-})
+};
+
+define(["purchaserApp"], function(app){
+    app.controller("purchaserInventoryFixCtrl", purchaserInventoryFixCtrlProvide);
+    app.controller("purchaserInventoryFixDetailCtrl", purchaserInventoryFixDetailCtrlProvide);
+});

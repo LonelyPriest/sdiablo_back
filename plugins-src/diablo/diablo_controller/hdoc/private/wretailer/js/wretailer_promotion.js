@@ -1,4 +1,6 @@
-wretailerApp.controller("wretailerRechargeNewCtrl", function(
+'use strict'
+
+function wretailerRechargeNewCtrlProvide(
     $scope, dateFilter, diabloPattern, diabloUtilsService, wretailerService){
     $scope.pattern = {
 	name      :diabloPattern.ch_en_num_beside_underline_bars,
@@ -44,10 +46,10 @@ wretailerApp.controller("wretailerRechargeNewCtrl", function(
     $scope.cancel = function(){
 	diablo_goto_page("#/promotion/recharge_detail");
     }
-});
+};
 
 
-wretailerApp.controller("wretailerRechargeDetailCtrl", function(
+function wretailerRechargeDetailCtrlProvide(
     $scope, diabloPattern, diabloUtilsService, wretailerService, user
 ){
 
@@ -101,12 +103,11 @@ wretailerApp.controller("wretailerRechargeDetailCtrl", function(
 	    undefined
 	);
     };
-});
+};
 
 
-wretailerApp.controller("wretailerScoreNewCtrl", function(
-    $scope, dateFilter, diabloPattern, diabloUtilsService,
-    wretailerService){
+function wretailerScoreNewCtrlProvide(
+    $scope, dateFilter, diabloPattern, diabloUtilsService, wretailerService){
     
     $scope.pattern = {
 	name      :diabloPattern.ch_en_num_beside_underline_bars,
@@ -171,9 +172,9 @@ wretailerApp.controller("wretailerScoreNewCtrl", function(
 	diablo_goto_page("#/promotion/score_detail");
     }
     
-});
+};
 
-wretailerApp.controller("wretailerScoreDetailCtrl", function(
+function wretailerScoreDetailCtrlProvide(
     $scope, diabloPattern, diabloUtilsService, wretailerService, user){
 
     $scope.rules = wretailerService.score_rules;
@@ -219,4 +220,11 @@ wretailerApp.controller("wretailerScoreDetailCtrl", function(
     $scope.delete_score = function(old_score){
 	dialog.response(false, "删除积分方案", "暂不支持此操作！！");
     };
+};
+
+define (["wretailerApp"], function(app){
+    app.controller("wretailerRechargeNewCtrl", wretailerRechargeNewCtrlProvide);
+    app.controller("wretailerRechargeDetailCtrl", wretailerRechargeDetailCtrlProvide);
+    app.controller("wretailerScoreNewCtrl", wretailerScoreNewCtrlProvide);
+    app.controller("wretailerScoreDetailCtrl", wretailerScoreDetailCtrlProvide);
 });

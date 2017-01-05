@@ -1,5 +1,7 @@
+'use strict'
+
 var diabloFilterApp = angular.module("diabloFilterApp", [], function($provide){
-     $provide.provider('diabloFilter', filterProvider)
+    $provide.provider('diabloFilter', filterProvider)
 });
 
 
@@ -33,7 +35,7 @@ var clear_from_storage = function(key, name){
     var storage = localStorage.getItem(key);
     if (angular.isDefined(storage) && storage !== null) {
 	var caches = JSON.parse(storage);
-	for (o in caches){
+	for (var o in caches){
 	    if (o === name) delete caches[o];
 	}
 	
@@ -61,12 +63,80 @@ function filterProvider(){
     // var _chargs      = [];
     // var _scores      = [];
 
-    this.$get = function($resource, dateFilter, wgoodService){
+    this.$get = function($resource, dateFilter){
 	var resource = $resource(
 	    "/purchaser/:operation", {operation: '@operation'},
 	    {query_by_post: {method: 'POST', isArray:true}});
 
-	var cookie = 'filter-' + diablo_get_cookie("qzg_dyty_session"); 
+	var _goodHttp = $resource("/wgood/:operation/:id", {operation: '@operation', id:'@id'},
+				  {query_by_post: {method: 'POST', isArray: true}});
+
+	var _retailerHttp = $resource("/wretailer/:operation/:id",
+				      {operation: '@operation', id:'@id'},
+				      {post: {method: 'POST', isArray: true}}
+				     );
+	
+	var cookie = 'filter-' + diablo_get_cookie("qzg_dyty_session");
+
+	function list_w_promotion() {
+	    return _goodHttp.query({operation: 'list_w_promotion'}).$promise;
+	};
+
+	function list_purchaser_firm() {
+	    return _goodHttp.query({operation: "list_supplier"}).$promise;
+	};
+
+	function list_purchaser_size(){
+	    return _goodHttp.query({operation: 'list_w_size'}).$promise;
+	};
+
+	function list_purchaser_brand() {
+	    return _goodHttp.query({operation: "list_brand"}).$promise;
+	};
+
+	function list_purchaser_type() {
+	    return _goodHttp.query({operation: "list_type"}).$promise;
+	};
+
+	function list_purchaser_color() {
+	    return _goodHttp.query({operation: 'list_w_color'}).$promise;
+	};
+
+	function list_color_type() {
+	    return _goodHttp.query({operation: 'list_color_type'}).$promise;
+	};
+
+	function match_all_purchaser_good(start_time, firm){
+	    return _goodHttp.query_by_post(
+		{operation: "match_all_w_good"},
+		{start_time: start_time, firm: firm}).$promise;
+	};
+
+	function match_purchaser_style_number(viewValue){
+	    return _goodHttp.query_by_post(
+		{operation: "match_w_good_style_number"},
+		{prompt_value: viewValue}).$promise;
+	};
+
+	function match_purchaser_good_with_firm(viewValue, firm){
+	    return _goodHttp.query_by_post(
+		{operation: "match_w_good"},
+		{prompt_value: viewValue, firm: firm}).$promise;
+	};
+
+	function add_purchaser_good (good, image){
+	    return _goodHttp.save({operation: "new_w_good"}, {good:good, image:image}).$promise;
+	};
+
+	function add_purchaser_color(color){
+	    return _goodHttp.save(
+		{operation: "new_w_color"},
+		{name: color.name, type: color.type, remark: color.remark}).$promise;
+	};
+
+	function get_purchaser_good(good){
+	    return _goodHttp.save({operation: "get_w_good"}, good).$promise;
+	};
 	
 	return{
 	    default_time: function(start, end){
@@ -212,9 +282,7 @@ function filterProvider(){
 	    },
 	    
 	    match_style_number: function(viewValue){
-		return wgoodService.match_purchaser_style_number(
-		    viewValue
-		).then(function(result){
+		return match_purchaser_style_number(viewValue).then(function(result){
 		    // console.log(result);
 		    return result.map(function(s){
 			return s.style_number;
@@ -223,23 +291,32 @@ function filterProvider(){
 	    },
 
 	    match_wgood_with_firm: function(viewValue, firm){
-		return wgoodService.match_purchaser_good_with_firm(
-		    viewValue, firm
-		).then(function(goods){
+		return match_purchaser_good_with_firm(viewValue, firm).then(function(goods){
 		    // console.log(goods); 
 		    return goods.map(function(g){
 			return angular.extend(
-			    g, {name:g.style_number
-				+ "，" + g.brand + "，" + g.type})
+			    g, {name:g.style_number + "，" + g.brand + "，" + g.type})
 		    })
 		})
 	    },
 
 	    match_all_w_good: function(start_time, firm){
-		return wgoodService.match_all_purchaser_good(
-		    start_time, firm);
+		return match_all_purchaser_good(start_time, firm);
 	    },
 
+	    /*
+	     * stock
+	     */
+	    list_purchaser_inventory: function (condition){
+    		return resource.query_by_post(
+    		    {operation: "list_w_inventory"}, condition).$promise;
+	    },
+
+	    list_w_inventory_info: function(condition){
+    		return resource.save(
+    		    {operation: "list_w_inventory_info"}, condition).$promise;
+	    },
+	    
 	    match_w_query_inventory:function(viewValue, Shop){
 		return resource.query_by_post(
 		    {operation:'match_w_inventory'},
@@ -323,7 +400,7 @@ function filterProvider(){
 				      + "，" + inv.brand + "，" + inv.type})
 			})
 		    })
-	    },
+	    }, 
 
 	    match_retailer_phone:function(viewValue, mode) {
 		var http = $resource("/wretailer/:operation",
@@ -347,6 +424,12 @@ function filterProvider(){
 		    })
 	    },
 
+	    check_retailer_password: function(retailerId, password){
+		return _retailerHttp.save(
+		    {operation: "check_w_retailer_password"},
+		    {id:retailerId, password:password}).$promise;
+	    },
+
 	    reset_firm: function(){
 		_firms = [];
 	    },
@@ -356,7 +439,7 @@ function filterProvider(){
 		    // console.log("cache");
 		    return _firms;
 		} else {
-		    return wgoodService.list_purchaser_firm(
+		    return list_purchaser_firm(
 		    ).then(function(firms){
 			_firms = firms.map(function(f){
 			    return {id: f.id,
@@ -378,7 +461,7 @@ function filterProvider(){
 		var cached = get_from_storage(cookie, "brand");
 		if (angular.isArray(cached) && cached.length !== 0) return cached;
 		else {
-		    return wgoodService.list_purchaser_brand().then(function(brands){
+		    return list_purchaser_brand().then(function(brands){
 		    	// console.log(brands);
 		    	_brands =  brands.map(function(b){
 		    	    return {id: b.id,
@@ -426,7 +509,7 @@ function filterProvider(){
 		if (_types.length !== 0){
 		    return _types;
 		} else {
-		    return wgoodService.list_purchaser_type(
+		    return list_purchaser_type(
 		    ).then(function(types){
 			// console.log(types);
 			_types =  types.map(function(t){
@@ -447,7 +530,7 @@ function filterProvider(){
 		var cached = get_from_storage(cookie, "color");
 		if (angular.isArray(cached) && cached.length !== 0) return cached;
 		else {
-		    return wgoodService.list_purchaser_color().then(function(colors){
+		    return list_purchaser_color().then(function(colors){
 			_colors = colors.map(function(c){
 			    return {id:c.id,
 				    name:c.name,
@@ -482,7 +565,7 @@ function filterProvider(){
 		if (angular.isArray(cached) && cached.length !== 0){
 		    return cached;
 		} else {
-		    return wgoodService.list_color_type().then(function(types){
+		    return list_color_type().then(function(types){
 			set_storage(cookie, "color_type", types);
 			return types;
 		    }); 
@@ -503,7 +586,7 @@ function filterProvider(){
 		//     return _size_groups;
 		// }
 		else {
-		    return wgoodService.list_purchaser_size().then(
+		    return list_purchaser_size().then(
 			function(sizes){
 			    // console.log(sizes);
 			    _size_groups = sizes.map(function(s){
@@ -528,7 +611,7 @@ function filterProvider(){
 		//     return _promotions;
 		// }
 		else {
-		    return wgoodService.list_w_promotion().then(function(promotions){
+		    return list_w_promotion().then(function(promotions){
 			// console.log(promotions);
 			_promotions = promotions.map(function(p){
 			    return {
@@ -551,9 +634,6 @@ function filterProvider(){
 	    get_employee: function(){
 		var cached = get_from_storage(cookie, "employee");
 		if (angular.isArray(cached) && cached.length !== 0) return cached; 
-		// if (_employees.length !== 0){
-		//     return _employees;
-		// }
 		else {
 		    var http = $resource(
 			"/employ/:operation", {operation: '@operation'}); 
@@ -647,6 +727,18 @@ function filterProvider(){
 		// 		balance: r.balance} 
 		//     })
 		// })
+	    },
+
+	    add_purchaser_good: function(good){
+		return add_purchaser_good(good);
+	    },
+
+	    add_purchaser_color: function(color){
+		return add_purchaser_color(color);
+	    },
+
+	    get_purchaser_good: function(good){
+		return get_purchaser_good(good);
 	    }
 
 	    //

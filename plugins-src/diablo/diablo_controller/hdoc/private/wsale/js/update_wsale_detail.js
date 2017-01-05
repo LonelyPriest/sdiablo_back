@@ -1,7 +1,9 @@
-wsaleApp.controller("wsaleUpdateDetailCtrl", function(
+'use strict'
+
+function wsaleUpdateDetailCtrlProvide(
     $scope, $routeParams, $q, dateFilter, diabloUtilsService,
     diabloPromise, diabloFilter, diabloPattern,
-    wgoodService, purchaserService, wretailerService, wsaleService,
+    wsaleService,
     user, filterPromotion, filterScore, filterEmployee,
     filterSizeGroup, filterBrand, filterColor, filterType, base){
     console.log(user);
@@ -683,7 +685,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 			     shop: $scope.select.shop.id}; 
 	    var calls     = []; 
 	    calls.push(promise(
-		purchaserService.list_purchaser_inventory,
+		diabloFilter.list_purchaser_inventory,
 		condition)()); 
 	    $q.all(calls).then(function(data){
 		console.log(data);
@@ -691,8 +693,8 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 		// data[1] is the last sale of the shop 
 		var shop_now_inv = data[0];
 
-		var order_sizes = wgoodService.format_size_group(inv.s_group, filterSizeGroup);
-		var sort = purchaserService.sort_inventory(shop_now_inv, order_sizes, filterColor);
+		var order_sizes = diabloHelp.usort_size_group(inv.s_group, filterSizeGroup);
+		var sort = diabloHelp.sort_stock(shop_now_inv, order_sizes, filterColor);
 		
 		inv.total   = sort.total;
 		inv.sizes   = sort.size;
@@ -704,7 +706,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 		console.log(inv.amounts); 
 
 		inv.fdiscount   = inv.fdiscount   = function(){
-		    if (inv.promotion.rule_id === 0){
+		    if (angular.isObject(inv.promotion) && inv.promotion.rule_id === 0){
 			return inv.promotion.discount;
 		    } else {
 			return inv.discount;
@@ -790,7 +792,7 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
     };
 
     $scope.stock_info = function(inv){
-	purchaserService.list_w_inventory_info(
+	diabloFilter.list_w_inventory_info(
 	    {style_number: inv.style_number, brand: inv.brand.id, shop: $scope.select.shop.id}
 	).then(function(result){
 	    console.log(result);
@@ -882,4 +884,9 @@ wsaleApp.controller("wsaleUpdateDetailCtrl", function(
 	inv.fprice = 0;
 	$scope.re_calculate();
     }
-})
+};
+
+
+define (["wsaleApp"], function(app){
+    app.controller("wsaleUpdateDetailCtrl", wsaleUpdateDetailCtrlProvide);
+});

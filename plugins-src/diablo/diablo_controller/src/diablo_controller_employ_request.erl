@@ -15,9 +15,10 @@ action(Session, Req) ->
 			 [
 			  {navbar, ?menu:navbars(?MODULE, Session)},
 			  {basebar, ?menu:w_basebar(Session)},
-			  {sidebar, sidebar(Session)},
-			  {ngapp, "employApp"},
-			  {ngcontroller, "employCtrl"}]),
+			  {sidebar, sidebar(Session)}
+			  %% {ngapp, "employApp"},
+			  %% {ngcontroller, "employCtrl"}
+			 ]),
     Req:respond({200, [{"Content-Type", "text/html"}], HTMLOutput}).
      
 %%--------------------------------------------------------------------

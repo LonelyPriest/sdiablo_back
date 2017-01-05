@@ -1,4 +1,6 @@
-wgoodApp.controller("wgoodUpdateCtrl", function(
+'use strict'
+
+function wgoodUpdateCtrlProvide(
     $scope, $location, $routeParams, $q, diabloPattern,
     diabloUtilsService, diabloPromise, diabloFilter, wgoodService,
     filterPromotion, filterBrand, filterFirm, filterType, filterColor, filterSizeGroup,
@@ -587,4 +589,8 @@ wgoodApp.controller("wgoodUpdateCtrl", function(
 	else
 	    diablo_goto_page("#/good/wgood_detail");
     }
+};
+
+define(["wgoodApp"], function(app){
+    app.controller("wgoodUpdateCtrl", wgoodUpdateCtrlProvide);
 });

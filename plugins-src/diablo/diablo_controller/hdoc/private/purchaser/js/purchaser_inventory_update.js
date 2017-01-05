@@ -1,6 +1,8 @@
-purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
+'use strict'
+
+function purchaserInventoryNewUpdateCtrlProvide (
     $scope, $q, $routeParams, diabloPromise, dateFilter, diabloPattern,
-    diabloUtilsService, diabloFilter, diabloPagination, wgoodService, purchaserService,
+    diabloUtilsService, diabloFilter, diabloPagination, purchaserService,
     user, filterBrand, filterFirm, filterType, filterEmployee,
     filterSizeGroup, filterColor, base){
     $scope.shops       = user.sortShops;
@@ -65,7 +67,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	}
 	if (!$scope.focus_attrs[attr]){
 	    $scope.focus_attrs[attr] = true;
-	    for (o in $scope.focus_attrs){
+	    for (var o in $scope.focus_attrs){
 		if (o !== attr) $scope.focus_attrs[o] = false;
 	    }
 	}
@@ -342,7 +344,7 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	    var tag = angular.copy(s);
 	    tag.order_id = order_length;
 	    if (tag.sizes.length !== 1 || tag.sizes[0] !=="0" ){
-		tag.sizes = wgoodService.get_size_group(tag.s_group, filterSizeGroup); 
+		tag.sizes = diabloHelp.usort_size_group(tag.s_group, filterSizeGroup); 
 	    }
 	    $scope.inventories.push(tag);
 	    $scope.select.acc_tag_price += tag.tag_price * tag.total;
@@ -990,4 +992,8 @@ purchaserApp.controller("purchaserInventoryNewUpdateCtrl", function(
 	$scope.inventories[0] = {$edit:false, $new:true}; 
     } 
     
+};
+
+define (["purchaserApp"], function(app){
+    app.controller("purchaserInventoryNewUpdateCtrl", purchaserInventoryNewUpdateCtrlProvide); 
 });

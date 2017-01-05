@@ -1,4 +1,6 @@
-shopApp.controller("newShopCtrl", function(
+'use strict'
+
+function newShopCtrlProvide(
     $scope, shopService, diabloPattern, diabloUtilsService, filterEmployee, user){
     $scope.pattern = {address:diabloPattern.ch_name_address};
     
@@ -69,10 +71,10 @@ shopApp.controller("newShopCtrl", function(
     $scope.cancel_new_shop = function(){
 	diablo_goto_page("#/shop/shop_detail");
     }; 
-});
+};
 
 
-shopApp.controller("shopDetailCtrl", function(
+function shopDetailCtrlProvide(
     $scope, $q, diabloUtilsService, shopService,
     filterPromotion, filterScore, filterCharge, filterEmployee, filterRegion, user){
     // console.log(filterPromotion);
@@ -524,9 +526,9 @@ shopApp.controller("shopDetailCtrl", function(
 	     check_only: check_only,
 	     check_same: check_same});
     };
-});
+};
 
-shopApp.controller("regionDetailCtrl", function($scope, shopService, diabloUtilsService){
+function regionDetailCtrlProvide($scope, shopService, diabloUtilsService){
     var dialog = diabloUtilsService;
 
     $scope.refresh = function(){
@@ -567,12 +569,10 @@ shopApp.controller("regionDetailCtrl", function($scope, shopService, diabloUtils
 	dialog.response(false, "修改区域", "修改区域失败：暂不支持此操作！！")
     };
 	
-});
+};
 
-shopApp.controller("shopCtrl", function($scope){});
-
-shopApp.controller("loginOutCtrl", function($scope, $resource){
-    $scope.home = function () {
-	diablo_login_out($resource)
-    };
+define(["shopApp"], function(app){
+    app.controller("newShopCtrl", newShopCtrlProvide);
+    app.controller("shopDetailCtrl", shopDetailCtrlProvide);
+    app.controller("regionDetailCtrl", regionDetailCtrlProvide);
 });

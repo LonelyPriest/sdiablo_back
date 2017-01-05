@@ -1,18 +1,18 @@
-purchaserApp.controller("shortcutGoodNewCtrl", shortCutGoodNewCtrl);
+'use strict'
 
-shortCutGoodNewCtrl.$inject = [
-    '$scope',
-    '$timeout',
-    'diabloPattern',
-    'diabloUtilsService',
-    'diabloFilter',
-    'wgoodService',
-    'shortCutGoodService'];
+// shortCutGoodNewCtrl.$inject = [
+//     '$scope',
+//     '$timeout',
+//     'diabloPattern',
+//     'diabloUtilsService',
+//     'diabloFilter',
+//     'wgoodService',
+//     'shortCutGoodService'];
 
-function shortCutGoodNewCtrl(
+function shortCutGoodNewCtrlProvide(
     $scope, $timeout, diabloPattern, diabloUtilsService,
     diabloFilter, wgoodService, shortCutGoodService){
-    console.log($scope);
+    // console.log($scope);
     // $scope.gfirms       = shortCutGoodService.get_firm(); 
     // $scope.gcolors      = shortCutGoodService.get_color();
     // $scope.gbrands      = shortCutGoodService.get_brand();
@@ -577,3 +577,8 @@ function shortCutGoodNewCtrl(
 	$scope.image = undefined;
     };
 };
+
+
+define(["purchaserApp"], function(app){
+    app.controller("shortCutGoodNewCtrl", shortCutGoodNewCtrlProvide);
+});

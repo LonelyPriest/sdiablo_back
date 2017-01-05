@@ -1,6 +1,8 @@
-purchaserApp.controller("purchaserInventoryRejectCtrl", function(
+'use strict'
+
+function purchaserInventoryRejectCtrlProvide(
     $scope, $q, $timeout, dateFilter, diabloPattern, diabloUtilsService,
-    diabloPromise, diabloFilter, wgoodService, purchaserService,
+    diabloPromise, diabloFilter, purchaserService,
     user, filterFirm, filterEmployee, filterSizeGroup, filterColor, base){
     // console.log($scope.disable_refresh);
     // console.log(user);
@@ -496,10 +498,8 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	     qtype:       diablo_badrepo}
 	).then(function(invs){
 	    console.log(invs);
-	    var order_sizes = wgoodService.format_size_group(
-		inv.s_group, filterSizeGroup);
-	    var sort = purchaserService.sort_inventory(
-		invs, order_sizes, filterColor);
+	    var order_sizes = diabloHelp.usort_size_group(inv.s_group, filterSizeGroup);
+	    var sort = diabloHelp.sort_stock(invs, order_sizes, filterColor);
 	    
 	    inv.total   = sort.total;
 	    inv.sizes   = sort.size;
@@ -702,4 +702,8 @@ purchaserApp.controller("purchaserInventoryRejectCtrl", function(
 	}, 1000); 
     };
     
+};
+
+define(["purchaserApp"], function(app){
+    app.controller("purchaserInventoryRejectCtrl", purchaserInventoryRejectCtrlProvide);
 });

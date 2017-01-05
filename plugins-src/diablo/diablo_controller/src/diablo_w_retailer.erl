@@ -900,6 +900,7 @@ handle_call({filter_ticket_detail, Merchant, Conditions, CurrentPage, ItemsPerPa
 	", b.shop as shop_id"
 	", b.mobile"
 	", c.name as score"
+	
 	" from w_ticket a"
 	" left join w_retailer b on a.retailer=b.id"
 	" left join w_score c on a.sid=c.id"

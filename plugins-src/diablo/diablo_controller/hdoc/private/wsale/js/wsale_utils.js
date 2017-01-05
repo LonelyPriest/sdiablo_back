@@ -572,7 +572,8 @@ var wsaleUtils = function(){
 		return;
 	    } 
 	}
-	//
+
+	// 
 	
     }
 

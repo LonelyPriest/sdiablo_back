@@ -1,4 +1,6 @@
-wgoodApp.controller("wgoodSizeDetailCtrl", function(
+'use strict'
+
+function wgoodSizeDetailCtrlProvide(
     $scope, diabloPattern, diabloUtilsService, diabloFilter,
     wgoodService, filterSizeGroup){
     $scope.size_group = angular.copy(filterSizeGroup); 
@@ -109,4 +111,9 @@ wgoodApp.controller("wgoodSizeDetailCtrl", function(
 	    false, "删除尺码组", "暂不支持此操作！！",undefined);
     }
     
+};
+
+
+define(["wgoodApp"], function(app){
+    app.controller("wgoodSizeDetailCtrl", wgoodSizeDetailCtrlProvide);
 });

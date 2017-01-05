@@ -45,14 +45,14 @@
 	      <div class="input-group">
 		<input type="text" class="form-control"
 		       placeholder="年/月/日"
-		       datepicker-popup="yyyy/MM/dd"
+		       uib-datepicker-popup="yyyy/MM/dd"
 		       is-open="isOpened"
 		       close-text="关闭"
 		       clear-text="清除"
 		       current-text="今天"
 		       show-weeks="false"
 		       x-ng-model="select.date"
-		       x-ng-init="select.date=today()"></input>
+		       x-ng-init="select.date=today()"/>
 	  	<span class="input-group-btn">
 		  <button type="button"
 			  class="btn btn-default"
@@ -119,7 +119,7 @@
 				 placeholder="货号"
 				 typeahead-editable="false"
 				 typeahead-on-select="on_select_good($item, $model, $label)" 
-				 typeahead="g as g.name for g in
+				 uib-typeahead="g as g.name for g in
 					    all_w_inventory|filter:{prompt:$viewValue}|limitTo:base_settings.plimit"/>
 			  <span x-ng-show="loading">
 			    <i class="glyphicon glyphicon-refresh"></i>
@@ -142,7 +142,7 @@
 				 typeahead-on-select="on_select_good($item, $model, $label)"
 				 typeahead-wait-ms="500"
 				 typeahead-loading="loading"
-				 typeahead="g as g.name for g in match_style_number($viewValue)"/>
+				 uib-typeahead="g as g.name for g in match_style_number($viewValue)"/>
 			  <span x-ng-show="loading">
 			    <i class="glyphicon glyphicon-refresh"></i>
 			  </span>
@@ -171,8 +171,7 @@
 				 focus-auto="focus.fix"
 				 x-ng-change="auto_save_free(inv)"
 				 popover-placement="top"
-				 popover-trigger="focus"
-				 popover="请输入盘点数目"></input>
+				 popover-trigger="focus"/>
 			</div>
 		      </form>
 		    </td>
@@ -245,14 +244,15 @@
 		<tfoot>
 		  <tr>
 		    <td x-ng-show="total_items>items_perpage" colspan={{colspan}}>
-		      <pagination class="pull-right"
+		      <uib-pagination class="pull-right"
 				  total-items="total_items"
 				  items-per-page="items_perpage"
 				  boundary-links="true"
 				  previous-text="&lsaquo;" next-text="&rsaquo;"
 				  first-text="&laquo;" last-text="&raquo;"
 				  x-ng-model="current_page"
-				  x-ng-change="page_changed(current_page)"></pagination>
+				  x-ng-change="page_changed(current_page)">
+		      </uib-pagination>
 		    </td>
 		  </tr>
 		</tfoot>
@@ -391,7 +391,7 @@
 		<input id={{d.sn}}
 		       type="checkbox"
 		       x-ng-model="d.select"
-		       x-ng-click="params.select(params.drafts, d)"></input>
+		       x-ng-click="params.select(params.drafts, d)"/>
 		<label for={{d.sn}}></label>
 	      </div>
 	    </td>

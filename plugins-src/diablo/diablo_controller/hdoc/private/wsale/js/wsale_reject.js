@@ -1,10 +1,9 @@
-wsaleApp.controller("wsaleRejectCtrl", function(
+function wsaleRejectCtrlProvide(
     $scope, $q, dateFilter, diabloUtilsService, diabloPromise,
-    diabloPattern, diabloFilter, diabloNormalFilter, wgoodService,
-    purchaserService, wsaleService, wretailerService,
+    diabloPattern, diabloFilter, diabloNormalFilter, wsaleService,
     user, filterPromotion, filterScore, filterBrand,
     filterType, filterEmployee, filterSizeGroup, filterColor, base){
-    // console.log(base);
+    console.log($scope);
     // console.log(user); 
     $scope.shops         = user.sortBadRepoes.concat(user.sortShops);
     $scope.shopIds       = user.shopIds;
@@ -484,4 +483,8 @@ wsaleApp.controller("wsaleRejectCtrl", function(
 	diabloUtilsService.edit_with_modal(
 	    "wsale-reject-detail.html", undefined, undefined, $scope, payload)
     }; 
-}); 
+}; 
+
+define (["wsaleApp"], function(app){
+    app.controller("wsaleRejectCtrl", wsaleRejectCtrlProvide);
+});

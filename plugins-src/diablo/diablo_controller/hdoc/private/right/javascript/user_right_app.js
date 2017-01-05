@@ -1,4 +1,5 @@
 "use strict";
+
 var userApp = angular.module("userApp", ['ngResource']); 
 userApp.factory("userService", function($resource, $q){
     var _user = $resource("/right/:operation", {operation: '@operation'});

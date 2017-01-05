@@ -1,6 +1,9 @@
-purchaserApp.controller("purchaserInventoryTransferCtrl", function(
+'use strict'
+
+
+function purchaserInventoryTransferCtrlProvide (
     $scope, $q, $timeout, dateFilter, diabloPattern, diabloUtilsService,
-    diabloFilter, diabloNormalFilter, wgoodService,
+    diabloFilter, diabloNormalFilter, 
     purchaserService, user, filterShop, filterFirm, filterEmployee,
     filterSizeGroup, filterColor, base){
     // console.log(user); 
@@ -381,10 +384,8 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
 	     qtype: diablo_badrepo}
 	).then(function(invs){
 	    console.log(invs);
-	    var order_sizes = wgoodService.format_size_group(
-		inv.s_group, filterSizeGroup);
-	    var sort = purchaserService.sort_inventory(
-		invs, order_sizes, filterColor);
+	    var order_sizes = diabloHelp.usort_size_group(inv.s_group, filterSizeGroup);
+	    var sort = diabloHelp.sort_stock(invs, order_sizes, filterColor);
 	    
 	    inv.total   = sort.total;
 	    inv.sizes   = sort.size;
@@ -558,12 +559,12 @@ purchaserApp.controller("purchaserInventoryTransferCtrl", function(
 	}, 1000); 
     };
     
-});
+};
 
 
-purchaserApp.controller("purchaserInventoryTransferFromDetailCtrl", function(
+function purchaserInventoryTransferFromDetailCtrlProvide (
     $scope, dateFilter, localStorageService, diabloPattern, diabloUtilsService,
-    diabloFilter, purchaserService, wgoodService,
+    diabloFilter, purchaserService, 
     user, filterShop, filterEmployee, base){
     // console.log($routeParams);
 
@@ -607,16 +608,16 @@ purchaserApp.controller("purchaserInventoryTransferFromDetailCtrl", function(
     $scope.prompt = diabloFilter.get_prompt();
     
     var now = $.now();
-    $scope.qtime_start = function(shopId){
-	return diablo_base_setting(
-	    "qtime_start",
-	    shopId, base,
-	    diablo_set_date,
-	    diabloFilter.default_start_time(now));
-    }();
+    // $scope.qtime_start = function(shopId){
+    // 	return diablo_base_setting(
+    // 	    "qtime_start",
+    // 	    shopId, base,
+    // 	    diablo_set_date,
+    // 	    diabloFilter.default_start_time(now));
+    // }();
     // console.log($scope.qtime_start);
     
-    $scope.time   = diabloFilter.default_time($scope.qtime_start);
+    $scope.time   = diabloFilter.default_time(now - diablo_day_millisecond * 7, now);
 
     var storage = localStorageService.get(diablo_key_inventory_transfer);
     if (angular.isDefined(storage) && storage !== null){
@@ -718,12 +719,12 @@ purchaserApp.controller("purchaserInventoryTransferFromDetailCtrl", function(
 	    "移仓删除后无法恢复，确认要删除该称仓！！",
 	    callback, undefined, $scope);
     };
-});
+};
 
 
-purchaserApp.controller("purchaserInventoryTransferToDetailCtrl", function(
+function purchaserInventoryTransferToDetailCtrlProvide (
     $scope, dateFilter, diabloPattern, diabloUtilsService,
-    diabloFilter, purchaserService, wgoodService,
+    diabloFilter, purchaserService, 
     user, filterShop, filterEmployee, base){
 
     $scope.to_shops  = user.sortBadRepoes.concat(user.sortShops, user.sortRepoes);
@@ -757,16 +758,17 @@ purchaserApp.controller("purchaserInventoryTransferToDetailCtrl", function(
     $scope.prompt = diabloFilter.get_prompt();
     
     var now = $.now();
-    $scope.qtime_start = function(shopId){
-	return diablo_base_setting(
-	    "qtime_start",
-	    shopId, base,
-	    diablo_set_date,
-	    diabloFilter.default_start_time(now));
-    }();
+    // $scope.qtime_start = function(shopId){
+    // 	return diablo_base_setting(
+    // 	    "qtime_start",
+    // 	    shopId, base,
+    // 	    diablo_set_date,
+    // 	    diabloFilter.default_start_time(now));
+    // }();
     // console.log($scope.qtime_start);
     
-    $scope.time   = diabloFilter.default_time($scope.qtime_start); 
+    // $scope.time   = diabloFilter.default_time($scope.qtime_start);
+    $scope.time   = diabloFilter.default_time(now - diablo_day_millisecond * 7, now);
     // $scope.time   = diabloFilter.default_time();
 
     // console.log($scope.filter);
@@ -876,5 +878,10 @@ purchaserApp.controller("purchaserInventoryTransferToDetailCtrl", function(
     $scope.cancel_transfer = function(r){
 	dialog.response(false, "移仓取消", "系统暂不支持此操作！！", undefined);
     };
-});
+};
 
+define (["purchaserApp"], function(app){
+    app.controller("purchaserInventoryTransferCtrl", purchaserInventoryTransferCtrlProvide);
+    app.controller("purchaserInventoryTransferFromDetailCtrl", purchaserInventoryTransferFromDetailCtrlProvide);
+    app.controller("purchaserInventoryTransferToDetailCtrl", purchaserInventoryTransferToDetailCtrlProvide);
+});

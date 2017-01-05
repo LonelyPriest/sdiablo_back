@@ -1,4 +1,6 @@
-wretailerApp.controller("wretailerNewCtrl", function(
+'use strict'
+
+function wretailerNewCtrlProvide(
     $scope, wretailerService, diabloPattern, diabloUtilsService, user){
     $scope.pattern = {name_address: diabloPattern.ch_name_address,
 		      tel_mobile:   diabloPattern.tel_mobile,
@@ -38,10 +40,10 @@ wretailerApp.controller("wretailerNewCtrl", function(
     $scope.cancel = function(){
 	diablo_goto_page("#/wretailer_detail");
     };
-});
+};
 
 
-wretailerApp.controller("wretailerDetailCtrl", function(
+function wretailerDetailCtrlProvide(
     $scope, $location, dateFilter, diabloFilter, diabloPattern,
     diabloUtilsService, localStorageService, wretailerService,
     filterEmployee, filterCharge, user, base){
@@ -488,7 +490,7 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 			true, "会员积分修改",
 			"会员积分 [" +  score.toString() + "] 修改成功！！",
 			$scope, function(){
-			    $scope.do_refresh($scope.current_page, $scope.search);
+			    $scope.refresh();
 			});
     		} else{
 		    dialog.response(
@@ -539,9 +541,9 @@ wretailerApp.controller("wretailerDetailCtrl", function(
 	    });
 	});
     };
-});
+};
 
-wretailerApp.controller("wretailerChargeDetailCtrl", function(
+function wretailerChargeDetailCtrlProvide(
     $scope, diabloFilter, diabloUtilsService, localStorageService, wretailerService,
     filterEmployee, filterCharge, user, base){
 
@@ -666,14 +668,15 @@ wretailerApp.controller("wretailerChargeDetailCtrl", function(
 	
 	dialog.edit_with_modal("update-recharge.html", undefined, callback, undefined, payload);
     };
-});
+};
 
-wretailerApp.controller("wretailerTicketDetailCtrl", function(
+function wretailerTicketDetailCtrlProvide(
     $scope, diabloFilter, diabloPattern, diabloUtilsService,
     wretailerService, user){
 
     var dialog = diabloUtilsService;
 
+    $scope.shops = user.sortShops;
     $scope.pattern = {comment: diabloPattern.comment};
     $scope.items_perpage = diablo_items_per_page();
     $scope.max_page_size = 10;
@@ -685,8 +688,7 @@ wretailerApp.controller("wretailerTicketDetailCtrl", function(
     $scope.filters = []; 
     diabloFilter.reset_field();
     diabloFilter.add_field("retailer", function(viewValue){
-	if (viewValue.length < 4) return;
-	return diabloFilter.match_retailer_phone(viewValue)
+	return retailerUtils.match_retailer_phone(viewValue, diabloFilter)
     });
     
     $scope.filter = diabloFilter.get_filter();
@@ -707,13 +709,17 @@ wretailerApp.controller("wretailerTicketDetailCtrl", function(
 		$scope.match, search, page, $scope.items_perpage
 	    ).then(function(result){
 		console.log(result);
-		$scope.tickets = angular.copy(result.data);
+		$scope.tickets = angular.copy(result.data); 
 		
 		if (result.ecode === 0){
 		    if (page === $scope.default_page){
 			$scope.total_items = result.total;
 			$scope.total_balance = result.balance;
-		    } 
+		    }
+
+		    angular.forEach($scope.tickets, function(t){
+			t.shop = diablo_get_object(t.shop_id, $scope.shops);
+		    });
 
 		    diablo_order($scope.tickets, (page - 1) * $scope.items_perpage + 1);
 		    $scope.current_page = page; 
@@ -778,17 +784,12 @@ wretailerApp.controller("wretailerTicketDetailCtrl", function(
 
 	dialog.request("电子卷确认", "确定要使该电子卷生效吗？", callback, undefined, undefined);
     };
+};
+
+define (["wretailerApp"], function(app){
+    app.controller("wretailerNewCtrl", wretailerNewCtrlProvide);
+    app.controller("wretailerDetailCtrl", wretailerDetailCtrlProvide);
+    app.controller("wretailerChargeDetailCtrl", wretailerChargeDetailCtrlProvide);
+    app.controller("wretailerTicketDetailCtrl", wretailerTicketDetailCtrlProvide);
 });
 
-
-
-wretailerApp.controller("wretailerCtrl", function(
-    $scope, localStorageService){
-    diablo_remove_local_storage(localStorageService);
-});
-
-wretailerApp.controller("loginOutCtrl", function($scope, $resource){
-    $scope.home = function () {
-	diablo_login_out($resource)
-    };
-});

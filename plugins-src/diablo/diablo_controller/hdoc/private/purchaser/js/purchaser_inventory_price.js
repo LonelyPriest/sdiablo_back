@@ -1,6 +1,8 @@
-purchaserApp.controller("purchaserInventoryPriceCtrl", function(
+'use strict'
+
+function purchaserInventoryPriceCtrlProvide(
     $scope, $q, $timeout, dateFilter, localStorageService, diabloPattern,
-    diabloUtilsService, diabloFilter, diabloNormalFilter, purchaserService, wgoodService,
+    diabloUtilsService, diabloFilter, diabloNormalFilter, purchaserService,
     user, filterBrand, filterFirm, filterEmployee, filterRegion, base){
     // console.log(user); 
     $scope.shops     = user.sortShops;
@@ -363,4 +365,8 @@ purchaserApp.controller("purchaserInventoryPriceCtrl", function(
 	re_calculate();
 	
     }; 
+};
+
+define(["purchaserApp"], function(app){
+    app.controller("purchaserInventoryPriceCtrl", purchaserInventoryPriceCtrlProvide);
 });

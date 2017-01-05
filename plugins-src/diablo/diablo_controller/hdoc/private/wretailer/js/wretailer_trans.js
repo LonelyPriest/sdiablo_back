@@ -1,4 +1,6 @@
-wretailerApp.controller('wretailerTransCtrl', function(
+"use strict"
+
+function wretailerTransCtrlProvide(
     $scope, $routeParams, $location, diabloFilter, wretailerService,
     localStorageService, diabloUtilsService, filterEmployee, user, base){
     
@@ -180,12 +182,12 @@ wretailerApp.controller('wretailerTransCtrl', function(
 	     total_balance:     $scope.total_balance,
 	     t:                 now});
     };
-})
+};
 
 
-wretailerApp.controller("wretailerTransRsnDetailCtrl", function(
+function wretailerTransRsnDetailCtrlProvide(
     $scope, $routeParams, dateFilter, diabloUtilsService, diabloFilter,
-    wgoodService, wretailerService,
+    wretailerService,
     filterBrand, filterFirm, filterEmployee, filterSizeGroup,
     filterType, filterPromotion, filterScore, filterColor, user, base){
     // console.log($routeParams); 
@@ -314,7 +316,7 @@ wretailerApp.controller("wretailerTransRsnDetailCtrl", function(
 	    && angular.isDefined(inv.colors)
 	    && angular.isDefined(inv.order_sizes)){
 
-	    color_sorts     = sort_amounts_by_color(inv.colors, inv.amounts),
+	    var color_sorts     = sort_amounts_by_color(inv.colors, inv.amounts);
 	    
 	    diabloUtilsService.edit_with_modal(
 		"rsn-detail.html", undefined, undefined, $scope,
@@ -338,8 +340,8 @@ wretailerApp.controller("wretailerTransRsnDetailCtrl", function(
 	}).then(function(result){
 	    console.log(result);
 
-	    var order_sizes = wgoodService.format_size_group(inv.s_group, filterSizeGroup);
-	    var sort = wretailerService.sort_inventory(result.data, order_sizes, filterColor);
+	    var order_sizes = diabloHelp.usort_size_group(inv.s_group, filterSizeGroup);
+	    var sort = diabloHelp.sort_stock(result.data, order_sizes, filterColor);
 	    inv.total       = sort.total; 
 	    inv.colors      = sort.color;
 	    inv.sizes       = sort.size;
@@ -363,4 +365,9 @@ wretailerApp.controller("wretailerTransRsnDetailCtrl", function(
 		});
 	});
     }; 
+};
+
+define (["wretailerApp"], function(app){
+    app.controller("wretailerTransCtrl", wretailerTransCtrlProvide);
+    app.controller("wretailerTransRsnDetailCtrl", wretailerTransRsnDetailCtrlProvide); 
 });

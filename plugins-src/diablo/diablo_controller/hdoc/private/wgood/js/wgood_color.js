@@ -1,4 +1,6 @@
-wgoodApp.controller("wgoodColorDetailCtrl", function(
+'use strict'
+
+function wgoodColorDetailCtrlProvide(
     $scope, diabloUtilsService, diabloFilter, diabloPattern,
     wgoodService, filterColorType, filterColor){
     $scope.colorTypes = angular.copy(filterColorType); 
@@ -130,6 +132,10 @@ wgoodApp.controller("wgoodColorDetailCtrl", function(
     $scope.delete_color = function(color){
 	diabloUtilsService.response(false, "删除颜色", "暂不支持此操作！！", $scope);
     };
+};
+
+define(["wgoodApp"], function(app){
+    app.controller("wgoodColorDetailCtrl", wgoodColorDetailCtrlProvide);
 });
 
 

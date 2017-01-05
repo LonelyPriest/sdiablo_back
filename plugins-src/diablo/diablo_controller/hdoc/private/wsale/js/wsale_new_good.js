@@ -1,4 +1,6 @@
-wsaleApp.factory("wsaleGoodService", function(){
+'use strict'
+
+function wsaleGoodServiceProvide() {
     
     var _brands     = [];
     var _firms      = [];
@@ -181,4 +183,8 @@ wsaleApp.factory("wsaleGoodService", function(){
     };
 
     return service;
+};
+
+define (["wsaleApp"], function(app){
+    app.factory("wsaleGoodService", wsaleGoodServiceProvide);
 });

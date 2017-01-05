@@ -1,6 +1,6 @@
-wsaleApp.controller("wsaleUpdateRejectCtrl", function(
+function wsaleUpdateRejectCtrlProvide(
     $scope, $q, $routeParams, dateFilter, diabloUtilsService, diabloPromise,
-    diabloFilter, diabloPattern, wgoodService, purchaserService, wsaleService,
+    diabloFilter, diabloPattern, wsaleService,
     user, filterPromotion, filterScore, filterEmployee,
     filterSizeGroup, filterBrand, filterColor, filterType, base){
     // console.log(base);
@@ -155,7 +155,7 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 		dialog.response_with_callback(
 		    false,
 		    "退货单编辑",
-		    "退货编辑失败：" + purchaserService.error[2099],
+		    "退货编辑失败：" + wsaleService.error[2191],
 		    $scope, function(){
 			$scope.inventories[0] = {$edit:false, $new:true}});
 		return;
@@ -567,18 +567,15 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
 			     shop:  $scope.select.shop.id};
 
 	    var calls     = []; 
-	    calls.push(promise(purchaserService.list_purchaser_inventory,
-			       condition)());
+	    calls.push(promise(diabloFilter.list_purchaser_inventory, condition)());
 	    
 	    $q.all(calls).then(function(data){
 		console.log(data);
 		// data[0] is the inventory belong to the shop 
 		var shop_now_inv = data[0];
 
-		var order_sizes = wgoodService.format_size_group(
-		    inv.s_group, filterSizeGroup);
-		var sort = purchaserService.sort_inventory(
-		    shop_now_inv, order_sizes, filterColor);
+		var order_sizes = diabloHelp.usort_size_group(inv.s_group, filterSizeGroup);
+		var sort = diabloHelp.sort_stock(shop_now_inv, order_sizes, filterColor);
 
 		inv.total   = sort.total;
 		inv.sizes   = sort.size;
@@ -745,4 +742,8 @@ wsaleApp.controller("wsaleUpdateRejectCtrl", function(
     $scope.reset_inventory = function(inv){
 	$scope.inventories[0] = {$edit:false, $new:true};;
     }
+};
+
+define (["wsaleApp"], function(app){
+    app.controller("wsaleUpdateRejectCtrl", wsaleUpdateRejectCtrlProvide);
 });

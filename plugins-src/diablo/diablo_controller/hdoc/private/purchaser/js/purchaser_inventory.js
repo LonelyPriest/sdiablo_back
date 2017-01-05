@@ -1,13 +1,14 @@
-purchaserApp.controller("purchaserInventoryNewCtrl", function(
+'use strict'
+
+function purchaserInventoryNewCtrlProvide (
     $scope, $timeout, dateFilter, diabloPattern, diabloUtilsService,
-    diabloFilter, wgoodService, purchaserService, shortCutGoodService,
+    diabloFilter, purchaserService, shortCutGoodService,
     localStorageService, user, filterBrand, filterType,
     filterSizeGroup, filterFirm, filterEmployee, filterColor,
     filterColorType, base){
-    // console.log(user);
-    // console.log(filterColor);
-    // var re = /^\d{1,2}(\.\d{1,2})?$|100$|0$/;
-    // console.log(re.test(8.1));
+    
+    // console.log(ERROR); 
+    // console.log(user); 
     $scope.brands      = filterBrand;
     $scope.types       = filterType;
     $scope.size_groups = filterSizeGroup;
@@ -1151,7 +1152,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    var color = {name:   params.color.name,
 			 type:   params.color.type.id,
 			 remark: params.color.remark};
-	    wgoodService.add_purchaser_color(color).then(function(state){
+	    diabloFilter.add_purchaser_color(color).then(function(state){
 		console.log(state);
 		
 		var append_color = function(newColorId){
@@ -1185,9 +1186,9 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 			true, "新增颜色", "新增颜色成功！！", $scope,
 			function(){append_color(state.id)});
 		} else{
+		    var error = require("diablo-error");
 		    dialog.response(
-			false, "新增颜色",
-			"新增颜色失败：" + wgoodService.error[state.ecode]);
+			false, "新增颜色", "新增颜色失败：" + error[state.ecode]);
 		}
 	    })
 	};
@@ -1233,7 +1234,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	    $scope.good.colors="";
 
 	    for (var i=0, l1=params.colors.length; i<l1; i++){
-		for (j in params.colors[i]){
+		for (var j in params.colors[i]){
 		    var c = params.colors[i][j];
 		    if(angular.isDefined(c.select) && c.select){
 			$scope.good.colors += c.name + "；";
@@ -1260,7 +1261,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	     ucolors: function(){
 		 var ucolors = [];
 		 for (var i=0, l1=$scope.grouped_colors.length; i<l1; i++){
-		     for (j in $scope.grouped_colors[i]){
+		     for (var j in $scope.grouped_colors[i]){
 			 ucolors.push($scope.grouped_colors[i][j]); 
 		     }
 		 }
@@ -1418,7 +1419,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 
 	// return;
 	
-	wgoodService.add_purchaser_good(good, image).then(function(state){
+	diabloFilter.add_purchaser_good(good, image).then(function(state){
 	    console.log(state);
 	    $scope.good_saving = false;
 	    if (state.ecode == 0){
@@ -1439,7 +1440,7 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 
 		if (diablo_no === $scope.base_settings.group_color){
 		    for (var i=0, l1=$scope.grouped_colors.length; i<l1; i++){
-			for (j in $scope.grouped_colors[i]){
+			for (var j in $scope.grouped_colors[i]){
 			    if (angular.isDefined($scope.grouped_colors[i][j].select)){
 				$scope.grouped_colors[i][j].select = false;
 			    }
@@ -1530,12 +1531,13 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 		// $scope.focus.style_number = true;
 		$scope.on_select_good(agood, undefined, undefined); 
 	    } else{
+		var ERROR = require("diablo-error"); 
 		diabloUtilsService.response(
 		    false, "新增货品",
 		    "新增货品 ["
-			+ good.style_number + "-" + good.brand + "-"
+			+  good.style_number + "-" + good.brand + "-"
 			+  good.type + "] 失败："
-			+ wgoodService.error[state.ecode]);
+			+  ERROR[state.ecode]);
 	    }
 	});
     };
@@ -1591,11 +1593,12 @@ purchaserApp.controller("purchaserInventoryNewCtrl", function(
 	$scope.on_focus_attr("style_number");
     };
     
-});
+};
 
-purchaserApp.controller("purchaserInventoryDetailCtrl", function(
+
+function purchaserInventoryDetailCtrlProvide(
     $scope, $routeParams, $q, dateFilter, diabloPattern, diabloFilter,
-    diabloUtilsService, diabloPromise, purchaserService, wgoodService,
+    diabloUtilsService, diabloPromise, purchaserService,
     localStorageService, filterPromotion,filterScore,  user, filterBrand,
     filterFirm, filterType, filterSizeGroup, filterColor, base){
     // $scope.touch_start = function(){
@@ -1891,9 +1894,9 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 		 qtype:        1}
 	    ).then(function(invs){
 		console.log(invs);
-		var order_sizes = wgoodService.format_size_group(inv.s_group, filterSizeGroup);
+		var order_sizes = diabloHelp.usort_size_group(inv.s_group, filterSizeGroup);
 		console.log(order_sizes);
-		var sort    = purchaserService.sort_inventory(invs, order_sizes, filterColor);
+		var sort    = diabloHelp.sort_stock(invs, order_sizes, filterColor);
 		console.log(sort);
 		inv.sizes   = sort.size;
 		inv.colors  = sort.color;
@@ -2120,7 +2123,7 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 
     $scope.update_stock = function(inv){
 	// console.log(inv); 
-	wgoodService.get_purchaser_good(
+	diabloFilter.get_purchaser_good(
 	    {style_number:inv.style_number, brand:inv.brand.id}
 	).then(function(result){
 	    console.log(result);
@@ -2131,10 +2134,10 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 			+ inv.shop_id + "/"
 			+ diablo_from_stock.toString())
 	    } else {
+		var error = require("diablo-error");
 		dialog.response(
 		    false,
-		    "获取货品资料",
-		    "获取货品资料失败：" + wgoodService.error[result.ecode]);
+		    "获取货品资料", "获取货品资料失败：" + error[result.ecode]);
 	    }
 	}) 
     };
@@ -2144,10 +2147,10 @@ purchaserApp.controller("purchaserInventoryDetailCtrl", function(
 			 + "/" + inv.style_number
 			 + "/" + inv.brand_id.toString());
     };
-});
+};
 
 
-purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
+function purchaserInventoryNewDetailCtrlProvide (
     $scope, $routeParams, $location, dateFilter, diabloPattern,
     diabloUtilsService, localStorageService, diabloFilter, purchaserService,
     user, filterFirm, filterEmployee, filterBrand, filterRegion, base){
@@ -2527,4 +2530,10 @@ purchaserApp.controller("purchaserInventoryNewDetailCtrl", function(
 	}) 
     };
     
+};
+
+define (["purchaserApp"], function(app){
+    app.controller("purchaserInventoryNewCtrl", purchaserInventoryNewCtrlProvide);
+    app.controller("purchaserInventoryDetailCtrl", purchaserInventoryDetailCtrlProvide);
+    app.controller("purchaserInventoryNewDetailCtrl", purchaserInventoryNewDetailCtrlProvide);
 });

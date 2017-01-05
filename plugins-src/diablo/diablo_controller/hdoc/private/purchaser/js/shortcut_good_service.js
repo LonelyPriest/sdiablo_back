@@ -1,4 +1,6 @@
-purchaserApp.factory("shortCutGoodService", function(){
+'use strict'
+
+function shortCutGoodServiceProvide() {
     
     var _brands      = [];
     var _firms       = [];
@@ -73,5 +75,9 @@ purchaserApp.factory("shortCutGoodService", function(){
     };
 
     return service;
+};
+
+define (["purchaserApp"], function(app){
+    app.factory("shortCutGoodService", shortCutGoodServiceProvide);
 });
 

@@ -1,6 +1,8 @@
-purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
+'use strict'
+
+function purchaserInventoryRejectUpdateCtrlProvide(
     $scope, $q, $routeParams, dateFilter, diabloPattern, diabloUtilsService,
-    diabloPromise, diabloFilter, wgoodService, purchaserService,
+    diabloPromise, diabloFilter, purchaserService,
     user, filterBrand, filterFirm, filterType, filterEmployee,
     filterSizeGroup, filterColor, base){
     // console.log(user);
@@ -75,7 +77,7 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	
 	if (!$scope.focus_attrs[attr]){
 	    $scope.focus_attrs[attr] = true;
-	    for (o in $scope.focus_attrs){
+	    for (var o in $scope.focus_attrs){
 		if (o !== attr) $scope.focus_attrs[o] = false;
 	    }
 	}
@@ -329,8 +331,7 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	    var tag = angular.copy(s);
 	    tag.order_id = order_length;
 	    if (tag.sizes.length !== 1 || tag.sizes[0] !=="0" ){
-		tag.sizes = wgoodService.get_size_group(
-		    tag.s_group, filterSizeGroup); 
+		tag.sizes = diabloHelp.usort_size_group(tag.s_group, filterSizeGroup); 
 	    }
 	    $scope.inventories.push(tag);
 	    order_length--;
@@ -808,10 +809,8 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
 	     qtype: diablo_badrepo}
 	).then(function(invs){
 	    console.log(invs);
-	    var order_sizes = wgoodService.format_size_group(
-		inv.s_group, filterSizeGroup);
-	    var sort = purchaserService.sort_inventory(
-		invs, order_sizes, filterColor);
+	    var order_sizes = diabloHelp.usort_size_group(inv.s_group, filterSizeGroup);
+	    var sort = diabloHelp.sort_stock(invs, order_sizes, filterColor);
 	    
 	    inv.total   = sort.total;
 	    inv.sizes   = sort.size;
@@ -1013,6 +1012,10 @@ purchaserApp.controller("purchaserInventoryRejectUpdateCtrl", function(
     $scope.reset_inventory = function(inv){
 	$scope.inventories[0] = {$edit:false, $new:true};;
     }
+};
+
+define(["purchaserApp"], function(app){
+    app.controller("purchaserInventoryRejectUpdateCtrl", purchaserInventoryRejectUpdateCtrlProvide);
 });
 
 

@@ -1,7 +1,9 @@
-wgoodApp.controller("wgoodNewCtrl", function(
+'use strict'
+
+function wgoodNewCtrlProvide(
     $scope, $timeout, diabloPattern, diabloUtilsService, diabloFilter,
     wgoodService, filterPromotion, filterFirm, filterBrand,
-    filterType, filterSizeGroup, base){
+    filterType, filterSizeGroup, base) {
     // console.log(filterPromotion);
     $scope.promotions = filterPromotion;
     
@@ -636,10 +638,9 @@ wgoodApp.controller("wgoodNewCtrl", function(
 	$scope.goodForm.alarm.$pristine     = true;
 	$scope.image = undefined;
     };
-});
+};
 
-
-wgoodApp.controller("wgoodDetailCtrl", function(
+function wgoodDetailCtrlProvide(
     $scope, $location, dateFilter, diabloUtilsService,
     diabloPagination, wgoodService, user, diabloFilter,
     filterPromotion, filterBrand, filterFirm, filterType, filterColor, base){
@@ -845,4 +846,9 @@ wgoodApp.controller("wgoodDetailCtrl", function(
 	diablo_goto_page("#/inventory_new");
     };
     
+};
+
+define(["wgoodApp"], function(app){
+    app.controller("wgoodNewCtrl", wgoodNewCtrlProvide);
+    app.controller("wgoodDetailCtrl", wgoodDetailCtrlProvide);
 });

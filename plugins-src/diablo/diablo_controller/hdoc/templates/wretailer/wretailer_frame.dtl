@@ -1,4 +1,4 @@
-{% extends "../base_frame.dtl" %}
+{% extends "../base_require_frame.dtl" %}
 
 {% block self_reference_css %}
 <!-- <link href="/public/assets/font-awesome/css/awesome-bootstrap-checkbox.css" -->
@@ -11,30 +11,23 @@
 <!--pinyin-->
 <script src="/public/assets/pinyin/pinyin.js" type="text/javascript"></script>
 <script src="/public/assets/lodop/LodopFuncs.js" type="text/javascript"></script>
+
 <!-- right app -->
-<script src="/private/right/javascript/user_right_app.js" type="text/javascript"></script>
-<script src="/private/right/javascript/user_right_map.js" type="text/javascript"></script>
+<!-- <script src="/private/right/javascript/user_right_app.js" type="text/javascript"></script> -->
+<!-- <script src="/private/right/javascript/user_right_map.js" type="text/javascript"></script> -->
 
 <!-- good -->
-<script src="/private/wgood/js/wgood_app.js" type="text/javascript"></script> 
+<!-- <script src="/private/wgood/js/wgood_app.js" type="text/javascript"></script>  -->
 <!-- filter -->
-<script src="/private/utils/javascript/diablo_filter_app.js" type="text/javascript"></script> 
+<!-- <script src="/private/utils/javascript/diablo_filter_app.js" type="text/javascript"></script>  -->
 <!-- self -->
-<script src="/private/wretailer/js/wretailer_app.js" type="text/javascript"></script>
-<script src="/private/wretailer/js/wretailer_utils.js" type="text/javascript"></script>
-<script src="/private/wretailer/js/wretailer.js" type="text/javascript"></script>
-<script src="/private/wretailer/js/wretailer_promotion.js" type="text/javascript"></script>
-<script src="/private/wretailer/js/wretailer_trans.js" type="text/javascript"></script> 
 
-{% endblock %}
+<!-- <script src="/private/wretailer/js/wretailer_app.js" type="text/javascript"></script> -->
+<!-- <script src="/private/wretailer/js/wretailer_utils.js" type="text/javascript"></script> -->
+<!-- <script src="/private/wretailer/js/wretailer.js" type="text/javascript"></script> -->
+<!-- <script src="/private/wretailer/js/wretailer_promotion.js" type="text/javascript"></script> -->
+<!-- <script src="/private/wretailer/js/wretailer_trans.js" type="text/javascript"></script>  -->
 
+<script data-main="/private/wretailer/wretailer_main" src="/public/assets/require.js" type="text/javascript"></script>
 
-
-{% block script_init %} 
-<script>
-    jQuery(document).ready(function() {
-	App.init(); // initlayout and core plugins 
-    });
-    
-</script>
 {% endblock %}

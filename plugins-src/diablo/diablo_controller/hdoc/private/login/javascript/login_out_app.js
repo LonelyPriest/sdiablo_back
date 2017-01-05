@@ -2,6 +2,11 @@
 
 // console.log(loginOutApp);
 
+define(function(){
+    return diablo_login_out;
+});
+
+
 function diablo_login_out($resource){
     // console.log($scope);
 

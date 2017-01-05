@@ -1,4 +1,6 @@
-purchaserApp.controller("stockPromotionNew", function(
+'use strict'
+
+function stockPromotionNewProvide(
     $scope, dateFilter, diabloPattern, diabloUtilsService,
     purchaserService, wgoodService){
 
@@ -69,10 +71,10 @@ purchaserApp.controller("stockPromotionNew", function(
 	diablo_goto_page("#/promotion/promotion_detail");
     }
     
-});
+};
 
 
-purchaserApp.controller("stockPromotionDetail", function(
+function stockPromotionDetailProvide(
     $scope, dateFilter, diabloPattern, diabloUtilsService,
     purchaserService, wgoodService, user){
     $scope.pattern = {
@@ -168,4 +170,9 @@ purchaserApp.controller("stockPromotionDetail", function(
 	dialog.response(false, "删除促销方案", "暂不支持此操作！！");
     };
     
+};
+
+define(["purchaserApp"], function(app){
+    app.controller("stockPromotionNew", stockPromotionNewProvide);
+    app.controller("stockPromotionDetail", stockPromotionDetailProvide);
 });

@@ -79,7 +79,7 @@
 			 class="form-control"
 			 required
 			 placeholder="年/月/日"
-			 datepicker-popup="yyyy/MM/dd"
+			 uib-datepicker-popup="yyyy/MM/dd"
 			 is-open="isOpened"
 			 close-text="关闭"
 			 clear-text="清除"
@@ -103,9 +103,7 @@
 		<input type="text" class="form-control"
 		       placeholder="请选择店长，默认为空"
 		       x-ng-model="shop.shopowner"
-		       typeahead="e as e.name for e in
-				  employees|filter:$viewValue|limitTo:8">
-		</input>
+		       uib-typeahead="e as e.name for e in employees|filter:$viewValue|limitTo:8"/>
 	      </div>
 	    </div>
 

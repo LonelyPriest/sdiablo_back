@@ -1,4 +1,6 @@
-shopApp.controller("repoNewCtrl", function(
+'use strict'
+
+function repoNewCtrlProvide(
     $scope, shopService, diabloPattern, diabloUtilsService){
     $scope.pattern = {repo_name: diabloPattern.ch_name_address,
 		      repo_addr: diabloPattern.ch_name_address};
@@ -23,9 +25,9 @@ shopApp.controller("repoNewCtrl", function(
     $scope.cancel = function(){
 	diablo_goto_page("#/repo/repo_detail");
     };	
-});
+};
 
-shopApp.controller("repoDetailCtrl", function(
+function repoDetailCtrlProvide(
     $scope, shopService, diabloPattern, diabloUtilsService){
     $scope.goto_page = diablo_goto_page;
     var dialog = diabloUtilsService;
@@ -39,11 +41,11 @@ shopApp.controller("repoDetailCtrl", function(
     // $scope.bind_print = function(r){
 	
     // }
-});
+};
 
 
 
-shopApp.controller("badRepoNewCtrl", function(
+function badRepoNewCtrlProvide(
     $scope, shopService, diabloPattern, diabloUtilsService, user){
     $scope.pattern = {repo_name: diabloPattern.ch_name_address,
 		      repo_addr: diabloPattern.ch_name_address};
@@ -72,9 +74,9 @@ shopApp.controller("badRepoNewCtrl", function(
     $scope.cancel = function(){
 	diablo_goto_page("#/repo/badrepo_detail");
     };	
-});
+};
 
-shopApp.controller("badRepoDetailCtrl", function(
+function badRepoDetailCtrlProvide(
     $scope, shopService, diabloPattern, diabloUtilsService, user){
     $scope.goto_page = diablo_goto_page;
     var dialog = diabloUtilsService;
@@ -95,4 +97,11 @@ shopApp.controller("badRepoDetailCtrl", function(
     // $scope.bind_print = function(r){
     
     // }
+};
+
+define(["shopApp"], function(app){
+    app.controller("repoNewCtrl", repoNewCtrlProvide);
+    app.controller("repoDetailCtrl", repoDetailCtrlProvide);
+    app.controller("badRepoNewCtrl", badRepoNewCtrlProvide);
+    app.controller("badRepoDetailCtrl", badRepoDetailCtrlProvide);
 });
