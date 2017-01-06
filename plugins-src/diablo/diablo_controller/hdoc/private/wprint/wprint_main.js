@@ -1,7 +1,7 @@
 'use strict'
 
 require.config({
-    baseUrl: '/private/employ/javascript',
+    baseUrl: '/private/wprint/js',
     paths: {
 	"jquery": "/public/assets/metronic/plugins/jquery-1.11.3.min",
 	"jquery-migrate": "/public/assets/metronic/plugins/jquery-migrate-1.2.1.min",
@@ -25,10 +25,10 @@ require.config({
 	"diablo-authen": "/private/utils/javascript/diablo_authen_app",
 	"diablo-pattern": "/private/utils/javascript/diablo_pattern",
 	"diablo-utils": "/private/utils/javascript/diablo_utils",
-	"diablo-user-right": "/private/right/javascript/user_right_app",
-	"diablo-authen-right": "/private/right/javascript/user_right_map",
-	"diablo-login-out": "/private/login/javascript/login_out_app", 
-	
+	// "diablo-user-right": "/private/right/javascript/user_right_app",
+	// "diablo-authen-right": "/private/right/javascript/user_right_map",
+	"diablo-login-out": "/private/login/javascript/login_out_app",
+
 	"diablo-filter": "/private/utils/javascript/diablo_filter_app" 
     },
     
@@ -71,7 +71,7 @@ require.config({
         },
 
 	"angular-resource": {
-            exports: "angular-esource",
+            exports: "angular-resource",
             deps: ["angular"]
         },
 
@@ -104,20 +104,20 @@ require.config({
             deps: ["angular"]
 	},
 
-	"diablo-user-right": {
-            exports: "diablo-user-right",
-            deps: ["angular"]
-	},
+	// "diablo-user-right": {
+        //     exports: "diablo-user-right",
+        //     deps: ["angular"]
+	// },
 
-	"diablo-authen-right": {
-            exports: "diablo-authen-right",
-            deps: ["angular"]
-	},
+	// "diablo-authen-right": {
+        //     exports: "diablo-authen-right",
+        //     deps: ["angular"]
+	// },
 
 	"diablo-login-out":{
 	    deps: ["angular"]
-	},
-
+	}, 
+	
 	"diablo-utils": {
             exports: "diablo-utils",
             deps: ["angular"]
@@ -148,16 +148,17 @@ require([
     "bootstrap", "fastclick",
     
     "diablo-init", "diablo-function", "diablo-authen",
-    "diablo-pattern", "diablo-user-right", "diablo-authen-right",
+    "diablo-pattern",
+    // "diablo-user-right", "diablo-authen-right",
     "diablo-login-out", "diablo-utils", "diablo-filter", 
-    "employeeApp"
+    "wprintApp", "load_wprint"
 ], function($, angular) {
     $(function() {
-	angular.bootstrap(document, ["employeeApp"]);
+	angular.bootstrap(document, ["wprintApp"]);
     });
 
     var app = require("diablo-init");
-    if (app !== undefined) app.init();
+    if (app !== undefined) app.init(); 
     
     var attachFastClick = require('fastclick');
     if (typeof(attachFastClick) === 'function') attachFastClick(document.body);	    

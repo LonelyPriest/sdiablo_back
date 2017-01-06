@@ -1,4 +1,6 @@
-baseApp.controller("bankCardNewCtrl", function($scope, baseService, diabloUtilsService){
+'use strict'
+
+function bankCardNewCtrlProvide($scope, baseService, diabloUtilsService){
     // console.log($scope);
 
     $scope.new_card = function(){
@@ -25,10 +27,10 @@ baseApp.controller("bankCardNewCtrl", function($scope, baseService, diabloUtilsS
     $scope.cancel_new_card = function(){
 	diablo_goto_page("#/bank/bank_card_detail");
     }
-});
+};
 
 
-baseApp.controller("bankCardDetailCtrl", function($scope, baseService, diabloUtilsService){
+function bankCardDetailCtrlProvide($scope, baseService, diabloUtilsService){
     console.log($scope); 
 
     $scope.goto_page = diablo_goto_page;
@@ -100,10 +102,10 @@ baseApp.controller("bankCardDetailCtrl", function($scope, baseService, diabloUti
 	    "删除银行卡",
 	    "确定要删除该银行卡吗？", callback, undefined, $scope); 
     }
-});
+};
 
 
-baseApp.controller("printOptionCtrl", function(
+function printOptionCtrlProvide(
     $scope, dateFilter, baseService, diabloPattern, diabloUtilsService, user){
 
     // retailer
@@ -177,7 +179,7 @@ baseApp.controller("printOptionCtrl", function(
 	    // console.log(data); 
 	    $scope.settings = 
 		$scope.shops.map(function(s){
-		    setting = data.filter(function(d){
+		    var setting = data.filter(function(d){
 			return d.shop === s.id;
 		    });
 
@@ -353,10 +355,10 @@ baseApp.controller("printOptionCtrl", function(
 	     patterns: {tel_mobile: diabloPattern.tel_mobile,
 			remark:    diabloPattern.comment}});
     }
-});
+};
 
 
-baseApp.controller("printFormatCtrl", function(
+function printFormatCtrlProvide(
     $scope, dateFilter, baseService, diabloPattern, diabloUtilsService, wprintService, user){
     // shop and repo
     $scope.shops = [{id: -1, name:"== 请选择店铺或仓库，默认所有配置相同 =="}]
@@ -413,7 +415,7 @@ baseApp.controller("printFormatCtrl", function(
 	    // class by shop
 	    $scope.pformats = 
 		$scope.shops.map(function(s){
-		    pformat = data.filter(function(d){
+		    var pformat = data.filter(function(d){
 			return d.shop === s.id;
 		    });
 
@@ -496,12 +498,10 @@ baseApp.controller("printFormatCtrl", function(
 		change_format: change_format
 	    });
     }
-});
+};
 
 
-baseApp.controller("tableDetailCtrl", function(
-    $scope, baseService, diabloUtilsService
-){    
+function tableDetailCtrlProvide($scope, baseService, diabloUtilsService){    
     $scope.refresh = function(){
 	baseService.list_setting(baseService.table_setting).then(function(data){
 	    console.log(data);
@@ -541,10 +541,10 @@ baseApp.controller("tableDetailCtrl", function(
 	dialog.edit_with_modal(
 	    "table-setting.html", undefined, callback, $scope, {setting: s});
     }
-});
+};
 
 
-baseApp.controller("basePrinterConnectNewCtrl", function(
+function basePrinterConnectNewCtrlProvide(
     $scope, diabloPattern, wprintService, diabloUtilsService, user){
     // console.log(user);
     $scope.shops = [].concat(user.sortShops, user.sortRepoes);
@@ -606,15 +606,12 @@ baseApp.controller("basePrinterConnectNewCtrl", function(
 
     $scope.cancel = function(){
 	diablo_goto_page("#/print/connect_detail");
-    }
-    
-    
-});
+    }   
+};
 
 
-baseApp.controller("basePrinterConnectDetailCtrl", function(
+function basePrinterConnectDetailCtrlProvide(
     $scope, $q, $location, wprintService, diabloPromise, diabloUtilsService, user){
-
     // $scope.shops = user.sortShops;
     $scope.shops = [].concat(user.sortShops, user.sortRepoes);
     $scope.goto_page = diablo_goto_page;
@@ -786,11 +783,10 @@ baseApp.controller("basePrinterConnectDetailCtrl", function(
 	dialog.request(
 	    "删除打印机关联信息", "确定要删除该打印机关联信息吗？", callback, undefined, $scope);
     }
-});
+};
 
 
-baseApp.controller("resetPasswdCtrl", function(
-    $scope, diabloPattern, diabloUtilsService, baseService){
+function resetPasswdCtrlProvide($scope, diabloPattern, diabloUtilsService, baseService){
     $scope.passwd_pattern = diabloPattern.passwd;
 
     var dialog = diabloUtilsService;
@@ -815,9 +811,9 @@ baseApp.controller("resetPasswdCtrl", function(
 	    });
 	}
     }
-});
+};
 
-baseApp.controller("delDataCtrl", function($scope, dateFilter, diabloUtilsService, baseService){
+function delDataCtrlProvide($scope, dateFilter, diabloUtilsService, baseService){
     
     $scope.open_calendar = function(event){
 	event.preventDefault();
@@ -869,18 +865,18 @@ baseApp.controller("delDataCtrl", function($scope, dateFilter, diabloUtilsServic
 	
     };
     // diablo_goto_page("#/printer/connect_detail");
+};
+
+
+define(["baseApp"], function(app){
+    app.controller("bankCardNewCtrl", bankCardNewCtrlProvide);
+    app.controller("bankCardDetailCtrl", bankCardDetailCtrlProvide);
+    app.controller("printOptionCtrl", printOptionCtrlProvide);
+    app.controller("printFormatCtrl", printFormatCtrlProvide);
+    app.controller("tableDetailCtrl", tableDetailCtrlProvide);
+    app.controller("basePrinterConnectNewCtrl", basePrinterConnectNewCtrlProvide);
+    app.controller("basePrinterConnectDetailCtrl", basePrinterConnectDetailCtrlProvide);
+    app.controller("resetPasswdCtrl", resetPasswdCtrlProvide);
+    app.controller("delDataCtrl", delDataCtrlProvide);
 });
 
-baseApp.controller("baseCtrl", function($scope){
-    // diablo_goto_page("#/printer/connect_detail");
-});
-
-baseApp.controller("loginOutCtrl", function($scope, $resource){
-    $scope.home = function () {
-	diablo_login_out($resource)
-    };
-    
-    // $scope.max_screen = function(){
-    // 	console.log("max_screen");
-    // }
-});

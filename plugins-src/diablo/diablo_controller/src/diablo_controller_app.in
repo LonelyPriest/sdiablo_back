@@ -61,6 +61,7 @@
      
      %% template
      base_frame,
+     base_require_frame,
      employ_frame,
      %% inventory_frame,
      login,
@@ -68,6 +69,7 @@
      member_frame,
      merchant_frame,
      right_frame,
+     sright_frame,
      %% sale_frame,
      shop_frame,
      supplier_frame, 

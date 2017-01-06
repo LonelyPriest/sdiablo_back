@@ -1,4 +1,6 @@
-firmApp.controller('firmTransCtrl', function(
+'use strict'
+
+function firmTransCtrlProvide(
     $scope, $routeParams, $location, localStorageService,
     diabloFilter, diabloPattern, firmService, diabloUtilsService,
     filterFirm, filterEmployee, user, base){
@@ -278,19 +280,17 @@ firmApp.controller('firmTransCtrl', function(
 	    'comment-stock.html', 'lg', callback, undefined,
 	    {comment:r.comment, comment_pattern:diabloPattern.comment});
     };
-})
+}
 
 
-firmApp.controller("firmTransRsnDetailCtrl", function(
+function firmTransRsnDetailCtrlProvide(
     $scope, $routeParams, dateFilter, diabloUtilsService, diabloFilter,
-    wgoodService, firmService,
+    firmService,
     filterBrand, filterFirm, filterEmployee, filterSizeGroup,
-    filterType, user, base){
-    // console.log($routeParams);
-
+    filterType, filterColor, user, base){
+    // console.log($routeParams); 
     // console.log(filterEmployee);
-    $scope.shopIds   = user.shopIds;
-
+    $scope.shopIds   = user.shopIds; 
     /*
      * hidden
      */
@@ -432,9 +432,9 @@ firmApp.controller("firmTransRsnDetailCtrl", function(
 	).then(function(result){
 	    console.log(result);
 	    
-	    var order_sizes = wgoodService.format_size_group(inv.s_group, filterSizeGroup);
+	    var order_sizes = diabloHelp.usort_size_group(inv.s_group, filterSizeGroup);
 	    //console.log(order_sizes);
-	    var sort = diablo_sort_inventory(result.data, order_sizes);
+	    var sort = diabloHelp.sort_stock(result.data, order_sizes, filterColor);
 	    console.log(sort);
 	    inv.sizes   = sort.size;
 	    inv.colors  = sort.color;
@@ -450,4 +450,10 @@ firmApp.controller("firmTransRsnDetailCtrl", function(
 		 get_amount: get_amount});
 	}); 
     }; 
+};
+
+
+define(["firmApp"], function(app){
+    app.controller("firmTransCtrl", firmTransCtrlProvide);
+    app.controller("firmTransRsnDetailCtrl", firmTransRsnDetailCtrlProvide);
 });

@@ -1,7 +1,7 @@
 'use strict'
 
 require.config({
-    baseUrl: '/private/employ/javascript',
+    baseUrl: '/private/base/js',
     paths: {
 	"jquery": "/public/assets/metronic/plugins/jquery-1.11.3.min",
 	"jquery-migrate": "/public/assets/metronic/plugins/jquery-migrate-1.2.1.min",
@@ -27,8 +27,10 @@ require.config({
 	"diablo-utils": "/private/utils/javascript/diablo_utils",
 	"diablo-user-right": "/private/right/javascript/user_right_app",
 	"diablo-authen-right": "/private/right/javascript/user_right_map",
-	"diablo-login-out": "/private/login/javascript/login_out_app", 
-	
+	"diablo-login-out": "/private/login/javascript/login_out_app",
+
+	"diablo-wprint": "/private/wprint/js/wprintApp",
+
 	"diablo-filter": "/private/utils/javascript/diablo_filter_app" 
     },
     
@@ -71,7 +73,7 @@ require.config({
         },
 
 	"angular-resource": {
-            exports: "angular-esource",
+            exports: "angular-resource",
             deps: ["angular"]
         },
 
@@ -116,8 +118,8 @@ require.config({
 
 	"diablo-login-out":{
 	    deps: ["angular"]
-	},
-
+	}, 
+	
 	"diablo-utils": {
             exports: "diablo-utils",
             deps: ["angular"]
@@ -135,7 +137,12 @@ require.config({
 		  "jquery-block",
 		  "jquery-migrate",
 		  "fastclick"]
-	}, 
+	}
+
+	// "diablo-wprint": {
+	//     exports: "wprintApp",
+	//     deps: ["angular"]
+	// }
     }
 });
 
@@ -149,15 +156,18 @@ require([
     
     "diablo-init", "diablo-function", "diablo-authen",
     "diablo-pattern", "diablo-user-right", "diablo-authen-right",
-    "diablo-login-out", "diablo-utils", "diablo-filter", 
-    "employeeApp"
+    "diablo-login-out", "diablo-utils", "diablo-filter",
+    "diablo-wprint", "baseApp", "load_base"
 ], function($, angular) {
     $(function() {
-	angular.bootstrap(document, ["employeeApp"]);
+	angular.bootstrap(document, ["baseApp"]); 
     });
 
     var app = require("diablo-init");
     if (app !== undefined) app.init();
+
+
+    // console.log(a.service());
     
     var attachFastClick = require('fastclick');
     if (typeof(attachFastClick) === 'function') attachFastClick(document.body);	    

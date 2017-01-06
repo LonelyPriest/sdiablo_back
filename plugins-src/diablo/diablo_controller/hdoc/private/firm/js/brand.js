@@ -1,4 +1,6 @@
-firmApp.controller("brandNewCtrl", function(
+'use strict'
+
+function brandNewCtrlProvide(
     $scope, diabloUtilsService, diabloPattern,
     firmService, filterBrand, filterFirm){
     // console.log(filterFirm);
@@ -53,10 +55,10 @@ firmApp.controller("brandNewCtrl", function(
 	diablo_goto_page("#/brand_detail");
     };
     
-});
+};
 
 
-firmApp.controller("brandDetailCtrl", function(
+function brandDetailCtrlProvide(
     $scope, diabloUtilsService, diabloPattern, diabloPagination,
     firmService, filterFirm){
     // console.log(filterBrand);
@@ -212,4 +214,9 @@ firmApp.controller("brandDetailCtrl", function(
     $scope.delete_brand = function(brand){
 	dialog.response(false, "删除品牌", "暂不支持此操作！！")
     };
+};
+
+define(["firmApp"], function(app){
+    app.controller("brandNewCtrl", brandNewCtrlProvide);
+    app.controller("brandDetailCtrl", brandDetailCtrlProvide);
 });

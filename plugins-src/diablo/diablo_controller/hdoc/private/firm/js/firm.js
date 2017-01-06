@@ -1,4 +1,6 @@
-firmApp.controller("firmNewCtrl", function(
+'use strict'
+
+function firmNewCtrlProvide(
     $scope, diabloPattern, firmService, diabloUtilsService){
 
     $scope.pattern = {name: diabloPattern.ch_name_address,
@@ -29,10 +31,10 @@ firmApp.controller("firmNewCtrl", function(
     $scope.cancel = function(){
 	diablo_goto_page("#/firm_detail");
     };
-});
+};
 
 
-firmApp.controller("firmDetailCtrl", function(
+function firmDetailCtrlProvide(
     $scope, $location, $routeParams, firmService, diabloUtilsService,
     diabloPagination, diabloPattern, localStorageService){
 
@@ -347,14 +349,10 @@ firmApp.controller("firmDetailCtrl", function(
 	    }
 	})
     };
-});
+};
 
-firmApp.controller("firmCtrl", function($scope, localStorageService){
-    diablo_remove_local_storage(localStorageService)
-});
 
-firmApp.controller("loginOutCtrl", function($scope, $resource){
-    $scope.home = function () {
-	diablo_login_out($resource)
-    };
+define(["firmApp"], function(app){
+    app.controller("firmNewCtrl", firmNewCtrlProvide);
+    app.controller("firmDetailCtrl", firmDetailCtrlProvide);
 });

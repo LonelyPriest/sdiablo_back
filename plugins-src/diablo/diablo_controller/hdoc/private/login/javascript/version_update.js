@@ -1,6 +1,10 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2017-01-07",
+         content: ["修正偶尔出现空白内容的问题"]
+        },
+	
 	{date: "2016-12-31",
          content: ["加强会员录入约束条件",
 		   "会员增加身份证字段，以便核对会员信息",

@@ -1,4 +1,6 @@
-wreportApp.controller("monthStasticCtrl", function(
+'use strict'
+
+function monthStasticCtrlProvide(
     $scope, dateFilter, diabloFilter, diabloUtilsService, wreportService,
     filterEmployee, user, base){
     $scope.shops = user.sortShops;
@@ -218,4 +220,8 @@ wreportApp.controller("monthStasticCtrl", function(
 	    }); 
 	});
     };
+};
+
+define(["wreportApp"], function(app){
+    app.controller("monthStasticCtrl", monthStasticCtrlProvide); 
 });

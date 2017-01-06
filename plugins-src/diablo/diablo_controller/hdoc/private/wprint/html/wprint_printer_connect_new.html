@@ -136,7 +136,7 @@
 			 x-ng-model="printer.merchant"
 			 typeahead-editable="false"
 			 typeahead-on-select="on_select_merchant($item, $model, $label)"
-			 typeahead="m as m.name for m in
+			 uib-typeahead="m as m.name for m in
 		       		    merchants|filter:$viewValue|limitTo:8"></input>
 		  <span class="input-group-addon bg-white fg-red">*</span> 
 		</div>
@@ -157,7 +157,7 @@
 			 placeholder="请选择店铺"
 			 x-ng-model="printer.shop"
 			 typeahead-editable="false"
-			 typeahead="s as s.name for s in
+			 uib-typeahead="s as s.name for s in
 				    shops|filter:$viewValue|limitTo:8"></input>
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div>

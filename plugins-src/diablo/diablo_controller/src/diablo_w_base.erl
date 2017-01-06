@@ -134,8 +134,8 @@ handle_call({list_base_setting, Merchant, Conditions}, _From, State) ->
 
     Sql = "select id, ename, cname, value, type"
 	", remark, shop, entry_date from w_base_setting"
-	" where " ++ ?utils:to_sqls(proplists, Conditions)
-	++ " and merchant=" ++ ?to_s(Merchant)
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and " ++ ?utils:to_sqls(proplists, Conditions)
 	++ " and deleted=" ++ ?to_s(?NO)
 	++ " order by id",
 

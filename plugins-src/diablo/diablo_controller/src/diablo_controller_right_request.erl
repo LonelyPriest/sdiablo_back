@@ -11,31 +11,32 @@
 action(Session, Req) ->
     ?DEBUG("action with session ~p", [Session]),
 
-    Render = fun(Ctrl, App) ->
-		     right_frame:render(
-		       [
-			{navbar, ?menu:navbars(?MODULE, Session)},
+    Render = fun(?SUPER) ->
+		     sright_frame:render(
+		       [{navbar, ?menu:navbars(?MODULE, Session)},
 			{basebar, ?menu:w_basebar(Session)},
-			{sidebar, sidebar(Session)},
-			{ngapp, App},
-			{ngcontroller, Ctrl}
+			{sidebar, sidebar(Session)} 
+		       ]);
+		(_) ->
+		     right_frame:render(
+		       [{navbar, ?menu:navbars(?MODULE, Session)},
+			{basebar, ?menu:w_basebar(Session)},
+			{sidebar, sidebar(Session)} 
 		       ])
 	     end,
     
     case ?session:get(type, Session) of
 	?SUPER ->
 	    %% {"rightMechantCtrl", "rightMerchantApp"},
-	    {ok, HTMLOutput} = Render("rightMechantCtrl", "rightMerchantApp"),
+	    {ok, HTMLOutput} = Render(?SUPER),
 	    Req:respond({200, [{"Content-Type", "text/html"}], HTMLOutput});
 	?MERCHANT ->
 	    %% {"rightUserCtrl", "rightUserApp"},
-	    {ok, HTMLOutput} = Render("rightUserCtrl", "rightUserApp"),
+	    {ok, HTMLOutput} = Render(?MERCHANT),
 	    Req:respond({200, [{"Content-Type", "text/html"}], HTMLOutput});
 	?USER ->
-	    {ok, HTMLOutput} = Render("rightUserCtrl", "rightUserApp"),
-	    Req:respond({200, [{"Content-Type", "text/html"}], HTMLOutput})
-		%% Req:respond({597, [{"Content-Type", "text/plain"}],
-		%% 	     "request failed, sorry\n"})
+	    {ok, HTMLOutput} = Render(?USER),
+	    Req:respond({200, [{"Content-Type", "text/html"}], HTMLOutput}) 
     end.
 
 %%

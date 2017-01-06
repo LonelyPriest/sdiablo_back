@@ -135,7 +135,7 @@
 			 placeholder="请选择店铺或仓库"
 			 x-ng-model="printer.shop"
 			 typeahead-editable="false"
-			 typeahead="s as s.name for s in
+			 uib-typeahead="s as s.name for s in
 				    shops|filter:$viewValue|limitTo:8"></input>
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div>

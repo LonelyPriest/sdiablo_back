@@ -1,4 +1,10 @@
-wreportApp.factory("wreportCommService", function(){
+'use strict'
+
+define(["wreportApp"], function(app){
+    app.factory("wreportCommService", wreportCommServiceProvide);
+});
+
+function wreportCommServiceProvide(){
 
     var _employees = [];
     var _retailers = [];
@@ -44,4 +50,4 @@ wreportApp.factory("wreportCommService", function(){
     };
 
     return service;
-});
+};

@@ -1,4 +1,7 @@
-wreportApp.controller("wreportDailyCtrl", function(
+'use strict'
+
+
+function wreportDailyCtrlProvide(
     $scope, dateFilter, diabloFilter, diabloUtilsService, wreportService,
     wreportCommService, filterEmployee, user, base){
     wreportCommService.set_employee(filterEmployee);
@@ -288,9 +291,9 @@ wreportApp.controller("wreportDailyCtrl", function(
 	    {employees:login.employees,
 	     employee: login.login_employee});
     }
-});
+};
 
-wreportApp.controller("dailyByGood", function(
+function dailyByGoodProvide(
     $scope, diabloFilter, wreportService, wreportCommService){
 
     $scope.employees = wreportCommService.get_employee();
@@ -386,9 +389,9 @@ wreportApp.controller("dailyByGood", function(
 	})
 	
     };
-});
+};
 
-wreportApp.controller("realStasticController", function(
+function realStasticControllerProvide(
     $scope, diabloFilter, wreportCommService, wreportService){
     // console.log($scope); 
     // console.log($scope.sortShops);
@@ -588,4 +591,10 @@ wreportApp.controller("realStasticController", function(
     $scope.go_shift = function(){
 	diablo_goto_page("#/switch_shift");
     };
+};
+
+define(["wreportApp"], function(app){
+    app.controller("wreportDailyCtrl", wreportDailyCtrlProvide);
+    app.controller("dailyByGood", dailyByGoodProvide);
+    app.controller("realStasticController", realStasticControllerProvide);
 });

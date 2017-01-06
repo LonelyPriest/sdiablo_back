@@ -34,7 +34,7 @@ url_match(get) ->
 	++ register_e(employ,     ?employ_request)
 	%% ++ register_e(inventory,  ?inventory_request)
 	++ register_e(right,      ?right_request)
-	%% ++ register_e(supplier,   ?supplier_request)
+    %% ++ register_e(supplier,   ?supplier_request)
 
     %% about wholesale
 	++ register_e(wsale,      ?w_sale_request) 

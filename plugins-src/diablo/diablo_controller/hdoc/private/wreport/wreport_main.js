@@ -1,7 +1,7 @@
 'use strict'
 
 require.config({
-    baseUrl: '/private/employ/javascript',
+    baseUrl: '/private/wreport/js',
     paths: {
 	"jquery": "/public/assets/metronic/plugins/jquery-1.11.3.min",
 	"jquery-migrate": "/public/assets/metronic/plugins/jquery-migrate-1.2.1.min",
@@ -17,7 +17,7 @@ require.config({
         "angular-router": "/public/assets/angular-1.3.9/angular-route.min",
 	"angular-resource": "/public/assets/angular-1.3.9/angular-resource.min",
 	"angular-zh": "/public/assets/angular-1.3.9/i18n/angular-locale_zh",
-	// "angular-local-storage": "/public/assets/angular-local-storage/angular-local-storage",
+	"angular-local-storage": "/public/assets/angular-local-storage/angular-local-storage",
 	"angular-ui-bootstrap": "/public/assets/bootstrap/ui-bootstrap-tpls-0.14.3",
 	
         
@@ -29,7 +29,9 @@ require.config({
 	"diablo-authen-right": "/private/right/javascript/user_right_map",
 	"diablo-login-out": "/private/login/javascript/login_out_app", 
 	
-	"diablo-filter": "/private/utils/javascript/diablo_filter_app" 
+	"diablo-filter": "/private/utils/javascript/diablo_filter_app",
+
+	"report-utils": "/private/wreport/js/report_utils"
     },
     
     shim: {
@@ -79,10 +81,10 @@ require.config({
             deps: ["angular"]
         },
 
-	// "angular-local-storage": {
-        //     exports: "angular-local-storage",
-        //     deps: ["angular"]
-        // },
+	"angular-local-storage": {
+            exports: "angular-local-storage",
+            deps: ["angular"]
+        },
 
 	"angular-ui-bootstrap": {
             exports: "angular-ui-bootstrap",
@@ -135,14 +137,18 @@ require.config({
 		  "jquery-block",
 		  "jquery-migrate",
 		  "fastclick"]
-	}, 
+	},
+
+	"report-utils": {
+            deps: ["jquery", "diablo-utils"]
+	},
     }
 });
 
 require([
     "jquery",
     "angular", "angular-router", "angular-resource", "angular-zh", "angular-ui-bootstrap",
-    // "angular-local-storage",
+    "angular-local-storage",
     
     "jquery-custom", "jquery-cookie", "jquery-migrate", "jquery-block",
     "bootstrap", "fastclick",
@@ -150,10 +156,10 @@ require([
     "diablo-init", "diablo-function", "diablo-authen",
     "diablo-pattern", "diablo-user-right", "diablo-authen-right",
     "diablo-login-out", "diablo-utils", "diablo-filter", 
-    "employeeApp"
+    "report-utils", "wreportApp", "load_wreport"
 ], function($, angular) {
     $(function() {
-	angular.bootstrap(document, ["employeeApp"]);
+	angular.bootstrap(document, ["wreportApp"]);
     });
 
     var app = require("diablo-init");

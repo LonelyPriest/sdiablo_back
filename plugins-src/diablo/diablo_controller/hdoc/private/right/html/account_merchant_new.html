@@ -86,7 +86,7 @@
 			 placeholder="请输入商户经营者名称"
 			 x-ng-model="account.merchant"
 			 typeahead-editable="false"
-			 typeahead="merchant as merchant.name for merchant in
+			 uib-typeahead="merchant as merchant.name for merchant in
 				    merchants|filter:$viewValue|limitTo:8"></input>
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div>
@@ -148,7 +148,7 @@
 			 type="text"
 			 typeahead-editable="false"
 			 typeahead-on-select="on_role_select($item, $model, $label)"
-			 typeahead="role as role.name for role in
+			 uib-typeahead="role as role.name for role in
 				    roles|filter:$viewValue|limitTo:8"
 			 placeholder="请选择商家权限"></input>
 		  <span class="input-group-addon bg-white fg-red">*</span>

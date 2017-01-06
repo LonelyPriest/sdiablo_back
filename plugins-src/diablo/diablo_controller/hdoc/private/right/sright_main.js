@@ -1,13 +1,15 @@
 'use strict'
 
 require.config({
-    baseUrl: '/private/employ/javascript',
+    baseUrl: '/private/right/javascript',
     paths: {
 	"jquery": "/public/assets/metronic/plugins/jquery-1.11.3.min",
 	"jquery-migrate": "/public/assets/metronic/plugins/jquery-migrate-1.2.1.min",
 	"jquery-custom": "/public/assets/metronic/plugins/jquery-ui/jquery-ui-1.10.3.custom.min", 
 	"jquery-cookie": "/public/assets/metronic/plugins/jquery.cokie.min",
 	"jquery-block": "/public/assets/metronic/plugins/jquery.blockui.min",
+	"jquery-dynatree": "/public/assets/dynatree-1.2.6/jquery.dynatree",
+
 	"bootstrap": "/public/assets/bootstrap/js/bootstrap.min",
 	"fastclick": "/public/assets/fastclick/fastclick.min",
 	"diablo-init": "/public/assets/metronic/scripts/app",
@@ -19,6 +21,7 @@ require.config({
 	"angular-zh": "/public/assets/angular-1.3.9/i18n/angular-locale_zh",
 	// "angular-local-storage": "/public/assets/angular-local-storage/angular-local-storage",
 	"angular-ui-bootstrap": "/public/assets/bootstrap/ui-bootstrap-tpls-0.14.3",
+
 	
         
 	"diablo-function": "/private/utils/javascript/diablo_function", 
@@ -27,9 +30,12 @@ require.config({
 	"diablo-utils": "/private/utils/javascript/diablo_utils",
 	"diablo-user-right": "/private/right/javascript/user_right_app",
 	"diablo-authen-right": "/private/right/javascript/user_right_map",
-	"diablo-login-out": "/private/login/javascript/login_out_app", 
+	"diablo-login-out": "/private/login/javascript/login_out_app",
 	
-	"diablo-filter": "/private/utils/javascript/diablo_filter_app" 
+	"diablo-filter": "/private/utils/javascript/diablo_filter_app",
+
+	"diablo-tree-utils": "/private/right/javascript/tree_utils"
+
     },
     
     shim: {
@@ -53,6 +59,10 @@ require.config({
 	"jquery-migrate": {
 	    deps: ["jquery"]
         },
+
+	"jquery-dynatree":{
+	    deps: ["jquery", "jquery-custom", "jquery-cookie"]
+	},
 
 	"fastclick": {},
 
@@ -135,7 +145,11 @@ require.config({
 		  "jquery-block",
 		  "jquery-migrate",
 		  "fastclick"]
-	}, 
+	},
+
+	"diablo-tree-utils":{
+	    deps:["jquery-dynatree"]
+	}
     }
 });
 
@@ -144,20 +158,23 @@ require([
     "angular", "angular-router", "angular-resource", "angular-zh", "angular-ui-bootstrap",
     // "angular-local-storage",
     
-    "jquery-custom", "jquery-cookie", "jquery-migrate", "jquery-block",
-    "bootstrap", "fastclick",
+    "jquery-custom", "jquery-cookie", "jquery-migrate", "jquery-block", 
+    "bootstrap", "fastclick", "jquery-dynatree",
     
     "diablo-init", "diablo-function", "diablo-authen",
     "diablo-pattern", "diablo-user-right", "diablo-authen-right",
     "diablo-login-out", "diablo-utils", "diablo-filter", 
-    "employeeApp"
+    "diablo-tree-utils",
+    "rightApp", "rightMerchantApp", "right_merchant"
 ], function($, angular) {
     $(function() {
-	angular.bootstrap(document, ["employeeApp"]);
+	angular.bootstrap(document, ["rightApp", "rightMerchantApp"]);
     });
 
     var app = require("diablo-init");
     if (app !== undefined) app.init();
+
+    var tree = require("jquery-dynatree");
     
     var attachFastClick = require('fastclick');
     if (typeof(attachFastClick) === 'function') attachFastClick(document.body);	    

@@ -150,8 +150,14 @@ handle_call({navbar, super}, _From, #func_tree{tree=Tree} = State) ->
     Navs = 
 	lists:foldr(
 	  fun(RId, Acc) ->
-		  {Href, Name, Module} = gb_trees:get(RId, Tree),
-		  [{Href, Name, Module, hidden(mobile, RId)}|Acc]
+		  case RId =:= ?right_right of
+		      true ->
+			  {Href, Name, Module} = gb_trees:get(RId, Tree),
+			  [{Href, Name, Module, hidden(mobile, RId)}|Acc];
+		      false ->
+			  {Href, Name, Module} = gb_trees:get(RId, Tree),
+			  [{Href, Name, Module, hidden(mobile, RId)}|Acc]
+		  end
 	  end,[], ?SUPER_ROOT),
     ?DEBUG("navs ~p", [Navs]),
     {reply, Navs, State};

@@ -1,4 +1,6 @@
-wreportApp.controller("switchShiftCtrl", function(
+'use strict'
+
+function switchShiftCtrlProvide(
     $scope, dateFilter, diabloFilter, wreportService, filterEmployee, user){
     // console.log(user);
     $scope.shops = user.sortShops;
@@ -91,4 +93,8 @@ wreportApp.controller("switchShiftCtrl", function(
     $scope.go_back = function(){
     	diablo_goto_page("#/wreport_daily");
     }
+};
+
+define(["wreportApp"], function(app){
+    app.controller("switchShiftCtrl", switchShiftCtrlProvide); 
 });

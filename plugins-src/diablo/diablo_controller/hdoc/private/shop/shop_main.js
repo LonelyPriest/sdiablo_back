@@ -17,7 +17,7 @@ require.config({
         "angular-router": "/public/assets/angular-1.3.9/angular-route.min",
 	"angular-resource": "/public/assets/angular-1.3.9/angular-resource.min",
 	"angular-zh": "/public/assets/angular-1.3.9/i18n/angular-locale_zh",
-	"angular-local-storage": "/public/assets/angular-local-storage/angular-local-storage",
+	// "angular-local-storage": "/public/assets/angular-local-storage/angular-local-storage",
 	"angular-ui-bootstrap": "/public/assets/bootstrap/ui-bootstrap-tpls-0.14.3",
 	
         
@@ -79,10 +79,10 @@ require.config({
             deps: ["angular"]
         },
 
-	"angular-local-storage": {
-            exports: "angular-local-storage",
-            deps: ["angular"]
-        },
+	// "angular-local-storage": {
+        //     exports: "angular-local-storage",
+        //     deps: ["angular"]
+        // },
 
 	"angular-ui-bootstrap": {
             exports: "angular-ui-bootstrap",
@@ -142,7 +142,7 @@ require.config({
 require([
     "jquery",
     "angular", "angular-router", "angular-resource", "angular-zh", "angular-ui-bootstrap",
-    "angular-local-storage",
+    // "angular-local-storage",
     
     "jquery-custom", "jquery-cookie", "jquery-migrate", "jquery-block",
     "bootstrap", "fastclick",

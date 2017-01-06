@@ -1,5 +1,6 @@
-wprintApp.controller("serverNewCtrl", function(
-    $scope, diabloPattern, wprintService, diabloUtilsService){
+'use strict'
+
+function serverNewCtrlProvide($scope, diabloPattern, wprintService, diabloUtilsService){
     
     var url_pattern = diabloPattern.url; 
 
@@ -30,11 +31,10 @@ wprintApp.controller("serverNewCtrl", function(
     $scope.cancel = function(){
 	diablo_goto_page("#/server/detail");
     };
-});
+};
 
 
-wprintApp.controller("serverDetailCtrl", function(
-    $scope, $location, wprintService, diabloUtilsService){
+function serverDetailCtrlProvide($scope, $location, wprintService, diabloUtilsService){
 
     $scope.goto_page = diablo_goto_page;
 
@@ -54,4 +54,9 @@ wprintApp.controller("serverDetailCtrl", function(
     $scope.delete_server = function(){
 	diabloUtilsService.response(false, "删除服务器", "暂不支持此操作！！", $scope);
     }
+};
+
+define(["wprintApp"], function(app){
+    app.controller("serverNewCtrl", serverNewCtrlProvide);
+    app.controller("serverDetailCtrl", serverDetailCtrlProvide);
 });

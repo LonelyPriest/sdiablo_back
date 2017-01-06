@@ -1,5 +1,6 @@
-wprintApp.controller("printerConnectNewCtrl", function(
-    $scope, diabloPattern, wprintService, merchantService, diabloUtilsService){
+'use strict'
+
+function printerConnectNewCtrlProvide($scope, diabloPattern, wprintService, diabloUtilsService){
 
     $scope.paper_columns = wprintService.paper_columns;
     $scope.paper_heights = wprintService.paper_heights;
@@ -41,7 +42,7 @@ wprintApp.controller("printerConnectNewCtrl", function(
     $scope.merchants = []; 
     wprintService.list_merchant().then(function(merchants){
     	console.log(merchants);
-	$scope.merchants = merchants.map(merchants, function(m){
+	$scope.merchants = merchants.map(function(m){
 	    return {id:m.id, name:m.name, py:diablo_pinyin(m.name)}
 	}) 
     });
@@ -81,13 +82,11 @@ wprintApp.controller("printerConnectNewCtrl", function(
 
     $scope.cancel = function(){
 	diablo_goto_page("#/print/connect_detail");
-    }
-    
-    
-});
+    }    
+};
 
 
-wprintApp.controller("printerConnectDetailCtrl", function(
+function printerConnectDetailCtrlProvide(
     $scope, $q, $location, wprintService, diabloPromise, diabloUtilsService){
 
     $scope.goto_page = diablo_goto_page;
@@ -247,4 +246,9 @@ wprintApp.controller("printerConnectDetailCtrl", function(
 	dialog.request(
 	    "删除打印机关联信息", "确定要删除该打印机关联信息吗？", callback, undefined, $scope);
     }
+};
+
+define(["wprintApp"], function(app){
+    app.controller("printerConnectNewCtrl", printerConnectNewCtrlProvide);
+    app.controller("printerConnectDetailCtrl", printerConnectDetailCtrlProvide);
 });

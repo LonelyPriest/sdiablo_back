@@ -1,4 +1,6 @@
-firmApp.controller("firmBillCtrl", function(
+'use strict'
+
+function firmBillCtrlProvide(
     $scope, $routeParams, dateFilter, diabloPattern, diabloUtilsService,
     firmService, filterCard, filterEmployee, user){
     // console.log(filterCard);
@@ -127,9 +129,9 @@ firmApp.controller("firmBillCtrl", function(
     // $scope.cancel_bill = function(){
     // 	diablo_goto_page("#/firm/bill_detail");
     // };
-});
+};
 
-firmApp.controller("firmBillDetailCtrl", function(
+function firmBillDetailCtrlProvide(
     $scope, dateFilter, localStorageService, diabloPattern, diabloUtilsService, diabloFilter,
     firmService, filterFirm, filterCard, filterEmployee, user, base){
 
@@ -302,10 +304,10 @@ firmApp.controller("firmBillDetailCtrl", function(
 	    callback, undefined, undefined);
     }
     
-});
+};
 
 
-firmApp.controller("firmBillUpdateCtrl", function(
+function firmBillUpdateCtrlProvide(
     $scope, $routeParams, dateFilter, diabloPattern, diabloUtilsService,
     firmService, filterFirm, filterCard, filterEmployee, user){
     $scope.pattern = {
@@ -463,4 +465,10 @@ firmApp.controller("firmBillUpdateCtrl", function(
     $scope.cancel = function(){
 	diablo_goto_page("#/firm/bill_detail");
     };
+};
+
+define(["firmApp"], function(app){
+    app.controller("firmBillCtrl", firmBillCtrlProvide);
+    app.controller("firmBillDetailCtrl", firmBillDetailCtrlProvide);
+    app.controller("firmBillUpdateCtrl", firmBillUpdateCtrlProvide);
 });

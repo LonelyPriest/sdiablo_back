@@ -1,4 +1,6 @@
-wprintApp.controller("printerNewCtrl", function(
+'use strict'
+
+function printerNewCtrlProvide(
     $scope, diabloPattern, wprintService, diabloUtilsService){
     $scope.pattern = {brand: diabloPattern.chinese,
 		      model: diabloPattern.char_number_slash_bar};
@@ -30,9 +32,9 @@ wprintApp.controller("printerNewCtrl", function(
 	diablo_goto_page("#/printer/detail")
     };
     
-});
+};
 
-wprintApp.controller("printerDetailCtrl", function(
+function printerDetailCtrlProvide(
     $scope, diabloPattern, wprintService, diabloUtilsService){
     
     $scope.refresh = function(){
@@ -58,8 +60,14 @@ wprintApp.controller("printerDetailCtrl", function(
     $scope.delete_printer = function(){
 	dialog.response(false, "打印机编辑", "暂不支持此操作！！")
     };
-});
+};
 
-wprintApp.controller("wprintCtrl", function($scope){
+// wprintApp.controller("wprintCtrl", function($scope){
     
+// });
+
+
+define(["wprintApp"], function(app){
+    app.controller("printerNewCtrl", printerNewCtrlProvide);
+    app.controller("printerDetailCtrl", printerDetailCtrlProvide);
 });

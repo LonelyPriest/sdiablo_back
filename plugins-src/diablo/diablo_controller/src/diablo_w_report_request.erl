@@ -22,9 +22,10 @@ action(Session, Req) ->
 			 [
 			  {navbar, ?menu:navbars(?MODULE, Session)},
 			  {basebar, ?menu:w_basebar(Session)},
-			  {sidebar, sidebar(Session)},
-			  {ngapp, "wreportApp"},
-			  {ngcontroller, "wreportCtrl"}]),
+			  {sidebar, sidebar(Session)}
+			  %% {ngapp, "wreportApp"},
+			  %% {ngcontroller, "wreportCtrl"}
+			 ]),
     Req:respond({200, [{"Content-Type", "text/html"}], HTMLOutput}).
 
 
@@ -692,11 +693,14 @@ yestoday(Datetime) when is_binary(Datetime)->
     lists:flatten(io_lib:format("~4..0w-~2..0w-~2..0w", [Year, Month, Day])).
     
 csv_head(month_report, Do) ->
-    Do("序号,店铺,库存,库存成本"
+    Head = "序号,店铺,库存,库存成本"
        ",销售数量,销售金额,销售成本,现金,刷卡,微信,提现,电子卷,核销"
        ",入库数量,入库成本,出库数量,出库成本"
        ",调入数量,调入成本,调出数量,调出成本"
-       ",盘点数量,盘点成本").
+	",盘点数量,盘点成本",
+    UTF8 = unicode:characters_to_list(Head, utf8),
+    GBK = diablo_iconv:convert("utf-8", "gbk", UTF8),
+    Do(GBK).
 
 do_write(month_report, Do, _Count, [], Calcs) ->
     {CStockc, CStockCost,
@@ -791,8 +795,10 @@ do_write(month_report, Do, Count, [{H}|T], Calcs) ->
 	++ ?to_s(StockFix) ++ ?d
 	++ ?to_s(StockFixCost) ++ ?d,
 
-    Do(L),
-
+    UTF8 = unicode:characters_to_list(L, utf8),
+    GBK  = diablo_iconv:convert("utf-8", "gbk", UTF8), 
+    Do(GBK),
+    
     {CStockc, CStockCost,
      CSell, CSellCost, CBalance, CCash, CCard, CWxin, CDraw, CTicket, CVeri,
      CStockIn, CStockOut, CStockInCost, CStockOutCost,

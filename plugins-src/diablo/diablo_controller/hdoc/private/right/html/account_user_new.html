@@ -87,7 +87,7 @@
 			 type="text"
 			 typeahead-editable="false"
 			 typeahead-on-select="on_role_select($item, $model, $label)"
-			 typeahead="role as role.name for role in
+			 uib-typeahead="role as role.name for role in
 				    roles|filter:$viewValue|limitTo:8"
 			 placeholder="请选择员工权限"></input>
 		  <span class="input-group-addon bg-white fg-red">*</span>

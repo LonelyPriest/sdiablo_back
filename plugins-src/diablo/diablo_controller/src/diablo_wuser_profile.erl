@@ -401,15 +401,10 @@ handle_call({get_setting_profile, Merchant}, _From, State) ->
     %% end;
 
 handle_call({get_setting_profile, Merchant, Shop}, _From, State) ->
-    MS = ms(Merchant, setting),
-    Select = select(MS, fun() -> ?w_base:setting(list, Merchant) end),
-    Setting =
-	case filter(Select, <<"shop">>, Shop) of
-	    [] -> filter(Select, <<"shop">>, -1);
-	    S -> S 
-	end,
-    %% ?DEBUG("Setting ~p", [Setting]),
-    {reply, {ok, Setting}, State};
+    MS = ms(Merchant, {Shop, setting}),
+    Select = select(MS, fun() -> ?w_base:setting(list, Merchant, {<<"shop">>, Shop}) end), 
+    %% ?DEBUG("Select ~p", [Select]),
+    {reply, {ok, Select}, State};
 
 
 handle_call({get_size_group_profile, Merchant}, _From, State) ->
@@ -1037,6 +1032,11 @@ select(MS, RetryFun) ->
 ms(Merchant, setting) ->
     [{{'$1', #wuser_profile{merchant='$1', setting='$2', _='_'}},
       [{'==', '$1', ?to_i(Merchant)}],
+      ['$2']
+     }];
+ms(Merchant, {Shop, setting}) ->
+    [{{'$1', #wuser_profile{merchant='$1', shop='$2', setting='$3', _='_'}},
+      [{'==', '$1', ?to_i(Merchant)}, {'==', '$2', Shop}],
       ['$2']
      }];
 ms(Merchant, pformat) ->

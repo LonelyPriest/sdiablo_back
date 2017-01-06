@@ -1,5 +1,8 @@
-wreportApp.controller("stockStasticCtrl", function(
-    $scope, dateFilter, diabloFilter, diabloUtilsService, wreportService, filterEmployee, user, base){
+'use strict'
+
+function stockStasticCtrlProvide(
+    $scope, dateFilter, diabloFilter, diabloUtilsService, wreportService,
+    filterEmployee, user, base){
     // console.log(user);
     $scope.shops = user.sortShops;
     $scope.shopIds = user.shopIds;
@@ -170,4 +173,8 @@ wreportApp.controller("stockStasticCtrl", function(
     	diablo_goto_page("#/wreport_daily");
     }
     
+};
+
+define(["wreportApp"], function(app){
+    app.controller("stockStasticCtrl", stockStasticCtrlProvide); 
 });

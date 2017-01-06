@@ -133,7 +133,7 @@
 	      <sapn>
 		<span>显示第 {{pagination.current_page}} / {{num_pages}} 项结果，
 		  共 {{s_stastic.total_items}} 项</span> 
-		<pagination class="table-pagination pagination-lg pull-right "
+		<uib-pagination class="table-pagination pagination-lg pull-right "
 	      		    total-items="s_stastic.total_items"
 	      		    items-per-page="pagination.items_perpage"
 	      		    num-pages="num_pages"
@@ -143,7 +143,7 @@
 	      		    first-text="&laquo;" last-text="&raquo;"
 	      		    x-ng-model="pagination.current_page"
 	      		    x-ng-change="page_changed()">
-		</pagination> 
+		</uib-pagination> 
 	    </div>
 	  </div>
 	</div>

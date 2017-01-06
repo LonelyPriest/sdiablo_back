@@ -1,6 +1,6 @@
 'use strict'
 
-define(["angular", "angular-router", "angular-resource", "angular-local-storage",
+define(["angular", "angular-router", "angular-resource",
         "angular-ui-bootstrap", "diablo-authen", "diablo-pattern", "diablo-user-right",
         "diablo-authen-right", "diablo-utils", "diablo-filter"], employeeConfig);
 

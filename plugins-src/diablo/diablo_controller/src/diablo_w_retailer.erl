@@ -28,7 +28,7 @@
 
 -define(SERVER, ?MODULE). 
 
--record(state, {}).
+-record(state, {prompt = 0 :: integer()}).
 
 %%%===================================================================
 %%% API
@@ -153,14 +153,16 @@ syn(pinyin, Merchant, Retailers) ->
     
 
 start_link(Name) ->
-    gen_server:start_link({local, Name}, ?MODULE, [], []).
+    gen_server:start_link({local, Name}, ?MODULE, [Name], []).
 
 %%%===================================================================
 %%% gen_server callbacks
 %%%===================================================================
 
-init([]) ->
-    {ok, #state{}}.
+init([Name]) ->
+    [Merchant|_] = lists:reverse(string:tokens(?to_s(Name), "-")),
+    Prompt = default_profile(prompt, Merchant),
+    {ok, #state{prompt=Prompt}}.
 
 handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
     ?DEBUG("new_retailer with attrs ~p", [Attrs]),
@@ -912,10 +914,16 @@ handle_call({filter_ticket_detail, Merchant, Conditions, CurrentPage, ItemsPerPa
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({match_phone, Merchant, {Mode, Phone}}, _From, State) ->
-    ?DEBUG("match_phone: merchant ~p, Mode ~p, Phone ~p", [Merchant, Mode, Phone]),
-    PromptNum = ?w_good_sql:prompt_num(Merchant),
-    
+handle_call({match_phone, Merchant, {Mode, Phone}}, _From, #state{prompt=Prompt} = State) ->
+    ?DEBUG("match_phone: merchant ~p, Mode ~p, Phone ~p, state ~p",
+	   [Merchant, Mode, Phone, State]),
+
+    NewPrompt = 
+	case Prompt =:= 0 of
+	    true -> default_profile(prompt, Merchant);
+	    false -> Prompt
+	end,
+	    
     First = string:substr(?to_s(Phone), 1, 1),
     Last  = string:substr(?to_s(Phone), string:len(?to_s(Phone))),
     Match = string:strip(?to_s(Phone), both, $/),
@@ -943,10 +951,15 @@ handle_call({match_phone, Merchant, {Mode, Phone}}, _From, State) ->
 	       {_, Match, _}->
 		   Name ++ " like \'%" ++ Match ++ "%\'"
 	   end
-	++ " limit " ++ ?to_s(PromptNum),
+	++ " limit " ++ ?to_s(NewPrompt),
 
     Reply = ?sql_utils:execute(read, Sql),
-    {reply, Reply, State};
+    {reply, Reply, case NewPrompt =:= Prompt of
+		       true -> State;
+		       false ->
+			   ?w_user_profile:update(setting, Merchant),
+			   State#state{prompt=NewPrompt}
+		   end};
 
 handle_call({syn_pinyin, Merchant, Retailers}, _From, State) ->
     ?DEBUG("syn_pinyin with merchant ~p", [Merchant]),
@@ -985,3 +998,18 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================    
+default_profile(prompt, Merchant) -> 
+    %% Settings = ?w_user_profile:get(setting, Merchant, -1), 
+    {ok, Settings} = ?w_base:setting(list, Merchant, {<<"shop">>, -1}),
+    %% ?DEBUG("settings ~p", [Settings]),
+    case lists:filter(
+	   fun({S}) ->
+		   ?v(<<"ename">>, S) =:= <<"prompt">>
+	   end, Settings) of
+	[] -> 20;
+	[{Select}] ->
+	    Prompt = ?to_i(?v(<<"value">>, Select, 0)),
+	    ?DEBUG("=Prompt ~p", [Prompt]),
+	    Prompt
+    end.
+    

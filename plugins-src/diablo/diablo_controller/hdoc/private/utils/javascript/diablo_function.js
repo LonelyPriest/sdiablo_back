@@ -541,60 +541,60 @@ diablo_get_amount = function(cid, size, sorts){
     return undefined;
 };
 
-diablo_sort_inventory = function(invs, orderSizes){
-    // console.log(invs);
-    // console.log(orderSizes);
-    var in_sort = function(sorts, inv){
-	for(var i=0, l=sorts.length; i<l; i++){
-	    if(sorts[i].cid === inv.color_id
-	       && sorts[i].size === inv.size){
-		sorts[i].count += parseInt(inv.amount);
-		return true;
-	    }
-	}
-	return false;
-    };
+// diablo_sort_inventory = function(invs, orderSizes){
+//     // console.log(invs);
+//     // console.log(orderSizes);
+//     var in_sort = function(sorts, inv){
+// 	for(var i=0, l=sorts.length; i<l; i++){
+// 	    if(sorts[i].cid === inv.color_id
+// 	       && sorts[i].size === inv.size){
+// 		sorts[i].count += parseInt(inv.amount);
+// 		return true;
+// 	    }
+// 	}
+// 	return false;
+//     };
 
-    var total = 0;
-    var used_sizes  = [];
-    var colors = [];
-    var sorts = [];
-    angular.forEach(invs, function(inv){
-	if (angular.isDefined(inv.amount)){
-	    total += inv.amount; 
-	};
+//     var total = 0;
+//     var used_sizes  = [];
+//     var colors = [];
+//     var sorts = [];
+//     angular.forEach(invs, function(inv){
+// 	if (angular.isDefined(inv.amount)){
+// 	    total += inv.amount; 
+// 	};
 	
-	if (!in_array(used_sizes, inv.size)){
-	    used_sizes.push(inv.size);
-	};
+// 	if (!in_array(used_sizes, inv.size)){
+// 	    used_sizes.push(inv.size);
+// 	};
 	
-	var color = {cid:inv.color_id, cname: inv.color};
-	if (!in_array(colors, color)){
-	    colors.push(color)
-	};
+// 	var color = {cid:inv.color_id, cname: inv.color};
+// 	if (!in_array(colors, color)){
+// 	    colors.push(color)
+// 	};
 
-	if (!in_sort(sorts, inv)){
-	    sorts.push({cid:inv.color_id, size:inv.size, count:inv.amount})
-	}; 
-    });
+// 	if (!in_sort(sorts, inv)){
+// 	    sorts.push({cid:inv.color_id, size:inv.size, count:inv.amount})
+// 	}; 
+//     });
 
-    // format size
-    var order_used_sizes = [];
-    if (angular.isArray(orderSizes) && orderSizes.length !== 0){
-	order_used_sizes = orderSizes.filter(function(s){
-	    return in_array(used_sizes, s); 
-	});
-    } else{
-	order_used_sizes = used_sizes;
-    };
+//     // format size
+//     var order_used_sizes = [];
+//     if (angular.isArray(orderSizes) && orderSizes.length !== 0){
+// 	order_used_sizes = orderSizes.filter(function(s){
+// 	    return in_array(used_sizes, s); 
+// 	});
+//     } else{
+// 	order_used_sizes = used_sizes;
+//     };
     
 
-    // console.log(order_used_sizes);
-    // console.log(colors);
-    // console.log(sorts);
+//     // console.log(order_used_sizes);
+//     // console.log(colors);
+//     // console.log(sorts);
     
-    return {total: total, size: order_used_sizes, color:colors, sort:sorts};
-};
+//     return {total: total, size: order_used_sizes, color:colors, sort:sorts};
+// };
 
 var diablo_authen = function ($httpProvider) {
     var interceptor = ['$q', function($q){
@@ -889,8 +889,7 @@ var diabloHelp = function(){
 
 		// console.log(inv.color_id);
 		// console.log(allColors);
-		// console.log(colors);
-		
+		// console.log(colors); 
 		var color = diablo_find_color(inv.color_id, allColors); 
 		
 		if (!diablo_in_colors(color, colors)){
