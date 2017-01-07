@@ -209,6 +209,7 @@ handle_call({update_base_setting, Merchant, Update}, _From, State) ->
     Reply = ?sql_utils:execute(write, Sql, EName),
     %% refresh profile
     ?w_user_profile:update(setting, Merchant),
+    ?w_retailer:syn(prompt, Merchant),
     {reply, Reply, State};
 
 handle_call({add_shop_setting, Merchant, Shop}, _From, State) ->

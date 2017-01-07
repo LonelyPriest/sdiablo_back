@@ -24,7 +24,7 @@
 -export([charge/2, charge/3]).
 -export([score/2, score/3, ticket/3, get_ticket/3]).
 -export([filter/4, filter/6]).
--export([match/3, syn/3]).
+-export([match/3, syn/2, syn/3, get/2]).
 
 -define(SERVER, ?MODULE). 
 
@@ -150,7 +150,14 @@ match(phone, Merchant, {Mode, Phone}) ->
 syn(pinyin, Merchant, Retailers) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {syn_pinyin, Merchant, Retailers}, 30 * 1000).
-    
+
+syn(prompt, Merchant) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:cast(Name, {syn_prompt, Merchant}).
+
+get(prompt, Merchant) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {get_prompt, Merchant}).
 
 start_link(Name) ->
     gen_server:start_link({local, Name}, ?MODULE, [Name], []).
@@ -976,11 +983,19 @@ handle_call({syn_pinyin, Merchant, Retailers}, _From, State) ->
     ?DEBUG("Sqls ~p", [Sqls]),
     Reply = ?sql_utils:execute(transaction, Sqls, Merchant),
     {reply, Reply, State};
-    
+
+
+handle_call({get_prompt, _Merchant}, _From, #state{prompt=Prompt} = State) -> 
+    {reply, Prompt, State};
+
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
 
+
+handle_cast({syn_prompt, Merchant}, State) ->
+    Prompt = default_profile(prompt, Merchant),
+    {noreply, State#state{prompt=Prompt}};
 
 handle_cast(_Msg, State) ->
     {noreply, State}.

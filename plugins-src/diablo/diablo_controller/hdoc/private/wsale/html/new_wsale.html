@@ -380,13 +380,11 @@
 				   focus-auto="focus_attr.style_number"
 				   placeholder="货号"
 				   typeahead-editable="false"
-				   typeahead-on-select="on_select_good(
-							$item,
-							$model,
-							$label)"
-				   typeahead-wait-ms="500"
+				   typeahead-on-select="on_select_good($item, $model, $label)"
+				   typeahead-wait-ms="300"
 				   typeahead-loading="loading"
-				   uib-typeahead="g as g.name for g in match_style_number($viewValue)"/>
+				   uib-typeahead="g as g.name for
+						  g in match_style_number($viewValue)"/>
 			    <span x-ng-show="loading">
 			      <i class="glyphicon glyphicon-refresh"></i>
 			    </span>
@@ -820,7 +818,7 @@
     
     <div class="table-responsive">
       <table class="table table-bordered
-		    table-striped table-condensed table-advanced">
+		    table-striped table-condensed table-advanced" navtable>
 	<tbody>
 	  <tr>
 	    <td></td>
@@ -843,16 +841,14 @@
 	    </td>
 
 	    <td x-ng-repeat="s in params.sizes">
-	      <div x-ng-if="(amount=params.get_amount(
-			    c.cid, s, params.amounts))?true:false">
+	      <div x-ng-if="(amount=params.get_amount(c.cid, s, params.amounts))?true:false">
 		
 		<div class="input-group">
 		  <span class="input-group-addon modal-input-group-addon">
 		    {{amount.count}}
 		  </span>
 		  <form name="aform">
-		    <div ng-class="{'has-error':aform.$invalid
-				   || !params.valid_sell(amount)}">
+		    <div ng-class="{'has-error':aform.$invalid || !params.valid_sell(amount)}">
 		      <input x-ng-if="amount"
 			     class="form-control modal-input text-center"
 			     type="number" step="1"

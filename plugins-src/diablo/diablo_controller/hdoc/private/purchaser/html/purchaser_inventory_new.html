@@ -1037,8 +1037,7 @@
     </div>
     
     <div class="table-responsive">
-      <table class="table table-bordered table-striped
-		    table-condensed table-advanced">
+      <table class="table table-bordered table-striped table-condensed table-advanced" navtable>
 	<tbody>
 	  <tr>
 	    <td></td>
@@ -1071,11 +1070,9 @@
 			 ng-edit
 			 x-ng-model="amount.count"
 			 x-ng-pattern="/^[1-9][0-9]*$/"
-			 x-ng-init="amount=params.get_amount(
-				    c.cid, s, params.amount)"
+			 x-ng-init="amount=params.get_amount(c.cid, s, params.amount)"
 			 x-ng-enter="params.valid_amount(params.amount, params.ediscount) && ok()"
-			 focus-auto="s===params.sizes[0]
-				     && c.cid===params.colors[0].cid" />
+			 focus-auto="s===params.sizes[0] && c.cid===params.colors[0].cid" />
 		</div>
 	      </form> 
 	    </td>
@@ -1362,8 +1359,8 @@
 	<input
 	   class="form-control"
 	   placeholder="请输入颜色名称，支持首字母拼音查询"
-	   focus-auto=true
 	   ng-edit
+	   focus-auto=true 
 	   typeahead-editable="false"
 	   typeahead-on-select="params.on_select_ucolor($item, $model, $label);"
 	   uib-typeahead="c as c.name for c in params.ucolors|filter:$viewValue|limitTo:20"

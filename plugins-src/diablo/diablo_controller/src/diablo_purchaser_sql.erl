@@ -833,28 +833,14 @@ inventory({new_rsn_group_with_pagination, Mode, Sort},
 %% match
 %%
 inventory_match(Merchant, StyleNumber, Shop) ->
-    P = prompt_num(Merchant),
-    First = string:substr(?to_s(StyleNumber), 1, 1),
-    Last = string:substr(?to_s(StyleNumber), string:len(?to_s(StyleNumber))),
-    Match = string:strip(?to_s(StyleNumber), both, $/),
-    
+    P = ?w_retailer:get(prompt, Merchant),
     "select style_number from w_inventory"
 	%% ++ " where style_number like \'%" ++ ?to_s(StyleNumber) ++ "%\'"
 	%% ++ " where style_number like \'%" ++ ?to_s(StyleNumber) ++ "\'"
-	++ 
-	case {First, Match, Last} of
-	    {"/", Match, "/"} ->
-		" where style_number=\'" ++ Match ++ "\'"; 
-	    {"/", Match, _} ->
-		" where style_number like \'" ++ Match ++ "%\'";
-	    {_, Match, "/"} ->
-		" where style_number like \'%" ++ Match ++ "\'";
-	    {_, Match, _}->
-		" where style_number like \'%" ++ Match ++ "%\'"
-	end
+	++ " where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, [{<<"shop">>, Shop}])
-	++ " and merchant=" ++ ?to_s(Merchant)
-	++ " and deleted=" ++ ?to_s(?NO)
+	++ " and " ++ get_match_mode(style_number, StyleNumber) 
+    %% ++ " and deleted=" ++ ?to_s(?NO)
 	++ " group by style_number"
 	++ " limit " ++ ?to_s(P).
 
@@ -864,11 +850,11 @@ inventory_match(all_inventory, Merchant, Shop, Conditions) ->
 
     "select a.id, a.style_number, a.brand as brand_id, a.type as type_id"
 	", a.sex, a.season, a.firm as firm_id, a.s_group, a.free, a.year"
-	", a.amount as total"
+    %% ", a.amount as total"
 	", a.promotion as pid"
 	", a.score as sid"
 	", a.org_price, a.tag_price, a.ediscount, a.discount"
-	", a.path, a.alarm_day, a.entry_date"
+	", a.path, a.entry_date"
 
 	", b.name as brand" 
 	", c.name as type"
@@ -891,11 +877,15 @@ inventory_match(all_inventory, Merchant, Shop, Conditions) ->
 	++ " order by id desc";
 
 inventory_match(Merchant, StyleNumber, Shop, Firm) ->
-    P = prompt_num(Merchant),
+    P = ?w_retailer:get(prompt, Merchant),
+
     "select a.id, a.style_number, a.brand as brand_id, a.type as type_id"
 	", a.sex, a.season, a.firm as firm_id, a.s_group, a.free, a.year"
-	", a.promotion as pid, a.score as sid, a.org_price, a.tag_price"
-	", a.ediscount, a.discount, a.path, a.alarm_day, a.entry_date"
+    %% ", a.amount as total"
+	", a.promotion as pid"
+	", a.score as sid"
+	", a.org_price, a.tag_price, a.ediscount, a.discount"
+	", a.path, a.entry_date"
 	
 	", b.name as brand" 
 	", c.name as type"
@@ -903,19 +893,15 @@ inventory_match(Merchant, StyleNumber, Shop, Firm) ->
 	
 	" left join brands b on a.brand=b.id" 
 	" left join inv_types c on a.type=c.id"
-	
-	%% " (select id, style_number, brand, type, sex, season"
-	%% ", firm, s_group, free, org_price, tag_price, pkg_price"
-	%% ", price3, price4, price5, discount, path from w_inventory"
-	" where a.style_number like \'" ++ ?to_s(StyleNumber) ++ "%\'"
-	" and a.shop=" ++ ?to_s(Shop)
+
+	" where a.merchant=" ++ ?to_s(Merchant) 
+	++ " and a.shop=" ++ ?to_s(Shop)
 	++ case Firm of
 	       [] -> [];
 	       -1 -> [];
 	       Firm -> " and a.firm=" ++ ?to_s(Firm)
 	   end
-	++ " and a.merchant=" ++ ?to_s(Merchant)
-	%% ++ " and deleted=" ++ ?to_s(?NO)
+	++ " and a." ++ get_match_mode(style_number, StyleNumber)
 	++ " order by a.id desc"
 	++ " limit " ++ ?to_s(P).
 
@@ -1737,11 +1723,13 @@ filter_condition(inventory_new, [O|T], Acc1, Acc2) ->
     filter_condition(inventory_new, T, Acc1, [O|Acc2]).
 
 prompt_num(Merchant) ->
-    {ok, Setting}      = ?wifi_print:detail(base_setting, Merchant, -1),
-    PromptNum          = ?to_i(?v(<<"prompt">>, Setting, 8)),
-    ?DEBUG("prompt ~p", [PromptNum]),
-    PromptNum.
+    P = ?w_retailer:get(prompt, Merchant),
+    %% {ok, Setting}      = ?wifi_print:detail(base_setting, Merchant, -1),
+    %% PromptNum          = ?to_i(?v(<<"prompt">>, Setting, 8)),
+    %% ?DEBUG("prompt ~p", [PromptNum]),
+    %% PromptNum.
     %% {ok, Settings} = ?w_user_profile:get(setting, Merchant, -1),
+    P.
     
 stock(ediscount, _OrgPrice, TagPrice) when TagPrice == 0 -> 0; 
 stock(ediscount, OrgPrice, TagPrice) ->
@@ -1805,4 +1793,21 @@ realy_shop(UseBad, Merchant, ShopId) ->
 			_ -> RepoId
 		    end
 	    end
+    end.
+
+
+get_match_mode(style_number, StyleNumber) ->
+    First = string:substr(?to_s(StyleNumber), 1, 1),
+    Last = string:substr(?to_s(StyleNumber), string:len(?to_s(StyleNumber))),
+    Match = string:strip(?to_s(StyleNumber), both, $/),
+
+    case {First, Match, Last} of
+	{"/", Match, "/"} ->
+	    "style_number=\'" ++ Match ++ "\'"; 
+	{"/", Match, _} ->
+	    "style_number like \'" ++ Match ++ "%\'";
+	{_, Match, "/"} ->
+	    "style_number like \'%" ++ Match ++ "\'";
+	{_, Match, _}->
+	    "style_number like \'%" ++ Match ++ "%\'"
     end.

@@ -925,4 +925,3 @@ var diabloHelp = function(){
 	}
     };
 }();
-

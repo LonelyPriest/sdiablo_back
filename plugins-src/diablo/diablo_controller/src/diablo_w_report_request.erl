@@ -698,9 +698,9 @@ csv_head(month_report, Do) ->
        ",入库数量,入库成本,出库数量,出库成本"
        ",调入数量,调入成本,调出数量,调出成本"
 	",盘点数量,盘点成本",
-    UTF8 = unicode:characters_to_list(Head, utf8),
-    GBK = diablo_iconv:convert("utf-8", "gbk", UTF8),
-    Do(GBK).
+    %% UTF8 = unicode:characters_to_list(Head, utf8),
+    %% GBK = diablo_iconv:convert("utf-8", "gbk", UTF8),
+    Do(?utils:to_gbk(Head)).
 
 do_write(month_report, Do, _Count, [], Calcs) ->
     {CStockc, CStockCost,
@@ -793,11 +793,8 @@ do_write(month_report, Do, Count, [{H}|T], Calcs) ->
 	++ ?to_s(TStockOutCost) ++ ?d
 
 	++ ?to_s(StockFix) ++ ?d
-	++ ?to_s(StockFixCost) ++ ?d,
-
-    UTF8 = unicode:characters_to_list(L, utf8),
-    GBK  = diablo_iconv:convert("utf-8", "gbk", UTF8), 
-    Do(GBK),
+	++ ?to_s(StockFixCost) ++ ?d, 
+    Do(?utils:to_gbk(L)),
     
     {CStockc, CStockCost,
      CSell, CSellCost, CBalance, CCash, CCard, CWxin, CDraw, CTicket, CVeri,

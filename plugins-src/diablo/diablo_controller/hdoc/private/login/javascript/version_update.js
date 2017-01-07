@@ -1,6 +1,12 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2017-01-08",
+         content:
+	 ["修正修改采购入（退）库时，偶尔闪烁问题",
+	  "采购入库（退）支持键盘上下左右键操作"]
+        },
+	
 	{date: "2017-01-07",
          content: ["修正偶尔出现空白内容的问题"]
         },

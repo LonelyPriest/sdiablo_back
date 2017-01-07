@@ -110,7 +110,7 @@ function purchaserInventoryRejectUpdateCtrlProvide(
 						 brand_id:    inv.brand.id,
 						 history: history};
 			
-			$scope.h_inventories.push($scope.select_history);
+			$scope.h_inventories.splice(0, 0, $scope.select_history);
 
 			// console.log($scope.h_inventories); 
 		    }

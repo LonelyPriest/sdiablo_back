@@ -272,11 +272,8 @@
 	      <!--EBGIN table supplier-->
 	      <table id="t_update"
 		     class="table table-bordered
-			    table-striped table-condensed table-advanced">
-		<thead class="stick-thead"
-		       fsm-sticky-header
-		       scroll-body="'#t_update'"
-		       scroll-stop="50">
+			    table-striped table-condensed table-advanced" navtable>
+		<thead>
 		  <tr>
 		    <th class="text-center">序号</th>
 		    <th class="text-center">货号</th>
@@ -351,13 +348,11 @@
 			  <input class="form-control"
 				 type="number" step="0.01" 
 				 required
-				 ng-edit
-				 go-row
-				 auto-row="focus_row_auto"
-				 focus-auto="focus_attrs.org_price && inv.order_id===focus_row"
-				 x-ng-focus="on_focus_attr('org_price', inv)" 
+				 ng-edit 
 				 disable-wheel
 				 disable-key
+				 focus-auto="focus_attrs.org_price && inv.order_id===focus_row"
+				 x-ng-focus="on_focus_attr('org_price', inv)"
 				 x-ng-pattern="pattern.price"
 				 x-ng-model="inv.org_price"
 				 ng-model-options="{debounce:300}"
@@ -373,14 +368,10 @@
 			<div ng-class="{'has-error':inv.form.ediscount.$invalid}">
 			  <input class="form-control"
 				 type="number" step="1" 
-				 required
-				 ng-edit
-				 go-row
-				 auto-row="focus_row_auto"
-				 focus-auto="focus_attrs.ediscount && inv.order_id===focus_row"
-				 x-ng-focus="on_focus_attr('ediscount', inv)"
+				 required 
 				 disable-wheel
 				 disable-key
+				 x-ng-focus="on_focus_attr('ediscount', inv)" 
 				 x-ng-pattern="/^\d{1,2}(\.\d{1,2})?$|100$/"
 				 x-ng-model="inv.ediscount"
 				 placeholder="进价折扣率"

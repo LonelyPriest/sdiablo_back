@@ -390,16 +390,14 @@ function filterProvider(){
 
 	    match_w_sale: function(viewValue, shop){
 		return resource.query_by_post(
-		    {operation:'match_w_inventory'},
-		    {prompt:viewValue, shop:shop, firm:[]})
-		    .$promise.then(function(invs){
-			// console.log(invs);
-			return invs.map(function(inv){
-			    return angular.extend(
-				inv, {name:inv.style_number
-				      + "，" + inv.brand + "，" + inv.type})
-			})
+		    {operation:'match_w_inventory'}, {prompt:viewValue, shop:shop, firm:[]}
+		).$promise.then(function(invs){
+		    return invs.map(function(inv){
+			return angular.extend(
+			    inv, {name:inv.style_number
+				  + "，" + inv.brand + "，" + inv.type})
 		    })
+		})
 	    }, 
 
 	    match_retailer_phone:function(viewValue, mode) {

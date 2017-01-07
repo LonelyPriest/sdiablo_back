@@ -1,5 +1,55 @@
 var diabloUtils = angular.module("diabloUtils", []);
 
+diabloUtils.directive('navtable', function() {
+    return function(scope, element, attr){
+	
+	element.on("keydown", function(event){
+	    // console.log(event);
+	    var $table = $(this);
+	    var $active = $('input:focus,select:focus',$table);
+	    // var $cur_row = $active.closest('tr');
+	    
+	    var $next = null;
+	    var focusableQuery = 'input:visible,select:visible,textarea:visible';
+	    
+	    var position = parseInt( $active.closest('td').index()) + 1;
+	    // console.log('position :',position);
+	    
+	    switch(event.which){
+            case 37: // <Left>
+		$next = $active.closest('td').prev().find(focusableQuery);   
+		break;
+            case 38: // <Up>                    
+		$next = $active
+                    .closest('tr')
+                    .prev()                
+                    .find('td:nth-child(' + position + ')')
+                    .find(focusableQuery)
+		;
+		
+		break;
+            case 39: // <Right>
+		$next = $active.closest('td').next().find(focusableQuery);            
+		break;
+            case 40: // <Down>
+		$next = $active
+                    .closest('tr')
+                    .next()                
+                    .find('td:nth-child(' + position + ')')
+                    .find(focusableQuery)
+		;
+		break;
+	    }       
+	    if($next && $next.length)
+	    {
+		// $cur_row.closest('tr').css("background-color", "");
+		// $next.closest('tr').css("background-color", "pink");
+		$next.focus();
+	    }
+	})
+    };
+}); 
+
 diabloUtils.directive('ngEdit', function () {
     return function (scope, element, attrs) {
         element.bind("focus", function (event) {
