@@ -536,7 +536,7 @@ function stockConfg(angular){
 	this.csv_export = function(e_type, condition, mode){
 	    return http.save(
 		{operation: "w_inventory_export"},
-		{condition: condition, e_type:e_type, mode}).$promise;
+		{condition: condition, e_type:e_type, mode:mode}).$promise;
 	};
 
 	// transfer
