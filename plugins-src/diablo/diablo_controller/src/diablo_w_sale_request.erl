@@ -372,14 +372,25 @@ action(Session, Req, {"update_w_sale"}, Payload) ->
     Invs            = ?v(<<"inventory">>, Payload, []),
     {struct, Base}  = ?v(<<"base">>, Payload),
     RSN             = ?v(<<"rsn">>, Base),
-
-     
+    
     case ?w_sale:sale(get_new, Merchant, RSN) of
 	{ok, OldBase} -> 
 	    case ?w_sale:sale(update, Merchant, lists:reverse(Invs), {Base, OldBase}) of
-		{ok, RSN} -> 
-		    ?utils:respond(
-		       200, Req, ?succ(update_w_sale, RSN), {<<"rsn">>, ?to_b(RSN)});
+		{ok, {RSN, BackBalance, _BackScore,
+		      {OldRetailer, Withdraw}, {NewRetailer, NewWithdraw}}} ->
+		    case OldRetailer =:= NewRetailer andalso
+			Withdraw /= NewWithdraw of
+			true ->
+			    ShopId = ?v(<<"shop_id">>, OldBase),
+			    {SMSCode, _} =
+				send_sms(Merchant, 2, ShopId, OldRetailer, BackBalance),
+			    ?utils:respond(
+			       200, Req, ?succ(update_w_sale, RSN),
+			       [{<<"rsn">>, ?to_b(RSN)}, {<<"sms_code">>, SMSCode}]);
+			false ->
+			    ?utils:respond(
+			       200, Req, ?succ(update_w_sale, RSN), [{<<"rsn">>, ?to_b(RSN)}])
+		    end;
 		{error, Error} ->
 		    ?utils:respond(200, Req, Error)
 	    end;
@@ -1055,3 +1066,35 @@ sys_vip_of_shop(Merchant, Shop) ->
 		  end
 	  end, [], Settings),
     SysVips.
+
+send_sms(Merchant, Action, ShopId, RetailerId, ShouldPay) ->
+    try 
+	{ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),
+	ShopName = case ?w_user_profile:get(shop, Merchant, ShopId) of
+			     {ok, []} -> [];
+			     {ok, [{Shop}]} ->
+				 ?v(<<"name">>, Shop, [])
+			 end,
+	{ok, Retailer} = ?w_user_profile:get(retailer, Merchant, RetailerId),
+	Phone = ?v(<<"mobile">>, Retailer, []),
+	Balance = ?v(<<"balance">>, Retailer),
+	Score = ?v(<<"score">>, Retailer),
+	
+	SysVips  = sys_vip_of_shop(Merchant, ShopId), 
+	?DEBUG("SysVips ~p, Retailer ~p", [SysVips, Retailer]),
+	
+	case not lists:member(RetailerId, SysVips)
+	    andalso ?v(<<"type_id">>, Retailer) /= ?SYSTEM_RETAILER
+	    andalso ?to_i(?v(<<"consume_sms">>, Setting, 0)) == 1 of
+	    true -> 
+		?notify:sms_notify(
+		   Merchant,
+		   {ShopName, Phone, Action, abs(ShouldPay), Balance, Score});
+	    false -> {0, none} 
+	end
+    catch
+	_:{badmatch, _Error} ->
+	    ?INFO("failed to send sms phone:~p, merchant ~p, Error ~p",
+		  [RetailerId, Merchant, _Error]),
+	    ?err(sms_send_failed, Merchant)
+    end.

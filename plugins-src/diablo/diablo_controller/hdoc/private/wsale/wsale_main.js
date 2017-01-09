@@ -34,7 +34,8 @@ require.config({
 	// "diablo-retailer": "/private/wretailer/js/wretailer_app",
 	// "diablo-good": "/private/wgood/js/wgood_app",
 
-	"wsale-utils" : "/private/wsale/js/wsale_utils" 
+	"wsale-utils" : "/private/wsale/js/wsale_utils",
+	"diablo-error": '/private/utils/javascript/diablo_error'
     },
     
     shim: {
@@ -165,7 +166,10 @@ require.config({
 
 	"wsale-utils": {
             deps: ["jquery", "diablo-utils"]
-	} 
+	},
+
+	"diablo-error":{
+	}
     }
 });
 
@@ -180,7 +184,7 @@ require([
     "diablo-init", "diablo-function", "diablo-authen",
     "diablo-pattern", "diablo-user-right", "diablo-authen-right",
     "diablo-login-out", "diablo-utils", "diablo-filter", 
-    "wsale-utils", 
+    "wsale-utils", "diablo-error", 
     "wsaleApp", "load_wsale"
 ], function($, angular) {
     $(function() {

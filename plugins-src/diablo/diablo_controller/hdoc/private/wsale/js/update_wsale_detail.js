@@ -533,7 +533,12 @@ function wsaleUpdateDetailCtrlProvide(
 	}).then(function(result){
 	    console.log(result);
 	    if (result.ecode == 0){
-		msg = "销售单编辑成功！！单号：" + result.rsn; 
+		var msg = "销售单编辑成功！！单号：" + result.rsn;
+		if (angular.isDefined(result.sms_code)
+		    && result.sms_code !== 0){
+		    var ERROR = require("diablo-error");
+		    msg += "，短消息发送失败：" + ERROR[result.sms_code];
+		}
 	    	diabloUtilsService.response_with_callback(
 	    	    true, "销售单编辑", msg, $scope,
 	    	    function(){

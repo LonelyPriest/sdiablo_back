@@ -354,7 +354,10 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 		       false -> []
 		   end,
 	    
-	    Reply = ?sql_utils:execute(transaction, AllSql, RSN),
+	    Reply = ?sql_utils:execute(
+		       transaction, AllSql,
+		       {RSN, MShouldPay, MScore,
+			{OldRetailer, Withdraw}, {Retailer, NewWithdraw}}),
 		    ?w_user_profile:update(retailer, Merchant),
 		    {reply, Reply, State}; 
 	false ->
@@ -421,7 +424,10 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 		 ++ " and id>" ++ ?to_s(RSNId)
 		],
 
-	    Reply = ?sql_utils:execute(transaction, AllSql, RSN),
+	    Reply = ?sql_utils:execute(
+		       transaction, AllSql,
+		       {RSN, MShouldPay, MScore,
+			{OldRetailer, Withdraw}, {Retailer, NewWithdraw}}),
 	    ?w_user_profile:update(retailer, Merchant),
 
 	    {reply, Reply, State}

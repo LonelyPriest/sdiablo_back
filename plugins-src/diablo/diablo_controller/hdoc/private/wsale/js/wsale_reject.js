@@ -163,7 +163,7 @@ function wsaleRejectCtrlProvide(
     $scope.withdraw = function(){
 	var callback = function(params){
 	    console.log(params);
-	    wretailerService.check_retailer_password(
+	    diabloFilter.check_retailer_password(
 		params.retailer.id, params.retailer.password)
 		.then(function(result){
 		    console.log(result); 
@@ -173,10 +173,11 @@ function wsaleRejectCtrlProvide(
 			$scope.has_withdrawed  = true;
 			$scope.re_calculate();
 		    } else {
+			var ERROR = require("diablo-error");
 			diabloUtilsService.response(
 			    false,
 			    "会员退款",
-			    wretailerService.error[result.ecode],
+			    ERROR[result.ecode],
 			    undefined)
 		    }
 		}); 

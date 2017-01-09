@@ -428,6 +428,16 @@ function filterProvider(){
 		    {id:retailerId, password:password}).$promise;
 	    },
 
+	    get_ticket_by_batch: function(batchNo){
+		return _retailerHttp.save(
+		    {operation: "get_w_retailer_ticket"}, {batch:batchNo, mode:1}).$promise;
+	    },
+
+	    get_ticket_by_retailer: function(retailerId){
+		return http.save(
+		    {operation: "get_w_retailer_ticket"}, {retailer:retailerId, mode:0}).$promise;
+	    },
+
 	    reset_firm: function(){
 		_firms = [];
 	    },

@@ -367,7 +367,7 @@ function firmBillUpdateCtrlProvide(
 	$scope.bill_date = diablo_set_datetime(result.entry_date);
 	$scope.bill_card = diablo_get_object(result.card_id, $scope.cards);
 	$scope.comment   = result.comment; 
-	$scope.firm.balance += result.bill;
+	$scope.firm.balance = result.balance;
 
 	$scope.time = {hh: dateFilter($scope.bill_date, "HH"),
 		       mm: dateFilter($scope.bill_date, "mm"),

@@ -554,10 +554,11 @@ function wsaleNewProvide(
 			$scope.has_withdrawed  = true;
 			$scope.reset_payment();
 		    } else {
+			var ERROR = require("diablo-error");
 			diabloUtilsService.response(
 			    false,
 			    "会员现金提取",
-			    wretailerService.error[result.ecode],
+			    ERROR[result.ecode],
 			    undefined)
 		    }
 		}); 
@@ -600,7 +601,7 @@ function wsaleNewProvide(
 	    $scope.select.ticket_balance = undefined;
 	    
 	    if (!params.auto_batch) {
-		wretailerService.get_ticket_by_batch(params.ticket.batch).then(function(result){
+		diabloFilter.get_ticket_by_batch(params.ticket.batch).then(function(result){
 		    console.log(result);
 		    var ecode = result.ecode;
 		    if (ecode === 0 && !diablo_is_empty(result.data)) {
@@ -610,10 +611,12 @@ function wsaleNewProvide(
 			$scope.reset_payment(); 
 		    } else {
 			if (diablo_is_empty(result.data)) ecode = 2105;
+
+			var ERROR = require("diablo-error");
 			diabloUtilsService.response(
 			    false,
 			    "会员电子卷获取",
-			    wretailerService.error[ecode],
+			    ERROR[ecode],
 			    undefined);
 		    } 
 		});
@@ -624,7 +627,7 @@ function wsaleNewProvide(
 	    } 
 	};
 	
-	wretailerService.get_ticket_by_retailer($scope.select.retailer.id).then(function(result){
+	diabloFilter.get_ticket_by_retailer($scope.select.retailer.id).then(function(result){
 	    console.log(result);
 	    if (result.ecode === 0){
 		diabloUtilsService.edit_with_modal(
@@ -636,10 +639,11 @@ function wsaleNewProvide(
 			     balance: diablo_set_integer(result.data.balance)},
 		     auto_batch: wsaleUtils.to_integer(result.data.batch)!==0})
 	    } else {
+		var ERROR = require("diablo-error");
 		diabloUtilsService.response(
 		    false,
 		    "会员电子卷获取",
-		    wretailerService.error[result.ecode],
+		    ERROR[result.ecode],
 		    undefined);
 	    }
 	}); 
@@ -1030,7 +1034,8 @@ function wsaleNewProvide(
 
 	var sms_message = "";
 	if (result.sms_code !== 0) {
-	    sms_message = "发送短消息失败：" + wretailerService.error[result.sms_code];
+	    var ERROR = require("diablo-error");
+	    sms_message = "发送短消息失败：" + ERROR[result.sms_code];
 	}
 
 	if (im_print === diablo_yes){

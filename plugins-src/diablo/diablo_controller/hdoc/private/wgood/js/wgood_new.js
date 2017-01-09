@@ -272,7 +272,7 @@ function wgoodNewCtrlProvide(
 	    $scope.selectColors = [];
 	    $scope.good.colors="";
 	    for (var i=0, l1=params.colors.length; i<l1; i++){
-		for (j in params.colors[i]){
+		for (var j in params.colors[i]){
 		    var c = params.colors[i][j];
 		    if(c.select){
 			$scope.good.colors += c.name + "；";
@@ -298,7 +298,7 @@ function wgoodNewCtrlProvide(
 	     ucolors: function(){
 		 var ucolors = [];
 		 for (var i=0, l1=$scope.grouped_colors.length; i<l1; i++){
-		     for (j in $scope.grouped_colors[i]){
+		     for (var j in $scope.grouped_colors[i]){
 			 ucolors.push($scope.grouped_colors[i][j]); 
 		     }
 		 } 
