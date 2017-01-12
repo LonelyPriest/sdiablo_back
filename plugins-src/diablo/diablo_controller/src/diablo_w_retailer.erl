@@ -82,7 +82,11 @@ charge(delete_recharge, Merchant, ChargeId) ->
 
 charge(update_recharge, Merchant, {ChargeId, Attrs}) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {update_recharge, Merchant, {ChargeId, Attrs}}).
+    gen_server:call(Name, {update_recharge, Merchant, {ChargeId, Attrs}});
+
+charge(list_recharge, Merchant, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {list_recharge, Merchant, Conditions}).
 
 charge(list, Merchant) ->
     Name = ?wpool:get(?MODULE, Merchant),
@@ -614,6 +618,36 @@ handle_call({update_recharge, Merchant, {ChargeId, Attrs}}, _From, State) ->
 	++ " and a.merchant=" ++ ?to_s(Merchant),
 
     Reply = ?sql_utils:execute(write, Sql0, ChargeId), 
+    {reply, Reply, State};
+
+handle_call({list_recharge, Merchant, Conditions}, _From, State) ->
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
+
+    Sql = 
+	"select a.id, a.rsn"
+	", a.shop as shop_id"
+	", a.employ as employee_id"
+	", a.cid"
+	", a.retailer as retailer_id"
+	", a.lbalance, a.cbalance, a.sbalance"
+	", a.comment, a.entry_date"
+	
+	", b.name as retailer, b.mobile"
+	", c.name as shop"
+	", d.name as cname"
+	", e.name as employee"
+	
+	" from w_charge_detail a"
+	" left join w_retailer b on a.retailer=b.id"
+	" left join shops c on a.shop=c.id"
+	" left join w_charge d on a.cid=d.id"
+	" left join employees e on a.employ=e.number and e.merchant=" ++ ?to_s(Merchant)
+
+	++ " where a.merchant=" ++ ?to_s(Merchant) 
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime)
+	++ " order by id desc",
+    Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
 %%

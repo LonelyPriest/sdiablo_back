@@ -6,7 +6,7 @@
 -behaviour(gen_request).
 
 -export([action/2, action/3, action/4]).
--export([authen/2, authen_shop_action/2, filter_condition/3]).
+-export([authen/2, authen_shop_action/2, filter_condition/3, season/1]).
 
 -define(d, ?utils:seperator(csv)).
 
@@ -48,34 +48,56 @@ action(Session, Req, {"new_w_inventory"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     Invs = ?v(<<"inventory">>, Payload, []),
     {struct, Base} = ?v(<<"base">>, Payload), 
-    Datetime = ?v(<<"datetime">>, Base), 
-    CurrentDate = ?utils:current_time(format_localtime), 
+    Datetime       = ?v(<<"datetime">>, Base),
+    Total          = ?v(<<"total">>, Base), 
     %% Date = ?utils:to_date(datetime, Datetime),
-    
-    case ?utils:to_date(datetime, Datetime) /= ?utils:to_date(datetime, CurrentDate) of
+
+    %% ?DEBUG("current seconds ~p, date seconds ~p",
+    %% 	   [?utils:current_time(localtime2second), ?utils:datetime2seconds(Datetime)]),
+    case abs(?utils:current_time(localtime2second) - ?utils:datetime2seconds(Datetime)) > 3600 * 2 of
 	true ->
+	    CurDatetime    = ?utils:current_time(format_localtime), 
 	    ?utils:respond(200,
 			   Req,
-			   ?err(invalid_date, "new_w_inventory"),
+			   ?err(stock_invalid_date, "new_w_inventory"),
 			   [{<<"fdate">>, Datetime},
-			    {<<"bdate">>, CurrentDate}]);
-	false -> 
-	    case ?w_inventory:purchaser_inventory(
-		    new, Merchant, lists:reverse(Invs), Base) of
-		{ok, RSn} -> 
+			    {<<"bdate">>, ?to_b(CurDatetime)}]);
+	false ->
+	    case stock(check, ?NEW_INVENTORY, Total, 0, Invs) of
+		ok ->
+		    case ?w_inventory:purchaser_inventory(
+			    new, Merchant, lists:reverse(Invs), Base) of
+			{ok, RSn} -> 
+			    ?utils:respond(
+			       200,
+			       Req,
+			       ?succ(add_purchaser_inventory, RSn), {<<"rsn">>, ?to_b(RSn)});
+			{invalid_balance, {Firm, CurrentBalance, LastBalance}} ->
+			    ?utils:respond(200,
+					   Req,
+					   ?err(invalid_balance, Firm),
+					   [{<<"cbalance">>, CurrentBalance},
+					    {<<"lbalance">>, LastBalance}]);
+			{error, Error} ->
+			    ?utils:respond(200, Req, Error)
+		    end;
+		{error, EInv} ->
+		    StyleNumber = ?v(<<"style_number">>, EInv),
 		    ?utils:respond(
 		       200,
 		       Req,
-		       ?succ(add_purchaser_inventory, RSn), {<<"rsn">>, ?to_b(RSn)});
-		{invalid_balance, {Firm, CurrentBalance, LastBalance}} ->
-		    ?utils:respond(200,
-				   Req,
-				   ?err(invalid_balance, Firm),
-				   [{<<"cbalance">>, CurrentBalance},
-				    {<<"lbalance">>, LastBalance}]);
-		{error, Error} ->
-		    ?utils:respond(200, Req, Error)
+		       ?err(stock_invalid_inv, StyleNumber),
+		       [{<<"style_number">>, StyleNumber},
+			{<<"order_id">>, ?v(<<"order_id">>, EInv)}]);
+		{error, Total, CalcTotal} ->
+		    ?utils:respond(
+		       200,
+		       Req,
+		       ?err(stock_invalid_total, CalcTotal),
+		       [{<<"total">>, Total},
+			{<<"ctotal">>, CalcTotal}])
 	    end
+		    
     end;
 
 action(Session, Req, {"update_w_inventory"}, Payload) ->
@@ -125,6 +147,26 @@ action(Session, Req, {"comment_w_inventory_new"}, Payload) ->
     	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"modify_w_inventory_new_balance"}, Payload) ->
+    Merchant = ?session:get(merchant, Session),
+    RSN = ?v(<<"rsn">>, Payload),
+    Balance = ?v(<<"balance">>, Payload),
+
+    case is_number(Balance) of
+	true -> 
+	    case ?w_inventory:purchaser_inventory(modify_balance, Merchant, RSN, Balance) of
+		{ok, RSn} -> 
+		    ?utils:respond(
+		       200,
+		       Req,
+		       ?succ(update_w_inventory, RSn), {<<"rsn">>, ?to_b(RSn)});
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end;
+	false ->
+	    Error = ?err(params_error, "balance"),
+	    ?utils:respond(200, Req, Error)
+    end;
 
 action(Session, Req, {"check_w_inventory"}, Payload) ->
     ?DEBUG("check purchaser inventory with session ~p, paylaod~n~p",
@@ -379,31 +421,51 @@ action(Session, Req, {"reject_w_inventory"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     Invs = ?v(<<"inventory">>, Payload),
     {struct, Base} = ?v(<<"base">>, Payload),
+    Total          = ?v(<<"total">>, Base), 
 
     Datetime = ?v(<<"datetime">>, Base), 
-    CurrentDatetime = ?utils:current_time(format_localtime),
 
-    case ?utils:to_date(datetime, Datetime) /= ?utils:to_date(datetime, CurrentDatetime) of
+    case abs(?utils:current_time(localtime2second) - ?utils:datetime2seconds(Datetime)) > 3600 * 2 of
 	true ->
+	    CurDatetime = ?utils:current_time(format_localtime), 
 	    ?utils:respond(200,
 			   Req,
-			   ?err(invalid_date, "update_w_inventory"),
+			   ?err(stock_invalid_date, "update_w_inventory"),
 			   [{<<"fdate">>, Datetime},
-			    {<<"bdate">>, CurrentDatetime}]);
-	false -> 
-	    case ?w_inventory:purchaser_inventory(reject, Merchant, lists:reverse(Invs), Base) of 
-		{ok, RSn} ->
+			    {<<"bdate">>, ?to_b(CurDatetime)}]);
+	false ->
+	    case stock(check, ?REJECT_INVENTORY, Total, 0, Invs) of
+		ok ->
+		    case ?w_inventory:purchaser_inventory(
+			    reject, Merchant, lists:reverse(Invs), Base) of 
+			{ok, RSn} ->
+			    ?utils:respond(
+			       200, Req,
+			       ?succ(reject_w_inventory, RSn), {<<"rsn">>, ?to_b(RSn)});
+			{invalid_balance, {Firm, CurrentBalance, LastBalance}} ->
+			    ?utils:respond(200,
+					   Req,
+					   ?err(invalid_balance, Firm),
+					   [{<<"cbalance">>, CurrentBalance},
+					    {<<"lbalance">>, LastBalance}]);
+			{error, Error} ->
+			    ?utils:respond(200, Req, Error) 
+		    end;
+		{error, EInv} ->
+		    StyleNumber = ?v(<<"style_number">>, EInv),
 		    ?utils:respond(
-		       200, Req,
-		       ?succ(reject_w_inventory, RSn), {<<"rsn">>, ?to_b(RSn)});
-		{invalid_balance, {Firm, CurrentBalance, LastBalance}} ->
-		    ?utils:respond(200,
-				   Req,
-				   ?err(invalid_balance, Firm),
-				   [{<<"cbalance">>, CurrentBalance},
-				    {<<"lbalance">>, LastBalance}]);
-		{error, Error} ->
-		    ?utils:respond(200, Req, Error) 
+		       200,
+		       Req,
+		       ?err(stock_invalid_inv, StyleNumber),
+		       [{<<"style_number">>, StyleNumber},
+			{<<"order_id">>, ?v(<<"order_id">>, EInv)}]);
+		{error, Total, CalcTotal} ->
+		    ?utils:respond(
+		       200,
+		       Req,
+		       ?err(stock_invalid_total, CalcTotal),
+		       [{<<"total">>, Total},
+			{<<"ctotal">>, CalcTotal}])
 	    end
     end;
 
@@ -517,13 +579,47 @@ action(Session, Req, {"transfer_w_inventory"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     Invs = ?v(<<"inventory">>, Payload),
     {struct, Base} = ?v(<<"base">>, Payload),
-    case ?w_inventory:purchaser_inventory(transfer, Merchant, lists:reverse(Invs), Base) of
-        {ok, RSn} ->
-            ?utils:respond(200, Req, ?succ(transfer_w_inventory, RSn), {<<"rsn">>, ?to_b(RSn)});
-        {error, Error} ->
-            ?utils:respond(200, Req, Error)
-    end;
+    Total          = ?v(<<"total">>, Base), 
+    Datetime       = ?v(<<"datetime">>, Base),
 
+    case abs(?utils:current_time(localtime2second) - ?utils:datetime2seconds(Datetime)) > 3600 * 2 of
+	true ->
+	    CurDatetime = ?utils:current_time(format_localtime), 
+	    ?utils:respond(200,
+			   Req,
+			   ?err(stock_invalid_date, "update_w_inventory"),
+			   [{<<"fdate">>, Datetime},
+			    {<<"bdate">>, ?to_b(CurDatetime)}]);
+	false -> 
+	    case stock(check, ?TRANSFER_INVENTORY, Total, 0, Invs) of
+		ok ->
+		    case ?w_inventory:purchaser_inventory(
+			    transfer, Merchant, lists:reverse(Invs), Base) of
+			{ok, RSn} ->
+			    ?utils:respond(
+			       200,
+			       Req,
+			       ?succ(transfer_w_inventory, RSn), {<<"rsn">>, ?to_b(RSn)});
+			{error, Error} ->
+			    ?utils:respond(200, Req, Error)
+		    end;
+		{error, EInv} ->
+		    StyleNumber = ?v(<<"style_number">>, EInv),
+		    ?utils:respond(
+		       200,
+		       Req,
+		       ?err(stock_invalid_inv, StyleNumber),
+		       [{<<"style_number">>, StyleNumber},
+			{<<"order_id">>, ?v(<<"order_id">>, EInv)}]);
+		{error, Total, CalcTotal} ->
+		    ?utils:respond(
+		       200,
+		       Req,
+		       ?err(stock_invalid_total, CalcTotal),
+		       [{<<"total">>, Total},
+			{<<"ctotal">>, CalcTotal}])
+	    end
+    end;
 
 action(Session, Req, {"filter_transfer_w_inventory"}, Payload) ->
     ?DEBUG("filter_transfer_w_inventory with session ~p, paylaod~n~p", [Session, Payload]),
@@ -1141,4 +1237,35 @@ mode(6) -> use_style_number;
 mode(7) -> use_brand;
 mode(8) -> use_type.
 
-    
+
+stock(check, _Action, Total, CalcTotal, []) ->
+    ?DEBUG("total ~p, CalcTotal ~p", [Total, CalcTotal]),
+    case Total =:= CalcTotal of
+	true -> ok;
+	false -> {error, Total, CalcTotal}
+    end;
+stock(check, Action, Total, CalcTotal, [{struct, Inv}|T]) ->
+    StyleNumber = ?v(<<"style_number">>, Inv),
+    Amounts     = case Action of
+		      ?NEW_INVENTORY -> ?v(<<"amount">>, Inv);
+		      ?REJECT_INVENTORY ->  ?v(<<"amounts">>, Inv);
+		      ?TRANSFER_INVENTORY -> ?v(<<"amounts">>, Inv)
+		  end,
+    Count       = ?v(<<"total">>, Inv),
+    DCount      = lists:foldr(
+		    fun({struct, A}, Acc)->
+			    case Action of
+				?NEW_INVENTORY -> ?v(<<"count">>, A) + Acc;
+				?REJECT_INVENTORY -> ?v(<<"reject_count">>, A) + Acc;
+				?TRANSFER_INVENTORY -> ?v(<<"count">>, A) + Acc
+			    end
+		    end, 0, Amounts), 
+
+    case StyleNumber of
+	undefined -> {error, Inv};
+	_ ->
+	    case Count =:= DCount of
+		true -> stock(check, Action, Total, CalcTotal + Count, T);
+		false -> {error, Inv}
+	    end
+    end.

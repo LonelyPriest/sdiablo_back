@@ -534,6 +534,7 @@ function purchaserInventoryNewCtrlProvide (
 	    
 	    added.push({
 		// good        : add.id,
+		order_id    : add.order_id,
 		style_number: add.style_number,
 		brand       : add.brand_id,
 		firm        : add.firm_id,
@@ -578,9 +579,8 @@ function purchaserInventoryNewCtrlProvide (
 	    should_pay:    setv($scope.select.should_pay),
 	    has_pay:       setv($scope.select.has_pay),
 	    
-	    e_pay_type:     angular.isUndefined(e_pay)
-		? undefined : $scope.select.extra_pay_type.id,
-	    e_pay:          e_pay,
+	    e_pay_type: angular.isUndefined(e_pay) ? undefined : $scope.select.extra_pay_type.id,
+	    e_pay:  e_pay,
 	};
 
 	console.log(added);
@@ -603,20 +603,13 @@ function purchaserInventoryNewCtrlProvide (
 		    })
 	    } else {
 		diabloUtilsService.response_with_callback(
-	    	    false, "新增库存",
-	    	    "新增库存失败：" + purchaserService.error[state.ecode]
-			+ function(){
-			    if (state.ecode===2008){
-				return "厂商欠款[" + state.cbalance + "]，"
-				    + "上次欠款[" + state.lbalance + "]！！"
-			    } else if (state.ecode === 2010) {
-				return "当前日期[" + state.fdate + "]，"
-				    + "服务器日期[" + state.bdate + "]！！"
-			    } else {
-				return ""; 
-			    }
-			}(),
-		    undefined, function(){$scope.has_saved = false})
+	    	    false,
+		    "新增库存",
+	    	    "新增库存失败："
+			+ purchaserService.error[state.ecode]
+			+ stockUtils.extra_error(state), 
+		    undefined,
+		    function(){$scope.has_saved = false})
 	    }
 	})
     };
@@ -2384,7 +2377,7 @@ function purchaserInventoryNewDetailCtrlProvide (
 
 
     var storage = localStorageService.get(diablo_key_inventory_trans);
-    console.log(storage);
+    // console.log(storage);
 
     if (angular.isDefined(storage) && storage !== null){
     	$scope.filters      = storage.filter;
@@ -2435,7 +2428,7 @@ function purchaserInventoryNewDetailCtrlProvide (
     };
     
     $scope.do_search = function(page){
-	console.log(page);
+	// console.log(page);
 	$scope.current_page = page; 
 
 	stockUtils.cache_page_condition(

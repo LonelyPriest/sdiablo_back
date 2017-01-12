@@ -318,6 +318,22 @@ var stockUtils = function(){
 
 	    return {
 		first:new Date(year, month, 1).getTime(), current:now.getTime()};
+	},
+
+	extra_error: function(state) {
+	    if (state.ecode===2008)
+		return "厂商欠款[" + state.cbalance + "]，"
+		+ "上次欠款[" + state.lbalance + "]";
+	    else if (state.ecode === 2010) 
+		return "当前日期[" + state.fdate + "]，"
+		+ "服务器日期[" + state.bdate + "]";
+	    else if (state.ecode === 2011)
+		return "序号：" + state.order_id.toString();
+	    else if (state.ecode === 2012) 
+		return "退货/采购总数：[" + state.total.toString() + "]"
+		+ "明细总数：[" + state.ctotal.toString() + "]";
+	    else 
+		return ""; 
 	}
 	    
 	//

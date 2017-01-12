@@ -145,6 +145,10 @@ function baseConfig(angular){
 	    return http.save({operation: 'add_shop_setting'}, {shop:shop}).$promise;
 	};
 
+	this.delete_setting = function(shop) {
+	    return http.save({operation: 'delete_shop_setting'}, {shop:shop}).$promise;
+	};
+
 	/*
 	 * passwd
 	 */

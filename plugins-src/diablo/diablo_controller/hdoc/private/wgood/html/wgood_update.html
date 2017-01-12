@@ -536,7 +536,7 @@
 	   ng-edit
 	   typeahead-editable="false"
 	   typeahead-on-select="params.on_select_ucolor($item, $model, $label)"
-	   typeahead="c as c.name for c in params.ucolors|filter:$viewValue|limitTo:20"
+	   uib-typeahead="c as c.name for c in params.ucolors|filter:$viewValue|limitTo:20"
 	   x-ng-model="params.select_ucolor"
 	   x-ng-enter="params.select_ucolor?params.select_ucolor=undefined:ok()" />
       </div>

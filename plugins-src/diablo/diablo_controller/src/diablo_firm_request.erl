@@ -309,25 +309,29 @@ batch_responed(Fun, Req) ->
     end.
 
 csv_head(firm, Do) ->
-    H = "序号,名称,编号,联系方式,联系地址,备注", 
-    Do(?utils:to_gbk(H)).
+    H = "序号,名称,欠款,联系方式,联系地址,备注,编号,日期",
+    Do(?utils:to_utf8(from_latin1, H)).
 
 do_write(firm, _Do, _Count, []) ->
     ok;
 do_write(firm, Do, Count, [{H}|T]) ->
     ?DEBUG("firm ~p", [H]),
-    Id      = ?v(<<"id">>, H),
-    Name    = ?v(<<"name">>, H),
-    Mobile  = ?v(<<"mobile">>, H, []),
-    Address = ?v(<<"address">>, H, []),
-    Comment = ?v(<<"comment">>, H, []),
+    Id       = ?v(<<"id">>, H),
+    Name     = ?v(<<"name">>, H),
+    Balance  = ?v(<<"balance">>, H),
+    Mobile   = ?v(<<"mobile">>, H, []),
+    Address  = ?v(<<"address">>, H, []),
+    Comment  = ?v(<<"comment">>, H, []),
+    Datetime = ?v(<<"entry_date">>, H),
 
     L = "\r\n"
 	++ ?to_s(Count) ++ ?d
 	++ ?to_s(Name) ++ ?d
-	++ ?to_s(?FIRM_PREFIX + Id) ++ ?d 
+	++ ?to_s(Balance) ++ ?d
 	++ ?to_s(Mobile) ++ ?d
 	++ ?to_s(Address) ++ ?d
-	++ ?to_s(Comment) ++ ?d,
-    Do(?utils:to_gbk(L)),
+	++ ?to_s(Comment) ++ ?d
+	++ ?to_s(?FIRM_PREFIX + Id) ++ ?d
+	++ ?to_s(Datetime) ++ ?d, 
+    Do(?utils:to_utf8(from_latin1, L)),
     do_write(firm, Do, Count + 1, T).

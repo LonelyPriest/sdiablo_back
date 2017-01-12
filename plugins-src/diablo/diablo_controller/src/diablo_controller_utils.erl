@@ -39,6 +39,11 @@ current_time(timestamp) ->
     
     M * 1000000 + S;
 
+current_time(localtime2second) ->
+    {{Year, Month, Date}, {Hour, Minute, Second}} =
+	calendar:now_to_local_time(erlang:now()),
+    calendar:datetime_to_gregorian_seconds({{Year, Month, Date}, {Hour, Minute, Second}});
+
 current_time(db) ->
     "CURRENT_TIMESTAMP()";
 
@@ -74,8 +79,18 @@ to_date(datetime, Datetime) ->
 to_date(date, Date) ->
     SDate = ?to_s(Date),
     [Y, M, D] = string:tokens(SDate, "-"),
-    {?to_i(Y), ?to_i(M), ?to_i(D)}. 
-    
+    {?to_i(Y), ?to_i(M), ?to_i(D)}.
+
+
+datetime2seconds(Datetime) when is_binary(Datetime)->
+    <<YY:4/binary, "-",  MM:2/binary, "-", DD:2/binary, " ",
+      HH:2/binary, ":", MMM:2/binary, ":", SS:2/binary>> = Datetime,
+
+    calendar:datetime_to_gregorian_seconds({{?to_i(YY), ?to_i(MM), ?to_i(DD)},
+					    {?to_i(HH), ?to_i(MMM), ?to_i(SS)}});
+datetime2seconds(Datetime) ->
+    datetime2seconds(?to_b(Datetime)).
+
 respond(batch, Fun, Req) ->
     case Fun() of
 	{ok, Values} ->

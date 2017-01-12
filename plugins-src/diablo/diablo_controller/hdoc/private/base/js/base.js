@@ -284,7 +284,7 @@ function printOptionCtrlProvide(
 			true,
 			"系统选项编辑",
 			"系统选项 " + s.cname + " 编辑成功！！",
-			$scope,
+			undefined,
 			function(){$scope.refresh($scope.select.shop)});
 		} else{
 		    dialog.response(
@@ -354,7 +354,32 @@ function printOptionCtrlProvide(
 	     to_i:       diablo_set_integer,
 	     patterns: {tel_mobile: diabloPattern.tel_mobile,
 			remark:    diabloPattern.comment}});
-    }
+    };
+
+    $scope.delete_setting = function(shop){
+	console.log(shop);
+	if (shop.id === diablo_invalid_index){
+	    dialog.response(false, "删除系统配置项", "删除系统配置项失败：不能系统默认配置项！！")
+	} else {
+	    baseService.delete_setting(shop.id).then(function(result){
+		if (result.ecode === 0){
+		    dialog.response_with_callback(
+			true,
+			"删除系统配置项",
+			"删除系统配置项成功！！",
+			undefined,
+			function(){$scope.refresh($scope.shops[0])}
+		    )
+		} else {
+		    dialog.response(
+			false,
+			"删除系统配置项",
+			"删除系统配置项 " + shop.name + " 删除失败："
+			    + baseService.error[result.ecode]); 
+		}
+	    });
+	};
+    };
 };
 
 

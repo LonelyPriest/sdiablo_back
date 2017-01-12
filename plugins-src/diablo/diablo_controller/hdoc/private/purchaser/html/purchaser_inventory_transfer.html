@@ -4,7 +4,7 @@
       
       <div class="portlet-title">
 	<div class="caption"><i class="glyphicon glyphicon-transfer"></i>
-	  库存转移
+	  库存调出
 	</div>
 	<div class="actions">
 	  <div class="btn-group">
@@ -199,8 +199,7 @@
 			{{inv.reject}}
 		      </div> 
 		      <form name="inv.form.reject"
-			    ng-if="inv.$new && inv.free_color_size
-				   || !inv.$new && inv.free_update">
+			    ng-if="inv.$new && inv.free_color_size || !inv.$new && inv.free_update">
 			<div ng-class="{'has-error':inv.form.reject.$invalid
 				       && !inv.form.reject.$pristine
 				       || !valid_free_size_reject(inv)}"}>

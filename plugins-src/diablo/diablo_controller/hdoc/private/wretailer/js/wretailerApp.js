@@ -301,6 +301,11 @@ function wretailerConfig(angular) {
 			      employee: charge.employee}).$promise;
 	};
 
+	this.export_recharge_detail = function(condition){
+	    return http.save({operation: "export_recharge_detail"},
+			     {condition: condition}).$promise;
+	};
+
 	this.filter_charge_detail = function(match, fields, currentPage, itemsPerpage){
 	    return http.save(
 		{operation: "filter_charge_detail"},

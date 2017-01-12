@@ -1733,7 +1733,7 @@ prompt_num(Merchant) ->
     
 stock(ediscount, _OrgPrice, TagPrice) when TagPrice == 0 -> 0; 
 stock(ediscount, OrgPrice, TagPrice) ->
-    ?to_f(float_to_binary(OrgPrice / TagPrice, [{decimals, 3}])) * 100.
+    binary_to_float(float_to_binary(OrgPrice / TagPrice, [{decimals, 4}])) * 100.
 
 
 realy_conditions(Merchant, Conditions) ->

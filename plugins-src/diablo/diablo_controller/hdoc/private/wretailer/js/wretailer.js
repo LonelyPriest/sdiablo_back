@@ -554,9 +554,11 @@ function wretailerChargeDetailCtrlProvide(
     $scope.default_page = 1; 
     $scope.current_page = $scope.default_page;
     $scope.total_items = 0;
-
+    $scope.shops = user.sortShops;
+    
     $scope.filters = []; 
-    diabloFilter.reset_field(); 
+    diabloFilter.reset_field();
+    diabloFilter.add_field("shop", $scope.shops);
     diabloFilter.add_field("retailer", function(viewValue){
 	return retailerUtils.match_retailer_phone(viewValue, diabloFilter)
     });
@@ -667,6 +669,25 @@ function wretailerChargeDetailCtrlProvide(
 	};
 	
 	dialog.edit_with_modal("update-recharge.html", undefined, callback, undefined, payload);
+    };
+
+    $scope.export_charge_detail = function(){
+	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+	    wretailerService.export_recharge_detail(search).then(function(state){
+		if (state.ecode === 0){
+		    dialog.response_with_callback(
+			true,
+			"文件导出成功",
+			"创建文件成功，请点击确认下载！！",
+			undefined,
+			function(){window.location.href = state.url;})
+		} else {
+		    dialog.response(
+			false, "文件导出失败", "创建文件失败："
+			    + wretailerService.error[state.ecode]);
+		}
+	    })
+	}); 
     };
 };
 

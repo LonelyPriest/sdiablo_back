@@ -525,31 +525,24 @@ action(Session, Req, {"reject_w_sale"}, Payload) ->
     ?DEBUG("reject_w_sale with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
     Invs = ?v(<<"inventory">>, Payload),
-    {struct, Base}   = ?v(<<"base">>, Payload),
-    %% {struct, Print}  = ?v(<<"print">>, Payload),
-    %% ImmediatelyPrint = ?v(<<"im_print">>, Print, ?YES),
-    case ?w_sale:sale(reject, Merchant, lists:reverse(Invs), Base) of 
-    	{ok, RSN} ->
-	    %% case ImmediatelyPrint of
-	    %% 	?YES ->
-	    %% 	    SuccessRespone =
-	    %% 		fun(PCode, PInfo) ->
-	    %% 			?utils:respond(
-	    %% 			   200, Req, ?succ(reject_w_sale, RSN),
-	    %% 			   [{<<"rsn">>, ?to_b(RSN)},
-	    %% 			    {<<"pcode">>, PCode},
-	    %% 			    {<<"pinfo">>, PInfo}])
-	    %% 		end,
-		    
-	    %% 	    print(RSN, Merchant, Invs, Base, Print, SuccessRespone);
-	    %% 	?NO ->
-	    %% 	    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
-	    %% 			   [{<<"rsn">>, ?to_b(RSN)}])
-	    %% end;
-	    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
-			   [{<<"rsn">>, ?to_b(RSN)}]);
-    	{error, Error} ->
-    	    ?utils:respond(200, Req, Error)
+    {struct, Base}   = ?v(<<"base">>, Payload), 
+    Datetime         = ?v(<<"datetime">>, Base),
+    case abs(?utils:current_time(localtime2second) - ?utils:datetime2seconds(Datetime)) > 1800 of
+	true ->
+	    CurDatetime = ?utils:current_time(format_localtime), 
+	    ?utils:respond(200,
+			   Req,
+			   ?err(wsale_invalid_date, "reject_w_sale"),
+			   [{<<"fdate">>, Datetime},
+			    {<<"bdate">>, ?to_b(CurDatetime)}]);
+	false -> 
+	    case ?w_sale:sale(reject, Merchant, lists:reverse(Invs), Base) of 
+		{ok, RSN} -> 
+		    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
+				   [{<<"rsn">>, ?to_b(RSN)}]);
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end
     end;
 
 action(Session, Req, {"filter_w_sale_rsn_group"}, Payload) ->
@@ -644,12 +637,12 @@ action(Session, Req, {"w_sale_export"}, Payload) ->
 	    %% write to file 
 	    {ok, ExportFile, Url} =
 		?utils:create_export_file("otrans", Merchant, UserId), 
-	    case file:open(ExportFile, [append, raw]) of
+	    case file:open(ExportFile, [write, raw]) of
 		{ok, Fd} -> 
 		    try
 			DoFun = fun(C) -> ?utils:write(Fd, C) end,
 			csv_head(ExportType, DoFun),
-			do_write(ExportType, DoFun, 1, Transes),
+			do_write(ExportType, DoFun, 1, Transes, {0, 0, 0}),
 			ok = file:datasync(Fd),
 			ok = file:close(Fd)
 		    catch
@@ -795,108 +788,179 @@ batch_responed(Fun, Req) ->
     end.
 
 csv_head(trans, Do) ->
-    Do("序号,单号,交易类型,门店,店员,客户,数量,现金,刷卡,汇款,核销,费用,帐户欠款,应付,实付,本次欠款,备注,开单日期");
-csv_head(trans_note, Do) ->
-    Do("序号,单号,交易类型,门店,店员,客户,款号,品牌,类型,厂商,单价,折扣,数量,小计,备注,日期").
+    H = "序号,单号,交易,店铺,客户,上次结余,累计结余"
+	",店员,数量,应收,实收,积分"
+	",现金,刷卡,微信,提现,电子卷,核销,备注,日期",
+    UTF8 = unicode:characters_to_list(H, utf8),
+    Do(UTF8);
+csv_head(trans_note, Do) -> 
+    H = "序号,单号,客户,促销,积分,交易,店铺,店员"
+	",款号,品牌,类型,季节,厂商,年度,上加日期,吊牌价,成交价,数量,小计,折扣率,日期",
+    UTF8 = unicode:characters_to_list(H, utf8),
+    Do(UTF8).
 
+do_write(trans, Do, _Seq, [], {Amount, SPay, RPay})->
+    Do("\r\n"
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?to_s(Amount) ++ ?d
+       ++ ?to_s(SPay) ++ ?d
+       ++ ?to_s(RPay) ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+      );
 
-do_write(trans, _Do, _Count, [])->
-    ok;
-do_write(trans, Do, Count, [H|T]) ->
-    Rsn       = ?v(<<"rsn">>, H),
-    Type      = ?v(<<"type">>, H),
-    Shop      = ?v(<<"shop">>, H),
+do_write(trans, Do, Seq, [{H}|T], {Amount, SPay, RPay}) ->
+    Rsn        = ?v(<<"rsn">>, H),
+    Type       = ?v(<<"type">>, H),
+    Shop       = ?v(<<"shop">>, H),
+    Retailer   = ?v(<<"retailer">>, H), 
+    Balance    = ?v(<<"balance">>, H),
+    
     Employee  = ?v(<<"employee">>, H),
-    Retailer  = ?v(<<"retailer">>, H), 
     Total     = ?v(<<"total">>, H),
+    HasPay    = ?v(<<"should_pay">>, H),
+    Score     = ?v(<<"score">>, H),
+    
     Cash      = ?v(<<"cash">>, H),
     Card      = ?v(<<"card">>, H),
-    Wire      = ?v(<<"wire">>, H),
-    Verify    = ?v(<<"verificate">>, H),
-    EPay      = ?v(<<"e_pay">>, H),
-    LBalance  = ?to_f(?v(<<"balance">>, H)),
-    ShouldPay = ?v(<<"should_pay">>, H),
-    HasPay    = ?v(<<"has_pay">>, H), 
+    WXin      = ?v(<<"wxin">>, H),
+    WithDraw  = ?v(<<"withdraw">>, H),
+    Ticket    = ?v(<<"ticket">>, H), 
+    Verify    = ?v(<<"verificate">>, H), 
+    
     Comment   = ?v(<<"comment">>, H),
-    Date      = ?v(<<"entry_date">>, H),
+    Datetime  = ?v(<<"entry_date">>, H),
 
-    CBalance  = ?to_f(LBalance + ShouldPay + EPay - HasPay),
+    AccBalance = Balance - WithDraw,
+    ShouldPay  = HasPay + Verify,
+    
     %% ?DEBUG("CBalance ~p", [CBalance]),
 
     L = "\r\n"
-	++ ?to_s(Count) ++ ?d
+	++ ?to_s(Seq) ++ ?d
 	++ ?to_s(Rsn) ++ ?d
 	++ sale_type(Type) ++ ?d
 	++ ?to_s(Shop) ++ ?d
-	++ ?to_s(Employee) ++ ?d
 	++ ?to_s(Retailer) ++ ?d
+	++ ?to_s(Balance) ++ ?d
+	++ ?to_s(AccBalance) ++ ?d
+	
+	++ ?to_s(Employee) ++ ?d 
 	++ ?to_s(Total) ++ ?d
+	++ ?to_s(HasPay) ++ ?d
+	++ ?to_s(ShouldPay) ++ ?d
+	++ ?to_s(Score) ++ ?d
+	
 	++ ?to_s(Cash) ++ ?d
 	++ ?to_s(Card) ++ ?d 
-	++ ?to_s(Wire) ++ ?d
-	++ ?to_s(Verify) ++ ?d
-	++ ?to_s(EPay) ++ ?d
-	++ ?to_s(LBalance) ++ ?d
-	++ ?to_s(ShouldPay) ++ ?d
-	++ ?to_s(HasPay) ++ ?d
-	++ ?to_s(CBalance) ++ ?d
+	++ ?to_s(WXin) ++ ?d
+	++ ?to_s(WithDraw) ++ ?d
+	++ ?to_s(Ticket) ++ ?d
+	++ ?to_s(Verify) ++ ?d 
 	++ ?to_s(Comment) ++ ?d
-	++ ?to_s(Date),
-	%% ++ ?to_s(Date),
-    Do(L),
-    do_write(trans, Do, Count + 1, T);
+	++ ?to_s(Datetime),
+    UTF8 = unicode:characters_to_list(L, utf8),
+    Do(UTF8),
+    do_write(trans, Do, Seq + 1, T, {Amount + Total,
+				     SPay + ShouldPay,
+				     RPay + HasPay});
 
-do_write(trans_note, _Do, _Count, [])->
-    ok;
-do_write(trans_note, Do, Count, [H|T]) ->
+do_write(trans_note, Do, _Seq, [], {Amount, _SPay, _RPay})->
+    Do("\r\n"
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?to_s(Amount) ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d);
+
+do_write(trans_note, Do, Seq, [{H}|T], {Amount, SPay, RPay}) ->
     Rsn         = ?v(<<"rsn">>, H),
-    SType        = ?v(<<"sell_type">>, H),
+    Retailer    = ?v(<<"retailer">>, H),
+    Promotion   = case ?v(<<"promotion">>, H) of
+		      <<>> -> "-";
+		      _P -> _P
+		  end,
+    Score       = case ?v(<<"score">>, H) of
+		      <<>> -> "-";
+		      _S -> _S
+		  end,
+    SellType    = ?v(<<"sell_type">>, H), 
     Shop        = ?v(<<"shop">>, H),
     Employee    = ?v(<<"employee">>, H),
-    Retailer    = ?v(<<"retailer">>, H),
+    
     StyleNumber = ?v(<<"style_number">>, H),
     Brand       = ?v(<<"brand">>, H), 
     Type        = ?v(<<"type">>, H),
+    Season      = ?v(<<"season">>, H),
     Firm        = ?v(<<"firm">>, H),
-    %% Color       = ?v(<<"color">>, H),
-    %% Size        = ?v(<<"size">>, H),
-    FDiscount   = ?v(<<"fdiscount">>, H),
-    FPrice      = ?v(<<"fprice">>, H),
+    Year        = ?v(<<"year">>, H),
+    InDatetime  = ?v(<<"in_datetime">>, H),
+    TagPrice    = ?v(<<"tag_price">>, H),
+    RPrice      = ?v(<<"rprice">>, H), 
     Total       = ?v(<<"total">>, H),
 
-    %% ?DEBUG("FDiscount ~p, FPrice ~p, Total ~p, rsn ~p", [FDiscount, FPrice, Total, Rsn]),
-    Calc        = ?to_f(case FDiscount of
-			    <<>> -> 100;
-			    _ -> FDiscount
-			end * FPrice * Total * 0.01), 
-    Comment   = ?v(<<"comment">>, H),
-    Date      = ?v(<<"entry_date">>, H),
+    Calc        =  RPrice * Total, 
+    Datetime    = ?v(<<"entry_date">>, H),
     
     L = "\r\n"
-	++ ?to_s(Count) ++ ?d
+	++ ?to_s(Seq) ++ ?d
 	++ ?to_s(Rsn) ++ ?d
-	++ sale_type(SType) ++ ?d
+	++ ?to_s(Retailer) ++ ?d
+	++ ?to_s(Promotion) ++ ?d
+	++ ?to_s(Score) ++ ?d 
+	++ sale_type(SellType) ++ ?d
 	++ ?to_s(Shop) ++ ?d
 	++ ?to_s(Employee) ++ ?d
-	++ ?to_s(Retailer) ++ ?d
+	
 	++ ?to_s(StyleNumber) ++ ?d
 	++ ?to_s(Brand) ++ ?d
 	++ ?to_s(Type) ++ ?d
+	++ ?w_inventory_request:season(Season) ++ ?d
 	++ ?to_s(Firm) ++ ?d
-	%% ++ ?to_s(Color) ++ ?d
-	%% ++ ?to_s(Size) ++ ?d
-	++ ?to_s(FPrice) ++ ?d 
-	++ ?to_s(FDiscount) ++ ?d
+	++ ?to_s(Year) ++ ?d
+	++ ?to_s(InDatetime) ++ ?d 
+	++ ?to_s(TagPrice) ++ ?d 
+	++ ?to_s(RPrice) ++ ?d
 	++ ?to_s(Total) ++ ?d
 	++ ?to_s(Calc) ++ ?d 
-	++ ?to_s(Comment) ++ ?d
-	++ ?to_s(Date),
-    %% ++ ?to_s(Date),
-    Do(L),
-    do_write(trans_note, Do, Count + 1, T).
+	++ ?to_s(?w_good_sql:stock(ediscount, RPrice, TagPrice)) ++ ?d 
+	++ ?to_s(Datetime),
+    UTF8 = unicode:characters_to_list(L, utf8),
+    Do(UTF8),
+    do_write(trans_note, Do, Seq + 1, T, {Amount + Total, SPay, RPay}).
     
 sale_type(0) -> "开单";
-sale_type(1)-> "退货".
+sale_type(1)-> "退货". 
 
 export_type(0) -> trans;
 export_type(1) -> trans_note.
@@ -917,91 +981,105 @@ start(new_sale, Req, Merchant, Invs, Base, Print) ->
     RetailerId       = ?v(<<"retailer">>, Base),
     ShopId           = ?v(<<"shop">>, Base), 
 
-    case check_inventory(oncheck, Round, 0, ShouldPay, Invs) of
-        {ok, _} -> 
-	    case ?w_sale:sale(new, Merchant, lists:reverse(Invs), Base) of 
-		{ok, {RSN, Phone, _ShouldPay, Balance, Score}} ->
-		    {SMSCode, _} =
-			try
-			    {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1), 
-			    {ok, Retailer} = ?w_user_profile:get(retailer, Merchant, RetailerId), 
-			    SysVips  = sys_vip_of_shop(Merchant, ShopId), 
-			    ?DEBUG("SysVips ~p, Retailer ~p", [SysVips, Retailer]),
-			    case not lists:member(RetailerId, SysVips)
-				andalso ?v(<<"type_id">>, Retailer) /= ?SYSTEM_RETAILER
-				andalso ?to_i(?v(<<"consume_sms">>, Setting, 0)) == 1 of
-				true ->
-				    ShopName =
-					case ?w_user_profile:get(shop, Merchant, ShopId) of
-					    {ok, []} -> ShopId;
-					    {ok, [{Shop}]} -> ?v(<<"name">>, Shop)
-					end,
-				    ?notify:sms_notify(
-				       Merchant,
-				       {ShopName, Phone, 1, ShouldPay, Balance, Score});
-				false -> {0, none} 
-			    end
-			catch
-			    _:{badmatch, _Error} ->
-				?INFO("failed to send sms phone:~p, merchant ~p, Error ~p",
-				      [Phone, Merchant, _Error]),
-				?err(sms_send_failed, Merchant)
-			end,
-			
-		    case ImmediatelyPrint =:= ?YES andalso PMode =:= ?PRINT_BACKEND of
-			true ->
-			    SuccessRespone =
-				fun(PCode, PInfo) ->
-					?utils:respond(
-					   200, Req, ?succ(new_w_sale, RSN),
-					   [{<<"rsn">>, ?to_b(RSN)},
-					    {<<"sms_code">>, SMSCode},
-					    {<<"pcode">>, PCode},
-					    {<<"pinfo">>, PInfo}])
+    Datetime         = ?v(<<"datetime">>, Base),
+    %% half an hour
+    case abs(?utils:current_time(localtime2second) - ?utils:datetime2seconds(Datetime)) > 1800 of
+	true ->
+	    CurDatetime = ?utils:current_time(format_localtime), 
+	    ?utils:respond(200,
+			   Req,
+			   ?err(wsale_invalid_date, "new_w_sale"),
+			   [{<<"fdate">>, Datetime},
+			    {<<"bdate">>, ?to_b(CurDatetime)}]);
+	false-> 
+	    case check_inventory(oncheck, Round, 0, ShouldPay, Invs) of
+		{ok, _} -> 
+		    case ?w_sale:sale(new, Merchant, lists:reverse(Invs), Base) of 
+			{ok, {RSN, Phone, _ShouldPay, Balance, Score}} ->
+			    {SMSCode, _} =
+				try
+				    {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1), 
+				    {ok, Retailer} = ?w_user_profile:get(
+							retailer, Merchant, RetailerId), 
+				    SysVips  = sys_vip_of_shop(Merchant, ShopId), 
+				    ?DEBUG("SysVips ~p, Retailer ~p", [SysVips, Retailer]),
+				    
+				    case not lists:member(RetailerId, SysVips)
+					andalso ?v(<<"type_id">>, Retailer) /= ?SYSTEM_RETAILER
+					andalso ?to_i(?v(<<"consume_sms">>, Setting, 0)) == 1 of
+					true ->
+					    ShopName =
+						case ?w_user_profile:get(shop, Merchant, ShopId) of
+						    {ok, []} -> ShopId;
+						    {ok, [{Shop}]} -> ?v(<<"name">>, Shop)
+						end,
+					    ?notify:sms_notify(
+					       Merchant,
+					       {ShopName, Phone, 1, ShouldPay, Balance, Score});
+					false -> {0, none} 
+				    end
+				catch
+				    _:{badmatch, _Error} ->
+					?INFO("failed to send sms phone:~p, merchant ~p, Error ~p",
+					      [Phone, Merchant, _Error]),
+					?err(sms_send_failed, Merchant)
 				end,
 
-			    NewInvs =
-				lists:foldr(
-				  fun({struct, Inv}, Acc) ->
-					  StyleNumber = ?v(<<"style_number">>, Inv),
-					  BrandId     = ?v(<<"brand">>, Inv),
-					  Total       = ?v(<<"sell_total">>, Inv),
-					  TagPrice    = ?v(<<"tag_price">>, Inv),
-					  RPrice      = ?v(<<"rprice">>, Inv),
+			    case ImmediatelyPrint =:= ?YES andalso PMode =:= ?PRINT_BACKEND of
+				true ->
+				    SuccessRespone =
+					fun(PCode, PInfo) ->
+						?utils:respond(
+						   200, Req, ?succ(new_w_sale, RSN),
+						   [{<<"rsn">>, ?to_b(RSN)},
+						    {<<"sms_code">>, SMSCode},
+						    {<<"pcode">>, PCode},
+						    {<<"pinfo">>, PInfo}])
+					end,
 
-					  P = [{<<"style_number">>, StyleNumber},
-					       {<<"brand_id">>, BrandId},
-					       {<<"tag_price">>, TagPrice},
-					       {<<"rprice">>, RPrice},
-					       {<<"total">>, Total}
-					      ],
+				    NewInvs =
+					lists:foldr(
+					  fun({struct, Inv}, Acc) ->
+						  StyleNumber = ?v(<<"style_number">>, Inv),
+						  BrandId     = ?v(<<"brand">>, Inv),
+						  Total       = ?v(<<"sell_total">>, Inv),
+						  TagPrice    = ?v(<<"tag_price">>, Inv),
+						  RPrice      = ?v(<<"rprice">>, Inv),
 
-					  [P|Acc] 
-				  end, [], Invs),
-			    print(RSN, Merchant, NewInvs, Base, Print, SuccessRespone);
-			false ->
-			    ?utils:respond(
-			       200, Req, ?succ(new_w_sale, RSN), [{<<"rsn">>, ?to_b(RSN)}])
-		    end,
-		    ?w_user_profile:update(retailer, Merchant); 
-		{error, Error} ->
-		    ?utils:respond(200, Req, Error)
-	    end;
-	{error, EInv} ->
-            StyleNumber = ?v(<<"style_number">>, EInv),
-	    ?utils:respond(
-               200,
-               Req,
-               ?err(wsale_invalid_inv, StyleNumber),
-               [{<<"style_number">>, StyleNumber},
-                {<<"order_id">>, ?v(<<"order_id">>, EInv)}]);
-	{error, Moneny, ShouldPay} ->
-            ?utils:respond(
-               200,
-               Req,
-               ?err(wsale_invalid_pay, Moneny),
-	       [{<<"should_pay">>, ShouldPay},
-		{<<"check_pay">>, Moneny}])
+						  P = [{<<"style_number">>, StyleNumber},
+						       {<<"brand_id">>, BrandId},
+						       {<<"tag_price">>, TagPrice},
+						       {<<"rprice">>, RPrice},
+						       {<<"total">>, Total}
+						      ],
+
+						  [P|Acc] 
+					  end, [], Invs),
+				    print(RSN, Merchant, NewInvs, Base, Print, SuccessRespone);
+				false ->
+				    ?utils:respond(
+				       200, Req, ?succ(new_w_sale, RSN), [{<<"rsn">>, ?to_b(RSN)}])
+			    end,
+			    ?w_user_profile:update(retailer, Merchant); 
+			{error, Error} ->
+			    ?utils:respond(200, Req, Error)
+		    end;
+		{error, EInv} ->
+		    StyleNumber = ?v(<<"style_number">>, EInv),
+		    ?utils:respond(
+		       200,
+		       Req,
+		       ?err(wsale_invalid_inv, StyleNumber),
+		       [{<<"style_number">>, StyleNumber},
+			{<<"order_id">>, ?v(<<"order_id">>, EInv)}]);
+		{error, Moneny, ShouldPay} ->
+		    ?utils:respond(
+		       200,
+		       Req,
+		       ?err(wsale_invalid_pay, Moneny),
+		       [{<<"should_pay">>, ShouldPay},
+			{<<"check_pay">>, Moneny}])
+	    end
     end.
     
 check_inventory(oncheck, Round, Moneny, ShouldPay, []) ->

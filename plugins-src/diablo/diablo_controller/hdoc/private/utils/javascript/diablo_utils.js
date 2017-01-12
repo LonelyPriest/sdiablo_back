@@ -45,6 +45,8 @@ diabloUtils.directive('navtable', function() {
 		// $cur_row.closest('tr').css("background-color", "");
 		// $next.closest('tr').css("background-color", "pink");
 		$next.focus();
+		// console.log($next[0]);
+		// $next.select();
 	    }
 	})
     };

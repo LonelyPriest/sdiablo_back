@@ -28,7 +28,8 @@ function purchaserInventoryRejectCtrlProvide(
     // $scope.employees         = filterEmployee;
     $scope.extra_pay_types   = purchaserService.extra_pay_types;
     $scope.timeout_auto_save = undefined;
-    $scope.round             = diablo_round;
+    // $scope.invalid_stock     = false;
+    // $scope.round             = diablo_round;
     $scope.setting           = {reject_negative: false};
 
     $scope.disable_refresh   = true;
@@ -56,6 +57,8 @@ function purchaserInventoryRejectCtrlProvide(
 	    user.right
 	),
     };
+
+    // console.log($scope.stock_right);
 
     $scope.focus = {style_number:true, reject: false};
     $scope.auto_focus = function(attr){
@@ -354,6 +357,8 @@ function purchaserInventoryRejectCtrlProvide(
 	    };
 	    
 	    added.push({
+		// style_number: add.style_number,
+		order_id    : add.order_id,
 		style_number: add.style_number,
 		brand       : add.brand_id,
 		firm        : add.firm_id,
@@ -408,24 +413,17 @@ function purchaserInventoryRejectCtrlProvide(
 		$scope.select.firm.balance = $scope.select.left_balance;
 		$scope.select.surplus = $scope.select.firm.balance;
 	    	diabloUtilsService.response(
-	    	    true, "退货", "退货成功！！退货单号：" + state.rsn)
+	    	    true, "采购退货", "退货成功！！退货单号：" + state.rsn)
 	    	return;
 	    } else{
 	    	diabloUtilsService.response_with_callback(
-	    	    false, "退货",
-	    	    "退货失败：" + purchaserService.error[state.ecode]
-			+ function(){
-			    if (state.ecode===2008){
-				return "厂商欠款[" + state.cbalance + "]，"
-				    + "上次欠款[" + state.lbalance + "]！！"
-			    } else if (state.ecode === 2010) {
-				return "当前日期[" + state.fdate + "]，"
-				    + "服务器日期[" + state.bdate + "]！！"
-			    } else {
-				return ""; 
-			    }
-			}(),
-		    undefined, function(){$scope.has_saved = false});
+	    	    false,
+		    "采购退货",
+	    	    "退货失败："
+			+ purchaserService.error[state.ecode]
+			+ stockUtils.extra_error(state), 
+		    undefined,
+		    function(){$scope.has_saved = false});
 	    }
 	})
     };
@@ -679,13 +677,19 @@ function purchaserInventoryRejectCtrlProvide(
     $scope.auto_save_free = function(inv){
 	console.log(inv);
 	$timeout.cancel($scope.timeout_auto_save);
+	// $scope.invalid_stock = false; 
 	if (0 === stockUtils.to_integer(inv.amounts[0].reject_count)
 	    || 0 === inv.ediscount
 	    || 0 === stockUtils.to_float(inv.org_price)
 	    || angular.isUndefined(inv.style_number)){
+	    // $scope.invalid_stock = true;
+	    diabloUtilsService.response(
+	    	false,
+	    	"采购退货",
+	    	"采购退货失败：该款号无进货价或吊牌价！！");
 	    return;
 	}
-	
+
 	if (!$scope.setting.reject_negative
 	    && parseInt(inv.amounts[0].reject_count) > inv.total){
 	    return;

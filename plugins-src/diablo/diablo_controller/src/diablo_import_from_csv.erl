@@ -492,7 +492,7 @@ stock(ediscount, OrgPrice, TagPrice) ->
     %% 	true ->
     %% 	    -?to_f(float_to_binary((TagPrice - OrgPrice) / TagPrice, [{decimals, 3}])) * 100;
     %% 	false ->
-	    ?to_f(float_to_binary(OrgPrice / TagPrice, [{decimals, 3}])) * 100.
+	    binary_to_float(float_to_binary(OrgPrice / TagPrice, [{decimals, 4}])) * 100.
     %% end.
 
 sort(firm, [], Acc) ->

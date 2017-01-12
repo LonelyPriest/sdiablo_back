@@ -156,6 +156,7 @@ function wsaleConfg(angular){
             2705: "应付款项与开单项计算有不符！！",
 	    2706: "该电子卷金额与系统不一致，请核对该电子卷后再使用！！",
 	    2707: "该电子卷对应的优惠规则不存在！！",
+	    2708: "系统时间与服务器时间相差在于30分钟， 请检查系统时间或重新操作！！",
 	    2699: "修改前后信息一致，请重新编辑修改项！！",
 	    9001: "数据库操作失败，请联系服务人员！！"};
 
@@ -1300,21 +1301,16 @@ function wsaleNewProvide(
 		    $scope.print_front(result, im_print); 
 		}
 		success_callback();
-	    } else if (result.ecode === 2705){
+	    } else {
 		dialog.response_with_callback(
 	    	    false,
 		    "销售开单",
-		    "开单失败：" + wsaleService.error[result.ecode]
-			+ ["应付金额：" + result.should_pay.toString() +
-			   "，计算金额：" + result.check_pay.toString()],
-		    undefined, function(){$scope.has_saved = false});
-	    }
-	    else {
-		dialog.response_with_callback(
-	    	    false,
-		    "销售开单",
-		    "开单失败：" + wsaleService.error[result.ecode],
-		    $scope, function(){$scope.has_saved = false});
+		    "开单失败："
+			+ wsaleService.error[result.ecode]
+			+ wsaleUtils.extra_error(result), 
+		    undefined,
+		    function(){$scope.has_saved = false});
+		
 	    } 
 	})
     };

@@ -419,7 +419,7 @@ var wsaleUtils = function(){
 		}
 	    }
 
-	    console.log(round);
+	    // console.log(round);
 	    if (angular.isUndefined(round) || round) 
 		return {balance: diablo_round(balance - rbalance), rbalance: rbalance};
 	    else
@@ -571,6 +571,17 @@ var wsaleUtils = function(){
 	    } else {
 		return;
 	    } 
+	},
+
+	extra_error:function(result) {
+	    if (result.ecode === 2705) 
+		return "应付金额：" + result.should_pay.toString() +
+		"，计算金额：" + result.check_pay.toString();
+	    else if (result.ecode === 2708)
+		return "当前日期[" + result.fdate + "]，"
+		+ "服务器日期[" + result.bdate + "]";
+	    else
+		return ""
 	}
 
 	// 
@@ -691,6 +702,7 @@ var wsaleCalc = function(){
 	    wsaleCalc.calc_discount_of_verificate(inventories, mode, verificate); 
 	    
 	    var calc_p = wsaleUtils.calc_with_promotion(pmoneys, round);
+	    // console.log(calc_p);
 	    should_pay = wsaleUtils.to_decimal(calc_p.balance - verificate); 
 	    score  = wsaleUtils.calc_with_score(pscores, verificate); 
 	    // charge = should_pay - has_pay;
@@ -714,7 +726,7 @@ var wsaleCalc = function(){
 	    for (var i=1, l=inventories.length; i<l; i++){
 		var one = inventories[i];
 		var count = mode === 0 ? one.sell : one.reject;
-		p1 += diablo_float_mul(one.fprice, count);
+		p1 += one.fprice * count;
 	    }
 
 	    var vdiscount = diablo_discount(verificate, p1);
@@ -722,9 +734,9 @@ var wsaleCalc = function(){
 		var one = inventories[i];
 		var count = mode === 0 ? one.sell : one.reject;
 		
-		one.rdiscount = diablo_float_sub(one.rdiscount, vdiscount);
+		one.rdiscount = wsaleUtils.to_decimal(one.rdiscount - vdiscount);
 		one.rprice  = diablo_price(one.fprice, one.rdiscount);
-		one.calc    = diablo_float_mul(one.rprice, count);
+		one.calc    = wsaleUtils.to_decimal(one.rprice, count);
 	    }
 	}
     }

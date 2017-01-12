@@ -250,6 +250,7 @@ function purchaserInventoryTransferCtrlProvide (
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    var add = $scope.inventories[i];
 	    added.push({
+		order_id    : add.order_id,
 		style_number: add.style_number,
 		brand       : add.brand_id,
 		type        : add.type_id,
@@ -298,9 +299,13 @@ function purchaserInventoryTransferCtrlProvide (
 	    	return;
 	    } else{
 	    	diabloUtilsService.response_with_callback(
-	    	    false, "库存转移",
-	    	    "库存转移失败：" + purchaserService.error[state.ecode],
-		    $scope, function(){$scope.has_saved = false});
+	    	    false,
+		    "库存转移",
+	    	    "库存转移失败："
+			+ purchaserService.error[state.ecode]
+			+ stockUtils.extra_error(state),
+		    undefined,
+		    function(){$scope.has_saved = false});
 	    }
 	})
     };
@@ -544,7 +549,7 @@ function purchaserInventoryTransferCtrlProvide (
     $scope.auto_save_free = function(inv){
 	$timeout.cancel($scope.timeout_auto_save);
 	var reject = stockUtils.to_integer(inv.amounts[0].reject_count);
-	if (inv.form.good.invalid || 0 === reject || reject > inv.total){
+	if (angular.isUndefined(inv.style_number) || 0 === reject || reject > inv.total){
 	    return;
 	}
 	

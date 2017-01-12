@@ -249,6 +249,8 @@ success(base_update_setting, Name) ->
     {0, "Success to update base setting of  " ++ ?to_s(Name)};
 success(base_add_shop_setting, Shop) ->
     {0, "Success to add settings of shop " ++ ?to_s(Shop)};
+success(base_delete_shop_setting, Shop) ->
+    {0, "Success to delete settings of shop " ++ ?to_s(Shop)};
 success(base_update_passwd, Account) ->
     {0, "Success to update password of user " ++ ?to_s(Account)}. 
 
@@ -387,8 +389,14 @@ error(invalid_balance, Firm) ->
     {2008, "invalid balance of firm " ++ ?to_s(Firm)};
 error(zero_price_of_check, RSN) ->
     {2009, "zero price of check " ++ ?to_s(RSN) ++ "."};
-error(invalid_date, Action) ->
+error(stock_invalid_date, Action) ->
     {2010, "invalid date of action: " ++ ?to_s(Action) ++ "."};
+error(stock_invalid_inv, StyleNumber) ->
+    {2011, "invalid stock of style_number: " ++ ?to_s(StyleNumber) ++ "."};
+error(stock_invalid_total, CalcTotal) ->
+    {2012, "invalid total of stock: " ++ ?to_s(CalcTotal) ++ "."};
+
+
 
 %% retailer
 error(retailer_exist, Retailer) ->
@@ -450,6 +458,8 @@ error(wsale_invalid_ticket_balance, Balance) ->
     {2706, "invalid ticket balance: " ++ ?to_s(Balance) ++ "."};
 error(wsale_invalid_ticket_score, TicketSId) ->
     {2707, "invalid ticket promotion score: " ++ ?to_s(TicketSId) ++ "."};
+error(wsale_invalid_date, Action) ->
+    {2708, "invalid datetime of action: " ++ ?to_s(Action) ++ "."};
 
 %% about print
 error(invalid_sn, PrintSN) ->
@@ -501,10 +511,11 @@ error(base_invalid_update_passwd, User) ->
 error(db_error, EInfo) ->
     {9001, "DB error: " ++ ?to_s(EInfo)};
 error(db_timeout, _) ->
-    {9001, "DB timeout."};
+    {9003, "DB timeout."};
 %% unkown method
 error(unkown_operation, Method) ->
     {9002, "unkown operation: " ++ ?to_s(Method)};
+
 %% not enought right
 error(not_enought_right, Action) ->
     {9901, "not enougth right of action " ++ ?to_s(Action)};
@@ -512,5 +523,8 @@ error(operation_invalid_session, Error) ->
     {9902, "operation with invalid session with error " ++ ?to_s(Error)};
 
 error(file_op_error, Error) ->
-    {9101, "failed to operator file: ~p", [Error]}.
+    {9101, "failed to operator file: ~p", [Error]};
+error(params_error, Name) ->
+    {9102, "parameter input error: ~p", [Name]}.
+
 

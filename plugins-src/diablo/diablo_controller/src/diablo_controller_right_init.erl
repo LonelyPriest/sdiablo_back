@@ -281,7 +281,10 @@ init([]) ->
 	  <<"对帐备注">>, <<"comment_w_inventory_new">>, ?right_w_inventory},
 	 
 	 {?update_price_of_w_inventory_reject,
-	  <<"修改退货价格">>, <<"update_price_of_w_inventory_reject">>, ?right_w_inventory}
+	  <<"修改退货价格">>, <<"update_price_of_w_inventory_reject">>, ?right_w_inventory},
+
+	 {?modify_w_inventory_new_balance,
+	  <<"修改帐户欠款">>, <<"modify_w_inventory_new_balance">>, ?right_w_inventory}
 	],
 
     %% firm
@@ -856,6 +859,7 @@ pass_action(wholesaler) ->
      <<"get_w_retailer_ticket">>,
      <<"match_retailer_phone">>,
      <<"syn_retailer_pinyin">>,
+     <<"export_recharge_detail">>,
      
      %% wsale
      %% <<"list_w_sale_new">>,
@@ -879,6 +883,7 @@ pass_action(wholesaler) ->
      <<"update_base_setting">>,
      <<"add_base_setting">>,
      <<"add_shop_setting">>,
+     <<"delete_shop_setting">>,
 
      %% print
      <<"list_w_printer">>, 

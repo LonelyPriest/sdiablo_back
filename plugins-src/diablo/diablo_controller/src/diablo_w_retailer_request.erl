@@ -35,7 +35,6 @@ action(Session, Req, {"list_sys_wretailer"}) ->
     ?DEBUG("list sys_retailer with session ~p", [Session]), 
     Merchant = ?session:get(merchant, Session),
     {ok, Shops}   = ?w_user_profile:get(user_shop, Merchant, Session),
-    ?DEBUG("Shops ~p", [Shops]),
     ShopIds = lists:foldr(fun({Shop}, Acc) ->
 				  ShopId = ?v(<<"shop_id">>, Shop),
 				  case lists:member(ShopId, Acc) of
@@ -415,6 +414,42 @@ action(Session, Req, {"export_w_retailer"}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"export_recharge_detail"}, Payload) ->
+    ?DEBUG("export_recharge_detail with session ~p, payload ~p", [Session, Payload]),
+    Merchant    = ?session:get(merchant, Session),
+    UserId      = ?session:get(id, Session),
+    {struct, Condition}   = ?v(<<"condition">>, Payload, []),
+    
+    case ?w_retailer:charge(list_recharge, Merchant, Condition) of
+	[] -> ?utils:respond(200, Req, ?err(wretailer_export_none, Merchant));
+	{ok, Details} ->
+	    {ok, ExportFile, Url} = ?utils:create_export_file("recharge", Merchant, UserId),
+	    
+	    case file:open(ExportFile, [write, raw]) of
+		{ok, Fd} ->
+		    try
+			DoFun = fun(C) -> ?utils:write(Fd, C) end,
+			csv_head(recharge, DoFun),
+			do_write(recharge, DoFun, 1, Details, {0, 0, 0}),
+			ok = file:datasync(Fd),
+			ok = file:close(Fd)
+		    catch
+			T:W -> 
+			    file:close(Fd),
+			    ?DEBUG("trace export:T ~p, W ~p~n~p",
+				   [T, W, erlang:get_stacktrace()]),
+			    ?utils:respond(200, Req, ?err(wretailer_export_error, W)) 
+		    end,
+		    ?utils:respond(200, object, Req,
+				   {[{<<"ecode">>, 0},
+				     {<<"url">>, ?to_b(Url)}]}); 
+		{error, Error} ->
+		    ?utils:respond(200, Req, ?err(wretailer_export_error, Error))
+	    end;
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
 action(Session, Req, {"syn_retailer_pinyin"}, Payload) ->
     ?DEBUG("syn_retailer_pinyin with session ~p", [Session]),
 
@@ -471,8 +506,12 @@ sidebar(Session) ->
 csv_head(retailer, Do) ->
     Head = "序号,名称,类型,联系方式,累计消费,累计积分,所在店铺,日期",
     UTF8 = unicode:characters_to_list(Head, utf8),
-    GBK = diablo_iconv:convert("utf-8", "gbk", UTF8),
-    Do(GBK).
+    Do(UTF8);
+csv_head(recharge, Do) ->
+    Head = "序号,单号,店铺,经手人,会员,手机号码,充值方案,帐户余额,充值金额,赠送金额,累积余额"
+	",备注,充值日期",
+    UTF8 = unicode:characters_to_list(Head, utf8),
+    Do(UTF8).
 
 do_write(retailer, _Do, _Count, []) ->
     ok;
@@ -498,10 +537,61 @@ do_write(retailer, Do, Count, [{H}|T]) ->
 	++ ?to_s(Entry) ++ ?d,
 
     UTF8 = unicode:characters_to_list(L, utf8),
-    GBK  = diablo_iconv:convert("utf-8", "gbk", UTF8), 
-    Do(GBK),
+    Do(UTF8),
     
     do_write(retailer, Do, Count + 1, T).
+
+do_write(recharge, Do, _Seq, [], {AccCBalance, AccSBalance, _AccBalance}) ->
+    Do("\r\n"
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?to_s(AccCBalance) ++ ?d
+       ++ ?to_s(AccSBalance) ++ ?d
+       ++ ?d
+       ++ ?d
+       ++ ?d);
+
+do_write(recharge, Do, Seq, [{H}|T], {AccCBalance, AccSBalance, AccBalance}) ->
+    RSN          = ?v(<<"rsn">>, H),
+    Shop         = ?v(<<"shop">>, H),
+    Employee     = ?v(<<"employee">>, H),
+    Retailer     = ?v(<<"retailer">>, H),
+    Mobile       = ?v(<<"mobile">>, H),
+    ChargeName   = ?v(<<"cname">>, H),
+    LBalance     = ?v(<<"lbalance">>, H),
+    CBalance     = ?v(<<"cbalance">>, H), 
+    SBalance     = ?v(<<"sbalance">>, H),
+    Comment      = ?v(<<"comment">>, H),
+    Datetime     = ?v(<<"entry_date">>, H),
+
+    CurrentBalance = LBalance + CBalance + SBalance,
+
+    L = "\r\n"
+	++ ?to_s(Seq) ++ ?d
+	++ ?to_s(RSN) ++ ?d
+	++ ?to_s(Shop) ++ ?d
+	++ ?to_s(Employee) ++ ?d
+	++ ?to_s(Retailer) ++ ?d
+	++ ?to_s(Mobile) ++ ?d
+	++ ?to_s(ChargeName) ++ ?d
+	++ ?to_s(LBalance) ++ ?d
+	++ ?to_s(CBalance) ++ ?d
+	++ ?to_s(SBalance) ++ ?d
+	++ ?to_s(CurrentBalance) ++ ?d
+	++ ?to_s(Comment) ++ ?d
+	++ ?to_s(Datetime) ++ ?d,
+
+    UTF8 = unicode:characters_to_list(L, utf8),
+    Do(UTF8),
+    do_write(recharge, Do, Seq + 1, T, {AccCBalance + CBalance,
+					AccSBalance + SBalance,
+					AccBalance + CurrentBalance}).
 
 retailer_type(0) -> "普通会员";
 retailer_type(1) -> "充值会员";
@@ -510,3 +600,4 @@ retailer_type(_) -> "未知类型".
 mode(0) -> use_id; 
 mode(1) -> use_balance;
 mode(2) -> use_consume.
+

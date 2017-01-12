@@ -12,12 +12,14 @@
 		  x-ng-click="go_back()">返回
 	    <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
 
-	  <button type="button" class="btn blue reload"
+	  <button type="button" class="btn blue purple-stripe hidden-xs"
+		    x-ng-click="export_firm_trans()">导出
+	      <i class="glyphicon glyphicon-export"></i></button>
+
+	  <button type="button" class="btn yellow reload"
 		  x-ng-click="do_search(default_page)">刷新
-	    <i class="icon icon-spinner"></i></button>
-	  
-	</div>
-	
+	    <i class="icon icon-spinner"></i></button> 
+	</div> 
       </div>
 
       <!--BEGIN table container-->
@@ -151,11 +153,7 @@
 		    <td>
 		      <button class="btn diablo-button btn-primary"
 		    	 x-ng-click="trans_rsn_detail(r)">
-			明细<i class="glyphicon glyphicon-map-marker"></i></button>
-
-		      <button class="btn diablo-button yellow-crusta"
-		    	 x-ng-click="comment_rsn_detail(r)">
-			备注<i class="glyphicon glyphicon-comment"></i></button>
+			明细<i class="glyphicon glyphicon-map-marker"></i></button> 
                       
 		      <button x-ng-if="r.state===0" class="btn diablo-button btn-danger"
 		      	      x-ng-click="check_trans(r)">审核
@@ -164,6 +162,15 @@
 		      <button x-ng-if="r.state===1" class="btn diablo-button purple-plum"
 		      	      x-ng-click="uncheck_trans(r)">反审
 		      	<i class="glyphicon glyphicon-remove-circle"></i></button>
+
+		      <button class="btn diablo-button yellow-crusta"
+		    	      x-ng-click="comment_rsn_detail(r)">
+			备注<i class="glyphicon glyphicon-comment"></i></button>
+
+		      <button x-ng-if="right.master && r.state===0"
+			      class="btn diablo-button red-sunglo"
+		      	      x-ng-click="modify_balance(r)">帐户欠款
+		      	<i class="glyphicon glyphicon-edit"></i></button> 
 		      
 		    </td>
 		  </tr>
@@ -299,3 +306,43 @@
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>  
 </script>
+
+<script type="text/ng-template" id="modify-balance.html"> 
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    <h4 class="modal-title">
+      <span class="label label-sm label-primary">厂商帐户欠款修改</span>
+    </h4>
+  </div>
+
+  <div class="modal-body">
+    <form class="form-horizontal" name="cForm" novalidate>
+      <div class="form-body">
+	
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">帐户欠款</label> 
+	  <div class="col-md-10">
+	    <input class="form-control"
+		   name="balance"
+		   type="number"
+		   x-ng-model="params.balance"
+		   x-ng-pattern="params.pattern"/>
+	    <div x-ng-if="cForm.balance.$invalid && !cForm.balance.$pristine">
+	    	<span class="fg-red">请输入数字，支持二位小数</span>
+	    </div>
+	  </div>
+	</div>
+
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary" x-ng-disabled="cForm.$invalid" x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>  
+</script>
+

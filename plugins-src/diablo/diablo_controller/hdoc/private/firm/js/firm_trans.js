@@ -34,6 +34,8 @@ function firmTransCtrlProvide(
     $scope.toggle_comment = function(){
 	$scope.hidden.comment = !$scope.hidden.comment;
     };
+
+    $scope.right = {master: rightAuthen.authen_master(user.type)};
     
     
     $scope.css = diablo_stock_css;
@@ -273,15 +275,35 @@ function firmTransCtrlProvide(
 	    		"修改厂商对帐备注失败：" + firmService.error[state.ecode]);
 		}
 	    });
-	};
-
+	}; 
 	
 	dialog.edit_with_modal(
 	    'comment-stock.html', 'lg', callback, undefined,
 	    {comment:r.comment, comment_pattern:diabloPattern.comment});
     };
-}
 
+    $scope.modify_balance = function(r){
+	console.log(r);
+	var callback = function(params){
+	    console.log(params);
+	    firmService.modify_w_inventory_new_balance(r.rsn, params.balance).then(function(state){
+		console.log(state);
+		if (state.ecode == 0){
+		    // r.balance = params.balance;
+		    $scope.do_search($scope.current_page);
+		} else{
+	    	    dialog.response(
+	    		false, "厂商帐户欠款修改",
+	    		"修改厂商帐户欠款失败：" + firmService.error[state.ecode]);
+		}
+	    });
+	};
+
+	dialog.edit_with_modal(
+	    'modify-balance.html', undefined, callback, undefined,
+	    {balance:r.balance, pattern:diabloPattern.decimal_2});
+    };
+}
 
 function firmTransRsnDetailCtrlProvide(
     $scope, $routeParams, dateFilter, diabloUtilsService, diabloFilter,

@@ -760,8 +760,8 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 		++ "\"" ++ ?to_s(Datetime) ++ "\");",
 
 	    Sql3 = ["update w_retailer set consume=consume-" ++ ?to_s(ShouldPay)
-		++ case Withdraw > 0 of
-		       true -> ", balance=balance+" ++ ?to_s(Withdraw);
+		++ case NewWithdraw > 0 of
+		       true -> ", balance=balance+" ++ ?to_s(NewWithdraw);
 		       false -> []
 		   end
 		++ case TicketScore - Score /= 0 of
@@ -897,54 +897,70 @@ handle_call({new_trans_note_export, Merchant, Conditions}, _From, State)->
     ?DEBUG("new_trans_note_export: merchant ~p\nConditions~p", [Merchant, Conditions]),
     CorrectCondition = ?utils:correct_condition(<<"a.">>, Conditions),
 
-    Sql = "select a.id, a.rsn, a.style_number, a.brand_id"
-	", a.type_id, a.firm_id, a.s_group, a.free"
-	", a.total, a.pid, a.sid, a.fdiscount, a.fprice"
-	", a.path, a.comment, a.entry_date"
-    %% ", a.color_id, a.size, a.total"
-	", a.shop_id, a.retailer_id, a.employee_id, a.sell_type"
+    Sql = "select a.id, a.rsn, a.style_number"
+	", a.brand_id"
+	", a.type_id"
+	", a.firm_id"
+	", a.season"
+	", a.year"
+	", a.in_datetime"
+    %% ", a.s_group, a.free"
+	", a.total"
+	", a.pid"
+	", a.sid"
+	", a.tag_price, a.rprice, a.entry_date"
+	
+	", a.shop_id"
+	", a.retailer_id"
+	", a.employee_id"
+	", a.sell_type"
 
 	", b.name as brand"
-    %% ", c.name as color"
 	", d.name as type"
 	", e.name as firm"
 	", f.name as shop"
 	", g.name as retailer"
 	", h.name as employee"
+	", j.name as promotion"
+	", k.name as score"
 
 	" from ("
 
-	"select a.id, a.rsn, a.style_number, a.brand as brand_id"
-	", a.type as type_id, a.firm as firm_id"
-	", a.s_group, a.free, a.total, a.promotion as pid, a.score as sid"
-	", a.tag_price, a.fdiscount, a.fprice, a.path, a.comment, a.entry_date"
+	"select a.id, a.rsn, a.style_number"
+	", a.brand as brand_id"
+	", a.type as type_id"
+	", a.firm as firm_id"
+	", a.season"
+	", a.year"
+	", a.in_datetime"
+    %% ", a.s_group, a.free"
+	", a.total"
+	", a.promotion as pid"
+	", a.score as sid"
+	", a.tag_price, rprice, a.entry_date"
 
 	", b.shop as shop_id"
 	", b.retailer as retailer_id"
 	", b.employ as employee_id"
 	", b.type as sell_type"
-
-    %% ", c.color as color_id"
-    %% ", c.size"
-    %% ", c.total"
-
+	
 	" from w_sale_detail a"
 	" inner join w_sale b on a.rsn=b.rsn" 
-    %% " right join w_sale_detail_amount c on a.rsn=c.rsn"
-    %% " and a.style_number=c.style_number and a.brand=c.brand"
 
-	" where "
-	++ ?utils:to_sqls(proplists, CorrectCondition) ++ " order by a.id desc) a"
+	" where " ++ ?utils:to_sqls(proplists, CorrectCondition) ++ ") a"
 
 	" left join brands b on a.brand_id=b.id"
-    %% " left join colors c on a.color_id=c.id"
 	" left join inv_types d  on a.type_id=d.id"
 	" left join suppliers e on a.firm_id=e.id"
 
 	" left join shops f on a.shop_id=f.id"
 	" left join w_retailer g on a.retailer_id=g.id"
-	" left join (select id, number, name from employees where merchant="
-	++ ?to_s(Merchant) ++ ") h on a.employee_id=h.number",
+	" left join employees h on a.employee_id=h.number and h.merchant=" ++ ?to_s(Merchant)
+
+	++ " left join w_promotion j on a.pid=j.id"
+	++ " left join w_score k on a.sid=k.id"
+	
+	++ " order by id desc",
 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
@@ -1579,23 +1595,25 @@ count_table(w_sale, Merchant, Conditions) ->
 filter_table(w_sale, Merchant, Conditions) ->
     SortConditions = sort_condition(wsale, Merchant, Conditions),
 
-    Sql = "select a.id, a.rsn, a.employ as employee_id"
-	", a.retailer as retailer_id, a.shop as shop_id"
+    Sql = "select a.id, a.rsn"
+	", a.employ as employee_id"
+	", a.retailer as retailer_id"
+	", a.shop as shop_id"
     %% ", a.promotion as pid, a.charge as cid"
 	
-	", a.balance, a.should_pay, a.cash, a.card, a.wxin, a.withdraw, a.ticket"
-	", a.cbalance, a.sbalance, a.total, a.score"
+	", a.balance, a.should_pay, a.cash, a.card, a.wxin, a.withdraw, a.ticket, a.verificate"
+	", a.total, a.score"
 	
-	", a.comment, a.type, a.state, a.entry_date"
+	", a.comment, a.type, a.entry_date"
 	
 	", b.name as shop"
 	", c.name as employee"
 	", d.name as retailer"
+	
 	" from w_sale a"
 	" left join shops b on a.shop=b.id"
-	" left join (select id, number, name from employees where merchant="
-	++ ?to_s(Merchant) ++ ") c on a.employ=c.number"
-	" left join w_retailer d on a.retailer=d.id"
+	" left join employees c on a.employ=c.number and c.merchant=" ++ ?to_s(Merchant)
+	++ " left join w_retailer d on a.retailer=d.id"
 	" where " ++ SortConditions ++ " order by a.id desc",
     Sql.
 

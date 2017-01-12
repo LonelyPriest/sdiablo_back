@@ -128,10 +128,12 @@ action(Session, Req, {"update_base_setting"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     case ?w_base:setting(update, Merchant, Payload) of
 	{ok, EName}  ->
+	    ?w_user_profile:update(setting, Merchant),
 	    ?utils:respond(200, Req, ?succ(base_update_setting, EName));
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;
+
 
 action(Session, Req, {"add_shop_setting"}, Payload) ->
     ?DEBUG("add_shop_setting with session ~p", [Session]),
@@ -141,6 +143,18 @@ action(Session, Req, {"add_shop_setting"}, Payload) ->
 	{ok, Shop}  ->
 	    ?w_user_profile:update(setting, Merchant),
 	    ?utils:respond(200, Req, ?succ(base_add_shop_setting, Shop));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"delete_shop_setting"}, Payload) ->
+    ?DEBUG("add_shop_setting with session ~p", [Session]),
+    Merchant = ?session:get(merchant, Session),
+    Shop     = ?v(<<"shop">>, Payload),
+    case ?w_base:setting(delete_from_shop, Merchant, Shop) of
+	{ok, Shop}  ->
+	    ?w_user_profile:update(setting, Merchant),
+	    ?utils:respond(200, Req, ?succ(base_delete_shop_setting, Shop));
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;

@@ -51,7 +51,10 @@ setting(list, Merchant, Conditions) ->
 setting(add, Merchant, Attr) ->
     gen_server:call(?SERVER, {add_base_setting, Merchant, Attr});
 setting(update, Merchant, Update) ->
-    gen_server:call(?SERVER, {update_base_setting, Merchant, Update}).
+    gen_server:call(?SERVER, {update_base_setting, Merchant, Update});
+setting(delete_from_shop, Merchant , Shop) ->
+    gen_server:call(?SERVER, {delete_from_setting, Merchant, Shop}).
+
 
 
 start_link() ->
@@ -247,6 +250,23 @@ handle_call({add_shop_setting, Merchant, Shop}, _From, State) ->
 
     Reply = ?sql_utils:execute(transaction, Sql0, Shop),
     ?w_user_profile:update(setting, Merchant),
+    {reply, Reply, State};
+
+handle_call({delete_from_setting, Merchant, Shop}, _From, State) ->
+    ?DEBUG("delete_from_setting with merchant ~p, shop ~p", [Merchant, Shop]),
+
+    %% Id    = ?v(<<"id">>, Update),
+    %% EName = ?v(<<"ename">>, Update),
+    %% Value = ?v(<<"value">>, Update),
+    %% Shop  = ?v(<<"shop">>, Update),
+
+    Sql = "delete from w_base_setting where merchant=" ++ ?to_s(Merchant)
+	++ " and shop=" ++ ?to_s(Shop),
+
+    Reply = ?sql_utils:execute(write, Sql, Shop),
+    %% refresh profile
+    %% ?w_user_profile:update(setting, Merchant),
+    %% ?w_retailer:syn(prompt, Merchant),
     {reply, Reply, State};
 
 handle_call(_Request, _From, State) ->

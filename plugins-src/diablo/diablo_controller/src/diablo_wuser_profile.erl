@@ -625,20 +625,20 @@ handle_call({get_retailer_profile, Merchant}, _From, State) ->
     Select = select(MS, fun() -> ?w_retailer:retailer(list, Merchant) end),
     {reply, {ok, Select}, State};
 
-handle_call({get_sysretailer_profile, Merchant, Shops}, _From, State) -> 
+handle_call({get_sysretailer_profile, Merchant, Shops}, _From, State) ->
+    ?DEBUG("get_sysretailer_profile: merchant ~p, shops ~p", [Merchant, Shops]),
     Settings = select(ms(Merchant, setting), fun() -> ?w_base:setting(list, Merchant) end),
     %% ?DEBUG("Settings ~p", [Settings]),
     FilterSettings = 
 	case lists:filter(
 	       fun({S})->
-		       lists:member(?v(<<"shop">>, S), Shops)
-			   orelse ?v(<<"shop">>, S) =:= -1
+		       lists:member(?v(<<"shop">>, S), Shops) orelse ?v(<<"shop">>, S) =:= -1
 	       end, ?to_tl(Settings)) of
 	    [] -> [];
 	    %% [{Filter}] -> Filter;
 	    Filter -> Filter
 	end, 
-    %% ?DEBUG("FilterSettings ~p", [FilterSettings]),
+    ?DEBUG("FilterSettings ~p, length ~p", [FilterSettings, length(FilterSettings)]),
     
     SysVips = lists:foldr(
 		fun({S}, Acc) ->
@@ -660,17 +660,17 @@ handle_call({get_sysretailer_profile, Merchant, Shops}, _From, State) ->
     
     FilterRetailers = 
 	case lists:filter(
-	       fun({R})->
+	       fun({R})-> 
 		       lists:member(?v(<<"shop_id">>, R), Shops)
 			   andalso
-			     (?v(<<"type">>, R) =:= ?SYSTEM_RETAILER
+			     (?v(<<"type_id">>, R) =:= ?SYSTEM_RETAILER
 			      orelse lists:member(?v(<<"id">>, R), SysVips)) end,
 	       ?to_tl(Retailers)) of
 	    [] -> [];
 	    %% [{RFilter}] -> RFilter;
 	    RFilter -> RFilter
 	end, 
-    %% ?DEBUG("FilterRetailers ~p", [FilterRetailers]),
+    ?DEBUG("FilterRetailers ~p", [FilterRetailers]),
 
     SimpleRetailers = 
 	lists:foldr(

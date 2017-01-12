@@ -10,10 +10,11 @@
 
 	<div class="actions">
 	  <div class="btn-group btn-group-solid">
-	    <!-- <a type="button" class="btn btn-success" -->
-	    <!--    x-ng-click="new_retailer()">新增 -->
-	    <!--   <i class="glyphicon glyphicon-plus"></i></a>  --> 
-	    <a type="button" class="btn blue reload purple-stripe"
+	    <button type="button" class="btn blue purple-stripe hidden-xs"
+		    x-ng-click="export_charge_detail()">导出
+	      <i class="glyphicon glyphicon-export"></i></button>
+	    
+	    <a type="button" class="btn yellow reload purple-stripe"
 	       x-ng-click="refresh()">刷新
 	      <i class="icon icon-spinner fg-white"></i></a>
 	  </div>
@@ -179,7 +180,8 @@
 	  </span>
 	  <div class="col-md-6 col-sm-6 col-xs-6">
 	    <input type="text"
-		    class="form-control"
+		   class="form-control"
+		   x-ng-readonly=true
 		   x-ng-model="params.recharge.shop"/>
 	  </div>
 	</div>

@@ -404,8 +404,11 @@ function wsaleRejectCtrlProvide(
 	    	dialog.response_with_callback(
 	    	    false,
 		    "销售退货",
-		    "退货失败：" + wsaleService.error[result.ecode],
-		    undefined, function(){$scope.has_saved = false});
+		    "退货失败："
+			+ wsaleService.error[result.ecode]
+			+ wsaleUtils.extra_error(result),
+		    undefined,
+		    function(){$scope.has_saved = false});
 	    }
 	})
     }; 

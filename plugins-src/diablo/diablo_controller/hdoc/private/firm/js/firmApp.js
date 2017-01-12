@@ -254,6 +254,11 @@ function firmConfig(angular){
 			       {rsn:rsn, comment:comment}).$promise;
 	};
 
+	this.modify_w_inventory_new_balance = function(rsn, balance) {
+	    return http_p.save({operation: "modify_w_inventory_new_balance"},
+			       {rsn:rsn, balance:balance}).$promise;
+	};
+
 	this.filter_w_inventory_new_rsn_group = function(match, fields, currentPage, itemsPerpage){
 	    return http_p.save(
 		{operation: "filter_w_inventory_new_rsn_group"},

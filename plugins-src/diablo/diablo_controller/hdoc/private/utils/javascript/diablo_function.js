@@ -465,14 +465,17 @@ var diablo_discount = function(fprice, tagPrice){
     if (tagPrice == 0){
 	return diablo_full_discount;
     };
-    
-    return parseFloat((diablo_float_div(fprice, tagPrice) * 100).toFixed(1));
+
+    // console.log(fprice / tagPrice);
+    // return parseFloat((diablo_float_div(fprice, tagPrice) * 100).toFixed(1));
+    return diablo_rdight((fprice / tagPrice) * 100, 2);
 }
 
 var diablo_price = function(price, discount){
     // return diablo_float_mul(diablo_float_mul(price, discount), 0.01);
     var p = diablo_float_mul(diablo_float_mul(price, discount), 0.01);
-    return parseFloat(p.toFixed(2));
+    // return parseFloat(p.toFixed(2));
+    return diablo_rdight(p, 2);
 }
 
 var diablo_full_year = [2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020];

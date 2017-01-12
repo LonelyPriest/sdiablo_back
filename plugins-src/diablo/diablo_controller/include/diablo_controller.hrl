@@ -44,6 +44,7 @@
 -define(UPDATE_INVENTORY, 2).
 -define(UPDATE_FIRM, 3).
 -define(DELETE_INVENTORY, 4).
+-define(TRANSFER_INVENTORY, 5).
 
 %% retailer
 -define(UPDATE_RETAILER, 0).
@@ -219,7 +220,9 @@
 -define(cancel_w_inventory_transfer,     ?right_w_inventory + 20).
 -define(adjust_w_inventory_price,        ?right_w_inventory + 21).
 -define(comment_w_inventory_new,         ?right_w_inventory + 22).
+%% update original price when reject stock to firm
 -define(update_price_of_w_inventory_reject, ?right_w_inventory + 23).
+-define(modify_w_inventory_new_balance, ?right_w_inventory + 24).
 
 
 %% firm

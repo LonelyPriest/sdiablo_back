@@ -210,15 +210,10 @@
 	  <div class="panel panel-default">
 	    <div class="table-responsive diablo-table">
 	      <!--EBGIN table supplier-->
-	      <table id="t_reject"
-		     class="table table-bordered
+	      <table class="table table-bordered
 			    table-striped table-hover
-			    table-condensed table-advanced">
-		<thead
-		   class="stick-thead"
-		   fsm-sticky-header
-		   scroll-body="'#t_reject'"
-		   scroll-stop="50">
+			    table-condensed table-advanced" navtable>
+		<thead>
 		  <tr>
 		    <th class="text-center">序号</th>
 		    <th class="text-center">货号</th>
@@ -300,12 +295,14 @@
 				 type="number" step="0.01" 
 				 required
 				 disable-key
-				 readonly="!stock_right.update_price"
+				 x-ng-edit
+				 x-ng-readonly="!stock_right.update_price"
 				 placeholder="默认上次进价" 
 				 x-ng-pattern="pattern.price"
 				 x-ng-model="inv.org_price"
 				 ng-model-options="{debounce:300}"
 				 x-ng-change="row_change_price(inv)" />
+			</div>
 		      </form>
 		    </td>
 
@@ -322,12 +319,14 @@
 				 type="number" step="0.1" 
 				 required
 				 disable-key
-				 readonly="!stock_right.update_price"
+				 x-ng-edit
+				 x-ng-readonly="!stock_right.update_price"
 				 placeholder="默认上次折扣率" 
 				 x-ng-model="inv.ediscount"
 				 x-ng-pattern="/^\d{1,2}(\.\d{1,2})?$|100$/"
 				 ng-model-options="{debounce:300}"
 				 x-ng-change="row_change_ediscount(inv)" />
+			</div>
 		      </form>
 		    </td>
 		    
@@ -350,6 +349,7 @@
 				 x-ng-change="auto_save_free(inv)"
 				 focus-auto="focus.reject"
 				 placeholder="数量" />
+			</div>
 		      </form>
 		    </td>
 
@@ -428,10 +428,10 @@
 	    
 	  </div> <!--END panel-->
 	</div> <!--END portlet body-->
-      </div> <!--END table container-->
+      </div> <!--END table container--> 
       
     </div>
-  </div>
+  </div> 
 </div>
 
 

@@ -109,7 +109,11 @@ purchaser_inventory(delete_new, Merchant, RSN, Mode) ->
     gen_server:call(Name, {delete_new, Merchant, RSN, Mode});
 purchaser_inventory(comment, Merchant, RSN, Comment) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {comment_new, Merchant, RSN, Comment}).
+    gen_server:call(Name, {comment_new, Merchant, RSN, Comment});
+purchaser_inventory(modify_balance, Merchant, RSN, Balance) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {modify_balance, Merchant, RSN, Balance}).
+
 
 
 
@@ -1342,7 +1346,7 @@ handle_call({check_inventory, Merchant, RSN, Mode}, _From, State) ->
 
     case ?sql_utils:execute(s_read, Sql0) of
 	{ok, []} ->
-	    {reply, {error, ?err(failed_to_get_stock_new, RSN)}};
+	    {reply, {error, ?err(failed_to_get_stock_new, RSN)}, State};
 	{ok, New} ->
 	    StockState = ?v(<<"state">>, New),
 	    case StockState == ?DISCARD
@@ -1387,7 +1391,7 @@ handle_call({delete_new, Merchant, RSN, Mode}, _From, State) ->
 
     case ?sql_utils:execute(s_read, Sql1) of
 	{ok, []} ->
-	    {reply, {error, ?err(failed_to_get_stock_new, RSN)}};
+	    {reply, {error, ?err(failed_to_get_stock_new, RSN)}, State};
 	{ok, New} ->
 	    %% NId = ?v(<<"id">>, New),
 	    StockState = ?v(<<"state">>, New),
@@ -1511,6 +1515,75 @@ handle_call({comment_new, Merchant, RSN, Comment}, _From, State) ->
 
     Reply = ?sql_utils:execute(write, Sql, RSN),
     {reply, Reply, State};
+
+handle_call({modify_balance, Merchant, RSN, Balance}, _From, State) ->
+    Sql0 = "select id, merchant, rsn, firm, balance, type, entry_date from w_inventory_new"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'",
+    case ?sql_utils:execute(s_read, Sql0) of
+	{ok, []} ->
+	    {reply, {error, ?err(failed_to_get_stock_new, RSN)}, State};
+	{ok, New} ->
+	    case ?v(<<"state">>, New) of
+		?DISCARD ->
+		    {reply, {error, ?err(error_state_of_check, RSN)}, State};
+		?CHECKED ->
+		    {error, ?err(error_state_of_check, RSN)};
+		_ ->
+		    ?DEBUG("New ~p", [New]),
+		    OldBalance = ?v(<<"balance">>, New),
+		    EntryDate  = ?v(<<"entry_date">>, New),
+		    Firm       = ?v(<<"firm">>, New),
+		    Type       = ?v(<<"type">>, New),
+		    MBalance   = Balance - OldBalance,
+
+		    Sql1 = ["update w_inventory_new set balance=" ++ ?to_s(Balance)
+			    ++ " where merchant=" ++ ?to_s(Merchant)
+			    ++ " and firm=" ++ ?to_s(Firm)
+			    ++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'",
+
+			    "update w_inventory_new set balance=balance+" ++ ?to_s(MBalance)
+			    ++ " where merchant=" ++ ?to_s(Merchant)
+			    ++ " and firm=" ++ ?to_s(Firm)
+			    ++ " and state!=" ++ ?to_s(?DISCARD)
+			    ++ " and entry_date>\'" ++ ?to_s(EntryDate) ++ "\'"],
+
+		    case Type =:= ?FIRM_BILL of
+			true ->
+			    Sql01 = "select id, merchant, rsn, firm, balance from w_bill_detail"
+				" where merchant=" ++ ?to_s(Merchant)
+				++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'", 
+			    Sql2 =
+				case ?sql_utils:execute(s_read, Sql01) of
+				    {ok, []} -> [];
+				    {ok, Bill} ->
+					BillId = ?v(<<"id">>, Bill),
+					BillFirm = ?v(<<"firm">>, Bill),
+					["update w_bill_detail set balance=" ++ ?to_s(Balance)
+					 ++ " where merchant=" ++ ?to_s(Merchant)
+					 ++ " and firm=" ++ ?to_s(BillFirm)
+					 %% ++ " and state!=" ++ ?to_s(?DISCARD)
+					 ++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'",
+
+					 "update w_bill_detail"
+					 " set balance=balance+" ++ ?to_s(MBalance)
+					 ++ " where merchant=" ++ ?to_s(Merchant)
+					 ++ " and firm=" ++ ?to_s(BillFirm)
+					 ++ " and state!=" ++ ?to_s(?DISCARD)
+					 ++ " and id>" ++ ?to_s(BillId)];
+				    Error ->
+					{reply, Error, State}
+				end,
+			    Reply = ?sql_utils:execute(transaction, Sql1 ++ Sql2, RSN),
+			    {reply, Reply, State}; 
+			false ->
+			    Reply = ?sql_utils:execute(transaction, Sql1, RSN),
+			    {reply, Reply, State}
+		    end
+	    end;
+	Error ->
+	    {reply, Error, State}
+    end;
 
 %% reject
 handle_call({reject_inventory, Merchant, Inventories, Props}, _From, State) ->
@@ -1869,8 +1942,9 @@ handle_call({adjust_price, Merchant, Inventories, Attrs}, _From, State) ->
 		      case TagPrice == 0 of
 			  true -> 0;
 			  false ->
-			      ?to_f(float_to_binary(
-				      OrgPrice / TagPrice, [{decimals, 3}])) * 100
+			      ?w_good_sql:stock(ediscount, OrgPrice, TagPrice)
+			      %% ?to_f(float_to_binary(
+			      %% 	      OrgPrice / TagPrice, [{decimals, 3}])) * 100
 		      end,
 		  
 		  ["update w_inventory set discount=" ++ ?to_s(Discount)
