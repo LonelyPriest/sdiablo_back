@@ -61,6 +61,9 @@ function firmConfig(angular){
 	
 	var base = {"base": function(diabloNormalFilter){
 	    return diabloNormalFilter.get_base_setting()}};
+
+	var region = {"filterRegion": function(diabloNormalFilter){
+	    return diabloNormalFilter.get_region()}};
 	
 	$routeProvider.
 	    when('/firm_detail', {
@@ -81,6 +84,11 @@ function firmConfig(angular){
 	    when('/new_firm', {
 		templateUrl: '/private/firm/html/new_firm.html',
 		controller: 'firmNewCtrl'
+	    }).
+	    when('/firm_profit', {
+		templateUrl: '/private/firm/html/firm_profit.html',
+		controller: 'firmAnalysisProfitCtrl',
+		resolve: angular.extend({}, region)
 	    }).
 	    // brand
 	    when('/new_brand', {
@@ -220,6 +228,16 @@ function firmConfig(angular){
 
 	this.export_w_firm = function(){
 	    return http.save({operation: "export_w_firm"}).$promise;
+	};
+
+	this.analysis_profit_w_firm = function(match, condition, currentPage, itemsPerpage){
+	    return http.save({operation: "analysis_profit_w_firm"},
+			     {
+				 match:     angular.isDefined(match) ? match.op : undefined,
+				 condition: condition,
+				 page:      currentPage,
+				 count:     itemsPerpage
+			     }).$promise;
 	};
 
 	/*

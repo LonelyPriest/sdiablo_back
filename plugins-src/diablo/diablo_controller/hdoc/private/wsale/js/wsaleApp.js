@@ -156,7 +156,7 @@ function wsaleConfg(angular){
             2705: "应付款项与开单项计算有不符！！",
 	    2706: "该电子卷金额与系统不一致，请核对该电子卷后再使用！！",
 	    2707: "该电子卷对应的优惠规则不存在！！",
-	    2708: "系统时间与服务器时间相差在于30分钟， 请检查系统时间或重新操作！！",
+	    2708: "系统时间与服务器时间相差大于30分钟， 请检查系统时间或重新操作！！",
 	    2699: "修改前后信息一致，请重新编辑修改项！！",
 	    9001: "数据库操作失败，请联系服务人员！！"};
 
@@ -318,6 +318,7 @@ function wsaleNewProvide(
 	discount: diabloPattern.discount};
     
     $scope.timeout_auto_save = undefined;
+    $scope.interval_per_5_minute = undefined;
     $scope.round  = diablo_round;
     
     $scope.today = function(){
@@ -683,7 +684,7 @@ function wsaleNewProvide(
 	$scope.select.comment      = undefined;
 	
 	$scope.select.datetime     = $scope.today();
-
+	
 	if ($scope.setting.semployee)
 	    $scope.select.employee = undefined;
 	
@@ -693,7 +694,15 @@ function wsaleNewProvide(
 	$scope.auto_focus("style_number");
 	$scope.wsaleStorage.reset();
 	$scope.reset_retailer();
-    }; 
+    };
+
+    
+    $scope.refresh_datetime_per_5_minute = function(){
+    	$scope.interval_per_5_minute = setInterval(function(){
+    	    $scope.select.datetime  = $scope.today();
+	    console.log(dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"));
+    	}, 300 * 1000);
+    };
 
     var now = $scope.today(); 
     $scope.qtime_start = function(shopId){
@@ -726,6 +735,7 @@ function wsaleNewProvide(
     }
 
     $scope.match_all_w_inventory();
+    $scope.refresh_datetime_per_5_minute();
 
     // init
     $scope.inventories = [];
@@ -1028,30 +1038,34 @@ function wsaleNewProvide(
 	    return messsage;
 	};
 
+	var error = function(status) {
+	    var error_message = "";
+	    if (status.pcode !== 0)
+		error_message += print(status);
+
+	    if (status.sms_code !== 0){
+		if (status.sms_code !== 0) {
+		    var ERROR = require("diablo-error");
+		    error_message += "发送短消息失败：" + ERROR[status.sms_code];
+		}		
+	    }
+
+	    return error_message;
+	};
+
 	var dialog = diabloUtilsService; 
 	var show_dialog = function(title, message){
 	    dialog.response(true, title, message, undefined)
 	};
 
-	var sms_message = "";
-	if (result.sms_code !== 0) {
-	    var ERROR = require("diablo-error");
-	    sms_message = "发送短消息失败：" + ERROR[result.sms_code];
-	}
-
 	if (im_print === diablo_yes){
-	    if (result.pcode !== 0){
-		var show_message = "开单成功！！" + print(result);
-		show_dialog("销售开单", show_message + sms_message); 
-	    }
-	    if (result.sms_code !== 0){
-		show_dialog("销售开单", "开单成功！！" + sms_message); 
-	    }
+	    if (result.pcode !== 0 || result.sms_code !== 0)
+		show_dialog("销售开单", "开单成功！！" + error(result));
 	} else{
 	    var ok_print = function(){
 		wsaleService.print_w_sale(result.rsn).then(function(presult){
-		    var show_message = "开单成功，" + print(presult) + sms_message; 
-		    show_dialog("销售开单", show_message); 
+		    if (result.pcode !== 0 || result.sms_code !== 0)
+			show_dialog("销售开单", "开单成功" + error(presult)); 
 		})
 	    };
 	    

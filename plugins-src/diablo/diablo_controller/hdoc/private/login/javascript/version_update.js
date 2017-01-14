@@ -1,6 +1,11 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2017-01-16",
+         content:
+	 ["增加厂商一段时间内的进销存报表分析"]
+        },
+	
 	{date: "2017-01-13",
          content:
 	 ["增加销售开单/退货时间与服务器时间校验，误差不允许超过30分钟",

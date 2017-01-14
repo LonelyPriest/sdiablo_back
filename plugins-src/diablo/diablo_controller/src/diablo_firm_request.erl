@@ -251,10 +251,95 @@ action(Session, Req, {"export_w_firm"}, Payload) ->
 	    end;
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"analysis_profit_w_firm"}, Payload) ->
+    ?DEBUG("analysis_profit_w_firm:session ~p, payload ~p", [Session, Payload]),
+    Merchant    = ?session:get(merchant, Session),
+    {struct, Conditions} = ?v(<<"condition">>, Payload),
+    CurrentPage = ?v(<<"page">>, Payload, 1),
+    ItemsPerpage = ?v(<<"count">>, Payload, ?DEFAULT_ITEMS_PERPAGE), 
+
+    FF = fun (V) when V =:= <<>> -> 0;
+	     (Any)  -> ?to_f(Any)
+	 end,
+    
+    try
+	{Total, Others} = 
+	    case CurrentPage =:= 1 of
+		true ->
+		    {ok, R} = ?supplier:supplier(page_total, Merchant, []),
+		    {ok, TBalance} = ?supplier:sprofit(sprofit, balance, Merchant, Conditions),
+		    ?DEBUG("tbalance ~p", [TBalance]),
+		    {?v(<<"total">>, R),
+		     {proplists:delete(<<"total">>, R)
+		      ++ [{<<"tbalance">>, ?v(<<"tbalance">>, TBalance)}]
+		     }
+		    };
+		false -> {0, []}
+	    end,
+
+	case Total =:= 0 andalso CurrentPage =:= 1 of
+	    true ->
+		?utils:respond(
+		   200, object, Req, {[{<<"ecode">>, 0},
+				       {<<"total">>, Total},
+				       {<<"firm">>, []},
+				       {<<"sale">>, []},
+				       {<<"stockin">>, []},
+				       {<<"stockout">>, []},
+				       {<<"stockall">>, []},
+				       {<<"balance">>, []}
+				      ]});
+	    false ->
+		{ok, Firms} = ?supplier:supplier(page_list, Merchant, [], CurrentPage, ItemsPerpage),
+		FirmIds = lists:foldr(fun({Firm}, Acc) ->
+					      [?v(<<"id">>, Firm)|Acc]
+				      end, [], Firms), 
+		NConditions = [{<<"firm">>, FirmIds}|Conditions],
+	
+		{ok, Sales} = ?supplier:profit(profit, sale_of_firm, Merchant, NConditions),
+		{ok, StockIn} = ?supplier:profit(profit, stock_in_of_firm, Merchant, NConditions),
+		{ok, StockOut} = ?supplier:profit(profit, stock_out_of_firm, Merchant, NConditions),
+		{ok, StockAll} = ?supplier:profit(profit, stock_all, Merchant, NConditions),
+		{ok, StockBalance} = ?supplier:profit(profit, balance, Merchant, NConditions),
+
+		SS = 
+		    lists:foldr(
+		      fun({S}, Acc) ->
+			      [{[{<<"firm_id">>, ?v(<<"firm_id">>, S)},
+				 {<<"has_pay">>, ?v(<<"has_pay">>, S)},
+				 {<<"veri">>,    ?v(<<"verificate">>, S)},
+				 {<<"epay">>,    ?v(<<"e_pay">>, S)},
+				 {<<"balance">>,
+				  ?to_f(FF(?v(<<"balance">>, S, 0))
+					+ FF(?v(<<"should_pay">>, S, 0))
+					+ FF(?v(<<"e_pay">>, S, 0))
+					- FF(?v(<<"has_pay">>, S, 0))
+					- FF(?v(<<"verificate">>, S, 0)))
+				 }]}|Acc] 
+		      end, [], StockBalance),
+
+		%% ?DEBUG("SS ~p", [SS]),
+
+		?utils:respond(200, object, Req,
+			       {[{<<"ecode">>, 0},
+				 {<<"total">>, Total},
+				 {<<"firm">>, Firms},
+				 {<<"sale">>, Sales},
+				 {<<"stockin">>, StockIn},
+				 {<<"stockout">>, StockOut},
+				 {<<"stockall">>, StockAll},
+				 {<<"balance">>, SS},
+				 {<<"other">>, Others}
+				]})
+	end
+    catch
+	_:{badmatch, {error, Error}} -> ?utils:respond(200, Req, Error) 
     end.
 
 sidebar(Session) -> 
-    NewFrim =
+    NewFirm =
 	case ?right_auth:authen(?new_w_firm, Session) of
 	    {ok, ?new_w_firm} ->
 		[{"new_firm", "新增厂商", "glyphicon glyphicon-plus"}];
@@ -285,6 +370,15 @@ sidebar(Session) ->
 	    _ ->
 		[]
 	end,
+
+    FirmProfit = 
+	case ?right_auth:authen(?analysis_profit_w_firm, Session) of
+	    {ok, ?analysis_profit_w_firm} ->
+		[{"firm_profit", "盈利分析", "glyphicon glyphicon-font"}];
+	    _ ->
+		[]
+	end,
+    
     
     Bill =
         case ?right_auth:authen(?bill_w_firm, Session) of 
@@ -297,8 +391,9 @@ sidebar(Session) ->
             _ ->
                 []
         end,
-    ?menu:sidebar(level_1_menu, NewFrim ++ ListFirm ++ NewBrand ++ ListBrand)
-	++ ?menu:sidebar(level_2_menu, Bill).
+    ?menu:sidebar(level_1_menu, ListFirm ++ ListBrand ++ NewFirm ++ NewBrand)
+	++ ?menu:sidebar(level_2_menu, Bill)
+	++ ?menu:sidebar(level_1_menu, FirmProfit).
 
 batch_responed(Fun, Req) ->
     case Fun() of

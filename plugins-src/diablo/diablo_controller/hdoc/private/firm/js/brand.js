@@ -89,7 +89,7 @@ function brandDetailCtrlProvide(
     };
 
     $scope.page_changed = function(){
-	console.log($scope.current_page);
+	// console.log($scope.current_page);
 	$scope.filter_brands = diabloPagination.get_page($scope.current_page);
     };
     

@@ -558,10 +558,10 @@ function wretailerChargeDetailCtrlProvide(
     
     $scope.filters = []; 
     diabloFilter.reset_field();
-    diabloFilter.add_field("shop", $scope.shops);
     diabloFilter.add_field("retailer", function(viewValue){
 	return retailerUtils.match_retailer_phone(viewValue, diabloFilter)
     });
+    diabloFilter.add_field("shop", $scope.shops); 
 
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();

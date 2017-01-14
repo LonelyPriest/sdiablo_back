@@ -237,7 +237,7 @@ transfer_to_float(E) when is_integer(E) ->
     erlang:float(E);
 transfer_to_float(E) when is_binary(E) ->
     try
-	erlang:binary_to_float(E)
+	binary_to_float(float_to_binary(binary_to_float(E), [{decimals, 2}]))
     catch
 	error:badarg -> float(erlang:binary_to_integer(E))
     end;
@@ -245,11 +245,11 @@ transfer_to_float(E) when is_list(E)->
     try 
 	erlang:float(erlang:list_to_integer(E))
     catch
-	error:badarg ->
-	    erlang:list_to_float(E)
+	error:badarg -> 
+	    list_to_float(float_to_list(list_to_float(E), [{decimals, 2}]))
     end;
 transfer_to_float(E) ->
-    E.
+    list_to_float(float_to_list(E, [{decimals, 2}])).
 
 
 transfer_to_tuple_list(E) when is_tuple(E) ->

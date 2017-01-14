@@ -195,10 +195,7 @@ function firmDetailCtrlProvide(
 		if (!in_prompt(f.address, $scope.prompts)){
 		    $scope.prompts.push({name: f.address, py:diablo_pinyin(f.address)}); 
 		}
-		// if (!in_prompt(f.mobile, $scope.prompts)){
-		//     $scope.prompts.push({name: f.mobile, py:diablo_pinyin(f.mobile)}); 
-		// }
-
+		
 		if (!in_prompt(f.code, $scope.prompts)){
 		    $scope.prompts.push({name: f.code, py:f.code}); 
 		}
@@ -206,23 +203,7 @@ function firmDetailCtrlProvide(
 	    $scope.total_balance = diablo_rdight($scope.total_balance, 2);
 
 	    var filters = get_filter_firm(search); 
-	    reset_pagination(filters, search);
-	    
-	    // for(var i=0, l=$scope.firms.length; i<l; i++){
-	    // 	var f = $scope.firms[i];
-
-	    // 	if (!in_prompt(f.name, $scope.prompts)){
-	    // 	    $scope.prompts.push({name: f.name, py:diablo_pinyin(f.name)}); 
-	    // 	}
-	    // 	if (!in_prompt(f.address, $scope.prompts)){
-	    // 	    $scope.prompts.push({name: f.address, py:diablo_pinyin(f.address)}); 
-	    // 	}
-	    // 	if (!in_prompt(f.mobile, $scope.prompts)){
-	    // 	    $scope.prompts.push({name: f.mobile, py:diablo_pinyin(f.mobile)}); 
-	    // 	} 
-	    // } 
-
-	    // console.log($scope.current_page);
+	    reset_pagination(filters, search); 
 	});
     }
 
@@ -352,7 +333,90 @@ function firmDetailCtrlProvide(
 };
 
 
+function firmAnalysisProfitCtrlProvide(
+    $scope, $location, $routeParams, firmService, diabloUtilsService,
+    diabloFilter, diabloPagination, diabloPattern, localStorageService,
+    filterRegion){
+    $scope.regions = filterRegion;
+    // $scope.firms   = filterFirm;
+    $scope.analysises = [];
+    
+    var now = stockUtils.first_day_of_month();
+    $scope.time = diabloFilter.default_time(now.first, now.current);
+
+    $scope.items_perpage = diablo_items_per_page();
+    $scope.max_page_size = diablo_max_page_size();
+    $scope.default_page  = 1; 
+    $scope.current_page  = $scope.default_page;
+    $scope.total_items = 0;
+    
+    $scope.filters = [];
+    diabloFilter.reset_field(); 
+    // diabloFilter.add_field("region",  $scope.regions);
+    diabloFilter.add_field("firm",    $scope.firms);
+    
+    $scope.filter = diabloFilter.get_filter();
+    $scope.prompt = diabloFilter.get_prompt();
+
+    var select_by_firm = function(firmId, stastics){
+	if (!angular.isArray(stastics)) return {};
+
+	var filter = stastics.filter(function(s){
+	    return firmId === s.firm_id;
+	});
+
+	if (filter.length === 1) return filter[0];
+	return {};
+    };
+    
+    $scope.do_search = function(page){
+	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+	    firmService.analysis_profit_w_firm(
+		$scope.match, search, page, $scope.items_perpage
+	    ).then(function(result){
+		console.log(result);
+		if (result.ecode === 0) {
+		    if (page === 1) {
+			$scope.total_items = result.total;
+			$scope.total_balance = result.other.tbalance;
+		    };
+		    
+		    var firms        = result.firm;
+		    var sale         = result.sale;
+		    var stockIn      = result.stockin;
+		    var stockOut     = result.stockout;
+		    var stockAll     = result.stockall;
+		    var stockBalance = result.balance;
+
+		    $scope.analysises = []; 
+		    angular.forEach(firms, function(f){
+			var s = {firm:f};
+			s.sale         = select_by_firm(f.id, sale);
+			s.stockIn      = select_by_firm(f.id, stockIn);
+			s.stockOut     = select_by_firm(f.id, stockOut);
+			s.stockAll     = select_by_firm(f.id, stockAll);
+			s.stockBalance = select_by_firm(f.id, stockBalance);
+			$scope.analysises.push(s);
+		    });
+
+		    diablo_order_page(page, $scope.items_perpage, $scope.analysises);
+		    console.log($scope.analysises); 
+		    $scope.current_page = page;
+		}
+		
+	    });
+	});
+    };
+
+    $scope.page_changed = function(page) {
+	$scope.do_search(page);
+    };
+
+    $scope.do_search($scope.current_page);
+};
+    
 define(["firmApp"], function(app){
     app.controller("firmNewCtrl", firmNewCtrlProvide);
     app.controller("firmDetailCtrl", firmDetailCtrlProvide);
+    app.controller("firmAnalysisProfitCtrl", firmAnalysisProfitCtrlProvide);
 });

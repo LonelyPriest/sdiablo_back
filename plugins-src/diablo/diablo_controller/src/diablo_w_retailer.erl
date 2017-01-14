@@ -348,8 +348,20 @@ handle_call({reset_password, Merchant, RetailerId, Password}, _From, State) ->
 handle_call({get_retailer, Merchant, RetailerId}, _From, State) ->
     ?DEBUG("get_retailer with merchant ~p, retailerId ~p",
 	   [Merchant, RetailerId]),
-    Sql = "select id, name, mobile, address"
-	", balance, merchant, entry_date"
+    Sql = "select a.id"
+	", a.name"
+	", a.id_card"
+	", a.py"
+	", a.birth"
+	", a.type as type_id"
+	", a.balance"
+	", a.consume"
+	", a.score"
+	", a.mobile"
+	", a.address"
+	", a.shop as shop_id"
+	", a.merchant"
+	", a.entry_date" 
 	" from w_retailer where id=" ++ ?to_s(RetailerId)
 	++ " and merchant=" ++ ?to_s(Merchant), 
     Reply = ?sql_utils:execute(write, Sql, RetailerId),
@@ -393,7 +405,7 @@ handle_call({list_retailer, Merchant}, _From, State) ->
 	", a.mobile"
 	", a.address"
 	", a.shop as shop_id"
-	", a. merchant"
+	", a.merchant"
 	", a.entry_date"
 
 	", b.name as shop"

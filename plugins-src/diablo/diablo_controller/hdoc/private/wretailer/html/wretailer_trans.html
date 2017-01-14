@@ -99,12 +99,12 @@
 		    </td>
 		    <td class="{{css(r.state, r.type)}}">{{r.shop.name}}</td>
 		    <td class="{{css(r.state, r.type)}}">
-		      <div x-ng-if="retailer.type===1">{{r.balance}}</div>
-		      <div x-ng-if="retailer.type!==1">-</div>
+		      <div x-ng-if="retailer.type_id===1">{{r.balance}}</div>
+		      <div x-ng-if="retailer.type_id!==1">-</div>
 		    </td>
 		    <td class="{{css(r.state, r.type)}}">
-		      <div x-ng-if="retailer.type===1">{{r.left_balance}}</div>
-		      <div x-ng-if="retailer.type!==1">-</div>
+		      <div x-ng-if="retailer.type_id===1">{{r.left_balance}}</div>
+		      <div x-ng-if="retailer.type_id!==1">-</div>
 		    </td> 
 		    <td class="{{css(r.state, r.type)}}">{{r.employee.name}}</td> 
 		    <td class="{{css(r.state, r.type)}}">{{r.total}}</td> 

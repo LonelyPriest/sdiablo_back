@@ -42,6 +42,7 @@ function monthStasticCtrlProvide(
     };
 
     $scope.filters = [];
+    diabloFilter.reset_field(); 
     diabloFilter.add_field("shop",     $scope.shops);
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();

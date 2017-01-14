@@ -1,0 +1,140 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="portlet box purple diablo-margin-bottom-5">
+      
+      <div class="portlet-title">
+	<div class="caption"><i class="glyphicon glyphicon-menu-hamburger"></i>
+	  厂商盈利分析
+	</div>
+	
+	<div class="actions"> 
+	  <button type="button" class="btn red"
+		  x-ng-click="go_back()">返回
+	    <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
+
+	  <button type="button" class="btn blue purple-stripe hidden-xs"
+		    x-ng-click="export_firm_profit()">导出
+	      <i class="glyphicon glyphicon-export"></i></button>
+
+	  <button type="button" class="btn yellow reload"
+		  x-ng-click="do_search(default_page)">刷新
+	    <i class="icon icon-spinner"></i></button> 
+	</div> 
+      </div>
+
+      <!--BEGIN table container-->
+      <div class="portlet-body">
+	<!--BEGIN table-toolbar-->
+	<div class="table-toolbar util-btn-margin-bottom-5">
+	  <!--BEGIN row-->
+	  <div class="row">
+            <div class="col-md-4 col-sm-4 col-xs-6">
+              <time-search
+                 glyphicon="glyphicon glyphicon-arrow-left fg-red"
+                 time="time.start_time" ok="do_search(default_page)"></time-search>
+            </div>
+
+            <div class="col-md-4 col-sm-4 col-xs-6">
+              <time-search
+                 glyphicon="glyphicon glyphicon-arrow-right fg-red"
+                 time="time.end_time" ok="do_search(default_page)"></time-search>
+            </div> 
+
+            <div class="col-md-4 col-sm-4 col-xs-12">
+              <query-pattern ng-model="match"
+                             filters="filters"
+                             filter="filter">
+	      </query-pattern>
+            </div>
+	  </div> <!--END row-->
+
+	  <query-group filters="filters" prompt="prompt"
+		       ok="do_search(default_page)"></query-group>
+	</div> <!--END table-toolbar-->
+	
+	<!--BEGN portlet body--> 
+	<div class="portlet-body">
+	  <!--BEGIN panel-->
+	  <div class="panel panel-default table-panel">
+	    <div class="table-responsive"> 
+	      <!--EBGIN table -->
+	      <table class="table table-bordered
+			    table-striped table-hover table-condensed table-advanced">
+		<thead>
+		  <tr>
+		    <th>序号</th>
+		    <th>厂商</th>
+		    
+		    <th>已付</th>
+		    <th>核销</th>
+		    <th>费用</th>
+		    <th>欠款</th>
+		    
+		    <th>入库数量</th>
+		    <th>入库成本</th>
+		    <th>退货数量</th>
+		    <th>退货成本</th>
+		    <th>销售数量</th>
+		    <th>销售成本</th>
+		    <th>当前库存</th>
+		    <th>库存成本</th> 
+		  </tr>
+		</thead>
+		<tbody>
+		  <tr x-ng-repeat="a in analysises">
+		    <td x-ng-bind=a.order_id></td>
+		    <td x-ng-bind=a.firm.name></td>
+		    
+		    <td x-ng-bind=a.stockBalance.has_pay></td>
+		    <td x-ng-bind=a.stockBalance.veri></td>
+		    <td x-ng-bind=a.stockBalance.epay></td> 
+		    <td x-ng-bind=a.stockBalance.balance></td> 
+		    
+		    <td x-ng-bind=a.stockIn.amount></td>
+		    <td x-ng-bind=a.stockIn.cost></td>
+		    
+		    <td x-ng-bind=a.stockOut.amount></td>
+		    <td x-ng-bind=a.stockOut.cost></td>
+		    
+		    <td x-ng-bind=a.sale.total></td>
+		    <td x-ng-bind=a.sale.cost></td>
+
+		    <td x-ng-bind=a.stockAll.amount></td>
+		    <td x-ng-bind=a.stockAll.cost></td>
+		  </tr>
+
+		  <tr x-ng-if="total_items!==0" class="bg-white">
+		    <td colspan=5></td>
+		    <td x-ng-bind=total_balance></td>
+		    <td colspan=8></td>
+		  </tr> 
+		</tbody>
+		
+	      </table>
+	    </div> <!--END table responsive-->
+	    
+	  </div> <!--END panel-->
+	</div> <!--END portlet body-->
+
+	<div x-ng-show="total_items>items_perpage" class="row">
+	  <div class="col-md-12, col-sm-12, col-xs-12">
+	    <span>显示第 {{current_page}} / {{num_pages}} 项结果，共 {{total_items}} 项</span>
+	    <uib-pagination class="pagination-lg table-pagination pull-right"
+			total-items="total_items"
+			items-per-page="items_perpage"
+			num-pages="num_pages"
+			max-size="max_page_size"
+			boundary-links="true"
+			previous-text="&lsaquo;" next-text="&rsaquo;"
+			first-text="&laquo;" last-text="&raquo;"
+			x-ng-model="current_page"
+			x-ng-change="page_changed(current_page)">
+	    </uib-pagination>
+	  </div>
+	</div>
+	
+      </div> <!--END table container--> 
+    </div>
+  </div> 
+</div>
+

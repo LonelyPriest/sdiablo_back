@@ -329,7 +329,7 @@ action(Session, Req, {"list_w_inventory_flow"}, Payload) ->
 			 {<<"transfer">>, TransferDetail}
 			]})
     catch
-	_:{badmatch, Error} ->
+	_:{badmatch, {error, Error}} ->
 	    ?utils:respond(200, Req, Error)
     end;
 

@@ -316,7 +316,9 @@ init([]) ->
 	 {?abandon_w_firm_bill,
 	  <<"厂商结帐单废弃">>, <<"abandon_w_firm_bill">>,  ?right_w_firm},
 	 {?export_w_firm,
-	  <<"厂商导出">>, <<"export_w_firm">>,  ?right_w_firm}
+	  <<"厂商导出">>, <<"export_w_firm">>,  ?right_w_firm},
+	 {?analysis_profit_w_firm, 
+	  <<"厂商盈利分析">>, <<"analysis_profit_w_firm">>,  ?right_w_firm}
 	], 
     
     %% print
