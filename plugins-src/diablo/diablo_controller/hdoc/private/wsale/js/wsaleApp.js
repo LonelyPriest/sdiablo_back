@@ -700,7 +700,7 @@ function wsaleNewProvide(
     $scope.refresh_datetime_per_5_minute = function(){
     	$scope.interval_per_5_minute = setInterval(function(){
     	    $scope.select.datetime  = $scope.today();
-	    console.log(dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"));
+	    // console.log(dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"));
     	}, 300 * 1000);
     };
 

@@ -385,7 +385,6 @@ function wsaleRejectCtrlProvide(
 	console.log(added);
 	console.log(base);
 
-	return;
 	wsaleService.reject_w_sale({
 	    inventory:added, base:base, print:print
 	}).then(function(result){
