@@ -67,6 +67,12 @@ function wretailerConfig(angular) {
 
 	var color = {"filterColor": function(diabloFilter){
 	    return diabloFilter.get_color()}};
+
+	var region = {"filterRegion": function(diabloNormalFilter){
+	    return diabloNormalFilter.get_region()}};
+
+	var shop = {"filterShop": function(diabloNormalFilter){
+            return diabloNormalFilter.get_shop()}};
 	
 	$routeProvider. 
 	    when('/wretailer_new', {
@@ -77,7 +83,7 @@ function wretailerConfig(angular) {
 	    when('/wretailer_detail', {
 		templateUrl: '/private/wretailer/html/wretailer_detail.html',
 		controller: 'wretailerDetailCtrl',
-		resolve: angular.extend({}, employee, charge, user, base)
+		resolve: angular.extend({}, employee, charge, region, user, base)
 	    }).
 	    when('/wretailer_charge_detail', {
 		templateUrl: '/private/wretailer/html/wretailer_charge_detail.html',
@@ -124,7 +130,7 @@ function wretailerConfig(angular) {
 	    otherwise({
 		templateUrl: '/private/wretailer/html/wretailer_detail.html',
 		controller: 'wretailerDetailCtrl',
-		resolve: angular.extend({}, employee, charge, user, base)
+		resolve: angular.extend({}, employee, charge, region, user, base)
             })
     }]);
 

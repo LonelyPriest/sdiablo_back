@@ -2344,6 +2344,7 @@ handle_call({stock_export, Merchant, Conditions, Mode}, _From, State) ->
 		  (use_year)  -> "a.year";
 		  (use_type)  -> "a.type";
 		  (use_style_number) -> "a.style_number";
+		  (use_firm) -> "a.firm";
 		  (_) -> "a.id"
 	       end,
     Sql =

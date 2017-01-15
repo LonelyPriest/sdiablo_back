@@ -255,11 +255,30 @@ action(Session, Req, {"update_recharge"}, Payload) ->
 action(Session, Req, {"filter_retailer_detail"}, Payload) ->
     ?DEBUG("filter_retailer with session ~p, payload~n~p", [Session, Payload]), 
     Merchant  = ?session:get(merchant, Session),
-    {struct, Mode}     = ?v(<<"mode">>, Payload),
+    {struct, Mode}   = ?v(<<"mode">>, Payload),
+    {struct, Fields} = ?v(<<"fields">>, Payload),
+    
     Order = ?v(<<"mode">>, Mode, ?SORT_BY_ID),
     Sort  = ?v(<<"sort">>, Mode),
-    %% SortMode = ?v(<<"mode">>, Payload, ?SORT_BY_ID),
-    NewPayload = proplists:delete(<<"mode">>, Payload),
+
+    NewPayload = 
+	case ?v(<<"region">>, Fields) of
+	    undefined -> proplists:delete(<<"mode">>, Payload);
+	    Region -> 
+		{ok, Shops} = ?w_user_profile:get(shop, Merchant),
+		SelectShops = 
+		    lists:foldr(
+		      fun({Shop}, Acc)->
+			      case ?v(<<"region_id">>, Shop) =:= Region of
+				  true -> [?v(<<"id">>, Shop)|Acc];
+				  false -> Acc
+			      end
+		      end, [], Shops), 
+		proplists:delete(
+		  <<"fields">>, proplists:delete(<<"mode">>, Payload))
+		    ++ [{<<"fields">>, {struct, [{<<"shop">>, SelectShops}|Fields]}}]
+	end,
+    ?DEBUG("new payload ~p", [NewPayload]),
     
     ?pagination:pagination(
        fun(Match, Conditions) ->

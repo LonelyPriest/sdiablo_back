@@ -96,6 +96,10 @@ condition(page_desc, {use_type, Sort}, CurrentPage, ItemsPerPage) ->
     " order by a.type " ++ ?MODULE:sort(Sort)
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
     	++ ", " ++ ?to_s(ItemsPerPage);
+condition(page_desc, {use_firm, Sort}, CurrentPage, ItemsPerPage) ->
+    " order by a.firm " ++ ?MODULE:sort(Sort)
+	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
+    	++ ", " ++ ?to_s(ItemsPerPage);
 condition(page_desc, {use_datetime, Sort}, CurrentPage, ItemsPerPage) ->
     " order by a.entry_date " ++ ?MODULE:sort(Sort)
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)

@@ -649,6 +649,7 @@ var wsaleCalc = function(){
 		one.rdiscount   = diablo_full_discount;
 		one.rprice      = one.fprice;
 		one.calc        = diablo_float_mul(one.fprice, count);
+		// console.log(one.calc);
 
 		// if (retailer.id === no_vip){
 		//     wsaleUtils.sort_promotion({id: -1, rule_id: -1}, one.calc, pmoneys);
@@ -733,10 +734,10 @@ var wsaleCalc = function(){
 	    for (var i=1, l=inventories.length; i<l; i++){
 		var one = inventories[i];
 		var count = mode === 0 ? one.sell : one.reject;
-		
 		one.rdiscount = wsaleUtils.to_decimal(one.rdiscount - vdiscount);
 		one.rprice  = diablo_price(one.fprice, one.rdiscount);
-		one.calc    = wsaleUtils.to_decimal(one.rprice, count);
+		one.calc    = wsaleUtils.to_decimal(one.rprice * count);
+		console.log(one.calc);
 	    }
 	}
     }

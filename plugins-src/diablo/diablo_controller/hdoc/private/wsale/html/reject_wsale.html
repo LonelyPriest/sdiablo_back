@@ -90,7 +90,6 @@
 		<input class="form-control"
 		       type="text"
 		       placeholder="请选择单号" 
-		       typeahead-on-select="select_rsn($item, $model, $label)"
 		       x-ng-enter="select.rsn && select_rsn(select.rsn)"
 		       uib-typeahead="r for r in rsns|filter:$viewValue|limitTo:30"
 		       x-ng-model="select.rsn"/>
@@ -230,7 +229,7 @@
 	    <div class="col-xs-3 col-md-3">
 	      <div class="input-group">
 	    	<span class="input-group-addon">
-	    	  <i class="glyphicon glyphicon-file fg-red"></i>纸卷</span>
+	    	  <i class="glyphicon glyphicon-file fg-red"></i>纸券</span>
 	    	<input class="form-control" readonly
 	    	       x-ng-model="select.ticket"/>
 	      </div>

@@ -202,7 +202,8 @@ var stockUtils = function(){
 		    amount:5,
 		    style_number:6,
 		    brand:7,
-		    type:8};
+		    type:8,
+		    firm:9};
 	},
 
 	invalid_firm:function(firm) {

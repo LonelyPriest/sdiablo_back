@@ -3,7 +3,7 @@
 function firmTransCtrlProvide(
     $scope, $routeParams, $location, localStorageService,
     diabloFilter, diabloPattern, firmService, diabloUtilsService,
-    filterFirm, filterEmployee, user, base){
+    filterFirm, filterEmployee, filterRegion, user, base){
 
     // console.log(filterFirm);
     // console.log($routeParams);
@@ -89,7 +89,7 @@ function firmTransCtrlProvide(
 
     // diabloFilter.add_field("rsn", []);
     diabloFilter.add_field("shop",     $scope.shops);
-    // diabloFilter.add_field("retailer", filterRetailer);
+    diabloFilter.add_field("region",   filterRegion);
     diabloFilter.add_field("employee", filterEmployee);
 
     $scope.filter = diabloFilter.get_filter();
@@ -162,14 +162,22 @@ function firmTransCtrlProvide(
 	};
 	
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
-	    if (angular.isUndefined(search.shop)
-		|| !search.shop || search.shop.length === 0){
-		search.shop = $scope.shopIds.length
-		    === 0 ? undefined : $scope.shopIds; 
+	    if (stockUtils.to_integer(search.region) === 0){
+		if (angular.isUndefined(search.shop) || !search.shop || search.shop.length === 0){
+		    search.shop = $scope.shopIds.length === 0 ? undefined : $scope.shopIds; 
+		}
+	    } else {
+		if (angular.isArray(search.shop) && search.shop.length !== 0){
+		    delete search.region;
+		} else {
+		    search.shop = $scope.shops.filter(function(s){
+			return s.region === search.region;
+		    }).map(function(s) { return s.id});
+		}
 	    }
 	    
 	    search.firm = firm_id;
-
+	    
 	    firmService.filter_w_inventory_new(
 		$scope.match, search, page, $scope.items_perpage
 	    ).then(function(result){

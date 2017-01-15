@@ -62,8 +62,8 @@ function wretailerTransCtrlProvide(
     $scope.time  = diabloFilter.default_time($scope.qtime_start, $scope.qtime_end); 
     
     $scope.refresh = function(){
-	retailerUtils.remove_cache_page(diablo_key_retailer_trans);
-	retailerUtils.remove_cache_page("retailer-trans-stastic");
+	retailerUtils.remove_cache_page(localStorageService, diablo_key_retailer_trans);
+	retailerUtils.remove_cache_page(localStorageService, "retailer-trans-stastic");
 	$scope.do_search($scope.default_page);
     };
 

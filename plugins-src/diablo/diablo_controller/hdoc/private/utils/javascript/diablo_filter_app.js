@@ -995,9 +995,12 @@ function normalFilterProvider(){
 	    },
 
 	    get_shop: function(){
-                if (_shops.length !== 0){
-                    return _shops;
-                } else {
+		var cached = get_from_storage(cookie, "shop");
+		if (angular.isArray(cached) && cached.length !== 0) return cached; 
+                // if (_shops.length !== 0){
+                //     return _shops;
+                // }
+		else {
                     return _shopHttp.query(
                         {operation: "list_shop"}
                     ).$promise.then(function(shops){
@@ -1008,7 +1011,7 @@ function normalFilterProvider(){
                                     repo: s.repo,
                                     py:diablo_pinyin(s.name)};
                         });
-
+			set_storage(cookie, "shop", _shops)
                         return _shops;
 
                     })

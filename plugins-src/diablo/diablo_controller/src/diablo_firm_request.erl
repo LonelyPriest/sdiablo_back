@@ -374,7 +374,7 @@ sidebar(Session) ->
     FirmProfit = 
 	case ?right_auth:authen(?analysis_profit_w_firm, Session) of
 	    {ok, ?analysis_profit_w_firm} ->
-		[{"firm_profit", "盈利分析", "glyphicon glyphicon-font"}];
+		[{"firm_profit", "厂商进销存", "glyphicon glyphicon-font"}];
 	    _ ->
 		[]
 	end,

@@ -46,9 +46,11 @@ function wretailerNewCtrlProvide(
 function wretailerDetailCtrlProvide(
     $scope, $location, dateFilter, diabloFilter, diabloPattern,
     diabloUtilsService, localStorageService, wretailerService,
-    filterEmployee, filterCharge, user, base){
+    filterEmployee, filterCharge, filterRegion, user, base){
     $scope.employees      = filterEmployee;
     $scope.charges        = filterCharge;
+    $scope.regions        = filterRegion;
+    
     $scope.shops          = user.sortShops.concat([{id:-1, name:"无"}]);
     $scope.shopIds        = user.shopIds;
     $scope.retailer_types = wretailerService.retailer_types;
@@ -80,21 +82,9 @@ function wretailerDetailCtrlProvide(
 	export_retailer       :retailerUtils.authen(user.type, user.right, 'export_retailer'),
 	query_balance         :retailerUtils.authen(user.type, user.right, 'query_balance'),
 	update_phone          :retailerUtils.authen(user.type, user.right, 'update_phone'),
-	master                :rightAuthen.authen_master(user.type)
-	
-	// reset_password: rightAuthen.authen(
-	//     user.type, rightAuthen.retailer_action()['reset_password'], user.right),
-	// delete_retailer: rightAuthen.authen(
-	//     user.type, rightAuthen.retailer_action()['delete_retailer'], user.right),
-	// update_retailer_score: rightAuthen.authen(
-	//     user.type, rightAuthen.retailer_action()['update_score'], user.right),
-	// export_retailer: rightAuthen.authen(
-	//     user.type, rightAuthen.retailer_action()['export_retailer'], user.right),
-	// query_balance: rightAuthen.authen(
-	//     user.type, rightAuthen.retailer_action()['query_balance'], user.right), 
-	// master: rightAuthen.authen_master(user.type) 
+	master                :rightAuthen.authen_master(user.type) 
     };
-    console.log($scope.right);
+    // console.log($scope.right);
 
     /*
      * filter
@@ -102,9 +92,10 @@ function wretailerDetailCtrlProvide(
     $scope.filters = [];
     diabloFilter.reset_field();
     diabloFilter.add_field("month", $scope.months);
+    diabloFilter.add_field("region", $scope.regions);
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
-
+    
     $scope.order_fields = retailerUtils.order_fields();
     $scope.sort = {mode: $scope.order_fields.id, sort:diablo_desc};
 
@@ -145,11 +136,10 @@ function wretailerDetailCtrlProvide(
     $scope.do_search = function(page){
     	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
 	    console.log($scope.select.phone);
-	    if (angular.isDefined($scope.select.phone)
-		&& angular.isObject($scope.select.phone)){
+	    if (angular.isDefined($scope.select.phone) && angular.isObject($scope.select.phone)){
 		search.mobile = $scope.select.phone.mobile;
 		search.py = $scope.select.phone.py;
-	    }
+	    } 
 
 	    localStorageService.remove(diablo_key_retailer);
 	    localStorageService.set(diablo_key_retailer, {filter:$scope.filters,
@@ -198,9 +188,7 @@ function wretailerDetailCtrlProvide(
     };
 
     $scope.refresh = function(){
-	$scope.filters = []; 
 	localStorageService.remove("retailer-detail-stastic");
-	// diabloFilter.reset_field();
 	$scope.select.phone = undefined;
 	$scope.do_search($scope.default_page);
     };

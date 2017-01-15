@@ -3,7 +3,7 @@ function wsaleRejectCtrlProvide(
     diabloPattern, diabloFilter, diabloNormalFilter, wsaleService,
     user, filterPromotion, filterScore, filterBrand,
     filterType, filterEmployee, filterSizeGroup, filterColor, base){
-    console.log($scope);
+    // console.log($scope);
     // console.log(user); 
     $scope.shops         = user.sortBadRepoes.concat(user.sortShops);
     $scope.shopIds       = user.shopIds;
@@ -384,7 +384,8 @@ function wsaleRejectCtrlProvide(
 
 	console.log(added);
 	console.log(base);
-	
+
+	return;
 	wsaleService.reject_w_sale({
 	    inventory:added, base:base, print:print
 	}).then(function(result){
@@ -452,11 +453,13 @@ function wsaleRejectCtrlProvide(
 
 	var nscore = 0;
 	for (var i=1, l=$scope.inventories.length; i<l; i++){
-	    var inv = $scope.inventories[i]; 
+	    var inv = $scope.inventories[i];
+	    // console.log(inv);
 	    if (!inv.select){
 		if (diablo_invalid_index !== inv.sid)
 		    nscore += wsaleUtils.calc_score_of_money(inv.calc, inv.score);
 	    } else {
+		// console.log(inv);
 		$scope.select.rcharge += inv.calc;
 		$scope.select.rtotal += inv.reject;
 	    }
