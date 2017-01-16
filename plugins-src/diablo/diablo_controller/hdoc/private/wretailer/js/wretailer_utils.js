@@ -66,9 +66,9 @@ var retailerUtils = function(){
 	},
 
 	remove_cache_page: function(storage, key){
-	    storage.remove(key);
+	    storage.remove(k);
 	},
-
+	
 	order_fields: function(){
 	    return {id:0, balance:1, consume:2}
 	},

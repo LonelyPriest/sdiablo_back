@@ -85,6 +85,10 @@
 -define(SORT_BY_ID, 0).
 -define(SORT_BY_DATE, 1).
 
+%% recharge
+-define(RECHARGE, 0).
+-define(WITHDRAW, 1).
+
 %% pagination
 -define(DEFAULT_ITEMS_PERPAGE, 5).
 
@@ -144,6 +148,7 @@
 -define(export_w_retailer,           ?right_w_retailer + 21).
 -define(query_w_retailer_balance,    ?right_w_retailer + 22).
 -define(update_w_retailer_phone,     ?right_w_retailer + 23).
+-define(set_w_retailer_withdraw,     ?right_w_retailer + 24).
 
 %% shop
 -define(new_shop,       ?right_shop + 1).
@@ -161,6 +166,7 @@
 -define(add_shop_promotion,  ?right_shop + 13).
 -define(new_region,          ?right_shop + 14).
 -define(list_region,         ?right_shop + 15).
+-define(update_shop_charge,  ?right_shop + 16).
 
 %% employ
 -define(new_employe,    ?right_employe + 1).

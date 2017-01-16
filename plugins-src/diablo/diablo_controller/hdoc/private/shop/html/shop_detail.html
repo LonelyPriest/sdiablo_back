@@ -38,6 +38,7 @@
 		    <th>名称</th>
 		    <th>积分方案</th>
 		    <th>充值方案</th>
+		    <th>提现方案</th>
 		    <th>店长</th>
 		    <!-- <th>归属人</th> -->
 		    <th>地址</th>
@@ -53,33 +54,33 @@
 		    <td>{{shop.order_id}}</td>
 		    <td>{{shop.name}}</td>
 		    <td>
-		      <span x-ng-if="shop.score_id===-1">暂无</span>
-		      <span x-ng-if="shop.score_id!==-1">{{shop.score.name}}</span>
+		      <div x-ng-if="shop.score_id===-1" class="text-center">-</div>
+		      <div x-ng-if="shop.score_id!==-1">{{shop.score.name}}</div>
 		    </td>
 
 		    <td>
-		      <span x-ng-if="shop.charge_id === -1">暂无</span>
-		      <span x-ng-if="shop.charge_id !== -1">{{shop.charge.name}}</span>
+		      <div x-ng-if="shop.charge_id===-1" class="text-center">-</div>
+		      <div x-ng-if="shop.charge_id!==-1">{{shop.charge.name}}</div>
 		    </td>
 
 		    <td>
-		      <span x-ng-if="!shop.shopowner.name">暂无</span>
-		      <span x-ng-if="shop.shopowner.name">{{shop.shopowner.name}}</span>
+		      <div x-ng-if="shop.draw_id===-1">无限制</div>
+		      <div x-ng-if="shop.draw_id!==-1">{{shop.draw.name}}</div>
 		    </td>
 
-		    <!-- <td data-title="'经营人'"> -->
-		    <!--   <span>{{shop.owner}}</span> -->
-		    <!-- </td> -->
+		    <td>
+		      <div x-ng-if="!shop.shopowner.name" class="text-center">-</div>
+		      <div x-ng-if="shop.shopowner.name">{{shop.shopowner.name}}</div>
+		    </td> 
 
 		    <td>{{shop.address}}</td>
-		    <td>
-		      <span x-ng-if="shop.region_id===-1"></span>
-		      <span x-ng-if="shop.region_id!==-1">{{shop.region.name}}</span>
+		    <td class="text-center">
+		      <div x-ng-if="shop.region_id===-1">-</div>
+		      <div x-ng-if="shop.region_id!==-1">{{shop.region.name}}</div>
 		    </td>
-		    <td x-ng-show="authen_list_repo"
-			x-ng-switch on="shop.repo">
-		      <span ng-switch-when=undefined>暂无</span>
-		      <span ng-switch-default>{{shop.repo.name}}</span>
+		    <td x-ng-if="authen_list_repo" x-ng-switch on="shop.repo">
+		      <div ng-switch-when=undefined>-</div>
+		      <div ng-switch-default>{{shop.repo.name}}</div>
 		    </td>
 		    <td>{{shop.open_date}}</td>
 		    <td>{{shop.entry_date}}</td>
@@ -89,11 +90,14 @@
 		      <!--	      x-ng-click="on_sale(shop)">促销 -->
 		      <!--	<i class="glyphicon glyphicon-exclamation-sign"></i> -->
 		      <!-- </button> -->
-		      <button class="btn red-sunglo diablo-button"
-			      x-ng-click="charge(shop)">充值方案
+		      <button class="btn green diablo-button"
+			      x-ng-click="charge(shop)">充值
 			<i class="glyphicon glyphicon-upload"></i></button>
-		      <button class="btn green-meadow diablo-button"
-			      x-ng-click="score(shop)">积分方案
+		      <button class="btn  red diablo-button"
+			      x-ng-click="withdraw(shop)">提现
+			<i class="glyphicon glyphicon-share"></i></button>
+		      <button class="btn green diablo-button"
+			      x-ng-click="score(shop)">积分
 			<i class="glyphicon glyphicon-upload"></i></button>
 		      <button class="btn diablo-button btn-warning"
 			      x-ng-click="edit_shop(shop)">修改
@@ -376,6 +380,65 @@
     <button class="btn btn-primary"
 	    x-ng-disabled="pForm.$invalid
 			   || params.check_same(params.charges)"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
+</script>
+
+<script type="text/ng-template" id="shop-withdraw.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    <h4 class="modal-title">
+      <span class="label label-sm label-primary">
+	提现方案（<span >{{params.shop.name}}</span>）
+      </span>
+    </h4>
+  </div>
+
+  <!--BEGIN modal body-->
+  <div class="modal-body">
+
+    <div class="table-responsive">
+      <table class="table table-bordered
+		    table-striped table-condensed table-advanced">
+	<thead>
+	  <tr>
+	    <th></th>
+	    <th>名称</th>
+	    <th>提现金额</th>
+	    <th>开始日期</th>
+	    <th>结束日期</th>
+	  </tr>
+	</thead>
+	<tbody>
+	  <tr x-ng-repeat="d in params.draws">
+	    <td class="text-center">
+	      <div class="checkbox checkbox-danger checkbox-circle">
+		<input id={{d.id}}
+		       type="checkbox"
+		       x-ng-model="d.select"
+		       x-ng-change="params.check_only(d, params.draws)"/>
+		<label for={{d.id}}></label>
+	      </div>
+	    </td>
+
+	    <td class="vert-align">{{d.name}}</td>
+	    <td class="vert-align">{{d.charge}}</td>
+	    <td class="vert-align">{{d.sdate}}</td>
+	    <td class="vert-align">{{d.edate}}</td>
+
+	  </tr>
+	</tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="pForm.$invalid || params.check_same(params.draws)"
 	    x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>

@@ -86,7 +86,11 @@ function shopDetailCtrlProvide(
     $scope.promotions      = filterPromotion;
     // $scope.shop_promotions = filterShopPromotion.map(
     // 	function(p){return p.pid});
-    $scope.charges         = filterCharge.concat([{id:-1, name:"重置充值方案"}]);
+    $scope.charges = filterCharge.filter(function(c){return c.type===diablo_charge});
+    $scope.charges = $scope.charges.concat([{id:-1, name:"重置充值方案"}]);
+    $scope.draws   = filterCharge.filter(function(c){return c.type===diablo_withdraw});
+    $scope.draws   = $scope.draws.concat([{id:-1, name:"重置提现方案"}]);
+    
     $scope.scores          = filterScore.filter(function(s){return s.type_id===0});    
     $scope.employees       = filterEmployee;
     $scope.regions         = filterRegion.concat([{id:-1, name:"===请选择区域==="}]);
@@ -144,6 +148,8 @@ function shopDetailCtrlProvide(
 			
 			charge_id: s.charge_id,
 			charge: diablo_get_object(s.charge_id, $scope.charges),
+			draw_id: s.draw_id,
+			draw: diablo_get_object(s.draw_id, $scope.draws),
 
 			score_id: s.score_id,
 			score: diablo_get_object(s.score_id, $scope.scores),
@@ -420,7 +426,7 @@ function shopDetailCtrlProvide(
 
 	    console.log(select);
 
-	    shopService.update_charge(shop.id, select.id).then(function(
+	    shopService.update_charge(shop.id, select.id, diablo_charge).then(function(
 		result){
 		console.log(result);
 		
@@ -454,6 +460,70 @@ function shopDetailCtrlProvide(
 	    undefined,
 	    {shop: shop,
 	     charges: $scope.charges,
+	     check_only: check_only,
+	     check_same: check_same});
+    };
+
+    $scope.withdraw = function (shop){
+	var check_only = function(select, draws){
+	    // console.log(select);
+	    angular.forEach(draws, function(d){
+		if (d.id !== select.id){
+		    d.select = false;
+		};
+	    });
+	};
+
+	var check_same = function(draws) {
+	    for (var i=0, l=draws.length; i<l; i++){
+		if (draws[i].select && draws[i].id === shop.draw_id){
+		    return true;
+		}
+	    }
+	    return false; 
+	};
+	
+	var callback = function(params){
+	    //console.log(params); 
+	    var select = params.draws.filter(function(d){
+		return d.select;
+	    })[0];
+
+	    console.log(select);
+
+	    shopService.update_charge(shop.id, select.id, diablo_withdraw).then(function(
+		result){
+		console.log(result);
+		
+		if (result.ecode === 0){
+		    shop.draw_id = select.id;
+		    shop.draw = diablo_get_object(shop.draw_id, $scope.draws);
+		    dialog.response(true, "提现方案", "编辑提现方案成功！！");
+		} else {
+		    dialog.response(
+			false,
+			"提现方案",
+			"编辑提现方案失败："
+			    + shopService.error[result.ecode]);
+		}
+	    });
+	};  
+	
+	angular.forEach($scope.draws, function(d){
+	    d.select = false;
+	    if (d.id === shop.draw_id)
+		d.select = true;
+	});
+
+	console.log($scope.draws);
+	
+	dialog.edit_with_modal(
+	    "shop-withdraw.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {shop: shop,
+	     draws: $scope.draws,
 	     check_only: check_only,
 	     check_same: check_same});
     };

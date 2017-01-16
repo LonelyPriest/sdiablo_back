@@ -40,7 +40,9 @@ shop(delete, Merchant, ShopId) ->
     gen_server:call(?MODULE, {delete_shop, Merchant, ShopId}).
 
 shop(update, Merchant, ShopId, Attrs) ->
-    gen_server:call(?MODULE, {update_shop, Merchant, ShopId, Attrs}).
+    gen_server:call(?MODULE, {update_shop, Merchant, ShopId, Attrs});
+shop(update_charge, Merchant, ShopId, Attrs) ->
+    gen_server:call(?MODULE, {update_shop_charge, Merchant, ShopId, Attrs}).
 
 region(new, Merchant, Attrs) ->
     gen_server:call(?MODULE, {new_region, Merchant, Attrs}).
@@ -147,7 +149,7 @@ handle_call({update_shop, Merchant, ShopId, Attrs}, _From, State) ->
     Repo    = ?v(<<"repo">>, Attrs),
     %% Type    = ?v(<<"type">>, Attrs),
     Master  = ?v(<<"shopowner">>, Attrs),
-    Charge  = ?v(<<"charge">>, Attrs),
+    %% Charge  = ?v(<<"charge">>, Attrs),
     Score   = ?v(<<"score">>, Attrs),
     Region  = ?v(<<"region">>, Attrs),
 
@@ -169,7 +171,7 @@ handle_call({update_shop, Merchant, ShopId, Attrs}, _From, State) ->
 		++ ?utils:v(address, string, Address)
 		++ ?utils:v(region, integer, Region)
 		++ ?utils:v(master, string, Master)
-		++ ?utils:v(charge, integer, Charge)
+	    %% ++ ?utils:v(charge, integer, Charge)
 		++ ?utils:v(score, integer, Score),
 	    Sql1 = "update shops set "
 		++ ?utils:to_sqls(proplists, comma, Updates)
@@ -194,6 +196,26 @@ handle_call({update_shop, Merchant, ShopId, Attrs}, _From, State) ->
 	    {reply, Error, State}
     end;
 
+handle_call({update_shop_charge, Merchant, ShopId, Attrs}, _From, State) ->
+    ?DEBUG("update_shop_charge with merchant ~p, ShopId ~p, Attrs ~p",
+	   [Merchant, ShopId, Attrs]), 
+    Charge  = ?v(<<"charge">>, Attrs),
+    Updates = 
+	case ?v(<<"type">>, Attrs) of
+	    ?RECHARGE -> ?utils:v(charge, integer, Charge);
+	    ?WITHDRAW -> ?utils:v(draw, integer, Charge)
+	end, 
+	    
+    Sql1 = "update shops set "
+	++ ?utils:to_sqls(proplists, comma, Updates)
+	++ " where id=" ++ ?to_s(ShopId)
+	++ " and merchant=" ++ ?to_s(Merchant),
+    
+    Reply = ?sql_utils:execute(write, Sql1, ShopId),
+    {reply, Reply, State};
+	
+
+
 %% handle_call({shop_info, Merchant, Condition}, _From, State) ->
 %%     ?DEBUG("lookup_shop_info with condition ~p", [Condition]),
 %%     Sql1 = "select id, name, address, open_date, shopowner"
@@ -214,13 +236,19 @@ handle_call({list_shop, Merchant, Conditions}, _From, State) ->
     ?DEBUG("lookup shops with merchant ~p, condition ~p",
 	   [Merchant, Conditions]),
 
-    Sql1 = "select a.id, a.repo, a.name, a.address, a.type"
-	", a.open_date, a.master as shopowner_id, a.charge as charge_id"
-	", a.score as score_id, a.region as region_id, a.entry_date"
-	%% ", b.name as shopowner"
-	++ " from shops a"
-	%% ++ " left join employees b on a.shopowner=b.number"
-	%% ++ " and b.merchant=" ++ ?to_s(Merchant)
+    Sql1 = "select a.id"
+	", a.repo"
+	", a.name"
+	", a.address"
+	", a.type"
+	", a.open_date"
+	", a.master as shopowner_id"
+	", a.charge as charge_id"
+	", a.draw as draw_id"
+	", a.score as score_id"
+	", a.region as region_id"
+	", a.entry_date"
+	++ " from shops a" 
 	++ " where "
 	++ case Conditions of
 	       [] -> [];
@@ -230,7 +258,6 @@ handle_call({list_shop, Merchant, Conditions}, _From, State) ->
 		   ?utils:to_sqls(proplists, CorrectConditions) ++ " and "
 	   end
 	++ "a.merchant=" ++ ?to_s(Merchant)
-	%% ++ " and a.type=" ++ ?to_s(?SHOP)
 	++ " and a.deleted = " ++ ?to_s(?NO)
 	++ " order by id",
 

@@ -48,7 +48,10 @@ function wretailerDetailCtrlProvide(
     diabloUtilsService, localStorageService, wretailerService,
     filterEmployee, filterCharge, filterRegion, user, base){
     $scope.employees      = filterEmployee;
-    $scope.charges        = filterCharge;
+    // $scope.charges        = filterCharge;
+    $scope.charges        = filterCharge.filter(function(c){return c.type===diablo_charge});
+    $scope.draws          = filterCharge.filter(function(c){return c.type===diablo_withdraw})
+    $scope.draws          = $scope.draws.concat([{id:-1, name:"重置提现方案"}]);;
     $scope.regions        = filterRegion;
     
     $scope.shops          = user.sortShops.concat([{id:-1, name:"无"}]);
@@ -82,6 +85,7 @@ function wretailerDetailCtrlProvide(
 	export_retailer       :retailerUtils.authen(user.type, user.right, 'export_retailer'),
 	query_balance         :retailerUtils.authen(user.type, user.right, 'query_balance'),
 	update_phone          :retailerUtils.authen(user.type, user.right, 'update_phone'),
+	set_withdraw          :retailerUtils.authen(user.type, user.right, 'set_withdraw'),
 	master                :rightAuthen.authen_master(user.type) 
     };
     // console.log($scope.right);
@@ -178,6 +182,7 @@ function wretailerDetailCtrlProvide(
 			    || r.shop_id === diablo_invalid_index;
 			r.no_vip    = in_array($scope.no_vips, r.id)
 			    || r.type === diablo_system_retailer ? true : false;
+			r.draw     = diablo_get_object(r.draw_id, $scope.draws);
 		    });
 		    
     		    diablo_order($scope.retailers, (page - 1) * $scope.items_perpage + 1);
@@ -185,6 +190,77 @@ function wretailerDetailCtrlProvide(
     		} 
     	    })
     	})
+    };
+
+    $scope.withdraw = function (){
+	// var check_same = function(draws) {
+	//     for (var i=0, l=draws.length; i<l; i++){
+	// 	if (draws[i].select && draws[i].id === shop.draw_id){
+	// 	    return true;
+	// 	}
+	//     }
+	//     return false; 
+	// };
+	angular.forEach($scope.draws, function(d){
+	    d.select = false; 
+	});
+	
+	var callback = function(params){
+	    console.log(params); 
+	    var select = params.draws.filter(function(d){
+		return d.select;
+	    })[0];
+
+	    console.log(select);
+
+	    diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+		if (angular.isDefined($scope.select.phone) && angular.isObject($scope.select.phone)){
+		    search.mobile = $scope.select.phone.mobile;
+		    search.py = $scope.select.phone.py;
+		}
+
+		wretailerService.set_withdraw(select.id, search).then(function(result){
+		    console.log(result); 
+		    if (result.ecode === 0){
+			dialog.response_with_callback(
+			    true,
+			    "会员提现方案",
+			    "会员提现方案设置成功！！",
+			    undefined, function(){$scope.do_search($scope.current_page)});
+			// shop.draw_id = select.id;
+			// shop.draw = diablo_get_object(shop.draw_id, $scope.draws);
+			// dialog.response(true, "提现方案", "编辑提现方案成功！！");
+		    } else {
+			dialog.response(
+			    false,
+			    "会员提现方案",
+			    "会员提现方案设置失败：" + wretailerService.error[result.ecode]);
+		    }
+		}); 
+	    }); 
+	};  
+
+	var check_only = function(select, draws){
+	    angular.forEach(draws, function(d){
+		if (d.id !== select.id)
+		    d.select = false;
+	    });
+	};
+
+	var check_one = function(draws){
+	    for (var i=0,l=draws.length; i<l; i++){
+		if (draws[i].select) return true;
+	    }
+	    return false;
+	};
+	
+	dialog.edit_with_modal(
+	    "retailer-withdraw.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {draws: $scope.draws, check_only: check_only, check_one:check_one}
+	);
     };
 
     $scope.refresh = function(){
@@ -228,15 +304,7 @@ function wretailerDetailCtrlProvide(
     
     $scope.charge = function(retailer){
 	console.log($scope.charges); 
-	var get_charge = function(charge_id) {
-	    for (var i=0, l=$scope.charges.length; i<l; i++){
-		if (charge_id === $scope.charges[i].id){
-		    return $scope.charges[i];
-		}
-	    } 
-	    return undefined;
-	};
-	
+
 	var callback = function(params){
 	    console.log(params);
 
@@ -251,72 +319,81 @@ function wretailerDetailCtrlProvide(
 	    }();
 
 	    wretailerService.new_recharge({
-		retailer: retailer.id, 
-		shop: params.retailer.select_shop.id,
-		employee: params.retailer.select_employee.id, 
-		// old_balance:  retailer.balance,
+		retailer:       retailer.id, 
+		shop:           params.retailer.select_shop.id,
+		employee:       params.retailer.select_employee.id, 
 		charge_balance: charge_balance,
-		send_balance: send_balance,
-		charge: promotion.id,
-		comment: params.comment})
-		.then(function(result){
-		    console.log(result); 
-		    if (result.ecode == 0){
-			retailer.balance += charge_balance + send_balance;
-			dialog.response_with_callback(
-			    true,
-			    "会员充值",
-			    "会员 [" + retailer.name + "] 充分值成功，"
-				+ "帐户余额 [" + retailer.balance.toString() + " ]！！"
-				+ function(){
-				    if (result.sms_code !== 0)
-					return "发送短消息失败："
-					+ wretailerService.error[result.sms_code];
-				    else return ""; 
-				}(),
-			    undefined, function(){
-				if (diablo_frontend === retailerUtils.print_mode(
-				    params.retailer.select_shop.id, base)){
-				    if (angular.isUndefined(LODOP)){
-					LODOP = getLodop(); 
-				    }
-				    if (angular.isDefined(LODOP)){
-					var pdate = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss");
-					var hLine = retailerPrint.gen_head(
-					    LODOP,
-					    params.retailer.name,
-					    params.retailer.select_shop.name,
-					    params.retailer.select_employee.name,
-					    pdate);
-					
-					retailerPrint.gen_body(
-					    hLine, LODOP,
-					    {cbalance:charge_balance,
-					     sbalance:send_balance,
-					     comment:params.comment
-					    });
-					
-					return retailerPrint.start_print(LODOP);
-				    } else {
-					console.log("get lodop failed...");
-				    }
-				} 
-			    });
-    		    } else{
-			dialog.response(
-			    false,
-			    "会员充值",
-			    "会员充值失败："
-				+ wretailerService.error[result.ecode]);
-    		    }
-		})
+		send_balance:   send_balance,
+		charge:         promotion.id,
+		comment:        params.comment
+	    }).then(function(result){
+		console.log(result); 
+		if (result.ecode == 0){
+		    retailer.balance += charge_balance + send_balance;
+		    dialog.response_with_callback(
+			true,
+			"会员充值",
+			"会员 [" + retailer.name + "] 充分值成功，"
+			    + "帐户余额 [" + retailer.balance.toString() + " ]！！"
+			    + function(){
+				if (result.sms_code !== 0)
+				    return "发送短消息失败："
+				    + wretailerService.error[result.sms_code];
+				else return ""; 
+			    }(),
+			undefined, function(){
+			    if (diablo_frontend === retailerUtils.print_mode(
+				params.retailer.select_shop.id, base)){
+				if (angular.isUndefined(LODOP)){
+				    LODOP = getLodop(); 
+				}
+				if (angular.isDefined(LODOP)){
+				    var pdate = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss");
+				    var hLine = retailerPrint.gen_head(
+					LODOP,
+					params.retailer.name,
+					params.retailer.select_shop.name,
+					params.retailer.select_employee.name,
+					pdate);
+				    
+				    retailerPrint.gen_body(
+					hLine, LODOP,
+					{cbalance:charge_balance,
+					 sbalance:send_balance,
+					 comment:params.comment
+					});
+				    
+				    return retailerPrint.start_print(LODOP);
+				} else {
+				    console.log("get lodop failed...");
+				}
+			    } 
+			});
+    		} else{
+		    dialog.response(
+			false,
+			"会员充值",
+			"会员充值失败："
+			    + wretailerService.error[result.ecode]);
+    		}
+	    })
+	};
+
+	var get_charge = function(charge_id) {
+	    // console.log(charges);
+	    for (var i=0, l=$scope.charges.length; i<l; i++){
+		if (charge_id === $scope.charges[i].id){
+		    return $scope.charges[i];
+		}
+	    } 
+	    return undefined;
 	};
 	
 	dialog.edit_with_modal(
 	    "wretailer-charge.html",
 	    undefined,
 	    callback,
-	    undefined,
+	    $scope,
 	    {retailer:  {
 		name: retailer.name,
 		balance:retailer.balance,
@@ -324,8 +401,8 @@ function wretailerDetailCtrlProvide(
 		select_shop: $scope.shops[0],
 		employees: $scope.employees,
 		select_employee: $scope.employees[0],
-		charges: $scope.charges,
-		select_charge:get_charge($scope.shops[0].charge_id)
+		// charges: $scope.charges,
+		// select_charge:get_charge($scope.shops[0].charge_id)
 	    }, 
 	     pattern:  pattern,
 	     get_charge: get_charge
@@ -344,18 +421,17 @@ function wretailerDetailCtrlProvide(
 		id_card: diablo_get_modified(params.retailer.id_card, old_retailer.id_card),
 		mobile: diablo_get_modified(params.retailer.mobile, old_retailer.mobile),
 		address: diablo_get_modified(params.retailer.address, old_retailer.address),
-		shop: params.retailer.edit_shop
-		    ? diablo_get_modified(params.retailer.shop.id, old_retailer.shop_id): undefined,
+		shop: params.retailer.edit_shop ? params.retailer.shop.id : undefined,
 		type: diablo_get_modified(params.retailer.type, old_retailer.type),
 		password:diablo_get_modified(params.retailer.password, old_retailer.password),
 		birth:diablo_get_modified(params.retailer.birth.getTime(),
 					  old_retailer.birth.getTime()),
-		balance: diablo_get_modified(params.retailer.balance, old_retailer.balance),
+		balance: diablo_get_modified(params.retailer.balance, old_retailer.balance)
 	    };
 	    
 	    console.log(update_retailer); 
 	    update_retailer.id = params.retailer.id;
-	    update_retailer.obalance = old_retailer.balance;
+	    // update_retailer.obalance = old_retailer.balance;
 	    // console.log(update_retailer);
 	    
 	    wretailerService.update_retailer(update_retailer).then(function(result){

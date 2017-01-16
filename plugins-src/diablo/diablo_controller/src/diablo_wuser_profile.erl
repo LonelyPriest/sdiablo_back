@@ -114,6 +114,8 @@ get(brand, Merchant, BrandId) ->
     gen_server:call(?SERVER(Merchant), {get_brand_profile, Merchant, BrandId});
 get(color, Merchant, ColorId) ->
     gen_server:call(?SERVER(Merchant), {get_color_profile, Merchant, ColorId});
+get(charge, Merchant, ChargeId) ->
+    gen_server:call(?SERVER(Merchant), {get_charge, Merchant, ChargeId});
 
 %% about right of login user
 get(user_right, Merchant, Session) ->
@@ -787,6 +789,12 @@ handle_call({get_charge, Merchant}, _From, State) ->
     MS = ms(Merchant, charge),
     Select = select(MS, fun() -> ?w_retailer:charge(list, Merchant) end),
     {reply, {ok, Select}, State};
+
+handle_call({get_charge, Merchant, ChargeId}, _From, State) ->
+    MS = ms(Merchant, charge),
+    Select = select(MS, fun() -> ?w_retailer:charge(list, Merchant) end),
+    Charge = filter(Select, <<"id">>, ChargeId), 
+    {reply, {ok, Charge}, State};
 
 handle_call({get_score, Merchant}, _From, State) ->
     MS = ms(Merchant, score),

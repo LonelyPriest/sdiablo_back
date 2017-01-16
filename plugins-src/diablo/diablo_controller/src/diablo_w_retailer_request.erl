@@ -89,8 +89,8 @@ action(Session, Req, {"list_w_retailer_score"}) ->
 %%--------------------------------------------------------------------
 action(Session, Req, {"new_w_retailer"}, Payload) ->
     ?DEBUG("new wretailer with session ~p~npaylaod ~p", [Session, Payload]),
-    Merchant = ?session:get(merchant, Session), 
-
+    Merchant = ?session:get(merchant, Session),
+    
     case ?w_retailer:retailer(new, Merchant, Payload) of
 	{ok, RId} ->
 	    ?utils:respond(
@@ -103,11 +103,17 @@ action(Session, Req, {"update_w_retailer", Id}, Payload) ->
     ?DEBUG("update_w_retailer with Session ~p~npaylaod ~p",
 	   [Session, Payload]),
     
-    Merchant = ?session:get(merchant, Session), 
-    case ?w_retailer:retailer(update, Merchant, Id, Payload) of
-	{ok, RId} ->
-	    ?utils:respond(
-	       200, Req, ?succ(update_w_retailer, RId));
+    Merchant = ?session:get(merchant, Session),
+
+    case ?w_retailer:retailer(get, Merchant, Id) of
+	{ok, OldRetailer} ->
+	    case ?w_retailer:retailer(update, Merchant, Id, {Payload, OldRetailer}) of
+		{ok, RId} ->
+		    ?utils:respond(
+		       200, Req, ?succ(update_w_retailer, RId));
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end;
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;
@@ -140,9 +146,19 @@ action(Session, Req, {"check_w_retailer_password", Id}, Payload) ->
     Password = ?v(<<"password">>, Payload),
 
     case ?w_retailer:retailer(check_password, Merchant, Id, Password) of
-	{ok, Id} ->
-	    ?utils:respond(
-	       200, Req, ?succ(check_w_retailer_password, Id));
+	{ok, {Id, DrawId}} ->
+	    %% limt to withdraw
+	    Withdraw = 
+		case DrawId of
+		    ?INVALID_OR_EMPTY -> 0;
+		    _ ->
+			{ok, Charge} = ?w_user_profile:get(charge, Merchant, DrawId),
+			?v(<<"charge">>, Charge)
+		end,
+	    ?utils:respond(200,
+			   Req,
+			   ?succ(check_w_retailer_password, Id),
+			   [{<<"limit">>, Withdraw}]);
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;
@@ -167,13 +183,17 @@ action(Session, Req, {"add_w_retailer_charge"}, Payload) ->
 	   [Session, Payload]),
 
     Merchant = ?session:get(merchant, Session),
-
-    case ?w_retailer:charge(new, Merchant, Payload) of
-	{ok, Id} ->
-	    ?utils:respond(
-	       200, Req, ?succ(add_retailer_charge, Id));
-	{error, Error} ->
-	    ?utils:respond(200, Req, Error)
+    case ?v(<<"type">>, Payload) =:= undefined of
+	true -> ?utils:respond(200, Req, ?err(params_error, "type"));
+	false ->
+	    case ?w_retailer:charge(new, Merchant, Payload) of
+		{ok, Id} ->
+		    ?w_user_profile:update(charge, Merchant),
+		    ?utils:respond(
+		       200, Req, ?succ(add_retailer_charge, Id));
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end
     end;
 
 action(Session, Req, {"del_w_retailer_charge"}, Payload) ->
@@ -184,6 +204,37 @@ action(Session, Req, {"del_w_retailer_charge"}, Payload) ->
 	    ?utils:respond(
 	       200, Req, ?succ(delete_retailer_charge, Id)),
 	    ?w_user_profile:update(charge, Merchant);
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+
+action(Session, Req, {"set_w_retailer_withdraw"}, Payload) ->
+    Merchant = ?session:get(merchant, Session),
+    DrawId = ?v(<<"draw_id">>, Payload),
+    {struct, Conditions} = ?v(<<"condition">>, Payload),
+    
+    NewConditions = 
+	case ?v(<<"region">>, Conditions) of
+	    undefined -> Conditions;
+	    Region -> 
+		{ok, Shops} = ?w_user_profile:get(shop, Merchant),
+		SelectShops = 
+		    lists:foldr(
+		      fun({Shop}, Acc)->
+			      case ?v(<<"region_id">>, Shop) =:= Region of
+				  true -> [?v(<<"id">>, Shop)|Acc];
+				  false -> Acc
+			      end
+		      end, [], Shops), 
+		[{<<"shop">>, SelectShops}|proplists:delete(<<"region">>, Conditions)]
+	end,
+    ?DEBUG("new Conditions ~p", [NewConditions]), 
+    
+    case ?w_retailer:charge(set_withdraw, Merchant, {DrawId, NewConditions}) of
+	{ok, Merchant} -> 
+	    ?utils:respond(200, Req, ?succ(set_retailer_withdraw, Merchant)),
+	    ?w_user_profile:update(retailer, Merchant);
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;

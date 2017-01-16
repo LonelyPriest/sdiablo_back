@@ -74,8 +74,9 @@ create table shops
     master             VARCHAR(8) default null,
     region             INTEGER default -1, -- which repertory
 
-    charge             INTEGER default -1, -- charge promotion
-    score              INTEGER default -1, -- score promotion
+    charge             INTEGER default -1, -- charge strategy
+    draw               INTEGER default -1, -- withdraw strategy
+    score              INTEGER default -1, -- score strategy
     merchant           INTEGER default -1, -- which merchant belong to
     deleted            INTEGER default 0, -- 0: no;  1: yes
     entry_date         DATETIME not null,
@@ -377,6 +378,7 @@ create table w_retailer
     mobile          VARCHAR(11),
     address         VARCHAR(255),
     shop            INTEGER default -1,
+    draw            INTEGER default -1, -- with draw strategy
     merchant        INTEGER default -1, -- which merchant belong to
     type            TINYINT default 0,  -- 0: common, 1: charge
     py              VARCHAR(8) default null,
@@ -413,6 +415,7 @@ create table w_charge(
     name            VARCHAR(64) not null,
     charge          INTEGER not null default 0,
     balance         INTEGER not null default 0, -- send balance when charge
+    type            TINYINT default 0, -- 0:recharge 1:withdraw
     sdate           DATE default 0,
     edate           DATE default 0,
     remark          VARCHAR(128) default null,

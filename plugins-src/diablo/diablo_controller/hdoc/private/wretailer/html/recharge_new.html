@@ -3,7 +3,7 @@
     <ul class="page-breadcrumb breadcrumb">
       <li>
 	<i class="glyphicon glyphicon-menu-hamburger fg-red"></i>
-	<a href="javascript:;">充值方案</a>
+	<a href="javascript:;" x-ng-bind=label>方案</a>
 	<i class="glyphicon glyphicon-menu-right fg-red"></i>
       </li>
       <li class="active">
@@ -49,7 +49,7 @@
 
 
 	    <div class="form-group">
-	      <label class="col-md-3 col-sm-3 control-label">充值金额</label>
+	      <label class="col-md-3 col-sm-3 control-label" x-ng-bind=label>金额(元)</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
 		  <div x-ng-class="{'has-error':rForm.charge.$invalid
@@ -70,8 +70,8 @@
 	      </div> 
 	    </div>
 
-	    <div class="form-group">
-	      <label class="col-md-3 col-sm-3 control-label">赠送金额</label>
+	    <div x-ng-if="action===0" class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">赠送金额(元)</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div x-ng-class="{'has-error':rForm.balance.$invalid
 				 && !rForm.balance.$pristine}">

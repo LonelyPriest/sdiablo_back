@@ -70,14 +70,17 @@ function wsaleConfg(angular){
 	
 	var base = {"base": function(diabloNormalFilter){
 	    return diabloNormalFilter.get_base_setting()}};
+
+	var charge = {"filterCharge": function(diabloNormalFilter){
+	    return diabloNormalFilter.get_charge()}};
 	
 	$routeProvider. 
 	    when('/new_wsale', {
 		templateUrl: '/private/wsale/html/new_wsale.html',
 		controller: 'wsaleNewCtrl',
 		resolve: angular.extend(
-		    {}, user, promotion, score, firm, sysretailer, employee,
-		    s_group, brand, type, color, base)
+		    {}, user, promotion, charge, score, firm, sysretailer,
+		    employee, s_group, brand, type, color, base)
 	    }).
 	    when('/new_wsale_detail/:page?', {
 		templateUrl: '/private/wsale/html/new_wsale_detail.html',
@@ -157,6 +160,7 @@ function wsaleConfg(angular){
 	    2706: "该电子卷金额与系统不一致，请核对该电子卷后再使用！！",
 	    2707: "该电子卷对应的优惠规则不存在！！",
 	    2708: "系统时间与服务器时间相差大于30分钟， 请检查系统时间或重新操作！！",
+	    2698: "会员提取金额超过系统上限！！",
 	    2699: "修改前后信息一致，请重新编辑修改项！！",
 	    9001: "数据库操作失败，请联系服务人员！！"};
 
@@ -299,6 +303,8 @@ function wsaleConfg(angular){
     	};
     });
 
+    diablo_remove_wsale_local_storage();
+
     return wsaleApp;
 };
 
@@ -306,11 +312,12 @@ function wsaleNewProvide(
     $scope, $q, $timeout, dateFilter, localStorageService,
     diabloUtilsService, diabloPromise, diabloFilter, diabloNormalFilter,
     diabloPattern, wsaleService, wsaleGoodService,
-    user, filterPromotion, filterScore,
+    user, filterPromotion, filterCharge, filterScore,
     filterFirm, filterSysRetailer, filterEmployee,
     filterSizeGroup, filterBrand, filterType, filterColor, base){
     $scope.promotions = filterPromotion;
-    $scope.scores     = filterScore; 
+    $scope.scores     = filterScore;
+    $scope.draws      = filterCharge.filter(function(d){return d.type === diablo_withdraw}),
     
     $scope.pattern    = {
 	money:    diabloPattern.decimal_2,
@@ -549,12 +556,24 @@ function wsaleNewProvide(
 	var callback = function(params){
 	    console.log(params);
 	    diabloFilter.check_retailer_password(
-		params.retailer.id, params.retailer.password).then(function(result){
+		params.retailer.id, params.retailer.password, $scope.select.shop.id
+	    ).then(function(result){
 		    console.log(result);
 		    if (result.ecode === 0){
-			$scope.select.withdraw = params.retailer.withdraw;
-			$scope.has_withdrawed  = true;
-			$scope.reset_payment();
+			if (result.limit !== 0 && params.retailer.withdraw > result.limit){
+			    diabloUtilsService.response(
+				false,
+				"会员现金提取",
+				"会员现金提取失败："
+				    + wsaleService.error[2698]
+				    + "上限[" + result.limit + "]，"
+				    + "实际提取[" + params.retailer.withdraw + "]",
+				undefined) 
+			} else {
+			    $scope.select.withdraw = params.retailer.withdraw;
+			    $scope.has_withdrawed  = true;
+			    $scope.reset_payment();
+			} 
 		    } else {
 			var ERROR = require("diablo-error");
 			diabloUtilsService.response(
@@ -565,7 +584,28 @@ function wsaleNewProvide(
 		    }
 		}); 
 	};
-	
+
+	var get_max_draw = function(){
+
+	    var max_draw = 0;
+	    if ($scope.select.surplus >= $scope.select.charge){
+		max_draw =  $scope.select.charge;
+	    }  else {
+		max_draw = $scope.select.surplus; 
+	    }
+
+	    var limit = diablo_get_object($scope.select.retailer.draw_id, $scope.draws);
+	    console.log(limit);
+	    if (angular.isObject(limit)){
+		if (max_draw >=limit.charge)
+		    return limit.charge;
+	    } else {
+		return max_draw;
+	    } 
+	};
+
+	var limit_balance = get_max_draw();
+	// console.log(limit_balance);
 	diabloUtilsService.edit_with_modal(
 	    "new-withdraw.html",
 	    undefined,
@@ -574,22 +614,18 @@ function wsaleNewProvide(
 	    {retailer: {
 		id        :$scope.select.retailer.id,
 		name      :$scope.select.retailer.name,
-		surplus   :$scope.select.surplus,
-		
-		withdraw  :function() {
-		    if ($scope.select.surplus >= $scope.select.charge)
-			return $scope.select.charge;
-		    return $scope.select.surplus
-		}()
+		surplus   :$scope.select.surplus, 
+		withdraw  :limit_balance 
 	    },
 	      
 	     check_withdraw: function(balance){
-		 return balance > $scope.select.retailer.balance
-		     || balance > $scope.select.charge ? false : true;
+		 // return balance > $scope.select.retailer.balance
+		 //     || balance > $scope.select.charge ? false : true;
+		 return balance <= limit_balance;
 	     },
 	      
-	      check_zero: function(balance) {return balance === 0 ? true:false}
-	     }
+	     check_zero: function(balance) {return balance === 0 ? true:false}
+	    }
 	)
     };
 
@@ -700,7 +736,7 @@ function wsaleNewProvide(
     $scope.refresh_datetime_per_5_minute = function(){
     	$scope.interval_per_5_minute = setInterval(function(){
     	    $scope.select.datetime  = $scope.today();
-	    // console.log(dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"));
+	    console.log(dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"));
     	}, 300 * 1000);
     };
 

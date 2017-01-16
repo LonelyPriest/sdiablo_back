@@ -51,9 +51,9 @@ retailer(get_batch, Merchant, RetailerIds) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {get_retailer_batch, Merchant, RetailerIds}).
     
-retailer(update, Merchant, RetailerId, Attrs) ->
+retailer(update, Merchant, RetailerId, {Attrs, OldAttrs}) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {update_retailer, Merchant, RetailerId, Attrs});
+    gen_server:call(Name, {update_retailer, Merchant, RetailerId, {Attrs, OldAttrs}});
 retailer(update_score, Merchant, RetailerId, Score) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {update_score, Merchant, RetailerId, Score});
@@ -65,14 +65,18 @@ retailer(reset_password, Merchant, RetailerId, Password) ->
     gen_server:call(Name, {reset_password, Merchant, RetailerId, Password}).
 
 
-%% charge
+%% charge strategy
 charge(new, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {new_charge, Merchant, Attrs});
 charge(delete, Merchant, ChargeId) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {delete_charge, Merchant, ChargeId});
+charge(set_withdraw, Merchant, {DrawId, Conditions}) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {set_withdraw, Merchant, {DrawId, Conditions}});
 
+%% recharge of retailer
 charge(recharge, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {recharge, Merchant, Attrs});
@@ -187,7 +191,7 @@ handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
     Mobile   = ?v(<<"mobile">>, Attrs, []),
     Address  = ?v(<<"address">>, Attrs, []),
     Shop     = ?v(<<"shop">>, Attrs, -1),
-
+    
     %% mobile can not be same
     Sql = case Type =:= ?SYSTEM_RETAILER of
 	      true -> 
@@ -207,10 +211,11 @@ handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
 	  end,
 
     case ?sql_utils:execute(read, Sql) of
-	{ok, []} -> 
+	{ok, []} ->
+	    DrawId = default_withdraw(Merchant, Shop, Type),
 	    Sql2 = "insert into w_retailer("
 		"name, py, id_card, birth, type, password, score"
-		" ,mobile, address, shop, merchant, entry_date)"
+		" ,mobile, address, shop, draw, merchant, entry_date)"
 		++ " values ("
 		++ "\'" ++ ?to_s(Name) ++ "\',"
 		++ "\'" ++ ?to_s(Pinyin) ++ "\',"
@@ -222,6 +227,7 @@ handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
 		++ "\'" ++ ?to_s(Mobile) ++ "\',"
 		++ "\'" ++ ?to_s(Address) ++ "\',"
 		++ ?to_s(Shop) ++ ","
+		++ ?to_s(DrawId) ++ ","
 		++ ?to_s(Merchant) ++ ","
 		++ "\'" ++ ?utils:current_time(format_localtime) ++ "\')", 
 	    Reply = ?sql_utils:execute(insert, Sql2),
@@ -233,7 +239,7 @@ handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
 	    {reply, Error, State}
     end;
 
-handle_call({update_retailer, Merchant, RetailerId, Attrs}, _From, State) ->
+handle_call({update_retailer, Merchant, RetailerId, {Attrs, OldAttrs}}, _From, State) ->
     ?DEBUG("update_retailer with merchant ~p, retailerId ~p~nattrs ~p",
 	   [Merchant, RetailerId, Attrs]),
 
@@ -246,8 +252,16 @@ handle_call({update_retailer, Merchant, RetailerId, Attrs}, _From, State) ->
     Birth    = ?v(<<"birth">>, Attrs),
     Type     = ?v(<<"type">>, Attrs),
     Password = ?v(<<"password">>, Attrs),
-    OBalance  = ?v(<<"obalance">>, Attrs),
-    NBalance  = ?v(<<"nbalance">>, Attrs),
+    Balance  = case ?v(<<"balance">>, Attrs) of
+		   undefined -> undefined;
+		   _Balance -> ?to_f(_Balance)
+	       end,
+
+    OldShop     = ?v(<<"shop_id">>, OldAttrs),
+    OldType     = ?v(<<"type_id">>, OldAttrs),
+    OldDrawId   = ?v(<<"draw_id">>, OldAttrs),
+    OldBalance  = ?to_f(?v(<<"balance">>, OldAttrs)),
+
 
     Sql = case Type =:= ?SYSTEM_RETAILER of
 	      true ->
@@ -267,17 +281,24 @@ handle_call({update_retailer, Merchant, RetailerId, Attrs}, _From, State) ->
 	  end,
 
     case ?sql_utils:execute(read, Sql) of
-	{ok, []} ->
+	{ok, []} -> 
+	    DrawId = 
+		case Type =:= ?CHARGE_RETAILER andalso Type =/= OldType of
+		    true -> default_withdraw(Merchant, Shop, Type);
+		    false -> OldDrawId
+		end,
+
 	    Updates = ?utils:v(name, string, Name)
 		++ ?utils:v(py, string, Pinyin)
 		++ ?utils:v(id_card, string, IDCard)
 		++ ?utils:v(mobile, string, Mobile)
-		++ ?utils:v(shop, integer, Shop)
+		++ ?utils:v(shop, integer, ?supplier:get_modified(Shop, OldShop))
 		++ ?utils:v(address, string, Address)
 		++ ?utils:v(birth, string, Birth)
-		++ ?utils:v(type, integer, Type) 
+		++ ?utils:v(type, integer, ?supplier:get_modified(Type, OldType)) 
 		++ ?utils:v(password, string, Password)
-		++ ?utils:v(balance, float, NBalance),
+		++ ?utils:v(balance, float, ?supplier:get_modified(Balance, OldBalance))
+		++ ?utils:v(draw, integer, ?supplier:get_modified(DrawId, OldDrawId)),
 
 	    Sql1 = "update w_retailer set "
 		++ ?utils:to_sqls(proplists, comma, Updates)
@@ -285,17 +306,19 @@ handle_call({update_retailer, Merchant, RetailerId, Attrs}, _From, State) ->
 		++ " and merchant=" ++ ?to_s(Merchant),
 
 	    Reply = 
-		case NBalance of
-		    undefined -> 
+		case Balance =:= undefined
+		    orelse Type =/= ?CHARGE_RETAILER
+		    orelse Balance == OldBalance of
+		    true -> 
 			?sql_utils:execute(write, Sql1, RetailerId);
-		    _ ->
+		    false ->
 			Datetime = ?utils:current_time(format_localtime),
 			Sqls = [Sql1, "insert into retailer_balance_history("
 				"retailer, obalance, nbalance"
 				", action, merchant, entry_date) values("
 				++ ?to_s(RetailerId) ++ ","
-				++ ?to_s(OBalance) ++ ","
-				++ ?to_s(NBalance) ++ "," 
+				++ ?to_s(OldBalance) ++ ","
+				++ ?to_s(Balance) ++ "," 
 				++ ?to_s(?UPDATE_RETAILER) ++ "," 
 				++ ?to_s(Merchant) ++ ","
 				++ "\"" ++ ?to_s(Datetime) ++ "\")"], 
@@ -320,7 +343,7 @@ handle_call({update_score, Merchant, RetailerId, Score}, _From, State) ->
 
 
 handle_call({check_password, Merchant, RetailerId, Password}, _From, State) ->
-    Sql = "select id, password from w_retailer"
+    Sql = "select id, password, draw from w_retailer"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and id=" ++ ?to_s(RetailerId)
 	++ " and password=\'" ++ ?to_s(Password) ++ "\'"
@@ -330,8 +353,8 @@ handle_call({check_password, Merchant, RetailerId, Password}, _From, State) ->
 	{ok, []} ->
 	    {reply,
 	     {error, ?err(retailer_invalid_password, RetailerId)}, State};
-	{ok, _}->
-	    {reply, {ok, RetailerId}, State};
+	{ok, R}-> 
+	    {reply, {ok, {RetailerId, ?v(<<"draw">>, R)}}, State};
 	Error ->
 	    {reply, Error, State}
     end;
@@ -360,11 +383,12 @@ handle_call({get_retailer, Merchant, RetailerId}, _From, State) ->
 	", a.mobile"
 	", a.address"
 	", a.shop as shop_id"
+	", a.draw as draw_id"
 	", a.merchant"
 	", a.entry_date" 
-	" from w_retailer where id=" ++ ?to_s(RetailerId)
-	++ " and merchant=" ++ ?to_s(Merchant), 
-    Reply = ?sql_utils:execute(write, Sql, RetailerId),
+	" from w_retailer a where a.id=" ++ ?to_s(RetailerId)
+	++ " and a.merchant=" ++ ?to_s(Merchant), 
+    Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
 handle_call({get_retailer_batch, Merchant, RetailerIds}, _From, State) ->
@@ -372,6 +396,7 @@ handle_call({get_retailer_batch, Merchant, RetailerIds}, _From, State) ->
 	   [Merchant, RetailerIds]),
     Sql = "select id, merchant, name, py"
 	", shop as shop_id"
+	", draw as draw_id"
 	", type as type_id"
 	", balance, score, mobile"
 	" from w_retailer"
@@ -405,6 +430,7 @@ handle_call({list_retailer, Merchant}, _From, State) ->
 	", a.mobile"
 	", a.address"
 	", a.shop as shop_id"
+	", a.draw as draw_id"
 	", a.merchant"
 	", a.entry_date"
 
@@ -428,6 +454,7 @@ handle_call({new_charge, Merchant, Attrs}, _From, State) ->
     Name    = ?v(<<"name">>, Attrs),
     Charge  = ?v(<<"charge">>, Attrs, 0),
     Balance = ?v(<<"balance">>, Attrs, 0),
+    Type    = ?v(<<"type">>, Attrs),
     SDate   = ?v(<<"sdate">>, Attrs),
     EDate   = ?v(<<"edate">>, Attrs),
     Remark  = ?v(<<"remark">>, Attrs, []),
@@ -441,13 +468,14 @@ handle_call({new_charge, Merchant, Attrs}, _From, State) ->
     case ?sql_utils:execute(s_read, Sql) of
 	{ok, []} ->
 	    Sql1 = "insert into w_charge(merchant, name"
-		", charge, balance, sdate, edate, remark"
+		", charge, balance, type, sdate, edate, remark"
 		", entry) values("
 		++ ?to_s(Merchant) ++ ","
 	    %% ++ ?to_s(Shop) ++ ","
 		++ "\'" ++ ?to_s(Name) ++ "\',"
 		++ ?to_s(Charge) ++ ","
-		++ ?to_s(Balance) ++ "," 
+		++ ?to_s(Balance) ++ ","
+		++ ?to_s(Type) ++ "," 
 		++ "\'" ++ ?to_s(SDate) ++ "\',"
 		++ "\'" ++ ?to_s(EDate) ++ "\',"
 		++ "\'" ++ ?to_s(Remark) ++ "\',"
@@ -487,8 +515,33 @@ handle_call({delete_charge, Merchant, ChargeId}, _From, State) ->
 	    {reply, {error, ?err(invalid_charge_id, ChargeId)}, State}
     end;
 
+handle_call({set_withdraw, Merchant, {DrawId, Conditions}}, _From, State) ->
+    ?DEBUG("set_withdraw with merchant ~p, drawId ~p, condition ~p",
+	   [Merchant, DrawId, Conditions]),
+    case erlang:is_number(DrawId) of
+	true ->
+	    {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
+	    Month = ?v(<<"month">>, Conditions, []),
+	    SortConditions = lists:keydelete(<<"month">>, 1, NewConditions),
+	    
+	    Sql = "update w_retailer set draw=" ++ ?to_s(DrawId)
+		++ " where merchant=" ++ ?to_s(Merchant)
+		++ case Month of
+		       [] -> [];
+		       _ -> " and month(a.birth)=" ++ ?to_s(Month)
+		   end
+		++ ?sql_utils:condition(proplists, SortConditions)
+		++ " and type=" ++ ?to_s(?CHARGE_RETAILER) 
+		++ " and deleted=" ++ ?to_s(?NO),
+
+	    Reply =  ?sql_utils:execute(write, Sql, Merchant),
+	    {reply, Reply, State};
+	false ->
+	    {reply, {error, ?err(invalid_charge_id, DrawId)}, State}
+    end;
+
 handle_call({list_charge, Merchant}, _From, State) ->
-    Sql = "select id, name, charge, balance, sdate, edate"
+    Sql = "select id, name, charge, balance, type, sdate, edate"
 	", remark, entry, deleted"
 	" from w_charge"
 	" where merchant=" ++ ?to_s(Merchant),
@@ -886,6 +939,7 @@ handle_call({{filter_retailer, Order, Sort},
 	", a.mobile"
 	", a.address"
 	", a.shop as shop_id"
+	", a.draw as draw_id"
 	", a.entry_date"
 
 	", b.name as shop_name" 
@@ -989,6 +1043,7 @@ handle_call({match_phone, Merchant, {Mode, Phone}}, _From, #state{prompt=Prompt}
 
     Sql = "select id, merchant, name, py"
 	", shop as shop_id"
+	", draw as draw_id"
 	", type as type_id"
 	", balance, score, mobile"
 	" from w_retailer"
@@ -1073,4 +1128,15 @@ default_profile(prompt, Merchant) ->
 	    ?DEBUG("=Prompt ~p", [Prompt]),
 	    Prompt
     end.
-    
+
+
+default_withdraw(_Merchant, Shop, _RetailerType) when Shop =:= ?INVALID_OR_EMPTY->
+    ?INVALID_OR_EMPTY;
+default_withdraw(_Merchant, _Shop, RetailerType) when RetailerType =/= ?CHARGE_RETAILER ->
+    ?INVALID_OR_EMPTY; 
+default_withdraw(Merchant, Shop, _RetailerType) ->
+    case ?w_user_profile:get(shop, Merchant, Shop) of
+	{ok, []} -> ?INVALID_OR_EMPTY;
+	{ok, [{Draw}]} -> ?v(<<"draw_id">>, Draw)
+    end.
+

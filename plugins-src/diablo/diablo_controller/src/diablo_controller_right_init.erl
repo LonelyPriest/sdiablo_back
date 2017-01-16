@@ -115,6 +115,8 @@ init([]) ->
 	  <<"删除会员">>, <<"del_w_retailer">>,    ?right_w_retailer},
 	 {?update_w_retailer,
 	  <<"修改会员">>, <<"update_w_retailer">>, ?right_w_retailer},
+	 {?set_w_retailer_withdraw,
+	  <<"设置会员提现方案">>, <<"set_w_retailer_withdraw">>, ?right_w_retailer},
 	 {?list_w_retailer,
 	  <<"查询会员">>, <<"list_w_retailer">>,   ?right_w_retailer}, 
 
@@ -134,7 +136,7 @@ init([]) ->
 	 {?update_w_retailer_score,
 	  <<"修改积分方案">>,<<"update_w_retailer_score">>,?right_w_retailer},
 	 {?list_w_retailer_score,
-	  <<"查询积分方案">>, <<"list_w_retailer_score">>,?right_w_retailer},
+	  <<"查询积分方案">>, <<"list_w_retailer_score">>,?right_w_retailer}, 
 
 	 {?new_recharge, <<"会员充值">>, <<"new_recharge">>,?right_w_retailer},
 	 {?delete_recharge, 
@@ -168,6 +170,7 @@ init([]) ->
 	[{?new_shop,    <<"新增店铺">>, <<"new_shop">>,    ?right_shop},
 	 {?del_shop,    <<"删除店铺">>, <<"delete_shop">>, ?right_shop},
 	 {?update_shop, <<"修改店铺">>, <<"update_shop">>, ?right_shop},
+	 {?update_shop_charge, <<"修改店铺充值/提现方案">>, <<"update_shop_charge">>, ?right_shop},
 	 {?list_shop,   <<"查询店铺">>, <<"list_shop">>,   ?right_shop},
 	 
 	 {?new_repo,    <<"新增仓库">>, <<"new_repo">>,    ?right_shop},

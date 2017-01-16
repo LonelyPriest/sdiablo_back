@@ -51,6 +51,9 @@ var diablo_from_update_stock=7;
 var diablo_desc = 0;
 var diablo_asc  = 1;
 
+var diablo_charge = 0;
+var diablo_withdraw = 1;
+
 /*
  * stock
  */
@@ -229,22 +232,33 @@ var diablo_remove_local_storage = function(l){
     // console.log(keys);
 };
 
-var diablo_remove_wsale_local_storage = function(l){
-    var keys = l.keys();
-    console.log(keys);
-    var now = $.now();
-    var re = /^ws-\d+-\d+-.*$/; 
-    angular.forEach(keys, function(k){
+var diablo_remove_wsale_local_storage = function(){
+    var re = /^wsaleApp\.ws-\d+-\d+-.*$/; 
+    var now = $.now(); 
+    for (var k in localStorage) {
+	// console.log(k);
 	if (re.test(k)){
 	    var t = k.split("-");
+	    // console.log(k, t);
 	    if (now > parseInt(t[t.length - 1]) + 3600 * 1000){
-		l.remove(k);
+		localStorage.removeItem(k);
 	    }
 	}
-    });
-    
+    } 
     // console.log(keys);
 };
+
+var diablo_remove_app_storage = function(appRex){
+    // var re = /^wretailerApp.*$/; 
+    var now = $.now(); 
+    for (var k in localStorage) {
+	// console.log(k, appRex.test(k));
+	if (appRex.test(k)){
+	    localStorage.removeItem(k); 
+	}
+    }
+};
+
 
 /*
  * add ordered id

@@ -21,7 +21,7 @@
 	 terminate/2, code_change/3]).
 
 -export([supplier/2, supplier/3, filter/4, filter/6, bill/3, supplier/5]).
--export([update/3, datetime2seconds/1, profit/4, sprofit/4]).
+-export([update/3, datetime2seconds/1, profit/4, sprofit/4, get_modified/2]).
 
 -define(SERVER, ?MODULE). 
 -define(tbl_supplier, "suppliers").

@@ -192,7 +192,9 @@ success(effect_ticket, TicketId) ->
 success(consume_ticket, TicketId) ->
     {0, "Success to consume ticket: "++?to_s(TicketId)++"."};
 success(syn_retailer_pinyin, Merchant) ->
-    {0, "Success to syn retailer's pinyin of merchant: "++?to_s(Merchant)++"."}; 
+    {0, "Success to syn retailer's pinyin of merchant: "++?to_s(Merchant)++"."};
+success(set_retailer_withdraw, Merchant) ->
+    {0, "Success to set the withdraw of merchant: "++?to_s(Merchant)++"."};
 
 %% wsale
 success(new_w_sale, RSn) ->

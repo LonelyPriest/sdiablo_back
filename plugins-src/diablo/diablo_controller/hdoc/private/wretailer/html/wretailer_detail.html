@@ -14,7 +14,12 @@
 		    x-ng-click="new_retailer()">新增
 	      <i class="glyphicon glyphicon-plus"></i></button>
 
-	    <button x-ng-if="right.export_retailer" class="btn blue purple-stripe hidden-xs"
+	    <button x-ng-if="right.set_withdraw" class="btn red purple-stripe hidden-xxs"
+		    x-ng-click="withdraw()">提现方案
+	      <i class="glyphicon glyphicon-share"></i></button>
+
+	    <button x-ng-if="right.export_retailer"
+		    class="btn blue purple-stripe hidden-xs hidden-xxs"
 		    x-ng-click="export_retailer()">导出
 	      <i class="glyphicon glyphicon-export"></i></button>
 
@@ -22,8 +27,8 @@
 		    x-ng-click="charge_detail()">充值记录
 	      <i class="glyphicon glyphicon-map-marker"></i></button>
 
-	    <button x-ng-if="right.master" class="btn red purple-stripe"
-		    x-ng-click="syn_pinyin()">拼音
+	    <button x-ng-if="right.master" class="btn red purple-stripe hidden-xs hidden-xxs"
+		    x-ng-click="syn_pinyin()">拼音同步
 	      <i class="glyphicon glyphicon-sort"></i></button> 
 
 	    <button class="btn blue reload purple-stripe"
@@ -112,6 +117,7 @@
 		    <th x-ng-click="use_order(order_fields.balance)" class="danger">帐户余额
 		      <i class="glyphicon glyphicon-triangle-bottom fg-red"></i>
 		    </th>
+		    <th>提现额度</th>
 		    <th x-ng-click="use_order(order_fields.consume)" class="success">累计消费
 		      <i class="glyphicon glyphicon-triangle-bottom fg-red"></i>
 		    </th>
@@ -140,6 +146,13 @@
 		    <td class="text-center">
 		      <div x-ng-if="r.type_id===1">{{r.balance}}</div>
 		      <div x-ng-if="r.type_id!==1">-</div>
+		    </td>
+		    <td>
+		      <div x-ng-if="r.type_id===1">
+			<div x-ng-if="r.draw_id===-1" class="text-center">-</div>
+			<div x-ng-if="r.draw_id!==-1">{{r.draw.name}}</div>
+		      </div>
+		      <div x-ng-if="r.type_id!==1" class="text-center">-</div>
 		    </td>
 		    <td class="text-center">{{r.consume}}</td>
 		    <td class="text-center">
@@ -445,7 +458,8 @@
 		    class="form-control"
 		    x-ng-model="params.retailer.select_shop"
 		    x-ng-options="s as s.name for s in params.retailer.shops"
-		    x-ng-change="params.retailer.select_charge=params.get_charge(params.retailer.select_shop.charge_id)">
+		    x-ng-change="params.retailer.select_charge=params.get_charge(params.retailer.select_shop.charge_id)"
+		    x-ng-init="params.retailer.select_charge=params.get_charge(params.retailer.select_shop.charge_id)"> 
 	    </select>
 	  </div>
 	</div>
@@ -497,7 +511,7 @@
 	    <select type="text"
 		    class="form-control"
 		    x-ng-model="params.retailer.select_charge"
-		    x-ng-options="c as c.name for c in params.retailer.charges"
+		    x-ng-options="c as c.name for c in charges"
 		    x-ng-change="params.charge=params.retailer.select_charge.charge">
 	    </select>
 	  </div>
@@ -564,6 +578,64 @@
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>
   
+</script>
+
+
+<script type="text/ng-template" id="retailer-withdraw.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    <h4 class="modal-title">
+      <span class="label label-sm label-primary">会员提现方案编辑</span>
+    </h4>
+  </div>
+
+  <!--BEGIN modal body-->
+  <div class="modal-body">
+
+    <div class="table-responsive">
+      <table class="table table-bordered
+		    table-striped table-condensed table-advanced">
+	<thead>
+	  <tr>
+	    <th></th>
+	    <th>名称</th>
+	    <th>提现金额</th>
+	    <th>开始日期</th>
+	    <th>结束日期</th>
+	  </tr>
+	</thead>
+	<tbody>
+	  <tr x-ng-repeat="d in params.draws">
+	    <td class="text-center">
+	      <div class="checkbox checkbox-danger checkbox-circle">
+		<input id={{d.id}}
+		       type="checkbox"
+		       x-ng-model="d.select"
+		       x-ng-change="params.check_only(d, params.draws)"/>
+		<label for={{d.id}}></label>
+	      </div>
+	    </td>
+
+	    <td class="vert-align">{{d.name}}</td>
+	    <td class="vert-align">{{d.charge}}</td>
+	    <td class="vert-align">{{d.sdate}}</td>
+	    <td class="vert-align">{{d.edate}}</td>
+
+	  </tr>
+	</tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="pForm.$invalid || !params.check_one(params.draws)"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
 </script>
 
 <script type="text/ng-template" id="reset-password.html">
@@ -704,4 +776,64 @@
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>
   
+</script>
+
+
+<script type="text/ng-template" id="withdraw.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    <h4 class="modal-title">
+      <span class="label label-sm label-primary">
+	提现方案（<span >{{params.shop.name}}</span>）
+      </span>
+    </h4>
+  </div>
+
+  <!--BEGIN modal body-->
+  <div class="modal-body">
+
+    <div class="table-responsive">
+      <table class="table table-bordered
+		    table-striped table-condensed table-advanced">
+	<thead>
+	  <tr>
+	    <th></th>
+	    <th>名称</th>
+	    <th>提现金额</th>
+	    <th>开始日期</th>
+	    <th>结束日期</th>
+	  </tr>
+	</thead>
+	<tbody>
+	  <tr x-ng-repeat="d in params.draws">
+	    <td class="text-center">
+	      <div class="checkbox checkbox-danger checkbox-circle">
+		<input id={{d.id}}
+		       type="checkbox"
+		       x-ng-model="d.select"
+		       x-ng-change="params.check_only(d, params.draws)"/>
+		<label for={{d.id}}></label>
+	      </div>
+	    </td>
+
+	    <td class="vert-align">{{d.name}}</td>
+	    <td class="vert-align">{{d.charge}}</td>
+	    <td class="vert-align">{{d.sdate}}</td>
+	    <td class="vert-align">{{d.edate}}</td>
+
+	  </tr>
+	</tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="pForm.$invalid || params.check_same(params.draws)"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
 </script>

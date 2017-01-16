@@ -136,10 +136,10 @@ function shopConfig(angular){
 	    ).$promise;
 	};
 
-	this.update_charge = function(shopId, charge) {
+	this.update_charge = function(shopId, charge, type) {
 	    return shop.save(
-		{operation: "update_shop"},
-		{id:shopId, charge:charge}).$promise;
+		{operation: "update_shop_charge"},
+		{id:shopId, charge:charge, type:type}).$promise;
 	};
 
 	this.update_score = function(shopId, score) {

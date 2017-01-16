@@ -176,7 +176,7 @@ function firmDetailCtrlProvide(
     };
     
     $scope.do_refresh = function(page, search){
-	console.log(page); 
+	// console.log(page); 
 	$scope.current_page = page;
 	$scope.search       = search;
 	

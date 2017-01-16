@@ -300,6 +300,8 @@ function firmConfig(angular){
 	};
     });
 
+    // diablo_remove_app_storage(/^firmApp.*$/);
+
     return firmApp;
 };
 

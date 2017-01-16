@@ -102,7 +102,7 @@ function wretailerConfig(angular) {
 					promotion, score, color, user, base)
 	    }).
 	    // recharge and score
-	    when('/promotion/recharge_new', {
+	    when('/promotion/recharge_new/:action?', {
 		templateUrl: '/private/wretailer/html/recharge_new.html',
 		controller: 'wretailerRechargeNewCtrl'
 	    }). 
@@ -276,7 +276,7 @@ function wretailerConfig(angular) {
 	};
 
 	/*
-	 * charge
+	 * charge strategy
 	 */
 	this.new_charge_promotion = function(promotion){
 	    return http.save(
@@ -292,6 +292,14 @@ function wretailerConfig(angular) {
 	    return http.query({operation:"list_w_retailer_charge"}).$promise;
 	};
 
+	this.set_withdraw = function(drawId, conditions) {
+	    return http.save({operation:"set_w_retailer_withdraw"},
+			     {draw_id:drawId, condition:conditions}).$promise;
+	};
+
+	/*
+	 * recharge of retailer
+	 */
 	this.new_recharge = function(charge){
 	    return http.save({operation:"new_recharge"}, charge).$promise;
 	};
@@ -379,6 +387,8 @@ function wretailerConfig(angular) {
     wretailerApp.controller("loginOutCtrl", function($scope, $resource){
 	$scope.home = function () {diablo_login_out($resource)};
     });
+
+    // diablo_remove_app_storage(/^wretailerApp.*$/);
 
     return wretailerApp;
 };

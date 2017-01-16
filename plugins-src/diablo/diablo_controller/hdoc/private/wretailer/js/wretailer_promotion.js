@@ -1,12 +1,15 @@
 'use strict'
 
 function wretailerRechargeNewCtrlProvide(
-    $scope, dateFilter, diabloPattern, diabloUtilsService, wretailerService){
+    $scope, $routeParams, dateFilter, diabloPattern, diabloUtilsService, wretailerService){
     $scope.pattern = {
 	name      :diabloPattern.ch_en_num_beside_underline_bars,
 	number    :diabloPattern.number,
 	remark    :diabloPattern.comment
     };
+
+    $scope.action = retailerUtils.to_integer($routeParams.action); 
+    $scope.label = $scope.action === 1 ? "提现" : "充值";
 
     var dialog = diabloUtilsService; 
     var now    = $.now();
@@ -23,21 +26,24 @@ function wretailerRechargeNewCtrlProvide(
 	wretailerService.new_charge_promotion(
 	    {name:    $scope.promotion.name,
 	     charge:  $scope.promotion.charge,
-	     balance: diablo_set_integer($scope.promotion.balance),
+	     balance: retailerUtils.to_integer($scope.promotion.balance),
+	     type:    $scope.action,
 	     sdate:   dateFilter($scope.promotion.sdate, "yyyy-MM-dd"),
 	     edate:   dateFilter($scope.promotion.edate, "yyyy-MM-dd"), 
 	     remark:  diablo_set_string($scope.promotion.remark)}
 	).then(function(result){
 	    if (result.ecode === 0){
 		dialog.response_with_callback(
-		    true, "新增充值方案", "充值方案新增成功！！", undefined,
+		    true,
+		    "新增" + $scope.label + "方案",
+		    $scope.label + "方案新增成功！！",
+		    undefined,
 		    function(){$scope.cancel()});
 	    } else {
 		dialog.response(
 		    false,
-		    "新增充值方案",
-		    "充值方案新增失败："
-			+ wretailerService.error[result.ecode],
+		    "新增" + $scope.label + "方案",
+		    $scope.label + "方案新增失败：" + wretailerService.error[result.ecode],
 		    undefined);
 	    }
 	});
@@ -54,12 +60,16 @@ function wretailerRechargeDetailCtrlProvide(
 ){
 
     var dialog = diabloUtilsService;
+    $scope.actions = {recharge:true, draw:false}
     
     wretailerService.list_charge_promotion().then(function(result){
 	console.log(result);
 	// $scope.promotions = result.filter(function(r){return r.deleted!==1});
-	$scope.promotions = angular.copy(result);
+	
+	$scope.promotions = result.filter(function(r){return r.type===0});
+	$scope.draws = result.filter(function(r){return r.type===1});
 	diablo_order($scope.promotions);
+	diablo_order($scope.draws);
     });
 
     $scope.right = {
@@ -67,37 +77,43 @@ function wretailerRechargeDetailCtrlProvide(
     };
     
     $scope.new_recharge = function(){
-	diablo_goto_page("#/promotion/recharge_new");
+	if ($scope.actions.recharge)
+	    diablo_goto_page("#/promotion/recharge_new/0");
+	else if ($scope.actions.draw)
+	    diablo_goto_page("#/promotion/recharge_new/1");
     }
 
     $scope.update_charge = function(p){
-	dialog.response(false, "修改充值方案", "暂不支持此操作！！");
+	var title = $scope.actions.recharge ? "充值" : "提现";
+	dialog.response(false, "修改" + title + "方案", "暂不支持此操作！！");
     };
 
     $scope.delete_charge = function(p){
+	var title = $scope.actions.recharge ? "充值" : "提现";
+	
 	var callback = function() {
 	    wretailerService.delete_charge_promotion(p.id).then(function(result){
 		console.log(result);
 		if (result.ecode === 0){
 		    dialog.response_with_callback(
 			true,
-			"删除充分值方案",
-			"充值方案删除成功！！",
+			"删除" + title + "方案",
+			title + "方案删除成功！！",
 			undefined,
 			function() {p.deleted=diablo_has_deleted});
 		} else {
 		    dialog.response(
 			false,
-			"删除充值方案",
-			"充值方案删除失败！！" + wretailerService.error[result.ecode],
+			"删除" + title + "方案",
+			title + "方案删除失败！！" + wretailerService.error[result.ecode],
 			undefined);
 		}
 	    });
 	};
 	
 	dialog.request(
-	    "删除充值方案",
-	    "确认要删除该充值方案吗？",
+	    "删除" + title + "方案",
+	    "确认要删除该" + title + "方案吗？",
 	    callback,
 	    undefined,
 	    undefined

@@ -630,6 +630,8 @@ function stockConfg(angular){
 	    diablo_login_out($resource)
 	};
     });
+
+    // diablo_remove_app_storage(/^purchaserApp.*$/);
     
     return purchaserApp;
 };

@@ -1,6 +1,11 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2017-01-17",
+         content:
+	 ["增加会员提现上限功能"]
+        },
+	
 	{date: "2017-01-16",
          content:
 	 ["会员增加区域过滤项，可按区域查询该区域内的会员",

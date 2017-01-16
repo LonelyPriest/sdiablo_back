@@ -416,6 +416,7 @@ function filterProvider(){
 				    type_id: r.type_id,
 				    score:   r.score,
 				    shop_id: r.shop_id,
+				    draw_id: r.draw_id,
 				    py:      r.py,
 				    balance: r.balance} 
 			})
@@ -969,9 +970,13 @@ function normalFilterProvider(){
 
 
 	    get_charge: function(){
-		if (_charges.length !== 0){
-		    return _charges;
-		} else {
+		var cached = get_from_storage(cookie, "recharge");
+		if (angular.isArray(cached) && cached.length !== 0) return cached;
+		
+		// if (_charges.length !== 0){
+		//     return _charges;
+		// }
+		else {
 		    return _retailerHttp.query(
 			{operation: 'list_w_retailer_charge'}
 		    ).$promise.then(function(cs){
@@ -982,12 +987,14 @@ function normalFilterProvider(){
 				name:     c.name,
 				charge:   c.charge,
 				balance:  c.balance,
+				type:     c.type,
 				sdate:    c.sdate,
 				edate:    c.edate,
 				deleted:  c.deleted
 			    }
 			});
 
+			set_storage(cookie, "recharge", _charges);
 			return _charges;
 		    })
 		}

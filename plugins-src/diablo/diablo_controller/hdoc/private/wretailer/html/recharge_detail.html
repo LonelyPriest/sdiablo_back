@@ -25,62 +25,122 @@
 
 
       <div class="portlet-body">
-	<div class="table-toolbar">
-	</div>
+	<uib-tabset>
+	  <uib-tab active="actions.recharge">
+	    <tab-heading class="fg-darkRed">充值</tab-heading>
+	    
+	    <div class="panel panel-default table-panel">
+	      <div class="table-responsive">
+		<table class="table table-bordered
+			      table-striped table-hover
+			      table-condensed table-advanced">
+		  <thead>
+		    <tr>
+		      <th>序号</th>
+		      <th>名称</th>
+		      <th>充值金额(元)</th>
+		      <th>赠送金额(元)</th>
+		      <th>开始日期</th>
+		      <th>结束日期</th>
+		      <th>描述</th>
+		      <th>状态</th>
+		      <th>操作</th>
+		    </tr>
+		  </thead>
 
-	<div class="panel panel-default table-panel">
-	  <div class="table-responsive">
-	    <table class="table table-bordered
-			  table-striped table-hover
-			  table-condensed table-advanced">
-	      <thead>
-		<tr>
-		  <th>序号</th>
-		  <th>名称</th>
-		  <th>充值金额</th>
-		  <th>赠送金额</th>
-		  <th>开始日期</th>
-		  <th>结束日期</th>
-		  <th>描述</th>
-		  <th>状态</th>
-		  <th>操作</th>
-		</tr>
-	      </thead>
+		  <tbody>
+		    <tr x-ng-repeat="p in promotions">
+		      <td>{{p.order_id}}</td>
+		      <td>{{p.name}}</td>
+		      <td>{{p.charge}}</td>
+		      <td>{{p.balance}}</td>
+		      <td>{{p.sdate}}</td>
+		      <td>{{p.edate}}</td> 
+		      <td>
+			<span x-ng-if="p.remark">{{p.remark}}</span>
+			<span x-ng-if="!p.remark">暂无</span> 
+		      </td>
+		      <td>
+			<div x-ng-switch on="p.deleted">
+			  <span x-ng-switch-when=0>正常</span>
+			  <span x-ng-switch-when=1 class="fg-red">已删除</span>
+			</div>
+		      </td>
+		      <td>
+			<button x-ng-if="p.deleted!==1"
+				class="btn diablo-button btn-warning"
+				x-ng-click="update_charge(p)">修改
+			  <i class="glyphicon glyphicon-edit"></i></button>
+			<button x-ng-if="p.deleted!==1"
+				class="btn diablo-button btn-danger"
+				x-ng-click="delete_charge(p)">删除
+			  <i class="glyphicon glyphicon-erase"></i></button>
+		      </td>
+		    </tr>
+		  </tbody>
+		  
+		</table>
+	      </div>
+	    </div>
+	  </uib-tab>
 
-	      <tbody>
-		<tr x-ng-repeat="p in promotions">
-		  <td>{{p.order_id}}</td>
-		  <td>{{p.name}}</td>
-		  <td>{{p.charge}}</td>
-		  <td>{{p.balance}}</td>
-		  <td>{{p.sdate}}</td>
-		  <td>{{p.edate}}</td> 
-		  <td>
-		    <span x-ng-if="p.remark">{{p.remark}}</span>
-		    <span x-ng-if="!p.remark">暂无</span> 
-		  </td>
-		  <td>
-		    <div x-ng-switch on="p.deleted">
-		      <span x-ng-switch-when=0>正常</span>
-		      <span x-ng-switch-when=1 class="fg-red">已删除</span>
-		    </div>
-		  </td>
-		  <td>
-                    <button x-ng-if="p.deleted!==1"
-			    class="btn diablo-button btn-warning"
-			    x-ng-click="update_charge(p)">修改
-		      <i class="glyphicon glyphicon-edit"></i></button>
-                    <button x-ng-if="p.deleted!==1"
-			    class="btn diablo-button btn-danger"
-			    x-ng-click="delete_charge(p)">删除
-		      <i class="glyphicon glyphicon-erase"></i></button>
-		  </td>
-		</tr>
-	      </tbody>
-	      
-	    </table>
-	  </div>
-	</div>
+	  <uib-tab active="actions.draw">
+	    <tab-heading class="fg-darkBlue">提现</tab-heading>
+	    
+	    <div class="panel panel-default table-panel">
+	      <div class="table-responsive">
+		<table class="table table-bordered
+			      table-striped table-hover
+			      table-condensed table-advanced">
+		  <thead>
+		    <tr>
+		      <th>序号</th>
+		      <th>名称</th>
+		      <th>提现金额(元)</th>
+		      <th>开始日期</th>
+		      <th>结束日期</th>
+		      <th>描述</th>
+		      <th>状态</th>
+		      <th>操作</th>
+		    </tr>
+		  </thead>
+
+		  <tbody>
+		    <tr x-ng-repeat="d in draws">
+		      <td>{{d.order_id}}</td>
+		      <td>{{d.name}}</td>
+		      <td>{{d.charge}}</td>
+		      <td>{{d.sdate}}</td>
+		      <td>{{d.edate}}</td> 
+		      <td>
+			<span x-ng-if="d.remark">{{d.remark}}</span>
+			<span x-ng-if="!d.remark">-</span> 
+		      </td>
+		      <td>
+			<div x-ng-switch on="d.deleted">
+			  <span x-ng-switch-when=0>正常</span>
+			  <span x-ng-switch-when=1 class="fg-red">已删除</span>
+			</div>
+		      </td>
+		      <td>
+			<button x-ng-if="p.deleted!==1"
+				class="btn diablo-button btn-warning"
+				x-ng-click="update_charge(d)">修改
+			  <i class="glyphicon glyphicon-edit"></i></button>
+			<button x-ng-if="p.deleted!==1"
+				class="btn diablo-button btn-danger"
+				x-ng-click="delete_charge(d)">删除
+			  <i class="glyphicon glyphicon-erase"></i></button>
+		      </td>
+		    </tr>
+		  </tbody>
+		  
+		</table>
+	      </div>
+	    </div>
+	  </uib-tab>
+	  
+	</uib-tabset>
       </div>
 
       
