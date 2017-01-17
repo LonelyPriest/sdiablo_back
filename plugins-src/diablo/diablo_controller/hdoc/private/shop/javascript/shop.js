@@ -86,9 +86,14 @@ function shopDetailCtrlProvide(
     $scope.promotions      = filterPromotion;
     // $scope.shop_promotions = filterShopPromotion.map(
     // 	function(p){return p.pid});
-    $scope.charges = filterCharge.filter(function(c){return c.type===diablo_charge});
+    $scope.charges = filterCharge.filter(function(c){
+	return c.type===diablo_charge && c.deleted!==diablo_has_deleted;
+    });
     $scope.charges = $scope.charges.concat([{id:-1, name:"重置充值方案"}]);
-    $scope.draws   = filterCharge.filter(function(c){return c.type===diablo_withdraw});
+    
+    $scope.draws   = filterCharge.filter(function(c){
+	return c.type===diablo_withdraw && c.deleted!==diablo_has_deleted;
+    }); 
     $scope.draws   = $scope.draws.concat([{id:-1, name:"重置提现方案"}]);
     
     $scope.scores          = filterScore.filter(function(s){return s.type_id===0});    

@@ -1,7 +1,8 @@
 'use strict'
 
 function wretailerRechargeNewCtrlProvide(
-    $scope, $routeParams, dateFilter, diabloPattern, diabloUtilsService, wretailerService){
+    $scope, $routeParams, dateFilter, diabloPattern, diabloNormalFilter,
+    diabloUtilsService, wretailerService){
     $scope.pattern = {
 	name      :diabloPattern.ch_en_num_beside_underline_bars,
 	number    :diabloPattern.number,
@@ -38,7 +39,10 @@ function wretailerRechargeNewCtrlProvide(
 		    "新增" + $scope.label + "方案",
 		    $scope.label + "方案新增成功！！",
 		    undefined,
-		    function(){$scope.cancel()});
+		    function(){
+			diabloNormalFilter.reset_charge();
+			$scope.cancel();
+		    });
 	    } else {
 		dialog.response(
 		    false,
@@ -56,7 +60,7 @@ function wretailerRechargeNewCtrlProvide(
 
 
 function wretailerRechargeDetailCtrlProvide(
-    $scope, diabloPattern, diabloUtilsService, wretailerService, user
+    $scope, diabloPattern, diabloNormalFilter, diabloUtilsService, wretailerService, user
 ){
 
     var dialog = diabloUtilsService;
@@ -100,7 +104,10 @@ function wretailerRechargeDetailCtrlProvide(
 			"删除" + title + "方案",
 			title + "方案删除成功！！",
 			undefined,
-			function() {p.deleted=diablo_has_deleted});
+			function() {
+			    diabloNormalFilter.reset_charge();
+			    p.deleted=diablo_has_deleted;
+			});
 		} else {
 		    dialog.response(
 			false,

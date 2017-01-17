@@ -49,8 +49,12 @@ function wretailerDetailCtrlProvide(
     filterEmployee, filterCharge, filterRegion, user, base){
     $scope.employees      = filterEmployee;
     // $scope.charges        = filterCharge;
-    $scope.charges        = filterCharge.filter(function(c){return c.type===diablo_charge});
-    $scope.draws          = filterCharge.filter(function(c){return c.type===diablo_withdraw})
+    $scope.charges        = filterCharge.filter(function(c){
+	return c.type===diablo_charge && c.deleted!==diablo_has_deleted;
+    });
+    $scope.draws          = filterCharge.filter(function(c){
+	return c.type===diablo_withdraw && c.deleted!==diablo_has_deleted;
+    })
     $scope.draws          = $scope.draws.concat([{id:-1, name:"重置提现方案"}]);;
     $scope.regions        = filterRegion;
     

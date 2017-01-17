@@ -969,6 +969,10 @@ function normalFilterProvider(){
 	    },
 
 
+	    reset_charge: function() {
+		clear_from_storage(cookie, "recharge");
+	    },
+	    
 	    get_charge: function(){
 		var cached = get_from_storage(cookie, "recharge");
 		if (angular.isArray(cached) && cached.length !== 0) return cached;
