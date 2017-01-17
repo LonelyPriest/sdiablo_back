@@ -240,8 +240,8 @@ handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
     end;
 
 handle_call({update_retailer, Merchant, RetailerId, {Attrs, OldAttrs}}, _From, State) ->
-    ?DEBUG("update_retailer with merchant ~p, retailerId ~p~nattrs ~p",
-	   [Merchant, RetailerId, Attrs]),
+    ?DEBUG("update_retailer with merchant ~p, retailerId ~p~nattrs ~p, oldattrs ~p",
+	   [Merchant, RetailerId, Attrs, OldAttrs]),
 
     Name     = ?v(<<"name">>, Attrs),
     Pinyin   = ?v(<<"py">>, Attrs),
@@ -249,38 +249,48 @@ handle_call({update_retailer, Merchant, RetailerId, {Attrs, OldAttrs}}, _From, S
     Mobile   = ?v(<<"mobile">>, Attrs),
     Shop     = ?v(<<"shop">>, Attrs),
     Address  = ?v(<<"address">>, Attrs), 
-    Birth    = ?v(<<"birth">>, Attrs),
-    Type     = ?v(<<"type">>, Attrs),
-    Password = ?v(<<"password">>, Attrs),
-    Balance  = case ?v(<<"balance">>, Attrs) of
-		   undefined -> undefined;
-		   _Balance -> ?to_f(_Balance)
-	       end,
+    Birth    = ?v(<<"birth">>, Attrs), 
+    Password = ?v(<<"password">>, Attrs), 
 
     OldShop     = ?v(<<"shop_id">>, OldAttrs),
     OldType     = ?v(<<"type_id">>, OldAttrs),
     OldDrawId   = ?v(<<"draw_id">>, OldAttrs),
     OldBalance  = ?to_f(?v(<<"balance">>, OldAttrs)),
 
+    Balance  = case ?v(<<"balance">>, Attrs) of
+		   undefined -> OldBalance;
+		   _Balance -> ?to_f(_Balance)
+	       end,
+    
+    Type     = case ?v(<<"type">>, Attrs) of
+		   undefined -> OldType;
+		   _Type -> _Type
+	       end,
 
-    Sql = case Type =:= ?SYSTEM_RETAILER of
-	      true ->
-		  "select id, name, mobile, address"
-		      ++ " from w_retailer" 
-		      ++ " where merchant=" ++ ?to_s(Merchant)
-		      ++ " and name = " ++ "\'" ++ ?to_s(Name) ++ "\'" 
-		      ++ " and mobile = " ++ "\'" ++ ?to_s(Mobile) ++ "\'" 
-		      ++ " and deleted = " ++ ?to_s(?NO);
-	      false ->
-		  "select id, name, mobile, address"
-		      ++ " from w_retailer" 
-		      ++ " where merchant=" ++ ?to_s(Merchant)
-		      ++ " and mobile = " ++ "\'" ++ ?to_s(Mobile) ++ "\'"
-		      ++ " and type !=" ++ ?to_s(?SYSTEM_RETAILER) 
-		      ++ " and deleted = " ++ ?to_s(?NO)
-	  end,
+   IsMobileModified = 
+	case Mobile =:= undefined of
+	    true -> {ok, []};
+	    false -> 
+		Sql = case Type =:= ?SYSTEM_RETAILER of
+			  true ->
+			      "select id, name, mobile, address"
+				  ++ " from w_retailer" 
+				  ++ " where merchant=" ++ ?to_s(Merchant)
+				  ++ " and name=" ++ "\'" ++ ?to_s(Name) ++ "\'" 
+				  ++ " and mobile=" ++ "\'" ++ ?to_s(Mobile) ++ "\'" 
+				  ++ " and deleted=" ++ ?to_s(?NO);
+			  false ->
+			      "select id, name, mobile, address"
+				  ++ " from w_retailer" 
+				  ++ " where merchant=" ++ ?to_s(Merchant)
+				  ++ " and mobile=" ++ "\'" ++ ?to_s(Mobile) ++ "\'"
+				  ++ " and type!=" ++ ?to_s(?SYSTEM_RETAILER) 
+				  ++ " and deleted=" ++ ?to_s(?NO)
+		      end,
+		?sql_utils:execute(read, Sql)
+	end,
 
-    case ?sql_utils:execute(read, Sql) of
+    case IsMobileModified of 
 	{ok, []} -> 
 	    DrawId = 
 		case Type =:= ?CHARGE_RETAILER andalso Type =/= OldType of
@@ -304,7 +314,7 @@ handle_call({update_retailer, Merchant, RetailerId, {Attrs, OldAttrs}}, _From, S
 		++ ?utils:to_sqls(proplists, comma, Updates)
 		++ " where id=" ++ ?to_s(RetailerId)
 		++ " and merchant=" ++ ?to_s(Merchant),
-
+	    
 	    Reply = 
 		case Balance =:= undefined
 		    orelse Type =/= ?CHARGE_RETAILER

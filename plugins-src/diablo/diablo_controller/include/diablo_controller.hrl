@@ -33,6 +33,10 @@
 -define(DELETE, 0).
 -define(ABANDON, 1).
 
+%% wsale
+-define(NEW_SALE, 0).
+-define(REJECT_SALE, 1).
+
 %% transfer
 -define(IN_ROAD, 0).
 -define(IN_STOCK, 1).
@@ -80,6 +84,7 @@
 -define(PRINT_BACKEND, 1).
 
 -define(DEFAULT_ALARM_DAY, 7).
+-define(DEFAULT_BASE_SETTING, -1).
 
 %% sort
 -define(SORT_BY_ID, 0).

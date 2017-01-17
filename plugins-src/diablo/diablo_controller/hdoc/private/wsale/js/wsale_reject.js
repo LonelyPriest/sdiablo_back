@@ -41,23 +41,33 @@ function wsaleRejectCtrlProvide(
 
     $scope.has_select_rsn = false;
     
-    // rsn 
-    var time = diabloFilter.default_time();
-    wsaleService.get_wsale_rsn(
-	{shop       :$scope.shopIds,
-	 start_time :diablo_filter_time(time.start_time, 0, dateFilter),
-	 end_time   :diablo_filter_time(time.end_time, 1, dateFilter)}
-    ).then(function(result){
-	$scope.rsns = result.map(function(result){
-	    return result.rsn;
-	});
-    });
-	
+    // match rsn
+    
+    // var time = diabloFilter.default_time(); 
+    // wsaleService.get_wsale_rsn(
+    // 	{shop       :$scope.shopIds,
+    // 	 start_time :diablo_filter_time(time.start_time, 0, dateFilter),
+    // 	 end_time   :diablo_filter_time(time.end_time, 1, dateFilter)}
+    // ).then(function(result){
+    // 	$scope.rsns = result.map(function(result){
+    // 	    return result.rsn;
+    // 	});
+    // });
+
+
 
     var dialog = diabloUtilsService; 
-    var now    = $.now(); 
+    var now    = $.now();
+
+    var qtime_start = wsaleUtils.start_time(diablo_default_setting, base, now, dateFilter);
+    var qtime = diabloFilter.default_time(qtime_start, now);
+    $scope.match_rsn = function(viewValue){
+	return diabloFilter.match_wsale_rsn(viewValue, $scope.shopIds, qtime);
+    };
     
     $scope.select_rsn = function(item, model, label){
+	// console.log($scope.has_select_rsn);
+	// if ($scope.has_select_rsn) return;
 	wsaleService.get_w_sale_new(item).then(function(result){
 	    console.log(result);
 	    if (result.ecode === 0){

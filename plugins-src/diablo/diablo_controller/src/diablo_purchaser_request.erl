@@ -401,7 +401,7 @@ action(Session, Req, {"get_w_inventory_tagprice"}, Payload) ->
     Shop = ?v(<<"shop">>, Payload),
     StyleNumber = ?v(<<"style_number">>, Payload),
     Brand = ?v(<<"brand">>, Payload),
-    
+
     case ?w_inventory:purchaser_inventory(
 	    tag_price, Merchant, Shop, StyleNumber, Brand) of 
     	{ok, Detail} ->

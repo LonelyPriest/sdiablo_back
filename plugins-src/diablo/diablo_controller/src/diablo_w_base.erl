@@ -296,7 +296,7 @@ sys_config() ->
     {{YY, MM, DD}, _} = calendar:now_to_datetime({M, S - 86400 * 30, T}),
     DefaultDate = lists:flatten(io_lib:format("~4..0w-~2..0w-~2..0w", [YY, MM, DD])),
     
-    %%         ename,           cname,            value,type
+    %%         ename,             cname,                 value,type
     Values = [{"pum",             "打印份数",            "1",  "0"},
 	      {"ptype",           "打印方式",            "1",  "0"}, %% 0: front; 1:backend
 	      {"pim_print",       "立即打印",            "0",  "0"},
@@ -332,7 +332,8 @@ sys_config() ->
 	      {"cake_mode",       "蛋糕店模式",           "0",   "0"},
 	      {"p_balance",       "打印会员余额",         "0",   "0"},
 	      {"gen_ticket",      "自动生成电子卷",       "0",   "0"},
-	      {"recharge_sms", "充值短信提醒",      "0",   "0"},
-	      {"consume_sms",  "消费短信提醒",      "0",   "0"}
+	      {"recharge_sms",    "充值短信提醒",         "0",   "0"},
+	      {"consume_sms",     "消费短信提醒",         "0",   "0"},
+	      {"price_on_region", "按区域填写价格",       "0",   "0"}
 	     ],
     Values.

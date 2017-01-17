@@ -75,6 +75,12 @@ function filterProvider(){
 				      {operation: '@operation', id:'@id'},
 				      {post: {method: 'POST', isArray: true}}
 				     );
+
+	var _wsaleHttp = $resource("/wsale/:operation/:id",
+    				   {operation: '@operation', id: '@id'},
+				   {
+				       query_by_post: {method: 'POST', isArray: true}
+				   });
 	
 	var cookie = 'filter-' + diablo_get_cookie("qzg_dyty_session");
 
@@ -398,7 +404,19 @@ function filterProvider(){
 				  + "，" + inv.brand + "，" + inv.type})
 		    })
 		})
-	    }, 
+	    },
+
+	    match_wsale_rsn:function(viewValue, shops, conditions) {
+		return _wsaleHttp.query_by_post(
+		    {operation: "match_wsale_rsn"},
+		    {prompt: viewValue, shop: shops, condition:conditions}
+		).$promise.then(function(rsns){
+		    console.log(rsns);
+		    return rsns.map(function(r){
+			return r.rsn;
+		    })
+		});
+	    },
 
 	    match_retailer_phone:function(viewValue, mode) {
 		var http = $resource("/wretailer/:operation",
@@ -421,7 +439,7 @@ function filterProvider(){
 				    balance: r.balance} 
 			})
 		    })
-	    },
+	    }, 
 
 	    check_retailer_password: function(retailerId, password){
 		return _retailerHttp.save(

@@ -668,7 +668,24 @@ action(Session, Req, {"get_wsale_rsn"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     batch_responed(
       fun() -> ?w_sale:sale(
-		  get_rsn, Merchant, [{<<"sell_type">>, 0}|Payload]) end, Req).
+		  get_rsn, Merchant, [{<<"sell_type">>, 0}|Payload]) end, Req);
+
+action(Session, Req, {"match_wsale_rsn"}, Payload) ->
+    ?DEBUG("match_wsale_rsn with session ~p, Payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    %% {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
+    %% StartTime = ?v(<<"qtime_start">>, BaseSetting),
+    %% EndTime = ?v(<<"qtime_end">>, BaseSetting)
+    Shops = ?v(<<"shop">>, Payload),
+    Prompt = ?v(<<"prompt">>, Payload),
+    {struct, Conditions} = ?v(<<"condition">>, Payload),
+    batch_responed(
+      fun() -> ?w_sale:sale(
+		  match_rsn,
+		  Merchant,
+		  {Prompt, [{<<"shop">>, Shops}, {<<"type">>, ?NEW_SALE}|Conditions]})
+      end, Req).
+
 
 sidebar(Session) -> 
     case ?right_request:get_shops(Session, sale) of

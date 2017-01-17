@@ -266,8 +266,7 @@ function wsaleConfg(angular){
 	
 	this.get_wsale_rsn = function(condition){
 	    return http.query_by_post(
-		{operation: "get_wsale_rsn"}, condition
-	    ).$promise;
+		{operation: "get_wsale_rsn"}, condition).$promise;
 	};
 	
 	this.get_last_sale = function(inv){

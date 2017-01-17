@@ -1990,17 +1990,52 @@ handle_call({get_amount, Merchant, Shop, StyleNumber, Brand}, _From, State) ->
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
-handle_call({get_tagprice, Merchant, Shop, StyleNumber, Brand}, _From, State) ->
+handle_call({get_tagprice, Merchant, ShopId, StyleNumber, Brand}, _From, State) ->
     ?DEBUG("get_tagprice, with Merchant ~p, Shop ~p, StyleNumber ~p, Brand ~p",
-	   [Merchant, Shop, StyleNumber, Brand]),
+	   [Merchant, ShopId, StyleNumber, Brand]),
 
-    RealyShop = ?w_good_sql:realy_shop(true, Merchant, Shop),
+    %% RealyShop = ?w_good_sql:realy_shop(true, Merchant, Shop),
+    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, ?DEFAULT_BASE_SETTING),
+    ?DEBUG("base setting ~p", [BaseSetting]),
+    
+    ShopIds =
+	case ?to_i(?v(<<"price_on_region">>, BaseSetting, ?NO)) of
+	    ?NO  ->  [ShopId];
+	    ?YES ->
+		case ?w_user_profile:get(shop, Merchant) of
+		    {ok, [] }   -> [ShopId];
+		    {ok, Shops} ->
+			%% get region of shop
+			case lists:filter(
+			       fun({S})->
+				       ?v(<<"id">>, S) =:= ShopId
+					   andalso ?v(<<"region_id">>, S) =/= ?INVALID_OR_EMPTY
+			       end, Shops) of
+			    [] -> [ShopId];
+			    [{Shop}] ->
+				Region = ?v(<<"region_id">>, Shop),
+				?DEBUG("select region ~p", [Region]), 
+				lists:foldr(
+				  fun({S}, Acc)->
+					  case ?v(<<"region_id">>, S) =:= Region of
+					      true -> [?v(<<"id">>, S)|Acc];
+					      false-> Acc
+					  end
+				  end, [], Shops)
+			end
+		end
+	end, 
+									      
     Sql = "select style_number, brand, amount, org_price, tag_price, discount, ediscount"
 	" from w_inventory"
 	" where style_number=" ++ "\'" ++ ?to_s(StyleNumber) ++ "\'"
 	" and brand=" ++ ?to_s(Brand)
-	++ " and shop=" ++ ?to_s(RealyShop) 
-	++ " and merchant=" ++ ?to_s(Merchant),
+	++ " and " ++ ?utils:to_sqls(proplists, {<<"shop">>, ShopIds})
+	++ " and merchant=" ++ ?to_s(Merchant) 
+	++ case length(ShopIds) =:= 1 of
+	       true -> [];
+	       _ -> " group by style_number, brand"
+	   end,
 
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};

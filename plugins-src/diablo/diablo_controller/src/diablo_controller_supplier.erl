@@ -988,7 +988,7 @@ fields() -> "name, mobile, address, merchant".
 
 get_modified(undefined, _OldValue) -> undefined; 
 get_modified(NewValue, OldValue) when NewValue /= OldValue ->
-    ?DEBUG("newValue ~p, oldValue ~p", [NewValue, OldValue]),
+    %% ?DEBUG("newValue ~p, oldValue ~p", [NewValue, OldValue]),
     NewValue;
 get_modified(_NewValue, _OldValue) ->  undefined.
 

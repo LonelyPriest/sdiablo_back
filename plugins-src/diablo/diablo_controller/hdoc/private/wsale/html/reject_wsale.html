@@ -89,10 +89,16 @@
 		  <i class="glyphicon glyphicon-bookmark fg-red"></i>单号</span>
 		<input class="form-control"
 		       type="text"
-		       placeholder="请选择单号" 
-		       x-ng-enter="select.rsn && select_rsn(select.rsn)"
-		       uib-typeahead="r for r in rsns|filter:$viewValue|limitTo:30"
+		       placeholder="请选择单号"
+		       typeahead-editable="false"
+		       typeahead-wait-ms="1000"
+		       typeahead-loading="loading"
+		       typeahead-on-select="select_rsn($item, $model, $label)"
+		       uib-typeahead="r for r in match_rsn($viewValue)"
 		       x-ng-model="select.rsn"/>
+		<span x-ng-show="loading">
+	  	  <i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
+		</span>
 	      </div>
 	    </div>
 	  </div>

@@ -218,6 +218,7 @@ function purchaserInventoryNewCtrlProvide (
 	$scope.base_settings.t_trace = stockUtils.t_trace(shopId, base);
 	$scope.base_settings.group_color = stockUtils.group_color(shopId, base);
 	$scope.base_settings.image_allowed = stockUtils.image_allowed(shopId, base);
+	$scope.base_settings.price_on_region = stockUtils.price_on_region(shopId, base);
 
 	$scope.base_settings.hide_color = stockUtils.hide_color(shopId, base);
 	$scope.base_settings.hide_size  = stockUtils.hide_size(shopId, base);
@@ -387,15 +388,17 @@ function purchaserInventoryNewCtrlProvide (
 			    add.tag_price = result.data.tag_price;
 			    add.discount  = result.data.discount;
 			    add.ediscount = result.data.ediscount;
-			    add.stock = result.data.amount;
+			    add.stock     = result.data.amount;
 			}
 			else {
-			    add.tag_price = 0;
-			    add.discount  = 0;
+			    if (diablo_yes === $scope.base_settings.price_on_region){
+				add.tag_price = 0;
+				add.discount  = 0;
+			    } 
 			} 
 		    }
 		})
-	    }
+	    };
 	}
     };
     
@@ -820,10 +823,11 @@ function purchaserInventoryNewCtrlProvide (
 			inv.stock = result.data.amount;
 		    }
 		    else {
-		    	inv.tag_price = 0;
-		    	inv.discount  = 0;
+			if (diablo_yes === $scope.base_settings.price_on_region){
+			    inv.tag_price = 0;
+			    inv.discount  = 0;
+			} 
 		    }
-		    
 		}
 		add_stock();
 	    })

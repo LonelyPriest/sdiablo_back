@@ -197,8 +197,8 @@ function wretailerConfig(angular) {
 		 password: r.password,
 		 type:     r.type,
 		 birth:    dateFilter(r.birth, "yyyy-MM-dd"),
-		 obalance: r.obalance,
-		 nbalance: r.balance, 
+		 // obalance: r.obalance,
+		 balance:  r.balance, 
 		}).$promise;
 	};
 

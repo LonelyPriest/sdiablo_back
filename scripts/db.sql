@@ -873,7 +873,7 @@ create table w_sale(
     score          INTEGER not null default 0,
     comment        VARCHAR(255) default null, 
     
-    type           TINYINT  default -1, -- 0:sale 1:reject 2: charge
+    type           TINYINT  default -1, -- 0:sale 1:reject
     state          TINYINT  default 0,  -- 0: wait for check, 1: checked
     check_date     DATETIME default 0,  -- date of last change
     entry_date     DATETIME default 0,

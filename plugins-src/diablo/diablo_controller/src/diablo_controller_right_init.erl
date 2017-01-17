@@ -881,6 +881,7 @@ pass_action(wholesaler) ->
      <<"filter_w_sale_image">>,
      <<"w_sale_export">>,
      <<"get_wsale_rsn">>,
+     <<"match_wsale_rsn">>,
 
      %% base_setting
      <<"list_w_bank_card">>,

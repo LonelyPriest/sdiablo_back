@@ -72,7 +72,10 @@ sale(list_rsn_with_shop, Merchant, Shop) ->
     gen_server:call(Name, {list_sale_rsn_with_shop, Merchant, Shop});
 sale(get_rsn, Merchant, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {get_sale_rsn, Merchant, Condition}).
+    gen_server:call(Name, {get_sale_rsn, Merchant, Condition});
+sale(match_rsn, Merchant, {ViewValue, Condition}) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {match_sale_rsn, Merchant, {ViewValue, Condition}}).
 
 rsn_detail(rsn, Merchant, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -100,6 +103,7 @@ filter({rsn_group, Mode, Sort}, 'and', Merchant, CurrentPage, ItemsPerPage, Fiel
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(
       Name, {filter_rsn_group, {Mode, Sort}, Merchant, CurrentPage, ItemsPerPage, Fields}).
+
 
 export(trans, Merchant, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -523,28 +527,21 @@ handle_call({trace_sale, Merchant, Conditions}, _From, State) ->
     {reply, Reply, State}; 
 
 handle_call({get_sale_rsn, Merchant, Conditions}, _From, State) ->
-    ?DEBUG("get_sale_rsn with merchant=~p, conditions ~p",
-	   [Merchant, Conditions]),
-    {DetailConditions, SaleConditions} = 
+    ?DEBUG("get_sale_rsn with merchant=~p, conditions ~p", [Merchant, Conditions]),
+    
+    {DetailConditions, SaleConditions} =
 	filter_condition(
 	  wsale, [{<<"merchant">>, Merchant}|Conditions], [], []),
-    ?DEBUG("sale conditions ~p, detail condition ~p",
-	   [SaleConditions, DetailConditions]), 
+    ?DEBUG("sale conditions ~p, detail condition ~p", [SaleConditions, DetailConditions]), 
 
     {StartTime, EndTime, CutSaleConditions}
 	= ?sql_utils:cut(fields_with_prifix, SaleConditions),
-    %% CorrectDetailConditions = ?utils:correct_condition(<<"a.">>, DetailConditions),
-
+    
     Sql1 = 
 	"select a.rsn from w_sale a"
 	" where "
 	++ ?sql_utils:condition(proplists_suffix, CutSaleConditions)
 	++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime),
-    %% ++ case {StartTime, EndTime} of
-    %%        {undefined, undefined} -> ?utils:to_sqls(proplists, CutSaleConditions);
-    %%        _ -> ?sql_utils:condition(proplists_suffix, CutSaleConditions)
-    %%    end 
-    %% ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime),
     Sql = 
 	case ?v(<<"rsn">>, SaleConditions, []) of
 	    [] ->
@@ -570,6 +567,21 @@ handle_call({get_sale_rsn, Merchant, Conditions}, _From, State) ->
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
+handle_call({match_sale_rsn, Merchant, {ViewValue, Conditions}}, _From, State) ->
+    {StartTime, _EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
+
+    Limit = ?w_retailer:get(prompt, Merchant),
+    Sql = "select id, rsn from w_sale"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	
+	++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, undefined)
+	++ " and rsn like \'%" ++ ?to_s(ViewValue) ++ "\'"
+	++ " order by id desc"
+	++ " limit " ++ ?to_s(Limit),
+    
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
 
 handle_call({history_retailer, Merchant, Retailer, Goods}, _From, State) ->
     ?DEBUG("history_retailer with merchant ~p, retailer ~p~n goods ~p",

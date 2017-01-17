@@ -3,13 +3,11 @@ var stockUtils = function(){
 	firm_prefix: 1000,
 	
 	typeahead: function(shop, base){
-	    return diablo_base_setting(
-		"qtypeahead", shop, base, parseInt, diablo_backend);
+	    return diablo_base_setting("qtypeahead", shop, base, parseInt, diablo_backend);
 	},
 
 	reject_negative: function(shop, base){
-	    return diablo_base_setting(
-		"reject_negative", shop, base, parseInt, diablo_no);
+	    return diablo_base_setting("reject_negative", shop, base, parseInt, diablo_no);
 	},
 
 	start_time: function(shop, base, now, dateFun){
@@ -19,59 +17,50 @@ var stockUtils = function(){
 	},
 
 	prompt_limit: function(shop, base){
-	    return diablo_base_setting(
-		"prompt", shop, base, parseInt, 8);
+	    return diablo_base_setting("prompt", shop, base, parseInt, 8);
 	},
 
 	history_stock: function(shop, base){
-	    return diablo_base_setting(
-		"h_stock_edit", shop, base, parseInt, diablo_no);
+	    return diablo_base_setting("h_stock_edit", shop, base, parseInt, diablo_no);
 	},
 
 	multi_sizegroup: function(shop, base){
-	    return diablo_base_setting(
-		"m_sgroup", shop, base, parseInt, diablo_no);
+	    return diablo_base_setting("m_sgroup", shop, base, parseInt, diablo_no);
 	},
 
 	t_trace: function(shop, base){
-	    return diablo_base_setting(
-		"t_trace", shop, base, parseInt, diablo_no);
+	    return diablo_base_setting("t_trace", shop, base, parseInt, diablo_no);
+	},
+
+	price_on_region: function(shop, base){
+	    return diablo_base_setting("price_on_region", shop, base, parseInt, diablo_no);
 	},
 
 	d_sex: function(shop, base){
-	    // console.log(shop, base);
-	    return diablo_base_setting(
-		"d_sex", shop, base, parseInt, diablo_female);
+	    return diablo_base_setting("d_sex", shop, base, parseInt, diablo_female);
 	},
 
 	group_color: function(shop, base){
-	    return diablo_base_setting(
-		"group_color", shop, base, parseInt, diablo_yes);
+	    return diablo_base_setting("group_color", shop, base, parseInt, diablo_yes);
 	},
 
 	hide_color: function(shop, base) {
-	    return diablo_base_setting(
-		"h_color", shop, base, parseInt, diablo_no);
+	    return diablo_base_setting("h_color", shop, base, parseInt, diablo_no);
 	},
 
 	hide_size: function(shop, base) {
-	    return diablo_base_setting(
-		"h_size", shop, base, parseInt, diablo_no);
+	    return diablo_base_setting("h_size", shop, base, parseInt, diablo_no);
 	},
 
 	hide_sex: function(shop, base) {
-	    return diablo_base_setting(
-		"h_sex", shop, base, parseInt, diablo_no);
+	    return diablo_base_setting("h_sex", shop, base, parseInt, diablo_no);
 	},
 
 	image_allowed: function(shop, base){
-	    return diablo_base_setting(
-		"image_mode", shop, base, parseInt, diablo_no);
+	    return diablo_base_setting("image_mode", shop, base, parseInt, diablo_no);
 	},
 
-	yes_no: function() {
-	    return [{name:"否", id: 0}, {name:"是", id: 1}]
-	},
+	yes_no: function() {return [{name:"否", id: 0}, {name:"是", id: 1}]},
 
 	valid_season: function(month){
 	    switch(month){

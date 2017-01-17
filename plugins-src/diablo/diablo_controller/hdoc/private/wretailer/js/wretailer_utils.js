@@ -66,7 +66,7 @@ var retailerUtils = function(){
 	},
 
 	remove_cache_page: function(storage, key){
-	    storage.remove(k);
+	    storage.remove(key);
 	},
 	
 	order_fields: function(){
