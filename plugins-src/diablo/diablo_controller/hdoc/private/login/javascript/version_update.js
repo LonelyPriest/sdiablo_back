@@ -1,7 +1,7 @@
 var version_update = function(){
     
     var updates = [
-	{date: "2017-01-24",
+	{date: "2017-01-21",
          content:
 	 ["库存调价，增加款号联想方式，并在不同的调价模式下显示不同的库存"]
         },

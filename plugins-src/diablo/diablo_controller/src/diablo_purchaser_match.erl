@@ -43,7 +43,11 @@ match_stock(by_shop, Merchant, ShopIds, StartTime, Promot) ->
 	++ " and " ++ ?utils:to_sqls(proplists, {<<"a.shop">>, ShopIds})
 	++ " and a.entry_date>\'" ++ ?to_s(StartTime) ++ "\'"
 	++ " and a." ++ ?w_good_sql:get_match_mode(style_number, Promot)
-	++ " group by a.style_number, a.brand"
+	++ case length(ShopIds) =:= 1 of
+	       true -> [];
+	       false -> " group by a.style_number, a.brand"
+	   end
+	++ 
 	" order by id desc limit " ++ ?to_s(P).
     
 
