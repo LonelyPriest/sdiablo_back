@@ -27,6 +27,7 @@
 
 -export([filter/4, filter/6, rsn_detail/3, export/4, rsn/4]).
 -export([match/3, match/4, match/5, match/6]).
+-export([match_stock/5]).
 
 -define(SERVER, ?MODULE). 
 
@@ -203,6 +204,11 @@ match(all_reject_inventory, QType, Merchant, Shop, Firm, StartTime) ->
     gen_server:call(
       Name, {match_all_reject_inventory,
 		QType, Merchant, Shop, Firm, StartTime}).
+
+match_stock(by_shop, Merchant, ShopIds, StartTime, Prompt) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(
+      Name, {match_stock_by_shop, Merchant, ShopIds, StartTime, Prompt}).
 
 %% =============================================================================
 %% filter with pagination
@@ -863,6 +869,11 @@ handle_call({match_all_inventory, Merchant, Shop, Conditions}, _From, State) ->
 	   [Merchant, Shop, Conditions]),
     RealyShop = ?w_good_sql:realy_shop(Merchant, Shop),
     Sql = ?w_good_sql:inventory_match(all_inventory, Merchant, RealyShop, Conditions),
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({match_stock_by_shop, Merchant, ShopIds, StartTime, Prompt}, _From, State) ->
+    Sql = ?w_stock_match:match_stock(by_shop, Merchant, ShopIds, StartTime, Prompt),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 

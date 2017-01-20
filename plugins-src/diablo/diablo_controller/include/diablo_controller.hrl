@@ -384,6 +384,7 @@
 -define(w_good, diablo_w_good).
 -define(w_good_sql, diablo_purchaser_sql).
 -define(w_transfer_sql, diablo_purchaser_transfer).
+-define(w_stock_match, diablo_purchaser_match).
 
 %% report
 -define(w_report_request, diablo_w_report_request).

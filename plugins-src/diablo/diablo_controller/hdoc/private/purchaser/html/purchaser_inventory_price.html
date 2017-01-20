@@ -201,28 +201,29 @@
 		  <!-- <tr class="text-center" ng-repeat="inv in inventories"> -->
 		  <tr class="text-center" ng-repeat="inv in inventories">  
 		    <td>{{inv.order_id}}</td>
-		    <td x-ng-if="base_settings.prompt===0" class="col-md-2 text-left vert-align">
-		      <span ng-if="!inv.$new">{{inv.style_number}}</span>
-		      <form name="inv.form.good" ng-if="inv.$new">
-			<div ng-class="{'has-error':inv.form.good.$invalid
-				       && !inv.form.good.$pristine}">
-			  <input class="form-control text-left" type="text"
-				 required
-				 focus-auto="focus.style_number"
-				 x-ng-model="inv.style_number"
-				 placeholder="货号"
-				 typeahead-editable="false"
-				 typeahead-on-select="on_select_good($item, $model, $label)" 
-				 uib-typeahead="g as g.name for g in
-					    all_w_inventory|filter:{prompt:$viewValue}|limitTo:base_settings.plimit"/>
-			  <span x-ng-show="loading">
-			    <i class="glyphicon glyphicon-refresh"></i>
-			  </span>
-			</div>
-		      </form>
-		    </td>
+		    <!-- <td x-ng-if="base_settings.prompt===0" class="col-md-2 text-left vert-align"> -->
+		    <!--   <span ng-if="!inv.$new">{{inv.style_number}}</span> -->
+		    <!--   <form name="inv.form.good" ng-if="inv.$new"> -->
+		    <!-- 	<div ng-class="{'has-error':inv.form.good.$invalid -->
+		    <!-- 		       && !inv.form.good.$pristine}"> -->
+		    <!-- 	  <input class="form-control text-left" type="text" -->
+		    <!-- 		 required -->
+		    <!-- 		 focus-auto="focus.style_number" -->
+		    <!-- 		 x-ng-model="inv.style_number" -->
+		    <!-- 		 placeholder="货号" -->
+		    <!-- 		 typeahead-editable="false" -->
+		    <!-- 		 typeahead-on-select="on_select_good($item, $model, $label)"  -->
+		    <!-- 		 uib-typeahead="g as g.name for g in -->
+		    <!-- 			    all_w_inventory|filter:{prompt:$viewValue}|limitTo:base_settings.plimit"/> -->
+		    <!-- 	  <span x-ng-show="loading"> -->
+		    <!-- 	    <i class="glyphicon glyphicon-refresh"></i> -->
+		    <!-- 	  </span> -->
+		    <!-- 	</div> -->
+		    <!--   </form> -->
+		    <!-- </td> -->
 		    
-		    <td x-ng-if="base_settings.prompt===1" class="col-md-2 text-left vert-align">
+		    <!-- <td x-ng-if="base_settings.prompt===1" class="col-md-2 text-left vert-align"> -->
+		    <td class="col-md-2 text-left vert-align">
 		      <span ng-if="!inv.$new">{{inv.style_number}}</span>
 		      <form name="inv.form.good" ng-if="inv.$new">
 			<div ng-class="{'has-error':inv.form.good.$invalid
@@ -236,7 +237,8 @@
 				 typeahead-on-select="on_select_good($item, $model, $label)"
 				 typeahead-wait-ms="500"
 				 typeahead-loading="loading"
-				 uib-typeahead="g as g.name for g in match_style_number($viewValue)"/>
+				 uib-typeahead="g as g.name for g
+						in match_stock_by_shop($viewValue)"/>
 			  <span x-ng-show="loading">
 			    <i class="glyphicon glyphicon-refresh"></i>
 			  </span>
@@ -320,6 +322,10 @@
   </div>
 
   <div class="col-md-12 col-sm-12">
+    <p class="fg-darkBlue">
+      <span class="bg-success">注：12表示联想所有包含12的款号，/12表示联想以12开头的款号，12/表以联想以12结尾的款号，/12/表示联想12的款号</span>
+    </p>
+    
     <p class="fg-red">
       <span class="bg-success">注：价格关联模式-价格或折扣改动的同进，折扣与价格会关联改动
 	&nbsp&nbsp&nbsp&nbsp独立模式-价格与折扣分别独立</span>

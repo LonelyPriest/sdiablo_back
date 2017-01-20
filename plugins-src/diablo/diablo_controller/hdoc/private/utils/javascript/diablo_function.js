@@ -64,6 +64,10 @@ var diablo_stock_has_unchecked = 0;
 var diablo_firm_bill = 9;
 var diablo_sort_by_date = 1;
 
+var diablo_match_stock_by_shop = 1;
+var diablo_match_stock_by_region = 2;
+var diablo_match_stock_by_merchant = 3;
+
 /*
  * bill mode
  */
@@ -659,14 +663,13 @@ var diablo_base_setting = function(name, shop, base_settings, transfer, defaultV
     }
 
     if (!found){
-	var s_default = 
-	    base_settings.filter(function(s){return name === s.name && s.shop ===  -1});
-
+	var s_default = base_settings.filter(function(s){return name === s.name && s.shop ===  -1});
+	
 	if (s_default.length !== 0){
 	    return transfer(s_default[0].value);
 	}
     }
-    
+
     return defaultValue;
 };
 

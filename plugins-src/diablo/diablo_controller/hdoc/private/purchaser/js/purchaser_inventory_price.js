@@ -53,6 +53,8 @@ function purchaserInventoryPriceCtrlProvide(
     /*
      * init
      */
+    var now = $.now();
+    
     $scope.inventories = [];
     $scope.inventories.push({$edit:false, $new:true});
     $scope.h_inventories = [];
@@ -63,19 +65,19 @@ function purchaserInventoryPriceCtrlProvide(
 	p_mode:   $scope.p_modes[0],
 	s_mode:   $scope.s_modes[0],
 	u_mode:   $scope.u_modes[0],
-	datetime: $.now()
-    };
-
-    console.log($scope.select);    
+	datetime: now
+    }; 
+    // console.log($scope.select);
     $scope.has_saved = false;
-    var now = $.now();
-
+    var valid_shop_id = stockUtils.get_valid_shop_id(user.shopIds);
+    // console.log(valid_shop_id);
     $scope.base_settings = {
-	plimit : stockUtils.prompt_limit(-1, base),
-	prompt : stockUtils.typeahead(-1, base),
-	start_time : stockUtils.start_time(-1, base, now, dateFilter)
+	plimit : stockUtils.prompt_limit(valid_shop_id, base),
+	prompt : stockUtils.typeahead(valid_shop_id, base),
+	start_time : dateFilter(
+	    stockUtils.start_time(valid_shop_id, base, now, dateFilter), "yyyy-MM-dd")
     };
-
+    
     $scope.get_select_shop = function(){
 	if ($scope.select.u_mode.id === 0)
 	    return $scope.select.shop.id;
@@ -85,9 +87,15 @@ function purchaserInventoryPriceCtrlProvide(
 	    }).map(function(s){return s.id});
     };
 
-    $scope.match_style_number = function(viewValue){
-	return diabloFilter.match_w_fix(viewValue, $scope.select.shop.id);
-    }
+    $scope.match_stock_by_shop = function($viewValue){
+	if ($viewValue.length < 2) return;
+	return diabloFilter.match_stock_backend_by_shop(
+	    $scope.get_select_shop(), $scope.base_settings.start_time, $viewValue);
+    };
+    
+    // $scope.match_style_number = function(viewValue){
+    // 	return diabloFilter.match_w_fix(viewValue, $scope.select.shop.id);
+    // }
     
     $scope.get_all_prompt_inventory = function(){
 	diabloNormalFilter.match_all_w_inventory(

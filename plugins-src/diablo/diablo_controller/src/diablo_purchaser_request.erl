@@ -726,8 +726,7 @@ action(Session, Req, {"match_all_reject_w_inventory"}, Payload) ->
 
 
 action(Session, Req, {"match_w_inventory"}, Payload) ->
-    ?DEBUG("match_w_inventory with session ~p~npayload ~p",
-	   [Session, Payload]),
+    ?DEBUG("match_w_inventory with session ~p~npayload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
     StyleNumber = ?v(<<"prompt">>, Payload),
     Shop        = ?v(<<"shop">>, Payload),
@@ -743,6 +742,16 @@ action(Session, Req, {"match_w_inventory"}, Payload) ->
 	    end,
     
     batch_responed(Match, Req);
+
+action(Session, Req, {"match_stock_by_shop"}, Payload) ->
+    ?DEBUG("match_stock_by_shop: session ~p, payload ~p", [Session, Payload]),
+    Merchant  = ?session:get(merchant, Session),
+    ShopIds   = ?v(<<"shop">>, Payload),
+    StartTime = ?v(<<"stime">>, Payload),
+    Prompt    = ?v(<<"prompt">>, Payload),
+
+    batch_responed(
+      fun()-> ?w_inventory:match_stock(by_shop, Merchant, ShopIds, StartTime, Prompt) end, Req);
 
 action(Session, Req, {"w_inventory_export"}, Payload) ->
     ?DEBUG("w_inventory_export with session ~p, paylaod ~n~p", [Session, Payload]),

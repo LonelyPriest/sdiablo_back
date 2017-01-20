@@ -1,6 +1,11 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2017-01-24",
+         content:
+	 ["库存调价，增加款号联想方式，并在不同的调价模式下显示不同的库存"]
+        },
+	
 	{date: "2017-01-18",
          content:
 	 ["修改销售退单不再限制1个月之内，统一退单时单号查询方式",

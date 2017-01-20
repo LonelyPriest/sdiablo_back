@@ -820,6 +820,7 @@ pass_action(wholesaler) ->
      <<"match_w_inventory">>,
      <<"match_all_w_inventory">>,
      <<"match_all_reject_w_inventory">>,
+     <<"match_stock_by_shop">>,
      %% <<"update_w_inventory_batch">>,
 
      %% inventory new

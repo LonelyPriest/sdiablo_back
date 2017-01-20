@@ -310,6 +310,12 @@ var stockUtils = function(){
 		first:new Date(year, month, 1).getTime(), current:now.getTime()};
 	},
 
+	get_valid_shop_id: function(shopIds){
+	    if (angular.isArray(shopIds) && shopIds.length > 0)
+		return shopIds[0];
+	    return DIABLO_DEFAULT_SETTING;
+	},
+
 	extra_error: function(state) {
 	    if (state.ecode===2008)
 		return "厂商欠款[" + state.cbalance + "]，"

@@ -411,11 +411,26 @@ function filterProvider(){
 		    {operation: "match_wsale_rsn"},
 		    {prompt: viewValue, shop: shops, condition:conditions}
 		).$promise.then(function(rsns){
-		    console.log(rsns);
+		    // console.log(rsns);
 		    return rsns.map(function(r){
 			return r.rsn;
 		    })
 		});
+	    },
+
+	    match_stock_backend_by_shop: function(shopIds, startTime, viewValue){
+		return resource.query_by_post(
+		    {operation:'match_stock_by_shop'},
+		    {shop:shopIds, stime:startTime, prompt:viewValue}
+		).$promise.then(function(stocks){
+		    console.log(stocks);
+		    return stocks.map(function(s){
+			// console.log(s);
+			return angular.extend(s, {
+			    name:s.style_number + "/" + s.brand + "/" + s.type
+			})
+		    })
+		})
 	    },
 
 	    match_retailer_phone:function(viewValue, mode) {
