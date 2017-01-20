@@ -59,7 +59,9 @@ function wsaleRejectCtrlProvide(
     var dialog = diabloUtilsService; 
     var now    = $.now();
 
-    var qtime_start = wsaleUtils.start_time(diablo_default_setting, base, now, dateFilter);
+    var shopId = $scope.shopIds.length > 0 ? $scope.shopIds[0] : diablo_default_setting;
+    var qtime_start = wsaleUtils.start_time(shopId, base, now, dateFilter);
+    // console.log(qtime_start);
     var qtime = diabloFilter.default_time(qtime_start, now);
     $scope.match_rsn = function(viewValue){
 	return diabloFilter.match_wsale_rsn(viewValue, $scope.shopIds, qtime);

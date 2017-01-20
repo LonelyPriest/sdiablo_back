@@ -41,13 +41,13 @@ action(Session, Req, {"list_base_setting"}) ->
 	    {ok, Shops} = ?w_user_profile:get(user_shop, Merchant, Session),
 	    %% ?DEBUG("Shops ~p", [Shops]),
 	    ShopIds = lists:foldr(
-			fun({Shop}, Acc) ->
-				ShopId = ?v(<<"shop_id">>, Shop),
-				case lists:member(ShopId, Acc) of
-				    true -> Acc;
-				    false -> [ShopId|Acc]
-				end
-			end, [], Shops),
+			    fun({Shop}, Acc) ->
+				    ShopId = ?v(<<"shop_id">>, Shop),
+				    case lists:member(ShopId, Acc) of
+					true -> Acc;
+					false -> [ShopId|Acc]
+				    end
+			    end, [], Shops),
 
 	    {ok, S}  = ?w_user_profile:get(setting, Merchant),
 
