@@ -225,7 +225,7 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
     diabloFilter.add_field("firm",  filterFirm);
     diabloFilter.add_field("year",  diablo_full_year);
     diabloFilter.add_field("season",  diablo_season2objects); 
-    diabloFilter.add_field("rsn",   []); 
+    diabloFilter.add_field("rsn",   function(viewValue) {return undefined}); 
     diabloFilter.add_field("shop", user.sortShops);
 
     $scope.filter = diabloFilter.get_filter();

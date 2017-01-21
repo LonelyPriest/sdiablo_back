@@ -758,7 +758,7 @@ detail(print_format, Merchant, Shop) ->
       end, [], ?PRINT_FIELDS);
 
 detail(base_setting, Merchant, Shop) ->
-    ?DEBUG("base_setting with merhcant ~p, Shop ~p", [Merchant, Shop]),
+    %% ?DEBUG("base_setting with merhcant ~p, Shop ~p", [Merchant, Shop]),
     {ok, Settings} = ?w_user_profile:get(setting, Merchant, Shop), 
     {ok, lists:foldr(
 	   fun({R}, Acc) ->

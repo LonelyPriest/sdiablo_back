@@ -109,6 +109,13 @@ function wsaleRsnDetailCtrlProvide (
 	$scope.qtime_end,
 	diabloFilter);
     console.log($scope.time);
+
+    $scope.match_rsn = function(viewValue) {
+	return diabloFilter.match_wsale_rsn_of_all(
+	    diablo_rsn_all,
+	    viewValue,
+	    wsaleUtils.format_time_from_second($scope.time, dateFilter));
+    };
     
     // console.log($scope.setting);
     // filter
@@ -125,7 +132,7 @@ function wsaleRsnDetailCtrlProvide (
     }); 
     diabloFilter.add_field("employee", filterEmployee); 
     diabloFilter.add_field("sell_type", sell_type);
-    diabloFilter.add_field("rsn", []); 
+    diabloFilter.add_field("rsn", $scope.match_rsn); 
    
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();

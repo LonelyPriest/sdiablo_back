@@ -195,7 +195,7 @@ function filterProvider(){
 
 		else if (name === 'rsn'){
 		    _filter.fields.push({name:"rsn", chinese:"单号"});
-		    // _prompt.rsn = promptValues;
+		    _prompt.rsn = promptValues;
 		} else if(name === 'shop'){
 		    _filter.fields.push({name:"shop", chinese:"店铺"});
 		    _prompt.shop = promptValues;
@@ -406,12 +406,23 @@ function filterProvider(){
 		})
 	    },
 
-	    match_wsale_rsn:function(viewValue, shops, conditions) {
+	    match_wsale_rsn_of_new:function(mode, viewValue, shops, conditions) {
 		return _wsaleHttp.query_by_post(
 		    {operation: "match_wsale_rsn"},
-		    {prompt: viewValue, shop: shops, condition:conditions}
+		    {mode:mode, prompt: viewValue, shop: shops, condition:conditions}
 		).$promise.then(function(rsns){
 		    // console.log(rsns);
+		    return rsns.map(function(r){
+			return r.rsn;
+		    })
+		});
+	    },
+
+	    match_wsale_rsn_of_all:function(mode, viewValue, conditions) {
+		return _wsaleHttp.query_by_post(
+		    {operation: "match_wsale_rsn"},
+		    {mode:mode, prompt: viewValue, condition:conditions}
+		).$promise.then(function(rsns){
 		    return rsns.map(function(r){
 			return r.rsn;
 		    })

@@ -238,7 +238,8 @@ function wsaleUpdateDetailCtrlProvide(
      */
     $scope.disable_save = function(){
 	// save one time only
-	if ($scope.has_saved || $scope.inventories.length === 1) return true;
+	// if ($scope.has_saved || $scope.inventories.length === 1) return true;
+	if ($scope.has_saved) return true;
 
 	if ($scope.select.should_pay >=0 && $scope.select.charge > 0)
 	    return true;

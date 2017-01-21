@@ -29,8 +29,11 @@ var diablo_round_row = 1;
 var diablo_sell   = 0;
 var diablo_charge = 2;
 
-var diablo_sale   = 0;
-var diablo_reject = 1;
+var diablo_sale     = 0;
+var diablo_reject   = 1;
+
+var diablo_rsn_all = 0;
+var diablo_rsn_new = 1;
 
 var diablo_check = 1;
 var diablo_uncheck = 0;

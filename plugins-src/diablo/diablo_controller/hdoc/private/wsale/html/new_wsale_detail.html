@@ -190,16 +190,21 @@
 		      	      x-ng-click="update_detail(r)">修改
 			<i class="glyphicon glyphicon-edit"></i></button> 
 		      
-		      <button x-ng-if="shop_right.check_w_sale"
-			      class="btn diablo-button btn-danger"
+		      <button x-ng-if="shop_right.check_w_sale && r.state===0"
+			      class="btn diablo-button green"
 			      x-ng-disabled="r.state===1"
 		      	      x-ng-click="check_detail(r)">审核
 			<i class="glyphicon glyphicon-check"></i></button>
-		      <button x-ng-if="shop_right.check_w_sale"
-			      class="btn diablo-button purple-plum"
+		      <button x-ng-if="shop_right.check_w_sale && r.state===1"
+			      class="btn diablo-button red"
 			      x-ng-disabled="r.state===0"
 		      	      x-ng-click="uncheck_detail(r)">反审
-			<i class="glyphicon glyphicon-ban-circle"></i></button> 
+			<i class="glyphicon glyphicon-ban-circle"></i></button>
+		      
+		      <button x-ng-if="shop_right.check_w_sale && r.type===0 && r.state===0"
+			      class="btn diablo-button red"
+		      	      x-ng-click="delete_detail(r)">删除
+			<i class="glyphicon glyphicon-erase"></i></button> 
 		    </td> 
 		  </tr>
 

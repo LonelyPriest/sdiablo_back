@@ -36,6 +36,8 @@
 %% wsale
 -define(NEW_SALE, 0).
 -define(REJECT_SALE, 1).
+-define(RSN_OF_ALL, 0).
+-define(RSN_OF_NEW, 1).
 
 %% transfer
 -define(IN_ROAD, 0).
@@ -208,6 +210,7 @@
 -define(update_w_sale,      ?right_w_sale + 5).
 -define(check_w_sale,       ?right_w_sale + 6).
 -define(list_w_sale,        ?right_w_sale + 7).
+-define(delete_w_sale,      ?right_w_sale + 8).
 
 %% inventory
 -define(new_w_inventory,             ?right_w_inventory + 4).

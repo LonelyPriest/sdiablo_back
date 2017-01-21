@@ -152,6 +152,8 @@ function wsaleConfg(angular){
 	    2422: "打印机连接设备不存在，请检查设备编号是否正确！！",
 	    2423: "打印格式缺少尺码，请在打印格式设置中选中尺码！！",
 	    2601: "获取零售商历史记录失败！！",
+	    2602: "单号不存在，请重新选择销售单",
+	    2603: "该销售单交易明细不为空，请删除交易明细后再重新删除！！",
 	    2701: "文件导出失败，请重试或联系服务人员查找原因！！",
 	    2702: "文件导出失败，没有任何数据需要导出，请重新设置查询条件！！",
 	    2703: "用户余额不足！！",
@@ -200,6 +202,10 @@ function wsaleConfg(angular){
 	this.uncheck_w_sale_new = function(rsn){
 	    return http.save({operation: "check_w_sale"},
 			     {rsn: rsn, mode:diablo_uncheck}).$promise;
+	};
+
+	this.delete_w_sale_new = function(rsn){
+	    return http.save({operation: "delete_w_sale"}, {rsn: rsn}).$promise;
 	};
 
 	this.new_w_sale_draft = function(inventory){
@@ -1854,22 +1860,7 @@ function wsaleNewDetailProvide(
     
     /* 
      * filter operation
-     */ 
-    // initial
-    diabloFilter.reset_field();
-    diabloFilter.add_field("shop",     $scope.shops);
-    diabloFilter.add_field("employee", filterEmployee); 
-    diabloFilter.add_field("retailer", function(viewValue){
-	return wsaleUtils.match_retailer_phone(viewValue, diabloFilter)
-    }); 
-    diabloFilter.add_field("rsn", []);
-    diabloFilter.add_field("check_state", wsaleService.check_state);
-    
-    $scope.filter = diabloFilter.get_filter();
-    $scope.prompt = diabloFilter.get_prompt();
-
-    // console.log($scope.filter);
-    // console.log($scope.prompt);
+     */
 
     var now = $.now();
     // var shopId = $scope.shopIds.length === 1 ? $scope.shopIds[0]: -1;
@@ -1892,7 +1883,38 @@ function wsaleNewDetailProvide(
 
     //console.log($scope.qtime_start);
     $scope.time = wsaleUtils.correct_query_time(
-	$scope.shop_right.master, show_sale_days, $scope.qtime_start, $scope.qtime_end, diabloFilter);
+	$scope.shop_right.master,
+	show_sale_days,
+	$scope.qtime_start,
+	$scope.qtime_end,
+	diabloFilter);
+    
+    $scope.match_rsn = function(viewValue) {
+	return diabloFilter.match_wsale_rsn_of_all(
+	    diablo_rsn_all,
+	    viewValue,
+	    wsaleUtils.format_time_from_second($scope.time, dateFilter));
+    };
+
+    $scope.match_retailer = function(viewValue) {
+	return wsaleUtils.match_retailer_phone(viewValue, diabloFilter);
+    };
+    
+    // initial
+    diabloFilter.reset_field();
+    diabloFilter.add_field("shop",        $scope.shops);
+    diabloFilter.add_field("employee",    filterEmployee); 
+    diabloFilter.add_field("retailer",    $scope.match_retailer); 
+    diabloFilter.add_field("rsn",         $scope.match_rsn);
+    diabloFilter.add_field("check_state", wsaleService.check_state);
+    
+    $scope.filter = diabloFilter.get_filter();
+    $scope.prompt = diabloFilter.get_prompt();
+
+    console.log($scope.filter);
+    console.log($scope.prompt);
+
+    
     
     $scope.sequence_pagination = wsaleUtils.sequence_pagination(-1, base);
     
@@ -2131,6 +2153,23 @@ function wsaleNewDetailProvide(
 	    	    "销售反审失败：" + wsaleService.error[state.ecode]);
 	    }
 	})
+    };
+
+    $scope.delete_detail = function(r){
+	console.log(r);
+	wsaleService.delete_w_sale_new(r.rsn).then(function(state){
+	    console.log(state);
+	    if (state.ecode == 0){
+		dialog.response_with_callback(
+		    true, "销售单删除", "销售单删除成功！！单号：" + state.rsn,
+		    $scope, function(){$scope.do_search($scope.current_page)})
+	    	return;
+	    } else{
+	    	dialog.response(
+	    	    false, "销售单删除",
+	    	    "销售删除失败：" + wsaleService.error[state.ecode]);
+	    }
+	});
     };
     
 

@@ -55,7 +55,11 @@ sale(list_new, Merchant, Condition) ->
     gen_server:call(Name, {list_new, Merchant, Condition});
 sale(get_new, Merchant, RSN) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {get_new, Merchant, RSN});
+    gen_server:call(Name, {get_new, Merchant, RSN}); 
+sale(delete_new, Merchant, RSN) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {delete_new, Merchant, RSN});
+
 sale(last, Merchant, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {last_sale, Merchant, Condition});
@@ -123,8 +127,7 @@ init([]) ->
     {ok, #state{}}.
 
 handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
-    ?DEBUG("new_sale with merchant ~p~n~p, props ~p",
-	   [Merchant, Inventories, Props]),
+    ?DEBUG("new_sale with merchant ~p~n~p, props ~p", [Merchant, Inventories, Props]),
 
     Retailer   = ?v(<<"retailer">>, Props),
     Shop       = ?v(<<"shop">>, Props), 
@@ -296,7 +299,7 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
     MScore       = Score - OldScore,
     RealyShop    = realy_shop(Merchant, Shop),
     
-    [NewTicket, NewWithdraw, NewWxin, NewCard, NewCash] = NewPays =
+    [NewTicket, NewWithdraw, NewWxin, NewCard, NewCash] = _NewPays =
 	case SellType of
 	    0 ->
 		case ShouldPay >= 0 of
@@ -307,7 +310,7 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 		end;
 	    1 -> pay_order(reject, ShouldPay, [Ticket, Withdraw, Wxin, Card, Cash], [])
 	end,
-    ?DEBUG("new pays ~p", [NewPays]),
+    %% ?DEBUG("new pays ~p", [NewPays]),
 
     NewDatetime = case Datetime =:= OldDatetime of
 		      true -> Datetime;
@@ -452,12 +455,26 @@ handle_call({list_new, Merchant, Conditions}, _From, State) ->
     ?DEBUG("list_new with merchant ~p, condtions ~p", [Conditions, Merchant]),
 
     CorrectCondition = ?utils:correct_condition(<<"a.">>, Conditions),
-    Sql = "select a.id, a.rsn, a.retailer as retailer_id, a.shop as shop_id"
-	", a.balance, a.should_pay, a.has_pay, a.cash, a.card, a.wxin"
-	", a.verificate, a.total, a.comment, a.rdate, a.entry_date"
+    Sql = "select a.id"
+	", a.rsn"
+	", a.retailer as retailer_id"
+	", a.shop as shop_id"
+	", a.balance"
+	", a.should_pay"
+	", a.has_pay"
+	", a.cash"
+	", a.card"
+	", a.wxin"
+	", a.verificate"
+	", a.total"
+	", a.comment"
+	", a.rdate"
+	", a.entry_date"
+	
 	", b.name as employee"
 	", c.name as retailer"
 	", d.name as shop"
+	
 	" from w_sale a"
 	++ " left join employees b on a.employ=b.number"
 	++ " and b.merchant=" ++ ?to_s(Merchant)
@@ -470,18 +487,38 @@ handle_call({list_new, Merchant, Conditions}, _From, State) ->
 
 handle_call({get_new, Merchant, RSN}, _From, State) ->
     ?DEBUG("get_new with merchant ~p, rsn ~p", [Merchant, RSN]),
-    Sql = "select id, rsn"
+    Sql = "select id"
+	", rsn"
 	", employ as employ_id"
 	", retailer as retailer_id"
 	", shop as shop_id"
 	", tbatch"
-	", balance, should_pay, cash, card, wxin, withdraw, ticket, verificate"
-	", total, lscore, score, comment, type, entry_date" 
+	", balance"
+	", should_pay"
+	", cash"
+	", card"
+	", wxin"
+	", withdraw"
+	", ticket"
+	", verificate"
+	", total"
+	", lscore"
+	", score"
+	", comment"
+	", type"
+	", entry_date" 
 	" from w_sale" 
 	++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
 	++ " and merchant=" ++ ?to_s(Merchant), 
     Reply =  ?sql_utils:execute(s_read, Sql),
-    {reply, Reply, State}; 
+    {reply, Reply, State};
+
+handle_call({delete_new, Merchant, RSN}, _From, State) ->
+    ?DEBUG("delete_new with merchant ~p, rsn ~p", [Merchant, RSN]),
+    Sql = "delete from w_sale where merchant=" ++ ?to_s(Merchant)
+	++ " and rsn =\'" ++ ?to_s(RSN) ++ "\'",
+    Reply =  ?sql_utils:execute(write, Sql, RSN),
+    {reply, Reply, State};
 
 handle_call({last_sale, Merchant, Conditions}, _From, State) ->
     ?DEBUG("last_sale with merchant ~p, condtions ~p",
@@ -618,21 +655,57 @@ handle_call({trans_detail, Merchant, Conditions}, _From, State) ->
     ?DEBUG("trans_detail with merchant ~p, Conditions ~p",
 	   [Merchant, Conditions]),
     Sql =
-	" select a.id, a.rsn, a.style_number, a.brand_id, a.type_id"
-	", a.s_group, a.free, a.season, a.firm_id, a.year, a.in_datetime"
-	", a.total, a.pid, a.sid, a.org_price, a.tag_price, a.fdiscount"
-	", a.rdiscount, a.fprice, a.rprice, a.path, a.comment"
+	" select a.id"
+	", a.rsn"
+	", a.style_number"
+	", a.brand_id"
+	", a.type_id"
+	", a.s_group"
+	", a.free"
+	", a.season"
+	", a.firm_id"
+	", a.year"
+	", a.in_datetime"
+	", a.total"
+	", a.pid"
+	", a.sid"
+	", a.org_price"
+	", a.tag_price"
+	", a.fdiscount"
+	", a.rdiscount"
+	", a.fprice"
+	", a.rprice"
+	", a.path"
+	", a.comment"
 	
 	", b.color as color_id"
 	", b.size"
 	", b.total as amount"
 	
-	" from " 
-	"(select id, rsn, style_number, brand as brand_id, type as type_id"
-	", s_group, free, season, firm as firm_id, year, in_datetime"
-	", total, promotion as pid, score as sid"
-	", org_price, tag_price, fdiscount, rdiscount, fprice, rprice"
-	", path, comment"
+	" from "
+	
+	"(select id"
+	", rsn"
+	", style_number"
+	", brand as brand_id"
+	", type as type_id"
+	", s_group"
+	", free"
+	", season"
+	", firm as firm_id"
+	", year"
+	", in_datetime"
+	", total"
+	", promotion as pid"
+	", score as sid"
+	", org_price"
+	", tag_price"
+	", fdiscount"
+	", rdiscount"
+	", fprice"
+	", rprice"
+	", path"
+	", comment"
 	" from w_sale_detail"
 	" where " ++ ?utils:to_sqls(proplists, Conditions) ++ ") a"
 

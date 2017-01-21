@@ -73,8 +73,7 @@ action(Session, Req, {"get_w_sale_new", RSN}) ->
     try
 	{ok, Sale} = ?w_sale:sale(get_new, Merchant, RSN),
 	%% ?DEBUG("sale ~p", [Sale]),
-	{ok, Details} = ?w_sale:sale(
-			   trans_detail, Merchant, {<<"rsn">>, ?to_b(RSN)}),
+	{ok, Details} = ?w_sale:sale(trans_detail, Merchant, {<<"rsn">>, ?to_b(RSN)}),
 	?DEBUG("details ~p", [Details]),
 
 	{ok, TicketScore} =
@@ -398,6 +397,33 @@ action(Session, Req, {"update_w_sale"}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"delete_w_sale"}, Payload) ->
+    ?DEBUG("delete_w_sale: session ~p, payload ~p", [Payload]),
+    Merchant = ?session:get(merchant, Session),
+    RSN = ?v(<<"rsn">>, Payload),
+
+    case ?w_sale:sale(get_new, Merchant, RSN) of
+	{ok, []} ->
+	    ?utils:respond(200, Req, ?err(wsale_empty, RSN));
+	{ok, _} ->
+	    case ?w_sale:sale(trans_detail, Merchant, {<<"rsn">>, ?to_b(RSN)}) of
+		{ok, []} -> 
+		    case ?w_sale:sale(delete_new, Merchant, RSN) of
+			{ok, RSN} ->
+			    ?utils:respond(
+			       200, Req, ?succ(update_w_sale, RSN), [{<<"rsn">>, ?to_b(RSN)}]);
+			{error, Error} ->
+			    ?utils:respond(200, Req, Error)
+		    end;
+		{ok, _} ->
+		    ?utils:respond(200, Req, ?err(wsale_trans_detail_not_empty, RSN)); 
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end;
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
 action(Session, Req, {"check_w_sale"}, Payload) ->
     ?DEBUG("chekc_w_sale with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
@@ -678,12 +704,19 @@ action(Session, Req, {"match_wsale_rsn"}, Payload) ->
     %% EndTime = ?v(<<"qtime_end">>, BaseSetting)
     Shops = ?v(<<"shop">>, Payload),
     Prompt = ?v(<<"prompt">>, Payload),
+    Mode = ?v(<<"mode">>, Payload, ?RSN_OF_ALL),
+    
     {struct, Conditions} = ?v(<<"condition">>, Payload),
     batch_responed(
       fun() -> ?w_sale:sale(
 		  match_rsn,
 		  Merchant,
-		  {Prompt, [{<<"shop">>, Shops}, {<<"type">>, ?NEW_SALE}|Conditions]})
+		  case Mode of
+		      ?RSN_OF_ALL ->
+			  {Prompt, Conditions};
+		      ?RSN_OF_NEW ->
+			  {Prompt, [{<<"shop">>, Shops}, {<<"type">>, ?NEW_SALE}|Conditions]}
+		  end)
       end, Req).
 
 
@@ -1019,7 +1052,7 @@ start(new_sale, Req, Merchant, Invs, Base, Print) ->
 				    {ok, Retailer} = ?w_user_profile:get(
 							retailer, Merchant, RetailerId), 
 				    SysVips  = sys_vip_of_shop(Merchant, ShopId), 
-				    ?DEBUG("SysVips ~p, Retailer ~p", [SysVips, Retailer]),
+				    %% ?DEBUG("SysVips ~p, Retailer ~p", [SysVips, Retailer]),
 				    
 				    case not lists:member(RetailerId, SysVips)
 					andalso ?v(<<"type_id">>, Retailer) /= ?SYSTEM_RETAILER

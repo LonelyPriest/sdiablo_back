@@ -38,6 +38,7 @@
 	      <div class="col-sm-6 col-md-6">
 	    	<div class="input-group">
 	    	  <select class="form-control"
+			  readonly
 	    		  x-ng-model="good.shop"
 	    		  x-ng-options="s as s.name for s in shops"
 			  x-ng-change="on_change_shop()">
@@ -68,7 +69,7 @@
 		  <input class="form-control"
 			 type="text"
 			 name="style_number"
-			 readonly
+			 x-ng-readonly="route_params.from!==8"
 			 required
 			 capitalize
 			 placeholder="请输入2-10位款号" 
@@ -94,7 +95,7 @@
 		  <input class="form-control"
 			 type="text"
 			 name="brand"
-			 readonly
+			 x-ng-readonly="route_params.from!==8"
 			 required
 			 placeholder="请输入中文，字母或数字" 
 			 x-ng-model="good.brand"

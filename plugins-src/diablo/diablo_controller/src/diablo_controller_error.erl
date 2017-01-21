@@ -446,6 +446,10 @@ error(wsale_draft_not_exist, SN) ->
     {2501, "draft " ++ ?to_s(SN) ++ " does not exist."};
 error(wsale_history_failed, Retailer) ->
     {2601, "failed to get history of retailer " ++ ?to_s(Retailer)};
+error(wsale_empty, RSN) ->
+    {2602, "there is no sale of rsn:" ++ ?to_s(RSN)};
+error(wsale_trans_detail_not_empty, RSN) ->
+    {2603, "trans detail is not empty of rsn:" ++ ?to_s(RSN)};
 error(wsale_export_error, Error) ->
     {2701, "failed to export file: " ++ ?to_s(Error)};
 error(wsale_export_no_date, Merchant) ->

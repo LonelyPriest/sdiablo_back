@@ -2364,7 +2364,7 @@ function purchaserInventoryNewDetailCtrlProvide (
     diabloFilter.add_field("employee", filterEmployee);
     diabloFilter.add_field("check_state", purchaserService.check_state);
     diabloFilter.add_field("purchaser_type", purchaserService.purchaser_type); 
-    diabloFilter.add_field("rsn", []); 
+    diabloFilter.add_field("rsn", function(viewValue) {return undefined}); 
     // diabloFilter.add_field("has_pay",  has_pay);
 
     $scope.filter = diabloFilter.get_filter();

@@ -560,6 +560,17 @@ var wsaleUtils = function(){
 	    return diablo_invalid_firm;
 	},
 
+	format_time_from_second: function(time, dateFun) {
+	    var o = {};
+	    if (angular.isObject(time)) {
+		if (time.hasOwnProperty('start_time'))
+		    o.start_time = dateFun(time.start_time, "yyyy-MM-dd");
+		if (time.hasOwnProperty('end_time'))
+		    o.end_time = dateFun(time.start_time, "yyyy-MM-dd");
+	    }
+	    return o;
+	},
+
 	match_retailer_phone: function(viewValue, filterFun){
 	    if (diablo_is_digit_string(viewValue)){
 		if (viewValue.length < 4) return;

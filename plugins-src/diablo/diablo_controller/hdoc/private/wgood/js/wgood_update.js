@@ -39,8 +39,9 @@ function wgoodUpdateCtrlProvide(
     
     $scope.price_readonly = $scope.stock_right.show_orgprice ? false : true;
 
-    $scope.route_params = {shop:false};
-    
+    $scope.route_params = {shop:false, from: stockUtils.to_integer($routeParams.from)}; 
+    console.log($scope.route_params);
+        
     // [{type:"红色", tid:1
     // 	    colors:[{name:"深红", id:1},
     // 		    {name:"粉红", id:2}]},

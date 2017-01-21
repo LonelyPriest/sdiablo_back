@@ -64,7 +64,7 @@ function wsaleRejectCtrlProvide(
     // console.log(qtime_start);
     var qtime = diabloFilter.default_time(qtime_start, now);
     $scope.match_rsn = function(viewValue){
-	return diabloFilter.match_wsale_rsn(viewValue, $scope.shopIds, qtime);
+	return diabloFilter.match_wsale_rsn_of_new(diablo_rsn_new, viewValue, $scope.shopIds, qtime);
     };
     
     $scope.select_rsn = function(item, model, label){

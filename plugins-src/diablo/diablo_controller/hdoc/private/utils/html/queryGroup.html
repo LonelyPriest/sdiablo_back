@@ -23,10 +23,11 @@
 	      <input type="text" class="form-control" placeholder="请输入款号"
 		     x-ng-model="f.value"
 		     x-ng-edit
-		     typeahead-wait-ms="300"
-		     typeahead-loading="loading" 
-		     typeahead-on-select="prompt.on_select_style_number($item, $model, $label)"
-	  	     uib-typeahead="s for s in prompt.style_number($viewValue)|limitTo:20"
+		     typeahead-editable="false"
+		     typeahead-wait-ms="1000"
+		     typeahead-loading="loading"
+		     typeahead-on-select="f.value && ok()"
+	  	     uib-typeahead="s for s in prompt.style_number($viewValue)"
 		     x-ng-enter="f.value && ok()" />
 	      <span x-ng-show="loading">
 		<i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
@@ -195,14 +196,30 @@
 			      prompt.employee|filter:$viewValue|limitTo:8"/>
 	  </span>
 	  
+	  <!-- <span x-ng-switch-when="rsn"> -->
+	  <!--   <form name="rForm"> -->
+	  <!--     <div ng-class="{'has-error':rForm.$invalid && !rForm.$pristine}"> -->
+	  <!-- 	<input type="text" class="form-control" placeholder="请输入单号" -->
+	  <!-- 	       x-ng-model="f.value" -->
+	  <!-- 	       x-ng-pattern="/^[A-Za-z0-9\-]+$/"/> -->
+	  <!--     </div> -->
+	  <!--   </form> -->
+	  <!-- </span> -->
+
 	  <span x-ng-switch-when="rsn">
-	    <form name="rForm">
-	      <div ng-class="{'has-error':rForm.$invalid && !rForm.$pristine}">
-		<input type="text" class="form-control" placeholder="请输入单号"
-		       x-ng-model="f.value"
-		       x-ng-pattern="/^[A-Za-z0-9\-]+$/"/>
-	      </div>
-	    </form>
+	    <div class="has-feedback">
+	      <input type="text" class="form-control" placeholder="请输入单号"
+		     x-ng-model="f.value"
+		     x-ng-edit
+		     typeahead-wait-ms="1000"
+		     typeahead-loading="loading" 
+		     typeahead-on-select="f.value && ok()"
+	  	     uib-typeahead="s for s in prompt.rsn($viewValue)"
+		     x-ng-enter="f.value && ok()" />
+	      <span x-ng-show="loading">
+		<i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
+	      </span>
+	    </div> 
 	  </span>
 
 	  <span x-ng-switch-when="discount">
@@ -249,9 +266,10 @@
 	      <input type="text" class="form-control" placeholder="请输入客户名"
 	  	     x-ng-model="f.value"
 	  	     x-ng-edit
-	  	     typeahead-wait-ms="300"
+		     typeahead-editable="false"
+	  	     typeahead-wait-ms="1000"
 	  	     typeahead-loading="loading"
-	  	     typeahead-on-select="prompt.on_select_retailer($item, $model, $label)"
+		     typeahead-on-select="f.value && ok()"
 	  	     uib-typeahead="s as s.name for s in prompt.retailer($viewValue)"
 	  	     x-ng-enter="f.value && ok()" />
 	      <span x-ng-show="loading">
