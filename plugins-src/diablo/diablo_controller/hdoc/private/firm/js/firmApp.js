@@ -88,7 +88,7 @@ function firmConfig(angular){
 	    when('/firm_profit', {
 		templateUrl: '/private/firm/html/firm_profit.html',
 		controller: 'firmAnalysisProfitCtrl',
-		resolve: angular.extend({}, region)
+		resolve: angular.extend({}, firm, region)
 	    }).
 	    // brand
 	    when('/new_brand', {
@@ -131,6 +131,7 @@ function firmConfig(angular){
 	this.error = {
     	    1601: "厂商创建失败，已存在同样的厂商！！",
 	    1604: "一个时间点只能结帐一次，请重新选择结帐时间！！",
+	    1605: "该厂商存在入库记录，无法删除，请先删除入库记录后再重新操作！！",
 	    1699: "修改前后信息一致，请重新编辑修改项！！",
 	    9001: "数据库操作失败，请联系服务人员！！"};
 

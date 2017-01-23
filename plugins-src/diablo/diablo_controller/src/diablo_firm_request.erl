@@ -258,7 +258,9 @@ action(Session, Req, {"analysis_profit_w_firm"}, Payload) ->
     Merchant    = ?session:get(merchant, Session),
     {struct, Conditions} = ?v(<<"condition">>, Payload),
     CurrentPage = ?v(<<"page">>, Payload, 1),
-    ItemsPerpage = ?v(<<"count">>, Payload, ?DEFAULT_ITEMS_PERPAGE), 
+    ItemsPerpage = ?v(<<"count">>, Payload, ?DEFAULT_ITEMS_PERPAGE),
+
+    {_, _, ConditionsWithOutTime} = ?sql_utils:cut(non_prefix, Conditions),
 
     FF = fun (V) when V =:= <<>> -> 0;
 	     (Any)  -> ?to_f(Any)
@@ -268,7 +270,7 @@ action(Session, Req, {"analysis_profit_w_firm"}, Payload) ->
 	{Total, Others} = 
 	    case CurrentPage =:= 1 of
 		true ->
-		    {ok, R} = ?supplier:supplier(page_total, Merchant, []),
+		    {ok, R} = ?supplier:supplier(page_total, Merchant, ConditionsWithOutTime),
 		    {ok, TBalance} = ?supplier:sprofit(sprofit, balance, Merchant, Conditions),
 		    ?DEBUG("tbalance ~p", [TBalance]),
 		    {?v(<<"total">>, R),
@@ -292,7 +294,12 @@ action(Session, Req, {"analysis_profit_w_firm"}, Payload) ->
 				       {<<"balance">>, []}
 				      ]});
 	    false ->
-		{ok, Firms} = ?supplier:supplier(page_list, Merchant, [], CurrentPage, ItemsPerpage),
+		{ok, Firms} = ?supplier:supplier(
+				 page_list,
+				 Merchant,
+				 ConditionsWithOutTime,
+				 CurrentPage,
+				 ItemsPerpage),
 		FirmIds = lists:foldr(fun({Firm}, Acc) ->
 					      [?v(<<"id">>, Firm)|Acc]
 				      end, [], Firms), 

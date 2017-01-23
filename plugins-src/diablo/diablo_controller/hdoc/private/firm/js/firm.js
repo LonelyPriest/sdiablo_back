@@ -336,9 +336,9 @@ function firmDetailCtrlProvide(
 function firmAnalysisProfitCtrlProvide(
     $scope, $location, $routeParams, firmService, diabloUtilsService,
     diabloFilter, diabloPagination, diabloPattern, localStorageService,
-    filterRegion){
+    filterFirm, filterRegion){
     $scope.regions = filterRegion;
-    // $scope.firms   = filterFirm;
+    $scope.firms   = filterFirm;
     $scope.analysises = [];
     
     var now = stockUtils.first_day_of_month();
@@ -348,7 +348,7 @@ function firmAnalysisProfitCtrlProvide(
     $scope.max_page_size = diablo_max_page_size();
     $scope.default_page  = 1; 
     $scope.current_page  = $scope.default_page;
-    $scope.total_items = 0;
+    $scope.total_items   = 0;
     
     $scope.filters = [];
     diabloFilter.reset_field(); 
@@ -410,6 +410,10 @@ function firmAnalysisProfitCtrlProvide(
 
     $scope.page_changed = function(page) {
 	$scope.do_search(page);
+    };
+
+    $scope.refresh = function(){
+	$scope.do_search($scope.default_page);
     };
 
     $scope.do_search($scope.current_page);

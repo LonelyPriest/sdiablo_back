@@ -337,6 +337,9 @@ error(supplier_bill_discard, RSN) ->
     {1603, "bill " ++ ?to_s(RSN) ++ " of supplier has been discarded."};
 error(bill_at_same_time, Firm) ->
     {1604, "bill of firm " ++ ?to_s(Firm) ++ " at same time."};
+error(firm_retalted_stock, Firm) ->
+    {1605, "firm retailed stock:" ++ ?to_s(Firm)};
+
 
 %% inventory
 error(inventory_exist, Name) ->
@@ -425,6 +428,9 @@ error(wretailer_export_none, Merchant) ->
     {2111, "no date to export of merchant: " ++ ?to_s(Merchant)};
 error(wretailer_export_error, Error) ->
     {2112, "failed to export file: " ++ ?to_s(Error)};
+error(wretailer_retalted_sale, RetailerId) ->
+    {2113, "some sales retailed on the retailer: " ++ ?to_s(RetailerId)};
+
 
 
 

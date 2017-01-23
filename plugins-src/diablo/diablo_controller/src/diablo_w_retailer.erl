@@ -419,12 +419,20 @@ handle_call({get_retailer_batch, Merchant, RetailerIds}, _From, State) ->
 handle_call({delete_retailer, Merchant, RetailerId}, _From, State) ->
     ?DEBUG("delete_retailer with merchant ~p, retailerId ~p",
 	   [Merchant, RetailerId]),
-    Sql = "delete from w_retailer where id=" ++ ?to_s(RetailerId)
-	++ " and merchant=" ++ ?to_s(Merchant), 
-    Reply = ?sql_utils:execute(write, Sql, RetailerId),
-    ?w_user_profile:update(retailer, Merchant),
-    {reply, Reply, State};
-    
+    Sql0 = "select id, retailer from w_sale"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and retailer=" ++ ?to_s(RetailerId)
+	++ " order by id desc limit 1",
+    case ?sql_utils:execute(s_read, Sql0) of 
+	{ok, []} ->
+	    Sql = "delete from w_retailer where id=" ++ ?to_s(RetailerId)
+		++ " and merchant=" ++ ?to_s(Merchant), 
+	    Reply = ?sql_utils:execute(write, Sql, RetailerId),
+	    ?w_user_profile:update(retailer, Merchant),
+	    {reply, Reply, State};
+	{ok, _R} ->
+	    {reply, {error, ?err(wretailer_retalted_sale, RetailerId)}, State} 
+    end;
 
 handle_call({list_retailer, Merchant}, _From, State) ->
     ?DEBUG("lookup retail with merchant ~p", [Merchant]),

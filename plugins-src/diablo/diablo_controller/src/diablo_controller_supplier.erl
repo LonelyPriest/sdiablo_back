@@ -194,12 +194,21 @@ handle_call({w_update_supplier, Merchant, Attrs}, _From, State) ->
 
 handle_call({w_delete_supplier, Merchant, Id}, _From, State) ->
     ?DEBUG("w_delete_supplier with merchant ~p, Id ~p", [Merchant, Id]),
-    Sql = "delete from " ++ ?tbl_supplier
-	++ " where id=" ++ ?to_s(Id)
-	++ " and merchant=" ++ ?to_s(Merchant), 
-    Reply = ?sql_utils:execute(write, Sql, Id),
-    ?w_user_profile:update(firm, Merchant),
-    {reply, Reply, State}; 
+    Sql0 = "select id, firm from w_inventory_new"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and id=" ++ ?to_s(Id)
+	++ " order by id desc limit 1",
+    case ?sql_utils:execute(s_read, Sql0) of
+	{ok, []} ->
+	    Sql = "delete from " ++ ?tbl_supplier
+		++ " where id=" ++ ?to_s(Id)
+		++ " and merchant=" ++ ?to_s(Merchant), 
+	    Reply = ?sql_utils:execute(write, Sql, Id),
+	    ?w_user_profile:update(firm, Merchant),
+	    {reply, Reply, State};
+	{ok, _R} ->
+	    {reply, {error, ?err(firm_retalted_stock, Id)}, State} 
+    end;
 
 handle_call({w_list, Merchant}, _From, State) ->
     ?DEBUG("w_list with merchant ~p", [Merchant]),
@@ -214,18 +223,28 @@ handle_call({w_list, Merchant}, _From, State) ->
 
 handle_call({page_total, Merchant, Conditions}, _From, State) ->
     ?DEBUG("page_total: merchant ~p, Conditions ~p", [Merchant, Conditions]),
+    NewConditions = lists:foldr(fun({<<"firm">>, Firm}, Acc) ->
+					[{<<"id">>, Firm}|Acc];
+				   (Others, Acc) ->
+					[Others|Acc]
+				end, [], Conditions),
     Sql = "select count(*) as total"
 	" from suppliers where merchant=" ++ ?to_s(Merchant)
-	++ ?sql_utils:condition(proplists, Conditions),
+	++ ?sql_utils:condition(proplists, NewConditions),
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
 handle_call({page_list, Merchant, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
     ?DEBUG("page_list: merchant ~p, Conditions ~p, CurrentPage ~p, ItemsPerPage ~p",
 	   [Merchant, Conditions, CurrentPage, ItemsPerPage]),
+    NewConditions = lists:foldr(fun({<<"firm">>, Firm}, Acc) ->
+					[{<<"id">>, Firm}|Acc];
+				   (Others, Acc) ->
+					[Others|Acc]
+				end, [], Conditions),
     Sql = "select id, name, balance from suppliers"
 	" where merchant=" ++ ?to_s(Merchant)
-	++ ?sql_utils:condition(proplists, Conditions)
+	++ ?sql_utils:condition(proplists, NewConditions)
 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
 
     Reply = ?sql_utils:execute(read, Sql),
