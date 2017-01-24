@@ -479,7 +479,7 @@ function filterProvider(){
 	    },
 
 	    get_ticket_by_retailer: function(retailerId){
-		return http.save(
+		return _retailerHttp.save(
 		    {operation: "get_w_retailer_ticket"}, {retailer:retailerId, mode:0}).$promise;
 	    },
 
