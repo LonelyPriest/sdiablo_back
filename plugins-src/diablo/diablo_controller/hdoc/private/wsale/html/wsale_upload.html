@@ -1,0 +1,93 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="portlet box purple">
+      
+      <div class="portlet-title">
+	<div class="caption">
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>
+	  <!-- <span x-ng-bind="wsale_rsn_title"></span> -->
+	  <span>销售单导入</span>
+	</div>	
+
+	<div class="actions">
+	  <div class="btn-group btn-group-solid">
+	    <button type="button" class="btn red"
+		    x-ng-click="back()">返回
+	      <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
+	    
+	    <button class="btn btn-primary btn-file purple-stripe">文件
+	      <i class="glyphicon glyphicon-open-file"></i>
+	      <input type="file" nv-file-select="" uploader="uploader"/>
+	    </button> 
+	    
+	  </div>
+	</div>
+	
+      </div>
+
+      <!--BEGIN table container-->
+      <div class="portlet-body">
+	<div class="table-toolbar util-btn-margin-bottom-5"> 
+	</div> <!--END table-toolbar-->
+	
+	<!--BEGN portlet body--> 
+	<div class="portlet-body">
+	  <!--BEGIN panel-->
+	  <div class="panel panel-default table-panel">
+	    <div class="table-responsive diablo-table">
+	      <!--EBGIN table supplier-->
+	      <table class="table table-bordered
+			    table-striped table-hover
+			    table-condensed table-advanced">
+		<thead>
+		  <tr>
+		    <th>名称</th>
+		    <th>大小</th>
+		    <th>进度</th>
+		    <th>状态</th>
+		    <th>操作</th>
+		  </tr>
+		</thead>
+		<tbody>
+                  <tr ng-repeat="f in uploader.queue">
+                    <td><strong>{{ f.file.name }}</strong></td>
+                    <td nowrap>{{ f.file.size/1024/1024|number:2 }} MB</td>
+                    <td>
+                      <div class="progress" style="margin-bottom: 0;">
+                        <div class="progress-bar" role="progressbar" ng-style="{ 'width': f.progress + '%' }"></div>
+                      </div>
+                    </td>
+                    <td class="text-center">
+                      <span ng-show="f.isSuccess"><i class="glyphicon glyphicon-ok"></i></span>
+                      <span ng-show="f.isCancel"><i class="glyphicon glyphicon-ban-circle"></i></span>
+                      <span ng-show="f.isError"><i class="glyphicon glyphicon-remove"></i></span>
+                    </td>
+                    <td nowrap>
+                      <button type="button"
+			      class="btn btn-success diablo-button"
+			      ng-click="f.upload()"
+			      ng-disabled="f.isReady || f.isUploading || f.isSuccess">
+                        上传<span class="glyphicon glyphicon-upload"></span>
+                      </button>
+                      <button type="button"
+			      class="btn btn-warning diablo-button" ng-click="f.cancel()" ng-disabled="!f.isUploading">
+                        取消<span class="glyphicon glyphicon-ban-circle"></span>
+                      </button>
+                      <button type="button" class="btn btn-danger diablo-button" ng-click="f.remove()">
+                        删除<span class="glyphicon glyphicon-erase"></span>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody> 
+		<tfoot> 
+		</tfoot>
+		
+	      </table> <!--END table--> 
+	    </div> <!--END table responsive--> 
+	  </div> <!--END panel-->
+	</div> <!--END portlet body--> 
+      </div> <!--END table container-->
+      
+    </div>
+  </div>
+</div>
