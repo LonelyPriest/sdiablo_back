@@ -32,8 +32,8 @@ http(M, {'DELETE', Req, [Url]}) ->
 http(UnkownModule, UnkownReq) ->
     ?DEBUG("http receiive unkown message, module ~p, Req ~p", [UnkownModule, UnkownReq]).
 
-http(M, {'POST', Req, [Url]}, Payload) ->
-    ?DEBUG("http receive POST message with url ~p and payload ~ts", [Url, Payload]),
+http(M, {'POST', Req, [Url]}, Payload) -> 
+    ?DEBUG("http receive POST message with url ~p and payload ~ts", [Url, Payload]), 
     action(M, Req, ?split_url(Url), Payload).
 
 
@@ -45,7 +45,7 @@ action(M, Req, Args) ->
     Session = get_session(Req),
     Fun = fun() -> M:action(Session, Req, Args) end, 
     authen(Req, Args, Session, Fun).
-    %% [Action|_] = erlang:tuple_to_list(Args),    
+    %% [Action|_] = erlang:tuple_to_list(Args),
     %% case ?right_auth:authen(action, Action, Session) of
     %% 	{error, Error} ->
     %% 	    ?utils:respond(200, object, Req, Error);
@@ -56,7 +56,14 @@ action(M, Req, Args) ->
     
 action(M, Req, Args, Payload) ->
     Session = get_session(Req),
-    {struct, P} = mochijson2:decode(Payload),
+    ?DEBUG("Args ~p", [Args]),
+    [Action|_] = erlang:tuple_to_list(Args),
+    P = 
+	case Action of
+	    "upload_w_sale" -> Payload;
+	    _ -> {struct, Decoded} = mochijson2:decode(Payload),
+		 Decoded
+	end,
     %% Session = get_session(Req),
     
     Fun = fun() -> M:action(Session, Req, Args, P) end, 

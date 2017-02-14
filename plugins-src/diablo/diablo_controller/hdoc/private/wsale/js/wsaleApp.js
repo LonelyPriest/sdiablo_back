@@ -1,13 +1,13 @@
 "use strict";
 
-define(["angular", "angular-router", "angular-resource", "angular-local-storage",
+define(["angular", "angular-router", "angular-resource", "angular-local-storage", "angular-file-upload",
         "angular-ui-bootstrap", "diablo-authen", "diablo-pattern", "diablo-user-right",
         "diablo-authen-right", "diablo-utils", "diablo-filter"], wsaleConfg);
 
 function wsaleConfg(angular){
     var wsaleApp = angular.module(
 	'wsaleApp',
-	['ui.bootstrap', 'ngRoute', 'ngResource', 'LocalStorageModule',
+	['ui.bootstrap', 'ngRoute', 'ngResource', 'LocalStorageModule', 'angularFileUpload',
 	 'diabloAuthenApp', 'diabloPattern', 'diabloUtils', 'diabloFilterApp',
 	 'diabloNormalFilterApp', 'userApp']
     ).config(function(localStorageServiceProvider){
@@ -119,7 +119,12 @@ function wsaleConfg(angular){
 		templateUrl: '/private/wsale/html/wsale_print_preview.html',
 		controller: 'wsalePrintPreviewCtrl',
 		resolve: angular.extend({}, s_group, base) 
-	    }). 
+	    }).
+	    when('/upload_wsale', {
+		templateUrl: '/private/wsale/html/wsale_upload.html',
+		controller: 'wsaleUploadCtrl',
+		resolve: angular.extend({}, user, base) 
+	    }).
 	    otherwise({
 		templateUrl: '/private/wsale/html/new_wsale_detail.html',
 		controller: 'wsaleNewDetailCtrl',

@@ -244,7 +244,9 @@ init([]) ->
 	 {?list_w_sale,
 	  <<"销售单查询">>,   <<"filter_w_sale_new">>,  ?right_w_sale},
 	 {?delete_w_sale,
-	  <<"销售单删除">>,   <<"delete_w_sale">>,  ?right_w_sale}
+	  <<"销售单删除">>,   <<"delete_w_sale">>,  ?right_w_sale},
+	 {?upload_w_sale,
+	  <<"销售单导入">>,   <<"upload_w_sale">>,  ?right_w_sale}
 	],
     
     %% inventory

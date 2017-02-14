@@ -717,8 +717,14 @@ action(Session, Req, {"match_wsale_rsn"}, Payload) ->
 		      ?RSN_OF_NEW ->
 			  {Prompt, [{<<"shop">>, Shops}, {<<"type">>, ?NEW_SALE}|Conditions]}
 		  end)
-      end, Req).
+      end, Req);
 
+action(Session, Req, {"upload_w_sale"}, Payload) ->
+    ?DEBUG("match_wsale_rsn with session ~p, Payload ~p", [Session, Payload]),
+    
+    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
+				       {<<"data">>, 0}]}).
+    
 
 sidebar(Session) -> 
     case ?right_request:get_shops(Session, sale) of
@@ -744,8 +750,15 @@ sidebar(Session) ->
 		[{"wsale_rsn_detail",
 		  "交易明细", "glyphicon glyphicon-map-marker"}],
 
+	    WUpload = ?w_inventory_request:authen_shop_action(
+			 {?upload_w_sale,
+			  "upload_wsale",
+			  "销售导入",
+			  "glyphicon glyphicon-upload"}, Shops), 
+
+
 	    L1 = ?menu:sidebar(
-		    level_1_menu, WSale ++ WReject ++ SaleR ++ SaleD),
+		    level_1_menu, WSale ++ WReject ++ SaleR ++ SaleD ++ WUpload),
 	    
 	    L1
 		
