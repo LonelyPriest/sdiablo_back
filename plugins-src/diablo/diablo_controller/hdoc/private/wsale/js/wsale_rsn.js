@@ -468,11 +468,19 @@ function wsaleUploadCtrlProvide (
     $scope, $routeParams, dateFilter, FileUploader, diabloUtilsService, diabloFilter,
     wsaleService, user, base){
 
-    var uploader = $scope.uploader = new FileUploader({
-        url: '/wsale/upload_w_sale'
+    $scope.shops = user.sortShops;
+    $scope.select = {shop:$scope.shops[0]};
+    
+    $scope.uploader = new FileUploader({
+        url: '/wsale/upload_w_sale/' + $scope.select.shop.id.toString()
     });
 
-    uploader.filters.push({
+    $scope.change_shop = function(){
+	$scope.uploader.url = '/wsale/upload_w_sale/' + $scope.select.shop.id.toString();
+	console.log($scope.uploader.url);
+    };
+
+    $scope.uploader.filters.push({
         name: 'syncFilter',
         fn: function(item /*{File|FileLikeObject}*/, options) {
             console.log('syncFilter');
@@ -480,41 +488,68 @@ function wsaleUploadCtrlProvide (
         }
     });
 
-    uploader.onWhenAddingFileFailed = function(item /*{File|FileLikeObject}*/, filter, options) {
+    $scope.uploader.onWhenAddingFileFailed = function(item /*{File|FileLikeObject}*/, filter, options) {
             console.info('onWhenAddingFileFailed', item, filter, options);
         };
-        uploader.onAfterAddingFile = function(fileItem) {
+    
+    $scope.uploader.onAfterAddingFile = function(fileItem) {
             console.info('onAfterAddingFile', fileItem);
-        };
-        uploader.onAfterAddingAll = function(addedFileItems) {
-            console.info('onAfterAddingAll', addedFileItems);
-        };
-        uploader.onBeforeUploadItem = function(item) {
-            console.info('onBeforeUploadItem', item);
-        };
-        uploader.onProgressItem = function(fileItem, progress) {
-            console.info('onProgressItem', fileItem, progress);
-        };
-        uploader.onProgressAll = function(progress) {
-            console.info('onProgressAll', progress);
-        };
-        uploader.onSuccessItem = function(fileItem, response, status, headers) {
-            console.info('onSuccessItem', fileItem, response, status, headers);
-        };
-        uploader.onErrorItem = function(fileItem, response, status, headers) {
-            console.info('onErrorItem', fileItem, response, status, headers);
-        };
-        uploader.onCancelItem = function(fileItem, response, status, headers) {
-            console.info('onCancelItem', fileItem, response, status, headers);
-        };
-        uploader.onCompleteItem = function(fileItem, response, status, headers) {
-            console.info('onCompleteItem', fileItem, response, status, headers);
-        };
-        uploader.onCompleteAll = function() {
-            console.info('onCompleteAll');
-        };
+    };
+    
+    $scope.uploader.onAfterAddingAll = function(addedFileItems) {
+        console.info('onAfterAddingAll', addedFileItems);
+    };
+    
+    $scope.uploader.onBeforeUploadItem = function(item) {
+        console.info('onBeforeUploadItem', item);
+    };
+    $scope.uploader.onProgressItem = function(fileItem, progress) {
+        console.info('onProgressItem', fileItem, progress);
+    };
+    $scope.uploader.onProgressAll = function(progress) {
+        console.info('onProgressAll', progress);
+    };
+    $scope.uploader.onSuccessItem = function(fileItem, response, status, headers) {
+        // console.info('onSuccessItem', fileItem, response, status, headers);
+	console.info('onSuccessItem', response);
+    };
+    $scope.uploader.onErrorItem = function(fileItem, response, status, headers) {
+        console.info('onErrorItem', fileItem, response, status, headers);
+    };
+    $scope.uploader.onCancelItem = function(fileItem, response, status, headers) {
+        // console.info('onCancelItem', fileItem, response, status, headers);
+	console.info('onCancelItem', fileItem, response);
+    };
 
-        console.info('uploader', uploader);
+    $scope.uploader.onCompleteItem = function(fileItem, response, status, headers) {
+	console.info('onCompletedItem', fileItem, response);
+	var dialog = diabloUtilsService;
+	if (response.ecode === 0){
+	    dialog.response(true, "销售单导入", "销售导入成功");
+	} else if (response.ecode === 2712) {
+	    fileItem.isSuccess = false;
+	    fileItem.isError = true;
+	    fileItem.isUploaded = false;
+	    fileItem.progress = 0;
+	    var message = wsaleService.error[2712]
+		+ "[款号：" + response.style_number
+		+ "，总数量：" + response.total
+		+ "，校验数量：" + response.amount +"]";
+	    dialog.response(false, "销售单导入", "销售单导入失败：" + message)
+	} else {
+	    fileItem.isSuccess = false;
+	    fileItem.isError = true;
+	    fileItem.isUploaded = false;
+	    fileItem.progress = 0;
+	    var message = wsaleService.error[response.ecode] + "[款号：" + response.style_number + "]";
+	    dialog.response(false, "销售单导入", "销售单导入失败：" + message);
+	} 
+    };
+    $scope.uploader.onCompleteAll = function() {
+        console.info('onCompleteAll');
+    };
+
+    console.info('uploader', $scope.uploader);
     
 };
 

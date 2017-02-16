@@ -17,7 +17,7 @@
 	    
 	    <button class="btn btn-primary btn-file purple-stripe">文件
 	      <i class="glyphicon glyphicon-open-file"></i>
-	      <input type="file" nv-file-select="" uploader="uploader"/>
+	      <input type="file" accept=".csv" nv-file-select="" uploader="uploader"/>
 	    </button> 
 	    
 	  </div>
@@ -27,7 +27,20 @@
 
       <!--BEGIN table container-->
       <div class="portlet-body">
-	<div class="table-toolbar util-btn-margin-bottom-5"> 
+	<div class="table-toolbar util-btn-margin-bottom-5">
+	  <div class="row">
+	    <div class="col-xs-12 col-ms-12 col-md-12">
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-map-marker fg-red"></i>店铺</span>
+		<select class="form-control" type="text"
+	  		x-ng-model="select.shop" 
+	  		x-ng-options="s as s.name for s in shops"
+			x-ng-change="change_shop()">
+		</select>
+	      </div>
+	    </div>
+	  </div>
 	</div> <!--END table-toolbar-->
 	
 	<!--BEGN portlet body--> 

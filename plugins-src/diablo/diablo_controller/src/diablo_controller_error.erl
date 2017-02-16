@@ -472,7 +472,14 @@ error(wsale_invalid_ticket_score, TicketSId) ->
     {2707, "invalid ticket promotion score: " ++ ?to_s(TicketSId) ++ "."};
 error(wsale_invalid_date, Action) ->
     {2708, "invalid datetime of action: " ++ ?to_s(Action) ++ "."};
-
+error(wsale_stock_not_found, StyleNumber) ->
+    {2709, "stock not found: " ++ ?to_s(StyleNumber) ++ "."};
+error(wsale_stock_not_enought, StyleNumber) ->
+    {2710, "stock not enought: " ++ ?to_s(StyleNumber) ++ "."};
+error(wsale_stock_not_unique, StyleNumber) ->
+    {2711, "stock not unique: " ++ ?to_s(StyleNumber) ++ "."};
+error(wsale_invalid_stock_total, StyleNumber) ->
+    {2712, "invalid stock total: " ++ ?to_s(StyleNumber) ++ "."};
 %% about print
 error(invalid_sn, PrintSN) ->
     {2411, "invalid SN of print " ++ ?to_s(PrintSN)};

@@ -32,8 +32,11 @@ http(M, {'DELETE', Req, [Url]}) ->
 http(UnkownModule, UnkownReq) ->
     ?DEBUG("http receiive unkown message, module ~p, Req ~p", [UnkownModule, UnkownReq]).
 
-http(M, {'POST', Req, [Url]}, Payload) -> 
-    ?DEBUG("http receive POST message with url ~p and payload ~ts", [Url, Payload]), 
+http(M, {'POST', Req, [Url]}, Payload) ->
+    case Url =:= "upload_w_sale" of
+	true -> ?DEBUG("http receive POST message with url ~p", [Url]);
+	false -> ?DEBUG("http receive POST message with url ~p and payload ~ts", [Url, Payload])
+    end,
     action(M, Req, ?split_url(Url), Payload).
 
 

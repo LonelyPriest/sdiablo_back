@@ -719,12 +719,35 @@ action(Session, Req, {"match_wsale_rsn"}, Payload) ->
 		  end)
       end, Req);
 
-action(Session, Req, {"upload_w_sale"}, Payload) ->
-    ?DEBUG("match_wsale_rsn with session ~p, Payload ~p", [Session, Payload]),
-    
-    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
-				       {<<"data">>, 0}]}).
-    
+action(Session, Req, {"upload_w_sale", ShopId}, Payload) ->
+    ?DEBUG("upload_w_sale with session ~p, ShopId ~p, payload~n~ts", [Session, ShopId, Payload]), 
+    Merchant = ?session:get(merchant, Session), 
+    {ok, Colors} = ?w_user_profile:get(color, Merchant),
+    {ok, Sizes} = ?w_user_profile:get(size_group, Merchant),
+
+    {ok, [{Employee}|_]} = ?w_user_profile:get(employee, Merchant),
+    %% {ok, [{Retailer}|_T]} = ?w_user_profile:get(retailer, Merchant),
+    {ok, [{Retailer}|_]} = ?w_user_profile:get(retailer, Merchant),
+    %% ?DEBUG("Employee ~p", [Employee]),
+    %% ?DEBUG("Retailers ~p", [Retailers]),
+
+    case 
+	diablo_import_taobao_csv:parse_data(
+	  taobao_csv,
+	  {Merchant, ShopId, ?v(<<"number">>, Employee), ?v(<<"id">>, Retailer)},
+	  Payload,
+	  Colors,
+	  Sizes) of
+	{error, Error, StyleNumber} -> 
+	    ?utils:respond(200, Req, Error, [{<<"style_number">>, ?to_b(StyleNumber)}]);
+	{error, {invalid_stock_total, StyleNumber, TotalOfStyleNumber, Amount}} ->
+	    ?utils:respond(200,
+			   Req,
+			   ?err(wsale_invalid_stock_total, StyleNumber),
+			   [{<<"style_number">>, ?to_b(StyleNumber)},
+			    {<<"total">>, TotalOfStyleNumber},
+			    {<<"amount">>, Amount}])
+    end.
 
 sidebar(Session) -> 
     case ?right_request:get_shops(Session, sale) of
@@ -1239,3 +1262,10 @@ send_sms(Merchant, Action, ShopId, RetailerId, ShouldPay) ->
 		  [RetailerId, Merchant, _Error]),
 	    ?err(sms_send_failed, Merchant)
     end.
+
+
+
+
+
+
+
