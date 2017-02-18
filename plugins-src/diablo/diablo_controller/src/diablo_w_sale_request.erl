@@ -777,15 +777,23 @@ sidebar(Session) ->
 		[{"wsale_rsn_detail",
 		  "交易明细", "glyphicon glyphicon-map-marker"}],
 
-	    WUpload = ?w_inventory_request:authen_shop_action(
-			 {?upload_w_sale,
-			  "upload_wsale",
-			  "销售导入",
-			  "glyphicon glyphicon-upload"}, Shops), 
+	    Merchant = ?session:get(merchant, Session), 
+	    {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),
+
+	    %% ?DEBUG("import ~p", [?v(<<"wsale_import">>, Setting)]),
+	    UploadMenu = 
+		case ?to_i(?v(<<"wsale_import">>, Setting, 0)) of
+		    1 -> ?w_inventory_request:authen_shop_action(
+			    {?upload_w_sale,
+			     "upload_wsale",
+			     "销售导入",
+			     "glyphicon glyphicon-upload"}, Shops);
+		    0 -> []
+		end,
 
 
 	    L1 = ?menu:sidebar(
-		    level_1_menu, WSale ++ WReject ++ SaleR ++ SaleD ++ WUpload),
+		    level_1_menu, WSale ++ WReject ++ SaleR ++ SaleD ++ UploadMenu),
 	    
 	    L1
 		

@@ -1,5 +1,6 @@
 var diabloUtils = angular.module("diabloUtils", []);
 
+
 diabloUtils.directive('navtable', function() {
     return function(scope, element, attr){
 	

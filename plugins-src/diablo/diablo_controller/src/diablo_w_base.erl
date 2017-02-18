@@ -337,7 +337,7 @@ sys_config() ->
 	      {"price_on_region", "按区域填写价格",       "0",   "0"},
 	      {"wsale_import",    "导入淘宝销售单",       "0",   "0"},
 	      {"stock_warning",   "库存预警",             "0",   "0"},
-	      {"stock_warning_a",  "库存预警数量",         "0",   "0"},
+	      {"stock_warning_a", "库存预警数量",         "0",   "0"},
 	      {"stock_contailer", "货品货柜号",           "0",   "0"}
 	     ],
     Values.

@@ -343,7 +343,11 @@ inventory(group_detail, Merchant, Conditions, PageFun) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions), 
     RealyConditions = realy_conditions(Merchant, NewConditions),
     %% ?DEBUG("RealyConditions ~p", [RealyConditions]),
-    ExtraCondtion = ?w_good_sql:sort_condition(stock, NewConditions, <<"a.">>),
+    ExtraConditions = ?w_good_sql:sort_condition(stock, NewConditions, <<"a.">>),
+    ShopConditons = ?v(<<"shop">>, RealyConditions), 
+
+    {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),
+    StockWarning = ?to_i(?v(<<"stock_warning">>, Setting, 0)),
     
     "select "
 	"a.id"
@@ -377,14 +381,33 @@ inventory(group_detail, Merchant, Conditions, PageFun) ->
 	
 	", b.name as shop"
 	
+	++ case StockWarning of
+	       1 -> ", c.minalarm_a";
+	       0 -> []
+	   end
+	++
+	
 	" from w_inventory a"
 	" left join shops b on a.shop=b.id"
 
+	++ case StockWarning of
+	       1 ->
+		   " left join ("
+		       "select style_number, brand, merchant, shop"
+		       ", MIN(total-alarm_a) as minalarm_a from w_inventory_amount"
+		       " where merchant=" ++ ?to_s(Merchant)
+		       ++ ?sql_utils:condition(proplists, {<<"shop">>, ShopConditons})
+		       ++ " and total<alarm_a"
+		       ++ " group by style_number, brand, merchant, shop) c on "
+		       "a.style_number=c.style_number and a.brand=c.brand and a.merchant=c.merchant"
+		       " and a.shop=c.shop";
+	       0 -> []
+	   end
+	++ 
 	" where "
 	++ "a.merchant=" ++ ?to_s(Merchant) 
-	++ ?sql_utils:condition(
-	      proplists, ?utils:correct_condition(<<"a.">>, RealyConditions, []))
-	++ ExtraCondtion
+	++ ?sql_utils:condition(proplists, ?utils:correct_condition(<<"a.">>, RealyConditions, []))
+	++ ExtraConditions
 	++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime) ++  PageFun();
 
 inventory(set_promotion, Merchant, Promotions, Conditions) ->
@@ -463,7 +486,50 @@ inventory(update_batch, Merchant, Attrs, Conditions) ->
 				      end, [], NewConditions))
 		    ++ "merchant=" ++ ?to_s(Merchant) 
 		    ++ " and deleted=" ++ ?to_s(?NO)]
-	   end.
+	   end;
+
+inventory(update_stock_alarm, Merchant, Attrs, Conditions) ->
+    {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions), 
+    MinAlarm = ?v(<<"alarm_a">>, Attrs),
+    Amounts  = ?v(<<"amount">>, Attrs),
+    UpdateOfGood = ?utils:v(alarm_a, integer, MinAlarm), 
+    ?DEBUG("UpdateOfGood ~p", [UpdateOfGood]),
+
+    Sql1 = 
+	["update w_inventory set " ++ ?utils:to_sqls(proplists, comma, UpdateOfGood)
+	 ++ " where "
+	 ++ ?sql_utils:condition(proplists_suffix, NewConditions) 
+	 ++ "merchant=" ++ ?to_s(Merchant),
+
+	 "update w_inventory_good set "
+	 ++ ?utils:to_sqls(proplists, comma, UpdateOfGood) 
+	 ++ " where " 
+	 ++ ?sql_utils:condition(
+	       proplists_suffix,
+	       lists:foldr(fun({<<"shop">>, _}, Acc)->
+				   Acc;
+			      (A, Acc) ->
+				   [A|Acc]
+			   end, [], NewConditions))
+	 ++ "merchant=" ++ ?to_s(Merchant) 
+	],
+
+    Sql2 =
+	lists:foldr(
+	  fun({struct, Amount}, Acc) ->
+		  Alarm_a = ?v(<<"alarm_a">>, Amount),
+		  ColorId = ?v(<<"cid">>, Amount),
+		  Size    = ?v(<<"size">>, Amount),
+		  
+		  ["update w_inventory_amount set alarm_a=" ++ ?to_s(Alarm_a)
+		   ++ " where "
+		   ++ ?sql_utils:condition(proplists_suffix,
+					   NewConditions ++ [{<<"color">>, ColorId}, {<<"size">>, Size}])
+		   ++ "merchant=" ++ ?to_s(Merchant)] ++ Acc
+	  end, [], Amounts),
+
+
+    Sql1 ++ Sql2.
 
 inventory(inventory_new_rsn, Merchant, Conditions) ->
     {DetailConditions, SaleConditions} = 

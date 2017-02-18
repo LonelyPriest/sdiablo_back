@@ -238,6 +238,7 @@
 %% update original price when reject stock to firm
 -define(update_price_of_w_inventory_reject, ?right_w_inventory + 23).
 -define(modify_w_inventory_new_balance, ?right_w_inventory + 24).
+-define(update_w_inventory_alarm,    ?right_w_inventory + 25).
 
 
 %% firm

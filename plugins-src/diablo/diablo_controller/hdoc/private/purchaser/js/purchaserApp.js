@@ -603,6 +603,13 @@ function stockConfg(angular){
 		 attrs: attrs}).$promise;
 	};
 
+	this.update_w_inventory_alarm = function(condition, attrs){
+	    return http.save(
+		{operation: "update_w_inventory_alarm"},
+		{condition: condition,
+		 attrs: attrs}).$promise;
+	};
+
 	this.adjust_price = function(inventory){
 	    return http.save({operation: "adjust_w_inventory_price"}, inventory).$promise;
 	};

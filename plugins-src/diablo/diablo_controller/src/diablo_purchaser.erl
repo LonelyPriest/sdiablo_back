@@ -93,6 +93,11 @@ purchaser_inventory(set_promotion, Merchant, Promotions, Conditions) ->
 purchaser_inventory(update_batch, Merchant, Attrs, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {update_batch, Merchant, Attrs, Conditions});
+
+purchaser_inventory(update_stock_alarm, Merchant, Attrs, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {update_stock_alarm, Merchant, Attrs, Conditions});
+
 purchaser_inventory(adjust_price, Merchant, Inventories, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {adjust_price, Merchant, Inventories, Attrs});
@@ -1933,6 +1938,16 @@ handle_call({update_batch, Merchant, Attrs, Conditions}, _From, State) ->
 
     Reply = ?sql_utils:execute(transaction, Sqls, Merchant),
     {reply, Reply, State};
+
+handle_call({update_stock_alarm, Merchant, Attrs, Conditions}, _From, State) ->
+    ?DEBUG("update_stock_alarm with merchant ~p, attrs ~p, conditions ~p",
+	   [Merchant, Attrs, Conditions]), 
+    Sqls = ?w_good_sql:inventory(
+	      update_stock_alarm, Merchant, Attrs, Conditions),
+
+    Reply = ?sql_utils:execute(transaction, Sqls, Merchant),
+    {reply, Reply, State};
+
 
 handle_call({adjust_price, Merchant, Inventories, Attrs}, _From, State) ->
     ?DEBUG("adjust_price with merchant ~p, inventories ~p, attrs ~p",

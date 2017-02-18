@@ -206,7 +206,7 @@
 	    </div>
 	    <!-- </div> <\!--END row-\-> -->
 
-	    <div class="form-group">
+	    <div x-ng-if="stock_right.show_orgprice" class="form-group">
 	      <label class="col-sm-3 col-md-3 control-label">吊牌价</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
@@ -231,7 +231,7 @@
 	      </div>
 	    </div>
 
-	    <div class="form-group">
+	    <div x-ng-if="stock_right.show_orgprice" class="form-group">
 	      <label class="col-sm-3 col-md-3 control-label">折扣</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">

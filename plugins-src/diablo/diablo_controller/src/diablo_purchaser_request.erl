@@ -861,6 +861,23 @@ action(Session, Req, {"update_w_inventory_batch"}, Payload) ->
     	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"update_w_inventory_alarm"}, Payload) ->
+    ?DEBUG("update_w_inventory_alarm with session ~p~n, paylaod ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    {struct, Conditions} = ?value(<<"condition">>, Payload), 
+    {struct, Attrs} = ?value(<<"attrs">>, Payload, []),
+
+    case ?w_inventory:purchaser_inventory(
+	    update_stock_alarm, Merchant, Attrs, Conditions) of
+	{ok, Merchant} ->
+	    ?utils:respond(
+	       200,
+	       Req,
+	       ?succ(update_w_inventory_batch, Merchant));
+	{error, Error} ->
+    	    ?utils:respond(200, Req, Error)
+    end;
+
 action(Session, Req, {"adjust_w_inventory_price"}, Payload) ->
     ?DEBUG("adjust_w_inventory_price with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),

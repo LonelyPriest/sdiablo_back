@@ -597,19 +597,15 @@
 	      <span x-ng-switch-default>{{c.cname}}</span>
 	    </td>
 	    <td class="col-md-1" x-ng-repeat="s in params.sizes">
-	      <div x-ng-if="(amount=params.get_amount(
-			    c.cid, s, params.amounts))?true:false">
-		
+	      <div x-ng-if="(amount=params.get_amount(c.cid, s, params.amounts))?true:false"> 
 		<div class="input-group">
-		  <span class="input-group-addon modal-input-group-addon">
-		    {{amount.count}}
-		  </span>
+		  <span class="input-group-addon modal-input-group-addon">{{amount.count}}</span>
 		  <form name="aform">
-		    <div ng-class="{'has-error':aform.$invalid
-				   || !params.valid_sell(amount)}">
+		    <div ng-class="{'has-error':aform.$invalid || !params.valid_sell(amount)}">
 		      <input x-ng-if="amount"
 			     class="form-control modal-input text-center"
-			     type="number" step="1"
+			     type="number"
+			     step="1"
 			     x-ng-model="amount.sell_count">
 		    </div>
 		  </form>

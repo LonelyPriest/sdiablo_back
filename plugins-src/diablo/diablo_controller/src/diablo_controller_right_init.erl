@@ -274,6 +274,9 @@ init([]) ->
 	 {?update_w_inventory_batch,
 	  <<"批量修改库存">>, <<"update_w_inventory_batch">>, ?right_w_inventory},
 
+	 {?update_w_inventory_alarm,
+	  <<"修改库存预警数量">>, <<"update_w_inventory_alarm">>, ?right_w_inventory},
+
 	 {?adjust_w_inventory_price,
 	  <<"库存调价">>, <<"adjust_w_inventory_price">>, ?right_w_inventory},
 	 

@@ -1,6 +1,13 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2017-02-18",
+         content:
+	 ["货品价格可直接弹出窗口修改修改，",
+	  "增加货品数量预警",
+	  "增加货品存放的货柜号"]
+        },
+	
 	{date: "2017-01-24",
          content:
 	 ["厂商进销存增加厂商过滤条件",
