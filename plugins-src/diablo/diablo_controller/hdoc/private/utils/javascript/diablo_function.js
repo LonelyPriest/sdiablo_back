@@ -889,8 +889,7 @@ var diabloHelp = function(){
 	    // console.log(orderSizes);
 	    var in_sort = function(sorts, inv){
 		for(var i=0, l=sorts.length; i<l; i++){
-		    if(sorts[i].cid === inv.color_id
-		       && sorts[i].size === inv.size){
+		    if(sorts[i].cid === inv.color_id && sorts[i].size === inv.size){
 			sorts[i].count += parseInt(inv.amount);
 			return true;
 		    }
@@ -922,8 +921,9 @@ var diabloHelp = function(){
 
 		if (!in_sort(sorts, inv)){
 		    sorts.push({cid:inv.color_id,
-				size:inv.size,
-				count:inv.amount})
+				size    :inv.size,
+				alarm_a :inv.alarm_a,
+				count   :inv.amount})
 		}; 
 	    });
 

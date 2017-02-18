@@ -26,7 +26,7 @@ parse_data(taobao_csv, {Merchant, Shop, Employee, Retailer}, CSVData, Colors, Si
 	    try
 		Sqls = insert_db(stock, {Merchant, Shop, Employee, Retailer, Datetime}, Sort, []),
 		?DEBUG("all sqls ~n~p", [Sqls]),
-		Sqls
+		?sql_utils:execute(transaction, Sqls, Shop)
 	    catch _:Error ->
 		    ?DEBUG("error ~p, ~p", [Error, erlang:get_stacktrace()]),
 		    Error
@@ -293,7 +293,7 @@ insert_db(stock, {Merchant, Shop, Employee, Retailer, Datetime}, [H|T], Acc) ->
 			++ "\"" ++ ?to_s(Datetime) ++ "\")",
 
 		    StockSql0 = "update w_inventory set amount=amount-" ++ ?to_s(TotalOfStyleNumber)
-			++ ", sell=sell-" ++ ?to_s(TotalOfStyleNumber)
+			++ ", sell=sell+" ++ ?to_s(TotalOfStyleNumber)
 			++ " where id=" ++ ?to_s(?v(<<"id">>, R))
 			++ " and merchant=" ++ ?to_s(Merchant)
 			++ " and shop=" ++ ?to_s(Shop)
@@ -319,8 +319,8 @@ insert_db(stock, {Merchant, Shop, Employee, Retailer, Datetime}, [H|T], Acc) ->
 					  case Total - TAmount >= 0 of
 					      true ->
 						  ["update w_inventory_amount set total=total-" ++ ?to_s(TAmount)
-						   ++ " and id=" ++ ?to_s(RID)
-						   ++ " merchant=" ++ ?to_s(Merchant)
+						   ++ " where id=" ++ ?to_s(RID)
+						   ++ " and merchant=" ++ ?to_s(Merchant)
 						   ++ " and shop=" ++ ?to_s(Shop)
 						   ++ " and style_number=\'"  ++ ?to_s(StyleNumber) ++ "\'"
 						   ++ " and color=" ++ ?to_s(ColorId)

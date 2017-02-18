@@ -128,35 +128,29 @@
 			<th>积分</th>
 			<th>店铺</th>
 			<th>上架日期</th>
+			<th x-ng-if="setting.stock_alarm">预警数量</th>
+			<th x-ng-if="setting.stock_contailer">货柜</th>
 			<th>操作</th>
 		      </tr>
 		    </thead>
 		    <tbody>
 		      <tr ng-repeat="inv in inventories track by inv.id">
-			<td class="css(inv.isAlarm)">{{inv.order_id}}</td> 
-			<td class="css(inv.isAlarm)">{{inv.style_number}}</td> 
-			<td class="css(inv.isAlarm)">{{inv.brand.name}}</td> 
-			<td class="css(inv.isAlarm)">{{inv.type.name}}</td> 
-			<td class="css(inv.isAlarm)">{{sexs[inv.sex]}}</td> 
-			<td class="css(inv.isAlarm)">{{inv.firm.name}}</td> 
-			<td class="css(inv.isAlarm)">{{seasons[inv.season]}}</td> 
-			<td class="css(inv.isAlarm)">{{inv.year}}</td> 
-			<td class="css(inv.isAlarm)">{{inv.tag_price}}</td> 
-			<td class="css(inv.isAlarm)">{{inv.discount}}</td>
-			  
-
-			<td x-ng-if="stock_right.show_orgprice" class="css(inv.isAlarm)">
-			  {{inv.org_price}}
-			</td> 
-
-			<td x-ng-if="stock_right.show_orgprice" class="css(inv.isAlarm)"> 
-			  {{inv.ediscount}}
-			</td> 
-			<td class="css(inv.isAlarm)">{{inv.amount}}</td>
-			<td x-ng-if="stock_right.show_orgprice" class="css(inv.isAlarm)"> 
-			  {{inv.calc}}
-			</td> 
-			<td class="css(inv.isAlarm)">{{inv.sell}}</td>
+			<td>{{inv.order_id}}</td> 
+			<td>{{inv.style_number}}</td> 
+			<td>{{inv.brand.name}}</td> 
+			<td>{{inv.type.name}}</td> 
+			<td>{{sexs[inv.sex]}}</td> 
+			<td>{{inv.firm.name}}</td> 
+			<td>{{seasons[inv.season]}}</td> 
+			<td>{{inv.year}}</td> 
+			<td>{{inv.tag_price}}</td> 
+			<td>{{inv.discount}}</td>
+			
+			<td x-ng-if="stock_right.show_orgprice">{{inv.org_price}}</td> 
+			<td x-ng-if="stock_right.show_orgprice">{{inv.ediscount}}</td> 
+			<td class="{{css(inv.amount, inv.alarm_a)}}">{{inv.amount}}</td>
+			<td x-ng-if="stock_right.show_orgprice">{{inv.calc}}</td> 
+			<td>{{inv.sell}}</td>
 
 			<td>
 			  <div x-ng-switch on="inv.pid">
@@ -177,6 +171,9 @@
 
 			<td class="css(inv.isAlarm)">{{inv.shop}}</td> 
 			<td>{{inv.entry_date}}</td>
+
+			<td x-ng-if="setting.stock_alarm">{{inv.alarm_a}}</td>
+			<td x-ng-if="setting.stock_contailer">{{inv.contailer}}</td>
 			
 			
 			<td data-title="'操作'"> 
@@ -185,17 +182,47 @@
 				  x-ng-click="lookup_detail(inv)">详情
 			    <i class="glyphicon glyphicon-map-marker"></i> 
 			  </button>
-			  
-			  <button x-ng-if="stock_right.update_good"
-				  class="btn diablo-button yellow"
-				  x-ng-click="update_stock(inv)">修改
-			    <i class="glyphicon glyphicon-edit"></i> 
-			  </button>
+
+			  <div class="btn-group">
+			    <button type="button" class="btn diablo-button yellow">
+			      修改<i class="glyphicon glyphicon-edit"></i></button>
+			    <button type="button" class="btn diablo-button yellow" 
+				    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			      <span class="caret"></span>
+			      <span class="sr-only">Toggle Dropdown</span>
+			    </button>
+			    <ul class="dropdown-menu">
+			      <li><a href="javascript:;" x-ng-click="update_price(inv)">编辑价格</a></li>
+			      <li><a href="javascript:;" x-ng-click="update_stock(inv)">基本属性</a></li>
+			      <li x-ng-if="setting.stock_alarm">
+				<a href="javascript:;" x-ng-click="update_alarm_a(inv)">预警数量</a>
+			      </li>
+			      <!-- <li role="separator" class="divider"></li> -->
+			      <!-- <li><a href="#">Separated link</a></li> -->
+			    </ul>
+			  </div>
 
 			  <button class="btn diablo-button purple-plum"
 				  x-ng-click="stock_flow(inv)">流水
 			    <i class="glyphicon glyphicon-leaf"></i> 
 			  </button>
+			  <!-- <button x-ng-if="stock_right.update_good" -->
+			  <!-- 	  class="btn diablo-button red" -->
+			  <!-- 	  x-ng-click="update_price(inv)">价格 -->
+			  <!--   <i class="glyphicon glyphicon-pencil"></i>  -->
+			  <!-- </button> -->
+			  
+			  <!-- <button x-ng-if="stock_right.update_good" -->
+			  <!-- 	  class="btn diablo-button yellow" -->
+			  <!-- 	  x-ng-click="update_stock(inv)">属性 -->
+			  <!--   <i class="glyphicon glyphicon-edit"></i>  -->
+			  <!-- </button> -->
+
+			  <!-- <button x-ng-if="stock_right.update_good && setting.stock_alarm" -->
+			  <!-- 	  class="btn diablo-button red" -->
+			  <!-- 	  x-ng-click="update_alarm_a(inv)">预警 -->
+			  <!--   <i class="glyphicon glyphicon-edit"></i>  -->
+			  <!-- </button>  -->
 			  
 			</td>
 		      </tr>
@@ -297,19 +324,29 @@
 	      <span x-ng-switch-default>{{c.cname}}</span>
 	    </td>
 	    <td class="col-md-1" x-ng-repeat="s in params.sizes">
-	      {{params.get_amount(c.cid, s).count}}
-	      <!-- <input class="form-control" readonly -->
-	      <!-- 	     x-ng-model="amount" -->
-	      <!-- 	     x-ng-init="amount=params.get_amount(c.cid, s)"></input> -->
-	      <!-- <span>{{params.get_amount(c.cid, s)}}</span> -->
+	      <div x-ng-if="amount=params.get_amount(c.cid, s); amount">
+		<div x-ng-if="params.stock_alarm">
+		  <div>
+		    <span x-ng-if="amount.count<amount.alarm_a" class="badge bg-magenta">{{amount.count}}</span>
+		    <span x-ng-if="amount.count>=amount.alarm_a">{{amount.count}}</span>
+		    <span class="badge bg-yellow" x-ng-bind={{amount.alarm_a}}></span>
+		  </div>
+		</div>
+		
+		<div x-ng-if="!params.stock_alarm"> {{amount.count}}</div>		
+	      </div> 
 	    </td>
 	  </tr>
 	</tbody>
       </table>
     </div>
-    <image x-ng-show="params.path"
-	   class="img-responsive img-thumbnail"
-	   ng-src="{{params.path}}"></image>
+    <div x-ng-if="params.stock_alarm">
+      <p>
+	<span class="bg-magenta">红色表示目前库存已预警</span>
+	<span class="bg-yellow">黄色表示预警数量</span>
+      </p>
+    </div>
+    <image x-ng-show="params.path" class="img-responsive img-thumbnail" ng-src="{{params.path}}"></image>
   </div>
 
   <div class="modal-footer">
@@ -533,6 +570,82 @@
 	    </select>
 	  </div>
 	</div>
+	
+      </div> <!-- END form body --> 
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="params.check_invalid(params.select)"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning"
+	    x-ng-click="cancel()">取消</button>
+  </div>  
+</script>
+
+
+<script type="text/ng-template" id="stock-update-price.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    
+    <h4 class="modal-title">
+      <span class="label label-sm label-primary">库存修改（{{params.style_number}}-{{params.brand}}）</span>
+    </h4>
+  </div>
+  
+  <div class="modal-body">
+    <form class="form-horizontal" name="sForm" novalidate> 
+      <div class="form-body">
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">吊牌价</label>
+	  <div class="col-sm-10 col-md-10">
+	    <input class="form-control"
+		   type="number"
+		   step="1"
+		   disable-key
+		   disable-wheel
+		   x-ng-model="params.tag_price"/>
+	  </div>
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">折扣</label>
+	  <div class="col-sm-10 col-md-10">
+	    <input class="form-control"
+		   type="number"
+		   step="1"
+		   disable-key
+		   disable-wheel
+		   x-ng-model="params.discount"/>
+	  </div>
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">是否积分</label>
+	  <div class="col-sm-10 col-md-10">
+	    <select class="form-control"
+		    x-ng-model="params.is_score"
+		    x-ng-options="s as s.name for s in params.yes_no">
+	    </select>
+	  </div>
+	</div>
+
+	<div x-ng-if="params.stock_contailer" class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">货柜号</label>
+	  <div class="col-sm-10 col-md-10">
+	    <input class="form-control"
+		   type="number"
+		   step="1"
+		   disable-key
+		   disable-wheel
+		   x-ng-model="params.contailer"/>
+	  </div>
+	</div> 
 	
       </div> <!-- END form body --> 
     </form>

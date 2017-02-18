@@ -528,6 +528,12 @@ create table w_inventory_good
     discount         DECIMAL(4, 1), -- max: 100, discount of sell
     path             VARCHAR(255) default null, -- the image path
     alarm_day        TINYINT default -1,  -- the days of alarm
+
+    --
+    contailer        INTEGER default -1,
+    alarm_a          INTEGER default 0,
+
+    --
     merchant         INTEGER default -1,
     
     change_date      DATETIME default 0, -- date of last change 
@@ -569,7 +575,12 @@ create table w_inventory
     path             VARCHAR(255) default null, -- the image path
     alarm_day        TINYINT default -1,  -- the days of alarm 
     sell             INTEGER default 0,  -- how many selled
-    
+
+    --
+    contailer        INTEGER default -1,
+    alarm_a          INTEGER default 0,
+
+    --
     shop             INTEGER default -1,
     state            INTEGER default 0,  -- 0: wait for check, 1: checked
 
@@ -594,6 +605,11 @@ create table w_inventory_amount(
     color          INTEGER default -1,
     size           VARCHAR(8) default null, -- S/26, M/27....
     shop           INTEGER default -1,
+
+    --
+    alarm_a        INTEGER default 0, 
+    --
+    
     merchant       INTEGER default -1,
     total          INTEGER default 0,
     entry_date     DATETIME not null default 0,

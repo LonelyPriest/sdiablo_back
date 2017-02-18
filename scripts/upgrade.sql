@@ -174,3 +174,14 @@ alter table w_retailer add column id_card VARCHAR(18) default null;
 alter table w_charge add column type TINYINT default 0 after balance;
 alter table shops add column draw INTEGER default -1 after charge;
 alter table w_retailer add column draw INTEGER default -1 after shop;
+
+
+-- 2017-02-17
+alter table w_inventory_good add column contailer INTEGER default -1 after alarm_day;
+alter table w_inventory_good add column alarm_a INTEGER default -1 after contailer;
+
+alter table w_inventory add column contailer INTEGER default -1 after sell;
+alter table w_inventory add column alarm_a INTEGER default -1 after contailer;
+
+-- alter table w_inventory_amount add column contailer INTEGER default -1 after shop;
+alter table w_inventory_amount add column alarm_a INTEGER default -1 after contailer;

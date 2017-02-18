@@ -439,8 +439,7 @@
 		    <td class="{{focus_css(inv.order_id, inv.$new)}} col-md-1 vert-align">
 		      <span x-ng-if="inv.$new">{{inv.discount}}</span>
 		      <form x-ng-if="!inv.$new" name="inv.form.discount">
-		    	<div ng-class="{'has-error':inv.form.discount.$invalid
-		    		       && !inv.form.discount.$pristine}">
+		    	<div ng-class="{'has-error':inv.form.discount.$invalid && !inv.form.discount.$pristine}">
 		    	  <input class="form-control"
 		    		 type="number" step="1"
 		    		 placeholder="卖价折扣"
@@ -485,7 +484,6 @@
 				 disable-wheel
 				 ng-edit
 				 disable-key
-				 focus-auto="focus_attrs.org_price && inv.order_id===focus_row"
 				 x-ng-focus="on_focus_attr('org_price', inv)"
 				 x-ng-pattern="/^\d+(.\d{1,2})?$/"
 				 x-ng-model="inv.org_price"

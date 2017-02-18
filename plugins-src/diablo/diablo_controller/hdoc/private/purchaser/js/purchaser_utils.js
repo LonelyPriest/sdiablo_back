@@ -55,6 +55,18 @@ var stockUtils = function(){
 	hide_sex: function(shop, base) {
 	    return diablo_base_setting("h_sex", shop, base, parseInt, diablo_no);
 	},
+	
+	stock_alarm: function(shop, base) {
+	    return diablo_base_setting("stock_warning", shop, base, parseInt, diablo_no);
+	},
+
+	stock_alarm_a: function(shop, base) {
+	    return diablo_base_setting("stock_warning_a", shop, base, parseInt, diablo_no);
+	},
+
+	stock_contailer: function(shop, base) {
+	    return diablo_base_setting("stock_contailer", shop, base, parseInt, diablo_no);
+	},
 
 	image_allowed: function(shop, base){
 	    return diablo_base_setting("image_mode", shop, base, parseInt, diablo_no);

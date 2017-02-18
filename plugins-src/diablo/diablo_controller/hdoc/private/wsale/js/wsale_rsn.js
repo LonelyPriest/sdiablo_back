@@ -525,7 +525,7 @@ function wsaleUploadCtrlProvide (
 	console.info('onCompletedItem', fileItem, response);
 	var dialog = diabloUtilsService;
 	if (response.ecode === 0){
-	    dialog.response(true, "销售单导入", "销售导入成功");
+	    dialog.response(true, "销售单导入", "销售单据导入成功！！导入店铺：" + $scope.select.shop.name);
 	} else if (response.ecode === 2712) {
 	    fileItem.isSuccess = false;
 	    fileItem.isError = true;

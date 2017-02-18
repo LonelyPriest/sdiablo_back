@@ -223,6 +223,10 @@ function purchaserInventoryNewCtrlProvide (
 	$scope.base_settings.hide_color = stockUtils.hide_color(shopId, base);
 	$scope.base_settings.hide_size  = stockUtils.hide_size(shopId, base);
 	$scope.base_settings.hide_sex   = stockUtils.hide_sex(shopId, base);
+	
+	$scope.base_settings.stock_alarm     = stockUtils.stock_alarm(shopId, base);
+	$scope.base_settings.stock_alarm_a   = stockUtils.stock_alarm_a(shopId, base);
+	$scope.base_settings.stock_contailer = stockUtils.stock_contailer(shopId, base);
     }
 
     $scope.change_shop = function(){
@@ -312,6 +316,9 @@ function purchaserInventoryNewCtrlProvide (
 	add.over         = 0;
 	// exist stock in shop
 	add.stock        = 0;
+
+	add.contailer   = src.contailer;
+	add.alarm_a     = src.alarm_a;
 	
 	if ( add.free === 0 ){
 	    add.free_color_size = true;
@@ -554,6 +561,9 @@ function purchaserInventoryNewCtrlProvide (
 		tag_price   : diablo_set_float(add.tag_price), 
 		ediscount   : diablo_set_float(add.ediscount),
 		discount    : diablo_set_float(add.discount),
+
+		contailer   : add.contailer,
+		alarm_a     : add.alarm_a,
 		
 		path        : add.path,
 		alarm_day   : add.alarm_day,
@@ -1338,9 +1348,12 @@ function purchaserInventoryNewCtrlProvide (
 	alarm_day : 7,
 	year      : diablo_now_year(),
 	season    : $scope.season2objs[stockUtils.valid_season(current_month)],
-	image     : undefined
+	image     : undefined,
+	contailer : -1,
+	alarm_a   : $scope.base_settings.stock_alarm_a
 	// d_image   : true
     };
+    
 
     $scope.new_good = function(){
 	if ($scope.form.gForm.$invalid || $scope.is_same_good || $scope.good_has_saved) return; 
@@ -1361,6 +1374,9 @@ function purchaserInventoryNewCtrlProvide (
 	good.tag_price = $scope.good.tag_price;
 	good.discount  = $scope.good.discount; 
 	good.ediscount = $scope.good.ediscount;
+
+	good.contailer = $scope.good.contailer;
+	good.alarm_a   = $scope.good.alarm_a;
 	
 	// good.promotion = good.promotion.id; 
 	
@@ -1486,11 +1502,9 @@ function purchaserInventoryNewCtrlProvide (
 		// cons.log($scope.types); 
 		var sg = s_groups.length === 0 ? "0":s_groups.toString();
 		var ss = s_sizes.length === 0 ? "0":s_sizes.toString();
-		var sc = angular.isUndefined(good.colors)
-		    ? "0" : good.colors.toString();
+		var sc = angular.isUndefined(good.colors) ? "0" : good.colors.toString();
 		var free = (sg === "0" && ss === "0" && sc === "0") ? 0:1;
-		var p = stockUtils.prompt_name(
-		    good.style_number, good.brand, good.type);
+		var p = stockUtils.prompt_name(good.style_number, good.brand, good.type);
 		
 		var agood = {
 		    $new_good: true,
@@ -1516,7 +1530,10 @@ function purchaserInventoryNewCtrlProvide (
 		    free:      free,
 		    s_group:   sg,
 		    size:      ss,
-		    color:     sc
+		    color:     sc,
+
+		    contailer: good.contailer,
+		    alarm_a:   good.alarm_a
 		};
 
 		if ($scope.q_prompt === diablo_frontend){
@@ -1654,15 +1671,15 @@ function purchaserInventoryDetailCtrlProvide(
     
     $scope.setting = {alarm: false};
 
-    $scope.css =  function(isAlarm){
-	return diablo_stock_alarm_css($scope.setting.alarm, isAlarm);
-    };
-
-
     $scope.match_style_number = function(viewValue){
 	return diabloFilter.match_w_inventory(viewValue, $scope.shopIds);
     };
 
+    $scope.css =  function(amount, alarm_amount){
+	// console.log(amount, alarm_amount);
+	return amount < alarm_amount ? "bg-magenta" : "";
+    };
+    
     /*
      * filter
      */ 
@@ -1691,7 +1708,9 @@ function purchaserInventoryDetailCtrlProvide(
     // console.log(storage);
         
     // alarm, use default shop
-    $scope.setting.alarm = diablo_base_setting("stock_alarm", -1, base, parseInt, diablo_no); 
+    $scope.setting.alarm = diablo_base_setting("stock_alarm", -1, base, parseInt, diablo_no);
+    $scope.setting.stock_alarm = stockUtils.stock_alarm(-1, base);
+    $scope.setting.stock_contailer = stockUtils.stock_contailer(-1, base);
 
     /*
      * pagination 
@@ -1877,6 +1896,7 @@ function purchaserInventoryDetailCtrlProvide(
 	    var payload = {sizes:      inv.sizes,
 			   colors:     inv.colors,
 			   path:       inv.path,
+			   stock_alarm: $scope.setting.stock_alarm,
 			   get_amount: get_amount 
 			  };
 	    
@@ -1902,6 +1922,7 @@ function purchaserInventoryDetailCtrlProvide(
 		var payload = {sizes:      inv.sizes,
 			       colors:     inv.colors,
 			       path:       inv.path,
+			       stock_alarm: $scope.setting.stock_alarm,
 			       get_amount: function(cid, size){
 				   return get_amount(cid, size, inv.amounts);
 			       }};
@@ -2104,18 +2125,13 @@ function purchaserInventoryDetailCtrlProvide(
 		    } 
 		    return false;
 		},
-		// years: diablo_full_year,
-		// sexs: diablo_sex2object,
-		// seasons: diablo_season2objects,
+		
 		yes_no: yes_no,
-		select: {
-		    score: yes_no[0]
-		    // sex: diablo_sex2object[0],
-		    // season: diablo_season2objects[0],
-		    // year: diablo_now_year()},
-		}
+		select: {score: yes_no[0]}
 	    }
-	)
+	);
+
+	
     };
 
     $scope.update_stock = function(inv){
@@ -2137,6 +2153,73 @@ function purchaserInventoryDetailCtrlProvide(
 		    "获取货品资料", "获取货品资料失败：" + error[result.ecode]);
 	    }
 	}) 
+    };
+
+    $scope.update_price = function(inv) {
+	var callback = function(params){
+	    console.log(params);
+	    var update = {
+		tag_price  :diablo_get_modified(params.tag_price, inv.tag_price),
+		discount   :diablo_get_modified(params.discount, inv.discount),
+		contailer  :diablo_get_modified(params.contailer, inv.contailer),
+		score      :params.is_score.id === 0 ? undefined : params.is_score.id
+	    };
+
+	    // console.log(update);
+
+	    var condition = {style_number:inv.style_number, brand:inv.brand.id};
+
+	    purchaserService.update_w_inventory_batch(condition, update).then(function(result){
+		console.log(result);
+		if (result.ecode === 0){
+		    var tag_price = angular.isDefined(update.tag_price) ? update.tag_price : inv.tag_price;
+		    var discount  = angular.isDefined(update.discount)  ? update.discount  : inv.discount;
+		    var contailer = angular.isDefined(update.contailer) ? update.contailer : inv.contailer;
+		    var s = "修改价格成功！！"
+			+ "[ 吊牌价" + tag_price.toString() + "；" 
+			+ "折扣" + discount.toString() + "；";
+		    if ($scope.setting.stock_contailer)
+			s += "货柜号" + contailer.toString() + "]";
+		    
+		    dialog.response_with_callback(
+			true, "修改库存价格", s, undefined,
+			function(){
+			    inv.tag_price = tag_price;
+			    inv.discount  = discount;
+			    inv.contailer = contailer;
+			    inv.sid       = update.score === undefined ? -1 : inv.sid}
+		    ); 
+		} else {
+		    dialog.response(
+			false,
+			"批量修改库存价格",
+			"批量修改库存价格失败："
+			    + purchaserService.error[result.ecode]);
+		}
+	    });
+	};
+
+	var yes_no = stockUtils.yes_no(); 
+	dialog.edit_with_modal(
+	    "stock-update-price.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {
+		style_number :inv.style_number,
+		brand        :inv.brand.name,
+		tag_price    :inv.tag_price,
+		discount     :inv.discount,
+		contailer    :inv.contailer,
+		yes_no       :yes_no,
+		is_score     :yes_no[0],
+		stock_contailer : $scope.setting.stock_contailer
+	    }
+	);
+    };
+
+    $scope.update_alarm_a = function(inv){
+	
     };
 
     $scope.stock_flow = function(inv){

@@ -738,7 +738,9 @@ action(Session, Req, {"upload_w_sale", ShopId}, Payload) ->
 	  Payload,
 	  Colors,
 	  Sizes) of
-	{error, Error, StyleNumber} -> 
+	{ok, ShopId} ->
+	    ?utils:respond(200, Req, ?succ(w_sale_uploaded, ShopId), {<<"shop">>, ?to_b(ShopId)}); 
+	{error, Error, StyleNumber} ->
 	    ?utils:respond(200, Req, Error, [{<<"style_number">>, ?to_b(StyleNumber)}]);
 	{error, {invalid_stock_total, StyleNumber, TotalOfStyleNumber, Amount}} ->
 	    ?utils:respond(200,
@@ -746,7 +748,9 @@ action(Session, Req, {"upload_w_sale", ShopId}, Payload) ->
 			   ?err(wsale_invalid_stock_total, StyleNumber),
 			   [{<<"style_number">>, ?to_b(StyleNumber)},
 			    {<<"total">>, TotalOfStyleNumber},
-			    {<<"amount">>, Amount}])
+			    {<<"amount">>, Amount}]);
+	{error, Error} -> 
+	    ?utils:respond(200, Req, Error)
     end.
 
 sidebar(Session) -> 

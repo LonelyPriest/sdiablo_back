@@ -22,6 +22,9 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
     Path        = ?v(<<"path">>, Attrs, []),
     AlarmDay    = ?v(<<"alarm_day">>, Attrs, 7),
 
+    Contailer  = ?v(<<"contailer">>, Attrs, -1),
+    Alarm_a    = ?v(<<"alarm_a">>, Attrs, 0),
+
     Sizes       = ?v(<<"sizes">>, Attrs, [?FREE_SIZE]), 
     %% Date        = ?utils:current_time(localdate),
     DateTime    = ?utils:current_time(localtime), 
@@ -39,7 +42,7 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
 	"insert into w_inventory_good"
 	"(style_number, sex, color, year, season, type, size, s_group, free"
 	", brand, firm, org_price, tag_price, ediscount, discount"
-	", path, alarm_day, merchant, change_date, entry_date"
+	", path, alarm_day, contailer, alarm_a, merchant, change_date, entry_date"
 	") values("
 	++ "\"" ++ ?to_s(StyleNumber) ++ "\","
 	++ ?to_s(Sex) ++ ","
@@ -59,6 +62,8 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
 	++ ?to_s(Discount) ++ ","
 	++ "\"" ++ ?to_s(Path) ++ "\","
 	++ ?to_s(AlarmDay) ++ ","
+	++ ?to_s(Contailer) ++ ","
+	++ ?to_s(Alarm_a) ++ ","
 	++ ?to_s(Merchant) ++ ","
 	++ "\"" ++ ?to_s(DateTime) ++ "\","
 	++ "\"" ++ ?to_s(DateTime) ++ "\");",
@@ -168,7 +173,7 @@ good(detail, Merchant, Conditions) ->
 	", a.brand as brand_id, a.firm as firm_id, a.type as type_id"
 	", a.sex, a.color, a.year, a.season, a.size, a.s_group, a.free"
 	", a.org_price, a.tag_price, a.ediscount"
-	", a.discount, a.path, a.entry_date"
+	", a.discount, a.path, a.contailer, a.alarm_a, a.entry_date"
 
 	", b.name as brand"
 	
@@ -207,7 +212,7 @@ good(detail_no_join, Merchant, StyleNumber, Brand) ->
 	", a.type as type_id, a.firm as firm_id"
 	", a.sex, a.color, a.year, a.season, a.size, a.s_group, a.free"
 	", a.org_price, a.tag_price, a.ediscount"
-	", a.discount, a.path, a.alarm_day, a.entry_date" 
+	", a.discount, a.path, a.alarm_day, a.contailer, a.alarm_a, a.entry_date" 
 	", b.name as brand"
 	", c.name as type"
 	" from w_inventory_good a, brands b, inv_types c"
@@ -260,7 +265,7 @@ good_match(style_number_with_firm, Merchant, StyleNumber, Firm) ->
 	", a.type as type_id, a.firm as firm_id"
 	", a.sex, a.color, a.year, a.season, a.size, a.s_group, a.free"
 	", a.org_price, a.tag_price, a.ediscount"
-	", a.discount, a.path, a.alarm_day, a.entry_date" 
+	", a.discount, a.path, a.alarm_day, a.contailer, a.alarm_a, a.entry_date" 
 	", b.name as brand"
 	", c.name as type"
 	" from w_inventory_good a, brands b, inv_types c"
@@ -281,7 +286,7 @@ good_match(all_style_number_with_firm, Merchant, StartTime, Firm) ->
 	", a.type as type_id, a.firm as firm_id"
 	", a.sex, a.color, a.year, a.season, a.size, a.s_group, a.free"
 	", a.org_price, a.tag_price, a.ediscount"
-	", a.discount, a.path, a.alarm_day, a.entry_date"
+	", a.discount, a.path, a.alarm_day, a.contailer, a.alarm_a, a.entry_date"
 	
 	", b.name as brand"
 	", c.name as type"
@@ -361,6 +366,8 @@ inventory(group_detail, Merchant, Conditions, PageFun) ->
 	", a.discount"
 	", a.path"
 	", a.alarm_day"
+	", a.contailer"
+	", a.alarm_a"
 	", a.sell"
 	", a.shop as shop_id"
 	", a.state"
@@ -408,13 +415,16 @@ inventory(update_batch, Merchant, Attrs, Conditions) ->
 
     TagPrice = ?v(<<"tag_price">>, Attrs),
     Discount = ?v(<<"discount">>, Attrs),
+    Contailer = ?v(<<"contailer">>, Attrs),
     Score = case ?v(<<"score">>, Attrs) of
 		0 -> -1;
-		1 -> undefined
+		1 -> undefined;
+		_ -> undefined
 	    end,
 
     UpdateOfGood = ?utils:v(tag_price, float, TagPrice)
-	++ ?utils:v(discount, float, Discount),
+	++ ?utils:v(discount, float, Discount)
+	++ ?utils:v(contailer, integer, Contailer),
 
     UpdateOfStock = UpdateOfGood ++ ?utils:v(score, integer, Score),
 
@@ -491,7 +501,7 @@ inventory(list, Merchant, Conditions) ->
     "select a.style_number, a.brand_id, a.type_id, a.sex, a.season, a.total"
 	", a.org_price, a.tag_price, a.ediscount, a.discount"
 
-	", b.color as color_id, b.size, b.total as amount"
+	", b.color as color_id, b.size, b.total as amount, b.alarm_a"
 	%% ", c.name as color"
 	
 	" from ("
@@ -1135,7 +1145,10 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
     Discount    = ?v(<<"discount">>, Inv, 100),
     Path        = ?v(<<"path">>, Inv, []),
     AlarmDay    = ?v(<<"alarm_day">>, Inv, 7),
-    Score       = ?v(<<"score">>, Inv, -1), 
+    Score       = ?v(<<"score">>, Inv, -1),
+
+    Contailer  = ?v(<<"contailer">>, Inv, -1),
+    Alarm_a    = ?v(<<"alarm_a">>, Inv, 0),
 
     %% InventoryExist = ?sql_utils:execute(s_read, Sql0),
 
@@ -1153,7 +1166,7 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		 ", style_number, brand, type, sex, season, amount"
 		 ", firm, s_group, free, year, score"
 		 ", org_price, tag_price, ediscount, discount"
-		 ", path, alarm_day, shop, merchant"
+		 ", path, alarm_day, shop, contailer, alarm_a, merchant"
 		 ", last_sell, change_date, entry_date)"
 		 " values("
 		 ++ "\"" ++ ?to_s(-1) ++ "\","
@@ -1176,6 +1189,8 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		 ++ "\"" ++ ?to_s(Path) ++ "\","
 		 ++ ?to_s(AlarmDay) ++ ","
 		 ++ ?to_s(Shop) ++ ","
+		 ++ ?to_s(Contailer) ++ ","
+		 ++ ?to_s(Alarm_a) ++ ","
 		 ++ ?to_s(Merchant) ++ ","
 		 ++ "\"" ++ ?to_s(CurDateTime) ++ "\","
 		 ++ "\"" ++ ?to_s(CurDateTime) ++ "\","
@@ -1190,6 +1205,8 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 				++ ", ediscount=" ++ ?to_s(EDiscount)
 				++ ", tag_price=" ++ ?to_s(TagPrice)
 				++ ", discount=" ++ ?to_s(Discount);
+				%% ++ ", contailer=" ++ ?to_s(Contailer)
+				%% ++ ", alarm_a=" ++ ?to_s(Alarm_a); 
 			%%++ ", entry_date=" ++ "\"" ++ ?to_s(CurDateTime) ++ "\""; 
 			?REJECT_INVENTORY -> []
 		    end
@@ -1288,7 +1305,7 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		     {ok, []} ->
 			 "insert into w_inventory_amount(rsn"
 			     ", style_number, brand, color, size"
-			     ", shop, merchant, total, entry_date)"
+			     ", shop, alarm_a, merchant, total, entry_date)"
 			     " values("
 			     ++ "\"" ++ ?to_s(-1) ++ "\","
 			     ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
@@ -1296,6 +1313,7 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 			     ++ ?to_s(Color) ++ ","
 			     ++ "\'" ++ ?to_s(Size)  ++ "\',"
 			     ++ ?to_s(Shop)  ++ ","
+			     ++ ?to_s(Alarm_a) ++ ","
 			     ++ ?to_s(Merchant) ++ ","
 			     ++ ?to_s(Count) ++ "," 
 			     ++ "\"" ++ ?to_s(CurDateTime) ++ "\")"; 

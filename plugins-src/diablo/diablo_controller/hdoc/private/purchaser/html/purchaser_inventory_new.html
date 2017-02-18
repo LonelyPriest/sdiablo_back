@@ -263,8 +263,8 @@
 			<!-- <th class="text-center">性别</th> -->
 			<th class="text-center">年份</th>
 			<th class="text-center">季节</th>
-			<th x-ng-if="base_settings.t_trace" class="text-center">库存</th>
-
+			<th x-ng-if="base_settings.t_trace" class="text-center">库存</th> 
+			
 			<th class="text-center">吊牌价</th>
 			<th class="text-center">折扣</th>
 			
@@ -275,18 +275,18 @@
 
 			
 			<th class="text-center">数量</th>
-			<th x-ng-if="stock_right.show_orgprice"
-			    class="text-center">合计</th>
+			<th x-ng-if="stock_right.show_orgprice" class="text-center">合计</th>
 			<th class="text-center">溢出</th>
-			<th class="text-center">操作</th>
+			<th x-ng-if="base_settings.stock_alarm" class="text-center">预警数量</th>
+			<th x-ng-if="base_settings.stock_contailer" class="text-center">货柜号</th>
+			<th class="text-center">操作</th> 
 		      </tr>
 		    </thead>
 		    <tbody>
 		      <tr class="text-center" x-ng-repeat="inv in inventories">  
 			<td class="vert-align">{{inv.order_id}}</td>
 
-			<td x-ng-if="q_prompt===0"
-			    class="col-md-2 text-left vert-align">
+			<td x-ng-if="q_prompt===0" class="col-md-2 text-left vert-align">
 			  <span ng-if="!inv.$new">{{inv.style_number}}</span>
 			  <form name="inv.form.good" ng-if="inv.$new">
 			    <div ng-class="{'has-error':inv.form.good.$invalid
@@ -310,8 +310,7 @@
 			  </form>
 			</td>
 			
-			<td x-ng-if="q_prompt===1"
-			    class="col-md-2 text-left vert-align">
+			<td x-ng-if="q_prompt===1" class="col-md-2 text-left vert-align">
 			  <span ng-if="!inv.$new">{{inv.style_number}}</span>
 			  <form name="inv.form.good" ng-if="inv.$new">
 			    <div ng-class="{'has-error':inv.form.good.$invalid
@@ -346,12 +345,9 @@
 			<td x-ng-if="base_settings.t_trace" class="vert-align">{{inv.stock}}</td>
 			
 			<td class="col-md-1 vert-align">
-			  <span x-ng-if="!inv.$new && !inv.update_directory">
-			    {{inv.tag_price}}</span>
+			  <span x-ng-if="!inv.$new && !inv.update_directory">{{inv.tag_price}}</span>
 			  <form name="inv.form.tagprice"
-				x-ng-if="inv.$new
-					 && inv.free_color_size
-					 || inv.update_directory">
+				x-ng-if="inv.$new && inv.free_color_size || inv.update_directory">
 		    	    <div ng-class="{'has-error':inv.form.tagprice.$invalid
 		    			   && !inv.form.tagprice.$pristine}">
 		    	      <input class="form-control"
@@ -482,9 +478,44 @@
 				     x-ng-model="inv.over" />
 			    </div>
 			  </form>
-			</td> 
+			</td>
+
+			<td x-ng-if="base_settings.stock_alarm" class="vert-align">
+			  {{inv.alarm_a}}
+			  <!-- <span x-ng-if="inv.$new">{{inv.alarm_a}}</span> -->
+			  <!-- <form x-ng-if="!inv.$new" name="inv.form.alarm_a"> -->
+			  <!--   <div ng-class="{'has-error':inv.form.alarm_a.$invalid && !inv.form.alarm_a.$pristine}"> -->
+			  <!--     <input class="form-control" -->
+			  <!-- 	     type="number" -->
+			  <!-- 	     required  -->
+			  <!-- 	     disable-wheel -->
+			  <!-- 	     ng-edit -->
+			  <!-- 	     disable-key -->
+			  <!-- 	     x-ng-pattern="/^\d{1,4}$/" -->
+			  <!-- 	     x-ng-model="inv.alarm_a"/> -->
+			  <!--   </div> -->
+			  <!-- </form> -->
+			</td>
 			
-			<td class="text-left vert-align col-md-1">
+			<td x-ng-if="base_settings.stock_contailer" class="vert-align">
+			  {{inv.contailer}}
+			  <!-- <span x-ng-if="inv.$new">{{inv.contailer}}</span> -->
+			  <!-- <form x-ng-if="!inv.$new" name="inv.form.container"> -->
+			  <!--   <div ng-class="{'has-error':inv.form.contailer.$invalid -->
+			  <!-- 		   && !inv.form.contailer.$pristine}"> -->
+			  <!--     <input class="form-control" -->
+			  <!-- 	     type="number" -->
+			  <!-- 	     required  -->
+			  <!-- 	     disable-wheel -->
+			  <!-- 	     ng-edit -->
+			  <!-- 	     disable-key -->
+			  <!-- 	     x-ng-pattern="/^\d{1,4}$/" -->
+			  <!-- 	     x-ng-model="inv.contailer"/> -->
+			  <!--   </div> -->
+			  <!-- </form>  -->
+			</td>
+			
+			<td class="vert-align">
 			  <div x-ng-if="inv.$new"> 
 			    <a class="btn diablo-input-button btn-success"
 			       x-ng-if="!inv.free_color_size"
@@ -868,8 +899,7 @@
 		  </div> 
 		</div>
 
-		<div x-ng-if="base_settings.image_allowed"
-		     class="form-group diablo-good-form-group">
+		<div x-ng-if="base_settings.image_allowed" class="form-group diablo-good-form-group">
 		  <label class="col-sm-3 col-md-3 control-label">图片</label>
 		  <div class="col-sm-6 col-md-6">
 		    <div class="input-group">
@@ -888,13 +918,58 @@
 		  </div>
 		</div>
 
-		<div x-ng-if="base_settings.image_allowed"
-		     class="form-group diablo-good-form-group">
+		<div x-ng-if="base_settings.image_allowed" class="form-group diablo-good-form-group">
 		  <div class="col-sm-offset-3 col-sm-6 col-md-offset-3 col-md-6">
 		    <image-draw x-ng-show="good.image"
 				class="img-responsive img-thumbnail"
 	      			org-image="good.image">
 		    </image-draw>
+		  </div>
+		</div>
+
+		<div x-ng-if="base_settings.stock_alarm" class="form-group diablo-good-form-group">
+		  <label class="col-sm-3 col-md-3 control-label">预警数量</label>
+		  <div class="col-sm-6 col-md-6"> 
+		    <div ng-class="{'has-error':form.gForm.alarm_a.$invalid && !form.gForm.alarm_a.$pristine}">
+		      <input class="form-control"
+			     type="number" step="1" 
+			     name="alarm_a"
+			     required
+			     disable-key
+			     ng-edit
+			     placeholder="请输入货品预警数量"
+			     x-ng-pattern="/^\d{1,4}$/"
+			     x-ng-enter=""
+			     x-ng-model="good.alarm_a"/>
+		    </div>
+		  </div>
+		  <div ng-if="form.gForm.alarm_a.$invalid && !form.gForm.alarm_a.$pristine">
+		    <span class="fg-red">请输入小于9999的整数</span>
+		  </div>
+		</div>
+
+		<div x-ng-if="base_settings.stock_contailer" class="form-group diablo-good-form-group">
+		  <label class="col-sm-3 col-md-3 control-label">货柜号</label>
+		  <div class="col-sm-6 col-md-6">
+		    <div class="input-group">
+		      <div ng-class="{'has-error':form.gForm.contailer.$invalid
+				     && !form.gForm.contailer.$pristine}">
+			<input class="form-control"
+			       type="number" step="1" 
+			       name="contailer"
+			       required
+			       disable-key
+			       ng-edit
+			       placeholder="请输入货品放置的货柜号"
+			       x-ng-pattern="/^\d{1,4}$/"
+			       x-ng-enter=""
+			       x-ng-model="good.contailer"/>
+		      </div>
+		      <span class="input-group-addon bg-white fg-red">*</span>
+		    </div>
+		  </div>
+		  <div ng-if="form.gForm.contailer.$invalid && !form.gForm.contailer.$pristine">
+		    <span class="fg-red">请输入小于9999的整数</span>
 		  </div>
 		</div>
 		

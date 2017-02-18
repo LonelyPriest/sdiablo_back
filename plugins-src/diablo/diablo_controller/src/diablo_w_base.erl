@@ -334,6 +334,10 @@ sys_config() ->
 	      {"gen_ticket",      "自动生成电子卷",       "0",   "0"},
 	      {"recharge_sms",    "充值短信提醒",         "0",   "0"},
 	      {"consume_sms",     "消费短信提醒",         "0",   "0"},
-	      {"price_on_region", "按区域填写价格",       "0",   "0"}
+	      {"price_on_region", "按区域填写价格",       "0",   "0"},
+	      {"wsale_import",    "导入淘宝销售单",       "0",   "0"},
+	      {"stock_warning",   "库存预警",             "0",   "0"},
+	      {"stock_warning_a",  "库存预警数量",         "0",   "0"},
+	      {"stock_contailer", "货品货柜号",           "0",   "0"}
 	     ],
     Values.

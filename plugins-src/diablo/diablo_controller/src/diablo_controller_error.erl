@@ -211,6 +211,8 @@ success(get_w_sale_draft, Sn) ->
     {0, "Success to get draft " ++ ?to_s(Sn)};
 success(reject_w_sale, RSn) ->
     {0, "Success to reject of rsn " ++ ?to_s(RSn)};
+success(w_sale_uploaded, Shop) ->
+    {0, "Success to upload wsale of shop " ++ ?to_s(Shop)};
 
 %% wprint
 success(new_wprint_server, Server) ->
