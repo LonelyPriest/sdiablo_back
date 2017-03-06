@@ -184,4 +184,4 @@ alter table w_inventory add column contailer INTEGER default -1 after sell;
 alter table w_inventory add column alarm_a INTEGER default -1 after contailer;
 
 -- alter table w_inventory_amount add column contailer INTEGER default -1 after shop;
-alter table w_inventory_amount add column alarm_a INTEGER default -1 after contailer;
+alter table w_inventory_amount add column alarm_a INTEGER default -1 after shop;

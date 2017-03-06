@@ -2052,18 +2052,38 @@ handle_call({get_tagprice, Merchant, ShopId, StyleNumber, Brand}, _From, State) 
 		end
 	end, 
 									      
-    Sql = "select style_number, brand, amount, org_price, tag_price, discount, ediscount"
+    Sql = "select merchant, shop, style_number, brand"
+	", amount, org_price, tag_price, discount, ediscount"
 	" from w_inventory"
 	" where style_number=" ++ "\'" ++ ?to_s(StyleNumber) ++ "\'"
 	" and brand=" ++ ?to_s(Brand)
 	++ " and " ++ ?utils:to_sqls(proplists, {<<"shop">>, ShopIds})
-	++ " and merchant=" ++ ?to_s(Merchant) 
-	++ case length(ShopIds) =:= 1 of
-	       true -> [];
-	       _ -> " group by style_number, brand"
-	   end,
+	++ " and merchant=" ++ ?to_s(Merchant),
+    %% ++ case length(ShopIds) =:= 1 of
+    %%        true -> [];
+    %%        _ -> " group by merchant, shop, style_number, brand"
+    %%    end,
 
-    Reply = ?sql_utils:execute(s_read, Sql),
+    Reply = 
+	case ?sql_utils:execute(read, Sql) of
+	    {ok, []} ->  {ok, []};
+	    {ok, Results} ->
+		%% ?DEBUG("results ~p", [Results]),
+		Filter = 
+		    case lists:filter(
+			   fun({R}) ->
+				   ?v(<<"shop">>, R) =:= ShopId
+			   end, Results) of
+			[] ->
+			    {First} = lists:nth(1, Results),
+			    Replace = lists:keyreplace(<<"amount">>, 1, First, {<<"amount">>, 0}),
+			    Replace;
+			[{_Filter}] -> _Filter
+		    end,
+		%% ?DEBUG("filter ~p", [Filter]),
+		{ok, Filter};
+	    Error -> Error
+	end, 
     {reply, Reply, State};
 
 
