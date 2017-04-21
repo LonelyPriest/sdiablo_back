@@ -157,6 +157,7 @@ handle_cast(cancel_ticket, #state{ticket_of_merchant=Tickets} = State) ->
 handle_cast({gen_ticket, TriggerTime},
 	    #state{merchant=Merchants, ticket_of_merchant=Tickets} = State) ->
     ?DEBUG("gen_ticket time ~p, tickets ~p", [TriggerTime, Tickets]),
+    ?INFO("auto generate ticket at time ~p, merchant ~p", [TriggerTime, Merchants]),
     case Tickets of
 	[] -> 
 	    NewTasks = 
@@ -334,7 +335,7 @@ task(gen_ticket, Datetime, Merchants) when is_list(Merchants) ->
     Sqls = lists:foldr(fun(M, Acc) ->
 			       [task(gen_ticket, Datetime, M)|Acc]
 		       end, [], Merchants),
-    ?DEBUG("Sqls ~p", [Sqls]),
+    ?DEBUG("gen_tickiet: auto gen Sqls ~p", [Sqls]),
 
     lists:foreach(
       fun({_M, SqlsOfMerchant}) ->
@@ -383,7 +384,6 @@ task(gen_ticket, Datetime, Merchant) when is_number(Merchant) ->
 				  case lists:member(?v(<<"id">>, R), SysVips) of
 				      true -> Acc;
 				      false ->
-					  Batch = ?inventory_sn:sn(w_ticket, Merchant),
 					  RetailerScore = ?v(<<"score">>, R, 0),
 					  RetailerId = ?v(<<"id">>, R),
 
@@ -394,6 +394,7 @@ task(gen_ticket, Datetime, Merchant) when is_number(Merchant) ->
 						  ++ " and retailer=" ++ ?to_s(RetailerId)
 						  ++ " and state in (0, 1)" ) of
 					      {ok, []} ->
+						  Batch = ?inventory_sn:sn(w_ticket, Merchant), 
 						  ["insert into w_ticket(batch, sid, balance"
 						   ", retailer, merchant, entry_date) values("
 						   ++ ?to_s(Batch) ++ ","
@@ -418,6 +419,7 @@ task(gen_ticket, Datetime, Merchant) when is_number(Merchant) ->
     %% 		      ?WARN("sql error to gen ticket: ~p", [Error])
     %% 	      end
     %%   end, TicketSqls);
+    ?DEBUG("ticketSqls ~p", [TicketSqls]),
     {Merchant, lists:reverse(TicketSqls)}; 
 	
 task(stastic_per_shop, Datetime, Merchants) when is_list(Merchants)->

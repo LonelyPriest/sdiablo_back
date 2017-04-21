@@ -118,7 +118,7 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
     end.
 
 import(firm, Merchant, Shop, Path) ->
-    ?DEBUG("current path ~p", [file:get_cwd()]),
+    ?INFO("current path ~p", [file:get_cwd()]),
     %% {ok, Content} = file:read_file(Path), 
     {ok, Device} = file:open(Path, [read]), 
     Content = read_line(Device, []),
@@ -242,16 +242,29 @@ insert_int_db(firm, [H|T], RSN, Employee, Merchant, Shop, Datetime, Sqls, AllTot
     
     {ok, BrandId} = ?attr:brand(new, Merchant, [{<<"name">>, Brand}]),
     {ok, TypeId} = case Type of
-		       <<>> -> {ok, 48};
+		       <<>> -> {ok, 1423};
 		       _ -> ?attr:type(new, Merchant, Type)
 		   end,
-    <<Year:4/binary, CSeason/binary>> = YS,
+    {Year, CSeason} = 
+	case YS of
+	    <<>> -> {2017, 1};
+	    <<"0">> -> {2017,1};
+	    <<"1">> -> {2017,1};
+	    _ ->
+		try
+		    <<_Year:4/binary, _CSeason/binary>> = YS,
+		    {_Year, _CSeason}
+		catch _:_ ->
+			{2017, 1}
+		end
+    end,
 
     Season = case CSeason of
-		 <<"春">> -> 0;
-		 <<"夏">> -> 1;
-		 <<"秋">> -> 2;
-		 <<"冬">> -> 3
+		 <<"年春">> -> 0;
+		 <<"年夏">> -> 1;
+		 <<"年秋">> -> 2;
+		 <<"年冬">> -> 3;
+		 _ -> 1
 	     end,
 
     EDiscount = stock(ediscount, ?to_f(Cost), ?to_f(TagPrice)),

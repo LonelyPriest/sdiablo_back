@@ -84,3 +84,21 @@ update w_inventory a inner join (select a.style_number, a.brand, a.amount, b.tot
 
 -- check w_sale_detail and w_inventory
 select a.style_number, a.brand, a.stotal, b.sell from (select style_number, brand, sum(total) as stotal from w_sale_detail where rsn like 'm-4-s-20-%' group by style_number, brand) a left join w_inventory b on a.style_number=b.style_number and a.brand=b.brand and b.shop=20;
+
+
+-- delete wsale
+update w_inventory_amount a inner join(\
+select style_number, brand, color, size, total from w_sale_detail_amount where rsn='M-4-S-18-R-1858') b \
+on a.style_number=b.style_number and a.brand=b.brand and a.size=b.size and a.color=b.color set a.total=a.total+b.total \
+where a.merchant=4 and a.shop=18;
+
+
+update w_inventory a inner join(\
+select style_number, brand, total from w_sale_detail where rsn='M-4-S-18-R-1858') b \
+on a.style_number=b.style_number and a.brand=b.brand set a.amount=a.amount+b.total \
+where a.merchant=4 and a.shop=18;
+
+delete from w_sale_detail_amount where rsn='M-4-S-18-R-1858';
+delete from w_sale_detail where rsn='M-4-S-18-R-1858';
+delete from w_sale where rsn='M-4-S-18-R-1858';
+

@@ -24,7 +24,14 @@ action(Session, Req, {"list_supplier"}) ->
 action(Session, Req, {"list_brand"}) ->
     ?DEBUG("list brand with session ~p", [Session]),
     Merchant = ?session:get(merchant, Session),
-    batch_responed(fun()->?w_user_profile:get(brand, Merchant) end, Req); 
+    %% batch_responed(fun()->?w_user_profile:get(brand, Merchant) end, Req),
+    case  ?w_user_profile:get(brand, Merchant) of
+	{ok, Values} ->
+	    ?utils:respond(200, batch_mochijson, Req, Values);
+	{error, _Error} ->
+	    ?utils:respond(200, batch, Req, [])
+    end;
+
 
 action(Session, Req, {"list_type"}) ->
     ?DEBUG("list_type with session ~p", [Session]),

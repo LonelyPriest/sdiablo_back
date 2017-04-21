@@ -132,6 +132,11 @@ respond(200, batch, Req, Content) ->
 		 [{"Content-Type", "application/json"}],
 		 ejson:encode(?to_tl(Content))});
 
+respond(200, batch_mochijson, Req, Content) ->
+    Req:respond({200,
+		 [{"Content-Type", "application/json"}],
+		 mochijson2:encode(Content)});
+
 respond(200, object, Req, Content) ->
     Req:respond({200,
 		 [{"Content-Type", "application/json"}],
