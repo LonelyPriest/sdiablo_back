@@ -67,9 +67,12 @@ insert_into_member(Merchant, _Datetime, _Time, [], _Sort, Acc) ->
     {ok, Merchant} = ?sql_utils:execute(transaction, lists:reverse(Acc), Merchant);
 
 insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
-    {Phone, Shop, Score, Consume, Date} = H,
+    {RName, Phone, Shop, Score, Consume, Date} = H,
 
-    NewScore = round(?to_f(Score)),
+    NewScore = case Score of
+		   <<>> -> 0;
+		   _ -> round(?to_f(Score))
+	       end,
 
     NewConsume = case Consume of
 		     <<>> -> 0;
@@ -77,7 +80,7 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
 		 end,
 
     IsExist = 
-	case [ P || {P, _, _, _, _} <- Sort, P =:= Phone ] of
+	case [ P || {_, P, _, _, _, _} <- Sort, P =:= Phone ] of
 	    [] -> false;
 	    _ -> true
 	end,
@@ -91,7 +94,23 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
 
 	    case ?sql_utils:execute(s_read, Sql0) of
 		{ok, []} ->
-		    <<_:6/binary, Name:5/binary>> = Phone,
+
+		    UName =
+			case RName of
+			    <<>> ->
+				<<_:6/binary, Name:5/binary>> = Phone,
+				Name;
+			    _ ->
+				RegExp = "^[A-Za-z]",
+				case re:run(RName, RegExp) of
+				    {match, _} ->
+					<<_:6/binary, Name:5/binary>> = Phone,
+					Name;
+				    nomatch ->
+					RName
+				end
+			end,
+			    
 		    Entry = case Date of
 				<<>> -> Datetime;
 				_ -> ?to_s(Date) ++ " " ++ Time
@@ -100,7 +119,7 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
 		    Sql = ["insert into w_retailer("
 			   "name, score, consume, mobile, shop, merchant, entry_date)"
 			   " values ("
-			   ++ "\"" ++ ?to_s(Name) ++ "\","
+			   ++ "\"" ++ ?to_s(UName) ++ "\","
 			   ++ ?to_s(NewScore) ++ ","
 			   ++ ?to_s(NewConsume) ++ "," 
 			   ++ "\"" ++ ?to_s(Phone) ++ "\","

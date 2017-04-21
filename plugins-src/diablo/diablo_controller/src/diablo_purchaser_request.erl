@@ -1040,7 +1040,7 @@ authen([Action|T], Session, Acc) ->
 batch_responed(Fun, Req) ->
     case Fun() of
 	{ok, Values} ->
-	    ?utils:respond(200, batch, Req, Values);
+	    ?utils:respond(200, batch_mochijson, Req, Values);
 	{error, _Error} ->
 	    ?utils:respond(200, batch, Req, [])
     end.
