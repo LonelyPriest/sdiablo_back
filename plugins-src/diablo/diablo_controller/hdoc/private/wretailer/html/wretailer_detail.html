@@ -542,6 +542,28 @@
 	</div>
 
 	<div class="form-group">
+	  <span class="col-md-3 col-sm-3 col-xs-3 control-label">
+	    赠送金额
+	  </span>
+	  <div class="col-md-6 col-sm-6 col-xs-6">
+	    <div x-ng-switch on="params.retailer.select_charge.rule_id">
+	      <input x-ng-switch-when=0
+		     type="text"
+		     class="form-control fg-red"
+		     value="{{params.retailer.select_charge.balance}}"
+		     readonly />
+	    </div>
+	    <div x-ng-switch on="params.retailer.select_charge.rule_id">
+	      <input x-ng-switch-when=1
+		     type="text"
+		     class="form-control fg-red"
+		     value="{{params.charge / params.retailer.select_charge.xtime}}"
+		     readonly />
+	    </div>
+	  </div> 
+	</div>
+
+	<div class="form-group">
 	  <label class="col-sm-3 col-md-3 control-label">备注</label>
 	  <div class="col-sm-6 col-md-6">
 	    <input type="text"
@@ -556,16 +578,16 @@
 	  </div> 
 	</div>
 
-	<div class="form-group">
-	  <span class="col-md-3 col-sm-3 col-xs-3 control-label"> 
-	  </span>
-	  <div class="col-md-6 col-sm-6 col-xs-6">
-	    <span>充&nbsp&nbsp&nbsp&nbsp
-	      <span class="bg-blue">{{params.retailer.select_charge.charge}}</span>
-	      &nbsp&nbsp&nbsp&nbsp送&nbsp&nbsp&nbsp&nbsp
-	      <span class="bg-red">{{params.retailer.select_charge.balance}}</span> 
-	  </div>
-	</div>
+	<!-- <div class="form-group"> -->
+	<!--   <span class="col-md-3 col-sm-3 col-xs-3 control-label">  -->
+	<!--   </span> -->
+	<!--   <div class="col-md-6 col-sm-6 col-xs-6"> -->
+	<!--     <span>充&nbsp&nbsp&nbsp&nbsp -->
+	<!--       <span class="bg-blue">{{params.retailer.select_charge.charge}}</span> -->
+	<!--       &nbsp&nbsp&nbsp&nbsp送&nbsp&nbsp&nbsp&nbsp -->
+	<!--       <span class="bg-red">{{params.retailer.select_charge.balance}}</span>  -->
+	<!--   </div> -->
+	<!-- </div> -->
 	
       </div>
     </form>

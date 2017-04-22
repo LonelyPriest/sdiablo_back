@@ -413,6 +413,8 @@ create table w_charge(
     id              INTEGER AUTO_INCREMENT,
     merchant        INTEGER not null default -1,
     name            VARCHAR(64) not null,
+    rule	    TINYINT default 0,
+    xtime           TINYINT default 1,
     charge          INTEGER not null default 0,
     balance         INTEGER not null default 0, -- send balance when charge
     type            TINYINT default 0, -- 0:recharge 1:withdraw

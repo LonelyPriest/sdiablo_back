@@ -158,6 +158,9 @@ function wretailerConfig(angular) {
 	    {name: "积分兑换钱", id:1, remakr: "积分到钱"}
 	];
 
+	this.charge_rules = [{name:"固定赠送模式", id:0, remark: "充值多少赠送固定金额"},
+			     {name:"N+1倍赠送模式", id:1, remark: "充值N倍赠送1倍金额"}];
+	
 	this.retailer_types = [{name: "普通会员", id:0},
 			       {name: "充值会员", id:1},
 			       {name: "系统会员", id:2}];

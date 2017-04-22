@@ -1033,6 +1033,8 @@ function normalFilterProvider(){
 			    return {
 				id:       c.id,
 				name:     c.name,
+				rule_id:  c.rule_id,
+				xtime:    c.xtime,
 				charge:   c.charge,
 				balance:  c.balance,
 				type:     c.type,

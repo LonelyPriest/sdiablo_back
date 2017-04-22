@@ -47,8 +47,33 @@
 	      </div> 
 	    </div>
 
-
 	    <div class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">充值规则</label>
+	      <div class="col-sm-6 col-md-6">
+		<div class="input-group">
+		  <select class="form-control"
+			  x-ng-model="promotion.rule"
+			  x-ng-options="r as r.name for r in rules"> 
+		  </select>
+		  <span class="input-group-addon bg-white fg-red">*</span>
+		</div> 
+	      </div>
+	    </div>
+
+	    <div x-ng-if="promotion.rule.id===1" class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">倍数</label>
+	      <div class="col-sm-6 col-md-6">
+		<div class="input-group">
+		  <select class="form-control"
+			  x-ng-model="promotion.time"
+			  x-ng-options="t as t for t in times"> 
+		  </select>
+		  <span class="input-group-addon bg-white fg-red">*</span>
+		</div> 
+	      </div>
+	    </div>
+
+	    <div x-ng-if="promotion.rule.id===0" class="form-group">
 	      <label class="col-md-3 col-sm-3 control-label" x-ng-bind=label>金额(元)</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
@@ -70,7 +95,7 @@
 	      </div> 
 	    </div>
 
-	    <div x-ng-if="action===0" class="form-group">
+	    <div x-ng-if="promotion.rule.id===0 && action===0" class="form-group">
 	      <label class="col-md-3 col-sm-3 control-label">赠送金额(元)</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div x-ng-class="{'has-error':rForm.balance.$invalid

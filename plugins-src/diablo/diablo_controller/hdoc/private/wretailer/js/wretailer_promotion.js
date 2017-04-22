@@ -11,14 +11,18 @@ function wretailerRechargeNewCtrlProvide(
 
     $scope.action = retailerUtils.to_integer($routeParams.action); 
     $scope.label = $scope.action === 1 ? "提现" : "充值";
+    $scope.rules = wretailerService.charge_rules;
+    $scope.times = [3, 4, 5, 6, 7, 8, 9];
 
     var dialog = diabloUtilsService; 
     var now    = $.now();
     
     $scope.promotion = {
 	discount   :100,
+	rule       :$scope.rules[0],
+	time       :$scope.times[2],
 	sdate      :now,
-	edate      :now +  diablo_day_millisecond * 90
+	edate      :now + diablo_day_millisecond * 90
     };
 
     $scope.new_promotion = function(){
@@ -26,6 +30,8 @@ function wretailerRechargeNewCtrlProvide(
 
 	wretailerService.new_charge_promotion(
 	    {name:    $scope.promotion.name,
+	     rule:    $scope.promotion.rule.id,
+	     xtime:   $scope.promotion.rule.id ===0 ? undefined : $scope.promotion.time,
 	     charge:  $scope.promotion.charge,
 	     balance: retailerUtils.to_integer($scope.promotion.balance),
 	     type:    $scope.action,
@@ -72,6 +78,11 @@ function wretailerRechargeDetailCtrlProvide(
 	
 	$scope.promotions = result.filter(function(r){return r.type===0});
 	$scope.draws = result.filter(function(r){return r.type===1});
+
+	angular.forEach($scope.promotions, function(p){
+	    p.rule = diablo_get_object(p.rule_id, wretailerService.charge_rules); 
+	});
+	
 	diablo_order($scope.promotions);
 	diablo_order($scope.draws);
     });

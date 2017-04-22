@@ -315,10 +315,15 @@ function wretailerDetailCtrlProvide(
 	    var promotion       = params.retailer.select_charge;
 	    var charge_balance  = diablo_set_integer(params.charge);
 	    var send_balance    = function(){
-		if (promotion.charge !== 0 && charge_balance >= promotion.charge){
-		    return Math.floor(charge_balance / promotion.charge) * promotion.balance;
-		} else {
-		    return 0;
+		if (0 === promotion.rule_id) {
+		    if (promotion.charge !== 0 && charge_balance >= promotion.charge){
+			return Math.floor(charge_balance / promotion.charge) * promotion.balance;
+		    } else {
+			return 0;
+		    }
+		}
+		else if (1 === promotion.rule_id) {
+		    return Math.floor(charge_balance / promotion.xtime);
 		}
 	    }();
 

@@ -185,3 +185,9 @@ alter table w_inventory add column alarm_a INTEGER default -1 after contailer;
 
 -- alter table w_inventory_amount add column contailer INTEGER default -1 after shop;
 alter table w_inventory_amount add column alarm_a INTEGER default -1 after shop;
+
+
+
+-- 2017-04-22
+alter table w_charge add column rule TINYINT default 0 after name;
+alter table w_charge add column xtime TINYINT default 1 after rule;

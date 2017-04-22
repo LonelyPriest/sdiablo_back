@@ -38,6 +38,8 @@
 		    <tr>
 		      <th>序号</th>
 		      <th>名称</th>
+		      <th>规则</th>
+		      <th>倍数</th>
 		      <th>充值金额(元)</th>
 		      <th>赠送金额(元)</th>
 		      <th>开始日期</th>
@@ -52,8 +54,25 @@
 		    <tr x-ng-repeat="p in promotions">
 		      <td>{{p.order_id}}</td>
 		      <td>{{p.name}}</td>
-		      <td>{{p.charge}}</td>
-		      <td>{{p.balance}}</td>
+		      <td>{{p.rule.name}}</td>
+		      <td>
+			<div x-ng-switch on="p.rule_id">
+			  <span x-ng-switch-when=0>-</span>
+			  <span x-ng-switch-when=1>{{p.xtime}}</span>
+			</div>
+		      </td>
+		      <td>
+			<div x-ng-switch on="p.rule_id">
+			  <span x-ng-switch-when=0>{{p.charge}}</span>
+			  <span x-ng-switch-when=1>-</span>
+			</div>
+		      </td>
+		      <td>
+			<div x-ng-switch on="p.rule_id">
+			  <span x-ng-switch-when=0>{{p.balance}}</span>
+			  <span x-ng-switch-when=1>-</span>
+			</div> 
+		      </td>
 		      <td>{{p.sdate}}</td>
 		      <td>{{p.edate}}</td> 
 		      <td>
