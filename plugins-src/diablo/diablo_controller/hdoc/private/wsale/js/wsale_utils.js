@@ -925,16 +925,17 @@ var wsalePrint = function(){
 	    LODOP.SET_PRINT_STYLEA(1,"bold",1);
 	    // LODOP.SET_PRINT_STYLEA(1,"Horient",2); 
 	    LODOP.ADD_PRINT_TEXT(40,0,"58mm",20,"单号：" + rsn);
-	    LODOP.ADD_PRINT_TEXT(55,0,"58mm",20,"客户：" + retailer + "  店员：" + employee);
-	    // LODOP.ADD_PRINT_TEXT(70,5,"58mm",20,"店员：" + retailer);
-	    LODOP.ADD_PRINT_TEXT(70,0,"58mm",20,"日期：" + date); 
-	    LODOP.ADD_PRINT_LINE(90,0,90,178,0,1);
+	    LODOP.ADD_PRINT_TEXT(55,0,"58mm",20,"客户：" + retailer);
+	    
+	    LODOP.ADD_PRINT_TEXT(70,5,"58mm",20,"店员：" + employee);
+	    LODOP.ADD_PRINT_TEXT(85,0,"58mm",20,"日期：" + date); 
+	    LODOP.ADD_PRINT_LINE(105,0,90,178,0,1);
 
 	    return;
 	},
 
 	gen_body: function(LODOP, inventories, round, cakeMode){
-	    var hLine = 100;
+	    var hLine = 115;
 	    if (diablo_no === cakeMode) {
 		LODOP.ADD_PRINT_TEXT(hLine,0,67,20,"款号"); 
 		LODOP.ADD_PRINT_TEXT(hLine,67,100,20,"单价"); 

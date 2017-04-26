@@ -519,7 +519,7 @@
 	
 	<div class="form-group">
 	  <span class="col-md-3 col-sm-3 col-xs-3 control-label">
-	    充值金额
+	    充值金额（现金）
 	  </span>
 	  <div class="col-md-6 col-sm-6 col-xs-6">
 	    <div class="input-group">
@@ -528,6 +528,7 @@
 		     required
 		     diable-key
 		     disable-wheel
+		     ng-edit
 		     name="charge"
 		     placeholder="请输入充值金额"
 		     x-ng-model="params.charge"
@@ -536,6 +537,54 @@
 	      <span class="input-group-addon bg-white fg-red">*</span>
 	    </div>
 	    <div ng-show="cForm.charge.$invalid && !cForm.charge.$pristine"> 
+	      <span class="fg-red">金额只能是整数</span>
+	    </div>
+	  </div> 
+	</div>
+
+	<div class="form-group">
+	  <span class="col-md-3 col-sm-3 col-xs-3 control-label">
+	    充值金额（刷卡）
+	  </span>
+	  <div class="col-md-6 col-sm-6 col-xs-6">
+	    <div class="input-group">
+	      <input type="number" step="1"
+		     class="form-control"
+		     required
+		     diable-key
+		     disable-wheel
+		     ng-edit
+		     name="card"
+		     placeholder="请输入刷卡金额"
+		     x-ng-model="params.card"
+		     x-ng-pattern="params.pattern.number"/>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	    <div ng-show="cForm.card.$invalid && !cForm.card.$pristine"> 
+	      <span class="fg-red">金额只能是整数</span>
+	    </div>
+	  </div> 
+	</div>
+
+	<div class="form-group">
+	  <span class="col-md-3 col-sm-3 col-xs-3 control-label">
+	    充值金额（微信）
+	  </span>
+	  <div class="col-md-6 col-sm-6 col-xs-6">
+	    <div class="input-group">
+	      <input type="number" step="1"
+		     class="form-control"
+		     required
+		     diable-key
+		     disable-wheel
+		     ng-edit
+		     name="wxin"
+		     placeholder="请输入刷卡金额"
+		     x-ng-model="params.wxin"
+		     x-ng-pattern="params.pattern.number"/>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	    <div ng-show="cForm.wxin.$invalid && !cForm.wxin.$pristine"> 
 	      <span class="fg-red">金额只能是整数</span>
 	    </div>
 	  </div> 

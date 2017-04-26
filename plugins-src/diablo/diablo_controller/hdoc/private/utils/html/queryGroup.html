@@ -245,6 +245,17 @@
 	    </form>
 	  </span>
 
+	  <span x-ng-switch-when="org_price">
+	    <form name="dForm">
+	      <div ng-class="{'has-error':dForm.$invalid && !dForm.$pristine}">
+		<input disable-key
+		       class="form-control" placeholder="请输入进货价"
+		       x-ng-model="f.value"
+		       x-ng-pattern="/^\d+$/" />
+	      </div>
+	    </form>
+	  </span>
+
 	  <span x-ng-switch-when="firm">
 	    <input type="text" class="form-control" placeholder="请输入厂商名"
 		   x-ng-model="f.value"

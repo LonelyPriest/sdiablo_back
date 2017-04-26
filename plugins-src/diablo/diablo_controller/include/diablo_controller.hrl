@@ -212,6 +212,7 @@
 -define(list_w_sale,        ?right_w_sale + 7).
 -define(delete_w_sale,      ?right_w_sale + 8).
 -define(upload_w_sale,      ?right_w_sale + 9).
+-define(update_w_sale_price, ?right_w_sale + 10).
 
 %% inventory
 -define(new_w_inventory,             ?right_w_inventory + 4).

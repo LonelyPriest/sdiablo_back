@@ -126,13 +126,13 @@ function wsaleRsnDetailCtrlProvide (
     diabloFilter.add_field("year",     diablo_full_year);
     diabloFilter.add_field("firm",     filterFirm);
     diabloFilter.add_field("shop",     $scope.shops); 
-    // diabloFilter.add_field("retailer", filterRetailer);
     diabloFilter.add_field("retailer", function(viewValue){
 	return wsaleUtils.match_retailer_phone(viewValue, diabloFilter)
     }); 
-    diabloFilter.add_field("employee", filterEmployee); 
+    diabloFilter.add_field("employee",  filterEmployee); 
     diabloFilter.add_field("sell_type", sell_type);
-    diabloFilter.add_field("rsn", $scope.match_rsn); 
+    diabloFilter.add_field("rsn",       $scope.match_rsn);
+    diabloFilter.add_field("org_price", []);
    
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
@@ -460,6 +460,40 @@ function wsaleRsnDetailCtrlProvide (
 		}
 	    })   
 	} 
+    };
+
+
+    $scope.update_orgprice = function(inv) {
+	var callback = function(params){
+	    console.log(params);
+
+	    wsaleService.update_w_sale_price(
+		inv.rsn, {org_price:params.org_price, tag_price:inv.tag_price}
+	    ).then(function(result){
+		console.log(result);
+		if (result.ecode === 0){
+		    inv.org_price = params.org_price; 
+		} else {
+		    dialog.response(
+			false,
+			"交易单进货价编辑",
+			"交易单进货价编辑失败："
+			    + wsaleService.error[result.ecode]);
+		}
+	    });
+	};
+
+	dialog.edit_with_modal(
+	    "rsn-update-orgprice.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {
+		style_number :inv.style_number,
+		brand        :inv.brand.name,
+		org_price    :inv.org_price
+	    }
+	);
     };
 };
 

@@ -383,6 +383,12 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
     {ok, SaleInfo} = ?w_report:stastic(stock_sale, Merchant, Conditions), 
     {ok, StockIn}  = ?w_report:stastic(stock_in, Merchant, DropConditions),
     {ok, StockOut} = ?w_report:stastic(stock_out, Merchant, DropConditions),
+    {ok, Recharges} = case ?w_report:stastic(recharge, Merchant, DropConditions) of
+			  {ok, []} -> {ok, []};
+			  {ok, [{_Recharges}]} -> {ok, _Recharges}
+		      end,
+			  
+    ?DEBUG("recharges ~p", [Recharges]),
     %% {ok, StockTransferIn} = ?w_report:stastic(stock_transfer_in, Merchant, Conditions),
     %% {ok, StockTransferOut} = ?w_report:stastic(stock_transfer_out, Merchant, Conditions),
     %% {ok, StockFix} = ?w_report:stastic(stock_fix, Merchant, Conditions), 
@@ -392,14 +398,18 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 		       {<<"start_time">>, ?v(<<"qtime_start">>, BaseSetting)}
 		      ]),
 
-    {ok, LastStockInfo} = ?w_report:stastic(last_stock_of_shop, Merchant, ShopId, TodayStart), 
-
+    {ok, LastStockInfo} = ?w_report:stastic(last_stock_of_shop, Merchant, ShopId, TodayStart),
+    
     {SellTotal, SellBalance, SellCash, SellCard, SellWxin, SellDraw, SellTicket}
 	= sell(info, SaleInfo),
     CurrentStockTotal = stock(total, StockR), 
     LastStockTotal = stock(last_total, LastStockInfo),
     StockInTotal = stock(total, StockIn),
     StockOutTotal = stock(total, StockOut),
+
+    
+
+    
     %% ?DEBUG("stockr ~p", [StockR]),
     
     Sql = "select id, merchant, shop, employ entry_date"
@@ -419,6 +429,7 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 		{insert,
 		 "insert into w_change_shift(merchant, employ, shop"
 		 ", total, balance, cash, card, wxin, withdraw, ticket"
+		 ", charge, ccash, ccard, cwxin"
 		 ", stock, y_stock, stock_in, stock_out"
 		 ", pcash, pcash_in"
 		 ", comment, entry_date) values("
@@ -436,6 +447,11 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 		 ++ ?to_s(SellWxin) ++ ","
 		 ++ ?to_s(SellDraw) ++ ","
 		 ++ ?to_s(SellTicket) ++ ","
+
+		 ++ ?to_s(?v(<<"cbalance">>, Recharges, 0)) ++ ","
+		 ++ ?to_s(?v(<<"tcash">>, Recharges, 0)) ++ ","
+		 ++ ?to_s(?v(<<"tcard">>, Recharges, 0)) ++ ","
+		 ++ ?to_s(?v(<<"twxin">>, Recharges, 0)) ++ ","
 		 
 		 ++ ?to_s(CurrentStockTotal) ++ ","
 		 ++ ?to_s(LastStockTotal) ++ "," 
@@ -457,6 +473,11 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 		 ++ ", wxin="++ ?to_s(SellWxin)
 		 ++ ", withdraw="++ ?to_s(SellDraw)
 		 ++ ", ticket="++ ?to_s(SellTicket)
+
+		 ++ ", charge=" ++ ?to_s(?v(<<"cbalance">>, Recharges, 0)) 
+		 ++ ", ccash=" ++ ?to_s(?v(<<"tcash">>, Recharges, 0)) 
+		 ++ ", ccard=" ++ ?to_s(?v(<<"tcard">>, Recharges, 0)) 
+		 ++ ", cwxin=" ++ ?to_s(?v(<<"twxin">>, Recharges, 0))
 		 
 		 ++ ", stock=" ++ ?to_s(CurrentStockTotal)
 		 ++ ", stock_in=" ++ ?to_s(StockInTotal)

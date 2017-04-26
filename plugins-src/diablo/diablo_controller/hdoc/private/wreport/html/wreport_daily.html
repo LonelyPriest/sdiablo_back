@@ -62,6 +62,9 @@
 		      <th style="background-color:#FFCC66">核销</th>
 		      
 		      <th class="bg-magenta">充值</th>
+		      <th class="bg-orange">现金</th>
+		      <th class="bg-orange">刷卡</th>
+		      <th class="bg-orange">微信</th>
 
 		      <th x-ng-if="right.master">销售成本</th>
 		      <th x-ng-if="right.master">毛利</th>
@@ -96,6 +99,9 @@
 		      <td style="background-color:#FFCC66">{{r.sale.veri}}</td>
 		      
 		      <td class="bg-magenta">{{r.sale.cbalance}}</td>
+		      <td class="bg-orange">{{r.sale.ccash}}</td>
+		      <td class="bg-orange">{{r.sale.ccard}}</td>
+		      <td class="bg-orange">{{r.sale.cwxin}}</td>
 
 		      <td x-ng-if="right.master">{{r.sale.cost}}</td>
 		      <td x-ng-if="right.master">{{r.sale.gross}}</td>
@@ -136,6 +142,9 @@
 		      <td>{{total.ticket}}</td>
 		      <td>{{total.veri}}</td>
 		      <td>{{total.cbalance}}</td>
+		      <td>{{total.ccash}}</td>
+		      <td>{{total.ccard}}</td>
+		      <td>{{total.cwxin}}</td>
 		      <td x-ng-if="right.master">{{total.sale_cost}}</td>
 		      <td x-ng-if="right.master">{{total.gross}}</td>
 		      <td x-ng-if="right.master">{{total.margins}}</td>

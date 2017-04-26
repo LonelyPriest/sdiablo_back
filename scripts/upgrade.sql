@@ -191,3 +191,13 @@ alter table w_inventory_amount add column alarm_a INTEGER default -1 after shop;
 -- 2017-04-22
 alter table w_charge add column rule TINYINT default 0 after name;
 alter table w_charge add column xtime TINYINT default 1 after rule;
+
+-- 2017-04-26
+alter table w_charge_detail add column cash INTEGER not null default 0 after cbalance;
+alter table w_charge_detail add column card INTEGER not null default 0 after cash;
+alter table w_charge_detail add column wxin INTEGER not null default 0 after card;
+
+alter table w_change_shift add column charge INTEGER not null default 0 after ticket;
+alter table w_change_shift add column ccash INTEGER not null default 0 after charge;
+alter table w_change_shift add column ccard INTEGER not null default 0 after ccash;
+alter table w_change_shift add column cwxin INTEGER not null default 0 after ccard;

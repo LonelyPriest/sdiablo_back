@@ -313,8 +313,11 @@ function wretailerDetailCtrlProvide(
 	    console.log(params);
 
 	    var promotion       = params.retailer.select_charge;
-	    var charge_balance  = diablo_set_integer(params.charge);
-	    var send_balance    = function(){
+	    var charge_balance  = retailerUtils.to_integer(params.charge)
+		+ retailerUtils.to_integer(params.cash)
+		+ retailerUtils.to_integer(params.wxin);
+	    
+	    var send_balance = function(){
 		if (0 === promotion.rule_id) {
 		    if (promotion.charge !== 0 && charge_balance >= promotion.charge){
 			return Math.floor(charge_balance / promotion.charge) * promotion.balance;
@@ -332,6 +335,9 @@ function wretailerDetailCtrlProvide(
 		shop:           params.retailer.select_shop.id,
 		employee:       params.retailer.select_employee.id, 
 		charge_balance: charge_balance,
+		cash:           retailerUtils.to_integer(params.charge),
+		card:           retailerUtils.to_integer(params.card),
+		wxin:           retailerUtils.to_integer(params.wxin),
 		send_balance:   send_balance,
 		charge:         promotion.id,
 		comment:        params.comment
@@ -412,7 +418,9 @@ function wretailerDetailCtrlProvide(
 		select_employee: $scope.employees[0],
 		// charges: $scope.charges,
 		// select_charge:get_charge($scope.shops[0].charge_id)
-	    }, 
+	    },
+	     card: 0,
+	     wxin: 0,
 	     pattern:  pattern,
 	     get_charge: get_charge
 	    }
@@ -656,6 +664,9 @@ function wretailerChargeDetailCtrlProvide(
 			$scope.total_items = result.total;
 			$scope.total_cbalance = result.cbalance;
 			$scope.total_sbalance = result.sbalance;
+			$scope.total_cash = result.tcash;
+			$scope.total_card = result.tcard;
+			$scope.total_wxin = result.twxin;
 		    }
 
 		    angular.forEach(result.data, function(d){

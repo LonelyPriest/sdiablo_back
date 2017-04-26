@@ -48,7 +48,10 @@ sale(reject, Merchant, Inventories, Props) ->
     gen_server:call(Name, {reject_sale, Merchant, Inventories, Props});
 sale(check, Merchant, RSN, Mode) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {check_new, Merchant, RSN, Mode}).
+    gen_server:call(Name, {check_new, Merchant, RSN, Mode});
+sale(update_price, Merchant, RSN, Updates) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {update_price, Merchant, RSN, Updates}).
 
 sale(list_new, Merchant, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -1050,6 +1053,24 @@ handle_call({new_trans_note_export, Merchant, Conditions}, _From, State)->
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
+handle_call({update_price, Merchant, RSN, Updates}, _From, State) ->
+    ?DEBUG("update_price: merchant ~p, RSN ~p, Updates ~p", [Merchant, RSN, Updates]),
+    OrgPrice = ?v(<<"org_price">>, Updates),
+    TagPrice = ?v(<<"tag_price">>, Updates),
+
+    EDiscount = case TagPrice of
+		    undefined -> 0;
+		    _ -> ?w_good_sql:stock(ediscount, OrgPrice, TagPrice)
+		end, 
+    
+    Sql = "update w_sale_detail set org_price=" ++ ?to_s(OrgPrice)
+	++ ", ediscount=" ++ ?to_s(EDiscount)
+	++ " where rsn=\'" ++ ?to_s(RSN)  ++ "\'"
+	++ " and merchant=" ++ ?to_s(Merchant),
+
+    Reply = ?sql_utils:execute(write, Sql, RSN),
+    {reply, Reply, State};
+
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
@@ -1783,8 +1804,10 @@ filter_condition(wsale, [{<<"firm">>, _} = F|T], Acc1, Acc2) ->
     filter_condition(wsale, T, [F|Acc1], Acc2);
 filter_condition(wsale, [{<<"type">>, _} = OT|T], Acc1, Acc2) ->
     filter_condition(wsale, T, [OT|Acc1], Acc2);
-filter_condition(wsale, [{<<"year">>, _} = OT|T], Acc1, Acc2) ->
-    filter_condition(wsale, T, [OT|Acc1], Acc2);
+filter_condition(wsale, [{<<"year">>, _} = Y|T], Acc1, Acc2) ->
+    filter_condition(wsale, T, [Y|Acc1], Acc2);
+filter_condition(wsale, [{<<"org_price">>, OP} = _OP|T], Acc1, Acc2) ->
+    filter_condition(wsale, T, [{<<"org_price">>, ?to_f(OP)}|Acc1], Acc2);
 
 
 filter_condition(wsale, [{<<"rsn">>, _} = R|T], Acc1, Acc2) ->

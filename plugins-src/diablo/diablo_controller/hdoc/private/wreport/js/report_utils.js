@@ -133,7 +133,19 @@ var reportPrint = function(){
 	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"电子券：" + sale.ticket); 
 	    hLine += 15;
 
-
+	    LODOP.ADD_PRINT_LINE(hLine,0,hLine,45,0,1);
+	    LODOP.ADD_PRINT_TEXT(hLine,45,135,20, "充值状况");
+	    LODOP.ADD_PRINT_LINE(hLine,135,hLine,178,0,1);
+	    hLine += 15;
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"充值：" + sale.cbalance);
+	    hLine += 15;
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"现金：" + sale.ccash);
+	    hLine += 15;
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"刷卡：" + sale.ccard);
+	    hLine += 15;
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"微信：" + sale.cwxin);
+	    hLine += 15; 
+	    
 	    LODOP.ADD_PRINT_LINE(hLine,0,hLine,45,0,1);
 	    LODOP.ADD_PRINT_TEXT(hLine,45,135,20, "库存状况");
 	    LODOP.ADD_PRINT_LINE(hLine,135,hLine,178,0,1); 

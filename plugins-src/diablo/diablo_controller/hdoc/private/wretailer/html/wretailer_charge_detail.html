@@ -84,6 +84,9 @@
 		    <th>充值方案</th>
 		    <th>帐户余额</th>
 		    <th class="success">充值金额</th>
+		    <th>现金</th>
+		    <th>刷卡</th>
+		    <th>微信</th>
 		    <th class="info">赠送金额</th>
 		    <th class="danger">累计余额</th>
 		    <th>备注</th> 
@@ -102,6 +105,9 @@
 		    <td>{{c.charge.name}}</td>
 		    <td>{{c.lbalance}}</td>
 		    <td>{{c.cbalance}}</td>
+		    <td class="bg-magenta">{{c.cash}}</td>
+		    <td class="bg-orange">{{c.card}}</td>
+		    <td class="bg-teal">{{c.wxin}}</td>
 		    <td>{{c.sbalance}}</td>
 		    <td>{{c.accbalance}}</td> 
 		    <td>{{c.comment}}</td>
@@ -120,6 +126,9 @@
 		  <tr x-ng-if="right.master && total_items!==0" class="bg-white">
 		    <td colspan=8></td>
 		    <td>{{total_cbalance}}</td>
+		    <td>{{total_cash}}</td>
+		    <td>{{total_card}}</td>
+		    <td>{{total_wxin}}</td>
 		    <td>{{total_sbalance}}</td>
 		    <td></td>
 		  </tr>

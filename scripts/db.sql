@@ -978,6 +978,9 @@ create table w_charge_detail(
     lbalance        INTEGER not null default 0, -- last balance
     cbalance        INTEGER not null default 0, -- charge balance
     sbalance        INTEGER not null default 0, -- send balance
+    cash            INTEGER not null default 0, -- cash
+    card            INTEGER not null default 0, -- card
+    wxin            INTEGER not null default 0, -- wxin
     comment         VARCHAR(256) default null,
     
     entry_date      DATETIME default 0,
@@ -1032,6 +1035,11 @@ create table w_change_shift(
     wxin            DECIMAL(10, 2) not null default 0,
     withdraw        DECIMAL(10, 2) not null default 0,
     ticket          DECIMAL(10, 2) not null default 0,
+
+    charge          INTEGER not null default 0,
+    ccash           INTEGER not null default 0,
+    ccard           INTEGER not null default 0,
+    cwxin           INTEGER not null default 0,
 
     y_stock         INTEGER not null default -1, 
     stock           INTEGER not null default -1, 

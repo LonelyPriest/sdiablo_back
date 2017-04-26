@@ -100,6 +100,9 @@ function wreportDailyCtrlProvide(
 			veri:0,
 
 			cbalance: 0,
+			ccash: 0,
+			ccard: 0,
+			cwxin: 0,
 
 			stock_in: 0,
 			stock_out: 0,
@@ -126,6 +129,9 @@ function wreportDailyCtrlProvide(
 
 			s.recharge = reportUtils.filter_by_shop(shop.id, recharge);
 			s.sale.cbalance = s.recharge.cbalance;
+			s.sale.ccash = s.recharge.tcash;
+			s.sale.ccard = s.recharge.tcard;
+			s.sale.cwxin = s.recharge.twxin;
 
 			s.stock_in = reportUtils.filter_by_shop(shop.id, stockIn);
 			s.stock_out = reportUtils.filter_by_shop(shop.id, stockOut);
@@ -150,7 +156,10 @@ function wreportDailyCtrlProvide(
 			$scope.total.ticket += reportUtils.to_float(s.sale.ticket);
 			$scope.total.veri += reportUtils.to_float(s.sale.veri);
 
-			$scope.total.cbalance += reportUtils.to_float(s.sale.cbalance);
+			$scope.total.cbalance += reportUtils.to_float(s.sale.cbalance); 
+			$scope.total.ccash += reportUtils.to_integer(s.sale.ccash);
+			$scope.total.ccard += reportUtils.to_integer(s.sale.ccard);
+			$scope.total.cwxin += reportUtils.to_integer(s.sale.cwxin);
 
 			$scope.total.stock_in += reportUtils.to_integer(s.sale.stock_in);
 			$scope.total.stock_out += reportUtils.to_integer(s.sale.stock_out);
@@ -212,20 +221,20 @@ function wreportDailyCtrlProvide(
             ).then(function(status){
 		console.log(status);
 		if (status.ecode === 0){
-		    var messsage = "";
+		    var message = "";
 		    if (status.pcode === 0){
-			messsage = "打印成功！！请等待服务器打印．．．";
-			dialog.response(true, "交班报表打印", messsage);
+			message = "打印成功！！请等待服务器打印．．．";
+			dialog.response(true, "交班报表打印", message);
 		    } else {
 			message = "打印失败！！"
 			if (status.pinfo.length === 0){
-			    messsage += wreportService.error[status.pcode]
+			    message += wreportService.error[status.pcode]
 			} else {
 			    angular.forEach(status.pinfo, function(p){
-				messsage += "[" + p.device + "] " + wreportService.error[p.ecode]
+				message += "[" + p.device + "] " + wreportService.error[p.ecode]
 			    })
 			};
-			dialog.response(false, "交班报表打印", messsage);
+			dialog.response(false, "交班报表打印", message);
 		    }
 		} else {
 		    dialog.response(
@@ -265,7 +274,7 @@ function wreportDailyCtrlProvide(
 			return r.shop.id === d.shop.id;
 		    })[0];
 
-		    var pdate = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss");
+		    var pdate = dateFilter($scope.current_day, "yyyy-MM-dd HH:mm:ss");
 		    
 		    if (angular.isUndefined(LODOP)) LODOP = getLodop();
 

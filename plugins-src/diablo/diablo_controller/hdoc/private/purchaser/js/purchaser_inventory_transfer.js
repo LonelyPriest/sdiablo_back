@@ -160,6 +160,13 @@ function purchaserInventoryTransferCtrlProvide (
 		$scope, function(){ $scope.inventories[0] = {$edit:false, $new:true}});
 	    return;
 	}
+
+	if ( item.org_price <=0 ) {
+	    diabloUtilsService.response_with_callback(
+		false, "库存转移", "转移失败：" + purchaserService.error[2088],
+		$scope, function(){ $scope.inventories[0] = {$edit:false, $new:true}});
+	    return;
+	}
 	
 	// has been added
 	for(var i=1, l=$scope.inventories.length; i<l; i++){

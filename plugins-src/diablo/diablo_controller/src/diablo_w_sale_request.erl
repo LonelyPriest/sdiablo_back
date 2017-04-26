@@ -751,7 +751,21 @@ action(Session, Req, {"upload_w_sale", ShopId}, Payload) ->
 			    {<<"amount">>, Amount}]);
 	{error, Error} -> 
 	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"update_w_sale_price"}, Payload) ->
+    ?DEBUG("update_w_sale_price: session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    RSN = ?v(<<"rsn">>, Payload),
+    {struct, Updates} = ?v(<<"update">>, Payload),
+    
+    case ?w_sale:sale(update_price, Merchant, RSN, Updates) of
+	{ok, RSN} ->
+	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0}]});
+	{error, Error} ->
+    	    ?utils:respond(200, Req, Error)
     end.
+
 
 sidebar(Session) -> 
     case ?right_request:get_shops(Session, sale) of

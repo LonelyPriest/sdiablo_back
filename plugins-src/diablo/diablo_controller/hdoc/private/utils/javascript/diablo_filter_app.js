@@ -220,13 +220,16 @@ function filterProvider(){
 		} else if (name === 'card'){
 		    _filter.fields.push({name:"card", chinese:"银行卡号"});
 		    _prompt.cards = promptValues;
-		} else if (name === 'discount'){
+		}
+		else if (name === 'discount'){
 		    _filter.fields.push({name:"discount", chinese:"折扣"});
-		    // _prompt.rsn = promptValues;
-		}else if (name === 'tag_price'){
+		} else if (name === 'tag_price'){
 		    _filter.fields.push({name:"tag_price", chinese:"吊牌价"});
-		    // _prompt.rsn = promptValues;
-		} else if (name === 'check_state'){
+		} else if (name === 'org_price'){
+		    _filter.fields.push({name:"org_price", chinese:"进货价"});
+		}
+
+		else if (name === 'check_state'){
 		    _filter.fields.push({name:"check_state", chinese:"审核状态"});
 		    _prompt.check_state = promptValues;
 		} else if(name === 'fshop'){

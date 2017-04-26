@@ -588,7 +588,12 @@ handle_call({recharge, Merchant, Attrs}, _From, State) ->
     Retailer = ?v(<<"retailer">>, Attrs),
     Shop     = ?v(<<"shop">>, Attrs),
     Employee = ?v(<<"employee">>, Attrs),
-    CBalance    = ?v(<<"charge_balance">>, Attrs),
+    %% CBalance    = ?v(<<"charge_balance">>, Attrs),
+    
+    Cash     = ?v(<<"cash">>, Attrs, 0),
+    Card     = ?v(<<"card">>, Attrs, 0),
+    Wxin     = ?v(<<"wxin">>, Attrs, 0),
+    CBalance = ?to_i(Cash) + ?to_i(Card) + ?to_i(Wxin), 
     SBalance    = ?v(<<"send_balance">>, Attrs),
 
     Charge      = ?v(<<"charge">>, Attrs), 
@@ -621,7 +626,7 @@ handle_call({recharge, Merchant, Attrs}, _From, State) ->
 	    Sql2 =
 		["insert into w_charge_detail(rsn"
 		 ", merchant, shop, employ, cid, retailer"
-		 ", lbalance, cbalance, sbalance, comment, entry_date) values("
+		 ", lbalance, cbalance, sbalance, cash, card, wxin, comment, entry_date) values("
 		 ++ "\"" ++ ?to_s(SN) ++ "\","
 		 ++ ?to_s(Merchant) ++ ","
 		 ++ ?to_s(Shop) ++ ","
@@ -630,7 +635,10 @@ handle_call({recharge, Merchant, Attrs}, _From, State) ->
 		 ++ ?to_s(Retailer) ++ "," 
 		 ++ ?to_s(CurrentBalance) ++ ","
 		 ++ ?to_s(CBalance) ++ "," 
-		 ++ ?to_s(SBalance) ++ "," 
+		 ++ ?to_s(SBalance) ++ ","
+		 ++ ?to_s(Cash) ++ ","
+		 ++ ?to_s(Card) ++ ","
+		 ++ ?to_s(Wxin) ++ ","
 		 ++ "\"" ++ ?to_s(Comment) ++ "\"," 
 		 ++ "\"" ++ ?to_s(Entry) ++ "\")",
 		 
@@ -726,7 +734,7 @@ handle_call({list_recharge, Merchant, Conditions}, _From, State) ->
 	", a.employ as employee_id"
 	", a.cid"
 	", a.retailer as retailer_id"
-	", a.lbalance, a.cbalance, a.sbalance"
+	", a.lbalance, a.cbalance, a.sbalance, a.cash, a.card, a.wxin"
 	", a.comment, a.entry_date"
 	
 	", b.name as retailer, b.mobile"
@@ -942,6 +950,9 @@ handle_call({total_charge_detail, Merchant, Conditions}, _From, State) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
     Sql = "select count(*) as total"
 	", sum(cbalance) as cbalance"
+	", sum(cash) as tcash"
+	", sum(card) as tcard"
+	", sum(wxin) as twxin"
 	", sum(sbalance) as sbalance"
 	" from w_charge_detail"
 	" where merchant=" ++ ?to_s(Merchant)
@@ -998,7 +1009,7 @@ handle_call({filter_charge_detail, Merchant, Conditions, CurrentPage, ItemsPerPa
 	", a.employ as employee_id"
 	", a.cid"
 	", a.retailer as retailer_id"
-	", a.lbalance, a.cbalance, a.sbalance"
+	", a.lbalance, a.cbalance, a.sbalance, a.cash, a.card, a.wxin"
 	", a.comment, a.entry_date"
 	", b.name as retailer"
 	", b.mobile as mobile"

@@ -203,6 +203,11 @@ function wsaleConfg(angular){
 	    return http.save({operation: "update_w_sale"}, inventory).$promise;
 	};
 
+	this.update_w_sale_price = function(rsn, updates) {
+	    return http.save({operation: "update_w_sale_price"},
+			     {rsn:rsn, update: updates}).$promise;
+	};
+
 	this.check_w_sale_new = function(rsn){
 	    return http.save({operation: "check_w_sale"},
 			     {rsn: rsn, mode:diablo_check}).$promise;
