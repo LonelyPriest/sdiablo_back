@@ -43,7 +43,8 @@ var rightAuthen = {
     wsale_action: function(){
 	return {
 	    update_w_sale: rightAuthen.root_right._wsale + 5,
-	    check_w_sale:  rightAuthen.root_right._wsale + 6
+	    check_w_sale:  rightAuthen.root_right._wsale + 6,
+	    update_w_sale_price: rightAuthen.root_right._wsale + 10
 	}
     },
 

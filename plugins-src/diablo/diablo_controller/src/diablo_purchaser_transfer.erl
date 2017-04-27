@@ -227,7 +227,7 @@ amount_transfer(transfer_from, RSN, Merchant, Shop, TShop, Datetime, Inv) ->
     Sql2 ++ Sql3.
 
 check_transfer(Merchant, FShop, TShop, CheckProps) ->
-    ?DEBUG("check_inventory_transfer: FShop, TShop, checkprops ~p",
+    ?DEBUG("check_inventory_transfer: FShop ~p, TShop ~p, checkprops ~p",
 	   [FShop, TShop, CheckProps]), 
     %% Now = ?utils:current_time(format_localtime),
 
@@ -287,6 +287,14 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 
 		case ?sql_utils:execute(s_read, Sql21) of
 		    {ok, []} ->
+
+			Sql22 = "select style_number, brand, entry_date"
+			    " from w_inventory_good"
+			    " where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+			    " and brand=" ++ ?to_s(Brand)
+			    ++ " and merchant=" ++ ?to_s(Merchant),
+			{ok, Good} = ?sql_utils:execute(s_read, Sql22),
+			
 			["insert into w_inventory(rsn"
 			 ", style_number, brand, firm, type, sex, season, year"
 			 ", amount, s_group, free, promotion, score"
@@ -319,7 +327,7 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 			 ++ ?to_s(Merchant) ++ ","
 			 ++ "\"" ++ ?to_s(Now) ++ "\","
 			 ++ "\"" ++ ?to_s(Now) ++ "\","
-			 ++ "\"" ++ ?to_s(Now) ++ "\")"
+			 ++ "\"" ++ ?to_s(?v(<<"entry_date">>, Good)) ++ "\")"
 
 			 %% "insert into w_inventory_amount(rsn"
 			 %% ", style_number, brand, color, size"
@@ -404,6 +412,13 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 					  ++ " and merchant=" ++ ?to_s(Merchant),
 				      case ?sql_utils:execute(s_read, Sql33) of
 					  {ok, []} ->
+					      Sql22 = "select style_number, brand, entry_date"
+						  " from w_inventory_good"
+						  " where style_number=\'"++?to_s(StyleNumber) ++ "\'"
+						  " and brand=" ++ ?to_s(Brand)
+						  ++ " and merchant=" ++ ?to_s(Merchant),
+					      {ok, Good} = ?sql_utils:execute(s_read, Sql22),
+					      
 					      ["insert into w_inventory_amount("
 					       "rsn, style_number, brand"
 					       ", color, size, shop, merchant"
@@ -416,7 +431,7 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 					       ++ ?to_s(TShop) ++ ","
 					       ++ ?to_s(Merchant) ++ ","
 					       ++ ?to_s(Total) ++ ","
-					       ++ "\"" ++ ?to_s(Now) ++ "\")"];
+					       ++ "\"" ++ ?to_s(?v(<<"entry_date">>, Good)) ++ "\")"];
 					  {ok, RR} ->
 					      ["update w_inventory_amount"
 					       " set total=total+" ++ ?to_s(Total)

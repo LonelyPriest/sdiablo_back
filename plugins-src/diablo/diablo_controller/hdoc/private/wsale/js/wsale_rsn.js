@@ -34,7 +34,11 @@ function wsaleRsnDetailCtrlProvide (
     $scope.right = {
 	master:        rightAuthen.authen_master(user.type),
 	show_stastic:  rightAuthen.authen_master(user.type),
-	show_orgprice: rightAuthen.authen_master(user.type)
+	show_orgprice: rightAuthen.authen_master(user.type),
+	update_price: rightAuthen.authen(
+	    user.type,
+	    rightAuthen.wsale_action()['update_w_sale_price'],
+	    user.right)
     };
 
     /* hidden */
