@@ -606,7 +606,7 @@
 	      <input x-ng-switch-when=1
 		     type="text"
 		     class="form-control fg-red"
-		     value="{{params.charge / params.retailer.select_charge.xtime}}"
+		     value="{{(params.charge + params.card + params.wxin) / params.retailer.select_charge.xtime}}"
 		     readonly />
 	    </div>
 	  </div> 

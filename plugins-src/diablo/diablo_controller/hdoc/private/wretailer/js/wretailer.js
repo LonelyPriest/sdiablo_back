@@ -314,7 +314,7 @@ function wretailerDetailCtrlProvide(
 
 	    var promotion       = params.retailer.select_charge;
 	    var charge_balance  = retailerUtils.to_integer(params.charge)
-		+ retailerUtils.to_integer(params.cash)
+		+ retailerUtils.to_integer(params.card)
 		+ retailerUtils.to_integer(params.wxin);
 	    
 	    var send_balance = function(){
