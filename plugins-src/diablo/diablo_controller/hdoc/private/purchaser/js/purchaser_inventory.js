@@ -262,14 +262,19 @@ function purchaserInventoryNewCtrlProvide (
 
     $scope.q_prompt = $scope.q_typeahead($scope.select.shop.id, base); 
     $scope.qtime_start = function(shopId){
-	var now = $.now();
-	return stockUtils.start_time(shopId, base, now, dateFilter); 
+	return stockUtils.start_time(shopId, base, $.now(), dateFilter); 
+	// return diablo_base_setting(
+	//     "qtime_start",
+	//     shopId,
+	//     base,
+	//     function(v) {return v},
+	//     dateFun($.now - diablo_day_millisecond * 30, "yyyy-MM-dd"));
     };
     
     $scope.get_all_w_good = function(){
 	// console.log(select_firm);
 	diabloFilter.match_all_w_good(
-	    $scope.qtime_start($scope.select.shop.id),
+	    dateFilter($scope.qtime_start($scope.select.shop.id), "yyyy-MM-dd"),
 	    stockUtils.match_firm($scope.select.firm)
 	).then(function(goods){
 	    $scope.all_w_goods = goods.sort(function(g1, g2){

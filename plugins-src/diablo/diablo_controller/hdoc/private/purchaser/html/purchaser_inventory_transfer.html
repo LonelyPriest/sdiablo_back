@@ -153,27 +153,44 @@
 		    
 		    <td>{{inv.order_id}}</td>
 
-		    <td x-ng-if="base_settings.q_prompt===0"
-			class="col-md-2 text-left vert-align">
-		      <span ng-if="!inv.$new">{{inv.style_number}}</span>
-		      <form name="inv.form.good" ng-if="inv.$new">
-			<div ng-class="{'has-error':inv.form.good.$invalid
-				       && !inv.form.good.$pristine}">
-			  <input class="form-control text-left" type="text"
-				 required
-				 x-ng-model="inv.style_number"
-				 focus-auto="focus.style_number"
-				 placeholder="货号"
-				 typeahead-editable="false"
-				 typeahead-on-select="on_select_inventory($item, $model, $label)"
-				 uib-typeahead="g as g.name for g in
-					    all_prompt_inventory|filter:{name:$viewValue}|limitTo:base_settings.plimit"/>
-			</div>
-		      </form>
-		    </td>
+		    <!-- <td x-ng-if="base_settings.q_prompt===0" -->
+		    <!-- 	class="col-md-2 text-left vert-align"> -->
+		    <!--   <span ng-if="!inv.$new">{{inv.style_number}}</span> -->
+		    <!--   <form name="inv.form.good" ng-if="inv.$new"> -->
+		    <!-- 	<div ng-class="{'has-error':inv.form.good.$invalid -->
+		    <!-- 		       && !inv.form.good.$pristine}"> -->
+		    <!-- 	  <input class="form-control text-left" type="text" -->
+		    <!-- 		 required -->
+		    <!-- 		 x-ng-model="inv.style_number" -->
+		    <!-- 		 focus-auto="focus.style_number" -->
+		    <!-- 		 placeholder="货号" -->
+		    <!-- 		 typeahead-editable="false" -->
+		    <!-- 		 typeahead-on-select="on_select_inventory($item, $model, $label)" -->
+		    <!-- 		 uib-typeahead="g as g.name for g in -->
+		    <!-- 			    all_prompt_inventory|filter:{name:$viewValue}|limitTo:base_settings.plimit"/> -->
+		    <!-- 	</div> -->
+		    <!--   </form> -->
+		    <!-- </td> -->
 		    
-		    <td x-ng-if="base_settings.q_prompt===1"
-			class="col-md-2 text-left vert-align">
+		    <!-- <td x-ng-if="base_settings.q_prompt===1" -->
+		    <!-- 	class="col-md-2 text-left vert-align"> -->
+		    <!--   <span ng-if="!inv.$new">{{inv.style_number}}</span> -->
+		    <!--   <form name="inv.form.good" ng-if="inv.$new"> -->
+		    <!-- 	<div ng-class="{'has-error':inv.form.good.$invalid -->
+		    <!-- 		       && !inv.form.good.$pristine}"> -->
+		    <!-- 	  <input class="form-control text-left" type="text" -->
+		    <!-- 		 required -->
+		    <!-- 		 x-ng-model="inv.style_number" -->
+		    <!-- 		 placeholder="货号" -->
+		    <!-- 		 typeahead-editable="false" -->
+		    <!-- 		 typeahead-wait-ms="500" -->
+		    <!-- 		 typeahead-on-select="on_select_inventory($item, $model, $label)" -->
+		    <!-- 		 uib-typeahead="g as g.name for g in match_prompt_inventory($viewValue)"/> -->
+		    <!-- 	</div> -->
+		    <!--   </form> -->
+		    <!-- </td> -->
+
+		    <td class="col-md-2 text-left vert-align">
 		      <span ng-if="!inv.$new">{{inv.style_number}}</span>
 		      <form name="inv.form.good" ng-if="inv.$new">
 			<div ng-class="{'has-error':inv.form.good.$invalid
@@ -185,10 +202,12 @@
 				 typeahead-editable="false"
 				 typeahead-wait-ms="500"
 				 typeahead-on-select="on_select_inventory($item, $model, $label)"
-				 uib-typeahead="g as g.name for g in match_prompt_inventory($viewValue)"/>
+				 uib-typeahead="g as g.name for g in
+						match_prompt_inventory($viewValue)"/>
 			</div>
 		      </form>
 		    </td>
+
 		    <td class="vert-align">{{inv.brand}}</td>
 		    <td class="vert-align">{{inv.type}}</td> 
 		    <td class="vert-align">{{seasons[inv.season]}}</td>

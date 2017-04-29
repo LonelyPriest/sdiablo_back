@@ -472,7 +472,7 @@ function wsaleNewProvide(
     $scope.change_shop = function(){
 	get_setting($scope.select.shop.id);
 	
-	$scope.match_all_w_inventory(); 
+	// $scope.match_all_w_inventory(); 
 	$scope.get_employee();
 
 	$scope.wsaleStorage.remove($scope.wsaleStorage.get_key());
@@ -789,7 +789,7 @@ function wsaleNewProvide(
 	};
     }
 
-    $scope.match_all_w_inventory();
+    // $scope.match_all_w_inventory();
     $scope.refresh_datetime_per_5_minute();
 
     // init

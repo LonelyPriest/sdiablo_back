@@ -143,8 +143,8 @@ function purchaserInventoryTransferCtrlProvide (
     };
     
     if ($scope.base_settings.q_prompt === diablo_frontend){
-	// console.log($scope.select);
-	$scope.get_all_prompt_inventory()
+	// use backend always
+	// $scope.get_all_prompt_inventory()
     };
 
     $scope.match_prompt_inventory = function(viewValue){

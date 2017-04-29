@@ -88,7 +88,7 @@ function purchaserInventoryPriceCtrlProvide(
     };
 
     $scope.match_stock_by_shop = function($viewValue){
-	if ($viewValue.length < 2) return;
+	// if ($viewValue.length < 2) return;
 	return diabloFilter.match_stock_backend_by_shop(
 	    $scope.get_select_shop(), $scope.base_settings.start_time, $viewValue);
     };

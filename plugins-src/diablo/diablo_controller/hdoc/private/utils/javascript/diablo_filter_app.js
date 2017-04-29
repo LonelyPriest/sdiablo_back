@@ -304,7 +304,7 @@ function filterProvider(){
 		    // console.log(goods); 
 		    return goods.map(function(g){
 			return angular.extend(
-			    g, {name:g.style_number + "，" + g.brand + "，" + g.type})
+			    g, {name:g.style_number + "/" + g.brand + "/" + g.type})
 		    })
 		})
 	    },
@@ -345,8 +345,8 @@ function filterProvider(){
 		    .$promise.then(function(invs){
 			console.log(invs);
 			return invs.map(function(inv){
-			    var name = inv.style_number + "，"
-				+ inv.brand + "，"
+			    var name = inv.style_number + "/"
+				+ inv.brand + "/"
 				+ inv.type;
 			    // var prompt = name + "," + diablo_pinyin(name); 
 			    return angular.extend(inv, {name:name});
@@ -378,7 +378,7 @@ function filterProvider(){
 			    return invs.map(function(inv){
 				return angular.extend(
 				    inv,
-				    {name:inv.style_number + "，" + inv.brand + "，" + inv.type})
+				    {name:inv.style_number + "/" + inv.brand + "/" + inv.type})
 			    })
 			}
 		    })
@@ -404,7 +404,7 @@ function filterProvider(){
 		    return invs.map(function(inv){
 			return angular.extend(
 			    inv, {name:inv.style_number
-				  + "，" + inv.brand + "，" + inv.type})
+				  + "/" + inv.brand + "/" + inv.type})
 		    })
 		})
 	    },
