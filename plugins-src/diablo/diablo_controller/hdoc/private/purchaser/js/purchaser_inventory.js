@@ -2164,6 +2164,7 @@ function purchaserInventoryDetailCtrlProvide(
 	var callback = function(params){
 	    console.log(params);
 	    var update = {
+		org_price  :diablo_get_modified(params.org_price, inv.org_price),
 		tag_price  :diablo_get_modified(params.tag_price, inv.tag_price),
 		discount   :diablo_get_modified(params.discount, inv.discount),
 		contailer  :diablo_get_modified(params.contailer, inv.contailer),
@@ -2177,11 +2178,13 @@ function purchaserInventoryDetailCtrlProvide(
 	    purchaserService.update_w_inventory_batch(condition, update).then(function(result){
 		console.log(result);
 		if (result.ecode === 0){
+		    var org_price = angular.isDefined(update.org_price) ? update.org_price : inv.org_price;
 		    var tag_price = angular.isDefined(update.tag_price) ? update.tag_price : inv.tag_price;
 		    var discount  = angular.isDefined(update.discount)  ? update.discount  : inv.discount;
 		    var contailer = angular.isDefined(update.contailer) ? update.contailer : inv.contailer;
 		    var s = "修改价格成功！！"
-			+ "[ 吊牌价" + tag_price.toString() + "；" 
+			+ "[ 进价" + org_price.toString() + "；" 
+			+ "吊牌价" + tag_price.toString() + "；" 
 			+ "折扣" + discount.toString() + "；";
 		    if ($scope.setting.stock_contailer)
 			s += "货柜号" + contailer.toString() + "]";
@@ -2189,8 +2192,10 @@ function purchaserInventoryDetailCtrlProvide(
 		    dialog.response_with_callback(
 			true, "库存价格编辑", s, undefined,
 			function(){
+			    inv.org_price = org_price;
 			    inv.tag_price = tag_price;
 			    inv.discount  = discount;
+			    inv.ediscount = stockUtils.ediscount(org_price, tag_price);
 			    inv.contailer = contailer;
 			    inv.sid       = update.score === undefined ? -1 : inv.sid}); 
 		} else {
@@ -2212,6 +2217,7 @@ function purchaserInventoryDetailCtrlProvide(
 	    {
 		style_number :inv.style_number,
 		brand        :inv.brand.name,
+		org_price    :inv.org_price,
 		tag_price    :inv.tag_price,
 		discount     :inv.discount,
 		contailer    :inv.contailer,

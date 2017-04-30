@@ -259,9 +259,15 @@ function wsaleRejectCtrlProvide(
 		show_dialog("销售退货", show_message); 
 	    })
 	};
-	    
+
+	var sms_message = "";
+	if (angular.isDefined(result.sms_code) && result.sms_code !== 0){
+	    var ERROR = require("diablo-error");
+	    sms_message += "，短消息发送失败：" + ERROR[result.sms_code] + "，";
+	}
+	
 	dialog.request(
-	    "销售退货", "退货成功，是否打印退货单？",
+	    "销售退货", "退货成功，" + sms_message + "是否打印退货单？",
 	    ok_print, undefined, $scope);
     };
 
@@ -302,8 +308,15 @@ function wsaleRejectCtrlProvide(
 	    };
 	};
 
+	var sms_message = "";
+	if (angular.isDefined(result.sms_code) && result.sms_code !== 0){
+	    var ERROR = require("diablo-error");
+	    sms_message += "，短消息发送失败：" + ERROR[result.sms_code] + "，";
+	}
+	
 	dialog.request(
-	    "销售退货", "退货成功，是否打印销售单？", ok_print, undefined, undefined);
+	    "销售退货",
+	    "退货成功，" + sms_message + "是否打印销售单？", ok_print, undefined, undefined);
     };
     
     $scope.save_inventory = function(){

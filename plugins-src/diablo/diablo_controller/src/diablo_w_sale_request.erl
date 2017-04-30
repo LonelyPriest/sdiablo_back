@@ -563,9 +563,17 @@ action(Session, Req, {"reject_w_sale"}, Payload) ->
 			    {<<"bdate">>, ?to_b(CurDatetime)}]);
 	false -> 
 	    case ?w_sale:sale(reject, Merchant, lists:reverse(Invs), Base) of 
-		{ok, RSN} -> 
-		    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
-				   [{<<"rsn">>, ?to_b(RSN)}]);
+		{{ok, RSN}, Shop, Retailer, BackWithdraw} ->
+		    case BackWithdraw =/= 0 of
+			true ->
+			    {SMSCode, _} = send_sms(Merchant, 2, Shop, Retailer, BackWithdraw),
+			    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
+					   [{<<"rsn">>, ?to_b(RSN)},
+					    {<<"sms_code">>, SMSCode}]); 
+			false ->
+			    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
+					   [{<<"rsn">>, ?to_b(RSN)}])
+		    end;
 		{error, Error} ->
 		    ?utils:respond(200, Req, Error)
 	    end

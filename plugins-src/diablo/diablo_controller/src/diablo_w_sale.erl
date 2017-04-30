@@ -872,11 +872,11 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 		{error, _} = Error ->
 		    {reply, Error, State};
 		OK ->
-		    case Withdraw =/= 0 orelse TicketScore - Score =/= 0 of
+		    case NewWithdraw =/= 0 orelse TicketScore - Score =/= 0 of
 			true  -> ?w_user_profile:update(retailer, Merchant);
 			false -> ok
 		    end,
-		    {reply, OK, State}
+		    {reply, {OK, Shop, Retailer, NewWithdraw}, State}
 	    end; 
 	Error ->
 	    {reply, Error, State}

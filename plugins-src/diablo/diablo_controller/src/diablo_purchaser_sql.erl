@@ -436,8 +436,9 @@ inventory(update_batch, Merchant, Attrs, Conditions) ->
     {StartTime, EndTime, NewConditions} =
 	?sql_utils:cut(fields_no_prifix, Conditions),
 
-    TagPrice = ?v(<<"tag_price">>, Attrs),
-    Discount = ?v(<<"discount">>, Attrs),
+    OrgPrice  = ?v(<<"org_price">>, Attrs),
+    TagPrice  = ?v(<<"tag_price">>, Attrs),
+    Discount  = ?v(<<"discount">>, Attrs),
     Contailer = ?v(<<"contailer">>, Attrs),
     Score = case ?v(<<"score">>, Attrs) of
 		0 -> -1;
@@ -445,18 +446,25 @@ inventory(update_batch, Merchant, Attrs, Conditions) ->
 		_ -> undefined
 	    end,
 
-    UpdateOfGood = ?utils:v(tag_price, float, TagPrice)
+    UpdateOfGood = ?utils:v(org_price, float, OrgPrice)
+	++ ?utils:v(tag_price, float, TagPrice)
 	++ ?utils:v(discount, float, Discount)
 	++ ?utils:v(contailer, integer, Contailer),
 
     UpdateOfStock = UpdateOfGood ++ ?utils:v(score, integer, Score),
 
-    ?DEBUG("UpdateOfGood ~p, UpdateOfStock", [UpdateOfGood, UpdateOfStock]),
+    ?DEBUG("UpdateOfGood ~p, UpdateOfStock ~p", [UpdateOfGood, UpdateOfStock]),
 
     ["update w_inventory set " ++ ?utils:to_sqls(proplists, comma, UpdateOfStock)
-     ++ case TagPrice of
-	    undefined -> [];
-	    _ ->", ediscount=(org_price/" ++ ?to_s(TagPrice) ++ ")*100"
+     ++ case {TagPrice, OrgPrice} of
+	    {undefined, undefined} ->
+		[];
+	    {undefined, OrgPrice} ->
+		", ediscount=(" ++ ?to_s(OrgPrice) ++"/tag_price)*100";
+	    {TagPrice, undefined} ->
+		", ediscount=(org_price/" ++ ?to_s(TagPrice) ++ ")*100";
+	    {TagPrice, OrgPrice} ->
+		", ediscount=" ++ ?to_s(stock(ediscount, OrgPrice, TagPrice))
 	end
      ++ " where " 
      ++ ?sql_utils:condition(proplists_suffix, NewConditions) 
@@ -472,9 +480,15 @@ inventory(update_batch, Merchant, Attrs, Conditions) ->
 	       _ ->
 		   ["update w_inventory_good set "
 		    ++ ?utils:to_sqls(proplists, comma, UpdateOfGood)
-		    ++ case TagPrice of
-			   undefined -> [];
-			   _ ->", ediscount=(org_price/" ++ ?to_s(TagPrice) ++ ")*100"
+		    ++ case {TagPrice, OrgPrice} of
+			   {undefined, undefined} ->
+			       [];
+			   {undefined, OrgPrice} ->
+			       ", ediscount=(" ++ ?to_s(OrgPrice) ++"/tag_price)*100";
+			   {TagPrice, undefined} ->
+			       ", ediscount=(org_price/" ++ ?to_s(TagPrice) ++ ")*100";
+			   {TagPrice, OrgPrice} ->
+			       ", ediscount=" ++ ?to_s(stock(ediscount, OrgPrice, TagPrice))
 		       end
 		    ++ " where " 
 		    ++ ?sql_utils:condition(
