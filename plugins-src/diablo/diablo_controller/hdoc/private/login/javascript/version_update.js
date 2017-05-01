@@ -1,6 +1,12 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2017-05-01",
+         content:
+	 ["充值会员返现时，增加短信提示",
+	  "增加管理员可修改进价能力"]
+        },
+	
 	{date: "2017-04-28",
          content:
 	 ["解决N+1倍充值时，刷卡不赠送现金的问题",

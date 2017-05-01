@@ -1666,10 +1666,11 @@ function purchaserInventoryDetailCtrlProvide(
     $scope.sort = 0;
 
     $scope.stock_right = {
-	show_orgprice: stockUtils.authen_rainbow(user.type, user.right, 'show_orgprice'), 
+	show_orgprice: stockUtils.authen_rainbow(user.type, user.right, "show_orgprice"), 
 	export_stock:  rightAuthen.authen_master(user.type),
 	set_promotion: rightAuthen.authen_master(user.type),
-	update_batch:  rightAuthen.authen_master(user.type),
+	update_batch:  rightAuthen.authen(
+	    user.type, rightAuthen.stock_action()["update_w_stock_batch"], user.right),
 	update_good:   rightAuthen.authen(
 	    user.type, rightAuthen.good_action()["update_w_good"], user.right),
     };
