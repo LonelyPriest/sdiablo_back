@@ -674,6 +674,9 @@ function wgoodDetailCtrlProvide(
     diabloFilter.reset_field();
     diabloFilter.add_field("style_number", diabloFilter.match_style_number);
     diabloFilter.add_field("brand", filterBrand);
+    if ($scope.right.lookup_w_good_orgprice) {
+	diabloFilter.add_field("org_price", []);
+    }
     diabloFilter.add_field("type", filterType);
     diabloFilter.add_field("firm", filterFirm); 
     $scope.filter = diabloFilter.get_filter();

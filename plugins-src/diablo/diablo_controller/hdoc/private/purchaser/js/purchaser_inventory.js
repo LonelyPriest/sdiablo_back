@@ -1699,6 +1699,9 @@ function purchaserInventoryDetailCtrlProvide(
     diabloFilter.add_field("season", diablo_season2objects);
     diabloFilter.add_field("sex",  diablo_sex2object);
     diabloFilter.add_field("year", diablo_full_year);
+    if ($scope.stock_right.show_orgprice) {
+	diabloFilter.add_field("org_price", []);
+    }
     diabloFilter.add_field("tag_price", []); 
     diabloFilter.add_field("discount", []);
     diabloFilter.add_field("shop", $scope.shops);
