@@ -1432,7 +1432,17 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 	end,
 
     Sql3 = lists:foldr(NewFun, [], Amounts),
-    Sql1 ++ Sql2 ++ Sql3.
+    Sql4 = case OrgPrice =/= 0 of
+	       true -> ["update w_inventory_good set org_price=" ++ ?to_s(OrgPrice)
+			++ ", ediscount=" ++ ?to_s(EDiscount)
+			++ ", tag_price=" ++ ?to_s(TagPrice)
+			++ ", discount=" ++ ?to_s(Discount)
+			++ " where style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
+			++ " and brand=" ++ ?to_s(Brand) 
+			++ " and merchant=" ++ ?to_s(Merchant)];
+	       false -> []
+	   end,
+    Sql1 ++ Sql2 ++ Sql3 ++ Sql4.
 
 amount_reject(RSN, Merchant, Shop, Firm, Datetime, Inv, Amounts) ->
     ?DEBUG("reject inventory with rsn ~p~namounts ~p", [RSN, Amounts]), 

@@ -1378,16 +1378,33 @@ handle_call({check_inventory, Merchant, RSN, Mode}, _From, State) ->
 			    Reply = ?sql_utils:execute(write, Sql, RSN),
 			    {reply, Reply, State};
 			1 ->
-			    Sql1 = "select style_number, brand, org_price from w_inventory_new_detail"
+			    Sql1 = "select style_number, brand"
+				", firm, org_price from w_inventory_new_detail"
 				" where rsn=\'" ++ ?to_s(RSN) ++ "\'"
 				++ " and merchant=" ++ ?to_s(Merchant)
-				++ " and org_price=0",
+				++ " and (org_price=0 or firm=-1)",
+			    %% case ?sql_utils:execute(read, Sql1) of
+			    %% 	{ok, [{R}]} ->
+			    %% 	    %% ?DEBUG("R ~p", [R]),
+			    %% 	    case ?v(<<"org_price">>, R) =:= 0 of
+			    %% 		true ->
+			    %% 		    {reply, {error, {zero_org_price, R}}, State};
+			    %% 		false ->
+			    %% 		    case ?v(<<"firm">>, R) =:= ?INVALID_OR_EMPTY of
+			    %% 			true ->
+			    %% 			    {reply, {error, {empty_firm, R}}, State};
+			    %% 			false ->
+			    %% 			    Reply = ?sql_utils:execute(write, Sql, RSN),
+			    %% 			    {reply, Reply, State}
+			    %% 		    end
+			    %% 	    end
+			    %% end 
 			    case ?sql_utils:execute(read, Sql1) of
-				{ok, []} -> 
-				    Reply = ?sql_utils:execute(write, Sql, RSN),
-				    {reply, Reply, State};
-				{ok, R} ->
-				    {reply, {error, {zero_org_price, R}}, State}
+			    	{ok, []} -> 
+			    	    Reply = ?sql_utils:execute(write, Sql, RSN),
+			    	    {reply, Reply, State};
+			    	{ok, R} ->
+			    	    {reply, {error, {zero_org_price, R}}, State}
 			    end
 		    end
 	    end;

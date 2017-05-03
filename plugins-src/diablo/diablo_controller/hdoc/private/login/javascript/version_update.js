@@ -1,6 +1,12 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2017-05-03",
+         content:
+	 ["增加入库单厂商为空时，无法审核",
+	  "增加入库进价校验"]
+        },
+	
 	{date: "2017-05-01",
          content:
 	 ["充值会员返现时，增加短信提示",

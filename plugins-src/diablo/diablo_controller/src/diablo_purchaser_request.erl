@@ -185,6 +185,11 @@ action(Session, Req, {"check_w_inventory"}, Payload) ->
                200,
                Req,
                ?err(zero_price_of_check, RSN));
+	{error, {empty_firm, _R}} ->
+	    ?utils:respond(
+               200,
+               Req,
+               ?err(empty_firm_of_check, RSN));
     	{error, Error} ->
     	    ?utils:respond(200, Req, Error)
     end;

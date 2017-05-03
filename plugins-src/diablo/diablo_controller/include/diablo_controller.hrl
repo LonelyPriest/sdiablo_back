@@ -27,8 +27,8 @@
 -define(CHECKED, 1).
 -define(DISCARD, 7).
 
--define(CHECK, 0).
--define(UNCHECK, 1).
+-define(CHECK, 1).
+-define(UNCHECK, 0).
 
 -define(DELETE, 0).
 -define(ABANDON, 1).

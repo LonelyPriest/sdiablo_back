@@ -402,6 +402,8 @@ error(stock_invalid_inv, StyleNumber) ->
     {2011, "invalid stock of style_number: " ++ ?to_s(StyleNumber) ++ "."};
 error(stock_invalid_total, CalcTotal) ->
     {2012, "invalid total of stock: " ++ ?to_s(CalcTotal) ++ "."};
+error(empty_firm_of_check, RSN) ->
+    {2013, "empty firm of rsn " ++ ?to_s(RSN) ++ "."};
 
 
 
