@@ -73,7 +73,7 @@ function firmConfig(angular){
 	    when('/firm_trans/:firm?/:page?', {
 		templateUrl: '/private/firm/html/firm_trans.html',
 		controller: 'firmTransCtrl',
-		resolve: angular.extend({}, firm, employee, region, user, base)
+		resolve: angular.extend({}, brand, firm, employee, region, user, base)
 	    }).
 	    when('/firm_trans_rsn/:firm?/:rsn?/:ppage?', {
 		templateUrl: '/private/firm/html/firm_trans_rsn_detail.html',

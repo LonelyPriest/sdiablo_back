@@ -260,7 +260,8 @@ action(Session, Req, {"filter_w_inventory_new"}, Payload) ->
 
     NewFields =
 	case ?utils:v(style_number, string, ?v(<<"style_number">>, Fields))
-	    ++ ?utils:v(brand, integer, ?v(<<"brand">>, Fields)) of
+	    ++ ?utils:v(brand, integer, ?v(<<"brand">>, Fields))
+	    ++ ?utils:v(brand, integer, ?v(<<"org_price">>, Fields)) of
 	    [] -> {ok,
 		   [{<<"fields">>, {struct, Fields}}]
 		   ++ lists:keydelete(<<"fields">>, 1, NewPayload)}; 
@@ -270,8 +271,10 @@ action(Session, Req, {"filter_w_inventory_new"}, Payload) ->
 		    {ok, RSNs} ->
 			{ok,
 			 [{<<"fields">>, 
-			   {struct, lists:keydelete(<<"style_number">>, 1,
-						    lists:keydelete(<<"brand">>, 1, Fields))
+			   {struct, lists:keydelete(
+				      <<"style_number">>, 1,
+				      lists:keydelete(<<"brand">>, 1,
+						      lists:keydelete(<<"org_price">>, 1, Fields)))
 			    ++ [{<<"rsn">>, lists:foldr(
 					      fun({RSN}, Acc) ->
 						      [?v(<<"rsn">>, RSN)|Acc]
@@ -766,7 +769,7 @@ action(Session, Req, {"w_inventory_export"}, Payload) ->
 
     {struct, Conditions} = ?v(<<"condition">>, Payload),
     
-    {struct, Mode}     = ?v(<<"mode">>, Payload, []),
+    %% {struct, Mode}     = ?v(<<"mode">>, Payload),
 
     UseMode = 
 	case ?v(<<"mode">>, Payload) of

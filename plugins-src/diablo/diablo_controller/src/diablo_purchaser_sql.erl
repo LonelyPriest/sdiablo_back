@@ -1819,6 +1819,8 @@ filter_condition(inventory_new, [{<<"season">>, _} = OT|T], Acc1, Acc2) ->
     filter_condition(inventory_new, T, [OT|Acc1], Acc2);
 filter_condition(inventory_new, [{<<"region">>, _}|T], Acc1, Acc2) ->
     filter_condition(inventory_new, T, Acc1, Acc2);
+filter_condition(inventory_new, [{<<"org_price">>, OrgPrice}|T], Acc1, Acc2) ->
+    filter_condition(inventory_new, T, [{<<"org_price">>, ?to_i(OrgPrice)}|Acc1], Acc2);
 
 
 filter_condition(inventory_new, [{<<"purchaser_type">>, OT}|T], Acc1, Acc2) ->

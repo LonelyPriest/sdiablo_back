@@ -104,6 +104,10 @@ delete from w_sale where rsn='M-4-S-18-R-1858';
 
 
 -- syn w_sale_detail where org_price=0
-update w_sale_detail a inner join(select style_number, brand, merchant, shop, org_price, ediscount from w_inventory) b \
+update w_sale_detail a inner join(select style_number, brand, merchant, shop, org_price, ediscount from w_inventory where merchant=4) b \
 on a.merchant=b.merchant and a.shop=b.shop and a.style_number=b.style_number and a.brand=b.brand \
+set a.org_price=b.org_price, a.ediscount=b.ediscount where a.org_price=0;
+
+update w_inventory a inner join(select style_number, brand, merchant, org_price, ediscount from w_inventory_good where merchant=4) b \
+on a.merchant=b.merchant and a.style_number=b.style_number and a.brand=b.brand \
 set a.org_price=b.org_price, a.ediscount=b.ediscount where a.org_price=0;

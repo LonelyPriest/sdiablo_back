@@ -1,6 +1,13 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2017-05-11",
+         content:
+	 ["增加入库单进价查询",
+	  "增加入库单导出功能",
+	  "厂商对帐中增加款号，品牌查询"]
+        },
+	
 	{date: "2017-05-03",
          content:
 	 ["增加入库单厂商为空时，无法审核",

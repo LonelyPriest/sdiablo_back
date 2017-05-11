@@ -3,7 +3,7 @@
 function firmTransCtrlProvide(
     $scope, $routeParams, $location, localStorageService,
     diabloFilter, diabloPattern, firmService, diabloUtilsService,
-    filterFirm, filterEmployee, filterRegion, user, base){
+    filterBrand, filterFirm, filterEmployee, filterRegion, user, base){
 
     // console.log(filterFirm);
     // console.log($routeParams);
@@ -78,7 +78,11 @@ function firmTransCtrlProvide(
 		    page:     $scope.current_page,
 		    t:        now})
 	}
-    }; 
+    };
+
+    $scope.match_style_number = function(viewValue){
+	return diabloFilter.match_w_inventory(viewValue, $scope.shopIds);
+    };
 
     /* 
      * filter operation
@@ -88,9 +92,17 @@ function firmTransCtrlProvide(
     diabloFilter.reset_field();
 
     // diabloFilter.add_field("rsn", []);
+    diabloFilter.add_field("style_number", $scope.match_style_number);
+    diabloFilter.add_field("brand",    filterBrand);
     diabloFilter.add_field("shop",     $scope.shops);
     diabloFilter.add_field("region",   filterRegion);
     diabloFilter.add_field("employee", filterEmployee);
+    // diabloFilter.add_field("check_state", purchaserService.check_state);
+    // diabloFilter.add_field("purchaser_type", purchaserService.purchaser_type);
+    diabloFilter.add_field("org_price", []);
+    // if ($scope.shop_right.check_w_stock) {
+    // 	diabloFilter.add_field("org_price", []);
+    // }
 
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
