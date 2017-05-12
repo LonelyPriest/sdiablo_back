@@ -2555,6 +2555,7 @@ function purchaserInventoryNewDetailCtrlProvide (
     diabloFilter.add_field("brand",    filterBrand);
     diabloFilter.add_field("firm",     filterFirm); 
     diabloFilter.add_field("shop",     $scope.shops);
+    // diabloFilter.add_field("season",   diablo_season2objects);
     diabloFilter.add_field("region",   $scope.regions);
     diabloFilter.add_field("employee", filterEmployee);
     diabloFilter.add_field("check_state", purchaserService.check_state);
@@ -2562,11 +2563,15 @@ function purchaserInventoryNewDetailCtrlProvide (
     if ($scope.shop_right.check_w_stock) {
 	diabloFilter.add_field("org_price", []);
     }
+    diabloFilter.add_field("over", stockUtils.over_flow()); 
     diabloFilter.add_field("rsn", function(viewValue) {return undefined});
     // diabloFilter.add_field("has_pay",  has_pay);
 
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
+
+    // console.log($scope.filter);
+    // console.log($scope.prompt);
 
     /*
      * pagination 

@@ -342,6 +342,10 @@ var stockUtils = function(){
 		+ "明细总数：[" + state.ctotal.toString() + "]";
 	    else 
 		return ""; 
+	},
+
+	over_flow:function() {
+	    return [{name:"!=0", id:0}]
 	}
 	    
 	//

@@ -143,6 +143,14 @@
 	    </select>
 	  </span>
 
+	  <span x-ng-switch-when="over">
+	    <select type="text" class="form-control"
+		    x-ng-model="f.value"
+	  	    x-ng-options="o as o.name for o in prompt.over"
+		    x-ng-init="f.value=f.value ? f.value : prompt.over[0]">
+	    </select>
+	  </span>
+
 	  <span x-ng-switch-when="fshop">
 	    <select type="text" class="form-control"
 		    x-ng-model="f.value"

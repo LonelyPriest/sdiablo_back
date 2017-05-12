@@ -261,7 +261,8 @@ action(Session, Req, {"filter_w_inventory_new"}, Payload) ->
     NewFields =
 	case ?utils:v(style_number, string, ?v(<<"style_number">>, Fields))
 	    ++ ?utils:v(brand, integer, ?v(<<"brand">>, Fields))
-	    ++ ?utils:v(brand, integer, ?v(<<"org_price">>, Fields)) of
+	    ++ ?utils:v(org_price, integer, ?v(<<"org_price">>, Fields))
+	    ++ ?utils:v(over, integer, ?v(<<"over">>, Fields)) of
 	    [] -> {ok,
 		   [{<<"fields">>, {struct, Fields}}]
 		   ++ lists:keydelete(<<"fields">>, 1, NewPayload)}; 

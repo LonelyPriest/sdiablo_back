@@ -550,8 +550,8 @@ inventory(inventory_new_rsn, Merchant, Conditions) ->
 	filter_condition(inventory_new,
 			 Conditions ++ [{<<"merchant">>, Merchant}], [], []),
     ?DEBUG("inventory_new_rsn conditions ~p, detail condition ~p",
-	   [SaleConditions, DetailConditions]), 
-
+	   [SaleConditions, DetailConditions]),
+    
     {StartTime, EndTime, CutSaleConditions}
 	= ?sql_utils:cut(fields_with_prifix, SaleConditions),
 
@@ -565,10 +565,18 @@ inventory(inventory_new_rsn, Merchant, Conditions) ->
 	    case DetailConditions of
 		[] -> Sql1;
 		_ ->
+		    Over = ?v(<<"over">>, DetailConditions, []),
+		    D = proplists:delete(<<"over">>, DetailConditions),
 		    "select a.rsn from w_inventory_new a "
 			"inner join (select rsn from w_inventory_new_detail"
 			" where rsn like " ++ "\'M-" ++ ?to_s(Merchant) ++"%\'"
-			++ ?sql_utils:condition(proplists, DetailConditions) ++ ") b"
+			++ ?sql_utils:condition(proplists, D)
+			++ case Over of
+			       [] -> [];
+			       0 -> " and over !=0 ";
+			       _ -> []
+			   end
+			++ ") b"
 			" on a.rsn=b.rsn"
 			" where " ++ TimeSql 
 	    end;
@@ -1774,8 +1782,9 @@ type(reject) -> 1.
 
 sort_condition(w_inventory_new, Merchant, Conditions) ->
     HasPay = ?v(<<"has_pay">>, Conditions, []),
+    Over = ?v(<<"over">>, Conditions, []),
 
-    C = proplists:delete(<<"has_pay">>, Conditions),
+    C = proplists:delete(<<"has_pay">>, proplists:delete(<<"over">>, Conditions)),
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_with_prifix, C),
 
     "a.merchant=" ++ ?to_s(Merchant)
@@ -1784,6 +1793,11 @@ sort_condition(w_inventory_new, Merchant, Conditions) ->
 	       [] -> [];
 	       0 -> " and a.has_pay>0";
 	       1 -> " and a.has_pay<0"
+	   end
+	++ case Over of
+	       [] -> [];
+	       0 -> " and over!=0";
+	       _ -> []
 	   end
 	++ case ?sql_utils:condition(time_with_prfix, StartTime, EndTime) of
 	       [] -> [];
@@ -1815,12 +1829,14 @@ filter_condition(inventory_new, [{<<"sex">>, _} = OT|T], Acc1, Acc2) ->
     filter_condition(inventory_new, T, [OT|Acc1], Acc2);
 filter_condition(inventory_new, [{<<"year">>, _} = OT|T], Acc1, Acc2) ->
     filter_condition(inventory_new, T, [OT|Acc1], Acc2);
-filter_condition(inventory_new, [{<<"season">>, _} = OT|T], Acc1, Acc2) ->
-    filter_condition(inventory_new, T, [OT|Acc1], Acc2);
+filter_condition(inventory_new, [{<<"season">>, _} = ST|T], Acc1, Acc2) ->
+    filter_condition(inventory_new, T, [ST|Acc1], Acc2);
 filter_condition(inventory_new, [{<<"region">>, _}|T], Acc1, Acc2) ->
     filter_condition(inventory_new, T, Acc1, Acc2);
 filter_condition(inventory_new, [{<<"org_price">>, OrgPrice}|T], Acc1, Acc2) ->
     filter_condition(inventory_new, T, [{<<"org_price">>, ?to_i(OrgPrice)}|Acc1], Acc2);
+filter_condition(inventory_new, [{<<"over">>, _} = OT|T], Acc1, Acc2) ->
+    filter_condition(inventory_new, T, [OT|Acc1], Acc2);
 
 
 filter_condition(inventory_new, [{<<"purchaser_type">>, OT}|T], Acc1, Acc2) ->

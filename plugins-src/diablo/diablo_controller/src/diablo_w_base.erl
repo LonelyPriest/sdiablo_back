@@ -339,5 +339,6 @@ sys_config() ->
 	      {"stock_warning",   "库存预警",             "0",   "0"},
 	      {"stock_warning_a", "库存预警数量",         "0",   "0"},
 	      {"stock_contailer", "货品货柜号",           "0",   "0"}
+	      %%  {"score_withdraw",  "提现是否积分",         "1",   "0"}
 	     ],
     Values.

@@ -244,7 +244,11 @@ function filterProvider(){
 		} else if(name === 'region'){
 		    _filter.fields.push({name:"region", chinese:"区域"});
 		    _prompt.region = promptValues;
-		} 
+		} else if(name === 'over'){
+		    _filter.fields.push({name:"over", chinese:"溢出"});
+		    _prompt.over = promptValues;
+		}
+		
 		return _filter;
 	    },
 
