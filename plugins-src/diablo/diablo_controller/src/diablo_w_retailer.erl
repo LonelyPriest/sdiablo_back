@@ -20,7 +20,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
--export([retailer/3, retailer/4]).
+-export([retailer/2, retailer/3, retailer/4]).
 -export([charge/2, charge/3]).
 -export([score/2, score/3, ticket/3, get_ticket/3]).
 -export([filter/4, filter/6]).
@@ -33,6 +33,9 @@
 %%%===================================================================
 %%% API
 %%%===================================================================
+retailer(list, Merchant) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {list_retailer, Merchant, []}).
 
 retailer(list, Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
