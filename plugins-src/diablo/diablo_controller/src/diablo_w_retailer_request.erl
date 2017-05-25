@@ -295,7 +295,7 @@ action(Session, Req, {"update_recharge"}, Payload) ->
     Merchant = ?session:get(merchant, Session), 
     ChargeId = ?v(<<"charge_id">>, Payload),
 
-    case ?w_retailer:charge(delete_recharge, Merchant, {ChargeId, Payload}) of
+    case ?w_retailer:charge(update_recharge, Merchant, {ChargeId, Payload}) of
 	{ok, ChargeId} ->
 	    %% ?w_user_profile:update(retailer, Merchant),
 	    ?utils:respond(200, Req, ?succ(update_recharge, ChargeId));
@@ -449,7 +449,8 @@ action(Session, Req, {"export_w_retailer"}, Payload) ->
     ?DEBUG("export_w_retailer with session ~p, payload ~p", [Session, Payload]),
     Merchant    = ?session:get(merchant, Session),
     UserId      = ?session:get(id, Session),
-    case ?w_retailer:retailer(list, Merchant) of
+    {_StartTime, _EndTime, Conditions} = ?sql_utils:cut(non_prefix, Payload),
+    case ?w_retailer:retailer(list, Merchant, Conditions) of
 	[] -> ?utils:respond(200, Req, ?err(wretailer_export_none, Merchant));
 	{ok, Retailers} ->
 	    {ok, ExportFile, Url}

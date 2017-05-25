@@ -120,7 +120,7 @@
 		  <input type="text"
 			 class="form-control"
 			 name="firm"
-			 readonly
+			 x-ng-readonly="route_params.from!==8"
 			 placeholder="请输入厂商"
 			 x-ng-model="good.firm"
 			 x-ng-enter=""

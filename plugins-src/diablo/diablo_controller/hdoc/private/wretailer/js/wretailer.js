@@ -101,6 +101,7 @@ function wretailerDetailCtrlProvide(
     diabloFilter.reset_field();
     diabloFilter.add_field("month", $scope.months);
     diabloFilter.add_field("region", $scope.regions);
+    diabloFilter.add_field("shop", user.sortShops);
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
     
@@ -404,6 +405,15 @@ function wretailerDetailCtrlProvide(
 	    return undefined;
 	};
 	
+	var get_employee = function(shop_id) {
+	    return $scope.employees.filter(function(e) {
+		return e.shop === shop_id && e.state === 0;
+	    });
+	}
+
+	var select_shop = $scope.shops[0];
+	var employees = get_employee(select_shop.id);
+	
 	dialog.edit_with_modal(
 	    "wretailer-charge.html",
 	    undefined,
@@ -413,9 +423,9 @@ function wretailerDetailCtrlProvide(
 		name: retailer.name,
 		balance:retailer.balance,
 		shops: $scope.shops,
-		select_shop: $scope.shops[0],
-		employees: $scope.employees,
-		select_employee: $scope.employees[0],
+		select_shop: select_shop,
+		employees: employees,
+		select_employee: employees[0],
 		// charges: $scope.charges,
 		// select_charge:get_charge($scope.shops[0].charge_id)
 	    },
@@ -588,20 +598,22 @@ function wretailerDetailCtrlProvide(
     };
 
     $scope.export_retailer = function(){
-	wretailerService.export_w_retailer().then(function(state){
-	    if (state.ecode === 0){
-		dialog.response_with_callback(
-		    true,
-		    "文件导出成功",
-		    "创建文件成功，请点击确认下载！！",
-		    undefined,
-		    function(){window.location.href = state.url;})
-	    } else {
-		dialog.response(
-		    false, "文件导出失败", "创建文件失败："
-			+ wretailerService.error[state.ecode]);
-	    }
-	})
+	diabloFilter.do_filter($scope.filters, $scope.time, function(search) {
+	    wretailerService.export_w_retailer(search).then(function(state){
+		if (state.ecode === 0){
+		    dialog.response_with_callback(
+			true,
+			"文件导出成功",
+			"创建文件成功，请点击确认下载！！",
+			undefined,
+			function(){window.location.href = state.url;})
+		} else {
+		    dialog.response(
+			false, "文件导出失败", "创建文件失败："
+			    + wretailerService.error[state.ecode]);
+		}
+	    })
+	}); 
     };
 
     $scope.syn_pinyin = function(){
@@ -724,7 +736,8 @@ function wretailerChargeDetailCtrlProvide(
 
 	    var update = {
 		id: recharge.id,
-		employee: diablo_get_modified(params.recharge.employee, recharge.employee)
+		employee: diablo_get_modified(params.recharge.employee, recharge.employee),
+		shop: diablo_get_modified(params.recharge.select_shop.id, recharge.shop_id)
 	    };
 
 	    console.log(update);
@@ -737,7 +750,7 @@ function wretailerChargeDetailCtrlProvide(
 			function(){$scope.do_search($scope.current_page)})
 		} else {
 		    dialog.response(
-			false, "删除充值记录", "充值记录删除失败："
+			false, "修改充值记录", "充值记录修改失败："
 			    + wretailerService.error[result.ecode]);
 		}
 	    })
@@ -746,9 +759,12 @@ function wretailerChargeDetailCtrlProvide(
 	var employees = filterEmployee.filter(function(e){
 	    return e.shop === recharge.shop_id;
 	});
+
+	recharge.select_shop = diablo_get_object(recharge.shop_id, $scope.shops);
 	
 	var payload = {
-	    recharge: recharge,
+	    shops:     $scope.shops,
+	    recharge:  recharge,
 	    employees: employees
 	};
 	

@@ -20,7 +20,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
--export([retailer/2, retailer/3, retailer/4]).
+-export([retailer/3, retailer/4]).
 -export([charge/2, charge/3]).
 -export([score/2, score/3, ticket/3, get_ticket/3]).
 -export([filter/4, filter/6]).
@@ -34,9 +34,9 @@
 %%% API
 %%%===================================================================
 
-retailer(list, Merchant) ->
+retailer(list, Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {list_retailer, Merchant}).
+    gen_server:call(Name, {list_retailer, Merchant, Conditions});
 
 retailer(new, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -434,8 +434,8 @@ handle_call({delete_retailer, Merchant, RetailerId}, _From, State) ->
 	    {reply, {error, ?err(wretailer_retalted_sale, RetailerId)}, State} 
     end;
 
-handle_call({list_retailer, Merchant}, _From, State) ->
-    ?DEBUG("lookup retail with merchant ~p", [Merchant]),
+handle_call({list_retailer, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("lookup retail with merchant ~p, Conditions ~p", [Merchant, Conditions]),
     Sql = "select a.id"
 	", a.name"
 	", a.id_card"
@@ -457,6 +457,7 @@ handle_call({list_retailer, Merchant}, _From, State) ->
 	" from w_retailer a"
 	" left join shops b on a.shop=b.id"
 	" where a.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, Conditions)
 	++ " and a.deleted=" ++ ?to_s(?NO)
 	++ " order by a.id desc",
 
@@ -714,13 +715,15 @@ handle_call({delete_recharge, Merchant, ChargeId}, _From, State) ->
 
 handle_call({update_recharge, Merchant, {ChargeId, Attrs}}, _From, State) ->
     Employee = ?v(<<"employee">>, Attrs),
+    Shop = ?v(<<"shop">>, Attrs),
 
-    Updates = ?utils:v(employ, string, Employee),
+    Updates = ?utils:v(employ, string, Employee)
+	++ ?utils:v(shop, integer, Shop),
     
-    Sql0 = "update w_charge_detail set"
+    Sql0 = "update w_charge_detail set "
 	++ ?utils:to_sqls(proplists, comma, Updates) 
-	++ " where a.id=" ++ ?to_s(ChargeId)
-	++ " and a.merchant=" ++ ?to_s(Merchant),
+	++ " where id=" ++ ?to_s(ChargeId)
+	++ " and merchant=" ++ ?to_s(Merchant),
 
     Reply = ?sql_utils:execute(write, Sql0, ChargeId), 
     {reply, Reply, State};

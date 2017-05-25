@@ -315,8 +315,9 @@ function wretailerConfig(angular) {
 
 	this.update_recharge = function(charge){
 	    return http.save({operation:"update_recharge"},
-			     {charge_id: charge,
-			      employee: charge.employee}).$promise;
+			     {charge_id: charge.id,
+			      employee: charge.employee,
+			      shop: charge.shop}).$promise;
 	};
 
 	this.export_recharge_detail = function(condition){
@@ -377,8 +378,8 @@ function wretailerConfig(angular) {
 		{operation: "get_w_retailer_ticket"}, {batch:batch, mode:1}).$promise;
 	};
 
-	this.export_w_retailer = function(){
-	    return http.save({operation: "export_w_retailer"}).$promise;
+	this.export_w_retailer = function(conditions){
+	    return http.save({operation: "export_w_retailer"}, conditions).$promise;
 	};
 
 	this.syn_retailer_pinyin = function(retailers){

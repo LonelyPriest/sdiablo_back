@@ -188,10 +188,15 @@
 	    店铺
 	  </span>
 	  <div class="col-md-6 col-sm-6 col-xs-6">
-	    <input type="text"
-		   class="form-control"
-		   x-ng-readonly=true
-		   x-ng-model="params.recharge.shop"/>
+	    <!-- <input type="text" -->
+	    <!-- 	   class="form-control" -->
+	    <!-- 	   x-ng-readonly=true -->
+	    <!-- 	   x-ng-model="params.recharge.shop"/> -->
+	    <select type="text"
+		    class="form-control"
+		    x-ng-model="params.recharge.select_shop"
+		    x-ng-options="s as s.name for s in params.shops">
+	    </select> 
 	  </div>
 	</div>
 
