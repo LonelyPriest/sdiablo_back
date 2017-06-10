@@ -201,3 +201,7 @@ alter table w_change_shift add column charge INTEGER not null default 0 after ti
 alter table w_change_shift add column ccash INTEGER not null default 0 after charge;
 alter table w_change_shift add column ccard INTEGER not null default 0 after ccash;
 alter table w_change_shift add column cwxin INTEGER not null default 0 after ccard;
+
+
+-- 2017-06-10
+alter table w_daily_report add column charge DECIMAL(10, 2) not null default 0 after ticket;

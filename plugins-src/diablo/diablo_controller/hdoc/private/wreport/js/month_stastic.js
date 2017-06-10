@@ -27,6 +27,8 @@ function monthStasticCtrlProvide(
 	ticket: 0,
 	veri: 0,
 
+	charge:0,
+
 	stockIn: 0,
 	stockInCost: 0,
 	stockOut: 0,
@@ -63,6 +65,8 @@ function monthStasticCtrlProvide(
 	$scope.s_stastic.draw = 0;
 	$scope.s_stastic.ticket = 0;
 	$scope.s_stastic.veri = 0;
+
+	$scope.s_stastic.charge = 0;
 
 	$scope.s_stastic.stockIn = 0;
 	$scope.s_stastic.stockInCost = 0;
@@ -134,6 +138,8 @@ function monthStasticCtrlProvide(
 			p.draw     = d.draw;
 			p.ticket   = d.ticket;
 
+			p.charge   = d.charge;
+
 			p.stockIn       = d.stock_in;
 			p.stockOut      = d.stock_out;
 			p.stockInCost   = d.stock_in_cost;
@@ -163,6 +169,8 @@ function monthStasticCtrlProvide(
 			$scope.s_stastic.draw += to_f(p.draw);
 			$scope.s_stastic.ticket += to_f(p.ticket);
 			$scope.s_stastic.veri += to_f(p.veri);
+
+			$scope.s_stastic.charge += to_f(p.charge);
 
 			$scope.s_stastic.stockIn += to_i(p.stockIn);
 			$scope.s_stastic.stockInCost += to_f(p.stockInCost);

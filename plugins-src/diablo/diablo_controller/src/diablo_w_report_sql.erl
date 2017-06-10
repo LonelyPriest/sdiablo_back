@@ -98,7 +98,7 @@ daily(detail, Merchant, Conditions) ->
     
     "select id, merchant, shop as shop_id"
 	", sell, sell_cost as sellCost, balance, cash, card, wxin, draw, ticket, veri"
-	", stock, stockc, stock_cost as stockCost"
+	", charge, stock, stockc, stock_cost as stockCost"
 	
 	", stock_in as stockIn, stock_in_cost as stockInCost"
 	", stock_out as stockOut, stock_out_cost as stockOutCost"

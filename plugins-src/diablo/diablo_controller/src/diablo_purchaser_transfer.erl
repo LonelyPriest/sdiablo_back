@@ -242,7 +242,7 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 
     Sql2 = "select style_number, brand, type, sex, season"
     	", firm, s_group, free, year"
-    	", org_price, tag_price, discount, ediscount, amount, path"
+    	", org_price, tag_price, discount, ediscount, amount, path, entry_date"
 	" from w_inventory_transfer_detail"
 	" where rsn=\"" ++ ?to_s(RSN) ++ "\"",
 
@@ -276,6 +276,14 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 		Amount      = ?v(<<"amount">>, Transfer), 
 		Path        = ?v(<<"path">>, Transfer, []),
 		AlarmDay    = ?v(<<"alarm_day">>, Transfer, ?DEFAULT_ALARM_DAY),
+		EntryDate   = ?v(<<"entry_date">>, Transfer),
+
+		Sql22 = "select style_number, brand, entry_date"
+		    " from w_inventory_good"
+		    " where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+		    " and brand=" ++ ?to_s(Brand)
+		    ++ " and merchant=" ++ ?to_s(Merchant),
+		{ok, Good} = ?sql_utils:execute(s_read, Sql22),
 
 		Sql21 = "select id, style_number, brand, shop, merchant"
 		    " from w_inventory"
@@ -286,15 +294,7 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 		    ++ " and merchant=" ++ ?to_s(Merchant), 
 
 		case ?sql_utils:execute(s_read, Sql21) of
-		    {ok, []} ->
-
-			Sql22 = "select style_number, brand, entry_date"
-			    " from w_inventory_good"
-			    " where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
-			    " and brand=" ++ ?to_s(Brand)
-			    ++ " and merchant=" ++ ?to_s(Merchant),
-			{ok, Good} = ?sql_utils:execute(s_read, Sql22),
-			
+		    {ok, []} -> 
 			["insert into w_inventory(rsn"
 			 ", style_number, brand, firm, type, sex, season, year"
 			 ", amount, s_group, free, promotion, score"
@@ -326,8 +326,13 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 			 ++ ?to_s(TShop) ++ ","
 			 ++ ?to_s(Merchant) ++ ","
 			 ++ "\"" ++ ?to_s(Now) ++ "\","
-			 ++ "\"" ++ ?to_s(Now) ++ "\","
-			 ++ "\"" ++ ?to_s(?v(<<"entry_date">>, Good)) ++ "\")"
+			 ++ "\"" ++ ?to_s(Now) ++ "\"," 
+			 ++ "\"" ++
+			     case Good of
+				 [] -> ?to_s(EntryDate);
+				 _ -> ?to_s(?v(<<"entry_date">>, Good))
+			     end
+			 ++ "\")"
 
 			 %% "insert into w_inventory_amount(rsn"
 			 %% ", style_number, brand, color, size"
@@ -384,7 +389,7 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 		    case ?sql_utils:execute(
 			    read,
 			    "select id, style_number"
-			    ", brand, color, size, total"
+			    ", brand, color, size, total, entry_date"
 			    " from w_inventory_transfer_detail_amount"
 			    " where rsn=\"" ++ ?to_s(RSN) ++ "\""
 			    " and style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
@@ -398,7 +403,7 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 				      Color = ?v(<<"color">>, RD),
 				      Size  = ?v(<<"size">>, RD),
 				      Total = ?v(<<"total">>, RD),
-
+				      
 				      Sql33 =
 					  "select id, style_number, brand, shop"
 					  ", color, size, merchant"
@@ -412,12 +417,12 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 					  ++ " and merchant=" ++ ?to_s(Merchant),
 				      case ?sql_utils:execute(s_read, Sql33) of
 					  {ok, []} ->
-					      Sql22 = "select style_number, brand, entry_date"
-						  " from w_inventory_good"
-						  " where style_number=\'"++?to_s(StyleNumber) ++ "\'"
-						  " and brand=" ++ ?to_s(Brand)
-						  ++ " and merchant=" ++ ?to_s(Merchant),
-					      {ok, Good} = ?sql_utils:execute(s_read, Sql22),
+					      %% Sql22 = "select style_number, brand, entry_date"
+					      %% 	  " from w_inventory_good"
+					      %% 	  " where style_number=\'"++?to_s(StyleNumber) ++ "\'"
+					      %% 	  " and brand=" ++ ?to_s(Brand)
+					      %% 	  ++ " and merchant=" ++ ?to_s(Merchant),
+					      %% {ok, Good} = ?sql_utils:execute(s_read, Sql22),
 					      
 					      ["insert into w_inventory_amount("
 					       "rsn, style_number, brand"
@@ -431,7 +436,11 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 					       ++ ?to_s(TShop) ++ ","
 					       ++ ?to_s(Merchant) ++ ","
 					       ++ ?to_s(Total) ++ ","
-					       ++ "\"" ++ ?to_s(?v(<<"entry_date">>, Good)) ++ "\")"];
+					       ++ "\"" 
+					       ++ case Good of
+						      [] ->?to_s(?v(<<"entry_date">>, RD));
+						      _ -> ?to_s(?v(<<"entry_date">>, Good))
+						  end ++ "\")"];
 					  {ok, RR} ->
 					      ["update w_inventory_amount"
 					       " set total=total+" ++ ?to_s(Total)

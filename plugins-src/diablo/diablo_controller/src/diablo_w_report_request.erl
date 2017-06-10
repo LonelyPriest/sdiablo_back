@@ -253,6 +253,8 @@ action(Session, Req, {"export_month_report"}, Payload) ->
 			 {<<"draw">>, ?v(<<"draw">>, D, 0)},
 			 {<<"ticket">>, ?v(<<"ticket">>, D, 0)},
 
+			 {<<"charge">>, ?v(<<"charge">>, D, 0)},
+
 			 {<<"stockIn">>, ?v(<<"stock_in">>, D, 0)},
 			 {<<"stockOut">>, ?v(<<"stock_out">>, D, 0)},
 			 {<<"stockInCost">>, ?v(<<"stock_in_cost">>, D, 0)},
@@ -271,7 +273,7 @@ action(Session, Req, {"export_month_report"}, Payload) ->
 	%% ?DEBUG("reports ~p", [MonthReports]),
 	
 	{ok, ExportFile, Url} = ?utils:create_export_file("mreport", Merchant, UserId),
-	Calcs = erlang:list_to_tuple(lists:duplicate(21, 0)),
+	Calcs = erlang:list_to_tuple(lists:duplicate(22, 0)),
 	case file:open(ExportFile, [append, raw]) of
 	    {ok, Fd} -> 
 		try
@@ -716,7 +718,7 @@ yestoday(Datetime) when is_binary(Datetime)->
 csv_head(month_report, Do) ->
     Head = "序号,店铺,库存,库存成本"
        ",销售数量,销售金额,销售成本,现金,刷卡,微信,提现,电子卷,核销"
-       ",入库数量,入库成本,出库数量,出库成本"
+       ",充值,入库数量,入库成本,出库数量,出库成本"
        ",调入数量,调入成本,调出数量,调出成本"
 	",盘点数量,盘点成本",
     %% UTF8 = unicode:characters_to_list(Head, utf8),
@@ -726,7 +728,7 @@ csv_head(month_report, Do) ->
 do_write(month_report, Do, _Count, [], Calcs) ->
     {CStockc, CStockCost,
      CSell, CSellCost, CBalance, CCash, CCard, CWxin, CDraw, CTicket, CVeri,
-     CStockIn, CStockOut, CStockInCost, CStockOutCost,
+     Charge, CStockIn, CStockOut, CStockInCost, CStockOutCost,
      CTStockIn, CTStockOut, CTStockInCost, CTStockOutCost,
      CStockFix, CStockFixCost} = Calcs,
 
@@ -745,6 +747,8 @@ do_write(month_report, Do, _Count, [], Calcs) ->
        ++ ?to_s(CDraw) ++ ?d
        ++ ?to_s(CTicket) ++ ?d
        ++ ?to_s(CVeri) ++ ?d
+
+       ++ ?to_s(Charge) ++ ?d
 
        ++ ?to_s(CStockIn) ++ ?d
        ++ ?to_s(CStockInCost) ++ ?d
@@ -774,6 +778,7 @@ do_write(month_report, Do, Count, [{H}|T], Calcs) ->
     Ticket = ?v(<<"ticket">>, H),
     Veri = ?v(<<"veri">>, H), 
 
+    Charge = ?v(<<"charge">>, H),
     StockIn = ?v(<<"stockIn">>, H),
     StockOut = ?v(<<"stockOut">>, H),
     StockInCost = ?v(<<"stockInCost">>, H),
@@ -803,6 +808,7 @@ do_write(month_report, Do, Count, [{H}|T], Calcs) ->
 	++ ?to_s(Ticket) ++ ?d
 	++ ?to_s(Veri) ++ ?d
 
+	++ ?to_s(Charge) ++ ?d
 	++ ?to_s(StockIn) ++ ?d
 	++ ?to_s(StockInCost) ++ ?d
 	++ ?to_s(StockOut) ++ ?d
@@ -819,7 +825,7 @@ do_write(month_report, Do, Count, [{H}|T], Calcs) ->
     
     {CStockc, CStockCost,
      CSell, CSellCost, CBalance, CCash, CCard, CWxin, CDraw, CTicket, CVeri,
-     CStockIn, CStockOut, CStockInCost, CStockOutCost,
+     CCharge, CStockIn, CStockOut, CStockInCost, CStockOutCost,
      CTStockIn, CTStockOut, CTStockInCost, CTStockOutCost,
      CStockFix, CStockFixCost} = Calcs,
     
@@ -836,6 +842,7 @@ do_write(month_report, Do, Count, [{H}|T], Calcs) ->
 					      CTicket + Ticket,
 					      CVeri + Veri,
 
+					      CCharge + Charge,
 					      CStockIn + StockIn,
 					      CStockOut + StockOut,
 					      CStockInCost + StockInCost,

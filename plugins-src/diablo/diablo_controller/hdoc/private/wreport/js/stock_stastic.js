@@ -51,7 +51,7 @@ function stockStasticCtrlProvide(
 
 	// stock: 0,
 	// stockCost: 0,
-
+	charge: 0,
 	stockIn: 0,
 	stockInCost: 0,
 	stockOut: 0,
@@ -109,6 +109,8 @@ function stockStasticCtrlProvide(
 			$scope.s_stastic.draw = result.draw;
 			$scope.s_stastic.ticket = result.ticket;
 			$scope.s_stastic.veri = result.veri;
+
+			$scope.s_stastic.charge = result.charge;
 
 			// $scope.s_stastic.stock = result.stock;
 			// $scope.s_stastic.stockCost = result.stockCost;

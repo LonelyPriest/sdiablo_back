@@ -178,7 +178,8 @@ handle_call({total_of_daily, Merchant, Conditions}, _From, State) ->
 	", sum(draw) as draw" 
 	", sum(ticket) as ticket" 
 	", sum(veri) as veri"
-	
+
+	", sum(charge) as charge"
     %% ", sum(stock) as stock"
     %% ", sum(stock_cost) as stockCost"
 	
@@ -491,6 +492,8 @@ handle_call({month_report_by_shop, Merchant, Conditions}, _From, State) ->
 	", SUM(veri) as veri"
 	", SUM(draw) as draw"
 	", SUM(ticket) as ticket"
+
+	", SUM(charge) as charge"
 	
 	", SUM(stock_in) as stock_in"
 	", SUM(stock_out) as stock_out"
