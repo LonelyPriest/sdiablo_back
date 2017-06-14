@@ -1,6 +1,11 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2017-06-15",
+         content:
+	 ["修正入库记录导出时，已废弃单据记录同时导出的问题",
+	  "修正移仓时，导至上架日期偶尔为0的问题"]
+        },
 	{date: "2017-05-25",
          content:
 	 ["增加充值记录可修改店铺与经手人",

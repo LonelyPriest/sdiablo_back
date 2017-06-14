@@ -2373,7 +2373,7 @@ handle_call({new_trans_export, Merchant, Conditions}, _From, State)->
 	" left join shops c on a.shop=c.id"
 	" left join (select id, number, name from employees where merchant="
 	++ ?to_s(Merchant) ++ ") d on a.employ=d.number"
-	" where " ++ SortConditions ++ "order by a.id desc",
+	" where " ++ SortConditions ++ " and a.state in (0, 1) order by a.id desc",
     
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
