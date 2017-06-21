@@ -83,7 +83,9 @@ function purchaserInventoryNewCtrlProvide (
     }; 
 
     $scope.$watch("select.firm", function(newValue, oldValue){
-	if (newValue === oldValue) return; 
+	if (newValue === oldValue) return;
+	if (diablo_no === $scope.base_settings) return;
+	
 	$scope.change_firm();
     });
     
@@ -227,6 +229,8 @@ function purchaserInventoryNewCtrlProvide (
 	$scope.base_settings.stock_alarm     = stockUtils.stock_alarm(shopId, base);
 	$scope.base_settings.stock_alarm_a   = stockUtils.stock_alarm_a(shopId, base);
 	$scope.base_settings.stock_contailer = stockUtils.stock_contailer(shopId, base);
+
+	$scope.base_settings.stock_with_firm = stockUtils.stock_with_firm(shopId, base);
     }
 
     $scope.change_shop = function(){
@@ -353,6 +357,11 @@ function purchaserInventoryNewCtrlProvide (
 		return;
 	    }
 	    
+	    // do not check firm 
+	    if ($scope.base_settings.stock_with_firm === diablo_no) {
+		continue;
+	    }
+
 	    if (item.firm_id === -1 || $scope.inventories[i].firm_id === -1) {
 		continue;
 	    }
@@ -372,10 +381,12 @@ function purchaserInventoryNewCtrlProvide (
 	    };
 	}
 	
-	if (-1 !== item.firm_id){
-	    $scope.select.firm = diablo_get_object(item.firm_id, $scope.firms);
+	if ($scope.base_settings.stock_with_firm === diablo_yes) {
+	    if (-1 !== item.firm_id){
+		$scope.select.firm = diablo_get_object(item.firm_id, $scope.firms);
+	    }
 	}
-
+	
 	// auto focus
 	$scope.auto_focus("sale");
 	
@@ -582,8 +593,15 @@ function purchaserInventoryNewCtrlProvide (
 	
 	var base = {
 	    // brand:         $scope.select.brand.id,
-	    firm:          angular.isDefined($scope.select.firm)
-		&& $scope.select.firm ? $scope.select.firm.id : undefined,
+	    firm:         function() {
+		if (angular.isDefined($scope.select.firm)
+		    && $scope.base_settings.stock_with_firm === diablo_yes) {
+		    return $scope.select.firm;
+		} else {
+		    return undefined;
+		}
+	    }(),
+	    
 	    shop:          $scope.select.shop.id,
 	    datetime:      dateFilter($scope.select.date, "yyyy-MM-dd HH:mm:ss"),
 	    employee:      $scope.select.employee.id,

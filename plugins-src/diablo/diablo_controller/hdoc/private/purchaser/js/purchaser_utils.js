@@ -72,6 +72,10 @@ var stockUtils = function(){
 	    return diablo_base_setting("image_mode", shop, base, parseInt, diablo_no);
 	},
 
+	stock_with_firm: function(shop, base) {
+	    return diablo_base_setting("stock_firm", shop, base, parseInt, diablo_yes);
+	},
+
 	yes_no: function() {return [{name:"否", id: 0}, {name:"是", id: 1}]},
 
 	valid_season: function(month){
