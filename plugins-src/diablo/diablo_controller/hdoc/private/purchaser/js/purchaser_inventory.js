@@ -532,7 +532,8 @@ function purchaserInventoryNewCtrlProvide (
 	var added = [];
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    var add = $scope.inventories[i];
-	    if (diablo_invalid_firm !== add.firm_id
+	    if (diablo_yes === $scope.base_settings.stock_with_firm
+		&& diablo_invalid_firm !== add.firm_id
 		&& add.firm_id !== stockUtils.invalid_firm($scope.select.firm)){
 		$scope.has_saved = false;
 		diabloUtilsService.response(
@@ -596,7 +597,7 @@ function purchaserInventoryNewCtrlProvide (
 	    firm:         function() {
 		if (angular.isDefined($scope.select.firm)
 		    && $scope.base_settings.stock_with_firm === diablo_yes) {
-		    return $scope.select.firm;
+		    return $scope.select.firm.id;
 		} else {
 		    return undefined;
 		}

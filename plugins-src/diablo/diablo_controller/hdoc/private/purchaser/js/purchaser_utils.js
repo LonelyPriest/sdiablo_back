@@ -243,7 +243,7 @@ var stockUtils = function(){
 	    }
 	    
 	    else if (angular.isObject(newValue)){
-		return newValue.id === oldValue.id ?  true : false; 
+		return !angular.isUndefined(oldValue) && newValue.id === oldValue.id ?  true : false; 
 	    }
 	    else {
 		return newValue === oldValue ? true : false; 
