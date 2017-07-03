@@ -1963,6 +1963,10 @@ function purchaserInventoryDetailCtrlProvide(
 	}
     };
 
+    $scope.bar_code = function() {
+	
+    };
+
     $scope.export_to = function(){
 	diabloFilter.do_filter(
 	    $scope.filters, $scope.time, function(search){

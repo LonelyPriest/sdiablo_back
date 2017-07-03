@@ -575,7 +575,7 @@ sidebar(Session) ->
     L1 ++ L2.
 
 csv_head(retailer, Do) ->
-    Head = "序号,名称,类型,联系方式,累计消费,累计积分,所在店铺,日期",
+    Head = "序号,名称,类型,联系方式,余额,累计消费,累计积分,所在店铺,日期",
     UTF8 = unicode:characters_to_list(Head, utf8),
     Do(UTF8);
 csv_head(recharge, Do) ->
@@ -592,6 +592,7 @@ do_write(retailer, Do, Count, [{H}|T]) ->
     Name    = ?v(<<"name">>, H),
     Type    = retailer_type(?v(<<"type_id">>, H)),
     Mobile  = ?v(<<"mobile">>, H, []),
+    Balance = ?v(<<"balance">>, H, 0),
     Consume = ?v(<<"consume">>, H),
     Score   = ?v(<<"score">>, H),
     Shop    = ?v(<<"shop">>, H),
@@ -602,6 +603,7 @@ do_write(retailer, Do, Count, [{H}|T]) ->
 	++ ?to_s(Name) ++ ?d
 	++ ?to_s(Type) ++ ?d
 	++ ?to_s(Mobile) ++ ?d
+	++ ?to_s(Balance) ++ ?d
 	++ ?to_s(Consume) ++ ?d
 	++ ?to_s(Score) ++ ?d
 	++ ?to_s(Shop) ++ ?d

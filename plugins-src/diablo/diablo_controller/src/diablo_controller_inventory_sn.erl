@@ -40,6 +40,23 @@ sn(member, Merchant) ->
     Key = ?to_atom("member-no-" ++ ?to_s(Merchant)),
     gen_server:call(?SERVER, {new, Key});
 
+sn(firm, Merchant) ->
+    Key = ?to_atom("firm-no-" ++ ?to_s(Merchant)),
+    gen_server:call(?SERVER, {new, Key});
+
+sn(brand, Merchant) ->
+    Key = ?to_atom("brand-no-" ++ ?to_s(Merchant)),
+    gen_server:call(?SERVER, {new, Key});
+
+sn(type, Merchant) ->
+    Key = ?to_atom("type-no-" ++ ?to_s(Merchant)),
+    gen_server:call(?SERVER, {new, Key});
+
+sn(color, Merchant) ->
+    Key = ?to_atom("color-no-" ++ ?to_s(Merchant)),
+    gen_server:call(?SERVER, {new, Key});
+
+
 sn(running_no, Merchant) ->
     Key = ?to_atom("running-no-" ++ ?to_s(Merchant)),
     gen_server:call(?SERVER, {new, Key});
@@ -158,6 +175,11 @@ handle_call({init, Merchant}, _From, State) ->
 		mnesia:write(#unique_ids{merchant=?to_atom("running-no-" ++ M) , id=0}),
 		mnesia:write(#unique_ids{merchant=?to_atom("member-no-" ++ M) , id=0}),
 		mnesia:write(#unique_ids{merchant=?to_atom("ad-no-" ++ M) , id=0}),
+
+		mnesia:write(#unique_ids{merchant=?to_atom("firm-no-" ++ M) , id=0}),
+		mnesia:write(#unique_ids{merchant=?to_atom("brand-no-" ++ M) , id=0}),
+		mnesia:write(#unique_ids{merchant=?to_atom("type-no-" ++ M) , id=0}),
+		mnesia:write(#unique_ids{merchant=?to_atom("color-no-" ++ M) , id=0}),
 		
 		%% whole sale
 		mnesia:write(#unique_ids{merchant=?to_atom("w-inv-new-sn-" ++ M) , id=0}),

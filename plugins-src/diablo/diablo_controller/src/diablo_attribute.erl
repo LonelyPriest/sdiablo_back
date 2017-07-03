@@ -20,7 +20,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
--export([color_type/2, color/2, color/3]).
+-export([color_type/2, color/2, color/3, bcode/3]).
 -export([size_group/2, size_group/3]).
 -export([brand/2, brand/3]).
 -export([type/2, type/3]).
@@ -68,6 +68,16 @@ type(list, Merchant) ->
     gen_server:call(?MODULE, {list_type, Merchant}).
 
 
+bcode(update, firm, Merchant) ->
+    gen_server:call(?MODULE, {bcode_update, firm, Merchant});
+bcode(update, brand, Merchant) ->
+    gen_server:call(?MODULE, {bcode_update, brand, Merchant});
+bcode(update, type, Merchant) ->
+    gen_server:call(?MODULE, {bcode_update, type, Merchant});
+bcode(update, color, Merchant) ->
+    gen_server:call(?MODULE, {bcode_update, color, Merchant}).
+
+
 
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
@@ -101,9 +111,11 @@ handle_call({new_w_color, Merchant, Attr}, _From, State) ->
 
     Reply = 
 	case ?sql_utils:execute(s_read, Sql0) of
-	    {ok, []} -> 
-		Sql1 = "insert into colors(name, type, remark, merchant)"
+	    {ok, []} ->
+		BCode = ?inventory_sn:sn(color, Merchant),
+		Sql1 = "insert into colors(bcode, name, type, remark, merchant)"
 		    " values("
+		    ++ ?to_s(BCode) ++ ","
 		    ++ "\"" ++ ?to_s(Name) ++ "\","
 		    ++ ?to_s(Type) ++ ","
 		    ++ "\"" ++ ?to_s(Remark) ++ "\","
@@ -149,7 +161,7 @@ handle_call({delete_w_color, Merchant, ColorId}, _From, State) ->
 
 handle_call({list_w_color, Merchant}, _Form, State) ->
     ?DEBUG("list colors with merchant ~p", [Merchant]),
-    Sql = "select a.id, a.name, a.type as tid, a.remark, b.name as type"
+    Sql = "select a.id, a.bcode, a.name, a.type as tid, a.remark, b.name as type"
 	++ " from colors a, color_type b"
 	++ " where "
 	++ " a.merchant=" ++ ?to_s(Merchant)
@@ -161,7 +173,7 @@ handle_call({list_w_color, Merchant}, _Form, State) ->
 
 handle_call({list_w_color, Merchant, ColorIds}, _Form, State) ->
     ?DEBUG("list colors with merchant ~p, colorIds ~p", [Merchant, ColorIds]), 
-    Sql = "select id, name from colors"
+    Sql = "select id, bcode, name from colors"
 	" where " ++ ?utils:to_sqls(proplists, [{<<"id">>, ColorIds}])
 	++ " and merchant=" ++ ?to_s(Merchant)
 	++ " and deleted=" ++ ?to_s(?NO)
@@ -281,9 +293,11 @@ handle_call({new_brand, Merchant, Attrs}, _From, State) ->
     Reply =
 	case ?sql_utils:execute(s_read, Sql) of
 	    {ok, []} ->
+		BCode = ?inventory_sn:sn(brand, Merchant),
 		Sql1 = 
 		    "insert into brands"
-		    ++"(name, supplier, merchant, remark, entry) values("
+		    ++"(bcode, name, supplier, merchant, remark, entry) values("
+		    ++ ?to_s(BCode) ++ ","
 		    ++ "\'" ++?to_s(Name) ++ "\',"
 		    ++ ?to_s(Firm) ++ ","
 		    ++ ?to_s(Merchant) ++ ","
@@ -323,7 +337,7 @@ handle_call({update_brand, Merchant, Attrs}, _From, State) ->
 
 handle_call({list_brand, Merchant}, _From, State) ->
     ?DEBUG("list_brand with merchant ~p", [Merchant]),
-    Sql = "select a.id, a.name, a.supplier as supplier_id"
+    Sql = "select a.id, a.bcode, a.name, a.supplier as supplier_id"
 	", a.remark, a.entry"
 	", b.name as supplier"
 	++ " from brands a"
@@ -345,9 +359,11 @@ handle_call({new_type, Merchant, Type}, _From, State) ->
     Reply = 
 	case ?sql_utils:execute(s_read, Sql) of
 	    {ok, []} ->
+		BCode = ?inventory_sn:sn(type, Merchant),
 		Sql1 = 
 		    "insert into inv_types"
-		    ++"(name, merchant) values("
+		    ++"(bcode, name, merchant) values("
+		    ++ ?to_s(BCode) ++ ","
 		    ++ "\"" ++?to_s(Type) ++ "\","
 		    ++ ?to_s(Merchant) ++ ");",
 		R = ?sql_utils:execute(insert, Sql1),
@@ -362,13 +378,48 @@ handle_call({new_type, Merchant, Type}, _From, State) ->
 
 handle_call({list_type, Merchant}, _From, State) ->
     ?DEBUG("list_type with merchant ~p", [Merchant]),
-    Sql = "select id, name from inv_types"
+    Sql = "select id, bcode, name from inv_types"
 	++ " where "
 	++ " merchant = " ++ ?to_string(Merchant)
 	++ " and deleted = " ++ ?to_string(?NO)
 	++ " order by id desc",
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
+
+handle_call({bcode_update, Table, Merchant}, _From, State) ->
+    Sql = "select id from "
+	++ case Table of
+	       firm -> "suppliers";
+	       brand -> "brands";
+	       type -> "inv_types";
+	       color -> "colors"
+	   end
+	++ " where merchant=" ++ ?to_s(Merchant)
+	++ " order by id",
+
+    case ?sql_utils:execute(read, Sql) of
+	{ok, []} ->
+	    {reply, ok, State};
+	{ok, Records} ->
+	    Sqls = 
+		lists:foldl(
+		  fun({R}, Acc) ->
+			  BCode = ?inventory_sn:sn(?to_a(Table), Merchant),
+			  ["update " ++ case Table of
+					    firm -> "suppliers";
+					    brand-> "brands";
+					    type -> "inv_types";
+					    color -> "colors"
+					end
+			   ++ " set bcode=" ++ ?to_s(BCode)
+			   ++ " where id=" ++ ?to_s(?v(<<"id">>, R))]
+			      ++ Acc
+		  end, [], Records),
+	    Reply = ?sql_utils:execute(transaction, Sqls, Table),
+	    {reply, Reply, State};
+	Error ->
+	    {reply, Error, State}
+    end;
 
 handle_call(_Request, _From, State) ->
     Reply = ok,

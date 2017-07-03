@@ -200,7 +200,6 @@ action(Session, Req, {"new_w_good"}, Payload) ->
 		 [filename:dirname(filename:dirname(Here)),
 		  "hdoc", "image", ?to_s(Merchant)]),
     
-    
     try 
 	{ok, BrandId} = ?attr:brand(new, Merchant, [{<<"name">>, Brand}]), 
 	case ImageData of

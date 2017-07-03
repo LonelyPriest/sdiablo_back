@@ -89,6 +89,7 @@ create table shops
 create table suppliers
 (
     id              INTEGER AUTO_INCREMENT,
+    bcode           INTEGER default 0, -- use to bar code
     code            INTEGER default -1,
     name            VARCHAR(128) not null,
     balance         DECIMAL(10, 2) default 0, -- max: 99999999.99
@@ -138,6 +139,7 @@ create table size_group(
 create table colors
 (
     id               INTEGER AUTO_INCREMENT,
+    bcode            INTEGER default 0, -- use to bar code
     name             VARCHAR(8) not null,
     type             TINYINT default 0, -- color type, 0: nothing
     remark           VARCHAR(255),
@@ -160,6 +162,7 @@ create table color_type(
 
 create table brands(
     id               INTEGER AUTO_INCREMENT,
+    bcode            INTEGER default 0, -- use to bar code
     name             VARCHAR(8) default null,
     supplier         INTEGER default -1,  -- supplier of brand
     merchant         INTEGER default -1,  -- brand belong to
@@ -174,6 +177,7 @@ create table brands(
 create table inv_types(
     id               INTEGER AUTO_INCREMENT,
     name             VARCHAR(64),
+    bcode            INTEGER default 0, -- use to bar code
     merchant         INTEGER, -- type belong to
     deleted          INTEGER default 0, -- 0: no;  1: yes
 

@@ -205,3 +205,10 @@ alter table w_change_shift add column cwxin INTEGER not null default 0 after cca
 
 -- 2017-06-10
 alter table w_daily_report add column charge DECIMAL(10, 2) not null default 0 after ticket;
+
+
+-- 2017-07-03
+alter table suppliers add column bcode INTEGER default 0 after id;
+alter table colors add column bcode INTEGER default 0 after id;
+alter table brands add column bcode INTEGER default 0 after id;
+alter table inv_types add column bcode INTEGER default 0 after id;

@@ -105,9 +105,11 @@ handle_call({w_new_supplier, Attrs}, _From, State)->
     
     case ?sql_utils:execute(read, Sql) of
 	{ok, []} ->
+	    BCode = ?inventory_sn:sn(firm, Merchant),
 	    Sql1 = "insert into " ++ ?tbl_supplier
-		++ "(name, balance, mobile, address, comment, merchant, change_date, entry_date)"
+		++ "(bcode, name, balance, mobile, address, comment, merchant, change_date, entry_date)"
 		++ " values ("
+		++ ?to_s(BCode) ++ ","
 		++ "\"" ++ ?to_s(Name) ++ "\","
 		++ ?to_s(Balance) ++ ","
 		++ "\"" ++ ?to_s(Mobile) ++ "\","
@@ -212,7 +214,7 @@ handle_call({w_delete_supplier, Merchant, Id}, _From, State) ->
 
 handle_call({w_list, Merchant}, _From, State) ->
     ?DEBUG("w_list with merchant ~p", [Merchant]),
-    Sql = "select id, name, mobile, address, comment"
+    Sql = "select id, bcode, name, mobile, address, comment"
 	", balance, entry_date from suppliers"
 	++ " where "
 	++ " merchant=" ++ ?to_s(Merchant)
