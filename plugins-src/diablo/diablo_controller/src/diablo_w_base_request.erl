@@ -54,7 +54,7 @@ action(Session, Req, {"list_base_setting"}) ->
 	    Select =
 		case [{SS} || {SS} <- S, lists:member(?v(<<"shop">>, SS), ShopIds)] of
 		    [] -> [{SS} || {SS} <- S, ?v(<<"shop">>, SS) =:= -1];
-		    V -> V
+		    V -> V ++ [{SS} || {SS} <- S, ?v(<<"shop">>, SS) =:= -1]
 		end,
 	    %% ?DEBUG("select ~p", [Select]),
 	    %% lists:filter()

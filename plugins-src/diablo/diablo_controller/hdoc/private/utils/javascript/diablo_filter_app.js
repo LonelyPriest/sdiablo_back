@@ -503,6 +503,7 @@ function filterProvider(){
 		    ).then(function(firms){
 			_firms = firms.map(function(f){
 			    return {id: f.id,
+				    bcode: f.bcode,
 				    name:f.name,
 				    py:diablo_pinyin(f.name),
 				    balance:f.balance};
@@ -525,6 +526,7 @@ function filterProvider(){
 		    	// console.log(brands);
 		    	_brands =  brands.map(function(b){
 		    	    return {id: b.id,
+				    bcode: b.bcode,
 		    		    name:b.name,
 		    		    py:diablo_pinyin(b.name),
 		    		    // firm: supplier,
@@ -574,6 +576,7 @@ function filterProvider(){
 			// console.log(types);
 			_types =  types.map(function(t){
 			    return {id: t.id,
+				    bcode: t.bcode,
 				    name:t.name, py:diablo_pinyin(t.name)};
 			})
 
@@ -593,6 +596,7 @@ function filterProvider(){
 		    return list_purchaser_color().then(function(colors){
 			_colors = colors.map(function(c){
 			    return {id:c.id,
+				    bcode:c.bcode,
 				    name:c.name,
 				    tid:c.tid,
 				    type:c.type}

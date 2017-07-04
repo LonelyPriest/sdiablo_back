@@ -76,6 +76,18 @@ var stockUtils = function(){
 	    return diablo_base_setting("stock_firm", shop, base, parseInt, diablo_yes);
 	},
 
+	use_barcode: function(shop, base) {
+	    return diablo_base_setting("bcode_use", shop, base, parseInt, diablo_no);
+	},
+
+	barcode_width: function(shop, base) {
+	    return diablo_base_setting("bcode_width", shop, base, parseInt, 7);
+	},
+
+	barcode_height: function(shop, base) {
+	    return diablo_base_setting("bcode_height", shop, base, parseInt, 2);
+	},
+
 	yes_no: function() {return [{name:"否", id: 0}, {name:"是", id: 1}]},
 
 	valid_season: function(month){
@@ -349,9 +361,46 @@ var stockUtils = function(){
 	},
 
 	over_flow:function() {
-	    return [{name:"!=0", id:0}]
-	}
+	    return [{name:"!=0", id:0}];
+	},
+
+	gen_barcode_of_free_stock(firm, brand, type, year, season) {
+	    return "0"
+		+ firm.toString()
+		+ brand.toString()
+		+ type.toString()
+		+ year.toString()
+		+ season.toString();
+	},
+
+	gen_barcode_of_stock(firm, brand, type, year, season, color, size) {
+	    var patchColor = color.toString();
+	    if ( 1 === patchColor.length) {
+		patchColor = "00" + patchColor;
+	    } else if (2 === patchColor.length) {
+		patchColor = "0" + patchColor;
+	    }
+
+	    var patchSize = size.toString();
+	    if ( 1 === patchSize.length) {
+		patchSize = "00" + patchSize;
+	    } else if ( 2 === patchSize.length) {
+		patchSize = "0" + patchSize;
+	    }
 	    
+	    return "1"
+		+ firm.toString()
+		+ brand.toString()
+		+ type.toString()
+		+ year.toString()
+		+ season.toString()
+		+ patchColor
+		+ patchSize; 
+	},
+
+	get_short_year(year) {
+	    return year.toString().substr(2, 2);
+	} 
 	//
     }
 }();
@@ -454,6 +503,87 @@ stockDraft.prototype.select = function(dialog, template, draftFilter, selectCall
 	 }
 	});
 };
+
+var stockPrint = function() {
+    return {
+	// cm
+	barcode: function(
+	    LODOP,
+	    maxPageWidth,
+	    realPageWidth,
+	    maxPageHeight,
+	    realPageHeight,
+	    barcode,
+	    text) {
+	    // px
+	    var maxWPX = Math.floor(maxPageWidth * 96 / 2.54);
+	    var maxHPX = Math.floor(maxPageHeight * 96 / 2.54);
+	    LODOP.PRINT_INITA(0, 0, maxWPX, maxHPX, "task_barcode_from_stock");
+	    LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
+
+	    var topPX = 5;
+	    var leftPX = Math.ceil( (maxPageWidth - realPageWidth) * 48 / 2.54);
+
+	    var wpx = Math.floor(realPageWidth * 96 / 2.54);
+	    var hpx = Math.floor(realPageHeight * 96 / 2.54);
+
+	    var hpxOfBarCode = Math.ceil(hpx / 2);
+	    LODOP.ADD_PRINT_BARCODE(topPX, leftPX, wpx, hpxOfBarCode, "128A", barcode);
+	    LODOP.ADD_PRINT_TEXT(hpxOfBarCode + 2, leftPX, wpx, hpx - hpxOfBarCode - 2, text.toString());
+	    LODOP.SET_PRINT_STYLEA(0, "FontSize", 1);
+
+	    // LODOP.PRINT_DESIGN();
+	    LODOP.PRINT_SETUP();
+	},
+
+	barcode2: function(
+	    LODOP,
+	    pageWidth,
+	    pageHeight,
+	    barcode,
+	    price,
+	    color,
+	    size) {
+	    
+	    // px
+	    var wpx = Math.floor(pageWidth * 96 / 2.54);
+	    var hpx = Math.floor(pageHeight * 96 / 2.54);
+	    LODOP.PRINT_INITA(0, 0, wpx, wpx, "task_barcode_from_stock");
+	    LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
+
+	    LODOP.SET_PRINT_PAGESIZE(1, pageWidth * 100, pageHeight * 100, "");
+
+	    var topPX = 5;
+	    var leftPX = 10;
+
+	    var hpxOfBarCode = Math.ceil( hpx / 2);
+	    LODOP.ADD_PRINT_BARCODE(topPX, leftPX, wpx - 10, hpxOfBarCode, "128A", barcode);
+	    // text
+	    var p = "RMB:" + price.toString();
+	    if (angular.isDefined(color)) {
+		p += " " + color;
+	    }
+	    if (angular.isDefined(size)) {
+		p += "-" + size;
+	    }
+		
+	    LODOP.ADD_PRINT_TEXT(hpxOfBarCode + 12,
+				 leftPX,
+				 wpx - 10,
+				 hpx - hpxOfBarCode - 12,
+				 p
+				);
+	    LODOP.SET_PRINT_STYLEA(0, "FontSize", 11);
+	    // LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
+	    LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
+
+	    // LODOP.PRINT_DESIGN();
+	    // LODOP.PRINT_SETUP();
+	    LODOP.PREVIEW();
+	}
+	//
+    }
+}();
 
     
 

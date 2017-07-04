@@ -1738,6 +1738,9 @@ function purchaserInventoryDetailCtrlProvide(
     $scope.setting.alarm = diablo_base_setting("stock_alarm", -1, base, parseInt, diablo_no);
     $scope.setting.stock_alarm = stockUtils.stock_alarm(-1, base);
     $scope.setting.stock_contailer = stockUtils.stock_contailer(-1, base);
+    $scope.setting.use_barcode = stockUtils.use_barcode(-1, base);
+    $scope.setting.barcode_width = stockUtils.barcode_width(-1, base);
+    $scope.setting.barcode_height = stockUtils.barcode_height(-1, base);
 
     /*
      * pagination 
@@ -1963,8 +1966,135 @@ function purchaserInventoryDetailCtrlProvide(
 	}
     };
 
-    $scope.bar_code = function() {
+    var LODOP;
+    if ($scope.setting.use_barcode) {
+	if (needCLodop()) loadCLodop();
+    } 
+    
+    $scope.bar_code = function(inv) {
+	console.log(inv);
+
+	if (angular.isUndefined(LODOP)) LODOP = getLodop();
 	
+	if (0 === inv.free) {
+	    var barcode = stockUtils.gen_barcode_of_free_stock(
+		inv.firm.bcode,
+		inv.brand.bcode,
+		inv.type.bcode,
+		stockUtils.get_short_year(inv.year),
+		inv.season
+	    )
+
+	    console.log(barcode);
+	    // stockPrint.barcode(LODOP, 10, 7, 2, 2, barcode, inv.tag_price);
+	    stockPrint.barcode2(
+		LODOP,
+		$scope.setting.barcode_width,
+		$scope.setting.barcode_height,
+		barcode,
+		inv.tag_price);
+	} else {
+	    var callback = function(params) {
+		console.log(params.amounts);
+
+		var barcode_amounts = [];
+		for (var i=0, l=params.amounts.length; i<l; i++) {
+		    var a = params.amounts[i];
+		    if (angular.isDefined(a.select) && a.select) {
+			barcode_amounts.push(a)
+		    }
+		}
+
+		if (0 === a.length) {
+		    dialog.response(
+			false,
+			"库存条码打印",
+			"库存条码打印失败：" + purchaserService.error[2087]);
+		} else {
+		    var barcodes = [];
+
+		    angular.forEach(barcode_amounts, function(a) {
+			var color = diablo_get_object(a.cid, filterColor);
+			console.log(color);
+			var barcode = stockUtils.gen_barcode_of_stock(
+			    inv.firm.bcode,
+			    inv.brand.bcode,
+			    inv.type.bcode,
+			    stockUtils.get_short_year(inv.year),
+			    inv.season,
+			    color.bcode,
+			    a.size
+			);
+
+			// console.log(barcode);
+			barcodes.push({b:barcode, c:color.name, s:a.size});
+		    });
+
+		    // stockPrint.barcode(LODOP, 10, 7, 2, 2, barcode, inv.tag_price);
+		    console.log(barcodes);
+		    // stockPrint.barcode2(LODOP, 7, 2, barcode, inv.tag_price);
+		    angular.forEach(barcodes, function(b) {
+			stockPrint.barcode2(
+			    LODOP,
+			    $scope.setting.barcode_width,
+			    $scope.setting.barcode_height,
+			    b.b,
+			    inv.tag_price,
+			    b.c,
+			    b.s);
+		    })
+		}
+	    }
+
+	    var get_amount = function(cid, size, amounts){
+		return purchaserService.get_inventory_from_sort(cid, size, amounts)};
+	    
+	    if (angular.isDefined(inv.sizes)
+		&& angular.isDefined(inv.colors)
+		&& angular.isDefined(inv.amounts)){
+		
+		// var get_amount = function(cid, size){
+		//     return purchaserService.get_inventory_from_sort(cid, size, inv.amounts)
+		// };
+		var payload = {sizes:      inv.sizes,
+			       colors:     inv.colors,
+			       path:       inv.path,
+			       amounts:    inv.amounts,
+			       get_amount: get_amount};
+		
+		dialog.edit_with_modal(
+		    "inventory-gen-barcode.html", undefined, callback, undefined, payload);
+	    } else{
+		purchaserService.list_purchaser_inventory(
+		    {style_number: inv.style_number,
+		     brand:        inv.brand_id,
+		     rsn:          $routeParams.rsn ? $routeParams.rsn:undefined,
+		     shop:         inv.shop_id,
+		     qtype:        1}
+		).then(function(invs){
+		    console.log(invs);
+		    var order_sizes = diabloHelp.usort_size_group(inv.s_group, filterSizeGroup);
+		    console.log(order_sizes);
+		    var sort    = diabloHelp.sort_stock(invs, order_sizes, filterColor);
+		    console.log(sort);
+		    inv.sizes   = sort.size;
+		    inv.colors  = sort.color;
+		    inv.amounts = sort.sort;
+
+		    var payload = {sizes:      inv.sizes,
+				   colors:     inv.colors,
+				   path:       inv.path,
+				   amounts:    inv.amounts,
+				   get_amount: get_amount};
+		    dialog.edit_with_modal(
+			"inventory-gen-barcode.html",
+			undefined,
+			callback,
+			undefined,
+			payload); 
+		}) 
+	    }
+	}
     };
 
     $scope.export_to = function(){
