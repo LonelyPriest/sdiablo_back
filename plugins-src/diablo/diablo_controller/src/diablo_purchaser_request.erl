@@ -901,8 +901,25 @@ action(Session, Req, {"adjust_w_inventory_price"}, Payload) ->
 	       ?succ(adjust_w_inventory_price, Merchant));
     	{error, Error} ->
     	    ?utils:respond(200, Req, Error)
-    end.
+    end;
 
+action(Session, Req, {"syn_w_inventory_barcode"}, Payload) ->
+    ?DEBUG("syn_w_inventory_barcode with session ~p, paylaod~n~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    %% StyleNumber = ?v(<<"style_number">>, Payload),
+    %% Brand = ?v(<<"brand">>, Payload),
+    %% Shop = ?v(<<"shop">>, Payload),
+    Barcode = ?v(<<"barcode">>, Payload),
+    Conditions = lists:keydelete(<<"barcode">>, 1, Payload),
+    case ?w_inventory:purchaser_inventory(syn_barcode, Merchant, Barcode, Conditions) of
+	{ok, Barcode} ->
+	    ?utils:respond(
+	       200,
+	       Req,
+	       ?succ(syn_w_inventory_barcode, Barcode));
+    	{error, Error} ->
+    	    ?utils:respond(200, Req, Error)
+    end.
 
 
 sidebar(Session) ->

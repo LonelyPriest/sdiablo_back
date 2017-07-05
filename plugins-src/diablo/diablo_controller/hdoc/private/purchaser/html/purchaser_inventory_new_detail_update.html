@@ -579,6 +579,10 @@
 			   x-ng-if="!inv.update_directory"
 			   x-ng-click="delete_inventory(inv)">删除
 			  <i class="glyphicon glyphicon-erase"></i></a>
+			<a class="btn diablo-input-button green"
+			   x-ng-if="setting.use_barcode && !inv.update_directory"
+			   x-ng-click="gen_barcode(inv)">条码
+			  <i class="glyphicon glyphicon-barcode"></i></a>
 
 			<a class="btn diablo-input-button btn-success"
 			   x-ng-if="inv.update_directory"

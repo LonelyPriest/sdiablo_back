@@ -157,6 +157,9 @@ success(transfer_w_inventory, Rsn) ->
     {0, "Success to transfer inventory with rsn  " ++ ?to_s(Rsn)};
 success(adjust_w_inventory_price, Merchant) ->
     {0, "Success to adjust price of merchant  " ++ ?to_s(Merchant)};
+success(syn_w_inventory_barcode, Barcode) ->
+    {0, "Success to syn barcode:  " ++ ?to_s(Barcode)};
+
 
 %% promotion
 success(new_promotion, Promotion) ->
@@ -404,6 +407,14 @@ error(stock_invalid_total, CalcTotal) ->
     {2012, "invalid total of stock: " ++ ?to_s(CalcTotal) ++ "."};
 error(empty_firm_of_check, RSN) ->
     {2013, "empty firm of rsn " ++ ?to_s(RSN) ++ "."};
+error(stock_not_exist, StyleNumber) ->
+    {2014, "stock not exist " ++ ?to_s(StyleNumber) ++ "."};
+error(stock_same_barcode, Barcode) ->
+    {2015, "same barcode of stock " ++ ?to_s(Barcode) ++ "."};
+error(stock_invalid_barcode, Barcode) ->
+    {2016, "invalid barcode of stock " ++ ?to_s(Barcode) ++ "."};
+
+
 
 
 

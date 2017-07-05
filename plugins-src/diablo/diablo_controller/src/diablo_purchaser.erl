@@ -118,10 +118,10 @@ purchaser_inventory(comment, Merchant, RSN, Comment) ->
     gen_server:call(Name, {comment_new, Merchant, RSN, Comment});
 purchaser_inventory(modify_balance, Merchant, RSN, Balance) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {modify_balance, Merchant, RSN, Balance}).
-
-
-
+    gen_server:call(Name, {modify_balance, Merchant, RSN, Balance});
+purchaser_inventory(syn_barcode, Merchant, Barcode, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {syn_barcode, Merchant, Barcode, Conditions}).
 
 %%
 %% 
@@ -152,7 +152,7 @@ purchaser_inventory(trace_new, Merchant, Conditions) ->
 purchaser_inventory(trace_transfer, Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {trace_transfer, Merchant, Conditions});
-
+    
 %% purchaser_inventory(last_reject, Merchant, Conditions) ->
 %%     gen_server:call(?SERVER, {last_reject, Merchant, Conditions});
 purchaser_inventory(get_new, Merchant, RSN) ->
@@ -1920,6 +1920,57 @@ handle_call({trace_transfer, Merchant, Conditions}, _From, State) ->
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
+handle_call({syn_barcode, Merchant, Barcode, Conditions}, _From, State) ->
+    ?DEBUG("syn_barcode  with merchant ~p, barcode ~p, conditions ~p",
+	   [Merchant, Barcode, Conditions]),
+
+    %% Barcode = ?v(<<"barcode">>, Attrs),
+    StyleNumber = ?v(<<"style_number">>, Conditions),
+    %% Brand = ?v(<<"brand">>, Attrs),
+    %% Shop = ?v(<<"shop">>, Attrs), 
+    
+    Sql = "select a.bcode, a.style_number, a.brand, a.firm, a.type, a.year, a.season, a.free"
+	", b.bcode as bbcode"
+	", c.bcode as fbcode"
+	", d.bcode as tbcode"
+	
+	" from w_inventory a"
+	" left join brands b on a.brand=b.id"
+	" left join suppliers c on a.firm=c.id"
+	" left join inv_types d on a.type=d.id"
+
+	" where a.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, ?utils:correct_condition(<<"a.">>, Conditions)), 
+
+    case ?sql_utils:execute(s_read, Sql) of
+	{ok, []} ->
+	    {reply, {error, ?err(stock_not_exist, StyleNumber)}, State};
+	{ok, Stock} ->
+	    case ?v(<<"bcode">>, Stock) == Barcode of
+		true ->
+		    {reply, {ok, Barcode}, State};
+		false ->
+		    Free = ?v(<<"free">>, Stock),
+		    FBcode = ?v(<<"fbcode">>, Stock),
+		    BBcode = ?v(<<"bbcode">>, Stock),
+		    TBcode = ?v(<<"tbcode">>, Stock),
+		    Year = ?v(<<"year">>, Stock),
+		    Season = ?v(<<"season">>, Stock),
+		    
+		    NewBarcode = gen_barcode(Free, FBcode, BBcode, TBcode, Year, Season),
+		    case ?to_s(Barcode) /= NewBarcode of
+			true ->
+			    {reply, {error, ?err(stock_invalid_barcode, Barcode)}, State};
+			false -> 
+			    Sql1 = "update w_inventory set bcode=\'" ++ ?to_s(NewBarcode) ++ "\'"
+				" where merchant=" ++ ?to_s(Merchant)
+				++ ?sql_utils:condition(proplists, Conditions),
+			    Reply = ?sql_utils:execute(write, Sql1, Barcode),
+			    {reply, Reply, State}
+		    end
+	    end
+    end;
+
 %% handle_call({last_reject, Merchant, Conditions}, _From, State) ->
 %%     ?DEBUG("last_reject with merchant ~p, Conditions ~p", [Merchant, Conditions]),
 %%     Shop = ?v(<<"shop">>, Conditions),
@@ -2983,14 +3034,11 @@ update_stock(diff_firm, Merchant, CurrentTime, Updates, {Props, OldProps}) ->
 	    end
     end.
 
-	    
-
-			
-			
-			
-			    
-		    
-		    
-	    
-
-    
+gen_barcode(Free, Firm, Brand, Type, Year, Season) ->
+    <<_:2/binary, YY/binary>> = ?to_b(Year),
+    ?to_s(Free)
+	++ ?to_s(Firm)
+	++ ?to_s(Brand)
+	++ ?to_s(Type)
+	++ ?to_s(YY)
+	++ ?to_s(Season).

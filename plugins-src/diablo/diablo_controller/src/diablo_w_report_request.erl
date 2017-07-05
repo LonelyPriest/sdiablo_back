@@ -593,10 +593,10 @@ sidebar(Session) ->
     ReportAuthen = AuthenFun(
 		   [{?daily_wreport,
 		     {"wreport_daily", "实时报表", "glyphicon glyphicon-time"}},
-		    {?stock_stastic,
+		    {?h_daily_wreport,
 		     {"stastic", "日报表", "glyphicon glyphicon-calendar"}},
 
-		    {?stock_stastic,
+		    {?h_month_wreport,
 		     {"m_stastic", "月报表", "glyphicon glyphicon-calendar"}},
 		    
 		    {?switch_shift_report,

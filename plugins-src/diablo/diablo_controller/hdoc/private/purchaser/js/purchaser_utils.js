@@ -364,8 +364,8 @@ var stockUtils = function(){
 	    return [{name:"!=0", id:0}];
 	},
 
-	gen_barcode_of_free_stock(firm, brand, type, year, season) {
-	    return "0"
+	gen_barcode_of_free_stock(free, firm, brand, type, year, season) {
+	    return free.toString()
 		+ firm.toString()
 		+ brand.toString()
 		+ type.toString()
@@ -373,7 +373,7 @@ var stockUtils = function(){
 		+ season.toString();
 	},
 
-	gen_barcode_of_stock(firm, brand, type, year, season, color, size) {
+	gen_barcode_of_stock(free, firm, brand, type, year, season, color, size) {
 	    var patchColor = color.toString();
 	    if ( 1 === patchColor.length) {
 		patchColor = "00" + patchColor;
@@ -388,12 +388,7 @@ var stockUtils = function(){
 		patchSize = "0" + patchSize;
 	    }
 	    
-	    return "1"
-		+ firm.toString()
-		+ brand.toString()
-		+ type.toString()
-		+ year.toString()
-		+ season.toString()
+	    return stockUtils.gen_barcode_of_free_stock(free, firm, brand, type, year, season) 
 		+ patchColor
 		+ patchSize; 
 	},
@@ -579,7 +574,8 @@ var stockPrint = function() {
 
 	    // LODOP.PRINT_DESIGN();
 	    // LODOP.PRINT_SETUP();
-	    LODOP.PREVIEW();
+	    // LODOP.PREVIEW();
+	    LODOP.PRINT();
 	}
 	//
     }

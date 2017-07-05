@@ -241,6 +241,9 @@ function stockConfg(angular){
 	    2011: "款号未知，请重新输入款号！！",
 	    2012: "采购/退货总数与明细总数不一致，请核对该退货单后再进行操作！！",
 	    2013: "该单无厂商，无法审核，请填写厂商后再审核！！",
+	    2014: "该货品不存在，请重新选择货品！！",
+	    2016: "服务器条码校验失败，请注销当前用户后再操作！！",
+	    2086: "该货品无厂商信息，无法生成条码，请填写厂商信息后再重新操作！！",
 	    2087: "请选择需要打印条码的库存！！",
 	    2088: "该货品无进货价，请核对该货品进货价后再移仓！！",
 	    2089: "该货品无厂商信息，请填写厂商后再进行移仓！！",
@@ -621,11 +624,22 @@ function stockConfg(angular){
 	 * trace
 	 */
 	this.list_w_inventory_new_detail = function(conditions){
-	    return http.save({operation: "list_w_inventory_new_detail"}, conditions).$promise
+	    return http.save({operation: "list_w_inventory_new_detail"}, conditions).$promise;
 	};
 
 	this.list_w_inventory_flow = function(conditions){
-	    return http.save({operation: "list_w_inventory_flow"}, conditions).$promise
+	    return http.save({operation: "list_w_inventory_flow"}, conditions).$promise;
+	};
+
+	/*
+	 * barcode
+	 */
+	this.syn_barcode = function(style_number, brand, shop, barcode) {
+	    return http.save({operation: "syn_w_inventory_barcode"},
+			     {style_number:style_number,
+			      brand:brand,
+			      shop:shop,
+			      barcode:barcode}).$promise;
 	};
 	
     });

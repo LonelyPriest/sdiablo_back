@@ -169,6 +169,12 @@
 		    	      x-ng-click="update_rsn_detail(inv)">
 			修改<i class="glyphicon glyphicon-edit"></i>
 		      </button>
+
+		      <button x-ng-if="setting.use_barcode && inv.type === 0"
+			      class="btn diablo-button green"
+			      x-ng-click="gen_barcode(inv)">条码
+			<i class="glyphicon glyphicon-barcode"></i>
+		      </button>
 		      
 		    </td>
 		  </tr>

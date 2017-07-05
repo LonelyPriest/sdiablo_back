@@ -59,7 +59,7 @@ function loadCLodop() {
     var head = document.head || document.getElementsByTagName("head")[0] || document.documentElement;
     var oscript = document.createElement("script");
     oscript.src ="http://localhost:63552/CLodopfuncs.js?priority=1";
-    // oscript.src ="http://192.168.1.108:8001/CLodopfuncs.js?priority=1";
+    // oscript.src ="http://192.168.0.102:63552/CLodopfuncs.js?priority=1";
     head.insertBefore( oscript,head.firstChild );
 };
 
@@ -129,7 +129,7 @@ function getLodop(oOBJECT,oEMBED){
             return LODOP;
         };
         //===如下空白位置适合调用统一功能(如注册语句、语言选择等):===
-
+	LODOP.SET_LICENSES("","642444550545056635559666456128","688858710010010811411756128900","");
         //===========================================================
         return LODOP;
     } catch(err) {alert("getLodop出错:"+err);};

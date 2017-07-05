@@ -212,3 +212,4 @@ alter table suppliers add column bcode INTEGER default 0 after id;
 alter table colors add column bcode INTEGER default 0 after id;
 alter table brands add column bcode INTEGER default 0 after id;
 alter table inv_types add column bcode INTEGER default 0 after id;
+alter table w_inventory add column bcode VARCHAR(32) default 0 after id;

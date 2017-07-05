@@ -351,6 +351,7 @@ inventory(group_detail, Merchant, Conditions, PageFun) ->
     
     "select "
 	"a.id"
+	", a.bcode"
 	", a.style_number"
 	", a.brand as brand_id"
 	", a.firm as firm_id"

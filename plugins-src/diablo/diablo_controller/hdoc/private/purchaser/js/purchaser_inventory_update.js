@@ -33,6 +33,10 @@ function purchaserInventoryNewUpdateCtrlProvide (
     $scope.setting    = {history_stock: false};
     $scope.pattern    = {discount:diabloPattern.discount};
 
+    $scope.setting.use_barcode = stockUtils.use_barcode(-1, $scope.ubase);
+    $scope.setting.barcode_width = stockUtils.barcode_width(-1, $scope.ubase);
+    $scope.setting.barcode_height = stockUtils.barcode_height(-1, $scope.ubase);
+    
     $scope.go_back = function(){
 	console.log($routeParams.ppage);
 	if (diablo_from_update_stock === stockUtils.to_integer($routeParams.from)){
@@ -990,7 +994,95 @@ function purchaserInventoryNewUpdateCtrlProvide (
 
     $scope.reset_inventory = function(inv){
 	$scope.inventories[0] = {$edit:false, $new:true}; 
-    } 
+    };
+
+    var LODOP;
+    if ($scope.setting.use_barcode) {
+	if (needCLodop())
+	    loadCLodop();
+    }
+    
+    $scope.gen_barcode = function(inv) {
+	console.log(inv);
+
+	if (diablo_invalid_firm === inv.firm_id) {
+	    dialog.response(
+		false,
+		"库存条码打印",
+		"库存条码打印失败：" + purchaserService.error[2086]);
+	    return;
+	}
+
+	var firm = diablo_get_object(inv.firm_id, $scope.firms); 
+	var barcode = stockUtils.gen_barcode_of_free_stock(
+	    inv.free,
+	    firm.bcode,
+	    inv.brand.bcode,
+	    inv.type.bcode,
+	    stockUtils.get_short_year(inv.year),
+	    inv.season);
+	console.log(barcode);
+
+	if (angular.isUndefined(LODOP)) LODOP = getLodop();
+
+	var print_barcode = function() {
+	    if (inv.free_color_size) {
+		for (var i=0; i<inv.total; i++) {
+		    stockPrint.barcode2(
+			LODOP,
+			$scope.setting.barcode_width,
+			$scope.setting.barcode_height,
+			barcode,
+			inv.tag_price);
+		}
+	    }
+	    else {
+		var barcodes = []; 
+		angular.forEach(inv.amounts, function(a) {
+		    var color = diablo_get_object(a.cid, filterColor);
+		    
+		    for (var i=0; i<a.count; i++) {
+			var barcode2 = stockUtils.gen_barcode_of_stock(
+			    inv.free,
+			    firm.bcode,
+			    inv.brand.bcode,
+			    inv.type.bcode,
+			    stockUtils.get_short_year(inv.year),
+			    inv.season,
+			    color.bcode,
+			    a.size
+			);
+			barcodes.push({b:barcode2, c:color.name, s:a.size});
+		    }
+		});
+
+		console.log(barcodes);
+		angular.forEach(barcodes, function(b) {
+		    stockPrint.barcode2(
+			LODOP,
+			$scope.setting.barcode_width,
+			$scope.setting.barcode_height,
+			b.b,
+			inv.tag_price,
+			b.c,
+			b.s);
+		})
+	    }
+	};
+
+	// syn
+	purchaserService.syn_barcode(
+	    inv.style_number, inv.brand_id, inv.shop_id, barcode
+	).then(function(result) {
+	    if (result.ecode === 0) {
+		print_barcode();
+	    } else {
+		dialog.response(
+		    false, "条码生成", "条码生成失败："
+			+ purchaserService.error[result.ecode]);
+	    }
+	});
+    };
     
 };
 

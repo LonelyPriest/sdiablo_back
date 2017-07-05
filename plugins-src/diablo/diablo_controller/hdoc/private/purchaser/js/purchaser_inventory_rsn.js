@@ -184,6 +184,12 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
     $scope.calc_drate = stockUtils.calc_drate_of_org_price;
     $scope.css        = diablo_stock_css;
 
+    $scope.setting = {
+	use_barcode: stockUtils.use_barcode(-1, base),
+	barcode_width: stockUtils.barcode_width(-1, base),
+	barcode_height: stockUtils.barcode_height(-1, base) 
+    };
+
     /*
      * hidden
      */
@@ -512,6 +518,114 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 		}); 
 	}) 
     };
+
+    var LODOP;
+    if ($scope.setting.use_barcode) {
+	if (needCLodop())
+	    loadCLodop();
+    }
+    
+    $scope.gen_barcode = function(inv) {
+	console.log(inv);
+
+	if (diablo_invalid_firm === inv.firm_id) {
+	    dialog.response(
+		false,
+		"库存条码打印",
+		"库存条码打印失败：" + purchaserService.error[2086]);
+	    return;
+	}
+
+	var barcode = stockUtils.gen_barcode_of_free_stock(
+	    inv.free,
+	    inv.firm.bcode,
+	    inv.brand.bcode,
+	    inv.itype.bcode,
+	    stockUtils.get_short_year(inv.year),
+	    inv.season);
+	console.log(barcode);
+	
+	if (angular.isUndefined(LODOP)) LODOP = getLodop();
+
+	var print_barcode = function() {
+	    if (0 === inv.free) {
+		for (var i=0; i<inv.amount; i++) {
+		    stockPrint.barcode2(
+			LODOP,
+			$scope.setting.barcode_width,
+			$scope.setting.barcode_height,
+			barcode,
+			inv.tag_price);
+		} 
+	    }
+	    else {
+		var print = function(amounts) {
+		    var barcodes = []; 
+		    angular.forEach(inv.amounts, function(a) {
+			var color = diablo_get_object(a.cid, filterColor); 
+			for (var i=0; i<a.count; i++) {
+			    var barcode2 = stockUtils.gen_barcode_of_stock(
+				inv.free,
+				inv.firm.bcode,
+				inv.brand.bcode,
+				inv.itype.bcode,
+				stockUtils.get_short_year(inv.year),
+				inv.season,
+				color.bcode,
+				a.size
+			    );
+			    barcodes.push({b:barcode2, c:color.name, s:a.size});
+			}
+		    }); 
+		    console.log(barcodes);
+		    
+		    angular.forEach(barcodes, function(b) {
+			stockPrint.barcode2(
+			    LODOP,
+			    $scope.setting.barcode_width,
+			    $scope.setting.barcode_height,
+			    b.b,
+			    inv.tag_price,
+			    b.c,
+			    b.s);
+		    })
+		};
+
+		if (angular.isDefined(inv.amounts)
+		    && angular.isDefined(inv.colors)
+		    && angular.isDefined(inv.sizes)){
+		    print(inv.amounts);
+		}
+		else {
+		    purchaserService.w_inventory_new_rsn_detail(
+			{rsn:inv.rsn, style_number:inv.style_number, brand:inv.brand_id}
+		    ).then(function(result){
+			console.log(result);
+			var order_sizes = diabloHelp.usort_size_group(inv.s_group, filterSizeGroup);
+			var sort = diabloHelp.sort_stock(result.data, order_sizes, filterColor);
+			inv.sizes   = sort.size;
+			inv.colors  = sort.color;
+			inv.amounts = sort.sort; 
+			print(inv.amounts);
+		    }); 
+		}
+	    }
+	}
+	
+	// syn
+	purchaserService.syn_barcode(
+	    inv.style_number, inv.brand_id, inv.shop_id, barcode
+	).then(function(result) {
+	    if (result.ecode === 0) {
+		print_barcode();
+	    } else {
+		dialog.response(
+		    false, "条码生成", "条码生成失败："
+			+ purchaserService.error[result.ecode]);
+	    }
+	}); 
+    };
+    
 };
 
 function stockHistoryCtrlProvide(
