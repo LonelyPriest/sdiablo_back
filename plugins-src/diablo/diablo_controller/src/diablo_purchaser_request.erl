@@ -762,6 +762,24 @@ action(Session, Req, {"match_stock_by_shop"}, Payload) ->
     batch_responed(
       fun()-> ?w_inventory:match_stock(by_shop, Merchant, ShopIds, StartTime, Prompt) end, Req);
 
+action(Session, Req, {"get_stock_by_barcode"}, Payload) ->
+    ?DEBUG("get_stock_by_barcode: session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    Barcode = ?v(<<"barcode">>, Payload),
+    Shop = ?v(<<"shop">>, Payload),
+
+    case ?w_inventory:purchaser_inventory(get_by_barcode, Merchant, Shop, Barcode) of
+	%% {ok, []} ->
+	%%     ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
+	%% 				       {<<"stock">>, {[]} }]});
+	{ok, Stock} ->
+	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
+					       {<<"stock">>, {Stock} }]});
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+
 action(Session, Req, {"w_inventory_export"}, Payload) ->
     ?DEBUG("w_inventory_export with session ~p, paylaod ~n~p", [Session, Payload]),
     Merchant    = ?session:get(merchant, Session),

@@ -472,7 +472,12 @@ function filterProvider(){
 				    balance: r.balance} 
 			})
 		    })
-	    }, 
+	    },
+
+	    get_stock_by_barcode: function(barcode, shop) {
+		return resource.save(
+		    {operation:'get_stock_by_barcode'}, {barcode:barcode, shop:shop}).$promise;
+	    },
 
 	    check_retailer_password: function(retailerId, password){
 		return _retailerHttp.save(

@@ -3,6 +3,7 @@ var diablo_delay = 1000; //ms
 var diablo_delay_300ms = 300;
 
 var diablo_default_setting = -1;
+var diablo_default_shop = -1;
 var diablo_full_discount = 100;
 var diablo_pfree = 0.01;
 var diablo_invalid_employee = "-1";
@@ -86,9 +87,8 @@ diablo_right = 1;
 diablo_down = 2;
 diablo_left = 3;
 
-
+var diablo_barcode_lenth_of_color_size = 6;
 var diablo_by_shop     = "by_shop";
-
 var diablo_print_px   = 5.56;
 
 /*
@@ -705,7 +705,9 @@ var diablo_find_color = function(cid, allColors){
     if (cid === 0){
 	return {cid:cid};
     } else{
-	return {cid:cid, cname:diablo_get_object(cid, allColors).name};
+	var c = diablo_get_object(cid, allColors);
+	// console.log(c);
+	return {cid:cid, bcode:c.bcode, cname:c.name};
     }
 };
 
@@ -720,6 +722,16 @@ var diablo_in_colors = function(color, colors){
 
     return false;
 };
+
+// var diablo_get_bcode_of_color(colorId, colors) {
+//     for (var i=0, l=colors.length; i<l; i++) {
+// 	if (colorId === colors[i].bcode) {
+// 	    return colors[i];
+// 	}
+//     }
+    
+//     return undefined;
+// };
 
 var diablo_is_same = function(newValue, oldValue){
     if (angular.isNumber(newValue) || angular.isString(newValue))
@@ -920,7 +932,7 @@ var diabloHelp = function(){
 		};
 
 		if (!in_sort(sorts, inv)){
-		    sorts.push({cid:inv.color_id,
+		    sorts.push({cid     :inv.color_id,
 				size    :inv.size,
 				alarm_a :inv.alarm_a,
 				count   :inv.amount})

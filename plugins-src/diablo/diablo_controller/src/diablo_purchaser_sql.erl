@@ -947,7 +947,7 @@ inventory_match(all_inventory, Merchant, Shop, Conditions) ->
     {StartTime, EndTime, NewConditions} =
 	?sql_utils:cut(fields_with_prifix, Conditions),
 
-    "select a.id, a.style_number, a.brand as brand_id, a.type as type_id"
+    "select a.id, a.bcode, a.style_number, a.brand as brand_id, a.type as type_id"
 	", a.sex, a.season, a.firm as firm_id, a.s_group, a.free, a.year"
     %% ", a.amount as total"
 	", a.promotion as pid"
@@ -978,7 +978,7 @@ inventory_match(all_inventory, Merchant, Shop, Conditions) ->
 inventory_match(Merchant, StyleNumber, Shop, Firm) ->
     P = ?w_retailer:get(prompt, Merchant),
 
-    "select a.id, a.style_number, a.brand as brand_id, a.type as type_id"
+    "select a.id, a.bcode, a.style_number, a.brand as brand_id, a.type as type_id"
 	", a.sex, a.season, a.firm as firm_id, a.s_group, a.free, a.year"
     %% ", a.amount as total"
 	", a.promotion as pid"
@@ -1005,7 +1005,7 @@ inventory_match(Merchant, StyleNumber, Shop, Firm) ->
 	++ " limit " ++ ?to_s(P).
 
 inventory_match(all_reject, Merchant, Shop, Firm, StartTime) ->
-    "select a.id, a.style_number, a.brand as brand_id, a.type as type_id"
+    "select a.id, a.bcode, a.style_number, a.brand as brand_id, a.type as type_id"
 	", a.sex, a.season, a.firm as firm_id, a.s_group, a.free, a.year"
 	", a.org_price, a.tag_price, a.ediscount, a.discount"
 	", a.path, a.alarm_day, a.entry_date"
@@ -1027,7 +1027,29 @@ inventory_match(all_reject, Merchant, Shop, Firm, StartTime) ->
 	++ " and entry_date>=\'" ++ ?to_s(StartTime) ++ "\'"
     %% ++ " and deleted=" ++ ?to_s(?NO)
 	++ " order by a.id desc".
+
+get_inventory(barcode, Merchant, Shop, Barcode) ->
+    "select a.id, a.bcode, a.style_number"
+	", a.brand as brand_id"
+	", a.type as type_id"
+	", a.sex, a.season"
+	", a.firm as firm_id, a.s_group, a.free, a.year"
 	
+	", a.promotion as pid"
+	", a.score as sid"
+	", a.org_price, a.tag_price, a.ediscount, a.discount"
+	", a.path, a.entry_date"
+
+	", b.name as brand" 
+	", c.name as type"
+	" from w_inventory a"
+
+	" left join brands b on a.brand=b.id" 
+	" left join inv_types c on a.type=c.id"
+
+	" where a.merchant=" ++ ?to_s(Merchant) 
+	++ " and a.shop=" ++ ?to_s(Shop)
+	++ " and a.bcode=\'" ++ ?to_s(Barcode) ++ "\'".
 
 inventory(update, Mode, RSN, Merchant, Shop, Firm, OldFirm, Datetime,  OldDatetime) ->
     UpdateDate = case Datetime =/= OldDatetime of

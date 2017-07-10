@@ -119,9 +119,14 @@ purchaser_inventory(comment, Merchant, RSN, Comment) ->
 purchaser_inventory(modify_balance, Merchant, RSN, Balance) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {modify_balance, Merchant, RSN, Balance});
+
 purchaser_inventory(syn_barcode, Merchant, Barcode, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {syn_barcode, Merchant, Barcode, Conditions}).
+    gen_server:call(Name, {syn_barcode, Merchant, Barcode, Conditions});
+purchaser_inventory(get_by_barcode, Merchant, Shop, Barcode) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {get_by_barcode, Merchant, Shop, Barcode}).
+
 
 %%
 %% 
@@ -1970,6 +1975,14 @@ handle_call({syn_barcode, Merchant, Barcode, Conditions}, _From, State) ->
 		    end
 	    end
     end;
+
+handle_call({get_by_barcode, Merchant, Shop, Barcode}, _From, State) ->
+    ?DEBUG("get_by_barcode: Merchant ~p, Shop ~p, Barcode ~p", [Merchant, Shop, Barcode]),
+    Sql = ?w_good_sql:get_inventory(barcode, Merchant, Shop, Barcode),
+    Reply =  ?sql_utils:execute(s_read, Sql),
+    ?DEBUG("reply ~p", [Reply]),
+    {reply, Reply, State};
+
 
 %% handle_call({last_reject, Merchant, Conditions}, _From, State) ->
 %%     ?DEBUG("last_reject with merchant ~p, Conditions ~p", [Merchant, Conditions]),
