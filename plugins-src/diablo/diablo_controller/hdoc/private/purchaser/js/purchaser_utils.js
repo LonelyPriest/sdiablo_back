@@ -88,6 +88,10 @@ var stockUtils = function(){
 	    return diablo_base_setting("bcode_height", shop, base, parseInt, 2);
 	},
 
+	trans_orgprice: function(shop, base) {
+	    return diablo_base_setting("trans_orgprice", shop, base, parseInt, diablo_yes);
+	},
+
 	yes_no: function() {return [{name:"否", id: 0}, {name:"是", id: 1}]},
 
 	valid_season: function(month){

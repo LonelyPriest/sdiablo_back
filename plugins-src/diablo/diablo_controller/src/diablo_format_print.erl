@@ -184,6 +184,8 @@ line(add_minus, ?TABLE, ?ROW, SizeNum, Fields) ->
       end, [], T).
 
 
+width(_, []) ->
+    0;
 width(latin1, English) ->
     length(?to_s(English));
 width(chinese, Chinese) ->

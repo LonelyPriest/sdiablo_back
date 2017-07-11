@@ -38,6 +38,10 @@ function purchaserInventoryTransferCtrlProvide (
 
     $scope.calc_row = stockUtils.calc_row;
 
+    $scope.init_base_setting = function(shopId) {
+	$scope.base_settings.check_orgprice_of_transfer = stockUtils.trans_orgprice(shopId, base);
+    };
+
     var now = $.now();
 
     // init
@@ -70,10 +74,11 @@ function purchaserInventoryTransferCtrlProvide (
 
     $scope.change_shop = function(){
 	$scope.get_valid_employee();
-	$scope.get_transfer_shop(); 
-	if ($scope.base_settings.q_prompt === diablo_frontend){
-	    $scope.get_all_prompt_inventory();
-	}
+	$scope.get_transfer_shop();
+	$scope.init_base_setting($scope.select.shop.id);
+	// if ($scope.base_settings.q_prompt === diablo_frontend){
+	//     $scope.get_all_prompt_inventory();
+	// }
     };
 
     $scope.refresh = function(){
@@ -104,7 +109,8 @@ function purchaserInventoryTransferCtrlProvide (
     };
 
     $scope.get_valid_employee();
-    $scope.get_transfer_shop(); 
+    $scope.get_transfer_shop();
+    $scope.init_base_setting($scope.select.shop.id);
     
     // calender
     $scope.open_calendar = function(event){
@@ -125,7 +131,6 @@ function purchaserInventoryTransferCtrlProvide (
     };
 
     // console.log($scope.setting);
-
     $scope.get_all_prompt_inventory = function(){
 	console.log($scope.select.shop);
 	diabloNormalFilter.match_all_w_inventory(
@@ -161,7 +166,7 @@ function purchaserInventoryTransferCtrlProvide (
 	    return;
 	}
 
-	if ( item.org_price <=0 ) {
+	if ( item.org_price <=0 && $scope.base_settings.check_orgprice_of_transfer) {
 	    diabloUtilsService.response_with_callback(
 		false, "库存转移", "转移失败：" + purchaserService.error[2088],
 		$scope, function(){ $scope.inventories[0] = {$edit:false, $new:true}});

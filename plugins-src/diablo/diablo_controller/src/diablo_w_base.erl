@@ -342,7 +342,9 @@ sys_config() ->
 	      {"stock_firm",      "入库区分厂商",         "1",   "0"},
 	      {"bcode_use",       "启用条码",             "0",   "0"},
 	      {"bcode_width",     "条码宽度",             "7",   "0"},
-	      {"bcode_height",    "条码高度",             "2",   "0"}
+	      {"bcode_height",    "条码高度",             "2",   "0"},
+	      {"trans_orgprice",  "移仓检测进价",         "1",   "0"},
+	      {"p_color_size",    "打印颜色尺码",         "0",   "0"}
 	      %%  {"score_withdraw",  "提现是否积分",         "1",   "0"}
 	     ],
     Values.

@@ -287,6 +287,7 @@ print_content(ShopId, PBrand, Model, 58, Merchant, Setting, Invs) ->
 	   [ShopId, PBrand, Model, Merchant, Setting, Invs]),
 
     {ok, Brands} = ?w_user_profile:get(brand, Merchant),
+    {ok, Colors} = ?w_user_profile:get(color, Merchant),
 
     H = "款号" ++ pading(8)
 	++ "单价" ++ pading(2)
@@ -304,8 +305,8 @@ print_content(ShopId, PBrand, Model, 58, Merchant, Setting, Invs) ->
 		  SellTotal   = ?v(<<"total">>, Inv),
 		  TagPrice    = ?v(<<"tag_price">>, Inv),
 		  RPrice      = ?v(<<"rprice">>, Inv),
-		  %% rDiscount   = ?v(<<"rdiscount">>, Inv),
-
+		  Amounts     = ?v(<<"amounts">>, Inv, []),
+		  %% rDiscount   = ?v(<<"rdiscount">>, Inv), 
 		  CleanTagPrice = clean_zero(TagPrice),
 
 		  Discount   =
@@ -323,6 +324,8 @@ print_content(ShopId, PBrand, Model, 58, Merchant, Setting, Invs) ->
 		      end,
 
 		  BrandName = ?to_s(get_brand(Brands, BrandId)),
+
+		  
 		  {?to_s(StyleNumber) ++ pading(12 - width(latin1, StyleNumber))
 		   %% ++ "品名：" ++ ?to_s(get_brand(Brands, BrandId)) ++ br(PBrand)
 		   ++ ?to_s(CleanTagPrice) ++ pading(6 - width(latin1, CleanTagPrice))
@@ -330,7 +333,25 @@ print_content(ShopId, PBrand, Model, 58, Merchant, Setting, Invs) ->
 		   ++ ?to_s(Discount) ++ br(PBrand)
 
 		   %% ++ ?to_s(RPrice) ++ pading(8 - width(latin1, RPrice)) ++ br(PBrand)
-		   ++ BrandName ++ pading(24 - width(chinese, BrandName)) ++ ?to_s(RPrice)
+		   ++ BrandName
+		   ++ case ?v(<<"p_color_size">>, Setting, 0) of
+			  0 -> pading(24 - width(chinese, BrandName));
+			  1 ->
+			      fun() ->
+				      ColorSize = 
+					  lists:foldr(
+					    fun({struct, A}, Acc1) ->
+						    ColorId  = ?v(<<"cid">>, A),
+						    Size     = ?v(<<"size">>, A),
+						    ColorName = ?to_s(get_color(Colors, ColorId)),
+						    "/" ++ ColorName ++ "/" ++ Size ++ Acc1
+					    end, [], Amounts),
+				      ColorSize ++ pading(24
+							  - width(chinese, BrandName)
+							  - width(chinese, ColorSize))
+			      end ()
+		      end
+		   ++ ?to_s(RPrice)
 		   ++ br(PBrand)
 		   ++ pading(24 - 6) ++ "（合）" ++ ?to_s(RPrice * SellTotal) ++ br(PBrand)
 		   %% ++ "单价：" ++ ?to_s(TagPrice) ++ br(PBrand)
@@ -728,6 +749,12 @@ get_brand(Brands, BrandId) ->
 	FindBrand -> ?v(<<"name">>, FindBrand)
     end.
 
+get_color(Colors, ColorId) ->
+    case ?w_user_profile:filter(Colors, <<"id">>, ColorId) of
+	[] -> [];
+	FindBrand -> ?v(<<"name">>, FindBrand)
+    end.
+    
 server(1) ->
     fcloud.
 

@@ -1164,13 +1164,15 @@ start(new_sale, Req, Merchant, Invs, Base, Print) ->
 						  BrandId     = ?v(<<"brand">>, Inv),
 						  Total       = ?v(<<"sell_total">>, Inv),
 						  TagPrice    = ?v(<<"tag_price">>, Inv),
-						  RPrice      = ?v(<<"rprice">>, Inv),
+						  RPrice      = ?v(<<"rprice">>, Inv), 
+						  Amounts     = ?v(<<"amounts">>, Inv),
 
 						  P = [{<<"style_number">>, StyleNumber},
 						       {<<"brand_id">>, BrandId},
 						       {<<"tag_price">>, TagPrice},
 						       {<<"rprice">>, RPrice},
-						       {<<"total">>, Total}
+						       {<<"total">>, Total},
+						       {<<"amounts">>, Amounts}
 						      ],
 
 						  [P|Acc] 
