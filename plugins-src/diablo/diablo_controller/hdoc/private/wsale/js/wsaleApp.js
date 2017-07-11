@@ -366,7 +366,7 @@ function wsaleNewProvide(
 
     console.log($scope.right);
 
-    $scope.focus_attr = {style_number:true,
+    $scope.focus_attr = {style_number:false,
 			 barcode:false,
 			 sell:false,
 			 cash:false,
@@ -379,6 +379,12 @@ function wsaleNewProvide(
 	}
 	for (var o in $scope.focus_attr){
 	    if (o !== attr) $scope.focus_attr[o] = false;
+	} 
+    };
+
+    $scope.disable_focus = function() {
+	for (var o in $scope.focus_attr){
+	    $scope.focus_attr[o] = false;
 	} 
     };
 
@@ -460,7 +466,7 @@ function wsaleNewProvide(
 	$scope.setting.smember = wsaleUtils.s_member(shopId, base);
 	$scope.setting.semployee = wsaleUtils.s_employee(shopId, base);
 	$scope.setting.cake_mode = wsaleUtils.cake_mode(shopId, base);
-	$scope.setting.barcode_mode = wsaleUtils.barcode_mode(diablo_default_shop, base);
+	$scope.setting.barcode_mode = wsaleUtils.barcode_mode(shopId, base);
 
 	if (diablo_no === $scope.setting.cake_mode) {
 	    $scope.vpays = wsaleService.vpays;
@@ -479,24 +485,13 @@ function wsaleNewProvide(
 	get_setting($scope.select.shop.id); 
     }
 
-    $scope.good_mode = function() {
-	$scope.auto_focus('style_number');
-    };
-    
-    $scope.barcode_mode = function() {
-	$scope.auto_focus('barcode');
-    }
-    
-    // default tab
-    if ($scope.setting.barcode_mode) {
-	$scope.wsale_mode[0].active = false;
-	$scope.wsale_mode[2].active = true;
-	$scope.auto_focus('barcode');
-    } else {
-	$scope.wsale_mode[0].active = true;
-	$scope.wsale_mode[2].active = false;
-	$scope.auto_focus('style_number');
-    }
+    $scope.focus_good_or_barcode = function() {
+	if ($scope.setting.barcode_mode)
+	    $scope.auto_focus('barcode');
+	else
+	    $scope.auto_focus('style_number');
+    }; 
+    $scope.focus_good_or_barcode(); 
 
     $scope.change_shop = function(){
 	get_setting($scope.select.shop.id);	
@@ -774,11 +769,8 @@ function wsaleNewProvide(
 	$scope.disable_refresh     = true;
 	$scope.has_saved           = false;
 	$scope.has_withdrawed      = false;
-	if ($scope.wsale_mode[0].active) {
-	    $scope.auto_focus("style_number"); 
-	} else if ($scope.wsale_mode[0].active) {
-	    $scope.auto_focus("barcode"); 
-	} 
+	
+	$scope.focus_good_or_barcode();
 	$scope.wsaleStorage.reset();
 	$scope.reset_retailer();
     };
@@ -926,6 +918,10 @@ function wsaleNewProvide(
 	add.s_group      = src.s_group;
 	add.free         = src.free;
 	add.entry        = src.entry_date;
+
+	// add.full_bcode   = angular.isUndefined(src.full_bcode) ? src.bcode : src.full_bcode;
+	add.full_name    = add.style_number + "/" + add.brand;
+
 	return add; 
     };
 
@@ -1094,7 +1090,10 @@ function wsaleNewProvide(
     	console.log(full_bcode);
 	// get stock by barcode
 	// stock info
-	var barcode = full_bcode.substr(0, full_bcode.length - diablo_barcode_lenth_of_color_size);
+	var barcode = full_bcode;
+	if (barcode.startsWith('1')) {
+	    barcode = barcode.substr(0, barcode.length - diablo_barcode_lenth_of_color_size);
+	} 
 	diabloFilter.get_stock_by_barcode(barcode, $scope.select.shop.id).then(function(result){
 	    console.log(result);
 	    if (result.ecode === 0) {
@@ -1609,12 +1608,8 @@ function wsaleNewProvide(
 	$scope.re_calculate();
 	
 	$timeout.cancel($scope.timeout_auto_save);
-	
-	if ($scope.wsale_mode[0].active) {
-	    $scope.auto_focus("style_number");
-	} else if ($scope.wsale_mode[2].active) {
-	    $scope.auto_focus('barcode');
-	}
+
+	$scope.focus_good_or_barcode(); 
     };
 
     $scope.calc_discount = function(inv){
@@ -1687,16 +1682,13 @@ function wsaleNewProvide(
 			$scope.auto_save_free(inv);
 		    }
 		} else{
-		    inv.free_color_size = false;
-
-		    if ($scope.setting.barcode_mode && $scope.wsale_mode[2].active) {
+		    inv.free_color_size = false; 
+		    if ($scope.setting.barcode_mode && angular.isDefined(inv.full_bcode)) {
 			// get color, size from barcode
 			// console.log(inv.bcode);
 			// console.log(inv.full_bcode);
 			// console.log(inv.full_bcode.length - inv.bcode.length);
-			var color_size = inv.full_bcode.substr(
-			    inv.bcode.length,
-			    inv.full_bcode.length);
+			var color_size = inv.full_bcode.substr(inv.bcode.length, inv.full_bcode.length);
 			console.log(color_size);
 
 			var bcode_color = wsaleUtils.to_integer(color_size.substr(0, 3));
@@ -1723,7 +1715,10 @@ function wsaleNewProvide(
 		    var after_add = function(){
 			inv.$edit = true;
 			inv.$new = false;
-			inv.order_id = $scope.inventories.length; 
+			inv.order_id = $scope.inventories.length;
+			if (angular.isUndefined(inv.full_bcode)) {
+			    inv.full_bcode = inv.bcode;
+			}
 			$scope.inventories.unshift({$edit:false, $new:true}); 
 			$scope.disable_refresh = false;
 
@@ -1731,12 +1726,7 @@ function wsaleNewProvide(
 			    $scope.inventories.filter(function(r){return !r.$new}));
 			
 			$scope.re_calculate();
-
-			if ($scope.setting.barcode_mode) {
-			    $scope.auto_focus("barcode");
-			} else {
-			    $scope.auto_focus("style_number"); 
-			}
+			$scope.focus_good_or_barcode(); 
 		    };
 		    
 		    var callback = function(params){
@@ -1749,6 +1739,20 @@ function wsaleNewProvide(
 			inv.fprice     = result.fprice;
 			after_add();
 		    };
+
+		    // set auto focus
+		    for (var i=0, l=inv.amounts.length; i<l; i++) {
+			var a = inv.amounts[i]; 
+			if (a.sell_count > 0) {
+			    a.focus = true;
+			    break;
+			} else {
+			    if (a.cid === inv.colors[0].cid && a.size === inv.sizes[0]) {
+				a.focus = true;
+				break;
+			    }
+			} 
+		    }
 		    
 		    var modal_size = diablo_valid_dialog(inv.sizes);
 		    var large_size = modal_size === 'lg' ? true : false;
@@ -1813,7 +1817,10 @@ function wsaleNewProvide(
 	$scope.show_promotions.splice(i, 1);
 	for (var i=0, l=$scope.show_promotions.length; i<l; i++){
 	    $scope.show_promotions[i].order_id = l - i; 
-	} 
+	}
+
+	// $scope.disable_focus();
+	// $scope.focus_good_or_barcode();
     };
 
     /*
@@ -1897,11 +1904,7 @@ function wsaleNewProvide(
     $scope.reset_inventory = function(inv){
 	$timeout.cancel($scope.timeout_auto_save);
 	$scope.inventories[0] = {$edit:false, $new:true};
-	if ($scope.wsale_mode[0].active) {
-	    $scope.auto_focus("style_number");
-	} else if ($scope.wsale_mode[2].active) {
-	    $scope.auto_focus('barcode');
-	}
+	$scope.focus_good_or_barcode(); 
     };
 
     $scope.auto_save_free = function(inv){
@@ -1912,12 +1915,21 @@ function wsaleNewProvide(
 	if (angular.isUndefined(inv.style_number)) return;
 
 	if ($scope.setting.check_sale && sell > inv.total){
-	    inv.form.sell.$invalid = true;
+	    if (angular.isDefined(inv.form.sell)) {
+		inv.form.sell.$invalid = true;
+		inv.form.sell.$pristine = false; 
+	    }
+	    inv.invalid_sell = true;
+	    
 	    return;
 	}
 
 	if (diablo_no === $scope.setting.negative_sale && sell < 0) {
-	    inv.form.sell.$invalid = true;
+	    if (angular.isDefined(inv.form.sell)) {
+		inv.form.sell.$invalid = true;
+		inv.form.sell.$pristine = false;
+	    }
+	    inv.invalid_sell = true;
 	    return;
 	};
 	

@@ -412,10 +412,14 @@ diabloUtils.directive('disableWheel', function() {
 diabloUtils.directive('focusAuto', function($timeout, $parse) {
     return {
 	link: function(scope, element, attrs) {
-	    // console.log(attrs);
-	    var model = $parse(attrs.focusAuto); 
+	    // attrs.$observe('focusAuto', function(value) {
+	    // 	console.log('focusAuto', value);
+	    // });
+	    
+	    var model = $parse(attrs.focusAuto);
 	    
 	    scope.$watch(model, function(value) {
+		// console.log(value);
 		if(value === true) {
 		    $timeout(function(){
 			element[0].focus();
@@ -426,7 +430,7 @@ diabloUtils.directive('focusAuto', function($timeout, $parse) {
 			element[0].blur(); 
 		    }, 100);
 		}
-	    }); 
+	    }, true); 
 	}
     };
 });
