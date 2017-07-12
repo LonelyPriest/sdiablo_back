@@ -299,14 +299,18 @@ print_content(ShopId, PBrand, Model, 58, Merchant, Setting, Invs) ->
 
     {Body, TB, ST, RT} =
 	lists:foldr(
-	  fun(Inv, {Acc, Balance, STotal, RTotal})->
+	  fun({Inv}, {Acc, Balance, STotal, RTotal})->
+		  %% ?DEBUG("Inv ~p", [Inv]),
 		  StyleNumber = ?v(<<"style_number">>, Inv),
+		  %% ?DEBUG("StyleNumber ~p", [StyleNumber]),
 		  BrandId     = ?v(<<"brand_id">>, Inv),
 		  SellTotal   = ?v(<<"total">>, Inv),
 		  TagPrice    = ?v(<<"tag_price">>, Inv),
 		  RPrice      = ?v(<<"rprice">>, Inv),
 		  Amounts     = ?v(<<"amounts">>, Inv, []),
-		  %% rDiscount   = ?v(<<"rdiscount">>, Inv), 
+		  %% ?DEBUG("Amounts ~p", [Amounts]),
+		  %% rDiscount   = ?v(<<"rdiscount">>, Inv),
+		  %% Amounts = [],
 		  CleanTagPrice = clean_zero(TagPrice),
 
 		  Discount   =
@@ -325,7 +329,6 @@ print_content(ShopId, PBrand, Model, 58, Merchant, Setting, Invs) ->
 
 		  BrandName = ?to_s(get_brand(Brands, BrandId)),
 
-		  
 		  {?to_s(StyleNumber) ++ pading(12 - width(latin1, StyleNumber))
 		   %% ++ "品名：" ++ ?to_s(get_brand(Brands, BrandId)) ++ br(PBrand)
 		   ++ ?to_s(CleanTagPrice) ++ pading(6 - width(latin1, CleanTagPrice))
@@ -334,7 +337,7 @@ print_content(ShopId, PBrand, Model, 58, Merchant, Setting, Invs) ->
 
 		   %% ++ ?to_s(RPrice) ++ pading(8 - width(latin1, RPrice)) ++ br(PBrand)
 		   ++ BrandName
-		   ++ case ?v(<<"p_color_size">>, Setting, 0) of
+		   ++ case ?to_i(?v(<<"p_color_size">>, Setting, 0)) of
 			  0 -> pading(24 - width(chinese, BrandName));
 			  1 ->
 			      fun() ->
@@ -350,9 +353,10 @@ print_content(ShopId, PBrand, Model, 58, Merchant, Setting, Invs) ->
 						    end ++ 
 							case Size of
 							    ?FREE_SIZE -> [];
-							    _ -> "/" ++ Size
+							    _ -> "/" ++ ?to_s(Size)
 							end ++ Acc1
 					    end, [], Amounts),
+				      ?DEBUG("ColorSize ~p", [ColorSize]),
 				      ColorSize ++ pading(24
 							  - width(chinese, BrandName)
 							  - width(chinese, ColorSize))

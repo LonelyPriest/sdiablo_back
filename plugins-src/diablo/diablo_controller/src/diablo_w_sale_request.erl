@@ -827,7 +827,7 @@ combine_inv([], Acc) ->
 combine_inv([{Inv}|T], Acc) ->
     S       = ?v(<<"style_number">>, Inv),
     B       = ?v(<<"brand_id">>, Inv),
-    ColorId = ?v(<<"cid">>, Inv),
+    ColorId = ?v(<<"color_id">>, Inv),
     Size    = ?v(<<"size">>, Inv),
     Total   = ?v(<<"amount">>, Inv),
     
@@ -850,8 +850,10 @@ combine_inv([{Inv}|T], Acc) ->
 				     {<<"rprice">>, RPrice},
 				     {<<"total">>, ?v(<<"total">>, A) + Total},
 				     {<<"amounts">>,
-				      ?v(<<"amounts">>, A) ++ [{struct, [{<<"cid">>, ColorId},
-									 {<<"size">>, Size}]}]
+				      ?v(<<"amounts">>, A)
+				      ++ [{struct, [{<<"cid">>, ColorId},
+						    {<<"size">>, Size},
+						    {<<"sell_count">>, Total}]}]
 				     }
 				    ]}|Acc1];
 			      false ->
@@ -867,7 +869,8 @@ combine_inv([{Inv}|T], Acc) ->
 		 {<<"rprice">>, ?v(<<"rprice">>, Inv)},
 		 {<<"total">>, Total},
 		 {<<"amounts">>, [{struct, [{<<"cid">>, ColorId},
-					    {<<"size">>, Size}]}]}
+					    {<<"size">>, Size},
+					    {<<"sell_count">>, Total}]}]}
 		],
 	    combine_inv(T, [{NewInv}|Acc])
     end.
