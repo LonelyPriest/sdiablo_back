@@ -16,7 +16,7 @@
 %% API
 -export([start_link/0]).
 -export([lookup/1, report/2, cancel_report/1, task/3, add/3,
-	 ticket/2, cancel_ticket/1]).
+	 ticket/2, cancel_ticket/1, birth/2, birth/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -30,7 +30,8 @@
 
 -record(state, {merchant :: [],
 		task_of_per_shop :: [],
-		ticket_of_merchant :: []}).
+		ticket_of_merchant :: [],
+		birth_of_merchant :: []}).
 
 %%%===================================================================
 %%% API
@@ -55,6 +56,12 @@ ticket(preferential, TriggerTime) ->
 cancel_ticket(preferential) ->
     gen_server:cast(?SERVER, cancel_ticket).
 
+%%
+birth(congratulation, TriggerTime) ->
+    gen_server:cast(?SERVER, {birth, TriggerTime}).
+birth(cancel) ->
+    gen_server:cast(?SERVER, cancel_birth).
+
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
@@ -67,7 +74,10 @@ init([]) ->
 			  [?v(<<"id">>, Merchant)|Acc]
 		  end, [], Merchants),
 	    ?INFO("start cron task to genarate report ....~n", []),
-	    {ok, #state{merchant=L, task_of_per_shop=[], ticket_of_merchant=[]}};
+	    {ok, #state{merchant=L,
+			task_of_per_shop=[],
+			ticket_of_merchant=[],
+			birth_of_merchant=[]}};
 	{error, _Error} ->
 	    {ok, #state{}}
     end.
@@ -174,6 +184,35 @@ handle_cast({gen_ticket, TriggerTime},
 	    {noreply, State#state{ticket_of_merchant=NewTasks}};
 	_ -> {noreply, State}
     end;
+
+handle_cast({birth, TriggerTime},
+	    #state{merchant=Merchants, birth_of_merchant=BirthAll} = State) ->
+    ?DEBUG("birth time ~p, birth ~p", [TriggerTime, BirthAll]),
+    ?INFO("Auto birth at time time ~p, birth ~p", [TriggerTime, BirthAll]),
+    case BirthAll of
+	[] ->
+	    NewTasks =
+		lists:foldr(
+		  fun(M, Acc) ->
+			  CronTask = {{daily, TriggerTime},
+				      fun(_Ref, Datetime) ->
+					      task(auto_sms_at_birth, Datetime, [M])
+				      end}, 
+			  [?cron:cron(CronTask)|Acc] 
+		  end, [], Merchants),
+	    %% end, [], [4]),
+	    ?DEBUG("new auto sms ~p with merchants ~p", [NewTasks, Merchants]),
+	    {noreply, State#state{birth_of_merchant=NewTasks}};
+	_ -> {noreply, State}
+    end;
+
+handle_cast({cancel_birth}, #state{birth_of_merchant=BirthAll} = State) ->
+    ?DEBUG("cancel_birth", []),
+    lists:foreach(
+      fun(Birth) ->
+	      ?cron:cancel(Birth)
+      end, BirthAll),
+    {noreply, State#state{birth_of_merchant=[]}}; 
 
 handle_cast(_Msg, State) ->
     ?DEBUG("handle_cast receive unkown message ~p, State ~p", [_Msg, State]),
@@ -426,7 +465,53 @@ task(gen_ticket, Datetime, Merchant) when is_number(Merchant) ->
     %% 	      end
     %%   end, TicketSqls);
     ?DEBUG("ticketSqls ~p", [TicketSqls]),
-    {Merchant, lists:reverse(TicketSqls)}; 
+    {Merchant, lists:reverse(TicketSqls)};
+
+task(auto_sms_at_birth, Datetime, Merchants) when is_list(Merchants) ->
+    MerchantPhones = lists:foldr(
+		  fun(M, Acc) ->
+			  [task(auto_sms_at_birth, Datetime, M)|Acc]
+		  end, [], Merchants),
+    ?DEBUG("auto_sms_at_birth: Phones", [MerchantPhones]),
+
+    lists:foreach(
+      fun({_Merchant, Phones}) ->
+	      lists:foreach(
+		fun(Phone)->
+			%% send sms
+			?DEBUG("sms send phone ~p", [Phone])
+		end, Phones)
+      end, MerchantPhones);
+
+task(auto_sms_at_birth, Datetime, Merchant) when is_number(Merchant)->
+    {{_Year, Month, Day}, _Time} = Datetime, 
+    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, ?DEFAULT_BASE_SETTING),
+    BirthSMS = ?v(<<"birth_sms">>, BaseSetting, 0),
+    BirthBefore = ?to_i(?v(<<"birth_before">>, BaseSetting, 0)),
+    case BirthSMS of
+	0 -> {Merchant, []}; 
+	1 ->
+	    %% get all retailers
+	    {ok, Retailers} = ?w_user_profile:get(retailer, Merchant),
+	    %% birthday of retailer
+	    SMSRetailers = 
+		lists:foldr(
+		  fun({Retailer}, Acc) ->
+			  Birth = ?v(<<"birth">>, Retailer, []),
+			  Seconds = calendar:datetime_to_gregorian_seconds(Datetime)
+			      - ?ONE_DAY * BirthBefore,
+			  {{_Year, Month, Day}, _} = calendar:gregorian_seconds_to_datetime(Seconds),
+			  <<_Y:4/binary, "-", MonthOfBirth:2/binary, "-", DayOfBirth/binary>> = Birth,
+			  case Month =:= ?to_i(MonthOfBirth) andalso Day =:= ?to_i(DayOfBirth) of
+			      true ->
+				  %% send sms
+				  [?v(<<"mobile">>, Retailer)|Acc];
+			      false ->
+				  Acc
+			  end
+		  end, [], Retailers),
+	    {Merchant, SMSRetailers}
+    end; 
 	
 task(stastic_per_shop, Datetime, Merchants) when is_list(Merchants)->
     {YestodayStart, YestodayEnd} = yestoday(Datetime),

@@ -387,7 +387,7 @@ handle_call({list_type, Merchant}, _From, State) ->
     {reply, Reply, State};
 
 handle_call({bcode_update, Table, Merchant}, _From, State) ->
-    Sql = "select id from "
+    Sql = "select id, bcode from "
 	++ case Table of
 	       firm -> "suppliers";
 	       brand -> "brands";
@@ -404,16 +404,20 @@ handle_call({bcode_update, Table, Merchant}, _From, State) ->
 	    Sqls = 
 		lists:foldl(
 		  fun({R}, Acc) ->
-			  BCode = ?inventory_sn:sn(?to_a(Table), Merchant),
-			  ["update " ++ case Table of
-					    firm -> "suppliers";
-					    brand-> "brands";
-					    type -> "inv_types";
-					    color -> "colors"
-					end
-			   ++ " set bcode=" ++ ?to_s(BCode)
-			   ++ " where id=" ++ ?to_s(?v(<<"id">>, R))]
-			      ++ Acc
+			  case ?v(<<"bcode">>, R) /= 0 of
+			      true -> Acc;
+			      false ->
+				  BCode = ?inventory_sn:sn(?to_a(Table), Merchant),
+				  ["update " ++ case Table of
+						    firm -> "suppliers";
+						    brand-> "brands";
+						    type -> "inv_types";
+						    color -> "colors"
+						end
+				   ++ " set bcode=" ++ ?to_s(BCode)
+				   ++ " where id=" ++ ?to_s(?v(<<"id">>, R))]
+				      ++ Acc
+			  end
 		  end, [], Records),
 	    Reply = ?sql_utils:execute(transaction, Sqls, Table),
 	    {reply, Reply, State};

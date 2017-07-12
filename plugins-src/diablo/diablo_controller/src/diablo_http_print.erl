@@ -343,8 +343,15 @@ print_content(ShopId, PBrand, Model, 58, Merchant, Setting, Invs) ->
 					    fun({struct, A}, Acc1) ->
 						    ColorId  = ?v(<<"cid">>, A),
 						    Size     = ?v(<<"size">>, A),
-						    ColorName = ?to_s(get_color(Colors, ColorId)),
-						    "/" ++ ColorName ++ "/" ++ Size ++ Acc1
+						    case ColorId of
+							?FREE_COLOR -> [];
+							_ ->
+							    "/" ++ ?to_s(get_color(Colors, ColorId))
+						    end ++ 
+							case Size of
+							    ?FREE_SIZE -> [];
+							    _ -> "/" ++ Size
+							end ++ Acc1
 					    end, [], Amounts),
 				      ColorSize ++ pading(24
 							  - width(chinese, BrandName)

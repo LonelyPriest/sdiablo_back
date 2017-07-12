@@ -931,9 +931,9 @@ var wsalePrint = function(){
 	    LODOP.ADD_PRINT_TEXT(40,0,"58mm",20,"单号：" + rsn);
 	    LODOP.ADD_PRINT_TEXT(55,0,"58mm",20,"客户：" + retailer);
 	    
-	    LODOP.ADD_PRINT_TEXT(70,5,"58mm",20,"店员：" + employee);
+	    LODOP.ADD_PRINT_TEXT(70,0,"58mm",20,"店员：" + employee);
 	    LODOP.ADD_PRINT_TEXT(85,0,"58mm",20,"日期：" + date); 
-	    LODOP.ADD_PRINT_LINE(105,0,90,178,0,1);
+	    LODOP.ADD_PRINT_LINE(105,0,105,178,0,1);
 
 	    return;
 	},

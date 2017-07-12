@@ -344,7 +344,10 @@ sys_config() ->
 	      {"bcode_width",     "条码宽度",             "7",   "0"},
 	      {"bcode_height",    "条码高度",             "2",   "0"},
 	      {"trans_orgprice",  "移仓检测进价",         "1",   "0"},
-	      {"p_color_size",    "打印颜色尺码",         "0",   "0"}
+	      {"p_color_size",    "打印颜色尺码",         "0",   "0"},
+	      {"birth_sms",       "生日短信",             "0",   "0"},
+	      {"birth_before",    "生日短信发送间隔",     "0",   "0"}  %% default send sms current day
+	      
 	      %%  {"score_withdraw",  "提现是否积分",         "1",   "0"}
 	     ],
     Values.

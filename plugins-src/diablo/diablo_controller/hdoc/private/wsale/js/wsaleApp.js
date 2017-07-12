@@ -1160,10 +1160,10 @@ function wsaleNewProvide(
 		error_message += print(status);
 
 	    if (status.sms_code !== 0){
-		if (status.sms_code !== 0) {
-		    var ERROR = require("diablo-error");
-		    error_message += "发送短消息失败：" + ERROR[status.sms_code];
-		}		
+		// if (status.sms_code !== 0) {
+		var ERROR = require("diablo-error");
+		error_message += "发送短消息失败：" + ERROR[status.sms_code];
+		// }		
 	    }
 
 	    return error_message;

@@ -132,9 +132,12 @@ sms_once(aliqin, Merchant, {Shop, Phone, Action, Money, Balance, Score}) ->
 
 		    case ?to_i(Code) == 0 of
 			true -> {ok, {sms_send, Phone}};
-			false -> {error, {sms_send_failed, Code}}
+			false ->
+			    ?INFO("sms send failed phone ~p, code ~p", [Phone, Code]),
+			    {error, {sms_send_failed, Code}}
 		    end;
 		{error, Reason} ->
+		    ?INFO("sms send http failed phone ~p, Reason", [Phone, Reason]),
 		    {error, {http_failed, Reason}}
 	    end
     end.

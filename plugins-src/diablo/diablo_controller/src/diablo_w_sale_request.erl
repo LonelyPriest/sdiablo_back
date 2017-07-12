@@ -446,8 +446,7 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
     try
 	{ok, Sale} = ?w_sale:sale(get_new, Merchant, RSN),
 	?DEBUG("sale ~p", [Sale]),
-	{ok, SaleDetails} =
-	    ?w_sale:sale(trans_detail, Merchant, {<<"rsn">>, ?to_b(RSN)}),
+	{ok, SaleDetails} = ?w_sale:sale(trans_detail, Merchant, {<<"rsn">>, ?to_b(RSN)}),
 	?DEBUG("details ~p", [SaleDetails]), 
 
 	{ok, TicketScore} = 
@@ -464,8 +463,7 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
 					   ?v(<<"type_id">>, S) =:= 1
 					       andalso ?v(<<"id">>, S) =:= TicketSId end, Scores) of
 				[] -> throw({wsale_invalid_ticket_score, TicketBatch}) ;
-				[{Score2Money}] ->
-				    
+				[{Score2Money}] -> 
 				    AccScore = ?v(<<"score">>, Score2Money), 
 				    Balance = ?v(<<"balance">>, Score2Money),
 				    TicketBalance = ?v(<<"balance">>, Ticket),
@@ -827,9 +825,11 @@ sidebar(Session) ->
 combine_inv([], Acc) ->
     Acc;
 combine_inv([{Inv}|T], Acc) ->
-    S = ?v(<<"style_number">>, Inv),
-    B = ?v(<<"brand_id">>, Inv),
-    Amount   = ?v(<<"amount">>, Inv),
+    S       = ?v(<<"style_number">>, Inv),
+    B       = ?v(<<"brand_id">>, Inv),
+    ColorId = ?v(<<"cid">>, Inv),
+    Size    = ?v(<<"size">>, Inv),
+    Total   = ?v(<<"amount">>, Inv),
     
     case in_sort(Inv, Acc) of
 	true ->
@@ -840,15 +840,19 @@ combine_inv([{Inv}|T], Acc) ->
 			  B1 = ?v(<<"brand_id">>, A),
 			  TagPrice = ?v(<<"tag_price">>, A),
 			  RPrice   = ?v(<<"rprice">>, A),
-			  Amount1  = ?v(<<"amount">>, A),
-
+			  %% ColorId  = ?v(<<"color_id">>, A),
+			  %% Size     = ?v(<<"size">>, A), 
 			  case S =:= S1 andalso B =:= B1 of
 			      true ->
 				  [{[{<<"style_number">>, S1},
 				     {<<"brand_id">>, B1},
 				     {<<"tag_price">>, TagPrice},
 				     {<<"rprice">>, RPrice},
-				     {<<"total">>, Amount + Amount1}
+				     {<<"total">>, ?v(<<"total">>, A) + Total},
+				     {<<"amounts">>,
+				      ?v(<<"amounts">>, A) ++ [{struct, [{<<"cid">>, ColorId},
+									 {<<"size">>, Size}]}]
+				     }
 				    ]}|Acc1];
 			      false ->
 				  [{A}|Acc1]
@@ -856,7 +860,16 @@ combine_inv([{Inv}|T], Acc) ->
 		  end, [], Acc),
 	    combine_inv(T, NewAcc);
 	false ->
-	    combine_inv(T, [{Inv}|Acc])
+	    NewInv = 
+		[{<<"style_number">>, S},
+		 {<<"brand_id">>, B},
+		 {<<"tag_price">>, ?v(<<"tag_price">>, Inv)},
+		 {<<"rprice">>, ?v(<<"rprice">>, Inv)},
+		 {<<"total">>, Total},
+		 {<<"amounts">>, [{struct, [{<<"cid">>, ColorId},
+					    {<<"size">>, Size}]}]}
+		],
+	    combine_inv(T, [{NewInv}|Acc])
     end.
 
 in_sort(_In, []) ->
