@@ -337,34 +337,70 @@ print_content(ShopId, PBrand, Model, 58, Merchant, Setting, Invs) ->
 
 		   %% ++ ?to_s(RPrice) ++ pading(8 - width(latin1, RPrice)) ++ br(PBrand)
 		   ++ BrandName
+		   ++ pading(24 - width(chinese, BrandName))
+		   %% ++ case ?to_i(?v(<<"p_color_size">>, Setting, 0)) of
+		   %% 	  0 -> pading(24 - width(chinese, BrandName));
+		   %% 	  1 ->
+		   %% 	      fun() ->
+		   %% 		      ColorSize = 
+		   %% 			  lists:foldr(
+		   %% 			    fun({struct, A}, Acc1) ->
+		   %% 				    ColorId  = ?v(<<"cid">>, A),
+		   %% 				    Size     = ?v(<<"size">>, A),
+		   %% 				    case ColorId of
+		   %% 					?FREE_COLOR -> [];
+		   %% 					_ ->
+		   %% 					    "/" ++ ?to_s(get_color(Colors, ColorId))
+		   %% 				    end ++ 
+		   %% 					case Size of
+		   %% 					    ?FREE_SIZE -> [];
+		   %% 					    _ -> "/" ++ ?to_s(Size)
+		   %% 					end ++ Acc1
+		   %% 			    end, [], Amounts),
+		   %% 		      ?DEBUG("ColorSize ~p", [ColorSize]),
+		   %% 		      ColorSize ++ pading(24
+		   %% 					  - width(chinese, BrandName)
+		   %% 					  - width(chinese, ColorSize))
+		   %% 	      end ()
+		   %%    end
+		   ++ ?to_s(RPrice)
+		   ++ br(PBrand)
 		   ++ case ?to_i(?v(<<"p_color_size">>, Setting, 0)) of
-			  0 -> pading(24 - width(chinese, BrandName));
+			  0 ->
+			      pading(24 - 4) ++ "合：" ++ ?to_s(RPrice * SellTotal) ++ br(PBrand);
 			  1 ->
-			      fun() ->
+			      fun() -> 
 				      ColorSize = 
 					  lists:foldr(
 					    fun({struct, A}, Acc1) ->
 						    ColorId  = ?v(<<"cid">>, A),
 						    Size     = ?v(<<"size">>, A),
-						    case ColorId of
-							?FREE_COLOR -> [];
-							_ ->
-							    "/" ++ ?to_s(get_color(Colors, ColorId))
-						    end ++ 
+						    Sell     = ?v(<<"sell_count">>, A),
+						    Note = 
+							case ColorId of
+							    ?FREE_COLOR -> [];
+							    _ ->
+								"/" ++ ?to_s(get_color(Colors, ColorId))
+							end ++ 
 							case Size of
 							    ?FREE_SIZE -> [];
 							    _ -> "/" ++ ?to_s(Size)
-							end ++ Acc1
+							end,
+						    [Note ++ pading(18 - width(chinese, Note))
+						     ++ ?to_s(Sell)] ++ Acc1
 					    end, [], Amounts),
-				      ?DEBUG("ColorSize ~p", [ColorSize]),
-				      ColorSize ++ pading(24
-							  - width(chinese, BrandName)
-							  - width(chinese, ColorSize))
+				      %% ?DEBUG("ColorSize ~ts", [?to_b(ColorSize)]),
+				      [H1|T1] = ColorSize,
+				      ?DEBUG("H1 ~p, T1 ~p", [H1, T1]),
+				      lists:foldr(
+					fun(Note, Acc2) ->
+						Note ++ br(PBrand) ++ Acc2
+					end, [], T1)
+					  ++ H1 ++ pading(24 - width(chinese, H1) - 4)
+					  ++ "合：" ++ ?to_s(RPrice * SellTotal) ++ br(PBrand)
 			      end ()
 		      end
-		   ++ ?to_s(RPrice)
-		   ++ br(PBrand)
-		   ++ pading(24 - 6) ++ "（合）" ++ ?to_s(RPrice * SellTotal) ++ br(PBrand)
+		   %% ++ pading(24 - 6) ++ "（合）" ++ ?to_s(RPrice * SellTotal) ++ br(PBrand)
 		   %% ++ "单价：" ++ ?to_s(TagPrice) ++ br(PBrand)
 		   %% ++ "成交价：" ++ ?to_s(RPrice) ++ br(PBrand)
 		   %% ++ "数量：" ++ ?to_s(SellTotal) ++ br(PBrand)
