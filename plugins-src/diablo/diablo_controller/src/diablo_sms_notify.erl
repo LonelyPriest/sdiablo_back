@@ -120,15 +120,18 @@ sms_once(aliqin, Merchant, {Shop, Phone, Action, Money, Balance, Score}) ->
 			  [], "application/x-www-form-urlencoded;charset=utf-8", UTF8Body}, [], []) of
 		{ok, {{"HTTP/1.1", 200, "OK"}, _Head, Reply}} ->
 		    ?DEBUG("Reply ~ts", [Reply]),
-		    {struct, Result} = mochijson2:decode(Reply), 
+		    {struct, Result} = mochijson2:decode(Reply),
+		    ?DEBUG("sms result ~p", [Result]),
 		    [{_,
 		      {struct,
 		       [{<<"result">>,
 			 {struct,
-			  [{<<"err_code">>, Code},
-			   {<<"model">>, _Mode},
-			   {<<"success">>, _Success}]}},
+			  [{<<"err_code">>, Code}|_T
+			   %% {<<"model">>, _Mode},
+			   %% {<<"success">>, _Success}
+			  ]}},
 			{<<"request_id">>, _RequestId}]}}] = Result,
+		    ?DEBUG("code ~p", [Code]),
 
 		    case ?to_i(Code) == 0 of
 			true -> {ok, {sms_send, Phone}};
