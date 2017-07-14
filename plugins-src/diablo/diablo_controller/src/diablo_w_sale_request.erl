@@ -485,15 +485,15 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
 	
 	{ok, Employee} = ?w_user_profile:get(
 			    employee, Merchant, ?v(<<"employ_id">>, Sale)),
-	{ok, Brands}   = ?w_user_profile:get(brand, Merchant),
+	%% {ok, Brands}   = ?w_user_profile:get(brand, Merchant),
 
-	GetBrand =
-	    fun(BrandId)->
-		    case ?w_user_profile:filter(Brands, <<"id">>, BrandId) of
-			[] -> [];
-			FindBrand -> ?v(<<"name">>, FindBrand)
-		    end
-	    end,
+	%% GetBrand =
+	%%     fun(BrandId)->
+	%% 	    case ?w_user_profile:filter(Brands, <<"id">>, BrandId) of
+	%% 		[] -> [];
+	%% 		FindBrand -> ?v(<<"name">>, FindBrand)
+	%% 	    end
+	%%     end,
 	    
 	%% SortInvs = sort_inventory(Merchant, GetBrand, Details, []),
 	%% ?DEBUG("sorts ~p", [SortInvs]),
@@ -827,6 +827,7 @@ combine_inv([], Acc) ->
 combine_inv([{Inv}|T], Acc) ->
     S       = ?v(<<"style_number">>, Inv),
     B       = ?v(<<"brand_id">>, Inv),
+    TypeId  = ?v(<<"type_id">>, Inv),
     ColorId = ?v(<<"color_id">>, Inv),
     Size    = ?v(<<"size">>, Inv),
     Total   = ?v(<<"amount">>, Inv),
@@ -846,6 +847,7 @@ combine_inv([{Inv}|T], Acc) ->
 			      true ->
 				  [{[{<<"style_number">>, S1},
 				     {<<"brand_id">>, B1},
+				     {<<"type_id">>, ?v(<<"type_id">>, A)},
 				     {<<"tag_price">>, TagPrice},
 				     {<<"rprice">>, RPrice},
 				     {<<"total">>, ?v(<<"total">>, A) + Total},
@@ -865,6 +867,7 @@ combine_inv([{Inv}|T], Acc) ->
 	    NewInv = 
 		[{<<"style_number">>, S},
 		 {<<"brand_id">>, B},
+		 {<<"type_id">>, TypeId},
 		 {<<"tag_price">>, ?v(<<"tag_price">>, Inv)},
 		 {<<"rprice">>, ?v(<<"rprice">>, Inv)},
 		 {<<"total">>, Total},
@@ -1178,16 +1181,18 @@ start(new_sale, Req, Merchant, Invs, Base, Print) ->
 					  fun({struct, Inv}, Acc) ->
 						  StyleNumber = ?v(<<"style_number">>, Inv),
 						  BrandId     = ?v(<<"brand">>, Inv),
+						  TypeId      = ?v(<<"type">>, Inv),
 						  Total       = ?v(<<"sell_total">>, Inv),
 						  TagPrice    = ?v(<<"tag_price">>, Inv),
 						  RPrice      = ?v(<<"rprice">>, Inv), 
 						  Amounts     = ?v(<<"amounts">>, Inv),
 
 						  P = {[{<<"style_number">>, StyleNumber},
-						       {<<"brand_id">>, BrandId},
-						       {<<"tag_price">>, TagPrice},
-						       {<<"rprice">>, RPrice},
-						       {<<"total">>, Total},
+							{<<"brand_id">>, BrandId},
+							{<<"type_id">>, TypeId},
+							{<<"tag_price">>, TagPrice},
+							{<<"rprice">>, RPrice},
+							{<<"total">>, Total},
 							{<<"amounts">>, Amounts}
 						       ]},
 

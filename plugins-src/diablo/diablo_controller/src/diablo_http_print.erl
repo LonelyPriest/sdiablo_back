@@ -288,6 +288,7 @@ print_content(ShopId, PBrand, Model, 58, Merchant, Setting, Invs) ->
 
     {ok, Brands} = ?w_user_profile:get(brand, Merchant),
     {ok, Colors} = ?w_user_profile:get(color, Merchant),
+    {ok, Types} = ?w_user_profile:get(type, Merchant),
 
     H = "款号" ++ pading(8)
 	++ "单价" ++ pading(2)
@@ -304,10 +305,12 @@ print_content(ShopId, PBrand, Model, 58, Merchant, Setting, Invs) ->
 		  StyleNumber = ?v(<<"style_number">>, Inv),
 		  %% ?DEBUG("StyleNumber ~p", [StyleNumber]),
 		  BrandId     = ?v(<<"brand_id">>, Inv),
+		  TypeId      = ?v(<<"type_id">>, Inv),
 		  SellTotal   = ?v(<<"total">>, Inv),
 		  TagPrice    = ?v(<<"tag_price">>, Inv),
 		  RPrice      = ?v(<<"rprice">>, Inv),
 		  Amounts     = ?v(<<"amounts">>, Inv, []),
+
 		  %% ?DEBUG("Amounts ~p", [Amounts]),
 		  %% rDiscount   = ?v(<<"rdiscount">>, Inv),
 		  %% Amounts = [],
@@ -328,6 +331,7 @@ print_content(ShopId, PBrand, Model, 58, Merchant, Setting, Invs) ->
 		      end,
 
 		  BrandName = ?to_s(get_brand(Brands, BrandId)),
+		  TypeName = ?to_s(get_type(Types, TypeId)),
 
 		  {?to_s(StyleNumber) ++ pading(12 - width(latin1, StyleNumber))
 		   %% ++ "品名：" ++ ?to_s(get_brand(Brands, BrandId)) ++ br(PBrand)
@@ -336,8 +340,8 @@ print_content(ShopId, PBrand, Model, 58, Merchant, Setting, Invs) ->
 		   ++ ?to_s(Discount) ++ br(PBrand)
 
 		   %% ++ ?to_s(RPrice) ++ pading(8 - width(latin1, RPrice)) ++ br(PBrand)
-		   ++ BrandName
-		   ++ pading(24 - width(chinese, BrandName))
+		   ++ BrandName ++ "/" ++ ?to_s(TypeName)
+		   ++ pading(24 - width(chinese, BrandName) - width(chinese, TypeName))
 		   %% ++ case ?to_i(?v(<<"p_color_size">>, Setting, 0)) of
 		   %% 	  0 -> pading(24 - width(chinese, BrandName));
 		   %% 	  1 ->
@@ -799,7 +803,13 @@ get_brand(Brands, BrandId) ->
 get_color(Colors, ColorId) ->
     case ?w_user_profile:filter(Colors, <<"id">>, ColorId) of
 	[] -> [];
-	FindBrand -> ?v(<<"name">>, FindBrand)
+	FindColor -> ?v(<<"name">>, FindColor)
+    end.
+
+get_type(Types, TypeId) ->
+    case ?w_user_profile:filter(Types, <<"id">>, TypeId) of
+	[] -> [];
+	FindType -> ?v(<<"name">>, FindType)
     end.
     
 server(1) ->
