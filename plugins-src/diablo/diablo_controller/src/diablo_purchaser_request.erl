@@ -999,7 +999,7 @@ sidebar(Session) ->
 		[{{"inventory", "库存盘点", "glyphicon glyphicon-check"},
 		  case UserType of
 		      ?MERCHANT ->
-			  [{"inventory_fix", "盘点", "glyphicon glyphicon-check"}];
+			  [{"inventory_fix", "店铺盘点", "glyphicon glyphicon-check"}];
 		      _ -> []
 		  end
 			      

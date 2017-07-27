@@ -45,7 +45,10 @@ var retailerUtils = function(){
 	match_retailer_phone: function(viewValue, filterFun){
 	    if (diablo_is_digit_string(viewValue)){
 		if (viewValue.length < 4) return;
-		return filterFun.match_retailer_phone(viewValue, 0);
+		else if (viewValue.startsWith("9"))
+		    return filterFun.match_retailer_phone(viewValue, 3);
+		else 
+		    return filterFun.match_retailer_phone(viewValue, 0);
 	    } else if (diablo_is_letter_string(viewValue)){
 		return filterFun.match_retailer_phone(viewValue, 1);
 	    } else if (diablo_is_chinese_string(viewValue)){

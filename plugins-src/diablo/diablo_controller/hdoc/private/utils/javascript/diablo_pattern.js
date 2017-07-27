@@ -26,7 +26,9 @@ angular.module("diabloPattern", []).service("diabloPattern", [function(){
     // character, number or -
     this.char_number_slash_bar = /^[A-Za-z0-9-\/]{2,20}$/;
 
-    this.id_card = /^[A-Za-z0-9]{8,18}$/
+    this.id_card = /^[A-Za-z0-9]{8,18}$/;
+
+    this.card = /^9[A-Za-z0-9]{3,18}$/;
 
     // character, number or _
     this.char_number_underline = /^\w+$/;

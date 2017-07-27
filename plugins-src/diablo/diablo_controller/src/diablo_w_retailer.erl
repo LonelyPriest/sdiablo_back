@@ -185,6 +185,7 @@ init([Name]) ->
 handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
     ?DEBUG("new_retailer with attrs ~p", [Attrs]),
     Name     = ?v(<<"name">>, Attrs),
+    Card     = ?v(<<"card">>, Attrs, []),
     Pinyin   = ?v(<<"py">>, Attrs, []),
     IDCard   = ?v(<<"id_card">>, Attrs, []),
     Birth    = ?v(<<"birth">>, Attrs),
@@ -217,10 +218,11 @@ handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
 	{ok, []} ->
 	    DrawId = default_withdraw(Merchant, Shop, Type),
 	    Sql2 = "insert into w_retailer("
-		"name, py, id_card, birth, type, password, score"
+		"name, card, py, id_card, birth, type, password, score"
 		" ,mobile, address, shop, draw, merchant, entry_date)"
-		++ " values ("
+		++ " values (" 
 		++ "\'" ++ ?to_s(Name) ++ "\',"
+		++ "\'" ++ ?to_s(Card) ++ "\',"
 		++ "\'" ++ ?to_s(Pinyin) ++ "\',"
 		++ "\'" ++ ?to_s(IDCard) ++ "\',"
 		++ "\'" ++ ?to_s(Birth) ++ "\',"
@@ -247,6 +249,7 @@ handle_call({update_retailer, Merchant, RetailerId, {Attrs, OldAttrs}}, _From, S
 	   [Merchant, RetailerId, Attrs, OldAttrs]),
 
     Name     = ?v(<<"name">>, Attrs),
+    Card     = ?v(<<"card">>, Attrs),
     Pinyin   = ?v(<<"py">>, Attrs),
     IDCard   = ?v(<<"id_card">>, Attrs),
     Mobile   = ?v(<<"mobile">>, Attrs),
@@ -302,6 +305,7 @@ handle_call({update_retailer, Merchant, RetailerId, {Attrs, OldAttrs}}, _From, S
 		end,
 
 	    Updates = ?utils:v(name, string, Name)
+		++ ?utils:v(card, string, Card)
 		++ ?utils:v(py, string, Pinyin)
 		++ ?utils:v(id_card, string, IDCard)
 		++ ?utils:v(mobile, string, Mobile)
@@ -386,6 +390,7 @@ handle_call({get_retailer, Merchant, RetailerId}, _From, State) ->
 	   [Merchant, RetailerId]),
     Sql = "select a.id"
 	", a.name"
+	", a.card"
 	", a.id_card"
 	", a.py"
 	", a.birth"
@@ -441,6 +446,7 @@ handle_call({list_retailer, Merchant, Conditions}, _From, State) ->
     ?DEBUG("lookup retail with merchant ~p, Conditions ~p", [Merchant, Conditions]),
     Sql = "select a.id"
 	", a.name"
+	", a.card"
 	", a.id_card"
 	", a.py"
 	", a.birth"
@@ -979,6 +985,7 @@ handle_call({{filter_retailer, Order, Sort},
     Sql = "select a.id"
 	", a.merchant" 
 	", a.name"
+	", a.card"
 	", a.id_card"
 	", a.birth"
 	", a.type as type_id"
@@ -1087,10 +1094,11 @@ handle_call({match_phone, Merchant, {Mode, Phone}}, _From, #state{prompt=Prompt}
     Name = case Mode of
 	       0 -> "mobile";
 	       1 -> "py";
-	       2 -> "name"
+	       2 -> "name";
+	       3 -> "card"
 	   end,
 
-    Sql = "select id, merchant, name, py"
+    Sql = "select id, merchant, name, card, py"
 	", shop as shop_id"
 	", draw as draw_id"
 	", type as type_id"

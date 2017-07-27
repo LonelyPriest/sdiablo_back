@@ -347,6 +347,7 @@ sys_config() ->
 	      {"p_color_size",    "打印颜色尺码",         "0",   "0"},
 	      {"birth_sms",       "生日短信",             "0",   "0"},
 	      {"birth_before",    "生日短信发送间隔",     "0",   "0"}  %% default send sms current day
+	      %% {"draft_fix",       "盘点草稿保存路径",     "c:\fix.txt",    "0"}
 	      
 	      %%  {"score_withdraw",  "提现是否积分",         "1",   "0"}
 	     ],

@@ -18,6 +18,9 @@ var diablo_invalid = -1;
 var diablo_female = 0;
 var diablo_male = 1;
 
+var diablo_free_size = "0";
+var diablo_free_color = 0;
+
 var diablo_has_deleted=1;
 
 var diablo_frontend = 0;
@@ -58,6 +61,8 @@ var diablo_asc  = 1;
 
 var diablo_charge = 0;
 var diablo_withdraw = 1;
+
+var diablo_fix_draft_path = "c:\fix.txt";
 
 /*
  * stock
@@ -703,7 +708,7 @@ diablo_set_string = function(s){
 
 var diablo_find_color = function(cid, allColors){
     if (cid === 0){
-	return {cid:cid};
+	return {cid:cid, cname:"均码"};
     } else{
 	var c = diablo_get_object(cid, allColors);
 	// console.log(c);
@@ -925,10 +930,11 @@ var diabloHelp = function(){
 		// console.log(inv.color_id);
 		// console.log(allColors);
 		// console.log(colors); 
-		var color = diablo_find_color(inv.color_id, allColors); 
+		var color = diablo_find_color(inv.color_id, allColors);
+		// console.log(color);
 		
 		if (!diablo_in_colors(color, colors)){
-		    colors.push(color)
+		    colors.push(color) 
 		};
 
 		if (!in_sort(sorts, inv)){

@@ -8,7 +8,8 @@ function wretailerNewCtrlProvide(
 		      score:        diabloPattern.number,
 		      password:     diabloPattern.num_passwd,
 		      name:         diabloPattern.chinese_name,
-		      id_card:      diabloPattern.id_card};
+		      id_card:      diabloPattern.id_card,
+		      card:         diabloPattern.card};
 
     $scope.right = {master: rightAuthen.authen_master(user.type)};
     
@@ -300,12 +301,14 @@ function wretailerDetailCtrlProvide(
     };
 
     var pattern = {name_address: diabloPattern.ch_name_address,
+		   name:         diabloPattern.chinese_name,
 		   tel_mobile:   diabloPattern.tel_mobile,
 		   decimal_2:    diabloPattern.decimal_2,
 		   number:       diabloPattern.number,
 		   comment:      diabloPattern.comment,
 		   password:     diabloPattern.num_passwd,
-		   id_card:      diabloPattern.id_card}; 
+		   id_card:      diabloPattern.id_card,
+		   card:         diabloPattern.card}; 
     
     $scope.charge = function(retailer){
 	console.log($scope.charges); 
@@ -443,6 +446,7 @@ function wretailerDetailCtrlProvide(
 	    console.log(params); 
 	    var update_retailer = {
 		name: diablo_get_modified(params.retailer.name, old_retailer.name),
+		card: diablo_get_modified(params.retailer.card, old_retailer.card),
 		py: diablo_get_modified(diablo_pinyin(params.retailer.name),
 					diablo_pinyin(old_retailer.name)),
 		id_card: diablo_get_modified(params.retailer.id_card, old_retailer.id_card),

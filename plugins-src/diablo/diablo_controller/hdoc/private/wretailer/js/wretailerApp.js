@@ -172,6 +172,7 @@ function wretailerConfig(angular) {
 	    return http.save(
 		{operation:"new_w_retailer"},
 		{name:     r.name,
+		 card:     r.card,
 		 py:       diablo_pinyin(r.name),
 		 id_card:  r.id_card,
 		 password: diablo_set_string(r.password), 
@@ -192,6 +193,7 @@ function wretailerConfig(angular) {
 	    return http.save(
 		{operation: "update_w_retailer"},
 		{id:       r.id,
+		 card:     r.card,
 		 name:     r.name,
 		 py:       r.py,
 		 id_card:  r.id_card,

@@ -213,3 +213,7 @@ alter table colors add column bcode INTEGER default 0 after id;
 alter table brands add column bcode INTEGER default 0 after id;
 alter table inv_types add column bcode INTEGER default 0 after id;
 alter table w_inventory add column bcode VARCHAR(32) default 0 after id;
+
+
+-- 2017-07-23
+alter table w_retailer modify column card VARCHAR(18) default null;
