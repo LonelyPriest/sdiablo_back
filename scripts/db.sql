@@ -715,16 +715,13 @@ create table w_inventory_new_detail_amount(
 create table w_inventory_fix(
     id             INTEGER AUTO_INCREMENT,
     rsn            VARCHAR(32) not null, -- record sn
-    
+    merchant       INTEGER not null default -1,
     shop           INTEGER default -1,                 -- which shop saled the goods
     employ         VARCHAR(8) not null, 
     
-    exist          INTEGER,
-    fixed          INTEGER default 0,
-    metric         INTEGER default 0,
-    cost           DECIMAL(10, 2) default 0, -- max: 99999999.99
-        
-    merchant       INTEGER, 
+    shop_total     INTEGER not null default -1,
+    db_total       INTEGER not null default -1,
+    
     entry_date     DATETIME default 0,
     deleted        INTEGER default 0, -- 0: no;  1: yes
 
@@ -733,37 +730,37 @@ create table w_inventory_fix(
     primary key    (id)
 )default charset=utf8;
 
-create table w_inventory_fix_detail(
-    id             INTEGER AUTO_INCREMENT,
-    rsn            VARCHAR(32) not null, -- record sn
+-- create table w_inventory_fix_detail(
+--     id             INTEGER AUTO_INCREMENT,
+--     rsn            VARCHAR(32) not null, -- record sn
     
-    style_number   VARCHAR(64) not null,
-    brand          INTEGER default -1,
+--     style_number   VARCHAR(64) not null,
+--     brand          INTEGER default -1,
     
-    type           INTEGER default -1,
-    year           YEAR(4),
-    season         TINYINT, -- 0:spring, 1:summer, 2:autumn, 3:winter 
-    firm           INTEGER default -1,
+--     type           INTEGER default -1,
+--     year           YEAR(4),
+--     season         TINYINT, -- 0:spring, 1:summer, 2:autumn, 3:winter 
+--     firm           INTEGER default -1,
     
-    s_group        VARCHAR(32) default 0,  -- which size group 
-    free           TINYINT default 0,  -- free color and free size 
-    path           VARCHAR(255) default null, -- the image path
+--     s_group        VARCHAR(32) default 0,  -- which size group 
+--     free           TINYINT default 0,  -- free color and free size 
+--     path           VARCHAR(255) default null, -- the image path
         
-    exist          INTEGER not null,
-    fixed          INTEGER default 0,
-    metric         INTEGER default 0,
-    org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
+--     exist          INTEGER not null,
+--     fixed          INTEGER default 0,
+--     metric         INTEGER default 0,
+--     org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
 
-    merchant       INTEGER default -1,
-    shop           INTEGER default -1,
+--     merchant       INTEGER default -1,
+--     shop           INTEGER default -1,
     
-    entry_date     DATETIME default 0,
-    deleted        INTEGER default 0, -- 0: no;  1: yes
+--     entry_date     DATETIME default 0,
+--     deleted        INTEGER default 0, -- 0: no;  1: yes
 
-    unique  key uk (rsn, style_number, brand),
-    key dk (merchant, style_number, brand, type, firm),
-    primary key    (id)
-)default charset=utf8;
+--     unique  key uk (rsn, style_number, brand),
+--     key dk (merchant, style_number, brand, type, firm),
+--     primary key    (id)
+-- )default charset=utf8;
 
 create table w_inventory_fix_detail_amount(
     id             INTEGER AUTO_INCREMENT,
@@ -774,13 +771,13 @@ create table w_inventory_fix_detail_amount(
     brand          INTEGER default -1,
     color          INTEGER default -1,
     size           VARCHAR(8) default 0, -- S/26, M/27....
-    
-    exist          INTEGER,
-    fixed          INTEGER default 0,
-    metric         INTEGER default 0,
-    
+
+    shop_total     INTEGER not null default -1,
+    db_total       INTEGER not null default -1,
+
     entry_date     DATETIME default 0,
     deleted        INTEGER default 0, -- 0: no;  1: yes
+    
     unique  key uk (rsn, style_number, brand, color, size),
     key dk (merchant, style_number, brand, color, size),
     primary key    (id)

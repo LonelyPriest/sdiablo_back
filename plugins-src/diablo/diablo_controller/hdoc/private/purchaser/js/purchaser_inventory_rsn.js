@@ -27,7 +27,7 @@ function purchaserInventoryFixRsnDetailCtrlProvide(
     diabloFilter.add_field("brand", filterBrand);
     // diabloFilter.add_field("shop", user.sortShops);
     diabloFilter.add_field("shop", $scope.shops);
-    diabloFilter.add_field("firm", filterFirm);
+    // diabloFilter.add_field("firm", filterFirm);
 
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
@@ -81,8 +81,10 @@ function purchaserInventoryFixRsnDetailCtrlProvide(
 		    
 		    angular.forEach(result.data, function(d){
 			d.shop = diablo_get_object(d.shop_id, user.sortShops);
-			d.firm = diablo_get_object(d.firm_id, filterFirm);
+			// d.firm = diablo_get_object(d.firm_id, filterFirm);
 			d.brand = diablo_get_object(d.brand_id, filterBrand);
+			d.color = diablo_get_object(d.color_id, filterColor);
+			d.metric = d.shop_total - d.db_total;
 		    });
 		    
 		    $scope.inventories = result.data; 

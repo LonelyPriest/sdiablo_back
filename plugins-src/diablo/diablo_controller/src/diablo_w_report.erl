@@ -412,14 +412,24 @@ handle_call({stock_transfer_out, Merchant, Conditions}, _From, State)->
 handle_call({stock_fix, Merchant, Conditions}, _From, State)->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
 
-    Sql = "select SUM(metric) as total"
-	", SUM(cost) as cost"
+    Sql = "select 0 as total"
+	", 0 as cost"
 	", shop as shop_id"
+
 	" from w_inventory_fix"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions)
 	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime)
 	++ " group by shop",
+    
+    %% Sql = "select SUM(metric) as total"
+    %% 	", SUM(cost) as cost"
+    %% 	", shop as shop_id"
+    %% 	" from w_inventory_fix"
+    %% 	" where merchant=" ++ ?to_s(Merchant)
+    %% 	++ ?sql_utils:condition(proplists, NewConditions)
+    %% 	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime)
+    %% 	++ " group by shop",
 
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};

@@ -24,7 +24,7 @@
 -export([charge/2, charge/3]).
 -export([score/2, score/3, ticket/3, get_ticket/3]).
 -export([filter/4, filter/6]).
--export([match/3, syn/2, syn/3, get/2]).
+-export([match/3, syn/2, syn/3, get/2, card/3]).
 
 -define(SERVER, ?MODULE). 
 
@@ -169,6 +169,10 @@ syn(prompt, Merchant) ->
 get(prompt, Merchant) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {get_prompt, Merchant}).
+
+card(exist, Merchant, Card) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {is_card_exist, Merchant, Card}).
 
 start_link(Name) ->
     gen_server:start_link({local, Name}, ?MODULE, [Name], []).
@@ -1146,6 +1150,14 @@ handle_call({syn_pinyin, Merchant, Retailers}, _From, State) ->
 handle_call({get_prompt, _Merchant}, _From, #state{prompt=Prompt} = State) -> 
     {reply, Prompt, State};
 
+handle_call({is_card_exist, Merchant, Card}, _From, State) ->
+    Sql = "select id, card, mobile, merchant"
+	" from w_retailer"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and card=" ++ ?to_s(Card),
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+    
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.

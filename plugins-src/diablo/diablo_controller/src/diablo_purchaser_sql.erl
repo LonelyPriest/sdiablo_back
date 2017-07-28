@@ -765,11 +765,13 @@ inventory(new_detail, new, Merchant, Conditions, PageFun) ->
 inventory(fix_detail, fix, Merchant, Conditions, PageFun) ->
     {StartTime, EndTime, NewConditions} =
 	?sql_utils:cut(fields_with_prifix, Conditions),
-    "select a.id, a.rsn, a.shop as shop_id"
+    "select a.id"
+	", a.rsn"
+	", a.shop as shop_id"
 	", a.employ as employee_id"
-	", a.exist, a.fixed, a.metric, a.entry_date"
-    %% ", b.name as employee"
-    %% ", c.name as shop"
+	", a.shop_total"
+	", a.db_total"
+	", a.entry_date" 
 	" from w_inventory_fix a"
 
 	" where "
@@ -784,36 +786,59 @@ inventory(fix_rsn_groups, fix, Merchant, Conditions, PageFun) ->
     RSN         = ?v(<<"rsn">>, Conditions, []),
     StyleNumber = ?v(<<"style_number">>, Conditions, []),
     Brand       = ?v(<<"brand">>, Conditions, []),
-    Firm        = ?v(<<"firm">>, Conditions, []),
+    %% Firm        = ?v(<<"firm">>, Conditions, []),
     Shop        = ?v(<<"shop">>, Conditions, []),
 
-    C1 = [{<<"rsn">>, RSN}, {<<"shop">>, Shop}],
-    C11 = ?sql_utils:condition(proplists_suffix, C1)
-	++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime)
-	++ " and merchant="++ ?to_s(Merchant),
+    %% C1 = [{<<"rsn">>, RSN}, {<<"shop">>, Shop}],
+    %% C11 = ?sql_utils:condition(proplists_suffix, C1)
+    %% 	++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime)
+    %% 	++ " and merchant="++ ?to_s(Merchant),
 
 
-    C2 = [{<<"style_number">>, StyleNumber}, {<<"brand">>, Brand}, {<<"firm">>, Firm}],
-    C21 = ?sql_utils:condition(proplists, C2),
+    %% C2 = [{<<"style_number">>, StyleNumber}, {<<"brand">>, Brand}, {<<"firm">>, Firm}],
+    %% C21 = ?sql_utils:condition(proplists, C2),
 
-    "select a.id, a.rsn, a.style_number, a.brand as brand_id, a.type"
-	", a.s_group, a.free, a.season, a.firm as firm_id, a.path, a.exist"
-	", a.fixed, a.metric, a.entry_date"
+    %% "select a.id, a.rsn, a.style_number, a.brand as brand_id, a.type"
+    %% 	", a.s_group, a.free, a.season, a.firm as firm_id, a.path, a.exist"
+    %% 	", a.fixed, a.metric, a.entry_date"
 
-	", b.employ as employee_id"
-	", b.shop as shop_id" 
-	" from "
+    %% 	", b.employ as employee_id"
+    %% 	", b.shop as shop_id" 
+    %% 	" from "
 
-	"(select id, rsn, style_number, brand, type, s_group"
-	", free, season, firm, path, exist, fixed, metric, entry_date"
-	" from w_inventory_fix_detail"
-	" where rsn in(select rsn from w_inventory_fix where " ++ C11 ++ ")"
-	++ C21 ++ PageFun() ++ ") a"
+    %% 	"(select id, rsn, style_number, brand, type, s_group"
+    %% 	", free, season, firm, path, exist, fixed, metric, entry_date"
+    %% 	" from w_inventory_fix_detail"
+    %% 	" where rsn in(select rsn from w_inventory_fix where " ++ C11 ++ ")"
+    %% 	++ C21 ++ PageFun() ++ ") a"
 
-	" left join "
-	"(select rsn, employ, shop from w_inventory_fix"
-	" where " ++ C11 ++ ") b on a.rsn=b.rsn";
+    %% 	" left join "
+    %% 	"(select rsn, employ, shop from w_inventory_fix"
+    %% 	" where " ++ C11 ++ ") b on a.rsn=b.rsn";
 
+    C = [{<<"rsn">>, RSN},
+	 {<<"shop">>, Shop},
+	 {<<"style_number">>, StyleNumber},
+	 {<<"brand">>, Brand}],
+    C1 = ?sql_utils:condition(proplists, C)
+	++ case RSN of
+	       [] -> " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime);
+	       _ -> []
+	   end,
+    ?DEBUG("C1 ~p", [C1]),
+    
+    "select rsn"
+	", shop as shop_id"
+	", style_number"
+	", brand as brand_id"
+	", color as color_id"
+	", size"
+	", shop_total"
+	", db_total"
+	", entry_date"
+	" from w_inventory_fix_detail_amount"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ C1 ++ PageFun(); 
 
 inventory(transfer_detail, transfer, Merchant, Conditions, PageFun) ->
     {StartTime, EndTime, NewConditions} =

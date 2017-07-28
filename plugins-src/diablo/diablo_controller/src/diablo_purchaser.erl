@@ -23,7 +23,7 @@
 -export([purchaser_good/2, purchaser_good/3,
 	 purchaser_good/4, purchaser_good/5]).
 
--export([purchaser_inventory/3, purchaser_inventory/4, purchaser_inventory/5]).
+-export([purchaser_inventory/3, purchaser_inventory/4, purchaser_inventory/5, stock/3]).
 
 -export([filter/4, filter/6, rsn_detail/3, export/4, rsn/4]).
 -export([match/3, match/4, match/5, match/6]).
@@ -82,9 +82,13 @@ purchaser_inventory(transfer, Merchant, Inventories, Props) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {transfer_inventory, Merchant, Inventories, Props});
 
-purchaser_inventory(fix, Merchant, Inventories, Props) ->
+purchaser_inventory(fix, Merchant, {StocksNotInDB, StocksNotInShop, StocksDiff}, Props) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {fix_inventory, Merchant, Inventories, Props});
+    gen_server:call(Name, {
+		      fix_inventory,
+		      Merchant,
+		      {StocksNotInDB, StocksNotInShop, StocksDiff},
+		      Props});
 
 purchaser_inventory(set_promotion, Merchant, Promotions, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -351,6 +355,12 @@ export(trans_note, Merchant, Condition, []) ->
 export(stock, Merchant, Condition, Mode) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {stock_export, Merchant, Condition, Mode}).
+
+
+%% get stock detail of shop
+stock(detail_get_by_shop, Merchant, Shop) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {stock_detail_get_by_shop, Merchant, Shop}).
 
 
 start_link(Name) ->
@@ -1762,36 +1772,36 @@ handle_call({reject_inventory, Merchant, Inventories, Props}, _From, State) ->
     end;
 
 %% fix
-handle_call({fix_inventory, Merchant, Inventories, Props}, _From, State) ->
-    ?DEBUG("fix_inventory with merchant ~p~ninventory ~p~nprops ~p",
-	   [Merchant, Inventories, Props]), 
-    Now             = ?utils:current_time(localtime), 
+handle_call({fix_inventory, Merchant,
+	     {StocksNotInDB, StocksNotInShop, StocksDiff},
+	     Props}, _From, State) ->
+    ?DEBUG("fix_inventory with merchant ~p, props ~p", [Merchant, Props]), 
+    Datetime        = ?v(<<"datetime">>, Props), 
     Shop            = ?v(<<"shop">>, Props),
-    DateTime        = ?v(<<"datetime">>, Props, Now),
-    Employe         = ?v(<<"employee">>, Props), 
-    TotalExist      = ?v(<<"total_exist">>, Props),
-    TotalFixed      = ?v(<<"total_fixed">>, Props),
-    TotalMetric     = ?v(<<"total_metric">>, Props),
-    TotalCost       = ?v(<<"total_cost">>, Props),
-    
+    Employee        = ?v(<<"employee">>, Props),
+    DBTotal         = ?v(<<"db_total">>, Props),
+    ShopTotal       = ?v(<<"shop_total">>, Props), 
     RSN = rsn(fix, Merchant, Shop, ?inventory_sn:sn(w_inventory_fix_sn, Merchant)),
 
     RealyShop = ?w_good_sql:realy_shop(Merchant, Shop),
-    Sql1 = sql(wfix, RSN, DateTime, Merchant, RealyShop, Inventories),
+    Sql1 = sql(
+	     wfix,
+	     RSN,
+	     Datetime,
+	     Merchant,
+	     RealyShop,
+	     {StocksNotInDB, StocksNotInShop, StocksDiff}),
     
     Sql2 = "insert into w_inventory_fix(rsn"
-	", shop, employ, exist, fixed, metric, cost, merchant, entry_date)"
+	", merchant, shop, employ, shop_total, db_total, entry_date)"
 	" values("
 	++ "\"" ++ ?to_s(RSN) ++ "\","
-	++ ?to_s(Shop) ++ ","
-	++ "\"" ++ ?to_s(Employe) ++ "\","
-	++ ?to_s(TotalExist) ++ ","
-	++ ?to_s(TotalFixed) ++ ","
-	++ ?to_s(TotalMetric) ++ ","
-	++ ?to_s(TotalCost) ++ ","
 	++ ?to_s(Merchant) ++ "," 
-	++ "\"" ++ ?to_s(DateTime) ++ "\");", 
-
+	++ ?to_s(Shop) ++ ","
+	++ "\"" ++ ?to_s(Employee) ++ "\","
+	++ ?to_s(ShopTotal) ++ ","
+	++ ?to_s(DBTotal) ++ "," 
+	++ "\"" ++ ?to_s(Datetime) ++ "\");", 
     AllSql = Sql1 ++ [Sql2],
     Reply = ?sql_utils:execute(transaction, AllSql, RSN),
     {reply, Reply, State}; 
@@ -2209,14 +2219,13 @@ handle_call({{filter_news, SortMode}, Merchant, CurrentPage, ItemsPerPage, Field
 
 %% fix
 handle_call({total_fix, Merchant, Fields}, _From, State) ->
-    Sql = "rsn, exist, fixed, metric",
-    CountTable = ?sql_utils:count_table(w_inventory_fix, Sql, Merchant, Fields),
-    CountSql = "select count(*) as total"
-    	", sum(exist) as t_exist"
-    	", sum(fixed) as t_fixed"
-    	", sum(metric) as t_metric"
-    	" from ("
-	++ CountTable ++ ") a",
+    %% Sql = "rsn, exist, fixed, metric",
+    CountSql = ?sql_utils:count_table(w_inventory_fix, Merchant, Fields),
+    %% CountSql = "select count(*) as total"
+    %% ", sum(exist) as t_exist"
+    %% 	", sum(fixed) as t_fixed"
+    %% 	", sum(metric) as t_metric"
+    %% 	" from (" ++ CountTable ++ ") a",
     %% Sql = ?sql_utils:count_table("w_inventory_fix", Merchant, Fields),
     Reply = ?sql_utils:execute(s_read, CountSql),
     {reply, Reply, State}; 
@@ -2361,14 +2370,18 @@ handle_call({get_new_amount, Merchant, Conditions}, _From, State) ->
 %% fix
 %% =============================================================================
 handle_call({total_fix_rsn_groups, Merchant, Fields}, _From, State) ->
-    Sql = "rsn",
-    CountTable = ?sql_utils:count_table(w_inventory_fix, Sql, Merchant, Fields),
-    CountSql = "select count(*) as total"
-	", SUM(exist) as t_exist"
-	", SUM(fixed) as t_fixed"
-	", SUM(metric) as t_metric"
-	" from w_inventory_fix_detail"
-	" where rsn in(" ++ CountTable ++ ")",
+    {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Fields),
+
+    CountSql = 
+	case ?v(<<"rsn">>, Fields, []) of
+	    [] -> ?sql_utils:count_table(w_inventory_fix_detail_amount, Merchant, Fields);
+	    _ -> ?sql_utils:count_table(w_inventory_fix_detail_amount, Merchant, NewConditions)
+	end,
+    %% CountSql = "select count(*) as total"
+    %% 	%% ", SUM(exist) as t_exist"
+    %% 	%% ", SUM(fixed) as t_fixed"
+    %% 	%% ", SUM(metric) as t_metric"
+    %% 	" from w_inventory_fix_detail_amount"
     Reply = ?sql_utils:execute(s_read, CountSql),
     {reply, Reply, State}; 
 
@@ -2540,6 +2553,18 @@ handle_call({stock_export, Merchant, Conditions, Mode}, _From, State) ->
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
+handle_call({stock_detail_get_by_shop, Merchant, Shop}, _From, State) ->
+    Sql = "select id, style_number, brand, color, size, total, merchant, shop"
+	" from w_inventory_amount"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and shop=" ++ ?to_s(Shop)
+	++ " and total!=0"
+	++ " order by id desc",
+
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+    
+
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
@@ -2603,97 +2628,165 @@ sql(transfer_from, RSN, Merchant, Shop, TShop, Datetime, Inventories) ->
                  Datetime, Inv) ++ Acc0
       end, [], Inventories).
 
-sql(wfix, RSN, DateTime, Merchant, Shop, Inventories) ->
+sql(wfix, RSN, Datetime, Merchant, Shop, {StocksNotInDB, StocksNotInShop, StocksDiff}) -> 
     %% Shop       = ?v(<<"shop">>, Props),
     %% Employe    = ?v(<<"employee">>, Props),
 
-    lists:foldr(
-      fun({struct, Inv}, Acc0)->
-	      StyleNumber = ?v(<<"style_number">>, Inv),
-	      Brand       = ?v(<<"brand">>, Inv),
-	      Type        = ?v(<<"type">>, Inv),
-	      Firm        = ?v(<<"firm">>, Inv),
-	      Year        = ?v(<<"year">>, Inv),
-	      Season      = ?v(<<"season">>, Inv),
-	      SizeGroup   = ?v(<<"s_group">>, Inv),
-	      Free        = ?v(<<"free">>, Inv),
-	      Path        = ?v(<<"path">>, Inv),
-	      Exist       = ?v(<<"exist">>, Inv),
-	      Fixed       = ?v(<<"fixed">>, Inv),
-	      Metric      = ?v(<<"metric">>, Inv),
-	      OrgPrice    = ?v(<<"org_price">>, Inv),
+    %% lists:foldr(
+    %%   fun({struct, Inv}, Acc0)->
+    %% 	      StyleNumber = ?v(<<"style_number">>, Inv),
+    %% 	      Brand       = ?v(<<"brand">>, Inv),
+    %% 	      Type        = ?v(<<"type">>, Inv),
+    %% 	      Firm        = ?v(<<"firm">>, Inv),
+    %% 	      Year        = ?v(<<"year">>, Inv),
+    %% 	      Season      = ?v(<<"season">>, Inv),
+    %% 	      SizeGroup   = ?v(<<"s_group">>, Inv),
+    %% 	      Free        = ?v(<<"free">>, Inv),
+    %% 	      Path        = ?v(<<"path">>, Inv),
+    %% 	      Exist       = ?v(<<"exist">>, Inv),
+    %% 	      Fixed       = ?v(<<"fixed">>, Inv),
+    %% 	      Metric      = ?v(<<"metric">>, Inv),
+    %% 	      OrgPrice    = ?v(<<"org_price">>, Inv),
 
-	      Sql0 = 
-		  ["insert into w_inventory_fix_detail("
-		   "rsn, style_number, brand, type, s_group, free"
-		   ", year, season, firm, path"
-		   ", exist, fixed, metric, org_price"
-		   ", merchant, shop, entry_date)"
-		   " values("
-		   ++ "\"" ++ ?to_s(RSN) ++ "\","
-		   ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
-		   ++ ?to_s(Brand) ++ ","
-		   ++ ?to_s(Type) ++ ","
-		   ++ "\"" ++ ?to_s(SizeGroup) ++ "\","
-		   ++ ?to_s(Free) ++ ","
-		   ++ ?to_s(Year) ++ ","
-		   ++ ?to_s(Season) ++ ","
-		   ++ ?to_s(Firm) ++ ","
-		   ++ "\'" ++ ?to_s(Path) ++ "\'," 
-		   ++ ?to_s(Exist) ++ ","
-		   ++ ?to_s(Fixed) ++ ","
-		   ++ ?to_s(Metric) ++ ","
-		   ++ ?to_s(OrgPrice) ++ ","
-		   ++ ?to_s(Merchant) ++ ","
-		   ++ ?to_s(Shop) ++ ","
-		   ++ "\'" ++ ?to_s(DateTime) ++ "\')",
+    %% 	      Sql0 = 
+    %% 		  ["insert into w_inventory_fix_detail("
+    %% 		   "rsn, style_number, brand, type, s_group, free"
+    %% 		   ", year, season, firm, path"
+    %% 		   ", exist, fixed, metric, org_price"
+    %% 		   ", merchant, shop, entry_date)"
+    %% 		   " values("
+    %% 		   ++ "\"" ++ ?to_s(RSN) ++ "\","
+    %% 		   ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
+    %% 		   ++ ?to_s(Brand) ++ ","
+    %% 		   ++ ?to_s(Type) ++ ","
+    %% 		   ++ "\"" ++ ?to_s(SizeGroup) ++ "\","
+    %% 		   ++ ?to_s(Free) ++ ","
+    %% 		   ++ ?to_s(Year) ++ ","
+    %% 		   ++ ?to_s(Season) ++ ","
+    %% 		   ++ ?to_s(Firm) ++ ","
+    %% 		   ++ "\'" ++ ?to_s(Path) ++ "\'," 
+    %% 		   ++ ?to_s(Exist) ++ ","
+    %% 		   ++ ?to_s(Fixed) ++ ","
+    %% 		   ++ ?to_s(Metric) ++ ","
+    %% 		   ++ ?to_s(OrgPrice) ++ ","
+    %% 		   ++ ?to_s(Merchant) ++ ","
+    %% 		   ++ ?to_s(Shop) ++ ","
+    %% 		   ++ "\'" ++ ?to_s(DateTime) ++ "\')",
 		   
-		  "update w_inventory set amount=amount+" ++ ?to_s(Metric)
-		   ++ " where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
-		   ++ " and brand=" ++ ?to_s(Brand)
-		   ++ " and shop=" ++ ?to_s(Shop)
-		   ++ " and merchant=" ++ ?to_s(Merchant)],
+    %% 		  "update w_inventory set amount=amount+" ++ ?to_s(Metric)
+    %% 		   ++ " where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+    %% 		   ++ " and brand=" ++ ?to_s(Brand)
+    %% 		   ++ " and shop=" ++ ?to_s(Shop)
+    %% 		   ++ " and merchant=" ++ ?to_s(Merchant)],
 
-	      Amounts  = lists:reverse(?v(<<"amounts">>, Inv)),
+    %% 	      Amounts  = lists:reverse(?v(<<"amounts">>, Inv)),
 	      
-	      Sql0 ++ 
-		  lists:foldr(
-		    fun({struct, A}, Acc1)->
-			    Color  = ?v(<<"cid">>, A),
-			    Size   = ?v(<<"size">>, A),
-			    AExist  = ?v(<<"count">>, A),
-			    AFixed  = ?v(<<"fixed_count">>, A), 
-			    AMetric = AFixed - AExist,
+    %% 	      Sql0 ++ 
+    %% 		  lists:foldr(
+    %% 		    fun({struct, A}, Acc1)->
+    %% 			    Color  = ?v(<<"cid">>, A),
+    %% 			    Size   = ?v(<<"size">>, A),
+    %% 			    AExist  = ?v(<<"count">>, A),
+    %% 			    AFixed  = ?v(<<"fixed_count">>, A), 
+    %% 			    AMetric = AFixed - AExist,
 
-			    case AMetric of
-				0 -> [];
-				_ ->
-				    ["update w_inventory_amount set total=total+" ++ ?to_s(AMetric)
-				     ++ " where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
-				     ++ " and brand=" ++ ?to_s(Brand)
-				     ++ " and color=" ++ ?to_s(Color)
-				     ++ " and size=" ++ "\'" ++ ?to_s(Size) ++ "\'"
-				     ++ " and shop=" ++ ?to_s(Shop)
-				     ++ " and merchant=" ++ ?to_s(Merchant)]
-			    end ++ 
-				["insert into w_inventory_fix_detail_amount(rsn"
-				 ", merchant, shop, style_number, brand, color, size"
-				 ", exist, fixed, metric, entry_date)"
-				 " values("
-				 ++ "\'" ++ ?to_s(RSN) ++ "\',"
-				 ++ ?to_s(Merchant) ++ ","
-				 ++ ?to_s(Shop) ++ ","
-				 ++ "\'" ++ ?to_s(StyleNumber) ++ "\',"
-				 ++ ?to_s(Brand) ++ ","
-				 ++ ?to_s(Color) ++ ","
-				 ++ "\'" ++ ?to_s(Size) ++ "\'," 
-				 ++ ?to_s(AExist) ++ ","
-				 ++ ?to_s(AFixed) ++ ","
-				 ++ ?to_s(AMetric) ++ ","
-				 ++ "\'" ++ ?to_s(DateTime) ++ "\')"|Acc1] 
-		    end, [], Amounts) ++ Acc0
+    %% 			    case AMetric of
+    %% 				0 -> [];
+    %% 				_ ->
+    %% 				    ["update w_inventory_amount set total=total+" ++ ?to_s(AMetric)
+    %% 				     ++ " where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+    %% 				     ++ " and brand=" ++ ?to_s(Brand)
+    %% 				     ++ " and color=" ++ ?to_s(Color)
+    %% 				     ++ " and size=" ++ "\'" ++ ?to_s(Size) ++ "\'"
+    %% 				     ++ " and shop=" ++ ?to_s(Shop)
+    %% 				     ++ " and merchant=" ++ ?to_s(Merchant)]
+    %% 			    end ++ 
+    %% 				["insert into w_inventory_fix_detail_amount(rsn"
+    %% 				 ", merchant, shop, style_number, brand, color, size"
+    %% 				 ", exist, fixed, metric, entry_date)"
+    %% 				 " values("
+    %% 				 ++ "\'" ++ ?to_s(RSN) ++ "\',"
+    %% 				 ++ ?to_s(Merchant) ++ ","
+    %% 				 ++ ?to_s(Shop) ++ ","
+    %% 				 ++ "\'" ++ ?to_s(StyleNumber) ++ "\',"
+    %% 				 ++ ?to_s(Brand) ++ ","
+    %% 				 ++ ?to_s(Color) ++ ","
+    %% 				 ++ "\'" ++ ?to_s(Size) ++ "\'," 
+    %% 				 ++ ?to_s(AExist) ++ ","
+    %% 				 ++ ?to_s(AFixed) ++ ","
+    %% 				 ++ ?to_s(AMetric) ++ ","
+    %% 				 ++ "\'" ++ ?to_s(DateTime) ++ "\')"|Acc1] 
+    %% 		    end, [], Amounts) ++ Acc0
 
-      end, [], Inventories).
+    %%   end, [], Inventories).
+    Sql0 = lists:foldr(
+	     fun({Stock}, Acc) ->
+		     StyleNumber = ?v(<<"style_number">>, Stock),
+		     Brand = ?v(<<"brand">>, Stock),
+		     Color = ?v(<<"color">>, Stock),
+		     Size  = ?v(<<"size">>, Stock),
+		     Fix   = ?v(<<"fix">>, Stock),
+		     ["insert into w_inventory_fix_detail_amount(rsn"
+		      ", merchant, shop, style_number"
+		      ", brand, color, size, db_total, shop_total, entry_date) values("
+		      ++ "\'" ++ ?to_s(RSN) ++ "\',"
+		      ++ ?to_s(Merchant) ++ ","
+		      ++ ?to_s(Shop) ++ ","
+		      ++ "\'" ++ ?to_s(StyleNumber) ++ "\',"
+		      ++ ?to_s(Brand) ++ ","
+		      ++ ?to_s(Color) ++ ","
+		      ++ "\'" ++ ?to_s(Size) ++ "\',"
+		      ++ "0,"
+		      ++ ?to_s(Fix) ++  ","
+		      ++ "\'" ++ ?to_s(Datetime) ++"\')"|Acc] 
+	     end, [], StocksNotInDB),
+
+    Sql1 = lists:foldr(
+	     fun({Stock}, Acc) ->
+		     StyleNumber = ?v(<<"style_number">>, Stock),
+		     Brand = ?v(<<"brand">>, Stock),
+		     Color = ?v(<<"color">>, Stock),
+		     Size  = ?v(<<"size">>, Stock),
+		     Total = ?v(<<"total">>, Stock),
+		     ["insert into w_inventory_fix_detail_amount(rsn"
+		      ", merchant, shop, style_number"
+		      ", brand, color, size, db_total, shop_total) values("
+		      ++ "\'" ++ ?to_s(RSN) ++ "\',"
+		      ++ ?to_s(Merchant) ++ ","
+		      ++ ?to_s(Shop) ++ ","
+		      ++ "\'" ++ ?to_s(StyleNumber) ++ "\',"
+		      ++ ?to_s(Brand) ++ ","
+		      ++ ?to_s(Color) ++ ","
+		      ++ "\'" ++ ?to_s(Size) ++ "\',"
+		      ++ ?to_s(Total) ++ ","
+		      ++ "0" ++  ","
+		      ++ "\'" ++ ?to_s(Datetime) ++"\')"|Acc]
+	     end, [], StocksNotInShop),
+
+    Sql2 = lists:foldr(
+	     fun({Stock}, Acc) ->
+		     StyleNumber = ?v(<<"style_number">>, Stock),
+		     Brand    = ?v(<<"brand">>, Stock),
+		     Color    = ?v(<<"color">>, Stock),
+		     Size     = ?v(<<"size">>, Stock),
+		     FixTotal = ?v(<<"total">>, Stock),
+		     DBTotal  = ?v(<<"db">>, Stock),
+		     ["insert into w_inventory_fix_detail_amount(rsn"
+		      ", merchant, shop, style_number"
+		      ", brand, color, size, db_total, shop_total) values("
+		      ++ "\'" ++ ?to_s(RSN) ++ "\',"
+		      ++ ?to_s(Merchant) ++ ","
+		      ++ ?to_s(Shop) ++ ","
+		      ++ "\'" ++ ?to_s(StyleNumber) ++ "\',"
+		      ++ ?to_s(Brand) ++ ","
+		      ++ ?to_s(Color) ++ ","
+		      ++ "\'" ++ ?to_s(Size) ++ "\',"
+		      ++ ?to_s(DBTotal) ++ ","
+		      ++ ?to_s(FixTotal) ++ ","
+		      ++ "\'" ++ ?to_s(Datetime) ++"\')"|Acc]
+	     end, [], StocksDiff),
+
+    Sql0 ++ Sql1 ++ Sql2.
 
 count_table(w_inventory_new, Merchant, Conditions) -> 
     %% SubSql = "select a.rsn, a.total, a.should_pay, a.has_pay"

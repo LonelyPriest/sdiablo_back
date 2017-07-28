@@ -519,19 +519,62 @@ action(Session, Req, {"list_w_inventory"}, Payload) ->
 action(Session, Req, {"fix_w_inventory"}, Payload) ->
     ?DEBUG("fix_w_inventory with session ~p, paylaod~n~p",
 	   [Session, Payload]),
-    Merchant = ?session:get(merchant, Session),
-    Invs = ?v(<<"inventory">>, Payload, []),
+    Merchant       = ?session:get(merchant, Session),
+    ShopStocks     = ?v(<<"stock">>, Payload, []),
     {struct, Base} = ?v(<<"base">>, Payload),
-    case ?w_inventory:purchaser_inventory(
-	    fix, Merchant, lists:reverse(Invs), Base) of 
-    	{ok, RSn} ->
-	    ?utils:respond(200,
-			   Req,
-			   ?succ(fix_w_inventory, RSn),
-			   {<<"rsn">>, ?to_b(RSn)});
-    	{error, Error} ->
-    	    ?utils:respond(200, Req, Error)
+    Shop = ?v(<<"shop">>, Base),
+
+    %% {ShopTotal, ShopStockDict} = stock(shop_to_dict, ShopStocks, 0, dict:new()),
+
+    %% get stock of shop
+    case ?w_inventory:stock(detail_get_by_shop, Merchant, Shop) of
+	{ok, DBStocks} ->
+	    {DBTotal, DBStockDict} = stock(to_dict, DBStocks, 0, dict:new()),
+	    {StocksNotInDB, StocksNotEqualDB}
+		= compare_stock(shop_to_db, ShopStocks, DBStockDict, [], []),
+	    ?DEBUG("stocksNotInDB ~p", [StocksNotInDB]),
+	    ?DEBUG("stocksNotEqualDB ~p", [StocksNotEqualDB]),
+	    
+	    {ShopTotal, ShopStockDict} = stock(shop_to_dict, ShopStocks, 0, dict:new()),
+	    {StocksNotInShop, StocksNotEqualShop}
+		= compare_stock(db_to_shop, DBStocks, ShopStockDict, [], []),
+	    ?DEBUG("stocksNotInShop ~p", [StocksNotInShop]),
+	    ?DEBUG("stocksNotEqualShop ~p", [StocksNotEqualShop]),
+
+	    case ?w_inventory:purchaser_inventory(
+		    fix,
+		    Merchant,
+		    {StocksNotInDB, StocksNotInShop, StocksNotEqualDB},
+		    [{<<"db_total">>, DBTotal}, {<<"shop_total">>, ShopTotal}] ++ Base) of
+		{ok, RSN} -> 
+		    ?utils:respond(
+		       200,
+		       object,
+		       Req,
+		       {[{<<"ecode">>, 0},
+			 {<<"rsn">>, ?to_b(RSN)},
+			 {<<"s_not_db">>, StocksNotInDB},
+			 {<<"s_not_equal_db">>, StocksNotEqualDB},
+			 {<<"s_not_shop">>, StocksNotInShop},
+			 {<<"s_not_equal_shop">>, StocksNotEqualShop}
+			]});
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end;
+	{error, Error}->
+	    ?utils:respond(200, Req, Error)
     end;
+
+    
+    %% case ?w_inventory:purchaser_inventory(fix, Merchant, Stocks, Base) of 
+    %% 	{ok, RSn} ->
+    %% 	    ?utils:respond(200,
+    %% 			   Req,
+    %% 			   ?succ(fix_w_inventory, RSn),
+    %% 			   {<<"rsn">>, ?to_b(RSn)});
+    %% 	{error, Error} ->
+    %% 	    ?utils:respond(200, Req, Error)
+    %% end;
 
 action(Session, Req, {"filter_fix_w_inventory"}, Payload) -> 
     ?DEBUG("filter_fix_w_inventory with session ~p, paylaod~n~p",
@@ -941,7 +984,7 @@ action(Session, Req, {"syn_w_inventory_barcode"}, Payload) ->
 
 
 sidebar(Session) ->
-    UserType = ?session:get(type, Session),
+    %% UserType = ?session:get(type, Session),
     
     case ?right_request:get_shops(Session, inventory) of
 	[] ->
@@ -997,16 +1040,16 @@ sidebar(Session) ->
 
 	    InvMgr =
 		[{{"inventory", "库存盘点", "glyphicon glyphicon-check"},
-		  case UserType of
-		      ?MERCHANT ->
-			  [{"inventory_fix", "店铺盘点", "glyphicon glyphicon-check"}];
-		      _ -> []
-		  end
+		  %% case UserType of
+		  %%     ?MERCHANT ->
+		  %% 	  [{"inventory_fix", "店铺盘点", "glyphicon glyphicon-check"}];
+		  %%     _ -> []
+		  %% end
 			      
-		  %% authen_shop_action(
-		  %%   {?fix_w_inventory,
-		  %%    "inventory_fix",
-		  %%    "盘点", "glyphicon glyphicon-check"}, Shops) 
+		  authen_shop_action(
+		    {?fix_w_inventory,
+		     "inventory_fix",
+		     "店铺盘点", "glyphicon glyphicon-check"}, Shops)
 		  ++ [{"inventory_fix_detail",
 		       "盘点记录", "glyphicon glyphicon-tasks"},
 		      {"inventory_rsn_detail/fix",
@@ -1340,3 +1383,85 @@ stock(check, Action, Total, CalcTotal, [{struct, Inv}|T]) ->
 		false -> {error, Inv}
 	    end
     end.
+
+
+key(stock, Stock) ->
+    StyleNumber = ?v(<<"style_number">>, Stock),
+    Brand = ?to_b(?v(<<"brand">>, Stock)),
+    Color = ?to_b(?v(<<"color">>, Stock)),
+    Size  = ?to_b(?v(<<"size">>, Stock)),
+    Key = <<StyleNumber/binary, Brand/binary, Color/binary, Size/binary>>,
+    Key.
+
+stock(to_dict, [], DBTotal, DictStocks) ->
+    {DBTotal, DictStocks};
+stock(to_dict, [{Stock}|T], DBTotal, DictStocks) -> 
+    Key = key(stock, Stock),
+    Total = ?v(<<"total">>, Stock),
+    stock(to_dict, T, Total + DBTotal, dict:store(Key, Stock, DictStocks));
+
+stock(shop_to_dict, [], ShopTotal, DictStocks) ->
+    {ShopTotal, DictStocks};
+stock(shop_to_dict, [{struct, Stock}|T], ShopTotal, DictStocks) -> 
+    Key = key(stock, Stock),
+    Total = ?v(<<"fix">>, Stock),
+    stock(shop_to_dict, T, Total + ShopTotal, dict:store(Key, Stock, DictStocks)).
+
+compare_stock(shop_to_db, [], _DBStockDict, StocksNotInDB, StocksNotEqualDB) ->
+    {StocksNotInDB, StocksNotEqualDB}; 
+compare_stock(shop_to_db, [{struct, Stock}|T], DBStockDict, StocksNotInDB, StocksNotEqualDB) ->
+    ?DEBUG("stock ~p", [Stock]),
+    Key = key(stock, Stock),
+    ?DEBUG("key ~p", [Key]),
+    case dict:find(Key, DBStockDict) of
+	{ok, DBStock} ->
+	    StockFixed = ?v(<<"fix">>, Stock),
+	    StockInDB = ?v(<<"total">>, DBStock),
+	    case StockFixed =/= StockInDB of
+		true ->
+		    compare_stock(
+		      shop_to_db,
+		      T,
+		      DBStockDict,
+		      StocksNotInDB,
+		      [{Stock ++ [{<<"db">>, StockInDB}]}|StocksNotEqualDB]);
+		false ->
+		    compare_stock(shop_to_db, T, DBStockDict, StocksNotInDB, StocksNotEqualDB)
+	    end;
+	error ->
+	    ?DEBUG("shop_to_db:key ~p not found", [Key]),
+	    compare_stock(shop_to_db, T, DBStockDict, [{Stock}|StocksNotInDB], StocksNotEqualDB)
+    end;
+
+
+compare_stock(db_to_shop, [], _ShopStockDict, StocksNotInShop, StocksNotEqualShop) ->
+    {StocksNotInShop, StocksNotEqualShop}; 
+compare_stock(db_to_shop, [{Stock}|T], ShopStockDict, StocksNotInShop, StocksNotEqualShop) ->
+    Key = key(stock, Stock),
+    case dict:find(Key, ShopStockDict) of
+	{ok, _ShopStock} ->
+	    compare_stock(db_to_shop, T, ShopStockDict, StocksNotInShop, StocksNotEqualShop);
+	    %% StockFixed = ?v(<<"fix">>, Stock),
+	    %% StockInDB = ?v(<<"total">>, DBStock),
+	    %% case StockFixed =/= StockInDB of
+	    %% 	true ->
+	    %% 	    compare_stock(
+	    %% 	      shop_to_db,
+	    %% 	      T,
+	    %% 	      DBStockDict,
+	    %% 	      StocksNotInDB,
+	    %% 	      [{Stock ++ [{<<"db">>, StockInDB}]}|StocksNotEqualDB]);
+	    %% 	false ->
+	    %% 	    compare_stock(shop_to_db, T, DBStockDict, StocksNotInDB, StocksNotEqualDB)
+	    %% end;
+	error ->
+	    ?DEBUG("db_to_shop:key ~p not found", [Key]),
+	    compare_stock(
+	      db_to_shop,
+	      T,
+	      ShopStockDict,
+	      [{Stock}|StocksNotInShop], StocksNotEqualShop)
+    end.
+
+
+    

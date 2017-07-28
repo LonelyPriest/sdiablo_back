@@ -62,7 +62,7 @@ var diablo_asc  = 1;
 var diablo_charge = 0;
 var diablo_withdraw = 1;
 
-var diablo_fix_draft_path = "c:\fix.txt";
+var diablo_fix_draft_path = "C:\\fix.txt";
 
 /*
  * stock

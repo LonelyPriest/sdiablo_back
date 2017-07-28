@@ -217,3 +217,6 @@ alter table w_inventory add column bcode VARCHAR(32) default 0 after id;
 
 -- 2017-07-23
 alter table w_retailer modify column card VARCHAR(18) default null;
+drop table w_inventory_fix;
+drop table w_inventory_fix_detail;
+drop table w_inventory_fix_detail_amount;

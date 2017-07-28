@@ -574,7 +574,10 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [S|Shops], Sqls) ->
 	    {ok, StockTransferIn} = ?w_report:stastic(stock_transfer_in, M, Conditions),
 	    {ok, StockTransferOut} = ?w_report:stastic(stock_transfer_out, M, Conditions),
 
-	    {ok, StockFix} = ?w_report:stastic(stock_fix, M, Conditions),
+	    {ok, StockFix} = case ?w_report:stastic(stock_fix, M, Conditions) of
+				 {ok, _StockFix} -> {ok, _StockFix};
+				 {error, _} -> {ok, []}
+			     end,
 
 	    {ok, StockCalcTotal, StockCalcCost} =
 		get_stock(calc, M,
@@ -714,7 +717,10 @@ get_stock(calc, Merchant, Conditions) ->
     {ok, StockOut} = ?w_report:stastic(stock_out, Merchant, Conditions),
     {ok, StockTransferIn} = ?w_report:stastic(stock_transfer_in, Merchant, Conditions),
     {ok, StockTransferOut} = ?w_report:stastic(stock_transfer_out, Merchant, Conditions),
-    {ok, StockFix} = ?w_report:stastic(stock_fix, Merchant, Conditions),
+    {ok, StockFix} = case ?w_report:stastic(stock_fix, Merchant, Conditions) of
+			 {ok, _StockFix} -> {ok, _StockFix};
+			 {error, _} -> {ok, []}
+		     end,
 
     {SellTotal, _SellBalance, _SellCash, _SellCard, _SellWxin, _SellVeri, _SellDraw, _SellTicket}
 	= sell(info, SaleInfo),

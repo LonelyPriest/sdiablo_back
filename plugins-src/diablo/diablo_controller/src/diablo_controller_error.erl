@@ -445,6 +445,9 @@ error(wretailer_export_error, Error) ->
     {2112, "failed to export file: " ++ ?to_s(Error)};
 error(wretailer_retalted_sale, RetailerId) ->
     {2113, "some sales retailed on the retailer: " ++ ?to_s(RetailerId)};
+error(wretailer_card_exist, Card) ->
+    {2114, "retailer card has been used: " ++ ?to_s(Card)};
+
 
 
 

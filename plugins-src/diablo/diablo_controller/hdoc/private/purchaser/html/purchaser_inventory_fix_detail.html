@@ -75,9 +75,9 @@
 		    <th>单号</th>
 		    <th>店铺</th>
 		    <th>店员</th>
-		    <th class="info">库存数量</th>
-		    <th class="warning">盘点数量</th>
-		    <th class="danger">盈余数量</th>
+		    <th class="info">盘点数量</th>
+		    <th class="warning">电脑数量</th>
+		    <th class="danger">盈余</th>
 		    <th>盘点日期</th> 
 		    <th>操作</th>
 		  </tr>
@@ -88,8 +88,8 @@
 		    <td>{{r.rsn}}</td>
 		    <td>{{r.shop.name}}</td>
 		    <td>{{r.employee.name}}</td>
-		    <td>{{r.exist}}</td>
-		    <td>{{r.fixed}}</td>
+		    <td>{{r.shop_total}}</td>
+		    <td>{{r.db_total}}</td>
 		    <td>
 		      <span x-ng-if="r.metric<0" class="fg-red">
 			{{r.metric}}

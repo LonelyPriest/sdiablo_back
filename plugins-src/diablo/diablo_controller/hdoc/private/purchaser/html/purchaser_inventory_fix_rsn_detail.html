@@ -71,35 +71,42 @@
 		<thead>
 		  <tr>
 		    <th>序号</th>
-		    <th class="danger">单号</th>
 		    <th>店铺</th>
-
-		    <th>厂商</th>
+		    <th>单号</th>
+		    
 		    <th>款号</th>
-		    <th>品牌</th>
-		    <!-- <th>颜色</th> -->
-		    <!-- <th>数量</th> -->
-		    <!-- <th>折扣</th> -->
-		    <!-- <th>价格</th> -->
-		    <th>库存</th>
-		    <th>盘点</th>
+		    <th>品牌</th> 
+		    <!-- <th>吊牌价</th> -->
+		    
+		    <th>颜色</th>
+		    <th>尺码</th>
+		    <th>盘点数量</th>
+		    <th>电脑数量</th> 
 		    <th>盈余</th> 
-		    <th>日期</th> 
-		    <th>操作</th>
+		    <th>日期</th>
 		  </tr>
 		</thead>
 		<tbody>
 		  <tr ng-repeat="inv in inventories">
 		    <td>{{inv.order_id}}</td>
-		    <td>{{inv.rsn}}</td>
 		    <td>{{inv.shop.name}}</td> 
+		    <td>{{inv.rsn}}</td>
 
-		    <td>{{inv.firm.name}}</td>
 		    <td>{{inv.style_number}}</td>
 		    <td>{{inv.brand.name}}</td>
+		    
+		    <td>
+		      <span x-ng-if="inv.color_id===0">-</span>
+		      <span x-ng-if="inv.color_id!==0">{{inv.color.name}}</span>
+		    </td> 
+		    <td>
+		      <span x-ng-if="inv.size==='0'">-</span>
+		      <span x-ng-if="inv.size!=='0'">{{inv.size}}</span>
+		    </td>
 
-		    <td>{{inv.exist}}</td>
-		    <td>{{inv.fixed}}</td>
+		    <td>{{inv.shop_total}}</td>
+		    <td>{{inv.db_total}}</td>
+		    
 		    <td>
 		      <span x-ng-if="inv.metric<0" class="fg-red">
 			{{inv.metric}}
@@ -108,38 +115,12 @@
 			{{inv.metric}}
 		      </span> 
 		    </td>
-		    <!-- <td>{{inv.color}}</td> -->
-		    <!-- <td>{{inv.total}}</td>  --> 
-		    <td>{{inv.entry_date}}</td>
-		    <td>
-		      <a class="btn diablo-button btn-primary"
-			 x-ng-disabled="inv.free === 0"
-		    	 x-ng-click="rsn_detail(inv)">
-			明细<i class="glyphicon glyphicon-map-marker"></i></a>
-		    </td>
+		    
+		    <td>{{inv.entry_date}}</td> 
 		  </tr> 
 		</tbody>
 
-		<tfoot>
-		  <!-- <tr> -->
-		  <!--   <td x-ng-show="total_items>items_perpage" colspan={{colspan}}> -->
-		  <!--     <span class="pagination"> -->
-		  <!-- 	<span>显示第 {{current_page}} / {{num_pages}} 项结果， -->
-		  <!-- 	  共 {{total_items}} 项</span> -->
-		  <!--     </span> -->
-		  <!--     <pagination class="pull-right" -->
-		  <!-- 		  total-items="total_items" -->
-		  <!-- 		  items-per-page="items_perpage" -->
-		  <!-- 		  num-pages="num_pages" -->
-		  <!-- 		  max-size="max_page_size" -->
-		  <!-- 		  boundary-links="true" -->
-		  <!-- 		  previous-text="&lsaquo;" next-text="&rsaquo;" -->
-		  <!-- 		  first-text="&laquo;" last-text="&raquo;" -->
-		  <!-- 		  x-ng-model="current_page" -->
-		  <!-- 		  x-ng-init="current_page=default_page" -->
-		  <!-- 		  x-ng-change="page_changed()"></pagination> -->
-		  <!--   </td> -->
-		  <!-- </tr> -->
+		<tfoot> 
 		</tfoot>
 		
 	      </table> <!--END supplier table-->

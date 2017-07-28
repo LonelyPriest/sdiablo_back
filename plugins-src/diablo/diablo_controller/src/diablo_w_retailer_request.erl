@@ -90,13 +90,27 @@ action(Session, Req, {"list_w_retailer_score"}) ->
 action(Session, Req, {"new_w_retailer"}, Payload) ->
     ?DEBUG("new wretailer with session ~p~npaylaod ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
-    
-    case ?w_retailer:retailer(new, Merchant, Payload) of
-	{ok, RId} ->
-	    ?utils:respond(
-	       200, Req, ?succ(add_w_retailer, RId), {<<"id">>, RId});
-	{error, Error} ->
-	    ?utils:respond(200, Req, Error)
+
+    case 
+	case ?v(<<"card">>, Payload, []) of
+	    [] -> ok;
+	    Card ->
+		case ?w_retailer:card(exist, Merchant, Card) of
+		    {ok, []} -> ok;
+		    {ok, _} -> {error, ?err(wretailer_card_exist, Card)}
+		end
+	end
+    of
+	ok -> 
+	    case ?w_retailer:retailer(new, Merchant, Payload) of
+		{ok, RId} ->
+		    ?utils:respond(
+		       200, Req, ?succ(add_w_retailer, RId), {<<"id">>, RId});
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end;
+	{error, ErrorCard} ->
+	    ?utils:respond(200, Req, ErrorCard)
     end;
 	
 action(Session, Req, {"update_w_retailer", Id}, Payload) ->
@@ -105,17 +119,31 @@ action(Session, Req, {"update_w_retailer", Id}, Payload) ->
     
     Merchant = ?session:get(merchant, Session),
 
-    case ?w_retailer:retailer(get, Merchant, Id) of
-	{ok, OldRetailer} ->
-	    case ?w_retailer:retailer(update, Merchant, Id, {Payload, OldRetailer}) of
-		{ok, RId} ->
-		    ?utils:respond(
-		       200, Req, ?succ(update_w_retailer, RId));
+    case 
+	case ?v(<<"card">>, Payload, []) of
+	    [] -> ok;
+	    Card ->
+		case ?w_retailer:card(exist, Merchant, Card) of
+		    {ok, []} -> ok;
+		    {ok, _} -> {error, ?err(wretailer_card_exist, Card)}
+		end
+	end
+    of
+	ok-> 
+	    case ?w_retailer:retailer(get, Merchant, Id) of
+		{ok, OldRetailer} ->
+		    case ?w_retailer:retailer(update, Merchant, Id, {Payload, OldRetailer}) of
+			{ok, RId} ->
+			    ?utils:respond(
+			       200, Req, ?succ(update_w_retailer, RId));
+			{error, Error} ->
+			    ?utils:respond(200, Req, Error)
+		    end;
 		{error, Error} ->
 		    ?utils:respond(200, Req, Error)
 	    end;
-	{error, Error} ->
-	    ?utils:respond(200, Req, Error)
+	{error, ErrorCard} ->
+	    ?utils:respond(200, Req, ErrorCard)
     end;
 
 action(Session, Req, {"get_w_retailer_batch"}, Payload) ->

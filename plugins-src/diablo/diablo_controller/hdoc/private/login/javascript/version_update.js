@@ -1,6 +1,12 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2017-07-29",
+         content:
+	 ["会员增加会员卡号功能",
+	  "修正库存盘点若干问题"]
+        },
+	
 	{date: "2017-07-13",
          content:
 	 ["增加条码功能，系统支持入库打印条码，开单支持条码扫描",
@@ -8,6 +14,7 @@ var version_update = function(){
 	  "小票打印增加打印颜色尺码能力配置",
 	  "移仓增加是否检测进价配置"]
         },
+	
 	{date: "2017-06-20",
          content:
 	 ["增加入库是否校验厂商配置项"]

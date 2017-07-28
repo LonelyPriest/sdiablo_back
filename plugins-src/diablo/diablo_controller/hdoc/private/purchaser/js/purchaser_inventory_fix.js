@@ -127,8 +127,28 @@ function purchaserInventoryFixCtrlProvide(
      * draft
      */ 
     
-    $scope.disable_draft = function(){
-	return false;
+    $scope.get_draft = function(){
+	if (angular.isUndefined(LODOP)) LODOP = getLodop();
+	if (angular.isUndefined(LODOP.VERSION)) return;
+
+	if (!LODOP.IS_FILE_EXIST(diablo_fix_draft_path)) {
+	    dialog.response(false, "库存盘点", purchaserService.error[2083]);
+	} else {
+	    var jsonContent = LODOP.GET_FILE_TEXT(diablo_fix_draft_path);
+	    console.log(jsonContent);
+	    if (!jsonContent) {
+		dialog.response(false, "库存盘点", purchaserService.error[2082]); 
+	    } else {
+		var content = angular.fromJson(jsonContent);
+		fix_time = content.t;
+		$scope.select.datetime = dateFilter(fix_time, "yyyy-MM-dd HH:mm:ss");
+		$scope.inventories = content.stock;
+
+		$scope.inventories.unshift({$edit:false, $new:true});
+		$scope.focus_good_or_barcode();
+		$scope.re_calculate();
+	    }
+	}
     };
     
     /*
@@ -159,7 +179,7 @@ function purchaserInventoryFixCtrlProvide(
 	// console.log($scope.inventories); 
 	var added = []; 
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
-	    var add = $scope.inventories[i];
+	    var add = $scope.inventories[i]; 
 	    if (!in_stocks(add, added)) {
 		added.push({
 		    style_number: add.style_number,
@@ -186,6 +206,26 @@ function purchaserInventoryFixCtrlProvide(
 
 	console.log(added);
 	console.log(base);
+
+	if (added.length === 0) {
+	    dialog.response(false, "库存盘点", "盘点失败", purchaserService.error[2084]);
+	    return;
+	}
+
+	purchaserService.fix_purchaser_inventory({stock: added, base: base}).then(function(result){
+	    console.log(result);
+	    if (result.ecode === 0) {
+		dialog.response(true,
+				"库存盘点", "盘点成功！！单号："
+				+ result.rsn + "，请查看盘点差异单！！");
+	    } else {
+		$scope.has_saved = false;
+		dialog.response(
+		    false,
+		    "库存盘点",
+		    "盘点失败", purchaserService.error[result.ecode]);
+	    }
+	});
 	
 	// return;
 	// purchaserService.fix_purchaser_inventory({
@@ -245,15 +285,15 @@ function purchaserInventoryFixCtrlProvide(
 	    return !r.$new;
 	});
 
-	console.log(angular.toJson({t:fix_time, stock:stocks}));
+	// console.log(angular.toJson({t:fix_time, stock:stocks}));
 	
-	// if (angular.isUndefined(LODOP)) LODOP = getLodop();
-	// if (angular.isUndefined(LODOP.VERSION)) return; 
+	if (angular.isUndefined(LODOP)) LODOP = getLodop();
+	if (angular.isUndefined(LODOP.VERSION)) return; 
 	
-	// LODOP.WRITE_FILE_TEXT(
-	//     0,
-	//     diablo_fix_draft_path,
-	//     angular.toJson({t:fix_time, stock:stocks}));
+	LODOP.WRITE_FILE_TEXT(
+	    0,
+	    diablo_fix_draft_path,
+	    angular.toJson({t:fix_time, stock:stocks}));
     };
 
     $scope.barcode_scanner = function(full_bcode) {
@@ -466,6 +506,7 @@ function purchaserInventoryFixDetailCtrlProvide(
 		    angular.forEach(result.data, function(d){
 			d.shop = diablo_get_object(d.shop_id, user.sortShops);
 			d.employee = diablo_get_object(d.employee_id, filterEmployee);
+			d.metric = d.shop_total - d.db_total;
 		    })
 		    $scope.records = result.data;
 		    diablo_order_page(page, $scope.items_perpage, $scope.records);

@@ -163,7 +163,12 @@ count_table(Table, CountSql, Merchant, Conditions) ->
     Sql = "select " ++ CountSql ++ " from " ++ ?to_s(Table)
 	++ " where " ++ condition(proplists_suffix, NewConditions) 
 	++ " merchant="++ ?to_s(Merchant)
-	++ " and " ++ condition(time_no_prfix, StartTime, EndTime),
+
+	
+	++ case condition(time_no_prfix, StartTime, EndTime) of
+	       [] -> [];
+	       TimeSql -> " and " ++ TimeSql
+	   end,
     Sql.
 
 
