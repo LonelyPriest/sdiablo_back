@@ -142,7 +142,19 @@ import(firm, Merchant, Shop, Path) ->
     {ok, Device} = file:open(Path, [read]), 
     Content = read_line(Device, []),
     file:close(Device),
-    insert_into_db(Merchant, Shop, Content, <<>>, []).
+    insert_into_db(Merchant, Shop, Content, <<>>, []);
+
+import(good, Merchant, Shop, Path) ->
+    ?INFO("current path ~p", [file:get_cwd()]),
+    {ok, Device} = file:open(Path, [read]), 
+    Content = read_line(Device, []),
+    ?DEBUG("Content ~p", [Content]),
+    file:close(Device),
+    Datetime = ?utils:current_time(format_localtime),
+    Sqls = insert_into_good(good, Merchant, Shop, Datetime, Content, []),
+    ?DEBUG("all sqls ~p", [Sqls]).
+    %% ?sql_utils:execute(transaction, Sqls, Merchant).
+    
     
 read_line(Device, Content) ->
     case file:read_line(Device) of
@@ -545,4 +557,118 @@ sort(firm, [H|T], Acc) ->
 	end,
     %% ?DEBUG("new acc ~p", [NewAcc]),
     sort(firm, T, NewAcc).
+
+
+insert_into_good(good, _Merchant, _Shop, _Datetime, [], Sqls) ->
+    Sqls;
+insert_into_good(good, Merchant, Shop, Datetime, [H|T], Sqls) ->
+    ?DEBUG("H~p", [H]),
+    {Brand, SN, Color, Type, TagPrice, _Total, _F, _S, _M, _L, _XL, _X2L, _X3L, _X4L, _X5L, _X6L, _X7L} = H,
+    ?DEBUG("SN ~p", [SN]),
+    %% get style_number, brand from sn
+    {NewSN, NewBrand} = parse_style_number(SN, <<>>),
+    ?DEBUG("NewSN ~p, NewBrand ~p", [NewSN,NewBrand]),
+
+    case NewSN =:= <<>> of
+	true ->
+	    insert_into_good(good, Merchant, Shop, Datetime, T, Sqls);
+	false ->
+	    RealBrand = case NewBrand =:= <<>> of
+			    true -> Brand;
+			    false -> NewBrand
+			end,
+		
+	    {ok, BrandId} = ?attr:brand(new, Merchant, [{<<"name">>, RealBrand}]),
+	    {ok, TypeId} = ?attr:type(new, Merchant, Type),
+	    
+	    Sql00 = "select id, name from colors"
+		" where name=" ++ "\"" ++ ?to_s(Color) ++ "\""
+		" and merchant=" ++ ?to_s(Merchant),
+
+	    {ok, ColorId} =
+		case ?sql_utils:execute(s_read, Sql00) of
+		    {ok, []} -> ?attr:color(
+				   w_new,
+				   Merchant,
+				   [{<<"name">>, Color}, {<<"type">>, 1}]); 
+		    {ok, R} ->
+			{ok, ?v(<<"id">>, R)}
+		end,
+
+	    {SGroup, Sizes} = case type_like_trous(Type) of
+			 true ->
+			     %% 26, 27, 28...
+			     {"111,112", "26,27,28,29,30,31,32,33,34"};
+			 false ->
+			     %% s, m, l...
+			     {"109", "S,M,L,XL,2XL,3XL,4XL"}
+		     end,
+	    
+	    Sql1 = "select id, style_number, brand, color, size from w_inventory_good"
+		" where merchant=" ++ ?to_s(Merchant)
+		++ " and style_number=\'" ++ ?to_s(NewSN) ++ "\'"
+		++ " and brand=" ++ ?to_s(BrandId),
+
+	    Sql10 = 
+		case ?sql_utils:execute(s_read, Sql1) of
+		    {ok, []} ->
+			["insert into w_inventory_good"
+			 "(style_number, sex, color, year, season, type, size, s_group, free"
+			 ", brand, firm, org_price, tag_price, ediscount, discount"
+			 ", alarm_day, merchant, change_date, entry_date"
+			 ") values("
+			 ++ "\"" ++ ?to_s(NewSN) ++ "\","
+			 ++ ?to_s(0) ++ ","
+			 ++ "\"" ++ ?to_s(ColorId) ++ "\","
+			 ++ ?to_s(2017) ++ ","
+			 ++ ?to_s(1) ++ "," 
+			 ++ ?to_s(TypeId) ++ ","
+			 ++ "\"" ++ ?to_s(Sizes) ++ "\","
+			 ++ "\"" ++ ?to_s(SGroup) ++ "\","
+			 ++ ?to_s(1) ++ ","
+			 ++ ?to_s(BrandId) ++ ","
+			 ++ ?to_s(-1) ++ ","
+			 ++ ?to_s(0) ++ ","
+			 ++ ?to_s(TagPrice) ++ ","
+			 ++ ?to_s(0) ++ ","
+			 ++ ?to_s(100) ++ ","
+			 ++ ?to_s(7) ++ ","
+			 ++ ?to_s(Merchant) ++ ","
+			 ++ "\"" ++ ?to_s(Datetime) ++ "\","
+			 ++ "\"" ++ ?to_s(Datetime) ++ "\")"];
+		    {ok, R1} ->
+			?DEBUG("R1 ~p", [R1]),
+			ExistColors = string:tokens(?to_s(?v(<<"color">>, R1)), ","),
+			?DEBUG("ExistColors ~p, colorId ~p", [ExistColors, ColorId]),
+			case lists:member(?to_s(ColorId), ExistColors) of
+			    true -> [];
+			    false ->
+				["update w_inventory_good set color=\'"
+				 ++ string:join(ExistColors, ",") ++ "," ++ ?to_s(ColorId) ++ "\'"
+				 ++ "where id=" ++ ?to_s(?v(<<"id">>, R1))] 
+			end
+		end,
+	    ?DEBUG("sql10 ~p", [Sql10]),
+	    ?sql_utils:execute(transaction, Sql10, Merchant),
+	    insert_into_good(good, Merchant, Shop, Datetime, T, Sql10 ++ Sqls)
+    end.
+		
+
+parse_style_number(<<>>, SN)->
+    {SN, <<>>};
+parse_style_number(<<H, T/binary>>, SN) when H > 127 ->
+    {SN, <<H, T/binary>>};
+parse_style_number(<<H, T/binary>>, SN)->
+    parse_style_number(T, <<SN/binary, H>>).
+
+
+type_like_trous(FullType) ->
+    T1 = << <<T1>> || <<T1>> <= FullType, <<T1>> =:= <<232>> >>,
+    T2 = << <<T2>> || <<T2>> <= FullType, <<T2>> =:= <<163>> >>,
+    T3 = << <<T3>> || <<T3>> <= FullType, <<T3>> =:= <<164>> >>,
+    ?DEBUG("T1 ~p, T2 ~p, T3 ~p", [T1,T2,T3]),
+    T1 =/= <<>> andalso T2 =/= <<>> andalso T3 =/= <<>>.
+
+   	    
+	 
 	    
