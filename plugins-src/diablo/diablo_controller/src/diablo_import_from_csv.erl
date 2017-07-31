@@ -563,7 +563,7 @@ insert_into_good(good, _Merchant, _Shop, _Datetime, [], Sqls) ->
     Sqls;
 insert_into_good(good, Merchant, Shop, Datetime, [H|T], Sqls) ->
     ?DEBUG("H~p", [H]),
-    {Brand, SN, Color, Type, TagPrice, _Total, _F, _S, _M, _L, _XL, _X2L, _X3L, _X4L, _X5L, _X6L, _X7L} = H,
+    {Brand, SN, Color, Type, TagPrice, _Total} = H,
     ?DEBUG("SN ~p", [SN]),
     %% get style_number, brand from sn
     {NewSN, NewBrand} = parse_style_number(SN, <<>>),

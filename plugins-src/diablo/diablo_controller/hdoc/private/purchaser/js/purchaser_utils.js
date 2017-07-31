@@ -550,7 +550,7 @@ var stockPrint = function() {
 	    LODOP.PRINT_INITA(0, 0, wpx, wpx, "task_barcode_from_stock");
 	    LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
 
-	    LODOP.SET_PRINT_PAGESIZE(1, pageWidth * 100, pageHeight * 100, "");
+	    LODOP.SET_PRINT_PAGESIZE(1, pageWidth * 10, pageHeight * 10, "");
 
 	    var topPX = 5;
 	    var leftPX = 10;
@@ -575,6 +575,105 @@ var stockPrint = function() {
 	    LODOP.SET_PRINT_STYLEA(0, "FontSize", 11);
 	    // LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
 	    LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
+
+	    // LODOP.PRINT_DESIGN();
+	    // LODOP.PRINT_SETUP();
+	    // LODOP.PREVIEW();
+	    LODOP.PRINT();
+	},
+
+	barcode3: function(
+	    LODOP,
+	    pageWidth,
+	    pageHeight,
+	    barcode,
+	    style_number,
+	    brand,
+	    firm,
+	    price,
+	    color,
+	    size) {
+	    
+	    // px
+	    var wpx = Math.floor(pageWidth * 96 / 2.54);
+	    var hpx = Math.floor(pageHeight * 96 / 2.54);
+	    LODOP.PRINT_INITA(0, 0, wpx, wpx, "task_barcode_from_stock");
+	    LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
+
+	    LODOP.SET_PRINT_PAGESIZE(1, pageWidth * 100, pageHeight * 100, "");
+
+	    var topPX = 5;
+	    var leftPX = 10;
+
+	    var hpxOfFirm = Math.ceil(hpx/6);
+	    LODOP.ADD_PRINT_TEXT(
+		topPX,
+		leftPX,
+		wpx-10,
+		hpxOfFirm,
+		"厂商:" + firm);
+	    
+	    var hpxOfStyleNumber = Math.ceil(hpx/6);
+	    LODOP.ADD_PRINT_TEXT(
+		topPX + hpxOfFirm,
+		leftPX,
+		wpx-10,
+		hpxOfStyleNumber,
+		"货号:" + style_number + brand);
+
+	    // var hpxOfColorSize = Math.ceil(hpx/6);
+	    var pColorSize = "";
+	    if (angular.isDefined(color)) {
+		pColorSize = color;
+	    } else {
+		pColorSize = "均色"
+	    }
+	    if (angular.isDefined(size)) {
+		pColorSize += size;
+	    } else {
+		pColorSize += "均码";
+	    }
+	    // LODOP.ADD_PRINT_TEXT(topPX + hpxOfFirm + hpxOfStyleNumber,
+	    // 			 leftPX,
+	    // 			 wpx-10,
+	    // 			 hpxOfColorSize,
+	    // 			 pColorSize);
+
+	    var hpxOfPrice = Math.ceil(hpx/6);
+	    LODOP.ADD_PRINT_TEXT(
+		topPX + hpxOfFirm + hpxOfStyleNumber,
+		leftPX,
+		wpx-10, hpxOfPrice, "RMB:" + price.toString() + " " + pColorSize);
+	    
+
+	    var hpxOfBarCode = Math.ceil(hpx/3);
+	    // var hpxOfBarCode = Math.ceil( hpx / 2);
+	    LODOP.ADD_PRINT_BARCODE(
+		topPX + hpxOfFirm + hpxOfStyleNumber + hpxOfPrice,
+		leftPX,
+		wpx - 10,
+		hpxOfBarCode,
+		"128A",
+		barcode);
+	    
+	    // // text
+	    // var p = "RMB:" + price.toString();
+	    // if (angular.isDefined(color)) {
+	    // 	p += " " + color;
+	    // }
+	    // if (angular.isDefined(size)) {
+	    // 	p += "-" + size;
+	    // }
+	    
+	    // LODOP.ADD_PRINT_TEXT(hpxOfBarCode + 12,
+	    // 			 leftPX,
+	    // 			 wpx - 10,
+	    // 			 hpx - hpxOfBarCode - 12,
+	    // 			 p
+	    // 			);
+	    // LODOP.SET_PRINT_STYLEA(0, "FontSize", 11);
+	    // LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
+	    // LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
 
 	    // LODOP.PRINT_DESIGN();
 	    // LODOP.PRINT_SETUP();

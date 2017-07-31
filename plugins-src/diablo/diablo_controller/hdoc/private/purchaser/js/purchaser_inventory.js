@@ -1997,12 +1997,22 @@ function purchaserInventoryDetailCtrlProvide(
 	    if (angular.isUndefined(LODOP)) LODOP = getLodop();
 	    
 	    if (0 === inv.free) {
-		stockPrint.barcode2(
+		// stockPrint.barcode2(
+		//     LODOP,
+		//     $scope.setting.barcode_width,
+		//     $scope.setting.barcode_height,
+		//     barcode,
+		//     inv.tag_price); 
+		stockPrint.barcode3(
 		    LODOP,
 		    $scope.setting.barcode_width,
 		    $scope.setting.barcode_height,
 		    barcode,
+		    inv.style_number,
+		    inv.brand.name,
+		    inv.firm.name,
 		    inv.tag_price);
+		
 	    } else {
 		var callback = function(params) {
 		    console.log(params.amounts);
@@ -2045,11 +2055,23 @@ function purchaserInventoryDetailCtrlProvide(
 			console.log(barcodes);
 			// stockPrint.barcode2(LODOP, 7, 2, barcode, inv.tag_price);
 			angular.forEach(barcodes, function(b) {
-			    stockPrint.barcode2(
+			    // stockPrint.barcode2(
+			    // 	LODOP,
+			    // 	$scope.setting.barcode_width,
+			    // 	$scope.setting.barcode_height,
+			    // 	b.b, 
+			    // 	inv.tag_price,
+			    // 	b.c,
+			    // 	b.s);
+
+			    stockPrint.barcode3(
 				LODOP,
 				$scope.setting.barcode_width,
 				$scope.setting.barcode_height,
 				b.b,
+				inv.style_number,
+				inv.brand.name,
+				inv.firm.name,
 				inv.tag_price,
 				b.c,
 				b.s);

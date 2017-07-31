@@ -1028,11 +1028,14 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	var print_barcode = function() {
 	    if (inv.free_color_size) {
 		for (var i=0; i<inv.total; i++) {
-		    stockPrint.barcode2(
+		    stockPrint.barcode3(
 			LODOP,
 			$scope.setting.barcode_width,
 			$scope.setting.barcode_height,
 			barcode,
+			inv.style_number,
+			inv.brand.name,
+			inv.firm.name,
 			inv.tag_price);
 		}
 	    }
@@ -1063,6 +1066,9 @@ function purchaserInventoryNewUpdateCtrlProvide (
 			$scope.setting.barcode_width,
 			$scope.setting.barcode_height,
 			b.b,
+			inv.style_number,
+			inv.brand.name,
+			inv.firm.name,
 			inv.tag_price,
 			b.c,
 			b.s);
