@@ -980,7 +980,23 @@ action(Session, Req, {"syn_w_inventory_barcode"}, Payload) ->
 	       ?succ(syn_w_inventory_barcode, Barcode));
     	{error, Error} ->
     	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"gen_stock_barcode"}, Payload) ->
+    ?DEBUG("gen_stock_barcode: session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    StyleNumber = ?v(<<"style_number">>, Payload),
+    Brand = ?v(<<"brand">>, Payload),
+
+    case ?w_inventory:purchaser_inventory(gen_barcode, Merchant, StyleNumber, Brand) of
+	{ok, Barcode} ->
+	    ?utils:respond(200, object, Req,
+			   {[{<<"ecode">>, 0},
+			     {<<"barcode">>, ?to_b(Barcode)}]}); 
+	{error, Error} ->
+    	    ?utils:respond(200, Req, Error)
     end.
+
 
 
 sidebar(Session) ->

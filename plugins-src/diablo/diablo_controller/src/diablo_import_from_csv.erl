@@ -67,8 +67,7 @@ insert_into_member(Merchant, _Datetime, _Time, [], _Sort, Acc) ->
     {ok, Merchant} = ?sql_utils:execute(transaction, lists:reverse(Acc), Merchant);
 
 insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
-    {RName, Phone, Shop, Score, Consume, Date} = H,
-
+    {RName, Phone, Shop, Score, Consume, Birth, Date} = H,
     NewScore = case Score of
 		   <<>> -> 0;
 		   _ -> round(?to_f(Score))
@@ -79,8 +78,13 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
 		     _ -> Consume
 		 end,
 
+    NewBirth = case Birth of
+		  <<>> -> <<"0000-00-00">>;
+		  _ -> <<"2017-", Birth/binary>>
+	      end,
+
     IsExist = 
-	case [ P || {_, P, _, _, _, _} <- Sort, P =:= Phone ] of
+	case [ P || {_, P, _, _, _, _, _} <- Sort, P =:= Phone ] of
 	    [] -> false;
 	    _ -> true
 	end,
@@ -117,7 +121,7 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
 			    end, 
 
 		    Sql = ["insert into w_retailer("
-			   "name, score, consume, mobile, shop, merchant, entry_date)"
+			   "name, score, consume, mobile, shop, merchant, Birth, entry_date)"
 			   " values ("
 			   ++ "\"" ++ ?to_s(UName) ++ "\","
 			   ++ ?to_s(NewScore) ++ ","
@@ -125,6 +129,7 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
 			   ++ "\"" ++ ?to_s(Phone) ++ "\","
 			   ++ ?to_s(Shop) ++ ","
 			   ++ ?to_s(Merchant) ++ ","
+			   ++ "\"" ++ ?to_s(NewBirth) ++ "\","
 			   ++ "\"" ++ ?to_s(Entry) ++ "\")"],
 		    insert_into_member(Merchant, Datetime, Time, T, [H|Sort], Sql ++ Acc);
 		{ok, R} ->
