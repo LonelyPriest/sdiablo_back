@@ -92,6 +92,26 @@ var stockUtils = function(){
 	    return diablo_base_setting("trans_orgprice", shop, base, parseInt, diablo_yes);
 	},
 
+	saler_stock: function(shop, base) {
+	    return diablo_base_setting("saler_stock", shop, base, parseInt, diablo_no);
+	},
+
+	check_oprice_with_reject_stock: function(shop, base) {
+	    return diablo_base_setting("r_stock_oprice", shop, base, parseInt, diablo_yes);
+	},
+
+	check_oprice_with_check_stock_in: function(shop, base) {
+	    return diablo_base_setting("c_stock_oprice", shop, base, parseInt, diablo_yes);
+	},
+	
+	check_firm_with_check_stock_in: function(shop, base) {
+	    return diablo_base_setting("c_stock_firm", shop, base, parseInt, diablo_yes);
+	},
+
+	barcode_with_firm: function(shop, base) {
+	    return diablo_base_setting("bcode_firm", shop, base, parseInt, diablo_no);
+	},
+
 	yes_no: function() {return [{name:"否", id: 0}, {name:"是", id: 1}]},
 
 	valid_season: function(month){
@@ -368,42 +388,32 @@ var stockUtils = function(){
 	    return [{name:"!=0", id:0}];
 	},
 
-	gen_barcode_of_free_stock(free, firm, brand, type, year, season) {
-	    return free.toString()
-		+ firm.toString()
-		+ brand.toString()
-		+ type.toString()
-		+ year.toString()
-		+ season.toString();
-	},
+	// gen_barcode_of_free_stock(free, firm, brand, type, year, season) {
+	//     return free.toString()
+	// 	+ firm.toString()
+	// 	+ brand.toString()
+	// 	+ type.toString()
+	// 	+ year.toString()
+	// 	+ season.toString();
+	// },
 
-	gen_barcode_of_stock(free, firm, brand, type, year, season, color, size) {
+	patch_barcode:function(barcode, color, size) {
 	    var patchColor = color.toString();
 	    if ( 1 === patchColor.length) {
 		patchColor = "00" + patchColor;
 	    } else if (2 === patchColor.length) {
 		patchColor = "0" + patchColor;
 	    }
-
+	    
 	    var patchSize = size.toString();
 	    if ( 1 === patchSize.length) {
-		patchSize = "00" + patchSize;
-	    } else if ( 2 === patchSize.length) {
 		patchSize = "0" + patchSize;
 	    }
-	    
-	    return stockUtils.gen_barcode_of_free_stock(
-		free,
-		firm,
-		brand,
-		type,
-		year,
-		season) 
-		+ patchColor
-		+ patchSize; 
+
+	    return barcode + patchColor + patchSize; 
 	},
 
-	get_short_year(year) {
+	get_short_year:function(year) {
 	    return year.toString().substr(2, 2);
 	} 
 	//
@@ -592,6 +602,46 @@ var stockPrint = function() {
 	    LODOP,
 	    pageWidth,
 	    pageHeight,
+	    includeFirm,
+	    barcode,
+	    style_number,
+	    brand,
+	    firm,
+	    price,
+	    color,
+	    size) {
+	    if (diablo_yes === includeFirm) {
+		stockPrint.barcode_with_firm(
+		    LODOP,
+		    pageWidth,
+		    pageHeight,
+		    barcode,
+		    style_number,
+		    brand,
+		    firm,
+		    price,
+		    color,
+		    size);
+	    } else {
+		stockPrint.barcode_no_firm(
+		    LODOP,
+		    pageWidth,
+		    pageHeight,
+		    barcode,
+		    style_number,
+		    brand,
+		    price,
+		    color,
+		    size
+		);
+	    }
+	},
+
+
+	barcode_with_firm: function(
+	    LODOP,
+	    pageWidth,
+	    pageHeight,
 	    barcode,
 	    style_number,
 	    brand,
@@ -603,14 +653,15 @@ var stockPrint = function() {
 	    // px
 	    var wpx = Math.floor(pageWidth * 96 / 2.54);
 	    var hpx = Math.floor(pageHeight * 96 / 2.54);
-	    LODOP.PRINT_INITA(0, 0, wpx, wpx, "task_barcode_from_stock");
+	    LODOP.PRINT_INITA(0, 0, wpx, hpx, "task_barcode_from_stock");
 	    LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
 
 	    LODOP.SET_PRINT_PAGESIZE(1, pageWidth * 100, pageHeight * 100, "");
 
 	    var topPX = 5;
-	    var leftPX = 5;
+	    var leftPX = 10;
 
+	    
 	    var hpxOfFirm = Math.ceil(hpx/6);
 	    LODOP.ADD_PRINT_TEXT(
 		topPX,
@@ -654,31 +705,16 @@ var stockPrint = function() {
 		"RMB:" + price.toString() + " " + pColorSize);
 	    
 
-	    var hpxOfBarCode = Math.ceil(hpx/3);
-	    // var hpxOfBarCode = Math.ceil( hpx / 2);
+	    var hpxOfBarCode = Math.ceil(hpx/3); 
 	    LODOP.ADD_PRINT_BARCODE(
 		topPX + hpxOfFirm + hpxOfStyleNumber + hpxOfPrice,
 		leftPX,
 		wpx,
 		hpxOfBarCode,
-		"128A",
+		"128C",
 		barcode);
-	    
-	    // // text
-	    // var p = "RMB:" + price.toString();
-	    // if (angular.isDefined(color)) {
-	    // 	p += " " + color;
-	    // }
-	    // if (angular.isDefined(size)) {
-	    // 	p += "-" + size;
-	    // }
-	    
-	    // LODOP.ADD_PRINT_TEXT(hpxOfBarCode + 12,
-	    // 			 leftPX,
-	    // 			 wpx - 10,
-	    // 			 hpx - hpxOfBarCode - 12,
-	    // 			 p
-	    // 			);
+
+	    LODOP.SET_PRINT_STYLEA(0, "FontSize", 7); 
 	    // LODOP.SET_PRINT_STYLEA(0, "FontSize", 11);
 	    // LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
 	    // LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
@@ -686,6 +722,80 @@ var stockPrint = function() {
 	    // LODOP.PRINT_DESIGN();
 	    // LODOP.PRINT_SETUP();
 	    // LODOP.PREVIEW();
+	    LODOP.PRINT();
+	},
+	
+	barcode_no_firm: function(
+	    LODOP,
+	    pageWidth,
+	    pageHeight,
+	    barcode,
+	    style_number,
+	    brand,
+	    price,
+	    color,
+	    size) {
+	    
+	    // px
+	    var wpx = Math.floor(pageWidth * 96 / 2.54);
+	    var hpx = Math.floor(pageHeight * 96 / 2.54);
+	    LODOP.PRINT_INITA(0, 0, wpx, hpx, "task_barcode_from_stock");
+	    LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
+
+	    LODOP.SET_PRINT_PAGESIZE(1, pageWidth * 100, pageHeight * 100, "");
+
+	    var topPX = 5;
+	    var leftPX = 10;
+
+	    
+	    var hpxOfBrand = Math.ceil(hpx/6);
+	    LODOP.ADD_PRINT_TEXT(
+		topPX,
+		leftPX,
+		wpx,
+		hpxOfBrand,
+		"品牌:" + brand);
+	    
+	    var hpxOfStyleNumber = Math.ceil(hpx/6);
+	    LODOP.ADD_PRINT_TEXT(
+		topPX + hpxOfBrand,
+		leftPX,
+		wpx,
+		hpxOfStyleNumber,
+		"货号:" + style_number);
+
+	    // var hpxOfColorSize = Math.ceil(hpx/6);
+	    var pColorSize = "";
+	    if (angular.isDefined(color)) {
+		pColorSize = color;
+	    } else {
+		pColorSize = "均色"
+	    }
+	    if (angular.isDefined(size)) {
+		pColorSize += size;
+	    } else {
+		pColorSize += "均码";
+	    } 
+
+	    var hpxOfPrice = Math.ceil(hpx/6);
+	    LODOP.ADD_PRINT_TEXT(
+		topPX + hpxOfBrand + hpxOfStyleNumber,
+		leftPX,
+		wpx,
+		hpxOfPrice,
+		"RMB:" + price.toString() + " " + pColorSize);
+	    
+
+	    var hpxOfBarCode = Math.ceil(hpx/3); 
+	    LODOP.ADD_PRINT_BARCODE(
+		topPX + hpxOfBrand + hpxOfStyleNumber + hpxOfPrice,
+		leftPX,
+		wpx,
+		hpxOfBarCode,
+		"128C",
+		barcode);
+
+	    LODOP.SET_PRINT_STYLEA(0, "FontSize", 7); 
 	    LODOP.PRINT();
 	}
 	//

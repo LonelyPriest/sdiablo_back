@@ -1692,7 +1692,10 @@ function wsaleNewProvide(
 			console.log(color_size);
 
 			var bcode_color = wsaleUtils.to_integer(color_size.substr(0, 3));
-			var bcode_size = color_size.substr(3, color_size.length);
+			var bcode_size_index = wsaleUtils.to_integer(
+			    color_size.substr(3, color_size.length));
+			
+			var bcode_size = size_to_barcode[bcode_size_index];
 			console.log(bcode_color);
 			console.log(bcode_size);
 			angular.forEach(inv.amounts, function(a) {

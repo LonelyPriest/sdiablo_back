@@ -296,7 +296,9 @@ init([]) ->
 	  <<"修改退货价格">>, <<"update_price_of_w_inventory_reject">>, ?right_w_inventory},
 
 	 {?modify_w_inventory_new_balance,
-	  <<"修改帐户欠款">>, <<"modify_w_inventory_new_balance">>, ?right_w_inventory}
+	  <<"修改帐户欠款">>, <<"modify_w_inventory_new_balance">>, ?right_w_inventory},
+
+	 {?reset_stock_barcode, <<"条码重置">>, <<"reset_stock_barcode">>, ?right_w_inventory}
 	],
 
     %% firm
@@ -832,6 +834,7 @@ pass_action(wholesaler) ->
      <<"match_stock_by_shop">>,
      <<"get_stock_by_barcode">>, 
      <<"syn_w_inventory_barcode">>,
+     <<"gen_stock_barcode">>,
      %% <<"update_w_inventory_batch">>,
 
      %% inventory new

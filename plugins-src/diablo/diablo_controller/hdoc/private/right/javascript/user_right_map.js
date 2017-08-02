@@ -54,7 +54,8 @@ var rightAuthen = {
 	    update_w_stock: rightAuthen.root_right._stock + 6,
 	    check_w_stock:  rightAuthen.root_right._stock + 13,
 	    update_w_stock_batch: rightAuthen.root_right._stock + 15,
-	    update_price_of_w_stock_reject: rightAuthen.root_right._stock + 23
+	    update_price_of_w_stock_reject: rightAuthen.root_right._stock + 23,
+	    reset_barcode: rightAuthen.root_right._stock + 26
 	}
     },
 

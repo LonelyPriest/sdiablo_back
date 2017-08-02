@@ -189,7 +189,8 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
     $scope.setting = {
 	use_barcode: stockUtils.use_barcode(-1, base),
 	barcode_width: stockUtils.barcode_width(-1, base),
-	barcode_height: stockUtils.barcode_height(-1, base) 
+	barcode_height: stockUtils.barcode_height(-1, base),
+	barcode_firm: stockUtils.barcode_with_firm(-1, base)
     };
 
     /*
@@ -527,7 +528,7 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 	    loadCLodop();
     }
     
-    $scope.gen_barcode = function(inv) {
+    $scope.p_barcode = function(inv) {
 	console.log(inv);
 
 	if (diablo_invalid_firm === inv.firm_id) {
@@ -538,28 +539,29 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 	    return;
 	}
 
-	var barcode = stockUtils.gen_barcode_of_free_stock(
-	    inv.free,
-	    inv.firm.bcode,
-	    inv.brand.bcode,
-	    inv.itype.bcode,
-	    stockUtils.get_short_year(inv.year),
-	    inv.season);
-	console.log(barcode);
+	// var barcode = stockUtils.gen_barcode_of_free_stock(
+	//     inv.free,
+	//     inv.firm.bcode,
+	//     inv.brand.bcode,
+	//     inv.itype.bcode,
+	//     stockUtils.get_short_year(inv.year),
+	//     inv.season);
+	// console.log(barcode);
 	
 	if (angular.isUndefined(LODOP)) LODOP = getLodop();
 
-	var print_barcode = function() {
+	var print_barcode = function(barcode) {
 	    if (0 === inv.free) {
 		for (var i=0; i<inv.amount; i++) {
 		    stockPrint.barcode3(
 			LODOP,
 			$scope.setting.barcode_width,
 			$scope.setting.barcode_height,
+			$scope.setting.barcode_firm,
+			barcode, 
 			inv.style_number,
 			inv.brand.name,
 			inv.firm.name,
-			barcode,
 			inv.tag_price);
 		} 
 	    }
@@ -569,17 +571,17 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 		    angular.forEach(inv.amounts, function(a) {
 			var color = diablo_get_object(a.cid, filterColor); 
 			for (var i=0; i<a.count; i++) {
-			    var barcode2 = stockUtils.gen_barcode_of_stock(
-				inv.free,
-				inv.firm.bcode,
-				inv.brand.bcode,
-				inv.itype.bcode,
-				stockUtils.get_short_year(inv.year),
-				inv.season,
-				color.bcode,
-				a.size
-			    );
-			    barcodes.push({b:barcode2, c:color.name, s:a.size});
+			    var bcode_size = size_to_barcode.indexOf(a.size); 
+			    if (diablo_invalid_index !== bcode_size) {
+				var barcode2 = stockUtils.patch_barcode(
+			    	    barcode,
+			    	    color.bcode,
+			    	    bcode_size,
+				);
+
+				console.log(barcode2);
+				barcodes.push({b:barcode2, c:color.name, s:a.size});
+			    }; 
 			}
 		    }); 
 		    console.log(barcodes);
@@ -589,6 +591,7 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 			    LODOP,
 			    $scope.setting.barcode_width,
 			    $scope.setting.barcode_height,
+			    $scope.setting.barcode_firm,
 			    b.b,
 			    inv.style_number,
 			    inv.brand.name,
@@ -620,12 +623,13 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 	    }
 	}
 	
-	// syn
-	purchaserService.syn_barcode(
-	    inv.style_number, inv.brand_id, inv.shop_id, barcode
+	// gen
+	purchaserService.gen_barcode(
+	    inv.style_number, inv.brand_id, inv.shop_id
 	).then(function(result) {
+	    console.log(result);
 	    if (result.ecode === 0) {
-		print_barcode();
+		print_barcode(result.barcode);
 	    } else {
 		dialog.response(
 		    false, "条码生成", "条码生成失败："

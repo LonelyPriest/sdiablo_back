@@ -20,6 +20,7 @@ var diablo_male = 1;
 
 var diablo_free_size = "0";
 var diablo_free_color = 0;
+var diablo_empty_barcode = "0";
 
 var diablo_has_deleted=1;
 
@@ -92,9 +93,9 @@ diablo_right = 1;
 diablo_down = 2;
 diablo_left = 3;
 
-var diablo_barcode_lenth_of_color_size = 6;
+var diablo_barcode_lenth_of_color_size = 5;
 var diablo_by_shop     = "by_shop";
-var diablo_print_px   = 5.56;
+var diablo_print_px    = 5.56;
 
 /*
  * retailer
@@ -134,6 +135,16 @@ var diablo_key_retailer_trans_detail  = "q-retailer-trans-detail";
 var diablo_dkey_stock_price = 9;
 var diablo_dkey_stock_in  = 8;
 var diablo_dkey_stock_fix = 7;
+
+
+var size_to_barcode = ["XS",  "S",   "M",   "L",   "XL",  "2XL",  "3XL", "4XL", "5XL", "6XL", "7XL",
+		       "0",   "8",   "9",   "10",  "11",  "12",  "13",   "14",  "15",  "16",  "17",
+		       "18",  "19",  "20",  "21",  "22",  "23",  "24",   "25",  "26",  "27",  "28",
+		       "29",  "30",  "31",   "32",  "33",  "34",  "35",  "36",  "37",  "38",  "40",
+		       "42",  "44",  "46",   "48",  "50",  "52",
+		       "80",  "90",  "100", "105", "110", "115",  "120", "125", "130", "135", "140",
+		       "145", "150", "155", "160", "165", "170",  "175", "180", "185", "190", "195",
+		       "200"];
 
 function diablo_range(n){
     if (n < 0) return;

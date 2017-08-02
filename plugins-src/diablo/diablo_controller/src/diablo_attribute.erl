@@ -25,7 +25,17 @@
 -export([brand/2, brand/3]).
 -export([type/2, type/3]).
 
--define(SERVER, ?MODULE). 
+-define(SERVER, ?MODULE).
+
+-define(SIZE_TO_BARCODE,
+	["XS",  "S",   "M",   "L",   "XL",  "2XL",  "3XL", "4XL", "5XL", "6XL", "7XL",
+	 "0",   "8",   "9",   "10",  "11",  "12",  "13",   "14",  "15",  "16",  "17",
+	 "18",  "19",  "20",  "21",  "22",  "23",  "24",   "25",  "26",  "27",  "28",
+	 "29",  "30",  "31",   "32",  "33",  "34",  "35",  "36",  "37",  "38",  "40",
+	 "42",  "44",  "46",   "48",  "50",  "52",
+	 "80",  "90",  "100", "105", "110", "115",  "120", "125", "130", "135", "140",
+	 "145", "150", "155", "160", "165", "170",  "175", "180", "185", "190", "195",
+	 "200"]).
 
 -record(state, {}).
 
@@ -203,21 +213,33 @@ handle_call({new_size_group, Merchant, Attrs}, _From, State) ->
 		SVI  = ?v(<<"svi">>, Attrs, ""),
 		SVII = ?v(<<"svii">>, Attrs, ""),
 
-		Sql1 = "insert into size_group("
-		    "name, si, sii, siii, siv, sv, svi, svii, merchant)"
-		    " values("
-		    "\'" ++ ?to_s(Name) ++ "\',"
-		    "\'" ++ ?to_s(SI) ++ "\',"
-		    "\'" ++ ?to_s(SII) ++ "\',"
-		    "\'" ++ ?to_s(SIII) ++ "\',"
-		    "\'" ++ ?to_s(SIV) ++ "\',"
-		    "\'" ++ ?to_s(SV) ++ "\',"
-		    "\'" ++ ?to_s(SVI) ++ "\',"
-		    "\'" ++ ?to_s(SVII) ++ "\',"
-		    ++ ?to_s(Merchant) ++ ")", 
-		Result = ?sql_utils:execute(insert, Sql1),
-		?w_user_profile:update(size_group, Merchant),
-		Result;
+		case invalid_size(SI)
+		    orelse invalid_size(SII)
+		    orelse invalid_size(SIII)
+		    orelse invalid_size(SIV)
+		    orelse invalid_size(SV)
+		    orelse invalid_size(SVI)
+		    orelse invalid_size(SVII) of
+		    true ->
+			{error, ?err(size_group_invalid_name, Name)};
+		    false -> 
+			Sql1 = "insert into size_group("
+			    "name, si, sii, siii, siv, sv, svi, svii, merchant)"
+			    " values("
+			    "\'" ++ ?to_s(Name) ++ "\',"
+			    "\'" ++ ?to_s(SI) ++ "\',"
+			    "\'" ++ ?to_s(SII) ++ "\',"
+			    "\'" ++ ?to_s(SIII) ++ "\',"
+			    "\'" ++ ?to_s(SIV) ++ "\',"
+			    "\'" ++ ?to_s(SV) ++ "\',"
+			    "\'" ++ ?to_s(SVI) ++ "\',"
+			    "\'" ++ ?to_s(SVII) ++ "\',"
+			    ++ ?to_s(Merchant) ++ ")",
+			?sql_utils:execute(insert, Sql1)
+		%% Result = ?sql_utils:execute(insert, Sql1),
+		%% ?w_user_profile:update(size_group, Merchant),
+		%% Result
+		end;
 	    {ok, Group} ->
 		{error, ?err(size_group_exist, ?v(<<"id">>, Group))};
 	    Error ->
@@ -448,3 +470,7 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
+
+invalid_size("") -> false; 
+invalid_size(Size) ->
+    not lists:member(Size, ?SIZE_TO_BARCODE).

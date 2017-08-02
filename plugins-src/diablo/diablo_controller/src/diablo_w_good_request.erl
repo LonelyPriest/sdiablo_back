@@ -96,6 +96,7 @@ action(Session, Req, {"new_w_size"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     case ?attr:size_group(new, Merchant, Payload) of
 	{ok, GId} ->
+	    ?w_user_profile:update(size_group, Merchant),
 	    ?utils:respond(200, Req, ?succ(add_size_group, GId), {<<"id">>, GId});
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)

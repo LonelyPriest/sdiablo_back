@@ -242,7 +242,9 @@ function stockConfg(angular){
 	    2012: "采购/退货总数与明细总数不一致，请核对该退货单后再进行操作！！",
 	    2013: "该单无厂商，无法审核，请填写厂商后再审核！！",
 	    2014: "该货品不存在，请重新选择货品！！",
+	    2015: "条码值已使用，请重试！！",
 	    2016: "服务器条码校验失败，请注销当前用户后再操作！！",
+	    2081: "条码值为空，无法重置该条码，请先生成该货品条码后再操作！！",
 	    2082: "盘点草稿获取失败，请检查盘点文件内容并确保该文件可读！！",
 	    2083: "盘点草稿不存在，请检查C盘目录下的盘点文件！！",
 	    2084: "盘点库存为空，请重新选择库存！！",
@@ -644,6 +646,20 @@ function stockConfg(angular){
 			      brand:brand,
 			      shop:shop,
 			      barcode:barcode}).$promise;
+	};
+
+	this.gen_barcode = function(style_number, brand, shop) {
+	    return http.save({operation: "gen_stock_barcode"},
+			     {style_number:style_number,
+			      brand:brand,
+			      shop:shop}).$promise;
+	};
+
+	this.reset_barcode = function(style_number, brand, shop) {
+	    return http.save({operation: "reset_stock_barcode"},
+			     {style_number:style_number,
+			      brand:brand,
+			      shop:shop}).$promise;
 	};
 	
     });

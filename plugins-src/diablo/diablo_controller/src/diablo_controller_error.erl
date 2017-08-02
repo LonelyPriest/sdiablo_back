@@ -375,6 +375,8 @@ error(color_exist, Color) ->
     {1901, "color " ++ ?to_s(Color) ++ " has been existed."};
 error(size_group_exist, Group) ->
     {1902, "size group " ++ ?to_s(Group) ++ " has been existed."};
+error(size_group_invalid_name, GName) ->
+    {1903, "size group has invalid size name:" ++ GName};
 
 %%
 %% about wholesale

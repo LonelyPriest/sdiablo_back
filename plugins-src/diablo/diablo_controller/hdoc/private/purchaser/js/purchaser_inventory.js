@@ -230,7 +230,7 @@ function purchaserInventoryNewCtrlProvide (
 	$scope.base_settings.stock_alarm_a   = stockUtils.stock_alarm_a(shopId, base);
 	$scope.base_settings.stock_contailer = stockUtils.stock_contailer(shopId, base);
 
-	$scope.base_settings.stock_with_firm = stockUtils.stock_with_firm(shopId, base);
+	$scope.base_settings.stock_with_firm = stockUtils.stock_with_firm(shopId, base); 
     }
 
     $scope.change_shop = function(){
@@ -1609,7 +1609,7 @@ function purchaserInventoryNewCtrlProvide (
 	    season:    $scope.season2objs[stockUtils.valid_season(current_month)],
 	    org_price: $scope.good.org_price,
 	    tag_price: $scope.good.tag_price, 
-	    ediscount: $scope.good.ediscount,
+	    ediscount: $scope.good.ediscount, 
 	    discount:  $scope.good.discount,
 	    alarm_day: $scope.good.alarm_day,
 	    image: undefined
@@ -1690,8 +1690,10 @@ function purchaserInventoryDetailCtrlProvide(
 	set_promotion: rightAuthen.authen_master(user.type),
 	update_batch:  rightAuthen.authen(
 	    user.type, rightAuthen.stock_action()["update_w_stock_batch"], user.right),
+	reset_barcode: rightAuthen.authen(
+	    user.type, rightAuthen.stock_action()["reset_barcode"], user.right), 
 	update_good:   rightAuthen.authen(
-	    user.type, rightAuthen.good_action()["update_w_good"], user.right),
+	    user.type, rightAuthen.good_action()["update_w_good"], user.right), 
     };
     
     $scope.setting = {alarm: false};
@@ -1741,6 +1743,8 @@ function purchaserInventoryDetailCtrlProvide(
     $scope.setting.use_barcode = stockUtils.use_barcode(-1, base);
     $scope.setting.barcode_width = stockUtils.barcode_width(-1, base);
     $scope.setting.barcode_height = stockUtils.barcode_height(-1, base);
+    $scope.setting.saler_stock = stockUtils.saler_stock(-1, base);
+    $scope.setting.barcode_firm = stockUtils.barcode_with_firm(-1, base);
 
     /*
      * pagination 
@@ -1804,8 +1808,14 @@ function purchaserInventoryDetailCtrlProvide(
 	if (angular.isUndefined(search.shop)
 	    || !search.shop || search.shop.length === 0){
 	    // search.shop = user.shopIds;
-	    search.shop = $scope.shopIds
-		=== 0 ? undefined : $scope.shopIds;
+	    if (diablo_yes !== $scope.setting.saler_stock) {
+		search.shop = $scope.shopIds
+		    === 0 ? undefined : $scope.shopIds;
+	    } else {
+		search.shop = undefined;
+	    }
+	    // search.shop = $scope.shopIds
+	    // 	=== 0 ? undefined : $scope.shopIds;
 	}; 
     };
 
@@ -1972,7 +1982,7 @@ function purchaserInventoryDetailCtrlProvide(
 	    loadCLodop();
     } 
     
-    $scope.bar_code = function(inv) {
+    $scope.p_barcode = function(inv) {
 	console.log(inv);
 
 	if (diablo_invalid_firm === inv.firm_id) {
@@ -1983,30 +1993,18 @@ function purchaserInventoryDetailCtrlProvide(
 	    return;
 	}
 
-	var barcode = stockUtils.gen_barcode_of_free_stock(
-	    inv.free,
-	    inv.firm.bcode,
-	    inv.brand.bcode,
-	    inv.type.bcode,
-	    stockUtils.get_short_year(inv.year),
-	    inv.season
-	); 
-	console.log(barcode); 
-
-	var print_barcode = function() {
-	    if (angular.isUndefined(LODOP)) LODOP = getLodop();
+	var print_barcode = function(barcode) {
+	    console.log(barcode);
+	    
+	    if (angular.isUndefined(LODOP))
+		LODOP = getLodop();
 	    
 	    if (0 === inv.free) {
-		// stockPrint.barcode2(
-		//     LODOP,
-		//     $scope.setting.barcode_width,
-		//     $scope.setting.barcode_height,
-		//     barcode,
-		//     inv.tag_price); 
 		stockPrint.barcode3(
 		    LODOP,
 		    $scope.setting.barcode_width,
 		    $scope.setting.barcode_height,
+		    $scope.setting.barcode_firm,
 		    barcode,
 		    inv.style_number,
 		    inv.brand.name,
@@ -2036,38 +2034,27 @@ function purchaserInventoryDetailCtrlProvide(
 			angular.forEach(barcode_amounts, function(a) {
 			    var color = diablo_get_object(a.cid, filterColor);
 			    console.log(color);
-			    var barcode2 = stockUtils.gen_barcode_of_stock(
-				inv.free,
-				inv.firm.bcode,
-				inv.brand.bcode,
-				inv.type.bcode,
-				stockUtils.get_short_year(inv.year),
-				inv.season,
-				color.bcode,
-				a.size
-			    );
 
-			    // console.log(barcode);
-			    barcodes.push({b:barcode2, c:color.name, s:a.size});
+			    var bcode_size = size_to_barcode.indexOf(a.size);
+			    if (diablo_invalid_index !== bcode_size) {
+				var barcode2 = stockUtils.patch_barcode(
+			    	    barcode,
+			    	    color.bcode,
+			    	    bcode_size,
+				);
+
+				console.log(barcode2);
+				barcodes.push({b:barcode2, c:color.name, s:a.size});
+			    }; 
 			});
 
-			// stockPrint.barcode(LODOP, 10, 7, 2, 2, barcode, inv.tag_price);
 			console.log(barcodes);
-			// stockPrint.barcode2(LODOP, 7, 2, barcode, inv.tag_price);
 			angular.forEach(barcodes, function(b) {
-			    // stockPrint.barcode2(
-			    // 	LODOP,
-			    // 	$scope.setting.barcode_width,
-			    // 	$scope.setting.barcode_height,
-			    // 	b.b, 
-			    // 	inv.tag_price,
-			    // 	b.c,
-			    // 	b.s);
-
 			    stockPrint.barcode3(
 				LODOP,
 				$scope.setting.barcode_width,
 				$scope.setting.barcode_height,
+				$scope.setting.barcode_firm,
 				b.b,
 				inv.style_number,
 				inv.brand.name,
@@ -2131,24 +2118,66 @@ function purchaserInventoryDetailCtrlProvide(
 	};
 
 	// syn
-	if (inv.bcode !== barcode) {
-	    purchaserService.syn_barcode(
-		inv.style_number, inv.brand_id, inv.shop_id, barcode
-	    ).then(function(result) {
-		if (result.ecode === 0) {
-		    inv.bcode = barcode;
-		    print_barcode();
-		} else {
-		    dialog.response(
-			false, "条码生成", "条码生成失败："
-			    + purchaserService.error[result.ecode]);
-		}
-	    })
-	}
-	else {
-	    print_barcode();
-	} 
+	// if (inv.bcode !== barcode) {
+	purchaserService.gen_barcode(
+	    inv.style_number, inv.brand_id, inv.shop_id
+	).then(function(result) {
+	    console.log(result);
+	    if (result.ecode === 0) {
+		inv.bcode = result.barcode;
+		print_barcode(result.barcode);
+	    } else {
+		dialog.response(
+		    false,
+		    "条码生成", "条码生成失败："
+			+ purchaserService.error[result.ecode]);
+	    }
+	})
+	//    }
+	// else {
+	//     print_barcode();
+	// } 
 	
+    };
+
+    $scope.reset_barcode = function(inv) {
+	console.log(inv);
+	if (inv.bcode === diablo_empty_barcode) {
+	    dialog.response(
+		false,
+		"条码重置", "条码重置失败："
+		    + purchaserService.error[2081]);
+	} else {
+	    var callback = function() {
+		purchaserService.reset_barcode(
+		    inv.style_number, inv.brand_id, inv.shop_id
+		).then(function(result) {
+		    console.log(result);
+		    if (result.ecode === 0) {
+			dialog.response_with_callback(
+			    true,
+			    "条码重置",
+			    "条码重置成功，重置后条码值为："
+				+ result.barcode
+				+ "请重新打印条码！！",
+			    undefined,
+			    function() {
+				inv.bcode = result.barcode;
+			    });
+			// print_barcode(result.barcode);
+		    } else {
+			dialog.response(
+			    false,
+			    "条码重置", "条码重置失败："
+				+ purchaserService.error[result.ecode]);
+		    }
+		});
+	    };
+
+	    dialog.request(
+		"条码重置", "所有店铺下的该货品的条码将会重置，确定要重置吗？",
+		callback, undefined, undefined);
+	} 
     };
 
     $scope.export_to = function(){
@@ -2568,6 +2597,10 @@ function purchaserInventoryNewDetailCtrlProvide (
     $scope.total_items  = 0;
     $scope.css = diablo_stock_css;
 
+    $scope.base_setting = {
+	check_firm: stockUtils.check_firm_with_check_stock_in(-1, base)
+    };
+
     // console.log($scope.shops);
 
     /*
@@ -2648,19 +2681,26 @@ function purchaserInventoryNewDetailCtrlProvide (
     
     $scope.check_detail = function(r){
 	// console.log(r);
-	purchaserService.check_w_inventory_new(r.rsn).then(function(state){
-	    console.log(state);
-	    if (state.ecode == 0){
-		dialog.response_with_callback(
-		    true, "入库单审核", "入库单审核成功！！单号：" + state.rsn,
-		    $scope, function(){r.state = diablo_stock_has_checked})
-	    	return;
-	    } else{
-	    	diabloUtilsService.response(
-	    	    false, "入库单审核",
-	    	    "入库单审核失败：" + purchaserService.error[state.ecode]);
-	    }
-	}) 
+	if (diablo_yes === $scope.base_setting.check_firm
+	    && r.firm_id === diablo_invalid_firm) {
+	    diabloUtilsService.response(
+	    	false, "入库单审核",
+	    	"入库单审核失败：" + purchaserService.error[2013]);
+	} else {
+	    purchaserService.check_w_inventory_new(r.rsn).then(function(state){
+		console.log(state);
+		if (state.ecode == 0){
+		    dialog.response_with_callback(
+			true, "入库单审核", "入库单审核成功！！单号：" + state.rsn,
+			$scope, function(){r.state = diablo_stock_has_checked})
+	    	    return;
+		} else{
+	    	    diabloUtilsService.response(
+	    		false, "入库单审核",
+	    		"入库单审核失败：" + purchaserService.error[state.ecode]);
+		}
+	    }) 
+	} 
     };
 
     $scope.uncheck_detail = function(r){

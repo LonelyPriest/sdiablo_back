@@ -30,7 +30,10 @@ function purchaserInventoryRejectCtrlProvide(
     $scope.timeout_auto_save = undefined;
     // $scope.invalid_stock     = false;
     // $scope.round             = diablo_round;
-    $scope.setting           = {reject_negative: false};
+    $scope.setting           = {
+	reject_negative: false,
+	check_orgprice: stockUtils.check_oprice_with_reject_stock(base, -1)
+    };
 
     $scope.disable_refresh   = true;
 
@@ -548,14 +551,15 @@ function purchaserInventoryRejectCtrlProvide(
 		inv.free_color_size = true;
 	    } else{
 		inv.free_color_size = false;
-		var payload = {sizes:        inv.sizes,
-			       colors:       inv.colors,
-			       tag_price:    inv.tag_price,
-			       org_price:    inv.org_price,
-			       ediscount:    inv.ediscount,
-			       amounts:      inv.amounts,
-			       get_amount:   get_amount,
-			       valid:        valid_all,
+		var payload = {sizes:          inv.sizes,
+			       colors:         inv.colors,
+			       tag_price:      inv.tag_price,
+			       org_price:      inv.org_price,
+			       ediscount:      inv.ediscount,
+			       amounts:        inv.amounts,
+			       get_amount:     get_amount,
+			       valid:          valid_all,
+			       check_orgprice: $scope.setting.check_orgprice,
 			       get_price_info: stockUtils.calc_stock_orgprice_info};
 		
 		diabloUtilsService.edit_with_modal(

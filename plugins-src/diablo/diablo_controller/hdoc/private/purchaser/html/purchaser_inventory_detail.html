@@ -185,11 +185,29 @@
 			    <i class="glyphicon glyphicon-map-marker"></i> 
 			  </button>
 
-			  <button x-ng-if="setting.use_barcode"
-				  class="btn diablo-button btn-success"
-				  x-ng-click="bar_code(inv)">条码
-			    <i class="glyphicon glyphicon-barcode"></i> 
-			  </button>
+			  
+			  <!-- <button x-ng-if="setting.use_barcode" -->
+			  <!-- 	  class="btn diablo-button btn-success" -->
+			  <!-- 	  x-ng-click="bar_code(inv)">条码 -->
+			  <!--   <i class="glyphicon glyphicon-barcode"></i>  -->
+			  <!-- </button> -->
+			  <div x-ng-if="setting.use_barcode" class="btn-group">
+			    <button type="button" class="btn diablo-button green">
+			      条码<i class="glyphicon glyphicon-barcode"></i></button>
+			    <button type="button" class="btn diablo-button red" 
+				    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			      <span class="caret"></span>
+			      <span class="sr-only">Toggle Dropdown</span>
+			    </button>
+			    <ul class="dropdown-menu">
+			      <li>
+				<a href="javascript:;" x-ng-click="p_barcode(inv)">条码打印</a>
+			      </li>
+			      <li x-ng-if="stock_right.reset_barcode">
+				<a href="javascript:;" x-ng-click="reset_barcode(inv)">条码重置</a>
+			      </li> 
+			    </ul>
+			  </div>
 
 			  <div class="btn-group">
 			    <button type="button" class="btn diablo-button yellow">
@@ -206,9 +224,7 @@
 			      <li><a href="javascript:;" x-ng-click="update_stock(inv)">基本属性</a></li>
 			      <li x-ng-if="setting.stock_alarm">
 				<a href="javascript:;" x-ng-click="update_alarm_a(inv)">预警数量</a>
-			      </li>
-			      <!-- <li role="separator" class="divider"></li> -->
-			      <!-- <li><a href="#">Separated link</a></li> -->
+			      </li> 
 			    </ul>
 			  </div>
 

@@ -337,11 +337,21 @@ write(Fd, Content) ->
 
 -define(MAX_EMPLOYEE_ID, 8).
 pack_string(String, Pack) -> 
-    SS = ?to_string(String), pack_string(SS, ?to_string(Pack), length(SS)).
+    SS = ?to_string(String),
+    pack_string(SS, ?to_string(Pack), length(SS)).
 pack_string(String, _Pack, ?MAX_EMPLOYEE_ID) -> 
     String;
 pack_string(String, Pack, Length) ->
     pack_string(Pack ++ String, Pack, Length + length(Pack)).
+
+-define(MAX_FLOW_ID, 6).
+pack_flow(Flow, Pack) -> 
+    SS = ?to_string(Flow),
+    pack_flow(SS, ?to_string(Pack), length(SS)).
+pack_flow(Flow, _Pack, Length) when Length >= ?MAX_FLOW_ID -> 
+    Flow;
+pack_flow(Flow, Pack, Length) ->
+    pack_flow(Pack ++ Flow, Pack, Length + length(Pack)).
 
 
 -spec epoch_seconds/0 :: () -> diablo_cron:seconds().

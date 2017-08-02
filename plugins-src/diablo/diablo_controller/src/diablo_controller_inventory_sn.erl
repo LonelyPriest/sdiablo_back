@@ -16,7 +16,7 @@
 -export([start_link/0]).
 
 -export([init/2]).
--export([sn/2, dump/0]).
+-export([sn/2, sn/3, dump/0]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -95,6 +95,11 @@ sn(w_sale_reject_sn, Merchant) ->
 sn(w_ticket, Merchant) ->
     Key = ?to_atom("w-ticket-sn-" ++ ?to_s(Merchant)),
     gen_server:call(?SERVER, {new, Key}).
+
+sn(barcode_flow, Merchant, Year) ->
+    Key = ?to_atom("w-barcode-flow-" ++ ?to_s(Merchant) ++ ?to_s(Year)),
+    gen_server:call(?SERVER, {new, Key}).
+
 
 
 dump() ->

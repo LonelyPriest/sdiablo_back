@@ -346,9 +346,14 @@ sys_config() ->
 	      {"trans_orgprice",  "移仓检测进价",         "1",   "0"},
 	      {"p_color_size",    "打印颜色尺码",         "0",   "0"},
 	      {"birth_sms",       "生日短信",             "0",   "0"},
-	      {"birth_before",    "生日短信发送间隔",     "0",   "0"}  %% default send sms current day
+	      {"birth_before",    "生日短信发送间隔",     "0",   "0"},  %% default send sms current day
 	      %% {"draft_fix",       "盘点草稿保存路径",     "c:\fix.txt",    "0"}
 	      
 	      %%  {"score_withdraw",  "提现是否积分",         "1",   "0"}
+	      {"saler_stock",      "营业员查看区域库存",  "0",   "0"},
+	      {"r_stock_oprice",    "厂商退货检测进价",   "1",   "0"},
+	      {"c_stock_oprice",    "入库审核检测进价",   "1",   "0"},
+	      {"c_stock_firm",      "入库审核检测厂商",   "1",   "0"},
+	      {"bcode_firm",        "条码打印厂商",       "0",   "0"}
 	     ],
     Values.

@@ -42,11 +42,14 @@ function wgoodSizeDetailCtrlProvide(
 
     var check_same = function(size, key, value){
 	// console.log(size, key, value);
+	if (value && diablo_invalid_index === size_to_barcode.indexOf(value)) {
+	    return false;
+	}
+	
 	for (var s in size){
 	    if (s === 'name' || s === key) continue;
 
-	    if (angular.isDefined(size[s])
-		&& size[s] && size[s] === value){
+	    if (angular.isDefined(size[s]) && size[s] && size[s] === value){
 		return false;
 	    }
 	}

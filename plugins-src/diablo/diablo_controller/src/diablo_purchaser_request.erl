@@ -987,8 +987,25 @@ action(Session, Req, {"gen_stock_barcode"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     StyleNumber = ?v(<<"style_number">>, Payload),
     Brand = ?v(<<"brand">>, Payload),
+    Shop = ?v(<<"shop">>, Payload),
 
-    case ?w_inventory:purchaser_inventory(gen_barcode, Merchant, StyleNumber, Brand) of
+    case ?w_inventory:purchaser_inventory(gen_barcode, Merchant, Shop, StyleNumber, Brand) of
+	{ok, Barcode} ->
+	    ?utils:respond(200, object, Req,
+			   {[{<<"ecode">>, 0},
+			     {<<"barcode">>, ?to_b(Barcode)}]}); 
+	{error, Error} ->
+    	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"reset_stock_barcode"}, Payload) ->
+    ?DEBUG("reset_stock_barcode: session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    StyleNumber = ?v(<<"style_number">>, Payload),
+    Brand = ?v(<<"brand">>, Payload),
+    Shop = ?v(<<"shop">>, Payload),
+
+    case ?w_inventory:purchaser_inventory(reset_barcode, Merchant, Shop, StyleNumber, Brand) of
 	{ok, Barcode} ->
 	    ?utils:respond(200, object, Req,
 			   {[{<<"ecode">>, 0},

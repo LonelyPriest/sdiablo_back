@@ -548,12 +548,15 @@
 	</tbody>
       </table>
     </div>
-    <div x-ng-if="params.org_price===0"><span class="bg-red">退货价为0，无法退货！！</span></div>
+    <div x-ng-if="params.check_orgprice && params.org_price===0">
+      <span class="bg-red">退货价为0，无法退货！！</span>
+    </div>
   </div>
 
   <div class="modal-footer">
     <button class="btn btn-primary"
-	    x-ng-disabled="params.org_price==0 || !params.valid(params.amounts)"
+	    x-ng-disabled="params.check_orgprice && params.org_price==0
+			   || !params.valid(params.amounts)"
 	    x-ng-click="ok()">保存
     </button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
