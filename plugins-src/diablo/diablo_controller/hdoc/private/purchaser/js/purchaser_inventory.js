@@ -2032,7 +2032,7 @@ function purchaserInventoryDetailCtrlProvide(
 			var barcodes = [];
 
 			angular.forEach(barcode_amounts, function(a) {
-			    var color = diablo_get_object(a.cid, filterColor);
+			    var color = diablo_find_color(a.cid, filterColor);
 			    console.log(color);
 
 			    var bcode_size = size_to_barcode.indexOf(a.size);
@@ -2040,11 +2040,11 @@ function purchaserInventoryDetailCtrlProvide(
 				var barcode2 = stockUtils.patch_barcode(
 			    	    barcode,
 			    	    color.bcode,
-			    	    bcode_size,
+			    	    bcode_size
 				);
 
 				console.log(barcode2);
-				barcodes.push({b:barcode2, c:color.name, s:a.size});
+				barcodes.push({b:barcode2, c:color.cname, s:a.size});
 			    }; 
 			});
 

@@ -649,7 +649,8 @@ var stockPrint = function() {
 	    price,
 	    color,
 	    size) {
-	    
+
+	    console.log(barcode);
 	    // px
 	    var wpx = Math.floor(pageWidth * 96 / 2.54);
 	    var hpx = Math.floor(pageHeight * 96 / 2.54);
@@ -685,7 +686,7 @@ var stockPrint = function() {
 	    } else {
 		pColorSize = "均色"
 	    }
-	    if (angular.isDefined(size)) {
+	    if (angular.isDefined(size) && size.toString() !== "0") {
 		pColorSize += size;
 	    } else {
 		pColorSize += "均码";
@@ -771,7 +772,8 @@ var stockPrint = function() {
 	    } else {
 		pColorSize = "均色"
 	    }
-	    if (angular.isDefined(size)) {
+	    // console.log(size);
+	    if (angular.isDefined(size) && size.toString() !== "0") {
 		pColorSize += size;
 	    } else {
 		pColorSize += "均码";

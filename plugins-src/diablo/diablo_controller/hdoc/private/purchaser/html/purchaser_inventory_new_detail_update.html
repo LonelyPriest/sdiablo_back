@@ -9,9 +9,15 @@
 	</div>
 	<div class="actions">
 	  <div class="btn-group btn-group-solid">
-	    <button type="button" class="btn red"
+	    <button class="btn red"
 		    x-ng-click="go_back()">返回
 	      <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
+	    
+	    <button x-ng-if="setting.use_barcode"
+		    x-ng-disabled="disable_gen_barcode_all"
+		    class="btn btn-primary purple-stripe"
+		    x-ng-click="gen_barcode_all()">条码
+	      <i class="glyphicon glyphicon-barcode"></i></button>
 	    
 	    <button class="btn btn-success purple-stripe"
 		    x-ng-disabled="has_saved"
@@ -29,7 +35,7 @@
 	<div class="table-toolbar">
 	  
 	  <div class="row diablo-form-group">
-	    <div x-ng-if="stock_right.show_orgprice" class="col-xs-3 col-md-3">
+	    <div class="col-xs-3 col-md-3">
 	      <div class="input-group"> 
 		<span class="input-group-addon">
 		  <i class="icon icon-rss fg-red"></i>厂商</span>
@@ -44,19 +50,19 @@
 	      </div>
 	    </div>
 
-	    <div x-ng-if="!stock_right.show_orgprice" class="col-xs-3 col-md-3">
-	      <div class="input-group">
-		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-bold fg-red"></i>厂商
-		</span>
-	  	<input class="form-control"
-		       type="text"
-	  	       x-ng-model="select.firm"
-	  	       placeholder="厂商自动选择" 
-		       uib-typeahead="f as f.name for f in
-	  			  firms|filter:$viewValue|limitTo:15"/> 
-	      </div>
-	    </div>
+	    <!-- <div x-ng-if="!stock_right.show_orgprice" class="col-xs-3 col-md-3"> -->
+	    <!--   <div class="input-group"> -->
+	    <!-- 	<span class="input-group-addon"> -->
+	    <!-- 	  <i class="glyphicon glyphicon-bold fg-red"></i>厂商 -->
+	    <!-- 	</span> -->
+	    <!-- 	<input class="form-control" -->
+	    <!-- 	       type="text" -->
+	    <!-- 	       x-ng-model="select.firm" -->
+	    <!-- 	       placeholder="厂商自动选择"  -->
+	    <!-- 	       uib-typeahead="f as f.name for f in -->
+	    <!-- 			  firms|filter:$viewValue|limitTo:15"/>  -->
+	    <!--   </div> -->
+	    <!-- </div> -->
 
 	    <div class="col-xs-3 col-md-3">
 	      <div class="input-group">

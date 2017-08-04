@@ -1002,12 +1002,31 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	if (needCLodop())
 	    loadCLodop();
     }
+
+    $scope.disable_gen_barcode_all = false;
+    $scope.gen_barcode_all = function() {
+	if (diablo_invalid_firm === stockUtils.invalid_firm($scope.select.firm)) {
+	    diabloUtilsService.response(
+		false,
+		"库存条码打印",
+		"库存条码打印失败：" + purchaserService.error[2086]);
+	    return;
+	}
+	
+	$scope.disable_gen_barcode_all = true;
+	for (var i=1, l=$scope.inventories.length; i<l; i++) {
+	    var one = $scope.inventories[i];
+	    $scope.gen_barcode(one);
+	    // break;
+	}
+	$scope.disable_gen_barcode_all = false;
+    };
     
     $scope.gen_barcode = function(inv) {
 	console.log(inv);
 
 	if (diablo_invalid_firm === inv.firm_id) {
-	    dialog.response(
+	    diabloUtilsService.response(
 		false,
 		"库存条码打印",
 		"库存条码打印失败：" + purchaserService.error[2086]);
@@ -1044,8 +1063,8 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	    else {
 		var barcodes = []; 
 		angular.forEach(inv.amounts, function(a) {
-		    var color = diablo_get_object(a.cid, filterColor);
-		    
+		    var color = diablo_find_color(a.cid, filterColor);
+		    // console.log(color); 
 		    for (var i=0; i<a.count; i++) {
 			// var barcode2 = stockUtils.gen_barcode_of_stock(
 			//     inv.free,
@@ -1059,17 +1078,21 @@ function purchaserInventoryNewUpdateCtrlProvide (
 			// );
 			// barcodes.push({b:barcode2, c:color.name, s:a.size});
 			
-			var bcode_size = size_to_barcode.indexOf(a.size); 
+			var bcode_size = size_to_barcode.indexOf(a.size);
+			// console.log(bcode_size);
 			if (diablo_invalid_index !== bcode_size) {
 			    var barcode2 = stockUtils.patch_barcode(
 			    	barcode,
 			    	color.bcode,
-			    	bcode_size,
+			    	bcode_size
 			    );
 
 			    console.log(barcode2);
-			    barcodes.push({b:barcode2, c:color.name, s:a.size});
-			}; 
+			    console.log(color);
+			    barcodes.push({b:barcode2, c:color.cname, s:a.size});
+			};
+
+			console.log(barcodes);
 		    }
 		});
 

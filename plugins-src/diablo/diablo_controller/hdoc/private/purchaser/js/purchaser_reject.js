@@ -32,7 +32,7 @@ function purchaserInventoryRejectCtrlProvide(
     // $scope.round             = diablo_round;
     $scope.setting           = {
 	reject_negative: false,
-	check_orgprice: stockUtils.check_oprice_with_reject_stock(base, -1)
+	check_orgprice: stockUtils.check_oprice_with_reject_stock(-1, base)
     };
 
     $scope.disable_refresh   = true;

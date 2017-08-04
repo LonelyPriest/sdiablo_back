@@ -805,23 +805,6 @@ action(Session, Req, {"match_stock_by_shop"}, Payload) ->
     batch_responed(
       fun()-> ?w_inventory:match_stock(by_shop, Merchant, ShopIds, StartTime, Prompt) end, Req);
 
-action(Session, Req, {"get_stock_by_barcode"}, Payload) ->
-    ?DEBUG("get_stock_by_barcode: session ~p, payload ~p", [Session, Payload]),
-    Merchant = ?session:get(merchant, Session),
-    Barcode = ?v(<<"barcode">>, Payload),
-    Shop = ?v(<<"shop">>, Payload),
-
-    case ?w_inventory:purchaser_inventory(get_by_barcode, Merchant, Shop, Barcode) of
-	%% {ok, []} ->
-	%%     ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
-	%% 				       {<<"stock">>, {[]} }]});
-	{ok, Stock} ->
-	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
-					       {<<"stock">>, {Stock} }]});
-	{error, Error} ->
-	    ?utils:respond(200, Req, Error)
-    end;
-
 
 action(Session, Req, {"w_inventory_export"}, Payload) ->
     ?DEBUG("w_inventory_export with session ~p, paylaod ~n~p", [Session, Payload]),
@@ -962,6 +945,49 @@ action(Session, Req, {"adjust_w_inventory_price"}, Payload) ->
 	       ?succ(adjust_w_inventory_price, Merchant));
     	{error, Error} ->
     	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"get_stock_by_barcode"}, Payload) ->
+    ?DEBUG("get_stock_by_barcode: session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    Barcode = ?v(<<"barcode">>, Payload),
+    Shop = ?v(<<"shop">>, Payload),
+
+    %% BarcodeSize = erlang:size(Barcode),
+
+    %% 128C code's lenght should be odd
+    <<ZZ:2/binary, _/binary>> = Barcode,
+    NewBarcode = 
+	case ZZ of
+	    <<"00">> ->
+		<<_Z:1/binary, Code/binary>> = Barcode,
+		CodeSize = erlang:size(Code),
+		case CodeSize rem 2 of
+		    0 -> Barcode;
+		    _ -> Code
+		end;
+	    _ ->
+		Barcode
+	end,
+    %% NewBarcode  =
+    %% 	case BarcodeSize rem 2 of
+    %% 	    0 ->Barcode;
+    %% 	    _ ->
+    %% 		<<_Z:1/binary, Code/binary>> = Barcode,
+    %% 		Code
+    %% 	end,
+
+    ?DEBUG("newBarcode ~p", [Barcode]),
+	    
+    case ?w_inventory:purchaser_inventory(get_by_barcode, Merchant, Shop, NewBarcode) of
+	%% {ok, []} ->
+	%%     ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
+	%% 				       {<<"stock">>, {[]} }]});
+	{ok, Stock} ->
+	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
+					       {<<"stock">>, {Stock} }]});
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
     end;
 
 action(Session, Req, {"syn_w_inventory_barcode"}, Payload) ->
