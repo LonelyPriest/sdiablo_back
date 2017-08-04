@@ -99,7 +99,7 @@ function purchaserInventoryNewCtrlProvide (
 	    $scope.select.surplus = undefined;
 	    $scope.select.left_balance = undefined;
 	} 
-	$scope.get_prompt_good(); 
+	// $scope.get_prompt_good(); 
     };
 
     $scope.refresh = function(){
@@ -292,12 +292,12 @@ function purchaserInventoryNewCtrlProvide (
 	});
     };
 
-    $scope.get_prompt_good = function(){
-	if ($scope.q_prompt === diablo_frontend){
-    	    $scope.get_all_w_good();
-	}
-    }; 
-    $scope.get_prompt_good();
+    // $scope.get_prompt_good = function(){
+    // 	if ($scope.q_prompt === diablo_frontend){
+    // 	    $scope.get_all_w_good();
+    // 	}
+    // }; 
+    // $scope.get_prompt_good();
 
     var copy_select = function(add, src){
 	add.$new_good    = src.$new_good;
@@ -959,45 +959,82 @@ function purchaserInventoryNewCtrlProvide (
 	var modal_size = diablo_valid_dialog(inv.sizes);
 	var large_size = modal_size === 'lg' ? true : false;
 
-	// refresh colors
-	if ($scope.q_prompt === diablo_frontend){
-	    var f = $scope.all_w_goods.filter(function(g){
-		return g.id === inv.id
-		    && g.style_number === inv.style_number
-		    && g.brand_id === inv.brand_id
-	    });
-	    // console.log(f);
-	    if (f.length !== 0) {
-		inv.colors = f[0].color.split(",");
+	// refresh colors 
+	diabloFilter.get_purchaser_good(
+	    {style_number:inv.style_number, brand:inv.brand_id}
+	).then(function(result) {
+	    if(result.ecode === 0 && !diablo_is_empty(result.data)) {
+		inv.colors = result.data.color.split(",");
+		inv.sizes  = result.data.size.split(",");
+		inv.s_group = result.data.s_group;
 		inv.colors_info = inv.colors.map(function(cid){
 		    return diablo_find_color(parseInt(cid), $scope.colors)});
-	    }
-	};
+
+		var payload = {sizes:      inv.sizes,
+			       large_size: large_size,
+			       amount:     inv.amount,
+			       org_price:  inv.org_price,
+			       ediscount:  inv.ediscount,
+			       tag_price:  inv.tag_price,
+			       discount:   inv.discount,
+			       over:       inv.over,
+			       colors:     inv.colors_info,
+			       path:       inv.path,
+			       stock:      inv.stock,
+			       right:      $scope.stock_right,
+			       get_amount: get_amount,
+			       valid_amount: valid_amount,
+			       get_price_info: stockUtils.calc_stock_orgprice_info,
+			       edit: function(){
+				   diablo_goto_page(
+				       "#/good/wgood_update"
+					   + "/" + inv.id.toString()
+					   + "/" + $scope.select.shop.id.toString()
+					   + "/" + diablo_from_stock_new.toString())}
+			      };
+		diabloUtilsService.edit_with_modal(
+		    "inventory-new.html", modal_size, callback, undefined, payload);
+	    };
+	});
 	
-	var payload = {sizes:      inv.sizes,
-		       large_size: large_size,
-		       amount:     inv.amount,
-		       org_price:  inv.org_price,
-		       ediscount:  inv.ediscount,
-		       tag_price:  inv.tag_price,
-		       discount:   inv.discount,
-		       over:       inv.over,
-		       colors:     inv.colors_info,
-		       path:       inv.path,
-		       stock:      inv.stock,
-		       right:      $scope.stock_right,
-		       get_amount: get_amount,
-		       valid_amount: valid_amount,
-		       get_price_info: stockUtils.calc_stock_orgprice_info,
-		       edit: function(){
-			   diablo_goto_page(
-			       "#/good/wgood_update"
-				   + "/" + inv.id.toString()
-				   + "/" + $scope.select.shop.id.toString()
-				   + "/" + diablo_from_stock_new.toString())}
-		      };
-	diabloUtilsService.edit_with_modal(
-	    "inventory-new.html", modal_size, callback, undefined, payload)
+	// if ($scope.q_prompt === diablo_frontend){
+	//     var f = $scope.all_w_goods.filter(function(g){
+	// 	return g.id === inv.id
+	// 	    && g.style_number === inv.style_number
+	// 	    && g.brand_id === inv.brand_id
+	//     });
+	//     // console.log(f);
+	//     if (f.length !== 0) {
+	// 	inv.colors = f[0].color.split(",");
+	// 	inv.colors_info = inv.colors.map(function(cid){
+	// 	    return diablo_find_color(parseInt(cid), $scope.colors)});
+	//     }
+	// };
+	
+	// var payload = {sizes:      inv.sizes,
+	// 	       large_size: large_size,
+	// 	       amount:     inv.amount,
+	// 	       org_price:  inv.org_price,
+	// 	       ediscount:  inv.ediscount,
+	// 	       tag_price:  inv.tag_price,
+	// 	       discount:   inv.discount,
+	// 	       over:       inv.over,
+	// 	       colors:     inv.colors_info,
+	// 	       path:       inv.path,
+	// 	       stock:      inv.stock,
+	// 	       right:      $scope.stock_right,
+	// 	       get_amount: get_amount,
+	// 	       valid_amount: valid_amount,
+	// 	       get_price_info: stockUtils.calc_stock_orgprice_info,
+	// 	       edit: function(){
+	// 		   diablo_goto_page(
+	// 		       "#/good/wgood_update"
+	// 			   + "/" + inv.id.toString()
+	// 			   + "/" + $scope.select.shop.id.toString()
+	// 			   + "/" + diablo_from_stock_new.toString())}
+	// 	      };
+	// diabloUtilsService.edit_with_modal(
+	//     "inventory-new.html", modal_size, callback, undefined, payload);
     };
 
     $scope.save_free_update = function(inv){
@@ -1092,10 +1129,10 @@ function purchaserInventoryNewCtrlProvide (
 	$scope.on_focus_attr("style_number");
 	console.log($scope.focus_attrs);
 
-	if (angular.isUndefined($scope.all_w_goods)
-	    || $scope.all_w_goods.length === 0){
-	    $scope.get_all_w_good();
-	}
+	// if (angular.isUndefined($scope.all_w_goods)
+	//     || $scope.all_w_goods.length === 0){
+	//     $scope.get_all_w_good();
+	// }
     };
 
     $scope.on_select_good_new = function(item, model, label){
@@ -1473,7 +1510,7 @@ function purchaserInventoryNewCtrlProvide (
 			}) 
 		    })
 		});
-		console.log($scope.gcolors); 
+		// console.log($scope.gcolors); 
 
 		if (diablo_no === $scope.base_settings.group_color){
 		    for (var i=0, l1=$scope.grouped_colors.length; i<l1; i++){
@@ -1483,7 +1520,7 @@ function purchaserInventoryNewCtrlProvide (
 			    }
 			}
 		    }
-		    console.log($scope.grouped_colors); 
+		    // console.log($scope.grouped_colors); 
 		};
 
 		// reset
@@ -1560,11 +1597,11 @@ function purchaserInventoryNewCtrlProvide (
 		    alarm_a:   good.alarm_a
 		};
 
-		if ($scope.q_prompt === diablo_frontend){
-		    if (angular.isDefined($scope.all_w_goods)){
-			$scope.all_w_goods.splice(0, 0, agood); 
-		    }
-		};
+		// if ($scope.q_prompt === diablo_frontend){
+		//     if (angular.isDefined($scope.all_w_goods)){
+		// 	$scope.all_w_goods.splice(0, 0, agood); 
+		//     }
+		// };
 
 		// $scope.focus.style_number = true;
 		$scope.on_select_good(agood, undefined, undefined); 

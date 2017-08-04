@@ -286,31 +286,31 @@
 		      <tr class="text-center" x-ng-repeat="inv in inventories">  
 			<td class="vert-align">{{inv.order_id}}</td>
 
-			<td x-ng-if="q_prompt===0" class="col-md-2 text-left vert-align">
-			  <span ng-if="!inv.$new">{{inv.style_number}}</span>
-			  <form name="inv.form.good" ng-if="inv.$new">
-			    <div ng-class="{'has-error':inv.form.good.$invalid
-					   && !inv.form.good.$pristine}">
-			      <input class="form-control text-left" type="text"
-				     required
-				     ng-edit
-				     focus-auto="focus_of_inv.style_number"
-				     x-ng-model="inv.style_number"
-				     placeholder="货号"
-				     typeahead-editable="false"
-				     typeahead-select-on-exact="true"
-				     typeahead-append-to-body="true"
-				     typeahead-on-select="on_select_good($item, $model, $label)" 
-				     uib-typeahead="g as g.name for g in
-						all_w_goods|filter:{prompt:$viewValue}|limitTo:prompt_limit"/>
-			      <span x-ng-show="loading">
-				<i class="glyphicon glyphicon-refresh"></i>
-			      </span>
-			    </div>
-			  </form>
-			</td>
+			<!-- <td x-ng-if="q_prompt===0" class="col-md-2 text-left vert-align"> -->
+			<!--   <span ng-if="!inv.$new">{{inv.style_number}}</span> -->
+			<!--   <form name="inv.form.good" ng-if="inv.$new"> -->
+			<!--     <div ng-class="{'has-error':inv.form.good.$invalid -->
+			<!-- 		   && !inv.form.good.$pristine}"> -->
+			<!--       <input class="form-control text-left" type="text" -->
+			<!-- 	     required -->
+			<!-- 	     ng-edit -->
+			<!-- 	     focus-auto="focus_of_inv.style_number" -->
+			<!-- 	     x-ng-model="inv.style_number" -->
+			<!-- 	     placeholder="货号" -->
+			<!-- 	     typeahead-editable="false" -->
+			<!-- 	     typeahead-select-on-exact="true" -->
+			<!-- 	     typeahead-append-to-body="true" -->
+			<!-- 	     typeahead-on-select="on_select_good($item, $model, $label)"  -->
+			<!-- 	     uib-typeahead="g as g.name for g in -->
+			<!-- 			all_w_goods|filter:{prompt:$viewValue}|limitTo:prompt_limit"/> -->
+			<!--       <span x-ng-show="loading"> -->
+			<!-- 	<i class="glyphicon glyphicon-refresh"></i> -->
+			<!--       </span> -->
+			<!--     </div> -->
+			<!--   </form> -->
+			<!-- </td> -->
 			
-			<td x-ng-if="q_prompt===1" class="col-md-2 text-left vert-align">
+			<td class="col-md-2 text-left vert-align">
 			  <span ng-if="!inv.$new">{{inv.style_number}}</span>
 			  <form name="inv.form.good" ng-if="inv.$new">
 			    <div ng-class="{'has-error':inv.form.good.$invalid
@@ -323,12 +323,10 @@
 				     typeahead-editable="false"
 				     typeahead-select-on-exact="true"
 				     typeahead-append-to-body="true"
-				     typeahead-on-select="on_select_good(
-							  $item, $model, $label)"
+				     typeahead-on-select="on_select_good($item, $model, $label)"
 				     typeahead-wait-ms="500"
 				     typeahead-loading="loading"
-				     uib-typeahead="g as g.name for g in
-						match_prompt_good($viewValue)"/>
+				     uib-typeahead="g as g.name for g in match_prompt_good($viewValue)"/>
 			      <span x-ng-show="loading">
 				<i class="glyphicon glyphicon-refresh"></i>
 			      </span>
@@ -606,12 +604,29 @@
 		  <div class="col-sm-6 col-md-6"> 
 		    <div class="input-group">
 		      <div x-ng-class="{'has-error':form.gForm.style_number.$invalid
-				       && !form.gForm.style_number.$pristine
-				       || is_same_good}">
+				       && !form.gForm.style_number.$pristine || is_same_good}">
+			<!-- <input type="text" -->
+			<!--        class="form-control" -->
+			<!--        name="style_number" -->
+			<!--        required  -->
+			<!--        capitalize -->
+			<!--        ng-edit -->
+			<!--        focus-auto="focus_attrs.style_number" -->
+			<!--        go-next-field -->
+			<!--        next="brand" -->
+			<!--        auto-row="go_next_good_field" -->
+			<!--        placeholder="请输入2-10位款号" -->
+			<!--        x-ng-blur="focus_attrs.style_number=false" -->
+			<!--        x-ng-model="good.style_number" -->
+			<!--        x-ng-pattern="pattern.style_number" -->
+			<!--        x-ng-enter="" -->
+			<!--        typeahead-on-select="on_select_good_new($item, $model, $label)" -->
+			<!--        uib-typeahead="g as g.name for g in -->
+			<!-- 		  all_w_goods|filter:{prompt:$viewValue}|limitTo:prompt_limit"/> -->
 			<input type="text"
 			       class="form-control"
 			       name="style_number"
-			       required 
+			       required
 			       capitalize
 			       ng-edit
 			       focus-auto="focus_attrs.style_number"
@@ -624,8 +639,12 @@
 			       x-ng-pattern="pattern.style_number"
 			       x-ng-enter=""
 			       typeahead-on-select="on_select_good_new($item, $model, $label)"
-			       uib-typeahead="g as g.name for g in
-					  all_w_goods|filter:{prompt:$viewValue}|limitTo:prompt_limit"/>
+			       typeahead-wait-ms="500"
+			       typeahead-loading="loading"
+			       uib-typeahead="g as g.name for g in match_prompt_good($viewValue)"/>
+			<span x-ng-show="loading">
+			  <i class="glyphicon glyphicon-refresh"></i>
+			</span>
 		      </div>
 		      <span class="input-group-addon bg-white fg-red">*</span>
 		      <span class="input-group-btn">

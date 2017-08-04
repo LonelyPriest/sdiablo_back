@@ -111,3 +111,9 @@ set a.org_price=b.org_price, a.ediscount=b.ediscount where a.org_price=0;
 update w_inventory a inner join(select style_number, brand, merchant, org_price, ediscount from w_inventory_good where merchant=4) b \
 on a.merchant=b.merchant and a.style_number=b.style_number and a.brand=b.brand \
 set a.org_price=b.org_price, a.ediscount=b.ediscount where a.org_price=0;
+
+update w_inventory_transfer_detail t inner join \
+(select style_number, brand, org_price, tag_price, discount, ediscount, merchant from w_inventory where merchant=4 group by style_number, brand) w \
+on t.merchant=w.merchant and t.style_number=w.style_number and t.brand=w.brand
+set t.org_price=w.org_price, t.tag_price=w.tag_price, t.discount=w.discount, t.ediscount=w.ediscount \
+where t.merchant=4;

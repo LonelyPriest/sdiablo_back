@@ -587,7 +587,7 @@ function purchaserInventoryTransferFromDetailCtrlProvide (
 
     $scope.from_shops = user.sortBadRepoes.concat(user.sortShops, user.sortRepoes);
     $scope.shopIds = user.shopIds.concat(user.badrepoIds, user.repoIds);
-    
+    $scope.total_items = 0;
     $scope.goto_page = diablo_goto_page;
 
     $scope.go_transfer = function(){
@@ -637,11 +637,16 @@ function purchaserInventoryTransferFromDetailCtrlProvide (
     $scope.time   = diabloFilter.default_time(now - diablo_day_millisecond * 7, now);
 
     var storage = localStorageService.get(diablo_key_inventory_transfer);
+    // console.log(storage);
     if (angular.isDefined(storage) && storage !== null){
 	$scope.filters = storage.filter;
+	// console.log($scope.filter);
+	if (angular.isDefined(storage.start_time)) {
+	    $scope.time.start_time = storage.start_time; 
+	}
     };
 
-    console.log($scope.filters);
+    // console.log($scope.filters);
     
     /*
      * pagination 
@@ -674,19 +679,21 @@ function purchaserInventoryTransferFromDetailCtrlProvide (
 	    purchaserService.filter_transfer_w_inventory(
 		$scope.match,
 		search, page,
-		$scope.items_perpage).then(function(result){
-		    console.log(result);
-		    if (page === 1){
-			$scope.total_items = result.total
-		    }
-		    angular.forEach(result.data, function(d){
-			d.fshop = diablo_get_object(d.fshop_id, $scope.from_shops);
-			d.tshop = diablo_get_object(d.tshop_id, filterShop);
-			d.employee = diablo_get_object(d.employee_id, filterEmployee);
-		    })
-		    $scope.records = result.data;
-		    diablo_order_page(page, $scope.items_perpage, $scope.records);
+		$scope.items_perpage
+	    ).then(function(result){
+		console.log(result);
+		if (page === 1){
+		    $scope.total_items = result.total;
+		    $scope.total_amounts = result.t_amount;
+		}
+		angular.forEach(result.data, function(d){
+		    d.fshop = diablo_get_object(d.fshop_id, $scope.from_shops);
+		    d.tshop = diablo_get_object(d.tshop_id, filterShop);
+		    d.employee = diablo_get_object(d.employee_id, filterEmployee);
 		})
+		$scope.records = result.data;
+		diablo_order_page(page, $scope.items_perpage, $scope.records);
+	    })
 
 	    $scope.current_page = page;
 	    
@@ -740,7 +747,7 @@ function purchaserInventoryTransferFromDetailCtrlProvide (
 
 
 function purchaserInventoryTransferToDetailCtrlProvide (
-    $scope, dateFilter, diabloPattern, diabloUtilsService,
+    $scope, dateFilter, localStorageService, diabloPattern, diabloUtilsService,
     diabloFilter, purchaserService, 
     user, filterShop, filterEmployee, base){
 
@@ -748,6 +755,7 @@ function purchaserInventoryTransferToDetailCtrlProvide (
     $scope.shopIds = user.shopIds.concat(user.badrepoIds, user.repoIds);
     // console.log($scope.to_shops);
     $scope.goto_page = diablo_goto_page;
+    $scope.total_items = 0;
 
     $scope.go_transfer = function(){
 	$scope.goto_page('#/inventory/inventory_transfer');
@@ -786,6 +794,15 @@ function purchaserInventoryTransferToDetailCtrlProvide (
     
     // $scope.time   = diabloFilter.default_time($scope.qtime_start);
     $scope.time   = diabloFilter.default_time(now - diablo_day_millisecond * 7, now);
+    var storage = localStorageService.get(diablo_key_inventory_transfer_to);
+    // console.log(storage);
+    if (angular.isDefined(storage) && storage !== null){
+	$scope.filters = storage.filter;
+	// console.log($scope.filter);
+	if (angular.isDefined(storage.start_time)) {
+	    $scope.time.start_time = storage.start_time; 
+	}
+    };
     // $scope.time   = diabloFilter.default_time();
 
     // console.log($scope.filter);
@@ -817,26 +834,34 @@ function purchaserInventoryTransferToDetailCtrlProvide (
 	    	    === 0 ? undefined : $scope.shopIds;
 	    }
 
+	    localStorageService.set(
+		diablo_key_inventory_transfer_to,
+		{filter:$scope.filters,
+		 start_time:diablo_get_time($scope.time.start_time),
+		 page:page, t:now});
+	    
 	    purchaserService.filter_transfer_w_inventory(
 		$scope.match,
 		search, page,
-		$scope.items_perpage).then(function(result){
-		    console.log(result);
-		    if (page === 1){
-			$scope.total_items = result.total
-		    }
-		    angular.forEach(result.data, function(d){
-			d.fshop = diablo_get_object(
-			    d.fshop_id, filterShop);
-			d.tshop = diablo_get_object(
-			    d.tshop_id, $scope.to_shops);
-			d.employee = diablo_get_object(
-			    d.employee_id, filterEmployee);
-		    })
-		    $scope.records = result.data;
-		    diablo_order_page(
-			page, $scope.items_perpage, $scope.records);
+		$scope.items_perpage
+	    ).then(function(result){
+		console.log(result);
+		if (page === 1){
+		    $scope.total_items = result.total;
+		    $scope.total_amounts = result.t_amount;
+		}
+		angular.forEach(result.data, function(d){
+		    d.fshop = diablo_get_object(
+			d.fshop_id, filterShop);
+		    d.tshop = diablo_get_object(
+			d.tshop_id, $scope.to_shops);
+		    d.employee = diablo_get_object(
+			d.employee_id, filterEmployee);
 		})
+		$scope.records = result.data;
+		diablo_order_page(
+		    page, $scope.items_perpage, $scope.records);
+	    })
 
 	    $scope.current_page = page;
 	    

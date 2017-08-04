@@ -220,3 +220,7 @@ alter table w_retailer modify column card VARCHAR(18) default null;
 drop table w_inventory_fix;
 drop table w_inventory_fix_detail;
 drop table w_inventory_fix_detail_amount;
+
+
+-- 2017-08-04
+

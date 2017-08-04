@@ -2342,7 +2342,7 @@ handle_call({total_transfer, Merchant, Fields}, _From, State) ->
     Sql = "rsn, total",
     CountTable = ?sql_utils:count_table(w_inventory_transfer, Sql, Merchant, Fields),
     CountSql = "select count(*) as total"
-        ", sum(total) as t_total"
+        ", sum(total) as t_amount"
         " from ("
         ++ CountTable ++ ") a",
     %% Sql = ?sql_utils:count_table("w_inventory_fix", Merchant, Fields),
@@ -2507,6 +2507,7 @@ handle_call({total_transfer_rsn_groups, Merchant, Fields}, _From, State) ->
     CountTable = ?sql_utils:count_table(w_inventory_transfer, Sql, Merchant, Fields),
     CountSql = "select count(*) as total"
         ", SUM(amount) as t_amount"
+	", SUM(amount * org_price) as t_cost"
         " from w_inventory_transfer_detail"
         " where rsn in(" ++ CountTable ++ ")",
     Reply = ?sql_utils:execute(s_read, CountSql),

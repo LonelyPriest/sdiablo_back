@@ -253,10 +253,12 @@ good(used_detail, Merchant, StyleNumber, Brand) ->
 
 good_match(style_number, Merchant, StyleNumber) ->
     P = prompt_num(Merchant),
-    "select distinct style_number from w_inventory_good"
+    "select style_number"
+	", brand as brand_id from w_inventory_good"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and deleted=" ++ ?to_s(?NO) 
 	++ " and style_number like \'" ++ ?to_s(StyleNumber) ++ "%\'"
+	++ " group by style_number"
 	++ " limit " ++ ?to_s(P).
 
 good_match(style_number_with_firm, Merchant, StyleNumber, Firm) ->
@@ -880,12 +882,21 @@ inventory(transfer_rsn_groups, transfer, Merchant, Conditions, PageFun) ->
           {<<"firm">>, Firm}],
     C21 = ?utils:correct_condition(<<"b.">>, C2),
 
-        "select b.id, b.rsn, b.style_number"
+        "select b.id"
+	", b.rsn"
+	", b.style_number"
         ", b.brand as brand_id"
         ", b.type as type_id"
-        ", b.sex, b.season, b.amount"
-        ", b.firm as firm_id, b.s_group"
-        ", b.free, b.year, b.path, b.entry_date"
+        ", b.sex"
+	", b.season"
+        ", b.firm as firm_id"
+	", b.s_group"
+        ", b.free"
+	", b.year"
+	", b.amount"
+	", b.org_price"
+	", b.path"
+	", b.entry_date"
 
         ", a.employ as employee_id"
         ", a.fshop as fshop_id"

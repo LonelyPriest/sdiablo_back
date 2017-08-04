@@ -94,7 +94,7 @@ function wgoodUpdateCtrlProvide(
 	    }
 	} 
 	$scope.grouped_colors.push(color);
-	console.log($scope.grouped_colors);
+	// console.log($scope.grouped_colors);
     };
     
     var dialog = diabloUtilsService;

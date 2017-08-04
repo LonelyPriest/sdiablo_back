@@ -580,7 +580,7 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 			    	    bcode_size
 				);
 
-				console.log(barcode2);
+				// console.log(barcode2);
 				barcodes.push({b:barcode2, c:color.cname, s:a.size});
 			    }; 
 			}
@@ -838,7 +838,7 @@ function purchaserInventoryFlowCtrlProvide(
 
 
 function purchaserInventoryTransferFromRsnDetailCtrlProvide(
-    $scope, $routeParams, $location, dateFilter,
+    $scope, $routeParams, $location, dateFilter, localStorageService,
     diabloPattern, diabloUtilsService, diabloFilter,
     purchaserService, 
     user, filterShop, filterBrand, filterType, filterFirm,
@@ -859,6 +859,13 @@ function purchaserInventoryTransferFromRsnDetailCtrlProvide(
     $scope.go_back = function(){
 	diablo_goto_page("#/inventory/inventory_transfer_from_detail");
     };
+
+    $scope.stock_right = {
+	show_orgprice: stockUtils.authen_rainbow(user.type, user.right, "show_orgprice")
+	// master: rightAuthen.authen_master(user.type)
+    };
+
+    $scope.total_items = 0;
     
     // initial
     $scope.filters = [];
@@ -893,6 +900,13 @@ function purchaserInventoryTransferFromRsnDetailCtrlProvide(
     
     // $scope.time   = diabloFilter.default_time($scope.qtime_start);
     $scope.time   = diabloFilter.default_time(now - diablo_day_millisecond * 7, now);
+    var storage = localStorageService.get(diablo_key_inventory_transfer_note);
+    if (angular.isDefined(storage) && storage !== null){
+	$scope.filters = storage.filter;
+	if (angular.isDefined(storage.start_time)) {
+	    $scope.time.start_time = storage.start_time; 
+	}
+    };
     
     // $scope.time   = diabloFilter.default_time();
     
@@ -906,39 +920,47 @@ function purchaserInventoryTransferFromRsnDetailCtrlProvide(
 
     $scope.do_search = function(page){
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
-	        if ((angular.isUndefined(search.fshop)
-		      || !search.fshop || search.fshop.length === 0)){
-		    search.fshop = $scope.shops.length
-		        === 0 ? undefined : $scope.shopIds;
-		        } 
+	    if ((angular.isUndefined(search.fshop)
+		 || !search.fshop || search.fshop.length === 0)){
+		search.fshop = $scope.shops.length === 0 ? undefined : $scope.shopIds;
+	    } 
 
-	        if (angular.isUndefined(search.rsn)){
-		    search.rsn = $routeParams.rsn ? $routeParams.rsn : undefined; 
-		        }
-	        console.log(search);
-	        
-	        purchaserService.filter_transfer_rsn_w_inventory(
-		    $scope.match, search, page, $scope.items_perpage
-		        ).then(function(result){
-			    console.log(result);
-			    if (page === 1){
-				    $scope.total_items = result.total
-				}
-			    
-			    angular.forEach(result.data, function(d){
-				    d.fshop = diablo_get_object(d.fshop_id, $scope.shops);
-				    d.tshop = diablo_get_object(d.tshop_id, filterShop);
-				    
-				    d.firm = diablo_get_object(d.firm_id, filterFirm);
-				    d.brand = diablo_get_object(d.brand_id, filterBrand);
-				    d.type = diablo_get_object(d.type_id, filterType);
-				});
-			    
-			    $scope.inventories = result.data; 
-			    diablo_order_page(
-				    page, $scope.items_perpage, $scope.inventories);
-			        })
-	    }) 
+	    if (angular.isUndefined(search.rsn)){
+		search.rsn = $routeParams.rsn ? $routeParams.rsn : undefined;
+	    }
+	    console.log(search);
+
+	    localStorageService.set(
+		diablo_key_inventory_transfer_note,
+		{filter:$scope.filters,
+		 start_time:diablo_get_time($scope.time.start_time),
+		 page:page, t:now});
+	    
+	    purchaserService.filter_transfer_rsn_w_inventory(
+		$scope.match, search, page, $scope.items_perpage
+	    ).then(function(result){
+		console.log(result);
+		if (page === 1){
+		    $scope.total_items = result.total;
+		    $scope.total_amounts = result.t_amount;
+		    $scope.total_cost = result.t_cost;
+		}
+		
+		angular.forEach(result.data, function(d){
+		    d.fshop = diablo_get_object(d.fshop_id, $scope.shops);
+		    d.tshop = diablo_get_object(d.tshop_id, filterShop);
+		    
+		    d.firm = diablo_get_object(d.firm_id, filterFirm);
+		    d.brand = diablo_get_object(d.brand_id, filterBrand);
+		    d.type = diablo_get_object(d.type_id, filterType);
+
+		    d.calc = stockUtils.to_decimal(d.org_price * d.amount);
+		});
+		
+		$scope.inventories = result.data; 
+		diablo_order_page(page, $scope.items_perpage, $scope.inventories);
+	    })
+	})
     };
     
     // default the first page
@@ -1012,7 +1034,7 @@ function purchaserInventoryTransferFromRsnDetailCtrlProvide(
 };
 
 function purchaserInventoryTransferToRsnDetailCtrlProvide(
-    $scope, $routeParams, $location, dateFilter,
+    $scope, $routeParams, $location, dateFilter, localStorageService,
     diabloPattern, diabloUtilsService, diabloFilter,
     purchaserService, 
     user, filterShop, filterBrand, filterType, filterFirm,
@@ -1032,6 +1054,12 @@ function purchaserInventoryTransferToRsnDetailCtrlProvide(
     $scope.go_back = function(){
 	diablo_goto_page("#/inventory/inventory_transfer_to_detail");
     };
+
+    $scope.stock_right = {
+	show_orgprice: stockUtils.authen_rainbow(user.type, user.right, "show_orgprice")
+    };
+
+    $scope.total_items = 0;
     
     // initial
     $scope.filters = [];
@@ -1066,6 +1094,13 @@ function purchaserInventoryTransferToRsnDetailCtrlProvide(
     
     // $scope.time   = diabloFilter.default_time($scope.qtime_start);
     $scope.time   = diabloFilter.default_time(now - diablo_day_millisecond * 7, now);
+    var storage = localStorageService.get(diablo_key_inventory_transfer_to_note);
+    if (angular.isDefined(storage) && storage !== null){
+	$scope.filters = storage.filter;
+	if (angular.isDefined(storage.start_time)) {
+	    $scope.time.start_time = storage.start_time; 
+	}
+    };
     
     // $scope.time   = diabloFilter.default_time();
     
@@ -1079,41 +1114,50 @@ function purchaserInventoryTransferToRsnDetailCtrlProvide(
 
     $scope.do_search = function(page){
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
-	        if ((angular.isUndefined(search.tshop)
-		      || !search.tshop || search.tshop.length === 0)){
-		    search.tshop = $scope.shops.length
-		        === 0 ? undefined : $scope.shopIds; ;
-		        } 
+	    if ((angular.isUndefined(search.tshop)
+		 || !search.tshop || search.tshop.length === 0)){
+		search.tshop = $scope.shops.length
+		    === 0 ? undefined : $scope.shopIds; ;
+	    } 
 
-	        if (angular.isUndefined(search.rsn)){
-		    search.rsn = $routeParams.rsn ? $routeParams.rsn : undefined; 
-		        }
-	        console.log(search);
+	    if (angular.isUndefined(search.rsn)){
+		search.rsn = $routeParams.rsn ? $routeParams.rsn : undefined; 
+	    }
+	    console.log(search);
+
+	    localStorageService.set(
+		diablo_key_inventory_transfer_to_note,
+		{filter:$scope.filters,
+		 start_time:diablo_get_time($scope.time.start_time),
+		 page:page, t:now});
 	        
-	        purchaserService.filter_transfer_rsn_w_inventory(
-		    $scope.match, search, page, $scope.items_perpage
-		        ).then(function(result){
-			    console.log(result);
-			    if (page === 1){
-				    $scope.total_items = result.total
-				}
-			    
-			    angular.forEach(result.data, function(d){
-				    d.fshop = diablo_get_object(
-					d.fshop_id, filterShop);
-				    d.tshop = diablo_get_object(
-					d.tshop_id, $scope.shops);
-				    
-				    d.firm = diablo_get_object(d.firm_id, filterFirm);
-				    d.brand = diablo_get_object(d.brand_id, filterBrand);
-				    d.type = diablo_get_object(d.type_id, filterType);
-				});
-			    
-			    $scope.inventories = result.data; 
-			    diablo_order_page(
-				    page, $scope.items_perpage, $scope.inventories);
-			        })
-	    }) 
+	    purchaserService.filter_transfer_rsn_w_inventory(
+		$scope.match, search, page, $scope.items_perpage
+	    ).then(function(result){
+		console.log(result);
+		if (page === 1){
+		    $scope.total_items = result.total;
+		    $scope.total_amounts = result.t_amount;
+		    $scope.total_cost = result.t_cost;
+		}
+		
+		angular.forEach(result.data, function(d){
+		    d.fshop = diablo_get_object(
+			d.fshop_id, filterShop);
+		    d.tshop = diablo_get_object(
+			d.tshop_id, $scope.shops);
+		    
+		    d.firm = diablo_get_object(d.firm_id, filterFirm);
+		    d.brand = diablo_get_object(d.brand_id, filterBrand);
+		    d.type = diablo_get_object(d.type_id, filterType);
+
+		    d.calc = stockUtils.to_decimal(d.org_price * d.amount);
+		});
+		
+		$scope.inventories = result.data; 
+		diablo_order_page(page, $scope.items_perpage, $scope.inventories);
+	    })
+	}) 
     };
     
     // default the first page

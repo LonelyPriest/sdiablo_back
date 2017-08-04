@@ -140,6 +140,7 @@ function wsaleConfg(angular){
 	    2193: "该款号吊牌价小于零，无法出售，请定价后再出售！！",
 	    2194: "该款号无入库记录，请先入库后再出售或重新选择货品！！",
 	    2195: "该条码对应的库存不存在，请确认条码是否正确，或通过款号模式开单！！",
+	    2196: "非法条码，条码长度不小于9，请输入正确的条码值！！",
 	    2401: "店铺打印机不存在或打印处理暂停状态！！",
 	    
 	    2411: "打印机编号错误！！",
@@ -1087,13 +1088,21 @@ function wsaleNewProvide(
     };
 
     $scope.barcode_scanner = function(full_bcode) {
+	console.log($scope.inventories);
     	console.log(full_bcode);
 	// get stock by barcode
 	// stock info
 	var barcode = full_bcode;
 	if (barcode.startsWith('1')) {
 	    barcode = barcode.substr(0, barcode.length - diablo_barcode_lenth_of_color_size);
-	} 
+	}
+
+	// invalid barcode
+	if (!barcode) {
+	    dialog.response(false, "销售开单", "开单失败" + wsaleService.error[2196]);
+	    return;
+	}
+	
 	diabloFilter.get_stock_by_barcode(barcode, $scope.select.shop.id).then(function(result){
 	    console.log(result);
 	    if (result.ecode === 0) {

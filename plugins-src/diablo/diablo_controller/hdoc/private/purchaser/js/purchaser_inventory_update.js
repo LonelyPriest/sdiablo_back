@@ -961,16 +961,27 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	    // console.log(inv);
 	    $scope.re_calculate(); 
 	};
-	
-	var payload = {sizes:        inv.sizes,
-		       amount:       inv.amounts,
-		       org_price:    inv.org_price,
-		       ediscount:    inv.ediscount,
-		       colors:       inv.colors,
-		       get_amount:   get_amount,
-		       valid_amount: valid_amount};
-	diabloUtilsService.edit_with_modal(
-	    "inventory-new.html", undefined, callback, $scope, payload)
+
+	diabloFilter.get_purchaser_good(
+	    {style_number:inv.style_number, brand:inv.brand_id}
+	).then(function(result) {
+	    if(result.ecode === 0 && !diablo_is_empty(result.data)) {
+		inv.sizes  = result.data.size.split(","); 
+		inv.colors = result.data.color.split(",").map(function(cid){
+		    return diablo_find_color(stockUtils.to_integer(cid), filterColor);
+		});
+
+		var payload = {sizes:        inv.sizes,
+			       amount:       inv.amounts,
+			       org_price:    inv.org_price,
+			       ediscount:    inv.ediscount,
+			       colors:       inv.colors,
+			       get_amount:   get_amount,
+			       valid_amount: valid_amount};
+		diabloUtilsService.edit_with_modal(
+		    "inventory-new.html", undefined, callback, $scope, payload)
+	    }
+	}); 
     };
 
     $scope.save_free_update = function(inv){
