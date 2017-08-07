@@ -842,36 +842,72 @@ action(Session, Req, {"w_inventory_export"}, Payload) ->
 	    stock -> Conditions
 	end,
 
+    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
+    ExportColorSize = ?v(<<"export_note">>, BaseSetting, 0), 
 
     case ?w_inventory:export(ExportType, Merchant, NewConditions, UseMode) of
 	{ok, []} ->
 	    ?utils:respond(200, Req, ?err(wsale_export_none, Merchant));
-	{ok, Transes} -> 
+	{ok, Transes} ->
 	    %% write to file 
 	    {ok, ExportFile, Url}
-		= ?utils:create_export_file("itrans", Merchant, UserId), 
-	    case file:open(ExportFile, [append, raw]) of
-		{ok, Fd} -> 
-		    try
-			DoFun = fun(C) -> ?utils:write(Fd, C) end,
-			csv_head(ExportType, DoFun),
-			do_write(ExportType, DoFun, 1, Transes),
-			ok = file:datasync(Fd),
-			ok = file:close(Fd)
-		    catch
-			T:W -> 
-			    file:close(Fd),
-			    ?DEBUG("trace export:T ~p, W ~p~n~p",
-				   [T, W, erlang:get_stacktrace()]),
-			    ?utils:respond(
-			       200, Req, ?err(wsale_export_error, W)) 
-		    end,
-		    ?utils:respond(200, object, Req,
-				   {[{<<"ecode">>, 0},
-				     {<<"url">>, ?to_b(Url)}]}); 
-		{error, Error} ->
-		    ?utils:respond(200, Req, ?err(wsale_export_error, Error))
-	    end; 
+		= ?utils:create_export_file("itrans", Merchant, UserId),
+	    
+	    case ?to_i(ExportColorSize) =:= 1 andalso ExportType =:=stock of
+		true ->
+		    case ?w_inventory:export(stock_note, Merchant, NewConditions, UseMode) of
+			[] ->
+			    ?utils:respond(200, Req, ?err(wsale_export_none, Merchant));
+			{ok, StockNotes} ->
+			    case file:open(ExportFile, [append, raw]) of
+				{ok, Fd} ->
+				    try
+					%% sort stock by color
+					DoFun = fun(C) -> ?utils:write(Fd, C) end, 
+					SortStockS = stock_note(to_dict, StockNotes, dict:new()),
+					csv_head(stock_sort_by_color, DoFun),
+					do_write(stock_sort_by_color, DoFun, 1, Transes, SortStockS),
+					ok = file:datasync(Fd),
+					ok = file:close(Fd)
+				    catch
+					T:W -> 
+					    file:close(Fd),
+					    ?DEBUG("trace export:T ~p, W ~p~n~p",
+						   [T, W, erlang:get_stacktrace()]),
+					    ?utils:respond(
+					       200, Req, ?err(wsale_export_error, W)) 
+				    end,
+				    ?utils:respond(200, object, Req,
+						   {[{<<"ecode">>, 0},
+						     {<<"url">>, ?to_b(Url)}]}); 
+				{error, Error} ->
+				    ?utils:respond(200, Req, ?err(wsale_export_error, Error))
+			    end
+		    end;
+		false -> 
+		    case file:open(ExportFile, [append, raw]) of
+			{ok, Fd} -> 
+			    try
+				DoFun = fun(C) -> ?utils:write(Fd, C) end, 
+				csv_head(ExportType, DoFun),
+				do_write(ExportType, DoFun, 1, Transes),
+				ok = file:datasync(Fd),
+				ok = file:close(Fd)
+			    catch
+				T:W -> 
+				    file:close(Fd),
+				    ?DEBUG("trace export:T ~p, W ~p~n~p",
+					   [T, W, erlang:get_stacktrace()]),
+				    ?utils:respond(
+				       200, Req, ?err(wsale_export_error, W)) 
+			    end,
+			    ?utils:respond(200, object, Req,
+					   {[{<<"ecode">>, 0},
+					     {<<"url">>, ?to_b(Url)}]}); 
+			{error, Error} ->
+			    ?utils:respond(200, Req, ?err(wsale_export_error, Error))
+		    end 
+	    end;
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;
@@ -1234,7 +1270,13 @@ csv_head(stock, Do) ->
     H = "序号,款号,品牌,类别,性别,厂商,季节,年度,吊牌价,折扣,进价,进折扣,数量,店铺,上架日期",
     UTF8 = unicode:characters_to_list(H, utf8),
     %% GBK  = diablo_iconv:convert("utf-8", "gbk", UTF8), 
-    Do(UTF8). 
+    Do(UTF8);
+
+csv_head(stock_sort_by_color, Do) ->
+    H = "序号,款号,品牌,类别,性别,厂商,季节,年度,吊牌价,折扣,进价,进折扣,数量,颜色,尺码,店铺,上架日期",
+    UTF8 = unicode:characters_to_list(H, utf8),
+    %% GBK  = diablo_iconv:convert("utf-8", "gbk", UTF8), 
+    Do(UTF8).
 
 do_write(trans, _Do, _Count, [])->
     ok;
@@ -1384,6 +1426,89 @@ do_write(stock, Do, Count, [H|T]) ->
     Do(UTF8),    
     do_write(stock, Do, Count + 1, T).
 
+do_write(stock_sort_by_color, _Do, _Count, [], _SortStocks)->
+    ok;
+do_write(stock_sort_by_color, Do, Count, [H|T], SortStocks) ->
+    StyleNumber = ?v(<<"style_number">>, H),
+    Brand       = ?v(<<"brand">>, H),
+    BrandId     = ?to_b(?v(<<"brand_id">>, H)),
+    Type        = ?v(<<"type">>, H),
+    %% Color       = ?v(<<"color">>, H),
+    %% Size        = ?v(<<"size">>, H),
+    Sex         = ?v(<<"sex">>, H),
+
+    Firm        = ?v(<<"firm">>, H), 
+    Shop        = ?v(<<"shop">>, H),
+    Season      = ?v(<<"season">>, H),
+    Year        = ?v(<<"year">>, H),
+
+    OrgPrice    = ?v(<<"org_price">>, H),
+    EDiscount   = ?v(<<"ediscount">>, H),
+    TagPrice    = ?v(<<"tag_price">>, H), 
+    Discount    = ?v(<<"discount">>, H), 
+    %% Total       = ?v(<<"amount">>, H), 
+
+    Date      = ?v(<<"entry_date">>, H),
+
+    Key = <<StyleNumber/binary, BrandId/binary>>,
+    case dict:find(Key, SortStocks) of
+	{ok, Notes} ->
+	    ?DEBUG("Notes ~p", [Notes]),
+	    %% sort notes
+	    NoteDict = one_stock_note(sort_by_color, Notes, dict:new()),
+
+	    %% Keys = dict:fetch_keys(NoteDict),
+	    Details = 
+		dict:fold(
+		  fun(K, SStocks, Acc) ->
+			  {TotalOfColor, SizeDescs} = 
+			      lists:foldr(
+				fun({S}, {Total0, Descs}) ->
+					Size = ?v(<<"size">>, S),
+					Total = ?v(<<"total">>, S),
+					{Total0 + Total,
+					 Descs ++ ?to_s(Size) ++ ":" ++ ?to_s(Total) ++ " "} 
+				end, {0, []}, SStocks),
+
+			  [{K, TotalOfColor, SizeDescs}|Acc]
+
+		  end, [], NoteDict),
+	    ?DEBUG("Details ~p", [Details]),
+
+	    {NewCount, C} = 
+		lists:foldr(
+		  fun({Color, TotalOfColor, SizeDescs}, {Count1, Acc}) ->
+			  L = "\r\n"
+			      ++ ?to_s(Count1) ++ ?d
+			      ++ "\'" ++ string:strip(?to_s(StyleNumber)) ++ "\'" ++ ?d
+			      ++ ?to_s(Brand) ++ ?d
+			      ++ ?to_s(Type) ++ ?d 
+			      ++ sex(Sex) ++ ?d
+			      ++ ?to_s(Firm) ++ ?d
+			      ++ season(Season) ++ ?d
+			      ++ ?to_s(Year) ++ ?d
+			      ++ ?to_s(TagPrice) ++ ?d
+			      ++ ?to_s(Discount) ++ ?d
+			      ++ ?to_s(OrgPrice) ++ ?d
+			      ++ ?to_s(EDiscount) ++ ?d 
+			      ++ ?to_s(TotalOfColor) ++ ?d
+			      ++ ?to_s(Color) ++ ?d
+			      ++ ?to_s(SizeDescs) ++ ?d
+			      ++ ?to_s(Shop) ++ ?d 
+			      ++ ?to_s(Date),
+			  {Count1 + 1, Acc ++ L}
+		  end, {Count, []}, Details),
+
+	    ?DEBUG("NewCount ~p, C ~ts", [NewCount, C]),
+
+	    UTF8 = unicode:characters_to_list(C, utf8),
+	    %% GBK  = diablo_iconv:convert("utf-8", "gbk", UTF8), 
+	    Do(UTF8),    
+	    do_write(stock_sort_by_color, Do,  NewCount, T, SortStocks);
+	error ->
+	    do_write(stock_sort_by_color, Do, Count, T, SortStocks)
+    end. 
+
 export_type(0) -> trans;
 export_type(1) -> trans_note;
 export_type(2) -> stock.
@@ -1521,6 +1646,59 @@ compare_stock(db_to_shop, [{Stock}|T], ShopStockDict, StocksNotInShop, StocksNot
 	      ShopStockDict,
 	      [{Stock}|StocksNotInShop], StocksNotEqualShop)
     end.
+
+
+stock_note(to_dict, [], Dict) ->
+    ?DEBUG("Dict ~p", [dict:to_list(Dict)]),
+    Dict;
+stock_note(to_dict, [{H}|T], Dict) ->
+    %% ?DEBUG("H ~p", [H]),
+    StyleNumber = ?to_b(?v(<<"style_number">>, H)),
+    Brand = ?to_b(?v(<<"brand">>, H)),
+    %% Color = ?to_b(?v(<<"color">>, H)),
+    Key = <<StyleNumber/binary, Brand/binary>>,
+
+    DictNew = 
+	case dict:find(Key, Dict) of
+	    error ->
+		dict:store(Key, {H}, Dict);
+	    {ok, _V} ->
+		dict:update(
+		  Key,
+		  fun(V) ->
+			  case is_tuple(V) of
+			      true -> [{H}, V];
+			      false -> [{H}] ++ V
+			  end
+		  end,
+		  Dict)
+		%% dict:append(Key, {H}, Dict)
+	end,
+    
+    stock_note(to_dict, T, DictNew).
+
+%% same style_number and brand, sort by color
+one_stock_note(sort_by_color, [], Sorts) ->
+    ?DEBUG("one_stock_note: ~p", [dict:to_list(Sorts)]),
+    Sorts;
+one_stock_note(sort_by_color, [{H}|T], Sorts) ->
+    ?DEBUG("H ~p", [H]),
+    %% use color to key
+    Color = ?v(<<"color">>, H),
+    NewSorts = 
+	case dict:find(Color, Sorts) of
+	    error ->
+		dict:store(Color, {H}, Sorts);
+	    {ok, _V} ->
+		dict:update(
+		  Color,
+		  fun(V) when is_tuple(V) -> [{H}, V];
+		     (V) when is_list(V)-> [{H}] ++ V
+		  end,
+		  Sorts)
+	end,
+
+    one_stock_note(sort_by_color, T, NewSorts).
 
 
     

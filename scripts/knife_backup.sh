@@ -52,7 +52,9 @@ ${mysqldump} -hlocalhost -u${user} -p${passwd} \
 TAR=diablo_backup-${DATE}.tar.gz
 tar -zcf ${TAR} ${BACKUP_DIR}
 
-cp ${TAR} /home/diablo
+## cp ${TAR} /home/diablo
+mkdir -p /home/bxhui2/sql_back
+cp ${TAR} /home/bxhui2/sql_back/
 
 if [ $? -eq 0 ]; then
     echo "success to backup !!"

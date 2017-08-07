@@ -354,6 +354,8 @@ sys_config() ->
 	      {"r_stock_oprice",    "厂商退货检测进价",   "1",   "0"},
 	      {"c_stock_oprice",    "入库审核检测进价",   "1",   "0"},
 	      {"c_stock_firm",      "入库审核检测厂商",   "1",   "0"},
-	      {"bcode_firm",        "条码打印厂商",       "0",   "0"}
+	      {"bcode_firm",        "条码打印厂商",       "0",   "0"},
+	      {"export_code",       "导出编码格式",       "0",   "0"}, %% 0: utf8 1: gbk
+	      {"export_note",       "导出颜色尺码",       "0",   "0"} %% 0: utf8 1: gbk
 	     ],
     Values.

@@ -366,7 +366,11 @@ export(trans_note, Merchant, Condition, []) ->
     gen_server:call(Name, {new_trans_note_export, Merchant, Condition});
 export(stock, Merchant, Condition, Mode) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {stock_export, Merchant, Condition, Mode}).
+    gen_server:call(Name, {stock_export, Merchant, Condition, Mode});
+export(stock_note, Merchant, Condition, Mode) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {stock_note_export, Merchant, Condition, Mode}).
+
 
 
 %% get stock detail of shop
@@ -2622,12 +2626,22 @@ handle_call({stock_export, Merchant, Conditions, Mode}, _From, State) ->
 		  (_) -> "a.id"
 	       end,
     Sql =
-	"select a.id, a.style_number, a.brand as brand_id"
-	", a.type as type_id, a.sex, a.season, a.amount"
-	", a.firm as firm_id, a.year"
+	"select a.id"
+	", a.style_number"
+	", a.brand as brand_id"
+	", a.type as type_id"
+	", a.sex"
+	", a.season"
+	", a.amount"
+	", a.firm as firm_id"
+	", a.year"
 
-	", a.org_price, a.ediscount, a.tag_price , a.discount"
-	", a.shop as shop_id, a.entry_date"
+	", a.org_price"
+	", a.ediscount"
+	", a.tag_price"
+	", a.discount"
+	", a.shop as shop_id"
+	", a.entry_date"
 
 	", b.name as shop"
 	", c.name as brand"
@@ -2649,6 +2663,20 @@ handle_call({stock_export, Merchant, Conditions, Mode}, _From, State) ->
 	
 	%% ++ " order by a.id desc",
     
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({stock_note_export, Merchant, Conditions, _Mode}, _From, State) ->
+    {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions), 
+    RealyConditions = ?w_good_sql:realy_conditions(Merchant, NewConditions), 
+    %% ExtraCondtion = ?w_good_sql:sort_condition(stock, NewConditions, <<"a.">>),
+    
+    
+    Sql = "select id, style_number, brand, color, size, total, merchant, shop"
+	" from w_inventory_amount"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, RealyConditions),
+
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
