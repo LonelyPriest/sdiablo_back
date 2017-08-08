@@ -1723,8 +1723,10 @@ function purchaserInventoryDetailCtrlProvide(
 
     $scope.stock_right = {
 	show_orgprice: stockUtils.authen_rainbow(user.type, user.right, "show_orgprice"), 
-	export_stock:  rightAuthen.authen_master(user.type),
-	set_promotion: rightAuthen.authen_master(user.type),
+	// export_stock:  rightAuthen.authen_master(user.type),
+	// set_promotion: rightAuthen.authen_master(user.type),
+	set_promotion: rightAuthen.authen(
+	    user.type, rightAuthen.stock_action()["set_w_stock_promotion"], user.right),
 	update_batch:  rightAuthen.authen(
 	    user.type, rightAuthen.stock_action()["update_w_stock_batch"], user.right),
 	reset_barcode: rightAuthen.authen(
@@ -2356,7 +2358,8 @@ function purchaserInventoryDetailCtrlProvide(
 		// season: params.select.season,
 		// year: params.select.year
 		tag_price: diablo_set_integer(params.select.tag_price),
-		discount: diablo_set_integer(params.select.discount),
+		discount:  diablo_set_integer(params.select.discount),
+		imbalance: diablo_set_integer(params.select.imbalance),
 		score: params.select.score.id
 	    };
 	    
@@ -2441,7 +2444,7 @@ function purchaserInventoryDetailCtrlProvide(
 	var callback = function(params){
 	    console.log(params);
 	    var update = {
-		org_price  :diablo_get_modified(params.org_price, inv.org_price),
+		// org_price  :diablo_get_modified(params.org_price, inv.org_price),
 		tag_price  :diablo_get_modified(params.tag_price, inv.tag_price),
 		discount   :diablo_get_modified(params.discount, inv.discount),
 		contailer  :diablo_get_modified(params.contailer, inv.contailer),

@@ -409,9 +409,11 @@ function wretailerDetailCtrlProvide(
 	};
 	
 	var get_employee = function(shop_id) {
-	    return $scope.employees.filter(function(e) {
+	    var validEmployees = $scope.employees.filter(function(e) {
 		return e.shop === shop_id && e.state === 0;
 	    });
+
+	    return validEmployees.length === 0 ? $scope.employees : validEmployees;
 	}
 
 	var select_shop = $scope.shops[0];

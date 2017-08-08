@@ -486,8 +486,16 @@ handle_call({new_charge, Merchant, Attrs}, _From, State) ->
     Name    = ?v(<<"name">>, Attrs),
     Rule    = ?v(<<"rule">>, Attrs, 0),
     XTime   = ?v(<<"xtime">>, Attrs, 1),
-    Charge  = ?v(<<"charge">>, Attrs, 0),
-    Balance = ?v(<<"balance">>, Attrs, 0),
+
+    %% N+1
+    Charge  = case Rule of
+		  0 -> ?v(<<"charge">>, Attrs, 0);
+		  1 -> 0
+	      end,
+    Balance = case Rule of
+		  0 -> ?v(<<"balance">>, Attrs, 0);
+		  1 -> 0
+	      end,
     Type    = ?v(<<"type">>, Attrs),
     SDate   = ?v(<<"sdate">>, Attrs),
     EDate   = ?v(<<"edate">>, Attrs),
@@ -503,6 +511,7 @@ handle_call({new_charge, Merchant, Attrs}, _From, State) ->
 		      ++ " and balance=" ++ ?to_s(Balance)
 		      ++ " and type=" ++ ?to_s(Type);
 	      1 ->
+		  %% N+1
 		  "select id, charge, balance from w_charge"
 		      " where merchant=" ++ ?to_s(Merchant)
 		      ++ " and xtime=" ++ ?to_s(XTime)

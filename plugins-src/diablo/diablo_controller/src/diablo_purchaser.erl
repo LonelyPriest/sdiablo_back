@@ -2669,14 +2669,11 @@ handle_call({stock_export, Merchant, Conditions, Mode}, _From, State) ->
 handle_call({stock_note_export, Merchant, Conditions, _Mode}, _From, State) ->
     {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions), 
     RealyConditions = ?w_good_sql:realy_conditions(Merchant, NewConditions), 
-    %% ExtraCondtion = ?w_good_sql:sort_condition(stock, NewConditions, <<"a.">>),
-    
-    
+    %% ExtraCondtion = ?w_good_sql:sort_condition(stock, NewConditions, <<"a.">>), 
     Sql = "select id, style_number, brand, color, size, total, merchant, shop"
 	" from w_inventory_amount"
 	" where merchant=" ++ ?to_s(Merchant)
-	++ ?sql_utils:condition(proplists, RealyConditions),
-
+	++ ?sql_utils:condition(proplists, RealyConditions), 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 

@@ -33,8 +33,13 @@ function wsaleRsnDetailCtrlProvide (
      */
     $scope.right = {
 	master:        rightAuthen.authen_master(user.type),
-	show_stastic:  rightAuthen.authen_master(user.type),
-	show_orgprice: rightAuthen.authen_master(user.type),
+	// show_stastic:  rightAuthen.authen_master(user.type),
+	// show_orgprice: rightAuthen.authen_master(user.type),
+	show_orgprice: rightAuthen.authen(
+	    user.type,
+	    rightAuthen.rainbow_action()['show_orgprice'],
+	    user.right
+	),
 	update_price: rightAuthen.authen(
 	    user.type,
 	    rightAuthen.wsale_action()['update_w_sale_price'],
@@ -47,7 +52,7 @@ function wsaleRsnDetailCtrlProvide (
     };
     
     $scope.calc_colspan = function(){
-	var column = 17;
+	var column = 18;
 	if ($scope.hidden.base) column -= 3;
 	
 	return column;
@@ -232,7 +237,8 @@ function wsaleRsnDetailCtrlProvide (
 		    d.drate     = diablo_discount(d.rprice, d.tag_price);
 		    d.gprofit   = d.rprice <= diablo_pfree ? 0 : diablo_discount(
 			diablo_float_sub(d.rprice, d.org_price), d.rprice);
-		    d.calc      = diablo_float_mul(d.rprice, d.total); 
+		    d.calc      = diablo_float_mul(d.rprice, d.total);
+		    d.imbalance = wsaleUtils.to_decimal(d.tag_price - d.rprice);
 		});
 
 		if ($scope.setting.se_pagination === diablo_no){

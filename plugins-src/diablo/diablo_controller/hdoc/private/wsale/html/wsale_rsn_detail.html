@@ -112,6 +112,7 @@
 		    <th class="info">吊牌价</th>
 		    <!-- <th class="info">单价</th> -->
 		    <th class="danger">成交价</th>
+		    <th class="success">优惠</th>
 		    <th>数量</th> 
 		    <th>小计</th>
 		    <th x-ng-if="right.show_orgprice">进价</th> 
@@ -152,6 +153,10 @@
 
 		    <td>{{inv.tag_price}}</td> 
 		    <td>{{inv.rprice}} </td>
+		    <td>
+		      <div x-ng-if="inv.imbalance > 0" class="fg-red">{{inv.imbalance}}</div>
+		      <div x-ng-if="inv.imbalance <= 0">{{inv.imbalance}}</div>
+		    </td>
 		    
 		    <td x-ng-switch on="inv.sell_type"> 
 		      <span class="fg-red" x-ng-switch-when=1>{{inv.total}}</span>
@@ -181,8 +186,8 @@
 		  <tr x-ng-if="total_items!==0" class="bg-white">
 		    <td colspan={{calc_colspan()}}></td>
 		    <td>{{total_amounts}}</td> 
-		    <td x-ng-if="right.show_stastic">{{total_balance}}</td>
-		    <td x-ng-if="right.show_stastic">{{total_obalance}}</td>
+		    <td>{{total_balance}}</td>
+		    <td x-ng-if="right.show_orgprice">{{total_obalance}}</td>
 		    <td colspan="5"></td>
 		  </tr>
 		  

@@ -299,6 +299,7 @@ init([]) ->
 	  <<"修改帐户欠款">>, <<"modify_w_inventory_new_balance">>, ?right_w_inventory},
 
 	 {?reset_stock_barcode, <<"条码重置">>, <<"reset_stock_barcode">>, ?right_w_inventory}
+	 %% {?reset_stock_barcode, <<"设置促销方案">>, <<"">>, ?right_w_inventory}
 	],
 
     %% firm

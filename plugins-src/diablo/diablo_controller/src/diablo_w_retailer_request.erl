@@ -477,6 +477,9 @@ action(Session, Req, {"export_w_retailer"}, Payload) ->
     ?DEBUG("export_w_retailer with session ~p, payload ~p", [Session, Payload]),
     Merchant    = ?session:get(merchant, Session),
     UserId      = ?session:get(id, Session),
+    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
+    ExportCode  = ?to_i(?v(<<"export_code">>, BaseSetting, 0)),
+    
     {_StartTime, _EndTime, Conditions} = ?sql_utils:cut(non_prefix, Payload),
     case ?w_retailer:retailer(list, Merchant, Conditions) of
 	[] -> ?utils:respond(200, Req, ?err(wretailer_export_none, Merchant));
@@ -492,8 +495,8 @@ action(Session, Req, {"export_w_retailer"}, Payload) ->
 		{ok, Fd} ->
 		    try
 			DoFun = fun(C) -> ?utils:write(Fd, C) end,
-			csv_head(retailer, DoFun),
-			do_write(retailer, DoFun, 1, NewRetailers),
+			csv_head(retailer, DoFun, ExportCode),
+			do_write(retailer, DoFun, 1, NewRetailers, ExportCode),
 			ok = file:datasync(Fd),
 			ok = file:close(Fd)
 		    catch
@@ -518,7 +521,9 @@ action(Session, Req, {"export_recharge_detail"}, Payload) ->
     Merchant    = ?session:get(merchant, Session),
     UserId      = ?session:get(id, Session),
     {struct, Condition}   = ?v(<<"condition">>, Payload, []),
-    
+
+    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
+    ExportCode  = ?to_i(?v(<<"export_code">>, BaseSetting, 0)), 
     case ?w_retailer:charge(list_recharge, Merchant, Condition) of
 	[] -> ?utils:respond(200, Req, ?err(wretailer_export_none, Merchant));
 	{ok, Details} ->
@@ -528,8 +533,8 @@ action(Session, Req, {"export_recharge_detail"}, Payload) ->
 		{ok, Fd} ->
 		    try
 			DoFun = fun(C) -> ?utils:write(Fd, C) end,
-			csv_head(recharge, DoFun),
-			do_write(recharge, DoFun, 1, Details, {0, 0, 0}),
+			csv_head(recharge, DoFun, ExportCode),
+			do_write(recharge, DoFun, 1, Details, ExportCode, {0, 0, 0}),
 			ok = file:datasync(Fd),
 			ok = file:close(Fd)
 		    catch
@@ -602,19 +607,35 @@ sidebar(Session) ->
 
     L1 ++ L2.
 
-csv_head(retailer, Do) ->
+csv_head(retailer, Do, Code) ->
     Head = "序号,名称,类型,联系方式,余额,累计消费,累计积分,所在店铺,日期",
-    UTF8 = unicode:characters_to_list(Head, utf8),
-    Do(UTF8);
-csv_head(recharge, Do) ->
+    C = 
+	case Code of
+	    0 ->
+		?utils:to_utf8(from_latin1, Head);
+	    1 ->
+		?utils:to_gbk(from_latin1, Head)
+	end,
+    
+    %% UTF8 = unicode:characters_to_list(Head, utf8),
+    Do(C);
+csv_head(recharge, Do, Code) ->
     Head = "序号,单号,店铺,经手人,会员,手机号码,充值方案,帐户余额,充值金额,赠送金额,累积余额"
 	",备注,充值日期",
-    UTF8 = unicode:characters_to_list(Head, utf8),
-    Do(UTF8).
+    
+    %% UTF8 = unicode:characters_to_list(Head, utf8),
+    C = 
+	case Code of
+	    0 ->
+		?utils:to_utf8(from_latin1, Head);
+	    1 ->
+		?utils:to_gbk(from_latin1, Head)
+	end,
+    Do(C).
 
-do_write(retailer, _Do, _Count, []) ->
+do_write(retailer, _Do, _Count, [], _Code) ->
     ok;
-do_write(retailer, Do, Count, [{H}|T]) ->
+do_write(retailer, Do, Count, [{H}|T], Code) ->
     %% ?DEBUG("retailer ~p", [H]),
     %% Id      = ?v(<<"id">>, H),
     Name    = ?v(<<"name">>, H),
@@ -637,12 +658,19 @@ do_write(retailer, Do, Count, [{H}|T]) ->
 	++ ?to_s(Shop) ++ ?d
 	++ ?to_s(Entry) ++ ?d,
 
-    UTF8 = unicode:characters_to_list(L, utf8),
-    Do(UTF8),
-    
-    do_write(retailer, Do, Count + 1, T).
+    %% UTF8 = unicode:characters_to_list(L, utf8),
+    %% Do(UTF8),
 
-do_write(recharge, Do, _Seq, [], {AccCBalance, AccSBalance, _AccBalance}) ->
+    Line = 
+	case Code of
+	    0 -> ?utils:to_utf8(from_latin1, L);
+	    1 -> ?utils:to_gbk(from_latin1, L)
+	end,
+    Do(Line), 
+    
+    do_write(retailer, Do, Count + 1, T, Code).
+
+do_write(recharge, Do, _Seq, [], _Code, {AccCBalance, AccSBalance, _AccBalance}) ->
     Do("\r\n"
        ++ ?d
        ++ ?d
@@ -658,7 +686,7 @@ do_write(recharge, Do, _Seq, [], {AccCBalance, AccSBalance, _AccBalance}) ->
        ++ ?d
        ++ ?d);
 
-do_write(recharge, Do, Seq, [{H}|T], {AccCBalance, AccSBalance, AccBalance}) ->
+do_write(recharge, Do, Seq, [{H}|T], Code, {AccCBalance, AccSBalance, AccBalance}) ->
     RSN          = ?v(<<"rsn">>, H),
     Shop         = ?v(<<"shop">>, H),
     Employee     = ?v(<<"employee">>, H),
@@ -688,8 +716,16 @@ do_write(recharge, Do, Seq, [{H}|T], {AccCBalance, AccSBalance, AccBalance}) ->
 	++ ?to_s(Comment) ++ ?d
 	++ ?to_s(Datetime) ++ ?d,
 
-    UTF8 = unicode:characters_to_list(L, utf8),
-    Do(UTF8),
+    %% UTF8 = unicode:characters_to_list(L, utf8),
+    %% Do(UTF8),
+
+    Line = 
+	case Code of
+	    0 -> ?utils:to_utf8(from_latin1, L);
+	    1 -> ?utils:to_gbk(from_latin1, L)
+	end,
+    Do(Line),
+    
     do_write(recharge, Do, Seq + 1, T, {AccCBalance + CBalance,
 					AccSBalance + SBalance,
 					AccBalance + CurrentBalance}).
