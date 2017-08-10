@@ -1184,7 +1184,10 @@ sidebar(Session) ->
 			    {"size",
 			     "尺码", "glyphicon glyphicon-text-size"},
 			    {"color", "颜色",
-			     "glyphicon glyphicon-font"}]
+			     "glyphicon glyphicon-font"},
+			    {"type", "品类",
+			     "glyphicon glyphicon-object-align-top"}
+			   ]
 		       }],
 
 

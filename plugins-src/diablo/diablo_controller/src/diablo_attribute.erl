@@ -113,52 +113,97 @@ handle_call({new_w_color, Merchant, Attr}, _From, State) ->
     ?DEBUG("new color with merchant ~p, attr ~p ", [Merchant, Attr]),
     Name     = ?v(<<"name">>, Attr),
     Type     = ?v(<<"type">>, Attr),
-    Remark   = ?v(<<"remark">>, Attr, "NULL"),
+    BCode    = ?v(<<"bcode">>, Attr, 0),
+    Remark   = ?v(<<"remark">>, Attr, []),
+    SelfBarcode = ?v(<<"self_barcode">>, Attr, 0),
     
     Sql0 = "select id, name from colors"
 	" where name=" ++ "\"" ++ ?to_s(Name) ++ "\""
 	" and merchant=" ++ ?to_s(Merchant),
 
-    Reply = 
-	case ?sql_utils:execute(s_read, Sql0) of
-	    {ok, []} ->
-		BCode = ?inventory_sn:sn(color, Merchant),
+    AddColor =
+	fun(NewBCode) ->
 		Sql1 = "insert into colors(bcode, name, type, remark, merchant)"
 		    " values("
-		    ++ ?to_s(BCode) ++ ","
+		    ++ ?to_s(NewBCode) ++ ","
 		    ++ "\"" ++ ?to_s(Name) ++ "\","
 		    ++ ?to_s(Type) ++ ","
 		    ++ "\"" ++ ?to_s(Remark) ++ "\","
 		    ++ ?to_s(Merchant) ++ ");",
-		R = ?sql_utils:execute(insert, Sql1),
-		?w_user_profile:update(color, Merchant),
-		R;
-	    {ok, Color} ->
-		{error, ?err(color_exist, ?v(<<"id">>, Color))};
-	    Error ->
-		Error
+		?sql_utils:execute(insert, Sql1)
 	end,
-    {reply, Reply, State};
+    
+    case ?sql_utils:execute(s_read, Sql0) of
+	{ok, []} ->
+	    NewBCode = case SelfBarcode of
+			   ?NO -> ?inventory_sn:sn(color, Merchant);
+			   ?YES -> BCode
+		       end,
+	    case NewBCode =/= 0 of
+		true ->
+		    Sql01 = "select id, bcode, name from colors"
+			" where bcode=" ++ ?to_s(BCode) ++
+			" and merchant=" ++ ?to_s(Merchant),
+		    case ?sql_utils:execute(s_read, Sql01) of
+			{ok, []} ->
+			    R = AddColor(NewBCode),
+			    {reply, R, State};
+			{ok, _Color} ->
+			    {reply, {error, ?err(color_bcode_exist, BCode)}, State};
+			Error ->
+			    {reply, Error, State}
+		    end;
+		false ->
+		    R = AddColor(NewBCode),
+		    {reply, R, State}
+	    end;
+	{ok, Color} ->
+	    {reply, {error, ?err(color_exist, ?v(<<"id">>, Color))}, State};
+	Error ->
+	    {reply, Error, State}
+    end; 
 
 handle_call({update_w_color, Merchant, Attrs}, _From, State) ->
     ?DEBUG("update_w_color with Merchant ~p, attrs ~p", [Merchant, Attrs]),
     ColorId  = ?v(<<"cid">>, Attrs),
+    BCode    = ?v(<<"bcode">>, Attrs),
     Name     = ?v(<<"name">>, Attrs),
     Type     = ?v(<<"type">>, Attrs),
     Remark   = ?v(<<"remark">>, Attrs),
 
-    Updates = ?utils:v(name, string, Name)
-	++ ?utils:v(type, integer, Type)
-	++ ?utils:v(Remark, string, Remark), 
+    case 
+	case BCode of
+	    undefined -> ok;
+	    _ ->
+		Sql01 = "select id, bcode, name from colors"
+		    " where bcode=" ++ ?to_s(BCode) ++
+		    " and merchant=" ++ ?to_s(Merchant),
+		case ?sql_utils:execute(s_read, Sql01) of
+		    {ok, []} ->
+			ok; 
+		    {ok, _Color} ->
+			{error, ?err(color_bcode_exist, BCode)};
+		    Error ->
+			Error
+		end
+	end
+    of
+	ok -> 
+	    Updates = ?utils:v(name, string, Name)
+		++ ?utils:v(bcode, integer, BCode)
+		++ ?utils:v(type, integer, Type)
+		++ ?utils:v(Remark, string, Remark), 
+	    ?DEBUG("updates ~p", [Updates]),
 
-    ?DEBUG("updates ~p", [Updates]),
-
-    Sql  = "update colors set "
-	++ ?utils:to_sqls(proplists, comma, Updates)
-	++ " where merchant=" ++ ?to_s(Merchant)
-	++ " and id=" ++ ?to_s(ColorId), 
-    Reply = ?sql_utils:execute(write, Sql, ColorId),
-    {reply, Reply, State};
+	    Sql  = "update colors set "
+		++ ?utils:to_sqls(proplists, comma, Updates)
+		++ " where merchant=" ++ ?to_s(Merchant)
+		++ " and id=" ++ ?to_s(ColorId), 
+	    Reply = ?sql_utils:execute(write, Sql, ColorId),
+	    {reply, Reply, State};
+	Error1 ->
+	    {reply, Error1, State}
+    end;
 
 handle_call({delete_w_color, Merchant, ColorId}, _From, State) ->
     ?DEBUG("delete_w_color with merchant ~p, colorId ~p", [Merchant, ColorId]), 

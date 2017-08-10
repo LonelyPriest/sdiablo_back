@@ -356,6 +356,7 @@ sys_config() ->
 	      {"c_stock_firm",      "入库审核检测厂商",   "1",   "0"},
 	      {"bcode_firm",        "条码打印厂商",       "0",   "0"},
 	      {"export_code",       "导出编码格式",       "0",   "0"}, %% 0: utf8 1: gbk
-	      {"export_note",       "导出颜色尺码",       "0",   "0"} %% 0: utf8 1: gbk
+	      {"export_note",       "导出颜色尺码",       "0",   "0"}, %% 0: utf8 1: gbk
+	      {"bcode_self",        "允许自定义条码",     "0",   "0"}
 	     ],
     Values.

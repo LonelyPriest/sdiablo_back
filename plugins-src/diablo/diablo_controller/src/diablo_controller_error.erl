@@ -377,6 +377,11 @@ error(size_group_exist, Group) ->
     {1902, "size group " ++ ?to_s(Group) ++ " has been existed."};
 error(size_group_invalid_name, GName) ->
     {1903, "size group has invalid size name:" ++ GName};
+error(color_bcode_not_allowed, Merchant) ->
+    {1904, "barcode of color not allowed:" ++ ?to_s(Merchant)};
+error(color_bcode_exist, BCode) ->
+    {1905, "barcode of color has been exist:" ++ ?to_s(BCode)};
+
 
 %%
 %% about wholesale

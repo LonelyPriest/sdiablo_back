@@ -112,6 +112,10 @@ var stockUtils = function(){
 	    return diablo_base_setting("bcode_firm", shop, base, parseInt, diablo_no);
 	},
 
+	barcode_self: function(shop, base) {
+	    return diablo_base_setting("bcode_self", shop, base, parseInt, diablo_no);
+	},
+
 	yes_no: function() {return [{name:"否", id: 0}, {name:"是", id: 1}]},
 
 	valid_season: function(month){
@@ -804,5 +808,63 @@ var stockPrint = function() {
     }
 }();
 
-    
+var stockFile = function(file) {
+    this.file = file;
+    // this.LODOP = getLodop();
+    // default callback, do nothing
+    this.callback = function(taskId, value) {};
+};
 
+stockFile.prototype.getLodop = function() {
+    if (angular.isUndefined(this.LODOP)) {
+	this.LODOP = getLodop(); 
+    }
+};
+
+stockFile.prototype.useCLODOP = function() {
+    return this.LODOP.CVERSION;
+};
+
+stockFile.prototype.setCallback = function(callback) {
+    this.callback = callback;
+}
+
+stockFile.prototype.writeFile = function(content) {
+    if (angular.isUndefined(this.LODOP)) {
+	return;
+    }
+    
+    if (this.useCLODOP) {
+	CLODOP.On_Return = this.callback;
+    }; 
+
+    var result = this.LODOP.WRITE_FILE_TEXT(0, this.file, content);
+    return result;
+};
+
+stockFile.prototype.isFileExist = function() {
+    if (angular.isUndefined(this.LODOP)) {
+	return;
+    }
+    
+    if (this.useCLODOP) {
+	CLODOP.On_Return = this.callback;
+    };
+
+    var result = this.LODOP.IS_FILE_EXIST(this.file);
+    // if (!this.LODOP.CVERSION) return result;
+    return result;
+};
+
+stockFile.prototype.readFile = function() {
+    if (angular.isUndefined(this.LODOP)) {
+	return;
+    }
+    
+    if (this.useCLODOP) {
+	CLODOP.On_Return = this.callback;
+    }
+
+    var result = this.LODOP.GET_FILE_TEXT(this.file); 
+    return result;
+};

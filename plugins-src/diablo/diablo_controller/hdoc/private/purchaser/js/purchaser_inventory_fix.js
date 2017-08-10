@@ -7,9 +7,10 @@ function purchaserInventoryFixCtrlProvide(
     // $scope.sexs    = diablo_sex;
     $scope.seasons = diablo_season;
     // $scope.calc_row = stockUtils.calc_row;
-    $scope.setting = {barcode_mode: diablo_no};
+    $scope.setting = {barcode_mode: diablo_no}; 
     
     var dialog = diabloUtilsService;
+    // var fixDraft = new stockFile(diablo_fix_draft_path);
     var fix_time;
     var LODOP;
     
@@ -128,27 +129,41 @@ function purchaserInventoryFixCtrlProvide(
      */ 
     
     $scope.get_draft = function(){
-	if (angular.isUndefined(LODOP)) LODOP = getLodop();
-	if (angular.isUndefined(LODOP.VERSION)) return;
+	var fixDraft = new stockFile(diablo_fix_draft_path);
+	fixDraft.getLodop();
 
-	if (!LODOP.IS_FILE_EXIST(diablo_fix_draft_path)) {
-	    dialog.response(false, "库存盘点", purchaserService.error[2083]);
-	} else {
-	    var jsonContent = LODOP.GET_FILE_TEXT(diablo_fix_draft_path);
-	    console.log(jsonContent);
-	    if (!jsonContent) {
-		dialog.response(false, "库存盘点", purchaserService.error[2082]); 
+	var callbackIsFileExist = function(taskId, value) {
+	    if (value) {
+		// console.log(value);
+		var callbackReadFile = function(taskId, value){
+		    console.log(value); 
+		    $scope.$apply(function() {
+			var content = angular.fromJson(value);
+			fix_time = content.t;
+			$scope.select.datetime = dateFilter(fix_time, "yyyy-MM-dd HH:mm:ss");
+			$scope.inventories = content.stock;
+			console.log($scope.inventories);
+			angular.forEach($scope.inventories, function(inv) {
+			    if (!inv.$new) {
+				inv.color = get_color(inv.color_id, inv.colors); 
+			    }
+			});
+			
+			// $scope.inventories.unshift({$edit:false, $new:true}); 
+			// console.log($scope.select.datetime);
+			console.log($scope.inventories);
+			$scope.focus_good_or_barcode();
+			$scope.re_calculate();
+		    });
+		}
+		fixDraft.setCallback(callbackReadFile);
+		fixDraft.readFile();
 	    } else {
-		var content = angular.fromJson(jsonContent);
-		fix_time = content.t;
-		$scope.select.datetime = dateFilter(fix_time, "yyyy-MM-dd HH:mm:ss");
-		$scope.inventories = content.stock;
-
-		$scope.inventories.unshift({$edit:false, $new:true});
-		$scope.focus_good_or_barcode();
-		$scope.re_calculate();
+		dialog.response(false, "库存盘点", purchaserService.error[2083]);
 	    }
 	}
+	fixDraft.setCallback(callbackIsFileExist);
+	fixDraft.isFileExist(); 
     };
     
     /*
@@ -225,26 +240,7 @@ function purchaserInventoryFixCtrlProvide(
 		    "库存盘点",
 		    "盘点失败", purchaserService.error[result.ecode]);
 	    }
-	});
-	
-	// return;
-	// purchaserService.fix_purchaser_inventory({
-	//     inventory: added.length === 0 ? undefined : added, base: base
-	// }).then(function(state){
-	//     console.log(state);
-	//     if (state.ecode == 0){
-	// 	$scope.sDraft.remove();
-	//     	diabloUtilsService.response_with_callback(
-	//     	    true, "库存盘点", "盘点成功！！盘点单号：" + state.rsn,
-	// 	    $scope, undefined)
-	//     	return;
-	//     } else{
-	//     	diabloUtilsService.response(
-	//     	    false, "库存盘点",
-	//     	    "盘点失败：" + purchaserService.error[state.ecode],
-	// 	    $scope, function(){$scope.has_saved = false});
-	//     }
-	// })
+	}); 
     };
 
     /*
@@ -277,23 +273,54 @@ function purchaserInventoryFixCtrlProvide(
     $scope.save_draft = function() {
 	if ($scope.inventories.length === 2) {
 	    fix_time = $.now();
-	    // $scope.select.datetime = $.now();
 	    $scope.select.datetime = dateFilter(fix_time, "yyyy-MM-dd HH:mm:ss");
 	}
 
-	var stocks = $scope.inventories.filter(function(r) {
-	    return !r.$new;
+	var stocks = $scope.inventories.map(function(r) {
+	    // return !r.$new;
+	    if (r.$new) {
+		return {$new: r.$new};
+	    } else {
+		return {
+		    $new         :r.$new,
+		    bcode        :r.bcode,
+		    full_bcode   :r.full_bcode,
+		    style_number :r.style_number,
+		    brand        :r.brand,
+		    brand_id     :r.brand_id, 
+		    type         :r.type,
+		    type_id      :r.type_id,
+		    firm_id      :r.firm_id,
+
+		    sex          :r.sex,
+		    season       :r.season,
+		    year         :r.year,
+
+		    tag_price    :r.tag_price,
+		    discount     :r.discount,
+
+		    free         :r.free,
+		    s_group      :r.s_group,
+		    path         :r.path,
+		    entry        :r.entry,
+
+		    full_name    :r.full_name,
+
+		    color_id     :r.color.cid,
+		    colors       :r.colors,
+		    size         :r.size,
+		    sizes        :r.sizes, 
+		    fix          :r.fix 
+		};
+	    }
 	});
 
-	// console.log(angular.toJson({t:fix_time, stock:stocks}));
-	
-	if (angular.isUndefined(LODOP)) LODOP = getLodop();
-	if (angular.isUndefined(LODOP.VERSION)) return; 
-	
-	LODOP.WRITE_FILE_TEXT(
-	    0,
-	    diablo_fix_draft_path,
-	    angular.toJson({t:fix_time, stock:stocks}));
+	var fixDraft = new stockFile(diablo_fix_draft_path);
+	fixDraft.getLodop();
+	// console.log(angular.toJson({t:fix_time, stock:stocks})); 
+	// if (angular.isUndefined(LODOP)) LODOP = getLodop();
+	// if (angular.isUndefined(LODOP.VERSION)) return; 
+	fixDraft.writeFile(angular.toJson({t:fix_time, stock:stocks}));
     };
 
     $scope.barcode_scanner = function(full_bcode) {
@@ -327,7 +354,7 @@ function purchaserInventoryFixCtrlProvide(
 	    var order_sizes = diabloHelp.usort_size_group(inv.s_group, filterSizeGroup);
 	    var sort = diabloHelp.sort_stock(invs, order_sizes, filterColor);
 	    
-	    inv.total   = sort.total;
+	    // inv.total   = sort.total;
 	    inv.sizes   = sort.size;
 	    inv.colors  = sort.color; 
 	    // inv.amounts = sort.sort;
@@ -335,7 +362,7 @@ function purchaserInventoryFixCtrlProvide(
 	    if ($scope.setting.barcode_mode && angular.isDefined(inv.full_bcode)) {
 		if (inv.free === 0) {
 		    inv.color = get_color(diablo_free_color, inv.colors);
-		    inv.size = get_size(diablo_free_size, inv.sizes);
+		    inv.size  = get_size(diablo_free_size, inv.sizes);
 		} else {
 		    var color_size = inv.full_bcode.substr(inv.bcode.length, inv.full_bcode.length);
 		    console.log(color_size);

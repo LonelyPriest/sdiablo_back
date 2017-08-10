@@ -2,10 +2,16 @@
 
 function wgoodColorDetailCtrlProvide(
     $scope, diabloUtilsService, diabloFilter, diabloPattern,
-    wgoodService, filterColorType, filterColor){
+    wgoodService, filterColorType, filterColor, base){
     $scope.colorTypes = angular.copy(filterColorType); 
     $scope.colors = angular.copy(filterColor);
-    $scope.pattern = {color:diabloPattern.color, comment: diabloPattern.comment};
+    $scope.pattern = {
+	color:diabloPattern.color,
+	comment: diabloPattern.comment,
+	barcode: diabloPattern.number_3,
+    };
+    $scope.self_barcode = stockUtils.barcode_self(diablo_default_shop, base);
+    console.log($scope.self_barcode);
 
     var dialog = diabloUtilsService;
 
@@ -14,6 +20,7 @@ function wgoodColorDetailCtrlProvide(
 	var callback = function(params){
 	    console.log(params.color);
 	    var color = {name:   params.color.name,
+			 bcode:  params.color.bcode,
 			 type:   params.color.type.id,
 			 remark: params.color.remark};
 	    wgoodService.add_purchaser_color(color).then(function(state){
@@ -23,11 +30,12 @@ function wgoodColorDetailCtrlProvide(
 		    $scope.colors.push({
 			order_id: $scope.colors.length + 1,
 			id:      newColorId,
+			bcode:   params.color.bcode,
 			name:    params.color.name,
 			tid:     params.color.type.id,
 			type:    params.color.type.name, 
-			remark:  params.color.remark ? params.color.remark : "NULL"}), 
-		    console.log($scope.colors); 
+			remark:  params.color.remark ? params.color.remark : "NULL"});
+		    // console.log($scope.colors); 
 		};
 		
 		if (state.ecode == 0){
@@ -53,8 +61,11 @@ function wgoodColorDetailCtrlProvide(
 	    undefined,
 	    callback,
 	    undefined,
-	    {color: {types: $scope.colorTypes}})
-    }
+	    {color: {types: $scope.colorTypes},
+	     pattern: $scope.pattern,
+	     self_barcode: $scope.self_barcode
+	    })
+    };
 
     /*
      * Update
@@ -65,7 +76,8 @@ function wgoodColorDetailCtrlProvide(
 	    console.log(params);
 	    // check
 	    if (params.color.name === color.name
-		&& params.color.type.name === color.type){
+		&& params.color.type.name === color.type
+		&& params.color.bcode === color.bcode){
 		dialog.response(
 		    false, "颜色编辑", wgoodService.error[2099], undefined);
 		return;
@@ -78,10 +90,18 @@ function wgoodColorDetailCtrlProvide(
 			false, "颜色编辑", wgoodService.error[1901], undefined);
 		    return;
 		}
+
+		if (params.color.bcode === $scope.colors[i].bcode
+		    && params.color.bcode !== color.bcode){
+		    dialog.response(
+			false, "颜色编辑", wgoodService.error[1905], undefined);
+		    return;
+		}
 	    };
 
 	    var update = {
 		cid:  color.id,
+		bcode: diablo_get_modified(params.color.bcode, color.bcode),
 		name: diablo_get_modified(params.color.name, color.name),
 		type: params.color.type.name === color.type ? undefined:params.color.type.id,
 		remark: params.color.remark ? params.color.remark:undefined};
@@ -97,6 +117,7 @@ function wgoodColorDetailCtrlProvide(
 			undefined,
 			function() {
 			    color.name = params.color.name;
+			    color.bcode = params.color.bcode;
 			    color.type = params.color.type.name;
 			    color.remark = params.color.remark;
 			    diabloFilter.reset_color();
@@ -115,15 +136,20 @@ function wgoodColorDetailCtrlProvide(
 	    undefined,
 	    callback,
 	    undefined,
-	    {color:{name:color.name,
+	    {
+		color:{
+		    name:color.name,
+		    bcode:color.bcode,
 		    type:function(){
 			return $scope.colorTypes.filter(function(t){
 			    return t.name === color.type;
 			})[0]; 
-		    }()
-		   },
-	     pattern: $scope.pattern,
-	     types: $scope.colorTypes})
+		    }() 
+		},
+		pattern: $scope.pattern,
+		self_barcode: $scope.self_barcode,
+		types: $scope.colorTypes
+	    })
     };
 
     /*
@@ -134,8 +160,16 @@ function wgoodColorDetailCtrlProvide(
     };
 };
 
+
+function wgoodTypeDetailCtrlProvide(
+    $scope, diabloUtilsService, diabloFilter, diabloPattern,
+    wgoodService, filterType, base){
+    
+}
+
 define(["wgoodApp"], function(app){
     app.controller("wgoodColorDetailCtrl", wgoodColorDetailCtrlProvide);
+    app.controller("wgoodTypeDetailCtrl", wgoodTypeDetailCtrlProvide);
 });
 
 

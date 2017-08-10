@@ -24,6 +24,7 @@ function wgoodConfig(){
 	    1901: "该颜色已存在，请重新输入颜色名！！",
 	    1902: "该尺码组已存在！！",
 	    1903: "该尺码组存在不规范的尺码名称，请核对后重试！！",
+	    1905: "该颜色对应的条码编码已存在，请重新填写编码！！",
 	    9001: "数据库操作失败，请联系服务人员！！"};
 
 	// free color, size
@@ -69,6 +70,7 @@ function wgoodConfig(){
 	    return http.save(
 		{operation: "new_w_color"},
 		{name: color.name,
+		 bcode: color.bcode,
 		 type: color.type,
 		 remark: color.remark}).$promise;
 	};

@@ -108,9 +108,31 @@ action(Session, Req, {"new_w_size"}, Payload) ->
 action(Session, Req, {"new_w_color"}, Payload) ->
     ?DEBUG("new_w_color with session ~p,  paylaod ~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
-    case ?attr:color(w_new, Merchant, Payload) of
-	{ok, ColorId} ->
-	    ?utils:respond(200, Req, ?succ(add_color, ColorId), {<<"id">>, ColorId});
+
+    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
+    SelfBarcode = ?to_i(?v(<<"bcode_self">>, BaseSetting, 0)),
+    
+    case 
+	case ?v(<<"bcode">>, Payload) of
+	    undefined ->
+		ok;
+	    _BCode ->
+		case SelfBarcode of
+		    ?NO ->
+			{error, ?err(self_bcode_not_allowed, Merchant)};
+		    ?YES ->
+			ok
+		end
+	end
+    of
+	ok -> 
+	    case ?attr:color(w_new, Merchant, Payload ++ [{<<"self_barcode">>, SelfBarcode}]) of
+		{ok, ColorId} ->
+		    ?utils:respond(200, Req, ?succ(add_color, ColorId), {<<"id">>, ColorId}),
+		    ?w_user_profile:update(color, Merchant);
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end;
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;
@@ -414,13 +436,32 @@ action(Session, Req, {"update_w_color"}, Payload) ->
     ?DEBUG("update_w_color with session ~p, Payload ~p", [Session, Payload]), 
     Merchant  = ?session:get(merchant, Session),
 
-    case ?attr:color(w_update, Merchant, Payload) of 
-	{ok, ColorId} ->
-	    ?w_user_profile:update(color, Merchant),
-	    ?utils:respond(200, Req, ?succ(update_color, ColorId));
+    case 
+	case ?v(<<"bcode">>, Payload) of
+	    undefined ->
+		ok;
+	    _BCode ->
+		{ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
+		case ?to_i(?v(<<"bcode_self">>, BaseSetting, 0)) of
+		    ?NO ->
+			{error, ?err(self_bcode_not_allowed, Merchant)};
+		    ?YES ->
+			ok
+		end
+	end
+    of
+	ok -> 
+	    case ?attr:color(w_update, Merchant, Payload) of 
+		{ok, ColorId} ->
+		    ?w_user_profile:update(color, Merchant),
+		    ?utils:respond(200, Req, ?succ(update_color, ColorId));
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end;
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end.
+
 
 %% sidebar(Session) -> 
 %%     G1 = 

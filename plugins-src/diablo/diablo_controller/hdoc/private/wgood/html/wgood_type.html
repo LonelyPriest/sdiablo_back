@@ -4,13 +4,13 @@
       <div class="portlet-title">
 	<div class="caption">
 	  <i class="glyphicon glyphicon-menu-hamburger"></i>
-	  颜色详情
+	  品类详情
 	</div>	
 
 	<div class="actions">
 	  <div class="btn-group btn-group-solid">
 	    <button type="button" class="btn btn-success"
-	  	    x-ng-click="new_color()">新增
+	  	    x-ng-click="new_type()">新增
 	      <i class="glyphicon glyphicon-plus"></i></button>
 
 	    <button type="button" class="btn blue reload purple-stripe"
@@ -38,33 +38,26 @@
 	      <thead>
 		<tr>
 	    	  <th>序号</th> 
-		  <th>颜色</th>
+		  <th>名称</th>
 		  <th>条码编码</th>
-		  <th>基础色</th> 
-		  <th>说明</th>		  	    	  
 	    	  <th>操作</th>
 		</tr>
 	      </thead>
 	      <tbody>
-		<tr ng-repeat="color in colors">
-		  <td>{{color.order_id}}</td>
-		  <td>{{color.name}}</td>
-		  <td>{{color.bcode}}</td>
-		  <td>{{color.type}}</td>
-		  <td x-ng-switch on="color.remark">
-		      <span x-ng-switch-when="NULL">无</span>
-		      <span x-ng-switch-default>{{color.remark}}</span>
-		  </td>
+		<tr ng-repeat="t in goodTypes">
+		  <td>{{t.order_id}}</td>
+		  <td>{{t.name}}</td>
+		  <td>{{t.bcode}}</td> 
 		  <td class="col-md-2">
 		    <span> 
 		      <button type="button" class="btn btn-warning diablo-button"
-		    	      ng-click="modify_color(color)">编辑
+		    	      ng-click="update_type(color)">编辑
 			<i class="glyphicon glyphicon-edit"></i></button>
 		      <button class="btn btn-danger diablo-button"
-		    	      x-ng-click="delete_color(color)">删除
+		    	      x-ng-click="delete_type(color)">删除
 			<i class="glyphicon glyphicon-erase"></i></button>
 		    </span>
-		  </td>		  
+		  </td>
 		</tr> 
 	      </tbody>
 	    </table> <!--END table-->
@@ -82,7 +75,7 @@
       <span class="sr-only"></span>
     </button>
     
-    <h4 class="modal-title"><span class="label label-sm label-primary">新增颜色</span></h4>
+    <h4 class="modal-title"><span class="label label-sm label-primary">新增品类</span></h4>
   </div>
 
   <div class="modal-body">
@@ -112,43 +105,17 @@
 	<div x-ng-if="params.self_barcode" class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label">条码编码</label>
 	  <div class="col-sm-10 col-md-10">
-	      <input class="form-control"
-		     name="bcode"
-		     type="number"
-		     placeholder="请输入条码编码，只能是数字且不大于999"
-		     x-ng-pattern="params.pattern.barcode"
-	      	     x-ng-model="params.color.bcode"/>
-	      <div ng-show="newColorForm.bcode.$invalid && !newColorForm.bcode.$pristine">
-		<span class="fg-red">只能是数字，且不在于999</span>
-	      </div>
-	  </div> 
-	</div>
-
-	<div class="form-group">
-	  <label class="col-sm-2 col-md-2 control-label">基础色</label>
-	  <div class="col-sm-10 col-md-10">
-	    <select class="form-control"
-	      	    x-ng-model="params.color.type"
-	      	    x-ng-options="t as t.name for t in params.color.types"
-	      	    x-ng-init="params.color.type=params.color.types[0]">
-	    </select>
-	  </div>
-	</div>
-	
-	<div class="form-group">
-	  <label class="col-sm-2 col-md-2 control-label">备注</label>
-	  <div class="col-sm-10 col-md-10"> 
 	    <input class="form-control"
-		     name="remark"
-		   type="text" 
-		   placeholder="请输入备注"
-		   x-ng-model="params.color.remark"
-		   x-ng-pattern="params.pattern.comment"/>
-	    <div ng-show="newColorForm.remark.$invalid && ! newColorForm.remark.$pristine">
-	      <span class="fg-red">只能是汉字，字母，下划组或数字</span>
+		   name="bcode"
+		   type="number"
+		   placeholder="请输入条码编码，只能是数字且不大于999"
+		   x-ng-pattern="params.pattern.barcode"
+	      	   x-ng-model="params.color.bcode"/>
+	    <div ng-show="newColorForm.bcode.$invalid && !newColorForm.bcode.$pristine">
+	      <span class="fg-red">只能是数字，且不在于999</span>
 	    </div>
 	  </div> 
-	</div>
+	</div> 
 	
       </div>
     </form>
@@ -165,7 +132,7 @@
   <!--END modal-footer-->
 </script>
 
-<script type="text/ng-template" id="update-color.html">
+<script type="text/ng-template" id="update-type.html">
   <div class="modal-header">
     <button class="close" x-ng-click="cancel()" type="button">
       <span aria-hidden="true">&times;</span>
@@ -173,7 +140,7 @@
     </button>
     
     <h4 class="modal-title">
-      <span class="label label-sm label-primary">颜色编辑</span>
+      <span class="label label-sm label-primary">品类编辑</span>
     </h4>
   </div>
 
@@ -197,42 +164,18 @@
 	<div x-ng-if="params.self_barcode" class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label">条码编码</label>
 	  <div class="col-sm-10 col-md-10">
-	      <input class="form-control"
-		     name="bcode"
-		     type="number" 
-		     placeholder="请输入条码编码，只能是数字且不大于999"
-		     x-ng-pattern="params.pattern.barcode"
-	      	     x-ng-model="params.color.bcode"/>
-	      <div ng-show="cForm.bcode.$invalid && !cForm.bcode.$pristine">
-		<span class="fg-red">只能是数字，且不在于999</span>
-	      </div>
-	  </div> 
-	</div>
-
-	<div class="form-group">
-	  <label class="col-sm-2 col-md-2 control-label">基础色</label>
-	  <div class="col-sm-10 col-md-10"> 
-	      <select class="form-control"
-	      	      x-ng-model="params.color.type"
-	      	      x-ng-options="type as type.name for type in params.types">
-	      </select> 
-	  </div>
-	</div> 
-
-	<div class="form-group">
-	  <label class="col-sm-2 col-md-2 control-label">备注</label>
-	  <div class="col-sm-10 col-md-10">
 	    <input class="form-control"
-		     name="remark"
-		     type="text" 
-		     placeholder="请输入备注"
-		     x-ng-model="params.color.remark"
-		     x-ng-pattern="params.pattern.comment"/>
-	    <div ng-show="cForm.remark.$invalid && !cForm.remark.$pristine">
-	      <span class="fg-red">只能是汉字，字母，下划组或数字</span>
+		   name="bcode"
+		   type="number" 
+		   placeholder="请输入条码编码，只能是数字且不大于999"
+		   x-ng-pattern="params.pattern.barcode"
+	      	   x-ng-model="params.color.bcode"/>
+	    <div ng-show="cForm.bcode.$invalid && !cForm.bcode.$pristine">
+	      <span class="fg-red">只能是数字，且不在于999</span>
 	    </div>
 	  </div> 
-	</div> 	
+	</div>
+	
       </div> 
     </form>
   </div>
@@ -245,6 +188,5 @@
   </div>
   
 </script>
-
 
 

@@ -155,7 +155,12 @@ function stockConfg(angular){
 	    when('/good/color', {
 		templateUrl: '/private/wgood/html/wgood_color.html',
 		controller: 'wgoodColorDetailCtrl',
-		resolve: angular.extend({}, color_type, color)
+		resolve: angular.extend({}, color_type, color, base)
+	    }).
+	    when('/good/type', {
+		templateUrl: '/private/wgood/html/wgood_type.html',
+		controller: 'wgoodTypeDetailCtrl',
+		resolve: angular.extend({}, type, base)
 	    }).
 	    when('/good/wgood_new', {
 		templateUrl: '/private/wgood/html/wgood_new.html',
