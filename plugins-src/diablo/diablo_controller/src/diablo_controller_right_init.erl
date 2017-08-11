@@ -382,7 +382,17 @@ init([]) ->
 	 {?update_w_promotion,
 	  <<"修改促销方案">>, <<"update_w_promotion">>, ?right_w_good},
 	 {?list_w_promotion,
-	  <<"查询促销方案">>, <<"list_w_promotion">>, ?right_w_good} 
+	  <<"查询促销方案">>, <<"list_w_promotion">>, ?right_w_good},
+
+	 %% type
+	 {?new_w_type,
+	  <<"新增品类">>,   <<"new_w_type">>,   ?right_w_good},
+	 {?del_w_type, 
+	  <<"删除品类">>,   <<"delete_w_type">>,?right_w_good},
+	 {?update_w_type,
+	  <<"修改品类">>,   <<"update_w_type">>,?right_w_good},
+
+	 {?reset_w_good_barcode, <<"货品条码重置">>, <<"reset_w_good_barcode">>, ?right_w_good}
 	],
 
     WReport =
@@ -824,6 +834,7 @@ pass_action(wholesaler) ->
      <<"match_w_good">>,
      <<"match_all_w_good">>,
      <<"match_w_good_style_number">>,
+     <<"list_w_promotion">>,
 
      %% inventnory
      <<"list_w_inventory">>,

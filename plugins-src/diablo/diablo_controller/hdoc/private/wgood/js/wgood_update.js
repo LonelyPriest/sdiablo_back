@@ -37,8 +37,7 @@ function wgoodUpdateCtrlProvide(
 	)
     };
     
-    $scope.price_readonly = $scope.stock_right.show_orgprice ? false : true;
-
+    $scope.price_readonly = $scope.stock_right.show_orgprice ? false : true; 
     $scope.route_params = {shop:false, from: stockUtils.to_integer($routeParams.from)}; 
     console.log($scope.route_params);
         
@@ -128,8 +127,8 @@ function wgoodUpdateCtrlProvide(
 	}
 
 	$scope.setting = {
-	    multi_sgroup: diablo_base_setting(
-		"m_sgroup", $scope.good.shop.id, base, parseInt, 0)
+	    multi_sgroup :stockUtils.multi_sizegroup($scope.good.shop.id, base),
+	    self_barcode :stockUtils.barcode_self(diablo_default_setting, base)
 	};
 
 	// $scope.good.promotion = diablo_get_object(good.pid, $scope.promotions);

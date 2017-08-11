@@ -202,7 +202,7 @@
 			      <li>
 				<a href="javascript:;" x-ng-click="p_barcode(inv)">条码打印</a>
 			      </li>
-			      <li x-ng-if="stock_right.reset_barcode">
+			      <li x-ng-if="!setting.self_barcode && stock_right.reset_barcode">
 				<a href="javascript:;" x-ng-click="reset_barcode(inv)">条码重置</a>
 			      </li> 
 			    </ul>

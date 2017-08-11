@@ -51,10 +51,10 @@
 		  <td class="col-md-2">
 		    <span> 
 		      <button type="button" class="btn btn-warning diablo-button"
-		    	      ng-click="update_type(color)">编辑
+		    	      ng-click="update_type(t)">编辑
 			<i class="glyphicon glyphicon-edit"></i></button>
 		      <button class="btn btn-danger diablo-button"
-		    	      x-ng-click="delete_type(color)">删除
+		    	      x-ng-click="delete_type(t)">删除
 			<i class="glyphicon glyphicon-erase"></i></button>
 		    </span>
 		  </td>
@@ -68,7 +68,7 @@
   </div><!--END col-md-12-->
 </div>
 
-<script type="text/ng-template" id="new-color.html">
+<script type="text/ng-template" id="new-type.html">
   <div class="modal-header">
     <button class="close" x-ng-click="cancel()" type="button">
       <span aria-hidden="true">&times;</span>
@@ -79,7 +79,7 @@
   </div>
 
   <div class="modal-body">
-    <form class="form-horizontal" name="newColorForm" novalidate>
+    <form class="form-horizontal" name="tForm" novalidate>
       <div class="form-body">
 	
 	<div class="form-group">
@@ -91,12 +91,12 @@
 		     type="text" 
 		     required
 		     placeholder="请输入名称"
-		     x-ng-model="params.color.name"
-		     x-ng-pattern="params.pattern.color"/>
+		     x-ng-model="params.type.name"
+		     x-ng-pattern="params.pattern.type"/>
 	      <span class="input-group-addon bg-white fg-red">*</span> 
 	    </div>
-	    <div ng-show="newColorForm.name.$invalid && !newColorForm.name.$pristine">
-	      <span class="fg-red">汉字，数字不超过3个字符</span>
+	    <div ng-show="tForm.name.$invalid && !tForm.name.$pristine">
+	      <span class="fg-red">请输入汉字，数字，下划线</span>
 	    </div>
 	  </div> 
 	</div>
@@ -110,8 +110,8 @@
 		   type="number"
 		   placeholder="请输入条码编码，只能是数字且不大于999"
 		   x-ng-pattern="params.pattern.barcode"
-	      	   x-ng-model="params.color.bcode"/>
-	    <div ng-show="newColorForm.bcode.$invalid && !newColorForm.bcode.$pristine">
+	      	   x-ng-model="params.type.bcode"/>
+	    <div ng-show="tForm.bcode.$invalid && !tForm.bcode.$pristine">
 	      <span class="fg-red">只能是数字，且不在于999</span>
 	    </div>
 	  </div> 
@@ -124,7 +124,7 @@
   <!--BEGIN modal-footer-->
   <div class="modal-footer">
     <button class="btn btn-primary"
-	    x-ng-disabled="newColorForm.$invalid"
+	    x-ng-disabled="tForm.$invalid"
 	    x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>
@@ -145,7 +145,7 @@
   </div>
 
   <div class="modal-body">
-    <form class="form-horizontal" name="cForm" novalidate> 
+    <form class="form-horizontal" name="tForm" novalidate> 
       <div class="form-body">
 	<!--Name-->
 	<div class="form-group">
@@ -156,8 +156,11 @@
 		   name="name"
 		   placeholder="请输入名称"
 		   required
-		   x-ng-pattern="params.pattern.color"
-		   x-ng-model="params.color.name" />
+		   x-ng-pattern="params.pattern.type"
+		   x-ng-model="params.type.name" />
+	    <div ng-show="tForm.name.$invalid && !tForm.name.$pristine">
+	      <span class="fg-red">请输入汉字，数字，下划线</span>
+	    </div>
 	  </div> 
 	</div>
 
@@ -169,8 +172,8 @@
 		   type="number" 
 		   placeholder="请输入条码编码，只能是数字且不大于999"
 		   x-ng-pattern="params.pattern.barcode"
-	      	   x-ng-model="params.color.bcode"/>
-	    <div ng-show="cForm.bcode.$invalid && !cForm.bcode.$pristine">
+	      	   x-ng-model="params.type.bcode"/>
+	    <div ng-show="tForm.bcode.$invalid && !tForm.bcode.$pristine">
 	      <span class="fg-red">只能是数字，且不在于999</span>
 	    </div>
 	  </div> 
@@ -182,7 +185,7 @@
 
   <div class="modal-footer"> 
     <button class="btn btn-primary"
-	    x-ng-disabled="cForm.$invalid"
+	    x-ng-disabled="tForm.$invalid"
 	    x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>

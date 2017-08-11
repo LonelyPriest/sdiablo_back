@@ -28,7 +28,7 @@
 -define(SERVER, ?MODULE).
 
 -define(SIZE_TO_BARCODE,
-	["XS",  "S",   "M",   "L",   "XL",  "2XL",  "3XL", "4XL", "5XL", "6XL", "7XL",
+	["FF",  "XS",  "S",   "M",   "L",   "XL",  "2XL",  "3XL", "4XL", "5XL", "6XL", "7XL",
 	 "0",   "8",   "9",   "10",  "11",  "12",  "13",   "14",  "15",  "16",  "17",
 	 "18",  "19",  "20",  "21",  "22",  "23",  "24",   "25",  "26",  "27",  "28",
 	 "29",  "30",  "31",   "32",  "33",  "34",  "35",  "36",  "37",  "38",  "40",
@@ -72,8 +72,10 @@ brand(update, Merchant, Attrs) ->
 brand(list, Merchant) ->
     gen_server:call(?MODULE, {list_brand, Merchant}).
 
-type(new, Merchant, Type)->
-    gen_server:call(?MODULE, {new_type, Merchant, Type}).
+type(new, Merchant, Attrs)->
+    gen_server:call(?MODULE, {new_type, Merchant, Attrs});
+type(update, Merchant, Attrs) ->
+    gen_server:call(?MODULE, {update_type, Merchant, Attrs}).
 type(list, Merchant) ->
     gen_server:call(?MODULE, {list_type, Merchant}).
 
@@ -174,6 +176,7 @@ handle_call({update_w_color, Merchant, Attrs}, _From, State) ->
     case 
 	case BCode of
 	    undefined -> ok;
+	    0 -> ok;
 	    _ ->
 		Sql01 = "select id, bcode, name from colors"
 		    " where bcode=" ++ ?to_s(BCode) ++
@@ -416,32 +419,95 @@ handle_call({list_brand, Merchant}, _From, State) ->
     {reply, Reply, State};
 
 
-handle_call({new_type, Merchant, Type}, _From, State) ->
-    ?DEBUG("new_type with merchant ~p, type ~p", [Merchant, Type]),
+handle_call({new_type, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("new_type with merchant ~p, attrs ~p", [Merchant, Attrs]),
+    Name     = ?v(<<"name">>, Attrs),
+    BCode    = ?v(<<"bcode">>, Attrs, 0),
+    SelfBarcode = ?v(<<"self_barcode">>, Attrs, 0),
     
     Sql = "select id, name from inv_types"
-	++ " where name=" ++ "\"" ++ ?to_s(Type) ++ "\""
+	++ " where name=" ++ "\"" ++ ?to_s(Name) ++ "\""
 	++ " and merchant=" ++ ?to_s(Merchant) ++ ";",
 
-    Reply = 
-	case ?sql_utils:execute(s_read, Sql) of
-	    {ok, []} ->
-		BCode = ?inventory_sn:sn(type, Merchant),
+    AddType =
+	fun(NewBarcode) ->
 		Sql1 = 
 		    "insert into inv_types"
 		    ++"(bcode, name, merchant) values("
-		    ++ ?to_s(BCode) ++ ","
-		    ++ "\"" ++?to_s(Type) ++ "\","
+		    ++ ?to_s(NewBarcode) ++ ","
+		    ++ "\"" ++?to_s(Name) ++ "\","
 		    ++ ?to_s(Merchant) ++ ");",
-		R = ?sql_utils:execute(insert, Sql1),
-		?w_user_profile:update(type, Merchant),
-		R;
-	    {ok, R} -> 
-		{ok, ?v(<<"id">>, R)};
-	    Error ->
-		Error
+		?sql_utils:execute(insert, Sql1)
 	end,
-    {reply, Reply, State};
+
+    case ?sql_utils:execute(s_read, Sql) of
+	{ok, []} ->
+	    NewBCode = case SelfBarcode of
+			   ?NO -> ?inventory_sn:sn(type, Merchant);
+			   ?YES -> BCode
+		       end,
+	    case NewBCode =/= 0 of
+		true ->
+		    Sql01 = "select id, bcode, name from inv_types"
+			" where bcode=" ++ ?to_s(BCode) ++
+			" and merchant=" ++ ?to_s(Merchant),
+		    case ?sql_utils:execute(s_read, Sql01) of
+			{ok, []} ->
+			    R = AddType(NewBCode),
+			    {reply, R, State};
+			{ok, _Type} ->
+			    {reply, {error, ?err(type_bcode_exist, BCode)}, State};
+			Error ->
+			    {reply, Error, State}
+		    end;
+		false ->
+		    R = AddType(NewBCode),
+		    {reply, R, State}
+	    end; 
+	{ok, _Type} -> 
+	    {reply, {ok_exist, ?v(<<"id">>, _Type)}, State};
+	Error ->
+	    {reply, Error, State}
+    end;
+
+handle_call({update_type, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("update_type with Merchant ~p, attrs ~p", [Merchant, Attrs]),
+    TypeId   = ?v(<<"tid">>, Attrs),
+    BCode    = ?v(<<"bcode">>, Attrs),
+    Name     = ?v(<<"name">>, Attrs), 
+
+    case 
+	case BCode of
+	    undefined -> ok;
+	    0 -> ok;
+	    _ ->
+		Sql01 = "select id, bcode, name from inv_types"
+		    " where bcode=" ++ ?to_s(BCode) ++
+		    " and merchant=" ++ ?to_s(Merchant),
+		case ?sql_utils:execute(s_read, Sql01) of
+		    {ok, []} ->
+			ok; 
+		    {ok, _Type} ->
+			{error, ?err(type_bcode_exist, BCode)};
+		    Error ->
+			Error
+		end
+	end
+    of
+	ok -> 
+	    Updates = ?utils:v(name, string, Name)
+		++ ?utils:v(bcode, integer, BCode), 
+	    ?DEBUG("updates ~p", [Updates]),
+
+	    Sql  = "update inv_types set "
+		++ ?utils:to_sqls(proplists, comma, Updates)
+		++ " where merchant=" ++ ?to_s(Merchant)
+		++ " and id=" ++ ?to_s(TypeId), 
+	    Reply = ?sql_utils:execute(write, Sql, TypeId),
+	    {reply, Reply, State};
+	Error1 ->
+	    {reply, Error1, State}
+    end;
 
 handle_call({list_type, Merchant}, _From, State) ->
     ?DEBUG("list_type with merchant ~p", [Merchant]),

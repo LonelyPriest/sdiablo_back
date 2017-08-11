@@ -222,5 +222,7 @@ drop table w_inventory_fix_detail;
 drop table w_inventory_fix_detail_amount;
 
 
--- 2017-08-04
-
+-- 2017-08-11
+alter table w_inventory_good add column bcode VARCHAR(32) default 0 after id;
+alter table w_inventory_good add index bcode (bcode);
+alter table w_inventory add index bcode (bcode);

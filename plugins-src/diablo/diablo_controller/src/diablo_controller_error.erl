@@ -381,7 +381,18 @@ error(color_bcode_not_allowed, Merchant) ->
     {1904, "barcode of color not allowed:" ++ ?to_s(Merchant)};
 error(color_bcode_exist, BCode) ->
     {1905, "barcode of color has been exist:" ++ ?to_s(BCode)};
-
+error(type_bcode_not_allowed, Merchant) ->
+    {1906, "barcode of type not allowed:" ++ ?to_s(Merchant)};
+error(type_bcode_exist, BCode) ->
+    {1907, "barcode of type has been exist:" ++ ?to_s(BCode)}; 
+error(good_type_exist, TypeId) ->
+    {1908, "type " ++ ?to_s(TypeId) ++ " has been existed."};
+error(self_bcode_not_allowed, Merchant) ->
+    {1909, ?to_s(Merchant) ++ "costome barcode can not be allowed while not in self barcode mode"};
+error(good_barcode_exist, BCode) ->
+    {1910, "barcode of this good has been exist:" ++ ?to_s(BCode)};
+error(type_bcode_not_init, TypeId) ->
+    {1911, "barcode of type not initial:" ++ ?to_s(TypeId)};
 
 %%
 %% about wholesale
@@ -420,6 +431,8 @@ error(stock_same_barcode, Barcode) ->
     {2015, "same barcode of stock " ++ ?to_s(Barcode) ++ "."};
 error(stock_invalid_barcode, Barcode) ->
     {2016, "invalid barcode of stock " ++ ?to_s(Barcode) ++ "."};
+error(stock_barcode_not_init, StyleNumber) ->
+    {2017, "barcode of stock " ++ ?to_s(StyleNumber) ++ " not initial."};
 
 
 

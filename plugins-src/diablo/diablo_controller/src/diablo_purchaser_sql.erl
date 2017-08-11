@@ -22,36 +22,53 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
     Path        = ?v(<<"path">>, Attrs, []),
     AlarmDay    = ?v(<<"alarm_day">>, Attrs, 7),
 
-    Contailer  = ?v(<<"contailer">>, Attrs, -1),
-    Alarm_a    = ?v(<<"alarm_a">>, Attrs, 0),
+    Contailer   = ?v(<<"contailer">>, Attrs, -1),
+    Alarm_a     = ?v(<<"alarm_a">>, Attrs, 0),
 
-    Sizes       = ?v(<<"sizes">>, Attrs, [?FREE_SIZE]), 
+    Sizes       = ?v(<<"sizes">>, Attrs, [?FREE_SIZE]),
+    SelfBarcode = ?v(<<"self_barcode">>, Attrs, ?NO), 
     %% Date        = ?utils:current_time(localdate),
     DateTime    = ?utils:current_time(localtime), 
-
-
     Free = case Colors =:= [0] andalso Sizes =:= [0] of
 	       true  -> 0;
 	       false -> 1
 	   end,
 
+    Barcode = 
+	case SelfBarcode of
+	    ?NO  -> 0;
+	    ?YES ->
+		case ?w_user_profile:get(type, Merchant, TypeId) of
+		    {ok, []} -> 0;
+		    {ok, [{Type}]} ->
+			?DEBUG("type ~p", [Type]),
+			case ?v(<<"bcode">>, Type) of
+			    0 -> 0;
+			    _BCodeOfType ->
+				gen_barcode(self_barcode, Merchant, Year, Season, _BCodeOfType)
+			end;
+		    _ -> 0
+		end 
+	end,
+    
     {GIds, GNames} = decompose_size(Sizes),
     %% ?DEBUG("GIds ~p, GNames ~p", [GIds, GNames]),
 
     Sql1 =
 	"insert into w_inventory_good"
-	"(style_number, sex, color, year, season, type, size, s_group, free"
+	"(bcode, style_number, sex, color, year, season, type, size, s_group, free"
 	", brand, firm, org_price, tag_price, ediscount, discount"
 	", path, alarm_day, contailer, alarm_a, merchant, change_date, entry_date"
 	") values("
-	++ "\"" ++ ?to_s(StyleNumber) ++ "\","
+	++ "\'" ++ ?to_s(Barcode) ++ "\',"
+	++ "\'" ++ ?to_s(StyleNumber) ++ "\',"
 	++ ?to_s(Sex) ++ ","
-	++ "\"" ++ join_with_comma(Colors) ++ "\","
+	++ "\'" ++ join_with_comma(Colors) ++ "\',"
 	++ ?to_s(Year) ++ ","
 	++ ?to_s(Season) ++ "," 
 	++ ?to_s(TypeId) ++ ","
-	++ "\"" ++ join_with_comma(GNames) ++ "\","
-	++ "\"" ++ join_with_comma(GIds) ++ "\","
+	++ "\'" ++ join_with_comma(GNames) ++ "\',"
+	++ "\'" ++ join_with_comma(GIds) ++ "\',"
 	++ ?to_s(Free) ++ ","
 	++ ?to_s(BrandId) ++ ","
 	++ ?to_s(Firm) ++ ","
@@ -60,13 +77,13 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
 	++ ?to_s(TagPrice) ++ ","
 	++ ?to_s(EDiscount) ++ ","
 	++ ?to_s(Discount) ++ ","
-	++ "\"" ++ ?to_s(Path) ++ "\","
+	++ "\'" ++ ?to_s(Path) ++ "\',"
 	++ ?to_s(AlarmDay) ++ ","
 	++ ?to_s(Contailer) ++ ","
 	++ ?to_s(Alarm_a) ++ ","
 	++ ?to_s(Merchant) ++ ","
-	++ "\"" ++ ?to_s(DateTime) ++ "\","
-	++ "\"" ++ ?to_s(DateTime) ++ "\");",
+	++ "\'" ++ ?to_s(DateTime) ++ "\',"
+	++ "\'" ++ ?to_s(DateTime) ++ "\');",
 
     case UseZero of
 	?NO ->
@@ -169,7 +186,7 @@ good(delete, Merchant, {GoodId, StyleNumber, Brand}) ->
 good(detail, Merchant, Conditions) ->
     {StartTime, EndTime, NewConditions} =
 	?sql_utils:cut(fields_with_prifix, Conditions), 
-	"select a.id, a.style_number"
+	"select a.id, a.bcode, a.style_number"
 	", a.brand as brand_id, a.firm as firm_id, a.type as type_id"
 	", a.sex, a.color, a.year, a.season, a.size, a.s_group, a.free"
 	", a.org_price, a.tag_price, a.ediscount"
@@ -208,13 +225,32 @@ good(detail_with_pagination,
 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage).
 
 good(detail_no_join, Merchant, StyleNumber, Brand) ->
-    "select a.id, a.style_number, a.brand as brand_id"
-	", a.type as type_id, a.firm as firm_id"
-	", a.sex, a.color, a.year, a.season, a.size, a.s_group, a.free"
-	", a.org_price, a.tag_price, a.ediscount"
-	", a.discount, a.path, a.alarm_day, a.contailer, a.alarm_a, a.entry_date" 
+    "select a.id"
+	", a.bcode"
+	", a.style_number"
+	", a.brand as brand_id"
+	", a.type as type_id"
+	", a.firm as firm_id"
+	", a.sex"
+	", a.color"
+	", a.year"
+	", a.season"
+	", a.size"
+	", a.s_group"
+	", a.free"
+	", a.org_price"
+	", a.tag_price"
+	", a.ediscount"
+	", a.discount"
+	", a.path"
+	", a.alarm_day"
+	", a.contailer"
+	", a.alarm_a"
+	", a.entry_date"
+	
 	", b.name as brand"
 	", c.name as type"
+	
 	" from w_inventory_good a, brands b, inv_types c"
 	" where a.merchant=" ++ ?to_s(Merchant)
 	++ " and a.style_number='" ++ ?to_s(StyleNumber) ++ "'" 
@@ -224,10 +260,14 @@ good(detail_no_join, Merchant, StyleNumber, Brand) ->
 	++ " and a.type=c.id" ;
 
 good(used_detail, Merchant, StyleNumber, Brand) ->
-    "select a.id, style_number, a.brand as brand_id"
-	", a.firm as firm_id, a.type as type_id"
-	", a.shop as shop_id, a.amount"
+    "select a.id, style_number"
+	", a.brand as brand_id"
+	", a.firm as firm_id"
+	", a.type as type_id"
+	", a.shop as shop_id"
+	", a.amount"
 	", b.name as shop"
+	
 	" from w_inventory a"
 	" left join shops b on a.shop=b.id"
 	
@@ -254,7 +294,8 @@ good(used_detail, Merchant, StyleNumber, Brand) ->
 good_match(style_number, Merchant, StyleNumber) ->
     P = prompt_num(Merchant),
     "select style_number"
-	", brand as brand_id from w_inventory_good"
+	", brand as brand_id"
+	" from w_inventory_good"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and deleted=" ++ ?to_s(?NO) 
 	++ " and style_number like \'" ++ ?to_s(StyleNumber) ++ "%\'"
@@ -263,13 +304,32 @@ good_match(style_number, Merchant, StyleNumber) ->
 
 good_match(style_number_with_firm, Merchant, StyleNumber, Firm) ->
     P = prompt_num(Merchant), 
-    "select a.id, a.style_number, a.brand as brand_id"
-	", a.type as type_id, a.firm as firm_id"
-	", a.sex, a.color, a.year, a.season, a.size, a.s_group, a.free"
-	", a.org_price, a.tag_price, a.ediscount"
-	", a.discount, a.path, a.alarm_day, a.contailer, a.alarm_a, a.entry_date" 
+    "select a.id"
+	", a.bcode"
+	", a.style_number"
+	", a.brand as brand_id"
+	", a.type as type_id"
+	", a.firm as firm_id"
+	", a.sex"
+	", a.color"
+	", a.year"
+	", a.season"
+	", a.size"
+	", a.s_group"
+	", a.free"
+	", a.org_price"
+	", a.tag_price"
+	", a.ediscount"
+	", a.discount"
+	", a.path"
+	", a.alarm_day"
+	", a.contailer"
+	", a.alarm_a"
+	", a.entry_date"
+	
 	", b.name as brand"
 	", c.name as type"
+	
 	" from w_inventory_good a, brands b, inv_types c"
 	" where a.merchant=" ++ ?to_s(Merchant)
 	++ case Firm of
@@ -284,11 +344,28 @@ good_match(style_number_with_firm, Merchant, StyleNumber, Firm) ->
 	++ " limit " ++ ?to_s(P);
 
 good_match(all_style_number_with_firm, Merchant, StartTime, Firm) ->
-    "select a.id, a.style_number, a.brand as brand_id"
-	", a.type as type_id, a.firm as firm_id"
-	", a.sex, a.color, a.year, a.season, a.size, a.s_group, a.free"
-	", a.org_price, a.tag_price, a.ediscount"
-	", a.discount, a.path, a.alarm_day, a.contailer, a.alarm_a, a.entry_date"
+    "select a.id"
+	", a.bcode"
+	", a.style_number"
+	", a.brand as brand_id"
+	", a.type as type_id"
+	", a.firm as firm_id"
+	", a.sex"
+	", a.color"
+	", a.year"
+	", a.season"
+	", a.size"
+	", a.s_group"
+	", a.free"
+	", a.org_price"
+	", a.tag_price"
+	", a.ediscount"
+	", a.discount"
+	", a.path"
+	", a.alarm_day"
+	", a.contailer"
+	", a.alarm_a"
+	", a.entry_date"
 	
 	", b.name as brand"
 	", c.name as type"
@@ -1301,7 +1378,8 @@ join_with_comma([H|T], Acc) ->
     join_with_comma(T, Acc ++ ?to_s(H) ++ ",").
 
 amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
-    ?DEBUG("new inventory with rsn ~p~namounts ~p", [RSN, Amounts]), 
+    ?DEBUG("new inventory with rsn ~p~namounts ~p", [RSN, Amounts]),
+    BCode       = ?v(<<"bcode">>, Inv, 0),
     StyleNumber = ?v(<<"style_number">>, Inv),
     Brand       = ?v(<<"brand">>, Inv),
     Type        = ?v(<<"type">>, Inv),
@@ -1342,13 +1420,14 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 	case ?sql_utils:execute(s_read, Sql0) of
 	    {ok, []} ->
 		["insert into w_inventory(rsn"
-		 ", style_number, brand, type, sex, season, amount"
+		 ", bcode, style_number, brand, type, sex, season, amount"
 		 ", firm, s_group, free, year, score"
 		 ", org_price, tag_price, ediscount, discount"
 		 ", path, alarm_day, shop, contailer, alarm_a, merchant"
 		 ", last_sell, change_date, entry_date)"
 		 " values("
 		 ++ "\"" ++ ?to_s(-1) ++ "\","
+		 ++ "\"" ++ ?to_s(BCode) ++ "\","
 		 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
 		 ++ ?to_s(Brand) ++ ","
 		 ++ ?to_s(Type) ++ ","
@@ -2028,3 +2107,14 @@ get_match_mode(style_number, StyleNumber) ->
 	{_, Match, _}->
 	    "style_number like \'%" ++ Match ++ "%\'"
     end.
+
+
+gen_barcode(self_barcode, Merchant, Year, Season, Type) ->
+    <<_:2/binary, YY/binary>> = ?to_b(Year),
+    <<_:1/binary, Y/binary>>  = YY,
+    Flow = ?inventory_sn:sn(barcode_flow, Merchant, YY),
+    ?to_s(Y) 
+	++ ?to_s(?to_i(Season) + 1)
+	++ ?to_s(Type)
+	++ ?utils:pack_flow(Flow, 0).
+	

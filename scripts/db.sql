@@ -513,6 +513,7 @@ create table w_ticket(
 create table w_inventory_good
 (
     id               INTEGER AUTO_INCREMENT,
+    bcode            VARCHAR(32) default 0, -- use to bar code
     style_number     VARCHAR(64) not null,
     brand            INTEGER default -1,
     firm             INTEGER default -1,
@@ -548,6 +549,7 @@ create table w_inventory_good
 
     unique key       uk (merchant, style_number, brand),
     key              firm  (firm),
+    key              bcode (bcode),
     
     primary key      (id)
 )default charset=utf8;
@@ -555,6 +557,7 @@ create table w_inventory_good
 create table w_inventory
 (
     id               INTEGER AUTO_INCREMENT,
+    bcode            VARCHAR(32) default 0, -- use to bar code
     rsn              VARCHAR(32) default null, -- record sn    
     style_number     VARCHAR(64) not null,
     brand            INTEGER default -1,
@@ -600,6 +603,7 @@ create table w_inventory
     
     unique key       uk (merchant, shop, style_number, brand),
     key              dk (merchant, firm),
+    key              bcode (bcode),
     primary key      (id)
 )default charset=utf8;
 

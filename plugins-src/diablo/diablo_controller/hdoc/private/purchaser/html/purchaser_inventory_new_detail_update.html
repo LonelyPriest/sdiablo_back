@@ -16,7 +16,7 @@
 	    <button x-ng-if="setting.use_barcode"
 		    x-ng-disabled="disable_gen_barcode_all"
 		    class="btn btn-primary purple-stripe"
-		    x-ng-click="gen_barcode_all()">条码
+		    x-ng-click="p_barcode_all()">条码
 	      <i class="glyphicon glyphicon-barcode"></i></button>
 	    
 	    <button class="btn btn-success purple-stripe"
@@ -586,7 +586,7 @@
 			  <i class="glyphicon glyphicon-erase"></i></a>
 			<a class="btn diablo-input-button green"
 			   x-ng-if="setting.use_barcode && !inv.update_directory"
-			   x-ng-click="gen_barcode(inv)">条码
+			   x-ng-click="p_barcode(inv)">条码
 			  <i class="glyphicon glyphicon-barcode"></i></a>
 
 			<a class="btn diablo-input-button btn-success"

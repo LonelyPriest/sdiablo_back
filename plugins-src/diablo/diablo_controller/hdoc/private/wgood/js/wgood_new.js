@@ -665,7 +665,20 @@ function wgoodDetailCtrlProvide(
 	    user.right)
     };
 
-    console.log($scope.right);
+    $scope.setting = {
+	self_barcode   :stockUtils.barcode_self(diablo_default_shop, base),
+	use_barcode    :stockUtils.use_barcode(diablo_default_shop, base),
+	barcode_width  :stockUtils.barcode_width(diablo_default_shop, base),
+	barcode_height :stockUtils.barcode_height(diablo_default_shop, base),
+	barcode_firm   :stockUtils.barcode_with_firm(diablo_default_shop, base)
+    };
+
+    $scope.printU = new stockPrintU(
+	$scope.setting.barcode_width,
+	$scope.setting.barcode_height,
+	$scope.setting.barcode_firm,
+	$scope.setting.self_barcode); 
+    // console.log($scope.right);
     /*
      * filter
      */ 
@@ -806,38 +819,8 @@ function wgoodDetailCtrlProvide(
 		    dialog.response(
 			false, "删除货品", "删除货品失败："
 			    + wgoodService.error[result.ecode]);
-		}
-		
-		// if (angular.isDefined(result.id)){
-		//     g.deleted = false;
-		//     dialog.response(
-		// 	false, "删除货品",
-		// 	"删除货品失败：" + wgoodService.error[2098], $scope);
-		// } else {
-		//     var callback = function(){
-		// 	wgoodService.delete_purchaser_good(g).then(function(
-		// 	    result){
-		// 	    if (result.ecode === 0){
-		// 		dialog.response_with_callback(
-		// 		    true, "删除货品",
-		// 		    "货品资料 [" + g.style_number
-		// 			+ "-" + g.brand.name + "-"
-		// 			+ g.type.name + " ]删除成功！！",
-		// 		    $scope,
-		// 		    function(){$scope.do_search(
-		// 			$scope.current_page)})
-		// 	    } else {
-		// 		dialog.response(
-		// 		    false, "删除货品", "删除货品失败："
-		// 			+ wgoodService.error[result.ecode]);
-		// 	    }
-		// 	})
-		//     };
-		    
-		//     dialog.request(
-		// 	"删除货品", "确定要删除该货品资料吗？", callback);
-		// }
-	    })    
+		} 
+	    }); 
 	} 
     };
 
@@ -847,6 +830,148 @@ function wgoodDetailCtrlProvide(
 
     $scope.add_inventory = function(){
 	diablo_goto_page("#/inventory_new");
+    };
+
+    $scope.reset_barcode = function(g) {
+	var callback = function() {
+	    wgoodService.reset_barcode(g.style_number, g.brand_id).then(function(result) {
+		console.log(result);
+		if (result.ecode === 0) {
+		    dialog.response_with_callback(
+			true,
+			"条码重置",
+			"条码重置成功，重置后条码值为："
+			    + result.barcode
+			    + "请重新打印条码！！",
+			undefined,
+			function() {
+			    g.bcode = result.barcode;
+			});
+		} else {
+		    dialog.response(
+			false,
+			"条码重置", "条码重置失败："
+			    + wgoodService.error[result.ecode]);
+		}
+	    });
+	};
+	dialog.request(
+	    "条码重置", "所有与该货品关联的条码将会重置，确定要重置吗？",
+	    callback, undefined, undefined);
+    };
+
+    var dialog_barcode_title = "货品条码打印";
+    var dialog_barcode_title_failed = "货品条码打印失败：";
+    var dialog_barcode_title_success = "货品条码打印成功：";
+
+    if ($scope.setting.use_barcode && $scope.setting.self_barcode && needCLodop())
+	loadCLodop();
+    
+    $scope.print_barcode = function(g) {
+	console.log(g);
+	if (diablo_yes === $scope.setting.barcode_firm && g.firm_id === diablo_invalid_firm) {
+	    dialog.response(
+		false,
+		dialog_barcode_title,
+		dialog_barcode_title_failed + wgoodService.error[1999]);
+	    return;
+	}
+
+	if (diablo_empty_barcode === g.bcode) {
+	    dialog.response(
+		false,
+		dialog_barcode_title,
+		dialog_barcode_title_failed + wgoodService.error[1997]);
+	    return;
+	}
+	
+	if (!angular.isDefined(g.amounts)) {
+	    var colorIds = g.color.split(diablo_seperator);
+	    var sizes = g.size.split(diablo_seperator);
+
+	    var amounts = [];
+	    for (var i=0, l=colorIds.length; i<l; i++) {
+		for (var j=0, k=sizes.length; j<k; j++) {
+		    amounts.push({
+			cid:   stockUtils.to_integer(colorIds[i]),
+			size:  sizes[j],
+			focus: i===0 && j===0 ? true:false
+			// count: 0
+		    });
+		}
+	    }
+
+	    // console.log(amounts);
+	    
+	    g.colors = colorIds.map(function(cid){
+		return diablo_find_color(parseInt(cid), filterColor); 
+	    });
+	    
+	    g.sizes   = sizes;
+	    g.amounts = amounts;
+	}
+
+	var callback = function(params) {
+	    console.log(params);
+	    g.amounts = angular.copy(params.amounts);
+
+	    var barcode_amounts = [];
+	    for (var i=0, l=params.amounts.length; i<l; i++) {
+		var a = params.amounts[i];
+		if (stockUtils.to_integer(a.count) !== 0) {
+		    barcode_amounts.push(a);
+		}
+	    }
+
+	    if (0 === barcode_amounts.length) {
+		dialog.response(
+		    false,
+		    dialog_barcode_title,
+		    dialog_barcode_title_failed + wgoodService.error[1998]);
+	    } else {
+		var barcodes = [];
+		angular.forEach(barcode_amounts, function(a) {
+		    var color = diablo_find_color(a.cid, filterColor);
+		    for (var i=0; i<a.count; i++) {
+			var o = stockUtils.gen_barcode_content2(g.bcode, color, a.size);
+			if (angular.isDefined(o) && angular.isObject(o)) {
+			    barcodes.push(o);
+			}
+		    } 
+		}); 
+		console.log(barcodes);
+		
+		angular.forEach(barcodes, function(b) {
+		    console.log(b);
+		    $scope.printU.prepare(
+			g.style_number,
+			g.brand,
+			g.tag_price,
+			b.barcode,
+			b.cname,
+			b.size,
+			g.firm_id === diablo_invalid_firm ? undefined : g.firm.name); 
+		});
+	    }
+	};
+
+	dialog.edit_with_modal(
+	    "good-barcode.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {sizes      :g.sizes,
+	     colors     :g.colors,
+	     amounts    :g.amounts,
+	     get_amount :function(cid, size, amounts) {
+		 for (var i=0, l=amounts.length; i<l; i++) {
+		     if (amounts[i].cid===cid && amounts[i].size===size) {
+			 // console.log(g.amounts[i]);
+			 return amounts[i];
+		     }
+		 }
+	     },
+	     path        :g.path}); 
     };
     
 };

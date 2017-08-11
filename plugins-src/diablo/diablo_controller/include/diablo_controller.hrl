@@ -290,6 +290,11 @@
 -define(list_w_promotion,   ?right_w_good + 14). 
 -define(lookup_good_orgprice, ?right_w_good + 15).
 
+-define(new_w_type,    ?right_w_good + 16).
+-define(del_w_type,    ?right_w_good + 17).
+-define(update_w_type, ?right_w_good + 18).
+-define(reset_w_good_barcode, ?right_w_good + 19).
+
 %% report
 -define(daily_wreport,   ?right_w_report + 1).
 -define(stock_stastic,   ?right_w_report + 2).

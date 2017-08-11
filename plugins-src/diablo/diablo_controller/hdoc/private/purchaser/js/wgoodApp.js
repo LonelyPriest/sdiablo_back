@@ -24,7 +24,16 @@ function wgoodConfig(){
 	    1901: "该颜色已存在，请重新输入颜色名！！",
 	    1902: "该尺码组已存在！！",
 	    1903: "该尺码组存在不规范的尺码名称，请核对后重试！！",
-	    1905: "该颜色对应的条码编码已存在，请重新填写编码！！",
+	    1905: "该颜色对应的条码编码已存在，请重新填写条码编码！！",
+	    1906: "品类不允许自定谇条码编码！！",
+	    1907: "该品类对应的条码编码已存在，请重新填写条码编码！！",
+	    1908: "该品类已存在！！请重新填入品类名！！",
+	    1909: "该模式下不允许自定义条码！！",
+	    1910: "该货品条码已存在，请重新操作！！",
+	    1911: "该货品品类条码编码未设置，无法重置！！",
+	    1997: "该货品无条码值，请先重置该货品条码值后再打印！！",
+	    1998: "请选择需要打印条码的货品！！",
+	    1999: "该货品无厂商，请先设置厂商后再打印条码！！",
 	    9001: "数据库操作失败，请联系服务人员！！"};
 
 	// free color, size
@@ -78,6 +87,21 @@ function wgoodConfig(){
 	this.update_color = function(color){
 	    return http.save(
 		{operation: "update_w_color"}, color).$promise;
+	};
+
+	/*
+	 * good type
+	 */
+	this.add_good_type = function(type) {
+	    return http.save(
+		{operation: "new_w_type"},
+		{name: type.name, bcode: type.bcode}).$promise;
+	};
+
+	this.update_good_type = function(type) {
+	    return http.save(
+		{operation: "update_w_type"},
+		{tid:type.tid, name: type.name, bcode: type.bcode}).$promise;
 	};
 
 	/*
@@ -192,6 +216,14 @@ function wgoodConfig(){
 	};
 
 	/*
+	 * barcode
+	 */
+	this.reset_barcode = function(style_number, brand) {
+	    return http.save({operation: 'reset_w_good_barcode'},
+			     {style_number:style_number, brand:brand}).$promise;
+	};
+
+	/*
 	 * firm
 	 */
 	var firm_http = $resource("/firm/:operation", {operation: '@operation'});
@@ -204,7 +236,8 @@ function wgoodConfig(){
     		 mobile:  (angular.isDefined(firm.mobile)
 			   && firm.mobile ? firm.mobile:undefined),
     		 address: firm.address}).$promise
-	};
+	}; 
+	
     });
 
     return wgoodApp;

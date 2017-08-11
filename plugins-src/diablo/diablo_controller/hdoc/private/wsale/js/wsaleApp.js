@@ -463,11 +463,11 @@ function wsaleNewProvide(
 	$scope.setting.no_vip     = wsaleUtils.no_vip(shopId, base);
 	$scope.setting.q_backend = $scope.q_typeahead(shopId);
 	$scope.setting.round   = wsaleUtils.round(shopId, base);
-	// $scope.setting.scanner = wsaleUtils.scanner(shopId, base);
 	$scope.setting.smember = wsaleUtils.s_member(shopId, base);
 	$scope.setting.semployee = wsaleUtils.s_employee(shopId, base);
 	$scope.setting.cake_mode = wsaleUtils.cake_mode(shopId, base);
 	$scope.setting.barcode_mode = wsaleUtils.barcode_mode(shopId, base);
+	$scope.setting.self_barcode = wsaleUtils.barcode_self(shopId, base);
 
 	if (diablo_no === $scope.setting.cake_mode) {
 	    $scope.vpays = wsaleService.vpays;
@@ -1093,7 +1093,8 @@ function wsaleNewProvide(
 	// get stock by barcode
 	// stock info
 	var barcode = full_bcode;
-	if (barcode.startsWith('1')) {
+	
+	if (barcode.startsWith('1') || $scope.setting.self_barcode) {
 	    barcode = barcode.substr(0, barcode.length - diablo_barcode_lenth_of_color_size);
 	}
 

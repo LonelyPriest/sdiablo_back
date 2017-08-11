@@ -187,12 +187,18 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
     $scope.css        = diablo_stock_css;
 
     $scope.setting = {
-	use_barcode: stockUtils.use_barcode(-1, base),
-	barcode_width: stockUtils.barcode_width(-1, base),
-	barcode_height: stockUtils.barcode_height(-1, base),
-	barcode_firm: stockUtils.barcode_with_firm(-1, base)
+	self_barcode   :stockUtils.barcode_self(diablo_default_shop, base), 
+	use_barcode: stockUtils.use_barcode(diablo_default_shop, base),
+	barcode_width: stockUtils.barcode_width(diablo_default_shop, base),
+	barcode_height: stockUtils.barcode_height(diablo_default_shop, base),
+	barcode_firm: stockUtils.barcode_with_firm(diablo_default_shop, base)
     };
 
+    $scope.printU = new stockPrintU(
+	$scope.setting.barcode_width,
+	$scope.setting.barcode_height,
+	$scope.setting.barcode_firm,
+	$scope.setting.self_barcode); 
     /*
      * hidden
      */
@@ -522,47 +528,33 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 	}) 
     };
 
-    var LODOP;
-    if ($scope.setting.use_barcode) {
-	if (needCLodop())
-	    loadCLodop();
-    }
+
+    if ($scope.setting.use_barcode && needCLodop()) loadCLodop();
+    
+    var dialog_barcode_title = "库存条码打印";
+    var dialog_barcode_title_failed = "库存条码打印失败：";
     
     $scope.p_barcode = function(inv) {
 	console.log(inv);
 
-	if (diablo_invalid_firm === inv.firm_id) {
+	if ($scope.setting.barcode_firm && diablo_invalid_firm === inv.firm_id ) {
 	    dialog.response(
 		false,
-		"库存条码打印",
-		"库存条码打印失败：" + purchaserService.error[2086]);
+		dialog_barcode_title,
+		dialog_barcode_title_failed + purchaserService.error[2086]);
 	    return;
-	}
-
-	// var barcode = stockUtils.gen_barcode_of_free_stock(
-	//     inv.free,
-	//     inv.firm.bcode,
-	//     inv.brand.bcode,
-	//     inv.itype.bcode,
-	//     stockUtils.get_short_year(inv.year),
-	//     inv.season);
-	// console.log(barcode);
-	
-	if (angular.isUndefined(LODOP)) LODOP = getLodop();
+	} 
 
 	var print_barcode = function(barcode) {
+	    var firm = inv.firm_id === diablo_invalid_firm ? undefined: inv.firm.name; 
 	    if (0 === inv.free) {
 		for (var i=0; i<inv.amount; i++) {
-		    stockPrint.barcode3(
-			LODOP,
-			$scope.setting.barcode_width,
-			$scope.setting.barcode_height,
-			$scope.setting.barcode_firm,
-			barcode, 
+		    $scope.printU.free_prepare(
 			inv.style_number,
 			inv.brand.name,
-			inv.firm.name,
-			inv.tag_price);
+			inv.tag_price,
+			barcode,
+			firm);
 		} 
 	    }
 	    else {
@@ -572,34 +564,23 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 			var color = diablo_find_color(a.cid, filterColor);
 			// console.log(color);
 			for (var i=0; i<a.count; i++) {
-			    var bcode_size = size_to_barcode.indexOf(a.size); 
-			    if (diablo_invalid_index !== bcode_size) {
-				var barcode2 = stockUtils.patch_barcode(
-			    	    barcode,
-			    	    color.bcode,
-			    	    bcode_size
-				);
-
-				// console.log(barcode2);
-				barcodes.push({b:barcode2, c:color.cname, s:a.size});
-			    }; 
+			    var o = stockUtils.gen_barcode_content2(barcode, color, a.size);
+			    if (angular.isDefined(o) && angular.isObject(o)) {
+				barcodes.push(o); 
+			    } 
 			}
 		    }); 
 		    console.log(barcodes);
 		    
 		    angular.forEach(barcodes, function(b) {
-			stockPrint.barcode3(
-			    LODOP,
-			    $scope.setting.barcode_width,
-			    $scope.setting.barcode_height,
-			    $scope.setting.barcode_firm,
-			    b.b,
+			$scope.printU.prepare(
 			    inv.style_number,
 			    inv.brand.name,
-			    inv.firm.name,
 			    inv.tag_price,
-			    b.c,
-			    b.s);
+			    b.barcode,
+			    b.cname,
+			    b.size,
+			    firm); 
 		    })
 		};
 

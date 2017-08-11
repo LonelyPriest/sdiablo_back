@@ -120,13 +120,12 @@
 		  <input type="text"
 			 class="form-control"
 			 name="firm"
-			 x-ng-readonly="route_params.from!==8"
+			 x-ng-readonly="route_params.from!==8 && !setting.self_barcode"
 			 placeholder="请输入厂商"
 			 x-ng-model="good.firm"
 			 x-ng-enter=""
 			 typeahead-editable="false"
-			 uib-typeahead="f as f.name for f in
-				    firms|filter:$viewValue|limitTo:8"/>
+			 uib-typeahead="f as f.name for f in firms|filter:$viewValue|limitTo:20"/>
 		  <span class="input-group-btn">
 		    <button class="btn btn-success" x-ng-click="new_firm()">
 		      <i class="glyphicon glyphicon-plus"></i>

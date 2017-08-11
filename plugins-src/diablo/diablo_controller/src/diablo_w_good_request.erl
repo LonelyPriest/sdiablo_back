@@ -217,6 +217,9 @@ action(Session, Req, {"new_w_good"}, Payload) ->
     %% Firm        = ?v(<<"firm">>, Good),
     StyleNumber = ?v(<<"style_number">>, Good),
     ImageData   = ?v(<<"image">>, Payload, <<>>),
+
+    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
+    SelfBarcode = ?to_i(?v(<<"bcode_self">>, BaseSetting, 0)),
     
     {file, Here} = code:is_loaded(?MODULE),
     ImageDir = filename:join(
@@ -242,7 +245,14 @@ action(Session, Req, {"new_w_good"}, Payload) ->
 		ok = file:write_file(ImageFile, base64:decode(ImageData))
 	end, 
 	
-	{ok, TypeId} = ?attr:type(new, Merchant, Type),
+	{ok, TypeId} =
+	    case ?attr:type(new, Merchant, [{<<"name">>, Type},
+					    {<<"self_barcode">>, SelfBarcode}]) of
+		{ok, _TypeId} -> {ok, _TypeId};
+		{ok_exist, _TypeId} -> {ok, _TypeId};
+		_Error -> _Error 
+	    end,
+	
 	ImagePath = case ImageData of
 			<<>> -> [];
 			_ -> filename:join(["image", ?to_s(Merchant),
@@ -253,7 +263,8 @@ action(Session, Req, {"new_w_good"}, Payload) ->
 		new, Merchant,
 		[{<<"brand_id">>, BrandId},
 		 {<<"type_id">>, TypeId},
-		 {<<"path">>, ImagePath} |Good]) of
+		 {<<"path">>, ImagePath},
+		 {<<"self_barcode">>, SelfBarcode}|Good]) of
 	    {ok, DBId} -> 
 		?utils:respond(
 		   200,
@@ -460,9 +471,92 @@ action(Session, Req, {"update_w_color"}, Payload) ->
 	    end;
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"new_w_type"}, Payload) ->
+    ?DEBUG("new_w_color with session ~p,  paylaod ~p", [Session, Payload]), 
+    Merchant = ?session:get(merchant, Session), 
+    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
+    SelfBarcode = ?to_i(?v(<<"bcode_self">>, BaseSetting, 0)),
+
+    case 
+	case ?v(<<"bcode">>, Payload) of
+	    undefined ->
+		ok;
+	    _BCode ->
+		case SelfBarcode of
+		    ?NO ->
+			{error, ?err(self_bcode_not_allowed, Merchant)};
+		    ?YES ->
+			ok
+		end
+	end
+    of
+	ok -> 
+	    case ?attr:type(new, Merchant, Payload ++ [{<<"self_barcode">>, SelfBarcode}]) of
+		{ok, TypeId} ->
+		    ?utils:respond(200, Req, ?succ(add_color, TypeId), {<<"id">>, TypeId}),
+		    ?w_user_profile:update(type, Merchant);
+		{ok_exist, TypeId} ->
+		    ?utils:respond(200, Req, ?err(good_type_exist, TypeId));
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end;
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"update_w_type"}, Payload) ->
+    ?DEBUG("update_w_type with session ~p, Payload ~p", [Session, Payload]), 
+    Merchant  = ?session:get(merchant, Session), 
+    case 
+	case ?v(<<"bcode">>, Payload) of
+	    undefined ->
+		ok;
+	    _BCode ->
+		{ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
+		case ?to_i(?v(<<"bcode_self">>, BaseSetting, 0)) of
+		    ?NO ->
+			{error, ?err(self_bcode_not_allowed, Merchant)};
+		    ?YES ->
+			ok
+		end
+	end
+    of
+	ok -> 
+	    case ?attr:type(update, Merchant, Payload) of 
+		{ok, TypeId} ->
+		    ?w_user_profile:update(type, Merchant),
+		    ?utils:respond(200, Req, ?succ(update_color, TypeId));
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end;
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"reset_w_good_barcode"}, Payload) ->
+    Merchant = ?session:get(merchant, Session),
+    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
+    SelfBarcode = ?to_i(?v(<<"bcode_self">>, BaseSetting, 0)),
+
+    StyleNumber = ?v(<<"style_number">>, Payload),
+    Brand = ?v(<<"brand">>, Payload),
+
+    case SelfBarcode of
+	?NO ->
+	    ?utils:respond(200, Req, ?err(self_bcode_not_allowed, Merchant));
+	?YES ->
+	    case ?w_inventory:purchaser_good(reset_barcode, Merchant, StyleNumber, Brand) of
+		{ok, Barcode} ->
+		    ?utils:respond(200, object, Req,
+				   {[{<<"ecode">>, 0},
+				     {<<"barcode">>, ?to_b(Barcode)}]}); 
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end
     end.
-
-
+    
 %% sidebar(Session) -> 
 %%     G1 = 
 %% 	case ?right_auth:authen(?new_w_good, Session) of

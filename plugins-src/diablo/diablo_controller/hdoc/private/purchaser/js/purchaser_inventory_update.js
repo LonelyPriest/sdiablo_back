@@ -33,10 +33,17 @@ function purchaserInventoryNewUpdateCtrlProvide (
     $scope.setting    = {history_stock: false};
     $scope.pattern    = {discount:diabloPattern.discount};
 
-    $scope.setting.use_barcode = stockUtils.use_barcode(-1, $scope.ubase);
-    $scope.setting.barcode_width = stockUtils.barcode_width(-1, $scope.ubase);
-    $scope.setting.barcode_height = stockUtils.barcode_height(-1, $scope.ubase);
-    $scope.setting.barcode_firm = stockUtils.barcode_with_firm(-1, base);
+    $scope.setting.use_barcode    = stockUtils.use_barcode(diablo_default_shop, $scope.ubase);
+    $scope.setting.barcode_width  = stockUtils.barcode_width(diablo_default_shop, $scope.ubase);
+    $scope.setting.barcode_height = stockUtils.barcode_height(diablo_default_shop, $scope.ubase);
+    $scope.setting.barcode_firm   = stockUtils.barcode_with_firm(diablo_default_shop, base);
+    $scope.setting.self_barcode   = stockUtils.barcode_self(diablo_default_shop, base);
+
+    $scope.printU = new stockPrintU(
+	$scope.setting.barcode_width,
+	$scope.setting.barcode_height,
+	$scope.setting.barcode_firm,
+	$scope.setting.self_barcode); 
     
     $scope.go_back = function(){
 	console.log($routeParams.ppage);
@@ -1008,124 +1015,83 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	$scope.inventories[0] = {$edit:false, $new:true}; 
     };
 
-    var LODOP;
-    if ($scope.setting.use_barcode) {
-	if (needCLodop())
-	    loadCLodop();
-    }
-
     $scope.disable_gen_barcode_all = false;
-    $scope.gen_barcode_all = function() {
-	if (diablo_invalid_firm === stockUtils.invalid_firm($scope.select.firm)) {
+    $scope.p_barcode_all = function() {
+	if ($scope.setting.barcode_firm
+	    && diablo_invalid_firm === stockUtils.invalid_firm($scope.select.firm)) {
 	    diabloUtilsService.response(
 		false,
-		"库存条码打印",
-		"库存条码打印失败：" + purchaserService.error[2086]);
+		dialog_barcode_title,
+		dialog_barcode_title_failed + purchaserService.error[2086]);
 	    return;
 	}
 	
 	$scope.disable_gen_barcode_all = true;
 	for (var i=1, l=$scope.inventories.length; i<l; i++) {
 	    var one = $scope.inventories[i];
-	    $scope.gen_barcode(one);
+	    $scope.p_barcode(one);
 	    // break;
 	}
 	$scope.disable_gen_barcode_all = false;
     };
+
+    if ($scope.setting.use_barcode && needCLodop()) loadCLodop();
     
-    $scope.gen_barcode = function(inv) {
+    var dialog_barcode_title = "库存条码打印";
+    var dialog_barcode_title_failed = "库存条码打印失败：";
+    $scope.p_barcode = function(inv) {
 	console.log(inv);
-
-	if (diablo_invalid_firm === inv.firm_id) {
-	    diabloUtilsService.response(
+	if ($scope.setting.barcode_firm && diablo_invalid_firm === inv.firm_id ) {
+	    dialog.response(
 		false,
-		"库存条码打印",
-		"库存条码打印失败：" + purchaserService.error[2086]);
+		dialog_barcode_title,
+		dialog_barcode_title_failed + purchaserService.error[2086]);
 	    return;
-	}
-
-	// var firm = diablo_get_object(inv.firm_id, $scope.firms); 
-	// var barcode = stockUtils.gen_barcode_of_free_stock(
-	//     inv.free,
-	//     firm.bcode,
-	//     inv.brand.bcode,
-	//     inv.type.bcode,
-	//     stockUtils.get_short_year(inv.year),
-	//     inv.season);
-	// console.log(barcode);
-
-	if (angular.isUndefined(LODOP)) LODOP = getLodop();
-
+	} 
+	
 	var print_barcode = function(barcode) {
+	    var firm = stockUtils.invalid_firm($scope.select.firm)
+		=== diablo_invalid_firm ? undefined : $scope.select.firm.name; 
+	    
 	    if (inv.free_color_size) {
 		for (var i=0; i<inv.total; i++) {
-		    stockPrint.barcode3(
-			LODOP,
-			$scope.setting.barcode_width,
-			$scope.setting.barcode_height,
-			$scope.setting.barcode_firm,
-			barcode,
+		    $scope.printU.free_prepare(
 			inv.style_number,
 			inv.brand.name,
-			$scope.select.firm.name,
-			inv.tag_price);
+			inv.tag_price,
+			barcode,
+			firm); 
 		}
 	    }
 	    else {
 		var barcodes = []; 
 		angular.forEach(inv.amounts, function(a) {
+		    
 		    var color = diablo_find_color(a.cid, filterColor);
 		    // console.log(color); 
 		    for (var i=0; i<a.count; i++) {
-			// var barcode2 = stockUtils.gen_barcode_of_stock(
-			//     inv.free,
-			//     firm.bcode,
-			//     inv.brand.bcode,
-			//     inv.type.bcode,
-			//     stockUtils.get_short_year(inv.year),
-			//     inv.season,
-			//     color.bcode,
-			//     a.size
-			// );
-			// barcodes.push({b:barcode2, c:color.name, s:a.size});
-			
-			var bcode_size = size_to_barcode.indexOf(a.size);
-			// console.log(bcode_size);
-			if (diablo_invalid_index !== bcode_size) {
-			    var barcode2 = stockUtils.patch_barcode(
-			    	barcode,
-			    	color.bcode,
-			    	bcode_size
-			    );
-
-			    console.log(barcode2);
-			    console.log(color);
-			    barcodes.push({b:barcode2, c:color.cname, s:a.size});
-			};
-
-			console.log(barcodes);
-		    }
+			var o = stockUtils.gen_barcode_content2(barcode, color, a.size);
+			if (angular.isDefined(o) && angular.isObject(o)) {
+			    barcodes.push(o); 
+			}
+		    } 
 		});
-
+		
 		console.log(barcodes);
 		angular.forEach(barcodes, function(b) {
-		    stockPrint.barcode3(
-			LODOP,
-			$scope.setting.barcode_width,
-			$scope.setting.barcode_height,
-			$scope.setting.barcode_firm,
-			b.b,
+		    $scope.printU.prepare(
 			inv.style_number,
 			inv.brand.name,
-			$scope.select.firm.name,
 			inv.tag_price,
-			b.c,
-			b.s);
+			b.barcode,
+			b.cname,
+			b.size,
+			firm); 
 		})
 	    }
 	};
 
-	// gen
+	// gen 
 	purchaserService.gen_barcode(
 	    inv.style_number, inv.brand_id, $scope.select.shop.id
 	).then(function(result) {
@@ -1133,8 +1099,9 @@ function purchaserInventoryNewUpdateCtrlProvide (
 		print_barcode(result.barcode);
 	    } else {
 		dialog.response(
-		    false, "条码生成", "条码生成失败："
-			+ purchaserService.error[result.ecode]);
+		    false,
+		    dialog_barcode_title,
+		    dialog_barcode_title_failed + purchaserService.error[result.ecode]);
 	    }
 	});
     };

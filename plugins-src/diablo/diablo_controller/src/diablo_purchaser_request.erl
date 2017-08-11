@@ -1071,7 +1071,11 @@ action(Session, Req, {"gen_stock_barcode"}, Payload) ->
     Brand = ?v(<<"brand">>, Payload),
     Shop = ?v(<<"shop">>, Payload),
 
-    case ?w_inventory:purchaser_inventory(gen_barcode, Merchant, Shop, StyleNumber, Brand) of
+    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
+    SelfBarcode = ?to_i(?v(<<"bcode_self">>, BaseSetting, 0)),
+    
+    case ?w_inventory:purchaser_inventory(
+	    gen_barcode, SelfBarcode, Merchant, Shop, StyleNumber, Brand) of
 	{ok, Barcode} ->
 	    ?utils:respond(200, object, Req,
 			   {[{<<"ecode">>, 0},
