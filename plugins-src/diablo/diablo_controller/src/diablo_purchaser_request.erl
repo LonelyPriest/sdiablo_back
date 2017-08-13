@@ -1017,28 +1017,14 @@ action(Session, Req, {"get_stock_by_barcode"}, Payload) ->
 	case ZZ of
 	    <<"00">> ->
 		<<_Z:1/binary, Code/binary>> = Barcode,
-		CodeSize = erlang:size(Code),
-		case CodeSize rem 2 of
-		    0 -> Barcode;
-		    _ -> Code
-		end;
+		Code; 
 	    _ ->
 		Barcode
 	end,
-    %% NewBarcode  =
-    %% 	case BarcodeSize rem 2 of
-    %% 	    0 ->Barcode;
-    %% 	    _ ->
-    %% 		<<_Z:1/binary, Code/binary>> = Barcode,
-    %% 		Code
-    %% 	end,
-
+    
     ?DEBUG("newBarcode ~p", [Barcode]),
 	    
-    case ?w_inventory:purchaser_inventory(get_by_barcode, Merchant, Shop, NewBarcode) of
-	%% {ok, []} ->
-	%%     ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
-	%% 				       {<<"stock">>, {[]} }]});
+    case ?w_inventory:purchaser_inventory(get_by_barcode, Merchant, Shop, NewBarcode) of 
 	{ok, Stock} ->
 	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
 					       {<<"stock">>, {Stock} }]});

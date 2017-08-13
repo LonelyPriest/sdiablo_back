@@ -1,6 +1,11 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2017-08-12",
+         content:
+	 ["增加自定义条码设置"]
+        },
+	
 	{date: "2017-08-08",
          content:
 	 ["库存导出增加颜色，尺码导出配置",
