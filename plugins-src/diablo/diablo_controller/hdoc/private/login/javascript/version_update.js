@@ -1,6 +1,11 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2017-08-14",
+         content:
+	 ["增加销售明细颜色尺码导出功能"]
+        },
+	
 	{date: "2017-08-12",
          content:
 	 ["增加自定义条码设置"]

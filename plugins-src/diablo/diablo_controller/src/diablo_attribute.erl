@@ -144,7 +144,7 @@ handle_call({new_w_color, Merchant, Attr}, _From, State) ->
 	    case NewBCode =/= 0 of
 		true ->
 		    Sql01 = "select id, bcode, name from colors"
-			" where bcode=" ++ ?to_s(BCode) ++
+			" where bcode=" ++ ?to_s(NewBCode) ++
 			" and merchant=" ++ ?to_s(Merchant),
 		    case ?sql_utils:execute(s_read, Sql01) of
 			{ok, []} ->
@@ -449,7 +449,7 @@ handle_call({new_type, Merchant, Attrs}, _From, State) ->
 	    case NewBCode =/= 0 of
 		true ->
 		    Sql01 = "select id, bcode, name from inv_types"
-			" where bcode=" ++ ?to_s(BCode) ++
+			" where bcode=" ++ ?to_s(NewBCode) ++
 			" and merchant=" ++ ?to_s(Merchant),
 		    case ?sql_utils:execute(s_read, Sql01) of
 			{ok, []} ->

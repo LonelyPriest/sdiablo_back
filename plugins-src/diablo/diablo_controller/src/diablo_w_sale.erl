@@ -117,7 +117,11 @@ export(trans, Merchant, Condition) ->
     gen_server:call(Name, {new_trans_export, Merchant, Condition});
 export(trans_note, Merchant, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {new_trans_note_export, Merchant, Condition}).
+    gen_server:call(Name, {new_trans_note_export, Merchant, Condition});
+export(trans_note_color_size, Merchant, Condition) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {new_trans_note_color_size_export, Merchant, Condition}).
+
 
 start_link(Name) ->
     gen_server:start_link({local, Name}, ?MODULE, [], []).
@@ -1050,6 +1054,25 @@ handle_call({new_trans_note_export, Merchant, Conditions}, _From, State)->
 	
 	++ " order by id desc",
 
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+
+handle_call({new_trans_note_color_size_export, Merchant, Conditions}, _From, State)->
+    ?DEBUG("new_trans_note_colro_size_export: merchant ~p\nConditions~p", [Merchant, Conditions]),
+
+    Sql = "select id"
+	", style_number"
+	", brand"
+	", color"
+	", size"
+	", total"
+	", shop" 
+	", merchant"
+	" from w_sale_detail_amount"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, Conditions),
+    
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 

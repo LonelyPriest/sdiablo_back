@@ -7,6 +7,7 @@
 
 -export([action/2, action/3, action/4]).
 -export([authen/2, authen_shop_action/2, filter_condition/3, season/1]).
+-export([get_color/2]).
 
 -define(d, ?utils:seperator(csv)).
 
@@ -1488,6 +1489,7 @@ do_write(stock_sort_by_color, Do, Count, [H|T], SortStocks, Colors, Code, ShowOr
 
     Firm        = ?v(<<"firm">>, H), 
     Shop        = ?v(<<"shop">>, H),
+    ShopId      = ?to_b(?v(<<"shop_id">>, H)),
     Season      = ?v(<<"season">>, H),
     Year        = ?v(<<"year">>, H),
 
@@ -1499,10 +1501,11 @@ do_write(stock_sort_by_color, Do, Count, [H|T], SortStocks, Colors, Code, ShowOr
 
     Date      = ?v(<<"entry_date">>, H),
 
-    Key = <<StyleNumber/binary, BrandId/binary>>,
+    Key = <<StyleNumber/binary, BrandId/binary, ShopId/binary>>,
+    %% ?DEBUG("key ~p", [Key]),
     case dict:find(Key, SortStocks) of
 	{ok, Notes} ->
-	    %% ?DEBUG("Notes ~p", [Notes]),
+	    ?DEBUG("Notes ~p", [Notes]),
 	    %% sort notes
 	    NoteDict = one_stock_note(sort_by_color, Notes, dict:new()),
 
@@ -1735,8 +1738,9 @@ stock_note(to_dict, [{H}|T], Dict) ->
     %% ?DEBUG("H ~p", [H]),
     StyleNumber = ?to_b(?v(<<"style_number">>, H)),
     Brand = ?to_b(?v(<<"brand">>, H)),
+    Shop  = ?to_b(?v(<<"shop">>, H)),
     %% Color = ?to_b(?v(<<"color">>, H)),
-    Key = <<StyleNumber/binary, Brand/binary>>,
+    Key = <<StyleNumber/binary, Brand/binary, Shop/binary>>,
 
     DictNew = 
 	case dict:find(Key, Dict) of
@@ -1763,7 +1767,7 @@ one_stock_note(sort_by_color, [], Sorts) ->
     %% ?DEBUG("one_stock_note: ~p", [dict:to_list(Sorts)]),
     Sorts;
 one_stock_note(sort_by_color, [{H}|T], Sorts) ->
-    %% ?DEBUG("H ~p", [H]),
+    ?DEBUG("H ~p", [H]),
     %% use color to key
     Color = ?v(<<"color">>, H),
     NewSorts = 
