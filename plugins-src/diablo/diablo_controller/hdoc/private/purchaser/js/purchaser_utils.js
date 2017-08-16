@@ -222,6 +222,14 @@ var stockUtils = function(){
 	    }
 	},
 
+	// to_string: function(v) {
+	//     if (angular.isUndefined(v) || !v) {
+	// 	return undefined;
+	//     } else {
+	// 	return v;
+	//     }
+	// },
+
 	ediscount: function(org_price, tag_price){
 	    if (tag_price == 0) return 0; 
 	    return parseFloat((diablo_float_div(org_price, tag_price) * 100).toFixed(1));
@@ -260,9 +268,7 @@ var stockUtils = function(){
 	},
 
 	get_object_id: function(obj){
-	    if (angular.isDefined(obj)
-		&& angular.isObject(obj)
-		&& angular.isDefined(obj.id))
+	    if (angular.isDefined(obj) && angular.isObject(obj) && angular.isDefined(obj.id))
 		return obj.id; 
 	    return diablo_invalid_firm;
 	},
@@ -370,6 +376,18 @@ var stockUtils = function(){
 		first:new Date(year, month, 1).getTime(), current:now.getTime()};
 	},
 
+	get_object_by_name: function(name, objs) {
+	    if (!angular.isArray(objs)) return undefined;
+
+	    for (var i=0, l=objs.length; i<l; i++){
+		if (objs[i].hasOwnProperty('name') && name === objs[i].name){
+		    return objs[i]
+		}
+	    }
+
+	    return undefined;
+	},
+
 	get_valid_shop_id: function(shopIds){
 	    if (angular.isArray(shopIds) && shopIds.length > 0)
 		return shopIds[0];
@@ -395,15 +413,6 @@ var stockUtils = function(){
 	over_flow:function() {
 	    return [{name:"!=0", id:0}];
 	},
-
-	// gen_barcode_of_free_stock(free, firm, brand, type, year, season) {
-	//     return free.toString()
-	// 	+ firm.toString()
-	// 	+ brand.toString()
-	// 	+ type.toString()
-	// 	+ year.toString()
-	// 	+ season.toString();
-	// },
 
 	patch_barcode:function(barcode, color, size) {
 	    var patchColor = color.toString();

@@ -169,7 +169,7 @@ function wgoodTypeDetailCtrlProvide(
     $scope.self_barcode = stockUtils.barcode_self(diablo_default_shop, base);
     $scope.pattern = {
 	type:diabloPattern.ch_name_address,
-	barcode: diabloPattern.number_3,
+	barcode: diabloPattern.number_3
     };
     
     var dialog = diabloUtilsService;
@@ -202,7 +202,7 @@ function wgoodTypeDetailCtrlProvide(
 		} else{
 		    dialog.response(
 			false,
-			"新增类",
+			"新增品类",
 			"新增品类失败：" + wgoodService.error[state.ecode]);
 		}
 	    })

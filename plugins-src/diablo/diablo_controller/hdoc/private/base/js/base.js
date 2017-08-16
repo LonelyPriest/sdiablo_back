@@ -383,192 +383,6 @@ function printOptionCtrlProvide(
 };
 
 
-function printFormatCtrlProvide(
-    $scope, dateFilter, baseService, diabloPattern, diabloUtilsService, wprintService, user){
-    // shop and repo
-    $scope.shops = [{id: -1, name:"== 请选择店铺或仓库，默认所有配置相同 =="}]
-	.concat(user.sortShops, user.sortRepoes); 
-
-    $scope.select       = {shop: $scope.shops[0]};
-    $scope.print_fields = diablo_print_field;
-    $scope.actions      = wprintService.print_actions;
-
-    var dialog = diabloUtilsService;
-
-    /*
-     * select by the shop, new was created when empty
-     */ 
-    $scope.shop_format = function(shop){
-	console.log(shop);
-	for(var i=0, l=$scope.pformats.length; i<l; i++){
-	    var p = $scope.pformats[i];
-	    if (shop.id === p.shop.id){
-		if (p.pformat.length === 0){
-		    var callback = function(){
-			wprintService.add_shop_format(
-			    shop.id
-			).then(function(result){
-			    if (result.ecode == 0){
-				dialog.response_with_callback(
-				    true, "新增打印格式", "店铺 " + shop.name
-					+ " 打印格式新增成功！！",
-				    $scope, function(){$scope.refresh(shop)});
-			    } else {
-				dialog.response(
-				    false, "新增打印格式",
-				    "店铺 " + shop.name
-					+ " 打印格式新增失败："
-					+ baseService.error[result.ecode]); 
-			    }
-			})
-		    };
-		    
-		    dialog.request(
-			"新增打印格式",
-			"该店铺无打印格式，确定要新增打印格式吗？",
-			callback, undefined, $scope);
-		}
-		return p.pformat;
-	    }
-	} 
-    };
-    
-    $scope.refresh = function(shop){
-	// console.log(shop);
-	wprintService.list_printer_format().then(function(data){
-	    console.log(data);
-	    // class by shop
-	    $scope.pformats = 
-		$scope.shops.map(function(s){
-		    var pformat = data.filter(function(d){
-			return d.shop === s.id;
-		    });
-
-		    return {shop:s, pformat:diablo_order(pformat)};
-		})
-	    // console.log($scope.pformats); 
-	    
-	    console.log($scope.pformats); 
-	    
-	    $scope.select = {shop:shop, pformat: $scope.shop_format(shop)}; 
-	})
-    }; 
-
-    $scope.refresh($scope.select.shop);
-    
-    $scope.update_printer_format = function(f){
-	console.log(f); 
-	
-	var callback = function(params){
-	    console.log(params);
-	    // check_format(params.pformat); 
-	    console.log($scope.select);
-	    wprintService.update_printer_format({
-		id:     f.id,
-		name:   f.name,
-		print:  params.pformat.print.value,
-		width:  params.pformat.width,
-		seq:    params.pformat.seq,
-		shop:   $scope.select.shop.id
-	    }).then(function(state){
-		console.log(state);
-		if (state.ecode == 0){
-		    dialog.response_with_callback(
-			true, "打印格式编辑", "打印格式编辑 "
-			    + $scope.print_fields[f.name] + " 修改成功！！",
-			$scope, function(){
-			    f.print = params.pformat.print.value;
-			    f.width = params.pformat.width;
-			    f.seq   = params.pformat.seq;
-			});
-		} else{
-		    dialog.response(
-			false, "打印格式编辑", "打印格式编辑失败："
-			    + wprintService.error[state.ecode]); 
-		}
-	    })
-	}; 
-
-	var check_same = function(newValue){
-	    if (newValue.print == f.print
-		&& newValue.width == f.width
-		&& newValue.seq === f.seq){
-		return true;
-	    }
-	    return false;
-	}
-
-	var print_action = $scope.actions.filter(function(a){
-	    return f.print === a.value;
-	});
-
-	var change_format = function(format){
-	    // console.log(format);
-	    if (format.print.value === 0){
-		format.width = 0;
-	    }
-	}; 
-
-	console.log(print_action);
-	dialog.edit_with_modal(
-	    "update-print-format.html", undefined, callback, $scope,
-	    {
-		pformat:       {name:  f.name,
-				print: print_action[0],
-				width: f.width,
-				seq:   f.seq},
-		fields:        $scope.print_fields,
-		actions:       $scope.actions,
-		check_same:    check_same,
-		change_format: change_format
-	    });
-    }
-};
-
-
-function tableDetailCtrlProvide($scope, baseService, diabloUtilsService){    
-    $scope.refresh = function(){
-	baseService.list_setting(baseService.table_setting).then(function(data){
-	    console.log(data);
-	    diablo_order(data);
-	    $scope.settings = data;
-	})
-    };
-
-    $scope.refresh();
-
-
-    var dialog = diabloUtilsService;
-    $scope.update_setting = function(s){
-	console.log(s);
-
-	var callback = function(params){
-	    console.log(params);
-
-	    var setting = params.setting;
-	    baseService.update_setting({
-		id:    setting.id,
-		ename: setting.ename,
-		value: setting.value
-	    }).then(function(state){
-		console.log(state);
-		if (state.ecode == 0){
-		    dialog.response_with_callback(
-			true, "表格编辑", "表格编辑 " + s.cname + " 修改成功！！",
-			$scope, function(){$scope.refresh()});
-		} else{
-		    dialog.response(
-			false, "表格编辑", "表格编辑失败：" + baseService.error[state.ecode]); 
-		}
-	    })
-	}; 
-	
-	dialog.edit_with_modal(
-	    "table-setting.html", undefined, callback, $scope, {setting: s});
-    }
-};
-
-
 function basePrinterConnectNewCtrlProvide(
     $scope, diabloPattern, wprintService, diabloUtilsService, user){
     // console.log(user);
@@ -678,14 +492,6 @@ function basePrinterConnectDetailCtrlProvide(
 	    }
 	})
     };
-
-    // var get_object = function(id, objs){
-    // 	for (var i=0, l=objs.length; i<l; i++){
-    // 	    if (id === objs[i].id){
-    // 		return objs[i];
-    // 	    }
-    // 	}
-    // };
     
     $scope.update_printer = function(p){
 	console.log(p);
@@ -838,70 +644,330 @@ function resetPasswdCtrlProvide($scope, diabloPattern, diabloUtilsService, baseS
     }
 };
 
-function delDataCtrlProvide($scope, dateFilter, diabloUtilsService, baseService){
-    
-    $scope.open_calendar = function(event){
-	event.preventDefault();
-	event.stopPropagation();
-	$scope.isOpened = true; 
-    }
 
-    $scope.today = function(){
-	return $.now();
+function goodStdStandardCtrlProvide(
+    $scope, diabloUtilsService, diabloFilter, diabloPattern, baseService, user){
+    $scope.pattern = {
+	name:    diabloPattern.char_number_space_slash_bar,
+    }; 
+    var dialog = diabloUtilsService;
+
+    $scope.refresh = function() {
+	baseService.list_std_executive().then(function(es) {
+	    console.log(es);
+	    diablo_order(es);
+	    $scope.es = es; 
+	});
     };
 
-    $scope.sure = {
-	date:      $scope.today() - diablo_day_millisecond * 90,
-	select_in: false,
-	select:    false};
-
-    var dialog = diabloUtilsService;
-    $scope.sure_delete = function(){
-	console.log($scope.sure);
-
-	var callback = function(){
-	    baseService.delete_expire_data(
-		dateFilter($scope.sure.date, "yyyy-MM-dd"),
-		$scope.sure.select_in,
-		$scope.sure.select
-	    ).then(function(result){
-		console.log(result);
-		if (result.ecode === 0){
-		    dialog.response(
+    $scope.refresh(); 
+    $scope.new_std_executive = function(){
+	var callback = function(params){
+	    console.log(params.type);
+	    var t = {name:   params.std.name};
+	    baseService.add_std_executive(t).then(function(state){
+		console.log(state); 
+		if (state.ecode == 0){
+		    dialog.response_with_callback(
 			true,
-			"数据删除",
-			"数据删除成功，请注销该用户后再登录！！",
-			undefined); 
-		} else {
-		    diablo.response(
-			false, "数据删除", "数据删除失败："
-			    + baseService.error[result.ecode], undefined);
+			"新增执行标准", "新增执行标准成功！！",
+			undefined,
+			function(){
+			    diabloFilter.reset_good_std_executive();
+			    $scope.refresh(); 
+			});
+		} else{
+		    dialog.response(
+			false,
+			"新增执行标准",
+			"新增执行标准失败：" + baseService.error[state.ecode]);
 		}
-		
 	    })
 	};
 	
-	dialog.request(
-	    "数据删除",
-	    "数据删除后无法恢复，确认要删除 ["
-		+ dateFilter($scope.sure.date, "yyyy-MM-dd")
-		+ "] 之前的数据吗？",
-	    callback, undefined, undefined);
-	
+	dialog.edit_with_modal(
+	    'new-std-executive.html',
+	    undefined,
+	    callback,
+	    undefined,
+	    {std: {}, pattern: $scope.pattern});
     };
-    // diablo_goto_page("#/printer/connect_detail");
+
+
+    $scope.update_executive = function(e){
+	console.log(e);
+	var callback = function(params){
+	    console.log(params); 
+	    if (params.std.name === e.name){
+		dialog.response(
+		    false, "执行标准编辑", baseService.error[8010], undefined);
+		return;
+	    };
+
+	    
+	    for (var i=0, l=$scope.es.length; i<l; i++){
+		if (params.std.name === $scope.es[i].name && params.std.name !== e.name){
+		    dialog.response(
+			false, "执行标准编辑", baseService.error[8005], undefined);
+		    return;
+		} 
+	    };
+
+	    var update = {
+		eid:  e.id,
+		name: diablo_get_modified(params.std.name, e.name)}; 
+	    console.log(update);
+
+	    baseService.update_std_executive(update).then(function(result){
+		if (result.ecode === 0) {
+		    dialog.response_with_callback(
+			true,
+			"执行标准编辑",
+			"执行标准编辑成功！！",
+			undefined,
+			function() {
+			    e.name = params.std.name;
+			    diabloFilter.reset_good_std_executive();
+			});
+		} else {
+		    dialog.response(
+			false,
+			"执行标准编辑",
+			"执行标准编辑失败！！" + baseService.error[result.ecode],
+			undefined);
+		};
+	    });
+	};
+	
+	dialog.edit_with_modal(
+	    "update-std-executive.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {std:{name:e.name}, pattern: $scope.pattern});
+    };
 };
 
+
+function goodSafetyCategoryCtrlProvide(
+    $scope, diabloUtilsService, diabloFilter, diabloPattern, baseService, user){
+    $scope.pattern = {
+	name:    diabloPattern.char_number_space_chinese,
+    }; 
+    var dialog = diabloUtilsService;
+
+    $scope.refresh = function() {
+	baseService.list_safety_category().then(function(cs) {
+	    console.log(cs);
+	    diablo_order(cs);
+	    $scope.categories = cs; 
+	});
+    };
+
+    $scope.refresh(); 
+    $scope.new_safety_category = function(){
+	var callback = function(params){
+	    console.log(params.category);
+	    var c = {name:   params.category.name};
+	    baseService.add_safety_category(c).then(function(state){
+		console.log(state); 
+		if (state.ecode == 0){
+		    dialog.response_with_callback(
+			true,
+			"新增安全类别", "新增安全类别成功！！",
+			undefined,
+			function(){
+			    diabloFilter.reset_good_safety_category();
+			    $scope.refresh(); 
+			});
+		} else{
+		    dialog.response(
+			false,
+			"新增安全类别",
+			"新增安全类别失败：" + baseService.error[state.ecode]);
+		}
+	    })
+	};
+	
+	dialog.edit_with_modal(
+	    'new-safety-category.html',
+	    undefined,
+	    callback,
+	    undefined,
+	    {categroy: {}, pattern: $scope.pattern});
+    };
+
+
+    $scope.update_category = function(c){
+	console.log(c);
+	var callback = function(params){
+	    console.log(params.category); 
+	    if (params.category.name === c.name){
+		dialog.response(
+		    false, "安全类别编辑", baseService.error[8010], undefined);
+		return;
+	    };
+
+	    
+	    for (var i=0, l=$scope.categories.length; i<l; i++){
+		if (params.category.name === $scope.categories[i].name
+		    && params.category.name !== c.name){
+		    dialog.response(
+			false, "安全类别编辑", baseService.error[8006], undefined);
+		    return;
+		} 
+	    };
+
+	    var update = {
+		cid:  c.id,
+		name: diablo_get_modified(params.category.name, c.name)}; 
+	    console.log(update);
+
+	    baseService.update_safety_category(update).then(function(result){
+		if (result.ecode === 0) {
+		    dialog.response_with_callback(
+			true,
+			"安全类别编辑",
+			"安全类别编辑成功！！",
+			undefined,
+			function() {
+			    c.name = params.category.name;
+			    diabloFilter.reset_good_safety_category();
+			});
+		} else {
+		    dialog.response(
+			false,
+			"安全类别编辑",
+			"安全类别编辑失败！！" + baseService.error[result.ecode],
+			undefined);
+		};
+	    });
+	};
+	
+	dialog.edit_with_modal(
+	    "update-safety-category.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {category:{name:c.name}, pattern: $scope.pattern});
+    };
+};
+
+
+function goodFabricCtrlProvide(
+    $scope, diabloUtilsService, diabloFilter, diabloPattern, baseService, user){
+    $scope.pattern = {
+	name:    diabloPattern.ch_en_num,
+    }; 
+    var dialog = diabloUtilsService;
+
+    $scope.refresh = function() {
+	baseService.list_fabric().then(function(fabrics) {
+	    console.log(fabrics);
+	    diablo_order(fabrics);
+	    $scope.fabrics = fabrics; 
+	});
+    };
+
+    $scope.refresh(); 
+    $scope.new_fabric = function(){
+	var callback = function(params){
+	    console.log(params.fabric);
+	    var c = {name: params.fabric.name};
+	    baseService.add_fabric(c).then(function(state){
+		console.log(state); 
+		if (state.ecode == 0){
+		    dialog.response_with_callback(
+			true,
+			"新增面料", "新增面料成功！！",
+			undefined,
+			function(){
+			    diabloFilter.reset_good_fabric();
+			    $scope.refresh(); 
+			});
+		} else{
+		    dialog.response(
+			false,
+			"新增面料",
+			"新增面料失败：" + baseService.error[state.ecode]);
+		}
+	    })
+	};
+	
+	dialog.edit_with_modal(
+	    'new-fabric.html',
+	    undefined,
+	    callback,
+	    undefined,
+	    {categroy: {}, pattern: $scope.pattern});
+    };
+
+
+    $scope.update_fabric = function(f){
+	console.log(f);
+	var callback = function(params){
+	    console.log(params.fabric); 
+	    if (params.fabric.name === f.name){
+		dialog.response(
+		    false, "面料编辑", baseService.error[8010], undefined);
+		return;
+	    };
+
+	    
+	    for (var i=0, l=$scope.fabrics.length; i<l; i++){
+		if (params.fabric.name === $scope.fabrics[i].name && params.fabric.name !== f.name){
+		    dialog.response(
+			false, "面料编辑", baseService.error[8007], undefined);
+		    return;
+		} 
+	    };
+
+	    var update = {
+		fid:  f.id,
+		name: diablo_get_modified(params.fabric.name, f.name)}; 
+	    console.log(update);
+
+	    baseService.update_fabric(update).then(function(result){
+		if (result.ecode === 0) {
+		    dialog.response_with_callback(
+			true,
+			"面料编辑",
+			"面料编辑成功！！",
+			undefined,
+			function() {
+			    f.name = params.fabric.name;
+			    diabloFilter.reset_good_fabric();
+			});
+		} else {
+		    dialog.response(
+			false,
+			"面料编辑",
+			"面料编辑失败！！" + baseService.error[result.ecode],
+			undefined);
+		};
+	    });
+	};
+	
+	dialog.edit_with_modal(
+	    "update-fabric.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {fabric:{name:f.name}, pattern: $scope.pattern});
+    };
+};
 
 define(["baseApp"], function(app){
     app.controller("bankCardNewCtrl", bankCardNewCtrlProvide);
     app.controller("bankCardDetailCtrl", bankCardDetailCtrlProvide);
-    app.controller("printOptionCtrl", printOptionCtrlProvide);
-    app.controller("printFormatCtrl", printFormatCtrlProvide);
-    app.controller("tableDetailCtrl", tableDetailCtrlProvide);
+    app.controller("printOptionCtrl", printOptionCtrlProvide); 
     app.controller("basePrinterConnectNewCtrl", basePrinterConnectNewCtrlProvide);
     app.controller("basePrinterConnectDetailCtrl", basePrinterConnectDetailCtrlProvide);
+
+    app.controller("goodStdStandardCtrl", goodStdStandardCtrlProvide);
+    app.controller("goodSafetyCategoryCtrl", goodSafetyCategoryCtrlProvide);
+    app.controller("goodFabricCtrl", goodFabricCtrlProvide);
+    
     app.controller("resetPasswdCtrl", resetPasswdCtrlProvide);
-    app.controller("delDataCtrl", delDataCtrlProvide);
 });
 

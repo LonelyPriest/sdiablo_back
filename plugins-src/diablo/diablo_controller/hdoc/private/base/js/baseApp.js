@@ -8,7 +8,7 @@ function baseConfig(angular){
     var baseApp = angular.module(
 	'baseApp', [
 	    'ui.bootstrap', 'ngRoute', 'ngResource',
-	    'diabloAuthenApp', 'diabloPattern', 'diabloUtils',
+	    'diabloAuthenApp', 'diabloPattern', 'diabloUtils', 'diabloFilterApp',
 	    'userApp', 'wprintApp'])
 	.config(function($httpProvider, authenProvider){
 	    $httpProvider.interceptors.push(authenProvider.interceptor); 
@@ -16,17 +16,19 @@ function baseConfig(angular){
 
     baseApp.config(['$routeProvider', function($routeProvider){	
 	var user = {"user": function(userService){
-	    return userService()}};
+	    return userService()}}; 
 	
 	$routeProvider.
-	    when('/passwd', {
-		templateUrl: '/private/base/html/reset_password.html',
-		controller: 'resetPasswdCtrl'
-	    }).
-	    when('/del_data', {
-		templateUrl: '/private/base/html/delete_data.html',
-		controller: 'delDataCtrl'
-	    }).
+	    when('/printer/connect_new', {
+		templateUrl: '/private/base/html/base_printer_connect.html',
+		controller: 'basePrinterConnectNewCtrl',
+		resolve: angular.extend({}, user) 
+	    }). 
+	    when('/printer/connect_detail', {
+		templateUrl: '/private/base/html/base_printer_connect_detail.html',
+		controller: 'basePrinterConnectDetailCtrl',
+		resolve: angular.extend({}, user) 
+	    }). 
 	    when('/bank/new_bank_card/:cardId?', {
 		templateUrl: '/private/base/html/bank_card_new.html',
 		controller: 'bankCardNewCtrl'
@@ -40,26 +42,30 @@ function baseConfig(angular){
 		controller: 'printOptionCtrl',
 		resolve: angular.extend({}, user)
 	    }).
-	    when('/setting/print_format', {
-		templateUrl: '/private/base/html/base_print_format.html',
-		controller: 'printFormatCtrl',
+	    when('/setting/std_executive', {
+		templateUrl: '/private/base/html/good_executive_standard.html',
+		controller: 'goodStdStandardCtrl',
 		resolve: angular.extend({}, user)
-		
-	    }). 
-	    when('/setting/table_detail', {
-		templateUrl: '/private/base/html/table_detail.html',
-		controller: 'tableDetailCtrl'
 	    }).
-	    when('/printer/connect_new', {
-		templateUrl: '/private/base/html/base_printer_connect.html',
-		controller: 'basePrinterConnectNewCtrl',
-		resolve: angular.extend({}, user) 
-	    }). 
-	    when('/printer/connect_detail', {
-		templateUrl: '/private/base/html/base_printer_connect_detail.html',
-		controller: 'basePrinterConnectDetailCtrl',
-		resolve: angular.extend({}, user) 
+	    when('/setting/safety_category', {
+		templateUrl: '/private/base/html/good_safety_category.html',
+		controller: 'goodSafetyCategoryCtrl',
+		resolve: angular.extend({}, user)
 	    }).
+	    when('/setting/fabric', {
+		templateUrl: '/private/base/html/good_fabric.html',
+		controller: 'goodFabricCtrl',
+		resolve: angular.extend({}, user)
+	    }).
+	    when('/setting/print_template', {
+		templateUrl: '/private/base/html/print_template.html',
+		controller: 'printTemplateCtrl',
+		resolve: angular.extend({}, user)
+	    }).
+	    when('/passwd', {
+		templateUrl: '/private/base/html/reset_password.html',
+		controller: 'resetPasswdCtrl'
+	    }). 
 	    otherwise({
 		templateUrl: '/private/base/html/base_printer_connect_detail.html',
 		controller: 'basePrinterConnectDetailCtrl',
@@ -74,6 +80,9 @@ function baseConfig(angular){
 		      8002: "该设置项已存在，请选择其它设置项！！",
 		      8003: "旧密码不正确，请重新输入！！",
 		      8004: "用户权限不足！！",
+		      8005: "该标准已存在，请重新输入！！",
+		      8006: "该安全类别已存在，请重新输入！！",
+		      8007: "该面料已存在，请重新输入",
 		      9001: "数据库操作失败，请联系服务人员！！"};
 
 	this.print_setting = 0;
@@ -175,7 +184,48 @@ function baseConfig(angular){
 	var retailerHttp = $resource("/wretailer/:operation", {operation: '@operation'});
 	this.list_sys_wretailer = function(){
 	    return retailerHttp.query({operation: 'list_sys_wretailer'}).$promise;
-	}
+	};
+
+	/*
+	 * good standard
+	 */
+	this.add_std_executive = function(e) {
+	    return http.save({operation: 'add_std_executive'}, e).$promise;
+	};
+
+	this.list_std_executive = function(){
+	    return http.query({operation: 'list_std_executive'}).$promise;
+	};
+
+	this.update_std_executive = function(e) {
+	    return http.save({operation: 'update_std_executive'}, e).$promise;
+	};
+
+	// safety category
+	this.add_safety_category = function(c) {
+	    return http.save({operation: 'add_safety_category'}, c).$promise;
+	};
+
+	this.list_safety_category = function(){
+	    return http.query({operation: 'list_safety_category'}).$promise;
+	};
+
+	this.update_safety_category = function(c) {
+	    return http.save({operation: 'update_safety_category'}, c).$promise;
+	};
+
+	// fabric
+	this.add_fabric = function(f) {
+	    return http.save({operation: 'add_fabric'}, f).$promise;
+	};
+
+	this.list_fabric = function(){
+	    return http.query({operation: 'list_fabric'}).$promise;
+	};
+
+	this.update_fabric = function(f) {
+	    return http.save({operation: 'update_fabric'}, f).$promise;
+	};
 	
     });
 

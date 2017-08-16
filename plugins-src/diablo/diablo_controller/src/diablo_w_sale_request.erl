@@ -675,7 +675,9 @@ action(Session, Req, {"w_sale_export"}, Payload) ->
 
 	    case ExportColorSize =:= 1 andalso ExportType =:= trans_note of
 		true ->
-		    case ?w_sale:export(trans_note_color_size, Merchant, NewConditions) of
+		    %% only rsn
+		    NoteConditions = [{<<"rsn">>, ?v(<<"rsn">>, NewConditions, [])}],
+		    case ?w_sale:export(trans_note_color_size, Merchant, NoteConditions) of
 			[] ->
 			    ?utils:respond(200, Req, ?err(wsale_export_none, Merchant));
 			{ok, SaleNotes} ->

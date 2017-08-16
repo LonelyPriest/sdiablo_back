@@ -72,6 +72,15 @@ function stockConfg(angular){
 
 	var region = {"filterRegion": function(diabloNormalFilter){
 	    return diabloNormalFilter.get_region()}};
+
+	var std_executive = {"filterStdExecutive":function(diabloFilter) {
+	    return diabloFilter.list_good_std_executive()}};
+
+	var safety_category = {"filterCategory":function(diabloFilter) {
+	    return diabloFilter.list_good_safety_category()}};
+
+	var fabric = {"filterFabric":function(diabloFilter) {
+	    return diabloFilter.list_good_fabric()}};
 	
 	$routeProvider.
 	    // new
@@ -165,13 +174,27 @@ function stockConfg(angular){
 	    when('/good/wgood_new', {
 		templateUrl: '/private/wgood/html/wgood_new.html',
 		controller: 'wgoodNewCtrl',
-		resolve: angular.extend({}, promotion, firm, brand, type, s_group, base)
+		resolve: angular.extend(
+		    {},
+		    promotion,
+		    firm,
+		    brand,
+		    type,
+		    s_group, std_executive, safety_category, fabric, base)
 	    }).
 	    when('/good/wgood_update/:id?/:shop?/:from?', {
 		templateUrl: '/private/wgood/html/wgood_update.html',
 		controller: 'wgoodUpdateCtrl',
 		resolve: angular.extend(
-		    {}, promotion, brand, firm, type, color, s_group, user, base)
+		    {},
+		    promotion,
+		    brand,
+		    firm,
+		    type,
+		    color,
+		    s_group,
+		    user,
+		    std_executive, safety_category, fabric, base)
 	    }).
 	    when('/good/wgood_detail', {
 		templateUrl: '/private/wgood/html/wgood_detail.html',
@@ -250,6 +273,7 @@ function stockConfg(angular){
 	    2015: "条码值已使用，请重试！！",
 	    2016: "服务器条码校验失败，请注销当前用户后再操作！！",
 	    2017: "该货品无条码值，请先重置该货品条码值后再打印！！",
+	    2078: "无法单独修改积分方案，请关联修改吊牌价或折扣！！",
 	    2079: "该系统模式下，不能重置条码，请在货品详情中重置条码值！！",
 	    2081: "条码值为空，无法重置该条码，请先生成该货品条码后再操作！！",
 	    2082: "盘点草稿获取失败，请检查盘点文件内容并确保该文件可读！！",

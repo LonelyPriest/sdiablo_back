@@ -272,8 +272,7 @@
 		  <span>显示第 {{tab_page.page_of_time}} / {{num_pages}} 项结果，
 		    共 {{total_items}} 项
 		  </span>
-		  <uib-pagination class="pagination-lg
-				     table-pagination pull-right"
+		  <uib-pagination class="pagination-lg table-pagination pull-right"
 		  	      total-items="total_items"
 		  	      items-per-page="items_perpage"
 		  	      num-pages="num_pages"
@@ -603,8 +602,7 @@
 	<div class="form-group">
 	  <div class="input-group">
 	    <span class="input-group-addon">
-	      <i class="glyphicon glyphicon-hand-right fg-red"></i>
-	      是否积分</span>
+	      <i class="glyphicon glyphicon-hand-right fg-red"></i>是否积分</span>
 	    <select class="form-control"
 		    x-ng-model="params.select.score"
 		    x-ng-options="s as s.name for s
@@ -664,6 +662,7 @@
 		   step="1"
 		   disable-key
 		   disable-wheel
+		   required
 		   x-ng-model="params.tag_price"/>
 	  </div>
 	</div>
@@ -676,6 +675,7 @@
 		   step="1"
 		   disable-key
 		   disable-wheel
+		   required
 		   x-ng-model="params.discount"/>
 	  </div>
 	</div>
@@ -695,9 +695,10 @@
 	  <div class="col-sm-10 col-md-10">
 	    <input class="form-control"
 		   type="number"
-		   step="1"
+		   step="1" 
 		   disable-key
 		   disable-wheel
+		   required
 		   x-ng-model="params.contailer"/>
 	  </div>
 	</div> 
@@ -708,7 +709,7 @@
 
   <div class="modal-footer">
     <button class="btn btn-primary"
-	    x-ng-disabled="params.check_invalid(params.select)"
+	    x-ng-disabled="sForm.$invalid"
 	    x-ng-click="ok()">确认</button>
     <button class="btn btn-warning"
 	    x-ng-click="cancel()">取消</button>

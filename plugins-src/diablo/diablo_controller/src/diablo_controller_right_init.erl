@@ -434,7 +434,21 @@ init([]) ->
 	 {?update_w_printer_conn,
 	  <<"修改打印绑定">>,<<"update_w_printer_conn">>,  ?right_w_base},
 	 {?list_w_printer_conn,
-	  <<"查询打印绑定">>,<<"list_w_printer_conn">>,    ?right_w_base}
+	  <<"查询打印绑定">>,<<"list_w_printer_conn">>,    ?right_w_base},
+
+	 {?add_std_executive,
+	  <<"新增货品执行标准">>,<<"add_std_executive">>,    ?right_w_base}, 
+	 {?update_std_executive,
+	  <<"修改货品执行标准">>,<<"update_std_executive">>,    ?right_w_base},
+
+	 
+	 {?add_safety_category,
+	  <<"新增货品安全类别">>,<<"add_safety_category">>,  ?right_w_base},
+	 {?update_safety_category,
+	  <<"修改货品安全类别">>,<<"update_safety_category">>,  ?right_w_base},
+	 
+	 {?add_fabric, <<"新增货品面料">>, <<"add_fabric">>,  ?right_w_base},
+	 {?update_fabric, <<"修改货品面料">>, <<"update_fabric">>,  ?right_w_base}
     	],
 
     
@@ -917,6 +931,9 @@ pass_action(wholesaler) ->
      <<"add_base_setting">>,
      <<"add_shop_setting">>,
      <<"delete_shop_setting">>,
+     <<"list_std_executive">>,
+     <<"list_safety_category">>,
+     <<"list_fabric">>,
 
      %% print
      <<"list_w_printer">>, 

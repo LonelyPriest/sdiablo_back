@@ -325,6 +325,13 @@
 -define(del_w_printer_conn,    ?right_w_base + 6).
 -define(update_w_printer_conn, ?right_w_base + 7).
 -define(list_w_printer_conn,   ?right_w_base + 8).
+-define(add_std_executive,     ?right_w_base + 9).
+-define(add_safety_category,   ?right_w_base + 10).
+-define(add_fabric,            ?right_w_base + 11).
+
+-define(update_std_executive,     ?right_w_base + 12).
+-define(update_safety_category,   ?right_w_base + 13).
+-define(update_fabric,            ?right_w_base + 14).
 
 %% public
 -define(http_route, diablo_controller_http_route).

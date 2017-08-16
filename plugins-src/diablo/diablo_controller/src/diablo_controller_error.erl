@@ -259,7 +259,9 @@ success(base_add_shop_setting, Shop) ->
 success(base_delete_shop_setting, Shop) ->
     {0, "Success to delete settings of shop " ++ ?to_s(Shop)};
 success(base_update_passwd, Account) ->
-    {0, "Success to update password of user " ++ ?to_s(Account)}. 
+    {0, "Success to update password of user " ++ ?to_s(Account)}; 
+success(good_update_std_executive, EId) ->
+    {0, "Success to update executive standard " ++ ?to_s(EId)}.
 
 %% -----------------------------------------------------------------------------
 %% error define
@@ -563,6 +565,12 @@ error(base_setting_exist, EName) ->
     {8002, "name " ++ ?to_s(EName) ++ " of base setting has been exist"};
 error(base_invalid_update_passwd, User) ->
     {8003, "invalid password of user " ++ ?to_s(User)};
+error(good_executive_exist, Name) ->
+    {8005, "good executive standard has been exist " ++ ?to_s(Name)};
+error(good_safety_exist, Name) ->
+    {8006, "good safty category has been exist " ++ ?to_s(Name)};
+error(good_fabric_exist, Name) ->
+    {8007, "good fabric has been exist " ++ ?to_s(Name)};
 
 %% DB
 error(db_error, EInfo) ->

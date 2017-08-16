@@ -1136,3 +1136,64 @@ create table sms_center(
     unique  key uk (merchant),
     primary key    (id)
 ) default charset=utf8;
+
+/*
+** print tag
+*/
+create table std_executive (
+    id              INTEGER AUTO_INCREMENT,
+    name            VARCHAR(64) not null,
+    merchant        INTEGER not null default -1,
+    deleted         INTEGER default 0,
+
+    unique   key  (merchant, name),
+    primary key   (id)
+) default charset=utf8;;
+
+create table safety_category(
+    id              INTEGER AUTO_INCREMENT,
+    name            VARCHAR(64) not null,
+    merchant        INTEGER not null default -1,
+    deleted         INTEGER default 0,
+
+    unique   key  (merchant, name),
+    primary key   (id)
+) default charset=utf8;
+
+create table fabric(
+    id              INTEGER AUTO_INCREMENT,
+    name            VARCHAR(64) not null,
+    merchant        INTEGER not null default -1,
+    deleted         INTEGER default 0,
+
+    unique   key  (merchant, name),
+    primary key   (id)
+) default charset=utf8;
+
+
+create table print_template(
+   id              INTEGER AUTO_INCREMENT,
+   width           TINYINT default 0,
+   height          TINYINT default 0,
+   style_number    TINYINT default 0,
+   brand           TINYINT default 0,
+   type            INTEGER default 0,
+   firm            TINYINT default 0,
+   color           TINYINT default 0,
+   size            TINYINT default 0,
+
+   level           TINYINT default 0,
+   executive       TINYINT default 0,
+   category        TINYINT default 0, 
+   fabric          TINYINT default 0,
+   
+   font            TINYINT default 0,
+
+   merchant        INTEGER not null default -1,
+   unique   key    (merchant),
+   primary key     (id)
+   
+   
+)default charset=utf8;
+
+

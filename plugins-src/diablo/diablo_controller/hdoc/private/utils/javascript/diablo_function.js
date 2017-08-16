@@ -22,6 +22,7 @@ var diablo_free_size = "0";
 var diablo_free_color = 0;
 var diablo_free_color_size = 0;
 var diablo_empty_barcode = "0";
+var diablo_empty_string = "";
 
 var diablo_has_deleted=1;
 

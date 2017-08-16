@@ -301,7 +301,7 @@ function purchaserInventoryNewCtrlProvide (
 
     var copy_select = function(add, src){
 	add.$new_good    = src.$new_good;
-	// add.id           = src.id;
+	add.id           = src.id;
 	add.bcode        = src.bcode;
 	add.style_number = src.style_number;
 	add.brand        = src.brand;
@@ -997,46 +997,7 @@ function purchaserInventoryNewCtrlProvide (
 		diabloUtilsService.edit_with_modal(
 		    "inventory-new.html", modal_size, callback, undefined, payload);
 	    };
-	});
-	
-	// if ($scope.q_prompt === diablo_frontend){
-	//     var f = $scope.all_w_goods.filter(function(g){
-	// 	return g.id === inv.id
-	// 	    && g.style_number === inv.style_number
-	// 	    && g.brand_id === inv.brand_id
-	//     });
-	//     // console.log(f);
-	//     if (f.length !== 0) {
-	// 	inv.colors = f[0].color.split(",");
-	// 	inv.colors_info = inv.colors.map(function(cid){
-	// 	    return diablo_find_color(parseInt(cid), $scope.colors)});
-	//     }
-	// };
-	
-	// var payload = {sizes:      inv.sizes,
-	// 	       large_size: large_size,
-	// 	       amount:     inv.amount,
-	// 	       org_price:  inv.org_price,
-	// 	       ediscount:  inv.ediscount,
-	// 	       tag_price:  inv.tag_price,
-	// 	       discount:   inv.discount,
-	// 	       over:       inv.over,
-	// 	       colors:     inv.colors_info,
-	// 	       path:       inv.path,
-	// 	       stock:      inv.stock,
-	// 	       right:      $scope.stock_right,
-	// 	       get_amount: get_amount,
-	// 	       valid_amount: valid_amount,
-	// 	       get_price_info: stockUtils.calc_stock_orgprice_info,
-	// 	       edit: function(){
-	// 		   diablo_goto_page(
-	// 		       "#/good/wgood_update"
-	// 			   + "/" + inv.id.toString()
-	// 			   + "/" + $scope.select.shop.id.toString()
-	// 			   + "/" + diablo_from_stock_new.toString())}
-	// 	      };
-	// diabloUtilsService.edit_with_modal(
-	//     "inventory-new.html", modal_size, callback, undefined, payload);
+	}); 
     };
 
     $scope.save_free_update = function(inv){
@@ -1598,13 +1559,7 @@ function purchaserInventoryNewCtrlProvide (
 		    contailer: good.contailer,
 		    alarm_a:   good.alarm_a
 		};
-
-		// if ($scope.q_prompt === diablo_frontend){
-		//     if (angular.isDefined($scope.all_w_goods)){
-		// 	$scope.all_w_goods.splice(0, 0, agood); 
-		//     }
-		// };
-
+		
 		// $scope.focus.style_number = true;
 		$scope.on_select_good(agood, undefined, undefined); 
 	    } else{
@@ -2447,41 +2402,53 @@ function purchaserInventoryDetailCtrlProvide(
 		tag_price  :diablo_get_modified(params.tag_price, inv.tag_price),
 		discount   :diablo_get_modified(params.discount, inv.discount),
 		contailer  :diablo_get_modified(params.contailer, inv.contailer),
-		score      :params.is_score.id === 0 ? undefined : params.is_score.id
+		score      :params.is_score.id === 1 ? undefined : params.is_score.id
 	    };
 
-	    // console.log(update);
+	    console.log(update);
+
+	    if (angular.isUndefined(update.tag_price)
+		&& angular.isUndefined(update.discount)
+		&& angular.isUndefined(update.contailer)
+		&& (angular.isUndefined(update.score) || stockUtils.to_integer(update.score) === 1)) {
+		dialog.response_with_callback(
+		    false,
+		    "库存价格编辑",
+		    "编辑库存价格失败：" + purchaserService.error[2078]);
+		return;
+	    }
 
 	    var condition = {style_number:inv.style_number, brand:inv.brand.id, shop:inv.shop_id};
 
 	    purchaserService.update_w_inventory_batch(condition, update).then(function(result){
 		console.log(result);
 		if (result.ecode === 0){
-		    var org_price = angular.isDefined(update.org_price) ? update.org_price : inv.org_price;
 		    var tag_price = angular.isDefined(update.tag_price) ? update.tag_price : inv.tag_price;
 		    var discount  = angular.isDefined(update.discount)  ? update.discount  : inv.discount;
 		    var contailer = angular.isDefined(update.contailer) ? update.contailer : inv.contailer;
 		    var s = "修改价格成功！！"
-			+ "[ 进价" + org_price.toString() + "；" 
-			+ "吊牌价" + tag_price.toString() + "；" 
+		    
+			+ "[吊牌价" + tag_price.toString() + "；" 
 			+ "折扣" + discount.toString() + "；";
 		    if ($scope.setting.stock_contailer)
 			s += "货柜号" + contailer.toString() + "]";
+		    else
+			s += "]";
 		    
 		    dialog.response_with_callback(
 			true, "库存价格编辑", s, undefined,
 			function(){
-			    inv.org_price = org_price;
 			    inv.tag_price = tag_price;
 			    inv.discount  = discount;
-			    inv.ediscount = stockUtils.ediscount(org_price, tag_price);
+			    inv.ediscount = stockUtils.ediscount(inv.org_price, tag_price);
 			    inv.contailer = contailer;
-			    inv.sid       = update.score === undefined ? -1 : inv.sid}); 
+			    inv.sid       = update.score === 0 ? -1 : inv.sid;
+			    console.log(inv);}); 
 		} else {
 		    dialog.response(
 			false,
 			"库存价格编辑",
-			"修改库存价格失败："
+			"编辑库存价格失败："
 			    + purchaserService.error[result.ecode]);
 		}
 	    });

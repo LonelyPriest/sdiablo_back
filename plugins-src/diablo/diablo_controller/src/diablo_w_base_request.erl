@@ -60,7 +60,24 @@ action(Session, Req, {"list_base_setting"}) ->
 	    %% lists:filter()
 	    ?utils:respond(200, batch, Req, Select)
 
-    end.
+    end;
+
+
+action(Session, Req, {"list_std_executive"}) ->
+    ?DEBUG("list_executive with session ~p", [Session]),
+    Merchant = ?session:get(merchant, Session),
+    ?utils:respond(batch, fun() -> ?w_base:good(list_executive, Merchant) end, Req);
+
+action(Session, Req, {"list_safety_category"}) ->
+    ?DEBUG("list_safety_category with session ~p", [Session]),
+    Merchant = ?session:get(merchant, Session),
+    ?utils:respond(batch, fun() -> ?w_base:good(list_safety_category, Merchant) end, Req);
+
+action(Session, Req, {"list_fabric"}) ->
+    ?DEBUG("list_fabric with session ~p", [Session]),
+    Merchant = ?session:get(merchant, Session),
+    ?utils:respond(batch, fun() -> ?w_base:good(list_fabric, Merchant) end, Req).
+
 
 %%--------------------------------------------------------------------
 %% @desc: POST action
@@ -148,7 +165,7 @@ action(Session, Req, {"add_shop_setting"}, Payload) ->
     end;
 
 action(Session, Req, {"delete_shop_setting"}, Payload) ->
-    ?DEBUG("add_shop_setting with session ~p", [Session]),
+    ?DEBUG("delete_shop_setting with session ~p", [Session]),
     Merchant = ?session:get(merchant, Session),
     Shop     = ?v(<<"shop">>, Payload),
     case ?w_base:setting(delete_from_shop, Merchant, Shop) of
@@ -158,6 +175,73 @@ action(Session, Req, {"delete_shop_setting"}, Payload) ->
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;
+
+action(Session, Req, {"add_std_executive"}, Payload) ->
+    ?DEBUG("add_std_executive with session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    Name = ?v(<<"name">>, Payload),
+    case ?w_base:good(add_executive, Merchant, Name) of
+	{ok, AddId}  ->
+	    %% ?w_user_profile:update(setting, Merchant),
+	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0}, {<<"id">>, AddId}]}); 
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"update_std_executive"}, Payload) ->
+    Merchant = ?session:get(merchant, Session),
+    case ?w_base:good(update_executive, Merchant, Payload) of
+	{ok, EId}  ->
+	    %% ?w_user_profile:update(setting, Merchant),
+	    ?utils:respond(200, Req, ?succ(good_update_std_executive, EId));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"add_safety_category"}, Payload) ->
+    ?DEBUG("add_safety_category with session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    Name = ?v(<<"name">>, Payload),
+    case ?w_base:good(add_safety_category, Merchant, Name) of
+	{ok, AddId}  ->
+	    %% ?w_user_profile:update(setting, Merchant),
+	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0}, {<<"id">>, AddId}]}); 
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"update_safety_category"}, Payload) ->
+    Merchant = ?session:get(merchant, Session),
+    case ?w_base:good(update_safety_category, Merchant, Payload) of
+	{ok, CId}  ->
+	    %% ?w_user_profile:update(setting, Merchant),
+	    ?utils:respond(200, Req, ?succ(good_update_std_executive, CId));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"add_fabric"}, Payload) ->
+    ?DEBUG("add_fabric with session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    Name = ?v(<<"name">>, Payload),
+    case ?w_base:good(add_fabric, Merchant, Name) of
+	{ok, AddId}  ->
+	    %% ?w_user_profile:update(setting, Merchant),
+	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0}, {<<"id">>, AddId}]}); 
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"update_fabric"}, Payload) ->
+    Merchant = ?session:get(merchant, Session),
+    case ?w_base:good(update_fabric, Merchant, Payload) of
+	{ok, FId}  ->
+	    %% ?w_user_profile:update(setting, Merchant),
+	    ?utils:respond(200, Req, ?succ(good_update_std_executive, FId));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
 
 %%
 %% passwd
@@ -221,16 +305,26 @@ sidebar(Session) ->
 
 	case Print of
 	    [] -> [];
-	    _ ->  [{{"printer", "打印机", "glyphicon glyphicon-print"}, Print}]
+	    _ ->  [{{"printer", "打印机设置", "glyphicon glyphicon-print"}, Print}]
 	end ++
 
 	case ?session:get(type, Session) of
 	    ?USER -> [];
 	    ?MERCHANT ->
-		[{{"setting", "基本设置", "glyphicon glyphicon-cog"},
-		 [{"print_option", "系统设置", "glyphicon glyphicon-wrench"},
-		  {"print_format", "打印格式", "glyphicon glyphicon-text-width"}
-		 ]}]
+		Merchant = ?session:get(merchant, Session),
+		{ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
+		SelfBarcode = ?to_i(?v(<<"bcode_self">>, BaseSetting, 0)),
+		
+		[{{"setting",        "基本设置", "glyphicon glyphicon-cog"},
+		 [{"print_option",   "系统设置", "glyphicon glyphicon-wrench"}]
+		  ++ case SelfBarcode of
+			 0 -> [];
+			 1 ->
+			     [{"std_executive",  "执行标准", "glyphicon glyphicon-registration-mark"},
+			      {"safety_category", "安全类别", "glyphicon glyphicon-text-background"},
+			      {"fabric",         "面料", "glyphicon glyphicon-glass"}]
+		     end
+		  ++ [{"print_template", "条码打印模板", "glyphicon glyphicon-file"}]}]
 	end,
 	%% [{{"setting", "基本设置", "glyphicon glyphicon-cog"},
 	%%       case ?session:get(type, Session) of

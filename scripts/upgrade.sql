@@ -226,3 +226,9 @@ drop table w_inventory_fix_detail_amount;
 alter table w_inventory_good add column bcode VARCHAR(32) default 0 after id;
 alter table w_inventory_good add index bcode (bcode);
 alter table w_inventory add index bcode (bcode);
+
+-- 2017-08-16
+alter table w_inventory_good add column level TINYINT default -1 after path;
+alter table w_inventory_good add column executive INTEGER default -1 after level;
+alter table w_inventory_good add column category INTEGER default -1 after executive;
+alter table w_inventory_good add column fabric VARCHAR(256) default null after category;

@@ -60,6 +60,11 @@ function filterProvider(){
     var _employees   = [];
     var _size_groups = [];
     var _promotions  = [];
+
+    // var _executives  = [];
+    // var _category    = [];
+    // var _fabric      = [];
+    
     // var _chargs      = [];
     // var _scores      = [];
 
@@ -81,6 +86,11 @@ function filterProvider(){
 				   {
 				       query_by_post: {method: 'POST', isArray: true}
 				   });
+
+	var _baseSettingHttp = $resource("/wbase/:operation/:id", {operation: '@operation'},
+					 {
+					     query_by_post: {method: 'POST', isArray: true}
+					 });
 	
 	var cookie = 'filter-' + diablo_get_cookie("qzg_dyty_session");
 
@@ -142,6 +152,18 @@ function filterProvider(){
 
 	function get_purchaser_good(good){
 	    return _goodHttp.save({operation: "get_w_good"}, good).$promise;
+	};
+
+	function list_good_std_executive() {
+	    return _baseSettingHttp.query({operation: 'list_std_executive'}).$promise;
+	};
+
+	function list_good_safety_category() {
+	    return _baseSettingHttp.query({operation: 'list_safety_category'}).$promise;
+	};
+
+	function list_good_fabric() {
+	    return _baseSettingHttp.query({operation: 'list_fabric'}).$promise;
 	};
 	
 	return{
@@ -639,21 +661,11 @@ function filterProvider(){
 			return types;
 		    }); 
 		}
-		// if (_color_types.length !== 0){
-		//     return _color_types;
-		// } else {
-		//     return wgoodService.list_color_type().then(function(types){
-		// 	return types;
-		//     }); 
-		// } 
 	    },
 
 	    get_size_group: function(){
 		var cached = get_from_storage(cookie, "size");
-		if (angular.isDefined(cached) && angular.isArray(cached)) return cached;
-		// if (_size_groups.length !== 0){
-		//     return _size_groups;
-		// }
+		if (angular.isDefined(cached) && angular.isArray(cached)) return cached; 
 		else {
 		    return list_purchaser_size().then(
 			function(sizes){
@@ -808,8 +820,58 @@ function filterProvider(){
 
 	    get_purchaser_good: function(good){
 		return get_purchaser_good(good);
-	    }
+	    },
 
+	    list_good_std_executive: function() {
+		var cached = get_from_storage(cookie, "std_executive");
+		if (angular.isArray(cached) && cached.length !== 0){
+		    return cached;
+		} else {
+		    return list_good_std_executive().then(function(es){
+			set_storage(cookie, "std_executive", es);
+			return es;
+		    }); 
+		}
+	    }, 
+
+	    reset_good_std_executive: function() {
+		clear_from_storage(cookie, "std_executive");
+	    },
+
+	    list_good_safety_category: function() {
+		var cached = get_from_storage(cookie, "safety_category");
+		if (angular.isArray(cached) && cached.length !== 0){
+		    return cached;
+		} else {
+		    return list_good_safety_category().then(function(cs){
+			set_storage(cookie, "safety_category", cs);
+			return cs;
+		    }); 
+		}
+	    }, 
+
+	    reset_good_safety_category: function() {
+		clear_from_storage(cookie, "safety_category");
+	    },
+
+	    list_good_fabric: function() {
+		var cached = get_from_storage(cookie, "fabric");
+		if (angular.isArray(cached) && cached.length !== 0){
+		    return cached;
+		} else {
+		    return list_good_fabric().then(function(fabrics){
+			var _fabrics = fabrics.map(function(f) {
+			    return {id:f.id, name:f.name, py:diablo_pinyin(f.name)};
+			});
+			set_storage(cookie, "fabric", _fabrics);
+			return _fabrics;
+		    }); 
+		}
+	    }, 
+
+	    reset_good_fabric: function() {
+		clear_from_storage(cookie, "fabric");
+	    }
 	    //
 	    
 	}

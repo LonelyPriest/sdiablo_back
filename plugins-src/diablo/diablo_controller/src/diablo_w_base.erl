@@ -21,6 +21,7 @@
 	 terminate/2, code_change/3]).
 
 -export([bank_card/2, bank_card/3, setting/2, setting/3, sys_config/0]).
+-export([good/2, good/3]).
 
 -define(SERVER, ?MODULE). 
 
@@ -39,7 +40,6 @@ bank_card(update, Merchant, Attrs) ->
 bank_card(list, Merchant) ->
     gen_server:call(?SERVER, {list_bank_card, Merchant}).
 
-
 setting(list, Merchant) ->
     gen_server:call(?SERVER, {list_base_setting, Merchant}).
 
@@ -54,6 +54,30 @@ setting(update, Merchant, Update) ->
     gen_server:call(?SERVER, {update_base_setting, Merchant, Update});
 setting(delete_from_shop, Merchant , Shop) ->
     gen_server:call(?SERVER, {delete_from_setting, Merchant, Shop}).
+
+
+good(list_executive, Merchant) ->
+    gen_server:call(?SERVER, {list_good_executive, Merchant});
+good(list_safety_category, Merchant) ->
+    gen_server:call(?SERVER, {list_safety_category, Merchant});
+good(list_fabric, Merchant) ->
+    gen_server:call(?SERVER, {list_fabric, Merchant}).
+
+good(add_executive, Merchant, Name) ->
+    gen_server:call(?SERVER, {add_good_executive, Merchant, Name});
+good(update_executive, Merchant, Attrs) ->
+    gen_server:call(?SERVER, {update_good_executive, Merchant, Attrs});
+
+good(add_safety_category, Merchant, Name) ->
+    gen_server:call(?SERVER, {add_safety_category, Merchant, Name});
+good(update_safety_category, Merchant, Attrs) ->
+    gen_server:call(?SERVER, {update_safety_category, Merchant, Attrs});
+
+good(add_fabric, Merchant, Name) ->
+    gen_server:call(?SERVER, {add_fabric, Merchant, Name});
+good(update_fabric, Merchant, Attrs) ->
+    gen_server:call(?SERVER, {update_fabric, Merchant, Attrs}).
+
 
 
 
@@ -269,6 +293,166 @@ handle_call({delete_from_setting, Merchant, Shop}, _From, State) ->
     %% ?w_retailer:syn(prompt, Merchant),
     {reply, Reply, State};
 
+handle_call({add_good_executive, Merchant, Name}, _From, State) ->
+    ?DEBUG("add_good_executive: Merchant  ~p, Name ~p", [Merchant, Name]),
+
+    Sql0 = "select id, name from std_executive"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and name=\'" ++ ?to_s(Name) ++ "\'",
+
+    Reply = 
+	case ?sql_utils:execute(s_read, Sql0) of
+	    {ok, []} ->
+		Sql01 = "insert into std_executive(name, merchant) values("
+		    ++ "\'" ++ ?to_s(Name) ++ "\',"
+		    ++ ?to_s(Merchant) ++ ")",
+		?sql_utils:execute(insert, Sql01);
+	    {ok, _R} ->
+		{error, ?err(good_safety_exist,?to_s(?v(<<"id">>, _R)))};
+	    Error ->
+		Error
+	end,
+
+    {reply, Reply, State};
+
+handle_call({list_good_executive, Merchant}, _From, State) ->
+    ?DEBUG("list_good_executive: Merchant  ~p", [Merchant]),
+
+    Sql0 = "select id, name from std_executive"
+	" where merchant=" ++ ?to_s(Merchant),
+
+    Reply = ?sql_utils:execute(read, Sql0),
+    {reply, Reply, State};
+
+handle_call({update_good_executive, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("update_good_executive: Merchant ~p, attrs ~p", [Merchant, Attrs]),
+    Id = ?v(<<"eid">>, Attrs),
+    Name = ?v(<<"name">>, Attrs),
+
+    Sql0 = "select id, name from std_executive"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and name=\'" ++ ?to_s(Name) ++ "\'",
+
+    Reply = 
+	case ?sql_utils:execute(s_read, Sql0) of
+	    {ok, []} ->
+		Sql01 = "update std_executive set"
+		    ++ " name=\'" ++ ?to_s(Name) ++ "\'"
+		    ++ " where id=" ++ ?to_s(Id), 
+		?sql_utils:execute(write, Sql01, Id);
+	    {ok, _R} ->
+		{error, ?err(good_safety_exist,?to_s(?v(<<"id">>, _R)))};
+	    Error ->
+		Error
+	end,
+
+    {reply, Reply, State};
+
+
+handle_call({add_safety_category, Merchant, Name}, _From, State) ->
+    ?DEBUG("add_safety_category: Merchant  ~p, Name ~p", [Merchant, Name]),
+
+    Sql0 = "select id, name from safety_category"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and name=\'" ++ ?to_s(Name) ++ "\'",
+
+    Reply = 
+	case ?sql_utils:execute(s_read, Sql0) of
+	    {ok, []} ->
+		Sql01 = "insert into safety_category(name, merchant) values("
+		    ++ "\'" ++ ?to_s(Name) ++ "\',"
+		    ++ ?to_s(Merchant) ++ ")",
+		?sql_utils:execute(insert, Sql01);
+	    {ok, _R} ->
+		{error, ?err(good_safety_exist,?to_s(?v(<<"id">>, _R)))};
+	    Error ->
+		Error
+	end,
+
+    {reply, Reply, State};
+
+handle_call({list_safety_category, Merchant}, _From, State) ->
+    ?DEBUG("list_good_safety: Merchant  ~p", [Merchant]), 
+    Sql0 = "select id, name from safety_category"
+	" where merchant=" ++ ?to_s(Merchant),
+
+    Reply = ?sql_utils:execute(read, Sql0),
+    {reply, Reply, State};
+
+handle_call({update_safety_category, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("update_safety_category: Merchant ~p, attrs ~p", [Merchant, Attrs]),
+    Id = ?v(<<"cid">>, Attrs),
+    Name = ?v(<<"name">>, Attrs),
+
+    Sql0 = "select id, name from safety_category"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and name=\'" ++ ?to_s(Name) ++ "\'",
+
+    Reply = 
+	case ?sql_utils:execute(s_read, Sql0) of
+	    {ok, []} ->
+		Sql01 = "update safety_category set name=\'" ++ ?to_s(Name) ++ "\'"
+		    ++ " where id=" ++ ?to_s(Id), 
+		?sql_utils:execute(write, Sql01, Id);
+	    {ok, _R} ->
+		{error, ?err(good_safety_exist,?to_s(?v(<<"id">>, _R)))};
+	    Error ->
+		Error
+	end,
+
+    {reply, Reply, State};
+
+
+handle_call({add_fabric, Merchant, Name}, _From, State) ->
+    ?DEBUG("add_fabric: Merchant  ~p, Name ~p", [Merchant, Name]),
+
+    Sql0 = "select id, name from fabric"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and name=\'" ++ ?to_s(Name) ++ "\'",
+
+    Reply = 
+	case ?sql_utils:execute(s_read, Sql0) of
+	    {ok, []} ->
+		Sql01 = "insert into fabric(name, merchant) values("
+		    ++ "\'" ++ ?to_s(Name) ++ "\',"
+		    ++ ?to_s(Merchant) ++ ")",
+		?sql_utils:execute(insert, Sql01);
+	    {ok, _R} ->
+		{error, ?err(good_fabric_exist,?to_s(?v(<<"id">>, _R)))};
+	    Error ->
+		Error
+	end,
+
+    {reply, Reply, State};
+
+handle_call({list_fabric, Merchant}, _From, State) ->
+    ?DEBUG("list_fabric: Merchant  ~p", [Merchant]), 
+    Sql0 = "select id, name from fabric where merchant=" ++ ?to_s(Merchant), 
+    Reply = ?sql_utils:execute(read, Sql0),
+    {reply, Reply, State};
+
+handle_call({update_fabric, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("update_fabric: Merchant ~p, attrs ~p", [Merchant, Attrs]),
+    Id = ?v(<<"fid">>, Attrs),
+    Name = ?v(<<"name">>, Attrs),
+
+    Sql0 = "select id, name from fabric where merchant=" ++ ?to_s(Merchant)
+	++ " and name=\'" ++ ?to_s(Name) ++ "\'",
+
+    Reply = 
+	case ?sql_utils:execute(s_read, Sql0) of
+	    {ok, []} ->
+		Sql01 = "update fabric set name=\'" ++ ?to_s(Name) ++ "\'"
+		    ++ " where id=" ++ ?to_s(Id), 
+		?sql_utils:execute(write, Sql01, Id);
+	    {ok, _R} ->
+		{error, ?err(good_fabric_exist,?to_s(?v(<<"id">>, _R)))};
+	    Error ->
+		Error
+	end,
+
+    {reply, Reply, State};
+
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
@@ -357,6 +541,6 @@ sys_config() ->
 	      {"bcode_firm",        "条码打印厂商",       "0",   "0"},
 	      {"export_code",       "导出编码格式",       "0",   "0"}, %% 0: utf8 1: gbk
 	      {"export_note",       "导出颜色尺码",       "0",   "0"}, %% 0: utf8 1: gbk
-	      {"bcode_self",        "允许自定义条码",     "0",   "0"}
+	      {"bcode_self",        "吊牌打印模式",       "0",   "0"}
 	     ],
     Values.

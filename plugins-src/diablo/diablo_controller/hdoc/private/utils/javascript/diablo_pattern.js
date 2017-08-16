@@ -10,12 +10,14 @@ angular.module("diabloPattern", []).service("diabloPattern", [function(){
     
     this.positive_num = /^[1-9][0-9]*$/;
     
-    this.positive_decimal_2 = /^\d+(.\d{1,2})?$/;
+    this.positive_decimal_2 = /^\d+(\.\d{1,2})?$/;
     
-    this.decimal_2 = /^[+|\-]?\d+(.\d{1,2})?$/;
+    this.decimal_2 = /^[+|\-]?\d+(\.\d{1,2})?$/;
 
     this.number_3 = /^[0-9]{1,3}$/;
-
+    
+    this.percent  = /^\d{1,2}(\.\d{1,2})?$/;
+    
     // 
     // this.discount = /^\d{2}$|100$/;
     this.discount = /^\d{1,2}(\.\d{1,2})?$|100$|0$/;
@@ -27,6 +29,10 @@ angular.module("diabloPattern", []).service("diabloPattern", [function(){
 
     // character, number or -
     this.char_number_slash_bar = /^[A-Za-z0-9-\/]{2,20}$/;
+
+    this.char_number_space_slash_bar = /^[A-Za-z0-9-\/\s]{2,}$/;
+
+    this.char_number_space_chinese = /^[A-Za-z0-9\u4e00-\u9fa5\s]{2,}$/;
 
     this.id_card = /^[A-Za-z0-9]{8,18}$/;
 

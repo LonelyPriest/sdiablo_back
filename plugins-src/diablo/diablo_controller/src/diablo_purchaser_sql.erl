@@ -13,7 +13,6 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
     Firm        = ?v(<<"firm">>, Attrs, -1),
     Season      = ?v(<<"season">>, Attrs),
     Year        = ?v(<<"year">>, Attrs),
-    %% Promotion   = ?v(<<"promotion">>, Attrs, -1),
     OrgPrice    = ?v(<<"org_price">>, Attrs, 0),
     TagPrice    = ?v(<<"tag_price">>, Attrs, 0), 
     EDiscount   = ?v(<<"ediscount">>, Attrs, 100),
@@ -27,8 +26,8 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
 
     Sizes       = ?v(<<"sizes">>, Attrs, [?FREE_SIZE]),
     SelfBarcode = ?v(<<"self_barcode">>, Attrs, ?NO), 
-    %% Date        = ?utils:current_time(localdate),
-    DateTime    = ?utils:current_time(localtime), 
+    DateTime    = ?utils:current_time(localtime),
+    
     Free = case Colors =:= [0] andalso Sizes =:= [0] of
 	       true  -> 0;
 	       false -> 1
@@ -50,15 +49,44 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
 		    _ -> 0
 		end 
 	end,
+
+    Level = ?v(<<"level">>, Attrs, -1), 
+    StdExecutive = ?v(<<"executive">>, Attrs, -1),
+    SafetyCategory = ?v(<<"category">>, Attrs, -1),
+    Fabric = ?v(<<"fabric">>, Attrs, []),
     
     {GIds, GNames} = decompose_size(Sizes),
     %% ?DEBUG("GIds ~p, GNames ~p", [GIds, GNames]),
 
     Sql1 =
 	"insert into w_inventory_good"
-	"(bcode, style_number, sex, color, year, season, type, size, s_group, free"
-	", brand, firm, org_price, tag_price, ediscount, discount"
-	", path, alarm_day, contailer, alarm_a, merchant, change_date, entry_date"
+	"(bcode"
+	", style_number"
+	", sex"
+	", color"
+	", year"
+	", season"
+	", type"
+	", size"
+	", s_group"
+	", free"
+	", brand"
+	", firm"
+	", org_price"
+	", tag_price"
+	", ediscount"
+	", discount"
+	", path"
+	", level"
+	", executive"
+	", category"
+	", fabric"
+	", alarm_day"
+	", contailer"
+	", alarm_a"
+	", merchant"
+	", change_date"
+	", entry_date"
 	") values("
 	++ "\'" ++ ?to_s(Barcode) ++ "\',"
 	++ "\'" ++ ?to_s(StyleNumber) ++ "\',"
@@ -78,6 +106,12 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
 	++ ?to_s(EDiscount) ++ ","
 	++ ?to_s(Discount) ++ ","
 	++ "\'" ++ ?to_s(Path) ++ "\',"
+	
+	++ ?to_s(Level) ++ ","
+	++ ?to_s(StdExecutive) ++ ","
+	++ ?to_s(SafetyCategory) ++ ","
+	++ "\'" ++ ?to_s(Fabric) ++ "\',"
+	
 	++ ?to_s(AlarmDay) ++ ","
 	++ ?to_s(Contailer) ++ ","
 	++ ?to_s(Alarm_a) ++ ","
@@ -522,7 +556,6 @@ inventory(update_batch, Merchant, Attrs, Conditions) ->
     Contailer = ?v(<<"contailer">>, Attrs), 
     Score = case ?v(<<"score">>, Attrs) of
 		0 -> -1;
-		1 -> undefined;
 		_ -> undefined
 	    end,
 
