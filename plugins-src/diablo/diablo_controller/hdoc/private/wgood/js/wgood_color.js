@@ -10,8 +10,8 @@ function wgoodColorDetailCtrlProvide(
 	comment: diabloPattern.comment,
 	barcode: diabloPattern.number_3,
     };
-    $scope.self_barcode = stockUtils.barcode_self(diablo_default_shop, base);
-    console.log($scope.self_barcode);
+    $scope.auto_barcode = stockUtils.auto_barcode(diablo_default_shop, base);
+    console.log($scope.auto_barcode);
 
     var dialog = diabloUtilsService;
 
@@ -63,7 +63,7 @@ function wgoodColorDetailCtrlProvide(
 	    undefined,
 	    {color: {types: $scope.colorTypes},
 	     pattern: $scope.pattern,
-	     self_barcode: $scope.self_barcode
+	     auto_barcode: $scope.auto_barcode
 	    });
     };
 
@@ -147,7 +147,7 @@ function wgoodColorDetailCtrlProvide(
 		    }() 
 		},
 		pattern: $scope.pattern,
-		self_barcode: $scope.self_barcode,
+		auto_barcode: $scope.auto_barcode,
 		types: $scope.colorTypes
 	    })
     };
@@ -166,7 +166,7 @@ function wgoodTypeDetailCtrlProvide(
     wgoodService, filterType, base){
     $scope.goodTypes = angular.copy(filterType);
     diablo_order($scope.goodTypes); 
-    $scope.self_barcode = stockUtils.barcode_self(diablo_default_shop, base);
+    $scope.auto_barcode = stockUtils.auto_barcode(diablo_default_shop, base);
     $scope.pattern = {
 	type:diabloPattern.ch_name_address,
 	barcode: diabloPattern.number_3
@@ -215,7 +215,7 @@ function wgoodTypeDetailCtrlProvide(
 	    undefined,
 	    {type: {},
 	     pattern: $scope.pattern,
-	     self_barcode: $scope.self_barcode
+	     auto_barcode: $scope.auto_barcode
 	    });
     };
 
@@ -284,7 +284,7 @@ function wgoodTypeDetailCtrlProvide(
 	    undefined,
 	    {type:{name:type.name, bcode:type.bcode},
 	     pattern: $scope.pattern,
-	     self_barcode: $scope.self_barcode});
+	     auto_barcode: $scope.auto_barcode});
     };
 }
 

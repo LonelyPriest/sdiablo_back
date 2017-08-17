@@ -340,13 +340,13 @@ sidebar(Session) ->
 	    ?MERCHANT ->
 		Merchant = ?session:get(merchant, Session),
 		{ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
-		SelfBarcode = ?to_i(?v(<<"bcode_self">>, BaseSetting, 0)),
+		AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSetting, 0)),
 		
 		[{{"setting",        "基本设置", "glyphicon glyphicon-cog"},
 		 [{"print_option",   "系统设置", "glyphicon glyphicon-wrench"}]
-		  ++ case SelfBarcode of
-			 0 -> [];
-			 1 ->
+		  ++ case AutoBarcode of
+			 ?YES -> [];
+			 ?NO ->
 			     [{"std_executive",  "执行标准", "glyphicon glyphicon-registration-mark"},
 			      {"safety_category", "安全类别", "glyphicon glyphicon-text-background"},
 			      {"fabric",         "面料", "glyphicon glyphicon-glass"}]

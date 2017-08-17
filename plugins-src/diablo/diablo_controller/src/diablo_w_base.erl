@@ -513,8 +513,8 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 
 	++  ?utils:v(font, integer, ?v(<<"font">>, Attrs))
 	++  ?utils:v(bold, integer, ?v(<<"bold">>, Attrs))
-	++  ?utils:v(sole_brand, integer, ?v(<<"solo_brand">>, Attrs))
-	++  ?utils:v(sole_color, integer, ?v(<<"solo_color">>, Attrs))
+	++  ?utils:v(solo_brand, integer, ?v(<<"solo_brand">>, Attrs))
+	++  ?utils:v(solo_color, integer, ?v(<<"solo_color">>, Attrs))
 	++  ?utils:v(solo_size, integer, ?v(<<"solo_size">>, Attrs))
 
 	++  ?utils:v(hpx_each, integer, ?v(<<"hpx_each">>, Attrs))
