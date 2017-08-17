@@ -447,8 +447,13 @@ init([]) ->
 	 {?update_safety_category,
 	  <<"修改货品安全类别">>,<<"update_safety_category">>,  ?right_w_base},
 	 
-	 {?add_fabric, <<"新增货品面料">>, <<"add_fabric">>,  ?right_w_base},
-	 {?update_fabric, <<"修改货品面料">>, <<"update_fabric">>,  ?right_w_base}
+	 {?add_fabric,
+	  <<"新增货品面料">>, <<"add_fabric">>,  ?right_w_base},
+	 {?update_fabric,
+	  <<"修改货品面料">>, <<"update_fabric">>,  ?right_w_base},
+	 
+	 {?update_print_template,
+	  <<"修改打印模板">>, <<"update_print_template">>,  ?right_w_base}
     	],
 
     
@@ -934,6 +939,8 @@ pass_action(wholesaler) ->
      <<"list_std_executive">>,
      <<"list_safety_category">>,
      <<"list_fabric">>,
+     <<"list_print_template">>,
+     <<"create_print_template">>,
 
      %% print
      <<"list_w_printer">>, 

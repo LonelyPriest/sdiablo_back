@@ -4,7 +4,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
     $scope, $q, $routeParams, diabloPromise, dateFilter, diabloPattern,
     diabloUtilsService, diabloFilter, diabloPagination, purchaserService,
     user, filterBrand, filterFirm, filterType, filterEmployee,
-    filterSizeGroup, filterColor, base){
+    filterSizeGroup, filterColor, filterTemplate, base){
     $scope.shops       = user.sortShops;
     $scope.brands      = filterBrand;
     $scope.firms       = filterFirm;
@@ -34,17 +34,11 @@ function purchaserInventoryNewUpdateCtrlProvide (
     $scope.pattern    = {discount:diabloPattern.discount};
 
     $scope.setting.use_barcode    = stockUtils.use_barcode(diablo_default_shop, $scope.ubase);
-    $scope.setting.barcode_width  = stockUtils.barcode_width(diablo_default_shop, $scope.ubase);
-    $scope.setting.barcode_height = stockUtils.barcode_height(diablo_default_shop, $scope.ubase);
-    $scope.setting.barcode_firm   = stockUtils.barcode_with_firm(diablo_default_shop, base);
-    $scope.setting.self_barcode   = stockUtils.barcode_self(diablo_default_shop, base);
+    $scope.setting.auto_barcode    = stockUtils.auto_barcode(diablo_default_shop, base); 
 
-    $scope.printU = new stockPrintU(
-	$scope.setting.barcode_width,
-	$scope.setting.barcode_height,
-	$scope.setting.barcode_firm,
-	$scope.setting.self_barcode); 
-    
+    $scope.template = filterTemplate.length !== 0 ? filterTemplate[0] : undefined;
+    $scope.printU = new stockPrintU($scope.template, $scope.setting.auto_barcode);
+
     $scope.go_back = function(){
 	console.log($routeParams.ppage);
 	if (diablo_from_update_stock === stockUtils.to_integer($routeParams.from)){
@@ -1041,7 +1035,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
     var dialog_barcode_title_failed = "库存条码打印失败：";
     $scope.p_barcode = function(inv) {
 	console.log(inv);
-	if ($scope.setting.barcode_firm && diablo_invalid_firm === inv.firm_id ) {
+	if ($scope.template.firm && diablo_invalid_firm === inv.firm_id ) {
 	    dialog.response(
 		false,
 		dialog_barcode_title,
@@ -1056,19 +1050,17 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	    if (inv.free_color_size) {
 		for (var i=0; i<inv.total; i++) {
 		    $scope.printU.free_prepare(
-			inv.style_number,
+			inv, 
 			inv.brand.name,
-			inv.tag_price,
 			barcode,
 			firm); 
 		}
-	    }
+	    } 
 	    else {
 		var barcodes = []; 
 		angular.forEach(inv.amounts, function(a) {
 		    
 		    var color = diablo_find_color(a.cid, filterColor);
-		    // console.log(color); 
 		    for (var i=0; i<a.count; i++) {
 			var o = stockUtils.gen_barcode_content2(barcode, color, a.size);
 			if (angular.isDefined(o) && angular.isObject(o)) {
@@ -1080,13 +1072,12 @@ function purchaserInventoryNewUpdateCtrlProvide (
 		console.log(barcodes);
 		angular.forEach(barcodes, function(b) {
 		    $scope.printU.prepare(
-			inv.style_number,
+			inv,
 			inv.brand.name,
-			inv.tag_price,
 			b.barcode,
+			firm,
 			b.cname,
-			b.size,
-			firm); 
+			b.size); 
 		})
 	    }
 	};

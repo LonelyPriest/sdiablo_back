@@ -25,7 +25,7 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
     Alarm_a     = ?v(<<"alarm_a">>, Attrs, 0),
 
     Sizes       = ?v(<<"sizes">>, Attrs, [?FREE_SIZE]),
-    SelfBarcode = ?v(<<"self_barcode">>, Attrs, ?NO), 
+    AutoBarcode = ?v(<<"Autobarcode">>, Attrs, ?NO), 
     DateTime    = ?utils:current_time(localtime),
     
     Free = case Colors =:= [0] andalso Sizes =:= [0] of
@@ -34,13 +34,13 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
 	   end,
 
     Barcode = 
-	case SelfBarcode of
-	    ?NO  -> 0;
-	    ?YES ->
+	case AutoBarcode of
+	    ?YES  -> 0;
+	    ?NO ->
 		case ?w_user_profile:get(type, Merchant, TypeId) of
 		    {ok, []} -> 0;
 		    {ok, [{Type}]} ->
-			?DEBUG("type ~p", [Type]),
+			%% ?DEBUG("type ~p", [Type]),
 			case ?v(<<"bcode">>, Type) of
 			    0 -> 0;
 			    _BCodeOfType ->
@@ -220,13 +220,38 @@ good(delete, Merchant, {GoodId, StyleNumber, Brand}) ->
 good(detail, Merchant, Conditions) ->
     {StartTime, EndTime, NewConditions} =
 	?sql_utils:cut(fields_with_prifix, Conditions), 
-	"select a.id, a.bcode, a.style_number"
-	", a.brand as brand_id, a.firm as firm_id, a.type as type_id"
-	", a.sex, a.color, a.year, a.season, a.size, a.s_group, a.free"
-	", a.org_price, a.tag_price, a.ediscount"
-	", a.discount, a.path, a.contailer, a.alarm_a, a.entry_date"
+	"select a.id"
+	", a.bcode"
+	", a.style_number"
+	", a.brand as brand_id"
+	", a.firm as firm_id"
+	", a.type as type_id"
+	", a.sex"
+	", a.color"
+	", a.year"
+	", a.season"
+	", a.size"
+	", a.s_group"
+	", a.free"
+	", a.org_price"
+	", a.tag_price"
+	", a.ediscount"
+	", a.discount"
+	", a.path"
+	
+	", a.contailer"
+	", a.alarm_a"
+
+	", a.level"
+	", a.executive as executive_id"
+	", a.category as category_id"
+	", a.fabric as fabric_json"
+	
+	", a.entry_date"
 
 	", b.name as brand"
+	%% ", c.name as executive"
+	%% ", d.name as category"
 	
 	" from w_inventory_good a" 
 	" left join brands b on a.brand=b.id"
@@ -241,9 +266,18 @@ good(detail, Merchant, Conditions) ->
 
 good(price, Merchant, [{_StyleNumber, _Brand}|_] = Conditions) ->
     [{S1, B1}|T] = Conditions, 
-    "select a.id, a.style_number, a.brand as brand_id"
-	", a.s_group, a.free, a.org_price, a.tag_price, a.pkg_price"
-	", a.price3, a.price4, a.price5, a.discount"
+    "select a.id"
+	", a.style_number"
+	", a.brand as brand_id"
+	", a.s_group"
+	", a.free"
+	", a.org_price"
+	", a.tag_price"
+	", a.pkg_price"
+    %% ", a.price3"
+    %% ", a.price4"
+    %% ", a.price5"
+	", a.discount"
 	" from w_inventory_good a where (a.style_number, a.brand) in("
 	++ lists:foldr(
 	     fun({StyleNumber, Brand}, Acc)->
@@ -278,8 +312,15 @@ good(detail_no_join, Merchant, StyleNumber, Brand) ->
 	", a.discount"
 	", a.path"
 	", a.alarm_day"
-	", a.contailer"
+	
+	", a.contailer" 
 	", a.alarm_a"
+
+	", a.level"
+	", a.executive as executive_id"
+	", a.category as category_id"
+	", a.fabric as fabric_json"
+	
 	", a.entry_date"
 	
 	", b.name as brand"
@@ -357,8 +398,10 @@ good_match(style_number_with_firm, Merchant, StyleNumber, Firm) ->
 	", a.discount"
 	", a.path"
 	", a.alarm_day"
+	
 	", a.contailer"
 	", a.alarm_a"
+	
 	", a.entry_date"
 	
 	", b.name as brand"
@@ -397,8 +440,10 @@ good_match(all_style_number_with_firm, Merchant, StartTime, Firm) ->
 	", a.discount"
 	", a.path"
 	", a.alarm_day"
+	
 	", a.contailer"
 	", a.alarm_a"
+	
 	", a.entry_date"
 	
 	", b.name as brand"

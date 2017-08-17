@@ -238,6 +238,8 @@ var diablo_sex2number = function(sex){
 
 var diablo_move_state = ["在途中", "已转移"];
 
+var diablo_level = ["未定义", "一等品", "二等品", "合格品"];
+
 var diablo_get_object = function(objectId, objects){
     if (!angular.isArray(objects)){
 	return undefined;

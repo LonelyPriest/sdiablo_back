@@ -1,0 +1,385 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="portlet box purple">
+      <div class="portlet-title">
+	<div class="caption">
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>
+	 条码打印模板
+	</div>	
+
+	<div class="actions">
+	  <div class="btn-group btn-group-solid">
+	    <button x-ng-if="!template" class="btn red purple-stripe"
+		    x-ng-click="create_template()">创建
+	      <i class="glyphicon glyphicon-plus"></i></button>
+	    
+	    <button class="btn btn-success purple-stripe"
+		    x-ng-click="save_template()">保存
+	      <i class="glyphicon glyphicon-save"></i></button>
+	    
+	    <button type="button" class="btn blue reload purple-stripe"
+		    x-ng-click="refresh()">刷新
+	      <i class="icon icon-spinner fg-white"></i></button>
+	  </div>
+	</div> 
+      </div>
+      
+      <!--BEGIN table container-->
+      <div class="portlet-body util-btn-margin-bottom-5">
+	<!--BEGIN table-toolbar-->
+	<div class="table-toolbar">
+	</div> <!--END table-toolbar-->
+	
+	<!--BEGN portlet body--> 
+	<div class="portlet-body">
+	  <div class="table-responsive">
+	    <!--BEGIN table--> 
+	    <table class="table table-bordered
+			  table-striped table-hover table-condensed" navtable>
+	      <thead>
+		<tr>
+	    	  <th>序号</th> 
+		  <th>名称</th>
+	    	  <th>取值</th>
+		  <th>描述</th>
+		</tr>
+	      </thead>
+	      <tbody x-ng-if="template">
+		<tr>
+		  <td>1</td>
+		  <td>纸宽</td>
+		  <td class="col-md-1 col-sm-1">
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.width"/> 
+		  </td>
+		  <td>单位：厘米</td> 
+		</tr>
+		
+		<tr>
+		  <td>2</td>
+		  <td>纸高</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.height"/>
+		    </td>
+		  <td>单位：厘米</td>
+		</tr>
+
+		<tr>
+		  <td>3</td>
+		  <td>打印款号</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.style_number"/>
+		    </td>
+		  <td></td>
+		</tr>
+
+		<tr>
+		  <td>4</td>
+		  <td>打印品牌</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.brand"/>
+		    </td>
+		  <td></td>
+		</tr>
+
+		<tr>
+		  <td>5</td>
+		  <td>打印类型</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.type"/>
+		    </td>
+		  <td>一般显示为品名</td>
+		</tr>
+
+		<tr>
+		  <td>6</td>
+		  <td>打印厂商</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.firm"/>
+		    </td>
+		  <td></td>
+		</tr>
+
+		<tr>
+		  <td>7</td>
+		  <td>打印颜色</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.color"/>
+		    </td>
+		  <td></td>
+		</tr>
+
+		<tr>
+		  <td>8</td>
+		  <td>打印尺码</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.size"/>
+		  </td>
+		  <td></td>
+		</tr>
+
+		<tr>
+		  <td>9</td>
+		  <td>打印等级</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.level"/>
+		  </td>
+		  <td></td>
+		</tr>
+
+		<tr>
+		  <td>10</td>
+		  <td>打印执行标准</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.executive"/>
+		  </td>
+		  <td></td>
+		</tr>
+
+		<tr>
+		  <td>11</td>
+		  <td>打印安全类别</td> 
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.category"/>
+		  </td>
+		  <td></td>
+		</tr>
+
+		<tr>
+		  <td>12</td>
+		  <td>打印面料</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.fabric"/>
+		  </td>
+		  <td>显示为面料成份</td>
+		</tr>
+
+		<tr>
+		  <td>13</td>
+		  <td>字体大小</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.font"/>
+		  </td>
+		  <td>0：表示打印机默认大小</td>
+		</tr>
+
+		<tr>
+		  <td>14</td>
+		  <td>字体加粗</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.bold"/>
+		  </td>
+		  <td>0：表示打印机默认粗细</td>
+		</tr>
+
+		<tr>
+		  <td>15</td>
+		  <td>品牌独占一行</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.solo_brand"/>
+		  </td>
+		  <td></td>
+		</tr>
+
+		<tr>
+		  <td>16</td>
+		  <td>颜色独占一行</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.solo_color"/>
+		  </td>
+		  <td></td>
+		</tr>
+
+		<tr>
+		  <td>17</td>
+		  <td>尺码独占一行</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.solo_size"/>
+		  </td>
+		  <td></td>
+		</tr>
+
+		<tr>
+		  <td>18</td>
+		  <td>行高</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.hpx_each"/>
+		  </td>
+		  <td>像素单位</td>
+		</tr>
+
+		<tr>
+		  <td>19</td>
+		  <td>价格行高</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.hpx_price"/>
+		  </td>
+		  <td>象素单位</td>
+		</tr>
+
+		<tr>
+		  <td>20</td>
+		  <td>条码行高</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.hpx_barcode"/>
+		  </td>
+		  <td>象素单位</td>
+		</tr>
+
+		<tr>
+		  <td>20</td>
+		  <td>上边距</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.hpx_top"/>
+		  </td>
+		  <td>象素单位</td>
+		</tr>
+
+		<tr>
+		  <td>20</td>
+		  <td>左边距</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.hpx_left"/>
+		  </td>
+		  <td>象素单位</td>
+		</tr>
+		
+	      </tbody>
+	    </table> <!--END table-->
+	  </div> <!--END table-responsive-->
+	</div> <!--END portlet body-->
+      </div> <!--END table container-->      
+    </div> <!--END box purle-->
+  </div><!--END col-md-12-->
+</div>

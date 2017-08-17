@@ -3,8 +3,13 @@
 function wgoodUpdateCtrlProvide(
     $scope, $location, $routeParams, $q, diabloPattern,
     diabloUtilsService, diabloPromise, diabloFilter, wgoodService,
-    filterPromotion, filterBrand, filterFirm, filterType, filterColor, filterSizeGroup,
-    user, base){
+    filterPromotion,
+    filterBrand,
+    filterFirm,
+    filterType,
+    filterColor,
+    filterSizeGroup,
+    filterStdExecutive, filterCategory, filterFabric, filterTemplate, base, user){
     // console.log(filterSizeGroup);
     // console.log($routeParams);
     
@@ -128,7 +133,7 @@ function wgoodUpdateCtrlProvide(
 
 	$scope.setting = {
 	    multi_sgroup :stockUtils.multi_sizegroup($scope.good.shop.id, base),
-	    self_barcode :stockUtils.barcode_self(diablo_default_setting, base)
+	    auto_barcode :stockUtils.auto_barcode(diablo_default_setting, base)
 	};
 
 	// $scope.good.promotion = diablo_get_object(good.pid, $scope.promotions);

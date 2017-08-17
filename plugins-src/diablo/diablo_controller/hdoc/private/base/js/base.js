@@ -646,7 +646,7 @@ function resetPasswdCtrlProvide($scope, diabloPattern, diabloUtilsService, baseS
 
 
 function goodStdStandardCtrlProvide(
-    $scope, diabloUtilsService, diabloFilter, diabloPattern, baseService, user){
+    $scope, diabloUtilsService, diabloFilter, diabloPattern, baseService){
     $scope.pattern = {
 	name:    diabloPattern.char_number_space_slash_bar,
     }; 
@@ -750,7 +750,7 @@ function goodStdStandardCtrlProvide(
 
 
 function goodSafetyCategoryCtrlProvide(
-    $scope, diabloUtilsService, diabloFilter, diabloPattern, baseService, user){
+    $scope, diabloUtilsService, diabloFilter, diabloPattern, baseService){
     $scope.pattern = {
 	name:    diabloPattern.char_number_space_chinese,
     }; 
@@ -855,7 +855,7 @@ function goodSafetyCategoryCtrlProvide(
 
 
 function goodFabricCtrlProvide(
-    $scope, diabloUtilsService, diabloFilter, diabloPattern, baseService, user){
+    $scope, diabloUtilsService, diabloFilter, diabloPattern, baseService){
     $scope.pattern = {
 	name:    diabloPattern.ch_en_num,
     }; 
@@ -957,6 +957,84 @@ function goodFabricCtrlProvide(
     };
 };
 
+
+function goodPrintTemplateCtrlProvide(
+    $scope, diabloUtilsService, diabloFilter, diabloPattern, baseService){
+    var dialog = diabloUtilsService;
+
+    $scope.refresh = function() {
+	baseService.list_print_template().then(function(templates) {
+	    console.log(templates);
+	    if (templates.length !== 0) {
+		$scope.template = templates[0];
+		$scope.o_template = angular.copy($scope.template);
+	    }
+
+	    console.log($scope.template);
+	});
+    };
+
+    $scope.refresh();
+
+    var p = ["width", "height", "style_number", "brand", "type", "firm", "color", "size"
+	     , "level", "executive", "category", "fabric"
+	     , "font", "bold", "solo_brand", "solo_color", "solo_size"
+	     , "hpx_each", "hpx_price", "hpx_barcode"
+	     , "hpx_top", "hpx_left"];
+    
+    $scope.save_template = function() {
+	var update = {id:$scope.template.id};
+	angular.forEach(p, function(o) {
+	    if ($scope.template[o] !== $scope.o_template[o]) {
+		update[o] = $scope.template[o]
+	    }
+	});
+	
+	console.log(update);
+	baseService.update_print_template(update).then(function(result){
+	    if (result.ecode === 0) {
+		dialog.response_with_callback(
+		    true,
+		    "打印模板编辑",
+		    "打印模板编辑成功！！",
+		    undefined,
+		    function() {
+			$scope.refresh();
+			diabloFilter.reset_print_template();
+		    });
+	    } else {
+		dialog.response(
+		    false,
+		    "打印模板编辑",
+		    "打印模板编辑失败！！" + baseService.error[result.ecode],
+		    undefined);
+	    };
+	});
+    };
+
+    $scope.create_template = function() {
+	baseService.create_print_template().then(function(result){
+	    if (result.ecode === 0) {
+		dialog.response_with_callback(
+		    true,
+		    "打印模板创建",
+		    "打印模板创建成功！！",
+		    undefined,
+		    function() {
+			$scope.refresh();
+			// diabloFilter.reset_print_template();
+		    });
+	    } else {
+		dialog.response(
+		    false,
+		    "打印模板创建",
+		    "打印模板创建失败！！" + baseService.error[result.ecode],
+		    undefined);
+	    };
+	});
+    }
+};
+
 define(["baseApp"], function(app){
     app.controller("bankCardNewCtrl", bankCardNewCtrlProvide);
     app.controller("bankCardDetailCtrl", bankCardDetailCtrlProvide);
@@ -967,7 +1045,7 @@ define(["baseApp"], function(app){
     app.controller("goodStdStandardCtrl", goodStdStandardCtrlProvide);
     app.controller("goodSafetyCategoryCtrl", goodSafetyCategoryCtrlProvide);
     app.controller("goodFabricCtrl", goodFabricCtrlProvide);
+    app.controller("goodPrintTemplateCtrl", goodPrintTemplateCtrlProvide);
     
     app.controller("resetPasswdCtrl", resetPasswdCtrlProvide);
 });
-

@@ -3,19 +3,21 @@
 function wgoodNewCtrlProvide(
     $scope, $timeout, diabloPattern, diabloUtilsService, diabloFilter,
     wgoodService, filterPromotion, filterFirm, filterBrand,
-    filterType, filterSizeGroup, filterStdExecutive, filterCategory, filterFabric, base) {
+    filterType, filterSizeGroup,
+    filterStdExecutive, filterCategory, filterFabric, filterTemplate, base) {
     // console.log(filterPromotion);
     $scope.promotions = filterPromotion;
     
     $scope.seasons    = diablo_season2objects;
     $scope.full_years = diablo_full_year; 
-    $scope.sexs       = diablo_sex2object;
+    $scope.sexs       = diablo_sex2object; 
 
     // use to print tag
     $scope.levels         = [1,2,3];
     $scope.std_executives = filterStdExecutive;
     $scope.categories     = filterCategory;
     $scope.fabrics        = filterFabric;
+    $scope.template       = filterTemplate.length!==0 ? filterTemplate[0] : undefined;
 
     console.log($scope.fabrics);
     
@@ -625,8 +627,16 @@ function wgoodNewCtrlProvide(
 
 function wgoodDetailCtrlProvide(
     $scope, $location, dateFilter, diabloUtilsService,
-    diabloPagination, wgoodService, user, diabloFilter,
-    filterPromotion, filterBrand, filterFirm, filterType, filterColor, base){
+    diabloPagination, wgoodService, diabloFilter,
+    filterPromotion,
+    filterBrand,
+    filterFirm,
+    filterType,
+    filterColor,
+    filterStdExecutive, filterCategory, filterFabric, filterTemplate, base, user){
+
+    $scope.template = filterTemplate.length !== 0 ? filterTemplate[0] : undefined;
+    
     /*
      * authen
      */
@@ -649,18 +659,15 @@ function wgoodDetailCtrlProvide(
     };
 
     $scope.setting = {
-	self_barcode   :stockUtils.barcode_self(diablo_default_shop, base),
-	use_barcode    :stockUtils.use_barcode(diablo_default_shop, base),
-	barcode_width  :stockUtils.barcode_width(diablo_default_shop, base),
-	barcode_height :stockUtils.barcode_height(diablo_default_shop, base),
-	barcode_firm   :stockUtils.barcode_with_firm(diablo_default_shop, base)
+	// self_barcode   :stockUtils.barcode_self(diablo_default_shop, base),
+	use_barcode  :stockUtils.use_barcode(diablo_default_shop, base),
+	auto_barcode :stockUtils.auto_barcode(diablo_default_shop, base)
+	// barcode_width  :stockUtils.barcode_width(diablo_default_shop, base),
+	// barcode_height :stockUtils.barcode_height(diablo_default_shop, base),
+	// barcode_firm   :stockUtils.barcode_with_firm(diablo_default_shop, base)
     };
 
-    $scope.printU = new stockPrintU(
-	$scope.setting.barcode_width,
-	$scope.setting.barcode_height,
-	$scope.setting.barcode_firm,
-	$scope.setting.self_barcode); 
+    $scope.printU = new stockPrintU($scope.template, $scope.setting.auto_barcode); 
     // console.log($scope.right);
     /*
      * filter
@@ -701,14 +708,26 @@ function wgoodDetailCtrlProvide(
 			$scope.total_items      = result.total;
 		    }
 		    angular.forEach(result.data, function(d){
+			console.log(d);
 			d.firm  = diablo_get_object(d.firm_id, filterFirm);
 			d.type  = diablo_get_object(d.type_id, filterType);
-			// d.promotion =
-			//     diablo_get_object(d.pid, filterPromotion);
+			
+			d.executive = diablo_get_object(d.executive_id, filterStdExecutive);
+			d.category = diablo_get_object(d.category_id, filterCategory);
+			if (d.fabric_json) {
+			    d.fabrics = angular.fromJson(d.fabric_json);
+			    d.fabric_desc = diablo_empty_string;
+			    angular.forEach(d.fabrics, function(f) {
+				var fabric = diablo_get_object(f.f, filterFabric);
+				if (angular.isDefined(fabric) && angular.isObject(fabric))
+				    f.name = fabric.name; 
+				    d.fabric_desc += fabric.name + ":" + f.p.toString();
+			    });
+			}
+			    
 		    })
 		    $scope.goods = result.data;
-		    diablo_order_page(
-			page, $scope.items_perpage, $scope.goods);
+		    diablo_order_page(page, $scope.items_perpage, $scope.goods);
 		})
 	});
     };
@@ -847,12 +866,12 @@ function wgoodDetailCtrlProvide(
     var dialog_barcode_title_failed = "货品条码打印失败：";
     var dialog_barcode_title_success = "货品条码打印成功：";
 
-    if ($scope.setting.use_barcode && $scope.setting.self_barcode && needCLodop())
+    if ($scope.setting.use_barcode && needCLodop())
 	loadCLodop();
     
     $scope.print_barcode = function(g) {
 	console.log(g);
-	if (diablo_yes === $scope.setting.barcode_firm && g.firm_id === diablo_invalid_firm) {
+	if ($scope.template.firm && g.firm_id === diablo_invalid_firm) {
 	    dialog.response(
 		false,
 		dialog_barcode_title,
@@ -879,7 +898,6 @@ function wgoodDetailCtrlProvide(
 			cid:   stockUtils.to_integer(colorIds[i]),
 			size:  sizes[j],
 			focus: i===0 && j===0 ? true:false
-			// count: 0
 		    });
 		}
 	    }
@@ -913,28 +931,37 @@ function wgoodDetailCtrlProvide(
 		    dialog_barcode_title_failed + wgoodService.error[1998]);
 	    } else {
 		var barcodes = [];
-		angular.forEach(barcode_amounts, function(a) {
-		    var color = diablo_find_color(a.cid, filterColor);
-		    for (var i=0; i<a.count; i++) {
-			var o = stockUtils.gen_barcode_content2(g.bcode, color, a.size);
-			if (angular.isDefined(o) && angular.isObject(o)) {
-			    barcodes.push(o);
-			}
-		    } 
-		}); 
-		console.log(barcodes);
-		
-		angular.forEach(barcodes, function(b) {
-		    console.log(b);
-		    $scope.printU.prepare(
-			g.style_number,
-			g.brand,
-			g.tag_price,
-			b.barcode,
-			b.cname,
-			b.size,
-			g.firm_id === diablo_invalid_firm ? undefined : g.firm.name); 
-		});
+		if (g.free === 0) {
+		   angular.forEach(barcode_amounts, function(a) {
+		       $scope.printU.free_prepare(
+			   g,
+			   g.brand,
+			   g.bcode,
+			   g.firm_id === diablo_invalid_firm ? undefined : g.firm.name);
+		   })
+		} else {
+		    angular.forEach(barcode_amounts, function(a) {
+			var color = diablo_find_color(a.cid, filterColor);
+			for (var i=0; i<a.count; i++) {
+			    var o = stockUtils.gen_barcode_content2(g.bcode, color, a.size);
+			    if (angular.isDefined(o) && angular.isObject(o)) {
+				barcodes.push(o);
+			    } 
+			} 
+		    }); 
+		    console.log(barcodes);
+		    
+		    angular.forEach(barcodes, function(b) {
+			console.log(b);
+			$scope.printU.prepare(
+			    g,
+			    g.brand,
+			    b.barcode,
+			    g.firm_id === diablo_invalid_firm ? undefined : g.firm.name, 
+			    b.cname,
+			    b.size); 
+		    });
+		} 
 	    }
 	};
 

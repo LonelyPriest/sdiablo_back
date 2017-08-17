@@ -165,6 +165,10 @@ function filterProvider(){
 	function list_good_fabric() {
 	    return _baseSettingHttp.query({operation: 'list_fabric'}).$promise;
 	};
+
+	function list_print_template() {
+	    return _baseSettingHttp.query({operation: 'list_print_template'}).$promise;
+	};
 	
 	return{
 	    default_time: function(start, end){
@@ -871,7 +875,23 @@ function filterProvider(){
 
 	    reset_good_fabric: function() {
 		clear_from_storage(cookie, "fabric");
-	    }
+	    },
+
+	    list_print_template: function() {
+		var cached = get_from_storage(cookie, "p_template");
+		if (angular.isArray(cached) && cached.length !== 0){
+		    return cached;
+		} else {
+		    return list_print_template().then(function(t){
+			set_storage(cookie, "p_template", t);
+			return t;
+		    }); 
+		}
+	    },
+
+	    reset_print_template: function() {
+		clear_from_storage(cookie, "p_template");
+	    },
 	    //
 	    
 	}

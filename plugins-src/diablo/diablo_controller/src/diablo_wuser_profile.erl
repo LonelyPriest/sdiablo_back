@@ -21,7 +21,7 @@
 	 terminate/2, code_change/3]).
 
 -export([new/1, new/2, get/1, get/2, get/3,
-	 update/2, update/3, set_default/1, set_default/2]).
+	 update/2, update/3, set_default/1, set_default/2, set_template/2]).
 -export([filter/3]).
 
 %% -define(SERVER, ?MODULE).
@@ -131,6 +131,8 @@ set_default(Merchant) ->
     set_default(Merchant, -1).
 set_default(Merchant, Shop) ->
     gen_server:call(?SERVER(Merchant), {set_default, Merchant, Shop}).
+set_template(barcode_print, Merchant) ->
+    gen_server:call(?SERVER(Merchant), {set_barcode_print_template, Merchant}).
 
 update(merchant, Merchant) ->
     gen_server:cast(?SERVER(Merchant), {update_merchant, Merchant}); 
@@ -866,7 +868,79 @@ handle_call({set_default, Merchant, Shop}, _From, State) ->
 
     Reply = ?sql_utils:execute(transaction, Sql0 ++ Sql1, ok),
     {reply, Reply, State};
-    
+
+handle_call({set_barcode_print_template, Merchant}, _From, State) ->
+    Sql0 = "select id, width, height from print_template"
+	" where merchant=" ++ ?to_s(Merchant),
+    case ?sql_utils:execute(s_read, Sql0) of
+	{ok, []} ->
+	    Sql1 = "insert into print_template ("
+		"width"
+		", height"
+		
+		", style_number"
+		", brand"
+		", type"
+		", firm"
+		", color"
+		", size"
+		
+		", level"
+		", executive"
+		", category"
+		", fabric"
+
+		", font"
+		", bold"
+		
+		", solo_brand"
+		", solo_color"
+		", solo_size" 
+		
+		", hpx_each"
+		", hpx_price"
+		", hpx_barcode"
+
+		", hpx_top"
+		", hpx_left"
+
+		", merchant) values("
+		++ ?to_s(4) ++ ","
+		++ ?to_s(3) ++ ","
+		
+		++ ?to_s(?YES) ++ ","
+		++ ?to_s(?YES) ++ ","
+		++ ?to_s(?YES) ++ ","
+		++ ?to_s(?YES) ++ ","
+		++ ?to_s(?YES) ++ ","
+		++ ?to_s(?YES) ++ ","
+
+		++ ?to_s(?NO) ++ ","
+		++ ?to_s(?NO) ++ "," 
+		++ ?to_s(?NO) ++ ","
+		++ ?to_s(?NO) ++ ","
+		
+		++ ?to_s(?NO) ++ ","
+		++ ?to_s(?NO) ++ ","
+
+		++ ?to_s(?NO) ++ ","
+		++ ?to_s(?NO) ++ ","
+		++ ?to_s(?NO) ++ ","
+		
+		++ ?to_s(0) ++ ","
+		++ ?to_s(0) ++ ","
+		++ ?to_s(0) ++ ","
+
+		++ ?to_s(5) ++ ","
+		++ ?to_s(10) ++ ","
+		
+		++ ?to_s(Merchant)  ++ ")",
+
+	    Reply = ?sql_utils:execute(insert, Sql1),
+	    {reply, Reply, State};
+	{ok, _} ->
+	    {reply, {ok, exist}, State}
+    end;
 
 handle_call(_Request, _From, State) ->
     Reply = ok,

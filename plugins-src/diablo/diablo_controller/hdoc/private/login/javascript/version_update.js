@@ -1,6 +1,11 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2017-08-17",
+         content:
+	 ["条码打印增加打印模板以定制条码打印内容"]
+        },
+	
 	{date: "2017-08-14",
          content:
 	 ["增加销售明细颜色尺码导出功能"]

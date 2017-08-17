@@ -110,23 +110,23 @@ action(Session, Req, {"new_w_color"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
 
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
-    SelfBarcode = ?to_i(?v(<<"bcode_self">>, BaseSetting, 0)),
+    AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSetting, ?YES)),
     
     case 
 	case ?v(<<"bcode">>, Payload) of
 	    undefined ->
 		ok;
 	    _BCode ->
-		case SelfBarcode of
-		    ?NO ->
-			{error, ?err(self_bcode_not_allowed, Merchant)};
+		case AutoBarcode of
 		    ?YES ->
+			{error, ?err(self_bcode_not_allowed, Merchant)};
+		    ?NO ->
 			ok
 		end
 	end
     of
 	ok -> 
-	    case ?attr:color(w_new, Merchant, Payload ++ [{<<"self_barcode">>, SelfBarcode}]) of
+	    case ?attr:color(w_new, Merchant, Payload ++ [{<<"auto_barcode">>, AutoBarcode}]) of
 		{ok, ColorId} ->
 		    ?utils:respond(200, Req, ?succ(add_color, ColorId), {<<"id">>, ColorId}),
 		    ?w_user_profile:update(color, Merchant);
@@ -219,7 +219,7 @@ action(Session, Req, {"new_w_good"}, Payload) ->
     ImageData   = ?v(<<"image">>, Payload, <<>>),
 
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
-    SelfBarcode = ?to_i(?v(<<"bcode_self">>, BaseSetting, 0)),
+    AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSetting, ?YES)),
     
     {file, Here} = code:is_loaded(?MODULE),
     ImageDir = filename:join(
@@ -247,7 +247,7 @@ action(Session, Req, {"new_w_good"}, Payload) ->
 	
 	{ok, TypeId} =
 	    case ?attr:type(new, Merchant, [{<<"name">>, Type},
-					    {<<"self_barcode">>, SelfBarcode}]) of
+					    {<<"auto_barcode">>, AutoBarcode}]) of
 		{ok, _TypeId} -> {ok, _TypeId};
 		{ok_exist, _TypeId} -> {ok, _TypeId};
 		_Error -> _Error 
@@ -264,7 +264,7 @@ action(Session, Req, {"new_w_good"}, Payload) ->
 		[{<<"brand_id">>, BrandId},
 		 {<<"type_id">>, TypeId},
 		 {<<"path">>, ImagePath},
-		 {<<"self_barcode">>, SelfBarcode}|Good]) of
+		 {<<"auto_barcode">>, AutoBarcode}|Good]) of
 	    {ok, DBId} -> 
 		?utils:respond(
 		   200,
@@ -538,23 +538,17 @@ action(Session, Req, {"update_w_type"}, Payload) ->
 action(Session, Req, {"reset_w_good_barcode"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
-    SelfBarcode = ?to_i(?v(<<"bcode_self">>, BaseSetting, 0)),
-
+    AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSetting, ?YES)), 
     StyleNumber = ?v(<<"style_number">>, Payload),
     Brand = ?v(<<"brand">>, Payload),
 
-    case SelfBarcode of
-	?NO ->
-	    ?utils:respond(200, Req, ?err(self_bcode_not_allowed, Merchant));
-	?YES ->
-	    case ?w_inventory:purchaser_good(reset_barcode, Merchant, StyleNumber, Brand) of
-		{ok, Barcode} ->
-		    ?utils:respond(200, object, Req,
-				   {[{<<"ecode">>, 0},
-				     {<<"barcode">>, ?to_b(Barcode)}]}); 
-		{error, Error} ->
-		    ?utils:respond(200, Req, Error)
-	    end
+    case ?w_inventory:purchaser_good(reset_barcode, AutoBarcode, Merchant, StyleNumber, Brand) of
+	{ok, Barcode} ->
+	    ?utils:respond(200, object, Req,
+			   {[{<<"ecode">>, 0},
+			     {<<"barcode">>, ?to_b(Barcode)}]}); 
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
     end.
     
 %% sidebar(Session) -> 

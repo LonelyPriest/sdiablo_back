@@ -332,6 +332,7 @@
 -define(update_std_executive,     ?right_w_base + 12).
 -define(update_safety_category,   ?right_w_base + 13).
 -define(update_fabric,            ?right_w_base + 14).
+-define(update_print_template,    ?right_w_base + 15).
 
 %% public
 -define(http_route, diablo_controller_http_route).

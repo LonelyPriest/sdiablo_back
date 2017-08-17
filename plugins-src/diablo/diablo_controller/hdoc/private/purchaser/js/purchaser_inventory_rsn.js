@@ -173,7 +173,7 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
     $scope, $routeParams, $location, dateFilter, diabloUtilsService, diabloFilter,
     purchaserService, localStorageService,
     user, filterBrand, filterFirm, filterType,
-    filterEmployee, filterSizeGroup, filterColor, base){
+    filterEmployee, filterSizeGroup, filterColor, filterTemplate, base){
 
     // console.log(user.right);
 
@@ -187,18 +187,16 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
     $scope.css        = diablo_stock_css;
 
     $scope.setting = {
-	self_barcode   :stockUtils.barcode_self(diablo_default_shop, base), 
+	// self_barcode   :stockUtils.barcode_self(diablo_default_shop, base), 
 	use_barcode: stockUtils.use_barcode(diablo_default_shop, base),
-	barcode_width: stockUtils.barcode_width(diablo_default_shop, base),
-	barcode_height: stockUtils.barcode_height(diablo_default_shop, base),
-	barcode_firm: stockUtils.barcode_with_firm(diablo_default_shop, base)
+	auto_barcode :stockUtils.auto_barcode(diablo_default_shop, base)
+	// barcode_width: stockUtils.barcode_width(diablo_default_shop, base),
+	// barcode_height: stockUtils.barcode_height(diablo_default_shop, base),
+	// barcode_firm: stockUtils.barcode_with_firm(diablo_default_shop, base)
     };
 
-    $scope.printU = new stockPrintU(
-	$scope.setting.barcode_width,
-	$scope.setting.barcode_height,
-	$scope.setting.barcode_firm,
-	$scope.setting.self_barcode); 
+    $scope.template = filterTemplate.length !== 0 ? filterTemplate[0] : undefined;
+    $scope.printU = new stockPrintU($scope.template, $scope.setting.auto_barcode); 
     /*
      * hidden
      */
@@ -537,7 +535,7 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
     $scope.p_barcode = function(inv) {
 	console.log(inv);
 
-	if ($scope.setting.barcode_firm && diablo_invalid_firm === inv.firm_id ) {
+	if ($scope.template.firm && diablo_invalid_firm === inv.firm_id ) {
 	    dialog.response(
 		false,
 		dialog_barcode_title,
@@ -550,9 +548,8 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 	    if (0 === inv.free) {
 		for (var i=0; i<inv.amount; i++) {
 		    $scope.printU.free_prepare(
-			inv.style_number,
+			inv,
 			inv.brand.name,
-			inv.tag_price,
 			barcode,
 			firm);
 		} 
@@ -574,13 +571,12 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 		    
 		    angular.forEach(barcodes, function(b) {
 			$scope.printU.prepare(
-			    inv.style_number,
+			    inv,
 			    inv.brand.name,
-			    inv.tag_price,
 			    b.barcode,
+			    firm,
 			    b.cname,
-			    b.size,
-			    firm); 
+			    b.size); 
 		    })
 		};
 

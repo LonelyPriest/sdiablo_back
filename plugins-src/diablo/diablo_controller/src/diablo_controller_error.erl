@@ -261,7 +261,10 @@ success(base_delete_shop_setting, Shop) ->
 success(base_update_passwd, Account) ->
     {0, "Success to update password of user " ++ ?to_s(Account)}; 
 success(good_update_std_executive, EId) ->
-    {0, "Success to update executive standard " ++ ?to_s(EId)}.
+    {0, "Success to update executive standard " ++ ?to_s(EId)};
+success(create_print_template, Merchant) ->
+    {0, "Success to create print template of merchant " ++ ?to_s(Merchant)}.
+
 
 %% -----------------------------------------------------------------------------
 %% error define

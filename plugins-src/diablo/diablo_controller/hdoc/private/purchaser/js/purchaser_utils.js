@@ -84,13 +84,13 @@ var stockUtils = function(){
 	    return diablo_base_setting("bcode_use", shop, base, parseInt, diablo_no);
 	},
 
-	barcode_width: function(shop, base) {
-	    return diablo_base_setting("bcode_width", shop, base, parseInt, 7);
-	},
+	// barcode_width: function(shop, base) {
+	//     return diablo_base_setting("bcode_width", shop, base, parseInt, 7);
+	// },
 
-	barcode_height: function(shop, base) {
-	    return diablo_base_setting("bcode_height", shop, base, parseInt, 2);
-	},
+	// barcode_height: function(shop, base) {
+	//     return diablo_base_setting("bcode_height", shop, base, parseInt, 2);
+	// },
 
 	trans_orgprice: function(shop, base) {
 	    return diablo_base_setting("trans_orgprice", shop, base, parseInt, diablo_yes);
@@ -112,12 +112,12 @@ var stockUtils = function(){
 	    return diablo_base_setting("c_stock_firm", shop, base, parseInt, diablo_yes);
 	},
 
-	barcode_with_firm: function(shop, base) {
-	    return diablo_base_setting("bcode_firm", shop, base, parseInt, diablo_no);
-	},
+	// barcode_with_firm: function(shop, base) {
+	//     return diablo_base_setting("bcode_firm", shop, base, parseInt, diablo_no);
+	// },
 
-	barcode_self: function(shop, base) {
-	    return diablo_base_setting("bcode_self", shop, base, parseInt, diablo_no);
+	auto_barcode: function(shop, base) {
+	    return diablo_base_setting("bcode_auto", shop, base, parseInt, diablo_yes);
 	},
 
 	yes_no: function() {return [{name:"否", id: 0}, {name:"是", id: 1}]},
@@ -611,18 +611,19 @@ stockFile.prototype.readFile = function() {
     return result;
 };
 
-var stockPrintU = function(pageWidth, pageHeight, includeFirm, selfBarcode) {
-    this.pageWidth = pageWidth;
-    this.pageHeight = pageHeight;
-    this.wpx = Math.floor(pageWidth * 96 / 2.54);
-    this.hpx = Math.floor(pageHeight * 96 / 2.54);
-    // px, top from paper
-    this.top = 5;
-    // px, left from paper
-    this.left = 10;
-    this.barcodeFormat = "128C";
-    this.includeFirm = includeFirm;
-    this.selfBarcode = selfBarcode;
+var stockPrintU = function(template, autoBarcode) {
+    console.log(template);
+    if (angular.isDefined(template) && angular.isObject(template)) {
+	this.template = template;
+	// this.pageWidth = template.width;
+	// this.pageHeight = template.height;
+	this.wpx = Math.floor(this.template.width * 96 / 2.54);
+	this.hpx = Math.floor(this.template.height * 96 / 2.54);
+	this.top = template.hpx_top;
+	this.left = template.hpx_left;
+	this.autoBarcode = autoBarcode; 
+	this.barcodeFormat = "128C"; 
+    } 
 };
 
 stockPrintU.prototype.getLodop = function() {
@@ -635,23 +636,19 @@ stockPrintU.prototype.init = function() {
     this.getLodop();
     this.LODOP.PRINT_INITA(0, 0, this.wpx, this.hpx, "task_barcode_from_stock");
     this.LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
-    this.LODOP.SET_PRINT_PAGESIZE(1, this.pageWidth * 100, this.pageHeight * 100, "");
+    this.LODOP.SET_PRINT_PAGESIZE(1, this.template.width * 100, this.template.height * 100, "");
 };
 
 stockPrintU.prototype.setBarcode = function(barcode) {
     this.barcode = barcode;
 };
 
-stockPrintU.prototype.setStyleNumber = function(styleNumber) {
-    this.styleNumber = styleNumber;
+stockPrintU.prototype.setStock = function(stock) {
+    this.stock = stock;
 };
 
 stockPrintU.prototype.setBrand = function(brand) {
     this.brand = brand;
-};
-
-stockPrintU.prototype.setPrice = function(price) {
-    this.price = price;
 };
 
 stockPrintU.prototype.setFirm = function(firm) {
@@ -667,131 +664,241 @@ stockPrintU.prototype.setSize = function(size) {
 };
 
 stockPrintU.prototype.reset = function() {
-    this.barcode = undefined;
-    this.styleNumber = undefined;
+    this.barcode = undefined; 
+    this.stock = undefined;
     this.brand = undefined;
-    this.price = undefined;
     this.firm  = undefined;
+    
     this.color = undefined;
     this.size  = undefined;
 };
 
 stockPrintU.prototype.free_prepare = function(
-    styleNumber,
+    stock,
     brand,
-    tagPrice,
     barcode,
     firm) {
     this.reset();
     this.init();
-    this.setStyleNumber(style_number);
+    
+    this.setStock(stock);
     this.setBrand(brand);
-    this.setPrice(tagPrice);
-
-    if (this.selfBarcode) {
+    this.setFirm(firm);
+    
+    if (!this.autoBarcode) {
 	this.setBarcode(stockUtils.patch_barcode(barcode, diablo_free_color, diablo_free_size));
     } else {
 	this.setBarcode(barcode);
-    }
+    } 
 
-    if (this.includeFirm)
-	this.setFirm(firm);
-
-    this.printBarcode(); 
+    this.printBarcode2(); 
 };
 
 stockPrintU.prototype.prepare = function(
-    styleNumber,
+    stock,
     brand,
-    tagPrice,
-    barcode,
+    barcode, 
+    firm,
     color,
-    size,
-    firm) {
-    console.log(styleNumber, brand, barcode, color, size, firm);
+    size) {
+    console.log(stock, brand, barcode, firm, color, size);
+    
     this.reset();
     this.init();
-    this.setStyleNumber(styleNumber);
+    
+    this.setStock(stock);
     this.setBrand(brand);
-    this.setPrice(tagPrice);
     this.setBarcode(barcode);
+    this.setFirm(firm);
     this.setColor(color);
     this.setSize(size);
-    
-    if (this.includeFirm)
-	this.setFirm(firm);
 
-    this.printBarcode(); 
+    // if (!this.autoBarcode) {
+    // 	this.setBarcode(barcode);
+    // } else {
+    // 	if (stock.free === 0) {
+    // 	    this.setBarcode(barcode.substr(0, barcode.length - diablo_barcode_lenth_of_color_size));
+    // 	} else {
+    // 	    this.setBarcode(barcode);
+    // 	}
+    // }
+    
+    this.printBarcode2(); 
 };
 
-
-
-stockPrintU.prototype.printBarcode = function() {
-    var hpxOfStyleNumber = Math.ceil(this.hpx/6);
-    var hpxOfBrand       = Math.ceil(this.hpx/6);
-    var hpxOfPrice       = Math.ceil(this.hpx/6);
-    var hpxOfBarCode     = Math.ceil(this.hpx/3);
-
-    var topOfStyleNumber = this.top; 
+stockPrintU.prototype.printBarcode2 = function() {
+    console.log(this);
     
-    var textStyleNumber = "货号:" + this.styleNumber; 
-    var textBrand; 
-    var hpxOfFirm; 
-    var textFirm;
-    if (angular.isDefined(this.firm)) {
-	hpxOfFirm = Math.ceil(this.hpx/6);
-	textFirm = "厂商" + this.firm;
-	textStyleNumber += this.brand;
-	topOfStyleNumber += hpxOfFirm;
-    } else {
-	textBrand = "品牌:" + this.brand;
-	topOfStyleNumber += hpxOfBrand;
-    }
+    var iwpx = this.wpx - this.left;
+    var top  = this.top;
 
-    // console.log(this);
-    var textPrice = "RMB:" + this.price.toString() + " "; 
-    if (angular.isDefined(this.color)) {
-	textPrice += this.color;
-    } else {
-	textPrice += "均色";
-    }
-    if (angular.isDefined(this.size) && this.size.toString() !== diablo_free_size) {
-	textPrice += this.size;
-    } else {
-	textPrice += "均码";
-    }
+    console.log(iwpx, top);
 
-    // console.log(textPrice);
+    var firm = angular.isUndefined(this.firm) ? diablo_empty_string : this.firm;
+    if (this.template.firm) {
+	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "厂商：" + firm);
+	top += this.template.hpx_each;
+    }
     
-    var iwpx = this.wpx - this.left; 
-    if (angular.isDefined(this.firm)) {
-	this.LODOP.ADD_PRINT_TEXT(this.top, this.left, iwpx, hpxOfFirm, textFirm);
-    } else {
-	this.LODOP.ADD_PRINT_TEXT(this.top, this.left, iwpx, hpxOfBrand, textBrand);
+    // brand
+    if (this.template.brand){
+	if (this.template.solo_brand) {
+	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "品牌：" + this.brand);
+	    top += this.template.hpx_each;
+	}
+    } 
+
+    // type
+    if (this.template.type) {
+	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "品名：" + this.stock.type.name);
+	top += this.template.hpx_each;
     }
 
-    LODOP.ADD_PRINT_TEXT(
-	topOfStyleNumber,
-	this.left,
-	iwpx,
-	hpxOfStyleNumber,
-	textStyleNumber);
+    // style number
+    if (this.template.style_number) {
+	var style_number = this.stock.style_number;
+	if (!this.template.solo_brand) {
+	    style_number += this.brand;
+	}
+	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "款号：" + style_number);
+	top += this.template.hpx_each;
+    }
+
+    // color
+    var color = angular.isDefined(this.color) ? this.color : "均色";
+    if (this.template.color) {
+	if (this.template.solo_color) {
+	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "颜色：" + color);
+	    top += this.template.hpx_each;
+	}
+    }
+
+    // size
+    var size = this.size && this.size.toString() !== diablo_free_size ? this.size : "均码";
+    if (this.template.size) {
+	if (this.template.solo_size) {
+	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "尺码：" + size);
+	    top += this.template.hpx_each;
+	}
+    }
+
+    // level
+    if (this.template.level) {
+	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "等级：" + diablo_level[this.stock.level]);
+	top += this.template.hpx_each;
+    }
+
+    // executive
+    if (this.template.executive) {
+	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "执行标准：" + this.stock.executive.name);
+	top += this.template.hpx_each;
+    }
+
+    // category
+    if (this.template.category) {
+	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "安全类别：" + this.stock.category.name);
+	top += this.template.hpx_each;
+    }
+
+    // fabric
+    if (this.template.fabric) {
+	for (var i=0, l=this.stock.fabrics.length; i<l; i++) {
+	    var f = this.stock.fabrics[i];
+	    if (i === 0) {
+		this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "面料：" + f.percent + "%" + f.name);
+	    } else {
+		this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "      " + f.percent + "%" + f.name);
+	    } 
+	    top += this.template.hpx_each;
+	} 
+    }
+
+    var price = this.stock.tag_price.toString();
+    if (!this.template.solo_color) {
+	price += " " + color;
+    }
+    if (!this.template.solo_size) {
+	price += " " + size;
+    }
     
-    LODOP.ADD_PRINT_TEXT(
-	topOfStyleNumber + hpxOfStyleNumber,
-	this.left,
-	iwpx,
-	hpxOfPrice,
-	textPrice);
+    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_price, "价格：" + price.toString());
+    top += this.template.hpx_each;
 
-    LODOP.ADD_PRINT_BARCODE(
-	topOfStyleNumber + hpxOfStyleNumber + hpxOfPrice,
-	this.left,
-	iwpx,
-	hpxOfBarCode,
-	this.barcodeFormat,
-	this.barcode);
+    this.LODOP.ADD_PRINT_BARCODE(top, this.left, iwpx, this.template.hpx_barcode, this.barcodeFormat, this.barcode);
+    this.LODOP.SET_PRINT_STYLEA(0, "FontSize", 7);
 
-    LODOP.SET_PRINT_STYLEA(0, "FontSize", 7);
-    LODOP.PRINT(); 
+    // this.LODOP.PRINT_SETUP();
+    // this.LODOP.PRINT_DESIGN();
+    this.LODOP.PRINT();
+    
 };
+
+// stockPrintU.prototype.printBarcode = function() {
+//     var hpxOfStyleNumber = Math.ceil(this.hpx/6);
+//     var hpxOfBrand       = Math.ceil(this.hpx/6);
+//     var hpxOfPrice       = Math.ceil(this.hpx/6);
+//     var hpxOfBarCode     = Math.ceil(this.hpx/3);
+
+//     var topOfStyleNumber = this.top; 
+    
+//     var textStyleNumber = "货号:" + this.styleNumber; 
+//     var textBrand; 
+//     var hpxOfFirm; 
+//     var textFirm;
+//     if (angular.isDefined(this.firm)) {
+// 	hpxOfFirm = Math.ceil(this.hpx/6);
+// 	textFirm = "厂商" + this.firm;
+// 	textStyleNumber += this.brand;
+// 	topOfStyleNumber += hpxOfFirm;
+//     } else {
+// 	textBrand = "品牌:" + this.brand;
+// 	topOfStyleNumber += hpxOfBrand;
+//     }
+
+//     // console.log(this);
+//     var textPrice = "RMB:" + this.price.toString() + " "; 
+//     if (angular.isDefined(this.color)) {
+// 	textPrice += this.color;
+//     } else {
+// 	textPrice += "均色";
+//     }
+//     if (angular.isDefined(this.size) && this.size.toString() !== diablo_free_size) {
+// 	textPrice += this.size;
+//     } else {
+// 	textPrice += "均码";
+//     }
+
+//     // console.log(textPrice);
+    
+//     var iwpx = this.wpx - this.left; 
+//     if (angular.isDefined(this.firm)) {
+// 	this.LODOP.ADD_PRINT_TEXT(this.top, this.left, iwpx, hpxOfFirm, textFirm);
+//     } else {
+// 	this.LODOP.ADD_PRINT_TEXT(this.top, this.left, iwpx, hpxOfBrand, textBrand);
+//     }
+
+//     LODOP.ADD_PRINT_TEXT(
+// 	topOfStyleNumber,
+// 	this.left,
+// 	iwpx,
+// 	hpxOfStyleNumber,
+// 	textStyleNumber);
+    
+//     LODOP.ADD_PRINT_TEXT(
+// 	topOfStyleNumber + hpxOfStyleNumber,
+// 	this.left,
+// 	iwpx,
+// 	hpxOfPrice,
+// 	textPrice);
+
+//     LODOP.ADD_PRINT_BARCODE(
+// 	topOfStyleNumber + hpxOfStyleNumber + hpxOfPrice,
+// 	this.left,
+// 	iwpx,
+// 	hpxOfBarCode,
+// 	this.barcodeFormat,
+// 	this.barcode);
+
+//     LODOP.SET_PRINT_STYLEA(0, "FontSize", 7);
+//     LODOP.PRINT(); 
+// };

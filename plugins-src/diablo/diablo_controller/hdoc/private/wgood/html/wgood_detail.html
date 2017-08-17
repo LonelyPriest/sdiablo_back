@@ -76,13 +76,19 @@
 		  <tr>
 		    <th>序号</th>
 		    <th>厂商</th>
-		    <th x-ng-if="setting.use_barcode && setting.self_barcode">条码</th>
+		    <th x-ng-if="setting.use_barcode">条码</th>
 		    <th>款号</th>
 		    <th>品牌</th>
 		    <th>类别</th>
 		    <!-- <th class="text-center">性别</th> -->
 		    <!-- <th class="text-center">季节</th> -->
 		    <th>年度</th>
+		    
+		    <th x-ng-if="template && template.level">等级</th>
+		    <th x-ng-if="template && template.executive">执行标准</th>
+		    <th x-ng-if="template && template.category">安全类别</th>
+		    <th x-ng-if="template && template.fabric">面料</th>
+		    
 		    <th x-ng-if="right.lookup_w_good_orgprice">进价</th>
 		    <th x-ng-if="right.lookup_w_good_orgprice">折扣进</th>
 		    <th x-ng-if="right.lookup_w_good_orgprice">吊牌价</th> 
@@ -100,15 +106,31 @@
 		      <div x-ng-if="g.firm_id===-1" class="text-center">-</div>
 		      <div x-ng-if="g.firm_id!==-1">{{g.firm.name}}</div>
 		    </td>
-		    <td x-ng-if="setting.use_barcode && setting.self_barcode">
-		      {{g.bcode}}
-		    </td>
+		    <td x-ng-if="setting.use_barcode">{{g.bcode}}</td>
 		    <td>{{g.style_number}}</td>
 		    <td>{{g.brand}}</td>
 		    <td>{{g.type.name}}</td>
 		    <!-- <td>{{g.sex}}</td>-->
 		    <!-- <td>{{g.season}}</td> -->
 		    <td>{{g.year}}</td>
+
+		    <td x-ng-if="template && template.level">
+		      <div x-ng-if="g.level===-1" class="text-center">-</div>
+		      <div x-ng-if="g.level!==-1" class="text-center">{{g.level}}</div>
+		    </td>
+		    <td x-ng-if="template && template.executive">
+		      <div x-ng-if="g.executive_id===-1" class="text-center">-</div>
+		      <div x-ng-if="g.executive_id!==-1">{{g.executive.name}}</div>
+		    </td>
+		    <td x-ng-if="template && template.category">
+		      <div x-ng-if="g.category_id===-1" class="text-center">-</div>
+		      <div x-ng-if="g.category_id!==-1">{{g.category.name}}</div>
+		    </td> 
+		    <td x-ng-if="template && template.fabric">
+		      <div x-ng-if="!g.fabric_desc" class="text-center">-</div>
+		      <div x-ng-if="g.fabric_desc">{{g.fabric_desc}}</div>
+		    </td>
+		    
 		    <td x-ng-if="right.lookup_w_good_orgprice">{{g.org_price}}</td>
 		    <td x-ng-if="right.lookup_w_good_orgprice">{{g.ediscount}}</td>
 		    <td x-ng-if="right.lookup_w_good_orgprice" class="fg-darkRed">{{g.tag_price}}</td> 
@@ -137,7 +159,7 @@
 			      x-ng-click="delete_good(g)">删除
 			<i class="glyphicon glyphicon-erase"></i></button>
 		      
-		      <div x-ng-if="setting.use_barcode && setting.self_barcode"
+		      <div x-ng-if="setting.use_barcode"
 			   class="btn-group">
 			    <button type="button" class="btn diablo-button green">
 			      条码<i class="glyphicon glyphicon-barcode"></i></button>

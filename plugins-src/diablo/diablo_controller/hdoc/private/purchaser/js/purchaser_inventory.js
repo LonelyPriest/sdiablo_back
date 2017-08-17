@@ -1631,8 +1631,8 @@ function purchaserInventoryNewCtrlProvide (
 function purchaserInventoryDetailCtrlProvide(
     $scope, $routeParams, $q, dateFilter, diabloPattern, diabloFilter,
     diabloUtilsService, diabloPromise, purchaserService,
-    localStorageService, filterPromotion,filterScore,  user, filterBrand,
-    filterFirm, filterType, filterSizeGroup, filterColor, base){
+    localStorageService, filterPromotion, filterScore,  filterBrand,
+    filterFirm, filterType, filterSizeGroup, filterColor, filterTemplate, base, user){
     // $scope.touch_start = function(){
     // 	console.log("touch_start");
     // }
@@ -1656,6 +1656,7 @@ function purchaserInventoryDetailCtrlProvide(
     // console.log($scope.promotions);
     $scope.promotions = filterPromotion.concat([{id:diablo_invalid_index, name:"重置促销方案"}]);
     $scope.scores = filterScore.concat([{id:diablo_invalid_index, name:"重置积分方案", type_id:0}]);
+    $scope.template = filterTemplate.length !== 0 ? filterTemplate[0] : undefined;
 
     /*
      * tab-set
@@ -1733,21 +1734,14 @@ function purchaserInventoryDetailCtrlProvide(
     // console.log(storage);
         
     // alarm, use default shop
-    $scope.setting.alarm = stockUtils.stock_alarm_b(diablo_default_shop, base);
-    $scope.setting.stock_alarm = stockUtils.stock_alarm(diablo_default_shop, base);
+    $scope.setting.alarm           = stockUtils.stock_alarm_b(diablo_default_shop, base);
+    $scope.setting.stock_alarm     = stockUtils.stock_alarm(diablo_default_shop, base);
     $scope.setting.stock_contailer = stockUtils.stock_contailer(diablo_default_shop, base);
-    $scope.setting.use_barcode = stockUtils.use_barcode(diablo_default_shop, base);
-    $scope.setting.barcode_width = stockUtils.barcode_width(diablo_default_shop, base);
-    $scope.setting.barcode_height = stockUtils.barcode_height(diablo_default_shop, base);
-    $scope.setting.saler_stock = stockUtils.saler_stock(diablo_default_shop, base);
-    $scope.setting.barcode_firm = stockUtils.barcode_with_firm(diablo_default_shop, base);
-    $scope.setting.self_barcode = stockUtils.barcode_self(diablo_default_shop, base);
-
-    $scope.printU = new stockPrintU(
-	$scope.setting.barcode_width,
-	$scope.setting.barcode_height,
-	$scope.setting.barcode_firm,
-	$scope.setting.self_barcode); 
+    $scope.setting.use_barcode     = stockUtils.use_barcode(diablo_default_shop, base);
+    $scope.setting.auto_barcode    = stockUtils.auto_barcode(diablo_default_shop, base); 
+    $scope.setting.saler_stock     = stockUtils.saler_stock(diablo_default_shop, base);
+    
+    $scope.printU = new stockPrintU($scope.template, $scope.setting.auto_barcode); 
     /*
      * pagination 
      */
@@ -1986,7 +1980,7 @@ function purchaserInventoryDetailCtrlProvide(
     var dialog_barcode_title_failed = "库存条码打印失败：";
     $scope.p_barcode = function(inv) {
 	console.log(inv); 
-	if ($scope.setting.barcode_firm && diablo_invalid_firm === inv.firm_id ) {
+	if ($scope.template.firm && diablo_invalid_firm === inv.firm_id ) {
 	    dialog.response(
 		false,
 		dialog_barcode_title,
@@ -1999,9 +1993,8 @@ function purchaserInventoryDetailCtrlProvide(
 	    var firm = inv.firm_id === diablo_invalid_firm ? undefined : inv.firm.name; 
 	    if (diablo_free_color_size === inv.free) {
 		$scope.printU.free_prepare(
-		    inv.style_number,
+		    inv,
 		    inv.brand.name,
-		    inv.tag_price,
 		    barcode,
 		    firm); 
 	    }
@@ -2038,13 +2031,12 @@ function purchaserInventoryDetailCtrlProvide(
 			console.log(barcodes);
 			angular.forEach(barcodes, function(b) {
 			    $scope.printU.prepare(
-				inv.style_number,
+				inv,
 				inv.brand.name,
-				inv.tag_price,
 				b.barcode,
+				firm,
 				b.cname,
-				b.size,
-				firm); 
+				b.size); 
 			})
 		    }
 		}
@@ -2096,32 +2088,21 @@ function purchaserInventoryDetailCtrlProvide(
 	    }
 	};
 
-
-	if ($scope.setting.self_barcode) {
-	    if (inv.bcode === diablo_empty_barcode) {
+	
+	purchaserService.gen_barcode(
+	    inv.style_number, inv.brand_id, inv.shop_id
+	).then(function(result) {
+	    console.log(result);
+	    if (result.ecode === 0) {
+		inv.bcode = result.barcode;
+		print_barcode(result.barcode);
+	    } else {
 		dialog.response(
 		    false,
-		    dialog_barcode_title,
-		    dialog_barcode_title_failed + purchaserService.error[2017]);
-	    } else {
-		print_barcode(inv.bcode);
+		    "条码生成", "条码生成失败："
+			+ purchaserService.error[result.ecode]);
 	    }
-	} else {
-	    purchaserService.gen_barcode(
-		inv.style_number, inv.brand_id, inv.shop_id
-	    ).then(function(result) {
-		console.log(result);
-		if (result.ecode === 0) {
-		    inv.bcode = result.barcode;
-		    print_barcode(result.barcode);
-		} else {
-		    dialog.response(
-			false,
-			"条码生成", "条码生成失败："
-			    + purchaserService.error[result.ecode]);
-		}
-	    }); 
-	} 
+	});
     };
 
     var dialog_reset_barcode_title = "条码重置";

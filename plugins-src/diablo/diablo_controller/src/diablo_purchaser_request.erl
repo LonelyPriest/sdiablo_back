@@ -1059,10 +1059,10 @@ action(Session, Req, {"gen_stock_barcode"}, Payload) ->
     Shop = ?v(<<"shop">>, Payload),
 
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
-    SelfBarcode = ?to_i(?v(<<"bcode_self">>, BaseSetting, 0)),
+    AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSetting, ?YES)),
     
     case ?w_inventory:purchaser_inventory(
-	    gen_barcode, SelfBarcode, Merchant, Shop, StyleNumber, Brand) of
+	    gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand) of
 	{ok, Barcode} ->
 	    ?utils:respond(200, object, Req,
 			   {[{<<"ecode">>, 0},
@@ -1078,7 +1078,11 @@ action(Session, Req, {"reset_stock_barcode"}, Payload) ->
     Brand = ?v(<<"brand">>, Payload),
     Shop = ?v(<<"shop">>, Payload),
 
-    case ?w_inventory:purchaser_inventory(reset_barcode, Merchant, Shop, StyleNumber, Brand) of
+    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
+    AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSetting, ?YES)),
+    
+    case ?w_inventory:purchaser_inventory(
+	    reset_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand) of
 	{ok, Barcode} ->
 	    ?utils:respond(200, object, Req,
 			   {[{<<"ecode">>, 0},

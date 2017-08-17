@@ -45,22 +45,22 @@ function baseConfig(angular){
 	    when('/setting/std_executive', {
 		templateUrl: '/private/base/html/good_executive_standard.html',
 		controller: 'goodStdStandardCtrl',
-		resolve: angular.extend({}, user)
+		resolve: angular.extend({})
 	    }).
 	    when('/setting/safety_category', {
 		templateUrl: '/private/base/html/good_safety_category.html',
 		controller: 'goodSafetyCategoryCtrl',
-		resolve: angular.extend({}, user)
+		resolve: angular.extend({})
 	    }).
 	    when('/setting/fabric', {
 		templateUrl: '/private/base/html/good_fabric.html',
 		controller: 'goodFabricCtrl',
-		resolve: angular.extend({}, user)
+		resolve: angular.extend({})
 	    }).
 	    when('/setting/print_template', {
 		templateUrl: '/private/base/html/print_template.html',
-		controller: 'printTemplateCtrl',
-		resolve: angular.extend({}, user)
+		controller: 'goodPrintTemplateCtrl',
+		resolve: angular.extend({})
 	    }).
 	    when('/passwd', {
 		templateUrl: '/private/base/html/reset_password.html',
@@ -225,6 +225,19 @@ function baseConfig(angular){
 
 	this.update_fabric = function(f) {
 	    return http.save({operation: 'update_fabric'}, f).$promise;
+	};
+
+	// print template
+	this.create_print_template = function() {
+	    return http.save({operation: 'create_print_template'}, {}).$promise;
+	};
+	
+	this.update_print_template = function(t) {
+	    return http.save({operation: 'update_print_template'}, t).$promise;
+	};
+	
+	this.list_print_template = function(){
+	    return http.query({operation: 'list_print_template'}).$promise;
 	};
 	
     });

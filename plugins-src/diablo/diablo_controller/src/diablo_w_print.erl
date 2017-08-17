@@ -337,9 +337,10 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 
 print_format() ->
-    [{"brand",           "0"},
-     {"style_number",    "0"},
-     {"type",            "0"},
-     {"color",           "0"},
-     {"size",            "0"} 
+    [
+     %% {"brand",           "0"},
+     %% {"style_number",    "0"},
+     %% {"type",            "0"},
+     %% {"color",           "0"},
+     %% {"size",            "0"} 
     ].

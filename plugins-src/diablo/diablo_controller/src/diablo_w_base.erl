@@ -21,7 +21,7 @@
 	 terminate/2, code_change/3]).
 
 -export([bank_card/2, bank_card/3, setting/2, setting/3, sys_config/0]).
--export([good/2, good/3]).
+-export([good/2, good/3, print/2, print/3]).
 
 -define(SERVER, ?MODULE). 
 
@@ -78,9 +78,11 @@ good(add_fabric, Merchant, Name) ->
 good(update_fabric, Merchant, Attrs) ->
     gen_server:call(?SERVER, {update_fabric, Merchant, Attrs}).
 
-
-
-
+%% barcode print
+print(list_template, Merchant) ->
+    gen_server:call(?SERVER, {list_barcode_print_template, Merchant}).
+print(update_template, Merchant, Attrs) ->
+    gen_server:call(?SERVER, {update_barcode_print_template, Merchant, Attrs}).
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
@@ -453,6 +455,82 @@ handle_call({update_fabric, Merchant, Attrs}, _From, State) ->
 
     {reply, Reply, State};
 
+
+handle_call({list_barcode_print_template, Merchant}, _From, State) ->
+    ?DEBUG("list_barcode_print_template: Merchant  ~p", [Merchant]), 
+    Sql0 = "select id"
+	", width"
+	", height"
+	
+	", style_number"
+	", brand"
+	", type"
+	", firm"
+	", color"
+	", size"
+
+	", level"
+	", executive"
+	", category"
+	", fabric"
+
+	", font"
+	", bold"
+	
+	", solo_brand"
+	", solo_color"
+	", solo_size"
+	
+	", hpx_each"
+	", hpx_price"
+	", hpx_barcode"
+
+	", hpx_top"
+	", hpx_left"
+	
+	" from print_template"
+	" where merchant=" ++ ?to_s(Merchant), 
+    Reply = ?sql_utils:execute(read, Sql0),
+    {reply, Reply, State};
+
+handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("update_barcode_print_template: Merchant ~p, attrs ~p", [Merchant, Attrs]),
+    Id = ?v(<<"id">>, Attrs),
+    U = ?utils:v(width, integer, ?v(<<"width">>, Attrs))
+	++  ?utils:v(height, integer, ?v(<<"height">>, Attrs))
+	
+	++  ?utils:v(style_number, integer, ?v(<<"style_number">>, Attrs))
+	++  ?utils:v(brand, integer, ?v(<<"brand">>, Attrs))
+	++  ?utils:v(type, integer, ?v(<<"type">>, Attrs))
+	++  ?utils:v(firm, integer, ?v(<<"firm">>, Attrs))
+	++  ?utils:v(color, integer, ?v(<<"color">>, Attrs))
+	++  ?utils:v(size, integer, ?v(<<"size">>, Attrs))
+	
+	++  ?utils:v(level, integer, ?v(<<"level">>, Attrs))
+	++  ?utils:v(executive, integer, ?v(<<"executive">>, Attrs))
+	++  ?utils:v(category, integer, ?v(<<"category">>, Attrs))
+	++  ?utils:v(fabric, integer, ?v(<<"fabric">>, Attrs))
+
+	++  ?utils:v(font, integer, ?v(<<"font">>, Attrs))
+	++  ?utils:v(bold, integer, ?v(<<"bold">>, Attrs))
+	++  ?utils:v(sole_brand, integer, ?v(<<"solo_brand">>, Attrs))
+	++  ?utils:v(sole_color, integer, ?v(<<"solo_color">>, Attrs))
+	++  ?utils:v(solo_size, integer, ?v(<<"solo_size">>, Attrs))
+
+	++  ?utils:v(hpx_each, integer, ?v(<<"hpx_each">>, Attrs))
+	++  ?utils:v(hpx_price, integer, ?v(<<"hpx_price">>, Attrs))
+	++  ?utils:v(hpx_barcode, integer, ?v(<<"hpx_barcode">>, Attrs))
+
+	++  ?utils:v(hpx_top, integer, ?v(<<"hpx_top">>, Attrs))
+	++  ?utils:v(hpx_left, integer, ?v(<<"hpx_left">>, Attrs)),
+
+    Sql = "update print_template set " ++ ?utils:to_sqls(proplists, comma, U)
+	++ " where merchant=" ++ ?to_s(Merchant)
+	++ " and id=" ++ ?to_s(Id),
+
+    Reply = ?sql_utils:execute(write, Sql, Id),
+    {reply, Reply, State};
+    
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
@@ -501,19 +579,18 @@ sys_config() ->
 	      {"m_sgroup",        "允许多尺码组",         "0",   "0"},
 	      {"t_trace",         "入库价格跟踪",         "0",   "0"},
 	      {"d_sex",           "默认入库性别",         "0",   "0"},
-	      %% {"d_sale",          "显示销售天数",         "0",   "0"},
 	      {"d_report",        "日报表能力",           "0",   "0"},
 	      {"m_sale",          "允许负数退货",         "1",   "0"},
 	      {"group_color",     "颜色分组",             "1",   "0"},
 	      {"image_mode",      "图片模式",             "0",   "0"},
 	      {"round",           "四舍五入",             "1",   "0"},
-	      {"scanner",         "扫描模式",             "0",   "0"},
+	      %% {"scanner",         "扫描模式",             "0",   "0"},
 	      {"h_color",         "隐藏颜色",             "0",   "0"},
 	      {"h_size",          "隐藏尺码",             "0",   "0"},
 	      {"h_sex",           "隐藏性别",             "0",   "0"},
 	      {"s_member",        "会员独立",             "0",   "0"},
 	      {"s_employee",      "营业员必选",           "0",   "0"},
-	      {"cake_mode",       "蛋糕店模式",           "0",   "0"},
+	      %% {"cake_mode",    "蛋糕店模式",           "0",   "0"},
 	      {"p_balance",       "打印会员余额",         "0",   "0"},
 	      {"gen_ticket",      "自动生成电子卷",       "0",   "0"},
 	      {"recharge_sms",    "充值短信提醒",         "0",   "0"},
@@ -525,22 +602,24 @@ sys_config() ->
 	      {"stock_contailer", "货品货柜号",           "0",   "0"},
 	      {"stock_firm",      "入库区分厂商",         "1",   "0"},
 	      {"bcode_use",       "启用条码",             "0",   "0"},
-	      {"bcode_width",     "条码宽度",             "7",   "0"},
-	      {"bcode_height",    "条码高度",             "2",   "0"},
+	      {"bcode_auto",      "自动条码",             "1",   "0"},
+	      %% {"bcode_width",     "条码宽度",             "7",   "0"},
+	      %% {"bcode_height",    "条码高度",             "2",   "0"},
 	      {"trans_orgprice",  "移仓检测进价",         "1",   "0"},
 	      {"p_color_size",    "打印颜色尺码",         "0",   "0"},
-	      {"birth_sms",       "生日短信",             "0",   "0"},
-	      {"birth_before",    "生日短信发送间隔",     "0",   "0"},  %% default send sms current day
-	      %% {"draft_fix",       "盘点草稿保存路径",     "c:\fix.txt",    "0"}
+	      
+	      %% {"birth_sms",       "生日短信",             "0",   "0"},
+	      %% default send sms current day
+	      %% {"birth_before",    "生日短信发送间隔",     "0",   "0"}, 
 	      
 	      %%  {"score_withdraw",  "提现是否积分",         "1",   "0"}
 	      {"saler_stock",      "营业员查看区域库存",  "0",   "0"},
 	      {"r_stock_oprice",    "厂商退货检测进价",   "1",   "0"},
 	      {"c_stock_oprice",    "入库审核检测进价",   "1",   "0"},
 	      {"c_stock_firm",      "入库审核检测厂商",   "1",   "0"},
-	      {"bcode_firm",        "条码打印厂商",       "0",   "0"},
+	      %% {"bcode_firm",     "条码打印厂商",       "0",   "0"},
 	      {"export_code",       "导出编码格式",       "0",   "0"}, %% 0: utf8 1: gbk
-	      {"export_note",       "导出颜色尺码",       "0",   "0"}, %% 0: utf8 1: gbk
-	      {"bcode_self",        "吊牌打印模式",       "0",   "0"}
+	      {"export_note",       "导出颜色尺码",       "0",   "0"} %% 0: utf8 1: gbk
+	      %% {"bcode_self",     "吊牌打印模式",       "0",   "0"}
 	     ],
     Values.

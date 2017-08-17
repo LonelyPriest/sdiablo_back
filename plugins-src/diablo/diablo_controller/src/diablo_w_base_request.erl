@@ -76,7 +76,12 @@ action(Session, Req, {"list_safety_category"}) ->
 action(Session, Req, {"list_fabric"}) ->
     ?DEBUG("list_fabric with session ~p", [Session]),
     Merchant = ?session:get(merchant, Session),
-    ?utils:respond(batch, fun() -> ?w_base:good(list_fabric, Merchant) end, Req).
+    ?utils:respond(batch, fun() -> ?w_base:good(list_fabric, Merchant) end, Req);
+
+action(Session, Req, {"list_print_template"}) ->
+    ?DEBUG("list_print_template with session ~p", [Session]),
+    Merchant = ?session:get(merchant, Session),
+    ?utils:respond(batch, fun() -> ?w_base:print(list_template, Merchant) end, Req).
 
 
 %%--------------------------------------------------------------------
@@ -243,6 +248,28 @@ action(Session, Req, {"update_fabric"}, Payload) ->
     end;
 
 
+action(Session, Req, {"create_print_template"}, Payload) ->
+    ?DEBUG("create_print_template: session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    case ?w_user_profile:set_template(barcode_print, Merchant) of
+	{ok, _}  ->
+	    %% ?w_user_profile:update(setting, Merchant),
+	    ?utils:respond(200, Req, ?succ(create_print_template, Merchant));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"update_print_template"}, Payload) ->
+    ?DEBUG("update_print_template: session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    case ?w_base:print(update_template, Merchant, Payload) of
+	{ok, TId}  ->
+	    %% ?w_user_profile:update(setting, Merchant),
+	    ?utils:respond(200, Req, ?succ(good_update_std_executive, TId));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
 %%
 %% passwd
 %%
@@ -324,7 +351,7 @@ sidebar(Session) ->
 			      {"safety_category", "安全类别", "glyphicon glyphicon-text-background"},
 			      {"fabric",         "面料", "glyphicon glyphicon-glass"}]
 		     end
-		  ++ [{"print_template", "条码打印模板", "glyphicon glyphicon-file"}]}]
+		  ++ [{"print_template", "打印模板", "glyphicon glyphicon-file"}]}]
 	end,
 	%% [{{"setting", "基本设置", "glyphicon glyphicon-cog"},
 	%%       case ?session:get(type, Session) of

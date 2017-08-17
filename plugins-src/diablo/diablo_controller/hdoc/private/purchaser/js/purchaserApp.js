@@ -81,6 +81,9 @@ function stockConfg(angular){
 
 	var fabric = {"filterFabric":function(diabloFilter) {
 	    return diabloFilter.list_good_fabric()}};
+
+	var ptemplate = {"filterTemplate":function(diabloFilter) {
+	    return diabloFilter.list_print_template()}};
 	
 	$routeProvider.
 	    // new
@@ -94,7 +97,7 @@ function stockConfg(angular){
 		templateUrl: '/private/purchaser/html/purchaser_inventory_new_detail_update.html',
 		controller: 'purchaserInventoryNewUpdateCtrl',
 		resolve: angular.extend(
-		    {}, user, brand, firm, type, employee, s_group, color, base)
+		    {}, user, brand, firm, type, employee, s_group, color, ptemplate, base)
 	    }).
 	    // reject
 	    when('/inventory_reject', {
@@ -114,7 +117,7 @@ function stockConfg(angular){
 		templateUrl: '/private/purchaser/html/purchaser_inventory_new_rsn_detail.html',
 		controller: 'purchaserInventoryNewRsnDetailCtrl',
 		resolve: angular.extend(
-		    {}, user, brand, firm, type, employee, s_group, color, base)
+		    {}, user, brand, firm, type, employee, s_group, color, ptemplate, base)
 	    }).
 	    when('/inventory_new_detail/:page?', {
 		templateUrl: '/private/purchaser/html/purchaser_inventory_new_detail.html',
@@ -126,7 +129,7 @@ function stockConfg(angular){
 		controller: 'purchaserInventoryDetailCtrl' ,
 		resolve: angular.extend(
 		    {}, promotion, score,
-		    user, brand, firm, type, s_group, color, base)
+		    brand, firm, type, s_group, color, ptemplate, base, user)
 	    }).
 	    when('/inventory_detail/inventory_flow/:snumber?/:brand?', {
 		templateUrl: '/private/purchaser/html/purchaser_inventory_flow.html',
@@ -180,7 +183,7 @@ function stockConfg(angular){
 		    firm,
 		    brand,
 		    type,
-		    s_group, std_executive, safety_category, fabric, base)
+		    s_group, std_executive, safety_category, fabric, ptemplate, base)
 	    }).
 	    when('/good/wgood_update/:id?/:shop?/:from?', {
 		templateUrl: '/private/wgood/html/wgood_update.html',
@@ -193,14 +196,19 @@ function stockConfg(angular){
 		    type,
 		    color,
 		    s_group,
-		    user,
-		    std_executive, safety_category, fabric, base)
+		    std_executive, safety_category, fabric, ptemplate, base, user)
 	    }).
 	    when('/good/wgood_detail', {
 		templateUrl: '/private/wgood/html/wgood_detail.html',
 		controller: 'wgoodDetailCtrl',
 		resolve: angular.extend(
-		    {}, promotion, brand, firm, type, color, base, user) 
+		    {},
+		    promotion,
+		    brand,
+		    firm,
+		    type,
+		    color,
+		    std_executive, safety_category, fabric, ptemplate, base, user) 
 	    }).
 	    // promotion
 	    when('/promotion/promotion_new', {

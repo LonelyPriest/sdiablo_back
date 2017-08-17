@@ -63,9 +63,6 @@ purchaser_good(price, Merchant, [{_StyleNumber, _Brand}|_] = Conditions) ->
 purchaser_good(lookup, Merchant, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {lookup_good, Merchant, StyleNumber, Brand});
-purchaser_good(reset_barcode, Merchant, StyleNumber, Brand) ->
-    Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {reset_good_barcode, Merchant, StyleNumber, Brand});
     
 purchaser_good(used, Merchant, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -73,7 +70,11 @@ purchaser_good(used, Merchant, StyleNumber, Brand) ->
 purchaser_good(used, Merchant, Shops, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(
-      Name, {lookup_used_good, Merchant, Shops, StyleNumber, Brand}).
+      Name, {lookup_used_good, Merchant, Shops, StyleNumber, Brand});
+
+purchaser_good(reset_barcode, AutoBarcode, Merchant, StyleNumber, Brand) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {reset_good_barcode, AutoBarcode, Merchant, StyleNumber, Brand}).
 
 
 purchaser_inventory(new, Merchant, Inventories, Props) ->
@@ -190,16 +191,17 @@ purchaser_inventory(tag_price, Merchant, Shop, StyleNumber, Brand) ->
 %%
 %% barcode
 %%
-purchaser_inventory(reset_barcode, Merchant, Shop, StyleNumber, Brand) ->
-    Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {reset_barcode, Merchant, Shop, StyleNumber, Brand});
 purchaser_inventory(gen_barcode, Merchant, Shop, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {gen_barcode, ?NO, Merchant, Shop, StyleNumber, Brand}).
+    gen_server:call(Name, {gen_barcode, ?YES, Merchant, Shop, StyleNumber, Brand}).
 
-purchaser_inventory(gen_barcode, SelfBarcode, Merchant, Shop, StyleNumber, Brand) ->
+purchaser_inventory(gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {gen_barcode, SelfBarcode, Merchant, Shop, StyleNumber, Brand}).
+    gen_server:call(Name, {gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand});
+
+purchaser_inventory(reset_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {reset_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}).
 
 
 
@@ -2014,51 +2016,71 @@ handle_call({syn_barcode, Merchant, Barcode, Conditions}, _From, State) ->
 	    end
     end;
 
-handle_call({gen_barcode, SelfBarcode, Merchant, Shop, StyleNumber, Brand}, _From, State) ->
-    ?DEBUG("gen_barcode:  selfbarcode ~p merchant ~p, shop ~p, style_number ~p, brand ~p",
-	   [SelfBarcode, Merchant, Shop, StyleNumber, Brand]),
+handle_call({gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _From, State) ->
+    ?DEBUG("gen_barcode:  autoBarcode ~p merchant ~p, shop ~p, style_number ~p, brand ~p",
+	   [AutoBarcode, Merchant, Shop, StyleNumber, Brand]),
     
-    Sql = "select bcode, style_number, brand, firm, type, year, season, free" 
-	" from w_inventory " 
-	" where merchant=" ++ ?to_s(Merchant)
-	++ " and shop=" ++ ?to_s(Shop)
-	++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
-	++ " and brand=" ++ ?to_s(Brand),
+    Sql = "select a.bcode"
+	", a.style_number"
+	", a.brand"
+	", a.firm"
+	", a.type"
+	", a.year"
+	", a.season"
+	", a.free"
+
+	", b.bcode as tbcode"
+	" from w_inventory a"
+	" left join inv_types b on a.type=b.id"
+	
+	" where a.merchant=" ++ ?to_s(Merchant)
+	++ " and a.shop=" ++ ?to_s(Shop)
+	++ " and a.style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+	++ " and a.brand=" ++ ?to_s(Brand),
     
     case ?sql_utils:execute(s_read, Sql) of
 	{ok, []} ->
 	    {reply, {error, ?err(stock_not_exist, StyleNumber)}, State};
 	{ok, Stock} ->
 	    case ?v(<<"bcode">>, Stock) of
-		<<"0">> ->
-		    case SelfBarcode of
-			?YES ->
-			    StyleNumber = ?v(<<"style_number">>, Stock),
-			    {reply, {error, ?err(stock_barcode_not_init, StyleNumber)}, State};
-			?NO ->
-			    Year = ?v(<<"year">>, Stock),
-			    Free = ?v(<<"free">>, Stock), 
-			    Barcode = gen_barcode(Merchant, Free, Year),
-			    ?DEBUG("barcode ~p", [Barcode]),
+		<<"0">> -> 
+		    Year = ?v(<<"year">>, Stock),
+		    Free = ?v(<<"free">>, Stock),
+		    Season = ?v(<<"season">>, Stock),
+		    TBarcode = ?v(<<"tbcode">>, Stock),
+		    
+		    Barcode =
+			case AutoBarcode of
+			    ?NO ->
+				?w_good_sql:gen_barcode(
+				   self_barcode, Merchant, Year, Season, TBarcode);
+			    ?YES ->
+				gen_barcode(Merchant, Free, Year)
+			end,
+		    ?DEBUG("barcode ~p", [Barcode]),
 
-			    Sql0 = "select bcode, style_number, brand" 
-				" from w_inventory " 
-				" where merchant=" ++ ?to_s(Merchant)
-				++ " and bcode=\'" ++ ?to_s(Barcode) ++ "\'", 
-			    case ?sql_utils:execute(s_read, Sql0) of
-				{ok, []} ->
-				    %% use syn all stock's barcode in different shop
-				    Sql1 = "update w_inventory set "
-					"bcode=\'" ++ ?to_s(Barcode) ++ "\'"
-					" where merchant=" ++ ?to_s(Merchant)
-				    %% ++ " and shop=" ++ ?to_s(Shop)
-					++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
-					++ " and brand=" ++ ?to_s(Brand),
-				    Reply = ?sql_utils:execute(write, Sql1, Barcode),
-				    {reply, Reply, State};
-				{ok, _R} ->
-				    {reply, {error, ?err(stock_same_barcode, Barcode)}, State}
-			    end
+		    Sql0 = "select bcode, style_number, brand" 
+			" from w_inventory " 
+			" where merchant=" ++ ?to_s(Merchant)
+			++ " and bcode=\'" ++ ?to_s(Barcode) ++ "\'", 
+		    case ?sql_utils:execute(s_read, Sql0) of
+			{ok, []} ->
+			    %% use syn all stock's barcode in different shop
+			    Sqls = ["update w_inventory set "
+				    "bcode=\'" ++ ?to_s(Barcode) ++ "\'"
+				    " where merchant=" ++ ?to_s(Merchant)
+				    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+				    ++ " and brand=" ++ ?to_s(Brand),
+
+				    "update w_inventory_good set "
+				    "bcode=\'" ++ ?to_s(Barcode) ++ "\'"
+				    " where merchant=" ++ ?to_s(Merchant)
+				    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+				    ++ " and brand=" ++ ?to_s(Brand)],
+			    Reply = ?sql_utils:execute(transaction, Sqls, Barcode),
+			    {reply, Reply, State};
+			{ok, _R} ->
+			    {reply, {error, ?err(stock_same_barcode, Barcode)}, State}
 		    end;
 		Barcode ->
 		    {reply, {ok, Barcode}, State} 
@@ -2069,24 +2091,46 @@ handle_call({gen_barcode, SelfBarcode, Merchant, Shop, StyleNumber, Brand}, _Fro
 %%
 %% reset stock barcode
 %%
-handle_call({reset_barcode, Merchant, Shop, StyleNumber, Brand}, _From, State) ->
-    ?DEBUG("reset_barcode  with merchant ~p, shop ~p, style_number ~p, brand ~p",
-	   [Merchant, Shop, StyleNumber, Brand]), 
+handle_call({reset_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _From, State) ->
+    ?DEBUG("reset_barcode: autoBarcode ~p,  merchant ~p, shop ~p, style_number ~p, brand ~p",
+	   [AutoBarcode, Merchant, Shop, StyleNumber, Brand]), 
 
-    Sql = "select bcode, style_number, brand, firm, type, year, season, free" 
-	" from w_inventory " 
-	" where merchant=" ++ ?to_s(Merchant)
-	++ " and shop=" ++ ?to_s(Shop)
-	++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
-	++ " and brand=" ++ ?to_s(Brand),
+    Sql = "select a.bcode"
+	", a.style_number"
+	", a.brand"
+	", a.firm"
+	", a.type"
+	", a.year"
+	", a.season"
+	", a.free"
+
+	", b.bcode as tbcode"
+	" from w_inventory a"
+	" left join inv_types b on a.type=b.id"
+	
+	" where a.merchant=" ++ ?to_s(Merchant)
+	++ " and a.shop=" ++ ?to_s(Shop)
+	++ " and a.style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+	++ " and a.brand=" ++ ?to_s(Brand),
 
     case ?sql_utils:execute(s_read, Sql) of
 	{ok, []} ->
 	    {reply, {error, ?err(stock_not_exist, StyleNumber)}, State};
 	{ok, Stock} -> 
 	    Year = ?v(<<"year">>, Stock),
-	    Free = ?v(<<"free">>, Stock), 
-	    Barcode = gen_barcode(Merchant, Free, Year),
+	    Free = ?v(<<"free">>, Stock),
+	    Season = ?v(<<"season">>, Stock),
+	    TBarcode = ?v(<<"tbcode">>, Stock),
+	    
+	    Barcode =
+		case AutoBarcode of
+		    ?NO ->
+			?w_good_sql:gen_barcode(
+			   self_barcode, Merchant, Year, Season, TBarcode);
+		    ?YES ->
+			gen_barcode(Merchant, Free, Year)
+		end,
+	    
 	    ?DEBUG("barcode ~p", [Barcode]),
 	    Sql0 = "select bcode, style_number, brand" 
 		" from w_inventory " 
@@ -2095,22 +2139,27 @@ handle_call({reset_barcode, Merchant, Shop, StyleNumber, Brand}, _From, State) -
 	    case ?sql_utils:execute(s_read, Sql0) of
 		{ok, []} ->
 		    %% use syn all stock's barcode in different shop
-		    Sql1 = "update w_inventory set "
-			"bcode=\'" ++ ?to_s(Barcode) ++ "\'"
-			" where merchant=" ++ ?to_s(Merchant)
-		    %% ++ " and shop=" ++ ?to_s(Shop)
-			++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
-			++ " and brand=" ++ ?to_s(Brand),
-		    Reply = ?sql_utils:execute(write, Sql1, Barcode),
+		    Sqls = ["update w_inventory set "
+			    "bcode=\'" ++ ?to_s(Barcode) ++ "\'"
+			    " where merchant=" ++ ?to_s(Merchant)
+			    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+			    ++ " and brand=" ++ ?to_s(Brand),
+
+			    "update w_inventory_good set "
+			    "bcode=\'" ++ ?to_s(Barcode) ++ "\'"
+			    " where merchant=" ++ ?to_s(Merchant)
+			    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+			    ++ " and brand=" ++ ?to_s(Brand)],
+		    Reply = ?sql_utils:execute(write, Sqls, Barcode),
 		    {reply, Reply, State};
 		{ok, _R} ->
 		    {reply, {error, ?err(stock_barcode_exist, Barcode)}, State}
 	    end 
     end;
 
-handle_call({reset_good_barcode, Merchant, StyleNumber, Brand}, _From, State) ->
-    ?DEBUG("reset_barcode  with merchant ~p, style_number ~p, brand ~p",
-	   [Merchant, StyleNumber, Brand]), 
+handle_call({reset_good_barcode, AutoBarcode, Merchant, StyleNumber, Brand}, _From, State) ->
+    ?DEBUG("reset_good_barcode: autoBarcode ~p, merchant ~p, style_number ~p, brand ~p",
+	   [AutoBarcode, Merchant, StyleNumber, Brand]), 
 
     Sql = "select a.bcode"
 	", a.style_number"
@@ -2137,11 +2186,20 @@ handle_call({reset_good_barcode, Merchant, StyleNumber, Brand}, _From, State) ->
 	    Season = ?v(<<"season">>, Good),
 	    TBarcode = ?v(<<"tbcode">>, Good),
 	    TypeId = ?v(<<"type">>, Good),
+	    Free = ?v(<<"free">>, Good),
 	    case TBarcode of
 		0 ->
 		    {reply, {error, ?err(type_bcode_not_init, TypeId)}, State};
 		_ ->
-		    Barcode = ?w_good_sql:gen_barcode(self_barcode, Merchant, Year, Season, TBarcode),
+		    Barcode =
+			case AutoBarcode of
+			    ?NO ->
+				?w_good_sql:gen_barcode(
+				   self_barcode, Merchant, Year, Season, TBarcode);
+			    ?YES ->
+				gen_barcode(Merchant, Free, Year)
+			end,
+		    
 		    ?DEBUG("barcode ~p", [Barcode]),
 		    Sql0 = "select bcode, style_number, brand" 
 			" from w_inventory_good " 

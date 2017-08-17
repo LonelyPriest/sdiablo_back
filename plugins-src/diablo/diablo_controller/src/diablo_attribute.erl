@@ -117,7 +117,7 @@ handle_call({new_w_color, Merchant, Attr}, _From, State) ->
     Type     = ?v(<<"type">>, Attr),
     BCode    = ?v(<<"bcode">>, Attr, 0),
     Remark   = ?v(<<"remark">>, Attr, []),
-    SelfBarcode = ?v(<<"self_barcode">>, Attr, 0),
+    AutoBarcode = ?v(<<"auto_barcode">>, Attr, 0),
     
     Sql0 = "select id, name from colors"
 	" where name=" ++ "\"" ++ ?to_s(Name) ++ "\""
@@ -137,9 +137,9 @@ handle_call({new_w_color, Merchant, Attr}, _From, State) ->
     
     case ?sql_utils:execute(s_read, Sql0) of
 	{ok, []} ->
-	    NewBCode = case SelfBarcode of
-			   ?NO -> ?inventory_sn:sn(color, Merchant);
-			   ?YES -> BCode
+	    NewBCode = case AutoBarcode of
+			   ?YES -> ?inventory_sn:sn(color, Merchant);
+			   ?NO -> BCode
 		       end,
 	    case NewBCode =/= 0 of
 		true ->
@@ -423,7 +423,7 @@ handle_call({new_type, Merchant, Attrs}, _From, State) ->
     ?DEBUG("new_type with merchant ~p, attrs ~p", [Merchant, Attrs]),
     Name     = ?v(<<"name">>, Attrs),
     BCode    = ?v(<<"bcode">>, Attrs, 0),
-    SelfBarcode = ?v(<<"self_barcode">>, Attrs, 0),
+    AutoBarcode = ?v(<<"auto_barcode">>, Attrs, 0),
     
     Sql = "select id, name from inv_types"
 	++ " where name=" ++ "\"" ++ ?to_s(Name) ++ "\""
@@ -442,9 +442,9 @@ handle_call({new_type, Merchant, Attrs}, _From, State) ->
 
     case ?sql_utils:execute(s_read, Sql) of
 	{ok, []} ->
-	    NewBCode = case SelfBarcode of
-			   ?NO -> ?inventory_sn:sn(type, Merchant);
-			   ?YES -> BCode
+	    NewBCode = case AutoBarcode of
+			   ?YES -> ?inventory_sn:sn(type, Merchant);
+			   ?NO -> BCode
 		       end,
 	    case NewBCode =/= 0 of
 		true ->

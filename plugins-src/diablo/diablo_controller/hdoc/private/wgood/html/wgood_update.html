@@ -120,7 +120,7 @@
 		  <input type="text"
 			 class="form-control"
 			 name="firm"
-			 x-ng-readonly="route_params.from!==8 && !setting.self_barcode"
+			 x-ng-readonly="route_params.from!==8 && setting.auto_barcode"
 			 placeholder="请输入厂商"
 			 x-ng-model="good.firm"
 			 x-ng-enter=""

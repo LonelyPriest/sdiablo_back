@@ -541,6 +541,12 @@ create table w_inventory_good
     alarm_a          INTEGER default 0,
 
     --
+    level            TINYINT default -1,
+    executive        INTEGER default -1,
+    category         INTEGER default -1,
+    fabric           VARCHAR(256) default null,
+
+    --
     merchant         INTEGER default -1,
     
     change_date      DATETIME default 0, -- date of last change 
@@ -1175,9 +1181,10 @@ create table print_template(
    id              INTEGER AUTO_INCREMENT,
    width           TINYINT default 0,
    height          TINYINT default 0,
+   
    style_number    TINYINT default 0,
    brand           TINYINT default 0,
-   type            INTEGER default 0,
+   type            TINYINT default 0,
    firm            TINYINT default 0,
    color           TINYINT default 0,
    size            TINYINT default 0,
@@ -1188,11 +1195,21 @@ create table print_template(
    fabric          TINYINT default 0,
    
    font            TINYINT default 0,
+   bold            TINYINT default 0,
+   solo_brand      TINYINT default 0,
+   solo_color      TINYINT default 0,
+   solo_size       TINYINT default 0,
+   
+   hpx_each        TINYINT default 0,
+   hpx_price       TINYINT default 0,
+   hpx_barcode     TINYINT default 0,
 
+   hpx_top         TINYINT default 0,
+   hpx_left        TINYINT default 0,
+   
    merchant        INTEGER not null default -1,
    unique   key    (merchant),
    primary key     (id)
-   
    
 )default charset=utf8;
 
