@@ -2150,7 +2150,7 @@ handle_call({reset_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _F
 			    " where merchant=" ++ ?to_s(Merchant)
 			    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 			    ++ " and brand=" ++ ?to_s(Brand)],
-		    Reply = ?sql_utils:execute(write, Sqls, Barcode),
+		    Reply = ?sql_utils:execute(transaction, Sqls, Barcode),
 		    {reply, Reply, State};
 		{ok, _R} ->
 		    {reply, {error, ?err(stock_barcode_exist, Barcode)}, State}
