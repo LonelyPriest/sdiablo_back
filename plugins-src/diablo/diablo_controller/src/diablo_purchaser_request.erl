@@ -1509,7 +1509,7 @@ do_write(stock_sort_by_color, Do, Count, [H|T], SortStocks, Colors, Code, ShowOr
     %% ?DEBUG("key ~p", [Key]),
     case dict:find(Key, SortStocks) of
 	{ok, Notes} ->
-	    ?DEBUG("Notes ~p", [Notes]),
+	    %% ?DEBUG("Notes ~p", [Notes]),
 	    %% sort notes
 	    NoteDict = one_stock_note(sort_by_color, Notes, dict:new()),
 
@@ -1771,7 +1771,7 @@ one_stock_note(sort_by_color, [], Sorts) ->
     %% ?DEBUG("one_stock_note: ~p", [dict:to_list(Sorts)]),
     Sorts;
 one_stock_note(sort_by_color, [{H}|T], Sorts) ->
-    ?DEBUG("H ~p", [H]),
+    %% ?DEBUG("H ~p", [H]),
     %% use color to key
     Color = ?v(<<"color">>, H),
     NewSorts = 

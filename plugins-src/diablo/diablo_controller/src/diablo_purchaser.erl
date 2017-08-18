@@ -2807,12 +2807,52 @@ handle_call({stock_export, Merchant, Conditions, Mode}, _From, State) ->
 
 handle_call({stock_note_export, Merchant, Conditions, _Mode}, _From, State) ->
     {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions), 
-    RealyConditions = ?w_good_sql:realy_conditions(Merchant, NewConditions), 
+    RealyConditions = ?w_good_sql:realy_conditions(Merchant, NewConditions),
+
+    {C1, C2} = 
+	lists:foldr(
+	  fun({<<"firm">>, _} = C, {Stock, Note}) ->
+		  {[C|Stock], Note};
+	     ({<<"type">>, _} = C, {Stock, Note}) ->
+		  {[C|Stock], Note};
+	     ({<<"season">>, _} = C, {Stock, Note}) ->
+		  {[C|Stock], Note};
+	     ({<<"sex">>, _} = C, {Stock, Note}) ->
+		  {[C|Stock], Note};
+	     ({<<"year">>, _} = C, {Stock, Note}) ->
+		  {[C|Stock], Note};
+	     ({<<"tag_price">>, _} = C, {Stock, Note}) ->
+		  {[C|Stock], Note};
+	     ({<<"discount">>, _} = C, {Stock, Note}) ->
+		  {[C|Stock], Note};
+	     (C, {Stock, Note}) ->
+		  {Stock, [C|Note]} 
+	  end, {[], []}, RealyConditions),
+    
     %% ExtraCondtion = ?w_good_sql:sort_condition(stock, NewConditions, <<"a.">>), 
-    Sql = "select id, style_number, brand, color, size, total, merchant, shop"
-	" from w_inventory_amount"
-	" where merchant=" ++ ?to_s(Merchant)
-	++ ?sql_utils:condition(proplists, RealyConditions), 
+    Sql = case C1 of
+	      [] ->
+		  "select id, style_number, brand, color, size, total, merchant, shop"
+		      " from w_inventory_amount"
+		      " where merchant=" ++ ?to_s(Merchant)
+		      ++ ?sql_utils:condition(proplists, C2);
+	      _ ->
+		  "select a.id"
+		      ", a.style_number"
+		      ", a.brand"
+		      ", a.merchant"
+		      ", a.shop"
+		      
+		      ", b.color"
+		      ", b.size"
+		      ", b.total"
+		      
+		      " from w_inventory a, w_inventory_amount b"
+		      " where a.style_number=b.style_number and a.brand=b.brand and a.merchant=b.merchant and a.shop=b.shop"
+		      " and " ++ ?utils:to_sqls(proplists, ?utils:correct_condition(<<"a.">>, C1))
+		      ++ ?sql_utils:condition(proplists, ?utils:correct_condition(<<"b.">>, C2))
+	  end,
+		      
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
