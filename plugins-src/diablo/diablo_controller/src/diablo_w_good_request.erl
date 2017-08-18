@@ -309,6 +309,9 @@ action(Session, Req, {"update_w_good"}, Payload) ->
 		       _Firm     -> _Firm
 		   end,
 
+    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
+    AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSetting, ?YES)),
+
     UpdateOrNewBrand = 
     	fun(undefined) ->
     		case Firm =:= OFirm of
@@ -331,9 +334,21 @@ action(Session, Req, {"update_w_good"}, Payload) ->
     try
 	TypeId = case ?v(<<"type">>, Good) of
 		     undefined -> undefined;
-		     Type -> {ok, TId} = ?attr:type(new, Merchant, Type),
-			     TId
+		     Type ->
+			 
+			 %% {ok, TId} = ?attr:type(new, Merchant, Type),
+			 %% TId, 
+			 {ok, TId} =
+			     case ?attr:type(new, Merchant, [{<<"name">>, Type},
+							     {<<"auto_barcode">>, AutoBarcode}]) of
+				 {ok, _TypeId} -> {ok, _TypeId};
+				 {ok_exist, _TypeId} -> {ok, _TypeId};
+				 _Error -> _Error 
+			     end,
+			 TId
 		 end,
+
+	
 
 	BrandId = UpdateOrNewBrand(?v(<<"brand">>, Good)), 
 	OldPath = image(path, Merchant, OStyleNumber, OBrandId),
