@@ -1009,19 +1009,35 @@ action(Session, Req, {"get_stock_by_barcode"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     Barcode = ?v(<<"barcode">>, Payload),
     Shop = ?v(<<"shop">>, Payload),
-
+    
+    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
+    AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSetting, ?YES)), 
     %% BarcodeSize = erlang:size(Barcode),
 
     %% 128C code's lenght should be odd
     <<ZZ:2/binary, _/binary>> = Barcode,
+    <<_Z:1/binary, SCode/binary>> = Barcode, 
     NewBarcode = 
-	case ZZ of
-	    <<"00">> ->
-		<<_Z:1/binary, Code/binary>> = Barcode,
-		Code; 
-	    _ ->
-		Barcode
-	end,
+	case AutoBarcode of
+	    ?YES -> 
+		case ZZ of
+		    <<"00">> ->
+			SCode;
+		    <<"0", _T/binary>> ->
+			SCode;
+		    _ ->
+			Barcode
+		end;
+	    ?NO ->
+		case ZZ of
+		    <<"00">> ->
+			SCode;
+		    <<"0", _T/binary>> ->
+			SCode;
+		    _ ->
+			Barcode
+		end
+    end,
     
     ?DEBUG("newBarcode ~p", [Barcode]),
 	    

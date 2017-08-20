@@ -302,8 +302,8 @@ var wsaleUtils = function(){
 	    return diablo_base_setting("bcode_use", shop, base, parseInt, diablo_no);
 	},
 
-	barcode_self: function(shop, base) {
-	    return diablo_base_setting("bcode_self", shop, base, parseInt, diablo_no);
+	barcode_auto: function(shop, base) {
+	    return diablo_base_setting("bcode_auto", shop, base, parseInt, diablo_no);
 	},
 
 	get_login_employee:function(shop, loginEmployee, employees){

@@ -891,6 +891,11 @@ handle_call({set_barcode_print_template, Merchant}, _From, State) ->
 		", fabric"
 
 		", font"
+		", font_name"
+		", font_executive"
+		", font_category"
+		", font_price"
+		
 		", bold"
 		
 		", solo_brand"
@@ -898,6 +903,9 @@ handle_call({set_barcode_print_template, Merchant}, _From, State) ->
 		", solo_size" 
 		
 		", hpx_each"
+		", hpx_executive"
+		", hpx_category"
+		", hpx_fabric"
 		", hpx_price"
 		", hpx_barcode"
 
@@ -920,13 +928,20 @@ handle_call({set_barcode_print_template, Merchant}, _From, State) ->
 		++ ?to_s(?NO) ++ ","
 		++ ?to_s(?NO) ++ ","
 		
-		++ ?to_s(?NO) ++ ","
+		++ ?to_s(0) ++ ","
+		++ ?to_s(0) ++ ","
+		++ ?to_s(0) ++ ","
+		++ ?to_s(0) ++ ","
+		
 		++ ?to_s(?NO) ++ ","
 
 		++ ?to_s(?NO) ++ ","
 		++ ?to_s(?NO) ++ ","
 		++ ?to_s(?NO) ++ ","
 		
+		++ ?to_s(0) ++ ","
+		++ ?to_s(0) ++ ","
+		++ ?to_s(0) ++ ","
 		++ ?to_s(0) ++ ","
 		++ ?to_s(0) ++ ","
 		++ ?to_s(0) ++ ","

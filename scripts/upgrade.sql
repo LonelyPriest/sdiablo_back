@@ -232,3 +232,15 @@ alter table w_inventory_good add column level TINYINT default -1 after path;
 alter table w_inventory_good add column executive INTEGER default -1 after level;
 alter table w_inventory_good add column category INTEGER default -1 after executive;
 alter table w_inventory_good add column fabric VARCHAR(256) default null after category;
+
+
+-- 2017-08-19
+alter table print_template add column font_name VARCHAR(32) default "" after font;
+alter table print_template add column font_executive TINYINT default 0 after font_name;
+alter table print_template add column font_category TINYINT default 0 after font_executive;
+alter table print_template add column font_price TINYINT default 0 after font_category;
+
+alter table print_template add column hpx_executive TINYINT default 0 after hpx_each;
+alter table print_template add column hpx_category TINYINT default 0 after hpx_executive;
+alter table print_template add column hpx_fabric TINYINT default 0 after hpx_category;
+

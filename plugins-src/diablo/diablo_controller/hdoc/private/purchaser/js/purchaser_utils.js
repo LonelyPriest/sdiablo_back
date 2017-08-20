@@ -637,6 +637,15 @@ stockPrintU.prototype.init = function() {
     this.LODOP.PRINT_INITA(0, 0, this.wpx, this.hpx, "task_barcode_from_stock");
     this.LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
     this.LODOP.SET_PRINT_PAGESIZE(1, this.template.width * 100, this.template.height * 100, "");
+    if (stockUtils.to_integer(this.template.font) !== 0) {
+	this.LODOP.SET_PRINT_STYLE("FontSize", stockUtils.to_integer(this.template.font));
+    }
+    if (this.template.font_name) {
+	this.LODOP.SET_PRINT_STYLE("FontName", this.template.font_name);
+    }
+    if (stockUtils.to_integer(this.template.bold) !== 0) {
+	this.LODOP.SET_PRINT_STYLE("Bold", stockUtils.to_integer(this.template.bold));
+    }
 };
 
 stockPrintU.prototype.setBarcode = function(barcode) {
@@ -777,7 +786,7 @@ stockPrintU.prototype.printBarcode2 = function() {
     var size = this.size && this.size.toString() !== diablo_free_size ? this.size : "均码";
     if (this.template.size) {
 	if (this.template.solo_size) {
-	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "尺码：" + size);
+	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "规格：" + size);
 	    top += this.template.hpx_each;
 	}
     }
@@ -790,26 +799,38 @@ stockPrintU.prototype.printBarcode2 = function() {
 
     // executive
     if (this.template.executive) {
-	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "执行标准：" + this.stock.executive.name);
-	top += this.template.hpx_each;
+	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "执行标准：" );
+	top += this.template.hpx_executive; 
+	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "      " +  this.stock.executive.name);
+	if (stockUtils.to_integer(this.template.font_executive) !== 0) {
+	    this.LODOP.SET_PRINT_STYLEA(0, "FontSize", stockUtils.to_integer(this.template.font_executive));
+	}
+	top += this.template.hpx_executive;
     }
 
     // category
     if (this.template.category) {
-	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "安全类别：" + this.stock.category.name);
-	top += this.template.hpx_each;
+	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "安全技术类别：");
+	top += this.template.hpx_category; 
+	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "      " +  this.stock.category.name); 
+	if (stockUtils.to_integer(this.template.font_executive) !== 0) {
+	    this.LODOP.SET_PRINT_STYLEA(0, "FontSize", stockUtils.to_integer(this.template.font_executive));
+	}
+	top += this.template.hpx_category;
     }
 
     // fabric
     if (this.template.fabric) {
 	for (var i=0, l=this.stock.fabrics.length; i<l; i++) {
 	    var f = this.stock.fabrics[i];
+	    
 	    if (i === 0) {
-		this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "面料：" + f.percent + "%" + f.name);
-	    } else {
-		this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "      " + f.percent + "%" + f.name);
-	    } 
-	    top += this.template.hpx_each;
+		this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "成份：");
+		top += this.template.hpx_fabric;
+	    }
+	    
+	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "      " + f.p + "%" + f.name);
+	    top += this.template.hpx_fabric;
 	} 
     }
 
@@ -826,10 +847,12 @@ stockPrintU.prototype.printBarcode2 = function() {
 
     this.LODOP.ADD_PRINT_BARCODE(top, this.left, iwpx, this.template.hpx_barcode, this.barcodeFormat, this.barcode);
     this.LODOP.SET_PRINT_STYLEA(0, "FontSize", 7);
+    // this.LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
+    // this.LODOP.SET_PRINT_STYLEA(0, "Bold", 0);
 
     // this.LODOP.PRINT_SETUP();
-    // this.LODOP.PRINT_DESIGN();
-    this.LODOP.PRINT();
+    this.LODOP.PRINT_DESIGN();
+    // this.LODOP.PRINT();
     
 };
 

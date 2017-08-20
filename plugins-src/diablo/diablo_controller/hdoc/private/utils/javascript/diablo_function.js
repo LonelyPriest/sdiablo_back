@@ -987,6 +987,42 @@ var diabloHelp = function(){
 		    size: order_used_sizes,
 		    color:colors,
 		    sort:sorts};
+	},
+
+	correct_barcode: function(original, auto_barcode) {
+	    var correct, cuted;
+	    if (auto_barcode) {
+		if (original.startsWith('1')) {
+		    correct = original; 
+		    cuted = original.substr(0, original.length - diablo_barcode_lenth_of_color_size);
+		} else if (original.startsWith('01')) {
+		    correct = original.substr(1, original.length - 1); 
+		    cuted = original.substr(1, original.length - diablo_barcode_lenth_of_color_size -1);
+		} else if (barcode.startsWith('00')) {
+		    correct = original.substr(1, original.length - 1); 
+		    cuted = original.substr(1, original.length - diablo_barcode_lenth_of_color_size -1);
+		} else {
+		    correct = original; 
+		    cuted = original.substr(0, original.length - diablo_barcode_lenth_of_color_size);
+		} 
+	    } else {
+		if (original.startsWith('00')) {
+		    correct = original.substr(1, original.length - 1); 
+		    cuted = original.substr(1, original.length - diablo_barcode_lenth_of_color_size -1); 
+		}
+		else if (original.startsWith('0')) {
+		    correct = original.substr(1, original.length - 1); 
+		    cuted = original.substr(1, original.length - diablo_barcode_lenth_of_color_size -1); 
+		}
+		else {
+		    correct = original; 
+		    cuted = original.substr(0, original.length - diablo_barcode_lenth_of_color_size);
+		}
+	    }
+	    
+	    return {correct: correct, cuted:cuted}; 
 	}
+
+	//
     };
 }();

@@ -1195,12 +1195,22 @@ create table print_template(
    fabric          TINYINT default 0,
    
    font            TINYINT default 0,
+   font_name       VARCHAR(32) default "",
+   font_executive  TINYINT default 0,
+   font_category   TINYINT default 0,
+   font_price      TINYINT default 0,
+   
    bold            TINYINT default 0,
+   
    solo_brand      TINYINT default 0,
    solo_color      TINYINT default 0,
    solo_size       TINYINT default 0,
    
    hpx_each        TINYINT default 0,
+   hpx_executive   TINYINT default 0,
+   hpx_category    TINYINT default 0,
+   hpx_fabric      TINYINT default 0,
+   
    hpx_price       TINYINT default 0,
    hpx_barcode     TINYINT default 0,
 

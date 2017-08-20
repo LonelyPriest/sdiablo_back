@@ -976,21 +976,33 @@ function goodPrintTemplateCtrlProvide(
 
     $scope.refresh();
 
-    var p = ["width", "height", "style_number", "brand", "type", "firm", "color", "size"
+    var p = ["width", "height",
+	     "style_number", "brand", "type", "firm", "color", "size"
 	     , "level", "executive", "category", "fabric"
-	     , "font", "bold", "solo_brand", "solo_color", "solo_size"
-	     , "hpx_each", "hpx_price", "hpx_barcode"
+	     , "font", "font_name", "font_executive", "font_category", "font_price"
+	     , "bold"
+	     , "solo_brand", "solo_color", "solo_size"
+	     , "hpx_each", "hpx_executive", "hpx_category", "hpx_fabric", "hpx_price", "hpx_barcode"
 	     , "hpx_top", "hpx_left"];
     
     $scope.save_template = function() {
-	var update = {id:$scope.template.id};
+	var update = {};
 	angular.forEach(p, function(o) {
 	    if ($scope.template[o] !== $scope.o_template[o]) {
 		update[o] = $scope.template[o]
 	    }
 	});
+	if (diablo_is_empty(update)) {
+	    dialog.response(
+		false,
+		"打印模板编辑",
+		"打印模板编辑失败！！" + baseService.error[8010],
+		undefined);
+	    return;
+	};
 	
-	console.log(update);
+	console.log(update); 
+	update.id = $scope.template.id;
 	baseService.update_print_template(update).then(function(result){
 	    if (result.ecode === 0) {
 		dialog.response_with_callback(

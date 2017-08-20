@@ -324,19 +324,17 @@ function purchaserInventoryFixCtrlProvide(
     };
 
     $scope.barcode_scanner = function(full_bcode) {
-    	console.log(full_bcode);
+    	console.log(full_bcode); 
+	var barcode = diabloHelp.correct_barcode(full_bcode); 
+	console.log(barcode);
 	
-	var barcode = full_bcode;
-	if (barcode.startsWith('1')) {
-	    barcode = barcode.substr(0, barcode.length - diablo_barcode_lenth_of_color_size);
-	} 
-	diabloFilter.get_stock_by_barcode(barcode, $scope.select.shop.id).then(function(result){
+	diabloFilter.get_stock_by_barcode(barcode.cuted, $scope.select.shop.id).then(function(result){
 	    console.log(result);
 	    if (result.ecode === 0) {
 		if (diablo_is_empty(result.stock)) {
 		    dialog.response(false, "库存盘点", "盘点失败" + purchaserService.error[2085]);
 		} else {
-		    result.stock.full_bcode = full_bcode;
+		    result.stock.full_bcode = barcode.correct;
 		    $scope.on_select_good(result.stock);
 		}
 	    } else {

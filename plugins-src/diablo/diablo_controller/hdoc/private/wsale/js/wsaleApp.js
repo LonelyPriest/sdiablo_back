@@ -467,7 +467,7 @@ function wsaleNewProvide(
 	$scope.setting.semployee = wsaleUtils.s_employee(shopId, base);
 	$scope.setting.cake_mode = wsaleUtils.cake_mode(shopId, base);
 	$scope.setting.barcode_mode = wsaleUtils.barcode_mode(shopId, base);
-	$scope.setting.self_barcode = wsaleUtils.barcode_self(shopId, base);
+	$scope.setting.barcode_auto = wsaleUtils.barcode_auto(shopId, base);
 
 	if (diablo_no === $scope.setting.cake_mode) {
 	    $scope.vpays = wsaleService.vpays;
@@ -1088,29 +1088,27 @@ function wsaleNewProvide(
     };
 
     $scope.barcode_scanner = function(full_bcode) {
-	console.log($scope.inventories);
+	// console.log($scope.inventories);
     	console.log(full_bcode);
 	// get stock by barcode
-	// stock info
-	var barcode = full_bcode;
+	// stock info 
+	var barcode = diabloHelp.correct_barcode(full_bcode); 
+	console.log(barcode);
 	
-	if (barcode.startsWith('1') || $scope.setting.self_barcode) {
-	    barcode = barcode.substr(0, barcode.length - diablo_barcode_lenth_of_color_size);
-	}
 
 	// invalid barcode
-	if (!barcode) {
+	if (!barcode.cuted || !barcode.correct) {
 	    dialog.response(false, "销售开单", "开单失败" + wsaleService.error[2196]);
 	    return;
 	}
 	
-	diabloFilter.get_stock_by_barcode(barcode, $scope.select.shop.id).then(function(result){
+	diabloFilter.get_stock_by_barcode(barcode.cuted, $scope.select.shop.id).then(function(result){
 	    console.log(result);
 	    if (result.ecode === 0) {
 		if (diablo_is_empty(result.stock)) {
 		    dialog.response(false, "销售开单", "开单失败" + wsaleService.error[2195]);
 		} else {
-		    result.stock.full_bcode = full_bcode;
+		    result.stock.full_bcode = barcode.correct;
 		    $scope.on_select_good(result.stock);
 		}
 	    } else {
@@ -1721,8 +1719,17 @@ function wsaleNewProvide(
 			    if (angular.isDefined(color)
 				&& color.bcode === bcode_color && a.size === bcode_size) {
 				a.sell_count = 1;
+				a.focus = true;
 			    }
 			});
+		    } else {
+			// inv.amounts[0].focus = true;
+			for (var i=0, l=inv.amounts.length; i<l; i++) {
+			    var a = inv.amounts[i]; 
+			    if (a.cid === inv.colors[0].cid && a.size === inv.sizes[0]) {
+				a.focus = true;
+			    }
+			}
 		    }
 		    
 		    var after_add = function(){
@@ -1754,18 +1761,19 @@ function wsaleNewProvide(
 		    };
 
 		    // set auto focus
-		    for (var i=0, l=inv.amounts.length; i<l; i++) {
-			var a = inv.amounts[i]; 
-			if (a.sell_count > 0) {
-			    a.focus = true;
-			    break;
-			} else {
-			    if (a.cid === inv.colors[0].cid && a.size === inv.sizes[0]) {
-				a.focus = true;
-				break;
-			    }
-			} 
-		    }
+		    // for (var i=0, l=inv.amounts.length; i<l; i++) {
+		    // 	var a = inv.amounts[i];
+		    // 	console.log(a.sell_count);
+		    // 	if (a.sell_count > 0) {
+		    // 	    a.focus = true;
+		    // 	    break;
+		    // 	} else {
+		    // 	    if (a.cid === inv.colors[0].cid && a.size === inv.sizes[0]) {
+		    // 		a.focus = true;
+		    // 		break;
+		    // 	    }
+		    // 	} 
+		    // }
 		    
 		    var modal_size = diablo_valid_dialog(inv.sizes);
 		    var large_size = modal_size === 'lg' ? true : false;

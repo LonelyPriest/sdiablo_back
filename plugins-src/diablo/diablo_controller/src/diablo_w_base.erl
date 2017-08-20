@@ -475,6 +475,11 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", fabric"
 
 	", font"
+	", font_name"
+	", font_executive"
+	", font_category"
+	", font_price"
+	
 	", bold"
 	
 	", solo_brand"
@@ -482,6 +487,9 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", solo_size"
 	
 	", hpx_each"
+	", hpx_executive"
+	", hpx_category"
+	", hpx_fabric"
 	", hpx_price"
 	", hpx_barcode"
 
@@ -512,12 +520,20 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(fabric, integer, ?v(<<"fabric">>, Attrs))
 
 	++  ?utils:v(font, integer, ?v(<<"font">>, Attrs))
+	++  ?utils:v(font_name, string, ?v(<<"font_name">>, Attrs))
+	++  ?utils:v(font_executive, integer, ?v(<<"font_executive">>, Attrs))
+	++  ?utils:v(font_category, integer, ?v(<<"font_category">>, Attrs))
+	++  ?utils:v(font_print, integer, ?v(<<"font_price">>, Attrs))
+	
 	++  ?utils:v(bold, integer, ?v(<<"bold">>, Attrs))
 	++  ?utils:v(solo_brand, integer, ?v(<<"solo_brand">>, Attrs))
 	++  ?utils:v(solo_color, integer, ?v(<<"solo_color">>, Attrs))
 	++  ?utils:v(solo_size, integer, ?v(<<"solo_size">>, Attrs))
 
 	++  ?utils:v(hpx_each, integer, ?v(<<"hpx_each">>, Attrs))
+	++  ?utils:v(hpx_executive, integer, ?v(<<"hpx_executive">>, Attrs))
+	++  ?utils:v(hpx_category, integer, ?v(<<"hpx_category">>, Attrs))
+	++  ?utils:v(hpx_fabric, integer, ?v(<<"hpx_fabric">>, Attrs))
 	++  ?utils:v(hpx_price, integer, ?v(<<"hpx_price">>, Attrs))
 	++  ?utils:v(hpx_barcode, integer, ?v(<<"hpx_barcode">>, Attrs))
 
@@ -526,7 +542,7 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 
     Sql = "update print_template set " ++ ?utils:to_sqls(proplists, comma, U)
 	++ " where merchant=" ++ ?to_s(Merchant)
-	++ " and id=" ++ ?to_s(Id),
+	++ " and id=" ++ ?to_s(Id), 
 
     Reply = ?sql_utils:execute(write, Sql, Id),
     {reply, Reply, State};
