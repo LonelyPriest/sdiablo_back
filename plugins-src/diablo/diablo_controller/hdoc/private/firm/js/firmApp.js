@@ -68,7 +68,8 @@ function firmConfig(angular){
 	$routeProvider.
 	    when('/firm_detail', {
 		templateUrl: '/private/firm/html/firm_detail.html',
-		controller: 'firmDetailCtrl'
+		controller: 'firmDetailCtrl',
+		resolve: angular.extend({}, user)
 	    }).
 	    when('/firm_trans/:firm?/:page?', {
 		templateUrl: '/private/firm/html/firm_trans.html',
@@ -122,7 +123,7 @@ function firmConfig(angular){
 	    otherwise({
 		templateUrl: '/private/firm/html/firm_detail.html',
 		controller: 'firmDetailCtrl', 
-		resolve: angular.extend({}, firm)
+		resolve: angular.extend({}, user)
             })
     }]);
 

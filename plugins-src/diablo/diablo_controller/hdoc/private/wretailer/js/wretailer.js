@@ -665,7 +665,9 @@ function wretailerChargeDetailCtrlProvide(
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
 
-    $scope.right = {master: rightAuthen.authen_master(user.type)};
+    $scope.right = {
+	master: rightAuthen.authen_master(user.type),
+	update_phone: retailerUtils.authen(user.type, user.right, 'update_phone')};
     
     var now = $.now(); 
     $scope.time = diabloFilter.default_time(now, now);
@@ -743,7 +745,8 @@ function wretailerChargeDetailCtrlProvide(
 	    var update = {
 		id: recharge.id,
 		employee: diablo_get_modified(params.recharge.employee, recharge.employee),
-		shop: diablo_get_modified(params.recharge.select_shop.id, recharge.shop_id)
+		shop: diablo_get_modified(params.recharge.select_shop.id, recharge.shop_id),
+		comment: diablo_get_modified(params.comment, recharge.comment)
 	    };
 
 	    console.log(update);

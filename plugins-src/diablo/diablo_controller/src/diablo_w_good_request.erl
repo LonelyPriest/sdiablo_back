@@ -468,10 +468,10 @@ action(Session, Req, {"update_w_color"}, Payload) ->
 		ok;
 	    _BCode ->
 		{ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
-		case ?to_i(?v(<<"bcode_self">>, BaseSetting, 0)) of
-		    ?NO ->
-			{error, ?err(self_bcode_not_allowed, Merchant)};
+		case ?to_i(?v(<<"bcode_auto">>, BaseSetting, ?YES)) of
 		    ?YES ->
+			{error, ?err(self_bcode_not_allowed, Merchant)};
+		    ?NO ->
 			ok
 		end
 	end
@@ -492,23 +492,23 @@ action(Session, Req, {"new_w_type"}, Payload) ->
     ?DEBUG("new_w_color with session ~p,  paylaod ~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session), 
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
-    SelfBarcode = ?to_i(?v(<<"bcode_self">>, BaseSetting, 0)),
+    AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSetting, ?YES)),
 
     case 
 	case ?v(<<"bcode">>, Payload) of
 	    undefined ->
 		ok;
 	    _BCode ->
-		case SelfBarcode of
-		    ?NO ->
-			{error, ?err(self_bcode_not_allowed, Merchant)};
+		case AutoBarcode of
 		    ?YES ->
+			{error, ?err(self_bcode_not_allowed, Merchant)};
+		    ?NO ->
 			ok
 		end
 	end
     of
 	ok -> 
-	    case ?attr:type(new, Merchant, Payload ++ [{<<"self_barcode">>, SelfBarcode}]) of
+	    case ?attr:type(new, Merchant, Payload ++ [{<<"auto_barcode">>, AutoBarcode}]) of
 		{ok, TypeId} ->
 		    ?utils:respond(200, Req, ?succ(add_color, TypeId), {<<"id">>, TypeId}),
 		    ?w_user_profile:update(type, Merchant);
@@ -530,10 +530,10 @@ action(Session, Req, {"update_w_type"}, Payload) ->
 		ok;
 	    _BCode ->
 		{ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
-		case ?to_i(?v(<<"bcode_self">>, BaseSetting, 0)) of
-		    ?NO ->
-			{error, ?err(self_bcode_not_allowed, Merchant)};
+		case ?to_i(?v(<<"bcode_auto">>, BaseSetting, ?YES)) of
 		    ?YES ->
+			{error, ?err(self_bcode_not_allowed, Merchant)};
+		    ?NO ->
 			ok
 		end
 	end

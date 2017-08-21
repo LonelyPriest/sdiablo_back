@@ -36,7 +36,7 @@ function firmNewCtrlProvide(
 
 function firmDetailCtrlProvide(
     $scope, $location, $routeParams, firmService, diabloUtilsService,
-    diabloPagination, diabloPattern, localStorageService){
+    diabloPagination, diabloPattern, localStorageService, user){
 
     $scope.pattern = {
 	name: diabloPattern.ch_name_address,
@@ -44,6 +44,14 @@ function firmDetailCtrlProvide(
 	tel_mobile: diabloPattern.tel_mobile,
 	address: diabloPattern.ch_name_address,
 	comment: diabloPattern.comment};
+
+    $scope.right = {
+	show_orgprice: rightAuthen.authen(
+	    user.type,
+	    rightAuthen.rainbow_action()['show_orgprice'],
+	    user.right
+	) 
+    }; 
 
     var f_add = diablo_float_add;
     var now   = $.now();
@@ -291,7 +299,8 @@ function firmDetailCtrlProvide(
 		     && diablo_is_same(new_firm.mobile, old_firm.mobile)
 		     && diablo_is_same(new_firm.comment, old_firm.comment) ? false : true;
 	     },
-	     pattern: $scope.pattern})
+	     pattern: $scope.pattern,
+	     right: $scope.right})
     };
 
     $scope.delete_firm = function(f){

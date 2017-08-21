@@ -781,15 +781,16 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 
 		%% fix
 		Sql16 =
-		    ["update w_inventory_fix_detail set "
-		     ++ ?utils:to_sqls(
-			   proplists,
-			   comma,
-			   Update2
-			   ++ ?utils:v(path, string, Path)
-			   ++ ?utils:v(firm, integer, Firm))
-		     ++ " where "
-		     ++ RC(OrgStyleNumber, OrgBrand),
+		    [
+		     %% "update w_inventory_fix_detail set "
+		     %% ++ ?utils:to_sqls(
+		     %% 	   proplists,
+		     %% 	   comma,
+		     %% 	   Update2
+		     %% 	   ++ ?utils:v(path, string, Path)
+		     %% 	   ++ ?utils:v(firm, integer, Firm))
+		     %% ++ " where "
+		     %% ++ RC(OrgStyleNumber, OrgBrand),
 
 		     "update w_inventory_fix_detail_amount set "
 		     ++ ?utils:to_sqls(proplists, comma, Update2)

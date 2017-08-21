@@ -320,7 +320,8 @@ function wretailerConfig(angular) {
 	    return http.save({operation:"update_recharge"},
 			     {charge_id: charge.id,
 			      employee: charge.employee,
-			      shop: charge.shop}).$promise;
+			      shop: charge.shop,
+			     comment: charge.comment}).$promise;
 	};
 
 	this.export_recharge_detail = function(condition){

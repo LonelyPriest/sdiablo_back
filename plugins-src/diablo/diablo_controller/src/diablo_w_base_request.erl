@@ -340,7 +340,7 @@ sidebar(Session) ->
 	    ?MERCHANT ->
 		Merchant = ?session:get(merchant, Session),
 		{ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
-		AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSetting, 0)),
+		AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSetting, ?YES)),
 		
 		[{{"setting",        "基本设置", "glyphicon glyphicon-cog"},
 		 [{"print_option",   "系统设置", "glyphicon glyphicon-wrench"}]

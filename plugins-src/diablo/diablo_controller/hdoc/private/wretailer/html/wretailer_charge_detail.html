@@ -112,7 +112,7 @@
 		    <td>{{c.accbalance}}</td> 
 		    <td>{{c.comment}}</td>
 		    <td>{{c.entry_date}}</td> 
-		    <td x-ng-if="right.master">
+		    <td  x-ng-if="right.update_phone">
 		      <button class="btn diablo-button yellow-crusta"
 		      	      x-ng-click="update_recharge(c)">修改
 		      	<i class="glyphicon glyphicon-edit"></i>
@@ -123,7 +123,7 @@
 		    </td>
 		  </tr>
 
-		  <tr x-ng-if="right.master && total_items!==0" class="bg-white">
+		  <tr x-ng-if="total_items!==0" class="bg-white">
 		    <td colspan=8></td>
 		    <td>{{total_cbalance}}</td>
 		    <td>{{total_cash}}</td>

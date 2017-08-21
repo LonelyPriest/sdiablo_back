@@ -25,7 +25,7 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
     Alarm_a     = ?v(<<"alarm_a">>, Attrs, 0),
 
     Sizes       = ?v(<<"sizes">>, Attrs, [?FREE_SIZE]),
-    AutoBarcode = ?v(<<"Autobarcode">>, Attrs, ?NO), 
+    AutoBarcode = ?v(<<"Autobarcode">>, Attrs, ?YES), 
     DateTime    = ?utils:current_time(localtime),
     
     Free = case Colors =:= [0] andalso Sizes =:= [0] of

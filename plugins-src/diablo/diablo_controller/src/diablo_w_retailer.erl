@@ -738,9 +738,11 @@ handle_call({delete_recharge, Merchant, ChargeId}, _From, State) ->
 handle_call({update_recharge, Merchant, {ChargeId, Attrs}}, _From, State) ->
     Employee = ?v(<<"employee">>, Attrs),
     Shop = ?v(<<"shop">>, Attrs),
+    Comment = ?v(<<"comment">>, Attrs),
 
     Updates = ?utils:v(employ, string, Employee)
-	++ ?utils:v(shop, integer, Shop),
+	++ ?utils:v(shop, integer, Shop)
+	++ ?utils:v(comment, string, Comment),
     
     Sql0 = "update w_charge_detail set "
 	++ ?utils:to_sqls(proplists, comma, Updates) 
