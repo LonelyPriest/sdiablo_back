@@ -1175,7 +1175,7 @@ sidebar(Session) ->
 		  authen_shop_action(
 		    {?fix_w_inventory,
 		     "inventory_fix",
-		     "店铺盘点", "glyphicon glyphicon-check"}, Shops)
+		     "盘点", "glyphicon glyphicon-check"}, Shops)
 		  ++ [{"inventory_fix_detail",
 		       "盘点记录", "glyphicon glyphicon-tasks"},
 		      {"inventory_rsn_detail/fix",

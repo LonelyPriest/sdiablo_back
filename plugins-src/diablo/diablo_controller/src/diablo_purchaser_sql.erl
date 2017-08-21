@@ -415,8 +415,9 @@ good_match(style_number_with_firm, Merchant, StyleNumber, Firm) ->
 	       _ -> ?sql_utils:condition(proplists, {<<"a.firm">>, Firm})
 	   end 
 	++ " and a.brand=b.id"
-	++ " and a.type=c.id" 
-	++ " and a.style_number like \'" ++ ?to_s(StyleNumber) ++ "%\'"
+	++ " and a.type=c.id"
+	++ " and " ++ get_match_mode(style_number, StyleNumber, "a.") 
+    %% ++ " and a.style_number like \'%" ++ ?to_s(StyleNumber) ++ "%\'"
 	++ " order by id desc"
 	++ " limit " ++ ?to_s(P);
 
@@ -1154,6 +1155,7 @@ inventory({new_rsn_group_with_pagination, Mode, Sort},
 %%
 %% match
 %%
+
 inventory_match(Merchant, StyleNumber, Shop) ->
     P = ?w_retailer:get(prompt, Merchant),
     "select style_number from w_inventory"
@@ -2171,19 +2173,21 @@ realy_shop(UseBad, Merchant, ShopId) ->
 
 
 get_match_mode(style_number, StyleNumber) ->
+    get_match_mode(style_number, StyleNumber, []).
+get_match_mode(style_number, StyleNumber, Prefix) ->
     First = string:substr(?to_s(StyleNumber), 1, 1),
     Last = string:substr(?to_s(StyleNumber), string:len(?to_s(StyleNumber))),
     Match = string:strip(?to_s(StyleNumber), both, $/),
 
     case {First, Match, Last} of
 	{"/", Match, "/"} ->
-	    "style_number=\'" ++ Match ++ "\'"; 
+	    ?to_s(Prefix) ++ "style_number=\'" ++ Match ++ "\'"; 
 	{"/", Match, _} ->
-	    "style_number like \'" ++ Match ++ "%\'";
+	    ?to_s(Prefix) ++ "style_number like \'" ++ Match ++ "%\'";
 	{_, Match, "/"} ->
-	    "style_number like \'%" ++ Match ++ "\'";
+	    ?to_s(Prefix) ++ "style_number like \'%" ++ Match ++ "\'";
 	{_, Match, _}->
-	    "style_number like \'%" ++ Match ++ "%\'"
+	    ?to_s(Prefix) ++ "style_number like \'%" ++ Match ++ "%\'"
     end.
 
 

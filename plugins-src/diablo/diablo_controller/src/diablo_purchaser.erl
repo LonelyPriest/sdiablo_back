@@ -1803,9 +1803,10 @@ handle_call({reject_inventory, Merchant, Inventories, Props}, _From, State) ->
     end;
 
 %% fix
-handle_call({fix_inventory, Merchant,
-	     {StocksNotInDB, StocksNotInShop, StocksDiff},
-	     Props}, _From, State) ->
+handle_call({fix_inventory,
+	     Merchant,
+	     {StocksNotInDB, StocksNotInShop, StocksDiff}, Props},
+	    _From, State) ->
     ?DEBUG("fix_inventory with merchant ~p, props ~p", [Merchant, Props]), 
     Datetime        = ?v(<<"datetime">>, Props), 
     Shop            = ?v(<<"shop">>, Props),
@@ -3054,7 +3055,7 @@ sql(wfix, RSN, Datetime, Merchant, Shop, {StocksNotInDB, StocksNotInShop, Stocks
 		     Total = ?v(<<"total">>, Stock),
 		     ["insert into w_inventory_fix_detail_amount(rsn"
 		      ", merchant, shop, style_number"
-		      ", brand, color, size, db_total, shop_total) values("
+		      ", brand, color, size, db_total, shop_total, entry_date) values("
 		      ++ "\'" ++ ?to_s(RSN) ++ "\',"
 		      ++ ?to_s(Merchant) ++ ","
 		      ++ ?to_s(Shop) ++ ","
@@ -3077,7 +3078,7 @@ sql(wfix, RSN, Datetime, Merchant, Shop, {StocksNotInDB, StocksNotInShop, Stocks
 		     DBTotal  = ?v(<<"db">>, Stock),
 		     ["insert into w_inventory_fix_detail_amount(rsn"
 		      ", merchant, shop, style_number"
-		      ", brand, color, size, db_total, shop_total) values("
+		      ", brand, color, size, db_total, shop_total, entry_date) values("
 		      ++ "\'" ++ ?to_s(RSN) ++ "\',"
 		      ++ ?to_s(Merchant) ++ ","
 		      ++ ?to_s(Shop) ++ ","

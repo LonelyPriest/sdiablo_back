@@ -7,14 +7,18 @@ function purchaserInventoryFixCtrlProvide(
     // $scope.sexs    = diablo_sex;
     $scope.seasons = diablo_season;
     // $scope.calc_row = stockUtils.calc_row;
-    $scope.setting = {barcode_mode: diablo_no}; 
+    $scope.setting = {barcode_mode: diablo_no};
+    $scope.useFile = false;
     
     var dialog = diabloUtilsService;
     // var fixDraft = new stockFile(diablo_fix_draft_path);
     var fix_time;
-    var LODOP;
+    // var LODOP;
     
-    if (needCLodop) loadCLodop();
+    if (needCLodop()) {
+	$scope.useFile = true;
+	loadCLodop(); 
+    }
 
     $scope.refresh = function(){
 	$scope.inventories = [];
@@ -171,7 +175,11 @@ function purchaserInventoryFixCtrlProvide(
      */
     $scope.disable_save = function(){
 	return $scope.has_saved || $scope.inventories.length === 1 ? true : false;
-    }; 
+    };
+
+    $scope.disable_draft = function() {
+	return !$scope.useFile;
+    };
 
     var in_stocks = function(s, stocks) {
 	var found = false;
@@ -315,12 +323,11 @@ function purchaserInventoryFixCtrlProvide(
 	    }
 	});
 
-	var fixDraft = new stockFile(diablo_fix_draft_path);
-	fixDraft.getLodop();
-	// console.log(angular.toJson({t:fix_time, stock:stocks})); 
-	// if (angular.isUndefined(LODOP)) LODOP = getLodop();
-	// if (angular.isUndefined(LODOP.VERSION)) return; 
-	fixDraft.writeFile(angular.toJson({t:fix_time, stock:stocks}));
+	if ($scope.useFile) {
+	    var fixDraft = new stockFile(diablo_fix_draft_path);
+	    fixDraft.getLodop(); 
+	    fixDraft.writeFile(angular.toJson({t:fix_time, stock:stocks}));
+	} 
     };
 
     $scope.barcode_scanner = function(full_bcode) {
