@@ -25,6 +25,7 @@
 
 -export([trans/1]).
 -define(SERVER, ?MODULE).
+-define(SQL_TIME_OUT, 5 * 1000).
 
 -record(state, {conn_pool = undefined}).
 
@@ -77,14 +78,14 @@ init([]) ->
     lists:foreach(
       fun(_) ->
     	      mysql:connect(conn, Host, undefined, User, Passwd, DB, true)
-      end, lists:duplicate(10, dummy)),
+      end, lists:duplicate(50, dummy)),
     
     {ok, #state{conn_pool = conn}}.
 
 handle_call({fetch_read, SQL}, _From,
             #state{conn_pool = Read} = State) when is_binary(SQL)->
     Result =
-        case mysql:fetch(Read, SQL) of
+        case mysql:fetch(Read, SQL, ?SQL_TIME_OUT) of
             {data, #mysql_result{rows=[]}} ->
 		{ok, []};
 	    
@@ -104,7 +105,7 @@ handle_call({fetch_read, SQL}, _From,
 handle_call({fetch_write, SQL}, _From,
 	    #state{conn_pool = Write} = State) when is_binary(SQL)->
     Result = 
-	case mysql:fetch(Write, SQL) of
+	case mysql:fetch(Write, SQL, ?SQL_TIME_OUT) of
 	    {updated, #mysql_result{affectedrows=AffectedRows}} ->
 		{ok, {write, AffectedRows}};
 	    {error, #mysql_result{error=Error, errcode=ErrCode}} ->
@@ -118,7 +119,7 @@ handle_call({fetch_write, SQL}, _From,
 handle_call({fetch_insert, SQL}, _From,
 	    #state{conn_pool = Insert} = State) when is_binary(SQL)->
     Result = 
-	case mysql:fetch(Insert, SQL) of
+	case mysql:fetch(Insert, SQL, ?SQL_TIME_OUT) of
 	    {updated, #mysql_result{insertid=InsertId}} ->
 		?DEBUG("insert id=~p", [InsertId]),
 		{ok, InsertId};
@@ -144,7 +145,7 @@ handle_call({transaction, SQLS}, _From,
     TransFun = fun() -> exec_funs(Funs, []) end,
     
     Reply = 
-	case mysql:transaction(Write, TransFun) of
+	case mysql:transaction(Write, TransFun, ?SQL_TIME_OUT) of
 	    {atomic, Result} ->
 		{ok, Result};
 	    {aborted, {{error, Error}, RollbackResult}} ->
@@ -277,7 +278,7 @@ wait(Pool, Parent, {Action, Sql}) ->
 
 read(Pool, Sql) ->
     Result =
-        case mysql:fetch(Pool, Sql) of
+        case mysql:fetch(Pool, Sql, ?SQL_TIME_OUT) of
             {data, #mysql_result{rows=[]}} ->
 		{ok, []};
 
@@ -293,7 +294,7 @@ read(Pool, Sql) ->
 
 write(Pool, Sql) ->
     Result = 
-	case mysql:fetch(Pool, Sql) of
+	case mysql:fetch(Pool, Sql, ?SQL_TIME_OUT) of
 	    {updated, #mysql_result{affectedrows=AffectedRows}} ->
 		{ok, {write, AffectedRows}};
 	    {error, #mysql_result{error=Error, errcode=ErrCode}} ->
@@ -305,7 +306,7 @@ write(Pool, Sql) ->
 
 insert(Pool, Sql) ->
     Result = 
-	case mysql:fetch(Pool, Sql) of
+	case mysql:fetch(Pool, Sql, ?SQL_TIME_OUT) of
 	    {updated, #mysql_result{insertid=InsertId}} ->
 		?DEBUG("insert id=~p", [InsertId]),
 		{ok, InsertId};
@@ -329,7 +330,7 @@ transaction(Pool, Sqls) ->
     TransFun = fun() -> exec_funs(Funs, []) end,
 
     Reply = 
-	case mysql:transaction(Pool, TransFun) of
+	case mysql:transaction(Pool, TransFun, ?SQL_TIME_OUT) of
 	    {atomic, Result} ->
 		{ok, Result};
 	    {aborted, {{error, Error}, RollbackResult}} ->

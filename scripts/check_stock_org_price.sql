@@ -117,3 +117,13 @@ update w_inventory_transfer_detail t inner join \
 on t.merchant=w.merchant and t.style_number=w.style_number and t.brand=w.brand
 set t.org_price=w.org_price, t.tag_price=w.tag_price, t.discount=w.discount, t.ediscount=w.ediscount \
 where t.merchant=4;
+
+
+-- w_inventory_new_detail to w_inventory
+update w_inventory a inner join(select style_number, brand, merchant, shop, amount from w_inventory_new_detail where rsn='M-4-S-19-5002') b \
+on a.style_number=b.style_number and a.brand=b.brand and a.merchant=b.merchant and a.shop=b.shop \
+set a.amount=a.amount+b.amount where a.merchant=4 and a.shop=19;
+
+update w_inventory_amount a inner join(select style_number, brand, color, size, merchant, shop, total from w_inventory_new_detail_amount where rsn='M-4-S-19-5002') b \
+on a.style_number=b.style_number and a.brand=b.brand and a.color=b.color and a.size=b.size and a.merchant=b.merchant and a.shop=b.shop \
+set a.total=a.total+b.total where a.merchant=4 and a.shop=19;

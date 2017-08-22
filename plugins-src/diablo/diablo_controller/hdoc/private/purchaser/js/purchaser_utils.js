@@ -851,8 +851,8 @@ stockPrintU.prototype.printBarcode2 = function() {
     // this.LODOP.SET_PRINT_STYLEA(0, "Bold", 0);
 
     // this.LODOP.PRINT_SETUP();
-    this.LODOP.PRINT_DESIGN();
-    // this.LODOP.PRINT();
+    // this.LODOP.PRINT_DESIGN();
+    this.LODOP.PRINT();
     
 };
 
