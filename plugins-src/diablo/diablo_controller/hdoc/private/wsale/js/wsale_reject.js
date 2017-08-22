@@ -218,9 +218,7 @@ function wsaleRejectCtrlProvide(
 	if ($scope.has_saved || $scope.select.total === 0 || $scope.select.rcharge === 0)
 	    return invalid = true;
 
-	if ($scope.select.retailer.type_id===1
-	    && $scope.select.withdraw!==0
-	    && !$scope.has_withdrawed)
+	if ($scope.select.retailer.type_id===1 && $scope.select.withdraw!==0 && !$scope.has_withdrawed)
 	    invalid = true; 
 	
 	return invalid; 
@@ -343,7 +341,7 @@ function wsaleRejectCtrlProvide(
 	var nscore = 0;
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    var add = $scope.inventories[i];
-	    if (!add.select) continue;
+	    if (!add.select || add.total < 0) continue;
 	    added.push({
 		style_number: add.style_number,
 		brand       : add.brand_id,
@@ -372,6 +370,16 @@ function wsaleRejectCtrlProvide(
 		colors      : add.colors,
 		free        : add.free
 	    })
+	};
+	console.log(added);
+	if (added.length === 0) {
+	    dialog.response_with_callback(
+		false,
+		"销售退货",
+		"退货失败：" + wsaleService.error[2697],
+		undefined,
+		function() {$scope.has_saved = false});
+	    return;
 	};
 
 	var setv = diablo_set_float; 
@@ -407,7 +415,6 @@ function wsaleRejectCtrlProvide(
 	    // retailer:    $scope.select.retailer.name
 	};
 
-	console.log(added);
 	console.log(base);
 
 	wsaleService.reject_w_sale({
@@ -486,7 +493,7 @@ function wsaleRejectCtrlProvide(
 		// console.log(inv);
 		$scope.select.rcharge += inv.calc;
 		$scope.select.rtotal += inv.reject;
-	    }
+	    } 
 	}
 
 	// console.log(nscore);
@@ -494,8 +501,7 @@ function wsaleRejectCtrlProvide(
 	$scope.select.rcharge = diablo_round($scope.select.rcharge);
 
 	if ($scope.has_withdrawed){
-	    $scope.select.left_balance =
-		$scope.select.surplus + $scope.select.withdraw; 
+	    $scope.select.left_balance = $scope.select.surplus + $scope.select.withdraw; 
 	}
     };
     

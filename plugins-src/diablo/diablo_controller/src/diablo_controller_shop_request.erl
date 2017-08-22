@@ -163,12 +163,12 @@ sidebar(Session) ->
 		     {"shop_detail", "店铺详情", "glyphicon glyphicon-book"}}
 		   ]),
 
-    RepoAuthen = AuthenFun(
-		   [{?new_repo,
-		     {"repo_new", "新增仓库", "glyphicon glyphicon-plus"}},
-		    {?list_repo,
-		     {"repo_detail", "仓库详情", "glyphicon glyphicon-book"}}
-		   ]),
+    %% RepoAuthen = AuthenFun(
+    %% 		   [{?new_repo,
+    %% 		     {"repo_new", "新增仓库", "glyphicon glyphicon-plus"}},
+    %% 		    {?list_repo,
+    %% 		     {"repo_detail", "仓库详情", "glyphicon glyphicon-book"}}
+    %% 		   ]),
 
     
     Region = [{"region_detail", "区域", "glyphicon glyphicon-th-list"}] ,
@@ -181,13 +181,14 @@ sidebar(Session) ->
 		[{{"shop", "店铺", "glyphicon glyphicon-star-empty"}, Shop}] 
 	end,
 
-    SidebarRepo = 
-	case RepoAuthen of
-	    []   -> [];
-	    Repo ->
-		[{{"repo", "仓库", "icon icon-twitter"}, Repo}] 
-	end,
+    %% SidebarRepo = 
+    %% 	case RepoAuthen of
+    %% 	    []   -> [];
+    %% 	    Repo ->
+    %% 		[{{"repo", "仓库", "icon icon-twitter"}, Repo}] 
+    %% 	end,
     
-    ?menu:sidebar(level_2_menu, SidebarShop ++ SidebarRepo) ++ L1.
+    %% ?menu:sidebar(level_2_menu, SidebarShop ++ SidebarRepo) ++ L1.
+    ?menu:sidebar(level_2_menu, SidebarShop) ++ L1.
 
 
