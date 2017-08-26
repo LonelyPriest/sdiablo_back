@@ -1093,7 +1093,7 @@ function wsaleNewProvide(
     	console.log(full_bcode);
 	// get stock by barcode
 	// stock info 
-	var barcode = diabloHelp.correct_barcode(full_bcode); 
+	var barcode = diabloHelp.correct_barcode(full_bcode, $scope.setting.barcode_auto); 
 	console.log(barcode);
 	
 

@@ -84,6 +84,12 @@ function stockConfg(angular){
 
 	var ptemplate = {"filterTemplate":function(diabloFilter) {
 	    return diabloFilter.list_print_template()}};
+
+	var ctype = {"filterCType": function(diabloFilter) {
+	    return diabloFilter.list_good_ctype()}};
+
+	var size_spec = {"filterSizeSpec": function(diabloFilter) {
+	    return diabloFilter.list_good_size_spec()}};
 	
 	$routeProvider.
 	    // new
@@ -172,7 +178,7 @@ function stockConfg(angular){
 	    when('/good/type', {
 		templateUrl: '/private/wgood/html/wgood_type.html',
 		controller: 'wgoodTypeDetailCtrl',
-		resolve: angular.extend({}, type, base)
+		resolve: angular.extend({}, type, ctype, base)
 	    }).
 	    when('/good/wgood_new', {
 		templateUrl: '/private/wgood/html/wgood_new.html',
@@ -208,6 +214,7 @@ function stockConfg(angular){
 		    firm,
 		    type,
 		    color,
+		    size_spec,
 		    std_executive, safety_category, fabric, ptemplate, base, user) 
 	    }).
 	    // promotion

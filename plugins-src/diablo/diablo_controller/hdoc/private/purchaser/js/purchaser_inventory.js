@@ -1521,6 +1521,7 @@ function purchaserInventoryNewCtrlProvide (
 			id   :state.type,
 			name :good.type,
 			py   :diablo_pinyin(good.type)});
+		    diabloFilter.reset_type();
 		};
 
 		// cons.log($scope.types); 

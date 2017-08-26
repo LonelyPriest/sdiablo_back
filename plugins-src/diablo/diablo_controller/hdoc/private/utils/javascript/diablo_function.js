@@ -724,7 +724,7 @@ diablo_set_string = function(s){
     if (angular.isUndefined(s)){
 	return undefined;
     } else{
-	return s.toString();
+	return s.toString().replace(/^\s+|\s+$/g, '');
     }
 };
 
@@ -995,15 +995,18 @@ var diabloHelp = function(){
 		if (original.startsWith('1')) {
 		    correct = original; 
 		    cuted = original.substr(0, original.length - diablo_barcode_lenth_of_color_size);
-		} else if (original.startsWith('01')) {
+		}
+		else if (original.startsWith('00')) {
+		    correct = original.substr(1, original.length - 1); 
+		    cuted = original;
+		}
+		else if (original.startsWith('01') && original.length > 14 ) {
 		    correct = original.substr(1, original.length - 1); 
 		    cuted = original.substr(1, original.length - diablo_barcode_lenth_of_color_size -1);
-		} else if (barcode.startsWith('00')) {
-		    correct = original.substr(1, original.length - 1); 
-		    cuted = original.substr(1, original.length - diablo_barcode_lenth_of_color_size -1);
-		} else {
-		    correct = original; 
-		    cuted = original.substr(0, original.length - diablo_barcode_lenth_of_color_size);
+		} 
+		else {
+		    cxorrect = original,
+		    cuted = original;
 		} 
 	    } else {
 		if (original.startsWith('00')) {

@@ -106,6 +106,16 @@
 %% session
 -define(QZG_DY_SESSION, "qzg_dyty_session").
 
+-define(SIZE_TO_BARCODE,
+	["FF",  "XS",  "S",   "M",   "L",   "XL",  "2XL",  "3XL", "4XL", "5XL", "6XL", "7XL",
+	 "0",   "8",   "9",   "10",  "11",  "12",  "13",   "14",  "15",  "16",  "17",
+	 "18",  "19",  "20",  "21",  "22",  "23",  "24",   "25",  "26",  "27",  "28",
+	 "29",  "30",  "31",   "32",  "33",  "34",  "35",  "36",  "37",  "38",  "40",
+	 "42",  "44",  "46",   "48",  "50",  "52",
+	 "80",  "90",  "100", "105", "110", "115",  "120", "125", "130", "135", "140",
+	 "145", "150", "155", "160", "165", "170",  "175", "180", "185", "190", "195",
+	 "200"]).
+
 %% right module
 -define(right_shop, 40000).
 -define(right_employe, 50000).
@@ -333,6 +343,12 @@
 -define(update_safety_category,   ?right_w_base + 13).
 -define(update_fabric,            ?right_w_base + 14).
 -define(update_print_template,    ?right_w_base + 15).
+
+-define(add_ctype,                ?right_w_base + 16).
+-define(update_ctype,             ?right_w_base + 17).
+
+-define(add_size_spec,            ?right_w_base + 18).
+-define(update_size_spec,         ?right_w_base + 19).
 
 %% public
 -define(http_route, diablo_controller_http_route).

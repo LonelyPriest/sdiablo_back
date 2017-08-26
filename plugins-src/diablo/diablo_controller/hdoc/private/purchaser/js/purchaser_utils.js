@@ -786,6 +786,13 @@ stockPrintU.prototype.printBarcode2 = function() {
     var size = this.size && this.size.toString() !== diablo_free_size ? this.size : "均码";
     if (this.template.size) {
 	if (this.template.solo_size) {
+	    if (this.stock.specs.length !== 0 && this.size.toString() !== diablo_free_size) {
+		for (var i=0, l=this.stock.specs.length; i<l; i++) {
+		    if (this.size.toString() === this.stock.specs[i].name) {
+			size += "    " + this.stock.specs[i].spec;
+		    }
+		}
+	    };
 	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "规格：" + size);
 	    top += this.template.hpx_each;
 	}

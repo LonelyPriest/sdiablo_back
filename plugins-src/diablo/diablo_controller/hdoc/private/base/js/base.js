@@ -1047,6 +1047,237 @@ function goodPrintTemplateCtrlProvide(
     }
 };
 
+function goodCTypeCtrlProvide(
+    $scope, diabloUtilsService, diabloFilter, diabloPattern, baseService){
+    $scope.pattern = {
+	name:    diabloPattern.ch_en_num,
+	spec:    diabloPattern.size_specific
+    }; 
+    var dialog = diabloUtilsService;
+
+    $scope.refresh = function() {
+	baseService.list_ctype().then(function(ctypes) {
+	    console.log(ctypes);
+	    diablo_order(ctypes);
+	    $scope.ctypes = ctypes; 
+	});
+    };
+
+    $scope.refresh(); 
+    $scope.new_ctype = function(){
+	var callback = function(params){
+	    console.log(params.ctype);
+	    var c = {name: params.ctype.name};
+	    baseService.add_ctype(c).then(function(state){
+		console.log(state); 
+		if (state.ecode == 0){
+		    dialog.response_with_callback(
+			true,
+			"新增大类", "新增货品大类成功！！",
+			undefined,
+			function(){
+			    diabloFilter.reset_good_ctype();
+			    $scope.refresh(); 
+			});
+		} else{
+		    dialog.response(
+			false,
+			"新增大类",
+			"新增大类失败：" + baseService.error[state.ecode]);
+		}
+	    })
+	};
+	
+	dialog.edit_with_modal(
+	    'new-ctype.html',
+	    undefined,
+	    callback,
+	    undefined,
+	    {ctype: {}, pattern: $scope.pattern});
+    };
+
+
+    $scope.update_ctype = function(c){
+	console.log(c);
+	var callback = function(params){
+	    console.log(params.ctype); 
+	    if (params.ctype.name === c.name){
+		dialog.response(
+		    false, "大类编辑", baseService.error[8010], undefined);
+		return;
+	    };
+	    
+	    for (var i=0, l=$scope.ctypes.length; i<l; i++){
+		if (params.ctype.name === $scope.ctypes[i].name && params.ctype.name !== c.name){
+		    dialog.response(
+			false, "大类编辑", baseService.error[8007], undefined);
+		    return;
+		} 
+	    };
+
+	    var update = {
+		cid:  c.id,
+		name: diablo_get_modified(params.ctype.name, c.name)
+		// spec: diablo_get_modified(params.ctype.spec, c.spec)
+	    }; 
+	    console.log(update);
+
+	    baseService.update_ctype(update).then(function(result){
+		if (result.ecode === 0) {
+		    dialog.response_with_callback(
+			true,
+			"大类编辑",
+			"大类编辑成功！！",
+			undefined,
+			function() {
+			    c.name = params.ctype.name;
+			    // c.spec = angular.isDefined(update.spec) ? update.spec : c.spec;
+			    diabloFilter.reset_good_ctype();
+			});
+		} else {
+		    dialog.response(
+			false,
+			"大类编辑",
+			"大类编辑失败！！" + baseService.error[result.ecode],
+			undefined);
+		};
+	    });
+	};
+	
+	dialog.edit_with_modal(
+	    "update-ctype.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {ctype:{name:c.name}, pattern: $scope.pattern});
+    };
+};
+
+
+function goodSizeSpecCtrlProvide(
+    $scope, diabloUtilsService, diabloFilter, diabloPattern, baseService, filterCType){
+    $scope.pattern = {
+	name:    diabloPattern.size,
+	spec:    diabloPattern.size_specific}; 
+    $scope.ctypes = filterCType;
+    
+    var dialog = diabloUtilsService;
+
+    $scope.refresh = function() {
+	baseService.list_size_spec().then(function(specs) {
+	    console.log(specs);
+	    diablo_order(specs);
+	    $scope.specs = specs;
+	    angular.forEach($scope.specs, function(s){
+		s.ctype = diablo_get_object(s.cid, $scope.ctypes);
+	    }); 
+	});
+    };
+
+    $scope.refresh(); 
+    $scope.new_size_spec = function(){
+	var callback = function(params){
+	    console.log(params.size);
+	    var s = {name:  params.size.name,
+		     spec:  params.size.spec,
+		     cid:   params.size.ctype.id}; 
+	    baseService.add_size_spec(s).then(function(state){
+		console.log(state); 
+		if (state.ecode == 0){
+		    dialog.response_with_callback(
+			true,
+			"新增尺码规格", "新增尺码规格成功！！",
+			undefined,
+			function(){
+			    diabloFilter.reset_good_size_spec();
+			    $scope.refresh(); 
+			});
+		} else{
+		    dialog.response(
+			false,
+			"新增尺码规格",
+			"新增尺码规格失败：" + baseService.error[state.ecode]);
+		}
+	    })
+	};
+	
+	dialog.edit_with_modal(
+	    'new-size-spec.html',
+	    undefined,
+	    callback,
+	    undefined,
+	    {size: {ctype:$scope.ctypes[0]},
+	     pattern: $scope.pattern,
+	     ctypes: $scope.ctypes});
+    };
+
+
+    $scope.update_size_spec = function(s){
+	console.log(s);
+	var callback = function(params){
+	    console.log(params.size); 
+	    if (params.size.name === s.name
+		&& params.size.spec === s.spec
+		&& params.size.ctype.id === s.cid){
+		dialog.response(
+		    false, "尺码规格编辑", baseService.error[8010], undefined);
+		return;
+	    };
+	    
+	    // for (var i=0, l=$scope.specs.length; i<l; i++){
+	    // 	if (params.size.name === $scope.specs[i].name
+	    // 	    && params.size.name !== s.name
+	    // 	    && params.size.ctype.id === s.cid){
+	    // 	    dialog.response(
+	    // 		false, "尺码规格编辑", baseService.error[8007], undefined);
+	    // 	    return;
+	    // 	} 
+	    // };
+
+	    var update = {
+		sid:  s.id,
+		name: diablo_set_string(params.size.name),
+		spec: diablo_get_modified(params.size.spec, s.spec),
+		cid:  params.size.ctype.id,
+	    }; 
+	    console.log(update);
+
+	    baseService.update_size_spec(update).then(function(result){
+		if (result.ecode === 0) {
+		    dialog.response_with_callback(
+			true,
+			"尺码规格编辑",
+			"尺码规格编辑成功！！",
+			undefined,
+			function() {
+			    // s.name = params.size.name;
+			    // s.spec = params.size.spec;
+			    // s.ctype = params.size.ctype;
+			    // s.cid   = params.size.ctype.id;
+			    $scope.refresh();
+			    diabloFilter.reset_good_size_spec();
+			});
+		} else {
+		    dialog.response(
+			false,
+			"尺码规格编辑",
+			"尺码规格编辑失败！！" + baseService.error[result.ecode],
+			undefined);
+		};
+	    });
+	};
+	
+	dialog.edit_with_modal(
+	    "update-size-spec.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {size: {name:s.name, spec:s.spec, ctype:s.ctype},
+	     pattern: $scope.pattern,
+	     ctypes: $scope.ctypes});
+    };
+};
+
 define(["baseApp"], function(app){
     app.controller("bankCardNewCtrl", bankCardNewCtrlProvide);
     app.controller("bankCardDetailCtrl", bankCardDetailCtrlProvide);
@@ -1058,6 +1289,9 @@ define(["baseApp"], function(app){
     app.controller("goodSafetyCategoryCtrl", goodSafetyCategoryCtrlProvide);
     app.controller("goodFabricCtrl", goodFabricCtrlProvide);
     app.controller("goodPrintTemplateCtrl", goodPrintTemplateCtrlProvide);
+
+    app.controller("goodCTypeCtrl", goodCTypeCtrlProvide);
+    app.controller("goodSizeSpecCtrl", goodSizeSpecCtrlProvide);
     
     app.controller("resetPasswdCtrl", resetPasswdCtrlProvide);
 });

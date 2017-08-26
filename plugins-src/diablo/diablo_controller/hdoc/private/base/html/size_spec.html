@@ -3,14 +3,13 @@
     <div class="portlet box purple">
       <div class="portlet-title">
 	<div class="caption">
-	  <i class="glyphicon glyphicon-menu-hamburger"></i>
-	  品类详情
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>尺码规格
 	</div>	
 
 	<div class="actions">
 	  <div class="btn-group btn-group-solid">
 	    <button type="button" class="btn btn-success"
-	  	    x-ng-click="new_type()">新增
+	  	    x-ng-click="new_size_spec()">新增
 	      <i class="glyphicon glyphicon-plus"></i></button>
 
 	    <button type="button" class="btn blue reload purple-stripe"
@@ -18,9 +17,6 @@
 	      <i class="icon icon-spinner fg-white"></i></button>
 	  </div>
 	</div> 
-	<!-- <div class="tools"> -->
-	<!--   <a class="reload" href="javascript:;"></a> -->
-	<!-- </div> -->
       </div>
       
       <!--BEGIN table container-->
@@ -39,28 +35,22 @@
 		<tr>
 	    	  <th>序号</th> 
 		  <th>名称</th>
-		  <th>大类</th>
-		  <th>条码编码</th>
+		  <th>规格描述</th>
+		  <th>大类</th> 
 	    	  <th>操作</th>
 		</tr>
 	      </thead>
 	      <tbody>
-		<tr ng-repeat="t in goodTypes">
-		  <td>{{t.order_id}}</td>
-		  <td>{{t.name}}</td>
-		  <td>
-		    <div x-ng-if="t.cid===-1" class="text-center">-</div>
-		    <div x-ng-if="t.cid!==-1">{{t.ctype.name}}</div>
-		  </td>
-		  <td>{{t.bcode}}</td> 
+		<tr ng-repeat="s in specs">
+		  <td>{{s.order_id}}</td>
+		  <td>{{s.name}}</td>
+		  <td>{{s.spec}}</td>
+		  <td>{{s.ctype.name}}</td> 
 		  <td class="col-md-2">
 		    <span> 
 		      <button type="button" class="btn btn-warning diablo-button"
-		    	      ng-click="update_type(t)">编辑
-			<i class="glyphicon glyphicon-edit"></i></button>
-		      <button class="btn btn-danger diablo-button"
-		    	      x-ng-click="delete_type(t)">删除
-			<i class="glyphicon glyphicon-erase"></i></button>
+		    	      ng-click="update_size_spec(s)">修改
+			<i class="glyphicon glyphicon-edit"></i></button> 
 		    </span>
 		  </td>
 		</tr> 
@@ -73,14 +63,13 @@
   </div><!--END col-md-12-->
 </div>
 
-<script type="text/ng-template" id="new-type.html">
+<script type="text/ng-template" id="new-size-spec.html">
   <div class="modal-header">
     <button class="close" x-ng-click="cancel()" type="button">
       <span aria-hidden="true">&times;</span>
       <span class="sr-only"></span>
-    </button>
-    
-    <h4 class="modal-title"><span class="label label-sm label-primary">新增品类</span></h4>
+    </button> 
+    <h4 class="modal-title"><span class="label label-sm label-primary">新增尺码规格</span></h4>
   </div>
 
   <div class="modal-body">
@@ -93,34 +82,51 @@
 	    <div class="input-group">
 	      <input class="form-control"
 		     name="name"
-		     type="text" 
+		     type="text"
 		     required
-		     placeholder="请输入名称"
-		     x-ng-model="params.type.name"
-		     x-ng-pattern="params.pattern.type"/>
+		     capitalize
+		     focus-auto="true"
+		     placeholder="请输入尺码名称（S/M/L/XL/160/175）"
+		     x-ng-model="params.size.name"
+		     x-ng-pattern="params.pattern.name"/>
 	      <span class="input-group-addon bg-white fg-red">*</span> 
 	    </div>
 	    <div ng-show="tForm.name.$invalid && !tForm.name.$pristine">
-	      <span class="fg-red">请输入汉字，数字，下划线</span>
+	      <span class="fg-red">请输入标准尺码名称</span>
 	    </div>
 	  </div> 
 	</div>
 
-
-	<div x-ng-if="!params.auto_barcode" class="form-group">
-	  <label class="col-sm-2 col-md-2 control-label">条码编码</label>
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">规格描述</label>
 	  <div class="col-sm-10 col-md-10">
-	    <input class="form-control"
-		   name="bcode"
-		   type="number"
-		   placeholder="请输入条码编码，只能是数字且不大于999"
-		   x-ng-pattern="params.pattern.barcode"
-	      	   x-ng-model="params.type.bcode"/>
-	    <div ng-show="tForm.bcode.$invalid && !tForm.bcode.$pristine">
-	      <span class="fg-red">只能是数字，且不在于999</span>
+	    <div class="input-group">
+	      <input class="form-control"
+		     name="spec"
+		     type="text"
+		     required
+		     capitalize
+		     placeholder="150/76A"
+		     x-ng-model="params.size.spec"
+		     x-ng-pattern="params.pattern.spec"/>
+	      <span class="input-group-addon bg-white fg-red">*</span>
 	    </div>
+	    <div ng-show="tForm.spec.$invalid && !tForm.spec.$pristine">
+	      <span class="fg-red">数字，英文或斜杠（150/76A）</span>
+	    </div>
+	  </div>
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">大类</label>
+	  <div class="col-sm-10 col-md-10">
+	    <select class="form-control"
+		    type="text"
+	      	    x-ng-model="params.size.ctype"
+		    x-ng-options="c as c.name for c in params.ctypes">
+	    </select> 
 	  </div> 
-	</div> 
+	</div>
 	
       </div>
     </form>
@@ -137,7 +143,7 @@
   <!--END modal-footer-->
 </script>
 
-<script type="text/ng-template" id="update-type.html">
+<script type="text/ng-template" id="update-size-spec.html">
   <div class="modal-header">
     <button class="close" x-ng-click="cancel()" type="button">
       <span aria-hidden="true">&times;</span>
@@ -145,43 +151,52 @@
     </button>
     
     <h4 class="modal-title">
-      <span class="label label-sm label-primary">品类编辑</span>
+      <span class="label label-sm label-primary">尺码规格编辑</span>
     </h4>
   </div>
 
   <div class="modal-body">
     <form class="form-horizontal" name="tForm" novalidate> 
       <div class="form-body">
-	<!--Name-->
+	
 	<div class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label">名称</label>
 	  <div class="col-sm-10 col-md-10">
-	    <input type="text"
-		   class="form-control"
-		   name="name"
-		   placeholder="请输入名称"
-		   required
-		   x-ng-pattern="params.pattern.type"
-		   x-ng-model="params.type.name" />
+	    <div class="input-group">
+	      <input class="form-control"
+		     name="name"
+		     type="text"
+		     required
+		     capitalize
+		     focus-auto="true"
+		     placeholder="请输入尺码名称（S/M/L/XL/160/175）"
+		     x-ng-model="params.size.name"
+		     x-ng-pattern="params.pattern.name"/>
+	      <span class="input-group-addon bg-white fg-red">*</span> 
+	    </div>
 	    <div ng-show="tForm.name.$invalid && !tForm.name.$pristine">
-	      <span class="fg-red">请输入汉字，数字，下划线</span>
+	      <span class="fg-red">请输入标准尺码名称</span>
 	    </div>
 	  </div> 
 	</div>
 
-	<div x-ng-if="!params.auto_barcode" class="form-group">
-	  <label class="col-sm-2 col-md-2 control-label">条码编码</label>
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">规格描述</label>
 	  <div class="col-sm-10 col-md-10">
-	    <input class="form-control"
-		   name="bcode"
-		   type="number" 
-		   placeholder="请输入条码编码，只能是数字且不大于999"
-		   x-ng-pattern="params.pattern.barcode"
-	      	   x-ng-model="params.type.bcode"/>
-	    <div ng-show="tForm.bcode.$invalid && !tForm.bcode.$pristine">
-	      <span class="fg-red">只能是数字，且不在于999</span>
+	    <div class="input-group">
+	      <input class="form-control"
+		     name="spec"
+		     type="text"
+		     capitalize
+		     placeholder="150/76A"
+		     x-ng-model="params.size.spec"
+		     x-ng-pattern="params.pattern.spec"/>
+	      <span class="input-group-addon bg-white fg-red">*</span>
 	    </div>
-	  </div> 
+	    <div ng-show="tForm.spec.$invalid && !tForm.spec.$pristine">
+	      <span class="fg-red">数字，英文或斜杠（150/76A）</span>
+	    </div>
+	  </div>
 	</div>
 
 	<div class="form-group">
@@ -189,7 +204,7 @@
 	  <div class="col-sm-10 col-md-10">
 	    <select class="form-control"
 		    type="text"
-	      	    x-ng-model="params.type.ctype"
+	      	    x-ng-model="params.size.ctype"
 		    x-ng-options="c as c.name for c in params.ctypes">
 	    </select> 
 	  </div> 
@@ -207,5 +222,3 @@
   </div>
   
 </script>
-
-

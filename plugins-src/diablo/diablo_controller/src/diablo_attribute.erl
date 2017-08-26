@@ -23,19 +23,9 @@
 -export([color_type/2, color/2, color/3, bcode/3]).
 -export([size_group/2, size_group/3]).
 -export([brand/2, brand/3]).
--export([type/2, type/3]).
+-export([type/2, type/3, invalid_size/1]).
 
 -define(SERVER, ?MODULE).
-
--define(SIZE_TO_BARCODE,
-	["FF",  "XS",  "S",   "M",   "L",   "XL",  "2XL",  "3XL", "4XL", "5XL", "6XL", "7XL",
-	 "0",   "8",   "9",   "10",  "11",  "12",  "13",   "14",  "15",  "16",  "17",
-	 "18",  "19",  "20",  "21",  "22",  "23",  "24",   "25",  "26",  "27",  "28",
-	 "29",  "30",  "31",   "32",  "33",  "34",  "35",  "36",  "37",  "38",  "40",
-	 "42",  "44",  "46",   "48",  "50",  "52",
-	 "80",  "90",  "100", "105", "110", "115",  "120", "125", "130", "135", "140",
-	 "145", "150", "155", "160", "165", "170",  "175", "180", "185", "190", "195",
-	 "200"]).
 
 -record(state, {}).
 
@@ -423,6 +413,7 @@ handle_call({new_type, Merchant, Attrs}, _From, State) ->
     ?DEBUG("new_type with merchant ~p, attrs ~p", [Merchant, Attrs]),
     Name     = ?v(<<"name">>, Attrs),
     BCode    = ?v(<<"bcode">>, Attrs, 0),
+    CType    = ?v(<<"ctype">>, Attrs, -1),
     AutoBarcode = ?v(<<"auto_barcode">>, Attrs, ?YES),
     
     Sql = "select id, name from inv_types"
@@ -433,9 +424,10 @@ handle_call({new_type, Merchant, Attrs}, _From, State) ->
 	fun(NewBarcode) ->
 		Sql1 = 
 		    "insert into inv_types"
-		    ++"(bcode, name, merchant) values("
+		    ++"(bcode, name, ctype, merchant) values("
 		    ++ ?to_s(NewBarcode) ++ ","
 		    ++ "\"" ++?to_s(Name) ++ "\","
+		    ++ ?to_s(CType) ++ ","
 		    ++ ?to_s(Merchant) ++ ");",
 		?sql_utils:execute(insert, Sql1)
 	end,
@@ -474,7 +466,8 @@ handle_call({update_type, Merchant, Attrs}, _From, State) ->
     ?DEBUG("update_type with Merchant ~p, attrs ~p", [Merchant, Attrs]),
     TypeId   = ?v(<<"tid">>, Attrs),
     BCode    = ?v(<<"bcode">>, Attrs),
-    Name     = ?v(<<"name">>, Attrs), 
+    Name     = ?v(<<"name">>, Attrs),
+    CId     = ?v(<<"cid">>, Attrs), 
 
     case 
 	case BCode of
@@ -496,7 +489,8 @@ handle_call({update_type, Merchant, Attrs}, _From, State) ->
     of
 	ok -> 
 	    Updates = ?utils:v(name, string, Name)
-		++ ?utils:v(bcode, integer, BCode), 
+		++ ?utils:v(bcode, integer, BCode)
+		++ ?utils:v(ctype, integer, CId),
 	    ?DEBUG("updates ~p", [Updates]),
 
 	    Sql  = "update inv_types set "
@@ -511,7 +505,7 @@ handle_call({update_type, Merchant, Attrs}, _From, State) ->
 
 handle_call({list_type, Merchant}, _From, State) ->
     ?DEBUG("list_type with merchant ~p", [Merchant]),
-    Sql = "select id, bcode, name from inv_types"
+    Sql = "select id, bcode, name, ctype as cid from inv_types"
 	++ " where "
 	++ " merchant = " ++ ?to_string(Merchant)
 	++ " and deleted = " ++ ?to_string(?NO)
@@ -584,5 +578,5 @@ code_change(_OldVsn, State, _Extra) ->
 
 invalid_size("") -> false; 
 invalid_size(Size) ->
-    ?DEBUG("Size ~p", [Size]),
+    ?DEBUG("Size ~p", [Size]), 
     not lists:member(?to_s(Size), ?SIZE_TO_BARCODE).

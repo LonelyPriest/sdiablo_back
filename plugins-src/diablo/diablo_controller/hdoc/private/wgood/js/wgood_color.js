@@ -163,9 +163,17 @@ function wgoodColorDetailCtrlProvide(
 
 function wgoodTypeDetailCtrlProvide(
     $scope, diabloUtilsService, diabloFilter, diabloPattern,
-    wgoodService, filterType, base){
+    wgoodService, filterType, filterCType, base){
     $scope.goodTypes = angular.copy(filterType);
-    diablo_order($scope.goodTypes); 
+    console.log($scope.goodTypes);
+    $scope.ctypes = [{id:-1, name:"===请选择大类==="}].concat(filterCType);
+
+    angular.forEach($scope.goodTypes, function(t) {
+	t.ctype = diablo_get_object(t.cid, $scope.ctypes);
+    });
+    
+    diablo_order($scope.goodTypes);
+    
     $scope.auto_barcode = stockUtils.auto_barcode(diablo_default_shop, base);
     $scope.pattern = {
 	type:diabloPattern.ch_name_address,
@@ -228,7 +236,9 @@ function wgoodTypeDetailCtrlProvide(
 	    var uBarcode = stockUtils.to_integer(params.type.bcode);
 	    console.log(uBarcode);
 
-	    if (params.type.name === type.name && uBarcode === type.bcode){
+	    if (params.type.name === type.name
+		&& uBarcode === type.bcode
+		&& params.type.ctype.id === type.cid){
 		dialog.response(
 		    false, "品类编辑", wgoodService.error[2099], undefined);
 		return;
@@ -252,6 +262,7 @@ function wgoodTypeDetailCtrlProvide(
 
 	    var update = {
 		tid:  type.id,
+		cid:   diablo_get_modified(params.type.ctype.id, type.cid),
 		bcode: diablo_get_modified(uBarcode, type.bcode),
 		name: diablo_get_modified(params.type.name, type.name)}; 
 	    console.log(update);
@@ -264,8 +275,11 @@ function wgoodTypeDetailCtrlProvide(
 			"品类编辑成功！！",
 			undefined,
 			function() {
-			    type.name = params.type.name;
-			    type.bcode = uBarcode; 
+			    type.name  = params.type.name;
+			    type.bcode = uBarcode;
+			    type.cid   = params.type.ctype.id;
+			    type.ctype = params.type.ctype;
+			    console.log(type);
 			    diabloFilter.reset_type();
 			});
 		} else {
@@ -282,9 +296,11 @@ function wgoodTypeDetailCtrlProvide(
 	    undefined,
 	    callback,
 	    undefined,
-	    {type:{name:type.name, bcode:type.bcode},
+	    {type:{name:type.name, bcode:type.bcode, ctype:type.ctype},
+	     
 	     pattern: $scope.pattern,
-	     auto_barcode: $scope.auto_barcode});
+	     auto_barcode: $scope.auto_barcode,
+	     ctypes: $scope.ctypes});
     };
 }
 

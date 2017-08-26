@@ -136,6 +136,17 @@ create table size_group(
    primary key      (id)
 )default charset=utf8;
 
+create table size_spec(
+    id               INTEGER AUTO_INCREMENT,
+    name             VARCHAR(8) not null,
+    spec             VARCHAR(64) default '',  -- 150/76A; 155/80A
+    ctype            INTEGER default -1,
+    merchant         INTEGER default -1, -- type belong to
+    deleted          INTEGER default 0, -- 0: no;  1: yes 
+    unique  key uk   (merchant, name, ctype),
+    primary key      (id)
+)default charset=utf8;
+
 create table colors
 (
     id               INTEGER AUTO_INCREMENT,
@@ -176,12 +187,24 @@ create table brands(
 
 create table inv_types(
     id               INTEGER AUTO_INCREMENT,
-    name             VARCHAR(64),
+    name             VARCHAR(64) not null,
     bcode            INTEGER default 0, -- use to bar code
-    merchant         INTEGER, -- type belong to
+    ctype            INTEGER default -1,
+    merchant         INTEGER default -1, -- type belong to
     deleted          INTEGER default 0, -- 0: no;  1: yes
 
     unique  key     index_nm (merchant, name),
+    primary key      (id)
+)default charset=utf8;
+
+create table type_class(
+    id               INTEGER AUTO_INCREMENT,
+    name             VARCHAR(64) not null,
+    -- spec             VARCHAR(64) default '',  -- 150/76A; 155/80A
+    merchant         INTEGER default -1, -- type belong to
+    deleted          INTEGER default 0, -- 0: no;  1: yes
+
+    unique  key uk   (merchant, name),
     primary key      (id)
 )default charset=utf8;
 
@@ -1154,7 +1177,7 @@ create table std_executive (
 
     unique   key  (merchant, name),
     primary key   (id)
-) default charset=utf8;;
+) default charset=utf8;
 
 create table safety_category(
     id              INTEGER AUTO_INCREMENT,

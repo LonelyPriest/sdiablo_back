@@ -1107,6 +1107,15 @@ action(Session, Req, {"reset_stock_barcode"}, Payload) ->
     	    ?utils:respond(200, Req, Error)
     end.
 
+%% action(Session, Req, {"print_stock_new"}, Payload) ->
+%%     ?DEBUG("print_stock_new: session ~p, payload ~p", [Session, Payload]),
+%%     Merchant = ?session:get(merchant, Session),
+%%     RSN = ?v(<<"rsn">>, Payload),
+%%     ok.
+
+
+
+
 
 
 sidebar(Session) ->

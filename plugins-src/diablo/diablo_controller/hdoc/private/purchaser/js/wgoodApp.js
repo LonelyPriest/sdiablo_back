@@ -101,7 +101,7 @@ function wgoodConfig(){
 	this.update_good_type = function(type) {
 	    return http.save(
 		{operation: "update_w_type"},
-		{tid:type.tid, name: type.name, bcode: type.bcode}).$promise;
+		{tid:type.tid, name: type.name, cid: type.cid, bcode: type.bcode}).$promise;
 	};
 
 	/*

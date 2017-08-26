@@ -262,6 +262,8 @@ success(base_update_passwd, Account) ->
     {0, "Success to update password of user " ++ ?to_s(Account)}; 
 success(good_update_std_executive, EId) ->
     {0, "Success to update executive standard " ++ ?to_s(EId)};
+success(good_update_ctype, CId) ->
+    {0, "Success to update ctype " ++ ?to_s(CId)};
 success(create_print_template, Merchant) ->
     {0, "Success to create print template of merchant " ++ ?to_s(Merchant)}.
 
@@ -398,6 +400,8 @@ error(good_barcode_exist, BCode) ->
     {1910, "barcode of this good has been exist:" ++ ?to_s(BCode)};
 error(type_bcode_not_init, TypeId) ->
     {1911, "barcode of type not initial:" ++ ?to_s(TypeId)};
+
+
 
 %%
 %% about wholesale
@@ -574,6 +578,12 @@ error(good_safety_exist, Name) ->
     {8006, "good safty category has been exist " ++ ?to_s(Name)};
 error(good_fabric_exist, Name) ->
     {8007, "good fabric has been exist " ++ ?to_s(Name)};
+error(good_ctype_exist, TypeId) ->
+    {8008, "ctype" ++ ?to_s(TypeId) ++ " has been existed."};
+error(good_size_spec_exist, SpecId) ->
+    {8009, "size sepcific " ++ ?to_s(SpecId) ++ " has been existed."};
+error(good_size_spec_invalid_size, Name) ->
+    {8010, "invalid size name " ++ ?to_s(Name) ++ " of size specific."};
 
 %% DB
 error(db_error, EInfo) ->

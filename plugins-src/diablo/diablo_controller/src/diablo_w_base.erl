@@ -61,7 +61,11 @@ good(list_executive, Merchant) ->
 good(list_safety_category, Merchant) ->
     gen_server:call(?SERVER, {list_safety_category, Merchant});
 good(list_fabric, Merchant) ->
-    gen_server:call(?SERVER, {list_fabric, Merchant}).
+    gen_server:call(?SERVER, {list_fabric, Merchant});
+good(list_ctype, Merchant) ->
+    gen_server:call(?SERVER, {list_ctype, Merchant});
+good(list_size_spec, Merchant) ->
+    gen_server:call(?SERVER, {list_size_spec, Merchant}).
 
 good(add_executive, Merchant, Name) ->
     gen_server:call(?SERVER, {add_good_executive, Merchant, Name});
@@ -76,7 +80,19 @@ good(update_safety_category, Merchant, Attrs) ->
 good(add_fabric, Merchant, Name) ->
     gen_server:call(?SERVER, {add_fabric, Merchant, Name});
 good(update_fabric, Merchant, Attrs) ->
-    gen_server:call(?SERVER, {update_fabric, Merchant, Attrs}).
+    gen_server:call(?SERVER, {update_fabric, Merchant, Attrs});
+
+good(add_ctype, Merchant, Name) ->
+    gen_server:call(?SERVER, {add_ctype, Merchant, Name});
+good(update_ctype, Merchant, Attrs) ->
+    gen_server:call(?SERVER, {update_ctype, Merchant, Attrs});
+
+good(add_size_spec, Merchant, Attrs) ->
+    gen_server:call(?SERVER, {add_size_spec, Merchant, Attrs});
+good(update_size_spec, Merchant, Attrs) ->
+    gen_server:call(?SERVER, {update_size_spec, Merchant, Attrs}).
+
+
 
 %% barcode print
 print(list_template, Merchant) ->
@@ -455,6 +471,143 @@ handle_call({update_fabric, Merchant, Attrs}, _From, State) ->
 
     {reply, Reply, State};
 
+handle_call({add_ctype, Merchant, Name}, _From, State) ->
+    ?DEBUG("add_ctype: Merchant  ~p, Name ~p", [Merchant, Name]), 
+    %% Name = ?v(<<"name">>, Attrs),
+    %% Spec = ?v(<<"spec">>, Attrs, []),
+    
+    Sql0 = "select id, name from type_class"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and name=\'" ++ ?to_s(Name) ++ "\'",
+
+    Reply = 
+	case ?sql_utils:execute(s_read, Sql0) of
+	    {ok, []} ->
+		Sql01 = "insert into type_class(name, merchant) values("
+		    ++ "\'" ++ ?to_s(Name) ++ "\',"
+		%% ++ "\'" ++ ?to_s(Spec) ++ "\',"
+		    ++ ?to_s(Merchant) ++ ")",
+		?sql_utils:execute(insert, Sql01);
+	    {ok, _R} ->
+		{error, ?err(good_ctype_exist, ?to_s(?v(<<"id">>, _R)))};
+	    Error ->
+		Error
+	end,
+
+    {reply, Reply, State};
+
+handle_call({list_ctype, Merchant}, _From, State) ->
+    ?DEBUG("list_ctype: Merchant  ~p", [Merchant]), 
+    Sql0 = "select id, name from type_class where merchant=" ++ ?to_s(Merchant), 
+    Reply = ?sql_utils:execute(read, Sql0),
+    {reply, Reply, State};
+
+handle_call({update_ctype, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("update_fabric: Merchant ~p, attrs ~p", [Merchant, Attrs]),
+    Id = ?v(<<"cid">>, Attrs),
+    Name = ?v(<<"name">>, Attrs),
+    %% Spec = ?v(<<"spec">>, Attrs),
+
+    Sql0 = "select id, name from type_class where merchant=" ++ ?to_s(Merchant)
+	++ " and name=\'" ++ ?to_s(Name) ++ "\'",
+
+    Reply = 
+	case ?sql_utils:execute(s_read, Sql0) of
+	    {ok, []} ->
+	        Updates = ?utils:v(name, string, Name), 
+		Sql01 = "update type_class set "
+		    ++ ?utils:to_sqls(proplists, comma, Updates)
+		    ++ " where id=" ++ ?to_s(Id),
+		?sql_utils:execute(write, Sql01, Id);
+	    {ok, _R} ->
+		{error, ?err(good_ctype_exist, ?to_s(?v(<<"id">>, _R)))};
+	    Error ->
+		Error
+	end, 
+    {reply, Reply, State};
+
+
+handle_call({add_size_spec, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("add_ctype: Merchant  ~p, Attrs ~p", [Merchant, Attrs]), 
+    Name  = ?v(<<"name">>, Attrs),
+    Spec  = ?v(<<"spec">>, Attrs, []),
+    CType = ?v(<<"cid">>, Attrs, -1),
+
+    case ?attr:invalid_size(Name) of
+	true ->
+	    {reply, {error, ?err(good_size_spec_invalid_size, Name)}, State};
+        false -> 
+	    Sql0 = "select id, name from size_spec"
+		" where merchant=" ++ ?to_s(Merchant)
+		++ " and name=\'" ++ ?to_s(Name) ++ "\'"
+		++ " and ctype=" ++ ?to_s(CType),
+
+	    Reply = 
+		case ?sql_utils:execute(s_read, Sql0) of
+		    {ok, []} ->
+			Sql01 = "insert into size_spec(name, spec, ctype, merchant) values("
+			    ++ "\'" ++ ?to_s(Name) ++ "\',"
+			    ++ "\'" ++ ?to_s(Spec) ++ "\',"
+			    ++ ?to_s(CType) ++ ","
+			    ++ ?to_s(Merchant) ++ ")",
+			?sql_utils:execute(insert, Sql01);
+		    {ok, _R} ->
+			{error, ?err(good_size_spec_exist, ?to_s(?v(<<"id">>, _R)))};
+		    Error ->
+			Error
+		end, 
+	    {reply, Reply, State}
+    end;
+
+handle_call({list_size_spec, Merchant}, _From, State) ->
+    ?DEBUG("list_size_spec: Merchant  ~p", [Merchant]), 
+    Sql0 = "select id, name, spec, ctype as cid from size_spec where merchant=" ++ ?to_s(Merchant)
+	++ " order by id",
+    Reply = ?sql_utils:execute(read, Sql0),
+    {reply, Reply, State};
+
+handle_call({update_size_spec, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("update_size_spec: Merchant ~p, attrs ~p", [Merchant, Attrs]),
+    Id    = ?v(<<"sid">>, Attrs),
+    Name  = ?v(<<"name">>, Attrs),
+    Spec  = ?v(<<"spec">>, Attrs),
+    CType = ?v(<<"cid">>, Attrs),
+
+    UpdateFun =
+	fun() ->
+		Updates = ?utils:v(name, string, Name)
+		    ++ ?utils:v(spec, string, Spec)
+		    ++ ?utils:v(ctype, integer, CType),
+		Sql01 = "update size_spec set "
+		    ++ ?utils:to_sqls(proplists, comma, Updates)
+		    ++ " where id=" ++ ?to_s(Id),
+		?sql_utils:execute(write, Sql01, Id)
+	end,
+
+    Reply =
+	case Name of
+	    undefined ->
+		UpdateFun();
+	    _ ->
+		case ?attr:invalid_size(Name) of
+		    true ->
+			{error, ?err(good_size_spec_invalid_size, Name)};
+		    false ->
+			Sql0 = "select id, name from size_spec"
+			    " where merchant=" ++ ?to_s(Merchant)
+			    ++ " and name=\'" ++ ?to_s(Name) ++ "\'"
+			    ++ " and ctype=" ++ ?to_s(CType),
+			case ?sql_utils:execute(s_read, Sql0) of
+			    {ok, []} ->
+				UpdateFun();
+			    {ok, _R} ->
+				{error, ?err(good_size_spec_exist, ?to_s(?v(<<"id">>, _R)))};
+			    Error ->
+				Error
+			end
+		end
+	end,
+    {reply, Reply, State};
 
 handle_call({list_barcode_print_template, Merchant}, _From, State) ->
     ?DEBUG("list_barcode_print_template: Merchant  ~p", [Merchant]), 

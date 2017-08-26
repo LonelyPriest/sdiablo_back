@@ -16,7 +16,10 @@ function baseConfig(angular){
 
     baseApp.config(['$routeProvider', function($routeProvider){	
 	var user = {"user": function(userService){
-	    return userService()}}; 
+	    return userService()}};
+
+	var ctype = {"filterCType": function(diabloFilter) {
+	    return diabloFilter.list_good_ctype()}};
 	
 	$routeProvider.
 	    when('/printer/connect_new', {
@@ -57,6 +60,16 @@ function baseConfig(angular){
 		controller: 'goodFabricCtrl',
 		resolve: angular.extend({})
 	    }).
+	    when('/setting/ctype', {
+		templateUrl: '/private/base/html/good_ctype.html',
+		controller: 'goodCTypeCtrl',
+		resolve: angular.extend({})
+	    }).
+	    when('/setting/size_spec', {
+		templateUrl: '/private/base/html/size_spec.html',
+		controller: 'goodSizeSpecCtrl',
+		resolve: angular.extend({}, ctype)
+	    }).
 	    when('/setting/print_template', {
 		templateUrl: '/private/base/html/print_template.html',
 		controller: 'goodPrintTemplateCtrl',
@@ -82,7 +95,10 @@ function baseConfig(angular){
 		      8004: "用户权限不足！！",
 		      8005: "该标准已存在，请重新输入！！",
 		      8006: "该安全类别已存在，请重新输入！！",
-		      8007: "该面料已存在，请重新输入",
+		      8007: "该面料已存在，请重新输入！！",
+		      8008: "该大类已存在，请重新输入！！",
+		      8009: "该大类所对应的尺码规格已存在，请重新输入！！",
+		      8010: "尺码名称不规范，请重新输入尺码！！",
 		      9001: "数据库操作失败，请联系服务人员！！"};
 
 	this.print_setting = 0;
@@ -227,6 +243,32 @@ function baseConfig(angular){
 	    return http.save({operation: 'update_fabric'}, f).$promise;
 	};
 
+	// ctype
+	this.add_ctype = function(c) {
+	    return http.save({operation: 'add_ctype'}, c).$promise;
+	};
+
+	this.list_ctype = function(){
+	    return http.query({operation: 'list_ctype'}).$promise;
+	};
+
+	this.update_ctype = function(c) {
+	    return http.save({operation: 'update_ctype'}, c).$promise;
+	};
+
+	// size spec
+	this.add_size_spec = function(s) {
+	    return http.save({operation: 'add_size_spec'}, s).$promise;
+	};
+
+	this.list_size_spec = function(){
+	    return http.query({operation: 'list_size_spec'}).$promise;
+	};
+
+	this.update_size_spec = function(s) {
+	    return http.save({operation: 'update_size_spec'}, s).$promise;
+	};
+	
 	// print template
 	this.create_print_template = function() {
 	    return http.save({operation: 'create_print_template'}, {}).$promise;

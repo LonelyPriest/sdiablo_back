@@ -244,3 +244,5 @@ alter table print_template add column hpx_executive TINYINT default 0 after hpx_
 alter table print_template add column hpx_category TINYINT default 0 after hpx_executive;
 alter table print_template add column hpx_fabric TINYINT default 0 after hpx_category;
 
+-- 2017-08-26
+alter table inv_types add column ctype INTEGER default -1 after bcode;

@@ -166,6 +166,14 @@ function filterProvider(){
 	    return _baseSettingHttp.query({operation: 'list_fabric'}).$promise;
 	};
 
+	function list_good_ctype() {
+	    return _baseSettingHttp.query({operation: 'list_ctype'}).$promise;
+	};
+
+	function list_good_size_spec() {
+	    return _baseSettingHttp.query({operation: 'list_size_spec'}).$promise;
+	};
+
 	function list_print_template() {
 	    return _baseSettingHttp.query({operation: 'list_print_template'}).$promise;
 	};
@@ -569,50 +577,28 @@ function filterProvider(){
 			set_storage(cookie, "brand", _brands)
 		    	return _brands;
 		    });    
-		}
-		// if (_brands.length !== 0 ){
-		//     // console.log("cache brands");
-		//     return _brands;
-		// } else {
-		//     return wgoodService.list_purchaser_brand(
-		//     ).then(function(brands){
-		// 	// console.log(brands);
-		// 	_brands =  brands.map(function(b){
-		// 	    return {id: b.id,
-		// 		    name:b.name,
-		// 		    py:diablo_pinyin(b.name),
-		// 		    // firm: supplier,
-		// 		    firm_id: b.supplier_id,
-		// 		    // remark: b.remark,
-		// 		    // entry: b.entry
-		// 		   };
-		// 	})
-
-		// 	return _brands;
-		//     });    
-		// }
-		
+		} 
 	    },
 
 	    reset_type: function(){
-		_types = [];
+		clear_from_storage(cookie, "type");
 	    },
 	    
 	    get_type: function(){
-		if (_types.length !== 0){
-		    return _types;
-		} else {
-		    return list_purchaser_type(
-		    ).then(function(types){
+		var cached = get_from_storage(cookie, "type");
+		if (angular.isArray(cached) && cached.length !== 0) return cached;
+		else {
+		    return list_purchaser_type().then(function(types){
 			// console.log(types);
-			_types =  types.map(function(t){
+			var _types =  types.map(function(t){
 			    return {id: t.id,
 				    bcode: t.bcode,
+				    cid: t.cid,
 				    name:t.name, py:diablo_pinyin(t.name)};
-			})
-
+			});
+			set_storage(cookie, "type", _types) 
 			return _types;
-		    });
+		    }); 
 		} 
 	    },
 
@@ -635,24 +621,7 @@ function filterProvider(){
 			set_storage(cookie, "color", _colors)
 			return _colors;
 		    })
-		}
-		// if (_colors.length !== 0){
-		//     // console.log("cache color");
-		//     return _colors;
-		// } else {
-		//     return wgoodService.list_purchaser_color(
-		//     ).then(function(colors){
-		// 	// console.log(colors);
-		// 	_colors = colors.map(function(c){
-		// 	    return {id:c.id,
-		// 		    name:c.name,
-		// 		    tid:c.tid,
-		// 		    type:c.type}
-		// 	});
-
-		// 	return _colors;
-		//     })   
-		// } 
+		} 
 	    },
 
 	    get_color_type: function(){
@@ -875,6 +844,44 @@ function filterProvider(){
 
 	    reset_good_fabric: function() {
 		clear_from_storage(cookie, "fabric");
+	    },
+
+	    list_good_ctype: function() {
+		var cached = get_from_storage(cookie, "ctype");
+		if (angular.isArray(cached) && cached.length !== 0){
+		    return cached;
+		} else {
+		    return list_good_ctype().then(function(ctypes){
+			var _ctypes = ctypes.map(function(c) {
+			    return {id:c.id, name:c.name, py:diablo_pinyin(c.name)};
+			});
+			set_storage(cookie, "ctype", _ctypes);
+			return _ctypes;
+		    }); 
+		}
+	    }, 
+
+	    reset_good_ctype: function() {
+		clear_from_storage(cookie, "ctype");
+	    },
+
+	    list_good_size_spec: function() {
+		var cached = get_from_storage(cookie, "size_spec");
+		if (angular.isArray(cached) && cached.length !== 0){
+		    return cached;
+		} else {
+		    return list_good_size_spec().then(function(specs){
+			// var _ctypes = ctypes.map(function(c) {
+			//     return {id:c.id, name:c.name, py:diablo_pinyin(c.name)};
+			// });
+			set_storage(cookie, "size_spec", specs);
+			return specs;
+		    }); 
+		}
+	    }, 
+
+	    reset_good_size_spec: function() {
+		clear_from_storage(cookie, "size_spec");
 	    },
 
 	    list_print_template: function() {

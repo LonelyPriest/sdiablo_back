@@ -633,8 +633,9 @@ function wgoodDetailCtrlProvide(
     filterFirm,
     filterType,
     filterColor,
+    filterSizeSpec,
     filterStdExecutive, filterCategory, filterFabric, filterTemplate, base, user){
-
+    console.log(filterSizeSpec);
     $scope.template = filterTemplate.length !== 0 ? filterTemplate[0] : undefined;
     
     /*
@@ -667,7 +668,7 @@ function wgoodDetailCtrlProvide(
 	// barcode_firm   :stockUtils.barcode_with_firm(diablo_default_shop, base)
     };
 
-    $scope.printU = new stockPrintU($scope.template, $scope.setting.auto_barcode); 
+    $scope.printU = new stockPrintU($scope.template, $scope.setting.auto_barcode);
     // console.log($scope.right);
     /*
      * filter
@@ -714,6 +715,16 @@ function wgoodDetailCtrlProvide(
 			
 			d.executive = diablo_get_object(d.executive_id, filterStdExecutive);
 			d.category = diablo_get_object(d.category_id, filterCategory);
+
+			d.specs = [];
+			if (angular.isObject(d.type) && d.type.cid !== diablo_invalid_index) {
+			    angular.forEach(filterSizeSpec, function(s) {
+				if (s.cid === d.type.cid) {
+				    d.specs.push(s);
+				}
+			    }) 
+			}
+			
 			if (d.fabric_json) {
 			    d.fabrics = angular.fromJson(d.fabric_json);
 			    d.fabric_desc = diablo_empty_string;
@@ -930,7 +941,6 @@ function wgoodDetailCtrlProvide(
 		    dialog_barcode_title,
 		    dialog_barcode_title_failed + wgoodService.error[1998]);
 	    } else {
-		var barcodes = [];
 		if (g.free === 0) {
 		   angular.forEach(barcode_amounts, function(a) {
 		       $scope.printU.free_prepare(
@@ -940,6 +950,7 @@ function wgoodDetailCtrlProvide(
 			   g.firm_id === diablo_invalid_firm ? undefined : g.firm.name);
 		   })
 		} else {
+		    var barcodes = [];
 		    angular.forEach(barcode_amounts, function(a) {
 			var color = diablo_find_color(a.cid, filterColor);
 			for (var i=0; i<a.count; i++) {

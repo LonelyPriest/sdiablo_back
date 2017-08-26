@@ -78,6 +78,16 @@ action(Session, Req, {"list_fabric"}) ->
     Merchant = ?session:get(merchant, Session),
     ?utils:respond(batch, fun() -> ?w_base:good(list_fabric, Merchant) end, Req);
 
+action(Session, Req, {"list_ctype"}) ->
+    ?DEBUG("list_ctype with session ~p", [Session]),
+    Merchant = ?session:get(merchant, Session),
+    ?utils:respond(batch, fun() -> ?w_base:good(list_ctype, Merchant) end, Req);
+
+action(Session, Req, {"list_size_spec"}) ->
+    ?DEBUG("list_ctype with session ~p", [Session]),
+    Merchant = ?session:get(merchant, Session),
+    ?utils:respond(batch, fun() -> ?w_base:good(list_size_spec, Merchant) end, Req);
+
 action(Session, Req, {"list_print_template"}) ->
     ?DEBUG("list_print_template with session ~p", [Session]),
     Merchant = ?session:get(merchant, Session),
@@ -270,6 +280,51 @@ action(Session, Req, {"update_print_template"}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+
+action(Session, Req, {"add_ctype"}, Payload) ->
+    ?DEBUG("add_ctype with session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    Name = ?v(<<"name">>, Payload),
+    case ?w_base:good(add_ctype, Merchant, Name) of
+	{ok, AddId}  ->
+	    %% ?w_user_profile:update(setting, Merchant),
+	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0}, {<<"id">>, AddId}]}); 
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"update_ctype"}, Payload) ->
+    Merchant = ?session:get(merchant, Session),
+    case ?w_base:good(update_ctype, Merchant, Payload) of
+	{ok, CId}  ->
+	    %% ?w_user_profile:update(setting, Merchant),
+	    ?utils:respond(200, Req, ?succ(good_update_ctype, CId));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"add_size_spec"}, Payload) ->
+    ?DEBUG("add_size_spec with session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    %% Name = ?v(<<"name">>, Payload),
+    case ?w_base:good(add_size_spec, Merchant, Payload) of
+	{ok, AddId}  ->
+	    %% ?w_user_profile:update(setting, Merchant),
+	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0}, {<<"id">>, AddId}]}); 
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"update_size_spec"}, Payload) ->
+    Merchant = ?session:get(merchant, Session),
+    case ?w_base:good(update_size_spec, Merchant, Payload) of
+	{ok, SId}  ->
+	    %% ?w_user_profile:update(setting, Merchant),
+	    ?utils:respond(200, Req, ?succ(good_update_ctype, SId));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
 %%
 %% passwd
 %%
@@ -343,27 +398,18 @@ sidebar(Session) ->
 		AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSetting, ?YES)),
 		
 		[{{"setting",        "基本设置", "glyphicon glyphicon-cog"},
-		 [{"print_option",   "系统设置", "glyphicon glyphicon-wrench"}]
+		  [{"print_option",  "系统设置", "glyphicon glyphicon-wrench"},
+		   {"ctype",         "货品大类", "glyphicon glyphicon-text-width"}]
 		  ++ case AutoBarcode of
 			 ?YES -> [];
 			 ?NO ->
-			     [{"std_executive",  "执行标准", "glyphicon glyphicon-registration-mark"},
+			     [{"std_executive",   "执行标准", "glyphicon glyphicon-registration-mark"},
 			      {"safety_category", "安全类别", "glyphicon glyphicon-text-background"},
-			      {"fabric",         "面料", "glyphicon glyphicon-glass"}]
+			      {"fabric",          "货品面料", "glyphicon glyphicon-glass"},
+			      {"size_spec",       "尺码规格", "glyphicon glyphicon-text-size"}]
 		     end
 		  ++ [{"print_template", "打印模板", "glyphicon glyphicon-file"}]}]
 	end,
-	%% [{{"setting", "基本设置", "glyphicon glyphicon-cog"},
-	%%       case ?session:get(type, Session) of
-	%% 	  ?USER ->
-	%% 	      [{"print_format", "打印格式", "glyphicon glyphicon-text-width"}];
-	%% 	  ?MERCHANT ->
-	%% 	      [{"print_option", "系统设置", "glyphicon glyphicon-wrench"},
-	%% 	       {"print_format", "打印格式", "glyphicon glyphicon-text-width"}
-	%% 	      ]
-	%%       end
-	%%  }],
     
     Passwd = [{"passwd", "重置密码", "glyphicon glyphicon-user"}], 
-    
     ?menu:sidebar(level_2_menu, SBase) ++ ?menu:sidebar(level_1_menu, Passwd).
