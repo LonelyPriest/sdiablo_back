@@ -429,7 +429,12 @@ handle_call({new_type, Merchant, Attrs}, _From, State) ->
 		    ++ "\"" ++?to_s(Name) ++ "\","
 		    ++ ?to_s(CType) ++ ","
 		    ++ ?to_s(Merchant) ++ ");",
-		?sql_utils:execute(insert, Sql1)
+		case ?sql_utils:execute(insert, Sql1) of
+		    {ok, _} = R ->
+			?w_user_profile:update(type, Merchant),
+			R;
+		    R -> R
+		end 
 	end,
 
     case ?sql_utils:execute(s_read, Sql) of
@@ -445,7 +450,7 @@ handle_call({new_type, Merchant, Attrs}, _From, State) ->
 			" and merchant=" ++ ?to_s(Merchant),
 		    case ?sql_utils:execute(s_read, Sql01) of
 			{ok, []} ->
-			    R = AddType(NewBCode),
+			    R = AddType(NewBCode), 
 			    {reply, R, State};
 			{ok, _Type} ->
 			    {reply, {error, ?err(type_bcode_exist, BCode)}, State};

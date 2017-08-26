@@ -652,10 +652,6 @@ function filterProvider(){
 		}
 	    },
 
-	    reset_promotion: function(){
-		_promotions = [];
-	    },
-	    
 	    get_promotion: function(){
 		// console.log("get promotion");
 		var cached = get_from_storage(cookie, "promotion");
@@ -685,6 +681,11 @@ function filterProvider(){
 		}
 	    },
 
+	    reset_promotion: function(){
+		clear_from_storage(cookie, "promotion");
+	    },
+	    
+
 	    get_employee: function(){
 		var cached = get_from_storage(cookie, "employee");
 		if (angular.isArray(cached) && cached.length !== 0) return cached; 
@@ -708,9 +709,9 @@ function filterProvider(){
 		} 
 	    },
 
-	    reset_retailer: function(){
-		_retailers = [];
-	    },
+	    // reset_retailer: function(){
+	    // 	_retailers = [];
+	    // },
 	    
 	    // get_wretailer: function(){
 	    // 	if (_retailers.length !== 0 ){

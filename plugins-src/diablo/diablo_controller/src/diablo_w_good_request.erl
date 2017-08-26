@@ -510,8 +510,8 @@ action(Session, Req, {"new_w_type"}, Payload) ->
 	ok -> 
 	    case ?attr:type(new, Merchant, Payload ++ [{<<"auto_barcode">>, AutoBarcode}]) of
 		{ok, TypeId} ->
-		    ?utils:respond(200, Req, ?succ(add_color, TypeId), {<<"id">>, TypeId}),
-		    ?w_user_profile:update(type, Merchant);
+		    ?utils:respond(200, Req, ?succ(add_color, TypeId), {<<"id">>, TypeId});
+		    %% ?w_user_profile:update(type, Merchant);
 		{ok_exist, TypeId} ->
 		    ?utils:respond(200, Req, ?err(good_type_exist, TypeId));
 		{error, Error} ->
