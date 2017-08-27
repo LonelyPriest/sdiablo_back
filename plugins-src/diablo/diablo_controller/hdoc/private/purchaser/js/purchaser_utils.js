@@ -349,6 +349,10 @@ var stockUtils = function(){
 	    return rightAuthen.authen(user_type, rightAuthen.rainbow_action()[action], user_right);
 	},
 
+	authen_stock: function(user_type, user_right, action) {
+	    return rightAuthen.authen(user_type, rightAuthen.stock_action()[action], user_right);
+	},
+
 	cache_page_condition: function(
 	    storage, key, conditions, start_time, end_time, current_page, datetime){
 	    storage.remove(key);
@@ -789,7 +793,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 	    if (this.stock.specs.length !== 0 && this.size.toString() !== diablo_free_size) {
 		for (var i=0, l=this.stock.specs.length; i<l; i++) {
 		    if (this.size.toString() === this.stock.specs[i].name) {
-			size += "    " + this.stock.specs[i].spec;
+			size += "  " + this.stock.specs[i].spec;
 		    }
 		}
 	    };

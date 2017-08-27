@@ -844,6 +844,7 @@ create table w_inventory_transfer(
 create table w_inventory_transfer_detail(
     id             INTEGER AUTO_INCREMENT,
     rsn            VARCHAR(32) not null, -- record sn
+    bcode          VARCHAR(32) default 0, -- use to bar code
     style_number   VARCHAR(64) not null,
     brand          INTEGER default -1,
 

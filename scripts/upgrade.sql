@@ -246,3 +246,7 @@ alter table print_template add column hpx_fabric TINYINT default 0 after hpx_cat
 
 -- 2017-08-26
 alter table inv_types add column ctype INTEGER default -1 after bcode;
+
+
+-- 2017-08-27
+alter table w_inventory_transfer_detail add column bcode VARCHAR(32) default 0 after rsn;

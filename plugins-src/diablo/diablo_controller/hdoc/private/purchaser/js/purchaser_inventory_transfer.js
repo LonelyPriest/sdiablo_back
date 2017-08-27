@@ -190,6 +190,7 @@ function purchaserInventoryTransferCtrlProvide (
 	// add at first allways 
 	var add = $scope.inventories[0];
 	add.id           = item.id;
+	add.bcode        = item.bcode;
 	add.style_number = item.style_number;
 	add.brand        = item.brand;
 	add.brand_id     = item.brand_id;
@@ -263,6 +264,7 @@ function purchaserInventoryTransferCtrlProvide (
 	    var add = $scope.inventories[i];
 	    added.push({
 		order_id    : add.order_id,
+		bcode       : add.bcode,
 		style_number: add.style_number,
 		brand       : add.brand_id,
 		type        : add.type_id,

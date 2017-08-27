@@ -56,9 +56,11 @@ function purchaserInventoryNewUpdateCtrlProvide (
      */
     $scope.stock_right = {
 	show_orgprice: stockUtils.authen_rainbow(user.type, user.right, 'show_orgprice'),
-	show_balance: stockUtils.authen_rainbow(user.type, user.right, 'show_balance_onstock'),
-	master: rightAuthen.authen_master(user.type)
+	show_balance:  stockUtils.authen_rainbow(user.type, user.right, 'show_balance_onstock'),
+	master:        rightAuthen.authen_master(user.type)
     };
+
+    // console.log($scope.stock_right);
     
     /*
      * auto focus

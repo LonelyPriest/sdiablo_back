@@ -2613,7 +2613,8 @@ function purchaserInventoryNewDetailCtrlProvide (
 	    user.shop
 	),
 
-	show_balance: rightAuthen.authen_master(user.type)
+	show_balance:  stockUtils.authen_rainbow(user.type, user.right, 'show_orgprice'),
+	print_w_stock: stockUtils.authen_stock(user.type, user.right, 'print_w_stock_new')
     };
     
     $scope.hidden = {base:true, balance:true, comment:true};
@@ -2755,6 +2756,19 @@ function purchaserInventoryNewDetailCtrlProvide (
 	
 	dialog.request(
 	    "入库单废弃", "入库单废弃后，无法恢复，确认要废弃吗？",
+	    callback, undefined, undefined);
+    };
+
+    $scope.print_detail = function(r) {
+	var callback = function() {
+	    // purchaserService.print_w_inventory_new(r.rsn).then(function(state) {
+	    // 	console.log(state);
+	    // });
+	    diablo_goto_page("#/print_inventory_new/" + r.rsn);
+	}
+	
+	dialog.request(
+	    "采购单打印", "采购单打印要求纸张为A4纸，确认要打印吗？",
 	    callback, undefined, undefined);
     };
 

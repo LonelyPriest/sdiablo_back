@@ -16,6 +16,7 @@
 amount_transfer(transfer_from, RSN, Merchant, Shop, TShop, Datetime, Inv) ->
     ?DEBUG("transfer inventory with rsn ~p~nInv ~p", [RSN, Inv]), 
     Amounts     = ?v(<<"amounts">>, Inv),
+    Barcode     = ?v(<<"bcode">>, Inv, 0),
     StyleNumber = ?v(<<"style_number">>, Inv),
     Brand       = ?v(<<"brand">>, Inv),
     Type        = ?v(<<"type">>, Inv),
@@ -126,13 +127,14 @@ amount_transfer(transfer_from, RSN, Merchant, Shop, TShop, Datetime, Inv) ->
     Sql2 = [ case ?sql_utils:execute(s_read, Sql00) of
 		 {ok, []} ->
 		     "insert into w_inventory_transfer_detail("
-			 "rsn, style_number"
+			 "rsn, bcode, style_number"
 			 ", brand, type, sex, season, amount"
 			 ", firm, s_group, free, year"
 			 ", org_price, tag_price, discount"
 			 ", ediscount, path, merchant, fshop, tshop, entry_date) values("
-			 ++ "\"" ++ ?to_s(RSN) ++ "\","
-			 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
+			 ++ "\'" ++ ?to_s(RSN) ++ "\',"
+			 ++ "\'" ++ ?to_s(Barcode) ++ "\',"
+			 ++ "\'" ++ ?to_s(StyleNumber) ++ "\',"
 			 ++ ?to_s(Brand) ++ ","
 			 ++ ?to_s(Type) ++ ","
 			 ++ ?to_s(Sex) ++ ","
@@ -240,11 +242,25 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 	++ ", check_date=\"" ++ ?to_s(Now) ++ "\""
 	++ " where rsn=\"" ++ ?to_s(RSN) ++ "\"",
 
-    Sql2 = "select style_number, brand, type, sex, season"
-    	", firm, s_group, free, year"
-    	", org_price, tag_price, discount, ediscount, amount, path, entry_date"
+    Sql2 = "select bcode"
+	", style_number"
+	", brand"
+	", type"
+	", sex"
+	", season"
+    	", firm"
+	", s_group"
+	", free"
+	", year"
+    	", org_price"
+	", tag_price"
+	", discount"
+	", ediscount"
+	", amount"
+	", path"
+	", entry_date"
 	" from w_inventory_transfer_detail"
-	" where rsn=\"" ++ ?to_s(RSN) ++ "\"",
+	" where rsn=\'" ++ ?to_s(RSN) ++ "\'",
 
     DefaultScore = case ?w_user_profile:get(shop, Merchant, TShop) of
 		       [] -> -1;
@@ -254,6 +270,7 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 		   end,
     CheckFun = 
 	fun({Transfer}, Acc)->
+		Barcode     = ?v(<<"bcode">>, Transfer),
 		StyleNumber = ?v(<<"style_number">>, Transfer),
 		Brand       = ?v(<<"brand">>, Transfer),
 		Type        = ?v(<<"type">>, Transfer),
@@ -296,13 +313,14 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 		case ?sql_utils:execute(s_read, Sql21) of
 		    {ok, []} -> 
 			["insert into w_inventory(rsn"
-			 ", style_number, brand, firm, type, sex, season, year"
+			 ", bcode, style_number, brand, firm, type, sex, season, year"
 			 ", amount, s_group, free, promotion, score"
 			 ", org_price, tag_price, ediscount, discount"
 			 ", path, alarm_day, shop, merchant"
 			 ", last_sell, change_date, entry_date)"
 			 " values("
 			 ++ "\"" ++ ?to_s(-1) ++ "\","
+			 ++ "\"" ++ ?to_s(Barcode) ++ "\","
 			 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
 			 ++ ?to_s(Brand) ++ ","
 			 ++ ?to_s(Firm) ++ "," 

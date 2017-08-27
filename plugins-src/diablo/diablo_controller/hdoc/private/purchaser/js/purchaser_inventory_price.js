@@ -375,6 +375,68 @@ function purchaserInventoryPriceCtrlProvide(
     }; 
 };
 
+function stockNewDetailPrintCtrlProvide(
+    $scope, $routeParams, diabloUtilsService, purchaserService,
+    filterBrand, filterFirm, filterType, filterColor, user){
+    // console.log($routeParams);
+    // $scope.rsn = $routeParams.rsn;
+
+    var LODOP;
+    if (needCLodop()) loadCLodop();
+
+    var dialog = diabloUtilsService;
+    purchaserService.print_w_inventory_new($routeParams.rsn).then(function(result) {
+    	console.log(result);
+	if (result.ecode === 0) {
+	    $scope.detail = result.detail;
+	    $scope.notes = [];
+
+	    var order_id = 1;
+	    angular.forEach(result.note, function(n) {
+		n.brand = diablo_get_object(n.brand_id, filterBrand);
+		n.type  = diablo_get_object(n.type_id, filterType);
+		n.order_id = order_id; 
+		$scope.notes.push(n);
+		
+		for (var i=0, l=n.note.length; i<l; i++) {
+		    var s = n.note[i];
+		    $scope.notes.push({
+			amount: s.total,
+			color:  diablo_find_color(s.color_id, filterColor),
+			size:   s.size
+		    });
+		}
+
+		order_id++; 
+	    });
+
+	    console.log($scope.notes);
+	    
+	} else {
+	    dialog.response(
+		false,
+		"采购单打印",
+		"采购单打印失败：获取采购单失败，请核对后再打印！！")
+	}
+    });
+
+    $scope.print = function() {
+	if (angular.isUndefined(LODOP)) {
+	    LODOP = getLodop();
+	}
+
+	if (LODOP.VERSION) {
+	    LODOP.PRINT_INIT();
+	    LODOP.SET_PRINT_PAGESIZE(1, 0, 0,"A4");
+	    LODOP.ADD_PRINT_HTM(
+		"10%", "10%",  "90%", "90%", document.getElementById("print_table").innerHTML);
+	    LODOP.PRINT_DESIGN();
+	}
+    };
+    
+};
+
 define(["purchaserApp"], function(app){
     app.controller("purchaserInventoryPriceCtrl", purchaserInventoryPriceCtrlProvide);
+    app.controller("stockNewDetailPrintCtrl", stockNewDetailPrintCtrlProvide);
 });

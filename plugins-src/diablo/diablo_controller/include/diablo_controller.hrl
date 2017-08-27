@@ -248,9 +248,10 @@
 -define(comment_w_inventory_new,         ?right_w_inventory + 22).
 %% update original price when reject stock to firm
 -define(update_price_of_w_inventory_reject, ?right_w_inventory + 23).
--define(modify_w_inventory_new_balance, ?right_w_inventory + 24).
--define(update_w_inventory_alarm,    ?right_w_inventory + 25).
--define(reset_stock_barcode,    ?right_w_inventory + 26).
+-define(modify_w_inventory_new_balance,     ?right_w_inventory + 24).
+-define(update_w_inventory_alarm,           ?right_w_inventory + 25).
+-define(reset_stock_barcode,                ?right_w_inventory + 26).
+-define(print_w_inventory_new,              ?right_w_inventory + 27).
 %% -define(set_stock_promotion,    ?right_w_inventory + 27).
 
 %% firm

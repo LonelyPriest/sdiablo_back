@@ -873,7 +873,11 @@ action(Session, Req, {"w_inventory_export"}, Payload) ->
 				    try
 					%% sort stock by color
 					DoFun = fun(C) -> ?utils:write(Fd, C) end, 
-					SortStockS = stock_note(to_dict, StockNotes, dict:new()),
+					SortStockS = stock_note(
+						       to_dict,
+						       {<<"style_number">>, <<"brand">>, <<"shop">>},
+						       StockNotes,
+						       dict:new()),
 					csv_head(
 					  stock_sort_by_color,
 					  DoFun,
@@ -1105,19 +1109,96 @@ action(Session, Req, {"reset_stock_barcode"}, Payload) ->
 			     {<<"barcode">>, ?to_b(Barcode)}]}); 
 	{error, Error} ->
     	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"print_w_inventory_new"}, Payload) ->
+    ?DEBUG("print_stock_new: session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    RSN = ?v(<<"rsn">>, Payload),
+
+    %% new
+    {ok, Detail} = ?w_inventory:purchaser_inventory(get_new, Merchant, RSN),
+    ?DEBUG("detail ~p", [Detail]),
+    %% detail
+    {ok, Transes} = ?w_inventory:purchaser_inventory(list_new_detail, Merchant, [{<<"rsn">>, RSN}]),
+    ?DEBUG("transes ~p", [Transes]),
+    %% amount
+    {ok, Notes} = ?w_inventory:rsn_detail(new_rsn, Merchant, [{<<"rsn">>, RSN}]),
+    ?DEBUG("Notes ~p", [Notes]),
+
+    DictNote = stock_note(
+		 to_dict,
+		 {<<"style_number">>, <<"brand_id">>, <<"shop_id">>},
+		 Notes,
+		 dict:new()),
+
+    ?DEBUG("dict note ~p", [dict:to_list(DictNote)]),
+
+    Sort = print_inventory_new(sort_by_color, Transes, DictNote, []),
+    ?DEBUG("sort ~p", [Sort]),
+
+    ?utils:respond(200, object, Req,
+		   {[{<<"ecode">>, 0},
+		     {<<"detail">>, {Detail}},
+		     {<<"note">>, Sort}]}).
+
+
+print_inventory_new(sort_by_color, [], _DictNote, Acc) ->
+    Acc; 
+print_inventory_new(sort_by_color, [H|T], DictNote, Acc) ->
+    StyleNumber = ?v(<<"style_number">>, H),
+    BrandId     = ?to_b(?v(<<"brand_id">>, H)),
+    TypeId      = ?v(<<"type_id">>, H), 
+    ShopId      = ?to_b(?v(<<"shop_id">>, H)),
+    Season      = ?v(<<"season">>, H),
+    %% Year        = ?v(<<"year">>, H), 
+    %% OrgPrice    = ?v(<<"org_price">>, H),
+    %% EDiscount   = ?v(<<"ediscount">>, H),
+    %% TagPrice    = ?v(<<"tag_price">>, H), 
+    %% Discount    = ?v(<<"discount">>, H), 
+    Total       = ?v(<<"amount">>, H), 
+    Date        = ?v(<<"entry_date">>, H),
+
+    Key = <<StyleNumber/binary, BrandId/binary, ShopId/binary>>,
+
+    case dict:find(Key, DictNote) of
+	{ok, Notes} ->
+	    OneDict = one_stock_note(sort_by_color, <<"color_id">>, Notes, dict:new()),
+
+	    NoteDetails = 
+		dict:fold(
+		  fun(K, OneNotes, Acc1) ->
+			  {TotalOfColor, SizeDescs} = 
+			      lists:foldr(
+				fun({One}, {Amount, Descs}) ->
+					Size = ?v(<<"size">>, One),
+					OneAmount = ?v(<<"amount">>, One),
+					{Amount + OneAmount,
+					 Descs ++ ?to_s(Size) ++ ":" ++ ?to_s(OneAmount) ++ ";"} 
+				end, {0, []}, OneNotes),
+
+			  [{K, TotalOfColor, SizeDescs}|Acc1]
+
+		  end, [], OneDict),
+
+	    N = {[{<<"style_number">>, StyleNumber},
+		  {<<"brand_id">>, ?to_i(BrandId)},
+		  {<<"type_id">>, TypeId},
+		  {<<"season">>, Season},
+		  {<<"total">>, Total},
+		  {<<"entry_date">>, Date},
+		  {<<"note">>,
+		   lists:foldr(
+		     fun({ColorId, TotalOfColor, SizeDesc}, Acc1) ->
+			     [{[{<<"color_id">>, ColorId},
+			      {<<"total">>, TotalOfColor},
+				{<<"size">>, ?to_b(SizeDesc)}]}|Acc1]
+		     end, [], NoteDetails)}]},
+	    print_inventory_new(sort_by_color, T, DictNote, [N|Acc]);
+	error ->
+	    print_inventory_new(sort_by_color, T, DictNote, Acc)
     end.
-
-%% action(Session, Req, {"print_stock_new"}, Payload) ->
-%%     ?DEBUG("print_stock_new: session ~p, payload ~p", [Session, Payload]),
-%%     Merchant = ?session:get(merchant, Session),
-%%     RSN = ?v(<<"rsn">>, Payload),
-%%     ok.
-
-
-
-
-
-
+	    
 sidebar(Session) ->
     %% UserType = ?session:get(type, Session),
     
@@ -1536,7 +1617,7 @@ do_write(stock_sort_by_color, Do, Count, [H|T], SortStocks, Colors, Code, ShowOr
 	{ok, Notes} ->
 	    %% ?DEBUG("Notes ~p", [Notes]),
 	    %% sort notes
-	    NoteDict = one_stock_note(sort_by_color, Notes, dict:new()),
+	    NoteDict = one_stock_note(sort_by_color, <<"color">>, Notes, dict:new()),
 
 	    %% Keys = dict:fetch_keys(NoteDict),
 	    Details = 
@@ -1760,14 +1841,15 @@ compare_stock(db_to_shop, [{Stock}|T], ShopStockDict, StocksNotInShop, StocksNot
     end.
 
 
-stock_note(to_dict, [], Dict) ->
+stock_note(to_dict, _key, [], Dict) ->
     %% ?DEBUG("Dict ~p", [dict:to_list(Dict)]),
     Dict;
-stock_note(to_dict, [{H}|T], Dict) ->
+stock_note(to_dict, {K1, K2, K3} = K, [{H}|T], Dict) ->
     %% ?DEBUG("H ~p", [H]),
-    StyleNumber = ?to_b(?v(<<"style_number">>, H)),
-    Brand = ?to_b(?v(<<"brand">>, H)),
-    Shop  = ?to_b(?v(<<"shop">>, H)),
+    StyleNumber = ?to_b(?v(K1, H)),
+    Brand = ?to_b(?v(K2, H)),
+    Shop  = ?to_b(?v(K3, H)),
+    
     %% Color = ?to_b(?v(<<"color">>, H)),
     Key = <<StyleNumber/binary, Brand/binary, Shop/binary>>,
 
@@ -1779,26 +1861,22 @@ stock_note(to_dict, [{H}|T], Dict) ->
 		dict:update(
 		  Key,
 		  fun(V) ->
-			  [{H}] ++ V
-			  %% case is_tuple(V) of
-			  %%     true -> [{H}, V];
-			  %%     false -> [{H}] ++ V
-			  %% end
+			  [{H}] ++ V 
 		  end,
 		  Dict)
-		%% dict:append(Key, {H}, Dict)
 	end,
     
-    stock_note(to_dict, T, DictNew).
+    stock_note(to_dict, K, T, DictNew).
 
 %% same style_number and brand, sort by color
-one_stock_note(sort_by_color, [], Sorts) ->
+one_stock_note(sort_by_color, _Key, [], Sorts) ->
     %% ?DEBUG("one_stock_note: ~p", [dict:to_list(Sorts)]),
     Sorts;
-one_stock_note(sort_by_color, [{H}|T], Sorts) ->
+one_stock_note(sort_by_color, Key, [{H}|T], Sorts) ->
     %% ?DEBUG("H ~p", [H]),
     %% use color to key
-    Color = ?v(<<"color">>, H),
+    %% Color = ?v(<<"color">>, H),
+    Color = ?v(Key, H),
     NewSorts = 
 	case dict:find(Color, Sorts) of
 	    error ->
@@ -1806,14 +1884,11 @@ one_stock_note(sort_by_color, [{H}|T], Sorts) ->
 	    {ok, _V} ->
 		dict:update(
 		  Color,
-		  fun(V) -> [{H}] ++ V end,
-		  %% fun(V) when is_tuple(V) -> [{H}, V];
-		  %%    (V) when is_list(V)-> [{H}] ++ V
-		  %% end,
+		  fun(V) -> [{H}] ++ V end, 
 		  Sorts)
 	end,
 
-    one_stock_note(sort_by_color, T, NewSorts).
+    one_stock_note(sort_by_color, Key, T, NewSorts).
 
 get_color(0, _Colors) ->
     <<"均色">>;

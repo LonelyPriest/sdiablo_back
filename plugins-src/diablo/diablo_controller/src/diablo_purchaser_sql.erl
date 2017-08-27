@@ -833,12 +833,17 @@ inventory(get_new_amount, _Merchant, Conditions) ->
 inventory(new_rsn_detail, _Merchant, Conditions) ->
     {_StartTime, _EndTime, NewConditions} =
 	?sql_utils:cut(fields_no_prifix, Conditions),
-    "select a.rsn, a.style_number, a.brand as brand_id"
-	", a.color as color_id, a.size, a.total as amount"
+    "select a.rsn"
+	", a.style_number"
+	", a.brand as brand_id"
+	", a.shop as shop_id"
+	", a.color as color_id"
+	", a.size"
+	", a.total as amount"
 	", b.name as color"
-	" from ("
-
-	"select rsn, style_number, brand, color, size, total"
+	
+	" from (" 
+	"select rsn, style_number, brand, shop, color, size, total"
 	" from w_inventory_new_detail_amount"
 	" where " ++ ?sql_utils:condition(proplists_suffix, NewConditions)
 	++ "deleted=" ++ ?to_s(?NO) ++ ") a"
@@ -910,15 +915,25 @@ inventory(new_rsn_groups, new, Merchant, Conditions, PageFun) ->
 
     CorrectCutDConditions = ?utils:correct_condition(<<"b.">>, CutDCondtions),
 
-    "select b.id, b.rsn, b.style_number"
+    "select b.id"
+	", b.rsn"
+	", b.style_number"
 	", b.brand as brand_id"
 	", b.type as type_id"
 	", b.sex as sex_id"
-	", b.season, b.amount, b.over"
+	", b.season"
+	", b.amount"
+	", b.over"
 	", b.firm as firm_id"
-	", b.org_price, b.ediscount"
-	", b.tag_price, b.discount"
-	", b.s_group, b.free, b.year, b.path, b.entry_date"
+	", b.org_price"
+	", b.ediscount"
+	", b.tag_price"
+	", b.discount"
+	", b.s_group"
+	", b.free"
+	", b.year"
+	", b.path"
+	", b.entry_date"
 
 	", a.shop as shop_id"
 	", a.employ as employee_id"

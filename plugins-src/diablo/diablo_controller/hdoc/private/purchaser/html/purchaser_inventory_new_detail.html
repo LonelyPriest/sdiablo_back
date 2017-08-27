@@ -204,22 +204,27 @@
 		      	<i class="glyphicon glyphicon-remove-circle"></i>
 		      </button>
 
-		      <button x-ng-if="shop_right.delete_w_stock
-				       && r.type!==9
-				       && r.state===0"
+		      <!-- <button x-ng-if="shop_right.delete_w_stock -->
+		      <!-- 		       && r.type!==9 -->
+		      <!-- 		       && r.state===0" -->
+		      <!-- 	      class="btn diablo-button blue-hoki" -->
+		      <!-- 	      x-ng-click="abandon_detail(r)">废弃 -->
+		      <!-- 	<i class="glyphicon glyphicon-ban-circle"></i> -->
+		      <!-- </button> -->
+
+		      <button x-ng-if="shop_right.print_w_stock && r.type !==9"
 			      class="btn diablo-button blue-hoki"
-		      	      x-ng-click="abandon_detail(r)">废弃
-		      	<i class="glyphicon glyphicon-ban-circle"></i>
+		      	      x-ng-click="print_detail(r)">打印
+		      	<i class="glyphicon glyphicon-print"></i>
 		      </button>
 		      
-		      <button x-ng-if="shop_right.delete_w_stock
-				       && r.type !==9
-				       && r.state === 0"
+		      <button x-ng-if="shop_right.delete_w_stock && r.type !==9 && r.state === 0"
 			      class="btn diablo-button red"
 			      x-ng-disabled="r.state===1 || r.type===9"
 		      	      x-ng-click="delete_detail(r)">删除
 		      	<i class="glyphicon glyphicon-erase"></i>
 		      </button> 
+		      
 		    </td>
 		  </tr>
 
