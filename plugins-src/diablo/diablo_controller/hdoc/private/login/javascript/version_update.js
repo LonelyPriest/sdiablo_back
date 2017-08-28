@@ -1,6 +1,11 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2017-08-28",
+         content:
+	 ["增加采购单据打印功能"]
+        },
+	
 	{date: "2017-08-27",
          content:
 	 ["修正均色均码无法扫条形码的问题",

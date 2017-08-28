@@ -21,14 +21,23 @@
       </div> 
       
       <!--BEGN portlet body--> 
-      <div class="portlet-body">
+      <div id="stock_new" class="portlet-body">
 	<!--BEGIN panel-->
-	<div id="print_table" class="panel panel-default table-panel">
-	  <div class="table-responsive"> 
-	    <!--EBGIN table -->
-	    <table class="table table-bordered
-			  table-striped table-hover
-			  table-condensed table-advanced"> 
+	<h3 style="text-align:center">
+	  <span x-ng-bind=detail.shop.name></span>
+	  <span x-ng-if="detail.type===0">（入库）</span>
+	  <span x-ng-if="detail.type===1">（退货）</span>
+	</h3>
+	<h5>
+	  <div style="text-align:center">
+	    <span>日期：<span x-ng-bind=detail.entry_date></span></span>
+	    &nbsp&nbsp&nbsp&nbsp<span>单号：<span x-ng-bind=detail.rsn></span></span>
+	    &nbsp&nbsp&nbsp&nbsp<span>厂商：<span x-ng-bind=detail.firm.name></span></span>
+	    &nbsp&nbsp&nbsp&nbsp<span>经手人：<span x-ng-bind=detail.employee.name></span></span>
+	  </div>
+	</h5>
+	<div class="table-responsive">
+	  <table class="table table-bordered table-striped" style="margin-bottom:5px"> 
 	      <thead>
 		<tr>
 		  <th class="text-center">序号</th>
@@ -52,17 +61,27 @@
 		  
 		  <td class="text-center">{{n.amount}}</td>
 		  <td class="text-center">{{n.color.cname}}</td>
-		  <td class="text-center">{{n.size}}</td>
-		</tr> 
+		  <td style="text-center">{{n.size}}</td>
+		</tr>
+		
+		<tr>
+		  <td colspan="4"></td>
+		  <td class="text-center" x-ng-bind=total></td>
+		  <td class="text-center" x-ng-bind=amount></td>
+		  <td colspan="2">
+		</tr>
 	      </tbody> 
-	      
 	    </table> <!--END table--> 
-	  </div> <!--END table responsive-->
-	  
-	</div> <!--END panel--> 
-	
-      </div> <!--END portlet body--> 
-    </div> <!--END table container-->
+	</div>
+	<h5 style="text-align:left">
+	  <p>
+	    <span>钱掌柜零售云平台</span>
+	    &nbsp&nbsp&nbsp&nbsp<span>手机（微信）：18692269329</span>
+	    &nbsp&nbsp&nbsp&nbsp<span>15292083301</span>
+	  </p>
+	</h5>
+      </div>
+    </div>
     
   </div>
  

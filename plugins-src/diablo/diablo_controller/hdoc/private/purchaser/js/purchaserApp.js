@@ -168,7 +168,7 @@ function stockConfg(angular){
 	    when('/print_inventory_new/:rsn?', {
 		templateUrl: '/private/purchaser/html/stock_new_detail_print.html',
 		controller: 'stockNewDetailPrintCtrl' ,
-		resolve: angular.extend({}, brand, firm, type, color, user)
+		resolve: angular.extend({}, brand, firm, type, color, employee, user)
 	    }).
 	    // wgood
 	    when('/good/size', {

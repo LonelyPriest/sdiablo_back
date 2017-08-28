@@ -377,19 +377,28 @@ function purchaserInventoryPriceCtrlProvide(
 
 function stockNewDetailPrintCtrlProvide(
     $scope, $routeParams, diabloUtilsService, purchaserService,
-    filterBrand, filterFirm, filterType, filterColor, user){
+    filterBrand, filterFirm, filterType, filterColor, filterEmployee, user){
     // console.log($routeParams);
     // $scope.rsn = $routeParams.rsn;
 
-    var LODOP;
-    if (needCLodop()) loadCLodop();
+    $scope.shops = user.sortShops; 
+    // console.log($scope.shops);
 
+    var LODOP;
+    if (needCLodop()) loadCLodop(); 
     var dialog = diabloUtilsService;
+    
     purchaserService.print_w_inventory_new($routeParams.rsn).then(function(result) {
     	console.log(result);
 	if (result.ecode === 0) {
 	    $scope.detail = result.detail;
+	    $scope.detail.shop = diablo_get_object($scope.detail.shop_id, $scope.shops);
+	    $scope.detail.employee = diablo_get_object($scope.detail.employee_id, filterEmployee);
+	    $scope.detail.firm = diablo_get_object($scope.detail.firm_id, filterFirm);
+	    
 	    $scope.notes = [];
+	    $scope.total  = 0;
+	    $scope.amount = 0;
 
 	    var order_id = 1;
 	    angular.forEach(result.note, function(n) {
@@ -397,9 +406,11 @@ function stockNewDetailPrintCtrlProvide(
 		n.type  = diablo_get_object(n.type_id, filterType);
 		n.order_id = order_id; 
 		$scope.notes.push(n);
+		$scope.total += n.total;
 		
 		for (var i=0, l=n.note.length; i<l; i++) {
 		    var s = n.note[i];
+		    $scope.amount += s.total;
 		    $scope.notes.push({
 			amount: s.total,
 			color:  diablo_find_color(s.color_id, filterColor),
@@ -420,18 +431,32 @@ function stockNewDetailPrintCtrlProvide(
 	}
     });
 
+    // var css = "<style>table { border-splice:0; border-collapse:collapse }</style>"
+    // var strBodyStyle="<style>table,td { border: 1 solid #000000;border-collapse:collapse }</style>"; 
+    var strBodyStyle="<style>"
+	+ ".table-response {min-height: .01%; overflow-x:auto;}"
+	+ "table {border-spacing:0; border-collapse:collapse; width:100%}"
+	+ "td,th {padding:0; border:1 solid #000000; text-align:center;}"
+	+ ".table-bordered {border:1 solid #000000;}" 
+	+ "</style>";
     $scope.print = function() {
 	if (angular.isUndefined(LODOP)) {
 	    LODOP = getLodop();
 	}
 
 	if (LODOP.VERSION) {
-	    LODOP.PRINT_INIT();
-	    LODOP.SET_PRINT_PAGESIZE(1, 0, 0,"A4");
+	    LODOP.PRINT_INIT("task_print_stock_new");
+	    LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
+	    // LODOP.SET_PRINT_PAGESIZE(1, 0, 0,"A4");
 	    LODOP.ADD_PRINT_HTM(
-		"10%", "10%",  "90%", "90%", document.getElementById("print_table").innerHTML);
-	    LODOP.PRINT_DESIGN();
+		"5%", "5%",  "90%", "BottomMargin:15mm",
+		strBodyStyle + "<body>" + document.getElementById("stock_new").innerHTML + "</body>");
+	    LODOP.PREVIEW();
 	}
+    };
+
+    $scope.go_back = function() {
+	diablo_goto_page("#/inventory_new_detail");
     };
     
 };
