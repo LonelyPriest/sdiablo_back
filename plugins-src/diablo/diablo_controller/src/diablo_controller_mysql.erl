@@ -10,6 +10,8 @@
 
 -include("../../../../deps/erlang-mysql-driver-master/include/mysql.hrl").
 -include("../../../../include/knife.hrl").
+-include("diablo_controller.hrl").
+
 
 -behaviour(gen_server).
 
@@ -25,7 +27,6 @@
 
 -export([trans/1]).
 -define(SERVER, ?MODULE).
--define(SQL_TIME_OUT, 5 * 1000).
 
 -record(state, {conn_pool = undefined}).
 

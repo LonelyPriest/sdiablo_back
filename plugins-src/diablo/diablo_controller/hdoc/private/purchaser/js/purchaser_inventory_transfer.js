@@ -606,7 +606,8 @@ function purchaserInventoryTransferFromDetailCtrlProvide (
 	//     rightAuthen.rainbow_action()['show_orgprice'],
 	//     user.right
 	// )
-	master: rightAuthen.authen_master(user.type)
+	master: rightAuthen.authen_master(user.type),
+	print:  stockUtils.authen_stock(user.type, user.right, 'print_stock_transfer')
     }; 
 
     /*
@@ -744,6 +745,16 @@ function purchaserInventoryTransferFromDetailCtrlProvide (
 	    "移仓删除确认",
 	    "移仓删除后无法恢复，确认要删除该称仓！！",
 	    callback, undefined, $scope);
+    };
+
+    $scope.print_transfer = function(r) {
+	var callback = function() {
+	    diablo_goto_page("#/print_inventory_transfer/" + r.rsn);
+	}
+	
+	dialog.request(
+	    "采购单打印", "调出单打印需要打印机支持A4纸张，确认要打印吗？",
+	    callback, undefined, undefined);
     };
 };
 

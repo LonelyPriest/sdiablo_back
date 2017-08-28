@@ -2761,14 +2761,11 @@ function purchaserInventoryNewDetailCtrlProvide (
 
     $scope.print_detail = function(r) {
 	var callback = function() {
-	    // purchaserService.print_w_inventory_new(r.rsn).then(function(state) {
-	    // 	console.log(state);
-	    // });
 	    diablo_goto_page("#/print_inventory_new/" + r.rsn);
 	}
 	
 	dialog.request(
-	    "采购单打印", "采购单打印要求纸张为A4纸，确认要打印吗？",
+	    "采购单打印", "采购单打印需要打印机支持A4纸张，确认要打印吗？",
 	    callback, undefined, undefined);
     };
 

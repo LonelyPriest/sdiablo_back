@@ -1118,38 +1118,67 @@ action(Session, Req, {"print_w_inventory_new"}, Payload) ->
 
     %% new
     {ok, Detail} = ?w_inventory:purchaser_inventory(get_new, Merchant, RSN),
-    ?DEBUG("detail ~p", [Detail]),
+    %% ?DEBUG("detail ~p", [Detail]),
     %% detail
     {ok, Transes} = ?w_inventory:purchaser_inventory(list_new_detail, Merchant, [{<<"rsn">>, RSN}]),
-    ?DEBUG("transes ~p", [Transes]),
+    %% ?DEBUG("transes ~p", [Transes]),
     %% amount
     {ok, Notes} = ?w_inventory:rsn_detail(new_rsn, Merchant, [{<<"rsn">>, RSN}]),
-    ?DEBUG("Notes ~p", [Notes]),
-
+    %% ?DEBUG("Notes ~p", [Notes]),
+    Key = {<<"style_number">>, <<"brand_id">>, <<"shop_id">>},
     DictNote = stock_note(
 		 to_dict,
-		 {<<"style_number">>, <<"brand_id">>, <<"shop_id">>},
+		 Key,
 		 Notes,
 		 dict:new()),
 
-    ?DEBUG("dict note ~p", [dict:to_list(DictNote)]),
+    %% ?DEBUG("dict note ~p", [dict:to_list(DictNote)]), 
+    Sort = print_inventory_new(sort_by_color, Key, Transes, DictNote, []),
+    %% ?DEBUG("sort ~p", [Sort]), 
+    ?utils:respond(200, object, Req,
+		   {[{<<"ecode">>, 0},
+		     {<<"detail">>, {Detail}},
+		     {<<"note">>, Sort}]});
 
-    Sort = print_inventory_new(sort_by_color, Transes, DictNote, []),
-    ?DEBUG("sort ~p", [Sort]),
+action(Session, Req, {"print_w_inventory_transfer"}, Payload) ->
+    ?DEBUG("print_stock_tranasfer: session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    RSN = ?v(<<"rsn">>, Payload),
 
+    %% new
+    {ok, Detail} = ?w_inventory:purchaser_inventory(get_transfer, Merchant, RSN),
+    ?DEBUG("detail ~p", [Detail]),
+    %% detail
+    {ok, Transes} = ?w_inventory:purchaser_inventory(trace_transfer, Merchant, [{<<"rsn">>, RSN}]),
+    %% ?DEBUG("transes ~p", [Transes]),
+    %% amount
+    {ok, Notes} = ?w_inventory:rsn_detail(transfer_rsn, Merchant, [{<<"rsn">>, RSN}]),
+    %% ?DEBUG("Notes ~p", [Notes]),
+
+    Key = {<<"style_number">>, <<"brand_id">>, <<"fshop_id">>},
+    DictNote = stock_note(
+		 to_dict,
+		 Key,
+		 Notes,
+		 dict:new()),
+
+    %% ?DEBUG("dict note ~p", [dict:to_list(DictNote)]), 
+    Sort = print_inventory_new(sort_by_color, Key, Transes, DictNote, []),
+    %% ?DEBUG("sort ~p", [Sort]), 
     ?utils:respond(200, object, Req,
 		   {[{<<"ecode">>, 0},
 		     {<<"detail">>, {Detail}},
 		     {<<"note">>, Sort}]}).
 
 
-print_inventory_new(sort_by_color, [], _DictNote, Acc) ->
+print_inventory_new(sort_by_color, _Key, [], _DictNote, Acc) ->
     Acc; 
-print_inventory_new(sort_by_color, [H|T], DictNote, Acc) ->
-    StyleNumber = ?v(<<"style_number">>, H),
-    BrandId     = ?to_b(?v(<<"brand_id">>, H)),
+print_inventory_new(sort_by_color, {K1, K2, K3} = K, [H|T], DictNote, Acc) ->
+    StyleNumber = ?v(K1, H),
+    BrandId     = ?to_b(?v(K2, H)),
+    ShopId      = ?to_b(?v(K3, H)),
+    
     TypeId      = ?v(<<"type_id">>, H), 
-    ShopId      = ?to_b(?v(<<"shop_id">>, H)),
     Season      = ?v(<<"season">>, H),
     %% Year        = ?v(<<"year">>, H), 
     %% OrgPrice    = ?v(<<"org_price">>, H),
@@ -1167,7 +1196,7 @@ print_inventory_new(sort_by_color, [H|T], DictNote, Acc) ->
 
 	    NoteDetails = 
 		dict:fold(
-		  fun(K, OneNotes, Acc1) ->
+		  fun(C, OneNotes, Acc1) ->
 			  {TotalOfColor, SizeDescs} = 
 			      lists:foldr(
 				fun({One}, {Amount, Descs}) ->
@@ -1177,7 +1206,7 @@ print_inventory_new(sort_by_color, [H|T], DictNote, Acc) ->
 					 Descs ++ ?to_s(Size) ++ ":" ++ ?to_s(OneAmount) ++ ";"} 
 				end, {0, []}, OneNotes),
 
-			  [{K, TotalOfColor, SizeDescs}|Acc1]
+			  [{C, TotalOfColor, SizeDescs}|Acc1]
 
 		  end, [], OneDict),
 
@@ -1194,9 +1223,9 @@ print_inventory_new(sort_by_color, [H|T], DictNote, Acc) ->
 			      {<<"total">>, TotalOfColor},
 				{<<"size">>, ?to_b(SizeDesc)}]}|Acc1]
 		     end, [], NoteDetails)}]},
-	    print_inventory_new(sort_by_color, T, DictNote, [N|Acc]);
+	    print_inventory_new(sort_by_color, K, T, DictNote, [N|Acc]);
 	error ->
-	    print_inventory_new(sort_by_color, T, DictNote, Acc)
+	    print_inventory_new(sort_by_color, K, T, DictNote, Acc)
     end.
 	    
 sidebar(Session) ->

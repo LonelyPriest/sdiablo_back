@@ -298,10 +298,14 @@ init([]) ->
 	 {?modify_w_inventory_new_balance,
 	  <<"修改帐户欠款">>, <<"modify_w_inventory_new_balance">>, ?right_w_inventory},
 
-	 {?reset_stock_barcode, <<"条码重置">>, <<"reset_stock_barcode">>, ?right_w_inventory},
+	 {?reset_stock_barcode,
+	  <<"条码重置">>, <<"reset_stock_barcode">>, ?right_w_inventory},
 
-	 {?print_w_inventory_new, <<"采购单打印">>, <<"print_w_inventory_new">>, ?right_w_inventory}
-	 %% {?reset_stock_barcode, <<"设置促销方案">>, <<"">>, ?right_w_inventory}
+	 {?print_w_inventory_new,
+	  <<"采购单打印">>, <<"print_w_inventory_new">>, ?right_w_inventory},
+	 
+	 {?print_w_inventory_transfer,
+	  <<"调出单打印">>, <<"print_w_inventory_transfer">>, ?right_w_inventory}	 
 	],
 
     %% firm

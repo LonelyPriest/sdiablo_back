@@ -229,6 +229,10 @@ function monthStasticCtrlProvide(
 	    }); 
 	});
     };
+
+    $scope.go_back = function() {
+	diablo_goto_page("#/wreport_daily");
+    };
 };
 
 define(["wreportApp"], function(app){

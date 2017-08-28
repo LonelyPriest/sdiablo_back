@@ -869,20 +869,15 @@ inventory(fix_rsn_detail, _Merchant, Conditions) ->
 inventory(transfer_rsn_detail, _Merchant, Conditions) ->    
     {_StartTime, _EndTime, NewConditions} =
         ?sql_utils:cut(fields_with_prifix, Conditions),
-    "select a.rsn, a.style_number, a.brand as brand_id"
-        ", a.color as color_id, a.size, a.total as amount"
-    %% ", b.name as color"
-
-        " from w_inventory_transfer_detail_amount a"
-        %% " from ("
-
-        %% "select rsn, style_number, brand, color, size, exist, fixed, metric"
-        %% " from w_inventory_fix_detail_amount"
-        %% " where " ++ ?sql_utils:condition(proplists_suffix, NewConditions)
-        %% ++ "deleted=" ++ ?to_s(?NO) ++ ") a"
-
-        %% " left join colors b on a.color=b.id"
+    "select a.rsn"
+	", a.style_number"
+	", a.brand as brand_id"
+	", a.fshop as fshop_id"
+        ", a.color as color_id"
+	", a.size"
+	", a.total as amount"
 	
+        " from w_inventory_transfer_detail_amount a" 
         " where " ++ ?utils:to_sqls(proplists, NewConditions).
 
 
@@ -957,11 +952,26 @@ inventory(new_detail, new, Merchant, Conditions, PageFun) ->
     SortConditions = sort_condition(w_inventory_new, Merchant, Conditions),
     %% {StartTime, EndTime, NewConditions} =
     %% 	?sql_utils:cut(fields_with_prifix, Conditions),
-    "select a.id, a.rsn, a.employ as employee_id"
-	", a.firm as firm_id, a.shop as shop_id"
-	", a.balance, a.should_pay, a.has_pay, a.cash, a.card, a.wire"
-	", a.verificate, a.total, a.comment, a.e_pay_type, a.e_pay"
-	", a.type, a.state, a.entry_date, a.op_date"
+    "select a.id"
+	", a.rsn"
+	", a.employ as employee_id"
+	", a.firm as firm_id"
+	", a.shop as shop_id"
+	", a.balance"
+	", a.should_pay"
+	", a.has_pay"
+	", a.cash"
+	", a.card"
+	", a.wire"
+	", a.verificate"
+	", a.total"
+	", a.comment"
+	", a.e_pay_type"
+	", a.e_pay"
+	", a.type"
+	", a.state"
+	", a.entry_date"
+	", a.op_date"
 
 	" from w_inventory_new a"
 	" where " ++ SortConditions 
@@ -1048,24 +1058,27 @@ inventory(fix_rsn_groups, fix, Merchant, Conditions, PageFun) ->
 inventory(transfer_detail, transfer, Merchant, Conditions, PageFun) ->
     {StartTime, EndTime, NewConditions} =
         ?sql_utils:cut(fields_with_prifix, Conditions),
-    "select a.id, a.rsn, a.fshop as fshop_id"
+    "select a.id"
+	", a.rsn"
+	", a.fshop as fshop_id"
         ", a.tshop as tshop_id"
         ", a.employ as employee_id"
-        ", a.total, a.comment, a.state"
-        ", a.check_date, a.entry_date"
-    %% ", b.name as employee"
-    %% ", c.name as shop"
+        ", a.total"
+	", a.comment"
+	", a.state"
+        ", a.check_date"
+	", a.entry_date"
+	
         " from w_inventory_transfer a"
 
         " where "
-        ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime)
-        ++ ?sql_utils:condition(proplists, NewConditions)
-        ++ " and merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists_suffix, NewConditions)
+	++ "merchant=" ++ ?to_s(Merchant)       
+        ++ ?sql_utils:fix_condition(time, time_with_prfix, StartTime, EndTime) 
         ++ PageFun();
 
 
-inventory(transfer_rsn_groups, transfer, Merchant, Conditions, PageFun) ->
-    
+inventory(transfer_rsn_groups, transfer, Merchant, Conditions, PageFun) -> 
     StartTime   = ?v(<<"start_time">>, Conditions),
     EndTime     = ?v(<<"end_time">>, Conditions),
     RSN         = ?v(<<"rsn">>, Conditions, []),
@@ -1075,10 +1088,7 @@ inventory(transfer_rsn_groups, transfer, Merchant, Conditions, PageFun) ->
     FShop       = ?v(<<"fshop">>, Conditions, []),
     TShop       = ?v(<<"tshop">>, Conditions, []),
     C1 = [{<<"rsn">>, RSN}, {<<"fshop">>, FShop}, {<<"tshop">>, TShop}],
-    C11 = ?utils:correct_condition(<<"a.">>, C1),
-    %% ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime)
-    %% ++ " and merchant="++ ?to_s(Merchant),
-
+    C11 = ?utils:correct_condition(<<"a.">>, C1), 
 
     C2 = [{<<"style_number">>, StyleNumber},
           {<<"brand">>, Brand},

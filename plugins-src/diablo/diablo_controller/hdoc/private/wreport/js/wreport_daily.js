@@ -597,6 +597,10 @@ function realStasticControllerProvide(
 	diablo_goto_page("#/stastic");
     };
 
+    $scope.go_month = function() {
+	diablo_goto_page("#/m_stastic");
+    };
+
     $scope.go_shift = function(){
 	diablo_goto_page("#/switch_shift");
     };

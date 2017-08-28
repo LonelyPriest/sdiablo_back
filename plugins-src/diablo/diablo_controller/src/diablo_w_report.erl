@@ -32,70 +32,70 @@
 %%%===================================================================
 
 report(total, by_shop, Merchant, Conditions) ->
-    gen_server:call(?SERVER, {total, by_shop, Merchant, Conditions}); 
+    gen_server:call(?SERVER, {total, by_shop, Merchant, Conditions}, ?SQL_TIME_OUT); 
 report(total, by_retailer, Merchant, Conditions) ->
-    gen_server:call(?SERVER, {total, by_retailer, Merchant, Conditions});
+    gen_server:call(?SERVER, {total, by_retailer, Merchant, Conditions}, ?SQL_TIME_OUT);
 report(total, by_good, Merchant, Conditions) ->
-    gen_server:call(?SERVER, {total, by_good, Merchant, Conditions}).
+    gen_server:call(?SERVER, {total, by_good, Merchant, Conditions}, ?SQL_TIME_OUT).
 
 report(by_shop, Merchant, CurrentPage, ItemsPerPage, Conditions) ->
     gen_server:call(
-      ?SERVER, {by_shop, Merchant, CurrentPage, ItemsPerPage, Conditions}); 
+      ?SERVER, {by_shop, Merchant, CurrentPage, ItemsPerPage, Conditions}, ?SQL_TIME_OUT); 
 report(by_retailer, Merchant, CurrentPage, ItemsPerPage, Conditions) ->
     gen_server:call(
-      ?SERVER, {by_retailer, Merchant, CurrentPage, ItemsPerPage, Conditions});
+      ?SERVER, {by_retailer, Merchant, CurrentPage, ItemsPerPage, Conditions}, ?SQL_TIME_OUT);
 report(by_good, Merchant, CurrentPage, ItemsPerPage, Conditions) ->
     gen_server:call(
-      ?SERVER, {by_good, Merchant, CurrentPage, ItemsPerPage, Conditions}).
+      ?SERVER, {by_good, Merchant, CurrentPage, ItemsPerPage, Conditions}, ?SQL_TIME_OUT).
 
 daily_report(total, Merchant, Conditions) ->
-    gen_server:call(?SERVER, {total_of_daily, Merchant, Conditions}).
+    gen_server:call(?SERVER, {total_of_daily, Merchant, Conditions}, ?SQL_TIME_OUT).
 daily_report(detail, Merchant, CurrentPage, ItemsPerPage, Conditions) ->
     gen_server:call(
-      ?SERVER, {detail_of_daily, Merchant, CurrentPage, ItemsPerPage, Conditions}).
+      ?SERVER, {detail_of_daily, Merchant, CurrentPage, ItemsPerPage, Conditions}, ?SQL_TIME_OUT).
 
 month_report(by_shop, Merchant, Conditions) ->
-    gen_server:call(?SERVER, {month_report_by_shop, Merchant, Conditions}).
+    gen_server:call(?SERVER, {month_report_by_shop, Merchant, Conditions}, ?SQL_TIME_OUT).
 
 switch_shift_report(total, Merchant, Conditions) ->
-    gen_server:call(?SERVER, {total_of_shift, Merchant, Conditions}).
+    gen_server:call(?SERVER, {total_of_shift, Merchant, Conditions}, ?SQL_TIME_OUT).
 switch_shift_report(detail, Merchant, CurrentPage, ItemsPerPage, Conditions) ->
     gen_server:call(
-      ?SERVER, {detail_of_shift, Merchant, CurrentPage, ItemsPerPage, Conditions}).
+      ?SERVER, {detail_of_shift, Merchant, CurrentPage, ItemsPerPage, Conditions}, ?SQL_TIME_OUT).
 
 stastic(stock_sale, Merchant, Conditions)->
-    gen_server:call(?SERVER, {stock_sale, Merchant, Conditions});
+    gen_server:call(?SERVER, {stock_sale, Merchant, Conditions}, ?SQL_TIME_OUT);
 stastic(stock_profit, Merchant, Conditions)->
-    gen_server:call(?SERVER, {stock_profit, Merchant, Conditions});
+    gen_server:call(?SERVER, {stock_profit, Merchant, Conditions}, ?SQL_TIME_OUT);
 stastic(stock_in, Merchant, Conditions)->
-    gen_server:call(?SERVER, {stock_in, Merchant, Conditions});
+    gen_server:call(?SERVER, {stock_in, Merchant, Conditions}, ?SQL_TIME_OUT);
 stastic(stock_out, Merchant, Conditions)->
-    gen_server:call(?SERVER, {stock_out, Merchant, Conditions});
+    gen_server:call(?SERVER, {stock_out, Merchant, Conditions}, ?SQL_TIME_OUT);
 stastic(stock_transfer_in, Merchant, Conditions)->
-    gen_server:call(?SERVER, {stock_transfer_in, Merchant, Conditions});
+    gen_server:call(?SERVER, {stock_transfer_in, Merchant, Conditions}, ?SQL_TIME_OUT);
 stastic(stock_transfer_out, Merchant, Conditions)->
-    gen_server:call(?SERVER, {stock_transfer_out, Merchant, Conditions});
+    gen_server:call(?SERVER, {stock_transfer_out, Merchant, Conditions}, ?SQL_TIME_OUT);
 stastic(stock_fix, Merchant, Conditions)->
-    gen_server:call(?SERVER, {stock_fix, Merchant, Conditions});
+    gen_server:call(?SERVER, {stock_fix, Merchant, Conditions}, ?SQL_TIME_OUT);
 stastic(stock_real, Merchant, Conditions) ->
-    gen_server:call(?SERVER, {stock_real, Merchant, Conditions});
+    gen_server:call(?SERVER, {stock_real, Merchant, Conditions}, ?SQL_TIME_OUT);
 stastic(recharge, Merchant, Conditions) ->
-    gen_server:call(?SERVER, {recharge, Merchant, Conditions}).
+    gen_server:call(?SERVER, {recharge, Merchant, Conditions}, ?SQL_TIME_OUT).
 
 
 stastic(current_stock_of_shop, Merchant, ShopId, CurrentDay) when is_number(ShopId) ->
-    gen_server:call(?SERVER, {current_stock_of_shop, Merchant, [ShopId], CurrentDay});
+    gen_server:call(?SERVER, {current_stock_of_shop, Merchant, [ShopId], CurrentDay}, ?SQL_TIME_OUT);
 stastic(current_stock_of_shop, Merchant, ShopIds, CurrentDay)->
-    gen_server:call(?SERVER, {current_stock_of_shop, Merchant, ShopIds, CurrentDay});
+    gen_server:call(?SERVER, {current_stock_of_shop, Merchant, ShopIds, CurrentDay}, ?SQL_TIME_OUT);
 
 stastic(last_stock_of_shop, Merchant, ShopId, CurrentDay) when is_number(ShopId) ->
-    gen_server:call(?SERVER, {last_stock_of_shop, Merchant, [ShopId], CurrentDay});
+    gen_server:call(?SERVER, {last_stock_of_shop, Merchant, [ShopId], CurrentDay}, ?SQL_TIME_OUT);
 stastic(last_stock_of_shop, Merchant, ShopIds, CurrentDay)->
-    gen_server:call(?SERVER, {last_stock_of_shop, Merchant, ShopIds, CurrentDay}).
+    gen_server:call(?SERVER, {last_stock_of_shop, Merchant, ShopIds, CurrentDay}, ?SQL_TIME_OUT).
 
 
 stock(of_day, Merchant, ShopIds, Day) ->
-    gen_server:call(?SERVER, {stock_of_day, Merchant, ShopIds, Day}).
+    gen_server:call(?SERVER, {stock_of_day, Merchant, ShopIds, Day}, ?SQL_TIME_OUT).
 
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).

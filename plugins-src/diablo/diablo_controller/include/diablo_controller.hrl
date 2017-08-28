@@ -64,6 +64,7 @@
 
 -define(FIRM_PREFIX, 1000).
 -define(ONE_DAY, (24 * 60 * 60)).
+-define(SQL_TIME_OUT, 5 * 1000).
 
 %% bill mode
 -define(CASH, 0).
@@ -252,6 +253,7 @@
 -define(update_w_inventory_alarm,           ?right_w_inventory + 25).
 -define(reset_stock_barcode,                ?right_w_inventory + 26).
 -define(print_w_inventory_new,              ?right_w_inventory + 27).
+-define(print_w_inventory_transfer,         ?right_w_inventory + 28).
 %% -define(set_stock_promotion,    ?right_w_inventory + 27).
 
 %% firm

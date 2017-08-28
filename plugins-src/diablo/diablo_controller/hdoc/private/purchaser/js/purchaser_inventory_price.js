@@ -389,7 +389,7 @@ function stockNewDetailPrintCtrlProvide(
     var dialog = diabloUtilsService;
     
     purchaserService.print_w_inventory_new($routeParams.rsn).then(function(result) {
-    	console.log(result);
+    	// console.log(result);
 	if (result.ecode === 0) {
 	    $scope.detail = result.detail;
 	    $scope.detail.shop = diablo_get_object($scope.detail.shop_id, $scope.shops);
@@ -421,7 +421,7 @@ function stockNewDetailPrintCtrlProvide(
 		order_id++; 
 	    });
 
-	    console.log($scope.notes);
+	    // console.log($scope.notes);
 	    
 	} else {
 	    dialog.response(
@@ -461,7 +461,97 @@ function stockNewDetailPrintCtrlProvide(
     
 };
 
+function stockTransferPrintCtrlProvide(
+    $scope, $routeParams, diabloUtilsService, purchaserService,
+    filterBrand, filterShop, filterType, filterColor, filterEmployee){
+    // console.log($routeParams);
+    // $scope.rsn = $routeParams.rsn;
+
+    $scope.shops = filterShop; 
+    // console.log($scope.shops);
+
+    var LODOP;
+    if (needCLodop()) loadCLodop(); 
+    var dialog = diabloUtilsService;
+    
+    purchaserService.print_w_inventory_transfer($routeParams.rsn).then(function(result) {
+    	// console.log(result);
+	if (result.ecode === 0) {
+	    $scope.detail = result.detail;
+	    $scope.detail.fshop = diablo_get_object($scope.detail.fshop_id, $scope.shops);
+	    $scope.detail.tshop = diablo_get_object($scope.detail.tshop_id, $scope.shops);
+	    $scope.detail.employee = diablo_get_object($scope.detail.employee_id, filterEmployee);
+	    
+	    $scope.notes = [];
+	    $scope.total  = 0;
+	    $scope.amount = 0;
+
+	    var order_id = 1;
+	    angular.forEach(result.note, function(n) {
+		n.brand = diablo_get_object(n.brand_id, filterBrand);
+		n.type  = diablo_get_object(n.type_id, filterType);
+		n.order_id = order_id; 
+		$scope.notes.push(n);
+		$scope.total += n.total;
+		
+		for (var i=0, l=n.note.length; i<l; i++) {
+		    var s = n.note[i];
+		    $scope.amount += s.total;
+		    $scope.notes.push({
+			amount: s.total,
+			color:  diablo_find_color(s.color_id, filterColor),
+			size:   s.size
+		    });
+		}
+
+		order_id++; 
+	    });
+
+	    // console.log($scope.notes);
+	    
+	} else {
+	    dialog.response(
+		false,
+		"调出单打印",
+		"调出单单打印失败：获取调出单失败，请核对后再打印！！")
+	}
+    });
+
+    // var css = "<style>table { border-splice:0; border-collapse:collapse }</style>"
+    // var strBodyStyle="<style>table,td { border: 1 solid #000000;border-collapse:collapse }</style>"; 
+    var strBodyStyle="<style>"
+	+ ".table-response {min-height: .01%; overflow-x:auto;}"
+	+ "table {border-spacing:0; border-collapse:collapse; width:100%}"
+	+ "td,th {padding:0; border:1 solid #000000; text-align:center;}"
+	+ ".table-bordered {border:1 solid #000000;}" 
+	+ "</style>";
+    $scope.print = function() {
+	if (angular.isUndefined(LODOP)) {
+	    LODOP = getLodop();
+	}
+
+	if (LODOP.VERSION) {
+	    LODOP.PRINT_INIT("task_print_stock_new");
+	    LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
+	    // LODOP.SET_PRINT_PAGESIZE(1, 0, 0,"A4");
+	    LODOP.ADD_PRINT_HTM(
+		"5%", "5%",  "90%", "BottomMargin:15mm",
+		strBodyStyle
+		    + "<body>"
+		    + document.getElementById("stock_transfer").innerHTML
+		    + "</body>");
+	    LODOP.PREVIEW();
+	}
+    };
+
+    $scope.go_back = function() {
+	diablo_goto_page("#/inventory/inventory_transfer_from_detail");
+    };
+    
+};
+
 define(["purchaserApp"], function(app){
     app.controller("purchaserInventoryPriceCtrl", purchaserInventoryPriceCtrlProvide);
     app.controller("stockNewDetailPrintCtrl", stockNewDetailPrintCtrlProvide);
+    app.controller("stockTransferPrintCtrl", stockTransferPrintCtrlProvide);
 });

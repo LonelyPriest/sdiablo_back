@@ -1,0 +1,89 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="portlet box purple table-panel">
+      
+      <div class="portlet-title">
+	<div class="caption">
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>
+	  店铺调出单打印
+	</div>
+	
+	<div class="actions"> 
+	  <button class="btn red" type="button"
+		  x-ng-click="go_back()">返回
+	    <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
+
+	  <button class="btn green" type="button"
+		  x-ng-click="print()">打印
+	    <i class="glyphicon glyphicon-print"></i></button>
+	  
+	</div> 
+      </div> 
+      
+      <!--BEGN portlet body--> 
+      <div id="stock_transfer" class="portlet-body">
+	<!--BEGIN panel-->
+	<h3 style="text-align:center">
+	  <span x-ng-bind=detail.fshop.name></span>
+	  <span>&gt;</span>
+	  <span x-ng-bind=detail.tshop.name></span>
+	</h3>
+	<h5>
+	  <div style="text-align:center">
+	    <span>日期：<span x-ng-bind=detail.entry_date></span></span>
+	    &nbsp&nbsp&nbsp&nbsp<span>单号：<span x-ng-bind=detail.rsn></span></span>
+	    &nbsp&nbsp&nbsp&nbsp<span>经手人：<span x-ng-bind=detail.employee.name></span></span>
+	  </div>
+	</h5>
+	<div class="table-responsive">
+	  <table class="table table-bordered table-striped" style="margin-bottom:5px"> 
+	      <thead>
+		<tr>
+		  <th class="text-center">序号</th>
+		  <th class="text-center">货号</th>
+		  <th class="text-center">品名</th>
+		  <th class="text-center">类型</th>
+		  <th class="text-center">小计</th>
+		  <th class="text-center">数量</th>
+		  <th class="text-center">颜色</th>
+		  <th class="text-center">尺码</th> 
+		</tr>
+	      </thead>
+	      
+	      <tbody>
+		<tr x-ng-repeat="n in notes"> 
+		  <td class="text-center">{{n.order_id}}</td>
+		  <td class="text-center">{{n.style_number}}</td>
+		  <td class="text-center">{{n.brand.name}}</td>
+		  <td class="text-center">{{n.type.name}}</td>
+		  <td class="text-center">{{n.total}}</td>
+		  
+		  <td class="text-center">{{n.amount}}</td>
+		  <td class="text-center">{{n.color.cname}}</td>
+		  <td style="text-center">{{n.size}}</td>
+		</tr>
+		
+		<tr>
+		  <td colspan="4"></td>
+		  <td class="text-center" x-ng-bind=total></td>
+		  <td class="text-center" x-ng-bind=amount></td>
+		  <td colspan="2">
+		</tr>
+	      </tbody> 
+	    </table> <!--END table--> 
+	</div>
+	<h5 style="text-align:left">
+	  <p>
+	    <span>钱掌柜零售云平台</span>
+	    &nbsp&nbsp&nbsp&nbsp<span>手机（微信）：18692269329</span>
+	    &nbsp&nbsp&nbsp&nbsp<span>15292083301</span>
+	  </p>
+	</h5>
+      </div>
+    </div>
+    
+  </div>
+ 
+</div>
+
+

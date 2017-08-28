@@ -165,10 +165,15 @@ function stockConfg(angular){
 		    {}, user, brand, firm, s_group, color, base)
 	    }).
 	    // print
-	    when('/print_inventory_new/:rsn?', {
+	    when('/print_inventory_new/:rsn', {
 		templateUrl: '/private/purchaser/html/stock_new_detail_print.html',
 		controller: 'stockNewDetailPrintCtrl' ,
 		resolve: angular.extend({}, brand, firm, type, color, employee, user)
+	    }).
+	    when('/print_inventory_transfer/:rsn', {
+		templateUrl: '/private/purchaser/html/stock_transfer_print.html',
+		controller: 'stockTransferPrintCtrl' ,
+		resolve: angular.extend({}, brand, shop, type, color, employee)
 	    }).
 	    // wgood
 	    when('/good/size', {
@@ -719,6 +724,10 @@ function stockConfg(angular){
 	 */
 	this.print_w_inventory_new = function(rsn) {
 	    return http.save({operation: "print_w_inventory_new"}, {rsn: rsn}).$promise;
+	};
+
+	this.print_w_inventory_transfer = function(rsn) {
+	    return http.save({operation: "print_w_inventory_transfer"}, {rsn: rsn}).$promise;
 	};
 	
     });
