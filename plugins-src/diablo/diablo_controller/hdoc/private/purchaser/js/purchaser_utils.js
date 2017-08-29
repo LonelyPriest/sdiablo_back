@@ -793,7 +793,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 	    if (this.stock.specs.length !== 0 && this.size.toString() !== diablo_free_size) {
 		for (var i=0, l=this.stock.specs.length; i<l; i++) {
 		    if (this.size.toString() === this.stock.specs[i].name) {
-			size += "  " + this.stock.specs[i].spec;
+			size += " (" + this.stock.specs[i].spec + ")";
 		    }
 		}
 	    };

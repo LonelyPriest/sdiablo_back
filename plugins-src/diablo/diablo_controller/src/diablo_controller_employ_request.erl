@@ -46,6 +46,17 @@ action(Session, Req, {"delete_employe", EmployId}) ->
 	    ?utils:respond(200, Req, ?succ(delete_employ, EmployId));
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"recover_employe", EmployId}) ->
+    ?DEBUG("recover employ with session ~p, id ~p", [Session, EmployId]),
+    Merchant = ?session:get(merchant, Session),
+    case ?employ:employ(recover, Merchant, EmployId) of
+	{ok, EmployId} ->
+	    ?w_user_profile:update(employee, Merchant),
+	    ?utils:respond(200, Req, ?succ(delete_employ, EmployId));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
     end.
 
 

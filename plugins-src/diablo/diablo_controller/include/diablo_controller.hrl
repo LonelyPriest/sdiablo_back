@@ -187,10 +187,11 @@
 -define(update_shop_charge,  ?right_shop + 16).
 
 %% employ
--define(new_employe,    ?right_employe + 1).
--define(del_employe,    ?right_employe + 2).
--define(update_employe, ?right_employe + 3).
--define(list_employe,   ?right_employe + 4).
+-define(new_employe,     ?right_employe + 1).
+-define(del_employe,     ?right_employe + 2).
+-define(update_employe,  ?right_employe + 3).
+-define(list_employe,    ?right_employe + 4).
+-define(recover_employe, ?right_employe + 5).
 
 %% right
 -define(new_role,       ?right_right + 1).

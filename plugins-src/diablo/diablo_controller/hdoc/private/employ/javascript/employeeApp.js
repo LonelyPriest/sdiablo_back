@@ -72,6 +72,11 @@ function employeeConfig(angular){
 		{operation: "delete_employe", id: one.id}
 	    )};
 
+	this.recover = function(one){
+	    return employ.delete(
+		{operation: "recover_employe", id: one.id}
+	    )};
+
 	this.edit = function(one){
 	    return employ.save(
 		{operation: "update_employe", id: one.id}, one).$promise;
@@ -86,7 +91,7 @@ function employeeConfig(angular){
 	
 	$scope.refresh = function(){
 	    employService.list().$promise.then(function(employees){
-		console.log(employees)
+		// console.log(employees)
 		angular.forEach(employees, function(e){
 		    e.sex = diablo_sex2object[e.sex];
 		    e.shop = diablo_get_object(e.shop_id, $scope.shops);
@@ -183,6 +188,29 @@ function employeeConfig(angular){
 	    
 	    diabloUtilsService.request(
 		"删除员工", "确定要删除该员工吗？", callback, undefined, $scope);
+	};
+
+	// recover
+	$scope.recover_employ = function(employ){
+	    var callback = function(){
+		employService.recover(employ).$promise.then(function(state){
+    		    console.log(state);
+    		    if (state.ecode == 0){
+			diabloUtilsService.response_with_callback(
+			    true, "恢复员工",
+			    "恭喜你，员工 [" + employ.name + "] 恢复成功！！", $scope,
+			    function(){employ.state=0}
+			);
+    		    } else{
+			diabloUtilsService.response(
+			    false, "恢复员工",
+			    "恢复员工失败：" + employService.error[state.ecode]);
+    		    }
+    		})
+	    };
+	    
+	    diabloUtilsService.request(
+		"恢复员工", "确定要恢复该员工吗？", callback, undefined, undefined);
 	};
 	
 	$scope.employ_delete_submit = function(){

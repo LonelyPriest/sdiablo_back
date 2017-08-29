@@ -200,7 +200,9 @@ init([]) ->
 	 {?update_employe,
 	  <<"修改员工">>, <<"update_employe">>, ?right_employe},
 	 {?list_employe,
-	  <<"查询员工">>, <<"list_employe">>,   ?right_employe}
+	  <<"查询员工">>, <<"list_employe">>,   ?right_employe},
+	 {?recover_employe,
+	  <<"恢复员工">>, <<"recover_employe">>,   ?right_employe}
 	],
 
     Right =
@@ -305,7 +307,7 @@ init([]) ->
 	  <<"采购单打印">>, <<"print_w_inventory_new">>, ?right_w_inventory},
 	 
 	 {?print_w_inventory_transfer,
-	  <<"调出单打印">>, <<"print_w_inventory_transfer">>, ?right_w_inventory}	 
+	  <<"调出单打印">>, <<"print_w_inventory_transfer">>, ?right_w_inventory}
 	],
 
     %% firm

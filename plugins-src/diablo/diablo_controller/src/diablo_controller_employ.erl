@@ -37,7 +37,9 @@ employ(list, Merchant) ->
     employ(list, Merchant, []).
 
 employ(delete, Merchant, EmployeeId) ->
-    gen_server:call(?MODULE, {delete_employee, Merchant, EmployeeId}); 
+    gen_server:call(?MODULE, {delete_employee, Merchant, EmployeeId});
+employ(recover, Merchant, EmployeeId) ->
+    gen_server:call(?MODULE, {recover_employee, Merchant, EmployeeId});
 employ(list, Merchant, Conditions) ->
     gen_server:call(?MODULE, {list_employee, Merchant, Conditions}).
 
@@ -113,6 +115,18 @@ handle_call({delete_employee, Merchant, EmployeeId}, _From, State) ->
     Sql = "update employees set deleted=1 where id=" ++ ?to_s(EmployeeId)
 	++ " and merchant=" ++ ?to_s(Merchant),
     
+    case ?mysql:fetch(write, Sql) of
+	{ok, _} ->
+	    {reply, {ok, EmployeeId}, State};
+	{error, {_, Err}} ->
+	    {reply, {error, ?err(db_error, Err), State}}
+    end;
+
+handle_call({recover_employee, Merchant, EmployeeId}, _From, State) ->
+    ?DEBUG("recover_employee with merchant ~p, employeeId ~p", [Merchant, EmployeeId]), 
+    Sql = "update employees set deleted=0 where id=" ++ ?to_s(EmployeeId)
+	++ " and merchant=" ++ ?to_s(Merchant),
+
     case ?mysql:fetch(write, Sql) of
 	{ok, _} ->
 	    {reply, {ok, EmployeeId}, State};
