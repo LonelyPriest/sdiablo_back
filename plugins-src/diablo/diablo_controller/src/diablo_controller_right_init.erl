@@ -341,7 +341,9 @@ init([]) ->
 	 {?export_w_firm,
 	  <<"厂商导出">>, <<"export_w_firm">>,  ?right_w_firm},
 	 {?analysis_profit_w_firm, 
-	  <<"厂商盈利分析">>, <<"analysis_profit_w_firm">>,  ?right_w_firm}
+	  <<"厂商盈利分析">>, <<"analysis_profit_w_firm">>,  ?right_w_firm},
+	 {?export_firm_profit, 
+	  <<"导出厂商盈利分析">>, <<"export_firm_profit">>,  ?right_w_firm}
 	], 
     
     %% print

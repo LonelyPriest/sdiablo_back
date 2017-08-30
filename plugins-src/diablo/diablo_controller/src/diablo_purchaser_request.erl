@@ -7,7 +7,7 @@
 
 -export([action/2, action/3, action/4]).
 -export([authen/2, authen_shop_action/2, filter_condition/3, season/1]).
--export([get_color/2]).
+-export([get_color/2, mode/1]).
 
 -define(d, ?utils:seperator(csv)).
 

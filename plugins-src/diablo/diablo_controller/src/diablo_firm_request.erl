@@ -224,8 +224,7 @@ action(Session, Req, {"export_w_firm"}, Payload) ->
     case ?supplier:supplier(w_list, Merchant) of
 	[] -> ?utils:respond(200, Req, ?err(wsale_export_none, Merchant));
 	{ok, Firms} ->
-	    {ok, ExportFile, Url}
-		= ?utils:create_export_file("firm", Merchant, UserId),
+	    {ok, ExportFile, Url} = ?utils:create_export_file("firm", Merchant, UserId),
 
 	    case file:open(ExportFile, [append, raw]) of
 		{ok, Fd} ->
@@ -260,11 +259,15 @@ action(Session, Req, {"analysis_profit_w_firm"}, Payload) ->
     CurrentPage = ?v(<<"page">>, Payload, 1),
     ItemsPerpage = ?v(<<"count">>, Payload, ?DEFAULT_ITEMS_PERPAGE),
 
+    {struct, Mode}     = ?v(<<"mode">>, Payload),
+    Order = ?v(<<"mode">>, Mode),
+    Sort  = ?v(<<"sort">>, Mode),
+
     {_, _, ConditionsWithOutTime} = ?sql_utils:cut(non_prefix, Conditions),
 
-    FF = fun (V) when V =:= <<>> -> 0;
-	     (Any)  -> ?to_f(Any)
-	 end,
+    %% FF = fun (V) when V =:= <<>> -> 0;
+    %% 	     (Any)  -> ?to_f(Any)
+    %% 	 end,
     
     try
 	{Total, Others} = 
@@ -290,12 +293,12 @@ action(Session, Req, {"analysis_profit_w_firm"}, Payload) ->
 				       {<<"sale">>, []},
 				       {<<"stockin">>, []},
 				       {<<"stockout">>, []},
-				       {<<"stockall">>, []},
+				       %% {<<"stockall">>, []},
 				       {<<"balance">>, []}
 				      ]});
 	    false ->
 		{ok, Firms} = ?supplier:supplier(
-				 page_list,
+				 {page_list, ?w_inventory_request:mode(Order), Sort},
 				 Merchant,
 				 ConditionsWithOutTime,
 				 CurrentPage,
@@ -308,7 +311,7 @@ action(Session, Req, {"analysis_profit_w_firm"}, Payload) ->
 		{ok, Sales} = ?supplier:profit(profit, sale_of_firm, Merchant, NConditions),
 		{ok, StockIn} = ?supplier:profit(profit, stock_in_of_firm, Merchant, NConditions),
 		{ok, StockOut} = ?supplier:profit(profit, stock_out_of_firm, Merchant, NConditions),
-		{ok, StockAll} = ?supplier:profit(profit, stock_all, Merchant, NConditions),
+		%% {ok, StockAll} = ?supplier:profit(profit, stock_all, Merchant, NConditions),
 		{ok, StockBalance} = ?supplier:profit(profit, balance, Merchant, NConditions),
 
 		SS = 
@@ -319,11 +322,11 @@ action(Session, Req, {"analysis_profit_w_firm"}, Payload) ->
 				 {<<"veri">>,    ?v(<<"verificate">>, S)},
 				 {<<"epay">>,    ?v(<<"e_pay">>, S)},
 				 {<<"balance">>,
-				  ?to_f(FF(?v(<<"balance">>, S, 0))
-					+ FF(?v(<<"should_pay">>, S, 0))
-					+ FF(?v(<<"e_pay">>, S, 0))
-					- FF(?v(<<"has_pay">>, S, 0))
-					- FF(?v(<<"verificate">>, S, 0)))
+				  ?to_f(to_f(?v(<<"balance">>, S, 0))
+					+ to_f(?v(<<"should_pay">>, S, 0))
+					+ to_f(?v(<<"e_pay">>, S, 0))
+					- to_f(?v(<<"has_pay">>, S, 0))
+					- to_f(?v(<<"verificate">>, S, 0)))
 				 }]}|Acc] 
 		      end, [], StockBalance),
 
@@ -336,14 +339,100 @@ action(Session, Req, {"analysis_profit_w_firm"}, Payload) ->
 				 {<<"sale">>, Sales},
 				 {<<"stockin">>, StockIn},
 				 {<<"stockout">>, StockOut},
-				 {<<"stockall">>, StockAll},
+				 %% {<<"stockall">>, StockAll},
 				 {<<"balance">>, SS},
 				 {<<"other">>, Others}
 				]})
 	end
     catch
 	_:{badmatch, {error, Error}} -> ?utils:respond(200, Req, Error) 
-    end.
+    end;
+
+action(Session, Req, {"export_firm_profit"}, Payload) ->
+    ?DEBUG("export_firm_profit: session ~p, payload ~p", [Session, Payload]),
+    Merchant    = ?session:get(merchant, Session),
+    UserId      = ?session:get(id, Session),
+    
+    {struct, Conditions} = ?v(<<"condition">>, Payload), 
+    {struct, Mode}     = ?v(<<"mode">>, Payload),
+
+    {_, _, ConditionsWithOutTime} = ?sql_utils:cut(non_prefix, Conditions),
+    Order = ?v(<<"mode">>, Mode),
+    Sort  = ?v(<<"sort">>, Mode),
+
+    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
+    ExportFormat = ?to_i(?v(<<"export_code">>, BaseSetting, 0)), 
+    ShowOrgPrice = 
+	case ?right_auth:authen(?stock_show_orgprice, Session) of
+	    {ok, ?stock_show_orgprice} -> true;
+	    _ -> false
+	end,
+    
+    SelectFun =
+	fun(Firm, Objs) when is_list(Objs) ->
+		case 
+		    lists:filter(
+		      fun({O}) -> 
+			      ?v(<<"firm_id">>, O) =:= Firm
+		      end, Objs)
+		of
+		    [] -> [];
+		    [{V}] -> V
+		end;
+	   (_Firm, _) -> []
+	end,
+    
+    {ok, Firms} = ?supplier:supplier(
+		     {page_list, ?w_inventory_request:mode(Order), Sort},
+		     Merchant,
+		     ConditionsWithOutTime),
+    FirmIds = lists:foldr(fun({Firm}, Acc) ->
+				  [?v(<<"id">>, Firm)|Acc]
+			  end, [], Firms), 
+    NConditions = [{<<"firm">>, FirmIds}|Conditions],
+
+    {ok, Sales} = ?supplier:profit(profit, sale_of_firm, Merchant, NConditions),
+    %% ?DEBUG("sales ~p", [Sales]),
+    {ok, StocksIn} = ?supplier:profit(profit, stock_in_of_firm, Merchant, NConditions),
+    %% ?DEBUG("stocksIn ~p", [StocksIn]),
+    {ok, StocksOut} = ?supplier:profit(profit, stock_out_of_firm, Merchant, NConditions),
+    %% ?DEBUG("stocksOut ~p", [StocksOut]),
+    {ok, StocksBalance} = ?supplier:profit(profit, balance, Merchant, NConditions),
+    %% ?DEBUG("stocksBalance ~p", [StocksBalance]),
+    
+
+    {ok, File, Url} = ?utils:create_export_file("pfirm", Merchant, UserId),
+    
+    case file:open(File, [append, raw]) of
+	{ok, Fd} ->
+	    try
+		DoFun = fun(C) -> ?utils:write(Fd, C) end,
+		csv_head(pfirm, DoFun, {ExportFormat, ShowOrgPrice}),
+		do_write(pfirm,
+			 DoFun,
+			 SelectFun,
+			 1,
+			 Firms,
+			 {Sales, StocksIn, StocksOut, StocksBalance},
+			 {ExportFormat, ShowOrgPrice}),
+		
+		ok = file:datasync(Fd),
+		ok = file:close(Fd)
+	    catch
+		T:W -> 
+		    file:close(Fd),
+		    ?DEBUG("trace export:T ~p, W ~p~n~p",
+			   [T, W, erlang:get_stacktrace()]),
+		    ?utils:respond(
+		       200, Req, ?err(wsale_export_error, W)) 
+	    end,
+	    ?utils:respond(200, object, Req,
+			   {[{<<"ecode">>, 0},
+			     {<<"url">>, ?to_b(Url)}]}); 
+	{error, Error} ->
+	    ?utils:respond(200, Req, ?err(wsale_export_error, Error))
+    end. 
+
 
 sidebar(Session) -> 
     NewFirm =
@@ -381,7 +470,7 @@ sidebar(Session) ->
     FirmProfit = 
 	case ?right_auth:authen(?analysis_profit_w_firm, Session) of
 	    {ok, ?analysis_profit_w_firm} ->
-		[{"firm_profit", "厂商进销存", "glyphicon glyphicon-font"}];
+		[{"firm_profit", "进销存分析", "glyphicon glyphicon-font"}];
 	    _ ->
 		[]
 	end,
@@ -417,7 +506,7 @@ csv_head(firm, Do) ->
 do_write(firm, _Do, _Count, []) ->
     ok;
 do_write(firm, Do, Count, [{H}|T]) ->
-    ?DEBUG("firm ~p", [H]),
+    %% ?DEBUG("firm ~p", [H]),
     Id       = ?v(<<"id">>, H),
     Name     = ?v(<<"name">>, H),
     Balance  = ?v(<<"balance">>, H),
@@ -437,3 +526,115 @@ do_write(firm, Do, Count, [{H}|T]) ->
 	++ ?to_s(Datetime) ++ ?d, 
     Do(?utils:to_utf8(from_latin1, L)),
     do_write(firm, Do, Count + 1, T).
+
+
+
+csv_head(pfirm, Do, {Format, ShowOrgPrice}) ->
+    H = case ShowOrgPrice of
+	    true ->
+		"序号,厂商,已付,核销,费用,欠款,入库数量,入库成本,退货数量,退货成本,销售数量,销售成本,当前库存,库存成本";
+	    false ->
+		"序号,厂商,入库数量,退货数量,销售数量,当前库存"
+	end,
+
+    L = case Format of
+	    0 -> ?utils:to_utf8(from_latin1, H);
+	    1 -> ?utils:to_gbk(from_latin1, H)
+	end,
+    Do(L).
+
+do_write(pfirm, _Do, _Select, _Count, [], _Info, _Format) ->
+    ok;
+do_write(pfirm, Do, Select, Count, [{H}|T],
+	 {Sales, StocksIn, StocksOut, StocksBalance},
+	 {Format, ShowOrgPrice}) ->
+    FirmId = ?v(<<"id">>, H),
+    Firm   = ?v(<<"name">>, H),
+    %% ?DEBUG("Firm: ~p", [FirmId]),
+
+    Sale     = Select(FirmId, Sales),
+    %% ?DEBUG("Sale: ~p", [Sale]),
+    
+    SIn      = Select(FirmId, StocksIn),
+    %% ?DEBUG("StockIn: ~p", [SIn]),
+    
+    SOut     = Select(FirmId, StocksOut),
+    %% ?DEBUG("StockOut: ~p", [SOut]),
+    
+    SBalance = Select(FirmId, StocksBalance),
+    %% ?DEBUG("SBalance: ~p", [SBalance]), 
+
+    Balance = ?v(<<"balance">>, SBalance, 0),
+    ShouldPay = ?v(<<"should_pay">>, SBalance, 0),
+    EPay    = ?v(<<"e_pay">>, SBalance, 0), 
+    HasPay  = ?v(<<"has_pay">>, SBalance, 0),
+    Veri    = ?v(<<"verificate">>, SBalance, 0), 
+    AccBalance = ?to_f(Balance + ShouldPay + EPay - HasPay - Veri),
+
+    StockIn     = ?v(<<"amount">>, SIn, 0),
+    StockInCost = ?v(<<"cost">>, SIn, 0),
+
+    StockOut     = ?v(<<"amount">>, SOut, 0),
+    StockOutCost = ?v(<<"cost">>, SOut, 0),
+
+    Sell     = ?v(<<"total">>, Sale, 0),
+    SellCost = ?v(<<"cost">>, Sale, 0),
+
+    StockExist = ?v(<<"amount">>, H, 0),
+    StockExistCost = ?v(<<"cost">>, H, 0),
+
+    %% ?DEBUG("AccBalance ~p, StockIn ~p, StockInCost ~p, StockOut ~p, StockOutCost ~p"
+    %% 	   ", Sell ~p, SellCost ~p, StockExist ~p, StockExistCost ~p",
+    %% 	  [AccBalance, StockIn, StockInCost, StockOut, StockOutCost, Sell, SellCost,
+    %% 	   StockExist, StockExistCost]),
+    L = "\r\n"
+	++ ?to_s(Count) ++ ?d
+	++ ?to_s(Firm) ++ ?d
+	++ case ShowOrgPrice of
+	       true ->
+		   ?to_s(HasPay) ++ ?d
+		       ++ ?to_s(Veri) ++ ?d
+		       ++ ?to_s(EPay) ++ ?d
+		       ++ ?to_s(AccBalance) ++ ?d;
+	       false -> []
+	   end
+	
+	++ ?to_s(StockIn) ++ ?d
+	++ case ShowOrgPrice of
+	       true -> ?to_s(StockInCost) ++ ?d;
+	       false -> []
+	   end 
+	++ ?to_s(StockOut) ++ ?d
+
+	++ case ShowOrgPrice of
+	       true -> ?to_s(StockOutCost) ++ ?d;
+	       false -> []
+	   end 
+	
+	++ ?to_s(Sell) ++ ?d
+	++ case ShowOrgPrice of
+	       true -> ?to_s(SellCost) ++ ?d;
+	       false -> []
+	   end 
+
+	++ ?to_s(StockExist) ++ ?d
+	++ case ShowOrgPrice of
+	       true -> ?to_s(StockExistCost) ++ ?d;
+	       false -> []
+	   end,
+
+    Line = case Format of
+	    0 -> ?utils:to_utf8(from_latin1, L);
+	    1 -> ?utils:to_gbk(from_latin1, L)
+	end,
+
+    Do(Line), 
+    do_write(pfirm, Do, Select, Count + 1, T,
+	     {Sales -- Sale,
+	      StocksIn -- SIn,
+	      StocksOut -- SOut,
+	      StocksBalance -- SBalance},
+	     {Format, ShowOrgPrice}).
+
+to_f(<<>>) -> 0;
+to_f(V) -> ?to_f(V).

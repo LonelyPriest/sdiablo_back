@@ -74,10 +74,12 @@
 		    <th>入库成本</th>
 		    <th>退货数量</th>
 		    <th>退货成本</th>
-		    <th>销售数量</th>
+		    <th x-ng-click="use_order(order_fields.sell)">销售数量
+		      <i class="glyphicon glyphicon-triangle-bottom fg-red"></i></th>
 		    <th>销售成本</th>
-		    <th>当前库存</th>
-		    <th>库存成本</th> 
+		    <th x-ng-click="use_order(order_fields.amount)">当前库存
+		      <i class="glyphicon glyphicon-triangle-bottom fg-red"></i></th>
+		    <th>库存成本</th>
 		  </tr>
 		</thead>
 		<tbody>
@@ -99,8 +101,8 @@
 		    <td x-ng-bind=a.sale.total></td>
 		    <td x-ng-bind=a.sale.cost></td>
 
-		    <td x-ng-bind=a.stockAll.amount></td>
-		    <td x-ng-bind=a.stockAll.cost></td>
+		    <td x-ng-bind=a.firm.amount></td>
+		    <td x-ng-bind=a.firm.cost></td>
 		  </tr>
 
 		  <tr x-ng-if="total_items!==0" class="bg-white">

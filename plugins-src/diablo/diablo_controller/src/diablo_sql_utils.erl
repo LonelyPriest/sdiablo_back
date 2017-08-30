@@ -115,6 +115,11 @@ condition(page_desc, {use_consume, Sort}, CurrentPage, ItemsPerPage) ->
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
     	++ ", " ++ ?to_s(ItemsPerPage).
 
+mode(Mode, Sort) ->
+    " order by " ++ mode(Mode) ++ " " ++ sort(Sort).
+mode(use_sell) -> "sell";
+mode(use_amount) -> "amount".
+
 sort(0) -> "desc";
 sort(1) -> "asc".
     

@@ -357,7 +357,8 @@ function firmAnalysisProfitCtrlProvide(
     $scope.max_page_size = diablo_max_page_size();
     $scope.default_page  = 1; 
     $scope.current_page  = $scope.default_page;
-    $scope.total_items   = 0;
+    $scope.total_items   = 0; 
+    $scope.order_fields  = {sell:1, amount:5}; 
     
     $scope.filters = [];
     diabloFilter.reset_field(); 
@@ -365,7 +366,7 @@ function firmAnalysisProfitCtrlProvide(
     diabloFilter.add_field("firm",    $scope.firms);
     
     $scope.filter = diabloFilter.get_filter();
-    $scope.prompt = diabloFilter.get_prompt();
+    $scope.prompt = diabloFilter.get_prompt(); 
 
     var select_by_firm = function(firmId, stastics){
 	if (!angular.isArray(stastics)) return {};
@@ -377,10 +378,20 @@ function firmAnalysisProfitCtrlProvide(
 	if (filter.length === 1) return filter[0];
 	return {};
     };
+
+    $scope.mode = $scope.order_fields.sell;
+    $scope.sort = 0;
+    
+    $scope.use_order = function(mode) {
+	$scope.mode = mode;
+	$scope.sort = $scope.sort === 0 ? 1 : 0; 
+	$scope.do_search($scope.current_page);
+    }
     
     $scope.do_search = function(page){
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
 	    firmService.analysis_profit_w_firm(
+		{mode:$scope.mode, sort:$scope.sort},
 		$scope.match, search, page, $scope.items_perpage
 	    ).then(function(result){
 		console.log(result);
@@ -394,7 +405,7 @@ function firmAnalysisProfitCtrlProvide(
 		    var sale         = result.sale;
 		    var stockIn      = result.stockin;
 		    var stockOut     = result.stockout;
-		    var stockAll     = result.stockall;
+		    // var stockAll     = result.stockall;
 		    var stockBalance = result.balance;
 
 		    $scope.analysises = []; 
@@ -403,7 +414,7 @@ function firmAnalysisProfitCtrlProvide(
 			s.sale         = select_by_firm(f.id, sale);
 			s.stockIn      = select_by_firm(f.id, stockIn);
 			s.stockOut     = select_by_firm(f.id, stockOut);
-			s.stockAll     = select_by_firm(f.id, stockAll);
+			// s.stockAll     = select_by_firm(f.id, stockAll);
 			s.stockBalance = select_by_firm(f.id, stockBalance);
 			$scope.analysises.push(s);
 		    });
@@ -426,6 +437,28 @@ function firmAnalysisProfitCtrlProvide(
     };
 
     $scope.do_search($scope.current_page);
+
+    var dialog = diabloUtilsService;
+    $scope.export_firm_profit = function() {
+	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+	    firmService.export_firm_profit(
+		{mode:$scope.mode, sort:$scope.sort}, search
+	    ).then(function(state){
+		if (state.ecode === 0){
+		    dialog.response_with_callback(
+			true,
+			"文件导出成功",
+			"创建文件成功，请点击确认下载！！",
+			undefined,
+			function(){window.location.href = state.url;})
+		} else {
+		    dialog.response(
+			false, "文件导出失败", "创建文件失败："
+			    + firmService.error[state.ecode]);
+		}
+	    })
+	}); 
+    };
 };
     
 define(["firmApp"], function(app){

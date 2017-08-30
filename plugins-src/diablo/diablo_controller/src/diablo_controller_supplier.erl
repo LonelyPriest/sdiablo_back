@@ -51,9 +51,11 @@ supplier(abandon_bill, Merchant, Attrs) ->
     gen_server:call(?MODULE, {abandon_bill_supplier, Merchant, Attrs});
 
 supplier(page_total, Merchant, Conditions) ->
-    gen_server:call(?MODULE, {page_total, Merchant, Conditions}).
-supplier(page_list, Merchant, Conditions, CurrentPage, ItemsPerPage) ->
-    gen_server:call(?MODULE, {page_list, Merchant, Conditions, CurrentPage, ItemsPerPage}).
+    gen_server:call(?MODULE, {page_total, Merchant, Conditions});
+supplier({page_list, Mode, Sort}, Merchant, Conditions) ->
+    supplier({page_list, Mode, Sort}, Merchant, Conditions, -1, -1).
+supplier({page_list, Mode, Sort}, Merchant, Conditions, CurrentPage, ItemsPerPage) ->
+    gen_server:call(?MODULE, {page_list, {Mode, Sort}, Merchant, Conditions, CurrentPage, ItemsPerPage}).
 
 filter(total_bill, 'and', Merchant, Conditions) ->
     gen_server:call(?MODULE, {total_bill, Merchant, Conditions}).
@@ -236,19 +238,35 @@ handle_call({page_total, Merchant, Conditions}, _From, State) ->
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
-handle_call({page_list, Merchant, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
+handle_call({page_list, {Mode, Sort}, Merchant, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
     ?DEBUG("page_list: merchant ~p, Conditions ~p, CurrentPage ~p, ItemsPerPage ~p",
 	   [Merchant, Conditions, CurrentPage, ItemsPerPage]),
     NewConditions = lists:foldr(fun({<<"firm">>, Firm}, Acc) ->
-					[{<<"id">>, Firm}|Acc];
-				   (Others, Acc) ->
-					[Others|Acc]
-				end, [], Conditions),
-    Sql = "select id, name, balance from suppliers"
-	" where merchant=" ++ ?to_s(Merchant)
-	++ ?sql_utils:condition(proplists, NewConditions)
-	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
-
+    					[{<<"id">>, Firm}|Acc];
+    				   (Others, Acc) ->
+    					[Others|Acc]
+    				end, [], Conditions),
+    Sql = "select a.id"
+	", a.name"
+	", a.balance"
+	", b.sell"
+	", b.amount"
+	", b.cost"
+	
+	" from suppliers a"
+	" left join"
+	" (select firm as firm_id"
+	", SUM(sell) as sell"
+	", SUM(amount) as amount"
+	", SUM(org_price * amount) as cost"
+	" from w_inventory where merchant=" ++ ?to_s(Merchant)
+	++ " group by firm ) b on a.id=b.firm_id"
+	++ " where a.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, ?utils:correct_condition(<<"a.">>, NewConditions))
+	++ case CurrentPage =:= -1 orelse ItemsPerPage =:= -1 of
+	       true  -> ?sql_utils:mode(Mode, Sort);
+	       false -> ?sql_utils:condition(page_desc, {Mode, Sort}, CurrentPage, ItemsPerPage)
+	   end,
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 	
@@ -832,7 +850,8 @@ handle_call({profit, sale_of_firm, Merchant, Conditions}, _From, State) ->
     	"select x.merchant, x.firm_id"
 	", SUM(x.total) as total"
 	", SUM(x.total * x.org_price) as cost"
-    	" from "
+	
+    	" from " 
     	"(select a.rsn"
     	", b.total"
     	", b.org_price"
@@ -935,6 +954,7 @@ handle_call({profit, balance, Merchant, Conditions}, _From, State) ->
 	", a.verificate"
 	", a.e_pay"
 	", a.entry_date"
+	
 	" from w_inventory_new a"
 	" inner join"
 	" (select max(a.entry_date) as entry, a.merchant, a.firm from w_inventory_new a"
@@ -954,7 +974,7 @@ handle_call({profit, balance, Merchant, Conditions}, _From, State) ->
 handle_call({sprofit, balance, Merchant, Conditions}, _From, State) ->
     {_StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
     Sql = "select a.merchant"
-	", SUM(a.should_pay - a.has_pay - a.verificate - a.e_pay) as tbalance"
+	", SUM(a.should_pay - a.has_pay - a.verificate + a.e_pay) as tbalance"
     %% ", a.should_pay"
 	%% ", a.has_pay" 
 	%% ", a.verificate"

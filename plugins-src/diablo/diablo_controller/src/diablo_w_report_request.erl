@@ -527,6 +527,14 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 		    ++ ?f_print:br(Brand)
 
 		    ++ "<C>" ++ ?f_print:line(equal, FillLen)
+		    ++ "充值状况" ++ ?f_print:line(equal, FillLen)
+		    ++ "</C>" ++ ?f_print:br(Brand)
+		    ++ "充值  ：" ++ ?to_s(?v(<<"cbalance">>, Recharges, 0)) ++ ?f_print:br(Brand) 
+		    ++ "现金  ：" ++ ?to_s(?v(<<"tcash">>, Recharges, 0))  ++ ?f_print:br(Brand)
+		    ++ "刷卡  ：" ++ ?to_s(?v(<<"tcard">>, Recharges, 0))  ++ ?f_print:br(Brand)
+		    ++ "微信  ：" ++ ?to_s(?v(<<"twxin">>, Recharges, 0))  ++ ?f_print:br(Brand) 
+		    
+		    ++ "<C>" ++ ?f_print:line(equal, FillLen)
 		    ++ "库存状况"
 		    ++ ?f_print:line(equal, FillLen) ++ "</C>" ++ ?f_print:br(Brand)
 		    

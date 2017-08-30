@@ -232,14 +232,19 @@ function firmConfig(angular){
 	    return http.save({operation: "export_w_firm"}).$promise;
 	};
 
-	this.analysis_profit_w_firm = function(match, condition, currentPage, itemsPerpage){
+	this.export_firm_profit = function(mode, condition) {
+	    return http.save({operation: "export_firm_profit"},
+			     {mode      :mode,
+			      condition :condition}).$promise;
+	};
+
+	this.analysis_profit_w_firm = function(mode, match, condition, currentPage, itemsPerpage){
 	    return http.save({operation: "analysis_profit_w_firm"},
-			     {
-				 match:     angular.isDefined(match) ? match.op : undefined,
-				 condition: condition,
-				 page:      currentPage,
-				 count:     itemsPerpage
-			     }).$promise;
+			     {mode:      mode,
+			      match:     angular.isDefined(match) ? match.op : undefined,
+			      condition: condition,
+			      page:      currentPage,
+			      count:     itemsPerpage}).$promise;
 	};
 
 	/*

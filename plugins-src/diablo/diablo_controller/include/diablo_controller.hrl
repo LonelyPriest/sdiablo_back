@@ -272,7 +272,8 @@
 -define(check_w_firm_bill,    ?right_w_firm + 11).
 -define(abandon_w_firm_bill,  ?right_w_firm + 12).
 -define(export_w_firm,        ?right_w_firm + 13).
--define(analysis_profit_w_firm,      ?right_w_firm + 14).
+-define(analysis_profit_w_firm, ?right_w_firm + 14).
+-define(export_firm_profit,   ?right_w_firm + 15).
 
 %% wprint
 -define(new_w_print_server,  ?right_w_print + 1).
