@@ -850,7 +850,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 	price += " " + color;
     }
     if (!this.template.solo_size) {
-	price += " " + size;
+	price += "" + size;
     }
     
     this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_price, "价格：" + price.toString());

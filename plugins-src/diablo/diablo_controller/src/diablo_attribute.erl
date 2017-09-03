@@ -583,5 +583,5 @@ code_change(_OldVsn, State, _Extra) ->
 
 invalid_size("") -> false; 
 invalid_size(Size) ->
-    ?DEBUG("Size ~p", [Size]), 
+    %% ?DEBUG("Size ~p", [Size]), 
     not lists:member(?to_s(Size), ?SIZE_TO_BARCODE).
