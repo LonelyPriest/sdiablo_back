@@ -190,13 +190,18 @@ function purchaserInventoryNewCtrlProvide (
 		return {sn:k,
 			// firm: diablo_get_object(p[1], $scope.firms),
 			shop:diablo_get_object(parseInt(p[1]), $scope.shops),
-		       	employee:diablo_get_object(p[2], $scope.employees)}
+		       	// employee:diablo_get_object(p[2], $scope.employees)
+			employee:diablo_get_object(p[2], filterEmployee)
+		       }
 	    });
 	};
 
 	var select = function(draft, resource){
-	    $scope.select.employee = diablo_get_object(draft.employee.id, $scope.employees);
+	    // $scope.select.employee = diablo_get_object(draft.employee.id, $scope.employees);
+	    // console.log(draft);
+	    $scope.select.employee = diablo_get_object(draft.employee.id, filterEmployee);
 	    $scope.select.shop = diablo_get_object(draft.shop.id, $scope.shops);
+	    $scope.get_employee();
 	    // $scope.select.frim = diablo_get_object(draft.firm.id, $scope.firms);
 	    $scope.inventories = angular.copy(resource);
 	    for (var i=0, l=$scope.inventories.length; i<l; i++){
@@ -234,11 +239,15 @@ function purchaserInventoryNewCtrlProvide (
     }
 
     $scope.change_shop = function(){
-	sDraft.change_key(undefined, $scope.select.shop.id, $scope.select.employee.id);
+	console.log(sDraft.key);
+	// sDraft.remove(); 
 	$scope.get_setting($scope.select.shop.id);
+	$scope.get_employee();
+	sDraft.change_key(undefined, $scope.select.shop.id, $scope.select.employee.id);
+	// sDraft.save($scope.inventories.filter(function(r){return !r.$new}));
 	
-	$scope.q_prompt = $scope.q_typeahead($scope.select.shop.id, base);
-	$scope.get_prompt_good(); 
+	// $scope.q_prompt = $scope.q_typeahead($scope.select.shop.id, base);
+	// $scope.get_prompt_good(); 
 	$scope.get_employee();
     };
 

@@ -1,6 +1,12 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2017-09-08",
+         content:
+	 ["入库/调价草稿只保留一份",
+	  "解决有色均码的货品扫条码时条码时数量不自动置1的问题"]
+        },
+	
 	{date: "2017-08-29",
          content:
 	 ["增加厂商进销存可按销售数量与库存数量排序",

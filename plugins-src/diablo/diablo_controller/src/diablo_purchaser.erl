@@ -2071,8 +2071,9 @@ handle_call({gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _Fro
 		    Sql0 = "select bcode, style_number, brand" 
 			" from w_inventory " 
 			" where merchant=" ++ ?to_s(Merchant)
-			++ " and bcode=\'" ++ ?to_s(Barcode) ++ "\'", 
-		    case ?sql_utils:execute(s_read, Sql0) of
+			++ " and bcode=\'" ++ ?to_s(Barcode) ++ "\'",
+		    
+		    case ?sql_utils:execute(read, Sql0) of
 			{ok, []} ->
 			    %% use syn all stock's barcode in different shop
 			    Sqls = ["update w_inventory set "
@@ -2088,7 +2089,7 @@ handle_call({gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _Fro
 				    ++ " and brand=" ++ ?to_s(Brand)],
 			    Reply = ?sql_utils:execute(transaction, Sqls, Barcode),
 			    {reply, Reply, State};
-			{ok, _R} ->
+			{ok, _R} -> 
 			    {reply, {error, ?err(stock_same_barcode, Barcode)}, State}
 		    end;
 		Barcode ->

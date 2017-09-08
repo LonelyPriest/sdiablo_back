@@ -373,9 +373,9 @@ function purchaserInventoryFixCtrlProvide(
 		    console.log(color_size);
 		    
 		    var bcode_color = stockUtils.to_integer(color_size.substr(0, 3));
-		    var bcode_size_index = stockUtils.to_integer(
-			color_size.substr(3, color_size.length));
-		    var bcode_size = size_to_barcode[bcode_size_index];
+		    var bcode_size_index = stockUtils.to_integer(color_size.substr(3, color_size.length));
+		    
+		    var bcode_size = bcode_size_index === 0 ? diablo_free_size : size_to_barcode[bcode_size_index];
 		    // var bcode_size = color_size.substr(3, color_size.length);
 
 		    if (bcode_color === diablo_free_color) {

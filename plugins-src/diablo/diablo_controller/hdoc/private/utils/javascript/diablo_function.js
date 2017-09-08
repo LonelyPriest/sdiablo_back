@@ -144,7 +144,9 @@ var diablo_dkey_stock_price = 9;
 var diablo_dkey_stock_in  = 8;
 var diablo_dkey_stock_fix = 7;
 
-
+/**
+ * the order must not be changed, if want to add size, add it at end
+**/
 var size_to_barcode =
     ["FF",
      "XS",  "S",   "M",   "L",   "XL",  "2XL", "3XL", "4XL", "5XL", "6XL", "7XL",

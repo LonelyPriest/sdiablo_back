@@ -503,9 +503,14 @@ stockDraft.prototype.keys = function(){
 };
 
 stockDraft.prototype.save = function(resources){
-    var key = this.key;
-    var now = $.now();
-    this.storage.set(key, {t:now, v:resources});
+    var keys = this.keys();
+    for (var i=0, l=keys.length; i<l; i++) {
+	if (keys[i] !== this.key)
+	    this.storage.remove(keys[i]);
+    } 
+    // var key = this.key;
+    // var now = $.now(); 
+    this.storage.set(this.key, {t:$.now(), v:resources});
 };
 
 stockDraft.prototype.list = function(draftFilter){

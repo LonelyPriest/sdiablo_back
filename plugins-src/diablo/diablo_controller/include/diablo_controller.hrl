@@ -107,6 +107,7 @@
 %% session
 -define(QZG_DY_SESSION, "qzg_dyty_session").
 
+%% the order must not be changed, if want to add size, add it at end
 -define(SIZE_TO_BARCODE,
 	["FF",
 	 "XS",  "S",   "M",   "L",   "XL",  "2XL",  "3XL", "4XL", "5XL", "6XL", "7XL",
