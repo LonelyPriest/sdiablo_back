@@ -1278,6 +1278,28 @@ function goodSizeSpecCtrlProvide(
     };
 };
 
+function printerDetectCtrlProvide($scope, diabloUtilsService){
+    var LODOP;
+    var dialog = diabloUtilsService;
+    if (needCLodop()) loadCLodop();
+
+    $scope.refresh = function() {
+	if (angular.isUndefined(LODOP))
+	    LODOP = getLodop(); 
+	if (LODOP.CVERSION) {
+	    $scope.printers = [];
+	    var count = LODOP.GET_PRINTER_COUNT();
+	    for (var i=0; i<count; i++) {
+		var pName = LODOP.GET_PRINTER_NAME(i);
+		var pSize = LODOP.GET_PRINTER_NAME(i.toString() + ":PaperSize");
+		var pWidth = LODOP.GET_PRINTER_NAME(i.toString() + ":PaperWidth");
+		var pHeight = LODOP.GET_PRINTER_NAME(i.toString() + ":PaperLength"); 
+		$scope.printers.push({index:i, name:pName, size:pSize, width:pWidth, height:pHeight});
+	    }
+	}
+    }
+};
+    
 define(["baseApp"], function(app){
     app.controller("bankCardNewCtrl", bankCardNewCtrlProvide);
     app.controller("bankCardDetailCtrl", bankCardDetailCtrlProvide);
@@ -1293,5 +1315,6 @@ define(["baseApp"], function(app){
     app.controller("goodCTypeCtrl", goodCTypeCtrlProvide);
     app.controller("goodSizeSpecCtrl", goodSizeSpecCtrlProvide);
     
+    app.controller("printerDetectCtrl", printerDetectCtrlProvide);
     app.controller("resetPasswdCtrl", resetPasswdCtrlProvide);
 });

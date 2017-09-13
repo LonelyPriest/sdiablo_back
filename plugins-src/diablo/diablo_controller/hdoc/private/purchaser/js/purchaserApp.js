@@ -168,12 +168,12 @@ function stockConfg(angular){
 	    when('/print_inventory_new/:rsn', {
 		templateUrl: '/private/purchaser/html/stock_new_detail_print.html',
 		controller: 'stockNewDetailPrintCtrl' ,
-		resolve: angular.extend({}, brand, firm, type, color, employee, user)
+		resolve: angular.extend({}, brand, firm, type, color, employee, user, base)
 	    }).
 	    when('/print_inventory_transfer/:rsn', {
 		templateUrl: '/private/purchaser/html/stock_transfer_print.html',
 		controller: 'stockTransferPrintCtrl' ,
-		resolve: angular.extend({}, brand, shop, type, color, employee)
+		resolve: angular.extend({}, brand, shop, type, color, employee, user, base)
 	    }).
 	    // wgood
 	    when('/good/size', {

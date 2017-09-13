@@ -1,6 +1,11 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2017-09-13",
+         content:
+	 ["增加配置打印机功能"]
+        },
+	
 	{date: "2017-09-08",
          content:
 	 ["入库/调价草稿只保留一份",

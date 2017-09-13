@@ -788,7 +788,10 @@ sys_config() ->
 	      {"c_stock_firm",      "入库审核检测厂商",   "1",   "0"},
 	      %% {"bcode_firm",     "条码打印厂商",       "0",   "0"},
 	      {"export_code",       "导出编码格式",       "0",   "0"}, %% 0: utf8 1: gbk
-	      {"export_note",       "导出颜色尺码",       "0",   "0"} %% 0: utf8 1: gbk
+	      {"export_note",       "导出颜色尺码",       "0",   "0"}, %% 0: utf8 1: gbk
+
+	      {"prn_barcode",       "条码打印机编号",     "-1",   "0"},
+	      {"prn_bill",          "单据打印机编号",     "-1",   "0"}
 	      %% {"bcode_self",     "吊牌打印模式",       "0",   "0"}
 	     ],
     Values.

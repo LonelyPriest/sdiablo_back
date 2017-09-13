@@ -10,23 +10,13 @@
     <title>钱掌柜</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <meta name="MobileOptimized" content="minimal-ui"/>
-    <!-- <meta name="MobileOptimized" content="320"/> --> 
-    <!-- <meta http-equiv="Pragma"   CONTENT="no-cache"> -->
-    <!-- <meta http-equiv="Cache-Control"  content="no-cache, no-store" /> -->
-    <!-- <meta http-equiv="Expires"   CONTENT="0"> -->
-
-    
+    <meta name="MobileOptimized" content="minimal-ui"/> 
     <!-- BEGIN GLOBAL MANDATORY STYLES -->
     <link href="/public/assets/bootstrap/css/bootstrap.min.css"
 	  rel="stylesheet" type="text/css"/>
     
     <link href="/public/assets/bootstrap/css/bootstrap-customer.css"
-    	  rel="stylesheet" type="text/css"/>
-    
-    <!-- <link href="/public/assets/responsive-nav/responsive-nav.css" -->
-    <!-- 	  rel="stylesheet" type="text/css"/> -->
-        
+    	  rel="stylesheet" type="text/css"/> 
     <link href="/public/assets/font-awesome/css/font-awesome.min.css"
 	  rel="stylesheet" type="text/css"/>
     <!--[if IE 7]>
@@ -43,33 +33,12 @@
     <!-- <link href="/public/assets/metronic/css/themes/default.css" -->
     <!-- 	  rel="stylesheet" type="text/css" id="style_color"/> -->
     <link href="/public/assets/metronic/css/themes/grey.css"
-    	  rel="stylesheet" type="text/css"/ id="style_color">
-    <!-- <link href="/public/assets/metronic/plugins/uniform/css/uniform.default.css" -->
-    <!-- 	  rel="stylesheet" type="text/css"/> -->
-    <!--print-->
-    <!-- <link href="/public/assets/bootstrap/css/print.css" -->
-    <!-- 	  rel="stylesheet" type="text/css" media="print"/> -->
-    <!-- <link href="/public/assets/metronic/plugins/font-awesome/css/font-awesome.min.css" -->
-    <!-- 	  rel="stylesheet" type="text/css"> -->
-    <!-- END GLOBAL MANDATORY STYLES -->
-    
+    	  rel="stylesheet" type="text/css"/ id="style_color"> 
     <!-- BEGIN PAGE LEVEL PLUGIN STYLES -->
     <link href="/public/assets/metronic/plugins/gritter/css/jquery.gritter.css"
-	  rel="stylesheet" type="text/css"/>
-    <!-- <link href="/public/assets/metronic/plugins/bootstrap-daterangepicker/daterangepicker-bs3.css" -->
-    <!-- 	  rel="stylesheet" type="text/css"/> -->
-    <!-- <link href="/public/assets/metronic/plugins/fullcalendar/fullcalendar/fullcalendar.css" -->
-    <!-- 	  rel="stylesheet" type="text/css"/> -->
-    <!-- <link href="/public/assets/metronic/plugins/jquery-easy-pie-chart/jquery.easy-pie-chart.css" -->
-    <!-- 	  rel="stylesheet" type="text/css"/> -->
-    <!-- END PAGE LEVEL PLUGIN STYLES -->
-    
-    <!-- <link rel="shortcut icon" href="favicon.ico"/> -->
-
+	  rel="stylesheet" type="text/css"/> 
     <!-- metro color -->
     <link href="/public/assets/metro-ui/metro-color.css" rel="stylesheet" type="text/css"/> 
-
-
     <!-- Every application has own CSS-->
     {% block self_reference_css %} {% endblock %}
     

@@ -377,7 +377,7 @@ function purchaserInventoryPriceCtrlProvide(
 
 function stockNewDetailPrintCtrlProvide(
     $scope, $routeParams, diabloUtilsService, purchaserService,
-    filterBrand, filterFirm, filterType, filterColor, filterEmployee, user){
+    filterBrand, filterFirm, filterType, filterColor, filterEmployee, user, base){
     // console.log($routeParams);
     // $scope.rsn = $routeParams.rsn;
 
@@ -386,7 +386,7 @@ function stockNewDetailPrintCtrlProvide(
 
     var LODOP;
     if (needCLodop()) loadCLodop(); 
-    var dialog = diabloUtilsService;
+    var dialog = diabloUtilsService; 
     
     purchaserService.print_w_inventory_new($routeParams.rsn).then(function(result) {
     	// console.log(result);
@@ -444,14 +444,36 @@ function stockNewDetailPrintCtrlProvide(
 	    LODOP = getLodop();
 	}
 
-	if (LODOP.VERSION) {
+	if (LODOP.CVERSION) {
 	    LODOP.PRINT_INIT("task_print_stock_new");
+	    LODOP.SET_PRINTER_INDEX(stockUtils.printer_bill(user.loginShop, base));
 	    LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
-	    // LODOP.SET_PRINT_PAGESIZE(1, 0, 0,"A4");
 	    LODOP.ADD_PRINT_HTM(
 		"5%", "5%",  "90%", "BottomMargin:15mm",
 		strBodyStyle + "<body>" + document.getElementById("stock_new").innerHTML + "</body>");
 	    LODOP.PREVIEW();
+	    
+	    // LODOP.On_Return = function(taskId, value) {
+	    // 	// console.log(value);
+	    // 	if (value >= 0) {
+	    // 	    LODOP.ADD_PRINT_HTM(
+	    // 		"5%", "5%",  "90%", "BottomMargin:15mm",
+	    // 		strBodyStyle + "<body>" + document.getElementById("stock_new").innerHTML + "</body>");
+	    // 	    LODOP.PREVIEW();
+	    // 	}
+	    // };
+	    // LODOP.SELECT_PRINTER();
+	    
+	    // LODOP.SET_SHOW_MODE("PREVIEW_IN_BROWSER", true);
+	    // var index = LODOP.SELECT_PRINTER();
+	    // console.log(index);
+	    // if (-1 !== index) {
+	    // LODOP.SET_PRINTER_INDEX(index);
+	    // LODOP.SET_PRINT_PAGESIZE(1, 0, 0,"A4");
+	    
+	    // LODOP.PREVIEW();
+	    // LODOP.PRINTA();
+	    // } 
 	}
     };
 
@@ -463,7 +485,7 @@ function stockNewDetailPrintCtrlProvide(
 
 function stockTransferPrintCtrlProvide(
     $scope, $routeParams, diabloUtilsService, purchaserService,
-    filterBrand, filterShop, filterType, filterColor, filterEmployee){
+    filterBrand, filterShop, filterType, filterColor, filterEmployee, user, base){
     // console.log($routeParams);
     // $scope.rsn = $routeParams.rsn;
 
@@ -531,7 +553,8 @@ function stockTransferPrintCtrlProvide(
 	}
 
 	if (LODOP.VERSION) {
-	    LODOP.PRINT_INIT("task_print_stock_new");
+	    LODOP.PRINT_INIT("task_print_stock_transfer");
+	    LODOP.SET_PRINTER_INDEX(stockUtils.printer_bill(user.loginShop, base));
 	    LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
 	    // LODOP.SET_PRINT_PAGESIZE(1, 0, 0,"A4");
 	    LODOP.ADD_PRINT_HTM(

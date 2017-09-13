@@ -21,117 +21,82 @@
       </div>
 
       <!--BEGIN table container-->
-      <div class="portlet-body">
-	<div class="table-toolbar"> 
-	  <!-- <div class="row form-group"> -->
-	    
-	  <!--   <div class="col-sm-6 col-md-6"> -->
-	  <!--     <div class="input-group"> -->
-	  <!-- 	<div class="input-cont"> -->
-	  <!-- 	  <input type="text" class="form-control" placeholder="请输入打印机序列号" -->
-	  <!-- 		 x-ng-model="filter.name"></input> -->
-	  <!-- 	</div> -->
-	  <!-- 	<span class="input-group-btn"> -->
-	  <!-- 	  <button type="button" class="btn green"> -->
-	  <!-- 	    <i class="m-icon-swapright m-icon-white"></i> -->
-	  <!-- 	</span> -->
-	  <!--     </div> -->
-	  <!--   </div> -->
-
-	  <!--   <div class="col-sm-6 col-md-6"> -->
-	  <!--     <div class="input-group"> -->
-	  <!-- 	<div class="input-cont"> -->
-	  <!-- 	  <input type="text" class="form-control" placeholder="请输入商家名称" -->
-	  <!-- 		 x-ng-model="filter.name"></input> -->
-	  <!-- 	</div> -->
-	  <!-- 	<span class="input-group-btn"> -->
-	  <!-- 	  <button type="button" class="btn green"> -->
-	  <!-- 	    <i class="m-icon-swapright m-icon-white"></i> -->
-	  <!-- 	</span> -->
-	  <!--     </div> -->
-	  <!--   </div> -->
-	    
-	  <!-- </div> <\!--END form-group-\->  -->
-	</div> <!--END table-toolbar-->
-	
-	
+      <div class="portlet-body"> 
 	<!--BEGN portlet body--> 
-	<div class="portlet-body">
-	  <!--BEGIN panel-->
-	  <div class="panel panel-default">
-	    <div class="table-responsive">
-	      <!--EBGIN table supplier-->
-	      <table class="table table-bordered
-			    table-striped table-hover table-condensed table-advanced">
-		<thead>
-		  <tr>
-		    <th>序号</th>
-		    <th>品牌</th>
-		    <th>型号</th>
-		    <th>状态</th>
-		    <th>打印列数</th>
-		    <th>打印高度</th>
-		    <th>设备号</th> 
-		    <th>接入码</th>
-		    <th>服务器名称</th>
-		    <!-- <th>服务器地址</th> -->
-		    <!-- <th>所属商家</th> -->
-		    <th>所属店铺</th>
-		    <th>日期</th>
-		    <th>操作</th>
-		  </tr>
-		</thead>
-		<tbody>
-		  <tr ng-repeat="p in printers">
-		    <td>{{p.order_id}}</td>
-		    <td>{{p.brand_chinese}}</td>
-		    <td>{{p.model}}</td>
-		    <td x-ng-switch on="p.status">
-		      <span x-ng-switch-when=0>正常</span>
-		      <span x-ng-switch-when=1>暂停</span>
-		    </td> 
-		    <td>{{p.pcolumn}}</td>
-		    <td>{{p.pheight}}厘米</td>
-		    <td>{{p.sn}}</td>
-		    <td>{{p.code}}</td>
-		    <td>{{p.server}}</td>
-		    <!-- <td>{{p.server_path}}</td> -->
-		    <!-- <td>{{p.merchant}}</td> -->
-		    <td class="col-md-1">
-		      <div x-ng-switch on="p.shop_id">
-			<span x-ng-switch-when=-1>暂无</span>
-			<span x-ng-switch-default>{{p.shop}}</span> 
-		      </div>
-		    </td>
+	<!--BEGIN panel-->
+	<div class="panel panel-default">
+	  <div class="table-responsive">
+	    <!--EBGIN table supplier-->
+	    <table class="table table-bordered
+			  table-striped table-hover table-condensed table-advanced">
+	      <thead>
+		<tr>
+		  <th>序号</th>
+		  <th>品牌</th>
+		  <th>型号</th>
+		  <th>状态</th>
+		  <th>打印列数</th>
+		  <th>打印高度</th>
+		  <th>设备号</th> 
+		  <th>接入码</th>
+		  <th>服务器名称</th>
+		  <!-- <th>服务器地址</th> -->
+		  <!-- <th>所属商家</th> -->
+		  <th>所属店铺</th>
+		  <th>日期</th>
+		  <th>操作</th>
+		</tr>
+	      </thead>
+	      <tbody>
+		<tr ng-repeat="p in printers">
+		  <td>{{p.order_id}}</td>
+		  <td>{{p.brand_chinese}}</td>
+		  <td>{{p.model}}</td>
+		  <td x-ng-switch on="p.status">
+		    <span x-ng-switch-when=0>正常</span>
+		    <span x-ng-switch-when=1>暂停</span>
+		  </td> 
+		  <td>{{p.pcolumn}}</td>
+		  <td>{{p.pheight}}厘米</td>
+		  <td>{{p.sn}}</td>
+		  <td>{{p.code}}</td>
+		  <td>{{p.server}}</td>
+		  <!-- <td>{{p.server_path}}</td> -->
+		  <!-- <td>{{p.merchant}}</td> -->
+		  <td class="col-md-1">
+		    <div x-ng-switch on="p.shop_id">
+		      <span x-ng-switch-when=-1>暂无</span>
+		      <span x-ng-switch-default>{{p.shop}}</span> 
+		    </div>
+		  </td>
 
-		    <td>{{p.entry_date}}</td> 
+		  <td>{{p.entry_date}}</td> 
 
-		    <td>
-		      <!-- <button class="btn btn-success btn-xs red-stripe" -->
-		      <!-- 	      x-ng-disabled="p.shop_id!==-1" -->
-		      <!-- 	      x-ng-click="associate_printer(p)">关联 -->
-		      <!-- 	<i class="glyphicon glyphicon-ok"></i></button> --> 
-		      <button class="btn diablo-button btn-primary"
-			      x-ng-disabled="p.shop_id==-1"
-			      x-ng-click="test_printer(p)">测试
-			<i class="glyphicon glyphicon-ok"></i></button>
-		      
-                      <button class="btn diablo-button btn-warning"
-			      x-ng-click="update_printer(p)">修改
-			<i class="glyphicon glyphicon-edit"></i></button>
-		      
-                      <button class="btn diablo-button btn-danger"
-			      x-ng-click="delete_printer(p)">删除
-			<i class="glyphicon glyphicon-erase"></i></button>
-		    </td>
-		  </tr>
-		</tbody>
-		
-	      </table> <!--END supplier table-->
-	    </div> <!--END table responsive-->
-	    
-	  </div> <!--END panel-->
-	</div> <!--END portlet body-->
+		  <td>
+		    <!-- <button class="btn btn-success btn-xs red-stripe" -->
+		    <!-- 	      x-ng-disabled="p.shop_id!==-1" -->
+		    <!-- 	      x-ng-click="associate_printer(p)">关联 -->
+		    <!-- 	<i class="glyphicon glyphicon-ok"></i></button> --> 
+		    <button class="btn diablo-button btn-primary"
+			    x-ng-disabled="p.shop_id==-1"
+			    x-ng-click="test_printer(p)">测试
+		      <i class="glyphicon glyphicon-ok"></i></button>
+		    
+                    <button class="btn diablo-button btn-warning"
+			    x-ng-click="update_printer(p)">修改
+		      <i class="glyphicon glyphicon-edit"></i></button>
+		    
+                    <button class="btn diablo-button btn-danger"
+			    x-ng-click="delete_printer(p)">删除
+		      <i class="glyphicon glyphicon-erase"></i></button>
+		  </td>
+		</tr>
+	      </tbody>
+	      
+	    </table> <!--END supplier table-->
+	  </div> <!--END table responsive-->
+	  
+	</div> <!--END panel-->
       </div> <!--END table container-->
       
     </div>

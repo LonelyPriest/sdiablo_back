@@ -1,0 +1,49 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="portlet box purple">
+      
+      <div class="portlet-title">
+	<div class="caption"><i class="glyphicon glyphicon-menu-hamburger"></i>
+	  打印机控测
+	</div>	
+
+	<div class="actions">
+	  <button type="button" class="btn blue reload purple-stripe"
+		    x-ng-click="refresh()">刷新
+	    <i class="icon icon-spinner fg-white"></i></button>
+	</div> 
+      </div>
+
+      <div class="portlet-body"> 
+	<div class="panel panel-default">
+	    <div class="table-responsive">
+	    <!--EBGIN table supplier-->
+	    <table class="table table-bordered
+			  table-striped table-hover table-condensed table-advanced">
+	      <thead>
+		<tr>
+		  <th>序号</th>
+		  <th>名称</th>
+		  <th>纸张大小</th>
+		  <th>纸宽</th>
+		  <th>纸高</th> 
+		</tr>
+	      </thead>
+	      <tbody>
+		<tr ng-repeat="p in printers">
+		  <td>{{p.index}}</td>
+		  <td>{{p.name}}</td>
+		  <td>{{p.size}}</td> 
+		  <td>{{p.width}}</td>
+		  <td>{{p.height}}</td> 
+		</tr>
+	      </tbody>
+	      
+	    </table> <!--END supplier table-->
+	  </div>
+	</div>
+      </div>
+      
+    </div>
+  </div>
+</div>

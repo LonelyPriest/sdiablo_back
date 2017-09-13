@@ -1643,27 +1643,6 @@ function purchaserInventoryDetailCtrlProvide(
     diabloUtilsService, diabloPromise, purchaserService,
     localStorageService, filterPromotion, filterScore,  filterBrand,
     filterFirm, filterType, filterSizeGroup, filterColor, filterTemplate, base, user){
-    // $scope.touch_start = function(){
-    // 	console.log("touch_start");
-    // }
-    // var data = {
-    // 	labels : ["January","February","March","April","May","June","July"],
-    // 	datasets : [
-    // 	    {
-    // 		fillColor : "rgba(220,220,220,0.5)",
-    // 		strokeColor : "rgba(220,220,220,1)",
-    // 		data : [65,59,90,81,56,55,40]
-    // 	    },
-    // 	    {
-    // 		fillColor : "rgba(151,187,205,0.5)",
-    // 		strokeColor : "rgba(151,187,205,1)",
-    // 		data : [28,48,40,19,96,27,100]
-    // 	    }
-    // 	]
-    // };
-
-    // $scope.chart.data = data;
-    // console.log($scope.promotions);
     $scope.promotions = filterPromotion.concat([{id:diablo_invalid_index, name:"重置促销方案"}]);
     $scope.scores = filterScore.concat([{id:diablo_invalid_index, name:"重置积分方案", type_id:0}]);
     $scope.template = filterTemplate.length !== 0 ? filterTemplate[0] : undefined;
@@ -1750,8 +1729,12 @@ function purchaserInventoryDetailCtrlProvide(
     $scope.setting.use_barcode     = stockUtils.use_barcode(diablo_default_shop, base);
     $scope.setting.auto_barcode    = stockUtils.auto_barcode(diablo_default_shop, base); 
     $scope.setting.saler_stock     = stockUtils.saler_stock(diablo_default_shop, base);
+    $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, base);
     
-    $scope.printU = new stockPrintU($scope.template, $scope.setting.auto_barcode); 
+    $scope.setting.printer_barcode = stockUtils.printer_barcode(pShop, base);
+    $scope.printU = new stockPrintU($scope.template, $scope.setting.auto_barcode);
+    $scope.printU.setPrinter($scope.setting.printer_barcode);
+    
     /*
      * pagination 
      */

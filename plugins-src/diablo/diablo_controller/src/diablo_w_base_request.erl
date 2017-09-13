@@ -372,11 +372,12 @@ sidebar(Session) ->
 	    {ok, ?new_w_printer_conn} ->
 		[
 		 {"connect_new",    "打印机绑定", "glyphicon glyphicon-plus"},
-		 {"connect_detail", "绑定详情", "glyphicon glyphicon-briefcase"}
+		 {"connect_detail", "绑定详情",   "glyphicon glyphicon-briefcase"}
 		 %% {"connect_detail", "绑定详情", "glyphicon glyphicon-leaf"}
 		]; 
 	    _ -> []
-	end, 
+	end ++ [{"detect",         "打印机探测", "glyphicon glyphicon-search"}],
+
     
     SBase =
 	case Card of

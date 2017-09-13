@@ -31,6 +31,10 @@ function baseConfig(angular){
 		templateUrl: '/private/base/html/base_printer_connect_detail.html',
 		controller: 'basePrinterConnectDetailCtrl',
 		resolve: angular.extend({}, user) 
+	    }).
+	    when('/printer/detect', {
+		templateUrl: '/private/base/html/printer_detect.html',
+		controller: 'printerDetectCtrl'
 	    }). 
 	    when('/bank/new_bank_card/:cardId?', {
 		templateUrl: '/private/base/html/bank_card_new.html',
