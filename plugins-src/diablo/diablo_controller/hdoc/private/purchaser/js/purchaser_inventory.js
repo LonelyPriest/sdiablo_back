@@ -1731,7 +1731,7 @@ function purchaserInventoryDetailCtrlProvide(
     $scope.setting.saler_stock     = stockUtils.saler_stock(diablo_default_shop, base);
     $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, base);
     
-    $scope.setting.printer_barcode = stockUtils.printer_barcode(pShop, base);
+    $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, base);
     $scope.printU = new stockPrintU($scope.template, $scope.setting.auto_barcode);
     $scope.printU.setPrinter($scope.setting.printer_barcode);
     
