@@ -1294,7 +1294,11 @@ sidebar(Session) ->
 		  authen_shop_action(
 		    {?fix_w_inventory,
 		     "inventory_fix",
-		     "盘点", "glyphicon glyphicon-check"}, Shops)
+		     "扫描盘点", "glyphicon glyphicon-check"}, Shops)
+		  ++ authen_shop_action(
+		       {?fix_w_inventory,
+			"inventory_import_fix",
+			"导入盘点", "glyphicon glyphicon-import"}, Shops)
 		  ++ [{"inventory_fix_detail",
 		       "盘点记录", "glyphicon glyphicon-tasks"},
 		      {"inventory_rsn_detail/fix",

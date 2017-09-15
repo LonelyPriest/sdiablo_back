@@ -1,13 +1,13 @@
 "use strict";
 
-define(["angular", "angular-router", "angular-resource", "angular-local-storage",
+define(["angular", "angular-router", "angular-resource", "angular-local-storage", "angular-file-upload",
         "angular-ui-bootstrap", "diablo-authen", "diablo-pattern", "diablo-user-right",
         "diablo-authen-right", "diablo-utils", "diablo-filter"], stockConfg);
 
 function stockConfg(angular){
     var purchaserApp = angular.module(
 	'purchaserApp',
-	['ui.bootstrap', 'ngRoute', 'ngResource', 'LocalStorageModule',
+	['ui.bootstrap', 'ngRoute', 'ngResource', 'LocalStorageModule', 'angularFileUpload',
 	 'diabloAuthenApp', 'diabloPattern', 'diabloUtils', 'diabloFilterApp',
 	 'diabloNormalFilterApp', 'userApp']
     ).config(function(localStorageServiceProvider){
@@ -152,6 +152,11 @@ function stockConfg(angular){
 		templateUrl: '/private/purchaser/html/purchaser_inventory_fix.html',
 		controller: 'purchaserInventoryFixCtrl' ,
 		resolve: angular.extend({}, user, employee, s_group, color, base)
+	    }).
+	    when('/inventory/inventory_import_fix', {
+		templateUrl: '/private/purchaser/html/purchaser_inventory_import_fix.html',
+		controller: 'purchaserInventoryImportFixCtrl' ,
+		resolve: angular.extend({}, user, employee, base)
 	    }).
 	    when('/inventory/inventory_fix_detail', {
 		templateUrl: '/private/purchaser/html/purchaser_inventory_fix_detail.html',
@@ -299,6 +304,7 @@ function stockConfg(angular){
 	    2015: "条码值已使用，请重试！！",
 	    2016: "服务器条码校验失败，请注销当前用户后再操作！！",
 	    2017: "该货品无条码值，请先重置该货品条码值后再打印！！",
+	    2077: "导入的文件数量不能超过了2个！！", 
 	    2078: "无法单独修改积分方案，请关联修改吊牌价或折扣！！",
 	    2079: "该系统模式下，不能重置条码，请在货品详情中重置条码值！！",
 	    2081: "条码值为空，无法重置该条码，请先生成该货品条码后再操作！！",

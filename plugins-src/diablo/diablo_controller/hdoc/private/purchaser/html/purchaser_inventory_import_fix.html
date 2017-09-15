@@ -1,0 +1,137 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="portlet box purple">
+      
+      <div class="portlet-title">
+	<div class="caption"><i class="glyphicon glyphicon-menu-hamburger"></i>
+	  库存盘点
+	</div>
+	<div class="actions"> 
+	  <button class="btn btn-primary btn-file purple-stripe">文件
+	      <i class="glyphicon glyphicon-import"></i>
+	      <input type="file" accept=".csv" nv-file-select="" uploader="uploader"/>
+	  </button>
+	  
+	  <button class="btn btn-success"
+		  x-ng-disabled="disable_save()"
+		  x-ng-click="save()">保存
+	    <i class="glyphicon glyphicon-save"></i></button> 
+	</div>
+	<div class="tools">
+	</div>
+      </div>
+
+      <!--BEGIN table container-->
+      <div class="portlet-body">
+	<div class="table-toolbar"> 
+	  <div class="row diablo-form-group">
+	    <div class="col-xs-3 col-md-3">
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-calendar fg-red"></i>日期</span>
+		<input type="text"
+		       class="form-control"
+		       readonly 
+		       x-ng-model="select.datetime"/> 
+	      </div>
+	    </div>
+	    
+	    <div class="col-xs-3 col-md-3">
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-map-marker fg-red"></i>店铺</span>
+	  	<select class="form-control" type="text"
+	  		x-ng-model="select.shop"
+	  		x-ng-options="s as s.name for s in shops|filter:$viewValue">
+		</select>
+	      </div>
+	    </div>
+	    
+	    <div class="col-xs-3 col-md-3">
+	      <div class="input-group">
+		<span class="input-group-addon">
+	  	  <i class="icon-user fg-red"></i>店员</span>
+	  	<select class="form-control" type="text"
+	  		x-ng-model="select.employee"
+	  		x-ng-options="e as e.name for e in employees|filter:$viewValue">
+		</select> 
+	      </div>
+	    </div>
+
+	    <div class="col-xs-3 col-md-3">
+	      <div class="input-group">
+		<span class="input-group-addon">
+	  	  <i class="icon-user fg-red"></i>数量</span>
+	  	<input type="text"
+		       class="form-control"
+		       readonly
+		       x-ng-model="select.total"/> 
+	      </div>
+	    </div>
+	  </div> <!--END from-group--> 
+	  
+	</div>
+	
+	<!--BEGN portlet body--> 
+	<div class="portlet-body">
+	  <!--BEGIN panel-->
+	  <div class="panel panel-default table-panel">
+
+	    <div class="table-responsive diablo-table">
+	      <!--EBGIN table supplier-->
+	      <table class="table table-bordered
+			    table-striped table-hover
+			    table-condensed table-advanced">
+		<thead>
+		  <tr>
+		    <th>名称</th>
+		    <th>大小</th>
+		    <th>进度</th>
+		    <th>状态</th>
+		    <th>操作</th>
+		  </tr>
+		</thead>
+		<tbody>
+                  <tr ng-repeat="f in uploader.queue">
+                    <td><strong>{{ f.file.name }}</strong></td>
+                    <td nowrap>{{ f.file.size/1024/1024|number:2 }} MB</td>
+                    <td>
+                      <div class="progress" style="margin-bottom: 0;">
+                        <div class="progress-bar" role="progressbar" ng-style="{ 'width': f.progress + '%' }"></div>
+                      </div>
+                    </td>
+                    <td class="text-center">
+                      <span ng-show="f.isSuccess"><i class="glyphicon glyphicon-ok"></i></span>
+                      <span ng-show="f.isCancel"><i class="glyphicon glyphicon-ban-circle"></i></span>
+                      <span ng-show="f.isError"><i class="glyphicon glyphicon-remove"></i></span>
+                    </td>
+                    <td nowrap>
+                      <button type="button"
+			      class="btn btn-success diablo-button"
+			      ng-click="f.upload()"
+			      ng-disabled="f.isReady || f.isUploading || f.isSuccess">
+                        上传<span class="glyphicon glyphicon-upload"></span>
+                      </button>
+                      <button type="button"
+			      class="btn btn-warning diablo-button" ng-click="f.cancel()" ng-disabled="!f.isUploading">
+                        取消<span class="glyphicon glyphicon-ban-circle"></span>
+                      </button>
+                      <button type="button" class="btn btn-danger diablo-button" ng-click="f.remove()">
+                        删除<span class="glyphicon glyphicon-erase"></span>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody> 
+		<tfoot> 
+		</tfoot>
+		
+	      </table> <!--END table--> 
+	    </div> <!--END table responsive-->
+	    
+	  </div> <!--END panel--> 
+	</div> <!--END portlet body-->
+      </div> <!--END table container-->
+      
+    </div>
+  </div>
+</div>

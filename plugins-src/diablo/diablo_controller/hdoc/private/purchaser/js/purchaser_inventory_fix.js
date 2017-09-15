@@ -1,6 +1,6 @@
 function purchaserInventoryFixCtrlProvide(
-    $scope, $q, $timeout, dateFilter, localStorageService, diabloPattern,
-    diabloUtilsService, diabloPromise, diabloFilter, diabloNormalFilter, purchaserService,
+    $scope, $q, $timeout, dateFilter, localStorageService,
+    diabloUtilsService, diabloFilter, diabloPagination, purchaserService,
     user, filterEmployee, filterSizeGroup, filterColor, base){
     // console.log(user); 
     $scope.shops   = user.sortShops;    
@@ -35,6 +35,12 @@ function purchaserInventoryFixCtrlProvide(
 	for (var o in $scope.focus){
 	    if (o !== attr) $scope.focus[o] = false;
 	} 
+    };
+
+    $scope.reset_focus = function() {
+    	for (var o in $scope.focus){
+    	    $scope.focus[o] = false;
+    	} 
     };
 
     $scope.get_setting = function(shopId) {
@@ -72,18 +78,13 @@ function purchaserInventoryFixCtrlProvide(
     $scope.get_employee();
     $scope.get_setting();
     $scope.focus_good_or_barcode();
-       
-    // $scope.base_settings = {
-    // 	plimit : stockUtils.prompt_limit($scope.select.shop.id, base),
-    // 	prompt : stockUtils.typeahead($scope.select.shop.id, base),
-    // 	start_time : stockUtils.start_time($scope.select.shop.id, base, now, dateFilter)
-    // }; 
-
+    
     $scope.match_style_number = function(viewValue){
 	return diabloFilter.match_w_sale(viewValue, $scope.select.shop.id);
     };
 
     $scope.on_select_good = function(item, model, label){
+	$scope.reset_focus();
 	// add at first allways 
 	var add = $scope.inventories[0];
 
@@ -112,10 +113,9 @@ function purchaserInventoryFixCtrlProvide(
 	add.path         = item.path;
 	add.entry        = item.entry_date;
 
+	// console.log($scope.focus);
 	add.full_name    = item.style_number + "/" + item.brand; 
-	console.log(add);
-
-	App.scrollTop();
+	// console.log(add); 
 	$scope.auto_focus("fix");
 	$scope.add_inventory(add); 
 	return;
@@ -147,7 +147,7 @@ function purchaserInventoryFixCtrlProvide(
 			fix_time = content.t;
 			$scope.select.datetime = dateFilter(fix_time, "yyyy-MM-dd HH:mm:ss");
 			$scope.inventories = content.stock;
-			console.log($scope.inventories);
+			// console.log($scope.inventories); 
 			angular.forEach($scope.inventories, function(inv) {
 			    if (!inv.$new) {
 				inv.color = get_color(inv.color_id, inv.colors); 
@@ -156,7 +156,8 @@ function purchaserInventoryFixCtrlProvide(
 			
 			// $scope.inventories.unshift({$edit:false, $new:true}); 
 			// console.log($scope.select.datetime);
-			console.log($scope.inventories);
+			// console.log($scope.inventories);
+			reset_pagination();
 			$scope.focus_good_or_barcode();
 			$scope.re_calculate();
 		    });
@@ -292,6 +293,7 @@ function purchaserInventoryFixCtrlProvide(
 	    } else {
 		return {
 		    $new         :r.$new,
+		    order_id     :r.order_id,
 		    bcode        :r.bcode,
 		    full_bcode   :r.full_bcode,
 		    style_number :r.style_number,
@@ -400,6 +402,26 @@ function purchaserInventoryFixCtrlProvide(
 	    // }
 	}); 
     };
+
+    /*
+     * pagination
+     */
+    $scope.items_perpage = diablo_items_per_page();
+    // $scope.default_page  = 1;
+    $scope.current_page  = 1;
+    $scope.reset_pagination = function() {
+	diabloPagination.set_data($scope.inventories);
+	diabloPagination.set_items_perpage($scope.items_perpage);
+	$scope.total_items = diabloPagination.get_length();
+	$scope.page_items  = diabloPagination.get_page($scope.current_page);
+    };
+
+    $scope.page_changed = function(page) {
+	$scope.current_page = page;
+	$scope.page_items   = diabloPagination.get_page($scope.current_page);
+    };
+
+    $scope.reset_pagination();
     
     /*
      * delete inventory
@@ -422,9 +444,10 @@ function purchaserInventoryFixCtrlProvide(
 	    $scope.inventories[i].order_id = l - i;
 	}
 
+	$scope.reset_pagination();
 	$scope.re_calculate();
 	$scope.save_draft();
-    };
+    }; 
 
     $scope.add_free_inventory = function(inv){
 	console.log(inv);
@@ -432,9 +455,13 @@ function purchaserInventoryFixCtrlProvide(
 	// oreder
 	inv.order_id = $scope.inventories.length; 
 	$scope.inventories.unshift({$edit:false, $new:true});
-	$scope.focus_good_or_barcode();
+
+	// $scope.reset_focus();
+	$scope.reset_pagination();
+	
+	$scope.focus_good_or_barcode(); 
 	$scope.re_calculate();
-	$scope.save_draft();
+	$scope.save_draft(); 
     };
     
     $scope.save_free_update = function(inv){
@@ -469,6 +496,108 @@ function purchaserInventoryFixCtrlProvide(
 	}, 500); 
 	
     };
+};
+
+
+function purchaserInventoryImportFixCtrlProvide(
+    $scope, $q, $timeout, dateFilter, FileUploader,
+    diabloUtilsService, diabloFilter, purchaserService,
+    user, filterEmployee, base){
+    $scope.shops   = user.sortShops;    
+    var dialog = diabloUtilsService; 
+    $scope.select = {shop:$scope.shops[0], total:0}
+    $scope.select.datetime = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss");
+    
+    $scope.get_employee = function(){
+	var select = stockUtils.get_login_employee(
+	    $scope.select.shop.id, user.loginEmployee, filterEmployee); 
+	$scope.select.employee = select.login;
+	$scope.employees = select.filter;
+    };
+
+    $scope.get_employee();
+
+    $scope.uploader = new FileUploader({
+        url: '/purchaser/upload_stock/' + $scope.select.shop.id.toString()
+    });
+
+    $scope.change_shop = function(){
+	$scope.uploader.url = '/purchaser/upload_stock/' + $scope.select.shop.id.toString();
+	console.log($scope.uploader.url);
+    };
+
+    $scope.uploader.filters.push({
+        name: 'syncFilter',
+        fn: function(item /*{File|FileLikeObject}*/, options) {
+            console.log('syncFilter');
+            return this.queue.length < 1;
+        }
+    });
+
+    $scope.uploader.onWhenAddingFileFailed = function(item /*{File|FileLikeObject}*/, filter, options) {
+	console.info('onWhenAddingFileFailed', item, filter, options);
+	dialog.response(false, "库存导入", "库存导入失败：" + purchaserService.error[2077]); 
+    };
+    
+    $scope.uploader.onAfterAddingFile = function(fileItem) {
+        console.info('onAfterAddingFile', fileItem);
+    };
+    
+    $scope.uploader.onAfterAddingAll = function(addedFileItems) {
+        console.info('onAfterAddingAll', addedFileItems);
+    };
+    
+    $scope.uploader.onBeforeUploadItem = function(item) {
+        console.info('onBeforeUploadItem', item);
+    };
+    $scope.uploader.onProgressItem = function(fileItem, progress) {
+        console.info('onProgressItem', fileItem, progress);
+    };
+    $scope.uploader.onProgressAll = function(progress) {
+        console.info('onProgressAll', progress);
+    };
+    $scope.uploader.onSuccessItem = function(fileItem, response, status, headers) {
+        // console.info('onSuccessItem', fileItem, response, status, headers);
+	console.info('onSuccessItem', response);
+    };
+    $scope.uploader.onErrorItem = function(fileItem, response, status, headers) {
+        console.info('onErrorItem', fileItem, response, status, headers);
+    };
+    $scope.uploader.onCancelItem = function(fileItem, response, status, headers) {
+        // console.info('onCancelItem', fileItem, response, status, headers);
+	console.info('onCancelItem', fileItem, response);
+    };
+
+    $scope.uploader.onCompleteItem = function(fileItem, response, status, headers) {
+	console.info('onCompletedItem', fileItem, response);
+	var dialog = diabloUtilsService;
+	// if (response.ecode === 0){
+	//     dialog.response(true, "库存导入", "库存导入成功！！导入店铺：" + $scope.select.shop.name);
+	// } else if (response.ecode === 2712) {
+	//     fileItem.isSuccess = false;
+	//     fileItem.isError = true;
+	//     fileItem.isUploaded = false;
+	//     fileItem.progress = 0;
+	//     var message = wsaleService.error[2712]
+	// 	+ "[款号：" + response.style_number
+	// 	+ "，总数量：" + response.total
+	// 	+ "，校验数量：" + response.amount +"]";
+	//     dialog.response(false, "销售单导入", "销售单导入失败：" + message)
+	// } else {
+	//     fileItem.isSuccess = false;
+	//     fileItem.isError = true;
+	//     fileItem.isUploaded = false;
+	//     fileItem.progress = 0;
+	//     var message = wsaleService.error[response.ecode] + "[款号：" + response.style_number + "]";
+	//     dialog.response(false, "销售单导入", "销售单导入失败：" + message);
+	// } 
+    };
+    
+    $scope.uploader.onCompleteAll = function() {
+        console.info('onCompleteAll');
+    };
+
+    console.info('uploader', $scope.uploader);
 };
 
 
@@ -571,5 +700,6 @@ function purchaserInventoryFixDetailCtrlProvide(
 
 define(["purchaserApp"], function(app){
     app.controller("purchaserInventoryFixCtrl", purchaserInventoryFixCtrlProvide);
+    app.controller("purchaserInventoryImportFixCtrl", purchaserInventoryImportFixCtrlProvide);
     app.controller("purchaserInventoryFixDetailCtrl", purchaserInventoryFixDetailCtrlProvide);
 });

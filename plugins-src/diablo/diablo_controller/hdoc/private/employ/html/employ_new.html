@@ -37,7 +37,7 @@
 			   required
 			   placeholder="请输入员工姓名"
 			   x-ng-model="employ.name"
-			   x-ng-pattern="name_pattern"></input>
+			   x-ng-pattern="name_pattern"/>
 		  </div>
 		  <span class="input-group-addon bg-white fg-red">*</span> 
 		</div> 
@@ -73,7 +73,7 @@
 			   ng-pattern="mobile_pattern"
 			   placeholder="请输入手机号码"
 			   class="form-control"
-			   x-ng-model="employ.mobile"></input>
+			   x-ng-model="employ.mobile"/>
 		  </div>
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div>
@@ -96,7 +96,7 @@
 			   required
 			   placeholder="请输入您的联系地址"
 			   x-ng-model="employ.address"
-			   x-ng-pattern="address_pattern"></input>
+			   x-ng-pattern="address_pattern"/>
 		  </div>
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div>
@@ -114,13 +114,13 @@
 		<div class="input-group">
 		  <input type="text" class="form-control" required
 			 placeholder="年/月/日"
-			 datepicker-popup="yyyy/MM/dd"
+			 uib-datepicker-popup="yyyy/MM/dd"
 			 is-open="isOpened"
 			 close-text="关闭"
 			 clear-text="清除"
 			 current-text="今天"
 			 show-weeks="false"
-			 x-ng-model="employ.entry"></input>
+			 x-ng-model="employ.entry"/>
 		  <span class="input-group-btn">
 		    <button type="button"
 			    class="btn btn-default"

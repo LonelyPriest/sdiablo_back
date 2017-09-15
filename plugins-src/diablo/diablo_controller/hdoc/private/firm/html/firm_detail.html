@@ -89,7 +89,7 @@
 		  </tr>
 		</thead>
 		<tbody>
-		  <tr ng-repeat="f in filter_firms">
+		  <tr ng-repeat="f in filter_firms track by f.order_id">
 		    <td>{{f.order_id}}</td>
 		    <td>{{f.name}}</td>
 		    <td x-ng-if="right.show_orgprice">{{f.balance}}</td>
@@ -135,7 +135,7 @@
 	  </div> <!--END panel-->
 
 	  <div x-ng-show="total_items>items_perpage" class="row">
-	  <div class="col-md-12, col-sm-12, col-xs-12">
+	    <div class="col-md-12, col-sm-12, col-xs-12">
 	
 	    <span>显示第 {{current_page}} / {{num_pages}} 项结果，
 	      共 {{total_items}} 项</span>
