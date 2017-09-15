@@ -1,6 +1,11 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2017-09-16",
+         content:
+	 ["修正盘点时数量过多引起的显示问题"]
+        },
+	
 	{date: "2017-09-13",
          content:
 	 ["增加配置打印机功能"]
