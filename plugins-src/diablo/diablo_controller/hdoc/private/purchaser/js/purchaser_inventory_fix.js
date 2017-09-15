@@ -112,9 +112,10 @@ function purchaserInventoryFixCtrlProvide(
 	add.path         = item.path;
 	add.entry        = item.entry_date;
 
-	add.full_name    = item.style_number + "/" + item.brand;
+	add.full_name    = item.style_number + "/" + item.brand; 
+	console.log(add);
 
-	console.log(add); 
+	App.scrollTop();
 	$scope.auto_focus("fix");
 	$scope.add_inventory(add); 
 	return;
