@@ -238,7 +238,8 @@ alter table w_inventory_good add column fabric VARCHAR(256) default null after c
 alter table print_template add column font_name VARCHAR(32) default "" after font;
 alter table print_template add column font_executive TINYINT default 0 after font_name;
 alter table print_template add column font_category TINYINT default 0 after font_executive;
-alter table print_template add column font_price TINYINT default 0 after font_category;
+alter table print_template add column font_price  TINYINT default 0 after font_category;
+alter table print_template add column font_fabric TINYINT default 0 after font_price;
 
 alter table print_template add column hpx_executive TINYINT default 0 after hpx_each;
 alter table print_template add column hpx_category TINYINT default 0 after hpx_executive;

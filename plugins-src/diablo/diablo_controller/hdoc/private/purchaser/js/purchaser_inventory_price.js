@@ -386,7 +386,10 @@ function stockNewDetailPrintCtrlProvide(
 
     var LODOP;
     if (needCLodop()) loadCLodop(); 
-    var dialog = diabloUtilsService; 
+    var dialog = diabloUtilsService;
+
+    var pageHeight = diablo_base_setting("prn_h_page", diablo_default_shop, base, parseFloat, 14);
+    var pageWidth  = diablo_base_setting("prn_w_page", diablo_default_shop, base, parseFloat, 21.3);
     
     purchaserService.print_w_inventory_new($routeParams.rsn).then(function(result) {
     	// console.log(result);
@@ -447,6 +450,7 @@ function stockNewDetailPrintCtrlProvide(
 	if (LODOP.CVERSION) {
 	    LODOP.PRINT_INIT("task_print_stock_new");
 	    LODOP.SET_PRINTER_INDEX(stockUtils.printer_bill(user.loginShop, base));
+	    LODOP.SET_PRINT_PAGESIZE(0, pageWidth * 100, pageHeight * 100, "");
 	    LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
 	    LODOP.ADD_PRINT_HTM(
 		"5%", "5%",  "90%", "BottomMargin:15mm",
@@ -495,6 +499,10 @@ function stockTransferPrintCtrlProvide(
     var LODOP;
     if (needCLodop()) loadCLodop(); 
     var dialog = diabloUtilsService;
+
+    var pageHeight = diablo_base_setting("prn_h_page", diablo_default_shop, base, parseFloat, 14);
+    var pageWidth  = diablo_base_setting("prn_w_page", diablo_default_shop, base, parseFloat, 21.3);
+    // console.log(pageHeight, pageWidth);
     
     purchaserService.print_w_inventory_transfer($routeParams.rsn).then(function(result) {
     	// console.log(result);
@@ -555,6 +563,7 @@ function stockTransferPrintCtrlProvide(
 	if (LODOP.VERSION) {
 	    LODOP.PRINT_INIT("task_print_stock_transfer");
 	    LODOP.SET_PRINTER_INDEX(stockUtils.printer_bill(user.loginShop, base));
+	    LODOP.SET_PRINT_PAGESIZE(0, pageWidth * 100, pageHeight * 100, "");
 	    LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
 	    // LODOP.SET_PRINT_PAGESIZE(1, 0, 0,"A4");
 	    LODOP.ADD_PRINT_HTM(

@@ -632,6 +632,7 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", font_executive"
 	", font_category"
 	", font_price"
+	", font_fabric"
 	
 	", bold"
 	
@@ -676,7 +677,8 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(font_name, string, ?v(<<"font_name">>, Attrs))
 	++  ?utils:v(font_executive, integer, ?v(<<"font_executive">>, Attrs))
 	++  ?utils:v(font_category, integer, ?v(<<"font_category">>, Attrs))
-	++  ?utils:v(font_print, integer, ?v(<<"font_price">>, Attrs))
+	++  ?utils:v(font_price, integer, ?v(<<"font_price">>, Attrs))
+	++  ?utils:v(font_fabric, integer, ?v(<<"font_fabric">>, Attrs))
 	
 	++  ?utils:v(bold, integer, ?v(<<"bold">>, Attrs))
 	++  ?utils:v(solo_brand, integer, ?v(<<"solo_brand">>, Attrs))
@@ -791,7 +793,9 @@ sys_config() ->
 	      {"export_note",       "导出颜色尺码",       "0",   "0"}, %% 0: utf8 1: gbk
 
 	      {"prn_barcode",       "条码打印机编号",     "-1",   "0"},
-	      {"prn_bill",          "单据打印机编号",     "-1",   "0"}
+	      {"prn_bill",          "单据打印机编号",     "-1",   "0"},
+	      {"prn_h_page",        "单据纸张高",         "14.0", "0"},
+	      {"prn_w_page",        "单据纸张宽",         "21.3", "0"}
 	      %% {"bcode_self",     "吊牌打印模式",       "0",   "0"}
 	     ],
     Values.

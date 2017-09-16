@@ -1,6 +1,12 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2017-09-17",
+         content:
+	 ["支持入库/移仓单自定义纸张大小",
+	  "增加吊牌打印时，自定义成份字体大小"]
+        },
+	
 	{date: "2017-09-16",
          content:
 	 ["修正盘点时数量过多引起的显示问题"]

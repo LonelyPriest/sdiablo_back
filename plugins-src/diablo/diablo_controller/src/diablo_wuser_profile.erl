@@ -895,6 +895,7 @@ handle_call({set_barcode_print_template, Merchant}, _From, State) ->
 		", font_executive"
 		", font_category"
 		", font_price"
+		", font_fabric"
 		
 		", bold"
 		
@@ -928,6 +929,7 @@ handle_call({set_barcode_print_template, Merchant}, _From, State) ->
 		++ ?to_s(?NO) ++ ","
 		++ ?to_s(?NO) ++ ","
 		
+		++ ?to_s(0) ++ ","
 		++ ?to_s(0) ++ ","
 		++ ?to_s(0) ++ ","
 		++ ?to_s(0) ++ ","

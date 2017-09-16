@@ -1223,6 +1223,7 @@ create table print_template(
    font_executive  TINYINT default 0,
    font_category   TINYINT default 0,
    font_price      TINYINT default 0,
+   font_fabric     TINYINT default 0,
    
    bold            TINYINT default 0,
    

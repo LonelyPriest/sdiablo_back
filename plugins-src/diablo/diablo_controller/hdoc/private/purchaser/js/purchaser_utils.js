@@ -866,6 +866,10 @@ stockPrintU.prototype.printBarcode2 = function() {
 	    }
 	    
 	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "      " + f.p + "%" + f.name);
+	    
+	    if (stockUtils.to_integer(this.template.font_fabric) !== 0) {
+		this.LODOP.SET_PRINT_STYLEA(0, "FontSize", stockUtils.to_integer(this.template.font_fabric));
+	    }
 	    top += this.template.hpx_fabric;
 	} 
     }
@@ -887,7 +891,7 @@ stockPrintU.prototype.printBarcode2 = function() {
     // this.LODOP.SET_PRINT_STYLEA(0, "Bold", 0);
 
     // this.LODOP.PRINT_SETUP();
-    // this.LODOP.PRINT_DESIGN();
-    this.LODOP.PRINT();
+    this.LODOP.PRINT_DESIGN();
+    // this.LODOP.PRINT();
     
 };

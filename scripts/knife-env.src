@@ -4,6 +4,8 @@
 # invoked from another script, this is the location of the caller)
 SCRIPT_PATH="$0"
 
+export PATH=/home/bxhui2/otp_bin_R17/bin:${PATH}
+
 while [ -h "$SCRIPT_PATH" ] ; do
     FULL_PATH=`readlink -f $SCRIPT_PATH 2>/dev/null`
     if [ "$?" != "0" ]; then
