@@ -33,11 +33,13 @@ function purchaserInventoryNewUpdateCtrlProvide (
     $scope.setting    = {history_stock: false};
     $scope.pattern    = {discount:diabloPattern.discount};
 
-    $scope.setting.use_barcode    = stockUtils.use_barcode(diablo_default_shop, $scope.ubase);
-    $scope.setting.auto_barcode    = stockUtils.auto_barcode(diablo_default_shop, base); 
+    $scope.setting.use_barcode     = stockUtils.use_barcode(diablo_default_shop, $scope.ubase);
+    $scope.setting.auto_barcode    = stockUtils.auto_barcode(diablo_default_shop, base);
+    $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, base);
 
     $scope.template = filterTemplate.length !== 0 ? filterTemplate[0] : undefined;
     $scope.printU = new stockPrintU($scope.template, $scope.setting.auto_barcode);
+    $scope.printU.setPrinter($scope.setting.printer_barcode);
 
     $scope.go_back = function(){
 	console.log($routeParams.ppage);

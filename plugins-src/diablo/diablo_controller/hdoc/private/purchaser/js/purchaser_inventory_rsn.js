@@ -189,14 +189,16 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
     $scope.setting = {
 	// self_barcode   :stockUtils.barcode_self(diablo_default_shop, base), 
 	use_barcode: stockUtils.use_barcode(diablo_default_shop, base),
-	auto_barcode :stockUtils.auto_barcode(diablo_default_shop, base)
+	auto_barcode :stockUtils.auto_barcode(diablo_default_shop, base),
+	printer_barcode: stockUtils.printer_barcode(user.loginShop, base)
 	// barcode_width: stockUtils.barcode_width(diablo_default_shop, base),
 	// barcode_height: stockUtils.barcode_height(diablo_default_shop, base),
 	// barcode_firm: stockUtils.barcode_with_firm(diablo_default_shop, base)
     };
 
     $scope.template = filterTemplate.length !== 0 ? filterTemplate[0] : undefined;
-    $scope.printU = new stockPrintU($scope.template, $scope.setting.auto_barcode); 
+    $scope.printU = new stockPrintU($scope.template, $scope.setting.auto_barcode);
+    $scope.printU.setPrinter($scope.setting.printer_barcode);
     /*
      * hidden
      */

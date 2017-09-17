@@ -23,7 +23,10 @@ function purchaserInventoryFixCtrlProvide(
     $scope.refresh = function(){
 	$scope.inventories = [];
 	$scope.inventories.push({$edit:false, $new:true}); 
-	$scope.has_saved = false; 
+	$scope.has_saved = false;
+
+	$scope.current_page  = 1;
+	$scope.reset_pagination();
     }; 
 
     // focus
@@ -43,14 +46,17 @@ function purchaserInventoryFixCtrlProvide(
     	} 
     };
 
-    $scope.get_setting = function(shopId) {
-	$scope.setting.barcode_mode = stockUtils.use_barcode(shopId, base);
-    };
+    // $scope.get_setting = function(shopId) {
+    // 	$scope.setting.barcode_mode = stockUtils.use_barcode(shopId, base);
+    // };
 
-    $scope.change_shop = function() {
-	$scope.get_setting($scope.select.shop.id);
-    };
+    // $scope.change_shop = function() {
+    // 	$scope.get_setting($scope.select.shop.id);
+    // };
 
+    $scope.setting.barcode_mode = stockUtils.use_barcode(diablo_default_shop, base);
+    $scope.setting.auto_barcode    = stockUtils.auto_barcode(diablo_default_shop, base);
+    
     $scope.get_employee = function(){
 	var select = stockUtils.get_login_employee(
 	    $scope.select.shop.id, user.loginEmployee, filterEmployee); 
@@ -76,7 +82,7 @@ function purchaserInventoryFixCtrlProvide(
     $scope.has_saved = false;
     
     $scope.get_employee();
-    $scope.get_setting();
+    // $scope.get_setting();
     $scope.focus_good_or_barcode();
     
     $scope.match_style_number = function(viewValue){
@@ -157,7 +163,8 @@ function purchaserInventoryFixCtrlProvide(
 			// $scope.inventories.unshift({$edit:false, $new:true}); 
 			// console.log($scope.select.datetime);
 			// console.log($scope.inventories);
-			reset_pagination();
+			$scope.current_page = 1;
+			$scope.reset_pagination();
 			$scope.focus_good_or_barcode();
 			$scope.re_calculate();
 		    });
@@ -335,7 +342,7 @@ function purchaserInventoryFixCtrlProvide(
 
     $scope.barcode_scanner = function(full_bcode) {
     	console.log(full_bcode); 
-	var barcode = diabloHelp.correct_barcode(full_bcode); 
+	var barcode = diabloHelp.correct_barcode(full_bcode, $scope.setting.auto_barcode); 
 	console.log(barcode);
 	
 	diabloFilter.get_stock_by_barcode(barcode.cuted, $scope.select.shop.id).then(function(result){
