@@ -153,7 +153,7 @@ import(good, Merchant, Shop, Path) ->
     ?INFO("current path ~p", [file:get_cwd()]),
     {ok, Device} = file:open(Path, [read]), 
     Content = read_line(Device, []),
-    ?DEBUG("Content ~p", [Content]),
+    %% ?DEBUG("Content ~p", [Content]),
     file:close(Device),
     Datetime = ?utils:current_time(format_localtime),
     Sqls = insert_into_good(good, Merchant, Shop, Datetime, Content, []),
@@ -568,11 +568,35 @@ insert_into_good(good, _Merchant, _Shop, _Datetime, [], Sqls) ->
     Sqls;
 insert_into_good(good, Merchant, Shop, Datetime, [H|T], Sqls) ->
     ?DEBUG("H~p", [H]),
-    {Brand, SN, Color, Type, TagPrice, _Total} = H,
+    {Brand, SN, Color, Type, TagPrice, _Firm, _Num, _ShiftDate} = H,
     ?DEBUG("SN ~p", [SN]),
     %% get style_number, brand from sn
     {NewSN, NewBrand} = parse_style_number(SN, <<>>),
     ?DEBUG("NewSN ~p, NewBrand ~p", [NewSN,NewBrand]),
+
+    {Year, Season, ShiftDate} =
+    	case _ShiftDate of
+    	    <<>> -> {2017, 2, Datetime};
+    	    _ ->
+		<<YY:4/binary, "-",  MM:2/binary, "-", _DD:2/binary>> = _ShiftDate,
+		SS = 
+		    case ?to_i(MM) of
+			1 -> 0;
+			2 -> 0;
+			3 -> 0;
+			4 -> 1;
+			5 -> 1;
+			6 -> 1;
+			7 -> 2;
+			8 -> 2;
+			9 -> 2;
+			10 -> 3;
+			11 -> 3;
+			12 -> 3
+		    end,
+		{YY, SS, <<_ShiftDate/binary, <<" 13:30:22">>/binary>>}
+	end,
+		
 
     case NewSN =:= <<>> of
 	true ->
@@ -584,7 +608,14 @@ insert_into_good(good, Merchant, Shop, Datetime, [H|T], Sqls) ->
 			end,
 		
 	    {ok, BrandId} = ?attr:brand(new, Merchant, [{<<"name">>, RealBrand}]),
-	    {ok, TypeId} = ?attr:type(new, Merchant, Type),
+	    %% {ok, TypeId} = ?attr:type(new, Merchant, Type),
+	    {ok, TypeId} =
+		case ?attr:type(new, Merchant, [{<<"name">>, Type},
+						{<<"auto_barcode">>, 0}]) of
+		    {ok, _TypeId} -> {ok, _TypeId};
+		    {ok_exist, _TypeId} -> {ok, _TypeId};
+		    _Error -> _Error 
+		end,
 	    
 	    Sql00 = "select id, name from colors"
 		" where name=" ++ "\"" ++ ?to_s(Color) ++ "\""
@@ -603,10 +634,10 @@ insert_into_good(good, Merchant, Shop, Datetime, [H|T], Sqls) ->
 	    {SGroup, Sizes} = case type_like_trous(Type) of
 			 true ->
 			     %% 26, 27, 28...
-			     {"111,112", "26,27,28,29,30,31,32,33,34"};
+			     {"150,151", "26,27,28,29,30,31,32,33,34,35,36"};
 			 false ->
 			     %% s, m, l...
-			     {"109", "S,M,L,XL,2XL,3XL,4XL"}
+			     {"75", "S,M,L,XL,2XL,3XL,4XL"}
 		     end,
 	    
 	    Sql1 = "select id, style_number, brand, color, size from w_inventory_good"
@@ -625,8 +656,8 @@ insert_into_good(good, Merchant, Shop, Datetime, [H|T], Sqls) ->
 			 ++ "\"" ++ ?to_s(NewSN) ++ "\","
 			 ++ ?to_s(0) ++ ","
 			 ++ "\"" ++ ?to_s(ColorId) ++ "\","
-			 ++ ?to_s(2017) ++ ","
-			 ++ ?to_s(1) ++ "," 
+			 ++ ?to_s(Year) ++ ","
+			 ++ ?to_s(Season) ++ "," 
 			 ++ ?to_s(TypeId) ++ ","
 			 ++ "\"" ++ ?to_s(Sizes) ++ "\","
 			 ++ "\"" ++ ?to_s(SGroup) ++ "\","
@@ -639,8 +670,8 @@ insert_into_good(good, Merchant, Shop, Datetime, [H|T], Sqls) ->
 			 ++ ?to_s(100) ++ ","
 			 ++ ?to_s(7) ++ ","
 			 ++ ?to_s(Merchant) ++ ","
-			 ++ "\"" ++ ?to_s(Datetime) ++ "\","
-			 ++ "\"" ++ ?to_s(Datetime) ++ "\")"];
+			 ++ "\"" ++ ?to_s(ShiftDate) ++ "\","
+			 ++ "\"" ++ ?to_s(ShiftDate) ++ "\")"];
 		    {ok, R1} ->
 			?DEBUG("R1 ~p", [R1]),
 			ExistColors = string:tokens(?to_s(?v(<<"color">>, R1)), ","),

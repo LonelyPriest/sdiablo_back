@@ -540,7 +540,7 @@ action(Session, Req, {"fix_w_inventory"}, Payload) ->
 	    {StocksNotInShop, StocksNotEqualShop}
 		= compare_stock(db_to_shop, DBStocks, ShopStockDict, [], []),
 	    ?DEBUG("stocksNotInShop ~p", [StocksNotInShop]),
-	    ?DEBUG("stocksNotEqualShop ~p", [StocksNotEqualShop]),
+	    %% ?DEBUG("stocksNotEqualShop ~p", [StocksNotEqualShop]),
 
 	    case ?w_inventory:purchaser_inventory(
 		    fix,
@@ -1812,6 +1812,7 @@ stock(to_dict, [{Stock}|T], DBTotal, DictStocks) ->
     stock(to_dict, T, Total + DBTotal, dict:store(Key, Stock, DictStocks));
 
 stock(shop_to_dict, [], ShopTotal, DictStocks) ->
+    ?DEBUG("sthopTotal ~pm DictStocks ~p", [ShopTotal, dict:to_list(DictStocks)]),
     {ShopTotal, DictStocks};
 stock(shop_to_dict, [{struct, Stock}|T], ShopTotal, DictStocks) -> 
     Key = key(stock, Stock),
@@ -1866,7 +1867,7 @@ compare_stock(db_to_shop, [{Stock}|T], ShopStockDict, StocksNotInShop, StocksNot
 	    %% 	    compare_stock(shop_to_db, T, DBStockDict, StocksNotInDB, StocksNotEqualDB)
 	    %% end;
 	error ->
-	    ?DEBUG("db_to_shop:key ~p not found", [Key]),
+	    %% ?DEBUG("db_to_shop:key ~p not found", [Key]),
 	    compare_stock(
 	      db_to_shop,
 	      T,

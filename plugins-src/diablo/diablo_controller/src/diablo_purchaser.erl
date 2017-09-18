@@ -3093,7 +3093,7 @@ sql(wfix, RSN, Datetime, Merchant, Shop, {StocksNotInDB, StocksNotInShop, Stocks
 		     Brand    = ?v(<<"brand">>, Stock),
 		     Color    = ?v(<<"color">>, Stock),
 		     Size     = ?v(<<"size">>, Stock),
-		     FixTotal = ?v(<<"total">>, Stock),
+		     FixTotal = ?v(<<"fix">>, Stock),
 		     DBTotal  = ?v(<<"db">>, Stock),
 		     ["insert into w_inventory_fix_detail_amount(rsn"
 		      ", merchant, shop, style_number"
