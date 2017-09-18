@@ -2098,6 +2098,91 @@ function purchaserInventoryDetailCtrlProvide(
 	});
     };
 
+    $scope.p_barcode_all = function(inv) {
+	console.log(inv); 
+	if ($scope.template.firm && diablo_invalid_firm === inv.firm_id ) {
+	    dialog.response(
+		false,
+		dialog_barcode_title,
+		dialog_barcode_title_failed + purchaserService.error[2086]);
+	    return;
+	} 
+
+	var print_barcode = function(barcode) {
+	    console.log(barcode);
+	    var firm = inv.firm_id === diablo_invalid_firm ? undefined : inv.firm.name;
+
+	    if (diablo_free_color_size === inv.free) {
+		for (var i=0; i<inv.amount; i++) {
+		    $scope.printU.free_prepare(
+			inv,
+			inv.brand.name,
+			barcode,
+			firm); 
+		} 
+	    } else {
+		purchaserService.list_purchaser_inventory(
+		    {style_number: inv.style_number,
+		     brand:        inv.brand_id,
+		     rsn:          undefined,
+		     shop:         inv.shop_id,
+		     qtype:        1}
+		).then(function(invs){
+		    console.log(invs);
+		    var order_sizes = diabloHelp.usort_size_group(inv.s_group, filterSizeGroup);
+		    // console.log(order_sizes);
+		    var sort    = diabloHelp.sort_stock(invs, order_sizes, filterColor);
+		    // console.log(sort);
+		    // inv.sizes   = sort.size;
+		    // inv.colors  = sort.color;
+		    inv.amounts = sort.sort;
+
+		    var barcodes = []; 
+		    angular.forEach(inv.amounts, function(a) {
+			for (var i=0; i<a.count; i++) {
+			    var o = stockUtils.gen_barcode_content(
+				barcode,
+				a.cid,
+				a.size,
+				filterColor);
+
+			    if (angular.isDefined(o) && angular.isObject(o)) {
+				barcodes.push(o);
+			    }
+			} 
+		    });
+
+		    console.log(barcodes);
+		    angular.forEach(barcodes, function(b) {
+			$scope.printU.prepare(
+			    inv,
+			    inv.brand.name,
+			    b.barcode,
+			    firm,
+			    b.cname,
+			    b.size); 
+		    }) 
+		});
+	    } 
+	};
+
+	
+	purchaserService.gen_barcode(
+	    inv.style_number, inv.brand_id, inv.shop_id
+	).then(function(result) {
+	    console.log(result);
+	    if (result.ecode === 0) {
+		inv.bcode = result.barcode;
+		print_barcode(result.barcode);
+	    } else {
+		dialog.response(
+		    false,
+		    "条码生成", "条码生成失败："
+			+ purchaserService.error[result.ecode]);
+	    }
+	});
+    };
+
     var dialog_reset_barcode_title = "条码重置";
     var dialog_reset_barcode_title_failed = "条码重置失败：";
     $scope.reset_barcode = function(inv) {
