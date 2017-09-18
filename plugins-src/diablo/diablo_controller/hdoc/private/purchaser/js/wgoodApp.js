@@ -89,6 +89,13 @@ function wgoodConfig(){
 		{operation: "update_w_color"}, color).$promise;
 	};
 
+	this.delete_color = function(colorId){
+	    return http.save(
+		{operation: "delete_w_color"}, {cid: colorId}).$promise;
+	};
+
+	
+
 	/*
 	 * good type
 	 */

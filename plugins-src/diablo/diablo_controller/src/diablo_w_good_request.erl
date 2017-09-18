@@ -488,6 +488,18 @@ action(Session, Req, {"update_w_color"}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"delete_w_color"}, Payload) ->
+    ?DEBUG("delete_w_color with session ~p, Payload ~p", [Session, Payload]), 
+    Merchant  = ?session:get(merchant, Session),
+    ColorId = ?v(<<"cid">>, Payload, 0),
+    case ?attr:color(w_delete, Merchant, ColorId) of 
+	{ok, ColorId} ->
+	    ?w_user_profile:update(color, Merchant),
+	    ?utils:respond(200, Req, ?succ(update_color, ColorId));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
 action(Session, Req, {"new_w_type"}, Payload) ->
     ?DEBUG("new_w_color with session ~p,  paylaod ~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session), 

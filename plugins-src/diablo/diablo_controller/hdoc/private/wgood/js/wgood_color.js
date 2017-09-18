@@ -156,8 +156,32 @@ function wgoodColorDetailCtrlProvide(
      * delete 
      */
     $scope.delete_color = function(color){
+	console.log(color);
 	diabloUtilsService.response(false, "删除颜色", "暂不支持此操作！！", $scope);
-    };
+	// var callback = function() {
+    // 	    wgoodService.delete_color(color.id).then(function(result) {
+    // 		if (result.ecode === 0) {
+    // 		    dialog.response_with_callback(
+    // 			true,
+    // 			"删除颜色",
+    // 			"删除颜色成功！！",
+    // 			undefined,
+    // 			function() {
+    // 			    $scope.colors = $scope.colors.filter(function(c) {
+    // 				return c.id !== color.id;
+    // 			    });
+    // 			    diabloFilter.reset_color();
+    // 			});
+    // 		} else {
+    // 		    dialog.response(false,
+    // 				    "颜色编辑",
+    // 				    "颜色编辑失败！！" + wgoodService.error[result.ecode],
+    // 				    undefined);
+    // 		};
+    // 	    });
+    // 	};
+    // 	dialog.request("删除颜色", "确认要删除颜色吗？", callback, undefined, undefined);
+    // };
 };
 
 

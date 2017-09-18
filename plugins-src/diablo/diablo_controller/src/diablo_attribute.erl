@@ -200,10 +200,13 @@ handle_call({update_w_color, Merchant, Attrs}, _From, State) ->
 
 handle_call({delete_w_color, Merchant, ColorId}, _From, State) ->
     ?DEBUG("delete_w_color with merchant ~p, colorId ~p", [Merchant, ColorId]), 
-    Sql  = "update colors set deleted=" ++ ?to_s(?YES)
-	++ " where=id" ++ ?to_s(ColorId)
-	++ " and merchant=" ++ ?to_s(Merchant),
+    %% Sql  = "update colors set deleted=" ++ ?to_s(?YES)
+    %% 	++ " where id=" ++ ?to_s(ColorId)
+    %% 	++ " and merchant=" ++ ?to_s(Merchant),
 
+    Sql = "delete from colors" 
+	++ " where id=" ++ ?to_s(ColorId)
+	++ " and merchant=" ++ ?to_s(Merchant),
     Reply = ?sql_utils:execute(write, Sql, ColorId),
     {reply, Reply, State};
 
@@ -213,6 +216,7 @@ handle_call({list_w_color, Merchant}, _Form, State) ->
 	++ " from colors a, color_type b"
 	++ " where "
 	++ " a.merchant=" ++ ?to_s(Merchant)
+	++ " and a.deleted!=1"
 	++ " and a.type=b.id order by a.id",
 
     Reply = ?sql_utils:execute(read, Sql),
