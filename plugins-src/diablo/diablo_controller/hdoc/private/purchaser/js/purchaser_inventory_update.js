@@ -41,6 +41,8 @@ function purchaserInventoryNewUpdateCtrlProvide (
     $scope.printU = new stockPrintU($scope.template, $scope.setting.auto_barcode);
     $scope.printU.setPrinter($scope.setting.printer_barcode);
 
+    var dialog = diabloUtilsService;
+
     $scope.go_back = function(){
 	console.log($routeParams.ppage);
 	if (diablo_from_update_stock === stockUtils.to_integer($routeParams.from)){
