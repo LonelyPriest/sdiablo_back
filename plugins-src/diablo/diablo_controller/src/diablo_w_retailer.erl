@@ -258,7 +258,8 @@ handle_call({update_retailer, Merchant, RetailerId, {Attrs, OldAttrs}}, _From, S
     IDCard   = ?v(<<"id_card">>, Attrs),
     Mobile   = ?v(<<"mobile">>, Attrs),
     Shop     = ?v(<<"shop">>, Attrs),
-    Address  = ?v(<<"address">>, Attrs), 
+    Address  = ?v(<<"address">>, Attrs),
+    Comment  = ?v(<<"comment">>, Attrs),
     Birth    = ?v(<<"birth">>, Attrs), 
     Password = ?v(<<"password">>, Attrs), 
 
@@ -315,6 +316,7 @@ handle_call({update_retailer, Merchant, RetailerId, {Attrs, OldAttrs}}, _From, S
 		++ ?utils:v(mobile, string, Mobile)
 		++ ?utils:v(shop, integer, ?supplier:get_modified(Shop, OldShop))
 		++ ?utils:v(address, string, Address)
+		++ ?utils:v(comment, string, Comment)
 		++ ?utils:v(birth, string, Birth)
 		++ ?utils:v(type, integer, ?supplier:get_modified(Type, OldType)) 
 		++ ?utils:v(password, string, Password)
@@ -464,6 +466,7 @@ handle_call({list_retailer, Merchant, Conditions}, _From, State) ->
 	", a.draw as draw_id"
 	", a.merchant"
 	", a.entry_date"
+	", a.comment"
 
 	", b.name as shop"
 	
@@ -1012,6 +1015,7 @@ handle_call({{filter_retailer, Order, Sort},
 	", a.shop as shop_id"
 	", a.draw as draw_id"
 	", a.entry_date"
+	", a.comment"
 
 	", b.name as shop_name" 
 	" from w_retailer a"

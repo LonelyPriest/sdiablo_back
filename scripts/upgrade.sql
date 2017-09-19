@@ -254,3 +254,5 @@ alter table w_inventory_transfer_detail add column bcode VARCHAR(32) default 0 a
 
 -- 2017-09-20
 alter table print_template add column code_firm TINYINT default 0 after firm;
+
+alter table w_retailer add column comment VARCHAR(255) after entry_date;

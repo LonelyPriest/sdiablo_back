@@ -200,6 +200,7 @@ function wretailerConfig(angular) {
 		 id_card:  r.id_card,
 		 mobile:   r.mobile,
 		 address:  r.address,
+		 comment:  r.comment,
 		 shop:     r.shop,
 		 password: r.password,
 		 type:     r.type,

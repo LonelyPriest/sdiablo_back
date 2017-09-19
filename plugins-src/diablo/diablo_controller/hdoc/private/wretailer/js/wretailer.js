@@ -454,6 +454,7 @@ function wretailerDetailCtrlProvide(
 		id_card: diablo_get_modified(params.retailer.id_card, old_retailer.id_card),
 		mobile: diablo_get_modified(params.retailer.mobile, old_retailer.mobile),
 		address: diablo_get_modified(params.retailer.address, old_retailer.address),
+		comment: diablo_get_modified(params.retailer.comment, old_retailer.comment),
 		shop: params.retailer.edit_shop ? params.retailer.shop.id : undefined,
 		type: diablo_get_modified(params.retailer.type, old_retailer.type),
 		password:diablo_get_modified(params.retailer.password, old_retailer.password),
