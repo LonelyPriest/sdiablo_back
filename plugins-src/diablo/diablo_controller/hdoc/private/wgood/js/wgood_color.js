@@ -181,7 +181,7 @@ function wgoodColorDetailCtrlProvide(
     // 	    });
     // 	};
     // 	dialog.request("删除颜色", "确认要删除颜色吗？", callback, undefined, undefined);
-    // };
+    };
 };
 
 
@@ -326,7 +326,7 @@ function wgoodTypeDetailCtrlProvide(
 	     auto_barcode: $scope.auto_barcode,
 	     ctypes: $scope.ctypes});
     };
-}
+};
 
 define(["wgoodApp"], function(app){
     app.controller("wgoodColorDetailCtrl", wgoodColorDetailCtrlProvide);
