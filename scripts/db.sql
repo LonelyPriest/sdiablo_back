@@ -1210,6 +1210,7 @@ create table print_template(
    brand           TINYINT default 0,
    type            TINYINT default 0,
    firm            TINYINT default 0,
+   code_firm       TINYINT default 0,
    color           TINYINT default 0,
    size            TINYINT default 0,
 

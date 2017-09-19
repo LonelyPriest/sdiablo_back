@@ -977,7 +977,7 @@ function goodPrintTemplateCtrlProvide(
     $scope.refresh();
 
     var p = ["width", "height",
-	     "style_number", "brand", "type", "firm", "color", "size"
+	     "style_number", "brand", "type", "firm", "code_firm", "color", "size"
 	     , "level", "executive", "category", "fabric"
 	     , "font", "font_name", "font_executive", "font_category", "font_price"
 	     , "bold"

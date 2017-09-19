@@ -943,13 +943,15 @@ function wgoodDetailCtrlProvide(
 		    dialog_barcode_title,
 		    dialog_barcode_title_failed + wgoodService.error[1998]);
 	    } else {
+		// $scope.printU.setCodeFirm(g.firm_id); 
 		if (g.free === 0) {
 		   angular.forEach(barcode_amounts, function(a) {
 		       $scope.printU.free_prepare(
 			   g,
 			   g.brand,
 			   g.bcode,
-			   g.firm_id === diablo_invalid_firm ? undefined : g.firm.name);
+			   g.firm_id === diablo_invalid_firm ? undefined : g.firm.name,
+			   g.firm_id);
 		   })
 		} else {
 		    var barcodes = [];
@@ -970,7 +972,8 @@ function wgoodDetailCtrlProvide(
 			    g,
 			    g.brand,
 			    b.barcode,
-			    g.firm_id === diablo_invalid_firm ? undefined : g.firm.name, 
+			    g.firm_id === diablo_invalid_firm ? undefined : g.firm.name,
+			    g.firm_id,
 			    b.cname,
 			    b.size); 
 		    });

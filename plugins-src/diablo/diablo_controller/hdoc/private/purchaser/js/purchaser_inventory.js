@@ -1983,13 +1983,16 @@ function purchaserInventoryDetailCtrlProvide(
 
 	var print_barcode = function(barcode) {
 	    console.log(barcode);
-	    var firm = inv.firm_id === diablo_invalid_firm ? undefined : inv.firm.name; 
+	    var firm = inv.firm_id === diablo_invalid_firm ? undefined : inv.firm.name;
+	    // $scope.printU.setCodeFirm(inv.firm.id);
+	    
 	    if (diablo_free_color_size === inv.free) {
 		$scope.printU.free_prepare(
 		    inv,
 		    inv.brand.name,
 		    barcode,
-		    firm); 
+		    firm,
+		    inv.firm_id); 
 	    }
 	    else {
 		var callback = function(params) {
@@ -2028,6 +2031,7 @@ function purchaserInventoryDetailCtrlProvide(
 				inv.brand.name,
 				b.barcode,
 				firm,
+				inv.firm_id,
 				b.cname,
 				b.size); 
 			})

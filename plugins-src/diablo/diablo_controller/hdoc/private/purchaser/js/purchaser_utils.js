@@ -693,6 +693,11 @@ stockPrintU.prototype.setFirm = function(firm) {
     this.firm = firm;
 };
 
+stockPrintU.prototype.setCodeFirm = function(code) {
+    this.codeFirm = diablo_firm_code + code;
+};
+
+
 stockPrintU.prototype.setColor = function(color) {
     this.color = color;
 };
@@ -706,6 +711,7 @@ stockPrintU.prototype.reset = function() {
     this.stock = undefined;
     this.brand = undefined;
     this.firm  = undefined;
+    this.codeFirm = undefined;
     
     this.color = undefined;
     this.size  = undefined;
@@ -715,13 +721,15 @@ stockPrintU.prototype.free_prepare = function(
     stock,
     brand,
     barcode,
-    firm) {
+    firm,
+    codeFirm) {
     this.reset();
     this.init();
     
     this.setStock(stock);
     this.setBrand(brand);
     this.setFirm(firm);
+    this.setCodeFirm(codeFirm);
     
     if (!this.autoBarcode) {
 	this.setBarcode(stockUtils.patch_barcode(barcode, diablo_free_color, diablo_free_size));
@@ -737,6 +745,7 @@ stockPrintU.prototype.prepare = function(
     brand,
     barcode, 
     firm,
+    codeFirm,
     color,
     size) {
     console.log(stock, brand, barcode, firm, color, size);
@@ -748,6 +757,7 @@ stockPrintU.prototype.prepare = function(
     this.setBrand(brand);
     this.setBarcode(barcode);
     this.setFirm(firm);
+    this.setCodeFirm(codeFirm);
     this.setColor(color);
     this.setSize(size);
 
@@ -770,11 +780,15 @@ stockPrintU.prototype.printBarcode2 = function() {
     var iwpx = this.wpx - this.left;
     var top  = this.top;
 
-    console.log(iwpx, top);
+    // console.log(iwpx, top);
 
     var firm = angular.isUndefined(this.firm) ? diablo_empty_string : this.firm;
     if (this.template.firm) {
-	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "厂商：" + firm);
+	if (this.template.code_firm && angular.isDefined(this.codeFirm)) {
+	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "厂商：" + this.codeFirm);
+	} else {
+	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "厂商：" + firm); 
+	}
 	top += this.template.hpx_each;
     }
     

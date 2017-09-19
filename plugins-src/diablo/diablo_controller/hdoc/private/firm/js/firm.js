@@ -195,7 +195,7 @@ function firmDetailCtrlProvide(
 	    $scope.prompts = []; 
 	    angular.forEach($scope.firms, function(f){
 		$scope.total_balance += f.balance;
-		f.code = 1000 + f.id;
+		f.code = diablo_firm_code + f.id;
 
 		if (!in_prompt(f.name, $scope.prompts)){
 		    $scope.prompts.push({name: f.name, py:diablo_pinyin(f.name)}); 

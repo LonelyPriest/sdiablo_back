@@ -546,14 +546,17 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 	} 
 
 	var print_barcode = function(barcode) {
-	    var firm = inv.firm_id === diablo_invalid_firm ? undefined: inv.firm.name; 
+	    var firm = inv.firm_id === diablo_invalid_firm ? undefined: inv.firm.name;
+	    // $scope.printU.setCodeFirm(inv.firm.id);
+
 	    if (0 === inv.free) {
 		for (var i=0; i<inv.amount; i++) {
 		    $scope.printU.free_prepare(
 			inv,
 			inv.brand.name,
 			barcode,
-			firm);
+			firm,
+			inv.firm_id);
 		} 
 	    }
 	    else {
@@ -577,6 +580,7 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 			    inv.brand.name,
 			    b.barcode,
 			    firm,
+			    inv.firm_id,
 			    b.cname,
 			    b.size); 
 		    })

@@ -882,6 +882,7 @@ handle_call({set_barcode_print_template, Merchant}, _From, State) ->
 		", brand"
 		", type"
 		", firm"
+		", code_firm"
 		", color"
 		", size"
 		
@@ -921,6 +922,7 @@ handle_call({set_barcode_print_template, Merchant}, _From, State) ->
 		++ ?to_s(?YES) ++ ","
 		++ ?to_s(?YES) ++ ","
 		++ ?to_s(?YES) ++ ","
+		++ ?to_s(?NO) ++ ","
 		++ ?to_s(?YES) ++ ","
 		++ ?to_s(?YES) ++ ","
 

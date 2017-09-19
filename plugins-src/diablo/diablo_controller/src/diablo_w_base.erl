@@ -619,6 +619,7 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", brand"
 	", type"
 	", firm"
+	", code_firm"
 	", color"
 	", size"
 
@@ -665,6 +666,7 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(brand, integer, ?v(<<"brand">>, Attrs))
 	++  ?utils:v(type, integer, ?v(<<"type">>, Attrs))
 	++  ?utils:v(firm, integer, ?v(<<"firm">>, Attrs))
+	++  ?utils:v(code_firm, integer, ?v(<<"code_firm">>, Attrs))
 	++  ?utils:v(color, integer, ?v(<<"color">>, Attrs))
 	++  ?utils:v(size, integer, ?v(<<"size">>, Attrs))
 	
