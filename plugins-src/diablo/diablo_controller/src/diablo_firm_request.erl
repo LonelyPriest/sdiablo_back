@@ -43,7 +43,18 @@ action(Session, Req, {"list_brand"}) ->
 action(Session, Req, {"delete_frim", FirmId}) ->
     ?DEBUG("delete firm with session ~p, id ~p", [Session, FirmId]),
     ok = ?supplier:supplier(delete, {"id", ?to_integer(FirmId)}),
-    ?utils:respond(200, Req, ?succ(delete_supplier, FirmId)).
+    ?utils:respond(200, Req, ?succ(delete_supplier, FirmId));
+
+action(Session, Req, {"delete_brand", Id}) ->
+    ?DEBUG("delete_brand with session ~p, id ~p", [Session, Id]),
+
+    Merchant = ?session:get(merchant, Session),
+    case ?attr:brand(delete, Merchant, Id) of
+	{ok, GoodId} ->
+	    ?utils:respond(200, Req, ?succ(delete_purchaser_good, GoodId));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end.
 
 
 %%--------------------------------------------------------------------

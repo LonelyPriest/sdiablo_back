@@ -58,7 +58,9 @@ size_group(update, Merchant, Attrs) ->
 brand(new, Merchant, Attrs) ->
     gen_server:call(?MODULE, {new_brand, Merchant, Attrs});
 brand(update, Merchant, Attrs) ->
-    gen_server:call(?MODULE, {update_brand, Merchant, Attrs}).
+    gen_server:call(?MODULE, {update_brand, Merchant, Attrs});
+brand(delete, Merchant, BrandId) ->
+    gen_server:call(?MODULE, {delete_brand, Merchant, BrandId }).
 brand(list, Merchant) ->
     gen_server:call(?MODULE, {list_brand, Merchant}).
 
@@ -398,6 +400,26 @@ handle_call({update_brand, Merchant, Attrs}, _From, State) ->
     Reply = ?sql_utils:execute(write, Sql, BrandId),
     ?w_user_profile:update(brand, Merchant),
     {reply, Reply, State};
+
+
+handle_call({delete_brand, Merchant, BrandId}, _From, State) ->
+    Sql0 = "select style_number, brand from w_inventory_good where merchant=" ++ ?to_s(Merchant)
+	++ " and brand=" ++ ?to_s(BrandId),
+
+    case ?sql_utils:execute(read, Sql0) of
+	{ok, []} -> 
+	    Sql = "delete from brands"
+		++ " where id=" ++ ?to_s(BrandId)
+		++ " and merchant=" ++ ?to_s(Merchant),
+
+	    Reply = ?sql_utils:execute(write, Sql, BrandId),
+	    ?w_user_profile:update(brand, Merchant),
+	    {reply, Reply, State};
+	{ok, _R} ->
+	    {reply, {error, ?err(brand_used, BrandId)}, State};
+	Error ->
+	    {reply, Error, State}
+    end;
 
 handle_call({list_brand, Merchant}, _From, State) ->
     ?DEBUG("list_brand with merchant ~p", [Merchant]),

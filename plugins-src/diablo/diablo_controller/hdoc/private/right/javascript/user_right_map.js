@@ -59,6 +59,7 @@ var rightAuthen = {
 	    set_w_stock_promotion: rightAuthen.root_right._stock + 14,
 	    print_w_stock_new: rightAuthen.root_right._stock + 27,
 	    print_stock_transfer: rightAuthen.root_right._stock + 28,
+	    print_w_barcode: rightAuthen.root_right._stock + 29
 	}
     },
 

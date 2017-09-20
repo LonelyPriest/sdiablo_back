@@ -305,6 +305,9 @@ init([]) ->
 
 	 {?print_w_inventory_new,
 	  <<"采购单打印">>, <<"print_w_inventory_new">>, ?right_w_inventory},
+
+	 {?print_w_barcode,
+	  <<"条码打印">>, <<"print_w_bracode">>, ?right_w_inventory},
 	 
 	 {?print_w_inventory_transfer,
 	  <<"调出单打印">>, <<"print_w_inventory_transfer">>, ?right_w_inventory}

@@ -37,6 +37,8 @@ function purchaserInventoryNewUpdateCtrlProvide (
     $scope.setting.auto_barcode    = stockUtils.auto_barcode(diablo_default_shop, base);
     $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, base);
 
+    // console.log($scope.setting);
+
     $scope.template = filterTemplate.length !== 0 ? filterTemplate[0] : undefined;
     $scope.printU = new stockPrintU($scope.template, $scope.setting.auto_barcode);
     $scope.printU.setPrinter($scope.setting.printer_barcode);
@@ -59,12 +61,17 @@ function purchaserInventoryNewUpdateCtrlProvide (
      * authen
      */
     $scope.stock_right = {
-	show_orgprice: stockUtils.authen_rainbow(user.type, user.right, 'show_orgprice'),
-	show_balance:  stockUtils.authen_rainbow(user.type, user.right, 'show_balance_onstock'),
-	master:        rightAuthen.authen_master(user.type)
-    };
+	show_orgprice:   stockUtils.authen_rainbow(user.type, user.right, 'show_orgprice'),
+	show_balance:    stockUtils.authen_rainbow(user.type, user.right, 'show_balance_onstock'),
+	master:          rightAuthen.authen_master(user.type),
+	print_w_barcode: stockUtils.authen_stock(user.type, user.right, 'print_w_barcode'),
+	update_w_stock:  rightAuthen.authen_shop_action(
+	    user.type,
+	    rightAuthen.stock_action()['update_w_stock'],
+	    user.shop
+	)};
 
-    // console.log($scope.stock_right);
+    console.log($scope.stock_right);
     
     /*
      * auto focus

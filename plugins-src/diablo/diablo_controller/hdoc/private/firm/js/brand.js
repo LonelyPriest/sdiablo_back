@@ -212,7 +212,30 @@ function brandDetailCtrlProvide(
     };
 
     $scope.delete_brand = function(brand){
-	dialog.response(false, "删除品牌", "暂不支持此操作！！")
+	// dialog.response(false, "删除品牌", "暂不支持此操作！！")
+	var callback = function() {
+	    firmService.delete_brand(brand.id).then(function(result) {
+		if (result.ecode === 0) {
+		    dialog.response_with_callback(
+			true,
+			"删除品牌",
+			"删除品牌成功！！",
+			undefined,
+			function() {
+			    $scope.brands = $scope.brands.filter(function(b) {
+				return brand.id !== b.id;
+			    });
+			    diabloFilter.reset_brand();
+			});
+		} else {
+		    dialog.response(false,
+				    "删除品牌",
+				    "删除品牌失败！！" + firmService.error[result.ecode],
+				    undefined);
+		};
+	    });
+	};
+	dialog.request("删除颜色", "确认要删除颜色吗？", callback, undefined, undefined);
     };
 };
 

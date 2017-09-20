@@ -257,6 +257,7 @@
 -define(reset_stock_barcode,                ?right_w_inventory + 26).
 -define(print_w_inventory_new,              ?right_w_inventory + 27).
 -define(print_w_inventory_transfer,         ?right_w_inventory + 28).
+-define(print_w_barcode,                    ?right_w_inventory + 29).
 %% -define(set_stock_promotion,    ?right_w_inventory + 27).
 
 %% firm

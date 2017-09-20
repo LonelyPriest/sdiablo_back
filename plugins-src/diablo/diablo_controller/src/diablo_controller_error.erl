@@ -351,6 +351,9 @@ error(bill_at_same_time, Firm) ->
     {1604, "bill of firm " ++ ?to_s(Firm) ++ " at same time."};
 error(firm_retalted_stock, Firm) ->
     {1605, "firm retailed stock:" ++ ?to_s(Firm)};
+error(brand_used, BrandId) ->
+    {1606, "brand using:" ++ ?to_s(BrandId)};
+
 
 
 %% inventory

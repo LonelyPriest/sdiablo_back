@@ -127,3 +127,10 @@ set a.amount=a.amount+b.amount where a.merchant=4 and a.shop=19;
 update w_inventory_amount a inner join(select style_number, brand, color, size, merchant, shop, total from w_inventory_new_detail_amount where rsn='M-4-S-19-5002') b \
 on a.style_number=b.style_number and a.brand=b.brand and a.color=b.color and a.size=b.size and a.merchant=b.merchant and a.shop=b.shop \
 set a.total=a.total+b.total where a.merchant=4 and a.shop=19;
+
+
+delete from w_inventory_good where (style_number, brand) in \
+(select a.style_number, a.brand from (select style_number, brand from w_inventory_good where merchant=12) a \
+where (a.style_number, a.brand) not in \
+(select style_number, brand from w_inventory where merchant=12 group by style_number, brand)) and merchant=12;
+

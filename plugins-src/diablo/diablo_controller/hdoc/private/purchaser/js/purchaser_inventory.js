@@ -1732,6 +1732,7 @@ function purchaserInventoryDetailCtrlProvide(
     $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, base);
     
     $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, base);
+    // console.log($scope.setting);
     $scope.printU = new stockPrintU($scope.template, $scope.setting.auto_barcode);
     $scope.printU.setPrinter($scope.setting.printer_barcode);
     
@@ -2670,8 +2671,6 @@ function purchaserInventoryNewDetailCtrlProvide (
 	check_firm: stockUtils.check_firm_with_check_stock_in(-1, base)
     };
 
-    // console.log($scope.shops);
-
     /*
      * authen
      */
@@ -2695,8 +2694,11 @@ function purchaserInventoryNewDetailCtrlProvide (
 	),
 
 	show_balance:  stockUtils.authen_rainbow(user.type, user.right, 'show_orgprice'),
-	print_w_stock: stockUtils.authen_stock(user.type, user.right, 'print_w_stock_new')
+	print_w_stock: stockUtils.authen_stock(user.type, user.right, 'print_w_stock_new'),
+	print_w_barcode: stockUtils.authen_stock(user.type, user.right, 'print_w_barcode')
     };
+
+    // console.log($scope.shop_right);
     
     $scope.hidden = {base:true, balance:true, comment:true};
     $scope.toggle_base = function(){

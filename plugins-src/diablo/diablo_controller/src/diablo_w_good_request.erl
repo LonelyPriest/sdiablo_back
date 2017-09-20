@@ -71,7 +71,6 @@ action(Session, Req, {"get_w_good", Id}) ->
     object_responed(
       fun() -> ?w_inventory:purchaser_good(lookup, Merchant, Id) end, Req).
 
-
 %%--------------------------------------------------------------------
 %% @desc: POST action
 %%--------------------------------------------------------------------
