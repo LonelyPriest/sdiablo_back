@@ -2123,7 +2123,8 @@ function purchaserInventoryDetailCtrlProvide(
 			inv,
 			inv.brand.name,
 			barcode,
-			firm); 
+			firm,
+			inv.firm_id); 
 		} 
 	    } else {
 		purchaserService.list_purchaser_inventory(
@@ -2164,6 +2165,7 @@ function purchaserInventoryDetailCtrlProvide(
 			    inv.brand.name,
 			    b.barcode,
 			    firm,
+			    inv.firm_id,
 			    b.cname,
 			    b.size); 
 		    }) 
