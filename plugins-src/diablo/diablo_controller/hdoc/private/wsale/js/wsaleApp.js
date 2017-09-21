@@ -456,8 +456,8 @@ function wsaleNewProvide(
 	datetime:     $scope.today()
     };
 
-    var dialog = diabloUtilsService; 
-
+    var dialog = diabloUtilsService;
+    
     var get_setting = function(shopId){
 	$scope.setting.check_sale = wsaleUtils.check_sale(shopId, base);
 	$scope.setting.negative_sale = wsaleUtils.negative_sale(shopId, base);
@@ -1216,7 +1216,7 @@ function wsaleNewProvide(
 	    pinvs.push($scope.inventories[i]);
 	};
 
-	console.log(pinvs);
+	// console.log(pinvs);
 	
 	if (angular.isUndefined(LODOP)) LODOP = getLodop();
 
@@ -1239,13 +1239,15 @@ function wsaleNewProvide(
 			$scope.select.rsn,
 			$scope.select.employee.name,
 			$scope.select.retailer.name, 
-			dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"));
+			dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),
+			wsaleService.direct.wsale);
 
 		    var isRound = $scope.setting.round; 
 		    var cakeMode = $scope.setting.cake_mode;
 		    var hLine = wsalePrint.gen_body(LODOP, pinvs, isRound, cakeMode);
 		    
-		    var isVip = $scope.select.retailer.id !== $scope.setting.no_vip ? true : false;
+		    var isVip = ($scope.select.retailer.id !== $scope.setting.no_vip
+				 || $scope.select.retailer.id !== user.loginRetailer) ? true : false;
 		    
 		    // console.log($scope.select);
 		    hLine = wsalePrint.gen_stastic(
@@ -1266,18 +1268,26 @@ function wsaleNewProvide(
 		    $timeout.cancel(timeout_to_print);
 	    }
 	};
+
+	var sms_notify = function(status) {
+	    if (status.sms_code !== 0) {
+		var ERROR = require("diablo-error");
+		dialog.response(
+		    false,
+		    "销售开单",
+		    "开单成功！！发送短消息失败：" + ERROR[status.sms_code]); 
+	    }
+	};
 	
 	if (im_print === diablo_yes){
 	    ok_print();
-	    // javascript:window.print();
+	    sms_notify(result);
 	} else {
-	    var dialog = diabloUtilsService; 
 	    var request = dialog.request(
-		"销售开单", "开单成功，是否打印销售单？",
-		undefined, undefined, undefined);
-
+		"销售开单", "开单成功，是否打印销售单？", undefined, undefined, undefined); 
 	    request.result.then(function(close){
 		ok_print();
+		sms_notify(result);
 	    })
 	}
     };

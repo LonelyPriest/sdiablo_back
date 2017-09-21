@@ -725,7 +725,7 @@ diablo_set_integer = function(v){
 };
 
 diablo_set_string = function(s){
-    if (angular.isUndefined(s)){
+    if (angular.isUndefined(s) || null === s){
 	return undefined;
     } else{
 	return s.toString().replace(/^\s+|\s+$/g, '');

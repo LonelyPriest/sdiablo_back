@@ -109,6 +109,7 @@ function wsaleRejectCtrlProvide(
 		    $scope.setting.p_mode = wsaleUtils.print_mode(shopId, settings);
 		    $scope.setting.round = wsaleUtils.round(shopId, settings);
 		    $scope.setting.cakeMode = wsaleUtils.cake_mode(shopId, settings);
+		    // console.log($scope.setting);
 
 		    $scope.employees = wsaleUtils.get_login_employee(
 			shopId,
@@ -285,10 +286,12 @@ function wsaleRejectCtrlProvide(
 		    result.rsn,
 		    $scope.select.employee.name,
 		    $scope.select.retailer.name, 
-		    dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"));
+		    dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),
+		    wsaleService.direct.wreject);
 
 		var isRound = $scope.setting.round; 
-		var cakeMode = $scope.setting.cake_mode;
+		var cakeMode = $scope.setting.cakeMode;
+		// console.log($scope.setting);
 		
 		var hLine = wsalePrint.gen_body(
 		    LODOP,
@@ -296,7 +299,8 @@ function wsaleRejectCtrlProvide(
 		    isRound,
 		    cakeMode);
 		
-		var isVip = $scope.select.retailer.id !== $scope.setting.no_vip ? true : false;
+		var isVip = ($scope.select.retailer.id !== $scope.setting.no_vip
+			     || $scope.select.retailer.id !== user.loginRetailer) ? true : false;
 		
 		hLine = wsalePrint.gen_stastic(
 		    LODOP, hLine, wsaleService.direct.wreject, $scope.select, isVip);

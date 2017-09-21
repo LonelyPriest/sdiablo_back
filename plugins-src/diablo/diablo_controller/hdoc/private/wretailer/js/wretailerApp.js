@@ -173,13 +173,13 @@ function wretailerConfig(angular) {
 	    return http.save(
 		{operation:"new_w_retailer"},
 		{name:     r.name,
-		 card:     r.card,
+		 card:     r.card ? r.card : undefined,
 		 py:       diablo_pinyin(r.name),
-		 id_card:  r.id_card,
+		 id_card:  r.id_card ? r.card : undefined,
 		 password: diablo_set_string(r.password), 
 		 score:    diablo_set_float(r.score),
 		 mobile:   r.mobile,
-		 address:  r.address,
+		 address:  diablo_set_string(r.address),
 		 type:     r.type.id,
 		 shop:     r.shop.id,
 		 birth:    dateFilter(r.birth, "yyyy-MM-dd")

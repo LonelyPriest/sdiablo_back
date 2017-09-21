@@ -886,6 +886,10 @@ wsaleDraft.prototype.select = function(dialog, template, draftFilter, selectCall
 };
 
 var wsalePrint = function(){
+    var left = 5;
+    var width = 219; // inch, 5.8 / 2.45 * 96 
+    var vWidth = width - 5; 
+    var hFont = 20; // height of font
     var pay = function(cash, card, withDraw, ticket, should_pay){
 	console.log(cash, card, withDraw);
 	var s = "";
@@ -928,137 +932,110 @@ var wsalePrint = function(){
 	//     s += "核销：" + veri.toString();
 	// }
     };
-    
+
     return {
-	gen_head: function(LODOP, shop, rsn, employee, retailer, date){
-	    LODOP.ADD_PRINT_TEXT(5, 0, "58mm", 30, shop); 
-	    LODOP.SET_PRINT_STYLEA(1,"FontSize",13);
-	    LODOP.SET_PRINT_STYLEA(1,"bold",1);
-	    // LODOP.SET_PRINT_STYLEA(1,"Horient",2); 
-	    LODOP.ADD_PRINT_TEXT(40,0,"58mm",20,"单号：" + rsn);
-	    LODOP.ADD_PRINT_TEXT(55,0,"58mm",20,"客户：" + retailer);
-	    
-	    LODOP.ADD_PRINT_TEXT(70,0,"58mm",20,"店员：" + employee);
-	    LODOP.ADD_PRINT_TEXT(85,0,"58mm",20,"日期：" + date); 
-	    LODOP.ADD_PRINT_LINE(105,0,105,178,0,1);
+	gen_head: function(LODOP, shop, rsn, employee, retailer, date, direct){
+	    // wsalePrint.init(LODOP);
+	    LODOP.ADD_PRINT_TEXT(
+		10,
+		left,
+		vWidth,
+		30,
+		wsaleUtils.to_integer(direct) === 0 ? shop : shop + "（退）"); 
+	    LODOP.SET_PRINT_STYLEA(0, "FontSize", 13);
+	    LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
+	    LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
+
+	    var top = 40; 
+	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "单号：" + rsn); 
+	    top += 15; // 55
+	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "客户：" + retailer);
+	    top += 15; // 70
+	    LODOP.ADD_PRINT_TEXT(top,  left, vWidth, hFont, "店员：" + employee);
+	    top += 15; // 85
+	    LODOP.ADD_PRINT_TEXT(top,  left, vWidth, hFont, "日期：" + date); 
+	    top += 20; // 105
+	    LODOP.ADD_PRINT_LINE(top,  left, top, vWidth, 0, 1);
 
 	    return;
 	},
 
 	gen_body: function(LODOP, inventories, round, cakeMode){
-	    var hLine = 115;
-	    if (diablo_no === cakeMode) {
-		LODOP.ADD_PRINT_TEXT(hLine,0,67,20,"款号"); 
-		LODOP.ADD_PRINT_TEXT(hLine,67,100,20,"单价"); 
-		LODOP.ADD_PRINT_TEXT(hLine,100,133,20,"数量"); 
-		LODOP.ADD_PRINT_TEXT(hLine,133,178,20,"折扣率");
+	    var top = 115;
+	    // if (diablo_no === cakeMode) {
+	    LODOP.ADD_PRINT_TEXT(top, left, 70, hFont, "款号"); 
+	    LODOP.ADD_PRINT_TEXT(top, left + 70, 35, hFont, "单价"); 
+	    LODOP.ADD_PRINT_TEXT(top, left + 105, 35, hFont, "数量"); 
+	    LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, 20, "折扣率");
 
-		hLine += 15;
+	    top += 15;
+	    
+	    angular.forEach(inventories, function(d){
+		console.log(d);
+		var calc = function() {
+		    if (angular.isUndefined(round) || round)
+			return diablo_round(d.total * d.rprice).toString();
+		    else
+			return (d.total * d.rprice).toString();
+		}();
 		
-		angular.forEach(inventories, function(d){
-		    var calc = function() {
-			if (angular.isUndefined(round) || round)
-			    return diablo_round(d.total * d.rprice).toString();
-			else
-			    return (d.total * d.rprice).toString();
-		    }();
-		    
-		    var ediscount = wsaleUtils.ediscount(d.rprice, d.tag_price).toString();
-			
-		    LODOP.ADD_PRINT_TEXT(hLine,0,67,20, d.style_number);
-		    LODOP.ADD_PRINT_TEXT(hLine, 67, 100, 20, d.tag_price.toString());
-		    LODOP.ADD_PRINT_TEXT(hLine,100,133,20, d.total.toString());
-		    LODOP.ADD_PRINT_TEXT(hLine,133,178,20, ediscount.toString());
-		    
-		    hLine += 15;
-		    LODOP.ADD_PRINT_TEXT(hLine, 0, 67, 20, d.brand);
-		    LODOP.ADD_PRINT_TEXT(hLine, 133, 178, 20, d.rprice.toString());
-
-		    hLine += 15;
-		    LODOP.ADD_PRINT_TEXT(hLine, 133, 178, 20, calc.toString());
-
-		    hLine += 15;
-		    LODOP.ADD_PRINT_LINE(hLine,0,hLine,178,0,1);
-		    hLine += 5;
-			
-		    // LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"款号：" + d.style_number);
-		    // LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"品名：" + d.brand);
-		    // hLine += 15;
-		    // } else {
-		    // 	LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"类型：" + d.type);
-		    // 	hLine += 15;
-		    // }
-		    
-		    
-
-		    // if (diablo_no === cakeMode){
-		    //     LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"成交价：" + d.rprice.toString());
-		    //     hLine += 15;
-		    // }
-		    
-		    // LODOP.ADD_PRINT_TEXT(hLine,100,133,20, d.total.toString());
-		    // hLine += 15;
-		    
-		    // LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"小计："
-		    // 		     + function() {
-		    // 			 if (angular.isUndefined(round) || round)
-		    // 			     return diablo_round(d.total * d.rprice).toString();
-		    // 			 else
-		    // 			     return (d.total * d.rprice).toString();
-		    // 		     }())
-		    // hLine += 15;
-
-		    // if (diablo_no === cakeMode){
-		    //     var ediscount = wsaleUtils.ediscount(d.rprice, d.tag_price).toString();
-		    //     LODOP.ADD_PRINT_TEXT(hLine,133,178,20, ediscount);
-		    //     hLine += 20; 
-		    // } else {
-		    //     hLine += 5;
-		    // }
-		    
-		    // LODOP.ADD_PRINT_LINE(hLine,0,hLine,178,0,1);
-		    // hLine += 10;
-		});
-	    } else {
-		LODOP.ADD_PRINT_TEXT(hLine,0,80,20,"类型 "); 
-		LODOP.ADD_PRINT_TEXT(hLine,80,113,20,"数量"); 
-		LODOP.ADD_PRINT_TEXT(hLine,113,146,20,"单价"); 
-		LODOP.ADD_PRINT_TEXT(hLine,146,178,20,"小计");
-
-		hLine += 15;
+		var ediscount = wsaleUtils.ediscount(d.rprice, d.tag_price).toString();
 		
-		angular.forEach(inventories, function(d){
-		    var calc = function() {
-			if (angular.isUndefined(round) || round)
-			    return diablo_round(d.total * d.rprice).toString();
-			else
-			    return (d.total * d.rprice).toString();
-		    }();
-		    
-		    LODOP.ADD_PRINT_TEXT(hLine,0, 80, 20, d.type);
-		    LODOP.ADD_PRINT_TEXT(hLine, 80, 113, 20, d.total.toString());
-		    LODOP.ADD_PRINT_TEXT(hLine,113,146,20, d.tag_price.toString());
-		    LODOP.ADD_PRINT_TEXT(hLine,146,178,20, calc.toString());
-		    
-		    hLine += 15;
-		    // LODOP.ADD_PRINT_TEXT(hLine, 0, 67, 20, d.brand);
-		    // LODOP.ADD_PRINT_TEXT(hLine, 133, 178, 20, d.rprice.toString());
-		    
-		    // hLine += 15;
-		    // LODOP.ADD_PRINT_LINE(hLine,0,hLine,178,0,1);
-		    // hLine += 5; 
-		});
+		LODOP.ADD_PRINT_TEXT(top, left, 70, hFont, d.style_number); 
+		LODOP.ADD_PRINT_TEXT(top, left + 70, 35, hFont, d.tag_price.toString()); 
+		LODOP.ADD_PRINT_TEXT(top, left + 105, 35, hFont, d.total.toString()); 
+		LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, ediscount.toString());
+		
+		top += 15;
+		LODOP.ADD_PRINT_TEXT(
+		    top,
+		    left,
+		    70,
+		    hFont,
+		    angular.isObject(d.brand)
+			&& angular.isDefined(d.brand.name) ? d.brand.name : d.brand);
+		LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, d.rprice.toString());
 
-		// hLine += 5;
-		LODOP.ADD_PRINT_LINE(hLine,0,hLine,178,0,1);
-		hLine += 5;
-	    } 
-	    return hLine;
+		top += 15;
+		LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString());
+
+		top += 15;
+		LODOP.ADD_PRINT_LINE(top, left, top, vWidth, 0, 1);
+		top += 5; 
+	    });
+	    // } else {
+	    // 	LODOP.ADD_PRINT_TEXT(top,0,80,20,"类型"); 
+	    // 	LODOP.ADD_PRINT_TEXT(top,80,113,20,"数量"); 
+	    // 	LODOP.ADD_PRINT_TEXT(top,113,146,20,"单价"); 
+	    // 	LODOP.ADD_PRINT_TEXT(top,146,178,20,"小计");
+
+	    // 	hLine += 15;
+		
+	    // 	angular.forEach(inventories, function(d){
+	    // 	    var calc = function() {
+	    // 		if (angular.isUndefined(round) || round)
+	    // 		    return diablo_round(d.total * d.rprice).toString();
+	    // 		else
+	    // 		    return (d.total * d.rprice).toString();
+	    // 	    }();
+		    
+	    // 	    LODOP.ADD_PRINT_TEXT(top,0, 80, 20, d.type);
+	    // 	    LODOP.ADD_PRINT_TEXT(top, 80, 113, 20, d.total.toString());
+	    // 	    LODOP.ADD_PRINT_TEXT(top,113,146,20, d.tag_price.toString());
+	    // 	    LODOP.ADD_PRINT_TEXT(top,146,178,20, calc.toString()); 
+	    // 	    top += 15; 
+	    // 	});
+
+	    // 	// hLine += 5;
+	    // 	LODOP.ADD_PRINT_LINE(top,0,top,178,0,1);
+	    // 	hLine += 5;
+	    // } 
+	    return top;
 	},
 
 	gen_stastic: function(LODOP, hLine, direct, sale, vip){
-	    // console.log(sale);
-	    console.log(hLine);
+	    console.log(sale);
+	    // console.log(hLine);
 	    if (angular.isUndefined(direct)) direct = 0;
 	    var cash = sale.cash;
 	    var card = sale.card;
@@ -1079,7 +1056,8 @@ var wsalePrint = function(){
 
 	    var l1 = "总计：" + total.toString() + "  备注：" + comment;
 	    console.log(l1);
-	    LODOP.ADD_PRINT_TEXT(hLine, 0, "52mm", 20, l1);
+	    hLine += 5;
+	    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
 	    hLine += 15; 
 	    
 	    if (0 === direct) l1 = "实付：";
@@ -1087,22 +1065,22 @@ var wsalePrint = function(){
 	    l1 += should_pay.toString(); 
 	    l1 += " " + pay(cash, card, withDraw, ticket, should_pay);
 	    console.log(l1);
-	    LODOP.ADD_PRINT_TEXT(hLine, 0, "52mm", 20, l1);
+	    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
 	    hLine += 15;
 
 	    if (vip) {
 		l1 = "上次积分：" + lscore.toString();
-		LODOP.ADD_PRINT_TEXT(hLine, 0, 178, 20, l1);
+		LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
 		hLine += 15;
-		l1 = "本次积分：" + score.toString() + "\n";
-		LODOP.ADD_PRINT_TEXT(hLine, 0, 178, 20, l1);
+		l1 = "本次积分：" + score.toString();
+		LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
 		hLine += 15;
-		l1 = "累积积分：" + (lscore + score - ticketScore).toString() + "\n";
-		LODOP.ADD_PRINT_TEXT(hLine, 0, 178, 20, l1);
+		l1 = "累积积分：" + (lscore + score - ticketScore).toString();
+		LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
 		hLine += 15;
 	    }
 
-	    LODOP.ADD_PRINT_LINE(hLine + 5, 0, hLine + 5, 178, 0, 1);
+	    LODOP.ADD_PRINT_LINE(hLine + 5, left, hLine + 5, vWidth, 0, 1);
 
 	    return hLine + 15;
 	},
@@ -1114,17 +1092,22 @@ var wsalePrint = function(){
 	    if (diablo_no === cakeMode){
 		var order = 1;
 		// var height = 0;
-		LODOP.ADD_PRINT_TEXT(hLine, 0, 178, 20, "顾客需知：");
+		LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, "顾客需知：");
 		hLine += 20;
 		angular.forEach(comments, function(c){
 		    if (c){
 			var s = order.toString() + "：" + c.name;
-			LODOP.ADD_PRINT_TEXT(hLine, 0, "52mm", 40, order.toString() + "：" + c.name);
-			hLine += 35;
-
-			console.log(s.length); 
-			if (s.length > 30) hLine += 15;
-			
+			// if (s.length > 30) hFont += 15;
+			// hFont = hFont *  Math.ceil((s.length / 15))
+			LODOP.ADD_PRINT_TEXT(
+			    hLine,
+			    left,
+			    vWidth,
+			    hFont * Math.ceil((s.length / 15)),
+			    order.toString() + "：" + c.name);
+			hLine += Math.ceil((s.length / 15)) * 15; 
+			// console.log(s.length); 
+			// if (s.length > 30) hLine += 15; 
 			order++;
 		    }
 		});
@@ -1136,12 +1119,16 @@ var wsalePrint = function(){
 	    // LODOP.ADD_PRINT_TEXT(hLine, 5, 178, 140, order.toString() + "：" + s);
 
 	    var s = "打印日期：" + date;
-	    LODOP.ADD_PRINT_TEXT(hLine, 0, "58mm", 20, s);
+	    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, s);
+	},
+
+	init: function(LODOP) {
+	    LODOP.SET_PRINT_PAGESIZE(3, 580, 0, ""); 
 	},
 
 	start_print: function(LODOP){
-	    LODOP.SET_PRINT_PAGESIZE(3,"58mm",50,""); 
-	    // LODOP.PREVIEW();
+	    wsalePrint.init(LODOP);
+	    // LODOP.PRINT_DESIGN();
 	    LODOP.PRINT();
 	}
     }

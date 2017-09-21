@@ -606,12 +606,11 @@ function purchaserInventoryNewCtrlProvide (
 	var base = {
 	    // brand:         $scope.select.brand.id,
 	    firm:         function() {
-		if (angular.isDefined($scope.select.firm)
-		    && $scope.base_settings.stock_with_firm === diablo_yes) {
-		    return $scope.select.firm.id;
+		if ($scope.base_settings.stock_with_firm === diablo_yes) {
+		    return stockUtils.invalid_firm($scope.select.firm);
 		} else {
 		    return undefined;
-		}
+		} 
 	    }(),
 	    
 	    shop:          $scope.select.shop.id,

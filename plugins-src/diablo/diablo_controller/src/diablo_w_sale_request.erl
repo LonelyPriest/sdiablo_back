@@ -1537,6 +1537,8 @@ start(new_sale, Req, Merchant, Invs, Base, Print) ->
 					?err(sms_send_failed, Merchant)
 				end,
 
+			    %% ?DEBUG("SMSCode ~p", [SMSCode]),
+
 			    case ImmediatelyPrint =:= ?YES andalso PMode =:= ?PRINT_BACKEND of
 				true ->
 				    SuccessRespone =
@@ -1574,7 +1576,9 @@ start(new_sale, Req, Merchant, Invs, Base, Print) ->
 				    print(RSN, Merchant, NewInvs, Base, Print, SuccessRespone);
 				false ->
 				    ?utils:respond(
-				       200, Req, ?succ(new_w_sale, RSN), [{<<"rsn">>, ?to_b(RSN)}])
+				       200, Req, ?succ(new_w_sale, RSN),
+				       [{<<"rsn">>, ?to_b(RSN)},
+					{<<"sms_code">>, SMSCode}])
 			    end,
 			    ?w_user_profile:update(retailer, Merchant); 
 			{error, Error} ->
