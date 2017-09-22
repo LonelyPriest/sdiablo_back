@@ -306,6 +306,10 @@ var wsaleUtils = function(){
 	    return diablo_base_setting("bcode_auto", shop, base, parseInt, diablo_no);
 	},
 
+	draw_score: function(shop, base) {
+	    return diablo_base_setting("draw_score", shop, base, parseInt, diablo_yes);
+	},
+
 	get_login_employee:function(shop, loginEmployee, employees){
 	    var filterEmployees = employees.filter(function(e){
 		return e.shop === shop && e.state === 0;
@@ -471,7 +475,7 @@ var wsaleUtils = function(){
 		var s = pscores[0];
 		if (angular.isDefined(s.score)) {
 		    score = Math.floor((diablo_round(s.money) - verificate) / s.score.balance) * s.score.score; 
-		    for ( var i=1, l=pscores.length; i<l; i++){
+		    for (var i=1, l=pscores.length; i<l; i++){
 			s = pscores[i];
 			score += Math.floor(diablo_round(s.money) / s.score.balance) * s.score.score; 
 		    } 
@@ -697,10 +701,8 @@ var wsaleCalc = function(){
 	    
 	    // calculate rmoney, all the promotion change to discount
 	    for (var i=1, l=inventories.length; i<l; i++){
-		var one = inventories[i];
-
-		var count = (mode === 0 ? one.sell : one.reject);
-		
+		var one = inventories[i]; 
+		var count = (mode === 0 ? one.sell : one.reject); 
 		// if (one.pid !== -1 && retailer.id !== no_vip){
 		if (one.pid !== diablo_invalid_index){
 		    one.rdiscount = wsaleUtils.calc_discount_of_rmoney(

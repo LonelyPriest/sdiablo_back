@@ -2375,8 +2375,7 @@ handle_call({get_tagprice, Merchant, ShopId, StyleNumber, Brand}, _From, State) 
 
     %% RealyShop = ?w_good_sql:realy_shop(true, Merchant, Shop),
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, ?DEFAULT_BASE_SETTING),
-    ?DEBUG("base setting ~p", [BaseSetting]),
-    
+    %% ?DEBUG("base setting ~p", [BaseSetting]), 
     ShopIds =
 	case ?to_i(?v(<<"price_on_region">>, BaseSetting, ?NO)) of
 	    ?NO  ->  [ShopId];

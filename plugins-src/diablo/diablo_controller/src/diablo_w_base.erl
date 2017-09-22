@@ -20,7 +20,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
--export([bank_card/2, bank_card/3, setting/2, setting/3, sys_config/0]).
+-export([bank_card/2, bank_card/3, setting/2, setting/3, sys_config/0, sys_config/1]).
 -export([good/2, good/3, print/2, print/3]).
 
 -define(SERVER, ?MODULE). 
@@ -723,6 +723,35 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
+sys_config(shop) ->
+    [{"pum",             "打印份数",            "1",  "0"},
+     {"ptype",           "打印方式",            "1",  "0"}, %% 0: front; 1:backend
+     {"pim_print",       "立即打印",            "0",  "0"},
+
+     {"reject_negative", "零库存退货",           "0",  "0"},
+     {"check_sale",      "检测库存销售",         "1",  "0"}, 
+
+     {"h_stock_edit",    "采购编辑展示历史记录", "0",   "0"},
+     {"m_sgroup",        "允许多尺码组",         "0",   "0"},
+     {"t_trace",         "入库价格跟踪",         "0",   "0"},
+     {"d_sex",           "默认入库性别",         "0",   "0"},
+     {"d_report",        "日报表能力",           "0",   "0"},
+     {"m_sale",          "允许负数退货",         "1",   "0"},
+     {"round",           "四舍五入",             "1",   "0"},
+     {"h_color",         "隐藏颜色",             "0",   "0"},
+     {"h_size",          "隐藏尺码",             "0",   "0"},
+     {"h_sex",           "隐藏性别",             "0",   "0"},
+     {"s_member",        "会员独立",             "0",   "0"},
+     {"s_employee",      "营业员必选",           "0",   "0"},
+     
+     {"prn_barcode",       "条码打印机编号",     "-1",   "0"},
+     {"prn_bill",          "单据打印机编号",     "-1",   "0"},
+     {"prn_h_page",        "单据纸张高",         "14.0", "0"},
+     {"prn_w_page",        "单据纸张宽",         "21.3", "0"},
+     
+     {"draw_score",        "提现积分",           "1",    "0"}
+    ].
+    
 sys_config() ->
     %% one month default
     {M, S, T} = erlang:now(), 
@@ -795,7 +824,8 @@ sys_config() ->
 	      {"prn_barcode",       "条码打印机编号",     "-1",   "0"},
 	      {"prn_bill",          "单据打印机编号",     "-1",   "0"},
 	      {"prn_h_page",        "单据纸张高",         "14.0", "0"},
-	      {"prn_w_page",        "单据纸张宽",         "21.3", "0"}
+	      {"prn_w_page",        "单据纸张宽",         "21.3", "0"},
+	      {"draw_score",        "提现积分",           "1",    "0"}
 	      %% {"bcode_self",     "吊牌打印模式",       "0",   "0"}
 	     ],
     Values.

@@ -155,9 +155,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 
     Ticket     = ?v(<<"ticket">>, Props, 0), 
     TicketScore = ?v(<<"ticket_score">>, Props, 0),
-    TicketBatch = ?v(<<"ticket_batch">>, Props, -1),
-
-    %% RPay       = ShouldPay - Withdraw - Ticket,
+    TicketBatch = ?v(<<"ticket_batch">>, Props, -1), 
     
     Sql0 = "select id, name, mobile, balance, score from w_retailer"
 	" where id=" ++ ?to_s(Retailer)

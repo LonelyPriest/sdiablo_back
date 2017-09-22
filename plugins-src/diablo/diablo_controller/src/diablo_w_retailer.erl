@@ -450,6 +450,8 @@ handle_call({delete_retailer, Merchant, RetailerId}, _From, State) ->
 
 handle_call({list_retailer, Merchant, Conditions}, _From, State) ->
     ?DEBUG("lookup retail with merchant ~p, Conditions ~p", [Merchant, Conditions]),
+    Month = ?v(<<"month">>, Conditions, []),
+    SortConditions = lists:keydelete(<<"month">>, 1, Conditions),
     Sql = "select a.id"
 	", a.name"
 	", a.card"
@@ -473,7 +475,11 @@ handle_call({list_retailer, Merchant, Conditions}, _From, State) ->
 	" from w_retailer a"
 	" left join shops b on a.shop=b.id"
 	" where a.merchant=" ++ ?to_s(Merchant)
-	++ ?sql_utils:condition(proplists, Conditions)
+	++ case Month of
+	       [] -> [];
+	       _ -> " and month(a.birth)=" ++ ?to_s(Month)
+	   end
+	++ ?sql_utils:condition(proplists, ?utils:correct_condition(<<"a.">>, SortConditions))
 	++ " and a.deleted=" ++ ?to_s(?NO)
 	++ " order by a.id desc",
 

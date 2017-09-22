@@ -109,6 +109,7 @@ function wsaleRejectCtrlProvide(
 		    $scope.setting.p_mode = wsaleUtils.print_mode(shopId, settings);
 		    $scope.setting.round = wsaleUtils.round(shopId, settings);
 		    $scope.setting.cakeMode = wsaleUtils.cake_mode(shopId, settings);
+		    $scope.setting.draw_score = wsaleUtils.draw_score(shopId, settings);
 		    // console.log($scope.setting);
 
 		    $scope.employees = wsaleUtils.get_login_employee(
@@ -479,7 +480,7 @@ function wsaleRejectCtrlProvide(
 	    diablo_reject,
 	    $scope.select.verificate);
 	
-	console.log(calc);
+	// console.log(calc);
 	
 	$scope.select.total     = calc.total; 
 	$scope.select.abs_total = calc.abs_total;

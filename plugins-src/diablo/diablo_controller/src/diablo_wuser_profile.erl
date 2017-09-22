@@ -818,7 +818,7 @@ handle_call({set_default, Merchant, Shop}, _From, State) ->
     ?DEBUG("set default value of merchant ~p, shop ~p", [Merchant, Shop]),
     %% base setting
     Now = ?utils:current_time(format_localtime), 
-    Values = ?w_base:sys_config(), 
+    Values = ?w_base:sys_config(shop), 
     Sql0 = lists:foldr(
 	    fun({EName, CName, Value, Type}, Acc) ->
 		    Sql00 = "select id, ename, value from w_base_setting"

@@ -88,14 +88,14 @@ function wsaleUpdateRejectCtrlProvide(
 		$scope.old_select = wsale.select;
 		$scope.select = angular.extend($scope.select, wsale.select);
 
-		// setting 
-		$scope.setting.check_sale = wsaleUtils.check_sale(
-	    	    $scope.select.shop.id, $scope.base_settings);
-		$scope.setting.no_vip = wsaleUtils.no_vip(
-		    $scope.select.shop.id, $scope.base_settings);
+		// setting
+		var shopId = $scope.select.shop.id;
+		$scope.setting.check_sale = wsaleUtils.check_sale(shopId, $scope.base_settings);
+		$scope.setting.no_vip = wsaleUtils.no_vip(shopId, $scope.base_settings); 
+		$scope.setting.draw_score = wsaleUtils.draw_score(shopId, $scope.base_settings);
 		
 		$scope.employees = wsaleUtils.get_login_employee(
-		    $scope.select.shop.id,
+		    shopId,
 		    base.employ_id,
 		    filterEmployee).filter;
 

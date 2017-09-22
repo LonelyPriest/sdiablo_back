@@ -250,7 +250,7 @@ action(Session, Req, {"new_w_sale"}, Payload) ->
     {struct, Print} = ?v(<<"print">>, Payload),
 
     %% Shop = ?v(<<"shop">>, Base, -1),
-    %% {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, Shop),
+    %% {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, ?DEFAULT_BASE_SETTING),
     
     %% ImmediatelyPrint = ?v(<<"im_print">>, Print, ?NO),
     %% PMode            = ?v(<<"p_mode">>, Print, ?PRINT_FRONTE),

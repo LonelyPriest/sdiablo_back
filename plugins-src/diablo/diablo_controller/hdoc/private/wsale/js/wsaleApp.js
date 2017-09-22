@@ -341,6 +341,9 @@ function wsaleNewProvide(
     $scope.scores     = filterScore;
     $scope.draws      = filterCharge.filter(function(d){return d.type === diablo_withdraw}),
     
+    console.log($scope.draws);
+    console.log($scope.scores);
+    
     $scope.pattern    = {
 	money:    diabloPattern.decimal_2,
 	sell:     diabloPattern.integer_except_zero,
@@ -469,6 +472,7 @@ function wsaleNewProvide(
 	$scope.setting.cake_mode = wsaleUtils.cake_mode(shopId, base);
 	$scope.setting.barcode_mode = wsaleUtils.barcode_mode(shopId, base);
 	$scope.setting.barcode_auto = wsaleUtils.barcode_auto(shopId, base);
+	$scope.setting.draw_score = wsaleUtils.draw_score(shopId, base);
 
 	if (diablo_no === $scope.setting.cake_mode) {
 	    $scope.vpays = wsaleService.vpays;
@@ -522,13 +526,8 @@ function wsaleNewProvide(
 	$scope.select.employee = select.login;
 	if ($scope.setting.semployee) $scope.select.employee = undefined;
     };
-
-    // $scope.change_employee = function(){
-    // 	wsaleDraft.change_employee($scope.select.employee.id);
-    // };
     
-    $scope.get_employee();
-    
+    $scope.get_employee(); 
     // retailer;
     $scope.match_retailer_phone = function(viewValue){
 	return wsaleUtils.match_retailer_phone(viewValue, diabloFilter)
@@ -557,7 +556,7 @@ function wsaleNewProvide(
 	if ($scope.wsale_mode[1].active){
 	    $scope.page_changed($scope.current_page); 
 	}
-    }
+    };
 
     $scope.sysRetailers = filterSysRetailer;
     // console.log($scope.sysRetailers);
@@ -1397,8 +1396,9 @@ function wsaleNewProvide(
 	    charge:         $scope.select.charge,
 	    total:          $scope.select.total,
 	    last_score:     $scope.select.retailer.score,
-	    score:          $scope.select.score,
+	    score:          $scope.select.score, 
 	    round:          $scope.setting.round
+	    // draw_score:     $scope.setting.draw_score
 	};
 
 	var print = {
@@ -1544,15 +1544,13 @@ function wsaleNewProvide(
 	    diablo_sale,
 	    $scope.select.verificate,
 	    $scope.setting.round);
-
-	// console.log($scope.show_promotions);
 	
+	console.log(calc);
 	$scope.select.total     = calc.total; 
 	$scope.select.abs_total = calc.abs_total;
 	$scope.select.should_pay= calc.should_pay; 
 	$scope.select.score     = calc.score; 
 	$scope.select.charge    = $scope.select.should_pay - $scope.select.has_pay;
-	console.log($scope.select);
     };
 
     var valid_sell = function(amount){

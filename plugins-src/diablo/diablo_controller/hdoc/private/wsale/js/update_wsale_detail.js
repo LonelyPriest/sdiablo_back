@@ -76,31 +76,17 @@ function wsaleUpdateDetailCtrlProvide(
 	    $scope.select.verificate,
 	    $scope.setting.round);
 
-	// console.log(calc);
+	console.log(calc);
 	// console.log($scope.show_promotions); 
 	$scope.select.total     = calc.total; 
 	$scope.select.should_pay= calc.should_pay;
 	$scope.select.score     = calc.score;
-	
-	// if (0 !== wsaleUtils.to_float($scope.select.has_pay))
-	//     $scope.select.charge = $scope.select.should_pay
-	//     - wsaleUtils.to_float($scope.select.has_pay)
-	//     - wsaleUtils.to_float($scope.select.ticket);
 
 	$scope.select.charge = $scope.select.should_pay
 	    - wsaleUtils.to_float($scope.select.has_pay)
-	    - wsaleUtils.to_float($scope.select.ticket);
-
-	// console.log($scope.select);
-	
-	// $scope.calc_withdraw();
-    };
-    
-    // $scope.change_retailer = function(){
-    // 	$scope.select.surplus = $scope.select.retailer.balance;
-    // 	$scope.re_calculate();
-    // 	$scope.select.o_retailer = $scope.select.retailer;
-    // }
+	    - wsaleUtils.to_float($scope.select.ticket); 
+	// console.log($scope.select);	
+    }; 
     
     // rsn detail
     var rsn     = $routeParams.rsn
@@ -134,7 +120,7 @@ function wsaleUpdateDetailCtrlProvide(
 		$scope.select = angular.extend($scope.select, wsale.select);
 		$scope.select.o_retailer = $scope.select.retailer;
 		$scope.select.left_balance = $scope.select.surplus - $scope.select.withdraw;
-
+		
 		$scope.show_promotions = wsale.show_promotions;
 
 		// setting
@@ -143,6 +129,7 @@ function wsaleUpdateDetailCtrlProvide(
 		$scope.setting.no_vip = wsaleUtils.no_vip(shopId, $scope.base_settings);
 		$scope.setting.round = wsaleUtils.round(shopId, $scope.base_settings); 
 		$scope.setting.cake_mode = wsaleUtils.cake_mode(shopId, $scope.base_settings);
+		$scope.setting.draw_score = wsaleUtils.draw_score(shopId, $scope.base_settings);
 		
 		if (diablo_no === $scope.setting.cake_mode) 
 		    $scope.vpays = wsaleService.vpays;
@@ -543,7 +530,7 @@ function wsaleUpdateDetailCtrlProvide(
 	    	diabloUtilsService.response_with_callback(
 	    	    true, "销售单编辑", msg, $scope,
 	    	    function(){
-			diabloFilter.reset_retailer();
+			// diabloFilter.reset_retailer();
 			$scope.go_back();
 		    })
 	    } else{
