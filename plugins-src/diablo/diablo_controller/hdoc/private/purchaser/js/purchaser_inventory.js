@@ -605,11 +605,11 @@ function purchaserInventoryNewCtrlProvide (
 	
 	var base = {
 	    // brand:         $scope.select.brand.id,
-	    firm:         function() {
+	    firm: function() {
 		if ($scope.base_settings.stock_with_firm === diablo_yes) {
 		    return stockUtils.invalid_firm($scope.select.firm);
 		} else {
-		    return undefined;
+		    return diablo_invalid_firm;
 		} 
 	    }(),
 	    
