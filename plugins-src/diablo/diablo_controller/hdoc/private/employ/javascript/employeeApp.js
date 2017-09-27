@@ -85,7 +85,7 @@ function employeeConfig(angular){
 
 
     employeeApp.controller("employDetailCtrl", function(
-	$scope, diabloPattern, diabloUtilsService, employService, user){
+	$scope, dateFilter, diabloPattern, diabloUtilsService, employService, user){
 	$scope.shops = user.sortShops;
 	$scope.goto_page = diablo_goto_page;
 	
@@ -113,7 +113,9 @@ function employeeConfig(angular){
 		    sex:  diablo_get_modified(n_employee.sex, o_employee.sex),
 		    mobile: diablo_get_modified(n_employee.mobile, o_employee.mobile),
 		    address: diablo_get_modified(n_employee.address, o_employee.address),
-		    shop: diablo_get_modified(n_employee.shop, o_employee.shop)
+		    shop: diablo_get_modified(n_employee.shop, o_employee.shop),
+		    entry: diablo_get_modified(
+			dateFilter(n_employee.entry, "yyyy-MM-dd"), o_employee.entry)
 		}; 
 		console.log(u_employee);
 		
@@ -138,6 +140,7 @@ function employeeConfig(angular){
 		    && diablo_is_same(new_employee.mobile, o_employee.mobile)
 		    && diablo_is_same(new_employee.address, o_employee.address)
 		    && diablo_is_same(new_employee.shop, o_employee.shop)
+		    && diablo_is_same(dateFilter(new_employee.entry, "yyyy-MM-dd"), o_employee.entry)
 	    };
 	    
 	    
@@ -154,10 +157,18 @@ function employeeConfig(angular){
 
 	    o_employee.sex = diablo_sex2object[o_employee.sex.id];
 	    o_employee.shop = diablo_get_object(o_employee.shop_id, $scope.shops); 
+
 	    
 	    diabloUtilsService.edit_with_modal(
 		"edit-employ.html", undefined, callback, $scope,
 		{employee:    o_employee,
+		 entry:       {
+		     isOpened:false,
+		     open_calendar: function(event) {
+			 event.preventDefault();
+			 event.stopPropagation();
+		     }},
+		 
 		 pattern:     {name:    diabloPattern.chinese_name,
 			       mobile:  diabloPattern.mobile,
 			       address: diabloPattern.ch_name_address},

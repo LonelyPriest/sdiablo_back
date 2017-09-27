@@ -1,6 +1,12 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2017-09-28",
+         content:
+	 ["增加员工修改入职日期功能",
+	  "增加调出记录删除的权限控制"]
+        },
+	
 	{date: "2017-09-22",
          content:
 	 ["修正新增会员时有时出现系统内部错误的问题",

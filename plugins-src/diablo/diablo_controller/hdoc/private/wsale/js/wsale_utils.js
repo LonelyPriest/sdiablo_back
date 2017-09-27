@@ -926,13 +926,7 @@ var wsalePrint = function(){
 	    s += "券：" + ticket.toString();
 	}
 
-	return s;
-	// if (wsaleUtils.to_float(veri) != 0){
-	//     if (s) {
-	// 	s += "  ";
-	//     }
-	//     s += "核销：" + veri.toString();
-	// }
+	return s; 
     };
 
     return {
@@ -946,7 +940,7 @@ var wsalePrint = function(){
 		wsaleUtils.to_integer(direct) === 0 ? shop : shop + "（退）"); 
 	    LODOP.SET_PRINT_STYLEA(0, "FontSize", 13);
 	    LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
-	    LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
+	    // LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
 
 	    var top = 40; 
 	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "单号：" + rsn); 

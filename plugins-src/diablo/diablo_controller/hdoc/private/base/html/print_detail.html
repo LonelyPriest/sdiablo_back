@@ -28,13 +28,7 @@
       <!--BEGIN table container-->
       <div class="portlet-body">
 	<!--BEGIN table-toolbar-->
-	<div class="table-toolbar">
-	  <!-- <div class="alert alert-warning" role="alert"> -->
-	  <!--   <p> -->
-	  <!--     <span class="fg-red">注意：106列以上打印机建议尺码横打，其它建议尺码竖打</span> -->
-	  <!--   </p> -->
-	  <!-- </div> -->
-
+	<div class="table-toolbar"> 
 	  <div class="row form-group">
 	    <div class="col-sm-12 col-md-12">
 	      <select class="form-control"
@@ -99,21 +93,9 @@
 
 		      <span ng-switch-when="check_sale">
 			{{yes_no[s.value].cname}}
-		      </span> 
-
-		       <!-- <span ng-switch-when="e_sgroup1"> -->
-		       <!-- 	 {{get_object(s.value, size_groups).name}} -->
-		       <!-- </span> -->
-
-		       <!-- <span ng-switch-when="e_sgroup2"> -->
-		       <!-- 	 {{get_object(s.value, size_groups).name}} -->
-		       <!-- </span> -->
-
-		       <!-- <span ng-switch-when="e_sgroup3"> -->
-		       <!-- 	 {{get_object(s.value, size_groups).name}} -->
-		       <!-- </span> -->
-
-		       <span ng-switch-when="s_customer">
+		      </span>
+		      
+		      <span ng-switch-when="s_customer">
 			 {{get_object(s.value, retailers).name}}
 		       </span>
 
@@ -308,36 +290,7 @@
 		      x-ng-init="params.setting.value=
 				 params.setting.yes_no[params.setting.value]">
 	      </select>
-
-	      <!-- <select x-ng-switch-when="e_sgroup1" -->
-	      <!-- 	      class="form-control" required -->
-	      <!-- 	      name="value" -->
-	      <!-- 	      x-ng-model="params.setting.value" -->
-	      <!-- 	      x-ng-options="y as y.name for -->
-	      <!-- 			    y in params.setting.sgroups" -->
-	      <!-- 	      x-ng-init="params.setting.value=params.init_v "> -->
-	      <!-- </select> -->
-
-	      <!-- <select x-ng-switch-when="e_sgroup2" -->
-	      <!-- 	      class="form-control" required -->
-	      <!-- 	      name="value" -->
-	      <!-- 	      x-ng-model="params.setting.value" -->
-	      <!-- 	      x-ng-options="y as y.name for -->
-	      <!-- 			    y in params.setting.sgroups" -->
-	      <!-- 	      x-ng-init="params.setting.value=params.init_v "> -->
-		      
-	      <!-- </select> -->
-
-	      <!-- <select x-ng-switch-when="e_sgroup3" -->
-	      <!-- 	      class="form-control" required -->
-	      <!-- 	      name="value" -->
-	      <!-- 	      x-ng-model="params.setting.value" -->
-	      <!-- 	      x-ng-options="y as y.name for -->
-	      <!-- 			    y in params.setting.sgroups" -->
-	      <!-- 	      x-ng-init="params.setting.value=params.init_v "> -->
-		      
-	      <!-- </select> -->
-
+	      
 	      <div x-ng-switch-when="qtime_start">
 		<div class="input-group col-md-12 col-sm-12 col-xs-12">
 		  <input type="text"

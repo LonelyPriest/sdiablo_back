@@ -304,11 +304,6 @@ function printOptionCtrlProvide(
 	    angular.extend(s, {prompt_types: $scope.prompt_types}); 
 	};
 	
-	// if (s.ename === 'e_sgroup1'
-	//     || s.ename === 'e_sgroup2'
-	//     || s.ename === 'e_sgroup3'){
-	//     angular.extend(s, {sgroups: $scope.size_groups});
-	// };
 	if (s.ename === 's_customer'){
 	    angular.extend(s, {retailers: $scope.retailers});
 	};
@@ -324,15 +319,8 @@ function printOptionCtrlProvide(
 	};
 
 	var v; 
-	// if (s.ename === 'e_sgroup1'
-	//     || s.ename === 'e_sgroup2'
-	//     || s.ename === 'e_sgroup3'){
-	//     console.log(s.value, $scope.size_groups);
-	//     v = $scope.get_object(s.value, $scope.size_groups);
-	// };
-
+	
 	if (s.ename === 's_customer'){
-	    // console.log(s.value, $scope.size_groups);
 	    v = $scope.get_object(s.value, $scope.retailers);
 	};
 
@@ -342,7 +330,6 @@ function printOptionCtrlProvide(
 	    qtime.open_calendar = function(event){
 		event.preventDefault();
 		event.stopPropagation();
-		// qtime.isOpened = true;
 	    };
 	}; 
 	

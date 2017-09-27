@@ -601,13 +601,8 @@ function purchaserInventoryTransferFromDetailCtrlProvide (
     };
 
     $scope.stock_right = {
-	// show_orgprice: rightAuthen.authen(
-	//     user.type,
-	//     rightAuthen.rainbow_action()['show_orgprice'],
-	//     user.right
-	// )
-	master: rightAuthen.authen_master(user.type),
-	print:  stockUtils.authen_stock(user.type, user.right, 'print_stock_transfer')
+	print:  stockUtils.authen_stock(user.type, user.right, 'print_stock_transfer'),
+	cancel: stockUtils.authen_stock(user.type, user.right, 'cancel_stock_transfer'),
     }; 
 
     /*

@@ -122,47 +122,46 @@
       <div class="form-body">
 	
 	<div class="form-group">
-	  <div class="input-group">
-	      <span class="input-group-addon">
-		<i class="glyphicon glyphicon-hand-right fg-red"></i>工号</span>
-	      <input class="form-control" type="text" readonly
-                     x-ng-model="params.employee.number"/>
+	  <label class="col-sm-2 col-md-2 control-label">工号</label>
+	  <div class="col-sm-8 col-md-8">
+	    <input class="form-control" type="text" readonly
+                   x-ng-model="params.employee.number"/>
 	  </div>
 	</div>
 
 	<div class="form-group">
-	  <div class="input-group">
-	      <span class="input-group-addon">
-		<i class="glyphicon glyphicon-hand-right fg-red"></i>姓名</span>
+	  <label class="col-sm-2 col-md-2 control-label">姓名</label>
+	  <div class="col-sm-8 col-md-8">
+	    <div class="input-group">
 	      <input class="form-control" type="text" required
 		     name="name"
                      x-ng-model="params.employee.name"
 		     x-ng-pattern="params.pattern.name"/>
 	      <span class="input-group-addon bg-white fg-red">*</span>
-	  </div> 
-	  <div x-ng-show="eForm.name.$invalid && !eForm.name.$pristine">
+	    </div> 
+	    <div x-ng-show="eForm.name.$invalid && !eForm.name.$pristine">
 	    <span class="fg-red">请输入2到3个中文字符</span>
-	  </div>
-	  <div x-ng-show="params.check_exist(params.employee)">
-	    <span class="fg-red">该用户名已存在</span>
+	    </div>
+	    <div x-ng-show="params.check_exist(params.employee)">
+	      <span class="fg-red">该用户名已存在</span>
+	    </div> 
 	  </div> 
 	</div>
 	
 	<div class="form-group">
-	  <div class="input-group">
-	      <span class="input-group-addon">
-		<i class="glyphicon glyphicon-hand-right fg-red"></i>性别</span>
-	      <select class="form-control"
-			x-ng-model="params.employee.sex"
-			x-ng-options="s as s.name for s in params.sexes">
-		</select> 
+	  <label class="col-sm-2 col-md-2 control-label">性别</label>
+	  <div class="col-sm-8 col-md-8"> 
+	    <select class="form-control"
+		    x-ng-model="params.employee.sex"
+		    x-ng-options="s as s.name for s in params.sexes">
+	    </select> 
 	  </div>
-	</div> 
+	</div>
 	
 	<div class="form-group">
-	  <div class="input-group">
-	      <span class="input-group-addon">
-		<i class="glyphicon glyphicon-hand-right fg-red"></i>手机</span>
+	  <label class="col-sm-2 col-md-2 control-label">联系方式</label>
+	  <div class="col-sm-8 col-md-8"> 
+	    <div class="input-group"> 
 	      <input class="form-control"
 		     type="tel"
 		     name="mobile"
@@ -171,47 +170,73 @@
 		     placeholder="请输入手机号码"
 		     x-ng-model="params.employee.mobile"/>
 	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	      <div ng-show="eForm.mobile.$invalid && ! eForm.mobile.$pristine">
+		<span class="fg-red">请输入正确的手机号码</span>
+	      </div>
+	  </div> 
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">联系地址</label>
+	  <div class="col-sm-8 col-md-8"> 
+	    <div class="input-group"> 
+	      <div ng-class="{'has-error': eForm.address.$invalid && !eForm.address.$pristine}">
+		<input type="text"
+		       class="form-control"
+		       name="address"
+		       required
+		       placeholder="请输入您的联系地址"
+		       x-ng-model="params.employee.address"
+		       x-ng-pattern="params.pattern.address"/>
+	      </div>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	    <div ng-show="eForm.address.$invalid && !eForm.address.$pristine">
+	      <span class="fg-red">必需以中文开头，只允许字母，数字</span>
+	    </div> 
+	  </div> 
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">入职日期</label>
+	  <div class="col-sm-8 col-md-8">
+	    <div class="input-group">
+	      <input type="text" class="form-control" required
+		     placeholder="年/月/日"
+		     uib-datepicker-popup="yyyy/MM/dd"
+		     is-open="params.entry.isOpened"
+		     close-text="关闭"
+		     clear-text="清除"
+		     current-text="今天"
+		     show-weeks="false"
+		     x-ng-model="params.employee.entry"/>
+	      <span class="input-group-btn">
+		<button type="button"
+			class="btn btn-default"
+			ng-click="params.entry.isOpened=true; params.entry.open_calender($event)">
+		  <i class="glyphicon glyphicon-calendar"></i>
+		</button>
+	      </span>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	  </div> 
+	</div>
+
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">所属电铺</label>
+	  <div class="col-sm-8 col-md-8">
+	    <div class="input-group"> 
+	      <div ng-class="{'has-error': eForm.shop.$invalid && !eForm.shop.$pristine}">
+		<select class="form-control" type="text"
+	  		x-ng-model="params.employee.shop" 
+	  		x-ng-options="s as s.name for s in params.shops">
+		</select>
+	      </div>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div> 
 	  </div>
-	  <div ng-show="eForm.mobile.$invalid && ! eForm.mobile.$pristine">
-	    <span class="fg-red">请输入正确的手机号码</span>
-	   </div>
-	</div>
-
-	<div class="form-group">
-	  <div class="input-group">
-	    <span class="input-group-addon">
-		<i class="glyphicon glyphicon-hand-right fg-red"></i>地址</span>
-	    <div ng-class="{'has-error': eForm.address.$invalid
-			   && !eForm.address.$pristine}">
-	      <input type="text"
-		     class="form-control"
-		     name="address"
-		     required
-		     placeholder="请输入您的联系地址"
-		     x-ng-model="params.employee.address"
-		     x-ng-pattern="params.pattern.address"/>
-	    </div>
-	    <span class="input-group-addon bg-white fg-red">*</span>
-	  </div> 
-	  <div ng-show="eForm.address.$invalid && !eForm.address.$pristine">
-	    <span class="fg-red">必需以中文开头，只允许字母，数字</span>
-	  </div> 
-	</div>
-
-
-	<div class="form-group">
-	  <div class="input-group">
-	    <span class="input-group-addon">
-	      <i class="glyphicon glyphicon-hand-right fg-red"></i>店铺</span>
-	    <div ng-class="{'has-error': eForm.shop.$invalid
-			   && !eForm.shop.$pristine}">
-	      <select class="form-control" type="text"
-	  	      x-ng-model="params.employee.shop" 
-	  	      x-ng-options="s as s.name for s in params.shops">
-	      </select>
-	    </div>
-	    <span class="input-group-addon bg-white fg-red">*</span>
-	  </div> 
 	</div>
 	
       </div>

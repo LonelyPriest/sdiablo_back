@@ -143,6 +143,7 @@ handle_call({update_employee, Merchant, EmployeeId, Attrs}, _From, State) ->
     Mobile  = ?v(<<"mobile">>, Attrs),
     Address = ?v(<<"address">>, Attrs),
     Shop    = ?v(<<"shop">>, Attrs),
+    Entry   = ?v(<<"entry">>, Attrs),
     
     NameExist =
 	case Name of
@@ -164,7 +165,8 @@ handle_call({update_employee, Merchant, EmployeeId, Attrs}, _From, State) ->
 		++ ?utils:v(sex, integer, Sex)
 		++ ?utils:v(mobile, string, Mobile)
 		++ ?utils:v(address, string, Address)
-		++ ?utils:v(shop, integer, Shop),
+		++ ?utils:v(shop, integer, Shop)
+		++ ?utils:v(entry, string, Entry),
 
 	    
 	    Sql1 = "update employees set "
