@@ -1633,7 +1633,7 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		 ++ ", tag_price=" ++ ?to_s(TagPrice)
 		 ++ ", discount=" ++ ?to_s(Discount)
 		 ++ ", entry_date=" ++ "\"" ++ ?to_s(CurDateTime) ++ "\"" 
-		 ++ " where id=" ++ ?to_s(?v(<<"id">>, R20))];
+		 ++ " where id=" ++ ?to_s(?v(<<"id">>, R20))]; 
 	    {error, Error20} ->
 		throw({db_error, Error20})
 	end,
@@ -1994,8 +1994,7 @@ amount_update(Mode, RSN, Merchant, Shop, Datetime, Inv) ->
 				      ++ ?to_s(Count) ++ ","
 				      ++ "\"" ++ ?to_s(Datetime) ++ "\")";
 			      {ok, _} ->
-				  "update w_inventory_amount"
-				      " set total=total+" ++ ?to_s(Count)
+				  "update w_inventory_amount" " set total=total+" ++ ?to_s(Count)
 				      ++ " where " ++ C1(Color, Size);
 			      {error, E00} ->
 				  throw({db_error, E00})
@@ -2004,11 +2003,13 @@ amount_update(Mode, RSN, Merchant, Shop, Datetime, Inv) ->
 			 case ?sql_utils:execute(s_read, Sql02) of
 			     {ok, []} ->
 				 "insert into w_inventory_new_detail_amount("
-				     "rsn, style_number, brand, color"
+				     "rsn, style_number, brand, merchant, shop, color"
 				     ", size, total, entry_date) values("
 				     ++ "\"" ++ ?to_s(RSN) ++ "\","
 				     ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
 				     ++ ?to_s(Brand) ++ ","
+				     ++ ?to_s(Merchant) ++ ","
+				     ++ ?to_s(Shop) ++ ","
 				     ++ ?to_s(Color) ++ ","
 				     ++ "\'" ++ ?to_s(Size)  ++ "\',"
 				     ++ ?to_s(Count) ++ "," 
@@ -2024,7 +2025,7 @@ amount_update(Mode, RSN, Merchant, Shop, Datetime, Inv) ->
 		    <<"d">> -> 
 			["update w_inventory_amount set total=total-"
 			 ++ ?to_s(Count) ++ " where " ++ C1(Color, Size),
-
+			 
 			 "delete from w_inventory_new_detail_amount"
 			 " where " ++ C2(Color, Size)
 			 | Acc1];

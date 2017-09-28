@@ -445,6 +445,8 @@ error(stock_invalid_barcode, Barcode) ->
     {2016, "invalid barcode of stock " ++ ?to_s(Barcode) ++ "."};
 error(stock_barcode_not_init, StyleNumber) ->
     {2017, "barcode of stock " ++ ?to_s(StyleNumber) ++ " not initial."};
+error(purchaser_good_non, _GoodId) ->
+    {2018, "good information does not exit."};
 
 
 

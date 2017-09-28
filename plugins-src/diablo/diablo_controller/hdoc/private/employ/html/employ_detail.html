@@ -79,14 +79,17 @@
 		    </td>
 		    
 		    <td> 
-		      <button class="btn diablo-button btn-warning"
-			 x-ng-click="edit_employ(employ)">修改
+		      <button x-ng-if="employ.state===0"
+			      class="btn diablo-button btn-warning"
+			      x-ng-click="edit_employ(employ)">修改
 			<i class="glyphicon glyphicon-edit"></i></button>
-                      <button class="btn diablo-button btn-success"
-			 x-ng-click="recover_employ(employ)">恢复
+                      <button x-ng-if="employ.state===1"
+			      class="btn diablo-button btn-success"
+			      x-ng-click="recover_employ(employ)">恢复
 			<i class="glyphicon glyphicon-saved"></i></button>
-		      <button class="btn diablo-button btn-danger"
-			 x-ng-click="delete_employ(employ)">删除
+		      <button x-ng-if="employ.state===0"
+			      class="btn diablo-button btn-danger"
+			      x-ng-click="delete_employ(employ)">删除
 			<i class="glyphicon glyphicon-erase"></i></button>
 		    </td>
 		    
@@ -202,9 +205,12 @@
 	  <label class="col-sm-2 col-md-2 control-label">入职日期</label>
 	  <div class="col-sm-8 col-md-8">
 	    <div class="input-group">
-	      <input type="text" class="form-control" required
-		     placeholder="年/月/日"
-		     uib-datepicker-popup="yyyy/MM/dd"
+	      <input type="text"
+		     class="form-control"
+		     readonly
+		     name="entry"
+		     placeholder="年-月-日"
+		     uib-datepicker-popup="yyyy-MM-dd"
 		     is-open="params.entry.isOpened"
 		     close-text="关闭"
 		     clear-text="清除"

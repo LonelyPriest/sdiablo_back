@@ -2445,11 +2445,18 @@ function purchaserInventoryDetailCtrlProvide(
 	).then(function(result){
 	    console.log(result);
 	    if (result.ecode === 0){
-		diablo_goto_page(
-		    "#/good/wgood_update/"
-			+ result.data.id + "/"
-			+ inv.shop_id + "/"
-			+ diablo_from_stock.toString())
+		if (diablo_is_empty(result.data)) {
+		    var error = require("diablo-error");
+		    dialog.response(
+			false,
+			"获取获品资料", "获取货品资料失败：" + error[2018]);
+		} else {
+		    diablo_goto_page(
+			"#/good/wgood_update/"
+			    + result.data.id + "/"
+			    + inv.shop_id + "/"
+			    + diablo_from_stock.toString())
+		} 
 	    } else {
 		var error = require("diablo-error");
 		dialog.response(

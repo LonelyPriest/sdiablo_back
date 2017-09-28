@@ -522,8 +522,10 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
     RC = fun(S, B) ->
 		 "style_number=\'" ++ ?to_s(S) ++ "\'"
 		     ++ " and brand=" ++ ?to_s(B)
-		     ++ " and rsn like \'"
-		     "M-" ++ ?to_s(Merchant) ++ "-S-" ++ ?to_s(Shop) ++ "%\'"
+		     ++ " and merchant=" ++ ?to_s(Merchant)
+		     ++ " and shop=" ++ ?to_s(Shop)
+		     %% ++ " and rsn like \'"
+		     %% "M-" ++ ?to_s(Merchant) ++ "-S-" ++ ?to_s(Shop) ++ "%\'"
 	 end,
 
     Sql1 = "update w_inventory_good set "
@@ -555,8 +557,7 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 				 ++ ?utils:to_sqls(proplists, comma, U3)
 				 ++ " where "
 				 ++ C(true, OrgStyleNumber, OrgBrand)]
-				    ++ 
-				    case lists:keydelete(<<"sex">>, 1, U3) of
+				    ++ case lists:keydelete(<<"sex">>, 1, U3) of
 					[] -> [];
 					U1 ->
 					    ["update w_sale_detail set "
@@ -776,37 +777,36 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 			   Update2
 			   ++ ?utils:v(path, string, Path)
 			   ++ ?utils:v(firm, integer, Firm))
-		     ++ " where "
-		     ++ RC(OrgStyleNumber, OrgBrand),
+		     ++ " where style_number=\'" ++ ?to_s(OrgStyleNumber) ++ "\'"
+		     ++ " and brand=" ++ ?to_s(OrgBrand)
+		     ++ " and merchant=" ++ ?to_s(Merchant)
+		     ++ " and fshop=" ++ ?to_s(Shop),
+		     
+		     %% ++ RC(OrgStyleNumber, OrgBrand),
 
 		     "update w_inventory_transfer_detail_amount set "
 		     ++ ?utils:to_sqls(proplists, comma, Update2)
 		     ++ " where "
-		     ++ RC(OrgStyleNumber, OrgBrand)],
+		     ++ " where style_number=\'" ++ ?to_s(OrgStyleNumber) ++ "\'"
+		     ++ " and brand=" ++ ?to_s(OrgBrand)
+		     ++ " and merchant=" ++ ?to_s(Merchant)
+		     ++ " and fshop=" ++ ?to_s(Shop)
+		     %%  ++ RC(OrgStyleNumber, OrgBrand)
+		    ],
 
 		?DEBUG("Sql15 ~p", [Sql15]),
 
 		%% fix
-		Sql16 =
-		    [
-		     %% "update w_inventory_fix_detail set "
-		     %% ++ ?utils:to_sqls(
-		     %% 	   proplists,
-		     %% 	   comma,
-		     %% 	   Update2
-		     %% 	   ++ ?utils:v(path, string, Path)
-		     %% 	   ++ ?utils:v(firm, integer, Firm))
-		     %% ++ " where "
-		     %% ++ RC(OrgStyleNumber, OrgBrand),
+		%% Sql16 =
+		%%     ["update w_inventory_fix_detail_amount set "
+		%%      ++ ?utils:to_sqls(proplists, comma, Update2)
+		%%      ++ " where "
+		%%      ++ RC(OrgStyleNumber, OrgBrand)],
 
-		     "update w_inventory_fix_detail_amount set "
-		     ++ ?utils:to_sqls(proplists, comma, Update2)
-		     ++ " where "
-		     ++ RC(OrgStyleNumber, OrgBrand)],
+		%% ?DEBUG("Sql16 ~p", [Sql16]),
 
-		?DEBUG("Sql16 ~p", [Sql16]),
-
-		AllSql = Sql00 ++ Sql10 ++ Sql12 ++ Sql14 ++ Sql15 ++ Sql16,
+		AllSql = Sql00 ++ Sql10 ++ Sql12 ++ Sql14 ++ Sql15,
+		    %% ++ Sql16,
 		{reply, ?sql_utils:execute(transaction, AllSql, GoodId), State}
 	    catch
 		_:{badmatch, Error} -> {reply, Error, State}
@@ -828,7 +828,7 @@ handle_call({lookup_good, Merchant}, _Form, State) ->
 
 
 handle_call({lookup_good, Merchant, GoodId}, _Form, State) ->
-    ?DEBUG("lookup_good with merchant ~p, goodId ~p", [Merchant, GoodId]),
+    ?DEBUG("lookup_good with merchant ~p, goodId ~p", [Merchant, GoodId]), 
     Sql = ?w_good_sql:good(detail, Merchant, [{<<"id">>, ?to_i(GoodId)}]),
     Reply =  ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};

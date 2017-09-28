@@ -113,8 +113,7 @@ function wgoodUpdateCtrlProvide(
 	$scope.src_good = angular.copy(good);
 	// $scope.src_good.brand =
 	//     diablo_get_object(good.brand_id, $scope.brands);
-	$scope.src_good.type  = diablo_get_object(
-	    good.type_id, $scope.types).name;
+	$scope.src_good.type  = diablo_get_object(good.type_id, $scope.types).name;
 
 	// now
 	$scope.good = angular.copy(good);
