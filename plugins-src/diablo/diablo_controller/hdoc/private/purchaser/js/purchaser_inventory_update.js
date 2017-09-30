@@ -36,7 +36,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
     $scope.setting.use_barcode     = stockUtils.use_barcode(diablo_default_shop, $scope.ubase);
     $scope.setting.auto_barcode    = stockUtils.auto_barcode(diablo_default_shop, base);
     $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, base);
-
+    // console.log(user.loginShop);
     // console.log($scope.setting);
 
     $scope.template = filterTemplate.length !== 0 ? filterTemplate[0] : undefined;

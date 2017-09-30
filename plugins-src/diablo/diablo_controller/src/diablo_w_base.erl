@@ -266,7 +266,7 @@ handle_call({add_shop_setting, Merchant, Shop}, _From, State) ->
     %% {{YY, MM, DD}, _} = calendar:now_to_datetime({M, S - 86400 * 30, T}),
     %% DefaultDate = lists:flatten(io_lib:format("~4..0w-~2..0w-~2..0w", [YY, MM, DD])), 
     
-    Values = sys_config(), 
+    Values = sys_config(shop), 
     Sql0 = lists:foldr(
 	     fun({EName, CName, Value, Type}, Acc) ->
 		     Sql00 = "select id, ename, value from w_base_setting"
