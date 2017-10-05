@@ -373,6 +373,7 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 		    {ok, R} ->
 			["update w_inventory set"
 			 " amount=amount+" ++ ?to_s(Amount)
+			 ++ ", s_group=\'" ++ ?to_s(SizeGroup) ++ "\'"
 			 %% ++ ", org_price=" ++ ?to_s(OrgPrice) 
 			 %% ++ ", ediscount=" ++ ?to_s(eDiscount)
 			 ++ ", change_date="

@@ -1,6 +1,8 @@
 -define(NO, 0).
 -define(YES, 1).
 
+-define(TABLET, 1).
+
 -define(SUCCESS, 0).
 
 %% user type
@@ -487,6 +489,7 @@
 	  shop_id     = -1         :: integer(),
 	  mtype       = -1         :: integer(),
 	  sdays       = 0          :: integer(),
+	  tablet      = 0          :: integer(),
 	  login_time  = undefined  :: string()   
 	 }).
 

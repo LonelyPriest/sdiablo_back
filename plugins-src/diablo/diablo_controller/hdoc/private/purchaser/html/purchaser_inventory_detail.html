@@ -644,18 +644,17 @@
     <form class="form-horizontal" name="sForm" novalidate> 
       <div class="form-body">
 
-	<!-- <div class="form-group"> -->
-	<!--   <label class="col-sm-2 col-md-2 control-label">进价</label> -->
-	<!--   <div class="col-sm-10 col-md-10"> -->
-	<!--     <input class="form-control" -->
-	<!-- 	   type="number" -->
-	<!-- 	   step="1" -->
-	<!-- 	   readonly -->
-	<!-- 	   disable-key -->
-	<!-- 	   disable-wheel -->
-	<!-- 	   x-ng-model="params.org_price"/> -->
-	<!--   </div> -->
-	<!-- </div> -->
+	<div x-ng-if="params.update_orgprice" class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">进价</label>
+	  <div class="col-sm-10 col-md-10">
+	    <input class="form-control"
+		   type="number"
+		   step="1"
+		   disable-key
+		   disable-wheel
+		   x-ng-model="params.org_price"/>
+	  </div>
+	</div>
 
 	<div class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label">吊牌价</label>

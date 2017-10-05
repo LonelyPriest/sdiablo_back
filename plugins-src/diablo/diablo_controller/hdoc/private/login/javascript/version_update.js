@@ -1,6 +1,12 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2017-10-03",
+         content:
+	 ["增加均码货品不能增加尺码组的限制",
+	  "修正移仓时尺码组不同步导致开单有库存但无法显示的问题"]
+        },
+	
 	{date: "2017-09-28",
          content:
 	 ["增加员工修改入职日期功能",

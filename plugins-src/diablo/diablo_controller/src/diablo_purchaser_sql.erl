@@ -595,7 +595,7 @@ inventory(set_promotion, Merchant, Promotions, Conditions) ->
 inventory(update_batch, Merchant, Attrs, Conditions) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
 
-    %% OrgPrice  = ?v(<<"org_price">>, Attrs),
+    OrgPrice  = ?v(<<"org_price">>, Attrs),
     TagPrice  = ?v(<<"tag_price">>, Attrs),
     Discount  = ?v(<<"discount">>, Attrs),
     Imbalance = ?v(<<"imbalance">>, Attrs),
@@ -609,10 +609,10 @@ inventory(update_batch, Merchant, Attrs, Conditions) ->
     UpdateOfGood =
 	case Imbalance of
 	    undefined ->
-		%% ?utils:v(org_price, float, OrgPrice)
-		?utils:v(tag_price, float, TagPrice);
-		    %% ++ ?utils:v(discount, float, Discount)
-		    %% ++ ?utils:v(contailer, integer, Contailer);
+		?utils:v(org_price, float, OrgPrice)
+		    ++ ?utils:v(tag_price, float, TagPrice);
+	    %% ++ ?utils:v(discount, float, Discount)
+	    %% ++ ?utils:v(contailer, integer, Contailer);
 	    _ ->
 		%% ?utils:v(contailer, integer, Contailer)
 		[]
@@ -629,13 +629,21 @@ inventory(update_batch, Merchant, Attrs, Conditions) ->
 
     ["update w_inventory set " ++ ?utils:to_sqls(proplists, comma, UpdateOfStock)
      ++ case Imbalance of
-	    undefined ->
-		case TagPrice =:= undefined orelse TagPrice == 0 of
-		    true -> [];
-		    false -> ", ediscount=(org_price/" ++ ?to_s(TagPrice) ++ ")*100"
+	    undefined -> 
+		%% ", ediscount=(org_price/" ++ ?to_s(TagPrice) ++ ")*100"
+		case {TagPrice, OrgPrice} of
+		    {undefined, undefined} ->
+			[];
+		    {undefined, OrgPrice} ->
+			", ediscount=(" ++ ?to_s(OrgPrice) ++"/tag_price)*100";
+		    {TagPrice, undefined} ->
+			", ediscount=(org_price/" ++ ?to_s(TagPrice) ++ ")*100";
+		    {TagPrice, OrgPrice} ->
+			", ediscount=" ++ ?to_s(stock(ediscount, OrgPrice, TagPrice))
 		end;
 	    _ ->
 		", tag_price=tag_price-" ++ ?to_s(Imbalance)
+		    ++ ", ediscount=(org_price/(tag_price-" ++ ?to_s(Imbalance) ++ "))*100"
 	end 
      %% ++ ", ediscount=(org_price/" ++ ?to_s(TagPrice) ++ ")*100"
      %% ++ case {TagPrice, OrgPrice} of
@@ -664,10 +672,21 @@ inventory(update_batch, Merchant, Attrs, Conditions) ->
 		    ++ ?utils:to_sqls(proplists, comma, UpdateOfGood)
 		    ++ case Imbalance of
 			   undefined ->
-			       case TagPrice =:= undefined orelse TagPrice == 0 of
-				   true -> [];
-				   false -> ", ediscount=(org_price/" ++ ?to_s(TagPrice) ++ ")*100"
-			       end;
+			       case {TagPrice, OrgPrice} of
+			       	   {undefined, undefined} ->
+			       	       [];
+			       	   {undefined, OrgPrice} ->
+			       	       ", ediscount=(" ++ ?to_s(OrgPrice) ++"/tag_price)*100";
+			       	   {TagPrice, undefined} ->
+			       	       ", ediscount=(org_price/" ++ ?to_s(TagPrice) ++ ")*100";
+			       	   {TagPrice, OrgPrice} ->
+			       	       ", ediscount=" ++ ?to_s(stock(ediscount, OrgPrice, TagPrice))
+			          end;
+			       
+			       %% case TagPrice =:= undefined orelse TagPrice == 0 of
+			       %% 	   true -> [];
+			       %% 	   false -> ", ediscount=(org_price/" ++ ?to_s(TagPrice) ++ ")*100"
+			       %% end;
 
 			   _ -> []
 		       end

@@ -478,7 +478,8 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 	++ ?utils:v(firm, integer, Firm)
 	++ ?utils:v(sex, integer, Sex)
 	++ ?utils:v(year, integer, Year)
-	++ ?utils:v(season, integer, Season) 
+	++ ?utils:v(season, integer, Season)
+	++ ?utils:v(s_group, string, SizeGroup)
 	++ ?utils:v(path, string, Path),
 	%% ++ ?utils:v(change_date, string, DateTime),
 
@@ -496,7 +497,7 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
     UpdateGood = UpdateBase ++ UpdatePrice
 	++ ?utils:v(color, string, Colors)
 	++ UpdateFree
-	++ ?utils:v(s_group, string, SizeGroup)
+    %% ++ ?utils:v(s_group, string, SizeGroup)
 	++ ?utils:v(size, string, Sizes)
 	++ ?utils:v(change_date, string, DateTime),
     
@@ -541,7 +542,7 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 		_  ->
 		    UpdateInv = UpdateBase
 			++ UpdatePrice ++ UpdateFree
-			++ ?utils:v(s_group, string, SizeGroup)
+		    %% ++ ?utils:v(s_group, string, SizeGroup)
 			++ ?utils:v(change_date, string, DateTime),
 		    
 		    Sql2 = "update w_inventory set "
@@ -676,7 +677,7 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 		
 		%% update w_inventory
 		UpdateInv = UpdateBase
-		    ++ ?utils:v(s_group, string, SizeGroup)
+		%% ++ ?utils:v(s_group, string, SizeGroup)
 		    ++ ?utils:v(change_date, string, DateTime),
 
 		Sql12 = 
@@ -786,7 +787,6 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 
 		     "update w_inventory_transfer_detail_amount set "
 		     ++ ?utils:to_sqls(proplists, comma, Update2)
-		     ++ " where "
 		     ++ " where style_number=\'" ++ ?to_s(OrgStyleNumber) ++ "\'"
 		     ++ " and brand=" ++ ?to_s(OrgBrand)
 		     ++ " and merchant=" ++ ?to_s(Merchant)

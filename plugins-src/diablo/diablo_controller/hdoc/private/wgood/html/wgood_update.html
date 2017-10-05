@@ -346,7 +346,7 @@
 			   class="form-control"
 			   x-ng-model="good.size"/> 
 		  </div>
-		  <span x-ng-if="good.free!==0 && setting.multi_sgroup!==0" class="input-group-btn">
+		  <span x-ng-if="good.s_group!=='0' && setting.multi_sgroup!==0" class="input-group-btn">
 		    <button class="btn btn-primary" 
 			    x-ng-click="select_size()">
 		      <i class="glyphicon glyphicon-arrow-right"></i>

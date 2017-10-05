@@ -32,7 +32,7 @@ start(normal, _StartArgs) ->
 	    {ok, Pid};
 	Error ->
 	    Error
-		end.
+    end.
 
 
 stop(_State) ->

@@ -2470,7 +2470,7 @@ function purchaserInventoryDetailCtrlProvide(
 	var callback = function(params){
 	    console.log(params);
 	    var update = {
-		// org_price  :diablo_get_modified(params.org_price, inv.org_price),
+		org_price  :diablo_get_modified(params.org_price, inv.org_price),
 		tag_price  :diablo_get_modified(params.tag_price, inv.tag_price),
 		discount   :diablo_get_modified(params.discount, inv.discount),
 		contailer  :diablo_get_modified(params.contailer, inv.contailer),
@@ -2496,6 +2496,7 @@ function purchaserInventoryDetailCtrlProvide(
 		console.log(result);
 		if (result.ecode === 0){
 		    var tag_price = angular.isDefined(update.tag_price) ? update.tag_price : inv.tag_price;
+		    var org_price = angular.isDefined(update.org_price) ? update.org_price : inv.org_price;
 		    var discount  = angular.isDefined(update.discount)  ? update.discount  : inv.discount;
 		    var contailer = angular.isDefined(update.contailer) ? update.contailer : inv.contailer;
 		    var s = "修改价格成功！！"
@@ -2512,7 +2513,7 @@ function purchaserInventoryDetailCtrlProvide(
 			function(){
 			    inv.tag_price = tag_price;
 			    inv.discount  = discount;
-			    inv.ediscount = stockUtils.ediscount(inv.org_price, tag_price);
+			    inv.ediscount = stockUtils.ediscount(org_price, tag_price);
 			    inv.contailer = contailer;
 			    inv.sid       = update.score === 0 ? -1 : inv.sid;
 			    console.log(inv);}); 
@@ -2541,7 +2542,8 @@ function purchaserInventoryDetailCtrlProvide(
 		contailer    :inv.contailer,
 		yes_no       :yes_no,
 		is_score     :yes_no[0],
-		stock_contailer : $scope.setting.stock_contailer
+		stock_contailer : $scope.setting.stock_contailer,
+		update_orgprice: $scope.stock_right.show_orgprice
 	    }
 	);
     };

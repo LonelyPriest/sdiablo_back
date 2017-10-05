@@ -86,6 +86,7 @@ handle_call({new, User}, _From, State) ->
     Shop         = ?v(<<"shop_id">>, User),
     MerchantType = ?v(<<"mtype">>, User),
     SDays        = ?v(<<"sdays">>, User),
+    Tablet       = ?v(<<"tablet">>, User, 0),
 
     MS = [{{'_', #session{user_name='$1', _='_'}},
 	   [{'==', '$1', ?to_b(UserName)}],
@@ -105,17 +106,18 @@ handle_call({new, User}, _From, State) ->
     true = ets:insert(
 	     ?SESSION, {SessionId,
 			#session{
-			       id          = ?to_b(SessionId), 
-			       user_id     = ?to_i(UserId),
-			       user_name   = ?to_b(UserName),
-			       user_type   = ?to_i(UserType),
-			       merchant    = ?to_i(Merchant),
-			       retailer_id = ?to_i(Retailer),
-			       employee_id = ?to_b(Employee),
-			       shop_id     = ?to_i(Shop),
-			       mtype       = ?to_i(MerchantType),
-			       sdays       = ?to_i(SDays), 
-			       login_time  = ?utils:current_time(timestamp)}}),
+			  id          = ?to_b(SessionId), 
+			  user_id     = ?to_i(UserId),
+			  user_name   = ?to_b(UserName),
+			  user_type   = ?to_i(UserType),
+			  merchant    = ?to_i(Merchant),
+			  retailer_id = ?to_i(Retailer),
+			  employee_id = ?to_b(Employee),
+			  shop_id     = ?to_i(Shop),
+			  mtype       = ?to_i(MerchantType),
+			  sdays       = ?to_i(SDays),
+			  tablet      = ?to_i(Tablet),
+			  login_time  = ?utils:current_time(timestamp)}}),
     {reply, {ok, SessionId}, State};
 
 handle_call({lookup, SessionId}, _From, State) ->
@@ -307,6 +309,8 @@ get(mtype, Session) ->
     Session#session.mtype;
 get(time, Session) ->
     Session#session.login_time;
+get(tablet, Session) ->
+    Session#session.tablet;
 get(sdays, Session) ->
     Session#session.sdays.
 
