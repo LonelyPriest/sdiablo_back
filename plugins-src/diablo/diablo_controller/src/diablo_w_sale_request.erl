@@ -854,7 +854,9 @@ sidebar(Session) ->
 	    
 	    SaleD =
 		[{"wsale_rsn_detail",
-		  "交易明细", "glyphicon glyphicon-map-marker"}],
+		  "交易明细", "glyphicon glyphicon-map-marker"},
+		 {"wsale_firm_detail",
+		  "厂商明细", "glyphicon glyphicon-equalizer"}],
 
 	    Merchant = ?session:get(merchant, Session), 
 	    {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),

@@ -1,0 +1,127 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="portlet box purple">
+      
+      <div class="portlet-title">
+	<div class="caption">
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>
+	  <!-- <span x-ng-bind="wsale_rsn_title"></span> -->
+	  <span>厂商交易明细</span>
+	</div>	
+
+	<div class="actions">
+	  <div class="btn-group btn-group-solid">
+	    <button type="button" class="btn red"
+		    x-ng-click="back()">返回
+	      <i class="glyphicon glyphicon-circle-arrow-left"></i></button> 
+	    
+	    <button type="button" class="btn blue purple-stripe reload"
+		    x-ng-click="do_search(default_page)">刷新
+	      <i class="icon icon-spinner fg-white"></i></button> 
+	  </div>
+	</div>
+	
+      </div>
+
+      <!--BEGIN table container-->
+      <div class="portlet-body">
+	<div class="table-toolbar util-btn-margin-bottom-5">
+	  
+	  <div class="row">
+            <div class="col-md-4 col-sm-4 col-xs-12">
+              <time-search
+                 glyphicon="glyphicon glyphicon-arrow-left fg-red"
+                 time="time.start_time" ok="do_search(default_page)">
+	      </time-search>
+            </div>
+
+            <div class="col-md-4 col-sm-4 col-xs-12">
+              <time-search
+                 glyphicon="glyphicon glyphicon-arrow-right fg-red"
+                 time="time.end_time" ok="do_search(default_page)">
+	      </time-search>
+            </div>
+	    
+            <div class="col-md-4 col-sm-4 col-xs-12">
+              <query-pattern ng-model="match"
+                             filters="filters"
+                             filter="filter">
+	      </query-pattern>
+            </div>
+	  </div>
+
+	  <query-group filters="filters"
+	  	       prompt="prompt"
+	  	       ok="do_search(default_page)"></query-group>
+	  
+	</div> <!--END table-toolbar-->
+	
+	<!--BEGN portlet body--> 
+	<div class="portlet-body">
+	  <!--BEGIN panel-->
+	  <div class="panel panel-default table-panel">
+	    <div class="table-responsive diablo-table">
+	      <!--EBGIN table supplier-->
+	      <table class="table table-bordered
+			    table-striped table-hover
+			    table-condensed table-advanced">
+		<thead>
+		  <tr>
+		    <th>序号</th> 
+		    <th>交易</th> 
+		    <th>店铺</th>
+		    <th class="success">款号</th>
+		    <th class="danger">品牌</th>
+		    <th class="warning">类型</th> 
+		    <th>季节</th>
+		    <th class="danger">厂商</th> 
+		    <th>年度</th>
+		    <th>小计</th>
+		    <th>数量</th>
+		    <th>颜色</th>
+		    <th>尺码</th> 
+		    <th>上架日期</th> 
+		  </tr>
+		</thead>
+		<tbody>
+		  <tr ng-repeat="inv in inventories"> 
+		</tbody>
+
+		<tfoot> 
+		</tfoot>
+		
+	      </table> <!--END table--> 
+	    </div> <!--END table responsive--> 
+	  </div> <!--END panel-->
+	</div> <!--END portlet body-->
+
+	<div x-ng-show="total_items>items_perpage" class="row">
+	  <div class="col-md-12, col-sm-12, col-xs-12">
+	    <span>显示第 {{current_page}} / {{num_pages}} 项结果，
+	      共 {{total_items}} 项
+	    </span>
+	      
+	    <uib-pagination x-ng-show="!setting.se_pagination"
+			    class="pagination-lg table-pagination pull-right"
+		  	    total-items="total_items"
+		  	    items-per-page="items_perpage"
+		  	    num-pages="num_pages"
+		  	    max-size="max_page_size"
+		  	    boundary-links="true"
+		  	    previous-text="&lsaquo;" next-text="&rsaquo;"
+		  	    first-text="&laquo;" last-text="&raquo;"
+		  	    x-ng-model="current_page"
+		  	    x-ng-change="page_changed()">
+	    </uib-pagination> 
+	  </div>
+	</div>
+	
+      </div> <!--END table container-->
+      
+    </div>
+  </div>
+</div>
+
+
+
+

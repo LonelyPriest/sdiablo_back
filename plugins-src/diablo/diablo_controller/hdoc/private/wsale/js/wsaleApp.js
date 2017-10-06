@@ -101,6 +101,11 @@ function wsaleConfg(angular){
 		    {}, user, promotion, score, brand, employee,
 		    firm, s_group, type, color, base)
 	    }).
+	    when('/wsale_firm_detail', {
+		templateUrl: '/private/wsale/html/wsale_firm_detail.html',
+		controller: 'wsaleFirmDetailCtrl',
+		resolve: angular.extend({}, user, brand, firm,  type, base)
+	    }).
 	    when('/reject_wsale', {
 		templateUrl: '/private/wsale/html/reject_wsale.html',
 		controller: 'wsaleRejectCtrl',

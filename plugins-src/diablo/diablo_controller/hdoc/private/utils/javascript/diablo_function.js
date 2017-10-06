@@ -115,6 +115,7 @@ var diablo_print_px    = 5.56;
 // wsale
 var diablo_key_wsale_trans            = "q-wsale-trans";
 var diablo_key_wsale_trans_detail     = "q-wsale-trans-detail";
+var diablo_key_wsale_firm_detail      = "q-wsale-firm-detail";
 
 // inventory
 var diablo_key_inventory_detail       = "q-inventory-detail"
