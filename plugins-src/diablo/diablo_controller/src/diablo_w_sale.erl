@@ -88,13 +88,19 @@ rsn_detail(rsn, Merchant, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {rsn_detail, Merchant, Condition}).
 
+
+
 filter(total_news, 'and', Merchant, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {total_news, Merchant, Fields});
 
 filter(total_rsn_group, 'and', Merchant, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {total_rsn_group, Merchant, Fields}).
+    gen_server:call(Name, {total_rsn_group, Merchant, Fields});
+
+filter(total_firm_detail, 'and', Merchant, Fields) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {total_firm_detail, Merchant, Fields}).
 
 filter(news, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -110,6 +116,8 @@ filter({rsn_group, Mode, Sort}, 'and', Merchant, CurrentPage, ItemsPerPage, Fiel
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(
       Name, {filter_rsn_group, {Mode, Sort}, Merchant, CurrentPage, ItemsPerPage, Fields}).
+
+    
 
 
 export(trans, Merchant, Condition) ->
@@ -911,21 +919,21 @@ handle_call({total_rsn_group, Merchant, Conditions}, _From, State) ->
 
     	++ ?sql_utils:condition(proplists, CutSConditions)
     	++ " and a.merchant=" ++ ?to_s(Merchant)
-    	++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime),
-	
-    %% Sql = "select count(*) as total"
-    %% 	", SUM(total) as t_amount"
-    %% 	", SUM(fprice * fdiscount * total) as t_balance"
-    %% 	" from ("
-    %% 	"select b.id, b.rsn, b.total, b.fprice, b.fdiscount"
-    %% 	" from w_sale a, w_sale_detail b"
-    %% 	" where a.rsn=b.rsn"
-    %% 	++ ?sql_utils:condition(proplists, CutSConditions)
-    %% 	++ " and a.merchant=" ++ ?to_s(Merchant)
-    %% 	++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime)
-    %% 	++ ?sql_utils:condition(proplists, CorrectCutDConditions)
-    %% 	++ ") c", 
+    	++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime), 
     
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+handle_call({total_firm_detail, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("total_rsn_group with merchant ~p, conditions ~p", [Merchant, Conditions]),
+
+    Sql = "select count(*) as total"
+    	", SUM(total) as t_amount" 
+    	" from w_sale_detail"
+
+    	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, Conditions)
+	++ " group by style_number, brand, shop",
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State}; 
 

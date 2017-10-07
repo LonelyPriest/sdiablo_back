@@ -270,6 +270,12 @@ function wsaleConfg(angular){
 		 count:  itemsPerpage}).$promise;
 	};
 
+	this.list_wsale_group_by_style_number = function(condition) {
+	    return http.save(
+		{operation: "list_wsale_group_by_style_number"},
+		{condition: condition}).$promise;
+	};
+
 	this.get_w_sale_new = function(rsn){
 	    return http.get({operation: "get_w_sale_new", id:rsn}).$promise;
 	};

@@ -255,11 +255,56 @@ function wsaleRsnDetailCtrlProvide (
 		
 	    })
 	})
-    }; 
+    };
 
-    // default the first page
+    $scope.refresh = function() {
+	$scope.do_search($scope.default_page);
+    };
+
+    $scope.additional_mode = function() {
+	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+	    if (angular.isUndefined(search.rsn)){
+		search.rsn  =  $routeParams.rsn ? $routeParams.rsn : undefined; 
+	    };
+	    
+	    if (angular.isUndefined(search.shop)
+		|| !search.shop || search.shop.length === 0){
+		search.shop = $scope.shopIds.length === 0 ? undefined : $scope.shopIds; 
+	    }
+	    console.log(search);
+	    
+	    wsaleService.list_wsale_group_by_style_number(search).then(function(result){
+	    	console.log(result);
+		if (result.ecode === 0){
+		    $scope.notes = [];
+		    $scope.total = result.total;
+		    $scope.amount = 0;
+		    
+		    var order_id = 1;
+		    angular.forEach(result.note, function(n) {
+			n.order_id = order_id; 
+			$scope.notes.push(n);
+			
+			for (var i=0, l=n.note.length; i<l; i++) {
+			    var s = n.note[i];
+			    $scope.amount += s.total;
+			    $scope.notes.push({
+				amount: s.total,
+				color:  s.color,
+				size:   s.size
+			    });
+			}
+
+			order_id++; 
+		    });
+		}
+	    });
+	})
+    };
+
     if ($scope.is_linked || $scope.current_page !== $scope.default_page){
 	$scope.do_search($scope.current_page);
+	$scope.additional_mode();
     }
 
     $scope.auto_pagination = function(){
@@ -593,441 +638,7 @@ function wsaleUploadCtrlProvide (
         console.info('onCompleteAll');
     };
 
-    console.info('uploader', $scope.uploader);
-    
-};
-
-function wsaleFirmDetailCtrlProvide (
-    $scope, $routeParams, diabloUtilsService, diabloFilter,
-    wsaleService, localStorageService,
-    user, filterBrand, filterFirm,  filterType, base){
-    // console.log($routeParams);
-    // console.log(filterEmployee);
-    $scope.shops    = user.sortShops.concat(user.sortBadRepoes);
-    $scope.shopIds  = user.shopIds.concat(user.badrepoIds);
-    $scope.setting  = {};
-
-    $scope.total_items = 0;
-    $scope.goto_page   = diablo_goto_page;
-    $scope.items_perpage = diablo_items_per_page();
-    $scope.max_page_size = diablo_max_page_size();
-    $scope.default_page  = 1;
-    $scope.current_page  = $scope.default_page;
-    
-    var dialog      = diabloUtilsService;
-    
-    /*
-     * right
-     */
-    $scope.right = {
-	master:        rightAuthen.authen_master(user.type), 
-	show_orgprice: rightAuthen.authen(
-	    user.type,
-	    rightAuthen.rainbow_action()['show_orgprice'],
-	    user.right) 
-    };
-
-    // style_number
-    $scope.match_style_number = function(viewValue){
-	return diabloFilter.match_w_inventory(viewValue, $scope.shopIds);
-    }; 
-    
-    var now = $.now(); 
-    var shopId = $scope.shopIds.length === 1 ? $scope.shopIds[0]: -1;
-    
-    // base setting 
-    $scope.setting.show_sale_day = user.sdays;
-    
-    var storage = localStorageService.get(diablo_key_wsale_firm_detail);
-    console.log(storage);
-    if (angular.isDefined(storage) && storage !== null){
-    	$scope.filters      = storage.filter;
-	$scope.qtime_start  = storage.start_time;
-	$scope.qtime_end    = storage.end_time;
-	$scope.current_page = storage.page;
-    } else{
-	$scope.filters = []; 
-	$scope.qtime_start = now; 
-	$scope.qtime_end = now; 
-    };
-    // console.log($scope.qtime_start, $scope.qtime_end, now); 
-
-    $scope.time = wsaleUtils.correct_query_time(
-	$scope.right.master,
-	$scope.setting.show_sale_day,
-	$scope.qtime_start,
-	$scope.qtime_end,
-	diabloFilter);
-    console.log($scope.time);
-
-    // console.log($scope.setting);
-    // filter
-    diabloFilter.reset_field();
-    diabloFilter.add_field("style_number", $scope.match_style_number); 
-    diabloFilter.add_field("brand",    filterBrand);
-    diabloFilter.add_field("type",     filterType);
-    diabloFilter.add_field("year",     diablo_full_year);
-    diabloFilter.add_field("firm",     filterFirm);
-    diabloFilter.add_field("shop",     $scope.shops); 
-    
-    $scope.filter = diabloFilter.get_filter();
-    $scope.prompt = diabloFilter.get_prompt();
-
-    $scope.cache_stastic = function(){
-	localStorageService.set(
-	    "wsale-firm-stastic", {total_items:       $scope.total_items, t:now});
-    };
-    
-    /*
-     * pagination 
-     */
-    // $scope.colspan = 17;
-    $scope.do_search = function(page){
-	// console.log(page);
-	if (!$scope.right.master && $scope.setting.show_sale_day !== diablo_nolimit_day){
-	    var diff = now - diablo_get_time($scope.time.start_time);
-	    // console.log(diff);
-	    if (diff - diablo_day_millisecond * $scope.setting.show_sale_day > diablo_day_millisecond)
-	    	$scope.time.start_time = now - $scope.setting.show_sale_day * diablo_day_millisecond;
-	    
-	    if ($scope.time.end_time < $scope.time.start_time)
-		$scope.time.end_time = now;
-	}
-	
-	// save condition of query
-	if (!$scope.is_linked)
-	    wsaleUtils.cache_page_condition(
-		localStorageService,
-		diablo_key_wsale_trans_detail,
-		$scope.filters,
-		$scope.time.start_time,
-		$scope.time.end_time, page, now);
-
-	if (!$scope.is_linked && page !== $scope.default_page) {
-	    var stastic = localStorageService.get("wsale-note-stastic");
-	    console.log(stastic);
-	    $scope.total_items       = stastic.total_items;
-	    $scope.total_amounts     = stastic.total_amounts;
-	    $scope.total_balance     = stastic.total_balance;
-	    $scope.total_obalance    = stastic.total_obalance;
-	}
-	
-	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
-	    if (angular.isUndefined(search.rsn)){
-		search.rsn  =  $routeParams.rsn ? $routeParams.rsn : undefined;
-	    };
-	    
-	    if (angular.isUndefined(search.shop)
-	    	|| !search.shop || search.shop.length === 0){
-		search.shop = $scope.shopIds.length === 0 ? undefined : $scope.shopIds; 
-	    };
-	    
-	    console.log(search);
-
-	    var items    = $scope.items_perpage;
-	    var page_num = page; 
-	    if ($scope.setting.se_pagination === diablo_yes){
-		items = page * $scope.items_perpage;
-		page_num = 1;
-		$scope.inventories= []; 
-	    };
-	    
-	    wsaleService.filter_w_sale_rsn_group(
-		{mode:$scope.mode, sort:$scope.sort},
-		$scope.match, search, page_num, items
-	    ).then(function(result){
-		console.log(result);
-		// if (!$scope.is_linked && page === 1){
-		if (page === 1){
-		    $scope.total_items = result.total;
-		    $scope.total_amounts = result.total === 0 ? 0 : result.t_amount;
-		    $scope.total_balance = result.total === 0 ? 0 : result.t_balance;
-		    $scope.total_obalance = result.total === 0 ? 0 : result.t_obalance;
-		    $scope.inventories = [];
-		    if (!$scope.is_linked) $scope.cache_stastic();
-		}
-		
-		angular.forEach(result.data, function(d){
-		    d.brand    = diablo_get_object(d.brand_id, filterBrand);
-		    d.firm     = diablo_get_object(d.firm_id, filterFirm);
-		    d.shop     = diablo_get_object(d.shop_id, $scope.shops);
-		    // d.retailer = diablo_get_object(d.retailer_id, filterRetailer);
-		    d.employee = diablo_get_object(d.employee_id, filterEmployee);
-		    d.type      = diablo_get_object(d.type_id, filterType);
-		    d.oseason    = diablo_get_object(d.season, diablo_season2objects);
-		    d.promotion = diablo_get_object(d.pid, filterPromotion);
-		    d.score     = diablo_get_object(d.sid, filterScore);
-		    d.drate     = diablo_discount(d.rprice, d.tag_price);
-		    d.gprofit   = d.rprice <= diablo_pfree ? 0 : diablo_discount(
-			diablo_float_sub(d.rprice, d.org_price), d.rprice);
-		    d.calc      = diablo_float_mul(d.rprice, d.total);
-		    d.imbalance = wsaleUtils.to_decimal(d.tag_price - d.rprice);
-		});
-
-		if ($scope.setting.se_pagination === diablo_no){
-		    $scope.inventories = result.data;
-		    diablo_order_page(
-			page, $scope.items_perpage, $scope.inventories);
-		} else {
-		    diablo_order(
-			result.data, (page - 1) * $scope.items_perpage + 1);
-		    $scope.inventories = $scope.inventories.concat(result.data);
-		}
-
-		$scope.current_page = page;
-		
-	    })
-	})
-    }; 
-
-    // default the first page
-    if ($scope.is_linked || $scope.current_page !== $scope.default_page){
-	$scope.do_search($scope.current_page);
-    }
-
-    $scope.auto_pagination = function(){
-	$scope.current_page += 1;
-	$scope.do_search($scope.current_page);
-    };
-    
-    $scope.page_changed = function(){
-	console.log($scope.current_page);
-	$scope.do_search($scope.current_page);
-    } 
-
-    var get_amount = function(cid, size, amounts){
-	for(var i=0, l=amounts.length; i<l; i++){
-	    if (amounts[i].cid === cid && amounts[i].size === size){
-		return amounts[i].count;
-	    }
-	}
-	return undefined;
-    }; 
-
-    var sort_amounts_by_color = function(colors, amounts){
-	console.log(amounts);
-	return colors.map(function(c){
-	    var row = {total:0, cid:c.cid, cname:c.cname};
-	    for(var i=0, l=amounts.length; i<l; i++){
-		var a = amounts[i];
-		if (a.cid === c.cid){
-		    row.total += a.count;
-		}
-	    };
-	    return row;
-	})
-    }
-    
-    $scope.rsn_detail = function(inv){
-	console.log(inv);
-	if (angular.isDefined(inv.amounts)
-	    && angular.isDefined(inv.colors)
-	    && angular.isDefined(inv.order_sizes)){
-
-	    color_sorts = sort_amounts_by_color(inv.colors, inv.amounts); 
-	    dialog.edit_with_modal(
-		"rsn-detail.html", undefined, undefined, $scope,
-		{colors:        inv.colors,
-		 sizes:         inv.order_sizes,
-		 amounts:       inv.amounts,
-		 total:         inv.total, 
-		 path:          inv.path,
-		 colspan:       inv.sizes.length + 1,
-		 get_amount:    get_amount,
-		 row_total:     function(cid){
-		     return color_sorts.filter(function(s){
-			 return cid === s.cid
-		     })}
-		});
-	    return;
-	}
-	
-	wsaleService.w_sale_rsn_detail({
-	    rsn:inv.rsn, style_number:inv.style_number, brand:inv.brand_id
-	}).then(function(result){
-	    console.log(result);
-	    
-	    var order_sizes = diabloHelp.usort_size_group(inv.s_group, filterSizeGroup);
-	    var sort = diabloHelp.sort_stock(result.data, order_sizes, filterColor);
-	    // inv.total    = sort.total;
-	    inv.colors      = sort.color;
-	    inv.sizes       = sort.size;
-	    inv.amounts     = sort.sort; 
-	    // console.log(inv.amounts);
-	    color_sorts     = sort_amounts_by_color(inv.colors, inv.amounts),
-	    console.log(color_sorts);
-	    dialog.edit_with_modal(
-		"rsn-detail.html", undefined, undefined, $scope,
-		{colors:     inv.colors,
-		 sizes:      inv.sizes,
-		 amounts:    inv.amounts,
-		 total:      inv.total,
-		 path:       inv.path,
-		 colspan:    inv.sizes.length + 1,
-		 get_amount: get_amount,
-		 row_total:  function(cid){
-		     return color_sorts.filter(function(s){
-			 return cid === s.cid
-		     })}
-		});
-	});
-    };
-
-    $scope.export_to = function(){
-	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
-	    if (angular.isUndefined(search.rsn)){
-		search.rsn  =  $routeParams.rsn ? $routeParams.rsn : undefined; 
-	    };
-	    
-	    if (angular.isUndefined(search.shop)
-		|| !search.shop || search.shop.length === 0){
-		search.shop = $scope.shopIds.length === 0 ? undefined : $scope.shopIds; 
-	    }
-	    console.log(search);
-	    
-	    wsaleService.csv_export(
-		wsaleService.export_type.trans_note, search
-	    ).then(function(result){
-	    	console.log(result);
-		if (result.ecode === 0){
-		    dialog.response_with_callback(
-			true, "文件导出成功", "创建文件成功，请点击确认下载！！", undefined,
-			function(){window.location.href = result.url;}) 
-		} else {
-		    dialog.response(
-			false, "文件导出失败", "创建文件失败：" + wsaleService.error[result.ecode]);
-		}
-	    });
-	}) 
-    };
-
-    $scope.back = function(){
-	var ppage = diablo_set_integer($routeParams.ppage);
-	if(angular.isDefined(ppage)){
-	    // localStorageService.remove(diablo_key_wsale_trans_detail);
-	    $scope.goto_page("#/new_wsale_detail/" + ppage.toString());
-	} else{
-	    $scope.goto_page("#/new_wsale_detail") 
-	}
-
-	// $scope.goto_page("#/new_wsale_detail/");
-    };
-    
-    var dialog = diabloUtilsService;
-    $scope.print = function(){
-	var rsn = $routeParams.rsn; 
-	var shop = diablo_get_object(parseInt(rsn.split("-")[3]), $scope.shops);
-	var p_mode = wsaleUtils.print_mode(shop.id, base);
-	var no_vip = wsaleUtils.no_vip(shop.id, base);
-	var comments = wsaleUtils.comment(shop.id, base);
-	var isRound  = wsaleUtils.round(shop.id, base);
-	var cakeMode = wsaleUtils.cake_mode(shop.id, base);
-	var pdate    = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss");
-
-	console.log(isRound, cakeMode);
-	
-	if (diablo_frontend === p_mode){
-	    if (angular.isUndefined(LODOP)) LODOP=getLodop();
-	    console.log(LODOP);
-
-	    if (angular.isDefined(LODOP)){
-		wsaleService.get_w_sale_new(rsn).then(function(result){
-		    console.log(result);
-		    var sale = result.sale;
-		    var detail = angular.copy(result.detail);
-		    angular.forEach(detail, function(d){
-			d.brand = diablo_get_object(d.brand_id, filterBrand).name;
-			d.type = diablo_get_object(d.type_id, filterType).name;
-		    });
-
-		    diabloFilter.get_wretailer_batch([sale.retailer_id]).then(function(retailers){
-			console.log(retailers);
-			console.log(diablo_get_object(sale.retailer_id, retailers).name);
-			wsalePrint.gen_head(
-			    LODOP,
-			    shop.name,
-			    rsn,
-			    diablo_get_object(sale.employ_id, filterEmployee).name,
-			    diablo_get_object(sale.retailer_id, retailers).name,
-			    sale.entry_date);
-
-			var hLine = wsalePrint.gen_body(LODOP, detail, isRound, cakeMode); 
-			var isVip = sale.retailer_id !== no_vip ? true : false;
-
-			
-			hLine = wsalePrint.gen_stastic(LODOP, hLine, sale.direct, sale, isVip); 
-			wsalePrint.gen_foot(LODOP, hLine, comments, pdate, cakeMode);
-			wsalePrint.start_print(LODOP); 
-		    }); 
-		}); 
-	    }	    
-	} else {
-	    $scope.disable_print = true;
-	    wsaleService.print_w_sale(rsn).then(function(result){
-		console.log(result);
-		$scope.disable_print = false; 
-		if (result.ecode == 0){
-		    var msg = "";
-		    if (result.pcode == 0){
-			msg = "销售单打印成功！！单号："
-			    + result.rsn + "，请等待服务器打印";
-			dialog.response(true, "销售单打印", msg, $scope); 
-		    } else {
-			if (result.pinfo.length === 0){
-			    msg += wsaleService.error[result.pcode]
-			} else {
-			    angular.forEach(result.pinfo, function(p){
-				msg += "[" + p.device + "] "
-				    + wsaleService.error[p.ecode]
-			    })
-			};
-			msg = "销售单打印失败！！单号："
-			    + result.rsn + "，打印失败：" + msg;
-			dialog.response(false, "销售单打印", msg, $scope); 
-		    }
-		    
-		} else{
-	    	    dialog.response(
-	    		false, "销售单打印",
-			"销售单打印失败：" + wsaleService.error[result.ecode]);
-		}
-	    })   
-	} 
-    };
-
-
-    $scope.update_orgprice = function(inv) {
-	var callback = function(params){
-	    console.log(params);
-
-	    wsaleService.update_w_sale_price(
-		inv.rsn, {org_price:params.org_price, tag_price:inv.tag_price}
-	    ).then(function(result){
-		console.log(result);
-		if (result.ecode === 0){
-		    inv.org_price = params.org_price; 
-		} else {
-		    dialog.response(
-			false,
-			"交易单进货价编辑",
-			"交易单进货价编辑失败："
-			    + wsaleService.error[result.ecode]);
-		}
-	    });
-	};
-
-	dialog.edit_with_modal(
-	    "rsn-update-orgprice.html",
-	    undefined,
-	    callback,
-	    undefined,
-	    {
-		style_number :inv.style_number,
-		brand        :inv.brand.name,
-		org_price    :inv.org_price
-	    }
-	);
-    };
+    console.info('uploader', $scope.uploader);  
 };
 
 define (["wsaleApp"], function(app){

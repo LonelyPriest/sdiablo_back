@@ -26,7 +26,7 @@
 	      <i class="glyphicon glyphicon-export"></i></button> 
 	    
 	    <button type="button" class="btn blue purple-stripe reload"
-		    x-ng-click="do_search(default_page)">刷新
+		    x-ng-click="refresh()">刷新
 	      <i class="icon icon-spinner fg-white"></i></button> 
 	  </div>
 	</div>
@@ -69,169 +69,227 @@
 	<!--BEGN portlet body--> 
 	<div class="portlet-body">
 	  <!--BEGIN panel-->
-	  <div class="panel panel-default table-panel">
-	    <div class="table-responsive diablo-table">
-	      <!--EBGIN table supplier-->
-	      <table class="table table-bordered
-			    table-striped table-hover
-			    table-condensed table-advanced">
-		<thead>
-		  <tr>
-		    <th>序号</th>
-		    <th x-ng-click="toggle_base()" class="danger">
-		      <span x-ng-if="!hidden.base">
-			<i class="glyphicon glyphicon-backward fg-red"></i>
-			单号</span>
-		      <span x-ng-if="hidden.base">
-			单号<i class="glyphicon glyphicon-forward fg-red"></i>
-		      </span>
-		    </th>
-		    <th x-ng-if="!hidden.base" class="success">客户</th>
-		    <th x-ng-if="!hidden.base">促销</th>
-		    <th x-ng-if="!hidden.base">积分</th>
-		    
-		    <th>交易</th> 
-		    <th x-ng-click="use_order(order_fields.shop)">店铺
-		      <i class="glyphicon glyphicon-triangle-bottom fg-red"></i>
-		    </th>
-		    <th>店员</th>
-		    <th class="danger">款号</th>
-		    <th x-ng-click="use_order(order_fields.brand)" class="danger">品牌
-		      <i class="glyphicon glyphicon-triangle-bottom fg-red"></i>
-		    </th>
-		    <th class="success">类型</th> 
-		    <th >季节</th>
-		    <th x-ng-click="use_order(order_fields.firm)" class="danger">厂商
-		      <i class="glyphicon glyphicon-triangle-bottom fg-red"></i>
-		    </th> 
-		    <th >年度</th>
-		    <th>上架日期</th> 
-		    <!-- <th>颜色</th> -->
-		    <!-- <th>数量</th> -->
-		    
-		    <th class="info">吊牌价</th>
-		    <!-- <th class="info">单价</th> -->
-		    <th class="danger">成交价</th>
-		    <th class="success">优惠</th>
-		    <th>数量</th> 
-		    <th>小计</th>
-		    <th x-ng-if="right.show_orgprice">进价</th> 
-		    <th>折扣率</th>
-		    <th x-ng-if="right.show_orgprice">毛利率</th> 
-		    <!-- <th>备注</th> -->
-		    <th>日期</th> 
-		    <th>操作</th>
-		  </tr>
-		</thead>
-		<tbody>
-		  <tr ng-repeat="inv in inventories">
-		    <td>{{inv.order_id}}</td> 
-		    <td>{{inv.rsn}}</td>
-		    
-		    <td x-ng-if="!hidden.base">{{inv.retailer}}</td>
-		    <td x-ng-if="!hidden.base">{{inv.promotion.name}}</td>
-		    <td x-ng-if="!hidden.base">{{inv.score.name}}</td>
+	  <uib-tabset> 
+	    <uib-tab active="tab_active.time">
+	      <tab-heading>销售模式</tab-heading> 
+	      <div class="panel panel-default table-panel">
+		<div class="table-responsive diablo-table">
+		  <!--EBGIN table supplier-->
+		  <table class="table table-bordered
+				table-striped table-hover
+				table-condensed table-advanced">
+		    <thead>
+		      <tr>
+			<th>序号</th>
+			<th x-ng-click="toggle_base()" class="danger">
+			  <span x-ng-if="!hidden.base">
+			    <i class="glyphicon glyphicon-backward fg-red"></i>
+			    单号</span>
+			  <span x-ng-if="hidden.base">
+			    单号<i class="glyphicon glyphicon-forward fg-red"></i>
+			  </span>
+			</th>
+			<th x-ng-if="!hidden.base" class="success">客户</th>
+			<th x-ng-if="!hidden.base">促销</th>
+			<th x-ng-if="!hidden.base">积分</th>
+			
+			<th>交易</th> 
+			<th x-ng-click="use_order(order_fields.shop)">店铺
+			  <i class="glyphicon glyphicon-triangle-bottom fg-red"></i>
+			</th>
+			<th>店员</th>
+			<th class="danger">款号</th>
+			<th x-ng-click="use_order(order_fields.brand)" class="danger">品牌
+			  <i class="glyphicon glyphicon-triangle-bottom fg-red"></i>
+			</th>
+			<th class="success">类型</th> 
+			<th >季节</th>
+			<th x-ng-click="use_order(order_fields.firm)" class="danger">厂商
+			  <i class="glyphicon glyphicon-triangle-bottom fg-red"></i>
+			</th> 
+			<th >年度</th>
+			<th>上架日期</th> 
+			<!-- <th>颜色</th> -->
+			<!-- <th>数量</th> -->
+			
+			<th class="info">吊牌价</th>
+			<!-- <th class="info">单价</th> -->
+			<th class="danger">成交价</th>
+			<th class="success">优惠</th>
+			<th>数量</th> 
+			<th>小计</th>
+			<th x-ng-if="right.show_orgprice">进价</th> 
+			<th>折扣率</th>
+			<th x-ng-if="right.show_orgprice">毛利率</th> 
+			<!-- <th>备注</th> -->
+			<th>日期</th> 
+			<th>操作</th>
+		      </tr>
+		    </thead>
+		    <tbody>
+		      <tr ng-repeat="inv in inventories">
+			<td>{{inv.order_id}}</td> 
+			<td>{{inv.rsn}}</td>
+			
+			<td x-ng-if="!hidden.base">{{inv.retailer}}</td>
+			<td x-ng-if="!hidden.base">{{inv.promotion.name}}</td>
+			<td x-ng-if="!hidden.base">{{inv.score.name}}</td>
 
-		    <td x-ng-switch on="inv.sell_type">
-		      <span x-ng-switch-when=0>开单</span>
-		      <span class="fg-red" x-ng-switch-when=1>退货</span>
-		    </td>
-		    
-		    <td>{{inv.shop.name}}</td>
-		    <td>{{inv.employee.name}}</td> 
-		    <td>{{inv.style_number}}</td>
-		    <td>{{inv.brand.name}}</td>
-		    <td>{{inv.type.name}}</td> 
-		    <td>{{inv.oseason.name}}</td> 
-		    <td>{{inv.firm.name}}</td>
-		    <td>{{inv.year}}</td>
-		    <td>{{inv.in_datetime}}</td>
-		    
-		    <!-- <td>{{inv.color}}</td> -->
-		    <!-- <td>{{inv.total}}</td>  --> 
-		    <!-- <td>{{inv.fprice}}</td> -->
+			<td x-ng-switch on="inv.sell_type">
+			  <span x-ng-switch-when=0>开单</span>
+			  <span class="fg-red" x-ng-switch-when=1>退货</span>
+			</td>
+			
+			<td>{{inv.shop.name}}</td>
+			<td>{{inv.employee.name}}</td> 
+			<td>{{inv.style_number}}</td>
+			<td>{{inv.brand.name}}</td>
+			<td>{{inv.type.name}}</td> 
+			<td>{{inv.oseason.name}}</td> 
+			<td>{{inv.firm.name}}</td>
+			<td>{{inv.year}}</td>
+			<td>{{inv.in_datetime}}</td>
+			
+			<!-- <td>{{inv.color}}</td> -->
+			<!-- <td>{{inv.total}}</td>  --> 
+			<!-- <td>{{inv.fprice}}</td> -->
 
-		    <td>{{inv.tag_price}}</td> 
-		    <td>{{inv.rprice}} </td>
-		    <td>
-		      <div x-ng-if="inv.imbalance > 0" class="fg-red">{{inv.imbalance}}</div>
-		      <div x-ng-if="inv.imbalance <= 0">{{inv.imbalance}}</div>
-		    </td>
-		    
-		    <td x-ng-switch on="inv.sell_type"> 
-		      <span class="fg-red" x-ng-switch-when=1>{{inv.total}}</span>
-		      <span x-ng-switch-default>{{inv.total}}</span>
-		    </td>
-		    <td>{{inv.calc}} </td>
-		    <!-- <td>{{inv.rdiscount}} </td> -->
-		    <!-- <td class="fg-blue">{{inv.drate}} </td> -->
-		    
-		    <td x-ng-if="right.show_orgprice">{{inv.org_price}}</td>
-		    <td>{{inv.drate}}</td>
-		    <td x-ng-if="right.show_orgprice" class="fg-magenta">{{inv.gprofit}} </td>
-		    <!-- <td>{{inv.comment}}</td> -->
-		    <td>{{inv.entry_date}}</td>
-		    <td>
-		      <button class="btn diablo-button btn-primary"
-			 x-ng-disabled="inv.free === 0"
-		    	 x-ng-click="rsn_detail(inv)">
-			明细<i class="glyphicon glyphicon-map-marker"></i></button>
-		      <button x-ng-if="right.update_price" class="btn diablo-button btn-warning"
-			      x-ng-disabled="inv.firm_id === -1"
-		    	      x-ng-click="update_orgprice(inv)">
-			进价<i class="glyphicon glyphicon-edit"></i></button> 
-		    </td>
-		  </tr>
+			<td>{{inv.tag_price}}</td> 
+			<td>{{inv.rprice}} </td>
+			<td>
+			  <div x-ng-if="inv.imbalance > 0" class="fg-red">{{inv.imbalance}}</div>
+			  <div x-ng-if="inv.imbalance <= 0">{{inv.imbalance}}</div>
+			</td>
+			
+			<td x-ng-switch on="inv.sell_type"> 
+			  <span class="fg-red" x-ng-switch-when=1>{{inv.total}}</span>
+			  <span x-ng-switch-default>{{inv.total}}</span>
+			</td>
+			<td>{{inv.calc}} </td>
+			<!-- <td>{{inv.rdiscount}} </td> -->
+			<!-- <td class="fg-blue">{{inv.drate}} </td> -->
+			
+			<td x-ng-if="right.show_orgprice">{{inv.org_price}}</td>
+			<td>{{inv.drate}}</td>
+			<td x-ng-if="right.show_orgprice" class="fg-magenta">{{inv.gprofit}} </td>
+			<!-- <td>{{inv.comment}}</td> -->
+			<td>{{inv.entry_date}}</td>
+			<td>
+			  <button class="btn diablo-button btn-primary"
+				  x-ng-disabled="inv.free === 0"
+		    		  x-ng-click="rsn_detail(inv)">
+			    明细<i class="glyphicon glyphicon-map-marker"></i></button>
+			  <button x-ng-if="right.update_price" class="btn diablo-button btn-warning"
+				  x-ng-disabled="inv.firm_id === -1"
+		    		  x-ng-click="update_orgprice(inv)">
+			    进价<i class="glyphicon glyphicon-edit"></i></button> 
+			</td>
+		      </tr>
 
-		  <tr x-ng-if="total_items!==0" class="bg-white">
-		    <td colspan={{calc_colspan()}}></td>
-		    <td>{{total_amounts}}</td> 
-		    <td>{{total_balance}}</td>
-		    <td x-ng-if="right.show_orgprice">{{total_obalance}}</td>
-		    <td colspan="5"></td>
-		  </tr>
+		      <tr x-ng-if="total_items!==0" class="bg-white">
+			<td colspan={{calc_colspan()}}></td>
+			<td>{{total_amounts}}</td> 
+			<td>{{total_balance}}</td>
+			<td x-ng-if="right.show_orgprice">{{total_obalance}}</td>
+			<td colspan="5"></td>
+		      </tr>
+		      
+		    </tbody>
+
+		    <tfoot> 
+		    </tfoot>
+		    
+		  </table> <!--END table--> 
+		</div> <!--END table responsive--> 
+	      </div> <!--END panel-->
+
+	      <div x-ng-show="total_items>items_perpage" class="row">
+		<div class="col-md-12, col-sm-12, col-xs-12">
+		  <span>显示第 {{current_page}} / {{num_pages}} 项结果，
+		    共 {{total_items}} 项
+		  </span>
 		  
-		</tbody>
+		  <uib-pagination x-ng-show="!setting.se_pagination"
+				  class="pagination-lg table-pagination pull-right"
+		  		  total-items="total_items"
+		  		  items-per-page="items_perpage"
+		  		  num-pages="num_pages"
+		  		  max-size="max_page_size"
+		  		  boundary-links="true"
+		  		  previous-text="&lsaquo;" next-text="&rsaquo;"
+		  		  first-text="&laquo;" last-text="&raquo;"
+		  		  x-ng-model="current_page"
+		  		  x-ng-change="page_changed()">
+		  </uib-pagination>
+		  
+		  <span x-ng-if="setting.se_pagination"
+			class="pull-right">
+		    <button class="btn red-sunglo btn-next-page"
+			    x-ng-disabled="current_page===num_pages"
+			    x-ng-click="auto_pagination()">
+		      <i class="glyphicon glyphicon-menu-down"></i>
+		    </button>
+		  </span>
+		  
+		</div>
+	      </div>
+	    </uib-tab>
 
-		<tfoot> 
-		</tfoot>
-		
-	      </table> <!--END table--> 
-	    </div> <!--END table responsive--> 
-	  </div> <!--END panel-->
-	</div> <!--END portlet body-->
-
-	<div x-ng-show="total_items>items_perpage" class="row">
-	  <div class="col-md-12, col-sm-12, col-xs-12">
-	    <span>显示第 {{current_page}} / {{num_pages}} 项结果，
-	      共 {{total_items}} 项
-	    </span>
-	      
-	    <uib-pagination x-ng-show="!setting.se_pagination"
-			  class="pagination-lg table-pagination pull-right"
-		  	  total-items="total_items"
-		  	  items-per-page="items_perpage"
-		  	  num-pages="num_pages"
-		  	  max-size="max_page_size"
-		  	  boundary-links="true"
-		  	  previous-text="&lsaquo;" next-text="&rsaquo;"
-		  	  first-text="&laquo;" last-text="&raquo;"
-		  	  x-ng-model="current_page"
-		  	  x-ng-change="page_changed()">
-	    </uib-pagination>
-	      
-	    <span x-ng-if="setting.se_pagination"
-		  class="pull-right">
-	      <button class="btn red-sunglo btn-next-page"
-		      x-ng-disabled="current_page===num_pages"
-		      x-ng-click="auto_pagination()">
-		<i class="glyphicon glyphicon-menu-down"></i>
-	      </button>
-	    </span>
-	      
-	  </div>
-	</div>
-	
+	    <uib-tab heading="补单模式"
+		     select="additional_mode()"> 
+	      <div class="panel panel-default table-panel">
+		<div class="table-responsive diablo-table">
+		  <table class="table table-bordered
+				table-striped table-hover
+				table-condensed table-advanced">
+		    <thead>
+		      <tr>
+			<th>序号</th>
+			<th>店铺</th>
+			<th>款号</th>
+			<th>品牌</th>
+			<th>类型</th>
+			<!-- <th>季节</th> -->
+			<th>厂商</th>
+			<th>年度</th>
+			<th>小计</th>
+			<th>数量</th>
+			<th>颜色</th>
+			<th>尺码</th>
+			<th>上架日期</th>
+		      </tr>
+		    </thead>
+		    <tbody>
+		      <tr x-ng-repeat="n in notes"> 
+			<td class="text-center">{{n.order_id}}</td>
+			<td class="text-center">{{n.shop}}</td>
+			<td class="text-center">{{n.style_number}}</td>
+			<td class="text-center">{{n.brand}}</td>
+			<td class="text-center">{{n.type}}</td>
+			<td class="text-center">{{n.firm}}</td>
+			<td class="text-center">{{n.year}}</td>
+			<td class="text-center">{{n.total}}</td>
+			
+			<td class="text-center">{{n.amount}}</td>
+			<td class="text-center">{{n.color}}</td>
+			<td style="text-center">{{n.size}}</td>
+			<td style="text-center">{{n.entry_date}}</td>
+		      </tr>
+		      
+		      <tr>
+			<td colspan="7"></td>
+			<td class="text-center" x-ng-bind=total></td>
+			<td class="text-center" x-ng-bind=amount></td>
+			<td colspan="3">
+		      </tr>
+		    </tbody>
+		  </table>
+		</div>
+	      </div>
+	    </uib-tab>
+	  </uib-tabset>
+	  
+	</div> <!--END portlet body--> 
       </div> <!--END table container-->
       
     </div>

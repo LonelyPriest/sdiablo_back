@@ -946,6 +946,7 @@ pass_action(wholesaler) ->
      <<"get_w_sale_new">>,
      <<"filter_w_sale_reject">>,
      <<"filter_w_sale_rsn_group">>,
+     <<"list_wsale_group_by_style_number">>,
      <<"w_sale_rsn_detail">>,
      <<"filter_w_sale_image">>,
      <<"w_sale_export">>,

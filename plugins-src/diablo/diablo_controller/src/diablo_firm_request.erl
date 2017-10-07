@@ -266,7 +266,7 @@ action(Session, Req, {"export_w_firm"}, Payload) ->
 action(Session, Req, {"analysis_profit_w_firm"}, Payload) ->
     ?DEBUG("analysis_profit_w_firm:session ~p, payload ~p", [Session, Payload]),
     Merchant    = ?session:get(merchant, Session),
-    {struct, Conditions} = ?v(<<"condition">>, Payload),
+    {struct, Conditions} = ?v(<<"condition">>, Payload, []),
     CurrentPage = ?v(<<"page">>, Payload, 1),
     ItemsPerpage = ?v(<<"count">>, Payload, ?DEFAULT_ITEMS_PERPAGE),
 

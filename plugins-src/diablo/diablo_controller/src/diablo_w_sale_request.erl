@@ -578,36 +578,8 @@ action(Session, Req, {"reject_w_sale"}, Payload) ->
     end;
 
 action(Session, Req, {"filter_w_sale_rsn_group"}, Payload) ->
-    ?DEBUG("filter_w_sale_rsn_group with session ~p, paylaod~n~p",
-	   [Session, Payload]), 
-    Merchant           = ?session:get(merchant, Session),
-    
-    %% first, get rsn
-    %% {struct, NewConditions} = ?v(<<"fields">>, Payload), 
-    
-    %% {ok, Q} = ?w_sale:sale(get_rsn, Merchant, NewConditions),
-    %% FilterConditions =
-    %% 	?w_inventory_request:filter_condition(
-    %% 	  trans_note, [?v(<<"rsn">>, Rsn) || {Rsn} <- Q], NewConditions),
-    
-    %% case FilterConditions of
-    %% 	    [] -> ?utils:respond(
-    %% 		     200, object, Req, {[{<<"ecode">>, 0},
-    %% 					 {<<"total">>, 0},
-    %% 					 {<<"data">>, []}]});
-    %% 	_ -> 
-    %% 	    NewPayload = FilterConditions ++ proplists:delete(<<"fields">>, Payload), 
-    
-    %% 	    ?pagination:pagination(
-    %% 	       fun(Match, Conditions) ->
-    %% 		       ?w_sale:filter(total_rsn_group, ?to_a(Match), Merchant, Conditions)
-    %% 	       end,
-    %% 	       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
-    %% 		       ?w_sale:filter(
-    %% 			  rsn_group, Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
-    %% 	       end, Req, NewPayload)
-    %% end;
-
+    ?DEBUG("filter_w_sale_rsn_group with session ~p, paylaod~n~p", [Session, Payload]), 
+    Merchant           = ?session:get(merchant, Session), 
     {struct, Mode}     = ?v(<<"mode">>, Payload),
     Order = ?v(<<"mode">>, Mode),
     Sort  = ?v(<<"sort">>, Mode), 
@@ -623,6 +595,34 @@ action(Session, Req, {"filter_w_sale_rsn_group"}, Payload) ->
 		  {rsn_group, mode(Order), Sort},
     		  Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
        end, Req, NewPayload);
+
+
+action(Session, Req, {"list_wsale_group_by_style_number"}, Payload) ->
+    ?DEBUG("filter_w_sale_firm_detail with session ~p, paylaod~n~p", [Session, Payload]),
+
+    Merchant    = ?session:get(merchant, Session),
+    {struct, CutConditions} = ?v(<<"condition">>, Payload),
+    {ok, Q} = ?w_sale:sale(get_rsn, Merchant, CutConditions),
+    {struct, NewConditions} =
+	?v(<<"fields">>,
+	   ?w_inventory_request:filter_condition(
+	      trans_note, [?v(<<"rsn">>, Rsn) || {Rsn} <- Q], CutConditions)),
+
+    {ok, Colors} = ?w_user_profile:get(color, Merchant), 
+    {ok, Sales} = ?w_sale:export(trans_note, Merchant, NewConditions),
+    
+    NoteConditions = [{<<"rsn">>, ?v(<<"rsn">>, NewConditions, [])}],
+    {ok, SaleNotes} = ?w_sale:export(trans_note_color_size, Merchant, NoteConditions),
+    
+    SortTranses = sale_trans(to_dict, Sales, dict:new()),
+    DictNotes = sale_note(to_dict, SaleNotes, dict:new()),
+
+    {Amount, Sort} = print_wsale_new(sort_by_color, Colors, SortTranses, DictNotes, {0, []}),
+    ?DEBUG("sort ~p", [Sort]),
+    ?utils:respond(200, object, Req,
+		   {[{<<"ecode">>, 0},
+		     {<<"total">>, Amount},
+		     {<<"note">>, Sort}]});
 
 action(Session, Req, {"w_sale_rsn_detail"}, Payload) ->
     ?DEBUG("w_sale_rsn_detail with session ~p, paylaod~n~p",
@@ -854,9 +854,7 @@ sidebar(Session) ->
 	    
 	    SaleD =
 		[{"wsale_rsn_detail",
-		  "交易明细", "glyphicon glyphicon-map-marker"},
-		 {"wsale_firm_detail",
-		  "厂商明细", "glyphicon glyphicon-equalizer"}],
+		  "交易明细", "glyphicon glyphicon-map-marker"}],
 
 	    Merchant = ?session:get(merchant, Session), 
 	    {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),
@@ -1231,37 +1229,15 @@ do_write(trans_note_color, Do, _Seq, [], _DictNotes, _Colors, ExportCode, {Amoun
 
 do_write(trans_note_color, Do, Seq, [DH|DT], DictNotes, Colors, ExportCode, {Amount, SPay, RPay}) ->
     {Key, [{H}]} = DH,
-    %% Rsn         = ?v(<<"rsn">>, H),
-    %% Retailer    = ?v(<<"retailer">>, H),
-    %% Promotion   = case ?v(<<"promotion">>, H) of
-    %% 		      <<>> -> "-";
-    %% 		      _P -> _P
-    %% 		  end,
-    %% Score       = case ?v(<<"score">>, H) of
-    %% 		      <<>> -> "-";
-    %% 		      _S -> _S
-    %% 		  end,
-    %% SellType    = ?v(<<"sell_type">>, H), 
-    Shop        = ?v(<<"shop">>, H),
-    %% ShopId      = ?to_b(?v(<<"shop_id">>, H)),
-    %% Employee    = ?v(<<"employee">>, H),
-
+    Shop        = ?v(<<"shop">>, H), 
     StyleNumber = ?v(<<"style_number">>, H),
     Brand       = ?v(<<"brand">>, H),
-    %% BrandId     = ?to_b(?v(<<"brand_id">>, H)),
     Type        = ?v(<<"type">>, H),
     Season      = ?v(<<"season">>, H),
     Firm        = ?v(<<"firm">>, H),
     Year        = ?v(<<"year">>, H),
-    InDatetime  = ?v(<<"in_datetime">>, H),
-    %% TagPrice    = ?v(<<"tag_price">>, H),
-    %% RPrice      = ?v(<<"rprice">>, H), 
-    Total       = ?v(<<"total">>, H),
-
-    %% Calc        =  RPrice * Total, 
-    %% Datetime    = ?v(<<"entry_date">>, H),
-
-    %% Key = <<StyleNumber/binary, BrandId/binary, ShopId/binary>>,
+    InDatetime  = ?v(<<"in_datetime">>, H), 
+    Total       = ?v(<<"total">>, H), 
 
     case dict:find(Key, DictNotes) of
 	{ok, FindNotes} ->
@@ -1356,6 +1332,69 @@ do_write(trans_note_color, Do, Seq, [DH|DT], DictNotes, Colors, ExportCode, {Amo
 		     {Amount + Total, SPay, RPay})
     end.
 
+print_wsale_new(sort_by_color, _Colors, [], _DictNotes, {Amount, Acc}) ->
+    {Amount, Acc};
+print_wsale_new(sort_by_color, Colors, [DH|DT], DictNotes, {Amount, Acc}) ->
+    {Key, [{H}]} = DH,
+    Shop        = ?v(<<"shop">>, H), 
+    StyleNumber = ?v(<<"style_number">>, H),
+    Brand       = ?v(<<"brand">>, H),
+    Type        = ?v(<<"type">>, H),
+    Season      = ?v(<<"season">>, H),
+    Firm        = ?v(<<"firm">>, H),
+    Year        = ?v(<<"year">>, H),
+    InDatetime  = ?v(<<"in_datetime">>, H), 
+    Total       = ?v(<<"total">>, H),
+
+    case dict:find(Key, DictNotes) of
+	{ok, FindNotes} ->
+	    ?DEBUG("find notes ~p", [FindNotes]),
+	    ColoredNotes = note_class_with(color, FindNotes, dict:new()),
+	    Details = 
+		dict:fold(
+		  fun(K, SSNotes, Acc1) ->
+			  {TotalOfColor, SizeDescs} = 
+			      lists:foldr(
+				fun({S}, {Total0, Descs}) ->
+					Size = ?v(<<"size">>, S),
+					TotalA = ?v(<<"total">>, S),
+					{Total0 + TotalA,
+					 Descs ++ case TotalA == 0 of
+						      true -> [];
+						      false -> ?to_s(Size) ++ ":" ++ ?to_s(TotalA) ++ ";"
+						  end} 
+				end, {0, []}, SSNotes),
+
+			  [{K, TotalOfColor, SizeDescs}|Acc1]
+
+		  end, [], ColoredNotes),
+	    
+	    ?DEBUG("Details ~p", [Details]),
+
+	    N = {[{<<"style_number">>, StyleNumber},
+		  {<<"brand">>, Brand},
+		  {<<"shop">>,  Shop},
+		  {<<"firm">>,  Firm},
+		  {<<"year">>,  Year},
+		  {<<"type">>,  Type},
+		  {<<"season">>,Season},
+		  {<<"total">>, Total},
+		  {<<"entry_date">>, InDatetime},
+		  {<<"note">>,
+		   lists:foldr(
+		     fun({ColorId, TotalOfColor, SizeDesc}, Acc1) ->
+			     [{[{<<"color_id">>, ColorId},
+				{<<"color">>, ?to_b(?w_inventory_request:get_color(ColorId, Colors))},
+				{<<"total">>, TotalOfColor},
+				{<<"size">>, ?to_b(SizeDesc)}]}|Acc1]
+		     end, [], Details)}]},
+	    
+	    print_wsale_new(sort_by_color, Colors, DT, DictNotes, {Amount + Total, [N|Acc]}); 
+	error ->
+	    print_wsale_new(sort_by_color, Colors, DT, DictNotes, {Amount, Acc})
+	    
+    end.    
+    
 %% same style_number and brand, sort by color
 note_class_with(color, [], Sorts) ->
     ?DEBUG("not_class_with_color: ~p", [dict:to_list(Sorts)]),
