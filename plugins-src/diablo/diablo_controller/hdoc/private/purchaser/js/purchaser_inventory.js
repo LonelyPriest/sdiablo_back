@@ -1649,7 +1649,7 @@ function purchaserInventoryDetailCtrlProvide(
     /*
      * tab-set
      */ 
-    $scope.tab_active = {time: true, chart:false}; 
+    $scope.tab_active = {time: true, chart:false};
     $scope.chart_data = {};
     
     $scope.shops     = user.sortShops.concat(user.sortBadRepoes);

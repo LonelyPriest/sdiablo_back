@@ -537,7 +537,7 @@ action(Session, Req, {"fix_w_inventory"}, Payload) ->
 	    ?DEBUG("stocksNotEqualDB ~p", [StocksNotEqualDB]),
 	    
 	    {ShopTotal, ShopStockDict} = stock(shop_to_dict, ShopStocks, 0, dict:new()),
-	    {StocksNotInShop, StocksNotEqualShop}
+	    {StocksNotInShop, _StocksNotEqualShop}
 		= compare_stock(db_to_shop, DBStocks, ShopStockDict, [], []),
 	    ?DEBUG("stocksNotInShop ~p", [StocksNotInShop]),
 	    %% ?DEBUG("stocksNotEqualShop ~p", [StocksNotEqualShop]),
@@ -553,11 +553,11 @@ action(Session, Req, {"fix_w_inventory"}, Payload) ->
 		       object,
 		       Req,
 		       {[{<<"ecode">>, 0},
-			 {<<"rsn">>, ?to_b(RSN)},
-			 {<<"s_not_db">>, StocksNotInDB},
-			 {<<"s_not_equal_db">>, StocksNotEqualDB},
-			 {<<"s_not_shop">>, StocksNotInShop},
-			 {<<"s_not_equal_shop">>, StocksNotEqualShop}
+			 {<<"rsn">>, ?to_b(RSN)}
+			 %% {<<"s_not_db">>, StocksNotInDB},
+			 %% {<<"s_not_equal_db">>, StocksNotEqualDB},
+			 %% {<<"s_not_shop">>, StocksNotInShop},
+			 %% {<<"s_not_equal_shop">>, StocksNotEqualShop}
 			]});
 		{error, Error} ->
 		    ?utils:respond(200, Req, Error)

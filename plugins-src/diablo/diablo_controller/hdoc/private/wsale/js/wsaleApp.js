@@ -1105,7 +1105,6 @@ function wsaleNewProvide(
 	// stock info 
 	var barcode = diabloHelp.correct_barcode(full_bcode, $scope.setting.barcode_auto); 
 	console.log(barcode);
-	
 
 	// invalid barcode
 	if (!barcode.cuted || !barcode.correct) {

@@ -18,10 +18,14 @@ function wsaleRsnDetailCtrlProvide (
     $scope.items_perpage = diablo_items_per_page();
     $scope.max_page_size = diablo_max_page_size();
     $scope.default_page  = 1;
-    $scope.current_page  = $scope.default_page;
+    // $scope.current_page  = $scope.default_page;
+
+    $scope.tab  = {normal:true, additional:false};
+    $scope.tab_normal = {current_page:$scope.default_page};
 
     $scope.hidden         = {base:true};
     $scope.is_linked      = $routeParams.rsn ? true : false;
+    
     // $scope.show_print_btn = $routeParams.rsn ? true : false;
     
     var LODOP       = undefined;
@@ -65,7 +69,7 @@ function wsaleRsnDetailCtrlProvide (
     $scope.use_order = function(mode){
 	$scope.mode = mode;
 	$scope.sort = $scope.sort === 0 ? 1 : 0; 
-	$scope.do_search($scope.current_page);
+	$scope.do_search($scope.tab_normal.current_page);
     }
 
     // prepare of print
@@ -97,7 +101,7 @@ function wsaleRsnDetailCtrlProvide (
     	$scope.filters      = storage.filter;
 	$scope.qtime_start  = storage.start_time;
 	$scope.qtime_end    = storage.end_time;
-	$scope.current_page = storage.page;
+	$scope.tab_normal.current_page = storage.page;
     } else{
 	$scope.filters = [];
 	if (angular.isDefined($routeParams.rsn)){
@@ -160,7 +164,7 @@ function wsaleRsnDetailCtrlProvide (
      */
     // $scope.colspan = 17;
     $scope.do_search = function(page){
-	// console.log(page);
+	console.log(page);
 	if (!$scope.right.master && $scope.setting.show_sale_day !== diablo_nolimit_day){
 	    var diff = now - diablo_get_time($scope.time.start_time);
 	    // console.log(diff);
@@ -251,14 +255,18 @@ function wsaleRsnDetailCtrlProvide (
 		    $scope.inventories = $scope.inventories.concat(result.data);
 		}
 
-		$scope.current_page = page;
+		$scope.tab_normal.current_page = page;
 		
 	    })
 	})
     };
 
     $scope.refresh = function() {
-	$scope.do_search($scope.default_page);
+	if ($scope.tab.normal) {
+	    $scope.do_search($scope.default_page);
+	} else if ($scope.tab.additional) {
+	    $scope.additional_mode();
+	} 
     };
 
     $scope.additional_mode = function() {
@@ -302,19 +310,14 @@ function wsaleRsnDetailCtrlProvide (
 	})
     };
 
-    if ($scope.is_linked || $scope.current_page !== $scope.default_page){
-	$scope.do_search($scope.current_page);
-	$scope.additional_mode();
+    if ($scope.is_linked || $scope.tab_normal.current_page !== $scope.default_page){
+	$scope.do_search($scope.tab_normal.current_page);
+	// $scope.additional_mode();
     }
-
-    $scope.auto_pagination = function(){
-	$scope.current_page += 1;
-	$scope.do_search($scope.current_page);
-    };
     
-    $scope.page_changed = function(){
-	console.log($scope.current_page);
-	$scope.do_search($scope.current_page);
+    $scope.page_changed = function(page){
+	// console.log($scope.current_page);
+	$scope.do_search($scope.tab_normal.current_page);
     } 
 
     var get_amount = function(cid, size, amounts){

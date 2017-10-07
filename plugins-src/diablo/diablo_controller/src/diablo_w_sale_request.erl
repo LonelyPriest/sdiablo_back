@@ -617,8 +617,16 @@ action(Session, Req, {"list_wsale_group_by_style_number"}, Payload) ->
     SortTranses = sale_trans(to_dict, Sales, dict:new()),
     DictNotes = sale_note(to_dict, SaleNotes, dict:new()),
 
-    {Amount, Sort} = print_wsale_new(sort_by_color, Colors, SortTranses, DictNotes, {0, []}),
-    ?DEBUG("sort ~p", [Sort]),
+    {Amount, Notes} = print_wsale_new(sort_by_color, Colors, SortTranses, DictNotes, {0, []}),
+
+    Sort = lists:sort(
+	     fun({N1}, {N2}) ->
+		     Firm1 = ?v(<<"firm_id">>, N1),
+		     Firm2 = ?v(<<"firm_id">>, N2),
+		     Firm1 > Firm2
+	     end, Notes),
+    
+    %% ?DEBUG("sort ~p", [Sort]),
     ?utils:respond(200, object, Req,
 		   {[{<<"ecode">>, 0},
 		     {<<"total">>, Amount},
@@ -1342,13 +1350,14 @@ print_wsale_new(sort_by_color, Colors, [DH|DT], DictNotes, {Amount, Acc}) ->
     Type        = ?v(<<"type">>, H),
     Season      = ?v(<<"season">>, H),
     Firm        = ?v(<<"firm">>, H),
+    FirmId      = ?v(<<"firm_id">>, H),
     Year        = ?v(<<"year">>, H),
     InDatetime  = ?v(<<"in_datetime">>, H), 
     Total       = ?v(<<"total">>, H),
 
     case dict:find(Key, DictNotes) of
 	{ok, FindNotes} ->
-	    ?DEBUG("find notes ~p", [FindNotes]),
+	    %% ?DEBUG("find notes ~p", [FindNotes]),
 	    ColoredNotes = note_class_with(color, FindNotes, dict:new()),
 	    Details = 
 		dict:fold(
@@ -1369,12 +1378,13 @@ print_wsale_new(sort_by_color, Colors, [DH|DT], DictNotes, {Amount, Acc}) ->
 
 		  end, [], ColoredNotes),
 	    
-	    ?DEBUG("Details ~p", [Details]),
+	    %% ?DEBUG("Details ~p", [Details]),
 
 	    N = {[{<<"style_number">>, StyleNumber},
 		  {<<"brand">>, Brand},
 		  {<<"shop">>,  Shop},
 		  {<<"firm">>,  Firm},
+		  {<<"firm_id">>, FirmId},
 		  {<<"year">>,  Year},
 		  {<<"type">>,  Type},
 		  {<<"season">>,Season},
@@ -1397,10 +1407,10 @@ print_wsale_new(sort_by_color, Colors, [DH|DT], DictNotes, {Amount, Acc}) ->
     
 %% same style_number and brand, sort by color
 note_class_with(color, [], Sorts) ->
-    ?DEBUG("not_class_with_color: ~p", [dict:to_list(Sorts)]),
+    %% ?DEBUG("not_class_with_color: ~p", [dict:to_list(Sorts)]),
     Sorts;
 note_class_with(color, [{H}|T], Sorts) ->
-    ?DEBUG("H ~p", [H]),
+    %% ?DEBUG("H ~p", [H]),
     %% use color to key
     Color = ?v(<<"color">>, H),
     NewSorts = 
@@ -1437,7 +1447,7 @@ note_class_with(color, [{H}|T], Sorts) ->
     note_class_with(color, T, NewSorts).
 
 sale_note(to_dict, [], Dict) ->
-    ?DEBUG("sale_note_to_dict ~p", [dict:to_list(Dict)]),
+    %% ?DEBUG("sale_note_to_dict ~p", [dict:to_list(Dict)]),
     Dict;
 sale_note(to_dict, [{H}|T], Dict) ->
     %% ?DEBUG("H ~p", [H]),
@@ -1473,7 +1483,7 @@ sale_note(to_dict, [{H}|T], Dict) ->
     sale_note(to_dict, T, DictNew).
 
 sale_trans(to_dict, [], Dict) ->
-    ?DEBUG("sale_trans_to_Dict ~p", [dict:to_list(Dict)]),
+    %% ?DEBUG("sale_trans_to_Dict ~p", [dict:to_list(Dict)]),
     dict:to_list(Dict);
     %% [{_, L}] = dict:to_list(Dict),
     %% L;

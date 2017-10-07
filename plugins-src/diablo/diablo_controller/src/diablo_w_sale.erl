@@ -1058,7 +1058,7 @@ handle_call({new_trans_note_export, Merchant, Conditions}, _From, State)->
 	++ " left join w_promotion j on a.pid=j.id"
 	++ " left join w_score k on a.sid=k.id"
 	
-	++ " order by id desc",
+	++ " order by a.id desc",
 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};

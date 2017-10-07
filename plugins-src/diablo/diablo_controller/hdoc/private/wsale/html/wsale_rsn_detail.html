@@ -41,14 +41,14 @@
             <div class="col-md-4 col-sm-4 col-xs-12">
               <time-search
                  glyphicon="glyphicon glyphicon-arrow-left fg-red"
-                 time="time.start_time" ok="do_search(default_page)">
+                 time="time.start_time" ok="refresh()">
 	      </time-search>
             </div>
 
             <div class="col-md-4 col-sm-4 col-xs-12">
               <time-search
                  glyphicon="glyphicon glyphicon-arrow-right fg-red"
-                 time="time.end_time" ok="do_search(default_page)">
+                 time="time.end_time" ok="refresh()">
 	      </time-search>
             </div>
 	    
@@ -62,7 +62,7 @@
 
 	  <query-group filters="filters"
 	  	       prompt="prompt"
-	  	       ok="do_search(default_page)"></query-group>
+	  	       ok="refresh()"></query-group>
 	  
 	</div> <!--END table-toolbar-->
 	
@@ -70,7 +70,7 @@
 	<div class="portlet-body">
 	  <!--BEGIN panel-->
 	  <uib-tabset> 
-	    <uib-tab active="tab_active.time">
+	    <uib-tab active="tab.normal">
 	      <tab-heading>销售模式</tab-heading> 
 	      <div class="panel panel-default table-panel">
 		<div class="table-responsive diablo-table">
@@ -201,42 +201,11 @@
 		    
 		  </table> <!--END table--> 
 		</div> <!--END table responsive--> 
-	      </div> <!--END panel-->
-
-	      <div x-ng-show="total_items>items_perpage" class="row">
-		<div class="col-md-12, col-sm-12, col-xs-12">
-		  <span>显示第 {{current_page}} / {{num_pages}} 项结果，
-		    共 {{total_items}} 项
-		  </span>
-		  
-		  <uib-pagination x-ng-show="!setting.se_pagination"
-				  class="pagination-lg table-pagination pull-right"
-		  		  total-items="total_items"
-		  		  items-per-page="items_perpage"
-		  		  num-pages="num_pages"
-		  		  max-size="max_page_size"
-		  		  boundary-links="true"
-		  		  previous-text="&lsaquo;" next-text="&rsaquo;"
-		  		  first-text="&laquo;" last-text="&raquo;"
-		  		  x-ng-model="current_page"
-		  		  x-ng-change="page_changed()">
-		  </uib-pagination>
-		  
-		  <span x-ng-if="setting.se_pagination"
-			class="pull-right">
-		    <button class="btn red-sunglo btn-next-page"
-			    x-ng-disabled="current_page===num_pages"
-			    x-ng-click="auto_pagination()">
-		      <i class="glyphicon glyphicon-menu-down"></i>
-		    </button>
-		  </span>
-		  
-		</div>
-	      </div>
+	      </div> <!--END panel--> 
 	    </uib-tab>
 
 	    <uib-tab heading="补单模式"
-		     select="additional_mode()"> 
+		     active="tab.additional"> 
 	      <div class="panel panel-default table-panel">
 		<div class="table-responsive diablo-table">
 		  <table class="table table-bordered
@@ -276,7 +245,7 @@
 			<td style="text-center">{{n.entry_date}}</td>
 		      </tr>
 		      
-		      <tr>
+		      <tr x-ng-if="notes && notes.length>0">
 			<td colspan="7"></td>
 			<td class="text-center" x-ng-bind=total></td>
 			<td class="text-center" x-ng-bind=amount></td>
@@ -288,6 +257,26 @@
 	      </div>
 	    </uib-tab>
 	  </uib-tabset>
+
+	  <div x-ng-if="tab.normal">
+	    <div x-ng-show="total_items>items_perpage" class="row">
+		<div class="col-md-12, col-sm-12, col-xs-12">
+		  <span>显示第 {{tab_normal.current_page}} / {{num_pages}} 项结果， 共 {{total_items}} 项</span> 
+		  <uib-pagination x-ng-show="!setting.se_pagination"
+				  class="pagination-lg table-pagination pull-right"
+		  		  total-items="total_items"
+		  		  items-per-page="items_perpage"
+		  		  num-pages="num_pages"
+		  		  max-size="max_page_size"
+		  		  boundary-links="true"
+		  		  previous-text="&lsaquo;" next-text="&rsaquo;"
+		  		  first-text="&laquo;" last-text="&raquo;"
+		  		  x-ng-model="tab_normal.current_page"
+		  		  x-ng-change="page_changed()">
+		  </uib-pagination> 
+		</div>
+	      </div>
+	  </div>
 	  
 	</div> <!--END portlet body--> 
       </div> <!--END table container-->
