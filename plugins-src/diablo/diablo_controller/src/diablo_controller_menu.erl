@@ -114,6 +114,7 @@ w_basebar(Module, Session) ->
 			       "<a href='/wbase'>"
 			       "<i class='icon icon-cog fg-red'></i>用户设置</a>"
 			       "</li>\n"
+			       "<li>" 
 		   end
 	   end 
     ++ "<li>"

@@ -341,7 +341,7 @@ action(Session, Req, {"update_user_passwd"}, Payload) ->
 action(Session, Req, {"download_stock_fix"}, Payload) ->
     ?DEBUG("download_stock_fix with session ~p, payload ~p", [Session, Payload]),
     _Merchant = ?session:get(merchant, Session),
-    Apk = <<"钱掌柜盘点专用-release2017-10-08_01-18-32.apk">>,
+    Apk = <<"qzg_stock-release2017-10-08_01-18-32.apk">>,
     ?utils:respond(200, object, Req, {[{<<"ecode">>, 0}, {<<"url">>, ?to_b(Apk)}]});
 
 %%
