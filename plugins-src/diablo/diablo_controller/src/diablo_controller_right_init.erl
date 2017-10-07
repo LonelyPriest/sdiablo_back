@@ -992,5 +992,9 @@ pass_action(wholesaler) ->
      %% shop
      <<"list_shop">>,
      <<"list_shop_promotion">>,
-     <<"list_region">>
+     <<"list_region">>,
+
+     %% update soft
+     <<"download_stock_fix">>
+	 
     ].

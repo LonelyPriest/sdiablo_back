@@ -82,6 +82,10 @@ function baseConfig(angular){
 	    when('/passwd', {
 		templateUrl: '/private/base/html/reset_password.html',
 		controller: 'resetPasswdCtrl'
+	    }).
+	    when('/setting/soft_stock_fix', {
+		templateUrl: '/private/base/html/download_stock_fix.html',
+		controller: 'downloadStockFixCtrl'
 	    }). 
 	    otherwise({
 		templateUrl: '/private/base/html/base_printer_connect_detail.html',
@@ -284,6 +288,11 @@ function baseConfig(angular){
 	
 	this.list_print_template = function(){
 	    return http.query({operation: 'list_print_template'}).$promise;
+	};
+
+	// download
+	this.download_stock_fix = function() {
+	    return http.save({operation: 'download_stock_fix'}, {}).$promise;
 	};
 	
     });

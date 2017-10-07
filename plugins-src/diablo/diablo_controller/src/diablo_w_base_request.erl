@@ -338,6 +338,12 @@ action(Session, Req, {"update_user_passwd"}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"download_stock_fix"}, Payload) ->
+    ?DEBUG("download_stock_fix with session ~p, payload ~p", [Session, Payload]),
+    _Merchant = ?session:get(merchant, Session),
+    Apk = <<"钱掌柜盘点专用-release2017-10-08_01-18-32.apk">>,
+    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0}, {<<"url">>, ?to_b(Apk)}]});
+
 %%
 %% login out
 %% 
@@ -409,7 +415,8 @@ sidebar(Session) ->
 			      {"fabric",          "货品面料", "glyphicon glyphicon-glass"},
 			      {"size_spec",       "尺码规格", "glyphicon glyphicon-text-size"}]
 		     end
-		  ++ [{"print_template", "打印模板", "glyphicon glyphicon-file"}]}]
+		  ++ [{"print_template", "打印模板", "glyphicon glyphicon-file"},
+		      {"soft_stock_fix", "盘点软件", "glyphicon glyphicon-save"}]}]
 	end,
     
     Passwd = [{"passwd", "重置密码", "glyphicon glyphicon-user"}], 
