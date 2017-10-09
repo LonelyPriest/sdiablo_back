@@ -63,6 +63,7 @@ function wretailerDetailCtrlProvide(
     $scope.shopIds        = user.shopIds;
     $scope.retailer_types = wretailerService.retailer_types;
     $scope.months         = retailerUtils.months();
+    $scope.date_of_month  = retailerUtils.date_of_month();
     $scope.select         = {phone:undefined};
 
     var dialog = diabloUtilsService;
@@ -101,6 +102,7 @@ function wretailerDetailCtrlProvide(
     $scope.filters = [];
     diabloFilter.reset_field();
     diabloFilter.add_field("month", $scope.months);
+    diabloFilter.add_field("date", $scope.date_of_month);
     diabloFilter.add_field("region", $scope.regions);
     diabloFilter.add_field("shop", user.sortShops);
     $scope.filter = diabloFilter.get_filter();

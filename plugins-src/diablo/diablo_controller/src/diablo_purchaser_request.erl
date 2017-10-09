@@ -1812,7 +1812,7 @@ stock(to_dict, [{Stock}|T], DBTotal, DictStocks) ->
     stock(to_dict, T, Total + DBTotal, dict:store(Key, Stock, DictStocks));
 
 stock(shop_to_dict, [], ShopTotal, DictStocks) ->
-    ?DEBUG("sthopTotal ~pm DictStocks ~p", [ShopTotal, dict:to_list(DictStocks)]),
+    ?DEBUG("sthopTotal ~p DictStocks ~p", [ShopTotal, dict:to_list(DictStocks)]),
     {ShopTotal, DictStocks};
 stock(shop_to_dict, [{struct, Stock}|T], ShopTotal, DictStocks) -> 
     Key = key(stock, Stock),

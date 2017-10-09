@@ -275,6 +275,9 @@ function filterProvider(){
 		} else if(name === 'month'){
 		    _filter.fields.push({name:"month", chinese:"月份"});
 		    _prompt.month = promptValues;
+		} else if(name === 'date'){
+		    _filter.fields.push({name:"date", chinese:"日期"});
+		    _prompt.date = promptValues;
 		} else if(name === 'region'){
 		    _filter.fields.push({name:"region", chinese:"区域"});
 		    _prompt.region = promptValues;

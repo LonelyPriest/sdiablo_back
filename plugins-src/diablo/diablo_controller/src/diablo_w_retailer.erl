@@ -964,17 +964,23 @@ handle_call({total_retailer, Merchant, Conditions}, _From, State) ->
     {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
 
     Month = ?v(<<"month">>, Conditions, []),
-    SortConditions = lists:keydelete(<<"month">>, 1, NewConditions),
-    
+    Date  = ?v(<<"date">>, Conditions, []),
+    SortConditions = lists:keydelete(<<"month">>, 1, lists:keydelete(<<"date">>, 1, NewConditions)),
+
     Sql = "select count(*) as total"
 	", sum(balance) as balance"
 	", sum(consume) as consume"
 	", sum(score) as score" 
 	" from w_retailer"
 	" where merchant=" ++ ?to_s(Merchant)
-	++ case Month of
-	       [] -> [];
-	       _ -> " and month(birth)=" ++ ?to_s(Month)
+	++ case {Month, Date} of
+	       {[], []} -> [];
+	       {Month, []} -> 
+		   " and month(birth)=" ++ ?to_s(Month);
+	       {[], Date} ->
+		   " and dayofmonth(birth)=" ++ ?to_s(Date);
+	       {Month, Date} ->
+		   " and month(birth)=" ++ ?to_s(Month) ++ " and dayofmonth(birth)=" ++ ?to_s(Date)
 	   end
 	++ ?sql_utils:condition(proplists, SortConditions),
 
@@ -1004,7 +1010,8 @@ handle_call({{filter_retailer, Order, Sort},
 	   [Order, Sort, Merchant, Conditions, CurrentPage]),
     {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
     Month = ?v(<<"month">>, Conditions, []),
-    SortConditions = lists:keydelete(<<"a.month">>, 1, NewConditions),
+    Date  = ?v(<<"date">>, Conditions, []),    
+    SortConditions = lists:keydelete(<<"a.month">>, 1, lists:keydelete(<<"a.date">>, 1, NewConditions)),
     
     Sql = "select a.id"
 	", a.merchant" 
@@ -1027,12 +1034,17 @@ handle_call({{filter_retailer, Order, Sort},
 	" from w_retailer a"
 	" left join shops b on a.shop=b.id"
 	" where a.merchant=" ++ ?to_s(Merchant)
-	++ case Month of
-	       [] -> [];
-	       _ -> " and month(a.birth)=" ++ ?to_s(Month)
-	   end
+	++ case {Month, Date} of
+	       {[], []} -> [];
+	       {Month, []} -> 
+		   " and month(a.birth)=" ++ ?to_s(Month);
+	       {[], Date} ->
+		   " and dayofmonth(a.birth)=" ++ ?to_s(Date);
+	       {Month, Date} ->
+		   " and month(a.birth)=" ++ ?to_s(Month) ++ " and dayofmonth(a.birth)=" ++ ?to_s(Date)
+	   end 
 	++ ?sql_utils:condition(proplists, SortConditions)
-	++ " and a.deleted=" ++ ?to_s(?NO) 
+    %% ++ " and a.deleted=" ++ ?to_s(?NO) 
 	++ ?sql_utils:condition(page_desc, {Order, Sort}, CurrentPage, ItemsPerPage),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};

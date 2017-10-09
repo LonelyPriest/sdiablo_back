@@ -1287,26 +1287,26 @@ function printerDetectCtrlProvide($scope, diabloUtilsService){
     }
 };
 
-function downloadStockFixCtrlProvide($scope, diabloUtilsService, baseService) {
-    var dialog = diabloUtilsService;
-    baseService.download_stock_fix().then(function(result) {
-	console.log(result);
-	if (result.ecode === 0) {
-	    $scope.download_url = result.url;
-	    // dialog.response_with_callback(
-	    // 	true,
-	    // 	"盘点软件更新",
-	    // 	"获取软件成功，请点击确认下载！！", undefined,
-	    // 	function(){window.location.href = result.url;}) 
-	} else {
-	    diablo.response(
-		false,
-		"盘点软件更新",
-		"获取软件失败："
-		    + baseService.error[result.ecode]);
-	}
-    });
-};
+// function downloadStockFixCtrlProvide($scope, diabloUtilsService, baseService) {
+//     var dialog = diabloUtilsService;
+//     baseService.download_stock_fix().then(function(result) {
+// 	console.log(result);
+// 	if (result.ecode === 0) {
+// 	    $scope.download_url = result.url;
+// 	    // dialog.response_with_callback(
+// 	    // 	true,
+// 	    // 	"盘点软件更新",
+// 	    // 	"获取软件成功，请点击确认下载！！", undefined,
+// 	    // 	function(){window.location.href = result.url;}) 
+// 	} else {
+// 	    diablo.response(
+// 		false,
+// 		"盘点软件更新",
+// 		"获取软件失败："
+// 		    + baseService.error[result.ecode]);
+// 	}
+//     });
+// };
     
 define(["baseApp"], function(app){
     app.controller("bankCardNewCtrl", bankCardNewCtrlProvide);

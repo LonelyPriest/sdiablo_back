@@ -661,7 +661,7 @@ diabloUtils.directive('queryGroup', function () {
 	    angular.forEach(scope.filters, function(f){
 	    	angular.forEach(f.fields, function(e){
 	    	    if (e.name === f.field.name){
-			f.field = e;
+			// f.field = e;
 			switch (e.name){
 			case "sex":
 			    f.value = get_prompt(f.value, scope.prompt.sex);
@@ -692,6 +692,9 @@ diabloUtils.directive('queryGroup', function () {
 			    break;
 			case "month":
 			    f.value = get_prompt(f.value, scope.prompt.month);
+			    break;
+			case "date":
+			    f.value = get_prompt(f.value, scope.prompt.date);
 			    break;
 			default:
 			    break;

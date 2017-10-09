@@ -183,6 +183,14 @@
 	    </select>
 	  </span>
 
+	  <span x-ng-switch-when="date">
+	    <select type="text" class="form-control"
+	  	    x-ng-model="f.value"
+	  	    x-ng-options="s for s in prompt.date"
+	  	    x-ng-init="f.value=f.value ? f.value : prompt.date[0]">
+	    </select>
+	  </span>
+
 	  <span x-ng-switch-when="supplier">
 	    <input type="text" class="form-control" placeholder="请输入供应商"
 		   x-ng-model="f.value"

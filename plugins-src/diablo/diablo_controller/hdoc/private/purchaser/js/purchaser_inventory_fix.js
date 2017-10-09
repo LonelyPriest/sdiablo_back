@@ -1,6 +1,6 @@
 function purchaserInventoryFixCtrlProvide(
     $scope, $q, $timeout, dateFilter, localStorageService,
-    diabloUtilsService, diabloFilter, diabloPagination, purchaserService,
+    diabloUtilsService, diabloFilter, diabloPagination, purchaserService, diabloPattern,
     user, filterEmployee, filterSizeGroup, filterColor, base){
     // console.log(user); 
     $scope.shops   = user.sortShops;    
@@ -9,6 +9,9 @@ function purchaserInventoryFixCtrlProvide(
     // $scope.calc_row = stockUtils.calc_row;
     $scope.setting = {barcode_mode: diablo_no};
     $scope.useFile = false;
+    $scope.pattern = {barcode:diabloPattern.number, fix:diabloPattern.number_3};
+    $scope.fix = {scanner:false};
+    $scope.fix_attr = {colors:undefined, sizes:undefined};
     
     var dialog = diabloUtilsService;
     // var fixDraft = new stockFile(diablo_fix_draft_path);
@@ -22,9 +25,8 @@ function purchaserInventoryFixCtrlProvide(
 
     $scope.refresh = function(){
 	$scope.inventories = [];
-	$scope.inventories.push({$edit:false, $new:true}); 
 	$scope.has_saved = false;
-
+	$scope.select.total = 0;
 	$scope.current_page  = 1;
 	$scope.reset_pagination();
     }; 
@@ -77,7 +79,7 @@ function purchaserInventoryFixCtrlProvide(
     // $scope.refresh();
     // var now = $.now();
     $scope.inventories = [];
-    $scope.inventories.push({$edit:false, $new:true});
+    // $scope.inventories.push({$edit:false, $new:true});
     $scope.select = {shop:$scope.shops[0], datetime: undefined, total:0}
     $scope.has_saved = false;
     
@@ -90,46 +92,49 @@ function purchaserInventoryFixCtrlProvide(
     };
 
     $scope.on_select_good = function(item, model, label){
-	$scope.reset_focus();
-	// add at first allways 
-	var add = $scope.inventories[0];
+	// $scope.reset_focus();
+	// var add = {};
+	
+	// add.id           = item.id;
+	$scope.fix.s_barcode    = item.full_bcode;
+	
+	$scope.fix.bcode        = item.bcode; 
+	// $scope.fix.full_bcode   = item.full_bcode; 
+	$scope.fix.style_number = item.style_number;
+	
+	$scope.fix.brand        = item.brand;
+	$scope.fix.brand_id     = item.brand_id;
+	
+	$scope.fix.type         = item.type;
+	$scope.fix.type_id      = item.type_id;
+	
+	$scope.fix.firm_id      = item.firm_id;
+	
+	$scope.fix.sex          = item.sex; 
+	$scope.fix.season       = item.season;
+	$scope.fix.year         = item.year;
+	
+	$scope.fix.tag_price    = item.tag_price;
+	$scope.fix.discount     = item.discount;
 
-	add.id           = item.id;
-	add.bcode        = item.bcode;
-	add.full_bcode   = item.full_bcode; 
-	add.style_number = item.style_number;
-	
-	add.brand        = item.brand;
-	add.brand_id     = item.brand_id;
-	
-	add.type         = item.type;
-	add.type_id      = item.type_id;
-	
-	add.firm_id      = item.firm_id;
-	
-	add.sex          = item.sex; 
-	add.season       = item.season;
-	add.year         = item.year;
-	
-	add.tag_price    = item.tag_price;
-	add.discount     = item.discount;
-
-	add.free         = item.free;
-	add.s_group      = item.s_group;
-	add.path         = item.path;
-	add.entry        = item.entry_date;
+	$scope.fix.free         = item.free;
+	$scope.fix.s_group      = item.s_group;
+	$scope.fix.path         = item.path;
+	$scope.fix.entry        = item.entry_date;
 
 	// console.log($scope.focus);
-	add.full_name    = item.style_number + "/" + item.brand; 
-	// console.log(add); 
-	$scope.auto_focus("fix");
-	$scope.add_inventory(add); 
+	$scope.fix.full_name    = item.style_number + "/" + item.brand; 
+	// console.log(add);
+	if (!$scope.fix.scanner) {
+	    $scope.auto_focus("fix");
+	} 
+	$scope.add_inventory(); 
 	return;
     };
 
     $scope.re_calculate = function(){
 	$scope.select.total = 0;
-    	for (var i=1, l=$scope.inventories.length; i<l; i++){
+    	for (var i=0, l=$scope.inventories.length; i<l; i++){
     	    var one = $scope.inventories[i];
 	    $scope.select.total += one.fix;
     	}	
@@ -154,18 +159,18 @@ function purchaserInventoryFixCtrlProvide(
 			$scope.select.datetime = dateFilter(fix_time, "yyyy-MM-dd HH:mm:ss");
 			$scope.inventories = content.stock;
 			// console.log($scope.inventories); 
-			angular.forEach($scope.inventories, function(inv) {
-			    if (!inv.$new) {
-				inv.color = get_color(inv.color_id, inv.colors); 
-			    }
-			});
+			// angular.forEach($scope.inventories, function(inv) {
+			//     if (!inv.$new) {
+			// 	inv.color = get_color(inv.color_id, inv.colors); 
+			//     }
+			// });
 			
 			// $scope.inventories.unshift({$edit:false, $new:true}); 
 			// console.log($scope.select.datetime);
 			// console.log($scope.inventories);
 			$scope.current_page = 1;
 			$scope.reset_pagination();
-			$scope.focus_good_or_barcode();
+			// $scope.focus_good_or_barcode();
 			$scope.re_calculate();
 		    });
 		}
@@ -210,8 +215,10 @@ function purchaserInventoryFixCtrlProvide(
 	$scope.has_saved = true
 	// console.log($scope.inventories); 
 	var added = []; 
-	for(var i=1, l=$scope.inventories.length; i<l; i++){
-	    var add = $scope.inventories[i]; 
+	for(var i=0, l=$scope.inventories.length; i<l; i++){
+	    var add = $scope.inventories[i];
+	    if (0 === stockUtils.to_integer(add.fix))
+		continue;
 	    if (!in_stocks(add, added)) {
 		added.push({
 		    style_number: add.style_number,
@@ -238,7 +245,6 @@ function purchaserInventoryFixCtrlProvide(
 
 	console.log(added);
 	console.log(base);
-
 	if (added.length === 0) {
 	    dialog.response(false, "库存盘点", "盘点失败", purchaserService.error[2084]);
 	    return;
@@ -288,49 +294,45 @@ function purchaserInventoryFixCtrlProvide(
     };
 
     $scope.save_draft = function() {
-	if ($scope.inventories.length === 2) {
+	if ($scope.inventories.length === 1) {
 	    fix_time = $.now();
 	    $scope.select.datetime = dateFilter(fix_time, "yyyy-MM-dd HH:mm:ss");
 	}
 
 	var stocks = $scope.inventories.map(function(r) {
-	    // return !r.$new;
-	    if (r.$new) {
-		return {$new: r.$new};
-	    } else {
-		return {
-		    $new         :r.$new,
-		    order_id     :r.order_id,
-		    bcode        :r.bcode,
-		    full_bcode   :r.full_bcode,
-		    style_number :r.style_number,
-		    brand        :r.brand,
-		    brand_id     :r.brand_id, 
-		    type         :r.type,
-		    type_id      :r.type_id,
-		    firm_id      :r.firm_id,
+	    // return !r.$new; 
+	    return {
+		order_id     :r.order_id,
+		// bcode        :r.bcode,
+		full_bcode   :r.full_bcode,
+		style_number :r.style_number,
+		brand        :r.brand,
+		brand_id     :r.brand_id, 
+		type         :r.type,
+		type_id      :r.type_id,
+		firm_id      :r.firm_id,
 
-		    sex          :r.sex,
-		    season       :r.season,
-		    year         :r.year,
+		sex          :r.sex,
+		season       :r.season,
+		year         :r.year,
 
-		    tag_price    :r.tag_price,
-		    discount     :r.discount,
+		tag_price    :r.tag_price,
+		discount     :r.discount,
 
-		    free         :r.free,
-		    s_group      :r.s_group,
-		    path         :r.path,
-		    entry        :r.entry,
+		free         :r.free,
+		s_group      :r.s_group,
+		path         :r.path,
+		entry        :r.entry, 
+		full_name    :r.full_name,
 
-		    full_name    :r.full_name,
-
-		    color_id     :r.color.cid,
-		    colors       :r.colors,
-		    size         :r.size,
-		    sizes        :r.sizes, 
-		    fix          :r.fix 
-		};
-	    }
+		color        :r.color,
+		size         :r.size,
+		// color_id     :r.color.cid,
+		// colors       :r.colors,
+		// size         :r.size,
+		// sizes        :r.sizes, 
+		fix          :r.fix
+	    };
 	});
 
 	if ($scope.useFile) {
@@ -343,15 +345,23 @@ function purchaserInventoryFixCtrlProvide(
     $scope.barcode_scanner = function(full_bcode) {
     	console.log(full_bcode); 
 	var barcode = diabloHelp.correct_barcode(full_bcode, $scope.setting.auto_barcode); 
-	console.log(barcode);
+	console.log(barcode); 
+	// invalid barcode
+	if (!barcode.cuted || !barcode.correct) {
+	    $scope.fix.s_barcode = undefined;
+	    dialog.response(false, "库存盘点", "盘点失败" + purchaserService.error[2076]); 
+	    return;
+	}
 	
 	diabloFilter.get_stock_by_barcode(barcode.cuted, $scope.select.shop.id).then(function(result){
 	    console.log(result);
 	    if (result.ecode === 0) {
 		if (diablo_is_empty(result.stock)) {
+		    $scope.fix.s_barcode = undefined;
 		    dialog.response(false, "库存盘点", "盘点失败" + purchaserService.error[2085]);
 		} else {
-		    result.stock.full_bcode = barcode.correct;
+		    $scope.fix.scanner = true; 
+		    $scope.fix.full_bcode = barcode.correct;
 		    $scope.on_select_good(result.stock);
 		}
 	    } else {
@@ -361,25 +371,25 @@ function purchaserInventoryFixCtrlProvide(
 	
     };
 
-    $scope.add_inventory = function(inv){
+    $scope.add_inventory = function(){
 	purchaserService.list_purchaser_inventory(
-	    {style_number:inv.style_number, brand:inv.brand_id, shop:$scope.select.shop.id}
+	    {style_number:$scope.fix.style_number, brand:$scope.fix.brand_id, shop:$scope.select.shop.id}
 	).then(function(invs){
-	    console.log(invs); 
-	    var order_sizes = diabloHelp.usort_size_group(inv.s_group, filterSizeGroup);
+	    // console.log(invs); 
+	    var order_sizes = diabloHelp.usort_size_group($scope.fix.s_group, filterSizeGroup);
 	    var sort = diabloHelp.sort_stock(invs, order_sizes, filterColor);
 	    
 	    // inv.total   = sort.total;
-	    inv.sizes   = sort.size;
-	    inv.colors  = sort.color; 
+	    $scope.fix_attr.sizes   = sort.size;
+	    $scope.fix_attr.colors  = sort.color; 
 	    // inv.amounts = sort.sort;
 	    
-	    if ($scope.setting.barcode_mode && angular.isDefined(inv.full_bcode)) {
-		if (inv.free === 0) {
-		    inv.color = get_color(diablo_free_color, inv.colors);
-		    inv.size  = get_size(diablo_free_size, inv.sizes);
+	    if ($scope.setting.barcode_mode && angular.isDefined($scope.fix.full_bcode)) {
+		if ($scope.fix.free === 0) {
+		    $scope.fix.color = get_color(diablo_free_color, $scope.fix_attr.colors);
+		    $scope.fix.size  = get_size(diablo_free_size, $scope.fix_attr.sizes);
 		} else {
-		    var color_size = inv.full_bcode.substr(inv.bcode.length, inv.full_bcode.length);
+		    var color_size = $scope.fix.full_bcode.substr($scope.fix.bcode.length, $scope.fix.full_bcode.length);
 		    console.log(color_size);
 		    
 		    var bcode_color = stockUtils.to_integer(color_size.substr(0, 3));
@@ -389,22 +399,24 @@ function purchaserInventoryFixCtrlProvide(
 		    // var bcode_size = color_size.substr(3, color_size.length);
 
 		    if (bcode_color === diablo_free_color) {
-			inv.color = get_color(diablo_free_color, inv.colors);
+			$scope.fix.color = get_color(diablo_free_color, $scope.fix_attr.colors);
 		    } else {
-			inv.color = get_color_by_bcode(bcode_color, inv.colors);
+			$scope.fix.color = get_color_by_bcode(bcode_color, $scope.fix_attr.colors);
 		    }
 
 		    if (bcode_size === diablo_free_size) {
-			inv.size = get_size(diablo_free_size, inv.sizes);
+			$scope.fix.size = get_size(diablo_free_size, $scope.fix_attr.sizes);
 		    } else {
-			inv.size = get_size(bcode_size, inv.sizes);
+			$scope.fix.size = get_size(bcode_size, $scope.fix_attr.sizes);
 		    }
-		} 
-		inv.fix = 1;
-		$scope.auto_save_free(inv); 
+		}
+
+		$scope.fix.fix = 1; 
+		$scope.auto_save_free();
+		
 	    } else {
-		inv.color = inv.colors[0];
-		inv.size = inv.sizes[0];
+		$scope.fix.color = $scope.fix_attr.colors[0];
+		$scope.fix.size = $scope.fix_attr.sizes[0]; 
 	    } 
 	    // }
 	}); 
@@ -414,6 +426,7 @@ function purchaserInventoryFixCtrlProvide(
      * pagination
      */
     $scope.items_perpage = diablo_items_per_page();
+    $scope.max_page_size = diablo_max_page_size();
     // $scope.default_page  = 1;
     $scope.current_page  = 1;
     $scope.reset_pagination = function() {
@@ -438,7 +451,7 @@ function purchaserInventoryFixCtrlProvide(
 	// console.log($scope.inventories)
 
 	// var deleteIndex = -1;
-	for(var i=1, l=$scope.inventories.length; i<l; i++){
+	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    if(inv.order_id === $scope.inventories[i].order_id){
 		break;
 	    }
@@ -447,7 +460,7 @@ function purchaserInventoryFixCtrlProvide(
 	$scope.inventories.splice(i, 1);
 	
 	// reorder
-	for(var i=1, l=$scope.inventories.length; i<l; i++){
+	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    $scope.inventories[i].order_id = l - i;
 	}
 
@@ -456,50 +469,44 @@ function purchaserInventoryFixCtrlProvide(
 	$scope.save_draft();
     }; 
 
-    $scope.add_free_inventory = function(inv){
-	console.log(inv);
-	inv.$new = false; 
-	// oreder
-	inv.order_id = $scope.inventories.length; 
-	$scope.inventories.unshift({$edit:false, $new:true});
-
-	// $scope.reset_focus();
-	$scope.reset_pagination();
-	
-	$scope.focus_good_or_barcode(); 
+    $scope.add_free_inventory = function(){
+	console.log($scope.fix);
+	$scope.fix.order_id = $scope.inventories.length + 1; 
+	$scope.inventories.unshift($scope.fix);
 	$scope.re_calculate();
-	$scope.save_draft(); 
+	
+	$scope.reset_pagination(); 
+	$scope.save_draft();
+	
+	$scope.reset_fix();
+	$scope.focus_good_or_barcode();
+
     };
     
     $scope.save_free_update = function(inv){
     	$timeout.cancel($scope.timeout_auto_save);
     	$scope.re_calculate();
 	$scope.save_draft();
-    }
+    } 
 
-    // $scope.cancel_free_update = function(inv){
-    // 	$timeout.cancel($scope.timeout_auto_save);
-    // 	inv.free_update = false; 
-    // }
-
-    $scope.reset_inventory = function(inv){
-	$timeout.cancel($scope.timeout_auto_save);
-	$scope.inventories[0] = {$edit:false, $new:true};;
+    $scope.reset_fix = function(){
+	// console.log($scope.fix);
+	$timeout.cancel($scope.timeout_auto_save); 
+	$scope.fix = {scanner:false};
+	$scope.fix_attr = {};
     }
 
     $scope.timeout_auto_save = undefined;
-    $scope.auto_save_free = function(inv){
+    $scope.auto_save_free = function(){
+	// console.log($scope.fix);
 	$timeout.cancel($scope.timeout_auto_save);
-	if (0 === stockUtils.to_integer(inv.fix) ){
+	var re = $scope.pattern.fix;
+	if (0 === stockUtils.to_integer($scope.fix.fix) || !re.test(stockUtils.to_integer($scope.fix.fix))){
 	    return;
 	}
 
 	$scope.timeout_auto_save = $timeout(function(){
-	    if (inv.$new){
-		$scope.add_free_inventory(inv);
-	    } else {
-		$scope.save_free_update(inv);
-	    } 
+	    $scope.add_free_inventory();
 	}, 500); 
 	
     };

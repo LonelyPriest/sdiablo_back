@@ -83,10 +83,10 @@ function baseConfig(angular){
 		templateUrl: '/private/base/html/reset_password.html',
 		controller: 'resetPasswdCtrl'
 	    }).
-	    when('/setting/soft_stock_fix', {
-		templateUrl: '/private/base/html/download_stock_fix.html',
-		controller: 'downloadStockFixCtrl'
-	    }). 
+	    // when('/setting/soft_stock_fix', {
+	    // 	templateUrl: '/private/base/html/download_stock_fix.html',
+	    // 	controller: 'downloadStockFixCtrl'
+	    // }). 
 	    otherwise({
 		templateUrl: '/private/base/html/base_printer_connect_detail.html',
 		controller: 'basePrinterConnectDetailCtrl',

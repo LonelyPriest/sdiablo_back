@@ -64,7 +64,7 @@
 	    <div class="col-xs-3 col-md-3">
 	      <div class="input-group">
 		<span class="input-group-addon">
-	  	  <i class="icon-user fg-red"></i>数量</span>
+	  	  <i class="glyphicon glyphicon-plane fg-red"></i>数量</span>
 	  	<input type="text"
 		       class="form-control"
 		       readonly
@@ -77,8 +77,84 @@
 	
 	<!--BEGN portlet body--> 
 	<div class="portlet-body">
-	  <!--BEGIN panel-->
-	  <div class="panel panel-default">
+	  <div class="row diablo-form-group">
+	    <div class="col-xs-12 col-md-4 col-sm-4">
+	      <div class="input-group">
+		<span class="input-group-addon"><i class="glyphicon glyphicon-barcode fg-red"></i>条码</span>
+		<form name="bform">
+		  <div ng-class="{'has-error':bform.barcode.$invalid && !bform.barcode.$pristine}">
+		    <input class="form-control text-left"
+			   type="text"
+			   name="barcode"
+			   x-ng-model="fix.s_barcode"
+			   placeholder="请扫条码"
+			   focus-auto="focus.barcode"
+			   x-ng-pattern="pattern.barcode"
+			   barcode-scanner
+			   scanner="barcode_scanner"/>
+		  </div>
+		</form>
+	      </div>
+	    </div>
+	    <div class="col-xs-12 col-md-8 col-sm-8">
+	      <div class="input-group">
+		<span class="input-group-addon"><i class="glyphicon glyphicon-signal fg-red"></i>货号</span>
+		<form name="sform">
+		  <div ng-class="{'has-error':sform.snumber.$invalid && !sform.snumber.$pristine}"> 
+		    <input class="form-control text-left"
+			   name="snumber"
+			   type="text" 
+			   x-ng-model="fix.style_number"
+			   focus-auto="focus.style_number"
+			   placeholder="请输入货号"
+			   typeahead-editable="false"
+			   typeahead-on-select="on_select_good($item, $model, $label)"
+			   typeahead-wait-ms="300"
+			   typeahead-loading="loading"
+			   uib-typeahead="g as g.name for g in match_style_number($viewValue)" />
+		    <span x-ng-show="loading">
+		      <i class="glyphicon glyphicon-refresh"></i>
+		    </span>
+		  </div>
+		</form>
+		
+		<span x-ng-if="!fix.scanner && fix.style_number" class="input-group-addon">颜色</span>
+		<select x-ng-if="!fix.scanner && fix.style_number"
+			class="form-control col-md-1 col-sm-1 col-xs-1"
+			type="text"
+	  		x-ng-model="fix.color"
+	  		x-ng-options="c as c.cname for c in fix_attr.colors"
+			x-ng-change="save_draft()">
+		</select>
+		
+		<span x-ng-if="!fix.scanner && fix.style_number" class="input-group-addon">尺码</span>
+		<select x-ng-if="!fix.scanner && fix.style_number"
+			class="form-control col-md-1 col-sm-1 col-xs-1"
+			type="text"
+	  		x-ng-model="fix.size"
+	  		x-ng-options="s for s in fix_attr.sizes"
+			x-ng-change="save_draft()">
+		</select>
+
+		<span class="input-group-addon">数量</span>
+		<form name="xform">
+		  <div ng-class="{'has-error':xform.fix.$invalid && !xform.fix.$pristine}"> 
+		    <input class="form-control"
+			   name="fix"
+			   type="number"
+			   step="1"
+			   x-ng-pattern="pattern.fix"
+			   x-ng-readonly="fix.scanner || !fix.style_number"
+	  		   x-ng-model="fix.fix"
+			   focus-auto="focus.fix"
+			   x-ng-change="auto_save_free()"/>
+		  </div>
+		</form>
+	      </div>
+	    </div>
+	  </div> 
+	  <!--BEGIN panel
+	  <div class="panel panel-default"> 
 	    <div class="table-responsive">
 	      <!--EBGIN table supplier-->
 	      <table class="table table-bordered
@@ -101,104 +177,113 @@
 		<tbody>
 		  <!-- <tr class="text-center" ng-repeat="inv in inventories"> -->
 		  <tr class="text-center" ng-repeat="inv in page_items">  
-		    <td class="col-md-1">{{inv.order_id}}</td>
-		    <td x-ng-if="setting.barcode_mode" class="col-md-2 text-left vert-align">
-	  	      <span ng-if="!inv.$new">{{inv.full_bcode}}</span>
-	  	      <form name="inv.form.bcode" ng-if="inv.$new">
-	  		<div ng-class="{'has-error':inv.form.bcode.$invalid
-	  			       && !inv.form.bcode.$pristine}">
-	  		  <input class="form-control text-left"
-	  			 type="text"
-	  			 required
-	  			 x-ng-model="inv.full_bcode"
-	  			 focus-auto="focus.barcode"
-	  			 placeholder="条码"
-	  			 barcode-scanner
-	  			 scanner="barcode_scanner"/>
-	  		</div>
-	  	      </form>
+		    <td>{{inv.order_id}}</td>
+		    <td x-ng-if="setting.barcode_mode" class="text-left vert-align">
+		      <span>{{inv.full_bcode}}</span>
+	  	      <!-- <span ng-if="!inv.$new">{{inv.full_bcode}}</span> -->
+	  	      <!-- <form name="inv.form.bcode" ng-if="inv.$new"> -->
+	  	      <!-- 	<div ng-class="{'has-error':inv.form.bcode.$invalid -->
+	  	      <!-- 		       && !inv.form.bcode.$pristine}"> -->
+	  	      <!-- 	  <input class="form-control text-left" -->
+	  	      <!-- 		 type="text" -->
+	  	      <!-- 		 required -->
+	  	      <!-- 		 x-ng-model="inv.full_bcode" -->
+	  	      <!-- 		 focus-auto="focus.barcode" -->
+	  	      <!-- 		 placeholder="条码" -->
+	  	      <!-- 		 barcode-scanner -->
+	  	      <!-- 		 scanner="barcode_scanner"/> -->
+	  	      <!-- 	</div> -->
+	  	      <!-- </form> -->
 	  	    </td>
 		    
-		    <td class="col-md-2 text-left vert-align">
-		      <span ng-if="!inv.$new">{{inv.full_name}}</span>
-		      <form name="inv.form.good" ng-if="inv.$new">
-			<div ng-class="{'has-error':inv.form.good.$invalid
-				       && !inv.form.good.$pristine}">
-			  <input class="form-control text-left" type="text"
-				 required
-				 x-ng-model="inv.full_name"
-				 focus-auto="focus.style_number"
-				 placeholder="货号"
-				 typeahead-editable="false"
-				 typeahead-on-select="on_select_good($item, $model, $label)"
-				 typeahead-wait-ms="300"
-				 typeahead-loading="loading"
-				 uib-typeahead="g as g.name for g in match_style_number($viewValue)"/>
-			  <span x-ng-show="loading">
-			    <i class="glyphicon glyphicon-refresh"></i>
-			  </span>
-			</div>
-		      </form>
+		    <td class="text-left vert-align">
+		      <span>{{inv.full_name}}</span>
+		      <!-- <span ng-if="!inv.$new">{{inv.full_name}}</span> -->
+		      <!-- <form name="inv.form.good" ng-if="inv.$new"> -->
+		      <!-- 	<div ng-class="{'has-error':inv.form.good.$invalid && !inv.form.good.$pristine}"> -->
+		      <!-- 	  <input class="form-control text-left" -->
+		      <!-- 		 type="text" -->
+		      <!-- 		 required -->
+		      <!-- 		 x-ng-model="inv.full_name" -->
+		      <!-- 		 focus-auto="focus.style_number" -->
+		      <!-- 		 placeholder="货号" -->
+		      <!-- 		 typeahead-editable="false" -->
+		      <!-- 		 typeahead-on-select="on_select_good($item, $model, $label)" -->
+		      <!-- 		 typeahead-wait-ms="300" -->
+		      <!-- 		 typeahead-loading="loading" -->
+		      <!-- 		 uib-typeahead="g as g.name for g in match_style_number($viewValue)"/> -->
+		      <!-- 	  <span x-ng-show="loading"> -->
+		      <!-- 	    <i class="glyphicon glyphicon-refresh"></i> -->
+		      <!-- 	  </span> -->
+		      <!-- 	</div> -->
+		      <!-- </form> -->
 		    </td>
 		    
 		    <td class="col-md-1 vert-align">{{seasons[inv.season]}}</td>
 		    <td class="col-md-1 vert-align">
-		      <span x-ng-if="!inv.style_number"></span>
-		      <select x-ng-if="inv.style_number" class="form-control" type="text"
-	  		      x-ng-model="inv.color"
-	  		      x-ng-options="c as c.cname for c in inv.colors|filter:$viewValue"
-			      x-ng-change="save_draft()">
-		      </select>
+		      <div x-ng-bind="inv.color.cname"></div>
+		      <!-- <span x-ng-if="!inv.style_number"></span> -->
+		      <!-- <select x-ng-if="inv.style_number" class="form-control" type="text" -->
+	  	      <!-- 	      x-ng-model="inv.color" -->
+	  	      <!-- 	      x-ng-options="c as c.cname for c in inv.colors|filter:$viewValue" -->
+		      <!-- 	      x-ng-change="save_draft()"> -->
+		      <!-- </select> -->
 		    </td>
 		    <td class="col-md-1 vert-align">
-		      <span x-ng-if="!inv.style_number"></span>
-		      <select x-ng-if="inv.style_number" class="form-control" type="text"
-	  		      x-ng-model="inv.size"
-	  		      x-ng-options="s for s in inv.sizes"
-			      x-ng-change="save_draft()">
-		      </select>
+		      <div x-ng-bind="inv.size"></div>
+		      <!-- <span x-ng-if="!inv.style_number"></span> -->
+		      <!-- <select x-ng-if="inv.style_number" class="form-control" type="text" -->
+	  	      <!-- 	      x-ng-model="inv.size" -->
+	  	      <!-- 	      x-ng-options="s for s in inv.sizes" -->
+		      <!-- 	      x-ng-change="save_draft()"> -->
+		      <!-- </select> -->
 		    </td>
 		    
 		    <td class="col-md-1 vert-align">
-		      <span x-ng-if="!inv.style_number"></span>
-		      <form x-ng-if="inv.style_number" name="inv.form.sell">
-			  <div ng-class="{'has-error': inv.form.fix.$invalid
-					 && !inv.form.fix.$pristine}">
-			    <input type="number"
-				   step="1"
-				   class="form-control"
-				   placeholder="数量"
-				   required
-				   disable-key
-				   x-ng-model="inv.fix"
-				   focus-auto="focus.fix" 
-				   x-ng-change="auto_save_free(inv)" />
-			  </div>
-			</form>
+		      <div x-ng-bind="inv.fix"></div>
+		      <!-- <span x-ng-if="!inv.style_number"></span> -->
+		      <!-- <form x-ng-if="inv.style_number" name="inv.form.fix"> -->
+		      <!-- 	<div ng-class="{'has-error': inv.form.fix.$invalid && !inv.form.fix.$pristine}"> -->
+		      <!-- 	  <input type="number" -->
+		      <!-- 		 step="1" -->
+		      <!-- 		 class="form-control" -->
+		      <!-- 		 readonly="setting.barcode_mode" -->
+		      <!-- 		 placeholder="数量" -->
+		      <!-- 		 required -->
+		      <!-- 		 disable-key -->
+		      <!-- 		 x-ng-model="inv.fix" -->
+		      <!-- 		 focus-auto="focus.fix" -->
+		      <!-- 		 x-ng-change="auto_save_free(inv)" /> -->
+		      <!-- 	</div> -->
+		      <!-- </form> -->
 		    </td>
 		    
-		    <td class="col-md-1 vert-align">{{inv.tag_price}}</td> 
+		    <td class="col-md-1 vert-align">
+		      <div x-ng-bind="inv.tag_price"></div>
+		    </td> 
 		    <td class="col-md-1 text-left vert-align">
-		      <div x-ng-if="inv.$new"> 
-			<button class="btn diablo-input-button btn-warning"
-			   x-ng-disabled="!inv.style_number"
-			   x-ng-click="reset_inventory(inv)">重置
-			  <i class="glyphicon glyphicon-pushpin"></i></button>
-		      </div>
+		      <!-- <div x-ng-if="inv.$new">  -->
+		      <!-- 	<button class="btn diablo-input-button btn-warning" -->
+		      <!-- 	   x-ng-disabled="!inv.style_number" -->
+		      <!-- 	   x-ng-click="reset_inventory(inv)">重置 -->
+		      <!-- 	  <i class="glyphicon glyphicon-pushpin"></i></button> -->
+		      <!-- </div> -->
 
-		      <div ng-if="!inv.$new"> 
+		      <!-- <div ng-if="!inv.$new">  -->
+		      <!-- 	<button class="btn diablo-input-button btn-danger" -->
+		      <!-- 	   x-ng-if="!inv.free_update" -->
+		      <!-- 	   x-ng-click="delete_inventory(inv)">删除 -->
+		      <!-- 	  <i class="glyphicon glyphicon-erase"></i></button>  -->
+		      <!-- </div> -->
+
+		      <div x-ng-if="inv.style_number"> 
 			<button class="btn diablo-input-button btn-danger"
-			   x-ng-if="!inv.free_update"
-			   x-ng-click="delete_inventory(inv)">删除
+				x-ng-click="delete_inventory(inv)">删除
 			  <i class="glyphicon glyphicon-erase"></i></button> 
 		      </div>
 		      
 		    </td>
-		  </tr>
-
-		  <!-- <tr x-ng-if="inventories.length>1" class="text-center"> -->
-		    
-		  <!-- </tr> -->
+		  </tr> 
 		</tbody>
 
 		<tfoot>
@@ -210,8 +295,7 @@
 	  </div> <!--END panel-->
 
 	  <div x-ng-show="total_items>items_perpage" class="row">
-	    <div class="col-md-12, col-sm-12, col-xs-12">
-	
+	    <div class="col-md-12, col-sm-12, col-xs-12"> 
 	      <span>显示第 {{current_page}} / {{num_pages}} 项结果，
 		共 {{total_items}} 项</span>
 	    

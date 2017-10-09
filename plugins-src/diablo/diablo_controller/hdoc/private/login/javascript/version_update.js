@@ -1,6 +1,13 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2017-10-10",
+         content:
+	 ["增加可查找当天生日的会员",
+	  "无线扫描盘点模式改进",
+	  ]
+        },
+	
 	{date: "2017-10-07",
          content:
 	 ["增加均码货品不能增加尺码组的限制",
@@ -782,8 +789,7 @@ var version_update = function(){
 
     return {
 	init: function(){
-	    var content="";
-
+	    var content=""; 
 	    for (var i=0, l=updates.length; i<l; i++){
 		var s =  "<div class='update-content'><div class='text-left'>"
 		 + "<h4 class='text-center' style='margin-top:20px'><span class='fg-red'><strong>"
@@ -802,6 +808,12 @@ var version_update = function(){
 		content += s + c + e;
 	    }
 
+	    var apk = "<div class='update-content'>"
+		+ "<a type='button' href='/qzg_stock_fix-release2017-10-08_01-18-32.apk' download=''>"
+		+ "<h5 class='text-center fg-pink'>盘点机软件(安卓版)下载</h5>"
+		+ "</a>"
+		+ "</div>"
+	    $('body').append(apk);
 	    $('body').append(content);
 		// .append("<div class='copyright'><span> 2015-2025 &copy;&nbsp钱掌柜&nbsp&nbsp&nbsp&nbsp</span>"
 		// 			     + "<span><i class='glyphicon glyphicon-star'></i>"

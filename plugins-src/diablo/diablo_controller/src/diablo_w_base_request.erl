@@ -415,8 +415,10 @@ sidebar(Session) ->
 			      {"fabric",          "货品面料", "glyphicon glyphicon-glass"},
 			      {"size_spec",       "尺码规格", "glyphicon glyphicon-text-size"}]
 		     end
-		  ++ [{"print_template", "打印模板", "glyphicon glyphicon-file"},
-		      {"soft_stock_fix", "盘点软件", "glyphicon glyphicon-save"}]}]
+		  ++ [{"print_template", "打印模板", "glyphicon glyphicon-file"}
+		      %% {"soft_stock_fix", "盘点软件", "glyphicon glyphicon-save"}
+		     ]}
+		]
 	end,
     
     Passwd = [{"passwd", "重置密码", "glyphicon glyphicon-user"}], 
