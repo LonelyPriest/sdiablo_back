@@ -152,28 +152,24 @@ function purchaserInventoryFixCtrlProvide(
 	    if (value) {
 		// console.log(value);
 		var callbackReadFile = function(taskId, value){
-		    console.log(value); 
-		    $scope.$apply(function() {
-			var content = angular.fromJson(value);
-			fix_time = content.t;
-			$scope.select.datetime = dateFilter(fix_time, "yyyy-MM-dd HH:mm:ss");
-			$scope.inventories = content.stock;
-			// console.log($scope.inventories); 
-			// angular.forEach($scope.inventories, function(inv) {
-			//     if (!inv.$new) {
-			// 	inv.color = get_color(inv.color_id, inv.colors); 
-			//     }
-			// });
-			
-			// $scope.inventories.unshift({$edit:false, $new:true}); 
-			// console.log($scope.select.datetime);
-			// console.log($scope.inventories);
-			$scope.current_page = 1;
-			$scope.reset_pagination();
-			// $scope.focus_good_or_barcode();
-			$scope.re_calculate();
-		    });
+		    console.log(value);
+		    var content = angular.fromJson(value);
+		    fix_time = content.t;
+
+		    if (angular.isDefined(content.t)) {
+			$scope.$apply(function() {
+			    $scope.select.datetime = dateFilter(fix_time, "yyyy-MM-dd HH:mm:ss");
+			    $scope.inventories = content.stock; 
+			    $scope.current_page = 1;
+			    $scope.reset_pagination();
+			    $scope.re_calculate(); 
+			});
+		    } else {
+			dialog.response(false, "库存盘点", purchaserService.error[2083]);
+		    }
+		    
 		}
+		
 		fixDraft.setCallback(callbackReadFile);
 		fixDraft.readFile();
 	    } else {
