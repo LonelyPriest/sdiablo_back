@@ -390,6 +390,9 @@ function stockNewDetailPrintCtrlProvide(
 
     var pageHeight = diablo_base_setting("prn_h_page", diablo_default_shop, base, parseFloat, 14);
     var pageWidth  = diablo_base_setting("prn_w_page", diablo_default_shop, base, parseFloat, 21.3);
+    $scope.rbill_comment  = diablo_base_setting("rbill", diablo_default_shop, base, diablo_set_string, "");
+    // console.log(base);
+    // console.log($scope.rbill_comment);
     
     purchaserService.print_w_inventory_new($routeParams.rsn).then(function(result) {
     	// console.log(result);

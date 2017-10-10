@@ -26,8 +26,10 @@
 	<h3 style="text-align:center">
 	  <span x-ng-bind=detail.shop.name></span>
 	  <span x-ng-if="detail.type===0">（入库）</span>
-	  <span x-ng-if="detail.type===1">（退货）</span>
-	</h3>
+	  <span x-ng-if="detail.type===1">（退货）
+	    <span x-ng-if="rbill_comment">{{rbill_comment}}</span>
+	  </span> 
+	</h3> 
 	<h5>
 	  <div style="text-align:center">
 	    <span>日期：<span x-ng-bind=detail.entry_date></span></span>
@@ -76,8 +78,8 @@
 	<h5 style="text-align:left">
 	  <p>
 	    <span>钱掌柜零售云平台</span>
-	    &nbsp&nbsp&nbsp&nbsp<span>手机（微信）：18692269329</span>
-	    &nbsp&nbsp&nbsp&nbsp<span>15292083301</span>
+	    &nbsp&nbsp&nbsp&nbsp<span>联系方式：18692269329（微信）</span>
+	    &nbsp&nbsp&nbsp&nbsp<span>15292083301（微信）</span>
 	  </p>
 	</h5>
       </div>

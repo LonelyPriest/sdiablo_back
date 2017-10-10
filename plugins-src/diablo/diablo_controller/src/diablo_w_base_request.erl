@@ -35,7 +35,7 @@ action(Session, Req, {"list_base_setting"}) ->
     Merchant = ?session:get(merchant, Session),
     case ?session:get(type, Session) of
 	?MERCHANT ->
-	    {ok, S}  = ?w_user_profile:get(setting, Merchant),
+	    {ok, S}  = ?w_user_profile:get(setting, Merchant, -1),
 	    ?utils:respond(200, batch, Req, S); 
 	?USER ->
 	    {ok, Shops} = ?w_user_profile:get(user_shop, Merchant, Session),
@@ -52,9 +52,14 @@ action(Session, Req, {"list_base_setting"}) ->
 	    {ok, S}  = ?w_user_profile:get(setting, Merchant),
 
 	    Select =
-		case [{SS} || {SS} <- S, lists:member(?v(<<"shop">>, SS), ShopIds)] of
-		    [] -> [{SS} || {SS} <- S, ?v(<<"shop">>, SS) =:= -1];
-		    V -> V ++ [{SS} || {SS} <- S, ?v(<<"shop">>, SS) =:= -1]
+		case length(ShopIds) =:= 1 of
+		    true ->
+			case [{SS} || {SS} <- S, lists:member(?v(<<"shop">>, SS), ShopIds)] of
+			    [] -> [{SS} || {SS} <- S, ?v(<<"shop">>, SS) =:= -1];
+			    V -> V ++ [{SS} || {SS} <- S, ?v(<<"shop">>, SS) =:= -1]
+			end;
+		    false ->
+			[{SS} || {SS} <- S, ?v(<<"shop">>, SS) =:= -1]
 		end,
 	    %% ?DEBUG("select ~p", [Select]),
 	    %% lists:filter()

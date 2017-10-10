@@ -1325,5 +1325,4 @@ define(["baseApp"], function(app){
     
     app.controller("printerDetectCtrl", printerDetectCtrlProvide);
     app.controller("resetPasswdCtrl", resetPasswdCtrlProvide);
-    app.controller("downloadStockFixCtrl", downloadStockFixCtrlProvide);
 });
