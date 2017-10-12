@@ -461,6 +461,20 @@ function wsaleRejectCtrlProvide(
 	}
 	return undefined;
     };
+
+    $scope.reset_score = function() {
+	if (diablo_no === $scope.setting.draw_score && $scope.select.withdraw !== 0) {
+	    var pay_orders = wsaleCalc.pay_order_of_reject(
+		$scope.select.should_pay, [
+		    $scope.select.ticket,
+		    $scope.select.withdraw,
+		    $scope.select.wxin,
+		    $scope.select.card,
+		    $scope.select.cash]);
+	    var pay_with_score = pay_orders[2] + pay_orders[3] + pay_orders[4] - $scope.select.verificate;
+	    $scope.select.score = wsaleUtils.calc_score_of_pay(pay_with_score, $scope.select.pscores);
+	}
+    };
     
     $scope.re_calculate = function(){
 	$scope.select.total = 0;
@@ -486,24 +500,66 @@ function wsaleRejectCtrlProvide(
 	$scope.select.abs_total = calc.abs_total;
 	$scope.select.should_pay= calc.should_pay;
 	$scope.select.score     = calc.score;
+	$scope.select.pscores   = calc.pscores; 
+	$scope.reset_score();
 
 	var nscore = 0;
 	for (var i=1, l=$scope.inventories.length; i<l; i++){
 	    var inv = $scope.inventories[i];
 	    // console.log(inv);
 	    if (!inv.select){
-		if (diablo_invalid_index !== inv.sid)
-		    nscore += wsaleUtils.calc_score_of_money(inv.calc, inv.score);
+		if (diablo_invalid_index !== inv.sid) {
+		    if (diablo_no === $scope.setting.draw_score) {
+			for (var j=0, k=$scope.select.pscores; j<k; j++) {
+			    if (inv.sid === $scope.select.pscores[i].score.id) {
+				$scope.select.pscores[i].money - inv.calc;
+			    }
+			}
+		    } else {
+			nscore += wsaleUtils.calc_score_of_money(inv.calc, inv.score); 
+		    }
+		} 
 	    } else {
 		// console.log(inv);
 		$scope.select.rcharge += inv.calc;
 		$scope.select.rtotal += inv.reject;
 	    } 
-	}
-
-	// console.log(nscore);
-	$scope.select.rscore = $scope.select.score - nscore;
+	} 
 	$scope.select.rcharge = diablo_round($scope.select.rcharge);
+	
+	if (diablo_no === $scope.setting.draw_score) {
+	    var pay_orders = function() {
+	    	if ($scope.select.rcharge >= 0) {
+	    	    return wsaleCalc.pay_order_of_reject(
+	    		$scope.select.rcharge, [$scope.select.cash,
+	    					$scope.select.card,
+	    					$scope.select.wxin,
+	    					$scope.select.withdraw,
+	    					$scope.select.ticket]);
+	    	} else {
+	    	    return wsaleCalc.pay_order_of_reject(
+	    		$scope.select.rcharge, [$scope.select.cash,
+	    					$scope.select.card,
+	    					$scope.select.wxin,
+	    					$scope.select.withdraw,
+	    					$scope.select.ticket]); 
+	    	} 
+	    }();
+	    
+	    var pay_with_score = pay_orders[0] + pay_orders[1] + pay_orders[2];
+	    nscore = wsaleUtils.calc_score_of_pay(pay_with_score, $scope.select.pscores);
+	}
+	
+	// console.log(nscore);
+	if (diablo_no === $scope.setting.draw_score) {
+	    // if (nscore > $scope.select.score)
+	    // 	$scope.select.rscore = $scope.select.score;
+	    // else
+	    $scope.select.rscore = nscore;
+	} else {
+	    $scope.select.rscore = $scope.select.score - nscore; 
+	}
+	// $scope.select.rcharge = diablo_round($scope.select.rcharge);
 
 	if ($scope.has_withdrawed){
 	    $scope.select.left_balance = $scope.select.surplus + $scope.select.withdraw; 

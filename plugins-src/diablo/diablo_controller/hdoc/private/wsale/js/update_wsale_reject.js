@@ -481,6 +481,20 @@ function wsaleUpdateRejectCtrlProvide(
 	}
 	return undefined;
     };
+
+    $scope.reset_score = function() {
+	if (diablo_no === $scope.setting.draw_score && $scope.select.withdraw !== 0) {
+	    var pay_orders = wsaleCalc.pay_order_of_reject(
+		$scope.select.should_pay, [
+		    $scope.select.ticket,
+		    $scope.select.withdraw,
+		    $scope.select.wxin,
+		    $scope.select.card,
+		    $scope.select.cash]);
+	    var pay_with_score = pay_orders[2] + pay_orders[3] + pay_orders[4] - $scope.select.verificate;
+	    $scope.select.score = wsaleUtils.calc_score_of_pay(pay_with_score, $scope.select.pscores);
+	}
+    };
     
     $scope.re_calculate = function(){
 	$scope.select.total        = 0;
@@ -501,6 +515,9 @@ function wsaleUpdateRejectCtrlProvide(
 	$scope.select.abs_total = calc.abs_total;
 	$scope.select.should_pay= calc.should_pay;
 	$scope.select.score     = calc.score;
+	$scope.select.pscores   = calc.pscores; 
+	$scope.reset_score();
+	
 
 	// back to retailer
 	if ($scope.select.retailer.type===1){

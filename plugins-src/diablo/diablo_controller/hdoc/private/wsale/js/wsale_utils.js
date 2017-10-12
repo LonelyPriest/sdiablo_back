@@ -395,8 +395,7 @@ var wsaleUtils = function(){
 	    }
 
 	    if (!found){
-		scores.push({
-		    score:s, p: p, money: money});
+		scores.push({score:s, p: p, money: money});
 	    }
 
 	    return scores;
@@ -485,9 +484,45 @@ var wsaleUtils = function(){
 	    return score;
 	},
 
+	calc_score_of_pay: function(pay, pscores){
+	    // console.log(pscores);
+	    var score = 0;
+	    var pay_with_score = pay;
+	    if (pscores.length > 0){
+		if (pay >= 0) {
+		    for (var i=0, l=pscores.length; i<l; i++){
+			s = pscores[i];
+			if (pay_with_score > 0) {
+			    pay_with_score -= s.money;
+			    if (pay_with_score > 0)
+				score += Math.floor(
+				    diablo_round(s.money) / s.score.balance) * s.score.score;
+			    else
+				score += Math.floor(
+				    diablo_round(pay_with_score + s.money) / s.score.balance) * s.score.score;
+			} 
+		    }
+		} else {
+		    for (var i=0, l=pscores.length; i<l; i++){
+			s = pscores[i];
+			if (pay_with_score < 0) {
+			    pay_with_score -= s.money;
+			    if (pay_with_score < 0)
+				score += Math.floor(diablo_round(s.money) / s.score.balance) * s.score.score;
+			    else
+				score += Math.floor(
+				    diablo_round(pay_with_score + s.money) / s.score.balance) * s.score.score;
+			} 
+		    }
+		}
+		
+	    }
+	    
+	    return score;
+	},
+
 	calc_score_of_money: function(money, score){
-	    return Math.floor(money / score.balance) * score.score;
-	    // return Math.ceil(money / score.balance) * score.score;
+	    return Math.floor(diablo_round(money) / score.balance) * score.score;
 	},
 
 	to_float: function(v) {
@@ -737,7 +772,8 @@ var wsaleCalc = function(){
 		abs_total:  abs_total,
 		should_pay: should_pay,
 		score:      score,
-		rbalance:   calc_p.rbalance
+		pscores:    pscores,
+		rbalance:   calc_p.rbalance, 
 		// charge:     charge 
 	    }; 
 	},
@@ -763,7 +799,75 @@ var wsaleCalc = function(){
 		one.calc    = wsaleUtils.to_decimal(one.rprice * count);
 		console.log(one.calc);
 	    }
-	}
+	},
+
+	pay_order: function(should_pay, pays) {
+	    // var pay = {ticket: 0, withdraw:0, wxin: 0, card: 0, cash:0};
+	    var orders = [];
+	    var left = should_pay;
+	    for (var i=0, l=pays.length; i<l; i++) {
+		var pay = wsaleUtils.to_float(pays[i]);
+		if (pay !== 0 && left > 0) {
+		    left = left - pay;
+		    if (left > 0)
+			orders.push(pay);
+		    else
+			orders.push(left + pay);
+		} else {
+		    orders.push(0);
+		} 
+	    }
+
+	    if (left > 0)
+		orders[i - 1] += left;
+	    console.log(orders);
+	    return orders;
+	},
+
+	pay_order_of_reject: function(should_pay, pays) {
+	    // var pay = {ticket: 0, withdraw:0, wxin: 0, card: 0, cash:0};
+	    var orders = [];
+	    var left = should_pay;
+	    
+	    if (should_pay > 0) {
+		for (var i=0, l=pays.length; i<l; i++) {
+		    var pay = wsaleUtils.to_float(pays[i]); 
+		    if ( pay !== 0 && left > 0) {
+			left = left - pay;
+			if (left > 0)
+			    orders.push(pay);
+			else
+			    orders.push(left + pay);
+		    } else {
+			orders.push(0);
+		    } 
+		}
+
+		if (left > 0)
+		    orders[i - 1] += left;
+	    } else {
+		for (var i=0, l=pays.length; i<l; i++) {
+		    var pay = wsaleUtils.to_float(pays[i]); 
+		    if (pay !== 0 && left < 0) {
+			left = left - pay;
+			if (left < 0)
+			    orders.push(pay);
+			else
+			    orders.push(left + pay);
+		    } else {
+			orders.push(0);
+		    } 
+		}
+
+		if (left < 0)
+		    orders[i - 1] += left;
+	    }
+	    
+	    console.log(orders);
+	    return orders;
+	},
+	
+	//
     }
 }();
 

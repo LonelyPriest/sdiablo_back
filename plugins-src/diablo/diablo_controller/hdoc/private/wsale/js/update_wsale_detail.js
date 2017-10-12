@@ -31,8 +31,7 @@ function wsaleUpdateDetailCtrlProvide(
     $scope.has_saved   = false;
     $scope.setting     = {check_sale:true, q_backend:true};
 
-    $scope.old_select  = {};
-    
+    $scope.old_select  = {}; 
     $scope.select      = {}; 
     $scope.inventories = [];
     $scope.show_promotions = [];
@@ -81,10 +80,13 @@ function wsaleUpdateDetailCtrlProvide(
 	$scope.select.total     = calc.total; 
 	$scope.select.should_pay= calc.should_pay;
 	$scope.select.score     = calc.score;
+	$scope.select.pscores   = calc.pscores;
 
-	$scope.select.charge = $scope.select.should_pay
-	    - wsaleUtils.to_float($scope.select.has_pay)
-	    - wsaleUtils.to_float($scope.select.ticket); 
+	$scope.select.charge =
+	    $scope.select.should_pay - wsaleUtils.to_float($scope.select.has_pay) - wsaleUtils.to_float($scope.select.ticket);
+
+	$scope.reset_score();
+	
 	// console.log($scope.select);	
     }; 
     
@@ -554,9 +556,25 @@ function wsaleUpdateDetailCtrlProvide(
 	if ($scope.select.retailer.type_id === diablo_charge_retailer)
 	    $scope.select.has_pay += wsaleUtils.to_float($scope.select.withdraw);
 
-	$scope.select.charge = $scope.select.should_pay
-	    - wsaleUtils.to_float($scope.select.has_pay)
-	    - wsaleUtils.to_float($scope.select.ticket);
+	$scope.select.charge =
+	    $scope.select.should_pay - wsaleUtils.to_float($scope.select.has_pay) - wsaleUtils.to_float($scope.select.ticket);
+
+	$scope.reset_score();
+    };
+
+    $scope.reset_score = function() {
+	// only score with cash, card, wxin
+	if (diablo_no === $scope.setting.draw_score && $scope.select.withdraw !== 0) {
+	    var pay_orders = wsaleCalc.pay_order(
+		$scope.select.should_pay, [
+		    $scope.select.ticket,
+		    $scope.select.withdraw,
+		    $scope.select.wxin,
+		    $scope.select.card,
+		    $scope.select.cash]);
+	    var pay_with_score = pay_orders[2] + pay_orders[3] + pay_orders[4] - $scope.select.verificate;
+	    $scope.select.score = wsaleUtils.calc_score_of_pay(pay_with_score, $scope.select.pscores);
+	}
     };
     
     $scope.$watch("select.cash", function(newValue, oldValue){

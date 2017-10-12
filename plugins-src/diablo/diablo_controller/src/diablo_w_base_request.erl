@@ -47,9 +47,9 @@ action(Session, Req, {"list_base_setting"}) ->
 					true -> Acc;
 					false -> [ShopId|Acc]
 				    end
-			    end, [], Shops),
-
+			    end, [], Shops), 
 	    {ok, S}  = ?w_user_profile:get(setting, Merchant),
+	    %% ?DEBUG("shops ~p, shopIds ~p", [Shops, ShopIds]),
 
 	    Select =
 		case length(ShopIds) =:= 1 of

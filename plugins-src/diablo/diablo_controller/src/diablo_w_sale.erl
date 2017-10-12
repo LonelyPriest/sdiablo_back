@@ -160,6 +160,8 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
     ShouldPay  = ?v(<<"should_pay">>, Props, 0),
     Total      = ?v(<<"total">>, Props, 0),
     Score      = ?v(<<"score">>, Props, 0),
+    %% ScoreId    = ?v(<<"sid">>, Props, 0),
+    %% DrawScore  = ?v(<<"draw_score">>, Props, 0),
 
     Ticket     = ?v(<<"ticket">>, Props, 0), 
     TicketScore = ?v(<<"ticket_score">>, Props, 0),
@@ -195,12 +197,12 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 			       ["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-",
 				?inventory_sn:sn(w_sale_new_sn, Merchant)]),
 		    RealyShop = realy_shop(Merchant, Shop),
+		    
 		    Sql1 = 
 			lists:foldr(
 			  fun({struct, Inv}, Acc0)-> 
 				  Amounts = ?v(<<"amounts">>, Inv), 
-				  wsale(new, SaleSn, DateTime,
-					Merchant, RealyShop, Inv, Amounts) ++ Acc0
+				  wsale(new, SaleSn, DateTime, Merchant, RealyShop, Inv, Amounts) ++ Acc0
 			  end, [], Inventories), 
 
 		    Sql2 = "insert into w_sale(rsn"
@@ -241,11 +243,10 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 
 		    Sql4 = case TicketBatch of
 			       -1 -> [];
-			       _  ->
-				   ["update w_ticket set state=2"
-				    " where merchant=" ++ ?to_s(Merchant)
-				    ++ " and batch=" ++ ?to_s(TicketBatch)
-				    ++ " and retailer=" ++ ?to_s(Retailer)]
+			       _  -> ["update w_ticket set state=2"
+				      " where merchant=" ++ ?to_s(Merchant)
+				      ++ " and batch=" ++ ?to_s(TicketBatch)
+				      ++ " and retailer=" ++ ?to_s(Retailer)]
 			   end,
 
 		    AllSql = Sql1 ++ [Sql2] ++ Sql3 ++ Sql4,
@@ -323,7 +324,7 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 		end;
 	    1 -> pay_order(reject, ShouldPay, [Ticket, Withdraw, Wxin, Card, Cash], [])
 	end,
-    %% ?DEBUG("new pays ~p", [NewPays]),
+    ?DEBUG("new pays ~p", [_NewPays]),
 
     NewDatetime = case Datetime =:= OldDatetime of
 		      true -> Datetime;
@@ -1938,9 +1939,7 @@ pay_order(ShouldPay, [], Pays) when ShouldPay > 0 ->
     [H|T] = Pays,
     lists:reverse([H + ShouldPay|T]);
 pay_order(ShouldPay, T, Pays) when ShouldPay =< 0 ->
-    NewPays = 
-	lists:foldr(
-	  fun(_, Acc) -> [0|Acc] end, Pays, T),
+    NewPays = lists:foldr(fun(_, Acc) -> [0|Acc] end, Pays, T),
     ?DEBUG("new pays ~p", [NewPays]),
     lists:reverse(NewPays);
 pay_order(ShouldPay, [Pay|T], Pays) ->
@@ -1964,6 +1963,7 @@ pay_order(reject, ShouldPay, [Pay|T], Pays) ->
 				       true -> ShouldPay;
 				       false -> Pay end
 				   |Pays]).
+
 
 get_modified(NewValue, OldValue) when NewValue =/= OldValue -> NewValue;
 get_modified(_NewValue, _OldValue) ->  undefined.

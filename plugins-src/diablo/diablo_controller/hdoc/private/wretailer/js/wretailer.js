@@ -73,16 +73,16 @@ function wretailerDetailCtrlProvide(
 	return 's_customer' === s.name
     }).map(function(c){return parseInt(c.value)});
 
-    var LODOP;
-    var print_mode = diablo_backend;
-    for (var i=0, l=$scope.shopIds.length; i<l; i++){
-	if (diablo_frontend === retailerUtils.print_mode($scope.shopIds[i], base)){
-	    if (needCLodop()) {
-		loadCLodop();
-		break;
-	    };
-	}
-    }; 
+    // var LODOP;
+    // var print_mode = diablo_backend;
+    // for (var i=0, l=$scope.shopIds.length; i<l; i++){
+    // 	if (diablo_frontend === retailerUtils.print_mode($scope.shopIds[i], base)){
+    // 	    if (needCLodop()) {
+    // 		loadCLodop();
+    // 		break;
+    // 	    };
+    // 	}
+    // }; 
     
     $scope.right = {
 	reset_password        :retailerUtils.authen(user.type, user.right, 'reset_password'),
@@ -363,32 +363,32 @@ function wretailerDetailCtrlProvide(
 				else return ""; 
 			    }(),
 			undefined, function(){
-			    if (diablo_frontend === retailerUtils.print_mode(
-				params.retailer.select_shop.id, base)){
-				if (angular.isUndefined(LODOP)){
-				    LODOP = getLodop(); 
-				}
-				if (angular.isDefined(LODOP)){
-				    var pdate = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss");
-				    var hLine = retailerPrint.gen_head(
-					LODOP,
-					params.retailer.name,
-					params.retailer.select_shop.name,
-					params.retailer.select_employee.name,
-					pdate);
+			    // if (diablo_frontend === retailerUtils.print_mode(
+			// 	params.retailer.select_shop.id, base)){
+			// 	if (angular.isUndefined(LODOP)){
+			// 	    LODOP = getLodop(); 
+			// 	}
+			// 	if (angular.isDefined(LODOP)){
+			// 	    var pdate = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss");
+			// 	    var hLine = retailerPrint.gen_head(
+			// 		LODOP,
+			// 		params.retailer.name,
+			// 		params.retailer.select_shop.name,
+			// 		params.retailer.select_employee.name,
+			// 		pdate);
 				    
-				    retailerPrint.gen_body(
-					hLine, LODOP,
-					{cbalance:charge_balance,
-					 sbalance:send_balance,
-					 comment:params.comment
-					});
+			// 	    retailerPrint.gen_body(
+			// 		hLine, LODOP,
+			// 		{cbalance:charge_balance,
+			// 		 sbalance:send_balance,
+			// 		 comment:params.comment
+			// 		});
 				    
-				    return retailerPrint.start_print(LODOP);
-				} else {
-				    console.log("get lodop failed...");
-				}
-			    } 
+			// 	    return retailerPrint.start_print(LODOP);
+			// 	} else {
+			// 	    console.log("get lodop failed...");
+			// 	}
+			//     } 
 			});
     		} else{
 		    dialog.response(

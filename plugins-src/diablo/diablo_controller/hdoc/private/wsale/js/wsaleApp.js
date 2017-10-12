@@ -348,12 +348,13 @@ function wsaleNewProvide(
     user, filterPromotion, filterCharge, filterScore,
     filterFirm, filterSysRetailer, filterEmployee,
     filterSizeGroup, filterBrand, filterType, filterColor, base){
+    // console.log(base);
     $scope.promotions = filterPromotion;
     $scope.scores     = filterScore;
     $scope.draws      = filterCharge.filter(function(d){return d.type === diablo_withdraw}),
     
-    console.log($scope.draws);
-    console.log($scope.scores);
+    // console.log($scope.draws);
+    // console.log($scope.scores);
     
     $scope.pattern    = {
 	money:    diabloPattern.decimal_2,
@@ -463,10 +464,11 @@ function wsaleNewProvide(
 	has_pay:      0,
 	should_pay:   0,
 	score:        0,
+	pscores:      [],
 	charge:       0,
 	surplus:      0,
 	left_balance: 0,
-	// verificate:   $scope.vpays[0],
+	sid:          -1,
 	datetime:     $scope.today()
     };
 
@@ -627,6 +629,7 @@ function wsaleNewProvide(
 			    $scope.select.withdraw = params.retailer.withdraw;
 			    $scope.has_withdrawed  = true;
 			    $scope.reset_payment();
+			    // $scope.reset_score();
 			} 
 		    } else {
 			var ERROR = require("diablo-error");
@@ -700,7 +703,8 @@ function wsaleNewProvide(
 			$scope.select.ticket_batch = result.data.batch;
 			$scope.select.ticket_balance = result.data.balance;
 			$scope.select.ticket_sid =  result.data.sid;
-			$scope.reset_payment(); 
+			$scope.reset_payment();
+			// $scope.reset_score();
 		    } else {
 			if (diablo_is_empty(result.data)) ecode = 2105;
 
@@ -715,7 +719,8 @@ function wsaleNewProvide(
 	    } else {
 		$scope.select.ticket_batch = params.ticket.batch;
 		$scope.select.ticket_balance = params.ticket.balance;
-		$scope.reset_payment(); 
+		$scope.reset_payment();
+		// $scope.reset_score();
 	    } 
 	};
 	
@@ -764,6 +769,7 @@ function wsaleNewProvide(
 	$scope.select.has_pay      = 0;
 	$scope.select.should_pay   = 0;
 	$scope.select.score        = 0;
+	$scope.select.pscores      = [];
 	$scope.select.charge       = 0;
 	$scope.select.surplus      = $scope.select.retailer.balance;
 	$scope.select.left_balance = $scope.select.surplus;
@@ -1399,14 +1405,18 @@ function wsaleNewProvide(
 	    wxin:           setv($scope.select.wxin),
 	    withdraw:       setv($scope.select.withdraw),
 	    ticket:         setv($scope.select.ticket_balance),
-	    verificate:     setv($scope.select.verificate),
+	    verificate:     setv($scope.select.verificate), 
 	    
 	    should_pay:     setv($scope.select.should_pay),
 	    // has_pay:        $scope.select.has_pay,
+	    
 	    charge:         $scope.select.charge,
 	    total:          $scope.select.total,
 	    last_score:     $scope.select.retailer.score,
-	    score:          $scope.select.score, 
+	    score:          $scope.select.score,
+	    // sid             wsaleUtils.to_integer($scope.select.sid),
+	    // draw_score:     $scope.setting.draw_score,
+	    
 	    round:          $scope.setting.round
 	    // draw_score:     $scope.setting.draw_score
 	};
@@ -1490,31 +1500,52 @@ function wsaleNewProvide(
 	    $scope.select.has_pay += ticket_balance;
 	}
 	
-	$scope.select.charge = $scope.select.should_pay - $scope.select.has_pay; 
-    }; 
+	$scope.select.charge = $scope.select.should_pay - $scope.select.has_pay;
+
+	$scope.reset_score();
+    };
+
+    $scope.reset_score = function() {
+	// only score with cash, card, wxin
+	if (diablo_no === $scope.setting.draw_score && $scope.select.withdraw !== 0) {
+	    var pay_orders = wsaleCalc.pay_order(
+		$scope.select.should_pay, [
+		    $scope.select.ticket_balance,
+		    $scope.select.withdraw,
+		    $scope.select.wxin,
+		    $scope.select.card,
+		    $scope.select.cash]);
+	    var pay_with_score = pay_orders[2] + pay_orders[3] + pay_orders[4] - $scope.select.verificate;
+	    $scope.select.score = wsaleUtils.calc_score_of_pay(pay_with_score, $scope.select.pscores);
+	}
+    };
     
     $scope.$watch("select.cash", function(newValue, oldValue){
 	if (newValue === oldValue || angular.isUndefined(newValue)) return;
 	if ($scope.select.form.cashForm.$invalid) return; 
 	$scope.reset_payment(newValue);
+	// $scope.reset_score();
     });
 
     $scope.$watch("select.card", function(newValue, oldValue){
 	if (newValue === oldValue || angular.isUndefined(newValue)) return;
 	if ($scope.select.form.cardForm.$invalid) return;
-	$scope.reset_payment(newValue); 
+	$scope.reset_payment(newValue);
+	// $scope.reset_score();
     });
 
     $scope.$watch("select.wxin", function(newValue, oldValue){
 	if (newValue === oldValue || angular.isUndefined(newValue)) return;
 	if ($scope.select.form.wForm.$invalid) return;
-	$scope.reset_payment(newValue); 
+	$scope.reset_payment(newValue);
+	// $scope.reset_score();
     });
 
     $scope.$watch("select.verificate", function(newValue, oldValue){
 	if (newValue === oldValue || angular.isUndefined(newValue)) return;
 	$scope.reset_payment(newValue); 
 	$scope.re_calculate();
+	// $scope.reset_score();
     });
     
     var in_amount = function(amounts, inv){
@@ -1560,7 +1591,10 @@ function wsaleNewProvide(
 	$scope.select.abs_total = calc.abs_total;
 	$scope.select.should_pay= calc.should_pay; 
 	$scope.select.score     = calc.score; 
+	$scope.select.pscores   = calc.pscores;
 	$scope.select.charge    = $scope.select.should_pay - $scope.select.has_pay;
+
+	$scope.reset_score();
     };
 
     var valid_sell = function(amount){
@@ -1845,7 +1879,7 @@ function wsaleNewProvide(
 	}
 	
 	$scope.re_calculate();
-
+	
 	// promotion
 	for (var i=0, l=$scope.show_promotions.length; i<l; i++){
 	    if (inv.order_id === $scope.show_promotions[i].order_id){
