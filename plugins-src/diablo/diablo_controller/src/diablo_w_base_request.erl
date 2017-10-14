@@ -51,16 +51,31 @@ action(Session, Req, {"list_base_setting"}) ->
 	    {ok, S}  = ?w_user_profile:get(setting, Merchant),
 	    %% ?DEBUG("shops ~p, shopIds ~p", [Shops, ShopIds]),
 
-	    Select =
-		case length(ShopIds) =:= 1 of
-		    true ->
-			case [{SS} || {SS} <- S, lists:member(?v(<<"shop">>, SS), ShopIds)] of
-			    [] -> [{SS} || {SS} <- S, ?v(<<"shop">>, SS) =:= -1];
-			    V -> V ++ [{SS} || {SS} <- S, ?v(<<"shop">>, SS) =:= -1]
-			end;
-		    false ->
-			[{SS} || {SS} <- S, ?v(<<"shop">>, SS) =:= -1]
+	    Select = 
+		case [{SS} || {SS} <- S, lists:member(?v(<<"shop">>, SS), ShopIds)] of
+		    [] -> [{SS} || {SS} <- S, ?v(<<"shop">>, SS) =:= -1];
+		    V -> V ++ [{SS} || {SS} <- S, ?v(<<"shop">>, SS) =:= -1]
 		end,
+
+	    %% Select =
+	    %% 	case Merchant =:= 2 orelse Merchant =:= 4 of
+	    %% 	    true ->
+	    %% 		case length(ShopIds) =:= 1 of
+	    %% 		    true ->
+	    %% 			case [{SS} || {SS} <- S, lists:member(?v(<<"shop">>, SS), ShopIds)] of
+	    %% 			    [] -> [{SS} || {SS} <- S, ?v(<<"shop">>, SS) =:= -1];
+	    %% 			    V -> V ++ [{SS} || {SS} <- S, ?v(<<"shop">>, SS) =:= -1]
+	    %% 			end;
+	    %% 		    false ->
+	    %% 			[{SS} || {SS} <- S, ?v(<<"shop">>, SS) =:= -1]
+	    %% 		end;
+	    %% 	    false -> 
+	    %% 		case [{SS} || {SS} <- S, lists:member(?v(<<"shop">>, SS), ShopIds)] of
+	    %% 		    [] -> [{SS} || {SS} <- S, ?v(<<"shop">>, SS) =:= -1];
+	    %% 		    V -> V ++ [{SS} || {SS} <- S, ?v(<<"shop">>, SS) =:= -1]
+	    %% 		end
+	    %% 	end,
+		    
 	    %% ?DEBUG("select ~p", [Select]),
 	    %% lists:filter()
 	    ?utils:respond(200, batch, Req, Select)

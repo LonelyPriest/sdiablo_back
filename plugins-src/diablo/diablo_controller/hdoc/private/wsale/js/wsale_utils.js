@@ -820,7 +820,7 @@ var wsaleCalc = function(){
 
 	    if (left > 0)
 		orders[i - 1] += left;
-	    console.log(orders);
+	    // console.log(orders);
 	    return orders;
 	},
 
@@ -863,7 +863,7 @@ var wsaleCalc = function(){
 		    orders[i - 1] += left;
 	    }
 	    
-	    console.log(orders);
+	    // console.log(orders);
 	    return orders;
 	},
 	

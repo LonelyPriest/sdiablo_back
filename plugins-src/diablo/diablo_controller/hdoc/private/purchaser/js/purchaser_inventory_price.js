@@ -388,8 +388,8 @@ function stockNewDetailPrintCtrlProvide(
     if (needCLodop()) loadCLodop(); 
     var dialog = diabloUtilsService;
 
-    var pageHeight = diablo_base_setting("prn_h_page", diablo_default_shop, base, parseFloat, 14);
-    var pageWidth  = diablo_base_setting("prn_w_page", diablo_default_shop, base, parseFloat, 21.3);
+    var pageHeight = diablo_base_setting("prn_h_page", user.loginShop, base, parseFloat, 14);
+    var pageWidth  = diablo_base_setting("prn_w_page", user.loginShop, base, parseFloat, 21.3);
     $scope.rbill_comment  = diablo_base_setting("rbill", diablo_default_shop, base, diablo_set_string, "");
     // console.log(base);
     // console.log($scope.rbill_comment);
@@ -503,8 +503,8 @@ function stockTransferPrintCtrlProvide(
     if (needCLodop()) loadCLodop(); 
     var dialog = diabloUtilsService;
 
-    var pageHeight = diablo_base_setting("prn_h_page", diablo_default_shop, base, parseFloat, 14);
-    var pageWidth  = diablo_base_setting("prn_w_page", diablo_default_shop, base, parseFloat, 21.3);
+    var pageHeight = diablo_base_setting("prn_h_page", user.loginShop, base, parseFloat, 14);
+    var pageWidth  = diablo_base_setting("prn_w_page", user.loginShop, base, parseFloat, 21.3);
     // console.log(pageHeight, pageWidth);
     
     purchaserService.print_w_inventory_transfer($routeParams.rsn).then(function(result) {
