@@ -256,3 +256,14 @@ alter table w_inventory_transfer_detail add column bcode VARCHAR(32) default 0 a
 alter table print_template add column code_firm TINYINT default 0 after firm;
 
 alter table w_retailer add column comment VARCHAR(255) after entry_date;
+
+-- 2017-10-19
+alter table suppliers add column expire INTEGER default -1 after address;
+alter table print_template add column expire TINYINT default 0 after code_firm;
+-- alter table print_template add column dual_column TINYINT default 0 after height;
+alter table print_template add column second_space TINYINT default 0 after hpx_left;
+
+drop index uk on w_inventory_new_detail_amount;
+alter table w_inventory_new_detail_amount add unique index uk(rsn, style_number, brand, color, size);
+alter table w_inventory_new_detail_amount add index dk(merchant, shop, style_number, brand);
+-- alter table print_template modify column width DECIMAL(3, 1) default 0;

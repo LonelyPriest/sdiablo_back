@@ -614,12 +614,15 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
     Sql0 = "select id"
 	", width"
 	", height"
+    %% ", dual_column"
 	
 	", style_number"
 	", brand"
 	", type"
 	", firm"
 	", code_firm"
+	", expire"
+	
 	", color"
 	", size"
 
@@ -650,6 +653,7 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 
 	", hpx_top"
 	", hpx_left"
+	", second_space"
 	
 	" from print_template"
 	" where merchant=" ++ ?to_s(Merchant), 
@@ -661,12 +665,15 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
     Id = ?v(<<"id">>, Attrs),
     U = ?utils:v(width, integer, ?v(<<"width">>, Attrs))
 	++  ?utils:v(height, integer, ?v(<<"height">>, Attrs))
+    %% ++  ?utils:v(height, integer, ?v(<<"dual_column">>, Attrs))
 	
 	++  ?utils:v(style_number, integer, ?v(<<"style_number">>, Attrs))
 	++  ?utils:v(brand, integer, ?v(<<"brand">>, Attrs))
 	++  ?utils:v(type, integer, ?v(<<"type">>, Attrs))
 	++  ?utils:v(firm, integer, ?v(<<"firm">>, Attrs))
 	++  ?utils:v(code_firm, integer, ?v(<<"code_firm">>, Attrs))
+	++  ?utils:v(expire, integer, ?v(<<"expire">>, Attrs))
+	
 	++  ?utils:v(color, integer, ?v(<<"color">>, Attrs))
 	++  ?utils:v(size, integer, ?v(<<"size">>, Attrs))
 	
@@ -695,7 +702,8 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(hpx_barcode, integer, ?v(<<"hpx_barcode">>, Attrs))
 
 	++  ?utils:v(hpx_top, integer, ?v(<<"hpx_top">>, Attrs))
-	++  ?utils:v(hpx_left, integer, ?v(<<"hpx_left">>, Attrs)),
+	++  ?utils:v(hpx_left, integer, ?v(<<"hpx_left">>, Attrs))
+	++  ?utils:v(second_space, integer, ?v(<<"second_space">>, Attrs)),
 
     Sql = "update print_template set " ++ ?utils:to_sqls(proplists, comma, U)
 	++ " where merchant=" ++ ?to_s(Merchant)
@@ -749,7 +757,8 @@ sys_config(shop) ->
      {"prn_h_page",        "单据纸张高",         "14.0", "0"},
      {"prn_w_page",        "单据纸张宽",         "21.3", "0"},
      
-     {"draw_score",        "提现积分",           "1",    "0"}
+     {"draw_score",        "提现积分",           "1",    "0"}, 
+     {"dual_barcode",      "双排条码",           "0",    "0"}
     ].
     
 sys_config() ->
@@ -825,7 +834,8 @@ sys_config() ->
 	      {"prn_bill",          "单据打印机编号",     "-1",   "0"},
 	      {"prn_h_page",        "单据纸张高",         "14.0", "0"},
 	      {"prn_w_page",        "单据纸张宽",         "21.3", "0"},
-	      {"draw_score",        "提现积分",           "1",    "0"}
+	      {"draw_score",        "提现积分",           "1",    "0"},
+	      {"dual_barcode",      "双排条码",           "0",    "0"}
 	      %% {"bcode_self",     "吊牌打印模式",       "0",   "0"}
 	     ],
     Values.

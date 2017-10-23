@@ -152,6 +152,7 @@ function firmConfig(angular){
 		 balance: firm.balance ? parseInt(firm.balance) : 0,
 		 mobile:  firm.mobile,
 		 address: firm.address,
+		 expire:  firm.expire,
 		 comment: diablo_set_string(firm.comment)}).$promise
 	};
 

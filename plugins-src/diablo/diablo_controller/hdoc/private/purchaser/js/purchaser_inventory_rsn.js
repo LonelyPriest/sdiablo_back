@@ -190,14 +190,15 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 	// self_barcode   :stockUtils.barcode_self(diablo_default_shop, base), 
 	use_barcode: stockUtils.use_barcode(diablo_default_shop, base),
 	auto_barcode :stockUtils.auto_barcode(diablo_default_shop, base),
-	printer_barcode: stockUtils.printer_barcode(user.loginShop, base)
+	printer_barcode: stockUtils.printer_barcode(user.loginShop, base),
+	dual_barcode: stockUtils.dual_barcode_print(user.loginShop, base)
 	// barcode_width: stockUtils.barcode_width(diablo_default_shop, base),
 	// barcode_height: stockUtils.barcode_height(diablo_default_shop, base),
 	// barcode_firm: stockUtils.barcode_with_firm(diablo_default_shop, base)
     };
 
     $scope.template = filterTemplate.length !== 0 ? filterTemplate[0] : undefined;
-    $scope.printU = new stockPrintU($scope.template, $scope.setting.auto_barcode);
+    $scope.printU = new stockPrintU($scope.template, $scope.setting.auto_barcode, $scope.setting.dual_barcode);
     $scope.printU.setPrinter($scope.setting.printer_barcode);
     /*
      * hidden
@@ -387,7 +388,14 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 			inv.brand    = diablo_get_object(inv.brand_id, filterBrand);
 			inv.itype    = diablo_get_object(inv.type_id, filterType);
 			inv.sex      = diablo_get_object(inv.sex_id, diablo_sex2object);
-			inv.dseason =  diablo_get_object(inv.season, diablo_season2objects);
+			inv.dseason  = diablo_get_object(inv.season, diablo_season2objects);
+			inv.expire_date = diablo_none;
+			
+			if (diablo_invalid_firm !== stockUtils.invalid_firm(inv.firm)) {
+			    if (angular.isDefined(inv.firm.expire) &&  inv.firm.expire !== diablo_invalid_firm) {
+				inv.expire_date = stockUtils.date_add(inv.entry_date, inv.firm.expire);
+			    }
+			}
 		    });
 		    
 		    diablo_order_page(page, $scope.items_perpage, $scope.inventories);
@@ -548,20 +556,22 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 	var print_barcode = function(barcode) {
 	    var firm = inv.firm_id === diablo_invalid_firm ? undefined: inv.firm.name;
 	    // $scope.printU.setCodeFirm(inv.firm.id);
-
+	    var barcodes = []; 
 	    if (0 === inv.free) {
 		for (var i=0; i<inv.amount; i++) {
-		    $scope.printU.free_prepare(
-			inv,
-			inv.brand.name,
-			barcode,
-			firm,
-			inv.firm_id);
-		} 
+		    barcodes.push(barcode); 
+		}
+
+		$scope.printU.free_prepare(
+		    inv,
+		    inv.brand.name,
+		    barcodes,
+		    firm,
+		    inv.firm_id);
 	    }
 	    else {
 		var print = function(amounts) {
-		    var barcodes = []; 
+		    barcodes = []; 
 		    angular.forEach(inv.amounts, function(a) {
 			var color = diablo_find_color(a.cid, filterColor);
 			// console.log(color);
@@ -573,17 +583,12 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 			}
 		    }); 
 		    console.log(barcodes);
-		    
-		    angular.forEach(barcodes, function(b) {
-			$scope.printU.prepare(
-			    inv,
-			    inv.brand.name,
-			    b.barcode,
-			    firm,
-			    inv.firm_id,
-			    b.cname,
-			    b.size); 
-		    })
+		    $scope.printU.prepare(
+			inv,
+			inv.brand.name,
+			barcodes,
+			firm,
+			inv.firm_id); 
 		};
 
 		if (angular.isDefined(inv.amounts)

@@ -964,13 +964,20 @@ function goodPrintTemplateCtrlProvide(
     $scope.refresh();
 
     var p = ["width", "height",
-	     "style_number", "brand", "type", "firm", "code_firm", "color", "size"
-	     , "level", "executive", "category", "fabric"
-	     , "font", "font_name", "font_executive", "font_category", "font_price"
-	     , "bold"
+	     
+	     "style_number", "brand", "type", "firm", "code_firm", "expire", 
+	     "color", "size"
+	     
+	     , "level", "executive", "category", "fabric" 
+	     , "font", "font_name", "font_executive", "font_category", "font_price", "font_fabric"
+	     
+	     , "bold" 
 	     , "solo_brand", "solo_color", "solo_size"
-	     , "hpx_each", "hpx_executive", "hpx_category", "hpx_fabric", "hpx_price", "hpx_barcode"
-	     , "hpx_top", "hpx_left"];
+	     
+	     , "hpx_each", "hpx_executive", "hpx_category", "hpx_fabric"
+	     , "hpx_price", "hpx_barcode"
+	     
+	     , "hpx_top", "hpx_left", "second_space"];
     
     $scope.save_template = function() {
 	var update = {};

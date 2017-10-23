@@ -1836,6 +1836,8 @@ filter_condition(wsale, [{<<"type">>, _} = OT|T], Acc1, Acc2) ->
     filter_condition(wsale, T, [OT|Acc1], Acc2);
 filter_condition(wsale, [{<<"year">>, _} = Y|T], Acc1, Acc2) ->
     filter_condition(wsale, T, [Y|Acc1], Acc2);
+filter_condition(wsale, [{<<"season">>, _} = Y|T], Acc1, Acc2) ->
+    filter_condition(wsale, T, [Y|Acc1], Acc2);
 filter_condition(wsale, [{<<"org_price">>, OP} = _OP|T], Acc1, Acc2) ->
     filter_condition(wsale, T, [{<<"org_price">>, ?to_f(OP)}|Acc1], Acc2);
 

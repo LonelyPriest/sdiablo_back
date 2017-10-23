@@ -95,6 +95,7 @@ create table suppliers
     balance         DECIMAL(10, 2) default 0, -- max: 99999999.99
     mobile          VARCHAR(12),
     address         VARCHAR(256),
+    expire          INTEGER default -1,
     comment         VARCHAR(256),
     merchant        INTEGER default -1, -- which merchant belong to
     change_date     DATETIME,
@@ -740,7 +741,8 @@ create table w_inventory_new_detail_amount(
     shop           INTEGER default -1,
     entry_date     DATETIME default 0,
     deleted        INTEGER default 0, -- 0: no;  1: yes
-    unique  key uk (merchant, rsn, style_number, brand, color, size),
+    unique  key uk (rsn, style_number, brand, color, size),
+    key dk (merchant, shop, style_number, brand)
     -- key     index_msbc (merchant, style_number, brand, color, size),
     primary key    (id)
 )default charset=utf8;
@@ -1211,6 +1213,8 @@ create table print_template(
    type            TINYINT default 0,
    firm            TINYINT default 0,
    code_firm       TINYINT default 0,
+   expire          TINYINT default 0, -- print expire data of the firm
+   
    color           TINYINT default 0,
    size            TINYINT default 0,
 
@@ -1242,6 +1246,7 @@ create table print_template(
 
    hpx_top         TINYINT default 0,
    hpx_left        TINYINT default 0,
+   second_space    INTEGER default 0,
    
    merchant        INTEGER not null default -1,
    unique   key    (merchant),

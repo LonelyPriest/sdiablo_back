@@ -82,7 +82,8 @@
 		    </th> 
 		    <th>联系方式</th>
 		    <th>联系地址</th>
-		    <th>备注</th>
+		    <th>退货期限</th>
+		    <th>备注</th> 
 		    <th>编号</th> 
 		    <th>日期</th> 
 		    <th>操作</th>
@@ -92,10 +93,13 @@
 		  <tr ng-repeat="f in filter_firms track by f.order_id">
 		    <td>{{f.order_id}}</td>
 		    <td>{{f.name}}</td>
-		    <td x-ng-if="right.show_orgprice">{{f.balance}}</td>
-		    
+		    <td x-ng-if="right.show_orgprice">{{f.balance}}</td> 
 		    <td>{{f.mobile}}</td>
 		    <td>{{f.address}}</td>
+		    <td>
+		      <div x-ng-if="f.expire===-1" class="text-center">-</div>
+		      <div x-ng-if="f.expire!==-1">{{f.expire}}</div>
+		    </td>
 		    <td>{{f.comment}}</td>
 		    <td>{{f.code}}</td> 
 		    <td>{{f.entry_date}}</td>
@@ -256,6 +260,24 @@
 	      </div>
 	      <div ng-show="firmForm.address.$invalid && !firmForm.address.$prinstine">
 		<span class="fg-red">中文，字母，数字，不支持特殊字符</span> 
+	      </div> 
+	    </div>
+
+	    <!--balance-->
+	    <div class="form-group">
+	      <label class="col-sm-1 col-md-1 control-label">退货期限</label>
+	      <div class="col-sm-10 col-md-10">
+		<input type="number" step="1"
+		       class="form-control"
+		       name="expire"
+		       disable-key
+		       disable-wheel
+		       placeholder="厂商退货期限"
+		       x-ng-model="params.firm.expire"
+		       x-ng-pattern="params.pattern.expire"/>
+	      </div>
+	      <div ng-show="firmForm.expire.$invalid && !firmForm.expire.$pristine">
+		<span class="fg-red">请输入大于0的整数</span>
 	      </div> 
 	    </div>
 

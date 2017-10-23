@@ -100,6 +100,22 @@
 	    </div>
 
 	    <div class="form-group">
+	      <label class="col-sm-3 col-md-3 control-label">退货期限</label>
+	      <div class="col-sm-6 col-md-6">
+		<!-- <div class="input-group"> -->
+		<input class="form-control"
+		       type="number" step="1" 
+		       name="expire"
+		       placeholder="默认为没有期限"
+		       x-ng-model="firm.expire"
+		       x-ng-pattern="pattern.expire"/> 
+	      </div>
+	      <div ng-show="firmNewForm.balance.$invalid && !firmNewForm.balance.$pristine">
+		<span class="fg-red">只支持两位小数</span>
+	      </div>
+	    </div>
+
+	    <div class="form-group">
 	      <label class="col-sm-3 col-md-3 control-label">备注</label>
 	      <div class="col-sm-6 col-md-6">
 		<input type="text"

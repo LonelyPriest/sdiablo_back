@@ -123,6 +123,10 @@ var stockUtils = function(){
 	printer_barcode: function(shop, base) {
 	    return diablo_base_setting("prn_barcode", shop, base, parseInt, diablo_invalid_index);
 	},
+
+	dual_barcode_print: function(shop, base) {
+	    return diablo_base_setting("dual_barcode", shop, base, parseInt, diablo_no);
+	},
 	
 	printer_bill: function(shop, base) {
 	    return diablo_base_setting("prn_bill", shop, base, parseInt, diablo_invalid_index);
@@ -154,6 +158,12 @@ var stockUtils = function(){
 	    default:
 		return 0;
 	    }
+	},
+
+	date_add: function(date, add) {
+	    var dateAfter = new Date(diablo_set_date(date) + add * diablo_day_millisecond);
+	    return (dateAfter.getMonth() + 1).toString()+ "-" + dateAfter.getDate().toString();
+	    
 	},
 	
 	prompt_name: function(style_number, brand, type) {
@@ -635,18 +645,32 @@ stockFile.prototype.readFile = function() {
     return result;
 };
 
-var stockPrintU = function(template, autoBarcode) {
+var stockPrintU = function(template, autoBarcode, dualPrint) {
     console.log(template);
     if (angular.isDefined(template) && angular.isObject(template)) {
 	this.template = template;
 	// this.pageWidth = template.width;
 	// this.pageHeight = template.height;
-	this.wpx = Math.floor(this.template.width * 96 / 2.54);
+
 	this.hpx = Math.floor(this.template.height * 96 / 2.54);
-	this.top = template.hpx_top;
-	this.left = template.hpx_left;
-	this.autoBarcode = autoBarcode; 
-	this.barcodeFormat = "128C"; 
+	this.top = this.template.hpx_top;
+	this.left = this.template.hpx_left;
+	// this.second_space = Math.ceil(this.template.second_space * 96 / 2.54);
+	this.autoBarcode = autoBarcode;
+	this.dualPrint = dualPrint;
+	this.barcodeFormat = "128C";
+	
+	if (this.dualPrint) {
+	    this.wpx = Math.floor((this.template.width * 2 + this.template.second_space * 0.1) * 96 / 2.54);
+	} else {
+	    this.wpx = Math.floor(this.template.width * 96 / 2.54); 
+	} 
+
+	// dual print
+	// this.first = {barcode: undefined, color:undefined, size:undefined};
+	// this.second = {barcode:undefined, color:undefined, size:undefined};
+	this.first = {};
+	this.second = {};
     } 
 };
 
@@ -661,7 +685,16 @@ stockPrintU.prototype.init = function() {
     this.LODOP.PRINT_INITA(0, 0, this.wpx, this.hpx, "task_barcode_from_stock");
     this.LODOP.SET_PRINTER_INDEX(this.printerIndex);
     this.LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
-    this.LODOP.SET_PRINT_PAGESIZE(1, this.template.width * 100, this.template.height * 100, "");
+    if (this.dualPrint) {
+	this.LODOP.SET_PRINT_PAGESIZE(
+	    1,
+	    this.template.width * 2 * 100 + this.template.second_space * 10,
+	    this.template.height * 100,
+	    ""); 
+    } else {
+	this.LODOP.SET_PRINT_PAGESIZE(1, this.template.width * 100, this.template.height * 100, ""); 
+    }
+    
     if (stockUtils.to_integer(this.template.font) !== 0) {
 	this.LODOP.SET_PRINT_STYLE("FontSize", stockUtils.to_integer(this.template.font));
     }
@@ -677,9 +710,9 @@ stockPrintU.prototype.setPrinter = function(printerIndex) {
     this.printerIndex = printerIndex;
 };
 
-stockPrintU.prototype.setBarcode = function(barcode) {
-    this.barcode = barcode;
-};
+// stockPrintU.prototype.setBarcode = function(barcode) {
+//     this.barcode = barcode;
+// };
 
 stockPrintU.prototype.setStock = function(stock) {
     this.stock = stock;
@@ -698,68 +731,97 @@ stockPrintU.prototype.setCodeFirm = function(code) {
 };
 
 
-stockPrintU.prototype.setColor = function(color) {
-    this.color = color;
-};
+// stockPrintU.prototype.setColor = function(color) {
+//     this.color = color;
+// };
 
-stockPrintU.prototype.setSize = function(size) {
-    this.size = size;
-};
+// stockPrintU.prototype.setSize = function(size) {
+//     this.size = size;
+// };
 
 stockPrintU.prototype.reset = function() {
-    this.barcode = undefined; 
+    // this.barcode = undefined; 
     this.stock = undefined;
     this.brand = undefined;
     this.firm  = undefined;
     this.codeFirm = undefined;
-    
-    this.color = undefined;
-    this.size  = undefined;
+
+    // this.first = {barcode: undefined, color:undefined, size:undefined};
+    // this.second = {barcode:undefined, color:undefined, size:undefined};
+    // this.color = undefined;
+    // this.size  = undefined; 
 };
 
 stockPrintU.prototype.free_prepare = function(
     stock,
     brand,
-    barcode,
+    barcodes,
     firm,
     codeFirm) {
     this.reset();
-    this.init();
     
+    // this.init(); 
     this.setStock(stock);
     this.setBrand(brand);
     this.setFirm(firm);
-    this.setCodeFirm(codeFirm);
+    this.setCodeFirm(codeFirm); 
     
-    if (!this.autoBarcode) {
-	this.setBarcode(stockUtils.patch_barcode(barcode, diablo_free_color, diablo_free_size));
-    } else {
-	this.setBarcode(barcode);
-    } 
+    var i=0, l=barcodes.length;
+    while (i<l) {
+	this.first = {barcode: undefined, color:undefined, size:undefined};
+	this.second = {barcode:undefined, color:undefined, size:undefined};
+	
+	if (!this.autoBarcode)
+	    this.first.barcode = stockUtils.patch_barcode(barcodes[i], diablo_free_color, diablo_free_size);
+	else
+	    this.first.barcode = barcodes[i];
+	
+	this.first.color = diablo_free_color;
+	this.first.size = diablo_free_size;
+	
+	if (diablo_yes === this.dualPrint) {
+	    i++;
+	    if (i<l) {
+		if (!this.autoBarcode)
+		    this.second.barcode = stockUtils.patch_barcode(barcodes[i], diablo_free_color, diablo_free_size);
+		else
+		    this.second.barcode = barcodes[i];
+		
+		this.second.color = diablo_free_color;
+		this.second.size = diablo_free_size;
+	    } 
+	}
+	
+	this.printBarcode2(); 
+	
+	if (i<l) i++; 
+    }
+    
+    
+    // if (!this.autoBarcode) {
+    // 	this.setBarcode(stockUtils.patch_barcode(barcode, diablo_free_color, diablo_free_size));
+    // } else {
+    // 	this.setBarcode(barcode);
+    // } 
 
-    this.printBarcode2(); 
 };
 
 stockPrintU.prototype.prepare = function(
     stock,
     brand,
-    barcode, 
+    barcodes, 
     firm,
-    codeFirm,
-    color,
-    size) {
-    console.log(stock, brand, barcode, firm, color, size);
-    
+    codeFirm) {
+    console.log(stock, brand, barcodes, firm, codeFirm); 
     this.reset();
-    this.init();
-    
+    // this.init(); 
     this.setStock(stock);
     this.setBrand(brand);
-    this.setBarcode(barcode);
+    // this.setBarcode(barcode);
     this.setFirm(firm);
     this.setCodeFirm(codeFirm);
-    this.setColor(color);
-    this.setSize(size);
+    // this.setColor(color);
+    // this.setSize(size);
 
     // if (!this.autoBarcode) {
     // 	this.setBarcode(barcode);
@@ -771,72 +833,149 @@ stockPrintU.prototype.prepare = function(
     // 	}
     // }
     
-    this.printBarcode2(); 
+    var i=0, l=barcodes.length;
+    while (i<l) {
+	this.first = {barcode: undefined, color:undefined, size:undefined};
+	this.second = {barcode:undefined, color:undefined, size:undefined};
+	
+	this.first.barcode = barcodes[i].barcode; 
+	this.first.color = barcodes[i].cname;
+	this.first.size = barcodes[i].size;
+	
+	if (diablo_yes === this.dualPrint) {
+	    i++;
+	    if (i<l) {
+		this.second.barcode = barcodes[i].barcode; 
+		this.second.color = barcodes[i].cname;
+		this.second.size = barcodes[i].size;
+	    } 
+	}
+
+	this.printBarcode2();
+	
+	if (i<l) i++; 
+    }
+    
 };
 
 stockPrintU.prototype.printBarcode2 = function() {
-    console.log(this);
+    console.log(this); 
+    this.init();
     
-    var iwpx = this.wpx - this.left;
+    // var iwpx = this.wpx - this.left;
+    var iwpx = Math.floor(this.template.width * 96 / 2.54) - this.left;
+    var startSecond = 0;
+    if (this.dualPrint) {
+	startSecond = Math.floor((this.template.width + this.template.second_space * 0.1) * 96 / 2.54) + this.left;
+    }
+    
     var top  = this.top;
+    var pSecond = diablo_yes === this.dualPrint && angular.isDefined(this.second.barcode);
+    var line, line2;
 
     // console.log(iwpx, top);
 
     var firm = angular.isUndefined(this.firm) ? diablo_empty_string : this.firm;
     if (this.template.firm) {
 	if (this.template.code_firm && angular.isDefined(this.codeFirm)) {
-	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "厂商：" + this.codeFirm);
+	    line = "厂商：" + this.codeFirm;
+	    // this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "厂商：" + this.codeFirm);
 	} else {
-	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "厂商：" + firm); 
+	    line = "厂商：" + firm;
+	    // this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "厂商：" + firm); 
 	}
+	
+	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, line); 
+	if (pSecond)
+	    this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, line);
+	
 	top += this.template.hpx_each;
     }
     
     // brand
     if (this.template.brand){
 	if (this.template.solo_brand) {
-	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "品牌：" + this.brand);
+	    line = "品牌：" + this.brand;
+	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, line);
+	    if (pSecond)
+		this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, line);
 	    top += this.template.hpx_each;
 	}
     } 
 
     // type
     if (this.template.type) {
-	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "品名：" + this.stock.type.name);
+	line = "品名：" + this.stock.type.name;
+	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, line);
+	
+	if (pSecond)
+	    this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, line);
 	top += this.template.hpx_each;
     }
 
     // style number
     if (this.template.style_number) {
-	var style_number = this.stock.style_number;
-	if (!this.template.solo_brand) {
-	    style_number += this.brand;
+	line = "款号：" + this.stock.style_number;
+
+	if (this.template.expire && this.stock.expire_date !== diablo_none) {
+	    line += this.stock.expire_date.split(diablo_date_seprator).join("");
 	}
-	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "款号：" + style_number);
+	
+	if (!this.template.solo_brand) {
+	    line += this.brand;
+	} 
+	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, line);
+	
+	if (pSecond)
+	    this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, line);
+	
 	top += this.template.hpx_each;
     }
 
     // color
-    var color = angular.isDefined(this.color) ? this.color : "均色";
+    // var color = angular.isDefined(this.color) ? this.color : "均色";
+    line = this.first.color === diablo_free_color ? "均色" : this.first.color; 
     if (this.template.color) {
 	if (this.template.solo_color) {
-	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "颜色：" + color);
+	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "颜色：" + line);
+	    
+	    if (pSecond) {
+		line = this.second.color === diablo_free_color ? "均色" : this.second.color;
+		this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, "颜色：" + line); 
+	    }
+	    
 	    top += this.template.hpx_each;
 	}
     }
 
     // size
-    var size = this.size && this.size.toString() !== diablo_free_size ? this.size : "均码";
+    // var size = this.size && this.size.toString() !== diablo_free_size ? this.size : "均码";
+    line = this.first.size && this.first.size !== diablo_free_size ? this.first.size : "均码";
     if (this.template.size) {
 	if (this.template.solo_size) {
-	    if (this.stock.specs.length !== 0 && this.size.toString() !== diablo_free_size) {
+	    if (this.stock.specs.length !== 0 && this.first.size !== diablo_free_size) {
 		for (var i=0, l=this.stock.specs.length; i<l; i++) {
-		    if (this.size.toString() === this.stock.specs[i].name) {
-			size += " (" + this.stock.specs[i].spec + ")";
+		    if (this.first.size.toString() === this.stock.specs[i].name) {
+			line += " (" + this.stock.specs[i].spec + ")";
 		    }
 		}
 	    };
-	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "规格：" + size);
+	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "规格：" + line);
+
+	    // second
+	    if (pSecond) {
+		line = this.second.size && this.second.size !== diablo_free_size ? this.second.size : "均码"; 
+		if (this.stock.specs.length !== 0 && this.second.size !== diablo_free_size) {
+		    for (var i=0, l=this.stock.specs.length; i<l; i++) {
+			if (this.second.size.toString() === this.stock.specs[i].name) {
+			    line += " (" + this.stock.specs[i].spec + ")";
+			}
+		    }
+		};
+
+		this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, "规格：" + line);
+	    }
+	    
 	    top += this.template.hpx_each;
 	}
     }
@@ -844,28 +983,55 @@ stockPrintU.prototype.printBarcode2 = function() {
     // level
     if (this.template.level) {
 	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "等级：" + diablo_level[this.stock.level]);
+	if (pSecond) {
+	    this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, "等级：" + diablo_level[this.stock.level]);
+	}
 	top += this.template.hpx_each;
     }
 
     // executive
     if (this.template.executive) {
 	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "执行标准：" );
-	top += this.template.hpx_executive; 
+	if (pSecond) {
+	    this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, "执行标准：" );
+	} 
+	top += this.template.hpx_executive;
+	
 	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "      " +  this.stock.executive.name);
 	if (stockUtils.to_integer(this.template.font_executive) !== 0) {
 	    this.LODOP.SET_PRINT_STYLEA(0, "FontSize", stockUtils.to_integer(this.template.font_executive));
 	}
+	
+	if (pSecond) {
+	    this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, "      " +  this.stock.executive.name);
+	    if (stockUtils.to_integer(this.template.font_executive) !== 0) {
+		this.LODOP.SET_PRINT_STYLEA(0, "FontSize", stockUtils.to_integer(this.template.font_executive));
+	    }
+	} 
+	
 	top += this.template.hpx_executive;
     }
 
     // category
     if (this.template.category) {
 	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "安全技术类别：");
+	if (this.dualPrint) {
+	    this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, "安全技术类别：");
+	}
+	
 	top += this.template.hpx_category; 
-	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "      " +  this.stock.category.name); 
+	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "      " +  this.stock.category.name);
 	if (stockUtils.to_integer(this.template.font_executive) !== 0) {
 	    this.LODOP.SET_PRINT_STYLEA(0, "FontSize", stockUtils.to_integer(this.template.font_executive));
 	}
+	
+	if (pSecond) {
+	    this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, "      " +  this.stock.category.name);
+	    if (stockUtils.to_integer(this.template.font_executive) !== 0) {
+		this.LODOP.SET_PRINT_STYLEA(0, "FontSize", stockUtils.to_integer(this.template.font_executive));
+	    }
+	}
+
 	top += this.template.hpx_category;
     }
 
@@ -876,36 +1042,60 @@ stockPrintU.prototype.printBarcode2 = function() {
 	    
 	    if (i === 0) {
 		this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "成份：");
+		if (this.dualPrint) {
+		    this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, "成份：");
+		} 
 		top += this.template.hpx_fabric;
-	    }
-	    
-	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "      " + f.p + "%" + f.name);
-	    
+	    } 
+	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "      " + f.p + "%" + f.name); 
 	    if (stockUtils.to_integer(this.template.font_fabric) !== 0) {
 		this.LODOP.SET_PRINT_STYLEA(0, "FontSize", stockUtils.to_integer(this.template.font_fabric));
 	    }
+
+	    if (pSecond) {
+		this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, "      " + f.p + "%" + f.name);
+		if (stockUtils.to_integer(this.template.font_fabric) !== 0) {
+		    this.LODOP.SET_PRINT_STYLEA(0, "FontSize", stockUtils.to_integer(this.template.font_fabric));
+		}
+	    } 
+	    
 	    top += this.template.hpx_fabric;
 	} 
     }
 
-    var price = this.stock.tag_price.toString();
+    line = line2 = this.stock.tag_price.toString();
     if (!this.template.solo_color) {
-	price += " " + color;
-    }
-    if (!this.template.solo_size) {
-	price += "" + size;
+	line += " " + (this.first.color === diablo_free_color ? "均色" : this.first.color);
+	if (pSecond)
+	    line2 += " " + (this.second.color === diablo_free_color ? "均色" : this.second.color); 
     }
     
-    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_price, "价格：" + price.toString());
+    if (!this.template.solo_size) {
+	line += this.first.size && this.first.size !== diablo_free_size ? this.first.size : "均码";
+	if (pSecond)
+	    line2 += this.second.size && this.second.size !== diablo_free_size ? this.second.size : "均码";
+    }
+    
+    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_price, "价格：" + line);
+    if (pSecond) {
+	this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_price, "价格：" + line2);
+    }
     top += this.template.hpx_each;
 
-    this.LODOP.ADD_PRINT_BARCODE(top, this.left, iwpx, this.template.hpx_barcode, this.barcodeFormat, this.barcode);
+    this.LODOP.ADD_PRINT_BARCODE(top, this.left, iwpx, this.template.hpx_barcode, this.barcodeFormat, this.first.barcode);
     this.LODOP.SET_PRINT_STYLEA(0, "FontSize", 7);
+    
+    if (pSecond) {
+	this.LODOP.ADD_PRINT_BARCODE(top, startSecond, iwpx, this.template.hpx_barcode, this.barcodeFormat, this.second.barcode);
+	this.LODOP.SET_PRINT_STYLEA(0, "FontSize", 7);
+    }
+    
     // this.LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
     // this.LODOP.SET_PRINT_STYLEA(0, "Bold", 0);
 
     // this.LODOP.PRINT_SETUP();
     // this.LODOP.PRINT_DESIGN();
-    this.LODOP.PRINT();
+    this.LODOP.PREVIEW();
+    // this.LODOP.PRINT();
     
 };

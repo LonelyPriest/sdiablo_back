@@ -546,6 +546,7 @@ function filterProvider(){
 			_firms = firms.map(function(f){
 			    return {id: f.id,
 				    bcode: f.bcode,
+				    expire: f.expire,
 				    name:f.name,
 				    py:diablo_pinyin(f.name),
 				    balance:f.balance};
@@ -894,6 +895,7 @@ function filterProvider(){
 		    return cached;
 		} else {
 		    return list_print_template().then(function(t){
+			console.log(t);
 			set_storage(cookie, "p_template", t);
 			return t;
 		    }); 

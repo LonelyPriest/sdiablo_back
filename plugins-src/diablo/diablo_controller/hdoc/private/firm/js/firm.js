@@ -3,11 +3,12 @@
 function firmNewCtrlProvide(
     $scope, diabloPattern, firmService, diabloUtilsService){
 
-    $scope.pattern = {name: diabloPattern.ch_name_address,
-		      balance: diabloPattern.decimal_2,
+    $scope.pattern = {name:       diabloPattern.ch_name_address,
+		      balance:    diabloPattern.decimal_2,
 		      tel_mobile: diabloPattern.tel_mobile,
-		      address: diabloPattern.ch_name_address,
-		      comment: diabloPattern.comment};
+		      address:    diabloPattern.ch_name_address,
+		      comment:    diabloPattern.comment,
+		      expire:     diabloPattern.positive_num};
     
     // new firm 
     $scope.new_firm = function(){
@@ -35,15 +36,16 @@ function firmNewCtrlProvide(
 
 
 function firmDetailCtrlProvide(
-    $scope, $location, $routeParams, firmService, diabloUtilsService,
+    $scope, $location, $routeParams, firmService, diabloUtilsService, diabloFilter,
     diabloPagination, diabloPattern, localStorageService, user){
 
     $scope.pattern = {
-	name: diabloPattern.ch_name_address,
-	balance: diabloPattern.decimal_2,
+	name:       diabloPattern.ch_name_address,
+	balance:    diabloPattern.decimal_2,
 	tel_mobile: diabloPattern.tel_mobile,
-	address: diabloPattern.ch_name_address,
-	comment: diabloPattern.comment};
+	address:    diabloPattern.ch_name_address,
+	comment:    diabloPattern.comment,
+	expire:     diabloPattern.positive_num};
 
     $scope.right = {
 	show_orgprice: rightAuthen.authen(
@@ -267,7 +269,10 @@ function firmDetailCtrlProvide(
 			dialog.response_with_callback(
 			    true, "厂商编辑",
 			    "厂商 [" + params.firm.name + "] 编辑成功！！",
-			    $scope, $scope.refresh())
+			    undefined, function() {
+				diabloFilter.reset_firm();
+				$scope.refresh();
+			    });
 		    } else{
 			dialog.response(
 			    false, "厂商编辑", "厂商编辑失败："
@@ -297,7 +302,9 @@ function firmDetailCtrlProvide(
 		     && diablo_is_same(new_firm.balance ? new_firm.balance:0, old_firm.balance)
 		     && diablo_is_same(new_firm.address, old_firm.address)
 		     && diablo_is_same(new_firm.mobile, old_firm.mobile)
-		     && diablo_is_same(new_firm.comment, old_firm.comment) ? false : true;
+		     && diablo_is_same(new_firm.comment, old_firm.comment)
+		     && diablo_is_same(new_firm.expire, old_firm.expire)
+		     ? false : true;
 	     },
 	     pattern: $scope.pattern,
 	     right: $scope.right})

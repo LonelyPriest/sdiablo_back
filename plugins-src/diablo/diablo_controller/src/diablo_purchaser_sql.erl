@@ -834,19 +834,22 @@ inventory(get_new_amount, _Merchant, Conditions) ->
     "select a.rsn, a.style_number, a.brand_id, a.type_id, a.sex"
 	", a.season, a.firm_id, a.s_group, a.free, a.year"
 	", a.org_price, a.tag_price, a.ediscount"
-	", a.discount, a.over, a.path"
+	", a.discount, a.over, a.path, a.entry_date"
 
 	", b.color as color_id, b.size, b.total as amount"
 	" from "
 	
 	"(select rsn, style_number, brand as brand_id, type as type_id"
 	", sex, season, firm as firm_id, s_group, free, year"
-	", org_price, tag_price, ediscount, discount, over, path"
+	", org_price, tag_price, ediscount, discount, over, path, entry_date"
 	" from w_inventory_new_detail"
-	" where "++ ?utils:to_sqls(proplists, Conditions)
-	++ " and deleted=" ++ ?to_s(?NO) ++ ") a"
+	" where " ++ ?utils:to_sqls(proplists, Conditions) ++ ") a"
 
-	" inner join w_inventory_new_detail_amount b on a.rsn=b.rsn"
+	" inner join "
+	"(select rsn, style_number, brand, color, size, total"
+	" from w_inventory_new_detail_amount"
+	" where " ++ ?utils:to_sqls(proplists, Conditions) ++ ") b"
+	" on a.rsn=b.rsn" 
 	" and a.style_number=b.style_number and a.brand_id=b.brand";
 
 inventory(new_rsn_detail, _Merchant, Conditions) ->
@@ -1384,7 +1387,7 @@ inventory(update, Mode, RSN, Merchant, Shop, Firm, OldFirm, Datetime,  OldDateti
 			 " from w_inventory_new_detail"
 			 " where rsn=\'" ++ ?to_s(RSN) ++ "\') b"
 			 " on a.style_number=b.style_number and a.brand=b.brand"
-			 " set " ++?utils:to_sqls(proplists, comma, Updates)
+			 " set " ++?utils:to_sqls(proplists, comma, UpdateFirm)
 			 ++ " where a.merchant=" ++ ?to_s(Merchant),
 
 			 "update w_sale_detail a inner join "
@@ -1392,10 +1395,11 @@ inventory(update, Mode, RSN, Merchant, Shop, Firm, OldFirm, Datetime,  OldDateti
 			 " from w_inventory_new_detail"
 			 " where rsn=\'" ++ ?to_s(RSN) ++ "\') b"
 			 " on a.style_number=b.style_number and a.brand=b.brand"
-			 " set " ++?utils:to_sqls(proplists, comma, Updates)
+			 " set " ++?utils:to_sqls(proplists, comma, UpdateFirm)
 			 ++ " where a.merchant=" ++ ?to_s(Merchant)
-			 ++ " and rsn like \'M-" ++ ?to_s(Merchant) ++ "-S-"
-			 ++ ?to_s(Shop) ++ "-%\'"
+			 ++ " and a.shop=" ++ ?to_s(Shop)
+			 %% ++ " and rsn like \'M-" ++ ?to_s(Merchant) ++ "-S-"
+			 %% ++ ?to_s(Shop) ++ "-%\'"
 			]
 		end,
 	    %% ++ case UpdateDate of

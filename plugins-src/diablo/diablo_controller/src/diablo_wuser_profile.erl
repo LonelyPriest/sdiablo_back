@@ -880,12 +880,15 @@ handle_call({set_barcode_print_template, Merchant}, _From, State) ->
 	    Sql1 = "insert into print_template ("
 		"width"
 		", height"
+	    %% ", dual_column"
 		
 		", style_number"
 		", brand"
 		", type"
 		", firm"
 		", code_firm"
+		", expire" 
+		
 		", color"
 		", size"
 		
@@ -916,16 +919,20 @@ handle_call({set_barcode_print_template, Merchant}, _From, State) ->
 
 		", hpx_top"
 		", hpx_left"
+		", second_space"
 
 		", merchant) values("
 		++ ?to_s(4) ++ ","
 		++ ?to_s(3) ++ ","
+	    %% ++ ?to_s(0) ++ ","
 		
 		++ ?to_s(?YES) ++ ","
 		++ ?to_s(?YES) ++ ","
 		++ ?to_s(?YES) ++ ","
 		++ ?to_s(?YES) ++ ","
 		++ ?to_s(?NO) ++ ","
+		++ ?to_s(?NO) ++ ","
+		
 		++ ?to_s(?YES) ++ ","
 		++ ?to_s(?YES) ++ ","
 
@@ -956,6 +963,7 @@ handle_call({set_barcode_print_template, Merchant}, _From, State) ->
 
 		++ ?to_s(5) ++ ","
 		++ ?to_s(10) ++ ","
+		++ ?to_s(0) ++ ","
 		
 		++ ?to_s(Merchant)  ++ ")",
 

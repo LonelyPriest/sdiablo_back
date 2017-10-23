@@ -588,7 +588,7 @@ error(good_ctype_exist, TypeId) ->
 error(good_size_spec_exist, SpecId) ->
     {8009, "size sepcific " ++ ?to_s(SpecId) ++ " has been existed."};
 error(good_size_spec_invalid_size, Name) ->
-    {8010, "invalid size name " ++ ?to_s(Name) ++ " of size specific."};
+    {8011, "invalid size name " ++ ?to_s(Name) ++ " of size specific."};
 
 %% DB
 error(db_error, EInfo) ->

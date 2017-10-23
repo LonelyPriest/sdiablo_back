@@ -36,11 +36,12 @@ function purchaserInventoryNewUpdateCtrlProvide (
     $scope.setting.use_barcode     = stockUtils.use_barcode(diablo_default_shop, $scope.ubase);
     $scope.setting.auto_barcode    = stockUtils.auto_barcode(diablo_default_shop, base);
     $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, base);
+    $scope.setting.dual_barcode = stockUtils.dual_barcode_print(user.loginShop, base);
     // console.log(user.loginShop);
     // console.log($scope.setting);
 
     $scope.template = filterTemplate.length !== 0 ? filterTemplate[0] : undefined;
-    $scope.printU = new stockPrintU($scope.template, $scope.setting.auto_barcode);
+    $scope.printU = new stockPrintU($scope.template, $scope.setting.auto_barcode, $scope.setting.dual_barcode);
     $scope.printU.setPrinter($scope.setting.printer_barcode);
 
     var dialog = diabloUtilsService;
@@ -316,10 +317,8 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	$scope.select = angular.extend($scope.select, $scope.old_select);
 	// console.log($scope.select);
 	// base setting
-	$scope.setting.history_stock =
-	    stockUtils.history_stock(base.shop_id, $scope.ubase);
-	$scope.setting.q_start_time =
-	    stockUtils.start_time(base.shop_id, $scope.ubase, $.now(), dateFilter);
+	$scope.setting.history_stock = stockUtils.history_stock(base.shop_id, $scope.ubase);
+	$scope.setting.q_start_time = stockUtils.start_time(base.shop_id, $scope.ubase, $.now(), dateFilter);
 	
 	var length = invs.length;
 	var sorts  = [];
@@ -346,6 +345,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
 		add.discount        = invs[i].discount;
 		add.total           = invs[i].amount;
 		add.over            = invs[i].over;
+		add.entry_date      = invs[i].entry_date;
 		
 		add.sizes.push(invs[i].size);
 		add.colors.push(diablo_find_color(invs[i].color_id, filterColor));
@@ -484,6 +484,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	add.sizes        = item.size.split(",");
 	add.colors       = item.color.split(",");
 	add.over         = 0;
+	add.expire_date  = diablo_none;
 	
 	if ( add.free === 0 ){
 	    add.free_color_size = true;
@@ -1047,7 +1048,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
     var dialog_barcode_title = "库存条码打印";
     var dialog_barcode_title_failed = "库存条码打印失败：";
     $scope.p_barcode = function(inv) {
-	console.log(inv);
+	console.log(inv); 
 	if ($scope.template.firm && diablo_invalid_firm === inv.firm_id ) {
 	    dialog.response(
 		false,
@@ -1057,24 +1058,32 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	} 
 	
 	var print_barcode = function(barcode) {
-	    var firm = stockUtils.invalid_firm($scope.select.firm)
-		=== diablo_invalid_firm ? undefined : $scope.select.firm.name; 
+	    var firm = undefined;
+	    if (diablo_invalid_firm !== stockUtils.invalid_firm($scope.select.firm)) {
+		firm = $scope.select.firm.name;
+		if (angular.isDefined($scope.select.firm.expire)
+		    &&  $scope.select.firm.expire !== diablo_invalid_firm) {
+		    inv.expire_date = stockUtils.date_add(inv.entry_date, $scope.select.firm.expire);
+		}
+	    }
 	    // $scope.printU.setCodeFirm($scope.select.firm.id);
-	    
+	    var barcodes = []; 
 	    if (inv.free_color_size) {
 		for (var i=0; i<inv.total; i++) {
-		    $scope.printU.free_prepare(
-			inv, 
-			inv.brand.name,
-			barcode,
-			firm,
-			$scope.select.firm.id); 
+		    barcodes.push(barcode); 
 		}
-	    } 
+		
+		$scope.printU.free_prepare(
+		    inv, 
+		    inv.brand.name,
+		    barcodes,
+		    firm,
+		    $scope.select.firm.id); 
+	    }
+	    
 	    else {
-		var barcodes = []; 
+		barcodes = []; 
 		angular.forEach(inv.amounts, function(a) {
-		    
 		    var color = diablo_find_color(a.cid, filterColor);
 		    for (var i=0; i<a.count; i++) {
 			var o = stockUtils.gen_barcode_content2(barcode, color, a.size);
@@ -1084,17 +1093,13 @@ function purchaserInventoryNewUpdateCtrlProvide (
 		    } 
 		});
 		
-		console.log(barcodes);
-		angular.forEach(barcodes, function(b) {
-		    $scope.printU.prepare(
-			inv,
-			inv.brand.name,
-			b.barcode,
-			firm,
-			$scope.select.firm.id,
-			b.cname,
-			b.size); 
-		})
+		console.log(barcodes); 
+		$scope.printU.prepare(
+		    inv,
+		    inv.brand.name,
+		    barcodes,
+		    firm,
+		    $scope.select.firm.id); 
 	    }
 	};
 

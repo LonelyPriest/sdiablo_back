@@ -7,7 +7,7 @@
 	    <i class="glyphicon glyphicon-hand-right fg-red"></i></button>
 	</div>
 	<select class="form-control"
-		x-ng-options="f.chinese for  f in f.fields"
+		x-ng-options="f.chinese for f in f.fields"
 		x-ng-change="change_field(f)"
 		x-ng-model="f.field">
 	</select>
@@ -209,7 +209,7 @@
 		   x-ng-model="f.value"
 		   typeahead-editable="false"
 		   uib-typeahead="s as s.name for s in
-			      prompt.employee|filter:$viewValue|limitTo:8"/>
+				  prompt.employee|filter:$viewValue|limitTo:8"/>
 	  </span>
 	  
 	  <!-- <span x-ng-switch-when="rsn"> -->
@@ -277,7 +277,7 @@
 		   x-ng-model="f.value"
 		   typeahead-editable="false"
 	  	   uib-typeahead="s as s.name for s in
-			      prompt.firm|filter:$viewValue|limitTo:20"/>
+				  prompt.firm|filter:$viewValue|limitTo:20"/>
 	  </span>
 	  
 	  <!-- <span x-ng-switch-when="retailer"> -->
@@ -310,7 +310,7 @@
 		   x-ng-model="f.value"
 		   typeahead-editable="false"
 		   uib-typeahead="c as c.no for c in
-			      prompt.cards|filter:$viewValue|limitTo:8"/>
+				  prompt.cards|filter:$viewValue|limitTo:8"/>
 	  </span> 
 	  
 	</div> 

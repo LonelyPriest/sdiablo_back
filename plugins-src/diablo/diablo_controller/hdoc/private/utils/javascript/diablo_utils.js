@@ -658,8 +658,19 @@ diabloUtils.directive('queryGroup', function () {
 		return angular.isUndefined(v) ? prompts[0] : v;
 	    };
 
+	    var get_field = function(name, fields) {
+		for (var i=0,l=fields.length; i<l; i++) {
+		    if (name === fields[i].name)
+			return fields[i]
+		}
+	    };
+
 	    angular.forEach(scope.filters, function(f){
+		f.field = get_field(f.field.name, f.fields);
 	    	angular.forEach(f.fields, function(e){
+		    // console.log(e);
+		    // f.field = get_field(e.name, f.fields);
+		    // console.log(f.field);
 	    	    if (e.name === f.field.name){
 			// f.field = e;
 			switch (e.name){
@@ -755,13 +766,12 @@ diabloUtils.directive('queryPattern', function () {
 	    
 	    // add a filter
 	    scope.add_filter = function(){
-		console.log("add_filter...");
+		// console.log("add_filter...");
 		// console.log(scope.filters);
 		// scope.filters[scope.increment] = angular.copy(scope.filter);
 		scope.filters.push(angular.copy(scope.filter));
 		// use first as default field
-		scope.filters[scope.increment].field
-		    = scope.filters[scope.increment].fields[scope.increment];
+		scope.filters[scope.increment].field = scope.filters[scope.increment].fields[scope.increment];
 		scope.increment++;
 	    };
 

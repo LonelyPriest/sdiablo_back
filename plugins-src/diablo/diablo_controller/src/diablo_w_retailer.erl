@@ -450,8 +450,11 @@ handle_call({delete_retailer, Merchant, RetailerId}, _From, State) ->
 
 handle_call({list_retailer, Merchant, Conditions}, _From, State) ->
     ?DEBUG("lookup retail with merchant ~p, Conditions ~p", [Merchant, Conditions]),
+    {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions), 
     Month = ?v(<<"month">>, Conditions, []),
-    SortConditions = lists:keydelete(<<"month">>, 1, Conditions),
+    Date  = ?v(<<"date">>, Conditions, []),    
+    SortConditions = lists:keydelete(<<"a.month">>, 1, lists:keydelete(<<"a.date">>, 1, NewConditions)),
+    
     Sql = "select a.id"
 	", a.name"
 	", a.card"
@@ -475,12 +478,16 @@ handle_call({list_retailer, Merchant, Conditions}, _From, State) ->
 	" from w_retailer a"
 	" left join shops b on a.shop=b.id"
 	" where a.merchant=" ++ ?to_s(Merchant)
-	++ case Month of
-	       [] -> [];
-	       _ -> " and month(a.birth)=" ++ ?to_s(Month)
-	   end
+	++ case {Month, Date} of
+	       {[], []} -> [];
+	       {Month, []} -> 
+		   " and month(a.birth)=" ++ ?to_s(Month);
+	       {[], Date} ->
+		   " and dayofmonth(a.birth)=" ++ ?to_s(Date);
+	       {Month, Date} ->
+		   " and month(a.birth)=" ++ ?to_s(Month) ++ " and dayofmonth(a.birth)=" ++ ?to_s(Date)
+	   end 
 	++ ?sql_utils:condition(proplists, ?utils:correct_condition(<<"a.">>, SortConditions))
-	++ " and a.deleted=" ++ ?to_s(?NO)
 	++ " order by a.id desc",
 
     Reply = ?sql_utils:execute(read, Sql),

@@ -128,6 +128,7 @@
 			<th>积分</th>
 			<th>店铺</th>
 			<th>上架日期</th>
+			<th>退货日期</th>
 			<th x-ng-if="setting.stock_alarm">预警</th>
 			<th x-ng-if="setting.stock_contailer">货柜</th>
 			<th>操作</th>
@@ -172,6 +173,14 @@
 
 			<td class="css(inv.isAlarm)">{{inv.shop}}</td> 
 			<td>{{inv.entry_date}}</td>
+			<td>
+			  <div x-ng-if="inv.expire_date!=='-'">
+			      {{inv.expire_date}}
+			    </div>
+			    <div x-ng-if="inv.expire_date==='-'" class="text-center">
+			      {{inv.expire_date}}
+			    </div> 
+			</td>
 
 			<td x-ng-if="setting.stock_alarm">{{inv.alarm_a}}</td>
 			<td x-ng-if="setting.stock_contailer">{{inv.contailer}}</td>
@@ -183,13 +192,7 @@
 				  x-ng-click="lookup_detail(inv)">详情
 			    <i class="glyphicon glyphicon-map-marker"></i> 
 			  </button>
-
 			  
-			  <!-- <button x-ng-if="setting.use_barcode" -->
-			  <!-- 	  class="btn diablo-button btn-success" -->
-			  <!-- 	  x-ng-click="bar_code(inv)">条码 -->
-			  <!--   <i class="glyphicon glyphicon-barcode"></i>  -->
-			  <!-- </button> -->
 			  <div x-ng-if="setting.use_barcode" class="btn-group hidden-xs">
 			    <button type="button" class="btn diablo-button green">
 			      条码<i class="glyphicon glyphicon-barcode"></i></button>

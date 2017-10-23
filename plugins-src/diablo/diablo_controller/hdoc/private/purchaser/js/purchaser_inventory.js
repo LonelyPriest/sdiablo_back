@@ -1645,6 +1645,7 @@ function purchaserInventoryDetailCtrlProvide(
     $scope.promotions = filterPromotion.concat([{id:diablo_invalid_index, name:"重置促销方案"}]);
     $scope.scores = filterScore.concat([{id:diablo_invalid_index, name:"重置积分方案", type_id:0}]);
     $scope.template = filterTemplate.length !== 0 ? filterTemplate[0] : undefined;
+    // console.log(filterTemplate);
 
     /*
      * tab-set
@@ -1728,11 +1729,12 @@ function purchaserInventoryDetailCtrlProvide(
     $scope.setting.use_barcode     = stockUtils.use_barcode(diablo_default_shop, base);
     $scope.setting.auto_barcode    = stockUtils.auto_barcode(diablo_default_shop, base); 
     $scope.setting.saler_stock     = stockUtils.saler_stock(diablo_default_shop, base);
-    $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, base);
+    // $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, base);
     
     $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, base);
+    $scope.setting.dual_barcode = stockUtils.dual_barcode_print(user.loginShop, base);
     // console.log($scope.setting);
-    $scope.printU = new stockPrintU($scope.template, $scope.setting.auto_barcode);
+    $scope.printU = new stockPrintU($scope.template, $scope.setting.auto_barcode, $scope.setting.dual_barcode);
     $scope.printU.setPrinter($scope.setting.printer_barcode);
     
     /*
@@ -1762,6 +1764,8 @@ function purchaserInventoryDetailCtrlProvide(
 		diabloFilter.default_start_time(now));
 	}();
     };
+
+    console.log($scope.filters);
 
     $scope.time = diabloFilter.default_time($scope.qtime_start);
     
@@ -1870,8 +1874,17 @@ function purchaserInventoryDetailCtrlProvide(
 			d.promotion = diablo_get_object(d.pid, filterPromotion);
 			d.score = diablo_get_object(d.sid, filterScore);
 			d.calc  = diablo_float_mul(d.org_price, d.amount);
+			d.expire_date = diablo_none;
+			
+			if (diablo_invalid_firm !== stockUtils.invalid_firm(d.firm)) {
+			    if (angular.isDefined(d.firm.expire) && d.firm.expire !== diablo_invalid_index) {
+				d.expire_date = stockUtils.date_add(d.entry_date, d.firm.expire);
+			    }
+			}
+			
 			// d.shop  = diablo_get_object(d.shop_id, user.sortShops);
-		    })
+		    });
+		    
 		    diablo_order_page(
 			page, $scope.items_perpage, $scope.inventories);
 
@@ -1990,7 +2003,7 @@ function purchaserInventoryDetailCtrlProvide(
 		$scope.printU.free_prepare(
 		    inv,
 		    inv.brand.name,
-		    barcode,
+		    [barcode],
 		    firm,
 		    inv.firm_id); 
 	    }
@@ -2025,16 +2038,12 @@ function purchaserInventoryDetailCtrlProvide(
 			});
 
 			console.log(barcodes);
-			angular.forEach(barcodes, function(b) {
-			    $scope.printU.prepare(
-				inv,
-				inv.brand.name,
-				b.barcode,
-				firm,
-				inv.firm_id,
-				b.cname,
-				b.size); 
-			})
+			$scope.printU.prepare(
+			    inv,
+			    inv.brand.name,
+			    barcodes,
+			    firm,
+			    inv.firm_id); 
 		    }
 		}
 
@@ -2115,16 +2124,17 @@ function purchaserInventoryDetailCtrlProvide(
 	var print_barcode = function(barcode) {
 	    console.log(barcode);
 	    var firm = inv.firm_id === diablo_invalid_firm ? undefined : inv.firm.name;
-
+	    var barcodes = []; 
 	    if (diablo_free_color_size === inv.free) {
 		for (var i=0; i<inv.amount; i++) {
-		    $scope.printU.free_prepare(
-			inv,
-			inv.brand.name,
-			barcode,
-			firm,
-			inv.firm_id); 
-		} 
+		    barcodes.push(barcode); 
+		}
+		$scope.printU.free_prepare(
+		    inv,
+		    inv.brand.name,
+		    barcodes,
+		    firm,
+		    inv.firm_id);
 	    } else {
 		purchaserService.list_purchaser_inventory(
 		    {style_number: inv.style_number,
@@ -2142,7 +2152,7 @@ function purchaserInventoryDetailCtrlProvide(
 		    // inv.colors  = sort.color;
 		    inv.amounts = sort.sort;
 
-		    var barcodes = []; 
+		    barcodes = [];
 		    angular.forEach(inv.amounts, function(a) {
 			for (var i=0; i<a.count; i++) {
 			    var o = stockUtils.gen_barcode_content(
@@ -2158,16 +2168,12 @@ function purchaserInventoryDetailCtrlProvide(
 		    });
 
 		    console.log(barcodes);
-		    angular.forEach(barcodes, function(b) {
-			$scope.printU.prepare(
-			    inv,
-			    inv.brand.name,
-			    b.barcode,
-			    firm,
-			    inv.firm_id,
-			    b.cname,
-			    b.size); 
-		    }) 
+		    $scope.printU.prepare(
+			inv,
+			inv.brand.name,
+			barcodes,
+			firm,
+			inv.firm_id); 
 		});
 	    } 
 	};

@@ -94,6 +94,7 @@ handle_call({w_new_supplier, Attrs}, _From, State)->
     Balance  = ?v(<<"balance">>, Attrs, 0),
     Mobile   = ?v(<<"mobile">>, Attrs, []),
     Address  = ?v(<<"address">>, Attrs, []),
+    Expire   = ?v(<<"expire">>, Attrs, -1),
     Merchant = ?v(<<"merchant">>, Attrs),
     Comment  = ?v(<<"comment">>, Attrs, []),
     
@@ -109,13 +110,14 @@ handle_call({w_new_supplier, Attrs}, _From, State)->
 	{ok, []} ->
 	    BCode = ?inventory_sn:sn(firm, Merchant),
 	    Sql1 = "insert into " ++ ?tbl_supplier
-		++ "(bcode, name, balance, mobile, address, comment, merchant, change_date, entry_date)"
+		++ "(bcode, name, balance, mobile, address, expire, comment, merchant, change_date, entry_date)"
 		++ " values ("
 		++ ?to_s(BCode) ++ ","
 		++ "\"" ++ ?to_s(Name) ++ "\","
 		++ ?to_s(Balance) ++ ","
 		++ "\"" ++ ?to_s(Mobile) ++ "\","
 		++ "\"" ++ ?to_s(Address) ++ "\","
+		++ ?to_s(Expire) ++ "," 
 		++ "\"" ++ ?to_s(Comment) ++ "\","
 		++ ?to_s(Merchant) ++ ","
 		++ "\"" ++ ?utils:current_time(localtime) ++ "\","
@@ -140,7 +142,53 @@ handle_call({w_update_supplier, Merchant, Attrs}, _From, State) ->
     %% OldBalance  = ?v(<<"old_balance">>, Attrs), 
     Mobile   = ?v(<<"mobile">>, Attrs),
     Address  = ?v(<<"address">>, Attrs),
+    Expire   = ?v(<<"expire">>, Attrs),
     Comment  = ?v(<<"comment">>, Attrs),
+
+    Updates = ?utils:v(name, string, Name)
+	++ ?utils:v(balance, float, Balance)
+	++ ?utils:v(mobile,  string, Mobile)
+	++ ?utils:v(address, string, Address)
+	++ ?utils:v(expire, integer, Expire)
+	++ ?utils:v(comment, string, Comment), 
+
+    Sql1 = ["update " ++ ?tbl_supplier ++ " set "
+	    ++ ?utils:to_sqls(proplists, comma, Updates)
+	    ++ " where id=" ++ ?to_s(FirmId)
+	    ++ " and merchant=" ++ ?to_s(Merchant)],
+    Sql2 = 
+	case Balance =/= 0 of
+	    true ->
+		Datetime = ?utils:current_time(format_localtime), 
+		Sql0 = "select id, balance from " ++ ?tbl_supplier
+		    ++ " where "
+		    ++ " id=" ++ ?to_s(FirmId)
+		    ++ " and merchant=" ++ ?to_s(Merchant),
+		CurBalance = 
+		    case ?sql_utils:execute(s_read, Sql0) of
+			{ok, []} -> 0;
+			{ok, Firm} ->
+			    ?v(<<"balance">>, Firm, 0) 
+		    end,
+		
+		["insert into firm_balance_history("
+		 "firm, balance, metric, action, merchant, entry_date) values("
+		 ++ ?to_s(FirmId) ++ ","
+		 ++ ?to_s(CurBalance) ++ ","
+		 ++ ?to_s(Balance - CurBalance) ++ "," 
+		 ++ ?to_s(?UPDATE_FIRM) ++ "," 
+		 ++ ?to_s(Merchant) ++ ","
+		 ++ "\"" ++ ?to_s(Datetime) ++ "\")"];
+	    false -> []
+	end,
+
+    DoUpdate =
+	fun() ->
+		case Sql2 of
+		    [] -> ?sql_utils:execute(write, Sql1, FirmId);
+		    _ -> ?sql_utils:execute(transaction, Sql1 ++ Sql2, FirmId)
+		end
+	end,
 
     Sql = "select id, " ++ fields()
 	++ " from " ++ ?tbl_supplier
@@ -148,53 +196,23 @@ handle_call({w_update_supplier, Merchant, Attrs}, _From, State) ->
 	++ " name=" ++ "\"" ++ ?to_s(Name) ++ "\""
 	++ " and merchant=" ++ ?to_s(Merchant)
 	++ " and deleted=" ++ ?to_s(?NO),
-    %% ++ " and mobile = " ++ "\"" ++ ?to_s(Mobile) ++ "\";",
-    
-    case ?sql_utils:execute(s_read, Sql) of
-	{ok, []} ->
-	    Updates = ?utils:v(name, string, Name)
-		++ ?utils:v(balance, float, Balance)
-		++ ?utils:v(mobile,  string, Mobile)
-		++ ?utils:v(address, string, Address)
-		++ ?utils:v(comment, string, Comment),
-	    Sql1 = 
-		["update " ++ ?tbl_supplier ++ " set "
-		 ++ ?utils:to_sqls(proplists, comma, Updates)
-		 ++ " where id=" ++ ?to_s(FirmId)
-		 ++ " and merchant=" ++ ?to_s(Merchant)],
-	    Sql2 = 
-		case Balance =/= 0 of
-		    true ->
-			Datetime = ?utils:current_time(format_localtime),
 
-			CurBalance = 
-			    case ?w_user_profile:get(firm, Merchant, FirmId) of
-				{ok, []} -> 0;
-				{ok, FirmProfile} ->
-				    ?v(<<"balance">>, FirmProfile, 0)
-			    end,
-			
-			["insert into firm_balance_history("
-			 "firm, balance, metric, action, merchant, entry_date) values("
-			 ++ ?to_s(FirmId) ++ ","
-			 ++ ?to_s(CurBalance) ++ ","
-			 ++ ?to_s(Balance - CurBalance) ++ "," 
-			 ++ ?to_s(?UPDATE_FIRM) ++ "," 
-			 ++ ?to_s(Merchant) ++ ","
-			 ++ "\"" ++ ?to_s(Datetime) ++ "\")"];
-		    false -> []
-		end,
+    Reply = 
+	case Name of
+	    undefined ->
+		DoUpdate();
+	    _ ->
+		case ?sql_utils:execute(s_read, Sql) of
+		    {ok, []} ->
+			DoUpdate();
+		    {ok, _} ->
+			{error, ?err(supplier_exist, Name)};
+		    Error ->
+			Error
+		end
+	end,
 
-	    Reply = case Sql2 of
-			[] -> ?sql_utils:execute(write, Sql1, FirmId);
-			_ -> ?sql_utils:execute(transaction, Sql1 ++ Sql2, FirmId)
-		    end,
-	    {reply, Reply, State};
-	{ok, _} ->
-	    {reply, {error, ?err(supplier_exist, Name)}, State};
-	Error ->
-	    {reply, Error, State}
-    end;
+    {reply, Reply, State}; 
 
 handle_call({w_delete_supplier, Merchant, Id}, _From, State) ->
     ?DEBUG("w_delete_supplier with merchant ~p, Id ~p", [Merchant, Id]),
@@ -216,7 +234,7 @@ handle_call({w_delete_supplier, Merchant, Id}, _From, State) ->
 
 handle_call({w_list, Merchant}, _From, State) ->
     ?DEBUG("w_list with merchant ~p", [Merchant]),
-    Sql = "select id, bcode, name, mobile, address, comment"
+    Sql = "select id, bcode, name, mobile, address, expire, comment"
 	", balance, entry_date from suppliers"
 	++ " where "
 	++ " merchant=" ++ ?to_s(Merchant)

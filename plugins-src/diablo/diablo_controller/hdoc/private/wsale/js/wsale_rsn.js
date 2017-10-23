@@ -136,7 +136,8 @@ function wsaleRsnDetailCtrlProvide (
     diabloFilter.add_field("style_number", $scope.match_style_number); 
     diabloFilter.add_field("brand",    filterBrand);
     diabloFilter.add_field("type",     filterType);
-    diabloFilter.add_field("year",     diablo_full_year);
+    diabloFilter.add_field("season",   diablo_season2objects);
+    diabloFilter.add_field("year",     diablo_full_year); 
     diabloFilter.add_field("firm",     filterFirm);
     diabloFilter.add_field("shop",     $scope.shops); 
     diabloFilter.add_field("retailer", function(viewValue){
