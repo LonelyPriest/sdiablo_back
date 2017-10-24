@@ -27,7 +27,7 @@
      diablo_purchaser_sql,              diablo_w_report_sql,
      
      %% model
-     diablo_controller_member_request,    diablo_controller_member,
+     %% diablo_controller_member_request,    diablo_controller_member,
      diablo_controller_employ_request,    diablo_controller_employ,
      diablo_controller_inventory_request,
      diablo_controller_login_request,     diablo_controller_login,
