@@ -204,7 +204,7 @@
 		</div>
 	      </div>
 	      <div>
-		<div ng-show="firmNewForm.name.$invalid && !firmNewForm.name.$pristine">
+		<div ng-show="firmForm.name.$invalid && !firmForm.name.$pristine">
 		  <span class="fg-red">中文，字母，数字，不支持特殊字符</span>
 		</div> 
 		<div ng-show="!params.valid_firm(params.firm)">
@@ -226,9 +226,9 @@
 		       placeholder="默认为0，支持两位小数"
 		       x-ng-model="params.firm.balance"
 		       x-ng-pattern="params.pattern.balance"/>
-	      </div>
-	      <div ng-show="firmForm.balance.$invalid && !firmForm.balance.$pristine">
-		<span class="fg-red">只支持两位小数</span>
+		<div ng-show="firmForm.balance.$invalid && !firmForm.balance.$pristine">
+		  <span class="fg-red">只支持两位小数</span>
+		</div> 
 	      </div> 
 	    </div>
 
@@ -242,10 +242,10 @@
 		       placeholder="请输入电话或手机号码" 
 		       ng-pattern="params.pattern.tel_mobile" 
 		       x-ng-model="params.firm.mobile"/>
-	      </div>
-	      <div ng-show="firmForm.mobile.$invalid && !firmForm.mobile.$pristine">
-		<span class="fg-red">请输入正确的电话或手机号码</span>
-	      </div>
+		<div ng-show="firmForm.mobile.$invalid && !firmForm.mobile.$pristine">
+		  <span class="fg-red">请输入正确的电话或手机号码</span>
+		</div>
+	      </div> 
 	    </div>
 
 	    <div class="form-group">
@@ -277,7 +277,7 @@
 		       x-ng-pattern="params.pattern.expire"/>
 	      </div>
 	      <div ng-show="firmForm.expire.$invalid && !firmForm.expire.$pristine">
-		<span class="fg-red">请输入大于0的整数</span>
+		<span class="fg-red">请输入大于0的整数或-1</span>
 	      </div> 
 	    </div>
 

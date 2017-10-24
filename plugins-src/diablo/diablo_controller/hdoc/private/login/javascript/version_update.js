@@ -1,6 +1,11 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2017-10-25",
+         content:
+	 ["增加单一厂商货品盘点"]
+        },
+	
 	{date: "2017-10-23",
          content:
 	 ["增加厂商退货期限设置",

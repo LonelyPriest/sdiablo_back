@@ -151,7 +151,7 @@ function stockConfg(angular){
 	    when('/inventory/inventory_fix', {
 		templateUrl: '/private/purchaser/html/purchaser_inventory_fix.html',
 		controller: 'purchaserInventoryFixCtrl' ,
-		resolve: angular.extend({}, user, employee, s_group, color, base)
+		resolve: angular.extend({}, user, employee, s_group, color, firm, base)
 	    }).
 	    when('/inventory/inventory_import_fix', {
 		templateUrl: '/private/purchaser/html/purchaser_inventory_import_fix.html',
@@ -161,13 +161,12 @@ function stockConfg(angular){
 	    when('/inventory/inventory_fix_detail', {
 		templateUrl: '/private/purchaser/html/purchaser_inventory_fix_detail.html',
 		controller: 'purchaserInventoryFixDetailCtrl' ,
-		resolve: angular.extend({}, user, employee, base) 
+		resolve: angular.extend({}, user, employee, firm, base) 
 	    }).
 	    when('/inventory/inventory_rsn_detail/fix/:rsn?', {
 		templateUrl: '/private/purchaser/html/purchaser_inventory_fix_rsn_detail.html',
 		controller: 'purchaserInventoryFixRsnDetailCtrl',
-		resolve: angular.extend(
-		    {}, user, brand, firm, s_group, color, base)
+		resolve: angular.extend({}, user, brand, s_group, color, base)
 	    }).
 	    // print
 	    when('/print_inventory_new/:rsn', {
@@ -312,7 +311,7 @@ function stockConfg(angular){
 	    2082: "盘点草稿获取失败，请检查盘点文件内容并确保该文件可读！！",
 	    2083: "盘点草稿不存在或为空，请检查C盘目录下的盘点文件！！",
 	    2084: "盘点库存为空，请重新选择库存！！",
-	    2085: "该条码对应的库存不存在，请确认条码是否正确，或通过款号模式盘点！！",
+	    2085: "该条码对应的库存不存在，请确认厂商或条码是否正确，或通过款号模式盘点！！",
 	    2086: "该货品无厂商信息，无法生成条码，请填写厂商信息后再重新操作！！",
 	    2087: "请选择需要打印条码的库存！！",
 	    2088: "该货品无进货价，请核对该货品进货价后再移仓！！",

@@ -392,7 +392,7 @@ function purchaserInventoryNewCtrlProvide (
 	}
 	
 	if ($scope.base_settings.stock_with_firm === diablo_yes) {
-	    if (-1 !== item.firm_id){
+	    if (diablo_invalid_firm !== item.firm_id){
 		$scope.select.firm = diablo_get_object(item.firm_id, $scope.firms);
 	    }
 	}

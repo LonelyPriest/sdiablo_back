@@ -267,3 +267,6 @@ drop index uk on w_inventory_new_detail_amount;
 alter table w_inventory_new_detail_amount add unique index uk(rsn, style_number, brand, color, size);
 alter table w_inventory_new_detail_amount add index dk(merchant, shop, style_number, brand);
 -- alter table print_template modify column width DECIMAL(3, 1) default 0;
+
+-- 2017-10-25
+alter table w_inventory_fix add column firm INTEGER default -1 after shop;

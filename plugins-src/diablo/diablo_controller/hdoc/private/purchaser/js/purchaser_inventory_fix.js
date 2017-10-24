@@ -1,11 +1,12 @@
 function purchaserInventoryFixCtrlProvide(
     $scope, $q, $timeout, dateFilter, localStorageService,
     diabloUtilsService, diabloFilter, diabloPagination, purchaserService, diabloPattern,
-    user, filterEmployee, filterSizeGroup, filterColor, base){
+    user, filterEmployee, filterSizeGroup, filterColor, filterFirm, base){
     // console.log(user); 
     $scope.shops   = user.sortShops;    
     // $scope.sexs    = diablo_sex;
     $scope.seasons = diablo_season;
+    $scope.firms   = filterFirm;
     // $scope.calc_row = stockUtils.calc_row;
     $scope.setting = {barcode_mode: diablo_no};
     $scope.useFile = false;
@@ -71,7 +72,12 @@ function purchaserInventoryFixCtrlProvide(
 	    $scope.auto_focus('barcode');
 	else
 	    $scope.auto_focus('style_number');
-    }; 
+    };
+
+
+    $scope.get_prompt_firm = function(prompt){
+	return stockUtils.get_prompt_firm(prompt, $scope.firms)
+    };
     
     /*
      * init
@@ -154,11 +160,12 @@ function purchaserInventoryFixCtrlProvide(
 		var callbackReadFile = function(taskId, value){
 		    console.log(value);
 		    var content = angular.fromJson(value);
-		    fix_time = content.t;
+		    fix_time = content.t; 
 
 		    if (angular.isDefined(content.t)) {
 			$scope.$apply(function() {
 			    $scope.select.datetime = dateFilter(fix_time, "yyyy-MM-dd HH:mm:ss");
+			    $scope.select.firm = diablo_get_object(content.f, $scope.firms);
 			    $scope.inventories = content.stock; 
 			    $scope.current_page = 1;
 			    $scope.reset_pagination();
@@ -184,7 +191,7 @@ function purchaserInventoryFixCtrlProvide(
      * save all
      */
     $scope.disable_save = function(){
-	return $scope.has_saved || $scope.inventories.length === 1 ? true : false;
+	return $scope.has_saved || $scope.inventories.length === 0 ? true : false;
     };
 
     $scope.disable_draft = function() {
@@ -235,6 +242,7 @@ function purchaserInventoryFixCtrlProvide(
 	var base = {
 	    total:            $scope.select.total,
 	    shop:             $scope.select.shop.id,
+	    firm:             stockUtils.invalid_firm($scope.select.firm),
 	    datetime:         $scope.select.datetime,
 	    employee:         $scope.select.employee.id, 
 	};
@@ -334,8 +342,9 @@ function purchaserInventoryFixCtrlProvide(
 	if ($scope.useFile) {
 	    var fixDraft = new stockFile(diablo_fix_draft_path);
 	    fixDraft.getLodop(); 
-	    fixDraft.writeFile(angular.toJson({t:fix_time, stock:stocks}));
-	} 
+	    fixDraft.writeFile(angular.toJson({
+		t:fix_time, f:stockUtils.invalid_firm($scope.select.firm), stock:stocks}));
+	}
     };
 
     $scope.barcode_scanner = function(full_bcode) {
@@ -345,16 +354,20 @@ function purchaserInventoryFixCtrlProvide(
 	// invalid barcode
 	if (!barcode.cuted || !barcode.correct) {
 	    $scope.fix.s_barcode = undefined;
-	    dialog.response(false, "库存盘点", "盘点失败" + purchaserService.error[2076]); 
+	    dialog.response(false, "库存盘点", "盘点失败：" + purchaserService.error[2076]); 
 	    return;
 	}
 	
-	diabloFilter.get_stock_by_barcode(barcode.cuted, $scope.select.shop.id).then(function(result){
+	diabloFilter.get_stock_by_barcode(
+	    barcode.cuted,
+	    $scope.select.shop.id,
+	    stockUtils.invalid_firm($scope.select.firm)
+	).then(function(result){
 	    console.log(result);
 	    if (result.ecode === 0) {
 		if (diablo_is_empty(result.stock)) {
 		    $scope.fix.s_barcode = undefined;
-		    dialog.response(false, "库存盘点", "盘点失败" + purchaserService.error[2085]);
+		    dialog.response(false, "库存盘点", "盘点失败：" + purchaserService.error[2085]);
 		} else {
 		    $scope.fix.scanner = true; 
 		    $scope.fix.full_bcode = barcode.correct;
@@ -614,15 +627,14 @@ function purchaserInventoryImportFixCtrlProvide(
 
 function purchaserInventoryFixDetailCtrlProvide(
     $scope, dateFilter, diabloPattern, diabloUtilsService,
-    diabloFilter, purchaserService, user, filterEmployee, base){
-    console.log(user);
-
+    diabloFilter, purchaserService, user, filterEmployee, filterFirm, base){
+    console.log(user); 
     $scope.goto_page = diablo_goto_page;
-
+    
     $scope.go_fix = function(){
 	$scope.goto_page('#/inventory/inventory_fix');
     };
-
+    
     $scope.go_fix_rsn = function(){
 	$scope.goto_page('#/inventory/inventory_rsn_detail/fix');
     };
@@ -638,7 +650,7 @@ function purchaserInventoryFixDetailCtrlProvide(
     diabloFilter.add_field("rsn", []);
     diabloFilter.add_field("shop",     user.sortShops);
     // diabloFilter.add_field("shop",     user.sortAvailabeShops);
-    // diabloFilter.add_field("firm",     filterFirm);
+    diabloFilter.add_field("firm",     filterFirm);
     diabloFilter.add_field("employee", filterEmployee); 
 
     $scope.filter = diabloFilter.get_filter();
@@ -680,6 +692,7 @@ function purchaserInventoryFixDetailCtrlProvide(
 		    }
 		    angular.forEach(result.data, function(d){
 			d.shop = diablo_get_object(d.shop_id, user.sortShops);
+			d.firm = diablo_get_object(d.firm_id, filterFirm);
 			d.employee = diablo_get_object(d.employee_id, filterEmployee);
 			d.metric = d.shop_total - d.db_total;
 		    })

@@ -174,12 +174,10 @@
 			<td class="css(inv.isAlarm)">{{inv.shop}}</td> 
 			<td>{{inv.entry_date}}</td>
 			<td>
-			  <div x-ng-if="inv.expire_date!=='-'">
-			      {{inv.expire_date}}
-			    </div>
-			    <div x-ng-if="inv.expire_date==='-'" class="text-center">
-			      {{inv.expire_date}}
-			    </div> 
+			  <div x-ng-switch on="inv.expire_date">
+			    <div x-ng-switch-when="-" class="text-center">-</div>
+			    <div x-ng-switch-default x-ng-bind="inv.expire_date"></div>
+			  </div> 
 			</td>
 
 			<td x-ng-if="setting.stock_alarm">{{inv.alarm_a}}</td>

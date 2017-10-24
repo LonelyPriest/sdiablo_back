@@ -74,6 +74,7 @@
 		    <th>序号</th>
 		    <th>单号</th>
 		    <th>店铺</th>
+		    <th>厂商</th>
 		    <th>店员</th>
 		    <th class="info">盘点数量</th>
 		    <th class="warning">电脑数量</th>
@@ -87,6 +88,12 @@
 		    <td>{{r.order_id}}</td>
 		    <td>{{r.rsn}}</td>
 		    <td>{{r.shop.name}}</td>
+		    <td>
+		      <div x-ng-switch on="r.firm_id">
+			<div x-ng-switch-when=-1 class="text-center">-</div>
+			<div x-ng-switch-default x-ng-bind="r.firm.name"></div>
+		      </div>
+		    </td>
 		    <td>{{r.employee.name}}</td>
 		    <td>{{r.shop_total}}</td>
 		    <td>{{r.db_total}}</td>

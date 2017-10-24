@@ -8,7 +8,7 @@ function firmNewCtrlProvide(
 		      tel_mobile: diabloPattern.tel_mobile,
 		      address:    diabloPattern.ch_name_address,
 		      comment:    diabloPattern.comment,
-		      expire:     diabloPattern.positive_num};
+		      expire:     diabloPattern.expire_date};
     
     // new firm 
     $scope.new_firm = function(){
@@ -45,7 +45,7 @@ function firmDetailCtrlProvide(
 	tel_mobile: diabloPattern.tel_mobile,
 	address:    diabloPattern.ch_name_address,
 	comment:    diabloPattern.comment,
-	expire:     diabloPattern.positive_num};
+	expire:     diabloPattern.expire_date};
 
     $scope.right = {
 	show_orgprice: rightAuthen.authen(
@@ -55,6 +55,14 @@ function firmDetailCtrlProvide(
 	) 
     }; 
 
+    var to_float = function(v) {
+	if (angular.isUndefined(v) || isNaN(v) || (!v && v != 0)){
+	    return 0;
+	} else{
+	    return parseFloat(v)
+	}
+    };
+    
     var f_add = diablo_float_add;
     var now   = $.now();
 
@@ -298,14 +306,14 @@ function firmDetailCtrlProvide(
 	    {firm:old_firm,
 	     valid_firm:valid_firm,
 	     has_update: function(new_firm){
-		 return diablo_is_same(new_firm.name, old_firm.name)
-		     && diablo_is_same(new_firm.balance ? new_firm.balance:0, old_firm.balance)
-		     && diablo_is_same(new_firm.address, old_firm.address)
-		     && diablo_is_same(new_firm.mobile, old_firm.mobile)
-		     && diablo_is_same(new_firm.comment, old_firm.comment)
-		     && diablo_is_same(new_firm.expire, old_firm.expire)
-		     ? false : true;
+		 return !(diablo_is_same(new_firm.name, old_firm.name)
+			  && diablo_is_same(to_float(new_firm.balance), to_float(old_firm.balance))
+			  && diablo_is_same(new_firm.address, old_firm.address)
+			  && diablo_is_same(new_firm.mobile, old_firm.mobile)
+			  && diablo_is_same(new_firm.comment, old_firm.comment)
+			  && diablo_is_same(new_firm.expire, old_firm.expire));
 	     },
+	     
 	     pattern: $scope.pattern,
 	     right: $scope.right})
     };

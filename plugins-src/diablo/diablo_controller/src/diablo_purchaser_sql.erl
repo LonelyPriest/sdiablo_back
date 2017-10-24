@@ -1005,6 +1005,7 @@ inventory(fix_detail, fix, Merchant, Conditions, PageFun) ->
     "select a.id"
 	", a.rsn"
 	", a.shop as shop_id"
+	", a.firm as firm_id"
 	", a.employ as employee_id"
 	", a.shop_total"
 	", a.db_total"
@@ -1300,7 +1301,7 @@ inventory_match(all_reject, Merchant, Shop, Firm, StartTime) ->
     %% ++ " and deleted=" ++ ?to_s(?NO)
 	++ " order by a.id desc".
 
-get_inventory(barcode, Merchant, Shop, Barcode) ->
+get_inventory(barcode, Merchant, Shop, Firm, Barcode) ->
     "select a.id, a.bcode, a.style_number"
 	", a.brand as brand_id"
 	", a.type as type_id"
@@ -1319,9 +1320,14 @@ get_inventory(barcode, Merchant, Shop, Barcode) ->
 	" left join brands b on a.brand=b.id" 
 	" left join inv_types c on a.type=c.id"
 
-	" where a.merchant=" ++ ?to_s(Merchant) 
+	" where a.bcode=\'" ++ ?to_s(Barcode) ++ "\'"
+	++ " and a.merchant=" ++ ?to_s(Merchant)
 	++ " and a.shop=" ++ ?to_s(Shop)
-	++ " and a.bcode=\'" ++ ?to_s(Barcode) ++ "\'".
+	++ case Firm =:= ?INVALID_OR_EMPTY of
+	       true -> [];
+	       false -> " and a.firm=" ++ ?to_s(Firm)
+	   end.
+	
 
 inventory(update, Mode, RSN, Merchant, Shop, Firm, OldFirm, Datetime,  OldDatetime) ->
     UpdateDate = case Datetime =/= OldDatetime of

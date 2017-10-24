@@ -4,7 +4,7 @@ function purchaserInventoryFixRsnDetailCtrlProvide(
     $scope, $routeParams, $location, dateFilter,
     diabloPattern, diabloUtilsService, diabloFilter,
     purchaserService, 
-    user, filterBrand, filterFirm, filterSizeGroup, filterColor, base){
+    user, filterBrand, filterSizeGroup, filterColor, base){
     
     // var permitShops =  user.shopIds;
     // $scope.shops = user.sortAvailabeShops;

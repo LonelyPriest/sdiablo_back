@@ -511,9 +511,9 @@ function filterProvider(){
 		    })
 	    },
 
-	    get_stock_by_barcode: function(barcode, shop) {
+	    get_stock_by_barcode: function(barcode, shop, firm) {
 		return resource.save(
-		    {operation:'get_stock_by_barcode'}, {barcode:barcode, shop:shop}).$promise;
+		    {operation:'get_stock_by_barcode'}, {barcode:barcode, shop:shop, firm:firm}).$promise;
 	    },
 
 	    check_retailer_password: function(retailerId, password){

@@ -78,7 +78,28 @@
 	<!--BEGN portlet body--> 
 	<div class="portlet-body">
 	  <div class="row diablo-form-group">
-	    <div class="col-xs-12 col-md-4 col-sm-4">
+	    <div class="col-xs-12 col-md-3 col-sm-3">
+	      <div class="input-group">
+		<span class="input-group-addon"><i class="icon icon-rss fg-red"></i>厂商</span>
+		<form name="fform">
+		  <div ng-class="{'has-error':fform.firm.$invalid && !fform.firm.$pristine}">
+		    <input class="form-control text-left"
+			   type="text"
+			   name="firm" 
+			   ng-edit
+			   x-ng-model="select.firm"
+			   placeholder="请选择厂商"
+			   typeahead-editable="false"
+			   uib-typeahead="f as f.name for f in get_prompt_firm($viewValue)" /> 
+		  </div>
+		</form>
+	      </div>
+	      <div x-ng-if="fform.firm.$invalid && !fform.firm.$pristine">
+	    	<span class="fg-red">厂商只能从提示列表中选择</span>
+	      </div>
+	    </div>
+	    
+	    <div class="col-xs-12 col-md-3 col-sm-3">
 	      <div class="input-group">
 		<span class="input-group-addon"><i class="glyphicon glyphicon-barcode fg-red"></i>条码</span>
 		<form name="bform">
@@ -86,6 +107,7 @@
 		    <input class="form-control text-left"
 			   type="text"
 			   name="barcode"
+			   ng-edit
 			   x-ng-model="fix.s_barcode"
 			   placeholder="请扫条码"
 			   focus-auto="focus.barcode"
@@ -96,7 +118,8 @@
 		</form>
 	      </div>
 	    </div>
-	    <div class="col-xs-12 col-md-8 col-sm-8">
+	    
+	    <div class="col-xs-12 col-md-6 col-sm-6">
 	      <div class="input-group">
 		<span class="input-group-addon"><i class="glyphicon glyphicon-signal fg-red"></i>货号</span>
 		<form name="sform">

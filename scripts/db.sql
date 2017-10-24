@@ -752,6 +752,7 @@ create table w_inventory_fix(
     rsn            VARCHAR(32) not null, -- record sn
     merchant       INTEGER not null default -1,
     shop           INTEGER default -1,                 -- which shop saled the goods
+    firm           INTEGER default -1,
     employ         VARCHAR(8) not null, 
     
     shop_total     INTEGER not null default -1,

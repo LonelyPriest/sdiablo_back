@@ -26,7 +26,9 @@
 -export([purchaser_inventory/3,
 	 purchaser_inventory/4,
 	 purchaser_inventory/5,
-	 purchaser_inventory/6, stock/3]).
+	 purchaser_inventory/6,
+	 stock/3,
+	 stock/4]).
 
 -export([filter/4, filter/6, rsn_detail/3, export/4, rsn/4]).
 -export([match/3, match/4, match/5, match/6]).
@@ -134,10 +136,7 @@ purchaser_inventory(modify_balance, Merchant, RSN, Balance) ->
 
 purchaser_inventory(syn_barcode, Merchant, Barcode, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {syn_barcode, Merchant, Barcode, Conditions});
-purchaser_inventory(get_by_barcode, Merchant, Shop, Barcode) ->
-    Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {get_by_barcode, Merchant, Shop, Barcode}).
+    gen_server:call(Name, {syn_barcode, Merchant, Barcode, Conditions}).
 
 %%
 %% 
@@ -200,7 +199,11 @@ purchaser_inventory(tag_price, Merchant, Shop, StyleNumber, Brand) ->
 %%
 purchaser_inventory(gen_barcode, Merchant, Shop, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {gen_barcode, ?YES, Merchant, Shop, StyleNumber, Brand}).
+    gen_server:call(Name, {gen_barcode, ?YES, Merchant, Shop, StyleNumber, Brand});
+
+purchaser_inventory(get_by_barcode, Merchant, Shop, Firm, Barcode) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {get_by_barcode, Merchant, Shop, Firm, Barcode}).
 
 purchaser_inventory(gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -396,7 +399,11 @@ export(stock_note, Merchant, Condition, Mode) ->
 %% get stock detail of shop
 stock(detail_get_by_shop, Merchant, Shop) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {stock_detail_get_by_shop, Merchant, Shop}).
+    gen_server:call(Name, {stock_detail_get_by_shop, Merchant, Shop, ?INVALID_OR_EMPTY}).
+
+stock(detail_get_by_shop, Merchant, Shop, Firm) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {stock_detail_get_by_shop, Merchant, Shop, Firm}).
 
 
 start_link(Name) ->
@@ -1817,6 +1824,7 @@ handle_call({fix_inventory,
     ?DEBUG("fix_inventory with merchant ~p, props ~p", [Merchant, Props]), 
     Datetime        = ?v(<<"datetime">>, Props), 
     Shop            = ?v(<<"shop">>, Props),
+    Firm            = ?v(<<"firm">>, Props, -1),
     Employee        = ?v(<<"employee">>, Props),
     DBTotal         = ?v(<<"db_total">>, Props),
     ShopTotal       = ?v(<<"shop_total">>, Props), 
@@ -1832,11 +1840,12 @@ handle_call({fix_inventory,
 	     {StocksNotInDB, StocksNotInShop, StocksDiff}),
     
     Sql2 = "insert into w_inventory_fix(rsn"
-	", merchant, shop, employ, shop_total, db_total, entry_date)"
+	", merchant, shop, Firm, employ, shop_total, db_total, entry_date)"
 	" values("
 	++ "\"" ++ ?to_s(RSN) ++ "\","
 	++ ?to_s(Merchant) ++ "," 
 	++ ?to_s(Shop) ++ ","
+	++ ?to_s(Firm) ++ ","
 	++ "\"" ++ ?to_s(Employee) ++ "\","
 	++ ?to_s(ShopTotal) ++ ","
 	++ ?to_s(DBTotal) ++ "," 
@@ -2237,9 +2246,9 @@ handle_call({reset_good_barcode, AutoBarcode, Merchant, StyleNumber, Brand}, _Fr
 
 
 
-handle_call({get_by_barcode, Merchant, Shop, Barcode}, _From, State) ->
-    ?DEBUG("get_by_barcode: Merchant ~p, Shop ~p, Barcode ~p", [Merchant, Shop, Barcode]),
-    Sql = ?w_good_sql:get_inventory(barcode, Merchant, Shop, Barcode),
+handle_call({get_by_barcode, Merchant, Shop, Firm, Barcode}, _From, State) ->
+    ?DEBUG("get_by_barcode: Merchant ~p, Shop ~p, Firm ~p, Barcode ~p", [Merchant, Shop, Firm, Barcode]),
+    Sql = ?w_good_sql:get_inventory(barcode, Merchant, Shop, Firm, Barcode),
     Reply =  ?sql_utils:execute(s_read, Sql),
     ?DEBUG("reply ~p", [Reply]),
     {reply, Reply, State};
@@ -2876,14 +2885,35 @@ handle_call({stock_note_export, Merchant, Conditions, _Mode}, _From, State) ->
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({stock_detail_get_by_shop, Merchant, Shop}, _From, State) ->
-    Sql = "select id, style_number, brand, color, size, total, merchant, shop"
-	" from w_inventory_amount"
-	" where merchant=" ++ ?to_s(Merchant)
-	++ " and shop=" ++ ?to_s(Shop)
-	++ " and total!=0"
-	++ " order by id desc",
+handle_call({stock_detail_get_by_shop, Merchant, Shop, Firm}, _From, State) ->
+    Sql = case Firm =:= ?INVALID_OR_EMPTY of
+	      true ->
+		  "select style_number, brand, color, size, total, merchant, shop"
+		      " from w_inventory_amount"
+		      " where merchant=" ++ ?to_s(Merchant)
+		      ++ " and shop=" ++ ?to_s(Shop)
+		      ++ " and total!=0"
+		      ++ " order by id desc";
+	      false ->
+		  "select a.style_number, a.brand, a.merchant, a.shop"
+		      ", b.color, b.size, b.total"
+		      " from "
+		      
+		      "(select style_number, brand, merchant, shop, firm"
+		      " from w_inventory where merchant=" ++ ?to_s(Merchant) 
+		      ++ " and firm=" ++ ?to_s(Firm)
+		      ++ " and shop=" ++ ?to_s(Shop) ++ ") a"
 
+		      " inner join "
+		      "(select style_number, brand, merchant, shop, color, size, total"
+		      " from w_inventory_amount"
+		      " where merchant=" ++ ?to_s(Merchant)
+		      ++ " and shop=" ++ ?to_s(Shop)
+		      ++ " and total!=0) b"
+
+		      " on a.style_number=b.style_number and a.brand=b.brand"
+	  end,
+    
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
     

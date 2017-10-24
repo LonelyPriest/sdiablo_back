@@ -524,11 +524,12 @@ action(Session, Req, {"fix_w_inventory"}, Payload) ->
     ShopStocks     = ?v(<<"stock">>, Payload, []),
     {struct, Base} = ?v(<<"base">>, Payload),
     Shop = ?v(<<"shop">>, Base),
+    Firm = ?v(<<"firm">>, Base, -1),
 
     %% {ShopTotal, ShopStockDict} = stock(shop_to_dict, ShopStocks, 0, dict:new()),
 
     %% get stock of shop
-    case ?w_inventory:stock(detail_get_by_shop, Merchant, Shop) of
+    case ?w_inventory:stock(detail_get_by_shop, Merchant, Shop, Firm) of
 	{ok, DBStocks} ->
 	    {DBTotal, DBStockDict} = stock(to_dict, DBStocks, 0, dict:new()),
 	    {StocksNotInDB, StocksNotEqualDB}
@@ -1013,6 +1014,7 @@ action(Session, Req, {"get_stock_by_barcode"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     Barcode = ?v(<<"barcode">>, Payload),
     Shop = ?v(<<"shop">>, Payload),
+    Firm = ?v(<<"firm">>, Payload, -1),
     
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
     AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSetting, ?YES)), 
@@ -1045,7 +1047,7 @@ action(Session, Req, {"get_stock_by_barcode"}, Payload) ->
     
     ?DEBUG("newBarcode ~p", [Barcode]),
 	    
-    case ?w_inventory:purchaser_inventory(get_by_barcode, Merchant, Shop, NewBarcode) of 
+    case ?w_inventory:purchaser_inventory(get_by_barcode, Merchant, Shop, Firm, NewBarcode) of 
 	{ok, Stock} ->
 	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
 					       {<<"stock">>, {Stock} }]});

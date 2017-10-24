@@ -9,6 +9,7 @@ angular.module("diabloPattern", []).service("diabloPattern", [function(){
     this.number = /^[0-9]*$/;
     
     this.positive_num = /^[1-9][0-9]*$/;
+    this.expire_date = /^[1-9][0-9]*$|-1$/;
     
     this.positive_decimal_2 = /^\d+(\.\d{1,2})?$/;
     
