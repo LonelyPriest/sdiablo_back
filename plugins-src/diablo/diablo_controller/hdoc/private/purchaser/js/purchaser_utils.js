@@ -162,7 +162,13 @@ var stockUtils = function(){
 
 	date_add: function(date, add) {
 	    var dateAfter = new Date(diablo_set_date(date) + add * diablo_day_millisecond);
-	    return (dateAfter.getMonth() + 1).toString()+ "-" + dateAfter.getDate().toString();
+	    var m = (dateAfter.getMonth() + 1).toString();
+	    if (m.length === 1)
+		m = "0" + m;
+	    var d = dateAfter.getDate().toString();
+	    if (d.length === 1)
+		d = "0" + d;
+	    return m + "-" + d;
 	    
 	},
 	

@@ -346,6 +346,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
 		add.total           = invs[i].amount;
 		add.over            = invs[i].over;
 		add.entry_date      = invs[i].entry_date;
+		add.expire_date     = diablo_none;
 		
 		add.sizes.push(invs[i].size);
 		add.colors.push(diablo_find_color(invs[i].color_id, filterColor));
