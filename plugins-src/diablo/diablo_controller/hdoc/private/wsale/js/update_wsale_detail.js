@@ -412,7 +412,7 @@ function wsaleUpdateDetailCtrlProvide(
 		id             : add.id,
 		style_number   : add.style_number,
 		brand          : add.brand.id,
-		brand_name     : add.brand,
+		brand_name     : add.brand.name,
 		type           : add.type.id,
 		// type_name   : add.type,
 		firm           : add.firm_id,

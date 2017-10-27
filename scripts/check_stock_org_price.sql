@@ -12,12 +12,12 @@ select sum(x.intotal), sum(x.amount), sum(x.stotal) from (select a.style_number,
 -- all stock
 select sum(x.intotal), sum(x.amount), sum(x.stotal), sum(x.ftotal), sum(x.ttotal) from \
 (select a.style_number, a.brand, b.intotal, a.amount, c.stotal, d.ftotal, e.ttotal from \
-(select style_number, brand, amount from w_inventory where shop=9) a \
-left join (select style_number, brand, sum(amount) as intotal from w_inventory_new_detail where rsn like 'm-2-s-9-%' group by style_number, brand) b on a.style_number=b.style_number and a.brand=b.brand \
-left join (select style_number, brand, sum(total) as stotal from w_sale_detail where rsn like 'm-2-s-9-%' group by style_number, brand) c on a.style_number=c.style_number and a.brand=c.brand \
-left join (select a.style_number, brand, sum(a.amount) as ftotal from w_inventory_transfer_detail a, w_inventory_transfer b where a.fshop=9 and a.rsn=b.rsn and b.state=1 group by style_number, brand) d \
+(select style_number, brand, amount from w_inventory where shop=53) a \
+left join (select style_number, brand, sum(amount) as intotal from w_inventory_new_detail where rsn like 'm-15-s-53-%' group by style_number, brand) b on a.style_number=b.style_number and a.brand=b.brand \
+left join (select style_number, brand, sum(total) as stotal from w_sale_detail where rsn like 'm-15-s-53-%' group by style_number, brand) c on a.style_number=c.style_number and a.brand=c.brand \
+left join (select a.style_number, brand, sum(a.amount) as ftotal from w_inventory_transfer_detail a, w_inventory_transfer b where a.fshop=53 and a.rsn=b.rsn and b.state=1 group by style_number, brand) d \
 on a.style_number=d.style_number and a.brand=d.brand \
-left join (select a.style_number, brand, sum(a.amount) as ttotal from w_inventory_transfer_detail a, w_inventory_transfer b where a.tshop=9 and a.rsn=b.rsn and b.state=1 group by style_number, brand) e \
+left join (select a.style_number, brand, sum(a.amount) as ttotal from w_inventory_transfer_detail a, w_inventory_transfer b where a.tshop=53 and a.rsn=b.rsn and b.state=1 group by style_number, brand) e \
 on a.style_number=e.style_number and a.brand=e.brand) x;
 
 
@@ -60,7 +60,18 @@ update w_sale_detail a inner join(select style_number, brand, merchant, shop, en
 
 
 -- check stock
-select a.style_number, a.brand, a.amount, b.total from w_inventory a left join (select style_number, brand, sum(total) as total from w_inventory_amount a where a.merchant=4 and shop=19 group by a.style_number, a.brand) b on a.style_number=b.style_number and a.brand=b.brand where a.merchant=4 and a.shop=19 and a.amount!=b.total;
+select a.style_number, a.brand, a.amount, b.total from w_inventory a left join (select style_number, brand, sum(total) as total from w_inventory_amount a where a.merchant=4 and shop=19 group by a.style_number, a.brand) b on a.style_number=b.style_number and a.brand=b.brand where a.merchant=14 and a.shop=12 and a.amount!=b.total;
+
+select a.style_number, a.brand, a.total , b.amount from (select style_number, brand, sum(total) as total from w_inventory_amount where merchant=15 and shop=53 group by style_number, brand) a \
+left join (select style_number, brand, amount from w_inventory where merchant=15 and shop=53) b \
+on a.style_number=b.style_number and a.brand=b.brand;
+
+select a.merchant, a.shop, a.style_number, a.brand, a.amount, b.total from w_inventory a \
+left join (select merchant, shop, style_number, brand, sum(total) as total from w_inventory_amount a group by merchant, shop, a.style_number, a.brand) b \
+on a.merchant=b.merchant and a.shop=b.shop and a.style_number=b.style_number and a.brand=b.brand where a.amount!=b.total;
+
+-- check w_sale
+select a.rsn, a.total from (select rsn, sum(total) as total from w_sale_detail where shop=56 group by rsn) a, w_sale b where a.rsn=b.rsn and a.total!=b.total;
 
 -- export special record from special table
 mysqldump -uroot -pbxh --where="rsn='M-2-S-12-695'" sdiablo w_inventory_new > w_inventory_new.sql;

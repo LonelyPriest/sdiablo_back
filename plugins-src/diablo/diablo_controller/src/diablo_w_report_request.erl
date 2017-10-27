@@ -320,6 +320,7 @@ action(Session, Req, {"stock_stastic"}, Payload) ->
 	++ lists:keydelete(<<"start_time">>, 1, Payload),
     try 
 	{ok, StockSale} = ?w_report:stastic(stock_sale, Merchant, NewPayload),
+	%% ?DEBUG("stock sale ~p", [StockSale]),
 	{ok, StockProfit} = ?w_report:stastic(stock_profit, Merchant, NewPayload),
 	{ok, StockIn}  = ?w_report:stastic(stock_in, Merchant, NewPayload),
 	{ok, StockOut} = ?w_report:stastic(stock_out, Merchant, NewPayload),

@@ -371,7 +371,12 @@ action(Session, Req, {"update_w_sale"}, Payload) ->
     Invs            = ?v(<<"inventory">>, Payload, []),
     {struct, Base}  = ?v(<<"base">>, Payload),
     RSN             = ?v(<<"rsn">>, Base),
-    
+
+    %% Total = calc_count(reject, Invs, 0),
+    %% case Total =/= ?v(<<"total">>, Base) of
+    %% 	true ->
+    %% 	    ?utils:respond(200, Req, ?err(wsale_invalid_stock_total, Total));
+    %% 	false -> 
     case ?w_sale:sale(get_new, Merchant, RSN) of
 	{ok, OldBase} -> 
 	    case ?w_sale:sale(update, Merchant, lists:reverse(Invs), {Base, OldBase}) of
@@ -396,6 +401,7 @@ action(Session, Req, {"update_w_sale"}, Payload) ->
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;
+    %% end;
 
 action(Session, Req, {"delete_w_sale"}, Payload) ->
     ?DEBUG("delete_w_sale: session ~p, payload ~p", [Payload]),
@@ -551,29 +557,36 @@ action(Session, Req, {"reject_w_sale"}, Payload) ->
     Invs = ?v(<<"inventory">>, Payload),
     {struct, Base}   = ?v(<<"base">>, Payload), 
     Datetime         = ?v(<<"datetime">>, Base),
-    case abs(?utils:current_time(localtime2second) - ?utils:datetime2seconds(Datetime)) > 1800 of
+
+    RejectTotal = calc_count(reject, Invs, 0),
+    case RejectTotal =/= ?v(<<"total">>, Base) of
 	true ->
-	    CurDatetime = ?utils:current_time(format_localtime), 
-	    ?utils:respond(200,
-			   Req,
-			   ?err(wsale_invalid_date, "reject_w_sale"),
-			   [{<<"fdate">>, Datetime},
-			    {<<"bdate">>, ?to_b(CurDatetime)}]);
+	    ?utils:respond(200, Req, ?err(wsale_invalid_stock_total, RejectTotal));
 	false -> 
-	    case ?w_sale:sale(reject, Merchant, lists:reverse(Invs), Base) of 
-		{{ok, RSN}, Shop, Retailer, BackWithdraw} ->
-		    case BackWithdraw =/= 0 of
-			true ->
-			    {SMSCode, _} = send_sms(Merchant, 2, Shop, Retailer, BackWithdraw),
-			    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
-					   [{<<"rsn">>, ?to_b(RSN)},
-					    {<<"sms_code">>, SMSCode}]); 
-			false ->
-			    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
-					   [{<<"rsn">>, ?to_b(RSN)}])
-		    end;
-		{error, Error} ->
-		    ?utils:respond(200, Req, Error)
+	    case abs(?utils:current_time(localtime2second) - ?utils:datetime2seconds(Datetime)) > 1800 of
+		true ->
+		    CurDatetime = ?utils:current_time(format_localtime), 
+		    ?utils:respond(200,
+				   Req,
+				   ?err(wsale_invalid_date, "reject_w_sale"),
+				   [{<<"fdate">>, Datetime},
+				    {<<"bdate">>, ?to_b(CurDatetime)}]);
+		false -> 
+		    case ?w_sale:sale(reject, Merchant, lists:reverse(Invs), Base) of 
+			{{ok, RSN}, Shop, Retailer, BackWithdraw} ->
+			    case BackWithdraw =/= 0 of
+				true ->
+				    {SMSCode, _} = send_sms(Merchant, 2, Shop, Retailer, BackWithdraw),
+				    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
+						   [{<<"rsn">>, ?to_b(RSN)},
+						    {<<"sms_code">>, SMSCode}]); 
+				false ->
+				    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
+						   [{<<"rsn">>, ?to_b(RSN)}])
+			    end;
+			{error, Error} ->
+			    ?utils:respond(200, Req, Error)
+		    end
 	    end
     end;
 
@@ -1690,6 +1703,13 @@ check_inventory(oncheck, Round, Money, ShouldPay, [{struct, Inv}|T]) ->
 		false -> {error, Inv}
 	    end
     end.
+
+
+calc_count(reject, [], Total) ->
+    Total;
+calc_count(reject, [{struct, Inv}|T], Total) ->
+    InvTotal = ?v(<<"sell_total">>, Inv),
+    calc_count(reject, T, Total + InvTotal).
     
     
 mode(0) -> use_id;

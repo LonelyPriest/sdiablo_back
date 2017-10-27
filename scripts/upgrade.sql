@@ -270,3 +270,14 @@ alter table w_inventory_new_detail_amount add index dk(merchant, shop, style_num
 
 -- 2017-10-25
 alter table w_inventory_fix add column firm INTEGER default -1 after shop;
+
+-- 2017-10-26
+delete from w_inventory_amount where shop=53 and style_number='1' and brand=4734;
+delete from w_inventory_amount where shop=53 and style_number='1' and brand=4826;
+delete from w_inventory_amount where shop=53 and style_number='1' and brand=4856;
+delete from w_inventory_amount where shop=53 and style_number='9396' and brand=5612;
+delete from w_inventory_amount where shop=53 and style_number='9988' and brand=4970;
+update w_inventory set amount=0 where shop=53 and style_number='0001' and brand=4734;
+update w_sale set total=-2 where rsn='M-15-S-53-R-444';
+update w_sale set total=-2 where rsn='M-15-S-56-R-459';
+update w_sale set total=-2 where rsn='M-15-S-58-R-434';

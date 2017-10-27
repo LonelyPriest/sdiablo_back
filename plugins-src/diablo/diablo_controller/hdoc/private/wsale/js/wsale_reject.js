@@ -329,8 +329,7 @@ function wsaleRejectCtrlProvide(
 	var get_sales = function(amounts){
 	    var sale_amounts = [];
 	    for(var i=0, l=amounts.length; i<l; i++){
-		if (angular.isDefined(amounts[i].sell_count)
-		    && amounts[i].sell_count){
+		if (angular.isDefined(amounts[i].sell_count) && amounts[i].sell_count){
 		    sale_amounts.push({
 			cid:  amounts[i].cid,
 			size: amounts[i].size, 
@@ -343,10 +342,13 @@ function wsaleRejectCtrlProvide(
 	};
 	
 	var added  = [];
-	var nscore = 0;
+	var rtotal = 0;
+	// var nscore = 0;
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    var add = $scope.inventories[i];
 	    if (!add.select || add.total < 0) continue;
+
+	    rtotal += add.reject;
 	    added.push({
 		style_number: add.style_number,
 		brand       : add.brand_id,
@@ -359,7 +361,7 @@ function wsaleRejectCtrlProvide(
 		entry       : add.entry,
 
 		amounts     : get_sales(add.amounts),
-		sell_total  : parseInt(add.reject), 
+		sell_total  : wsaleUtils.to_integer(add.reject), 
 		promotion   : add.pid,
 		score       : add.sid, 
 		
@@ -376,6 +378,7 @@ function wsaleRejectCtrlProvide(
 		free        : add.free
 	    })
 	};
+	
 	console.log(added);
 	if (added.length === 0) {
 	    dialog.response_with_callback(
@@ -386,6 +389,16 @@ function wsaleRejectCtrlProvide(
 		function() {$scope.has_saved = false});
 	    return;
 	};
+
+	if (rtotal !== $scope.select.rtotal) {
+	    dialog.response_with_callback(
+		false,
+		"销售退货",
+		"退货失败：" + wsaleService.error[2712],
+		undefined,
+		function() {$scope.has_saved = false});
+	    return;
+	}
 
 	var setv = diablo_set_float; 
 	var seti = diablo_set_integer; 
