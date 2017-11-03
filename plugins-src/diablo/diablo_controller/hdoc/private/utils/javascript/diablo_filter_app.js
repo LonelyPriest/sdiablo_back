@@ -247,8 +247,12 @@ function filterProvider(){
 		    _prompt.sell_type = promptValues;
 		}else if (name === 'purchaser_type'){
 		    _filter.fields.push({name:"purchaser_type", chinese:"采购类型"});
-		    _prompt.purchaser_type = promptValues;
-		} else if (name === 'has_pay'){
+		    _prompt.purchaser_type = promptValues; 
+		}else if (name === 'comment') {
+		    _filter.fields.push({name:"comment", chinese:"备注"});
+		    _prompt.comment = promptValues; 
+		}
+		else if (name === 'has_pay'){
 		    _filter.fields.push({name:"has_pay", chinese:"实付查询"});
 		    _prompt.has_pay = promptValues;
 		} else if (name === 'card'){

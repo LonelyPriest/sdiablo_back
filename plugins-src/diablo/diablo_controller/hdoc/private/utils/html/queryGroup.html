@@ -109,7 +109,15 @@
 	    <input type="text" class="form-control" placeholder="请选择实付方式（>0或<0）"
 		   x-ng-model="f.value"
 		   typeahead-editable="false"
-	  	   uib-typeahead="p as p.name for p in prompt.has_pay|filter:$viewValue|limitTo:8"/> 
+	  	   uib-typeahead="p as p.name for p in prompt.has_pay|filter:$viewValue"/> 
+	  </span>
+
+	  <span x-ng-switch-when="comment">
+	    <select type="text" class="form-control"
+		    x-ng-model="f.value"
+	  	    x-ng-options="c as c.name for c in prompt.comment"
+		    x-ng-init="f.value=f.value ? f.value : prompt.comment[0]">
+	    </select>
 	  </span>
 
 	  <span x-ng-switch-when="season">

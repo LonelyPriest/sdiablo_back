@@ -919,10 +919,77 @@ function wretailerTicketDetailCtrlProvide(
     };
 };
 
+function wretailerCustomTicketDetailCtrlProvide(
+    $scope, diabloFilter, diabloPattern, diabloUtilsService,
+    wretailerService, user){
+    var dialog = diabloUtilsService;
+    
+    $scope.shops = user.sortShops;
+    $scope.pattern = {positive_num: diabloPattern.positive_num};
+    $scope.items_perpage = diablo_items_per_page();
+    $scope.max_page_size = 10;
+    $scope.default_page = 1; 
+    $scope.current_page = $scope.default_page;
+    $scope.total_items = 0;
+
+    $scope.filters = []; 
+    diabloFilter.reset_field();
+    diabloFilter.add_field("retailer", function(viewValue){
+	return retailerUtils.match_retailer_phone(viewValue, diabloFilter)
+    });
+    
+    $scope.filter = diabloFilter.get_filter();
+    $scope.prompt = diabloFilter.get_prompt();
+
+    var now = retailerUtils.first_day_of_month();
+    $scope.time = diabloFilter.default_time(now.first, now.current);
+
+    $scope.add_batch = function(){
+	var callback = function(params){
+	    console.log(params);
+	    var sbatch  = retailerUtils.to_integer(params.sbatch);
+	    var count   = retailerUtils.to_integer(params.count);
+	    var balance = retailerUtils.to_integer(params.balance);
+
+	    if (count > 1000)
+		dialog.response(false, "批量制券", "批量制券失败：" + wretailerService.error[2115]);
+	    if (balance > 500)
+		dialog.response(false, "批量制券", "批量制券失败：" + wretailerService.error[2116]);
+
+	    wretailerService.make_ticket_batch(
+		{sbatch:sbatch, count:count, balance:balance}
+	    ).then(function(result){
+		console.log(result);
+		if (result.ecode === 0){
+		    dialog.response_with_callback(
+			true,
+			"批量制券",
+			"批量制券成功！！" ,
+			undefined,
+			function(){});
+		} else {
+		    dialog.response(
+			false, "批量制券", "批量制券失败："
+			    + wretailerService.error[result.ecode]);
+		}
+	    })
+	};
+
+	dialog.edit_with_modal(
+	    "add-ticket-batch.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {num_pattern: $scope.pattern.positive_num}); 
+    };
+    
+};
+
 define (["wretailerApp"], function(app){
     app.controller("wretailerNewCtrl", wretailerNewCtrlProvide);
     app.controller("wretailerDetailCtrl", wretailerDetailCtrlProvide);
     app.controller("wretailerChargeDetailCtrl", wretailerChargeDetailCtrlProvide);
     app.controller("wretailerTicketDetailCtrl", wretailerTicketDetailCtrlProvide);
+    app.controller("wretailerCustomTicketDetailCtrl", wretailerCustomTicketDetailCtrlProvide);
 });
 

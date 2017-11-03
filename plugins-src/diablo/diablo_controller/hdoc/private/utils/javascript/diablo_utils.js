@@ -707,6 +707,8 @@ diabloUtils.directive('queryGroup', function () {
 			case "date":
 			    f.value = get_prompt(f.value, scope.prompt.date);
 			    break;
+			case "comment":
+			    f.value = get_prompt(f.value, scope.prompt.comment);
 			default:
 			    break;
 			}

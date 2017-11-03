@@ -481,11 +481,12 @@ error(wretailer_retalted_sale, RetailerId) ->
     {2113, "some sales retailed on the retailer: " ++ ?to_s(RetailerId)};
 error(wretailer_card_exist, Card) ->
     {2114, "retailer card has been used: " ++ ?to_s(Card)};
-
-
-
-
-
+error(make_ticket_invalid_count, Count) ->
+    {2115, "count can not be more than 1000: " ++ ?to_s(Count)};
+error(make_ticket_invalid_balance, Balance) ->
+    {2116, "balance can not be more than 500:" ++ ?to_s(Balance)};
+error(make_ticket_batch_used, Batch) ->
+    {2117, "batch number " ++ ?to_s(Batch) ++ " has been used"};
 
 %% wprint
 error(wprint_server_exist, Server) ->

@@ -192,8 +192,8 @@
 		    <th class="text-center">库存</th>
 		    <th class="text-center">吊牌价</th>
 		    <th class="text-center">折扣</th>
-		    <th class="text-center">进价</th>
-		    <th class="text-center">折扣率</th> 
+		    <th x-ng-if="right.show_org_price" class="text-center">进价</th>
+		    <th x-ng-if="right.show_org_price" class="text-center">折扣率</th> 
 		    <th class="text-center">操作</th>
 		  </tr>
 		</thead>
@@ -297,8 +297,8 @@
 		      </div>
 		    </td>
 		    
-		    <td class="vert-align">{{inv.org_price}}</td>
-		    <td class="vert-align">{{inv.ediscount}}</td> 
+		    <td x-ng-if="right.show_org_price" class="vert-align">{{inv.org_price}}</td>
+		    <td x-ng-if="right.show_org_price" class="vert-align">{{inv.ediscount}}</td> 
 		    
 		    <td class="text-left vert-align"> 
 		      <div ng-if="!inv.$new"> 

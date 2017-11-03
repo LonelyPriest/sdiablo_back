@@ -179,7 +179,8 @@
 				  x-ng-disabled="inv.free === 0"
 		    		  x-ng-click="rsn_detail(inv)">
 			    明细<i class="glyphicon glyphicon-map-marker"></i></button>
-			  <button x-ng-if="right.update_price" class="btn diablo-button btn-warning"
+			  <button x-ng-if="right.update_price && right.show_orgprice"
+				  class="btn diablo-button btn-warning"
 				  x-ng-disabled="inv.firm_id === -1"
 		    		  x-ng-click="update_orgprice(inv)">
 			    进价<i class="glyphicon glyphicon-edit"></i></button> 

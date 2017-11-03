@@ -1,6 +1,12 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2017-11-03",
+         content:
+	 ["销售交易记录增加备注过滤条件",
+	  "修改相关权限关联问题"]
+        },
+	
 	{date: "2017-10-25",
          content:
 	 ["增加单一厂商货品盘点"]

@@ -171,6 +171,7 @@
 -define(query_w_retailer_balance,    ?right_w_retailer + 22).
 -define(update_w_retailer_phone,     ?right_w_retailer + 23).
 -define(set_w_retailer_withdraw,     ?right_w_retailer + 24).
+-define(make_ticket_batch,           ?right_w_retailer + 25).
 
 %% shop
 -define(new_shop,       ?right_shop + 1).

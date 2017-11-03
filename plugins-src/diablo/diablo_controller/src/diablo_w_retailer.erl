@@ -22,7 +22,7 @@
 
 -export([retailer/2, retailer/3, retailer/4]).
 -export([charge/2, charge/3]).
--export([score/2, score/3, ticket/3, get_ticket/3]).
+-export([score/2, score/3, ticket/3, get_ticket/3, make_ticket/3]).
 -export([filter/4, filter/6]).
 -export([match/3, syn/2, syn/3, get/2, card/3]).
 
@@ -124,6 +124,10 @@ get_ticket(by_batch, Merchant, {Batch, Mode}) ->
     gen_server:call(Name, {ticket_by_batch, Merchant, {Batch, Mode}});
 get_ticket(by_batch, Merchant, Batch) ->
     get_ticket(by_batch, Merchant, {Batch, 0}).
+
+make_ticket(batch, Merchant, Attrs) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {make_ticket_batch, Merchant, Attrs}).
     %% Name = ?wpool:get(?MODULE, Merchant), 
     %% gen_server:call(Name, {ticket_by_batch, Merchant, Batch}).
 
@@ -1197,6 +1201,31 @@ handle_call({is_card_exist, Merchant, Card}, _From, State) ->
 	++ " and card=" ++ ?to_s(Card),
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
+
+handle_call({make_ticket_batch, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("make_ticket_batch: merchant ~p, Attrs ~p", [Merchant, Attrs]),
+    StartBatch = ?v(<<"sbatch">>, Attrs),
+    Count = ?v(<<"count">>, Attrs),
+    Balance = ?v(<<"balance">>, Attrs),
+
+    Sql = "select id, batch from w_ticket_custom"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and batch>=" ++ ?to_s(StartBatch)
+	++ " limit 1",
+    Reply = 
+	case ?sql_utils:execute(s_read, Sql) of
+	    {ok, []} ->
+		%% make
+		Datetime = ?utils:current_time(format_localtime),
+		Sqls = make_ticket(Merchant, Datetime, Balance, StartBatch, Count, []),
+		?DEBUG("sqls ~p", [Sqls]),
+		?sql_utils:execute(transaction, Sqls, StartBatch); 
+	    {ok, _} ->
+		{error, ?err(make_ticket_batch_used, StartBatch)};
+	    Error ->
+		Error
+	end,
+    {reply, Reply, State};
     
 handle_call(_Request, _From, State) ->
     Reply = ok,
@@ -1234,7 +1263,7 @@ default_profile(prompt, Merchant) ->
 	[] -> 20;
 	[{Select}] ->
 	    Prompt = ?to_i(?v(<<"value">>, Select, 0)),
-	    ?DEBUG("=Prompt ~p", [Prompt]),
+	    ?DEBUG("Prompt ~p", [Prompt]),
 	    Prompt
     end.
 
@@ -1249,3 +1278,28 @@ default_withdraw(Merchant, Shop, _RetailerType) ->
 	{ok, [{Draw}]} -> ?v(<<"draw_id">>, Draw)
     end.
 
+
+make_ticket(_Merchant, _Datetime, _Balance, _StartBatch, 0, Acc) ->
+    lists:reverse(Acc);
+make_ticket(Merchant, Datetime, Balance, StartBatch, Count, Acc) ->
+    Sql = "insert into w_ticket_custom("
+	"batch"
+	", balance"
+	", retailer"
+	", state"
+	", shop"
+	", remark"
+	", merchant"
+	", entry_date) values("
+	++ ?to_s(StartBatch) ++ ","
+	++ ?to_s(Balance) ++ ","
+	++ ?to_s(-1) ++ ","
+	++ ?to_s(?CHECKED) ++ ","
+	++ ?to_s(-1) ++ ","
+	++ "\'\'" ++ ","
+	++ ?to_s(Merchant) ++ ","
+	++ "\'" ++ ?to_s(Datetime) ++ "\')",
+
+    make_ticket(Merchant, Datetime, Balance, StartBatch + 1, Count - 1, [Sql|Acc]).
+    
+    

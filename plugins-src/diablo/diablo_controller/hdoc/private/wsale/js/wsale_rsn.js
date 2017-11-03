@@ -248,11 +248,9 @@ function wsaleRsnDetailCtrlProvide (
 
 		if ($scope.setting.se_pagination === diablo_no){
 		    $scope.inventories = result.data;
-		    diablo_order_page(
-			page, $scope.items_perpage, $scope.inventories);
+		    diablo_order_page(page, $scope.items_perpage, $scope.inventories);
 		} else {
-		    diablo_order(
-			result.data, (page - 1) * $scope.items_perpage + 1);
+		    diablo_order(result.data, (page - 1) * $scope.items_perpage + 1);
 		    $scope.inventories = $scope.inventories.concat(result.data);
 		}
 

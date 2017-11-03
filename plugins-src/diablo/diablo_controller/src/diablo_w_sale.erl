@@ -1783,17 +1783,25 @@ direct(_) -> wsale.
 
 
 sort_condition(wsale, Merchant, Conditions) ->
+    Comment = ?v(<<"comment">>, Conditions),
+    CutConditions = lists:keydelete(<<"comment">>, 1, Conditions),
+    
     C = lists:foldr(
 	  fun({K, V}, Acc) when K =:= <<"check_state">>->
 		  [{<<"state">>, V}|Acc];
 	     (KV, Acc)->
 		  [KV|Acc]
-	  end, [], Conditions),
+	  end, [], CutConditions),
     
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_with_prifix, C),
 
     "a.merchant=" ++ ?to_s(Merchant)
-	++ ?sql_utils:condition(proplists, NewConditions) 
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ case Comment of
+	       undefined -> [];
+	       0 -> " and a.comment!=\'\'";
+	       1 -> []
+	   end
 	++ case ?sql_utils:condition(time_with_prfix, StartTime, EndTime) of
 	       [] -> [];
 	       TimeSql -> " and " ++ TimeSql

@@ -455,6 +455,29 @@ action(Session, Req, {"get_w_retailer_ticket"}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"make_ticket_batch"}, Payload) ->
+    ?DEBUG("make_ticket_batch with session ~p, payload ~p", [Session, Payload]), 
+    Merchant = ?session:get(merchant, Session),
+    Count = ?v(<<"count">>, Payload),
+    Balance = ?v(<<"balance">>, Payload),
+
+    case Count > 1000 of
+	true ->
+	    ?utils:respond(200, Req, ?err(make_ticket_invalid_count, Count));
+	false ->
+	    case Balance > 500 of
+		true ->
+		    ?utils:respond(200, Req, ?err(make_ticket_invalid_balance, Balance));
+		false ->
+		    case ?w_retailer:make_ticket(batch, Merchant, Payload) of
+			{ok, StartBatch} ->
+			    ?utils:respond(200, Req, ?succ(consume_ticket, StartBatch));
+			{error, Error} ->
+			    ?utils:respond(200, Req, Error)
+		    end
+	    end
+    end;
+
 %% 
 %% charge
 %%
@@ -576,8 +599,7 @@ action(Session, Req, {"match_retailer_phone"}, Payload) ->
     ?utils:respond(batch, fun() -> ?w_retailer:match(phone, Merchant, {Mode, Phone}) end, Req).
 
 sidebar(Session) -> 
-    S1 = [{"wretailer_detail", "会员详情", "glyphicon glyphicon-book"}],
-    
+    S1 = [{"wretailer_detail", "会员详情", "glyphicon glyphicon-book"}], 
     S2 = 
 	case ?right_auth:authen(?new_w_retailer, Session) of
 	    {ok, ?new_w_retailer} ->
@@ -596,25 +618,27 @@ sidebar(Session) ->
 	
 	 }],
 
-    Ticket = case ?right_auth:authen(?filter_ticket_detail, Session) of
-		 {ok, ?filter_ticket_detail} ->
-		     [{"wretailer_ticket_detail", "电子卷", "glyphicon glyphicon-certificate"}];
-		 _ -> []
-	     end,
-    
-    L1 = ?menu:sidebar(level_1_menu, S2 ++ S1 ++ S3 ++ Ticket),
-    L2 = ?menu:sidebar(level_2_menu, Recharge),
+    Ticket = 
+	[{{"ticket", "电子券", "glyphicon glyphicon-certificate"},
 
+	  case ?right_auth:authen(?filter_ticket_detail, Session) of
+	      {ok, ?filter_ticket_detail} ->
+		  [{"score_ticket_detail", "积分电子券", "glyphicon glyphicon-font"},
+		   {"custom_ticket_detail", "定制电子券", "glyphicon glyphicon-bold"}];
+	      _ -> []
+	  end 
+	 }],
+    
+    L1 = ?menu:sidebar(level_1_menu, S2 ++ S1 ++ S3),
+    L2 = ?menu:sidebar(level_2_menu, Ticket ++ Recharge), 
     L1 ++ L2.
 
 csv_head(retailer, Do, Code) ->
     Head = "序号,名称,类型,联系方式,余额,累计消费,累计积分,所在店铺,日期",
     C = 
 	case Code of
-	    0 ->
-		?utils:to_utf8(from_latin1, Head);
-	    1 ->
-		?utils:to_gbk(from_latin1, Head)
+	    0 -> ?utils:to_utf8(from_latin1, Head);
+	    1 -> ?utils:to_gbk(from_latin1, Head)
 	end,
     
     %% UTF8 = unicode:characters_to_list(Head, utf8),

@@ -162,7 +162,10 @@ init([]) ->
 	 {?effect_ticket, 
 	  <<"电子卷生效">>, <<"effect_w_retailer_ticket">>, ?right_w_retailer},
 	 {?consume_ticket, 
-	  <<"手动消费电子卷">>, <<"consume_w_retailer_ticket">>, ?right_w_retailer}
+	  <<"手动消费电子卷">>, <<"consume_w_retailer_ticket">>, ?right_w_retailer},
+
+	 {?make_ticket_batch, 
+	  <<"批量制卷">>, <<"make_ticket_batch">>, ?right_w_retailer}
 	],
 
     

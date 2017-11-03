@@ -185,13 +185,12 @@ function wsaleConfg(angular){
 
 	this.rsn_title = ["开单明细", "退货明细", "销售明细"];
 
-	this.direct = {wsale: 0, wreject: 1};
-
-	this.wsale_mode = [{title: "款号模式"}, {title: "图片模式"}, {title: "条码模式"}];
-
+	this.direct = {wsale: 0, wreject: 1}; 
+	this.wsale_mode = [{title: "款号模式"}, {title: "图片模式"}, {title: "条码模式"}]; 
 	this.check_state = [{name:"未审核", id:0},	{name:"已审核", id:1}];
-
+	this.check_comment = [{name:"不为空", id:0}];
 	this.export_type = {trans:0, trans_note:1};
+	
 
 	this.vpays = [0, 1, 2, 3, -1, -2, -3];
 	this.cake_vpays = [0, -0.1, -0.2, -0.3, -0.4, -0.5, -0.6];
@@ -2112,6 +2111,7 @@ function wsaleNewDetailProvide(
     diabloFilter.add_field("retailer",    $scope.match_retailer); 
     diabloFilter.add_field("rsn",         $scope.match_rsn);
     diabloFilter.add_field("check_state", wsaleService.check_state);
+    diabloFilter.add_field("comment",     wsaleService.check_comment);
     
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();

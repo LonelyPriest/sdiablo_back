@@ -517,6 +517,24 @@ create table w_ticket(
 ) default charset=utf8;
 
 
+create table w_ticket_custom(
+    id              INTEGER AUTO_INCREMENT,
+    batch           INTEGER not null,
+    balance         INTEGER not null,
+    retailer        INTEGER default -1, -- -1: who consumed
+    state           INTEGER default 1, -- 0: discard; 1: checked; 2: consumed
+    shop            INTEGER default -1, -- consumed shop
+    remark          VARCHAR(128) not null,
+    merchant        INTEGER not null default -1, 
+    entry_date      DATETIME default 0, 
+    deleted         INTEGER default 0, -- 0: no;  1: yes
+
+    unique  key uk  (merchant, batch),
+    key         dk  (merchant, retailer),
+    primary key     (id)
+    
+) default charset=utf8;
+
 -- create table shop_promotion(
 --     id              INTEGER AUTO_INCREMENT,
 --     merchant        INTEGER not null default -1,
@@ -742,7 +760,7 @@ create table w_inventory_new_detail_amount(
     entry_date     DATETIME default 0,
     deleted        INTEGER default 0, -- 0: no;  1: yes
     unique  key uk (rsn, style_number, brand, color, size),
-    key dk (merchant, shop, style_number, brand)
+    key dk (merchant, shop, style_number, brand),
     -- key     index_msbc (merchant, style_number, brand, color, size),
     primary key    (id)
 )default charset=utf8;
