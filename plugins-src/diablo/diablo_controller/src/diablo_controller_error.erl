@@ -198,6 +198,10 @@ success(syn_retailer_pinyin, Merchant) ->
     {0, "Success to syn retailer's pinyin of merchant: "++?to_s(Merchant)++"."};
 success(set_retailer_withdraw, Merchant) ->
     {0, "Success to set the withdraw of merchant: "++?to_s(Merchant)++"."};
+success(discard_ticket_one, TicketId) ->
+    {0, "Success to discard ticket: "++?to_s(TicketId)++"."};
+success(discard_ticket_all, Merchant) ->
+    {0, "Success to discard all ticket of merchant: "++?to_s(Merchant)++"."};
 
 %% wsale
 success(new_w_sale, RSn) ->
@@ -487,6 +491,8 @@ error(make_ticket_invalid_balance, Balance) ->
     {2116, "balance can not be more than 500:" ++ ?to_s(Balance)};
 error(make_ticket_batch_used, Batch) ->
     {2117, "batch number " ++ ?to_s(Batch) ++ " has been used"};
+error(ticket_batch_length_error, Batch) ->
+    {2118, "ticket batch is too long: " ++ ?to_s(Batch)};
 
 %% wprint
 error(wprint_server_exist, Server) ->

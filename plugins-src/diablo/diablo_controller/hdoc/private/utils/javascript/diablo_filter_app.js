@@ -528,12 +528,14 @@ function filterProvider(){
 
 	    get_ticket_by_batch: function(batchNo){
 		return _retailerHttp.save(
-		    {operation: "get_w_retailer_ticket"}, {batch:batchNo, mode:1}).$promise;
-	    },
+		    {operation: "get_w_retailer_ticket"},
+		    {batch:batchNo, mode:diablo_ticket_by_batch, custom:diablo_custom_ticket}).$promise;
+	    }, 
 
 	    get_ticket_by_retailer: function(retailerId){
 		return _retailerHttp.save(
-		    {operation: "get_w_retailer_ticket"}, {retailer:retailerId, mode:0}).$promise;
+		    {operation: "get_w_retailer_ticket"},
+		    {retailer:retailerId, mode:diablo_ticket_by_retailer}).$promise;
 	    },
 
 	    reset_firm: function(){

@@ -158,14 +158,20 @@ init([]) ->
 	  <<"修改会员联系方式">>, <<"update_w_retailer_phone">>, ?right_w_retailer},
 
 	 {?filter_ticket_detail, 
-	  <<"查询电子卷">>, <<"filter_ticket_detail">>, ?right_w_retailer}, 
+	  <<"查询积分电子卷">>, <<"filter_ticket_detail">>, ?right_w_retailer},
+	 {?filter_custom_ticket_detail, 
+	  <<"查询优惠电子券">>, <<"filter_custom_ticket_detail">>, ?right_w_retailer},
+	 
 	 {?effect_ticket, 
 	  <<"电子卷生效">>, <<"effect_w_retailer_ticket">>, ?right_w_retailer},
 	 {?consume_ticket, 
 	  <<"手动消费电子卷">>, <<"consume_w_retailer_ticket">>, ?right_w_retailer},
 
 	 {?make_ticket_batch, 
-	  <<"批量制卷">>, <<"make_ticket_batch">>, ?right_w_retailer}
+	  <<"批量制卷">>, <<"make_ticket_batch">>, ?right_w_retailer},
+
+	 {?discard_custom_ticket, 
+	  <<"优惠券废弃">>, <<"discard_custom_ticket">>, ?right_w_retailer}
 	],
 
     

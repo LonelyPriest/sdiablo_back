@@ -124,12 +124,12 @@ function wretailerConfig(angular) {
 	    when('/ticket/score_ticket_detail', {
 		templateUrl: '/private/wretailer/html/ticket_detail.html',
 		controller: 'wretailerTicketDetailCtrl',
-		resolve: angular.extend({},  user)
+		resolve: angular.extend({},  shop)
 	    }).
 	    when('/ticket/custom_ticket_detail', {
 		templateUrl: '/private/wretailer/html/custom_ticket_detail.html',
 		controller: 'wretailerCustomTicketDetailCtrl',
-		resolve: angular.extend({},  user)
+		resolve: angular.extend({}, shop)
 	    }).
 	    // default
 	    otherwise({
@@ -153,6 +153,7 @@ function wretailerConfig(angular) {
 	    2115: "制券数量一次不能超过1000张，请重新输入制券数量",
 	    2116: "券金额不能超过500元，请重新输入券金额",
 	    2117: "批次号已存在，请重新输入批次号",
+	    2118: "批次号不能超过9位，请重新输入批次号",
 	    2501: "短信中心不存在，请联系服务人员！！",
 	    2502: "短信发送失败，余额不足，请联系服务人员充值！！",
 	    2503: "短信提醒服务没有开通，请联系服务人员开通该功能！！", 
@@ -381,19 +382,36 @@ function wretailerConfig(angular) {
 		{operation: "consume_w_retailer_ticket"}, {tid:tid, comment:comment}).$promise;
 	};
 
-	this.get_ticket_by_retailer = function(retailerId) {
-	    return http.save(
-		{operation: "get_w_retailer_ticket"}, {retailer:retailerId, mode:0}).$promise;
-	};
+	// this.get_ticket_by_retailer = function(retailerId) {
+	//     return http.save(
+	// 	{operation: "get_w_retailer_ticket"}, {retailer:retailerId, mode:0}).$promise;
+	// };
 
-	this.get_ticket_by_batch = function(batch) {
-	    return http.save(
-		{operation: "get_w_retailer_ticket"}, {batch:batch, mode:1}).$promise;
-	};
+	// this.get_ticket_by_batch = function(batch) {
+	//     return http.save(
+	// 	{operation: "get_w_retailer_ticket"}, {batch:batch, mode:1}).$promise;
+	// };
 
+	/*
+	 * custom ticket
+	 */
 	this.make_ticket_batch = function(ticket) {
 	    return http.save(
 		{operation: "make_ticket_batch"}, ticket).$promise;
+	};
+
+	this.discard_custom_ticket = function(ticketId, mode) {
+	    return http.save(
+		{operation: "discard_custom_ticket"}, {tid:ticketId, mode:mode}).$promise;
+	};
+
+	this.filter_custom_ticket_detail = function(match, fields, currentPage, itemsPerpage){
+	    return http.save(
+		{operation: "filter_custom_ticket_detail"},
+		{match:  angular.isDefined(match) ? match.op : undefined,
+		 fields: fields,
+		 page:   currentPage,
+		 count:  itemsPerpage}).$promise;
 	};
 
 	this.export_w_retailer = function(conditions){

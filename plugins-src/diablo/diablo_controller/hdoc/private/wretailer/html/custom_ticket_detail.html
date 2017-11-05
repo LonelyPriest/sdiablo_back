@@ -8,9 +8,13 @@
 
 	<div class="actions">
 	  <div class="btn-group btn-group-solid">
-	    <!-- <button class="btn green" -->
-	    <!--    x-ng-click="add_batch()">制券 -->
-	    <!--   <i class="glyphicon glyphicon-plus"></i></button> -->
+	    <button class="btn green"
+	       x-ng-click="add_batch()">制券
+	      <i class="glyphicon glyphicon-plus"></i></button>
+
+	    <button class="btn red purple-stripe"
+	       x-ng-click="discard(-1, 1)">废弃
+	      <i class="glyphicon glyphicon-minus"></i></button>
 	    
 	    <button class="btn blue reload purple-stripe"
 	       x-ng-click="refresh()">刷新
@@ -67,21 +71,64 @@
 		  <tr>
 		    <th>序号</th>
 		    <th>批次号</th>
-		    <th>消费客户</th>
+		    <th>会员</th>
 		    <th>联系方式</th>
 		    <th>金额</th>
 		    <th>状态</th>
-		    <th>会员所在店铺</th>
-		    <th>会员消费店铺</th> 
+		    <th>登记店铺</th>
+		    <th>消费店铺</th> 
 		    <th>备注</th> 
 		    <th>生成日期</th> 
 		    <th>操作</th>
 		  </tr>
-		</thead>
+		</thead> 
 		
 		<tbody>
-		  <tr ng-repeat="t in tickets"> 
-		  </tr> 
+		  <tr ng-repeat="t in tickets">
+		    <td x-ng-bind=t.order_id></td>
+		    <td x-ng-bind=t.batch></td>
+		    <td x-ng-bind=t.retailer></td>
+		    <td x-ng-bind=t.mobile></td>
+		    <td x-ng-bind=t.balance></td>
+		    <td>
+		      <div x-ng-switch on=t.state>
+			<span x-ng-switch-when=0 class="fg-red">已废弃</span>
+			<span x-ng-switch-when=1>已确认</span>
+			<span x-ng-switch-when=2 class="fg-pink">已消费</span>
+		      </div>
+		    </td>
+		    
+		    <td>
+		      <div x-ng-switch on=t.retailer_id>
+			<div x-ng-switch-when=-1 class="text-center">-</div>
+			<div x-ng-switch-default>{{t.in_shop.name}}</div>
+		      </div>
+		    </td>
+
+		    <td>
+		      <div x-ng-switch on=t.shop_id>
+			<div x-ng-switch-when=-1 class="text-center">-</div>
+			<div x-ng-switch-default>{{t.shop.name}}</div>
+		      </div>
+		    </td>
+		    
+		    <td x-ng-bind=t.remark></td>
+		    <td x-ng-bind=t.entry_date></td>
+
+		    <td>
+		      <button x-ng-if="t.state===1"
+			      class="btn red diablo-button"
+			      x-ng-click="discard(t.id, 0)">废弃
+			<i class="glyphicon glyphicon-erase"></i></button> 
+		    </td> 
+		  </tr>
+
+		  <tr x-ng-if="total_items!==0" class="bg-white">
+		    <td colspan=4></td>
+		    <td>{{total_balance}}</td>
+		    <td></td>
+		  </tr>
+		  
 		</tbody>
 		
 		<tfoot>

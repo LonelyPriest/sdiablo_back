@@ -805,11 +805,11 @@ function wretailerChargeDetailCtrlProvide(
 
 function wretailerTicketDetailCtrlProvide(
     $scope, diabloFilter, diabloPattern, diabloUtilsService,
-    wretailerService, user){
+    wretailerService, filterShop){
 
     var dialog = diabloUtilsService;
 
-    $scope.shops = user.sortShops;
+    // $scope.shops = user.sortShops;
     $scope.pattern = {comment: diabloPattern.comment};
     $scope.items_perpage = diablo_items_per_page();
     $scope.max_page_size = 10;
@@ -851,7 +851,7 @@ function wretailerTicketDetailCtrlProvide(
 		    }
 
 		    angular.forEach($scope.tickets, function(t){
-			t.shop = diablo_get_object(t.shop_id, $scope.shops);
+			t.shop = diablo_get_object(t.shop_id, filterShop);
 		    });
 
 		    diablo_order($scope.tickets, (page - 1) * $scope.items_perpage + 1);
@@ -921,10 +921,9 @@ function wretailerTicketDetailCtrlProvide(
 
 function wretailerCustomTicketDetailCtrlProvide(
     $scope, diabloFilter, diabloPattern, diabloUtilsService,
-    wretailerService, user){
-    var dialog = diabloUtilsService;
-    
-    $scope.shops = user.sortShops;
+    wretailerService, filterShop){
+    var dialog = diabloUtilsService; 
+    // $scope.shops = user.sortShops;
     $scope.pattern = {positive_num: diabloPattern.positive_num};
     $scope.items_perpage = diablo_items_per_page();
     $scope.max_page_size = 10;
@@ -944,17 +943,58 @@ function wretailerCustomTicketDetailCtrlProvide(
     var now = retailerUtils.first_day_of_month();
     $scope.time = diabloFilter.default_time(now.first, now.current);
 
+    $scope.do_search = function(page){
+	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+	    wretailerService.filter_custom_ticket_detail(
+		$scope.match, search, page, $scope.items_perpage
+	    ).then(function(result){
+		console.log(result);
+		$scope.tickets = angular.copy(result.data); 
+		if (result.ecode === 0){
+		    if (page === $scope.default_page){
+			$scope.total_items = result.total;
+			$scope.total_balance = result.balance;
+		    }
+
+		    angular.forEach($scope.tickets, function(t){
+			t.shop = diablo_get_object(t.shop_id, filterShop);
+		    	t.in_shop = diablo_get_object(t.in_shop_id, filterShop);
+		    });
+		    
+		    diablo_order($scope.tickets, (page - 1) * $scope.items_perpage + 1);
+		    $scope.current_page = page; 
+		} 
+	    })
+	})
+    };
+
+    $scope.refresh = function(){
+	$scope.do_search($scope.default_page)
+    };
+
+    $scope.page_changed = function(page){
+	$scope.do_search(page)
+    };
+
     $scope.add_batch = function(){
 	var callback = function(params){
 	    console.log(params);
 	    var sbatch  = retailerUtils.to_integer(params.sbatch);
 	    var count   = retailerUtils.to_integer(params.count);
 	    var balance = retailerUtils.to_integer(params.balance);
-
-	    if (count > 1000)
+	    
+	    if (sbatch.toString().length > diablo_max_ticket_batch) {
+		dialog.response(false, "批量制券", "批量制券失败：" + wretailerService.error[2118]);
+		return;
+	    }
+	    if (count > 1000) {
 		dialog.response(false, "批量制券", "批量制券失败：" + wretailerService.error[2115]);
-	    if (balance > 500)
+		return;
+	    }
+	    if (balance > 500) {
 		dialog.response(false, "批量制券", "批量制券失败：" + wretailerService.error[2116]);
+		return;
+	    }
 
 	    wretailerService.make_ticket_batch(
 		{sbatch:sbatch, count:count, balance:balance}
@@ -981,6 +1021,28 @@ function wretailerCustomTicketDetailCtrlProvide(
 	    callback,
 	    undefined,
 	    {num_pattern: $scope.pattern.positive_num}); 
+    };
+
+    $scope.discard = function(ticketId, mode) {
+	console.log(ticketId);
+	var callback = function(params) {
+	    wretailerService.discard_custom_ticket(ticketId, mode).then(function(result){
+		if (result.ecode === 0){
+		    dialog.response_with_callback(
+			true, "优惠券废弃", "优惠券废弃成功！！" ,
+			undefined,
+			function(){
+			    $scope.do_search($scope.current_page);
+			})
+		} else {
+		    dialog.response(
+			false, "优惠券废弃", "优惠券废弃失败："
+			    + wretailerService.error[result.ecode]);
+		}
+	    })
+	};
+
+	dialog.request("优惠券废弃", "优惠券废弃后不可恢复，确定要废弃吗？", callback, undefined, undefined);
     };
     
 };

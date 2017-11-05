@@ -69,6 +69,20 @@ var diablo_asc  = 1;
 var diablo_charge = 0;
 var diablo_withdraw = 1;
 
+/*
+ * ticket
+ */
+var diablo_score_ticket = 0;
+var diablo_custom_ticket = 1;
+
+var diablo_ticket_by_retailer = 0;
+var diablo_ticket_by_batch = 1;
+
+var diablo_discard_ticket_one = 0;
+var diablo_discard_ticket_all = 1;
+
+var diablo_max_ticket_batch = 9;
+
 var diablo_seperator = ",";
 var diablo_fix_draft_path = "C:\\fix.txt";
 

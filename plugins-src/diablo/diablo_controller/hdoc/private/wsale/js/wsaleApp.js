@@ -457,6 +457,7 @@ function wsaleNewProvide(
 	ticket_balance: undefined,
 	ticket_sid: -1,
 	ticket_score: 0,
+	ticket_custom: diablo_invalid,
 	
 	total:        0,
 	abs_total:    0,
@@ -691,49 +692,57 @@ function wsaleNewProvide(
     $scope.ticket = function(){
 	var callback = function(params){
 	    // console.log(params);
-	    $scope.select.ticket_batch = undefined;
+	    $scope.select.ticket_batch   = undefined;
 	    $scope.select.ticket_balance = undefined;
+	    $scope.select.ticket_custom  = params.auto_batch ? diablo_score_ticket : diablo_custom_ticket;
 	    
 	    if (!params.auto_batch) {
-		diabloFilter.get_ticket_by_batch(params.ticket.batch).then(function(result){
-		    console.log(result);
-		    var ecode = result.ecode;
-		    if (ecode === 0 && !diablo_is_empty(result.data)) {
-			$scope.select.ticket_batch = result.data.batch;
-			$scope.select.ticket_balance = result.data.balance;
-			$scope.select.ticket_sid =  result.data.sid;
-			$scope.reset_payment();
-			// $scope.reset_score();
-		    } else {
-			if (diablo_is_empty(result.data)) ecode = 2105;
-
-			var ERROR = require("diablo-error");
-			diabloUtilsService.response(
-			    false,
-			    "会员电子卷获取",
-			    ERROR[ecode],
-			    undefined);
-		    } 
-		});
+	    	diabloFilter.get_ticket_by_batch(params.ticket.batch).then(function(result){
+	    	    console.log(result);
+	    	    var ecode = result.ecode;
+	    	    if (ecode === 0 && !diablo_is_empty(result.data)) {
+	    		$scope.select.ticket_batch = diablo_set_integer(result.data.batch);
+	    		$scope.select.ticket_balance = diablo_set_integer(result.data.balance);
+	    		$scope.reset_payment();
+	    	    } else {
+	    		if (diablo_is_empty(result.data)) ecode = 2105;
+	    		var ERROR = require("diablo-error");
+	    		diabloUtilsService.response(
+	    		    false,
+	    		    "会员电子卷获取",
+	    		    ERROR[ecode],
+	    		    undefined);
+	    	    } 
+	    	});
 	    } else {
-		$scope.select.ticket_batch = params.ticket.batch;
-		$scope.select.ticket_balance = params.ticket.balance;
-		$scope.reset_payment();
-		// $scope.reset_score();
+	    	$scope.select.ticket_batch = params.ticket.batch;
+	    	$scope.select.ticket_balance = params.ticket.balance;
+	    	$scope.reset_payment();
 	    } 
 	};
 	
 	diabloFilter.get_ticket_by_retailer($scope.select.retailer.id).then(function(result){
 	    console.log(result);
 	    if (result.ecode === 0){
+		var batch;
+		var balance;
+		var auto_batch = false;
+		$scope.select.ticket_sid = diablo_invalid_index;
+		
+		if (!diablo_is_empty(result.data)) {
+		    batch   = diablo_set_integer(result.data.batch);
+		    balance = diablo_set_integer(result.data.balance);
+		    $scope.select.ticket_sid = wsaleUtils.to_integer(result.data.sid);
+		    auto_batch = true; 
+		}
+		
 		diabloUtilsService.edit_with_modal(
 		    "new-ticket.html",
 		    undefined,
 		    callback,
 		    undefined,
-		    {ticket:{batch: diablo_set_integer(result.data.batch),
-			     balance: diablo_set_integer(result.data.balance)},
-		     auto_batch: wsaleUtils.to_integer(result.data.batch)!==0})
+		    {ticket: {batch: batch, balance: balance},
+		     auto_batch: auto_batch});
 	    } else {
 		var ERROR = require("diablo-error");
 		diabloUtilsService.response(
@@ -761,9 +770,10 @@ function wsaleNewProvide(
 	$scope.select.withdraw     = undefined;
 	
 	$scope.select.ticket_batch = undefined;
-	$scope.select.ticket_batch = undefined;
+	$scope.select.ticket_balance = undefined;
 	$scope.select.ticket_score = 0;
-	$scope.select.ticket_sid   = -1;
+	$scope.select.ticket_sid   = diablo_invalid_index;
+	$scope.select.ticket_custom = diablo_invalid;
 	
 	$scope.select.has_pay      = 0;
 	$scope.select.should_pay   = 0;
@@ -796,7 +806,7 @@ function wsaleNewProvide(
     $scope.refresh_datetime_per_5_minute = function(){
     	$scope.interval_per_5_minute = setInterval(function(){
     	    $scope.select.datetime  = $scope.today();
-	    console.log(dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"));
+	    // console.log(dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"));
     	}, 300 * 1000);
     };
 
@@ -1241,7 +1251,7 @@ function wsaleNewProvide(
 		var start_print = function(){
 		    $scope.select.ticket_score = 0; 
 		    var sid = $scope.select.ticket_sid;
-		    if (-1 !== sid) {
+		    if (diablo_invalid_index !== sid) {
 			var s = diablo_get_object(sid, $scope.scores);
 			$scope.select.ticket_score =
 			    parseInt($scope.select.ticket_balance / s.balance) * s.score
@@ -1397,6 +1407,7 @@ function wsaleNewProvide(
 	    employee:       $scope.select.employee.id,
 	    comment:        sets($scope.select.comment),
 	    ticket_batch:   seti($scope.select.ticket_batch),
+	    ticket_custom:  $scope.select.ticket_custom,
 
 	    balance:        $scope.select.surplus, 
 	    cash:           setv($scope.select.cash),

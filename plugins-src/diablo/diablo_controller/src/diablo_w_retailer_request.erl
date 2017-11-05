@@ -438,15 +438,16 @@ action(Session, Req, {"consume_w_retailer_ticket"}, Payload) ->
 action(Session, Req, {"get_w_retailer_ticket"}, Payload) ->
     ?DEBUG("get_w_retailer_ticket with session ~p, payload ~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
-
+    
     case 
-	case ?v(<<"mode">>, Payload, 0) of
-	    0 ->
+	case ?v(<<"mode">>, Payload, ?TICKET_BY_RETAILER) of
+	    ?TICKET_BY_RETAILER ->
 		RetailerId = ?v(<<"retailer">>, Payload),
 		?w_retailer:get_ticket(by_retailer, Merchant, RetailerId);
-	    1 ->
+	    ?TICKET_BY_BATCH ->
 		Batch = ?v(<<"batch">>, Payload),
-		?w_retailer:get_ticket(by_batch, Merchant, Batch)
+		UseCustomTicket = ?v(<<"custom">>, Payload, ?SCORE_TICKET), 
+		?w_retailer:get_ticket(by_batch, Merchant, Batch, UseCustomTicket)
 	end
     of 
 	{ok, Value} ->
@@ -460,23 +461,66 @@ action(Session, Req, {"make_ticket_batch"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     Count = ?v(<<"count">>, Payload),
     Balance = ?v(<<"balance">>, Payload),
+    StartBatch = ?v(<<"sbatch">>, Payload),
 
-    case Count > 1000 of
+    case erlang:length(?to_s(StartBatch)) > 9 of
 	true ->
-	    ?utils:respond(200, Req, ?err(make_ticket_invalid_count, Count));
+	    ?utils:respond(200, Req, ?err(ticket_batch_length_error, StartBatch));
 	false ->
-	    case Balance > 500 of
+	    case Count > 1000 of
 		true ->
-		    ?utils:respond(200, Req, ?err(make_ticket_invalid_balance, Balance));
+		    ?utils:respond(200, Req, ?err(make_ticket_invalid_count, Count));
 		false ->
-		    case ?w_retailer:make_ticket(batch, Merchant, Payload) of
-			{ok, StartBatch} ->
-			    ?utils:respond(200, Req, ?succ(consume_ticket, StartBatch));
-			{error, Error} ->
-			    ?utils:respond(200, Req, Error)
+		    case Balance > 500 of
+			true ->
+			    ?utils:respond(200, Req, ?err(make_ticket_invalid_balance, Balance));
+			false ->
+			    case ?w_retailer:make_ticket(batch, Merchant, Payload) of
+				{ok, StartBatch} ->
+				    ?utils:respond(200, Req, ?succ(consume_ticket, StartBatch));
+				{error, Error} ->
+				    ?utils:respond(200, Req, Error)
+			    end
 		    end
 	    end
     end;
+
+action(Session, Req, {"discard_custom_ticket"}, Payload) ->
+    ?DEBUG("discard_custom_ticket: session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    TicketId = ?v(<<"tid">>, Payload),
+    DiscardMode = ?v(<<"mode">>, Payload),
+
+    case DiscardMode of
+	?TICKET_DISCARD_ONE ->
+	    case ?w_retailer:ticket(discard_custom_one, Merchant, TicketId) of
+		{ok, TicketId} ->
+		    ?utils:respond(200, Req, ?succ(discard_ticket_one, TicketId));
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end;
+	?TICKET_DISCARD_ALL ->
+	    case ?w_retailer:ticket(discard_custom_all, Merchant) of
+		{ok, Merchant} ->
+		    ?utils:respond(200, Req, ?succ(discard_ticket_all, Merchant));
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end
+    end;
+
+action(Session, Req, {"filter_custom_ticket_detail"}, Payload) ->
+    ?DEBUG("filter_custom_ticket_detail with session ~p, paylaod~n~p", [Session, Payload]), 
+    Merchant  = ?session:get(merchant, Session),
+
+    ?pagination:pagination(
+       fun(Match, Conditions) ->
+	       ?w_retailer:filter(
+		  total_custom_ticket_detail, ?to_a(Match), Merchant, Conditions)
+       end,
+       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
+	       ?w_retailer:filter(
+		  custom_ticket_detail, Match, Merchant, Conditions, CurrentPage, ItemsPerPage)
+       end, Req, Payload);
 
 %% 
 %% charge
@@ -623,10 +667,14 @@ sidebar(Session) ->
 
 	  case ?right_auth:authen(?filter_ticket_detail, Session) of
 	      {ok, ?filter_ticket_detail} ->
-		  [{"score_ticket_detail", "积分电子券", "glyphicon glyphicon-font"},
-		   {"custom_ticket_detail", "定制电子券", "glyphicon glyphicon-bold"}];
+		  [{"score_ticket_detail", "积分电子券", "glyphicon glyphicon-font"}];
 	      _ -> []
-	  end 
+	  end
+	  ++ case ?right_auth:authen(?filter_custom_ticket_detail, Session) of
+		  {ok, ?filter_custom_ticket_detail} ->
+		     [{"custom_ticket_detail", "优惠电子券", "glyphicon glyphicon-bold"}];
+		  _ -> []
+	      end
 	 }],
     
     L1 = ?menu:sidebar(level_1_menu, S2 ++ S1 ++ S3),

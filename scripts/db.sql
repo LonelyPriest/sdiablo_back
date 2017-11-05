@@ -926,7 +926,9 @@ create table w_sale(
     merchant       INTEGER not null default -1,
 
     -- promotion     INTEGER not null default -1,
-    tbatch        INTEGER not null default -1,
+    tbatch        INTEGER not null default -1, -- ticket batch number
+    tcustome      TINYINT default -1, -- 0:score_ticket 1:custom_ticket -1: none
+    
     -- charge        INTEGER not null default -1,
     
     balance        DECIMAL(10, 2) default 0, -- max: 99999999.99

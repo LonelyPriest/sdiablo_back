@@ -78,29 +78,37 @@ action(Session, Req, {"get_w_sale_new", RSN}) ->
 
 	{ok, TicketScore} =
 	    case ?v(<<"tbatch">>, Sale) of
-		-1 -> {ok, 0};
+		?INVALID_OR_EMPTY -> {ok, 0};
 		TicketBatch ->
-		    {ok, Ticket} = ?w_retailer:get_ticket(by_batch, Merchant, {TicketBatch, 1}),
-		    case ?v(<<"sid">>, Ticket) of
-			-1 -> {ok, 0};
-			TicketSId ->
-			    {ok, Scores} = ?w_user_profile:get(score, Merchant),
-			    case lists:filter(
-				   fun({S})->
-					   ?v(<<"type_id">>, S) =:= 1
-					       andalso ?v(<<"id">>, S) =:= TicketSId end, Scores) of
-				[] -> throw({wsale_invalid_ticket_score, TicketBatch}) ;
-				[{Score2Money}] ->
-
-				    AccScore = ?v(<<"score">>, Score2Money), 
-				    Balance = ?v(<<"balance">>, Score2Money),
-				    TicketBalance = ?v(<<"balance">>, Ticket),
-				    case ?w_sale:direct(?v(<<"type">>, Sale)) of
-					wreject -> {ok, -TicketBalance div Balance * AccScore};
-					_ -> {ok, TicketBalance div Balance * AccScore}
+		    TicketType = ?v(<<"tcustom">>, Sale), 
+		    case TicketType of
+			?INVALID_OR_EMPTY ->
+			    {ok, 0};
+			?CUSTOM_TICKET ->
+			    {ok, 0};
+			?SCORE_TICKET ->
+			    {ok, Ticket} = ?w_retailer:get_ticket(
+					      by_batch, Merchant, {TicketBatch, ?TICKET_ALL, TicketType}),
+			    case ?v(<<"sid">>, Ticket) of
+				-1 -> {ok, 0};
+				TicketSid ->
+				    {ok, Scores} = ?w_user_profile:get(score, Merchant),
+				    case lists:filter(
+					   fun({S})->
+						   ?v(<<"type_id">>, S) =:= 1
+						       andalso ?v(<<"id">>, S) =:= TicketSid end, Scores) of
+					[] -> throw({wsale_invalid_ticket_score, TicketBatch}) ;
+					[{Score2Money}] -> 
+					    AccScore = ?v(<<"score">>, Score2Money), 
+					    Balance = ?v(<<"balance">>, Score2Money),
+					    TicketBalance = ?v(<<"balance">>, Ticket),
+					    case ?w_sale:direct(?v(<<"type">>, Sale)) of
+						wreject -> {ok, -TicketBalance div Balance * AccScore};
+						_ -> {ok, TicketBalance div Balance * AccScore}
+					    end
 				    end
-			    end
-		    end
+			    end 
+		    end 
 	    end,
 	
 	%% sort by style_number and brand
@@ -258,52 +266,73 @@ action(Session, Req, {"new_w_sale"}, Payload) ->
     %% ShouldPay        = ?v(<<"should_pay">>, Base),
     
     TicketBatch      = ?v(<<"ticket_batch">>, Base),
-    TicketBalance    = ?v(<<"ticket">>, Base),
+    TicketBalance    = ?v(<<"ticket">>, Base), 
+    TicketCustom    = ?v(<<"ticket_custom">>, Base, -1),
     
     case TicketBatch =/= undefined andalso TicketBalance =/= undefined of
 	true ->
-	    {ok, Ticket} = ?w_retailer:get_ticket(by_batch, Merchant, TicketBatch), 
+	    {ok, Ticket} = ?w_retailer:get_ticket(by_batch, Merchant, TicketBatch, TicketCustom), 
 	    case Ticket of
 		[] ->
 		    ?utils:respond(200, Req, ?err(ticket_not_exist, TicketBatch));
 		_ ->
-		    TicketSId = ?v(<<"sid">>, Ticket),
-		    case TicketSId of
-			-1 ->
+		    TicketInfo =
+			case TicketCustom of
+			    ?SCORE_TICKET ->
+				TicketSId = ?v(<<"sid">>, Ticket),
+				case TicketSId of
+				    ?INVALID_OR_EMPTY -> {ok, 0};
+				    _ ->
+					{ok, Scores} = ?w_user_profile:get(score, Merchant),
+					case lists:filter(
+					       fun({S})->
+						       ?v(<<"type_id">>, S) =:= 1
+							   andalso ?v(<<"id">>, S) =:= TicketSId end, Scores) of
+					    [] ->
+						{error, ?err(wsale_invalid_ticket_score, TicketSId)}; 
+					    [{Score2Money}] ->
+						case TicketBalance /= ?v(<<"balance">>, Ticket) of
+						    true ->
+							{error, ?err(wsale_invalid_ticket_balance, TicketBalance)}; 
+						    false -> 
+							AccScore = ?v(<<"score">>, Score2Money), 
+							Balance = ?v(<<"balance">>, Score2Money),
+							TicketScore =TicketBalance div Balance * AccScore,
+							{ok, TicketScore} 
+						end
+					end
+				end;
+			    ?CUSTOM_TICKET ->
+				case TicketBalance /= ?v(<<"balance">>, Ticket) of
+				    true ->
+					{error, ?err(wsale_invalid_ticket_balance, TicketBalance)};
+				    false ->
+					{ok, 0}
+				end
+			end,
+		    
+		    case TicketInfo of
+			{ok, 0} ->
 			    start(new_sale, Req, Merchant, Invs, Base, Print);
-			_ ->
-			    {ok, Scores} = ?w_user_profile:get(score, Merchant), 
-			    case lists:filter(
-				   fun({S})->
-					   ?v(<<"type_id">>, S) =:= 1
-					       andalso ?v(<<"id">>, S) =:= TicketSId end, Scores) of
-				[] ->
-				    ?utils:respond(
-				       200, Req, ?err(wsale_invalid_ticket_score, TicketSId));
-				[{Score2Money}] ->
-				    case TicketBalance /= ?v(<<"balance">>, Ticket) of
-					true ->
-					    ?utils:respond(
-					       200,
-					       Req,
-					       ?err(wsale_invalid_ticket_balance, TicketBalance));
-					false ->
-					    AccScore = ?v(<<"score">>, Score2Money), 
-					    Balance = ?v(<<"balance">>, Score2Money),
-					    TicketScore =TicketBalance div Balance * AccScore,
-					    start(
-					      new_sale,
-					      Req,
-					      Merchant,
-					      Invs,
-					      Base ++ [{<<"ticket_score">>, TicketScore}],
-					      Print)
-				    end
-			    end
+			{ok, _TicketScore} ->
+			    start(
+			      new_sale,
+			      Req,
+			      Merchant,
+			      Invs,
+			      Base ++ [{<<"ticket_score">>, _TicketScore}],
+			      Print);
+			{error, Error} ->
+			    ?utils:respond(200, Req, Error)
 		    end
 	    end;
 	false ->
-	    start(new_sale, Req, Merchant, Invs, Base, Print)
+	    start(new_sale,
+		  Req,
+		  Merchant,
+		  Invs,
+		  lists:keydelete(<<"ticket_custom">>, 1, Base),
+		  Print)
     end;
 	
     %% check invs
@@ -371,12 +400,7 @@ action(Session, Req, {"update_w_sale"}, Payload) ->
     Invs            = ?v(<<"inventory">>, Payload, []),
     {struct, Base}  = ?v(<<"base">>, Payload),
     RSN             = ?v(<<"rsn">>, Base),
-
-    %% Total = calc_count(reject, Invs, 0),
-    %% case Total =/= ?v(<<"total">>, Base) of
-    %% 	true ->
-    %% 	    ?utils:respond(200, Req, ?err(wsale_invalid_stock_total, Total));
-    %% 	false -> 
+    
     case ?w_sale:sale(get_new, Merchant, RSN) of
 	{ok, OldBase} -> 
 	    case ?w_sale:sale(update, Merchant, lists:reverse(Invs), {Base, OldBase}) of
@@ -457,25 +481,34 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
 
 	{ok, TicketScore} = 
 	    case ?v(<<"tbatch">>, Sale) of
-		-1 -> {ok, 0};
+		?INVALID_OR_EMPTY -> {ok, 0};
 		TicketBatch ->
-		    {ok, Ticket} = ?w_retailer:get_ticket(by_batch, Merchant, {TicketBatch, 1}),
-		    case ?v(<<"sid">>, Ticket) of
-			-1 -> {ok, 0};
-			TicketSId ->
-			    {ok, Scores} = ?w_user_profile:get(score, Merchant),
-			    case lists:filter(
-				   fun({S})->
-					   ?v(<<"type_id">>, S) =:= 1
-					       andalso ?v(<<"id">>, S) =:= TicketSId end, Scores) of
-				[] -> throw({wsale_invalid_ticket_score, TicketBatch}) ;
-				[{Score2Money}] -> 
-				    AccScore = ?v(<<"score">>, Score2Money), 
-				    Balance = ?v(<<"balance">>, Score2Money),
-				    TicketBalance = ?v(<<"balance">>, Ticket),
-				    case ?w_sale:direct(?v(<<"type">>, Sale)) of
-					wreject -> {ok, -TicketBalance div Balance * AccScore};
-					_ ->{ ok, -TicketBalance div Balance * AccScore}
+		    TicketType = ?v(<<"tcustom">>, Sale), 
+		    case TicketType of
+			?INVALID_OR_EMPTY ->
+			    {ok, 0};
+			?CUSTOM_TICKET ->
+			    {ok, 0};
+			?SCORE_TICKET -> 
+			    {ok, Ticket} = ?w_retailer:get_ticket(
+					      by_batch, Merchant, {TicketBatch, ?TICKET_ALL, TicketType}),
+			    case ?v(<<"sid">>, Ticket) of
+				?INVALID_OR_EMPTY -> {ok, 0};
+				TicketSid ->
+				    {ok, Scores} = ?w_user_profile:get(score, Merchant),
+				    case lists:filter(
+					   fun({S})->
+						   ?v(<<"type_id">>, S) =:= 1
+						       andalso ?v(<<"id">>, S) =:= TicketSid end, Scores) of
+					[] -> throw({wsale_invalid_ticket_score, TicketBatch}) ;
+					[{Score2Money}] -> 
+					    AccScore = ?v(<<"score">>, Score2Money), 
+					    Balance = ?v(<<"balance">>, Score2Money),
+					    TicketBalance = ?v(<<"balance">>, Ticket),
+					    case ?w_sale:direct(?v(<<"type">>, Sale)) of
+						wreject -> {ok, -TicketBalance div Balance * AccScore};
+						_ ->{ ok, -TicketBalance div Balance * AccScore}
+					    end
 				    end
 			    end
 		    end

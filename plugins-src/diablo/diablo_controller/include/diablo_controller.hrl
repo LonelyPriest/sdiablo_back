@@ -68,6 +68,22 @@
 -define(ONE_DAY, (24 * 60 * 60)).
 -define(SQL_TIME_OUT, 5 * 1000).
 
+%% ticket
+-define(SCORE_TICKET, 0). 
+-define(CUSTOM_TICKET, 1).
+-define(TICKET_BY_RETAILER, 0).
+-define(TICKET_BY_BATCH, 1).
+-define(TICKET_ALL, 1).
+-define(TICKET_CHECKED, 0).
+
+-define(TICKET_STATE_CONSUMED, 2).
+-define(TICKET_STATE_CHECKED, 1).
+-define(TICKET_STATE_CHECKING, 0).
+-define(CUSTOM_TICKET_STATE_DISCARD, 0).
+
+-define(TICKET_DISCARD_ONE, 0).
+-define(TICKET_DISCARD_ALL, 1).
+
 %% bill mode
 -define(CASH, 0).
 -define(CARD, 1).
@@ -172,6 +188,8 @@
 -define(update_w_retailer_phone,     ?right_w_retailer + 23).
 -define(set_w_retailer_withdraw,     ?right_w_retailer + 24).
 -define(make_ticket_batch,           ?right_w_retailer + 25).
+-define(filter_custom_ticket_detail, ?right_w_retailer + 26).
+-define(discard_custom_ticket,       ?right_w_retailer + 27).
 
 %% shop
 -define(new_shop,       ?right_shop + 1).

@@ -281,3 +281,6 @@ update w_inventory set amount=0 where shop=53 and style_number='0001' and brand=
 update w_sale set total=-2 where rsn='M-15-S-53-R-444';
 update w_sale set total=-2 where rsn='M-15-S-56-R-459';
 update w_sale set total=-2 where rsn='M-15-S-58-R-434';
+
+-- 2017-11-05
+alter table w_sale add column tcustom TINYINT default -1 after tbatch;

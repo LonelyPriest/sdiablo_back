@@ -163,9 +163,10 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
     %% ScoreId    = ?v(<<"sid">>, Props, 0),
     %% DrawScore  = ?v(<<"draw_score">>, Props, 0),
 
-    Ticket     = ?v(<<"ticket">>, Props, 0), 
-    TicketScore = ?v(<<"ticket_score">>, Props, 0),
-    TicketBatch = ?v(<<"ticket_batch">>, Props, -1), 
+    Ticket       = ?v(<<"ticket">>, Props, 0), 
+    TicketScore  = ?v(<<"ticket_score">>, Props, 0),
+    TicketBatch  = ?v(<<"ticket_batch">>, Props, -1),
+    TicketCustom = ?v(<<"ticket_custom">>, Props, -1),
     
     Sql0 = "select id, name, mobile, balance, score from w_retailer"
 	" where id=" ++ ?to_s(Retailer)
@@ -206,15 +207,16 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 			  end, [], Inventories), 
 
 		    Sql2 = "insert into w_sale(rsn"
-			", employ, retailer, shop, merchant, tbatch"
+			", employ, retailer, shop, merchant, tbatch, tcustom"
 			", balance, should_pay, cash, card, wxin, withdraw, ticket, verificate"
 			", total, lscore, score, comment, type, entry_date) values("
 			++ "\"" ++ ?to_s(SaleSn) ++ "\","
 			++ "\'" ++ ?to_s(Employe) ++ "\',"
 			++ ?to_s(Retailer) ++ ","
 			++ ?to_s(Shop) ++ ","
-			++ ?to_s(Merchant) ++ ","
-			++ ?to_s(TicketBatch) ++ "," 
+			++ ?to_s(Merchant) ++ "," 
+			++ ?to_s(TicketBatch) ++ ","
+			++ ?to_s(TicketCustom) ++ "," 
 			++ ?to_s(CurrentBalance) ++ ","
 			++ ?to_s(ShouldPay) ++ "," 
 			++ ?to_s(NewCash) ++ ","
@@ -242,11 +244,25 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 			    ++ " where id=" ++ ?to_s(?v(<<"id">>, Account))],
 
 		    Sql4 = case TicketBatch of
-			       -1 -> [];
-			       _  -> ["update w_ticket set state=2"
-				      " where merchant=" ++ ?to_s(Merchant)
-				      ++ " and batch=" ++ ?to_s(TicketBatch)
-				      ++ " and retailer=" ++ ?to_s(Retailer)]
+			       ?INVALID_OR_EMPTY ->
+				   [];
+			       _ ->
+				   case TicketCustom of
+				       ?SCORE_TICKET ->
+					   ["update w_ticket set state=" ++ ?to_s(?TICKET_STATE_CONSUMED)
+					    ++ " where merchant=" ++ ?to_s(Merchant)
+					    ++ " and batch=" ++ ?to_s(TicketBatch)
+					    ++ " and retailer=" ++ ?to_s(Retailer)];
+				       ?CUSTOM_TICKET ->
+					   ["update w_ticket_custom set "
+					    "state=" ++ ?to_s(?TICKET_STATE_CONSUMED)
+					    ++ ", retailer=" ++ ?to_s(Retailer)
+					    ++ ", shop=" ++ ?to_s(Shop)
+					    ++ " where merchant=" ++ ?to_s(Merchant)
+					    ++ " and batch=" ++ ?to_s(TicketBatch)];
+				       ?INVALID_OR_EMPTY ->
+					   []
+				   end
 			   end,
 
 		    AllSql = Sql1 ++ [Sql2] ++ Sql3 ++ Sql4,
@@ -507,6 +523,7 @@ handle_call({get_new, Merchant, RSN}, _From, State) ->
 	", retailer as retailer_id"
 	", shop as shop_id"
 	", tbatch"
+	", tcustom"
 	", balance"
 	", should_pay"
 	", cash"
@@ -776,6 +793,7 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
     Ticket     = ?v(<<"ticket">>, Props, 0),
     TicketScore = ?v(<<"ticket_score">>, Props, 0),
     TicketBatch = ?v(<<"tbatch">>, Props, -1),
+    TicketCustom = ?v(<<"tcustom">>, Props, -1),
     
     Sql0 = "select id, name, balance, score from w_retailer"
 	" where id=" ++ ?to_s(Retailer)
@@ -830,7 +848,7 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 	    ?DEBUG("new pays ~p", [NewPays]),
 	    
 	    Sql2 = "insert into w_sale(rsn"
-		", employ, retailer, shop, merchant, tbatch, balance"
+		", employ, retailer, shop, merchant, tbatch, tcustom, balance"
 		", should_pay, cash, card, wxin, ticket, withdraw, verificate, total"
 		", lscore, score, comment, type, entry_date) values("
 		++ "\"" ++ ?to_s(Sn) ++ "\","
@@ -838,7 +856,8 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 		++ ?to_s(Retailer) ++ ","
 		++ ?to_s(Shop) ++ ","
 		++ ?to_s(Merchant) ++ ","
-		++ ?to_s(TicketBatch) ++ "," 
+		++ ?to_s(TicketBatch) ++ ","
+		++ ?to_s(TicketCustom) ++ ","
 		++ ?to_s(CurrentBalance) ++ ","
 		++ ?to_s(-ShouldPay) ++ ","
 		++ ?to_s(-NewCash) ++ ","
@@ -873,8 +892,18 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 		case TicketBatch =:= -1 of
 		    true -> [];
 		    false ->
-			["update w_ticket set state=0 where merchant=" ++ ?to_s(Merchant)
-			 ++ " and batch=" ++ ?to_s(TicketBatch)]
+			case TicketCustom of
+			    ?CUSTOM_TICKET ->
+				["update w_ticket_custom set state=" ++ ?to_s(?TICKET_STATE_CHECKED)
+				 ++ ", retailer=" ++ ?to_s(?INVALID_OR_EMPTY)
+				 ++ ", shop=" ++ ?to_s(?INVALID_OR_EMPTY)
+				 ++ " where merchant=" ++ ?to_s(Merchant)
+				 ++ " and batch=" ++ ?to_s(TicketBatch)];
+			    ?SCORE_TICKET ->
+				["update w_ticket set state=" ++ ?to_s(?TICKET_STATE_CHECKING)
+				 ++ " where merchant=" ++ ?to_s(Merchant)
+				 ++ " and batch=" ++ ?to_s(TicketBatch)]
+			end
 		end,
 
 	    AllSql = Sql1 ++ [Sql2] ++ Sql3 ++ Sql4,

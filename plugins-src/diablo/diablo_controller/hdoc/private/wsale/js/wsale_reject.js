@@ -422,6 +422,7 @@ function wsaleRejectCtrlProvide(
 	    total:         seti($scope.select.rtotal),
 	    score:         $scope.select.rscore, 
 	    tbatch:        $scope.select.tbatch,
+	    tcustom:       $scope.select.tcustom,
 	    ticket_score:  $scope.select.ticket_score
 	};
 	

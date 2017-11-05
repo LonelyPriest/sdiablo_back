@@ -642,7 +642,7 @@ handle_call({get_sysretailer_profile, Merchant, Shops}, _From, State) ->
 	    %% [{Filter}] -> Filter;
 	    Filter -> Filter
 	end, 
-    ?DEBUG("FilterSettings ~p, length ~p", [FilterSettings, length(FilterSettings)]),
+    %% ?DEBUG("FilterSettings ~p, length ~p", [FilterSettings, length(FilterSettings)]),
     
     SysVips = lists:foldr(
 		fun({S}, Acc) ->
