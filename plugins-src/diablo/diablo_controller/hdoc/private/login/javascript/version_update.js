@@ -1,6 +1,11 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2017-11-06",
+         content:
+	 ["增加批量制作电子券功能"]
+        },
+	
 	{date: "2017-11-03",
          content:
 	 ["销售交易记录增加备注过滤条件",

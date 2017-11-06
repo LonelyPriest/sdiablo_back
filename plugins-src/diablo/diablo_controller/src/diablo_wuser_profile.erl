@@ -575,7 +575,7 @@ handle_call({get_print_profile, Merchant, Shop}, _From, State) ->
 		{ok, Prints} = ?w_print:printer(list_conn, Merchant),
 		GetPrint(Prints);
 	    [Prints] ->
-		?DEBUG("print ~p of merchant ~p", [Prints, Merchant]),
+		%% ?DEBUG("print ~p of merchant ~p", [Prints, Merchant]),
 		GetPrint(Prints) 
 	end, 
     {reply, {ok, NewPrints}, State};
@@ -674,7 +674,7 @@ handle_call({get_sysretailer_profile, Merchant, Shops}, _From, State) ->
 	    %% [{RFilter}] -> RFilter;
 	    RFilter -> RFilter
 	end, 
-    ?DEBUG("FilterRetailers ~p", [FilterRetailers]),
+    %% ?DEBUG("FilterRetailers ~p", [FilterRetailers]),
 
     SimpleRetailers = 
 	lists:foldr(
@@ -693,7 +693,7 @@ handle_call({get_sysretailer_profile, Merchant, Shops}, _From, State) ->
 		  [{R1}|Acc]
 	  end, [], FilterRetailers),
 
-    ?DEBUG("SimpleRetailers ~p", [SimpleRetailers]),
+    %% ?DEBUG("SimpleRetailers ~p", [SimpleRetailers]),
     
     {reply, {ok, SimpleRetailers}, State};
 

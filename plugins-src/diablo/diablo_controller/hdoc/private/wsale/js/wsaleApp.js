@@ -690,12 +690,12 @@ function wsaleNewProvide(
      * ticket
      */
     $scope.ticket = function(){
+	$scope.select.ticket_batch   = undefined;
+	$scope.select.ticket_balance = undefined;
+	$scope.select.ticket_custom  = undefined; 
+	
 	var callback = function(params){
-	    // console.log(params);
-	    $scope.select.ticket_batch   = undefined;
-	    $scope.select.ticket_balance = undefined;
-	    $scope.select.ticket_custom  = params.auto_batch ? diablo_score_ticket : diablo_custom_ticket;
-	    
+	    // console.log(params); 
 	    if (!params.auto_batch) {
 	    	diabloFilter.get_ticket_by_batch(params.ticket.batch).then(function(result){
 	    	    console.log(result);
@@ -703,6 +703,7 @@ function wsaleNewProvide(
 	    	    if (ecode === 0 && !diablo_is_empty(result.data)) {
 	    		$scope.select.ticket_batch = diablo_set_integer(result.data.batch);
 	    		$scope.select.ticket_balance = diablo_set_integer(result.data.balance);
+			$scope.select.ticket_custom = params.auto_batch ? diablo_score_ticket:diablo_custom_ticket;
 	    		$scope.reset_payment();
 	    	    } else {
 	    		if (diablo_is_empty(result.data)) ecode = 2105;
@@ -717,6 +718,7 @@ function wsaleNewProvide(
 	    } else {
 	    	$scope.select.ticket_batch = params.ticket.batch;
 	    	$scope.select.ticket_balance = params.ticket.balance;
+		$scope.select.ticket_custom = params.auto_batch ? diablo_score_ticket:diablo_custom_ticket;
 	    	$scope.reset_payment();
 	    } 
 	};

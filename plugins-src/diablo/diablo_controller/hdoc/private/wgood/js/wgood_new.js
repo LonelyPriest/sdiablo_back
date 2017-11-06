@@ -192,7 +192,9 @@ function wgoodNewCtrlProvide(
 		    });
 
 		    $scope.group_color_with_8();
-		    // console.log($scope.colors);
+		    // console.log($scope.colors); 
+		    // reset filter color
+		    diabloFilter.reset_color();
 		}; 
 		
 		if (state.ecode == 0){
@@ -200,7 +202,7 @@ function wgoodNewCtrlProvide(
 			true, "新增颜色", "新增颜色成功！！", $scope,
 			function(){
 			    append_color(state.id);
-			    diabloFilter.reset_color();
+			    // diabloFilter.reset_color();
 			});
 		    
 		} else{

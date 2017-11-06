@@ -179,7 +179,7 @@ call(Parent, {print, Action, RSN, Merchant, Invs, Attrs, Print}) ->
     {VPrinters, ShopInfo} = get_printer(Merchant, ShopId), 
     %% ?DEBUG("printers ~p", [Printers]),
     %% VPrinters = [P || P <- Printers, length(P) =/= 0 ],
-    ?DEBUG("printers ~p", [VPrinters]),
+    %% ?DEBUG("printers ~p", [VPrinters]),
     case VPrinters of
 	[] ->
 	    Parent ! {Parent, {error, ?err(shop_not_printer, ShopId)}};
@@ -210,7 +210,7 @@ call(Parent, {print, Action, RSN, Merchant, Invs, Attrs, Print}) ->
 	    try
 		lists:foldr(
 		  fun(P, Acc) ->
-			  ?DEBUG("p ~p", [P]),
+			  %% ?DEBUG("p ~p", [P]),
 			  SN     = ?v(<<"sn">>, P),
 			  Key    = ?v(<<"code">>, P),
 			  Path   = ?v(<<"server_path">>, P),
@@ -281,10 +281,10 @@ call(Parent, {print, Action, RSN, Merchant, Invs, Attrs, Print}) ->
 	    end
     end.
 
-print_content(ShopId, PBrand, Model, 58, Merchant, Setting, Invs) ->
-    ?DEBUG("print_content with shop ~p, pbrand ~p, model ~p"
-	   ", merchant ~p~nsetting ~p~ninvs ~p",
-	   [ShopId, PBrand, Model, Merchant, Setting, Invs]),
+print_content(_ShopId, PBrand, _Model, 58, Merchant, Setting, Invs) ->
+    %% ?DEBUG("print_content with shop ~p, pbrand ~p, model ~p"
+    %% 	   ", merchant ~p~nsetting ~p~ninvs ~p",
+    %% 	   [ShopId, PBrand, Model, Merchant, Setting, Invs]),
 
     {ok, Brands} = ?w_user_profile:get(brand, Merchant),
     {ok, Colors} = ?w_user_profile:get(color, Merchant),
@@ -497,7 +497,7 @@ head(<<"feie">> = Brand, _Model, 80, RSN, Retailer, Employee, Date) ->
 	++ line(equal, 48) ++ br(Brand).
 
 body_stastic(Brand, _Model, Column, _TotalBalance, Attrs, Vip, LastScore, STotal, RTotal) ->
-    ?DEBUG("body_stastic with Attrs ~p, Column ~p, Vip ~p", [Attrs, Column, Vip]),
+    %% ?DEBUG("body_stastic with Attrs ~p, Column ~p, Vip ~p", [Attrs, Column, Vip]),
     Cash         = ?v(<<"cash">>, Attrs, 0),
     Card         = ?v(<<"card">>, Attrs, 0),
     Wxin         = ?v(<<"wxin">>, Attrs, 0),
