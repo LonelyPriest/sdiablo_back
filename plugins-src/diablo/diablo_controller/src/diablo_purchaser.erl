@@ -1107,17 +1107,20 @@ handle_call({update_inventory, Merchant, Inventories, {Props, OldProps}}, _From,
     OldComment   = ?v(<<"comment">>, OldProps),
     OldTotal     = ?v(<<"total">>, OldProps),
 
+    RealyShop = ?w_good_sql:realy_shop(Merchant, Shop),
     
-    RealyShop = ?w_good_sql:realy_shop(Merchant, Shop), 
+    UpdateBaseSql = ?w_good_sql:inventory(
+		       update_attr, Mode, RSN, Merchant, RealyShop, {Firm, OldFirm, Datetime, OldDatetime}),
+
     Sql1 = case Inventories of
 	       [] ->
-		   ?w_good_sql:inventory(
-		      update, Mode, RSN, Merchant, RealyShop,
-		      Firm, OldFirm, Datetime, OldDatetime);
+		   %% ?w_good_sql:inventory(
+		   %%    update_attr, Mode, RSN, Merchant, RealyShop, {Firm, OldFirm, Datetime, OldDatetime});
+		   UpdateBaseSql;
 	       _ ->
 		   ?w_good_sql:inventory(
-		      update, Mode, RSN, Merchant, RealyShop, Firm,
-		      Datetime, OldDatetime, CurTime, Inventories)
+		      update, Mode, RSN, Merchant, RealyShop, {Firm, Datetime, CurTime}, Inventories)
+		       ++ UpdateBaseSql
 	   end,
 
     IsSame = fun(_, New, Old) when New == Old -> undefined;

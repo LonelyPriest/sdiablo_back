@@ -95,8 +95,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	if ($scope.stock_right.show_orgprice && $scope.setting.history_stock){
 	    // flow
 	    var filter_history = $scope.h_inventories.filter(function(h){
-		return h.style_number === inv.style_number
-		    && h.brand_id === inv.brand.id
+		return h.style_number === inv.style_number && h.brand_id === inv.brand.id
 	    });
 
 	    // console.log($scope.old_select.datetime.getTime());
@@ -109,12 +108,15 @@ function purchaserInventoryNewUpdateCtrlProvide (
 		}).then(function(result){
 		    // console.log(result);
 		    if (result.ecode === 0){
-			var history = angular.copy(result.data);
+			var history = angular.copy(result.data).sort(function(h1, h2) {
+			    return diablo_set_date(h1.entry_date) - diablo_set_date(h2.entry_date);
+			});
+			
 			angular.forEach(history, function(h){
 			    h.brand = diablo_get_object(h.brand_id, $scope.brands);
 			    h.firm  = diablo_get_object(h.firm_id, $scope.firms);
 			    h.shop  = diablo_get_object(h.shop_id, $scope.shops);
-			});
+			}); 
 
 			$scope.select_history = {style_number:inv.style_number,
 						 brand_id:    inv.brand_id,
@@ -318,7 +320,8 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	// console.log($scope.select);
 	// base setting
 	$scope.setting.history_stock = stockUtils.history_stock(base.shop_id, $scope.ubase);
-	$scope.setting.q_start_time = stockUtils.start_time(base.shop_id, $scope.ubase, $.now(), dateFilter);
+	$scope.setting.q_start_time =
+	    dateFilter(stockUtils.start_time(base.shop_id, $scope.ubase, $.now(), dateFilter), "yyyy-MM-dd");
 	
 	var length = invs.length;
 	var sorts  = [];
@@ -513,8 +516,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
 		    // update
 		    found = true;
 		    
-		    var update_count = parseInt(newAmounts[i].count)
-			- parseInt(oldAmounts[j].count); 
+		    var update_count = parseInt(newAmounts[i].count) - parseInt(oldAmounts[j].count); 
 		    if ( update_count !== 0 ){
 			changedAmounts.push(
 			    {operation: 'u',
@@ -570,10 +572,8 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	    for (var j=0, l2=$scope.old_inventories.length; j < l2; j++){
 		var oldInv = $scope.old_inventories[j];
 		// update
-		if (newInv.style_number === oldInv.style_number
-		    && newInv.brand.id === oldInv.brand.id){
-		    var change_amouts = get_update_amount(
-			newInv.amounts, oldInv.amounts);
+		if (newInv.style_number === oldInv.style_number && newInv.brand.id === oldInv.brand.id){
+		    var change_amouts = get_update_amount(newInv.amounts, oldInv.amounts);
 		    if (change_amouts.length !== 0){
 			newInv.operation = 'u';
 			// newInv.old_total = oldInv.total;
@@ -582,22 +582,17 @@ function purchaserInventoryNewUpdateCtrlProvide (
 		    } else {
 			// console.log(newInv);
 			// console.log(oldInv);
-			if (stockUtils.to_float(newInv.org_price)
-			    !== stockUtils.to_float(oldInv.org_price)
+			if (stockUtils.to_float(newInv.org_price) !== stockUtils.to_float(oldInv.org_price)
 			    
-			    || stockUtils.to_float(newInv.ediscount)
-			    !== stockUtils.to_float(oldInv.ediscount)
+			    || stockUtils.to_float(newInv.ediscount) !== stockUtils.to_float(oldInv.ediscount)
 			    
-			    || stockUtils.to_integer(newInv.over)
-			    !== stockUtils.to_integer(oldInv.over)
+			    || stockUtils.to_integer(newInv.over) !== stockUtils.to_integer(oldInv.over)
 
-			    || stockUtils.to_float(newInv.tag_price)
-			    !== stockUtils.to_float(oldInv.tag_price)
+			    || stockUtils.to_float(newInv.tag_price) !== stockUtils.to_float(oldInv.tag_price)
 			    
-			    || stockUtils.to_float(newInv.discount)
-			    !== stockUtils.to_float(oldInv.discount)
+			    || stockUtils.to_float(newInv.discount) !== stockUtils.to_float(oldInv.discount)
 
-			    || newInv.firm_id !== stockUtils.invalid_firm($scope.select.firm)
+			    // || newInv.firm_id !== stockUtils.invalid_firm($scope.select.firm)
 			   ){
 			    newInv.operation = 'u';
 			    changedInvs.push(newInv);
@@ -689,10 +684,8 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	    };
 	    
 	    added.push({
-		// good           : add.id,
 		style_number   : add.style_number,
 		brand          : add.brand.id,
-		// firm           : add.firm_id,
 		firm           : stockUtils.invalid_firm($scope.select.firm),
 		type           : add.type.id,
 		sex            : add.sex,

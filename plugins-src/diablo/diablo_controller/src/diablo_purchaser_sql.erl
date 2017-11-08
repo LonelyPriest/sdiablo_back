@@ -1329,13 +1329,12 @@ get_inventory(barcode, Merchant, Shop, Firm, Barcode) ->
 	   end.
 	
 
-inventory(update, Mode, RSN, Merchant, Shop, Firm, OldFirm, Datetime,  OldDatetime) ->
+inventory(update_attr, Mode, RSN, Merchant, Shop, {Firm, OldFirm, Datetime,  OldDatetime}) ->
     UpdateDate = case Datetime =/= OldDatetime of
 		     true ->
 			 ?utils:v(entry_date,
 				  string,
 				  Datetime
-				  %% ?utils:correct_datetime(datetime, Datetime)
 				 );
 		     false -> []
 		 end,
@@ -1379,14 +1378,14 @@ inventory(update, Mode, RSN, Merchant, Shop, Firm, OldFirm, Datetime,  OldDateti
 			 ++ " where a.merchant=" ++ ?to_s(Merchant)
 			 ++ " and a.shop=" ++ ?to_s(Shop),
 			 
-			 "update w_inventory_amount a inner join "
-			 "(select style_number, brand"
-			 " from w_inventory_new_detail"
-			 " where rsn=\'" ++ ?to_s(RSN) ++ "\') b"
-			 " on a.style_number=b.style_number and a.brand=b.brand"
-			 " set " ++?utils:to_sqls(proplists, comma, UpdateFirm)
-			 ++ " where a.merchant=" ++ ?to_s(Merchant)
-			 ++ " and a.shop=" ++ ?to_s(Shop),
+			 %% "update w_inventory_amount a inner join "
+			 %% "(select style_number, brand"
+			 %% " from w_inventory_new_detail"
+			 %% " where rsn=\'" ++ ?to_s(RSN) ++ "\') b"
+			 %% " on a.style_number=b.style_number and a.brand=b.brand"
+			 %% " set " ++?utils:to_sqls(proplists, comma, UpdateFirm)
+			 %% ++ " where a.merchant=" ++ ?to_s(Merchant)
+			 %% ++ " and a.shop=" ++ ?to_s(Shop),
 
 			 "update w_inventory_good a inner join "
 			 "(select style_number, brand"
@@ -1451,7 +1450,7 @@ inventory(update, Mode, RSN, Merchant, Shop, Firm, OldFirm, Datetime,  OldDateti
 	    end
     end.
 
-inventory(update, Mode, RSN, Merchant, Shop, Firm, Datetime, _OldDatetime, Curtime, Inventories) ->
+inventory(update, Mode, RSN, Merchant, Shop, {Firm, Datetime, Curtime}, Inventories) ->
     
     lists:foldr(
       fun({struct, Inv}, Acc0)-> 
@@ -1475,7 +1474,7 @@ inventory(update, Mode, RSN, Merchant, Shop, Firm, Datetime, _OldDatetime, Curti
 		      amount_update(Mode, RSN, Merchant, Shop, Datetime, Inv)
 			  ++ Acc0
 	      end
-      end, [], Inventories).
+      end, [], Inventories) .
 
 %% =============================================================================
 %% internal function
@@ -1887,8 +1886,7 @@ amount_delete(RSN, Merchant, Shop, Inv, Amounts) ->
 	  end, [], Amounts).
 
 amount_update(Mode, RSN, Merchant, Shop, Datetime, Inv) ->
-    ?DEBUG("update inventory with rsn ~p~namounts ~p",
-	   [RSN, ?v(<<"changed_amount">>, Inv)]),
+    ?DEBUG("update inventory with rsn ~p~namounts ~p", [RSN, ?v(<<"changed_amount">>, Inv)]),
     StyleNumber    = ?v(<<"style_number">>, Inv),
     Brand          = ?v(<<"brand">>, Inv),
     Firm           = ?v(<<"firm">>, Inv),
@@ -1926,7 +1924,7 @@ amount_update(Mode, RSN, Merchant, Shop, Datetime, Inv) ->
 	++ ?utils:v(org_price, float, OrgPrice)
 	++ ?utils:v(tag_price, float, TagPrice)
 	++ ?utils:v(ediscount, float, EDiscount)
-	++ ?utils:v(discount, float, Discount),
+	++ ?utils:v(discount, float, Discount), 
     
     Sql0 =
 	["update w_inventory_new_detail set "
@@ -1939,6 +1937,7 @@ amount_update(Mode, RSN, Merchant, Shop, Datetime, Inv) ->
 	       comma,
 	       Updates
 	       ++ ?utils:v(over, integer, Over))
+	 
 	 ++ " where rsn=\"" ++ ?to_s(RSN) ++ "\""
 	 ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 	 ++ " and brand=" ++ ?to_s(Brand)]

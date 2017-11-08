@@ -99,7 +99,10 @@ function purchaserInventoryRejectUpdateCtrlProvide(
 		}).then(function(result){
 		    // console.log(result);
 		    if (result.ecode === 0){
-			var history = angular.copy(result.data);
+			var history = angular.copy(result.data).sort(function(h1, h2) {
+			    return diablo_set_date(h1.entry_date) - diablo_set_date(h2.entry_date);
+			});
+			
 			angular.forEach(history, function(h){
 			    h.firm  = diablo_get_object(h.firm_id, $scope.firms);
 			    h.brand = inv.brand;
@@ -234,57 +237,54 @@ function purchaserInventoryRejectUpdateCtrlProvide(
 	console.log(result);
 	// result[0] is the record detail
 	// result[1] are the inventory detail that the record is included
-	var base = result[0];
+	var baseInfo = result[0];
 	var invs = result[1].data; 
 	
 	$scope.old_select.rsn        = rsn;
-	$scope.old_select.rsn_id     = base.id;
-	$scope.old_select.firm       = $scope.get_object(
-	    base.firm_id, $scope.firms); 
-	$scope.old_select.datetime   = diablo_set_datetime(base.entry_date);
+	$scope.old_select.rsn_id     = baseInfo.id;
+	$scope.old_select.firm       = $scope.get_object(baseInfo.firm_id, $scope.firms); 
+	$scope.old_select.datetime   = diablo_set_datetime(baseInfo.entry_date);
 	
 	// console.log($scope.e_pay_types);
-	if (base.e_pay_type === -1){
+	if (baseInfo.e_pay_type === -1){
 	    $scope.old_select.e_pay_type = $scope.e_pay_types[0];
 	    $scope.old_select.e_pay      = undefined;
 	} else{
-	    $scope.old_select.e_pay_type
-		= $scope.get_object(base.e_pay_type, $scope.e_pay_types);
-	    $scope.old_select.e_pay      = base.e_pay; 
+	    $scope.old_select.e_pay_type = $scope.get_object(baseInfo.e_pay_type, $scope.e_pay_types);
+	    $scope.old_select.e_pay      = baseInfo.e_pay; 
 	}
 	
 	// $scope.old_select.surplus    = $scope.old_select.firm.balance;
-	var select = stockUtils.get_login_employee(
-	    base.shop_id, user.loginEmployee, filterEmployee);
+	var loginInfo = stockUtils.get_login_employee(baseInfo.shop_id, user.loginEmployee, filterEmployee);
 	
-	$scope.select.employee = select.login;
-	$scope.employees = select.filter;
+	// console.log(loginInfo);
+	// $scope.select.employee = loginInfo.login;
+	$scope.employees = loginInfo.filter; 
+	$scope.old_select.shop = $scope.get_object(baseInfo.shop_id, $scope.shops); 
+	$scope.old_select.employee = $scope.get_object(baseInfo.employee_id, $scope.employees);
 	
-	$scope.old_select.shop = $scope.get_object(base.shop_id,   $scope.shops); 
-	$scope.old_select.employee = $scope.get_object(base.employee_id, $scope.employees);
-	
-	$scope.old_select.surplus      = base.balance;
-	$scope.old_select.comment      = base.comment;
-	$scope.old_select.total        = Math.abs(base.total); 
-	$scope.old_select.should_pay   = Math.abs(base.should_pay);
-	$scope.old_select.left_balance = stockUtils.to_decimal(base.balance + base.should_pay);
+	$scope.old_select.surplus      = baseInfo.balance;
+	$scope.old_select.comment      = baseInfo.comment;
+	$scope.old_select.total        = Math.abs(baseInfo.total); 
+	$scope.old_select.should_pay   = Math.abs(baseInfo.should_pay);
+	$scope.old_select.left_balance = stockUtils.to_decimal(baseInfo.balance + baseInfo.should_pay);
 	// $scope.old_select.rsn          = base.rsn;
 
+	console.log($scope.old_select);
 	$scope.select = angular.extend($scope.select, $scope.old_select);
 
 	// base setting
-	$scope.setting.reject_negative = stockUtils.reject_negative(base.shop_id, $scope.ubase);
-	$scope.setting.history_stock = stockUtils.history_stock(base.shop_id, $scope.ubase);
+	$scope.setting.reject_negative = stockUtils.reject_negative(baseInfo.shop_id, $scope.ubase);
+	$scope.setting.history_stock = stockUtils.history_stock(baseInfo.shop_id, $scope.ubase);
 	$scope.setting.q_start_time =
-	    stockUtils.start_time(base.shop_id, $scope.ubase, $.now(), dateFilter);
+	    dateFilter(stockUtils.start_time(base.shop_id, $scope.ubase, $.now(), dateFilter), "yyyy-MM-dd");
 	
-	$scope.prompt_limit = stockUtils.prompt_limit(base.shop_id, $scope.ubase); 
-	$scope.q_prompt = stockUtils.typeahead(base.shop_id, $scope.ubase);
-
+	$scope.prompt_limit = stockUtils.prompt_limit(baseInfo.shop_id, $scope.ubase); 
+	$scope.q_prompt = stockUtils.typeahead(baseInfo.shop_id, $scope.ubase); 
 	console.log($scope.q_prompt);
 	
 	if ($scope.q_prompt === diablo_frontend){
-	    $scope.get_all_prompt_inventory(base.shop_id, base.firm_id);
+	    $scope.get_all_prompt_inventory(baseInfo.shop_id, base.firm_id);
 	}
 	
 	var length = invs.length;
@@ -425,12 +425,10 @@ function purchaserInventoryRejectUpdateCtrlProvide(
     
     var get_update_amount = function(newAmounts, oldAmounts){
 	var filterNewAmounts = newAmounts.filter(function(m){
-	    return angular.isDefined(m.reject)
-		&& !isNaN(parseInt(m.reject))
-		&& parseInt(m.reject) !== 0;
-	});
-
+	    return stockUtils.to_integer(m.reject) !== 0; 
+	}); 
 	console.log(filterNewAmounts);
+	
 	var changedAmounts = [];
 	var found = false;
 	for (var i=0, l1=filterNewAmounts.length; i < l1; i++){
@@ -439,10 +437,8 @@ function purchaserInventoryRejectUpdateCtrlProvide(
 		if (filterNewAmounts[i].cid === oldAmounts[j].cid
 		    && filterNewAmounts[i].size === oldAmounts[j].size){
 		    // update
-		    found = true;
-		    
-		    var update_count = parseInt(filterNewAmounts[i].reject)
-			- parseInt(oldAmounts[j].reject);
+		    found = true; 
+		    var update_count = parseInt(filterNewAmounts[i].reject) - parseInt(oldAmounts[j].reject);
 		    
 		    if ( update_count !== 0 ){
 			changedAmounts.push(
@@ -498,10 +494,8 @@ function purchaserInventoryRejectUpdateCtrlProvide(
 	    for (var j=0, l2=$scope.old_inventories.length; j < l2; j++){
 		var oldInv = $scope.old_inventories[j];
 		// update
-		if (newInv.style_number === oldInv.style_number
-		    && newInv.brand.id === oldInv.brand.id){
-		    var change_amouts = get_update_amount(
-			newInv.amounts, oldInv.amounts);
+		if (newInv.style_number === oldInv.style_number && newInv.brand.id === oldInv.brand.id){
+		    var change_amouts = get_update_amount(newInv.amounts, oldInv.amounts);
 		    
 		    if (change_amouts.length !== 0){
 			newInv.operation = 'u';
@@ -511,11 +505,18 @@ function purchaserInventoryRejectUpdateCtrlProvide(
 		    } else {
 			// console.log(newInv);
 			// console.log(oldInv);
-			if (parseFloat(newInv.org_price) !== oldInv.org_price
-			    || parseFloat(newInv.ediscount) !== oldInv.ediscount){
+			// if (parseFloat(newInv.org_price) !== oldInv.org_price
+			//     || parseFloat(newInv.ediscount) !== oldInv.ediscount){
+			//     newInv.operation = 'u';
+			//     changedInvs.push(newInv);
+			// }
+			
+			if (stockUtils.to_float(newInv.org_price) !== stockUtils.to_float(oldInv.org_price) 
+			    || stockUtils.to_float(newInv.ediscount) !== stockUtils.to_float(oldInv.ediscount)) {
 			    newInv.operation = 'u';
 			    changedInvs.push(newInv);
 			}
+			
 		    }
 		    found = true;
 		    break;
@@ -597,7 +598,7 @@ function purchaserInventoryRejectUpdateCtrlProvide(
 	    added.push({
 		style_number   : add.style_number,
 		brand          : add.brand.id,
-		// firm           : add.firm.id,
+		firm           : stockUtils.invalid_firm($scope.select.firm),
 		type           : add.type.id,
 		sex            : add.sex,
 		season         : add.season,
@@ -633,11 +634,10 @@ function purchaserInventoryRejectUpdateCtrlProvide(
 	
 	if (added.length === 0
 	    && ($scope.select.cash === $scope.old_select.cash 
-		&& $scope.select.employee.id === $scope.old_select.employee.id
+		&& $scope.select.employee.id === stockUtils.get_object_id($scope.old_select.employee)
 		&& $scope.select.comment === $scope.old_select.comment
-		&& $scope.select.firm.id === $scope.old_select.firm.id
-		&& (angular.isDefined($scope.old_select.e_pay)
-		    && $scope.select.e_pay === $scope.old_select.e_pay)
+		&& stockUtils.invalid_firm($scope.select.firm) === stockUtils.invalid_firm($scope.old_select.firm)
+		&& stockUtils.to_float($scope.select.e_pay) === stockUtils.to_float($scope.old_select.e_pay)
 		&& new_datetime === old_datetime)){
 	    dialog.response_with_callback(
 	    	false,

@@ -70,14 +70,16 @@
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-flag fg-red"></i>店铺
 		</span>
-	  	<input class="form-control"
-		       type="text"
+		<input class="form-control" type="text"
 		       readonly
-	  	       x-ng-model="select.shop"
-	  	       placeholder="请选择店铺"
-	  	       typeahead-editable="false"
-	  	       uib-typeahead="s as s.name for s in
-	  			  shops|filter:$viewValue|limitTo:8"/>
+	  	       x-ng-model="select.shop.name"/> 
+	  	<!-- <input class="form-control" -->
+		<!--        type="text" -->
+		<!--        readonly -->
+	  	<!--        x-ng-model="select.shop" -->
+	  	<!--        placeholder="请选择店铺" -->
+	  	<!--        typeahead-editable="false" -->
+	  	<!--        uib-typeahead="s as s.name for s in shops|filter:$viewValue"/> -->
 	      </div>
 	    </div>
 

@@ -284,22 +284,22 @@ function purchaserInventoryNewCtrlProvide (
 	//     dateFun($.now - diablo_day_millisecond * 30, "yyyy-MM-dd"));
     };
     
-    $scope.get_all_w_good = function(){
-	// console.log(select_firm);
-	diabloFilter.match_all_w_good(
-	    dateFilter($scope.qtime_start($scope.select.shop.id), "yyyy-MM-dd"),
-	    stockUtils.match_firm($scope.select.firm)
-	).then(function(goods){
-	    $scope.all_w_goods = goods.sort(function(g1, g2){
-		return g1.style_number.length - g2.style_number.length;
-	    }).map(function(g){
-		var p = stockUtils.prompt_name(g.style_number, g.brand, g.type);
-		return angular.extend(g, {name:p.name, prompt:p.prompt}); 
-	    });
+    // $scope.get_all_w_good = function(){
+    // 	// console.log(select_firm);
+    // 	diabloFilter.match_all_w_good(
+    // 	    dateFilter($scope.qtime_start($scope.select.shop.id), "yyyy-MM-dd"),
+    // 	    stockUtils.match_firm($scope.select.firm)
+    // 	).then(function(goods){
+    // 	    $scope.all_w_goods = goods.sort(function(g1, g2){
+    // 		return g1.style_number.length - g2.style_number.length;
+    // 	    }).map(function(g){
+    // 		var p = stockUtils.prompt_name(g.style_number, g.brand, g.type);
+    // 		return angular.extend(g, {name:p.name, prompt:p.prompt}); 
+    // 	    });
 
-	    // console.log($scope.all_w_goods);
-	});
-    };
+    // 	    // console.log($scope.all_w_goods);
+    // 	});
+    // };
 
     // $scope.get_prompt_good = function(){
     // 	if ($scope.q_prompt === diablo_frontend){
