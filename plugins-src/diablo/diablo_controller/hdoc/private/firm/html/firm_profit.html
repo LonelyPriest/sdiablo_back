@@ -65,13 +65,17 @@
 		    <th>序号</th>
 		    <th>厂商</th>
 		    
-		    <th>已付</th>
+		    <th>期初欠款</th> 
+		    <th>已付款</th> 
 		    <th>核销</th>
-		    <th>费用</th>
-		    <th>欠款</th>
+		    <th>费用</th> 
+		    <th>期末欠款</th>
 		    
 		    <th>入库数量</th>
 		    <th>入库成本</th>
+		    <th>溢出数量</th>
+		    <th>溢出成本</th>
+		    
 		    <th>退货数量</th>
 		    <th>退货成本</th>
 		    <th x-ng-click="use_order(order_fields.sell)">销售数量
@@ -87,13 +91,17 @@
 		    <td x-ng-bind=a.order_id></td>
 		    <td x-ng-bind=a.firm.name></td>
 		    
-		    <td x-ng-bind=a.stockBalance.has_pay></td>
-		    <td x-ng-bind=a.stockBalance.veri></td>
-		    <td x-ng-bind=a.stockBalance.epay></td> 
-		    <td x-ng-bind=a.stockBalance.balance></td> 
+		    <td x-ng-bind=a.startBalance.balance></td>
+		    <td x-ng-bind=a.billBalance.has_pay></td>
+		    <td x-ng-bind=a.billBalance.verificate></td>
+		    <td x-ng-bind=a.billBalance.e_pay></td>
+		    <td x-ng-bind=a.endBalance.balance></td> 
 		    
 		    <td x-ng-bind=a.stockIn.amount></td>
 		    <td x-ng-bind=a.stockIn.cost></td>
+		    <td x-ng-bind=a.stockIn.over></td>
+		    <td x-ng-bind=a.stockIn.ocost></td>
+		    
 		    
 		    <td x-ng-bind=a.stockOut.amount></td>
 		    <td x-ng-bind=a.stockOut.cost></td>
@@ -106,9 +114,11 @@
 		  </tr>
 
 		  <tr x-ng-if="total_items!==0" class="bg-white">
-		    <td colspan=5></td>
-		    <td x-ng-bind=total_balance></td>
-		    <td colspan=8></td>
+		    <td colspan=3></td>
+		    <td x-ng-bind=total_stat.has_pay></td>
+		    <td x-ng-bind=total_stat.verificate></td>
+		    <td x-ng-bind=total_stat.e_pay></td>
+		    <td colspan=11></td>
 		  </tr> 
 		</tbody>
 		

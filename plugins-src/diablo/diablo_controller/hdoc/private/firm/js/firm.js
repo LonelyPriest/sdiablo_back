@@ -413,7 +413,7 @@ function firmAnalysisProfitCtrlProvide(
 		if (result.ecode === 0) {
 		    if (page === 1) {
 			$scope.total_items = result.total;
-			$scope.total_balance = result.other.tbalance;
+			$scope.total_stat = result.other;
 		    };
 		    
 		    var firms        = result.firm;
@@ -421,7 +421,10 @@ function firmAnalysisProfitCtrlProvide(
 		    var stockIn      = result.stockin;
 		    var stockOut     = result.stockout;
 		    // var stockAll     = result.stockall;
-		    var stockBalance = result.balance;
+		    var startBalance = result.sbalance;
+		    var endBalance   = result.ebalance;
+		    var billBalance  = result.fbalance;
+		    
 
 		    $scope.analysises = []; 
 		    angular.forEach(firms, function(f){
@@ -429,8 +432,9 @@ function firmAnalysisProfitCtrlProvide(
 			s.sale         = select_by_firm(f.id, sale);
 			s.stockIn      = select_by_firm(f.id, stockIn);
 			s.stockOut     = select_by_firm(f.id, stockOut);
-			// s.stockAll     = select_by_firm(f.id, stockAll);
-			s.stockBalance = select_by_firm(f.id, stockBalance);
+			s.startBalance = select_by_firm(f.id, startBalance);
+			s.endBalance   = select_by_firm(f.id, endBalance);
+			s.billBalance  = select_by_firm(f.id, billBalance);
 			$scope.analysises.push(s);
 		    });
 

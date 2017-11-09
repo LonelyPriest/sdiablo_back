@@ -239,7 +239,7 @@
 		</thead>
 
 		<tbody>
-		  <tr x-ng-repeat="h in select_history.history">
+		  <tr x-ng-repeat="h in p_history">
 		    <td>{{h.style_number}}</td>
 		    <td>{{h.brand.name}}</td>
 		    <td class="bg-lightOrange">{{h.firm.name}}</td>
@@ -267,6 +267,23 @@
 		</tbody>
 
 	      </table>
+	    </div>
+	    <div x-ng-show="h_total_items>h_items_perpage" class="row">
+	      <div class="col-md-12, col-sm-12, col-xs-12">
+		<span>显示第 {{h_current_page}} / {{num_pages}} 项结果，
+		  共 {{h_total_items}} 项</span>
+		<uib-pagination
+		   class="pagination-lg table-pagination pull-right"
+		   total-items="h_total_items"
+		   items-per-page="h_items_perpage"
+		   num-pages="num_pages"
+		   boundary-links="true"
+		   previous-text="&lsaquo;" next-text="&rsaquo;"
+		   first-text="&laquo;" last-text="&raquo;"
+		   x-ng-model="h_current_page"
+		   x-ng-change="h_page_changed(h_current_page)">
+		</uib-pagination>
+	      </div>
 	    </div>
 	  </div>
 	  

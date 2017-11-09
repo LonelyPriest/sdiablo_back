@@ -145,3 +145,9 @@ delete from w_inventory_good where (style_number, brand) in \
 where (a.style_number, a.brand) not in \
 (select style_number, brand from w_inventory where merchant=12 group by style_number, brand)) and merchant=12;
 
+
+-- check firm between w_inventory_new and w_inventory_new_detail
+select a.rsn, a.firm, c.name, b.rsn, b.firm, b.fname from w_inventory_new a left join \
+(select a.rsn, a.firm, b.name as fname from w_inventory_new_detail a \
+left join suppliers b on a.firm=b.id where a.merchant=2 group by rsn) b on a.rsn=b.rsn \
+left join suppliers c on a.firm=c.id where a.merchant=2 and a.firm!=b.firm;

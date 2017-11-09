@@ -288,9 +288,7 @@ action(Session, Req, {"analysis_profit_w_firm"}, Payload) ->
 		    {ok, TBalance} = ?supplier:sprofit(sprofit, balance, Merchant, Conditions),
 		    ?DEBUG("tbalance ~p", [TBalance]),
 		    {?v(<<"total">>, R),
-		     {proplists:delete(<<"total">>, R)
-		      ++ [{<<"tbalance">>, ?v(<<"tbalance">>, TBalance)}]
-		     }
+		     {proplists:delete(<<"total">>, R) ++ proplists:delete(<<"merchant">>, TBalance)}
 		    };
 		false -> {0, []}
 	    end,
@@ -311,7 +309,8 @@ action(Session, Req, {"analysis_profit_w_firm"}, Payload) ->
 		{ok, Firms} = ?supplier:supplier(
 				 {page_list, ?w_inventory_request:mode(Order), Sort},
 				 Merchant,
-				 ConditionsWithOutTime,
+				 %% ConditionsWithOutTime,
+				 Conditions,
 				 CurrentPage,
 				 ItemsPerpage),
 		FirmIds = lists:foldr(fun({Firm}, Acc) ->
@@ -323,9 +322,11 @@ action(Session, Req, {"analysis_profit_w_firm"}, Payload) ->
 		{ok, StockIn} = ?supplier:profit(profit, stock_in_of_firm, Merchant, NConditions),
 		{ok, StockOut} = ?supplier:profit(profit, stock_out_of_firm, Merchant, NConditions),
 		%% {ok, StockAll} = ?supplier:profit(profit, stock_all, Merchant, NConditions),
-		{ok, StockBalance} = ?supplier:profit(profit, balance, Merchant, NConditions),
+		{ok, StartBalance} = ?supplier:profit(profit, start_balance, Merchant, NConditions),
+		{ok, EndBalance} = ?supplier:profit(profit, end_balance, Merchant, NConditions),
+		{ok, BillBalance} = ?supplier:profit(profit, bill_balance, Merchant, NConditions),
 
-		SS = 
+		SS0 = 
 		    lists:foldr(
 		      fun({S}, Acc) ->
 			      [{[{<<"firm_id">>, ?v(<<"firm_id">>, S)},
@@ -339,7 +340,23 @@ action(Session, Req, {"analysis_profit_w_firm"}, Payload) ->
 					- to_f(?v(<<"has_pay">>, S, 0))
 					- to_f(?v(<<"verificate">>, S, 0)))
 				 }]}|Acc] 
-		      end, [], StockBalance),
+		      end, [], StartBalance),
+
+		SS1 = 
+		    lists:foldr(
+		      fun({S}, Acc) ->
+			      [{[{<<"firm_id">>, ?v(<<"firm_id">>, S)},
+				 {<<"has_pay">>, ?v(<<"has_pay">>, S)},
+				 {<<"veri">>,    ?v(<<"verificate">>, S)},
+				 {<<"epay">>,    ?v(<<"e_pay">>, S)},
+				 {<<"balance">>,
+				  ?to_f(to_f(?v(<<"balance">>, S, 0))
+					+ to_f(?v(<<"should_pay">>, S, 0))
+					+ to_f(?v(<<"e_pay">>, S, 0))
+					- to_f(?v(<<"has_pay">>, S, 0))
+					- to_f(?v(<<"verificate">>, S, 0)))
+				 }]}|Acc] 
+		      end, [], EndBalance),
 
 		%% ?DEBUG("SS ~p", [SS]),
 
@@ -351,7 +368,9 @@ action(Session, Req, {"analysis_profit_w_firm"}, Payload) ->
 				 {<<"stockin">>, StockIn},
 				 {<<"stockout">>, StockOut},
 				 %% {<<"stockall">>, StockAll},
-				 {<<"balance">>, SS},
+				 {<<"sbalance">>, SS0},
+				 {<<"ebalance">>, SS1},
+				 {<<"fbalance">>, BillBalance},
 				 {<<"other">>, Others}
 				]})
 	end
@@ -367,7 +386,7 @@ action(Session, Req, {"export_firm_profit"}, Payload) ->
     {struct, Conditions} = ?v(<<"condition">>, Payload), 
     {struct, Mode}     = ?v(<<"mode">>, Payload),
 
-    {_, _, ConditionsWithOutTime} = ?sql_utils:cut(non_prefix, Conditions),
+    %% {_, _, ConditionsWithOutTime} = ?sql_utils:cut(non_prefix, Conditions),
     Order = ?v(<<"mode">>, Mode),
     Sort  = ?v(<<"sort">>, Mode),
 
@@ -394,9 +413,7 @@ action(Session, Req, {"export_firm_profit"}, Payload) ->
 	end,
     
     {ok, Firms} = ?supplier:supplier(
-		     {page_list, ?w_inventory_request:mode(Order), Sort},
-		     Merchant,
-		     ConditionsWithOutTime),
+		     {page_list, ?w_inventory_request:mode(Order), Sort}, Merchant, Conditions),
     FirmIds = lists:foldr(fun({Firm}, Acc) ->
 				  [?v(<<"id">>, Firm)|Acc]
 			  end, [], Firms), 
@@ -408,7 +425,10 @@ action(Session, Req, {"export_firm_profit"}, Payload) ->
     %% ?DEBUG("stocksIn ~p", [StocksIn]),
     {ok, StocksOut} = ?supplier:profit(profit, stock_out_of_firm, Merchant, NConditions),
     %% ?DEBUG("stocksOut ~p", [StocksOut]),
-    {ok, StocksBalance} = ?supplier:profit(profit, balance, Merchant, NConditions),
+    {ok, StartBalance} = ?supplier:profit(profit, start_balance, Merchant, NConditions),
+    {ok, EndBalance} = ?supplier:profit(profit, end_balance, Merchant, NConditions),
+    {ok, BillBalance} = ?supplier:profit(profit, bill_balance, Merchant, NConditions),
+    %% {ok, StocksBalance} = ?supplier:profit(profit, balance, Merchant, NConditions),
     %% ?DEBUG("stocksBalance ~p", [StocksBalance]),
     
 
@@ -424,7 +444,7 @@ action(Session, Req, {"export_firm_profit"}, Payload) ->
 			 SelectFun,
 			 1,
 			 Firms,
-			 {Sales, StocksIn, StocksOut, StocksBalance},
+			 {Sales, StocksIn, StocksOut, StartBalance, EndBalance, BillBalance},
 			 {ExportFormat, ShowOrgPrice}),
 		
 		ok = file:datasync(Fd),
@@ -543,9 +563,9 @@ do_write(firm, Do, Count, [{H}|T]) ->
 csv_head(pfirm, Do, {Format, ShowOrgPrice}) ->
     H = case ShowOrgPrice of
 	    true ->
-		"序号,厂商,已付,核销,费用,欠款,入库数量,入库成本,退货数量,退货成本,销售数量,销售成本,当前库存,库存成本";
+		"序号,厂商,期初欠款,已付款,核销,费用,期末欠款,入库数量,入库成本,溢出数量,溢出成本,退货数理,退货成本,销售数量,销售成本,当前库存,库存成本";
 	    false ->
-		"序号,厂商,入库数量,退货数量,销售数量,当前库存"
+		"序号,厂商,入库数量,溢出数量,退货数量,销售数量,当前库存"
 	end,
 
     L = case Format of
@@ -557,12 +577,12 @@ csv_head(pfirm, Do, {Format, ShowOrgPrice}) ->
 do_write(pfirm, _Do, _Select, _Count, [], _Info, _Format) ->
     ok;
 do_write(pfirm, Do, Select, Count, [{H}|T],
-	 {Sales, StocksIn, StocksOut, StocksBalance},
+	 {Sales, StocksIn, StocksOut, StartBalance, EndBalance, BillBalance},
 	 {Format, ShowOrgPrice}) ->
     FirmId = ?v(<<"id">>, H),
     Firm   = ?v(<<"name">>, H),
     %% ?DEBUG("Firm: ~p", [FirmId]),
-
+    
     Sale     = Select(FirmId, Sales),
     %% ?DEBUG("Sale: ~p", [Sale]),
     
@@ -571,19 +591,31 @@ do_write(pfirm, Do, Select, Count, [{H}|T],
     
     SOut     = Select(FirmId, StocksOut),
     %% ?DEBUG("StockOut: ~p", [SOut]),
-    
-    SBalance = Select(FirmId, StocksBalance),
-    %% ?DEBUG("SBalance: ~p", [SBalance]), 
 
-    Balance = ?v(<<"balance">>, SBalance, 0),
-    ShouldPay = ?v(<<"should_pay">>, SBalance, 0),
-    EPay    = ?v(<<"e_pay">>, SBalance, 0), 
-    HasPay  = ?v(<<"has_pay">>, SBalance, 0),
-    Veri    = ?v(<<"verificate">>, SBalance, 0), 
-    AccBalance = ?to_f(Balance + ShouldPay + EPay - HasPay - Veri),
+    S0 = Select(FirmId, StartBalance),
+    %% ?DEBUG("SBalance: ~p", [SBalance]),
+
+    S1  = Select(FirmId, EndBalance),
+
+    PeriodBalance = Select(FirmId, BillBalance),
+
+    BeginBalance = ?to_f(to_f(?v(<<"balance">>, S0, 0))
+			 + to_f(?v(<<"should_pay">>, S0, 0))
+			 + to_f(?v(<<"e_pay">>, S0, 0))
+			 - to_f(?v(<<"has_pay">>, S0, 0))
+			 - to_f(?v(<<"verificate">>, S0, 0))),
+
+    FinalBalance = ?to_f(to_f(?v(<<"balance">>, S1, 0))
+			 + to_f(?v(<<"should_pay">>, S1, 0))
+			 + to_f(?v(<<"e_pay">>, S1, 0))
+			 - to_f(?v(<<"has_pay">>, S1, 0))
+			 - to_f(?v(<<"verificate">>, S1, 0))),
+    
 
     StockIn     = ?v(<<"amount">>, SIn, 0),
     StockInCost = ?v(<<"cost">>, SIn, 0),
+    StockOver   = ?v(<<"over">>, SIn, 0),
+    StockOverCost = ?v(<<"ocost">>, SIn, 0),
 
     StockOut     = ?v(<<"amount">>, SOut, 0),
     StockOutCost = ?v(<<"cost">>, SOut, 0),
@@ -603,10 +635,15 @@ do_write(pfirm, Do, Select, Count, [{H}|T],
 	++ ?to_s(Firm) ++ ?d
 	++ case ShowOrgPrice of
 	       true ->
-		   ?to_s(HasPay) ++ ?d
-		       ++ ?to_s(Veri) ++ ?d
-		       ++ ?to_s(EPay) ++ ?d
-		       ++ ?to_s(AccBalance) ++ ?d;
+		   ?to_s(BeginBalance) ++ ?d;
+	       false -> []
+	   end
+	++ ?to_s(?v(<<"has_pay">>, PeriodBalance, 0)) ++ ?d
+	++ ?to_s(?v(<<"verificate">>, PeriodBalance, 0)) ++ ?d
+	++ ?to_s(?v(<<"e_pay">>, PeriodBalance, 0)) ++ ?d
+	++ case ShowOrgPrice of
+	       true ->
+		   ?to_s(FinalBalance) ++ ?d;
 	       false -> []
 	   end
 	
@@ -614,9 +651,15 @@ do_write(pfirm, Do, Select, Count, [{H}|T],
 	++ case ShowOrgPrice of
 	       true -> ?to_s(StockInCost) ++ ?d;
 	       false -> []
-	   end 
-	++ ?to_s(StockOut) ++ ?d
+	   end
 
+	++ ?to_s(StockOver) ++ ?d
+	++ case ShowOrgPrice of
+	       true -> ?to_s(StockOverCost) ++ ?d;
+	       false -> []
+	   end
+	
+	++ ?to_s(StockOut) ++ ?d 
 	++ case ShowOrgPrice of
 	       true -> ?to_s(StockOutCost) ++ ?d;
 	       false -> []
@@ -644,7 +687,9 @@ do_write(pfirm, Do, Select, Count, [{H}|T],
 	     {Sales -- Sale,
 	      StocksIn -- SIn,
 	      StocksOut -- SOut,
-	      StocksBalance -- SBalance},
+	      StartBalance -- S0,
+	      EndBalance -- S1,
+	      BillBalance -- PeriodBalance},
 	     {Format, ShowOrgPrice}).
 
 to_f(<<>>) -> 0;

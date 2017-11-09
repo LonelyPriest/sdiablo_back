@@ -250,8 +250,7 @@ handle_call({page_total, Merchant, Conditions}, _From, State) ->
 				   (Others, Acc) ->
 					[Others|Acc]
 				end, [], Conditions),
-    Sql = "select count(*) as total"
-	" from suppliers where merchant=" ++ ?to_s(Merchant)
+    Sql = "select count(*) as total" " from suppliers where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions),
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
@@ -264,23 +263,35 @@ handle_call({page_list, {Mode, Sort}, Merchant, Conditions, CurrentPage, ItemsPe
     				   (Others, Acc) ->
     					[Others|Acc]
     				end, [], Conditions),
+    {StartTime, EndTime, ConditionsWithOutTime} = ?sql_utils:cut(non_prefix, NewConditions),
+    
     Sql = "select a.id"
 	", a.name"
 	", a.balance"
+	
 	", b.sell"
-	", b.amount"
-	", b.cost"
+	
+	", c.amount"
+	", c.cost"
 	
 	" from suppliers a"
-	" left join"
+	
+	" left join" 
 	" (select firm as firm_id"
-	", SUM(sell) as sell"
+	", SUM(total) as sell"
+	" from w_sale_detail where merchant=" ++ ?to_s(Merchant)
+	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime) 
+	++ " group by firm) b on a.id=b.firm_id"
+
+	" left join" 
+	" (select firm as firm_id"
 	", SUM(amount) as amount"
 	", SUM(org_price * amount) as cost"
 	" from w_inventory where merchant=" ++ ?to_s(Merchant)
-	++ " group by firm ) b on a.id=b.firm_id"
+	++ " group by firm ) c on a.id=c.firm_id"
+	
 	++ " where a.merchant=" ++ ?to_s(Merchant)
-	++ ?sql_utils:condition(proplists, ?utils:correct_condition(<<"a.">>, NewConditions))
+	++ ?sql_utils:condition(proplists, ?utils:correct_condition(<<"a.">>, ConditionsWithOutTime))
 	++ case CurrentPage =:= -1 orelse ItemsPerPage =:= -1 of
 	       true  -> ?sql_utils:mode(Mode, Sort);
 	       false -> ?sql_utils:condition(page_desc, {Mode, Sort}, CurrentPage, ItemsPerPage)
@@ -878,7 +889,7 @@ handle_call({profit, sale_of_firm, Merchant, Conditions}, _From, State) ->
 	
     	" from w_sale a, w_sale_detail b" 
     	" where a.merchant=" ++ ?to_s(Merchant) 
-    	++ ?sql_utils:condition(proplists, NewConditions) 
+    	++ ?sql_utils:condition(proplists, ?utils:correct_condition(<<"b.">>, NewConditions)) 
     	++ " and a.rsn=b.rsn"
     	++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime) ++ ") x"
     	++ " group by x.merchant, x.firm_id",
@@ -890,7 +901,7 @@ handle_call({profit, stock_in_of_firm, Merchant, Conditions}, _From, State) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
     %% CorrectConditions = ?utils:correct_condition(<<"a.">>, NewConditions),
     Sql =
-	"select a.rsn, a.merchant"
+	"select a.merchant"
 	", a.firm as firm_id" 
 	", SUM(a.org_price * a.amount) as cost"
 	", SUM(a.org_price * a.over) as ocost"
@@ -898,9 +909,12 @@ handle_call({profit, stock_in_of_firm, Merchant, Conditions}, _From, State) ->
 	", SUM(a.over) as over"
 	
 	" from w_inventory_new_detail a, w_inventory_new b" 
-	" where a.merchant=" ++ ?to_s(Merchant)
-	++ ?sql_utils:condition(proplists, NewConditions) 
-	++ " and a.rsn=b.rsn"
+	" where a.rsn=b.rsn"
+	" and a.merchant=b.merchant"
+	" and a.firm=b.firm"
+	" and a.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	
 	++ " and b.type=0"
 	++ " and b.state in(0, 1)"
 	++ " and " ++ ?sql_utils:time_condition(StartTime, "b.entry_date", ge)
@@ -911,19 +925,22 @@ handle_call({profit, stock_in_of_firm, Merchant, Conditions}, _From, State) ->
     {reply, R, State};
 
 handle_call({profit, stock_out_of_firm, Merchant, Conditions}, _From, State) ->
-    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
     %% CorrectConditions = ?utils:correct_condition(<<"a.">>, NewConditions),
 
     Sql =
-	"select a.rsn, a.merchant"
+	"select a.merchant"
 	", a.firm as firm_id" 
 	", SUM(a.org_price * a.amount) as cost"
 	", SUM(a.amount) as amount"
 
 	" from w_inventory_new_detail a, w_inventory_new b" 
-	" where a.merchant=" ++ ?to_s(Merchant)
-	++ ?sql_utils:condition(proplists, NewConditions) 
-	++ " and a.rsn=b.rsn"
+	" where a.rsn=b.rsn"
+	" and a.merchant=b.merchant"
+	" and a.firm=b.firm"
+	" and a.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, ?utils:correct_condition(<<"a.">>, NewConditions))
+	
 	++ " and b.type=1"
 	++ " and b.state in(0, 1)"
 	++ " and " ++ ?sql_utils:time_condition(StartTime, "b.entry_date", ge)
@@ -989,20 +1006,100 @@ handle_call({profit, balance, Merchant, Conditions}, _From, State) ->
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 
-handle_call({sprofit, balance, Merchant, Conditions}, _From, State) ->
+handle_call({profit, start_balance, Merchant, Conditions}, _From, State) ->
+    {StartTime, _EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
+    Sql = "select a.id"
+	", a.merchant"
+	", a.firm as firm_id"
+	", a.balance"
+	
+	", a.should_pay"
+	", a.has_pay" 
+	", a.verificate"
+	", a.e_pay"
+	
+	", a.entry_date"
+
+	" from w_inventory_new a"
+
+	" inner join"
+	" (select max(a.entry_date) as entry, a.merchant, a.firm from w_inventory_new a"
+	" where a.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ ?sql_utils:fix_condition(time, time_with_prfix, undefined, StartTime)
+	++ " group by a.merchant, a.firm) b on "
+	" a.merchant=b.merchant and a.firm=b.firm and a.entry_date=b.entry"
+	
+	" where a.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ ?sql_utils:fix_condition(time, time_with_prfix, undefined, StartTime)
+	++ " group by a.merchant, a.firm order by entry_date", 
+
+    R = ?sql_utils:execute(read, Sql),
+    {reply, R, State};
+
+handle_call({profit, end_balance, Merchant, Conditions}, _From, State) ->
     {_StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
-    Sql = "select a.merchant"
-	", SUM(a.should_pay - a.has_pay - a.verificate + a.e_pay) as tbalance"
-    %% ", a.should_pay"
-	%% ", a.has_pay" 
-	%% ", a.verificate"
-	%% ", a.e_pay"
-    %% ", a.entry_date"
-	" from w_inventory_new a" 
+    Sql = "select a.id"
+	", a.merchant"
+	", a.firm as firm_id"
+	", a.balance"
+
+	", a.should_pay"
+	", a.has_pay" 
+	", a.verificate"
+	", a.e_pay"
+
+	", a.entry_date"
+
+	" from w_inventory_new a"
+
+	" inner join"
+	" (select max(a.entry_date) as entry, a.merchant, a.firm from w_inventory_new a"
+	" where a.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ ?sql_utils:fix_condition(time, time_with_prfix, undefined, EndTime)
+	++ " group by a.merchant, a.firm) b on "
+	" a.merchant=b.merchant and a.firm=b.firm and a.entry_date=b.entry"
 
 	" where a.merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions)
-	++ ?sql_utils:fix_condition(time, time_with_prfix, undefined, EndTime),
+	++ ?sql_utils:fix_condition(time, time_with_prfix, undefined, EndTime)
+	++ " group by a.merchant, a.firm order by entry_date", 
+
+    R = ?sql_utils:execute(read, Sql),
+    {reply, R, State};
+
+handle_call({profit, bill_balance, Merchant, Conditions}, _From, State) ->
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
+    
+    Sql = "select merchant"
+	", firm as firm_id"
+	", SUM(has_pay) as has_pay"
+	", SUM(verificate) as verificate"
+	", SUM(e_pay) as e_pay"
+
+	" from w_inventory_new" 
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime) 
+	++ " group by merchant, firm",
+    
+    R = ?sql_utils:execute(read, Sql),
+    {reply, R, State}; 
+    
+
+handle_call({sprofit, balance, Merchant, Conditions}, _From, State) ->
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions), 
+    Sql = "select merchant"
+	", SUM(should_pay) as should_pay"
+	", SUM(has_pay) as has_pay"
+	", SUM(verificate) as verificate"
+	", SUM(e_pay) as e_pay"
+	" from w_inventory_new" 
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime),
 
     R = ?sql_utils:execute(s_read, Sql),
     {reply, R, State}; 

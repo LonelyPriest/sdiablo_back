@@ -1,6 +1,11 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2017-11-10",
+         content:
+	 ["根据财条修改厂商进销存统计字段与算法"]
+        },
+	
 	{date: "2017-11-09",
          content:
 	 ["修正修改采购记录时有时会导致与采购明细的厂商不一致的问题",

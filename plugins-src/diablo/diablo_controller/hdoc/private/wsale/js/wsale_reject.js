@@ -346,8 +346,8 @@ function wsaleRejectCtrlProvide(
 	// var nscore = 0;
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    var add = $scope.inventories[i];
-	    if (!add.select || add.total < 0) continue;
-
+	    // if (!add.select || add.total < 0) continue;
+	    if (!add.select) continue;
 	    rtotal += add.reject;
 	    added.push({
 		style_number: add.style_number,
