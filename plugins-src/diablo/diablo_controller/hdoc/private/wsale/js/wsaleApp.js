@@ -475,17 +475,18 @@ function wsaleNewProvide(
     var dialog = diabloUtilsService;
     
     var get_setting = function(shopId){
-	$scope.setting.check_sale = wsaleUtils.check_sale(shopId, base);
+	$scope.setting.check_sale    = wsaleUtils.check_sale(shopId, base);
 	$scope.setting.negative_sale = wsaleUtils.negative_sale(shopId, base);
-	$scope.setting.no_vip     = wsaleUtils.no_vip(shopId, base);
-	$scope.setting.q_backend = $scope.q_typeahead(shopId);
-	$scope.setting.round   = wsaleUtils.round(shopId, base);
-	$scope.setting.smember = wsaleUtils.s_member(shopId, base);
-	$scope.setting.semployee = wsaleUtils.s_employee(shopId, base);
-	$scope.setting.cake_mode = wsaleUtils.cake_mode(shopId, base);
-	$scope.setting.barcode_mode = wsaleUtils.barcode_mode(shopId, base);
-	$scope.setting.barcode_auto = wsaleUtils.barcode_auto(shopId, base);
-	$scope.setting.draw_score = wsaleUtils.draw_score(shopId, base);
+	$scope.setting.no_vip        = wsaleUtils.no_vip(shopId, base);
+	$scope.setting.q_backend     = $scope.q_typeahead(shopId);
+	$scope.setting.round         = wsaleUtils.round(shopId, base);
+	$scope.setting.smember       = wsaleUtils.s_member(shopId, base);
+	$scope.setting.semployee     = wsaleUtils.s_employee(shopId, base);
+	$scope.setting.cake_mode     = wsaleUtils.cake_mode(shopId, base);
+	$scope.setting.barcode_mode  = wsaleUtils.barcode_mode(shopId, base);
+	$scope.setting.barcode_auto  = wsaleUtils.barcode_auto(shopId, base);
+	$scope.setting.draw_score    = wsaleUtils.draw_score(shopId, base);
+	$scope.setting.draw_region   = wsaleUtils.draw_score(shopId, base); 
 
 	if (diablo_no === $scope.setting.cake_mode) {
 	    $scope.vpays = wsaleService.vpays;
@@ -659,31 +660,53 @@ function wsaleNewProvide(
 	    } else {
 		return max_draw;
 	    } 
-	};
-
+	}; 
 	var limit_balance = get_max_draw();
-	// console.log(limit_balance);
-	diabloUtilsService.edit_with_modal(
-	    "new-withdraw.html",
-	    undefined,
-	    callback,
-	    undefined,
-	    {retailer: {
-		id        :$scope.select.retailer.id,
-		name      :$scope.select.retailer.name,
-		surplus   :$scope.select.surplus, 
-		withdraw  :limit_balance 
-	    },
-	      
-	     check_withdraw: function(balance){
-		 // return balance > $scope.select.retailer.balance
-		 //     || balance > $scope.select.charge ? false : true;
-		 return balance <= limit_balance;
-	     },
-	      
-	     check_zero: function(balance) {return balance === 0 ? true:false}
-	    }
-	)
+	
+	var startWithdraw = function() {
+	    diabloUtilsService.edit_with_modal(
+		"new-withdraw.html",
+		undefined,
+		callback,
+		undefined,
+		{retailer: {
+		    id        :$scope.select.retailer.id,
+		    name      :$scope.select.retailer.name,
+		    surplus   :$scope.select.surplus, 
+		    withdraw  :limit_balance 
+		},
+		 
+		 check_withdraw: function(balance){
+		     // return balance > $scope.select.retailer.balance
+		     //     || balance > $scope.select.charge ? false : true;
+		     return balance <= limit_balance;
+		 },
+		 
+		 check_zero: function(balance) {return balance === 0 ? true:false}
+		}
+	    )
+	}
+
+	if (diablo_yes === $scope.setting.draw_region) {
+	    diabloFilter.check_retailer_region(
+		$scope.select.retailer.id, $scope.select.shop.id
+	    ).then(function(result) {
+		console.log(result);
+		if (result.ecode === 0) {
+		    startWithdraw();
+		} else {
+		    var ERROR = require("diablo-error");
+		    diabloUtilsService.response(
+			false,
+			"会员现金提取",
+			ERROR[result.ecode],
+			undefined)
+		}
+	    })
+	} else {
+	    startWithdraw();
+	}
+	
     };
 
     /*

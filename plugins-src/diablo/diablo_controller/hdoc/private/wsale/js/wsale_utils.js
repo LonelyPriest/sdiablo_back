@@ -311,6 +311,10 @@ var wsaleUtils = function(){
 	    return diablo_base_setting("draw_score", shop, base, parseInt, diablo_yes);
 	},
 
+	draw_region: function(shop, base) {
+	    return diablo_base_setting("draw_region", shop, base, parseInt, diablo_no);
+	},
+
 	get_login_employee:function(shop, loginEmployee, employees){
 	    var filterEmployees = employees.filter(function(e){
 		return e.shop === shop && e.state === 0;

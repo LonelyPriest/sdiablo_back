@@ -835,7 +835,8 @@ sys_config() ->
 	      {"prn_h_page",        "单据纸张高",         "14.0", "0"},
 	      {"prn_w_page",        "单据纸张宽",         "21.3", "0"},
 	      {"draw_score",        "提现积分",           "1",    "0"},
-	      {"dual_barcode",      "双排条码",           "0",    "0"}
+	      {"dual_barcode",      "双排条码",           "0",    "0"},
+	      {"draw_region",       "区域提现",           "0",    "0"}
 	      %% {"bcode_self",     "吊牌打印模式",       "0",   "0"}
 	     ],
     Values.

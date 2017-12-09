@@ -936,6 +936,7 @@ pass_action(wholesaler) ->
      <<"get_w_retailer_batch">>,
      <<"filter_retailer_detail">>,
      <<"check_w_retailer_password">>,
+     <<"check_w_retailer_region">>,
      <<"list_w_retailer_charge">>,
      <<"list_w_retailer_score">>,
      <<"filter_charge_detail">>,

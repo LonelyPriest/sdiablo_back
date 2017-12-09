@@ -920,21 +920,45 @@ stockPrintU.prototype.printBarcode2 = function() {
 
     // style number
     if (this.template.style_number) {
-	line = "款号：" + this.stock.style_number;
+	line = "款号：";
+	if (this.template.width <= 4 && this.stock.style_number.length > 8) {
+	    line += this.stock.style_number.substr(0, 9);
+	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, line);
+	    if (pSecond) 
+		this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, line);
+	    top += this.template.hpx_each;
 
-	if (this.template.expire && this.stock.expire_date !== diablo_none) {
-	    line += this.stock.expire_date.split(diablo_date_seprator).join("");
-	}
-	
-	if (!this.template.solo_brand) {
-	    line += this.brand;
+	    line = "     " + this.stock.style_number.substr(9, this.stock.style_number.length);
+	    if (this.template.expire && this.stock.expire_date !== diablo_none) {
+		line += this.stock.expire_date.split(diablo_date_seprator).join("");
+	    }
+	    
+	    if (!this.template.solo_brand) {
+		line += this.brand;
+	    }
+	    
+	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, line); 
+	    if (pSecond)
+		this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, line);
+	    top += this.template.hpx_each; 
 	} 
-	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, line);
-	
-	if (pSecond)
-	    this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, line);
-	
-	top += this.template.hpx_each;
+	else {
+	    line += this.stock.style_number;
+	    
+	    if (this.template.expire && this.stock.expire_date !== diablo_none) {
+		line += this.stock.expire_date.split(diablo_date_seprator).join("");
+	    }
+	    
+	    if (!this.template.solo_brand) {
+		line += this.brand;
+	    } 
+	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, line);
+	    
+	    if (pSecond)
+		this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, line);
+	    
+	    top += this.template.hpx_each;
+	}
     }
 
     // color

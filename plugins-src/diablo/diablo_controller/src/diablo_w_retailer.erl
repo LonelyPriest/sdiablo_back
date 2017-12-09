@@ -52,7 +52,10 @@ retailer(get, Merchant, RetailerId) ->
     gen_server:call(Name, {get_retailer, Merchant, RetailerId});
 retailer(get_batch, Merchant, RetailerIds) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {get_retailer_batch, Merchant, RetailerIds}).
+    gen_server:call(Name, {get_retailer_batch, Merchant, RetailerIds}); 
+retailer(last_recharge, Merchant, RetailerId) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {last_recharge, Merchant, RetailerId}).
     
 retailer(update, Merchant, RetailerId, {Attrs, OldAttrs}) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -818,6 +821,19 @@ handle_call({list_recharge, Merchant, Conditions}, _From, State) ->
 	++ " order by id desc",
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
+
+handle_call({last_recharge, Merchant, RetailerId}, _From, State) ->
+    Sql = "select a.id, a.rsn"
+	", a.shop as shop_id" 
+	", a.retailer as retailer_id" 
+	" from w_charge_detail a"
+	" where a.merchant=" ++ ?to_s(Merchant)
+	++ " and retailer=" ++ ?to_s(RetailerId)
+	++ " order by id desc limit 1",
+
+    Reply =  ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
 
 %%
 %% score

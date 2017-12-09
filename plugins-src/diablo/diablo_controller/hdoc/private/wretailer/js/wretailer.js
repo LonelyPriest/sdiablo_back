@@ -991,7 +991,7 @@ function wretailerCustomTicketDetailCtrlProvide(
 		dialog.response(false, "批量制券", "批量制券失败：" + wretailerService.error[2115]);
 		return;
 	    }
-	    if (balance > 500) {
+	    if (balance > 5000) {
 		dialog.response(false, "批量制券", "批量制券失败：" + wretailerService.error[2116]);
 		return;
 	    }

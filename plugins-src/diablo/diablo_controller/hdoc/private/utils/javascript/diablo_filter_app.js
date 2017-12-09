@@ -526,6 +526,12 @@ function filterProvider(){
 		    {id:retailerId, password:password}).$promise;
 	    },
 
+	    check_retailer_region: function(retailerId, shopId) {
+		return _retailerHttp.save(
+		    {operation: "check_w_retailer_region"},
+		    {id:retailerId, shop:shopId}).$promise;
+	    },
+
 	    get_ticket_by_batch: function(batchNo){
 		return _retailerHttp.save(
 		    {operation: "get_w_retailer_ticket"},

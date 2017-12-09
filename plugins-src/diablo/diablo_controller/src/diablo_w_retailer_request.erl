@@ -191,6 +191,42 @@ action(Session, Req, {"check_w_retailer_password", Id}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+
+action(Session, Req, {"check_w_retailer_region", Id}, Payload) ->
+    Merchant = ?session:get(merchant, Session),
+    ConsumeShopId = ?v(<<"shop">>, Payload),
+
+    %% get last charge
+    case ?w_retailer:retailer(last_recharge, Merchant, Id) of
+	{ok, []} ->
+	    ?utils:respond(200, Req, ?err(charge_none, Id));
+	{ok, LastCharge} ->
+	    ChargeShopId = ?v(<<"shop_id">>, LastCharge),
+	    case ?w_user_profile:get(shop, Merchant, ChargeShopId) of
+		{ok, [] }   ->
+		    ?utils:respond(200, Req, ?err(charge_none_shop, ChargeShopId));
+		{ok, [{ChargeShop}]} ->
+		    ?DEBUG("chargeShop ~p", [ChargeShop]), 
+		    ChargeShopRegion = ?v(<<"region_id">>, ChargeShop),
+		    case ?w_user_profile:get(shop, Merchant, ConsumeShopId) of
+			{ok, [] }   ->
+			    ?utils:respond(200, Req, ?err(charge_none_shop, ConsumeShopId));
+			{ok, [{ConsumeShop}]} ->
+			    ?DEBUG("consumeShop ~p", [ConsumeShop]), 
+			    ConsumeShopRegion = ?v(<<"region_id">>, ConsumeShop),
+			    case ChargeShopRegion =:= ConsumeShopRegion of
+				true -> 
+				    ?utils:respond(
+				       200, Req, ?succ(charge_check_region, ConsumeShopRegion));
+				false ->
+				    ?utils:respond(200, Req, ?err(charge_diff_region, ConsumeShopRegion))
+				end
+		    end
+	    end;
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error) 
+    end;
+
 action(Session, Req, {"reset_w_retailer_password", Id}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     Password = ?v(<<"password">>, Payload),
@@ -471,7 +507,7 @@ action(Session, Req, {"make_ticket_batch"}, Payload) ->
 		true ->
 		    ?utils:respond(200, Req, ?err(make_ticket_invalid_count, Count));
 		false ->
-		    case Balance > 500 of
+		    case Balance > 5000 of
 			true ->
 			    ?utils:respond(200, Req, ?err(make_ticket_invalid_balance, Balance));
 			false ->

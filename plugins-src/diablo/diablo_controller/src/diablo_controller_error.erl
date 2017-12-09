@@ -202,6 +202,8 @@ success(discard_ticket_one, TicketId) ->
     {0, "Success to discard ticket: "++?to_s(TicketId)++"."};
 success(discard_ticket_all, Merchant) ->
     {0, "Success to discard all ticket of merchant: "++?to_s(Merchant)++"."};
+success(charge_check_region, Region) ->
+    {0, "Success to check region: "++?to_s(Region)++"."};
 
 %% wsale
 success(new_w_sale, RSn) ->
@@ -493,6 +495,12 @@ error(make_ticket_batch_used, Batch) ->
     {2117, "batch number " ++ ?to_s(Batch) ++ " has been used"};
 error(ticket_batch_length_error, Batch) ->
     {2118, "ticket batch is too long: " ++ ?to_s(Batch)};
+error(charge_none, RetailerId) ->
+    {2119, "never recharge of the retailer: " ++ ?to_s(RetailerId)};
+error(charge_none_shop, ChargeShopId) ->
+    {2120, "shop does not exist of recharging: " ++ ?to_s(ChargeShopId)};
+error(charge_diff_region, Region) ->
+    {2121, "different region of recharging: " ++ ?to_s(Region)};
 
 %% wprint
 error(wprint_server_exist, Server) ->
