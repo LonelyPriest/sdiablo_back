@@ -549,14 +549,16 @@ gen_report(stastic_per_shop, {StartTime, EndTime, GenDatetime} , [M|Merchants], 
     gen_report(stastic_per_shop, {StartTime, EndTime, GenDatetime} , Merchants, [{M, Sqls}|Acc]).
 
 gen_shop_report(_Datetime, M, [], Sqls) ->
-    ?DEBUG("merchant ~p gen sql ~p", [M, Sqls]),
+    %% ?DEBUG("merchant ~p gen sql ~p", [M, Sqls]),
     {M, Sqls};
 gen_shop_report({StartTime, EndTime, GenDatetime}, M, [S|Shops], Sqls) ->
     %% ?DEBUG("gen_shop_report with merchant ~p, shop ~p, startTime ~p, endTime ~p, genTime ~p",
     %% 	   [M, S, StartTime, EndTime, GenDatetime]),
     ShopId  = ?v(<<"id">>, S),
-    {ok, BaseSetting} = ?wifi_print:detail(base_setting, M, ShopId), 
+    %% ?DEBUG("ShopId ~p", [ShopId]),
+    {ok, BaseSetting} = ?wifi_print:detail(base_setting, M, -1), 
     IsShopDailyReport = ?v(<<"d_report">>, BaseSetting, 1),
+    %% ?DEBUG("IsShopDailyReport ~p", [IsShopDailyReport]),
     
     case ?to_i(IsShopDailyReport) of
 	1 -> 

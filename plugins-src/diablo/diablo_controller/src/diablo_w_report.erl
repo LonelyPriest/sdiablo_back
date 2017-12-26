@@ -436,6 +436,7 @@ handle_call({stock_fix, Merchant, Conditions}, _From, State)->
 
 handle_call({stock_real, Merchant, Conditions}, _From, State)->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
+    %% ?DEBUG("Conditions ~p", [Conditions]),
 
     Sql = "select SUM(amount) as total"
 	", SUM(org_price * amount) as cost"
