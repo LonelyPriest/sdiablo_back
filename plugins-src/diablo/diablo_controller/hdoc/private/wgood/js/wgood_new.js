@@ -963,6 +963,7 @@ function wgoodDetailCtrlProvide(
 		    });
 		    
 		    $scope.printU.free_prepare(
+			undefined,
 			g,
 			g.brand,
 			barcodes,
@@ -983,6 +984,7 @@ function wgoodDetailCtrlProvide(
 		    
 		    console.log(barcodes); 
 		    $scope.printU.prepare(
+			undefined,
 			g,
 			g.brand,
 			barcodes,

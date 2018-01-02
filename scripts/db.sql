@@ -1228,7 +1228,8 @@ create table print_template(
    id              INTEGER AUTO_INCREMENT,
    width           TINYINT default 0,
    height          TINYINT default 0,
-   
+
+   shop            TINYINT default 0,
    style_number    TINYINT default 0,
    brand           TINYINT default 0,
    type            TINYINT default 0,

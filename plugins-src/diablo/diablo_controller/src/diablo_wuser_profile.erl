@@ -881,7 +881,8 @@ handle_call({set_barcode_print_template, Merchant}, _From, State) ->
 		"width"
 		", height"
 	    %% ", dual_column"
-		
+
+		", shop"
 		", style_number"
 		", brand"
 		", type"

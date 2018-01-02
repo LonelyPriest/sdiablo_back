@@ -2001,6 +2001,7 @@ function purchaserInventoryDetailCtrlProvide(
 	    
 	    if (diablo_free_color_size === inv.free) {
 		$scope.printU.free_prepare(
+		    inv.shop,
 		    inv,
 		    inv.brand.name,
 		    [barcode],
@@ -2039,6 +2040,7 @@ function purchaserInventoryDetailCtrlProvide(
 
 			console.log(barcodes);
 			$scope.printU.prepare(
+			    inv.shop,
 			    inv,
 			    inv.brand.name,
 			    barcodes,
@@ -2130,6 +2132,7 @@ function purchaserInventoryDetailCtrlProvide(
 		    barcodes.push(barcode); 
 		}
 		$scope.printU.free_prepare(
+		    inv.shop,
 		    inv,
 		    inv.brand.name,
 		    barcodes,
@@ -2169,6 +2172,7 @@ function purchaserInventoryDetailCtrlProvide(
 
 		    console.log(barcodes);
 		    $scope.printU.prepare(
+			inv.shop,
 			inv,
 			inv.brand.name,
 			barcodes,

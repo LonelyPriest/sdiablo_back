@@ -719,6 +719,10 @@ stockPrintU.prototype.setPrinter = function(printerIndex) {
 //     this.barcode = barcode;
 // };
 
+stockPrintU.prototype.setShop = function(shop) {
+    this.shop = shop;
+};
+
 stockPrintU.prototype.setStock = function(stock) {
     this.stock = stock;
 };
@@ -745,7 +749,8 @@ stockPrintU.prototype.setCodeFirm = function(code) {
 // };
 
 stockPrintU.prototype.reset = function() {
-    // this.barcode = undefined; 
+    // this.barcode = undefined;
+    this.shop = undefined;
     this.stock = undefined;
     this.brand = undefined;
     this.firm  = undefined;
@@ -758,6 +763,7 @@ stockPrintU.prototype.reset = function() {
 };
 
 stockPrintU.prototype.free_prepare = function(
+    shop,
     stock,
     brand,
     barcodes,
@@ -765,7 +771,8 @@ stockPrintU.prototype.free_prepare = function(
     codeFirm) {
     this.reset();
     
-    // this.init(); 
+    // this.init();
+    this.setShop(shop);
     this.setStock(stock);
     this.setBrand(brand);
     this.setFirm(firm);
@@ -812,6 +819,7 @@ stockPrintU.prototype.free_prepare = function(
 };
 
 stockPrintU.prototype.prepare = function(
+    shop,
     stock,
     brand,
     barcodes, 
@@ -819,7 +827,8 @@ stockPrintU.prototype.prepare = function(
     codeFirm) {
     console.log(stock, brand, barcodes, firm, codeFirm); 
     this.reset();
-    // this.init(); 
+    // this.init();
+    this.setShop(shop);
     this.setStock(stock);
     this.setBrand(brand);
     // this.setBarcode(barcode);
@@ -879,7 +888,18 @@ stockPrintU.prototype.printBarcode2 = function() {
     var line, line2;
 
     // console.log(iwpx, top);
+    if (this.template.shop) {
+	if (angular.isDefined(this.shop)) {
+	    line = this.shop;
 
+	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, line);
+	    if (pSecond)
+		this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, line);
+
+	    top += this.template.hpx_each;
+	}
+    }
+    
     var firm = angular.isUndefined(this.firm) ? diablo_empty_string : this.firm;
     if (this.template.firm) {
 	if (this.template.code_firm && angular.isDefined(this.codeFirm)) {

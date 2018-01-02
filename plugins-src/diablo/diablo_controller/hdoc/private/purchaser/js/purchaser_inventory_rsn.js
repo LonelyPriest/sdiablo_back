@@ -563,6 +563,7 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 		}
 
 		$scope.printU.free_prepare(
+		    inv.shop.name,
 		    inv,
 		    inv.brand.name,
 		    barcodes,
@@ -584,6 +585,7 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 		    }); 
 		    console.log(barcodes);
 		    $scope.printU.prepare(
+			inv.shop.name,
 			inv,
 			inv.brand.name,
 			barcodes,

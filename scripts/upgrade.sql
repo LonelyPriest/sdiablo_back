@@ -284,3 +284,6 @@ update w_sale set total=-2 where rsn='M-15-S-58-R-434';
 
 -- 2017-11-05
 alter table w_sale add column tcustom TINYINT default -1 after tbatch;
+
+--2018-01-02
+alter table print_template add column shop TINYINT default 0 after height;

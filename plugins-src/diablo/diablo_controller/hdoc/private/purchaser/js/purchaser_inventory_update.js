@@ -1068,6 +1068,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
 		}
 		
 		$scope.printU.free_prepare(
+		    $scope.select.shop.name,
 		    inv, 
 		    inv.brand.name,
 		    barcodes,
@@ -1089,6 +1090,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
 		
 		console.log(barcodes); 
 		$scope.printU.prepare(
+		    $scope.select.shop.name,
 		    inv,
 		    inv.brand.name,
 		    barcodes,

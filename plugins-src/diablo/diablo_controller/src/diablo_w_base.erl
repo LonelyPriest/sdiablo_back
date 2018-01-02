@@ -616,6 +616,7 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", height"
     %% ", dual_column"
 	
+	", shop"
 	", style_number"
 	", brand"
 	", type"
@@ -666,7 +667,8 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
     U = ?utils:v(width, integer, ?v(<<"width">>, Attrs))
 	++  ?utils:v(height, integer, ?v(<<"height">>, Attrs))
     %% ++  ?utils:v(height, integer, ?v(<<"dual_column">>, Attrs))
-	
+
+	++  ?utils:v(shop, integer, ?v(<<"shop">>, Attrs))
 	++  ?utils:v(style_number, integer, ?v(<<"style_number">>, Attrs))
 	++  ?utils:v(brand, integer, ?v(<<"brand">>, Attrs))
 	++  ?utils:v(type, integer, ?v(<<"type">>, Attrs))
