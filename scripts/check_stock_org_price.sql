@@ -151,3 +151,6 @@ select a.rsn, a.firm, c.name, b.rsn, b.firm, b.fname from w_inventory_new a left
 (select a.rsn, a.firm, b.name as fname from w_inventory_new_detail a \
 left join suppliers b on a.firm=b.id where a.merchant=2 group by rsn) b on a.rsn=b.rsn \
 left join suppliers c on a.firm=c.id where a.merchant=2 and a.firm!=b.firm;
+
+
+update  w_inventory_transfer a inner join (select rsn, cost from (select rsn, sum(org_price * amount) as cost from w_inventory_transfer_detail group by rsn) a) b on a.rsn=b.rsn set a.cost=b.cost;

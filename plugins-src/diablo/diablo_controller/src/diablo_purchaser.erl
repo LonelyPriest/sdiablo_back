@@ -1889,11 +1889,7 @@ handle_call({transfer_inventory, Merchant, Inventories, Props}, _From, State) ->
 
 	    ++ "\"" ++ ?to_s(DateTime) ++ "\")"],
     Sql2 = sql(transfer_from, TRSN, Merchant, Shop, ToShop, DateTime, Inventories),
-    ?DEBUG("Sql2 ~p", [Sql2]),
-    %% Sql3 = sql(transfer_to,
-    %%         ToRSN, Merchant, ToShop, Firm, DateTime, Inventories),
-    %% ?DEBUG("Sql3 ~p", [Sql3]),
-
+    ?DEBUG("Sql2 ~p", [Sql2]), 
     AllSql = Sql1 ++ Sql2,    %% ?DEBUG("AllSql ~p", [AllSql]),
     Reply = ?sql_utils:execute(transaction, AllSql, TRSN),
     {reply, Reply, State};

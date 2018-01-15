@@ -1186,7 +1186,7 @@ function wsaleNewProvide(
 	if ($scope.select.should_pay >=0 && $scope.select.charge > 0)
 	    return true;
 
-	if ($scope.select.should_pay < 0 && $scope.select.charge < 0)
+	if ($scope.select.should_pay < 0 && $scope.select.charge > 0)
 	    return true; 
 	
 	return false;

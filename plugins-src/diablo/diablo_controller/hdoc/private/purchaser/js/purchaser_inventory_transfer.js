@@ -330,8 +330,9 @@ function purchaserInventoryTransferCtrlProvide (
 	for (var i=1, l=$scope.inventories.length; i<l; i++){
 	    var one = $scope.inventories[i];
 	    // console.log(one);
-	    $scope.select.cost += stockUtils.to_float(one.org_price);
-	    $scope.select.total += stockUtils.to_integer(one.reject); 
+	    // $scope.select.cost += stockUtils.to_float(one.org_price);
+	    $scope.select.total += stockUtils.to_integer(one.reject);
+	    $scope.select.cost += stockUtils.to_float(one.org_price) * stockUtils.to_integer(one.reject);
 	} 
     };
     

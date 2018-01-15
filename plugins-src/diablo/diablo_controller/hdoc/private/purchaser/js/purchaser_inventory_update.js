@@ -1073,7 +1073,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
 		    inv.brand.name,
 		    barcodes,
 		    firm,
-		    $scope.select.firm.id); 
+		    stockUtils.invalid_firm($scope.select.firm)); 
 	    }
 	    
 	    else {
@@ -1095,7 +1095,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
 		    inv.brand.name,
 		    barcodes,
 		    firm,
-		    $scope.select.firm.id); 
+		    stockUtils.invalid_firm($scope.select.firm)); 
 	    }
 	};
 
