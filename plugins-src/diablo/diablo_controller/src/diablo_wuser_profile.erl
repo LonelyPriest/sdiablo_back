@@ -926,7 +926,8 @@ handle_call({set_barcode_print_template, Merchant}, _From, State) ->
 		++ ?to_s(4) ++ ","
 		++ ?to_s(3) ++ ","
 	    %% ++ ?to_s(0) ++ ","
-		
+
+		++ ?to_s(0) ++ ","
 		++ ?to_s(?YES) ++ ","
 		++ ?to_s(?YES) ++ ","
 		++ ?to_s(?YES) ++ ","
