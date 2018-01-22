@@ -419,6 +419,20 @@ create table w_retailer
     primary key     (id)
 ) default charset=utf8;
 
+create table card
+(
+    id              INTEGER AUTO_INCREMENT,
+    retailer        INTEGER not null default -1,
+    times           INTEGER default -1,
+    sdate           DATE default 0,
+    edate           DATE default 0,
+    type            INTEGER default 0, -- 0: times card, 1: year card
+    merchant        INTEGER default -1,
+    entry_date      DATETIME,
+    unique key      uk (merchant, retailer, type),
+    primary key     (id)
+) default charset=utf8;
+
 create table retailer_balance_history
 (
     id              INTEGER AUTO_INCREMENT,
@@ -441,8 +455,10 @@ create table w_charge(
     id              INTEGER AUTO_INCREMENT,
     merchant        INTEGER not null default -1,
     name            VARCHAR(64) not null,
-    rule	    TINYINT default 0,
-    xtime           TINYINT default 1,
+    rule	    TINYINT default 0, -- [0, 1, 2, 3]
+    
+    xtime           TINYINT default 1, 
+    ctime           INTEGER not null default -1, -- consume time 
     charge          INTEGER not null default 0,
     balance         INTEGER not null default 0, -- send balance when charge
     type            TINYINT default 0, -- 0:recharge 1:withdraw

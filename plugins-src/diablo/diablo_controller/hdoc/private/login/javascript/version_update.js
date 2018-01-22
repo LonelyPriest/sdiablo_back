@@ -1,6 +1,11 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2017-01-21",
+         content:
+	 ["修正入库记录与录入顺序不一致的问题"]
+        },
+	
 	{date: "2017-12-10",
          content:
 	 ["批量制卷时，调整允许最大金额为5000",

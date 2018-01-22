@@ -1802,10 +1802,11 @@ function purchaserInventoryDetailCtrlProvide(
 	    || !search.shop || search.shop.length === 0){
 	    // search.shop = user.shopIds;
 	    if (diablo_yes !== $scope.setting.saler_stock) {
-		search.shop = $scope.shopIds
-		    === 0 ? undefined : $scope.shopIds;
+		search.shop = $scope.shopIds.length === 0 ? undefined : $scope.shopIds;
 	    } else {
-		search.shop = undefined;
+		// more than shop means super user
+		search.shop = $scope.shopIds.length === 1 ? undefined : $scope.shopIds;
+		// search.shop = undefined;
 	    }
 	    // search.shop = $scope.shopIds
 	    // 	=== 0 ? undefined : $scope.shopIds;

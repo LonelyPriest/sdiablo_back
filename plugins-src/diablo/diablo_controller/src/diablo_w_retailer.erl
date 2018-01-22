@@ -525,17 +525,16 @@ handle_call({new_charge, Merchant, Attrs}, _From, State) ->
 
     Name    = ?v(<<"name">>, Attrs),
     Rule    = ?v(<<"rule">>, Attrs, 0),
-    XTime   = ?v(<<"xtime">>, Attrs, 1),
+    XTime   = ?v(<<"xtime">>, Attrs, 0),
+    CTime   = ?v(<<"ctime">>, Attrs, 0),
 
     %% N+1
-    Charge  = case Rule of
-		  0 -> ?v(<<"charge">>, Attrs, 0);
-		  1 -> 0
-	      end,
-    Balance = case Rule of
-		  0 -> ?v(<<"balance">>, Attrs, 0);
-		  1 -> 0
-	      end,
+    {Charge, Balance}  =
+	case Rule =:= 0 of
+	    true -> {?v(<<"charge">>, Attrs, 0), ?v(<<"balance">>, Attrs, 0)};
+	    _ -> {0, 0}
+	end,
+    
     Type    = ?v(<<"type">>, Attrs),
     SDate   = ?v(<<"sdate">>, Attrs),
     EDate   = ?v(<<"edate">>, Attrs),
@@ -552,22 +551,44 @@ handle_call({new_charge, Merchant, Attrs}, _From, State) ->
 		      ++ " and type=" ++ ?to_s(Type);
 	      1 ->
 		  %% N+1
-		  "select id, charge, balance from w_charge"
+		  "select id, xtime from w_charge"
 		      " where merchant=" ++ ?to_s(Merchant)
 		      ++ " and xtime=" ++ ?to_s(XTime)
+		      ++ " and type=" ++ ?to_s(Type);
+	      2 ->
+		  %% time consume
+		  "select id, ctime from w_charge"
+		      " where merchant=" ++ ?to_s(Merchant)
+		      ++ " and ctime=" ++ ?to_s(CTime)
+		      ++ " and type=" ++ ?to_s(Type);
+	      3 ->
+		  "select id, name from w_charge"
+		      " where merchant=" ++ ?to_s(Merchant)
+		      ++ " and name=\'" ++ ?to_s(Name) ++ "\'"
+		      ++ " and type=" ++ ?to_s(Type);
+	      4 ->
+		  "select id, name from w_charge"
+		      " where merchant=" ++ ?to_s(Merchant)
+		      ++ " and name=\'" ++ ?to_s(Name) ++ "\'"
+		      ++ " and type=" ++ ?to_s(Type);
+	      5 ->
+		  "select id, name from w_charge"
+		      " where merchant=" ++ ?to_s(Merchant)
+		      ++ " and name=\'" ++ ?to_s(Name) ++ "\'"
 		      ++ " and type=" ++ ?to_s(Type)
 	  end,
 
     case ?sql_utils:execute(s_read, Sql) of
 	{ok, []} ->
 	    Sql1 = "insert into w_charge(merchant, name"
-		", rule, xtime, charge, balance, type"
+		", rule, xtime, ctime, charge, balance, type"
 		", sdate, edate, remark, entry) values("
 		++ ?to_s(Merchant) ++ ","
 	    %% ++ ?to_s(Shop) ++ ","
 		++ "\'" ++ ?to_s(Name) ++ "\',"
 		++ ?to_s(Rule) ++ ","
 		++ ?to_s(XTime) ++ ","
+		++ ?to_s(CTime) ++ ","
 		++ ?to_s(Charge) ++ ","
 		++ ?to_s(Balance) ++ ","
 		++ ?to_s(Type) ++ "," 
@@ -636,10 +657,12 @@ handle_call({set_withdraw, Merchant, {DrawId, Conditions}}, _From, State) ->
     end;
 
 handle_call({list_charge, Merchant}, _From, State) ->
-    Sql = "select id, name, rule as rule_id, xtime, charge, balance, type, sdate, edate"
+    Sql = "select id, name, rule as rule_id, xtime, ctime, charge, balance, type, sdate, edate"
 	", remark, entry, deleted"
 	" from w_charge"
-	" where merchant=" ++ ?to_s(Merchant),
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " order by id desc",
+    
 
     Reply = ?sql_utils:execute(read, Sql),
 

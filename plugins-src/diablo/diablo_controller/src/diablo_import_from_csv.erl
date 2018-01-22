@@ -68,6 +68,10 @@ insert_into_member(Merchant, _Datetime, _Time, [], _Sort, Acc) ->
 
 insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
     {RName, Phone, Shop, Score, Consume, Birth, Date} = H,
+    NewShop = case Shop of
+		  <<>> -> 91;
+		  _ -> Shop
+	      end,
     NewScore = case Score of
 		   <<>> -> 0;
 		   _ -> round(?to_f(Score))
@@ -80,7 +84,8 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
 
     NewBirth = case Birth of
 		  <<>> -> <<"0000-00-00">>;
-		  _ -> <<"2017-", Birth/binary>>
+		  %% _ -> <<"2017-", Birth/binary>>
+		   _ -> Birth
 	      end,
 
     IsExist = 
@@ -127,7 +132,7 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
 			   ++ ?to_s(NewScore) ++ ","
 			   ++ ?to_s(NewConsume) ++ "," 
 			   ++ "\"" ++ ?to_s(Phone) ++ "\","
-			   ++ ?to_s(Shop) ++ ","
+			   ++ ?to_s(NewShop) ++ ","
 			   ++ ?to_s(Merchant) ++ ","
 			   ++ "\"" ++ ?to_s(NewBirth) ++ "\","
 			   ++ "\"" ++ ?to_s(Entry) ++ "\")"],

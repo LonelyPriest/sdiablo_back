@@ -18,7 +18,7 @@ function wretailerRechargeNewCtrlProvide(
     var now    = $.now();
     
     $scope.promotion = {
-	discount   :100,
+	// discount   :100,
 	rule       :$scope.rules[0],
 	time       :$scope.times[2],
 	sdate      :now,
@@ -31,7 +31,8 @@ function wretailerRechargeNewCtrlProvide(
 	wretailerService.new_charge_promotion(
 	    {name:    $scope.promotion.name,
 	     rule:    $scope.promotion.rule.id,
-	     xtime:   $scope.promotion.rule.id ===0 ? undefined : $scope.promotion.time,
+	     xtime:   $scope.promotion.rule.id !==1 ? undefined : $scope.promotion.time,
+	     ctime:   $scope.promotion.rule.id !==2 ? undefined : $scope.promotion.ctime,
 	     charge:  $scope.promotion.charge,
 	     balance: retailerUtils.to_integer($scope.promotion.balance),
 	     type:    $scope.action,

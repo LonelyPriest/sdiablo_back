@@ -1158,6 +1158,7 @@ function normalFilterProvider(){
 				name:     c.name,
 				rule_id:  c.rule_id,
 				xtime:    c.xtime,
+				ctime:    c.ctime,
 				charge:   c.charge,
 				balance:  c.balance,
 				type:     c.type,

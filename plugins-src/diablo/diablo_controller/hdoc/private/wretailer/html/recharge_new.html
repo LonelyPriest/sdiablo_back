@@ -73,6 +73,27 @@
 	      </div>
 	    </div>
 
+	    <div x-ng-if="promotion.rule.id===2" class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">次数</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<div class="input-group">
+		  <div x-ng-class="{'has-error':rForm.ctime.$invalid && !rForm.ctime.$pristine}">
+		    <input type="number" step="1"
+			   class="form-control"
+			   name="ctime"
+			   required
+			   placeholder="请输入次数" 
+			   x-ng-model="promotion.ctime"
+			   x-ng-pattern="pattern.number"/>
+		  </div>
+		  <span class="input-group-addon bg-white fg-red">*</span>
+		</div> 
+	      </div>
+	      <div ng-if="rForm.ctime.$invalid && !rForm.ctime.$pristine">
+		<span class="fg-red">次数只能是整数</span>
+	      </div> 
+	    </div>
+
 	    <div x-ng-if="promotion.rule.id===0" class="form-group">
 	      <label class="col-md-3 col-sm-3 control-label" x-ng-bind=label>金额(元)</label>
 	      <div class="col-sm-6 col-md-6"> 

@@ -287,3 +287,7 @@ alter table w_sale add column tcustom TINYINT default -1 after tbatch;
 
 --2018-01-02
 alter table print_template add column shop TINYINT default 0 after height;
+
+
+-- 2018-01-02
+alter table w_charge add column ctime INTEGER default -1 after xtime;

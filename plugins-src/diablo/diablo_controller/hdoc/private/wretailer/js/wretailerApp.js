@@ -169,7 +169,12 @@ function wretailerConfig(angular) {
 	];
 
 	this.charge_rules = [{name:"固定赠送模式", id:0, remark: "充值多少赠送固定金额"},
-			     {name:"N+1倍赠送模式", id:1, remark: "充值N倍赠送1倍金额"}];
+			     {name:"N+1倍赠送模式", id:1, remark: "充值N倍赠送1倍金额"},
+			     {name:"次卡模式", id:2, remark: "充值与消费次数相关"},
+			     {name:"月卡模式", id:3, remark: "一个月内任意消费次数"},
+			     {name:"季卡模式", id:4, remark: "一个季度内内任意消费次数"},
+			     {name:"年卡模式", id:5, remark: "一年内任意消费次数"}
+			    ];
 	
 	this.retailer_types = [{name: "普通会员", id:0},
 			       {name: "充值会员", id:1},

@@ -831,7 +831,7 @@ inventory(list_info, Merchant, Conditions) ->
 	++ ?sql_utils:fix_condition(time, time_with_prfix, StartTime, EndTime); 
 
 inventory(get_new_amount, _Merchant, Conditions) ->
-    "select a.rsn, a.style_number, a.brand_id, a.type_id, a.sex"
+    "select a.id, a.rsn, a.style_number, a.brand_id, a.type_id, a.sex"
 	", a.season, a.firm_id, a.s_group, a.free, a.year"
 	", a.org_price, a.tag_price, a.ediscount"
 	", a.discount, a.over, a.path, a.entry_date"
@@ -839,7 +839,7 @@ inventory(get_new_amount, _Merchant, Conditions) ->
 	", b.color as color_id, b.size, b.total as amount"
 	" from "
 	
-	"(select rsn, style_number, brand as brand_id, type as type_id"
+	"(select id, rsn, style_number, brand as brand_id, type as type_id"
 	", sex, season, firm as firm_id, s_group, free, year"
 	", org_price, tag_price, ediscount, discount, over, path, entry_date"
 	" from w_inventory_new_detail"
@@ -850,7 +850,7 @@ inventory(get_new_amount, _Merchant, Conditions) ->
 	" from w_inventory_new_detail_amount"
 	" where " ++ ?utils:to_sqls(proplists, Conditions) ++ ") b"
 	" on a.rsn=b.rsn" 
-	" and a.style_number=b.style_number and a.brand_id=b.brand";
+	" and a.style_number=b.style_number and a.brand_id=b.brand order by id";
 
 inventory(new_rsn_detail, _Merchant, Conditions) ->
     {_StartTime, _EndTime, NewConditions} =
