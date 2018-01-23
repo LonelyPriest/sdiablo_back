@@ -524,7 +524,7 @@ handle_call({new_charge, Merchant, Attrs}, _From, State) ->
     ?DEBUG("new_charge with merchant ~p, paylaod ~p", [Merchant, Attrs]),
 
     Name    = ?v(<<"name">>, Attrs),
-    Rule    = ?v(<<"rule">>, Attrs, 0),
+    Rule    = ?v(<<"rule">>, Attrs, -1),
     XTime   = ?v(<<"xtime">>, Attrs, 0),
     CTime   = ?v(<<"ctime">>, Attrs, 0),
 
@@ -543,35 +543,35 @@ handle_call({new_charge, Merchant, Attrs}, _From, State) ->
     Entry    = ?utils:current_time(localtime),
     
     Sql = case Rule of
-	      0 -> 
+	      ?GIVING_CHARGE -> 
 		  "select id, charge, balance from w_charge"
 		      " where merchant=" ++ ?to_s(Merchant)
 		      ++ " and charge=" ++ ?to_s(Charge)
 		      ++ " and balance=" ++ ?to_s(Balance)
 		      ++ " and type=" ++ ?to_s(Type);
-	      1 ->
+	      ?TIMES_CHARGE ->
 		  %% N+1
 		  "select id, xtime from w_charge"
 		      " where merchant=" ++ ?to_s(Merchant)
 		      ++ " and xtime=" ++ ?to_s(XTime)
 		      ++ " and type=" ++ ?to_s(Type);
-	      2 ->
+	      ?THEORETIC_CHARGE ->
 		  %% time consume
 		  "select id, ctime from w_charge"
 		      " where merchant=" ++ ?to_s(Merchant)
 		      ++ " and ctime=" ++ ?to_s(CTime)
 		      ++ " and type=" ++ ?to_s(Type);
-	      3 ->
+	      ?MONTH_UNLIMIT_CHARGE ->
 		  "select id, name from w_charge"
 		      " where merchant=" ++ ?to_s(Merchant)
 		      ++ " and name=\'" ++ ?to_s(Name) ++ "\'"
 		      ++ " and type=" ++ ?to_s(Type);
-	      4 ->
+	      ?QUARTER_UNLIMIT_CHARGE ->
 		  "select id, name from w_charge"
 		      " where merchant=" ++ ?to_s(Merchant)
 		      ++ " and name=\'" ++ ?to_s(Name) ++ "\'"
 		      ++ " and type=" ++ ?to_s(Type);
-	      5 ->
+	      ?YEAR_UNLIMIT_CHARGE ->
 		  "select id, name from w_charge"
 		      " where merchant=" ++ ?to_s(Merchant)
 		      ++ " and name=\'" ++ ?to_s(Name) ++ "\'"
@@ -682,67 +682,135 @@ handle_call({recharge, Merchant, Attrs}, _From, State) ->
     CBalance = ?to_i(Cash) + ?to_i(Card) + ?to_i(Wxin), 
     SBalance    = ?v(<<"send_balance">>, Attrs),
 
-    Charge      = ?v(<<"charge">>, Attrs), 
+    ChargeId    = ?v(<<"charge">>, Attrs),
+    CTime       = ?v(<<"ctime">>, Attrs, -1), 
     Comment     = ?v(<<"comment">>, Attrs, []), 
     Entry       = ?utils:current_time(format_localtime),
 
-    Sql0 = "select id, name, mobile, balance, score from w_retailer"
-	" where id=" ++ ?to_s(Retailer)
-	++ " and merchant=" ++ ?to_s(Merchant)
-	++ " and deleted=" ++ ?to_s(?NO) ++ ";",
+    case ?w_user_profile:get_charge(charge, Merchant, ChargeId) of
+	{ok, []} ->
+	    {reply, {error, ?err(charge_no_promotion, ChargeId)}};
+	{ok, Charge} ->
+	    Sql0 = "select id, name, mobile, balance, score from w_retailer"
+		" where id=" ++ ?to_s(Retailer)
+		++ " and merchant=" ++ ?to_s(Merchant)
+		++ " and deleted=" ++ ?to_s(?NO) ++ ";",
 
-    case ?sql_utils:execute(s_read, Sql0) of
-	{ok, Account} -> 
-	    SN = lists:concat(
-		   ["M-", ?to_i(Merchant),
-		    "-S-", ?to_i(Shop), "-",
-		    ?inventory_sn:sn(w_recharge, Merchant)]),
+	    case ?sql_utils:execute(s_read, Sql0) of
+		{ok, Account} -> 
+		    SN = lists:concat(
+			   ["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-", ?inventory_sn:sn(w_recharge, Merchant)]),
 
-	    CurrentBalance = case ?v(<<"balance">>, Account) of
-				 <<>> -> 0;
-				 R    -> R
-			     end,
-	    Score = case ?v(<<"score">>, Account) of
-			<<>> -> 0;
-			_Score -> _Score
-		    end,
+		    CurrentBalance = case ?v(<<"balance">>, Account) of
+					 <<>> -> 0;
+					 R    -> R
+				     end,
+		    Score = case ?v(<<"score">>, Account) of
+				<<>> -> 0;
+				_Score -> _Score
+			    end, 
+		    Mobile = ?v(<<"mobile">>, Account),
+		    
+		    Sql1 = "insert into w_charge_detail(rsn"
+			", merchant, shop, employ, cid, retailer"
+			", lbalance, cbalance, sbalance, cash, card, wxin, comment, entry_date) values("
+			++ "\"" ++ ?to_s(SN) ++ "\","
+			++ ?to_s(Merchant) ++ ","
+			++ ?to_s(Shop) ++ ","
+			++ "\"" ++ ?to_s(Employee) ++ "\","
+			++ ?to_s(ChargeId) ++ "," 
+			++ ?to_s(Retailer) ++ "," 
+			++ ?to_s(CurrentBalance) ++ ","
+			++ ?to_s(CBalance) ++ "," 
+			++ ?to_s(SBalance) ++ ","
+			++ ?to_s(Cash) ++ ","
+			++ ?to_s(Card) ++ ","
+			++ ?to_s(Wxin) ++ ","
+			++ "\"" ++ ?to_s(Comment) ++ "\"," 
+			++ "\"" ++ ?to_s(Entry) ++ "\")",
 
-	    Mobile = ?v(<<"mobile">>, Account),
-	    
-	    Sql2 =
-		["insert into w_charge_detail(rsn"
-		 ", merchant, shop, employ, cid, retailer"
-		 ", lbalance, cbalance, sbalance, cash, card, wxin, comment, entry_date) values("
-		 ++ "\"" ++ ?to_s(SN) ++ "\","
-		 ++ ?to_s(Merchant) ++ ","
-		 ++ ?to_s(Shop) ++ ","
-		 ++ "\"" ++ ?to_s(Employee) ++ "\","
-		 ++ ?to_s(Charge) ++ "," 
-		 ++ ?to_s(Retailer) ++ "," 
-		 ++ ?to_s(CurrentBalance) ++ ","
-		 ++ ?to_s(CBalance) ++ "," 
-		 ++ ?to_s(SBalance) ++ ","
-		 ++ ?to_s(Cash) ++ ","
-		 ++ ?to_s(Card) ++ ","
-		 ++ ?to_s(Wxin) ++ ","
-		 ++ "\"" ++ ?to_s(Comment) ++ "\"," 
-		 ++ "\"" ++ ?to_s(Entry) ++ "\")",
-		 
-		 "update w_retailer set balance=balance+"
-		 ++ ?to_s(CBalance + SBalance)
-		 ++ " where id=" ++ ?to_s(Retailer)],
-	    
-	    Reply =
-		case ?sql_utils:execute(transaction, Sql2, SN) of
-		    {ok, SN} ->
-			{ok, {SN, Mobile, CBalance, CurrentBalance + CBalance + SBalance, Score}};
-		    Error -> Error
-		end,
-	    %% ?w_user_profile:update(retailer, Merchant),
-	    {reply, Reply, State};
-	Error ->
-	    {reply, Error, State}
-    end;
+		    Rule = ?v(<<"rule_id">>, Charge, -1),
+		    case Rule =:= ?GIVING_CHARGE orelse Rule =:= ?TIMES_CHARGE of
+			true -> 
+			    Sql2 = [Sql1,
+				    "update w_retailer set balance=balance+"
+				    ++ ?to_s(CBalance + SBalance) ++ " where id=" ++ ?to_s(Retailer)], 
+			    Reply =
+				case ?sql_utils:execute(transaction, Sql2, SN) of
+				    {ok, SN} ->
+					{ok, {SN, Mobile, CBalance, CurrentBalance + CBalance + SBalance, Score}};
+				    Error -> Error
+				end,
+			    %% ?w_user_profile:update(retailer, Merchant),
+			    {reply, Reply, State};
+			false  -> 
+			    Sql01 = "select id, retailer, type from w_card"
+				" where merchant=" ++ ?to_s(Merchant)
+				++ " and retailer=" ++ ?to_s(Retailer)
+				++ " and rule=" ++ ?to_s(Rule),
+			    Sql22 = 
+				case ?sql_utils:execute(s_read, Sql01) of
+				    {ok, Card} ->
+					EndDate = ?v(<<"edate">>, Card, ?INVALID_DATE),
+					{Year, Month, Date} = ?utils:to_date(date, EndDate),
+					[Sql1, 
+					 case Rule of
+					     ?THEORETIC_CHARGE ->
+						"update w_card set ctime=ctime+" ++ ?to_s(CTime);
+					     ?MONTH_UNLIMIT_CHARGE ->
+						NextMonth = date_next(?MONTH_UNLIMIT_CHARGE, {Year, Month, Date}),
+						"update w_card set edate=\'" ++ ?to_s(NextMonth) ++ "\'";
+					    ?QUARTER_UNLIMIT_CHARGE ->
+						 NextQuarter =
+						     date_next(?QUARTER_UNLIMIT_CHARGE, {Year, Month, Date}),
+						 "update w_card set edate=\'" ++ ?to_s(NextQuarter);
+					     ?YEAR_UNLIMIT_CHARGE ->
+						 NextYear = date_next(?YEAR_UNLIMIT_CHARGE, {Year, Month, Date}),
+						 "update w_card set edate=\'" ++ ?to_s(NextYear)
+					 end ++ " where id=" ++ ?to_s(?v(<<"id">>, Card))];
+				{ok, []} ->
+				    {Year, Month, Date} = current_date(), 
+				    EndDate = 
+					case Rule of
+					    ?THEORETIC_CHARGE ->
+						?INVALID_DATE;
+					    ?MONTH_UNLIMIT_CHARGE ->
+						date_next(?MONTH_UNLIMIT_CHARGE, {Year, Month, Date});
+					    ?QUARTER_UNLIMIT_CHARGE ->
+						date_next(?QUARTER_UNLIMIT_CHARGE, {Year, Month, Date});
+					    ?YEAR_UNLIMIT_CHARGE ->
+						date_next(?YEAR_UNLIMIT_CHARGE, {Year, Month, Date})
+					end,
+				    [Sql1, 
+				     "insert into w_card(retailer"
+				     ", ctime, sdate, edate, rule, merchant, entry_date) values("
+				     ++ ?to_s(Retailer)
+				     ++ ?to_s(CTime)
+				     ++ case Rule of
+					    ?THEORETIC_CHARGE ->
+						"\'" ++ ?to_s(?INVALID_DATE) ++ "\'";
+					    _ ->
+						"\'" ++ ?to_s(format_date(Year, Month, Date)) ++ "\'"
+					end
+				     ++ "\'" ++ ?to_s(EndDate) ++ "\'"
+				     ++ ?to_s(Rule)
+				     ++ ?to_s(Merchant)
+				     ++ "\'" ++ ?to_s(Entry) ++ "\')"]
+				end,
+
+			    Reply =
+				case ?sql_utils:execute(transaction, Sql22, SN) of
+				    {ok, SN} ->
+					{ok, {SN, Mobile, CBalance, CurrentBalance, Score}};
+				    Error -> Error
+				end,
+			    %% ?w_user_profile:update(retailer, Merchant),
+			    {reply, Reply, State}
+		    end; 
+		Error ->
+		    {reply, Error, State}
+	    end 
+    end; 
 
 handle_call({delete_recharge, Merchant, ChargeId}, _From, State) ->
     Sql0 =
@@ -1421,4 +1489,27 @@ make_ticket(Merchant, Datetime, Balance, StartBatch, Count, Acc) ->
 
     make_ticket(Merchant, Datetime, Balance, StartBatch + 1, Count - 1, [Sql|Acc]).
     
+date_next(?MONTH_UNLIMIT_CHARGE, {Year, Month, Date}) ->
+    case Month + 1 > 12 of
+	true ->
+	    format_date(Year + 1, 1, Date);
+	false ->
+	    format_date(Year, Month + 1, Date)
+    end;
+date_next(?QUARTER_UNLIMIT_CHARGE, {Year, Month, Date}) ->
+    case Month + 3 > 12 of
+	true ->
+	    format_date(Year + 1, (Month + 3) rem 12, Date);
+	false ->
+	    format_date(Year, Month + 3, Date)
+    end;
+date_next(?YEAR_UNLIMIT_CHARGE, {Year, Month, Date}) ->
+    format_date(Year + 1, Month, Date).
+
+current_date() ->
+    {{Year, Month, Date}, {_, _, _}} = calendar:now_to_local_time(erlang:now()),
+    {Year, Month, Date}.
+
+format_date(Year, Month, Date) ->
+    lists:flatten(io_lib:format("~4..0w-~2..0w-~2..0w", [Year, Month, Date])).
     

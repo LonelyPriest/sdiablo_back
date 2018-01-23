@@ -318,21 +318,23 @@ function wretailerDetailCtrlProvide(
 	var callback = function(params){
 	    console.log(params);
 
-	    var promotion       = params.retailer.select_charge;
 	    var charge_balance  = retailerUtils.to_integer(params.charge)
 		+ retailerUtils.to_integer(params.card)
 		+ retailerUtils.to_integer(params.wxin);
-	    
+
+	    var promotion       = params.retailer.select_charge; 
 	    var send_balance = function(){
-		if (0 === promotion.rule_id) {
+		if (diablo_giving_charge === promotion.rule_id) {
 		    if (promotion.charge !== 0 && charge_balance >= promotion.charge){
 			return Math.floor(charge_balance / promotion.charge) * promotion.balance;
 		    } else {
 			return 0;
 		    }
 		}
-		else if (1 === promotion.rule_id) {
+		else if (diablo_times_charge === promotion.rule_id) {
 		    return Math.floor(charge_balance / promotion.xtime);
+		} else {
+		    return undefined;
 		}
 	    }();
 
@@ -346,6 +348,7 @@ function wretailerDetailCtrlProvide(
 		wxin:           retailerUtils.to_integer(params.wxin),
 		send_balance:   send_balance,
 		charge:         promotion.id,
+		ctime:          promotion.rule_id === diablo_theoretic_charge ? promotion.ctime : undefined,
 		comment:        params.comment
 	    }).then(function(result){
 		console.log(result); 

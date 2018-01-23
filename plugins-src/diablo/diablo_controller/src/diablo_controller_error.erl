@@ -501,6 +501,8 @@ error(charge_none_shop, ChargeShopId) ->
     {2120, "shop does not exist of recharging: " ++ ?to_s(ChargeShopId)};
 error(charge_diff_region, Region) ->
     {2121, "different region of recharging: " ++ ?to_s(Region)};
+error(charge_no_promotion, ChargeId) ->
+    {2122, "can not find charge promotion of charge: " ++ ?to_s(ChargeId)};
 
 %% wprint
 error(wprint_server_exist, Server) ->

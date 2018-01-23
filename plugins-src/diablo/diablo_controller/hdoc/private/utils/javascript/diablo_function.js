@@ -163,6 +163,16 @@ var diablo_dkey_stock_price = 9;
 var diablo_dkey_stock_in  = 8;
 var diablo_dkey_stock_fix = 7;
 
+/*
+ * charge type
+ */
+var diablo_giving_charge = 0;
+var diablo_times_charge  = 1;
+var diablo_theoretic_charge = 2;
+var diablo_month_unlimit_charge = 3;
+var diablo_quarter_unlimit_charge = 4;
+var diablo_year_unlimit_charge = 5;
+
 /**
  * the order must not be changed, if want to add size, add it at end
 **/

@@ -115,9 +115,18 @@
 -define(RECHARGE, 0).
 -define(WITHDRAW, 1).
 
+%% charge type
+-define(GIVING_CHARGE, 0).
+-define(TIMES_CHARGE, 1).
+-define(THEORETIC_CHARGE, 2).
+-define(MONTH_UNLIMIT_CHARGE, 3).
+-define(QUARTER_UNLIMIT_CHARGE, 4).
+-define(YEAR_UNLIMIT_CHARGE, 5).
+
 %% pagination
 -define(DEFAULT_ITEMS_PERPAGE, 5).
 
+-define(INVALID_DATE, "0000-00-00").
 %% seconds begin 0 year, 0 month, 0 day to 1970.1.1
 %% calendar:datetime_to_gregorian_seconds({{1970, 1, 1}, {0,0,0}}).
 -define(SECONDS_BEFOR_1970, 62167219200).

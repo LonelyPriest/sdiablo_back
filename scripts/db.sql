@@ -419,17 +419,17 @@ create table w_retailer
     primary key     (id)
 ) default charset=utf8;
 
-create table card
+create table w_card
 (
     id              INTEGER AUTO_INCREMENT,
     retailer        INTEGER not null default -1,
-    times           INTEGER default -1,
+    ctime           INTEGER default -1,
     sdate           DATE default 0,
     edate           DATE default 0,
-    type            INTEGER default 0, -- 0: times card, 1: year card
+    rule            TINYINT default -1, -- 2: therotic times card, 3: month card, 4: quarter card, 5: year card
     merchant        INTEGER default -1,
     entry_date      DATETIME,
-    unique key      uk (merchant, retailer, type),
+    unique key      uk (merchant, retailer, rule),
     primary key     (id)
 ) default charset=utf8;
 

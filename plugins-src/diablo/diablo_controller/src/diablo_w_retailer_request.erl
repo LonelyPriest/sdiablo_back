@@ -311,15 +311,15 @@ action(Session, Req, {"new_recharge"}, Payload) ->
 		   {ok, []} -> ShopId;
 		   {ok, [{Shop}]} -> ?v(<<"name">>, Shop)
 	       end,
-    
+
     case ?w_retailer:charge(recharge, Merchant, Payload) of
 	{ok, {SN, Mobile, CBalance, Balance, Score}} -> 
 	    ?w_user_profile:update(retailer, Merchant),
 	    try
 		{ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1), 
 		case ?to_i(?v(<<"recharge_sms">>, Setting, 0)) of
-		    0 -> ?utils:respond(200, Req, ?succ(new_recharge, SN),
-					[{<<"sms_code">>, 0}]);
+		    0 ->
+			?utils:respond(200, Req, ?succ(new_recharge, SN), [{<<"sms_code">>, 0}]);
 		    1 ->
 			{SMSCode, _} =
 			    ?notify:sms_notify(
