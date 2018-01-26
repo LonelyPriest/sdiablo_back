@@ -315,6 +315,10 @@ var wsaleUtils = function(){
 	    return diablo_base_setting("draw_region", shop, base, parseInt, diablo_no);
 	},
 
+	threshold_card: function(shop, base) {
+	    return diablo_base_setting("threshold_card", shop, base, parseInt, diablo_no);
+	},
+
 	get_login_employee:function(shop, loginEmployee, employees){
 	    var filterEmployees = employees.filter(function(e){
 		return e.shop === shop && e.state === 0;
@@ -648,6 +652,11 @@ var wsaleUtils = function(){
 		+ "服务器日期[" + result.bdate + "]";
 	    else
 		return ""
+	},
+
+	set_error: function(dialog, title, ecode) {
+	    var ERROR = require("diablo-error");
+	    dialog.response(false, title, ERROR[ecode], undefined);
 	}
 
 	// 

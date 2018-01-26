@@ -64,7 +64,6 @@
 	      	       typeahead-editable="false"
 		       typeahead-wait-ms="300"
 		       typeahead-loading="loading"
-	      	       typeahead-on-select="on_select_retailer($item, $model, $label)"
 	      	       uib-typeahead="s as s.name for s in match_retailer_phone($viewValue)"
 	      	       x-ng-model="select.phone"
 		       x-ng-enter="select.phone && do_search(default_page)"/>
@@ -663,6 +662,13 @@
 		   class="form-control fg-red"
 		   value="{{params.retailer.select_charge.ctime}}"
 		   readonly /> 
+	  </div> 
+	</div>
+
+	<div x-ng-if="params.unlimit_card(params.retailer.select_charge.rule_id)" class="form-group">
+	  <label class="col-sm-3 col-md-3 control-label">消费开始日期</label>
+	  <div class="col-sm-6 col-md-6">
+	    <time-search click-ok="false" time="params.stime"> </time-search>
 	  </div> 
 	</div>
 

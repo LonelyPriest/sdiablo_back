@@ -503,6 +503,14 @@ error(charge_diff_region, Region) ->
     {2121, "different region of recharging: " ++ ?to_s(Region)};
 error(charge_no_promotion, ChargeId) ->
     {2122, "can not find charge promotion of charge: " ++ ?to_s(ChargeId)};
+error(threshold_card_not_exist, RetailerId) ->
+    {2123, "can not find the threshold card of ther retailer: " ++ ?to_s(RetailerId)};
+error(threshold_card_not_enought_count, RetailerId) ->
+    {2124, "not enought count of the threshold card: " ++ ?to_s(RetailerId)};
+error(threshold_card_expired, RetailerId) ->
+    {2124, "threshold card expired: " ++ ?to_s(RetailerId)};
+
+
 
 %% wprint
 error(wprint_server_exist, Server) ->

@@ -126,7 +126,7 @@
 %% pagination
 -define(DEFAULT_ITEMS_PERPAGE, 5).
 
--define(INVALID_DATE, "0000-00-00").
+-define(INVALID_DATE, {0,0,0}).
 %% seconds begin 0 year, 0 month, 0 day to 1970.1.1
 %% calendar:datetime_to_gregorian_seconds({{1970, 1, 1}, {0,0,0}}).
 -define(SECONDS_BEFOR_1970, 62167219200).

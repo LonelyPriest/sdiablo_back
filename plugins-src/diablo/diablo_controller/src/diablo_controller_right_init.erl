@@ -937,6 +937,7 @@ pass_action(wholesaler) ->
      <<"filter_retailer_detail">>,
      <<"check_w_retailer_password">>,
      <<"check_w_retailer_region">>,
+     <<"check_w_retailer_card">>,
      <<"list_w_retailer_charge">>,
      <<"list_w_retailer_score">>,
      <<"filter_charge_detail">>,
@@ -944,6 +945,7 @@ pass_action(wholesaler) ->
      <<"match_retailer_phone">>,
      <<"syn_retailer_pinyin">>,
      <<"export_recharge_detail">>,
+     <<"filter_threshold_card_detail">>,
      
      %% wsale
      %% <<"list_w_sale_new">>,

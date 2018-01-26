@@ -189,7 +189,7 @@ function wsaleConfg(angular){
 	this.wsale_mode = [{title: "款号模式"}, {title: "图片模式"}, {title: "条码模式"}]; 
 	this.check_state = [{name:"未审核", id:0},	{name:"已审核", id:1}];
 	this.check_comment = [{name:"不为空", id:0}];
-	this.export_type = {trans:0, trans_note:1};
+	this.export_type = {trans:0, trans_note:1}; 
 	
 
 	this.vpays = [0, 1, 2, 3, -1, -2, -3];
@@ -363,6 +363,7 @@ function wsaleNewProvide(
     $scope.timeout_auto_save = undefined;
     $scope.interval_per_5_minute = undefined;
     $scope.round  = diablo_round;
+    $scope.threshold_cards = wsaleService.threshold_cards;
     
     $scope.today = function(){
 	return $.now();
@@ -445,6 +446,7 @@ function wsaleNewProvide(
     $scope.show_promotions = [];
     $scope.disable_refresh = true;
     $scope.has_withdrawed  = false;
+    $scope.has_card_draw   = false;
 
     $scope.select = {
 	rsn:  undefined,
@@ -486,7 +488,8 @@ function wsaleNewProvide(
 	$scope.setting.barcode_mode  = wsaleUtils.barcode_mode(shopId, base);
 	$scope.setting.barcode_auto  = wsaleUtils.barcode_auto(shopId, base);
 	$scope.setting.draw_score    = wsaleUtils.draw_score(shopId, base);
-	$scope.setting.draw_region   = wsaleUtils.draw_score(shopId, base); 
+	$scope.setting.draw_region   = wsaleUtils.draw_region(shopId, base);
+	$scope.setting.threshold_card = wsaleUtils.threshold_card(shopId, base); 
 
 	if (diablo_no === $scope.setting.cake_mode) {
 	    $scope.vpays = wsaleService.vpays;
@@ -642,7 +645,7 @@ function wsaleNewProvide(
 		    }
 		}); 
 	};
-
+	
 	var get_max_draw = function(){
 
 	    var max_draw = 0;
@@ -677,8 +680,6 @@ function wsaleNewProvide(
 		},
 		 
 		 check_withdraw: function(balance){
-		     // return balance > $scope.select.retailer.balance
-		     //     || balance > $scope.select.charge ? false : true;
 		     return balance <= limit_balance;
 		 },
 		 
@@ -695,18 +696,58 @@ function wsaleNewProvide(
 		if (result.ecode === 0) {
 		    startWithdraw();
 		} else {
-		    var ERROR = require("diablo-error");
-		    diabloUtilsService.response(
-			false,
-			"会员现金提取",
-			ERROR[result.ecode],
-			undefined)
+		    wsaleUtils.set_error(diabloUtilsService, "会员现金提取", result.ecode); 
 		}
 	    })
 	} else {
 	    startWithdraw();
 	}
 	
+    };
+
+    $scope.disable_card_draw = function(){
+    	return $scope.has_card_draw;
+    };
+
+    $scope.card_draw = function(){
+	var callback = function(params){
+	    console.log(params);
+	    diabloFilter.check_retailer_password(
+		params.retailer.id, params.retailer.password, $scope.select.shop.id
+	    ).then(function(result){
+		console.log(result);
+		if (result.ecode === 0){
+		    // check count
+		    diabloFilter.check_retailer_card_thresold(
+			params.retailer.id, params.card.id
+		    ).then(function(result){
+			if (result.ecode === 0) {
+			    $scope.has_card_draw = true;
+			    
+			} else {
+			    wsaleUtils.set_error(diabloUtilsService, "会员卡类消费", result.ecode); 
+			}
+		    })
+		    
+		} else {
+		    wsaleUtils.set_error(diabloUtilsService, "会员卡类消费", result.ecode); 
+		}
+	    }); 
+	}; 
+	
+	diabloUtilsService.edit_with_modal(
+	    "new-card-draw.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {retailer: {
+		id        :$scope.select.retailer.id,
+		name      :$scope.select.retailer.name
+	    },
+	     count: 1,
+	     cards: $scope.threshold_cards,
+	     card: $scope.threshold_cards[0]}
+	);
     };
 
     /*
@@ -821,6 +862,7 @@ function wsaleNewProvide(
 	$scope.disable_refresh     = true;
 	$scope.has_saved           = false;
 	$scope.has_withdrawed      = false;
+	$scope.has_card_draw       = false;
 	
 	$scope.focus_good_or_barcode();
 	$scope.wsaleStorage.reset();

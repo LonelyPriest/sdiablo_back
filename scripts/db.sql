@@ -428,8 +428,21 @@ create table w_card
     edate           DATE default 0,
     rule            TINYINT default -1, -- 2: therotic times card, 3: month card, 4: quarter card, 5: year card
     merchant        INTEGER default -1,
+    shop            INTEGER default -1, 
     entry_date      DATETIME,
     unique key      uk (merchant, retailer, rule),
+    primary key     (id)
+) default charset=utf8;
+
+create table w_card_good
+(
+    id              INTEGER AUTO_INCREMENT,
+    name            INTEGER not null default -1,
+    tag_price       INTEGER default -1, 
+    merchant        INTEGER default -1,
+    shop            INTEGER default -1,
+    entry_date      DATETIME,
+    unique key      uk (name, merchant),
     primary key     (id)
 ) default charset=utf8;
 

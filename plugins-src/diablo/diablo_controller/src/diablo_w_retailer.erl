@@ -21,7 +21,7 @@
 	 terminate/2, code_change/3]).
 
 -export([retailer/2, retailer/3, retailer/4]).
--export([charge/2, charge/3]).
+-export([charge/2, charge/3, threshold_card/4]).
 -export([score/2, score/3, ticket/2, ticket/3, get_ticket/3, get_ticket/4, make_ticket/3]).
 -export([filter/4, filter/6]).
 -export([match/3, syn/2, syn/3, get/2, card/3]).
@@ -144,6 +144,14 @@ make_ticket(batch, Merchant, Attrs) ->
     %% Name = ?wpool:get(?MODULE, Merchant), 
     %% gen_server:call(Name, {ticket_by_batch, Merchant, Batch}).
 
+%% card
+threshold_card(check_count, Merchant, RetailerId, Count) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {check_threshold_card_count, Merchant, RetailerId, Count});
+threshold_card(check_expire, Merchant, RetailerId, CardRule) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {check_threshold_card_expire, Merchant, RetailerId, CardRule}).
+
 filter(total_retailer, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {total_retailer, Merchant, Conditions}); 
@@ -155,7 +163,10 @@ filter(total_ticket_detail, 'and', Merchant, Conditions) ->
     gen_server:call(Name, {total_ticket_detail, Merchant, Conditions});
 filter(total_custom_ticket_detail, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {total_custom_ticket_detail, Merchant, Conditions}).
+    gen_server:call(Name, {total_custom_ticket_detail, Merchant, Conditions}); 
+filter(total_threshold_card, 'and', Merchant, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {total_threshold_card, Merchant, Conditions}).
 
 
 filter({retailer, Order, Sort}, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
@@ -175,7 +186,12 @@ filter(ticket_detail, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
 filter(custom_ticket_detail, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(
-      Name, {filter_custom_ticket_detail, Merchant, Conditions, CurrentPage, ItemsPerPage}).
+      Name, {filter_custom_ticket_detail, Merchant, Conditions, CurrentPage, ItemsPerPage});
+
+filter(threshold_card, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(
+      Name, {filter_threshold_card, Merchant, Conditions, CurrentPage, ItemsPerPage}).
 
 %% match
 match(phone, Merchant, {Mode, Phone}) ->
@@ -680,17 +696,17 @@ handle_call({recharge, Merchant, Attrs}, _From, State) ->
     Card     = ?v(<<"card">>, Attrs, 0),
     Wxin     = ?v(<<"wxin">>, Attrs, 0),
     CBalance = ?to_i(Cash) + ?to_i(Card) + ?to_i(Wxin), 
-    SBalance    = ?v(<<"send_balance">>, Attrs),
+    SBalance    = ?v(<<"send_balance">>, Attrs, 0),
 
     ChargeId    = ?v(<<"charge">>, Attrs),
-    CTime       = ?v(<<"ctime">>, Attrs, -1), 
     Comment     = ?v(<<"comment">>, Attrs, []), 
     Entry       = ?utils:current_time(format_localtime),
 
-    case ?w_user_profile:get_charge(charge, Merchant, ChargeId) of
+    case ?w_user_profile:get(charge, Merchant, ChargeId) of
 	{ok, []} ->
 	    {reply, {error, ?err(charge_no_promotion, ChargeId)}};
 	{ok, Charge} ->
+	    %% ?DEBUG("Charge ~p", [Charge]),
 	    Sql0 = "select id, name, mobile, balance, score from w_retailer"
 		" where id=" ++ ?to_s(Retailer)
 		++ " and merchant=" ++ ?to_s(Merchant)
@@ -743,59 +759,83 @@ handle_call({recharge, Merchant, Attrs}, _From, State) ->
 				end,
 			    %% ?w_user_profile:update(retailer, Merchant),
 			    {reply, Reply, State};
-			false  -> 
-			    Sql01 = "select id, retailer, type from w_card"
+			false  ->
+			    CTime       = ?v(<<"ctime">>, Attrs, -1),
+			    StartDate   = ?v(<<"stime">>, Attrs, ?INVALID_DATE),
+			    
+			    Sql01 = "select id, retailer, ctime, edate, rule from w_card"
 				" where merchant=" ++ ?to_s(Merchant)
 				++ " and retailer=" ++ ?to_s(Retailer)
 				++ " and rule=" ++ ?to_s(Rule),
+			    
 			    Sql22 = 
 				case ?sql_utils:execute(s_read, Sql01) of
 				    {ok, Card} ->
-					EndDate = ?v(<<"edate">>, Card, ?INVALID_DATE),
-					{Year, Month, Date} = ?utils:to_date(date, EndDate),
+					EndDate = ?v(<<"edate">>, Card, ?INVALID_DATE), 
+					%% {Year, Month, Date} = ?utils:to_date(date, EndDate),
+					{Year, Month, Date} =
+					    case Rule of
+						?THEORETIC_CHARGE -> ?INVALID_DATE;
+						_ ->
+						    ?utils:big_date(date, StartDate, EndDate)
+					    end,
+					
 					[Sql1, 
 					 case Rule of
 					     ?THEORETIC_CHARGE ->
 						"update w_card set ctime=ctime+" ++ ?to_s(CTime);
 					     ?MONTH_UNLIMIT_CHARGE ->
 						NextMonth = date_next(?MONTH_UNLIMIT_CHARGE, {Year, Month, Date}),
-						"update w_card set edate=\'" ++ ?to_s(NextMonth) ++ "\'";
+						"update w_card set edate=\'" ++ format_date(NextMonth) ++ "\'"; 
 					    ?QUARTER_UNLIMIT_CHARGE ->
 						 NextQuarter =
 						     date_next(?QUARTER_UNLIMIT_CHARGE, {Year, Month, Date}),
-						 "update w_card set edate=\'" ++ ?to_s(NextQuarter);
+						 "update w_card set edate=\'" ++ format_date(NextQuarter);
 					     ?YEAR_UNLIMIT_CHARGE ->
 						 NextYear = date_next(?YEAR_UNLIMIT_CHARGE, {Year, Month, Date}),
-						 "update w_card set edate=\'" ++ ?to_s(NextYear)
-					 end ++ " where id=" ++ ?to_s(?v(<<"id">>, Card))];
-				{ok, []} ->
-				    {Year, Month, Date} = current_date(), 
-				    EndDate = 
-					case Rule of
-					    ?THEORETIC_CHARGE ->
-						?INVALID_DATE;
-					    ?MONTH_UNLIMIT_CHARGE ->
-						date_next(?MONTH_UNLIMIT_CHARGE, {Year, Month, Date});
-					    ?QUARTER_UNLIMIT_CHARGE ->
-						date_next(?QUARTER_UNLIMIT_CHARGE, {Year, Month, Date});
-					    ?YEAR_UNLIMIT_CHARGE ->
-						date_next(?YEAR_UNLIMIT_CHARGE, {Year, Month, Date})
-					end,
-				    [Sql1, 
-				     "insert into w_card(retailer"
-				     ", ctime, sdate, edate, rule, merchant, entry_date) values("
-				     ++ ?to_s(Retailer)
-				     ++ ?to_s(CTime)
-				     ++ case Rule of
-					    ?THEORETIC_CHARGE ->
-						"\'" ++ ?to_s(?INVALID_DATE) ++ "\'";
-					    _ ->
-						"\'" ++ ?to_s(format_date(Year, Month, Date)) ++ "\'"
-					end
-				     ++ "\'" ++ ?to_s(EndDate) ++ "\'"
-				     ++ ?to_s(Rule)
-				     ++ ?to_s(Merchant)
-				     ++ "\'" ++ ?to_s(Entry) ++ "\')"]
+						 "update w_card set edate=\'" ++ format_date(NextYear)
+					 end ++ 
+					     case Rule of
+						 ?THEORETIC_CHARGE -> [];
+						 _ ->
+						     case ?utils:compare_date(date, StartDate, EndDate) of 
+							 true ->
+							     ", set sdate=\'" ++ ?to_s(StartDate) ++ "\'";
+							 false -> []
+						     end
+					     end
+					 ++ " where id=" ++ ?to_s(?v(<<"id">>, Card))];
+				    {ok, []} ->
+					{Year, Month, Date} =
+					    case Rule of
+						?THEORETIC_CHARGE -> ?INVALID_DATE;
+						_ ->
+						    ?utils:big_date(date, current_date(), StartDate)
+					    end,
+					
+					EndDate = 
+					    case Rule of
+						?THEORETIC_CHARGE ->
+						    ?INVALID_DATE;
+						?MONTH_UNLIMIT_CHARGE ->
+						    date_next(?MONTH_UNLIMIT_CHARGE, {Year, Month, Date});
+						?QUARTER_UNLIMIT_CHARGE ->
+						    date_next(?QUARTER_UNLIMIT_CHARGE, {Year, Month, Date});
+						?YEAR_UNLIMIT_CHARGE ->
+						    date_next(?YEAR_UNLIMIT_CHARGE, {Year, Month, Date})
+					    end, 
+					
+					[Sql1, 
+					 "insert into w_card(retailer"
+					 ", ctime, sdate, edate, rule, merchant, shop, entry_date) values("
+					 ++ ?to_s(Retailer) ++ ","
+					 ++ ?to_s(CTime) ++ ","
+					 ++ "\'" ++ format_date(Year, Month, Date) ++ "\',"
+					 ++ "\'" ++ format_date(EndDate) ++ "\',"
+					 ++ ?to_s(Rule) ++ ","
+					 ++ ?to_s(Merchant) ++ ","
+					 ++ ?to_s(Shop) ++ ","
+					 ++ "\'" ++ ?to_s(Entry) ++ "\')"]
 				end,
 
 			    Reply =
@@ -1413,6 +1453,90 @@ handle_call({filter_custom_ticket_detail, Merchant, Conditions, CurrentPage, Ite
 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
+
+
+handle_call({total_threshold_card, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("total_threshold_card: merchant ~p, conditions ~p", [Merchant, Conditions]),
+    {_, _, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
+    Sql = "select count(*) as total"
+	" from w_card"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions),
+	
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+
+handle_call({filter_threshold_card, Merchant, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
+    ?DEBUG("filter_threshold_card: merchant ~p, conditions ~p, page ~p",
+	   [Merchant, Conditions, CurrentPage]),
+    {_, _, NewConditions} = ?sql_utils:cut(prefix, Conditions),
+    Sql = 
+	"select a.id" 
+	", a.retailer as retailer_id" 
+	", a.ctime"
+	", a.sdate"
+	", a.edate"
+	", a.rule as rule_id"
+	", a.shop as shop_id"
+	", a.entry_date"
+
+	", b.name as retailer"
+	", b.mobile"
+	
+    %% ", c.name as shop" 
+
+	" from w_card a"
+	" left join w_retailer b on a.retailer=b.id"
+    %% " left join shops c on a.shop=c.id"
+
+	" where a.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
+    Reply =  ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({check_threshold_card_count, Merchant, RetailerId, Count}, _From, State) ->
+    Sql = "select id, merchant, retailer, rule, ctime from w_card"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and retailer=" ++ ?to_s(RetailerId)
+	++ " and rule=" ++ ?to_s(?THEORETIC_CHARGE),
+
+    case ?sql_utils:execute(s_read, Sql) of
+	{ok, []} ->
+	    {reply, ?err(threshold_card_not_exist, RetailerId), State};
+	{ok, Card} ->
+	    LeftCount = ?v(<<"ctime">>, Card),
+	    case LeftCount < Count of
+		true ->
+		    {reply, ?err(threshold_card_not_enought_count, RetailerId), State};
+		false ->
+		    {reply, {ok, RetailerId}, State}
+	    end;
+	Error ->
+	    {reply, Error, State}
+    end;
+
+handle_call({check_threshold_card_expire, Merchant, RetailerId, CardRule}, _From, State) ->
+    Sql = "select id, merchant, retailer, rule, sdate, edate from w_card"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and retailer=" ++ ?to_s(RetailerId)
+	++ " and rule=" ++ ?to_s(CardRule),
+
+    case ?sql_utils:execute(s_read, Sql) of
+	{ok, []} ->
+	    {reply, ?err(threshold_card_not_exist, RetailerId), State};
+	{ok, Card} ->
+	    ExpireDate = ?v(<<"edate">>, Card),
+	    case ?utils:compare_date(date, current_date(), ExpireDate) of
+		true ->
+		    {reply, ?err(threshold_card_expired, RetailerId), State};
+		false ->
+		    {reply, {ok, RetailerId}, State}
+	    end; 
+	Error ->
+	    {reply, Error, State}
+    end;
     
 handle_call(_Request, _From, State) ->
     Reply = ok,
@@ -1492,19 +1616,28 @@ make_ticket(Merchant, Datetime, Balance, StartBatch, Count, Acc) ->
 date_next(?MONTH_UNLIMIT_CHARGE, {Year, Month, Date}) ->
     case Month + 1 > 12 of
 	true ->
-	    format_date(Year + 1, 1, Date);
-	false ->
-	    format_date(Year, Month + 1, Date)
+	    {Year + 1, 1, Date};
+	false -> 
+	    {Year, Month + 1, day_of_next_month(Year, Month + 1, Date)}
     end;
 date_next(?QUARTER_UNLIMIT_CHARGE, {Year, Month, Date}) ->
     case Month + 3 > 12 of
 	true ->
-	    format_date(Year + 1, (Month + 3) rem 12, Date);
+	    {Year + 1, (Month + 3) rem 12, day_of_next_month(Year, (Month + 3) rem 12, Date)};
 	false ->
-	    format_date(Year, Month + 3, Date)
+	    {Year, Month + 3, day_of_next_month(Year, Month + 3, Date)}
     end;
 date_next(?YEAR_UNLIMIT_CHARGE, {Year, Month, Date}) ->
-    format_date(Year + 1, Month, Date).
+    {Year + 1, Month, Date}.
+
+
+
+day_of_next_month(CurrentYear, NextMonth, CurrentDay) -> 
+    Days = calendar:last_day_of_the_month(CurrentYear, NextMonth),
+    case CurrentDay > Days of
+	true -> Days; 
+	false -> CurrentDay
+    end. 
 
 current_date() ->
     {{Year, Month, Date}, {_, _, _}} = calendar:now_to_local_time(erlang:now()),
@@ -1512,4 +1645,6 @@ current_date() ->
 
 format_date(Year, Month, Date) ->
     lists:flatten(io_lib:format("~4..0w-~2..0w-~2..0w", [Year, Month, Date])).
+format_date({Year, Month, Date}) ->
+    format_date(Year, Month, Date).
     

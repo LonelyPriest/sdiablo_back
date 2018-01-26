@@ -131,6 +131,17 @@ function wretailerConfig(angular) {
 		controller: 'wretailerCustomTicketDetailCtrl',
 		resolve: angular.extend({}, shop)
 	    }).
+	    // threshold card
+	    when('/threshold_card/card_detail', {
+		templateUrl: '/private/wretailer/html/threshold_card_detail.html',
+		controller: 'wretailerThresholdCardDetailCtrl',
+		resolve: angular.extend({},  shop)
+	    }).
+	    when('/threshold_card/card_good', {
+		templateUrl: '/private/wretailer/html/threshold_card_good.html',
+		controller: 'wretailerThresholdCardGoodCtrl',
+		resolve: angular.extend({},  shop)
+	    }). 
 	    // default
 	    otherwise({
 		templateUrl: '/private/wretailer/html/wretailer_detail.html',
@@ -168,13 +179,19 @@ function wretailerConfig(angular) {
 	    {name: "积分兑换钱", id:1, remakr: "积分到钱"}
 	];
 
-	this.charge_rules = [{name:"固定赠送模式", id:0, remark: "充值多少赠送固定金额"},
-			     {name:"N+1倍赠送模式", id:1, remark: "充值N倍赠送1倍金额"},
-			     {name:"次卡模式", id:2, remark: "充值与消费次数相关"},
-			     {name:"月卡模式", id:3, remark: "一个月内任意消费次数"},
-			     {name:"季卡模式", id:4, remark: "一个季度内内任意消费次数"},
-			     {name:"年卡模式", id:5, remark: "一年内任意消费次数"}
-			    ];
+	this.charge_rules = [
+	    {name:"固定赠送模式", id:diablo_giving_charge, remark: "充值多少赠送固定金额"},
+	    {name:"N+1倍赠送模式", id:diablo_times_charge, remark: "充值N倍赠送1倍金额"},
+	    {name:"次卡模式", id:diablo_theoretic_charge, remark: "充值与消费次数相关"},
+	    {name:"月卡模式", id:diablo_month_unlimit_charge, remark: "一个月内任意消费次数"},
+	    {name:"季卡模式", id:diablo_quarter_unlimit_charge, remark: "一个季度内内任意消费次数"},
+	    {name:"年卡模式", id:diablo_year_unlimit_charge, remark: "一年内任意消费次数"}
+	];
+
+	this.threshold_cards = [{name:"次卡模式", id:diablo_theoretic_charge},
+				{name:"月卡模式", id:diablo_month_unlimit_charge},
+				{name:"季卡模式", id:diablo_quarter_unlimit_charge},
+				{name:"年卡模式", id:diablo_year_unlimit_charge}];
 	
 	this.retailer_types = [{name: "普通会员", id:0},
 			       {name: "充值会员", id:1},
@@ -413,6 +430,19 @@ function wretailerConfig(angular) {
 	this.filter_custom_ticket_detail = function(match, fields, currentPage, itemsPerpage){
 	    return http.save(
 		{operation: "filter_custom_ticket_detail"},
+		{match:  angular.isDefined(match) ? match.op : undefined,
+		 fields: fields,
+		 page:   currentPage,
+		 count:  itemsPerpage}).$promise;
+	};
+
+
+	/*
+	 * threshold
+	 */
+	this.filter_threshold_card_detail = function(match, fields, currentPage, itemsPerpage){
+	    return http.save(
+		{operation: "filter_threshold_card_detail"},
 		{match:  angular.isDefined(match) ? match.op : undefined,
 		 fields: fields,
 		 page:   currentPage,

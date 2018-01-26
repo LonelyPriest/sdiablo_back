@@ -234,8 +234,7 @@ handle_cast(cleanup_session, State) ->
     ets:foldl(
       fun({Id, Session}, Acc)->
 	      %% ?DEBUG("session id ~p, session ~p", [Id, Session]),
-	      case ?utils:current_time(timestamp)
-		  - Session#session.login_time >= ?TIMEOUT of
+	      case ?utils:current_time(timestamp) - Session#session.login_time >= ?TIMEOUT of
 		  true ->
 		      %% not acitivte, delete
 		      ?INFO("session ~p does not activited, delete it", [Session]),

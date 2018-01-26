@@ -109,7 +109,13 @@
 		    <td class="bg-orange">{{c.card}}</td>
 		    <td class="bg-teal">{{c.wxin}}</td>
 		    <td>{{c.sbalance}}</td>
-		    <td>{{c.accbalance}}</td> 
+		    <td>
+		      <div x-ng-switch on="c.charge.rule_id">
+			<div x-ng-switch-when=0>{{c.accbalance}}</div>
+			<div x-ng-switch-when=1>{{c.accbalance}}</div>
+			<div x-ng-switch-default>-</div>
+		      </div>
+		    </td> 
 		    <td>{{c.comment}}</td>
 		    <td>{{c.entry_date}}</td> 
 		    <td  x-ng-if="right.update_phone">

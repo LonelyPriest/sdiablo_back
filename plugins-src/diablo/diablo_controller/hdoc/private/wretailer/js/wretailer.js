@@ -311,10 +311,37 @@ function wretailerDetailCtrlProvide(
 		   password:     diabloPattern.num_passwd,
 		   id_card:      diabloPattern.id_card,
 		   card:         diabloPattern.card}; 
+
+    var is_unlimit_card = function(rule_id) {
+	return rule_id === diablo_month_unlimit_charge
+	    || rule_id === diablo_quarter_unlimit_charge
+	    || rule_id === diablo_year_unlimit_charge;
+    };
+
+    var is_theoretic_card = function(rule_id) {
+	return rule_id === diablo_theoretic_charge;
+    };
+
+    var get_charge = function(charge_id) {
+	// console.log(charges);
+	for (var i=0, l=$scope.charges.length; i<l; i++){
+	    if (charge_id === $scope.charges[i].id){
+		return $scope.charges[i];
+	    }
+	} 
+	return undefined;
+    };
+    
+    var get_employee = function(shop_id) {
+	var validEmployees = $scope.employees.filter(function(e) {
+	    return e.shop === shop_id && e.state === 0;
+	});
+
+	return validEmployees.length === 0 ? $scope.employees : validEmployees;
+    }; 
     
     $scope.charge = function(retailer){
 	console.log($scope.charges); 
-
 	var callback = function(params){
 	    console.log(params);
 
@@ -349,11 +376,15 @@ function wretailerDetailCtrlProvide(
 		send_balance:   send_balance,
 		charge:         promotion.id,
 		ctime:          promotion.rule_id === diablo_theoretic_charge ? promotion.ctime : undefined,
+		stime:  is_unlimit_card(promotion.rule_id) ? dateFilter(params.stime, "yyyy-MM-dd") : undefined,
 		comment:        params.comment
 	    }).then(function(result){
 		console.log(result); 
 		if (result.ecode == 0){
-		    retailer.balance += charge_balance + send_balance;
+		    if (!is_theoretic_card(promotion.rule_id) && !is_unlimit_card(promotion.rule_id)) {
+			retailer.balance += charge_balance + retailerUtils.to_float(send_balance) 
+		    }
+		    
 		    dialog.response_with_callback(
 			true,
 			"会员充值",
@@ -401,25 +432,7 @@ function wretailerDetailCtrlProvide(
 			    + wretailerService.error[result.ecode]);
     		}
 	    })
-	};
-
-	var get_charge = function(charge_id) {
-	    // console.log(charges);
-	    for (var i=0, l=$scope.charges.length; i<l; i++){
-		if (charge_id === $scope.charges[i].id){
-		    return $scope.charges[i];
-		}
-	    } 
-	    return undefined;
-	};
-	
-	var get_employee = function(shop_id) {
-	    var validEmployees = $scope.employees.filter(function(e) {
-		return e.shop === shop_id && e.state === 0;
-	    });
-
-	    return validEmployees.length === 0 ? $scope.employees : validEmployees;
-	}
+	}; 
 
 	var select_shop = $scope.shops[0];
 	var employees = get_employee(select_shop.id);
@@ -441,8 +454,11 @@ function wretailerDetailCtrlProvide(
 	    },
 	     card: 0,
 	     wxin: 0,
+	     stime: $.now(),
 	     pattern:  pattern,
-	     get_charge: get_charge
+	     get_charge: get_charge,
+	     unlimit_card: is_unlimit_card
+	     // theoretic_card: is_theoretic_card
 	    }
 	)
     };
@@ -1046,9 +1062,77 @@ function wretailerCustomTicketDetailCtrlProvide(
 	};
 
 	dialog.request("优惠券废弃", "优惠券废弃后不可恢复，确定要废弃吗？", callback, undefined, undefined);
-    };
-    
+    };  
 };
+
+function wretailerThresholdCardDetailCtrlProvide(
+    $scope, diabloFilter, diabloPattern, diabloUtilsService, wretailerService, filterShop){
+    var dialog = diabloUtilsService;
+    var now = $.now();
+    
+    // $scope.shops = user.sortShops;
+    // $scope.threshold_cards = wretailerService.threshold_cards;
+    $scope.items_perpage = diablo_items_per_page();
+    $scope.max_page_size = 10;
+    $scope.default_page = 1; 
+    $scope.current_page = $scope.default_page;
+    $scope.total_items = 0;
+
+    $scope.select         = {phone:undefined};
+
+    $scope.filters = []; 
+    diabloFilter.reset_field();
+    diabloFilter.add_field("retailer", function(viewValue){
+	return retailerUtils.match_retailer_phone(viewValue, diabloFilter)
+    });
+    
+    $scope.filter = diabloFilter.get_filter();
+    $scope.prompt = diabloFilter.get_prompt(); 
+
+    $scope.time = diabloFilter.default_time(now, now);
+    $scope.do_search = function(page){
+	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+	    console.log($scope.select.phone);
+	    if (angular.isDefined($scope.select.phone) && angular.isObject($scope.select.phone)){
+		search.retailer = $scope.select.phone.id;
+	    }
+	    
+	    wretailerService.filter_threshold_card_detail(
+		$scope.match, search, page, $scope.items_perpage
+	    ).then(function(result){
+		console.log(result);
+		$scope.tcards = angular.copy(result.data); 
+		if (result.ecode === 0){
+		    if (page === $scope.default_page){
+			$scope.total_items = result.total;
+		    }
+
+		    angular.forEach($scope.tcards, function(c) {
+			c.shop = diablo_get_object(c.shop_id, filterShop);
+			c.rule = diablo_get_object(c.rule_id, wretailerService.threshold_cards);
+		    });
+		    
+		    diablo_order_page(page, $scope.items_perpage, $scope.tcards);
+		    $scope.current_page = page; 
+		} 
+	    })
+	})
+    };
+
+
+    $scope.match_retailer_phone = function(viewValue){
+	return retailerUtils.match_retailer_phone(viewValue, diabloFilter)
+    };
+
+    $scope.refresh = function(){
+	$scope.do_search($scope.default_page)
+    };
+
+    $scope.page_changed = function(page){
+	$scope.do_search(page)
+    }; 
+};
+
 
 define (["wretailerApp"], function(app){
     app.controller("wretailerNewCtrl", wretailerNewCtrlProvide);
@@ -1056,5 +1140,6 @@ define (["wretailerApp"], function(app){
     app.controller("wretailerChargeDetailCtrl", wretailerChargeDetailCtrlProvide);
     app.controller("wretailerTicketDetailCtrl", wretailerTicketDetailCtrlProvide);
     app.controller("wretailerCustomTicketDetailCtrl", wretailerCustomTicketDetailCtrlProvide);
+    app.controller("wretailerThresholdCardDetailCtrl", wretailerThresholdCardDetailCtrlProvide);
 });
 

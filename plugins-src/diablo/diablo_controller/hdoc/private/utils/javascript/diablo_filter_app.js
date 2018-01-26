@@ -532,6 +532,12 @@ function filterProvider(){
 		    {id:retailerId, shop:shopId}).$promise;
 	    },
 
+	    check_retailer_card_thresold: function(retailerId, cardType, count) {
+		return _retailerHttp.save(
+		    {operation: "check_w_retailer_card"},
+		    {id:retailerId, tcard:cardType, count:count}).$promise;
+	    },
+
 	    get_ticket_by_batch: function(batchNo){
 		return _retailerHttp.save(
 		    {operation: "get_w_retailer_ticket"},
