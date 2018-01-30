@@ -177,6 +177,11 @@ function filterProvider(){
 	function list_print_template() {
 	    return _baseSettingHttp.query({operation: 'list_print_template'}).$promise;
 	};
+
+	function list_threshold_card_good(shopIds) {
+	    return _retailerHttp.post(
+		{operation: "list_threshold_card_good"}, {shop: shopIds}).$promise;
+	};
 	
 	return{
 	    default_time: function(start, end){
@@ -531,11 +536,28 @@ function filterProvider(){
 		    {operation: "check_w_retailer_region"},
 		    {id:retailerId, shop:shopId}).$promise;
 	    },
+	    
+	    list_threshold_card_good:function(deferred, shopIds) {
+		var cached = get_from_storage(cookie, "tcard_good");
+		if (angular.isArray(cached) && cached.length !== 0)
+		    deferred.resolve(cached);
+		else {
+		    return list_threshold_card_good(shopIds).then(function(goods) {
+			var goods = goods.map(function(g) {
+			    return {id        :g.id,
+				    name      :g.name,
+				    shop_id   :g.shop_id,
+				    tag_price :g.tag_price}
+			});
 
-	    check_retailer_card_thresold: function(retailerId, cardType, count) {
-		return _retailerHttp.save(
-		    {operation: "check_w_retailer_card"},
-		    {id:retailerId, tcard:cardType, count:count}).$promise;
+			set_storage(cookie, "tcard_good", goods);
+			deferred.resolve(goods);
+		    }); 
+		} 
+	    },
+
+	    reset_threshold_card_good: function() {
+		clear_from_storage(cookie, "tcard_good");
 	    },
 
 	    get_ticket_by_batch: function(batchNo){
@@ -596,7 +618,7 @@ function filterProvider(){
 		    		    // entry: b.entry
 		    		   };
 		    	})
-			set_storage(cookie, "brand", _brands)
+			set_storage(cookie, "brand", _brands);
 		    	return _brands;
 		    });    
 		} 
@@ -894,9 +916,6 @@ function filterProvider(){
 		    return cached;
 		} else {
 		    return list_good_size_spec().then(function(specs){
-			// var _ctypes = ctypes.map(function(c) {
-			//     return {id:c.id, name:c.name, py:diablo_pinyin(c.name)};
-			// });
 			set_storage(cookie, "size_spec", specs);
 			return specs;
 		    }); 
@@ -922,9 +941,9 @@ function filterProvider(){
 
 	    reset_print_template: function() {
 		clear_from_storage(cookie, "p_template");
-	    },
-	    //
+	    }
 	    
+	    // 
 	}
     }
 };

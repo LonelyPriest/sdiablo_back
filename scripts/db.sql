@@ -437,12 +437,34 @@ create table w_card
 create table w_card_good
 (
     id              INTEGER AUTO_INCREMENT,
-    name            INTEGER not null default -1,
+    name            VARCHAR(64) not null,
     tag_price       INTEGER default -1, 
     merchant        INTEGER default -1,
     shop            INTEGER default -1,
     entry_date      DATETIME,
-    unique key      uk (name, merchant),
+    deleted         INTEGER default 0, -- 0: no;  1: yes
+    unique key      uk (name, merchant, shop),
+    primary key     (id)
+) default charset=utf8;
+
+create table w_card_sale
+(
+    id              INTEGER AUTO_INCREMENT,
+    rsn             VARCHAR(32) default -1,
+    employee        VARCHAR(8) not null,
+    retailer        INTEGER not null default -1,
+    card            INTEGER not null default -1, -- refer to w_card
+    amount          INTEGER not null default -1,
+    cgood           INTEGER default -1, -- refer to card_good
+    tag_price       INTEGER default -1,
+    
+    merchant        INTEGER default -1,
+    shop            INTEGER default -1,
+    comment         VARCHAR(127) default null,
+    entry_date      DATETIME,
+    deleted         INTEGER default 0, -- 0: no;  1: yes
+    unique key      uk (rsn),
+    key     dk     (merchant, shop, retailer),
     primary key     (id)
 ) default charset=utf8;
 

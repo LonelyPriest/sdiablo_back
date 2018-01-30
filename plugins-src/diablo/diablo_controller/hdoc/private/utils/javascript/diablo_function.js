@@ -759,7 +759,6 @@ diablo_set_string = function(s){
     }
 };
 
-
 var diablo_find_color = function(cid, allColors){
     if (cid === 0){
 	return {cid:cid, bcode:0, cname:"均色"};

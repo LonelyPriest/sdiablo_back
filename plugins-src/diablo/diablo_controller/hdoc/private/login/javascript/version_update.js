@@ -1,6 +1,11 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2018-01-31",
+         content:
+	 ["增加次/月/季/年卡消费模式"]
+        },
+	
 	{date: "2017-01-21",
          content:
 	 ["修正入库记录与录入顺序不一致的问题"]

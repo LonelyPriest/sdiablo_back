@@ -204,6 +204,10 @@ success(discard_ticket_all, Merchant) ->
     {0, "Success to discard all ticket of merchant: "++?to_s(Merchant)++"."};
 success(charge_check_region, Region) ->
     {0, "Success to check region: "++?to_s(Region)++"."};
+success(new_threshold_card_sale, Card) ->
+    {0, "Success to threshold card sale: "++?to_s(Card)++"."};
+success(add_threshold_card_good, Good) ->
+    {0, "Success to add threshold card good:" ++ ?to_s(Good)};
 
 %% wsale
 success(new_w_sale, RSn) ->
@@ -508,7 +512,11 @@ error(threshold_card_not_exist, RetailerId) ->
 error(threshold_card_not_enought_count, RetailerId) ->
     {2124, "not enought count of the threshold card: " ++ ?to_s(RetailerId)};
 error(threshold_card_expired, RetailerId) ->
-    {2124, "threshold card expired: " ++ ?to_s(RetailerId)};
+    {2125, "threshold card expired: " ++ ?to_s(RetailerId)};
+error(threshold_card_good_exist, Good) ->
+    {2126, "threshold card good exist: " ++ ?to_s(Good)};
+error(invalid_threshold_card_rule, Card) ->
+    {2127, "invalid threshold card rule: " ++ ?to_s(Card)};
 
 
 
@@ -631,8 +639,7 @@ error(operation_invalid_session, Error) ->
     {9902, "operation with invalid session with error " ++ ?to_s(Error)};
 
 error(file_op_error, Error) ->
-    {9101, "failed to operator file: ~p", [Error]};
+    {9101, "failed to operator file:" ++ [Error]};
 error(params_error, Name) ->
-    {9102, "parameter input error: ~p", [Name]}.
-
+    {9102, "parameter input error: " ++ [Name]}.
 

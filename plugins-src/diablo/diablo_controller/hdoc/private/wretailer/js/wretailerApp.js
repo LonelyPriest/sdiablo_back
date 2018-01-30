@@ -72,7 +72,7 @@ function wretailerConfig(angular) {
 	    return diabloNormalFilter.get_region()}};
 
 	var shop = {"filterShop": function(diabloNormalFilter){
-            return diabloNormalFilter.get_shop()}};
+            return diabloNormalFilter.get_shop()}}; 
 	
 	$routeProvider. 
 	    when('/wretailer_new', {
@@ -135,13 +135,18 @@ function wretailerConfig(angular) {
 	    when('/threshold_card/card_detail', {
 		templateUrl: '/private/wretailer/html/threshold_card_detail.html',
 		controller: 'wretailerThresholdCardDetailCtrl',
-		resolve: angular.extend({},  shop)
+		resolve: angular.extend({}, employee, user, base)
 	    }).
 	    when('/threshold_card/card_good', {
 		templateUrl: '/private/wretailer/html/threshold_card_good.html',
 		controller: 'wretailerThresholdCardGoodCtrl',
-		resolve: angular.extend({},  shop)
-	    }). 
+		resolve: angular.extend({}, user)
+	    }).
+	    when('/threshold_card/card_sale', {
+		templateUrl: '/private/wretailer/html/threshold_card_sale.html',
+		controller: 'wretailerThresholdCardSaleCtrl',
+		resolve: angular.extend({}, employee, shop)
+	    }).
 	    // default
 	    otherwise({
 		templateUrl: '/private/wretailer/html/wretailer_detail.html',
@@ -438,7 +443,7 @@ function wretailerConfig(angular) {
 
 
 	/*
-	 * threshold
+	 * threshold card
 	 */
 	this.filter_threshold_card_detail = function(match, fields, currentPage, itemsPerpage){
 	    return http.save(
@@ -449,6 +454,39 @@ function wretailerConfig(angular) {
 		 count:  itemsPerpage}).$promise;
 	};
 
+	this.add_threshold_card_good = function(card) {
+	    return http.save({operation: "add_threshold_card_good"},
+			     {shop: card.shop,
+			      name: card.name,
+			      price: card.price}).$promise;
+	};
+
+	this.filter_threshold_card_good = function(match, fields, currentPage, itemsPerpage){
+	    return http.save(
+		{operation: "filter_threshold_card_good"},
+		{match:  angular.isDefined(match) ? match.op : undefined,
+		 fields: fields,
+		 page:   currentPage,
+		 count:  itemsPerpage}).$promise;
+	};
+
+	this.filter_threshold_card_sale = function(match, fields, currentPage, itemsPerpage){
+	    return http.save(
+		{operation: "filter_threshold_card_sale"},
+		{match:  angular.isDefined(match) ? match.op : undefined,
+		 fields: fields,
+		 page:   currentPage,
+		 count:  itemsPerpage}).$promise;
+	};
+
+	this.new_threshold_card_sale = function(sale) {
+	    return http.save(
+		{operation: "new_threshold_card_sale"}, sale).$promise;
+	};
+	
+	/*
+	 * 
+	 */
 	this.export_w_retailer = function(conditions){
 	    return http.save({operation: "export_w_retailer"}, conditions).$promise;
 	};

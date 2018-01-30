@@ -72,7 +72,9 @@ var rightAuthen = {
 	    export_retailer   :rightAuthen.root_right._retailer + 21,
 	    query_balance     :rightAuthen.root_right._retailer + 22,
 	    update_phone      :rightAuthen.root_right._retailer + 23,
-	    set_withdraw      :rightAuthen.root_right._retailer + 24
+	    set_withdraw      :rightAuthen.root_right._retailer + 24,
+	    add_card_good     :rightAuthen.root_right._retailer + 28,
+	    delete_card_good  :rightAuthen.root_right._retailer + 30
 	}
     },
 

@@ -82,8 +82,6 @@ action(Session, Req, {"list_w_retailer_score"}) ->
     ?utils:respond(
        batch, fun() -> ?w_user_profile:get(score, Merchant) end, Req).
 
-
-
 %%--------------------------------------------------------------------
 %% @desc: POST action
 %%--------------------------------------------------------------------
@@ -228,24 +226,24 @@ action(Session, Req, {"check_w_retailer_region", Id}, Payload) ->
     end;
 
 
-action(Session, Req, {"check_w_retailer_card", Id}, Payload) ->
+action(Session, Req, {"new_threshold_card_sale", Id}, Payload) ->
+    ?DEBUG("new_threshold_card_sale: session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
-    CardType = ?v(<<"tcard">>, Payload),
-    Count = ?v(<<"count">>, Payload), 
+    %% Retailer = ?v(<<"retailer">>, Payload),
+    CardRule = ?v(<<"rule">>, Payload, -1), 
+    %% Count = ?v(<<"count">>, Payload), 
     case 
-	case ?to_i(CardType) of
+	case ?to_i(CardRule) of
+	    ?INVALID_OR_EMPTY ->
+		{error, ?err(invalid_threshold_card_rule, Id)};
 	    ?THEORETIC_CHARGE ->
-		?w_retailer:card(check_theoretic, Merchant, Id, Count);
-	    ?MONTH_UNLIMIT_CHARGE ->
-		?w_retailer:card(check_expire, Merchant, Id, ?MONTH_UNLIMIT_CHARGE);
-	    ?QUARTER_UNLIMIT_CHARGE ->
-		?w_retailer:card(check_expire, Merchant, Id, ?QUARTER_UNLIMIT_CHARGE);
-	    ?YEAR_UNLIMIT_CHARGE ->
-		?w_retailer:card(check_expire, Merchant, Id, ?YEAR_UNLIMIT_CHARGE)
-	end
+		?w_retailer:threshold_card(threshold_consume, Merchant, Id, Payload);
+	    _ ->
+		?w_retailer:threshold_card(expire_consume, Merchant, Id, Payload)
+	end 
     of
-	{ok, Id} ->
-	    ?utils:respond(200, Req, ?succ(check_w_retailer_card, Id));
+	{ok, RSN} ->
+	    ?utils:respond(200, Req, ?succ(new_threshold_card_sale, RSN), [{<<"rsn">>, ?to_b(RSN)}]);
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end; 
@@ -582,6 +580,34 @@ action(Session, Req, {"filter_custom_ticket_detail"}, Payload) ->
        end, Req, Payload);
 
 
+%%
+%% threshold card
+%%
+action(Session, Req, {"list_threshold_card_good"}, Payload) ->
+    ?DEBUG("list_threshold_card_good with Session ~p~npaylaod ~p", [Session, Payload]), 
+    Merchant = ?session:get(merchant, Session),
+    Shops = ?v(<<"shop">>, Payload, []), 
+    ?utils:respond(
+       batch, fun() -> ?w_retailer:threshold_card_good(
+			  list,
+			  Merchant,
+			  case Shops of
+			      [] -> [];
+			      _ -> [{<<"shop">>, Shops}]
+			  end) end, Req);
+
+action(Session, Req, {"add_threshold_card_good"}, Payload) ->
+    ?DEBUG("add_threshold_card_good with session ~p, payload ~p", [Session, Payload]), 
+    Merchant = ?session:get(merchant, Session), 
+    case ?w_retailer:threshold_card_good(new, Merchant, Payload) of
+	{ok, GoodId} ->
+	    %% ?w_user_profile:update(charge, Merchant),
+	    ?utils:respond(
+	       200, Req, ?succ(add_threshold_card_good, GoodId));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;    
+
 action(Session, Req, {"filter_threshold_card_detail"}, Payload) ->
     ?DEBUG("filter_threshold_card_detail with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant  = ?session:get(merchant, Session),
@@ -592,6 +618,30 @@ action(Session, Req, {"filter_threshold_card_detail"}, Payload) ->
        end,
        fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
 	       ?w_retailer:filter(threshold_card, Match, Merchant, Conditions, CurrentPage, ItemsPerPage)
+       end, Req, Payload);
+
+action(Session, Req, {"filter_threshold_card_sale"}, Payload) ->
+    ?DEBUG("filter_threshold_card_sale with session ~p, paylaod~n~p", [Session, Payload]), 
+    Merchant  = ?session:get(merchant, Session),
+
+    ?pagination:pagination(
+       fun(Match, Conditions) ->
+	       ?w_retailer:filter(total_threshold_card_sale, ?to_a(Match), Merchant, Conditions)
+       end,
+       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
+	       ?w_retailer:filter(threshold_card_sale, Match, Merchant, Conditions, CurrentPage, ItemsPerPage)
+       end, Req, Payload);
+
+action(Session, Req, {"filter_threshold_card_good"}, Payload) ->
+    ?DEBUG("filter_threshold_card_good with session ~p, paylaod~n~p", [Session, Payload]), 
+    Merchant  = ?session:get(merchant, Session),
+
+    ?pagination:pagination(
+       fun(Match, Conditions) ->
+	       ?w_retailer:filter(total_threshold_card_good, ?to_a(Match), Merchant, Conditions)
+       end,
+       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
+	       ?w_retailer:filter(threshold_card_good, Match, Merchant, Conditions, CurrentPage, ItemsPerPage)
        end, Req, Payload);
 
 %% 
@@ -750,13 +800,14 @@ sidebar(Session) ->
 	 }],
     
     ThresholdCard = [{{"threshold_card", "次/月/季/年卡", "glyphicon glyphicon-credit-card" },
-		      [{"card_good",   "按次商品", "glyphicon glyphicon-book"},
-		       {"card_detail", "卡类详情", "glyphicon glyphicon-credit-card"}] 
+		      [{"card_detail", "卡类详情", "glyphicon glyphicon-credit-card"},
+		       {"card_good",   "按次商品", "glyphicon glyphicon-book"}, 
+		       {"card_sale",   "消费记录", "glyphicon glyphicon-bookmark"}
+		      ] 
 		     }],
 
     Merchant = ?session:get(merchant, Session),
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, ?DEFAULT_BASE_SETTING),
-    
     L1 = ?menu:sidebar(level_1_menu, S2 ++ S1 ++ S3),
     L2 = ?menu:sidebar(level_2_menu, Ticket ++ Recharge ++
 			   case ?to_i(?v(<<"threshold_card">>, BaseSetting, ?NO)) of

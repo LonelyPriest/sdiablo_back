@@ -187,7 +187,6 @@
 -define(delete_recharge,             ?right_w_retailer + 15).
 -define(update_recharge,             ?right_w_retailer + 16).
 -define(update_retailer_score,       ?right_w_retailer + 17).
-
 %% ticket
 -define(filter_ticket_detail,        ?right_w_retailer + 18).
 -define(effect_ticket,               ?right_w_retailer + 19).
@@ -199,6 +198,11 @@
 -define(make_ticket_batch,           ?right_w_retailer + 25).
 -define(filter_custom_ticket_detail, ?right_w_retailer + 26).
 -define(discard_custom_ticket,       ?right_w_retailer + 27).
+%% threshold card
+-define(add_threshold_card_good,     ?right_w_retailer + 28).
+-define(update_threshold_card_good,  ?right_w_retailer + 29).
+-define(delete_threshold_card_good,  ?right_w_retailer + 30).
+-define(new_threshold_card_sale,     ?right_w_retailer + 31).
 
 %% shop
 -define(new_shop,       ?right_shop + 1).

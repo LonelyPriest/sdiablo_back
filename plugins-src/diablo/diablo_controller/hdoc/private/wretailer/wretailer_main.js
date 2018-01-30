@@ -123,7 +123,7 @@ require.config({
 
 	"diablo-utils": {
             exports: "diablo-utils",
-            deps: ["angular"]
+            deps: ["angular", "diablo-error"]
 	}, 
 	
 	"diablo-filter": {

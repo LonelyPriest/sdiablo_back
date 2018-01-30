@@ -934,6 +934,11 @@ diabloUtils.service("diabloUtilsService", function($uibModal){
 	    }
 	})
     };
+
+    this.set_error = function(title, ecode) {
+	var ERROR = require("diablo-error");
+	this.response(false, title, ERROR[ecode], undefined);
+    };
 });
 
 diabloUtils.controller("diabloDialogCtrl", function(

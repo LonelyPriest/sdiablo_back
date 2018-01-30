@@ -363,7 +363,6 @@ function wsaleNewProvide(
     $scope.timeout_auto_save = undefined;
     $scope.interval_per_5_minute = undefined;
     $scope.round  = diablo_round;
-    $scope.threshold_cards = wsaleService.threshold_cards;
     
     $scope.today = function(){
 	return $.now();
@@ -446,7 +445,6 @@ function wsaleNewProvide(
     $scope.show_promotions = [];
     $scope.disable_refresh = true;
     $scope.has_withdrawed  = false;
-    $scope.has_card_draw   = false;
 
     $scope.select = {
 	rsn:  undefined,
@@ -489,8 +487,7 @@ function wsaleNewProvide(
 	$scope.setting.barcode_auto  = wsaleUtils.barcode_auto(shopId, base);
 	$scope.setting.draw_score    = wsaleUtils.draw_score(shopId, base);
 	$scope.setting.draw_region   = wsaleUtils.draw_region(shopId, base);
-	$scope.setting.threshold_card = wsaleUtils.threshold_card(shopId, base); 
-
+	
 	if (diablo_no === $scope.setting.cake_mode) {
 	    $scope.vpays = wsaleService.vpays;
 	} else {
@@ -616,34 +613,34 @@ function wsaleNewProvide(
 	var callback = function(params){
 	    console.log(params);
 	    diabloFilter.check_retailer_password(
-		params.retailer.id, params.retailer.password, $scope.select.shop.id
+		params.retailer.id, params.retailer.password
 	    ).then(function(result){
-		    console.log(result);
-		    if (result.ecode === 0){
-			if (result.limit !== 0 && params.retailer.withdraw > result.limit){
-			    diabloUtilsService.response(
-				false,
-				"会员现金提取",
-				"会员现金提取失败："
-				    + wsaleService.error[2698]
-				    + "上限[" + result.limit + "]，"
-				    + "实际提取[" + params.retailer.withdraw + "]",
-				undefined) 
-			} else {
-			    $scope.select.withdraw = params.retailer.withdraw;
-			    $scope.has_withdrawed  = true;
-			    $scope.reset_payment();
-			    // $scope.reset_score();
-			} 
-		    } else {
-			var ERROR = require("diablo-error");
+		console.log(result);
+		if (result.ecode === 0){
+		    if (result.limit !== 0 && params.retailer.withdraw > result.limit){
 			diabloUtilsService.response(
 			    false,
 			    "会员现金提取",
-			    ERROR[result.ecode],
-			    undefined)
-		    }
-		}); 
+			    "会员现金提取失败："
+				+ wsaleService.error[2698]
+				+ "上限[" + result.limit + "]，"
+				+ "实际提取[" + params.retailer.withdraw + "]",
+			    undefined) 
+		    } else {
+			$scope.select.withdraw = params.retailer.withdraw;
+			$scope.has_withdrawed  = true;
+			$scope.reset_payment();
+			// $scope.reset_score();
+		    } 
+		} else {
+		    var ERROR = require("diablo-error");
+		    diabloUtilsService.response(
+			false,
+			"会员现金提取",
+			ERROR[result.ecode],
+			undefined)
+		}
+	    }); 
 	};
 	
 	var get_max_draw = function(){
@@ -703,53 +700,8 @@ function wsaleNewProvide(
 	    startWithdraw();
 	}
 	
-    };
-
-    $scope.disable_card_draw = function(){
-    	return $scope.has_card_draw;
-    };
-
-    $scope.card_draw = function(){
-	var callback = function(params){
-	    console.log(params);
-	    diabloFilter.check_retailer_password(
-		params.retailer.id, params.retailer.password, $scope.select.shop.id
-	    ).then(function(result){
-		console.log(result);
-		if (result.ecode === 0){
-		    // check count
-		    diabloFilter.check_retailer_card_thresold(
-			params.retailer.id, params.card.id
-		    ).then(function(result){
-			if (result.ecode === 0) {
-			    $scope.has_card_draw = true;
-			    
-			} else {
-			    wsaleUtils.set_error(diabloUtilsService, "会员卡类消费", result.ecode); 
-			}
-		    })
-		    
-		} else {
-		    wsaleUtils.set_error(diabloUtilsService, "会员卡类消费", result.ecode); 
-		}
-	    }); 
-	}; 
-	
-	diabloUtilsService.edit_with_modal(
-	    "new-card-draw.html",
-	    undefined,
-	    callback,
-	    undefined,
-	    {retailer: {
-		id        :$scope.select.retailer.id,
-		name      :$scope.select.retailer.name
-	    },
-	     count: 1,
-	     cards: $scope.threshold_cards,
-	     card: $scope.threshold_cards[0]}
-	);
-    };
-
+    }; 
+    
     /*
      * ticket
      */
@@ -862,7 +814,6 @@ function wsaleNewProvide(
 	$scope.disable_refresh     = true;
 	$scope.has_saved           = false;
 	$scope.has_withdrawed      = false;
-	$scope.has_card_draw       = false;
 	
 	$scope.focus_good_or_barcode();
 	$scope.wsaleStorage.reset();

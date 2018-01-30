@@ -2,18 +2,9 @@
 
 function newShopCtrlProvide(
     $scope, shopService, diabloPattern, diabloUtilsService, filterEmployee, user){
-    $scope.pattern = {address:diabloPattern.ch_name_address};
-    
+    $scope.pattern = {address:diabloPattern.ch_name_address};    
     $scope.employees = filterEmployee;
-    // console.log($scope.employees);
-
-    var dialog = diabloUtilsService;
-    // employService.list().$promise.then(function(employees){
-    // 	console.log(employees);
-    // 	$scope.employees =  employees.map(function(e){
-    // 	    return {name:e.name, id:e.number, py:diablo_pinyin(e.name)}
-    // 	}) 
-    // });
+    var dialog = diabloUtilsService; 
 
     // repo
     $scope.authen_list_repo =
@@ -21,10 +12,6 @@ function newShopCtrlProvide(
 	    rightAuthen.shop_action["list_repo"],
 	    user.right); 
     
-
-    // console.log($scope.authen_list_repo);
-    
-
     $scope.repertories = [];
     if ($scope.authen_list_repo){
 	shopService.list_repo().then(function(repo){
@@ -33,7 +20,6 @@ function newShopCtrlProvide(
     		return {name:r.name, id:r.id, py:diablo_pinyin(r.name)}
     	    })
 	});
-	// $scope.repertories = diabloNormalFilter.get_repo();
 	console.log($scope.repertories);
     };
     
@@ -111,7 +97,6 @@ function shopDetailCtrlProvide(
     $scope.repertories = [];
     var deferred = $q.defer(); 
     if ($scope.authen_list_repo){
-	
 	shopService.list_repo().then(function(repo){
     	    console.log(repo);
     	    $scope.repertories = repo.map(function(r){
@@ -128,7 +113,7 @@ function shopDetailCtrlProvide(
 	// $scope.repertories = diabloNormalFilter.get_repo()
     } else{
 	deferred.resolve();
-    }
+    };
     
     
     $scope.get_employee = function(id){

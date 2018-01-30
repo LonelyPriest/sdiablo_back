@@ -171,7 +171,18 @@ init([]) ->
 	  <<"批量制卷">>, <<"make_ticket_batch">>, ?right_w_retailer},
 
 	 {?discard_custom_ticket, 
-	  <<"优惠券废弃">>, <<"discard_custom_ticket">>, ?right_w_retailer}
+	  <<"优惠券废弃">>, <<"discard_custom_ticket">>, ?right_w_retailer},
+
+	 %% threshold card good
+	 {?add_threshold_card_good,
+	  <<"新增按次商品">>, <<"add_threshold_card_good">>, ?right_w_retailer}, 
+	 {?update_threshold_card_good,
+	  <<"修改按次商品">>, <<"update_threshold_card_good">>, ?right_w_retailer}, 
+	 {?delete_threshold_card_good,
+	  <<"删除按次商品">>, <<"delete_threshold_card_good">>, ?right_w_retailer},
+
+	 {?new_threshold_card_sale,
+	  <<"次卡商品销售">>, <<"new_threshold_card_sale">>, ?right_w_retailer} 
 	],
 
     
@@ -937,7 +948,6 @@ pass_action(wholesaler) ->
      <<"filter_retailer_detail">>,
      <<"check_w_retailer_password">>,
      <<"check_w_retailer_region">>,
-     <<"check_w_retailer_card">>,
      <<"list_w_retailer_charge">>,
      <<"list_w_retailer_score">>,
      <<"filter_charge_detail">>,
@@ -946,6 +956,9 @@ pass_action(wholesaler) ->
      <<"syn_retailer_pinyin">>,
      <<"export_recharge_detail">>,
      <<"filter_threshold_card_detail">>,
+     <<"filter_threshold_card_good">>,
+     <<"filter_threshold_card_sale">>,
+     <<"list_threshold_card_good">>,
      
      %% wsale
      %% <<"list_w_sale_new">>,

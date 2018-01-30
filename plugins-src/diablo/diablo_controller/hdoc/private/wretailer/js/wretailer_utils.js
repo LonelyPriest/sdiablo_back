@@ -92,63 +92,88 @@ var retailerUtils = function(){
 }();
 
 var retailerPrint = function(){
+    var left = 5;
+    var width = 219; // inch, 5.8 / 2.45 * 96 
+    var vWidth = width - 5; 
+    var hFont = 20; // height of font
+    
     return {
-	gen_head: function(LODOP, retailer, shop, employee, date){
-	    var hLine = 5;
-
-	    // var left = diablo_round((178 - (shop.length * diablo_print_px * 2)) / 2);
-	    // console.log(diablo_round(left))
-	    LODOP.ADD_PRINT_TEXT(hLine, 0, 178, 30, shop);
-	    LODOP.SET_PRINT_STYLEA(1,"FontSize",13);
-	    LODOP.SET_PRINT_STYLEA(1,"bold",1);
-	    LODOP.SET_PRINT_STYLEA(1,"Horient",2); 
-	    hLine += 35;
-
-	    LODOP.ADD_PRINT_TEXT(hLine, 0, 178, 30, "（" + retailer + "-充值凭证）"); 
-	    // LODOP.SET_PRINT_STYLEA(1,"FontSize",13);
-	    // LODOP.SET_PRINT_STYLEA(1,"bold",1);
-	    LODOP.SET_PRINT_STYLEA(2,"Horient",2); 
-	    hLine += 35;
-
-	    LODOP.ADD_PRINT_TEXT(hLine, 0, 178, 20, "经手人：" + employee);
-	    hLine += 15
+	init: function(LODOP) {LODOP.SET_PRINT_PAGESIZE(3, 580, 0, "")},
 	    
-	    LODOP.ADD_PRINT_TEXT(hLine, 0, 178, 20, "充值日期：" + date);
-	    hLine += 15
-	    
-	    return hLine;
+	gen_head: function(LODOP, shop, rsn, employee, retailer, date){
+	    LODOP.ADD_PRINT_TEXT(10, left, vWidth, 30, shop); 
+	    LODOP.SET_PRINT_STYLEA(0, "FontSize", 13);
+	    LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
+	    // LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
+
+	    var top = 40; 
+	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "单号：" + rsn); 
+	    top += 15; // 55
+	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "客户：" + retailer);
+	    top += 15; // 70
+	    LODOP.ADD_PRINT_TEXT(top,  left, vWidth, hFont, "店员：" + employee);
+	    top += 15; // 85
+	    LODOP.ADD_PRINT_TEXT(top,  left, vWidth, hFont, "日期：" + date); 
+	    top += 20; // 105
+	    LODOP.ADD_PRINT_LINE(top,  left, top, vWidth, 0, 1);
+
+	    return;
 	},
 
-	gen_body: function(hLine, LODOP, charge){
-	    var to_i = retailerUtils.to_integer;
-
-	    LODOP.ADD_PRINT_LINE(hLine,0,hLine,178,0,1); 
-	    hLine += 15;
+	gen_body: function(LODOP, sale){
+	    var top = 115;
+	    LODOP.ADD_PRINT_TEXT(top, left, 70, hFont, "商品");
+	    LODOP.ADD_PRINT_TEXT(top, left + 70, 35, hFont, "单价");
+	    LODOP.ADD_PRINT_TEXT(top, left + 105, 35, hFont, "次数");
 	    
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"充值金额：" + charge.cbalance);
-	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"赠送金额：" + charge.sbalance); 
-	    hLine += 15;
+	    top += 15; 
+	    LODOP.ADD_PRINT_TEXT(top, left, 70, hFont, sale.good_name);
+	    top += 15;
+	    LODOP.ADD_PRINT_TEXT(top, left + 70, 35, hFont, sale.tag_price);
+	    LODOP.ADD_PRINT_TEXT(top, left + 105, 35, hFont, sale.count);
 
-	    var comment = comment ? comment : "";
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"备注："+ comment); 
+	    top += 15;
+	    LODOP.ADD_PRINT_LINE(top, left, top, vWidth, 0, 1);
 	    
-	    return hLine;
+	    top += 5;
+	    return top;
+	},
+
+	gen_stastic: function(LODOP, top, card, comment){
+	    top += 5;
+	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "消费类型：" + card.rule.name);
+	    
+	    var l = "";
+	    if(card.rule.id === diablo_theoretic_charge) 
+		l += "剩余次数：" + card.left_time;
+	    else
+		l += "过期日期：" + card.expire_date;
+	    
+	    console.log(l);
+	    top += 15;
+	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, l);
+	    
+	    top += 15;
+	    l = "备注：" + (comment ? comment : "");
+	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, l);
+
+	    top += 15;
+	    LODOP.ADD_PRINT_LINE(top, left, top, vWidth, 0, 1);
+
+	    top += 5;
+	    return top;
+	},
+
+	gen_foot: function(LODOP, top, date) {
+	    top += 5;
+	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "谢谢惠顾！！"); 
+	    top += 15;
+	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "打印日期：" + date);
 	},
 	
 	start_print: function(LODOP){
-	    LODOP.SET_PRINT_PAGESIZE(3, 178, 100, ""); 
-	    // LODOP.PREVIEW();
-	    LODOP.PRINT();
-	},
-
-	// first_day_of_month: function(){
-	//     var now = new Date(); 
-	//     var year = now.getFullYear();
-	//     var month = now.getMonth();
-
-	//     return {
-	// 	first:new Date(year, month, 1).getTime(), current:now.getTime()};
-	// }
+	    LODOP.PREVIEW();
+	    // LODOP.PRINT();
+	} 
     }
 }();
