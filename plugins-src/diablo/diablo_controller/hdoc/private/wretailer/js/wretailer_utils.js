@@ -172,8 +172,8 @@ var retailerPrint = function(){
 	},
 	
 	start_print: function(LODOP){
-	    LODOP.PREVIEW();
-	    // LODOP.PRINT();
+	    // LODOP.PREVIEW();
+	    LODOP.PRINT();
 	} 
     }
 }();

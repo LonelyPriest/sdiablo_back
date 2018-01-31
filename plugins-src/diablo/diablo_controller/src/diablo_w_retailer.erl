@@ -598,22 +598,19 @@ handle_call({new_charge, Merchant, Attrs}, _From, State) ->
 		  "select id, ctime from w_charge"
 		      " where merchant=" ++ ?to_s(Merchant)
 		      ++ " and ctime=" ++ ?to_s(CTime)
-		      ++ " and type=" ++ ?to_s(Type);
+		      ++ " and name=\'" ++ ?to_s(Name) ++ "\'";
 	      ?MONTH_UNLIMIT_CHARGE ->
 		  "select id, name from w_charge"
 		      " where merchant=" ++ ?to_s(Merchant)
-		      ++ " and name=\'" ++ ?to_s(Name) ++ "\'"
-		      ++ " and type=" ++ ?to_s(Type);
+		      ++ " and name=\'" ++ ?to_s(Name) ++ "\'";
 	      ?QUARTER_UNLIMIT_CHARGE ->
 		  "select id, name from w_charge"
 		      " where merchant=" ++ ?to_s(Merchant)
-		      ++ " and name=\'" ++ ?to_s(Name) ++ "\'"
-		      ++ " and type=" ++ ?to_s(Type);
+		      ++ " and name=\'" ++ ?to_s(Name) ++ "\'";
 	      ?YEAR_UNLIMIT_CHARGE ->
 		  "select id, name from w_charge"
 		      " where merchant=" ++ ?to_s(Merchant)
 		      ++ " and name=\'" ++ ?to_s(Name) ++ "\'"
-		      ++ " and type=" ++ ?to_s(Type)
 	  end,
 
     case ?sql_utils:execute(s_read, Sql) of
