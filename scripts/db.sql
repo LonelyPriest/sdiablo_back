@@ -426,11 +426,12 @@ create table w_card
     ctime           INTEGER default -1,
     sdate           DATE default 0,
     edate           DATE default 0,
+    cid             INTEGER default -1,
     rule            TINYINT default -1, -- 2: therotic times card, 3: month card, 4: quarter card, 5: year card
     merchant        INTEGER default -1,
     shop            INTEGER default -1, 
     entry_date      DATETIME,
-    unique key      uk (merchant, retailer, rule),
+    unique key      uk (merchant, retailer, cid),
     primary key     (id)
 ) default charset=utf8;
 
@@ -454,7 +455,8 @@ create table w_card_sale
     employee        VARCHAR(8) not null,
     retailer        INTEGER not null default -1,
     card            INTEGER not null default -1, -- refer to w_card
-    amount          INTEGER not null default -1,
+    cid             INTEGER not null default -1, -- refer to w_card
+    amount          INTEGER not null default -1, -- refer to w_charge
     cgood           INTEGER default -1, -- refer to card_good
     tag_price       INTEGER default -1,
     

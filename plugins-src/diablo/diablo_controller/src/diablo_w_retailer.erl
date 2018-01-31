@@ -785,10 +785,10 @@ handle_call({recharge, Merchant, Attrs}, _From, State) ->
 			    CTime       = ?v(<<"ctime">>, Attrs, -1),
 			    StartDate   = ?v(<<"stime">>, Attrs, ?INVALID_DATE),
 			    
-			    Sql01 = "select id, retailer, ctime, edate, rule from w_card"
+			    Sql01 = "select id, retailer, ctime, edate, cid, rule from w_card"
 				" where merchant=" ++ ?to_s(Merchant)
 				++ " and retailer=" ++ ?to_s(Retailer)
-				++ " and rule=" ++ ?to_s(Rule),
+				++ " and cid=" ++ ?to_s(ChargeId),
 			    
 			    Sql22 = 
 				case ?sql_utils:execute(s_read, Sql01) of 
@@ -814,11 +814,12 @@ handle_call({recharge, Merchant, Attrs}, _From, State) ->
 					
 					[Sql1, 
 					 "insert into w_card(retailer"
-					 ", ctime, sdate, edate, rule, merchant, shop, entry_date) values("
+					 ", ctime, sdate, edate, cid, rule, merchant, shop, entry_date) values("
 					 ++ ?to_s(Retailer) ++ ","
 					 ++ ?to_s(CTime) ++ ","
 					 ++ "\'" ++ format_date(Year, Month, Date) ++ "\',"
 					 ++ "\'" ++ format_date(EndDate) ++ "\',"
+					 ++ ?to_s(ChargeId) ++ ","
 					 ++ ?to_s(Rule) ++ ","
 					 ++ ?to_s(Merchant) ++ ","
 					 ++ ?to_s(Shop) ++ ","
@@ -1498,17 +1499,21 @@ handle_call({filter_threshold_card, Merchant, Conditions, CurrentPage, ItemsPerP
 	", a.ctime"
 	", a.sdate"
 	", a.edate"
+	", a.cid"
 	", a.rule as rule_id"
 	", a.shop as shop_id"
 	", a.entry_date"
 
 	", b.name as retailer"
 	", b.mobile"
+
+	", c.name as cname"
 	
     %% ", c.name as shop" 
 
 	" from w_card a"
 	" left join w_retailer b on a.retailer=b.id"
+	" left join w_charge c on a.cid=c.id"
     %% " left join shops c on a.shop=c.id"
 
 	" where a.merchant=" ++ ?to_s(Merchant)
@@ -1558,11 +1563,14 @@ handle_call({filter_threshold_card_sale, Merchant, Conditions, CurrentPage, Item
 	", b.name as retailer"
 	", b.mobile"
 
-	", c.rule as rule_id" 
+	", c.rule as rule_id"
+	
+	", d.name as cname"
 
 	" from w_card_sale a"
 	" left join w_retailer b on a.retailer=b.id"
 	" left join w_card c on a.card=c.id"
+	" left join w_charge d on a.cid=d.id"
 
 	" where a.merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions)
@@ -1639,6 +1647,7 @@ handle_call({threshold_card_consume, Merchant, CardId, Attrs}, _From, State) ->
     ?DEBUG("threshold_card_consume: merchant ~p, card ~p, attrs ~p", [Merchant, CardId, Attrs]),
     CGood = ?v(<<"cgood">>, Attrs), 
     Count = ?v(<<"count">>, Attrs),
+    ChargeId = ?v(<<"charge">>, Attrs),
     Retailer = ?v(<<"retailer">>, Attrs),
     Employee = ?v(<<"employee">>, Attrs),
     Price    = ?v(<<"tag_price">>, Attrs),
@@ -1648,7 +1657,7 @@ handle_call({threshold_card_consume, Merchant, CardId, Attrs}, _From, State) ->
     Sql = "select id, merchant, retailer, rule, ctime from w_card"
 	" where id=" ++ ?to_s(CardId)
 	++ " and merchant=" ++ ?to_s(Merchant)
-	++ " and rule=" ++ ?to_s(?THEORETIC_CHARGE),
+	++ " and cid=" ++ ?to_s(ChargeId),
     
     case ?sql_utils:execute(s_read, Sql) of
 	{ok, []} ->
@@ -1668,12 +1677,13 @@ handle_call({threshold_card_consume, Merchant, CardId, Attrs}, _From, State) ->
 			++ " and merchant=" ++ ?to_s(Merchant)
 			++ " and rule=" ++ ?to_s(?THEORETIC_CHARGE),
 		    Sql2 = "insert into w_card_sale(rsn"
-			", employee, retailer, card, amount, cgood, tag_price, merchant"
+			", employee, retailer, card, cid, amount, cgood, tag_price, merchant"
 			", shop, comment, entry_date) values("
 			++ "\'" ++ ?to_s(SN) ++ "\',"
 			++ "\'" ++ ?to_s(Employee) ++ "\',"
 			++ ?to_s(Retailer) ++ ","
 			++ ?to_s(CardId) ++ ","
+			++ ?to_s(ChargeId) ++ "," 
 			++ ?to_s(Count) ++ ","
 			++ ?to_s(CGood) ++ ","
 			++ ?to_s(Price) ++ ","
@@ -1692,7 +1702,7 @@ handle_call({expire_card_consume, Merchant, CardId, Attrs}, _From, State) ->
     ?DEBUG("threshold_card_consume: merchant ~p, card ~p, attrs ~p", [Merchant, CardId, Attrs]),
     CGood = ?v(<<"cgood">>, Attrs),
     Count = ?v(<<"count">>, Attrs),
-    CardRule = ?v(<<"rule">>, Attrs),
+    ChargeId = ?v(<<"charge">>, Attrs),
     Retailer = ?v(<<"retailer">>, Attrs),
     Employee = ?v(<<"employee">>, Attrs),
     Price    = ?v(<<"tag_price">>, Attrs),
@@ -1702,7 +1712,7 @@ handle_call({expire_card_consume, Merchant, CardId, Attrs}, _From, State) ->
     Sql = "select id, merchant, retailer, rule, sdate, edate from w_card"
 	" where id=" ++ ?to_s(CardId)
 	++ " and merchant=" ++ ?to_s(Merchant)
-	++ " and rule=" ++ ?to_s(CardRule), 
+	++ " and cid=" ++ ?to_s(ChargeId), 
     
     case ?sql_utils:execute(s_read, Sql) of
 	{ok, []} ->

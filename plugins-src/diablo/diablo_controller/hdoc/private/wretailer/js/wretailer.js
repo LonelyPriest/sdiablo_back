@@ -1184,6 +1184,7 @@ function wretailerThresholdCardDetailCtrlProvide(
 		if (result.ecode === 0){
 		    wretailerService.new_threshold_card_sale({
 			id        :card.id,
+			charge    :card.cid,
 			rule      :card.rule_id,
 			retailer  :card.retailer_id,
 			employee  :params.employee.id,
