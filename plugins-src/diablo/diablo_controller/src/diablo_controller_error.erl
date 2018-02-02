@@ -517,7 +517,8 @@ error(threshold_card_good_exist, Good) ->
     {2126, "threshold card good exist: " ++ ?to_s(Good)};
 error(invalid_threshold_card_rule, Card) ->
     {2127, "invalid threshold card rule: " ++ ?to_s(Card)};
-
+error(invalid_recharge, RechargeId) ->
+    {2128, "can not find retailer's recharge:" ++ ?to_s(RechargeId)};
 
 
 %% wprint

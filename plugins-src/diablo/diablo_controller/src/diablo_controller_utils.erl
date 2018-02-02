@@ -107,6 +107,10 @@ datetime2seconds(Datetime) when is_binary(Datetime)->
 datetime2seconds(Datetime) ->
     datetime2seconds(?to_b(Datetime)).
 
+date_before({Year, Month, Date}, Before) ->
+    Days = calendar:date_to_gregorian_days({Year, Month, Date}),
+    calendar:gregorian_days_to_date(Days - Before).
+
 respond(batch, Fun, Req) ->
     case Fun() of
 	{ok, Values} ->

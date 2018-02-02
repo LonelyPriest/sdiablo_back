@@ -492,7 +492,7 @@ create table w_charge(
     id              INTEGER AUTO_INCREMENT,
     merchant        INTEGER not null default -1,
     name            VARCHAR(64) not null,
-    rule	    TINYINT default 0, -- [0, 1, 2, 3]
+    rule	    TINYINT default 0, -- [0, 1, 2, 3, 4, 5]
     
     xtime           TINYINT default 1, 
     ctime           INTEGER not null default -1, -- consume time 
@@ -1083,9 +1083,9 @@ create table w_charge_detail(
     merchant        INTEGER not null default -1,
     shop            INTEGER not null default -1, 
     employ          VARCHAR(8) not null,
-    cid             INTEGER not null default -1, -- charge
-
     retailer        INTEGER not null default -1,
+    cid             INTEGER not null default -1, -- charge
+    ledate          DATE default 0,   -- last expire date where charge rule = [3, 4, 5] 
     lbalance        INTEGER not null default 0, -- last balance
     cbalance        INTEGER not null default 0, -- charge balance
     sbalance        INTEGER not null default 0, -- send balance

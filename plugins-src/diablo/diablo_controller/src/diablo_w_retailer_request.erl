@@ -365,12 +365,18 @@ action(Session, Req, {"new_recharge"}, Payload) ->
 action(Session, Req, {"delete_recharge"}, Payload) ->
     ?DEBUG("delete_recharge with session ~p, payload ~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session), 
-    ChargeId = ?v(<<"charge_id">>, Payload),
-    
-    case ?w_retailer:charge(delete_recharge, Merchant, ChargeId) of
-	{ok, ChargeId} ->
-	    ?w_user_profile:update(retailer, Merchant),
-	    ?utils:respond(200, Req, ?succ(delete_recharge, ChargeId));
+    RechargeId = ?v(<<"recharge">>, Payload), 
+    case ?w_retailer:charge(get_recharge, Merchant, RechargeId) of
+	{ok, []} ->
+	    ?utils:respond(200, Req, ?err(invalid_recharge, RechargeId));
+	{ok, Recharge} -> 
+	    case ?w_retailer:charge(delete_recharge, Merchant, {RechargeId, Recharge}) of
+		{ok, RechargeId} ->
+		    ?w_user_profile:update(retailer, Merchant),
+		    ?utils:respond(200, Req, ?succ(delete_recharge, RechargeId));
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end;
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;

@@ -348,9 +348,9 @@ function wretailerConfig(angular) {
 	    return http.save({operation:"new_recharge"}, charge).$promise;
 	};
 
-	this.delete_recharge = function(charge){
+	this.delete_recharge = function(rechargeId){
 	    return http.save({operation:"delete_recharge"},
-			     {charge_id: charge}).$promise;
+			     {recharge: rechargeId}).$promise;
 	};
 
 	this.update_recharge = function(charge){

@@ -295,3 +295,7 @@ alter table w_charge add column ctime INTEGER default -1 after xtime;
 -- 2018-01-31
 alter table w_card add column cid INTEGER default -1 after edate;
 alter table w_card_sale add column cid INTEGER default -1 after card;
+
+
+--2018-02-03
+alter table w_charge_detail add column ledate DATE default 0 after cid;

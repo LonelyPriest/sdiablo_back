@@ -1,6 +1,11 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2018-02-03",
+         content:
+	 ["修正次/月/季/年/卡充值同时删除后重新充值不成功的问题"]
+        },
+	
 	{date: "2018-01-31",
          content:
 	 ["增加次/月/季/年卡消费模式"]
