@@ -714,7 +714,11 @@ function wretailerChargeDetailCtrlProvide(
 		    angular.forEach(result.data, function(d){
 			d.employee = diablo_get_object(d.employee_id, filterEmployee);
 			d.charge = diablo_get_object(d.cid, filterCharge);
-			d.accbalance = d.lbalance + d.cbalance + d.sbalance;
+			if (d.charge.rule_id === diablo_giving_charge
+			    || d.charge.rule_id === diablo_times_charge)
+			    d.accbalance = retailerUtils.to_decimal(d.lbalance + d.cbalance + d.sbalance);
+			else
+			    d.accbalance = 0;
 		    });
 
 		    diablo_order(result.data, (page - 1) * $scope.items_perpage + 1);

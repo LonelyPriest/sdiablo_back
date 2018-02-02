@@ -65,11 +65,9 @@
 	  
 	  </div>
 
-	  <!--BEGIN panel-->
-
+	  <!--BEGIN panel--> 
 	  <div class="panel panel-default table-panel"> 
 	    <div class="table-responsive">
-	      <!--EBGIN table supplier-->
 	      <table class="table table-bordered
 			    table-striped table-hover
 			    table-condensed table-advanced">
@@ -81,6 +79,7 @@
 		    <th>经手人</th> 
 		    <th>会员</th>
 		    <th>手机号码</th>
+		    <th>卡有效期</th> 
 		    <th>充值方案</th>
 		    <th>帐户余额</th>
 		    <th class="success">充值金额</th>
@@ -101,7 +100,15 @@
 		    <td>{{c.shop}}</td>
 		    <td>{{c.employee.name}}</td> 
 		    <td>{{c.retailer}}</td>
-		    <td>{{c.mobile}}</td> 
+		    <td>{{c.mobile}}</td>
+		    <td>
+		      <div x-ng-switch on="c.charge.rule_id">
+			<span x-ng-switch-when=0>-</span>
+			<span x-ng-switch-when=1>-</span>
+			<span x-ng-switch-when=2>-</span>
+			<span x-ng-switch-default>{{c.ledate}}</span>
+		      </div>
+		    </td> 
 		    <td>{{c.charge.name}}</td>
 		    <td>{{c.lbalance}}</td>
 		    <td>{{c.cbalance}}</td>
@@ -109,13 +116,7 @@
 		    <td class="bg-orange">{{c.card}}</td>
 		    <td class="bg-teal">{{c.wxin}}</td>
 		    <td>{{c.sbalance}}</td>
-		    <td>
-		      <div x-ng-switch on="c.charge.rule_id">
-			<div x-ng-switch-when=0>{{c.accbalance}}</div>
-			<div x-ng-switch-when=1>{{c.accbalance}}</div>
-			<div x-ng-switch-default>-</div>
-		      </div>
-		    </td> 
+		    <td>{{c.accbalance}}</td> 
 		    <td>{{c.comment}}</td>
 		    <td>{{c.entry_date}}</td> 
 		    <td  x-ng-if="right.update_phone">
@@ -130,13 +131,13 @@
 		  </tr>
 
 		  <tr x-ng-if="total_items!==0" class="bg-white">
-		    <td colspan=8></td>
+		    <td colspan=9></td>
 		    <td>{{total_cbalance}}</td>
 		    <td>{{total_cash}}</td>
 		    <td>{{total_card}}</td>
 		    <td>{{total_wxin}}</td>
 		    <td>{{total_sbalance}}</td>
-		    <td></td>
+		    <td colspan=4></td>
 		  </tr>
 		  
 		</tbody>
