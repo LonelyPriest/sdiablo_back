@@ -1277,6 +1277,7 @@ function wretailerThresholdCardDetailCtrlProvide(
 		 ctime   :card.ctime,
 		 edate   :card.edate},
 	     count: 1,
+	     employee: $scope.employees[0],
 	     good: $scope.card_goods[0],
 	     shop: $scope.shops[0],
 	     comment_pattern: diabloPattern.comment}
