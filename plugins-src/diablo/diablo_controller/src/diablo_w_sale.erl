@@ -1624,7 +1624,8 @@ wsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
     C2 =
 	fun(Color, Size) ->
 		?utils:to_sqls(
-		   proplists, [{<<"rsn">>, ?to_b(RSN)},
+		   proplists, [{<<"merchant">>, Merchant},
+			       {<<"rsn">>, ?to_b(RSN)},
 			       {<<"style_number">>, StyleNumber},
 			       {<<"brand">>, Brand},
 			       {<<"color">>, Color},
@@ -1912,7 +1913,8 @@ valid_orgprice(stock, Merchant, Shop, Inventory) ->
 
     Sql = "select style_number, brand, org_price, ediscount, amount"
 	" from w_inventory_new_detail"
-	" where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 	++ " and brand=" ++ ?to_s(Brand)
 	++ " and rsn like \'M-" ++ ?to_s(Merchant) ++ "-S-" ++ ?to_s(Shop) ++ "%\'" 
 	++ " order by id desc",

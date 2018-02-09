@@ -693,7 +693,7 @@ function wsaleNewProvide(
 		if (result.ecode === 0) {
 		    startWithdraw();
 		} else {
-		    wsaleUtils.set_error(diabloUtilsService, "会员现金提取", result.ecode); 
+		    dialog.set_error("会员现金提取", result.ecode); 
 		}
 	    })
 	} else {
