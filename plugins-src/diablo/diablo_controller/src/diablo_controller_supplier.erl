@@ -994,6 +994,7 @@ handle_call({profit, balance, Merchant, Conditions}, _From, State) ->
 	" inner join"
 	" (select max(a.entry_date) as entry, a.merchant, a.firm from w_inventory_new a"
 	" where a.merchant=" ++ ?to_s(Merchant)
+	++ " and a.state in(0, 1)" 
 	++ ?sql_utils:condition(proplists, NewConditions)
 	++ ?sql_utils:fix_condition(time, time_with_prfix, undefined, EndTime)
 	++ " group by a.merchant, a.firm) b on "
@@ -1025,6 +1026,7 @@ handle_call({profit, start_balance, Merchant, Conditions}, _From, State) ->
 	" inner join"
 	" (select max(a.entry_date) as entry, a.merchant, a.firm from w_inventory_new a"
 	" where a.merchant=" ++ ?to_s(Merchant)
+	++ " and a.state in(0, 1)"
 	++ ?sql_utils:condition(proplists, NewConditions)
 	++ ?sql_utils:fix_condition(time, time_with_prfix, undefined, StartTime)
 	++ " group by a.merchant, a.firm) b on "
@@ -1057,6 +1059,7 @@ handle_call({profit, end_balance, Merchant, Conditions}, _From, State) ->
 	" inner join"
 	" (select max(a.entry_date) as entry, a.merchant, a.firm from w_inventory_new a"
 	" where a.merchant=" ++ ?to_s(Merchant)
+	++ " and a.state in(0, 1)"
 	++ ?sql_utils:condition(proplists, NewConditions)
 	++ ?sql_utils:fix_condition(time, time_with_prfix, undefined, EndTime)
 	++ " group by a.merchant, a.firm) b on "
@@ -1081,6 +1084,7 @@ handle_call({profit, bill_balance, Merchant, Conditions}, _From, State) ->
 
 	" from w_inventory_new" 
 	" where merchant=" ++ ?to_s(Merchant)
+	++ " and state in(0, 1)"
 	++ ?sql_utils:condition(proplists, NewConditions)
 	++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime) 
 	++ " group by merchant, firm",
@@ -1098,6 +1102,7 @@ handle_call({sprofit, balance, Merchant, Conditions}, _From, State) ->
 	", SUM(e_pay) as e_pay"
 	" from w_inventory_new" 
 	" where merchant=" ++ ?to_s(Merchant)
+	++ " and state in(0,1)" 
 	++ ?sql_utils:condition(proplists, NewConditions)
 	++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime),
 
