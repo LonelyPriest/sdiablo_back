@@ -1,6 +1,11 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2018-03-22",
+         content:
+	 ["增加会员折扣功能，即会员可享受单独折扣"]
+        },
+	
 	{date: "2018-02-03",
          content:
 	 ["修正次/月/季/年/卡充值同时删除后重新充值不成功的问题"]
@@ -867,7 +872,7 @@ var version_update = function(){
 	    }
 
 	    var apk = "<div class='update-content'>"
-		+ "<a type='button' href='/qzg_stock_fix-release2017-10-10_11-41-42.apk' download=''>"
+		+ "<a type='button' href='/qzg_stock_fix-release2018-03-22_13-06-04.apk' download=''>"
 		+ "<h5 class='text-center fg-pink'>盘点机软件(安卓版)下载</h5>"
 		+ "</a>"
 		+ "</div>"

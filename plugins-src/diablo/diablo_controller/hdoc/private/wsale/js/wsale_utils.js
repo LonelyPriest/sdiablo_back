@@ -706,7 +706,7 @@ var wsaleCalc = function(){
 		    if (!one.$update) {
 			if (one.pid === -1) {
 			    if (isVip && angular.isDefined(vipDiscount)) {
-				one.fdiscount = vipDiscount;
+				one.fdiscount = vipDiscount < one.discount ? vipDiscount : one.discount;
 			    } else {
 				one.fdiscount = one.discount;
 			    }
