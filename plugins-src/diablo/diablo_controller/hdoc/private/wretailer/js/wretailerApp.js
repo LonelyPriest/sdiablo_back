@@ -147,6 +147,11 @@ function wretailerConfig(angular) {
 		controller: 'wretailerThresholdCardSaleCtrl',
 		resolve: angular.extend({}, employee, shop)
 	    }).
+	    // level
+	    when('/wretailer_level', {
+		templateUrl: '/private/wretailer/html/retailer_level.html',
+		controller: 'wretailerLevelCtrl'
+	    }).
 	    // default
 	    otherwise({
 		templateUrl: '/private/wretailer/html/wretailer_detail.html',
@@ -282,6 +287,19 @@ function wretailerConfig(angular) {
 		 fields: fields,
 		 page:   currentPage,
 		 count:  itemsPerpage}).$promise;
+	};
+
+	this.new_retailer_level = function(level, name, score, discount) {
+	    return http.save(
+		{operation: "add_retailer_level"},
+		{level: level,
+		 name: name,
+		 score: score,
+		 discount: discount}).$promise;
+	};
+
+	this.list_retailer_level = function() {
+	    return http.query({operation: "list_retailer_level"}).$promise;
 	};
 
 	var http_wsale = $resource(

@@ -1,21 +1,23 @@
 function wsaleUpdateRejectCtrlProvide(
     $scope, $q, $routeParams, dateFilter, diabloUtilsService, diabloPromise,
     diabloFilter, diabloPattern, wsaleService,
-    user, filterPromotion, filterScore, filterEmployee,
-    filterSizeGroup, filterBrand, filterColor, filterType, base){
+    user, filterPromotion, filterScore, filterSysRetailer, filterEmployee,
+    filterSizeGroup, filterBrand, filterColor, filterType, filterLevel, base){
     // console.log(base);
     // console.log(user);
     // console.log(filterScore);
     $scope.shops         = user.sortBadRepoes.concat(user.sortShops);
     $scope.promotions    = filterPromotion;
     $scope.scores        = filterScore;
+    $scope.sysRetailers  = filterSysRetailer; 
     
     // $scope.retailers       = filterRetailer; 
     $scope.employees       = filterEmployee;
     $scope.size_groups     = filterSizeGroup;
     $scope.brands          = filterBrand;
     $scope.colors          = filterColor;
-    $scope.types           = filterType; 
+    $scope.types           = filterType;
+    $scope.levels          = filterLevel;
     $scope.base_settings   = base;
     
     $scope.sexs            = diablo_sex;
@@ -93,6 +95,7 @@ function wsaleUpdateRejectCtrlProvide(
 		$scope.setting.check_sale = wsaleUtils.check_sale(shopId, $scope.base_settings);
 		$scope.setting.no_vip = wsaleUtils.no_vip(shopId, $scope.base_settings); 
 		$scope.setting.draw_score = wsaleUtils.draw_score(shopId, $scope.base_settings);
+		$scope.setting.vip_mode = wsaleUtils.vip_discount(shopId, settings);
 		
 		$scope.employees = wsaleUtils.get_login_employee(
 		    shopId,
@@ -503,9 +506,9 @@ function wsaleUpdateRejectCtrlProvide(
 	$scope.select.score        = 0;
 	
 	var calc = wsaleCalc.calculate(
-	    $scope.old_select.retailer,
-	    $scope.select.retailer,
-	    $scope.setting.no_vip,
+	    wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers),
+	    $scope.setting.vip_mode,
+	    wsaleUtils.get_retailer_discount($scope.select.retailer.level, $scope.levels),
 	    $scope.inventories,
 	    $scope.show_promotions,
 	    diablo_reject,

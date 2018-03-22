@@ -182,6 +182,11 @@ function filterProvider(){
 	    return _retailerHttp.post(
 		{operation: "list_threshold_card_good"}, {shop: shopIds}).$promise;
 	};
+
+	function list_retailer_level() {
+	    return _retailerHttp.query(
+		{operation: "list_retailer_level"}).$promise;
+	};
 	
 	return{
 	    default_time: function(start, end){
@@ -508,7 +513,8 @@ function filterProvider(){
 			// console.log(phones);
 			return phones.map(function(r){
 			    return {id:      r.id,
-				    name:    r.name+ "," + r.mobile, 
+				    name:    r.name+ "," + r.mobile,
+				    level:   r.level,
 				    mobile:  r.mobile,
 				    type_id: r.type_id,
 				    score:   r.score,
@@ -558,6 +564,28 @@ function filterProvider(){
 
 	    reset_threshold_card_good: function() {
 		clear_from_storage(cookie, "tcard_good");
+	    },
+
+	    get_retailer_level:function() {
+		var cached = get_from_storage(cookie, "r_level");
+		if (angular.isArray(cached) && cached.length !== 0) return cached
+		else {
+		    return list_retailer_level().then(function(levels) {
+			var rlevels = levels.map(function(l) {
+			    return {name      :l.name,
+				    level     :l.level,
+				    discount  :l.discount}
+			});
+
+			set_storage(cookie, "r_level", rlevels);
+			return rlevels;
+		    }); 
+		}
+		    
+	    },
+
+	    reset_retailer_level: function() {
+		clear_from_storage(cookie, "r_level");
 	    },
 
 	    get_ticket_by_batch: function(batchNo){

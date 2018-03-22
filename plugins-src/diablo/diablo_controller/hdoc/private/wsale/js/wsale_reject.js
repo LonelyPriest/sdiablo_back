@@ -1,8 +1,8 @@
 function wsaleRejectCtrlProvide(
     $scope, $q, dateFilter, diabloUtilsService, diabloPromise,
     diabloPattern, diabloFilter, diabloNormalFilter, wsaleService,
-    user, filterPromotion, filterScore, filterBrand,
-    filterType, filterEmployee, filterSizeGroup, filterColor, base){
+    user, filterPromotion, filterScore, filterSysRetailer, filterBrand,
+    filterType, filterEmployee, filterSizeGroup, filterColor, filterLevel, base){
     // console.log($scope);
     // console.log(user); 
     $scope.shops         = user.sortBadRepoes.concat(user.sortShops);
@@ -10,13 +10,15 @@ function wsaleRejectCtrlProvide(
     
     $scope.promotions    = filterPromotion;
     $scope.scores        = filterScore;
+    $scope.sysRetailers  = filterSysRetailer; 
     $scope.brands        = filterBrand;
     $scope.types         = filterType;
     // $scope.retailers     = filterRetailer;
     $scope.employees     = [];
     $scope.size_groups   = filterSizeGroup;
     $scope.colors        = filterColor;
-    $scope.base_settings = base;
+    $scope.levels        = filterLevel;
+    $scope.base_settings = base; 
     
     // $scope.repoes  = user.sortRepoes; 
     $scope.sexs    = diablo_sex;
@@ -110,6 +112,7 @@ function wsaleRejectCtrlProvide(
 		    $scope.setting.round = wsaleUtils.round(shopId, settings);
 		    $scope.setting.cakeMode = wsaleUtils.cake_mode(shopId, settings);
 		    $scope.setting.draw_score = wsaleUtils.draw_score(shopId, settings);
+		    $scope.setting.vip_mode = wsaleUtils.vip_discount(shopId, settings);
 		    // console.log($scope.setting);
 
 		    $scope.employees = wsaleUtils.get_login_employee(
@@ -300,11 +303,15 @@ function wsaleRejectCtrlProvide(
 		    isRound,
 		    cakeMode);
 		
-		var isVip = ($scope.select.retailer.id !== $scope.setting.no_vip
-			     || $scope.select.retailer.id !== user.loginRetailer) ? true : false;
+		// var isVip = ($scope.select.retailer.id !== $scope.setting.no_vip
+		// 	     || $scope.select.retailer.id !== user.loginRetailer) ? true : false;
 		
 		hLine = wsalePrint.gen_stastic(
-		    LODOP, hLine, wsaleService.direct.wreject, $scope.select, isVip);
+		    LODOP,
+		    hLine,
+		    wsaleService.direct.wreject,
+		    $scope.select,
+		    wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers));
 		
 		wsalePrint.gen_foot(LODOP, hLine, $scope.setting.comments, pdate, cakeMode);
 		wsalePrint.start_print(LODOP);
@@ -500,9 +507,9 @@ function wsaleRejectCtrlProvide(
 	$scope.select.rscore     = 0;
 
 	var calc = wsaleCalc.calculate(
-	    $scope.select.retailer,
-	    $scope.select.retailer,
-	    $scope.setting.no_vip,
+	    wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers),
+	    $scope.setting.vip_mode,
+	    wsaleUtils.get_retailer_discount($scope.select.retailer.level, $scope.levels),
 	    $scope.inventories,
 	    $scope.show_promotions,
 	    diablo_reject,

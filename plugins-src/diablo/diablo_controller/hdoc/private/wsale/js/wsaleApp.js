@@ -73,14 +73,16 @@ function wsaleConfg(angular){
 
 	var charge = {"filterCharge": function(diabloNormalFilter){
 	    return diabloNormalFilter.get_charge()}};
+
+	var level = {"filterLevel": function(diabloFilter){
+	    return diabloFilter.get_retailer_level()}};
 	
 	$routeProvider. 
 	    when('/new_wsale', {
 		templateUrl: '/private/wsale/html/new_wsale.html',
 		controller: 'wsaleNewCtrl',
 		resolve: angular.extend(
-		    {}, user, promotion, charge, score, firm, sysretailer,
-		    employee, s_group, brand, type, color, base)
+		    {}, user, promotion, charge, score, sysretailer, employee, s_group, brand, type, color, level, base)
 	    }).
 	    when('/new_wsale_detail/:page?', {
 		templateUrl: '/private/wsale/html/new_wsale_detail.html',
@@ -91,15 +93,13 @@ function wsaleConfg(angular){
 		templateUrl: '/private/wsale/html/update_wsale_detail.html',
 		controller: 'wsaleUpdateDetailCtrl',
 		resolve: angular.extend(
-		    {}, user, promotion, score, employee,
-		    s_group, brand, color, type, base)
+		    {}, user, promotion, score, sysretailer, employee, s_group, brand, color, type, level, base)
 	    }). 
 	    when('/wsale_rsn_detail/:rsn?/:ppage?', {
 		templateUrl: '/private/wsale/html/wsale_rsn_detail.html',
 		controller: 'wsaleRsnDetailCtrl',
 		resolve: angular.extend(
-		    {}, user, promotion, score, brand, employee,
-		    firm, s_group, type, color, base)
+		    {}, user, promotion, score, sysretailer, brand, employee, firm, s_group, type, color, base)
 	    }).
 	    when('/wsale_firm_detail', {
 		templateUrl: '/private/wsale/html/wsale_firm_detail.html',
@@ -110,15 +110,13 @@ function wsaleConfg(angular){
 		templateUrl: '/private/wsale/html/reject_wsale.html',
 		controller: 'wsaleRejectCtrl',
 		resolve: angular.extend(
-		    {}, user, promotion, score, brand, type, employee,
-		    s_group, color, base) 
+		    {}, user, promotion, score, sysretailer, brand, type, employee, s_group, color, level, base) 
 	    }).
 	    when('/update_wsale_reject/:rsn?/:ppage?', {
 		templateUrl: '/private/wsale/html/update_wsale_reject.html',
 		controller: 'wsaleUpdateRejectCtrl',
 		resolve: angular.extend(
-		    {}, user, promotion, score, employee,
-		    s_group, brand, color, type, base)
+		    {}, user, promotion, score, sysretailer, employee, s_group, brand, color, type, level, base)
 	    }). 
 	    when('/wsale_print_preview/:rsn?', {
 		templateUrl: '/private/wsale/html/wsale_print_preview.html',
@@ -345,12 +343,13 @@ function wsaleNewProvide(
     diabloUtilsService, diabloPromise, diabloFilter, diabloNormalFilter,
     diabloPattern, wsaleService, wsaleGoodService,
     user, filterPromotion, filterCharge, filterScore,
-    filterFirm, filterSysRetailer, filterEmployee,
-    filterSizeGroup, filterBrand, filterType, filterColor, base){
+    filterSysRetailer, filterEmployee,
+    filterSizeGroup, filterBrand, filterType, filterColor, filterLevel, base){
     // console.log(base);
     $scope.promotions = filterPromotion;
     $scope.scores     = filterScore;
     $scope.draws      = filterCharge.filter(function(d){return d.type === diablo_withdraw}),
+    $scope.levels     = filterLevel; 
     
     // console.log($scope.draws);
     // console.log($scope.scores);
@@ -418,7 +417,6 @@ function wsaleNewProvide(
     wsaleGoodService.set_brand(filterBrand);
     wsaleGoodService.set_type(filterType);
     wsaleGoodService.set_size_group(filterSizeGroup);
-    wsaleGoodService.set_firm(filterFirm);
     wsaleGoodService.set_color(filterColor);
 
     // base setting 
@@ -487,6 +485,7 @@ function wsaleNewProvide(
 	$scope.setting.barcode_auto  = wsaleUtils.barcode_auto(shopId, base);
 	$scope.setting.draw_score    = wsaleUtils.draw_score(shopId, base);
 	$scope.setting.draw_region   = wsaleUtils.draw_region(shopId, base);
+	$scope.setting.vip_mode      = wsaleUtils.vip_discount(shopId, base);
 	
 	if (diablo_no === $scope.setting.cake_mode) {
 	    $scope.vpays = wsaleService.vpays;
@@ -497,6 +496,11 @@ function wsaleNewProvide(
 	$scope.select.verificate = $scope.vpays[0];
 	// console.log($scope.setting);
     };
+
+    // var isVip = function() {
+    // 	return  $scope.select.retailer.id !== $scope.setting.no_vip
+    // 	    && $scope.sysRetailers.filter(function(r) {return $scope.select.retailer.id === r.id}).length === 0
+    // };
     
     // shops
     $scope.shops = user.sortShops;
@@ -573,7 +577,7 @@ function wsaleNewProvide(
     };
 
     $scope.sysRetailers = filterSysRetailer;
-    // console.log($scope.sysRetailers);
+    console.log($scope.sysRetailers);
     $scope.reset_retailer = function(){
     	if (diablo_yes === $scope.setting.smember){
     	    $scope.sysRetailers = $scope.sysRetailers.filter(function(r){
@@ -1286,18 +1290,16 @@ function wsaleNewProvide(
 
 		    var isRound = $scope.setting.round; 
 		    var cakeMode = $scope.setting.cake_mode;
-		    var hLine = wsalePrint.gen_body(LODOP, pinvs, isRound, cakeMode);
-		    
-		    var isVip = ($scope.select.retailer.id !== $scope.setting.no_vip
-				 || $scope.select.retailer.id !== user.loginRetailer) ? true : false;
-		    
+		    var hLine = wsalePrint.gen_body(LODOP, pinvs, isRound, cakeMode); 
+		    var selectRetailer = $scope.select.retailer.id; 
 		    // console.log($scope.select);
 		    hLine = wsalePrint.gen_stastic(
 			LODOP,
 			hLine,
 			0,
 			$scope.select,
-			isVip); 
+			wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers)
+			); 
 		    wsalePrint.gen_foot(LODOP, hLine, $scope.comments, pdate, cakeMode);
 		    wsalePrint.start_print(LODOP); 
 		};
@@ -1416,10 +1418,11 @@ function wsaleNewProvide(
 	// console.log($scope.select);
 	var im_print = $scope.immediately_print($scope.select.shop.id);
 	var p_mode = $scope.p_mode($scope.select.shop.id);
+	var selectRetailer = $scope.select.retailer.id; 
 	// console.log(im_print);
 	var base = {
 	    retailer:       $scope.select.retailer.id,
-	    vip:            $scope.select.retailer.id !== $scope.setting.no_vip,
+	    vip:            wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers),
 	    shop:           $scope.select.shop.id,
 	    datetime:       dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),
 	    employee:       $scope.select.employee.id,
@@ -1473,12 +1476,13 @@ function wsaleNewProvide(
 		    $scope.wsaleStorage.remove($scope.select_draft_key);
 		    $scope.select_draft_key = undefined;
 		};
-		$scope.wsaleStorage.remove($scope.wsaleStorage.get_key());
-
-		if ($scope.select.retailer.id !== $scope.setting.no_vip) {
-		    $scope.select.retailer.score += $scope.select.score;
-		    $scope.select.retailer.score -= $scope.select.ticket_score;
-		}
+		$scope.wsaleStorage.remove($scope.wsaleStorage.get_key()); 
+		// if ($scope.select.retailer.id !== $scope.setting.no_vip) {
+		//     $scope.select.retailer.score += $scope.select.score;
+		//     $scope.select.retailer.score -= $scope.select.ticket_score;
+		// }
+		$scope.select.retailer.score += $scope.select.score;
+		$scope.select.retailer.score -= $scope.select.ticket_score; 
 		
 		$scope.refresh();
 		
@@ -1605,9 +1609,11 @@ function wsaleNewProvide(
 
 	// console.log($scope.inventoyies);
 	var calc = wsaleCalc.calculate(
-	    $scope.select.o_retailer,
-	    $scope.select.retailer,
-	    $scope.setting.no_vip, 
+	    // $scope.select.o_retailer,
+	    // $scope.select.retailer,
+	    wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers),
+	    $scope.setting.vip_mode,
+	    wsaleUtils.get_retailer_discount($scope.select.retailer.level, $scope.levels),
 	    $scope.inventories,
 	    $scope.show_promotions,
 	    diablo_sale,
@@ -1962,7 +1968,8 @@ function wsaleNewProvide(
 	    inv.fprice     = result.fprice; 
 	    // save
 	    $scope.wsaleStorage.save($scope.inventories.filter(function(r){return !r.$new}));
-	    $scope.re_calculate(); 
+	    $scope.re_calculate();
+	    // inv.$update = false;
 	};
 
 	var modal_size = diablo_valid_dialog(inv.sizes);
@@ -1990,11 +1997,13 @@ function wsaleNewProvide(
 	// save
 	$scope.wsaleStorage.save($scope.inventories.filter(function(r){return !r.$new}));
 	$scope.re_calculate();
+	// inv.$update = false; 
     };
 
     $scope.cancel_free_update = function(inv){
 	// console.log(inv);
 	$timeout.cancel($scope.timeout_auto_save);
+	// inv.$update = false;
 	inv.free_update = false;
 	inv.sell      = inv.amounts[0].sell_count;
 	inv.fdiscount = inv.o_fdiscount;

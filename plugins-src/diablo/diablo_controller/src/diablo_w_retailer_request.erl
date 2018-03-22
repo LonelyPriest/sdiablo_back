@@ -80,7 +80,13 @@ action(Session, Req, {"list_w_retailer_score"}) ->
     %% ?utils:respond(
     %%    batch, fun() -> ?w_user_profile:get(retailer, Merchant) end, Req).
     ?utils:respond(
-       batch, fun() -> ?w_user_profile:get(score, Merchant) end, Req).
+       batch, fun() -> ?w_user_profile:get(score, Merchant) end, Req);
+
+action(Session, Req, {"list_retailer_level"}) ->
+    ?DEBUG("list_retailer_level with session ~p", [Session]), 
+    Merchant = ?session:get(merchant, Session), 
+    ?utils:respond(
+       batch, fun() -> ?w_retailer:retailer(list_level, Merchant) end, Req).
 
 %%--------------------------------------------------------------------
 %% @desc: POST action
@@ -112,11 +118,8 @@ action(Session, Req, {"new_w_retailer"}, Payload) ->
     end;
 	
 action(Session, Req, {"update_w_retailer", Id}, Payload) ->
-    ?DEBUG("update_w_retailer with Session ~p~npaylaod ~p",
-	   [Session, Payload]),
-    
-    Merchant = ?session:get(merchant, Session),
-
+    ?DEBUG("update_w_retailer with Session ~p~npaylaod ~p", [Session, Payload]), 
+    Merchant = ?session:get(merchant, Session), 
     case 
 	case ?v(<<"card">>, Payload, []) of
 	    [] -> ok;
@@ -142,6 +145,17 @@ action(Session, Req, {"update_w_retailer", Id}, Payload) ->
 	    end;
 	{error, ErrorCard} ->
 	    ?utils:respond(200, Req, ErrorCard)
+    end;
+
+action(Session, Req, {"add_retailer_level"}, Payload) ->
+    ?DEBUG("add_retailer_level with Session ~p~npaylaod ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    case ?w_retailer:retailer(add_level, Merchant, Payload) of
+	{ok, RId} ->
+	    ?utils:respond(
+	       200, Req, ?succ(add_w_retailer, RId), {<<"id">>, RId});
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
     end;
 
 action(Session, Req, {"get_w_retailer_batch"}, Payload) ->
@@ -770,8 +784,11 @@ action(Session, Req, {"match_retailer_phone"}, Payload) ->
     Mode  = ?v(<<"mode">>, Payload, 0),
     ?utils:respond(batch, fun() -> ?w_retailer:match(phone, Merchant, {Mode, Phone}) end, Req).
 
-sidebar(Session) -> 
-    S1 = [{"wretailer_detail", "会员详情", "glyphicon glyphicon-book"}], 
+sidebar(Session) ->
+    Merchant = ?session:get(merchant, Session),
+    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, ?DEFAULT_BASE_SETTING),
+    
+    S1 = [{"wretailer_detail", "会员详情", "glyphicon glyphicon-map-marker"}], 
     S2 = 
 	case ?right_auth:authen(?new_w_retailer, Session) of
 	    {ok, ?new_w_retailer} ->
@@ -780,7 +797,6 @@ sidebar(Session) ->
 	end,
 
     S3 = [{"wretailer_charge_detail", "充值记录", "glyphicon glyphicon-bookmark"}],
-    
 
     Recharge =
 	[{{"promotion", "充值积分", "glyphicon glyphicon-superscript"},
@@ -812,15 +828,16 @@ sidebar(Session) ->
 		      ] 
 		     }],
 
-    Merchant = ?session:get(merchant, Session),
-    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, ?DEFAULT_BASE_SETTING),
+    Level = [{"wretailer_level", "会员等级", "glyphicon glyphicon-sort-by-alphabet"}],
+
+    
     L1 = ?menu:sidebar(level_1_menu, S2 ++ S1 ++ S3),
     L2 = ?menu:sidebar(level_2_menu, Ticket ++ Recharge ++
 			   case ?to_i(?v(<<"threshold_card">>, BaseSetting, ?NO)) of
 			       ?YES -> ThresholdCard;
 			       ?NO -> []
 			   end),
-    L1 ++ L2.
+    L1 ++ L2 ++ ?menu:sidebar(level_1_menu, Level).
 
 csv_head(retailer, Do, Code) ->
     Head = "序号,名称,类型,联系方式,余额,累计消费,累计积分,所在店铺,日期",

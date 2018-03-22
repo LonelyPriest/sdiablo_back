@@ -1512,6 +1512,51 @@ function wretailerThresholdCardGoodCtrlProvide(
     };
 };
 
+function wretailerLevelCtrlProvide(
+    $scope, diabloFilter, diabloPattern, diabloUtilsService, wretailerService){
+    $scope.levels = diablo_retailer_levels;
+    var dialog = diabloUtilsService; 
+    var lpattern = {name     :diabloPattern.chinese_name,
+		    score    :diabloPattern.number,
+		    discount :diabloPattern.discount};
+
+    $scope.refresh = function() {
+	wretailerService.list_retailer_level().then(function(levels) {
+	    diablo_order(levels); 
+	    $scope.retailer_levels = angular.copy(levels);
+	});
+    };
+
+    $scope.new_level = function() {
+	var callback = function(params) {
+	    console.log(params);
+	    wretailerService.new_retailer_level(
+		params.level.level, params.name, params.score, params.discount
+	    ).then(function(result) {
+		console.log(result);
+		if (result.ecode === 0) {
+		    dialog.response_with_callback(
+			true, "新增会员等级", "新增会员等级成功！！", undefined, $scope.refresh);
+		} else {
+		    dialog.set_error("新增会员等级", result.ecode); 
+		}
+	    });
+	};
+
+	dialog.edit_with_modal(
+	    "new-retailer-level.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {levels  :$scope.levels,
+	     level   :$scope.levels[0],
+	     pattern :lpattern}
+	)
+    };
+};
+
+
+
 
 define (["wretailerApp"], function(app){
     app.controller("wretailerNewCtrl", wretailerNewCtrlProvide);
@@ -1522,5 +1567,6 @@ define (["wretailerApp"], function(app){
     app.controller("wretailerThresholdCardDetailCtrl", wretailerThresholdCardDetailCtrlProvide);
     app.controller("wretailerThresholdCardGoodCtrl", wretailerThresholdCardGoodCtrlProvide);
     app.controller("wretailerThresholdCardSaleCtrl", wretailerThresholdCardSaleCtrlProvide);
+    app.controller("wretailerLevelCtrl", wretailerLevelCtrlProvide);
 });
 

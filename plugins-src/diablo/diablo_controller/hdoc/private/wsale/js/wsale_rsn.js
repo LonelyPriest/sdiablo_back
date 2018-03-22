@@ -1,7 +1,7 @@
 function wsaleRsnDetailCtrlProvide (
     $scope, $routeParams, dateFilter, diabloUtilsService, diabloFilter,
     wsaleService, localStorageService,
-    user, filterPromotion, filterScore, filterBrand,
+    user, filterPromotion, filterScore, filterSysRetailer, filterBrand,
     filterEmployee, filterFirm, filterSizeGroup,
     filterType, filterColor, base){
     // console.log($routeParams);
@@ -466,20 +466,20 @@ function wsaleRsnDetailCtrlProvide (
 
 		    diabloFilter.get_wretailer_batch([sale.retailer_id]).then(function(retailers){
 			console.log(retailers);
-			console.log(diablo_get_object(sale.retailer_id, retailers).name);
+			// console.log(diablo_get_object(sale.retailer_id, retailers).name);
+			var retailer = diablo_get_object(sale.retailer_id, retailers);
 			wsalePrint.gen_head(
 			    LODOP,
 			    shop.name,
 			    rsn,
 			    diablo_get_object(sale.employ_id, filterEmployee).name,
-			    diablo_get_object(sale.retailer_id, retailers).name,
+			    retailer.name,
 			    sale.entry_date);
 
-			var hLine = wsalePrint.gen_body(LODOP, detail, isRound, cakeMode); 
-			var isVip = sale.retailer_id !== no_vip ? true : false;
-
+			var hLine = wsalePrint.gen_body(LODOP, detail, isRound, cakeMode);
+			var vip = wsaleUtils.isVip(retailer, no_vip, $scope.sysRetailers),
 			
-			hLine = wsalePrint.gen_stastic(LODOP, hLine, sale.direct, sale, isVip); 
+			hLine = wsalePrint.gen_stastic(LODOP, hLine, sale.direct, sale, vip); 
 			wsalePrint.gen_foot(LODOP, hLine, comments, pdate, cakeMode);
 			wsalePrint.start_print(LODOP); 
 		    }); 

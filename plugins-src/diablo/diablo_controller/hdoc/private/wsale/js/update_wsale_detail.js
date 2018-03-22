@@ -4,22 +4,23 @@ function wsaleUpdateDetailCtrlProvide(
     $scope, $routeParams, $q, dateFilter, diabloUtilsService,
     diabloPromise, diabloFilter, diabloPattern,
     wsaleService,
-    user, filterPromotion, filterScore, filterEmployee,
-    filterSizeGroup, filterBrand, filterColor, filterType, base){
-    console.log(user);
-
+    user, filterPromotion, filterScore, filterSysRetailer, filterEmployee,
+    filterSizeGroup, filterBrand, filterColor, filterType, filterLevel, base){
+    console.log(user); 
     $scope.pattern     = {money: diabloPattern.decimal_2};
     
     $scope.shops         = user.sortShops;
     $scope.promotions    = filterPromotion;
     $scope.scores        = filterScore;
-    
+    $scope.sysRetailers  = filterSysRetailer;
+
     // $scope.retailers     = filterRetailer; 
     // $scope.employees     = filterEmployee;
     $scope.size_groups   = filterSizeGroup;
     $scope.brands        = filterBrand;
     $scope.colors        = filterColor;
     $scope.types         = filterType;
+    $scope.levels        = filterLevel;
     $scope.base_settings = base;
     // $scope.vpays         = wsaleService.vpays;
     
@@ -56,7 +57,12 @@ function wsaleUpdateDetailCtrlProvide(
     // 	    $scope.select.charge = $scope.select.should_pay - $scope.select.has_pay;
     // 	} 
     // };
-    
+
+    // var isVip = function() {
+    // 	return  $scope.select.retailer.id !== $scope.setting.no_vip
+    // 	    && $scope.sysRetailers.filter(function(r) {return $scope.select.retailer.id === r.id}).length === 0
+    // };
+
     $scope.re_calculate = function(){
 	$scope.select.total          = 0;
 	$scope.select.abs_total      = 0;
@@ -66,9 +72,9 @@ function wsaleUpdateDetailCtrlProvide(
 	// $scope.select.save_to_back   = 0;
 	
 	var calc = wsaleCalc.calculate(
-	    $scope.select.o_retailer,
-	    $scope.select.retailer,
-	    $scope.setting.no_vip,
+	    wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers),
+	    $scope.setting.vip_mode,
+	    wsaleUtils.get_retailer_discount($scope.select.retailer.level, $scope.levels),
 	    $scope.inventories,
 	    $scope.show_promotions,
 	    diablo_reject,
@@ -132,6 +138,7 @@ function wsaleUpdateDetailCtrlProvide(
 		$scope.setting.round = wsaleUtils.round(shopId, $scope.base_settings); 
 		$scope.setting.cake_mode = wsaleUtils.cake_mode(shopId, $scope.base_settings);
 		$scope.setting.draw_score = wsaleUtils.draw_score(shopId, $scope.base_settings);
+		$scope.setting.vip_mode = wsaleUtils.vip_discount(shopId, $scope.base_settings);
 		
 		if (diablo_no === $scope.setting.cake_mode) 
 		    $scope.vpays = wsaleService.vpays;
@@ -841,7 +848,8 @@ function wsaleUpdateDetailCtrlProvide(
      */
     $scope.update_inventory = function(inv){
 	console.log(inv);
-	// inv.$update = true; 
+	inv.$update = true;
+	
 	if (inv.free_color_size){
 	    inv.free_update = true;
 	    inv.o_fdiscount = inv.fdiscount;

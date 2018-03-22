@@ -182,7 +182,13 @@ init([]) ->
 	  <<"删除按次商品">>, <<"delete_threshold_card_good">>, ?right_w_retailer},
 
 	 {?new_threshold_card_sale,
-	  <<"次卡商品销售">>, <<"new_threshold_card_sale">>, ?right_w_retailer} 
+	  <<"次卡商品销售">>, <<"new_threshold_card_sale">>, ?right_w_retailer},
+
+	 {?add_retailer_level,
+	  <<"新增会员等级">>, <<"add_retailer_level">>, ?right_w_retailer},
+
+	 {?update_retailer_level,
+	  <<"修改会员等级">>, <<"update_retailer_level">>, ?right_w_retailer}
 	],
 
     
@@ -959,6 +965,7 @@ pass_action(wholesaler) ->
      <<"filter_threshold_card_good">>,
      <<"filter_threshold_card_sale">>,
      <<"list_threshold_card_good">>,
+     <<"list_retailer_level">>,
      
      %% wsale
      %% <<"list_w_sale_new">>,

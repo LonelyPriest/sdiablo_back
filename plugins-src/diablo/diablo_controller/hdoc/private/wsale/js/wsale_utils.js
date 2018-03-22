@@ -1,8 +1,7 @@
 var wsaleUtils = function(){
     var in_sort = function(sorts, sell){
 	for (var i=0, l=sorts.length; i<l; i++){
-	    if (sell.style_number === sorts[i].style_number 
-		&& sell.brand_id   === sorts[i].brand_id){
+	    if (sell.style_number === sorts[i].style_number && sell.brand_id   === sorts[i].brand_id){
 		// sorts[i].total += sell.sell;
 		sorts[i].reject += sell.amount;
 		sorts[i].amounts.push({
@@ -81,8 +80,8 @@ var wsaleUtils = function(){
 		
 		add.pid       = s.pid;
 		add.sid       = s.sid;
-		
-		add.sizes.push(s.size);
+
+		add.sizes.push(s.size); 
 		add.colors_id.push(s.color_id);
 		
 		add.amounts.push({
@@ -104,7 +103,8 @@ var wsaleUtils = function(){
 		if (parseInt(id) === g.id){
 		    angular.forEach(diablo_sizegroup, function(sname){
 			if (g[sname]){
-			    gnames.push(g[sname]);
+			    if (!in_array(gnames, g[sname]))
+				gnames.push(g[sname]);
 			}
 		    })
 		}
@@ -175,7 +175,7 @@ var wsaleUtils = function(){
 	    var show_promotions = [];
 	    angular.forEach(details, function(d){
 
-		if (d.sizes.length !== 1 || d.sizes[0] !== "0"){
+		if (d.sizes.length !== 1 || d.sizes[0] !== diablo_free_size){
 		    d.sizes = get_size_group(d.s_group, size_groups)
 		}
 
@@ -313,6 +313,10 @@ var wsaleUtils = function(){
 
 	draw_region: function(shop, base) {
 	    return diablo_base_setting("draw_region", shop, base, parseInt, diablo_no);
+	},
+
+	vip_discount:function(shop, base) {
+	    return diablo_base_setting("r_discount", shop, base, parseInt, diablo_no);
 	},
 	
 	get_login_employee:function(shop, loginEmployee, employees){
@@ -648,7 +652,20 @@ var wsaleUtils = function(){
 		+ "服务器日期[" + result.bdate + "]";
 	    else
 		return ""
-	} 
+	},
+
+	isVip:function(selectRetailer, customRetailer, sysRetailers) {
+	    return  selectRetailer.id !== customRetailer
+		&& sysRetailers.filter(function(r) {return selectRetailer.id === r.id}).length === 0
+	},
+
+	get_retailer_discount:function(retailerLevel, levels) {
+	    var filterLevels = levels.filter(function(l) {
+		return retailerLevel === l.level;
+	    });
+
+	    return filterLevels.length === 0 ? undefined : filterLevels[0].discount;
+	}
 
 	// 
 	
@@ -658,9 +675,9 @@ var wsaleUtils = function(){
 
 var wsaleCalc = function(){
     return {
-	calculate: function(o_retailer,
-			    retailer,
-			    no_vip,
+	calculate: function(isVip,
+			    vipMode,
+			    vipDiscount, 
 			    inventories,
 			    show_promotions,
 			    mode,
@@ -679,11 +696,29 @@ var wsaleCalc = function(){
 		
 		if (angular.isDefined(one.select) && !one.select) continue;
 		
-		var count = (mode === 0 ? one.sell : one.reject);
+		var count = (mode === diablo_sale ? one.sell : one.reject);
 		// console.log(count);
 		
 		total      += parseInt(count);
 		abs_total  += Math.abs(parseInt(count));
+
+		if (vipMode && mode === diablo_sale) {
+		    if (!one.$update) {
+			if (one.pid === -1) {
+			    if (isVip && angular.isDefined(vipDiscount)) {
+				one.fdiscount = vipDiscount;
+			    } else {
+				one.fdiscount = one.discount;
+			    }
+			} 
+		    }
+		}
+		
+		// if (isVip && vipMode) 
+		//     one.fdiscount = vipDiscount;
+		// else {
+		//     one.fdiscount = one.discount;
+		// }
 		
 		// if (retailer.id !== o_retailer.id){
 		//     if (o_retailer.id === no_vip){
@@ -745,8 +780,7 @@ var wsaleCalc = function(){
 		var count = (mode === 0 ? one.sell : one.reject); 
 		// if (one.pid !== -1 && retailer.id !== no_vip){
 		if (one.pid !== diablo_invalid_index){
-		    one.rdiscount = wsaleUtils.calc_discount_of_rmoney(
-			one.fdiscount, one.promotion, pmoneys);
+		    one.rdiscount = wsaleUtils.calc_discount_of_rmoney(one.fdiscount, one.promotion, pmoneys);
 		    
 		    if (one.fdiscount !== one.rdiscount){
 			one.rprice  = diablo_price(one.fprice, one.rdiscount);

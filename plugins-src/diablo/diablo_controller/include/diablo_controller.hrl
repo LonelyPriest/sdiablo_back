@@ -204,6 +204,9 @@
 -define(delete_threshold_card_good,  ?right_w_retailer + 30).
 -define(new_threshold_card_sale,     ?right_w_retailer + 31).
 
+-define(add_retailer_level,          ?right_w_retailer + 32).
+-define(update_retailer_level,          ?right_w_retailer + 33).
+
 %% shop
 -define(new_shop,       ?right_shop + 1).
 -define(del_shop,       ?right_shop + 2).
@@ -567,7 +570,8 @@
 	  charge      = [] :: list(),
 	  score       = [] :: list(),
 	  sms_rate    = [] :: list(),
-	  sms_center  = [] :: list()
+	  sms_center  = [] :: list(),
+	  level       = [] :: list()
 	  %% login_right = [] :: list(),
 	  %% login_shop  = [] :: list()
 	 }).

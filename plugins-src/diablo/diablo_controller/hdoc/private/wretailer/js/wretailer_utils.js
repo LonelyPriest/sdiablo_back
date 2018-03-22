@@ -44,8 +44,8 @@ var retailerUtils = function(){
 
 	to_decimal:function(v){
 	    return diablo_rdight(v, 2);
-	},
-
+	}, 
+	
 	match_retailer_phone: function(viewValue, filterFun){
 	    if (diablo_is_digit_string(viewValue)){
 		if (viewValue.length < 4) return;

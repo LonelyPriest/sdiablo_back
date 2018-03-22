@@ -397,6 +397,7 @@ create table w_retailer
 (
     id              INTEGER AUTO_INCREMENT,
     name            VARCHAR(64) not null,
+    level           TINYINT default 0,
     card            VARCHAR(16) default null,
     birth           DATE default 0,
     password        VARCHAR(128) default null,
@@ -416,6 +417,18 @@ create table w_retailer
     deleted         INTEGER default 0, -- 0: no;  1: yes
     
     unique  key  uk (merchant, name, mobile),
+    primary key     (id)
+) default charset=utf8;
+
+create table w_retailer_level
+(
+    id              INTEGER AUTO_INCREMENT,
+    name            VARCHAR(64) not null,
+    level           TINYINT default -1,
+    score           INTEGER default 0,
+    discount        INTEGER default 0,
+    merchant        INTEGER default -1, -- which merchant belong to
+    unique  key  uk (level, merchant),
     primary key     (id)
 ) default charset=utf8;
 

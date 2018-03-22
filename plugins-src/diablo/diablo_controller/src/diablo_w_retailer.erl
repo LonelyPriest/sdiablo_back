@@ -35,7 +35,10 @@
 %%%===================================================================
 retailer(list, Merchant) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {list_retailer, Merchant, []}).
+    gen_server:call(Name, {list_retailer, Merchant, []});
+retailer(list_level, Merchant) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {list_retailer_level, Merchant}).
 
 retailer(list, Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -44,6 +47,10 @@ retailer(list, Merchant, Conditions) ->
 retailer(new, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {new_retailer, Merchant, Attrs});
+retailer(add_level, Merchant, Attrs) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {add_retailer_level, Merchant, Attrs});
+
 retailer(delete, Merchant, RetailerId) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {delete_retailer, Merchant, RetailerId});
@@ -264,6 +271,10 @@ handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
     Mobile   = ?v(<<"mobile">>, Attrs, []),
     Address  = ?v(<<"address">>, Attrs, []),
     Shop     = ?v(<<"shop">>, Attrs, -1),
+    Level    = case Type =:= ?SYSTEM_RETAILER of
+		   true -> -1;
+		   false -> 0
+	       end,
     
     %% mobile can not be same
     Sql = case Type =:= ?SYSTEM_RETAILER of
@@ -287,10 +298,11 @@ handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
 	{ok, []} ->
 	    DrawId = default_withdraw(Merchant, Shop, Type),
 	    Sql2 = "insert into w_retailer("
-		"name, card, py, id_card, birth, type, password, score"
+		"name, level, card, py, id_card, birth, type, password, score"
 		" ,mobile, address, shop, draw, merchant, entry_date)"
 		++ " values (" 
 		++ "\'" ++ ?to_s(Name) ++ "\',"
+		++ ?to_s(Level) ++ ","
 		++ "\'" ++ ?to_s(Card) ++ "\',"
 		++ "\'" ++ ?to_s(Pinyin) ++ "\',"
 		++ "\'" ++ ?to_s(IDCard) ++ "\',"
@@ -309,6 +321,32 @@ handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
 	    {reply, Reply, State};
 	{ok, _Any} ->
 	    {reply, {error, ?err(retailer_exist, Name)}, State};
+	Error ->
+	    {reply, Error, State}
+    end;
+
+handle_call({add_retailer_level, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("add_retailer_level with attrs ~p", [Attrs]),
+    Name     = ?v(<<"name">>, Attrs), 
+    Level    = ?v(<<"level">>, Attrs),
+    Score    = ?v(<<"score">>, Attrs, 0),
+    Discount = ?v(<<"discount">>, Attrs, 100),
+
+    Sql = "select id, name, level from w_retailer_level where merchant=" ++ ?to_s(Merchant), 
+    case ?sql_utils:execute(read, Sql) of
+	{ok, []} ->
+	    Sql2 = "insert into w_retailer_level("
+		"name, level, score, discount, Merchant)"
+		++ " values (" 
+		++ "\'" ++ ?to_s(Name) ++ "\',"
+		++ "\'" ++ ?to_s(Level) ++ "\'," 
+		++ ?to_s(Score) ++ ","
+		++ ?to_s(Discount) ++ "," 
+		++ ?to_s(Merchant) ++ ")",
+	    Reply = ?sql_utils:execute(insert, Sql2),
+	    {reply, Reply, State};
+	{ok, _Any} ->
+	    {reply, {error, ?err(level_exist, Level)}, State};
 	Error ->
 	    {reply, Error, State}
     end;
@@ -461,6 +499,7 @@ handle_call({get_retailer, Merchant, RetailerId}, _From, State) ->
 	   [Merchant, RetailerId]),
     Sql = "select a.id"
 	", a.name"
+	", a.level"
 	", a.card"
 	", a.id_card"
 	", a.py"
@@ -483,7 +522,7 @@ handle_call({get_retailer, Merchant, RetailerId}, _From, State) ->
 handle_call({get_retailer_batch, Merchant, RetailerIds}, _From, State) ->
     ?DEBUG("get_retailer_batch with merchant ~p, retailerIds ~p",
 	   [Merchant, RetailerIds]),
-    Sql = "select id, merchant, name, py"
+    Sql = "select id, merchant, name, level, py"
 	", shop as shop_id"
 	", draw as draw_id"
 	", type as type_id"
@@ -513,6 +552,15 @@ handle_call({delete_retailer, Merchant, RetailerId}, _From, State) ->
 	    {reply, {error, ?err(wretailer_retalted_sale, RetailerId)}, State} 
     end;
 
+handle_call({list_retailer_level, Merchant}, _From, State) ->
+    ?DEBUG("list_retailer_level with merchant ~p", [Merchant]),
+    Sql = "select id, name, level, score, discount"
+	" from w_retailer_level"
+	" where merchant=" ++ ?to_s(Merchant),
+    
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
 handle_call({list_retailer, Merchant, Conditions}, _From, State) ->
     ?DEBUG("lookup retail with merchant ~p, Conditions ~p", [Merchant, Conditions]),
     {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions), 
@@ -522,6 +570,7 @@ handle_call({list_retailer, Merchant, Conditions}, _From, State) ->
     
     Sql = "select a.id"
 	", a.name"
+	", a.level"
 	", a.card"
 	", a.id_card"
 	", a.py"
@@ -1274,6 +1323,7 @@ handle_call({{filter_retailer, Order, Sort},
     Sql = "select a.id"
 	", a.merchant" 
 	", a.name"
+	", a.level"
 	", a.card"
 	", a.id_card"
 	", a.birth"
@@ -1394,12 +1444,20 @@ handle_call({match_phone, Merchant, {Mode, Phone}}, _From, #state{prompt=Prompt}
 	       3 -> "card"
 	   end,
 
-    Sql = "select id, merchant, name, card, py"
+    Sql = "select id"
+	", merchant"
+	", name"
+	", level"
+	", card"
+	", py"
 	", shop as shop_id"
 	", draw as draw_id"
 	", type as type_id"
-	", balance, score, mobile"
+	", balance"
+	", score"
+	", mobile"
 	" from w_retailer"
+	
 	++ " where merchant=" ++ ?to_s(Merchant)
 	++ " and "
 	++ case {First, Match, Last} of

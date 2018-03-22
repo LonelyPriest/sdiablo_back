@@ -760,7 +760,8 @@ sys_config(shop) ->
      {"prn_w_page",        "单据纸张宽",         "21.3", "0"},
      
      {"draw_score",        "提现积分",           "1",    "0"}, 
-     {"dual_barcode",      "双排条码",           "0",    "0"}
+     {"dual_barcode",      "双排条码",           "0",    "0"},
+     {"m_discount",        "会员折扣模式",       "0",    "0"}
     ].
     
 sys_config() ->
@@ -813,17 +814,9 @@ sys_config() ->
 	      {"stock_contailer", "货品货柜号",           "0",   "0"},
 	      {"stock_firm",      "入库区分厂商",         "1",   "0"},
 	      {"bcode_use",       "启用条码",             "0",   "0"},
-	      {"bcode_auto",      "自动条码",             "1",   "0"},
-	      %% {"bcode_width",     "条码宽度",             "7",   "0"},
-	      %% {"bcode_height",    "条码高度",             "2",   "0"},
+	      {"bcode_auto",      "自动条码",             "1",   "0"}, 
 	      {"trans_orgprice",  "移仓检测进价",         "1",   "0"},
-	      {"p_color_size",    "打印颜色尺码",         "0",   "0"},
-	      
-	      %% {"birth_sms",       "生日短信",             "0",   "0"},
-	      %% default send sms current day
-	      %% {"birth_before",    "生日短信发送间隔",     "0",   "0"}, 
-	      
-	      %%  {"score_withdraw",  "提现是否积分",         "1",   "0"}
+	      {"p_color_size",    "打印颜色尺码",         "0",   "0"}, 
 	      {"saler_stock",      "营业员查看区域库存",  "0",   "0"},
 	      {"r_stock_oprice",    "厂商退货检测进价",   "1",   "0"},
 	      {"c_stock_oprice",    "入库审核检测进价",   "1",   "0"},
@@ -839,7 +832,8 @@ sys_config() ->
 	      {"draw_score",        "提现积分",           "1",    "0"},
 	      {"dual_barcode",      "双排条码",           "0",    "0"},
 	      {"draw_region",       "区域提现",           "0",    "0"},
-	      {"threshold_card",    "次卡消费模式",       "0",    "0"}
+	      {"threshold_card",    "次卡消费模式",       "0",    "0"},
+	      {"r_discount",        "会员折扣模式",       "0",    "0"}
 	      %% {"bcode_self",     "吊牌打印模式",       "0",   "0"}
 	     ],
     Values.

@@ -84,8 +84,9 @@ get(score, Merchant) ->
 get(sms_rate, Merchant) ->
     gen_server:call(?SERVER(Merchant), {get_sms_rate, Merchant});
 get(sms_center, Merchant) ->
-    gen_server:call(?SERVER(Merchant), {get_sms_center, Merchant}).
-
+    gen_server:call(?SERVER(Merchant), {get_sms_center, Merchant});
+get(retailer_level, Merchant) ->
+    gen_server:call(?SERVER(Merchant), {get_retailer_level, Merchant}).
 
 
 get(shop, Merchant, Shop) ->
@@ -224,6 +225,7 @@ handle_call({new_profile, Merchant}, _From, State) ->
 
 	{ok, SMSRate}      = ?merchant:sms(list, Merchant),
 	{ok, SMSCenter}    = ?merchant:sms(list_center, Merchant),
+	{ok, Levels}       = ?w_retailer:retailer(list_level, Merchant),
 	
 	%% good
 	%% Goods = ?w_inventory:purchaser_good(lookup, Merchant), 
@@ -251,7 +253,8 @@ handle_call({new_profile, Merchant}, _From, State) ->
 				  score       = Scores,
 
 				  sms_rate    = SMSRate,
-				  sms_center  = SMSCenter
+				  sms_center  = SMSCenter,
+				  level       = Levels
 				  %% good     = ?to_tl(Goods)
 				 }
 			  })
@@ -813,6 +816,11 @@ handle_call({get_sms_center, Merchant}, _From, State) ->
     Select = select(MS, fun() -> ?merchant:sms(list_center, Merchant) end),
     {reply, {ok, Select}, State};
 
+handle_call({get_retailer_level, Merchant}, _From, State) ->
+    MS = ms(Merchant, retailer_level),
+    Select = select(MS, fun() -> ?w_retailer:retailer(list_level, Merchant) end),
+    {reply, {ok, Select}, State};
+
 
 handle_call({set_default, Merchant, Shop}, _From, State) ->
     ?DEBUG("set default value of merchant ~p, shop ~p", [Merchant, Shop]),
@@ -1220,6 +1228,11 @@ ms(Merchant, sms_rate) ->
      }];
 ms(Merchant, sms_center) ->
     [{{'$1', #wuser_profile{merchant='$1', sms_center='$2', _='_'}},
+      [{'==', '$1', ?to_i(Merchant)}],
+      ['$2']
+     }]; 
+ms(Merchant, retailer_level) ->
+    [{{'$1', #wuser_profile{merchant='$1', level='$2', _='_'}},
       [{'==', '$1', ?to_i(Merchant)}],
       ['$2']
      }];

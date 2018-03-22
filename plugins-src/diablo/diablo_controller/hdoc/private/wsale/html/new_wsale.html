@@ -405,10 +405,8 @@
 			  {{inv.fdiscount}}
 			</div>
 			<form name="inv.form.fdiscount"
-			      ng-if="inv.$new && inv.free_color_size
-				     || !inv.$new && inv.free_update">
-			  <div ng-class="{'has-error':
-					 inv.form.fdiscount.$invalid
+			      ng-if="inv.$new && inv.free_color_size || !inv.$new && inv.free_update">
+			  <div ng-class="{'has-error': inv.form.fdiscount.$invalid
 					 && !inv.form.fdiscount.$pristine}">
 			    <input class="form-control"
 				   type="number" step="0.1"
@@ -434,11 +432,8 @@
 			  </div>
 			</div>
 			<form name="inv.form.fprice"
-			      ng-if="inv.$new && inv.free_color_size
-				     || !inv.$new && inv.free_update">
-			  <div ng-class="{'has-error':
-					 inv.form.fprice.$invalid
-					 && !inv.form.fprice.$pristine}">
+			      ng-if="inv.$new && inv.free_color_size || !inv.$new && inv.free_update">
+			  <div ng-class="{'has-error': inv.form.fprice.$invalid && !inv.form.fprice.$pristine}">
 			    <input class="form-control"
 				   type="number" step="0.01"
 				   required

@@ -223,8 +223,12 @@ var diablo_obj_strip = function(obj){
     return obj;
 };
 
-var diablo_season = ["春", "夏", "秋", "冬"];
+var diablo_retailer_levels = [{level:0, name:"普通级"},
+			      {level:1, name:"金卡级"},
+			      {level:2, name:"白金级"},
+			      {level:3, name:"黑金级"}];
 
+var diablo_season = ["春", "夏", "秋", "冬"];
 var diablo_season2number = function(season){
     if (season == "春")
 	return 0;
