@@ -143,6 +143,48 @@
 	      </div> 
 	    </div>
 
+	    <div x-ng-if="promotion.rule.id===2" class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">购买数量</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<div class="input-group">
+		  <div x-ng-class="{'has-error':pForm.cm.$invalid && !pForm.cm.$pristine}">
+		    <input type="number" step="1"
+			   class="form-control"
+			   name="cm"
+			   required
+			   placeholder="同类型商品购买数量" 
+			   x-ng-model="promotion.consume"
+			   x-ng-pattern="pattern.number"/>
+		  </div>
+		  <span class="input-group-addon bg-white fg-red">*</span>
+		</div> 
+	      </div>
+	      <div ng-if="pForm.cm.$invalid && !pForm.cm.$pristine">
+		<span class="fg-red">购买数量只能是整数</span>
+	      </div> 
+	    </div>
+
+	    <div x-ng-if="promotion.rule.id===2" class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">赠送数量</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<div class="input-group">
+		  <div x-ng-class="{'has-error':pForm.sm.$invalid && !pForm.sm.$pristine}">
+		    <input type="number" step="1"
+			   class="form-control"
+			   name="sm"
+			   required
+			   placeholder="请输入减免金额" 
+			   x-ng-model="promotion.reduce"
+			   x-ng-pattern="pattern.number"/>
+		  </div>
+		  <span class="input-group-addon bg-white fg-red">*</span>
+		</div> 
+	      </div>
+	      <div ng-if="pForm.sm.$invalid && !pForm.sm.$pristine">
+		<span class="fg-red">赠送数量只能是整数</span>
+	      </div> 
+	    </div>
+
 	    
 	    <div class="form-group">
 	      <label class="col-md-3 col-sm-3 control-label">开始日期</label>

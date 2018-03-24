@@ -43,9 +43,9 @@ function stockPromotionNewProvide(
 	    // shop:     $scope.promotion.shop.id,
 	    name:     $scope.promotion.name,
 	    rule:     $scope.promotion.rule.id,
-	    discount: $scope.promotion.discount,
-	    consume:  $scope.promotion.consume,
-	    reduce:   $scope.promotion.reduce,
+	    discount: $scope.promotion.rule.id === 0 ? $scope.promotion.discount : undefined,
+	    consume:  $scope.promotion.rule.id !== 0 ? $scope.promotion.consume : undefined,
+	    reduce:   $scope.promotion.rule.id !== 0 ? $scope.promotion.reduce : undefined,
 	    sdate:    dateFilter($scope.promotion.sdate, "yyyy-MM-dd"),
 	    edate:    dateFilter($scope.promotion.edate, "yyyy-MM-dd"),
 	    remark:   diablo_set_string($scope.promotion.remark)

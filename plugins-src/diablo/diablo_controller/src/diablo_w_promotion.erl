@@ -56,17 +56,35 @@ handle_call({new_promotion, Merchant, Attrs}, _From, State) ->
     %% Shop     = ?v(<<"shop">>, Attrs, -1),
     Name     = ?v(<<"name">>, Attrs),
     Rule     = ?v(<<"rule">>, Attrs),
-    Discount = ?v(<<"discount">>, Attrs, 100),
-    Consume  = ?v(<<"consume">>, Attrs, 0),
-    Reduce   = ?v(<<"reduce">>, Attrs, 0),
+    Discount = case Rule of
+		   0 -> ?v(<<"discount">>, Attrs, 100);
+		   _ -> 100
+	       end,
+		   
+    Consume  = case Rule of
+		   0 -> 0;
+		   _ -> ?v(<<"consume">>, Attrs, 0)
+	       end,
+    
+    Reduce   = case Rule of
+		   0 -> 0;
+		   _ -> ?v(<<"reduce">>, Attrs, 0)
+	       end,
+    
     SDate    = ?v(<<"sdate">>, Attrs),
     EDate    = ?v(<<"edate">>, Attrs),
     Remark   = ?v(<<"remark">>, Attrs, []), 
 
-    Sql = "select id, name from w_promotion"
-	" where merchant=" ++ ?to_s(Merchant)
-    %% ++ " and shop=" ++ ?to_s(Shop)
-	++ " and name=\'" ++ ?to_s(Name) ++ "\'",
+    Sql = case Rule of
+	      0 -> "select id, name from w_promotion"
+		       " where merchant=" ++ ?to_s(Merchant)
+		       ++ " and discount=" ++ ?to_s(Discount);
+	      _ ->
+		  "select id, name from w_promotion"
+		      " where merchant=" ++ ?to_s(Merchant)
+		      ++ " and cmoney=" ++ ?to_s(Consume)
+		      ++ " and rmoney=" ++ ?to_s(Reduce)
+	  end,
 
     case ?sql_utils:execute(s_read, Sql) of
 	{ok, []} ->

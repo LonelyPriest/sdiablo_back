@@ -417,8 +417,8 @@
 	    <th>名称</th>
 	    <th>方案</th> 
 	    <th>折扣</th>
-	    <th>消费金额</th>
-	    <th>减免金额</th>
+	    <th>金额/购买</th>
+	    <th>减免/赠送</th>
 	    <th>开始日期</th>
 	    <th>结束日期</th> 
 	  </tr>
@@ -440,25 +440,28 @@
 	      <div x-ng-switch on="p.rule_id">
 		<span x-ng-switch-when=0>折扣优惠</span>
 		<span x-ng-switch-when=1>金额减免</span>
+		<span x-ng-switch-when=2>买M送N</span>
 	      </div>
 	    </td>
 	    <td class="vert-align">
 	      <div x-ng-switch on="p.rule_id">
 		<span x-ng-switch-when=0>{{p.discount}}</span>
-		<span x-ng-switch-when=1>不涉及</span>
+		<span x-ng-switch-default>-</span>
 	      </div>
 	    </td>
 	    <td class="vert-align">
 	      <div x-ng-switch on="p.rule_id">
 		<span x-ng-switch-when=1>{{p.cmoney}}</span>
-		<span x-ng-switch-when=0>不涉及</span>
+		<span x-ng-switch-when=2>{{p.cmoney}}</span>
+		<span x-ng-switch-when=0>-</span>
 	      </div>
 	    </td>
 	    
 	    <td class="vert-align">
 	      <div x-ng-switch on="p.rule_id">
 		<span x-ng-switch-when=1>{{p.rmoney}}</span>
-		<span x-ng-switch-when=0>不涉及</span>
+		<span x-ng-switch-when=2>{{p.rmoney}}</span>
+		<span x-ng-switch-when=0>-</span>
 	      </div>
 	    </td>
 	    

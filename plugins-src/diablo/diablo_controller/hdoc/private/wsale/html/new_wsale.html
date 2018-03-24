@@ -574,6 +574,12 @@
 	      	  满<span class="fg-red">{{p.promotion.cmoney}}</span>
 	      	  送<span class="fg-red">{{p.promotion.rmoney}}</span>
 	      	</span>
+
+		<span x-ng-switch-when=2>
+	      	  买<span class="fg-red">{{p.promotion.cmoney}}</span>
+	      	  送<span class="fg-red">{{p.promotion.rmoney}}</span>
+	      	</span>
+		
 	      </span>
 	    </span>
 	    <span x-ng-if="!p.promotion">无</span>
