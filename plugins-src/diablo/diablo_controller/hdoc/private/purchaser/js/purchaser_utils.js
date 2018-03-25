@@ -99,6 +99,10 @@ var stockUtils = function(){
 	    return diablo_base_setting("saler_stock", shop, base, parseInt, diablo_no);
 	},
 
+	gift_sale:function(shop, base) {
+	    return diablo_base_setting("gift_sale", shop, base, parseInt, diablo_no);
+	},
+
 	check_oprice_with_reject_stock: function(shop, base) {
 	    return diablo_base_setting("r_stock_oprice", shop, base, parseInt, diablo_yes);
 	},

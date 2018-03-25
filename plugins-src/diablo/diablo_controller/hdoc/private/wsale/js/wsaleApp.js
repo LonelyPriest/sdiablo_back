@@ -357,19 +357,15 @@ function wsaleNewProvide(
     $scope.pattern    = {
 	money:    diabloPattern.decimal_2,
 	sell:     diabloPattern.integer_except_zero,
-	discount: diabloPattern.discount};
+	discount: diabloPattern.discount,
+	barcode:  diabloPattern.number};
     
     $scope.timeout_auto_save = undefined;
     $scope.interval_per_5_minute = undefined;
     $scope.round  = diablo_round;
     
-    $scope.today = function(){
-	return $.now();
-    };
-    
-    $scope.back  = function(){
-	diablo_goto_page("#/new_wsale_detail");
-    };
+    $scope.today = function(){return $.now();}; 
+    $scope.back  = function(){diablo_goto_page("#/new_wsale_detail");};
 
     $scope.setting = {q_backend:true, check_sale:true, negative_sale:true};
 
@@ -405,14 +401,11 @@ function wsaleNewProvide(
 
     $scope.key_action = function(key){
 	if (key === 113) $scope.auto_focus('cash');
-	if (key === 114) $scope.auto_focus('card');
-	// if (key === 114) {
-	//     if (!$scope.disable_save()) $scope.save_wsale();
-	// }
+	if (key === 114) $scope.auto_focus('card'); 
 	if (key === 117){
 	    if (!$scope.disable_refresh) $scope.refresh();
 	}
-    }
+    };
     
     wsaleGoodService.set_brand(filterBrand);
     wsaleGoodService.set_type(filterType);
@@ -443,7 +436,7 @@ function wsaleNewProvide(
     $scope.show_promotions = [];
     $scope.disable_refresh = true;
     $scope.has_withdrawed  = false;
-
+    
     $scope.select = {
 	rsn:  undefined,
 	cash: undefined,
@@ -486,6 +479,7 @@ function wsaleNewProvide(
 	$scope.setting.draw_score    = wsaleUtils.draw_score(shopId, base);
 	$scope.setting.draw_region   = wsaleUtils.draw_region(shopId, base);
 	$scope.setting.vip_mode      = wsaleUtils.vip_discount(shopId, base);
+	$scope.setting.gift_sale     = wsaleUtils.gift_sale(shopId, base);
 	
 	if (diablo_no === $scope.setting.cake_mode) {
 	    $scope.vpays = wsaleService.vpays;
@@ -966,7 +960,8 @@ function wsaleNewProvide(
 	add.path         = src.path; 
 	add.s_group      = src.s_group;
 	add.free         = src.free;
-	add.entry        = src.entry_date;
+	add.state        = src.state;
+	// add.entry        = src.entry_date;
 
 	// add.full_bcode   = angular.isUndefined(src.full_bcode) ? src.bcode : src.full_bcode;
 	add.full_name    = add.style_number + "/" + add.brand;
@@ -2053,6 +2048,12 @@ function wsaleNewProvide(
 		$scope.save_free_update(inv); 
 	    }
 	}, 1000); 
+    };
+
+    $scope.gift_sale = function(inv) {
+	inv.fprice = 0;
+	$scope.wsaleStorage.save($scope.inventories.filter(function(r){return !r.$new}));
+	$scope.re_calculate();
     };
 };
 

@@ -304,3 +304,7 @@ alter table w_charge_detail add column ledate DATE default 0 after cid;
 --2018-03-18
 alter table w_retailer add column level TINYINT default 0 after name;
 update w_retailer set level=-1 where type=2;
+
+
+--2018-03-25
+alter table w_change_shift modify column entry_date date default 0;

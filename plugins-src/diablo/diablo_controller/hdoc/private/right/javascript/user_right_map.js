@@ -60,7 +60,8 @@ var rightAuthen = {
 	    print_w_stock_new: rightAuthen.root_right._stock + 27,
 	    print_stock_transfer: rightAuthen.root_right._stock + 28,
 	    print_w_barcode: rightAuthen.root_right._stock + 29,
-	    cancel_stock_transfer: rightAuthen.root_right._stock + 20
+	    cancel_stock_transfer: rightAuthen.root_right._stock + 20,
+	    gift_w_stock: rightAuthen.root_right._stock + 30
 	}
     },
 

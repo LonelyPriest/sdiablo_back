@@ -592,6 +592,19 @@ inventory(set_promotion, Merchant, Promotions, Conditions) ->
 	   end
 	++ " and deleted=" ++ ?to_s(?NO);
 
+inventory(set_gift, Merchant, StockState, Conditions) ->
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions), 
+    Updates = ?utils:v(state, integer, StockState), 
+    "update w_inventory set " ++ ?utils:to_sqls(proplists, comma, Updates)
+	++ " where " 
+	++ ?sql_utils:condition(proplists_suffix, NewConditions)
+	++ "merchant=" ++ ?to_s(Merchant)
+	++ case ?sql_utils:condition(time_no_prfix, StartTime, EndTime) of
+	       [] -> [];
+	       TimeSql ->  " and " ++ TimeSql
+	   end
+	++ " and deleted=" ++ ?to_s(?NO);
+
 inventory(update_batch, Merchant, Attrs, Conditions) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
 
@@ -796,16 +809,37 @@ inventory(inventory_new_rsn, Merchant, Conditions) ->
 inventory(list, Merchant, Conditions) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_with_prifix, Conditions),
 
-    "select a.style_number, a.brand_id, a.type_id, a.sex, a.season, a.total"
-	", a.org_price, a.tag_price, a.ediscount, a.discount"
+    "select a.style_number"
+	", a.brand_id"
+	", a.type_id"
+	", a.sex"
+	", a.season"
+	", a.total"
+	", a.org_price"
+	", a.tag_price"
+	", a.ediscount"
+	", a.discount"
+	", a.state"
+	", a.shop_id"
 
-	", b.color as color_id, b.size, b.total as amount, b.alarm_a"
-	%% ", c.name as color"
+	", b.color as color_id"
+	", b.size"
+	", b.total as amount"
+	", b.alarm_a"
 	
+	%% ", c.name as color" 
 	" from ("
-	"select a.style_number, a.brand as brand_id"
-	", a.type as type_id, a.sex, a.season, a.amount as total"
-	", a.org_price, a.tag_price, a.ediscount, a.discount"
+	"select a.style_number"
+	", a.brand as brand_id"
+	", a.type as type_id"
+	", a.sex"
+	", a.season"
+	", a.amount as total"
+	", a.org_price"
+	", a.tag_price"
+	", a.ediscount"
+	", a.discount"
+	", a.state"
 	", a.shop as shop_id"
 	" from w_inventory a"
 	" where " ++ ?sql_utils:condition(proplists_suffix, NewConditions)
@@ -814,8 +848,10 @@ inventory(list, Merchant, Conditions) ->
 	++") a "
 
 	" left join w_inventory_amount b on"
-	" a.style_number=b.style_number and a.brand_id=b.brand"
-	" and a.shop_id=b.shop and b.merchant=" ++ ?to_s(Merchant);
+	" a.style_number=b.style_number"
+	" and a.brand_id=b.brand"
+	" and a.shop_id=b.shop"
+	" and b.merchant=" ++ ?to_s(Merchant);
 
 inventory(list_info, Merchant, Conditions) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_with_prifix, Conditions), 
@@ -1226,7 +1262,7 @@ inventory_match(all_inventory, Merchant, Shop, Conditions) ->
 	", a.promotion as pid"
 	", a.score as sid"
 	", a.org_price, a.tag_price, a.ediscount, a.discount"
-	", a.path, a.entry_date"
+	", a.state, a.path, a.entry_date"
 
 	", b.name as brand" 
 	", c.name as type"
@@ -1257,7 +1293,7 @@ inventory_match(Merchant, StyleNumber, Shop, Firm) ->
 	", a.promotion as pid"
 	", a.score as sid"
 	", a.org_price, a.tag_price, a.ediscount, a.discount"
-	", a.path, a.entry_date"
+	", a.state, a.path, a.entry_date"
 	
 	", b.name as brand" 
 	", c.name as type"

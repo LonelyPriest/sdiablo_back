@@ -214,6 +214,7 @@ function wreportDailyCtrlProvide(
             wreportService.print_wreport(
 		diablo_by_shop,
 		{shop:     d.shop.id,
+		 date:     dateFilter($scope.current_day, "yyyy-MM-dd"),
 		 employee: params.employee.id === "-1" ? undefined : params.employee.id,
 		 pcash:    diablo_set_float(params.pcash),
 		 pcash_in: diablo_set_float(params.pcash_in),
@@ -253,7 +254,9 @@ function wreportDailyCtrlProvide(
 	    callback,
 	    undefined,
 	    {employees:login.employees,
-	     employee: login.login_employee});
+	     employee: login.login_employee,
+	     pcash: 0,
+	     pcash_in: 0});
     };
 
     $scope.print_shop_fronted = function(d){

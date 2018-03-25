@@ -232,7 +232,7 @@
 
 	  <!-- ticket -->
 	  <div class="row diablo-form-group"> 
-	    <div class="col-sm-3 col-md-3">
+	    <div class="col-xs-3 col-sm-3 col-md-3">
 	      <div class="input-group">
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-copyright-mark fg-red"></i>积分</span>
@@ -241,7 +241,7 @@
 	      </div>
 	    </div>
 	    
-	    <div class="col-sm-3 col-md-3">
+	    <div class="col-xs-3 col-sm-3 col-md-3">
 	      <div class="input-group">
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-barcode fg-red"></i>批次</span>
@@ -251,7 +251,7 @@
 	      </div>
 	    </div>
 	    
-	    <div class="col-sm-3 col-md-3">
+	    <div class="col-xs-3 col-sm-3 col-md-3">
 	      <div class="input-group">
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>金额</span>
@@ -261,7 +261,7 @@
 	      </div>
 	    </div>
 
-	    <div class="col-sm-3 col-md-3 col-xs-3"> 
+	    <div class="col-xs-3 col-sm-3 col-md-3 col-xs-3"> 
 	      <div class="input-group"> 
 		<span class="input-group-addon">
 	    	  <i class="glyphicon glyphicon-ban-circle fg-red"></i>核销</span>
@@ -275,7 +275,7 @@
 	  </div>
 
 	  <div x-ng-if="select.retailer.type_id===1" class="row diablo-form-group"> 
-	    <div class="col-sm-3 col-md-3">
+	    <div class="col-xs-3 col-sm-3 col-md-3">
 	      <div class="input-group">
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>余额</span>
@@ -284,7 +284,7 @@
 	      </div>
 	    </div>
 	    
-	    <div class="col-sm-3 col-md-3">
+	    <div class="col-xs-3 col-sm-3 col-md-3">
 	      <div class="input-group">
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>提现</span> 
@@ -296,7 +296,7 @@
 	      </div>
 	    </div>
 
-	    <div class="col-sm-6 col-md-6">
+	    <div class="col-xs-6 col-sm-6 col-md-6">
 	      <div class="input-group">
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>结余</span>
@@ -306,259 +306,227 @@
 	               x-ng-model="select.left_balance"/>
 	      </div>
 	    </div> 
-	  </div>
-	  
+	  </div> 
 	</div> 
       </div>
       
       <!--BEGN portlet body--> 
       <div class="portlet-body">
 	<!--BEGIN panel-->
-	<uib-tabset>
-	  <uib-tab heading="{{wsale_mode[0].title}}"
-		   active="wsale_mode[0].active">
-	    <div class="panel panel-default">
-	      
-	      <div class="table-responsive">
-		<!--EBGIN table supplier-->
-		<table class="table table-bordered
-			      table-striped table-hover
-			      table-condensed table-advanced">
-		  <thead>
-		    <tr>
-		      <th class="text-center">序号</th>
-		      <th x-ng-if="setting.barcode_mode" class="text-center">条码</th>
-		      <th class="text-center">货号</th>
-		      <!-- <th class="text-center">品名</th> -->
-		      <th x-ng-if="setting.check_sale" class="text-center">库存</th> 
-		      <th class="text-center">吊牌价</th>
-		      <th class="text-center">折扣</th> 
-		      <th class="text-center">单价</th>
-		      <th class="text-center">数量</th>
-		      <th class="text-center">成交价</th>
-		      <th class="text-center">折扣率</th> 
-		      <th class="text-center">合计</th>
-		      <!-- <th class="col-md-1 col-sm-1 col-xs-1">备注</th> -->
-		      <th class="text-center">操作</th>
-		    </tr>
-		  </thead>
-		  <tbody>
-		    <tr class="text-center" x-ng-repeat="inv in inventories"> 
-		      <td class="text-center vert-align">{{inv.order_id}}</td>
-		      
-		      <td x-ng-if="setting.barcode_mode" class="col-md-2 text-left vert-align">
-	  		<span ng-if="!inv.$new">{{inv.full_bcode}}</span>
-	  		<form name="inv.form.bcode" ng-if="inv.$new">
-	  		  <div ng-class="{'has-error':inv.form.bcode.$invalid
-	  				 && !inv.form.bcode.$pristine}">
-	  		    <input class="form-control text-left"
-	  			   type="text"
-	  			   required
-	  			   x-ng-model="inv.full_bcode"
-	  			   focus-auto="focus_attr.barcode"
-	  			   placeholder="条码"
-	  			   barcode-scanner
-	  			   scanner="barcode_scanner"/>
-	  		  </div>
-	  		</form>
-	  	      </td>
-	  
-		      <td class="col-md-2 text-left vert-align">
-			<span ng-if="!inv.$new">{{inv.full_name}}</span>
-			<form name="inv.form.good" x-ng-if="inv.$new">
-			  <div ng-class="{'has-error':inv.form.good.$invalid
-					 && !inv.form.good.$pristine}">
-			    <input class="form-control text-left"
-				   type="text"
-				   required
-				   x-ng-model="inv.full_name"
-				   focus-auto="focus_attr.style_number"
-				   placeholder="货号"
-				   typeahead-editable="false"
-				   typeahead-on-select="on_select_good($item, $model, $label)"
-				   typeahead-wait-ms="300"
-				   typeahead-loading="loading"
-				   uib-typeahead="g as g.name for
-						  g in match_style_number($viewValue)"/>
-			    <span x-ng-show="loading">
-			      <i class="glyphicon glyphicon-refresh"></i>
-			    </span>
-			  </div>
-			</form>
-		      </td>
-
-		      <!-- <td>{{inv.style_number}}</td> -->
-		      <!-- <td class="vert-align">{{inv.brand}}</td> -->
-		      <td x-ng-if="setting.check_sale" class="vert-align">
-			{{inv.total}}
-		      </td>
-		      
-		      <td class="col-md-1 vert-align">{{inv.tag_price}}</td>
-
-		      <!--discount-->
-		      <td x-ng-if="!right.m_discount" class="vert-align">
-			{{inv.fdiscount}}
-		      </td>
-		      
-		      <td x-ng-if="right.m_discount" class="col-md-1 vert-align">
-			<div x-ng-if="!inv.$new && !inv.free_update">
-			  {{inv.fdiscount}}
-			</div>
-			<form name="inv.form.fdiscount"
-			      ng-if="inv.$new && inv.free_color_size || !inv.$new && inv.free_update">
-			  <div ng-class="{'has-error': inv.form.fdiscount.$invalid
-					 && !inv.form.fdiscount.$pristine}">
-			    <input class="form-control"
-				   type="number" step="0.1"
-				   required
-				   disable-key
-				   x-ng-pattern="pattern.discount"
-				   x-ng-model="inv.fdiscount" />
-			  </div>
-			</form>
-		      </td>
-		      
-		      <td x-ng-if="!right.m_price" class="vert-align">
-			<div x-ng-if="(inv.fprice===0 || inv.fprice)">
-			  {{inv.fprice}}
-			</div>
-		      </td>
-		      
-		      <td x-ng-if="right.m_price"
-			  class="col-md-1 vert-align">
-			<div ng-if="!inv.$new && !inv.free_update">
-			  <div x-ng-if="(inv.fprice===0 || inv.fprice)">
-			    {{inv.fprice}}
-			  </div>
-			</div>
-			<form name="inv.form.fprice"
-			      ng-if="inv.$new && inv.free_color_size || !inv.$new && inv.free_update">
-			  <div ng-class="{'has-error': inv.form.fprice.$invalid && !inv.form.fprice.$pristine}">
-			    <input class="form-control"
-				   type="number" step="0.01"
-				   required
-				   disable-key
-				   x-ng-pattern="/^\d+(.\d{1,2})?$/"
-				   x-ng-model="inv.fprice"/>
-			  </div>
-			</form>
-		      </td>
-		      
-		      <!-- <td class="vert-align">{{inv.total}}</td> -->
-
-		      <!-- sell count-->
-		      <td class="col-md-1 vert-align">
-			<div x-ng-if="!inv.$new && !inv.free_update">{{inv.sell}}</div> 
-			<form name="inv.form.sell"
-			      x-ng-if="inv.$new && inv.free_color_size
-				       || !inv.$new && inv.free_update">
-			  <div ng-class="{'has-error':(inv.form.sell.$invalid
-					 &&!inv.form.sell.$pristine) || inv.invalid_sell}">
-			    <input type="number" step="1"
-				   class="form-control"
-				   placeholder="数量"
-				   required
-				   disable-key
-				   x-ng-pattern="pattern.sell"
-				   x-ng-model="inv.sell"
-				   focus-auto="focus_attr.sell" 
-				   x-ng-change="auto_save_free(inv)" />
-			  </div> 
-			</form>
-		      </td>
-		      
-		      <td class="vert-align"><span class="fg-red">{{inv.rprice}}<span></td> 
-		      <td class="vert-align"><span class="fg-red">{{inv.rdiscount}}</span></td> 
-		      <td class="vert-align"><span>{{inv.calc}}</span></td>
-		      
-		      <!-- <td class="vert-align col-md-1"> -->
-		      <!-- 	<form> -->
-		      <!-- 	  <div>  -->
-		      <!-- 	    <input class="form-control input-xs" -->
-		      <!-- 		   type="text" -->
-		      <!-- 		   placeholder="备注" -->
-		      <!-- 		   x-ng-model="inv.comment"/> -->
-		      <!-- 	  </div> -->
-		      <!-- 	</form> -->
-		      <!-- </td> -->
-		      
-		      <td class="text-left vert-align">
-			<span x-ng-if="inv.$new"> 
-			  <a class="btn diablo-input-button btn-success"
-			     x-ng-if="!inv.free_color_size"
-			     x-ng-disabled="inv.form.good.$invalid"
-			     x-ng-click="add_inventory(inv)">新增
-			    <i class="glyphicon glyphicon-plus"></i></a>
-			  
-			  <a class="btn diablo-input-button btn-warning"
-			     x-ng-click="reset_inventory(inv)">重置
-			    <i class="glyphicon glyphicon-pushpin"></i></a> 
+	<!-- <uib-tabset> -->
+	<!-- <uib-tab heading="{{wsale_mode[0].title}}" active="wsale_mode[0].active"> -->
+	<div class="panel panel-default"> 
+	  <div class="table-responsive">
+	    <!--EBGIN table supplier-->
+	    <table class="table table-bordered table-striped table-hover table-condensed table-advanced">
+	      <thead>
+		<tr>
+		  <th class="text-center">序号</th>
+		  <th x-ng-if="setting.barcode_mode" class="text-center">条码</th>
+		  <th class="text-center">货号</th>
+		  <th x-ng-if="setting.check_sale" class="text-center">库存</th> 
+		  <th class="text-center">吊牌价</th>
+		  <th class="text-center">折扣</th> 
+		  <th class="text-center">单价</th>
+		  <th class="text-center">数量</th>
+		  <th class="text-center">成交价</th>
+		  <th class="text-center">折扣率</th> 
+		  <th class="text-center">合计</th>
+		  <th class="text-center">操作</th>
+		</tr>
+	      </thead>
+	      <tbody>
+		<tr class="text-center" x-ng-repeat="inv in inventories"> 
+		  <td class="text-center vert-align">{{inv.order_id}}</td>
+		  
+		  <td x-ng-if="setting.barcode_mode" class="col-md-2 text-left vert-align">
+	  	    <span ng-if="!inv.$new">{{inv.full_bcode}}</span>
+	  	    <form name="inv.form.bcode" ng-if="inv.$new">
+	  	      <div ng-class="{'has-error':inv.form.bcode.$invalid && !inv.form.bcode.$pristine}">
+	  		<input class="form-control text-left"
+	  		       type="text"
+	  		       required
+	  		       x-ng-model="inv.full_bcode"
+	  		       focus-auto="focus_attr.barcode"
+	  		       placeholder="条码"
+	  		       barcode-scanner
+	  		       scanner="barcode_scanner"/>
+	  	      </div>
+	  	    </form>
+	  	  </td>
+		  
+		  <td class="col-md-2 text-left vert-align">
+		    <span ng-if="!inv.$new">{{inv.full_name}}</span>
+		    <form name="inv.form.good" x-ng-if="inv.$new">
+		      <div ng-class="{'has-error':inv.form.good.$invalid && !inv.form.good.$pristine}">
+			<input class="form-control text-left"
+			       type="text"
+			       required
+			       x-ng-model="inv.full_name"
+			       focus-auto="focus_attr.style_number"
+			       placeholder="货号"
+			       typeahead-editable="false"
+			       typeahead-on-select="on_select_good($item, $model, $label)"
+			       typeahead-wait-ms="300"
+			       typeahead-loading="loading"
+			       uib-typeahead="g as g.name for g in match_style_number($viewValue)"/>
+			<span x-ng-show="loading">
+			  <i class="glyphicon glyphicon-refresh"></i>
 			</span>
+		      </div>
+		    </form>
+		  </td>
+		  
+		  <td x-ng-if="setting.check_sale" class="vert-align">{{inv.total}}</td> 
+		  <td class="col-md-1 vert-align">{{inv.tag_price}}</td>
 
-			<span ng-if="inv.$edit">
-			  <a class="btn diablo-input-button btn-primary"
-			     x-ng-if="!inv.free_update"
-			     x-ng-disabled="inv.free_color_size"
-			     x-ng-click="inventory_detail(inv)">详情
-			    <i class="glyphicon glyphicon-eye-open"></i></a>
-			  
-			  <a class="btn diablo-input-button yellow"
-			     x-ng-if="!inv.free_update"
-			     x-ng-click="update_inventory(inv)">修改
-			    <i class="glyphicon glyphicon-edit"></i></a>
-			  
-			  <a class="btn diablo-input-button btn-danger"
-			     x-ng-if="!inv.free_update"
-			     x-ng-click="delete_inventory(inv)">删除
-			    <i class="glyphicon glyphicon-erase"></i></a>
+		  <!--discount-->
+		  <td x-ng-if="!right.m_discount" class="vert-align">{{inv.fdiscount}}</td>
+		  
+		  <td x-ng-if="right.m_discount" class="col-md-1 vert-align">
+		    <div x-ng-if="!inv.$new && !inv.free_update">{{inv.fdiscount}}</div>
+		    <form name="inv.form.fdiscount"
+			  ng-if="inv.$new && inv.free_color_size || !inv.$new && inv.free_update">
+		      <div ng-class="{'has-error': inv.form.fdiscount.$invalid
+				     && !inv.form.fdiscount.$pristine}">
+			<input class="form-control"
+			       type="number" step="0.1"
+			       required
+			       disable-key
+			       x-ng-pattern="pattern.discount"
+			       x-ng-model="inv.fdiscount" />
+		      </div>
+		    </form>
+		  </td>
+		  
+		  <td x-ng-if="!right.m_price" class="vert-align">
+		    <div x-ng-if="(inv.fprice===0 || inv.fprice)">{{inv.fprice}}</div>
+		  </td>
+		  
+		  <td x-ng-if="right.m_price"
+		      class="col-md-1 vert-align">
+		    <div ng-if="!inv.$new && !inv.free_update">
+		      <div x-ng-if="(inv.fprice===0 || inv.fprice)">{{inv.fprice}}</div>
+		    </div>
+		    <form name="inv.form.fprice"
+			  ng-if="inv.$new && inv.free_color_size || !inv.$new && inv.free_update">
+		      <div ng-class="{'has-error': inv.form.fprice.$invalid && !inv.form.fprice.$pristine}">
+			<input class="form-control"
+			       type="number" step="0.01"
+			       required
+			       disable-key
+			       x-ng-pattern="/^\d+(.\d{1,2})?$/"
+			       x-ng-model="inv.fprice"/>
+		      </div>
+		    </form>
+		  </td>
+		  
+		  <!-- <td class="vert-align">{{inv.total}}</td> -->
 
-			  <a class="btn diablo-input-button btn-success"
-			     x-ng-show="inv.free_update"
-			     x-ng-disabled="inv.form.good.$invalid
-					    || inv.form.sell.$invalid
-			    		    || inv.form.fprice.$invalid
-			    		    || inv.form.fdiscount.$invalid"
-			     x-ng-click="save_free_update(inv)">保存
-			    <i class="glyphicon glyphicon-plus"></i></a>
-			  
-			  <a class="btn diablo-input-button btn-danger"
-			     ng-if="inv.free_update"
-			     x-ng-disabled=" inv.form.sell.$invalid"
-			     x-ng-click="cancel_free_update(inv)">取消
-			    <i class="glyphicon glyphicon-off"></i></a> 
-			</span>
+		  <!-- sell count-->
+		  <td class="col-md-1 vert-align">
+		    <div x-ng-if="!inv.$new && !inv.free_update">{{inv.sell}}</div> 
+		    <form name="inv.form.sell"
+			  x-ng-if="inv.$new && inv.free_color_size || !inv.$new && inv.free_update">
+		      <div ng-class="{'has-error':(inv.form.sell.$invalid
+				     &&!inv.form.sell.$pristine) || inv.invalid_sell}">
+			<input type="number" step="1"
+			       class="form-control"
+			       placeholder="数量"
+			       required
+			       disable-key
+			       x-ng-pattern="pattern.sell"
+			       x-ng-model="inv.sell"
+			       focus-auto="focus_attr.sell" 
+			       x-ng-change="auto_save_free(inv)" />
+		      </div> 
+		    </form>
+		  </td>
+		  
+		  <td class="vert-align"><span class="fg-red">{{inv.rprice}}<span></td> 
+		  <td class="vert-align"><span class="fg-red">{{inv.rdiscount}}</span></td> 
+		  <td class="vert-align"><span>{{inv.calc}}</span></td> 
+		  
+		  <td class="text-left vert-align">
+		    <div x-ng-if="inv.$new">
+		      <div class="btn-group btn-group-solid">
+			<button class="btn diablo-input-button btn-success"
+				x-ng-if="!inv.free_color_size"
+				x-ng-disabled="inv.form.good.$invalid"
+				x-ng-click="add_inventory(inv)">新增
+			  <i class="glyphicon glyphicon-plus"></i></button>
+		      
+			<button class="btn diablo-input-button btn-warning"
+				x-ng-click="reset_inventory(inv)">重置
+			  <i class="glyphicon glyphicon-pushpin"></i></button>
+		      </div>
+		    </div>
+
+		    <div x-ng-if="inv.$edit">
+		      <div class="btn-group btn-group-solid" x-ng-if="!inv.free_update">
+			<button class="btn diablo-input-button btn-primary"
+			      x-ng-disabled="inv.free_color_size"
+			      x-ng-click="inventory_detail(inv)">详情
+			  <i class="glyphicon glyphicon-eye-open"></i></button>
+		      
+			<button class="btn diablo-input-button yellow"
+				x-ng-click="update_inventory(inv)">修改
+			  <i class="glyphicon glyphicon-edit"></i></button>
 			
-		      </td>
-		    </tr>
+			<button class="btn diablo-input-button btn-danger"
+				x-ng-click="delete_inventory(inv)">删除
+			  <i class="glyphicon glyphicon-erase"></i></button>
 
-		    <tr x-ng-if="inventories.length>1" class="text-center">
-		      <td></td>
-		      <td x-ng-if="setting.barcode_mode"></td>
-		      <td></td>
-		      <td x-ng-if="setting.check_sale"></td>
-		      <td colspan=3></td>
-		      <td class="vert-align">{{select.abs_total}}</td>
-		      <td></td>
-		      <td></td>
-		      <!-- <td x-ng-if="!setting.show_discount" colspan=2></td> -->
-		      <td class="vert-align">{{select.should_pay}}</td>
-		      <td colspan="2"></td>
-		      <!-- <td colspan="2">{{select.score}}</td> -->
-		    </tr> 
-		  </tbody>
-		  <tfoot>
-		  </tfoot>
-		</table> <!--END supplier table-->
-	      </div> <!--END table responsive--> 
-	    </div> <!--END panel--> 
-	  </uib-tab> 
-	</uib-tabset>
+			<button class="btn diablo-input-button green" x-ng-if="setting.gift_sale && inv.state===2"
+				x-ng-click="gift_sale(inv)">赠送
+			  <i class="glyphicon glyphicon-gift"></i></button>
+		      </div>
+
+		      <div class="btn-group btn-group-solid" x-ng-if="inv.free_update">
+			<button class="btn diablo-input-button btn-success"
+				x-ng-disabled="inv.form.good.$invalid
+					       || inv.form.sell.$invalid
+			    		       || inv.form.fprice.$invalid
+			    		       || inv.form.fdiscount.$invalid"
+				x-ng-click="save_free_update(inv)">保存
+			  <i class="glyphicon glyphicon-plus"></i></button>
+		      
+			<button class="btn diablo-input-button btn-danger"
+				x-ng-disabled=" inv.form.sell.$invalid"
+				x-ng-click="cancel_free_update(inv)">取消
+			  <i class="glyphicon glyphicon-off"></i></button>
+		      </div>
+		    </div>
+		    
+		  </td>
+		</tr>
+
+		<tr x-ng-if="inventories.length>1" class="text-center">
+		  <td></td>
+		  <td x-ng-if="setting.barcode_mode"></td>
+		  <td></td>
+		  <td x-ng-if="setting.check_sale"></td>
+		  <td colspan=3></td>
+		  <td class="vert-align">{{select.abs_total}}</td>
+		  <td></td>
+		  <td></td>
+		  <!-- <td x-ng-if="!setting.show_discount" colspan=2></td> -->
+		  <td class="vert-align">{{select.should_pay}}</td>
+		  <td colspan="2"></td>
+		  <!-- <td colspan="2">{{select.score}}</td> -->
+		</tr> 
+	      </tbody>
+	      <tfoot>
+	      </tfoot>
+	    </table> <!--END supplier table-->
+	  </div> <!--END table responsive--> 
+	</div> <!--END panel--> 
+	  <!-- </uib-tab>  -->
+	<!-- </uib-tabset> -->
 
 	<div x-ng-if="select.score!==0">
 	  <span class="fg-red">总积分：</span>
-	  <span class="fg-color-darken">
-	    <strong>{{select.score}}</strong>
-	  </span>
+	  <span class="fg-color-darken"><strong>{{select.score}}</strong></span>
 	</div>
 	<div x-ng-repeat="p in show_promotions">
 	  <div>{{p.name}}&nbsp&nbsp&nbsp&nbsp
@@ -597,50 +565,6 @@
     </div> <!--END portlet box-->
   </div> <!--END col-md-12-->
 </div> <!--END row-->
-
-<!--print-->
-<!-- <div class="row visible-print-block"> -->
-<!--   <div class="text-center"><strong>{{select.shop.name}}</strong></div> -->
-<!--   <div class="text-left"> -->
-<!--     <p> -->
-<!--       <div>单号：<span x-ng-bind="select.rsn"></span></div> -->
-<!--       <div>客户：<span x-ng-bind="select.retailer.name"></span> -->
-<!-- 	<span>店员：<span x-ng-bind="select.employee.name"></span><span></div> -->
-<!--       <div> -->
-<!-- 	日期：{{select.datetime|date: "yyyy-MM-dd HH:mm:ss"}} -->
-<!--       </div> -->
-<!--       <div><span>================================</span></div>  -->
-<!--     </p> -->
-<!--   </div>  -->
-<!--   <div x-ng-repeat="inv in inventories"> -->
-<!--     <div x-ng-if="!inv.$new"> -->
-<!--       <div>款号：<span>{{inv.style_number}}</span></div> -->
-<!--       <div>品名：<span>{{inv.brand}}</span></div> -->
-<!--       <div>单价：<span>{{inv.tag_price}}</span></div> -->
-<!--       <div>成交价：<span>{{inv.rprice}}</span></div> -->
-<!--       <div>数量：<span>{{inv.sell}}</span></div> -->
-<!--       <div>小计:<span>{{inv.calc}}</span></div> -->
-<!--       <div>折扣率： <span>{{f_discount(inv.rprice, inv.tag_price)}}</span></div> -->
-<!--       <div>--------------------------------</div> -->
-<!--     </div> -->
-<!--   </div>  -->
-
-<!--   <div>总计：{{select.total}}</div> -->
-<!--   <div>实付：{{select.should_pay}}</div> -->
-<!--   <div x-ng-if="select.retailer.id !== setting.no_vip"> -->
-<!--     <div>上次积分：<span>{{select.retailer.score}}</span></div> -->
-<!--     <div>本次积分：<span>{{select.score}}</span></div> -->
-<!--     <div>累计积分：<span>{{select.retailer.score + select.score}}</span></div> -->
-<!--     <div>--------------------------------</div> -->
-<!--   </div> -->
-
-<!--   <div>顾客需知：</div> -->
-<!--   <div x-ng-repeat="c in comments"> -->
-<!--     <div>{{c.id}}：{{c.name}}</div> -->
-<!--   </div> -->
-<!--   <div>打印日期：{{select.datetime|date: 'yyyy-MM-dd HH:mm'}}</div> -->
-<!-- </div> -->
-
 
 <script type="text/ng-template" id="wsale-new.html">
   <div class="modal-body"> 

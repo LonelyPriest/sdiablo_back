@@ -276,37 +276,7 @@ function purchaserInventoryNewCtrlProvide (
     $scope.q_prompt = $scope.q_typeahead($scope.select.shop.id, base); 
     $scope.qtime_start = function(shopId){
 	return stockUtils.start_time(shopId, base, $.now(), dateFilter); 
-	// return diablo_base_setting(
-	//     "qtime_start",
-	//     shopId,
-	//     base,
-	//     function(v) {return v},
-	//     dateFun($.now - diablo_day_millisecond * 30, "yyyy-MM-dd"));
     };
-    
-    // $scope.get_all_w_good = function(){
-    // 	// console.log(select_firm);
-    // 	diabloFilter.match_all_w_good(
-    // 	    dateFilter($scope.qtime_start($scope.select.shop.id), "yyyy-MM-dd"),
-    // 	    stockUtils.match_firm($scope.select.firm)
-    // 	).then(function(goods){
-    // 	    $scope.all_w_goods = goods.sort(function(g1, g2){
-    // 		return g1.style_number.length - g2.style_number.length;
-    // 	    }).map(function(g){
-    // 		var p = stockUtils.prompt_name(g.style_number, g.brand, g.type);
-    // 		return angular.extend(g, {name:p.name, prompt:p.prompt}); 
-    // 	    });
-
-    // 	    // console.log($scope.all_w_goods);
-    // 	});
-    // };
-
-    // $scope.get_prompt_good = function(){
-    // 	if ($scope.q_prompt === diablo_frontend){
-    // 	    $scope.get_all_w_good();
-    // 	}
-    // }; 
-    // $scope.get_prompt_good();
 
     var copy_select = function(add, src){
 	add.$new_good    = src.$new_good;
@@ -543,7 +513,7 @@ function purchaserInventoryNewCtrlProvide (
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    var add = $scope.inventories[i];
 	    if (diablo_yes === $scope.base_settings.stock_with_firm
-		&& diablo_invalid_firm !== add.firm_id
+		&& add.firm_id !== diablo_invalid_firm
 		&& add.firm_id !== stockUtils.invalid_firm($scope.select.firm)){
 		$scope.has_saved = false;
 		diabloUtilsService.response(
@@ -1633,7 +1603,6 @@ function purchaserInventoryNewCtrlProvide (
 	//focus
 	$scope.on_focus_attr("style_number");
     };
-    
 };
 
 
@@ -1641,7 +1610,7 @@ function purchaserInventoryDetailCtrlProvide(
     $scope, $routeParams, $q, dateFilter, diabloPattern, diabloFilter,
     diabloUtilsService, diabloPromise, purchaserService,
     localStorageService, filterPromotion, filterScore,  filterBrand,
-    filterFirm, filterType, filterSizeGroup, filterColor, filterTemplate, base, user){
+    filterFirm, filterType, filterSizeGroup, filterColor, filterTemplate, base, user) {
     $scope.promotions = filterPromotion.concat([{id:diablo_invalid_index, name:"重置促销方案"}]);
     $scope.scores = filterScore.concat([{id:diablo_invalid_index, name:"重置积分方案", type_id:0}]);
     $scope.template = filterTemplate.length !== 0 ? filterTemplate[0] : undefined;
@@ -1679,7 +1648,9 @@ function purchaserInventoryDetailCtrlProvide(
 	reset_barcode: rightAuthen.authen(
 	    user.type, rightAuthen.stock_action()["reset_barcode"], user.right), 
 	update_good:   rightAuthen.authen(
-	    user.type, rightAuthen.good_action()["update_w_good"], user.right), 
+	    user.type, rightAuthen.good_action()["update_w_good"], user.right),
+	gift_stock:  rightAuthen.authen(
+	    user.type, rightAuthen.good_action()["gift_w_stock"], user.right)
     };
     
     $scope.setting = {alarm: false};
@@ -1729,6 +1700,8 @@ function purchaserInventoryDetailCtrlProvide(
     $scope.setting.use_barcode     = stockUtils.use_barcode(diablo_default_shop, base);
     $scope.setting.auto_barcode    = stockUtils.auto_barcode(diablo_default_shop, base); 
     $scope.setting.saler_stock     = stockUtils.saler_stock(diablo_default_shop, base);
+    $scope.setting.gift_sale       = stockUtils.gift_sale(diablo_default_shop, base);
+    
     // $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, base);
     
     $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, base);
@@ -2559,6 +2532,28 @@ function purchaserInventoryDetailCtrlProvide(
 	);
     };
 
+    $scope.gift_stock = function(inv) {
+	console.log(inv);
+	var condition = {style_number:inv.style_number, brand:inv.brand.id, shop:inv.shop_id};
+	purchaserService.gift_stock(condition, {state:inv.state}).then(function(result){
+	    console.log(result);
+	    if (result.ecode === 0){
+		dialog.response_with_callback(
+		    true,
+		    "赠送标识设置",
+		    "赠送标识设置成功！！",
+		    undefined,
+		    function() {inv.state = result.state;});
+	    } else {
+		dialog.response(
+		    false,
+		    "赠送标识设置",
+		    "赠送标识设置失败："
+			+ purchaserService.error[result.ecode]);
+	    }
+	});
+    };
+
     $scope.update_alarm_a = function(inv){
 	console.log(inv);
 
@@ -2687,6 +2682,10 @@ function purchaserInventoryNewDetailCtrlProvide (
     $scope.round   = diablo_round;
     $scope.total_items  = 0;
     $scope.css = diablo_stock_css;
+    $scope.css_gift_stock = function(state) {
+	return state === 2 ? "success" : "";
+    };
+    
 
     $scope.base_setting = {
 	check_firm: stockUtils.check_firm_with_check_stock_in(-1, base)

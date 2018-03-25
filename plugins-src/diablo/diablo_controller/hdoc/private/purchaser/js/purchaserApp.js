@@ -355,83 +355,7 @@ function stockConfg(angular){
 		}
 	    }
 	    return undefined;
-	};
-	
-	// this.sort_inventory = function(invs, orderSizes, allColors){
-	//     // console.log(invs);
-	//     // console.log(orderSizes);
-	//     var in_sort = function(sorts, inv){
-	// 	for(var i=0, l=sorts.length; i<l; i++){
-	// 	    if(sorts[i].cid === inv.color_id
-	// 	       && sorts[i].size === inv.size){
-	// 		sorts[i].count += parseInt(inv.amount);
-	// 		return true;
-	// 	    }
-	// 	}
-	// 	return false;
-	//     };
-
-	//     var total = 0;
-	//     var used_sizes  = [];
-	//     var colors = [];
-	//     var sorts = [];
-	//     angular.forEach(invs, function(inv){
-	// 	if (angular.isDefined(inv.amount)){
-	// 	    total += inv.amount; 
-	// 	};
-		
-	// 	if (!in_array(used_sizes, inv.size)){
-	// 	    used_sizes.push(inv.size);
-	// 	};
-
-	// 	// console.log(inv.color_id);
-	// 	// console.log(allColors);
-	// 	// console.log(colors);
-		
-	// 	var color = diablo_find_color(inv.color_id, allColors); 
-		
-	// 	if (!diablo_in_colors(color, colors)){
-	// 	    colors.push(color)
-	// 	};
-
-	// 	if (!in_sort(sorts, inv)){
-	// 	    sorts.push({cid:inv.color_id,
-	// 			size:inv.size,
-	// 			count:inv.amount})
-	// 	}; 
-	//     });
-
-	//     // format size
-	//     var order_used_sizes = [];
-	//     if (angular.isArray(orderSizes) && orderSizes.length !== 0){
-	// 	order_used_sizes = orderSizes.filter(function(s){
-	// 	    return in_array(used_sizes, s); 
-	// 	});
-	//     } else{
-	// 	order_used_sizes = used_sizes;
-	//     };
-	    
-
-	//     // console.log(order_used_sizes);
-	//     // console.log(colors);
-	//     // console.log(sorts);
-	    
-	//     return {total: total,
-	// 	    size: order_used_sizes,
-	// 	    color:colors,
-	// 	    sort:sorts};
-	// };
-
-	// this.promise = function(callback, params){
-	//     return function(){
-	// 	var deferred = $q.defer();
-	// 	callback(params).$promise.then(function(data){
-	// 	    // console.log(data);
-	// 	    deferred.resolve(data);
-	// 	});
-	// 	return deferred.promise;
-	//     }
-	// };
+	}; 
 	
 	// =========================================================================
 	var http = $resource(
@@ -681,14 +605,16 @@ function stockConfg(angular){
 
 	this.update_w_inventory_alarm = function(condition, attrs){
 	    return http.save(
-		{operation: "update_w_inventory_alarm"},
-		{condition: condition,
-		 attrs: attrs}).$promise;
+		{operation: "update_w_inventory_alarm"}, {condition: condition, attrs: attrs}).$promise;
 	};
 
 	this.adjust_price = function(inventory){
 	    return http.save({operation: "adjust_w_inventory_price"}, inventory).$promise;
 	};
+
+	this.gift_stock = function(condition, attrs) {
+	    return http.save({operation: "gift_w_stock"}, {condition:condition, attrs:attrs}).$promise;
+	}
 
 	/*
 	 * trace

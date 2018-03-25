@@ -126,6 +126,7 @@
 			  <i class="glyphicon glyphicon-triangle-bottom fg-red"></i></th>
 			<th>促销</th>
 			<th>积分</th>
+			<th x-ng-if="setting.gift_sale">赠送</th>
 			<th>店铺</th>
 			<th>上架日期</th>
 			<th>退货日期</th>
@@ -156,7 +157,7 @@
 
 			<td>
 			  <div x-ng-switch on="inv.pid">
-			    <span x-ng-switch-when=-1>暂无</span>
+			    <span x-ng-switch-when=-1>-</span>
 			    <span x-ng-switch-default>
 			      {{inv.promotion.name}}
 			    </span>
@@ -164,12 +165,19 @@
 			</td> 
 			<td>
 			  <div x-ng-switch on="inv.sid">
-			    <span x-ng-switch-when=-1>暂无</span>
+			    <span x-ng-switch-when=-1>-</span>
 			    <span x-ng-switch-default>
 			      {{inv.score.name}} 
 			    </span>
 			  </div>
-			</td> 
+			</td>
+
+			<td x-ng-if="setting.gift_sale">
+			  <div x-ng-switch on="inv.state">
+			    <span x-ng-switch-when=2>是</span>
+			    <span x-ng-switch-default>否</span>
+			  </div>
+			</td>
 
 			<td class="css(inv.isAlarm)">{{inv.shop}}</td> 
 			<td>{{inv.entry_date}}</td>
@@ -222,9 +230,12 @@
 			    </button>
 			    <ul class="dropdown-menu">
 			      <li x-ng-if="stock_right.update_batch">
-				<a href="javascript:;" x-ng-click="update_price(inv)">编辑价格</a>
+				<a href="javascript:;" x-ng-click="update_price(inv)">价格修改</a>
 			      </li>
-			      <li><a href="javascript:;" x-ng-click="update_stock(inv)">基本属性</a></li>
+			      <li><a href="javascript:;" x-ng-click="update_stock(inv)">属性修改</a></li>
+			      <li x-ng-if="setting.gift_sale && stock_right.gift_stock">
+				<a href="javascript:;" x-ng-click="gift_stock(inv)">赠送标识设置</a>
+			      </li>
 			      <li x-ng-if="setting.stock_alarm">
 				<a href="javascript:;" x-ng-click="update_alarm_a(inv)">预警数量</a>
 			      </li> 

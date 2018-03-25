@@ -1174,7 +1174,7 @@ create table w_change_shift(
     pcash_in        DECIMAL(10, 2) not null default 0,
     
     comment         VARCHAR(127) default null,
-    entry_date      DATETIME default 0,
+    entry_date      DATE default 0,
     
     key     dk (merchant, shop, employ),
     primary key    (id)

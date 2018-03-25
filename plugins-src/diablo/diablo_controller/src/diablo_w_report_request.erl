@@ -349,18 +349,19 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     {struct, Content}  = ?v(<<"content">>, Payload),
     ShopId     = ?v(<<"shop">>, Content),
+    StartDate  = ?v(<<"date">>, Content),
     EmployeeId = ?v(<<"employee">>, Content),
     PCash      = ?v(<<"pcash">>, Content, 0),
     PCashIn    = ?v(<<"pcash_in">>, Content, 0),
-    Comment    = ?v(<<"comment">>, Content, []),
-    
-    Currenttime = ?utils:current_time(format_localtime), 
-    TimeEnd = time_of_end_day(),
-    TodayStart = ?utils:current_time(localdate),
-    TodayEnd = TodayStart ++ " " ++ TimeEnd,
+    Comment    = ?v(<<"comment">>, Content, []), 
+    Curtime    = ?utils:current_time(format_localtime), 
+    %% TimeEnd = time_of_end_day(),
+    %% TodayStart = ?utils:current_time(localdate),
+    %% TodayEnd = TodayStart ++ " " ++ TimeEnd,
+    EndDate  = ?to_s(StartDate) ++ " " ++ time_of_end_day(),
     
     {ok, EmployeeInfo} = ?w_user_profile:get(employee, Merchant, EmployeeId),
-    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, ShopId), 
+    BaseSettings = get_setting(Merchant, ShopId), 
 
     {VPrinters, ShopInfo} = ?wifi_print:get_printer(Merchant, ShopId),
     ShopName = ?to_s(?v(<<"name">>, ShopInfo)),
@@ -372,13 +373,13 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
     Conditions = case EmployeeId of
 		     undefined ->
 			 [{<<"shop">>, ShopId},
-			  {<<"start_time">>, ?to_b(TodayStart)},
-			  {<<"end_time">>, ?to_b(TodayEnd)}];
+			  {<<"start_time">>, ?to_b(StartDate)},
+			  {<<"end_time">>, ?to_b(EndDate)}];
 		     _ ->
 			 [{<<"shop">>, ShopId},
 			  {<<"employ">>, EmployeeId},
-			  {<<"start_time">>, ?to_b(TodayStart)},
-			  {<<"end_time">>, ?to_b(TodayEnd)}]
+			  {<<"start_time">>, ?to_b(StartDate)},
+			  {<<"end_time">>, ?to_b(EndDate)}]
 		 end,
 
     DropConditions = lists:keydelete(<<"employ">>, 1, Conditions),
@@ -398,10 +399,10 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
     {ok, StockR} = ?w_report:stastic(
 		      stock_real, Merchant,
 		      [{<<"shop">>, ShopId},
-		       {<<"start_time">>, ?v(<<"qtime_start">>, BaseSetting)}
+		       {<<"start_time">>, get_config(<<"qtime_start">>, BaseSettings)}
 		      ]),
 
-    {ok, LastStockInfo} = ?w_report:stastic(last_stock_of_shop, Merchant, ShopId, TodayStart),
+    {ok, LastStockInfo} = ?w_report:stastic(last_stock_of_shop, Merchant, ShopId, StartDate),
     
     {SellTotal, SellBalance, SellCash, SellCard, SellWxin, SellDraw, SellTicket}
 	= sell(info, SaleInfo),
@@ -409,9 +410,6 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
     LastStockTotal = stock(last_total, LastStockInfo),
     StockInTotal = stock(total, StockIn),
     StockOutTotal = stock(total, StockOut),
-
-    
-
     
     %% ?DEBUG("stockr ~p", [StockR]),
     
@@ -423,8 +421,8 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 	       undefined -> [];
 	       _ -> " and employ=\'" ++ ?to_s(EmployeeId) ++ "\'"
 	   end
-	++ " and entry_date>\'" ++ TodayStart ++ "\'"
-	++ " and entry_date<=\'" ++ TodayEnd ++ "\'",
+	++ " and entry_date>\'" ++ ?to_s(StartDate) ++ "\'"
+	++ " and entry_date<=\'" ++ ?to_s(EndDate) ++ "\'",
 
     ShiftSql = 
 	case ?sql_utils:execute(s_read, Sql) of
@@ -465,7 +463,7 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 		 ++ ?to_s(PCashIn) ++ ","
 		 
 		 ++ "\'" ++ ?to_s(Comment) ++ "\',"
-		 ++ "\'" ++ ?to_s(Currenttime) ++ "\')"};
+		 ++ "\'" ++ ?to_s(StartDate) ++ "\')"};
 	    {ok, Shift} ->
 		{update,
 		 "update w_change_shift set "
@@ -490,7 +488,7 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 		 ++ ", pcash_in=" ++ ?to_s(PCashIn)
 
 		 ++ ", comment=\'" ++ ?to_s(Comment) ++ "\'"
-		 ++ ", entry_date=\'" ++ ?to_s(Currenttime) ++ "\'"
+		 ++ ", entry_date=\'" ++ ?to_s(StartDate) ++ "\'"
 		 " where id=" ++ ?to_s(?v(<<"id">>, Shift))}
 	end,
 
@@ -509,7 +507,7 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 			      80 ->
 				  (49 - 8) div 2
 			  end,
-		"日期：" ++ ?to_s(Currenttime) ++ ?f_print:br(Brand)
+		"日期：" ++ ?to_s(StartDate) ++ ?f_print:br(Brand)
 		    ++ "员工：" ++ ?to_s(EmployeeName)
 		    ++ ?f_print:br(Brand)
 		    ++ ?f_print:br(Brand)
@@ -555,6 +553,7 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 
 		    ++ ?f_print:br(Brand)
 		    ++ "备注  ：" ++ ?to_s(Comment)
+		    ++ "打印日期：" ++ ?to_s(Curtime)
 		    
 		    ++ lists:foldl(
 			 fun(_Inc, Acc) -> ?f_print:br(Brand) ++ Acc end, [], lists:seq(1, 2))
@@ -575,7 +574,7 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 	end
     of
 	{ok, _} ->
-	    case ?v(<<"ptype">>, BaseSetting) of
+	    case get_config(<<"ptype">>, BaseSettings) of
 		<<"0">> ->
 		    ?utils:respond(200, Req, ?succ(print_wreport, ShopId));
 		<<"1">> ->
@@ -867,3 +866,23 @@ do_write(month_report, Do, Count, [{H}|T], Calcs) ->
 	
 	
 
+
+
+get_setting(Merchant, Shop) ->
+    {ok, S}  = ?w_user_profile:get(setting, Merchant),
+    Select = 
+	case [{SS} || {SS} <- S, ?v(<<"shop">>, SS) =:= Shop] of
+	    [] -> [{SS} || {SS} <- S, ?v(<<"shop">>, SS) =:= -1];
+	    V -> V ++ [{SS} || {SS} <- S, ?v(<<"shop">>, SS) =:= -1]
+	end,
+    Select.
+
+get_config(_ConfigName, []) ->
+    [];
+get_config(ConfigName, [{H}|T]) ->
+    case ?v(<<"ename">>, H) =:= ConfigName of
+	true -> ?v(<<"value">>, H);
+	false -> get_config(ConfigName, T)
+    end.
+	    
+	    

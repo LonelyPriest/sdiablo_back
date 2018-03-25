@@ -108,6 +108,11 @@ purchaser_inventory(update_batch, Merchant, Attrs, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {update_batch, Merchant, Attrs, Conditions});
 
+purchaser_inventory(set_gift, Merchant, Attrs, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {set_gift, Merchant, Attrs, Conditions});
+
+
 purchaser_inventory(update_stock_alarm, Merchant, Attrs, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {update_stock_alarm, Merchant, Attrs, Conditions});
@@ -2272,13 +2277,13 @@ handle_call({abstract_inventory, Merchant, Shop, Conditions}, _From, State) ->
     {reply, Reply, State};
 
 handle_call({set_promotion, Merchant, Promotions, Conditions}, _From, State) ->
-    ?DEBUG("set_promotion with merchant ~p, promotions ~p, conditions ~p",
-	   [Merchant, Promotions, Conditions]), 
+    ?DEBUG("set_promotion with merchant ~p, promotions ~p, conditions ~p", [Merchant, Promotions, Conditions]), 
     Sql = ?w_good_sql:inventory(
 	     set_promotion, Merchant, Promotions, Conditions),
     
     Reply = ?sql_utils:execute(write, Sql, ok),
     {reply, Reply, State};
+
 
 handle_call({update_batch, Merchant, Attrs, Conditions}, _From, State) ->
     ?DEBUG("update_batch with merchant ~p, attrs ~p, conditions ~p",
@@ -2287,6 +2292,16 @@ handle_call({update_batch, Merchant, Attrs, Conditions}, _From, State) ->
 	     update_batch, Merchant, Attrs, Conditions),
 
     Reply = ?sql_utils:execute(transaction, Sqls, Merchant),
+    {reply, Reply, State};
+
+handle_call({set_gift, Merchant, Attrs, Conditions}, _From, State) ->
+    ?DEBUG("set_gift with merchant ~p, attrs ~p, conditions ~p", [Merchant, Attrs, Conditions]),
+    GiftState = case ?v(<<"state">>, Attrs) =:= 0 of
+		    true -> 2;
+		    false -> 0
+		end,
+    Sql = ?w_good_sql:inventory(set_gift, Merchant, GiftState, Conditions), 
+    Reply = ?sql_utils:execute(write, Sql, GiftState),
     {reply, Reply, State};
 
 handle_call({update_stock_alarm, Merchant, Attrs, Conditions}, _From, State) ->
