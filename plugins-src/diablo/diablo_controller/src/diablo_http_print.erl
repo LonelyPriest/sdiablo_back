@@ -187,8 +187,7 @@ call(Parent, {print, Action, RSN, Merchant, Invs, Attrs, Print}) ->
 	    %% content info
 	    %% Retailer     = ?v(<<"retailer">>, Print),
 	    RetailerId = ?v(<<"retailer_id">>, Print),
-	    {ok, Retailer}
-		= ?w_user_profile:get(retailer, Merchant, RetailerId),
+	    {ok, Retailer} = ?w_retailer:retailer(get, Merchant, RetailerId),
 	    %% RetailerName = ?v(<<"name">>, Retailer, []),
 	    
 	    %% ?DEBUG("retailer  ~p", [Retailer]),

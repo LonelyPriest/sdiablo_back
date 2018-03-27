@@ -539,7 +539,8 @@ function wsaleNewProvide(
 	if ($scope.setting.semployee) $scope.select.employee = undefined;
     };
     
-    $scope.get_employee(); 
+    $scope.get_employee();
+    
     // retailer;
     $scope.match_retailer_phone = function(viewValue){
 	return wsaleUtils.match_retailer_phone(viewValue, diabloFilter)
@@ -961,7 +962,7 @@ function wsaleNewProvide(
 	add.s_group      = src.s_group;
 	add.free         = src.free;
 	add.state        = src.state;
-	// add.entry        = src.entry_date;
+	add.entry        = src.entry_date;
 
 	// add.full_bcode   = angular.isUndefined(src.full_bcode) ? src.bcode : src.full_bcode;
 	add.full_name    = add.style_number + "/" + add.brand;

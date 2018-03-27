@@ -93,9 +93,9 @@ function wsaleUpdateRejectCtrlProvide(
 		// setting
 		var shopId = $scope.select.shop.id;
 		$scope.setting.check_sale = wsaleUtils.check_sale(shopId, $scope.base_settings);
-		$scope.setting.no_vip = wsaleUtils.no_vip(shopId, $scope.base_settings); 
+		$scope.setting.no_vip     = wsaleUtils.no_vip(shopId, $scope.base_settings); 
 		$scope.setting.draw_score = wsaleUtils.draw_score(shopId, $scope.base_settings);
-		$scope.setting.vip_mode = wsaleUtils.vip_discount(shopId, settings);
+		$scope.setting.vip_mode   = wsaleUtils.vip_discount(shopId, $scope.base_settings);
 		
 		$scope.employees = wsaleUtils.get_login_employee(
 		    shopId,

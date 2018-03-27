@@ -395,8 +395,8 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 		       transaction, AllSql,
 		       {RSN, MShouldPay, MScore,
 			{OldRetailer, Withdraw}, {Retailer, NewWithdraw}}),
-		    ?w_user_profile:update(retailer, Merchant),
-		    {reply, Reply, State}; 
+	    %% ?w_user_profile:update(retailer, Merchant),
+	    {reply, Reply, State}; 
 	false ->
 	    Sql0 = "select id, rsn, retailer, shop, merchant"
 		", balance, should_pay, withdraw, lscore, score from w_sale"
@@ -406,7 +406,7 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 		++ " and id<" ++ ?to_s(RSNId)
 		++ " order by id desc limit 1",
 	    
-	    {ok, RetailerInfo} = ?w_user_profile:get(retailer, Merchant, Retailer),
+	    {ok, RetailerInfo} = ?w_retailer:retailer(get, Merchant, Retailer),
 	    
 	    {NewLastBalance, NewLastScore} = 
 		case ?sql_utils:execute(s_read, Sql0) of
@@ -465,7 +465,7 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 		       transaction, AllSql,
 		       {RSN, MShouldPay, MScore,
 			{OldRetailer, Withdraw}, {Retailer, NewWithdraw}}),
-	    ?w_user_profile:update(retailer, Merchant),
+	    %% ?w_user_profile:update(retailer, Merchant),
 
 	    {reply, Reply, State}
 
@@ -912,10 +912,10 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 		{error, _} = Error ->
 		    {reply, Error, State};
 		OK ->
-		    case NewWithdraw =/= 0 orelse TicketScore - Score =/= 0 of
-			true  -> ?w_user_profile:update(retailer, Merchant);
-			false -> ok
-		    end,
+		    %% case NewWithdraw =/= 0 orelse TicketScore - Score =/= 0 of
+		    %% 	true  -> ?w_user_profile:update(retailer, Merchant);
+		    %% 	false -> ok
+		    %% end,
 		    {reply, {OK, Shop, Retailer, NewWithdraw}, State}
 	    end; 
 	Error ->

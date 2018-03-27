@@ -492,7 +492,7 @@ task(auto_sms_at_birth, Datetime, Merchant) when is_number(Merchant)->
 	0 -> {Merchant, []}; 
 	1 ->
 	    %% get all retailers
-	    {ok, Retailers} = ?w_user_profile:get(retailer, Merchant),
+	    {ok, Retailers} = ?w_retailer:retailer(list, Merchant),
 	    %% birthday of retailer
 	    SMSRetailers = 
 		lists:foldr(

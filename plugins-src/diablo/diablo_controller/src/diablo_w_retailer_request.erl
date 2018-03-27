@@ -27,9 +27,10 @@ action(Session, Req) ->
 
 action(Session, Req, {"list_w_retailer"}) ->
     ?DEBUG("list w_retailer with session ~p", [Session]), 
-    Merchant = ?session:get(merchant, Session), 
+    Merchant = ?session:get(merchant, Session),
+    
     ?utils:respond(
-       batch, fun() -> ?w_user_profile:get(retailer, Merchant) end, Req);
+       batch, fun() -> ?w_retailer:retailer(list, Merchant)end, Req);
 
 action(Session, Req, {"list_sys_wretailer"}) ->
     ?DEBUG("list sys_retailer with session ~p", [Session]), 
@@ -62,14 +63,12 @@ action(Session, Req, {"get_w_retailer", Id}) ->
     ?DEBUG("get_w_retailer with session ~p, Id ~p", [Session, Id]),
     Merchant = ?session:get(merchant, Session),
     ?utils:respond(
-       object, fun() -> ?w_user_profile:get(retailer, Merchant, ?to_i(Id)) end, Req);
+       object, fun() -> ?w_retailer:retailer(get, Merchant, Id) end, Req);
 
 
 action(Session, Req, {"list_w_retailer_charge"}) ->
     ?DEBUG("list w_retailer_charge with session ~p", [Session]), 
     Merchant = ?session:get(merchant, Session), 
-    %% ?utils:respond(
-    %%    batch, fun() -> ?w_user_profile:get(retailer, Merchant) end, Req).
     ?utils:respond(
        batch, fun() -> ?w_retailer:charge(list, Merchant) end, Req);
 
@@ -77,8 +76,6 @@ action(Session, Req, {"list_w_retailer_charge"}) ->
 action(Session, Req, {"list_w_retailer_score"}) ->
     ?DEBUG("list w_retailer_score with session ~p", [Session]), 
     Merchant = ?session:get(merchant, Session), 
-    %% ?utils:respond(
-    %%    batch, fun() -> ?w_user_profile:get(retailer, Merchant) end, Req).
     ?utils:respond(
        batch, fun() -> ?w_user_profile:get(score, Merchant) end, Req);
 
@@ -174,7 +171,7 @@ action(Session, Req, {"update_retailer_score", Id}, Payload) ->
     Score = ?v(<<"score">>, Payload),
     case ?w_retailer:retailer(update_score, Merchant, Id, Score) of
 	{ok, RId} ->
-	    ?w_user_profile:update(retailer, Merchant),
+	    %% ?w_user_profile:update(retailer, Merchant),
 	    ?utils:respond(
 	       200, Req, ?succ(update_w_retailer, RId));
 	{error, Error} ->
@@ -332,8 +329,8 @@ action(Session, Req, {"set_w_retailer_withdraw"}, Payload) ->
     
     case ?w_retailer:charge(set_withdraw, Merchant, {DrawId, NewConditions}) of
 	{ok, Merchant} -> 
-	    ?utils:respond(200, Req, ?succ(set_retailer_withdraw, Merchant)),
-	    ?w_user_profile:update(retailer, Merchant);
+	    ?utils:respond(200, Req, ?succ(set_retailer_withdraw, Merchant));
+	    %% ?w_user_profile:update(retailer, Merchant);
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;
@@ -349,7 +346,7 @@ action(Session, Req, {"new_recharge"}, Payload) ->
 
     case ?w_retailer:charge(recharge, Merchant, Payload) of
 	{ok, {SN, Mobile, CBalance, Balance, Score}} -> 
-	    ?w_user_profile:update(retailer, Merchant),
+	    %% ?w_user_profile:update(retailer, Merchant),
 	    try
 		{ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1), 
 		case ?to_i(?v(<<"recharge_sms">>, Setting, 0)) of
@@ -386,7 +383,7 @@ action(Session, Req, {"delete_recharge"}, Payload) ->
 	{ok, Recharge} -> 
 	    case ?w_retailer:charge(delete_recharge, Merchant, {RechargeId, Recharge}) of
 		{ok, RechargeId} ->
-		    ?w_user_profile:update(retailer, Merchant),
+		    %% ?w_user_profile:update(retailer, Merchant),
 		    ?utils:respond(200, Req, ?succ(delete_recharge, RechargeId));
 		{error, Error} ->
 		    ?utils:respond(200, Req, Error)
@@ -505,7 +502,7 @@ action(Session, Req, {"consume_w_retailer_ticket"}, Payload) ->
     
     case ?w_retailer:ticket(consume, Merchant, {TicketId, Comment, Score2Money}) of
 	{ok, TicketId} ->
-	    ?w_user_profile:update(retailer, Merchant),
+	    %% ?w_user_profile:update(retailer, Merchant),
 	    ?utils:respond(200, Req, ?succ(consume_ticket, TicketId));
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
@@ -770,7 +767,7 @@ action(Session, Req, {"syn_retailer_pinyin"}, Payload) ->
     Retailers = ?v(<<"retailer">>, Payload, []),
     case ?w_retailer:syn(pinyin, Merchant, Retailers) of
 	{ok, Merchant} ->
-	    ?w_user_profile:update(retailer, Merchant),
+	    %% ?w_user_profile:update(retailer, Merchant),
 	    ?utils:respond(
 	       200, Req, ?succ(syn_retailer_pinyin, Merchant));
 	{error, Error} ->

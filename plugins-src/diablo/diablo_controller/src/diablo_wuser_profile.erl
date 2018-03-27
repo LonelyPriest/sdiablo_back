@@ -63,8 +63,8 @@ get(print_format, Merchant) ->
     gen_server:call(?SERVER(Merchant), {get_print_format_profile, Merchant});
 get(type, Merchant) ->
     gen_server:call(?SERVER(Merchant), {get_type_profile, Merchant});
-get(retailer, Merchant) ->
-    gen_server:call(?SERVER(Merchant), {get_retailer_profile, Merchant}); 
+%% get(retailer, Merchant) ->
+%%     gen_server:call(?SERVER(Merchant), {get_retailer_profile, Merchant}); 
 get(firm, Merchant) ->
     gen_server:call(?SERVER(Merchant), {get_firm_profile, Merchant});
 get(employee, Merchant) ->
@@ -103,8 +103,8 @@ get(size_group, Merchant, GId) ->
     gen_server:call(?SERVER(Merchant), {get_size_group_profile, Merchant, GId});
 get(type, Merchant, TypeId) ->
     gen_server:call(?SERVER(Merchant), {get_type_profile, Merchant, TypeId});
-get(retailer, Merchant, Retailer) -> 
-    gen_server:call(?SERVER(Merchant), {get_retailer_profile, Merchant, Retailer});
+%% get(retailer, Merchant, Retailer) -> 
+%%     gen_server:call(?SERVER(Merchant), {get_retailer_profile, Merchant, Retailer});
 get(sys_retailer, Merchant, Shops) ->
     gen_server:call(?SERVER(Merchant), {get_sysretailer_profile, Merchant, Shops});
 get(firm, Merchant, Firm) ->
@@ -157,8 +157,8 @@ update(print_format, Merchant) ->
     gen_server:cast(?SERVER(Merchant), {update_print_format, Merchant});
 update(firm, Merchant) ->
     gen_server:cast(?SERVER(Merchant), {update_firm_format, Merchant});
-update(retailer, Merchant) ->
-    gen_server:cast(?SERVER(Merchant), {update_retailer, Merchant});
+update(sysretailer, Merchant) ->
+    gen_server:cast(?SERVER(Merchant), {update_sysretailer, Merchant});
 update(color, Merchant) ->
     gen_server:cast(?SERVER(Merchant), {update_color, Merchant});
 update(size_group, Merchant) ->
@@ -211,8 +211,7 @@ handle_call({new_profile, Merchant}, _From, State) ->
 	{ok, Types}        = ?attr:type(list, Merchant),
 	{ok, Prints}       = ?w_print:printer(list_conn, Merchant),
 	{ok, PFormats}     = ?w_print:format(list, Merchant),
-
-	{ok, Retailers}    = ?w_retailer:retailer(list, Merchant),
+	
 	{ok, Employees}    = ?employ:employ(list, Merchant),
 	{ok, Brands}       = ?attr:brand(list, Merchant),
 	{ok, Firms}        = ?supplier:supplier(w_list, Merchant),
@@ -226,6 +225,8 @@ handle_call({new_profile, Merchant}, _From, State) ->
 	{ok, SMSRate}      = ?merchant:sms(list, Merchant),
 	{ok, SMSCenter}    = ?merchant:sms(list_center, Merchant),
 	{ok, Levels}       = ?w_retailer:retailer(list_level, Merchant),
+
+	{ok, SysRetailers} = ?w_retailer:retailer(list_sys, Merchant),
 	
 	%% good
 	%% Goods = ?w_inventory:purchaser_good(lookup, Merchant), 
@@ -244,7 +245,7 @@ handle_call({new_profile, Merchant}, _From, State) ->
 				  itype       = Types,
 				  firm        = Firms,
 				  employee    = Employees,
-				  retailer    = Retailers,
+				  sysretailer = SysRetailers,
 				  brand       = Brands,
 				  color_type  = ColorTypes,
 				  color       = Colors,
@@ -626,58 +627,52 @@ handle_call({get_type_profile, Merchant, TypeId}, _From, State) ->
 %%
 %% retailer
 %%
-handle_call({get_retailer_profile, Merchant}, _From, State) ->
-    ?DEBUG("get_retailer_profile of merchant ~p", [Merchant]),
-    MS = ms(Merchant, retailer),
-    Select = select(MS, fun() -> ?w_retailer:retailer(list, Merchant) end),
-    {reply, {ok, Select}, State};
+%% handle_call({get_retailer_profile, Merchant}, _From, State) ->
+%%     ?DEBUG("get_retailer_profile of merchant ~p", [Merchant]),
+%%     MS = ms(Merchant, retailer),
+%%     Select = select(MS, fun() -> ?w_retailer:retailer(list, Merchant) end),
+%%     {reply, {ok, Select}, State};
 
 handle_call({get_sysretailer_profile, Merchant, Shops}, _From, State) ->
     ?DEBUG("get_sysretailer_profile: merchant ~p, shops ~p", [Merchant, Shops]),
-    Settings = select(ms(Merchant, setting), fun() -> ?w_base:setting(list, Merchant) end),
-    %% ?DEBUG("Settings ~p", [Settings]),
-    FilterSettings = 
-	case lists:filter(
-	       fun({S})->
-		       lists:member(?v(<<"shop">>, S), Shops) orelse ?v(<<"shop">>, S) =:= -1
-	       end, ?to_tl(Settings)) of
-	    [] -> [];
-	    %% [{Filter}] -> Filter;
-	    Filter -> Filter
-	end, 
-    %% ?DEBUG("FilterSettings ~p, length ~p", [FilterSettings, length(FilterSettings)]),
+    %% Settings = select(ms(Merchant, setting), fun() -> ?w_base:setting(list, Merchant) end),
+    %% FilterSettings = 
+    %% 	case lists:filter(
+    %% 	       fun({S})->
+    %% 		       lists:member(?v(<<"shop">>, S), Shops) orelse ?v(<<"shop">>, S) =:= -1
+    %% 	       end, ?to_tl(Settings)) of
+    %% 	    [] -> [];
+    %% 	    Filter -> Filter
+    %% 	end, 
     
-    SysVips = lists:foldr(
-		fun({S}, Acc) ->
-			case ?v(<<"ename">>, S) =:= <<"s_customer">> of
-			    true ->
-				SysVip = ?to_i(?v(<<"value">>, S)),
-				%% ?DEBUG("sysvip ~p", [SysVip]),
-				case lists:member(SysVip, Acc) of
-				    true -> Acc;
-				    false -> [SysVip] ++ Acc
-				end;
-			    false -> Acc
-			end
-		end, [], FilterSettings), 
-    ?DEBUG("SysVips ~p", [SysVips]),
+    %% SysVips = lists:foldr(
+    %% 		fun({S}, Acc) ->
+    %% 			case ?v(<<"ename">>, S) =:= <<"s_customer">> of
+    %% 			    true ->
+    %% 				SysVip = ?to_i(?v(<<"value">>, S)),
+    %% 				%% ?DEBUG("sysvip ~p", [SysVip]),
+    %% 				case lists:member(SysVip, Acc) of
+    %% 				    true -> Acc;
+    %% 				    false -> [SysVip] ++ Acc
+    %% 				end;
+    %% 			    false -> Acc
+    %% 			end
+    %% 		end, [], FilterSettings), 
+    %% ?DEBUG("SysVips ~p", [SysVips]),
     
-    Retailers = select(ms(Merchant, retailer), fun() -> ?w_retailer:retailer(list, Merchant) end),
-    %% ?DEBUG("Retailers ~p", [Retailers]),
+    SysRetailers = select(ms(Merchant, sysretailer), fun() -> ?w_retailer:retailer(list_sys, Merchant) end),
+    ?DEBUG("sysRetailers ~p", [SysRetailers]),
     
     FilterRetailers = 
 	case lists:filter(
 	       fun({R})-> 
-		       lists:member(?v(<<"shop_id">>, R), Shops)
-			   andalso
-			     (?v(<<"type_id">>, R) =:= ?SYSTEM_RETAILER
-			      orelse lists:member(?v(<<"id">>, R), SysVips)) end,
-	       ?to_tl(Retailers)) of
+		       lists:member(?v(<<"shop_id">>, R), Shops) end,
+	       ?to_tl(SysRetailers))
+	of
 	    [] -> [];
-	    %% [{RFilter}] -> RFilter;
 	    RFilter -> RFilter
 	end, 
-    %% ?DEBUG("FilterRetailers ~p", [FilterRetailers]),
+    ?DEBUG("FilterRetailers ~p", [FilterRetailers]),
 
     SimpleRetailers = 
 	lists:foldr(
@@ -696,17 +691,17 @@ handle_call({get_sysretailer_profile, Merchant, Shops}, _From, State) ->
 		  [{R1}|Acc]
 	  end, [], FilterRetailers),
 
-    %% ?DEBUG("SimpleRetailers ~p", [SimpleRetailers]),
+    ?DEBUG("SimpleRetailers ~p", [SimpleRetailers]),
     
     {reply, {ok, SimpleRetailers}, State};
 
-handle_call({get_retailer_profile, Merchant, RetailerId}, _From, State) ->
-    ?DEBUG("get_retailer_profile of merchant ~p, Retailer ~p",
-	   [Merchant, RetailerId]),
-    MS = ms(Merchant, retailer),
-    Select = select(MS, fun() -> ?w_retailer:retailer(list, Merchant) end),
-    SelectRetailer = filter(Select, <<"id">>, RetailerId),
-    {reply, {ok, SelectRetailer}, State};
+%% handle_call({get_retailer_profile, Merchant, RetailerId}, _From, State) ->
+%%     ?DEBUG("get_retailer_profile of merchant ~p, Retailer ~p",
+%% 	   [Merchant, RetailerId]),
+%%     MS = ms(Merchant, retailer),
+%%     Select = select(MS, fun() -> ?w_retailer:retailer(list, Merchant) end),
+%%     SelectRetailer = filter(Select, <<"id">>, RetailerId),
+%%     {reply, {ok, SelectRetailer}, State};
 
 %%
 %% firm
@@ -1035,9 +1030,9 @@ handle_cast({Update, Merchant}, State) ->
 		    update_firm_format ->
 			{ok, Firms} = ?supplier:supplier(w_list, Merchant),
 			Profile#wuser_profile{firm=Firms};
-		     update_retailer ->
-                        {ok, Retailers}=?w_retailer:retailer(list, Merchant),
-                        Profile#wuser_profile{retailer=Retailers}; 
+		     update_sysretailer ->
+                        {ok, SysRetailers}=?w_retailer:retailer(list_sys, Merchant),
+                        Profile#wuser_profile{sysretailer=SysRetailers}; 
 		    update_color ->
 			{ok, Colors}= ?attr:color(w_list, Merchant),
 			Profile#wuser_profile{color=Colors};
@@ -1171,8 +1166,8 @@ ms(Merchant, itype) ->
       [{'==', '$1', ?to_i(Merchant)}],
       ['$2']
      }];
-ms(Merchant, retailer) ->
-    [{{'$1', #wuser_profile{merchant='$1', retailer='$2', _='_'}},
+ms(Merchant, sysretailer) ->
+    [{{'$1', #wuser_profile{merchant='$1', sysretailer='$2', _='_'}},
       [{'==', '$1', ?to_i(Merchant)}],
       ['$2']
      }];

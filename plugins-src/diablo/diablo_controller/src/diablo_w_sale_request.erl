@@ -846,7 +846,7 @@ action(Session, Req, {"upload_w_sale", ShopId}, Payload) ->
 
     {ok, [{Employee}|_]} = ?w_user_profile:get(employee, Merchant),
     %% {ok, [{Retailer}|_T]} = ?w_user_profile:get(retailer, Merchant),
-    {ok, [{Retailer}|_]} = ?w_user_profile:get(retailer, Merchant),
+    {ok, [{Retailer}|_]} = ?w_retailer:retailer(list, Merchant),
     %% ?DEBUG("Employee ~p", [Employee]),
     %% ?DEBUG("Retailers ~p", [Retailers]),
 
@@ -1587,7 +1587,8 @@ start(new_sale, Req, Merchant, Invs, Base, Print) ->
     PMode            = ?v(<<"p_mode">>, Print, ?PRINT_FRONTE),
     Round            = ?v(<<"round">>, Base, 1),
     ShouldPay        = ?v(<<"should_pay">>, Base),
-    RetailerId       = ?v(<<"retailer">>, Base),
+    %% RetailerId       = ?v(<<"retailer">>, Base),
+    Vip            = ?v(<<"vip">>, Base, false),
     ShopId           = ?v(<<"shop">>, Base), 
 
     Datetime         = ?v(<<"datetime">>, Base),
@@ -1608,13 +1609,12 @@ start(new_sale, Req, Merchant, Invs, Base, Print) ->
 			    {SMSCode, _} =
 				try
 				    {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1), 
-				    {ok, Retailer} = ?w_user_profile:get(
-							retailer, Merchant, RetailerId), 
-				    SysVips  = sys_vip_of_shop(Merchant, ShopId), 
+				    %% {ok, Retailer} = ?w_user_profile:get(
+				    %% 			retailer, Merchant, RetailerId), 
+				    %% SysVips  = sys_vip_of_shop(Merchant, ShopId),
 				    %% ?DEBUG("SysVips ~p, Retailer ~p", [SysVips, Retailer]),
 				    
-				    case not lists:member(RetailerId, SysVips)
-					andalso ?v(<<"type_id">>, Retailer) /= ?SYSTEM_RETAILER
+				    case Vip =:= true
 					andalso ?to_i(?v(<<"consume_sms">>, Setting, 0)) == 1 of
 					true ->
 					    ShopName =
@@ -1676,8 +1676,8 @@ start(new_sale, Req, Merchant, Invs, Base, Print) ->
 				       200, Req, ?succ(new_w_sale, RSN),
 				       [{<<"rsn">>, ?to_b(RSN)},
 					{<<"sms_code">>, SMSCode}])
-			    end,
-			    ?w_user_profile:update(retailer, Merchant); 
+			    end;
+			    %% ?w_user_profile:update(retailer, Merchant); 
 			{error, Error} ->
 			    ?utils:respond(200, Req, Error)
 		    end;
@@ -1777,7 +1777,7 @@ send_sms(Merchant, Action, ShopId, RetailerId, ShouldPay) ->
 			     {ok, [{Shop}]} ->
 				 ?v(<<"name">>, Shop, [])
 			 end,
-	{ok, Retailer} = ?w_user_profile:get(retailer, Merchant, RetailerId),
+	{ok, Retailer} = ?w_retailer:get(retailer, Merchant, RetailerId),
 	Phone = ?v(<<"mobile">>, Retailer, []),
 	Balance = ?v(<<"balance">>, Retailer),
 	Score = ?v(<<"score">>, Retailer),

@@ -36,6 +36,9 @@
 retailer(list, Merchant) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {list_retailer, Merchant, []});
+retailer(list_sys, Merchant) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {list_retailer, Merchant, [{<<"type">>, ?SYSTEM_RETAILER}]});
 retailer(list_level, Merchant) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {list_retailer_level, Merchant}).
@@ -316,9 +319,20 @@ handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(DrawId) ++ ","
 		++ ?to_s(Merchant) ++ ","
 		++ "\'" ++ ?utils:current_time(format_localtime) ++ "\')", 
-	    Reply = ?sql_utils:execute(insert, Sql2),
-	    ?w_user_profile:update(retailer, Merchant),
-	    {reply, Reply, State};
+	    OkReply =
+		case ?sql_utils:execute(insert, Sql2) of
+		    {ok, _} = Reply ->
+			case Type =:= ?SYSTEM_RETAILER of
+			    true ->
+				?w_user_profile:update(sysretailer, Merchant),
+				Reply;
+			    false ->
+				none
+			end;
+		    Reply ->
+			Reply
+		end,
+	    {reply, OkReply, State};
 	{ok, _Any} ->
 	    {reply, {error, ?err(retailer_exist, Name)}, State};
 	Error ->
@@ -449,8 +463,15 @@ handle_call({update_retailer, Merchant, RetailerId, {Attrs, OldAttrs}}, _From, S
 				++ ?to_s(Merchant) ++ ","
 				++ "\"" ++ ?to_s(Datetime) ++ "\")"], 
 			?sql_utils:execute(transaction, Sqls, RetailerId)
-		end, 
-	    ?w_user_profile:update(retailer, Merchant),
+		end,
+	    
+	    case ?supplier:get_modified(Type, OldType) of
+		?SYSTEM_RETAILER -> 
+		    ?w_user_profile:update(sysretailer, Merchant);
+		_ ->
+		    none
+	    end,
+	    
 	    {reply, Reply, State}; 
 	{ok, _} ->
 	    {reply, {error, ?err(retailer_exist, Mobile)}, State};
@@ -520,8 +541,7 @@ handle_call({get_retailer, Merchant, RetailerId}, _From, State) ->
     {reply, Reply, State};
 
 handle_call({get_retailer_batch, Merchant, RetailerIds}, _From, State) ->
-    ?DEBUG("get_retailer_batch with merchant ~p, retailerIds ~p",
-	   [Merchant, RetailerIds]),
+    ?DEBUG("get_retailer_batch with merchant ~p, retailerIds ~p", [Merchant, RetailerIds]),
     Sql = "select id, merchant, name, level, py"
 	", shop as shop_id"
 	", draw as draw_id"
@@ -546,7 +566,7 @@ handle_call({delete_retailer, Merchant, RetailerId}, _From, State) ->
 	    Sql = "delete from w_retailer where id=" ++ ?to_s(RetailerId)
 		++ " and merchant=" ++ ?to_s(Merchant), 
 	    Reply = ?sql_utils:execute(write, Sql, RetailerId),
-	    ?w_user_profile:update(retailer, Merchant),
+	    %% ?w_user_profile:update(retailer, Merchant),
 	    {reply, Reply, State};
 	{ok, _R} ->
 	    {reply, {error, ?err(wretailer_retalted_sale, RetailerId)}, State} 
@@ -601,7 +621,7 @@ handle_call({list_retailer, Merchant, Conditions}, _From, State) ->
 	       {Month, Date} ->
 		   " and month(a.birth)=" ++ ?to_s(Month) ++ " and dayofmonth(a.birth)=" ++ ?to_s(Date)
 	   end 
-	++ ?sql_utils:condition(proplists, ?utils:correct_condition(<<"a.">>, SortConditions))
+	++ ?sql_utils:condition(proplists, SortConditions)
 	++ " order by a.id desc",
 
     Reply = ?sql_utils:execute(read, Sql),

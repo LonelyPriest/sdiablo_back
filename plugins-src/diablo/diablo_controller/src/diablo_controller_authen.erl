@@ -185,7 +185,7 @@ handle_call({navbar, UserId}, _From, #func_tree{tree=Tree} = State) ->
 			  end
 		  end
 	  end, [], RightIds), 
-    ?DEBUG("Roots ~p", [Roots]),
+    %% ?DEBUG("Roots ~p", [Roots]),
 
 
     %% order right
@@ -338,7 +338,7 @@ handle_call({cache_right, UserId}, _From,
 		  {ok, C} = ?right_init:get_children(RightId),
 		  C ++ Acc
 	  end, [], ?to_tuplelist(RightIds)),
-    ?DEBUG("Children ~p", [Children]),
+    %% ?DEBUG("Children ~p", [Children]),
 
 
     Right = 

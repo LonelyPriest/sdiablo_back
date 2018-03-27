@@ -562,7 +562,7 @@
 	  itype       = [] :: list(), %% type of inventory
 	  brand       = [] :: list(), %% brand of inventory
 	  employee    = [] :: list(), %% all employee of merchant
-	  retailer    = [] :: list(), %% all retailer
+	  sysretailer = [] :: list(), %% all retailer
 	  firm        = [] :: list(), %% all firms of merchant
 	  color_type  = [] :: list(),
 	  color       = [] :: list(), 
