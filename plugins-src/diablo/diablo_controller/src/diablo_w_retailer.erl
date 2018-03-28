@@ -327,7 +327,7 @@ handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
 				?w_user_profile:update(sysretailer, Merchant),
 				Reply;
 			    false ->
-				none
+			        Reply
 			end;
 		    Reply ->
 			Reply

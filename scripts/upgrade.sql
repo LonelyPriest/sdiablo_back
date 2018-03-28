@@ -308,3 +308,6 @@ update w_retailer set level=-1 where type=2;
 
 --2018-03-25
 alter table w_change_shift modify column entry_date date default 0;
+
+--2018-03-28
+alter table w_retailer add index type (type);

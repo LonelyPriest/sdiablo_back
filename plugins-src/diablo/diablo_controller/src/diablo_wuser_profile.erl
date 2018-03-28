@@ -661,7 +661,7 @@ handle_call({get_sysretailer_profile, Merchant, Shops}, _From, State) ->
     %% ?DEBUG("SysVips ~p", [SysVips]),
     
     SysRetailers = select(ms(Merchant, sysretailer), fun() -> ?w_retailer:retailer(list_sys, Merchant) end),
-    ?DEBUG("sysRetailers ~p", [SysRetailers]),
+    %% ?DEBUG("sysRetailers ~p", [SysRetailers]),
     
     FilterRetailers = 
 	case lists:filter(
@@ -672,7 +672,7 @@ handle_call({get_sysretailer_profile, Merchant, Shops}, _From, State) ->
 	    [] -> [];
 	    RFilter -> RFilter
 	end, 
-    ?DEBUG("FilterRetailers ~p", [FilterRetailers]),
+    %% ?DEBUG("FilterRetailers ~p", [FilterRetailers]),
 
     SimpleRetailers = 
 	lists:foldr(
@@ -691,7 +691,7 @@ handle_call({get_sysretailer_profile, Merchant, Shops}, _From, State) ->
 		  [{R1}|Acc]
 	  end, [], FilterRetailers),
 
-    ?DEBUG("SimpleRetailers ~p", [SimpleRetailers]),
+    %% ?DEBUG("SimpleRetailers ~p", [SimpleRetailers]),
     
     {reply, {ok, SimpleRetailers}, State};
 

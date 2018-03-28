@@ -83,7 +83,7 @@ action(Session, Req, {"list_retailer_level"}) ->
     ?DEBUG("list_retailer_level with session ~p", [Session]), 
     Merchant = ?session:get(merchant, Session), 
     ?utils:respond(
-       batch, fun() -> ?w_retailer:retailer(list_level, Merchant) end, Req).
+       batch, fun() -> ?w_user_profile:get(retailer_level, Merchant) end, Req).
 
 %%--------------------------------------------------------------------
 %% @desc: POST action

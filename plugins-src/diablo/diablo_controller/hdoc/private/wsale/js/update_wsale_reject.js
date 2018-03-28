@@ -387,6 +387,7 @@ function wsaleUpdateRejectCtrlProvide(
 	    id:             $scope.select.rsn_id,
 	    rsn :           $scope.select.rsn,
 	    retailer:       $scope.select.retailer.id,
+	    vip:            wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers),
 	    shop:           $scope.select.shop.id,
 	    datetime:       dateFilter($scope.select.rsn_datetime, "yyyy-MM-dd HH:mm:ss"),
 	    employee:       $scope.select.employee.id,

@@ -795,7 +795,7 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
     TicketBatch = ?v(<<"tbatch">>, Props, -1),
     TicketCustom = ?v(<<"tcustom">>, Props, -1),
     
-    Sql0 = "select id, name, balance, score from w_retailer"
+    Sql0 = "select id, name, balance, score, type from w_retailer"
 	" where id=" ++ ?to_s(Retailer)
 	++ " and merchant=" ++ ?to_s(Merchant)
 	++ " and deleted=" ++ ?to_s(?NO) ++ ";",
@@ -916,7 +916,7 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 		    %% 	true  -> ?w_user_profile:update(retailer, Merchant);
 		    %% 	false -> ok
 		    %% end,
-		    {reply, {OK, Shop, Retailer, NewWithdraw}, State}
+		    {reply, {OK, Shop, Retailer, ?v(<<"type">>, Account), NewWithdraw}, State}
 	    end; 
 	Error ->
 	    {reply, Error, State}

@@ -417,6 +417,7 @@ create table w_retailer
     deleted         INTEGER default 0, -- 0: no;  1: yes
     
     unique  key  uk (merchant, name, mobile),
+    key          type (type),
     primary key     (id)
 ) default charset=utf8;
 

@@ -400,22 +400,26 @@ action(Session, Req, {"update_w_sale"}, Payload) ->
     Invs            = ?v(<<"inventory">>, Payload, []),
     {struct, Base}  = ?v(<<"base">>, Payload),
     RSN             = ?v(<<"rsn">>, Base),
+    Vip             = ?v(<<"vip">>, Base, false),
     
     case ?w_sale:sale(get_new, Merchant, RSN) of
 	{ok, OldBase} -> 
 	    case ?w_sale:sale(update, Merchant, lists:reverse(Invs), {Base, OldBase}) of
-		{ok, {RSN, BackBalance, _BackScore,
-		      {OldRetailer, Withdraw}, {NewRetailer, NewWithdraw}}} ->
-		    case OldRetailer =:= NewRetailer andalso
-			Withdraw /= NewWithdraw of
+		{ok, {RSN, BackBalance, _BackScore, {OldRetailerId, Withdraw}, {NewRetailerId, NewWithdraw}}} -> 
+		    case OldRetailerId =:= NewRetailerId andalso Withdraw /= NewWithdraw of
 			true ->
+			    {ok, Retailer} = ?w_retailer:retailer(get, Merchant, OldRetailerId), 
 			    ShopId = ?v(<<"shop_id">>, OldBase),
 			    {SMSCode, _} =
-				send_sms(Merchant, 2, ShopId, OldRetailer, BackBalance),
+				send_sms(Merchant, 2, ShopId, Retailer, BackBalance),
 			    ?utils:respond(
 			       200, Req, ?succ(update_w_sale, RSN),
 			       [{<<"rsn">>, ?to_b(RSN)}, {<<"sms_code">>, SMSCode}]);
 			false ->
+			    case Vip of
+				true -> ok;
+				false -> ?w_user_profile:update(sysretailer, Merchant)
+			    end, 
 			    ?utils:respond(
 			       200, Req, ?succ(update_w_sale, RSN), [{<<"rsn">>, ?to_b(RSN)}])
 		    end;
@@ -606,14 +610,20 @@ action(Session, Req, {"reject_w_sale"}, Payload) ->
 				    {<<"bdate">>, ?to_b(CurDatetime)}]);
 		false -> 
 		    case ?w_sale:sale(reject, Merchant, lists:reverse(Invs), Base) of 
-			{{ok, RSN}, Shop, Retailer, BackWithdraw} ->
+			{{ok, RSN}, Shop, RetailerId, RetailerType, BackWithdraw} ->
 			    case BackWithdraw =/= 0 of
 				true ->
+				    %% query agign to obtain the correct infomation
+				    {ok, Retailer} = ?w_retailer:retailer(get, Merchant, RetailerId),
 				    {SMSCode, _} = send_sms(Merchant, 2, Shop, Retailer, BackWithdraw),
 				    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
 						   [{<<"rsn">>, ?to_b(RSN)},
 						    {<<"sms_code">>, SMSCode}]); 
 				false ->
+				    case RetailerType =:= ?SYSTEM_RETAILER of
+					true -> ?w_user_profile:update(sysretailer, Merchant);
+					false -> ok
+				    end,
 				    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
 						   [{<<"rsn">>, ?to_b(RSN)}])
 			    end;
@@ -1625,7 +1635,9 @@ start(new_sale, Req, Merchant, Invs, Base, Print) ->
 					    ?notify:sms_notify(
 					       Merchant,
 					       {ShopName, Phone, 1, ShouldPay, Balance, Score});
-					false -> {0, none} 
+					false ->
+					    ?w_user_profile:update(sysretailer, Merchant),
+					    {0, none} 
 				    end
 				catch
 				    _:{badmatch, _Error} ->
@@ -1677,7 +1689,7 @@ start(new_sale, Req, Merchant, Invs, Base, Print) ->
 				       [{<<"rsn">>, ?to_b(RSN)},
 					{<<"sms_code">>, SMSCode}])
 			    end;
-			    %% ?w_user_profile:update(retailer, Merchant); 
+			%% ?w_user_profile:update(retailer, Merchant); 
 			{error, Error} ->
 			    ?utils:respond(200, Req, Error)
 		    end;
@@ -1769,7 +1781,7 @@ sys_vip_of_shop(Merchant, Shop) ->
 	  end, [], Settings),
     SysVips.
 
-send_sms(Merchant, Action, ShopId, RetailerId, ShouldPay) ->
+send_sms(Merchant, Action, ShopId, Retailer, ShouldPay) ->
     try 
 	{ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),
 	ShopName = case ?w_user_profile:get(shop, Merchant, ShopId) of
@@ -1777,13 +1789,14 @@ send_sms(Merchant, Action, ShopId, RetailerId, ShouldPay) ->
 			     {ok, [{Shop}]} ->
 				 ?v(<<"name">>, Shop, [])
 			 end,
-	{ok, Retailer} = ?w_retailer:get(retailer, Merchant, RetailerId),
+	%% {ok, Retailer} = ?w_retailer:get(retailer, Merchant, RetailerId),
+	RetailerId = ?v(<<"id">>, Retailer),
 	Phone = ?v(<<"mobile">>, Retailer, []),
 	Balance = ?v(<<"balance">>, Retailer),
 	Score = ?v(<<"score">>, Retailer),
 	
 	SysVips  = sys_vip_of_shop(Merchant, ShopId), 
-	?DEBUG("SysVips ~p, Retailer ~p", [SysVips, Retailer]),
+	%% ?DEBUG("SysVips ~p, Retailer ~p", [SysVips, Retailer]),
 	
 	case not lists:member(RetailerId, SysVips)
 	    andalso ?v(<<"type_id">>, Retailer) /= ?SYSTEM_RETAILER
@@ -1796,8 +1809,7 @@ send_sms(Merchant, Action, ShopId, RetailerId, ShouldPay) ->
 	end
     catch
 	_:{badmatch, _Error} ->
-	    ?INFO("failed to send sms phone:~p, merchant ~p, Error ~p",
-		  [RetailerId, Merchant, _Error]),
+	    ?INFO("failed to send sms phone:~p, merchant ~p, Error ~p", [?v(<<"id">>, Retailer), Merchant, _Error]),
 	    ?err(sms_send_failed, Merchant)
     end.
 

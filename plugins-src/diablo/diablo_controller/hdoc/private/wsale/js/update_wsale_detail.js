@@ -468,6 +468,7 @@ function wsaleUpdateDetailCtrlProvide(
 	    id:            $scope.select.rsn_id,
 	    rsn:           $scope.select.rsn,
 	    retailer:      $scope.select.retailer.id,
+	    vip:           wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers),
 	    shop:          $scope.select.shop.id,
 	    datetime:      dateFilter($scope.select.rsn_datetime,
 				      "yyyy-MM-dd HH:mm:ss"),
@@ -499,10 +500,8 @@ function wsaleUpdateDetailCtrlProvide(
 	console.log(base);
 	
 	console.log($scope.old_select);
-	var new_datetime = dateFilter($scope.select.rsn_datetime,
-				      "yyyy-MM-dd");
-	var old_datetime = dateFilter($scope.old_select.rsn_datetime,
-				      "yyyy-MM-dd");
+	var new_datetime = dateFilter($scope.select.rsn_datetime, "yyyy-MM-dd");
+	var old_datetime = dateFilter($scope.old_select.rsn_datetime, "yyyy-MM-dd");
 	if (added.length === 0
 	    && ($scope.select.cash === $scope.old_select.cash
 		&& $scope.select.card === $scope.old_select.card
