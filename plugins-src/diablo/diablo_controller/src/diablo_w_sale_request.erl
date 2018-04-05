@@ -540,7 +540,9 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
 	    
 	%% SortInvs = sort_inventory(Merchant, GetBrand, Details, []),
 	%% ?DEBUG("sorts ~p", [SortInvs]),
-	RSNAttrs = [{<<"shop">>,       ?v(<<"shop_id">>, Sale)},
+	RetailerId = ?v(<<"retailer_id">>, Sale),
+	ShopId     = ?v(<<"shop_id">>, Sale),
+	RSNAttrs = [{<<"shop">>,       ShopId},		    
 		    {<<"datetime">>,   ?v(<<"entry_date">>, Sale)},
 		    {<<"balance">>,    ?v(<<"balance">>, Sale)},
 		    {<<"cash">>,       ?v(<<"cash">>, Sale)},
@@ -563,7 +565,7 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
 	%% ?DEBUG("employee ~p", [Employee]),
 	PrintAttrs = [
 		      %% {<<"retailer">>, ?v(<<"name">>, Retailer)},
-		      {<<"retailer_id">>, ?v(<<"retailer_id">>, Sale)},
+		      {<<"retailer_id">>, RetailerId},
 		      {<<"employ">>, ?v(<<"name">>, Employee)}], 
 
 	SuccessRespone =
@@ -1771,7 +1773,6 @@ sys_vip_of_shop(Merchant, Shop) ->
 		  case ?v(<<"ename">>, S) =:= <<"s_customer">> of
 		      true ->
 			  SysVip = ?to_i(?v(<<"value">>, S)),
-			  %% ?DEBUG("sysvip ~p", [SysVip]),
 			  case lists:member(SysVip, Acc) of
 			      true -> Acc;
 			      false -> [SysVip] ++ Acc

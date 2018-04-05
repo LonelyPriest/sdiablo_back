@@ -495,14 +495,14 @@ var wsaleUtils = function(){
 		if (pay >= 0) {
 		    for (var i=0, l=pscores.length; i<l; i++){
 			s = pscores[i];
+			pay_with_score -= s.money; 
 			if (pay_with_score > 0) {
-			    pay_with_score -= s.money;
 			    if (pay_with_score > 0)
 				score += Math.floor(
 				    diablo_round(s.money) / s.score.balance) * s.score.score;
 			    else
 				score += Math.floor(
-				    diablo_round(pay_with_score + s.money) / s.score.balance) * s.score.score;
+				    diablo_round(pay_with_score) / s.score.balance) * s.score.score;
 			} 
 		    }
 		} else {
@@ -514,11 +514,10 @@ var wsaleUtils = function(){
 				score += Math.floor(diablo_round(s.money) / s.score.balance) * s.score.score;
 			    else
 				score += Math.floor(
-				    diablo_round(pay_with_score + s.money) / s.score.balance) * s.score.score;
+				    diablo_round(pay_with_score) / s.score.balance) * s.score.score;
 			} 
 		    }
 		}
-		
 	    }
 	    
 	    return score;

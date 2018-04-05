@@ -145,14 +145,20 @@ content(normal, {Brand, Model, Column},
 	{Merchant, Shop, RSN, Retailer, Setting}, {Invs, Attrs, Print}) ->
 
     Datetime     = ?v(<<"datetime">>, Attrs),
+    Vip          = case ?v(<<"vip">>, Attrs) of
+		       undefined ->
+			   SysVips  = ?gen_report:sys_vip_of(merchant, Merchant),
+			   RetailerId = ?v(<<"id">>, Retailer),
+			   not lists:member(RetailerId, SysVips)
+			       andalso ?v(<<"type_id">>, Retailer) /= ?SYSTEM_RETAILER;
+		       _Vip -> _Vip
+		   end,
+    
     RetailerName = ?v(<<"name">>, Retailer, []),
     Employee     = ?v(<<"employ">>, Print), 
-    RetailerId   = ?v(<<"retailer_id">>, Print), 
-    LastScore   = ?v(<<"score">>, Retailer, 0),
-    Vip = RetailerId =/= ?to_i(?v(<<"s_customer">>, Setting)),
+    %% LastScore    = ?v(<<"score">>, Retailer, 0),
     
     Head = title(Brand, Model, Shop)
-    %% ++ address(Brand, Model, ShopAddr)
 	++ head(Brand, Model, Column, RSN,
 		RetailerName, Employee, Datetime),
 
@@ -162,8 +168,7 @@ content(normal, {Brand, Model, Column},
 	  Merchant, Setting, Invs), 
 
     Stastic = body_stastic(
-		Brand, Model, Column, TotalBalance,
-		Attrs, Vip, LastScore, STotal, RTotal),
+		Brand, Model, Column, TotalBalance, Attrs, Vip, STotal, RTotal),
 
     Foot = body_foot(
 	     Brand, Model, Column, Setting),
@@ -177,25 +182,14 @@ call(Parent, {print, Action, RSN, Merchant, Invs, Attrs, Print}) ->
     ShopId = ?v(<<"shop">>, Attrs), 
 
     {VPrinters, ShopInfo} = get_printer(Merchant, ShopId), 
-    %% ?DEBUG("printers ~p", [Printers]),
-    %% VPrinters = [P || P <- Printers, length(P) =/= 0 ],
-    %% ?DEBUG("printers ~p", [VPrinters]),
     case VPrinters of
 	[] ->
 	    Parent ! {Parent, {error, ?err(shop_not_printer, ShopId)}};
 	_  ->
 	    %% content info
-	    %% Retailer     = ?v(<<"retailer">>, Print),
-	    RetailerId = ?v(<<"retailer_id">>, Print),
-	    {ok, Retailer} = ?w_retailer:retailer(get, Merchant, RetailerId),
-	    %% RetailerName = ?v(<<"name">>, Retailer, []),
-	    
-	    %% ?DEBUG("retailer  ~p", [Retailer]),
-	    %% Employee     = ?v(<<"employ">>, Print), 
-	    %% Datetime     = ?v(<<"datetime">>, Attrs),
-	    %% Total        = ?v(<<"total">>, Attrs, 0),
-	    Direct       = ?v(<<"direct">>, Attrs, 0),
-	    %%  [Date, _]    = string:tokens(?to_s(DateTime), " "),
+	    RetailerId     = ?v(<<"retailer_id">>, Print),
+	    {ok, Retailer} = ?w_retailer:retailer(get, Merchant, RetailerId), 
+	    Direct         = ?v(<<"direct">>, Attrs, 0),
 
 	    %% shop info
 	    ShopName = case ?w_sale:direct(Direct) of
@@ -495,7 +489,7 @@ head(<<"feie">> = Brand, _Model, 80, RSN, Retailer, Employee, Date) ->
 	
 	++ line(equal, 48) ++ br(Brand).
 
-body_stastic(Brand, _Model, Column, _TotalBalance, Attrs, Vip, LastScore, STotal, RTotal) ->
+body_stastic(Brand, _Model, Column, _TotalBalance, Attrs, Vip, STotal, RTotal) ->
     %% ?DEBUG("body_stastic with Attrs ~p, Column ~p, Vip ~p", [Attrs, Column, Vip]),
     Cash         = ?v(<<"cash">>, Attrs, 0),
     Card         = ?v(<<"card">>, Attrs, 0),
@@ -511,12 +505,8 @@ body_stastic(Brand, _Model, Column, _TotalBalance, Attrs, Vip, LastScore, STotal
     Score        = ?v(<<"score">>, Attrs, 0),
     TicketScore  = ?v(<<"ticket_score">>, Attrs, 0),
 
-    RealLastScore = case ?v(<<"im_print">>, Attrs) of
-			false -> ?v(<<"last_score">>, Attrs);
-			_ -> LastScore
-		    end,
-    
-    AccScore     = Score + RealLastScore - TicketScore,
+    RealLastScore = ?v(<<"last_score">>, Attrs), 
+    AccScore      = Score + RealLastScore - TicketScore,
 
 
     [NewTicket, NewWithdraw, NewWxin, NewCard, NewCash] = NewPays =

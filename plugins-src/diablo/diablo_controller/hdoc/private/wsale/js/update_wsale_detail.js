@@ -570,7 +570,7 @@ function wsaleUpdateDetailCtrlProvide(
 
     $scope.reset_score = function() {
 	// only score with cash, card, wxin
-	if (diablo_no === $scope.setting.draw_score && $scope.select.withdraw !== 0) {
+	if (diablo_no === $scope.setting.draw_score && wsaleUtils.to_float($scope.select.withdraw) !== 0) {
 	    var pay_orders = wsaleCalc.pay_order(
 		$scope.select.should_pay, [
 		    $scope.select.ticket,
@@ -578,7 +578,7 @@ function wsaleUpdateDetailCtrlProvide(
 		    $scope.select.wxin,
 		    $scope.select.card,
 		    $scope.select.cash]);
-	    var pay_with_score = pay_orders[2] + pay_orders[3] + pay_orders[4] - $scope.select.verificate;
+	    var pay_with_score = pay_orders[2] + pay_orders[3] + pay_orders[4];
 	    $scope.select.score = wsaleUtils.calc_score_of_pay(pay_with_score, $scope.select.pscores);
 	}
     };

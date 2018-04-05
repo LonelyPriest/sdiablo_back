@@ -12,7 +12,7 @@
 -behaviour(gen_request).
 
 -export([action/2, action/3, action/4]).
--export([sell/2, stock/2]).
+-export([sell/2, stock/2, get_setting/2, get_config/2]).
 
 -define(d, ?utils:seperator(csv)).
 

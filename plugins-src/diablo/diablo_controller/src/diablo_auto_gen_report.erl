@@ -231,7 +231,9 @@ code_change(_OldVsn, State, _Extra) ->
 syn_stastic_per_shop(_Merchant, _Shop, StartDay, EndDay) when StartDay >= EndDay -> 
     ok;
 syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) ->
-    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, Shop),
+    %% {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, Shop),
+    BaseSettings = ?w_report_request:get_setting(Merchant, Shop),
+    
     Date = calendar:gregorian_days_to_date(StartDay),
     {BeginOfDay, EndOfDay} = day(begin_to_end, Date),
     
@@ -244,7 +246,7 @@ syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) ->
     {ok, StockCalcTotal, StockCalcCost} =
 	get_stock(calc, Merchant,
 		  [{<<"shop">>, Shop},
-		   {<<"start_time">>, ?v(<<"qtime_start">>, BaseSetting)},
+		   {<<"start_time">>, ?w_report_request:get_config(<<"qtime_start">>, BaseSettings)},
 		   {<<"end_time">>, ?to_b(EndOfDay)}
 		  ]),
 

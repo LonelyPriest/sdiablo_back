@@ -32,11 +32,12 @@ function purchaserInventoryNewUpdateCtrlProvide (
     $scope.calc_row   = stockUtils.calc_row;
     $scope.setting    = {history_stock: false};
     $scope.pattern    = {discount:diabloPattern.discount};
-
+    
+    $scope.setting.stock_with_firm = stockUtils.stock_with_firm(diablo_default_shop, $scope.ubase); 
     $scope.setting.use_barcode     = stockUtils.use_barcode(diablo_default_shop, $scope.ubase);
-    $scope.setting.auto_barcode    = stockUtils.auto_barcode(diablo_default_shop, base);
-    $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, base);
-    $scope.setting.dual_barcode = stockUtils.dual_barcode_print(user.loginShop, base);
+    $scope.setting.auto_barcode    = stockUtils.auto_barcode(diablo_default_shop, $scope.ubase);
+    $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, $scope.ubase);
+    $scope.setting.dual_barcode = stockUtils.dual_barcode_print(user.loginShop, $scope.ubase);
     // console.log(user.loginShop);
     // console.log($scope.setting);
 
@@ -450,6 +451,11 @@ function purchaserInventoryNewUpdateCtrlProvide (
 		return;
 	    }
 
+	    // do not check firm 
+	    if ($scope.base_settings.stock_with_firm === diablo_no) {
+		continue;
+	    }
+	    
 	    if (item.firm_id === -1 || $scope.inventories[i].firm_id === -1) {
 		continue;
 	    }
