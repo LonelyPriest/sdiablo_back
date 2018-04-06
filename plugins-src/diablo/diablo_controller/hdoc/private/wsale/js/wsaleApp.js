@@ -1534,7 +1534,10 @@ function wsaleNewProvide(
 
     $scope.reset_score = function() {
 	// only score with cash, card, wxin
-	if (diablo_no === $scope.setting.draw_score && wsaleUtils.to_float($scope.select.withdraw) !== 0) {
+	if (diablo_no === $scope.setting.draw_score
+	    && ( wsaleUtils.to_float($scope.select.withdraw) !== 0
+		 || wsaleUtils.to_float($scope.select.ticket_balance) !== 0)
+	   ) {
 	    var pay_orders = wsaleCalc.pay_order(
 		$scope.select.should_pay, [
 		    $scope.select.ticket_balance,
