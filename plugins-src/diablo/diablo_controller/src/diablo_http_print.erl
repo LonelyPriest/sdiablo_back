@@ -188,9 +188,12 @@ call(Parent, {print, Action, RSN, Merchant, Invs, Attrs, Print}) ->
 	_  ->
 	    %% content info
 	    RetailerId     = ?v(<<"retailer_id">>, Print),
-	    {ok, Retailer} = ?w_retailer:retailer(get, Merchant, RetailerId), 
-	    Direct         = ?v(<<"direct">>, Attrs, 0),
-
+	    {ok, Retailer} = case Action of
+				 test -> {ok, []};
+				 _ ->
+				     ?w_retailer:retailer(get, Merchant, RetailerId)
+			     end,
+	    Direct         = ?v(<<"direct">>, Attrs, 0), 
 	    %% shop info
 	    ShopName = case ?w_sale:direct(Direct) of
 			   wreject ->
