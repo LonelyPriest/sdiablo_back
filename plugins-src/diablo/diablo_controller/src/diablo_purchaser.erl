@@ -610,11 +610,11 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 			    "\'" ++ (RStyleNumber(StyleNumber)) ++ "\'"
 			    ", " ++ ?to_s(RBrand(Brand)) ++ 
 			    ", " ++ ?to_s(Color) ++ 
-			    ", \'" ++ ?to_s(Size) ++ "\'" ++
-			    case Shop of
-				undefined -> [];
-				_ -> " and shop=" ++ ?to_s(Shop)
-			    end ++
+			    ", \'" ++ ?to_s(Size) ++
+			    "\'," ++ case Shop of
+					 undefined -> "-1"; 
+					 _ ->?to_s(Shop)
+				     end ++
 			    ", " ++ ?to_s(Merchant) ++
 			    ", " ++ ?to_s(Total) ++
 			    ", \'" ++ ?to_s(DateTime) ++ "\')"

@@ -11,6 +11,7 @@ var rightAuthen = {
 	_wsale    : 90000,
 	_stock    : 100000,
 	_good     : 140000,
+	_firm     : 110000,
 	_retailer : 30000
     },
 
@@ -76,6 +77,13 @@ var rightAuthen = {
 	    set_withdraw      :rightAuthen.root_right._retailer + 24,
 	    add_card_good     :rightAuthen.root_right._retailer + 28,
 	    delete_card_good  :rightAuthen.root_right._retailer + 30
+	}
+    },
+
+    firm_action: function() {
+	return {
+	    firm_profit: rightAuthen.root_right._firm + 14,
+	    firm_profit_export: rightAuthen.root_right._firm + 15
 	}
     },
 

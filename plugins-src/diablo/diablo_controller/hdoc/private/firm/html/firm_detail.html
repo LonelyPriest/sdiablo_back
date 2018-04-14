@@ -14,9 +14,13 @@
 		    x-ng-click="new_firm()">新增
 	      <i class="glyphicon glyphicon-plus"></i></button>
 
+	    <button x-ng-if="right.firm_profit" type="button" class="btn red purple-stripe"
+		    x-ng-click="goto_firm_profit()">进销存
+	      <i class="glyphicon glyphicon-export"></i></button>
+
 	    <button type="button" class="btn blue purple-stripe hidden-xs"
 		    x-ng-click="export_firm()">导出
-	      <i class="glyphicon glyphicon-export"></i></button>
+	      <i class="glyphicon glyphicon-export"></i></button> 
 
 	    <button type="button" class="btn yellow reload purple-stripe"
 		    x-ng-click="refresh()">刷新

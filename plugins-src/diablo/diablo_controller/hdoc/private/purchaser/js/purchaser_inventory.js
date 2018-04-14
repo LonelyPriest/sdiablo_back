@@ -270,7 +270,8 @@ function purchaserInventoryNewCtrlProvide (
     $scope.match_prompt_good = function(viewValue){
 	return diabloFilter.match_wgood_with_firm(
 	    viewValue,
-	    stockUtils.match_firm($scope.select.firm)); 
+	    stockUtils.match_firm(
+		$scope.base_settings.stock_with_firm ? $scope.select.firm : diablo_invalid_firm) ); 
     };
 
     $scope.q_prompt = $scope.q_typeahead($scope.select.shop.id, base); 

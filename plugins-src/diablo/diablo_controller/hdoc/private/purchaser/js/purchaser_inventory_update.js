@@ -432,7 +432,8 @@ function purchaserInventoryNewUpdateCtrlProvide (
     
     $scope.match_prompt_good = function(viewValue){
 	return diabloFilter.match_wgood_with_firm(
-	    viewValue, stockUtils.match_firm($scope.select.firm)); 
+	    viewValue, stockUtils.match_firm(
+		$scope.setting.stock_with_firm$ ? scope.select.firm : diablo_invalid_firm) ); 
     }; 
     
     $scope.on_select_good = function(item, model, label){
@@ -452,7 +453,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	    }
 
 	    // do not check firm 
-	    if ($scope.base_settings.stock_with_firm === diablo_no) {
+	    if ($scope.setting.stock_with_firm === diablo_no) {
 		continue;
 	    }
 	    

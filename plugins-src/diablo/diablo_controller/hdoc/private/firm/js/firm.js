@@ -52,6 +52,12 @@ function firmDetailCtrlProvide(
 	    user.type,
 	    rightAuthen.rainbow_action()['show_orgprice'],
 	    user.right
+	),
+
+	firm_profit: rightAuthen.authen(
+	    user.type,
+	    rightAuthen.firm_action()['firm_profit'],
+	    user.right
 	) 
     }; 
 
@@ -236,6 +242,10 @@ function firmDetailCtrlProvide(
     $scope.do_refresh($scope.current_page, $scope.search); 
 
     $scope.new_firm = function(){location.href = "#/new_firm";};
+
+    $scope.goto_firm_profit = function() {
+	diablo_goto_page("#/firm_profit");
+    };
 
     $scope.trans_info = function(f){
 	// console.log(f);
@@ -453,6 +463,10 @@ function firmAnalysisProfitCtrlProvide(
 
     $scope.refresh = function(){
 	$scope.do_search($scope.default_page);
+    };
+
+    $scope.go_back = function() {
+	diablo_goto_page("#/firm_detail");
     };
 
     $scope.do_search($scope.current_page);
