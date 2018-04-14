@@ -355,7 +355,7 @@ diabloUtils.directive('goNextField', function() {
 	    // console.log(modelCtrl);
             element.bind("keydown", function (event) {
 		// console.log("keydown", event.which);
-		if(event.which === 40) {
+		if(event.which === 39) {
 		    event.preventDefault();
 		    var f = scope.autoRow(); 
                     scope.$apply(function(){
@@ -364,7 +364,7 @@ diabloUtils.directive('goNextField', function() {
 			}
 		    }); 
 		}
-		if(event.which === 38) {
+		if(event.which === 37) {
 		    event.preventDefault();
 		    var f = scope.autoRow();
                     scope.$apply(function(){
