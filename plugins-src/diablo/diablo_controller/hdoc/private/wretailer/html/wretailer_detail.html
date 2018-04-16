@@ -111,7 +111,8 @@
 		    <th>卡号</th>
 		    <th>身份证号码</th>
 		    <th>生日</th>
-		    <th>会员类型</th> 
+		    <th>会员类型</th>
+		    <th>会员等级</th> 
 		    <th>联系方式</th>
 		    <th>联系地址</th> 
 		    <th x-ng-click="use_order(order_fields.balance)" class="danger">帐户余额
@@ -145,7 +146,8 @@
 		      <span x-ng-if="r.type.id===0">{{r.type.name}}</span> 
 		      <span x-ng-if="r.type.id===1" class="bg-magenta">{{r.type.name}}</span>
 		      <span x-ng-if="r.type.id===2" class="bg-lightOrange">{{r.type.name}}</span>
-		    </td> 
+		    </td>
+		    <td>{{retailer_levels[r.level].name}}</td>
 		    <td><div x-ng-if="r.mobile">{{r.mobile}}</div></td>
 		    <td>{{r.address}}</td> 
 		    <td class="text-center">
@@ -199,7 +201,7 @@
 		  </tr>
 
 		  <tr x-ng-if="right.query_balance && total_items!==0" class="bg-white">
-		    <td colspan="8"></td>
+		    <td colspan="9"></td>
 		    <td class="fg-red text-center">{{total_balance}}</td>
 		    <td></td>
 		    <td class="fg-red text-center">{{total_consume}}</td>

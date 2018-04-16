@@ -53,6 +53,7 @@ function wretailerDetailCtrlProvide(
     $scope.charges        = filterCharge.filter(function(c){
 	return c.type===diablo_charge && c.deleted!==diablo_has_deleted;
     });
+    
     $scope.draws          = filterCharge.filter(function(c){
 	return c.type===diablo_withdraw && c.deleted!==diablo_has_deleted;
     })
@@ -64,6 +65,8 @@ function wretailerDetailCtrlProvide(
     $scope.retailer_types = wretailerService.retailer_types;
     $scope.months         = retailerUtils.months();
     $scope.date_of_month  = retailerUtils.date_of_month();
+    $scope.retailer_levels = diablo_retailer_levels;
+    
     $scope.select         = {phone:undefined};
 
     var dialog = diabloUtilsService;

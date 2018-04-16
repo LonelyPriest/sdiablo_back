@@ -418,6 +418,7 @@ create table w_retailer
     
     unique  key  uk (merchant, name, mobile),
     key          type (type),
+    key          shop (shop)
     primary key     (id)
 ) default charset=utf8;
 

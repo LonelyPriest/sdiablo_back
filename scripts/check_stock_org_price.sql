@@ -154,3 +154,41 @@ left join suppliers c on a.firm=c.id where a.merchant=2 and a.firm!=b.firm;
 
 
 update  w_inventory_transfer a inner join (select rsn, cost from (select rsn, sum(org_price * amount) as cost from w_inventory_transfer_detail group by rsn) a) b on a.rsn=b.rsn set a.cost=b.cost;
+
+
+-- clear date
+delete from w_inventory_good where merchant=11;
+
+delete from w_inventory_new_detail_amount where merchant=11;
+delete from w_inventory_new_detail where merchant=11;
+delete from w_inventory_new where merchant=11;
+
+-- clear stock
+delete from w_inventory_amount where merchant=11;
+delete from w_inventory where merchant=11;
+
+-- clear sale
+delete from w_sale_detail_amount where merchant=11;
+delete from w_sale_detail where merchant=11;
+delete from w_sale where merchant=11;
+
+-- clear transefer
+delete from w_inventory_transfer_detail_amount where merchant=11;
+delete from w_inventory_transfer_detail where merchant=11;
+delete from w_inventory_transfer where merchant=11;
+
+
+-- report
+delete from w_daily_report where merchant=11;
+delete from w_change_shift where merchant=11;
+
+-- charge
+delete from w_charge_detail where merchant=11;
+
+
+-- brands
+delete from brands where merchant=11;
+delete from inv_types where merchant=11;
+
+-- bill
+delete from w_bill_detail where merchant=11;

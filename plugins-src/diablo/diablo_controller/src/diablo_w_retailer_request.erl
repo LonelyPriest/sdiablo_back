@@ -149,6 +149,7 @@ action(Session, Req, {"add_retailer_level"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     case ?w_retailer:retailer(add_level, Merchant, Payload) of
 	{ok, RId} ->
+	    ?w_user_profile:update(retailer_level, Merchant),
 	    ?utils:respond(
 	       200, Req, ?succ(add_w_retailer, RId), {<<"id">>, RId});
 	{error, Error} ->

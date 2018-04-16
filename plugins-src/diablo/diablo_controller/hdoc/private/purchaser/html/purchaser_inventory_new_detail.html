@@ -180,7 +180,7 @@
 			<i class="glyphicon glyphicon-map-marker"></i>
 		      </button>
 		      
-		      <button x-ng-if="shop_right.update_w_stock||(shop_right.print_w_barcode && r.type!=1)
+		      <button x-ng-if="(shop_right.update_w_stock||(shop_right.print_w_barcode && r.type!==1))
 				       && r.type!==9
 				       && r.state===0"
 			      class="btn diablo-button yellow"
@@ -188,17 +188,13 @@
 		      	<i class="glyphicon glyphicon-edit"></i>
 		      </button>
 		      
-		      <button x-ng-if="shop_right.check_w_stock
-				       && r.type!==9
-				       && r.state===0"
+		      <button x-ng-if="shop_right.check_w_stock && r.type!==9 && r.state===0"
 			      class="btn diablo-button red"
 		      	      x-ng-click="check_detail(r)">审核
 		      	<i class="glyphicon glyphicon-check"></i>
 		      </button>
 
-		      <button x-ng-if="shop_right.check_w_stock
-				       && r.type!==9
-				       && r.state==1"
+		      <button x-ng-if="shop_right.check_w_stock && r.type!==9 && r.state==1"
 			      class="btn diablo-button purple-plum"
 		      	      x-ng-click="uncheck_detail(r)">反审
 		      	<i class="glyphicon glyphicon-remove-circle"></i>

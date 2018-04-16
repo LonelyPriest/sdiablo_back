@@ -35,7 +35,7 @@ action(Session, Req, {"list_base_setting"}) ->
     Merchant = ?session:get(merchant, Session),
     case ?session:get(type, Session) of
 	?MERCHANT ->
-	    {ok, S}  = ?w_user_profile:get(setting, Merchant, -1),
+	    {ok, S}  = ?w_user_profile:get(setting, Merchant),
 	    ?utils:respond(200, batch, Req, S); 
 	?USER ->
 	    {ok, Shops} = ?w_user_profile:get(user_shop, Merchant, Session),

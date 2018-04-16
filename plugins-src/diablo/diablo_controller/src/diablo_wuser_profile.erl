@@ -172,7 +172,10 @@ update(score, Merchant) ->
 update(sms_rate, Merchant) ->
     gen_server:cast(?SERVER(Merchant), {update_sms_rate, Merchant});
 update(region, Merchant) ->
-    gen_server:cast(?SERVER(Merchant), {update_region, Merchant}).
+    gen_server:cast(?SERVER(Merchant), {update_region, Merchant});
+update(retailer_level, Merchant) ->
+    gen_server:cast(?SERVER(Merchant), {update_retailer_level, Merchant}).
+
 
 
 
@@ -1057,7 +1060,10 @@ handle_cast({Update, Merchant}, State) ->
 			Profile#wuser_profile{region=Regions};
 		    update_merchant ->
 			{ok, Info} = ?merchant:merchant(get, Merchant),
-			Profile#wuser_profile{info=Info}
+			Profile#wuser_profile{info=Info};
+		    update_retailer_level ->
+			{ok, Levels}       = ?w_retailer:retailer(list_level, Merchant),
+			Profile#wuser_profile{level=Levels}
 		end 
 	end,
 

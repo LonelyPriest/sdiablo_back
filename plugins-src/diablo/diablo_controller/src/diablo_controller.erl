@@ -26,6 +26,7 @@ start(normal, _StartArgs) ->
 	    %% report
 	    ok = diablo_auto_gen_report:report(stastic_per_shop, {2, 0, am}),
 	    ok = diablo_auto_gen_report:ticket(preferential, {4, 0, am}),
+	    ok = diablo_auto_gen_report:retailer_level(check, {5, 0, am}),
 
 	    %% init right data
 	    %% ok = diablo_controller_right_init:init(),

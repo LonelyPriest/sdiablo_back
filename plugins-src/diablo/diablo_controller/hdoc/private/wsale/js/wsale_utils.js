@@ -701,11 +701,14 @@ var wsaleCalc = function(){
 		total      += parseInt(count);
 		abs_total  += Math.abs(parseInt(count));
 
-		if (vipMode && mode === diablo_sale) {
+		if (vipMode !== diablo_no && mode === diablo_sale) {
 		    if (!one.$update) {
 			if (one.pid === -1) {
 			    if (isVip && angular.isDefined(vipDiscount)) {
-				one.fdiscount = vipDiscount < one.discount ? vipDiscount : one.discount;
+				if ( vipMode === 1)
+				    one.fdiscount = vipDiscount < one.discount ? vipDiscount : one.discount;
+				else if (vipMode === 2)
+				    one.fdiscount = wsaleUtils.to_decimal(one.discount * vipDiscount * 0.01);
 			    } else {
 				one.fdiscount = one.discount;
 			    }

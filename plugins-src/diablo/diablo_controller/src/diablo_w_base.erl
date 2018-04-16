@@ -760,7 +760,9 @@ sys_config(shop) ->
      {"prn_w_page",        "单据纸张宽",         "21.3", "0"},
      
      {"draw_score",        "提现积分",           "1",    "0"}, 
-     {"dual_barcode",      "双排条码",           "0",    "0"} 
+     {"dual_barcode",      "双排条码",           "0",    "0"},
+
+     {"r_discount",        "会员折扣模式",       "0",    "0"}
     ].
     
 sys_config() ->
@@ -830,6 +832,7 @@ sys_config() ->
 	      {"draw_region",       "区域提现",           "0",    "0"},
 	      {"threshold_card",    "次卡消费模式",       "0",    "0"},
 	      {"r_discount",        "会员折扣模式",       "0",    "0"},
+	      {"r_level",           "会员等级模式",       "0",    "0"},
 	      {"gift_sale",         "开单赠送模式",       "0",    "0"}
 	     ],
     Values.

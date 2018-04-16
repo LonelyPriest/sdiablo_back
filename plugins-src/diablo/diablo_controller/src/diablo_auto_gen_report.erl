@@ -15,8 +15,11 @@
 
 %% API
 -export([start_link/0]).
--export([lookup/1, report/2, cancel_report/1, task/3, add/3,
-	 ticket/2, cancel_ticket/1, birth/2, birth/1]).
+-export([lookup/1,
+	 report/2, cancel_report/1, task/3, add/3,
+	 ticket/2, cancel_ticket/1,
+	 birth/2, birth/1,
+	 retailer_level/2, retailer_level/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -28,10 +31,11 @@
 
 -define(SERVER, ?MODULE).
 
--record(state, {merchant :: [],
-		task_of_per_shop :: [],
-		ticket_of_merchant :: [],
-		birth_of_merchant :: []}).
+-record(state, {merchant            :: [],
+		task_of_per_shop    :: [],
+		ticket_of_merchant  :: [],
+		birth_of_merchant   :: [],
+		task_of_level_check :: []}).
 
 %%%===================================================================
 %%% API
@@ -50,7 +54,7 @@ syn_report(stastic_per_shop, Merchant, Conditions) ->
 add(report_task, Merchant, TriggerTime) ->
     gen_server:call(?SERVER, {add_report_task, Merchant, TriggerTime}).
 
-%% triggerTime: {12, 13, am}
+%% triggerTime: {12, 13, am} or {9, 15, pm}
 ticket(preferential, TriggerTime) ->
     gen_server:cast(?SERVER, {gen_ticket, TriggerTime}).
 cancel_ticket(preferential) ->
@@ -61,6 +65,12 @@ birth(congratulation, TriggerTime) ->
     gen_server:cast(?SERVER, {birth, TriggerTime}).
 birth(cancel) ->
     gen_server:cast(?SERVER, cancel_birth).
+
+%% retailer level
+retailer_level(check, TriggerTime) ->
+    gen_server:cast(?SERVER, {check_level, TriggerTime}).
+retailer_level(cancel_check) ->
+    gen_server:cast(?SERVER, {cancel_check_level}).
 
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
@@ -75,9 +85,10 @@ init([]) ->
 		  end, [], Merchants),
 	    ?INFO("start cron task to genarate report ....~n", []),
 	    {ok, #state{merchant=L,
-			task_of_per_shop=[],
-			ticket_of_merchant=[],
-			birth_of_merchant=[]}};
+			task_of_per_shop    = [],
+			ticket_of_merchant  = [],
+			birth_of_merchant   = [],
+			task_of_level_check = []}};
 	{error, _Error} ->
 	    {ok, #state{}}
     end.
@@ -141,8 +152,8 @@ handle_cast({stastic_per_shop, TriggerTime},
 				      end}, 
 			  [?cron:cron(CronTask)|Acc] 
 		  end, [], Merchants),
-			  %% end, [], [4]),
-	    %% ?DEBUG("new tasks ~p with merchants ~p", [NewTasks, Merchants]),
+	    %% end, [], [4]),
+	    ?DEBUG("new tasks ~p with merchants ~p", [NewTasks, Merchants]),
 	    %% {noreply, #state{merchant=Merchants, task_of_per_shop=NewTasks}};
 	    {noreply, State#state{task_of_per_shop=NewTasks}};
 	_ -> {noreply, State}
@@ -179,14 +190,13 @@ handle_cast({gen_ticket, TriggerTime},
 				      end}, 
 			  [?cron:cron(CronTask)|Acc] 
 		  end, [], Merchants),
-	    %% end, [], [4]),
+			  %% end, [], [4]),
 	    %% ?DEBUG("new ticket ~p with merchants ~p", [NewTasks, Merchants]),
 	    {noreply, State#state{ticket_of_merchant=NewTasks}};
 	_ -> {noreply, State}
     end;
 
-handle_cast({birth, TriggerTime},
-	    #state{merchant=Merchants, birth_of_merchant=BirthAll} = State) ->
+handle_cast({birth, TriggerTime}, #state{merchant=Merchants, birth_of_merchant=BirthAll} = State) ->
     ?DEBUG("birth time ~p, birth ~p", [TriggerTime, BirthAll]),
     ?INFO("Auto birth at time time ~p, birth ~p", [TriggerTime, BirthAll]),
     case BirthAll of
@@ -212,7 +222,35 @@ handle_cast({cancel_birth}, #state{birth_of_merchant=BirthAll} = State) ->
       fun(Birth) ->
 	      ?cron:cancel(Birth)
       end, BirthAll),
-    {noreply, State#state{birth_of_merchant=[]}}; 
+    {noreply, State#state{birth_of_merchant=[]}};
+
+
+handle_cast({check_level, TriggerTime}, #state{merchant=Merchants, task_of_level_check=Tasks} = State) ->
+    ?INFO("level check at time~p, tasks ~p", [TriggerTime, Tasks]),
+    case Tasks of
+	[] ->
+	    NewTasks =
+		lists:foldr(
+		  fun(M, Acc) ->
+			  CronTask = {{daily, TriggerTime},
+				      fun(_Ref, Datetime) ->
+					      task(check_level, Datetime, [M])
+				      end}, 
+			  [?cron:cron(CronTask)|Acc] 
+		  end, [], Merchants),
+	    %% end, [], [4]),
+	    ?DEBUG("new level check ~p with merchants ~p", [NewTasks, Merchants]),
+	    {noreply, State#state{task_of_level_check=NewTasks}};
+	_ -> {noreply, State}
+    end;
+
+handle_cast({cancel_check_level}, #state{task_of_level_check=Tasks} = State) ->
+    ?DEBUG("cancel check level", []),
+    lists:foreach(
+      fun(Task) ->
+	      ?cron:cancel(Task)
+      end, Tasks),
+    {noreply, State#state{task_of_level_check=[]}}; 
 
 handle_cast(_Msg, State) ->
     ?DEBUG("handle_cast receive unkown message ~p, State ~p", [_Msg, State]),
@@ -255,7 +293,7 @@ syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) ->
 
     {ok, SaleInfo} = ?w_report:stastic(stock_sale, Merchant, Conditions),
     {ok, ChargeInfo} = ?w_report:stastic(recharge, Merchant, Conditions),
-    ?DEBUG("chargeInfo ~p", [ChargeInfo]),
+    %% ?DEBUG("chargeInfo ~p", [ChargeInfo]),
     {ok, SaleProfit} = ?w_report:stastic(stock_profit, Merchant, Conditions),
 
     {ok, StockIn}  = ?w_report:stastic(stock_in, Merchant, Conditions),
@@ -382,25 +420,33 @@ task(gen_ticket, Datetime, Merchants) when is_list(Merchants) ->
     Sqls = lists:foldr(fun(M, Acc) ->
 			       [task(gen_ticket, Datetime, M)|Acc]
 		       end, [], Merchants),
-    ?DEBUG("gen_tickiet: auto gen Sqls ~p", [Sqls]),
-
+    %% ?DEBUG("gen_tickiet: auto gen Sqls ~p", [Sqls]), 
     lists:foreach(
-      fun({_M, SqlsOfMerchant}) ->
-	      lists:foreach(
-		fun(Sql)->
-			case ?sql_utils:execute(insert, Sql) of
-			    {ok, _} -> ok;
-			    {error, Error} ->
-				?WARN("sql error to create daily report: ~p", [Error])
-			end
-		end, SqlsOfMerchant)
+      fun({_M, SqlsOfMerchant}) -> 
+	      %% lists:foreach(
+	      %% 	fun(Sql)->
+	      %% 		case ?sql_utils:execute(insert, Sql) of
+	      %% 		    {ok, _} -> ok;
+	      %% 		    {error, Error} ->
+	      %% 			?WARN("sql error to create daily report: ~p", [Error])
+	      %% 		end
+	      %% 	end, SqlsOfMerchant)
+	      case length(SqlsOfMerchant) =:= 0 of
+		  true -> ok;
+		  false ->
+		      case ?sql_utils:execute(transaction, SqlsOfMerchant, _M) of
+			  {ok, _} -> ok;
+			  {error, Error} ->
+			      ?WARN("sql error to create gen ticket: ~p", [Error])
+		      end
+	      end
       end, Sqls);
 
 task(gen_ticket, Datetime, Merchant) when is_number(Merchant) ->
     FormatDatetime = format_datetime(Datetime),
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
     {ok, Scores}=?w_user_profile:get(score, Merchant),
-    ?DEBUG("scores ~p", [Scores]),
+    %% ?DEBUG("scores ~p", [Scores]),
     Score2Money =
 	case lists:filter(fun({S})-> ?v(<<"type_id">>, S) =:= 1 end, Scores) of
 	    [] -> [];
@@ -410,11 +456,10 @@ task(gen_ticket, Datetime, Merchant) when is_number(Merchant) ->
     
     IsGenTicket = ?v(<<"gen_ticket">>, BaseSetting, 0),
     SysVips = sys_vip_of(merchant, Merchant),
-    ?DEBUG("IsGenTicket ~p, SysVips ~p, Merchant ~p, score2money ~p",
-	   [IsGenTicket, SysVips, Merchant, Score2Money]),
+    %% ?DEBUG("IsGenTicket ~p, SysVips ~p, Merchant ~p, score2money ~p", [IsGenTicket, SysVips, Merchant, Score2Money]),
     
     TicketSqls =
-	case ?to_i(IsGenTicket) =:= 1 andalso length(Score2Money) =/= 0 of
+	case ?to_i(IsGenTicket) =:= ?YES andalso length(Score2Money) =/= 0 of
 	    true ->
 		AccScore = ?v(<<"score">>, Score2Money), 
 		Balance = ?v(<<"balance">>, Score2Money),
@@ -466,7 +511,7 @@ task(gen_ticket, Datetime, Merchant) when is_number(Merchant) ->
     %% 		      ?WARN("sql error to gen ticket: ~p", [Error])
     %% 	      end
     %%   end, TicketSqls);
-    ?DEBUG("ticketSqls ~p", [TicketSqls]),
+    %% ?DEBUG("ticketSqls ~p", [TicketSqls]),
     {Merchant, lists:reverse(TicketSqls)};
 
 task(auto_sms_at_birth, Datetime, Merchants) when is_list(Merchants) ->
@@ -513,7 +558,37 @@ task(auto_sms_at_birth, Datetime, Merchant) when is_number(Merchant)->
 			  end
 		  end, [], Retailers),
 	    {Merchant, SMSRetailers}
-    end; 
+    end;
+
+task(check_level, Datetime, Merchants) when is_list(Merchants) ->
+     UpLevels = lists:foldr(
+		fun(M, Acc) ->
+			[task(check_level,  Datetime, M)|Acc]
+		end, [], Merchants),
+    ?DEBUG("check level ~p:", [UpLevels]),
+    lists:foreach(
+      fun({Merchant, UpSqls}) ->
+	      lists:foreach(
+		fun({_, _, Sqls})-> 
+			%%?DEBUG("Sqls: ~p", [Sqls]),
+			case length(Sqls) =:= 0 of
+			    true -> ok;
+			    false ->
+				case ?sql_utils:execute(transaction, Sqls, Merchant) of
+				    {ok, Merchant} -> ok;
+				    {error, Error} ->
+					?WARN("sql error to check retailer level: ~p", [Error])
+				end
+			end
+		end, UpSqls)
+      end, UpLevels);
+    
+task(check_level, _Datetime, Merchant) when is_number(Merchant) ->
+    %% get shop
+    {ok, Shops} = ?w_user_profile:get(shop, Merchant),
+    {ok, Levels} = ?w_user_profile:get(retailer_level, Merchant), 
+    Sqls = start_check_level(Merchant, Levels, Shops, []),
+    {Merchant, Sqls};
 	
 task(stastic_per_shop, Datetime, Merchants) when is_list(Merchants)->
     {YestodayStart, YestodayEnd} = yestoday(Datetime),
@@ -522,18 +597,28 @@ task(stastic_per_shop, Datetime, Merchants) when is_list(Merchants)->
     SqlsOfAllMerchant=
 	gen_report(stastic_per_shop,
 		   {YestodayStart, YestodayEnd, FormatDatetime}, Merchants), 
-    ?DEBUG("SqlsOfAllMerchant ~p", [SqlsOfAllMerchant]),
+    %% ?DEBUG("SqlsOfAllMerchant ~p", [SqlsOfAllMerchant]),
     
     lists:foreach(
       fun({_M, Sqls}) ->
-	      lists:foreach(
-		fun(Sql)->
-			case ?sql_utils:execute(insert, Sql) of
-			    {ok, _} -> ok;
-			    {error, Error} ->
-				?WARN("sql error to create daily report: ~p", [Error])
-			end
-		end, Sqls)
+	      case length(Sqls) =:= 0 of
+		  true -> ok;
+		  false ->
+		      case ?sql_utils:execute(transaction, Sqls, _M) of
+			  {ok, _} -> ok;
+			  {error, Error} ->
+			      ?WARN("sql error to create daily report: ~p", [Error])
+		      end
+	      end
+			  
+	      %% lists:foreach(
+	      %% 	fun(Sql)->
+	      %% 		case ?sql_utils:execute(insert, Sql) of
+	      %% 		    {ok, _} -> ok;
+	      %% 		    {error, Error} ->
+	      %% 			?WARN("sql error to create daily report: ~p", [Error])
+	      %% 		end
+	      %% 	end, Sqls)
       end, SqlsOfAllMerchant);
 task(stastic_per_shop, Datetime, Merchant) when is_number(Merchant)->
     task(stastic_per_shop, Datetime, [Merchant]).
@@ -553,7 +638,7 @@ gen_report(stastic_per_shop, {StartTime, EndTime, GenDatetime} , [M|Merchants], 
 gen_shop_report(_Datetime, M, [], Sqls) ->
     %% ?DEBUG("merchant ~p gen sql ~p", [M, Sqls]),
     {M, Sqls};
-gen_shop_report({StartTime, EndTime, GenDatetime}, M, [S|Shops], Sqls) ->
+gen_shop_report({StartTime, EndTime, GenDatetime}, M, [{S}|Shops], Sqls) ->
     %% ?DEBUG("gen_shop_report with merchant ~p, shop ~p, startTime ~p, endTime ~p, genTime ~p",
     %% 	   [M, S, StartTime, EndTime, GenDatetime]),
     ShopId  = ?v(<<"id">>, S),
@@ -617,7 +702,7 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [S|Shops], Sqls) ->
 		andalso StockTransferOutTotal == 0
 		andalso StockFixTotal == 0 of
 		true ->
-		    ?DEBUG("no input, no daily report", []),
+		    %% ?DEBUG("no input, no daily report", []),
 		    gen_shop_report({StartTime, EndTime, GenDatetime}, M, Shops, Sqls);
 		false ->
 		    Sql0 = "select id, merchant, shop, day from w_daily_report"
@@ -713,6 +798,64 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [S|Shops], Sqls) ->
 	    gen_shop_report({StartTime, EndTime, GenDatetime}, M, Shops, Sqls)
     end.
 
+start_check_level(_Merchant, _Levels, [], CheckSqls) ->
+    CheckSqls; 
+start_check_level(Merchant, Levels, [{Shop}|Shops], CheckSqls) ->
+    %% ?DEBUG("shop ~p", [Shop]),
+    ShopId = ?v(<<"id">>, Shop),
+    BaseSettings = ?w_report_request:get_setting(Merchant, ShopId),
+    Sqls = 
+	case ?to_i(?w_report_request:get_config(<<"r_level">>, BaseSettings, ?NO)) of
+	    ?YES ->
+		[L0|LT] = Levels,
+		Sql = "select id, level, score, consume, shop from w_retailer where merchant=" ++ ?to_s(Merchant)
+		    ++ " and shop=" ++ ?to_s(ShopId) 
+		    ++ " and type in(0, 1)" 
+		    ++ case erlang:length(Levels) =/= 0 of
+			   true ->
+			       " and (consume>" ++ ?to_s(?v(<<"score">>, L0)) 
+				   ++ lists:foldr(
+					fun({Level}, Acc) ->
+						" or consume>" ++ ?to_s(?v(<<"score">>, Level)) ++ Acc
+					end, [], LT)
+				   ++ ")";
+			   false -> []
+		       end,
+		case ?sql_utils:execute(read, Sql) of
+		    {ok, []} -> [];
+		    {ok, Retailers} ->
+			lists:foldr(
+			  fun({R}, Acc) -> 
+				  ILevel = ?v(<<"level">>, R),
+				  UpLevel = lists:foldr(
+					      fun({Level}, StartLevel) ->
+						      case ?v(<<"consume">>, R) > ?v(<<"score">>, Level) of
+							  true ->
+							      case StartLevel < ?v(<<"level">>, Level) of
+								  true ->
+								      ?v(<<"level">>, Level);
+								  false ->
+								      StartLevel
+							      end;
+							  false ->
+							      StartLevel
+						      end
+					      end, ILevel, Levels),
+				  case UpLevel > ILevel of
+				      true ->
+					  ["update w_retailer set level=" ++ ?to_s(UpLevel)
+					   ++ " where merchant=" ++ ?to_s(Merchant)
+					   ++ " and shop=" ++ ?to_s(ShopId)
+					   ++ " and id=" ++ ?to_s(?v(<<"id">>, R))| Acc];
+				      false ->
+					  Acc
+				  end
+			  end, [], Retailers)
+		end;
+	    ?NO ->
+		[]
+	end,
+    start_check_level(Merchant, Levels, Shops, [{Merchant, ShopId, Sqls}|CheckSqls]).
 
 get_stock(calc, Merchant, Conditions) ->
     {ok, SaleInfo} = ?w_report:stastic(stock_sale, Merchant, Conditions),

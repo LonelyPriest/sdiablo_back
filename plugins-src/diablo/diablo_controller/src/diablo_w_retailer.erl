@@ -346,7 +346,9 @@ handle_call({add_retailer_level, Merchant, Attrs}, _From, State) ->
     Score    = ?v(<<"score">>, Attrs, 0),
     Discount = ?v(<<"discount">>, Attrs, 100),
 
-    Sql = "select id, name, level from w_retailer_level where merchant=" ++ ?to_s(Merchant), 
+    Sql = "select id, name, level from w_retailer_level where merchant="
+	++ ?to_s(Merchant)
+	++ " and level=" ++ ?to_s(Level),
     case ?sql_utils:execute(read, Sql) of
 	{ok, []} ->
 	    Sql2 = "insert into w_retailer_level("
@@ -360,7 +362,7 @@ handle_call({add_retailer_level, Merchant, Attrs}, _From, State) ->
 	    Reply = ?sql_utils:execute(insert, Sql2),
 	    {reply, Reply, State};
 	{ok, _Any} ->
-	    {reply, {error, ?err(level_exist, Level)}, State};
+	    {reply, {error, ?err(retailer_level_exist, Level)}, State};
 	Error ->
 	    {reply, Error, State}
     end;
