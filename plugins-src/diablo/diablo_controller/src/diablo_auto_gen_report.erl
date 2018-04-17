@@ -178,7 +178,7 @@ handle_cast(cancel_ticket, #state{ticket_of_merchant=Tickets} = State) ->
 handle_cast({gen_ticket, TriggerTime},
 	    #state{merchant=Merchants, ticket_of_merchant=Tickets} = State) ->
     %% ?DEBUG("gen_ticket time ~p, tickets ~p", [TriggerTime, Tickets]),
-    ?INFO("auto generate ticket at time ~p, merchant ~p", [TriggerTime, Merchants]),
+    ?INFO("auto generate ticket at time ~p, tasks ~p", [TriggerTime, Tickets]),
     case Tickets of
 	[] -> 
 	    NewTasks = 

@@ -702,7 +702,7 @@ var wsaleCalc = function(){
 		abs_total  += Math.abs(parseInt(count));
 
 		if (vipMode !== diablo_no && mode === diablo_sale) {
-		    if (!one.$update) {
+		    if (one.sid !== diablo_invalid_index && !one.$update) {
 			if (one.pid === -1) {
 			    if (isVip && angular.isDefined(vipDiscount)) {
 				if ( vipMode === 1)
