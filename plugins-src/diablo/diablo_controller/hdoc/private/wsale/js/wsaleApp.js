@@ -480,6 +480,7 @@ function wsaleNewProvide(
 	$scope.setting.draw_region   = wsaleUtils.draw_region(shopId, base);
 	$scope.setting.vip_mode      = wsaleUtils.vip_discount(shopId, base);
 	$scope.setting.gift_sale     = wsaleUtils.gift_sale(shopId, base);
+	$scope.setting.scan_only     = wsaleUtils.scan_only(shopId, base);
 	
 	if (diablo_no === $scope.setting.cake_mode) {
 	    $scope.vpays = wsaleService.vpays;
@@ -965,7 +966,7 @@ function wsaleNewProvide(
 	add.entry        = src.entry_date;
 
 	// add.full_bcode   = angular.isUndefined(src.full_bcode) ? src.bcode : src.full_bcode;
-	add.full_name    = add.style_number + "/" + add.brand;
+	add.full_name    = add.style_number + "/" + add.brand + "/" + add.type;
 
 	return add; 
     };

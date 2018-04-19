@@ -314,6 +314,10 @@ var wsaleUtils = function(){
 	gift_sale:function(shop, base) {
 	    return diablo_base_setting("gift_sale", shop, base, parseInt, diablo_no);
 	},
+
+	scan_only:function(shop, base) {
+	    return diablo_base_setting("scan_only", shop, base, parseInt, diablo_no);
+	},
 	
 	get_login_employee:function(shop, loginEmployee, employees){
 	    var filterEmployees = employees.filter(function(e){

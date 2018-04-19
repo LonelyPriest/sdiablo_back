@@ -355,8 +355,8 @@
 	  	    </form>
 	  	  </td>
 		  
-		  <td class="col-md-2 text-left vert-align">
-		    <span ng-if="!inv.$new">{{inv.full_name}}</span>
+		  <td x-ng-if="!setting.scan_only" class="col-md-2 text-left vert-align">
+		    <span x-ng-if="!inv.$new">{{inv.full_name}}</span>
 		    <form name="inv.form.good" x-ng-if="inv.$new">
 		      <div ng-class="{'has-error':inv.form.good.$invalid && !inv.form.good.$pristine}">
 			<input class="form-control text-left"
@@ -375,6 +375,11 @@
 			</span>
 		      </div>
 		    </form>
+		  </td>
+
+		  <td x-ng-if="setting.scan_only" class="col-md-2 text-left vert-align">
+		    <div x-ng-if="inv.$new" class="text-center">-</div> 
+		    <div x-ng-if="!inv.$new" x-ng-bind=inv.full_name></div>
 		  </td>
 		  
 		  <td x-ng-if="setting.check_sale" class="vert-align">{{inv.total}}</td> 
