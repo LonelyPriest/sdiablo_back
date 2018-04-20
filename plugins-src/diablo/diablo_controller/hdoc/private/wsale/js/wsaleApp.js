@@ -344,7 +344,7 @@ function wsaleNewProvide(
     diabloPattern, wsaleService, wsaleGoodService,
     user, filterPromotion, filterCharge, filterScore,
     filterSysRetailer, filterEmployee,
-    filterSizeGroup, filterBrand, filterType, filterColor, filterLevel, base){
+    filterSizeGroup, filterType, filterColor, filterLevel, base){
     // console.log(base);
     $scope.promotions = filterPromotion;
     $scope.scores     = filterScore;
@@ -407,7 +407,7 @@ function wsaleNewProvide(
 	}
     };
     
-    wsaleGoodService.set_brand(filterBrand);
+    // wsaleGoodService.set_brand(filterBrand);
     wsaleGoodService.set_type(filterType);
     wsaleGoodService.set_size_group(filterSizeGroup);
     wsaleGoodService.set_color(filterColor);
@@ -1019,7 +1019,7 @@ function wsaleNewProvide(
     $scope.filters = [];
     diabloFilter.reset_field();
     // diabloFilter.add_field("firm", filterFirm);
-    diabloFilter.add_field("brand", wsaleGoodService.get_brand());
+    // diabloFilter.add_field("brand", wsaleGoodService.get_brand());
     diabloFilter.add_field("type",  wsaleGoodService.get_type());
 
     $scope.filter = diabloFilter.get_filter();
