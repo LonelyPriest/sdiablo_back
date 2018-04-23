@@ -276,7 +276,7 @@ handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
     Shop     = ?v(<<"shop">>, Attrs, -1),
     Level    = case Type =:= ?SYSTEM_RETAILER of
 		   true -> -1;
-		   false -> 0
+		   false -> ?v(<<"level">>, Attrs, 0)
 	       end,
     
     %% mobile can not be same
@@ -384,6 +384,7 @@ handle_call({update_retailer, Merchant, RetailerId, {Attrs, OldAttrs}}, _From, S
 
     OldShop     = ?v(<<"shop_id">>, OldAttrs),
     OldType     = ?v(<<"type_id">>, OldAttrs),
+    OldLevel    = ?v(<<"level">>, OldAttrs),
     OldDrawId   = ?v(<<"draw_id">>, OldAttrs),
     OldBalance  = ?to_f(?v(<<"balance">>, OldAttrs)),
 
@@ -396,6 +397,8 @@ handle_call({update_retailer, Merchant, RetailerId, {Attrs, OldAttrs}}, _From, S
 		   undefined -> OldType;
 		   _Type -> _Type
 	       end,
+    
+    Level    = ?v(<<"level">>, Attrs, OldLevel),
 
    IsMobileModified = 
 	case Mobile =:= undefined of
@@ -437,7 +440,8 @@ handle_call({update_retailer, Merchant, RetailerId, {Attrs, OldAttrs}}, _From, S
 		++ ?utils:v(address, string, Address)
 		++ ?utils:v(comment, string, Comment)
 		++ ?utils:v(birth, string, Birth)
-		++ ?utils:v(type, integer, ?supplier:get_modified(Type, OldType)) 
+		++ ?utils:v(type, integer, ?supplier:get_modified(Type, OldType))
+		++ ?utils:v(level, integer, ?supplier:get_modified(Level, OldLevel))
 		++ ?utils:v(password, string, Password)
 		++ ?utils:v(balance, float, ?supplier:get_modified(Balance, OldBalance))
 		++ ?utils:v(draw, integer, ?supplier:get_modified(DrawId, OldDrawId)),

@@ -222,6 +222,7 @@ function wretailerConfig(angular) {
 		 mobile:   r.mobile,
 		 address:  diablo_set_string(r.address),
 		 type:     r.type.id,
+		 level:    r.level.level,
 		 shop:     r.shop.id,
 		 birth:    dateFilter(r.birth, "yyyy-MM-dd")
 		}).$promise;
@@ -245,6 +246,7 @@ function wretailerConfig(angular) {
 		 shop:     r.shop,
 		 password: r.password,
 		 type:     r.type,
+		 level:    r.level,
 		 birth:    dateFilter(r.birth, "yyyy-MM-dd"),
 		 // obalance: r.obalance,
 		 balance:  r.balance, 

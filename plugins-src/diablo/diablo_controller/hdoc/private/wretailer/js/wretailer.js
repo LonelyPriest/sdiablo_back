@@ -14,14 +14,24 @@ function wretailerNewCtrlProvide(
     $scope.right = {master: rightAuthen.authen_master(user.type)};
     
     $scope.shops = user.sortShops;
-    $scope.retailer_types = wretailerService.retailer_types;
+    if ($scope.right.master) {
+	$scope.retailer_types = wretailerService.retailer_types;
+    } else {
+	$scope.retailer_types = wretailerService.retailer_types.filter(function(t) {
+	    return t.id !== 2;
+	});
+    };
+    
+    $scope.levels = diablo_retailer_levels;
     $scope.retailer = {
 	birth:$.now(),
-	type:$scope.retailer_types[0],
-	shop:$scope.shops[0]};
+	type :$scope.retailer_types[0],
+	shop :$scope.shops[0],
+	level:$scope.levels[0]
+    };
 
     $scope.new_wretailer = function(retailer){
-	// console.log(retailer); 
+	// console.log(retailer);
 	wretailerService.new_wretailer(retailer).then(function(state){
 	    console.log(state);
 	    if (state.ecode == 0){
@@ -60,11 +70,11 @@ function wretailerDetailCtrlProvide(
     $scope.draws          = $scope.draws.concat([{id:-1, name:"重置提现方案"}]);;
     $scope.regions        = filterRegion;
     
-    $scope.shops          = user.sortShops.concat([{id:-1, name:"无"}]);
-    $scope.shopIds        = user.shopIds;
-    $scope.retailer_types = wretailerService.retailer_types;
-    $scope.months         = retailerUtils.months();
-    $scope.date_of_month  = retailerUtils.date_of_month();
+    $scope.shops           = user.sortShops.concat([{id:-1, name:"无"}]);
+    $scope.shopIds         = user.shopIds;
+    $scope.retailer_types  = wretailerService.retailer_types;
+    $scope.months          = retailerUtils.months();
+    $scope.date_of_month   = retailerUtils.date_of_month();
     $scope.retailer_levels = diablo_retailer_levels;
     
     $scope.select         = {phone:undefined};
@@ -186,6 +196,7 @@ function wretailerDetailCtrlProvide(
 		    $scope.retailers = angular.copy(result.data);
 		    angular.forEach($scope.retailers, function(r){
 			r.type = diablo_get_object(r.type_id, $scope.retailer_types);
+			r.olevel = $scope.retailer_levels[r.level];
 			r.birthday = r.birth.substr(5,8); 
 			r.birth     = diablo_set_date_obj(r.birth);
 			r.shop      = diablo_get_object(r.shop_id, $scope.shops);
@@ -481,6 +492,7 @@ function wretailerDetailCtrlProvide(
 		comment: diablo_get_modified(params.retailer.comment, old_retailer.comment),
 		shop: params.retailer.edit_shop ? params.retailer.shop.id : undefined,
 		type: diablo_get_modified(params.retailer.type, old_retailer.type),
+		level: diablo_get_modified(params.retailer.olevel.level, old_retailer.level),
 		password:diablo_get_modified(params.retailer.password, old_retailer.password),
 		birth:diablo_get_modified(params.retailer.birth.getTime(),
 					  old_retailer.birth.getTime()),
@@ -537,6 +549,7 @@ function wretailerDetailCtrlProvide(
 			 return t.id !== diablo_system_retailer;
 		     });
 	     }(),
+	     levels:      $scope.retailer_levels,
 	     shops:       $scope.shops,
 	     pattern:     pattern,
 	     check_same:  check_same,

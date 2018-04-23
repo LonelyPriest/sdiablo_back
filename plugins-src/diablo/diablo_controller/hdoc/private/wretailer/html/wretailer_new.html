@@ -134,6 +134,16 @@
 	      </div>
 	    </div>
 
+	    <div x-ng-if="retailer.type.id!==2" class="form-group">
+	      <label class="col-sm-3 col-md-3 control-label">会员等级</label>
+	      <div class="col-sm-6 col-md-6">
+	    	<select class="form-control" type="text"
+	    		x-ng-model="retailer.level"
+	    		x-ng-options="l as l.name for l in levels">
+	    	</select>
+	      </div>
+	    </div>
+
 	    <div x-ng-if="retailer.type.id===1" class="form-group">
 	      <label class="col-sm-3 col-md-3 control-label">取现密码</label>
 	      <div class="col-sm-6 col-md-6">

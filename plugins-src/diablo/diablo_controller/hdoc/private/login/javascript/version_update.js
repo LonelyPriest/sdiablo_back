@@ -1,6 +1,11 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2018-04-23",
+         content:
+	 ["新增会员增加等级选择"]
+        },
+	
 	{date: "2018-04-16",
          content:
 	 ["增加会员自动升级功能",

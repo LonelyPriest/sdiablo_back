@@ -205,7 +205,7 @@
 -define(new_threshold_card_sale,     ?right_w_retailer + 31).
 
 -define(add_retailer_level,          ?right_w_retailer + 32).
--define(update_retailer_level,          ?right_w_retailer + 33).
+-define(update_retailer_level,       ?right_w_retailer + 33).
 
 %% shop
 -define(new_shop,       ?right_shop + 1).
