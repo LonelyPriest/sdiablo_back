@@ -65,6 +65,7 @@ function purchaserInventoryRejectCtrlProvide(
 
     $scope.focus = {style_number:true, reject: false};
     $scope.auto_focus = function(attr){
+	console.log($scope.focus, attr);
 	if (!$scope.focus[attr]){
 	    $scope.focus[attr] = true;
 	}

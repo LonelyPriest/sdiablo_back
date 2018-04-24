@@ -1,6 +1,11 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2018-04-24",
+         content:
+	 ["增加自定义核销范围设置"]
+        },
+	
 	{date: "2018-04-23",
          content:
 	 ["新增会员增加等级选择"]

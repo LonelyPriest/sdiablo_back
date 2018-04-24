@@ -318,6 +318,10 @@ var wsaleUtils = function(){
 	scan_only:function(shop, base) {
 	    return diablo_base_setting("scan_only", shop, base, parseInt, diablo_no);
 	},
+
+	maling_rang:function(shop, base) {
+	    return diablo_base_setting("maling_rang", shop, base, parseInt, diablo_default_maling_rang);
+	},
 	
 	get_login_employee:function(shop, loginEmployee, employees){
 	    var filterEmployees = employees.filter(function(e){

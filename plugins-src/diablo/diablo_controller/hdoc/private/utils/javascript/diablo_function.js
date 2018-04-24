@@ -12,6 +12,7 @@ var diablo_date_seprator = "-";
 var diablo_invalid_index = -1;
 var diablo_invalid_firm = -1;
 var diablo_nolimit_day = -1;
+var diablo_default_maling_rang = 3;
 
 var diablo_firm_code = 1000;
 
@@ -190,6 +191,15 @@ var size_to_barcode =
 function diablo_range(n){
     if (n < 0) return;
     return n ? diablo_range(n - 1).concat(n):[];
+};
+
+function diablo_num2arrary(n) {
+    if (n < 0) {
+	if (n > 0) return;
+	return n ? diablo_num2arrary(n+1).concat(n) : [];
+    } else {
+	return n ? diablo_num2arrary(n - 1).concat(n) : [];
+    } 
 };
 
 var in_array = function(arr, item){

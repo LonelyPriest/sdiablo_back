@@ -1596,11 +1596,11 @@ export_type(1) -> trans_note.
 
 start(new_sale, Req, Merchant, Invs, Base, Print) ->
     ImmediatelyPrint = ?v(<<"im_print">>, Print, ?NO),
-    PMode            = ?v(<<"p_mode">>, Print, ?PRINT_FRONTE),
+    PMode            = ?v(<<"p_mode">>, Print, ?PRINT_BACKEND),
     Round            = ?v(<<"round">>, Base, 1),
     ShouldPay        = ?v(<<"should_pay">>, Base),
     %% RetailerId       = ?v(<<"retailer">>, Base),
-    Vip            = ?v(<<"vip">>, Base, false),
+    Vip              = ?v(<<"vip">>, Base, false),
     ShopId           = ?v(<<"shop">>, Base), 
 
     Datetime         = ?v(<<"datetime">>, Base),

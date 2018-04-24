@@ -481,14 +481,18 @@ function wsaleNewProvide(
 	$scope.setting.vip_mode      = wsaleUtils.vip_discount(shopId, base);
 	$scope.setting.gift_sale     = wsaleUtils.gift_sale(shopId, base);
 	$scope.setting.scan_only     = wsaleUtils.scan_only(shopId, base);
+	$scope.setting.maling_rang   = wsaleUtils.maling_rang(shopId, base);
 	
 	if (diablo_no === $scope.setting.cake_mode) {
-	    $scope.vpays = wsaleService.vpays;
+	    // $scope.vpays = wsaleService.vpays;
+	    $scope.vpays = [0].concat(diablo_num2arrary($scope.setting.maling_rang)
+				      .concat(diablo_num2arrary(-$scope.setting.maling_rang)));
 	} else {
 	    $scope.vpays = wsaleService.cake_vpays;
 	}
 
 	$scope.select.verificate = $scope.vpays[0];
+	console.log($scope.vpays);
 	// console.log($scope.setting);
     };
 
