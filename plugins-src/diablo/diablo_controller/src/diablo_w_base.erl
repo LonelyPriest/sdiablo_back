@@ -174,9 +174,7 @@ handle_call({list_bank_card, Merchant}, _From, State) ->
     {reply, Reply, State}; 
 
 handle_call({list_base_setting, Merchant, Conditions}, _From, State) ->
-    ?DEBUG("list_base_setting with merchant ~p, condtions ~p",
-	   [Merchant, Conditions]),
-
+    ?DEBUG("list_base_setting with merchant ~p, condtions ~p", [Merchant, Conditions]), 
     Sql = "select id, ename, cname, value, type"
 	", remark, shop, entry_date from w_base_setting"
 	" where merchant=" ++ ?to_s(Merchant)
@@ -833,7 +831,7 @@ sys_config() ->
 	      {"draw_region",       "区域提现",           "0",    "0"},
 	      {"threshold_card",    "次卡消费模式",       "0",    "0"},
 	      {"r_discount",        "会员折扣模式",       "0",    "0"},
-	      {"r_level",           "会员等级模式",       "0",    "0"},
+	      %% {"r_level",           "会员等级模式",       "0",    "0"},
 	      {"gift_sale",         "开单赠送模式",       "0",    "0"},
 	      {"scan_only",         "扫码销售",           "0",    "0"},
 	      {"auto_level",        "会员自动升级",       "0",    "0"},

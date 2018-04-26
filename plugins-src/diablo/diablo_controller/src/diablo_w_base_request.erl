@@ -51,11 +51,26 @@ action(Session, Req, {"list_base_setting"}) ->
 	    {ok, S}  = ?w_user_profile:get(setting, Merchant),
 	    %% ?DEBUG("shops ~p, shopIds ~p", [Shops, ShopIds]),
 
-	    Select = 
+	    Selects = 
 		case [{SS} || {SS} <- S, lists:member(?v(<<"shop">>, SS), ShopIds)] of
 		    [] -> [{SS} || {SS} <- S, ?v(<<"shop">>, SS) =:= -1];
 		    V -> V ++ [{SS} || {SS} <- S, ?v(<<"shop">>, SS) =:= -1]
 		end,
+
+	    Filters =
+		lists:foldr(
+		  fun({B}, Acc) ->
+			  [{lists:keydelete(
+			      <<"entry_date">>, 1, 
+			      lists:keydelete(
+				<<"remark">>, 1,
+				lists:keydelete(
+				  <<"type">>, 1,
+				  lists:keydelete(
+				    <<"cname">>, 1,
+				    lists:keydelete(<<"id">>, 1, B)))))}|Acc]
+		  end, [], Selects),
+	    	
 
 	    %% Select =
 	    %% 	case Merchant =:= 2 orelse Merchant =:= 4 of
@@ -76,9 +91,10 @@ action(Session, Req, {"list_base_setting"}) ->
 	    %% 		end
 	    %% 	end,
 		    
-	    %% ?DEBUG("select ~p", [Select]),
+	    %% ?DEBUG("select ~p", [Selects]),
+	    %% ?DEBUG("filters ~p", [Filters]), 
 	    %% lists:filter()
-	    ?utils:respond(200, batch, Req, Select)
+	    ?utils:respond(200, batch, Req, Filters)
 
     end;
 

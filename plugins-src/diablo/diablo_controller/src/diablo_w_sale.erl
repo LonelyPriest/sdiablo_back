@@ -1022,7 +1022,7 @@ handle_call({new_trans_export, Merchant, Conditions}, _From, State)->
     {reply, Reply, State};
 
 handle_call({new_trans_note_export, Merchant, Conditions}, _From, State)->
-    ?DEBUG("new_trans_note_export: merchant ~p\nConditions~p", [Merchant, Conditions]),
+    %% ?DEBUG("new_trans_note_export: merchant ~p\nConditions~p", [Merchant, Conditions]),
     CorrectCondition = ?utils:correct_condition(<<"a.">>, Conditions),
 
     Sql = "select a.id, a.rsn, a.style_number"
@@ -1095,7 +1095,7 @@ handle_call({new_trans_note_export, Merchant, Conditions}, _From, State)->
 
 
 handle_call({new_trans_note_color_size_export, Merchant, Conditions}, _From, State)->
-    ?DEBUG("new_trans_note_colro_size_export: merchant ~p\nConditions~p", [Merchant, Conditions]),
+    %% ?DEBUG("new_trans_note_colro_size_export: merchant ~p\nConditions~p", [Merchant, Conditions]),
 
     Sql = "select id"
 	", style_number"

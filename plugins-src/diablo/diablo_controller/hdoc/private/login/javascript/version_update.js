@@ -1,6 +1,11 @@
 var version_update = function(){
     
     var updates = [
+	{date: "2018-04-26",
+         content:
+	 ["补单模式默认按销售数量排序"]
+        },
+	
 	{date: "2018-04-24",
          content:
 	 ["增加自定义核销范围设置"]

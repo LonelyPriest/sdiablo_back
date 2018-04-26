@@ -805,8 +805,9 @@ start_check_level(Merchant, Levels, [{Shop}|Shops], CheckSqls) ->
     ShopId = ?v(<<"id">>, Shop),
     BaseSettings = ?w_report_request:get_setting(Merchant, ShopId),
     Sqls = 
-	case ?to_i(?w_report_request:get_config(<<"r_level">>, BaseSettings, ?NO)) =:= ?YES
-	    andalso ?to_i(?w_report_request:get_config(<<"auto_level">>, BaseSettings, ?NO)) =:= ?YES of
+	%% case ?to_i(?w_report_request:get_config(<<"r_level">>, BaseSettings, ?NO)) =:= ?YES
+	%%     andalso ?to_i(?w_report_request:get_config(<<"auto_level">>, BaseSettings, ?NO)) =:= ?YES of
+	case ?to_i(?w_report_request:get_config(<<"auto_level">>, BaseSettings, ?NO)) =:= ?YES of
 	    true ->
 		[L0|LT] = Levels,
 		Sql = "select id, level, score, consume, shop from w_retailer where merchant=" ++ ?to_s(Merchant)

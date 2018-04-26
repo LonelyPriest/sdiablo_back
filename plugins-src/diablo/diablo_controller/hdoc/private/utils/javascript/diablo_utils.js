@@ -420,7 +420,8 @@ diabloUtils.directive('focusAuto', function($timeout, $parse) {
 	    
 	    scope.$watch(model, function(value) {
 		// console.log(value);
-		if(value === true) {
+		if(value) {
+		    // console.log("focus");
 		    $timeout(function(){
 			element[0].focus();
 		    }, 100);
@@ -741,8 +742,8 @@ diabloUtils.directive('queryPattern', function () {
 	    // console.log(scope);
 	    // pattern
 	    scope.pattern = {};
-	    scope.pattern.matches = [{op:"and", chinese:"匹配所有"}
-				     // {op:"or",  chinese:"匹配任意一个"}
+	    scope.pattern.matches = [{op:"and",   chinese:"匹配所有"},
+				     {op:"like",  chinese:"模糊匹配"}
 				    ];
 	    scope.pattern.match = scope.pattern.matches[0];
 

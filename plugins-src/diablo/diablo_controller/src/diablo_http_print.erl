@@ -221,8 +221,7 @@ call(Parent, {print, Action, RSN, Merchant, Invs, Attrs, Print}) ->
 			  %% ?DEBUG("P ~p", [P]),
 			  Server = server(?v(<<"server_id">>, P)),
 
-			  {ok, Setting}
-			      = detail(base_setting, Merchant, PShop),
+			  {ok, Setting} = detail(base_setting, Merchant, PShop),
 
 			  Content =
 			      case Action of
@@ -835,18 +834,38 @@ detail(print_format, Merchant, Shop) ->
 
 detail(base_setting, Merchant, Shop) ->
     %% ?DEBUG("base_setting with merhcant ~p, Shop ~p", [Merchant, Shop]),
-    {ok, Settings} = ?w_user_profile:get(setting, Merchant, Shop), 
-    {ok, lists:foldr(
-	   fun({R}, Acc) ->
-		   %% only use print setting
-		   case ?v(<<"type">>, R) of
-		       1 -> Acc;
-		       0 -> EName = ?v(<<"ename">>, R),
-			    Value = ?v(<<"value">>, R),
-			    [{EName, Value}|Acc]
-		   end
-	   end, [], Settings)}.
-
+    %% {ok, Settings} = ?w_user_profile:get(setting, Merchant, Shop),
+    Settings = ?w_report_request:get_setting(Merchant, Shop),
+    FormatSettings = 
+	{ok, lists:foldr(
+	       fun({R}, Acc) ->
+		       %% only use print setting
+		       case ?v(<<"type">>, R) of
+			   1 -> Acc;
+			   0 -> 
+			       EName = ?v(<<"ename">>, R),
+			       Value = ?v(<<"value">>, R),
+			       T = {EName, Value},
+			       case ?to_i(?v(<<"shop">>, R)) =:= Shop of
+				   true ->
+				       case lists:keysearch(EName, 1, Acc) of
+					   {_V, _T} ->
+					       lists:keyreplace(EName, 1, Acc, T);
+					   false ->
+					       [T|Acc]
+				       end;
+				   false ->
+				       case lists:keysearch(EName, 1, Acc) of
+					   {_V, _T} ->
+					       Acc;
+					   false ->
+					       [T|Acc]
+				       end
+			       end
+		       end
+	       end, [], Settings)},
+    %% ?DEBUG("formatSettings ~p", FormatSettings),
+    FormatSettings.
 
 field_name(<<"brand">>) -> "品牌";
 field_name(<<"style_number">>) -> "款号";
@@ -855,8 +874,7 @@ field_name(<<"color">>)        -> "颜色";
 field_name(<<"size">>)         -> "尺码".
 
 pay(style, Cash, Card, Withdraw, Ticket, Wxin) ->
-    ?DEBUG("cash ~p, card ~p, withdraw ~p, ticket ~p, Wxin ~p",
-	   [Cash, Card, Withdraw, Ticket, Wxin]),
+    %% ?DEBUG("cash ~p, card ~p, withdraw ~p, ticket ~p, Wxin ~p", [Cash, Card, Withdraw, Ticket, Wxin]),
     Pays = [pay(cash, Cash),
 	    pay(card, Card),
 	    pay(withdraw, Withdraw),

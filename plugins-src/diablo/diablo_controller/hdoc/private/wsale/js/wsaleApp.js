@@ -486,7 +486,7 @@ function wsaleNewProvide(
 	if (diablo_no === $scope.setting.cake_mode) {
 	    // $scope.vpays = wsaleService.vpays;
 	    $scope.vpays = [0].concat(diablo_num2arrary($scope.setting.maling_rang)
-				      .concat(diablo_num2arrary(-$scope.setting.maling_rang)));
+				      .concat(diablo_num2arrary(-3)));
 	} else {
 	    $scope.vpays = wsaleService.cake_vpays;
 	}
@@ -1004,7 +1004,7 @@ function wsaleNewProvide(
 	}; 
 
 	// auto focus
-	$scope.auto_focus("sell");
+	// $scope.auto_focus("sell");
 	
 	// add at first allways 
 	var add = $scope.inventories[0];
@@ -1774,6 +1774,7 @@ function wsaleNewProvide(
 		// console.log(inv.amounts); 
 
 		if(inv.free === 0){
+		    $scope.auto_focus("sell");
 		    inv.free_color_size = true;
 		    inv.amounts         = [{cid:0, size:0}];
 		    if ($scope.setting.barcode_mode) {

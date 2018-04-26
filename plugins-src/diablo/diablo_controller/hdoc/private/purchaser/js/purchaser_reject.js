@@ -63,7 +63,7 @@ function purchaserInventoryRejectCtrlProvide(
 
     // console.log($scope.stock_right);
 
-    $scope.focus = {style_number:true, reject: false};
+    $scope.focus = {style_number:false, reject: false};
     $scope.auto_focus = function(attr){
 	console.log($scope.focus, attr);
 	if (!$scope.focus[attr]){
@@ -71,8 +71,10 @@ function purchaserInventoryRejectCtrlProvide(
 	}
 	for (var o in $scope.focus){
 	    if (o !== attr) $scope.focus[o] = false;
-	} 
-    };
+	}
+	console.log($scope.focus, attr);
+    }; 
+    $scope.auto_focus('style_number');
 
     
     // init
@@ -211,25 +213,25 @@ function purchaserInventoryRejectCtrlProvide(
     };
 
     // console.log($scope.setting);
-    $scope.get_all_prompt_inventory = function(){
-	diabloFilter.match_all_w_reject_inventory(
-	    $scope.qtime_start($scope.select.shop.id),
-	    $scope.select.shop.id,
-	    stockUtils.invalid_firm($scope.select.firm)
-	).then(function(invs){
-	    // console.log(invs);
-	    $scope.all_prompt_inventory = invs.sort(function(inv1, inv2){
-		return inv1.style_number.length - inv2.style_number.length;
-	    }).map(function(inv){
-		var p = stockUtils.prompt_name(inv.style_number, inv.brand, inv.type);
-		return angular.extend(inv, {name:p.name, prompt:p.prompt}); 
-	    });
-	});
-    };
+    // $scope.get_all_prompt_inventory = function(){
+    // 	diabloFilter.match_all_w_reject_inventory(
+    // 	    $scope.qtime_start($scope.select.shop.id),
+    // 	    $scope.select.shop.id,
+    // 	    stockUtils.invalid_firm($scope.select.firm)
+    // 	).then(function(invs){
+    // 	    // console.log(invs);
+    // 	    $scope.all_prompt_inventory = invs.sort(function(inv1, inv2){
+    // 		return inv1.style_number.length - inv2.style_number.length;
+    // 	    }).map(function(inv){
+    // 		var p = stockUtils.prompt_name(inv.style_number, inv.brand, inv.type);
+    // 		return angular.extend(inv, {name:p.name, prompt:p.prompt}); 
+    // 	    });
+    // 	});
+    // };
 
-    if ($scope.q_prompt === diablo_frontend){
-	$scope.get_all_prompt_inventory()
-    };
+    // if ($scope.q_prompt === diablo_frontend){
+    // 	$scope.get_all_prompt_inventory()
+    // };
 
     $scope.match_prompt_inventory = function(viewValue){
 	return diabloFilter.match_w_reject_inventory(
@@ -290,7 +292,7 @@ function purchaserInventoryRejectCtrlProvide(
 	$scope.add_inventory(add);
 
 	// auto focus
-	$scope.auto_focus("reject");
+	// $scope.auto_focus("reject");
 	
 	return;
     }; 
@@ -550,6 +552,7 @@ function purchaserInventoryRejectCtrlProvide(
 
 	    if (inv.free === 0){
 		inv.free_color_size = true;
+		$scope.auto_focus("reject");
 	    } else{
 		inv.free_color_size = false;
 		var payload = {sizes:          inv.sizes,

@@ -286,9 +286,10 @@ function wsaleRsnDetailCtrlProvide (
 		    $scope.notes = [];
 		    $scope.total = result.total;
 		    $scope.amount = 0;
-		    
+
+		    sorted_notes = result.note.sort(function(n1, n2) {return n2.total - n1.total}); 
 		    var order_id = 1;
-		    angular.forEach(result.note, function(n) {
+		    angular.forEach(sorted_notes, function(n) {
 			n.order_id = order_id; 
 			$scope.notes.push(n);
 			

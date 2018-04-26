@@ -233,42 +233,37 @@
 		  <tr class="text-center" ng-repeat="inv in inventories"> 
 		    <td>{{inv.order_id}}</td>
 
-		    <td x-ng-if="q_prompt===0"
-			class="col-md-2 text-left vert-align">
-		      <span ng-if="!inv.$new">{{inv.style_number}}</span>
-		      <form name="inv.form.good" ng-if="inv.$new">
-			<div ng-class="{'has-error':inv.form.good.$invalid
-				       && !inv.form.good.$pristine}">
-			  <input class="form-control text-left" type="text"
-				 required
-				 focus-auto="focus.style_number"
-				 x-ng-model="inv.style_number"
-				 placeholder="货号"
-				 typeahead-editable="false"
-				 typeahead-on-select="on_select_inventory(
-						      $item, $model, $label)"
-				 uib-typeahead="g as g.name for g in
-					    all_prompt_inventory|filter:{prompt:$viewValue}|limitTo:prompt_limit"/>
-			</div>
-		      </form>
-		    </td>
+		    <!-- <td x-ng-if="q_prompt===0" class="col-md-2 text-left vert-align"> -->
+		    <!--   <span ng-if="!inv.$new">{{inv.style_number}}</span> -->
+		    <!--   <form name="inv.form.good" ng-if="inv.$new"> -->
+		    <!-- 	<div ng-class="{'has-error':inv.form.good.$invalid -->
+		    <!-- 		       && !inv.form.good.$pristine}"> -->
+		    <!-- 	  <input class="form-control text-left" type="text" -->
+		    <!-- 		 required -->
+		    <!-- 		 focus-auto="focus.style_number" -->
+		    <!-- 		 x-ng-model="inv.style_number" -->
+		    <!-- 		 placeholder="货号" -->
+		    <!-- 		 typeahead-editable="false" -->
+		    <!-- 		 typeahead-on-select="on_select_inventory($item, $model, $label)" -->
+		    <!-- 		 uib-typeahead="g as g.name for g in -->
+		    <!-- 			    all_prompt_inventory|filter:{prompt:$viewValue}|limitTo:prompt_limit"/> -->
+		    <!-- 	</div> -->
+		    <!--   </form> -->
+		    <!-- </td> -->
 		    
-		    <td x-ng-if="q_prompt===1"
-			class="col-md-2 text-left vert-align">
+		    <td class="col-md-2 text-left vert-align">
 		      <span ng-if="!inv.$new">{{inv.style_number}}</span>
 		      <form name="inv.form.good" ng-if="inv.$new">
-			<div ng-class="{'has-error':inv.form.good.$invalid
-				       && !inv.form.good.$pristine}">
+			<div ng-class="{'has-error':inv.form.good.$invalid && !inv.form.good.$pristine}">
 			  <input class="form-control text-left" type="text"
 				 required
 				 x-ng-model="inv.style_number"
+				 focus-auto="focus.style_number"
 				 placeholder="货号"
 				 typeahead-editable="false"
 				 typeahead-wait-ms="500"
-				 typeahead-on-select="on_select_inventory(
-						      $item, $model, $label)"
-				 uib-typeahead="g as g.name for g in
-					    match_prompt_inventory($viewValue)"/>
+				 typeahead-on-select="on_select_inventory($item, $model, $label)"
+				 uib-typeahead="g as g.name for g in match_prompt_inventory($viewValue)"/>
 			</div>
 		      </form>
 		    </td>
