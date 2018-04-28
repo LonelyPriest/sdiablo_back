@@ -2,8 +2,11 @@
 -define(YES, 1).
 
 -define(TABLET, 1).
-
 -define(SUCCESS, 0).
+
+%% match
+-define(AND, 'and').
+-define(LIKE, 'like').
 
 %% user type
 -define(SUPER, 0).

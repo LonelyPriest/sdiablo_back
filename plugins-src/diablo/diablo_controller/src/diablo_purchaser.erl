@@ -302,9 +302,9 @@ filter(total_transfer_rsn_groups, 'and', Merchant, Fields) ->
     gen_server:call(Name, {total_transfer_rsn_groups, Merchant, Fields});
 
 %% inventory
-filter(total_groups, 'and', Merchant, Fields) ->
+filter(total_groups, MatchMode, Merchant, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {total_groups, Merchant, Fields});
+    gen_server:call(Name, {total_groups, MatchMode, Merchant, Fields});
 
 %% good
 filter(total_goods, 'and', Merchant, Fields) ->
@@ -350,16 +350,16 @@ filter(transfer_rsn_groups, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) 
                            Merchant, CurrentPage, ItemsPerPage, Fields});
 
 %% inventory
-filter(groups, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
+filter(groups, MatchMode, Merchant, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant),
     %% default use id
     gen_server:call(
-      Name, {filter_groups, {use_id, 0}, Merchant, CurrentPage, ItemsPerPage, Fields});
+      Name, {filter_groups, {use_id, 0}, MatchMode, Merchant, CurrentPage, ItemsPerPage, Fields});
 
-filter({groups, Mode, Sort}, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
+filter({groups, Mode, Sort}, MatchMode, Merchant, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(
-      Name, {filter_groups, {Mode, Sort}, Merchant, CurrentPage, ItemsPerPage, Fields});
+      Name, {filter_groups, {Mode, Sort}, MatchMode, Merchant, CurrentPage, ItemsPerPage, Fields});
 
 %% good
 filter(goods, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
@@ -2560,7 +2560,7 @@ handle_call({filter_goods, Merchant, CurrentPage, ItemsPerPage, Fields}, _From, 
     {reply, Reply, State}; 
 
 %% inventory
-handle_call({total_groups, Merchant, Fields}, _From, State) ->
+handle_call({total_groups, MatchMode, Merchant, Fields}, _From, State) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Fields),
     RealyConditions = ?w_good_sql:realy_conditions(Merchant, NewConditions), 
     ExtraCondtion = ?w_good_sql:sort_condition(stock, NewConditions),
@@ -2571,20 +2571,30 @@ handle_call({total_groups, Merchant, Fields}, _From, State) ->
 	", sum(amount * org_price) as t_lmoney"
 	" from w_inventory"
 	" where merchant=" ++ ?to_s(Merchant)
-	++ ?sql_utils:condition(proplists, RealyConditions)
+	++ case MatchMode of
+	       ?AND -> ?sql_utils:condition(proplists, RealyConditions);
+	       ?LIKE -> 
+		   case ?v(<<"style_number">>, RealyConditions, []) of
+		       [] ->
+			   ?sql_utils:condition(proplists, RealyConditions);
+		       StyleNumber ->
+			   " and style_number like '" ++ ?to_s(StyleNumber) ++ "%'"
+			   ++ ?sql_utils:condition(
+				 proplists, lists:keydelete(<<"style_number">>, 1, RealyConditions))
+		   end
+	   end
 	++ ExtraCondtion
 	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime),
     
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State}; 
 
-handle_call({filter_groups, {Mode, Sort}, Merchant,
+handle_call({filter_groups, {Mode, Sort}, MatchMode, Merchant,
 	     CurrentPage, ItemsPerPage, Fields}, _From, State) ->
-    ?DEBUG("filter_groups_with_and: mode ~p, sort ~p, currentPage ~p, ItemsPerpage ~p"
-	   ", Merchant ~p~nfields ~p",
+    ?DEBUG("filter_groups_with_and: mode ~p, sort ~p, currentPage ~p, ItemsPerpage ~p" ", Merchant ~p~nfields ~p",
 	   [Mode, Sort, CurrentPage, ItemsPerPage, Merchant, Fields]),
     %% C = realy_conditions(Merchant, Fields),
-    Sql = ?w_good_sql:inventory({group_detail_with_pagination, Mode, Sort},
+    Sql = ?w_good_sql:inventory({group_detail_with_pagination, MatchMode, Mode, Sort},
 				Merchant, Fields, CurrentPage, ItemsPerPage), 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};

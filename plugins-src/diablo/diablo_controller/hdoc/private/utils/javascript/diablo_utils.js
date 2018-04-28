@@ -736,15 +736,19 @@ diabloUtils.directive('queryPattern', function () {
 	require: "ngModel",
 	scope:{
 	    filters:  '=',
-	    filter:   '='
+	    filter:   '=',
+	    likeMatch: '@'
 	},
 	link: function(scope, element, attr, ngModel){
 	    // console.log(scope);
 	    // pattern
 	    scope.pattern = {};
-	    scope.pattern.matches = [{op:"and",   chinese:"匹配所有"},
-				     {op:"like",  chinese:"模糊匹配"}
-				    ];
+	    if (angular.isDefined(scope.likeMatch) && scope.$eval(scope.likeMatch)) 
+		scope.pattern.matches = [{op:"and",   chinese:"匹配所有"},
+					 {op:"like",  chinese:"模糊匹配"}];
+	    else
+		scope.pattern.matches = [{op:"and",   chinese:"匹配所有"}];
+	    
 	    scope.pattern.match = scope.pattern.matches[0];
 
 	    ngModel.$setViewValue(scope.pattern.match);

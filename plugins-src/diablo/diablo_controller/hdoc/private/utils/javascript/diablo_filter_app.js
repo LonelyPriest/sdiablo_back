@@ -346,6 +346,7 @@ function filterProvider(){
 	    },
 	    
 	    match_style_number: function(viewValue){
+		if (angular.isUndefined(viewValue) || viewValue.length < diablo_filter_length) return;
 		return match_purchaser_style_number(viewValue).then(function(result){
 		    // console.log(result);
 		    return result.map(function(s){

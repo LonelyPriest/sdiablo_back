@@ -375,7 +375,7 @@ function wsaleNewProvide(
 	master:rightAuthen.authen_master(user.type)
     };
 
-    console.log($scope.right);
+    // console.log($scope.right);
 
     $scope.focus_attr = {style_number:false,
 			 barcode:false,
@@ -492,7 +492,7 @@ function wsaleNewProvide(
 	}
 
 	$scope.select.verificate = $scope.vpays[0];
-	console.log($scope.vpays);
+	// console.log($scope.vpays);
 	// console.log($scope.setting);
     };
 
@@ -577,7 +577,7 @@ function wsaleNewProvide(
     };
 
     $scope.sysRetailers = filterSysRetailer;
-    console.log($scope.sysRetailers);
+    // console.log($scope.sysRetailers);
     $scope.reset_retailer = function(){
     	if (diablo_yes === $scope.setting.smember){
     	    $scope.sysRetailers = $scope.sysRetailers.filter(function(r){
@@ -931,6 +931,7 @@ function wsaleNewProvide(
     };
     
     $scope.match_style_number = function(viewValue){
+	if (angular.isUndefined(diablo_set_string(viewValue)) || viewValue.length < diablo_filter_length) return;
 	return diabloFilter.match_w_sale(viewValue, $scope.select.shop.id);
     } 
 
@@ -1713,7 +1714,7 @@ function wsaleNewProvide(
 
     $scope.calc_discount = function(inv){
 	if (inv.pid !== -1 && inv.promotion.rule_id === 0){
-	    return inv.promotion.discount;
+	    return inv.discount < inv.promotion.discount ? inv.discount : inv.promotion.discount;
 	} else {
 	    return inv.discount;
 	}

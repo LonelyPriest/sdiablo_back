@@ -497,7 +497,7 @@ inventory(abstract, Merchant, Shop, [{S1, B1}|T] = _Conditions) ->
 	" and a.brand_id=b.brand"
 	" and a.shop=b.shop";
 
-inventory(group_detail, Merchant, Conditions, PageFun) ->
+inventory({group_detail, MatchMode}, Merchant, Conditions, PageFun) ->
     ?DEBUG("group_detail:merchant ~p, Conditions ~p", [Merchant, Conditions]),
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions), 
     RealyConditions = realy_conditions(Merchant, NewConditions),
@@ -565,8 +565,23 @@ inventory(group_detail, Merchant, Conditions, PageFun) ->
 	   end
 	++ 
 	" where "
-	++ "a.merchant=" ++ ?to_s(Merchant) 
-	++ ?sql_utils:condition(proplists, ?utils:correct_condition(<<"a.">>, RealyConditions, []))
+	++ "a.merchant=" ++ ?to_s(Merchant)
+	++ case MatchMode of
+	       ?AND ->
+		   ?sql_utils:condition(proplists, ?utils:correct_condition(<<"a.">>, RealyConditions, []));
+	       ?LIKE ->
+		   case ?v(<<"style_number">>, RealyConditions, []) of
+		       [] ->
+			   ?sql_utils:condition(proplists, ?utils:correct_condition(<<"a.">>, RealyConditions, []));
+		       StyleNumber ->
+			   " and style_number like '" ++ ?to_s(StyleNumber) ++ "%'"
+			       ++ ?sql_utils:condition(
+				     proplists,
+				     ?utils:correct_condition(
+					<<"a.">>,
+					lists:keydelete(<<"style_number">>, 1, RealyConditions), []))
+		   end
+	   end
 	++ ExtraConditions
 	++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime) ++  PageFun();
 
@@ -1188,9 +1203,9 @@ inventory(transfer_rsn_groups, transfer, Merchant, Conditions, PageFun) ->
 	   end 
         ++ PageFun();
 
-inventory({group_detail_with_pagination, Mode, Sort},
+inventory({group_detail_with_pagination, MatchMode, Mode, Sort},
 	  Merchant, Conditions, CurrentPage, ItemsPerPage) -> 
-    inventory(group_detail, Merchant, Conditions,
+    inventory({group_detail, MatchMode}, Merchant, Conditions,
 	fun() ->
 		?sql_utils:condition(page_desc, {Mode, Sort}, CurrentPage, ItemsPerPage)
 	end);

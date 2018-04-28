@@ -483,8 +483,7 @@ action(Session, Req, {"reject_w_inventory"}, Payload) ->
 %% inventory
 %% ============================================================================= 
 action(Session, Req, {"filter_w_inventory_group"}, Payload) -> 
-    ?DEBUG("filter_w_inventory_group with session ~p, paylaod~n~p",
-	   [Session, Payload]), 
+    ?DEBUG("filter_w_inventory_group with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
     {struct, Mode}     = ?v(<<"mode">>, Payload),
     Order = ?v(<<"mode">>, Mode),

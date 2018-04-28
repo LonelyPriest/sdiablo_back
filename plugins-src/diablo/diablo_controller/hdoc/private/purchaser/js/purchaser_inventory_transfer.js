@@ -153,6 +153,8 @@ function purchaserInventoryTransferCtrlProvide (
     };
 
     $scope.match_prompt_inventory = function(viewValue){
+	// console.log(viewValue, diablo_filter_length);
+	if (angular.isUndefined(diablo_set_string(viewValue)) && viewValue.length < diablo_filter_length) return;
 	return diabloFilter.match_w_sale(viewValue, $scope.select.shop.id); 
     }; 
 
@@ -211,7 +213,7 @@ function purchaserInventoryTransferCtrlProvide (
 
 	console.log(add);
 
-	$scope.auto_focus("transfer");
+	// $scope.auto_focus("transfer");
 	$scope.add_inventory(add);
 	
 	return;
@@ -449,6 +451,7 @@ function purchaserInventoryTransferCtrlProvide (
 
 	    if (inv.free === 0){
 		inv.free_color_size = true;
+		$scope.auto_focus("transfer"); 
 	    } else{
 		inv.free_color_size = false;
 		var payload = {sizes:        inv.sizes,

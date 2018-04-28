@@ -120,6 +120,7 @@ function wsaleUpdateRejectCtrlProvide(
     });
 
     $scope.match_style_number = function(viewValue){
+	if (angular.isUndefined(diablo_set_string(viewValue)) || viewValue.length < diablo_filter_length) return;
     	return diabloFilter.match_w_sale(viewValue, $scope.select.shop.id);
     }
     

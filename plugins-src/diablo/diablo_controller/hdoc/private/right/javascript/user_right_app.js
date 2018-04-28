@@ -185,7 +185,7 @@ userApp.factory("userService", function($resource, $q){
 
 		var re  = /^login-.*$/; 
 		for (var key in localStorage){
-		    console.log(key);
+		    // console.log(key);
 		    if (re.test(key)) localStorage.removeItem(key);
 		}
 		
