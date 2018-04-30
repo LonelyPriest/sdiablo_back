@@ -1006,7 +1006,7 @@ stockPrintU.prototype.printBarcode2 = function() {
     line = this.first.size && this.first.size !== diablo_free_size ? this.first.size : "均码";
     if (this.template.size) {
 	if (this.template.solo_size) {
-	    if (this.stock.specs.length !== 0 && this.first.size !== diablo_free_size) {
+	    if (angular.isDefined(this.stock.specs) && this.stock.specs.length !== 0 && this.first.size !== diablo_free_size) {
 		for (var i=0, l=this.stock.specs.length; i<l; i++) {
 		    if (this.first.size.toString() === this.stock.specs[i].name) {
 			line += " (" + this.stock.specs[i].spec + ")";
@@ -1018,7 +1018,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 	    // second
 	    if (pSecond) {
 		line = this.second.size && this.second.size !== diablo_free_size ? this.second.size : "均码"; 
-		if (this.stock.specs.length !== 0 && this.second.size !== diablo_free_size) {
+		if (angular.isDefined(this.stock.specs) && this.stock.specs.length !== 0 && this.second.size !== diablo_free_size) {
 		    for (var i=0, l=this.stock.specs.length; i<l; i++) {
 			if (this.second.size.toString() === this.stock.specs[i].name) {
 			    line += " (" + this.stock.specs[i].spec + ")";

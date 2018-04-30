@@ -15,7 +15,7 @@ var diablo_nolimit_day = -1;
 var diablo_default_maling_rang = 3;
 
 var diablo_firm_code = 1000;
-var diablo_filter_length = 3;
+var diablo_filter_length = 2;
 
 var diablo_yes = 1;
 var diablo_no = 0;
