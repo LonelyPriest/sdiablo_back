@@ -7,10 +7,14 @@
 	  <i class="glyphicon glyphicon-menu-hamburger"></i>积分电子卷</div>	
 
 	<div class="actions">
-	  <div class="btn-group btn-group-solid"> 
-	    <a type="button" class="btn blue reload purple-stripe"
+	  <div class="btn-group btn-group-solid">
+	    <button x-ng-if="right.syn_ticket" type="button" class="btn green reload purple-stripe"
+	       x-ng-click="syn_ticket()">同步
+	      <i class="glyphicon glyphicon-sort"></i></button>
+	    
+	    <button type="button" class="btn blue reload purple-stripe"
 	       x-ng-click="refresh()">刷新
-	      <i class="icon icon-spinner fg-white"></i></a>
+	      <i class="icon icon-spinner fg-white"></i></button> 
 	  </div>
 	</div>
 	

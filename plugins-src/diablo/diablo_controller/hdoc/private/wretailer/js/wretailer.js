@@ -105,6 +105,7 @@ function wretailerDetailCtrlProvide(
 	query_balance         :retailerUtils.authen(user.type, user.right, 'query_balance'),
 	update_phone          :retailerUtils.authen(user.type, user.right, 'update_phone'),
 	set_withdraw          :retailerUtils.authen(user.type, user.right, 'set_withdraw'),
+	update_level          :retailerUtils.authen(user.type, user.right, 'update_level'),
 	master                :rightAuthen.authen_master(user.type) 
     };
     // console.log($scope.right);
@@ -843,11 +844,9 @@ function wretailerChargeDetailCtrlProvide(
 };
 
 function wretailerTicketDetailCtrlProvide(
-    $scope, diabloFilter, diabloPattern, diabloUtilsService,
-    wretailerService, filterShop){
+    $scope, diabloFilter, diabloPattern, diabloUtilsService, wretailerService, filterShop, user){
 
-    var dialog = diabloUtilsService;
-
+    var dialog = diabloUtilsService; 
     // $scope.shops = user.sortShops;
     $scope.pattern = {comment: diabloPattern.comment};
     $scope.items_perpage = diablo_items_per_page();
@@ -855,6 +854,10 @@ function wretailerTicketDetailCtrlProvide(
     $scope.default_page = 1; 
     $scope.current_page = $scope.default_page;
     $scope.total_items = 0;
+
+    $scope.right = {
+	syn_ticket        :retailerUtils.authen(user.type, user.right, 'syn_score_ticket')
+    };
     // $scope.retailers = filterRetailer.filter(function(r){return r.score > 10000});
 
     $scope.filters = []; 
@@ -898,6 +901,25 @@ function wretailerTicketDetailCtrlProvide(
 		} 
 	    })
 	})
+    };
+
+    $scope.syn_ticket = function() {
+	diabloFilter.do_filter($scope.filters, $scope.time, function(search) {
+	    wretailerService.syn_ticket(search).then(function(result) {
+		console.log(result);
+		if (result.ecode === 0) {
+		    dialog.response_with_callback(
+			true,
+			"同步电子卷",
+			"同步电子卷成功！！",
+			undefined,
+			function(){$scope.do_search($scope.current_page)}) 
+		} else {
+		    dialog.response(
+			false, "同步电子卷", "同步电子卷失败：" + wretailerService.error[result.ecode]);
+		}
+	    });
+	});
     };
 
     $scope.refresh = function(){

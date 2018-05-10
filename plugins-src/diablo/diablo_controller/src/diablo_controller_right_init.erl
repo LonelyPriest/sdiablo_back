@@ -166,6 +166,8 @@ init([]) ->
 	  <<"电子卷生效">>, <<"effect_w_retailer_ticket">>, ?right_w_retailer},
 	 {?consume_ticket, 
 	  <<"手动消费电子卷">>, <<"consume_w_retailer_ticket">>, ?right_w_retailer},
+	 {?syn_score_ticket,
+	  <<"同步积分电子卷">>, <<"syn_score_ticket">>, ?right_w_retailer},
 
 	 {?make_ticket_batch, 
 	  <<"批量制卷">>, <<"make_ticket_batch">>, ?right_w_retailer},
@@ -188,7 +190,7 @@ init([]) ->
 	  <<"新增会员等级">>, <<"add_retailer_level">>, ?right_w_retailer},
 
 	 {?update_retailer_level,
-	  <<"修改会员等级">>, <<"update_retailer_level">>, ?right_w_retailer}
+	  <<"修改会员等级定义">>, <<"update_retailer_level">>, ?right_w_retailer} 
 	],
 
     

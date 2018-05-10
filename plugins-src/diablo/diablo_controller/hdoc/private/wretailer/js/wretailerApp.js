@@ -124,7 +124,7 @@ function wretailerConfig(angular) {
 	    when('/ticket/score_ticket_detail', {
 		templateUrl: '/private/wretailer/html/ticket_detail.html',
 		controller: 'wretailerTicketDetailCtrl',
-		resolve: angular.extend({},  shop)
+		resolve: angular.extend({},  shop, user)
 	    }).
 	    when('/ticket/custom_ticket_detail', {
 		templateUrl: '/private/wretailer/html/custom_ticket_detail.html',
@@ -427,6 +427,10 @@ function wretailerConfig(angular) {
 	this.consume_ticket = function(tid, comment){
 	    return http.save(
 		{operation: "consume_w_retailer_ticket"}, {tid:tid, comment:comment}).$promise;
+	};
+
+	this.syn_ticket = function(conditions) {
+	    return http.save({operation: "syn_score_ticket"}, conditions).$promise;
 	};
 
 	// this.get_ticket_by_retailer = function(retailerId) {

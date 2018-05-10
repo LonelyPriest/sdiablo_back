@@ -239,12 +239,13 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
     diabloFilter.add_field("style_number", $scope.match_style_number);
     diabloFilter.add_field("brand", filterBrand);
     diabloFilter.add_field("type",  filterType);
-    diabloFilter.add_field("sex",   diablo_sex2object); 
     diabloFilter.add_field("firm",  filterFirm);
     diabloFilter.add_field("year",  diablo_full_year);
-    diabloFilter.add_field("season",  diablo_season2objects); 
+    diabloFilter.add_field("season",  diablo_season2objects);
+    diabloFilter.add_field("shop", user.sortShops); 
+    diabloFilter.add_field("purchaser_type", purchaserService.purchaser_type);
+    diabloFilter.add_field("sex",   diablo_sex2object); 
     diabloFilter.add_field("rsn",   function(viewValue) {return undefined}); 
-    diabloFilter.add_field("shop", user.sortShops);
 
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();

@@ -830,8 +830,7 @@ action(Session, Req, {"w_inventory_export"}, Payload) ->
 	case ExportType of
 	    trans_note ->
 		{struct, CutConditions} = ?v(<<"condition">>, Payload),
-		{ok, Q} = ?w_inventory:purchaser_inventory(
-			     get_inventory_new_rsn, Merchant, CutConditions),
+		{ok, Q} = ?w_inventory:purchaser_inventory(get_inventory_new_rsn, Merchant, CutConditions),
 		{struct, C} =
 		    ?v(<<"fields">>,
 		       filter_condition(
@@ -1429,16 +1428,33 @@ filter_condition(trans_note, Rsns, Conditions) ->
 	       end, [], Conditions)}}].
 
 
-csv_head(trans, Do, _Code, _ShowOrgPrice) ->
+csv_head(trans, Do, Code, _ShowOrgPrice) ->
     H = "序号,单号,厂商,门店,入单员,采购,数量,现金,刷卡,汇款,核销,费用,帐户欠款,应付,实付,本次欠款,备注,日期",
-    UTF8 = unicode:characters_to_list(H, utf8),
+    %% UTF8 = unicode:characters_to_list(H, utf8),
+    %% GBK  = diablo_iconv:convert("utf-8", "gbk", UTF8),
+    C = case Code of
+	    0 ->
+		?utils:to_utf8(from_latin1, H);
+	    1 ->
+		?utils:to_gbk(from_latin1, H)
+	end, 
+    Do(C);
+csv_head(trans_note, Do, Code, ShowOrgPrice) ->
+    H = case ShowOrgPrice of
+	    true ->
+		"序号,单号,厂商,门店,店员,交易类型,款号,品牌,类型,吊牌价,折扣,进价,数量,日期";
+	    false ->
+		"序号,单号,厂商,门店,店员,交易类型,款号,品牌,类型,吊牌价,折扣,数量,日期"
+	end,
+    C = case Code of
+	    0 ->
+		?utils:to_utf8(from_latin1, H);
+	    1 ->
+		?utils:to_gbk(from_latin1, H)
+	end,
+    %% UTF8 = unicode:characters_to_list(H, utf8),
     %% GBK  = diablo_iconv:convert("utf-8", "gbk", UTF8), 
-    Do(UTF8);
-csv_head(trans_note, Do, _Code, _ShowOrgPrice) ->
-    H = "序号,单号,厂商,门店,店员,交易类型,款号,品牌,类型,折扣,数量,日期",
-    UTF8 = unicode:characters_to_list(H, utf8),
-    %% GBK  = diablo_iconv:convert("utf-8", "gbk", UTF8), 
-    Do(UTF8);
+    Do(C);
 
 csv_head(stock, Do, Code, ShowOrgPrice) ->
     H = case ShowOrgPrice of
@@ -1524,9 +1540,15 @@ do_write(trans, Do, Count, [H|T], Code, ShowOrgPrice) ->
 	++ ?to_s(Date),
     %% ++ ?to_s(Date),
     %% Do(L),
-    UTF8 = unicode:characters_to_list(L, utf8),
+    Line = 
+	case Code of
+	    0 -> ?utils:to_utf8(from_latin1, L);
+	    1 -> ?utils:to_gbk(from_latin1, L)
+	end,
+    
+    %% UTF8 = unicode:characters_to_list(L, utf8),
     %% GBK  = diablo_iconv:convert("utf-8", "gbk", UTF8), 
-    Do(UTF8),
+    Do(Line),
     do_write(trans, Do, Count + 1, T, Code, ShowOrgPrice);
 
 do_write(trans_note, _Do, _Count, [], _Code, _ShowOrgPrice)->
@@ -1545,7 +1567,9 @@ do_write(trans_note, Do, Count, [H|T], Code, ShowOrgPrice) ->
 
     %% Color       = ?v(<<"color">>, H),
     %% Size        = ?v(<<"size">>, H),
+    TagPrice   = ?v(<<"tag_price">>, H),
     Discount   = ?v(<<"discount">>, H),
+    OrgPrice   = ?v(<<"org_price">>, H),
     %% FPrice      = ?v(<<"fprice">>, H),
 
     %% Comment   = ?v(<<"comment">>, H),
@@ -1567,16 +1591,32 @@ do_write(trans_note, Do, Count, [H|T], Code, ShowOrgPrice) ->
     %% ++ ?to_s(Size) ++ ?d
     %% ++ ?to_s(FPrice) ++ ?d 
     %% ++ ?to_s(FDiscount) ++ ?d
-	++ ?to_s(Discount) ++ ?d 
+	++ ?to_s(TagPrice) ++ ?d 
+	++ ?to_s(Discount) ++ ?d
+
+	++ case ShowOrgPrice of
+	       true ->
+		   ?to_s(OrgPrice) ++ ?d;
+	       false ->
+		   []
+	   end
+	
 	++ ?to_s(Total) ++ ?d
     %% ++ ?to_s(Calc) ++ ?d 
     %% ++ ?to_s(Comment) ++ ?d
 	++ ?to_s(Date),
     %% ++ ?to_s(Date),
     
-    UTF8 = unicode:characters_to_list(L, utf8),
+    %% UTF8 = unicode:characters_to_list(L, utf8),
     %% GBK  = diablo_iconv:convert("utf-8", "gbk", UTF8), 
-    Do(UTF8), 
+
+    Line = 
+	case Code of
+	    0 -> ?utils:to_utf8(from_latin1, L);
+	    1 -> ?utils:to_gbk(from_latin1, L)
+	end,
+    Do(Line),
+    
     do_write(trans_note, Do, Count + 1, T, Code, ShowOrgPrice);
 
 do_write(stock, _Do, _Count, [], _Code, _ShowOrgPrice)->

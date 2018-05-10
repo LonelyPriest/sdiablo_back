@@ -509,6 +509,16 @@ action(Session, Req, {"consume_w_retailer_ticket"}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"syn_score_ticket"}, Payload) ->
+    ?DEBUG("syn_score_ticket: session ~p, payload ~p",  [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    {_StartTime, _EndTime, Conditions} = ?sql_utils:cut(non_prefix, Payload),
+    case ?gen_report:syn_ticket(Merchant, Conditions) of
+	{ok, Merchant} ->
+	    ?utils:respond(200, Req, ?succ(syn_score_ticket, Merchant));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
 
 action(Session, Req, {"get_w_retailer_ticket"}, Payload) ->
     ?DEBUG("get_w_retailer_ticket with session ~p, payload ~p", [Session, Payload]), 

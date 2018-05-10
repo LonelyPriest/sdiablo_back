@@ -2756,7 +2756,7 @@ handle_call({new_trans_note_export, Merchant, Conditions}, _From, State)->
 
     Sql = 
 	"select a.id, a.rsn, a.style_number, a.brand_id, a.type_id, a.season"
-	", a.amount as total, a.firm_id, a.year, a.discount, a.entry_date"
+	", a.amount as total, a.firm_id, a.year, a.tag_price, a.org_price, a.discount, a.entry_date"
 	", a.shop_id, a.employee_id, a.in_type"
 	
 	", b.name as brand"
@@ -2768,7 +2768,7 @@ handle_call({new_trans_note_export, Merchant, Conditions}, _From, State)->
 	" from ("
 	"select a.id, a.rsn, a.style_number, a.brand as brand_id"
 	", a.type as type_id, a.season, a.amount, a.firm as firm_id"
-	", a.year, a.discount, a.entry_date"
+	", a.year, a.tag_price, a.org_price, a.discount, a.entry_date"
 
 	", b.shop as shop_id"
 	", b.employ as employee_id"

@@ -208,6 +208,8 @@ success(new_threshold_card_sale, Card) ->
     {0, "Success to threshold card sale: "++?to_s(Card)++"."};
 success(add_threshold_card_good, Good) ->
     {0, "Success to add threshold card good:" ++ ?to_s(Good)};
+success(syn_score_ticket, Merchant) ->
+    {0, "Success syn ticket of merchant:" ++ ?to_s(Merchant)};
 
 %% wsale
 success(new_w_sale, RSn) ->

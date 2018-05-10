@@ -76,7 +76,9 @@ var rightAuthen = {
 	    update_phone      :rightAuthen.root_right._retailer + 23,
 	    set_withdraw      :rightAuthen.root_right._retailer + 24,
 	    add_card_good     :rightAuthen.root_right._retailer + 28,
-	    delete_card_good  :rightAuthen.root_right._retailer + 30
+	    delete_card_good  :rightAuthen.root_right._retailer + 30,
+	    update_level      :rightAuthen.root_right._retailer + 33,
+	    syn_score_ticket  :rightAuthen.root_right._retailer + 34
 	}
     },
 

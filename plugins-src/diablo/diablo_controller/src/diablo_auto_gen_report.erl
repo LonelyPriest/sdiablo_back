@@ -25,7 +25,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
--export([syn_report/3, sys_vip_of/2]).
+-export([syn_report/3, sys_vip_of/2, syn_ticket/2]).
 
 -export([gen_report/3]).
 
@@ -58,8 +58,10 @@ add(report_task, Merchant, TriggerTime) ->
 ticket(preferential, TriggerTime) ->
     gen_server:cast(?SERVER, {gen_ticket, TriggerTime}).
 cancel_ticket(preferential) ->
-    gen_server:cast(?SERVER, cancel_ticket).
-
+    gen_server:cast(?SERVER, cancel_ticket). 
+syn_ticket(Merchant, Conditions) ->
+    gen_server:call(?SERVER, {syn_ticket, Merchant, Conditions}).
+    
 %%
 birth(congratulation, TriggerTime) ->
     gen_server:cast(?SERVER, {birth, TriggerTime}).
@@ -133,13 +135,22 @@ handle_call({syn_stastic_per_shop, Merchant, Conditions}, _From, State) ->
     catch
 	_:{badmatch, Error} -> {reply, Error, State}
     end;
+
+handle_call({syn_ticket, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("syn_ticket: merchant ~p, conditions ~p", [Merchant, Conditions]),
+    {Merchant, Sqls} = task(gen_ticket, calendar:now_to_local_time(erlang:now()), {Merchant, Conditions}),
+    Reply = case length(Sqls) =:= 0 of
+		true -> ok;
+		false ->
+		    ?sql_utils:execute(transaction, Sqls, Merchant)
+	    end,
+    {reply, Reply, State};
     
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
 
-handle_cast({stastic_per_shop, TriggerTime},
-	    #state{merchant=Merchants, task_of_per_shop=Tasks} = State) ->
+handle_cast({stastic_per_shop, TriggerTime}, #state{merchant=Merchants, task_of_per_shop=Tasks} = State) ->
     %% ?DEBUG("stastic_per_shop ~p, tasks ~p", [TriggerTime, Tasks]),
     case Tasks of
 	[] -> 
@@ -418,7 +429,7 @@ syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) ->
 
 task(gen_ticket, Datetime, Merchants) when is_list(Merchants) ->
     Sqls = lists:foldr(fun(M, Acc) ->
-			       [task(gen_ticket, Datetime, M)|Acc]
+			       [task(gen_ticket, Datetime, {M, []})|Acc]
 		       end, [], Merchants),
     %% ?DEBUG("gen_tickiet: auto gen Sqls ~p", [Sqls]), 
     lists:foreach(
@@ -438,14 +449,15 @@ task(gen_ticket, Datetime, Merchants) when is_list(Merchants) ->
 			  {ok, _} -> ok;
 			  {error, Error} ->
 			      ?WARN("sql error to create gen ticket: ~p", [Error])
+			      %% {error, Error}
 		      end
 	      end
       end, Sqls);
 
-task(gen_ticket, Datetime, Merchant) when is_number(Merchant) ->
+task(gen_ticket, Datetime, {Merchant, Conditions}) when is_number(Merchant) ->
     FormatDatetime = format_datetime(Datetime),
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
-    {ok, Scores}=?w_user_profile:get(score, Merchant),
+    {ok, Scores} = ?w_user_profile:get(score, Merchant),
     %% ?DEBUG("scores ~p", [Scores]),
     Score2Money =
 	case lists:filter(fun({S})-> ?v(<<"type_id">>, S) =:= 1 end, Scores) of
@@ -461,10 +473,11 @@ task(gen_ticket, Datetime, Merchant) when is_number(Merchant) ->
     TicketSqls =
 	case ?to_i(IsGenTicket) =:= ?YES andalso length(Score2Money) =/= 0 of
 	    true ->
-		AccScore = ?v(<<"score">>, Score2Money), 
-		Balance = ?v(<<"balance">>, Score2Money),
+		AccScore    = ?v(<<"score">>, Score2Money), 
+		SendBalance = ?v(<<"balance">>, Score2Money),
 		Sql = "select id, score from w_retailer where merchant=" ++ ?to_s(Merchant)
 		    ++ " and score>=" ++ ?to_s(AccScore)
+		    ++ ?sql_utils:condition(proplists, Conditions)
 		    ++ " and type!=" ++ ?to_s(?SYSTEM_RETAILER)
 		    ++ " and deleted=0",
 		case ?sql_utils:execute(read, Sql) of
@@ -478,10 +491,10 @@ task(gen_ticket, Datetime, Merchant) when is_number(Merchant) ->
 				      false ->
 					  RetailerScore = ?v(<<"score">>, R, 0),
 					  RetailerId = ?v(<<"id">>, R),
-
+					  TicketBalance = RetailerScore div AccScore * SendBalance,
 					  %% only one ticket unless the ticked was consumed
 					  case ?sql_utils:execute(
-						  s_read , "select id, batch, retailer from w_ticket"
+						  s_read , "select id, batch, balance, retailer from w_ticket"
 						  " where merchant=" ++ ?to_s(Merchant)
 						  ++ " and retailer=" ++ ?to_s(RetailerId)
 						  ++ " and state in (0, 1)" ) of
@@ -491,12 +504,18 @@ task(gen_ticket, Datetime, Merchant) when is_number(Merchant) ->
 						   ", retailer, merchant, entry_date) values("
 						   ++ ?to_s(Batch) ++ ","
 						   ++ ?to_s(?v(<<"id">>, Score2Money)) ++ ","
-						   ++ ?to_s(
-							 RetailerScore div AccScore * Balance) ++ ","
+						   ++ ?to_s(TicketBalance) ++ ","
 						   ++ ?to_s(RetailerId) ++ ","
 						   ++ ?to_s(Merchant) ++ ","
 						   ++ "\'" ++ FormatDatetime ++ "\')"|Acc];
-					      {ok, _} -> Acc
+					      {ok, E} ->
+						  CurTicketBalance = ?v(<<"balance">>, E),
+						  case TicketBalance > CurTicketBalance of
+						      true ->
+							  ["update w_ticket set balance=" ++ ?to_s(TicketBalance)
+							  ++ " where id=" ++ ?to_s(?v(<<"id">>, E))|Acc];
+						      false -> Acc
+						  end
 					  end
 				  end
 			  end, [], Retailers)

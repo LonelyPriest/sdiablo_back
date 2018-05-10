@@ -16,6 +16,7 @@ var diablo_default_maling_rang = 3;
 
 var diablo_firm_code = 1000;
 var diablo_filter_length = 2;
+var diablo_max_color_per_line = 10;
 
 var diablo_yes = 1;
 var diablo_no = 0;

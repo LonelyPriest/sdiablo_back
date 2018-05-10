@@ -76,6 +76,8 @@ function wgoodUpdateCtrlProvide(
     // });
 
     $scope.colors = angular.copy(filterColor);
+    var max_color = diablo_max_color_per_line;
+    var color_range = [0].concat(diablo_range(max_color - 1));
     $scope.group_color_with_8 = function(){
 	var color = {};
 	$scope.grouped_colors = [];
@@ -87,14 +89,14 @@ function wgoodUpdateCtrlProvide(
 		add_color.disabled = true; 
 	    };
 	    
-	    if (i <= (g+1)*10 - 1){
-		color[(i - g * 10).toString()] = add_color;
+	    if (i <= (g+1)*max_color - 1){
+		color[(i - g * max_color).toString()] = add_color;
 	    } 
-	    if (i === (g+1) * 10){
+	    if (i === (g+1) * max_color){
 		$scope.grouped_colors.push(color);
 		g++;
 		color = {};
-		color[(i - g * 10).toString()] = add_color;
+		color[(i - g * max_color).toString()] = add_color;
 	    }
 	} 
 	$scope.grouped_colors.push(color);
@@ -295,12 +297,13 @@ function wgoodUpdateCtrlProvide(
 			    py:diablo_pinyin(params.color.name)
 			});
 
-			filterColor.push({
-			    id:newColorId,
-			    name:params.color.name,
-			    py:diablo_pinyin(params.color.name)});
+			// filterColor.push({
+			//     id:newColorId,
+			//     name:params.color.name,
+			//     py:diablo_pinyin(params.color.name)});
 
 			$scope.group_color_with_8();
+			diabloFilter.reset_color();
 		    };
 		    
 		    dialog.response_with_callback(
@@ -388,6 +391,7 @@ function wgoodUpdateCtrlProvide(
 	    callback,
 	    undefined,
 	    {colors:$scope.grouped_colors,
+	     color_range: color_range,
 	     ucolors: function(){
 		 var ucolors = [];
 		 for (var i=0, l1=$scope.grouped_colors.length; i<l1; i++){

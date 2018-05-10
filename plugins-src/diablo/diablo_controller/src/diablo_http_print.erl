@@ -22,7 +22,7 @@
 
 -export([print/4, print/5, call/2]).
 
--export([server/1, head/7, detail/2, detail/3,
+-export([server/1, head/8, detail/2, detail/3,
 	 start_print/8, start_print/6,
 	 multi_print/1, get_printer_state/4,
 	 multi_send/5]).
@@ -154,18 +154,15 @@ content(normal, {Brand, Model, Column},
 		       _Vip -> _Vip
 		   end,
     
-    RetailerName = ?v(<<"name">>, Retailer, []),
+    %% RetailerName = ?v(<<"name">>, Retailer, []),
     Employee     = ?v(<<"employ">>, Print), 
     %% LastScore    = ?v(<<"score">>, Retailer, 0),
     
     Head = title(Brand, Model, Shop)
-	++ head(Brand, Model, Column, RSN,
-		RetailerName, Employee, Datetime),
+	++ head(Brand, Model, Column, RSN, Retailer, Vip, Employee, Datetime),
 
     {Body, TotalBalance, STotal, RTotal} =
-	print_content(
-	  -1, Brand, Model, Column,
-	  Merchant, Setting, Invs), 
+	print_content(-1, Brand, Model, Column, Merchant, Setting, Invs), 
 
     Stastic = body_stastic(
 		Brand, Model, Column, TotalBalance, Attrs, Vip, STotal, RTotal),
@@ -470,23 +467,43 @@ title(<<"feie">>, _Model, Title) ->
 %% address(<<"feie">>, _Model, Address) ->
 %%     "<C>" ++ ?to_s(Address) ++ "</C><BR>".
 
-head(<<"feie">> = Brand, _Model, 58, RSN, Retailer, Employee, Date) ->
+head(<<"feie">> = Brand, _Model, 58, RSN, Retailer, Vip, Employee, Date) ->
     ?DEBUG("feie head brand ~p, RSN ~p~nretailer ~p, employee ~p, date ~p",
 	   [Brand, RSN, Retailer, Employee, Date]),
+    Name = ?v(<<"name">>, Retailer),
+    Phone = ?v(<<"mobile">>, Retailer),
+    
     "单号：" ++ ?to_s(RSN) ++ br(Brand)
-	++ "客户：" ++ ?to_s(Retailer)
-	++ pading(32 - 12 - width(chinese, Retailer) - width(chinese, Employee))
+	
+	++ "客户：" ++ ?to_s(Name)
+	++ case Vip of
+	       true ->
+		   pading(32 - 6 - width(chinese, Name) - 6 - width(latin1, Phone))
+		       ++ "电话：" ++ ?to_s(Phone) ++ br(Brand);
+	       false ->
+		   []
+	   end
+	
 	++ "店员：" ++ ?to_s(Employee) ++ br(Brand)
 	++ "日期：" ++ ?to_s(Date) ++ br(Brand)
 	++ line(equal, 32) ++ br(Brand);
 
-head(<<"feie">> = Brand, _Model, 80, RSN, Retailer, Employee, Date) ->
+head(<<"feie">> = Brand, _Model, 80, RSN, Retailer, Vip, Employee, Date) ->
+    Name = ?v(<<"name">>, Retailer),
+    Phone = ?v(<<"mobile">>, Retailer),
+    
     "单号：" ++ ?to_s(RSN)
 	++ pading(48 - 6 - width(latin1, RSN) - 25)
 	++ "日期：" ++ ?to_s(Date) ++ br(Brand)
-	
-	++ "客户：" ++ ?to_s(Retailer)
-	++ pading(48 - 25 - 6 - width(chinese, Retailer))
+
+	++ case Vip of
+	       true ->
+		   "客户：" ++ ?to_s(Name) ++ pading(2) ++ "电话：" ++ ?to_s(Phone) ++ pading(2)
+		       ++ pading(48 - 8 - width(chinese, Name) - 8 - width(latin1, Phone) - 7 - width(chinese, Employee));
+	       false ->
+		   "客户：" ++ ?to_s(Name)
+		       ++ pading(48 - 6 - width(chinese, Name) - 20 - width(chinese, Employee))
+	   end
 	++ "店员：" ++ ?to_s(Employee) ++ br(Brand)
 	
 	++ line(equal, 48) ++ br(Brand).

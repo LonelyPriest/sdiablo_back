@@ -1134,19 +1134,21 @@ function purchaserInventoryNewCtrlProvide (
 
     // console.log($scope.colors);
 
+    var max_color = diablo_max_color_per_line;
+    var color_range = [0].concat(diablo_range(max_color - 1));
     $scope.group_color_with_8 = function(){
 	var color = {};
 	$scope.grouped_colors = [];
 	for (var i=0, g=0, l=$scope.colors.length; i<l; i++){
 	    var gc = $scope.colors[i];
-	    if (i <= (g+1)*10 - 1){
-		color[(i - g * 10).toString()] = {id:gc.id, name:gc.name, py:diablo_pinyin(gc.name)};
+	    if (i <= (g+1)*max_color - 1){
+		color[(i - g * max_color).toString()] = {id:gc.id, name:gc.name, py:diablo_pinyin(gc.name)};
 	    } 
-	    if (i === (g+1) * 10){
+	    if (i === (g+1) * max_color){
 		$scope.grouped_colors.push(color);
 		g++;
 		color = {};
-		color[(i - g * 10).toString()] = {id:gc.id, name:gc.name, py:diablo_pinyin(gc.name)};
+		color[(i - g * max_color).toString()] = {id:gc.id, name:gc.name, py:diablo_pinyin(gc.name)};
 	    }
 	} 
 	$scope.grouped_colors.push(color); 
@@ -1268,6 +1270,7 @@ function purchaserInventoryNewCtrlProvide (
 	    callback,
 	    undefined,
 	    {colors:$scope.grouped_colors,
+	     color_range:color_range,
 	     ucolors: function(){
 		 var ucolors = [];
 		 for (var i=0, l1=$scope.grouped_colors.length; i<l1; i++){
