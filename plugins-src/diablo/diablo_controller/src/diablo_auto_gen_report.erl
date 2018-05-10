@@ -140,7 +140,7 @@ handle_call({syn_ticket, Merchant, Conditions}, _From, State) ->
     ?DEBUG("syn_ticket: merchant ~p, conditions ~p", [Merchant, Conditions]),
     {Merchant, Sqls} = task(gen_ticket, calendar:now_to_local_time(erlang:now()), {Merchant, Conditions}),
     Reply = case length(Sqls) =:= 0 of
-		true -> ok;
+		true -> {ok, Merchant};
 		false ->
 		    ?sql_utils:execute(transaction, Sqls, Merchant)
 	    end,
