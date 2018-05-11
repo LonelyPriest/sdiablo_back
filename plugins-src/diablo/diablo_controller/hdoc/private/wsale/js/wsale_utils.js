@@ -469,9 +469,9 @@ var wsaleUtils = function(){
 		}
 	    } else if (promotion.rule_id === 2) {
 		if (count >= 0)
-		    rmoney = fprice * Math.floor(count / promotion.cmoney) * promotion.rmoney;
+		    rmoney = fprice * Math.floor(count / (promotion.cmoney + promotion.rmoney)) * promotion.rmoney;
 		else
-		    rmoney = fprice * Math.ceil(count / promotion.cmoney) * promotion.rmoney;
+		    rmoney = fprice * Math.ceil(count / (promotion.cmoney + promotion.rmoney)) * promotion.rmoney;
 
 		var calc = wsaleUtils.to_decimal(fprice * count);
 		return diablo_discount(calc - rmoney, calc);
