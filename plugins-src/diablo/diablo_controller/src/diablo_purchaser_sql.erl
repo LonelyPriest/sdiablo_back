@@ -372,8 +372,9 @@ good_match(style_number, Merchant, StyleNumber) ->
 	", brand as brand_id"
 	" from w_inventory_good"
 	" where merchant=" ++ ?to_s(Merchant)
-	++ " and deleted=" ++ ?to_s(?NO) 
-	++ " and style_number like \'" ++ ?to_s(StyleNumber) ++ "%\'"
+    %% ++ " and deleted=" ++ ?to_s(?NO) 
+    %% ++ " and style_number like \'" ++ ?to_s(StyleNumber) ++ "%\'"
+	++ " and " ++ get_match_mode(style_number, StyleNumber) 
 	++ " group by style_number"
 	++ " limit " ++ ?to_s(P).
 
@@ -1256,7 +1257,8 @@ inventory({new_rsn_group_with_pagination, Mode, Sort},
 %%
 
 inventory_match(Merchant, StyleNumber, Shop) ->
-    P = ?w_retailer:get(prompt, Merchant),
+    %% P = ?w_retailer:get(prompt, Merchant),
+    P = prompt_num(Merchant),
     "select style_number from w_inventory"
 	%% ++ " where style_number like \'%" ++ ?to_s(StyleNumber) ++ "%\'"
 	%% ++ " where style_number like \'%" ++ ?to_s(StyleNumber) ++ "\'"
@@ -1383,10 +1385,7 @@ get_inventory(barcode, Merchant, Shop, Firm, Barcode) ->
 inventory(update_attr, Mode, RSN, Merchant, Shop, {Firm, OldFirm, Datetime,  OldDatetime}) ->
     UpdateDate = case Datetime =/= OldDatetime of
 		     true ->
-			 ?utils:v(entry_date,
-				  string,
-				  Datetime
-				 );
+			 ?utils:v(entry_date, string, Datetime);
 		     false -> []
 		 end,
 

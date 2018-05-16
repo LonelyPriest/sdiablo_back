@@ -151,6 +151,7 @@ function firmBillDetailCtrlProvide(
     // initial
     $scope.filters = [];
     diabloFilter.reset_field();
+    diabloFilter.add_field("shop", $scope.shops);
     diabloFilter.add_field("card", filterCard);
     diabloFilter.add_field("firm", filterFirm);
     $scope.filter = diabloFilter.get_filter();

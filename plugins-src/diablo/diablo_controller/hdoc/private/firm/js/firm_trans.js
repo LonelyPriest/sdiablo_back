@@ -148,6 +148,25 @@ function firmTransCtrlProvide(
 	$scope.do_search($scope.default_page);
     };
 
+    var add_search_condition = function(search) {
+	if (stockUtils.to_integer(search.region) === 0){
+	    if (angular.isUndefined(search.shop) || !search.shop || search.shop.length === 0){
+		search.shop = $scope.shopIds.length === 0 ? undefined : $scope.shopIds; 
+	    }
+	} else {
+	    if (angular.isArray(search.shop) && search.shop.length !== 0){
+		delete search.region;
+	    } else {
+		search.shop = $scope.shops.filter(function(s){
+		    return s.region === search.region;
+		}).map(function(s) { return s.id});
+	    }
+	}
+
+	search.firm = firm_id; 
+	return search;
+    };
+    
     $scope.do_search = function(page){
 	// console.log(page);
 	$scope.current_page = page;
@@ -172,25 +191,25 @@ function firmTransCtrlProvide(
 	    $routeParams.page = undefined;
 	    back_page = undefined;
 	    localStorageService.remove("firm-trans-stastic");
-	};
+	}; 
 	
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
-	    if (stockUtils.to_integer(search.region) === 0){
-		if (angular.isUndefined(search.shop) || !search.shop || search.shop.length === 0){
-		    search.shop = $scope.shopIds.length === 0 ? undefined : $scope.shopIds; 
-		}
-	    } else {
-		if (angular.isArray(search.shop) && search.shop.length !== 0){
-		    delete search.region;
-		} else {
-		    search.shop = $scope.shops.filter(function(s){
-			return s.region === search.region;
-		    }).map(function(s) { return s.id});
-		}
-	    }
+	    // if (stockUtils.to_integer(search.region) === 0){
+	    // 	if (angular.isUndefined(search.shop) || !search.shop || search.shop.length === 0){
+	    // 	    search.shop = $scope.shopIds.length === 0 ? undefined : $scope.shopIds; 
+	    // 	}
+	    // } else {
+	    // 	if (angular.isArray(search.shop) && search.shop.length !== 0){
+	    // 	    delete search.region;
+	    // 	} else {
+	    // 	    search.shop = $scope.shops.filter(function(s){
+	    // 		return s.region === search.region;
+	    // 	    }).map(function(s) { return s.id});
+	    // 	}
+	    // }
 	    
-	    search.firm = firm_id;
-	    
+	    // search.firm = firm_id;
+	    search = add_search_condition(search); 
 	    firmService.filter_w_inventory_new(
 		$scope.match, search, page, $scope.items_perpage
 	    ).then(function(result){
@@ -323,6 +342,27 @@ function firmTransCtrlProvide(
 	dialog.edit_with_modal(
 	    'modify-balance.html', undefined, callback, undefined,
 	    {balance:r.balance, pattern:diabloPattern.decimal_2});
+    };
+
+    $scope.export_firm_trans = function() {
+	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+	    search = add_search_condition(search);
+	    // [transe, transe_note, stock, shift, shift_note]
+	    firmService.export_firm_trans(0, search, {mode: 10}).then(function(result){
+	    	console.log(result);
+		if (result.ecode === 0){
+		    dialog.response_with_callback(
+			true,
+			"文件导出成功",
+			"创建文件成功，请点击确认下载！！",
+			undefined,
+			function(){window.location.href = result.url;}) 
+		} else {
+		    dialog.response(
+			false, "文件导出失败", "创建文件失败：" + firmService.error[result.ecode]);
+		} 
+	    }); 
+	});	
     };
 }
 

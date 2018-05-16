@@ -523,20 +523,21 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
 	    add_search_condition(search);
 	    
-	    purchaserService.csv_export(purchaserService.export_type.trans_note, search)
-		.then(function(result){
-	    	    console.log(result);
-		    if (result.ecode === 0){
-			dialog.response_with_callback(
-			    true, "文件导出成功", "创建文件成功，请点击确认下载！！", undefined,
-			    function(){window.location.href = result.url;}) 
-		    } else {
-			dialog.response(
-			    false, "文件导出失败", "创建文件失败："
-				+ purchaserService.error[result.ecode]);
-		    } 
-		}); 
-	}) 
+	    purchaserService.csv_export(
+		purchaserService.export_type.trans_note, search
+	    ).then(function(result){
+	    	console.log(result);
+		if (result.ecode === 0){
+		    dialog.response_with_callback(
+			true, "文件导出成功", "创建文件成功，请点击确认下载！！", undefined,
+			function(){window.location.href = result.url;}) 
+		} else {
+		    dialog.response(
+			false, "文件导出失败", "创建文件失败："
+			    + purchaserService.error[result.ecode]);
+		} 
+	    }); 
+	})
     };
 
 
@@ -912,16 +913,30 @@ function purchaserInventoryTransferFromRsnDetailCtrlProvide(
     $scope.max_page_size = 10;
     $scope.default_page = 1;
 
+    var add_search_condition = function(search){
+	if ((angular.isUndefined(search.fshop)
+	     || !search.fshop || search.fshop.length === 0)){
+	    search.fshop = $scope.shops.length === 0 ? undefined : $scope.shopIds;
+	} 
+
+	if (angular.isUndefined(search.rsn)){
+	    search.rsn = $routeParams.rsn ? $routeParams.rsn : undefined;
+	}
+
+	return search;
+    };
+    
     $scope.do_search = function(page){
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
-	    if ((angular.isUndefined(search.fshop)
-		 || !search.fshop || search.fshop.length === 0)){
-		search.fshop = $scope.shops.length === 0 ? undefined : $scope.shopIds;
-	    } 
+	    // if ((angular.isUndefined(search.fshop)
+	    // 	 || !search.fshop || search.fshop.length === 0)){
+	    // 	search.fshop = $scope.shops.length === 0 ? undefined : $scope.shopIds;
+	    // } 
 
-	    if (angular.isUndefined(search.rsn)){
-		search.rsn = $routeParams.rsn ? $routeParams.rsn : undefined;
-	    }
+	    // if (angular.isUndefined(search.rsn)){
+	    // 	search.rsn = $routeParams.rsn ? $routeParams.rsn : undefined;
+	    // }
+	    search = add_search_condition(search);
 	    console.log(search);
 
 	    localStorageService.set(
@@ -1023,7 +1038,27 @@ function purchaserInventoryTransferFromRsnDetailCtrlProvide(
 			  path:       inv.path,
 			  get_amount: get_amount});
 		}); 
-    }
+    };
+
+    $scope.export_to = function() {
+	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+	    search = add_search_condition(search);
+	    purchaserService.csv_export(
+		purchaserService.export_type.shift_note, search 
+	    ).then(function(result){
+	    	console.log(result);
+		if (result.ecode === 0){
+		    diabloUtilsService.response_with_callback(
+			true, "文件导出成功", "创建文件成功，请点击确认下载！！", undefined,
+			function(){window.location.href = result.url;}) 
+		} else {
+		    diabloUtilsService.response(
+			false, "文件导出失败", "创建文件失败："
+			    + purchaserService.error[result.ecode]);
+		} 
+	    }); 
+	})
+    };
     
 };
 

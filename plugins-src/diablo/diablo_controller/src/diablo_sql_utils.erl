@@ -117,8 +117,10 @@ condition(page_desc, {use_consume, Sort}, CurrentPage, ItemsPerPage) ->
 
 mode(Mode, Sort) ->
     " order by " ++ mode(Mode) ++ " " ++ sort(Sort).
+mode(use_id) -> "id";
 mode(use_sell) -> "sell";
-mode(use_amount) -> "amount".
+mode(use_amount) -> "amount";
+mode(use_date) ->   "entry_date".
 
 sort(0) -> "desc";
 sort(1) -> "asc".

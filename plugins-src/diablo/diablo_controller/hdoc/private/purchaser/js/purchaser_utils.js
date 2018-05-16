@@ -287,7 +287,8 @@ var stockUtils = function(){
 		    style_number:6,
 		    brand:7,
 		    type:8,
-		    firm:9};
+		    firm:9,
+		    date: 10};
 	},
 
 	invalid_firm:function(firm) {

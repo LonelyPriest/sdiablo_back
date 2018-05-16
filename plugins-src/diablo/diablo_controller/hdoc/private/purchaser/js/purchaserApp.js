@@ -346,7 +346,7 @@ function stockConfg(angular){
 	    // {name: "金额赠送", id:2, remakr: "交易金额达到目标值赠送一定金额"}
 	];
 	
-	this.export_type = {trans:0, trans_note:1, stock:2};
+	this.export_type = {trans:0, trans_note:1, stock:2, shift:3, shift_note:4};
 
 	this.get_inventory_from_sort = function(cid, size, sorts){
 	    for(var i=0, l=sorts.length; i<l; i++){

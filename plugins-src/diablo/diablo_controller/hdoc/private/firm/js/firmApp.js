@@ -303,7 +303,13 @@ function firmConfig(angular){
 	    return http_p.save(
 		{operation: "w_inventory_new_rsn_detail"},
 		{rsn:inv.rsn, style_number:inv.style_number, brand:inv.brand}).$promise;
-	}
+	};
+
+	this.export_firm_trans = function (e_type, condition, mode) {
+	    return http_p.save(
+		{operation: "w_inventory_export"},
+		{condition: condition, e_type:e_type, mode:mode}).$promise;
+	};
 	
     });
     

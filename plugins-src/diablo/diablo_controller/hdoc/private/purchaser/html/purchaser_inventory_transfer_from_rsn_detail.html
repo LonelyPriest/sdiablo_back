@@ -14,8 +14,13 @@
 		    x-ng-click="go_back()">返回
 	      <i class="glyphicon glyphicon-circle-arrow-left"></i>
 	    </button> 
+
+	    <button class="btn blue hidden-xs purple-stripe"
+		  type="button"
+		  x-ng-click="export_to()">导出
+	    <i class="glyphicon glyphicon-export"></i></button>
 	    
-	    <button type="button" class="btn blue purple-stripe reload"
+	    <button type="button" class="btn yellow purple-stripe reload"
 		    x-ng-click="do_search(default_page)">刷新
 	      <i class="icon icon-spinner fg-white"></i>
 	    </button> 
@@ -133,7 +138,7 @@
 		  </tr>
 		  <tr x-ng-if="stock_right.show_orgprice && total_items!==0">
 		    <td colspan=8></td>
-		    <td>{{total_items}}</td>
+		    <td>{{total_amounts}}</td>
 		    <td></td>
 		    <td>{{total_cost}}</td>
 		    <td colspan=3></td>

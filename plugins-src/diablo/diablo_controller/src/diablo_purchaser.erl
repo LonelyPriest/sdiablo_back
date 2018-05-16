@@ -386,9 +386,10 @@ rsn_detail(transfer_rsn, Merchant, Condition) ->
 %%
 %% export
 %%
-export(trans, Merchant, Condition, []) ->
+export(trans, Merchant, Condition, Mode) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {new_trans_export, Merchant, Condition});
+    gen_server:call(Name, {new_trans_export, Merchant, Condition, Mode});
+
 export(trans_note, Merchant, Condition, []) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {new_trans_note_export, Merchant, Condition});
@@ -397,7 +398,15 @@ export(stock, Merchant, Condition, Mode) ->
     gen_server:call(Name, {stock_export, Merchant, Condition, Mode});
 export(stock_note, Merchant, Condition, Mode) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {stock_note_export, Merchant, Condition, Mode}).
+    gen_server:call(Name, {stock_note_export, Merchant, Condition, Mode});
+export(shift_note, Merchant, Condition, []) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {shift_note_export, Merchant, Condition});
+export(shift_note_color_size, Merchant, Condition, []) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {shift_note_color_size_export, Merchant, Condition}).
+
+
 
 
 
@@ -2726,15 +2735,36 @@ handle_call({transfer_rsn_detail, Merchant, Conditions}, _From, State) ->
 %%
 %% export
 %%
-handle_call({new_trans_export, Merchant, Conditions}, _From, State)->
-    ?DEBUG("new_trans_export with merchant ~p, condition ~p", [Merchant, Conditions]),
+handle_call({new_trans_export, Merchant, Conditions, Mode}, _From, State)->
+    ?DEBUG("new_trans_export with merchant ~p, condition ~p, Mode ~p", [Merchant, Conditions, Mode]),
     {_, C} = ?w_good_sql:filter_condition(inventory_new, Conditions, [], []),
     SortConditions = ?w_good_sql:sort_condition(w_inventory_new, Merchant, C),
-    Sql = "select a.id, a.rsn, a.employ as employee_id"
-	", a.firm as firm_id, a.shop as shop_id"
-	", a.balance, a.should_pay, a.has_pay, a.cash, a.card, a.wire"
-	", a.verificate, a.total, a.comment, a.e_pay_type, a.e_pay"
-	", a.type, a.state, a.entry_date"
+
+    Order = ?v(<<"mode">>, Mode, use_id),
+    Sort  = case ?v(<<"sort">>, Mode) of
+		undefined -> 0;
+		_Sort -> _Sort
+	    end,
+    
+    Sql = "select a.id, a.rsn"
+	", a.employ as employee_id"
+	", a.firm as firm_id"
+	", a.shop as shop_id"
+	", a.balance"
+	", a.should_pay"
+	", a.has_pay"
+	", a.cash"
+	", a.card"
+	", a.wire"
+	", a.verificate"
+	", a.total"
+	", a.comment"
+	", a.e_pay_type"
+	", a.e_pay"
+	", a.type"
+	", a.state"
+	", a.entry_date"
+	", a.op_date"
 
 	", b.name as firm"
 	", c.name as shop"
@@ -2745,7 +2775,8 @@ handle_call({new_trans_export, Merchant, Conditions}, _From, State)->
 	" left join shops c on a.shop=c.id"
 	" left join (select id, number, name from employees where merchant="
 	++ ?to_s(Merchant) ++ ") d on a.employ=d.number"
-	" where " ++ SortConditions ++ " and a.state in (0, 1) order by a.id desc",
+	" where " ++ SortConditions ++ " and a.state in (0, 1)"
+	++ ?sql_utils:mode(Order, Sort),
     
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
@@ -2906,6 +2937,17 @@ handle_call({stock_note_export, Merchant, Conditions, _Mode}, _From, State) ->
 		      ++ ?sql_utils:condition(proplists, ?utils:correct_condition(<<"b.">>, C2))
 	  end,
 		      
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({shift_note_export, Merchant, Conditions}, _From, State) -> 
+    Sql = ?w_good_sql:inventory(
+	     transfer_rsn_groups, transfer, Merchant, Conditions, fun() -> [] end),
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({shift_note_color_size_export, Merchant, Conditions}, _From, State) ->
+    Sql = ?w_good_sql:inventory(transfer_rsn_detail, Merchant, Conditions),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 

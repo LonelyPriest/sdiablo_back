@@ -6,6 +6,7 @@
 -behaviour(gen_request).
 
 -export([action/2, action/3, action/4]).
+-export([sale_note/3, sale_trans/3, note_class_with/3]).
 
 -define(d, ?utils:seperator(csv)).
 
