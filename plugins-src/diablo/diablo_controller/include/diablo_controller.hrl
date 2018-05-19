@@ -163,6 +163,7 @@
 -define(right_w_print,     130000).
 -define(right_w_good,      140000).
 -define(right_w_report,    150000).
+-define(right_b_sale,      160000).
 
 %% rainbow
 -define(right_rainbow, 800000).
@@ -400,6 +401,16 @@
 -define(add_size_spec,            ?right_w_base + 18).
 -define(update_size_spec,         ?right_w_base + 19).
 
+%% ================================================================================
+%% batch sale
+%% ================================================================================
+-define(new_batch_sale,    ?right_b_sale + 1).
+-define(reject_batch_sale, ?right_b_sale + 2).
+-define(update_batch_sale, ?right_b_sale + 3).
+-define(list_batch_sale,   ?right_b_sale + 4).
+-define(check_batch_sale,  ?right_b_sale + 5).
+-define(del_batch_sale,    ?right_b_sale + 6).
+
 %% public
 -define(http_route, diablo_controller_http_route).
 -define(mysql, diablo_controller_mysql).
@@ -417,6 +428,10 @@
 %% sale
 -define(sale_request, diablo_controller_sale_request).
 -define(sale, diablo_controller_sale).
+
+%% batch_sale
+-define(b_sale_request, diablo_batch_sale_request).
+-define(b_sale, diablo_batch_sale).
 
 %% shop
 -define(shop_request, diablo_controller_shop_request).

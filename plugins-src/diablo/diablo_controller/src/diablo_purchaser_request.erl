@@ -121,18 +121,26 @@ action(Session, Req, {"update_w_inventory"}, Payload) ->
     %% 	false -> 
     RSN = ?v(<<"rsn">>, Base), 
     {ok, OldBase} = ?w_inventory:purchaser_inventory(get_new, Merchant, RSN),
+    
+    Firm = ?v(<<"firm">>, Base), 
+    Datetime   = ?v(<<"datetime">>, Base),
+    OldDatetime = ?v(<<"entry_date">>, OldBase),
 
-    case ?w_inventory:purchaser_inventory(
-	    update, Merchant, lists:reverse(Invs), {Base, OldBase}) of
-	{ok, RSn} -> 
-	    ?utils:respond(
-	       200,
-	       Req,
-	       ?succ(update_w_inventory, RSn), {<<"rsn">>, ?to_b(RSn)});
-	{error, Error} ->
-	    ?utils:respond(200, Req, Error)
+    case Firm == ?INVALID_OR_EMPTY andalso ?to_b(Datetime) =/= ?to_b(OldDatetime) of
+	true ->
+	    ?utils:respond(200, Req, ?err(purchaser_diff_time_with_empty_firm, Datetime));
+	false -> 
+	    case ?w_inventory:purchaser_inventory(
+		    update, Merchant, lists:reverse(Invs), {Base, OldBase}) of
+		{ok, RSn} -> 
+		    ?utils:respond(
+		       200,
+		       Req,
+		       ?succ(update_w_inventory, RSn), {<<"rsn">>, ?to_b(RSn)});
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end
     end;
-    %% end;
 
 action(Session, Req, {"comment_w_inventory_new"}, Payload) ->
     Merchant = ?session:get(merchant, Session),

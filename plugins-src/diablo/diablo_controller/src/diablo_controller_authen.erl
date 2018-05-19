@@ -29,6 +29,7 @@
 -define(SUPER_ROOT, [?right_merchant, ?right_right, ?right_w_print]).
 -define(USER_ORDER_ROOT,
 	[?right_w_sale,
+	 ?right_b_sale,
 	 ?right_w_inventory,
 	 ?right_w_retailer,
 	 ?right_employe,
@@ -119,14 +120,19 @@ init([]) ->
 	 
 	 %% about whole sale
 	 {?right_w_retailer,   {"/wretailer", "会员",   ?w_retailer_request}},
-	 {?right_w_sale,       {"/wsale",     "销售",   ?w_sale_request}}, 
+	 
+	 {?right_w_sale,       {"/wsale",     "销售",   ?w_sale_request}},
+
 	 {?right_w_firm,       {"/firm",      "厂商",   ?firm_request}}, 
 	 {?right_w_inventory,  {"/purchaser", "采购",   ?w_inventory_request}},
 	 {?right_w_print,      {"/wprint",    "打印",   ?w_print_request}}, 
-	 {?right_w_good,       {"/wgood",     "货品",   ?w_good_request}}, 
+	 %% {?right_w_good,       {"/wgood",     "货品",   ?w_good_request}}, 
 	 {?right_w_report,     {"/wreport",   "报表",   ?w_report_request}}, 
 	 %% base setting
-	 {?right_w_base,       {"/wbase",     "设置",   ?w_base_request}}
+	 {?right_w_base,       {"/wbase",     "设置",   ?w_base_request}},
+
+	 %% batch sale
+	 {?right_b_sale,       {"/bsale", "批售", ?b_sale_request}} 
 	],
 
     Tree = 
@@ -138,8 +144,7 @@ init([]) ->
 
     
     %% Tree = gb_trees:from_orddict(Funcs),
-    {ok, #func_tree{tree  = Tree,
-		    rights = dict:new()}}.
+    {ok, #func_tree{tree  = Tree, rights = dict:new()}}.
 
 handle_call(lookup, _From, #func_tree{tree=Tree} = State) ->
     {reply, Tree, State};

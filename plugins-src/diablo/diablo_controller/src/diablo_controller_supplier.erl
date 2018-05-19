@@ -72,8 +72,11 @@ profit(profit, Mode, Merchant, Conditions) ->
     gen_server:call(?MODULE, {profit, Mode, Merchant, Conditions}).
 
 %% stastic
+%% half of minitue
 sprofit(sprofit, Mode, Merchant, Conditions) ->
-    gen_server:call(?MODULE, {sprofit, Mode, Merchant, Conditions}).
+    gen_server:call(?MODULE, {sprofit, Mode, Merchant, Conditions}, 1000 * 30).
+
+
 
 update(code, Merchant, FirmId) ->
     gen_server:cast(?MODULE, {update_code, Merchant, FirmId}).
@@ -1107,7 +1110,33 @@ handle_call({sprofit, balance, Merchant, Conditions}, _From, State) ->
 	++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime),
 
     R = ?sql_utils:execute(s_read, Sql),
-    {reply, R, State}; 
+    {reply, R, State};
+
+handle_call({sprofit, stock_in, Merchant, Conditions}, _From, State) -> 
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
+    Sql =
+	"select a.merchant"
+	", a.firm as firm_id" 
+	", SUM(a.org_price * a.amount) as cost"
+	", SUM(a.org_price * a.over) as ocost"
+	", SUM(a.amount) as amount"
+	", SUM(a.over) as over"
+
+	" from w_inventory_new_detail a, w_inventory_new b" 
+	" where a.rsn=b.rsn"
+	" and a.merchant=b.merchant"
+	" and a.merchant=" ++ ?to_s(Merchant)
+	++ " and a.firm!=-1"
+	++ ?sql_utils:condition(proplists, NewConditions)
+
+	++ " and b.type=0"
+	++ " and b.state in(0, 1)"
+	++ " and " ++ ?sql_utils:time_condition(StartTime, "b.entry_date", ge)
+	++ " and " ++ ?sql_utils:time_condition(EndTime, "b.entry_date", le),
+
+    R = ?sql_utils:execute(s_read, Sql),
+    {reply, R, State};
+
 
 handle_call(_Request, _From, State) ->
     ?DEBUG("unkown request ~p", [_Request]),

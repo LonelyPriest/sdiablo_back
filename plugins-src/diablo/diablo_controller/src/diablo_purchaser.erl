@@ -3397,7 +3397,9 @@ update_stock(same_firm, Merchant, CurrentTime, Updates, {Props, OldProps})->
 				    ++ "\"" ++ ?to_s(CurrentTime) ++ "\")"]
 			   end;
 		false ->
-		    []
+		    ["update w_inventory_new set "
+		     ++ ?utils:to_sqls(proplists, comma, Updates)
+		     ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"]
 	    end
     end;
 

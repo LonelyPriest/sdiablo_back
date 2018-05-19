@@ -268,6 +268,8 @@ function purchaserInventoryNewCtrlProvide (
      * match
      */
     $scope.match_prompt_good = function(viewValue){
+	if (angular.isUndefined(diablo_set_string(viewValue)) || viewValue.length < diablo_filter_length) return;
+	
 	return diabloFilter.match_wgood_with_firm(
 	    viewValue,
 	    stockUtils.match_firm(

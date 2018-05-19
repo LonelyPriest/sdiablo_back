@@ -459,9 +459,8 @@ error(stock_barcode_not_init, StyleNumber) ->
     {2017, "barcode of stock " ++ ?to_s(StyleNumber) ++ " not initial."};
 error(purchaser_good_non, _GoodId) ->
     {2018, "good information does not exit."};
-
-
-
+error(purchaser_diff_time_with_empty_firm, Datetime) ->
+    {2019, "empty firm but datetime has been changed:" ++ ?to_s(Datetime)};
 
 
 %% retailer

@@ -77,13 +77,7 @@ action(Session, Req, {"new_shop"}, Payload) ->
     ?utils:respond(normal,
 		   fun()-> ?shop:shop(new, Merchant, Payload) end,
 		   fun(ShopId)-> ?succ(add_shop, ShopId) end,
-		   Req);
-    %% case ?shop:shop(new, [{<<"merchant">>, Merchant}|Payload]) of
-    %% 	{ok, ShopId} ->
-    %% 	    ?utils:respond(200, Req, ?succ(add_shop, ShopId));
-    %% 	{error, Error} ->
-    %% 	    ?utils:respond(200, Req, Error)
-    %% end;
+		   Req); 
 
 action(Session, Req, {"update_shop", Id}, Payload) ->
     ?DEBUG("update a shop with session ~p, id ~p, paylaod ~p",
@@ -161,15 +155,7 @@ sidebar(Session) ->
 		     {"shop_new", "新增店铺", "glyphicon glyphicon-plus"}},
 		    {?list_shop,
 		     {"shop_detail", "店铺详情", "glyphicon glyphicon-book"}}
-		   ]),
-
-    %% RepoAuthen = AuthenFun(
-    %% 		   [{?new_repo,
-    %% 		     {"repo_new", "新增仓库", "glyphicon glyphicon-plus"}},
-    %% 		    {?list_repo,
-    %% 		     {"repo_detail", "仓库详情", "glyphicon glyphicon-book"}}
-    %% 		   ]),
-
+		   ]), 
     
     Region = [{"region_detail", "区域", "glyphicon glyphicon-th-list"}] ,
     L1 = ?menu:sidebar(level_1_menu, Region),
@@ -180,15 +166,7 @@ sidebar(Session) ->
 	    Shop ->
 		[{{"shop", "店铺", "glyphicon glyphicon-star-empty"}, Shop}] 
 	end,
-
-    %% SidebarRepo = 
-    %% 	case RepoAuthen of
-    %% 	    []   -> [];
-    %% 	    Repo ->
-    %% 		[{{"repo", "仓库", "icon icon-twitter"}, Repo}] 
-    %% 	end,
     
-    %% ?menu:sidebar(level_2_menu, SidebarShop ++ SidebarRepo) ++ L1.
     ?menu:sidebar(level_2_menu, SidebarShop) ++ L1.
 
 

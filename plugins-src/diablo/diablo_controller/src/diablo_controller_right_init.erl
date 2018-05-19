@@ -36,6 +36,7 @@
 	 ?right_merchant,
 	 
 	 ?right_w_sale,
+	 ?right_b_sale,
 	 ?right_w_inventory,
 	 ?right_w_firm,
 	 ?right_w_retailer,
@@ -97,6 +98,7 @@ init([]) ->
 	      {?right_merchant,  <<"商家管理">>,   <<"merchant">>},
 	      
 	      {?right_w_sale,      <<"销售管理">>,   <<"wsale">>},
+	      {?right_b_sale,      <<"批发管理">>,   <<"bsale">>},
 	      {?right_w_inventory, <<"采购管理">>,   <<"purchaser">>},
 	      {?right_w_firm,      <<"厂商管理">>,   <<"firm">>}, 
 	      {?right_w_good,      <<"货品管理">>,   <<"wgood">>},
@@ -279,6 +281,22 @@ init([]) ->
 	  <<"销售单导入">>,   <<"upload_w_sale">>,  ?right_w_sale},
 	 {?update_w_sale_price,
 	  <<"修改销售单进货价">>,   <<"update_w_sale_price">>,  ?right_w_sale}
+	],
+
+    %% batch sale
+    BSale =
+	[{?new_batch_sale,
+	  <<"批发开单">>,     <<"new_batch_sale">>,       ?right_b_sale},
+	 {?reject_batch_sale,
+	  <<"批发退货">>,     <<"reject_batch_sale">>,    ?right_b_sale}, 
+	 {?update_batch_sale,
+	  <<"批发单编辑">>,   <<"update_batch_sale">>,    ?right_b_sale},
+	 {?check_batch_sale,
+	  <<"批发单审核">>,   <<"check_batch_sale">>,     ?right_b_sale},
+	 {?list_batch_sale,
+	  <<"批发单查询">>,   <<"list_batch_sale">>,      ?right_b_sale},
+	 {?del_batch_sale,
+	  <<"批发单删除">>,   <<"delete_batch_sale">>,    ?right_b_sale} 
 	],
     
     %% inventory
@@ -517,7 +535,7 @@ init([]) ->
 		  %% sale
 		  Employ ++ Shop ++ Member
 		  ++ Right ++ Merchant
-		  ++ WInventory ++ WSale ++ WFirm ++ WPrint ++ WGood
+		  ++ WInventory ++ WSale ++ BSale ++ WFirm ++ WPrint ++ WGood
 		  ++ WReport ++ Base
 		  %% finance
 		  ++ Rainbow 
@@ -533,8 +551,7 @@ init([]) ->
     %% ?DEBUG("right tree~n ~p", [Trees]),
     {ok, #right_trees{action_tree = ActionTree,
 		      id_tree = IdTree,
-		      pass_actions=
-			  pass_action(saler) ++ pass_action(wholesaler)}}.
+		      pass_actions= pass_action(saler) ++ pass_action(wholesaler)}}.
 
 handle_call(lookup, _From, #right_trees{id_tree=GBTree} = State) ->
     %% Children =
@@ -560,7 +577,7 @@ handle_call(lookup_super, _From, #right_trees{id_tree=GBTree} = State) ->
     %% Cares = ?ALL_CATLOGS -- [?right_merchant, ?right_right],
     %% normal user does not right to set merchant, print
     Cares = ?ALL_CATLOGS -- [?right_merchant, ?right_w_print],
-    
+    %% ?DEBUG("Cares ~p", [Cares]),
 
     Iter = gb_trees:iterator(GBTree),
     Super = 

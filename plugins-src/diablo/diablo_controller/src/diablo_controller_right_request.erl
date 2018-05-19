@@ -245,6 +245,25 @@ action(Session, Req, {"list_sales_children"}) ->
 	  fun({Node}) ->
 		  lists:member(?value(<<"id">>, Node), Cares)
 	  end, Children),
+    ?utils:respond(200, batch, Req, FilterChildren);
+
+action(Session, Req, {"list_bsale_children"}) ->
+    ?DEBUG("list_bsale_children with session ~p", [Session]),
+    {RightId, Cares} =
+	{?right_b_sale, [?new_batch_sale, 
+			 ?reject_batch_sale,
+			 ?update_batch_sale,
+			 ?check_batch_sale,
+			 ?list_batch_sale]},
+
+    {ok, Children} =
+	?right_init:get_children(children_only, [{<<"id">>, RightId}]),
+
+    FilterChildren = 
+	lists:filter(
+	  fun({Node}) ->
+		  lists:member(?value(<<"id">>, Node), Cares)
+	  end, Children),
     ?utils:respond(200, batch, Req, FilterChildren).
 
 %%
