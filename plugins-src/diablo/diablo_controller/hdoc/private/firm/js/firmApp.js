@@ -91,6 +91,12 @@ function firmConfig(angular){
 		controller: 'firmAnalysisProfitCtrl',
 		resolve: angular.extend({}, firm, region)
 	    }).
+	    // virtual firm
+	    when('/list_virutal_firm', {
+		templateUrl: '/private/firm/html/virutal_firm.html',
+		controller: 'virtualFirmCtrl',
+		resolve: angular.extend({}, firm, region)
+	    }). 
 	    // brand
 	    when('/new_brand', {
 		templateUrl: '/private/firm/html/new_brand.html',

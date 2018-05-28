@@ -883,52 +883,7 @@ action(Session, Req, {"w_inventory_export"}, Payload) ->
 				    ?utils:respond(200, object, Req, OkReturn);
 				{error, Error} ->
 				    ?utils:respond(200, Req, Error)
-			    end;
-			    %% case ?w_inventory:export(stock_note, Merchant, NewConditions, UseMode) of
-			    %% 	[] ->
-			    %% 	    ?utils:respond(200, Req, ?err(wsale_export_none, Merchant));
-			    %% 	{ok, StockNotes} ->
-			    %% 	    {ok, Colors} = ?w_user_profile:get(color, Merchant),
-			    %% 	    case file:open(ExportFile, [append, raw]) of
-			    %% 		{ok, Fd} ->
-			    %% 		    try
-			    %% 			%% sort stock by color
-			    %% 			DoFun = fun(C) -> ?utils:write(Fd, C) end, 
-			    %% 			SortStockS = stock_note(
-			    %% 				       to_dict,
-			    %% 				       {<<"style_number">>, <<"brand">>, <<"shop">>},
-			    %% 				       StockNotes,
-			    %% 				       dict:new()),
-			    %% 			csv_head(
-			    %% 			  stock_sort_by_color,
-			    %% 			  DoFun,
-			    %% 			  ExportCode,
-			    %% 			  ShowOrgPrice),
-			    %% 			do_write(
-			    %% 			  stock_sort_by_color,
-			    %% 			  DoFun,
-			    %% 			  1,
-			    %% 			  Transes,
-			    %% 			  SortStockS,
-			    %% 			  Colors,
-			    %% 			  ExportCode,
-			    %% 			  ShowOrgPrice),
-			    %% 			ok = file:datasync(Fd),
-			    %% 			ok = file:close(Fd)
-			    %% 		    catch
-			    %% 			T:W -> 
-			    %% 			    file:close(Fd)sss,
-			    %% 			    ?DEBUG("trace export:T ~p, W ~p~n~p",
-			    %% 				   [T, W, erlang:get_stacktrace()]),
-			    %% 			    ?utils:respond(
-			    %% 			       200, Req, ?err(wsale_export_error, W)) 
-			    %% 		    end,
-			    %% 		    ?utils:respond(200, object, Req,
-			    %% 				   {[{<<"ecode">>, 0},
-			    %% 				     {<<"url">>, ?to_b(Url)}]}); 
-			    %% 		{error, Error} ->
-			    %% 		    ?utils:respond(200, Req, ?err(wsale_export_error, Error))
-			    %% 	    end;
+			    end; 
 			shift_note ->
 			    case export(
 				   shift_note,
@@ -1218,7 +1173,18 @@ action(Session, Req, {"print_w_inventory_transfer"}, Payload) ->
     ?utils:respond(200, object, Req,
 		   {[{<<"ecode">>, 0},
 		     {<<"detail">>, {Detail}},
-		     {<<"note">>, Sort}]}).
+		     {<<"note">>, Sort}]});
+
+action(Session, Req, {"print_w_inventory_note"}, Payload) ->
+    ?DEBUG("print_w_inventory_note: session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    {struct, CutConditions} = ?v(<<"condition">>, Payload),
+    {ok, Q} = ?w_inventory:purchaser_inventory(get_inventory_new_rsn, Merchant, CutConditions),
+    {struct, C} = ?v(<<"fields">>,
+		     filter_condition(trans_note, [?v(<<"rsn">>, Rsn) || {Rsn} <- Q], CutConditions)),
+    {ok, Transes} = ?w_inventory:export(trans_note, Merchant, C, []),
+    ?utils:respond(200, object, Req,
+		   {[{<<"ecode">>, 0}]}).
 
 
 print_inventory_new(sort_by_color, _Key, [], _DictNote, Acc) ->

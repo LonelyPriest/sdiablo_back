@@ -290,13 +290,15 @@ init([]) ->
 	 {?reject_batch_sale,
 	  <<"批发退货">>,     <<"reject_batch_sale">>,    ?right_b_sale}, 
 	 {?update_batch_sale,
-	  <<"批发单编辑">>,   <<"update_batch_sale">>,    ?right_b_sale},
+	  <<"批发记录编辑">>,   <<"update_batch_sale">>,    ?right_b_sale},
 	 {?check_batch_sale,
-	  <<"批发单审核">>,   <<"check_batch_sale">>,     ?right_b_sale},
+	  <<"批发记录审核">>,   <<"check_batch_sale">>,     ?right_b_sale},
 	 {?list_batch_sale,
-	  <<"批发单查询">>,   <<"list_batch_sale">>,      ?right_b_sale},
+	  <<"批发记录查询">>,   <<"list_batch_sale">>,      ?right_b_sale},
+	 {?note_batch_sale,
+	  <<"批发明细查询">>,   <<"note_batch_sale">>,      ?right_b_sale},
 	 {?del_batch_sale,
-	  <<"批发单删除">>,   <<"delete_batch_sale">>,    ?right_b_sale} 
+	  <<"批发记录删除">>,   <<"delete_batch_sale">>,    ?right_b_sale} 
 	],
     
     %% inventory
@@ -395,7 +397,13 @@ init([]) ->
 	 {?analysis_profit_w_firm, 
 	  <<"厂商盈利分析">>, <<"analysis_profit_w_firm">>,  ?right_w_firm},
 	 {?export_firm_profit, 
-	  <<"导出厂商盈利分析">>, <<"export_firm_profit">>,  ?right_w_firm}
+	  <<"导出厂商盈利分析">>, <<"export_firm_profit">>,  ?right_w_firm},
+
+	 {?new_virtual_firm,
+	  <<"新增虚拟厂商">>, <<"new_virtual_firm">>,  ?right_w_firm},
+
+	 {?list_virtual_firm,
+	  <<"查看虚拟厂商">>, <<"list_virtual_firm">>,  ?right_w_firm} 
 	], 
     
     %% print

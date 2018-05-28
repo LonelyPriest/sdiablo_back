@@ -512,7 +512,8 @@ get_shops(Session, Module) ->
 			     {<<"func_id">>, 
 			      case Module of
 				  inventory -> ?right_w_inventory;
-				  sale ->      ?right_w_sale
+				  sale ->      ?right_w_sale;
+				  bsale ->     ?right_b_sale
 			      end}
 			    ]} | Acc] 
 		  end, [], S0);

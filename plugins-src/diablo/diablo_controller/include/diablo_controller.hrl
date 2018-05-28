@@ -319,7 +319,9 @@
 -define(abandon_w_firm_bill,  ?right_w_firm + 12).
 -define(export_w_firm,        ?right_w_firm + 13).
 -define(analysis_profit_w_firm, ?right_w_firm + 14).
--define(export_firm_profit,   ?right_w_firm + 15).
+-define(export_firm_profit,     ?right_w_firm + 15).
+-define(new_virtual_firm,       ?right_w_firm + 16).
+-define(list_virtual_firm,      ?right_w_firm + 17).
 
 %% wprint
 -define(new_w_print_server,  ?right_w_print + 1).
@@ -410,6 +412,15 @@
 -define(list_batch_sale,   ?right_b_sale + 4).
 -define(check_batch_sale,  ?right_b_sale + 5).
 -define(del_batch_sale,    ?right_b_sale + 6).
+-define(note_batch_sale,   ?right_b_sale + 7).
+-define(book_batch_sale,   ?right_b_sale + 8).
+
+-define(new_batch_saler,      ?right_b_sale + 9).
+-define(list_batch_saler,     ?right_b_sale + 10).
+-define(delete_batch_saler,   ?right_b_sale + 11).
+-define(update_batch_saler,   ?right_b_sale + 12).
+-define(bill_batch_saler,     ?right_b_sale + 13).
+-define(bank_batch_saler,     ?right_b_sale + 14).
 
 %% public
 -define(http_route, diablo_controller_http_route).

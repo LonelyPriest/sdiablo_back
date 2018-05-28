@@ -219,8 +219,10 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
      */
     $scope.stock_right = {
 	show_orgprice: rightAuthen.authen(
-	    user.type, rightAuthen.rainbow_action()['show_orgprice'], user.right
-	)
+	    user.type, rightAuthen.rainbow_action()['show_orgprice'], user.right 
+	),
+
+	print_w_stock: stockUtils.authen_stock(user.type, user.right, 'print_w_stock_new')
     };
 
     // console.log($scope.stock_right);
@@ -538,6 +540,19 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 		} 
 	    }); 
 	})
+    };
+
+    $scope.print_note = function() {
+	var callback = function() {
+	    diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+		add_search_condition(search);
+		diablo_goto_page("#/print_inventory_new_note/" + angular.toJson(search)); 
+	    }); 
+	}
+	
+	dialog.request(
+	    "采购单打印", "采购单打印需要打印机支持A4纸张，确认要打印吗？",
+	    callback, undefined, undefined);
     };
 
 

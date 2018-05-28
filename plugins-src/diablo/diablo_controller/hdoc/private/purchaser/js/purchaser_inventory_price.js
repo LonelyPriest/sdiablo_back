@@ -525,7 +525,7 @@ function stockTransferPrintCtrlProvide(
 	    $scope.notes = [];
 	    $scope.total  = 0;
 	    $scope.amount = 0;
-
+	    
 	    var order_id = 1;
 	    angular.forEach(result.note, function(n) {
 		n.brand = diablo_get_object(n.brand_id, filterBrand);

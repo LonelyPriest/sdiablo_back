@@ -47,6 +47,9 @@ url_match(get) ->
 	++ register_e(wreport,    ?w_report_request)
     %% base setting
 	++ register_e(wbase,      ?w_base_request)
+
+    %% batch sale
+	++ register_e(bsale,      ?b_sale_request)
 	;
 
 url_match(delete) ->
@@ -69,6 +72,9 @@ url_match(delete) ->
 	++ register_e(wreport,    ?w_report_request)
     %% base setting
 	++ register_e(wbase,      ?w_base_request)
+
+    %% batch sale
+	++ register_e(bsale,      ?b_sale_request)
 	.
     
 
@@ -90,8 +96,11 @@ url_match(post, Payload) ->
 	++ register_e(purchaser,  ?w_inventory_request, Payload)
 	++ register_e(wprint,     ?w_print_request, Payload) 
 	++ register_e(wgood,      ?w_good_request, Payload)
-	++ register_e(wreport,    ?w_report_request, Payload)
+	++ register_e(wreport,    ?w_report_request, Payload) 
     %% base setting
 	++ register_e(wbase,       ?w_base_request, Payload)
+
+	%% batch sale
+	++ register_e(bsale,       ?b_sale_request, Payload)
 	.
     

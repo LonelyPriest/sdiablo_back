@@ -505,6 +505,14 @@ sidebar(Session) ->
 	    _ ->
 		[]
 	end,
+
+    VirtualFirm =
+	case ?right_auth:authen(?list_virtual_firm, Session) of
+	    {ok, ?list_virtual_firm} ->
+		[{"list_virtual_firm", "厂商归类", "glyphicon glyphicon-copyright-mark"}];
+	    _ ->
+		[]
+	end,
     
     
     Bill =
@@ -520,6 +528,7 @@ sidebar(Session) ->
         end,
     ?menu:sidebar(level_1_menu, ListFirm ++ ListBrand ++ NewFirm ++ NewBrand)
 	++ ?menu:sidebar(level_2_menu, Bill)
+	++ ?menu:sidebar(level_1_menu, VirtualFirm)
 	++ ?menu:sidebar(level_1_menu, FirmProfit).
 
 batch_responed(Fun, Req) ->

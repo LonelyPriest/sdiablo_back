@@ -1347,7 +1347,7 @@ create table print_template(
 
 -- wholesalers
 
-create table wholesaler
+create table batchsaler
 (
     id              INTEGER AUTO_INCREMENT,
     name            VARCHAR(127) not null,
