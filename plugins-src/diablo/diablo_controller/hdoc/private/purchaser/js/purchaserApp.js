@@ -182,7 +182,7 @@ function stockConfg(angular){
 	    when('/print_inventory_new_note/:note', {
 		templateUrl: '/private/purchaser/html/stock_new_note_print.html',
 		controller: 'stockNewNotePrintCtrl' ,
-		resolve: angular.extend({}, brand, firm, type, color, user, base)
+		resolve: angular.extend({}, brand, firm, type, user, base)
 	    }). 
 	    // wgood
 	    when('/good/size', {

@@ -465,34 +465,74 @@ function stockNewDetailPrintCtrlProvide(
 	    LODOP.ADD_PRINT_HTM(
 		"5%", "5%",  "90%", "BottomMargin:15mm",
 		strBodyStyle + "<body>" + document.getElementById("stock_new").innerHTML + "</body>");
-	    LODOP.PREVIEW();
-	    
-	    // LODOP.On_Return = function(taskId, value) {
-	    // 	// console.log(value);
-	    // 	if (value >= 0) {
-	    // 	    LODOP.ADD_PRINT_HTM(
-	    // 		"5%", "5%",  "90%", "BottomMargin:15mm",
-	    // 		strBodyStyle + "<body>" + document.getElementById("stock_new").innerHTML + "</body>");
-	    // 	    LODOP.PREVIEW();
-	    // 	}
-	    // };
-	    // LODOP.SELECT_PRINTER();
-	    
-	    // LODOP.SET_SHOW_MODE("PREVIEW_IN_BROWSER", true);
-	    // var index = LODOP.SELECT_PRINTER();
-	    // console.log(index);
-	    // if (-1 !== index) {
-	    // LODOP.SET_PRINTER_INDEX(index);
-	    // LODOP.SET_PRINT_PAGESIZE(1, 0, 0,"A4");
-	    
-	    // LODOP.PREVIEW();
-	    // LODOP.PRINTA();
-	    // } 
+	    LODOP.PREVIEW(); 
 	}
     };
 
     $scope.go_back = function() {
 	diablo_goto_page("#/inventory_new_detail");
+    };
+    
+};
+
+
+function stockNewNotePrintCtrlProvide(
+    $scope, $routeParams, diabloUtilsService, purchaserService,
+    filterBrand, filterFirm, filterType, user, base){
+    // console.log($routeParams); 
+    $scope.shops = user.sortShops;
+    var search = angular.fromJson($routeParams.note);
+    console.log(search);
+
+    var LODOP;
+    if (needCLodop()) loadCLodop(); 
+    var dialog = diabloUtilsService;
+
+    var pageHeight = diablo_base_setting("prn_h_page", user.loginShop, base, parseFloat, 14);
+    var pageWidth  = diablo_base_setting("prn_w_page", user.loginShop, base, parseFloat, 21.3);
+    $scope.rbill_comment  = diablo_base_setting("rbill", diablo_default_shop, base, diablo_set_string, "");
+    // console.log(base);
+    // console.log($scope.rbill_comment); 
+    purchaserService.print_w_inventory_new_note(search).then(function(result) {
+    	console.log(result);
+	if (result.ecode === 0) {
+	    
+	    
+	} else {
+	    dialog.response(
+		false,
+		"采购单打印",
+		"采购单打印失败：获取采购单失败，请核对后再打印！！")
+	}
+    });
+
+    // var css = "<style>table { border-splice:0; border-collapse:collapse }</style>"
+    // var strBodyStyle="<style>table,td { border: 1 solid #000000;border-collapse:collapse }</style>"; 
+    var strBodyStyle="<style>"
+	+ ".table-response {min-height: .01%; overflow-x:auto;}"
+	+ "table {border-spacing:0; border-collapse:collapse; width:100%}"
+	+ "td,th {padding:0; border:1 solid #000000; text-align:center;}"
+	+ ".table-bordered {border:1 solid #000000;}" 
+	+ "</style>";
+    $scope.print = function() {
+	if (angular.isUndefined(LODOP)) {
+	    LODOP = getLodop();
+	}
+
+	if (LODOP.CVERSION) {
+	    LODOP.PRINT_INIT("task_print_stock_new");
+	    LODOP.SET_PRINTER_INDEX(stockUtils.printer_bill(user.loginShop, base));
+	    LODOP.SET_PRINT_PAGESIZE(0, pageWidth * 100, pageHeight * 100, "");
+	    LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
+	    LODOP.ADD_PRINT_HTM(
+		"5%", "5%",  "90%", "BottomMargin:15mm",
+		strBodyStyle + "<body>" + document.getElementById("stock_new").innerHTML + "</body>");
+	    LODOP.PREVIEW(); 
+	}
+    };
+
+    $scope.go_back = function() {
+	diablo_goto_page("#/inventory_rsn_detail");
     };
     
 };
@@ -596,4 +636,5 @@ define(["purchaserApp"], function(app){
     app.controller("purchaserInventoryPriceCtrl", purchaserInventoryPriceCtrlProvide);
     app.controller("stockNewDetailPrintCtrl", stockNewDetailPrintCtrlProvide);
     app.controller("stockTransferPrintCtrl", stockTransferPrintCtrlProvide);
+    app.controller("stockNewNotePrintCtrl", stockNewNotePrintCtrlProvide);
 });

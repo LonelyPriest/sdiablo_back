@@ -1175,7 +1175,7 @@ action(Session, Req, {"print_w_inventory_transfer"}, Payload) ->
 		     {<<"detail">>, {Detail}},
 		     {<<"note">>, Sort}]});
 
-action(Session, Req, {"print_w_inventory_note"}, Payload) ->
+action(Session, Req, {"print_w_inventory_new_note"}, Payload) ->
     ?DEBUG("print_w_inventory_note: session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
     {struct, CutConditions} = ?v(<<"condition">>, Payload),
@@ -1183,6 +1183,8 @@ action(Session, Req, {"print_w_inventory_note"}, Payload) ->
     {struct, C} = ?v(<<"fields">>,
 		     filter_condition(trans_note, [?v(<<"rsn">>, Rsn) || {Rsn} <- Q], CutConditions)),
     {ok, Transes} = ?w_inventory:export(trans_note, Merchant, C, []),
+    Dict = new_trans_to_dict(<<"shop_id">>, Transes, dict:new()),
+    ?DEBUG("dict note ~p", [dict:to_list(Dict)]), 
     ?utils:respond(200, object, Req,
 		   {[{<<"ecode">>, 0}]}).
 
@@ -1243,6 +1245,7 @@ print_inventory_new(sort_by_color, {K1, K2, K3} = K, [H|T], DictNote, Acc) ->
 	error ->
 	    print_inventory_new(sort_by_color, K, T, DictNote, Acc)
     end.
+
 
 export(stock_note, Merchant, Conditions, {UseMode, Transes, File, Url, ExportCode, ShowOrgPrice}) ->
     case ?w_inventory:export(stock_note, Merchant, Conditions, UseMode) of
@@ -2323,6 +2326,29 @@ shift_note_class_with(color, [{H}|T], Sorts) ->
 	end,
 
     shift_note_class_with(color, T, NewSorts).
+
+new_trans_to_dict(_Key, [], Dict) ->
+    Dict;
+new_trans_to_dict(Key, [{H}|T], Dict) ->
+    %% Firm        = ?to_b(?v(<<"firm_id">>, H)),
+    K        = ?v(Key, H),
+    %% StyleNumber = ?to_b(?v(<<"style_number">>, H)),
+    %% Brand       = ?to_b(?v(<<"brand_id">>, H)), 
+
+    %% Key = <<Firm/binary, Shop/binary, StyleNumber/binary, Brand/binary>>,
+    DictNew =
+	case dict:find(K, Dict) of
+	    error ->
+		dict:store(Key, [{H}], Dict);
+	    {ok, _V} ->
+		dict:update(
+		  Key,
+		  fun(V) ->
+			  [{H}] ++ V
+		  end,
+		  Dict)
+	end,
+    new_trans_to_dict(Key, T, DictNew).
 
 get_color(0, _Colors) ->
     <<"均色">>;

@@ -361,7 +361,10 @@ init([]) ->
 	  <<"调出单打印">>, <<"print_w_inventory_transfer">>, ?right_w_inventory},
 
 	 {?gift_w_stock,
-	  <<"库存赠送标识设置">>, <<"gift_w_stock">>, ?right_w_inventory}
+	  <<"库存赠送标识设置">>, <<"gift_w_stock">>, ?right_w_inventory},
+
+	 {?print_w_inventory_new_note,
+	  <<"采购单明细打印">>, <<"print_w_inventory_new_note">>, ?right_w_inventory}
 	],
 
     %% firm

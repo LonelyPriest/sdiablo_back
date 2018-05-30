@@ -2786,9 +2786,19 @@ handle_call({new_trans_note_export, Merchant, Conditions}, _From, State)->
     CorrectCondition = ?utils:correct_condition(<<"a.">>, Conditions),
 
     Sql = 
-	"select a.id, a.rsn, a.style_number, a.brand_id, a.type_id, a.season"
-	", a.amount as total, a.firm_id, a.year, a.tag_price, a.org_price, a.discount, a.entry_date"
-	", a.shop_id, a.employee_id, a.in_type"
+	"select a.id, a.rsn"
+	", a.style_number"
+	", a.brand_id"
+	", a.type_id"
+	", a.season"
+	", a.amount as total"
+	", a.firm_id"
+	", a.year"
+	", a.tag_price, a.org_price, a.discount"
+	", a.entry_date"
+	", a.shop_id"
+	", a.employee_id"
+	", a.in_type"
 	
 	", b.name as brand"
 	", d.name as type"
