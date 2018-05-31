@@ -24,7 +24,7 @@ function wgoodNewCtrlProvide(
     $scope.pattern = {
 	style_number: diabloPattern.style_number,
 	brand:        diabloPattern.ch_en_num,
-	type:         diabloPattern.head_ch_en_num,
+	type:         diabloPattern.good_type,
 	discount:     diabloPattern.discount,
 	price:        diabloPattern.positive_decimal_2,
 	percent:      diabloPattern.percent

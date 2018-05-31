@@ -188,7 +188,7 @@ function stockConfg(angular){
 	    when('/good/size', {
 		templateUrl: '/private/wgood/html/wgood_size.html',
 		controller: 'wgoodSizeDetailCtrl',
-		resolve: angular.extend({}, s_group)
+		resolve: angular.extend({}, s_group, base)
 	    }).
 	    when('/good/color', {
 		templateUrl: '/private/wgood/html/wgood_color.html',

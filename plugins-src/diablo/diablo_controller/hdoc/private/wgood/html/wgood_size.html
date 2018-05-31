@@ -106,13 +106,12 @@
 		     name="name"
 		     placeholder="请输入尺码名称"
 		     x-ng-model="params.size.name"
-		     x-ng-pattern="/^[A-Za-z0-9-_\u4e00-\u9fa5]+$/"</input> 
+		     x-ng-pattern="/^[A-Za-z0-9-_\*\u4e00-\u9fa5]+$/"</input> 
 	      <span class="input-group-addon bg-white fg-red">*</span>
 	    </div>
 	  </div>
-	  <div ng-show="newSizeForm.name.$invalid
-			&& !newSizeForm.name.$pristine">
-	    <span class="fg-red">请输入汉字，字母，下划线或数字</span>
+	  <div ng-show="newSizeForm.name.$invalid && !newSizeForm.name.$pristine">
+	    <span class="fg-red">请输入汉字，字母，星号，下划线或数字</span>
 	  </div>
 	</div>
 
@@ -134,8 +133,7 @@
 	  <div ng-show="newSizeForm.si.$invalid && !newSizeForm.si.$pristine">
 	    <span class="fg-red">请输入1-3个字母或数字</span>
 	  </div>
-	  <div ng-show="!params.check_same(
-			params.size, 'si', params.size.si)">
+	  <div ng-show="!params.check_same(params.size, 'si', params.size.si)">
 	    <span class="fg-red">尺码不规范或已存在，请重新输入</span>
 	  </div>
 	</div>
@@ -156,12 +154,10 @@
 	      <span class="input-group-addon bg-white fg-red">*</span>
 	    </div>
 	  </div>
-	  <div ng-show="newSizeForm.sii.$invalid
-			&& !newSizeForm.sii.$pristine">
+	  <div ng-show="newSizeForm.sii.$invalid && !newSizeForm.sii.$pristine">
 	    <span class="fg-red">请输入1-3个字母或数字</span>
 	  </div>
-	  <div ng-show="!params.check_same(
-			params.size, 'sii', params.size.sii)">
+	  <div ng-show="!params.check_same(params.size, 'sii', params.size.sii)">
 	    <span class="fg-red">尺码不规范或已存在，请重新输入</span>
 	  </div>
 	</div>
@@ -181,17 +177,14 @@
 	      <span class="input-group-addon bg-white fg-red">*</span>
 	    </div>
 	  </div>
-	  <div ng-show="newSizeForm.siii.$invalid
-			&& !newSizeForm.siii.$pristine">
+	  <div ng-show="newSizeForm.siii.$invalid && !newSizeForm.siii.$pristine">
 	    <span class="fg-red">请输入1-3个字母或数字</span>
 	  </div>
-	  <div ng-show="!params.check_same(
-			params.size, 'siii', params.size.siii)">
+	  <div ng-show="!params.check_same(params.size, 'siii', params.size.siii)">
 	    <span class="fg-red">尺码不规范或已存在，请重新输入</span>
 	  </div>
 	</div>
-
-
+	
 	<!--SIV-->
 	<div class="form-group">
 	  <label class="col-sm-3 col-md-3 control-label">尺码IV</label>
@@ -206,12 +199,10 @@
 	      <span class="input-group-addon bg-white fg-red">*</span>
 	    </div>
 	  </div>
-	  <div ng-show="newSizeForm.siv.$invalid
-			&& !newSizeForm.siv.$pristine">
+	  <div ng-show="newSizeForm.siv.$invalid && !newSizeForm.siv.$pristine">
 	    <span class="fg-red">请输入1-3个字母或数字</span>
 	  </div>
-	  <div ng-show="!params.check_same(
-			params.size, 'siv', params.size.siv)">
+	  <div ng-show="!params.check_same(params.size, 'siv', params.size.siv)">
 	    <span class="fg-red">尺码不规范或已存在，请重新输入</span>
 	  </div>
 	</div>
@@ -233,8 +224,7 @@
 	  <div ng-show="newSizeForm.sv.$invalid && !newSizeForm.sv.$pristine">
 	    <span class="fg-red">请输入1-3个字母或数字</span>
 	  </div>
-	  <div ng-show="!params.check_same(
-			params.size, 'sv', params.size.sv)">
+	  <div ng-show="!params.check_same(params.size, 'sv', params.size.sv)">
 	    <span class="fg-red">尺码不规范或已存在，请重新输入</span>
 	  </div>
 	</div>
@@ -253,12 +243,10 @@
 	      <span class="input-group-addon bg-white fg-red">*</span>
 	    </div>
 	  </div>
-	  <div ng-show="newSizeForm.svi.$invalid
-			&& !newSizeForm.svi.$pristine">
+	  <div ng-show="newSizeForm.svi.$invalid && !newSizeForm.svi.$pristine">
 	    <span class="fg-red">请输入1-3个字母或数字</span>
 	  </div>
-	  <div ng-show="!params.check_same(
-			params.size, 'svi', params.size.svi)">
+	  <div ng-show="!params.check_same(params.size, 'svi', params.size.svi)">
 	    <span class="fg-red">尺码不规范或已存在，请重新输入</span>
 	  </div>
 	</div>
@@ -277,12 +265,10 @@
 	      <span class="input-group-addon bg-white fg-red">*</span>
 	    </div>
 	  </div>
-	  <div ng-show="newSizeForm.svii.$invalid
-			&& !newSizeForm.svii.$pristine">
+	  <div ng-show="newSizeForm.svii.$invalid && !newSizeForm.svii.$pristine">
 	    <span class="fg-red">请输入1-3个字母或数字</span>
 	  </div>
-	  <div ng-show="!params.check_same(
-			params.size, 'svii', params.size.svii)">
+	  <div ng-show="!params.check_same(params.size, 'svii', params.size.svii)">
 	    <span class="fg-red">尺码不规范或已存在，请重新输入</span>
 	  </div>
 	</div>
@@ -294,8 +280,7 @@
   <!--BEGIN modal-footer-->
   <div class="modal-footer">
     <button class="btn btn-primary"
-	    x-ng-disabled="newSizeForm.$invalid
-			   || !params.valid_group(params.size)"
+	    x-ng-disabled="newSizeForm.$invalid || !params.valid_group(params.size)"
 	    x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>

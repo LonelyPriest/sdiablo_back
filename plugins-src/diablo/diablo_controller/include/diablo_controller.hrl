@@ -110,6 +110,11 @@
 -define(DEFAULT_ALARM_DAY, 7).
 -define(DEFAULT_BASE_SETTING, -1).
 
+%% shop mode
+-define(CLOTHES_MODE, 1).
+-define(CHILD_MODE, 2).
+-define(HOME_MODE, 3).
+
 %% sort
 -define(SORT_BY_ID, 0).
 -define(SORT_BY_DATE, 1).

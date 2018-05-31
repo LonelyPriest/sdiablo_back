@@ -73,6 +73,13 @@ var diablo_charge = 0;
 var diablo_withdraw = 1;
 
 /*
+  * shop mode
+ */
+diablo_clothes_mode = 1;
+diablo_child_mode = 2;
+diablo_home_mode = 3;
+
+/*
  * ticket
  */
 var diablo_score_ticket = 0;
@@ -189,6 +196,11 @@ var size_to_barcode =
      "58",  "80",  "90",  "100", "105", "110", "115", "120", "125", "130", "135",
      "140", "145", "150", "155", "160", "165", "170", "175", "180", "185", "190",
      "195", "200", "4",   "6",   "7",    "5"];
+
+// var f_size_to_barcode = [
+//     "FF",
+//     "200*230", "220*240"
+// ];
 
 function diablo_range(n){
     if (n < 0) return;

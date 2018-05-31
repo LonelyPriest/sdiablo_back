@@ -835,6 +835,8 @@ sys_config() ->
 	      {"gift_sale",         "开单赠送模式",       "0",    "0"},
 	      {"scan_only",         "扫码销售",           "0",    "0"},
 	      {"auto_level",        "会员自动升级",       "0",    "0"},
-	      {"maling_rang",       "抹零范围",           "3",    "0"}
+	      {"maling_rang",       "抹零范围",           "3",    "0"},
+	      %% 1: clothes, 2: child, 3: home
+	      {"shop_mode",         "店铺模式",           "1",    "0"}
 	     ],
     Values.

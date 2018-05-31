@@ -1046,7 +1046,7 @@ function purchaserInventoryNewCtrlProvide (
      */ 
     $scope.pattern = {style_number: diabloPattern.style_number,
 		      brand: diabloPattern.ch_en_num,
-		      type:  diabloPattern.head_ch_en_num};
+		      type:  diabloPattern.good_type};
 
     $scope.focus_attrs = {style_number:true,
 			  brand:false,

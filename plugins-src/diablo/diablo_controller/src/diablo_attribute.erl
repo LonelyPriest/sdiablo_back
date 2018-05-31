@@ -23,7 +23,7 @@
 -export([color_type/2, color/2, color/3, bcode/3]).
 -export([size_group/2, size_group/3]).
 -export([brand/2, brand/3]).
--export([type/2, type/3, invalid_size/1]).
+-export([type/2, type/3, invalid_size/1, invalid_size/2]).
 
 -define(SERVER, ?MODULE).
 
@@ -239,7 +239,9 @@ handle_call({list_w_color, Merchant, ColorIds}, _Form, State) ->
 
 handle_call({new_size_group, Merchant, Attrs}, _From, State) ->
     ?DEBUG("new_size_group with merchant ~p, attrs ~p", [Merchant, Attrs]),
-    Name     = ?value(<<"name">>, Attrs),
+    Name     = ?v(<<"name">>, Attrs),
+    Mode     = ?v(<<"mode">>, Attrs, ?CLOTHES_MODE),
+    ?DEBUG("Mode ~p", [Mode]),
     
     Sql0 = "select id, name from size_group"
 	" where name=\"" ++ ?to_s(Name) ++ "\""
@@ -257,13 +259,13 @@ handle_call({new_size_group, Merchant, Attrs}, _From, State) ->
 		SVI  = ?v(<<"svi">>, Attrs, ""),
 		SVII = ?v(<<"svii">>, Attrs, ""),
 
-		case invalid_size(SI)
-		    orelse invalid_size(SII)
-		    orelse invalid_size(SIII)
-		    orelse invalid_size(SIV)
-		    orelse invalid_size(SV)
-		    orelse invalid_size(SVI)
-		    orelse invalid_size(SVII) of
+		case invalid_size(SI, Mode)
+		    orelse invalid_size(SII, Mode)
+		    orelse invalid_size(SIII, Mode)
+		    orelse invalid_size(SIV, Mode)
+		    orelse invalid_size(SV, Mode)
+		    orelse invalid_size(SVI, Mode)
+		    orelse invalid_size(SVII, Mode) of
 		    true ->
 			{error, ?err(size_group_invalid_name, Name)};
 		    false -> 
@@ -606,8 +608,15 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
-
-invalid_size("") -> false; 
 invalid_size(Size) ->
+    invalid_size(Size, ?CLOTHES_MODE).
+
+invalid_size("", _Mode) -> false; 
+invalid_size(Size, ?CLOTHES_MODE) ->
     %% ?DEBUG("Size ~p", [Size]), 
-    not lists:member(?to_s(Size), ?SIZE_TO_BARCODE).
+    not lists:member(?to_s(Size), ?SIZE_TO_BARCODE);
+invalid_size(Size, ?CHILD_MODE) ->
+    not lists:member(?to_s(Size), ?SIZE_TO_BARCODE);
+invalid_size(_Size, ?HOME_MODE) ->
+    false.
+

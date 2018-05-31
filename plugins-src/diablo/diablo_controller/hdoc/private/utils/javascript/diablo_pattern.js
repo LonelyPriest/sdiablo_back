@@ -47,7 +47,8 @@ angular.module("diabloPattern", []).service("diabloPattern", [function(){
     this.comment = /^[\u4e00-\u9fa5A-Za-z0-9\-_\.\uFF00-\uFFFF]+$/;
 
     // size group
-    this.size = /^[A-Za-z0-9\/]{1,3}$/
+    this.size = /^[A-Za-z0-9\/]{1,3}$/;
+    this.home_size = /^[0-9\*\/]{3,8}$/;
 
     this.chinese = /^[\u4e00-\u9fa5]+$/;
     
@@ -56,6 +57,7 @@ angular.module("diabloPattern", []).service("diabloPattern", [function(){
     this.ch_en_num = /^[\u4e00-\u9fa5A-Za-z0-9]+$/;
     
     this.head_ch_en_num  = /^[\u4e00-\u9fa5][\u4e00-\u9fa5A-Za-z0-9\s]+$/;
+    this.good_type  = /^[\u4e00-\u9fa5A-Za-z0-9\-\s]+$/;
 
     this.ch_name_address = /^[\u4e00-\u9fa5A-Za-z0-9\-_\s]+$/;
 

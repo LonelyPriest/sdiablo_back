@@ -528,7 +528,7 @@ sidebar(Session) ->
         end,
     ?menu:sidebar(level_1_menu, ListFirm ++ ListBrand ++ NewFirm ++ NewBrand)
 	++ ?menu:sidebar(level_2_menu, Bill)
-	++ ?menu:sidebar(level_1_menu, VirtualFirm)
+    %% ++ ?menu:sidebar(level_1_menu, VirtualFirm)
 	++ ?menu:sidebar(level_1_menu, FirmProfit).
 
 batch_responed(Fun, Req) ->

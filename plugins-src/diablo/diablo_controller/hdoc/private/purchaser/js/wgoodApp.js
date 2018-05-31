@@ -122,10 +122,11 @@ function wgoodConfig(){
 	// 	return http.save({operation: "new_w_good"}, good).$promise;
 	// };
 
-	this.add_purchaser_size = function(group){
+	this.add_purchaser_size = function(group, mode){
 	    return http.save(
 		{operation: "new_w_size"},
-		{name: group.name,
+		{mode:   mode,
+		 name:   group.name,
 		 si:     group.si,
 		 sii:    group.sii,
 		 siii:   group.siii,

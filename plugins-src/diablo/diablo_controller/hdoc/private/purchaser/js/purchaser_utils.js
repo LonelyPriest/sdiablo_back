@@ -134,6 +134,10 @@ var stockUtils = function(){
 	printer_bill: function(shop, base) {
 	    return diablo_base_setting("prn_bill", shop, base, parseInt, diablo_invalid_index);
 	},
+
+	shop_mode: function(shop, base) {
+	    return diablo_base_setting("shop_mode", shop, base, parseInt, diablo_clothes_mode);
+	},
 	
 	yes_no: function() {return [{name:"否", id: 0}, {name:"是", id: 1}]},
 
