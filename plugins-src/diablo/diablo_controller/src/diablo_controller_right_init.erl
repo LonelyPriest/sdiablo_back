@@ -936,6 +936,7 @@ pass_action(wholesaler) ->
      <<"match_all_w_good">>,
      <<"match_w_good_style_number">>,
      <<"list_w_promotion">>,
+     <<"syn_type_pinyin">>,
 
      %% inventnory
      <<"list_w_inventory">>,

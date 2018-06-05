@@ -480,8 +480,9 @@ function wsaleNewProvide(
 	$scope.setting.draw_region   = wsaleUtils.draw_region(shopId, base);
 	$scope.setting.vip_mode      = wsaleUtils.vip_discount(shopId, base);
 	$scope.setting.gift_sale     = wsaleUtils.gift_sale(shopId, base);
-	$scope.setting.scan_only     = wsaleUtils.scan_only(shopId, base);
+	$scope.setting.scan_only     = wsaleUtils.to_integer(wsaleUtils.scan_only(shopId, base).charAt(0));
 	$scope.setting.maling_rang   = wsaleUtils.maling_rang(shopId, base);
+	$scope.setting.type_sale     = wsaleUtils.type_sale(shopId, base);
 	
 	if (diablo_no === $scope.setting.cake_mode) {
 	    // $scope.vpays = wsaleService.vpays;
@@ -493,7 +494,7 @@ function wsaleNewProvide(
 
 	$scope.select.verificate = $scope.vpays[0];
 	// console.log($scope.vpays);
-	// console.log($scope.setting);
+	console.log($scope.setting);
     };
 
     // var isVip = function() {
@@ -637,12 +638,7 @@ function wsaleNewProvide(
 			// $scope.reset_score();
 		    } 
 		} else {
-		    var ERROR = require("diablo-error");
-		    diabloUtilsService.response(
-			false,
-			"会员现金提取",
-			ERROR[result.ecode],
-			undefined)
+		    diabloUtilsService.set_error("会员现金提取", result.ecode); 
 		}
 	    }); 
 	};
@@ -931,9 +927,18 @@ function wsaleNewProvide(
     };
     
     $scope.match_style_number = function(viewValue){
-	if (angular.isUndefined(diablo_set_string(viewValue)) || viewValue.length < diablo_filter_length) return;
-	return diabloFilter.match_w_sale(viewValue, $scope.select.shop.id);
-    } 
+	if (diablo_yes === $scope.setting.type_sale) {
+	    return diabloFilter.match_w_sale(
+		viewValue,
+		$scope.select.shop.id,
+		diablo_type_sale,
+		diablo_is_ascii_string(viewValue));
+	} else {
+	    if (angular.isUndefined(diablo_set_string(viewValue)) || viewValue.length < diablo_filter_length) return; 
+	    
+	    return diabloFilter.match_w_sale(viewValue, $scope.select.shop.id);
+	} 
+    };
 
     $scope.copy_select = function(add, src){
 	// console.log(src);
@@ -986,8 +991,7 @@ function wsaleNewProvide(
     };
     
     $scope.on_select_good = function(item, model, label){
-	console.log(item);
-
+	console.log(item); 
 	if (item.tag_price < 0){
 	    fail_response(2193, function(){
 		$scope.inventories[0] = {$edit:false, $new:true}});
@@ -1147,32 +1151,27 @@ function wsaleNewProvide(
 
 	// invalid barcode
 	if (!barcode.cuted || !barcode.correct) {
-	    dialog.response(false, "销售开单", "开单失败" + wsaleService.error[2196]);
+	    dialog.set_error("销售开单", 2196);
 	    return;
 	}
 	
-	diabloFilter.get_stock_by_barcode(barcode.cuted, $scope.select.shop.id).then(function(result){
+	diabloFilter.get_stock_by_barcode(
+	    barcode.cuted, $scope.select.shop.id
+	).then(function(result){
 	    console.log(result);
 	    if (result.ecode === 0) {
 		if (diablo_is_empty(result.stock)) {
-		    dialog.response(false, "销售开单", "开单失败" + wsaleService.error[2195]);
+		    dialog.set_error("销售开单", 2195);
 		} else {
 		    result.stock.full_bcode = barcode.correct;
 		    $scope.on_select_good(result.stock);
 		}
 	    } else {
-		dialog.response(false, "销售开单", "开单失败" + wsaleService.error[result.ecode]);
+		dialog.set_error("销售开单", result.ecode);
 	    }
 	});
 	
     };
-    
-    // $scope.barcode_scanner_options = {
-    // 	onComplete: function(barcode) {
-    // 	    console.log(barcode);
-    // 	},
-    // 	minLength: 3
-    // };
     
     /*
      * save all
@@ -1302,7 +1301,8 @@ function wsaleNewProvide(
 			$scope.select,
 			wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers)
 			); 
-		    wsalePrint.gen_foot(LODOP, hLine, $scope.comments, pdate, cakeMode);
+		    wsalePrint.gen_foot(
+			LODOP, hLine, $scope.comments, pdate, $scope.select.shop.addr, cakeMode);
 		    wsalePrint.start_print(LODOP); 
 		};
 		

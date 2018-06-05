@@ -323,7 +323,7 @@
 		<tr>
 		  <th class="text-center">序号</th>
 		  <th x-ng-if="setting.barcode_mode" class="text-center">条码</th>
-		  <th class="text-center">货号</th>
+		  <th class="text-center">货号/品类</th>
 		  <th x-ng-if="setting.check_sale" class="text-center">库存</th> 
 		  <th class="text-center">吊牌价</th>
 		  <th class="text-center">折扣</th> 
@@ -364,7 +364,7 @@
 			       required
 			       x-ng-model="inv.full_name"
 			       focus-auto="focus_attr.style_number"
-			       placeholder="货号"
+			       placeholder="货号/品类"
 			       typeahead-editable="false"
 			       typeahead-on-select="on_select_good($item, $model, $label)"
 			       typeahead-wait-ms="300"
@@ -375,7 +375,7 @@
 			</span>
 		      </div>
 		    </form>
-		  </td>
+		  </td> 
 
 		  <td x-ng-if="setting.scan_only" class="col-md-2 text-left vert-align">
 		    <div x-ng-if="inv.$new" class="text-center">-</div> 

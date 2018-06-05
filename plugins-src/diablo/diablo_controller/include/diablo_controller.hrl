@@ -131,6 +131,11 @@
 -define(QUARTER_UNLIMIT_CHARGE, 4).
 -define(YEAR_UNLIMIT_CHARGE, 5).
 
+
+%% sale mode
+-define(GOOD_SALE, 0).
+-define(BRAND_TYPE_SALE, 1).
+
 %% pagination
 -define(DEFAULT_ITEMS_PERPAGE, 5).
 

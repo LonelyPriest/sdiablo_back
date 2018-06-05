@@ -224,6 +224,7 @@ purchaser_inventory(reset_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Bra
 %%
 %% match
 %%
+%% match inventory
 %% match good
 match(style_number, Merchant, PromptNumber) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -235,23 +236,24 @@ match(style_number_with_firm, Merchant, PromptNumber, Firm) ->
 match(all_style_number_with_firm, Merchant, StartTime, Firm) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {match_all_style_number_with_firm,
-			   Merchant, StartTime, Firm}).
+			   Merchant, StartTime, Firm});
 
-
-%% match inventory 
+%% match inventory
+match(inventory_with_type, Merchant, Shop, Types) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {match_inventory_in, Merchant, Shop, Types});
+match(inventory, Merchant, Prompt, Shop) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(
+      Name, {match_inventory, Merchant, Prompt, Shop}).
 match(inventory, all_inventory, Merchant, Shop, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {match_all_inventory, Merchant, Shop, Conditions});
-
-match(inventory, QType, Merchant, StyleNumber, Shop) ->
+    gen_server:call(Name, {match_all_inventory, Merchant, Shop, Conditions}); 
+match(inventory, Merchant, Prompt, Shop, Firm) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(
-      Name, {match_inventory, QType, Merchant, StyleNumber, Shop}).
+      Name, {match_inventory, Merchant, Prompt, Shop, Firm}).
 
-match(inventory, QType, Merchant, StyleNumber, Shop, Firm) ->
-    Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(
-      Name, {match_inventory, QType, Merchant, StyleNumber, Shop, Firm});
 
 match(all_reject_inventory, QType, Merchant, Shop, Firm, StartTime) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -903,29 +905,32 @@ handle_call({match_all_style_number_with_firm, Merchant, StartTime, Firm},
     {reply, Reply, State};
 
 %% inventory match
-handle_call({match_inventory, QType, Merchant, StyleNumber, Shop},
-	    _Form, State) ->
-    ?DEBUG("match_inventory with qtype ~p, merchant ~p, styleNumber ~p"
-	   ", shop ~p", [QType, Merchant, StyleNumber, Shop]),
-    RealyShop = case QType of
-		    1 -> Shop;
-		    _ -> ?w_good_sql:realy_shop(Merchant, Shop)
-		end,
+handle_call({match_inventory, Merchant, StyleNumber, Shop}, _Form, State) ->
+    ?DEBUG("match_inventory: merchant ~p, styleNumber ~p, shop ~p", [Merchant, StyleNumber, Shop]),
+    %% RealyShop = case QType of
+    %% 		    1 -> Shop;
+    %% 		    _ -> ?w_good_sql:realy_shop(Merchant, Shop)
+    %% 		end,
     
-    Sql = ?w_good_sql:inventory_match(Merchant, StyleNumber, RealyShop),
+    Sql = ?w_good_sql:inventory_match(Merchant, StyleNumber, Shop),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({match_inventory,
-	     QType, Merchant, StyleNumber, Shop, Firm}, _Form, State) ->
-    ?DEBUG("match_inventory with qtype ~p, merchant ~p, styleNumber ~p"
-	   ",shop ~p, firm ~p", [QType, Merchant, StyleNumber, Shop, Firm]),
-    RealyShop = case QType of
-		    1 -> ?w_good_sql:realy_shop(true, Merchant, Shop);
-		    _ -> ?w_good_sql:realy_shop(Merchant, Shop)
-		end,
+handle_call({match_inventory, Merchant, StyleNumber, Shop, Firm}, _Form, State) ->
+    ?DEBUG("match_inventory:merchant ~p, styleNumber ~p"
+	   ",shop ~p, firm ~p", [Merchant, StyleNumber, Shop, Firm]),
+    %% RealyShop = case QType of
+    %% 		    1 -> ?w_good_sql:realy_shop(true, Merchant, Shop);
+    %% 		    _ -> ?w_good_sql:realy_shop(Merchant, Shop)
+    %% 		end,
     %% RealyShop = realy_shop(Merchant, Shop),
-    Sql = ?w_good_sql:inventory_match(Merchant, StyleNumber, RealyShop, Firm),
+    Sql = ?w_good_sql:inventory_match(Merchant, StyleNumber, Shop, Firm),
+    Reply =  ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({match_inventory_in, Merchant, Shop, Ins}, _Form, State) ->
+    ?DEBUG("match_inventory_in: merchant ~p, shop ~p, ins ~p", [Merchant, Shop, Ins]),
+    Sql = ?w_good_sql:inventory_match(of_in, Merchant, Shop, Ins),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 

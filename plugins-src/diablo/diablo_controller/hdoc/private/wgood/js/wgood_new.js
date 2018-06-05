@@ -490,6 +490,8 @@ function wgoodNewCtrlProvide(
 	
 	good.brand = typeof(good.brand) === "object" ? good.brand.name: good.brand; 
 	good.type  = typeof(good.type) === "object" ? good.type.name: good.type;
+	good.type = diablo_trim(good.type);
+	good.type_py = diablo_pinyin(good.type);
 	
 	good.colors = function(){
 	    if (angular.isDefined($scope.selectColors) && $scope.selectColors.length > 0){
@@ -577,7 +579,7 @@ function wgoodNewCtrlProvide(
 				// id   :$scope.types.length + 1,
 				id   :state.type,
 				name :good.type,
-				py   :diablo_pinyin(good.type)});
+				py   :good.type_py});
 
 			    diabloFilter.reset_type();
 			};

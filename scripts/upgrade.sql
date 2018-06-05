@@ -314,3 +314,6 @@ alter table w_retailer add index type (type);
 
 --2018-04-16
 alter table w_retailer add index shop (shop);
+
+--2018-06-05
+alter table inv_types add column py varchar(64) not null after name;

@@ -13,6 +13,10 @@
 	  	    x-ng-click="new_type()">新增
 	      <i class="glyphicon glyphicon-plus"></i></button>
 
+	    <button class="btn red purple-stripe hidden-xs hidden-xxs"
+		    x-ng-click="syn_pinyin()">拼音同步
+	      <i class="glyphicon glyphicon-sort"></i></button> 
+
 	    <button type="button" class="btn blue reload purple-stripe"
 		    x-ng-click="refresh()">刷新
 	      <i class="icon icon-spinner fg-white"></i></button>
@@ -39,6 +43,7 @@
 		<tr>
 	    	  <th>序号</th> 
 		  <th>名称</th>
+		  <th>拼音</th>
 		  <th>大类</th>
 		  <th>条码编码</th>
 	    	  <th>操作</th>
@@ -48,6 +53,7 @@
 		<tr ng-repeat="t in goodTypes">
 		  <td>{{t.order_id}}</td>
 		  <td>{{t.name}}</td>
+		  <td>{{t.py}}</td>
 		  <td>
 		    <div x-ng-if="t.cid===-1" class="text-center">-</div>
 		    <div x-ng-if="t.cid!==-1">{{t.ctype.name}}</div>

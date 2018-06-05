@@ -1372,6 +1372,8 @@ function purchaserInventoryNewCtrlProvide (
 	good.style_number = $scope.good.style_number;
 	good.brand =typeof($scope.good.brand)==="object" ? $scope.good.brand.name:$scope.good.brand; 
 	good.type = typeof($scope.good.type)==="object" ? $scope.good.type.name: $scope.good.type;
+	good.type = diablo_trim(good.type);
+	good.type_py = diablo_pinyin(good.type);
 	good.sex  = $scope.good.sex.id;
 	good.year = $scope.good.year; 
 	good.firm = angular.isDefined($scope.select.firm) && $scope.select.firm ? $scope.select.firm.id : undefined;
@@ -1504,7 +1506,7 @@ function purchaserInventoryNewCtrlProvide (
 		    $scope.types.push({
 			id   :state.type,
 			name :good.type,
-			py   :diablo_pinyin(good.type)});
+			py   :good.type_py});
 		    diabloFilter.reset_type();
 		};
 

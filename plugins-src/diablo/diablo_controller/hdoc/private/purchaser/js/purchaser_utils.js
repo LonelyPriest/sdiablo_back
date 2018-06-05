@@ -135,8 +135,16 @@ var stockUtils = function(){
 	    return diablo_base_setting("prn_bill", shop, base, parseInt, diablo_invalid_index);
 	},
 
+	scan_mode:function(shop, base) {
+	    return diablo_base_setting("scan_only", shop, base, function(s) {return s}, diablo_scan_mode);
+	},
+
 	shop_mode: function(shop, base) {
 	    return diablo_base_setting("shop_mode", shop, base, parseInt, diablo_clothes_mode);
+	},
+
+	type_sale:function(shop, base) {
+	    return diablo_base_setting("type_sale", shop, base, parseInt, diablo_no);
 	},
 	
 	yes_no: function() {return [{name:"否", id: 0}, {name:"是", id: 1}]},

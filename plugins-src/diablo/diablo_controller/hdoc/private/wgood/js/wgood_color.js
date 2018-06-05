@@ -205,18 +205,32 @@ function wgoodTypeDetailCtrlProvide(
     };
     
     var dialog = diabloUtilsService;
+
+    $scope.refresh = function() {
+	wgoodApp.list_purchaser_type().then(function(types) {
+	    $scope.goodType = types.map(function(t) {
+		return {id: t.id,
+			bcode: t.bcode,
+			cid: t.cid,
+			name:t.name,
+			py:t.py};
+	    })
+	});
+    };
     
     $scope.new_type = function(){
 	var callback = function(params){
 	    console.log(params.type);
-	    var goodType = {name:   params.type.name,
-			    bcode:  params.type.bcode};
+	    var goodType = {name:   diablo_trim(params.type.name),
+			    bcode:  params.type.bcode,
+			    py:     diablo_pinyin(diablo_trim(params.type.name))
+			   };
 	    wgoodService.add_good_type(goodType).then(function(state){
 		console.log(state);
 
 		var append_type = function(typeId){
 		    $scope.goodTypes.push({
-			order_id: $scope.goodTypes.length + 1,
+			order_id:$scope.goodTypes.length + 1,
 			id:      typeId,
 			bcode:   stockUtils.to_integer(params.type.bcode),
 			name:    params.type.name});
@@ -325,6 +339,27 @@ function wgoodTypeDetailCtrlProvide(
 	     pattern: $scope.pattern,
 	     auto_barcode: $scope.auto_barcode,
 	     ctypes: $scope.ctypes});
+    };
+
+    $scope.syn_pinyin = function() {
+	var ts = [];
+	angular.forEach($scope.goodTypes, function(t) {
+	    ts.push({id:t.id, py:diablo_pinyin(t.name)});
+	});
+
+	wgoodService.syn_type_pinyin(ts).then(function(result) {
+	    if (result.ecode === 0){
+		dialog.response_with_callback(
+		    true,
+		    "同步品类拼音",
+		    "同步成功！！",
+		    undefined,
+		    function() {diabloFilter.reset_type()});
+	    } else {
+		dialog.response(
+		    true, "同步品类拼音", "同步失败！！" + wgoodService.error[result.ecode]);
+	    }
+	});
     };
 };
 

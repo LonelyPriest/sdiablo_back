@@ -312,7 +312,7 @@
 		       scroll-stop="50">
 		  <tr>
 		    <th class="text-center">序号</th>
-		    <th class="text-center">货号</th>
+		    <th class="text-center">货号/品类</th>
 		    <th class="text-center">品名</th>
 		    <th class="text-center">吊牌价</th> 
 		    <th class="text-center">折扣</th> 
@@ -330,7 +330,7 @@
 		    
 		    <td>{{inv.order_id}}</td>
 		    <td class="col-md-2 text-left vert-align">
-		      <span ng-if="!inv.$new">{{inv.style_number}}</span>
+		      <span ng-if="!inv.$new">{{inv.style_number}}/{{inv.type.name}}</span>
 		      <form name="inv.form.good" ng-if="inv.$new">
 			<div ng-class="{'has-error':inv.form.good.$invalid
 				       && !inv.form.good.$pristine}">
@@ -339,8 +339,7 @@
 				 x-ng-model="inv.style_number"
 				 placeholder="货号"
 				 typeahead-editable="false"
-				 typeahead-on-select="on_select_good(
-						      $item, $model, $label)"
+				 typeahead-on-select="on_select_good($item, $model, $label)"
 				 typeahead-wait-ms="500"
 				 typeahead-loading="loading"
 				 uib-typeahead="g as g.name for g in

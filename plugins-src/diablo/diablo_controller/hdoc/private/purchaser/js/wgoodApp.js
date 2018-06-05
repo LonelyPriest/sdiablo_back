@@ -111,6 +111,11 @@ function wgoodConfig(){
 		{tid:type.tid, name: type.name, cid: type.cid, bcode: type.bcode}).$promise;
 	};
 
+	this.syn_type_pinyin = function(types) {
+	    return http.save({operation: "syn_type_pinyin"},
+			     {type:types}).$promise;
+	};
+
 	/*
 	 * size
 	 */

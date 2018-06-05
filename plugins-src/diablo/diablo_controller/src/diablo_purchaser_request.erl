@@ -789,18 +789,38 @@ action(Session, Req, {"match_all_reject_w_inventory"}, Payload) ->
 action(Session, Req, {"match_w_inventory"}, Payload) ->
     ?DEBUG("match_w_inventory with session ~p~npayload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
-    StyleNumber = ?v(<<"prompt">>, Payload),
+    Prompt = ?v(<<"prompt">>, Payload),
     Shop        = ?v(<<"shop">>, Payload),
     Firm        = ?v(<<"firm">>, Payload),
-    QType       = ?v(<<"type">>, Payload, 0),
+    QMode       = ?v(<<"mode">>, Payload, ?GOOD_SALE),
+    Ascii       = ?v(<<"ascii">>, Payload, ?YES),
 
-    Match = fun() when Firm =:= undefined->
-		    ?w_inventory:match(
-		       inventory, QType, Merchant, StyleNumber, Shop);
-	       () ->
-		    ?w_inventory:match(
-		       inventory, QType, Merchant, StyleNumber, Shop, Firm)
-	    end,
+    Match = 
+	case QMode of
+	    ?GOOD_SALE ->
+		fun() when Firm =:= undefined->
+			?w_inventory:match(
+			   inventory, Merchant, Prompt, Shop);
+		   () ->
+			?w_inventory:match(
+			   inventory, Merchant, Prompt, Shop, Firm)
+		end;
+	    ?BRAND_TYPE_SALE ->
+		case ?attr:type(list, Merchant, Prompt, Ascii) of
+		    {ok, []} ->
+			fun() -> {ok, []} end;
+		    {ok, Types} ->
+			fun() ->
+				?w_inventory:match(
+				   inventory_with_type, Merchant, Shop,
+				   {<<"type">>,
+				    lists:foldr(
+				      fun({Type}, Acc) ->
+					      [?v(<<"id">>, Type)|Acc]
+				      end, [], Types)})
+			end
+		end
+	end,
     
     batch_responed(Match, Req);
 

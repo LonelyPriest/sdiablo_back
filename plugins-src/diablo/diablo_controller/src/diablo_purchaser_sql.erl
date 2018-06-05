@@ -1269,6 +1269,7 @@ inventory_match(Merchant, StyleNumber, Shop) ->
 	++ " group by style_number"
 	++ " limit " ++ ?to_s(P).
 
+
 inventory_match(all_inventory, Merchant, Shop, Conditions) ->
     {StartTime, EndTime, NewConditions} =
 	?sql_utils:cut(fields_with_prifix, Conditions),
@@ -1301,12 +1302,34 @@ inventory_match(all_inventory, Merchant, Shop, Conditions) ->
 	   end
 	++ " order by id desc";
 
+inventory_match(of_in, Merchant, Shop, Ins) ->
+    P = ?w_retailer:get(prompt, Merchant),
+
+    "select a.id, a.bcode, a.style_number, a.brand as brand_id, a.type as type_id"
+	", a.sex, a.season, a.firm as firm_id, a.s_group, a.free, a.year"
+	", a.promotion as pid"
+	", a.score as sid"
+	", a.org_price, a.tag_price, a.ediscount, a.discount"
+	", a.state, a.path, a.entry_date"
+
+	", b.name as brand" 
+	", c.name as type"
+	" from w_inventory a"
+
+	" left join brands b on a.brand=b.id" 
+	" left join inv_types c on a.type=c.id"
+
+	" where a.merchant=" ++ ?to_s(Merchant) 
+	++ " and a.shop=" ++ ?to_s(Shop)
+	++ ?sql_utils:condition(proplists, ?utils:correct_condition(<<"a.">>, Ins))
+	++ " order by a.id desc"
+	++ " limit " ++ ?to_s(P);
+
 inventory_match(Merchant, StyleNumber, Shop, Firm) ->
     P = ?w_retailer:get(prompt, Merchant),
 
     "select a.id, a.bcode, a.style_number, a.brand as brand_id, a.type as type_id"
 	", a.sex, a.season, a.firm as firm_id, a.s_group, a.free, a.year"
-    %% ", a.amount as total"
 	", a.promotion as pid"
 	", a.score as sid"
 	", a.org_price, a.tag_price, a.ediscount, a.discount"

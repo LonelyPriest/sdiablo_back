@@ -316,11 +316,15 @@ var wsaleUtils = function(){
 	},
 
 	scan_only:function(shop, base) {
-	    return diablo_base_setting("scan_only", shop, base, parseInt, diablo_no);
+	    return diablo_base_setting("scan_only", shop, base, function(s) {return s}, diablo_scan_mode);
 	},
 
 	maling_rang:function(shop, base) {
 	    return diablo_base_setting("maling_rang", shop, base, parseInt, diablo_default_maling_rang);
+	},
+
+	type_sale:function(shop, base) {
+	    return diablo_base_setting("type_sale", shop, base, parseInt, diablo_no);
 	},
 	
 	get_login_employee:function(shop, loginEmployee, employees){
@@ -1042,7 +1046,7 @@ var wsalePrint = function(){
     var width = 219; // inch, 5.8 / 2.45 * 96 
     var vWidth = width - 5; 
     var hFont = 20; // height of font
-    var pay = function(cash, card, withDraw, ticket, should_pay){
+    var pay = function(cash, card, wxin, withDraw, ticket, should_pay){
 	console.log(cash, card, withDraw);
 	var s = "";
 	var left = should_pay;
@@ -1065,6 +1069,16 @@ var wsalePrint = function(){
 	    } else {
 		s += "刷卡：" + card.toString();
 		left -= card;
+	    }
+	}
+	if (wsaleUtils.to_float(wxin) != 0) {
+	    if (s) s += " ";
+	    if (wxin >= left) {
+		s += "微信：" + left.toString();
+		left = 0;
+	    } else {
+		s += "微信：" + wxin.toString();
+		left -= wxin;
 	    }
 	}
 	if (wsaleUtils.to_float(withDraw) != 0){
@@ -1186,6 +1200,7 @@ var wsalePrint = function(){
 	    var cash = sale.cash;
 	    var card = sale.card;
 	    var withDraw = sale.withdraw;
+	    var wxin  = sale.wxin;
 	    var ticket = sale.ticket;
 	    
 	    var total = sale.total;
@@ -1209,7 +1224,7 @@ var wsalePrint = function(){
 	    if (0 === direct) l1 = "实付：";
 	    if (1 === direct) l1 = "退款：";
 	    l1 += should_pay.toString(); 
-	    l1 += " " + pay(cash, card, withDraw, ticket, should_pay);
+	    l1 += " " + pay(cash, card, wxin, withDraw, ticket, should_pay);
 	    console.log(l1);
 	    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
 	    hLine += 15;
@@ -1231,7 +1246,7 @@ var wsalePrint = function(){
 	    return hLine + 15;
 	},
 	
-	gen_foot: function(LODOP, hLine, comments, date, cakeMode){
+	gen_foot: function(LODOP, hLine, comments, date, address, cakeMode){
 	    // console.log(hLine);
 	    // console.log(comments);
 	    // console.log(date);
@@ -1257,6 +1272,7 @@ var wsalePrint = function(){
 			order++;
 		    }
 		});
+
 	    } else {
 		LODOP.ADD_PRINT_TEXT(hLine, 50, 178, 20, "谢谢惠顾！！");
 		hLine += 15;
@@ -1266,6 +1282,12 @@ var wsalePrint = function(){
 
 	    var s = "打印日期：" + date;
 	    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, s);
+
+	    hLine += 20;
+	    if (angular.isDefined(diablo_set_string(address))) {
+		// hLine += 20;
+		LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, "地址：" + address);
+	    }
 	},
 
 	init: function(LODOP) {

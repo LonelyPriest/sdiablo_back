@@ -443,6 +443,7 @@ function wsaleRsnDetailCtrlProvide (
     $scope.print = function(){
 	var rsn = $routeParams.rsn;
 	var shop = diablo_get_object(parseInt(rsn.split("-")[3]), $scope.shops);
+	// console.log(shop);
 	var no_vip = wsaleUtils.no_vip(shop.id, base); 
 	var p_mode = wsaleUtils.print_mode(shop.id, base);
 	var comments = wsaleUtils.comment(shop.id, base);
@@ -481,7 +482,8 @@ function wsaleRsnDetailCtrlProvide (
 			var hLine = wsalePrint.gen_body(LODOP, detail, isRound, cakeMode);
 			var vip = wsaleUtils.isVip(retailer, no_vip, filterSysRetailer), 
 			hLine = wsalePrint.gen_stastic(LODOP, hLine, sale.direct, sale, vip); 
-			wsalePrint.gen_foot(LODOP, hLine, comments, pdate, cakeMode);
+			wsalePrint.gen_foot(
+			    LODOP, hLine, comments, pdate, shop.addr, cakeMode);
 			wsalePrint.start_print(LODOP); 
 		    }); 
 		}); 

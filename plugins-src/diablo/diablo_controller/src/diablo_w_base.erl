@@ -761,7 +761,8 @@ sys_config(shop) ->
      {"dual_barcode",      "双排条码",           "0",    "0"},
 
      {"r_discount",        "会员折扣模式",       "0",    "0"},
-     {"scan_only",         "扫码销售",           "0",    "0"}
+     %% {"scan_only",         "扫码销售",           "0",    "0"}
+     {"scan_only",         "扫码模式",           "0000", "0"}
     ].
     
 sys_config() ->
@@ -785,8 +786,6 @@ sys_config() ->
 	      {"check_sale",      "检测库存销售",         "1",  "0"},
 	      
 	      {"se_pagination",   "顺序翻页",             "0",  "0"}, 
-	      %% {"s_customer",      "非VIP客户",            "0",   "0"},
-
 	      {"h_stock_edit",    "采购编辑展示历史记录", "0",   "0"},
 	      {"m_sgroup",        "允许多尺码组",         "0",   "0"},
 	      {"t_trace",         "入库价格跟踪",         "0",   "0"},
@@ -833,10 +832,15 @@ sys_config() ->
 	      {"r_discount",        "会员折扣模式",       "0",    "0"},
 	      %% {"r_level",           "会员等级模式",       "0",    "0"},
 	      {"gift_sale",         "开单赠送模式",       "0",    "0"},
-	      {"scan_only",         "扫码销售",           "0",    "0"},
+	      %%[0]:scan sale only
+	      %%[1]:add scan mode when stock_in
+	      %%[2]:add scan mode when stock_out
+	      %%[3]:add scan mode when stock_transfer
+	      {"scan_only",         "扫码模式",           "0000", "0"},
 	      {"auto_level",        "会员自动升级",       "0",    "0"},
 	      {"maling_rang",       "抹零范围",           "3",    "0"},
 	      %% 1: clothes, 2: child, 3: home
-	      {"shop_mode",         "店铺模式",           "1",    "0"}
+	      {"shop_mode",         "店铺模式",           "1",    "0"},
+	      {"type_sale",         "品类开单模式",       "0",    "0"}
 	     ],
     Values.

@@ -22,7 +22,7 @@ function purchaserInventoryTransferCtrlProvide (
     $scope.extra_pay_types   = purchaserService.extra_pay_types;
     $scope.timeout_auto_save = undefined;
     $scope.base_settings     = {};
-    $scope.focus             = {style_number:true, transfer: false};
+    $scope.focus             = {barcode: false, style_number:false, transfer: false};
 
     $scope.go_back = function(){
 	diablo_goto_page("#inventory/inventory_transfer_detail");
@@ -40,6 +40,12 @@ function purchaserInventoryTransferCtrlProvide (
 
     $scope.init_base_setting = function(shopId) {
 	$scope.base_settings.check_orgprice_of_transfer = stockUtils.trans_orgprice(shopId, base);
+	$scope.base_settings.type_sale = stockUtils.type_sale(shopId, base);
+	// $scope.base_settings.use_barcode = stockUtils.use_barcode(shopId, base);
+	$scope.base_settings.scan_mode = stockUtils.to_integer(stockUtils.scan_mode(shopId, base).charAt(3));
+	$scope.base_settings.auto_barcode = stockUtils.auto_barcode(diablo_default_shop, base); 
+
+	console.log($scope.base_settings);
     };
 
     var now = $.now();
@@ -76,6 +82,7 @@ function purchaserInventoryTransferCtrlProvide (
 	$scope.get_valid_employee();
 	$scope.get_transfer_shop();
 	$scope.init_base_setting($scope.select.shop.id);
+	$scope.focus_good_or_barcode();
 	// if ($scope.base_settings.q_prompt === diablo_frontend){
 	//     $scope.get_all_prompt_inventory();
 	// }
@@ -101,6 +108,13 @@ function purchaserInventoryTransferCtrlProvide (
 	} 
     };
 
+    $scope.focus_good_or_barcode = function() {
+	if ($scope.base_settings.scan_mode)
+	    $scope.auto_focus('barcode');
+	else
+	    $scope.auto_focus('style_number');
+    }; 
+
     $scope.get_valid_employee = function(){
 	var loginEmployee =  stockUtils.get_login_employee(
 	    $scope.select.shop.id, user.loginEmployee, filterEmployee); 
@@ -111,6 +125,7 @@ function purchaserInventoryTransferCtrlProvide (
     $scope.get_valid_employee();
     $scope.get_transfer_shop();
     $scope.init_base_setting($scope.select.shop.id);
+    $scope.focus_good_or_barcode();
     
     // calender
     $scope.open_calendar = function(event){
@@ -123,101 +138,122 @@ function purchaserInventoryTransferCtrlProvide (
 	return now;
     };
 
-    $scope.base_settings.q_prompt = stockUtils.typeahead($scope.select.shop.id, base);
-    $scope.base_settings.plimit = stockUtils.prompt_limit($scope.select.shop.id, base);
+    // $scope.base_settings.q_prompt = stockUtils.typeahead($scope.select.shop.id, base);
+    // $scope.base_settings.plimit = stockUtils.prompt_limit($scope.select.shop.id, base);
     
     $scope.qtime_start = function(shopId){
 	return stockUtils.start_time(shopId, base, now, dateFilter); 
     };
 
     // console.log($scope.setting);
-    $scope.get_all_prompt_inventory = function(){
-	console.log($scope.select.shop);
-	diabloNormalFilter.match_all_w_inventory(
-	    {start_time:$scope.qtime_start($scope.select.shop.id),
-	     shop:$scope.select.shop.id} 
-	).$promise.then(function(invs){
-	    // console.log(invs);
-	    $scope.all_prompt_inventory = invs.map(function(v){
-		var p = stockUtils.prompt_name(v.style_number, v.brand, v.type);
-		return angular.extend(v, {name:p.name, prompt:p.prompt}); 
-	    });
+    // $scope.get_all_prompt_inventory = function(){
+    // 	console.log($scope.select.shop);
+    // 	diabloNormalFilter.match_all_w_inventory(
+    // 	    {start_time:$scope.qtime_start($scope.select.shop.id),
+    // 	     shop:$scope.select.shop.id} 
+    // 	).$promise.then(function(invs){
+    // 	    // console.log(invs);
+    // 	    $scope.all_prompt_inventory = invs.map(function(v){
+    // 		var p = stockUtils.prompt_name(v.style_number, v.brand, v.type);
+    // 		return angular.extend(v, {name:p.name, prompt:p.prompt}); 
+    // 	    });
 
-	    // console.log($scope.all_prompt_inventory);
-	});
-    };
+    // 	    // console.log($scope.all_prompt_inventory);
+    // 	});
+    // };
     
-    if ($scope.base_settings.q_prompt === diablo_frontend){
-	// use backend always
-	// $scope.get_all_prompt_inventory()
-    };
+    // if ($scope.base_settings.q_prompt === diablo_frontend){
+    // 	// use backend always
+    // 	// $scope.get_all_prompt_inventory()
+    // };
 
     $scope.match_prompt_inventory = function(viewValue){
-	// console.log(viewValue, diablo_filter_length);
-	if (angular.isUndefined(diablo_set_string(viewValue)) && viewValue.length < diablo_filter_length) return;
-	return diabloFilter.match_w_sale(viewValue, $scope.select.shop.id); 
+	if (diablo_yes === $scope.base_settings.type_sale) {
+	    return diabloFilter.match_w_sale(
+		viewValue,
+		$scope.select.shop.id,
+		diablo_type_sale,
+		diablo_is_ascii_string(viewValue));
+	} else {
+	    if (angular.isUndefined(diablo_set_string(viewValue)) && viewValue.length < diablo_filter_length) return;
+	    return diabloFilter.match_w_sale(viewValue, $scope.select.shop.id); 
+	} 
     }; 
 
     $scope.on_select_inventory = function(item, model, label){
-	console.log(item);
-
+	console.log(item); 
 	if (diablo_invalid_firm === item.firm_id){
 	    diabloUtilsService.response_with_callback(
-		false, "库存转移", "转移失败：" + purchaserService.error[2089],
+		false, "库存移仓", "转移失败：" + purchaserService.error[2089],
 		$scope, function(){ $scope.inventories[0] = {$edit:false, $new:true}});
 	    return;
 	}
 
 	if ( item.org_price <=0 && $scope.base_settings.check_orgprice_of_transfer) {
 	    diabloUtilsService.response_with_callback(
-		false, "库存转移", "转移失败：" + purchaserService.error[2088],
+		false, "库存转仓", "转移失败：" + purchaserService.error[2088],
 		$scope, function(){ $scope.inventories[0] = {$edit:false, $new:true}});
 	    return;
 	}
 	
 	// has been added
+	var existStock = undefined;
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    if (item.style_number === $scope.inventories[i].style_number
 		&& item.brand_id  === $scope.inventories[i].brand_id){
-		diabloUtilsService.response_with_callback(
-		    false, "库存转移", "转移失败：" + purchaserService.error[2099],
-		    $scope, function(){ $scope.inventories[0] = {$edit:false, $new:true}});
-		return;
+		existStock = $scope.inventories[i];
+		// diabloUtilsService.response_with_callback(
+		//     false, "库存移仓", "转移失败：" + purchaserService.error[2099],
+		//     $scope, function(){ $scope.inventories[0] = {$edit:false, $new:true}});
+		// return;
 	    }
 	}
-	
-	// add at first allways 
-	var add = $scope.inventories[0];
 
-	// add at first allways 
-	var add = $scope.inventories[0];
-	add.id           = item.id;
-	add.bcode        = item.bcode;
-	add.style_number = item.style_number;
-	add.brand        = item.brand;
-	add.brand_id     = item.brand_id;
-	add.type         = item.type;
-	add.type_id      = item.type_id;
-	add.firm_id      = item.firm_id;
-	add.s_group      = item.s_group;
-	add.free         = item.free;
-	add.year         = item.year;
-	add.sex          = item.sex;
-	add.season       = item.season;
-	add.org_price    = item.org_price;
-	add.tag_price    = item.tag_price;
-	add.ediscount    = item.ediscount;
-	add.discount     = item.discount;
-	add.path         = item.path;
-	add.alarm_day    = item.alarm_day;
+	if (angular.isDefined(existStock)) {
+	    $scope.update_inventory(
+		existStock,
+		function() {$scope.inventories[0] = {$edit:false, $new:true}})
+	} else {
+	    // add at first allways 
+	    var add = $scope.inventories[0];
+	    add.id           = item.id;
+	    add.bcode        = item.bcode;
+	    add.full_bcode   = item.full_bcode;
+	    add.style_number = item.style_number;
+	    add.brand        = item.brand;
+	    add.brand_id     = item.brand_id;
+	    add.type         = item.type;
+	    add.type_id      = item.type_id;
+	    add.firm_id      = item.firm_id;
+	    add.s_group      = item.s_group;
+	    add.free         = item.free;
+	    add.year         = item.year;
+	    add.sex          = item.sex;
+	    add.season       = item.season;
+	    add.org_price    = item.org_price;
+	    add.tag_price    = item.tag_price;
+	    add.ediscount    = item.ediscount;
+	    add.discount     = item.discount;
+	    add.path         = item.path;
+	    add.alarm_day    = item.alarm_day;
+	    add.full_name    = add.style_number + "/" + add.brand + "/" + add.type;
 
-	console.log(add);
+	    console.log(add); 
+	    // $scope.auto_focus("transfer");
+	    $scope.add_inventory(add);
+	} 
+    };
 
-	// $scope.auto_focus("transfer");
-	$scope.add_inventory(add);
-	
-	return;
-    }; 
+    $scope.barcode_scanner = function(barcode) {
+	diabloHelp.scanner(
+	    barcode,
+	    $scope.base_settings.auto_barcode,
+	    $scope.select.shop.id,
+	    diabloFilter.get_stock_by_barcode,
+	    diabloUtilsService,
+	    "库存移仓",
+	    $scope.on_select_inventory)
+    };
     
     /*
      * save all
@@ -395,7 +431,8 @@ function purchaserInventoryTransferCtrlProvide (
 	// add new line
 	$scope.inventories.unshift({$edit:false, $new:true}); 
 	$scope.re_calculate();
-	$scope.auto_focus("style_number");
+	// $scope.auto_focus("style_number");
+	$scope.focus_good_or_barcode();
     };
     
     $scope.add_inventory = function(inv){
@@ -438,7 +475,8 @@ function purchaserInventoryTransferCtrlProvide (
 		$scope.inventories.unshift({$edit:false, $new:true});
 
 		$scope.re_calculate();
-		$scope.auto_focus("style_number");
+		// $scope.auto_focus("style_number");
+		$scope.focus_good_or_barcode();
 	    };
 	    
 	    var callback = function(params){
@@ -492,6 +530,7 @@ function purchaserInventoryTransferCtrlProvide (
 	}
 
 	$scope.re_calculate();
+	// $scope.focus_good_or_barcode();
     };
 
     /*
@@ -510,11 +549,12 @@ function purchaserInventoryTransferCtrlProvide (
     /*
      * update inventory
      */
-    $scope.update_inventory = function(inv){
+    $scope.update_inventory = function(inv, updateCallback){
 	inv.$update = true; 
 	if (inv.free_color_size){
 	    inv.free_update = true;
 	    inv.o_org_price  = inv.org_price;
+	    $scope.auto_focus("transfer");
 	    return;
 	}
 	
@@ -528,7 +568,10 @@ function purchaserInventoryTransferCtrlProvide (
 		}
 	    });
 
-	    calculate();
+	    $scope.re_calculate();
+
+	    if (angular.isDefined(updateCallback) && angular.isFunction(updateCallback))
+		updateCallback();
 	};
 
 	var payload = {sizes:        inv.sizes,
@@ -547,6 +590,9 @@ function purchaserInventoryTransferCtrlProvide (
 	inv.free_update = false;
 	inv.reject      = inv.amounts[0].reject_count;
 	$scope.re_calculate();
+	// reset
+	$scope.inventories[0] = {$edit:false, $new:true};
+	$scope.focus_good_or_barcode();
     }
 
     $scope.cancel_free_update = function(inv){
@@ -567,7 +613,10 @@ function purchaserInventoryTransferCtrlProvide (
     $scope.auto_save_free = function(inv){
 	$timeout.cancel($scope.timeout_auto_save);
 	var reject = stockUtils.to_integer(inv.amounts[0].reject_count);
-	if (angular.isUndefined(inv.style_number) || 0 === reject || reject > inv.total){
+	if (angular.isUndefined(inv.style_number)
+	    || 0 === reject
+	    || reject > inv.total
+	    || reject === inv.reject){
 	    return;
 	}
 	

@@ -73,11 +73,17 @@ var diablo_charge = 0;
 var diablo_withdraw = 1;
 
 /*
-  * shop mode
+ * shop mode
  */
-diablo_clothes_mode = 1;
-diablo_child_mode = 2;
-diablo_home_mode = 3;
+var diablo_clothes_mode = 1;
+var diablo_child_mode = 2;
+var diablo_home_mode = 3;
+
+/*
+ * sale mode
+*/
+var diablo_good_sale = 0;
+var diablo_type_sale = 1;
 
 /*
  * ticket
@@ -115,6 +121,11 @@ var diablo_match_stock_by_merchant = 3;
 var diablo_bill_cash = 0;
 var diablo_bill_card = 1;
 var diablo_bill_wire = 2;
+
+/*
+ * scan mode
+ */
+var diablo_scan_mode = "0000";
 
 /*
  * direction
@@ -454,6 +465,10 @@ var diablo_valid_dialog = function(sizes){
 
 var diablo_pinyin = function(name){
     return pinyin.getCamelChars(name);
+};
+
+var diablo_trim = function(value) {
+    return value.replace(/(^\s*)|(\s*$)/g, "");
 };
 
 
@@ -940,6 +955,24 @@ diablo_is_letter_string = function(value){
     return !invalid;
 };
 
+diablo_is_ascii_string = function(value) {
+    var invalid = true;
+    for (var i=0, l=value.length; i<l; i++){
+	var c = value[i].charCodeAt(0);
+	// number, character or '-'
+	if ( (65 <= c && c <= 90) || (97 <= c && c <=122) || (48 <=c && c<=57)
+	     || c === 45 ){ 
+	    invalid = false;
+	} else {
+	    invalid = true;
+	    break;
+	}
+	
+    }
+
+    return !invalid ? 1 : 0;
+};
+
 diablo_is_chinese_string = function(value){
     return /^[\u4e00-\u9fa5]+$/.test(value);
 };
@@ -1082,6 +1115,36 @@ var diabloHelp = function(){
 	    }
 	    
 	    return {correct: correct, cuted:cuted}; 
+	},
+
+	scanner:function(
+	    full_bcode, auto_barcode, shop, filterPromise, dialog, failTitle, callback
+	) {
+	    console.log(full_bcode);
+	    // get stock by barcode
+	    // stock info 
+	    var barcode = diabloHelp.correct_barcode(full_bcode, auto_barcode); 
+	    console.log(barcode);
+
+	    // invalid barcode
+	    if (!barcode.cuted || !barcode.correct) {
+		dialog.set_error(failTitle, 2196);
+		return;
+	    }
+
+	    filterPromise(barcode.cuted, shop).then(function(result) {
+		console.log(result);
+		if (result.ecode === 0) {
+		    if (diablo_is_empty(result.stock)) {
+			dialog.set_error(failTitle, 2195);
+		    } else {
+			result.stock.full_bcode = barcode.correct;
+			callback(result.stock);
+		    }
+		} else {
+		    dialog.set_error(failTitle, result.ecode);
+		}
+	    }); 
 	}
 
 	//

@@ -382,17 +382,17 @@ function filterProvider(){
     		    {operation: "list_w_inventory_info"}, condition).$promise;
 	    },
 	    
-	    match_w_query_inventory:function(viewValue, Shop){
-		return resource.query_by_post(
-		    {operation:'match_w_inventory'},
-		    {prompt:viewValue, shop:shop, type:1})
-		    .$promise.then(function(invs){
-			console.log(invs);
-			return invs.map(function(inv){
-			    return inv.style_number;
-			})
-		    })
-	    },
+	    // match_w_query_inventory:function(viewValue, Shop){
+	    // 	return resource.query_by_post(
+	    // 	    {operation:'match_w_inventory'},
+	    // 	    {prompt:viewValue, shop:shop, type:1})
+	    // 	    .$promise.then(function(invs){
+	    // 		console.log(invs);
+	    // 		return invs.map(function(inv){
+	    // 		    return inv.style_number;
+	    // 		})
+	    // 	    })
+	    // },
 
 	    match_w_reject_inventory: function(viewValue, shop, firm){
 		return resource.query_by_post(
@@ -453,14 +453,15 @@ function filterProvider(){
 	    // 	    })
 	    // },
 
-	    match_w_sale: function(viewValue, shop){
+	    match_w_sale: function(viewValue, shop, mode, ascii){
 		return resource.query_by_post(
-		    {operation:'match_w_inventory'}, {prompt:viewValue, shop:shop, firm:[]}
+		    {operation:'match_w_inventory'},
+		    {prompt:viewValue, shop:shop, firm:[], mode:mode, ascii:ascii}
 		).$promise.then(function(invs){
 		    return invs.map(function(inv){
 			return angular.extend(
 			    inv, {name:inv.style_number
-				  + "/" + inv.brand + "/" + inv.type})
+				  + "/" + inv.brand + "/" + inv.type + "/" + inv.tag_price})
 		    })
 		})
 	    },
@@ -667,7 +668,8 @@ function filterProvider(){
 			    return {id: t.id,
 				    bcode: t.bcode,
 				    cid: t.cid,
-				    name:t.name, py:diablo_pinyin(t.name)};
+				    name:t.name,
+				    py:t.py};
 			});
 			set_storage(cookie, "type", _types) 
 			return _types;

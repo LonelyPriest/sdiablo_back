@@ -23,7 +23,8 @@
 -export([color_type/2, color/2, color/3, bcode/3]).
 -export([size_group/2, size_group/3]).
 -export([brand/2, brand/3]).
--export([type/2, type/3, invalid_size/1, invalid_size/2]).
+-export([type/2, type/3, type/4, invalid_size/1, invalid_size/2]).
+-export([syn/3]).
 
 -define(SERVER, ?MODULE).
 
@@ -68,8 +69,13 @@ type(new, Merchant, Attrs)->
     gen_server:call(?MODULE, {new_type, Merchant, Attrs});
 type(update, Merchant, Attrs) ->
     gen_server:call(?MODULE, {update_type, Merchant, Attrs}).
+type(list, Merchant, LikePrompt, Ascii) ->
+    gen_server:call(?MODULE, {list_type, Merchant, LikePrompt, Ascii}).
 type(list, Merchant) ->
-    gen_server:call(?MODULE, {list_type, Merchant}).
+    type(list, Merchant, [], ?YES).
+
+syn(type_py, Merchant, Types) ->
+    gen_server:call(?MODULE, {syn_type_py, Merchant, Types}).
 
 
 bcode(update, firm, Merchant) ->
@@ -440,6 +446,7 @@ handle_call({list_brand, Merchant}, _From, State) ->
 handle_call({new_type, Merchant, Attrs}, _From, State) ->
     ?DEBUG("new_type with merchant ~p, attrs ~p", [Merchant, Attrs]),
     Name     = ?v(<<"name">>, Attrs),
+    PY       = ?v(<<"py">>, Attrs, []),
     BCode    = ?v(<<"bcode">>, Attrs, 0),
     CType    = ?v(<<"ctype">>, Attrs, -1),
     AutoBarcode = ?v(<<"auto_barcode">>, Attrs, ?YES),
@@ -452,9 +459,10 @@ handle_call({new_type, Merchant, Attrs}, _From, State) ->
 	fun(NewBarcode) ->
 		Sql1 = 
 		    "insert into inv_types"
-		    ++"(bcode, name, ctype, merchant) values("
+		    ++"(bcode, name, py, ctype, merchant) values("
 		    ++ ?to_s(NewBarcode) ++ ","
 		    ++ "\"" ++?to_s(Name) ++ "\","
+		    ++ "\"" ++?to_s(PY) ++ "\","
 		    ++ ?to_s(CType) ++ ","
 		    ++ ?to_s(Merchant) ++ ");",
 		case ?sql_utils:execute(insert, Sql1) of
@@ -536,14 +544,39 @@ handle_call({update_type, Merchant, Attrs}, _From, State) ->
 	    {reply, Error1, State}
     end;
 
-handle_call({list_type, Merchant}, _From, State) ->
-    ?DEBUG("list_type with merchant ~p", [Merchant]),
-    Sql = "select id, bcode, name, ctype as cid from inv_types"
+handle_call({list_type, Merchant, LikePrompt, Ascii}, _From, State) ->
+    ?DEBUG("list_type with merchant ~p, LikePrompt ~p, ascii ~p",
+	   [Merchant, LikePrompt, Ascii]),
+    Sql = "select id, bcode, name, py, ctype as cid from inv_types"
 	++ " where "
 	++ " merchant = " ++ ?to_string(Merchant)
+	++ case LikePrompt of
+	       [] -> [];
+	       _ ->
+		   case Ascii of
+		       ?YES -> " and py like \'%" ++ ?to_s(LikePrompt) ++ "%\'";
+		       ?NO -> " and name like \'%" ++ ?to_s(LikePrompt) ++ "%\'"
+		   end
+	   end
 	++ " and deleted = " ++ ?to_string(?NO)
 	++ " order by id desc",
     Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({syn_type_py, Merchant, Types}, _From, State) ->
+    ?DEBUG("syn_type_py: merchant ~p", [Merchant]),
+    Sqls = 
+	lists:foldr(
+	  fun({struct, R}, Acc)->
+		  Id     = ?v(<<"id">>, R),
+		  Pinyin = ?v(<<"py">>, R, []),
+		  ["update inv_types set py=\'" ++ ?to_s(Pinyin) ++ "\'"
+		   " where merchant=" ++ ?to_s(Merchant)
+		   ++ " and id=" ++ ?to_s(Id)|Acc]
+	  end, [], Types),
+
+    ?DEBUG("Sqls ~p", [Sqls]),
+    Reply = ?sql_utils:execute(transaction, Sqls, Merchant),
     {reply, Reply, State};
 
 handle_call({bcode_update, Table, Merchant}, _From, State) ->
@@ -586,8 +619,7 @@ handle_call({bcode_update, Table, Merchant}, _From, State) ->
     end;
 
 handle_call(_Request, _From, State) ->
-    Reply = ok,
-    {reply, Reply, State}.
+    {reply, ok, State}.
 
 
 handle_cast(_Msg, State) ->

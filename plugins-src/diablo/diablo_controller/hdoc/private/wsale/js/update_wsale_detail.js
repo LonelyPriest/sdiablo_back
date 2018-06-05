@@ -139,6 +139,7 @@ function wsaleUpdateDetailCtrlProvide(
 		$scope.setting.cake_mode = wsaleUtils.cake_mode(shopId, $scope.base_settings);
 		$scope.setting.draw_score = wsaleUtils.draw_score(shopId, $scope.base_settings);
 		$scope.setting.vip_mode = wsaleUtils.vip_discount(shopId, $scope.base_settings);
+		$scope.setting.type_sale = wsaleUtils.type_sale(shopId, $scope.base_settings);
 		
 		if (diablo_no === $scope.setting.cake_mode) 
 		    $scope.vpays = wsaleService.vpays;
@@ -167,8 +168,16 @@ function wsaleUpdateDetailCtrlProvide(
     });
 
     $scope.match_style_number = function(viewValue){
-	if (angular.isUndefined(diablo_set_string(viewValue)) || viewValue.length < diablo_filter_length) return;
-	return diabloFilter.match_w_sale(viewValue, $scope.select.shop.id);
+	if (diablo_yes === $scope.setting.type_sale) {
+	    return diabloFilter.match_w_sale(
+		viewValue,
+		$scope.select.shop.id,
+		diablo_type_sale,
+		diablo_is_ascii_string(viewValue));
+	} else {
+	    if (angular.isUndefined(diablo_set_string(viewValue)) || viewValue.length < diablo_filter_length) return;
+	    return diabloFilter.match_w_sale(viewValue, $scope.select.shop.id);
+	} 
     };
 
     // retailer;

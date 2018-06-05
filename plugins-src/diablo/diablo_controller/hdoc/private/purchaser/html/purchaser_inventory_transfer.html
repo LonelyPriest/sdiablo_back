@@ -138,11 +138,13 @@
 		   scroll-stop="50">
 		  <tr>
 		    <th class="text-center">序号</th>
+		    <th x-ng-if="base_settings.scan_mode" class="text-center">条码</th>
 		    <th class="text-center">货号</th>
 		    <th class="text-center">品牌</th>
 		    <th class="text-center">类别</th> 
 		    <th class="text-center">季节</th>
-		    <th class="text-center">库存</th> 
+		    <th class="text-center">库存</th>
+		    <th x-ng-if="stock_right.show_orgprice" class="text-center">进价</th>
 		    <th class="text-center">数量</th>
 		    <th x-ng-if="stock_right.show_orgprice" class="text-center">小计</th>
 		    <th class="text-center">操作</th>
@@ -151,22 +153,38 @@
 		<tbody>
 		  <tr class="text-center" ng-repeat="inv in inventories">
 		    
-		    <td>{{inv.order_id}}</td> 
+		    <td>{{inv.order_id}}</td>
+		    
+		    <td x-ng-if="base_settings.scan_mode" class="col-md-2 text-left vert-align">
+	  	    <span ng-if="!inv.$new">{{inv.full_bcode}}</span>
+	  	    <form name="inv.form.bcode" ng-if="inv.$new">
+	  	      <div ng-class="{'has-error':inv.form.bcode.$invalid && !inv.form.bcode.$pristine}">
+	  		<input class="form-control text-left"
+	  		       type="text"
+	  		       required
+	  		       x-ng-model="inv.full_bcode"
+	  		       focus-auto="focus.barcode"
+	  		       placeholder="条码"
+	  		       barcode-scanner
+	  		       scanner="barcode_scanner"/>
+	  	      </div>
+	  	    </form>
+	  	  </td>
+		    
 		    <td class="col-md-2 text-left vert-align">
-		      <span ng-if="!inv.$new">{{inv.style_number}}</span>
+		      <span ng-if="!inv.$new">{{inv.full_name}}</span>
 		      <form name="inv.form.good" ng-if="inv.$new">
 			<div ng-class="{'has-error':inv.form.good.$invalid
 				       && !inv.form.good.$pristine}">
 			  <input class="form-control text-left" type="text"
 				 required
-				 x-ng-model="inv.style_number"
+				 x-ng-model="inv.full_name"
 				 focus-auto="focus.style_number"
 				 placeholder="货号"
 				 typeahead-editable="false"
 				 typeahead-wait-ms="500"
 				 typeahead-on-select="on_select_inventory($item, $model, $label)"
-				 uib-typeahead="g as g.name for g in
-						match_prompt_inventory($viewValue)"/>
+				 uib-typeahead="g as g.name for g in match_prompt_inventory($viewValue)"/>
 			</div>
 		      </form>
 		    </td>
@@ -175,7 +193,8 @@
 		    <td class="vert-align">{{inv.type}}</td> 
 		    <td class="vert-align">{{seasons[inv.season]}}</td>
 		    <td class="vert-align">{{inv.total}}</td> 
-		    
+
+		    <td x-ng-if="stock_right.show_orgprice" class="vert-align">{{inv.org_price}}</td>
 		    <td class="col-md-1 vert-align">
 		      <div x-ng-if="!inv.$new && !inv.free_update">
 			{{inv.reject}}
@@ -188,6 +207,7 @@
 			  <input class="form-control"
 				 type="number" step="1" 
 				 required
+				 x-ng-edit
 				 x-ng-pattern="/^[1-9][0-9]*$/"
 				 x-ng-model="inv.amounts[0].reject_count"
 				 focus-auto="focus.transfer"
@@ -251,7 +271,7 @@
 		  </tr>
 		  
 		  <tr x-ng-if="select.total!==0" class="text-center">
-		    <td colspan="6"></td>
+		    <td colspan="8"></td> 
 		    <td class="vert-align">
 		      <span class="fg-red">{{select.total}}</span>
 		    </td>

@@ -189,6 +189,7 @@ create table brands(
 create table inv_types(
     id               INTEGER AUTO_INCREMENT,
     name             VARCHAR(64) not null,
+    py		     VARCHAR(64) not null,
     bcode            INTEGER default 0, -- use to bar code
     ctype            INTEGER default -1,
     merchant         INTEGER default -1, -- type belong to

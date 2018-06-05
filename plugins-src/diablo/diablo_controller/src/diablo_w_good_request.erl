@@ -212,6 +212,7 @@ action(Session, Req, {"new_w_good"}, Payload) ->
     ?DEBUG("new purchaser good with session ~p, good~n~p", [Session, Good]),
     
     Type        = ?v(<<"type">>, Good),
+    TypePY      = ?v(<<"type_py">>, Good),
     Brand       = ?v(<<"brand">>, Good),
     %% Firm        = ?v(<<"firm">>, Good),
     StyleNumber = ?v(<<"style_number">>, Good),
@@ -246,6 +247,7 @@ action(Session, Req, {"new_w_good"}, Payload) ->
 	
 	{ok, TypeId} =
 	    case ?attr:type(new, Merchant, [{<<"name">>, Type},
+					    {<<"py">>, TypePY},
 					    {<<"auto_barcode">>, AutoBarcode}]) of
 		{ok, _TypeId} -> {ok, _TypeId};
 		{ok_exist, _TypeId} -> {ok, _TypeId};
@@ -560,6 +562,19 @@ action(Session, Req, {"update_w_type"}, Payload) ->
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;
+
+action(Session, Req, {"syn_type_pinyin"}, Payload) ->
+    ?DEBUG("syn_type_pinyin: session ~p, paylaod ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    Types = ?v(<<"type">>, Payload, []),
+    case ?attr:syn(type_py, Merchant, Types) of 
+	{ok, Merchant} ->
+	    ?w_user_profile:update(type, Merchant),
+	    ?utils:respond(200, Req, ?succ(syn_retailer_pinyin, Merchant));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
 
 action(Session, Req, {"reset_w_good_barcode"}, Payload) ->
     Merchant = ?session:get(merchant, Session),

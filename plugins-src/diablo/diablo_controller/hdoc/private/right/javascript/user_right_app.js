@@ -82,6 +82,7 @@ userApp.factory("userService", function($resource, $q){
 		    // console.log(shops);
 		    var shop = {id:  s.shop_id,
 				name:s.name,
+				addr:s.addr,
 				repo:s.repo_id,
 				region: s.region_id,
 				charge_id: s.charge_id,
@@ -104,6 +105,7 @@ userApp.factory("userService", function($resource, $q){
 		angular.forEach(shops, function(s){
 		    var repo = {id:  s.shop_id,
 				name:s.name,
+				addr:s.addr,
 				repo:s.repo_id,
 				charge_id: s.charge_id,
 				score_id: s.score_id,
@@ -138,6 +140,7 @@ userApp.factory("userService", function($resource, $q){
 		angular.forEach(shops, function(s){
 		    var repo = {id:  s.shop_id,
 				name:s.name,
+				addr:s.addr,
 				repo:s.repo_id,
 				charge_id: s.charge_id,
 				score_id: s.score_id,
