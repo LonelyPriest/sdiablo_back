@@ -166,20 +166,20 @@ update  w_inventory_transfer a inner join (select rsn, cost from (select rsn, su
 
 
 -- clear date
-delete from w_inventory_good where merchant=11;
+delete from w_inventory_good where merchant=31;
 
-delete from w_inventory_new_detail_amount where merchant=11;
-delete from w_inventory_new_detail where merchant=11;
-delete from w_inventory_new where merchant=11;
+delete from w_inventory_new_detail_amount where merchant=31;
+delete from w_inventory_new_detail where merchant=31;
+delete from w_inventory_new where merchant=31;
 
 -- clear stock
-delete from w_inventory_amount where merchant=11;
-delete from w_inventory where merchant=11;
+delete from w_inventory_amount where merchant=31;
+delete from w_inventory where merchant=31;
 
 -- clear sale
-delete from w_sale_detail_amount where merchant=11;
-delete from w_sale_detail where merchant=11;
-delete from w_sale where merchant=11;
+delete from w_sale_detail_amount where merchant=31;
+delete from w_sale_detail where merchant=31;
+delete from w_sale where merchant=31;
 
 -- clear transefer
 delete from w_inventory_transfer_detail_amount where merchant=11;
@@ -196,8 +196,8 @@ delete from w_charge_detail where merchant=11;
 
 
 -- brands
-delete from brands where merchant=11;
-delete from inv_types where merchant=11;
+delete from brands where merchant=31;
+delete from inv_types where merchant=31;
 
 -- bill
 delete from w_bill_detail where merchant=11;

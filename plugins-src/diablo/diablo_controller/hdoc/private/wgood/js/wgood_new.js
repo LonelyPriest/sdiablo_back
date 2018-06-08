@@ -27,20 +27,27 @@ function wgoodNewCtrlProvide(
 	type:         diabloPattern.good_type,
 	discount:     diabloPattern.discount,
 	price:        diabloPattern.positive_decimal_2,
-	percent:      diabloPattern.percent
+	percent:      diabloPattern.percent,
+	expire:       diabloPattern.expire_date
     };
 
     var dialog     = diabloUtilsService;
     var set_float  = diablo_set_float;
-
+    
+    var hide_mode  = stockUtils.stock_in_hide_mode(diablo_default_shop, base); 
     $scope.base_settings = {
 	m_sgroup    :stockUtils.multi_sizegroup(-1, base),
-	hide_color  :stockUtils.hide_color(-1, base),
-	hide_size   :stockUtils.hide_size(-1, base),
-	hide_sex    :stockUtils.hide_sex(-1, base)
+	hide_color  :stockUtils.to_integer(hide_mode.charAt(0)),
+	hide_size   :stockUtils.to_integer(hide_mode.charAt(1)),
+	hide_sex    :stockUtils.to_integer(hide_mode.charAt(2)),
+	hide_expire :function() {
+	    var h = hide_mode.charAt(3);
+	    if ( !h ) return diablo_yes;
+	    else return stockUtils.to_integer(h);
+	}()
     };
 
-    // console.log($scope.base_settings);
+    console.log($scope.base_settings);
 
     // $scope.colors = [{type:"红色", tid:1
     // 		  colors:[{name:"深红", id:1},
@@ -435,7 +442,7 @@ function wgoodNewCtrlProvide(
 	tag_price : 0,
 	ediscount : 100,
 	discount  : 100,
-	alarm_day : 7,
+	alarm_day : -1,
 	year      : diablo_now_year(),
 	season    : $scope.seasons[stockUtils.valid_season(current_month)],
 	
@@ -544,7 +551,7 @@ function wgoodNewCtrlProvide(
 			angular.forEach($scope.colors, function(color){
 			    if (color.select) color.select = false;});
 
-			console.log($scope.grouped_colors); 
+			// console.log($scope.grouped_colors); 
 			$scope.good.style_number = undefined;
 			$scope.good.type = undefined;
 			$scope.goodForm.type.$pristine = true;
@@ -666,15 +673,23 @@ function wgoodDetailCtrlProvide(
 	    user.right)
     };
 
+    var hide_mode  = stockUtils.stock_in_hide_mode(diablo_default_shop, base); 
     $scope.setting = {
 	// self_barcode   :stockUtils.barcode_self(diablo_default_shop, base),
 	use_barcode  :stockUtils.use_barcode(diablo_default_shop, base),
 	auto_barcode :stockUtils.auto_barcode(diablo_default_shop, base),
 	printer_barcode: stockUtils.printer_barcode(user.loginShop, base),
-	dual_barcode: stockUtils.dual_barcode_print(user.loginShop, base)
+	dual_barcode: stockUtils.dual_barcode_print(user.loginShop, base),
 	// barcode_width  :stockUtils.barcode_width(diablo_default_shop, base),
 	// barcode_height :stockUtils.barcode_height(diablo_default_shop, base),
 	// barcode_firm   :stockUtils.barcode_with_firm(diablo_default_shop, base)
+
+	hide_expire :function() {
+	    var h = hide_mode.charAt(3);
+	    if ( !h ) return diablo_yes;
+	    else return stockUtils.to_integer(h);
+	}()
+	
     };
 
     $scope.printU = new stockPrintU($scope.template, $scope.setting.auto_barcode, $scope.setting.dual_barcode);
@@ -719,7 +734,7 @@ function wgoodDetailCtrlProvide(
 			$scope.total_items      = result.total;
 		    }
 		    angular.forEach(result.data, function(d){
-			console.log(d);
+			// console.log(d);
 			d.firm  = diablo_get_object(d.firm_id, filterFirm);
 			d.type  = diablo_get_object(d.type_id, filterType);
 			
@@ -745,7 +760,23 @@ function wgoodDetailCtrlProvide(
 				    d.fabric_desc += fabric.name + ":" + f.p.toString();
 			    });
 			}
-			    
+
+			d.expire_date = diablo_none;
+			var expire = diablo_nolimit_day;
+			if (d.alarm_day !== diablo_nolimit_day) {
+			    expire = stockUtils.to_integer(d.alarm_day);
+			} else {
+			    if (diablo_invalid_firm !== stockUtils.invalid_firm(d.firm)) {
+				if (angular.isDefined(d.firm.expire)
+				    && d.firm.expire !== diablo_nolimit_day) {
+				    expire = stockUtils.to_integer(d.firm.expire);
+				}
+			    }
+			}
+
+			if (expire !== diablo_nolimit_day) {
+			    d.expire_date = stockUtils.date_add(d.entry_date, expire);
+			}
 		    })
 		    $scope.goods = result.data;
 		    diablo_order_page(page, $scope.items_perpage, $scope.goods);

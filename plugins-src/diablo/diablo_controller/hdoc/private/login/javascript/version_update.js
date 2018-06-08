@@ -1,6 +1,11 @@
 var version_update = function(){
-    
     var updates = [
+	{date: "2018-06-10",
+	 content:
+	 ["条码打印增加款号是否换行打印选项",
+	  "货品退货期限可在入库时输入，精确到款"]
+	},
+	
 	{date: "2018-06-06",
          content:
 	 ["增加品类开单模式，以适应家访店开单模式",

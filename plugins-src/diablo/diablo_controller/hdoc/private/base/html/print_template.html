@@ -551,6 +551,36 @@
 		  </td>
 		  <td></td>
 		</tr>
+
+		<tr>
+		  <td>35</td>
+		  <td>换行打印款号</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.solo_snumber"/>
+		  </td>
+		  <td>款号过长时换行打印</td>
+		</tr>
+
+		<tr>
+		  <td>36</td>
+		  <td>款号换行阀值</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.len_snumber"/>
+		  </td>
+		  <td>款号长度大于阀值时，且换行打印款号时，款号打印换行</td>
+		</tr>
 		
 	      </tbody>
 	    </table> <!--END table-->

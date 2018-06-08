@@ -792,7 +792,8 @@ create table w_inventory_new_detail(
     firm           INTEGER default -1, 
     s_group        VARCHAR(32) default 0,  -- which size group 
     free           TINYINT default 0,  -- free color and free size
-    year           YEAR(4),
+    year           YEAR(4), 
+    alarm_day      TINYINT default -1,  -- the days of alarm 
 
     -- promotion      INTEGER not null default -1,
     org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
@@ -1338,6 +1339,9 @@ create table print_template(
    hpx_top         TINYINT default 0,
    hpx_left        TINYINT default 0,
    second_space    INTEGER default 0,
+
+   solo_snumber    TINYINT default 0,
+   len_snumber     TINYINT default 0,
    
    merchant        INTEGER not null default -1,
    unique   key    (merchant),

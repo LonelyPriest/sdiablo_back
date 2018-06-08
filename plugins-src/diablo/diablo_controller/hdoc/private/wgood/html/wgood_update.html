@@ -164,15 +164,12 @@
 	      </div>
 	    </div> 
 
-	    <div class="form-group">
+	    <div x-ng-if="!setting.hide_sex" class="form-group">
 	      <label class="col-sm-3 col-md-3 control-label">性别</label>
-	      <div class="col-sm-6 col-md-6">
-		<!-- <div class="input-group"> -->
-		<!-- <span class="input-group-addon">性别</span>  -->
+	      <div class="col-sm-6 col-md-6"> 
 		<select class="form-control"
 			x-ng-model="good.sex"
 			x-ng-options="s as s.name for s in sexs"></select>
-		<!-- </div> -->
 	      </div>
 	    </div>
 
@@ -305,13 +302,12 @@
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div>
 	      </div>
-	      <div ng-if="goodForm.ediscount.$invalid
-			  && !goodForm.ediscount.$pristine">
+	      <div ng-if="goodForm.ediscount.$invalid && !goodForm.ediscount.$pristine">
 		<span style="color:red">支持两位小数，无折扣请输入100</span>
 	      </div>
 	    </div> 
 	    
-	    <div class="form-group">
+	    <div x-ng-if="!setting.hide_color" class="form-group">
 	      <label class="col-sm-3 col-md-3 control-label">颜色</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
@@ -334,7 +330,7 @@
 	      </div>
 	    </div>
 	    
-	    <div class="form-group">
+	    <div x-ng-if="!setting.hide_size" class="form-group">
 	      <label class="col-sm-3 col-md-3 control-label">尺码</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
@@ -356,6 +352,27 @@
 		</div>
 	      </div> 
 	    </div>
+
+	    <div x-ng-if="!setting.hide_expire"
+		 class="form-group diablo-good-form-group">
+	      <label class="col-sm-3 col-md-3 control-label">退货期限</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<div class="input-group">
+		  <input class="form-control"
+			 type="number" step="1" 
+			 name="expire"
+			 required
+			 placeholder="退货期限"
+			 x-ng-pattern="pattern.expire"
+			 x-ng-enter=""
+			 x-ng-model="good.alarm_day" />
+		  <span class="input-group-addon bg-white fg-red">*</span> 
+		</div>
+	      </div>
+	      <div ng-if="goodForm.expire.$invalid && !goodForm.expire.$pristine">
+		<span class="fg-red">整数或-1，-1表示无退货期限</span>
+	      </div>
+	    </div> 
 
 	    <!-- image --> 
 	    <div class="form-group">

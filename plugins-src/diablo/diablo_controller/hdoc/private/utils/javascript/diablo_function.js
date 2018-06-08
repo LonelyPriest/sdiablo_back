@@ -126,6 +126,10 @@ var diablo_bill_wire = 2;
  * scan mode
  */
 var diablo_scan_mode = "0000";
+/*
+ * hide mode
+ */
+var diablo_stock_in_hide_mode = "00011";
 
 /*
  * direction
@@ -285,9 +289,10 @@ var diablo_season2objects = [
 var diablo_sex2object = [
     {name:"女", id:0},
     {name:"男", id:1},
+    {name:"童", id:2},
 ];
 
-var diablo_sex = ["女", "男"];
+var diablo_sex = ["女", "男", "童"];
 
 var diablo_sizegroup = ["si", "sii", "siii", "siv", "sv", "svi", "svii"];
 
@@ -299,11 +304,12 @@ var diablo_sell_style = [
 ];
 
 var diablo_sex2number = function(sex){
-    if (sex == "女"){
+    if (sex === "女")
 	return 0;
-    } else{
+    else if (sex === "男")
 	return 1;
-    }
+    else
+	return 2;
 };
 
 var diablo_move_state = ["在途中", "已转移"];
@@ -804,7 +810,8 @@ diablo_set_string = function(s){
 
 var diablo_find_color = function(cid, allColors){
     if (cid === 0){
-	return {cid:cid, bcode:0, cname:"均色"};
+	// return {cid:cid, bcode:0, cname:"均色"};
+	return {cid:cid, bcode:0, cname:""};
     } else{
 	var c = diablo_get_object(cid, allColors);
 	// console.log(c);

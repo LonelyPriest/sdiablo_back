@@ -977,7 +977,8 @@ function goodPrintTemplateCtrlProvide(
 	     , "hpx_each", "hpx_executive", "hpx_category", "hpx_fabric"
 	     , "hpx_price", "hpx_barcode"
 	     
-	     , "hpx_top", "hpx_left", "second_space"];
+	     , "hpx_top", "hpx_left", "second_space"
+	     , "solo_snumber", "len_snumber"];
     
     $scope.save_template = function() {
 	var update = {};

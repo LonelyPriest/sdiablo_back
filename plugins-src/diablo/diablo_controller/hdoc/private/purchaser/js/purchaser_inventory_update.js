@@ -349,7 +349,9 @@ function purchaserInventoryNewUpdateCtrlProvide (
 		add.discount        = invs[i].discount;
 		add.total           = invs[i].amount;
 		add.over            = invs[i].over;
-		add.entry_date      = invs[i].entry_date;
+
+		add.alarm_day       = invs[i].alarm_day;
+		add.entry_date      = invs[i].entry_date; 
 		add.expire_date     = diablo_none;
 		
 		add.sizes.push(invs[i].size);
@@ -1059,7 +1061,24 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	} 
 	
 	var print_barcode = function(barcode) {
+	    var expire = diablo_nolimit_day;
 	    var firm = undefined;
+
+	    if (inv.alarm_day !== diablo_nolimit_day) {
+		expire = stockUtils.to_integer(inv.alarm_day);
+	    } else {
+		if (diablo_invalid_firm !== stockUtils.invalid_firm($scope.select.firm)) {
+		    firm = $scope.select.firm.name;
+		    if (angular.isDefined($scope.select.firm.expire)
+			&&  $scope.select.firm.expire !== diablo_invalid_firm) {
+			expire = stockUtils.to_integer($scope.select.firm.expire); 
+		    }
+		}
+	    }
+
+	    if (expire !== diablo_nolimit_day)
+		inv.expire_date = stockUtils.date_add(inv.entry_date, expire);
+	    
 	    if (diablo_invalid_firm !== stockUtils.invalid_firm($scope.select.firm)) {
 		firm = $scope.select.firm.name;
 		if (angular.isDefined($scope.select.firm.expire)

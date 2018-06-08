@@ -19,7 +19,7 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
     Discount    = ?v(<<"discount">>, Attrs, 100),
     Colors      = ?v(<<"colors">>, Attrs, [?FREE_COLOR]),
     Path        = ?v(<<"path">>, Attrs, []),
-    AlarmDay    = ?v(<<"alarm_day">>, Attrs, 7),
+    AlarmDay    = ?v(<<"alarm_day">>, Attrs, -1),
 
     Contailer   = ?v(<<"contailer">>, Attrs, -1),
     Alarm_a     = ?v(<<"alarm_a">>, Attrs, 0),
@@ -237,7 +237,8 @@ good(detail, Merchant, Conditions) ->
 	", a.tag_price"
 	", a.ediscount"
 	", a.discount"
-	", a.path"
+	", a.path" 
+	", a.alarm_day"
 	
 	", a.contailer"
 	", a.alarm_a"
@@ -886,14 +887,14 @@ inventory(get_new_amount, _Merchant, Conditions) ->
     "select a.id, a.rsn, a.style_number, a.brand_id, a.type_id, a.sex"
 	", a.season, a.firm_id, a.s_group, a.free, a.year"
 	", a.org_price, a.tag_price, a.ediscount"
-	", a.discount, a.over, a.path, a.entry_date"
+	", a.discount, a.over, a.path, a.alarm_day, a.entry_date"
 
 	", b.color as color_id, b.size, b.total as amount"
 	" from "
 	
 	"(select id, rsn, style_number, brand as brand_id, type as type_id"
 	", sex, season, firm as firm_id, s_group, free, year"
-	", org_price, tag_price, ediscount, discount, over, path, entry_date"
+	", org_price, tag_price, ediscount, discount, over, path, alarm_day, entry_date"
 	" from w_inventory_new_detail"
 	" where " ++ ?utils:to_sqls(proplists, Conditions) ++ ") a"
 
@@ -1607,7 +1608,7 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 			  
     Discount    = ?v(<<"discount">>, Inv, 100),
     Path        = ?v(<<"path">>, Inv, []),
-    AlarmDay    = ?v(<<"alarm_day">>, Inv, 7),
+    AlarmDay    = ?v(<<"alarm_day">>, Inv, -1),
     Score       = ?v(<<"score">>, Inv, -1),
 
     Contailer  = ?v(<<"contailer">>, Inv, -1),
@@ -1700,7 +1701,7 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 	    {ok, []} ->
 		["insert into w_inventory_new_detail(rsn, style_number"
 		 ", brand, type, sex, season, amount, over"
-		 ", firm, s_group, free, year"
+		 ", firm, s_group, free, year, alarm_day"
 		 ", org_price, tag_price, ediscount, discount"
 		 " , path, merchant, shop, entry_date) values("
 		 ++ "\"" ++ ?to_s(RSN) ++ "\","
@@ -1715,7 +1716,8 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 
 		 ++ "\"" ++ ?to_s(SizeGroup) ++ "\","
 		 ++ ?to_s(Free) ++ ","
-		 ++ ?to_s(Year) ++ "," 
+		 ++ ?to_s(Year) ++ ","
+		 ++ ?to_s(AlarmDay) ++ "," 
 
 		 %% ++ ?to_s(Promotion) ++ ","
 		 ++ ?to_s(OrgPrice) ++ ","

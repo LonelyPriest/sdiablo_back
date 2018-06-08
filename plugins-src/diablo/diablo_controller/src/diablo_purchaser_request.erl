@@ -2050,7 +2050,8 @@ purchaser_type(1)-> "退货";
 purchaser_type(9)-> "结帐".
 
 sex(0) ->"女"; 
-sex(1) ->"男".
+sex(1) ->"男";
+sex(2) ->"童".
 
 season(0) -> "春";
 season(1) -> "夏";

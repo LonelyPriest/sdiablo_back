@@ -224,12 +224,24 @@ function purchaserInventoryNewCtrlProvide (
 	$scope.base_settings.m_sgroup = stockUtils.multi_sizegroup(shopId, base);
 	$scope.base_settings.t_trace = stockUtils.t_trace(shopId, base);
 	$scope.base_settings.group_color = stockUtils.group_color(shopId, base);
-	$scope.base_settings.image_allowed = stockUtils.image_allowed(shopId, base);
+	// $scope.base_settings.image_allowed = stockUtils.image_allowed(shopId, base);
 	$scope.base_settings.price_on_region = stockUtils.price_on_region(shopId, base);
 
-	$scope.base_settings.hide_color = stockUtils.hide_color(shopId, base);
-	$scope.base_settings.hide_size  = stockUtils.hide_size(shopId, base);
-	$scope.base_settings.hide_sex   = stockUtils.hide_sex(shopId, base);
+	var hide_mode  = stockUtils.stock_in_hide_mode(shopId, base); 
+	$scope.base_settings.hide_color  = stockUtils.to_integer(hide_mode.charAt(0)),
+	$scope.base_settings.hide_size   = stockUtils.to_integer(hide_mode.charAt(1)),
+	$scope.base_settings.hide_sex    = stockUtils.to_integer(hide_mode.charAt(2)),
+	$scope.base_settings.hide_expire = function() {
+	    var h = hide_mode.charAt(3);
+	    if ( !h ) return diablo_yes;
+	    else return stockUtils.to_integer(h);
+	}();
+
+	$scope.base_settings.hide_image = function () {
+	    var h = hide_mode.charAt(4);
+	    if ( !h ) return diablo_yes;
+	    else return stockUtils.to_integer(h);
+	}();
 	
 	$scope.base_settings.stock_alarm     = stockUtils.stock_alarm(shopId, base);
 	$scope.base_settings.stock_alarm_a   = stockUtils.stock_alarm_a(shopId, base);
@@ -1046,7 +1058,8 @@ function purchaserInventoryNewCtrlProvide (
      */ 
     $scope.pattern = {style_number: diabloPattern.style_number,
 		      brand: diabloPattern.ch_en_num,
-		      type:  diabloPattern.good_type};
+		      type:  diabloPattern.good_type,
+		      expire: diabloPattern.expire_date};
 
     $scope.focus_attrs = {style_number:true,
 			  brand:false,
@@ -1058,6 +1071,7 @@ function purchaserInventoryNewCtrlProvide (
 			  discount:false,
 			  color:false,
 			  size:false,
+			  expire: false,
 			  ok:false};
     $scope.on_focus_attr = function(attr){
 	stockUtils.on_focus_attr(attr, $scope.focus_attrs);
@@ -1353,7 +1367,7 @@ function purchaserInventoryNewCtrlProvide (
 	tag_price : 0, 
 	ediscount : 0,
 	discount  : 100,
-	alarm_day : 7,
+	alarm_day : -1,
 	year      : diablo_now_year(),
 	season    : $scope.season2objs[stockUtils.valid_season(current_month)],
 	image     : undefined,
@@ -1592,7 +1606,7 @@ function purchaserInventoryNewCtrlProvide (
 	    tag_price: $scope.good.tag_price, 
 	    ediscount: $scope.good.ediscount, 
 	    discount:  $scope.good.discount,
-	    alarm_day: $scope.good.alarm_day,
+	    alarm_day: -1,
 	    image: undefined
 	    // image.file: undefined,
 	    // d_image: true
@@ -1711,8 +1725,14 @@ function purchaserInventoryDetailCtrlProvide(
     $scope.setting.saler_stock     = stockUtils.saler_stock(diablo_default_shop, base);
     $scope.setting.gift_sale       = stockUtils.gift_sale(diablo_default_shop, base);
     
-    // $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, base);
+    // var hide_mode  = stockUtils.stock_in_hide_mode(diablo_default_shop, base); 
+    // $scope.setting.hide_expire  = function() {
+    // 	var h = hide_mode.charAt(3);
+    // 	if ( !h ) return diablo_yes;
+    // 	else return stockUtils.to_integer(h);
+    // }(),
     
+    // $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, base); 
     $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, base);
     $scope.setting.dual_barcode = stockUtils.dual_barcode_print(user.loginShop, base);
     // console.log($scope.setting);
@@ -1824,7 +1844,7 @@ function purchaserInventoryDetailCtrlProvide(
 		if ($scope.tab_active.chart && $scope.mode === 1){
 		    var labels  = [];
 		    var totals  = [];
-		    var sells   = [];
+		    var sells   = []; 
 		    angular.forEach(result.data, function(d){
 			labels.push(d.style_number);
 			totals.push(d.amount + d.sell);
@@ -1840,14 +1860,23 @@ function purchaserInventoryDetailCtrlProvide(
 			$scope.total_sell   = result.t_sell;
 			$scope.total_lmoney = result.t_lmoney;
 		    }
-		    angular.forEach(result.data, function(d){
-			if (now_date.getTime() - diablo_set_date(d.last_sell)
-			    > diablo_day_millisecond * d.alarm_day){
-			    d.isAlarm = true;
-			} else{
-			    d.isAlarm = false;
-			}
-		    })
+		    // angular.forEach(result.data, function(d){
+		    // 	// if (now_date.getTime() - diablo_set_date(d.last_sell)
+		    // 	//     > diablo_day_millisecond * d.alarm_day){
+		    // 	//     d.isAlarm = true;
+		    // 	// } else{
+		    // 	//     d.isAlarm = false;
+		    // 	// }
+		    // 	d.isAlarm = false;
+		    // 	if (d.alarm_day !== diablo_nolimit_day && 0 !== d.amount) {
+		    // 	    var limit = diablo_day_millisecond * d.alarm_day;
+		    // 	    if (diablo_set_date(d.entry_date)
+		    // 		+ limit < diablo_set_date(now) ) {
+		    // 		d.isAlarm = true;
+		    // 	    }
+		    // 	}
+			
+		    // });
 		    
 		    $scope.inventories = result.data;
 		    angular.forEach(result.data, function(d){
@@ -1857,14 +1886,31 @@ function purchaserInventoryDetailCtrlProvide(
 			d.promotion = diablo_get_object(d.pid, filterPromotion);
 			d.score = diablo_get_object(d.sid, filterScore);
 			d.calc  = diablo_float_mul(d.org_price, d.amount);
-			d.expire_date = diablo_none;
-			
-			if (diablo_invalid_firm !== stockUtils.invalid_firm(d.firm)) {
-			    if (angular.isDefined(d.firm.expire) && d.firm.expire !== diablo_invalid_index) {
-				d.expire_date = stockUtils.date_add(d.entry_date, d.firm.expire);
+
+			d.isAlarm = false;
+			if (d.alarm_day !== diablo_nolimit_day && 0 !== d.amount) {
+			    var limit = diablo_day_millisecond * d.alarm_day;
+			    if (diablo_set_date(d.entry_date) + limit < now ) {
+				d.isAlarm = true;
 			    }
 			}
 			
+			d.expire_date = diablo_none;
+			var expire = diablo_nolimit_day;
+			if (d.alarm_day !== diablo_nolimit_day) {
+			    expire = stockUtils.to_integer(d.alarm_day);
+			} else {
+			    if (diablo_invalid_firm !== stockUtils.invalid_firm(d.firm)) {
+				if (angular.isDefined(d.firm.expire)
+				    && d.firm.expire !== diablo_nolimit_day) {
+				    expire = stockUtils.to_integer(d.firm.expire);
+				}
+			    }
+			}
+
+			if (expire !== diablo_nolimit_day) {
+			    d.expire_date = stockUtils.date_add(d.entry_date, expire);
+			} 
 			// d.shop  = diablo_get_object(d.shop_id, user.sortShops);
 		    });
 		    

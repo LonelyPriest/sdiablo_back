@@ -485,6 +485,7 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 
     EDiscount      = ?v(<<"ediscount">>, Attrs),
     Discount       = ?v(<<"discount">>, Attrs),
+    AlarmDay       = ?v(<<"alarm_day">>, Attrs),
     
     Colors         = ?v(<<"color">>, Attrs),
     SizeGroup      = ?v(<<"s_group">>, Attrs),
@@ -503,8 +504,9 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 	++ ?utils:v(year, integer, Year)
 	++ ?utils:v(season, integer, Season)
 	++ ?utils:v(s_group, string, SizeGroup)
+	++ ?utils:v(alarm_day, integer, AlarmDay)
 	++ ?utils:v(path, string, Path),
-	%% ++ ?utils:v(change_date, string, DateTime),
+    %% ++ ?utils:v(change_date, string, DateTime),
 
     UpdatePrice = ?utils:v(org_price, float, OrgPrice)
 	++ ?utils:v(tag_price, float, TagPrice)
@@ -516,6 +518,8 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 		     _ when Colors =/= <<"0">> -> ?utils:v(free, integer, 1);
 		     _ -> [] 
 		 end,
+
+    %% UpdateAlarm = ?utils:v(alarm_day, integer, AlarmDay),
 
     UpdateGood = UpdateBase ++ UpdatePrice
 	++ ?utils:v(color, string, Colors)
@@ -564,7 +568,8 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 		    {reply, ?sql_utils:execute(write, Sql1, GoodId), State};
 		_  ->
 		    UpdateInv = UpdateBase
-			++ UpdatePrice ++ UpdateFree
+			++ UpdatePrice
+			++ UpdateFree
 		    %% ++ ?utils:v(s_group, string, SizeGroup)
 			++ ?utils:v(change_date, string, DateTime),
 		    
@@ -581,7 +586,10 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 				 ++ ?utils:to_sqls(proplists, comma, U3)
 				 ++ " where "
 				 ++ C(true, OrgStyleNumber, OrgBrand)]
-				    ++ case lists:keydelete(<<"sex">>, 1, U3) of
+				    ++ case lists:keydelete(
+					      <<"alarm_day">>, 1,
+					      lists:keydelete(
+						<<"sex">>, 1, U3)) of
 					[] -> [];
 					U1 ->
 					    ["update w_sale_detail set "
@@ -687,7 +695,8 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 			   proplists,
 			   comma,
 			   Update2
-			   ++ ?utils:v(path, string, Path)
+			   ++ ?utils:v(alarm_day, integer, AlarmDay)
+			   ++ ?utils:v(path, string, Path) 
 			   ++ ?utils:v(firm, integer, Firm))
 		     ++ " where " ++ RC(OrgStyleNumber, OrgBrand),
 
@@ -714,7 +723,10 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 			    ["update w_inventory set "
 			     ++ ?utils:to_sqls(
 				   proplists, comma,
-				   Update2 ++ UpdateInv ++ UpdatePrice ++ UpdateFree)
+				   Update2
+				   ++ UpdateInv
+				   ++ UpdatePrice
+				   ++ UpdateFree)
 			     ++ " where "
 			     ++ C(true, OrgStyleNumber, OrgBrand),
 

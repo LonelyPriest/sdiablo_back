@@ -928,6 +928,9 @@ handle_call({set_barcode_print_template, Merchant}, _From, State) ->
 		", hpx_left"
 		", second_space"
 
+		", solo_snumber"
+		", len_snumber"
+
 		", merchant) values("
 		++ ?to_s(4) ++ ","
 		++ ?to_s(3) ++ ","
@@ -972,6 +975,9 @@ handle_call({set_barcode_print_template, Merchant}, _From, State) ->
 		++ ?to_s(5) ++ ","
 		++ ?to_s(10) ++ ","
 		++ ?to_s(0) ++ ","
+
+		++ ?to_s(0) ++ ","
+		++ ?to_s(8) ++ ","
 		
 		++ ?to_s(Merchant)  ++ ")",
 

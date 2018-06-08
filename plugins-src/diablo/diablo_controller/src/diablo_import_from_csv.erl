@@ -163,8 +163,15 @@ import(good, Merchant, Shop, Path) ->
     Datetime = ?utils:current_time(format_localtime),
     Sqls = insert_into_good(good, Merchant, Shop, Datetime, Content, []),
     ?DEBUG("all sqls ~p", [Sqls]).
-    %% ?sql_utils:execute(transaction, Sqls, Merchant).
-    
+%%
+%% import from Guan Jia Po
+%%
+%% import(gjp, Merchant, Shop, Path) -> 
+%%     ?INFO("current path ~p", [file:get_cwd()]),
+%%     {ok, Device} = file:open(Path, [read]), 
+%%     Content = read_line(Device, []),
+%%     file:close(Device),
+%%     insert_into_stock(from_gjp, Merchant, Shop, Content, <<>>, []).
     
 read_line(Device, Content) ->
     case file:read_line(Device) of
@@ -200,21 +207,7 @@ insert_into_db(Merchant, Shop, [], _F, Content) ->
 	    NewContent = sort(firm, Content, []),
 	    %% ?DEBUG("new content ~p", [NewContent]),
 	    new(Merchant, Shop, NewContent)
-    end;
-    %% Datetime = ?utils:current_time(format_localtime),
-    %% RSN = ?w_inventory:rsn(
-    %% 	     new,
-    %% 	     Merchant,
-    %% 	     Shop,
-    %% 	     ?inventory_sn:sn(w_inventory_new_sn, Merchant)),
-
-    %% Sql = "select id, number from employees where merchant=" ++ ?to_s(Merchant)
-    %% 	++ " and shop=" ++ ?to_s(Shop)
-    %% 	++ " order by id limit 1",
-
-    %% {ok, Employee} = ?sql_utils:execute(s_read, Sql),
-    %% EmployeeId = ?v(<<"number">>, Employee), 
-    %% insert_int_db(firm, Content, RSN, EmployeeId, Merchant, Shop, Datetime, [], 0, 0);
+    end; 
 
 insert_into_db(Merchant, Shop, [H|T], F, Content) ->
     {Firm, _SN, _Brand, _Type, _YS, _TagPrice, _Discount, _Total, _Cost} = H,
@@ -223,30 +216,11 @@ insert_into_db(Merchant, Shop, [H|T], F, Content) ->
 	true ->
 	    insert_into_db(Merchant, Shop, T, F, Content ++ [H]);
 	false ->
-	    %% ?DEBUG("content ~p", [Content]),
 	    case Content of
 		[] -> ok;
 		_ ->
 		    NewContent = sort(firm, Content, []),
-		    %% ?DEBUG("new content ~p", [NewContent]),
-		    new(Merchant, Shop, NewContent)
-		    %% Datetime = ?utils:current_time(format_localtime),
-		    %% RSN = ?w_inventory:rsn(
-		    %% 	     new,
-		    %% 	     Merchant,
-		    %% 	     Shop,
-		    %% 	     ?inventory_sn:sn(w_inventory_new_sn, Merchant)),
-
-		    %% Sql = "select id, number from employees where merchant=" ++ ?to_s(Merchant)
-		    %% 	++ " and shop=" ++ ?to_s(Shop)
-		    %% 	++ " order by id limit 1",
-
-		    %% {ok, Employee} = ?sql_utils:execute(s_read, Sql),
-		    %% ?DEBUG("employees ~p", [Employee]),
-		    %% EmployeeId = ?v(<<"number">>, Employee),
-
-		    %% insert_int_db(
-		    %%   firm, Content, RSN, EmployeeId, Merchant, Shop, Datetime, [], 0, 0)
+		    new(Merchant, Shop, NewContent) 
 	    end,
 	    insert_into_db(Merchant, Shop, T, Firm, [H])
     end.
@@ -693,8 +667,7 @@ insert_into_good(good, Merchant, Shop, Datetime, [H|T], Sqls) ->
 	    ?sql_utils:execute(transaction, Sql10, Merchant),
 	    insert_into_good(good, Merchant, Shop, Datetime, T, Sql10 ++ Sqls)
     end.
-		
-
+		    
 parse_style_number(<<>>, SN)->
     {SN, <<>>};
 parse_style_number(<<H, T/binary>>, SN) when H > 127 ->

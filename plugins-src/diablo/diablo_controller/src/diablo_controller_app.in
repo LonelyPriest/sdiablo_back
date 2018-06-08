@@ -19,7 +19,8 @@
      diablo_controller_session_manager, gen_request,
      diablo_controller_inventory_sn,    diablo_attribute,
      diablo_iconv,                      diablo_import_from_csv,
-     diablo_import_taobao_csv,
+     diablo_import_taobao_csv,          diablo_import_from_gjp,
+     
      %% print
      diablo_http_print,                 diablo_http_print_test,
      %% about sql

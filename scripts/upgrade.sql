@@ -317,3 +317,13 @@ alter table w_retailer add index shop (shop);
 
 --2018-06-05
 alter table inv_types add column py varchar(64) not null after name;
+
+
+--2018-06-06
+alter table print_template add column solo_snumber TINYINT default 0 after second_space;
+alter table print_template add column len_snumber TINYINT default 0 after solo_snumber;
+alter table w_inventory_new_detail add column alarm_day TINYINT default -1 after year;
+update w_inventory_good set alarm_day=-1 where merchant=31;
+update w_inventory set alarm_day=-1 where merchant=31;
+
+

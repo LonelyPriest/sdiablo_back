@@ -95,6 +95,7 @@
 		    <th x-ng-if="right.lookup_w_good_orgprice" class="success">折扣卖</th>
 		    <!-- <th>促销方案</th>  -->
 		    <th>上架日期</th>
+		    <th x-ng-if="!setting.hide_expire" >退货期限</th>
 		    <!-- <th>缩略图</th> -->
 		    <th>操作</th>
 		  </tr>
@@ -137,6 +138,7 @@
 		    <td x-ng-if="right.lookup_w_good_orgprice" class="fg-darkBlue">{{g.discount}}</td>
 		    <!-- <td>{{g.promotion.name}}</td>  -->
 		    <td>{{g.entry_date}}</td>
+		    <td x-ng-if="!setting.hide_expire">{{g.expire_date}}</td>
 		    
 		    <td data-title="'操作'"> 
 		      <button class="btn diablo-button btn-primary"

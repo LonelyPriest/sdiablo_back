@@ -653,6 +653,9 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", hpx_top"
 	", hpx_left"
 	", second_space"
+
+	", solo_snumber"
+	", len_snumber"
 	
 	" from print_template"
 	" where merchant=" ++ ?to_s(Merchant), 
@@ -703,7 +706,10 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 
 	++  ?utils:v(hpx_top, integer, ?v(<<"hpx_top">>, Attrs))
 	++  ?utils:v(hpx_left, integer, ?v(<<"hpx_left">>, Attrs))
-	++  ?utils:v(second_space, integer, ?v(<<"second_space">>, Attrs)),
+	++  ?utils:v(second_space, integer, ?v(<<"second_space">>, Attrs))
+
+	++  ?utils:v(solo_snumber, integer, ?v(<<"solo_snumber">>, Attrs))
+	++  ?utils:v(len_snumber, integer, ?v(<<"len_snumber">>, Attrs)),    
 
     Sql = "update print_template set " ++ ?utils:to_sqls(proplists, comma, U)
 	++ " where merchant=" ++ ?to_s(Merchant)
@@ -746,9 +752,10 @@ sys_config(shop) ->
      %% {"d_report",        "日报表能力",           "0",   "0"},
      {"m_sale",          "允许负数退货",         "1",   "0"},
      {"round",           "四舍五入",             "1",   "0"},
-     {"h_color",         "隐藏颜色",             "0",   "0"},
-     {"h_size",          "隐藏尺码",             "0",   "0"},
-     {"h_sex",           "隐藏性别",             "0",   "0"},
+     {"h_stock",         "入库字段隐藏",         "0000", "0"},
+     %% {"h_color",         "隐藏颜色",             "0",   "0"},
+     %% {"h_size",          "隐藏尺码",             "0",   "0"},
+     %% {"h_sex",           "隐藏性别",             "0",   "0"},
      {"s_member",        "会员独立",             "0",   "0"},
      {"s_employee",      "营业员必选",           "0",   "0"},
      
@@ -781,7 +788,7 @@ sys_config() ->
 	      {"prompt",          "联想数目",            "8",   "0"},
 
 
-	      {"stock_alarm",     "库存告警",             "0",  "0"},
+	      %% {"stock_alarm",     "库存告警",             "0",  "0"},
 	      {"reject_negative", "零库存退货",           "0",  "0"},
 	      {"check_sale",      "检测库存销售",         "1",  "0"},
 	      
@@ -795,9 +802,16 @@ sys_config() ->
 	      {"group_color",     "颜色分组",             "1",   "0"},
 	      {"image_mode",      "图片模式",             "0",   "0"},
 	      {"round",           "四舍五入",             "1",   "0"},
-	      {"h_color",         "隐藏颜色",             "0",   "0"},
-	      {"h_size",          "隐藏尺码",             "0",   "0"},
-	      {"h_sex",           "隐藏性别",             "0",   "0"},
+	      %% [0]: hide color
+	      %% [1]: hide size
+	      %% [2]: hide sex
+	      %% [3]: hide expire
+	      %% [4]: hide image
+	      {"h_stock",         "入库字段隐藏",         "00011", "0"},
+	      %% {"h_color",         "隐藏颜色",             "0",   "0"},
+	      %% {"h_size",          "隐藏尺码",             "0",   "0"},
+	      %% {"h_sex",           "隐藏性别",             "0",   "0"},
+	      %% {"h_expire",        "隐藏退货期限",             "0",   "0"},
 	      {"s_member",        "会员独立",             "0",   "0"},
 	      {"s_employee",      "营业员必选",           "0",   "0"},
 	      {"p_balance",       "打印会员余额",         "0",   "0"},

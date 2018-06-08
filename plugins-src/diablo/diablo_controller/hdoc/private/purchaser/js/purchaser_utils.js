@@ -55,6 +55,11 @@ var stockUtils = function(){
 	    return diablo_base_setting("h_sex", shop, base, parseInt, diablo_no);
 	},
 
+	stock_in_hide_mode: function(shop, base) {
+	    return diablo_base_setting(
+		"h_stock", shop, base, function(s) {return s}, diablo_stock_in_hide_mode);
+	},
+
 	stock_alarm: function(shop, base) {
 	    return diablo_base_setting("stock_warning", shop, base, parseInt, diablo_no);
 	},
@@ -681,6 +686,8 @@ var stockPrintU = function(template, autoBarcode, dualPrint) {
 	this.autoBarcode = autoBarcode;
 	this.dualPrint = dualPrint;
 	this.barcodeFormat = "128C";
+	this.solo_snumber = stockUtils.to_integer(this.template.solo_snumber);
+	this.len_snumber  = stockUtils.to_integer(this.template.len_snumber);
 	
 	if (this.dualPrint) {
 	    this.wpx = Math.floor((this.template.width * 2 + this.template.second_space * 0.1) * 96 / 2.54);
@@ -958,14 +965,15 @@ stockPrintU.prototype.printBarcode2 = function() {
     // style number
     if (this.template.style_number) {
 	line = "款号：";
-	if (this.template.width <= 4 && this.stock.style_number.length > 8) {
-	    line += this.stock.style_number.substr(0, 9);
+	if (this.solo_snumber && this.stock.style_number.length > this.len_snumber)
+	{
+	    line += this.stock.style_number.substr(0, this.len_snumber);
 	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, line);
 	    if (pSecond) 
 		this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, line);
 	    top += this.template.hpx_each;
 
-	    line = "     " + this.stock.style_number.substr(9, this.stock.style_number.length);
+	    line = "     " + this.stock.style_number.substr(this.len_snumber, this.stock.style_number.length);
 	    if (this.template.expire && this.stock.expire_date !== diablo_none) {
 		line += this.stock.expire_date.split(diablo_date_seprator).join("");
 	    }
@@ -973,10 +981,12 @@ stockPrintU.prototype.printBarcode2 = function() {
 	    if (!this.template.solo_brand) {
 		line += this.brand;
 	    }
+	    if (diablo_trim(line).length !== 0) {
+		this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, line);
+		if (pSecond)
+		    this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, line);
+	    }
 	    
-	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, line); 
-	    if (pSecond)
-		this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, line);
 	    top += this.template.hpx_each; 
 	} 
 	else {
@@ -999,14 +1009,15 @@ stockPrintU.prototype.printBarcode2 = function() {
     }
 
     // color
-    // var color = angular.isDefined(this.color) ? this.color : "均色";
-    line = this.first.color === diablo_free_color ? "均色" : this.first.color; 
+    // line = this.first.color === diablo_free_color ? "均色" : this.first.color;
+    line = this.first.color === diablo_free_color ? "" : this.first.color;
     if (this.template.color) {
 	if (this.template.solo_color) {
 	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "颜色：" + line);
 	    
 	    if (pSecond) {
-		line = this.second.color === diablo_free_color ? "均色" : this.second.color;
+		// line = this.second.color === diablo_free_color ? "均色" : this.second.color;
+		line = this.second.color === diablo_free_color ? "" : this.second.color;
 		this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, "颜色：" + line); 
 	    }
 	    
@@ -1015,8 +1026,8 @@ stockPrintU.prototype.printBarcode2 = function() {
     }
 
     // size
-    // var size = this.size && this.size.toString() !== diablo_free_size ? this.size : "均码";
-    line = this.first.size && this.first.size !== diablo_free_size ? this.first.size : "均码";
+    // line = this.first.size && this.first.size !== diablo_free_size ? this.first.size : "均码";
+    line = this.first.size && this.first.size !== diablo_free_size ? this.first.size : "";
     if (this.template.size) {
 	if (this.template.solo_size) {
 	    if (angular.isDefined(this.stock.specs) && this.stock.specs.length !== 0 && this.first.size !== diablo_free_size) {
@@ -1030,7 +1041,8 @@ stockPrintU.prototype.printBarcode2 = function() {
 
 	    // second
 	    if (pSecond) {
-		line = this.second.size && this.second.size !== diablo_free_size ? this.second.size : "均码"; 
+		// line = this.second.size && this.second.size !== diablo_free_size ? this.second.size : "均码";
+		line = this.second.size && this.second.size !== diablo_free_size ? this.second.size : "";
 		if (angular.isDefined(this.stock.specs) && this.stock.specs.length !== 0 && this.second.size !== diablo_free_size) {
 		    for (var i=0, l=this.stock.specs.length; i<l; i++) {
 			if (this.second.size.toString() === this.stock.specs[i].name) {
@@ -1131,15 +1143,19 @@ stockPrintU.prototype.printBarcode2 = function() {
 
     line = line2 = this.stock.tag_price.toString();
     if (!this.template.solo_color) {
-	line += " " + (this.first.color === diablo_free_color ? "均色" : this.first.color);
+	// line += " " + (this.first.color === diablo_free_color ? "均色" : this.first.color);
+	line += " " + (this.first.color === diablo_free_color ? "" : this.first.color);
 	if (pSecond)
-	    line2 += " " + (this.second.color === diablo_free_color ? "均色" : this.second.color); 
+	    // line2 += " " + (this.second.color === diablo_free_color ? "均色" : this.second.color);
+	    line2 += " " + (this.second.color === diablo_free_color ? "" : this.second.color); 
     }
     
     if (!this.template.solo_size) {
-	line += this.first.size && this.first.size !== diablo_free_size ? this.first.size : "均码";
+	// line += this.first.size && this.first.size !== diablo_free_size ? this.first.size : "均码";
+	line += this.first.size && this.first.size !== diablo_free_size ? this.first.size : "";
 	if (pSecond)
-	    line2 += this.second.size && this.second.size !== diablo_free_size ? this.second.size : "均码";
+	    // line2 += this.second.size && this.second.size !== diablo_free_size ? this.second.size : "均码";
+	    line2 += this.second.size && this.second.size !== diablo_free_size ? this.second.size : "";
     }
     
     this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_price, "价格：" + line);

@@ -19,10 +19,11 @@ function wgoodUpdateCtrlProvide(
 
     $scope.pattern = {
 	style_number: diabloPattern.style_number,
-	brand: diabloPattern.ch_en_num,
-	type:  diabloPattern.good_type,
-	discount: diabloPattern.discount,
-	price: diabloPattern.positive_decimal_2};
+	brand:        diabloPattern.ch_en_num,
+	type:         diabloPattern.good_type,
+	discount:     diabloPattern.discount,
+	price:        diabloPattern.positive_decimal_2,
+	expire:       diabloPattern.expire_date};
 
     $scope.shops      = user.sortShops;
     $scope.promotions = filterPromotion;
@@ -44,7 +45,7 @@ function wgoodUpdateCtrlProvide(
     
     $scope.price_readonly = $scope.stock_right.show_orgprice ? false : true; 
     $scope.route_params = {shop:false, from: stockUtils.to_integer($routeParams.from)}; 
-    console.log($scope.route_params);
+    console.log($scope.route_params); 
         
     // [{type:"红色", tid:1
     // 	    colors:[{name:"深红", id:1},
@@ -132,10 +133,30 @@ function wgoodUpdateCtrlProvide(
 	    $scope.good.shop      = $scope.shops[0];
 	}
 
-	$scope.setting = {
-	    multi_sgroup :stockUtils.multi_sizegroup($scope.good.shop.id, base),
-	    auto_barcode :stockUtils.auto_barcode(diablo_default_setting, base)
-	};
+	$scope.init_base_setting = function(shop) {
+	    var hide_mode  = stockUtils.stock_in_hide_mode(shop, base); 
+	    $scope.setting = {
+		multi_sgroup:stockUtils.multi_sizegroup(shop, base),
+		hide_color  :stockUtils.to_integer(hide_mode.charAt(0)),
+		hide_size   :stockUtils.to_integer(hide_mode.charAt(1)),
+		hide_sex    :stockUtils.to_integer(hide_mode.charAt(2)),
+		hide_expire :function() {
+		    var h = hide_mode.charAt(3);
+		    if ( !h ) return diablo_yes;
+		    else return stockUtils.to_integer(h);
+		}(),
+		auto_barcode :stockUtils.auto_barcode(diablo_default_setting, base)
+	    }; 
+	    console.log($scope.base_settings);
+	}
+
+	$scope.init_base_setting($scope.good.shop.id);
+	
+	// $scope.setting = {
+	//     multi_sgroup :stockUtils.multi_sizegroup($scope.good.shop.id, base),
+	//     auto_barcode :stockUtils.auto_barcode(diablo_default_setting, base),
+	    
+	// };
 
 	// $scope.good.promotion = diablo_get_object(good.pid, $scope.promotions);
 	// $scope.good.shop      = $scope.shops[0];
@@ -450,8 +471,7 @@ function wgoodUpdateCtrlProvide(
     };
 
     $scope.on_change_shop = function(){
-	$scope.setting.multi_sgroup = diablo_base_setting(
-	    "m_sgroup", $scope.good.shop.id, base, parseInt, 0);
+	$scope.init_base_setting($scope.good.shop.id); 
     };
     
     /*
@@ -476,10 +496,12 @@ function wgoodUpdateCtrlProvide(
 	update_good.sex       = good.sex.id;
 	update_good.year      = good.year;
 	update_good.season    = good.season.id;
-	update_good.org_price = parseFloat(good.org_price);
-	update_good.tag_price = parseFloat(good.tag_price); 
-	update_good.ediscount = parseInt(good.ediscount);
-	update_good.discount  = parseInt(good.discount);
+	update_good.org_price = stockUtils.to_float(good.org_price);
+	update_good.tag_price = stockUtils.to_float(good.tag_price); 
+	update_good.ediscount = stockUtils.to_integer(good.ediscount);
+	update_good.discount  = stockUtils.to_integer(good.discount);
+	update_good.alarm_day = stockUtils.to_integer(good.alarm_day);
+	
 	update_good.color     = function(){
 	    if (angular.isDefined($scope.selectColors) && $scope.selectColors.length > 0){
 		var colors = $scope.src_good.color.split(",").map(
