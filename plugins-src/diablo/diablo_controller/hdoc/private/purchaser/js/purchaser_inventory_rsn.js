@@ -561,92 +561,92 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
     var dialog_barcode_title = "库存条码打印";
     var dialog_barcode_title_failed = "库存条码打印失败：";
     
-    $scope.p_barcode = function(inv) {
-	console.log(inv);
+    // $scope.p_barcode = function(inv) {
+    // 	console.log(inv);
 
-	if ($scope.template.firm && diablo_invalid_firm === inv.firm_id ) {
-	    dialog.response(
-		false,
-		dialog_barcode_title,
-		dialog_barcode_title_failed + purchaserService.error[2086]);
-	    return;
-	} 
+    // 	if ($scope.template.firm && diablo_invalid_firm === inv.firm_id ) {
+    // 	    dialog.response(
+    // 		false,
+    // 		dialog_barcode_title,
+    // 		dialog_barcode_title_failed + purchaserService.error[2086]);
+    // 	    return;
+    // 	} 
 
-	var print_barcode = function(barcode) {
-	    var firm = inv.firm_id === diablo_invalid_firm ? undefined: inv.firm.name;
-	    // $scope.printU.setCodeFirm(inv.firm.id);
-	    var barcodes = []; 
-	    if (0 === inv.free) {
-		for (var i=0; i<inv.amount; i++) {
-		    barcodes.push(barcode); 
-		}
+    // 	var print_barcode = function(barcode) {
+    // 	    var firm = inv.firm_id === diablo_invalid_firm ? undefined: inv.firm.name;
+    // 	    // $scope.printU.setCodeFirm(inv.firm.id);
+    // 	    var barcodes = []; 
+    // 	    if (0 === inv.free) {
+    // 		for (var i=0; i<inv.amount; i++) {
+    // 		    barcodes.push(barcode); 
+    // 		}
 
-		$scope.printU.free_prepare(
-		    inv.shop.name,
-		    inv,
-		    inv.brand.name,
-		    barcodes,
-		    firm,
-		    inv.firm_id);
-	    }
-	    else {
-		var print = function(amounts) {
-		    barcodes = []; 
-		    angular.forEach(inv.amounts, function(a) {
-			var color = diablo_find_color(a.cid, filterColor);
-			// console.log(color);
-			for (var i=0; i<a.count; i++) {
-			    var o = stockUtils.gen_barcode_content2(barcode, color, a.size);
-			    if (angular.isDefined(o) && angular.isObject(o)) {
-				barcodes.push(o); 
-			    } 
-			}
-		    }); 
-		    console.log(barcodes);
-		    $scope.printU.prepare(
-			inv.shop.name,
-			inv,
-			inv.brand.name,
-			barcodes,
-			firm,
-			inv.firm_id); 
-		};
+    // 		$scope.printU.free_prepare(
+    // 		    inv.shop.name,
+    // 		    inv,
+    // 		    inv.brand.name,
+    // 		    barcodes,
+    // 		    firm,
+    // 		    inv.firm_id);
+    // 	    }
+    // 	    else {
+    // 		var print = function(amounts) {
+    // 		    barcodes = []; 
+    // 		    angular.forEach(inv.amounts, function(a) {
+    // 			var color = diablo_find_color(a.cid, filterColor);
+    // 			// console.log(color);
+    // 			for (var i=0; i<a.count; i++) {
+    // 			    var o = stockUtils.gen_barcode_content2(barcode, color, a.size);
+    // 			    if (angular.isDefined(o) && angular.isObject(o)) {
+    // 				barcodes.push(o); 
+    // 			    } 
+    // 			}
+    // 		    }); 
+    // 		    console.log(barcodes);
+    // 		    $scope.printU.prepare(
+    // 			inv.shop.name,
+    // 			inv,
+    // 			inv.brand.name,
+    // 			barcodes,
+    // 			firm,
+    // 			inv.firm_id); 
+    // 		};
 
-		if (angular.isDefined(inv.amounts)
-		    && angular.isDefined(inv.colors)
-		    && angular.isDefined(inv.sizes)){
-		    print(inv.amounts);
-		}
-		else {
-		    purchaserService.w_inventory_new_rsn_detail(
-			{rsn:inv.rsn, style_number:inv.style_number, brand:inv.brand_id}
-		    ).then(function(result){
-			console.log(result);
-			var order_sizes = diabloHelp.usort_size_group(inv.s_group, filterSizeGroup);
-			var sort = diabloHelp.sort_stock(result.data, order_sizes, filterColor);
-			inv.sizes   = sort.size;
-			inv.colors  = sort.color;
-			inv.amounts = sort.sort; 
-			print(inv.amounts);
-		    }); 
-		}
-	    }
-	}
+    // 		if (angular.isDefined(inv.amounts)
+    // 		    && angular.isDefined(inv.colors)
+    // 		    && angular.isDefined(inv.sizes)){
+    // 		    print(inv.amounts);
+    // 		}
+    // 		else {
+    // 		    purchaserService.w_inventory_new_rsn_detail(
+    // 			{rsn:inv.rsn, style_number:inv.style_number, brand:inv.brand_id}
+    // 		    ).then(function(result){
+    // 			console.log(result);
+    // 			var order_sizes = diabloHelp.usort_size_group(inv.s_group, filterSizeGroup);
+    // 			var sort = diabloHelp.sort_stock(result.data, order_sizes, filterColor);
+    // 			inv.sizes   = sort.size;
+    // 			inv.colors  = sort.color;
+    // 			inv.amounts = sort.sort; 
+    // 			print(inv.amounts);
+    // 		    }); 
+    // 		}
+    // 	    }
+    // 	}
 	
-	// gen
-	purchaserService.gen_barcode(
-	    inv.style_number, inv.brand_id, inv.shop_id
-	).then(function(result) {
-	    console.log(result);
-	    if (result.ecode === 0) {
-		print_barcode(result.barcode);
-	    } else {
-		dialog.response(
-		    false, "条码生成", "条码生成失败："
-			+ purchaserService.error[result.ecode]);
-	    }
-	}); 
-    };
+    // 	// gen
+    // 	purchaserService.gen_barcode(
+    // 	    inv.style_number, inv.brand_id, inv.shop_id
+    // 	).then(function(result) {
+    // 	    console.log(result);
+    // 	    if (result.ecode === 0) {
+    // 		print_barcode(result.barcode);
+    // 	    } else {
+    // 		dialog.response(
+    // 		    false, "条码生成", "条码生成失败："
+    // 			+ purchaserService.error[result.ecode]);
+    // 	    }
+    // 	}); 
+    // };
     
 };
 

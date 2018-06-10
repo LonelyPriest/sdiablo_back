@@ -11,6 +11,8 @@
 -include("../../../../include/knife.hrl").
 -include("diablo_controller.hrl").
 
+-import(diablo_import_from_gjp, [pack_date/1, parse_birth/2]).
+
 -compile(export_all).
 
 delete(member_not_used, Merchant) ->
@@ -61,15 +63,15 @@ import(member, Merchant, Path) ->
 			[Year, Month, Date, H, M, S])),
     insert_into_member(Merchant, Datetime, Time, Content, [], []).
 
-
 insert_into_member(Merchant, _Datetime, _Time, [], _Sort, Acc) ->
     %% ?DEBUG("Sqls ~p", [lists:reverse(Acc)]),
     {ok, Merchant} = ?sql_utils:execute(transaction, lists:reverse(Acc), Merchant);
 
 insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
     {RName, Phone, Shop, Score, Consume, Birth, Date} = H,
+    ?DEBUG("H ~p", [H]),
     NewShop = case Shop of
-		  <<>> -> 91;
+		  <<>> -> 117;
 		  _ -> Shop
 	      end,
     NewScore = case Score of
@@ -85,7 +87,10 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
     NewBirth = case Birth of
 		  <<>> -> <<"0000-00-00">>;
 		  %% _ -> <<"2017-", Birth/binary>>
-		   _ -> Birth
+		   _ ->
+		       {BirthMonth, _BirthDate} = parse_birth(Birth, <<>>),
+		       BirthDate = pack_date(_BirthDate),
+		       << <<"2018-">>/binary, BirthMonth/binary, <<"-">>/binary, BirthDate/binary>>
 	      end,
 
     IsExist = 
@@ -110,14 +115,21 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
 				<<_:6/binary, Name:5/binary>> = Phone,
 				Name;
 			    _ ->
-				RegExp = "^[A-Za-z]",
-				case re:run(RName, RegExp) of
-				    {match, _} ->
+				case size(RName) =:= 3 of
+				    true ->
 					<<_:6/binary, Name:5/binary>> = Phone,
-					Name;
-				    nomatch ->
+		    			<<RName/binary, Name/binary>>;
+				    false ->
 					RName
 				end
+				%% RegExp = "^[A-Za-z]",
+				%% case re:run(RName, RegExp) of
+				%%     {match, _} ->
+				%% 	<<_:6/binary, Name:5/binary>> = Phone,
+				%% 	Name;
+				%%     nomatch ->
+				%% 	RName
+				%% end
 			end,
 			    
 		    Entry = case Date of

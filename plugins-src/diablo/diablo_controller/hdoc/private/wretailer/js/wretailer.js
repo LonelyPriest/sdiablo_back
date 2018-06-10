@@ -485,18 +485,30 @@ function wretailerDetailCtrlProvide(
 	    var update_retailer = {
 		name: diablo_get_modified(params.retailer.name, old_retailer.name),
 		card: diablo_get_modified(params.retailer.card, old_retailer.card),
-		py: diablo_get_modified(diablo_pinyin(params.retailer.name),
-					diablo_pinyin(old_retailer.name)),
+		py: diablo_get_modified(
+		    diablo_pinyin(params.retailer.name),
+		    diablo_pinyin(old_retailer.name)),
+		
 		id_card: diablo_get_modified(params.retailer.id_card, old_retailer.id_card),
 		mobile: diablo_get_modified(params.retailer.mobile, old_retailer.mobile),
 		address: diablo_get_modified(params.retailer.address, old_retailer.address),
 		comment: diablo_get_modified(params.retailer.comment, old_retailer.comment),
 		shop: params.retailer.edit_shop ? params.retailer.shop.id : undefined,
 		type: diablo_get_modified(params.retailer.type, old_retailer.type),
-		level: diablo_get_modified(params.retailer.olevel.level, old_retailer.level),
-		password:diablo_get_modified(params.retailer.password, old_retailer.password),
-		birth:diablo_get_modified(params.retailer.birth.getTime(),
-					  old_retailer.birth.getTime()),
+		level: function() {
+		    if (old_retailer.type_id !== 2)
+			return old_retailer.leveldiablo_get_modified(
+			    params.retailer.olevel.level,
+			    old_retailer.level)
+		}(),
+		
+		password:diablo_get_modified(
+		    params.retailer.password,
+		    old_retailer.password),
+		
+		birth:diablo_get_modified(
+		    params.retailer.birth.getTime(),
+		    old_retailer.birth.getTime()),
 		balance: diablo_get_modified(params.retailer.balance, old_retailer.balance)
 	    };
 	    

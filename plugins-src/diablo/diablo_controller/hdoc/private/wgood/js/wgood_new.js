@@ -651,6 +651,7 @@ function wgoodDetailCtrlProvide(
     filterStdExecutive, filterCategory, filterFabric, filterTemplate, base, user){
     console.log(filterSizeSpec);
     $scope.template = filterTemplate.length !== 0 ? filterTemplate[0] : undefined;
+    $scope.shops = user.sortShops;
     
     /*
      * authen
@@ -983,23 +984,37 @@ function wgoodDetailCtrlProvide(
 		    dialog_barcode_title_failed + wgoodService.error[1998]);
 	    } else {
 		// $scope.printU.setCodeFirm(g.firm_id);
-		var firm = undefined;
+		var expire = diablo_nolimit_day;
 		g.expire_date = diablo_none;
-		if (diablo_invalid_firm !== g.firm_id) {
-		    firm = g.firm.name;
-		    if (angular.isDefined(g.firm.expire) &&  g.firm.expire !== diablo_invalid_firm) {
-			inv.expire_date = stockUtils.date_add(inv.entry_date, g.firm.expire);
+
+		if (g.alarm_day !== diablo_nolimit_day) {
+		    expire = stockUtils.to_integer(g.alarm_day);
+		} else {
+		    if (diablo_invalid_firm !== g.firm_id) {
+			if (angular.isDefined(g.firm.expire)
+			    &&  g.firm.expire !== diablo_nolimit_day) {
+			    expire = stockUtils.to_integer(g.firm.expire);
+			}
 		    }
+		} 
+
+		if (expire !== diablo_nolimit_day) {
+		    g.expire_date = stockUtils.date_add(g.entry_date, g.firm.expire);
 		}
 		
+		var firm = diablo_invalid_firm !== g.firm_id ? g.firm.name : undefined;
+
 		var barcodes = [];
 		if (g.free === 0) {
 		    angular.forEach(barcode_amounts, function(a) {
-			barcodes.push(g.bcode); 
+			for (var i=0; i<a.count; i++) {
+			    barcodes.push(g.bcode); 
+			}
 		    });
+		    console.log(barcodes); 
 		    
 		    $scope.printU.free_prepare(
-			undefined,
+			$scope.shops.length !== 0 ? $scope.shops[0].name : undefined,
 			g,
 			g.brand,
 			barcodes,
@@ -1020,7 +1035,7 @@ function wgoodDetailCtrlProvide(
 		    
 		    console.log(barcodes); 
 		    $scope.printU.prepare(
-			undefined,
+			$scope.shops.length !== 0 ? $scope.shops[0].name : undefined,
 			g,
 			g.brand,
 			barcodes,

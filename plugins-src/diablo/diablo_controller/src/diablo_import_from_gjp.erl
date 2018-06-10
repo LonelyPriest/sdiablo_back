@@ -10,7 +10,6 @@
 -include("diablo_controller.hrl").
 
 -compile(export_all).
-
 -import(diablo_import_from_csv, [read_line/2, stock/3]).
 
 
@@ -20,6 +19,22 @@ import(Merchant, Shop, Path) ->
     Content = read_line(Device, []),
     file:close(Device),
     insert_into_db(Merchant, Shop, Content, 0, []).
+
+import(member, Merchant, Shop, Path) ->
+    ?DEBUG("current path ~p", [file:get_cwd()]),
+    {ok, Device} = file:open(Path, [read]),
+    Content = read_line(Device, []),
+    file:close(Device),
+
+
+    {{Year, Month, Date}, {H, M, S}} = calendar:now_to_local_time(erlang:now()),
+    %% Time = lists:flatten(io_lib:format("~2..0w:~2..0w:~2..0w", [H, M, S])),
+
+    Datetime = 
+	lists:flatten(
+	  io_lib:format("~4..0w-~2..0w-~2..0w ~2..0w:~2..0w:~2..0w",
+			[Year, Month, Date, H, M, S])),
+    insert_into_member(Merchant, Shop, Datetime, Content, [], []).
 
 insert_into_db(Merchant, Shop, [], _Count, Content) ->
     case Content of
@@ -442,6 +457,13 @@ parse_date(<<"-", T/binary>>, P) ->
 parse_date(<<H, T/binary>>, P) ->
     parse_date(T, <<P/binary, H>>).
 
+parse_birth(<<>>, P) ->
+    {pack_date(P), <<>>};
+parse_birth(<<".", T/binary>>, P) ->
+    {pack_date(P), T};
+parse_birth(<<H, T/binary>>, P) ->
+    parse_birth(T, <<P/binary, H>>).
+
 pack_date(String) -> 
     SS = ?to_string(String),
     case length(SS) =:= 1 of
@@ -458,3 +480,73 @@ gen_shift_datetime() ->
     Seconds = ?utils:current_time(timestamp) + 60 + ?SECONDS_BEFOR_1970,
     calendar:gregorian_seconds_to_datetime(Seconds).
     
+
+
+insert_into_member(Merchant, _Shop, _Datetime, [], _Sort, Acc) -> 
+    ?DEBUG("Sqls ~p", [lists:reverse(Acc)]),
+    {ok, Merchant} = ?sql_utils:execute(transaction, lists:reverse(Acc), Merchant);
+
+insert_into_member(Merchant, Shop, Datetime, [H|T], Sort, Acc) ->
+    ?DEBUG("H ~p", [H]),
+    %% {RName, Phone, Birth} = H,
+    {RName, Phone, _InShop, _Score, _Consume, Birth, _Date} = H,
+    ?DEBUG("size RName ~p", [size(RName)]),
+
+    NewBirth = case Birth of
+		   <<>> -> <<"0000-00-00">>;
+		   _ ->
+		       {BirthMonth, _BirthDate} = parse_birth(Birth, <<>>),
+		       BirthDate = pack_date(_BirthDate),
+		       << <<"2018-">>/binary, BirthMonth/binary, <<"-">>/binary, BirthDate/binary>>
+	       end,
+    ?DEBUG("NewBirth ~p", [NewBirth]),
+
+    IsExist = 
+	case [ P || {_, P, _, _, _, _, _} <- Sort, P =:= Phone ] of
+	    [] -> false;
+	    _ -> true
+	end,
+
+    case size(Phone) =/= 11 orelse IsExist of
+	true -> insert_into_member(Merchant, Shop, Datetime, T, Sort, Acc);
+	false -> 
+	    Sql0 = "select id, name, mobile from w_retailer"
+		" where merchant=" ++ ?to_s(Merchant)
+		++ " and mobile=\'" ++ ?to_s(Phone) ++ "\'",
+
+	    case ?sql_utils:execute(s_read, Sql0) of
+		{ok, []} -> 
+		    UName =
+		    	case RName of
+		    	    <<>> ->
+		    		<<_:6/binary, Name:5/binary>> = Phone,
+				Name;
+		    	    _ ->
+		    		case size(RName) =:= 3 of
+		    		    true ->
+		    			<<_:6/binary, Name:5/binary>> = Phone,
+		    			<<RName/binary, Name/binary>>;
+		    		    false ->
+					unicode:characters_to_binary(RName)
+		    		end
+		    	end,
+
+		    ?DEBUG("UName ~ts", [UName]),
+
+		    Sql = ["insert into w_retailer("
+			   "name, score, consume, mobile, shop, merchant, Birth, entry_date)"
+			   " values ("
+			   ++ "\'" ++ unicode:characters_to_list(UName) ++ "\',"
+			   ++ ?to_s(0) ++ ","
+			   ++ ?to_s(0) ++ "," 
+			   ++ "\"" ++ ?to_s(Phone) ++ "\","
+			   ++ ?to_s(Shop) ++ ","
+			   ++ ?to_s(Merchant) ++ ","
+			   ++ "\"" ++ ?to_s(NewBirth) ++ "\","
+			   ++ "\"" ++ ?to_s(Datetime) ++ "\")"],
+		    ?DEBUG("Sql ~p", [Sql]),
+		    insert_into_member(Merchant, Shop, Datetime, T, [H|Sort], Sql ++ Acc);
+		{ok, _R} -> 
+		    insert_into_member(Merchant, Shop, Datetime, T, [H|Sort], Acc)
+	    end
+    end.

@@ -978,7 +978,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 		line += this.stock.expire_date.split(diablo_date_seprator).join("");
 	    }
 	    
-	    if (!this.template.solo_brand) {
+	    if (this.template.brand && !this.template.solo_brand) {
 		line += this.brand;
 	    }
 	    if (diablo_trim(line).length !== 0) {
@@ -996,7 +996,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 		line += this.stock.expire_date.split(diablo_date_seprator).join("");
 	    }
 	    
-	    if (!this.template.solo_brand) {
+	    if (this.template.brand && !this.template.solo_brand) {
 		line += this.brand;
 	    } 
 	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, line);

@@ -1126,7 +1126,7 @@ var wsalePrint = function(){
 	    LODOP.ADD_PRINT_TEXT(top, left, 70, hFont, "款号"); 
 	    LODOP.ADD_PRINT_TEXT(top, left + 70, 35, hFont, "单价"); 
 	    LODOP.ADD_PRINT_TEXT(top, left + 105, 35, hFont, "数量"); 
-	    LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, 20, "折扣率");
+	    LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, "折扣率");
 
 	    top += 15;
 	    
@@ -1144,16 +1144,13 @@ var wsalePrint = function(){
 		LODOP.ADD_PRINT_TEXT(top, left, 70, hFont, d.style_number); 
 		LODOP.ADD_PRINT_TEXT(top, left + 70, 35, hFont, d.tag_price.toString()); 
 		LODOP.ADD_PRINT_TEXT(top, left + 105, 35, hFont, d.total.toString()); 
-		LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, ediscount.toString());
+		LODOP.ADD_PRINT_TEXT(top, left + 140, left + 140, hFont, ediscount.toString());
 		
 		top += 15;
-		LODOP.ADD_PRINT_TEXT(
-		    top,
-		    left,
-		    70,
-		    hFont,
-		    angular.isObject(d.brand)
-			&& angular.isDefined(d.brand.name) ? d.brand.name : d.brand);
+		var brand = angular.isObject(d.brand) && angular.isDefined(d.brand.name) ? d.brand.name : d.brand;
+		brand += angular.isObject(d.type) && angular.isDefined(d.type.name) ? d.type.name : d.type;
+		LODOP.ADD_PRINT_TEXT(top, left, vWidth - left, hFont, brand);
+		
 		LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, d.rprice.toString());
 
 		top += 15;
@@ -1206,7 +1203,7 @@ var wsalePrint = function(){
 	    var total = sale.total;
 	    var should_pay = sale.should_pay;
 	    var comment = angular.isUndefined(sale.comment) ? "" : sale.comment;
-	    var score = sale.score;
+	    var score = direct === diablo_sale ? sale.score : -sale.score;
 	    var ticketScore = sale.ticket_score;
 	    
 	    var lscore = function(){
@@ -1221,13 +1218,22 @@ var wsalePrint = function(){
 	    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
 	    hLine += 15; 
 	    
-	    if (0 === direct) l1 = "实付：";
-	    if (1 === direct) l1 = "退款：";
+	    if (diablo_sale === direct) l1 = "实付："; 
+	    if (diablo_reject === direct) l1 = "退款：";
 	    l1 += should_pay.toString(); 
 	    l1 += " " + pay(cash, card, wxin, withDraw, ticket, should_pay);
-	    console.log(l1);
-	    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
+	    console.log(l1); 
+	    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1); 
 	    hLine += 15;
+
+	    if (diablo_sale === direct && angular.isDefined(sale.charge) ) {
+		l1 = "找零：" + wsaleUtils.to_float(-sale.charge).toString();
+		LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
+		LODOP.SET_PRINT_STYLEA(0, "FontSize", 13);
+		LODOP.SET_PRINT_STYLEA(0, "Bold", 1); 
+		hLine += 20;
+	    }
+		
 
 	    if (vip) {
 		l1 = "上次积分：" + lscore.toString();
@@ -1266,7 +1272,7 @@ var wsalePrint = function(){
 			    vWidth,
 			    hFont * Math.ceil((s.length / 15)),
 			    order.toString() + "：" + c.name);
-			hLine += Math.ceil((s.length / 15)) * 15; 
+			hLine += Math.ceil((s.length / 15)) * 15 + 5; 
 			// console.log(s.length); 
 			// if (s.length > 30) hLine += 15; 
 			order++;
@@ -1297,6 +1303,7 @@ var wsalePrint = function(){
 	start_print: function(LODOP){
 	    wsalePrint.init(LODOP);
 	    // LODOP.PRINT_DESIGN();
+	    // LODOP.PREVIEW();
 	    LODOP.PRINT();
 	}
     }

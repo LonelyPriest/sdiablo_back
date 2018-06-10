@@ -301,10 +301,7 @@ function wsaleRejectCtrlProvide(
 		    LODOP,
 		    $scope.inventories.filter(function(r){return !r.$new && r.select}),
 		    isRound,
-		    cakeMode);
-		
-		// var isVip = ($scope.select.retailer.id !== $scope.setting.no_vip
-		// 	     || $scope.select.retailer.id !== user.loginRetailer) ? true : false;
+		    cakeMode); 
 		
 		hLine = wsalePrint.gen_stastic(
 		    LODOP,
@@ -313,7 +310,13 @@ function wsaleRejectCtrlProvide(
 		    $scope.select,
 		    wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers));
 		
-		wsalePrint.gen_foot(LODOP, hLine, $scope.setting.comments, pdate, cakeMode);
+		wsalePrint.gen_foot(
+		    LODOP,
+		    hLine,
+		    $scope.setting.comments,
+		    pdate,
+		    $scope.select.shop.addr,
+		    cakeMode);
 		wsalePrint.start_print(LODOP);
 	    };
 	};
@@ -448,10 +451,10 @@ function wsaleRejectCtrlProvide(
 	}).then(function(result){
 	    console.log(result);
 	    if (result.ecode == 0){
-		$scope.select.retailer.balance = $scope.select.left_balance;
-		$scope.select.surplus = $scope.select.left_balance;
-		$scope.select.retailer.score -= $scope.select.score;
-		$scope.select.retailer.score += $scope.select.ticket_score;
+		// $scope.select.retailer.balance = $scope.select.left_balance;
+		// $scope.select.surplus = $scope.select.left_balance;
+		// $scope.select.retailer.score -= $scope.select.score;
+		// $scope.select.retailer.score += $scope.select.ticket_score;
 
 		if (diablo_backend === $scope.setting.p_mode){
 		    $scope.print_backend(result, false);

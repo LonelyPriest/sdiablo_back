@@ -1483,8 +1483,8 @@ function wsaleNewProvide(
 		//     $scope.select.retailer.score += $scope.select.score;
 		//     $scope.select.retailer.score -= $scope.select.ticket_score;
 		// }
-		$scope.select.retailer.score += $scope.select.score;
-		$scope.select.retailer.score -= $scope.select.ticket_score; 
+		// $scope.select.retailer.score += $scope.select.score;
+		// $scope.select.retailer.score -= $scope.select.ticket_score; 
 		
 		$scope.refresh();
 		
