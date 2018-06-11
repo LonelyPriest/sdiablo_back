@@ -497,9 +497,8 @@ function wretailerDetailCtrlProvide(
 		type: diablo_get_modified(params.retailer.type, old_retailer.type),
 		level: function() {
 		    if (old_retailer.type_id !== 2)
-			return old_retailer.leveldiablo_get_modified(
-			    params.retailer.olevel.level,
-			    old_retailer.level)
+			return diablo_get_modified(
+			    params.retailer.olevel.level, old_retailer.level)
 		}(),
 		
 		password:diablo_get_modified(

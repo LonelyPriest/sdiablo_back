@@ -478,7 +478,7 @@ function wsaleNewProvide(
 	$scope.setting.barcode_auto  = wsaleUtils.barcode_auto(shopId, base);
 	$scope.setting.draw_score    = wsaleUtils.draw_score(shopId, base);
 	$scope.setting.draw_region   = wsaleUtils.draw_region(shopId, base);
-	$scope.setting.vip_mode      = wsaleUtils.vip_discount(shopId, base);
+	$scope.setting.vip_mode      = wsaleUtils.vip_mode(shopId, base);
 	$scope.setting.gift_sale     = wsaleUtils.gift_sale(shopId, base);
 	$scope.setting.scan_only     = wsaleUtils.to_integer(wsaleUtils.scan_only(shopId, base).charAt(0));
 	$scope.setting.maling_rang   = wsaleUtils.maling_rang(shopId, base);

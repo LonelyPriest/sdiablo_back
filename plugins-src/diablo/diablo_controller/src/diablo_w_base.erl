@@ -749,13 +749,9 @@ sys_config(shop) ->
      {"m_sgroup",        "允许多尺码组",         "0",   "0"},
      {"t_trace",         "入库价格跟踪",         "0",   "0"},
      {"d_sex",           "默认入库性别",         "0",   "0"},
-     %% {"d_report",        "日报表能力",           "0",   "0"},
      {"m_sale",          "允许负数退货",         "1",   "0"},
      {"round",           "四舍五入",             "1",   "0"},
-     {"h_stock",         "入库字段隐藏",         "0000", "0"},
-     %% {"h_color",         "隐藏颜色",             "0",   "0"},
-     %% {"h_size",          "隐藏尺码",             "0",   "0"},
-     %% {"h_sex",           "隐藏性别",             "0",   "0"},
+     {"h_stock",         "入库字段隐藏",         "0000", "0"}, 
      {"s_member",        "会员独立",             "0",   "0"},
      {"s_employee",      "营业员必选",           "0",   "0"},
      
@@ -767,8 +763,7 @@ sys_config(shop) ->
      {"draw_score",        "提现积分",           "1",    "0"}, 
      {"dual_barcode",      "双排条码",           "0",    "0"},
 
-     {"r_discount",        "会员折扣模式",       "0",    "0"},
-     %% {"scan_only",         "扫码销售",           "0",    "0"}
+     {"r_discount",        "会员折扣模式",       "0000", "0"},
      {"scan_only",         "扫码模式",           "0000", "0"}
     ].
     
@@ -824,8 +819,8 @@ sys_config() ->
 	      {"stock_warning_a", "库存预警数量",         "0",   "0"},
 	      {"stock_contailer", "货品货柜号",           "0",   "0"},
 	      {"stock_firm",      "入库区分厂商",         "1",   "0"},
-	      {"bcode_use",       "启用条码",             "0",   "0"},
-	      {"bcode_auto",      "自动条码",             "1",   "0"}, 
+	      {"bcode_use",       "条码开单模式",         "0",   "0"},
+	      {"bcode_auto",      "采用系统规则生成条码", "1",   "0"}, 
 	      {"trans_orgprice",  "移仓检测进价",         "1",   "0"},
 	      {"p_color_size",    "打印颜色尺码",         "0",   "0"}, 
 	      {"saler_stock",      "营业员查看区域库存",  "0",   "0"},
@@ -843,7 +838,28 @@ sys_config() ->
 	      {"dual_barcode",      "双排条码",           "0",    "0"},
 	      {"draw_region",       "区域提现",           "0",    "0"},
 	      {"threshold_card",    "次卡消费模式",       "0",    "0"},
-	      {"r_discount",        "会员折扣模式",       "0",    "0"},
+	      %% vip mode
+	      %% case 1: 1000 or 2100 when the shop take score promotion,
+	      %%         no score measn no discount any
+
+	      %% case 2: 1010 or 2010 when the shop no score promotion,
+	      %%         should be take vip discount any
+
+	      %% case 3: 1011 or 2011 when the shop take score and stock promotion,
+	      %%         used in child mode usually
+
+	      %% case 4: 1001 or 2001
+	      
+	      %% [0]: 0-> no vip discount
+	      %%      1-> vip discount only,
+	      %%      2-> vip discount  on discount
+	      %% [1]: auto check level at 5:00 am
+	      %% [2]: 0-> score promotion first,
+	      %%      1-> vip discount when first in any case.
+	      %% [3]: 0-> stock promotion first
+	      %%      1-> vip discount first in any case
+	      {"r_discount",        "会员折扣模式",       "0000",    "0"},
+	      
 	      %% {"r_level",           "会员等级模式",       "0",    "0"},
 	      {"gift_sale",         "开单赠送模式",       "0",    "0"},
 	      %%[0]:scan sale only
@@ -851,10 +867,10 @@ sys_config() ->
 	      %%[2]:add scan mode when stock_out
 	      %%[3]:add scan mode when stock_transfer
 	      {"scan_only",         "扫码模式",           "0000", "0"},
-	      {"auto_level",        "会员自动升级",       "0",    "0"},
+	      %% {"auto_level",        "会员自动升级",       "0",    "0"},
 	      {"maling_rang",       "抹零范围",           "3",    "0"},
-	      %% 1: clothes, 2: child, 3: home
+	      %% 1: clothes mode, 2: child mode, 3: home mode
 	      {"shop_mode",         "店铺模式",           "1",    "0"},
-	      {"type_sale",         "品类开单模式",       "0",    "0"}
+	      {"type_sale",         "品类开单模式",       "0",    "0"}	      
 	     ],
     Values.

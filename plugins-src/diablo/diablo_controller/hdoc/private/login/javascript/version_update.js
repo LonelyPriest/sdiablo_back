@@ -1,5 +1,10 @@
 var version_update = function(){
     var updates = [
+	{date: "2018-06-11",
+	 content:
+	 ["修正会员折扣模式以适应更多场景"]
+	},
+	
 	{date: "2018-06-10",
 	 content:
 	 ["条码打印增加款号是否换行打印选项",

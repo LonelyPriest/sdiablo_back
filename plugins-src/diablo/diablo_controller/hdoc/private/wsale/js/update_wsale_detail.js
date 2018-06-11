@@ -138,7 +138,7 @@ function wsaleUpdateDetailCtrlProvide(
 		$scope.setting.round = wsaleUtils.round(shopId, $scope.base_settings); 
 		$scope.setting.cake_mode = wsaleUtils.cake_mode(shopId, $scope.base_settings);
 		$scope.setting.draw_score = wsaleUtils.draw_score(shopId, $scope.base_settings);
-		$scope.setting.vip_mode = wsaleUtils.vip_discount(shopId, $scope.base_settings);
+		$scope.setting.vip_mode = wsaleUtils.vip_mode(shopId, $scope.base_settings);
 		$scope.setting.type_sale = wsaleUtils.type_sale(shopId, $scope.base_settings);
 		
 		if (diablo_no === $scope.setting.cake_mode) 

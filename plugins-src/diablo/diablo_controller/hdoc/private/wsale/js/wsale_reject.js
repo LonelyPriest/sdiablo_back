@@ -112,7 +112,7 @@ function wsaleRejectCtrlProvide(
 		    $scope.setting.round = wsaleUtils.round(shopId, settings);
 		    $scope.setting.cakeMode = wsaleUtils.cake_mode(shopId, settings);
 		    $scope.setting.draw_score = wsaleUtils.draw_score(shopId, settings);
-		    $scope.setting.vip_mode = wsaleUtils.vip_discount(shopId, settings);
+		    $scope.setting.vip_mode = wsaleUtils.vip_mode(shopId, settings);
 		    // console.log($scope.setting);
 
 		    $scope.employees = wsaleUtils.get_login_employee(

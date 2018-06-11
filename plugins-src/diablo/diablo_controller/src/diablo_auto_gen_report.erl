@@ -823,13 +823,15 @@ start_check_level(Merchant, Levels, [{Shop}|Shops], CheckSqls) ->
     %% ?DEBUG("shop ~p", [Shop]),
     ShopId = ?v(<<"id">>, Shop),
     BaseSettings = ?w_report_request:get_setting(Merchant, ShopId),
-    Sqls = 
-	%% case ?to_i(?w_report_request:get_config(<<"r_level">>, BaseSettings, ?NO)) =:= ?YES
-	%%     andalso ?to_i(?w_report_request:get_config(<<"auto_level">>, BaseSettings, ?NO)) =:= ?YES of
-	case ?to_i(?w_report_request:get_config(<<"auto_level">>, BaseSettings, ?NO)) =:= ?YES of
+    <<_M:1/binary, Auto:1/binary, _/binary>> =
+	?w_report_request:get_config(<<"r_discount">>, BaseSettings, ?VIP_DEFAULT_MODE),
+    
+    Sqls =
+	case ?to_i(Auto) =:= ?YES of
 	    true ->
 		[L0|LT] = Levels,
-		Sql = "select id, level, score, consume, shop from w_retailer where merchant=" ++ ?to_s(Merchant)
+		Sql = "select id, level, score, consume, shop from w_retailer"
+		    " where merchant=" ++ ?to_s(Merchant)
 		    ++ " and shop=" ++ ?to_s(ShopId) 
 		    ++ " and type in(0, 1)" 
 		    ++ case erlang:length(Levels) =/= 0 of
@@ -837,7 +839,8 @@ start_check_level(Merchant, Levels, [{Shop}|Shops], CheckSqls) ->
 			       " and (consume>" ++ ?to_s(?v(<<"score">>, L0)) 
 				   ++ lists:foldr(
 					fun({Level}, Acc) ->
-						" or consume>" ++ ?to_s(?v(<<"score">>, Level)) ++ Acc
+						" or consume>"
+						    ++ ?to_s(?v(<<"score">>, Level)) ++ Acc
 					end, [], LT)
 				   ++ ")";
 			   false -> []
@@ -850,11 +853,14 @@ start_check_level(Merchant, Levels, [{Shop}|Shops], CheckSqls) ->
 				  ILevel = ?v(<<"level">>, R),
 				  UpLevel = lists:foldr(
 					      fun({Level}, StartLevel) ->
-						      case ?v(<<"consume">>, R) > ?v(<<"score">>, Level) of
+						      L = ?v(<<"level">>, Level),
+						      Consume = ?v(<<"consume">>, R),
+						      ScoreLevel = ?v(<<"score">>, Level),
+						      case  Consume >  ScoreLevel of
 							  true ->
-							      case StartLevel < ?v(<<"level">>, Level) of
+							      case StartLevel < L of
 								  true ->
-								      ?v(<<"level">>, Level);
+								      L;
 								  false ->
 								      StartLevel
 							      end;

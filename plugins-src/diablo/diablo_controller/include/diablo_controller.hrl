@@ -115,6 +115,9 @@
 -define(CHILD_MODE, 2).
 -define(HOME_MODE, 3).
 
+%% vip mode
+-define(VIP_DEFAULT_MODE, <<"0000">>).
+
 %% sort
 -define(SORT_BY_ID, 0).
 -define(SORT_BY_DATE, 1).

@@ -130,6 +130,10 @@ var diablo_scan_mode = "0000";
  * hide mode
  */
 var diablo_stock_in_hide_mode = "00011";
+/*
+ * vip mode
+ */
+var diablo_vip_mode = "0000";
 
 /*
  * direction
