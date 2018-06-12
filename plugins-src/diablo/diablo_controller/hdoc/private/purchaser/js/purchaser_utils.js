@@ -1177,8 +1177,11 @@ stockPrintU.prototype.printBarcode2 = function() {
     if (this.template.solo_color || this.template.solo_size) {
 	if (this.template.font_price > 0)
 	    this.LODOP.SET_PRINT_STYLEA(0, "FontSize", stockUtils.to_integer(this.template.font_price));
+	
 	if (this.template.hpx_price > 0)
-	    top += this.template.hpx_price
+	    top += this.template.hpx_price;
+	else
+	    top += this.template.hpx_each;
     } else
 	top += this.template.hpx_each; 
 
