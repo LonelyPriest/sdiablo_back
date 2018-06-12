@@ -965,8 +965,9 @@ function goodPrintTemplateCtrlProvide(
 
     var p = ["width", "height",
 	     
-	     "shop", "style_number", "brand", "type", "firm", "code_firm", "expire", 
-	     "color", "size"
+	     "shop", "style_number", "brand", "type", "firm", "code_firm"
+	     , "expire", "shift_date"
+	     , "color", "size"
 	     
 	     , "level", "executive", "category", "fabric" 
 	     , "font", "font_name", "font_executive", "font_category", "font_price", "font_fabric"

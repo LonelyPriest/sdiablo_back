@@ -3476,9 +3476,9 @@ update_stock(diff_firm, Merchant, CurrentTime, Updates, {Props, OldProps}) ->
 		++ " and firm=" ++ ?to_s(Firm)
 		++ " and state in(0, 1)"
 		++ " and entry_date<\'" ++ ?to_s(Datetime) ++ "\'"
-		++ " order by entry_date desc limit 1",
+		++ " order by entry_date desc limit 2",
 	    
-	    {ok, LastStockIn} = ?sql_utils:execute(s_read, Sql),
+	    {ok, LastStockIn} = ?sql_utils:execute(read, Sql),
 
 	    LastBalance =
 		case LastStockIn of

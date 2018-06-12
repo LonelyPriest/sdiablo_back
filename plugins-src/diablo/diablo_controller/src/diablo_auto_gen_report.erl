@@ -248,8 +248,8 @@ handle_cast({check_level, TriggerTime}, #state{merchant=Merchants, task_of_level
 					      task(check_level, Datetime, [M])
 				      end}, 
 			  [?cron:cron(CronTask)|Acc] 
-		  end, [], Merchants),
-	    %% end, [], [4]),
+			  %% end, [], Merchants),
+	    end, [], [4]),
 	    ?DEBUG("new level check ~p with merchants ~p", [NewTasks, Merchants]),
 	    {noreply, State#state{task_of_level_check=NewTasks}};
 	_ -> {noreply, State}
@@ -580,6 +580,7 @@ task(auto_sms_at_birth, Datetime, Merchant) when is_number(Merchant)->
     end;
 
 task(check_level, Datetime, Merchants) when is_list(Merchants) ->
+    %% ?DEBUG("start check_level ~p", [Datetime]),
      UpLevels = lists:foldr(
 		fun(M, Acc) ->
 			[task(check_level,  Datetime, M)|Acc]
@@ -604,6 +605,7 @@ task(check_level, Datetime, Merchants) when is_list(Merchants) ->
     
 task(check_level, _Datetime, Merchant) when is_number(Merchant) ->
     %% get shop
+    %% ?DEBUG("start check level: datetime ~p", [_Datetime]),
     {ok, Shops} = ?w_user_profile:get(shop, Merchant),
     {ok, Levels} = ?w_user_profile:get(retailer_level, Merchant), 
     Sqls = start_check_level(Merchant, Levels, Shops, []),
@@ -824,7 +826,11 @@ start_check_level(Merchant, Levels, [{Shop}|Shops], CheckSqls) ->
     ShopId = ?v(<<"id">>, Shop),
     BaseSettings = ?w_report_request:get_setting(Merchant, ShopId),
     <<_M:1/binary, Auto:1/binary, _/binary>> =
-	?w_report_request:get_config(<<"r_discount">>, BaseSettings, ?VIP_DEFAULT_MODE),
+	case ?w_report_request:get_config(<<"r_discount">>, BaseSettings) of
+	    [] -> ?VIP_DEFAULT_MODE;
+	    <<"0">> -> ?VIP_DEFAULT_MODE;
+	    _Value -> _Value
+	end,
     
     Sqls =
 	case ?to_i(Auto) =:= ?YES of

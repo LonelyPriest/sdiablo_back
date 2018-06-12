@@ -907,21 +907,32 @@ stockPrintU.prototype.printBarcode2 = function() {
 	startSecond = Math.floor((this.template.width + this.template.second_space * 0.1) * 96 / 2.54) + this.left;
     }
     
-    var top  = this.top;
-    var pSecond = diablo_yes === this.dualPrint && angular.isDefined(this.second.barcode);
-    var line, line2;
+    var pSecond = false;
+    if (this.dualPrint && angular.isDate(diablo_set_string(this.second.barcode)))
+	pSecond = true;
 
+    var top = this.top; 
+    var line, line2; 
     // console.log(iwpx, top);
     if (this.template.shop) {
-	if (angular.isDefined(this.shop)) {
-	    line = this.shop;
+	if (angular.isDefined(this.shop))
+	    line = this.shop; 
+    }
 
-	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, line);
-	    if (pSecond)
-		this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, line);
+    if (this.template.shift_date) {
+	if (diablo_trim(line))
+	    // 2018-06-12 12:30:49 -> 180612
+	    line += "-" + this.stock.entry_date.substr(2,8).split(diablo_date_seprator).join("");
+	else 
+	    line = this.stock.entry_date.substr(2,8).split(diablo_date_seprator).join("");
+    }
 
-	    top += this.template.hpx_each;
-	}
+    if (angular.isDefined(line) && diablo_trim(line)) {
+	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, line);
+	if (pSecond)
+	    this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, line);
+
+	top += this.template.hpx_each;
     }
     
     var firm = angular.isUndefined(this.firm) ? diablo_empty_string : this.firm;
@@ -1011,7 +1022,7 @@ stockPrintU.prototype.printBarcode2 = function() {
     // color
     // line = this.first.color === diablo_free_color ? "均色" : this.first.color;
     line = this.first.color === diablo_free_color ? "" : this.first.color;
-    if (this.template.color) {
+    if (diablo_trim(line) && this.template.color) {
 	if (this.template.solo_color) {
 	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "颜色：" + line);
 	    
@@ -1028,7 +1039,7 @@ stockPrintU.prototype.printBarcode2 = function() {
     // size
     // line = this.first.size && this.first.size !== diablo_free_size ? this.first.size : "均码";
     line = this.first.size && this.first.size !== diablo_free_size ? this.first.size : "";
-    if (this.template.size) {
+    if (diablo_trim(line) && this.template.size) {
 	if (this.template.solo_size) {
 	    if (angular.isDefined(this.stock.specs) && this.stock.specs.length !== 0 && this.first.size !== diablo_free_size) {
 		for (var i=0, l=this.stock.specs.length; i<l; i++) {
@@ -1100,13 +1111,13 @@ stockPrintU.prototype.printBarcode2 = function() {
 	top += this.template.hpx_category; 
 	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "      " +  this.stock.category.name);
 	if (stockUtils.to_integer(this.template.font_executive) !== 0) {
-	    this.LODOP.SET_PRINT_STYLEA(0, "FontSize", stockUtils.to_integer(this.template.font_executive));
+	    this.LODOP.SET_PRINT_STYLEA(0, "FontSize", stockUtils.to_integer(this.template.font_category));
 	}
 	
 	if (pSecond) {
 	    this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, "      " +  this.stock.category.name);
 	    if (stockUtils.to_integer(this.template.font_executive) !== 0) {
-		this.LODOP.SET_PRINT_STYLEA(0, "FontSize", stockUtils.to_integer(this.template.font_executive));
+		this.LODOP.SET_PRINT_STYLEA(0, "FontSize", stockUtils.to_integer(this.template.font_category));
 	    }
 	}
 
@@ -1158,11 +1169,18 @@ stockPrintU.prototype.printBarcode2 = function() {
 	    line2 += this.second.size && this.second.size !== diablo_free_size ? this.second.size : "";
     }
     
-    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_price, "价格：" + line);
+    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "价格：" + line);
     if (pSecond) {
-	this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_price, "价格：" + line2);
+	this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.hpx_each, "价格：" + line2);
     }
-    top += this.template.hpx_each;
+
+    if (this.template.solo_color || this.template.solo_size) {
+	if (this.template.font_price > 0)
+	    this.LODOP.SET_PRINT_STYLEA(0, "FontSize", stockUtils.to_integer(this.template.font_price));
+	if (this.template.hpx_price > 0)
+	    top += this.template.hpx_price
+    } else
+	top += this.template.hpx_each; 
 
     this.LODOP.ADD_PRINT_BARCODE(top, this.left, iwpx, this.template.hpx_barcode, this.barcodeFormat, this.first.barcode);
     this.LODOP.SET_PRINT_STYLEA(0, "FontSize", 7);

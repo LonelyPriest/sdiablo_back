@@ -894,7 +894,9 @@ handle_call({set_barcode_print_template, Merchant}, _From, State) ->
 		", type"
 		", firm"
 		", code_firm"
-		", expire" 
+		
+		", expire"
+		", shift_date"
 		
 		", color"
 		", size"
@@ -941,6 +943,8 @@ handle_call({set_barcode_print_template, Merchant}, _From, State) ->
 		++ ?to_s(?YES) ++ ","
 		++ ?to_s(?YES) ++ ","
 		++ ?to_s(?YES) ++ ","
+		++ ?to_s(?NO) ++ ","
+		
 		++ ?to_s(?NO) ++ ","
 		++ ?to_s(?NO) ++ ","
 		

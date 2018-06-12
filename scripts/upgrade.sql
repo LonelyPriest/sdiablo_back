@@ -327,3 +327,7 @@ update w_inventory_good set alarm_day=-1 where merchant=31;
 update w_inventory set alarm_day=-1 where merchant=31;
 
 
+--2018-06-12
+alter table print_template add column shift_date TINYINT default 0 after expire;
+
+
