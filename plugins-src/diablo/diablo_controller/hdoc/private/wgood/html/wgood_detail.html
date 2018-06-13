@@ -89,10 +89,10 @@
 		    <th x-ng-if="template && template.category">安全类别</th>
 		    <th x-ng-if="template && template.fabric">面料</th>
 		    
-		    <th x-ng-if="right.lookup_w_good_orgprice">进价</th>
-		    <th x-ng-if="right.lookup_w_good_orgprice">折扣进</th>
-		    <th x-ng-if="right.lookup_w_good_orgprice">吊牌价</th> 
-		    <th x-ng-if="right.lookup_w_good_orgprice" class="success">折扣卖</th>
+		    <th x-ng-if="right.show_orgprice">进价</th>
+		    <th x-ng-if="right.show_orgprice">折扣进</th>
+		    <th>吊牌价</th> 
+		    <th class="success">折扣卖</th>
 		    <!-- <th>促销方案</th>  -->
 		    <th>上架日期</th>
 		    <th x-ng-if="!setting.hide_expire" >退货期限</th>
@@ -132,10 +132,10 @@
 		      <div x-ng-if="g.fabric_desc">{{g.fabric_desc}}</div>
 		    </td>
 		    
-		    <td x-ng-if="right.lookup_w_good_orgprice">{{g.org_price}}</td>
-		    <td x-ng-if="right.lookup_w_good_orgprice">{{g.ediscount}}</td>
-		    <td x-ng-if="right.lookup_w_good_orgprice" class="fg-darkRed">{{g.tag_price}}</td> 
-		    <td x-ng-if="right.lookup_w_good_orgprice" class="fg-darkBlue">{{g.discount}}</td>
+		    <td x-ng-if="right.show_orgprice">{{g.org_price}}</td>
+		    <td x-ng-if="right.show_orgprice">{{g.ediscount}}</td>
+		    <td class="fg-darkRed">{{g.tag_price}}</td> 
+		    <td class="fg-darkBlue">{{g.discount}}</td>
 		    <!-- <td>{{g.promotion.name}}</td>  -->
 		    <td>{{g.entry_date}}</td>
 		    <td x-ng-if="!setting.hide_expire">{{g.expire_date}}</td>

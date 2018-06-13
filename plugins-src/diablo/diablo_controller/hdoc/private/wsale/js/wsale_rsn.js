@@ -35,20 +35,22 @@ function wsaleRsnDetailCtrlProvide (
     /*
      * right
      */
-    $scope.right = {
-	master:        rightAuthen.authen_master(user.type),
-	// show_stastic:  rightAuthen.authen_master(user.type),
-	// show_orgprice: rightAuthen.authen_master(user.type),
-	show_orgprice: rightAuthen.authen(
-	    user.type,
-	    rightAuthen.rainbow_action()['show_orgprice'],
-	    user.right
-	),
-	update_price: rightAuthen.authen(
-	    user.type,
-	    rightAuthen.wsale_action()['update_w_sale_price'],
-	    user.right)
-    };
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.right = authen.authenSaleRight();
+    // $scope.right = {
+    // 	master:        rightAuthen.authen_master(user.type),
+    // 	// show_stastic:  rightAuthen.authen_master(user.type),
+    // 	// show_orgprice: rightAuthen.authen_master(user.type),
+    // 	show_orgprice: rightAuthen.authen(
+    // 	    user.type,
+    // 	    rightAuthen.rainbow_action()['show_orgprice'],
+    // 	    user.right
+    // 	),
+    // 	update_price: rightAuthen.authen(
+    // 	    user.type,
+    // 	    rightAuthen.wsale_action()['update_w_sale_price'],
+    // 	    user.right)
+    // };
 
     /* hidden */
     $scope.toggle_base = function(){

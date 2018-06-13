@@ -291,7 +291,7 @@
 				 required
 				 disable-key
 				 x-ng-edit
-				 x-ng-readonly="!stock_right.update_price"
+				 x-ng-readonly="!stock_right.update_oprice"
 				 placeholder="默认上次进价" 
 				 x-ng-pattern="pattern.price"
 				 x-ng-model="inv.org_price"
@@ -315,7 +315,7 @@
 				 required
 				 disable-key
 				 x-ng-edit
-				 x-ng-readonly="!stock_right.update_price"
+				 x-ng-readonly="!stock_right.update_oprice"
 				 placeholder="默认上次折扣率" 
 				 x-ng-model="inv.ediscount"
 				 x-ng-pattern="/^\d{1,2}(\.\d{1,2})?$|100$/"
@@ -454,7 +454,7 @@
                      required
 		     ng-edit
 		     disable-key
-		     readonly="!stock_right.update_price"
+		     readonly="!stock_right.update_oprice"
                      x-ng-pattern="/^\d+(.\d{1,2})?$/"
 		     ng-model-options="{debounce:300}"
 		     x-ng-change="params.get_price_info(params.tag_price, params, 1)"
@@ -475,7 +475,7 @@
 		     required
 		     disable-key
 		     ng-edit
-		     readonly="!stock_right.update_price"
+		     readonly="!stock_right.update_oprice"
 		     x-ng-pattern="/^\d{1,2}(\.\d{1,2})?$|100$/"
 		     ng-model-options="{debounce:300}"
 		     x-ng-change="params.get_price_info(params.tag_price, params, 0)"

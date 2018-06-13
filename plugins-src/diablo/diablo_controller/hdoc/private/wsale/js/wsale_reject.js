@@ -37,9 +37,15 @@ function wsaleRejectCtrlProvide(
     $scope.setting = {};
     $scope.select = {datetime: $.now()};
 
-    $scope.right = {
-	master:rightAuthen.authen_master(user.type)
-    };
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.right = authen.authenSaleRight();
+    
+    // $scope.right = {
+    // 	master:rightAuthen.authen_master(user.type)
+    // };
+
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.shop_right = authen.authenSaleRight();
 
     $scope.has_select_rsn = false;
     

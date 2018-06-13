@@ -22,12 +22,8 @@ function purchaserInventoryPriceCtrlProvide(
 	comment: diabloPattern.comment
     };
 
-    $scope.right = {
-	show_orgprice: rightAuthen.authen(
-	    user.type,
-	    rightAuthen.rainbow_action()['show_orgprice'],
-	    user.right) 
-    }; 
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.stock_right = authen.authenStockRight(); 
     
     $scope.refresh = function(){
 	$scope.h_inventories = [];

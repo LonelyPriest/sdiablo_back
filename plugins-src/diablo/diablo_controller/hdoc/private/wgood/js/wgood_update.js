@@ -35,15 +35,16 @@ function wgoodUpdateCtrlProvide(
     $scope.colors     = [];
     $scope.grouped_colors = [];
 
-    $scope.stock_right = {
-	show_orgprice: rightAuthen.authen(
-	    user.type,
-	    rightAuthen.rainbow_action()['show_orgprice'],
-	    user.right
-	)
-    };
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.stock_right = authen.authenStockRight();
     
-    $scope.price_readonly = $scope.stock_right.show_orgprice ? false : true; 
+    // $scope.stock_right = {
+    // 	show_orgprice :stockUtils.authen_rainbow(user.type, user.right, 'show_orgprice'),
+    // 	update_tprice :stockUtils.authen_stock(user.type, user.right, 'update_tprice_on_stock_in'),
+    // 	update_oprice :stockUtils.authen_stock(user.type, user.right, 'update_oprice_on_stock_in') 
+    // };
+    
+    // $scope.price_readonly = $scope.stock_right.update_tprice ? false : true; 
     $scope.route_params = {shop:false, from: stockUtils.to_integer($routeParams.from)}; 
     console.log($scope.route_params); 
         

@@ -657,34 +657,16 @@ function wgoodDetailCtrlProvide(
      * authen
      */
     // console.log(user.right);
-    $scope.right = {
-	update_w_good: rightAuthen.authen(
-	    user.type,
-	    rightAuthen.good_action()["update_w_good"],
-	    user.right),
-
-	delete_w_good: rightAuthen.authen(
-	    user.type,
-	    rightAuthen.good_action()["delete_w_good"],
-	    user.right),
-
-	lookup_w_good_orgprice: rightAuthen.authen(
-	    user.type,
-	    rightAuthen.good_action()["lookup_w_good_orgprice"],
-	    user.right)
-    };
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.right = authen.authenGoodRight(); 
 
     var hide_mode  = stockUtils.stock_in_hide_mode(diablo_default_shop, base); 
     $scope.setting = {
-	// self_barcode   :stockUtils.barcode_self(diablo_default_shop, base),
 	use_barcode  :stockUtils.use_barcode(diablo_default_shop, base),
 	auto_barcode :stockUtils.auto_barcode(diablo_default_shop, base),
 	printer_barcode: stockUtils.printer_barcode(user.loginShop, base),
 	dual_barcode: stockUtils.dual_barcode_print(user.loginShop, base),
-	// barcode_width  :stockUtils.barcode_width(diablo_default_shop, base),
-	// barcode_height :stockUtils.barcode_height(diablo_default_shop, base),
-	// barcode_firm   :stockUtils.barcode_with_firm(diablo_default_shop, base)
-
+	
 	hide_expire :function() {
 	    var h = hide_mode.charAt(3);
 	    if ( !h ) return diablo_yes;
@@ -704,7 +686,7 @@ function wgoodDetailCtrlProvide(
     diabloFilter.reset_field();
     diabloFilter.add_field("style_number", diabloFilter.match_style_number);
     diabloFilter.add_field("brand", filterBrand);
-    if ($scope.right.lookup_w_good_orgprice) {
+    if ($scope.right.show_orgprice) {
 	diabloFilter.add_field("org_price", []);
     }
     diabloFilter.add_field("type", filterType);

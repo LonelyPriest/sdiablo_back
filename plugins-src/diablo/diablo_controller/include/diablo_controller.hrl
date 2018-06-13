@@ -315,6 +315,14 @@
 -define(print_w_barcode,                    ?right_w_inventory + 29).
 -define(gift_w_stock,                       ?right_w_inventory + 30).
 -define(print_w_inventory_new_note,         ?right_w_inventory + 31).
+
+-define(update_tprice_on_stock_in,          ?right_w_inventory + 32).
+-define(update_oprice_on_stock_in,          ?right_w_inventory + 33).
+-define(bill_firm_on_stock_in,              ?right_w_inventory + 34).
+
+
+
+
 %% -define(set_stock_promotion,    ?right_w_inventory + 27).
 
 %% firm
@@ -389,7 +397,7 @@
 -define(wsale_modify_price_onsale,    ?right_rainbow + 2).
 -define(wsale_modify_discount_onsale, ?right_rainbow + 3).
 -define(stock_show_orgprice,          ?right_rainbow + 4).
--define(sms_notify,                   ?right_rainbow + 5).
+%% -define(sms_notify,                   ?right_rainbow + 5).
 
 %% =============================================================================
 %% base setting

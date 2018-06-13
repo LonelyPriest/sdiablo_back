@@ -724,8 +724,11 @@ var wsaleCalc = function(){
 		count = wsaleCalc.get_inventory_count(one, saleMode);
 		total      += parseInt(count);
 		abs_total  += Math.abs(parseInt(count)); 
-		
-		if (vipDiscountMode !== diablo_no && saleMode === diablo_sale) {
+
+		if (!one.$update
+		    && vipDiscountMode !== diablo_no
+		    && saleMode === diablo_sale)
+		{
 		    // if (one.sid !== diablo_invalid_index && !one.$update) {
 		    if (one.sid === diablo_invalid && one.pid === diablo_invalid) {
 			// flag 10
@@ -752,25 +755,26 @@ var wsaleCalc = function(){
 				isVip, vipDiscountMode, vipDiscount, one);
 			
 		    }
-		    if (!one.$update && vipDiscountMode) {
-			if (vipPromotionMode) {
-			    if (!vipScoreMode) {
-				if (one.sid !== diablo_invalid)
-				    wsaleCalc.calc_vip_discount(
-					isVip, vipDiscountMode, vipDiscount, one);
-			    } else {
-				wsaleCalc.calc_vip_discount(
-				    isVip, vipDiscountMode, vipDiscount, one);
-			    }
-			} else {
-			    if (one.sid !== diablo_invalid && one.pid === diablo_invalid)
-				wsaleCalc.calc_vip_discount(
-				    isVip, vipDiscountMode, vipDiscount, one);
-			} 
-		    }
 		    
-		} 
-
+		    // if (!one.$update && vipDiscountMode) {
+		    // 	if (vipPromotionMode) {
+		    // 	    if (!vipScoreMode) {
+		    // 		if (one.sid !== diablo_invalid)
+		    // 		    wsaleCalc.calc_vip_discount(
+		    // 			isVip, vipDiscountMode, vipDiscount, one);
+		    // 	    } else {
+		    // 		wsaleCalc.calc_vip_discount(
+		    // 		    isVip, vipDiscountMode, vipDiscount, one);
+		    // 	    }
+		    // 	} else {
+		    // 	    if (one.sid !== diablo_invalid && one.pid === diablo_invalid)
+		    // 		wsaleCalc.calc_vip_discount(
+		    // 		    isVip, vipDiscountMode, vipDiscount, one);
+		    // 	} 
+		    // }
+		    
+		}
+		
 		// console.log(one);
 		if (one.o_fprice !== one.fprice){
 		    one.fdiscount = diablo_discount(one.fprice, one.tag_price);

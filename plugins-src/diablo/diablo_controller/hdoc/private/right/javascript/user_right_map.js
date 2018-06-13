@@ -28,8 +28,7 @@ var rightAuthen = {
 	return {
 	    modify_price_onsale  : rightAuthen.root_right._rainbow + 2,
 	    modify_discount_onsale : rightAuthen.root_right._rainbow + 3,
-	    show_orgprice: rightAuthen.root_right._rainbow + 4,
-	    show_balance_onstock: rightAuthen.root_right._rainbow + 5
+	    show_orgprice: rightAuthen.root_right._rainbow + 4
 	}
     },
 
@@ -58,11 +57,18 @@ var rightAuthen = {
 	    update_price_of_w_stock_reject: rightAuthen.root_right._stock + 23,
 	    reset_barcode: rightAuthen.root_right._stock + 26,
 	    set_w_stock_promotion: rightAuthen.root_right._stock + 14,
+	    
 	    print_w_stock_new: rightAuthen.root_right._stock + 27,
 	    print_stock_transfer: rightAuthen.root_right._stock + 28,
 	    print_w_barcode: rightAuthen.root_right._stock + 29,
+	    
 	    cancel_stock_transfer: rightAuthen.root_right._stock + 20,
-	    gift_w_stock: rightAuthen.root_right._stock + 30
+	    gift_w_stock: rightAuthen.root_right._stock + 30,
+	    
+	    update_tprice_on_stock_in: rightAuthen.root_right._stock + 32,
+	    update_oprice_on_stock_in: rightAuthen.root_right._stock + 33,
+	    bill_firm_on_stock_in:     rightAuthen.root_right._stock + 34
+
 	}
     },
 
@@ -144,3 +150,181 @@ var rightAuthen = {
 	return rightAuthen.authen(userType, action, rights);
     }
 };
+
+var diabloAuthen = function(userType, userRight, userShopRight) {
+    this.userType = userType;
+    this.userRight = userRight;
+    this.userShopRight = userShopRight;
+    this.master = rightAuthen.authen_master(userType);
+};
+
+/*
+ * rainbow
+ */
+diabloAuthen.prototype.authenRainbow = function(action) {
+    return rightAuthen.authen(
+	this.userType, rightAuthen.rainbow_action()[action], this.userRight);
+};
+
+/*
+ * stock
+ */
+diabloAuthen.prototype.authenStock = function(action) {
+    return rightAuthen.authen(
+	this.userType, rightAuthen.stock_action()[action], this.userRight);
+};
+
+diabloAuthen.prototype.authenStockByShop = function(action) {
+    return rightAuthen.authen_shop_action(
+	this.userType, rightAuthen.stock_action()[action], this.userShopRight);
+};
+
+// diabloAuthen.prototype.master = function() {
+//     return rightAuthen.authen_master(userType);
+// };
+
+/*
+ * sale
+ */
+diabloAuthen.prototype.authenSaleByShop = function(action) {
+    return rightAuthen.authen_shop_action(
+	this.userType, rightAuthen.wsale_action()[action], this.userShopRight);
+};
+
+
+diabloAuthen.prototype.authenSale = function(action) {
+    return rightAuthen.authen(
+	this.userType, rightAuthen.wsale_action()[action], this.userRight);
+};
+/*
+ * good
+ */
+ 
+diabloAuthen.prototype.authenGood = function(action) {
+    return rightAuthen.authen(
+	this.userType, rightAuthen.good_action()[action], this.userRight);
+};
+
+diabloAuthen.prototype.showOrgprice = function() {
+    return this.authenRainbow('show_orgprice');
+};
+
+/*
+ * stock action
+ */
+diabloAuthen.prototype.billFirmOnStockIn = function() {
+    return this.authenStock('bill_firm_on_stock_in');
+};
+
+diabloAuthen.prototype.printBarcode = function() {
+    return this.authenStock('print_w_barcode');
+};
+
+diabloAuthen.prototype.printStockIn = function() {
+    return this.authenStock('print_w_stock_new');
+};
+
+diabloAuthen.prototype.updateStock = function() {
+    return this.authenStockByShop('update_w_stock');
+};
+
+diabloAuthen.prototype.checkStock = function() {
+    return this.authenStockByShop('check_w_stock');
+};
+
+diabloAuthen.prototype.deleteStock = function() {
+    return this.authenStockByShop('delete_w_stock');
+};
+
+diabloAuthen.prototype.updateTagPrice = function() {
+    return this.authenStock('update_tprice_on_stock_in');
+};
+
+diabloAuthen.prototype.updateOrgPrice = function() {
+    return this.authenStock('update_oprice_on_stock_in');
+};
+
+diabloAuthen.prototype.updateOrgPriceOnStockOut = function () {
+    return this.authenStock('update_price_of_w_stock_reject');
+};
+
+/*
+ * Good action
+ */
+diabloAuthen.prototype.updateGood = function() {
+    return this.authenGood('update_w_good');
+};
+
+diabloAuthen.prototype.deleteGood = function() {
+    return this.authenGood('delete_w_good');
+};
+
+
+/*
+ * Raibow action
+ */
+diabloAuthen.prototype.updateDiscountOnSale = function() {
+    return this.authenRainbow('modify_discount_onsale');
+};
+
+diabloAuthen.prototype.updatePriceOnSale = function() {
+    return this.authenRainbow('modify_price_onsale');
+};
+
+/*
+ * sale action
+ */
+diabloAuthen.prototype.updateSale = function() {
+    return this.authenSaleByShop('update_w_sale');
+};
+
+diabloAuthen.prototype.checkSale = function() {
+    return this.authenSaleByShop('check_w_sale');
+};
+
+diabloAuthen.prototype.updateOpriceAfterSale = function () {
+    return this.authenSale('update_w_sale_price');
+};
+
+
+diabloAuthen.prototype.authenStockRight = function() {
+    return {
+	show_orgprice          :this.showOrgprice(),
+	bill_firm_on_stock_in  :this.billFirmOnStockIn(),
+	master                 :this.master,
+	print_w_barcode        :this.printBarcode(),
+	update_w_stock         :this.updateStock(), 
+	update_tprice          :this.updateTagPrice(),
+	update_oprice          :this.updateOrgPrice(),
+
+	check_w_stock          :this.checkStock(),
+	delete_w_stock         :this.deleteStock(),
+	print_w_stock          :this.printStockIn()
+    }
+};
+
+diabloAuthen.prototype.authenGoodRight = function() {
+    return {
+	show_orgprice         :this.showOrgprice(), 
+	update_w_good         :this.updateGood(),
+	delete_w_good         :this.deleteGood()
+	// update_oprice_stock_out :this.updateOrgPriceOnStockOut()
+    }
+};
+
+diabloAuthen.prototype.authenSaleRight = function() {
+    return {
+	m_discount :this.updateDiscountOnSale(), 
+	m_price    :this.updatePriceOnSale(),
+	master     :this.master,
+
+	show_orgprice  :this.showOrgprice(), 
+	update_w_sale  :this.updateSale(),
+	check_w_sale   :this.checkSale(),
+	show_stastic   :this.master,
+
+	update_oprice_after_sale : this.updateOpriceAfterSale()
+    }
+};
+
+

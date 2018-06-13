@@ -217,13 +217,15 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
     /*
      * authen
      */
-    $scope.stock_right = {
-	show_orgprice: rightAuthen.authen(
-	    user.type, rightAuthen.rainbow_action()['show_orgprice'], user.right 
-	),
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.stock_right = authen.authenStockRight(); 
+    // $scope.stock_right = {
+    // 	show_orgprice: rightAuthen.authen(
+    // 	    user.type, rightAuthen.rainbow_action()['show_orgprice'], user.right 
+    // 	),
 
-	print_w_stock: stockUtils.authen_stock(user.type, user.right, 'print_w_stock_new')
-    };
+    // 	print_w_stock: stockUtils.authen_stock(user.type, user.right, 'print_w_stock_new')
+    // };
 
     // console.log($scope.stock_right);
 

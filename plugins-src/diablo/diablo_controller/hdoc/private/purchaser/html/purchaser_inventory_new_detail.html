@@ -27,7 +27,7 @@
 	  	    x-ng-click="inventory_rsn_detail()">明细
 	      <i class="glyphicon glyphicon-map-marker"></i></button>
 	    
-	    <button x-ng-if="shop_right.show_balance"
+	    <button x-ng-if="shop_right.show_orgprice"
 		    class="btn green purple-stripe hidden-xs hidden-sm" 
 		    type="button"
 		  x-ng-click="export_to()">导出
@@ -100,7 +100,7 @@
 		    <th x-ng-if="!hidden.balance" class="warning">核销</th>
 		    <th x-ng-if="!hidden.balance" class="danger">费用</th>
 
-		    <th x-ng-if="shop_right.show_balance" class="info">
+		    <th x-ng-if="shop_right.show_orgprice" class="info">
 		      <span x-ng-click="toggle_balance()">
 			<span x-ng-if="!hidden.balance">
 			  <i class="glyphicon glyphicon-backward fg-red"></i>上次欠款</span>
@@ -109,10 +109,10 @@
 		      </span>
 		    </th>
 		    
-		    <th x-ng-if="shop_right.show_balance" class="success">应付</th>
-		    <th x-ng-if="shop_right.show_balance">实付</th>
+		    <th x-ng-if="shop_right.show_orgprice" class="success">应付</th>
+		    <th x-ng-if="shop_right.show_orgprice">实付</th>
 		    
-		    <th x-ng-if="shop_right.show_balance" class="danger">累计欠款</span></th>
+		    <th x-ng-if="shop_right.show_orgprice" class="danger">累计欠款</span></th>
 		    <th>备注</th>
 		    <th>采购日期</th> 
 		    <th>操作</th>
@@ -151,19 +151,19 @@
 		      <span x-ng-if="r.e_pay===0">{{r.e_pay}}</span>
 		    </td>
 
-		    <td x-ng-if="shop_right.show_balance"
+		    <td x-ng-if="shop_right.show_orgprice"
 			class="{{css(r.state, r.type)}}">{{r.balance}}</td>
 		    
-		    <td x-ng-if="shop_right.show_balance"
+		    <td x-ng-if="shop_right.show_orgprice"
 			class="{{css(r.state, r.type)}}" x-ng-switch on="r.type">
 		      <span class="fg-red" x-ng-switch-when=1>{{r.should_pay}}</span>
 		      <span x-ng-switch-default>{{r.should_pay}}</span> 
 		    </td>
 		    
-		    <td x-ng-if="shop_right.show_balance"
+		    <td x-ng-if="shop_right.show_orgprice"
 			class="{{css(r.state, r.type)}}">{{r.has_pay}}</td>
 		    
-		    <td x-ng-if="shop_right.show_balance" class="{{css(r.state, r.type)}}">
+		    <td x-ng-if="shop_right.show_orgprice" class="{{css(r.state, r.type)}}">
 		      {{r.acc_balance}}
 		    </td>
 		    
@@ -235,8 +235,8 @@
 		    <td x-ng-if="!hidden.balance">{{total_verificate}}</td>
 		    <td x-ng-if="!hidden.balance"></td> 
 		    <td colspan="1"></td> 
-		    <td x-ng-if="shop_right.show_balance" class="danger">{{total_spay}}</td>
-		    <td x-ng-if="shop_right.show_balance" class="info">{{total_hpay}}</td>
+		    <td x-ng-if="shop_right.show_orgprice" class="danger">{{total_spay}}</td>
+		    <td x-ng-if="shop_right.show_orgprice" class="info">{{total_hpay}}</td>
 		    <td colspan="4"></td>
 		  </tr>
 		  

@@ -364,7 +364,16 @@ init([]) ->
 	  <<"库存赠送标识设置">>, <<"gift_w_stock">>, ?right_w_inventory},
 
 	 {?print_w_inventory_new_note,
-	  <<"采购单明细打印">>, <<"print_w_inventory_new_note">>, ?right_w_inventory}
+	  <<"采购单明细打印">>, <<"print_w_inventory_new_note">>, ?right_w_inventory},
+
+	 {?update_tprice_on_stock_in,
+	  <<"入库单中修改吊牌价">>, <<"update_tprice_on_stock_in">>, ?right_w_inventory },
+
+	 {?update_oprice_on_stock_in,
+	  <<"入库单中修改进货价">>, <<"update_oprice_on_stock_in">>, ?right_w_inventory },
+
+	 {?bill_firm_on_stock_in,
+	  <<"允许入库单中结帐">>, <<"bill_firm_on_stock_in">>, ?right_w_inventory } 
 	],
 
     %% firm
@@ -485,9 +494,9 @@ init([]) ->
 	 {?wsale_modify_discount_onsale,
 	  <<"开单修改折扣">>, <<"wsale_modify_discount">>, ?right_rainbow}, 
 	 {?stock_show_orgprice,
-	  <<"查看成本价">>, <<"stock_show_orgprice">>, ?right_rainbow},
-	 {?sms_notify,
-	  <<"短信提醒">>, <<"sms_notify">>, ?right_rainbow}
+	  <<"查看成本价">>, <<"stock_show_orgprice">>, ?right_rainbow}
+	 %% {?sms_notify,
+	 %%  <<"短信提醒">>, <<"sms_notify">>, ?right_rainbow}
 	],
 
     %% base setting

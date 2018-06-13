@@ -1323,6 +1323,7 @@ inventory_match(of_in, Merchant, Shop, Ins) ->
 	" where a.merchant=" ++ ?to_s(Merchant) 
 	++ " and a.shop=" ++ ?to_s(Shop)
 	++ ?sql_utils:condition(proplists, ?utils:correct_condition(<<"a.">>, Ins))
+	++ " and a.amount > 0"
 	++ " order by a.id desc"
 	++ " limit " ++ ?to_s(P);
 
@@ -1349,7 +1350,7 @@ inventory_match(Merchant, StyleNumber, Shop, Firm) ->
 	       [] -> [];
 	       -1 -> [];
 	       Firm -> " and a.firm=" ++ ?to_s(Firm)
-	   end
+	   end 
 	++ " and a." ++ get_match_mode(style_number, StyleNumber)
 	++ " order by a.id desc"
 	++ " limit " ++ ?to_s(P).

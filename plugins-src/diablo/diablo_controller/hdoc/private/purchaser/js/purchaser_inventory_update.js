@@ -62,17 +62,8 @@ function purchaserInventoryNewUpdateCtrlProvide (
     /*
      * authen
      */
-    $scope.stock_right = {
-	show_orgprice:   stockUtils.authen_rainbow(user.type, user.right, 'show_orgprice'),
-	show_balance:    stockUtils.authen_rainbow(user.type, user.right, 'show_balance_onstock'),
-	master:          rightAuthen.authen_master(user.type),
-	print_w_barcode: stockUtils.authen_stock(user.type, user.right, 'print_w_barcode'),
-	update_w_stock:  rightAuthen.authen_shop_action(
-	    user.type,
-	    rightAuthen.stock_action()['update_w_stock'],
-	    user.shop
-	)};
-
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.stock_right = authen.authenStockRight(); 
     console.log($scope.stock_right);
     
     /*

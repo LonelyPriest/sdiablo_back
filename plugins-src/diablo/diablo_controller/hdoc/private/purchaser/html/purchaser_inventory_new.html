@@ -147,9 +147,9 @@
 		  </div> 
 		</form>
 
-		<span x-ng-if="stock_right.show_balance" class="input-group-addon">
+		<span x-ng-if="stock_right.bill_firm_on_stock_in" class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>欠款</span>
-	  	<input x-ng-if="stock_right.show_balance" class="form-control" readonly
+	  	<input x-ng-if="stock_right.bill_firm_on_stock_in" class="form-control" readonly
 	  	       x-ng-model="select.surplus"/>
 	      </div>
 	    </div> 
@@ -185,19 +185,19 @@
 		  </div>
 		</form>
 		
-		<span x-ng-if="stock_right.show_balance" class="input-group-addon">
+		<span x-ng-if="stock_right.bill_firm_on_stock_in" class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>应付</span>
-		<input x-ng-if="stock_right.show_balance" class="form-control" type="text" readonly
+		<input x-ng-if="stock_right.bill_firm_on_stock_in" class="form-control" type="text" readonly
 		       x-ng-model="select.should_pay"/>
 
-		<span x-ng-if="stock_right.show_balance" class="input-group-addon">
+		<span x-ng-if="stock_right.bill_firm_on_stock_in" class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>实付</span>
-	  	<input x-ng-if="stock_right.show_balance" class="form-control" readonly
+	  	<input x-ng-if="stock_right.bill_firm_on_stock_in" class="form-control" readonly
 	  	       x-ng-model="select.has_pay"/>
 
-		<span x-ng-if="stock_right.show_balance" class="input-group-addon">
+		<span x-ng-if="stock_right.bill_firm_on_stock_in" class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>结余</span>
-	  	<input x-ng-if="stock_right.show_balance" class="form-control"
+	  	<input x-ng-if="stock_right.bill_firm_on_stock_in" class="form-control"
 		       type="text" readonly
 	  	       x-ng-model="select.left_balance"/> 
 	      </div>

@@ -68,19 +68,8 @@ function purchaserInventoryNewCtrlProvide (
     /*
      * authen
      */
-    $scope.stock_right = {
-	show_orgprice: rightAuthen.authen(
-	    user.type,
-	    rightAuthen.rainbow_action()['show_orgprice'],
-	    user.right
-	),
-
-	show_balance: rightAuthen.authen(
-	    user.type,
-	    rightAuthen.rainbow_action()['show_balance_onstock'],
-	    user.right
-	)
-    }; 
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.stock_right = authen.authenStockRight(); 
 
     $scope.$watch("select.firm", function(newValue, oldValue){
 	if (newValue === oldValue) return;
@@ -2747,29 +2736,31 @@ function purchaserInventoryNewDetailCtrlProvide (
     /*
      * authen
      */
-    $scope.shop_right = {
-	update_w_stock: rightAuthen.authen_shop_action(
-	    user.type,
-	    rightAuthen.stock_action()['update_w_stock'],
-	    user.shop
-	),
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.shop_right = authen.authenStockRight(); 
+    // $scope.shop_right = {
+    // 	update_w_stock: rightAuthen.authen_shop_action(
+    // 	    user.type,
+    // 	    rightAuthen.stock_action()['update_w_stock'],
+    // 	    user.shop
+    // 	),
 
-	check_w_stock: rightAuthen.authen_shop_action(
-	    user.type,
-	    rightAuthen.stock_action()['check_w_stock'],
-	    user.shop
-	),
+    // 	check_w_stock: rightAuthen.authen_shop_action(
+    // 	    user.type,
+    // 	    rightAuthen.stock_action()['check_w_stock'],
+    // 	    user.shop
+    // 	),
 
-	delete_w_stock: rightAuthen.authen_shop_action(
-	    user.type,
-	    rightAuthen.stock_action()['delete_w_stock'],
-	    user.shop
-	),
+    // 	delete_w_stock: rightAuthen.authen_shop_action(
+    // 	    user.type,
+    // 	    rightAuthen.stock_action()['delete_w_stock'],
+    // 	    user.shop
+    // 	),
 
-	show_balance:  stockUtils.authen_rainbow(user.type, user.right, 'show_orgprice'),
-	print_w_stock: stockUtils.authen_stock(user.type, user.right, 'print_w_stock_new'),
-	print_w_barcode: stockUtils.authen_stock(user.type, user.right, 'print_w_barcode')
-    };
+    // 	show_balance:  stockUtils.authen_rainbow(user.type, user.right, 'show_orgprice'),
+    // 	print_w_stock: stockUtils.authen_stock(user.type, user.right, 'print_w_stock_new'),
+    // 	print_w_barcode: stockUtils.authen_stock(user.type, user.right, 'print_w_barcode')
+    // };
 
     // console.log($scope.shop_right);
     

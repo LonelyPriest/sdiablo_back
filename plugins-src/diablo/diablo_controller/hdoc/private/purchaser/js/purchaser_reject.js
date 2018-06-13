@@ -41,25 +41,28 @@ function purchaserInventoryRejectCtrlProvide(
 	diablo_goto_page("#/inventory_new_detail");
     };
 
-    $scope.stock_right = {
-	show_orgprice: rightAuthen.authen(
-	    user.type,
-	    rightAuthen.rainbow_action()['show_orgprice'],
-	    user.right
-	),
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.stock_right = authen.authenStockRight(); 
 
-	show_balance: rightAuthen.authen(
-	    user.type,
-	    rightAuthen.rainbow_action()['show_balance_onstock'],
-	    user.right
-	),
+    // $scope.stock_right = {
+    // 	show_orgprice: rightAuthen.authen(
+    // 	    user.type,
+    // 	    rightAuthen.rainbow_action()['show_orgprice'],
+    // 	    user.right
+    // 	),
 
-	update_price: rightAuthen.authen(
-	    user.type,
-	    rightAuthen.stock_action()['update_price_of_w_stock_reject'],
-	    user.right
-	),
-    };
+    // 	show_balance: rightAuthen.authen(
+    // 	    user.type,
+    // 	    rightAuthen.rainbow_action()['show_balance_onstock'],
+    // 	    user.right
+    // 	),
+
+    // 	update_price: rightAuthen.authen(
+    // 	    user.type,
+    // 	    rightAuthen.stock_action()['update_price_of_w_stock_reject'],
+    // 	    user.right
+    // 	),
+    // };
 
     // console.log($scope.stock_right);
 

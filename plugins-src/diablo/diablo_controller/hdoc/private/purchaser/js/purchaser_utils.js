@@ -391,11 +391,18 @@ var stockUtils = function(){
 	},
 
 	authen_rainbow: function(user_type, user_right, action){
-	    return rightAuthen.authen(user_type, rightAuthen.rainbow_action()[action], user_right);
+	    return rightAuthen.authen(
+		user_type, rightAuthen.rainbow_action()[action], user_right);
 	},
 
 	authen_stock: function(user_type, user_right, action) {
-	    return rightAuthen.authen(user_type, rightAuthen.stock_action()[action], user_right);
+	    return rightAuthen.authen(
+		user_type, rightAuthen.stock_action()[action], user_right);
+	},
+
+	authen_shop: function(user_type, shop_right, shop_action) {
+	    return rightAuthen.authen_shop_action(
+		user_type, rightAuthen.stock_action()[shop_action], shop_right);
 	},
 
 	cache_page_condition: function(
@@ -908,7 +915,7 @@ stockPrintU.prototype.printBarcode2 = function() {
     }
     
     var pSecond = false;
-    if (this.dualPrint && angular.isDate(diablo_set_string(this.second.barcode)))
+    if (this.dualPrint && angular.isDefined(diablo_set_string(this.second.barcode)))
 	pSecond = true;
 
     var top = this.top; 
@@ -1171,7 +1178,7 @@ stockPrintU.prototype.printBarcode2 = function() {
     
     this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "价格：" + line);
     if (pSecond) {
-	this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.hpx_each, "价格：" + line2);
+	this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, "价格：" + line2);
     }
 
     if (this.template.solo_color || this.template.solo_size) {

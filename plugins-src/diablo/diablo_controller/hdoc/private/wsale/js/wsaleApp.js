@@ -369,14 +369,10 @@ function wsaleNewProvide(
 
     $scope.setting = {q_backend:true, check_sale:true, negative_sale:true};
 
-    $scope.right = {
-	m_discount: wsaleUtils.authen_rainbow(user.type, 'modify_discount_onsale', user.right),
-	m_price: wsaleUtils.authen_rainbow(user.type, 'modify_price_onsale', user.right), 
-	master:rightAuthen.authen_master(user.type)
-    };
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.right = authen.authenSaleRight(); 
 
     // console.log($scope.right);
-
     $scope.focus_attr = {style_number:false,
 			 barcode:false,
 			 sell:false,
@@ -2097,12 +2093,14 @@ function wsaleNewDetailProvide(
     /*
      * authen
      */
-    $scope.shop_right = {
-	update_w_sale: wsaleUtils.authen_shop(user.type, user.shop, 'update_w_sale'),
-	check_w_sale: wsaleUtils.authen_shop(user.type, user.shop, 'check_w_sale'),
-	master:rightAuthen.authen_master(user.type),
-	show_stastic: rightAuthen.authen_master(user.type) 
-    }; 
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.shop_right = authen.authenSaleRight();
+    // $scope.shop_right = {
+    // 	update_w_sale: wsaleUtils.authen_shop(user.type, user.shop, 'update_w_sale'),
+    // 	check_w_sale: wsaleUtils.authen_shop(user.type, user.shop, 'check_w_sale'),
+    // 	master:rightAuthen.authen_master(user.type),
+    // 	show_stastic: rightAuthen.authen_master(user.type) 
+    // }; 
 
     /*
      * hidden
