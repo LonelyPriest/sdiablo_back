@@ -1203,8 +1203,10 @@ action(Session, Req, {"print_w_inventory_new_note"}, Payload) ->
     {struct, C} = ?v(<<"fields">>,
 		     filter_condition(trans_note, [?v(<<"rsn">>, Rsn) || {Rsn} <- Q], CutConditions)),
     {ok, Transes} = ?w_inventory:export(trans_note, Merchant, C, []),
-    Dict = new_trans_to_dict(<<"shop_id">>, Transes, dict:new()),
-    ?DEBUG("dict note ~p", [dict:to_list(Dict)]), 
+    Dict = new_note_to_dict(<<"shop_id">>, Transes, dict:new()),
+    ?DEBUG("dict note ~p", [dict:to_list(Dict)]),
+
+    
     ?utils:respond(200, object, Req,
 		   {[{<<"ecode">>, 0}]}).
 
@@ -2348,15 +2350,10 @@ shift_note_class_with(color, [{H}|T], Sorts) ->
 
     shift_note_class_with(color, T, NewSorts).
 
-new_trans_to_dict(_Key, [], Dict) ->
+new_note_to_dict(_Key, [], Dict) ->
     Dict;
-new_trans_to_dict(Key, [{H}|T], Dict) ->
-    %% Firm        = ?to_b(?v(<<"firm_id">>, H)),
-    K        = ?v(Key, H),
-    %% StyleNumber = ?to_b(?v(<<"style_number">>, H)),
-    %% Brand       = ?to_b(?v(<<"brand_id">>, H)), 
-
-    %% Key = <<Firm/binary, Shop/binary, StyleNumber/binary, Brand/binary>>,
+new_note_to_dict(Key, [{H}|T], Dict) ->
+    K        = ?v(Key, H), 
     DictNew =
 	case dict:find(K, Dict) of
 	    error ->
@@ -2369,7 +2366,7 @@ new_trans_to_dict(Key, [{H}|T], Dict) ->
 		  end,
 		  Dict)
 	end,
-    new_trans_to_dict(Key, T, DictNew).
+    new_note_to_dict(Key, T, DictNew).
 
 get_color(0, _Colors) ->
     <<"均色">>;

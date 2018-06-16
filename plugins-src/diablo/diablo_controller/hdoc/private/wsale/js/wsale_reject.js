@@ -305,6 +305,7 @@ function wsaleRejectCtrlProvide(
 		
 		var hLine = wsalePrint.gen_body(
 		    LODOP,
+		    $scope.select,
 		    $scope.inventories.filter(function(r){return !r.$new && r.select}),
 		    isRound,
 		    cakeMode); 

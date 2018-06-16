@@ -1153,8 +1153,9 @@ var wsalePrint = function(){
 	    return;
 	},
 
-	gen_body: function(LODOP, inventories, round, cakeMode){
+	gen_body: function(LODOP, sale, inventories, round, cakeMode){
 	    var top = 115;
+	    var perform = 0;
 	    // if (diablo_no === cakeMode) {
 	    LODOP.ADD_PRINT_TEXT(top, left, 70, hFont, "款号"); 
 	    LODOP.ADD_PRINT_TEXT(top, left + 70, 35, hFont, "单价"); 
@@ -1171,6 +1172,8 @@ var wsalePrint = function(){
 		    else
 			return (d.total * d.rprice).toString();
 		}();
+
+		perform += d.total * d.tag_price - calc;
 		
 		var ediscount = wsaleUtils.ediscount(d.rprice, d.tag_price).toString();
 		
@@ -1219,7 +1222,8 @@ var wsalePrint = function(){
 	    // 	// hLine += 5;
 	    // 	LODOP.ADD_PRINT_LINE(top,0,top,178,0,1);
 	    // 	hLine += 5;
-	    // } 
+	    // }
+	    sale.perform = perform;
 	    return top;
 	},
 
@@ -1259,12 +1263,30 @@ var wsalePrint = function(){
 	    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1); 
 	    hLine += 15;
 
-	    if (diablo_sale === direct && angular.isDefined(sale.charge) ) {
-		l1 = "找零：" + wsaleUtils.to_float(-sale.charge).toString();
-		LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
-		LODOP.SET_PRINT_STYLEA(0, "FontSize", 13);
-		LODOP.SET_PRINT_STYLEA(0, "Bold", 1); 
-		hLine += 20;
+	    if (diablo_sale === direct) {
+		if (angular.isDefined(sale.has_pay)) {
+		    l1 = "现付：" + wsaleUtils.to_float(sale.has_pay).toString();
+		    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
+		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 13);
+		    LODOP.SET_PRINT_STYLEA(0, "Bold", 1); 
+		    hLine += 20;
+		}
+		
+		if (angular.isDefined(sale.charge)) {
+		    l1 = "找零：" + wsaleUtils.to_float(-sale.charge).toString();
+		    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
+		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 13);
+		    LODOP.SET_PRINT_STYLEA(0, "Bold", 1); 
+		    hLine += 20;
+		}
+		
+		if (angular.isDefined(sale.perform) && sale.perform >= 0) {
+		    l1 = "优惠：" + wsaleUtils.to_float(sale.perform).toString();
+		    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
+		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 13);
+		    LODOP.SET_PRINT_STYLEA(0, "Bold", 1); 
+		    hLine += 20;
+		}
 	    }
 		
 

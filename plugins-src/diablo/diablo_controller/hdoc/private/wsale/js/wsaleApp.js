@@ -1287,7 +1287,7 @@ function wsaleNewProvide(
 
 		    var isRound = $scope.setting.round; 
 		    var cakeMode = $scope.setting.cake_mode;
-		    var hLine = wsalePrint.gen_body(LODOP, pinvs, isRound, cakeMode); 
+		    var hLine = wsalePrint.gen_body(LODOP, $scope.select, pinvs, isRound, cakeMode); 
 		    var selectRetailer = $scope.select.retailer.id; 
 		    // console.log($scope.select);
 		    hLine = wsalePrint.gen_stastic(

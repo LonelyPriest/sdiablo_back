@@ -481,7 +481,7 @@ function wsaleRsnDetailCtrlProvide (
 			    retailer.name,
 			    sale.entry_date);
 
-			var hLine = wsalePrint.gen_body(LODOP, detail, isRound, cakeMode);
+			var hLine = wsalePrint.gen_body(LODOP, sale, detail, isRound, cakeMode);
 			var vip = wsaleUtils.isVip(retailer, no_vip, filterSysRetailer), 
 			hLine = wsalePrint.gen_stastic(LODOP, hLine, sale.direct, sale, vip); 
 			wsalePrint.gen_foot(
