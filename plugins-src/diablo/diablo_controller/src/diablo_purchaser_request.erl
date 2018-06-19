@@ -1199,16 +1199,37 @@ action(Session, Req, {"print_w_inventory_new_note"}, Payload) ->
     ?DEBUG("print_w_inventory_note: session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
     {struct, CutConditions} = ?v(<<"condition">>, Payload),
-    {ok, Q} = ?w_inventory:purchaser_inventory(get_inventory_new_rsn, Merchant, CutConditions),
+    
+    {ok, Q} = ?w_inventory:purchaser_inventory(
+		 get_inventory_new_rsn, Merchant, CutConditions),
+    
     {struct, C} = ?v(<<"fields">>,
-		     filter_condition(trans_note, [?v(<<"rsn">>, Rsn) || {Rsn} <- Q], CutConditions)),
+		     filter_condition(
+		       trans_note, [?v(<<"rsn">>, Rsn) || {Rsn} <- Q], CutConditions)),
+    
     {ok, Transes} = ?w_inventory:export(trans_note, Merchant, C, []),
-    Dict = new_note_to_dict(<<"shop_id">>, Transes, dict:new()),
+    Dict = note_to_dict_by_firm(Transes, dict:new()),
     ?DEBUG("dict note ~p", [dict:to_list(Dict)]),
 
-    
-    ?utils:respond(200, object, Req,
-		   {[{<<"ecode">>, 0}]}).
+    %% sort by shop
+    Keys = dict:fetch_keys(Dict),
+    ?DEBUG("keys ~p", [Keys]),
+
+    SortAll = 
+    	lists:foldr(
+    	  fun(Key, Acc) ->
+    		  case dict:find(Key, Dict) of
+    		      error ->
+    			  Acc;
+    		      {ok, Notes} ->
+    			  [{[{<<"fid">>, Key},
+			   {<<"note">>, Notes}]}|Acc]
+    		  end
+		  
+    	  end, [], Keys), 
+    ?DEBUG("SortAll ~p", [SortAll]), 
+    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
+				       {<<"note">>, SortAll}]}).
 
 
 print_inventory_new(sort_by_color, _Key, [], _DictNote, Acc) ->
@@ -2350,23 +2371,55 @@ shift_note_class_with(color, [{H}|T], Sorts) ->
 
     shift_note_class_with(color, T, NewSorts).
 
-new_note_to_dict(_Key, [], Dict) ->
+note_to_dict_by_firm([], Dict) ->
     Dict;
-new_note_to_dict(Key, [{H}|T], Dict) ->
-    K        = ?v(Key, H), 
-    DictNew =
-	case dict:find(K, Dict) of
-	    error ->
-		dict:store(Key, [{H}], Dict);
-	    {ok, _V} ->
-		dict:update(
-		  Key,
-		  fun(V) ->
-			  [{H}] ++ V
-		  end,
-		  Dict)
-	end,
-    new_note_to_dict(Key, T, DictNew).
+note_to_dict_by_firm([{H}|T], Dict) ->
+    Key  = case ?v(<<"vfirm_id">>, H) of
+	     ?INVALID_OR_EMPTY ->
+		   K = ?to_b(?v(<<"firm_id">>, H)),
+		   << <<"f-">>/binary, K/binary>>;
+	     _VFirmId ->
+		   K = ?to_b(_VFirmId),
+		   << <<"v-">>/binary, K/binary>>
+	 end,
+
+    case Key of
+	?INVALID_OR_EMPTY ->
+	    note_to_dict_by_firm(T, Dict);
+	_ -> 
+	    DictNew =
+		case dict:find(Key, Dict) of
+		    error ->
+			dict:store(Key, [{H}], Dict);
+		    {ok, _V} ->
+			dict:update(
+			  Key,
+			  fun(V) ->
+				  [{H}] ++ V
+			  end,
+			  Dict)
+		end,
+	    note_to_dict_by_firm(T, DictNew)
+    end.
+
+%% note_to_dict_by_shop([], Dict) ->
+%%     Dict;
+%% note_to_dict_by_shop([{H}|T], Dict) ->
+%%     ?DEBUG("H ~p", [H]),
+%%     Key = ?v(<<"shop_id">>, H),
+%%     DictNew =
+%% 	case dict:find(Key, Dict) of
+%% 	    error ->
+%% 		dict:store(Key, [{H}], Dict);
+%% 	    {ok, _V} ->
+%% 		dict:update(
+%% 		  Key,
+%% 		  fun(V) ->
+%% 			  [{H}] ++ V
+%% 		  end,
+%% 		  Dict)
+%% 	end,
+%%     note_to_dict_by_shop(T, DictNew).
 
 get_color(0, _Colors) ->
     <<"均色">>;

@@ -98,6 +98,51 @@ action(Session, Req, {"update_firm"}, Payload) ->
     end;
 
 %%
+%% vfirm
+%%
+action(Session, Req, {"new_virtual_firm"}, Payload) ->
+    ?DEBUG("new vfrim with session ~p,  paylaod ~p", [Session, Payload]),
+
+    Merchant = ?session:get(merchant, Session),
+    case ?supplier:supplier(new_vfirm, Merchant, Payload) of
+	{ok, FirmId} ->
+	    %% ?w_user_profile:update(vfirm, Merchant),
+	    ?utils:respond(200, Req, ?succ(add_supplier, FirmId), {<<"id">>, FirmId}); 
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"update_virtual_firm"}, Payload) ->
+    ?DEBUG("update vfrim with session ~p,  paylaod ~p", [Session, Payload]),
+
+    Merchant = ?session:get(merchant, Session),
+    case ?supplier:supplier(update_vfirm, Merchant, Payload) of
+	{ok, FirmId} ->
+	    %% ?w_user_profile:update(vfirm, Merchant), 
+	    ?utils:respond(200, Req, ?succ(update_supplier, FirmId));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"filter_vfirm"}, Payload) -> 
+    ?DEBUG("filter_vfirm with session ~p, paylaod~n~p", [Session, Payload]), 
+    Merchant = ?session:get(merchant, Session), 
+    ?pagination:pagination(
+       fun(Match, Conditions) ->
+	       ?supplier:filter(total_vfirm, ?to_a(Match), Merchant, Conditions)
+       end,
+       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
+	       ?supplier:filter(
+		  vfirm, Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
+       end, Req, Payload);
+
+action(Session, Req, {"match_vfirm"}, Payload) -> 
+    ?DEBUG("match_vfirm with session ~p, paylaod~n~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    Prompt = ?v(<<"prompt">>, Payload, []),
+    Mode  = ?v(<<"mode">>, Payload, ?PY_MATCH),
+    ?utils:respond(batch, fun() -> ?supplier:match(vfirm, Merchant, {Mode, Prompt}) end, Req);
+%%
 %% brand
 %%
 action(Session, Req, {"new_brand"}, Payload) ->

@@ -330,4 +330,7 @@ update w_inventory set alarm_day=-1 where merchant=31;
 --2018-06-12
 alter table print_template add column shift_date TINYINT default 0 after expire;
 
+--2018-06-19
+alter table suppliers add column vfirm INTEGER default -1 after id;
+
 

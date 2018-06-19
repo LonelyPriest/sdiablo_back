@@ -130,14 +130,9 @@ function firmDetailCtrlProvide(
 	// console.log(search); 
 	$scope.search = search;
     	return $scope.firms.filter(function(f){
-	    // console.log(f);
 	    return -1 !== f.name.indexOf(search)
 		||  -1 !== f.address.indexOf(search)
-		|| -1 !== f.code.toString().indexOf(search);
-	    // search === f.name
-	    // // || search === f.mobile 
-	    // 	|| search === f.address
-	    // 	|| search === f.code
+		|| -1 !== f.code.toString().indexOf(search); 
 	}) 
     };
 
@@ -211,8 +206,9 @@ function firmDetailCtrlProvide(
 	    $scope.prompts = []; 
 	    angular.forEach($scope.firms, function(f){
 		$scope.total_balance += f.balance;
-		f.code = diablo_firm_code + f.id;
-
+		f.code = diablo_firm_code + f.id; 
+		f.vfirm = {vid: f.vid, name: f.vname};
+		
 		if (!in_prompt(f.name, $scope.prompts)){
 		    $scope.prompts.push({name: f.name, py:diablo_pinyin(f.name)}); 
 		}
@@ -255,7 +251,11 @@ function firmDetailCtrlProvide(
 
     $scope.bill_firm = function(f){
 	diablo_goto_page("#/firm/bill/" + f.id.toString());
-    }
+    };
+
+    $scope.match_vfirm = function(view) {
+	return diabloFilter.match_vfirm(view, diablo_py_or_ch_match(view));
+    }; 
 
     var dialog = diabloUtilsService; 
     $scope.update_firm = function(old_firm){
@@ -269,7 +269,8 @@ function firmDetailCtrlProvide(
 	    } else{
 		var update = {};
 		for (var o in params.firm){
-		    if (!angular.equals(params.firm[o], old_firm[o])){
+		    if (!angular.isObject(params.firm[o]) 
+			&& !angular.equals(params.firm[o], old_firm[o])){
 			update[o] = params.firm[o];
 		    }
 		}
@@ -277,6 +278,7 @@ function firmDetailCtrlProvide(
 		update.balance     = params.firm.balance;
 		update.old_balance = old_firm.balance;
 		update.firm_id     = params.firm.id;
+		update.vid = diablo_get_modified(params.firm.vfirm.vid, old_firm.vid);
 		console.log(update);
 
 		// update.name    = params.firm.name;
@@ -314,14 +316,18 @@ function firmDetailCtrlProvide(
 	dialog.edit_with_modal(
 	    'update-firm.html', undefined, callback, undefined,
 	    {firm:old_firm,
+	     match_vfirm: $scope.match_vfirm, 
 	     valid_firm:valid_firm,
 	     has_update: function(new_firm){
 		 return !(diablo_is_same(new_firm.name, old_firm.name)
-			  && diablo_is_same(to_float(new_firm.balance), to_float(old_firm.balance))
+			  && diablo_is_same(to_float(new_firm.balance),
+					    to_float(old_firm.balance))
 			  && diablo_is_same(new_firm.address, old_firm.address)
 			  && diablo_is_same(new_firm.mobile, old_firm.mobile)
 			  && diablo_is_same(new_firm.comment, old_firm.comment)
-			  && diablo_is_same(new_firm.expire, old_firm.expire));
+			  && diablo_is_same(new_firm.expire, old_firm.expire)
+			  && diablo_is_same(new_firm.vfirm.vid, old_firm.vid)
+			 );
 	     },
 	     
 	     pattern: $scope.pattern,
@@ -493,9 +499,137 @@ function firmAnalysisProfitCtrlProvide(
 	}); 
     };
 };
+
+function virtualFirmCtrlProvide(
+    $scope, diabloUtilsService, diabloFilter, diabloPattern, firmService){
+    $scope.pattern = {
+	name:    diabloPattern.ch_en_num_beside_underline_bars,
+	comment: diabloPattern.comment
+    };
+
+    $scope.max_page_size = diablo_max_page_size();
+    $scope.items_perpage = diablo_items_per_page();
+    $scope.default_page  = 1;
+    $scope.current_page  = $scope.default_page;
+    $scope.total_items   = undefined;
+    
+    var dialog = diabloUtilsService;
+
+    $scope.do_search = function(page) {
+	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+	    firmService.filter_vfirm(
+		$scope.match, search, page, $scope.items_perpage
+	    ).then(function(result) {
+		console.log(result);
+		if (result.ecode === 0){
+		    if (page === $scope.default_page) {
+			$scope.total_items   = result.total;
+		    }
+		}
+
+		$scope.vfirms = result.data;
+
+		diablo_order($scope.vfirms, (page - 1) * $scope.items_perpage + 1);
+    		$scope.current_page = page;
+	    })
+	});
+    };
+
+    $scope.page_changed = function(){
+	$scope.do_search($scope.current_page);
+    };
+
+    $scope.refresh = function() {
+	$scope.do_search($scope.current_page);
+    };
+
+    $scope.refresh();
+
+    $scope.new_vfirm = function(){
+	var callback = function(params){
+	    console.log(params.vfirm);
+	    var v = {name: params.vfirm.name,
+		     py: diablo_pinyin(params.vfirm.name),
+		     comment: params.vfirm.comment};
+	    
+	    firmService.new_vfirm(v).then(function(result){
+		console.log(result); 
+		if (result.ecode === 0){
+		    dialog.response_with_callback(
+			true,
+			"新增厂商大类", "新增厂商大类成功！！",
+			undefined,
+			function(){
+			    
+			});
+		} else{
+		    dialog.response(
+			false,
+			"新增厂商大类",
+			"新增厂商大类失败：" + firmService.error[result.ecode]);
+		}
+	    })
+	};
+	
+	dialog.edit_with_modal(
+	    'new-vfirm.html',
+	    undefined,
+	    callback,
+	    undefined,
+	    {ctype: {}, pattern: $scope.pattern});
+    };
+
+
+    $scope.update_vfirm = function(vfirm){
+	console.log(vfirm);
+	var callback = function(params){
+	    console.log(params.ctype); 
+	    if (params.vfirm.name === vfirm.name){
+		dialog.response(
+		    false, "厂商大类编辑", baseService.error[8010], undefined);
+		return;
+	    }; 
+
+	    var update = {
+		fid:  vfirm.id,
+		name: diablo_get_modified(params.vfirm.name, vfirm.name),
+		py:   diablo_get_modified(diablo_pinyin(params.vfirm.name, vfirm.py)),
+		comment: diablo_get_modified(params.vfirm.comment, vfirm.comment)
+	    }; 
+	    console.log(update);
+
+	    firmService.update_vfirm(update).then(function(result){
+		if (result.ecode === 0) {
+		    dialog.response_with_callback(
+			true,
+			"厂商大类编辑",
+			"厂商大类编辑成功！！",
+			undefined,
+			function() {
+			    $scope.do_search($scope.current_page);
+			});
+		} else {
+		    dialog.response(
+			false,
+			"厂商大类编辑",
+			"厂商大类编辑失败！！" + firmService.error[result.ecode],
+			undefined);
+		};
+	    });
+	};
+	
+	dialog.edit_with_modal(
+	    "update-vfirm.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {vfirm:{name:vfirm.name, comment:vfirm.comment}, pattern: $scope.pattern});
+    };
+};
     
 define(["firmApp"], function(app){
     app.controller("firmNewCtrl", firmNewCtrlProvide);
     app.controller("firmDetailCtrl", firmDetailCtrlProvide);
     app.controller("firmAnalysisProfitCtrl", firmAnalysisProfitCtrlProvide);
+    app.controller("virtualFirmCtrl", virtualFirmCtrlProvide);
 });

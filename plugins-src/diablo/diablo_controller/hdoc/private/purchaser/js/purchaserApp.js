@@ -369,7 +369,8 @@ function stockConfg(angular){
     	    {operation: '@operation', id: '@id'},
 	    {
 		get_inventory_group: {method: 'POST', isArray: true},
-		get_inventory: {method: 'POST', isArray: true}
+		get_inventory: {method: 'POST', isArray: true},
+		print_new_note: {method: 'POST', isArray: true}
 	    }); 
 	
 	/*

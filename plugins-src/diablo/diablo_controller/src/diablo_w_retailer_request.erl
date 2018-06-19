@@ -772,8 +772,7 @@ action(Session, Req, {"export_recharge_detail"}, Payload) ->
     end;
 
 action(Session, Req, {"syn_retailer_pinyin"}, Payload) ->
-    ?DEBUG("syn_retailer_pinyin with session ~p", [Session]),
-
+    ?DEBUG("syn_retailer_pinyin with session ~p", [Session]), 
     Merchant = ?session:get(merchant, Session), 
     Retailers = ?v(<<"retailer">>, Payload, []),
     case ?w_retailer:syn(pinyin, Merchant, Retailers) of

@@ -89,6 +89,7 @@ create table shops
 create table suppliers
 (
     id              INTEGER AUTO_INCREMENT,
+    vfirm           INTEGER default -1, -- vfirm
     bcode           INTEGER default 0, -- use to bar code
     code            INTEGER default -1,
     name            VARCHAR(128) not null,
@@ -105,6 +106,19 @@ create table suppliers
     -- key             index_m (merchant),
     primary key     (id)
 ) default charset=utf8;
+
+create table vfirm(
+    id               INTEGER AUTO_INCREMENT,
+    name             VARCHAR(64) not null,
+    py		     VARCHAR(64) not null,
+    comment          VARCHAR(127) default null,
+    merchant         INTEGER default -1, -- type belong to
+    entry_date       DATETIME,
+    deleted          INTEGER default 0, -- 0: no;  1: yes
+
+    unique  key uk   (merchant, name),
+    primary key      (id)
+)default charset=utf8;
 
 create table firm_balance_history
 (

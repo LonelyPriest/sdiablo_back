@@ -414,6 +414,9 @@ init([]) ->
 	 {?new_virtual_firm,
 	  <<"新增虚拟厂商">>, <<"new_virtual_firm">>,  ?right_w_firm},
 
+	 {?update_virtual_firm, 
+	  <<"修改虚拟厂商">>, <<"update_virtual_firm">>,  ?right_w_firm},
+
 	 {?list_virtual_firm,
 	  <<"查看虚拟厂商">>, <<"list_virtual_firm">>,  ?right_w_firm} 
 	], 
@@ -1056,6 +1059,8 @@ pass_action(wholesaler) ->
      <<"list_firm">>,
      <<"get_firm_bill">>, 
      <<"filter_firm_bill_detail">>,
+     <<"filter_vfirm">>,
+     <<"match_vfirm">>,
 
      <<"update_user_passwd">>,
 

@@ -86,6 +86,12 @@ var diablo_good_sale = 0;
 var diablo_type_sale = 1;
 
 /*
+ * match mode
+ */
+var diablo_py_match = 0;
+var diablo_ch_match = 1;
+
+/*
  * ticket
  */
 var diablo_score_ticket = 0;
@@ -987,6 +993,10 @@ diablo_is_ascii_string = function(value) {
 diablo_is_chinese_string = function(value){
     return /^[\u4e00-\u9fa5]+$/.test(value);
 };
+
+diablo_py_or_ch_match = function(value) {
+    return diablo_is_ascii_string(value) ? diablo_py_match : diablo_ch_match;
+}
 
 
 var diabloHelp = function(){

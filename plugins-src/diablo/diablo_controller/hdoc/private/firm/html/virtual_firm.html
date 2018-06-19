@@ -1,0 +1,243 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="portlet box purple">
+      <div class="portlet-title">
+	<div class="caption">
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>厂商大类
+	</div>	
+
+	<div class="actions">
+	  <div class="btn-group btn-group-solid">
+	    <button type="button" class="btn btn-success"
+	  	    x-ng-click="new_vfirm()">新增
+	      <i class="glyphicon glyphicon-plus"></i></button>
+
+	    <button type="button" class="btn blue reload purple-stripe"
+		    x-ng-click="refresh()">刷新
+	      <i class="icon icon-spinner fg-white"></i></button>
+	  </div>
+	</div> 
+      </div>
+      
+      <!--BEGIN table container-->
+      <div class="portlet-body util-btn-margin-bottom-5">
+	<!--BEGIN table-toolbar-->
+	<div class="table-toolbar">
+	  <div class="row">
+	      <div class="col-xs-12 col-ms-12 col-md-12">
+	      	<div class="input-group">
+		  <div class="has-feedback">
+	      	    <input
+	      	       class="form-control"
+		       type ="text"
+		       focus-auto=true
+	      	       ng-edit
+	      	       placeholder="支持厂商名/拼音查找"
+	      	       typeahead-editable="false"
+		       typeahead-wait-ms="300"
+		       typeahead-loading="loading"
+	      	       uib-typeahead="s as s.name for s in match_vfirm($viewValue)"
+	      	       x-ng-model="select.vfirm"
+		       x-ng-enter="select.vfirm && do_search(default_page)"/>
+		    <span x-ng-show="loading">
+	  	      <i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
+		    </span>
+		  </div>
+		  <div class="input-group-btn">
+		    <button class="btn green"
+			    x-ng-disabled="!select.vfirm"
+			    x-ng-click="do_search(default_page)">
+	      	      <i class="glyphicon glyphicon-search"></i>
+	      	    </button>
+		  </div> 
+	      	</div> 
+	      </div> 
+	    </div> <!--END row-->
+
+	  <query-group filters="filters"
+		       prompt="prompt"
+		       ok="do_search(default_page)">
+	  </query-group>
+	</div> <!--END table-toolbar-->
+	
+	<!--BEGN portlet body--> 
+	<div class="portlet-body">
+	  <div class="table-responsive">
+	    <!--BEGIN table--> 
+	    <table class="table table-bordered
+			  table-striped table-hover table-condensed">
+	      <thead>
+		<tr>
+	    	  <th>序号</th> 
+		  <th>名称</th>
+		  <th>备注</th>
+		  <th>日期</th> 
+	    	  <th>操作</th>
+		</tr>
+	      </thead>
+	      <tbody>
+		<tr ng-repeat="v in vfirms">
+		  <td>{{v.order_id}}</td>
+		  <td>{{v.name}}</td>
+		  <td>{{v.comment}}</td>
+		  <td>{{v.entry_date}}</td>
+		  <td class="col-md-2">
+		    <span> 
+		      <button type="button" class="btn btn-warning diablo-button"
+		    	      ng-click="update_vfirm(v)">修改
+			<i class="glyphicon glyphicon-edit"></i></button> 
+		    </span>
+		  </td>
+		</tr> 
+	      </tbody>
+	    </table> <!--END table-->
+	  </div> <!--END table-responsive-->
+	</div> <!--END portlet body-->
+
+	<div x-ng-show="total_items>items_perpage" class="row">
+	  <div class="col-md-12, col-sm-12, col-xs-12">
+	    <span>显示第 {{current_page}} / {{num_pages}} 项结果，
+	      共 {{total_items}} 项</span>
+	    <uib-pagination
+	       class="pagination-lg table-pagination pull-right"
+	       total-items="total_items"
+	       items-per-page="items_perpage"
+	       num-pages="num_pages"
+	       max-size="max_page_size"
+	       boundary-links="true"
+	       previous-text="&lsaquo;" next-text="&rsaquo;"
+	       first-text="&laquo;" last-text="&raquo;"
+	       x-ng-model="current_page"
+	       x-ng-change="page_changed()">
+	    </uib-pagination>
+	  </div>
+	</div>
+	
+      </div> <!--END table container-->      
+    </div> <!--END box purle-->
+  </div><!--END col-md-12-->
+</div>
+
+<script type="text/ng-template" id="new-vfirm.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    
+    <h4 class="modal-title"><span class="label label-sm label-primary">新增厂商大类</span></h4>
+  </div>
+
+  <div class="modal-body">
+    <form class="form-horizontal" name="tForm" novalidate>
+      <div class="form-body">
+	
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">名称</label>
+	  <div class="col-sm-10 col-md-10">
+	    <div class="input-group">
+	      <input class="form-control"
+		     name="name"
+		     type="text"
+		     required
+		     capitalize
+		     focus-auto="true"
+		     placeholder="请输入名称/中文，英文或数字"
+		     x-ng-model="params.vfirm.name"
+		     x-ng-pattern="params.pattern.name"/>
+	      <span class="input-group-addon bg-white fg-red">*</span> 
+	    </div>
+	    <div ng-show="tForm.name.$invalid && !tForm.name.$pristine">
+	      <span class="fg-red">只能是中文，英文或数字</span>
+	    </div>
+	  </div> 
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">备注</label>
+	  <div class="col-sm-10 col-md-10">
+	    <input class="form-control"
+		   name="comment"
+		   type="text"
+		   placeholder="请输入中文，数字或英文"
+		   x-ng-model="params.vfirm.comment"
+		   x-ng-pattern="params.pattern.comment"/>
+	    <div ng-show="tForm.comment.$invalid && !tForm.comment.$pristine">
+	      <span class="fg-red">中文，数字或英文</span>
+	    </div>
+	  </div>
+	</div>
+	
+      </div>
+    </form>
+  </div>
+
+  <!--BEGIN modal-footer-->
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="tForm.$invalid"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
+  
+  <!--END modal-footer-->
+</script>
+
+<script type="text/ng-template" id="update-vfirm.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    
+    <h4 class="modal-title">
+      <span class="label label-sm label-primary">厂商大类编辑</span>
+    </h4>
+  </div>
+
+  <div class="modal-body">
+    <form class="form-horizontal" name="tForm" novalidate> 
+      <div class="form-body">
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">名称</label>
+	  <div class="col-sm-10 col-md-10">
+	    <input type="text"
+		   class="form-control"
+		   name="name"
+		   placeholder="请输入名称"
+		   required
+		   x-ng-pattern="params.pattern.name"
+		   x-ng-model="params.vfirm.name" />
+	    <div ng-show="tForm.name.$invalid && !tForm.name.$pristine">
+	      <span class="fg-red">只能是中文，字母或数字</span>
+	    </div>
+	  </div> 
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">备注</label>
+	  <div class="col-sm-10 col-md-10">
+	    <input class="form-control"
+		   name="comment"
+		   type="text"
+		   placeholder="请输入中文，数字或英文"
+		   x-ng-model="params.vfirm.comment"
+		   x-ng-pattern="params.pattern.comment"/>
+	    <div ng-show="tForm.spec.$invalid && !tForm.spec.$pristine">
+	      <span class="fg-red">中文，数字或英文</span>
+	    </div>
+	  </div>
+	</div>
+	
+      </div> 
+    </form>
+  </div>
+
+  <div class="modal-footer"> 
+    <button class="btn btn-primary"
+	    x-ng-disabled="tForm.$invalid"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
+  
+</script>

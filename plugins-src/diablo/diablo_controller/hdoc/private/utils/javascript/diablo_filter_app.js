@@ -73,7 +73,12 @@ function filterProvider(){
 	    "/purchaser/:operation", {operation: '@operation'},
 	    {query_by_post: {method: 'POST', isArray:true}});
 
-	var _goodHttp = $resource("/wgood/:operation/:id", {operation: '@operation', id:'@id'},
+	var _goodHttp = $resource("/wgood/:operation/:id",
+				  {operation: '@operation', id:'@id'},
+				  {query_by_post: {method: 'POST', isArray: true}});
+
+	var _firmHttp = $resource("/firm/:operation/:id",
+    				  {operation: '@operation', id: '@id'},
 				  {query_by_post: {method: 'POST', isArray: true}});
 
 	var _retailerHttp = $resource("/wretailer/:operation/:id",
@@ -100,6 +105,12 @@ function filterProvider(){
 
 	function list_purchaser_firm() {
 	    return _goodHttp.query({operation: "list_supplier"}).$promise;
+	};
+
+	function match_vfirm(viewValue, mode) {
+	    return _firmHttp.query_by_post(
+		{operation: "match_vfirm"},
+		{prompt_value: viewValue, mode:mode}).$promise;
 	};
 
 	function list_purchaser_size(){
@@ -526,6 +537,14 @@ function filterProvider(){
 				    balance: r.balance} 
 			})
 		    })
+	    },
+
+	    match_vfirm: function(viewValue, mode) {
+		return match_vfirm(viewValue, mode).then(function(vfirms){
+		    return vfirms.map(function(v) {
+			return {vid: v.id, name:v.name};
+		    });
+		});
 	    },
 
 	    get_stock_by_barcode: function(barcode, shop, firm) {

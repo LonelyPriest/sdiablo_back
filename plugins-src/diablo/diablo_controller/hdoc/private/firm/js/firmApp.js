@@ -92,8 +92,8 @@ function firmConfig(angular){
 		resolve: angular.extend({}, firm, region)
 	    }).
 	    // virtual firm
-	    when('/list_virutal_firm', {
-		templateUrl: '/private/firm/html/virutal_firm.html',
+	    when('/list_virtual_firm', {
+		templateUrl: '/private/firm/html/virtual_firm.html',
 		controller: 'virtualFirmCtrl',
 		resolve: angular.extend({}, firm, region)
 	    }). 
@@ -169,11 +169,34 @@ function firmConfig(angular){
 	this.delete_firm = function(firm){
 	    return http.save({operation: "delete_firm"},
 			     {firm_id: firm.id}).$promise;
-	}
+	};
 
 	this.list_firm = function(){
 	    return http.query({operation: "list_firm"}).$promise;
-	}
+	};
+
+	/*
+	 * virtual firm
+	 */
+	this.new_vfirm = function(vfirm){
+	    return http.save(
+		{operation:"new_virtual_firm"}, vfirm).$promise
+	};
+
+	this.update_vfirm = function(vfirm){
+	    return http.save(
+		{operation:"update_virtual_firm"}, vfirm).$promise
+	};
+	
+	
+	this.filter_vfirm = function(match, fields, currentPage, itemsPerpage) {
+	    return http.save(
+		{operation: "filter_vfirm"},
+		{match:  angular.isDefined(match) ? match.op : undefined,
+		 fields: fields,
+		 page:   currentPage,
+		 count:  itemsPerpage}).$promise;
+	};
 
 	/*
 	 * brand

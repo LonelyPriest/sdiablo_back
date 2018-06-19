@@ -139,6 +139,10 @@
 -define(GOOD_SALE, 0).
 -define(BRAND_TYPE_SALE, 1).
 
+%% Match Mode
+-define(PY_MATCH, 0).
+-define(CH_MATCH, 1).
+
 %% pagination
 -define(DEFAULT_ITEMS_PERPAGE, 5).
 
@@ -344,6 +348,8 @@
 -define(export_firm_profit,     ?right_w_firm + 15).
 -define(new_virtual_firm,       ?right_w_firm + 16).
 -define(list_virtual_firm,      ?right_w_firm + 17).
+-define(update_virtual_firm,    ?right_w_firm + 18).
+
 
 %% wprint
 -define(new_w_print_server,  ?right_w_print + 1).

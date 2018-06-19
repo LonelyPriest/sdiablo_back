@@ -35,24 +35,23 @@ pagination(no_response, TotalFun, PageFun, Payload) ->
     end;
 
 pagination(TotalFun, PageFun, Req, Payload) ->
-    Match                = ?value(<<"match">>, Payload, 'and'),
+    Match = ?value(<<"match">>, Payload, 'and'),
     {struct, Conditions} =
 	case ?value(<<"fields">>, Payload) of
 	    undefined ->
 		case ?value(<<"condition">>, Payload) of
 		    undefined -> {struct, []};
-		   {struct, Any} -> {struct, lists:keydelete(<<"region">>, 1, Any)}
+		    {struct, Any} -> {struct, lists:keydelete(<<"region">>, 1, Any)}
 		end; 
 	    {struct, Any} ->
 		{struct, lists:keydelete(<<"region">>, 1, Any)}
 	end,
 
     ?DEBUG("conditions ~p", [Conditions]),
-    CurrentPage          = ?value(<<"page">>, Payload, 1), 
-    ItemsPerPage         = ?value(<<"count">>, Payload, ?DEFAULT_ITEMS_PERPAGE),
+    CurrentPage  = ?value(<<"page">>, Payload, 1), 
+    ItemsPerPage = ?value(<<"count">>, Payload, ?DEFAULT_ITEMS_PERPAGE),
     
-
-    case page(Conditions, CurrentPage, fun(C) -> TotalFun(?to_a(Match), C) end) of
+    case page(Conditions, CurrentPage, fun(C) -> TotalFun(?to_a(Match), C) end) of 
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error);
 	{Total, Others} -> 
@@ -76,8 +75,16 @@ pagination(TotalFun, PageFun, Req, Payload) ->
     end.
 
 
-page([], 1, _TotalFun) ->
-    {0, []};
+page([], 1, TotalFun) ->
+    %% {0, []};
+    case TotalFun([]) of
+	{ok, []} ->
+	    {0, []};
+	{ok, R} ->
+	    {?v(<<"total">>, R), proplists:delete(<<"total">>, R)};
+	Error ->
+	    Error
+    end;
 page(Conditions, 1, TotalFun) ->
     case TotalFun(Conditions) of
 	{ok, []} ->

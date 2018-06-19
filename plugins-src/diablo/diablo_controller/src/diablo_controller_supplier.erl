@@ -22,6 +22,7 @@
 
 -export([supplier/2, supplier/3, filter/4, filter/6, bill/3, supplier/5]).
 -export([update/3, datetime2seconds/1, profit/4, sprofit/4, get_modified/2]).
+-export([match/3]).
 
 -define(SERVER, ?MODULE). 
 -define(tbl_supplier, "suppliers").
@@ -50,6 +51,14 @@ supplier(check_bill, Merchant, Attrs) ->
 supplier(abandon_bill, Merchant, Attrs) ->
     gen_server:call(?MODULE, {abandon_bill_supplier, Merchant, Attrs});
 
+%%
+%% vfirm
+%%
+supplier(new_vfirm, Merchant, Attrs) ->
+    gen_server:call(?MODULE, {new_vfirm, Merchant, Attrs});
+supplier(update_vfirm, Merchant, Attrs) ->
+    gen_server:call(?MODULE, {update_vfirm, Merchant, Attrs});
+
 supplier(page_total, Merchant, Conditions) ->
     gen_server:call(?MODULE, {page_total, Merchant, Conditions});
 supplier({page_list, Mode, Sort}, Merchant, Conditions) ->
@@ -58,15 +67,24 @@ supplier({page_list, Mode, Sort}, Merchant, Conditions, CurrentPage, ItemsPerPag
     gen_server:call(?MODULE, {page_list, {Mode, Sort}, Merchant, Conditions, CurrentPage, ItemsPerPage}).
 
 filter(total_bill, 'and', Merchant, Conditions) ->
-    gen_server:call(?MODULE, {total_bill, Merchant, Conditions}).
+    gen_server:call(?MODULE, {total_bill, Merchant, Conditions}); 
+filter(total_vfirm, 'and', Merchant, Conditions) ->
+    gen_server:call(?MODULE, {total_vfirm, Merchant, Conditions}).
+
 filter(bill, 'and', Merchant, CurrentPage, ItemsPerPage, Conditions) ->
     gen_server:call(?MODULE, {bill_detail,
+			      Merchant, CurrentPage, ItemsPerPage, Conditions});
+filter(vfirm, 'and', Merchant, CurrentPage, ItemsPerPage, Conditions) ->
+    gen_server:call(?MODULE, {vfirm_detail,
 			      Merchant, CurrentPage, ItemsPerPage, Conditions}).
 
 bill(lookup, Merchant, Conditions) ->
     gen_server:call(?MODULE, {bill_lookup, Merchant, Conditions});
 bill(check_time, Merchant, {Firm, Datetime}) ->
     gen_server:call(?MODULE, {bill_check_time, Merchant, Firm ,Datetime}).
+
+match(vfirm, Merchant, {Mode, Prompt}) -> 
+    gen_server:call(?MODULE, {match_vfirm, Merchant, Mode, Prompt}).
 
 profit(profit, Mode, Merchant, Conditions) ->
     gen_server:call(?MODULE, {profit, Mode, Merchant, Conditions}).
@@ -140,6 +158,7 @@ handle_call({w_new_supplier, Attrs}, _From, State)->
 handle_call({w_update_supplier, Merchant, Attrs}, _From, State) ->
     ?DEBUG("w_update_supplier with merhcant ~p, attrs ~p", [Merchant, Attrs]),
     FirmId   = ?v(<<"firm_id">>, Attrs),
+    VFirm    = ?v(<<"vid">>, Attrs),
     Name     = ?v(<<"name">>, Attrs), 
     Balance  = ?v(<<"balance">>, Attrs),
     %% OldBalance  = ?v(<<"old_balance">>, Attrs), 
@@ -149,6 +168,7 @@ handle_call({w_update_supplier, Merchant, Attrs}, _From, State) ->
     Comment  = ?v(<<"comment">>, Attrs),
 
     Updates = ?utils:v(name, string, Name)
+	++ ?utils:v(vfirm, integer, VFirm)
 	++ ?utils:v(balance, float, Balance)
 	++ ?utils:v(mobile,  string, Mobile)
 	++ ?utils:v(address, string, Address)
@@ -237,12 +257,24 @@ handle_call({w_delete_supplier, Merchant, Id}, _From, State) ->
 
 handle_call({w_list, Merchant}, _From, State) ->
     ?DEBUG("w_list with merchant ~p", [Merchant]),
-    Sql = "select id, bcode, name, mobile, address, expire, comment"
-	", balance, entry_date from suppliers"
+    Sql = "select a.id"
+	", a.vfirm as vid"
+	", a.bcode"
+	", a.name"
+	", a.mobile"
+	", a.address"
+	", a.expire"
+	", a.comment"
+	", a.balance"
+	", a.entry_date"
+
+	", b.name as vname"
+	" from suppliers a"
+	" left join vfirm b on a.vfirm =b.id"
 	++ " where "
-	++ " merchant=" ++ ?to_s(Merchant)
-	++ " and deleted = " ++ ?to_s(?NO)
-	++ " order by id",
+	++ " a.merchant=" ++ ?to_s(Merchant)
+	++ " and a.deleted = " ++ ?to_s(?NO)
+	++ " order by a.id",
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
@@ -301,7 +333,90 @@ handle_call({page_list, {Mode, Sort}, Merchant, Conditions, CurrentPage, ItemsPe
 	   end,
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
-	
+
+%%
+%% vfirm
+%%
+handle_call({new_vfirm, Merchant, Attrs}, _From, State)->
+    ?DEBUG("w_vfirm supplier with Attrs ~p", [Attrs]),
+    Name     = ?v(<<"name">>, Attrs),
+    Pinyin   = ?v(<<"py">>, Attrs, []), 
+    Comment  = ?v(<<"comment">>, Attrs, []),
+
+    %% name can not be same
+    Sql = "select id, name, merchant"
+	++ " from vfirm"
+	++ " where "
+	++ " name=" ++ "\"" ++ ?to_s(Name) ++ "\""
+	++ " and merchant=" ++ ?to_s(Merchant)
+	++ " and deleted=" ++ ?to_s(?NO),
+
+    case ?sql_utils:execute(read, Sql) of
+	{ok, []} ->
+	    Sql1 = "insert into vfirm"
+		++ "(name, py, comment, merchant, entry_date)"
+		++ " values ("
+		++ "\"" ++ ?to_s(Name) ++ "\","
+		++ "\"" ++ ?to_s(Pinyin) ++ "\","
+		++ "\"" ++ ?to_s(Comment) ++ "\","
+		++ ?to_s(Merchant) ++ ","
+		++ "\"" ++ ?utils:current_time(format_localtime) ++ "\");",
+	    Reply = ?sql_utils:execute(insert, Sql1),
+	    {reply, Reply, State};
+	{ok, _Any} ->
+	    ?DEBUG("merchant ~p has been exist", [Name]),
+	    {reply, {error, ?err(supplier_exist, Name)}, State};
+	Error ->
+	    {reply, Error, State}
+    end;
+
+handle_call({update_vfirm, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("update_vfirm with merhcant ~p, attrs ~p", [Merchant, Attrs]),
+    FirmId   = ?v(<<"fid">>, Attrs),
+    Name     = ?v(<<"name">>, Attrs),
+    Pinyin   = ?v(<<"py">>, Attrs, []), 
+    Comment  = ?v(<<"comment">>, Attrs),
+
+    Updates = ?utils:v(name, string, Name)
+	++ ?utils:v(py, string, Pinyin)
+	++ ?utils:v(comment, string, Comment), 
+
+    Sql1 = ["update vfirm" ++ " set "
+	    ++ ?utils:to_sqls(proplists, comma, Updates)
+	    ++ " where id=" ++ ?to_s(FirmId)
+	    ++ " and merchant=" ++ ?to_s(Merchant)],
+    
+
+    DoUpdate =
+	fun() ->
+		?sql_utils:execute(write, Sql1, FirmId)
+	end,
+
+    Sql = "select id, name, merchant"
+	++ " from vfirm "
+	++ " where "
+	++ " name=" ++ "\"" ++ ?to_s(Name) ++ "\""
+	++ " and merchant=" ++ ?to_s(Merchant)
+	++ " and deleted=" ++ ?to_s(?NO),
+
+    Reply = 
+	case Name of
+	    undefined ->
+		DoUpdate();
+	    _ ->
+		case ?sql_utils:execute(s_read, Sql) of
+		    {ok, []} ->
+			DoUpdate();
+		    {ok, _} ->
+			{error, ?err(supplier_exist, Name)};
+		    Error ->
+			Error
+		end
+	end,
+
+    {reply, Reply, State}; 
+
+
 %% brand
 handle_call({new_brand, Attrs}, _From, State)->
     ?DEBUG("new brand with Attrs ~p", [Attrs]),
@@ -802,6 +917,45 @@ handle_call({bill_check_time, Merchant, Firm, Datetime}, _From, State) ->
 	{ok, _} -> {reply, {error, ?err(bill_at_same_time, Firm)}, State};
 	Error -> {reply, Error, State}
     end;
+
+handle_call({total_vfirm, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("total_vfirm with merchant ~p, conditions ~p", [Merchant, Conditions]),
+    CountSql = "count(*) as total", 
+    Sql = ?sql_utils:count_table(vfirm, CountSql, Merchant, Conditions), 
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+handle_call({vfirm_detail, Merchant, CurrentPage, ItemsPerPage, Conditions}, _From, State) ->
+    ?DEBUG("vfirm_detail:  merchant ~p, currentPage ~p, ItemsPerpage ~p~nfields ~p",
+	   [Merchant, CurrentPage, ItemsPerPage, Conditions]),
+
+    {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
+    Sql = "select id"
+	", name"
+	", comment"
+	", py"
+	", entry_date"
+	" from vfirm"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage), 
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({match_vfirm, Merchant, Mode, Prompt}, _From, State) ->
+    ?DEBUG("match_vfirm: merchant ~p, Mode ~p, Prompt ~p", [Merchant, Mode, Prompt]),
+    Sql = "select id, name from vfirm"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ case Mode of
+	       ?PY_MATCH ->
+		   " and py like '%" ++ ?to_s(Prompt) ++ "%'";
+	       ?CH_MATCH ->
+		   " and name like '%" ++ ?to_s(Prompt) ++ "%'"
+	   end
+	++ " order by id desc limit 20",
+
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State}; 
 
 handle_call({profit, sale_of_firm, Merchant, Conditions}, _From, State) ->
     ?DEBUG("sale_of_firm: Merchant ~p, conditions ~p", [Merchant, Conditions]),
