@@ -504,7 +504,8 @@ function virtualFirmCtrlProvide(
     $scope, diabloUtilsService, diabloFilter, diabloPattern, firmService){
     $scope.pattern = {
 	name:    diabloPattern.ch_en_num_beside_underline_bars,
-	comment: diabloPattern.comment
+	comment: diabloPattern.comment,
+	address: diabloPattern.ch_name_address,
     };
 
     $scope.max_page_size = diablo_max_page_size();
@@ -549,7 +550,8 @@ function virtualFirmCtrlProvide(
 	var callback = function(params){
 	    console.log(params.vfirm);
 	    var v = {name: params.vfirm.name,
-		     py: diablo_pinyin(params.vfirm.name),
+		     address: params.vfirm.address,
+		     py: diablo_pinyin(params.vfirm.name), 
 		     comment: params.vfirm.comment};
 	    
 	    firmService.new_vfirm(v).then(function(result){
@@ -583,17 +585,20 @@ function virtualFirmCtrlProvide(
     $scope.update_vfirm = function(vfirm){
 	console.log(vfirm);
 	var callback = function(params){
-	    console.log(params.ctype); 
-	    if (params.vfirm.name === vfirm.name){
+	    console.log(params.vfirm); 
+	    if (params.vfirm.name === vfirm.name
+		&& params.vfirm.address === vfirm.address
+		&& params.vfirm.comment === vfirm.comment){
 		dialog.response(
-		    false, "厂商大类编辑", baseService.error[8010], undefined);
+		    false, "厂商大类编辑", firmService.error[1699], undefined);
 		return;
 	    }; 
 
 	    var update = {
 		fid:  vfirm.id,
 		name: diablo_get_modified(params.vfirm.name, vfirm.name),
-		py:   diablo_get_modified(diablo_pinyin(params.vfirm.name, vfirm.py)),
+		address: diablo_get_modified(params.vfirm.address, vfirm.address),
+		py:   diablo_get_modified(diablo_pinyin(params.vfirm.name), vfirm.py),
 		comment: diablo_get_modified(params.vfirm.comment, vfirm.comment)
 	    }; 
 	    console.log(update);

@@ -64,6 +64,8 @@ var rightAuthen = {
 	    
 	    cancel_stock_transfer: rightAuthen.root_right._stock + 20,
 	    gift_w_stock: rightAuthen.root_right._stock + 30,
+
+	    print_w_stock_new_note: rightAuthen.root_right._stock + 31,
 	    
 	    update_tprice_on_stock_in: rightAuthen.root_right._stock + 32,
 	    update_oprice_on_stock_in: rightAuthen.root_right._stock + 33,
@@ -224,9 +226,15 @@ diabloAuthen.prototype.printStockIn = function() {
     return this.authenStock('print_w_stock_new');
 };
 
+diabloAuthen.prototype.printStockNote = function() {
+    return this.authenStock('print_w_stock_new_note');
+};
+
+
 diabloAuthen.prototype.updateStock = function() {
     return this.authenStockByShop('update_w_stock');
 };
+
 
 diabloAuthen.prototype.checkStock = function() {
     return this.authenStockByShop('check_w_stock');
@@ -299,7 +307,8 @@ diabloAuthen.prototype.authenStockRight = function() {
 
 	check_w_stock          :this.checkStock(),
 	delete_w_stock         :this.deleteStock(),
-	print_w_stock          :this.printStockIn()
+	print_w_stock          :this.printStockIn(),
+	print_w_stock_note     :this.printStockNote()
     }
 };
 

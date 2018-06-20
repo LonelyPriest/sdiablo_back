@@ -90,8 +90,7 @@
 	  	</span>
 	  	<select class="form-control" type="text"
 	  		x-ng-model="select.employee"
-	  		x-ng-options="e as e.name for e in
-	  			  employees|filter:$viewValue|limitTo:8">
+	  		x-ng-options="e as e.name for e in employees|filter:$viewValue">
 		</select> 
 	      </div>
 	    </div> 
@@ -177,7 +176,7 @@
 		<select class="form-control" type="text"
 	  		x-ng-model="select.extra_pay_type"
 	  		x-ng-options="ex as ex.name for ex in
-	  			      extra_pay_types|filter:$viewValue|limitTo:8">
+				      extra_pay_types|filter:$viewValue">
 		</select> 
 	      </div>
 	    </div>
@@ -217,6 +216,7 @@
 		  <tr>
 		    <th class="text-center">序号</th>
 		    <th class="text-center">货号</th>
+		    <th x-ng-if="setting.scan_mode" class="text-center">条码</th>
 		    <th class="text-center">品名</th>
 		    <th class="text-center">类别</th> 
 		    <th class="text-center">季节</th>
@@ -233,27 +233,25 @@
 		  <tr class="text-center" ng-repeat="inv in inventories"> 
 		    <td>{{inv.order_id}}</td>
 
-		    <!-- <td x-ng-if="q_prompt===0" class="col-md-2 text-left vert-align"> -->
-		    <!--   <span ng-if="!inv.$new">{{inv.style_number}}</span> -->
-		    <!--   <form name="inv.form.good" ng-if="inv.$new"> -->
-		    <!-- 	<div ng-class="{'has-error':inv.form.good.$invalid -->
-		    <!-- 		       && !inv.form.good.$pristine}"> -->
-		    <!-- 	  <input class="form-control text-left" type="text" -->
-		    <!-- 		 required -->
-		    <!-- 		 focus-auto="focus.style_number" -->
-		    <!-- 		 x-ng-model="inv.style_number" -->
-		    <!-- 		 placeholder="货号" -->
-		    <!-- 		 typeahead-editable="false" -->
-		    <!-- 		 typeahead-on-select="on_select_inventory($item, $model, $label)" -->
-		    <!-- 		 uib-typeahead="g as g.name for g in -->
-		    <!-- 			    all_prompt_inventory|filter:{prompt:$viewValue}|limitTo:prompt_limit"/> -->
-		    <!-- 	</div> -->
-		    <!--   </form> -->
-		    <!-- </td> -->
+		    <td x-ng-if="setting.scan_mode" class="col-md-2 text-left vert-align">
+	  	      <span ng-if="!inv.$new">{{inv.full_bcode}}</span>
+	  	      <form x-ng-if="inv.$new" name="inv.form.bcode">
+	  		<div ng-class="{'has-error':inv.form.bcode.$invalid && !inv.form.bcode.$pristine}">
+	  		  <input class="form-control text-left"
+	  			 type="text"
+	  			 required
+	  			 x-ng-model="inv.full_bcode"
+	  			 focus-auto="focus.barcode"
+	  			 placeholder="条码"
+	  			 barcode-scanner
+	  			 scanner="barcode_scanner"/>
+	  		</div>
+	  	      </form>
+	  	    </td>
 		    
 		    <td class="col-md-2 text-left vert-align">
 		      <span ng-if="!inv.$new">{{inv.style_number}}</span>
-		      <form name="inv.form.good" ng-if="inv.$new">
+		      <form x-ng-if="inv.$new" name="inv.form.good">
 			<div ng-class="{'has-error':inv.form.good.$invalid && !inv.form.good.$pristine}">
 			  <input class="form-control text-left" type="text"
 				 required
@@ -339,6 +337,7 @@
 				 type="number" step="1" 
 				 required
 				 disable-key
+				 x-ng-edit
 				 x-ng-pattern="pattern.amount"
 				 x-ng-model="inv.amounts[0].reject_count"
 				 x-ng-change="auto_save_free(inv)"

@@ -30,12 +30,25 @@ function purchaserInventoryRejectCtrlProvide(
     $scope.timeout_auto_save = undefined;
     // $scope.invalid_stock     = false;
     // $scope.round             = diablo_round;
-    $scope.setting           = {
-	reject_negative: false,
-	check_orgprice: stockUtils.check_oprice_with_reject_stock(-1, base)
-    };
 
-    $scope.disable_refresh   = true;
+    $scope.setting = {};
+    $scope.get_setting = function(shop_id) {
+	$scope.setting.reject_negative = stockUtils.reject_negative(shop_id, base);
+	
+	$scope.setting.check_orgprice =
+	    stockUtils.check_oprice_with_reject_stock(diablo_default_shop, base);
+
+	$scope.setting.scan_mode =
+	    stockUtils.to_integer(stockUtils.scan_mode(shop_id, base).charAt(2));
+
+	$scope.setting.auto_barcode = stockUtils.auto_barcode(diablo_default_shop, base); 
+	// $scope.setting.type_sale = stockUtils.type_sale(shop_id, base);
+
+	console.log($scope.setting);
+	
+    } 
+
+    $scope.disable_refresh = true;
 
     $scope.go_back = function(){
 	diablo_goto_page("#/inventory_new_detail");
@@ -43,30 +56,8 @@ function purchaserInventoryRejectCtrlProvide(
 
     var authen = new diabloAuthen(user.type, user.right, user.shop);
     $scope.stock_right = authen.authenStockRight(); 
-
-    // $scope.stock_right = {
-    // 	show_orgprice: rightAuthen.authen(
-    // 	    user.type,
-    // 	    rightAuthen.rainbow_action()['show_orgprice'],
-    // 	    user.right
-    // 	),
-
-    // 	show_balance: rightAuthen.authen(
-    // 	    user.type,
-    // 	    rightAuthen.rainbow_action()['show_balance_onstock'],
-    // 	    user.right
-    // 	),
-
-    // 	update_price: rightAuthen.authen(
-    // 	    user.type,
-    // 	    rightAuthen.stock_action()['update_price_of_w_stock_reject'],
-    // 	    user.right
-    // 	),
-    // };
-
-    // console.log($scope.stock_right);
-
-    $scope.focus = {style_number:false, reject: false};
+    
+    $scope.focus = {barcode: false, style_number:false, reject: false};
     $scope.auto_focus = function(attr){
 	console.log($scope.focus, attr);
 	if (!$scope.focus[attr]){
@@ -76,9 +67,14 @@ function purchaserInventoryRejectCtrlProvide(
 	    if (o !== attr) $scope.focus[o] = false;
 	}
 	console.log($scope.focus, attr);
-    }; 
-    $scope.auto_focus('style_number');
+    };
 
+    $scope.focus_good_or_barcode = function() {
+	if ($scope.setting.scan_mode)
+	    $scope.auto_focus('barcode');
+	else
+	    $scope.auto_focus('style_number');
+    };
     
     // init
     var now = $.now(); 
@@ -97,54 +93,39 @@ function purchaserInventoryRejectCtrlProvide(
 	extra_pay_type: $scope.extra_pay_types[0]
     };
 
-    // if ($scope.firms.length !== 0){
-    // 	$scope.select.firm = $scope.firms[0];
-    // 	$scope.select.surplus = parseFloat($scope.select.firm.balance);
-    // 	$scope.select.left_balance   = $scope.select.surplus;
-    // }
-
+    // setting
+    $scope.get_setting($scope.select.shop.id);
+    $scope.focus_good_or_barcode();
+    
     $scope.get_employee = function(){
 	var select = stockUtils.get_login_employee(
-	    $scope.select.shop.id, user.loginEmployee, filterEmployee); 
+	    $scope.select.shop.id,
+	    user.loginEmployee,
+	    filterEmployee);
+	
 	$scope.select.employee = select.login;
 	$scope.employees = select.filter; 
     }; 
     $scope.get_employee();
 
     $scope.get_prompt_firm = function(prompt){
-	return stockUtils.get_prompt_firm(prompt, $scope.firms)};
-    
-    $scope.$watch("select.firm", function(newValue, oldValue){
-    	if (newValue === oldValue) return;
-    	$scope.change_firm();
-    });
-    
-    $scope.change_firm = function(){
-	console.log($scope.select.firm);
-	$scope.select.surplus = 0;
-	$scope.select.left_balance = 0;
-	if (diablo_invalid_firm !== stockUtils.invalid_firm($scope.select.firm)){
-	    $scope.select.surplus = parseFloat($scope.select.firm.balance);
-	    $scope.select.left_balance = $scope.select.surplus; 
-	}
-	
-	$scope.re_calculate();
-
-	if ($scope.q_prompt === diablo_frontend){
-	    $scope.get_all_prompt_inventory();
-	}
-    };
+	return stockUtils.get_prompt_firm(prompt, $scope.firms)}; 
 
     $scope.change_shop = function(){
-	$scope.setting.reject_negative = stockUtils.reject_negative(
-	    $scope.select.shop.id, base); 
-	$scope.q_prompt = stockUtils.typeahead($scope.select.shop.id, base);
-	$scope.select.firm = undefined; 
-	if ($scope.q_prompt === diablo_frontend){
-	    $scope.get_all_prompt_inventory();
-	}
-
+	$scope.get_setting();
 	$scope.get_employee();
+    };
+
+     $scope.change_firm = function(){
+	 console.log($scope.select.firm);
+	 $scope.select.surplus = 0;
+	 $scope.select.left_balance = 0;
+	 if (diablo_invalid_firm !== stockUtils.invalid_firm($scope.select.firm)){
+	     $scope.select.surplus = stockUtils.to_float($scope.select.firm.balance);
+	     $scope.select.left_balance = $scope.select.surplus; 
+	 }
+	 
+	 $scope.re_calculate(); 
     };
 
     $scope.refresh = function(){
@@ -207,34 +188,9 @@ function purchaserInventoryRejectCtrlProvide(
 	$scope.isOpened = true;
     }; 
 
-    $scope.q_prompt = stockUtils.typeahead($scope.select.shop.id, base);
-    $scope.prompt_limit = stockUtils.prompt_limit($scope.select.shop.id, base);
-    $scope.setting.reject_negative = stockUtils.reject_negative(
-	$scope.select.shop.id, base); 
-    $scope.qtime_start = function(shopId){
-	return stockUtils.start_time(shopId, base, now, dateFilter); 
-    };
-
-    // console.log($scope.setting);
-    // $scope.get_all_prompt_inventory = function(){
-    // 	diabloFilter.match_all_w_reject_inventory(
-    // 	    $scope.qtime_start($scope.select.shop.id),
-    // 	    $scope.select.shop.id,
-    // 	    stockUtils.invalid_firm($scope.select.firm)
-    // 	).then(function(invs){
-    // 	    // console.log(invs);
-    // 	    $scope.all_prompt_inventory = invs.sort(function(inv1, inv2){
-    // 		return inv1.style_number.length - inv2.style_number.length;
-    // 	    }).map(function(inv){
-    // 		var p = stockUtils.prompt_name(inv.style_number, inv.brand, inv.type);
-    // 		return angular.extend(inv, {name:p.name, prompt:p.prompt}); 
-    // 	    });
-    // 	});
-    // };
-
-    // if ($scope.q_prompt === diablo_frontend){
-    // 	$scope.get_all_prompt_inventory()
-    // };
+    // $scope.qtime_start = function(shopId){
+    // 	return stockUtils.start_time(shopId, base, now, dateFilter); 
+    // }; 
 
     $scope.match_prompt_inventory = function(viewValue){
 	return diabloFilter.match_w_reject_inventory(
@@ -244,21 +200,21 @@ function purchaserInventoryRejectCtrlProvide(
     $scope.on_select_inventory = function(item, model, label){
 	console.log(item); 
 	// has been added
+	var existStock = undefined;
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    if (item.style_number === $scope.inventories[i].style_number
-		&& item.brand_id  === $scope.inventories[i].brand_id){
-		diabloUtilsService.response_with_callback(
-		    false, "退货", "退货失败：" + purchaserService.error[2099],
-		    $scope, function(){
-			$scope.inventories[0] = {$edit:false, $new:true}});
-		return;
+	    	&& item.brand_id  === $scope.inventories[i].brand_id){
+	    	// diabloUtilsService.response_with_callback(
+	    	//     false, "退货", "退货失败：" + purchaserService.error[2099],
+	    	//     $scope, function(){$scope.inventories[0] = {$edit:false, $new:true}});
+	    	// return;
+		existStock = $scope.inventories[i];
 	    }
 
 	    if (item.firm_id !== $scope.inventories[i].firm_id){
 		diabloUtilsService.response_with_callback(
 		    false, "退货", "退货失败：" + purchaserService.error[2093],
-		    $scope, function(){
-			$scope.inventories[0] = {$edit:false, $new:true}});
+		    $scope, function(){$scope.inventories[0] = {$edit:false, $new:true}});
 		return;
 	    };
 	}
@@ -267,38 +223,48 @@ function purchaserInventoryRejectCtrlProvide(
 	    $scope.select.firm = diablo_get_object(item.firm_id, $scope.firms);
 	    $scope.change_firm();
 	};
-	
-	// add at first allways 
-	var add = $scope.inventories[0];
 
-	// add at first allways 
-	var add = $scope.inventories[0];
-	add.id           = item.id;
-	add.style_number = item.style_number;
-	add.brand        = item.brand;
-	add.brand_id     = item.brand_id;
-	add.type         = item.type;
-	add.type_id      = item.type_id;
-	add.firm_id      = item.firm_id;
-	add.s_group      = item.s_group;
-	add.free         = item.free; 
-	add.sex          = item.sex;
-	add.season       = item.season;
-	add.org_price    = item.org_price;
-	add.tag_price    = item.tag_price;
-	add.ediscount    = item.ediscount;
-	add.discount     = item.discount;
-	add.year         = item.year;
-	add.path         = item.path;
-	console.log(add);
+	if (angular.isDefined(existStock)) {
+	    $scope.update_inventory(
+		existStock, function() {$scope.inventories[0] = {$edit:false, $new:true}})
+	} else {
+	    // add at first allways 
+	    var add = $scope.inventories[0];
+	    add.id           = item.id;
+	    add.bcode        = item.bcode;
+	    add.full_bcode   = item.full_bcode; 
+	    add.style_number = item.style_number;
+	    add.brand        = item.brand;
+	    add.brand_id     = item.brand_id;
+	    add.type         = item.type;
+	    add.type_id      = item.type_id;
+	    add.firm_id      = item.firm_id;
+	    add.s_group      = item.s_group;
+	    add.free         = item.free; 
+	    add.sex          = item.sex;
+	    add.season       = item.season;
+	    add.org_price    = item.org_price;
+	    add.tag_price    = item.tag_price;
+	    add.ediscount    = item.ediscount;
+	    add.discount     = item.discount;
+	    add.year         = item.year;
+	    add.path         = item.path;
+	    console.log(add);
 
-	$scope.add_inventory(add);
+	    $scope.add_inventory(add);
+	} 
+    };
 
-	// auto focus
-	// $scope.auto_focus("reject");
-	
-	return;
-    }; 
+    $scope.barcode_scanner = function(barcode) {
+	diabloHelp.scanner(
+	    barcode,
+	    $scope.setting.auto_barcode,
+	    $scope.select.shop.id,
+	    diabloFilter.get_stock_by_barcode,
+	    diabloUtilsService,
+	    "采购退货",
+	    $scope.on_select_inventory)
+    };
     
     /*
      * save all
@@ -491,10 +457,10 @@ function purchaserInventoryRejectCtrlProvide(
 	// add new line
 	$scope.inventories.unshift({$edit:false, $new:true});
 	
-	$scope.re_calculate();
-
+	$scope.re_calculate(); 
 	// auto_focus
-	$scope.auto_focus("style_number");
+	// $scope.auto_focus("style_number");
+	$scope.focus_good_or_barcode();
     };
     
     $scope.add_inventory = function(inv){
@@ -541,7 +507,8 @@ function purchaserInventoryRejectCtrlProvide(
 		$scope.re_calculate();
 
 		// auto focus
-		$scope.auto_focus("style_number");
+		// $scope.auto_focus("style_number");
+		$scope.focus_good_or_barcode();
 	    };
 	    
 	    var callback = function(params){
@@ -620,12 +587,13 @@ function purchaserInventoryRejectCtrlProvide(
     /*
      * update inventory
      */
-    $scope.update_inventory = function(inv){
+    $scope.update_inventory = function(inv, updateCallback){
 	inv.$update = true; 
 	if (inv.free_color_size){
 	    inv.free_update = true;
 	    inv.o_org_price = inv.org_price;
 	    inv.o_ediscount = inv.ediscount;
+	    $scope.auto_focus("reject");
 	    return;
 	}
 	
@@ -641,7 +609,10 @@ function purchaserInventoryRejectCtrlProvide(
 	    inv.org_price = params.org_price;
 	    inv.ediscount = params.ediscount;
 	    
-	    $scope.re_calculate(); 
+	    $scope.re_calculate();
+
+	    if (angular.isDefined(updateCallback) && angular.isFunction(updateCallback))
+		updateCallback();
 	};
 
 	var payload = {sizes:        inv.sizes,
@@ -666,7 +637,11 @@ function purchaserInventoryRejectCtrlProvide(
 	$timeout.cancel($scope.timeout_auto_save); 
 	inv.free_update = false;
 	inv.reject      = inv.amounts[0].reject_count;
-	$scope.re_calculate(); 
+	$scope.re_calculate();
+
+	// reset
+	$scope.inventories[0] = {$edit:false, $new:true};
+	$scope.focus_good_or_barcode();
     }
 
     $scope.cancel_free_update = function(inv){
@@ -686,14 +661,23 @@ function purchaserInventoryRejectCtrlProvide(
 
     var timeout_auto_save = undefined;
     $scope.auto_save_free = function(inv){
-	console.log(inv);
+	// console.log(inv);
 	$timeout.cancel($scope.timeout_auto_save);
-	// $scope.invalid_stock = false; 
-	if (0 === stockUtils.to_integer(inv.amounts[0].reject_count)
-	    || 0 === inv.ediscount
-	    || 0 === stockUtils.to_float(inv.org_price)
-	    || angular.isUndefined(inv.style_number)){
-	    // $scope.invalid_stock = true;
+	// $scope.invalid_stock = false;
+	if (0 === stockUtils.to_integer(inv.amounts[0].reject_count))
+	    return;
+
+	if (!diablo_set_string(inv.style_number)) {
+	    diabloUtilsService.response(
+	    	false,
+	    	"采购退货",
+	    	"采购退货失败：款号为空，请重新操作！！");
+	    return;
+	}
+	    
+	    
+	if (0 === stockUtils.to_float(inv.org_price)
+	    || 0 == stockUtils.to_float(inv.tag_price)){
 	    diabloUtilsService.response(
 	    	false,
 	    	"采购退货",

@@ -70,6 +70,7 @@
 		<tr>
 	    	  <th>序号</th> 
 		  <th>名称</th>
+		  <th>地址</th>
 		  <th>备注</th>
 		  <th>日期</th> 
 	    	  <th>操作</th>
@@ -79,6 +80,7 @@
 		<tr ng-repeat="v in vfirms">
 		  <td>{{v.order_id}}</td>
 		  <td>{{v.name}}</td>
+		  <td>{{v.address}}</td>
 		  <td>{{v.comment}}</td>
 		  <td>{{v.entry_date}}</td>
 		  <td class="col-md-2">
@@ -154,6 +156,21 @@
 	</div>
 
 	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">地址</label>
+	  <div class="col-sm-10 col-md-10">
+	    <input type="text"
+		   class="form-control"
+		   name="address"
+		   placeholder="请输入厂商地址"
+		   x-ng-model="params.vfirm.address"
+		   x-ng-pattern="params.pattern.address"/> 
+	  </div>
+	  <div ng-show="tForm.address.$invalid && !tForm.address.$pristine">
+	    <span class="fg-red">中文，字母，数字，不支持特殊字符</span> 
+	  </div> 
+	</div>
+
+	<div class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label">备注</label>
 	  <div class="col-sm-10 col-md-10">
 	    <input class="form-control"
@@ -211,6 +228,21 @@
 	    <div ng-show="tForm.name.$invalid && !tForm.name.$pristine">
 	      <span class="fg-red">只能是中文，字母或数字</span>
 	    </div>
+	  </div> 
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">地址</label>
+	  <div class="col-sm-10 col-md-10">
+	    <input type="text"
+		   class="form-control"
+		   name="address"
+		   placeholder="请输入厂商地址"
+		   x-ng-model="params.vfirm.address"
+		   x-ng-pattern="params.pattern.address"/> 
+	  </div>
+	  <div ng-show="tForm.address.$invalid && !tForm.address.$pristine">
+	    <span class="fg-red">中文，字母，数字，不支持特殊字符</span> 
 	  </div> 
 	</div>
 

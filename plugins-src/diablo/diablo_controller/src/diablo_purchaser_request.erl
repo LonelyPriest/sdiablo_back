@@ -1209,12 +1209,11 @@ action(Session, Req, {"print_w_inventory_new_note"}, Payload) ->
     
     {ok, Transes} = ?w_inventory:export(trans_note, Merchant, C, []),
     Dict = note_to_dict_by_firm(Transes, dict:new()),
-    ?DEBUG("dict note ~p", [dict:to_list(Dict)]),
+    %% ?DEBUG("dict note ~p", [dict:to_list(Dict)]),
 
     %% sort by shop
     Keys = dict:fetch_keys(Dict),
-    ?DEBUG("keys ~p", [Keys]),
-
+    %% ?DEBUG("keys ~p", [Keys]), 
     SortAll = 
     	lists:foldr(
     	  fun(Key, Acc) ->
@@ -1222,14 +1221,28 @@ action(Session, Req, {"print_w_inventory_new_note"}, Payload) ->
     		      error ->
     			  Acc;
     		      {ok, Notes} ->
+			  [{N}|_T] = Notes,
+			  ?DEBUG("N ~p", [N]),
     			  [{[{<<"fid">>, Key},
-			   {<<"note">>, Notes}]}|Acc]
+			     {<<"firm">>, case ?v(<<"vfirm">>, N, <<>>) of
+					      <<>> ->
+						  ?v(<<"firm">>, N, <<>>);
+					      _Firm ->
+						  _Firm
+					  end},
+			     {<<"addr">>, case ?v(<<"vfirm_addr">>, N, <<>>) of
+					      <<>> ->
+						  ?v(<<"firm_addr">>, N, <<>>);
+					       _Addr ->
+						   _Addr
+					  end},
+			     {<<"note">>, Notes}]}|Acc]
     		  end
 		  
     	  end, [], Keys), 
-    ?DEBUG("SortAll ~p", [SortAll]), 
+    %% ?DEBUG("SortAll ~p", [SortAll]), 
     ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
-				       {<<"note">>, SortAll}]}).
+				       {<<"data">>, SortAll}]}).
 
 
 print_inventory_new(sort_by_color, _Key, [], _DictNote, Acc) ->

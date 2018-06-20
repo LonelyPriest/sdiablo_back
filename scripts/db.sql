@@ -111,6 +111,7 @@ create table vfirm(
     id               INTEGER AUTO_INCREMENT,
     name             VARCHAR(64) not null,
     py		     VARCHAR(64) not null,
+    address          VARCHAR(256) default '',
     comment          VARCHAR(127) default null,
     merchant         INTEGER default -1, -- type belong to
     entry_date       DATETIME,

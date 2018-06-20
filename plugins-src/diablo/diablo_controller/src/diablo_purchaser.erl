@@ -2820,8 +2820,10 @@ handle_call({new_trans_note_export, Merchant, Conditions}, _From, State)->
 	", b.name as brand"
 	", d.name as type"
 	
-	", e.name as firm"
-	", e.vid  as vfirm_id"
+	", e.name  as firm"
+	", e.addr  as firm_addr"
+	", e.vid   as vfirm_id"
+	", e.vaddr as vfirm_addr"
 	", e.vname as vfirm"
 	
 	", f.name as shop"
@@ -2852,7 +2854,9 @@ handle_call({new_trans_note_export, Merchant, Conditions}, _From, State)->
 	" left join inv_types d on a.type_id=d.id"
     %% " left join suppliers e on a.firm_id=e.id"
 	" left join "
-	"(select a.id, a.vfirm as vid, a.name, b.name as vname"
+	"(select a.id, a.vfirm as vid, a.name, a.address as addr"
+	", b.name as vname"
+	", b.address as vaddr"
 	" from suppliers a left join vfirm b"
 	" on a.merchant=b.merchant and a.vfirm=b.id"
 	" where a.merchant=" ++ ?to_s(Merchant) ++ ") e on a.firm_id=e.id"

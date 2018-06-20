@@ -22,66 +22,65 @@
       
       <!--BEGN portlet body--> 
       <div id="stock_new" class="portlet-body">
-	<!--BEGIN panel-->
-	<h3 style="text-align:center">
-	  <span x-ng-bind=detail.shop.name></span>
-	  <span x-ng-if="detail.type===0">（入库）</span>
-	  <span x-ng-if="detail.type===1">（退货）
+	<div id={{n.fid}} x-ng-repeat="n in notes">
+	  <h2 style="text-align:center">
+	    <span x-ng-bind=n.firm></span> 
+	    <span>（</span><span x-ng-bind=n.total></span><span>）</span>
+	    <span x-ng-bind=search.start_time></span>
+	  </h2>
+	  <h3 style="text-align:center">
+	    <span x-ng-bind=n.addr></span>
+	  </h3>
+	  
+	  <h3 style="text-align:center">
 	    <span x-ng-if="rbill_comment">{{rbill_comment}}</span>
-	  </span> 
-	</h3> 
-	<h5>
-	  <div style="text-align:center">
-	    <span>日期：<span x-ng-bind=detail.entry_date></span></span>
-	    &nbsp&nbsp&nbsp&nbsp<span>单号：<span x-ng-bind=detail.rsn></span></span>
-	    &nbsp&nbsp&nbsp&nbsp<span>厂商：<span x-ng-bind=detail.firm.name></span></span>
-	    &nbsp&nbsp&nbsp&nbsp<span>经手人：<span x-ng-bind=detail.employee.name></span></span>
-	  </div>
-	</h5>
-	<div class="table-responsive">
-	  <table class="table table-bordered table-striped" style="margin-bottom:5px"> 
-	      <thead>
-		<tr>
-		  <th class="text-center">序号</th>
-		  <th class="text-center">货号</th>
-		  <th class="text-center">品名</th>
-		  <th class="text-center">类型</th>
-		  <th class="text-center">小计</th>
-		  <th class="text-center">数量</th>
-		  <th class="text-center">颜色</th>
-		  <th class="text-center">尺码</th> 
-		</tr>
-	      </thead>
-	      
-	      <tbody>
-		<tr x-ng-repeat="n in notes"> 
-		  <td class="text-center">{{n.order_id}}</td>
-		  <td class="text-center">{{n.style_number}}</td>
-		  <td class="text-center">{{n.brand.name}}</td>
-		  <td class="text-center">{{n.type.name}}</td>
-		  <td class="text-center">{{n.total}}</td>
-		  
-		  <td class="text-center">{{n.amount}}</td>
-		  <td class="text-center">{{n.color.cname}}</td>
-		  <td style="text-center">{{n.size}}</td>
-		</tr>
+	  </h3>
+
+	  <div x-ng-repeat="ns in n.ns">
+	    <h4 style="text-align:center"> 
+	      <span x-ng-bind=ns.shop></span>
+	    </h4>
+
+	    <div class="table-responsive">
+	      <table class="table table-bordered table-striped" style="margin-bottom:5px"> 
+		<thead>
+		  <tr>
+		    <th class="text-center">序号</th>
+		    <th class="text-center">货号</th>
+		    <th class="text-center">品名</th>
+		    <th class="text-center">类型</th>
+		    <th class="text-center">数量</th>
+		  </tr>
+		</thead>
 		
-		<tr>
-		  <td colspan="4"></td>
-		  <td class="text-center" x-ng-bind=total></td>
-		  <td class="text-center" x-ng-bind=amount></td>
-		  <td colspan="2">
-		</tr>
-	      </tbody> 
-	    </table> <!--END table--> 
-	</div>
-	<h5 style="text-align:left">
-	  <p>
-	    <span>钱掌柜零售云平台</span>
-	    &nbsp&nbsp&nbsp&nbsp<span>联系方式：18692269329（微信）</span>
-	    &nbsp&nbsp&nbsp&nbsp<span>15292083301（微信）</span>
-	  </p>
-	</h5>
+		<tbody>
+		  <tr x-ng-repeat="nt in ns.note"> 
+		    <td class="text-center">{{nt.order_id}}</td>
+		    <td class="text-center">{{nt.style_number}}</td>
+		    <td class="text-center">{{nt.brand}}</td>
+		    <td class="text-center">{{nt.type}}</td>
+		    <td class="text-center">{{nt.total}}</td>
+		  </tr>
+
+		  <tr>
+		    <td colspan="4"></td>
+		    <td class="text-center">{{ns.total}}</td>
+		  </tr>
+		</tbody> 
+	      </table> <!--END table--> 
+	    </div> 
+	    
+	  </div>
+
+	  <h5 style="text-align:left">
+	    <p>
+	      <span>钱掌柜零售云平台</span>
+	      &nbsp&nbsp&nbsp&nbsp<span>联系方式：18692269329（微信）</span>
+	      &nbsp&nbsp&nbsp&nbsp<span>15292083301（微信）</span>
+	    </p>
+	  </h5>
+	  
+	</div> 
       </div>
     </div>
     

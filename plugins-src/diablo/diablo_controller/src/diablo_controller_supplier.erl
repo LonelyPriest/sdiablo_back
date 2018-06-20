@@ -340,6 +340,7 @@ handle_call({page_list, {Mode, Sort}, Merchant, Conditions, CurrentPage, ItemsPe
 handle_call({new_vfirm, Merchant, Attrs}, _From, State)->
     ?DEBUG("w_vfirm supplier with Attrs ~p", [Attrs]),
     Name     = ?v(<<"name">>, Attrs),
+    Address  = ?v(<<"address">>, Attrs, []),
     Pinyin   = ?v(<<"py">>, Attrs, []), 
     Comment  = ?v(<<"comment">>, Attrs, []),
 
@@ -354,9 +355,10 @@ handle_call({new_vfirm, Merchant, Attrs}, _From, State)->
     case ?sql_utils:execute(read, Sql) of
 	{ok, []} ->
 	    Sql1 = "insert into vfirm"
-		++ "(name, py, comment, merchant, entry_date)"
+		++ "(name, address, py, comment, merchant, entry_date)"
 		++ " values ("
 		++ "\"" ++ ?to_s(Name) ++ "\","
+		++ "\"" ++ ?to_s(Address) ++ "\","
 		++ "\"" ++ ?to_s(Pinyin) ++ "\","
 		++ "\"" ++ ?to_s(Comment) ++ "\","
 		++ ?to_s(Merchant) ++ ","
@@ -374,10 +376,12 @@ handle_call({update_vfirm, Merchant, Attrs}, _From, State) ->
     ?DEBUG("update_vfirm with merhcant ~p, attrs ~p", [Merchant, Attrs]),
     FirmId   = ?v(<<"fid">>, Attrs),
     Name     = ?v(<<"name">>, Attrs),
-    Pinyin   = ?v(<<"py">>, Attrs, []), 
+    Address  = ?v(<<"address">>, Attrs),
+    Pinyin   = ?v(<<"py">>, Attrs), 
     Comment  = ?v(<<"comment">>, Attrs),
 
     Updates = ?utils:v(name, string, Name)
+	++ ?utils:v(address, string, Address)
 	++ ?utils:v(py, string, Pinyin)
 	++ ?utils:v(comment, string, Comment), 
 
@@ -932,6 +936,7 @@ handle_call({vfirm_detail, Merchant, CurrentPage, ItemsPerPage, Conditions}, _Fr
     {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
     Sql = "select id"
 	", name"
+	", address"
 	", comment"
 	", py"
 	", entry_date"
