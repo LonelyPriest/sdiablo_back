@@ -67,6 +67,8 @@ brand(list, Merchant) ->
 
 type(new, Merchant, Attrs)->
     gen_server:call(?MODULE, {new_type, Merchant, Attrs});
+type(get, Merchant, Condition) ->
+    gen_server:call(?MODULE, {get_type, Merchant, Condition});
 type(update, Merchant, Attrs) ->
     gen_server:call(?MODULE, {update_type, Merchant, Attrs}).
 type(list, Merchant, LikePrompt, Ascii) ->
@@ -543,6 +545,18 @@ handle_call({update_type, Merchant, Attrs}, _From, State) ->
 	Error1 ->
 	    {reply, Error1, State}
     end;
+
+
+handle_call({get_type, Merchant, Condition}, _From, State) ->
+    ?DEBUG("get_type: merchant ~p, Condition ~p", [Merchant, Condition]),
+    Sql = "select id, bcode, name, py, ctype as cid from inv_types"
+	++ " where "
+	++ " merchant = " ++ ?to_string(Merchant)
+	++ ?sql_utils:condition(proplists, Condition)
+	++ " and deleted = " ++ ?to_string(?NO)
+	++ " order by id desc",
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
 
 handle_call({list_type, Merchant, LikePrompt, Ascii}, _From, State) ->
     ?DEBUG("list_type with merchant ~p, LikePrompt ~p, ascii ~p",

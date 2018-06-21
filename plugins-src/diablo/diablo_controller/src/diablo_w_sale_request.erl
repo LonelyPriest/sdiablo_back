@@ -642,8 +642,39 @@ action(Session, Req, {"filter_w_sale_rsn_group"}, Payload) ->
     {struct, Mode}     = ?v(<<"mode">>, Payload),
     Order = ?v(<<"mode">>, Mode),
     Sort  = ?v(<<"sort">>, Mode), 
-    NewPayload = proplists:delete(<<"mode">>, Payload),
-    
+    NewPayload = proplists:delete(<<"mode">>, Payload), 
+    {struct, Fields}     = ?v(<<"fields">>, Payload),
+
+    PayloadWithCtype =
+	case ?v(<<"type">>, Fields) of
+	    undefined ->
+		case ?v(<<"ctype">>, Fields) of
+		    undefined -> NewPayload;
+		    CType ->
+			P = proplists:delete(<<"fields">>, NewPayload),
+			PN = proplists:delete(<<"type">>,
+					      proplists:delete(<<"ctype">>, Fields)),
+			case ?attr:type(get, Merchant, [{<<"ctype">>, CType}]) of
+			    {ok, []} ->
+				[{<<"fields">>, {struct, PN}}
+				 |P];
+			    {ok, Types}  ->
+				[{<<"fields">>,
+				  {struct,
+				   [{<<"type">>,
+				     lists:foldr(
+				       fun({Type}, Acc) ->
+					       [?v(<<"id">>, Type)|Acc]
+				       end, [], Types)}|PN]}}
+				 |P] 
+			end
+		end;
+	    _Type ->
+		P = proplists:delete(<<"fields">>, NewPayload),
+		[{<<"fields">>, {struct, proplists:delete(<<"ctype">>, Fields)}}|P]
+	end,
+	    
+    %% ?DEBUG("PayloadWithCtype ~p", [PayloadWithCtype]), 
     ?pagination:pagination(
        fun(Match, Conditions) ->
     	       ?w_sale:filter(total_rsn_group,
@@ -653,7 +684,7 @@ action(Session, Req, {"filter_w_sale_rsn_group"}, Payload) ->
     	       ?w_sale:filter(
 		  {rsn_group, mode(Order), Sort},
     		  Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
-       end, Req, NewPayload);
+       end, Req, PayloadWithCtype);
 
 
 action(Session, Req, {"list_wsale_group_by_style_number"}, Payload) ->

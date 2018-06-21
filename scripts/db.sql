@@ -434,7 +434,7 @@ create table w_retailer
     
     unique  key  uk (merchant, name, mobile),
     key          type (type),
-    key          shop (shop)
+    key          shop (shop),
     primary key     (id)
 ) default charset=utf8;
 
@@ -1057,7 +1057,8 @@ create table w_sale_detail(
     merchant       INTEGER not null default -1,
     shop           INTEGER not null default -1,
     
-    type           INTEGER default -1, -- reference to inv_type 
+    type           INTEGER default -1, -- reference to inv_type
+    sex            TINYINT default -1, -- 0: man, 1:woman 
     s_group        VARCHAR(32) default 0,  -- which size group
     free           TINYINT default 0,  -- free color and free size 
     

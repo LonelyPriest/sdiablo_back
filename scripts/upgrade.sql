@@ -333,4 +333,7 @@ alter table print_template add column shift_date TINYINT default 0 after expire;
 --2018-06-19
 alter table suppliers add column vfirm INTEGER default -1 after id;
 
+--2018-06-21
+alter table w_sale_detail add column sex TINYINT default -1 after type;
+
 

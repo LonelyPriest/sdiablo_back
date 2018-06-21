@@ -372,7 +372,7 @@ function wsaleRejectCtrlProvide(
 		brand_name  : add.brand.name,
 		type        : add.type_id,
 		firm        : add.firm_id,
-		// sex         : add.sex,
+		sex         : add.sex,
 		season      : add.season, 
 		year        : add.year,
 		entry       : add.entry,

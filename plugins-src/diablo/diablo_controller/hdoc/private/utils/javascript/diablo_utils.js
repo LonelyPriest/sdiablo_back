@@ -687,6 +687,8 @@ diabloUtils.directive('queryGroup', function () {
 			case "check_state":
 			    f.value = get_prompt(f.value, scope.prompt.check_state);
 			    break;
+			case "ctype":
+			    f.value = get_prompt(f.value, scope.prompt.ctype);
 			case "year":
 			    // f.value = get_prompt(f.value, scope.prompt.year);
 			    break;

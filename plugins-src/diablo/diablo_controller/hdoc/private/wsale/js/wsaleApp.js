@@ -76,6 +76,9 @@ function wsaleConfg(angular){
 
 	var level = {"filterLevel": function(diabloFilter){
 	    return diabloFilter.get_retailer_level()}};
+
+	var ctype = {"filterCType": function(diabloFilter) {
+	    return diabloFilter.list_good_ctype()}};
 	
 	$routeProvider. 
 	    when('/new_wsale', {
@@ -99,7 +102,7 @@ function wsaleConfg(angular){
 		templateUrl: '/private/wsale/html/wsale_rsn_detail.html',
 		controller: 'wsaleRsnDetailCtrl',
 		resolve: angular.extend(
-		    {}, user, promotion, score, sysretailer, brand, employee, firm, s_group, type, color, base)
+		    {}, user, promotion, score, sysretailer, brand, employee, firm, s_group, type, color, ctype, base)
 	    }).
 	    when('/wsale_firm_detail', {
 		templateUrl: '/private/wsale/html/wsale_firm_detail.html',
@@ -1384,6 +1387,7 @@ function wsaleNewProvide(
 		brand_name  : add.brand,
 		type        : add.type_id,
 		type_name   : add.type,
+		sex         : add.sex,
 		firm        : add.firm_id,
 		sex         : add.sex,
 		season      : add.season,

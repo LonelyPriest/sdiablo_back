@@ -691,6 +691,7 @@ handle_call({trans_detail, Merchant, Conditions}, _From, State) ->
 	", a.style_number"
 	", a.brand_id"
 	", a.type_id"
+	", a.sex"
 	", a.s_group"
 	", a.free"
 	", a.season"
@@ -720,6 +721,7 @@ handle_call({trans_detail, Merchant, Conditions}, _From, State) ->
 	", style_number"
 	", brand as brand_id"
 	", type as type_id"
+	", sex"
 	", s_group"
 	", free"
 	", season"
@@ -1589,6 +1591,7 @@ wsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
     StyleNumber = ?v(<<"style_number">>, Inventory),
     Brand       = ?v(<<"brand">>, Inventory),
     Type        = ?v(<<"type">>, Inventory),
+    Sex         = ?v(<<"sex">>, Inventory),
     
     OrgPrice    = ?v(<<"org_price">>, Inventory),
     TagPrice    = ?v(<<"tag_price">>, Inventory), 
@@ -1650,7 +1653,7 @@ wsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
 		       reject -> {OrgPrice, ?w_good_sql:stock(ediscount, OrgPrice, TagPrice)}
 		   end,
 	     "insert into w_sale_detail("
-		 "rsn, style_number, brand, merchant, shop, type, s_group, free"
+		 "rsn, style_number, brand, merchant, shop, type, sex, s_group, free"
 		 ", season, firm, year, in_datetime, total, promotion, score"
 		 ", org_price, ediscount, tag_price, fdiscount, rdiscount, fprice, rprice"
 		 ", path, comment, entry_date) values("
@@ -1660,6 +1663,7 @@ wsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
 		 ++ ?to_s(Merchant) ++ ","
 		 ++ ?to_s(Shop) ++ ","
 		 ++ ?to_s(Type) ++ ","
+		 ++ ?to_s(Sex) ++ ","
 		 ++ "\"" ++ ?to_s(SizeGroup) ++ "\","
 		 ++ ?to_s(Free) ++ "," 
 		 ++ ?to_s(Season) ++ ","
@@ -1872,6 +1876,8 @@ filter_condition(wsale, [{<<"firm">>, _} = F|T], Acc1, Acc2) ->
     filter_condition(wsale, T, [F|Acc1], Acc2);
 filter_condition(wsale, [{<<"type">>, _} = OT|T], Acc1, Acc2) ->
     filter_condition(wsale, T, [OT|Acc1], Acc2);
+filter_condition(wsale, [{<<"sex">>, _} = OT|T], Acc1, Acc2) ->
+    filter_condition(wsale, T, [OT|Acc1], Acc2);
 filter_condition(wsale, [{<<"year">>, _} = Y|T], Acc1, Acc2) ->
     filter_condition(wsale, T, [Y|Acc1], Acc2);
 filter_condition(wsale, [{<<"season">>, _} = Y|T], Acc1, Acc2) ->
@@ -1946,12 +1952,30 @@ sale_new(rsn_groups, Merchant, Conditions, PageFun) ->
 
     CorrectCutDConditions = ?utils:correct_condition(<<"b.">>, CutDCondtions),
 
-    "select b.id, b.rsn, b.style_number"
-	", b.brand as brand_id, b.type as type_id, b.season, b.firm as firm_id"
-	", b.year, b.s_group, b.free, b.total, b.promotion as pid, b.score as sid"
-	", b.org_price, b.ediscount, b.tag_price, b.fdiscount, b.rdiscount"
-	", b.fprice, b.rprice"
-	", b.in_datetime, b.path, b.comment, b.entry_date"
+    "select b.id, b.rsn"
+	", b.style_number"
+	", b.brand as brand_id"
+	", b.type as type_id"
+	", b.sex"
+	", b.season"
+	", b.firm as firm_id"
+	", b.year"
+	", b.s_group"
+	", b.free"
+	", b.total"
+	", b.promotion as pid"
+	", b.score as sid"
+	", b.org_price"
+	", b.ediscount"
+	", b.tag_price"
+	", b.fdiscount"
+	", b.rdiscount"
+	", b.fprice"
+	", b.rprice"
+	", b.in_datetime"
+	", b.path"
+	", b.comment"
+	", b.entry_date"
 
 	", a.shop as shop_id"
 	", a.retailer as retailer_id"

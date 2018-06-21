@@ -300,9 +300,11 @@ var diablo_sex2object = [
     {name:"女", id:0},
     {name:"男", id:1},
     {name:"童", id:2},
+    {name:"鞋", id:3},
+    {name:"配", id:4}
 ];
 
-var diablo_sex = ["女", "男", "童"];
+var diablo_sex = ["女", "男", "童", "鞋", "配"];
 
 var diablo_sizegroup = ["si", "sii", "siii", "siv", "sv", "svi", "svii"];
 

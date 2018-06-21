@@ -54,7 +54,7 @@ var wsaleUtils = function(){
 
 		add.brand_id = s.brand_id; 
 		add.type_id  = s.type_id;
-		// add.sex     = s.sex;
+		add.sex     = s.sex;
 		add.season  = s.season;
 		add.firm_id = s.firm_id;
 		add.year    = s.year;

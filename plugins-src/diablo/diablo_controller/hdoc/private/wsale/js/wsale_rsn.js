@@ -3,7 +3,7 @@ function wsaleRsnDetailCtrlProvide (
     wsaleService, localStorageService,
     user, filterPromotion, filterScore, filterSysRetailer, filterBrand,
     filterEmployee, filterFirm, filterSizeGroup,
-    filterType, filterColor, base){
+    filterType, filterColor, filterCType, base){
     // console.log($routeParams);
     // console.log(filterEmployee);
     $scope.shops    = user.sortShops.concat(user.sortBadRepoes);
@@ -14,6 +14,7 @@ function wsaleRsnDetailCtrlProvide (
     $scope.setting     = {round:diablo_round_record};
     $scope.total_items = 0;
     $scope.goto_page = diablo_goto_page;
+    $scope.sexs         = diablo_sex;
 
     $scope.items_perpage = diablo_items_per_page();
     $scope.max_page_size = diablo_max_page_size();
@@ -138,7 +139,9 @@ function wsaleRsnDetailCtrlProvide (
     diabloFilter.reset_field();
     diabloFilter.add_field("style_number", $scope.match_style_number); 
     diabloFilter.add_field("brand",    filterBrand);
+    diabloFilter.add_field("ctype",    filterCType);
     diabloFilter.add_field("type",     filterType);
+    diabloFilter.add_field("sex",      diablo_sex2object);
     diabloFilter.add_field("season",   diablo_season2objects);
     diabloFilter.add_field("year",     diablo_full_year); 
     diabloFilter.add_field("firm",     filterFirm);
@@ -201,11 +204,15 @@ function wsaleRsnDetailCtrlProvide (
 	    if (angular.isUndefined(search.rsn)){
 		search.rsn  =  $routeParams.rsn ? $routeParams.rsn : undefined;
 	    };
+
+	    // if (angular.isDefined(search.ctype)) {
+		
+	    // }
 	    
-	    if (angular.isUndefined(search.shop)
-	    	|| !search.shop || search.shop.length === 0){
-		search.shop = $scope.shopIds.length === 0 ? undefined : $scope.shopIds; 
-	    };
+	    // if (angular.isUndefined(search.shop)
+	    // 	|| !search.shop || search.shop.length === 0){
+	    // 	search.shop = $scope.shopIds.length === 0 ? undefined : $scope.shopIds; 
+	    // };
 	    
 	    console.log(search);
 

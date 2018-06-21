@@ -62,6 +62,9 @@ update w_inventory_new_detail_amount s inner join (select id, substring_index(a.
 -- syn in_datetime of w_sale_detail
 update w_sale_detail a inner join(select style_number, brand, merchant, shop, entry_date from w_inventory) b on a.merchant=b.merchant and a.shop=b.shop and a.style_number=b.style_number and a.brand=b.brand set a.in_datetime=b.entry_date where a.rsn like '%-R-%';
 
+-- syn sex of w_sale_detail
+update w_sale_detail a inner join(select style_number, brand, merchant, shop, sex from w_inventory) b on a.merchant=b.merchant and a.shop=b.shop and a.style_number=b.style_number and a.brand=b.brand set a.sex=b.sex;
+
 
 -- check stock
 select a.style_number, a.brand, a.amount, b.total from w_inventory a left join (select style_number, brand, sum(total) as total from w_inventory_amount a where a.merchant=4 and shop=19 group by a.style_number, a.brand) b on a.style_number=b.style_number and a.brand=b.brand where a.merchant=14 and a.shop=12 and a.amount!=b.total;
