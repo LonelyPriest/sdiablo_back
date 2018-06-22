@@ -1,5 +1,11 @@
 var version_update = function(){
     var updates = [
+	{date: "2018-06-21",
+	 content:
+	 ["增加销售可按货品大类查询",
+	  "增加销售可按性别查询"]
+	},
+	
 	{date: "2018-06-20",
 	 content:
 	 ["增加厂商大类，多个厂商可以归属于一个厂商大类",

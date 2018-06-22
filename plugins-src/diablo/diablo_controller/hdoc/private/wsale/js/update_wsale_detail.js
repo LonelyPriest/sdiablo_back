@@ -433,7 +433,7 @@ function wsaleUpdateDetailCtrlProvide(
 		type           : add.type.id,
 		// type_name   : add.type,
 		firm           : add.firm_id,
-		// sex            : add.sex,
+		sex            : add.sex,
 		season         : add.season,
 		year           : add.year,
 		changed_amount : add.changed_amounts,

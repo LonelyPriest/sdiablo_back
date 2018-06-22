@@ -203,16 +203,12 @@ function wsaleRsnDetailCtrlProvide (
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
 	    if (angular.isUndefined(search.rsn)){
 		search.rsn  =  $routeParams.rsn ? $routeParams.rsn : undefined;
-	    };
-
-	    // if (angular.isDefined(search.ctype)) {
-		
-	    // }
+	    }; 
 	    
-	    // if (angular.isUndefined(search.shop)
-	    // 	|| !search.shop || search.shop.length === 0){
-	    // 	search.shop = $scope.shopIds.length === 0 ? undefined : $scope.shopIds; 
-	    // };
+	    if (angular.isUndefined(search.shop)
+	    	|| !search.shop || search.shop.length === 0){
+	    	search.shop = $scope.shopIds.length === 0 ? undefined : $scope.shopIds; 
+	    };
 	    
 	    console.log(search);
 
