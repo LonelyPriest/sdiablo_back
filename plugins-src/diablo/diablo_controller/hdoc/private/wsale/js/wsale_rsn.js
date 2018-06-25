@@ -59,7 +59,7 @@ function wsaleRsnDetailCtrlProvide (
     };
     
     $scope.calc_colspan = function(){
-	var column = 18;
+	var column = 19;
 	if ($scope.hidden.base) column -= 3;
 	
 	return column;

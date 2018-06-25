@@ -1,5 +1,10 @@
 var version_update = function(){
     var updates = [
+	{date: "2018-06-27",
+	 content:
+	 ["优化入库操作， 入库动态增加颜色与数量时，不需要离开当前页面"]
+	},
+	
 	{date: "2018-06-21",
 	 content:
 	 ["增加销售可按货品大类查询",

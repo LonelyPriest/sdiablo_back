@@ -656,14 +656,12 @@
 	  	      </span> 
 		    </div>
 		  </div>
-		  <div ng-if="form.gForm.style_number.$invalid 
-			      && !form.gForm.style_number.$pristine">
+		  <div ng-if="form.gForm.style_number.$invalid && !form.gForm.style_number.$pristine">
 		    <span class="fg-red">
 		      款号只能是字母，数字或横杠，2-10个字符
 		    </span>
 		  </div>
-		  <div ng-if="is_same_good">
-		    <span class="fg-red">
+		  <div ng-if="is_same_good"> <span class="fg-red">
 		      该款号，品牌所对应的货品已存在，请直接录入数量
 		    </span>
 		  </div>
@@ -1053,15 +1051,14 @@
 
 <script type="text/ng-template" id="inventory-new.html">
   <div class="modal-body">
-
+      
     <div class="diablo-form-group"> 
       <div class="input-group">
 	<span class="input-group-addon">
 	  <i class="glyphicon glyphicon-yen fg-red"></i>吊牌价
 	</span>
 	<form name="tprice">
-	  <div ng-class="{'has-error':tprice.$invalid
-			 && !tprice.$pristine}"> 
+	  <div ng-class="{'has-error':tprice.$invalid && !tprice.$pristine}"> 
 	    <input class="form-control text-center"
 		   disable-key
 		   ng-edit
@@ -1207,12 +1204,16 @@
   </div>
 
   <div class="modal-footer">
-    <button class="btn btn-primary"
-	    x-ng-disabled="!params.valid_amount(params.amount, params.ediscount)"
-	    x-ng-click="ok()">保存</button>
-    <button class="btn btn-danger" x-ng-click="edit()">修改</button>
-    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
-  </div>
+    <div class="btn-group">
+      <button class="btn btn-primary"
+	      x-ng-disabled="!params.valid_amount(params.amount, params.ediscount)"
+	      x-ng-click="ok()">保存</button>
+      <button x-ng-if="!params.free"
+	      class="btn btn-danger" x-ng-click="params.add_exist_stock_color(cancel)">颜色</button>
+      <button x-ng-if="!params.free" class="btn btn-success" x-ng-click="edit()">尺码</button>
+      <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+    </div>
+</div>
 </script>
 
 
@@ -1451,6 +1452,7 @@
 		<input id={{s.id}}
 		       type="checkbox"
 		       x-ng-model="s.select"
+		       x-ng-disabled="s.disabled"
 		       x-ng-click="$event.stopPropagation()"
 		       x-ng-enter="ok()"/>
 		<label for={{s.id}}>{{s.name}}</label>
@@ -1498,6 +1500,7 @@
 	      <div x-ng-if="c[i].id" class="checkbox checkbox-danger checkbox-circle">
 		<input id={{c[i].id}}
 		       type="checkbox"
+		       x-ng-disabled="c[i].disabled"
 		       x-ng-model="c[i].select"
 		       x-ng-click="$event.stopPropagation()"
 		       x-ng-enter="ok()"/>

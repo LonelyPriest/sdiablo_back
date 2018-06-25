@@ -969,8 +969,7 @@ diabloUtils.controller("diabloDialogCtrl", function(
 	$uibModalInstance.close('ok'); 
 
 	var ok_call = function(){
-	    if (angular.isDefined(message.callback)
-		&& typeof(message.callback) === "function"){
+	    if (angular.isDefined(message.callback) && typeof(message.callback) === "function"){
 		var callback = message.callback;
 		if (angular.isDefined(message.params)){
 		    callback(message.params)

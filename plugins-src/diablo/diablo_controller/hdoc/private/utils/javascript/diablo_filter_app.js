@@ -155,6 +155,10 @@ function filterProvider(){
 	    return _goodHttp.save({operation: "new_w_good"}, {good:good, image:image}).$promise;
 	};
 
+	function update_purchaser_good(good, image) {
+	    return _goodHttp.save({operation: "update_w_good"}, {good:good, image:image}).$promise;  
+	};
+
 	function add_purchaser_color(color){
 	    return _goodHttp.save(
 		{operation: "new_w_color"},
@@ -883,6 +887,10 @@ function filterProvider(){
 
 	    add_purchaser_good: function(good){
 		return add_purchaser_good(good);
+	    },
+
+	    update_purchaser_good:function(good, image) {
+		return update_purchaser_good(good, image);
 	    },
 
 	    add_purchaser_color: function(color){
