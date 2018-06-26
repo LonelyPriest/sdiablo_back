@@ -581,6 +581,10 @@ stockDraft.prototype.remove = function(){
     this.storage.remove(this.key);
 };
 
+stockDraft.prototype.get = function(key) {
+    return this.storage.get(key);
+};
+
 stockDraft.prototype.select = function(dialog, template, draftFilter, selectCallback){
     var storage = this.storage;
     

@@ -151,6 +151,31 @@ function purchaserInventoryNewCtrlProvide (
 
     $scope.get_employee();
 
+    $scope.re_calculate = function(){
+	$scope.select.total = 0;
+	$scope.select.should_pay = 0.00;
+
+	var e_pay = stockUtils.to_float($scope.select.extra_pay); 
+	var verificate = stockUtils.to_float($scope.select.verificate); 
+
+	for (var i=1, l=$scope.inventories.length; i<l; i++){
+	    var one = $scope.inventories[i];
+	    // console.log(one);
+	    $scope.select.total  += stockUtils.to_integer(one.total);
+	    
+	    $scope.select.should_pay += $scope.calc_row(
+		one.org_price, 100, one.total - one.over);
+	};
+	
+	$scope.select.should_pay = stockUtils.to_decimal($scope.select.should_pay);
+	
+	$scope.select.left_balance =
+	    $scope.select.surplus + $scope.select.should_pay + e_pay
+	    - $scope.select.has_pay - verificate;
+	
+	$scope.select.left_balance = stockUtils.to_decimal($scope.select.left_balance);
+    };
+
     /*
      * draft
      */
@@ -165,6 +190,7 @@ function purchaserInventoryNewCtrlProvide (
 
     
     var sDraft = gen_draft();
+    
     // console.log(sDraft);
     $scope.disable_draft = function(){
 	if (sDraft.keys().length === 0) return true; 
@@ -203,11 +229,41 @@ function purchaserInventoryNewCtrlProvide (
 	    $scope.inventories.unshift({$edit:false, $new:true});
 	    $scope.disable_refresh = false;
 	    $scope.re_calculate();
-	    $scope.auto_focus("style_number");
+
+	    if ($scope.tab_active[0].active)
+		$scope.auto_focus("style_number");
+	    else if ($scope.tab_active[1].active)
+		$scope.reset_style_number();
 	};
 
 	sDraft.select(diabloUtilsService, "inventory-draft.html", draft_filter, select); 
     };
+
+    // list first draft
+    if (sDraft.keys().length !== 0) {
+	// var keySec = sDraft.keys()[0].split("-");
+	// console.log(keySec);
+	// $scope.select.shop = diablo_get_object(stockUtils.to_integer(keySec[1]), $scope.shops);
+	// $scope.select.employee = diablo_get_object(stockUtils.to_integer(keySec[2]), filterEmployee);
+	// $scope.get_employee();
+
+	// var one = sDraft.get(sDraft.keys()[0]);
+	// $scope.inventories = angular.copy(one.v);
+
+	// for (var i=0, l=$scope.inventories.length; i<l; i++){
+	//     var stock = $scope.inventories[i];
+	//     if (diablo_invalid_firm !== stock.firm_id){
+	// 	$scope.select.firm = diablo_get_object(stock.firm_id, $scope.firms);
+	// 	break;
+	//     }
+	// }
+
+	// $scope.inventories.unshift({$edit:false, $new:true});
+	// $scope.disable_refresh = false;
+	// $scope.re_calculate();
+	// $scope.auto_focus("style_number");
+	$scope.list_draft();
+    }
 
     $scope.get_setting = function(shopId){
 	$scope.base_settings.m_sgroup = stockUtils.multi_sizegroup(shopId, base);
@@ -691,31 +747,6 @@ function purchaserInventoryNewCtrlProvide (
 	}
     };
     
-    $scope.re_calculate = function(){
-	$scope.select.total = 0;
-	$scope.select.should_pay = 0.00;
-
-	var e_pay = stockUtils.to_float($scope.select.extra_pay); 
-	var verificate = stockUtils.to_float($scope.select.verificate); 
-
-	for (var i=1, l=$scope.inventories.length; i<l; i++){
-	    var one = $scope.inventories[i];
-	    // console.log(one);
-	    $scope.select.total  += stockUtils.to_integer(one.total);
-	    
-	    $scope.select.should_pay += $scope.calc_row(
-		one.org_price, 100, one.total - one.over);
-	};
-	
-	$scope.select.should_pay = stockUtils.to_decimal($scope.select.should_pay);
-	
-	$scope.select.left_balance =
-	    $scope.select.surplus + $scope.select.should_pay + e_pay
-	    - $scope.select.has_pay - verificate;
-	
-	$scope.select.left_balance = stockUtils.to_decimal($scope.select.left_balance);
-    };
-    
     var add_callback = function(params){
 	// console.log(params);
 	// delete empty
@@ -812,7 +843,9 @@ function purchaserInventoryNewCtrlProvide (
 			       add_exist_stock_color: function(close) {
 				   if (angular.isFunction(close))
 				       close();
-				   $scope.add_exist_stock_color(inv);
+				   $scope.add_exist_stock_color(inv, function(stock) {
+				       $scope.add_inventory(stock);
+				   });
 			       },
 			       edit: function(){
 				   diablo_goto_page(
@@ -826,8 +859,7 @@ function purchaserInventoryNewCtrlProvide (
 		    inv.colors_info = [{cid:0}];
 		    payload.colors = inv.colors_info;
 		    diabloUtilsService.edit_with_modal(
-			"inventory-new.html",
-			modal_size, callback, undefined, payload)
+			"inventory-new.html", modal_size, callback, undefined, payload)
 		} else{
 		    inv.colors_info = inv.colors.map(function(cid){
 			return diablo_find_color(parseInt(cid), $scope.colors)});
@@ -996,7 +1028,8 @@ function purchaserInventoryNewCtrlProvide (
 			       add_exist_stock_color: function(close) {
 				   if (angular.isFunction(close))
 				       close();
-				   $scope.add_exist_stock_color(inv);
+				   $scope.add_exist_stock_color(
+				       inv, function(stock) {$scope.update_inventory_with_new(stock);});
 			       },
 			       edit: function(){
 			       	   diablo_goto_page(
@@ -1039,7 +1072,7 @@ function purchaserInventoryNewCtrlProvide (
 	};
     };
     
-    $scope.add_exist_stock_color = function(inv) {
+    $scope.add_exist_stock_color = function(inv, afterAddColorCallback) {
 	// console.log(inv);
 	// $scope.good.colors=""; 
 	// $scope.selectColors = [];
@@ -1082,7 +1115,13 @@ function purchaserInventoryNewCtrlProvide (
 	    diabloFilter.update_purchaser_good(update_good, undefined).then(function(result) {
 		if (result.ecode === 0) {
 		    $scope.reset_select_color();
-		    $scope.update_inventory_with_new(inv);
+		    inv.colors = update_good.color.split(",");
+		    if (angular.isFunction(afterAddColorCallback))
+			afterAddColorCallback(inv)
+		    // if (inv.$new)
+		    // 	$scope.add_inventory(inv)
+		    // else
+		    // 	$scope.update_inventory_with_new(inv);
 		} else{
 		    diabloUtilsService.set_error("修改货品", result.ecode);
 		}
@@ -1170,7 +1209,9 @@ function purchaserInventoryNewCtrlProvide (
 			       add_exist_stock_color: function(close) {
 				   if (angular.isFunction(close))
 				       close();
-				   $scope.add_exist_stock_color(inv);
+				   $scope.add_exist_stock_color(inv, function(stock) {
+				       $scope.update_inventory(stock)
+				   });
 			       },
 			       edit: function(){
 				   diablo_goto_page(
