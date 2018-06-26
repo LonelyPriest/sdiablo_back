@@ -1376,6 +1376,7 @@
 		   type="text" 
 		   required
 		   placeholder="请输入名称"
+		   focus-auto="true"
 		   x-ng-model="params.color.name"
 		   x-ng-pattern="/^[A-Za-z0-9-_\u4e00-\u9fa5]+$/"/>
 	    <span class="input-group-addon bg-white fg-red">*</span>
@@ -1475,19 +1476,21 @@
   <div class="modal-body">
     <div class="diablo-margin-bottom-5">
       <div class="input-group">
-	<span class="input-group-addon">
-	  <i class="glyphicon glyphicon-search fg-red"></i>
-	</span>
 	<input
 	   class="form-control"
 	   placeholder="请输入颜色名称，支持首字母拼音查询"
 	   ng-edit
-	   focus-auto=true 
+	   focus-auto="true"
 	   typeahead-editable="false"
 	   typeahead-on-select="params.on_select_ucolor($item, $model, $label);"
 	   uib-typeahead="c as c.name for c in params.ucolors|filter:$viewValue|limitTo:20"
 	   x-ng-model="params.select_ucolor"
 	   x-ng-enter="params.select_ucolor?params.select_ucolor=undefined:ok()"/>
+	<span class="input-group-btn"> 
+	  <button class="btn btn-success" x-ng-click="params.add_color(cancel)">
+	    <i class="glyphicon glyphicon-plus"></i>
+	  </button>
+	</span>	
       </div>
     </div>
     

@@ -19,7 +19,7 @@ function purchaserInventoryNewCtrlProvide (
     $scope.base_settings = {};
 
     
-    $scope.tab_active  = [{active:true}, {active:false}, {active:false}]; 
+    $scope.tab_active  = [{active:false}, {active:true}, {active:false}]; 
     $scope.shops             = user.sortShops; 
     $scope.sexs              = diablo_sex;
     $scope.seasons           = diablo_season;
@@ -1041,33 +1041,33 @@ function purchaserInventoryNewCtrlProvide (
     
     $scope.add_exist_stock_color = function(inv) {
 	// console.log(inv);
-	$scope.good.colors=""; 
-	$scope.selectColors = [];
+	// $scope.good.colors=""; 
+	// $scope.selectColors = [];
 	
-	angular.forEach(inv.colors, function(colorId) {
-	    for (var i=0, l1=$scope.gcolors.length; i<l1; i++) {
-		angular.forEach($scope.gcolors[i].colors, function(c) {
-		    if (stockUtils.to_integer(colorId) === c.id) {
-			c.select = true;
-			c.disabled = true;
-		    } 
-		}) 
-	    }
-	});
+	// angular.forEach(inv.colors, function(colorId) {
+	//     for (var i=0, l1=$scope.gcolors.length; i<l1; i++) {
+	// 	angular.forEach($scope.gcolors[i].colors, function(c) {
+	// 	    if (stockUtils.to_integer(colorId) === c.id) {
+	// 		c.select = true;
+	// 		c.disabled = true;
+	// 	    } 
+	// 	}) 
+	//     }
+	// });
 	
-	if (diablo_no === $scope.base_settings.group_color){
-	    angular.forEach(inv.colors, function(colorId) {
-		for (var i=0, l1=$scope.grouped_colors.length; i<l1; i++){
-		    for (var j in $scope.grouped_colors[i]){
-			var c = $scope.grouped_colors[i][j];
-			if (stockUtils.to_integer(colorId) === c.id) {
-			    c.select = true;
-			    c.disabled = true; 
-			}
-		    }
-		} 
-	    });
-	};
+	// if (diablo_no === $scope.base_settings.group_color){
+	//     angular.forEach(inv.colors, function(colorId) {
+	// 	for (var i=0, l1=$scope.grouped_colors.length; i<l1; i++){
+	// 	    for (var j in $scope.grouped_colors[i]){
+	// 		var c = $scope.grouped_colors[i][j];
+	// 		if (stockUtils.to_integer(colorId) === c.id) {
+	// 		    c.select = true;
+	// 		    c.disabled = true; 
+	// 		}
+	// 	    }
+	// 	} 
+	//     });
+	// };
 
 	var callback = function() {
 	    var update_good = {};
@@ -1090,9 +1090,9 @@ function purchaserInventoryNewCtrlProvide (
 	};
 
 	if ($scope.base_settings.group_color) {
-	    $scope.select_color(callback);
+	    $scope.select_color(callback, inv.colors);
 	} else {
-	    $scope.select_grouped_color(callback); 
+	    $scope.select_grouped_color(callback, inv.colors); 
 	}
     };
 
@@ -1346,17 +1346,34 @@ function purchaserInventoryNewCtrlProvide (
     var color_range = [0].concat(diablo_range(max_color - 1));
     $scope.group_color_with_8 = function(){
 	var color = {};
+	// var oldGroupedColors = angular.copy($scope.grouped_colors);
+	
 	$scope.grouped_colors = [];
 	for (var i=0, g=0, l=$scope.colors.length; i<l; i++){
 	    var gc = $scope.colors[i];
+	    var addedColor = {id:gc.id, name:gc.name, py:diablo_pinyin(gc.name)}
+	    
+	    // for (var j=0, l1=oldGroupedColors.length; j<l1; j++){
+	    // 	for (var k in oldGroupedColors[j]){
+	    // 	    console.log(k);
+	    // 	    var c = oldGroupedColors[j][k];
+	    // 	    if (addedColor.id === c.id) {
+	    // 		if (c.select)
+	    // 	    	    addedColor.select = c.select;
+	    // 		if (c.disabled)
+	    // 	    	    addedColor.disabled = c.disabled;
+	    // 	    } 
+	    // 	}
+	    // }
+	    
 	    if (i <= (g+1)*max_color - 1){
-		color[(i - g * max_color).toString()] = {id:gc.id, name:gc.name, py:diablo_pinyin(gc.name)};
+		color[(i - g * max_color).toString()] = addedColor;
 	    } 
 	    if (i === (g+1) * max_color){
 		$scope.grouped_colors.push(color);
 		g++;
 		color = {};
-		color[(i - g * max_color).toString()] = {id:gc.id, name:gc.name, py:diablo_pinyin(gc.name)};
+		color[(i - g * max_color).toString()] = addedColor;
 	    }
 	} 
 	$scope.grouped_colors.push(color); 
@@ -1366,7 +1383,7 @@ function purchaserInventoryNewCtrlProvide (
 	$scope.group_color_with_8(); 
     }
     
-    $scope.new_color = function(){
+    $scope.new_color = function(afterAddCallback){
 	var callback = function(params){
 	    console.log(params.color);
 	    var color = {name:   params.color.name,
@@ -1392,13 +1409,16 @@ function purchaserInventoryNewCtrlProvide (
 			     tid:  newColor.tid,
 			     colors:[{name:newColor.name, id:newColor.id}]}); 
 		    }
+
+		    // reset filter color
+		    diabloFilter.reset_color();
 		    
 		    if (diablo_no === $scope.base_settings.group_color){
 			$scope.group_color_with_8(); 
 		    }
 
-		    // reset filter color
-		    diabloFilter.reset_color();
+		    if (angular.isFunction(afterAddCallback))
+			afterAddCallback();
 		}; 
 		
 		if (state.ecode == 0){
@@ -1421,9 +1441,20 @@ function purchaserInventoryNewCtrlProvide (
 	    {color: {types: $scope.color_types}});
     };
 
-    $scope.select_color = function(afterSelectCallback){
+    $scope.select_color = function(afterSelectCallback, disabledColors){
+	angular.forEach(disabledColors, function(colorId) {
+	    for (var i=0, l1=$scope.gcolors.length; i<l1; i++) {
+		angular.forEach($scope.gcolors[i].colors, function(c) {
+		    if (stockUtils.to_integer(colorId) === c.id) {
+			c.select = true;
+			c.disabled = true;
+		    } 
+		}) 
+	    }
+	});
+	
 	var callback = function(params){
-	    console.log(params.colors);
+	    // console.log(params.colors);
 	    
 	    $scope.selectColors = []; 
 	    $scope.good.colors="";
@@ -1446,7 +1477,21 @@ function purchaserInventoryNewCtrlProvide (
 	diabloUtilsService.edit_with_modal("select-color.html", 'lg', callback, $scope, {colors:$scope.gcolors});
     };
 
-    $scope.select_grouped_color = function(afterSelectCallback){
+    $scope.select_grouped_color = function(afterSelectCallback, disabledColors){
+	if (angular.isArray(disabledColors)) {
+	    angular.forEach(disabledColors, function(colorId) {
+		for (var i=0, l1=$scope.grouped_colors.length; i<l1; i++){
+		    for (var j in $scope.grouped_colors[i]){
+			var c = $scope.grouped_colors[i][j];
+			if (stockUtils.to_integer(colorId) === c.id) {
+			    c.select = true;
+			    c.disabled = true; 
+			}
+		    }
+		} 
+	    });
+	}
+	
 	var callback = function(params){
 	    $scope.good.colors=""; 
 	    $scope.selectColors = [];
@@ -1490,6 +1535,14 @@ function purchaserInventoryNewCtrlProvide (
 
 		 return ucolors;
 	     }(),
+	     add_color: function(close) {
+		 if (angular.isFunction(close))
+		     close();
+		 
+		 $scope.new_color(function() {
+		     $scope.select_grouped_color(afterSelectCallback, disabledColors)
+		 });
+	     },
 	     on_select_ucolor: on_select_ucolor});
     };
     
