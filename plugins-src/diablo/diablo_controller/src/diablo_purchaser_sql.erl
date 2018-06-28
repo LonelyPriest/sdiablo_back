@@ -1624,10 +1624,10 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
     %% ++ " and size=" ++ "\"" ++ ?to_s(Size) ++ "\""
 	++ " and shop=" ++ ?to_s(Shop)
 	++ " and merchant=" ++ ?to_s(Merchant),
-    Sql1 = 
+    {Sql1, Exist} = 
 	case ?sql_utils:execute(s_read, Sql0) of
 	    {ok, []} ->
-		["insert into w_inventory(rsn"
+		{["insert into w_inventory(rsn"
 		 ", bcode, style_number, brand, type, sex, season, amount"
 		 ", firm, s_group, free, year, score"
 		 ", org_price, tag_price, ediscount, discount"
@@ -1660,9 +1660,9 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		 ++ ?to_s(Merchant) ++ ","
 		 ++ "\"" ++ ?to_s(CurDateTime) ++ "\","
 		 ++ "\"" ++ ?to_s(CurDateTime) ++ "\","
-		 ++ "\"" ++ ?to_s(CurDateTime) ++ "\")"]; 
+		 ++ "\"" ++ ?to_s(CurDateTime) ++ "\")"], new_stock}; 
 	    {ok, R} ->
-		["update w_inventory set"
+		{["update w_inventory set"
 		 " amount=amount+" ++ ?to_s(Total)
 		 %% ++ ", promotion=" ++ ?to_s(Promotion)
 		 ++ case Mode of
@@ -1678,14 +1678,15 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		    end
 		 ++ ", change_date=" ++ "\"" ++ ?to_s(CurDateTime) ++ "\""
 		 ++ " where id=" ++ ?to_s(?v(<<"id">>, R))]
-		    ++ case SFirm =/= Firm of
-			   true ->
-			       ["update w_inventory_good set firm=" ++ ?to_s(Firm)
-				++ " where merchant="  ++ ?to_s(Merchant)
-				++ " and style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
-				++ " and brand=" ++ ?to_s(Brand)];
-			   false -> []
-		       end;
+		 %% ++ case SFirm =/= Firm of
+		 %% 	   true ->
+		 %% 	       ["update w_inventory_good set firm=" ++ ?to_s(Firm)
+		 %% 		++ " where merchant="  ++ ?to_s(Merchant)
+		 %% 		++ " and style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
+		 %% 		++ " and brand=" ++ ?to_s(Brand)];
+		 %% 	   false -> []
+		 %% end,
+		 , old_stock};
 	    {error, Error} ->
 		throw({db_error, Error})
 	end,
@@ -1713,8 +1714,10 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		 ++ ?to_s(Season) ++ ","
 		 ++ ?to_s(Total) ++ ","
 		 ++ ?to_s(Over) ++ ","
-		 ++ ?to_s(Firm) ++ ","
-
+		 ++ case Exist of
+			old_stock -> ?to_s(SFirm) ++ ",";
+			new_stock -> ?to_s(Firm) ++ ","
+		    end 
 		 ++ "\"" ++ ?to_s(SizeGroup) ++ "\","
 		 ++ ?to_s(Free) ++ ","
 		 ++ ?to_s(Year) ++ ","
@@ -1819,15 +1822,36 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 	end,
 
     Sql3 = lists:foldr(NewFun, [], Amounts),
-    Sql4 = case OrgPrice =/= 0 of
-	       true -> ["update w_inventory_good set org_price=" ++ ?to_s(OrgPrice)
-			++ ", ediscount=" ++ ?to_s(EDiscount)
-			++ ", tag_price=" ++ ?to_s(TagPrice)
-			++ ", discount=" ++ ?to_s(Discount)
-			++ " where style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
-			++ " and brand=" ++ ?to_s(Brand) 
-			++ " and merchant=" ++ ?to_s(Merchant)];
-	       false -> []
+    Sql4 = case Exist of
+	       old_stock ->
+		   case OrgPrice =/= 0 of
+		       true -> ["update w_inventory_good set org_price=" ++ ?to_s(OrgPrice)
+				++ ", ediscount=" ++ ?to_s(EDiscount)
+				++ ", tag_price=" ++ ?to_s(TagPrice)
+				++ ", discount=" ++ ?to_s(Discount)
+				++ " where style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
+				++ " and brand=" ++ ?to_s(Brand) 
+				++ " and merchant=" ++ ?to_s(Merchant)];
+		       false -> []
+		   end;
+	       new_stock ->
+		   case OrgPrice =/= 0 of
+		       true -> ["update w_inventory_good set"
+				" firm=" ++ ?to_s(Firm)
+				++ " org_price=" ++ ?to_s(OrgPrice)
+				++ ", ediscount=" ++ ?to_s(EDiscount)
+				++ ", tag_price=" ++ ?to_s(TagPrice)
+				++ ", discount=" ++ ?to_s(Discount)
+				++ " where style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
+				++ " and brand=" ++ ?to_s(Brand) 
+				++ " and merchant=" ++ ?to_s(Merchant)];
+		       false -> [
+				 "update w_inventory_good set"
+				 " firm=" ++ ?to_s(Firm) 
+				 ++ " where style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
+				 ++ " and brand=" ++ ?to_s(Brand) 
+				 ++ " and merchant=" ++ ?to_s(Merchant)]
+		   end
 	   end,
     Sql1 ++ Sql2 ++ Sql3 ++ Sql4.
 
@@ -1965,7 +1989,7 @@ amount_update(Mode, RSN, Merchant, Shop, Datetime, Inv) ->
     ?DEBUG("update inventory with rsn ~p~namounts ~p", [RSN, ?v(<<"changed_amount">>, Inv)]),
     StyleNumber    = ?v(<<"style_number">>, Inv),
     Brand          = ?v(<<"brand">>, Inv),
-    Firm           = ?v(<<"firm">>, Inv),
+    %% Firm           = ?v(<<"firm">>, Inv),
     OrgPrice       = ?v(<<"org_price">>, Inv, 0),
     TagPrice       = ?v(<<"tag_price">>, Inv),
     Discount       = ?v(<<"discount">>, Inv, 0),
@@ -1996,8 +2020,9 @@ amount_update(Mode, RSN, Merchant, Shop, Datetime, Inv) ->
 			       {<<"size">>, Size}])
 	end,
 
-    Updates = ?utils:v(firm, integer, Firm)
-	++ ?utils:v(org_price, float, OrgPrice)
+    Updates =
+	%% ?utils:v(firm, integer, Firm)
+	?utils:v(org_price, float, OrgPrice)
 	++ ?utils:v(tag_price, float, TagPrice)
 	++ ?utils:v(ediscount, float, EDiscount)
 	++ ?utils:v(discount, float, Discount), 
@@ -2035,8 +2060,8 @@ amount_update(Mode, RSN, Merchant, Shop, Datetime, Inv) ->
 		    ++ ?utils:to_sqls(
 			  proplists,
 			  comma,
-			  ?utils:v(firm, integer, Firm)
-			  ++ ?utils:v(org_price, integer, OrgPrice)
+			  %% ?utils:v(firm, integer, Firm)
+			  ?utils:v(org_price, integer, OrgPrice)
 			  ++ ?utils:v(ediscount, float, EDiscount)
 			 )
 		    ++ " where "

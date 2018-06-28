@@ -25,8 +25,8 @@
 	<div id={{n.fid}} x-ng-repeat="n in notes">
 	  <h2 style="text-align:center">
 	    <span x-ng-bind=n.firm></span> 
-	    <span>（</span><span x-ng-bind=n.total></span><span>）</span>
 	    <span x-ng-bind=search.start_time></span>
+	    <span>共</span><span x-ng-bind=-n.total></span><span>件</span> 
 	  </h2>
 	  <h3 style="text-align:center">
 	    <span x-ng-bind=n.addr></span>

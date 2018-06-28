@@ -424,7 +424,8 @@ function purchaserInventoryNewCtrlProvide (
 	}
 	
 	if ($scope.base_settings.stock_with_firm === diablo_yes) {
-	    if (diablo_invalid_firm !== item.firm_id){
+	    if (diablo_invalid_firm !== item.firm_id
+		&& diablo_invalid_firm !== stockUtils.invalid_firm($scope.select.firm)){
 		$scope.select.firm = diablo_get_object(item.firm_id, $scope.firms);
 	    }
 	}
@@ -645,14 +646,14 @@ function purchaserInventoryNewCtrlProvide (
 	
 	var base = {
 	    // brand:         $scope.select.brand.id,
-	    firm: function() {
-		if ($scope.base_settings.stock_with_firm === diablo_yes) {
-		    return stockUtils.invalid_firm($scope.select.firm);
-		} else {
-		    return diablo_invalid_firm;
-		} 
-	    }(),
-	    
+	    // firm: function() {
+	    // 	if ($scope.base_settings.stock_with_firm === diablo_yes) {
+	    // 	    return stockUtils.invalid_firm($scope.select.firm);
+	    // 	} else {
+	    // 	    return diablo_invalid_firm;
+	    // 	} 
+	    // }(),
+	    firm:          stockUtils.invalid_firm($scope.select.firm), 
 	    shop:          $scope.select.shop.id,
 	    datetime:      dateFilter($scope.select.date, "yyyy-MM-dd HH:mm:ss"),
 	    employee:      $scope.select.employee.id,
