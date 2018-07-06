@@ -279,23 +279,25 @@ function filterProvider(){
 		}else if (name === 'comment') {
 		    _filter.fields.push({name:"comment", chinese:"备注"});
 		    _prompt.comment = promptValues; 
-		}
-		else if (name === 'has_pay'){
+		} else if (name === 'has_pay'){
 		    _filter.fields.push({name:"has_pay", chinese:"实付查询"});
 		    _prompt.has_pay = promptValues;
 		} else if (name === 'card'){
 		    _filter.fields.push({name:"card", chinese:"银行卡号"});
 		    _prompt.cards = promptValues;
-		}
-		else if (name === 'discount'){
+		} else if (name === 'discount'){
 		    _filter.fields.push({name:"discount", chinese:"折扣"});
 		} else if (name === 'tag_price'){
 		    _filter.fields.push({name:"tag_price", chinese:"吊牌价"});
 		} else if (name === 'org_price'){
 		    _filter.fields.push({name:"org_price", chinese:"进货价"});
-		}
-
-		else if (name === 'check_state'){
+		} else if (name === 'msell'){
+		    _filter.fields.push({name:"msell", chinese:"销售大于"});
+		} else if (name === 'esell'){
+		    _filter.fields.push({name:"esell", chinese:"销售等于"});
+		} else if (name === 'lsell'){
+		    _filter.fields.push({name:"lsell", chinese:"销售小于"});
+		} else if (name === 'check_state'){
 		    _filter.fields.push({name:"check_state", chinese:"审核状态"});
 		    _prompt.check_state = promptValues;
 		} else if(name === 'fshop'){

@@ -2008,6 +2008,9 @@ function purchaserInventoryDetailCtrlProvide(
     diabloFilter.add_field("shop", $scope.shops);
     diabloFilter.add_field("firm", filterFirm);
     diabloFilter.add_field("stock", stocks);
+    diabloFilter.add_field("msell", []);
+    diabloFilter.add_field("esell", []);
+    diabloFilter.add_field("lsell", []);
 
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();

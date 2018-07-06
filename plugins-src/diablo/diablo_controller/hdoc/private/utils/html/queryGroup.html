@@ -279,8 +279,43 @@
 	  <span x-ng-switch-when="org_price">
 	    <form name="dForm">
 	      <div ng-class="{'has-error':dForm.$invalid && !dForm.$pristine}">
-		<input disable-key
+		<input type="number" step="1"
+		       disable-key
 		       class="form-control" placeholder="请输入进货价"
+		       x-ng-model="f.value"
+		       x-ng-pattern="/^\d+$/" />
+	      </div>
+	    </form>
+	  </span>
+
+	  <span x-ng-switch-when="msell">
+	    <form name="mForm">
+	      <div ng-class="{'has-error':mForm.$invalid && !mForm.$pristine}">
+		<input type="number" step="1"
+		       disable-key
+		       class="form-control" placeholder="请输入销售数量"
+		       x-ng-model="f.value" />
+	      </div>
+	    </form>
+	  </span>
+
+	  <span x-ng-switch-when="esell">
+	    <form name="eForm">
+	      <div ng-class="{'has-error':eForm.$invalid && !eForm.$pristine}">
+		<input type="number" step="1"
+		       disable-key
+		       class="form-control" placeholder="请输入销售数量"
+		       x-ng-model="f.value" />
+	      </div>
+	    </form>
+	  </span>
+
+	  <span x-ng-switch-when="lsell">
+	    <form name="lForm">
+	      <div ng-class="{'has-error':lForm.$invalid && !lForm.$pristine}">
+		<input type="number" step="1"
+		       disable-key
+		       class="form-control" placeholder="请输入销售数量"
 		       x-ng-model="f.value"
 		       x-ng-pattern="/^\d+$/" />
 	      </div>

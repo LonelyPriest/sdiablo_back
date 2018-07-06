@@ -2214,8 +2214,24 @@ sort_condition(stock, Conditions, Prefix) ->
 	[] -> [];
 	0 -> " and " ++ ?to_s(Prefix) ++ "amount>0";
 	1 -> " and " ++ ?to_s(Prefix) ++ "amount=0";
-	2 -> " and " ++ ?to_s(Prefix) ++ "amount!=0"	
-    end.
+	2 -> " and " ++ ?to_s(Prefix) ++ "amount!=0" 
+    end ++ 
+	case ?v(<<"msell">>, Conditions, []) of
+	    [] -> [];
+	    MoreSell -> " and " ++ ?to_s(Prefix) ++ "sell>" ++ ?to_s(MoreSell)
+	end ++
+
+	case ?v(<<"esell">>, Conditions, []) of
+	    [] -> [];
+	    EqualSell -> " and " ++ ?to_s(Prefix) ++ "sell=" ++ ?to_s(EqualSell)
+	end ++
+	
+	case ?v(<<"lsell">>, Conditions, []) of
+	    [] -> [];
+	    LessSell -> " and " ++ ?to_s(Prefix) ++ "sell<" ++ ?to_s(LessSell)
+	end.
+	
+		 
 
 sort_condition(stock, Conditions) ->
     sort_condition(stock, Conditions, []).
@@ -2267,14 +2283,31 @@ stock(ediscount, OrgPrice, TagPrice) ->
     binary_to_float(float_to_binary(OrgPrice / TagPrice, [{decimals, 4}])) * 100.
 
 
-realy_conditions(Merchant, Conditions) ->
+realy_conditions(_Merchant, Conditions) ->
+    %%
+    %% repo never userd, cancel it
+    %%
+    
+    %% lists:foldr(
+    %%   fun({<<"shop">>, Shop}, Acc) -> 
+    %% 	      [{<<"shop">>, realy_shop(true, Merchant, Shop)}|Acc];
+    %% 	 ({<<"stock">>, _}, Acc) ->
+    %% 	      Acc;
+    %% 	 (C, Acc) ->
+    %% 	      [C|Acc]
+    %%   end, [], Conditions).
+
     lists:foldr(
-      fun({<<"shop">>, Shop}, Acc) -> 
-	      [{<<"shop">>, realy_shop(true, Merchant, Shop)}|Acc];
-	 ({<<"stock">>, _}, Acc) ->
-	      Acc;
-	 (C, Acc) ->
-	      [C|Acc]
+      fun({<<"msell">>, _}, Acc) -> 
+    	      Acc;
+	 ({<<"esell">>, _}, Acc) ->
+    	      Acc;
+	 ({<<"lsell">>, _}, Acc) ->
+    	      Acc;
+    	 ({<<"stock">>, _}, Acc) ->
+    	      Acc;
+    	 (C, Acc) ->
+    	      [C|Acc]
       end, [], Conditions).
 
 
