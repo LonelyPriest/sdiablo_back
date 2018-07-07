@@ -93,11 +93,14 @@ function wsaleRsnDetailCtrlProvide (
     		      {name:"销售退货", id:1, py:diablo_pinyin("销售退货")}];
 
     var now = $.now(); 
-    var shopId = $scope.shopIds.length === 1 ? $scope.shopIds[0]: -1;
+    // var shopId = $scope.shopIds.length === 1 ? $scope.shopIds[0]: -1;
     
     // base setting 
-    $scope.setting.se_pagination = wsaleUtils.sequence_pagination(shopId, base); 
+    $scope.setting.se_pagination = wsaleUtils.sequence_pagination(diablo_default_shop, base); 
     $scope.setting.show_sale_day = user.sdays;
+
+    var sale_mode = wsaleUtils.sale_mode(diablo_default_shop, base);
+    $scope.setting.show_note     = wsaleUtils.to_integer(sale_mode.charAt(1));
     
     var storage = localStorageService.get(diablo_key_wsale_trans_detail);
     console.log(storage);
@@ -110,7 +113,7 @@ function wsaleRsnDetailCtrlProvide (
 	$scope.filters = [];
 	if (angular.isDefined($routeParams.rsn)){
 	    $scope.qtime_start = diablo_set_date(
-		wsaleUtils.start_time(shopId, base, now, dateFilter));
+		wsaleUtils.start_time(diablo_default_shop, base, now, dateFilter));
 	} else {
 	    $scope.qtime_start = now;
 	}
@@ -221,7 +224,7 @@ function wsaleRsnDetailCtrlProvide (
 	    };
 	    
 	    wsaleService.filter_w_sale_rsn_group(
-		{mode:$scope.mode, sort:$scope.sort},
+		{mode:$scope.mode, sort:$scope.sort, note: $scope.setting.show_note},
 		$scope.match, search, page_num, items
 	    ).then(function(result){
 		console.log(result);

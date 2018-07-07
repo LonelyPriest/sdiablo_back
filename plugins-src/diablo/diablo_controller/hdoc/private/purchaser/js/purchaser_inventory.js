@@ -222,7 +222,8 @@ function purchaserInventoryNewCtrlProvide (
 	    for (var i=0, l=$scope.inventories.length; i<l; i++){
 		var inv = $scope.inventories[i];
 		if (diablo_invalid_firm !== inv.firm_id){
-		    $scope.select.firm = diablo_get_object(inv.firm_id, $scope.firms); 
+		    $scope.select.firm = diablo_get_object(inv.firm_id, $scope.firms);
+		    break;
 		}
 	    }
 	    
@@ -425,7 +426,7 @@ function purchaserInventoryNewCtrlProvide (
 	
 	if ($scope.base_settings.stock_with_firm === diablo_yes) {
 	    if (diablo_invalid_firm !== item.firm_id
-		&& diablo_invalid_firm !== stockUtils.invalid_firm($scope.select.firm)){
+		&& diablo_invalid_firm === stockUtils.invalid_firm($scope.select.firm)){
 		$scope.select.firm = diablo_get_object(item.firm_id, $scope.firms);
 	    }
 	}
@@ -583,9 +584,11 @@ function purchaserInventoryNewCtrlProvide (
 	var added = [];
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    var add = $scope.inventories[i];
+	    var select_firm = stockUtils.invalid_firm($scope.select.firm);
 	    if (diablo_yes === $scope.base_settings.stock_with_firm
 		&& add.firm_id !== diablo_invalid_firm
-		&& add.firm_id !== stockUtils.invalid_firm($scope.select.firm)){
+		&& select_firm !== diablo_invalid_firm
+		&& add.firm_id !== select_firm){
 		$scope.has_saved = false;
 		diabloUtilsService.response(
 		    false,

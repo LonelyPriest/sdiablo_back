@@ -624,7 +624,10 @@ inventory(set_gift, Merchant, StockState, Conditions) ->
 
 inventory(update_batch, Merchant, Attrs, Conditions) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
-
+    RealyConditions = realy_conditions(Merchant, NewConditions),
+    ExtraConditions = sort_condition(stock, NewConditions),
+    
+    ?DEBUG("ExtraConditions ~p", [ExtraConditions]),
     OrgPrice  = ?v(<<"org_price">>, Attrs),
     TagPrice  = ?v(<<"tag_price">>, Attrs),
     Discount  = ?v(<<"discount">>, Attrs),
@@ -686,9 +689,10 @@ inventory(update_batch, Merchant, Attrs, Conditions) ->
      %% 	    {TagPrice, OrgPrice} ->
      %% 		", ediscount=" ++ ?to_s(stock(ediscount, OrgPrice, TagPrice))
      %% 	end
-     ++ " where " 
-     ++ ?sql_utils:condition(proplists_suffix, NewConditions) 
-     ++ "merchant=" ++ ?to_s(Merchant)
+     ++ " where "
+     ++ "merchant=" ++ ?to_s(Merchant) 
+     ++ ?sql_utils:condition(proplists, RealyConditions)
+     ++ ExtraConditions
      ++ case ?sql_utils:condition(time_no_prfix, StartTime, EndTime) of
 	    [] -> [];
 	    TimeSql ->  " and " ++ TimeSql
@@ -734,6 +738,14 @@ inventory(update_batch, Merchant, Attrs, Conditions) ->
 		    ++ ?sql_utils:condition(
 			  proplists_suffix,
 			  lists:foldr(fun({<<"shop">>, _}, Acc)->
+					      Acc;
+					 ({<<"stock">>, _}, Acc) ->
+					      Acc;
+					 ({<<"msell">>, _}, Acc) ->
+					      Acc;
+					 ({<<"esell">>, _}, Acc) ->
+					      Acc;
+					 ({<<"less">>, _}, Acc) ->
 					      Acc;
 					 (A, Acc) ->
 					      [A|Acc]
@@ -1838,7 +1850,7 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		   case OrgPrice =/= 0 of
 		       true -> ["update w_inventory_good set"
 				" firm=" ++ ?to_s(Firm)
-				++ " org_price=" ++ ?to_s(OrgPrice)
+				++ ", org_price=" ++ ?to_s(OrgPrice)
 				++ ", ediscount=" ++ ?to_s(EDiscount)
 				++ ", tag_price=" ++ ?to_s(TagPrice)
 				++ ", discount=" ++ ?to_s(Discount)

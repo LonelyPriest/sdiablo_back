@@ -219,33 +219,13 @@ action(Session, Req, {"filter_w_sale_image"}, Payload) ->
 	    ?utils:respond(
 	       200, object, Req,
 	       {[{<<"ecode">>, 0}, {<<"total">>, Total}, {<<"data">>, []}]});
-	{ok, Total, Data} ->
+	{ok, Total, Data, _Extra} ->
 	    ?utils:respond(
 	       200, object, Req,
 	       {[{<<"ecode">>, 0},
 		 {<<"total">>, Total},
 		 {<<"data">>, Data},
 		 {<<"history">>, []}]}); 
-	    %% view history of the retailer
-	    %% Retailer = ?v(<<"retailer">>, F),
-	    %% Goods = lists:foldr(
-	    %% 	      fun({Good}, Acc) ->
-	    %% 		      [{?v(<<"style_number">>, Good),
-	    %% 			?v(<<"brand_id">>, Good)}|Acc]
-	    %% 	      end, [], Data),
-	    
-	    %% case ?w_sale:sale(history_retailer, Merchant, Retailer, Goods) of 
-	    %% 	{ok, Histories} ->
-	    %% 	    ?utils:respond(
-	    %% 	       200, object, Req,
-	    %% 	       {[{<<"ecode">>, 0},
-	    %% 		 {<<"total">>, Total},
-	    %% 		 {<<"data">>, Data},
-	    %% 		 {<<"history">>, Histories}]}); 
-	    %% 	{error, _Error} ->
-	    %% 	    ?utils:respond(200, Req, ?err(wsale_history_failed, Retailer))
-	    %% end;
-	    
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;
@@ -257,14 +237,6 @@ action(Session, Req, {"new_w_sale"}, Payload) ->
     Invs            = ?v(<<"inventory">>, Payload, []),
     {struct, Base}  = ?v(<<"base">>, Payload),
     {struct, Print} = ?v(<<"print">>, Payload),
-
-    %% Shop = ?v(<<"shop">>, Base, -1),
-    %% {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, ?DEFAULT_BASE_SETTING),
-    
-    %% ImmediatelyPrint = ?v(<<"im_print">>, Print, ?NO),
-    %% PMode            = ?v(<<"p_mode">>, Print, ?PRINT_FRONTE),
-    %% Round            = ?v(<<"round">>, Base, 1),
-    %% ShouldPay        = ?v(<<"should_pay">>, Base),
     
     TicketBatch      = ?v(<<"ticket_batch">>, Base),
     TicketBalance    = ?v(<<"ticket">>, Base), 
@@ -641,7 +613,9 @@ action(Session, Req, {"filter_w_sale_rsn_group"}, Payload) ->
     Merchant           = ?session:get(merchant, Session), 
     {struct, Mode}     = ?v(<<"mode">>, Payload),
     Order = ?v(<<"mode">>, Mode),
-    Sort  = ?v(<<"sort">>, Mode), 
+    Sort  = ?v(<<"sort">>, Mode),
+    ShowNote = ?v(<<"note">>, Mode),
+    
     NewPayload = proplists:delete(<<"mode">>, Payload), 
     {struct, Fields}     = ?v(<<"fields">>, Payload),
 
@@ -673,19 +647,51 @@ action(Session, Req, {"filter_w_sale_rsn_group"}, Payload) ->
 		P = proplists:delete(<<"fields">>, NewPayload),
 		[{<<"fields">>, {struct, proplists:delete(<<"ctype">>, Fields)}}|P]
 	end,
-	    
-    %% ?DEBUG("PayloadWithCtype ~p", [PayloadWithCtype]), 
-    ?pagination:pagination(
-       fun(Match, Conditions) ->
-    	       ?w_sale:filter(total_rsn_group,
-    			      ?to_a(Match), Merchant, Conditions)
-       end,
-       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
-    	       ?w_sale:filter(
-		  {rsn_group, mode(Order), Sort},
-    		  Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
-       end, Req, PayloadWithCtype);
 
+    
+	    
+    ?DEBUG("PayloadWithCtype ~p", [PayloadWithCtype]),
+    case ShowNote of
+	?NO -> 
+	    ?pagination:pagination(
+	       fun(Match, Conditions) ->
+		       ?w_sale:filter(total_rsn_group,
+				      ?to_a(Match), Merchant, Conditions)
+	       end,
+	       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
+		       ?w_sale:filter(
+			  {rsn_group, mode(Order), Sort},
+			  Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
+	       end, Req, PayloadWithCtype);
+	?YES -> 
+	    case
+		?pagination:pagination(
+		   no_response,
+		   fun(Match, Conditions) ->
+			   ?w_sale:filter(total_rsn_group,
+					  ?to_a(Match), Merchant, Conditions)
+		   end,
+		   fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
+			   ?w_sale:filter(
+			      {rsn_group, mode(Order), Sort},
+			      Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
+		   end, PayloadWithCtype)
+	    of
+		{ok, Total, []} ->
+		    ?utils:respond(
+		       200, object, Req,
+		       {[{<<"ecode">>, 0}, {<<"total">>, Total}, {<<"data">>, []}]});
+		{ok, Total, Data, Extra} ->
+		    ?DEBUG("Total ~p, Data ~p, Extra ~p", [Total, Data, Extra]),
+		    %% get rsn
+		    ?utils:respond(
+		       200, object, Req, {[{<<"ecode">>, 0},
+					   {<<"total">>, Total},
+					   {<<"data">>, Data}] ++ Extra}); 
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end
+    end;
 
 action(Session, Req, {"list_wsale_group_by_style_number"}, Payload) ->
     ?DEBUG("filter_w_sale_firm_detail with session ~p, paylaod~n~p", [Session, Payload]),

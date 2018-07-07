@@ -482,6 +482,9 @@ function wsaleNewProvide(
 	$scope.setting.scan_only     = wsaleUtils.to_integer(wsaleUtils.scan_only(shopId, base).charAt(0));
 	$scope.setting.maling_rang   = wsaleUtils.maling_rang(shopId, base);
 	$scope.setting.type_sale     = wsaleUtils.type_sale(shopId, base);
+
+	// var sale_mode = wsaleUtils.sale_mode(shopId, base);
+	// $scope.setting.show_note     = wsaleUtils.to_integer(sale_mode.charAt(1));
 	
 	if (diablo_no === $scope.setting.cake_mode) {
 	    // $scope.vpays = wsaleService.vpays;
@@ -997,26 +1000,32 @@ function wsaleNewProvide(
 	    return;
 	};
 	
-	// one good can be add only once at the same time
+	// has been added
+	var existStock = undefined;
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    if (item.style_number === $scope.inventories[i].style_number
 		&& item.brand_id  === $scope.inventories[i].brand_id){
-		fail_response(2191, function(){
-		    $scope.inventories[0] = {$edit:false, $new:true}});
-		return; 
+		existStock = $scope.inventories[i];
+		// fail_response(2191, function(){
+		//     $scope.inventories[0] = {$edit:false, $new:true}});
+		// return; 
 	    }
 	}; 
 
 	// auto focus
 	// $scope.auto_focus("sell");
-	
-	// add at first allways 
-	var add = $scope.inventories[0];
-	add = $scope.copy_select(add, item);
-	console.log(add);
-	$scope.add_inventory(add);
-	
-	return;
+
+	if (angular.isDefined(existStock)) {
+	    $scope.update_inventory(
+		existStock,
+		function() {$scope.inventories[0] = {$edit:false, $new:true}})
+	} else {
+	    // add at first allways 
+	    var add = $scope.inventories[0];
+	    add = $scope.copy_select(add, item);
+	    console.log(add);
+	    $scope.add_inventory(add);
+	}	
     };
 
     
@@ -1672,17 +1681,19 @@ function wsaleNewProvide(
     var add_callback = function(params){
 	console.log(params.amounts);
 	
-	var sell_total = 0;
+	var sell_total = 0, note = "";
 	angular.forEach(params.amounts, function(a){
 	    if (angular.isDefined(a.sell_count) && a.sell_count){
 		sell_total += parseInt(a.sell_count);
+		note += diablo_find_color(a.cid, filterColor).cname + a.size + ";"
 	    }
 	}); 
 
 	return {amounts:     params.amounts,
 		sell:        sell_total,
 		fdiscount:   params.fdiscount,
-		fprice:      params.fprice};
+		fprice:      params.fprice,
+		note:        note};
     };
     
     $scope.add_free_inventory = function(inv){
@@ -1849,6 +1860,7 @@ function wsaleNewProvide(
 			inv.sell       = result.sell;
 			inv.fdiscount  = result.fdiscount;
 			inv.fprice     = result.fprice;
+			inv.note       = result.note;
 			after_add();
 		    };
 
@@ -1954,14 +1966,15 @@ function wsaleNewProvide(
     /*
      * update inventory
      */
-    $scope.update_inventory = function(inv){
+    $scope.update_inventory = function(inv, updateCallback){
 	console.log(inv);
 	inv.$update = true; 
 	// inv.fdiscount = $scope.calc_discount(inv); 
 	// inv.fprice    = diablo_price(inv.tag_price, inv.fdiscount);
 	
 	if (inv.free_color_size){
-	    inv.free_update = true; 
+	    inv.free_update = true;
+	    $scope.auto_focus("sell");
 	    return;
 	}
 	
@@ -1971,10 +1984,16 @@ function wsaleNewProvide(
 	    inv.amounts    = result.amounts;
 	    inv.sell       = result.sell;
 	    inv.fdiscount  = result.fdiscount;
-	    inv.fprice     = result.fprice; 
+	    inv.fprice     = result.fprice;
+	    inv.note       = result.note;
+
+	    // inv.note 
 	    // save
 	    $scope.wsaleStorage.save($scope.inventories.filter(function(r){return !r.$new}));
 	    $scope.re_calculate();
+
+	    if (angular.isDefined(updateCallback) && angular.isFunction(updateCallback))
+		updateCallback();
 	    // inv.$update = false;
 	};
 
@@ -2003,6 +2022,11 @@ function wsaleNewProvide(
 	// save
 	$scope.wsaleStorage.save($scope.inventories.filter(function(r){return !r.$new}));
 	$scope.re_calculate();
+
+	// reset
+	$scope.inventories[0] = {$edit:false, $new:true};
+	$scope.focus_good_or_barcode();
+	
 	// inv.$update = false; 
     };
 

@@ -326,6 +326,10 @@ var wsaleUtils = function(){
 	type_sale:function(shop, base) {
 	    return diablo_base_setting("type_sale", shop, base, parseInt, diablo_no);
 	},
+
+	sale_mode:function(shop, base) {
+	    return diablo_base_setting("p_balance", shop, base, function(s) {return s}, diablo_sale_mode);
+	},
 	
 	get_login_employee:function(shop, loginEmployee, employees){
 	    var filterEmployees = employees.filter(function(e){

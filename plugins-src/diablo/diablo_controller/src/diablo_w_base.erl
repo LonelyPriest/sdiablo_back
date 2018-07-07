@@ -783,8 +783,7 @@ sys_config() ->
 
 	      {"qtime_start",     "联想开始时间",        DefaultDate,  "0"}, 
 	      {"qtypeahead",      "联想方式",            "1",   "0"}, %% 0: front; 1:backend 
-	      {"prompt",          "联想数目",            "8",   "0"},
-
+	      {"prompt",          "联想数目",            "20",   "0"},
 
 	      %% {"stock_alarm",     "库存告警",             "0",  "0"},
 	      {"reject_negative", "零库存退货",           "0",  "0"},
@@ -812,7 +811,11 @@ sys_config() ->
 	      %% {"h_expire",        "隐藏退货期限",             "0",   "0"},
 	      {"s_member",        "会员独立",             "0",   "0"},
 	      {"s_employee",      "营业员必选",           "0",   "0"},
-	      {"p_balance",       "打印会员余额",         "0",   "0"},
+
+	      %% [0]: print balance of charge vip
+	      %% [1]: show color size when on sale
+	      {"p_balance",       "销售模式",         "0",  "00"},
+	      
 	      {"gen_ticket",      "自动生成电子卷",       "0",   "0"},
 	      {"recharge_sms",    "充值短信提醒",         "0",   "0"},
 	      {"consume_sms",     "消费短信提醒",         "0",   "0"},

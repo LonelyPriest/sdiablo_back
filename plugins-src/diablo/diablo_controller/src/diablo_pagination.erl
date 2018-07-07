@@ -6,28 +6,33 @@
 -export([pagination/4]).
 
 pagination(no_response, TotalFun, PageFun, Payload) ->
-    Match                = ?value(<<"match">>, Payload, 'and'),
+    Match                = ?value(<<"match">>, Payload, 'and'), 
     {struct, Conditions} =
 	case ?value(<<"fields">>, Payload) of
-	    undefined -> {struct, []};
-	    Any -> Any
+	    undefined ->
+		case ?value(<<"condition">>, Payload) of
+		    undefined -> {struct, []};
+		    {struct, Any} -> {struct, lists:keydelete(<<"region">>, 1, Any)}
+		end; 
+	    {struct, Any} ->
+		{struct, lists:keydelete(<<"region">>, 1, Any)}
 	end,
 
-    CurrentPage  = ?value(<<"page">>, Payload), 
+    ?DEBUG("conditions ~p", [Conditions]),
+
+    CurrentPage  = ?value(<<"page">>, Payload, 1), 
     ItemsPerPage  = ?value(<<"count">>, Payload, ?DEFAULT_ITEMS_PERPAGE),
 
-    case page(Conditions, CurrentPage,
-	      fun(C) -> TotalFun(?to_a(Match), C) end) of
+    case page(Conditions, CurrentPage, fun(C) -> TotalFun(?to_a(Match), C) end) of
 	{error, Error} -> {error, Error};
-	{Total, _} -> 
+	{Total, Others} -> 
 	    case Total =:= 0 andalso CurrentPage =:= 1 of
 		true ->
 		    {ok, Total, []}; 
 		false ->
-		    case PageFun(?to_a(Match),
-				 CurrentPage, ItemsPerPage, Conditions) of
+		    case PageFun(?to_a(Match), CurrentPage, ItemsPerPage, Conditions) of
 			{ok, Details} ->
-			    {ok, Total, Details}; 
+			    {ok, Total, Details, Others}; 
 			{error, Error} ->
 			    {error, Error}
 		    end
