@@ -117,7 +117,8 @@
 			<!-- <th class="info">单价</th> -->
 			<th class="danger">成交价</th>
 			<th class="success">优惠</th>
-			<th>数量</th> 
+			<th>数量</th>
+			<th x-ng-if="setting.show_note">色/码</th>
 			<th>小计</th>
 			<th x-ng-if="right.show_orgprice">进价</th> 
 			<th>折扣率</th>
@@ -167,6 +168,12 @@
 			  <span class="fg-red" x-ng-switch-when=1>{{inv.total}}</span>
 			  <span x-ng-switch-default>{{inv.total}}</span>
 			</td>
+			<td x-ng-if="setting.show_note">
+			  <span x-ng-if="inv.free">
+			    <span class="bg-blue" x-ng-bind="inv.note"></span>
+			  </span>
+			  <span x-ng-if="!inv.free">-</span>
+			</td>
 			<td>{{inv.calc}} </td>
 			<!-- <td>{{inv.rdiscount}} </td> -->
 			<!-- <td class="fg-blue">{{inv.drate}} </td> -->
@@ -177,8 +184,8 @@
 			<!-- <td>{{inv.comment}}</td> -->
 			<td>{{inv.entry_date}}</td>
 			<td>
-			  <button class="btn diablo-button btn-primary"
-				  x-ng-disabled="inv.free === 0"
+			  <button x-ng-if="inv.free"
+				  class="btn diablo-button btn-primary"
 		    		  x-ng-click="rsn_detail(inv)">
 			    明细<i class="glyphicon glyphicon-map-marker"></i></button>
 			  <button x-ng-if="right.update_oprice_after_sale
@@ -192,7 +199,8 @@
 
 		      <tr x-ng-if="total_items!==0" class="bg-white">
 			<td colspan={{calc_colspan()}}></td>
-			<td>{{total_amounts}}</td> 
+			<td>{{total_amounts}}</td>
+			<td x-ng-if="setting.show_note"></td> 
 			<td>{{total_balance}}</td>
 			<td x-ng-if="right.show_orgprice">{{total_obalance}}</td>
 			<td colspan="5"></td>

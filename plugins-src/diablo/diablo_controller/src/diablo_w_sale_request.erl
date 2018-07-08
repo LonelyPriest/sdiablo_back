@@ -682,12 +682,53 @@ action(Session, Req, {"filter_w_sale_rsn_group"}, Payload) ->
 		       200, object, Req,
 		       {[{<<"ecode">>, 0}, {<<"total">>, Total}, {<<"data">>, []}]});
 		{ok, Total, Data, Extra} ->
-		    ?DEBUG("Total ~p, Data ~p, Extra ~p", [Total, Data, Extra]),
+		    %% ?DEBUG("Total ~p, Data ~p, Extra ~p", [Total, Data, Extra]),
 		    %% get rsn
+		    %% {ok, AllColors} = ?w_user_profile:get(color, Merchant),
+		    
+		    Rsns = lists:foldr(
+			     fun({D}, Acc) ->
+				     Rsn = ?v(<<"rsn">>, D),
+				     case lists:member(Rsn, Acc) of
+					 true -> Acc;
+					 false -> [Rsn|Acc]
+				     end
+			     end, [], Data),
+		    %% note
+		    {ok, SaleNotes} = ?w_sale:export(
+					 trans_note_color_size, Merchant,
+					 [{<<"rsn">>, Rsns}]),
+		    NoteDict = sale_note(to_dict_with_rsn, SaleNotes, dict:new()),
+
+		    DataWithNote =
+			lists:foldr(
+			  fun({D}, Acc) ->
+				  Rsn = ?to_b(?v(<<"rsn">>, D)),
+				  StyleNumber = ?to_b(?v(<<"style_number">>, D)),
+				  Brand = ?to_b(?v(<<"brand_id">>, D)),
+				  Shop  = ?to_b(?v(<<"shop_id">>, D)),
+				  Key = <<Rsn/binary,
+					  <<"-">>/binary,
+					  StyleNumber/binary,
+					  <<"-">>/binary,
+					  Brand/binary,
+					  <<"-">>/binary,
+					  Shop/binary>>,
+
+				  %% ?DEBUG("Key ~p", [Key]),
+				  case dict:find(Key, NoteDict) of
+				      error ->
+					  [{D ++ [{<<"note">>, <<>>}]}] ++ Acc;
+				      {ok, Find} ->
+					  Note = ?to_b(?v(<<"note">>, Find)),
+					  [{D ++ [{<<"note">>, Note}]}] ++ Acc
+				  end
+			  end, [], Data),
+
 		    ?utils:respond(
 		       200, object, Req, {[{<<"ecode">>, 0},
 					   {<<"total">>, Total},
-					   {<<"data">>, Data}] ++ Extra}); 
+					   {<<"data">>, DataWithNote}] ++ Extra}); 
 		{error, Error} ->
 		    ?utils:respond(200, Req, Error)
 	    end
@@ -1576,7 +1617,49 @@ sale_note(to_dict, [{H}|T], Dict) ->
 		%% dict:append(Key, {H}, Dict)
 	end,
 
-    sale_note(to_dict, T, DictNew).
+    sale_note(to_dict, T, DictNew);
+
+sale_note(to_dict_with_rsn, [], Dict) ->
+    ?DEBUG("sale_note_to_dict_with_rsn ~p", [dict:to_list(Dict)]),
+    Dict;
+sale_note(to_dict_with_rsn, [{H}|T], Dict) ->
+    %% ?DEBUG("H ~p", [H]),
+    Rsn = ?to_b(?v(<<"rsn">>, H)),
+    StyleNumber = ?to_b(?v(<<"style_number">>, H)),
+    Brand = ?to_b(?v(<<"brand">>, H)),
+    Shop  = ?to_b(?v(<<"shop">>, H)),
+
+    Color = ?v(<<"color">>, H),
+    ColorName = ?v(<<"cname">>, H),
+    
+    Size  = ?v(<<"size">>,H),
+
+    Key = <<Rsn/binary,
+	    <<"-">>/binary,
+	    StyleNumber/binary,
+	    <<"-">>/binary,
+	    Brand/binary,
+	    <<"-">>/binary,
+	    Shop/binary>>,
+
+    DictNew = 
+	case dict:find(Key, Dict) of
+	    error ->
+		Note = [{<<"note">>, ?to_s(ColorName) ++ ?to_s(Size)}],
+		N = proplists:delete(<<"size">>, proplists:delete(<<"color">>, H)),
+		dict:store(Key, N ++ Note, Dict);
+	    {ok, _V} ->
+		dict:update(
+		  Key,
+		  fun(V) ->
+			  NewNote = ?v(<<"note">>, V) ++ ";"
+			      ++ ?to_s(ColorName) ++ ?to_s(Size),
+			  proplists:delete(<<"note">>, V) ++ [{<<"note">>, NewNote}]
+		  end,
+		  Dict)
+	end,
+
+    sale_note(to_dict_with_rsn, T, DictNew).
 
 sale_trans(to_dict, [], Dict) ->
     %% ?DEBUG("sale_trans_to_Dict ~p", [dict:to_list(Dict)]),
@@ -1616,7 +1699,6 @@ sale_trans(to_dict, [{H}|T], Dict) ->
 	end,
 
     sale_trans(to_dict, T, DictNew).    
-
     
 sale_type(0) -> "开单";
 sale_type(1)-> "退货". 

@@ -1099,16 +1099,21 @@ handle_call({new_trans_note_export, Merchant, Conditions}, _From, State)->
 handle_call({new_trans_note_color_size_export, Merchant, Conditions}, _From, State)->
     %% ?DEBUG("new_trans_note_colro_size_export: merchant ~p\nConditions~p", [Merchant, Conditions]),
 
-    Sql = "select id"
-	", style_number"
-	", brand"
-	", color"
-	", size"
-	", total"
-	", shop" 
-	", merchant"
-	" from w_sale_detail_amount"
-	" where merchant=" ++ ?to_s(Merchant)
+    Sql = "select a.id"
+	", a.rsn"
+	", a.style_number"
+	", a.brand"
+	", a.color"
+	", a.size"
+	", a.total"
+	", a.shop" 
+	", a.merchant"
+
+	", b.name as cname"
+	
+	" from w_sale_detail_amount a"
+	" left join colors b on a.merchant=b.merchant and a.color = b.id"
+	" where a.merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, Conditions),
     
     Reply = ?sql_utils:execute(read, Sql),

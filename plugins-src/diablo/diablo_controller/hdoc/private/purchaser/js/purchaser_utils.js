@@ -251,7 +251,7 @@ var stockUtils = function(){
 	},
 
 	to_float: function(v) {
-	    if (angular.isUndefined(v) || isNaN(v) || (!v && v != 0)){
+	    if (angular.isUndefined(v) || isNaN(v) || (!v && v !== 0)){
 		return 0;
 	    } else{
 		return parseFloat(v)
@@ -259,7 +259,7 @@ var stockUtils = function(){
 	},
 
 	to_integer: function(v){
-	    if (angular.isUndefined(v) || isNaN(v) || (!v && v != 0)){
+	    if (angular.isUndefined(v) || isNaN(v) || (!v && v !== 0)){
 		return 0;
 	    } else{
 		return parseInt(v)

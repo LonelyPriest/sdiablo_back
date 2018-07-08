@@ -2161,10 +2161,11 @@ function purchaserInventoryDetailCtrlProvide(
 		    
 		} else {
 		    if (page === 1){
-			$scope.total_items = result.total;
+			$scope.total_items  = result.total;
 			$scope.total_amount = result.t_amount;
 			$scope.total_sell   = result.t_sell;
 			$scope.total_lmoney = result.t_lmoney;
+			$scope.total_pmoney = result.t_pmoney;
 		    }
 		    // angular.forEach(result.data, function(d){
 		    // 	// if (now_date.getTime() - diablo_set_date(d.last_sell)

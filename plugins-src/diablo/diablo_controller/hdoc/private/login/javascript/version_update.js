@@ -1,5 +1,11 @@
 var version_update = function(){
     var updates = [
+	{date: "2018-07-09",
+	 content:
+	 ["交易明细可通过配置来是否直接显示颜色与尺码",
+	  "库存详情增加吊牌价统计显示"]
+	},
+	
 	{date: "2018-07-08",
 	 content:
 	 ["优化开单操作，同一款号多次开单时自动跳转到修改项",

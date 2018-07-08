@@ -2595,6 +2595,7 @@ handle_call({total_groups, MatchMode, Merchant, Fields}, _From, State) ->
 	", sum(amount) as t_amount"
 	", sum(sell) as t_sell"
 	", sum(amount * org_price) as t_lmoney"
+	", sum(amount * tag_price) as t_pmoney"
 	" from w_inventory"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ case MatchMode of

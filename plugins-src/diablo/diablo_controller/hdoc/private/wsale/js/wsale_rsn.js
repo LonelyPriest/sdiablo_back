@@ -98,7 +98,7 @@ function wsaleRsnDetailCtrlProvide (
     // base setting 
     $scope.setting.se_pagination = wsaleUtils.sequence_pagination(diablo_default_shop, base); 
     $scope.setting.show_sale_day = user.sdays;
-
+    
     var sale_mode = wsaleUtils.sale_mode(diablo_default_shop, base);
     $scope.setting.show_note     = wsaleUtils.to_integer(sale_mode.charAt(1));
     
@@ -223,6 +223,7 @@ function wsaleRsnDetailCtrlProvide (
 		$scope.inventories= []; 
 	    };
 	    
+	    // console.log($scope.setting);
 	    wsaleService.filter_w_sale_rsn_group(
 		{mode:$scope.mode, sort:$scope.sort, note: $scope.setting.show_note},
 		$scope.match, search, page_num, items
