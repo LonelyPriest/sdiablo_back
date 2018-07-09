@@ -940,6 +940,7 @@ handle_call({total_rsn_group, Merchant, Conditions}, _From, State) ->
 
     Sql = "select count(*) as total"
     	", SUM(b.total) as t_amount"
+	", SUM(b.tag_price * b.total) as t_tbalance"
     	", SUM(b.rprice * b.total) as t_balance"
 	", SUM(b.org_price * b.total) as t_obalance"
 	

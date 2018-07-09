@@ -59,7 +59,7 @@ function wsaleRsnDetailCtrlProvide (
     };
     
     $scope.calc_colspan = function(){
-	var column = 19;
+	var column = 16;
 	if ($scope.hidden.base) column -= 3;
 	
 	return column;
@@ -163,6 +163,7 @@ function wsaleRsnDetailCtrlProvide (
     $scope.cache_stastic = function(){
 	localStorageService.set(
 	    "wsale-note-stastic", {total_items:       $scope.total_items,
+				   total_tblance:     $scope.total_tblance,
 				   total_amounts:     $scope.total_amounts, 
 				   total_balance:     $scope.total_balance,
 				   total_obalance:    $scope.total_obalance,
@@ -199,6 +200,7 @@ function wsaleRsnDetailCtrlProvide (
 	    console.log(stastic);
 	    $scope.total_items       = stastic.total_items;
 	    $scope.total_amounts     = stastic.total_amounts;
+	    $scope.total_tblance     = stastic.total_tblance;
 	    $scope.total_balance     = stastic.total_balance;
 	    $scope.total_obalance    = stastic.total_obalance;
 	}
@@ -233,6 +235,7 @@ function wsaleRsnDetailCtrlProvide (
 		if (page === 1){
 		    $scope.total_items = result.total;
 		    $scope.total_amounts = result.total === 0 ? 0 : result.t_amount;
+		    $scope.total_tblance = result.total === 0 ? 0 : result.t_tbalance;
 		    $scope.total_balance = result.total === 0 ? 0 : result.t_balance;
 		    $scope.total_obalance = result.total === 0 ? 0 : result.t_obalance;
 		    $scope.inventories = [];

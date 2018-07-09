@@ -416,6 +416,7 @@ create table w_retailer
     level           TINYINT default 0,
     card            VARCHAR(16) default null,
     birth           DATE default 0,
+    ulimit          TINYINT default 0,
     password        VARCHAR(128) default null,
     balance         DECIMAL(10, 2) default 0, -- max: 99999999.99
     consume         DECIMAL(10, 2) default 0, -- max: 99999999.99
@@ -436,6 +437,14 @@ create table w_retailer
     key          type (type),
     key          shop (shop),
     primary key     (id)
+) default charset=utf8;
+
+create table birth_discount
+(
+    id              INTEGER AUTO_INCREMENT,
+    discount        INTEGER default 0,
+    limit           TINYINT default 0,
+    merchant        INTEGER default 0
 ) default charset=utf8;
 
 create table w_retailer_level
