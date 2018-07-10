@@ -445,6 +445,19 @@ action(Session, Req, {"filter_retailer_detail"}, Payload) ->
 		  Match, Merchant, Conditions, CurrentPage, ItemsPerPage)
        end, Req, NewPayload);
 
+
+action(Session, Req, {"filter_retailer_consume"}, Payload) ->
+    ?DEBUG("filter_retailer_consume with session ~p, paylaod~n~p", [Session, Payload]), 
+    Merchant  = ?session:get(merchant, Session),
+
+    ?pagination:pagination(
+       fun(Match, Conditions) ->
+	       ?w_retailer:filter(total_consume, ?to_a(Match), Merchant, Conditions)
+       end,
+       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
+	       ?w_retailer:filter(consume, Match, Merchant, Conditions, CurrentPage, ItemsPerPage)
+       end, Req, Payload);
+
 action(Session, Req, {"filter_charge_detail"}, Payload) ->
     ?DEBUG("filter_charge_detail with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant  = ?session:get(merchant, Session),
@@ -829,13 +842,14 @@ sidebar(Session) ->
 	 }],
     
     ThresholdCard = [{{"threshold_card", "次/月/季/年卡", "glyphicon glyphicon-credit-card" },
-		      [{"card_detail", "卡类详情", "glyphicon glyphicon-credit-card"},
-		       {"card_good",   "按次商品", "glyphicon glyphicon-book"}, 
-		       {"card_sale",   "消费记录", "glyphicon glyphicon-bookmark"}
+		      [{"card_detail",   "卡类详情", "glyphicon glyphicon-credit-card"},
+		       {"card_good",     "按次商品", "glyphicon glyphicon-book"}, 
+		       {"card_sale",     "消费记录", "glyphicon glyphicon-bookmark"}
 		      ] 
 		     }],
 
-    Level = [{"wretailer_level", "会员等级", "glyphicon glyphicon-sort-by-alphabet"}],
+    Level = [{"level", "会员等级", "glyphicon glyphicon-sort-by-alphabet"}],
+    Consume = [{"consume", "消费统计", "glyphicon glyphicon-usd"}],
 
     
     L1 = ?menu:sidebar(level_1_menu, S2 ++ S1 ++ S3),
@@ -844,7 +858,7 @@ sidebar(Session) ->
 			       ?YES -> ThresholdCard;
 			       ?NO -> []
 			   end),
-    L1 ++ L2 ++ ?menu:sidebar(level_1_menu, Level).
+    L1 ++ L2 ++ ?menu:sidebar(level_1_menu, Level) ++ ?menu:sidebar(level_1_menu, Consume).
 
 csv_head(retailer, Do, Code) ->
     Head = "序号,名称,类型,联系方式,余额,累计消费,累计积分,所在店铺,日期",

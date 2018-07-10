@@ -475,7 +475,7 @@
 		  
 		  <td class="text-left vert-align">
 		    <div x-ng-if="inv.$new">
-		      <div class="btn-group btn-group-solid">
+		      <div class="btn-group">
 			<button class="btn diablo-input-button btn-success"
 				x-ng-if="!inv.free_color_size"
 				x-ng-disabled="inv.form.good.$invalid"
@@ -489,7 +489,7 @@
 		    </div>
 
 		    <div x-ng-if="inv.$edit">
-		      <div class="btn-group btn-group-solid" x-ng-if="!inv.free_update">
+		      <div class="btn-group" x-ng-if="!inv.free_update">
 			<!-- <button class="btn diablo-input-button btn-primary" -->
 			<!--       x-ng-disabled="inv.free_color_size" -->
 			<!--       x-ng-click="inventory_detail(inv)">详情 -->

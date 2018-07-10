@@ -719,8 +719,8 @@ function wretailerChargeDetailCtrlProvide(
 	master: rightAuthen.authen_master(user.type),
 	update_phone: retailerUtils.authen(user.type, user.right, 'update_phone')};
     
-    var now = $.now(); 
-    $scope.time = diabloFilter.default_time(now, now);
+    var now = retailerUtils.first_day_of_month();
+    $scope.time = diabloFilter.default_time(now.first, now.current);
     
     $scope.do_search = function(page){
 	console.log($scope.filters);
@@ -1604,6 +1604,66 @@ function wretailerLevelCtrlProvide(
     };
 };
 
+function wretailerConsumeCtrlProvide(
+    $scope, diabloFilter, diabloPattern, diabloUtilsService, wretailerService, filterShop, user){
+    $scope.levels = diablo_retailer_levels;
+    var dialog = diabloUtilsService;
+
+    $scope.items_perpage = diablo_items_per_page();
+    $scope.max_page_size = 10;
+    $scope.default_page = 1; 
+    $scope.current_page = $scope.default_page;
+    $scope.total_items = 0;
+
+    $scope.shops = user.sortShops;
+
+    $scope.filters = []; 
+    diabloFilter.reset_field();
+
+    diabloFilter.add_field("shop", $scope.shops);
+    diabloFilter.add_field("mconsume", []);
+    
+    $scope.filter = diabloFilter.get_filter();
+    $scope.prompt = diabloFilter.get_prompt();
+    
+    var now = retailerUtils.first_day_of_month();
+    $scope.time = diabloFilter.default_time(now.first, now.current);
+
+    $scope.do_search = function(page){
+	console.log($scope.filters);
+	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+	    wretailerService.filter_retailer_consume(
+		$scope.match, search, page, $scope.items_perpage
+	    ).then(function(result){
+		console.log(result);
+		if (result.ecode === 0){
+		    if (page === $scope.default_page){
+			$scope.total_items = result.total; 
+		    }
+
+		    angular.forEach(result.data, function(d) {
+			d.shop = diablo_get_object(d.shop_id, filterShop);
+		    })
+
+		    diablo_order(result.data, (page - 1) * $scope.items_perpage + 1);
+		    $scope.consumes = result.data;
+		    $scope.current_page = page; 
+		} 
+	    })
+	})
+    };
+
+    $scope.refresh = function(){
+	$scope.do_search($scope.default_page)
+    };
+
+    $scope.page_changed = function(page){
+	$scope.do_search(page)
+    };
+
+    $scope.refresh();
+};
+
 
 
 
@@ -1617,5 +1677,6 @@ define (["wretailerApp"], function(app){
     app.controller("wretailerThresholdCardGoodCtrl", wretailerThresholdCardGoodCtrlProvide);
     app.controller("wretailerThresholdCardSaleCtrl", wretailerThresholdCardSaleCtrlProvide);
     app.controller("wretailerLevelCtrl", wretailerLevelCtrlProvide);
+    app.controller("wretailerConsumeCtrl", wretailerConsumeCtrlProvide);
 });
 

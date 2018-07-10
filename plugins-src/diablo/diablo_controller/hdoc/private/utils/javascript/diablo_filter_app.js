@@ -318,7 +318,9 @@ function filterProvider(){
 		} else if(name === 'over'){
 		    _filter.fields.push({name:"over", chinese:"溢出"});
 		    _prompt.over = promptValues;
-		}
+		} else if (name === 'mconsume'){
+		    _filter.fields.push({name:"mconsume", chinese:"消费大于"})
+		};
 		
 		return _filter;
 	    },

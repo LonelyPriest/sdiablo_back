@@ -148,10 +148,16 @@ function wretailerConfig(angular) {
 		resolve: angular.extend({}, employee, shop)
 	    }).
 	    // level
-	    when('/wretailer_level', {
+	    when('/level', {
 		templateUrl: '/private/wretailer/html/retailer_level.html',
 		controller: 'wretailerLevelCtrl'
 	    }).
+	    // consume
+	    when('/consume', {
+		templateUrl: '/private/wretailer/html/retailer_consume.html',
+		controller: 'wretailerConsumeCtrl',
+		resolve: angular.extend({}, shop, user)
+	    }). 
 	    // default
 	    otherwise({
 		templateUrl: '/private/wretailer/html/wretailer_detail.html',
@@ -519,6 +525,15 @@ function wretailerConfig(angular) {
 	    return http.save({operation: "syn_retailer_pinyin"},
 			     {retailer:retailers}).$promise;
 	};
+
+	this.filter_retailer_consume = function(match, fields, currentPage, itemsPerpage) {
+	    return http.save(
+		{operation: "filter_retailer_consume"},
+		{match:  angular.isDefined(match) ? match.op : undefined,
+		 fields: fields,
+		 page:   currentPage,
+		 count:  itemsPerpage}).$promise;
+	}
 	
     });
 

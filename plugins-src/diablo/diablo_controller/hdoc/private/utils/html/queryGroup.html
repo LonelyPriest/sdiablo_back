@@ -322,6 +322,17 @@
 	    </form>
 	  </span>
 
+	  <span x-ng-switch-when="mconsume">
+	    <form name="cForm">
+	      <div ng-class="{'has-error':cForm.$invalid && !cForm.$pristine}">
+		<input type="number" step="1"
+		       disable-key
+		       class="form-control" placeholder="请输入累计消费"
+		       x-ng-model="f.value" />
+	      </div>
+	    </form>
+	  </span>
+
 	  <span x-ng-switch-when="firm">
 	    <input type="text" class="form-control" placeholder="请输入厂商名"
 		   x-ng-model="f.value"

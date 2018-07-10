@@ -1012,6 +1012,7 @@ pass_action(wholesaler) ->
      <<"filter_threshold_card_sale">>,
      <<"list_threshold_card_good">>,
      <<"list_retailer_level">>,
+     <<"filter_retailer_consume">>,
      
      %% wsale
      %% <<"list_w_sale_new">>,
