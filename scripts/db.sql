@@ -416,7 +416,7 @@ create table w_retailer
     level           TINYINT default 0,
     card            VARCHAR(16) default null,
     birth           DATE default 0,
-    ulimit          TINYINT default 0,
+    -- ulimit          TINYINT default 0,
     password        VARCHAR(128) default null,
     balance         DECIMAL(10, 2) default 0, -- max: 99999999.99
     consume         DECIMAL(10, 2) default 0, -- max: 99999999.99
@@ -1376,21 +1376,20 @@ create table print_template(
 
 
 -- wholesalers
-
 create table batchsaler
 (
     id              INTEGER AUTO_INCREMENT,
     name            VARCHAR(127) not null,
     py              VARCHAR(8) default null,
+    type            TINYINT default 0,  -- 2: system, 0:common 
     balance         DECIMAL(10, 2) default 0, -- max: 99999999.99
     mobile          VARCHAR(11),
     address         VARCHAR(255), 
     merchant        INTEGER default -1,
     remark          VARCHAR(255),
     entry_date      DATETIME default 0, 
-    deleted         INTEGER default 0, -- 0: no;  1: yes
-
-    unique  key  uk (name, merchant),
+    deleted         INTEGER default 0, -- 0: no;  1: yes 
+    unique  key  uk (merchant, mobile),
     key          dk (merchant),
     primary key     (id)
 ) default charset=utf8;

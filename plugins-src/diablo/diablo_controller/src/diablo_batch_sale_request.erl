@@ -123,12 +123,9 @@ sidebar(Session) ->
 	    %% Merchant = ?session:get(merchant, Session), 
 	    %% {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),
 
-	   NewBatchSaler = 
-		case ?right_auth:authen(?new_w_retailer, Session) of
-		    {ok, ?new_w_retailer} ->
-			[{"new_saler", "新增客户", "glyphicon glyphicon-plus"}];
-		    _ -> []
-		end,
+	    Saler = 
+		[{"new_saler", "新增客户", "glyphicon glyphicon-plus"},
+		 {"saler_detail", "客户详情", "glyphicon glyphicon-bookmark"}], 
 
 
 	    L1 = ?menu:sidebar(
@@ -138,9 +135,11 @@ sidebar(Session) ->
 		    ++ BatchReject
 		    ++ ListBatchSale
 		    ++ NoteBatchSale
-		    ++ NewBatchSaler),
+		    ++ Saler),
 
-	    L1
+	    %% L2 = ?menu:sidebar(level_2_menu, Saler),
+
+	    L1 
 
     end.
 
