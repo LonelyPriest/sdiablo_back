@@ -4,6 +4,10 @@ var retailerUtils = function(){
 	    return diablo_base_setting(
 		"ptype", shop, base, parseInt, diablo_backend);
 	},
+
+	sale_mode:function(shop, base) {
+	    return diablo_base_setting("p_balance", shop, base, function(s) {return s}, diablo_sale_mode);
+	},
 	
 	to_integer: function(v){
 	    if (angular.isUndefined(v) || isNaN(v) || (!v && v !== 0)){

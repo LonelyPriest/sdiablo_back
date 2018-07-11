@@ -200,6 +200,10 @@ function wretailerTransRsnDetailCtrlProvide(
     });
     $scope.shopIds   = user.shopIds;
     $scope.goto_page = diablo_goto_page;
+
+    
+    var sale_mode = retailerUtils.sale_mode(diablo_default_shop, base);
+    var show_note = retailerUtils.to_integer(sale_mode.charAt(1)); 
     var now          = $.now(); 
 
     $scope.back = function(){
@@ -246,7 +250,7 @@ function wretailerTransRsnDetailCtrlProvide(
 	    search.retailer = retailer_id;
 	    
 	    wretailerService.filter_w_sale_rsn_group(
-		{mode:0, sort:0},
+		{mode:0, sort:0, note: show_note},
 		$scope.match, search, page, $scope.items_perpage
 	    ).then(function(result){
 		console.log(result);

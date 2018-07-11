@@ -885,11 +885,22 @@ handle_call({bill_lookup, Merchant, Conditions}, _From, State) ->
 
 handle_call({total_bill, Merchant, Conditions}, _From, State) ->
     ?DEBUG("total_bill with merchant ~p, conditions ~p", [Merchant, Conditions]),
-    CountSql = "count(*) as total"
-	", sum(bill) as t_bill" 
-	", sum(veri) as t_veri" ,
-    Sql = ?sql_utils:count_table(
-	     w_bill_detail, CountSql, Merchant, Conditions ++ [{<<"state">>, [0, 1]}]), 
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
+    
+    Sql ="select a.total, b.t_bill, b.t_veri from("
+	"select merchant, count(*) as total from w_bill_detail"
+	++ " where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime) ++ ") a"
+	++ " left join("
+	"select merchant, SUM(bill) as t_bill, SUM(veri) as t_veri"
+	" from w_bill_detail"
+	++ " where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions ++ [{<<"state">>, [0, 1]}])
+	++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime) ++ ") b"
+	++ " on a.merchant=b.merchant",
+    
+    
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
