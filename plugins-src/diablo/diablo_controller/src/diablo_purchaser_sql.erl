@@ -1599,7 +1599,7 @@ join_with_comma([H|T], Acc) ->
 
 amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
     ?DEBUG("new inventory with rsn ~p~namounts ~p", [RSN, Amounts]),
-    BCode       = ?v(<<"bcode">>, Inv, 0),
+    BCode       = ?v(<<"bcode">>, Inv, -1),
     StyleNumber = ?v(<<"style_number">>, Inv),
     Brand       = ?v(<<"brand">>, Inv),
     Type        = ?v(<<"type">>, Inv),
@@ -1613,8 +1613,8 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
     Total       = ?v(<<"total">>, Inv),
     Over        = ?v(<<"over">>, Inv, 0),
     %% Promotion   = ?v(<<"promotion">>, Inv),
-    OrgPrice    = ?v(<<"org_price">>, Inv),
-    TagPrice    = ?v(<<"tag_price">>, Inv),
+    OrgPrice    = ?v(<<"org_price">>, Inv, 0),
+    TagPrice    = ?v(<<"tag_price">>, Inv, 0),
     %% EDiscount   = ?v(<<"ediscount">>, Inv),
     EDiscount   = stock(ediscount, OrgPrice, TagPrice), 
     %% ?DEBUG("ediscount ~p", [EDiscount]),
