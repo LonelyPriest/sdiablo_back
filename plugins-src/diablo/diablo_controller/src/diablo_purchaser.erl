@@ -3254,8 +3254,20 @@ count_table(w_inventory_new, Merchant, Conditions) ->
     %% 	" from w_inventory_new a"
     %% 	" where "
     %% 	++ ?w_good_sql:sort_condition(w_inventory_new, Merchant, Conditions),
+    Sql ="select a.total"
+	", b.t_amount"
+	", b.t_spay"
+	", b.t_hpay"
+	", b.t_cash"
+	", b.t_card"
+	", b.t_wire"
+	" from ("
+	"select a.merchant, count(*) as total from w_inventory_new a"
+	" where "
+	++ ?w_good_sql:sort_condition(w_inventory_new, Merchant, Conditions) ++ ") a"
 
-    CountSql = "select count(*) as total"
+	++ " left join(" 
+	"select a.merchant"
     	", sum(a.total) as t_amount"
     	", sum(a.should_pay) as t_spay"
     	", sum(a.has_pay) as t_hpay"
@@ -3267,9 +3279,8 @@ count_table(w_inventory_new, Merchant, Conditions) ->
 	++ ?w_good_sql:sort_condition(
 	      w_inventory_new,
 	      Merchant,
-	      Conditions ++ [{<<"state">>, [0,1]}]),
-    CountSql.
-
+	      Conditions ++ [{<<"state">>, [0,1]}]) ++ ") b on a.merchant=b.merchant",
+    Sql.
 %% get_setting([], _Key, Value) ->
 %%     Value;
 %% get_setting([S|T], Key, Value) ->
