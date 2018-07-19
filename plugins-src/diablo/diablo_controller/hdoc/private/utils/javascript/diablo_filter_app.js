@@ -99,6 +99,12 @@ function filterProvider(){
 	
 	var cookie = 'filter-' + diablo_get_cookie("qzg_dyty_session");
 
+	function list_wsale_group_by_style_number(condition) {
+	    return _wsaleHttp.save(
+		{operation: "list_wsale_group_by_style_number"},
+		{condition: condition}).$promise;  
+	};
+	
 	function list_w_promotion() {
 	    return _goodHttp.query({operation: 'list_w_promotion'}).$promise;
 	};
@@ -474,6 +480,10 @@ function filterProvider(){
 	    // 		})
 	    // 	    })
 	    // },
+
+	    list_wsale_group_by_style_number: function(condition) {
+		return list_wsale_group_by_style_number(condition);
+	    },
 
 	    match_w_sale: function(viewValue, shop, mode, ascii){
 		return resource.query_by_post(

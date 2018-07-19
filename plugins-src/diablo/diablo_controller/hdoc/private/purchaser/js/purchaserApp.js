@@ -183,6 +183,11 @@ function stockConfg(angular){
 		templateUrl: '/private/purchaser/html/stock_new_note_print.html',
 		controller: 'stockNewNotePrintCtrl' ,
 		resolve: angular.extend({}, brand, firm, type, user, base)
+	    }).
+	    when('/print_inventory_fix_note/:note', {
+		templateUrl: '/private/purchaser/html/stock_fix_note_print.html',
+		controller: 'stockFixNotePrintCtrl' ,
+		resolve: angular.extend({}, brand, user, base)
 	    }). 
 	    // wgood
 	    when('/good/size', {
@@ -674,6 +679,10 @@ function stockConfg(angular){
 
 	this.print_w_inventory_transfer = function(rsn) {
 	    return http.save({operation: "print_w_inventory_transfer"}, {rsn: rsn}).$promise;
+	};
+
+	this.print_w_inventory_fix_note = function(condition) {
+	    return http.save({operation: "print_w_inventory_fix_note"}, condition).$promise;
 	};
 	
     });

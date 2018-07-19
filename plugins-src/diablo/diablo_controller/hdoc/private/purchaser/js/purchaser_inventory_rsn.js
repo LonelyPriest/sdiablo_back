@@ -11,6 +11,7 @@ function purchaserInventoryFixRsnDetailCtrlProvide(
     $scope.shops   = user.sortShops.concat(user.sortBadRepoes);
     $scope.shopIds = user.shopIds.concat(user.badrepoIds);
     $scope.goto_page = diablo_goto_page;
+    $scope.disable_print = $routeParams.rsn ? true : false;
     
     
     // style_number
@@ -59,19 +60,31 @@ function purchaserInventoryFixRsnDetailCtrlProvide(
     $scope.max_page_size = 10;
     $scope.default_page = 1;
 
+    var add_search_condition = function(search) {
+	if (angular.isUndefined(search.shop) || !search.shop || search.shop.length === 0){
+	    search.shop = user.shopIds.length === 0 ? undefined : user.shopIds;
+	};
+
+	if (angular.isUndefined(search.rsn)){
+	    search.rsn  =  $routeParams.rsn ? $routeParams.rsn : undefined; 
+	}
+
+	console.log(search);
+	return search;
+    }
+    
     $scope.do_search = function(page){
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
-	    if (angular.isUndefined(search.shop)
-	    	|| !search.shop || search.shop.length === 0){
-	    	// search.shop = user.shopIds;
-		search.shop = user.shopIds.length
-		    === 0 ? undefined : user.shopIds;
-	    };
+	    // if (angular.isUndefined(search.shop)
+	    // 	|| !search.shop || search.shop.length === 0){
+	    // 	search.shop = user.shopIds.length === 0 ? undefined : user.shopIds;
+	    // };
 
-	    if (angular.isUndefined(search.rsn)){
-		search.rsn  =  $routeParams.rsn ? $routeParams.rsn : undefined; 
-	    }
-	    console.log(search);
+	    // if (angular.isUndefined(search.rsn)){
+	    // 	search.rsn  =  $routeParams.rsn ? $routeParams.rsn : undefined; 
+	    // }
+	    search = add_search_condition(search);
+	    // console.log(search);
 	    
 	    purchaserService.filter_w_inventory_fix_rsn_group(
 		$scope.match, search, page, $scope.items_perpage).then(function(result){
@@ -166,6 +179,19 @@ function purchaserInventoryFixRsnDetailCtrlProvide(
 		 path:       inv.path,
 		 get_amount: get_amount});
 	}); 
+    }
+
+    $scope.print_note = function() {
+	var callback = function() {
+	    diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+		search = add_search_condition(search);
+		diablo_goto_page("#/print_inventory_fix_note/" + angular.toJson(search)); 
+	    }); 
+	}
+	
+	diabloUtilsService.request(
+	    "盘点明细打印", "打印需要打印机支持A4纸张，确认要打印吗？",
+	    callback, undefined, undefined);
     }
     
 };

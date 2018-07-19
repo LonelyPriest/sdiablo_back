@@ -165,6 +165,9 @@ purchaser_inventory(list_inventory_info, Merchant, Conditions) ->
 purchaser_inventory(list_new_detail, Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {list_new_detail, Merchant, Conditions});
+purchaser_inventory(list_fix_detail, Merchant, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {list_fix_detail, Merchant, Conditions});
 %% purchaser_inventory(list_transfer_detail, Merchant, Conditions) ->
 %%     Name = ?wpool:get(?MODULE, Merchant), 
 %%     gen_server:call(Name, {list_transfer_detail, Merchant, Conditions});
@@ -180,7 +183,7 @@ purchaser_inventory(trace_transfer, Merchant, Conditions) ->
 %%     gen_server:call(?SERVER, {last_reject, Merchant, Conditions});
 purchaser_inventory(get_new, Merchant, RSN) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {get_new, Merchant, RSN});
+    gen_server:call(Name, {get_new, Merchant, RSN}); 
 purchaser_inventory(get_inventory_new_rsn, Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {get_inventory_new_rsn, Merchant, Conditions}); 
@@ -190,7 +193,11 @@ purchaser_inventory(get_new_amount, Merchant, Conditions) ->
 
 purchaser_inventory(get_transfer, Merchant, RSN) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {get_transfer, Merchant, RSN}).
+    gen_server:call(Name, {get_transfer, Merchant, RSN});
+
+purchaser_inventory(get_fix, Merchant, RSN) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {get_fix, Merchant, RSN}).
     
 purchaser_inventory(amount, Merchant, Shop, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -2006,10 +2013,16 @@ handle_call({list_new_detail, Merchant, Conditions}, _From, State) ->
     {reply, Reply, State};
 
 handle_call({trace_transfer, Merchant, Conditions}, _From, State) ->
-    ?DEBUG("trace_transfer  with merchant ~p, conditions ~p",
-	   [Merchant, Conditions]), 
+    ?DEBUG("trace_transfer  with merchant ~p, conditions ~p", [Merchant, Conditions]), 
     Sql = ?w_good_sql:inventory(
 	     transfer_rsn_groups, transfer, Merchant, Conditions, fun() -> [] end),
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({list_fix_detail, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("list_fix_detail  with merchant ~p, conditions ~p", [Merchant, Conditions]),
+    Sql = ?w_good_sql:inventory(
+	     fix_rsn_groups, fix, Merchant, Conditions, fun() -> [] end),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
@@ -2398,6 +2411,17 @@ handle_call({get_transfer, Merchant, RSN}, _From, State) ->
     Sql = ?w_good_sql:inventory(
 	     transfer_detail,
 	     transfer,
+	     Merchant,
+	     [{<<"rsn">>, ?to_b(RSN)}],
+	     fun()-> "" end),
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+handle_call({get_fix, Merchant, RSN}, _From, State) ->
+    ?DEBUG("get_stock_fix with merchant ~p, RSN ~p", [Merchant, RSN]),
+    Sql = ?w_good_sql:inventory(
+	     fix_detail,
+	     fix,
 	     Merchant,
 	     [{<<"rsn">>, ?to_b(RSN)}],
 	     fun()-> "" end),

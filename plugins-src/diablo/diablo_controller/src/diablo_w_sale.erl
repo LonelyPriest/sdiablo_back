@@ -683,8 +683,7 @@ handle_call({rsn_detail, Merchant, Conditions}, _From, State) ->
     {reply, Reply, State};
 
 handle_call({trans_detail, Merchant, Conditions}, _From, State) ->
-    ?DEBUG("trans_detail with merchant ~p, Conditions ~p",
-	   [Merchant, Conditions]),
+    ?DEBUG("trans_detail with merchant ~p, Conditions ~p", [Merchant, Conditions]),
     Sql =
 	" select a.id"
 	", a.rsn"
@@ -744,7 +743,7 @@ handle_call({trans_detail, Merchant, Conditions}, _From, State) ->
 
 	" inner join w_sale_detail_amount b on a.rsn=b.rsn"
 	" and a.style_number=b.style_number"
-	" and a.brand_id=b.brand",
+	" and a.brand_id=b.brand",    
 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};

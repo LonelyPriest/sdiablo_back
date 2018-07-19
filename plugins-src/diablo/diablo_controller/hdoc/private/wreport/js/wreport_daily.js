@@ -49,7 +49,7 @@ function wreportDailyCtrlProvide(
     };
 
     $scope.disable_after_daily = function(){
-        return dateFilter("yyyy-MM-dd") === now_day;
+        return dateFilter($scope.current_day, "yyyy-MM-dd") === now_day;
     };
 
     $scope.after_daily = function(){
@@ -203,13 +203,18 @@ function wreportDailyCtrlProvide(
     };
 
     $scope.shift_print = function(d) {
-	if (diablo_frontend === reportUtils.print_mode(d.shop.id, base))
-	    $scope.print_shop_fronted(d);
+	var sale_mode = reportUtils.sale_mode(diablo_default_shop, base);
+	var p_note = reportUtils.to_integer(sale_mode.charAt(2));
+	
+	if (diablo_frontend === reportUtils.print_mode(d.shop.id, base)) {
+	    if (needCLodop()) loadCLodop();
+	    $scope.print_shop_fronted(d, p_note);
+	} 
 	else
-	    $scope.print_shop_backend(d);
+	    $scope.print_shop_backend(d, p_note);
     };
     
-    $scope.print_shop_backend = function(d){
+    $scope.print_shop_backend = function(d, p_note){
 	var callback = function(params){
             wreportService.print_wreport(
 		diablo_by_shop,
@@ -259,7 +264,7 @@ function wreportDailyCtrlProvide(
 	     pcash_in: 0});
     };
 
-    $scope.print_shop_fronted = function(d){
+    $scope.print_shop_fronted = function(d, p_note){
 	var login = get_login_employee(d.shop.id, user.loginEmployee, $scope.employees);
 
 	// console.log(login);
@@ -272,21 +277,39 @@ function wreportDailyCtrlProvide(
 		 pcash_in: diablo_set_float(params.pcash_in),
 		 comment:  diablo_set_string(params.comment)}
             ).then(function(status){
+		var report;
 		if (status.ecode === 0){
-		    var report = $scope.report_data.filter(function(r){
+		    report = $scope.report_data.filter(function(r){
 			return r.shop.id === d.shop.id;
 		    })[0];
 
 		    var pdate = dateFilter($scope.current_day, "yyyy-MM-dd HH:mm:ss");
-		    
-		    if (angular.isUndefined(LODOP)) LODOP = getLodop();
+
+		    if (angular.isUndefined(LODOP)) {
+			LODOP = getLodop();
+		    }
+		    console.log(LODOP);
 
 		    if (angular.isDefined(LODOP)){
+			reportPrint.init(LODOP);
+			
 			var hLine = reportPrint.gen_head(
 			    LODOP, d.shop.name, login.login_employee, pdate);
+			
 			console.log(report.sale);
-			hLine = reportPrint.gen_body(hLine, LODOP, report.sale, params); 
-			reportPrint.start_print(LODOP)
+			hLine = reportPrint.gen_body(hLine, LODOP, report.sale, params);
+
+			if (p_note) {
+			    var print_sale_note = function(notes) {
+				reportPrint.gen_note(LODOP, hLine, notes);
+				reportPrint.start_print(LODOP); 
+			    };
+			    
+			    $scope.get_sale_note(d.shop.id, print_sale_note);
+			} else {
+			    reportPrint.start_print(LODOP);
+			}
+			
 		    } 
 		} else {
 		    dialog.response(
@@ -302,6 +325,42 @@ function wreportDailyCtrlProvide(
 	    undefined,
 	    {employees:login.employees,
 	     employee: login.login_employee});
+    }
+
+    $scope.get_sale_note = function(shop, callback) {
+	var day = {start_time:$scope.current_day, end_time:$scope.current_day}; 
+	diabloFilter.do_filter([], day, function(search) {
+	    search.shop = shop; 
+	    console.log(search);
+	    
+	    diabloFilter.list_wsale_group_by_style_number(search).then(function(result){
+	    	console.log(result);
+		if (result.ecode === 0){
+		    // var notes = [];
+		    // $scope.amount = 0;
+
+		    var sorted_notes = result.note.sort(function(n1, n2) {
+			return n2.total - n1.total
+		    });
+		    
+		    // angular.forEach(sorted_notes, function(n) {
+		    // 	notes.push(n); 
+		    // 	for (var i=0, l=n.note.length; i<l; i++) {
+		    // 	    var s = n.note[i];
+		    // 	    // $scope.amount += s.total;
+		    // 	    notes.push({
+		    // 		amount: s.total,
+		    // 		color:  s.color,
+		    // 		size:   s.size
+		    // 	    });
+		    // 	} 
+		    // });
+
+		    if (angular.isFunction(callback))
+			callback(sorted_notes);
+		}
+	    });
+	})
     }
 };
 

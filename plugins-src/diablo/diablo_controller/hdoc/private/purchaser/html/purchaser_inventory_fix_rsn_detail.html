@@ -12,6 +12,12 @@
 	    <button type="button" class="btn red purple-stripe"
 		    x-ng-click="goto_page('#/inventory/inventory_fix_detail')">返回
 	      <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
+
+	    <button x-ng-if="disable_print"
+		    class="btn yellow purple-stripe hidden-xs hidden-sm"
+	    	    type="button"
+	    	    x-ng-click="print_note()">打印
+	      <i class="glyphicon glyphicon-print"></i></button>
 	    
 	    <!-- <button type="button" class="btn btn-danger green-stripe" -->
 	    <!-- 	  x-ng-click="goto_page('#/wsale/reject_wsale')">退货单 -->

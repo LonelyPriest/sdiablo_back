@@ -1165,6 +1165,20 @@ action(Session, Req, {"print_w_inventory_new"}, Payload) ->
 		     {<<"detail">>, {Detail}},
 		     {<<"note">>, Sort}]});
 
+
+action(Session, Req, {"print_w_inventory_fix_note"}, Payload) ->
+    ?DEBUG("print_stock_fix_note: session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    RSN = ?v(<<"rsn">>, Payload), 
+    %% fix
+    {ok, Detail} = ?w_inventory:purchaser_inventory(get_fix, Merchant, RSN),
+    
+    {ok, Notes} = ?w_inventory:purchaser_inventory(list_fix_detail, Merchant, [{<<"rsn">>, RSN}]), 
+    ?utils:respond(200, object, Req,
+		   {[{<<"ecode">>, 0},
+		     {<<"detail">>, {Detail}},
+		     {<<"note">>, Notes}]});
+
 action(Session, Req, {"print_w_inventory_transfer"}, Payload) ->
     ?DEBUG("print_stock_tranasfer: session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
@@ -1481,7 +1495,8 @@ sidebar(Session) ->
 		  ++ [{"inventory_fix_detail",
 		       "盘点记录", "glyphicon glyphicon-tasks"},
 		      {"inventory_rsn_detail/fix",
-		       "盘点明细", "glyphicon glyphicon-leaf"}] 
+		       "盘点明细", "glyphicon glyphicon-leaf"}
+		     ] 
 		 }],
 
 	    GoodMgr = [{{"good", "货品资料",

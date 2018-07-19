@@ -56,6 +56,10 @@ var reportUtils = function(){
 		"ptype", shop, base, parseInt, diablo_backend);
 	},
 
+	sale_mode:function(shop, base) {
+	    return diablo_base_setting("p_balance", shop, base, function(s) {return s}, diablo_sale_mode);
+	},
+
 	f_sub:function(v1, v2){
 	    return diablo_rdight(reportUtils.to_float(v1) - reportUtils.to_float(v2), 2);
 	},
@@ -78,7 +82,15 @@ var reportUtils = function(){
 
 var reportPrint = function(){
     return {
+	init: function(LODOP) {
+	    LODOP.PRINT_INIT("task_print_shift");
+	    LODOP.SET_PRINT_PAGESIZE(3, 580, 0, "");
+	    LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
+	},
+	
 	gen_head: function(LODOP, shop, employee, date){
+	    // wsalePrint.init(LODOP);
+	    
 	    var hLine = 5;
 	    
 	    LODOP.ADD_PRINT_TEXT(hLine, 0, 178, 30, shop); 
@@ -112,73 +124,127 @@ var reportPrint = function(){
 	gen_body: function(hLine, LODOP, sale, extra){
 	    console.log(sale);
 	    var to_i = reportUtils.to_integer;
+	    var to_f = reportUtils.to_float;
 
+	    hLine += 15; 
 	    LODOP.ADD_PRINT_LINE(hLine,0,hLine,45,0,1);
-	    LODOP.ADD_PRINT_TEXT(hLine,45,135,20, "营业状况");
+	    LODOP.ADD_PRINT_TEXT(hLine-6,45 + 10,135,20, "营业状况");
 	    LODOP.ADD_PRINT_LINE(hLine,135,hLine,178,0,1); 
-	    hLine += 15;
+	    hLine += 10;
 	    
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"数量  ：" + sale.total);
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"数量  ：" + to_i(sale.total));
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"营业额：" + sale.spay);
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"营业额：" + to_f(sale.spay));
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"现金  ：" + sale.cash);
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"现金  ：" + to_f(sale.cash));
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"刷卡  ：" + sale.card); 
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"刷卡  ：" + to_f(sale.card)); 
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"微信  ：" + sale.wxin); 
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"微信  ：" + to_f(sale.wxin)); 
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"提现  ：" + sale.draw); 
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"提现  ：" + to_f(sale.draw)); 
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"电子券：" + sale.ticket); 
-	    hLine += 15;
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"电子券：" + to_f(sale.ticket)); 
+	    hLine += 25;
 
 	    LODOP.ADD_PRINT_LINE(hLine,0,hLine,45,0,1);
-	    LODOP.ADD_PRINT_TEXT(hLine,45,135,20, "充值状况");
+	    LODOP.ADD_PRINT_TEXT(hLine-6,45+10,135,20, "充值状况");
 	    LODOP.ADD_PRINT_LINE(hLine,135,hLine,178,0,1);
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"充值：" + sale.cbalance);
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"充值：" + to_f(sale.cbalance));
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"现金：" + sale.ccash);
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"现金：" + to_f(sale.ccash));
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"刷卡：" + sale.ccard);
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"刷卡：" + to_f(sale.ccard));
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"微信：" + sale.cwxin);
-	    hLine += 15; 
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"微信：" + to_f(sale.cwxin));
+	    hLine += 25; 
 	    
 	    LODOP.ADD_PRINT_LINE(hLine,0,hLine,45,0,1);
-	    LODOP.ADD_PRINT_TEXT(hLine,45,135,20, "库存状况");
+	    LODOP.ADD_PRINT_TEXT(hLine-6,45+10,135,20, "库存状况");
 	    LODOP.ADD_PRINT_LINE(hLine,135,hLine,178,0,1); 
 	    // LODOP.ADD_PRINT_LINE(hLine,0,hLine,178,0,1); 
 	    hLine += 15;
 	    
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"昨日库存：" + sale.lastStock.total);
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"昨日库存：" + to_i(sale.lastStock.total));
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"当前库存：" + sale.currentStock.total);
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"当前库存：" + to_i(sale.currentStock.total));
 	    hLine += 15;
 	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"入库数量：" + to_i(sale.stock_in));
 	    hLine += 15;
 	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"退货数量：" + to_i(sale.stock_out)); 
-	    hLine += 15;
+	    hLine += 25;
 
 	    LODOP.ADD_PRINT_LINE(hLine,0,hLine,45,0,1);
-	    LODOP.ADD_PRINT_TEXT(hLine,45,135,20, "备用金");
+	    LODOP.ADD_PRINT_TEXT(hLine-6,45+10,135,20, "备用金");
 	    LODOP.ADD_PRINT_LINE(hLine,135,hLine,178,0,1); 
 	    // LODOP.ADD_PRINT_LINE(hLine,0,hLine,178,0,1);
 	    hLine += 15;
 	    
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"备用金：" + extra.pcash);
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"备用金：" + to_f(extra.pcash));
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"备用金余额：" + extra.pcash_in);
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"备用金余额：" + to_f(extra.pcash_in));
 	    hLine += 25;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"备注："
-				 + angular.isUndefined(extra.comment)?"":extra.comment); 
+	    LODOP.ADD_PRINT_TEXT(
+		hLine,0,178,20,"备注：" + extra.comment ? extra.comment : ""); 
 	    
 	    return hLine;
 	},
+
+	gen_note: function(LODOP, top, notes) {
+	    top += 15; 
+
+	    var left = 0;
+	    var width = 219; // inch, 5.8 / 2.45 * 96
+	    var font = 20; // height of font
+	    
+	    LODOP.ADD_PRINT_LINE(top,0,top,45,0,1);
+	    LODOP.ADD_PRINT_TEXT(top-6,45+10,135,font, "货品统计");
+	    LODOP.ADD_PRINT_LINE(top,135,top,178,0,1); 
+
+	    top += 25;
+	    
+	    LODOP.ADD_PRINT_TEXT(top, left, 60, font, "款号");
+	    LODOP.ADD_PRINT_TEXT(top, left + 60, 35, font, "单价");
+	    // LODOP.ADD_PRINT_TEXT(top, left + 95, 35, font, "数量");
+	    LODOP.ADD_PRINT_TEXT(top, left + 95, 45, font, "颜色");
+	    LODOP.ADD_PRINT_TEXT(top, left + 140, width - left - 140, font, "尺码");
+	    
+	    angular.forEach(notes, function(ns) {
+		top += 15; 
+		LODOP.ADD_PRINT_TEXT(top, left, 60, font, ns.style_number); 
+		LODOP.ADD_PRINT_TEXT(top, left + 60, 35, font, ns.tag_price.toString() );
+		// LODOP.ADD_PRINT_TEXT(top, left + 95, 35, font, n.total);
+		
+		top += 15 ; 
+		LODOP.ADD_PRINT_TEXT(top, left, 70, font, ns.brand);
+		LODOP.ADD_PRINT_TEXT(top, left + 65, 35, font, ns.total.toString() );
+
+		// console.log(ns);
+		if (ns.note.length !== 0) {
+		    top -= 15;
+		    LODOP.ADD_PRINT_TEXT(top, left + 95, 45, font, ns.note[0].color);
+		    LODOP.ADD_PRINT_TEXT(
+			top, left + 140, width - left - 140, font, ns.note[0].size); 
+		}
+
+		for (var i=1, l=ns.note.length; i<l; i++) {
+		    top += 15;
+		    var ne = ns.note[i];
+		    LODOP.ADD_PRINT_TEXT(top, left + 95, 45, font, ne.color);
+		    LODOP.ADD_PRINT_TEXT(top, left + 140, width - left - 140, font, ne.size);
+		}
+
+		if (ns.note.length > 1)
+		    top += 5; 
+		else if (ns.note.length === 1)
+		    top += 20; 
+	    });
+
+	},
 	
 	start_print: function(LODOP){
-	    LODOP.SET_PRINT_PAGESIZE(3,"58mm",50,""); 
+	    // LODOP.SET_PRINT_PAGESIZE(3,"58mm",50,""); 
 	    // LODOP.PREVIEW();
 	    LODOP.PRINT();
 	}

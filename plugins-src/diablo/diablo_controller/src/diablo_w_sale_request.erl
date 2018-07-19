@@ -74,7 +74,7 @@ action(Session, Req, {"get_w_sale_new", RSN}) ->
     try
 	{ok, Sale} = ?w_sale:sale(get_new, Merchant, RSN),
 	%% ?DEBUG("sale ~p", [Sale]),
-	{ok, Details} = ?w_sale:sale(trans_detail, Merchant, {<<"rsn">>, ?to_b(RSN)}),
+	{ok, Details} = ?w_sale:sale(trans_detail, Merchant, {<<"rsn">>, ?to_b(RSN)}), 
 	?DEBUG("details ~p", [Details]),
 
 	{ok, TicketScore} =
@@ -740,34 +740,44 @@ action(Session, Req, {"list_wsale_group_by_style_number"}, Payload) ->
     Merchant    = ?session:get(merchant, Session),
     {struct, CutConditions} = ?v(<<"condition">>, Payload),
     {ok, Q} = ?w_sale:sale(get_rsn, Merchant, CutConditions),
-    {struct, NewConditions} =
-	?v(<<"fields">>,
-	   ?w_inventory_request:filter_condition(
-	      trans_note, [?v(<<"rsn">>, Rsn) || {Rsn} <- Q], CutConditions)),
+    case Q of
+	[] ->
+	    %% ?DEBUG("sort ~p", [Sort]),
+	    ?utils:respond(200, object, Req,
+			   {[{<<"ecode">>, 0},
+			     {<<"total">>, 0},
+			     {<<"note">>, []}]});
+	_ ->
+	    {struct, NewConditions} =
+		?v(<<"fields">>,
+		   ?w_inventory_request:filter_condition(
+		      trans_note, [?v(<<"rsn">>, Rsn) || {Rsn} <- Q], CutConditions)),
 
-    {ok, Colors} = ?w_user_profile:get(color, Merchant), 
-    {ok, Sales} = ?w_sale:export(trans_note, Merchant, NewConditions),
-    
-    NoteConditions = [{<<"rsn">>, ?v(<<"rsn">>, NewConditions, [])}],
-    {ok, SaleNotes} = ?w_sale:export(trans_note_color_size, Merchant, NoteConditions),
-    
-    SortTranses = sale_trans(to_dict, Sales, dict:new()),
-    DictNotes = sale_note(to_dict, SaleNotes, dict:new()),
+	    {ok, Colors} = ?w_user_profile:get(color, Merchant), 
+	    {ok, Sales} = ?w_sale:export(trans_note, Merchant, NewConditions),
 
-    {Amount, Notes} = print_wsale_new(sort_by_color, Colors, SortTranses, DictNotes, {0, []}),
+	    NoteConditions = [{<<"rsn">>, ?v(<<"rsn">>, NewConditions, [])}],
+	    {ok, SaleNotes} = ?w_sale:export(trans_note_color_size, Merchant, NoteConditions),
 
-    Sort = lists:sort(
-	     fun({N1}, {N2}) ->
-		     Firm1 = ?v(<<"firm_id">>, N1),
-		     Firm2 = ?v(<<"firm_id">>, N2),
-		     Firm1 > Firm2
-	     end, Notes),
+	    SortTranses = sale_trans(to_dict, Sales, dict:new()),
+	    DictNotes = sale_note(to_dict, SaleNotes, dict:new()),
+
+	    {Amount, Notes} = print_wsale_new(sort_by_color, Colors, SortTranses, DictNotes, {0, []}),
+
+	    Sort = lists:sort(
+		     fun({N1}, {N2}) ->
+			     Firm1 = ?v(<<"firm_id">>, N1),
+			     Firm2 = ?v(<<"firm_id">>, N2),
+			     Firm1 > Firm2
+		     end, Notes),
+
+	    %% ?DEBUG("sort ~p", [Sort]),
+	    ?utils:respond(200, object, Req,
+			   {[{<<"ecode">>, 0},
+			     {<<"total">>, Amount},
+			     {<<"note">>, Sort}]})
+    end;
     
-    %% ?DEBUG("sort ~p", [Sort]),
-    ?utils:respond(200, object, Req,
-		   {[{<<"ecode">>, 0},
-		     {<<"total">>, Amount},
-		     {<<"note">>, Sort}]});
 
 action(Session, Req, {"w_sale_rsn_detail"}, Payload) ->
     ?DEBUG("w_sale_rsn_detail with session ~p, paylaod~n~p",
@@ -1491,6 +1501,7 @@ print_wsale_new(sort_by_color, Colors, [DH|DT], DictNotes, {Amount, Acc}) ->
     Year        = ?v(<<"year">>, H),
     InDatetime  = ?v(<<"in_datetime">>, H), 
     Total       = ?v(<<"total">>, H),
+    TagPrice    = ?v(<<"tag_price">>, H),
 
     case dict:find(Key, DictNotes) of
 	{ok, FindNotes} ->
@@ -1519,6 +1530,7 @@ print_wsale_new(sort_by_color, Colors, [DH|DT], DictNotes, {Amount, Acc}) ->
 
 	    N = {[{<<"style_number">>, StyleNumber},
 		  {<<"brand">>, Brand},
+		  {<<"tag_price">>, TagPrice},
 		  {<<"shop">>,  Shop},
 		  {<<"firm">>,  Firm},
 		  {<<"firm_id">>, FirmId},
@@ -1629,7 +1641,7 @@ sale_note(to_dict_with_rsn, [{H}|T], Dict) ->
     Brand = ?to_b(?v(<<"brand">>, H)),
     Shop  = ?to_b(?v(<<"shop">>, H)),
 
-    Color = ?v(<<"color">>, H),
+    %% Color = ?v(<<"color">>, H),
     ColorName = ?v(<<"cname">>, H),
     
     Size  = ?v(<<"size">>,H),

@@ -300,7 +300,7 @@ function wsaleRsnDetailCtrlProvide (
 		    $scope.total = result.total;
 		    $scope.amount = 0;
 
-		    sorted_notes = result.note.sort(function(n1, n2) {return n2.total - n1.total}); 
+		    var sorted_notes = result.note.sort(function(n1, n2) {return n2.total - n1.total}); 
 		    var order_id = 1;
 		    angular.forEach(sorted_notes, function(n) {
 			n.order_id = order_id; 
@@ -474,10 +474,10 @@ function wsaleRsnDetailCtrlProvide (
 		    console.log(result);
 		    var sale = result.sale;
 		    var detail = angular.copy(result.detail);
-		    angular.forEach(detail, function(d){
-			d.brand = diablo_get_object(d.brand_id, filterBrand).name;
-			d.type = diablo_get_object(d.type_id, filterType).name;
-		    });
+		    // angular.forEach(detail, function(d){
+		    // 	d.brand = diablo_get_object(d.brand_id, filterBrand).name;
+		    // 	d.type = diablo_get_object(d.type_id, filterType).name;
+		    // });
 
 		    diabloFilter.get_wretailer_batch([sale.retailer_id]).then(function(retailers){
 			console.log(retailers);
@@ -491,11 +491,40 @@ function wsaleRsnDetailCtrlProvide (
 			    retailer.name,
 			    sale.entry_date);
 
-			var hLine = wsalePrint.gen_body(LODOP, sale, detail, isRound, cakeMode);
+			// sort sale
+			var notes= [];
+			for (var i=0, l=detail.length; i<l; i++) {
+			    var d = detail[i];
+
+			    var found = false; 
+			    for (var j=0, k=notes.length; j<k; j++) {
+				var ns = notes[j];
+				if (d.style_number === ns.style_number
+				    && d.brand_id === ns.brand_id) {
+				    // console.log(d.color_id);
+				    ns.note += ";"
+					+ diablo_find_color(d.color_id, filterColor).cname
+					+ ":" + d.size;
+				    found = true;
+				} 
+			    }
+
+			    if (!found) {
+				// console.log(diablo_find_color(d.color_id, filterColor));
+				d.brand = diablo_get_object(d.brand_id, filterBrand).name;
+				d.type = diablo_get_object(d.type_id, filterType).name;
+				d.note = diablo_find_color(d.color_id, filterColor).cname
+				    + ":" + d.size;
+				notes.push(d)
+			    }
+			}
+
+			// console.log(notes);
+			var hLine = wsalePrint.gen_body(LODOP, sale, notes, isRound, cakeMode);
+			
 			var vip = wsaleUtils.isVip(retailer, no_vip, filterSysRetailer), 
 			hLine = wsalePrint.gen_stastic(LODOP, hLine, sale.direct, sale, vip); 
-			wsalePrint.gen_foot(
-			    LODOP, hLine, comments, pdate, shop.addr, cakeMode);
+			wsalePrint.gen_foot(LODOP, hLine, comments, pdate, shop.addr, cakeMode);
 			wsalePrint.start_print(LODOP); 
 		    }); 
 		}); 

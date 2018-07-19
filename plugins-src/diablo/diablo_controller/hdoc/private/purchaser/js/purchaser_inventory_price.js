@@ -556,22 +556,119 @@ function stockNewNotePrintCtrlProvide(
 	}
 
 	if (LODOP.CVERSION) {
-	    LODOP.PRINT_INIT("task_print_stock_new");
-	    LODOP.SET_PRINTER_INDEX(stockUtils.printer_bill(user.loginShop, base));
-	    LODOP.SET_PRINT_PAGESIZE(0, pageWidth * 100, pageHeight * 100, "");
-	    LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
+	    if (pageHeight != 0) {
+		LODOP.PRINT_INIT("task_print_stock_new_note");
+		LODOP.SET_PRINTER_INDEX(stockUtils.printer_bill(user.loginShop, base)); 
+		LODOP.SET_PRINT_PAGESIZE(0, pageWidth * 100, pageHeight * 100, ""); 
+		LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
 
-	    angular.forEach($scope.notes, function(n) {
-		LODOP.NEWPAGEA(); 
-		LODOP.ADD_PRINT_HTM(
-		    "5%", "5%",  "90%", "BottomMargin:15mm",
-		    strBodyStyle
-			+ "<body>"
-			+ document.getElementById(n.fid.toString()).innerHTML
-			+ "</body>"); 
-	    })
+		angular.forEach($scope.notes, function(n) {
+		    // if (pageHeight !== 0)
+		    LODOP.NEWPAGEA();
+		    LODOP.ADD_PRINT_HTM(
+			"5%", "5%",  "90%", "BottomMargin:15mm",
+			strBodyStyle
+			    + "<body>"
+			    + document.getElementById(n.fid.toString()).innerHTML
+			    + "</body>"); 
+		})
 
-	    LODOP.PREVIEW(); 
+		LODOP.PREVIEW(); 
+	    } else {
+		LODOP.PRINT_INIT("task_print_stock_new_note_58");
+		// LODOP.SET_PRINTER_INDEX(-1); 
+		LODOP.SET_PRINT_PAGESIZE(3, pageWidth * 100, 0, ""); 
+		LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
+
+		var top = 5;
+		var width = Math.floor(pageWidth * 96 / 2.54); // inch, 5.8 / 2.54 * 96
+		console.log(width);
+		var font = 20;
+		var left = 0;
+		
+		angular.forEach($scope.notes, function(n) {
+		    LODOP.ADD_PRINT_TEXT(top, 0, width, 30, n.firm); 
+		    LODOP.SET_PRINT_STYLEA(0,"FontSize",13);
+		    LODOP.SET_PRINT_STYLEA(0,"bold",1);
+		    LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
+
+		    top += 20;
+		    LODOP.ADD_PRINT_TEXT(
+			top,
+			0,
+			width,
+			font,
+			$scope.search.start_time + "（共" + Math.abs(n.total) + "件）");
+		    LODOP.SET_PRINT_STYLEA(0,"FontSize",9);
+		    LODOP.SET_PRINT_STYLEA(0,"bold",1);
+		    LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
+		    
+		    top += 15;
+		    LODOP.ADD_PRINT_TEXT(top, 0, width, font, n.addr);
+		    LODOP.SET_PRINT_STYLEA(0,"FontSize",8);
+		    LODOP.SET_PRINT_STYLEA(0,"bold",1);
+		    LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
+
+		    if ($scope.rbill_comment) {
+			top += 15;
+			LODOP.ADD_PRINT_TEXT(top, 0, width, font, $scope.rbill_comment);
+			LODOP.SET_PRINT_STYLEA(0,"FontSize",8);
+			LODOP.SET_PRINT_STYLEA(0,"bold",1);
+			LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
+		    } 
+
+		    angular.forEach(n.ns, function(ns) {
+			top += 15;
+			LODOP.ADD_PRINT_TEXT(top, 0, width, 30, ns.shop); 
+			LODOP.SET_PRINT_STYLEA(0,"FontSize",12);
+			LODOP.SET_PRINT_STYLEA(0,"bold",1);
+			LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
+			
+			top += 20;
+			LODOP.ADD_PRINT_LINE(top, left, top, width, 0, 1);
+			top += 10;
+			
+			LODOP.ADD_PRINT_TEXT(top, left, 40, font, "序号");
+			LODOP.ADD_PRINT_TEXT(top, left + 40, 60, font, "款号");
+			LODOP.ADD_PRINT_TEXT(top, left + 100, 70, font, "品名");
+			LODOP.ADD_PRINT_TEXT(top, left + 170, width - left - 170, font, "数量");
+
+			top += 15;
+			LODOP.ADD_PRINT_LINE(top, left, top, width, 0, 1);
+			angular.forEach(ns.note, function(ne) {
+			    top += 10;
+			    LODOP.ADD_PRINT_TEXT(top, left, 40, font, ne.order_id);
+			    LODOP.ADD_PRINT_TEXT(top, left + 40, 60, font, ne.style_number);
+			    LODOP.ADD_PRINT_TEXT(top, left + 100, 70, font, ne.brand);
+			    LODOP.ADD_PRINT_TEXT(top, left + 170, width - left - 170, font, ne.total);
+			    top += 15;
+			    LODOP.ADD_PRINT_LINE(top, left, top, width, 0, 1); 
+			    // top += 5;
+			});
+
+			top += 10;
+			LODOP.ADD_PRINT_TEXT(top, left + 170, width - left - 170, font, ns.total); 
+			
+		    })
+
+		    top += 15;
+		    LODOP.ADD_PRINT_TEXT(
+			top,
+			left,
+			width,
+			font, "欢迎使用钱掌柜零售云平台");
+		    top += 15;
+		    LODOP.ADD_PRINT_TEXT(
+			top,
+			left,
+			width,
+			font, "18692269329(微信)" + "15292083301(微信)");
+
+		    top += 40;
+		}); 
+		
+		LODOP.PREVIEW();
+	    } 
 	}
     };
 
@@ -676,9 +773,81 @@ function stockTransferPrintCtrlProvide(
     
 };
 
+
+function stockFixNotePrintCtrlProvide(
+    $scope, $routeParams, diabloUtilsService, purchaserService, user, base){
+    // console.log($routeParams); 
+    $scope.shops = user.sortShops;
+    $scope.search = angular.fromJson($routeParams.note);
+    console.log($scope.search);
+    // console.log($scope.shops);
+
+    var LODOP;
+    if (needCLodop()) loadCLodop(); 
+    var dialog = diabloUtilsService;
+
+    var pageHeight = diablo_base_setting("prn_h_page", user.loginShop, base, parseFloat, 14);
+    var pageWidth  = diablo_base_setting("prn_w_page", user.loginShop, base, parseFloat, 21.3);
+    
+    var notes = []; 
+    purchaserService.print_w_inventory_fix_note($scope.search).then(function(result) {
+    	console.log(result);
+	if (result.ecode === 0) {
+	    $scope.detail = result.detail;
+	    $scope.detail.shop = diablo_get_object($scope.detail.shop_id, $scope.shops);
+	    
+	    $scope.notes = result.note;
+	    diablo_order($scope.notes);
+	    console.log($scope.notes);
+	    
+	} else {
+	    dialog.response(
+		false,
+		"盘点单打印",
+		"盘点单单打印失败：获取采盘点明细失败，请核对后再打印！！")
+	}
+    });
+
+    
+    var strBodyStyle="<style>"
+	+ ".table-response {min-height: .01%; overflow-x:auto;}"
+	+ "table {border-spacing:0; border-collapse:collapse; width:100%}"
+	+ "td,th {padding:0; border:1 solid #000000; text-align:center;}"
+	+ ".table-bordered {border:1 solid #000000;}" 
+	+ "</style>";
+    $scope.print = function() {
+	if (angular.isUndefined(LODOP)) {
+	    LODOP = getLodop();
+	}
+
+	if (LODOP.CVERSION) {
+	    LODOP.PRINT_INIT("task_print_stock_fix_note");
+	    LODOP.SET_PRINTER_INDEX(stockUtils.printer_bill(user.loginShop, base));
+	    LODOP.SET_PRINT_PAGESIZE(0, pageWidth * 100, pageHeight * 100, "");
+	    LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
+
+	    LODOP.ADD_PRINT_HTM(
+		"1%", "1%",  "95%", "BottomMargin:10mm",
+		strBodyStyle
+		    + "<body>"
+		    + document.getElementById("stock_fix_note").innerHTML
+		    + "</body>");
+	    
+
+	    LODOP.PREVIEW(); 
+	}
+    };
+
+    $scope.go_back = function() {
+	diablo_goto_page("#/inventory_rsn_detail/fix" + diablo_set_string($scope.search.rsn));
+    };
+    
+};
+
 define(["purchaserApp"], function(app){
     app.controller("purchaserInventoryPriceCtrl", purchaserInventoryPriceCtrlProvide);
     app.controller("stockNewDetailPrintCtrl", stockNewDetailPrintCtrlProvide);
     app.controller("stockTransferPrintCtrl", stockTransferPrintCtrlProvide);
     app.controller("stockNewNotePrintCtrl", stockNewNotePrintCtrlProvide);
+    app.controller("stockFixNotePrintCtrl", stockFixNotePrintCtrlProvide);
 });

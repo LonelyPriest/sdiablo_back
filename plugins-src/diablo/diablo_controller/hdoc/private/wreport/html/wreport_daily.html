@@ -8,12 +8,12 @@
         </div>
 
         <div class="actions">
-          <button class="btn red hidden-xxs"
+          <button class="btn red"
                   x-ng-click="pre_daily()">前一天
             <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
 
-          <button class="btn btn-success hidden-xxs"
-                  x-ng-disabled="disable_after_daily()"
+          <button class="btn btn-success"
+                  x-ng-if="!disable_after_daily()"
                   x-ng-click="after_daily()">后一天
             <i class="glyphicon glyphicon-circle-arrow-right"></i></button>
 
@@ -108,9 +108,14 @@
 		      <td x-ng-if="right.master">{{r.sale.margins}}</td>
 		      
 		      <td>
-		      	<button class="btn diablo-button yellow-crusta"
+		      	<button class="btn diablo-button purple"
 		      		x-ng-click="shift_print(r)">交班
 		      	  <i class="glyphicon glyphicon-print"></i></button>
+
+			<!-- <button class="btn diablo-button yellow-crusta" -->
+		      	<!-- 	x-ng-click="shift_print_note(r)">货品 -->
+		      	<!--   <i class="glyphicon glyphicon-print"></i></button> -->
+			
 		      </td>
 		      
 		    </tr>

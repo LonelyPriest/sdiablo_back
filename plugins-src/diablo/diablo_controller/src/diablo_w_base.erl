@@ -814,7 +814,8 @@ sys_config() ->
 
 	      %% [0]: print balance of charge vip
 	      %% [1]: show color size when on sale
-	      {"p_balance",       "销售模式",         "0",  "00"},
+	      %% [2]: print sale note when switch shift
+	      {"p_balance",       "销售模式",         "0",  "000"},
 	      
 	      {"gen_ticket",      "自动生成电子卷",       "0",   "0"},
 	      {"recharge_sms",    "充值短信提醒",         "0",   "0"},

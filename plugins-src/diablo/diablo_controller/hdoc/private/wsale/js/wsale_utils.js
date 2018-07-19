@@ -1133,6 +1133,8 @@ var wsalePrint = function(){
     return {
 	gen_head: function(LODOP, shop, rsn, employee, retailer, date, direct){
 	    // wsalePrint.init(LODOP);
+	    wsalePrint.init(LODOP);
+	    
 	    LODOP.ADD_PRINT_TEXT(
 		10,
 		left,
@@ -1140,6 +1142,7 @@ var wsalePrint = function(){
 		30,
 		wsaleUtils.to_integer(direct) === 0 ? shop : shop + "（退）"); 
 	    LODOP.SET_PRINT_STYLEA(0, "FontSize", 13);
+	    LODOP.SET_PRINT_STYLEA(0, "Alignment", 2); 
 	    LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
 	    // LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
 
@@ -1194,6 +1197,7 @@ var wsalePrint = function(){
 		LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, d.rprice.toString());
 
 		top += 15;
+		LODOP.ADD_PRINT_TEXT(top, left, vWidth - left, hFont, d.note);
 		LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString());
 
 		top += 15;
@@ -1324,16 +1328,19 @@ var wsalePrint = function(){
 		    if (c){
 			var s = order.toString() + "：" + c.name;
 			// if (s.length > 30) hFont += 15;
-			// hFont = hFont *  Math.ceil((s.length / 15))
+			hFont = hFont *  Math.ceil(s.length / 17);
+			
 			LODOP.ADD_PRINT_TEXT(
 			    hLine,
 			    left,
 			    vWidth,
-			    hFont * Math.ceil((s.length / 15)),
-			    order.toString() + "：" + c.name);
-			hLine += Math.ceil((s.length / 15)) * 15 + 5; 
-			// console.log(s.length); 
+			    //hFont * Math.ceil((s.length / 15)),
+			    hFont,
+			    s);
+			hLine += Math.ceil((s.length / 17)) * 15 + 5; 
+			// console.log(s.length, Math.ceil((s.length / 15)) * 15 + 5); 
 			// if (s.length > 30) hLine += 15; 
+			// hLine += 15;
 			order++;
 		    }
 		});
@@ -1356,11 +1363,13 @@ var wsalePrint = function(){
 	},
 
 	init: function(LODOP) {
-	    LODOP.SET_PRINT_PAGESIZE(3, 580, 0, ""); 
+	    LODOP.PRINT_INIT("task_print_wsale");
+	    LODOP.SET_PRINT_PAGESIZE(3, 580, 0, "");
+	    LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
 	},
 
 	start_print: function(LODOP){
-	    wsalePrint.init(LODOP);
+	    // wsalePrint.init(LODOP);
 	    // LODOP.PRINT_DESIGN();
 	    // LODOP.PREVIEW();
 	    LODOP.PRINT();

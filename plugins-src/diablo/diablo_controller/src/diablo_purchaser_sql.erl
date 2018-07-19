@@ -1077,10 +1077,9 @@ inventory(fix_detail, fix, Merchant, Conditions, PageFun) ->
 	", a.entry_date" 
 	" from w_inventory_fix a"
 
-	" where "
-	++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime)
-	++ ?sql_utils:condition(proplists, NewConditions) 
-	++ " and merchant=" ++ ?to_s(Merchant)
+	" where merchant="  ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ ?sql_utils:fix_condition(time, time_with_prfix, StartTime, EndTime)
 	++ PageFun();
 
 inventory(fix_rsn_groups, fix, Merchant, Conditions, PageFun) ->
@@ -1129,8 +1128,22 @@ inventory(fix_rsn_groups, fix, Merchant, Conditions, PageFun) ->
 	       _ -> []
 	   end,
     ?DEBUG("C1 ~p", [C1]),
-    
-    "select rsn"
+
+    "select a.rsn"
+	", a.shop_id"
+	", a.style_number"
+	", a.brand_id"
+	", a.color_id"
+	", a.size"
+	", a.shop_total"
+	", a.db_total"
+	", a.entry_date"
+
+	", b.name as color"
+	", c.name as brand"
+	
+	" from ("
+	"select rsn"
 	", shop as shop_id"
 	", style_number"
 	", brand as brand_id"
@@ -1139,9 +1152,21 @@ inventory(fix_rsn_groups, fix, Merchant, Conditions, PageFun) ->
 	", shop_total"
 	", db_total"
 	", entry_date"
-	" from w_inventory_fix_detail_amount"
+	
+    
+    %% ", d.name as shop"
+	
+	" from w_inventory_fix_detail_amount "
+	
+	%% " left join colors b on a.color=b.id"
+	%% " left join brands c on a.brand=c.id"
+    %% " left join shops  d on a.shop=d.id"
+	
 	" where merchant=" ++ ?to_s(Merchant)
-	++ C1 ++ PageFun(); 
+	++ C1 ++ PageFun() ++ ") a"
+
+	" left join colors b on a.color_id=b.id"
+	" left join brands c on a.brand_id=c.id";
 
 inventory(transfer_detail, transfer, Merchant, Conditions, PageFun) ->
     {StartTime, EndTime, NewConditions} =
