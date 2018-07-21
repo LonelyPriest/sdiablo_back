@@ -2103,8 +2103,10 @@ handle_call({gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _Fro
 	{ok, []} ->
 	    {reply, {error, ?err(stock_not_exist, StyleNumber)}, State};
 	{ok, Stock} ->
-	    case ?v(<<"bcode">>, Stock) of
-		<<"0">> -> 
+	    %% ?DEBUG("stock ~p", [Stock]),
+	    ABCode = ?v(<<"bcode">>, Stock),
+	    case ABCode =:= <<"0">> orelse  ABCode =:= <<"-1">> of
+		true -> 
 		    Year = ?v(<<"year">>, Stock),
 		    Free = ?v(<<"free">>, Stock),
 		    Season = ?v(<<"season">>, Stock),
@@ -2144,8 +2146,8 @@ handle_call({gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _Fro
 			{ok, _R} -> 
 			    {reply, {error, ?err(stock_same_barcode, Barcode)}, State}
 		    end;
-		Barcode ->
-		    {reply, {ok, Barcode}, State} 
+		false ->
+		    {reply, {ok, ABCode}, State} 
 	    end
     end;
 
