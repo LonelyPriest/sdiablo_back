@@ -1123,6 +1123,8 @@ handle_call({update_price, Merchant, RSN, Updates}, _From, State) ->
     ?DEBUG("update_price: merchant ~p, RSN ~p, Updates ~p", [Merchant, RSN, Updates]),
     OrgPrice = ?v(<<"org_price">>, Updates),
     TagPrice = ?v(<<"tag_price">>, Updates),
+    StyleNumber = ?v(<<"style_number">>, Updates),
+    Brand = ?v(<<"brand">>, Updates),
 
     EDiscount = case TagPrice of
 		    undefined -> 0;
@@ -1132,6 +1134,8 @@ handle_call({update_price, Merchant, RSN, Updates}, _From, State) ->
     Sql = "update w_sale_detail set org_price=" ++ ?to_s(OrgPrice)
 	++ ", ediscount=" ++ ?to_s(EDiscount)
 	++ " where rsn=\'" ++ ?to_s(RSN)  ++ "\'"
+	++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+	++ " and brand=" ++ ?to_s(Brand)
 	++ " and merchant=" ++ ?to_s(Merchant),
 
     Reply = ?sql_utils:execute(write, Sql, RSN),

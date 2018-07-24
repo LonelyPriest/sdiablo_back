@@ -569,11 +569,18 @@ function wsaleRsnDetailCtrlProvide (
 	    console.log(params);
 
 	    wsaleService.update_w_sale_price(
-		inv.rsn, {org_price:params.org_price, tag_price:inv.tag_price}
+		inv.rsn,
+		{style_number:inv.style_number,
+		 brand:inv.brand_id,
+		 org_price:params.org_price,
+		 tag_price:inv.tag_price}
 	    ).then(function(result){
 		console.log(result);
 		if (result.ecode === 0){
 		    inv.org_price = params.org_price; 
+		    inv.gprofit   = inv.rprice <= diablo_pfree ? 0
+			: diablo_discount(
+			    diablo_float_sub(inv.rprice, inv.org_price), inv.rprice);
 		} else {
 		    dialog.response(
 			false,

@@ -65,6 +65,11 @@ update w_sale_detail a inner join(select style_number, brand, merchant, shop, en
 -- syn sex of w_sale_detail
 update w_sale_detail a inner join(select style_number, brand, merchant, shop, sex from w_inventory) b on a.merchant=b.merchant and a.shop=b.shop and a.style_number=b.style_number and a.brand=b.brand set a.sex=b.sex;
 
+-- syn org_price of w_sale_detail
+update w_sale_detail a inner join(select style_number, brand, merchant, shop, org_price, ediscount from w_inventory where merchant=33) b \
+on a.merchant=b.merchant and a.shop=b.shop and a.style_number=b.style_number and a.brand=b.brand \
+set a.org_price=b.org_price, a.ediscount=b.ediscount;
+
 
 -- check stock
 select a.style_number, a.brand, a.amount, b.total from w_inventory a left join (select style_number, brand, sum(total) as total from w_inventory_amount a where a.merchant=4 and shop=19 group by a.style_number, a.brand) b on a.style_number=b.style_number and a.brand=b.brand where a.merchant=14 and a.shop=12 and a.amount!=b.total;
