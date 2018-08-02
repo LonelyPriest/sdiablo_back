@@ -1752,7 +1752,11 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		 ++ ?to_s(Total) ++ ","
 		 ++ ?to_s(Over) ++ ","
 		 ++ case Exist of
-			old_stock -> ?to_s(SFirm) ++ ",";
+			old_stock ->
+			    case SFirm =/= -1 of
+				true -> ?to_s(SFirm) ++ ",";
+				false -> ?to_s(Firm)
+			    end;
 			new_stock -> ?to_s(Firm) ++ ","
 		    end 
 		 ++ "\"" ++ ?to_s(SizeGroup) ++ "\","
