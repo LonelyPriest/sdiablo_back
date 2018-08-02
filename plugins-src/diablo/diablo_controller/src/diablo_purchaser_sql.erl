@@ -1755,7 +1755,7 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 			old_stock ->
 			    case SFirm =/= -1 of
 				true -> ?to_s(SFirm) ++ ",";
-				false -> ?to_s(Firm)
+				false -> ?to_s(Firm) ++ ","
 			    end;
 			new_stock -> ?to_s(Firm) ++ ","
 		    end 
