@@ -740,16 +740,16 @@
 			       x-ng-model="good.type"
 			       x-ng-pattern="pattern.type"
 			       x-ng-enter=""
+			       typeahead-editable="base_settings.select_type"
 			       uib-typeahead="t.name for t in
-					  types|filter:$viewValue|limitTo:15"/>
+					  types|filter:$viewValue|limitTo:20"/>
 		      </div> 
 		      <span class="input-group-addon bg-white fg-red">*</span>
 		    </div>
 		  </div>
-		  <div ng-show="form.gForm.type.$invalid
-				&& !form.gForm.type.$pristine">
+		  <div ng-show="form.gForm.type.$invalid && !form.gForm.type.$pristine">
 		    <span style="color:red">
-		      请输入中文，字母或数字，必须以中文开头
+		      中文，字母或数字或必须从下拉列表中选择
 		    </span>
 		  </div>
 		</div> 

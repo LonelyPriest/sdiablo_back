@@ -288,6 +288,11 @@ function purchaserInventoryNewCtrlProvide (
 	    if ( !h ) return diablo_yes;
 	    else return stockUtils.to_integer(h);
 	}();
+
+	$scope.base_settings.select_type = function() {
+	    if ( hide_mode.charAt(5) ) return false;
+	    return true;
+	}();
 	
 	$scope.base_settings.stock_alarm     = stockUtils.stock_alarm(shopId, base);
 	$scope.base_settings.stock_alarm_a   = stockUtils.stock_alarm_a(shopId, base);
@@ -1935,7 +1940,7 @@ function purchaserInventoryDetailCtrlProvide(
     $scope, $routeParams, $q, dateFilter, diabloPattern, diabloFilter,
     diabloUtilsService, diabloPromise, purchaserService,
     localStorageService, filterPromotion, filterScore,  filterBrand,
-    filterFirm, filterType, filterSizeGroup, filterColor, filterTemplate, base, user) {
+    filterFirm, filterType, filterCType, filterSizeGroup, filterColor, filterTemplate, base, user) {
     $scope.promotions = filterPromotion.concat([{id:diablo_invalid_index, name:"重置促销方案"}]);
     $scope.scores = filterScore.concat([{id:diablo_invalid_index, name:"重置积分方案", type_id:0}]);
     $scope.template = filterTemplate.length !== 0 ? filterTemplate[0] : undefined;
@@ -1999,7 +2004,8 @@ function purchaserInventoryDetailCtrlProvide(
     diabloFilter.reset_field(); 
     diabloFilter.add_field("style_number", $scope.match_style_number);
     diabloFilter.add_field("brand", filterBrand);
-    diabloFilter.add_field("type", filterType);
+    diabloFilter.add_field("ctype", filterCType);
+    diabloFilter.add_field("type",  filterType);
     diabloFilter.add_field("season", diablo_season2objects);
     diabloFilter.add_field("sex",  diablo_sex2object);
     diabloFilter.add_field("year", diablo_full_year);

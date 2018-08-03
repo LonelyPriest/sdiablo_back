@@ -804,7 +804,8 @@ sys_config() ->
 	      %% [2]: hide sex
 	      %% [3]: hide expire
 	      %% [4]: hide image
-	      {"h_stock",         "入库字段隐藏",         "00011", "0"},
+	      %% [5]: type should be select
+	      {"h_stock",         "入库字段隐藏",         "000110", "0"},
 	      %% {"h_color",         "隐藏颜色",             "0",   "0"},
 	      %% {"h_size",          "隐藏尺码",             "0",   "0"},
 	      %% {"h_sex",           "隐藏性别",             "0",   "0"},
