@@ -344,13 +344,13 @@
 		  <td class="text-center vert-align">{{inv.order_id}}</td>
 		  
 		  <td x-ng-if="setting.barcode_mode" class="col-md-2 text-left vert-align">
-	  	    <span ng-if="!inv.$new">{{inv.full_bcode}}</span>
+	  	    <span ng-if="!inv.$new">{{inv.bcode}}</span>
 	  	    <form name="inv.form.bcode" ng-if="inv.$new">
 	  	      <div ng-class="{'has-error':inv.form.bcode.$invalid && !inv.form.bcode.$pristine}">
 	  		<input class="form-control text-left"
 	  		       type="text"
 	  		       required
-	  		       x-ng-model="inv.full_bcode"
+	  		       x-ng-model="inv.bcode"
 	  		       focus-auto="focus_attr.barcode"
 	  		       placeholder="条码"
 	  		       barcode-scanner

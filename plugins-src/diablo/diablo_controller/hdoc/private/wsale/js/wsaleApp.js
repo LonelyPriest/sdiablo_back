@@ -391,7 +391,7 @@ function wsaleNewProvide(
 	    if (o !== attr) $scope.focus_attr[o] = false;
 	} 
     };
-
+    
     $scope.disable_focus = function() {
 	for (var o in $scope.focus_attr){
 	    $scope.focus_attr[o] = false;
@@ -943,7 +943,7 @@ function wsaleNewProvide(
     };
 
     $scope.copy_select = function(add, src){
-	// console.log(src);
+	console.log(src);
 	add.id           = src.id;
 	add.bcode        = src.bcode;
 	add.full_bcode   = src.full_bcode;
@@ -1006,9 +1006,8 @@ function wsaleNewProvide(
 	    if (item.style_number === $scope.inventories[i].style_number
 		&& item.brand_id  === $scope.inventories[i].brand_id){
 		existStock = $scope.inventories[i];
-		// fail_response(2191, function(){
-		//     $scope.inventories[0] = {$edit:false, $new:true}});
-		// return; 
+		if (angular.isDefined(item.full_bcode))
+		    existStock.full_bcode = item.full_bcode;
 	    }
 	}; 
 
@@ -1018,7 +1017,7 @@ function wsaleNewProvide(
 	if (angular.isDefined(existStock)) {
 	    $scope.update_inventory(
 		existStock,
-		function() {$scope.inventories[0] = {$edit:false, $new:true}})
+		function() {$scope.inventories[0] = {$edit:false, $new:true}}, true)
 	} else {
 	    // add at first allways 
 	    var add = $scope.inventories[0];
@@ -1750,7 +1749,7 @@ function wsaleNewProvide(
 	    inv.free_color_size = true;
 	    inv.amounts         = [{cid:0, size:0}];
 	    if ($scope.setting.barcode_mode) {
-		inv.sell = 1;
+		inv.sell = 1; 
 		$scope.auto_save_free(inv);
 	    }
 	} else {
@@ -1790,7 +1789,8 @@ function wsaleNewProvide(
 		    inv.free_color_size = true;
 		    inv.amounts         = [{cid:0, size:0}];
 		    if ($scope.setting.barcode_mode) {
-			inv.sell = 1;
+			// inv.sell = 1;
+			inv.sell = 1; 
 			$scope.auto_save_free(inv);
 		    }
 		} else{
@@ -1811,6 +1811,7 @@ function wsaleNewProvide(
 			// console.log(bcode_size);
 			angular.forEach(inv.amounts, function(a) {
 			    // console.log(a.cid, inv.colors);
+			    a.focus = false;
 			    var color;
 			    for (var i=0, l=inv.colors.length; i<l; i++) {
 				if (a.cid === inv.colors[i].cid) {
@@ -1821,14 +1822,15 @@ function wsaleNewProvide(
 			    // console.log(color); 
 			    if (angular.isDefined(color)
 				&& color.bcode === bcode_color && a.size === bcode_size) {
-				a.sell_count = 1;
+				a.sell_count = 1; 
 				a.focus = true;
 			    }
 			});
 		    } else {
 			// inv.amounts[0].focus = true;
 			for (var i=0, l=inv.amounts.length; i<l; i++) {
-			    var a = inv.amounts[i]; 
+			    var a = inv.amounts[i];
+			    a.focus = false;
 			    if (a.cid === inv.colors[0].cid && a.size === inv.sizes[0]) {
 				a.focus = true;
 			    }
@@ -1839,9 +1841,9 @@ function wsaleNewProvide(
 			inv.$edit = true;
 			inv.$new = false;
 			inv.order_id = $scope.inventories.length;
-			if (angular.isUndefined(inv.full_bcode)) {
-			    inv.full_bcode = inv.bcode;
-			}
+			// if (angular.isUndefined(inv.full_bcode)) {
+			//     inv.full_bcode = inv.bcode;
+			// }
 			$scope.inventories.unshift({$edit:false, $new:true}); 
 			$scope.disable_refresh = false;
 
@@ -1966,7 +1968,7 @@ function wsaleNewProvide(
     /*
      * update inventory
      */
-    $scope.update_inventory = function(inv, updateCallback){
+    $scope.update_inventory = function(inv, updateCallback, scan){
 	console.log(inv);
 	inv.$update = true; 
 	// inv.fdiscount = $scope.calc_discount(inv); 
@@ -1974,8 +1976,63 @@ function wsaleNewProvide(
 	
 	if (inv.free_color_size){
 	    inv.free_update = true;
-	    $scope.auto_focus("sell");
+	    if (angular.isDefined(scan) && scan) {
+		if (wsaleUtils.to_integer(inv.sell) === 0)
+		    inv.sell = 1;
+		else
+		    inv.sell += 1;
+
+		$scope.auto_save_free(inv);
+	    } else {
+		$scope.auto_focus("sell");
+	    }
+	    
 	    return;
+	}
+
+	if (angular.isDefined(scan) && scan
+	    && $scope.setting.barcode_mode && angular.isDefined(inv.full_bcode)) {
+	    // get color, size from barcode
+	    // console.log(inv.bcode);
+	    // console.log(inv.full_bcode);
+	    // console.log(inv.full_bcode.length - inv.bcode.length);
+	    var color_size = inv.full_bcode.substr(inv.bcode.length, inv.full_bcode.length);
+	    console.log(color_size);
+
+	    var bcode_color = wsaleUtils.to_integer(color_size.substr(0, 3));
+	    var bcode_size_index = wsaleUtils.to_integer(color_size.substr(3, color_size.length));
+	    
+	    var bcode_size = bcode_size_index === 0 ? diablo_free_size : size_to_barcode[bcode_size_index];
+	    // console.log(bcode_color);
+	    // console.log(bcode_size);
+	    angular.forEach(inv.amounts, function(a) {
+		// console.log(a.cid, inv.colors);
+		a.focus = false;
+		var color;
+		for (var i=0, l=inv.colors.length; i<l; i++) {
+		    if (a.cid === inv.colors[i].cid) {
+			color = inv.colors[i];
+			break;
+		    }
+		} 
+		// console.log(color); 
+		if (angular.isDefined(color)
+		    && color.bcode === bcode_color && a.size === bcode_size) {
+		    if (wsaleUtils.to_integer(a.sell_count) === 0)
+			a.sell_count = 1;
+		    else
+			a.sell_count += 1;
+		    a.focus = true;
+		}
+	    });
+	} else {
+	    for (var i=0, l=inv.amounts.length; i<l; i++) {
+		var a = inv.amounts[i];
+		a.focus = false;
+		if (a.cid === inv.colors[0].cid && a.size === inv.sizes[0]) {
+		    a.focus = true;
+		}
+	    }
 	}
 	
 	var callback = function(params){
@@ -2038,6 +2095,8 @@ function wsaleNewProvide(
 	inv.sell      = inv.amounts[0].sell_count;
 	inv.fdiscount = inv.o_fdiscount;
 	inv.fprice    = inv.o_fprice;
+	// reset
+	$scope.inventories[0] = {$edit:false, $new:true};
 	$scope.re_calculate(); 
     };
 

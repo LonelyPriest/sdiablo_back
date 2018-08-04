@@ -71,7 +71,7 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
     {RName, Phone, Shop, Score, Consume, Birth, Date} = H,
     ?DEBUG("H ~p", [H]),
     NewShop = case Shop of
-		  <<>> -> 117;
+		  <<>> -> 129;
 		  _ -> Shop
 	      end,
     NewScore = case Score of
@@ -90,7 +90,7 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
 		   _ ->
 		       {BirthMonth, _BirthDate} = parse_birth(Birth, <<>>),
 		       BirthDate = pack_date(_BirthDate),
-		       << <<"2018-">>/binary, BirthMonth/binary, <<"-">>/binary, BirthDate/binary>>
+		       << <<"2018-">>/binary, BirthMonth/binary, <<"-">>/binary, BirthDate/binary>> 
 	      end,
 
     IsExist = 
@@ -109,27 +109,30 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
 	    case ?sql_utils:execute(s_read, Sql0) of
 		{ok, []} ->
 
-		    UName =
-			case RName of
-			    <<>> ->
+		    %% UName =
+		    %% 	case RName of
+		    %% 	    <<>> ->
+		    %% 		<<_:6/binary, Name:5/binary>> = Phone,
+		    %% 		Name;
+		    %% 	    _ ->
+		    %% 		case size(RName) =:= 3 of
+		    %% 		    true ->
+		    %% 			<<_:6/binary, Name:5/binary>> = Phone,
+		    %% 			<<RName/binary, Name/binary>>;
+		    %% 		    false ->
+		    %% 			RName
+		    %% 		end
+				
+		    %% 	end,
+
+		    RegExp = "^[A-Za-z]",
+		    UName = 
+			case re:run(RName, RegExp) of
+			    {match, _} ->
 				<<_:6/binary, Name:5/binary>> = Phone,
 				Name;
-			    _ ->
-				case size(RName) =:= 3 of
-				    true ->
-					<<_:6/binary, Name:5/binary>> = Phone,
-		    			<<RName/binary, Name/binary>>;
-				    false ->
-					RName
-				end
-				%% RegExp = "^[A-Za-z]",
-				%% case re:run(RName, RegExp) of
-				%%     {match, _} ->
-				%% 	<<_:6/binary, Name:5/binary>> = Phone,
-				%% 	Name;
-				%%     nomatch ->
-				%% 	RName
-				%% end
+			    nomatch ->
+				RName
 			end,
 			    
 		    Entry = case Date of
