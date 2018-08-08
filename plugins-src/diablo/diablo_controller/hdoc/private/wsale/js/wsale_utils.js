@@ -1235,7 +1235,7 @@ var wsalePrint = function(){
 	    return top;
 	},
 
-	gen_stastic: function(LODOP, hLine, direct, sale, vip){
+	gen_stastic: function(LODOP, hLine, direct, sale, vip, printPerform){
 	    console.log(sale);
 	    // console.log(hLine);
 	    if (angular.isUndefined(direct)) direct = 0;
@@ -1288,7 +1288,7 @@ var wsalePrint = function(){
 		    hLine += 20;
 		}
 		
-		if (angular.isDefined(sale.perform) && sale.perform >= 0) {
+		if (printPerform && angular.isDefined(sale.perform) && sale.perform >= 0) {
 		    l1 = "优惠：" + wsaleUtils.to_float(sale.perform).toString();
 		    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
 		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 13);

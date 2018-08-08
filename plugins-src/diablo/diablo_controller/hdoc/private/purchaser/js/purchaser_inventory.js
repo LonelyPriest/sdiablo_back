@@ -278,19 +278,19 @@ function purchaserInventoryNewCtrlProvide (
 	$scope.base_settings.hide_size   = stockUtils.to_integer(hide_mode.charAt(1)),
 	$scope.base_settings.hide_sex    = stockUtils.to_integer(hide_mode.charAt(2)),
 	$scope.base_settings.hide_expire = function() {
-	    var h = hide_mode.charAt(3);
+	    var h = stockUtils.to_integer(hide_mode.charAt(3));
 	    if ( !h ) return diablo_yes;
 	    else return stockUtils.to_integer(h);
 	}();
 
 	$scope.base_settings.hide_image = function () {
-	    var h = hide_mode.charAt(4);
+	    var h = stockUtils.to_integer(hide_mode.charAt(4));
 	    if ( !h ) return diablo_yes;
 	    else return stockUtils.to_integer(h);
 	}();
 
 	$scope.base_settings.select_type = function() {
-	    if ( hide_mode.charAt(5) ) return false;
+	    if ( stockUtils.to_integer(hide_mode.charAt(5)) ) return false;
 	    return true;
 	}();
 	

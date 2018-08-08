@@ -483,8 +483,8 @@ function wsaleNewProvide(
 	$scope.setting.maling_rang   = wsaleUtils.maling_rang(shopId, base);
 	$scope.setting.type_sale     = wsaleUtils.type_sale(shopId, base);
 
-	// var sale_mode = wsaleUtils.sale_mode(shopId, base);
-	// $scope.setting.show_note     = wsaleUtils.to_integer(sale_mode.charAt(1));
+	var sale_mode = wsaleUtils.sale_mode(shopId, base);
+	$scope.setting.print_perform     = wsaleUtils.to_integer(sale_mode.charAt(3));
 	
 	if (diablo_no === $scope.setting.cake_mode) {
 	    // $scope.vpays = wsaleService.vpays;
@@ -1306,8 +1306,8 @@ function wsaleNewProvide(
 			hLine,
 			0,
 			$scope.select,
-			wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers)
-			); 
+			wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers),
+			$scope.setting.print_perform); 
 		    wsalePrint.gen_foot(
 			LODOP, hLine, $scope.comments, pdate, $scope.select.shop.addr, cakeMode);
 		    wsalePrint.start_print(LODOP); 

@@ -119,6 +119,8 @@ function wsaleRejectCtrlProvide(
 		    $scope.setting.cakeMode = wsaleUtils.cake_mode(shopId, settings);
 		    $scope.setting.draw_score = wsaleUtils.draw_score(shopId, settings);
 		    $scope.setting.vip_mode = wsaleUtils.vip_mode(shopId, settings);
+		    var sale_mode = wsaleUtils.sale_mode(shopId, settings);
+		    $scope.setting.print_perform     = wsaleUtils.to_integer(sale_mode.charAt(3));
 		    // console.log($scope.setting);
 
 		    $scope.employees = wsaleUtils.get_login_employee(
@@ -315,7 +317,8 @@ function wsaleRejectCtrlProvide(
 		    hLine,
 		    wsaleService.direct.wreject,
 		    $scope.select,
-		    wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers));
+		    wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers),
+		    $scope.setting.print_perform);
 		
 		wsalePrint.gen_foot(
 		    LODOP,
