@@ -94,9 +94,9 @@ filter(total_news, 'and', Merchant, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {total_news, Merchant, Fields});
 
-filter(total_rsn_group, 'and', Merchant, Fields) ->
+filter(total_rsn_group, MatchMode, Merchant, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {total_rsn_group, Merchant, Fields});
+    gen_server:call(Name, {total_rsn_group, MatchMode, Merchant, Fields}, 6 * 1000);
 
 filter(total_firm_detail, 'and', Merchant, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -107,15 +107,15 @@ filter(news, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
     gen_server:call(
       Name, {filter_news, Merchant, CurrentPage, ItemsPerPage, Fields});
 
-filter(rsn_group, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
+filter(rsn_group, MatchMode, Merchant, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(
-      Name, {filter_rsn_group, {use_id, 0}, Merchant, CurrentPage, ItemsPerPage, Fields});
+      Name, {filter_rsn_group, {use_id, 0}, MatchMode, Merchant, CurrentPage, ItemsPerPage, Fields}, 6 * 1000);
 
-filter({rsn_group, Mode, Sort}, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
+filter({rsn_group, Mode, Sort}, MatchMode, Merchant, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(
-      Name, {filter_rsn_group, {Mode, Sort}, Merchant, CurrentPage, ItemsPerPage, Fields}).
+      Name, {filter_rsn_group, {Mode, Sort}, MatchMode, Merchant, CurrentPage, ItemsPerPage, Fields}, 6 * 1000).
 
     
 
@@ -590,7 +590,7 @@ handle_call({last_sale, Merchant, Conditions}, _From, State) ->
 
 handle_call({trace_sale, Merchant, Conditions}, _From, State) ->
     ?DEBUG("trance_sale with merchant ~p, Conditions ~p", [Merchant, Conditions]),
-    Sql = sale_new(rsn_groups, Merchant, Conditions, fun() -> " order by id desc" end),
+    Sql = sale_new(rsn_groups, 'and', Merchant, Conditions, fun() -> " order by id desc" end),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State}; 
 
@@ -923,16 +923,13 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 	    {reply, Error, State}
     end;
 
-handle_call({total_rsn_group, Merchant, Conditions}, _From, State) ->
-    ?DEBUG("total_rsn_group with merchant ~p, conditions ~p",
-	   [Merchant, Conditions]),
+handle_call({total_rsn_group, MatchMode, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("total_rsn_group with merchant ~p, matchMode ~p, conditions ~p",
+	   [Merchant, MatchMode, Conditions]),
     {DConditions, SConditions} = filter_condition(wsale, Conditions, [], []),
 
-    {StartTime, EndTime, CutSConditions}
-    	= ?sql_utils:cut(fields_with_prifix, SConditions),
-    
-    {_, _, CutDCondtions}
-    	= ?sql_utils:cut(fields_no_prifix, DConditions),
+    {StartTime, EndTime, CutSConditions} = ?sql_utils:cut(fields_with_prifix, SConditions), 
+    {_, _, CutDCondtions} = ?sql_utils:cut(fields_no_prifix, DConditions),
 
     %% ?DEBUG("CutDCondtions ~p", [CutDCondtions]),
     CorrectCutDConditions = ?utils:correct_condition(<<"b.">>, CutDCondtions),
@@ -946,11 +943,26 @@ handle_call({total_rsn_group, Merchant, Conditions}, _From, State) ->
     	" from w_sale_detail b, w_sale a"
 
     	" where "
-	++ ?sql_utils:condition(proplists_suffix, CorrectCutDConditions)
-	++ "b.rsn=a.rsn"
-
+    %% ++ ?sql_utils:condition(proplists_suffix, CorrectCutDConditions)
+	++ "b.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:like_condition(MatchMode, <<"b.style_number">>, CorrectCutDConditions)
+	%% ++ case MatchMode of
+	%%        ?AND ->
+	%% 	   ?sql_utils:condition(proplists, CorrectCutDConditions);
+	%%        ?LIKE ->
+	%% 	   case ?v(<<"b.style_number">>, CorrectCutDConditions, []) of
+	%% 	       [] ->
+	%% 		   ?sql_utils:condition(proplists, CorrectCutDConditions);
+	%% 	       StyleNumber ->
+	%% 		   " and b.style_number like '" ++ ?to_s(StyleNumber) ++ "%'"
+	%% 		       ++ ?sql_utils:condition(
+	%% 			     proplists, lists:keydelete(<<"b.style_number">>, 1, CorrectCutDConditions))
+	%% 	   end
+	%%    end
+	++ " and b.rsn=a.rsn"
+	
+	++ " and a.merchant=" ++ ?to_s(Merchant)
     	++ ?sql_utils:condition(proplists, CutSConditions)
-    	++ " and a.merchant=" ++ ?to_s(Merchant)
     	++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime), 
     
     Reply = ?sql_utils:execute(s_read, Sql),
@@ -970,11 +982,11 @@ handle_call({total_firm_detail, Merchant, Conditions}, _From, State) ->
     {reply, Reply, State}; 
 
 handle_call({filter_rsn_group, {Mode, Sort},
-	     Merchant, CurrentPage, ItemsPerPage, Conditions}, _From, State) ->
-    ?DEBUG("filter_rsn_group_and: mode ~p, sort ~p, currentPage ~p"
+	     MatchMode, Merchant, CurrentPage, ItemsPerPage, Conditions}, _From, State) ->
+    ?DEBUG("filter_rsn_group_and: mode ~p, sort ~p, MatchMode ~p, currentPage ~p"
 	   ", ItemsPerpage ~p, Merchant ~p~n",
-	   [Mode, Sort, CurrentPage, ItemsPerPage, Merchant]), 
-    Sql = sale_new(rsn_groups, Merchant, Conditions,
+	   [Mode, Sort, MatchMode, CurrentPage, ItemsPerPage, Merchant]), 
+    Sql = sale_new(rsn_groups, MatchMode, Merchant, Conditions,
 		   fun() ->
 			   rsn_order(Mode) ++ ?sql_utils:sort(Sort)
 			       ++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
@@ -1949,15 +1961,12 @@ filter_stock(news, [{H}|T], Stock, OrgPrice, EDiscount) ->
 	false -> filter_stock(news, T, Stock - Amount, OrgPrice, EDiscount)
     end.
 
-
-sale_new(rsn_groups, Merchant, Conditions, PageFun) ->
+sale_new(rsn_groups, MatchMode, Merchant, Conditions, PageFun) ->
     {DConditions, SConditions} = filter_condition(wsale, Conditions, [], []),
 
-    {StartTime, EndTime, CutSConditions}
-    	= ?sql_utils:cut(fields_with_prifix, SConditions),
+    {StartTime, EndTime, CutSConditions} = ?sql_utils:cut(fields_with_prifix, SConditions),
 
-    {_, _, CutDCondtions}
-    	= ?sql_utils:cut(fields_no_prifix, DConditions),
+    {_, _, CutDCondtions} = ?sql_utils:cut(fields_no_prifix, DConditions),
 
     CorrectCutDConditions = ?utils:correct_condition(<<"b.">>, CutDCondtions),
 
@@ -1997,11 +2006,26 @@ sale_new(rsn_groups, Merchant, Conditions, PageFun) ->
 	" left join w_retailer c on c.id=a.retailer"
 
     	" where "
-	++ ?sql_utils:condition(proplists_suffix, CorrectCutDConditions)
-	++ "b.rsn=a.rsn"
-
+    %% ++ ?sql_utils:condition(proplists_suffix, CorrectCutDConditions)
+	++ "b.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:like_condition(MatchMode, <<"b.style_number">>, CorrectCutDConditions)
+	%% ++ case MatchMode of
+	%%        ?AND ->
+	%% 	   ?sql_utils:condition(proplists, CorrectCutDConditions);
+	%%        ?LIKE ->
+	%% 	   case ?v(<<"b.style_number">>, CorrectCutDConditions, []) of
+	%% 	       [] ->
+	%% 		   ?sql_utils:condition(proplists, CorrectCutDConditions);
+	%% 	       StyleNumber ->
+	%% 		   " and b.style_number like '" ++ ?to_s(StyleNumber) ++ "%'"
+	%% 		       ++ ?sql_utils:condition(
+	%% 			     proplists, lists:keydelete(<<"b.style_number">>, 1, CorrectCutDConditions))
+	%% 	   end
+	%%    end
+	++ " and b.rsn=a.rsn"
+	
+	++ " and a.merchant=" ++ ?to_s(Merchant)
     	++ ?sql_utils:condition(proplists, CutSConditions)
-    	++ " and a.merchant=" ++ ?to_s(Merchant)
     	++ case ?sql_utils:condition(time_with_prfix, StartTime, EndTime) of
 	       [] -> [];
 	       TimeSql -> " and " ++ TimeSql

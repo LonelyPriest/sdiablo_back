@@ -27,8 +27,7 @@
 	 purchaser_inventory/4,
 	 purchaser_inventory/5,
 	 purchaser_inventory/6,
-	 stock/3,
-	 stock/4]).
+	 stock/5]).
 
 -export([filter/4, filter/6, rsn_detail/3, export/4, rsn/4]).
 -export([match/3, match/4, match/5, match/6]).
@@ -420,13 +419,13 @@ export(shift_note_color_size, Merchant, Condition, []) ->
 
 
 %% get stock detail of shop
-stock(detail_get_by_shop, Merchant, Shop) ->
-    Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {stock_detail_get_by_shop, Merchant, Shop, ?INVALID_OR_EMPTY}).
+%% stock(detail_get_by_shop, Merchant, Shop, ?INVALID_OR_EMPTY, []) ->
+%%     Name = ?wpool:get(?MODULE, Merchant),
+%%     gen_server:call(Name, {stock_detail_get_by_shop, Merchant, Shop, ?INVALID_OR_EMPTY}).
 
-stock(detail_get_by_shop, Merchant, Shop, Firm) ->
+stock(detail_get_by_shop, Merchant, Shop, Firm, ExtraCondtion) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {stock_detail_get_by_shop, Merchant, Shop, Firm}).
+    gen_server:call(Name, {stock_detail_get_by_shop, Merchant, Shop, Firm, ExtraCondtion}).
 
 
 start_link(Name) ->
@@ -2624,18 +2623,19 @@ handle_call({total_groups, MatchMode, Merchant, Fields}, _From, State) ->
 	", sum(amount * tag_price) as t_pmoney"
 	" from w_inventory"
 	" where merchant=" ++ ?to_s(Merchant)
-	++ case MatchMode of
-	       ?AND -> ?sql_utils:condition(proplists, RealyConditions);
-	       ?LIKE -> 
-		   case ?v(<<"style_number">>, RealyConditions, []) of
-		       [] ->
-			   ?sql_utils:condition(proplists, RealyConditions);
-		       StyleNumber ->
-			   " and style_number like '" ++ ?to_s(StyleNumber) ++ "%'"
-			   ++ ?sql_utils:condition(
-				 proplists, lists:keydelete(<<"style_number">>, 1, RealyConditions))
-		   end
-	   end
+	++ ?sql_utils:like_condition(MatchMode, <<"style_number">>, RealyConditions)
+	%% ++ case MatchMode of
+	%%        ?AND -> ?sql_utils:condition(proplists, RealyConditions);
+	%%        ?LIKE -> 
+	%% 	   case ?v(<<"style_number">>, RealyConditions, []) of
+	%% 	       [] ->
+	%% 		   ?sql_utils:condition(proplists, RealyConditions);
+	%% 	       StyleNumber ->
+	%% 		   " and style_number like '" ++ ?to_s(StyleNumber) ++ "%'"
+	%% 		   ++ ?sql_utils:condition(
+	%% 			 proplists, lists:keydelete(<<"style_number">>, 1, RealyConditions))
+	%% 	   end
+	%%    end
 	++ ExtraCondtion
 	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime),
     
@@ -3018,8 +3018,8 @@ handle_call({shift_note_color_size_export, Merchant, Conditions}, _From, State) 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({stock_detail_get_by_shop, Merchant, Shop, Firm}, _From, State) ->
-    Sql = case Firm =:= ?INVALID_OR_EMPTY of
+handle_call({stock_detail_get_by_shop, Merchant, Shop, Firm, ExtraCondtion}, _From, State) ->
+    Sql = case Firm =:= ?INVALID_OR_EMPTY andalso ExtraCondtion =:= [] of
 	      true ->
 		  "select style_number, brand, color, size, total, merchant, shop"
 		      " from w_inventory_amount"
@@ -3033,9 +3033,14 @@ handle_call({stock_detail_get_by_shop, Merchant, Shop, Firm}, _From, State) ->
 		      " from "
 		      
 		      "(select style_number, brand, merchant, shop, firm"
-		      " from w_inventory where merchant=" ++ ?to_s(Merchant) 
-		      ++ " and firm=" ++ ?to_s(Firm)
-		      ++ " and shop=" ++ ?to_s(Shop) ++ ") a"
+		      " from w_inventory where merchant=" ++ ?to_s(Merchant)
+		      ++ " and shop=" ++ ?to_s(Shop)
+		      ++ case Firm of
+			     ?INVALID_OR_EMPTY -> [];
+			     _ -> " and firm=" ++ ?to_s(Firm)
+			 end
+		      ++ ?sql_utils:condition(proplists, ExtraCondtion)
+		      ++ ") a"
 
 		      " inner join "
 		      "(select style_number, brand, merchant, shop, color, size, total"
@@ -3044,7 +3049,8 @@ handle_call({stock_detail_get_by_shop, Merchant, Shop, Firm}, _From, State) ->
 		      ++ " and shop=" ++ ?to_s(Shop)
 		      ++ " and total!=0) b"
 
-		      " on a.style_number=b.style_number and a.brand=b.brand"
+		      " on a.merchant=b.merchant and a.shop=b.shop"
+		      " and a.style_number=b.style_number and a.brand=b.brand"
 	  end,
     
     Reply = ?sql_utils:execute(read, Sql),

@@ -612,6 +612,7 @@ action(Session, Req, {"filter_w_sale_rsn_group"}, Payload) ->
     ?DEBUG("filter_w_sale_rsn_group with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant           = ?session:get(merchant, Session), 
     {struct, Mode}     = ?v(<<"mode">>, Payload),
+    
     Order = ?v(<<"mode">>, Mode),
     Sort  = ?v(<<"sort">>, Mode),
     ShowNote = ?v(<<"note">>, Mode),
@@ -619,15 +620,20 @@ action(Session, Req, {"filter_w_sale_rsn_group"}, Payload) ->
     NewPayload = proplists:delete(<<"mode">>, Payload), 
     {struct, Fields}     = ?v(<<"fields">>, Payload),
 
+    NewFields = 
+	case ?value(<<"match">>, Payload, 'and') of
+	    ?AND -> Fields;
+	    ?LIKE -> Fields 
+	end,
+
     PayloadWithCtype =
-	case ?v(<<"type">>, Fields) of
+	case ?v(<<"type">>, NewFields) of
 	    undefined ->
-		case ?v(<<"ctype">>, Fields) of
+		case ?v(<<"ctype">>, NewFields) of
 		    undefined -> NewPayload;
 		    CType ->
 			P = proplists:delete(<<"fields">>, NewPayload),
-			PN = proplists:delete(<<"type">>,
-					      proplists:delete(<<"ctype">>, Fields)),
+			PN = proplists:delete(<<"type">>, proplists:delete(<<"ctype">>, NewFields)),
 			case ?attr:type(get, Merchant, [{<<"ctype">>, CType}]) of
 			    {ok, []} ->
 				[{<<"fields">>, {struct, PN}}
@@ -647,16 +653,13 @@ action(Session, Req, {"filter_w_sale_rsn_group"}, Payload) ->
 		P = proplists:delete(<<"fields">>, NewPayload),
 		[{<<"fields">>, {struct, proplists:delete(<<"ctype">>, Fields)}}|P]
 	end,
-
     
-	    
     ?DEBUG("PayloadWithCtype ~p", [PayloadWithCtype]),
     case ShowNote of
 	?NO -> 
 	    ?pagination:pagination(
 	       fun(Match, Conditions) ->
-		       ?w_sale:filter(total_rsn_group,
-				      ?to_a(Match), Merchant, Conditions)
+		       ?w_sale:filter(total_rsn_group, ?to_a(Match), Merchant, Conditions)
 	       end,
 	       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
 		       ?w_sale:filter(

@@ -517,8 +517,7 @@ action(Session, Req, {"filter_w_inventory_group"}, Payload) ->
 					      proplists:delete(<<"ctype">>, Fields)),
 			case ?attr:type(get, Merchant, [{<<"ctype">>, CType}]) of
 			    {ok, []} ->
-				[{<<"fields">>, {struct, PN}}
-				 |P];
+				[{<<"fields">>, {struct, PN}} |P];
 			    {ok, Types}  ->
 				[{<<"fields">>,
 				  {struct,
@@ -566,10 +565,32 @@ action(Session, Req, {"fix_w_inventory"}, Payload) ->
     Shop = ?v(<<"shop">>, Base),
     Firm = ?v(<<"firm">>, Base, -1),
 
+    SortTypes =
+	case ?v(<<"ctype">>, Base, ?INVALID_OR_EMPTY) of
+	    ?INVALID_OR_EMPTY -> [];
+	    CType ->
+		case ?attr:type(get, Merchant, [{<<"ctype">>, CType}]) of
+		    {ok, []} ->
+			[];
+		    {ok, Types}  ->
+			lists:foldr(
+			  fun({Type}, Acc) ->
+				  [?v(<<"id">>, Type)|Acc]
+			  end, [], Types)
+		end
+	end,
+	
+
     %% {ShopTotal, ShopStockDict} = stock(shop_to_dict, ShopStocks, 0, dict:new()),
 
     %% get stock of shop
-    case ?w_inventory:stock(detail_get_by_shop, Merchant, Shop, Firm) of
+    ExtraConditions = case SortTypes of
+			  [] -> [];
+			  _ ->
+			      [{<<"type">>, SortTypes}]
+		      end,
+    
+    case ?w_inventory:stock(detail_get_by_shop, Merchant, Shop, Firm, ExtraConditions) of
 	{ok, DBStocks} ->
 	    {DBTotal, DBStockDict} = stock(to_dict, DBStocks, 0, dict:new()),
 	    {StocksNotInDB, StocksNotEqualDB}

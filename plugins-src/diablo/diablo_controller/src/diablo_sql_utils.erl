@@ -115,6 +115,21 @@ condition(page_desc, {use_consume, Sort}, CurrentPage, ItemsPerPage) ->
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
     	++ ", " ++ ?to_s(ItemsPerPage).
 
+like_condition(MatchMode, LikeKey, Conditions) ->
+    case MatchMode of
+	?AND ->
+	    ?sql_utils:condition(proplists, Conditions);
+	?LIKE ->
+	    case ?v(<<"b.style_number">>, Conditions, []) of
+		[] ->
+		    ?sql_utils:condition(proplists, Conditions);
+		Like ->
+		    " and " ++ ?to_s(LikeKey) ++ " like '" ++ ?to_s(Like) ++ "%'"
+			++ ?sql_utils:condition(
+			      proplists, lists:keydelete(LikeKey, 1, Conditions))
+	    end
+    end.
+
 mode(Mode, Sort) ->
     " order by " ++ mode(Mode) ++ " " ++ sort(Sort).
 mode(use_id) -> "id";
