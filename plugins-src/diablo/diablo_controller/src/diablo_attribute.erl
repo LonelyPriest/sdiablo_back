@@ -60,6 +60,8 @@ brand(new, Merchant, Attrs) ->
     gen_server:call(?MODULE, {new_brand, Merchant, Attrs});
 brand(update, Merchant, Attrs) ->
     gen_server:call(?MODULE, {update_brand, Merchant, Attrs});
+brand(like, Merchant, Like) ->
+    gen_server:call(?MODULE, {like_brand, Merchant, Like});
 brand(delete, Merchant, BrandId) ->
     gen_server:call(?MODULE, {delete_brand, Merchant, BrandId }).
 brand(list, Merchant) ->
@@ -442,6 +444,14 @@ handle_call({list_brand, Merchant}, _From, State) ->
 	++ " and a.deleted = " ++ ?to_string(?NO)
 	++ " order by id desc",
     Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({like_brand, Merchant, Like}, _From, State) ->
+    ?DEBUG("like_brand with merchant ~p, Like ~p", [Merchant, Like]),
+    Sql = "select id, name from brands a" ++ " where a.merchant=" ++ ?to_s(Merchant)
+	++ " and name like '%" ++ ?to_s(Like) ++ "%'"
+	++ " and deleted = " ++ ?to_string(?NO),
+	Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
 

@@ -326,6 +326,8 @@ function filterProvider(){
 		    _prompt.over = promptValues;
 		} else if (name === 'mconsume'){
 		    _filter.fields.push({name:"mconsume", chinese:"消费大于"})
+		} else if (name === 'lbrand'){
+		    _filter.fields.push({name:"lbrand", chinese:"品牌像"})
 		};
 		
 		return _filter;

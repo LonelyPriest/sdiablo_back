@@ -142,8 +142,9 @@ function wsaleRsnDetailCtrlProvide (
     diabloFilter.reset_field();
     diabloFilter.add_field("style_number", $scope.match_style_number); 
     diabloFilter.add_field("brand",    filterBrand);
+    diabloFilter.add_field("lbrand",   []);
+    diabloFilter.add_field("type",     filterType); 
     diabloFilter.add_field("ctype",    filterCType);
-    diabloFilter.add_field("type",     filterType);
     diabloFilter.add_field("sex",      diablo_sex2object);
     diabloFilter.add_field("season",   diablo_season2objects);
     diabloFilter.add_field("year",     diablo_full_year); 

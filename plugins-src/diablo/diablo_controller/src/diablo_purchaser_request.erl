@@ -505,35 +505,38 @@ action(Session, Req, {"filter_w_inventory_group"}, Payload) ->
     %% ?DEBUG("new payload ~p", [NewPayload]),
 
     {struct, Fields}     = ?v(<<"fields">>, Payload),
+    
+    
+    %% PayloadWithCtype =
+    %% 	case ?v(<<"type">>, Fields) of
+    %% 	    undefined ->
+    %% 		case ?v(<<"ctype">>, Fields) of
+    %% 		    undefined -> NewPayload;
+    %% 		    CType ->
+    %% 			P = proplists:delete(<<"fields">>, NewPayload),
+    %% 			PN = proplists:delete(<<"type">>, proplists:delete(<<"ctype">>, Fields)),
+    %% 			case ?attr:type(get, Merchant, [{<<"ctype">>, CType}]) of
+    %% 			    {ok, []} ->
+    %% 				[{<<"fields">>, {struct, PN}} |P];
+    %% 			    {ok, Types}  ->
+    %% 				[{<<"fields">>,
+    %% 				  {struct,
+    %% 				   [{<<"type">>,
+    %% 				     lists:foldr(
+    %% 				       fun({Type}, Acc) ->
+    %% 					       [?v(<<"id">>, Type)|Acc]
+    %% 				       end, [], Types)}|PN]}}
+    %% 				 |P] 
+    %% 			end
+    %% 		end;
+    %% 	    _Type ->
+    %% 		P = proplists:delete(<<"fields">>, NewPayload),
+    %% 		[{<<"fields">>, {struct, proplists:delete(<<"ctype">>, Fields)}}|P]
+    %% 	end,
 
-    PayloadWithCtype =
-	case ?v(<<"type">>, Fields) of
-	    undefined ->
-		case ?v(<<"ctype">>, Fields) of
-		    undefined -> NewPayload;
-		    CType ->
-			P = proplists:delete(<<"fields">>, NewPayload),
-			PN = proplists:delete(<<"type">>,
-					      proplists:delete(<<"ctype">>, Fields)),
-			case ?attr:type(get, Merchant, [{<<"ctype">>, CType}]) of
-			    {ok, []} ->
-				[{<<"fields">>, {struct, PN}} |P];
-			    {ok, Types}  ->
-				[{<<"fields">>,
-				  {struct,
-				   [{<<"type">>,
-				     lists:foldr(
-				       fun({Type}, Acc) ->
-					       [?v(<<"id">>, Type)|Acc]
-				       end, [], Types)}|PN]}}
-				 |P] 
-			end
-		end;
-	    _Type ->
-		P = proplists:delete(<<"fields">>, NewPayload),
-		[{<<"fields">>, {struct, proplists:delete(<<"ctype">>, Fields)}}|P]
-	end,
-
+    CType = ?v(<<"ctype">>, Fields),
+    SType = ?v(<<"type">>, Fields),
+    PayloadWithCtype = ?w_sale_request:replace_condition_with_ctype(Merchant, CType, SType, Fields, NewPayload), 
     ?DEBUG("PayloadWithCtype ~p", [PayloadWithCtype]),
     
     ?pagination:pagination(
@@ -565,30 +568,24 @@ action(Session, Req, {"fix_w_inventory"}, Payload) ->
     Shop = ?v(<<"shop">>, Base),
     Firm = ?v(<<"firm">>, Base, -1),
 
-    SortTypes =
+    ExtraConditions =
 	case ?v(<<"ctype">>, Base, ?INVALID_OR_EMPTY) of
-	    ?INVALID_OR_EMPTY -> [];
+	    ?INVALID_OR_EMPTY ->
+		[];
 	    CType ->
 		case ?attr:type(get, Merchant, [{<<"ctype">>, CType}]) of
-		    {ok, []} ->
-			[];
+		    {ok, []} -> [];
 		    {ok, Types}  ->
-			lists:foldr(
-			  fun({Type}, Acc) ->
-				  [?v(<<"id">>, Type)|Acc]
-			  end, [], Types)
+			[{<<"type">>, 
+			 lists:foldr(
+			   fun({Type}, Acc) ->
+				   [?v(<<"id">>, Type)|Acc]
+			   end, [], Types)}]
 		end
 	end,
 	
 
-    %% {ShopTotal, ShopStockDict} = stock(shop_to_dict, ShopStocks, 0, dict:new()),
-
-    %% get stock of shop
-    ExtraConditions = case SortTypes of
-			  [] -> [];
-			  _ ->
-			      [{<<"type">>, SortTypes}]
-		      end,
+    %% {ShopTotal, ShopStockDict} = stock(shop_to_dict, ShopStocks, 0, dict:new()), 
     
     case ?w_inventory:stock(detail_get_by_shop, Merchant, Shop, Firm, ExtraConditions) of
 	{ok, DBStocks} ->

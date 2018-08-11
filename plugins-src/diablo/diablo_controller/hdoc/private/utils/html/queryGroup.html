@@ -49,6 +49,13 @@
 	  	   uib-typeahead="b as b.name for b in prompt.brand|filter:$viewValue|limitTo:20"/>
 	  </span>
 
+	  <span x-ng-switch-when="lbrand">
+	    <input type="text"
+		   class="form-control"
+		   placeholder="请输入品名" 
+		   x-ng-model="f.value" />
+	  </span>
+
 	  <span x-ng-switch-when="ctype">
 	    <select type="text" class="form-control"
 		    x-ng-model="f.value"

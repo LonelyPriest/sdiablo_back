@@ -1,5 +1,12 @@
 var version_update = function(){
     var updates = [
+	{date: "2018-08-11",
+	 content:
+	 ["库存增加货品大类查询",
+	  "交易明细增加款号，品牌模糊匹配功能",
+	  "盘点机增加货品大类盘点"]
+	},
+	
 	{date: "2018-07-19",
 	 content:
 	 ["销售单据打印增加颜色尺码", 
