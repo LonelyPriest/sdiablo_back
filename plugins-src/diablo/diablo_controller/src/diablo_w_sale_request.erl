@@ -661,7 +661,9 @@ action(Session, Req, {"filter_w_sale_rsn_group"}, Payload) ->
 
     {struct, NewFields}  = ?v(<<"fields">>, PayloadWithCtype), 
     PayloadWithLBrand =
-	replace_condition_with_lbrand(?to_a(Like), Merchant, LBrand, Brand, NewFields, PayloadWithCtype), 
+	replace_condition_with_lbrand(?to_a(Like), Merchant, LBrand, Brand, NewFields, PayloadWithCtype),
+
+    ?DEBUG("PayloadWithlbrand ~p", [PayloadWithLBrand]),
     
     case ShowNote of
 	?NO -> 
@@ -714,15 +716,16 @@ action(Session, Req, {"filter_w_sale_rsn_group"}, Payload) ->
 		    DataWithNote =
 			lists:foldr(
 			  fun({D}, Acc) ->
+				  %% ?DEBUG("D ~p", [D]),
 				  Rsn = ?to_b(?v(<<"rsn">>, D)),
 				  StyleNumber = ?to_b(?v(<<"style_number">>, D)),
-				  Brand = ?to_b(?v(<<"brand_id">>, D)),
+				  UBrand = ?to_b(?v(<<"brand_id">>, D)),
 				  Shop  = ?to_b(?v(<<"shop_id">>, D)),
 				  Key = <<Rsn/binary,
 					  <<"-">>/binary,
 					  StyleNumber/binary,
 					  <<"-">>/binary,
-					  Brand/binary,
+					  UBrand/binary,
 					  <<"-">>/binary,
 					  Shop/binary>>,
 
