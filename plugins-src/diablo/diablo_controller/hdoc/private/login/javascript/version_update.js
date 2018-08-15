@@ -1,5 +1,11 @@
 var version_update = function(){
     var updates = [
+	{date: "2018-08-15",
+	 content:
+	 ["盘点机增加盘点货品大类盘点方式",
+	  "盘点机扫描系统不认识的条码时增加声音告警提示"]
+	},
+	
 	{date: "2018-08-11",
 	 content:
 	 ["库存增加货品大类查询",
@@ -1001,7 +1007,7 @@ var version_update = function(){
 	    }
 
 	    var apk = "<div class='update-content'>"
-		+ "<a type='button' href='/qzg_stock_fix-release2018-03-22_13-06-04.apk' download=''>"
+		+ "<a type='button' href='/qzg_stock_fix-release2018-08-15_20-58-24.apk' download=''>"
 		+ "<h5 class='text-center fg-pink'>盘点机软件(安卓版)下载</h5>"
 		+ "</a>"
 		+ "</div>"
