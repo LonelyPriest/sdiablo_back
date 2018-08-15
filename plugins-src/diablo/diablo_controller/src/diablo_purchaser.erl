@@ -210,11 +210,11 @@ purchaser_inventory(tag_price, Merchant, Shop, StyleNumber, Brand) ->
 %%
 purchaser_inventory(gen_barcode, Merchant, Shop, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {gen_barcode, ?YES, Merchant, Shop, StyleNumber, Brand});
+    gen_server:call(Name, {gen_barcode, ?YES, Merchant, Shop, StyleNumber, Brand}).
 
-purchaser_inventory(get_by_barcode, Merchant, Shop, Firm, Barcode) ->
+purchaser_inventory(get_by_barcode, Merchant, Shop, Firm, Barcode, ExtraCondtion) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {get_by_barcode, Merchant, Shop, Firm, Barcode}).
+    gen_server:call(Name, {get_by_barcode, Merchant, Shop, Firm, Barcode, ExtraCondtion});
 
 purchaser_inventory(gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -2290,9 +2290,10 @@ handle_call({reset_good_barcode, AutoBarcode, Merchant, StyleNumber, Brand}, _Fr
 
 
 
-handle_call({get_by_barcode, Merchant, Shop, Firm, Barcode}, _From, State) ->
-    ?DEBUG("get_by_barcode: Merchant ~p, Shop ~p, Firm ~p, Barcode ~p", [Merchant, Shop, Firm, Barcode]),
-    Sql = ?w_good_sql:get_inventory(barcode, Merchant, Shop, Firm, Barcode),
+handle_call({get_by_barcode, Merchant, Shop, Firm, Barcode, ExtraCondtion}, _From, State) ->
+    ?DEBUG("get_by_barcode: Merchant ~p, Shop ~p, Firm ~p, Barcode ~p, ExtraCondtion ~p",
+	   [Merchant, Shop, Firm, Barcode, ExtraCondtion]), 
+    Sql = ?w_good_sql:get_inventory(barcode, Merchant, Shop, Firm, Barcode, ExtraCondtion),
     Reply =  ?sql_utils:execute(s_read, Sql),
     ?DEBUG("reply ~p", [Reply]),
     {reply, Reply, State};

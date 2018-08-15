@@ -202,13 +202,16 @@ function wsaleUpdateDetailCtrlProvide(
 	add.sid          = src.sid;
 	add.score        = diablo_get_object(src.sid, $scope.scores);
 
-	add.org_price    = add.org_price;
-	add.tag_price    = src.tag_price; 
+	add.org_price    = src.org_price;
+	add.tag_price    = src.tag_price;
+	add.ediscount    = src.ediscount;
 	add.discount     = src.discount;
-	add.path         = src.path;
 	
+	add.path         = src.path;
 	add.s_group      = src.s_group;
-	add.free         = src.free; 
+	add.free         = src.free;
+	add.entry        = src.entry_date;
+	console.log(add);
 	return add;
 	
     };
@@ -436,6 +439,7 @@ function wsaleUpdateDetailCtrlProvide(
 		sex            : add.sex,
 		season         : add.season,
 		year           : add.year,
+		entry          : add.entry,
 		changed_amount : add.changed_amounts,
 		operation      : add.operation,
 		amount         : function(){
@@ -454,11 +458,12 @@ function wsaleUpdateDetailCtrlProvide(
 		score          : add.sid,
 
 		org_price      : add.org_price,
-		tag_price      : add.tag_price,
-		fdiscount      : add.fdiscount,
-		rdiscount      : add.rdiscount,
+		ediscount   : add.ediscount, 
+		tag_price      : add.tag_price, 
 		fprice         : add.fprice,
 		rprice         : add.rprice,
+		fdiscount      : add.fdiscount,
+		rdiscount      : add.rdiscount,
 		path           : add.path,
 		comment        : add.comment,
 
@@ -735,7 +740,7 @@ function wsaleUpdateDetailCtrlProvide(
 		console.log(inv.colors);
 		console.log(inv.amounts); 
 
-		inv.fdiscount   = inv.fdiscount   = function(){
+		inv.fdiscount = function(){
 		    if (angular.isObject(inv.promotion) && inv.promotion.rule_id === 0){
 			return inv.promotion.discount;
 		    } else {

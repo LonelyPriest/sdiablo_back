@@ -1088,7 +1088,22 @@ action(Session, Req, {"get_stock_by_barcode"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     Barcode = ?v(<<"barcode">>, Payload),
     Shop = ?v(<<"shop">>, Payload),
-    Firm = ?v(<<"firm">>, Payload, -1),
+    Firm = ?v(<<"firm">>, Payload, ?INVALID_OR_EMPTY), 
+    ExtraConditions =
+	case ?v(<<"ctype">>, Payload, ?INVALID_OR_EMPTY) of
+	    ?INVALID_OR_EMPTY ->
+		[];
+	    CType ->
+		case ?attr:type(get, Merchant, [{<<"ctype">>, CType}]) of
+		    {ok, []} -> [];
+		    {ok, Types}  ->
+			[{<<"type">>, 
+			  lists:foldr(
+			    fun({Type}, Acc) ->
+				    [?v(<<"id">>, Type)|Acc]
+			    end, [], Types)}]
+		end
+	end,
     
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
     AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSetting, ?YES)), 
@@ -1121,7 +1136,7 @@ action(Session, Req, {"get_stock_by_barcode"}, Payload) ->
     
     ?DEBUG("newBarcode ~p", [Barcode]),
 	    
-    case ?w_inventory:purchaser_inventory(get_by_barcode, Merchant, Shop, Firm, NewBarcode) of 
+    case ?w_inventory:purchaser_inventory(get_by_barcode, Merchant, Shop, Firm, NewBarcode, ExtraConditions) of 
 	{ok, Stock} ->
 	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
 					       {<<"stock">>, {Stock} }]});

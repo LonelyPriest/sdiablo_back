@@ -732,7 +732,7 @@ create table w_inventory
 
     --
     shop             INTEGER default -1,
-    state            INTEGER default 0,  -- 0: wait for check, 1: checked
+    state            INTEGER default 0,  -- 0: wait for check, 1: checked, 2: gift
 
     merchant         INTEGER default -1,
     

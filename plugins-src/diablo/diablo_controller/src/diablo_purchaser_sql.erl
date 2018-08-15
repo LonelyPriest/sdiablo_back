@@ -1416,7 +1416,7 @@ inventory_match(all_reject, Merchant, Shop, Firm, StartTime) ->
     %% ++ " and deleted=" ++ ?to_s(?NO)
 	++ " order by a.id desc".
 
-get_inventory(barcode, Merchant, Shop, Firm, Barcode) ->
+get_inventory(barcode, Merchant, Shop, Firm, Barcode, ExtraConditions) ->
     "select a.id, a.bcode, a.style_number"
 	", a.brand as brand_id"
 	", a.type as type_id"
@@ -1441,7 +1441,9 @@ get_inventory(barcode, Merchant, Shop, Firm, Barcode) ->
 	++ case Firm =:= ?INVALID_OR_EMPTY of
 	       true -> [];
 	       false -> " and a.firm=" ++ ?to_s(Firm)
-	   end.
+	   end
+	++ ?sql_utils:condition(
+	      proplists, ?utils:correct_condition(<<"a.">>, ExtraConditions)).
 	
 
 inventory(update_attr, Mode, RSN, Merchant, Shop, {Firm, OldFirm, Datetime,  OldDatetime}) ->
