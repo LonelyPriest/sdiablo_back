@@ -186,6 +186,8 @@
 		  </tr>
 		  <tr x-ng-if="total_items!==0" class="bg-white">
 		    <td colspan="{{calc_colspan()}}"></td>
+		    <td class="danger">{{total_tagPrice}}</td>
+		    <td colspan="3"></td>
 		    <td class="danger">{{total_amounts}}</td>
 		    <td>{{total_over}}</td>
 		    <td x-ng-if="stock_right.show_orgprice">{{total_balance}}</td>

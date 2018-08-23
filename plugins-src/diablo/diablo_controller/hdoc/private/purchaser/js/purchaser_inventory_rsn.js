@@ -234,7 +234,7 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
     $scope.toggle_base = function(){$scope.hidden.base = !$scope.hidden.base};
 
     $scope.calc_colspan = function(){
-	var column = 16;
+	var column = 12;
 	if ($scope.hidden.base) column -= 2;
 	if (!$scope.stock_right.show_orgprice) column -=2;
 	return column;
@@ -378,8 +378,9 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 	localStorageService.set(
 	    key, {total_items:$scope.total_items,
 		  total_amounts:$scope.total_amounts,
-		  total_balance:$scope.total_balance,
+		  total_balance:$scope.total_balance, 
 		  total_over: $scope.total_over,
+		  total_tagPrice: $scope.total_tagPrice,
 		  t:now})};
 
     $scope.do_search = function(page){
@@ -397,6 +398,7 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 	    $scope.total_amounts     = stastic.total_amounts;
 	    $scope.total_balance     = stastic.total_balance;
 	    $scope.total_over        = stastic.total_over;
+	    $scope.total_tagPrice    = stastic.total_tagPrice;
 	}
 	
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
@@ -409,6 +411,7 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 			$scope.total_amounts = result.t_amount;
 			$scope.total_over = result.t_over;
 			$scope.total_balance = result.t_balance;
+			$scope.total_tagPrice = result.g_balance;
 			$scope.cache_stastic(stastic_key);
 			// $location.path("/inventory_rsn_detail", false);
 		    }

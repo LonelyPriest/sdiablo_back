@@ -1367,7 +1367,7 @@ create table print_template(
 
    solo_snumber    TINYINT default 0,
    len_snumber     TINYINT default 0,
-   
+      
    merchant        INTEGER not null default -1,
    unique   key    (merchant),
    primary key     (id)

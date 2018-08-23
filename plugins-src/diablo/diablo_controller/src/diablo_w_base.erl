@@ -657,6 +657,8 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 
 	", solo_snumber"
 	", len_snumber"
+
+	", rbrand"
 	
 	" from print_template"
 	" where merchant=" ++ ?to_s(Merchant), 

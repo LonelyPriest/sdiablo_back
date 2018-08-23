@@ -380,7 +380,8 @@ action(Session, Req, {"update_w_good"}, Payload) ->
 				    NewPath
 			    end 
 		    end;
-		ImageData -> 
+		ImageData ->
+		    ?DEBUG("ImageDir ~p", [NewPath]), 
 		    case NewPath =:= OldPath of
 			true ->
 			    ok = file:write_file(
@@ -389,11 +390,11 @@ action(Session, Req, {"update_w_good"}, Payload) ->
 			    ok = file:delete(OldPath),
 			    ok = mk_image_dir(NewPath, Merchant), 
 
-			    ?DEBUG("ImageDir ~p", [NewPath]), 
 			    ok = file:write_file(
 				   NewPath, base64:decode(ImageData))
 		    end,
-		    filename:join(["image", file:basename(NewPath)])
+		    
+		    filename:join(["image", ?to_s(Merchant), filename:basename(NewPath)])
 	    end,
 
 	case ?w_inventory:purchaser_good(
