@@ -364,12 +364,15 @@ action(Session, Req, {"update_w_good"}, Payload) ->
 		     {StyleNumber, BrandId}      ->
 			 image(path, Merchant, StyleNumber, BrandId)
 	    end,
-	
+
+	?DEBUG("NewPath ~p, OldPath ~p", [NewPath, OldPath]), 
+
 	ImagePath =
 	    case ?v(<<"image">>, Payload) of 
 		undefined ->
 		    case NewPath =:= OldPath of
-			true  -> undefined; 
+			true  ->
+			    undefined; 
 			false ->
 			    case ?to_s(OImagePath) of
 				[] -> undefined;
@@ -381,9 +384,9 @@ action(Session, Req, {"update_w_good"}, Payload) ->
 			    end 
 		    end;
 		ImageData ->
-		    ?DEBUG("ImageDir ~p", [NewPath]), 
 		    case NewPath =:= OldPath of
 			true ->
+			    ok = mk_image_dir(OldPath, Merchant), 
 			    ok = file:write_file(
 				   OldPath, base64:decode(ImageData));
 			false ->

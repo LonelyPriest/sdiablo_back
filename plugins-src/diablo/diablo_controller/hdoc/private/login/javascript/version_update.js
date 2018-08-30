@@ -1,5 +1,11 @@
 var version_update = function(){
     var updates = [
+	{date: "2018-08-30z",
+	 content:
+	 ["修正图片有时无法上传的问题"]
+	},
+
+	
 	{date: "2018-08-15",
 	 content:
 	 ["盘点机增加盘点货品大类盘点方式",
