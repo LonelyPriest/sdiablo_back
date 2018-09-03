@@ -283,6 +283,9 @@ filter(total_news, 'and', Merchant, Fields) ->
 filter(total_new_rsn_groups, 'and', Merchant, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {total_new_rsn_groups, Merchant, Fields});
+filter(total_new_rsn_groups, 'like', Merchant, Fields) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {total_new_rsn_groups, Merchant, Fields});
 
 %% reject
 %% filter(total_rejects, 'and', Merchant, Fields) ->
@@ -332,6 +335,10 @@ filter({news, SortMode}, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
       Name, {{filter_news, SortMode}, Merchant, CurrentPage, ItemsPerPage, Fields});
 
 filter(new_rsn_groups, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {filter_new_rsn_groups,
+			   Merchant, CurrentPage, ItemsPerPage, Fields});
+filter(new_rsn_groups, 'like', Merchant, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {filter_new_rsn_groups,
 			   Merchant, CurrentPage, ItemsPerPage, Fields});

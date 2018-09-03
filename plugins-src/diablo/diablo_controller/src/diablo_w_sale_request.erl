@@ -8,7 +8,7 @@
 -export([action/2, action/3, action/4]).
 -export([sale_note/3, sale_trans/3, note_class_with/3]).
 -export([replace_condition_with_ctype/5,
-	 replace_condition_with_lbrand/6]).
+	 replace_condition_with_lbrand/5]).
 
 -define(d, ?utils:seperator(csv)).
 
@@ -657,11 +657,11 @@ action(Session, Req, {"filter_w_sale_rsn_group"}, Payload) ->
     %% replace lbrand
     Like = ?value(<<"match">>, Payload, 'and'),
     Brand = ?v(<<"brand">>, Fields),
-    LBrand = ?v(<<"lbrand">>, Fields),
+    %% LBrand = ?v(<<"lbrand">>, Fields),
 
     {struct, NewFields}  = ?v(<<"fields">>, PayloadWithCtype), 
     PayloadWithLBrand =
-	replace_condition_with_lbrand(?to_a(Like), Merchant, LBrand, Brand, NewFields, PayloadWithCtype),
+	replace_condition_with_lbrand(?to_a(Like), Merchant, Brand, NewFields, PayloadWithCtype),
 
     ?DEBUG("PayloadWithlbrand ~p", [PayloadWithLBrand]),
     
@@ -1935,34 +1935,33 @@ replace_condition_with_ctype(Merchant, CType, SType, Fields, Payload) ->
 	    [{<<"fields">>, {struct, proplists:delete(<<"ctype">>, Fields)}}|P]
     end.
     
-replace_condition_with_lbrand(?AND, _Merchant, _LBrand, _Brand, Fields, Payload) ->
-    P = proplists:delete(<<"fields">>, Payload),
-    PN = proplists:delete(<<"lbrand">>, Fields),
-    [{<<"fields">>, {struct, PN}} |P];
+replace_condition_with_lbrand(?AND, _Merchant, _Brand, _Fields, Payload) ->
+    Payload;
+    %% P = proplists:delete(<<"fields">>, Payload),
+    %% PN = proplists:delete(<<"lbrand">>, Fields),
+    %% [{<<"fields">>, {struct, PN}} |P];
         
-replace_condition_with_lbrand(?LIKE, Merchant, LBrand, Brand, Fields, Payload) ->
+replace_condition_with_lbrand(?LIKE, Merchant, Brand, Fields, Payload) ->
     P = proplists:delete(<<"fields">>, Payload),
     case Brand of
 	undefined ->
-	    case LBrand of
-		undefined -> Payload;
-		_ -> 
-		    PN = proplists:delete(<<"brand">>, proplists:delete(<<"lbrand">>, Fields)),
-		    case ?attr:brand(like, Merchant, LBrand) of
-			{ok, []} ->
-			    [{<<"fields">>, {struct, PN}} |P];
-			{ok, Brands} ->
-			    [{<<"fields">>,
-			      {struct,
-			       [{<<"brand">>,
-				 lists:foldr(
-				   fun({B}, Acc) ->
-					   [?v(<<"id">>, B)|Acc]
-				   end, [], Brands)}|PN]}} |P] 
-		    end
-	    end;
-	_ ->
-	    [{<<"fields">>, {struct, proplists:delete(<<"lbrand">>, Fields)}}|P]
+	    Payload; 
+	_ -> 
+	    PN = proplists:delete(<<"brand">>, Fields),
+	    case ?attr:brand(like, Merchant, Brand) of
+		{ok, []} ->
+		    [{<<"fields">>, {struct, PN}} |P];
+		{ok, Brands} ->
+		    [{<<"fields">>,
+		      {struct,
+		       [{<<"brand">>,
+			 lists:foldr(
+			   fun({B}, Acc) ->
+				   [?v(<<"id">>, B)|Acc]
+			   end, [], Brands)}|PN]}} |P] 
+	    end
+	%% _ ->
+	%%     [{<<"fields">>, {struct, proplists:delete(<<"lbrand">>, Fields)}}|P]
     end.
 
 sys_vip_of_shop(Merchant, Shop) ->
