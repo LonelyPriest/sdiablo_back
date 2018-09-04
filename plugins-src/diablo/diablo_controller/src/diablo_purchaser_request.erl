@@ -1268,13 +1268,18 @@ action(Session, Req, {"print_w_inventory_new_note"}, Payload) ->
     ?DEBUG("print_w_inventory_note: session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
     {struct, CutConditions} = ?v(<<"condition">>, Payload),
+
+    Like = ?value(<<"match">>, Payload, 'like'),
+    Brand = ?v(<<"brand">>, CutConditions),
+    
+    PayloadWithLBrand = replace_condition_with_lbrand(?to_a(Like), Merchant, Brand, CutConditions),
     
     {ok, Q} = ?w_inventory:purchaser_inventory(
-		 get_inventory_new_rsn, Merchant, CutConditions),
+		 get_inventory_new_rsn, Merchant, PayloadWithLBrand),
     
     {struct, C} = ?v(<<"fields">>,
 		     filter_condition(
-		       trans_note, [?v(<<"rsn">>, Rsn) || {Rsn} <- Q], CutConditions)),
+		       trans_note, [?v(<<"rsn">>, Rsn) || {Rsn} <- Q], PayloadWithLBrand)),
     
     {ok, Transes} = ?w_inventory:export(trans_note, Merchant, C, []),
     Dict = note_to_dict_by_firm(Transes, dict:new()),
@@ -2528,4 +2533,32 @@ get_name(by_id, GivenID, [{H}|T]) ->
 	    ?v(<<"name">>, H);
 	false ->
 	    get_name(by_id, GivenID, T)
+    end.
+
+
+replace_condition_with_lbrand(?AND, _Merchant, _Brand, Payload) ->
+    Payload;
+%% P = proplists:delete(<<"fields">>, Payload),
+%% PN = proplists:delete(<<"lbrand">>, Fields),
+%% [{<<"fields">>, {struct, PN}} |P];
+
+replace_condition_with_lbrand(?LIKE, Merchant, Brand, Payload) ->
+    case Brand of
+	undefined ->
+	    Payload; 
+	_ -> 
+	    case ?attr:brand(like, Merchant, Brand) of
+		{ok, []} ->
+		    Payload;
+		{ok, Brands} ->
+		    AllBrand = 
+			[{<<"brand">>,
+			  lists:foldr(
+			    fun({B}, Acc) ->
+				    [?v(<<"id">>, B)|Acc] end, [], Brands)}],
+
+		    proplists:delete(<<"brand">>, Payload) ++ AllBrand
+	    end
+	    %% _ ->
+	    %%     [{<<"fields">>, {struct, proplists:delete(<<"lbrand">>, Fields)}}|P]
     end.
