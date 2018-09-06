@@ -437,19 +437,27 @@ sidebar(Session) ->
 	    ?USER -> [];
 	    ?MERCHANT ->
 		Merchant = ?session:get(merchant, Session),
-		{ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
-		AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSetting, ?YES)),
+		BaseSettings = ?w_report_request:get_setting(Merchant, ?DEFAULT_BASE_SETTING),
+		<<_Color:1/binary, _Size:1/binary, _Sex:1/binary, _Expire:1/binary, _Image:1/binary, _Type:1/binary, Std:1/binary>> =
+		    case ?w_report_request:get_config(<<"h_stock">>, BaseSettings) of
+			[] -> ?HIDE_DEFAULT_MODE;
+			<<"0">> -> ?HIDE_DEFAULT_MODE;
+			_Value -> _Value
+		    end,
+		
+	        %%  {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
+		AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSettings, ?YES)),
 		
 		[{{"setting",        "基本设置", "glyphicon glyphicon-cog"},
 		  [{"print_option",  "系统设置", "glyphicon glyphicon-wrench"},
 		   {"ctype",         "货品大类", "glyphicon glyphicon-text-width"}]
-		  ++ case AutoBarcode of
-			 ?YES -> [];
-			 ?NO ->
+		  ++ case AutoBarcode =:= ?NO orelse ?to_i(Std) =:= ?YES of
+			 true ->
 			     [{"std_executive",   "执行标准", "glyphicon glyphicon-registration-mark"},
 			      {"safety_category", "安全类别", "glyphicon glyphicon-text-background"},
 			      {"fabric",          "货品面料", "glyphicon glyphicon-glass"},
-			      {"size_spec",       "尺码规格", "glyphicon glyphicon-text-size"}]
+			      {"size_spec",       "尺码规格", "glyphicon glyphicon-text-size"}];
+			 false -> [] 
 		     end
 		  ++ [{"print_template", "打印模板", "glyphicon glyphicon-file"}
 		      %% {"soft_stock_fix", "盘点软件", "glyphicon glyphicon-save"}

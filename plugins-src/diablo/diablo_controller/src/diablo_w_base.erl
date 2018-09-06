@@ -808,7 +808,8 @@ sys_config() ->
 	      %% [3]: hide expire
 	      %% [4]: hide image
 	      %% [5]: type should be select
-	      {"h_stock",         "入库字段隐藏",         "000110", "0"},
+	      %% [6]: print std_executive, std_category
+	      {"h_stock",         "入库字段隐藏",         "0001100", "0"},
 	      %% {"h_color",         "隐藏颜色",             "0",   "0"},
 	      %% {"h_size",          "隐藏尺码",             "0",   "0"},
 	      %% {"h_sex",           "隐藏性别",             "0",   "0"},

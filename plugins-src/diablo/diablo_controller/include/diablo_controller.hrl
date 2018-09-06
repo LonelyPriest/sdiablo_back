@@ -118,6 +118,9 @@
 %% vip mode
 -define(VIP_DEFAULT_MODE, <<"0000">>).
 
+%% hide mode
+-define(HIDE_DEFAULT_MODE, <<"0001100">>).
+
 %% sort
 -define(SORT_BY_ID, 0).
 -define(SORT_BY_DATE, 1).
