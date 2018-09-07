@@ -1220,8 +1220,8 @@ diabloUtils.directive('imageDraw', function ($q) {
 
 	    var orgImage = scope.orgImage.image;
 	    // console.log(orgImage);
-	    var height = 120;
-	    var width  = 160;
+	    var height = 320;
+	    var width  = 240;
 	    // var height = orgImage.height;
 	    // var width = orgImage.width;
 
