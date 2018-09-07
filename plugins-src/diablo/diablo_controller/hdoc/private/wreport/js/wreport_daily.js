@@ -4,6 +4,7 @@
 function wreportDailyCtrlProvide(
     $scope, dateFilter, diabloFilter, diabloUtilsService, wreportService,
     wreportCommService, filterEmployee, user, base){
+    console.log(user);
     wreportCommService.set_employee(filterEmployee);
     wreportCommService.set_user(user);
     wreportCommService.set_base_setting(base);
@@ -202,10 +203,12 @@ function wreportDailyCtrlProvide(
 	return {login_employee:select, employees:employees};
     };
 
+    var sale_mode = reportUtils.sale_mode(diablo_default_shop, base);
+    var p_note = reportUtils.to_integer(sale_mode.charAt(2));
+    var distinct_user = reportUtils.to_integer(sale_mode.charAt(4));
+    // console.log(sale_mode, distinct_user);
+    
     $scope.shift_print = function(d) {
-	var sale_mode = reportUtils.sale_mode(diablo_default_shop, base);
-	var p_note = reportUtils.to_integer(sale_mode.charAt(2));
-	
 	if (diablo_frontend === reportUtils.print_mode(d.shop.id, base)) {
 	    if (needCLodop()) loadCLodop();
 	    $scope.print_shop_fronted(d, p_note);
@@ -218,7 +221,8 @@ function wreportDailyCtrlProvide(
 	var callback = function(params){
             wreportService.print_wreport(
 		diablo_by_shop,
-		{shop:     d.shop.id,
+		{account:  params.account,
+		 shop:     d.shop.id,
 		 date:     dateFilter($scope.current_day, "yyyy-MM-dd"),
 		 employee: params.employee.id === "-1" ? undefined : params.employee.id,
 		 pcash:    diablo_set_float(params.pcash),
@@ -260,6 +264,9 @@ function wreportDailyCtrlProvide(
 	    undefined,
 	    {employees:login.employees,
 	     employee: login.login_employee,
+	     
+	     distinct_user: distinct_user, 
+	     account: distinct_user ? user.loginName : undefined,
 	     pcash: 0,
 	     pcash_in: 0});
     };
@@ -271,17 +278,20 @@ function wreportDailyCtrlProvide(
 	var callback = function(params){
 	    wreportService.print_wreport(
 		diablo_by_shop,
-		{shop:     d.shop.id,
+		{account:  params.account,
+		 shop:     d.shop.id,
+		 date:     dateFilter($scope.current_day, "yyyy-MM-dd"),
 		 employee: params.employee.id === "-1" ? undefined : params.employee.id,
 		 pcash:    diablo_set_float(params.pcash),
 		 pcash_in: diablo_set_float(params.pcash_in),
 		 comment:  diablo_set_string(params.comment)}
-            ).then(function(status){
-		var report;
-		if (status.ecode === 0){
-		    report = $scope.report_data.filter(function(r){
-			return r.shop.id === d.shop.id;
-		    })[0];
+            ).then(function(result){
+		console.log(result);
+		if (result.ecode === 0){
+		    var report = result.data;
+		    // report = $scope.report_data.filter(function(r){
+		    // 	return r.shop.id === d.shop.id;
+		    // })[0];
 
 		    var pdate = dateFilter($scope.current_day, "yyyy-MM-dd HH:mm:ss");
 
@@ -294,10 +304,10 @@ function wreportDailyCtrlProvide(
 			reportPrint.init(LODOP);
 			
 			var hLine = reportPrint.gen_head(
-			    LODOP, d.shop.name, login.login_employee, pdate);
+			    LODOP, d.shop.name, login.login_employee, pdate, params.account);
 			
 			console.log(report.sale);
-			hLine = reportPrint.gen_body(hLine, LODOP, report.sale, params);
+			hLine = reportPrint.gen_body(hLine, LODOP, report, params);
 
 			if (p_note) {
 			    var print_sale_note = function(notes) {
@@ -313,7 +323,7 @@ function wreportDailyCtrlProvide(
 		    } 
 		} else {
 		    dialog.response(
-			false, "交班失败", "交班失败：" + wreportService.error[status.ecode]);
+			false, "交班失败", "交班失败：" + wreportService.error[result.ecode]);
 		}
 	    }); 
 	};
@@ -324,7 +334,12 @@ function wreportDailyCtrlProvide(
 	    callback,
 	    undefined,
 	    {employees:login.employees,
-	     employee: login.login_employee});
+	     employee: login.login_employee,
+	     
+	     distinct_user: distinct_user, 
+	     account: distinct_user ? user.loginName : undefined,
+	     pcash: 0,
+	     pcash_in: 0});
     }
 
     $scope.get_sale_note = function(shop, callback) {

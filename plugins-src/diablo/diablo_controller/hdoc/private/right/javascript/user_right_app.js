@@ -12,6 +12,7 @@ userApp.factory("userService", function($resource, $q){
     var _loginEmployee = undefined;
     var _loginShop = -1;
     var _sdays = 0;
+    var _loginName = undefined;
     var _cookie = undefined;
     
     var sort = function(){
@@ -23,6 +24,7 @@ userApp.factory("userService", function($resource, $q){
 	    loginRetailer: _loginRetailer,
 	    loginEmployee: _loginEmployee,
 	    loginShop: _loginShop,
+	    loginName: _loginName,
 	    sdays: _sdays,
 	    cookie: _cookie,
 
@@ -182,6 +184,7 @@ userApp.factory("userService", function($resource, $q){
 		_loginRetailer = result.login_retailer;
 		_loginEmployee = result.login_employee;
 		_loginShop     = result.login_shop;
+		_loginName     = result.login_name;
 		_sdays         = result.sdays;
 		_cookie        = cookie;
 		var            cache = sort();

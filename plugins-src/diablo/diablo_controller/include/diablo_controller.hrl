@@ -650,6 +650,7 @@
 -record(wuser_session_profile, {
 	  merchant = -1 :: integer(),
 	  user     = -1 :: integer(),
+	  %% userId   = -1 :: integer(),
 	  type     = -1 :: integer(),
 	  right = [] :: list(),
 	  shop  = [] :: list(),

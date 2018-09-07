@@ -29,8 +29,7 @@
 	      <label class="col-sm-3 col-md-3 control-label">帐号</label>
 	      <div class="col-sm-6 col-md-6">
 		<div class="input-group">
-		  <div ng-class="{'has-error': accountAddForm.name.$invalid
-				 && !accountAddForm.name.$pristine}">
+		  <div ng-class="{'has-error': accountAddForm.name.$invalid && !accountAddForm.name.$pristine}">
 		    <input type="text"
 			   class="form-control"
 			   name="name"
@@ -39,7 +38,7 @@
 			   x-ng-model="account.name"
 			   x-ng-minlength="3"
 			   x-ng-maxlength="10"
-			   x-ng-pattern="/^(?!_)(?!.*?_$)[a-zA-Z0-9_]+$/"></input>
+			   x-ng-pattern="/^(?!_)(?!.*?_$)[a-zA-Z0-9_]+$/"/>
 		  </div>
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div>
@@ -65,7 +64,7 @@
 			 x-ng-model="account.password"
 			 x-ng-minlength="6"
 			 x-ng-maxlength="10"
-			 x-ng-pattern="/^\w+$/"></input>
+			 x-ng-pattern="/^\w+$/"/>
 		  </div>
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div>
@@ -89,7 +88,7 @@
 			 typeahead-on-select="on_role_select($item, $model, $label)"
 			 uib-typeahead="role as role.name for role in
 				    roles|filter:$viewValue|limitTo:8"
-			 placeholder="请选择员工权限"></input>
+			 placeholder="请选择员工权限"/>
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div>
 		<div ng-show="init_tree">

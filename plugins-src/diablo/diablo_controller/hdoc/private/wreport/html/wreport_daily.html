@@ -436,7 +436,17 @@
   <div class="modal-body">
 
     <form class="form-horizontal" name="sForm" novalidate>
-      <div class="form-body"> 
+      <div class="form-body">
+	<div x-ng-if="params.distinct_user" class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">收银员</label>
+	  <div class="col-md-8">
+	    <input class="form-control"
+		   name="account"
+		   type="text"
+		   x-ng-model="params.account"/>
+	  </div>
+	</div>
+	
 	<div class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label">员工</label>
 	  <div class="col-md-8">

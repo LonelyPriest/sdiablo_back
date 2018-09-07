@@ -55,13 +55,13 @@
 		    <td x-ng-bind=l.score></td>
 		    <td x-ng-bind=l.discount></td>
 		    <td> 
-		      <button x-ng-if="right.delete_retailer"
-			      class="btn diablo-button btn-danger"
-			      x-ng-click="delete_retailer(r)">删除
-			<i class="glyphicon glyphicon-erase"></i></button>
+		      <!-- <button x-ng-if="right.delete_retailer" -->
+		      <!-- 	      class="btn diablo-button btn-danger" -->
+		      <!-- 	      x-ng-click="delete_retailer(r)">删除 -->
+		      <!-- 	<i class="glyphicon glyphicon-erase"></i></button> -->
 
 		      <button class="btn diablo-button btn-warning"
-			      x-ng-click="update_retailer(r)">修改
+			      x-ng-click="update_level(l)">修改
 			<i class="glyphicon glyphicon-edit"></i></button> 
 		    </td>
 		  </tr> 
@@ -125,6 +125,91 @@
 	    <span ng-show="lForm.name.$error.minlength || lForm.name.$error.maxlength">
 	      <span class="fg-red">中文，只允许字母，数字，最少2个字符，不超过8个字符</span>
 	    </span> 
+	  </div> 
+	</div>
+
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">累计消费</label>
+	  <div class="col-sm-10 col-md-10">
+	    <div class="input-group"> 
+	      <div x-ng-class="{'has-error': lForm.score.$invalid && !lForm.score.$pristine}">
+		<input class="form-control"
+		       name="score" 
+		       type="number"
+		       required
+		       x-ng-model="params.score"
+		       x-ng-pattern="params.pattern.score"/>
+	      </div>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div> 
+	  </div>
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">商品折扣</label>
+	  <div class="col-sm-10 col-md-10">
+	    <div class="input-group"> 
+	      <div x-ng-class="{'has-error': lForm.discount.$invalid && !lForm.discount.$pristine}">
+		<input class="form-control"
+		       type="number"
+		       required
+		       name="discount"
+		       x-ng-model="params.discount"
+		       x-ng-pattern="params.pattern.discount"/>
+	      </div>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div> 
+	  </div>
+	</div>
+
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="lForm.$invalid"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
+</script>
+
+
+<script type="text/ng-template" id="update-retailer-level.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    <h4 class="modal-title">
+      <span class="label label-sm label-primary">编辑会员等级</span>
+    </h4>
+  </div>
+
+  <!--BEGIN modal body-->
+  <div class="modal-body">
+    <form class="form-horizontal" name="lForm" novalidate>
+      <div class="form-body">
+	
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">等级</label>
+	  <div class="col-sm-10 col-md-10">
+	    <input class="form-control"
+		   readonly
+		   x-ng-model="params.level.name"/>
+	  </div>
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">名称</label>
+	  <div class="col-sm-10 col-md-10">
+	    <div>
+	      <input class="form-control"
+		     type="text"
+		     readonly
+		     x-ng-model="params.name" />
+	    </div>
 	  </div> 
 	</div>
 

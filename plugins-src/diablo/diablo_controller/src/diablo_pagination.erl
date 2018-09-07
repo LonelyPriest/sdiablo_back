@@ -6,17 +6,18 @@
 -export([pagination/4]).
 
 pagination(no_response, TotalFun, PageFun, Payload) ->
-    Match                = ?value(<<"match">>, Payload, 'and'), 
-    {struct, Conditions} =
-	case ?value(<<"fields">>, Payload) of
-	    undefined ->
-		case ?value(<<"condition">>, Payload) of
-		    undefined -> {struct, []};
-		    {struct, Any} -> {struct, lists:keydelete(<<"region">>, 1, Any)}
-		end; 
-	    {struct, Any} ->
-		{struct, lists:keydelete(<<"region">>, 1, Any)}
-	end,
+    Match                = ?value(<<"match">>, Payload, 'and'),
+    {struct, Conditions} = correct_payload(Payload),
+    %% {struct, Conditions} =
+    %% 	case ?value(<<"fields">>, Payload) of
+    %% 	    undefined ->
+    %% 		case ?value(<<"condition">>, Payload) of
+    %% 		    undefined -> {struct, []};
+    %% 		    {struct, Any} -> {struct, lists:keydelete(<<"region">>, 1, Any)}
+    %% 		end; 
+    %% 	    {struct, Any} ->
+    %% 		{struct, lists:keydelete(<<"region">>, 1, Any)}
+    %% 	end,
 
     ?DEBUG("conditions ~p", [Conditions]),
 
@@ -41,16 +42,40 @@ pagination(no_response, TotalFun, PageFun, Payload) ->
 
 pagination(TotalFun, PageFun, Req, Payload) ->
     Match = ?value(<<"match">>, Payload, 'and'),
-    {struct, Conditions} =
-	case ?value(<<"fields">>, Payload) of
-	    undefined ->
-		case ?value(<<"condition">>, Payload) of
-		    undefined -> {struct, []};
-		    {struct, Any} -> {struct, lists:keydelete(<<"region">>, 1, Any)}
-		end; 
-	    {struct, Any} ->
-		{struct, lists:keydelete(<<"region">>, 1, Any)}
-	end,
+    {struct, Conditions} = correct_payload(Payload),
+	%% case ?value(<<"fields">>, Payload) of
+	%%     undefined ->
+	%% 	case ?value(<<"condition">>, Payload) of
+	%% 	    undefined -> {struct, []};
+	%% 	    {struct, Any} ->
+	%% 		F = lists:keydelete(<<"region">>, 1, Any),
+	%% 		case ?v(<<"account">>, F) of
+	%% 		    undefined -> {struct, lists:keydelete(<<"region">>, 1, Any)};
+	%% 		    UserId ->
+	%% 			case ?right:get(account, merchant, UserId) of
+	%% 			    {ok, []} ->
+	%% 				{struct, lists:keydelete(<<"region">>, 1, Any)};
+	%% 			    {ok, Account} ->
+	%% 				lists:keyreplace(
+	%% 				  <<"account">>, 1, Any, {<<"account">>, ?v(<<"id">>, Account)})
+	%% 			end
+	%% 		end
+	%% 	end; 
+	%%     {struct, Any} ->
+	%% 	F = lists:keydelete(<<"region">>, 1, Any),
+	%% 	case ?v(<<"account">>, F) of
+	%% 	    undefined -> {struct, lists:keydelete(<<"region">>, 1, Any)};
+	%% 	    UserId ->
+	%% 		case ?right:get(account, merchant, UserId) of
+	%% 		    {ok, []} ->
+	%% 			{struct, lists:keydelete(<<"region">>, 1, Any)};
+	%% 		    {ok, Account} ->
+	%% 			lists:keyreplace(
+	%% 			  <<"account">>, 1, Any, {<<"account">>, ?v(<<"id">>, Account)})
+	%% 		end
+	%% 	end
+	%% 	%% {struct, lists:keydelete(<<"region">>, 1, Any)}
+	%% end,
 
     ?DEBUG("conditions ~p", [Conditions]),
     CurrentPage  = ?value(<<"page">>, Payload, 1), 
@@ -101,3 +126,41 @@ page(Conditions, 1, TotalFun) ->
     end;
 page(_, _, _TotalFun) ->
     {0, []}.
+
+
+correct_payload(Payload)->
+    case ?value(<<"fields">>, Payload) of
+	undefined ->
+	    case ?value(<<"condition">>, Payload) of
+		undefined -> {struct, []};
+		{struct, Any} ->
+		    F = lists:keydelete(<<"region">>, 1, Any),
+		    case ?v(<<"account">>, F) of
+			undefined -> {struct, lists:keydelete(<<"region">>, 1, Any)};
+			UserName ->
+			    case ?right:get(account, merchant, UserName) of
+				{ok, []} ->
+				    {struct, lists:keydelete(<<"region">>, 1, Any)};
+				{ok, Account} ->
+				    {struct,
+				     lists:keyreplace(
+				       <<"account">>, 1, Any, {<<"account">>, ?v(<<"id">>, Account)})}
+			    end
+		    end
+	    end; 
+	{struct, Any} ->
+	    F = lists:keydelete(<<"region">>, 1, Any),
+	    case ?v(<<"account">>, F) of
+		undefined -> {struct, lists:keydelete(<<"region">>, 1, Any)};
+		UserName ->
+		    case ?right:get(account, merchant, UserName) of
+			{ok, []} ->
+			    {struct, lists:keydelete(<<"region">>, 1, Any)};
+			{ok, Account} ->
+			    {struct,
+			     lists:keyreplace(
+			       <<"account">>, 1, Any, {<<"account">>, ?v(<<"id">>, Account)})}
+		    end
+	    end
+    end.
+    

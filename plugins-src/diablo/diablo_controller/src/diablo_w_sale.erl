@@ -143,7 +143,7 @@ init([]) ->
 
 handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
     ?DEBUG("new_sale with merchant ~p~n~p, props ~p", [Merchant, Inventories, Props]),
-
+    UserId = ?v(<<"user">>, Props, -1), 
     Retailer   = ?v(<<"retailer">>, Props),
     Shop       = ?v(<<"shop">>, Props), 
     %% DateTime   = ?v(<<"datetime">>, Props, ?utils:current_time(localtime)),
@@ -207,10 +207,11 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 			  end, [], Inventories), 
 
 		    Sql2 = "insert into w_sale(rsn"
-			", employ, retailer, shop, merchant, tbatch, tcustom"
+			", account, employ, retailer, shop, merchant, tbatch, tcustom"
 			", balance, should_pay, cash, card, wxin, withdraw, ticket, verificate"
 			", total, lscore, score, comment, type, entry_date) values("
 			++ "\"" ++ ?to_s(SaleSn) ++ "\","
+			++ ?to_s(UserId) ++ ","
 			++ "\'" ++ ?to_s(Employe) ++ "\',"
 			++ ?to_s(Retailer) ++ ","
 			++ ?to_s(Shop) ++ ","
@@ -770,8 +771,8 @@ handle_call({filter_news, Merchant, CurrentPage, ItemsPerPage, Fields}, _From, S
 %% reject
 %% =============================================================================
 handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
-    ?DEBUG("reject_sale with merchant ~p~n~p, props ~p",
-	   [Merchant, Inventories, Props]), 
+    ?DEBUG("reject_sale with merchant ~p~n~p, props ~p", [Merchant, Inventories, Props]),
+    UserId = ?v(<<"user">>, Props, -1),
     Retailer   = ?v(<<"retailer_id">>, Props),
     Shop       = ?v(<<"shop">>, Props), 
     %% Datetime   = ?v(<<"datetime">>, Props, ?utils:current_time(localtime)),
@@ -849,10 +850,11 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 	    ?DEBUG("new pays ~p", [NewPays]),
 	    
 	    Sql2 = "insert into w_sale(rsn"
-		", employ, retailer, shop, merchant, tbatch, tcustom, balance"
+		", account, employ, retailer, shop, merchant, tbatch, tcustom, balance"
 		", should_pay, cash, card, wxin, ticket, withdraw, verificate, total"
 		", lscore, score, comment, type, entry_date) values("
 		++ "\"" ++ ?to_s(Sn) ++ "\","
+		++ ?to_s(UserId) ++ ","
 		++ "\'" ++ ?to_s(Employe) ++ "\',"
 		++ ?to_s(Retailer) ++ ","
 		++ ?to_s(Shop) ++ ","
@@ -1812,18 +1814,36 @@ filter_table(w_sale_with_page,
 	     Merchant, CurrentPage, ItemsPerPage, Conditions) -> 
     SortConditions = sort_condition(wsale, Merchant, Conditions),
     
-    Sql = "select a.id, a.rsn, a.employ as employee_id"
-    	", a.retailer as retailer_id, a.shop as shop_id"
+    Sql = "select a.id"
+	", a.rsn"
+	", a.account"
+	", a.employ as employee_id"
+    	", a.retailer as retailer_id"
+	", a.shop as shop_id"
     %% ", a.promotion as pid"
 	
-	", a.balance, a.should_pay, a.cash, a.card, a.wxin, a.withdraw, a.ticket, a.verificate"
-	", a.total, a.score"
+	", a.balance"
+	", a.should_pay"
+	", a.cash"
+	", a.card"
+	", a.wxin"
+	", a.withdraw"
+	", a.ticket"
+	", a.verificate"
+	", a.total"
+	", a.score"
 	
-	", a.comment, a.type, a.state, a.entry_date" 
+	", a.comment"
+	", a.type"
+	", a.state"
+	", a.entry_date"
+	
 	", b.name as retailer"
+	", c.name as account"
 	
     	" from w_sale a" 
 	" left join w_retailer b on a.retailer=b.id"
+	" left join users c on a.account=c.id"
 	
     	" where " ++ SortConditions
 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage), 

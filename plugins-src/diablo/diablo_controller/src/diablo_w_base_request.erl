@@ -438,20 +438,31 @@ sidebar(Session) ->
 	    ?MERCHANT ->
 		Merchant = ?session:get(merchant, Session),
 		BaseSettings = ?w_report_request:get_setting(Merchant, ?DEFAULT_BASE_SETTING),
-		<<_Color:1/binary, _Size:1/binary, _Sex:1/binary, _Expire:1/binary, _Image:1/binary, _Type:1/binary, Std:1/binary>> =
+		%% <<_Color:1/binary, _Size:1/binary, _Sex:1/binary, _Expire:1/binary, _Image:1/binary, _Type:1/binary, Std:1/binary, _/binary>> =
+		StockMode = 
 		    case ?w_report_request:get_config(<<"h_stock">>, BaseSettings) of
-			[] -> ?HIDE_DEFAULT_MODE;
-			<<"0">> -> ?HIDE_DEFAULT_MODE;
-			_Value -> _Value
+			[] -> ?to_s(?HIDE_DEFAULT_MODE);
+			<<"0">> -> ?to_s(?HIDE_DEFAULT_MODE);
+			_Value -> ?to_s(_Value)
 		    end,
+
+		
 		
 	        %%  {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
 		AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSettings, ?YES)),
+		StdMode = try
+			      %% ascii -> number
+			      lists:nth(7, StockMode) - 48
+			  catch _:_ ->
+				  ?NO
+			  end,
+		
+		%% ?DEBUG("std_mode ~p", [StdMode]),
 		
 		[{{"setting",        "基本设置", "glyphicon glyphicon-cog"},
 		  [{"print_option",  "系统设置", "glyphicon glyphicon-wrench"},
 		   {"ctype",         "货品大类", "glyphicon glyphicon-text-width"}]
-		  ++ case AutoBarcode =:= ?NO orelse ?to_i(Std) =:= ?YES of
+		  ++ case AutoBarcode =:= ?NO orelse ?to_i(StdMode) =:= ?YES of
 			 true ->
 			     [{"std_executive",   "执行标准", "glyphicon glyphicon-registration-mark"},
 			      {"safety_category", "安全类别", "glyphicon glyphicon-text-background"},

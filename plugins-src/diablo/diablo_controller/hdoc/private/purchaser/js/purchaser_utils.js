@@ -735,7 +735,8 @@ stockPrintU.prototype.init = function() {
 	    this.template.width * 2 * 100 + this.template.second_space * 10,
 	    this.template.height * 100,
 	    ""); 
-    } eles if (this.dualPrint === 2) {
+    }
+    else if (this.dualPrint === 2) {
 	this.LODOP.SET_PRINT_PAGESIZE(
 	    1,
 	    this.template.width * 3 * 100 + this.template.second_space * 10,
@@ -745,6 +746,7 @@ stockPrintU.prototype.init = function() {
     else {
 	this.LODOP.SET_PRINT_PAGESIZE(1, this.template.width * 100, this.template.height * 100, ""); 
     }
+    
     
     if (stockUtils.to_integer(this.template.font) !== 0) {
 	this.LODOP.SET_PRINT_STYLE("FontSize", stockUtils.to_integer(this.template.font));
@@ -838,7 +840,7 @@ stockPrintU.prototype.free_prepare = function(
 	this.first.color = diablo_free_color;
 	this.first.size = diablo_free_size;
 	
-	if (this.dualPrint === 1) {
+	if (this.dualPrint - 1 >= 0) {
 	    i++;
 	    if (i<l) {
 		if (!this.autoBarcode)
@@ -851,7 +853,7 @@ stockPrintU.prototype.free_prepare = function(
 	    } 
 	}
 	
-	if (this.dualPrint === 2) {
+	if (this.dualPrint - 2 >= 0) {
 	    i++;
 	    if (i<l) {
 		if (!this.autoBarcode)
@@ -917,7 +919,7 @@ stockPrintU.prototype.prepare = function(
 	this.first.color = barcodes[i].cname;
 	this.first.size = barcodes[i].size;
 	
-	if (1 === this.dualPrint) {
+	if (this.dualPrint - 1 >= 0) {
 	    i++;
 	    if (i<l) {
 		this.second.barcode = barcodes[i].barcode; 
@@ -926,7 +928,7 @@ stockPrintU.prototype.prepare = function(
 	    } 
 	}
 
-	if (2 === this.dualPrint) {
+	if (this.dualPrint - 2 >= 0) {
 	    i++;
 	    if (i<l) {
 		this.third.barcode = barcodes[i].barcode; 
@@ -950,20 +952,20 @@ stockPrintU.prototype.printBarcode2 = function() {
     var iwpx = Math.floor(this.template.width * 96 / 2.54) - this.left;
     var startSecond = 0;
     var startThird = 0;
-    if (this.dualPrint === 1) {
+    if (this.dualPrint - 1 >= 0) {
 	startSecond = Math.floor((this.template.width + this.template.second_space * 0.1) * 96 / 2.54) + this.left;
     }
 
-    if (this.dualPrint === 2) {
+    if (this.dualPrint - 2 >= 0) {
 	startThird = Math.floor((this.template.width * 2 + this.template.second_space * 0.1) * 96 / 2.54) + this.left;
     }
     
     var pSecond = false;
-    if (this.dualPrint === 1 && angular.isDefined(diablo_set_string(this.second.barcode)))
+    if (this.dualPrint - 1 >= 0 && angular.isDefined(diablo_set_string(this.second.barcode)))
 	pSecond = true;
     
     var pThird = false;
-    if (this.dualPrint === 2 && angular.isDefined(diablo_set_string(this.third.barcode)))
+    if (this.dualPrint - 2 >= 0 && angular.isDefined(diablo_set_string(this.third.barcode)))
 	pThird = true;
 
     var top = this.top; 

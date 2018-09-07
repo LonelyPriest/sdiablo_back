@@ -88,20 +88,22 @@ var reportPrint = function(){
 	    LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
 	},
 	
-	gen_head: function(LODOP, shop, employee, date){
+	gen_head: function(LODOP, shop, employee, date, account){
 	    // wsalePrint.init(LODOP);
 	    
 	    var hLine = 5;
 	    
 	    LODOP.ADD_PRINT_TEXT(hLine, 0, 178, 30, shop); 
-	    LODOP.SET_PRINT_STYLEA(1,"FontSize",13);
-	    LODOP.SET_PRINT_STYLEA(1,"bold",1);
+	    LODOP.SET_PRINT_STYLEA(0,"FontSize",13);
+	    LODOP.SET_PRINT_STYLEA(0, "Alignment", 2); 
+	    LODOP.SET_PRINT_STYLEA(0,"bold",1);
 	    // LODOP.SET_PRINT_STYLEA(1,"Horient",2); 
 	    hLine += 35;
 
-	    LODOP.ADD_PRINT_TEXT(hLine, 0, 178, 30, "（交班报表）"); 
-	    LODOP.SET_PRINT_STYLEA(1,"FontSize",13);
-	    LODOP.SET_PRINT_STYLEA(1,"bold",1);
+	    LODOP.ADD_PRINT_TEXT(hLine, 0, 178, 30, "交班报表-" + account); 
+	    LODOP.SET_PRINT_STYLEA(0,"FontSize",10);
+	    LODOP.SET_PRINT_STYLEA(0, "Alignment", 2); 
+	    LODOP.SET_PRINT_STYLEA(0,"bold",1);
 	    // LODOP.SET_PRINT_STYLEA(1,"Horient",2); 
 	    hLine += 35;
 	    
@@ -132,32 +134,32 @@ var reportPrint = function(){
 	    LODOP.ADD_PRINT_LINE(hLine,135,hLine,178,0,1); 
 	    hLine += 10;
 	    
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"数量  ：" + to_i(sale.total));
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"数量  ：" + to_i(sale.sell_total));
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"营业额：" + to_f(sale.spay));
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"营业额：" + to_f(sale.sell_balance));
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"现金  ：" + to_f(sale.cash));
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"现金  ：" + to_f(sale.sell_cash));
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"刷卡  ：" + to_f(sale.card)); 
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"刷卡  ：" + to_f(sale.sell_card)); 
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"微信  ：" + to_f(sale.wxin)); 
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"微信  ：" + to_f(sale.sell_wxin)); 
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"提现  ：" + to_f(sale.draw)); 
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"提现  ：" + to_f(sale.sell_draw)); 
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"电子券：" + to_f(sale.ticket)); 
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"电子券：" + to_f(sale.sell_ticket)); 
 	    hLine += 25;
 
 	    LODOP.ADD_PRINT_LINE(hLine,0,hLine,45,0,1);
 	    LODOP.ADD_PRINT_TEXT(hLine-6,45+10,135,20, "充值状况");
 	    LODOP.ADD_PRINT_LINE(hLine,135,hLine,178,0,1);
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"充值：" + to_f(sale.cbalance));
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"充值：" + to_f(sale.charge_balance));
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"现金：" + to_f(sale.ccash));
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"现金：" + to_f(sale.charge_cash));
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"刷卡：" + to_f(sale.ccard));
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"刷卡：" + to_f(sale.charge_card));
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"微信：" + to_f(sale.cwxin));
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"微信：" + to_f(sale.charge_wxin));
 	    hLine += 25; 
 	    
 	    LODOP.ADD_PRINT_LINE(hLine,0,hLine,45,0,1);
@@ -166,9 +168,9 @@ var reportPrint = function(){
 	    // LODOP.ADD_PRINT_LINE(hLine,0,hLine,178,0,1); 
 	    hLine += 15;
 	    
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"昨日库存：" + to_i(sale.lastStock.total));
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"昨日库存：" + to_i(sale.lstock));
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"当前库存：" + to_i(sale.currentStock.total));
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"当前库存：" + to_i(sale.cstock));
 	    hLine += 15;
 	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"入库数量：" + to_i(sale.stock_in));
 	    hLine += 15;

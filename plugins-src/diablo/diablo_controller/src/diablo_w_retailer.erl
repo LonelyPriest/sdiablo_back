@@ -53,6 +53,9 @@ retailer(new, Merchant, Attrs) ->
 retailer(add_level, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {add_retailer_level, Merchant, Attrs});
+retailer(update_level, Merchant, Attrs) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {update_retailer_level, Merchant, Attrs});
 
 retailer(delete, Merchant, RetailerId) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -371,6 +374,29 @@ handle_call({add_retailer_level, Merchant, Attrs}, _From, State) ->
 	    {reply, Reply, State};
 	{ok, _Any} ->
 	    {reply, {error, ?err(retailer_level_exist, Level)}, State};
+	Error ->
+	    {reply, Error, State}
+    end;
+
+handle_call({update_retailer_level, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("update_retailer_level with attrs ~p", [Attrs]),
+    Level    = ?v(<<"level">>, Attrs, -1),
+    Score    = ?v(<<"score">>, Attrs),
+    Discount = ?v(<<"discount">>, Attrs),
+
+    Sql = "select id, name, level from w_retailer_level where merchant="
+	++ ?to_s(Merchant)
+	++ " and id=" ++ ?to_s(Level),
+    case ?sql_utils:execute(read, Sql) of
+	{ok, []} ->
+	    {reply, {error, ?err(retailer_level_not_exist, Level)}, State};
+	{ok, _Any} ->
+	    Updates = ?utils:v(score, integer, Score) ++ ?utils:v(discount, integer, Discount),
+	    Sql1 = "update w_retailer_level set " ++ ?utils:to_sqls(proplists, comma, Updates)
+		++ " where merchant="  ++ ?to_s(Merchant)
+		++ " and id=" ++ ?to_s(Level),
+	    Reply = ?sql_utils:execute(write, Sql1, Level),
+	    {reply, Reply, State}; 
 	Error ->
 	    {reply, Error, State}
     end;

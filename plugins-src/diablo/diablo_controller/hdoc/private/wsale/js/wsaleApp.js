@@ -2242,6 +2242,7 @@ function wsaleNewDetailProvide(
     // initial
     diabloFilter.reset_field();
     diabloFilter.add_field("shop",        $scope.shops);
+    diabloFilter.add_field("account",     []); 
     diabloFilter.add_field("employee",    filterEmployee); 
     diabloFilter.add_field("retailer",    $scope.match_retailer); 
     diabloFilter.add_field("rsn",         $scope.match_rsn);
@@ -2368,6 +2369,7 @@ function wsaleNewDetailProvide(
 		
 		// console.log($scope); 
 		angular.forEach(result.data, function(d){
+		    d.rsn      = diablo_array_last(d.rsn.split(diablo_date_seprator));
 		    d.shop     = diablo_get_object(d.shop_id, $scope.shops);
 		    d.employee = diablo_get_object(d.employee_id, filterEmployee);
 		    // d.retailer = diablo_get_object(d.retailer_id, filterRetailer);

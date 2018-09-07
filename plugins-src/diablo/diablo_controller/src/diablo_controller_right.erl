@@ -22,6 +22,7 @@
 
 -export([right/2, right/3]).
 -export([lookup_account/1,
+	 get/3,
 	 lookup_account_right/1,
 	 lookup_role_right/1,
 	 lookup_role_shop/1]).
@@ -66,8 +67,11 @@ right(delete_account, Account, AccountType) ->
 
 get(account, Merchant) ->
     gen_server:call(?MODULE, {get_account, Merchant});
-get(merchant_account, Merchant) ->
+get(merchant_account, Merchant) -> 
     gen_server:call(?MODULE, {get_merchant_account, Merchant}).
+
+get(account, Merchant, Account) ->
+    gen_server:call(?MODULE, {get_account_by_name, Merchant, Account}).
 
 %% right(update, Condition, Fields) ->
 %%     gen_server:call(?MODULE, {update_merchant, Condition, Fields}).
@@ -634,6 +638,15 @@ handle_call({get_merchant_account, Merchant}, _From, State) ->
 	++ " and deleted=0",
     {ok, Account}  = ?mysql:fetch(read, Sql0), 
     {reply, {ok, Account}, State};
+
+handle_call({get_account_by_name, Merchant, Account}, _From, State) ->
+    ?DEBUG("get_merchant_account with merchant ~p, Account ~p", [Merchant, Account]),
+    Sql0 = "select id, name, type from users"
+	++ " where merchant=" ++ ?to_s(Merchant)
+	++ " and name=\'" ++ ?to_s(Account) ++ "\'"
+	++ " and deleted=0",
+    Reply  = ?sql_utils:execute(s_read, Sql0), 
+    {reply, Reply, State};
     
 handle_call(_Request, _From, State) ->
     ?DEBUG("receive unkown request ~p", [_Request]),

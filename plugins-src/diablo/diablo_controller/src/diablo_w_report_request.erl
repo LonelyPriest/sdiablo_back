@@ -346,8 +346,8 @@ action(Session, Req, {"stock_stastic"}, Payload) ->
 
 action(Session, Req, {"print_wreport", Type}, Payload) -> 
     ?DEBUG("print_wreport with session ~p, type ~p, payload~n~p",[Session, Type, Payload]),
-    Merchant = ?session:get(merchant, Session),
-    {struct, Content}  = ?v(<<"content">>, Payload),
+    Merchant = ?session:get(merchant, Session), 
+    {struct, Content}  = ?v(<<"content">>, Payload), 
     ShopId     = ?v(<<"shop">>, Content),
     StartDate  = ?v(<<"date">>, Content),
     EmployeeId = ?v(<<"employee">>, Content),
@@ -359,32 +359,76 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
     %% TodayStart = ?utils:current_time(localdate),
     %% TodayEnd = TodayStart ++ " " ++ TimeEnd,
     EndDate  = ?to_s(StartDate) ++ " " ++ time_of_end_day(),
-    
-    {ok, EmployeeInfo} = ?w_user_profile:get(employee, Merchant, EmployeeId),
-    BaseSettings = get_setting(Merchant, ShopId), 
 
+    {ok, EmployeeInfo} = ?w_user_profile:get(employee, Merchant, EmployeeId), 
+    
+    BaseSettings = get_setting(Merchant, ShopId), 
     {VPrinters, ShopInfo} = ?wifi_print:get_printer(Merchant, ShopId),
+    
     ShopName = ?to_s(?v(<<"name">>, ShopInfo)),
     EmployeeName = case ?v(<<"name">>, EmployeeInfo) of
 		       undefined -> [];
 		       EName -> EName
 		   end,
-    
-    Conditions = case EmployeeId of
-		     undefined ->
-			 [{<<"shop">>, ShopId},
-			  {<<"start_time">>, ?to_b(StartDate)},
-			  {<<"end_time">>, ?to_b(EndDate)}];
-		     _ ->
-			 [{<<"shop">>, ShopId},
-			  {<<"employ">>, EmployeeId},
-			  {<<"start_time">>, ?to_b(StartDate)},
-			  {<<"end_time">>, ?to_b(EndDate)}]
-		 end,
 
-    DropConditions = lists:keydelete(<<"employ">>, 1, Conditions),
+    Conditions = [{<<"shop">>, ShopId},
+		  {<<"start_time">>, ?to_b(StartDate)},
+		  {<<"end_time">>, ?to_b(EndDate)}],
+			     
+    ConditionsWithEmployee =
+	case EmployeeId of
+	    undefined -> Conditions;
+	    _ ->
+		Conditions ++ [{<<"employ">>, EmployeeId}]
+	end,
+
+    DistinctUser =
+	try
+	    %% ascii -> number
+	    ?to_i(lists:nth(5, ?to_s(get_config(<<"p_balance">>, BaseSettings)))) - 48
+	catch _:_ ->
+		?NO
+	end,
+
+    ?DEBUG("distinct user ~p", [DistinctUser]),
+		 
+    UserId =  case ?v(<<"account">>, Content) of
+		  undefined -> -1;
+		  Name ->
+		      case DistinctUser =:= ?YES of
+			  true ->
+			      case ?right:get(account, Merchant, Name) of
+				  {ok, []} -> -1;
+				  {ok, _Account} ->
+				      ?v(<<"id">>, _Account)
+			      end;
+			  false ->
+			      -1
+		      end
+	      end,
+
+    ConditionsWithAccount =
+	case UserId of
+	    -1 -> ConditionsWithEmployee;
+	    _ -> 
+		ConditionsWithEmployee ++ [{<<"account">>, UserId}] 
+	end,
     
-    {ok, SaleInfo} = ?w_report:stastic(stock_sale, Merchant, Conditions), 
+    %% Conditions = case EmployeeId of
+    %% 		     undefined ->
+    %% 			 [{<<"shop">>, ShopId},
+    %% 			  {<<"start_time">>, ?to_b(StartDate)},
+    %% 			  {<<"end_time">>, ?to_b(EndDate)}];
+    %% 		     _ ->
+    %% 			 [{<<"shop">>, ShopId},
+    %% 			  {<<"employ">>, EmployeeId},
+    %% 			  {<<"start_time">>, ?to_b(StartDate)},
+    %% 			  {<<"end_time">>, ?to_b(EndDate)}]
+    %% 		 end,
+
+    DropConditions = lists:keydelete(<<"account">>, 1 ,lists:keydelete(<<"employ">>, 1, Conditions)),
+    
+    {ok, SaleInfo} = ?w_report:stastic(stock_sale, Merchant, ConditionsWithAccount), 
     {ok, StockIn}  = ?w_report:stastic(stock_in, Merchant, DropConditions),
     {ok, StockOut} = ?w_report:stastic(stock_out, Merchant, DropConditions),
     {ok, Recharges} = case ?w_report:stastic(recharge, Merchant, DropConditions) of
@@ -406,6 +450,7 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
     
     {SellTotal, SellBalance, SellCash, SellCard, SellWxin, SellDraw, SellTicket}
 	= sell(info, SaleInfo),
+    
     CurrentStockTotal = stock(total, StockR), 
     LastStockTotal = stock(last_total, LastStockInfo),
     StockInTotal = stock(total, StockIn),
@@ -417,6 +462,15 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 	" from w_change_shift"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and shop=" ++ ?to_s(ShopId)
+	++ case UserId of
+	       -1 -> [];
+	       _ ->
+		   case DistinctUser =:= ?YES of
+		       true -> " and account=" ++ ?to_s(UserId); 
+		       false -> []
+		   end
+	   end
+	
 	++ case EmployeeId of
 	       undefined -> [];
 	       _ -> " and employ=\'" ++ ?to_s(EmployeeId) ++ "\'"
@@ -428,13 +482,14 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 	case ?sql_utils:execute(s_read, Sql) of
 	    {ok, []} -> 
 		{insert,
-		 "insert into w_change_shift(merchant, employ, shop"
+		 "insert into w_change_shift(merchant, account, employ, shop"
 		 ", total, balance, cash, card, wxin, withdraw, ticket"
 		 ", charge, ccash, ccard, cwxin"
 		 ", stock, y_stock, stock_in, stock_out"
 		 ", pcash, pcash_in"
 		 ", comment, entry_date) values("
 		 ++ ?to_s(Merchant) ++ ","
+		 ++ ?to_s(UserId) ++ ","
 		 ++ case EmployeeId of
 			undefined -> "\'-1\',";
 			_ -> "\'" ++ ?to_s(EmployeeId) ++ "\',"
@@ -576,7 +631,29 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 	{ok, _} ->
 	    case get_config(<<"ptype">>, BaseSettings) of
 		<<"0">> ->
-		    ?utils:respond(200, Req, ?succ(print_wreport, ShopId));
+		    %% ?utils:respond(200, Req, ?succ(print_wreport, ShopId));
+		    ReportInfo = {[{<<"sell_total">>, SellTotal},
+				  {<<"sell_balance">>, SellBalance},
+				  {<<"sell_cash">>, SellCash},
+				  {<<"sell_card">>, SellCard},
+				  {<<"sell_wxin">>, SellWxin},
+				  {<<"sell_draw">>, SellDraw},
+				  {<<"sell_ticket">>, SellTicket},
+
+				  {<<"charge_balance">>, ?v(<<"cbalance">>, Recharges, 0)},
+				  {<<"charge_cash">>, ?v(<<"tcash">>, Recharges, 0)},
+				  {<<"charge_card">>, ?v(<<"tcard">>, Recharges, 0)},
+				  {<<"charge_wxin">>, ?v(<<"twxin">>, Recharges, 0)},
+
+				  {<<"lstock">>, LastStockTotal},
+				  {<<"cstock">>, CurrentStockTotal},
+
+				  {<<"stock_in">>, StockInTotal},
+				  {<<"stock_out">>, StockOutTotal}]},
+		    
+		    ?utils:respond(200, object, Req,
+				   {[{<<"ecode">>, 0},
+				     {<<"data">>, ReportInfo}]});
 		<<"1">> ->
 		    PrintInfo = s_print(VPrinters, ShopId, TitleFun, BodyFun, []),
 		    m_print(Req, ShopId, PrintInfo)

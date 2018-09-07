@@ -161,8 +161,7 @@ action(Session, _Req, Action) ->
 %% @desc: POST action
 %%--------------------------------------------------------------------
 action(Session, Req, {"list_w_sale_new"}, Payload) ->
-    ?DEBUG("list_w_sale_new with session ~p, paylaod~n~p",
-	   [Session, Payload]), 
+    ?DEBUG("list_w_sale_new with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session), 
     batch_responed(
       fun() -> ?w_sale:sale(list_new, Merchant, Payload) end, Req); 
@@ -179,9 +178,8 @@ action(Session, Req, {"get_last_sale"}, Payload) ->
     end;
 
 action(Session, Req, {"filter_w_sale_new"}, Payload) ->
-    ?DEBUG("filter_w_sale_new with session ~p, paylaod~n~p",
-	   [Session, Payload]), 
-    Merchant = ?session:get(merchant, Session),
+    ?DEBUG("filter_w_sale_new with session ~p, paylaod~n~p", [Session, Payload]), 
+    Merchant = ?session:get(merchant, Session), 
     
     ?pagination:pagination(
        fun(Match, Conditions) ->
@@ -233,9 +231,10 @@ action(Session, Req, {"filter_w_sale_image"}, Payload) ->
     end;
 
 action(Session, Req, {"new_w_sale"}, Payload) ->
-    ?DEBUG("new_w_sale with session ~p, paylaod~n~p", [Session, Payload]),
-    
+    ?DEBUG("new_w_sale with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
+    UserId = ?session:get(id, Session),
+    
     Invs            = ?v(<<"inventory">>, Payload, []),
     {struct, Base}  = ?v(<<"base">>, Payload),
     {struct, Print} = ?v(<<"print">>, Payload),
@@ -288,14 +287,14 @@ action(Session, Req, {"new_w_sale"}, Payload) ->
 		    
 		    case TicketInfo of
 			{ok, 0} ->
-			    start(new_sale, Req, Merchant, Invs, Base, Print);
+			    start(new_sale, Req, Merchant, Invs, Base ++ [{<<"user">>, UserId}], Print);
 			{ok, _TicketScore} ->
 			    start(
 			      new_sale,
 			      Req,
 			      Merchant,
 			      Invs,
-			      Base ++ [{<<"ticket_score">>, _TicketScore}],
+			      Base ++ [{<<"ticket_score">>, _TicketScore}, {<<"user">>, UserId}],
 			      Print);
 			{error, Error} ->
 			    ?utils:respond(200, Req, Error)
@@ -306,7 +305,7 @@ action(Session, Req, {"new_w_sale"}, Payload) ->
 		  Req,
 		  Merchant,
 		  Invs,
-		  lists:keydelete(<<"ticket_custom">>, 1, Base),
+		  lists:keydelete(<<"ticket_custom">>, 1, Base) ++ [{<<"user">>, UserId}],
 		  Print)
     end;
 	
@@ -568,6 +567,9 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
 action(Session, Req, {"reject_w_sale"}, Payload) ->
     ?DEBUG("reject_w_sale with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UserId = ?session:get(id, Session),
+    %% UserId = ?right:get(account, Merchant, User),
+    
     Invs = ?v(<<"inventory">>, Payload),
     {struct, Base}   = ?v(<<"base">>, Payload), 
     Datetime         = ?v(<<"datetime">>, Base),
@@ -586,7 +588,7 @@ action(Session, Req, {"reject_w_sale"}, Payload) ->
 				   [{<<"fdate">>, Datetime},
 				    {<<"bdate">>, ?to_b(CurDatetime)}]);
 		false -> 
-		    case ?w_sale:sale(reject, Merchant, lists:reverse(Invs), Base) of 
+		    case ?w_sale:sale(reject, Merchant, lists:reverse(Invs), Base ++ [{<<"user">>, UserId}]) of 
 			{{ok, RSN}, Shop, RetailerId, RetailerType, BackWithdraw} ->
 			    case BackWithdraw =/= 0 of
 				true ->

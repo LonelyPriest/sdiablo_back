@@ -3048,9 +3048,7 @@ function purchaserInventoryNewDetailCtrlProvide (
     $scope.round   = diablo_round;
     $scope.total_items  = 0;
     $scope.css = diablo_stock_css;
-    $scope.css_gift_stock = function(state) {
-	return state === 2 ? "success" : "";
-    };
+    $scope.css_gift_stock = function(state) {return state === 2 ? "success" : "";};
     
 
     $scope.base_setting = {

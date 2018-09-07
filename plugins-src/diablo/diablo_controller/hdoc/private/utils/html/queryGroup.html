@@ -346,6 +346,18 @@
 	  	   uib-typeahead="s as s.name for s in
 				  prompt.firm|filter:$viewValue|limitTo:20"/>
 	  </span>
+
+	  <span x-ng-switch-when="account">
+	    <form name="aForm">
+	      <div ng-class="{'has-error':aForm.$invalid && !aForm.$pristine}">
+		<input type="text"
+		       disable-key
+		       class="form-control" placeholder="请输入收银员帐号"
+		       x-ng-model="f.value"
+		       x-ng-pattern="/^(?!_)(?!.*?_$)[a-zA-Z0-9_]+$/" />
+	      </div>
+	    </form>
+	  </span>
 	  
 	  <!-- <span x-ng-switch-when="retailer"> -->
 	  <!--   <input type="text" class="form-control" placeholder="请输入客户名" -->

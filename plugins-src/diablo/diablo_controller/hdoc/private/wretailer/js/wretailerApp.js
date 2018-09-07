@@ -306,6 +306,14 @@ function wretailerConfig(angular) {
 		 discount: discount}).$promise;
 	};
 
+	this.update_retailer_level = function(level_id, score, discount) {
+	    return http.save(
+		{operation: "update_retailer_level"},
+		{level: level_id,
+		 score: score,
+		 discount: discount}).$promise;
+	};
+
 	this.list_retailer_level = function() {
 	    return http.query({operation: "list_retailer_level"}).$promise;
 	};

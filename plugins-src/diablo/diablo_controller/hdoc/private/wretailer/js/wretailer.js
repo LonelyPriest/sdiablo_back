@@ -1602,6 +1602,36 @@ function wretailerLevelCtrlProvide(
 	     pattern :lpattern}
 	)
     };
+
+    $scope.update_level = function(l) {
+	console.log(l);
+	var callback = function(params) {
+	    console.log(params);
+	    wretailerService.update_retailer_level(
+		l.id, params.score, params.discount
+	    ).then(function(result) {
+		console.log(result);
+		if (result.ecode === 0) {
+		    dialog.response_with_callback(
+			true, "编辑会员等级", "编辑会员等级成功！！", undefined, $scope.refresh);
+		} else {
+		    dialog.set_error("编辑会员等级", result.ecode); 
+		}
+	    });
+	};
+
+	dialog.edit_with_modal(
+	    "update-retailer-level.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {level   :$scope.levels[l.level],
+	     name    :l.name,
+	     score   :l.score,
+	     discount :l.discount,
+	     pattern :lpattern}
+	)
+    };
 };
 
 function wretailerConsumeCtrlProvide(

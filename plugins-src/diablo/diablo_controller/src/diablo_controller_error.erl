@@ -521,7 +521,9 @@ error(invalid_threshold_card_rule, Card) ->
 error(invalid_recharge, RechargeId) ->
     {2128, "can not find retailer's recharge:" ++ ?to_s(RechargeId)};
 error(retailer_level_exist, Level) ->
-    {2129, "the level of retailer exist:" ++ ?to_s(Level)}; 
+    {2129, "the level of retailer exist:" ++ ?to_s(Level)};
+error(retailer_level_not_exist, Level) ->
+    {2130, "the level of retailer not exist:" ++ ?to_s(Level)}; 
 
 
 %% wprint

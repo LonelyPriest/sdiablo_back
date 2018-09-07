@@ -156,6 +156,18 @@ action(Session, Req, {"add_retailer_level"}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"update_retailer_level"}, Payload) ->
+    ?DEBUG("update_retailer_level with Session ~p~npaylaod ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    case ?w_retailer:retailer(update_level, Merchant, Payload) of
+	{ok, Level} ->
+	    ?w_user_profile:update(retailer_level, Merchant),
+	    ?utils:respond(
+	       200, Req, ?succ(add_w_retailer, Level), {<<"id">>, Level});
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
 action(Session, Req, {"get_w_retailer_batch"}, Payload) ->
     ?DEBUG("update_w_retailer with Session ~p~npaylaod ~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),

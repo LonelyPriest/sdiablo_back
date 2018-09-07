@@ -144,7 +144,7 @@ var diablo_vip_mode = "0000";
 /*
  * sale mode
  */
-var diablo_sale_mode ="0001";
+var diablo_sale_mode ="00010";
 
 /*
  * direction
@@ -688,6 +688,10 @@ var diablo_get_time = function(date){
     } else {
 	return date;
     }
+};
+
+var diablo_array_last = function(arrary) {
+    return arrary[arrary.length - 1];
 };
 
 diablo_get_amount = function(cid, size, sorts){

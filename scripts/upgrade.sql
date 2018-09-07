@@ -336,4 +336,10 @@ alter table suppliers add column vfirm INTEGER default -1 after id;
 --2018-06-21
 alter table w_sale_detail add column sex TINYINT default -1 after type;
 
+--2018-09-07
+alter table w_sale add column account INTEGER default -1 after rsn;
+alter table w_change_shift add column account INTEGER default -1 after merchant;
+
+
+
 

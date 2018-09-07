@@ -802,6 +802,7 @@ sys_config() ->
 	      {"group_color",     "颜色分组",             "1",   "0"},
 	      {"image_mode",      "图片模式",             "0",   "0"},
 	      {"round",           "四舍五入",             "1",   "0"},
+	      
 	      %% [0]: hide color
 	      %% [1]: hide size
 	      %% [2]: hide sex
@@ -810,6 +811,8 @@ sys_config() ->
 	      %% [5]: type should be select
 	      %% [6]: print std_executive, std_category
 	      {"h_stock",         "入库字段隐藏",         "0001100", "0"},
+
+	      
 	      %% {"h_color",         "隐藏颜色",             "0",   "0"},
 	      %% {"h_size",          "隐藏尺码",             "0",   "0"},
 	      %% {"h_sex",           "隐藏性别",             "0",   "0"},
@@ -821,7 +824,8 @@ sys_config() ->
 	      %% [1]: show color size when on sale
 	      %% [2]: print sale note when switch shift
 	      %% [3]: print perform when on sale
-	      {"p_balance",       "销售模式",             "0001",  "0"},
+	      %% [4]: distinct account when on sale
+	      {"p_balance",       "销售模式",             "00010",  "0"},
 	      
 	      {"gen_ticket",      "自动生成电子卷",       "0",   "0"},
 	      {"recharge_sms",    "充值短信提醒",         "0",   "0"},

@@ -1014,6 +1014,7 @@ create table w_inventory_transfer_detail_amount(
 create table w_sale(
     id             INTEGER AUTO_INCREMENT,
     rsn            VARCHAR(32) not null, -- record sn
+    account        INTEGER not null default -1,
     employ         VARCHAR(8) not null,
     retailer       INTEGER not null default -1, 
     shop           INTEGER not null default -1, 
@@ -1177,7 +1178,9 @@ create table w_bill_detail(
 create table w_change_shift(
     id              INTEGER AUTO_INCREMENT,
     
-    merchant        INTEGER not null default -1, 
+    merchant        INTEGER not null default -1,
+    account	    INTEGER not null default -1,
+
     employ          VARCHAR(8) not null, 
     shop            INTEGER not null default -1,
         
@@ -1204,8 +1207,8 @@ create table w_change_shift(
     
     comment         VARCHAR(127) default null,
     entry_date      DATE default 0,
-    
-    key     dk (merchant, shop, employ),
+
+    key     dk (merchant, account, shop, employ),
     primary key    (id)
     
 ) default charset=utf8;
