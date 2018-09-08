@@ -129,7 +129,7 @@
 		      x-ng-dblclick="(shop_right.update_w_sale && r.state!==1 && r.type!==1) && update_detail(r)">
 		    <td>{{r.order_id}}</td>
 		    <td x-ng-bind="r.account"></td>
-		    <td class="{{css(r.state, r.type)}}">{{r.rsn}}</td>
+		    <td class="{{css(r.state, r.type)}}">{{r.crsn}}</td>
 		    <td class="{{css(r.state, r.type)}}" x-ng-switch on="r.type">
 		      <span x-ng-switch-when=0>开单</span>
 		      <span class="fg-red" x-ng-switch-when=1>退货</span>

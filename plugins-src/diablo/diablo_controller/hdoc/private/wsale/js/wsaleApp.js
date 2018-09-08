@@ -2369,7 +2369,7 @@ function wsaleNewDetailProvide(
 		
 		// console.log($scope); 
 		angular.forEach(result.data, function(d){
-		    d.rsn      = diablo_array_last(d.rsn.split(diablo_date_seprator));
+		    d.crsn      = diablo_array_last(d.rsn.split(diablo_date_seprator));
 		    d.shop     = diablo_get_object(d.shop_id, $scope.shops);
 		    d.employee = diablo_get_object(d.employee_id, filterEmployee);
 		    // d.retailer = diablo_get_object(d.retailer_id, filterRetailer);

@@ -244,7 +244,8 @@ function wsaleRsnDetailCtrlProvide (
 		}
 		
 		angular.forEach(result.data, function(d){
-		    d.rsn      = diablo_array_last(d.rsn.split(diablo_date_seprator));
+		    // d.rsn      = diablo_array_last(d.rsn.split(diablo_date_seprator));
+		    d.crsn      = diablo_array_last(d.rsn.split(diablo_date_seprator));
 		    d.brand    = diablo_get_object(d.brand_id, filterBrand);
 		    d.firm     = diablo_get_object(d.firm_id, filterFirm);
 		    d.shop     = diablo_get_object(d.shop_id, $scope.shops);
