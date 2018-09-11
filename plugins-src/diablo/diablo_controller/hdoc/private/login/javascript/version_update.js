@@ -1,4 +1,11 @@
 var version_update = function(){
+    {date: "2018-09-11",
+     content:
+     ["修正负数退货时有时无法退货的问题",
+      "会员等级支持不同店铺不同会员定义",
+      "增加直接指定特价商品功能，不需要通过使用促销方案实现"]
+    },
+    
     var updates = [
 	{date: "2018-09-08",
 	 content:

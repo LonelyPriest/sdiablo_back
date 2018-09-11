@@ -2181,7 +2181,8 @@ mode(6) -> use_style_number;
 mode(7) -> use_brand;
 mode(8) -> use_type;
 mode(9) -> use_firm;
-mode(10) -> use_date.
+mode(10) -> use_date;
+mode(11) -> use_tag_price.
 
 
 stock(check, _Action, Total, CalcTotal, []) ->

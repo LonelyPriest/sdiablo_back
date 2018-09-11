@@ -729,9 +729,7 @@ var wsaleCalc = function(){
 		total      += parseInt(count);
 		abs_total  += Math.abs(parseInt(count)); 
 
-		if (!one.$update
-		    && vipDiscountMode !== diablo_no
-		    && saleMode === diablo_sale)
+		if (!one.$update && one.state!==3 && vipDiscountMode !== diablo_no && saleMode === diablo_sale)
 		{
 		    // if (one.sid !== diablo_invalid_index && !one.$update) {
 		    if (one.sid === diablo_invalid && one.pid === diablo_invalid) {
@@ -846,10 +844,18 @@ var wsaleCalc = function(){
 	    score  = wsaleUtils.calc_with_score(pscores, verificate); 
 	    // charge = should_pay - has_pay;
 
+	    if (wsaleUtils.to_integer(round) === 1) {
+		if (should_pay >= 0)
+		    should_pay = diablo_round(should_pay)
+		else {
+		    should_pay = -diablo_round(Math.abs(should_pay))
+		}
+	    }
+	    
 	    return {
 		total:      total,
 		abs_total:  abs_total,
-		should_pay: wsaleUtils.to_integer(round) === 1 ? diablo_round(should_pay) : should_pay,
+		should_pay: should_pay,
 		score:      score,
 		pscores:    pscores
 		// rbalance:   calc_p.rbalance, 

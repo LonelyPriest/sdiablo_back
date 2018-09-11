@@ -104,6 +104,10 @@ condition(page_desc, {use_datetime, Sort}, CurrentPage, ItemsPerPage) ->
     " order by a.entry_date " ++ ?MODULE:sort(Sort)
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
     	++ ", " ++ ?to_s(ItemsPerPage);
+condition(page_desc, {use_tag_price, Sort}, CurrentPage, ItemsPerPage) ->
+    " order by a.tag_price " ++ ?MODULE:sort(Sort)
+	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
+    	++ ", " ++ ?to_s(ItemsPerPage);
 
 %% retailer use
 condition(page_desc, {use_balance, Sort}, CurrentPage, ItemsPerPage) ->
@@ -135,7 +139,8 @@ mode(Mode, Sort) ->
 mode(use_id) -> "id";
 mode(use_sell) -> "sell";
 mode(use_amount) -> "amount";
-mode(use_date) ->   "entry_date".
+mode(use_date) ->   "entry_date";
+mode(use_tag_price) ->   "tag_price".
 
 sort(0) -> "desc";
 sort(1) -> "asc".

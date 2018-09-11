@@ -349,10 +349,11 @@ function wsaleNewProvide(
     filterSysRetailer, filterEmployee,
     filterSizeGroup, filterType, filterColor, filterLevel, base){
     // console.log(base);
+    // console.log(filterLevel);
     $scope.promotions = filterPromotion;
     $scope.scores     = filterScore;
     $scope.draws      = filterCharge.filter(function(d){return d.type === diablo_withdraw}),
-    $scope.levels     = filterLevel; 
+    // $scope.levels     = filterLevel; 
     
     // console.log($scope.draws);
     // console.log($scope.scores);
@@ -495,8 +496,22 @@ function wsaleNewProvide(
 	}
 
 	$scope.select.verificate = $scope.vpays[0];
-	// console.log($scope.vpays);
+	// console.log($scope.vpays); 
 	console.log($scope.setting);
+
+	// get valid levels
+	// console.log(shopId);
+	$scope.levels = filterLevel.filter(function(l) {
+	    return l.shop_id === shopId;
+	})
+
+	if ($scope.levels.length === 0) {
+	    $scope.levels = filterLevel.filter(function(l) {
+		return l.shop_id === diablo_default_shop;
+	    })
+	}
+
+	// console.log($scope.levels);
     };
 
     // var isVip = function() {

@@ -150,7 +150,8 @@ function wretailerConfig(angular) {
 	    // level
 	    when('/level', {
 		templateUrl: '/private/wretailer/html/retailer_level.html',
-		controller: 'wretailerLevelCtrl'
+		controller: 'wretailerLevelCtrl',
+		resolve: angular.extend({}, user)
 	    }).
 	    // consume
 	    when('/consume', {
@@ -297,21 +298,23 @@ function wretailerConfig(angular) {
 		 count:  itemsPerpage}).$promise;
 	};
 
-	this.new_retailer_level = function(level, name, score, discount) {
+	this.new_retailer_level = function(shop, level, name, score, discount) {
 	    return http.save(
 		{operation: "add_retailer_level"},
-		{level: level,
+		{shop: shop,
+		 level: level,
 		 name: name,
 		 score: score,
 		 discount: discount}).$promise;
 	};
 
-	this.update_retailer_level = function(level_id, score, discount) {
+	this.update_retailer_level = function(shop, level, score, discount) {
 	    return http.save(
-		{operation: "update_retailer_level"},
-		{level: level_id,
-		 score: score,
-		 discount: discount}).$promise;
+		{operation: "update_retailer_level"}, {
+		    shop:  shop,
+		    level: level,
+		    score: score,
+		    discount: discount}).$promise;
 	};
 
 	this.list_retailer_level = function() {

@@ -637,6 +637,11 @@ inventory(update_batch, Merchant, Attrs, Conditions) ->
 		0 -> -1;
 		_ -> undefined
 	    end,
+    
+    State = case ?v(<<"sprice">>, Attrs) of
+		1 -> 3;
+		_ -> undefined
+	    end,
 
     %% ?DEBUG("imbalance ~p", [Imbalance]),
     UpdateOfGood =
@@ -653,9 +658,12 @@ inventory(update_batch, Merchant, Attrs, Conditions) ->
     %% ++ ?utils:v(discount, float, Discount)
 	++ ?utils:v(contailer, integer, Contailer),
 
-    UpdateOfStock =
-	UpdateOfGood ++ ?utils:v(score, integer, Score)
+    UpdateOfStock = UpdateOfGood
+	++ ?utils:v(score, integer, Score)
+	++ ?utils:v(state, integer, State)
 	++ ?utils:v(discount, float, Discount),
+    
+    
     
 
     ?DEBUG("UpdateOfGood ~p, UpdateOfStock ~p", [UpdateOfGood, UpdateOfStock]),
@@ -677,7 +685,8 @@ inventory(update_batch, Merchant, Attrs, Conditions) ->
 	    _ ->
 		", tag_price=tag_price-" ++ ?to_s(Imbalance)
 		    ++ ", ediscount=(org_price/(tag_price-" ++ ?to_s(Imbalance) ++ "))*100"
-	end 
+	end
+     
      %% ++ ", ediscount=(org_price/" ++ ?to_s(TagPrice) ++ ")*100"
      %% ++ case {TagPrice, OrgPrice} of
      %% 	    {undefined, undefined} ->

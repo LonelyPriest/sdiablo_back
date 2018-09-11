@@ -2725,11 +2725,12 @@ function purchaserInventoryDetailCtrlProvide(
 	    console.log(params);
 	    var update = {
 		// season: params.select.season,
-		// year: params.select.year
+		// year: params.select.year 
 		tag_price: diablo_set_integer(params.select.tag_price),
 		discount:  diablo_set_integer(params.select.discount),
 		imbalance: diablo_set_integer(params.select.imbalance),
-		score: params.select.score.id
+		score: params.select.score.id,
+		sprice: params.select.sprice.id
 	    };
 	    
 	    purchaserService.update_w_inventory_batch(condition, update).then(function(result){
@@ -2743,7 +2744,8 @@ function purchaserInventoryDetailCtrlProvide(
 		    s += "折扣[" + update.discount.toString() + "]"; 
 		};
 
-		s += " 积分["  + params.select.score.name + "]"; 
+		s += " 积分["  + params.select.score.name + "]";
+		s += " 特价["  + params.select.sprice.name + "]";
 		console.log(s);
 		
 		if (result.ecode === 0){
@@ -2781,7 +2783,7 @@ function purchaserInventoryDetailCtrlProvide(
 		},
 		
 		yes_no: yes_no,
-		select: {score: yes_no[0]}
+		select: {score: yes_no[0], sprice: yes_no[0]}
 	    }
 	);
 

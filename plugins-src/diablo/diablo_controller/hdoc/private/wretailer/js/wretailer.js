@@ -1562,8 +1562,9 @@ function wretailerThresholdCardGoodCtrlProvide(
 };
 
 function wretailerLevelCtrlProvide(
-    $scope, diabloFilter, diabloPattern, diabloUtilsService, wretailerService){
+    $scope, diabloFilter, diabloPattern, diabloUtilsService, wretailerService, user){
     $scope.levels = diablo_retailer_levels;
+    $scope.shops  = user.sortShops;
     var dialog = diabloUtilsService; 
     var lpattern = {name     :diabloPattern.chinese_name,
 		    score    :diabloPattern.number,
@@ -1573,6 +1574,10 @@ function wretailerLevelCtrlProvide(
 	wretailerService.list_retailer_level().then(function(levels) {
 	    diablo_order(levels); 
 	    $scope.retailer_levels = angular.copy(levels);
+	    
+	    angular.forEach($scope.retailer_levels, function(l) {
+	    	l.shop = diablo_get_object(l.shop_id, $scope.shops);
+	    });
 	});
     };
 
@@ -1580,7 +1585,7 @@ function wretailerLevelCtrlProvide(
 	var callback = function(params) {
 	    console.log(params);
 	    wretailerService.new_retailer_level(
-		params.level.level, params.name, params.score, params.discount
+		params.shop.id, params.level.level, params.name, params.score, params.discount
 	    ).then(function(result) {
 		console.log(result);
 		if (result.ecode === 0) {
@@ -1597,10 +1602,12 @@ function wretailerLevelCtrlProvide(
 	    undefined,
 	    callback,
 	    undefined,
-	    {levels  :$scope.levels,
+	    {shops   :$scope.shops,
+	     shop    :$scope.shops[0],
+	     levels  :$scope.levels,
 	     level   :$scope.levels[0],
-	     pattern :lpattern}
-	)
+	     pattern :lpattern
+	    })
     };
 
     $scope.update_level = function(l) {
@@ -1608,7 +1615,7 @@ function wretailerLevelCtrlProvide(
 	var callback = function(params) {
 	    console.log(params);
 	    wretailerService.update_retailer_level(
-		l.id, params.score, params.discount
+		l.id, l.shop.id, params.score, params.discount
 	    ).then(function(result) {
 		console.log(result);
 		if (result.ecode === 0) {
@@ -1625,11 +1632,14 @@ function wretailerLevelCtrlProvide(
 	    undefined,
 	    callback,
 	    undefined,
-	    {level   :$scope.levels[l.level],
-	     name    :l.name,
-	     score   :l.score,
-	     discount :l.discount,
-	     pattern :lpattern}
+	    {
+		shops   :$scope.shops,
+		shop    :diablo_get_object(l.shop_id, $scope.shops),
+		level   :$scope.levels[l.level],
+		name    :l.name,
+		score   :l.score,
+		discount :l.discount,
+		pattern :lpattern}
 	)
     };
 };

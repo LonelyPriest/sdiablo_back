@@ -40,6 +40,7 @@
 		<thead>
 		  <tr>
 		    <th>序号</th>
+		    <th>店铺</th>
 		    <th>等级</th>
 		    <th>名称</th>
 		    <th>累计消费</th>
@@ -47,9 +48,16 @@
 		    <th>操作</th>
 		  </tr>
 		</thead>
+		
 		<tbody>
 		  <tr ng-repeat="l in retailer_levels">
 		    <td x-ng-bind=l.order_id></td>
+		    <td>
+		      <div x-ng-switch on="l.shop_id">
+			<span x-ng-switch-when=-1 class="text-center">-</span>
+			<span x-ng-switch-default class="text-center">{{l.shop.name}}</span>
+		      </div>
+		    </td>
 		    <td x-ng-bind=levels[l.level].name></td> 
 		    <td x-ng-bind=l.name></td>
 		    <td x-ng-bind=l.score></td>
@@ -96,6 +104,16 @@
   <div class="modal-body">
     <form class="form-horizontal" name="lForm" novalidate>
       <div class="form-body">
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">店铺</label>
+	  <div class="col-sm-10 col-md-10">
+	    <select class="form-control"
+		    x-ng-model="params.shop"
+		    x-ng-options="shop as shop.name for shop in  params.shops">
+	    </select>
+	  </div>
+	</div>
 	
 	<div class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label">等级</label>
@@ -191,6 +209,16 @@
   <div class="modal-body">
     <form class="form-horizontal" name="lForm" novalidate>
       <div class="form-body">
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">店铺</label>
+	  <div class="col-sm-10 col-md-10">
+	    <select class="form-control"
+		    x-ng-model="params.shop"
+		    x-ng-options="shop as shop.name for shop in  params.shops">
+	    </select>
+	  </div>
+	</div>
 	
 	<div class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label">等级</label>

@@ -305,7 +305,8 @@ var stockUtils = function(){
 		    brand:7,
 		    type:8,
 		    firm:9,
-		    date: 10};
+		    date: 10,
+		    tag_price:11};
 	},
 
 	invalid_firm:function(firm) {

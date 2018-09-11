@@ -352,19 +352,23 @@ handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
 
 handle_call({add_retailer_level, Merchant, Attrs}, _From, State) ->
     ?DEBUG("add_retailer_level with attrs ~p", [Attrs]),
-    Name     = ?v(<<"name">>, Attrs), 
+    Name     = ?v(<<"name">>, Attrs),
+    Shop     = ?v(<<"shop">>, Attrs),
     Level    = ?v(<<"level">>, Attrs),
     Score    = ?v(<<"score">>, Attrs, 0),
     Discount = ?v(<<"discount">>, Attrs, 100),
 
-    Sql = "select id, name, level from w_retailer_level where merchant="
-	++ ?to_s(Merchant)
+    Sql = "select id, name, level from w_retailer_level"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and shop=" ++ ?to_s(Shop) 
 	++ " and level=" ++ ?to_s(Level),
+    
     case ?sql_utils:execute(read, Sql) of
 	{ok, []} ->
 	    Sql2 = "insert into w_retailer_level("
-		"name, level, score, discount, Merchant)"
-		++ " values (" 
+		"shop, name, level, score, discount, Merchant)"
+		++ " values ("
+		++ ?to_s(Shop) ++ ","
 		++ "\'" ++ ?to_s(Name) ++ "\',"
 		++ "\'" ++ ?to_s(Level) ++ "\'," 
 		++ ?to_s(Score) ++ ","
@@ -380,18 +384,21 @@ handle_call({add_retailer_level, Merchant, Attrs}, _From, State) ->
 
 handle_call({update_retailer_level, Merchant, Attrs}, _From, State) ->
     ?DEBUG("update_retailer_level with attrs ~p", [Attrs]),
+    Shop     = ?v(<<"shop">>, Attrs),
     Level    = ?v(<<"level">>, Attrs, -1),
     Score    = ?v(<<"score">>, Attrs),
     Discount = ?v(<<"discount">>, Attrs),
 
-    Sql = "select id, name, level from w_retailer_level where merchant="
-	++ ?to_s(Merchant)
+    Sql = "select id, name, level from w_retailer_level"
+	" where merchant=" ++ ?to_s(Merchant)
 	++ " and id=" ++ ?to_s(Level),
     case ?sql_utils:execute(read, Sql) of
 	{ok, []} ->
 	    {reply, {error, ?err(retailer_level_not_exist, Level)}, State};
 	{ok, _Any} ->
-	    Updates = ?utils:v(score, integer, Score) ++ ?utils:v(discount, integer, Discount),
+	    Updates = ?utils:v(shop, integer, Shop)
+		++ ?utils:v(score, integer, Score)
+		++ ?utils:v(discount, integer, Discount),
 	    Sql1 = "update w_retailer_level set " ++ ?utils:to_sqls(proplists, comma, Updates)
 		++ " where merchant="  ++ ?to_s(Merchant)
 		++ " and id=" ++ ?to_s(Level),
@@ -614,7 +621,12 @@ handle_call({delete_retailer, Merchant, RetailerId}, _From, State) ->
 
 handle_call({list_retailer_level, Merchant}, _From, State) ->
     ?DEBUG("list_retailer_level with merchant ~p", [Merchant]),
-    Sql = "select id, name, level, score, discount"
+    Sql = "select id"
+	", name"
+	", level"
+	", score"
+	", discount"
+	", shop as shop_id"
 	" from w_retailer_level"
 	" where merchant=" ++ ?to_s(Merchant),
     

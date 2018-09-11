@@ -454,8 +454,9 @@ create table w_retailer_level
     level           TINYINT default -1,
     score           INTEGER default 0,
     discount        INTEGER default 0,
+    shop            INTEGER default -1, 
     merchant        INTEGER default -1, -- which merchant belong to
-    unique  key  uk (level, merchant),
+    unique  key  uk (level, merchant, shop),
     primary key     (id)
 ) default charset=utf8;
 
@@ -732,7 +733,7 @@ create table w_inventory
 
     --
     shop             INTEGER default -1,
-    state            INTEGER default 0,  -- 0: wait for check, 1: checked, 2: gift
+    state            INTEGER default 0,  -- 0: wait for check, 1: checked, 2: gift, 3:promotion
 
     merchant         INTEGER default -1,
     

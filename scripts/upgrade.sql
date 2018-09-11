@@ -346,5 +346,11 @@ alter table print_template add column size_color TINYINT default 0 after size_da
 alter table print_template add column firm_date TINYINT default 0 after size_color;
 
 
+--2018-09-12
+alter table w_retailer_level add column shop INTEGER default -1 after discount;
+alter table w_retailer_level drop index uk;
+alter table w_retailer_level add unique index uk(merchant, shop, level);
+
+
 
 

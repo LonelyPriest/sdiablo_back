@@ -618,6 +618,7 @@ function filterProvider(){
 			var rlevels = levels.map(function(l) {
 			    return {name      :l.name,
 				    level     :l.level,
+				    shop_id   :l.shop_id,
 				    discount  :l.discount}
 			});
 
