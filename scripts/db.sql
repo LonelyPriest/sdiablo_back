@@ -1370,6 +1370,10 @@ create table print_template(
 
    solo_snumber    TINYINT default 0,
    len_snumber     TINYINT default 0,
+
+   size_date       TINYINT default 0,
+   size_color      TINYINT default 0,
+   firm_date       TINYINT default 0,
       
    merchant        INTEGER not null default -1,
    unique   key    (merchant),

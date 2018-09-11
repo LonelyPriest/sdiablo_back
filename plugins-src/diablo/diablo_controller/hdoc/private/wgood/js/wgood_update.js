@@ -37,6 +37,12 @@ function wgoodUpdateCtrlProvide(
 
     var authen = new diabloAuthen(user.type, user.right, user.shop);
     $scope.stock_right = authen.authenStockRight();
+
+    $scope.levels         = [1,2,3];
+    $scope.std_executives = [{"id":-1, name:"无"}].concat(filterStdExecutive);
+    $scope.categories     = [{"id":-1, name:"无"}].concat(filterCategory);
+    $scope.fabrics        = filterFabric;
+    $scope.template       = filterTemplate.length!==0 ? filterTemplate[0] : undefined;
     
     // $scope.stock_right = {
     // 	show_orgprice :stockUtils.authen_rainbow(user.type, user.right, 'show_orgprice'),
@@ -126,6 +132,9 @@ function wgoodUpdateCtrlProvide(
 	$scope.good.firm      = diablo_get_object(good.firm_id, $scope.firms);
 	$scope.good.sex       = diablo_get_object(good.sex, $scope.sexs);
 	$scope.good.season    = diablo_get_object(good.season, $scope.seasons);
+
+	$scope.good.executive = diablo_get_object(good.executive_id, $scope.std_executives);
+	$scope.good.category  = diablo_get_object(good.categroy_id,  $scope.categories);
 
 	if (angular.isDefined($routeParams.shop)){
 	    $scope.good.shop      = diablo_get_object(parseInt($routeParams.shop), $scope.shops);

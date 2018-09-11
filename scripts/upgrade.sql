@@ -340,6 +340,11 @@ alter table w_sale_detail add column sex TINYINT default -1 after type;
 alter table w_sale add column account INTEGER default -1 after rsn;
 alter table w_change_shift add column account INTEGER default -1 after merchant;
 
+--2018-09-11
+alter table print_template add column size_date TINYINT default 0 after len_snumber;
+alter table print_template add column size_color TINYINT default 0 after size_date;
+alter table print_template add column firm_date TINYINT default 0 after size_color;
+
 
 
 

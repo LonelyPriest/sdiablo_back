@@ -377,7 +377,54 @@
 	      <div ng-if="goodForm.expire.$invalid && !goodForm.expire.$pristine">
 		<span class="fg-red">整数或-1，-1表示无退货期限</span>
 	      </div>
-	    </div> 
+	    </div>
+
+	    <div x-ng-if="template && template.level" class="form-group diablo-good-form-group">
+	      <label class="col-sm-3 col-md-3 control-label">等级</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<select class="form-control"
+			x-ng-model="good.level"
+			x-ng-options="l for l in levels">
+		</select>
+	      </div> 
+	    </div>
+
+	    <div x-ng-if="template && template.executive" class="form-group diablo-good-form-group">
+	      <label class="col-sm-3 col-md-3 control-label">执行标准</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<select class="form-control"
+			x-ng-model="good.executive"
+			x-ng-options="e as e.name for e in std_executives">
+		</select>
+	      </div> 
+	    </div>
+
+	    <div x-ng-if="template && template.category" class="form-group diablo-good-form-group">
+	      <label class="col-sm-3 col-md-3 control-label">安全类别</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<select class="form-control"
+			x-ng-model="good.category"
+			x-ng-options="c as c.name for c in categories">
+		</select>
+	      </div> 
+	    </div>
+
+	    <div x-ng-if="template && template.fabric" class="form-group diablo-good-form-group">
+	      <label class="col-sm-3 col-md-3 control-label">面料</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<div class="input-group">
+		  <input type="text" readonly
+			 class="form-control"
+			 placeholder="默认为空"
+			 x-ng-model="good.fabric_desc">
+		  </input>
+		  <span class="input-group-btn">
+		    <button class="btn btn-primary" x-ng-click="select_fabric()">
+		      <i class="glyphicon glyphicon-arrow-right"></i></button> 
+		  </span>
+		</div>
+	      </div> 
+	    </div>
 
 	    <!-- image --> 
 	    <div class="form-group">

@@ -933,6 +933,10 @@ handle_call({set_barcode_print_template, Merchant}, _From, State) ->
 		", solo_snumber"
 		", len_snumber"
 
+		", size_date"
+		", size_color"
+		", firm_date"
+
 		", merchant) values("
 		++ ?to_s(4) ++ ","
 		++ ?to_s(3) ++ ","
@@ -982,6 +986,10 @@ handle_call({set_barcode_print_template, Merchant}, _From, State) ->
 
 		++ ?to_s(0) ++ ","
 		++ ?to_s(8) ++ ","
+
+		++ ?to_s(0) ++ ","
+		++ ?to_s(0) ++ ","
+		++ ?to_s(0) ++ ","
 		
 		++ ?to_s(Merchant)  ++ ")",
 

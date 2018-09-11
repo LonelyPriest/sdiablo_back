@@ -659,6 +659,10 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", solo_snumber"
 	", len_snumber"
 
+	", size_date"
+	", size_color"
+	", firm_date"
+
     %% ", rbrand"
 	
 	" from print_template"
@@ -715,7 +719,12 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(second_space, integer, ?v(<<"second_space">>, Attrs))
 
 	++  ?utils:v(solo_snumber, integer, ?v(<<"solo_snumber">>, Attrs))
-	++  ?utils:v(len_snumber, integer, ?v(<<"len_snumber">>, Attrs)),    
+	++  ?utils:v(len_snumber, integer, ?v(<<"len_snumber">>, Attrs))
+
+	++  ?utils:v(size_date, integer, ?v(<<"size_date">>, Attrs))
+	++  ?utils:v(size_color, integer, ?v(<<"size_color">>, Attrs))
+	++  ?utils:v(firm_date, integer, ?v(<<"firm_date">>, Attrs)),
+    
 
     Sql = "update print_template set " ++ ?utils:to_sqls(proplists, comma, U)
 	++ " where merchant=" ++ ?to_s(Merchant)

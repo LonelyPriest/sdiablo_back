@@ -976,7 +976,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 	    line = this.shop; 
     }
 
-    if (this.template.shift_date) {
+    if (this.template.shift_date && !this.template.size_date) {
 	if (angular.isDefined(line) && diablo_trim(line))
 	    // 2018-06-12 12:30:49 -> 180612
 	    line += "-" + this.stock.entry_date.substr(2,8).split(diablo_date_seprator).join("");
@@ -1002,6 +1002,10 @@ stockPrintU.prototype.printBarcode2 = function() {
 	} else {
 	    line = "厂商：" + firm;
 	    // this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "厂商：" + firm); 
+	}
+
+	if (this.template.firm_date) {
+	    line += "(" + this.stock.entry_date.substr(2,8).split(diablo_date_seprator).join("") + ")";
 	}
 	
 	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, line); 
@@ -1123,8 +1127,16 @@ stockPrintU.prototype.printBarcode2 = function() {
 		    }
 		}
 	    };
-	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "规格：" + line);
 
+	    if (this.template.shift_date && this.template.size_date) {
+		line += "  (" + this.stock.entry_date.substr(2,8).split(diablo_date_seprator).join("") + ")";
+	    }
+	    if (this.template.color && this.template.size_color) {
+		line += "  " + this.first.color === diablo_free_color ? "" : this.first.color;
+	    }
+	    
+	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "规格：" + line);
+	    
 	    // second
 	    if (pSecond) {
 		// line = this.second.size && this.second.size !== diablo_free_size ? this.second.size : "均码";
@@ -1136,6 +1148,15 @@ stockPrintU.prototype.printBarcode2 = function() {
 			}
 		    }
 		};
+
+		if (this.template.shift_date && this.template.size_date) {
+		    line += "  (" + this.stock.entry_date.substr(2,8).split(diablo_date_seprator).join("") + ")";
+		}
+		if (this.template.color && this.template.size_color) {
+		    if (this.template.size_color) {
+			line += "  " + this.second.color === diablo_free_color ? "" : this.second.color;
+		    }
+		}
 
 		this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, "规格：" + line);
 	    }
@@ -1151,6 +1172,15 @@ stockPrintU.prototype.printBarcode2 = function() {
 		    }
 		};
 
+		if (this.template.shift_date && this.template.size_date) {
+		    line += "  (" + this.stock.entry_date.substr(2,8).split(diablo_date_seprator).join("") + ")";
+		}
+		if (this.template.color && this.template.size_color) {
+		    if (this.template.size_color) {
+			line +="  " + this.third.color === diablo_free_color ? "" : this.third.color;
+		    }
+		}
+		
 		this.LODOP.ADD_PRINT_TEXT(top, startThird, iwpx, this.template.hpx_each, "规格：" + line);
 	    }
 	    
