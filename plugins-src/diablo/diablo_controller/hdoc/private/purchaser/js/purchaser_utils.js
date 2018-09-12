@@ -1006,7 +1006,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 	}
 
 	if (this.template.firm_date) {
-	    line += "(" + this.stock.entry_date.substr(2,8).split(diablo_date_seprator).join("") + ")";
+	    line += "-" + this.stock.entry_date.substr(2,8).split(diablo_date_seprator).join("");
 	}
 	
 	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, line); 
@@ -1117,8 +1117,8 @@ stockPrintU.prototype.printBarcode2 = function() {
     }
 
     // size
-    // line = this.first.size && this.first.size !== diablo_free_size ? this.first.size : "均码";
-    line = this.first.size && this.first.size !== diablo_free_size ? this.first.size : "";
+    line = this.first.size && this.first.size !== diablo_free_size ? this.first.size : "均码";
+    // line = this.first.size && this.first.size !== diablo_free_size ? this.first.size : "";
     if (diablo_trim(line) && this.template.size) {
 	if (this.template.solo_size) {
 	    if (angular.isDefined(this.stock.specs) && this.stock.specs.length !== 0 && this.first.size !== diablo_free_size) {
@@ -1130,12 +1130,13 @@ stockPrintU.prototype.printBarcode2 = function() {
 	    };
 
 	    if (this.template.shift_date && this.template.size_date) {
-		line += "  (" + this.stock.entry_date.substr(2,8).split(diablo_date_seprator).join("") + ")";
+		line += "-" + this.stock.entry_date.substr(2,8).split(diablo_date_seprator).join("");
 	    }
 	    if (this.template.color && this.template.size_color) {
-		line += "  " + this.first.color === diablo_free_color ? "" : this.first.color;
+		line += "-" + this.first.color === diablo_free_color ? "" : this.first.color;
 	    }
-	    
+
+	    console.log(line);
 	    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "规格：" + line);
 	    
 	    // second
@@ -1151,11 +1152,11 @@ stockPrintU.prototype.printBarcode2 = function() {
 		};
 
 		if (this.template.shift_date && this.template.size_date) {
-		    line += "  (" + this.stock.entry_date.substr(2,8).split(diablo_date_seprator).join("") + ")";
+		    line += "-" + this.stock.entry_date.substr(2,8).split(diablo_date_seprator).join("");
 		}
 		if (this.template.color && this.template.size_color) {
 		    if (this.template.size_color) {
-			line += "  " + this.second.color === diablo_free_color ? "" : this.second.color;
+			line += "-" + this.second.color === diablo_free_color ? "" : this.second.color;
 		    }
 		}
 
@@ -1174,11 +1175,11 @@ stockPrintU.prototype.printBarcode2 = function() {
 		};
 
 		if (this.template.shift_date && this.template.size_date) {
-		    line += "  (" + this.stock.entry_date.substr(2,8).split(diablo_date_seprator).join("") + ")";
+		    line += "-" + this.stock.entry_date.substr(2,8).split(diablo_date_seprator).join("");
 		}
 		if (this.template.color && this.template.size_color) {
 		    if (this.template.size_color) {
-			line +="  " + this.third.color === diablo_free_color ? "" : this.third.color;
+			line +="-" + this.third.color === diablo_free_color ? "" : this.third.color;
 		    }
 		}
 		
@@ -1310,9 +1311,9 @@ stockPrintU.prototype.printBarcode2 = function() {
 	if (pSecond)
 	    // line2 += " " + (this.second.color === diablo_free_color ? "均色" : this.second.color);
 	    line2 += " " + (this.second.color === diablo_free_color ? "" : this.second.color);
-	if (pSecond)
+	if (pThird)
 	    // line2 += " " + (this.second.color === diablo_free_color ? "均色" : this.second.color);
-	    line3 += " " + (this.second.color === diablo_free_color ? "" : this.second.color); 
+	    line3 += " " + (this.second.color === diablo_free_color ? "" : this.third.color); 
     }
     
     if (!this.template.solo_size) {

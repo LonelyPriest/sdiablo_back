@@ -43,6 +43,7 @@ function wgoodUpdateCtrlProvide(
     $scope.categories     = [{"id":-1, name:"无"}].concat(filterCategory);
     $scope.fabrics        = filterFabric;
     $scope.template       = filterTemplate.length!==0 ? filterTemplate[0] : undefined;
+    console.log($scope.template);
     
     // $scope.stock_right = {
     // 	show_orgprice :stockUtils.authen_rainbow(user.type, user.right, 'show_orgprice'),
