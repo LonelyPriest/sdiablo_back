@@ -155,6 +155,7 @@ diablo_down = 2;
 diablo_left = 3;
 
 var diablo_barcode_lenth_of_color_size = 5;
+var diablo_ext_barcode_lenth_of_color_size = 6;
 var diablo_by_shop     = "by_shop";
 var diablo_print_px    = 5.56;
 
@@ -232,8 +233,8 @@ var size_to_barcode =
      "75A", "75B", "75C", "75D", "75E",
      "80A", "80B", "80C", "80D", "80E", "80F",
      "85A", "85B", "85C", "85D", "85E", "85F",
-     "90B", "90C", "90D", "90E", "90F",
-     "95C", "95D", "95E", "95F"];
+     "90A", "90B", "90C", "90D", "90E", "90F",
+     "95A", "95B", "95C", "95D", "95E", "95F"];
 
 // var f_size_to_barcode = [
 //     "FF",
@@ -285,10 +286,10 @@ var diablo_obj_strip = function(obj){
     return obj;
 };
 
-var diablo_retailer_levels = [{level:0, name:"普通级"},
-			      {level:1, name:"金卡级"},
-			      {level:2, name:"白金级"},
-			      {level:3, name:"黑金级"}];
+var diablo_retailer_levels = [{id:0, level:0, name:"普通级"},
+			      {id:1, level:1, name:"金卡级"},
+			      {id:2, level:2, name:"白金级"},
+			      {id:3, level:3, name:"黑金级"}];
 
 var diablo_season = ["春", "夏", "秋", "冬"];
 var diablo_season2number = function(season){
@@ -1123,6 +1124,7 @@ var diabloHelp = function(){
 	correct_barcode: function(original, auto_barcode) {
 	    var correct, cuted;
 	    if (auto_barcode) {
+		var code_len = original.length; 
 		if (original.startsWith('1')) {
 		    correct = original; 
 		    cuted = original.substr(0, original.length - diablo_barcode_lenth_of_color_size);
@@ -1133,7 +1135,7 @@ var diabloHelp = function(){
 		}
 		else if (original.startsWith('01') && original.length > 14 ) {
 		    correct = original.substr(1, original.length - 1); 
-		    cuted = original.substr(1, original.length - diablo_barcode_lenth_of_color_size -1);
+		    cuted = original.substr(1, original.length - diablo_ext_barcode_lenth_of_color_size - 1);
 		} 
 		else {
 		    cxorrect = original,

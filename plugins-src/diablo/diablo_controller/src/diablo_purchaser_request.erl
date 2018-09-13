@@ -1151,9 +1151,10 @@ action(Session, Req, {"syn_w_inventory_barcode"}, Payload) ->
     	    ?utils:respond(200, Req, Error)
     end;
 
-action(Session, Req, {"gen_stock_barcode"}, Payload) ->
+action(Session, Req, {"gen_stock_barcode"}, Payload) -> 
     ?DEBUG("gen_stock_barcode: session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    
     StyleNumber = ?v(<<"style_number">>, Payload),
     Brand = ?v(<<"brand">>, Payload),
     Shop = ?v(<<"shop">>, Payload),

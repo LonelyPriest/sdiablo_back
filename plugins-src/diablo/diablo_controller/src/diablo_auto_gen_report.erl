@@ -186,8 +186,7 @@ handle_cast(cancel_ticket, #state{ticket_of_merchant=Tickets} = State) ->
       end, Tickets),
     {noreply, State#state{ticket_of_merchant=[]}}; 
 
-handle_cast({gen_ticket, TriggerTime},
-	    #state{merchant=Merchants, ticket_of_merchant=Tickets} = State) ->
+handle_cast({gen_ticket, TriggerTime}, #state{merchant=Merchants, ticket_of_merchant=Tickets} = State) ->
     %% ?DEBUG("gen_ticket time ~p, tickets ~p", [TriggerTime, Tickets]),
     ?INFO("auto generate ticket at time ~p, tasks ~p", [TriggerTime, Tickets]),
     case Tickets of
@@ -459,12 +458,40 @@ task(gen_ticket, Datetime, {Merchant, Conditions}) when is_number(Merchant) ->
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
     {ok, Scores} = ?w_user_profile:get(score, Merchant),
     %% ?DEBUG("scores ~p", [Scores]),
+
+    ScoreId = ?v(<<"sid">>, Conditions, ?INVALID_OR_EMPTY),
+    %% max first
     Score2Money =
-	case lists:filter(fun({S})-> ?v(<<"type_id">>, S) =:= 1 end, Scores) of
-	    [] -> [];
-	    [{_Score2Money}] -> _Score2Money
-	end, 
-    %% ?DEBUG("score2money ~p, ", [Score2Money]),
+	case ScoreId of
+	    ?INVALID_OR_EMPTY ->
+		lists:foldr(
+		  fun({S}, Acc) ->
+			  case ?v(<<"type_id">>, S) =:= 1 of
+			      true ->
+				  case Acc of
+				      [] -> S;
+				      S0 ->
+					  case ?v(<<"balance">>, S0) < ?v(<<"balance">>, S) of
+					      true -> S;
+					      false -> Acc
+					  end
+				  end;
+			      false ->
+				  Acc
+			  end
+		  end, [], Scores);
+	    _ ->
+		lists:foldr(
+		  fun({S}, Acc) ->
+			  case ?v(<<"type_id">>, S) =:= 1 andalso ?v(<<"id">>, S) =:= ScoreId of
+			      true -> S;
+			      false -> Acc
+			  end
+		  end, [], Scores)
+	end,
+    
+    ?DEBUG("score2money ~p, ", [Score2Money]),
+
     
     IsGenTicket = ?v(<<"gen_ticket">>, BaseSetting, 0),
     SysVips = sys_vip_of(merchant, Merchant),
@@ -475,9 +502,54 @@ task(gen_ticket, Datetime, {Merchant, Conditions}) when is_number(Merchant) ->
 	    true ->
 		AccScore    = ?v(<<"score">>, Score2Money), 
 		SendBalance = ?v(<<"balance">>, Score2Money),
-		Sql = "select id, score from w_retailer where merchant=" ++ ?to_s(Merchant)
+
+		SortScores = 
+		    lists:sort(
+		      fun({S0}, {S1}) ->
+			      ?v(<<"score">>, S0) < ?v(<<"score">>, S1) end,
+		      lists:filter(
+			fun({S}) ->
+				?v(<<"type_id">>, S) =:= 1
+				    andalso ?v(<<"id">>, S) /= ScoreId
+				    andalso ?v(<<"score">>, S) > ?v(<<"score">>, Score2Money) end, Scores)),
+		
+		%% AccScore1 = 
+		%%     lists:foldr(
+		%%       fun({S}, Acc) ->
+		%% 	      ?DEBUG("S ~p", [S]),
+		%% 	      AccScore0 = ?v(<<"score">>, Acc),
+		%% 	      AccScore1 = ?v(<<"score">>, S),
+		%% 	      ?DEBUG("score0 ~p, score1 ~p, score ~p,", [AccScore0, AccScore1, AccScore]),
+		%% 	      case AccScore1 > AccScore of
+		%% 		  true ->
+		%% 		      case AccScore1 < AccScore0 of
+		%% 			  true -> AccScore1;
+		%% 			  false -> Acc
+		%% 		      end;
+		%% 		  false ->
+		%% 		      Acc
+		%% 	      end
+		%%       end, Score2Money, lists:filter(fun({S}) -> ?v(<<"type_id">>, S) =:= 1 end, Scores)),
+
+		%% ?DEBUG("SortScores ~p", [SortScores]),
+
+		NewConditions = lists:keydelete(
+				  <<"retailer">>, 1,
+				  lists:keydelete(<<"sid">>, 1, Conditions))
+		    ++ case ?v(<<"retailer">>, Conditions, []) of
+			   [] -> [];
+			   _RetailerId -> [{<<"id">>, _RetailerId}]
+		       end,
+		
+		
+		Sql = "select id, score from w_retailer where merchant=" ++ ?to_s(Merchant) 
 		    ++ " and score>=" ++ ?to_s(AccScore)
-		    ++ ?sql_utils:condition(proplists, Conditions)
+		    ++ case SortScores of
+			   [] -> [];
+			   [H|_] ->
+			       " and score<" ++ ?to_s(?v(<<"score">>, H))
+		       end
+		    ++ ?sql_utils:condition(proplists, NewConditions)
 		    ++ " and type!=" ++ ?to_s(?SYSTEM_RETAILER)
 		    ++ " and deleted=0",
 		case ?sql_utils:execute(read, Sql) of

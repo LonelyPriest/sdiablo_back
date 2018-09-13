@@ -516,11 +516,13 @@ action(Session, Req, {"consume_w_retailer_ticket"}, Payload) ->
     ?DEBUG("consume_ticket with session ~p, payload ~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session), 
     TicketId = ?v(<<"tid">>, Payload),
+    TicketSid = ?v(<<"sid">>, Payload),
     Comment = ?v(<<"comment">>, Payload, []),
 
     {ok, Scores}=?w_user_profile:get(score, Merchant),
     Score2Money =
-	case lists:filter(fun({S})-> ?v(<<"type_id">>, S) =:= 1 end, Scores) of
+	case lists:filter(fun({S})-> ?v(<<"type_id">>, S) =:= 1
+					 andalso ?v(<<"id">>, S) =:= TicketSid end, Scores) of
 	    [] -> [];
 	    [{_Score2Money}] -> _Score2Money
 	end, 
@@ -873,7 +875,7 @@ sidebar(Session) ->
     L1 ++ L2 ++ ?menu:sidebar(level_1_menu, Level) ++ ?menu:sidebar(level_1_menu, Consume).
 
 csv_head(retailer, Do, Code) ->
-    Head = "序号,名称,类型,联系方式,余额,累计消费,累计积分,所在店铺,日期",
+    Head = "序号,名称,类型,等级,联系方式,余额,累计消费,累计积分,所在店铺,日期",
     C = 
 	case Code of
 	    0 -> ?utils:to_utf8(from_latin1, Head);
@@ -903,6 +905,7 @@ do_write(retailer, Do, Count, [{H}|T], Code) ->
     %% Id      = ?v(<<"id">>, H),
     Name    = ?v(<<"name">>, H),
     Type    = retailer_type(?v(<<"type_id">>, H)),
+    Level   = retailer_level(?v(<<"level">>, H)),
     Mobile  = ?v(<<"mobile">>, H, []),
     Balance = ?v(<<"balance">>, H, 0),
     Consume = ?v(<<"consume">>, H),
@@ -914,6 +917,7 @@ do_write(retailer, Do, Count, [{H}|T], Code) ->
 	++ ?to_s(Count) ++ ?d
 	++ ?to_s(Name) ++ ?d
 	++ ?to_s(Type) ++ ?d
+	++ ?to_s(Level) ++ ?d
 	++ ?to_s(Mobile) ++ ?d
 	++ ?to_s(Balance) ++ ?d
 	++ ?to_s(Consume) ++ ?d
@@ -935,6 +939,7 @@ do_write(retailer, Do, Count, [{H}|T], Code) ->
 
 do_write(recharge, Do, _Seq, [], _Code, {AccCBalance, AccSBalance, _AccBalance}) ->
     Do("\r\n"
+       ++ ?d
        ++ ?d
        ++ ?d
        ++ ?d
@@ -996,8 +1001,17 @@ do_write(recharge, Do, Seq, [{H}|T], Code, {AccCBalance, AccSBalance, AccBalance
 retailer_type(0) -> "普通会员";
 retailer_type(1) -> "充值会员";
 retailer_type(_) -> "未知类型".
+
+retailer_level(0) -> "普通";
+retailer_level(1) -> "金卡";
+retailer_level(2) -> "白金";
+retailer_level(3) -> "黑金".
+    
 		    
 mode(0) -> use_id; 
 mode(1) -> use_balance;
-mode(2) -> use_consume.
+mode(2) -> use_consume;
+mode(3) -> use_level.
+
+
 

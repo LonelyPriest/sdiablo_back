@@ -112,7 +112,8 @@
 		    <th>身份证号码</th>
 		    <th>生日</th>
 		    <th>会员类型</th>
-		    <th>会员等级</th> 
+		    <th x-ng-click="use_order(order_fields.level)">会员等级
+		      <i class="glyphicon glyphicon-triangle-bottom fg-red"></th> 
 		    <th>联系方式</th>
 		    <th>联系地址</th> 
 		    <th x-ng-click="use_order(order_fields.balance)" class="danger">帐户余额
@@ -774,9 +775,7 @@
   </div>
 
   <div class="modal-footer">
-    <button class="btn btn-primary"
-	    x-ng-disabled="pForm.$invalid || !params.check_one(params.draws)"
-	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-primary" x-ng-disabled="!params.check_one(params.draws)" x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>
 </script>
@@ -975,7 +974,7 @@
 
   <div class="modal-footer">
     <button class="btn btn-primary"
-	    x-ng-disabled="pForm.$invalid || params.check_same(params.draws)"
+	    x-ng-disabled="params.check_same(params.draws)"
 	    x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>

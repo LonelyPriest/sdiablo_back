@@ -1,5 +1,11 @@
 var version_update = function(){
     var updates = [
+	{date: "2018-09-14",
+	 content:
+	 ["尺码个数扩展至999个",
+	  "支持多种积分方案兑换钱方案"]
+	},
+	
 	{date: "2018-09-11",
 	 content:
 	 ["修正负数退货时有时无法退货的问题",

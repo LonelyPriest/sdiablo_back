@@ -325,9 +325,14 @@ function filterProvider(){
 		    _filter.fields.push({name:"over", chinese:"溢出"});
 		    _prompt.over = promptValues;
 		} else if (name === 'mconsume'){
-		    _filter.fields.push({name:"mconsume", chinese:"消费大于"})
+		    _filter.fields.push({name:"mconsume", chinese:"消费大于"});
+		    _prompt.mconsume = promptValues;
 		} else if (name === 'account'){
-		    _filter.fields.push({name:"account", chinese:"收银员"})
+		    _filter.fields.push({name:"account", chinese:"收银员"});
+		    _prompt.account = promptValues;
+		} else if (name === 'level'){
+		    _filter.fields.push({name:"level", chinese:"等级"});
+		    _prompt.level = promptValues;
 		};
 		
 		return _filter;

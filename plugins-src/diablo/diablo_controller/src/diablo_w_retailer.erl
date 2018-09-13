@@ -1166,18 +1166,24 @@ handle_call({new_score, Merchant, Attrs}, _From, State) ->
 
     Entry    = ?utils:current_time(localtime),
 
-    Sql = case Rule of
-	      0 ->
-		  "select id, balance, score, type from w_score"
-		      " where merchant=" ++ ?to_s(Merchant)
-		      ++ " and balance=" ++ ?to_s(Balance)
-		      ++ " and score=" ++ ?to_s(Score)
-		      ++ " and type=" ++ ?to_s(Rule);
-	      1 ->
-		  "select id, balance, score, type from w_score"
-		      " where merchant=" ++ ?to_s(Merchant)
-		      ++ " and type=" ++ ?to_s(Rule)
-	  end,
+    %% Sql = case Rule of
+    %% 	      0 ->
+    %% 		  "select id, balance, score, type from w_score"
+    %% 		      " where merchant=" ++ ?to_s(Merchant)
+    %% 		      ++ " and balance=" ++ ?to_s(Balance)
+    %% 		      ++ " and score=" ++ ?to_s(Score)
+    %% 		      ++ " and type=" ++ ?to_s(Rule);
+    %% 	      1 ->
+    %% 		  "select id, balance, score, type from w_score"
+    %% 		      " where merchant=" ++ ?to_s(Merchant)
+    %% 		      ++ " and type=" ++ ?to_s(Rule)
+    %% 	  end,
+
+    Sql = "select id, balance, score, type from w_score"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and balance=" ++ ?to_s(Balance)
+	++ " and score=" ++ ?to_s(Score)
+	++ " and type=" ++ ?to_s(Rule),
 
     case ?sql_utils:execute(s_read, Sql) of
 	{ok, []} ->

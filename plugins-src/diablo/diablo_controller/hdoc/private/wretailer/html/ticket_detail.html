@@ -194,3 +194,56 @@
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>  
 </script>
+
+
+<script type="text/ng-template" id="syn-ticket.html"> 
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    <h4 class="modal-title">
+      <span class="label label-sm label-primary">积分方案</span>
+    </h4>
+  </div>
+
+  <div class="modal-body">
+    <div class="table-responsive">
+      <table class="table table-bordered
+		    table-striped table-condensed table-advanced">
+	<thead>
+	  <tr>
+	    <th></th>
+	    <th>名称</th>
+	    <th>消费积分</th>
+	    <th>兑换金额</th>
+	  </tr>
+	</thead>
+	<tbody>
+	  <tr x-ng-repeat="s in params.scores">
+	    <td class="text-center">
+	      <div class="checkbox checkbox-danger checkbox-circle">
+		<input id={{s.id}}
+		       type="checkbox"
+		       x-ng-model="s.select"
+		       x-ng-change="params.check_only(s, params.scores)"/>
+		<label for={{s.id}}></label>
+	      </div>
+	    </td>
+
+	    <td class="vert-align">{{s.name}}</td>
+	    <td class="vert-align">{{s.score}}</td>
+	    <td class="vert-align">{{s.balance}}</td>
+	    
+	  </tr>
+	</tbody>
+      </table>
+    </div>
+    
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary" x-ng-disabled="!params.check_one(params.scores)" x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>  
+</script>

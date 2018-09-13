@@ -81,7 +81,7 @@ var retailerUtils = function(){
 	},
 	
 	order_fields: function(){
-	    return {id:0, balance:1, consume:2}
+	    return {id:0, balance:1, consume:2, level:3};
 	},
 
 	authen: function(user_type, right_tree, action) {

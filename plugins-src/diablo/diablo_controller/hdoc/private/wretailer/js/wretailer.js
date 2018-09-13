@@ -119,6 +119,7 @@ function wretailerDetailCtrlProvide(
     diabloFilter.add_field("date", $scope.date_of_month);
     diabloFilter.add_field("region", $scope.regions);
     diabloFilter.add_field("shop", user.sortShops);
+    diabloFilter.add_field("level", $scope.retailer_levels);
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
     
@@ -160,6 +161,7 @@ function wretailerDetailCtrlProvide(
     };
 
     $scope.do_search = function(page){
+	// console.log($scope.filters);
     	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
 	    console.log($scope.select.phone);
 	    if (angular.isDefined($scope.select.phone) && angular.isObject($scope.select.phone)){
@@ -855,10 +857,11 @@ function wretailerChargeDetailCtrlProvide(
 };
 
 function wretailerTicketDetailCtrlProvide(
-    $scope, diabloFilter, diabloPattern, diabloUtilsService, wretailerService, filterShop, user){
+    $scope, diabloFilter, diabloPattern, diabloUtilsService, wretailerService, filterShop, filterScore, user){
 
     var dialog = diabloUtilsService; 
     // $scope.shops = user.sortShops;
+    $scope.scores = filterScore.filter(function(s) {return s.type_id === 1});
     $scope.pattern = {comment: diabloPattern.comment};
     $scope.items_perpage = diablo_items_per_page();
     $scope.max_page_size = 10;
@@ -914,23 +917,58 @@ function wretailerTicketDetailCtrlProvide(
 	})
     };
 
-    $scope.syn_ticket = function() {
-	diabloFilter.do_filter($scope.filters, $scope.time, function(search) {
-	    wretailerService.syn_ticket(search).then(function(result) {
-		console.log(result);
-		if (result.ecode === 0) {
-		    dialog.response_with_callback(
-			true,
-			"同步电子卷",
-			"同步电子卷成功！！",
-			undefined,
-			function(){$scope.do_search($scope.current_page)}) 
-		} else {
-		    dialog.response(
-			false, "同步电子卷", "同步电子卷失败：" + wretailerService.error[result.ecode]);
-		}
-	    });
+    var check_only = function(select, scores){
+	angular.forEach(scores, function(s){
+	    if (s.id !== select.id)
+		s.select = false;
 	});
+    };
+
+    var check_one = function(scores){
+	for (var i=0,l=scores.length; i<l; i++){
+	    if (scores[i].select) return true;
+	}
+	return false;
+    };
+    
+    $scope.syn_ticket = function() {
+	var callback = function(params) {
+	    console.log(params); 
+	    var select_score = -1;
+	    for (var i=0,l=params.scores.length; i<l; i++){
+		if (params.scores[i].select) {
+		    select_score = params.scores[i].id;
+		    break;
+		}
+	    } 
+	    
+	    diabloFilter.do_filter($scope.filters, $scope.time, function(search) {
+		wretailerService.syn_ticket(angular.extend(search, {sid:select_score})).then(function(result) {
+		    console.log(result);
+		    if (result.ecode === 0) {
+			dialog.response_with_callback(
+			    true,
+			    "同步电子卷",
+			    "同步电子卷成功！！",
+			    undefined,
+			    function(){$scope.do_search($scope.current_page)}) 
+		    } else {
+			dialog.response(
+			    false, "同步电子卷", "同步电子卷失败：" + wretailerService.error[result.ecode]);
+		    }
+		});
+	    });
+	};
+
+	dialog.edit_with_modal(
+	    "syn-ticket.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {scores: $scope.scores,
+	     check_only: check_only,
+	     check_one: check_one}); 
+	
     };
 
     $scope.refresh = function(){
@@ -946,9 +984,8 @@ function wretailerTicketDetailCtrlProvide(
     $scope.consume = function(ticket){
 	console.log(ticket);
 	var callback = function(params){
-	    console.log(params);
-	    
-	    wretailerService.consume_ticket(ticket.id, params.comment).then(function(result){
+	    console.log(params); 
+	    wretailerService.consume_ticket(ticket.id, ticket.sid, params.comment).then(function(result){
 		if (result.ecode === 0){
 		    dialog.response_with_callback(
 			true, "电子卷消费", "电子卷消费成功！！" ,
@@ -963,7 +1000,7 @@ function wretailerTicketDetailCtrlProvide(
 	};
 
 	
-	dialog.edit_with_modal("effect-ticket.html", 'lg', callback, undefined,
+	dialog.edit_with_modal("effect-ticket.html", undefined, callback, undefined,
 			       {comment_pattern: $scope.pattern.comment}); 
     };
 

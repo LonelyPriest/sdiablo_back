@@ -707,6 +707,9 @@ diabloUtils.directive('queryGroup', function () {
 			case "month":
 			    f.value = get_prompt(f.value, scope.prompt.month);
 			    break;
+			case "level":
+			    f.value = get_prompt(f.value, scope.prompt.level);
+			    break;
 			case "date":
 			    f.value = get_prompt(f.value, scope.prompt.date);
 			    break;

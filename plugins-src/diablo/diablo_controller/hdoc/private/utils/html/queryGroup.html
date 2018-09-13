@@ -390,7 +390,15 @@
 		   typeahead-editable="false"
 		   uib-typeahead="c as c.no for c in
 				  prompt.cards|filter:$viewValue|limitTo:8"/>
-	  </span> 
+	  </span>
+
+	  <span x-ng-switch-when="level">
+	    <select type="text" class="form-control"
+	  	    x-ng-model="f.value"
+	  	    x-ng-options="l as l.name for l in prompt.level"
+	  	    x-ng-init="f.value=f.value ? f.value : prompt.level[0]">
+	    </select>
+	  </span>
 	  
 	</div> 
 	
