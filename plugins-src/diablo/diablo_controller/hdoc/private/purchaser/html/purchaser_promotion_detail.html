@@ -47,6 +47,10 @@
 		    <th>减免金额</th>
 		    <th>购买数量</th>
 		    <th>赠送数量</th>
+
+		    <th>折扣数量</th>
+		    <th>折扣描述</th>
+		    
 		    <th>开始日期</th>
 		    <th>结束日期</th>
 		    <th>描述</th>
@@ -87,6 +91,19 @@
 		    <td>
 		       <div x-ng-switch on="p.rule.id">
 			<span x-ng-switch-when=2>{{p.rmoney}}</span>
+			<span x-ng-switch-default>-</span>
+		      </div>
+		    </td>
+
+		    <td>
+		       <div x-ng-switch on="p.rule.id">
+			<span x-ng-switch-when=3>{{p.scount}}</span>
+			<span x-ng-switch-default>-</span>
+		      </div>
+		    </td>
+		    <td>
+		       <div x-ng-switch on="p.rule.id">
+			<span x-ng-switch-when=3>{{p.sdiscount}}</span>
 			<span x-ng-switch-default>-</span>
 		      </div>
 		    </td>

@@ -78,8 +78,7 @@
 	      <label class="col-md-3 col-sm-3 control-label">折扣</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
-		  <div x-ng-class="{'has-error':pForm.discount.$invalid
-				   && !pForm.discount.$pristine}">
+		  <div x-ng-class="{'has-error':pForm.discount.$invalid && !pForm.discount.$pristine}">
 		    <input type="number" step="1"
 			   class="form-control"
 			   name="discount"
@@ -91,8 +90,7 @@
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div> 
 	      </div>
-	      <div ng-if="pForm.discount.$invalid
-			  && !pForm.discount.$pristine">
+	      <div ng-if="pForm.discount.$invalid && !pForm.discount.$pristine">
 		<span class="fg-red">两位整数，100表示无折扣</span>
 	      </div> 
 	    </div>
@@ -103,8 +101,7 @@
 	      <label class="col-md-3 col-sm-3 control-label">消费金额</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
-		  <div x-ng-class="{'has-error':pForm.consume.$invalid
-				   && !pForm.consume.$pristine}">
+		  <div x-ng-class="{'has-error':pForm.consume.$invalid && !pForm.consume.$pristine}">
 		    <input type="number" step="1"
 			   class="form-control"
 			   name="consume"
@@ -182,6 +179,49 @@
 	      </div>
 	      <div ng-if="pForm.sm.$invalid && !pForm.sm.$pristine">
 		<span class="fg-red">赠送数量只能是整数</span>
+	      </div> 
+	    </div>
+
+
+	    <div x-ng-if="promotion.rule.id===3" class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">购买数量</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<div class="input-group">
+		  <div x-ng-class="{'has-error':pForm.hm.$invalid && !pForm.hm.$pristine}">
+		    <input type="text"
+			   class="form-control"
+			   name="hm"
+			   required
+			   placeholder="商品购买数量,请用分号分开" 
+			   x-ng-model="promotion.scount"
+			   x-ng-pattern="pattern.semi_number"/>
+		  </div>
+		  <span class="input-group-addon bg-white fg-red">*</span>
+		</div> 
+	      </div>
+	      <div ng-if="pForm.hm.$invalid && !pForm.hm.$pristine">
+		<span class="fg-red">格式1;2;3</span>
+	      </div> 
+	    </div>
+
+	    <div x-ng-if="promotion.rule.id===3" class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">购买折扣</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<div class="input-group">
+		  <div x-ng-class="{'has-error':pForm.dm.$invalid && !pForm.dm.$pristine}">
+		    <input type="text"
+			   class="form-control"
+			   name="dm"
+			   required
+			   placeholder="购买折扣,请用分号分开" 
+			   x-ng-model="promotion.sdiscount"
+			   x-ng-pattern="pattern.semi_number"/>
+		  </div>
+		  <span class="input-group-addon bg-white fg-red">*</span>
+		</div> 
+	      </div>
+	      <div ng-if="pForm.dm.$invalid && !pForm.dm.$pristine">
+		<span class="fg-red">格式80;75;70</span>
 	      </div> 
 	    </div>
 

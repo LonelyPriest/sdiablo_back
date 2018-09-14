@@ -3,14 +3,13 @@
 function stockPromotionNewProvide(
     $scope, dateFilter, diabloPattern, diabloUtilsService,
     purchaserService, wgoodService){
-
-    // $scope.shops = user.sortShops;
-
+    // $scope.shops = user.sortShops; 
     $scope.pattern = {
-	name      :diabloPattern.ch_en_num_beside_underline_bars,
-	discount  :diabloPattern.discount,
-	number    :diabloPattern.number,
-	remark    :diabloPattern.comment
+	name        :diabloPattern.ch_en_num_beside_underline_bars,
+	discount    :diabloPattern.discount,
+	number      :diabloPattern.number,
+	remark      :diabloPattern.comment,
+	semi_number :diabloPattern.semicolon_number
     };
     
     $scope.rules = purchaserService.promotion_rules;
@@ -38,14 +37,19 @@ function stockPromotionNewProvide(
 	    || $scope.promotion.edate === null){
 	    $scope.promotion.edate = now +  diablo_day_millisecond * 90;
 	}
-	
+
+	var rule_id = $scope.promotion.rule.id; 
 	var p = {
 	    // shop:     $scope.promotion.shop.id,
 	    name:     $scope.promotion.name,
-	    rule:     $scope.promotion.rule.id,
-	    discount: $scope.promotion.rule.id === 0 ? $scope.promotion.discount : undefined,
-	    consume:  $scope.promotion.rule.id !== 0 ? $scope.promotion.consume : undefined,
-	    reduce:   $scope.promotion.rule.id !== 0 ? $scope.promotion.reduce : undefined,
+	    rule:     rule_id,
+	    discount: rule_id === 0 ? $scope.promotion.discount : undefined,
+	    consume:  rule_id === 1 || rule_id === 2 ? $scope.promotion.consume : undefined,
+	    reduce:   rule_id === 1 || rule_id === 2 ? $scope.promotion.reduce : undefined,
+
+	    scount:   rule_id === 3 ? $scope.promotion.scount : undefined,
+	    sdiscount:rule_id === 3 ? $scope.promotion.sdiscount : undefined, 
+
 	    sdate:    dateFilter($scope.promotion.sdate, "yyyy-MM-dd"),
 	    edate:    dateFilter($scope.promotion.edate, "yyyy-MM-dd"),
 	    remark:   diablo_set_string($scope.promotion.remark)

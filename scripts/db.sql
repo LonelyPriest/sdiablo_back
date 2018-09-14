@@ -580,6 +580,10 @@ create table w_promotion(
     discount        DECIMAL(3, 0)  not null default 100,
     cmoney          DECIMAL(10, 2) not null default 0,  -- consume money
     rmoney          DECIMAL(10, 2) not null default 0,  -- reduce money
+
+    scount          VARCHAR(32) default '',
+    sdiscount       VARCHAR(32) default '',
+    
     sdate           DATE default 0,
     edate           DATE default 0,
 

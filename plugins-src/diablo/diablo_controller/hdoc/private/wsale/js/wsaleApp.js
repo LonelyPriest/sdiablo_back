@@ -936,6 +936,7 @@ function wsaleNewProvide(
 		// console.log($scope.inventoyies);
 		$scope.inventories.unshift({$edit:false, $new:true});
 		$scope.disable_refresh = false;
+
 		$scope.re_calculate(); 
 	    };
 
@@ -980,7 +981,7 @@ function wsaleNewProvide(
 	add.promotion    = diablo_get_object(src.pid, $scope.promotions);
 	add.sid          = src.sid;
 	add.score        = diablo_get_object(src.sid, $scope.scores);
-
+	
 	add.org_price    = src.org_price;
 	add.ediscount    = src.ediscount;
 	add.tag_price    = src.tag_price; 
@@ -1633,7 +1634,7 @@ function wsaleNewProvide(
 	$scope.select.total        = 0;
 	$scope.select.abs_total    = 0;
 	$scope.select.should_pay   = 0;
-	$scope.select.score        = 0; 
+	$scope.select.score        = 0;
 
 	// console.log($scope.inventoyies);
 	var calc = wsaleCalc.calculate(
@@ -1730,17 +1731,20 @@ function wsaleNewProvide(
 	$scope.disable_refresh = false;
 	$scope.wsaleStorage.save(
 	    $scope.inventories.filter(function(r){return !r.$new}));
+
+
 	$scope.re_calculate();
 	
 	$timeout.cancel($scope.timeout_auto_save);
 
 	$scope.focus_good_or_barcode(); 
     };
-
+    
     $scope.calc_discount = function(inv){
 	if (inv.pid !== -1 && inv.promotion.rule_id === 0){
 	    return inv.discount < inv.promotion.discount ? inv.discount : inv.promotion.discount;
-	} else {
+	} 
+	else {
 	    return inv.discount;
 	}
     };
@@ -1864,7 +1868,8 @@ function wsaleNewProvide(
 
 			$scope.wsaleStorage.save(
 			    $scope.inventories.filter(function(r){return !r.$new}));
-			
+
+
 			$scope.re_calculate();
 			$scope.focus_good_or_barcode(); 
 		    };
@@ -1946,7 +1951,7 @@ function wsaleNewProvide(
 	} else {
 	    $scope.wsaleStorage.remove($scope.wsaleStorage.get_key());
 	}
-	
+
 	$scope.re_calculate();
 	
 	// promotion
@@ -2093,6 +2098,7 @@ function wsaleNewProvide(
 	inv.amounts[0].sell_count = inv.sell; 
 	// save
 	$scope.wsaleStorage.save($scope.inventories.filter(function(r){return !r.$new}));
+
 	$scope.re_calculate();
 
 	// reset

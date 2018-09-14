@@ -353,7 +353,8 @@ function stockConfg(angular){
 	this.promotion_rules = [
 	    {name: "折扣优惠", id:0, remark: "打折优惠"},
 	    {name: "金额减免", id:1, remakr: "交易金额达到目标值减免一定金额"},
-	    {name: "买M送N",   id:2, remakr: "同一类型的产品买M年送N件"}
+	    {name: "买M送N",   id:2, remakr: "同一类型的产品买M年送N件"},
+	    {name: "M件N折",   id:3, remakr: "一件8折二件7折"}
 	    // {name: "金额赠送", id:2, remakr: "交易金额达到目标值赠送一定金额"}
 	];
 	

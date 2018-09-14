@@ -29,6 +29,8 @@ angular.module("diabloPattern", []).service("diabloPattern", [function(){
     // character or number
     this.char_number = /^[A-Za-z0-9]+$/;
 
+    this.semicolon_number = /[0-9\;]+$/;
+
     // character, number or -
     this.char_number_slash_bar = /^[A-Za-z0-9-\/]{2,20}$/;
 

@@ -352,5 +352,9 @@ alter table w_retailer_level drop index uk;
 alter table w_retailer_level add unique index uk(merchant, shop, level);
 
 
+--2018-09-14
+alter table w_promotion add column scount varchar(32) default '' after rmoney;
+alter table w_promotion add column sdiscount varchar(32) default '' after scount;
+
 
 

@@ -106,6 +106,7 @@ var diablo_discard_ticket_all = 1;
 var diablo_max_ticket_batch = 9;
 
 var diablo_seperator = ",";
+var diablo_semi_seperator = ";";
 var diablo_fix_draft_path = "C:\\fix.txt";
 
 /*

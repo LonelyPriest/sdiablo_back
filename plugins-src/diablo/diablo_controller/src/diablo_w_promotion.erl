@@ -62,14 +62,26 @@ handle_call({new_promotion, Merchant, Attrs}, _From, State) ->
 	       end,
 		   
     Consume  = case Rule of
-		   0 -> 0;
-		   _ -> ?v(<<"consume">>, Attrs, 0)
+		   1 -> ?v(<<"consume">>, Attrs, 0);
+		   2 -> ?v(<<"consume">>, Attrs, 0);
+		   _ -> 0
 	       end,
     
     Reduce   = case Rule of
-		   0 -> 0;
-		   _ -> ?v(<<"reduce">>, Attrs, 0)
+		   1 -> ?v(<<"reduce">>, Attrs, 0);
+		   2 -> ?v(<<"reduce">>, Attrs, 0);
+		   _ -> 0
 	       end,
+
+    SCount  = case Rule of
+		  3 -> ?v(<<"scount">>, Attrs, []);
+		  _ -> []
+	      end,
+
+    SDiscount  = case Rule of
+		  3 -> ?v(<<"sdiscount">>, Attrs, []);
+		  _ -> []
+	      end,
     
     SDate    = ?v(<<"sdate">>, Attrs),
     EDate    = ?v(<<"edate">>, Attrs),
@@ -79,6 +91,10 @@ handle_call({new_promotion, Merchant, Attrs}, _From, State) ->
 	      0 -> "select id, name from w_promotion"
 		       " where merchant=" ++ ?to_s(Merchant)
 		       ++ " and discount=" ++ ?to_s(Discount);
+	      3 -> "select id, name from w_promotion"
+		       " where merchant=" ++ ?to_s(Merchant)
+		       ++ " and scount=\'" ++ ?to_s(SCount) ++ "\'"
+		       ++ " and sdiscount=\'" ++ ?to_s(SDiscount) ++ "\'"; 
 	      _ ->
 		  "select id, name from w_promotion"
 		      " where merchant=" ++ ?to_s(Merchant)
@@ -89,7 +105,7 @@ handle_call({new_promotion, Merchant, Attrs}, _From, State) ->
     case ?sql_utils:execute(s_read, Sql) of
 	{ok, []} ->
 	    Sql1 = "insert into w_promotion(merchant, name"
-		", rule, discount, cmoney, rmoney, sdate, edate, remark"
+		", rule, discount, cmoney, rmoney, scount, sdiscount, sdate, edate, remark"
 		", entry) values("
 		++ ?to_s(Merchant) ++ ","
 		%% ++ ?to_s(Shop) ++ ","
@@ -97,7 +113,11 @@ handle_call({new_promotion, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(Rule) ++ ","
 		++ ?to_s(Discount) ++ ","
 		++ ?to_s(Consume) ++ ","
-		++ ?to_s(Reduce) ++ "," 
+		++ ?to_s(Reduce) ++ ","
+		
+		++ "\'" ++ ?to_s(SCount) ++ "\',"
+		++ "\'" ++ ?to_s(SDiscount) ++ "\',"
+		
 		++ "\'" ++ ?to_s(SDate) ++ "\',"
 		++ "\'" ++ ?to_s(EDate) ++ "\',"
 		++ "\'" ++ ?to_s(Remark) ++ "\',"
@@ -155,8 +175,21 @@ handle_call({update_promotion, Merchant, Attrs}, _From, State) ->
     end;
 
 handle_call({list_promotion, Merchant}, _From, State) ->
-    Sql = "select id, name, rule as rule_id, discount, cmoney, rmoney"
-	", sdate, edate, remark, entry"
+    Sql = "select id"
+	", name"
+	", rule as rule_id"
+	", discount"
+	", cmoney"
+	", rmoney"
+
+	", scount"
+	", sdiscount"
+	
+	", sdate"
+	", edate"
+	", remark"
+	", entry"
+	
 	" from w_promotion"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " order by id desc",

@@ -788,12 +788,15 @@ function filterProvider(){
 			// console.log(promotions);
 			_promotions = promotions.map(function(p){
 			    return {
-				id:       p.id,
-				name:     p.name,
-				rule_id:  p.rule_id,
-				discount: p.discount,
-				cmoney:   p.cmoney,
-				rmoney:   p.rmoney,
+				id:        p.id,
+				name:      p.name,
+				rule_id:   p.rule_id,
+				discount:  p.discount,
+				cmoney:    p.cmoney,
+				rmoney:    p.rmoney,
+				scount:    p.scount,
+				sdiscount: p.sdiscount,
+				
 				sdate:    p.sdate,
 				edate:    p.edate
 			    }
