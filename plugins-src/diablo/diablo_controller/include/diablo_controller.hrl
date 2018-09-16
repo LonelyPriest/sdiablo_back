@@ -239,6 +239,7 @@
 -define(add_retailer_level,          ?right_w_retailer + 32).
 -define(update_retailer_level,       ?right_w_retailer + 33).
 -define(syn_score_ticket,            ?right_w_retailer + 34).
+-define(print_w_retailer,            ?right_w_retailer + 35).
 
 %% shop
 -define(new_shop,       ?right_shop + 1).

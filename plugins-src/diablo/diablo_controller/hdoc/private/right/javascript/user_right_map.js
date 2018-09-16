@@ -86,7 +86,8 @@ var rightAuthen = {
 	    add_card_good     :rightAuthen.root_right._retailer + 28,
 	    delete_card_good  :rightAuthen.root_right._retailer + 30,
 	    update_level      :rightAuthen.root_right._retailer + 33,
-	    syn_score_ticket  :rightAuthen.root_right._retailer + 34
+	    syn_score_ticket  :rightAuthen.root_right._retailer + 34,
+	    print_retailer    :rightAuthen.root_right._retailer + 35
 	}
     },
 
@@ -294,6 +295,13 @@ diabloAuthen.prototype.updateOpriceAfterSale = function () {
     return this.authenSale('update_w_sale_price');
 };
 
+/*
+ * retailre action
+ */
+diabloAuthen.prototype.authenRetailer = function(action) {
+    return rightAuthen.authen(
+	this.userType, rightAuthen.retailer_action()[action], this.userRight);
+};
 
 diabloAuthen.prototype.authenStockRight = function() {
     return {
@@ -334,6 +342,22 @@ diabloAuthen.prototype.authenSaleRight = function() {
 
 	update_oprice_after_sale : this.updateOpriceAfterSale()
     }
+};
+
+
+diabloAuthen.prototype.authenRetailerRight = function() {
+    return {
+	reset_password        :this.authenRetailer('reset_password'),
+	delete_retailer       :this.authenRetailer('delete_retailer'),
+	update_retailer_score :this.authenRetailer('update_score'),
+	export_retailer       :this.authenRetailer('export_retailer'),
+	query_balance         :this.authenRetailer('query_balance'),
+	update_phone          :this.authenRetailer('update_phone'),
+	set_withdraw          :this.authenRetailer('set_withdraw'),
+	update_level          :this.authenRetailer('update_level'),
+	print_retailer        :this.authenRetailer('print_retailer'),
+	master                :this.master
+    };
 };
 
 

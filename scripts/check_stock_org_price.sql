@@ -72,7 +72,9 @@ set a.org_price=b.org_price, a.ediscount=b.ediscount;
 
 
 -- check stock
-select a.style_number, a.brand, a.amount, b.total from w_inventory a left join (select style_number, brand, sum(total) as total from w_inventory_amount a where a.merchant=4 and shop=19 group by a.style_number, a.brand) b on a.style_number=b.style_number and a.brand=b.brand where a.merchant=14 and a.shop=12 and a.amount!=b.total;
+select a.style_number, a.brand, a.amount, b.total from w_inventory a left join \
+(select style_number, brand, sum(total) as total from w_inventory_amount a where a.merchant=35 and shop=129 group by a.style_number, a.brand) b \
+on a.style_number=b.style_number and a.brand=b.brand where a.merchant=35 and a.shop=129 and a.amount!=b.total;
 
 select a.style_number, a.brand, a.total , b.amount from (select style_number, brand, sum(total) as total from w_inventory_amount where merchant=15 and shop=53 group by style_number, brand) a \
 left join (select style_number, brand, amount from w_inventory where merchant=15 and shop=53) b \
@@ -86,6 +88,10 @@ select a.style_number, a.brand, a.amount, a.style_number_b, a.brand_b from \
 (select a.style_number, a.brand, a.amount, b.style_number as style_number_b, b.brand as brand_b from \
 (select style_number, brand,  sum(total) as amount from w_inventory_amount where merchant=16 and shop=62 group by style_number, brand) a left join \
 (select style_number, brand from w_inventory where merchant=16 and shop=62) b on a.style_number=b.style_number and a.brand=b.brand) a where ba is null;
+
+select a.merchant, a.amount, b.total from \
+(select merchant, sum(amount) as amount from w_inventory group by merchant) a \
+left join (select merchant, sum(total) as total from w_inventory_amount group by merchant) b on a.merchant=b.merchant;
 
 -- check w_sale
 select a.rsn, a.total from (select rsn, sum(total) as total from w_sale_detail where shop=56 group by rsn) a, w_sale b where a.rsn=b.rsn and a.total!=b.total;
@@ -171,6 +177,11 @@ left join suppliers c on a.firm=c.id where a.merchant=2 and a.firm!=b.firm;
 
 
 update  w_inventory_transfer a inner join (select rsn, cost from (select rsn, sum(org_price * amount) as cost from w_inventory_transfer_detail group by rsn) a) b on a.rsn=b.rsn set a.cost=b.cost;
+
+
+-- syn tagprice
+update w_inventory a inner join (select style_number, brand, shop, tag_price, discount, ediscount from w_inventory_new_detail where merchant=4 group by style_number, brand, shop) b on \
+a.style_number=b.style_number and a.brand=b.brand and a.shop=b.shop set a.tag_price=b.tag_price, a.discount=b.discount and a.ediscount=b.ediscount;
 
 
 -- clear date

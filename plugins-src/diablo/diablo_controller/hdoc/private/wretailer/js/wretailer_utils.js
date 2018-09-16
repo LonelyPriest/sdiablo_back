@@ -8,6 +8,10 @@ var retailerUtils = function(){
 	sale_mode:function(shop, base) {
 	    return diablo_base_setting("p_balance", shop, base, function(s) {return s}, diablo_sale_mode);
 	},
+
+	printer_bill: function(shop, base) {
+	    return diablo_base_setting("prn_bill", shop, base, parseInt, diablo_invalid_index);
+	},
 	
 	to_integer: function(v){
 	    if (angular.isUndefined(v) || isNaN(v) || (!v && v !== 0)){

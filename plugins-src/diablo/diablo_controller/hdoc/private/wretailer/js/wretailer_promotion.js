@@ -257,9 +257,76 @@ function wretailerScoreDetailCtrlProvide(
     };
 };
 
+
+function wretailerDetailPrintCtrlProvide(
+    $scope, $routeParams, diabloUtilsService, wretailerService, user, base){
+    console.log($routeParams); 
+    
+    var LODOP;
+    if (needCLodop()) loadCLodop(); 
+    var dialog = diabloUtilsService;
+
+    var pageHeight = diablo_base_setting("prn_h_page", user.loginShop, base, parseFloat, 14);
+    var pageWidth  = diablo_base_setting("prn_w_page", user.loginShop, base, parseFloat, 21.3);
+
+    var search = angular.fromJson($routeParams.search);
+    var sort   = angular.fromJson($routeParams.sort)
+    wretailerService.print_w_retailer(sort, search).then(function(result) {
+    	console.log(result);
+	if (result.ecode === 0) {
+	    $scope.retailers = result.data;
+	    var order_id = 1;
+	    angular.forEach($scope.retailers, function(r){
+		r.order_id  = order_id;
+		r.type      = diablo_get_object(r.type_id, wretailerService.retailer_types);
+		r.olevel    = diablo_retailer_levels[r.level];
+		r.birthday  = r.birth.substr(5,8);
+		order_id++
+	    });
+	    
+	} else {
+	    dialog.response(
+		false,
+		"会员详情打印",
+		"会员详情打印失败：会员详情失败，请核对后再打印！！")
+	}
+    });
+
+    // var css = "<style>table { border-splice:0; border-collapse:collapse }</style>"
+    // var strBodyStyle="<style>table,td { border: 1 solid #000000;border-collapse:collapse }</style>"; 
+    var strBodyStyle="<style>"
+	+ ".table-response {min-height: .01%; overflow-x:auto;}"
+	+ "table {border-spacing:0; border-collapse:collapse; width:100%}"
+	+ "td,th {padding:0; border:1 solid #000000; text-align:center;}"
+	+ ".table-bordered {border:1 solid #000000;}" 
+	+ "</style>";
+    $scope.print = function() {
+	if (angular.isUndefined(LODOP)) {
+	    LODOP = getLodop();
+	}
+
+	if (LODOP.CVERSION) {
+	    LODOP.PRINT_INIT("task_print_retailer");
+	    LODOP.SET_PRINTER_INDEX(retailerUtils.printer_bill(user.loginShop, base));
+	    LODOP.SET_PRINT_PAGESIZE(0, pageWidth * 100, pageHeight * 100, "");
+	    LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
+	    LODOP.ADD_PRINT_HTM(
+		"5%", "5%",  "90%", "BottomMargin:15mm",
+		strBodyStyle + "<body>" + document.getElementById("retailer_detail").innerHTML + "</body>");
+	    LODOP.PREVIEW(); 
+	}
+    };
+
+    $scope.go_back = function() {
+	diablo_goto_page("#/wretailer_detaill");
+    };
+    
+};
+
 define (["wretailerApp"], function(app){
     app.controller("wretailerRechargeNewCtrl", wretailerRechargeNewCtrlProvide);
     app.controller("wretailerRechargeDetailCtrl", wretailerRechargeDetailCtrlProvide);
     app.controller("wretailerScoreNewCtrl", wretailerScoreNewCtrlProvide);
     app.controller("wretailerScoreDetailCtrl", wretailerScoreDetailCtrlProvide);
+    app.controller("wretailerDetailPrintCtrl", wretailerDetailPrintCtrlProvide);
 });

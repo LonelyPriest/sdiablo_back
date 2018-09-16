@@ -458,6 +458,23 @@ action(Session, Req, {"filter_retailer_detail"}, Payload) ->
        end, Req, NewPayload);
 
 
+action(Session, Req, {"print_w_retailer"}, Payload) ->
+    ?DEBUG("print_w_retailer with session ~p, payload~n~p", [Session, Payload]), 
+    Merchant  = ?session:get(merchant, Session),
+    {struct, Mode}   = ?v(<<"mode">>, Payload),
+    {struct, Conditions} = ?v(<<"condition">>, Payload), 
+    Order  = ?v(<<"mode">>, Mode),
+    
+    case ?w_retailer:retailer(list, Merchant, {Conditions, mode(Order)}) of
+	[] -> ?utils:respond(200, Req, ?err(wretailer_export_none, Merchant));
+	{ok, Retailers} ->
+	    ?DEBUG("retailer ~p", [Retailers]),
+	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0}, {<<"data">>, Retailers}]});
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+
 action(Session, Req, {"filter_retailer_consume"}, Payload) ->
     ?DEBUG("filter_retailer_consume with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant  = ?session:get(merchant, Session),
@@ -911,7 +928,8 @@ do_write(retailer, Do, Count, [{H}|T], Code) ->
     Consume = ?v(<<"consume">>, H),
     Score   = ?v(<<"score">>, H),
     Shop    = ?v(<<"shop">>, H),
-    Entry   = ?v(<<"entry_date">>, H), 
+    Entry   = ?v(<<"entry_date">>, H),
+    Comment = ?v(<<"comment">>, H),
 
     L = "\r\n"
 	++ ?to_s(Count) ++ ?d
@@ -923,7 +941,8 @@ do_write(retailer, Do, Count, [{H}|T], Code) ->
 	++ ?to_s(Consume) ++ ?d
 	++ ?to_s(Score) ++ ?d
 	++ ?to_s(Shop) ++ ?d
-	++ ?to_s(Entry) ++ ?d,
+	++ ?to_s(Entry) ++ ?d
+	++ ?to_s(Comment) ++ ?d,
 
     %% UTF8 = unicode:characters_to_list(L, utf8),
     %% Do(UTF8),

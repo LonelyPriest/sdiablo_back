@@ -1,0 +1,77 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="portlet box purple table-panel">
+      
+      <div class="portlet-title">
+	<div class="caption">
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>
+	  会员详情
+	</div>
+	
+	<div class="actions"> 
+	  <button class="btn red" type="button"
+		  x-ng-click="go_back()">返回
+	    <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
+
+	  <button class="btn green" type="button"
+		  x-ng-click="print()">打印
+	    <i class="glyphicon glyphicon-print"></i></button>
+	  
+	</div> 
+      </div> 
+      
+      <!--BEGN portlet body--> 
+      <div id="retailer_detail" class="portlet-body"> 
+	<div class="table-responsive">
+	  <table class="table table-bordered table-striped" style="margin-bottom:5px"> 
+	    <thead>
+	      <tr>
+		<th class="text-center">序号</th>
+		<th class="text-center">名称</th>
+		<th class="text-center">生日</th>
+		<th class="text-center">类型</th>
+		<th class="text-center">等级</th>
+		<th class="text-center">电话</th>
+		<th class="text-center">地址</th>
+		<th class="text-center">余额</th>
+		<th class="text-center">累计消费</th>
+		<th class="text-center">累计积分</th>
+		<th class="text-center">所在店铺</th>
+		<th class="text-center">备注</th>
+		<th class="text-center">日期</th>
+	      </tr>
+	    </thead>
+	    
+	    <tbody>
+	      <tr x-ng-repeat="r in retailers"> 
+		<td class="text-center">{{r.order_id}}</td>
+		<td class="text-center">{{r.name}}</td>
+		<td class="text-center">{{r.birthday}}</td>
+		<td class="text-center">{{r.type.name}}</td>
+		<td class="text-center">{{r.olevel.name}}</td>
+		
+		<td class="text-center">{{r.mobile}}</td>
+		<td class="text-center">{{r.address}}</td>
+		<td class="text-center">{{r.balance}}</td>
+		<td class="text-center">{{r.consume}}</td>
+		<td class="text-center">{{r.score}}</td>
+		<td class="text-center">{{r.shop_name}}</td>
+		<td class="text-center">{{r.comment}}</td>
+		<td class="text-center">{{r.entry_date}}</td>
+	      </tr> 
+	    </tbody> 
+	  </table> <!--END table--> 
+	</div>
+	<h5 style="text-align:left">
+	  <p>
+	    <span>钱掌柜零售云平台</span>
+	    &nbsp&nbsp&nbsp&nbsp<span>联系方式：18692269329（微信）</span>
+	    &nbsp&nbsp&nbsp&nbsp<span>15292083301（微信）</span>
+	  </p>
+	</h5>
+      </div>
+    </div>
+    
+  </div>
+  
+</div>

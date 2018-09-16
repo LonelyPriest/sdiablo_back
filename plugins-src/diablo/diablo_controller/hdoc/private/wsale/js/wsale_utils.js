@@ -486,14 +486,14 @@ var wsaleUtils = function(){
 	    } 
 	},
 
-	calc_discount_of_brand_money:function(stock, allStocks) {
+	calc_discount_of_brand_money:function(saleMode, stock, allStocks) {
 	    var sameBrandStocks = [];
 	    var sellTotal = 0;
 	    for (var i=1, l=allStocks.length; i<l; i++) {
 		var s = allStocks[i];
 		if (s.brand_id === stock.brand_id && s.pid === stock.pid) {
 		    sameBrandStocks.push(s);
-		    sellTotal += s.sell;
+		    sellTotal += wsaleCalc.get_inventory_count(stock, saleMode);
 		}
 	    }
 
@@ -857,7 +857,7 @@ var wsaleCalc = function(){
 			}		    
 		    } 
 		    else {
-			var stocks = wsaleUtils.calc_discount_of_brand_money(one, inventories); 
+			var stocks = wsaleUtils.calc_discount_of_brand_money(saleMode, one, inventories); 
 			angular.forEach(stocks, function(one) {
 			    if (one.fdiscount !== one.rdiscount) {
 				one.rprice  = diablo_price(one.fprice, one.rdiscount);

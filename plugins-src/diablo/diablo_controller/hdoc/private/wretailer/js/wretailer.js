@@ -96,18 +96,20 @@ function wretailerDetailCtrlProvide(
     // 	    };
     // 	}
     // }; 
-    
-    $scope.right = {
-	reset_password        :retailerUtils.authen(user.type, user.right, 'reset_password'),
-	delete_retailer       :retailerUtils.authen(user.type, user.right, 'delete_retailer'),
-	update_retailer_score :retailerUtils.authen(user.type, user.right, 'update_score'),
-	export_retailer       :retailerUtils.authen(user.type, user.right, 'export_retailer'),
-	query_balance         :retailerUtils.authen(user.type, user.right, 'query_balance'),
-	update_phone          :retailerUtils.authen(user.type, user.right, 'update_phone'),
-	set_withdraw          :retailerUtils.authen(user.type, user.right, 'set_withdraw'),
-	update_level          :retailerUtils.authen(user.type, user.right, 'update_level'),
-	master                :rightAuthen.authen_master(user.type) 
-    };
+
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.right = authen.authenRetailerRight();
+    // $scope.right = {
+    // 	reset_password        :retailerUtils.authen(user.type, user.right, 'reset_password'),
+    // 	delete_retailer       :retailerUtils.authen(user.type, user.right, 'delete_retailer'),
+    // 	update_retailer_score :retailerUtils.authen(user.type, user.right, 'update_score'),
+    // 	export_retailer       :retailerUtils.authen(user.type, user.right, 'export_retailer'),
+    // 	query_balance         :retailerUtils.authen(user.type, user.right, 'query_balance'),
+    // 	update_phone          :retailerUtils.authen(user.type, user.right, 'update_phone'),
+    // 	set_withdraw          :retailerUtils.authen(user.type, user.right, 'set_withdraw'),
+    // 	update_level          :retailerUtils.authen(user.type, user.right, 'update_level'),
+    // 	master                :rightAuthen.authen_master(user.type) 
+    // };
     // console.log($scope.right);
 
     /*
@@ -160,15 +162,24 @@ function wretailerDetailCtrlProvide(
 	     t:                 now});
     };
 
+    var add_search_condition = function(search) {
+	if (angular.isDefined($scope.select.phone) && angular.isObject($scope.select.phone)){
+	    search.mobile = $scope.select.phone.mobile;
+	    search.py = $scope.select.phone.py;
+	}
+
+	return search;
+    };
+    
     $scope.do_search = function(page){
 	// console.log($scope.filters);
     	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
 	    console.log($scope.select.phone);
-	    if (angular.isDefined($scope.select.phone) && angular.isObject($scope.select.phone)){
-		search.mobile = $scope.select.phone.mobile;
-		search.py = $scope.select.phone.py;
-	    } 
-
+	    // if (angular.isDefined($scope.select.phone) && angular.isObject($scope.select.phone)){
+	    // 	search.mobile = $scope.select.phone.mobile;
+	    // 	search.py = $scope.select.phone.py;
+	    // }
+	    search = add_search_condition(search); 
 	    localStorageService.remove(diablo_key_retailer);
 	    localStorageService.set(diablo_key_retailer, {filter:$scope.filters,
 							  phone: $scope.select.phone,
@@ -215,6 +226,20 @@ function wretailerDetailCtrlProvide(
     		} 
     	    })
     	})
+    };
+
+    $scope.print_retailer = function() {
+	var callback = function() {
+	    diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+		add_search_condition(search);
+		diablo_goto_page("#/print_w_retailer/"
+				 + angular.toJson(search) + "/" + angular.toJson($scope.sort)) ; 
+	    });
+	}
+	
+	dialog.request(
+	    "会员打印", "会员打印需要打印机支持A4纸张，确认要打印吗？",
+	    callback, undefined, undefined);
     };
 
     $scope.withdraw = function (){

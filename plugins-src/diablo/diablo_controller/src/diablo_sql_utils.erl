@@ -145,7 +145,11 @@ mode(use_id) -> "id";
 mode(use_sell) -> "sell";
 mode(use_amount) -> "amount";
 mode(use_date) ->   "entry_date";
-mode(use_tag_price) ->   "tag_price".
+mode(use_tag_price) -> "tag_price";
+mode(use_balance) -> "balance";
+mode(use_consume) -> "consume";
+mode(use_level) -> "level".
+
 
 sort(0) -> "desc";
 sort(1) -> "asc".

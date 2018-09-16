@@ -42,7 +42,13 @@ function wgoodNewCtrlProvide(
 	hide_sex    :stockUtils.to_integer(hide_mode.charAt(2)),
 	hide_expire :function() {
 	    var h = hide_mode.charAt(3);
-	    if ( !h ) return diablo_yes;
+	    if ( diablo_empty_string === h ) return diablo_yes;
+	    else return stockUtils.to_integer(h);
+	}(),
+	
+	hide_image  :function () {
+	    var h = stockUtils.to_integer(hide_mode.charAt(4));
+	    if ( diablo_empty_string === h ) return diablo_yes;
 	    else return stockUtils.to_integer(h);
 	}()
     };

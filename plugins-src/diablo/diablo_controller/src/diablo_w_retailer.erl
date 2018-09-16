@@ -43,9 +43,12 @@ retailer(list_level, Merchant) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {list_retailer_level, Merchant}).
 
+retailer(list, Merchant, {Conditions, Order}) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {list_retailer, Merchant, Conditions, Order});
 retailer(list, Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {list_retailer, Merchant, Conditions});
+    gen_server:call(Name, {list_retailer, Merchant, Conditions, []});
 
 retailer(new, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -633,8 +636,9 @@ handle_call({list_retailer_level, Merchant}, _From, State) ->
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({list_retailer, Merchant, Conditions}, _From, State) ->
-    ?DEBUG("lookup retail with merchant ~p, Conditions ~p", [Merchant, Conditions]),
+handle_call({list_retailer, Merchant, Conditions, Mode}, _From, State) ->
+    ?DEBUG("lookup retail with merchant ~p, Conditions ~p, Sort ~p", [Merchant, Conditions, Mode]),
+    
     {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions), 
     Month = ?v(<<"month">>, Conditions, []),
     Date  = ?v(<<"date">>, Conditions, []),    
@@ -674,7 +678,7 @@ handle_call({list_retailer, Merchant, Conditions}, _From, State) ->
 		   " and month(a.birth)=" ++ ?to_s(Month) ++ " and dayofmonth(a.birth)=" ++ ?to_s(Date)
 	   end 
 	++ ?sql_utils:condition(proplists, SortConditions)
-	++ " order by a.id desc",
+	++ ?sql_utils:mode(Mode, 0),
 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};

@@ -192,7 +192,10 @@ init([]) ->
 	  <<"新增会员等级">>, <<"add_retailer_level">>, ?right_w_retailer},
 
 	 {?update_retailer_level,
-	  <<"修改会员等级定义">>, <<"update_retailer_level">>, ?right_w_retailer} 
+	  <<"修改会员等级定义">>, <<"update_retailer_level">>, ?right_w_retailer},
+
+	 {?print_w_retailer,
+	  <<"会员直接打印">>, <<"print_w_retailer">>, ?right_w_retailer} 
 	],
 
     

@@ -85,6 +85,11 @@ function wretailerConfig(angular) {
 		controller: 'wretailerDetailCtrl',
 		resolve: angular.extend({}, employee, charge, region, user, base)
 	    }).
+	    when('/print_w_retailer/:search/:sort?', {
+		templateUrl: '/private/wretailer/html/print_w_retailer.html',
+		controller: 'wretailerDetailPrintCtrl',
+		resolve: angular.extend({}, user, base)
+	    }).
 	    when('/wretailer_charge_detail', {
 		templateUrl: '/private/wretailer/html/wretailer_charge_detail.html',
 		controller: 'wretailerChargeDetailCtrl',
@@ -321,10 +326,9 @@ function wretailerConfig(angular) {
 	    return http.query({operation: "list_retailer_level"}).$promise;
 	};
 
-	var http_wsale = $resource(
-	    "/wsale/:operation/:id", {operation: '@operation', id: '@id'});
-	this.filter_w_sale_new = function(
-	    match, fields, currentPage, itemsPerpage){
+	var http_wsale = $resource("/wsale/:operation/:id", {operation: '@operation', id: '@id'});
+	
+	this.filter_w_sale_new = function(match, fields, currentPage, itemsPerpage){
 	    return http_wsale.save(
 		{operation: "filter_w_sale_new"},
 		{match:  angular.isDefined(match) ? match.op : undefined,
@@ -402,6 +406,7 @@ function wretailerConfig(angular) {
 	    return http.save({operation: "export_recharge_detail"},
 			     {condition: condition}).$promise;
 	};
+
 
 	this.filter_charge_detail = function(match, fields, currentPage, itemsPerpage){
 	    return http.save(
@@ -530,6 +535,11 @@ function wretailerConfig(angular) {
 	 */
 	this.export_w_retailer = function(conditions){
 	    return http.save({operation: "export_w_retailer"}, conditions).$promise;
+	};
+
+	this.print_w_retailer = function(mode, conditions) {
+	    return http.save(
+		{operation: "print_w_retailer"}, {mode:mode, condition:conditions}).$promise;
 	};
 
 	this.syn_retailer_pinyin = function(retailers){
