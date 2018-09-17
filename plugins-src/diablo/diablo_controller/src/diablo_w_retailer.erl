@@ -38,7 +38,7 @@ retailer(list, Merchant) ->
     gen_server:call(Name, {list_retailer, Merchant, []});
 retailer(list_sys, Merchant) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {list_retailer, Merchant, [{<<"type">>, ?SYSTEM_RETAILER}]});
+    gen_server:call(Name, {list_retailer, Merchant, [{<<"type">>, ?SYSTEM_RETAILER}], []});
 retailer(list_level, Merchant) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {list_retailer_level, Merchant}).
@@ -678,7 +678,11 @@ handle_call({list_retailer, Merchant, Conditions, Mode}, _From, State) ->
 		   " and month(a.birth)=" ++ ?to_s(Month) ++ " and dayofmonth(a.birth)=" ++ ?to_s(Date)
 	   end 
 	++ ?sql_utils:condition(proplists, SortConditions)
-	++ ?sql_utils:mode(Mode, 0),
+	++ case Mode of
+	       [] -> [];
+	       _ ->
+		   ?sql_utils:mode(Mode, 0)
+	   end,
 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
