@@ -97,13 +97,15 @@ function stockConfg(angular){
 		templateUrl: '/private/purchaser/html/purchaser_inventory_new.html',
 		controller: 'purchaserInventoryNewCtrl',
 		resolve: angular.extend(
-		    {}, user, brand, type, s_group, firm, employee, color, color_type, base)
+		    {}, user, brand, type, s_group, firm, employee, color, color_type,
+		    std_executive, safety_category, fabric, base)
 	    }).
 	    when('/update_new_detail/:rsn?/:ppage?/:from?', {
 		templateUrl: '/private/purchaser/html/purchaser_inventory_new_detail_update.html',
 		controller: 'purchaserInventoryNewUpdateCtrl',
 		resolve: angular.extend(
-		    {}, user, brand, firm, type, employee, s_group, color, ptemplate, base)
+		    {}, user, brand, firm, type, employee, s_group, color,
+		    std_executives, safety_category, fabric, ptemplate, base)
 	    }).
 	    // reject
 	    when('/inventory_reject', {

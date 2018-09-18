@@ -758,7 +758,7 @@ var wsaleCalc = function(){
 		total      += parseInt(count);
 		abs_total  += Math.abs(parseInt(count)); 
 
-		if (!one.$update && one.state!==3 && vipDiscountMode !== diablo_no && saleMode === diablo_sale)
+		if (one.$update && one.state!==3 && vipDiscountMode !== diablo_no && saleMode === diablo_sale)
 		{
 		    // if (one.sid !== diablo_invalid_index && !one.$update) {
 		    if (one.sid === diablo_invalid && one.pid === diablo_invalid) {
@@ -846,8 +846,7 @@ var wsaleCalc = function(){
 		if (one.pid !== diablo_invalid_index){
 		    // one.rdiscount = wsaleUtils.calc_discount_of_rmoney(one.fdiscount, one.promotion, pmoneys);
 		    if (one.promotion.rule_id !== 3) {
-			one.rdiscount = wsaleUtils.calc_discount_of_rmoney(
-			    one.fprice, count, one.promotion, pmoneys);
+			one.rdiscount = wsaleUtils.calc_discount_of_rmoney(one.fprice, count, one.promotion, pmoneys);
 
 			if (one.fdiscount !== one.rdiscount){
 			    one.rprice  = diablo_price(one.fprice, one.rdiscount);

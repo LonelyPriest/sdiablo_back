@@ -4,8 +4,8 @@ function purchaserInventoryNewCtrlProvide (
     $scope, $timeout, dateFilter, diabloPattern, diabloUtilsService,
     diabloFilter, purchaserService, shortCutGoodService,
     localStorageService, user, filterBrand, filterType,
-    filterSizeGroup, filterFirm, filterEmployee, filterColor,
-    filterColorType, base){
+    filterSizeGroup, filterFirm, filterEmployee, filterColor, filterColorType,
+    filterStdExecutive, filterCategory, filterFabric, base){
     
     // console.log(ERROR); 
     // console.log(user); 
@@ -24,6 +24,11 @@ function purchaserInventoryNewCtrlProvide (
     $scope.sexs              = diablo_sex;
     $scope.seasons           = diablo_season;
     $scope.extra_pay_types   = purchaserService.extra_pay_types;
+    
+    $scope.levels            = diablo_level;
+    $scope.std_executives    = filterStdExecutive;
+    $scope.categories        = filterCategory;
+    $scope.fabrics           = filterFabric;
 
     $scope.season2objs       = diablo_season2objects;
     $scope.sex2objs          = diablo_sex2object; 
@@ -274,25 +279,27 @@ function purchaserInventoryNewCtrlProvide (
 	$scope.base_settings.price_on_region = stockUtils.price_on_region(shopId, base);
 
 	var hide_mode  = stockUtils.stock_in_hide_mode(shopId, base); 
-	$scope.base_settings.hide_color  = stockUtils.to_integer(hide_mode.charAt(0)),
-	$scope.base_settings.hide_size   = stockUtils.to_integer(hide_mode.charAt(1)),
-	$scope.base_settings.hide_sex    = stockUtils.to_integer(hide_mode.charAt(2)),
-	$scope.base_settings.hide_expire = function() {
-	    var h = stockUtils.to_integer(hide_mode.charAt(3));
-	    if (diablo_empty_string===h) return diablo_yes;
-	    else return stockUtils.to_integer(h);
-	}();
+	angular.extend($scope.base_settings, hide_mode);
+	
+	// $scope.base_settings.hide_color  = stockUtils.to_integer(hide_mode.charAt(0)),
+	// $scope.base_settings.hide_size   = stockUtils.to_integer(hide_mode.charAt(1)),
+	// $scope.base_settings.hide_sex    = stockUtils.to_integer(hide_mode.charAt(2)),
+	// $scope.base_settings.hide_expire = function() {
+	//     var h = stockUtils.to_integer(hide_mode.charAt(3));
+	//     if (diablo_empty_string===h) return diablo_yes;
+	//     else return stockUtils.to_integer(h);
+	// }();
 
-	$scope.base_settings.hide_image = function () {
-	    var h = stockUtils.to_integer(hide_mode.charAt(4));
-	    if ( diablo_empty_string === h ) return diablo_yes;
-	    else return stockUtils.to_integer(h);
-	}();
+	// $scope.base_settings.hide_image = function () {
+	//     var h = stockUtils.to_integer(hide_mode.charAt(4));
+	//     if ( diablo_empty_string === h ) return diablo_yes;
+	//     else return stockUtils.to_integer(h);
+	// }();
 
-	$scope.base_settings.select_type = function() {
-	    if ( stockUtils.to_integer(hide_mode.charAt(5)) ) return false;
-	    return true;
-	}();
+	// $scope.base_settings.select_type = function() {
+	//     if ( stockUtils.to_integer(hide_mode.charAt(5)) ) return false;
+	//     return true;
+	// }();
 
 	console.log($scope.base_settings);
 	
@@ -1303,7 +1310,8 @@ function purchaserInventoryNewCtrlProvide (
     $scope.pattern = {style_number: diabloPattern.style_number,
 		      brand: diabloPattern.ch_en_num,
 		      type:  diabloPattern.good_type,
-		      expire: diabloPattern.expire_date};
+		      expire: diabloPattern.expire_date,
+		      percent: diabloPattern.percent};
 
     $scope.focus_attrs = {style_number:true,
 			  brand:false,
@@ -1633,6 +1641,55 @@ function purchaserInventoryNewCtrlProvide (
     };
 
     /*
+     * select fabric
+     */
+    $scope.select_fabric = function() {
+	var callback = function(params) {
+	    console.log(params.composites);
+	    var cs = params.composites; 
+	    // check
+	    for (var i=0, l=cs.length; i<l; i++) {
+		var c = cs[i];
+		if ( (angular.isUndefined(c.fabric) && 0 !== stockUtils.to_float(c.percent))
+		     || (angular.isDefined(c.fabric) && 0 === stockUtils.to_float(c.percent)) ) {
+		    dialog.response(
+			false,
+			"新增货品",
+			"新增货品失败：面料输入不正确，请确保面料从下拉框中选择，面料成份不为零");
+		    return;
+		}
+	    };
+
+	    $scope.good.fabrics = cs.filter(function(c) {
+		return angular.isDefined(c) && 0 !== stockUtils.to_float(c.percent);
+	    });
+
+	    $scope.good.fabric_desc = diablo_empty_string;
+	    angular.forEach($scope.good.fabrics, function(f) {
+		$scope.good.fabric_desc += f.fabric + ":" + f.percent.toString();
+	    });
+
+	    // console.log($scope.good.fabric_desc);
+	};
+	
+	dialog.edit_with_modal(
+	    "select-fabric.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {composites:$scope.good.fabrics,
+	     add_composite: function(composites) {
+		 composites.push({fabric:undefined, percent:undefined});
+	     },
+	     delete_composite: function(composites) {
+		 composites.splice(-1, 1);
+	     },
+	     fabrics: $scope.fabrics,
+	     p_percent: $scope.pattern.percent
+	    });
+    }
+
+    /*
      * image
      */
     // $scope.$watch("good.image", function(newValue, oldValue){
@@ -1670,7 +1727,12 @@ function purchaserInventoryNewCtrlProvide (
 	season    : $scope.season2objs[stockUtils.valid_season(current_month)],
 	image     : undefined,
 	contailer : -1,
-	alarm_a   : $scope.base_settings.stock_alarm_a
+	alarm_a   : $scope.base_settings.stock_alarm_a,
+
+	level     : $scope.levels[1],
+	executive : $scope.std_executives!==0 ? $scope.std_executives[0]: -1,
+	category  : $scope.categories.length!==0 ? $scope.categories[0]: -1,
+	fabrics   : []
 	// d_image   : true
     };
     
@@ -1699,6 +1761,22 @@ function purchaserInventoryNewCtrlProvide (
 
 	good.contailer = $scope.good.contailer;
 	good.alarm_a   = $scope.good.alarm_a;
+
+	good.level     = $scope.levels.indexOf($scope.good.level);
+	good.executive = $scope.good.executive.id;
+	good.category  = $scope.good.category.id;
+
+	good.fabric    = function() {
+	    if ($scope.good.fabrics.length !== 0) {
+		var cs = $scope.good.fabrics.map(function(f){
+		    return {f:stockUtils.get_object_by_name(f.fabric, $scope.fabrics).id, p:f.percent};
+		});
+		console.log(cs); 
+		return angular.toJson(cs);
+	    } else {
+		return undefined;
+	    }
+	}();
 	
 	// good.promotion = good.promotion.id; 
 	
@@ -1917,6 +1995,7 @@ function purchaserInventoryNewCtrlProvide (
 	    ediscount: $scope.good.ediscount, 
 	    discount:  $scope.good.discount,
 	    alarm_day: -1,
+	    
 	    image: undefined
 	    // image.file: undefined,
 	    // d_image: true

@@ -36,23 +36,23 @@ function wgoodNewCtrlProvide(
     
     var hide_mode  = stockUtils.stock_in_hide_mode(diablo_default_shop, base); 
     $scope.base_settings = {
-	m_sgroup    :stockUtils.multi_sizegroup(-1, base),
-	hide_color  :stockUtils.to_integer(hide_mode.charAt(0)),
-	hide_size   :stockUtils.to_integer(hide_mode.charAt(1)),
-	hide_sex    :stockUtils.to_integer(hide_mode.charAt(2)),
-	hide_expire :function() {
-	    var h = hide_mode.charAt(3);
-	    if ( diablo_empty_string === h ) return diablo_yes;
-	    else return stockUtils.to_integer(h);
-	}(),
+	m_sgroup    :stockUtils.multi_sizegroup(-1, base)
+	// hide_color  :stockUtils.to_integer(hide_mode.charAt(0)),
+	// hide_size   :stockUtils.to_integer(hide_mode.charAt(1)),
+	// hide_sex    :stockUtils.to_integer(hide_mode.charAt(2)),
+	// hide_expire :function() {
+	//     var h = hide_mode.charAt(3);
+	//     if ( diablo_empty_string === h ) return diablo_yes;
+	//     else return stockUtils.to_integer(h);
+	// }(),
 	
-	hide_image  :function () {
-	    var h = stockUtils.to_integer(hide_mode.charAt(4));
-	    if ( diablo_empty_string === h ) return diablo_yes;
-	    else return stockUtils.to_integer(h);
-	}()
+	// hide_image  :function () {
+	//     var h = stockUtils.to_integer(hide_mode.charAt(4));
+	//     if ( diablo_empty_string === h ) return diablo_yes;
+	//     else return stockUtils.to_integer(h);
+	// }(), 
     };
-
+    angular.extend($scope.base_settings, hide_mode); 
     console.log($scope.base_settings);
 
     // $scope.colors = [{type:"红色", tid:1
@@ -673,13 +673,14 @@ function wgoodDetailCtrlProvide(
 	printer_barcode: stockUtils.printer_barcode(user.loginShop, base),
 	dual_barcode: stockUtils.dual_barcode_print(user.loginShop, base),
 	
-	hide_expire :function() {
-	    var h = hide_mode.charAt(3);
-	    if ( !h ) return diablo_yes;
-	    else return stockUtils.to_integer(h);
-	}()
+	// hide_expire :function() {
+	//     var h = hide_mode.charAt(3);
+	//     if ( !h ) return diablo_yes;
+	//     else return stockUtils.to_integer(h);
+	// }()
 	
-    };
+    }; 
+    angular.extend($scope.setting, hide_mode);
 
     $scope.printU = new stockPrintU($scope.template, $scope.setting.auto_barcode, $scope.setting.dual_barcode);
     $scope.printU.setPrinter($scope.setting.printer_barcode);

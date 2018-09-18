@@ -56,8 +56,26 @@ var stockUtils = function(){
 	},
 
 	stock_in_hide_mode: function(shop, base) {
-	    return diablo_base_setting(
-		"h_stock", shop, base, function(s) {return s}, diablo_stock_in_hide_mode);
+	    var hide = diablo_base_setting("h_stock", shop, base, function(s) {return s}, diablo_stock_in_hide_mode);
+	    var default_hide = function(v) {
+		if (v === diablo_empty_string)
+		    return diablo_yes;
+		return stockUtils.to_integer(v);
+	    }
+	    
+	    return {
+		hide_color:     stockUtils.to_integer(hide.charAt(0)),
+		hide_size:      stockUtils.to_integer(hide.charAt(1)),
+		hide_sex:       stockUtils.to_integer(hide.charAt(2)),
+		hide_expire:    default_hide(hide.charAt(3)),
+		hide_image:     default_hide(hide.charAt(4)),
+		select_type:    default_hide(hide.charAt(5)),
+		hide_executive: default_hide(hide.charAt(6)),
+		hide_category:  default_hide(hide.charAt(7)),
+		hide_level:     default_hide(hide.charAt(8)),
+		hide_fabric:    default_hide(hide.charAt(9)) 
+	    }
+	    
 	},
 
 	stock_alarm: function(shop, base) {
@@ -150,7 +168,7 @@ var stockUtils = function(){
 
 	type_sale:function(shop, base) {
 	    return diablo_base_setting("type_sale", shop, base, parseInt, diablo_no);
-	},
+	}, 
 	
 	yes_no: function() {return [{name:"否", id: 0}, {name:"是", id: 1}]},
 

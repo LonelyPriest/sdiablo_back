@@ -1116,6 +1116,25 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	    inv.style_number, inv.brand_id, $scope.select.shop.id
 	).then(function(result) {
 	    if (result.ecode === 0) {
+		inv.executive = diablo_get_object(result.executive_id, filterStdExecutive);
+		inv.category  = diablo_get_object(result.category_id, filterCategory); 
+		// inv.sepcs = [];
+		// if (angular.isObject(inv.type) && inv.type.cid !== diablo_invalid_index) {
+		//     angular.forEach(filterSizeSpec, function(s) {
+		// 	if (s.cid === d.type.cid) {
+		// 	    d.specs.push(s);
+		// 	}
+		//     }) 
+		// }
+		if (result.fabric_json) {
+		    inv.fabrics = angular.fromJson(result.fabric_json);
+		    angular.forEach(inv.fabrics, function(f) {
+			var fabric = diablo_get_object(f.f, filterFabric);
+			if (angular.isDefined(fabric) && angular.isObject(fabric))
+			    f.name = fabric.name; 
+		    });
+		}
+		
 		print_barcode(result.barcode);
 	    } else {
 		dialog.response(

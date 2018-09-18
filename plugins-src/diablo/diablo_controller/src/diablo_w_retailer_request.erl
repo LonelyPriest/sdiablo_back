@@ -1024,7 +1024,8 @@ retailer_type(_) -> "未知类型".
 retailer_level(0) -> "普通";
 retailer_level(1) -> "金卡";
 retailer_level(2) -> "白金";
-retailer_level(3) -> "黑金".
+retailer_level(3) -> "黑金";
+retailer_level(_) -> "无".
     
 		    
 mode(0) -> use_id; 

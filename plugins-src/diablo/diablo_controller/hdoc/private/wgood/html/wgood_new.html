@@ -328,7 +328,7 @@
 	      </div>
 	    </div> 
 
-	    <div x-ng-if="template && template.level" class="form-group diablo-good-form-group">
+	    <div x-ng-if="!base_settings.hide_level" class="form-group diablo-good-form-group">
 	      <label class="col-sm-3 col-md-3 control-label">等级</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<select class="form-control"
@@ -338,7 +338,7 @@
 	      </div> 
 	    </div>
 
-	    <div x-ng-if="template && template.executive" class="form-group diablo-good-form-group">
+	    <div x-ng-if="!base_settings.hide_executive" class="form-group diablo-good-form-group">
 	      <label class="col-sm-3 col-md-3 control-label">执行标准</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<select class="form-control"
@@ -348,7 +348,7 @@
 	      </div> 
 	    </div>
 
-	    <div x-ng-if="template && template.category" class="form-group diablo-good-form-group">
+	    <div x-ng-if="!base_settings.hide_category" class="form-group diablo-good-form-group">
 	      <label class="col-sm-3 col-md-3 control-label">安全类别</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<select class="form-control"
@@ -358,7 +358,7 @@
 	      </div> 
 	    </div>
 
-	    <div x-ng-if="template && template.fabric" class="form-group diablo-good-form-group">
+	    <div x-ng-if="!base_settings.hide_fabric" class="form-group diablo-good-form-group">
 	      <label class="col-sm-3 col-md-3 control-label">面料</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">

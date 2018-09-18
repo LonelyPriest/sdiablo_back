@@ -504,6 +504,11 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
     SizeGroup      = ?v(<<"s_group">>, Attrs),
     Sizes          = ?v(<<"size">>, Attrs),
     Path           = ?v(<<"path">>, Attrs),
+
+    Level = ?v(<<"level">>, Attrs), 
+    StdExecutive = ?v(<<"executive_id">>, Attrs),
+    SafetyCategory = ?v(<<"category_id">>, Attrs),
+    Fabric = ?v(<<"fabric_json">>, Attrs),
     
     %% Date     = ?utils:current_time(localdate),
     DateTime = ?utils:current_time(localtime),
@@ -539,6 +544,10 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 	++ UpdateFree
     %% ++ ?utils:v(s_group, string, SizeGroup)
 	++ ?utils:v(size, string, Sizes)
+	++ ?utils:v(level, integer, Level)
+	++ ?utils:v(executive, integer, StdExecutive)
+	++ ?utils:v(category, integer, SafetyCategory)
+	++ ?utils:v(fabric, string, Fabric)
 	++ ?utils:v(change_date, string, DateTime),
     
     RBrand = fun(undefined) -> OrgBrand; (_) -> Brand end,
@@ -2095,10 +2104,19 @@ handle_call({gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _Fro
 	", a.year"
 	", a.season"
 	", a.free"
+	", a.merchant"
 
 	", b.bcode as tbcode"
+
+	", c.level"
+	", c.category as category_id"
+	", c.executive as executive_id"
+	", c.fabric as fabric_json"
+	
 	" from w_inventory a"
 	" left join inv_types b on a.type=b.id"
+	" left join w_inventory_good c"
+	" on a.style_number=c.style_number and a.brand=b.brand and a.merchant=b.merchant"
 	
 	" where a.merchant=" ++ ?to_s(Merchant)
 	++ " and a.shop=" ++ ?to_s(Shop)
@@ -2128,8 +2146,7 @@ handle_call({gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _Fro
 			end,
 		    ?DEBUG("barcode ~p", [Barcode]),
 
-		    Sql0 = "select bcode, style_number, brand" 
-			" from w_inventory " 
+		    Sql0 = "select bcode, style_number, brand from w_inventory"
 			" where merchant=" ++ ?to_s(Merchant)
 			++ " and bcode=\'" ++ ?to_s(Barcode) ++ "\'",
 		    
@@ -2147,13 +2164,25 @@ handle_call({gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _Fro
 				    " where merchant=" ++ ?to_s(Merchant)
 				    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 				    ++ " and brand=" ++ ?to_s(Brand)],
-			    Reply = ?sql_utils:execute(transaction, Sqls, Barcode),
-			    {reply, Reply, State};
+			    case ?sql_utils:execute(transaction, Sqls, Barcode) of
+				{ok, Barcode} ->
+				    {reply, {ok, Barcode,
+					     ?v(<<"level">>, Stock),
+					     ?v(<<"category_id">>, Stock),
+					     ?v(<<"executive_id">>, Stock),
+					     ?v(<<"fabric_json">>, Stock)}, State} ;
+				ErrorReply ->
+				    {reply, ErrorReply, State}
+			    end;
 			{ok, _R} -> 
 			    {reply, {error, ?err(stock_same_barcode, Barcode)}, State}
 		    end;
 		false ->
-		    {reply, {ok, ABCode}, State} 
+		    {reply, {ok, ABCode,
+			     ?v(<<"level">>, Stock),
+			     ?v(<<"category_id">>, Stock),
+			     ?v(<<"executive_id">>, Stock),
+			     ?v(<<"fabric_json">>, Stock)}, State} 
 	    end
     end;
 

@@ -1991,9 +1991,6 @@ function wsaleNewProvide(
     $scope.update_inventory = function(inv, updateCallback, scan){
 	console.log(inv);
 	inv.$update = true; 
-	// inv.fdiscount = $scope.calc_discount(inv); 
-	// inv.fprice    = diablo_price(inv.tag_price, inv.fdiscount);
-	
 	if (inv.free_color_size){
 	    inv.free_update = true;
 	    if (angular.isDefined(scan) && scan) {
@@ -2010,8 +2007,7 @@ function wsaleNewProvide(
 	    return;
 	}
 
-	if (angular.isDefined(scan) && scan
-	    && $scope.setting.barcode_mode && angular.isDefined(inv.full_bcode)) {
+	if (angular.isDefined(scan) && scan && $scope.setting.barcode_mode && angular.isDefined(inv.full_bcode)) {
 	    // get color, size from barcode
 	    // console.log(inv.bcode);
 	    // console.log(inv.full_bcode);
@@ -2036,8 +2032,7 @@ function wsaleNewProvide(
 		    }
 		} 
 		// console.log(color); 
-		if (angular.isDefined(color)
-		    && color.bcode === bcode_color && a.size === bcode_size) {
+		if (angular.isDefined(color) && color.bcode === bcode_color && a.size === bcode_size) {
 		    if (wsaleUtils.to_integer(a.sell_count) === 0)
 			a.sell_count = 1;
 		    else
@@ -2057,12 +2052,15 @@ function wsaleNewProvide(
 	
 	var callback = function(params){
 	    var result  = add_callback(params);
-	    console.log(result);
+	    console.log(result); 
+	    // if (inv.sell !== result.sell) 
+	    // 	inv.$update_count = true;
+	    
 	    inv.amounts    = result.amounts;
 	    inv.sell       = result.sell;
 	    inv.fdiscount  = result.fdiscount;
 	    inv.fprice     = result.fprice;
-	    inv.note       = result.note;
+	    inv.note       = result.note; 
 
 	    // inv.note 
 	    // save
@@ -2088,13 +2086,16 @@ function wsaleNewProvide(
 		       valid_sell:   valid_sell,
 		       valid:        valid_all_sell,
 		       right:        $scope.right}; 
-	diabloUtilsService.edit_with_modal(
-	    "wsale-new.html", modal_size, callback, $scope, payload)
+	diabloUtilsService.edit_with_modal("wsale-new.html", modal_size, callback, $scope, payload)
     };
 
     $scope.save_free_update = function(inv){
 	$timeout.cancel($scope.timeout_auto_save);
-	inv.free_update = false; 
+	inv.free_update = false;
+
+	// if (inv.amounts[0].sell_count !== inv.sell)
+	//     inv.$update_count = true;
+	
 	inv.amounts[0].sell_count = inv.sell; 
 	// save
 	$scope.wsaleStorage.save($scope.inventories.filter(function(r){return !r.$new}));

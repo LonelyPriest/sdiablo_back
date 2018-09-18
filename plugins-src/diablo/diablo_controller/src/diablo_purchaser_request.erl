@@ -1161,13 +1161,20 @@ action(Session, Req, {"gen_stock_barcode"}, Payload) ->
 
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
     AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSetting, ?YES)),
+    %% {ok, Hide} = ?v(<<"h_stock">>, BaseSetting, ?HIDE_DEFAULT_MODE),
+    
     
     case ?w_inventory:purchaser_inventory(
 	    gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand) of
-	{ok, Barcode} ->
+	{ok, Barcode, Level, Category, Executive, Fabric} ->
 	    ?utils:respond(200, object, Req,
 			   {[{<<"ecode">>, 0},
-			     {<<"barcode">>, ?to_b(Barcode)}]}); 
+			     {<<"barcode">>, ?to_b(Barcode)},
+			     {<<"level">>, Level},
+			     {<<"category_id">>, Category},
+			     {<<"executive_id">>, Executive}, 
+			     {<<"fabric_json">>, Fabric}
+			    ]}); 
 	{error, Error} ->
     	    ?utils:respond(200, Req, Error)
     end;

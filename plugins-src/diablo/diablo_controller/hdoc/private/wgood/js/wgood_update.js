@@ -23,7 +23,8 @@ function wgoodUpdateCtrlProvide(
 	type:         diabloPattern.good_type,
 	discount:     diabloPattern.discount,
 	price:        diabloPattern.positive_decimal_2,
-	expire:       diabloPattern.expire_date};
+	expire:       diabloPattern.expire_date,
+	percent:      diabloPattern.percent};
 
     $scope.shops      = user.sortShops;
     $scope.promotions = filterPromotion;
@@ -38,9 +39,9 @@ function wgoodUpdateCtrlProvide(
     var authen = new diabloAuthen(user.type, user.right, user.shop);
     $scope.stock_right = authen.authenStockRight();
 
-    $scope.levels         = [1,2,3];
-    $scope.std_executives = [{"id":-1, name:"无"}].concat(filterStdExecutive);
-    $scope.categories     = [{"id":-1, name:"无"}].concat(filterCategory);
+    $scope.levels         = diablo_level;
+    $scope.std_executives = filterStdExecutive;
+    $scope.categories     = filterCategory;
     $scope.fabrics        = filterFabric;
     $scope.template       = filterTemplate.length!==0 ? filterTemplate[0] : undefined;
     console.log($scope.template);
@@ -134,8 +135,38 @@ function wgoodUpdateCtrlProvide(
 	$scope.good.sex       = diablo_get_object(good.sex, $scope.sexs);
 	$scope.good.season    = diablo_get_object(good.season, $scope.seasons);
 
-	$scope.good.executive = diablo_get_object(good.executive_id, $scope.std_executives);
-	$scope.good.category  = diablo_get_object(good.categroy_id,  $scope.categories);
+	if (good.executive_id === diablo_invalid_index) {
+	    $scope.good.executive = $scope.std_executives.length === 0 ? undefined : $scope.std_executives[0];
+	} else {
+	    $scope.good.executive = diablo_get_object(good.executive_id, $scope.std_executives); 
+	}
+
+	if (good.category_id === diablo_invalid_index) {
+	    $scope.good.category = $scope.categories.length === 0 ? undefined : $scope.categories[0];
+	} else {
+	    $scope.good.category  = diablo_get_object(good.category_id,  $scope.categories); 
+	}
+
+	$scope.good.fabric_desc = diablo_empty_string; 
+	if (good.fabric_json) {
+	    var fabrics = angular.fromJson(good.fabric_json);
+	    // $scope.good.fabrics = angular.fromJson(good.fabric_json);
+	    $scope.good.fabrics = []; 
+	    angular.forEach(fabrics, function(f) {
+		var fabric = diablo_get_object(f.f, filterFabric);
+		if (angular.isDefined(fabric) && angular.isObject(fabric)) {
+		    $scope.good.fabrics.push({fabric:fabric.name, percent:stockUtils.to_integer(f.p)});
+		    $scope.good.fabric_desc += fabric.name + ":" + f.p.toString(); 
+		} 
+	    });
+	} 
+
+	if ($scope.good.level === diablo_invalid_index) {
+	    $scope.good.level = $scope.levels[0];
+	} else {
+	    $scope.good.level = $scope.levels[$scope.good.level];
+	} 
+	console.log($scope.good);
 
 	if (angular.isDefined($routeParams.shop)){
 	    $scope.good.shop      = diablo_get_object(parseInt($routeParams.shop), $scope.shops);
@@ -148,16 +179,18 @@ function wgoodUpdateCtrlProvide(
 	    var hide_mode  = stockUtils.stock_in_hide_mode(shop, base); 
 	    $scope.setting = {
 		multi_sgroup:stockUtils.multi_sizegroup(shop, base),
-		hide_color  :stockUtils.to_integer(hide_mode.charAt(0)),
-		hide_size   :stockUtils.to_integer(hide_mode.charAt(1)),
-		hide_sex    :stockUtils.to_integer(hide_mode.charAt(2)),
-		hide_expire :function() {
-		    var h = hide_mode.charAt(3);
-		    if ( !h ) return diablo_yes;
-		    else return stockUtils.to_integer(h);
-		}(),
+		// hide_color  :stockUtils.to_integer(hide_mode.charAt(0)),
+		// hide_size   :stockUtils.to_integer(hide_mode.charAt(1)),
+		// hide_sex    :stockUtils.to_integer(hide_mode.charAt(2)),
+		// hide_expire :function() {
+		//     var h = hide_mode.charAt(3);
+		//     if ( !h ) return diablo_yes;
+		//     else return stockUtils.to_integer(h);
+		// }(),
 		auto_barcode :stockUtils.auto_barcode(diablo_default_setting, base)
-	    }; 
+	    };
+	    
+	    angular.extend($scope.setting, hide_mode); 
 	    console.log($scope.base_settings);
 	}
 
@@ -230,6 +263,55 @@ function wgoodUpdateCtrlProvide(
             }
         });
     });
+
+    $scope.select_fabric = function() {
+	// $scope.selectFabrics = [];
+
+	var callback = function(params) {
+	    console.log(params.composites);
+	    var cs = params.composites;
+	    
+	    // check
+	    for (var i=0, l=cs.length; i<l; i++) {
+		var c = cs[i];
+		if ( (angular.isUndefined(c.fabric) && 0 !== stockUtils.to_float(c.percent))
+		     || (angular.isDefined(c.fabric) && 0 === stockUtils.to_float(c.percent)) ) {
+		    dialog.response(
+			false,
+			"新增货品",
+			"新增货品失败：面料输入不正确，请确保面料从下拉框中选择，面料成份不为零");
+		    return;
+		}
+	    };
+
+	    $scope.good.fabrics = cs.filter(function(c) {
+		return angular.isDefined(c) && 0 !== stockUtils.to_float(c.percent);
+	    });
+
+	    $scope.good.fabric_desc = diablo_empty_string;
+	    angular.forEach($scope.good.fabrics, function(f) {
+		$scope.good.fabric_desc += f.fabric + ":" + f.percent.toString();
+	    });
+
+	    // console.log($scope.good.fabric_desc);
+	};
+	
+	dialog.edit_with_modal(
+	    "select-fabric.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {composites:$scope.good.fabrics,
+	     add_composite: function(composites) {
+		 composites.push({fabric:undefined, percent:undefined});
+	     },
+	     delete_composite: function(composites) {
+		 composites.splice(-1, 1);
+	     },
+	     fabrics: $scope.fabrics,
+	     p_percent: $scope.pattern.percent
+	    });
+    };
 
     $scope.delete_image = function(){
 	$scope.image = undefined;
@@ -513,6 +595,25 @@ function wgoodUpdateCtrlProvide(
 	update_good.discount  = stockUtils.to_integer(good.discount);
 	update_good.alarm_day = stockUtils.to_integer(good.alarm_day);
 	
+	update_good.level       = function() {
+	    var levelIndex = $scope.levels.indexOf(good.level);
+	    return levelIndex === 0 ? diablo_invalid_index : levelIndex;
+	}();
+	
+	update_good.executive_id   = stockUtils.invalid_firm(good.executive);
+	update_good.category_id    = stockUtils.invalid_firm(good.category);
+	update_good.fabric_json = function() {
+	    if (good.fabrics.length !== 0) {
+		var cs = good.fabrics.map(function(f){
+		    return {f:stockUtils.get_object_by_name(f.fabric, filterFabric).id, p:f.percent};
+		});
+		console.log(cs); 
+		return angular.toJson(cs);
+	    } else {
+		return undefined;
+	    }
+	}();
+	
 	update_good.color     = function(){
 	    if (angular.isDefined($scope.selectColors) && $scope.selectColors.length > 0){
 		var colors = $scope.src_good.color.split(",").map(
@@ -570,10 +671,10 @@ function wgoodUpdateCtrlProvide(
 	}; 
 	
 	var image  = angular.isDefined($scope.image) && $scope.image
-	    ? $scope.image.dataUrl.replace(/^data:image\/(png|jpg);base64,/, "")
-	    : undefined;
+	    ? $scope.image.dataUrl.replace(/^data:image\/(png|jpg);base64,/, "") : undefined;
 
 	console.log(changed_good);
+
 	if (diablo_is_empty(changed_good) && angular.isUndefined(image)){
 	    diabloUtilsService.response(
 		false, "修改货品",

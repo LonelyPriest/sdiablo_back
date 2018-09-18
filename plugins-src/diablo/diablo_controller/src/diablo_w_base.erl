@@ -766,7 +766,8 @@ sys_config(shop) ->
      {"d_sex",           "默认入库性别",         "0",   "0"},
      {"m_sale",          "允许负数退货",         "1",   "0"},
      {"round",           "四舍五入",             "1",   "0"},
-     {"h_stock",         "入库字段隐藏",         "0000", "0"}, 
+     {"h_stock",         "入库字段隐藏",         "0001101111", "0"},
+     
      {"s_member",        "会员独立",             "0",   "0"},
      {"s_employee",      "营业员必选",           "0",   "0"},
      
@@ -818,8 +819,12 @@ sys_config() ->
 	      %% [3]: hide expire
 	      %% [4]: hide image
 	      %% [5]: type should be select
-	      %% [6]: print std_executive, std_category
-	      {"h_stock",         "入库字段隐藏",         "0001100", "0"},
+	      %% [6]: hide std_executive
+	      %% [7]: hide std_category
+	      %% [8]: hide level
+	      %% [9]: hide fabric
+	      
+	      {"h_stock",         "入库字段隐藏",         "0001101111", "0"},
 
 	      
 	      %% {"h_color",         "隐藏颜色",             "0",   "0"},
@@ -886,7 +891,7 @@ sys_config() ->
 	      %%      1-> vip discount first in any case
 	      {"r_discount",        "会员折扣模式",       "0000",    "0"},
 	      
-	      %% {"r_level",           "会员等级模式",       "0",    "0"},
+	      %% {"r_level",        "会员等级模式",       "0",    "0"},
 	      {"gift_sale",         "开单赠送模式",       "0",    "0"},
 	      %%[0]:scan sale only
 	      %%[1]:add scan mode when stock_in

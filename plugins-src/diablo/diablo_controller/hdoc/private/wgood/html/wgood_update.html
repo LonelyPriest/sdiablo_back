@@ -379,7 +379,7 @@
 	      </div>
 	    </div>
 
-	    <div x-ng-if="template && template.level" class="form-group diablo-good-form-group">
+	    <div x-ng-if="!setting.hide_level" class="form-group diablo-good-form-group">
 	      <label class="col-sm-3 col-md-3 control-label">等级</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<select class="form-control"
@@ -389,7 +389,7 @@
 	      </div> 
 	    </div>
 
-	    <div x-ng-if="template && template.executive" class="form-group diablo-good-form-group">
+	    <div x-ng-if="!setting.hide_executive" class="form-group diablo-good-form-group">
 	      <label class="col-sm-3 col-md-3 control-label">执行标准</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<select class="form-control"
@@ -399,7 +399,7 @@
 	      </div> 
 	    </div>
 
-	    <div x-ng-if="template && template.category" class="form-group diablo-good-form-group">
+	    <div x-ng-if="!setting.hide_category" class="form-group diablo-good-form-group">
 	      <label class="col-sm-3 col-md-3 control-label">安全类别</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<select class="form-control"
@@ -409,7 +409,7 @@
 	      </div> 
 	    </div>
 
-	    <div x-ng-if="template && template.fabric" class="form-group diablo-good-form-group">
+	    <div x-ng-if="!setting.hide_fabric" class="form-group diablo-good-form-group">
 	      <label class="col-sm-3 col-md-3 control-label">面料</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
@@ -427,7 +427,7 @@
 	    </div>
 
 	    <!-- image --> 
-	    <div class="form-group">
+	    <div x-ng-if="!setting.hide_image" class="form-group">
 	      <label class="col-sm-3 col-md-3 control-label">图片</label>
 	      <div class="col-sm-6 col-md-6">
 		<div class="input-group">
@@ -674,4 +674,69 @@
     <button class="btn btn-primary" x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>
+</script>
+
+<script type="text/ng-template" id="select-fabric.html"> 
+  <div class="modal-body">
+    <div class="table-responsive">
+      <div class="btn-group table-panel pull-right">
+	<button x-ng-disabled="params.composites.length===0"
+		x-ng-click="params.delete_composite(params.composites)"
+		type="button"
+		class="btn red">
+	  <i class="glyphicon glyphicon-minus"></i></button> 
+	<button x-ng-click="params.add_composite(params.composites)"
+	   type="button"
+	   class="btn green">
+	  <i class="glyphicon glyphicon-plus"></i>
+	</button>
+      </div>
+      
+      <table class="table table-bordered table-striped table-condensed table-advanced">
+	<thead>
+	  <th>面料</th>
+	  <th>百分比</th>
+	</thead>
+	
+	<tbody>
+	  <tr class="text-center" x-ng-repeat="c in params.composites">
+	    <td class="vert-align">
+	      <form name="cForm">
+		<div ng-class="{'has-error':cForm.$invalid && !cForm.$pristine}">
+		  <input type="text"
+			 class="form-control"
+			 name="fabric"
+			 required
+			 placeholder="请选择面料"
+			 x-ng-model="c.fabric"
+			 typeahead-editable="false"
+			 uib-typeahead="f.name for f in params.fabrics|filter:$viewValue|limitTo:20"/>
+		</div>
+	      </form> 
+	    </td>
+
+	    <td class="vert-align">
+	      <form name="pForm">
+		<div ng-class="{'has-error':pForm.$invalid && !pForm.$pristine}">
+		  <input type="text"
+			 class="form-control"
+			 name="percent"
+			 required
+			 placeholder="请输入百分比"
+			 x-ng-pattern="params.p_percent"
+			 x-ng-model="c.percent"/>
+		</div>
+	      </form>
+	    </td>
+	    
+	  </tr>
+	</tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary" x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>  
 </script>
