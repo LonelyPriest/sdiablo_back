@@ -47,8 +47,8 @@ function stockPromotionNewProvide(
 	    consume:  rule_id === 1 || rule_id === 2 ? $scope.promotion.consume : undefined,
 	    reduce:   rule_id === 1 || rule_id === 2 ? $scope.promotion.reduce : undefined,
 
-	    scount:   rule_id === 3 ? $scope.promotion.scount : undefined,
-	    sdiscount:rule_id === 3 ? $scope.promotion.sdiscount : undefined, 
+	    scount:   rule_id === 3 || rule_id === 4 ? $scope.promotion.scount : undefined,
+	    sdiscount:rule_id === 3 || rule_id === 4 ? $scope.promotion.sdiscount : undefined, 
 
 	    sdate:    dateFilter($scope.promotion.sdate, "yyyy-MM-dd"),
 	    edate:    dateFilter($scope.promotion.edate, "yyyy-MM-dd"),

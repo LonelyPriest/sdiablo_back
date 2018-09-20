@@ -105,7 +105,7 @@ function stockConfg(angular){
 		controller: 'purchaserInventoryNewUpdateCtrl',
 		resolve: angular.extend(
 		    {}, user, brand, firm, type, employee, s_group, color,
-		    std_executives, safety_category, fabric, ptemplate, base)
+		    std_executive, safety_category, fabric, ptemplate, base)
 	    }).
 	    // reject
 	    when('/inventory_reject', {
@@ -356,8 +356,8 @@ function stockConfg(angular){
 	    {name: "折扣优惠", id:0, remark: "打折优惠"},
 	    {name: "金额减免", id:1, remakr: "交易金额达到目标值减免一定金额"},
 	    {name: "买M送N",   id:2, remakr: "同一类型的产品买M年送N件"},
-	    {name: "M件N折",   id:3, remakr: "一件8折二件7折"}
-	    // {name: "金额赠送", id:2, remakr: "交易金额达到目标值赠送一定金额"}
+	    {name: "M件N折",   id:3, remakr: "一件8折二件7折"},
+	    {name: "M件减免N", id:4, remakr: "一件少50二件少100"}
 	];
 	
 	this.export_type = {trans:0, trans_note:1, stock:2, shift:3, shift_note:4};

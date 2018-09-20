@@ -183,7 +183,7 @@
 	    </div>
 
 
-	    <div x-ng-if="promotion.rule.id===3" class="form-group">
+	    <div x-ng-if="promotion.rule.id===3 || promotion.rule.id===4" class="form-group">
 	      <label class="col-md-3 col-sm-3 control-label">购买数量</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
@@ -204,8 +204,8 @@
 	      </div> 
 	    </div>
 
-	    <div x-ng-if="promotion.rule.id===3" class="form-group">
-	      <label class="col-md-3 col-sm-3 control-label">购买折扣</label>
+	    <div x-ng-if="promotion.rule.id===3 || promotion.rule.id===4" class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">购买折扣/金额</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
 		  <div x-ng-class="{'has-error':pForm.dm.$invalid && !pForm.dm.$pristine}">
