@@ -1729,10 +1729,10 @@ function purchaserInventoryNewCtrlProvide (
 	contailer : -1,
 	alarm_a   : $scope.base_settings.stock_alarm_a,
 
-	level     : $scope.levels[1],
-	executive : $scope.std_executives!==0 ? $scope.std_executives[0]: -1,
-	category  : $scope.categories.length!==0 ? $scope.categories[0]: -1,
-	fabrics   : []
+	level     : $scope.base_settings.hide_level ? undefined : $scope.levels[1],
+	executive : $scope.base_settings.hide_executive ? undefined : $scope.std_executives[0],
+	category  : $scope.base_settings.hide_category ? undefined : $scope.categories[0],
+	fabrics   : $scope.base_settings.hide_fabric ? undefined : []
 	// d_image   : true
     };
     
@@ -1762,12 +1762,12 @@ function purchaserInventoryNewCtrlProvide (
 	good.contailer = $scope.good.contailer;
 	good.alarm_a   = $scope.good.alarm_a;
 
-	good.level     = $scope.levels.indexOf($scope.good.level);
-	good.executive = $scope.good.executive.id;
-	good.category  = $scope.good.category.id;
+	good.level     = angular.isDefined($scope.good.level) ? $scope.levels.indexOf($scope.good.level) : undefined;
+	good.executive = angular.isObject($scope.good.executive)  ? $scope.good.executive.id : undefined;
+	good.category  = angular.isObject($scope.good.category_id) ? $scope.good.category.id : undefined;
 
 	good.fabric    = function() {
-	    if ($scope.good.fabrics.length !== 0) {
+	    if (angular.isArray($scope.good.fabrics) && $scope.good.fabrics.length !== 0) {
 		var cs = $scope.good.fabrics.map(function(f){
 		    return {f:stockUtils.get_object_by_name(f.fabric, $scope.fabrics).id, p:f.percent};
 		});
@@ -2128,7 +2128,6 @@ function purchaserInventoryDetailCtrlProvide(
     // $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, base); 
     $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, base);
     $scope.setting.dual_barcode = stockUtils.dual_barcode_print(user.loginShop, base);
-    // console.log($scope.setting);
     $scope.printU = new stockPrintU($scope.template, $scope.setting.auto_barcode, $scope.setting.dual_barcode);
     $scope.printU.setPrinter($scope.setting.printer_barcode);
     
@@ -2975,16 +2974,17 @@ function purchaserInventoryDetailCtrlProvide(
 		contailer    :inv.contailer,
 		yes_no       :yes_no,
 		is_score     :yes_no[0],
+		is_sprice    :yes_no[0],
 		stock_contailer : $scope.setting.stock_contailer,
 		update_orgprice: $scope.stock_right.show_orgprice
 	    }
 	);
     };
 
-    $scope.gift_stock = function(inv) {
+    $scope.gift_stock = function(inv, type) {
 	console.log(inv);
 	var condition = {style_number:inv.style_number, brand:inv.brand.id, shop:inv.shop_id};
-	purchaserService.gift_stock(condition, {state:inv.state}).then(function(result){
+	purchaserService.gift_stock(condition, {state:inv.state, type:type}).then(function(result){
 	    console.log(result);
 	    if (result.ecode === 0){
 		dialog.response_with_callback(

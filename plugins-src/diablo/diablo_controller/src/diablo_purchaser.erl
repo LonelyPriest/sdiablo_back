@@ -2108,15 +2108,15 @@ handle_call({gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _Fro
 
 	", b.bcode as tbcode"
 
-	", c.level"
-	", c.category as category_id"
-	", c.executive as executive_id"
-	", c.fabric as fabric_json"
+    %% ", c.level"
+    %% ", c.category as category_id"
+    %% ", c.executive as executive_id"
+    %% ", c.fabric as fabric_json"
 	
 	" from w_inventory a"
 	" left join inv_types b on a.type=b.id"
-	" left join w_inventory_good c"
-	" on a.style_number=c.style_number and a.brand=b.brand and a.merchant=b.merchant"
+    %% " left join w_inventory_good c"
+    %% " on a.style_number=c.style_number and a.brand=c.brand and a.merchant=c.merchant"
 	
 	" where a.merchant=" ++ ?to_s(Merchant)
 	++ " and a.shop=" ++ ?to_s(Shop)
@@ -2166,11 +2166,12 @@ handle_call({gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _Fro
 				    ++ " and brand=" ++ ?to_s(Brand)],
 			    case ?sql_utils:execute(transaction, Sqls, Barcode) of
 				{ok, Barcode} ->
-				    {reply, {ok, Barcode,
-					     ?v(<<"level">>, Stock),
-					     ?v(<<"category_id">>, Stock),
-					     ?v(<<"executive_id">>, Stock),
-					     ?v(<<"fabric_json">>, Stock)}, State} ;
+				    {reply, {ok, Barcode},
+					     %% ?v(<<"level">>, Stock),
+					     %% ?v(<<"category_id">>, Stock),
+					     %% ?v(<<"executive_id">>, Stock),
+					     %% ?v(<<"fabric_json">>, Stock)},
+				     State} ;
 				ErrorReply ->
 				    {reply, ErrorReply, State}
 			    end;
@@ -2178,11 +2179,12 @@ handle_call({gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _Fro
 			    {reply, {error, ?err(stock_same_barcode, Barcode)}, State}
 		    end;
 		false ->
-		    {reply, {ok, ABCode,
-			     ?v(<<"level">>, Stock),
-			     ?v(<<"category_id">>, Stock),
-			     ?v(<<"executive_id">>, Stock),
-			     ?v(<<"fabric_json">>, Stock)}, State} 
+		    {reply, {ok, ABCode},
+		     %% ?v(<<"level">>, Stock),
+		     %% ?v(<<"category_id">>, Stock),
+		     %% 	     ?v(<<"executive_id">>, Stock),
+		     %% 	     ?v(<<"fabric_json">>, Stock)},
+		    State} 
 	    end
     end;
 
@@ -2374,7 +2376,7 @@ handle_call({update_batch, Merchant, Attrs, Conditions}, _From, State) ->
 handle_call({set_gift, Merchant, Attrs, Conditions}, _From, State) ->
     ?DEBUG("set_gift with merchant ~p, attrs ~p, conditions ~p", [Merchant, Attrs, Conditions]),
     GiftState = case ?v(<<"state">>, Attrs) =:= 0 of
-		    true -> 2;
+		    true -> ?v(<<"type">>, Attrs);
 		    false -> 0
 		end,
     Sql = ?w_good_sql:inventory(set_gift, Merchant, GiftState, Conditions), 

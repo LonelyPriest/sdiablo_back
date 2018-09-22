@@ -4,7 +4,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
     $scope, $q, $routeParams, diabloPromise, dateFilter, diabloPattern,
     diabloUtilsService, diabloFilter, diabloPagination, purchaserService,
     user, filterBrand, filterFirm, filterType, filterEmployee,
-    filterSizeGroup, filterColor, filterTemplate, base){
+    filterSizeGroup, filterColor, filterStdExecutive, filterCategory, filterFabric, filterTemplate, base){
     $scope.shops       = user.sortShops;
     $scope.brands      = filterBrand;
     $scope.firms       = filterFirm;
@@ -1115,6 +1115,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	purchaserService.gen_barcode(
 	    inv.style_number, inv.brand_id, $scope.select.shop.id
 	).then(function(result) {
+	    console.log(result);
 	    if (result.ecode === 0) {
 		inv.executive = diablo_get_object(result.executive_id, filterStdExecutive);
 		inv.category  = diablo_get_object(result.category_id, filterCategory); 

@@ -375,7 +375,7 @@ handle_call({new_user_role, Attrs}, _From, State)->
 				   ++ ?to_s(NewRole) ++ ","
 				   ++ ?to_s(RightId) ++ ","
 				   ++ ?to_s(Merchant) ++ ");"|Acc]
-			  end, [], Keys),
+			  end, [], lists:usort(Keys)),
 
 		    Transaction = 
 			lists:foldr(

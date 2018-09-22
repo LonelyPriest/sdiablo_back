@@ -1206,10 +1206,10 @@ diabloUtils.directive('drawDefaultImg', function () {
 
 diabloUtils.directive('imageDraw', function ($q) {
     function postLinkFn (scope, element, attrs){
-	// console.log(scope);
 	var ctx = element.get(0).getContext("2d");
 
 	scope.$watch("orgImage.image", function(newValue, oldValue){
+	    console.log(scope);
 	    if (angular.isUndefined(newValue)
 		|| angular.equals(newValue, oldValue)){
 		return;
@@ -1222,7 +1222,7 @@ diabloUtils.directive('imageDraw', function ($q) {
 	    // var type = options ? options.type : 'image/jpg';
 
 	    var orgImage = scope.orgImage.image;
-	    // console.log(orgImage);
+	    console.log(orgImage);
 	    var height = 320;
 	    var width  = 240;
 	    // var height = orgImage.height;

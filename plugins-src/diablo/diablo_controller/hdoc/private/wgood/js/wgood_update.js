@@ -603,7 +603,7 @@ function wgoodUpdateCtrlProvide(
 	update_good.executive_id   = stockUtils.invalid_firm(good.executive);
 	update_good.category_id    = stockUtils.invalid_firm(good.category);
 	update_good.fabric_json = function() {
-	    if (good.fabrics.length !== 0) {
+	    if (angular.isArray(good.fabrics) && good.fabrics.length !== 0) {
 		var cs = good.fabrics.map(function(f){
 		    return {f:stockUtils.get_object_by_name(f.fabric, filterFabric).id, p:f.percent};
 		});

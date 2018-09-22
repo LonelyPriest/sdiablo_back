@@ -991,7 +991,7 @@
 		</div>
 		
 
-		<div x-ng-if="!base_settings.hide_image" class="form-group diablo-good-form-group">
+		<div x-ng-show="!base_settings.hide_image" class="form-group diablo-good-form-group">
 		  <label class="col-sm-3 col-md-3 control-label">图片</label>
 		  <div class="col-sm-6 col-md-6">
 		    <div class="input-group">
@@ -1010,7 +1010,7 @@
 		  </div>
 		</div>
 
-		<div x-ng-if="base_settings.image_allowed" class="form-group diablo-good-form-group">
+		<div x-ng-show="!base_settings.hide_image" class="form-group diablo-good-form-group">
 		  <div class="col-sm-offset-3 col-sm-6 col-md-offset-3 col-md-6">
 		    <image-draw x-ng-show="good.image"
 				class="img-responsive img-thumbnail"
@@ -1019,51 +1019,51 @@
 		  </div>
 		</div>
 
-		<div x-ng-if="base_settings.stock_alarm" class="form-group diablo-good-form-group">
-		  <label class="col-sm-3 col-md-3 control-label">预警数量</label>
-		  <div class="col-sm-6 col-md-6"> 
-		    <div ng-class="{'has-error':form.gForm.alarm_a.$invalid && !form.gForm.alarm_a.$pristine}">
-		      <input class="form-control"
-			     type="number" step="1" 
-			     name="alarm_a"
-			     required
-			     disable-key
-			     ng-edit
-			     placeholder="请输入货品预警数量"
-			     x-ng-pattern="/^\d{1,4}$/"
-			     x-ng-enter=""
-			     x-ng-model="good.alarm_a"/>
-		    </div>
-		  </div>
-		  <div ng-if="form.gForm.alarm_a.$invalid && !form.gForm.alarm_a.$pristine">
-		    <span class="fg-red">请输入小于9999的整数</span>
-		  </div>
-		</div>
+		<!-- <div x-ng-if="base_settings.stock_alarm" class="form-group diablo-good-form-group"> -->
+		<!--   <label class="col-sm-3 col-md-3 control-label">预警数量</label> -->
+		<!--   <div class="col-sm-6 col-md-6">  -->
+		<!--     <div ng-class="{'has-error':form.gForm.alarm_a.$invalid && !form.gForm.alarm_a.$pristine}"> -->
+		<!--       <input class="form-control" -->
+		<!-- 	     type="number" step="1"  -->
+		<!-- 	     name="alarm_a" -->
+		<!-- 	     required -->
+		<!-- 	     disable-key -->
+		<!-- 	     ng-edit -->
+		<!-- 	     placeholder="请输入货品预警数量" -->
+		<!-- 	     x-ng-pattern="/^\d{1,4}$/" -->
+		<!-- 	     x-ng-enter="" -->
+		<!-- 	     x-ng-model="good.alarm_a"/> -->
+		<!--     </div> -->
+		<!--   </div> -->
+		<!--   <div ng-if="form.gForm.alarm_a.$invalid && !form.gForm.alarm_a.$pristine"> -->
+		<!--     <span class="fg-red">请输入小于9999的整数</span> -->
+		<!--   </div> -->
+		<!-- </div> -->
 
-		<div x-ng-if="base_settings.stock_contailer" class="form-group diablo-good-form-group">
-		  <label class="col-sm-3 col-md-3 control-label">货柜号</label>
-		  <div class="col-sm-6 col-md-6">
-		    <div class="input-group">
-		      <div ng-class="{'has-error':form.gForm.contailer.$invalid
-				     && !form.gForm.contailer.$pristine}">
-			<input class="form-control"
-			       type="number" step="1" 
-			       name="contailer"
-			       required
-			       disable-key
-			       ng-edit
-			       placeholder="请输入货品放置的货柜号"
-			       x-ng-pattern="/^\d{1,4}$/"
-			       x-ng-enter=""
-			       x-ng-model="good.contailer"/>
-		      </div>
-		      <span class="input-group-addon bg-white fg-red">*</span>
-		    </div>
-		  </div>
-		  <div ng-if="form.gForm.contailer.$invalid && !form.gForm.contailer.$pristine">
-		    <span class="fg-red">请输入小于9999的整数</span>
-		  </div>
-		</div>
+		<!-- <div x-ng-if="base_settings.stock_contailer" class="form-group diablo-good-form-group"> -->
+		<!--   <label class="col-sm-3 col-md-3 control-label">货柜号</label> -->
+		<!--   <div class="col-sm-6 col-md-6"> -->
+		<!--     <div class="input-group"> -->
+		<!--       <div ng-class="{'has-error':form.gForm.contailer.$invalid -->
+		<!-- 		     && !form.gForm.contailer.$pristine}"> -->
+		<!-- 	<input class="form-control" -->
+		<!-- 	       type="number" step="1"  -->
+		<!-- 	       name="contailer" -->
+		<!-- 	       required -->
+		<!-- 	       disable-key -->
+		<!-- 	       ng-edit -->
+		<!-- 	       placeholder="请输入货品放置的货柜号" -->
+		<!-- 	       x-ng-pattern="/^\d{1,4}$/" -->
+		<!-- 	       x-ng-enter="" -->
+		<!-- 	       x-ng-model="good.contailer"/> -->
+		<!--       </div> -->
+		<!--       <span class="input-group-addon bg-white fg-red">*</span> -->
+		<!--     </div> -->
+		<!--   </div> -->
+		<!--   <div ng-if="form.gForm.contailer.$invalid && !form.gForm.contailer.$pristine"> -->
+		<!--     <span class="fg-red">请输入小于9999的整数</span> -->
+		<!--   </div> -->
+		<!-- </div> -->
 		
 		<!--BEGIN form action-->
 		<div class="form-actions fluid">

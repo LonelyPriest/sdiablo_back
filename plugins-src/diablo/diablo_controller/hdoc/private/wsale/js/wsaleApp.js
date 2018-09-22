@@ -1032,8 +1032,7 @@ function wsaleNewProvide(
 
 	if (angular.isDefined(existStock)) {
 	    $scope.update_inventory(
-		existStock,
-		function() {$scope.inventories[0] = {$edit:false, $new:true}}, true)
+		existStock, function() {$scope.inventories[0] = {$edit:false, $new:true}}, true)
 	} else {
 	    // add at first allways 
 	    var add = $scope.inventories[0];
@@ -1758,11 +1757,17 @@ function wsaleNewProvide(
 	    return;
 	};
 
-	inv.fdiscount = $scope.calc_discount(inv); 
-	inv.fprice    = diablo_price(inv.tag_price, inv.fdiscount);
+	// inv.cdiscount      = inv.discount;
+	// inv.cprice         = inv.tag_price;
+
+	inv.fdiscount = inv.discount;
+	inv.fprice    = diablo_price(inv.tag_price, inv.discount);
+
+	// inv.fdiscount = $scope.calc_discount(inv); 
+	// inv.fprice    = diablo_price(inv.tag_price, inv.fdiscount);
 
 	inv.o_fdiscount = inv.discount;
-	inv.o_fprice    = inv.fprice; 
+	inv.o_fprice    = inv.fprice;
 	
 	if ($scope.setting.check_sale === diablo_no && inv.free === 0){
 	    inv.free_color_size = true;
@@ -1875,7 +1880,7 @@ function wsaleNewProvide(
 		    };
 		    
 		    var callback = function(params){
-			// console.log(params);
+			console.log(params);
 			var result  = add_callback(params);
 			// console.log(result);
 			inv.amounts    = result.amounts;
@@ -1990,7 +1995,10 @@ function wsaleNewProvide(
      */
     $scope.update_inventory = function(inv, updateCallback, scan){
 	console.log(inv);
-	inv.$update = true; 
+	if (!angular.isDefined(updateCallback)) {
+	    inv.$update = true; 
+	}
+	
 	if (inv.free_color_size){
 	    inv.free_update = true;
 	    if (angular.isDefined(scan) && scan) {

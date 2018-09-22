@@ -1166,14 +1166,10 @@ action(Session, Req, {"gen_stock_barcode"}, Payload) ->
     
     case ?w_inventory:purchaser_inventory(
 	    gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand) of
-	{ok, Barcode, Level, Category, Executive, Fabric} ->
+	{ok, Barcode} ->
 	    ?utils:respond(200, object, Req,
 			   {[{<<"ecode">>, 0},
-			     {<<"barcode">>, ?to_b(Barcode)},
-			     {<<"level">>, Level},
-			     {<<"category_id">>, Category},
-			     {<<"executive_id">>, Executive}, 
-			     {<<"fabric_json">>, Fabric}
+			     {<<"barcode">>, ?to_b(Barcode)}
 			    ]}); 
 	{error, Error} ->
     	    ?utils:respond(200, Req, Error)

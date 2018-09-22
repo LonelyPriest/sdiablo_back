@@ -1159,8 +1159,8 @@ stockPrintU.prototype.printBarcode2 = function() {
 	    
 	    // second
 	    if (pSecond) {
-		// line = this.second.size && this.second.size !== diablo_free_size ? this.second.size : "均码";
-		line = this.second.size && this.second.size !== diablo_free_size ? this.second.size : "";
+		line = this.second.size && this.second.size !== diablo_free_size ? this.second.size : "均码";
+		// line = this.second.size && this.second.size !== diablo_free_size ? this.second.size : "";
 		if (angular.isDefined(this.stock.specs) && this.stock.specs.length !== 0 && this.second.size !== diablo_free_size) {
 		    for (var i=0, l=this.stock.specs.length; i<l; i++) {
 			if (this.second.size.toString() === this.stock.specs[i].name) {
@@ -1182,8 +1182,8 @@ stockPrintU.prototype.printBarcode2 = function() {
 	    }
 
 	    if (pThird) {
-		// line = this.second.size && this.second.size !== diablo_free_size ? this.second.size : "均码";
-		line = this.third.size && this.third.size !== diablo_free_size ? this.second.size : "";
+		line = this.second.size && this.second.size !== diablo_free_size ? this.second.size : "均码";
+		// line = this.third.size && this.third.size !== diablo_free_size ? this.second.size : "";
 		if (angular.isDefined(this.stock.specs) && this.stock.specs.length !== 0 && this.third.size !== diablo_free_size) {
 		    for (var i=0, l=this.stock.specs.length; i<l; i++) {
 			if (this.second.third.toString() === this.stock.specs[i].name) {

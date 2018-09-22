@@ -639,6 +639,7 @@ inventory(update_batch, Merchant, Attrs, Conditions) ->
 	    end,
     
     State = case ?v(<<"sprice">>, Attrs) of
+		0 -> 0;
 		1 -> 3;
 		_ -> undefined
 	    end,

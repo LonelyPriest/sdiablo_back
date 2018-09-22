@@ -1,5 +1,11 @@
 var version_update = function(){
     var updates = [
+	{date: "2018-09-23",
+	 content:
+	 ["优化销售算法",
+	  "修正由销售算法改动引起的问题"]
+	},
+	
 	{date: "2018-09-15",
 	 content:
 	 ["增加购买不同数量的同品牌货品不同折扣的促销方式"]
