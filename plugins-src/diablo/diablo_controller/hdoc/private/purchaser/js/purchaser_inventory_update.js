@@ -1117,18 +1117,21 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	).then(function(result) {
 	    console.log(result);
 	    if (result.ecode === 0) {
-		inv.executive = diablo_get_object(result.executive_id, filterStdExecutive);
-		inv.category  = diablo_get_object(result.category_id, filterCategory); 
-		// inv.sepcs = [];
-		// if (angular.isObject(inv.type) && inv.type.cid !== diablo_invalid_index) {
-		//     angular.forEach(filterSizeSpec, function(s) {
-		// 	if (s.cid === d.type.cid) {
-		// 	    d.specs.push(s);
-		// 	}
-		//     }) 
-		// }
-		if (result.fabric_json) {
-		    inv.fabrics = angular.fromJson(result.fabric_json);
+
+		inv.level     = result.level;
+		inv.executive = diablo_get_object(result.executive, filterStdExecutive);
+		inv.category  = diablo_get_object(result.category, filterCategory); 
+		inv.sepcs = [];
+		if (angular.isObject(inv.type) && inv.type.cid !== diablo_invalid_index) {
+		    angular.forEach(filterSizeSpec, function(s) {
+			if (s.cid === d.type.cid) {
+			    d.specs.push(s);
+			}
+		    }) 
+		}
+		
+		if (result.fabric) {
+		    inv.fabrics = angular.fromJson(result.fabric);
 		    angular.forEach(inv.fabrics, function(f) {
 			var fabric = diablo_get_object(f.f, filterFabric);
 			if (angular.isDefined(fabric) && angular.isObject(fabric))

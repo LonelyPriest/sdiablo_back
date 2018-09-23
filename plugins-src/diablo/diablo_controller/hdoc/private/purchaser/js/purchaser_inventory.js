@@ -383,6 +383,11 @@ function purchaserInventoryNewCtrlProvide (
 
 	add.contailer   = src.contailer;
 	add.alarm_a     = src.alarm_a;
+
+	add.level       = src.level;
+	add.executive   = src.executive_id;
+	add.category    = src.category_id;
+	add.fabric      = src.fabric_json;
 	
 	if ( add.free === 0 ){
 	    add.free_color_size = true;
@@ -397,7 +402,7 @@ function purchaserInventoryNewCtrlProvide (
     
     $scope.on_select_good = function(item, model, label){
 	console.log(item);
-	console.log($scope.inventories); 
+	// console.log($scope.inventories); 
 	// has been added
 	var existStock = undefined;
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
@@ -650,6 +655,11 @@ function purchaserInventoryNewCtrlProvide (
 
 		contailer   : add.contailer,
 		alarm_a     : add.alarm_a,
+
+		level       : add.level,
+		executive   : add.executive,
+		category    : add.category,
+		fabric      : add.fabric,
 		
 		path        : add.path,
 		alarm_day   : add.alarm_day,
@@ -1764,7 +1774,7 @@ function purchaserInventoryNewCtrlProvide (
 
 	good.level     = angular.isDefined($scope.good.level) ? $scope.levels.indexOf($scope.good.level) : undefined;
 	good.executive = angular.isObject($scope.good.executive)  ? $scope.good.executive.id : undefined;
-	good.category  = angular.isObject($scope.good.category_id) ? $scope.good.category.id : undefined;
+	good.category  = angular.isObject($scope.good.category) ? $scope.good.category.id : undefined;
 
 	good.fabric    = function() {
 	    if (angular.isArray($scope.good.fabrics) && $scope.good.fabrics.length !== 0) {
@@ -1949,7 +1959,12 @@ function purchaserInventoryNewCtrlProvide (
 		    color:     sc,
 
 		    contailer: good.contailer,
-		    alarm_a:   good.alarm_a
+		    alarm_a:   good.alarm_a,
+
+		    level:        good.level,
+		    executive_id: good.executive,
+		    category_id:  good.category,
+		    fabric_json:  good.fabric
 		};
 		
 		// $scope.focus.style_number = true;
@@ -2110,7 +2125,7 @@ function purchaserInventoryDetailCtrlProvide(
     // console.log(storage);
         
     // alarm, use default shop
-    $scope.setting.alarm           = stockUtils.stock_alarm_b(diablo_default_shop, base);
+    // $scope.setting.alarm           = stockUtils.stock_alarm_b(diablo_default_shop, base);
     $scope.setting.stock_alarm     = stockUtils.stock_alarm(diablo_default_shop, base);
     $scope.setting.stock_contailer = stockUtils.stock_contailer(diablo_default_shop, base);
     $scope.setting.use_barcode     = stockUtils.use_barcode(diablo_default_shop, base);

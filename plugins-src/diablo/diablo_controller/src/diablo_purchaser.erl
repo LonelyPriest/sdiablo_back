@@ -2106,6 +2106,11 @@ handle_call({gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _Fro
 	", a.free"
 	", a.merchant"
 
+	", a.level"
+	", a.category as category_id"
+	", a.executive as executive_id"
+	", a.fabric as fabric_json"
+
 	", b.bcode as tbcode"
 
     %% ", c.level"
@@ -2115,6 +2120,7 @@ handle_call({gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _Fro
 	
 	" from w_inventory a"
 	" left join inv_types b on a.type=b.id"
+	
     %% " left join w_inventory_good c"
     %% " on a.style_number=c.style_number and a.brand=c.brand and a.merchant=c.merchant"
 	
@@ -2166,11 +2172,11 @@ handle_call({gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _Fro
 				    ++ " and brand=" ++ ?to_s(Brand)],
 			    case ?sql_utils:execute(transaction, Sqls, Barcode) of
 				{ok, Barcode} ->
-				    {reply, {ok, Barcode},
-					     %% ?v(<<"level">>, Stock),
-					     %% ?v(<<"category_id">>, Stock),
-					     %% ?v(<<"executive_id">>, Stock),
-					     %% ?v(<<"fabric_json">>, Stock)},
+				    {reply, {ok, Barcode,
+					     ?v(<<"level">>, Stock),
+					     ?v(<<"category_id">>, Stock),
+					     ?v(<<"executive_id">>, Stock),
+					     ?v(<<"fabric_json">>, Stock)},
 				     State} ;
 				ErrorReply ->
 				    {reply, ErrorReply, State}
@@ -2179,12 +2185,12 @@ handle_call({gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _Fro
 			    {reply, {error, ?err(stock_same_barcode, Barcode)}, State}
 		    end;
 		false ->
-		    {reply, {ok, ABCode},
-		     %% ?v(<<"level">>, Stock),
-		     %% ?v(<<"category_id">>, Stock),
-		     %% 	     ?v(<<"executive_id">>, Stock),
-		     %% 	     ?v(<<"fabric_json">>, Stock)},
-		    State} 
+		    {reply, {ok, ABCode,
+			     ?v(<<"level">>, Stock),
+			     ?v(<<"category_id">>, Stock),
+			     ?v(<<"executive_id">>, Stock),
+			     ?v(<<"fabric_json">>, Stock)},
+		     State} 
 	    end
     end;
 

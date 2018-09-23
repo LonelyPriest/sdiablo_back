@@ -438,21 +438,27 @@ sidebar(Session) ->
 	    ?MERCHANT ->
 		Merchant = ?session:get(merchant, Session),
 		BaseSettings = ?w_report_request:get_setting(Merchant, ?DEFAULT_BASE_SETTING),
+		%% ?DEBUG("BaseSettings ~p", [BaseSettings]),
 		%% <<_Color:1/binary, _Size:1/binary, _Sex:1/binary, _Expire:1/binary, _Image:1/binary, _Type:1/binary, Std:1/binary, _/binary>> =
-		StockMode = 
+		StockHideMode = 
 		    case ?w_report_request:get_config(<<"h_stock">>, BaseSettings) of
 			[] -> ?to_s(?HIDE_DEFAULT_MODE);
 			<<"0">> -> ?to_s(?HIDE_DEFAULT_MODE);
 			_Value -> ?to_s(_Value)
 		    end,
-
-		
 		
 	        %%  {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
-		AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSettings, ?YES)),
+		%%  AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSettings, ?YES)),
+		AutoBarcode =
+		case ?w_report_request:get_config(<<"bcode_auto">>, BaseSettings) of
+		    [] -> ?YES;
+		    _AutoBarcode -> ?to_i(_AutoBarcode)
+		end, 
+		?DEBUG("AutoBarcode ~p", [AutoBarcode]),
+		
 		StdMode = try
 			      %% ascii -> number
-			      lists:nth(7, StockMode) - 48
+			      lists:nth(7, StockHideMode) - 48
 			  catch _:_ ->
 				  ?NO
 			  end,

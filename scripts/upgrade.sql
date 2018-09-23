@@ -359,7 +359,7 @@ alter table w_promotion add column sdiscount varchar(32) default '' after scount
 
 
 --2018-09-19
-alter table w_inventory add column level TINYINT default -1 after path;
+alter table w_inventory add column level TINYINT default -1 after alarm_a;
 alter table w_inventory add column executive INTEGER default -1 after level;
 alter table w_inventory add column category INTEGER default -1 after executive;
 alter table w_inventory add column fabric VARCHAR(256) default null after category;

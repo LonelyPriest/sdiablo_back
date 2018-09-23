@@ -446,6 +446,11 @@ good_match(all_style_number_with_firm, Merchant, StartTime, Firm) ->
 	
 	", a.contailer"
 	", a.alarm_a"
+
+	", a.level"
+	", a.executive as as.executive_id"
+	", a.category as category_id"
+	", a.fabric as fabric_json"
 	
 	", a.entry_date"
 	
@@ -534,6 +539,12 @@ inventory({group_detail, MatchMode}, Merchant, Conditions, PageFun) ->
 	", a.alarm_day"
 	", a.contailer"
 	", a.alarm_a"
+
+	", a.level"
+	", a.executive as executive_id"
+	", a.category as category_id"
+	", a.fabric as fabric_json"
+	
 	", a.sell"
 	", a.shop as shop_id"
 	", a.state"
@@ -864,7 +875,7 @@ inventory(list, Merchant, Conditions) ->
 	", b.color as color_id"
 	", b.size"
 	", b.total as amount"
-	", b.alarm_a"
+	", b.alarm_a" 
 	
 	%% ", c.name as color" 
 	" from ("
@@ -906,22 +917,60 @@ inventory(list_info, Merchant, Conditions) ->
 	++ ?sql_utils:fix_condition(time, time_with_prfix, StartTime, EndTime); 
 
 inventory(get_new_amount, _Merchant, Conditions) ->
-    "select a.id, a.rsn, a.style_number, a.brand_id, a.type_id, a.sex"
-	", a.season, a.firm_id, a.s_group, a.free, a.year"
-	", a.org_price, a.tag_price, a.ediscount"
-	", a.discount, a.over, a.path, a.alarm_day, a.entry_date"
+    "select a.id"
+	", a.rsn"
+	", a.style_number"
+	", a.brand_id"
+	", a.type_id"
+	", a.sex"
+	", a.season"
+	", a.firm_id"
+	", a.s_group"
+	", a.free"
+	", a.year"
+	", a.org_price"
+	", a.tag_price"
+	", a.ediscount"
+	", a.discount" 
+	
+	", a.over"
+	", a.path"
+	", a.alarm_day"
+	", a.entry_date"
 
 	", b.color as color_id, b.size, b.total as amount"
 	" from "
 	
-	"(select id, rsn, style_number, brand as brand_id, type as type_id"
-	", sex, season, firm as firm_id, s_group, free, year"
-	", org_price, tag_price, ediscount, discount, over, path, alarm_day, entry_date"
+	"(select id"
+	", rsn"
+	", style_number"
+	", brand as brand_id"
+	", type as type_id"
+	", sex"
+	", season"
+	", firm as firm_id"
+	", s_group"
+	", free"
+	", year"
+	", org_price"
+	", tag_price"
+	", ediscount"
+	", discount" 
+	
+	", over"
+	", path"
+	", alarm_day"
+	", entry_date"
 	" from w_inventory_new_detail"
 	" where " ++ ?utils:to_sqls(proplists, Conditions) ++ ") a"
 
 	" inner join "
-	"(select rsn, style_number, brand, color, size, total"
+	"(select rsn"
+	", style_number"
+	", brand"
+	", color"
+	", size"
+	", total"
 	" from w_inventory_new_detail_amount"
 	" where " ++ ?utils:to_sqls(proplists, Conditions) ++ ") b"
 	" on a.rsn=b.rsn" 
@@ -1664,6 +1713,11 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
     Contailer  = ?v(<<"contailer">>, Inv, -1),
     Alarm_a    = ?v(<<"alarm_a">>, Inv, 0),
 
+    Level = ?v(<<"level">>, Inv, -1), 
+    StdExecutive = ?v(<<"executive">>, Inv, -1),
+    SafetyCategory = ?v(<<"category">>, Inv, -1),
+    Fabric = ?v(<<"fabric">>, Inv, []),
+
     %% InventoryExist = ?sql_utils:execute(s_read, Sql0),
 
     Sql0 = "select id, style_number, brand from w_inventory"
@@ -1677,39 +1731,46 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 	case ?sql_utils:execute(s_read, Sql0) of
 	    {ok, []} ->
 		{["insert into w_inventory(rsn"
-		 ", bcode, style_number, brand, type, sex, season, amount"
-		 ", firm, s_group, free, year, score"
-		 ", org_price, tag_price, ediscount, discount"
-		 ", path, alarm_day, shop, contailer, alarm_a, merchant"
-		 ", last_sell, change_date, entry_date)"
-		 " values("
-		 ++ "\"" ++ ?to_s(-1) ++ "\","
-		 ++ "\"" ++ ?to_s(BCode) ++ "\","
-		 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
-		 ++ ?to_s(Brand) ++ ","
-		 ++ ?to_s(Type) ++ ","
-		 ++ ?to_s(Sex) ++ ","
-		 ++ ?to_s(Season) ++ ","
-		 ++ ?to_s(Total) ++ ","
-		 ++ ?to_s(Firm) ++ "," 
-		 ++ "\"" ++ ?to_s(SizeGroup) ++ "\","
-		 ++ ?to_s(Free) ++ ","
-		 ++ ?to_s(Year) ++ ","
-		 ++ ?to_s(Score) ++ ","
-		 %% ++ ?to_s(Promotion) ++ ","
-		 ++ ?to_s(OrgPrice) ++ ","
-		 ++ ?to_s(TagPrice) ++ ","
-		 ++ ?to_s(EDiscount) ++ ","
-		 ++ ?to_s(Discount) ++ ","
-		 ++ "\"" ++ ?to_s(Path) ++ "\","
-		 ++ ?to_s(AlarmDay) ++ ","
-		 ++ ?to_s(Shop) ++ ","
-		 ++ ?to_s(Contailer) ++ ","
-		 ++ ?to_s(Alarm_a) ++ ","
-		 ++ ?to_s(Merchant) ++ ","
-		 ++ "\"" ++ ?to_s(CurDateTime) ++ "\","
-		 ++ "\"" ++ ?to_s(CurDateTime) ++ "\","
-		 ++ "\"" ++ ?to_s(CurDateTime) ++ "\")"], new_stock}; 
+		  ", bcode, style_number, brand, type, sex, season, amount"
+		  ", firm, s_group, free, year, score"
+		  ", org_price, tag_price, ediscount, discount"
+		  ", path, alarm_day, shop, contailer, alarm_a"
+		  ", level, executive, category, fabric"
+		  ", merchant, last_sell, change_date, entry_date)"
+		  " values("
+		  ++ "\"" ++ ?to_s(-1) ++ "\","
+		  ++ "\"" ++ ?to_s(BCode) ++ "\","
+		  ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
+		  ++ ?to_s(Brand) ++ ","
+		  ++ ?to_s(Type) ++ ","
+		  ++ ?to_s(Sex) ++ ","
+		  ++ ?to_s(Season) ++ ","
+		  ++ ?to_s(Total) ++ ","
+		  ++ ?to_s(Firm) ++ "," 
+		  ++ "\"" ++ ?to_s(SizeGroup) ++ "\","
+		  ++ ?to_s(Free) ++ ","
+		  ++ ?to_s(Year) ++ ","
+		  ++ ?to_s(Score) ++ ","
+		  %% ++ ?to_s(Promotion) ++ ","
+		  ++ ?to_s(OrgPrice) ++ ","
+		  ++ ?to_s(TagPrice) ++ ","
+		  ++ ?to_s(EDiscount) ++ ","
+		  ++ ?to_s(Discount) ++ ","
+		  ++ "\"" ++ ?to_s(Path) ++ "\","
+		  ++ ?to_s(AlarmDay) ++ ","
+		  ++ ?to_s(Shop) ++ ","
+		  ++ ?to_s(Contailer) ++ ","
+		  ++ ?to_s(Alarm_a) ++ ","
+
+		  ++ ?to_s(Level) ++ ","
+		  ++ ?to_s(StdExecutive) ++ ","
+		  ++ ?to_s(SafetyCategory) ++ ","
+		  ++ "\'" ++ ?to_s(Fabric) ++ "\',"
+		  
+		  ++ ?to_s(Merchant) ++ ","
+		  ++ "\"" ++ ?to_s(CurDateTime) ++ "\","
+		  ++ "\"" ++ ?to_s(CurDateTime) ++ "\","
+		  ++ "\"" ++ ?to_s(CurDateTime) ++ "\")"], new_stock}; 
 	    {ok, R} ->
 		{["update w_inventory set"
 		 " amount=amount+" ++ ?to_s(Total)

@@ -736,6 +736,12 @@ create table w_inventory
     alarm_a          INTEGER default 0,
 
     --
+    level            TINYINT default -1,
+    executive        INTEGER default -1,
+    category         INTEGER default -1,
+    fabric           VARCHAR(256) default null,
+
+    --
     shop             INTEGER default -1,
     state            INTEGER default 0,  -- 0: wait for check, 1: checked, 2: gift, 3:promotion
 

@@ -1395,10 +1395,20 @@ var wsalePrint = function(){
     var vWidth = width - 5; 
     var hFont = 20; // height of font
     var pay = function(cash, card, wxin, withDraw, ticket, should_pay){
-	console.log(cash, card, withDraw);
+	console.log(cash, card, withDraw, ticket);
 	var s = "";
-	var left = should_pay;
+	var left = should_pay; 
+	if (wsaleUtils.to_float(ticket) != 0){
+	    s += "券：" + ticket.toString(); 
+	    if (ticket >= left) {
+		left = 0;
+	    } else {
+		left -= ticket;
+	    }
+	}
+	
 	if (wsaleUtils.to_float(cash) != 0){
+	    if (s) s += " "; 
 	    if (cash >= left){
 		s += "现金：" + left.toString();
 		left = 0;
@@ -1430,13 +1440,15 @@ var wsalePrint = function(){
 	    }
 	}
 	if (wsaleUtils.to_float(withDraw) != 0){
-	    if (s) s += " "; 
-	    s += "提现：" + withDraw.toString();
-	}
-	if (wsaleUtils.to_float(ticket) != 0){
-	    if (s) s += " "; 
-	    s += "券：" + ticket.toString();
-	}
+	    if (s) s += " ";
+	    if (withDraw >= left) {
+		s += "提现：" + left.toString();
+		left = 0;
+	    } else {
+		s += "提现：" + withDraw.toString();
+		left -= withDraw;
+	    }
+	} 
 
 	return s; 
     };
@@ -1554,7 +1566,7 @@ var wsalePrint = function(){
 	    var card = sale.card;
 	    var withDraw = sale.withdraw;
 	    var wxin  = sale.wxin;
-	    var ticket = sale.ticket;
+	    var ticket = angular.isDefined(sale.ticket) ? sale.ticket : sale.ticket_balance;
 	    
 	    var total = sale.total;
 	    var should_pay = sale.should_pay;

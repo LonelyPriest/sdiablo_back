@@ -998,9 +998,9 @@ stockPrintU.prototype.printBarcode2 = function() {
     if (this.template.shift_date && !this.template.size_date) {
 	if (angular.isDefined(line) && diablo_trim(line))
 	    // 2018-06-12 12:30:49 -> 180612
-	    line += "-" + this.stock.entry_date.substr(2,8).split(diablo_date_seprator).join("");
+	    line += "-" + this.stock.entry_date.substr(3,8).split(diablo_date_seprator).join("");
 	else 
-	    line = this.stock.entry_date.substr(2,8).split(diablo_date_seprator).join("");
+	    line = this.stock.entry_date.substr(3,8).split(diablo_date_seprator).join("");
     }
 
     if (angular.isDefined(line) && diablo_trim(line)) {
@@ -1024,7 +1024,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 	}
 
 	if (this.template.firm_date) {
-	    line += "-" + this.stock.entry_date.substr(2,8).split(diablo_date_seprator).join("");
+	    line += "-" + this.stock.entry_date.substr(3,8).split(diablo_date_seprator).join("");
 	}
 	
 	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, line); 
@@ -1148,7 +1148,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 	    };
 
 	    if (this.template.shift_date && this.template.size_date) {
-		line += "-" + this.stock.entry_date.substr(2,8).split(diablo_date_seprator).join("");
+		line += "-" + this.stock.entry_date.substr(3,8).split(diablo_date_seprator).join("");
 	    }
 	    if (this.template.color && this.template.size_color) {
 		line += "-" + this.first.color === diablo_free_color ? "" : this.first.color;
@@ -1170,7 +1170,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 		};
 
 		if (this.template.shift_date && this.template.size_date) {
-		    line += "-" + this.stock.entry_date.substr(2,8).split(diablo_date_seprator).join("");
+		    line += "-" + this.stock.entry_date.substr(3,8).split(diablo_date_seprator).join("");
 		}
 		if (this.template.color && this.template.size_color) {
 		    if (this.template.size_color) {
@@ -1193,7 +1193,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 		};
 
 		if (this.template.shift_date && this.template.size_date) {
-		    line += "-" + this.stock.entry_date.substr(2,8).split(diablo_date_seprator).join("");
+		    line += "-" + this.stock.entry_date.substr(3,8).split(diablo_date_seprator).join("");
 		}
 		if (this.template.color && this.template.size_color) {
 		    if (this.template.size_color) {
@@ -1399,6 +1399,6 @@ stockPrintU.prototype.printBarcode2 = function() {
 
     // this.LODOP.PRINT_SETUP();
     // this.LODOP.PRINT_DESIGN();
-    // this.LODOP.PREVIEW();
-    this.LODOP.PRINT(); 
+    this.LODOP.PREVIEW();
+    // this.LODOP.PRINT(); 
 };
