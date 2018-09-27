@@ -1171,7 +1171,7 @@ csv_head(trans, Do, ExportCode) ->
     Do(C);
 csv_head(trans_note, Do, ExportCode) -> 
     H = "序号,单号,客户,促销,积分,交易,店铺,店员"
-	",款号,品牌,类型,季节,厂商,年度,上架日期,吊牌价,成交价,数量,小计,折扣率,日期",
+	",款号,品牌,类型,季节,厂商,年度,上架日期,进价,吊牌价,成交价,数量,小计,折扣率,日期",
     %% UTF8 = unicode:characters_to_list(H, utf8),
     C = 
 	case ExportCode of
@@ -1306,6 +1306,7 @@ do_write(trans_note, Do, _Seq, [], ExportCode, {Amount, _SPay, _RPay})->
 	++ ?d
 	++ ?d
 	++ ?d
+	++ ?d
 	++ ?to_s(Amount) ++ ?d
 	++ ?d
 	++ ?d
@@ -1339,6 +1340,7 @@ do_write(trans_note, Do, Seq, [{H}|T], ExportCode, {Amount, SPay, RPay}) ->
     Firm        = ?v(<<"firm">>, H),
     Year        = ?v(<<"year">>, H),
     InDatetime  = ?v(<<"in_datetime">>, H),
+    OrgPrice    = ?v(<<"org_price">>, H),
     TagPrice    = ?v(<<"tag_price">>, H),
     RPrice      = ?v(<<"rprice">>, H), 
     Total       = ?v(<<"total">>, H),
@@ -1362,7 +1364,8 @@ do_write(trans_note, Do, Seq, [{H}|T], ExportCode, {Amount, SPay, RPay}) ->
 	++ ?w_inventory_request:season(Season) ++ ?d
 	++ ?to_s(Firm) ++ ?d
 	++ ?to_s(Year) ++ ?d
-	++ ?to_s(InDatetime) ++ ?d 
+	++ ?to_s(InDatetime) ++ ?d
+	++ ?to_s(OrgPrice) ++ ?d 
 	++ ?to_s(TagPrice) ++ ?d 
 	++ ?to_s(RPrice) ++ ?d
 	++ ?to_s(Total) ++ ?d

@@ -1052,7 +1052,7 @@ handle_call({new_trans_note_export, Merchant, Conditions}, _From, State)->
 	", a.total"
 	", a.pid"
 	", a.sid"
-	", a.tag_price, a.rprice, a.entry_date"
+	", a.org_price, a.tag_price, a.rprice, a.entry_date"
 	
 	", a.shop_id"
 	", a.retailer_id"
@@ -1081,7 +1081,7 @@ handle_call({new_trans_note_export, Merchant, Conditions}, _From, State)->
 	", a.total"
 	", a.promotion as pid"
 	", a.score as sid"
-	", a.tag_price, rprice, a.entry_date"
+	", a.org_price, a.tag_price, rprice, a.entry_date"
 
 	", b.shop as shop_id"
 	", b.retailer as retailer_id"

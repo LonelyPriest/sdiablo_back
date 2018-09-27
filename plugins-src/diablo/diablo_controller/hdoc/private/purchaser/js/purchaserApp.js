@@ -105,7 +105,7 @@ function stockConfg(angular){
 		controller: 'purchaserInventoryNewUpdateCtrl',
 		resolve: angular.extend(
 		    {}, user, brand, firm, type, employee, s_group, color,
-		    std_executive, safety_category, fabric, ptemplate, base)
+		    std_executive, safety_category, fabric, size_spec, ptemplate, base)
 	    }).
 	    // reject
 	    when('/inventory_reject', {

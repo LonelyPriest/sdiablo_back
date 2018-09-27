@@ -810,7 +810,7 @@ var wsaleCalc = function(){
 	    var vipPromotionMode   = wsaleUtils.to_integer(vipMode.charAt(3)); 
 
 	    var stocksSortWithPromotion = [];
-	    for (var i=1, l=inventories.length; i<l; i++){
+	    for (var i=0, l=inventories.length; i<l; i++){
 		var one = inventories[i];
 		if (angular.isDefined(one.select) && !one.select) continue;
 
@@ -957,7 +957,7 @@ var wsaleCalc = function(){
 
 	    // vip mode
 	    if (diablo_sale === saleMode && isVip && diablo_no !== vipDiscountMode) {
-		for (var i=1, l=inventories.length; i<l; i++) {
+		for (var i=0, l=inventories.length; i<l; i++) {
 		    // promotion first
 		    var one = inventories[i];
 		    if (one.state !== 3 && wsaleCalc.in_promotion_stock(one, stocksSortWithPromotion)) {
@@ -974,7 +974,7 @@ var wsaleCalc = function(){
 	    }
 
 	    var pscores = [];
-	    for (var i=1, l=inventories.length; i<l; i++) {
+	    for (var i=0, l=inventories.length; i<l; i++) {
 		var one = inventories[i];
 		var count = wsaleCalc.get_inventory_count(one, saleMode);
 
@@ -1174,7 +1174,7 @@ var wsaleCalc = function(){
 	    var p1 = 0;
 	    var one;
 	    var count;
-	    for (var i=1, l=inventories.length; i<l; i++){
+	    for (var i=0, l=inventories.length; i<l; i++){
 		one = inventories[i];
 		// count = mode === diablo_sale ? one.sell : one.reject;
 		count = wsaleCalc.get_inventory_count(one, mode);
@@ -1184,7 +1184,7 @@ var wsaleCalc = function(){
 
 	    var vdiscount = diablo_discount(verificate, p1);
 	    var calc = 0;
-	    for (var i=1, l=inventories.length; i<l; i++){
+	    for (var i=0, l=inventories.length; i<l; i++){
 		one = inventories[i];
 		// count = mode === diablo_sale ? one.sell : one.reject;
 		count = wsaleCalc.get_inventory_count(one, mode);

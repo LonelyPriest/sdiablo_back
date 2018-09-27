@@ -4,7 +4,8 @@ function purchaserInventoryNewUpdateCtrlProvide (
     $scope, $q, $routeParams, diabloPromise, dateFilter, diabloPattern,
     diabloUtilsService, diabloFilter, diabloPagination, purchaserService,
     user, filterBrand, filterFirm, filterType, filterEmployee,
-    filterSizeGroup, filterColor, filterStdExecutive, filterCategory, filterFabric, filterTemplate, base){
+    filterSizeGroup, filterColor, filterStdExecutive, filterCategory, filterFabric, filterSizeSpec,
+    filterTemplate, base){
     $scope.shops       = user.sortShops;
     $scope.brands      = filterBrand;
     $scope.firms       = filterFirm;

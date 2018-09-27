@@ -364,7 +364,7 @@ function wsaleNewProvide(
 	discount: diabloPattern.discount,
 	barcode:  diabloPattern.number};
     
-    $scope.timeout_auto_save = undefined;
+    // $scope.timeout_auto_save = undefined;
     $scope.interval_per_5_minute = undefined;
     $scope.round  = diablo_round;
     
@@ -399,10 +399,22 @@ function wsaleNewProvide(
 	} 
     };
 
+    $scope.disable_start_sale = function() {
+	return $scope.inventories.length === 0;
+    };
+
+    
     $scope.key_action = function(key){
-	if (key === 113) $scope.auto_focus('cash');
-	if (key === 114) $scope.auto_focus('card'); 
-	if (key === 117){
+	console.log(key); 
+	if (key === 113) {
+	    if (!$scope.disable_draft())
+		$scope.list_draft();
+	}
+	if (key === 117) {
+	    if (!$scope.disable_start_sale())
+		$scope.start_sale(); 
+	}
+	if (key === 114){
 	    if (!$scope.disable_refresh) $scope.refresh();
 	}
     };
@@ -463,6 +475,10 @@ function wsaleNewProvide(
 	datetime:     $scope.today()
     };
 
+    // init
+    $scope.sale = {barcode:undefined, style_number:undefined};
+    $scope.inventories = [];
+    
     var dialog = diabloUtilsService;
     
     var get_setting = function(shopId){
@@ -527,12 +543,17 @@ function wsaleNewProvide(
     }
 
     $scope.focus_good_or_barcode = function() {
-	if ($scope.setting.barcode_mode)
-	    $scope.auto_focus('barcode');
-	else
-	    $scope.auto_focus('style_number');
+	$scope.sale.style_number = undefined;
+	$scope.sale.barcode = undefined;
+	if ($scope.setting.barcode_mode) {
+	    $scope.auto_focus('barcode'); 
+	}
+	else {
+	    $scope.auto_focus('style_number'); 
+	}
     }; 
-    $scope.focus_good_or_barcode(); 
+    $scope.focus_good_or_barcode();
+    console.log($scope.focus_attr);
 
     $scope.change_shop = function(){
 	get_setting($scope.select.shop.id);	
@@ -624,11 +645,15 @@ function wsaleNewProvide(
      * with draw
      */ 
     $scope.disable_withdraw = function(){
-	return angular.isDefined($scope.select.retailer)
-	    && $scope.select.retailer.type_id === diablo_charge_retailer
-	    && $scope.select.retailer.surplus <= 0
-	    || $scope.select.charge <= 0
-	    || $scope.has_withdrawed;
+	if (angular.isDefined($scope.select.retailer) && angular.isObject($scope.select.retailer)) {
+	    if ($scope.select.retailer.type_id !== diablo_charge_retailer)
+		return true;
+	    else {
+		if ($scope.select.retailer.surplus < 0 || $scope.has_withdrawed)
+		    return true;
+	    }
+	} 
+	return false;
     };
     
     $scope.withdraw = function(){
@@ -652,7 +677,6 @@ function wsaleNewProvide(
 			$scope.select.withdraw = params.retailer.withdraw;
 			$scope.has_withdrawed  = true;
 			$scope.reset_payment();
-			// $scope.reset_score();
 		    } 
 		} else {
 		    diabloUtilsService.set_error("会员现金提取", result.ecode); 
@@ -660,8 +684,7 @@ function wsaleNewProvide(
 	    }); 
 	};
 	
-	var get_max_draw = function(){
-
+	var limit_balance = function(){
 	    var max_draw = 0;
 	    if ($scope.select.surplus >= $scope.select.charge){
 		max_draw =  $scope.select.charge;
@@ -677,8 +700,7 @@ function wsaleNewProvide(
 	    } else {
 		return max_draw;
 	    } 
-	}; 
-	var limit_balance = get_max_draw();
+	}(); 
 	
 	var startWithdraw = function() {
 	    diabloUtilsService.edit_with_modal(
@@ -722,81 +744,129 @@ function wsaleNewProvide(
     /*
      * ticket
      */
-    $scope.ticket = function(){
+    $scope.fetch_ticket = function(ticket_batch) {
 	$scope.select.ticket_batch   = undefined;
 	$scope.select.ticket_balance = undefined;
-	$scope.select.ticket_custom  = undefined; 
+	$scope.select.ticket_custom  = undefined;
+	$scope.select.ticket_sid = diablo_invalid_index; 
 	
-	var callback = function(params){
-	    // console.log(params); 
-	    if (!params.auto_batch) {
-	    	diabloFilter.get_ticket_by_batch(params.ticket.batch).then(function(result){
-	    	    console.log(result);
-	    	    var ecode = result.ecode;
-	    	    if (ecode === 0 && !diablo_is_empty(result.data)) {
-	    		$scope.select.ticket_batch = diablo_set_integer(result.data.batch);
-	    		$scope.select.ticket_balance = diablo_set_integer(result.data.balance);
-			$scope.select.ticket_custom = params.auto_batch ? diablo_score_ticket:diablo_custom_ticket;
-	    		$scope.reset_payment();
-	    	    } else {
-	    		if (diablo_is_empty(result.data)) ecode = 2105;
-	    		var ERROR = require("diablo-error");
-	    		diabloUtilsService.response(
-	    		    false,
-	    		    "会员电子卷获取",
-	    		    ERROR[ecode],
-	    		    undefined);
-	    	    } 
-	    	});
-	    } else {
-	    	$scope.select.ticket_batch = params.ticket.batch;
-	    	$scope.select.ticket_balance = params.ticket.balance;
-		$scope.select.ticket_custom = params.auto_batch ? diablo_score_ticket:diablo_custom_ticket;
-	    	$scope.reset_payment();
-	    } 
-	};
-	
-	diabloFilter.get_ticket_by_retailer($scope.select.retailer.id).then(function(result){
-	    console.log(result);
-	    if (result.ecode === 0){
-		var batch;
-		var balance;
-		var auto_batch = false;
-		$scope.select.ticket_sid = diablo_invalid_index;
-		
-		if (!diablo_is_empty(result.data)) {
-		    batch   = diablo_set_integer(result.data.batch);
-		    balance = diablo_set_integer(result.data.balance);
-		    $scope.select.ticket_sid = wsaleUtils.to_integer(result.data.sid);
-		    auto_batch = true; 
+	if (angular.isDefined(ticket_batch)) {
+	    diabloFilter.get_ticket_by_batch(ticket_batch).then(function(result){
+	    	console.log(result);
+	    	var ecode = result.ecode;
+	    	if (ecode === 0 && !diablo_is_empty(result.data)) {
+	    	    $scope.select.ticket_batch   = diablo_set_integer(result.data.batch);
+	    	    $scope.select.ticket_balance = diablo_set_integer(result.data.balance);
+		    $scope.select.ticket_custom  = diablo_custom_ticket;
+	    	    $scope.reset_payment();
+	    	} else {
+	    	    if (diablo_is_empty(result.data)) ecode = 2105;
+	    	    var ERROR = require("diablo-error");
+	    	    diabloUtilsService.response(
+	    		false,
+	    		"会员电子卷获取",
+	    		ERROR[ecode],
+	    		undefined);
+	    	} 
+	    })
+	} else {
+	    diabloFilter.get_ticket_by_retailer($scope.select.retailer.id).then(function(result){
+		console.log(result);
+		if (result.ecode === 0){
+		    if (!diablo_is_empty(result.data)) {
+			$scope.select.ticket_batch   = diablo_set_integer(result.data.batch);
+			$scope.select.ticket_balance = diablo_set_integer(result.data.balance);
+			$scope.select.ticket_sid     = wsaleUtils.to_integer(result.data.sid);
+			$scope.select.ticket_custom  = diablo_score_ticket;
+			$scope.reset_payment();
+		    } 
+		} else {
+		    var ERROR = require("diablo-error");
+		    diabloUtilsService.response(
+			false,
+			"会员电子卷获取",
+			ERROR[result.ecode],
+			undefined);
 		}
-		
-		diabloUtilsService.edit_with_modal(
-		    "new-ticket.html",
-		    undefined,
-		    callback,
-		    undefined,
-		    {ticket: {batch: batch, balance: balance},
-		     auto_batch: auto_batch});
-	    } else {
-		var ERROR = require("diablo-error");
-		diabloUtilsService.response(
-		    false,
-		    "会员电子卷获取",
-		    ERROR[result.ecode],
-		    undefined);
-	    }
-	}); 
+	    }); 
+	}
     };
+    
+    // $scope.get_ticket = function(){
+    // 	$scope.select.ticket_batch   = undefined;
+    // 	$scope.select.ticket_balance = undefined;
+    // 	$scope.select.ticket_custom  = undefined; 
+	
+    // 	var callback = function(params){
+    // 	    // console.log(params); 
+    // 	    if (!params.auto_batch) {
+    // 	    	diabloFilter.get_ticket_by_batch(params.ticket.batch).then(function(result){
+    // 	    	    console.log(result);
+    // 	    	    var ecode = result.ecode;
+    // 	    	    if (ecode === 0 && !diablo_is_empty(result.data)) {
+    // 	    		$scope.select.ticket_batch = diablo_set_integer(result.data.batch);
+    // 	    		$scope.select.ticket_balance = diablo_set_integer(result.data.balance);
+    // 			$scope.select.ticket_custom = params.auto_batch ? diablo_score_ticket:diablo_custom_ticket;
+    // 	    		$scope.reset_payment();
+    // 	    	    } else {
+    // 	    		if (diablo_is_empty(result.data)) ecode = 2105;
+    // 	    		var ERROR = require("diablo-error");
+    // 	    		diabloUtilsService.response(
+    // 	    		    false,
+    // 	    		    "会员电子卷获取",
+    // 	    		    ERROR[ecode],
+    // 	    		    undefined);
+    // 	    	    } 
+    // 	    	});
+    // 	    } else {
+    // 	    	$scope.select.ticket_batch = params.ticket.batch;
+    // 	    	$scope.select.ticket_balance = params.ticket.balance;
+    // 		$scope.select.ticket_custom = params.auto_batch ? diablo_score_ticket:diablo_custom_ticket;
+    // 	    	$scope.reset_payment();
+    // 	    } 
+    // 	};
+	
+    // 	diabloFilter.get_ticket_by_retailer($scope.select.retailer.id).then(function(result){
+    // 	    console.log(result);
+    // 	    if (result.ecode === 0){
+    // 		var batch;
+    // 		var balance;
+    // 		var auto_batch = false;
+    // 		$scope.select.ticket_sid = diablo_invalid_index;
+		
+    // 		if (!diablo_is_empty(result.data)) {
+    // 		    batch   = diablo_set_integer(result.data.batch);
+    // 		    balance = diablo_set_integer(result.data.balance);
+    // 		    $scope.select.ticket_sid = wsaleUtils.to_integer(result.data.sid);
+    // 		    auto_batch = true; 
+    // 		}
+		
+    // 		diabloUtilsService.edit_with_modal(
+    // 		    "new-ticket.html",
+    // 		    undefined,
+    // 		    callback,
+    // 		    undefined,
+    // 		    {ticket: {batch: batch, balance: balance},
+    // 		     auto_batch: auto_batch});
+    // 	    } else {
+    // 		var ERROR = require("diablo-error");
+    // 		diabloUtilsService.response(
+    // 		    false,
+    // 		    "会员电子卷获取",
+    // 		    ERROR[result.ecode],
+    // 		    undefined);
+    // 	    }
+    // 	}); 
+    // };
     
     $scope.refresh = function(){
 	$scope.inventories = [];
-	$scope.inventories.push({$edit:false, $new:true});
+	// $scope.inventories.push({$edit:false, $new:true});
 	$scope.show_promotions = [];
 	
-	$scope.select.form.cardForm.$invalid  = false;
-	$scope.select.form.cashForm.$invalid  = false;
-	$scope.select.form.wForm.$invalid  = false; 
+	// $scope.select.form.cardForm.$invalid  = false;
+	// $scope.select.form.cashForm.$invalid  = false;
+	// $scope.select.form.wForm.$invalid  = false; 
 
 	$scope.select.rsn          = undefined;
 	$scope.select.cash         = undefined;
@@ -878,10 +948,6 @@ function wsaleNewProvide(
     // $scope.match_all_w_inventory();
     $scope.refresh_datetime_per_5_minute();
 
-    // init
-    $scope.inventories = [];
-    $scope.inventories.push({$edit:false, $new:true});
-
     /*
      * draft
      */
@@ -894,9 +960,8 @@ function wsaleNewProvide(
     // console.log($scope.wsaleStorage);
     
     $scope.disable_draft = function(){
-	if ($scope.wsaleStorage.keys().length === 0 || $scope.inventories.length !== 1)
-	    return true; 
-	return false;
+	return $scope.wsaleStorage.keys().length === 0 || $scope.inventories.length === 1;
+	    
     };
 
     $scope.list_draft = function(){
@@ -934,7 +999,7 @@ function wsaleNewProvide(
 		
 		$scope.inventories = angular.copy(resource);
 		// console.log($scope.inventoyies);
-		$scope.inventories.unshift({$edit:false, $new:true});
+		// $scope.inventories.unshift({$edit:false, $new:true});
 		$scope.disable_refresh = false;
 
 		$scope.re_calculate(); 
@@ -1011,38 +1076,42 @@ function wsaleNewProvide(
     $scope.on_select_good = function(item, model, label){
 	console.log(item); 
 	if (item.tag_price < 0){
-	    fail_response(2193, function(){
-		$scope.inventories[0] = {$edit:false, $new:true}});
+	    fail_response(2193, function(){}); 
 	    return;
 	};
 	
 	// has been added
-	var existStock = undefined;
-	for(var i=1, l=$scope.inventories.length; i<l; i++){
-	    if (item.style_number === $scope.inventories[i].style_number
-		&& item.brand_id  === $scope.inventories[i].brand_id){
-		existStock = $scope.inventories[i];
-		if (angular.isDefined(item.full_bcode))
-		    existStock.full_bcode = item.full_bcode;
-	    }
-	}; 
+	// var existStock = undefined;
+	// for(var i=1, l=$scope.inventories.length; i<l; i++){
+	//     var s = $scope.inventories[i];
+	//     if (item.style_number === s.style_number && item.brand_id === s.brand_id){
+	// 	existStock = $scope.inventories[i];
+	// 	if (angular.isDefined(item.full_bcode)) existStock.full_bcode = item.full_bcode;
+	//     }
+	// }; 
+
+	// if (angular.isDefined(existStock)) {
+	//     $scope.update_inventory(
+	// 	existStock, function() {
+	// 	    // $scope.inventories[0] = {$edit:false, $new:true}
+	// 	}, true)
+	// } else {
+	//     // add at first allways 
+	//     var add = $scope.inventories[0];
+	//     add = $scope.copy_select(add, item);
+	//     console.log(add);
+	//     $scope.add_inventory(add);
+	// }
 
 	// auto focus
-	// $scope.auto_focus("sell");
-
-	if (angular.isDefined(existStock)) {
-	    $scope.update_inventory(
-		existStock, function() {$scope.inventories[0] = {$edit:false, $new:true}}, true)
-	} else {
-	    // add at first allways 
-	    var add = $scope.inventories[0];
-	    add = $scope.copy_select(add, item);
-	    console.log(add);
-	    $scope.add_inventory(add);
-	}	
+	$scope.auto_focus("sell");
+	
+	var add  = {$new:true}; 
+	$scope.copy_select(add, item);
+	console.log(add);
+	$scope.add_inventory(add); 
     };
 
-    
     /*
      * image mode
      */
@@ -1051,8 +1120,7 @@ function wsaleNewProvide(
     diabloFilter.reset_field();
     // diabloFilter.add_field("firm", filterFirm);
     // diabloFilter.add_field("brand", wsaleGoodService.get_brand());
-    diabloFilter.add_field("type",  wsaleGoodService.get_type());
-
+    diabloFilter.add_field("type",  wsaleGoodService.get_type()); 
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
     $scope.time   = diabloFilter.default_time();
@@ -1166,6 +1234,9 @@ function wsaleNewProvide(
     $scope.barcode_scanner = function(full_bcode) {
 	// console.log($scope.inventories);
     	console.log(full_bcode);
+	if (angular.isUndefined(full_bcode) || !diablo_trim(full_bcode))
+	    return;
+	
 	// get stock by barcode
 	// stock info 
 	var barcode = diabloHelp.correct_barcode(full_bcode, $scope.setting.barcode_auto); 
@@ -1200,9 +1271,8 @@ function wsaleNewProvide(
      */
     $scope.disable_save = function(){
 	// save one time only
-	if ($scope.has_saved || $scope.draft || $scope.inventories.length === 1)
-	    return true;
-	
+	// if ($scope.has_saved || $scope.draft || $scope.inventories.length === 1)
+	//     return true; 
 	if ($scope.select.should_pay >=0 && $scope.select.charge > 0)
 	    return true;
 
@@ -1269,6 +1339,27 @@ function wsaleNewProvide(
 	
     };
 
+    $scope.start_sale = function() {
+	// $scope.select.cash           = undefined;
+	// $scope.select.card           = undefined;
+	// $scope.select.wxin           = undefined;
+	// $scope.select.withdraw       = undefined;
+	// $scope.select.ticket_batch   = undefined;
+	// $scope.select.ticket_balance = undefined;
+	// $scope.select.ticket_score   = 0;
+	// $scope.select.ticket_sid     = diablo_invalid_index;
+	// $scope.select.ticket_custom  = diablo_invalid;
+	// $scope.select.verificate     = $scope.vpays[0],
+	// $scope.has_withdrawed        = false;
+	
+	var callback = function(params) {
+	    // console.log(params);
+	    $scope.save_wsale();
+	}
+
+	diabloUtilsService.edit_with_modal("start-sale.html", undefined, callback, $scope, {});
+    };
+
     var LODOP;
     $scope.print_front = function(result, im_print){
 	// var oscript = document.createElement("script");
@@ -1280,16 +1371,14 @@ function wsaleNewProvide(
 	// console.log($scope.inventories.filter(function(r){return !r.$new}));
 	var pdate = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss");
 	var pinvs = [];
-	for (var i=1, l=$scope.inventories.length; i<l; i++){
+	for (var i=0, l=$scope.inventories.length; i<l; i++){
 	    $scope.inventories[i].total = $scope.inventories[i].sell;
 	    pinvs.push($scope.inventories[i]);
 	};
 
 	// console.log(pinvs);
 	
-	if (angular.isUndefined(LODOP)) LODOP = getLodop();
-
-	var timeout_to_print = undefined;
+	if (angular.isUndefined(LODOP)) LODOP = getLodop(); 
 	var ok_print = function(){
 	    console.log($scope.select);
 	    if (angular.isDefined(LODOP)){
@@ -1330,10 +1419,7 @@ function wsaleNewProvide(
 		
 		for (var i=0; i<$scope.p_num; i++){
 		    start_print(); 
-		}
-		
-		if (angular.isDefined(timeout_to_print))
-		    $timeout.cancel(timeout_to_print);
+		} 
 	    }
 	};
 
@@ -1359,6 +1445,32 @@ function wsaleNewProvide(
 	    })
 	}
     };
+
+    var get_sale_detail = function(amounts){
+	var sale_amounts = [];
+	for(var i=0, l=amounts.length; i<l; i++){
+	    var a = amounts[i];
+	    if (angular.isDefined(a.sell_count) && a.sell_count){
+		var new_a = {
+		    cid:        a.cid,
+		    size:       a.size, 
+		    sell_count: wsaleUtils.to_integer(amounts[i].sell_count)}; 
+		sale_amounts.push(new_a); 
+	    }
+	}; 
+	return sale_amounts;
+    };
+
+    var index_of_sale = function(sale, exists) {
+	var index = diablo_invalid_index;;
+	for (var i=0, l=exists.length; i<l; i++) {
+	    if (sale.style_number === exists[i].style_number && sale.brand_id === exists[i].brand) {
+		index = i;
+		break;
+	    }
+	} 
+	return index;
+    };
     
     $scope.save_wsale = function(){
 	$scope.has_saved = true; 
@@ -1376,68 +1488,70 @@ function wsaleNewProvide(
 	    return;
 	};
 	
-	var get_sales = function(amounts){
-	    var sale_amounts = [];
-	    for(var i=0, l=amounts.length; i<l; i++){
-		var a = amounts[i];
-		if (angular.isDefined(a.sell_count) && a.sell_count){
-		    var new_a = {
-			cid:        a.cid,
-			size:       a.size, 
-			sell_count: parseInt(amounts[i].sell_count)}; 
-		    
-		    sale_amounts.push(new_a); 
-		}
-	    }; 
-
-	    return {amounts:sale_amounts};
-	};
-
 	var setv = diablo_set_float;
 	var seti = diablo_set_integer;
 	var sets = diablo_set_string;
 	
 	var added = [];
-	for(var i=1, l=$scope.inventories.length; i<l; i++){
+	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    var add = $scope.inventories[i];
-	    // var batch = add.batch;
-	    // console.log(batch);
-	    var amount_info = get_sales(add.amounts);
-	    added.push({
-		id          : add.id,
-		style_number: add.style_number,
-		brand       : add.brand_id,
-		brand_name  : add.brand,
-		type        : add.type_id,
-		type_name   : add.type,
-		sex         : add.sex,
-		firm        : add.firm_id,
-		sex         : add.sex,
-		season      : add.season,
-		year        : add.year,
-		entry       : add.entry,
-		sell_total  : parseInt(add.sell),
-
-		promotion   : add.pid,
-		score       : add.sid,
-
-		org_price   : add.org_price,
-		ediscount   : add.ediscount,
-		tag_price   : add.tag_price,
-		fprice      : add.fprice,
-		rprice      : add.rprice,
-		fdiscount   : add.fdiscount,
-		rdiscount   : add.rdiscount,
-		stock       : add.total,
+	    var index = index_of_sale(add, added)
+	    
+	    if (diablo_invalid_index !== index) {
+		var existSale = added[index];
+		existSale.sell_total += wsaleUtils.to_integer(add.sell)
 		
-		path        : sets(add.path), 
-		sizes       : add.sizes,
-		s_group     : add.s_group,
-		colors      : add.colors,
-		free        : add.free,
-		comment     : sets(add.comment), 
-		amounts     : amount_info.amounts
-	    })
+		var details1 = get_sale_detail(add.amounts);
+		var existDetails = existSale.amounts;
+		angular.forEach(details1, function(d) {
+		    for (var j=0, k=existDetails.length; j<k; j++) {
+			if (d.cid === existDetails[j].cid && d.size === existDetails[j].size) {
+			    existDetails[j].sell_count += d.sell_count;
+			} else {
+			    existDetails.push(d);
+			}
+		    }
+		})
+	    } else {
+		// var batch = add.batch;
+		// console.log(batch);
+		var details0 = get_sale_detail(add.amounts);
+		added.push({
+		    id          : add.id,
+		    style_number: add.style_number,
+		    brand       : add.brand_id,
+		    brand_name  : add.brand,
+		    type        : add.type_id,
+		    type_name   : add.type,
+		    sex         : add.sex,
+		    firm        : add.firm_id,
+		    sex         : add.sex,
+		    season      : add.season,
+		    year        : add.year,
+		    entry       : add.entry,
+		    sell_total  : wsaleUtils.to_integer(add.sell),
+
+		    promotion   : add.pid,
+		    score       : add.sid,
+
+		    org_price   : add.org_price,
+		    ediscount   : add.ediscount,
+		    tag_price   : add.tag_price,
+		    fprice      : add.fprice,
+		    rprice      : add.rprice,
+		    fdiscount   : add.fdiscount,
+		    rdiscount   : add.rdiscount,
+		    stock       : add.total,
+		    
+		    path        : sets(add.path), 
+		    sizes       : add.sizes,
+		    s_group     : add.s_group,
+		    colors      : add.colors,
+		    free        : add.free,
+		    comment     : sets(add.comment), 
+		    amounts     : details0
+		})
+	    } 
 	}; 
 
 	// console.log($scope.select);
@@ -1488,12 +1602,9 @@ function wsaleNewProvide(
 
 	console.log(added);
 	console.log(base);
-	
+
 	var dialog = diabloUtilsService; 
-	wsaleService.new_w_sale({
-	    inventory:added.length === 0 ? undefined : added,
-	    base:base, print:print
-	}).then(function(result){
+	wsaleService.new_w_sale({inventory:added.length===0 ? undefined:added, base:base, print:print}).then(function(result){
 	    console.log(result);
 	    var success_callback = function(){
 		// clear local storage
@@ -1501,6 +1612,7 @@ function wsaleNewProvide(
 		    $scope.wsaleStorage.remove($scope.select_draft_key);
 		    $scope.select_draft_key = undefined;
 		};
+		
 		$scope.wsaleStorage.remove($scope.wsaleStorage.get_key()); 
 		// if ($scope.select.retailer.id !== $scope.setting.no_vip) {
 		//     $scope.select.retailer.score += $scope.select.score;
@@ -1582,21 +1694,21 @@ function wsaleNewProvide(
     
     $scope.$watch("select.cash", function(newValue, oldValue){
 	if (newValue === oldValue || angular.isUndefined(newValue)) return;
-	if ($scope.select.form.cashForm.$invalid) return; 
+	// if ($scope.select.form.cashForm.$invalid) return; 
 	$scope.reset_payment(newValue);
 	// $scope.reset_score();
     });
 
     $scope.$watch("select.card", function(newValue, oldValue){
 	if (newValue === oldValue || angular.isUndefined(newValue)) return;
-	if ($scope.select.form.cardForm.$invalid) return;
+	// if ($scope.select.form.cardForm.$invalid) return;
 	$scope.reset_payment(newValue);
 	// $scope.reset_score();
     });
 
     $scope.$watch("select.wxin", function(newValue, oldValue){
 	if (newValue === oldValue || angular.isUndefined(newValue)) return;
-	if ($scope.select.form.wForm.$invalid) return;
+	// if ($scope.select.form.wForm.$invalid) return;
 	$scope.reset_payment(newValue);
 	// $scope.reset_score();
     });
@@ -1608,16 +1720,16 @@ function wsaleNewProvide(
 	// $scope.reset_score();
     });
     
-    var in_amount = function(amounts, inv){
-	for(var i=0, l=amounts.length; i<l; i++){
-	    if(amounts[i].cid === inv.color_id
-	       && amounts[i].size === inv.size){
-		amounts[i].count += parseInt(inv.amount);
-		return true;
-	    }
-	}
-	return false;
-    };
+    // var in_amount = function(amounts, inv){
+    // 	for(var i=0, l=amounts.length; i<l; i++){
+    // 	    if(amounts[i].cid === inv.color_id
+    // 	       && amounts[i].size === inv.size){
+    // 		amounts[i].count += parseInt(inv.amount);
+    // 		return true;
+    // 	    }
+    // 	}
+    // 	return false;
+    // };
 
     var get_amount = function(cid, sname, amounts){
 	for (var i=0, l=amounts.length; i<l; i++){
@@ -1693,12 +1805,11 @@ function wsaleNewProvide(
     };
 
     var add_callback = function(params){
-	console.log(params.amounts);
-	
+	console.log(params.amounts); 
 	var sell_total = 0, note = "";
 	angular.forEach(params.amounts, function(a){
 	    if (angular.isDefined(a.sell_count) && a.sell_count){
-		sell_total += parseInt(a.sell_count);
+		sell_total += wsaleUtils.to_integer(a.sell_count);
 		note += diablo_find_color(a.cid, filterColor).cname + a.size + ";"
 	    }
 	}); 
@@ -1709,34 +1820,66 @@ function wsaleNewProvide(
 		fprice:      params.fprice,
 		note:        note};
     };
+
+    var free_stock_not_enought = function(stock) {
+	var existSaleStock = 0;
+	for(var i=0, l=$scope.inventories.length; i<l; i++){
+	    var s = $scope.inventories[i];
+	    if (stock.style_number === s.style_number && stock.brand_id === s.brand_id){
+		existSaleStock += s.sell;
+	    }
+	} 
+	return existSaleStock + stock.sell > stock.total;
+    };
+
+    var cs_stock_not_enought = function(stock) {
+	var not_enought = false;
+	for(var i=0, l=$scope.inventories.length; i<l; i++){
+	    var s = $scope.inventories[i];
+	    if (stock.style_number === s.style_number && stock.brand_id === s.brand_id){
+		angular.forEach(stock.amounts, function(a) {
+		    var sellCount = wsaleUtils.to_integer(a.sell_count);
+		    if (sellCount !== 0) {
+			for (var j=0,k=s.amounts.length; j<k; j++) {
+			    if (a.cid === s.amounts[j].cid && a.size === s.amounts[j].size) {
+				if (sellCount + wsaleUtils.to_integer(s.amounts[j].sell_count) > a.count) {
+				    not_enought = true;
+				    break;
+				}
+			    }
+			}
+		    } 
+		})
+	    }
+	}
+
+	console.log(not_enought);
+	return not_enought;
+    };
     
     $scope.add_free_inventory = function(inv){
-	// console.log(inv);
-
-	if (angular.isUndefined($scope.select.retailer)
-	    || diablo_is_empty($scope.select.retailer)){
-	    diabloUtilsService.response(
-		false, "销售开单", "开单失败：" + wsaleService.error[2192]);
+	// console.log(inv); 
+	if (angular.isUndefined($scope.select.retailer) || diablo_is_empty($scope.select.retailer)){
+	    diabloUtilsService.response(false, "销售开单", "开单失败：" + wsaleService.error[2192]);
 	    return;
 	};
-	
-	inv.$edit = true;
-	inv.$new  = false;
-	inv.amounts[0].sell_count = inv.sell;
-	inv.order_id = $scope.inventories.length; 
-	$scope.inventories.unshift({$edit:false, $new:true});
-	
-	// save
-	$scope.disable_refresh = false;
-	$scope.wsaleStorage.save(
-	    $scope.inventories.filter(function(r){return !r.$new}));
 
-
-	$scope.re_calculate();
-	
-	$timeout.cancel($scope.timeout_auto_save);
-
-	$scope.focus_good_or_barcode(); 
+	// check stock total
+	if ($scope.setting.check_sale && free_stock_not_enought(inv)) {
+	    diabloUtilsService.set_error("销售开单", 2180);
+	} else {
+	    inv.$edit = true;
+	    inv.$new  = false;
+	    inv.amounts[0].sell_count = inv.sell; 
+	    $scope.inventories.unshift(inv);
+	    inv.order_id = $scope.inventories.length; 
+	    
+	    // save
+	    $scope.disable_refresh = false;
+	    $scope.wsaleStorage.save($scope.inventories.filter(function(r){return !r.$new})); 
+	    $scope.re_calculate();	    
+	    $scope.focus_good_or_barcode(); 
+	} 
     };
     
     $scope.calc_discount = function(inv){
@@ -1750,8 +1893,7 @@ function wsaleNewProvide(
     
     $scope.add_inventory = function(inv){
 	// console.log(inv); 
-	if (angular.isUndefined($scope.select.retailer)
-	    || diablo_is_empty($scope.select.retailer)){
+	if (angular.isUndefined($scope.select.retailer) || diablo_is_empty($scope.select.retailer)){
 	    diabloUtilsService.response(
 		false, "销售开单", "开单失败：" + wsaleService.error[2192]);
 	    return;
@@ -1772,10 +1914,10 @@ function wsaleNewProvide(
 	if ($scope.setting.check_sale === diablo_no && inv.free === 0){
 	    inv.free_color_size = true;
 	    inv.amounts         = [{cid:0, size:0}];
-	    if ($scope.setting.barcode_mode) {
-		inv.sell = 1; 
-		$scope.auto_save_free(inv);
-	    }
+	    // if ($scope.setting.barcode_mode) {
+	    inv.sell = 1; 
+	    $scope.auto_save_free(inv);
+	    // }
 	} else {
 	    var promise = diabloPromise.promise; 
 	    var calls = [promise(diabloFilter.list_purchaser_inventory,
@@ -1794,8 +1936,7 @@ function wsaleNewProvide(
 		    return; 
 		};
 		
-		var shop_now_inv = data[0];
-		
+		var shop_now_inv = data[0]; 
 		var order_sizes = diabloHelp.usort_size_group(inv.s_group, filterSizeGroup);
 		var sort = diabloHelp.sort_stock(shop_now_inv, order_sizes, filterColor);
 		
@@ -1813,7 +1954,6 @@ function wsaleNewProvide(
 		    inv.free_color_size = true;
 		    inv.amounts         = [{cid:0, size:0}];
 		    if ($scope.setting.barcode_mode) {
-			// inv.sell = 1;
 			inv.sell = 1; 
 			$scope.auto_save_free(inv);
 		    }
@@ -1830,7 +1970,7 @@ function wsaleNewProvide(
 			var bcode_color = wsaleUtils.to_integer(color_size.substr(0, 3));
 			var bcode_size_index = wsaleUtils.to_integer(color_size.substr(3, color_size.length));
 			
-			var bcode_size = bcode_size_index === 0 ? diablo_free_size : size_to_barcode[bcode_size_index];
+			var bcode_size = bcode_size_index === 0 ? diablo_free_size:size_to_barcode[bcode_size_index];
 			// console.log(bcode_color);
 			// console.log(bcode_size);
 			angular.forEach(inv.amounts, function(a) {
@@ -1844,8 +1984,7 @@ function wsaleNewProvide(
 				}
 			    } 
 			    // console.log(color); 
-			    if (angular.isDefined(color)
-				&& color.bcode === bcode_color && a.size === bcode_size) {
+			    if (angular.isDefined(color) && color.bcode === bcode_color && a.size === bcode_size) {
 				a.sell_count = 1; 
 				a.focus = true;
 			    }
@@ -1862,21 +2001,19 @@ function wsaleNewProvide(
 		    }
 		    
 		    var after_add = function(){
-			inv.$edit = true;
-			inv.$new = false;
-			inv.order_id = $scope.inventories.length;
-			// if (angular.isUndefined(inv.full_bcode)) {
-			//     inv.full_bcode = inv.bcode;
-			// }
-			$scope.inventories.unshift({$edit:false, $new:true}); 
-			$scope.disable_refresh = false;
-
-			$scope.wsaleStorage.save(
-			    $scope.inventories.filter(function(r){return !r.$new}));
-
-
-			$scope.re_calculate();
-			$scope.focus_good_or_barcode(); 
+			if ($scope.setting.check_sale && cs_stock_not_enought(inv)) {
+			    diabloUtilsService.set_error("销售开单", 2180);
+			} else {
+			    inv.$edit = true;
+			    inv.$new = false;
+			    $scope.disable_refresh = false;
+			    $scope.inventories.unshift(inv);
+			    
+			    inv.order_id = $scope.inventories.length; 
+			    $scope.wsaleStorage.save($scope.inventories.filter(function(r){return !r.$new})); 
+			    $scope.re_calculate();
+			    $scope.focus_good_or_barcode(); 
+			} 
 		    };
 		    
 		    var callback = function(params){
@@ -1889,22 +2026,7 @@ function wsaleNewProvide(
 			inv.fprice     = result.fprice;
 			inv.note       = result.note;
 			after_add();
-		    };
-
-		    // set auto focus
-		    // for (var i=0, l=inv.amounts.length; i<l; i++) {
-		    // 	var a = inv.amounts[i];
-		    // 	console.log(a.sell_count);
-		    // 	if (a.sell_count > 0) {
-		    // 	    a.focus = true;
-		    // 	    break;
-		    // 	} else {
-		    // 	    if (a.cid === inv.colors[0].cid && a.size === inv.sizes[0]) {
-		    // 		a.focus = true;
-		    // 		break;
-		    // 	    }
-		    // 	} 
-		    // }
+		    }; 
 		    
 		    var modal_size = diablo_valid_dialog(inv.sizes);
 		    var large_size = modal_size === 'lg' ? true : false;
@@ -1935,9 +2057,14 @@ function wsaleNewProvide(
     /*
      * delete inventory
      */
+    $scope.delete_inventory_head = function() {
+	$scope.inventories.splice(0, 1);
+	$scope.focus_good_or_barcode();
+    };
+    
     $scope.delete_inventory = function(inv){
 	console.log(inv); 
-	for(var i=1, l=$scope.inventories.length; i<l; i++){
+	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    if(inv.order_id === $scope.inventories[i].order_id){
 		break;
 	    }
@@ -1946,7 +2073,7 @@ function wsaleNewProvide(
 	$scope.inventories.splice(i, 1);
 	
 	// reorder
-	for(var i=1, l=$scope.inventories.length; i<l; i++){
+	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    $scope.inventories[i].order_id = l - i;
 	}
 
@@ -1995,21 +2122,19 @@ function wsaleNewProvide(
      */
     $scope.update_inventory = function(inv, updateCallback, scan){
 	console.log(inv);
-	if (!angular.isDefined(updateCallback)) {
-	    inv.$update = true; 
-	}
+	inv.$update = true;
 	
 	if (inv.free_color_size){
 	    inv.free_update = true;
 	    if (angular.isDefined(scan) && scan) {
-		if (wsaleUtils.to_integer(inv.sell) === 0)
-		    inv.sell = 1;
-		else
-		    inv.sell += 1;
+	    	if (wsaleUtils.to_integer(inv.sell) === 0)
+	    	    inv.sell = 1;
+	    	else
+	    	    inv.sell += 1;
 
-		$scope.auto_save_free(inv);
+	    	$scope.auto_save_free(inv);
 	    } else {
-		$scope.auto_focus("sell");
+	    	$scope.auto_focus("sell");
 	    }
 	    
 	    return;
@@ -2098,7 +2223,7 @@ function wsaleNewProvide(
     };
 
     $scope.save_free_update = function(inv){
-	$timeout.cancel($scope.timeout_auto_save);
+	// $timeout.cancel($scope.timeout_auto_save);
 	inv.free_update = false;
 
 	// if (inv.amounts[0].sell_count !== inv.sell)
@@ -2111,7 +2236,7 @@ function wsaleNewProvide(
 	$scope.re_calculate();
 
 	// reset
-	$scope.inventories[0] = {$edit:false, $new:true};
+	// $scope.inventories[0] = {$edit:false, $new:true};
 	$scope.focus_good_or_barcode();
 	
 	// inv.$update = false; 
@@ -2119,25 +2244,25 @@ function wsaleNewProvide(
 
     $scope.cancel_free_update = function(inv){
 	// console.log(inv);
-	$timeout.cancel($scope.timeout_auto_save);
+	// $timeout.cancel($scope.timeout_auto_save);
 	// inv.$update = false;
 	inv.free_update = false;
 	inv.sell      = inv.amounts[0].sell_count;
 	inv.fdiscount = inv.o_fdiscount;
 	inv.fprice    = inv.o_fprice;
 	// reset
-	$scope.inventories[0] = {$edit:false, $new:true};
+	// $scope.inventories[0] = {$edit:false, $new:true};
 	$scope.re_calculate(); 
     };
 
     $scope.reset_inventory = function(inv){
-	$timeout.cancel($scope.timeout_auto_save);
-	$scope.inventories[0] = {$edit:false, $new:true};
+	// $timeout.cancel($scope.timeout_auto_save);
+	// $scope.inventories[0] = {$edit:false, $new:true};
 	$scope.focus_good_or_barcode(); 
     };
 
     $scope.auto_save_free = function(inv){
-	$timeout.cancel($scope.timeout_auto_save);
+	// $timeout.cancel($scope.timeout_auto_save);
 	
 	var sell = wsaleUtils.to_integer(inv.sell);
 	if (sell === 0) return
@@ -2161,17 +2286,25 @@ function wsaleNewProvide(
 	    inv.invalid_sell = true;
 	    return;
 	};
-	
-	$scope.timeout_auto_save = $timeout(function(){
-	    // console.log(inv); 
-	    if (inv.$new && inv.free_color_size){
-		$scope.add_free_inventory(inv);
-	    }; 
 
-	    if (!inv.$new && inv.free_update){
-		$scope.save_free_update(inv); 
-	    }
-	}, 1000); 
+	if (inv.$new && inv.free_color_size){
+	    $scope.add_free_inventory(inv);
+	}; 
+
+	if (!inv.$new && inv.free_update){
+	    $scope.save_free_update(inv); 
+	}
+	
+	// $scope.timeout_auto_save = $timeout(function(){
+	//     // console.log(inv); 
+	//     if (inv.$new && inv.free_color_size){
+	// 	$scope.add_free_inventory(inv);
+	//     }; 
+
+	//     if (!inv.$new && inv.free_update){
+	// 	$scope.save_free_update(inv); 
+	//     }
+	// }, 1000); 
     };
 
     $scope.gift_sale = function(inv) {

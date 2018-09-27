@@ -20,7 +20,7 @@
 		    x-ng-click="print()">打印
 	      <i class="glyphicon glyphicon-print"></i></button>
 
-	    <button type="button"
+	    <button x-ng-if="right.show_orgprice" type="button"
 		    class="btn green purple-stripe hidden-xs hidden-sm"
 		    x-ng-click="export_to()">导出
 	      <i class="glyphicon glyphicon-export"></i></button> 
