@@ -72,8 +72,7 @@
 	  	  <i class="glyphicon glyphicon-user fg-red"></i>店员</span>
 	  	<select class="form-control" type="text"
 	  		x-ng-model="select.employee"
-	  		x-ng-options="e as e.name for e in
-	  			      employees|filter:$viewValue|limitTo:8">
+	  		x-ng-options="e as e.name for e in employees|filter:$viewValue">
 		</select> 
 	      </div>
 	    </div> 
