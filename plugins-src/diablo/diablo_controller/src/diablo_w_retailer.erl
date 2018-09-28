@@ -1607,6 +1607,7 @@ handle_call({match_phone, Merchant, {Mode, Phone}}, _From, #state{prompt=Prompt}
     Sql = "select id"
 	", merchant"
 	", name"
+	", birth"
 	", level"
 	", card"
 	", py"

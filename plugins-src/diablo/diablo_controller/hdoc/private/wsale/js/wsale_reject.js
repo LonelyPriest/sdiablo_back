@@ -135,7 +135,7 @@ function wsaleRejectCtrlProvide(
 		    $scope.old_inventories = wsale.details;
 		    $scope.inventories = angular.copy(wsale.details);
 		    
-		    $scope.inventories.unshift({$edit:false, $new:true});
+		    // $scope.inventories.unshift({$edit:false, $new:true});
 
 		    console.log($scope.old_inventories);
 		    console.log($scope.inventories);
@@ -364,7 +364,7 @@ function wsaleRejectCtrlProvide(
 	var added  = [];
 	var rtotal = 0;
 	// var nscore = 0;
-	for(var i=1, l=$scope.inventories.length; i<l; i++){
+	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    var add = $scope.inventories[i];
 	    // if (!add.select || add.total < 0) continue;
 	    if (!add.select) continue;
@@ -541,7 +541,7 @@ function wsaleRejectCtrlProvide(
 	$scope.reset_score();
 
 	var nscore = 0;
-	for (var i=1, l=$scope.inventories.length; i<l; i++){
+	for (var i=0, l=$scope.inventories.length; i<l; i++){
 	    var inv = $scope.inventories[i];
 	    // console.log(inv);
 	    if (!inv.select){

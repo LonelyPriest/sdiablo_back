@@ -173,7 +173,7 @@ function filterProvider(){
 
 	function get_purchaser_good(good){
 	    return _goodHttp.save({operation: "get_w_good"}, good).$promise;
-	};
+	}; 
 
 	function list_good_std_executive() {
 	    return _baseSettingHttp.query({operation: 'list_std_executive'}).$promise;
@@ -555,6 +555,7 @@ function filterProvider(){
 			return phones.map(function(r){
 			    return {id:      r.id,
 				    name:    r.name+ "," + r.mobile,
+				    birth:   r.birth.substr(5,8),
 				    level:   r.level,
 				    mobile:  r.mobile,
 				    type_id: r.type_id,
@@ -924,7 +925,7 @@ function filterProvider(){
 
 	    get_purchaser_good: function(good){
 		return get_purchaser_good(good);
-	    },
+	    }, 
 
 	    list_good_std_executive: function() {
 		var cached = get_from_storage(cookie, "std_executive");

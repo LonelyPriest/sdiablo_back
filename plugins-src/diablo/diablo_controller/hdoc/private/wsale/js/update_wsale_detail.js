@@ -32,6 +32,7 @@ function wsaleUpdateDetailCtrlProvide(
     $scope.has_saved   = false;
     $scope.setting     = {check_sale:true, q_backend:true};
 
+    $scope.sale        = {style_number:undefined};
     $scope.old_select  = {}; 
     $scope.select      = {}; 
     $scope.inventories = [];
@@ -156,7 +157,7 @@ function wsaleUpdateDetailCtrlProvide(
 		// inventory
 		$scope.old_inventories = wsale.details;
 		$scope.inventories = angular.copy(wsale.details);
-		$scope.inventories.unshift({$edit:false, $new:true});
+		// $scope.inventories.unshift({$edit:false, $new:true});
 
 		console.log($scope.old_inventories);
 		console.log($scope.inventories);
@@ -219,23 +220,19 @@ function wsaleUpdateDetailCtrlProvide(
     $scope.on_select_good = function(item, model, label){
 	console.log(item);
 	// one good can be add only once at the same time
-	for(var i=1, l=$scope.inventories.length; i<l; i++){
+	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    if (item.style_number === $scope.inventories[i].style_number
 		&& item.brand_id  === $scope.inventories[i].brand.id){
 		diabloUtilsService.response_with_callback(
 		    false,
 		    "销售单编辑",
 		    "销售单编辑失败：" + wsaleService.error[2191],
-		$scope, function(){
-		    $scope.inventories[0] = {$edit:false, $new:true}});
-		return;
-	    }
+		$scope, function(){})}
 	};
 	
 	// add at first allways 
-	var add = $scope.inventories[0];
-	add = $scope.copy_select(add, item); 
-
+	var add = {$new:true}; 
+	add = $scope.copy_select(add, item);
 	console.log(add); 
 	$scope.add_inventory(add);
 	
@@ -336,7 +333,7 @@ function wsaleUpdateDetailCtrlProvide(
     var get_update_inventory = function(){
 	var changedInvs = [];
 	var found = false;
-	for (var i=1, l1=$scope.inventories.length; i < l1; i++){
+	for (var i=0, l1=$scope.inventories.length; i < l1; i++){
 	    var newInv = $scope.inventories[i];
 	    found = false;
 	    for (var j=0, l2=$scope.old_inventories.length; j < l2; j++){
@@ -682,11 +679,11 @@ function wsaleUpdateDetailCtrlProvide(
 	})
 
 	return {amounts:     params.amounts,
-		reject:        sell_total,
+		reject:      sell_total,
 		fdiscount:   params.fdiscount,
 		fprice:      params.fprice};
     };
-
+    
     $scope.add_free_inventory = function(inv){
 	console.log(inv);
 	if (angular.isUndefined($scope.select.retailer)
@@ -700,11 +697,15 @@ function wsaleUpdateDetailCtrlProvide(
 	inv.$new  = false;
 	inv.amounts[0].sell_count = inv.reject;
 	// oreder
-	inv.order_id = $scope.inventories.length; 
+	$scope.inventories.unshift(inv); 
+	inv.order_id = $scope.inventories.length;
+
+	// reset
+	$scope.sale.style_number = undefined;
+	
 	// add new line
-	$scope.inventories.unshift({$edit:false, $new:true}); 
 	$scope.re_calculate(); 
-    };
+    }; 
     
     $scope.add_inventory = function(inv){
 	// console.log(inv);
@@ -752,16 +753,17 @@ function wsaleUpdateDetailCtrlProvide(
 
 		if(inv.free === 0){
 		    inv.free_color_size = true;
+		    inv.reject = 1;
+		    $scope.add_free_inventory(inv);
 		} else{
-		    inv.free_color_size = false;
-
+		    inv.free_color_size = false; 
 		    var after_add = function(){
 			inv.$edit = true;
 			inv.$new = false;
-			// oreder
-			inv.order_id = $scope.inventories.length; 
-			// add new line
-			$scope.inventories.unshift({$edit:false, $new:true}); 
+			$scope.inventories.unshift(inv); 
+			inv.order_id = $scope.inventories.length;
+			// reset
+			$scope.sale.style_number = undefined; 
 			$scope.re_calculate(); 
 		    };
 		    
@@ -800,7 +802,7 @@ function wsaleUpdateDetailCtrlProvide(
      */
     $scope.delete_inventory = function(inv){
 	console.log(inv);
-	for(var i=1, l=$scope.inventories.length; i<l; i++){
+	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    if(inv.order_id === $scope.inventories[i].order_id){
 		break;
 	    }
@@ -808,7 +810,7 @@ function wsaleUpdateDetailCtrlProvide(
 	$scope.inventories.splice(i, 1);
 	
 	// reorder
-	for(var i=1, l=$scope.inventories.length; i<l; i++){
+	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    $scope.inventories[i].order_id = l - i;
 	}
 

@@ -456,11 +456,11 @@ sidebar(Session) ->
 		end, 
 		?DEBUG("AutoBarcode ~p", [AutoBarcode]),
 		
-		StdMode = try
+		HideStd = try
 			      %% ascii -> number
 			      lists:nth(7, StockHideMode) - 48
 			  catch _:_ ->
-				  ?NO
+				  ?YES
 			  end,
 		
 		%% ?DEBUG("std_mode ~p", [StdMode]),
@@ -468,7 +468,7 @@ sidebar(Session) ->
 		[{{"setting",        "基本设置", "glyphicon glyphicon-cog"},
 		  [{"print_option",  "系统设置", "glyphicon glyphicon-wrench"},
 		   {"ctype",         "货品大类", "glyphicon glyphicon-text-width"}]
-		  ++ case AutoBarcode =:= ?NO orelse ?to_i(StdMode) =:= ?YES of
+		  ++ case AutoBarcode =:= ?NO orelse ?to_i(HideStd) =:= ?NO of
 			 true ->
 			     [{"std_executive",   "执行标准", "glyphicon glyphicon-registration-mark"},
 			      {"safety_category", "安全类别", "glyphicon glyphicon-text-background"},

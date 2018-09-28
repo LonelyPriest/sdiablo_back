@@ -110,7 +110,7 @@ function wsaleUpdateRejectCtrlProvide(
 		// inventory
 		$scope.old_inventories = wsale.details;
 		$scope.inventories = angular.copy(wsale.details);
-		$scope.inventories.unshift({$edit:false, $new:true});
+		// $scope.inventories.unshift({$edit:false, $new:true});
 		console.log($scope.old_inventories);
 		console.log($scope.inventories); 
 		$scope.re_calculate(); 
@@ -161,7 +161,7 @@ function wsaleUpdateRejectCtrlProvide(
     
     $scope.on_select_good = function(item, model, label){
 	// one good can be add only once at the same time
-	for(var i=1, l=$scope.inventories.length; i<l; i++){
+	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    if (item.style_number === $scope.inventories[i].style_number
 		&& item.brand_id  === $scope.inventories[i].brand_id){
 		dialog.response_with_callback(
@@ -679,7 +679,7 @@ function wsaleUpdateRejectCtrlProvide(
 	// console.log($scope.inventories)
 
 	// var deleteIndex = -1;
-	for(var i=1, l=$scope.inventories.length; i<l; i++){
+	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    if(inv.order_id === $scope.inventories[i].order_id){
 		// $scope.inventories.splice(i, 1)
 		// deleteIndex = i;
@@ -690,7 +690,7 @@ function wsaleUpdateRejectCtrlProvide(
 	$scope.inventories.splice(i, 1);
 	
 	// reorder
-	for(var i=1, l=$scope.inventories.length; i<l; i++){
+	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    $scope.inventories[i].order_id = l - i;
 	}
 

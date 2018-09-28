@@ -199,10 +199,8 @@ function wgoodConfig(){
 
 	this.delete_purchaser_good = function(good){
 	    return http.save(
-		{operation:"delete_w_good",
-		 id:good.id,
-		 style_number: good.style_number,
-		 brand: good.brand_id}).$promise;
+		{operation:"delete_w_good", id:good.id},
+		{style_number: good.style_number, brand: good.brand_id}).$promise;
 	}
 
 	this.update_purchaser_good = function(good, image){

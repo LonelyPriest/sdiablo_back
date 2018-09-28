@@ -1992,6 +1992,10 @@ function purchaserInventoryNewCtrlProvide (
 	$scope.is_same_good = false;
 	$scope.form.gForm.brand.$pristine = true;
     };
+
+    $scope.delete_good = function() {
+    	
+    };
     
     $scope.reset = function(){
 	$scope.selectGroups = [];
@@ -2001,7 +2005,7 @@ function purchaserInventoryNewCtrlProvide (
 	
 	$scope.good = {
 	    brand:     $scope.good.brand,
-	    type:      $scope.good.type,
+	    // type:      $scope.good.type,
 	    sex:       $scope.good.sex,
 	    year:      $scope.good.year,
 	    season:    $scope.season2objs[stockUtils.valid_season(current_month)],
