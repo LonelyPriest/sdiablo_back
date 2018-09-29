@@ -406,17 +406,14 @@ function wsaleNewProvide(
     
     $scope.key_action = function(key){
 	console.log(key); 
-	if (key === 113) {
-	    if (!$scope.disable_draft())
-		$scope.list_draft();
-	}
-	if (key === 117) {
-	    if (!$scope.disable_start_sale())
-		$scope.start_sale(); 
-	}
-	if (key === 114){
-	    if (!$scope.disable_refresh) $scope.refresh();
-	}
+	if (key === 113)
+	    $scope.auto_focus("cash")
+	
+	else if (key === 114)
+	    $scope.auto_focus("wxin")
+
+	else if (key === 117) 
+	    $scope.auto_focus("card") 
     };
     
     // wsaleGoodService.set_brand(filterBrand);
@@ -744,120 +741,120 @@ function wsaleNewProvide(
     /*
      * ticket
      */
-    $scope.fetch_ticket = function(ticket_batch) {
-	$scope.select.ticket_batch   = undefined;
-	$scope.select.ticket_balance = undefined;
-	$scope.select.ticket_custom  = undefined;
-	$scope.select.ticket_sid = diablo_invalid_index; 
-	
-	if (angular.isDefined(ticket_batch)) {
-	    diabloFilter.get_ticket_by_batch(ticket_batch).then(function(result){
-	    	console.log(result);
-	    	var ecode = result.ecode;
-	    	if (ecode === 0 && !diablo_is_empty(result.data)) {
-	    	    $scope.select.ticket_batch   = diablo_set_integer(result.data.batch);
-	    	    $scope.select.ticket_balance = diablo_set_integer(result.data.balance);
-		    $scope.select.ticket_custom  = diablo_custom_ticket;
-	    	    $scope.reset_payment();
-	    	} else {
-	    	    if (diablo_is_empty(result.data)) ecode = 2105;
-	    	    var ERROR = require("diablo-error");
-	    	    diabloUtilsService.response(
-	    		false,
-	    		"会员电子卷获取",
-	    		ERROR[ecode],
-	    		undefined);
-	    	} 
-	    })
-	} else {
-	    diabloFilter.get_ticket_by_retailer($scope.select.retailer.id).then(function(result){
-		console.log(result);
-		if (result.ecode === 0){
-		    if (!diablo_is_empty(result.data)) {
-			$scope.select.ticket_batch   = diablo_set_integer(result.data.batch);
-			$scope.select.ticket_balance = diablo_set_integer(result.data.balance);
-			$scope.select.ticket_sid     = wsaleUtils.to_integer(result.data.sid);
-			$scope.select.ticket_custom  = diablo_score_ticket;
-			$scope.reset_payment();
-		    } 
-		} else {
-		    var ERROR = require("diablo-error");
-		    diabloUtilsService.response(
-			false,
-			"会员电子卷获取",
-			ERROR[result.ecode],
-			undefined);
-		}
-	    }); 
-	}
-    };
-    
-    // $scope.get_ticket = function(){
+    // $scope.fetch_ticket = function(ticket_batch) {
     // 	$scope.select.ticket_batch   = undefined;
     // 	$scope.select.ticket_balance = undefined;
-    // 	$scope.select.ticket_custom  = undefined; 
+    // 	$scope.select.ticket_custom  = undefined;
+    // 	$scope.select.ticket_sid = diablo_invalid_index; 
 	
-    // 	var callback = function(params){
-    // 	    // console.log(params); 
-    // 	    if (!params.auto_batch) {
-    // 	    	diabloFilter.get_ticket_by_batch(params.ticket.batch).then(function(result){
-    // 	    	    console.log(result);
-    // 	    	    var ecode = result.ecode;
-    // 	    	    if (ecode === 0 && !diablo_is_empty(result.data)) {
-    // 	    		$scope.select.ticket_batch = diablo_set_integer(result.data.batch);
-    // 	    		$scope.select.ticket_balance = diablo_set_integer(result.data.balance);
-    // 			$scope.select.ticket_custom = params.auto_batch ? diablo_score_ticket:diablo_custom_ticket;
-    // 	    		$scope.reset_payment();
-    // 	    	    } else {
-    // 	    		if (diablo_is_empty(result.data)) ecode = 2105;
-    // 	    		var ERROR = require("diablo-error");
-    // 	    		diabloUtilsService.response(
-    // 	    		    false,
-    // 	    		    "会员电子卷获取",
-    // 	    		    ERROR[ecode],
-    // 	    		    undefined);
-    // 	    	    } 
-    // 	    	});
-    // 	    } else {
-    // 	    	$scope.select.ticket_batch = params.ticket.batch;
-    // 	    	$scope.select.ticket_balance = params.ticket.balance;
-    // 		$scope.select.ticket_custom = params.auto_batch ? diablo_score_ticket:diablo_custom_ticket;
-    // 	    	$scope.reset_payment();
-    // 	    } 
-    // 	};
-	
-    // 	diabloFilter.get_ticket_by_retailer($scope.select.retailer.id).then(function(result){
-    // 	    console.log(result);
-    // 	    if (result.ecode === 0){
-    // 		var batch;
-    // 		var balance;
-    // 		var auto_batch = false;
-    // 		$scope.select.ticket_sid = diablo_invalid_index;
-		
-    // 		if (!diablo_is_empty(result.data)) {
-    // 		    batch   = diablo_set_integer(result.data.batch);
-    // 		    balance = diablo_set_integer(result.data.balance);
-    // 		    $scope.select.ticket_sid = wsaleUtils.to_integer(result.data.sid);
-    // 		    auto_batch = true; 
+    // 	if (angular.isDefined(ticket_batch)) {
+    // 	    diabloFilter.get_ticket_by_batch(ticket_batch).then(function(result){
+    // 	    	console.log(result);
+    // 	    	var ecode = result.ecode;
+    // 	    	if (ecode === 0 && !diablo_is_empty(result.data)) {
+    // 	    	    $scope.select.ticket_batch   = diablo_set_integer(result.data.batch);
+    // 	    	    $scope.select.ticket_balance = diablo_set_integer(result.data.balance);
+    // 		    $scope.select.ticket_custom  = diablo_custom_ticket;
+    // 	    	    $scope.reset_payment();
+    // 	    	} else {
+    // 	    	    if (diablo_is_empty(result.data)) ecode = 2105;
+    // 	    	    var ERROR = require("diablo-error");
+    // 	    	    diabloUtilsService.response(
+    // 	    		false,
+    // 	    		"会员电子卷获取",
+    // 	    		ERROR[ecode],
+    // 	    		undefined);
+    // 	    	} 
+    // 	    })
+    // 	} else {
+    // 	    diabloFilter.get_ticket_by_retailer($scope.select.retailer.id).then(function(result){
+    // 		console.log(result);
+    // 		if (result.ecode === 0){
+    // 		    if (!diablo_is_empty(result.data)) {
+    // 			$scope.select.ticket_batch   = diablo_set_integer(result.data.batch);
+    // 			$scope.select.ticket_balance = diablo_set_integer(result.data.balance);
+    // 			$scope.select.ticket_sid     = wsaleUtils.to_integer(result.data.sid);
+    // 			$scope.select.ticket_custom  = diablo_score_ticket;
+    // 			$scope.reset_payment();
+    // 		    } 
+    // 		} else {
+    // 		    var ERROR = require("diablo-error");
+    // 		    diabloUtilsService.response(
+    // 			false,
+    // 			"会员电子卷获取",
+    // 			ERROR[result.ecode],
+    // 			undefined);
     // 		}
-		
-    // 		diabloUtilsService.edit_with_modal(
-    // 		    "new-ticket.html",
-    // 		    undefined,
-    // 		    callback,
-    // 		    undefined,
-    // 		    {ticket: {batch: batch, balance: balance},
-    // 		     auto_batch: auto_batch});
-    // 	    } else {
-    // 		var ERROR = require("diablo-error");
-    // 		diabloUtilsService.response(
-    // 		    false,
-    // 		    "会员电子卷获取",
-    // 		    ERROR[result.ecode],
-    // 		    undefined);
-    // 	    }
-    // 	}); 
+    // 	    }); 
+    // 	}
     // };
+    
+    $scope.get_ticket = function(){
+    	$scope.select.ticket_batch   = undefined;
+    	$scope.select.ticket_balance = undefined;
+    	$scope.select.ticket_custom  = undefined; 
+	
+    	var callback = function(params){
+    	    // console.log(params); 
+    	    if (!params.auto_batch) {
+    	    	diabloFilter.get_ticket_by_batch(params.ticket.batch).then(function(result){
+    	    	    console.log(result);
+    	    	    var ecode = result.ecode;
+    	    	    if (ecode === 0 && !diablo_is_empty(result.data)) {
+    	    		$scope.select.ticket_batch = diablo_set_integer(result.data.batch);
+    	    		$scope.select.ticket_balance = diablo_set_integer(result.data.balance);
+    			$scope.select.ticket_custom = params.auto_batch ? diablo_score_ticket:diablo_custom_ticket;
+    	    		$scope.reset_payment();
+    	    	    } else {
+    	    		if (diablo_is_empty(result.data)) ecode = 2105;
+    	    		var ERROR = require("diablo-error");
+    	    		diabloUtilsService.response(
+    	    		    false,
+    	    		    "会员电子卷获取",
+    	    		    ERROR[ecode],
+    	    		    undefined);
+    	    	    } 
+    	    	});
+    	    } else {
+    	    	$scope.select.ticket_batch = params.ticket.batch;
+    	    	$scope.select.ticket_balance = params.ticket.balance;
+    		$scope.select.ticket_custom = params.auto_batch ? diablo_score_ticket:diablo_custom_ticket;
+    	    	$scope.reset_payment();
+    	    } 
+    	};
+	
+    	diabloFilter.get_ticket_by_retailer($scope.select.retailer.id).then(function(result){
+    	    console.log(result);
+    	    if (result.ecode === 0){
+    		var batch;
+    		var balance;
+    		var auto_batch = false;
+    		$scope.select.ticket_sid = diablo_invalid_index;
+		
+    		if (!diablo_is_empty(result.data)) {
+    		    batch   = diablo_set_integer(result.data.batch);
+    		    balance = diablo_set_integer(result.data.balance);
+    		    $scope.select.ticket_sid = wsaleUtils.to_integer(result.data.sid);
+    		    auto_batch = true; 
+    		}
+		
+    		diabloUtilsService.edit_with_modal(
+    		    "new-ticket.html",
+    		    undefined,
+    		    callback,
+    		    undefined,
+    		    {ticket: {batch: batch, balance: balance},
+    		     auto_batch: auto_batch});
+    	    } else {
+    		var ERROR = require("diablo-error");
+    		diabloUtilsService.response(
+    		    false,
+    		    "会员电子卷获取",
+    		    ERROR[result.ecode],
+    		    undefined);
+    	    }
+    	}); 
+    };
     
     $scope.refresh = function(){
 	$scope.inventories = [];
@@ -1271,8 +1268,8 @@ function wsaleNewProvide(
      */
     $scope.disable_save = function(){
 	// save one time only
-	// if ($scope.has_saved || $scope.draft || $scope.inventories.length === 1)
-	//     return true; 
+	if ($scope.has_saved || $scope.draft || $scope.inventories.length === 0)
+	    return true; 
 	if ($scope.select.should_pay >=0 && $scope.select.charge > 0)
 	    return true;
 
@@ -1914,10 +1911,8 @@ function wsaleNewProvide(
 	if ($scope.setting.check_sale === diablo_no && inv.free === 0){
 	    inv.free_color_size = true;
 	    inv.amounts         = [{cid:0, size:0}];
-	    // if ($scope.setting.barcode_mode) {
 	    inv.sell = 1; 
 	    $scope.auto_save_free(inv);
-	    // }
 	} else {
 	    var promise = diabloPromise.promise; 
 	    var calls = [promise(diabloFilter.list_purchaser_inventory,
@@ -1952,11 +1947,9 @@ function wsaleNewProvide(
 		if(inv.free === 0){
 		    $scope.auto_focus("sell");
 		    inv.free_color_size = true;
-		    inv.amounts         = [{cid:0, size:0}];
-		    if ($scope.setting.barcode_mode) {
-			inv.sell = 1; 
-			$scope.auto_save_free(inv);
-		    }
+		    inv.amounts = [{cid:0, size:0}];
+		    inv.sell = 1; 
+		    $scope.auto_save_free(inv);
 		} else{
 		    inv.free_color_size = false; 
 		    if ($scope.setting.barcode_mode && angular.isDefined(inv.full_bcode)) {
@@ -2267,31 +2260,30 @@ function wsaleNewProvide(
 	var sell = wsaleUtils.to_integer(inv.sell);
 	if (sell === 0) return
 	if (angular.isUndefined(inv.style_number)) return;
-
-	if ($scope.setting.check_sale && sell > inv.total){
-	    if (angular.isDefined(inv.form.sell)) {
-		inv.form.sell.$invalid = true;
-		inv.form.sell.$pristine = false; 
-	    }
-	    inv.invalid_sell = true;
-	    
-	    return;
-	}
-
-	if (diablo_no === $scope.setting.negative_sale && sell < 0) {
-	    if (angular.isDefined(inv.form.sell)) {
-		inv.form.sell.$invalid = true;
-		inv.form.sell.$pristine = false;
-	    }
-	    inv.invalid_sell = true;
-	    return;
-	};
+	
 
 	if (inv.$new && inv.free_color_size){
 	    $scope.add_free_inventory(inv);
 	}; 
 
 	if (!inv.$new && inv.free_update){
+	    if ($scope.setting.check_sale && sell > inv.total){
+		if (angular.isDefined(inv.form.sell)) {
+		    inv.form.sell.$invalid = true;
+		    inv.form.sell.$pristine = false; 
+		}
+		inv.invalid_sell = true; 
+		return;
+	    }
+	    
+	    if (!$scope.setting.negative_sale && sell < 0) {
+		if (angular.isDefined(inv.form.sell)) {
+		    inv.form.sell.$invalid = true;
+		    inv.form.sell.$pristine = false;
+		}
+		inv.invalid_sell = true;
+		return;
+	    }; 
 	    $scope.save_free_update(inv); 
 	}
 	

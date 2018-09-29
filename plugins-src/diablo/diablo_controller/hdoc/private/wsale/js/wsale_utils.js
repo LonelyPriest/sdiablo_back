@@ -760,11 +760,10 @@ var wsaleCalc = function(){
 	    for (var i=0, l=stocksWithPromotion.length; i<l; i++) {
 		var p = stocksWithPromotion[i];
 		if (stock.pid === p.pid) {
-			p.stocks.push(stock)
+		    p.stocks.push(stock)
+		    find = true; 
+		    break; 
 		} 
-		
-		find = true; 
-		break; 
 	    }
 
 	    if (!find) {

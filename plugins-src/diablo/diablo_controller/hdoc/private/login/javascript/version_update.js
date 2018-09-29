@@ -1,5 +1,16 @@
 var version_update = function(){
     var updates = [
+	{date: "2018-09-29",
+	 content:
+	 ["销售开单界面回滚原来状态并优化",
+	  "修正会员折扣有时不生效问题"]
+	},
+	
+	{date: "2018-09-28",
+	 content:
+	 ["优化销售开单模式"]
+	},
+	
 	{date: "2018-09-23",
 	 content:
 	 ["优化销售算法",
