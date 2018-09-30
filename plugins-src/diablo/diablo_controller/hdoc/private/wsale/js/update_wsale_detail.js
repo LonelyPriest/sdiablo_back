@@ -339,18 +339,14 @@ function wsaleUpdateDetailCtrlProvide(
 	    for (var j=0, l2=$scope.old_inventories.length; j < l2; j++){
 		var oldInv = $scope.old_inventories[j];
 		// update
-		if (newInv.style_number === oldInv.style_number
-		    && newInv.brand.id === oldInv.brand.id){
+		if (newInv.style_number === oldInv.style_number && newInv.brand.id === oldInv.brand.id){
 		    var sort_amounts = newInv.amounts.filter(function(a){
-			if (angular.isDefined(a.sell_count)
-			    && a.sell_count
-			    && parseInt(a.sell_count) !== 0){
+			if (angular.isDefined(a.sell_count) && a.sell_count && parseInt(a.sell_count) !== 0){
 			    return true;
 			}
 		    });
 		    
-		    var change_amouts = get_update_amount(
-			sort_amounts, oldInv.amounts);
+		    var change_amouts = get_update_amount(sort_amounts, oldInv.amounts);
 		    
 		    if (change_amouts.length !== 0){
 			newInv.operation = 'u'; 
@@ -382,12 +378,11 @@ function wsaleUpdateDetailCtrlProvide(
 	for (var i=0, l1=$scope.old_inventories.length; i < l1; i++){
 	    var oldInv = $scope.old_inventories[i];
 	    found = false;
-	    for (var j=1, l2=$scope.inventories.length; j < l2; j++){
+	    for (var j=0, l2=$scope.inventories.length; j < l2; j++){
 		var newInv = $scope.inventories[j];
 		// console.log(oldInv);
 		// console.log(newInv);
-		if (oldInv.style_number === newInv.style_number
-		    && oldInv.brand.id === newInv.brand.id){
+		if (oldInv.style_number === newInv.style_number && oldInv.brand.id === newInv.brand.id){
 		    found = true;
 		    break;
 		} 

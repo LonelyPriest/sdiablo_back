@@ -86,11 +86,6 @@
 	    	    x-ng-click="save_wsale()">保存
 	      <i class="glyphicon glyphicon-save"></i></button>
 	    
-
-	    <!-- <button class="btn btn-success purple-stripe" -->
-	    <!-- 	    x-ng-disabled="disable_start_sale()" -->
-	    <!-- 	    x-ng-click="start_sale()">收银 -->
-	    <!--   <i class="glyphicon glyphicon-save"></i></button>  -->
 	  </div>
 	</div>
 	<div class="tools"></div>
@@ -120,17 +115,6 @@
 	      </div>
 	    </div>
 
-	    <div class="col-xs-3 col-md-3 ">
-	      <div class="input-group">
-	    	<span class="input-group-addon">
-	    	  <i class="glyphicon glyphicon-comment fg-red"></i>备注</span>
-	    	<input class="form-control"
-		       type="text"
-		       placeholder="备注"
-	    	       x-ng-model="select.comment"/>
-	      </div>
-	    </div>
-
 	    <div class="col-xs-3 col-md-3">
 	      <div class="input-group">
 	  	<span class="input-group-addon">
@@ -142,7 +126,18 @@
 	  	</select>
 	      </div>
 	    </div>
-	  
+
+	    <div class="col-xs-3 col-md-3 ">
+	      <div class="input-group">
+	    	<span class="input-group-addon">
+	    	  <i class="glyphicon glyphicon-comment fg-red"></i>备注</span>
+	    	<input class="form-control"
+		       type="text"
+		       placeholder="备注"
+	    	       x-ng-model="select.comment"/>
+	      </div>
+	    </div>
+	    
 	    <div class="col-xs-3 col-md-3 ">
 	      <div class="input-group">
 		<span class="input-group-addon">
@@ -166,23 +161,23 @@
 	    	<input class="form-control" type="text" readonly
 	    	       x-ng-model="select.should_pay"/>
 	      </div>
-	    </div> 
-	
+	    </div>
+
 	    <div class="col-xs-3 col-md-3">
 	      <div class="input-group">
 		<span class="input-group-addon bg-orange fg-white">
-		  <i class="glyphicon glyphicon-yen fg-red"></i>现金</span>
-		<form name="select.form.cashForm">
-		  <div ng-class="{'has-error':select.form.cashForm.$invalid
-				 && !select.form.cashForm.$pristine}">
+		  <i class="glyphicon glyphicon-credit-card fg-red"></i>刷卡</span>
+		<form name="select.form.cardForm">
+		  <div ng-class="{'has-error':select.form.cardForm.$invalid
+				 && !select.form.cardForm.$pristine}">
 	  	    <input class="form-control"
 			   type="number" step="0.01"
 			   disable-key
 			   x-ng-edit
-			   focus-auto="focus_attr.cash"
-	  		   x-ng-model="select.cash"
+			   focus-auto="focus_attr.card"
 			   x-ng-pattern="pattern.money"
-			   placeholder="现金"
+	  		   x-ng-model="select.card"
+			   placeholder="刷卡"
 			   x-ng-enter="disable_save() || save_wsale()"/>
 		  </div>
 		</form>
@@ -213,18 +208,18 @@
 	    <div class="col-xs-3 col-md-3">
 	      <div class="input-group">
 		<span class="input-group-addon bg-orange fg-white">
-		  <i class="glyphicon glyphicon-credit-card fg-red"></i>刷卡</span>
-		<form name="select.form.cardForm">
-		  <div ng-class="{'has-error':select.form.cardForm.$invalid
-				 && !select.form.cardForm.$pristine}">
+		  <i class="glyphicon glyphicon-yen fg-red"></i>现金</span>
+		<form name="select.form.cashForm">
+		  <div ng-class="{'has-error':select.form.cashForm.$invalid
+				 && !select.form.cashForm.$pristine}">
 	  	    <input class="form-control"
 			   type="number" step="0.01"
 			   disable-key
 			   x-ng-edit
-			   focus-auto="focus_attr.card"
+			   focus-auto="focus_attr.cash"
+	  		   x-ng-model="select.cash"
 			   x-ng-pattern="pattern.money"
-	  		   x-ng-model="select.card"
-			   placeholder="刷卡"
+			   placeholder="现金"
 			   x-ng-enter="disable_save() || save_wsale()"/>
 		  </div>
 		</form>
@@ -898,190 +893,3 @@
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>
 </script>
-
-
-<!-- <script type="text/ng-template" id="start-sale.html">  -->
-<!--   <div class="modal-body"> -->
-<!--     <form class="form-horizontal" name="tForm" novalidate> -->
-<!--       <div class="form-body"> -->
-
-<!-- 	<div class="form-group"> -->
-<!-- 	  <label class="col-sm-2 col-md-2 control-label">导购</label>  -->
-<!-- 	  <div class="col-sm-9 col-md-9"> -->
-<!-- 	    <select class="form-control" type="text" -->
-<!-- 	      	    x-ng-model="select.employee" -->
-<!-- 	    	    x-ng-change="change_employee()" -->
-<!-- 	      	    x-ng-options="e as e.name for e in employees|filter:$viewValue"> -->
-<!-- 	    </select>  -->
-<!-- 	  </div> -->
-<!-- 	</div> -->
-
-<!-- 	<div class="form-group"> -->
-<!-- 	  <label class="col-sm-2 col-md-2 control-label">会员</label>  -->
-<!-- 	  <div class="col-sm-9 col-md-9"> -->
-<!-- 	    <div class="input-group"> -->
-<!-- 	      <input class="form-control" type="text" -->
-<!-- 		     x-ng-edit -->
-<!-- 		     required -->
-<!-- 	  	     x-ng-model="select.retailer" -->
-<!-- 	  	     placeholder="请选择会员" -->
-<!-- 	  	     typeahead-editable="false" -->
-<!-- 		     typeahead-wait-ms="300" -->
-<!-- 		     typeahead-loading="loading" -->
-<!-- 		     typeahead-on-select="on_select_retailer($item, $model, $label)" -->
-<!-- 		     uib-typeahead="s as s.name for s in match_retailer_phone($viewValue)"/> -->
-<!-- 	      <span class="input-group-btn"> -->
-<!-- 		<button x-ng-disabled="disable_withdraw()" x-ng-click="withdraw()" class="btn green">提现</button>  -->
-<!-- 	      </span> -->
-<!-- 	      <span x-ng-show="loading"> -->
-<!-- 		<i class="icon-spinner icon-spin icon-2x form-control-feedback"></i> -->
-<!-- 	      </span>  -->
-<!-- 	    </div> -->
-<!-- 	  </div>  -->
-<!-- 	</div>  -->
-	
-<!-- 	<div class="form-group"> -->
-<!-- 	  <label class="col-sm-2 col-md-2 control-label">现金</label>  -->
-<!-- 	  <div class="col-sm-9 col-md-9"> -->
-<!-- 	    <input class="form-control" -->
-<!-- 		   name="cash" -->
-<!-- 		   type="number" step="0.01" -->
-<!-- 		   disable-key -->
-<!-- 		   x-ng-edit -->
-<!-- 	  	   x-ng-model="select.cash" -->
-<!-- 		   x-ng-pattern="pattern.money" -->
-<!-- 		   placeholder="现金" -->
-<!-- 		   x-ng-enter="disable_save() || save_wsale()"/> -->
-<!-- 	  </div> -->
-<!-- 	</div> -->
-
-<!-- 	<div class="form-group"> -->
-<!-- 	  <label class="col-sm-2 col-md-2 control-label">刷卡</label>  -->
-<!-- 	  <div class="col-sm-9 col-md-9"> -->
-<!-- 	    <input class="form-control" -->
-<!-- 		   name="card" -->
-<!-- 		   type="number" step="0.01" -->
-<!-- 		   name="card" -->
-<!-- 		   disable-key -->
-<!-- 		   x-ng-edit -->
-<!-- 	  	   x-ng-model="select.card" -->
-<!-- 		   x-ng-pattern="pattern.money" -->
-<!-- 		   placeholder="刷卡" -->
-<!-- 		   x-ng-enter="disable_save() || save_wsale()"/> -->
-<!-- 	  </div> -->
-<!-- 	</div> -->
-
-<!-- 	<div class="form-group"> -->
-<!-- 	  <label class="col-sm-2 col-md-2 control-label">微信/支付宝</label>  -->
-<!-- 	  <div class="col-sm-9 col-md-9"> -->
-<!-- 	    <input class="form-control" -->
-<!-- 		   type="number" step="0.01" -->
-<!-- 		   name="wxin" -->
-<!-- 		   disable-key -->
-<!-- 		   x-ng-edit -->
-<!-- 	  	   x-ng-model="select.wxin" -->
-<!-- 		   x-ng-pattern="pattern.money" -->
-<!-- 		   placeholder="微信/支付宝" -->
-<!-- 		   x-ng-enter="disable_save() || save_wsale()"/> -->
-<!-- 	  </div> -->
-<!-- 	</div> -->
-
-	
-<!-- 	<div class="form-group"> -->
-<!-- 	  <label class="col-sm-2 col-md-2 control-label">电子卷</label>  -->
-<!-- 	  <div class="col-sm-9 col-md-9"> -->
-<!-- 	    <div class="input-group"> -->
-<!-- 	      <input class="form-control" -->
-<!-- 		     name="ticket" -->
-<!-- 		     type="number" -->
-<!-- 		     step="1" -->
-<!-- 		     placeholder="卷批次号,积分电子卷直接获取" -->
-<!-- 		     x-ng-edit -->
-<!-- 		     disable-key -->
-<!-- 		     disable-wheel -->
-<!-- 		     x-ng-model="params.ticket_batch" -->
-<!-- 		     x-ng-enter="fetch_ticket(params.ticket_batch)"/>  -->
-<!-- 	      <span class="input-group-btn"> -->
-<!-- 		<button class="btn btn-primary" x-ng-click="fetch_ticket(params.ticket_batch)"> -->
-<!-- 		  <i class="glyphicon glyphicon-ok"></i> -->
-<!-- 		</button> -->
-<!-- 	      </span>  -->
-<!-- 	    </div>  -->
-<!-- 	  </div> -->
-<!-- 	</div> -->
-
-<!-- 	<div class="form-group"> -->
-<!-- 	  <label class="col-sm-2 col-md-2 control-label">核销</label>  -->
-<!-- 	  <div class="col-sm-9 col-md-9"> -->
-<!-- 	    <select class="form-control" type="text" -->
-<!-- 	  	    x-ng-model="select.verificate" -->
-<!-- 	  	    x-ng-options="v for v in vpays"> -->
-<!-- 	    </select>  -->
-<!-- 	  </div> -->
-<!-- 	</div> -->
-
-<!-- 	<div class="form-group"> -->
-<!-- 	  <label class="col-sm-2 col-md-2 control-label">备注</label>  -->
-<!-- 	    <div class="col-xs-9 col-md-9"> -->
-<!-- 	      <input class="form-control" -->
-<!-- 		     type="text" -->
-<!-- 		     name="comment" -->
-<!-- 		     placeholder="备注" -->
-<!-- 	    	     x-ng-model="select.comment"/> -->
-<!-- 	    </div> -->
-	
-<!--       </div> -->
-
-<!--     </form> -->
-
-<!--     <h4 class="text-center diablo-margin-top-minus-10"> -->
-<!--       <span x-ng-if="select.retailer.type_id!==2">生日： -->
-<!-- 	<span class="fg-blue"><strong>{{select.retailer.birth}}</strong></span>&nbsp&nbsp -->
-<!--       </span>  -->
-<!--       <span x-ng-if="select.retailer.type_id!==2">积分： -->
-<!-- 	<span class="fg-blue"><strong>{{select.retailer.score}}</strong></span>&nbsp&nbsp -->
-<!--       </span> -->
-<!--       <span x-ng-if="select.retailer.type_id===1">余额： -->
-<!-- 	<span class="fg-blue"><strong>{{select.surplus}}</strong></span>&nbsp&nbsp -->
-<!--       </span> -->
-
-<!--       <span x-ng-if="select.retailer.type_id===1">结余： -->
-<!-- 	<span class="fg-red"><strong>{{select.left_balance}}</strong></span>&nbsp&nbsp -->
-<!--       </span> -->
-      
-<!--     </h4> -->
-
-<!--     <h3 class="text-center"> -->
-<!--       <span>数量：<span class="fg-red"><strong>{{select.abs_total}}</strong></span></span>&nbsp&nbsp -->
-<!--       <span>应付：<span class="fg-blue"><strong>{{select.should_pay}}</strong></span></span>&nbsp&nbsp -->
-<!--       <span>实付：<span class="fg-red"><strong>{{select.has_pay}}</strong></span></span>  -->
-<!--     </h3> -->
-    
-<!--     <h3 class="text-center">  -->
-<!--       <span x-ng-if="select.ticket_balance">券：<span class="fg-blue"> -->
-<!-- 	  <strong>{{select.ticket_balance}}</strong></span>&nbsp&nbsp -->
-<!--       </span> -->
-<!--       <span x-ng-if="select.withdraw">提现：<span class="fg-blue"> -->
-<!-- 	  <strong>{{select.withdraw}}</strong></span>&nbsp&nbsp -->
-<!--       </span> -->
-<!--       <span x-ng-if="select.cash">现金：<span class="fg-blue"> -->
-<!-- 	  <strong>{{select.cash}}</strong></span>&nbsp&nbsp -->
-<!--       </span> -->
-<!--       <span x-ng-if="select.card">刷卡：<span class="fg-blue"> -->
-<!-- 	  <strong>{{select.card}}</strong></span>&nbsp&nbsp -->
-<!--       </span> -->
-<!--       <span x-ng-if="select.wxin">微/支：<span class="fg-blue"> -->
-<!-- 	  <strong>{{select.wxin}}</strong></span>&nbsp&nbsp -->
-<!--       </span> -->
-
-<!--       <span> 找零：<span class="fg-red"><strong>{{select.charge}}</strong></span></span>  -->
-<!--     </h3> -->
-<!--   </div> -->
-
-<!--   <div class="modal-footer"> -->
-<!--     <button class="btn btn-primary" -->
-<!-- 	    x-ng-disabled="tForm.$invalid || disable_save()" -->
-<!-- 	    x-ng-click="ok()">确定</button> -->
-<!--     <button class="btn btn-warning" x-ng-click="cancel()">取消</button> -->
-<!--   </div>  -->
-<!-- </script> -->

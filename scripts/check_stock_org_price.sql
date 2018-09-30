@@ -183,40 +183,44 @@ update  w_inventory_transfer a inner join (select rsn, cost from (select rsn, su
 update w_inventory a inner join (select style_number, brand, shop, tag_price, discount, ediscount from w_inventory_new_detail where merchant=4 group by style_number, brand, shop) b on \
 a.style_number=b.style_number and a.brand=b.brand and a.shop=b.shop set a.tag_price=b.tag_price, a.discount=b.discount and a.ediscount=b.ediscount;
 
+-- check sale
+select a.merchant, a.rsn, a.total, b.rsn, c.name from w_sale a left join w_sale_detail b on a.rsn=b.rsn left join merchants c on a.merchant=c.id where b.rsn is null and a.total!=0;
+select a.entry_date, a.rsn, a.total, b.rsn, b.total from w_sale a left join (select rsn, sum(total) as total from w_sale_detail group by rsn) b on a.rsn=b.rsn where a.total != b.total;
+
 
 -- clear date
-delete from w_inventory_good where merchant=8;
+delete from w_inventory_good where merchant=29;
 
-delete from w_inventory_new_detail_amount where merchant=8;
-delete from w_inventory_new_detail where merchant=8;
-delete from w_inventory_new where merchant=8;
+delete from w_inventory_new_detail_amount where merchant=29;
+delete from w_inventory_new_detail where merchant=29;
+delete from w_inventory_new where merchant=29;
 
 -- clear stock
-delete from w_inventory_amount where merchant=8;
-delete from w_inventory where merchant=8;
+delete from w_inventory_amount where merchant=29;
+delete from w_inventory where merchant=29;
 
 -- clear sale
-delete from w_sale_detail_amount where merchant=8;
-delete from w_sale_detail where merchant=8;
-delete from w_sale where merchant=8;
+delete from w_sale_detail_amount where merchant=29;
+delete from w_sale_detail where merchant=29;
+delete from w_sale where merchant=29;
 
 -- clear transefer
-delete from w_inventory_transfer_detail_amount where merchant=8;
-delete from w_inventory_transfer_detail where merchant=8;
-delete from w_inventory_transfer where merchant=8;
+delete from w_inventory_transfer_detail_amount where merchant=29;
+delete from w_inventory_transfer_detail where merchant=29;
+delete from w_inventory_transfer where merchant=29;
 
 
 -- report
-delete from w_daily_report where merchant=8;
-delete from w_change_shift where merchant=8;
+delete from w_daily_report where merchant=29;
+delete from w_change_shift where merchant=29;
 
 -- charge
-delete from w_charge_detail where merchant=8;
+delete from w_charge_detail where merchant=29;
 
 
 -- brands
-delete from brands where merchant=8;
-delete from inv_types where merchant=8;
+delete from brands where merchant=29;
+delete from inv_types where merchant=29;
 
 -- bill
-delete from w_bill_detail where merchant=8;
+delete from w_bill_detail where merchant=29;

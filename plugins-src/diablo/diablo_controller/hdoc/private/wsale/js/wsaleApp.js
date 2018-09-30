@@ -738,57 +738,6 @@ function wsaleNewProvide(
 	
     }; 
     
-    /*
-     * ticket
-     */
-    // $scope.fetch_ticket = function(ticket_batch) {
-    // 	$scope.select.ticket_batch   = undefined;
-    // 	$scope.select.ticket_balance = undefined;
-    // 	$scope.select.ticket_custom  = undefined;
-    // 	$scope.select.ticket_sid = diablo_invalid_index; 
-	
-    // 	if (angular.isDefined(ticket_batch)) {
-    // 	    diabloFilter.get_ticket_by_batch(ticket_batch).then(function(result){
-    // 	    	console.log(result);
-    // 	    	var ecode = result.ecode;
-    // 	    	if (ecode === 0 && !diablo_is_empty(result.data)) {
-    // 	    	    $scope.select.ticket_batch   = diablo_set_integer(result.data.batch);
-    // 	    	    $scope.select.ticket_balance = diablo_set_integer(result.data.balance);
-    // 		    $scope.select.ticket_custom  = diablo_custom_ticket;
-    // 	    	    $scope.reset_payment();
-    // 	    	} else {
-    // 	    	    if (diablo_is_empty(result.data)) ecode = 2105;
-    // 	    	    var ERROR = require("diablo-error");
-    // 	    	    diabloUtilsService.response(
-    // 	    		false,
-    // 	    		"会员电子卷获取",
-    // 	    		ERROR[ecode],
-    // 	    		undefined);
-    // 	    	} 
-    // 	    })
-    // 	} else {
-    // 	    diabloFilter.get_ticket_by_retailer($scope.select.retailer.id).then(function(result){
-    // 		console.log(result);
-    // 		if (result.ecode === 0){
-    // 		    if (!diablo_is_empty(result.data)) {
-    // 			$scope.select.ticket_batch   = diablo_set_integer(result.data.batch);
-    // 			$scope.select.ticket_balance = diablo_set_integer(result.data.balance);
-    // 			$scope.select.ticket_sid     = wsaleUtils.to_integer(result.data.sid);
-    // 			$scope.select.ticket_custom  = diablo_score_ticket;
-    // 			$scope.reset_payment();
-    // 		    } 
-    // 		} else {
-    // 		    var ERROR = require("diablo-error");
-    // 		    diabloUtilsService.response(
-    // 			false,
-    // 			"会员电子卷获取",
-    // 			ERROR[result.ecode],
-    // 			undefined);
-    // 		}
-    // 	    }); 
-    // 	}
-    // };
-    
     $scope.get_ticket = function(){
     	$scope.select.ticket_batch   = undefined;
     	$scope.select.ticket_balance = undefined;
@@ -858,12 +807,11 @@ function wsaleNewProvide(
     
     $scope.refresh = function(){
 	$scope.inventories = [];
-	// $scope.inventories.push({$edit:false, $new:true});
 	$scope.show_promotions = [];
 	
-	// $scope.select.form.cardForm.$invalid  = false;
-	// $scope.select.form.cashForm.$invalid  = false;
-	// $scope.select.form.wForm.$invalid  = false; 
+	$scope.select.form.cardForm.$invalid  = false;
+	$scope.select.form.cashForm.$invalid  = false;
+	$scope.select.form.wForm.$invalid  = false; 
 
 	$scope.select.rsn          = undefined;
 	$scope.select.cash         = undefined;
@@ -920,27 +868,24 @@ function wsaleNewProvide(
     $scope.setting.q_backend = $scope.q_typeahead($scope.select.shop.id);
     // console.log($scope.setting.q_backend);
     
-    $scope.match_all_w_inventory = function(){
-	// var as = ["a", "abcd", "abc", "df"].sort(function(a1, a2){
-	//     return a1.length - a2.length;
-	// });	
-	if (!$scope.setting.q_backend){
-	    diabloNormalFilter.match_all_w_inventory(
-		{shop:$scope.select.shop.id,
-		 start_time:$scope.qtime_start($scope.select.shop.id)}
-	    ).$promise.then(function(invs){
-		$scope.all_w_inventory = 
-		    invs.sort(function(inv1, inv2){
-			return inv1.style_number.length - inv2.style_number.length;
-		    }).map(function(inv){
-			var p = wsaleUtils.prompt_name(
-			    inv.style_number, inv.brand, inv.type); 
-			return angular.extend(
-                            inv, {name:p.name, prompt:p.prompt}); 
-		    });
-	    });
-	};
-    }
+    // $scope.match_all_w_inventory = function(){
+    // 	if (!$scope.setting.q_backend){
+    // 	    diabloNormalFilter.match_all_w_inventory(
+    // 		{shop:$scope.select.shop.id,
+    // 		 start_time:$scope.qtime_start($scope.select.shop.id)}
+    // 	    ).$promise.then(function(invs){
+    // 		$scope.all_w_inventory = 
+    // 		    invs.sort(function(inv1, inv2){
+    // 			return inv1.style_number.length - inv2.style_number.length;
+    // 		    }).map(function(inv){
+    // 			var p = wsaleUtils.prompt_name(
+    // 			    inv.style_number, inv.brand, inv.type); 
+    // 			return angular.extend(
+    //                         inv, {name:p.name, prompt:p.prompt}); 
+    // 		    });
+    // 	    });
+    // 	};
+    // }
 
     // $scope.match_all_w_inventory();
     $scope.refresh_datetime_per_5_minute();
@@ -957,7 +902,7 @@ function wsaleNewProvide(
     // console.log($scope.wsaleStorage);
     
     $scope.disable_draft = function(){
-	return $scope.wsaleStorage.keys().length === 0 || $scope.inventories.length === 1;
+	return $scope.wsaleStorage.keys().length === 0 || $scope.inventories.length !== 0;
 	    
     };
 
@@ -1327,36 +1272,13 @@ function wsaleNewProvide(
 		    if (result.pcode !== 0 || result.sms_code !== 0)
 			show_dialog("销售开单", "开单成功" + error(presult)); 
 		})
-	    };
-	    
+	    }; 
 	    dialog.request(
-		"销售开单", "开单成功，是否打印销售单？",
-		ok_print, undefined, $scope);
+		"销售开单", "开单成功，是否打印销售单？", ok_print, undefined, $scope);
 	}
 	
     };
-
-    $scope.start_sale = function() {
-	// $scope.select.cash           = undefined;
-	// $scope.select.card           = undefined;
-	// $scope.select.wxin           = undefined;
-	// $scope.select.withdraw       = undefined;
-	// $scope.select.ticket_batch   = undefined;
-	// $scope.select.ticket_balance = undefined;
-	// $scope.select.ticket_score   = 0;
-	// $scope.select.ticket_sid     = diablo_invalid_index;
-	// $scope.select.ticket_custom  = diablo_invalid;
-	// $scope.select.verificate     = $scope.vpays[0],
-	// $scope.has_withdrawed        = false;
-	
-	var callback = function(params) {
-	    // console.log(params);
-	    $scope.save_wsale();
-	}
-
-	diabloUtilsService.edit_with_modal("start-sale.html", undefined, callback, $scope, {});
-    };
-
+    
     var LODOP;
     $scope.print_front = function(result, im_print){
 	// var oscript = document.createElement("script");
@@ -1858,24 +1780,30 @@ function wsaleNewProvide(
 	// console.log(inv); 
 	if (angular.isUndefined($scope.select.retailer) || diablo_is_empty($scope.select.retailer)){
 	    diabloUtilsService.response(false, "销售开单", "开单失败：" + wsaleService.error[2192]);
-	    return;
+	    return; 
 	};
 
-	// check stock total
-	if ($scope.setting.check_sale && free_stock_not_enought(inv)) {
-	    diabloUtilsService.set_error("销售开单", 2180);
-	} else {
+	var callback = function(reject) {
 	    inv.$edit = true;
 	    inv.$new  = false;
-	    inv.amounts[0].sell_count = inv.sell; 
+	    inv.sell = reject ? -inv.sell : inv.sell;
+	    inv.amounts[0].sell_count = inv.sell;
 	    $scope.inventories.unshift(inv);
-	    inv.order_id = $scope.inventories.length; 
+	    inv.order_id = $scope.inventories.length;
 	    
-	    // save
 	    $scope.disable_refresh = false;
 	    $scope.wsaleStorage.save($scope.inventories.filter(function(r){return !r.$new})); 
 	    $scope.re_calculate();	    
 	    $scope.focus_good_or_barcode(); 
+	};
+	
+	// check stock total 
+	if ($scope.setting.check_sale && free_stock_not_enought(inv)) {
+	    // diabloUtilsService.set_error("销售开单", 2180); 
+	    var ERROR = require("diablo-error"); 
+	    diabloUtilsService.request("销售开单", ERROR[2180], callback, true, undefined);
+	} else {
+	    callback(false);
 	} 
     };
     
@@ -2285,18 +2213,7 @@ function wsaleNewProvide(
 		return;
 	    }; 
 	    $scope.save_free_update(inv); 
-	}
-	
-	// $scope.timeout_auto_save = $timeout(function(){
-	//     // console.log(inv); 
-	//     if (inv.$new && inv.free_color_size){
-	// 	$scope.add_free_inventory(inv);
-	//     }; 
-
-	//     if (!inv.$new && inv.free_update){
-	// 	$scope.save_free_update(inv); 
-	//     }
-	// }, 1000); 
+	} 
     };
 
     $scope.gift_sale = function(inv) {
@@ -2686,14 +2603,13 @@ function wsaleNewDetailProvide(
 			dialog.response_with_callback(
 			true,
 			    "文件导出成功",
-			    "创建文件成功，请点击确认下载！！", undefined,
+			    "创建文件成功，请点击确认下载！！",
+			    undefined,
 			    function(){window.location.href = result.url;}) 
 		    } else {
 			diablo.response(
 			false,
-			    "文件导出失败",
-			    "创建文件失败："
-				+ wsaleService.error[result.ecode]);
+			    "文件导出失败", "创建文件失败：" + wsaleService.error[result.ecode]);
 		    } 
 		}); 
 	}) 
