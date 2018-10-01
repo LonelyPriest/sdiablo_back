@@ -363,3 +363,56 @@ alter table w_inventory add column level TINYINT default -1 after alarm_a;
 alter table w_inventory add column executive INTEGER default -1 after level;
 alter table w_inventory add column category INTEGER default -1 after executive;
 alter table w_inventory add column fabric VARCHAR(256) default null after category;
+
+--2018-10-02
+update shops set merchant=51 where merchant=24 and id=164;
+-- firm
+update suppliers set merchant=51 where id in (4036, 4034);
+-- size
+update size_group set merchant=51 where id in (386,387);
+-- brand
+update brands set merchant=51 where id in (23578, 23581, 23684);
+-- type
+update inv_types set merchant=51 where merchant=24 and id=6801;
+
+
+-- good
+update w_inventory_good set merchant=51 where type=6801 and merchant=24;
+
+-- color
+update colors set merchant=51 where id in (4843, 4846, 4847, 4848, 4849, 4850);
+into colors (name, type, merchant) select name, type, 51 from colors where id in(2943,2944,2946,2947,2948,2949,2953,2956,2957,2958,2960,3024,3063,4868,3026,3064,3065);
+
+update w_inventory_good set color='4892' where merchant=51 and color='2944';
+update w_inventory_amount set color=4892 where merchant=51 and color=2944;
+
+insert into w_inventory_good(bcode, style_number, brand, firm, color, size, type, sex, season, year, \
+s_group, free, org_price, tag_price, ediscount, discount, path, level, executive, category, fabric, alarm_day, contailer, alarm_a, merchant, change_date, entry_date) \
+select a.bcode, a.style_number, a.brand, a.firm, a.color, a.size, a.type, a.sex, a.season, a.year,\
+a.s_group, a.free, a.org_price, a.tag_price, a.ediscount, a.discount, a.path, a.level, a.executive, \
+a.category, a.fabric, a.alarm_day, a.contailer, a.alarm_a, 51, a.change_date, a.entry_date from w_inventory_good a \
+inner join(select style_number, brand from w_inventory_new_detail where shop=164 group by style_number, brand) b on a.style_number=b.style_number and a.brand=b.brand;
+
+
+update w_inventory set merchant=51 where shop=164;
+update w_inventory_amount set merchant=51 where shop=164;
+
+update w_sale set merchant=51 where shop=164;
+update w_sale_detail set merchant=51 where shop=164;
+update w_sale_detail_amount set merchant=51 where shop=164;
+
+update w_inventory_new set merchant=51 where shop=164;
+update w_inventory_new_detail set merchant=51 where shop=164;
+update w_inventory_new_detail_amount set merchant=51 where shop=164;
+
+update users set merchant=51 where name in ('mst880', 'mst888');
+update roles set created_by=270 where id in(162,164);
+update role_to_shop set merchant=51 where merchant=24 and shop_id=164;
+update roles set merchant=51 where merchant=24 and id in(164,166);
+update role_to_right set merchant=51 where role_id in(164,166);
+
+
+update w_retailer set merchant=51 where shop=164;
+
+
+

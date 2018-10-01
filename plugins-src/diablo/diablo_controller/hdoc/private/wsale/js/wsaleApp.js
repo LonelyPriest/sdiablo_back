@@ -1533,19 +1533,7 @@ function wsaleNewProvide(
 		};
 		
 		$scope.wsaleStorage.remove($scope.wsaleStorage.get_key()); 
-		// if ($scope.select.retailer.id !== $scope.setting.no_vip) {
-		//     $scope.select.retailer.score += $scope.select.score;
-		//     $scope.select.retailer.score -= $scope.select.ticket_score;
-		// }
-		// $scope.select.retailer.score += $scope.select.score;
-		// $scope.select.retailer.score -= $scope.select.ticket_score; 
-		
-		$scope.refresh();
-		
-		// $scope.disable_refresh = false;
-		// modify current balance of retailer
-		// $scope.select.retailer.balance = $scope.select.left_balance;
-		// $scope.select.surplus = $scope.select.left_balance;
+		$scope.refresh(); 
 	    }
 
 	    

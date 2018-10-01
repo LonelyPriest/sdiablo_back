@@ -979,17 +979,7 @@ var wsaleCalc = function(){
 
 		total      += wsaleUtils.to_integer(count);
 		abs_total  += Math.abs(wsaleUtils.to_integer(count)); 
-
-		// if (one.o_fprice !== one.fprice) {
-		//     one.fdiscount = diablo_discount(one.fprice, one.tag_price);
-		// } else if (one.o_fdiscount !== one.fdiscount) {
-		//     if (one.tag_price == 0) {
-		// 	one.fprice = diablo_price(one.fprice, one.fdiscount); 
-		//     } else {
-		// 	one.fprice = diablo_price(one.tag_price, one.fdiscount); 
-		//     }
-		// }
-		// one.fprice = diablo_price(one.fprice, one.fdiscount); 
+		
 		one.o_fprice = one.fprice;
 		one.o_fdiscount = one.fdiscount;
 		
@@ -1003,151 +993,12 @@ var wsaleCalc = function(){
 		if (one.sid !== diablo_invalid_index){
 		    pscores = wsaleUtils.sort_score(one.score, one.promotion, one.calc, pscores);
 		} 
-	    }
-	    
-	    // var pmoneys = []; 
-	    // var pscores = []; 
-	    // for (var i=1, l=inventories.length; i<l; i++){
-	    // 	var one = inventories[i]; 
-	    // 	if (angular.isDefined(one.select) && !one.select) continue;
-		
-	    // 	// count = (mode === diablo_sale ? one.sell : one.reject);
-	    // 	count = wsaleCalc.get_inventory_count(one, saleMode);
-	    // 	total      += parseInt(count);
-	    // 	abs_total  += Math.abs(parseInt(count)); 
-
-	    // 	if (!one.$update && one.state!==3 && vipDiscountMode !== diablo_no && saleMode === diablo_sale)
-	    // 	{
-	    // 	    // if (one.sid !== diablo_invalid_index && !one.$update) {
-	    // 	    if (one.sid === diablo_invalid && one.pid === diablo_invalid) {
-	    // 		// flag 10
-	    // 		if (vipScoreMode)
-	    // 		    wsaleCalc.calc_vip_discount(isVip, vipDiscountMode, vipDiscount, one);
-	    // 	    }
-	    // 	    else if (one.sid !== diablo_invalid && one.pid !== diablo_invalid) {
-	    // 		// flag 01
-	    // 		if (vipPromotionMode)
-	    // 		    wsaleCalc.calc_vip_discount(isVip, vipDiscountMode, vipDiscount, one);
-	    // 	    }
-	    // 	    else if (one.sid !== diablo_invalid && one.pid === diablo_invalid) {
-	    // 		// flag: 00
-	    // 		wsaleCalc.calc_vip_discount(isVip, vipDiscountMode, vipDiscount, one);
-	    // 	    }
-	    // 	    else {
-	    // 		// one.sid === diablo_invalid && one.pid !== diablo_invalid
-	    // 		// flag: 11
-	    // 		if (vipScoreMode && vipPromotionMode)
-	    // 		    wsaleCalc.calc_vip_discount(isVip, vipDiscountMode, vipDiscount, one);
-			
-	    // 	    } 
-		    
-	    // 	}
-		
-	    // 	// console.log(one);
-	    // 	if (one.o_fprice !== one.fprice){
-	    // 	    one.fdiscount = diablo_discount(one.fprice, one.tag_price);
-	    // 	} else if (one.o_fdiscount !== one.fdiscount){
-	    // 	    if (one.tag_price == 0){
-	    // 		one.fprice = diablo_price(one.fprice, one.fdiscount); 
-	    // 	    } else {
-	    // 		one.fprice = diablo_price(one.tag_price, one.fdiscount); 
-	    // 	    }
-	    // 	}
-
-	    // 	one.o_fprice    = one.fprice;
-	    // 	one.o_fdiscount = one.fdiscount;
-		
-	    // 	one.rdiscount   = diablo_full_discount;
-	    // 	one.rprice      = one.fprice; 
-	    // 	one.calc        = wsaleUtils.to_decimal(one.fprice * count);
-	    // 	// console.log(one.calc);
-
-	    // 	if (one.pid === -1){
-	    // 	    pmoneys = wsaleUtils.sort_promotion({id: -1, rule_id: -1}, one.calc, pmoneys);
-	    // 	    show_promotions = wsaleUtils.format_promotion(one, show_promotions); 
-	    // 	} else {
-	    // 	    pmoneys = wsaleUtils.sort_promotion(one.promotion, one.calc, pmoneys);
-	    // 	    show_promotions = wsaleUtils.format_promotion(one, show_promotions);
-	    // 	}
-	    // 	// }
-	    // 	// console.log(one.calc); 
-	    // }
-	    
-	    // // console.log(pmoneys);
-	    
-	    // // calculate rmoney, all the promotion change to discount
-	    // var stockWithRule3 = [];
-	    // var stockWithRule4 = [];
-	    
-	    // for (var i=1, l=inventories.length; i<l; i++){
-	    // 	var one = inventories[i]; 
-	    // 	// count = (mode === diablo_sale ? one.sell : one.reject);
-	    // 	count = wsaleCalc.get_inventory_count(one, saleMode);
-	    // 	// if (one.pid !== -1 && retailer.id !== no_vip){
-	    // 	if (one.pid !== diablo_invalid_index){
-	    // 	    // one.rdiscount = wsaleUtils.calc_discount_of_rmoney(one.fdiscount, one.promotion, pmoneys);
-	    // 	    if (one.promotion.rule_id === 1 && one.promotion.rule_id === 2) {
-	    // 		one.rdiscount = wsaleUtils.calc_discount_of_rmoney(
-	    // 		    one.fprice, count, one.promotion, pmoneys); 
-	    // 	    } 
-	    // 	    else {
-	    // 		if (one.promotion.rule_id === 3)
-	    // 		    stockWithRule3.push(one);
-	    // 		else if (one.promotion.rule_id === 4)
-	    // 		    stockWithRule4.push(one); 
-	    // 	    } 
-	    // 	} 
-	    // }
-
-	    // // var stock3; var stock4;
-	    // if (stockWithRule3.length !== 0) {
-	    // 	 wsaleUtils.calc_discount_of_brand_money(saleMode, stockWithRule3[0], stockWithRule3); 
-	    // }
-
-	    // else if(stockWithRule4.length !== 0) {
-	    // 	wsaleUtils.calc_discount_of_minus_money(saleMode, stockWithRule4[0], stockWithRule4); 
-	    // }
-
-	    // for (var i=1, l=inventories.length; i<l; i++) {
-	    // 	var one = inventories[i]; 
-	    // 	if (one.fdiscount !== one.rdiscount) {
-	    // 	    one.rprice  = diablo_price(one.fprice, one.rdiscount);
-	    // 	    count = wsaleCalc.get_inventory_count(one, saleMode); 
-	    // 	    one.calc = wsaleUtils.to_decimal(one.rprice * count); 
-	    // 	    // wsaleUtils.sort_score(one.score, one.promotion, one.calc, pscores);
-	    // 	}
-
-	    // 	if (one.sid !== diablo_invalid_index){
-	    // 	    pscores = wsaleUtils.sort_score(one.score, one.promotion, one.calc, pscores);
-	    // 	}
-
-	    // 	should_pay += one.calc;
-	    // }
-
-	    // angular.forEach(stock3, function(one) {
-	    // 	if (one.fdiscount !== one.rdiscount) {
-	    // 	    one.rprice  = diablo_price(one.fprice, one.rdiscount);
-	    // 	    one.calc = wsaleUtils.to_decimal(one.rprice * count);
-
-	    // 	    wsaleUtils.sort_score(one.score, one.promotion, one.calc, pscores);
-	    // 	}
-	    // });
-
-	    // angular.forEach(stock4, function(one) {
-	    // 	if (one.fdiscount !== one.rdiscount) {
-	    // 	    one.rprice  = diablo_price(one.fprice, one.rdiscount);
-	    // 	    one.calc = wsaleUtils.to_decimal(one.rprice * count);
-	    // 	}
-	    // });
+	    } 
 
 	    // calcuate with verificate 
 	    should_pay = wsaleCalc.calc_discount_of_verificate(inventories, saleMode, should_pay, verificate); 
-	    // var calc_p = wsaleUtils.calc_with_promotion(inventoyies, pmoneys, round);
-	    // console.log(calc_p);
-	    // should_pay = should_pay - verificate; 
 	    score  = wsaleUtils.calc_with_score(pscores, verificate); 
-	    // charge = should_pay - has_pay;
-
+	    
 	    if (wsaleUtils.to_integer(round) === 1) {
 		if (should_pay >= 0)
 		    should_pay = diablo_round(should_pay)
@@ -1332,7 +1183,7 @@ wsaleDraft.prototype.save = function(resources){
 	return k2.split("-")[5] - k1.split("-")[5];
     });
 
-    for (var i=3, l=keys.length; i<l; i++)
+    for (var i=4, l=keys.length; i<l; i++)
 	this.remove(keys[i]);
     
     var key = this.key;
