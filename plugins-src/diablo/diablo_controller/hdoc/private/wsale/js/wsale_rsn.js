@@ -38,21 +38,7 @@ function wsaleRsnDetailCtrlProvide (
      */
     var authen = new diabloAuthen(user.type, user.right, user.shop);
     $scope.right = authen.authenSaleRight();
-    // $scope.right = {
-    // 	master:        rightAuthen.authen_master(user.type),
-    // 	// show_stastic:  rightAuthen.authen_master(user.type),
-    // 	// show_orgprice: rightAuthen.authen_master(user.type),
-    // 	show_orgprice: rightAuthen.authen(
-    // 	    user.type,
-    // 	    rightAuthen.rainbow_action()['show_orgprice'],
-    // 	    user.right
-    // 	),
-    // 	update_price: rightAuthen.authen(
-    // 	    user.type,
-    // 	    rightAuthen.wsale_action()['update_w_sale_price'],
-    // 	    user.right)
-    // };
-
+    
     /* hidden */
     $scope.toggle_base = function(){
 	$scope.hidden.base = !$scope.hidden.base;
@@ -60,7 +46,10 @@ function wsaleRsnDetailCtrlProvide (
     
     $scope.calc_colspan = function(){
 	var column = 16;
-	if ($scope.hidden.base) column -= 3;
+	if ($scope.setting.show_note)
+	    column += 1;
+	if ($scope.hidden.base)
+	    column -= 3;
 	
 	return column;
     };
@@ -361,10 +350,8 @@ function wsaleRsnDetailCtrlProvide (
     
     $scope.rsn_detail = function(inv){
 	console.log(inv);
-	if (angular.isDefined(inv.amounts)
-	    && angular.isDefined(inv.colors)
-	    && angular.isDefined(inv.order_sizes)){
-
+	var color_sorts;
+	if (angular.isDefined(inv.amounts) && angular.isDefined(inv.colors) && angular.isDefined(inv.order_sizes)){
 	    color_sorts = sort_amounts_by_color(inv.colors, inv.amounts); 
 	    dialog.edit_with_modal(
 		"rsn-detail.html", undefined, undefined, $scope,
@@ -393,7 +380,8 @@ function wsaleRsnDetailCtrlProvide (
 	    // inv.total    = sort.total;
 	    inv.colors      = sort.color;
 	    inv.sizes       = sort.size;
-	    inv.amounts     = sort.sort; 
+	    inv.amounts     = sort.sort;
+	    
 	    // console.log(inv.amounts);
 	    color_sorts     = sort_amounts_by_color(inv.colors, inv.amounts),
 	    console.log(color_sorts);
@@ -605,6 +593,28 @@ function wsaleRsnDetailCtrlProvide (
 		org_price    :inv.org_price
 	    }
 	);
+    };
+
+    $scope.stock_info = function(inv) {
+	console.log(inv);
+	diabloFilter.list_purchaser_inventory(
+	    {style_number:inv.style_number, brand:inv.brand_id, shop: inv.shop_id}
+	).then(function(stocks) {
+	    console.log(stocks);
+	    var order_sizes = diabloHelp.usort_size_group(inv.s_group, filterSizeGroup);
+	    var sort = diabloHelp.sort_stock(stocks, order_sizes, filterColor);
+	    
+	    var payload = {
+		style_number: inv.style_number,
+		brand:        inv.brand,
+		sizes:        sort.size,
+		colors:       sort.color,
+		path:         inv.path,
+		get_amount: function(cid, size){
+		    return get_amount(cid, size, sort.sort);
+		}};
+	    dialog.edit_with_modal("stock-add.html", undefined, undefined, undefined, payload); 
+	});
     };
 };
 

@@ -85,9 +85,17 @@
 		    <td x-ng-bind=s.shop.name></td>
 		    <td x-ng-bind=s.comment></td>
 		    <td x-ng-bind=s.entry_date></td> 
-		  </tr> 
-		</tbody> 
-		<tfoot> </tfoot>
+		  </tr>
+		  
+		  <tr x-ng-if="total_items!==0">
+		    <td colspan=8></td>
+		    <td x-ng-bind=amount_items></td>
+		    <td colspan=4></td>
+		  </tr>
+		</tbody>
+		
+		<tfoot>
+		</tfoot>
 		
 	      </table>
 	    </div>

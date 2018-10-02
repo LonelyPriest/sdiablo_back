@@ -1228,7 +1228,7 @@ function wretailerThresholdCardDetailCtrlProvide(
     
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt(); 
-
+    
     $scope.time = diabloFilter.default_time(now, now);
     $scope.do_search = function(page){
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
@@ -1312,6 +1312,7 @@ function wretailerThresholdCardDetailCtrlProvide(
 		    }).then(function(state) {
 			console.log(state);
 			if (state.ecode === 0) {
+			    var p_num = retailerUtils.print_num(params.shop.id, base); 
 			    dialog.response_with_callback(
 				true,
 				title, title + "消费成功！！",
@@ -1355,7 +1356,7 @@ function wretailerThresholdCardDetailCtrlProvide(
 					if (angular.isUndefined(LODOP)) LODOP = getLodop();
 
 					if (angular.isDefined(LODOP)) {
-					    for (var i=0; i<2; i++){
+					    for (var i=0; i<p_num; i++){
 						start_print(LODOP, ptime); 
 					    }
 					}; 
@@ -1437,6 +1438,7 @@ function wretailerThresholdCardSaleCtrlProvide(
 		if (result.ecode === 0){
 		    if (page === $scope.default_page){
 			$scope.total_items = result.total;
+			$scope.amount_items = result.amount;
 		    }
 
 		    angular.forEach($scope.sales, function(s) {

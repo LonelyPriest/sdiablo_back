@@ -1795,6 +1795,7 @@ handle_call({total_threshold_card_sale, Merchant, Conditions}, _From, State) ->
     ?DEBUG("total_threshold_card_sale: merchant ~p, conditions ~p", [Merchant, Conditions]),
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
     Sql = "select count(*) as total"
+	", sum(amount) as amount"
 	" from w_card_sale"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions)

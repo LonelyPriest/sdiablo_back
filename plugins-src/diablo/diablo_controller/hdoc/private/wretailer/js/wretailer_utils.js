@@ -12,6 +12,10 @@ var retailerUtils = function(){
 	printer_bill: function(shop, base) {
 	    return diablo_base_setting("prn_bill", shop, base, parseInt, diablo_invalid_index);
 	},
+
+	print_num: function(shop, base){
+	    return diablo_base_setting("pum", shop, base, parseInt, 1);
+	},
 	
 	to_integer: function(v){
 	    if (angular.isUndefined(v) || isNaN(v) || (!v && v !== 0)){

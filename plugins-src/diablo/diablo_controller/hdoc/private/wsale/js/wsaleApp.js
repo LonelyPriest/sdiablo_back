@@ -498,10 +498,10 @@ function wsaleNewProvide(
 	$scope.setting.type_sale     = wsaleUtils.type_sale(shopId, base);
 
 	var sale_mode = wsaleUtils.sale_mode(shopId, base);
-	$scope.setting.print_perform     = wsaleUtils.to_integer(sale_mode.charAt(3));
+	$scope.setting.print_perform = wsaleUtils.to_integer(sale_mode.charAt(3));
+	$scope.setting.hide_charge   = wsaleUtils.to_integer(sale_mode.charAt(4));
 	
 	if (diablo_no === $scope.setting.cake_mode) {
-	    // $scope.vpays = wsaleService.vpays;
 	    $scope.vpays = [0].concat(diablo_num2arrary($scope.setting.maling_rang)
 				      .concat(diablo_num2arrary(-3)));
 	} else {
@@ -1929,6 +1929,9 @@ function wsaleNewProvide(
 			console.log(params);
 			var result  = add_callback(params);
 			// console.log(result);
+			if (inv.fprice !== result.fprice || inv.fdiscount !== result.fdiscount) {
+			    inv.$update = true;
+			}
 			inv.amounts    = result.amounts;
 			inv.sell       = result.sell;
 			inv.fdiscount  = result.fdiscount;
@@ -2031,8 +2034,7 @@ function wsaleNewProvide(
      */
     $scope.update_inventory = function(inv, updateCallback, scan){
 	console.log(inv);
-	inv.$update = true;
-	
+	// inv.$update = true; 
 	if (inv.free_color_size){
 	    inv.free_update = true;
 	    if (angular.isDefined(scan) && scan) {
@@ -2097,6 +2099,9 @@ function wsaleNewProvide(
 	    console.log(result); 
 	    // if (inv.sell !== result.sell) 
 	    // 	inv.$update_count = true;
+	    if (inv.fprice !== result.fprice || inv.fdiscount !== result.fdiscount) {
+		inv.$update = true;
+	    }
 	    
 	    inv.amounts    = result.amounts;
 	    inv.sell       = result.sell;

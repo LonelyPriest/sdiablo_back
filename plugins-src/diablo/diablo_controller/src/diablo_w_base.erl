@@ -840,7 +840,8 @@ sys_config() ->
 	      %% [2]: print sale note when switch shift
 	      %% [3]: print perform when on sale
 	      %% [4]: distinct account when on sale
-	      {"p_balance",       "销售模式",             "00010",  "0"},
+	      %% [5]: hide charge on sale
+	      {"p_balance",       "销售模式",             "000100",  "0"},
 	      
 	      {"gen_ticket",      "自动生成电子卷",       "0",   "0"},
 	      {"recharge_sms",    "充值短信提醒",         "0",   "0"},

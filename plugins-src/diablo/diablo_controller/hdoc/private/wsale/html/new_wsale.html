@@ -4,7 +4,8 @@
       
       <div class="portlet-title">
 	<div class="caption"><i class="glyphicon glyphicon-record"></i>
-	  <span>开单</span> 
+	  <span>开单</span>
+	  <span>{{select.datetime|date: 'yyyy-MM-dd'}}</span>
 	</div>
 	<div class="actions">
 	  <div class="btn-group">
@@ -328,7 +329,7 @@
       <div class="portlet-title">
 	<div class="caption"><i class="glyphicon glyphicon-jpy large"></i>
 	  <span>收银</span>
-	  <span>{{select.datetime|date: 'yyyy-MM-dd'}}</span>
+	  <!-- <span>{{select.datetime|date: 'yyyy-MM-dd'}}</span> -->
 	  <!-- <span x-ng-bind=select.shop.name></span> -->
 	</div>
 
@@ -479,7 +480,20 @@
 	      </select>
 	    </div>
 	  </div>
-	</div> 
+	</div>
+
+	<div x-ng-if="setting.hide_charge" class="row" style="margin-top:10px">
+	  <div class="col-xs-12 col-md-12">
+	    <div class="input-group">
+	      <span class="input-group-addon">
+	    	<i class="glyphicon glyphicon-yen fg-red"></i>找零</span>
+	      <input class="form-control"
+		     readonly
+	    	     x-ng-model="select.charge"/>
+	    </div>
+	  </div>
+	</div>
+	
       </div>
 
       <div class="row">
@@ -508,7 +522,8 @@
 	    <span>数量：<span class="fg-red sell-font"><strong>{{select.abs_total}}</strong></span></span>&nbsp&nbsp
 	    <!-- <span>应付：<span class="fg-blue sell-font"><strong>{{select.should_pay}}</strong></span></span>&nbsp&nbsp -->
 	    <span>实付：<span class="fg-red sell-font"><strong>{{select.has_pay}}</strong></span></span>&nbsp&nbsp
-	    <span>找零：<span class="fg-red sell-font"><strong>{{select.charge}}</strong></span></span> 
+	    <span x-ng-if="!setting.hide_charge" >找零：
+	      <span class="fg-red sell-font"><strong>{{select.charge}}</strong></span></span> 
 
 	  </h4>
 	</div>

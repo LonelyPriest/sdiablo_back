@@ -2373,9 +2373,7 @@ function purchaserInventoryDetailCtrlProvide(
 	var get_amount = function(cid, size){
 	    return purchaserService.get_inventory_from_sort(cid, size, inv.amounts)};
 	
-	if (angular.isDefined(inv.sizes)
-	    && angular.isDefined(inv.colors)
-	    && angular.isDefined(inv.amounts)){
+	if (angular.isDefined(inv.sizes) && angular.isDefined(inv.colors) && angular.isDefined(inv.amounts)){
 	    var payload = {sizes:      inv.sizes,
 			   colors:     inv.colors,
 			   path:       inv.path,
@@ -2407,8 +2405,8 @@ function purchaserInventoryDetailCtrlProvide(
 			       path:       inv.path,
 			       stock_alarm: $scope.setting.stock_alarm,
 			       get_amount: function(cid, size){
-				   return get_amount(cid, size, inv.amounts);
-			       }};
+				   return get_amount(cid, size, inv.amounts)}
+			      };
 		dialog.edit_with_modal(
 		    "inventory-detail.html",
 		    undefined,

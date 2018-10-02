@@ -1,5 +1,11 @@
 var version_update = function(){
     var updates = [
+	{date: "2018-10-03",
+	 content:
+	 ["补单模式增加中增加现有库存查看",
+	  "修正开单有时折扣变动问题"]
+	},
+	
 	{date: "2018-09-29",
 	 content:
 	 ["销售开单界面回滚原来状态并优化",
