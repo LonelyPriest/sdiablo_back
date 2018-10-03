@@ -178,6 +178,8 @@ var retailerPrint = function(){
 
 	gen_foot: function(LODOP, top, date) {
 	    top += 5;
+	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "月/季/年卡类限每天只可消费一次");
+	    top += 15;
 	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "谢谢惠顾！！"); 
 	    top += 15;
 	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "打印日期：" + date);

@@ -3,7 +3,7 @@
 -include("../../../../include/knife.hrl").
 -include("diablo_controller.hrl").
 
--export([sms_notify/2, sign/1]).
+-export([sms_notify/2, sign/1, sms/4]).
 
 sms_notify(Merchant, {Shop, Phone, Action, Money, RetailerBalance, Score}) ->
     ?DEBUG("sms_notify: merchants ~p, shop ~p, phone ~p, action ~p, money ~p"
@@ -145,6 +145,64 @@ sms_once(aliqin, Merchant, {Shop, Phone, Action, Money, Balance, Score}) ->
 	    end
     end.
 
+sms(swiming, Merchant, Phone, {Shop, Action, LeftSwiming, Expire}) ->
+    SMSTemplate   = "SMS_146809919",
+    SMSParams = ?to_s(ejson:encode({[{<<"shop">>, Shop},
+				     {<<"action">>, action(Action)},
+				     {<<"lcount">>, limit_swiming(LeftSwiming)},
+				     {<<"expire">>, limit_swiming(Expire)}
+				    ]})),
+    start_sms(Merchant, Phone, SMSTemplate, SMSParams).
+
+
+start_sms(Merchant, Phone, SMSTemplate, SMSParams) ->
+    case check_sms_rate(Merchant) of
+	{ok, SMSRate} ->
+	    %% sen sms
+	    case send_sms(Phone, SMSTemplate, SMSParams) of
+		{ok, {sms_send, Phone}} ->
+		    Sql = "update merchants set balance=balance-" ++ ?to_s(SMSRate)
+			++ ", sms_send=sms_send+1  where id=" ++ ?to_s(Merchant),
+		    case ?sql_utils:execute(write, Sql, Merchant) of
+			{ok, Merchant} ->
+			    ?w_user_profile:update(sms_rate, Merchant),
+			    {0, Merchant};
+			_Error ->
+			    ?sql_utils:execute(write, Sql, Merchant),
+			    ?w_user_profile:update(sms_rate, Merchant),
+			    {0, Merchant}
+		    end;
+		{error, {sms_center_not_found, Merchant}} ->
+		    ?err(sms_center_not_found, Merchant);
+		{error, _} ->
+		    ?err(sms_send_failed, Merchant)
+	    end;
+	Error ->
+	    Error
+    end.
+
+check_sms_rate(Merchant) ->
+    try
+	case ?w_user_profile:get(merchant, Merchant) of
+	    {ok, []} -> ?err(sms_rate_not_found, Merchant);
+	    {ok, MerchantInfo} ->
+		?DEBUG("MerchantInfo ~p", [MerchantInfo]),
+		MerchantBalance = ?v(<<"balance">>, MerchantInfo), 
+		case ?w_user_profile:get(sms_rate, Merchant) of
+		    {ok, []} -> ?err(sms_rate_not_found, Merchant);
+		    {ok, SMSRate} ->
+			Rate = ?v(<<"rate">>, SMSRate),
+			?DEBUG("sms rate ~p, MerchantBalance ~p", [Rate, MerchantBalance]),
+			case Rate > MerchantBalance of
+			    true  -> ?err(sms_not_enought_blance, Merchant);
+			    false -> {ok, Rate}
+			end
+		end
+	end
+    catch
+	_:_ ->
+	    ?err(sms_send_failed, Merchant)
+    end.
 
 sign(md5) ->
     Path = "http://gw.api.taobao.com/router/rest", 
@@ -153,7 +211,8 @@ sign(md5) ->
     FreeSignName = "钱掌柜",
     SendMethod = "alibaba.aliqin.fc.sms.num.send", 
     AppSecret = "eab38d8733faf9d5c813a639afbcfbf2",
-    Params = ?to_s(ejson:encode({[{<<"action">>, action(0)},
+    Params = ?to_s(ejson:encode({[{<<"shop">>, <<"myshop">>},
+				  {<<"action">>, action(0)},
 				  {<<"maction">>, action(0)},
 				  {<<"money">>, <<"400">>},
 				  {<<"balance">>, <<"1000">>},
@@ -169,7 +228,7 @@ sign(md5) ->
     SMSFreeSignName = lists:concat(["sms_free_sign_name", FreeSignName]),
 
     SMSParams = lists:concat(["sms_param", Params]),
-    Template = lists:concat(["sms_template_code", "SMS_36280065"]), 
+    Template = lists:concat(["sms_template_code", "SMS_146809919"]), 
     SMSType  = lists:concat(["sms_type", "normal"]), 
     Timestamp = lists:concat(["timestamp", Datetime]),
     Version  =  lists:concat(["v", "2.0"]), 
@@ -223,8 +282,92 @@ sign(md5) ->
       post, {?to_s(Path) ++ "?" ++ "sign=" ++ ?to_s(SignMD5),
 	     [], "application/x-www-form-urlencoded;charset=utf-8", UTF8Body}, [], []).
 
+send_sms(Phone, SMSTemplate, SMSParams) ->
+    URL       = "http://gw.api.taobao.com/router/rest",
+    AppKey    = "23581677",
+    AppSecret = "eab38d8733faf9d5c813a639afbcfbf2",
 
+    SMSSignName   = "钱掌柜",
+    SMSSignMethod = "md5",
+    SMSSendMethod = "alibaba.aliqin.fc.sms.num.send",
+    
+    SMSTemplate   = ?to_s(SMSTemplate),
+    SMSType       = "normal",
+    SMSVersion    = "2.0",
+
+    Timestamp = ?utils:current_time(format_localtime),
+
+    %% SMSParams = ?to_s(ejson:encode({[{<<"shop">>, Shop},
+    %% 				     {<<"action">>, action(Action)},
+    %% 				     {<<"lcount">>, ?to_b(LeftSwiming)},
+    %% 				     {<<"expire">>, ?to_b(Expire)}
+    %% 				    ]})),
+
+    SortedParams = lists:sort(
+		     [lists:concat(["app_key", AppKey]),
+		      lists:concat(["format", "json"]),
+		      lists:concat(["method", SMSSendMethod]),
+		      lists:concat(["partner_id", ""]),
+		      lists:concat(["rec_num", ?to_s(Phone)]),
+		      lists:concat(["sign_method", SMSSignMethod]),
+		      lists:concat(["sms_free_sign_name", SMSSignName]),
+		      lists:concat(["sms_param", SMSParams]),
+		      lists:concat(["sms_template_code", SMSTemplate]),
+		      lists:concat(["sms_type", SMSType]),
+		      lists:concat(["timestamp", Timestamp]),
+		      lists:concat(["v", SMSVersion])]),
+    
+    SS = AppSecret ++ lists:concat(SortedParams) ++ AppSecret,
+    MD5Sign = ?wifi_print:bin2hex(sha1, crypto:hash(md5, unicode:characters_to_list(SS, utf8))),
+    ?DEBUG("MD5Sign ~p", [MD5Sign]),
+
+    Body = lists:concat(["app_key=", AppKey,
+			 "&format=", "json" 
+			 "&method=", SMSSendMethod,
+			 "&partner_id", "",
+			 "&rec_num=", ?to_s(Phone), 
+			 "&sign_method=", SMSSignMethod,
+			 "&sms_free_sign_name=", SMSSignName,
+			 "&sms_param=", SMSParams,
+			 "&sms_template_code=", SMSTemplate,
+			 "&sms_type=", SMSType,
+			 "&timestamp=", Timestamp,
+			 "&v=", SMSVersion]), 
+
+    UTF8Body = unicode:characters_to_list(Body, utf8),
+
+    case httpc:request(
+	   post, {?to_s(URL) ++ "?" ++ "sign=" ++ ?to_s(MD5Sign),
+		  [], "application/x-www-form-urlencoded;charset=utf-8", UTF8Body}, [], []) of
+	{ok, {{"HTTP/1.1", 200, "OK"}, _Head, Reply}} ->
+	    ?DEBUG("Reply ~ts", [Reply]),
+	    {struct, Result} = mochijson2:decode(Reply),
+	    ?DEBUG("sms result ~p", [Result]),
+	    [{_,
+	      {struct,
+	       [{<<"result">>,
+		 {struct,
+		  [{<<"err_code">>, Code}|_T 
+		  ]}},
+		{<<"request_id">>, _RequestId}]}}] = Result,
+	    ?DEBUG("code ~p", [Code]),
+
+	    case ?to_i(Code) == 0 of
+		true -> {ok, {sms_send, Phone}};
+		false ->
+		    ?INFO("sms send failed phone ~p, code ~p", [Phone, Code]),
+		    {error, {sms_send_failed, Code}}
+	    end;
+	{error, Reason} ->
+	    ?INFO("sms send http failed phone ~p, Reason", [Phone, Reason]),
+	    {error, {http_failed, Reason}}
+    end.
 
 action(0) -> <<"充值">>;
 action(1) -> <<"消费">>;
 action(2) -> <<"退款">>.
+
+
+limit_swiming(?INVALID_OR_EMPTY) -> <<"未限制">>;
+limit_swiming(V) ->  ?to_b(V).
+     

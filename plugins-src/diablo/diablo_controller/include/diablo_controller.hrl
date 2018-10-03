@@ -121,6 +121,9 @@
 %% hide mode
 -define(HIDE_DEFAULT_MODE, <<"00011011111">>).
 
+%% sms
+-define(SMS_NOTIFY, <<"00">>).
+
 %% sort
 -define(SORT_BY_ID, 0).
 -define(SORT_BY_DATE, 1).

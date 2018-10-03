@@ -1302,11 +1302,13 @@ function wretailerThresholdCardDetailCtrlProvide(
 			charge    :card.cid,
 			rule      :card.rule_id,
 			retailer  :card.retailer_id,
+			mobile    :card.mobile,
 			employee  :params.employee.id,
 			cgood     :params.good.id,
 			tag_price :params.good.tag_price,
 			count     :params.count,
 			shop      :params.shop.id,
+			shop_name :params.shop.name,
 			comment   :params.comment,
 			count     :params.count
 		    }).then(function(state) {
@@ -1315,7 +1317,12 @@ function wretailerThresholdCardDetailCtrlProvide(
 			    var p_num = retailerUtils.print_num(params.shop.id, base); 
 			    dialog.response_with_callback(
 				true,
-				title, title + "消费成功！！",
+				title, title + "消费成功！！"
+				+ function() {
+				    if (state.sms_code !== 0)
+					return "发送短消息失败：" + wretailerService.error[result.sms_code];
+				    else return ""; 
+				}(),
 				undefined,
 				function() {
 				    if (card.rule_id === diablo_theoretic_charge)

@@ -499,7 +499,7 @@ function wsaleNewProvide(
 
 	var sale_mode = wsaleUtils.sale_mode(shopId, base);
 	$scope.setting.print_perform = wsaleUtils.to_integer(sale_mode.charAt(3));
-	$scope.setting.hide_charge   = wsaleUtils.to_integer(sale_mode.charAt(4));
+	$scope.setting.hide_charge   = wsaleUtils.to_integer(sale_mode.charAt(5));
 	
 	if (diablo_no === $scope.setting.cake_mode) {
 	    $scope.vpays = [0].concat(diablo_num2arrary($scope.setting.maling_rang)
@@ -1297,9 +1297,9 @@ function wsaleNewProvide(
 
 	// console.log(pinvs);
 	
-	if (angular.isUndefined(LODOP)) LODOP = getLodop(); 
 	var ok_print = function(){
 	    console.log($scope.select);
+	    if (angular.isUndefined(LODOP)) LODOP = getLodop(); 
 	    if (angular.isDefined(LODOP)){
 		var start_print = function(){
 		    $scope.select.ticket_score = 0; 
@@ -1535,7 +1535,6 @@ function wsaleNewProvide(
 		$scope.wsaleStorage.remove($scope.wsaleStorage.get_key()); 
 		$scope.refresh(); 
 	    }
-
 	    
 	    if (result.ecode === 0){
 		$scope.select.rsn = result.rsn;
@@ -2141,9 +2140,11 @@ function wsaleNewProvide(
 	inv.free_update = false;
 
 	// if (inv.amounts[0].sell_count !== inv.sell)
-	//     inv.$update_count = true;
+	//     inv.$update_count = true; 
+	inv.amounts[0].sell_count = inv.sell;
+	if (inv.fprice !== inv.o_fprice || inv.fdiscount !== inv.o_fdiscount)
+	    inv.$update = true;
 	
-	inv.amounts[0].sell_count = inv.sell; 
 	// save
 	$scope.wsaleStorage.save($scope.inventories.filter(function(r){return !r.$new}));
 

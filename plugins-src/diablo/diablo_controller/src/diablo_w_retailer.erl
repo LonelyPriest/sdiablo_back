@@ -1952,8 +1952,12 @@ handle_call({threshold_card_consume, Merchant, CardId, Attrs}, _From, State) ->
 			++ ?to_s(Shop) ++ ","
 			++ "\'" ++ ?to_s(Comment) ++ "\',"
 			++ "\'" ++ ?utils:current_time(format_localtime) ++ "\')", 
-		    Reply = ?sql_utils:execute(transaction, [Sql1, Sql2], SN),
-		    {reply, Reply, State}
+		    case ?sql_utils:execute(transaction, [Sql1, Sql2], SN) of
+			{ok, SN} ->
+			    {reply, {ok, SN, LeftCount - Count, ?INVALID_OR_EMPTY}, State};
+			_Error ->
+			    _Error
+		    end
 	    end;
 	Error ->
 	    {reply, Error, State}
@@ -2002,8 +2006,12 @@ handle_call({expire_card_consume, Merchant, CardId, Attrs}, _From, State) ->
 			++ ?to_s(Shop) ++ ","
 			++ "\'" ++ ?to_s(Comment) ++ "\',"
 			++ "\'" ++ ?utils:current_time(format_localtime) ++ "\')", 
-		    Reply = ?sql_utils:execute(write, Sql1, SN), 
-		    {reply, Reply, State}
+		    case ?sql_utils:execute(write, Sql1, SN) of
+			{ok, SN} ->
+			    {reply, {ok, SN, ?INVALID_OR_EMPTY, ExpireDate}, State};
+			_Error ->
+			    _Error
+		    end 
 	    end; 
 	Error ->
 	    {reply, Error, State}

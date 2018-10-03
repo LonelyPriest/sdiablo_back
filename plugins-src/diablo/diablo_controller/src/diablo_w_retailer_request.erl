@@ -253,9 +253,9 @@ action(Session, Req, {"check_w_retailer_region", Id}, Payload) ->
 action(Session, Req, {"new_threshold_card_sale", Id}, Payload) ->
     ?DEBUG("new_threshold_card_sale: session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
-    %% Retailer = ?v(<<"retailer">>, Payload),
-    CardRule = ?v(<<"rule">>, Payload, -1), 
-    %% Count = ?v(<<"count">>, Payload), 
+    CardRule = ?v(<<"rule">>, Payload, -1),
+    Mobile   = ?v(<<"mobile">>, Payload),
+    Shop     = ?v(<<"shop_name">>, Payload),
     case 
 	case ?to_i(CardRule) of
 	    ?INVALID_OR_EMPTY ->
@@ -266,8 +266,47 @@ action(Session, Req, {"new_threshold_card_sale", Id}, Payload) ->
 		?w_retailer:threshold_card(expire_consume, Merchant, Id, Payload)
 	end 
     of
-	{ok, RSN} ->
-	    ?utils:respond(200, Req, ?succ(new_threshold_card_sale, RSN), [{<<"rsn">>, ?to_b(RSN)}]);
+	{ok, RSN, LeftSwiming, Expire} ->
+	    try
+		BaseSettings = ?w_report_request:get_setting(Merchant, ?DEFAULT_BASE_SETTING),
+		Notifies = 
+		    case ?w_report_request:get_config(<<"recharge_sms">>, BaseSettings) of
+			{ok, []} -> ?to_s(?SMS_NOTIFY);
+			_Value when size(_Value) =/= 2 -> ?to_s(?SMS_NOTIFY);
+			_Value  -> ?to_s(_Value)
+		    end,
+		?DEBUG("notify ~p", [Notifies]),
+		SMS = try
+			  lists:nth(2, Notifies) - 48
+		      catch _:_ ->
+			      ?NO
+		      end,
+
+		?DEBUG("sms ~p", [SMS]),
+			  
+		case ?to_i(SMS) of
+		    0 ->
+			?utils:respond(
+			   200,
+			   Req,
+			   ?succ(new_threshold_card_sale, RSN),
+			   [{<<"rsn">>, ?to_b(RSN)}, {<<"sms_code">>, 0}]);
+		    1 ->
+			{SMSCode, _} = ?notify:sms(swiming, Merchant, Mobile, {Shop, 1, LeftSwiming, Expire}),
+			?utils:respond(200,
+				       Req,
+				       ?succ(new_recharge, RSN),
+				       [{<<"rsn">>, ?to_b(RSN)}, {<<"sms_code">>, SMSCode}]) 
+		end
+	    catch
+		_:{badmatch, _Error} ->
+		    {Code1, _} =  ?err(sms_send_failed, Merchant),
+		    ?utils:respond(
+		       200,
+		       Req,
+		       ?succ(new_recharge, RSN),
+		       [{<<"rsn">>, ?to_b(RSN)}, {<<"sms_code">>, Code1}])
+	    end;
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end; 
@@ -361,14 +400,15 @@ action(Session, Req, {"new_recharge"}, Payload) ->
 	{ok, {SN, Mobile, CBalance, Balance, Score}} -> 
 	    %% ?w_user_profile:update(retailer, Merchant),
 	    try
-		{ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1), 
-		case ?to_i(?v(<<"recharge_sms">>, Setting, 0)) of
+		%% {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),
+		BaseSettings = ?w_report_request:get_setting(Merchant, ?DEFAULT_BASE_SETTING), 
+		<<SMS:1/binary, _/binary>> = ?w_report_request:get_config(<<"recharge_sms">>, BaseSettings), 
+		case ?to_i(SMS) of
 		    0 ->
 			?utils:respond(200, Req, ?succ(new_recharge, SN), [{<<"sms_code">>, 0}]);
 		    1 ->
 			{SMSCode, _} =
-			    ?notify:sms_notify(
-			       Merchant, {ShopName, Mobile, 0, CBalance, Balance, Score}),
+			    ?notify:sms_notify(Merchant, {ShopName, Mobile, 0, CBalance, Balance, Score}),
 			?utils:respond(200,
 				       Req,
 				       ?succ(new_recharge, SN),
