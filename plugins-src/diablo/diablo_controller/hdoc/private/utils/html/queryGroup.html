@@ -249,11 +249,11 @@
 		     x-ng-model="f.value"
 		     x-ng-edit
 		     typeahead-wait-ms="1000"
-		     typeahead-loading="loading" 
+		     typeahead-loading="loading_sn" 
 		     typeahead-on-select="f.value && ok()"
 	  	     uib-typeahead="s for s in prompt.rsn($viewValue)"
 		     x-ng-enter="f.value && ok()" />
-	      <span x-ng-show="loading">
+	      <span x-ng-show="loading_sn">
 		<i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
 	      </span>
 	    </div> 
@@ -374,11 +374,11 @@
 	  	     x-ng-edit
 		     typeahead-editable="false"
 	  	     typeahead-wait-ms="1000"
-	  	     typeahead-loading="loading"
+	  	     typeahead-loading="loading_retailer"
 		     typeahead-on-select="f.value && ok()"
 	  	     uib-typeahead="s as s.name for s in prompt.retailer($viewValue)"
 	  	     x-ng-enter="f.value && ok()" />
-	      <span x-ng-show="loading">
+	      <span x-ng-show="loading_retailer">
 	  	<i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
 	      </span>
 	    </div>

@@ -407,6 +407,13 @@ function wretailerDetailCtrlProvide(
 		}
 	    }();
 
+	    var ctime, stime;
+	    if (promotion.rule_id === diablo_theoretic_charge)
+		ctime = retailerUtils.to_integer(promotion.ctime) + retailerUtils.to_integer(promotion.cstime);
+
+	    if (is_unlimit_card(promotion.rule_id))
+		stime = dateFilter(params.stime, "yyyy-MM-dd");
+	    
 	    wretailerService.new_recharge({
 		retailer:       retailer.id, 
 		shop:           params.retailer.select_shop.id,
@@ -417,8 +424,8 @@ function wretailerDetailCtrlProvide(
 		wxin:           retailerUtils.to_integer(params.wxin),
 		send_balance:   send_balance,
 		charge:         promotion.id,
-		ctime:          promotion.rule_id === diablo_theoretic_charge ? promotion.ctime : undefined,
-		stime:  is_unlimit_card(promotion.rule_id) ? dateFilter(params.stime, "yyyy-MM-dd") : undefined,
+		ctime:          ctime,
+		stime:          stime,
 		comment:        params.comment
 	    }).then(function(result){
 		console.log(result); 

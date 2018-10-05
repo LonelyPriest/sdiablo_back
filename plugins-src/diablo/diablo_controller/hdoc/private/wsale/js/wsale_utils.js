@@ -1,17 +1,22 @@
 var wsaleUtils = function(){
     var in_sort = function(sorts, sell){
+	var found = false;
 	for (var i=0, l=sorts.length; i<l; i++){
-	    if (sell.style_number === sorts[i].style_number && sell.brand_id   === sorts[i].brand_id){
+	    if (sell.style_number === sorts[i].style_number && sell.brand_id === sorts[i].brand_id){
 		// sorts[i].total += sell.sell;
 		sorts[i].reject += sell.amount;
+		if (!in_array(sorts[i].colors_id, sell.color_id)) {
+		    sorts[i].colors_id.push(sell.color_id);
+		}		
 		sorts[i].amounts.push({
 		    cid        :sell.color_id,
 		    size       :sell.size,
 		    sell_count :sell.amount});
-		return true;
+		found = true;
+		break;
 	    } 
 	}
-	return false; 
+	return found; 
     };
 
     var sort_wsale = function(base, sells) {
@@ -43,7 +48,7 @@ var wsaleUtils = function(){
 
 	var sorts = [];
 	for (var i=0, l=sells.length; i<l; i++){
-	    var s = sells[i]; 
+	    var s = sells[i];
 	    if (!in_sort(sorts, s)){
 		var add = {$edit:true,
 			   $new:false,
@@ -84,10 +89,7 @@ var wsaleUtils = function(){
 		add.sizes.push(s.size); 
 		add.colors_id.push(s.color_id);
 		
-		add.amounts.push({
-		    cid: s.color_id,
-		    size:s.size,
-		    sell_count:s.amount});
+		add.amounts.push({cid: s.color_id, size:s.size, sell_count:s.amount});
 
 		sorts.push(add);
 	    }

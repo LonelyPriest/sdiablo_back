@@ -156,6 +156,7 @@ function wsaleUpdateDetailCtrlProvide(
 
 		// inventory
 		$scope.old_inventories = wsale.details;
+		// console.log($scope.old_inventories);
 		$scope.inventories = angular.copy(wsale.details);
 		// $scope.inventories.unshift({$edit:false, $new:true});
 
@@ -618,8 +619,7 @@ function wsaleUpdateDetailCtrlProvide(
 
     var in_amount = function(amounts, inv){
 	for(var i=0, l=amounts.length; i<l; i++){
-	    if(amounts[i].cid === inv.color_id
-	       && amounts[i].size === inv.size){
+	    if(amounts[i].cid === inv.color_id && amounts[i].size === inv.size){
 		amounts[i].count += parseInt(inv.amount);
 		return true;
 	    }
@@ -628,6 +628,7 @@ function wsaleUpdateDetailCtrlProvide(
     };
 
     var get_amount = function(cid, sname, amounts){
+	// console.log(cid, sname, amounts);
 	for (var i=0, l=amounts.length; i<l; i++){
 	    if (amounts[i].cid === cid && amounts[i].size === sname){
 		return amounts[i];

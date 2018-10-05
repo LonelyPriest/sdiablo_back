@@ -390,7 +390,7 @@
 	  	     placeholder="请选择会员"
 	  	     typeahead-editable="false"
 		     typeahead-wait-ms="300"
-		     typeahead-loading="loading"
+		     typeahead-loading="loading_retailer"
 		     typeahead-on-select="on_select_retailer($item, $model, $label)"
 		     uib-typeahead="s as s.name for s in match_retailer_phone($viewValue)"/>
 	      <span x-ng-show="loading_retailer">
