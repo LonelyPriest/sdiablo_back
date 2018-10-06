@@ -165,6 +165,12 @@ function filterProvider(){
 	    return _goodHttp.save({operation: "update_w_good"}, {good:good, image:image}).$promise;  
 	};
 
+	function delete_purchaser_good(style_number, brand) {
+	    return _goodHttp.save(
+		{operation:"delete_w_good"},
+		{style_number: style_number, brand: brand}).$promise;
+	};
+
 	function add_purchaser_color(color){
 	    return _goodHttp.save(
 		{operation: "new_w_color"},
@@ -917,6 +923,10 @@ function filterProvider(){
 
 	    update_purchaser_good:function(good, image) {
 		return update_purchaser_good(good, image);
+	    },
+
+	    delete_purchaser_good:function(style_number, brand) {
+		return delete_purchaser_good(style_number, brand);
 	    },
 
 	    add_purchaser_color: function(color){

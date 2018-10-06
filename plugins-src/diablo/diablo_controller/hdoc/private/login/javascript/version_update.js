@@ -1,5 +1,10 @@
 var version_update = function(){
     var updates = [
+	{date: "2018-10-06",
+	 content:
+	 ["采购入库界面增加删除货品资料功能，入错货品资料时可不需要离开该页面直接删除"]
+	},
+	
 	{date: "2018-10-03",
 	 content:
 	 ["补单模式增加中增加现有库存查看",

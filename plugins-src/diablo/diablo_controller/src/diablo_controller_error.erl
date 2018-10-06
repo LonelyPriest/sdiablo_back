@@ -461,6 +461,8 @@ error(purchaser_good_non, _GoodId) ->
     {2018, "good information does not exit."};
 error(purchaser_diff_time_with_empty_firm, Datetime) ->
     {2019, "empty firm but datetime has been changed:" ++ ?to_s(Datetime)};
+error(purchaser_good_in_used, StyleNumber) ->
+    {2020, "the good is used:" ++ ?to_s(StyleNumber)};
 
 
 %% retailer

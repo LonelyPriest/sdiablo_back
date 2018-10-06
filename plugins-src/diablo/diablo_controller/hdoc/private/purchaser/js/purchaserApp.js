@@ -483,9 +483,7 @@ function stockConfg(angular){
 		{operation: "reject_w_inventory"}, inventory).$promise;
 	}
 	
-	this.filter_w_inventory_reject = function(
-	    match, fields, currentPage, itemsPerpage
-	){
+	this.filter_w_inventory_reject = function(match, fields, currentPage, itemsPerpage){
 	    return http.save(
 		{operation: "filter_w_inventory_reject"},
 		{match:  angular.isDefined(match) ? match.op : undefined,
@@ -531,9 +529,7 @@ function stockConfg(angular){
 		 count:  itemsPerpage}).$promise;
 	};
 
-	this.filter_w_inventory_fix_rsn_group = function(
-	    match, fields, currentPage, itemsPerpage
-	){
+	this.filter_w_inventory_fix_rsn_group = function(match, fields, currentPage, itemsPerpage){
 	    return http.save(
 		{operation: "filter_w_inventory_fix_rsn_group"},
 		{match:  angular.isDefined(match) ? match.op : undefined,

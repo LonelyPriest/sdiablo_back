@@ -74,18 +74,37 @@ action(Session, Req, {"get_w_good", Id}) ->
 %%--------------------------------------------------------------------
 %% @desc: POST action
 %%--------------------------------------------------------------------
-action(Session, Req, {"delete_w_good", Id}, Payload) ->
-    ?DEBUG("delete_w_good with session ~p, id ~p", [Session, Id]),
-
+action(Session, Req, {"delete_w_good"}, Payload) ->
+    ?DEBUG("delete_w_good with session ~p, Payload ~p", [Session, Payload]), 
     StyleNumber = ?v(<<"style_number">>, Payload),
     Brand = ?v(<<"brand">>, Payload),
     Merchant = ?session:get(merchant, Session),
-    case ?w_inventory:purchaser_good(delete, Merchant, {Id, StyleNumber, Brand}) of
-	{ok, GoodId} ->
-	    ?utils:respond(200, Req, ?succ(delete_purchaser_good, GoodId));
+
+    case ?w_inventory:purchaser_good(used, Merchant, StyleNumber, Brand) of
+	{ok, Details} ->
+	    ?DEBUG("details ~p", [Details]),
+	    Shops = lists:foldr(
+			    fun({D}, Acc) ->
+				    case ?v(<<"amount">>, D) =/= 0 of
+					true -> [?v(<<"shop_id">>, D)|Acc];
+					false -> Acc
+				    end
+			    end, [], Details),
+	    case length(Shops) =/= 0 of
+		true ->
+		    ?utils:respond(200, Req, ?err(purchaser_good_in_used, StyleNumber));
+		false -> 
+		    case ?w_inventory:purchaser_good(delete, Merchant, {StyleNumber, Brand}) of
+			{ok, StyleNumber} ->
+			    ?utils:respond(200, Req, ?succ(delete_purchaser_good, StyleNumber));
+			{error, Error} ->
+			    ?utils:respond(200, Req, Error)
+		    end 
+	    end;
 	{error, Error} ->
-	    ?utils:respond(200, Req, Error)
+	    ?utils:respond(200, Req, Error) 
     end;
+    
 %%
 %% size
 %%

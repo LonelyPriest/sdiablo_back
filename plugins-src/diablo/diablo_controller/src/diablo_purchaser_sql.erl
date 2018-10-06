@@ -209,13 +209,15 @@ good(detail, Merchant) ->
     good(detail, Merchant, []).
 
 
-good(delete, Merchant, {GoodId, StyleNumber, Brand}) -> 
+good(delete, Merchant, {StyleNumber, Brand}) -> 
     ["delete from w_inventory where merchant=" ++ ?to_s(Merchant)
      ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
      ++ " and brand=" ++ ?to_s(Brand),
      
-     "delete from w_inventory_good where id=" ++ ?to_s(GoodId)
-     ++ " and merchant=" ++ ?to_s(Merchant)];
+     "delete from w_inventory_good where merchant=" ++ ?to_s(Merchant)
+     ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+     ++ " and brand=" ++ ?to_s(Brand)
+    ];
 
 good(detail, Merchant, Conditions) ->
     {StartTime, EndTime, NewConditions} =

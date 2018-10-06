@@ -719,7 +719,7 @@ function wgoodDetailCtrlProvide(
 	    wgoodService.filter_purchaser_good(
 		$scope.match, search, page, $scope.items_perpage
 	    ).then(function(result){
-		    console.log(result);
+		console.log(result);
 		    if (page === 1){
 			$scope.total_items      = result.total;
 		    }
@@ -817,55 +817,67 @@ function wgoodDetailCtrlProvide(
     };
 
     $scope.delete_good = function(g){
-	if (angular.isDefined(g.deleted) && !g.deleted){
-	    dialog.response(false, "删除货品", wgoodService.error[2098]);
-	} else {
-	    wgoodService.get_used_purchaser_good({
-		style_number:g.style_number, brand:g.brand_id
-	    }).then(function(result){
+	var callback = function(){
+	    diabloFilter.delete_purchaser_good(g.style_number, g.brand_id).then(function(result){
 		console.log(result);
 		if (result.ecode === 0){
-		    var usedShops = [];
-		    angular.forEach(result.data, function(s){
-			if (s.amount !== 0)
-			    usedShops.push(s.shop)
-		    });
-
-		    if (usedShops.length !== 0) {
-			dialog.response(
-			    false, "删除货品", "删除货品失败：["
-				+ usedShops.toString() + "] "+ wgoodService.error[2098]);
-		    } else {
-			var callback = function(){
-			    wgoodService.delete_purchaser_good(g).then(function(
-				result){
-				if (result.ecode === 0){
-				    dialog.response_with_callback(
-					true, "删除货品",
-					"货品资料 [" + g.style_number
-					    + "-" + g.brand.name + "-"
-					    + g.type.name + " ]删除成功！！",
-					$scope,
-					function(){$scope.do_search(
-					    $scope.current_page)})
-				} else {
-				    dialog.response(
-					false, "删除货品", "删除货品失败："
-					    + wgoodService.error[result.ecode]);
-				}
-			    })
-			};
-			
-			dialog.request(
-			    "删除货品", "确定要删除该货品资料吗？", callback);
-		    } 
+		    dialog.response_with_callback(
+			true, "删除货品",
+			"货品资料 [" + g.style_number + "-" + g.brand + "-" + g.type.name + " ]删除成功！！",
+			undefined,
+			function(){$scope.do_search($scope.current_page)})
 		} else {
-		    dialog.response(
-			false, "删除货品", "删除货品失败："
-			    + wgoodService.error[result.ecode]);
-		} 
-	    }); 
-	} 
+		    dialog.set_error("删除货品资料", result.ecode);
+		    // dialog.response(false, "删除货品", "删除货品失败：" + wgoodService.error[result.ecode]);
+		}
+	    })
+	};
+	
+	dialog.request("删除货品", "确定要删除该货品资料吗？", callback);
+	
+	// if (angular.isDefined(g.deleted) && !g.deleted){
+	//     dialog.response(false, "删除货品", wgoodService.error[2098]);
+	// } else {
+	//     wgoodService.get_used_purchaser_good({
+	// 	style_number:g.style_number, brand:g.brand_id
+	//     }).then(function(result){
+	// 	console.log(result);
+	// 	if (result.ecode === 0){
+	// 	    var usedShops = [];
+	// 	    angular.forEach(result.data, function(s){
+	// 		if (s.amount !== 0)
+	// 		    usedShops.push(s.shop)
+	// 	    });
+
+	// 	    if (usedShops.length !== 0) {
+	// 		dialog.response(
+	// 		    false, "删除货品", "删除货品失败：["
+	// 			+ usedShops.toString() + "] "+ wgoodService.error[2098]);
+	// 	    } else {
+	// 		var callback = function(){
+	// 		    wgoodService.delete_purchaser_good(g).then(function(
+	// 			result){
+	// 			if (result.ecode === 0){
+	// 			    dialog.response_with_callback(
+	// 				true, "删除货品",
+	// 				"货品资料 [" + g.style_number + "-" + g.brand.name + "-"
+	// 				    + g.type.name + " ]删除成功！！",
+	// 				$scope,
+	// 				function(){$scope.do_search($scope.current_page)})
+	// 			} else {
+	// 			    dialog.response(
+	// 				false, "删除货品", "删除货品失败：" + wgoodService.error[result.ecode]);
+	// 			}
+	// 		    })
+	// 		};
+			
+	// 		dialog.request("删除货品", "确定要删除该货品资料吗？", callback);
+	// 	    } 
+	// 	} else {
+	// 	    dialog.response(false, "删除货品", "删除货品失败：" + wgoodService.error[result.ecode]);
+	// 	} 
+	//     }); 
+	// } 
     };
 
     $scope.add_good = function(){

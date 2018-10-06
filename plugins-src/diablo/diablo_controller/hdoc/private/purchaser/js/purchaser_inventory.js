@@ -40,7 +40,7 @@ function purchaserInventoryNewCtrlProvide (
     $scope.calc_row          = stockUtils.calc_row;
     
     $scope.disable_refresh   = true;
-    $scope.timeout_auto_save = undefined;
+    $scope.timeout_auto_save = undefined; 
 
     $scope.get_prompt_firm = function(prompt){
 	return stockUtils.get_prompt_firm(prompt, $scope.firms)};
@@ -134,6 +134,7 @@ function purchaserInventoryNewCtrlProvide (
     // init
     $scope.inventories = [];
     $scope.inventories.push({$edit:false, $new:true});
+    $scope.stock_at_first = undefined; 
 
     // console.log($scope.shops);
     $scope.select = {
@@ -408,15 +409,7 @@ function purchaserInventoryNewCtrlProvide (
 	for(var i=1, l=$scope.inventories.length; i<l; i++){
 	    if (item.style_number === $scope.inventories[i].style_number
 		&& item.brand_id  === $scope.inventories[i].brand_id){
-		existStock = $scope.inventories[i];
-		// diabloUtilsService.response_with_callback(
-		//     false,
-		//     "新增库存",
-		//     "新增库存失败：" + purchaserService.error[2099]
-		// 	+ "入库编号：" + $scope.inventories[i].order_id,
-		//     $scope, function(){
-		// 	$scope.inventories[0] = {$edit:false, $new:true}});
-		// return;
+		existStock = $scope.inventories[i]; 
 	    }
 	    
 	    // do not check firm 
@@ -454,39 +447,39 @@ function purchaserInventoryNewCtrlProvide (
 	// $scope.auto_focus("sale");
 	
 	// add at first allways 
-	var add = $scope.inventories[0];
-	add = copy_select(add, item); 
-	console.log(add);
+	$scope.stock_at_first = $scope.inventories[0];
+	copy_select($scope.stock_at_first, item); 
+	console.log($scope.stock_at_first);
 	if (angular.isDefined(existStock)) {
 	    $scope.update_inventory_with_new(existStock);
 	} else {
-	    if (!add.free_color_size || $scope.tab_active[1].active){
-		$scope.add_inventory(add)
+	    if (!$scope.stock_at_first.free_color_size || $scope.tab_active[1].active){
+		$scope.add_inventory($scope.stock_at_first)
 	    } else {
 		if ($scope.tab_active[0].active) {
 		    $scope.auto_focus("sale");
 		};
 		
 		if (diablo_yes === $scope.base_settings.t_trace
-		    && (angular.isUndefined(add.$new_good) || !add.$new_good) ){
+		    && (angular.isUndefined($scope.stock_at_first.$new_good) || !$scope.stock_at_first.$new_good) ){
 		    purchaserService.get_purchaser_tagprice({
-			style_number: add.style_number,
-			brand:        add.brand_id,
+			style_number: $scope.stock_at_first.style_number,
+			brand:        $scope.stock_at_first.brand_id,
 			shop:         $scope.select.shop.id
 		    }).then(function(result){
 			console.log(result);
 			if (result.ecode === 0){
 			    if (!diablo_is_empty(result.data)){
-				add.org_price = result.data.org_price;
-				add.tag_price = result.data.tag_price;
-				add.discount  = result.data.discount;
-				add.ediscount = result.data.ediscount;
-				add.stock     = result.data.amount;
+				$scope.stock_at_first.org_price = result.data.org_price;
+				$scope.stock_at_first.tag_price = result.data.tag_price;
+				$scope.stock_at_first.discount  = result.data.discount;
+				$scope.stock_at_first.ediscount = result.data.ediscount;
+				$scope.stock_at_first.stock     = result.data.amount;
 			    }
 			    else {
 				if (diablo_yes === $scope.base_settings.price_on_region){
-				    add.tag_price = 0;
-				    add.discount  = 0;
+				    $scope.stock_at_first.tag_price = 0;
+				    $scope.stock_at_first.discount  = 0;
 				} 
 			    } 
 			}
@@ -822,6 +815,7 @@ function purchaserInventoryNewCtrlProvide (
 	    // console.log("add new line");
 	    $scope.inventories.unshift({$edit:false, $new:true}); 
 	    $scope.disable_refresh = false;
+	    // $scope.stock_at_first = undefined;
 	    $scope.re_calculate();
 
 	    // auto focus
@@ -1492,13 +1486,13 @@ function purchaserInventoryNewCtrlProvide (
 		}; 
 		
 		if (state.ecode == 0){
-		    dialog.response_with_callback(
-			true, "新增颜色", "新增颜色成功！！", $scope,
-			function(){append_color(state.id)});
+		    append_color(state.id);
+		    // dialog.response_with_callback(
+		    // 	true, "新增颜色", "新增颜色成功！！", $scope, function(){append_color(state.id)});
 		} else{
-		    var error = require("diablo-error");
-		    dialog.response(
-			false, "新增颜色", "新增颜色失败：" + error[state.ecode]);
+		    // var error = require("diablo-error");
+		    // dialog.response(false, "新增颜色", "新增颜色失败：" + error[state.ecode]);
+		    dialog.set_error("新增颜色", state.ecode)
 		}
 	    })
 	};
@@ -1933,7 +1927,7 @@ function purchaserInventoryNewCtrlProvide (
 		var p = stockUtils.prompt_name(good.style_number, good.brand, good.type);
 		
 		var agood = {
-		    $new_good: true,
+		    $new_good   : true,
 		    id          : state.db,
 		    style_number: good.style_number,
 		    brand:     good.brand,
@@ -1993,16 +1987,51 @@ function purchaserInventoryNewCtrlProvide (
 	$scope.form.gForm.brand.$pristine = true;
     };
 
-    $scope.delete_good = function() {
-    	
+    $scope.delete_w_good = function() {
+	console.log($scope.stock_at_first);
+	if (angular.isUndefined($scope.stock_at_first) || !angular.isObject($scope.stock_at_first)) {
+	    dialog.set_error("删除货品资料", 2080);
+	} else {
+	    var style_number = $scope.stock_at_first.style_number, brand = $scope.stock_at_first.brand_id;
+	    if (angular.isUndefined(style_number) || angular.isUndefined(brand)) {
+		dialog.set_error("删除货品资料", 2080);
+	    } else {
+		var stock_in_use = false;
+		for(var i=1, l=$scope.inventories.length; i<l; i++){
+		    if (style_number === $scope.inventories[i].style_number
+			&& brand  === $scope.inventories[i].brand_id){
+			stock_in_use = true;
+			break;
+		    }
+		}
+		if (stock_in_use) {
+		    dialog.set_error("删除货品资料", 2081);
+		} else {
+		    diabloFilter.delete_purchaser_good(style_number, brand).then(function(result){
+			console.log(result);
+			if (result.ecode === 0){
+			    dialog.response(
+				true,
+				"删除货品",
+				"货品资料 ["
+				    + $scope.stock_at_first.style_number
+				    + "-" + $scope.stock_at_first.brand
+				    + "-" + $scope.stock_at_first.type + " ]删除成功！！",
+				undefined)
+			} else {
+			    dialog.set_error("删除货品资料", result.ecode);
+			}
+		    })
+		} 
+	    } 
+	} 
     };
     
     $scope.reset = function(){
 	$scope.selectGroups = [];
 	$scope.selectColors = [];
 	$scope.is_same_good = false;
-	$scope.good_saving = false;
-	
+	$scope.good_saving  = false; 
 	$scope.good = {
 	    brand:     $scope.good.brand,
 	    // type:      $scope.good.type,

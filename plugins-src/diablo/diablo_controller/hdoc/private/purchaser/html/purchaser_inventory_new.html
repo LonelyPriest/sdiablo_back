@@ -157,7 +157,7 @@
 
 	  <!--BEGIN row-->
 	  <div class="row diablo-form-group">
-	    <div class="col-sm-3 col-md-3"> 
+	    <div class="col-xs-3 col-sm-3 col-md-3"> 
 	      <div class="input-group">
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-map-marker fg-red"></i>
@@ -168,7 +168,7 @@
 	      </div>
 	    </div>
 	    
-	    <div class="col-sm-9 col-md-9"> 
+	    <div class="col-xs-9 col-sm-9 col-md-9"> 
 	      <div class="input-group">
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-ban-circle fg-red"></i>
@@ -674,8 +674,7 @@
 		  </label>
 		  <div class="col-sm-6 col-md-6"> 
 		    <div class="input-group">
-		      <div x-ng-class="{'has-error':form.gForm.brand.$invalid
-				       && !form.gForm.brand.$pristine
+		      <div x-ng-class="{'has-error':form.gForm.brand.$invalid && !form.gForm.brand.$pristine
 				       || is_same_good}">
 			<input type="text"
 			       class="form-control"
@@ -692,8 +691,7 @@
 			       x-ng-model="good.brand"
 			       x-ng-pattern="pattern.brand"
 			       x-ng-enter=""
-			       uib-typeahead="b.name for b in
-					  brands|filter:$viewValue|limitTo:8"/> 
+			       uib-typeahead="b.name for b in brands|filter:$viewValue|limitTo:20"/> 
 		      </div> 
 		      <span class="input-group-addon bg-white fg-red">*</span>
 		      <span class="input-group-btn">
@@ -704,24 +702,19 @@
 			</a>
 		    </div>
 		  </div>	      
-		  <div ng-if="form.gForm.brand.$invalid
-			      && !form.gForm.brand.$pristine">
+		  <div ng-if="form.gForm.brand.$invalid && !form.gForm.brand.$pristine">
 		    <span style="color:red">
 		      品牌只能是中文，字母或数字
 		    </span>
 		  </div>
 		  <div ng-if="is_same_good">
-		    <span class="fg-red">
-		      该款号，品牌所对应的货品已存在，请直接录入数量
-		    </span>
+		    <span class="fg-red">该款号，品牌所对应的货品已存在，请直接录入数量</span>
 		  </div>
 		</div>
 		
 		<!--type-->
 		<div class="form-group diablo-good-form-group">
-		  <label class="col-sm-3 col-md-3 control-label">
-		    类别
-		  </label>
+		  <label class="col-sm-3 col-md-3 control-label">类别</label>
 		  <div class="col-sm-6 col-md-6"> 
 		    <div class="input-group">
 		      <div x-ng-class="{'has-error':form.gForm.type.$invalid
@@ -741,8 +734,7 @@
 			       x-ng-pattern="pattern.type"
 			       x-ng-enter=""
 			       typeahead-editable="base_settings.select_type"
-			       uib-typeahead="t.name for t in
-					  types|filter:$viewValue|limitTo:20"/>
+			       uib-typeahead="t.name for t in types|filter:$viewValue|limitTo:20"/>
 		      </div> 
 		      <span class="input-group-addon bg-white fg-red">*</span>
 		    </div>
@@ -1077,9 +1069,9 @@
 			      pre="size"
 			      auto-row="go_next_good_field"
 			      x-ng-click="new_good()">确定</button>
-		      <!-- <button type="button" class="btn btn-danger" -->
-		      <!-- 	      x-ng-disabled="!good.style_number || !good.brand" -->
-		      <!-- 	      x-ng-click="delete_good()">删除</button> -->
+		      <button type="button" class="btn btn-danger"
+		      	      x-ng-disabled="!good.style_number || !good.brand"
+		      	      x-ng-click="delete_w_good()">删除</button>
 		      <button type="button" class="btn btn-warning"
 			      x-ng-click="reset()">重置</button> 
 		    </div>

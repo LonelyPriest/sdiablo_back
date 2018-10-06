@@ -949,6 +949,10 @@ diabloUtils.service("diabloUtilsService", function($uibModal){
 	var ERROR = require("diablo-error");
 	this.response(false, title, ERROR[ecode], undefined);
     };
+    
+    this.success_response_with_callback = function(title, body, callback) {
+	this.response_with_callback(true, title, body, undefined, callback);
+    };
 });
 
 diabloUtils.controller("diabloDialogCtrl", function(

@@ -18,7 +18,7 @@ function wgoodConfig(){
 	// error
 	this.error = {
 	    2001: "货品资料已存在！！",
-	    2098: "该货品资料正在使用，请先删除该货品对应的库存！！",
+	    // 2098: "该货品资料正在使用，请先删除该货品对应的库存！！",
 	    2099: "修改前后数据一致，请重新编辑修改项！！",
 	    1601: "厂商创建失败，已存在同样的厂商！！",
 	    1901: "该颜色已存在，请重新输入颜色名！！",
@@ -197,11 +197,11 @@ function wgoodConfig(){
 		{good:good, image:image}).$promise;
 	};
 
-	this.delete_purchaser_good = function(good){
-	    return http.save(
-		{operation:"delete_w_good", id:good.id},
-		{style_number: good.style_number, brand: good.brand_id}).$promise;
-	}
+	// this.delete_purchaser_good = function(good){
+	//     return http.save(
+	// 	{operation:"delete_w_good", id:good.id},
+	// 	{style_number: good.style_number, brand: good.brand_id}).$promise;
+	// }
 
 	this.update_purchaser_good = function(good, image){
 	    return http.save(
