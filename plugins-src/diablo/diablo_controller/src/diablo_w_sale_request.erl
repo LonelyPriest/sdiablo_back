@@ -1876,7 +1876,8 @@ check_inventory(oncheck, Round, Money, ShouldPay, [{struct, Inv}|T]) ->
     FPrice = ?v(<<"rprice">>, Inv),
     Calc = FPrice * Count,
     %% end,
-
+    %% ?DEBUG("StyleNumber ~p", [StyleNumber]),
+    %% ?DEBUG("count ~p, DCount ~p", [Count, DCount]),
     case StyleNumber of
 	undefined -> {error, Inv};
 	_ ->

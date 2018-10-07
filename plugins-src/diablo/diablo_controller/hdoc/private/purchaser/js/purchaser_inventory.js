@@ -2355,8 +2355,7 @@ function purchaserInventoryDetailCtrlProvide(
 			// d.shop  = diablo_get_object(d.shop_id, user.sortShops);
 		    });
 		    
-		    diablo_order_page(
-			page, $scope.items_perpage, $scope.inventories);
+		    diablo_order_page(page, $scope.items_perpage, $scope.inventories);
 
 		    console.log($scope.inventories);
 		}
@@ -3152,8 +3151,9 @@ function purchaserInventoryDetailCtrlProvide(
     };
 
     $scope.stock_flow = function(inv){
+	console.log(inv);
 	$scope.goto_page("#/inventory_detail/inventory_flow"
-			 + "/" + inv.style_number
+			 + "/" + inv.style_number.replace("#", "%23")
 			 + "/" + inv.brand_id.toString());
     };
 };

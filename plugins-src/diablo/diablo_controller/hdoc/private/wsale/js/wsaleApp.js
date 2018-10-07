@@ -1390,6 +1390,19 @@ function wsaleNewProvide(
 	} 
 	return index;
     };
+
+    var index_of_sale_detail = function(existDetails, detail) {
+	var index = diablo_invalid_index;
+	for (var j=0, k=existDetails.length; j<k; j++) {
+	    if (detail.cid === existDetails[j].cid && detail.size === existDetails[j].size) {
+		// existDetails[j].sell_count += d.sell_count;
+		index = j;
+		break;
+	    } 
+	}
+
+	return index;
+    }
     
     $scope.save_wsale = function(){
 	$scope.has_saved = true; 
@@ -1415,21 +1428,22 @@ function wsaleNewProvide(
 	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    var add = $scope.inventories[i];
 	    var index = index_of_sale(add, added)
-	    
+	    // console.log(index);
 	    if (diablo_invalid_index !== index) {
 		var existSale = added[index];
 		existSale.sell_total += wsaleUtils.to_integer(add.sell)
 		
 		var details1 = get_sale_detail(add.amounts);
 		var existDetails = existSale.amounts;
+		// console.log(existDetails);
+		// console.log(details1);
 		angular.forEach(details1, function(d) {
-		    for (var j=0, k=existDetails.length; j<k; j++) {
-			if (d.cid === existDetails[j].cid && d.size === existDetails[j].size) {
-			    existDetails[j].sell_count += d.sell_count;
-			} else {
-			    existDetails.push(d);
-			}
-		    }
+		    var indexDetail = index_of_sale_detail(existDetails, d);
+		    if (diablo_invalid_index !== indexDetail) {
+			existDetails[indexDetail].sell_count += d.sell_count;
+		    } else {
+			existDetails.push(d);
+		    } 
 		})
 	    } else {
 		// var batch = add.batch;
@@ -1471,7 +1485,9 @@ function wsaleNewProvide(
 		    amounts     : details0
 		})
 	    } 
-	}; 
+	};
+
+	console.log(added);
 
 	// console.log($scope.select);
 	var im_print = $scope.immediately_print($scope.select.shop.id);
@@ -1519,7 +1535,6 @@ function wsaleNewProvide(
 	    retailer:    $scope.select.retailer.name
 	};
 
-	console.log(added);
 	console.log(base);
 
 	var dialog = diabloUtilsService; 
