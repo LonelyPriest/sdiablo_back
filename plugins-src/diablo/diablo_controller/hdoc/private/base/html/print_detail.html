@@ -34,11 +34,10 @@
 	      <select class="form-control"
 		      x-ng-model="select.shop"
 		      x-ng-change="select.setting=shop_setting(select.shop)"
-		      x-ng-options="s as s.name for s
-				    in shops|filter:$viewValue">
-		</select>
+		      x-ng-options="s as s.name for s in shops|filter:$viewValue">
+	      </select>
 	    </div>
-
+	  </div>
 	</div> <!--END table-toolbar-->
 
 	<!--BEGN portlet body-->
@@ -96,15 +95,15 @@
 		      </span>
 		      
 		      <span ng-switch-when="s_customer">
-			 {{get_object(s.value, retailers).name}}
-		       </span>
+			{{get_object(s.value, retailers).name}}
+		      </span>
 
-		       <span ng-switch-when="h_stock_edit">
-			 {{yes_no[s.value].cname}}
-		       </span>
+		      <span ng-switch-when="h_stock_edit">
+			{{yes_no[s.value].cname}}
+		      </span>
 
-		       <!--default-->
-		       <span ng-switch-default>{{s.value}}</span>
+		      <!--default-->
+		      <span ng-switch-default>{{s.value}}</span>
 		    </td>
 
 		    <td x-ng-switch on="s.remark">
@@ -116,7 +115,7 @@
 		    
 		    <td class="col-md-2">
 		      <button class="btn diablo-button btn-warning"
-			 x-ng-click="update_setting(s)">修改
+			      x-ng-click="update_setting(s)">修改
 			<i class="glyphicon glyphicon-edit"></i></button>
 		    </td>
 

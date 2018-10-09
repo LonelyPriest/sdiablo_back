@@ -200,8 +200,29 @@
 		<!-- </div> -->
 	      </div>
 	    </div>
-	    <!-- </div> <\!--END row-\-> -->
 
+	    <div x-ng-if="stock_right.show_orgprice && !setting.hide_vprice" class="form-group">
+	      <label class="col-sm-3 col-md-3 control-label">虚拟价</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<div class="input-group">
+		  <input type="text"
+			 class="form-control"
+			 name="vir_price"
+			 required
+			 disable-key
+			 x-ng-edit
+			 placeholder="虚拟价，支持二位小数"
+			 x-ng-pattern="pattern.price"
+			 x-ng-enter=""
+			 x-ng-model="good.vir_price" />
+		  <span class="input-group-addon bg-white fg-red">*</span> 
+		</div>
+	      </div>
+	      <div ng-show="goodForm.vir_price.$invalid && !goodForm.vir_price.$pristine">
+		<span style="color:red">格式（dd.dd）只支持二位小数</span>
+	      </div>
+	    </div>
+	    
 	    <div x-ng-if="stock_right.show_orgprice" class="form-group">
 	      <label class="col-sm-3 col-md-3 control-label">吊牌价</label>
 	      <div class="col-sm-6 col-md-6"> 

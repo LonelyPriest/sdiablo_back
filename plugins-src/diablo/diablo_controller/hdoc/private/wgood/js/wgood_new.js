@@ -17,7 +17,7 @@ function wgoodNewCtrlProvide(
     $scope.std_executives = filterStdExecutive;
     $scope.categories     = filterCategory;
     $scope.fabrics        = filterFabric;
-    $scope.template       = filterTemplate.length!==0 ? filterTemplate[0] : undefined;
+    // $scope.template       = filterTemplate.length!==0 ? filterTemplate[0] : undefined;
 
     console.log($scope.fabrics);
     
@@ -656,7 +656,7 @@ function wgoodDetailCtrlProvide(
     filterSizeSpec,
     filterStdExecutive, filterCategory, filterFabric, filterTemplate, base, user){
     console.log(filterSizeSpec);
-    $scope.template = filterTemplate.length !== 0 ? filterTemplate[0] : undefined;
+    // $scope.template = filterTemplate.length !== 0 ? filterTemplate[0] : undefined;
     $scope.shops = user.sortShops;
     
     /*
@@ -682,7 +682,8 @@ function wgoodDetailCtrlProvide(
     }; 
     angular.extend($scope.setting, hide_mode);
 
-    $scope.printU = new stockPrintU($scope.template, $scope.setting.auto_barcode, $scope.setting.dual_barcode);
+    $scope.templates = filterTemplate;
+    $scope.printU = new stockPrintU($scope.setting.auto_barcode, $scope.setting.dual_barcode);
     $scope.printU.setPrinter($scope.setting.printer_barcode);
     // console.log($scope.right);
     /*
@@ -925,14 +926,6 @@ function wgoodDetailCtrlProvide(
     
     $scope.print_barcode = function(g) {
 	console.log(g);
-	if ($scope.template.firm && g.firm_id === diablo_invalid_firm) {
-	    dialog.response(
-		false,
-		dialog_barcode_title,
-		dialog_barcode_title_failed + wgoodService.error[1999]);
-	    return;
-	}
-
 	if (diablo_empty_barcode === g.bcode) {
 	    dialog.response(
 		false,
@@ -940,7 +933,7 @@ function wgoodDetailCtrlProvide(
 		dialog_barcode_title_failed + wgoodService.error[1997]);
 	    return;
 	}
-	
+
 	if (!angular.isDefined(g.amounts)) {
 	    var colorIds = g.color.split(diablo_seperator);
 	    var sizes = g.size.split(diablo_seperator);
@@ -955,9 +948,8 @@ function wgoodDetailCtrlProvide(
 		    });
 		}
 	    }
-
-	    // console.log(amounts);
 	    
+	    // console.log(amounts);	    
 	    g.colors = colorIds.map(function(cid){
 		return diablo_find_color(parseInt(cid), filterColor); 
 	    });
@@ -966,103 +958,132 @@ function wgoodDetailCtrlProvide(
 	    g.amounts = amounts;
 	}
 
-	var callback = function(params) {
-	    console.log(params);
-	    g.amounts = angular.copy(params.amounts);
+	var start_barcode = function() {
+	    var callback = function(params) {
+		console.log(params);
+		g.amounts = angular.copy(params.amounts);
 
-	    var barcode_amounts = [];
-	    for (var i=0, l=params.amounts.length; i<l; i++) {
-		var a = params.amounts[i];
-		if (stockUtils.to_integer(a.count) !== 0) {
-		    barcode_amounts.push(a);
-		}
-	    }
-
-	    if (0 === barcode_amounts.length) {
-		dialog.response(
-		    false,
-		    dialog_barcode_title,
-		    dialog_barcode_title_failed + wgoodService.error[1998]);
-	    } else {
-		// $scope.printU.setCodeFirm(g.firm_id);
-		var expire = diablo_nolimit_day;
-		g.expire_date = diablo_none;
-
-		if (g.alarm_day !== diablo_nolimit_day) {
-		    expire = stockUtils.to_integer(g.alarm_day);
-		} else {
-		    if (diablo_invalid_firm !== g.firm_id) {
-			if (angular.isDefined(g.firm.expire)
-			    &&  g.firm.expire !== diablo_nolimit_day) {
-			    expire = stockUtils.to_integer(g.firm.expire);
-			}
+		var barcode_amounts = [];
+		for (var i=0, l=params.amounts.length; i<l; i++) {
+		    var a = params.amounts[i];
+		    if (stockUtils.to_integer(a.count) !== 0) {
+			barcode_amounts.push(a);
 		    }
-		} 
-
-		if (expire !== diablo_nolimit_day) {
-		    g.expire_date = stockUtils.date_add(g.entry_date, g.firm.expire);
 		}
-		
-		var firm = diablo_invalid_firm !== g.firm_id ? g.firm.name : undefined;
 
-		var barcodes = [];
-		if (g.free === 0) {
-		    angular.forEach(barcode_amounts, function(a) {
-			for (var i=0; i<a.count; i++) {
-			    barcodes.push(g.bcode); 
-			}
-		    });
-		    console.log(barcodes); 
-		    
-		    $scope.printU.free_prepare(
-			$scope.shops.length !== 0 ? $scope.shops[0].name : undefined,
-			g,
-			g.brand,
-			barcodes,
-			firm,
-			g.firm_id);
-		    
+		if (0 === barcode_amounts.length) {
+		    dialog.response(
+			false,
+			dialog_barcode_title,
+			dialog_barcode_title_failed + wgoodService.error[1998]);
 		} else {
-		    barcodes = [];
-		    angular.forEach(barcode_amounts, function(a) {
-			var color = diablo_find_color(a.cid, filterColor);
-			for (var i=0; i<a.count; i++) {
-			    var o = stockUtils.gen_barcode_content2(g.bcode, color, a.size);
-			    if (angular.isDefined(o) && angular.isObject(o)) {
-				barcodes.push(o);
-			    } 
-			} 
-		    });
+		    // $scope.printU.setCodeFirm(g.firm_id);
+		    var expire = diablo_nolimit_day;
+		    g.expire_date = diablo_none;
+
+		    if (g.alarm_day !== diablo_nolimit_day) {
+			expire = stockUtils.to_integer(g.alarm_day);
+		    } else {
+			if (diablo_invalid_firm !== g.firm_id) {
+			    if (angular.isDefined(g.firm.expire)
+				&&  g.firm.expire !== diablo_nolimit_day) {
+				expire = stockUtils.to_integer(g.firm.expire);
+			    }
+			}
+		    } 
+
+		    if (expire !== diablo_nolimit_day) {
+			g.expire_date = stockUtils.date_add(g.entry_date, g.firm.expire);
+		    }
 		    
-		    console.log(barcodes); 
-		    $scope.printU.prepare(
-			$scope.shops.length !== 0 ? $scope.shops[0].name : undefined,
-			g,
-			g.brand,
-			barcodes,
-			firm,
-			g.firm_id); 
-		} 
-	    }
+		    var firm = diablo_invalid_firm !== g.firm_id ? g.firm.name : undefined;
+
+		    var barcodes = [];
+		    if (g.free === 0) {
+			angular.forEach(barcode_amounts, function(a) {
+			    for (var i=0; i<a.count; i++) {
+				barcodes.push(g.bcode); 
+			    }
+			});
+			console.log(barcodes); 
+			
+			$scope.printU.free_prepare(
+			    $scope.shops.length !== 0 ? $scope.shops[0].name : undefined,
+			    g,
+			    g.brand,
+			    barcodes,
+			    firm,
+			    g.firm_id);
+			
+		    } else {
+			barcodes = [];
+			angular.forEach(barcode_amounts, function(a) {
+			    var color = diablo_find_color(a.cid, filterColor);
+			    for (var i=0; i<a.count; i++) {
+				var o = stockUtils.gen_barcode_content2(g.bcode, color, a.size);
+				if (angular.isDefined(o) && angular.isObject(o)) {
+				    barcodes.push(o);
+				} 
+			    } 
+			});
+			
+			console.log(barcodes); 
+			$scope.printU.prepare(
+			    $scope.shops.length !== 0 ? $scope.shops[0].name : undefined,
+			    g,
+			    g.brand,
+			    barcodes,
+			    firm,
+			    g.firm_id); 
+		    } 
+		}
+	    };
+
+	    dialog.edit_with_modal(
+		"good-barcode.html",
+		undefined,
+		callback,
+		undefined,
+		{sizes: g.sizes,
+		 colors: g.colors,
+		 amounts: g.amounts,
+		 get_amount :function(cid, size, amounts) {
+		     for (var i=0, l=amounts.length; i<l; i++) {
+			 if (amounts[i].cid===cid && amounts[i].size===size) {
+			     // console.log(g.amounts[i]);
+			     return amounts[i];
+			 }
+		     }
+		 },
+		 path: g.path}); 
 	};
 
-	dialog.edit_with_modal(
-	    "good-barcode.html",
-	    undefined,
-	    callback,
-	    undefined,
-	    {sizes      :g.sizes,
-	     colors     :g.colors,
-	     amounts    :g.amounts,
-	     get_amount :function(cid, size, amounts) {
-		 for (var i=0, l=amounts.length; i<l; i++) {
-		     if (amounts[i].cid===cid && amounts[i].size===size) {
-			 // console.log(g.amounts[i]);
-			 return amounts[i];
-		     }
-		 }
-	     },
-	     path        :g.path}); 
+	if ($scope.templates.length===1) {
+	    $scope.printU.set_template($scope.templates[0]);
+	    start_barcode($scope.templates[0]);
+	} else {
+	    var callback2 = function(params) {
+		var select_template = params.templates.filter(function(t) {return t.select})[0];
+		if (select_template.firm && g.firm_id === diablo_invalid_firm) {
+		    dialog.response(
+			false,
+			dialog_barcode_title,
+			dialog_barcode_title_failed + wgoodService.error[1999]);
+		    return;
+		}
+
+		$scope.printU.set_template(select_template);
+		start_barcode(select_template);
+	    };
+	    
+	    dialog.edit_with_modal(
+		"select-template.html",
+		undefined,
+		callback2,
+		undefined,
+		{templates: $scope.templates,
+		 check_only: stockUtils.check_select_only}); 
+	}
     };
     
 };

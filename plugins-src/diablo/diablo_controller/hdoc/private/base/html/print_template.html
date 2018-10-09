@@ -9,7 +9,7 @@
 
 	<div class="actions">
 	  <div class="btn-group btn-group-solid">
-	    <button x-ng-if="!template" class="btn red purple-stripe"
+	    <button class="btn red purple-stripe"
 		    x-ng-click="create_template()">创建
 	      <i class="glyphicon glyphicon-plus"></i></button>
 	    
@@ -28,6 +28,14 @@
       <div class="portlet-body util-btn-margin-bottom-5">
 	<!--BEGIN table-toolbar-->
 	<div class="table-toolbar">
+	  <div class="row form-group">
+	    <div class="col-sm-12 col-md-12">
+	      <select class="form-control"
+		      x-ng-model="template"
+		      x-ng-options="s as s.tname for s in templates|filter:$viewValue">
+	      </select>
+	    </div>
+	  </div>
 	</div> <!--END table-toolbar-->
 	
 	<!--BEGN portlet body--> 
@@ -45,6 +53,19 @@
 		</tr>
 	      </thead>
 	      <tbody x-ng-if="template">
+		<tr>
+		  <td>0</td>
+		  <td>模板名称</td>
+		  <td class="col-md-1 col-sm-1">
+		    <input class="form-control"
+			   type="text"
+			   ng-edit
+			   x-ng-model="template.name"
+			   x-ng-pattern="pattern.name"/> 
+		  </td>
+		  <td>模板名称</td> 
+		</tr>
+		
 		<tr>
 		  <td>1</td>
 		  <td>纸宽</td>
@@ -641,6 +662,66 @@
 		  </td>
 		  <td>上架日期与厂商同一行打印</td>
 		</tr>
+
+		<tr>
+		  <td>41</td>
+		  <td>尺码字体大小</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.font_size"/>
+		  </td>
+		  <td>像素单位</td>
+		</tr>
+		
+		<tr>
+		  <td>42</td>
+		  <td>尺码行高</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.hpx_size"/>
+		  </td>
+		  <td>像素单位</td>
+		</tr>
+
+		<tr>
+		  <td>43</td>
+		  <td>尺码偏移量</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.offset_size"/>
+		  </td>
+		  <td>像素单位</td>
+		</tr>
+
+		<tr>
+		  <td>43</td>
+		  <td>尺码规格描述</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   step="1"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.size_spec"/>
+		  </td>
+		  <td>155/80A</td>
+		</tr>
 		
 	      </tbody>
 	    </table> <!--END table-->
@@ -650,3 +731,65 @@
     </div> <!--END box purle-->
   </div><!--END col-md-12-->
 </div>
+
+<script type="text/ng-template" id="new-template.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    
+    <h4 class="modal-title"><span class="label label-sm label-primary">打印模板创建</span></h4>
+  </div>
+
+  <div class="modal-body">
+    <form class="form-horizontal" name="tForm" novalidate> 
+      <div class="form-body">
+	<!--Name-->
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">名称</label> 
+	  <div class="col-sm-8 col-md-8">
+	    <div class="input-group">
+	      <div ng-class="{'has-error':tForm.name.$invalid && !tForm.name.$pristine}">
+		<input type="text"
+		       class="form-control"
+		       name="name"
+		       required
+		       placeholder="请输入模板名称"
+		       x-ng-pattern="params.pattern.name"
+		       x-ng-model="params.name"/>
+	      </div>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	    <div>
+	      <div ng-show="tForm.name.$invalid && !tForm.name.$pristine">
+		<span class="fg-red">中文，字母，数字，不支持特殊字符</span>
+	      </div> 
+	    </div> 
+	  </div> 
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">店铺</label> 
+	  <div class="col-sm-8 col-md-8">
+	    <select class="form-control"
+		    x-ng-model="params.shop"
+		    x-ng-options="s as s.name for s in params.shops|filter:$viewValue">
+	    </select> 
+	  </div> 
+	</div>
+      </div> 
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="tForm.$invalid"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
+</script>
+
+
+
+

@@ -21,7 +21,8 @@
 	 terminate/2, code_change/3]).
 
 -export([new/1, new/2, get/1, get/2, get/3,
-	 update/2, update/3, set_default/1, set_default/2, set_template/2]).
+	 update/2, update/3, set_default/1, set_default/2,
+	 set_template/2, set_template/3]).
 -export([filter/3]).
 
 %% -define(SERVER, ?MODULE).
@@ -133,7 +134,9 @@ set_default(Merchant) ->
 set_default(Merchant, Shop) ->
     gen_server:call(?SERVER(Merchant), {set_default, Merchant, Shop}).
 set_template(barcode_print, Merchant) ->
-    gen_server:call(?SERVER(Merchant), {set_barcode_print_template, Merchant}).
+    gen_server:call(?SERVER(Merchant), {set_barcode_print_template, Merchant, []}).
+set_template(barcode_print, Merchant, Attrs) ->
+    gen_server:call(?SERVER(Merchant), {set_barcode_print_template, Merchant, Attrs}).
 
 update(merchant, Merchant) ->
     gen_server:cast(?SERVER(Merchant), {update_merchant, Merchant}); 
@@ -878,16 +881,25 @@ handle_call({set_default, Merchant, Shop}, _From, State) ->
     Reply = ?sql_utils:execute(transaction, Sql0 ++ Sql1, ok),
     {reply, Reply, State};
 
-handle_call({set_barcode_print_template, Merchant}, _From, State) ->
+handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
+    Shop = ?v(<<"shop">>, Attrs, ?INVALID_OR_EMPTY),
+    Name = ?v(<<"name">>, Attrs, <<"4x3">>),
+    
     Sql0 = "select id, width, height from print_template"
-	" where merchant=" ++ ?to_s(Merchant),
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and tshop=" ++ ?to_s(Shop)
+	++ " and name=\'" ++ ?to_s(Name) ++ "\'",
+    
     case ?sql_utils:execute(s_read, Sql0) of
 	{ok, []} ->
 	    Sql1 = "insert into print_template ("
-		"width"
+		"name"
+		", tshop"
+		
+		", width"
 		", height"
 	    %% ", dual_column"
-
+		
 		", shop"
 		", style_number"
 		", brand"
@@ -900,6 +912,7 @@ handle_call({set_barcode_print_template, Merchant}, _From, State) ->
 		
 		", color"
 		", size"
+		", size_spec"
 		
 		", level"
 		", executive"
@@ -911,6 +924,7 @@ handle_call({set_barcode_print_template, Merchant}, _From, State) ->
 		", font_executive"
 		", font_category"
 		", font_price"
+		", font_size"
 		", font_fabric"
 		
 		", bold"
@@ -924,6 +938,7 @@ handle_call({set_barcode_print_template, Merchant}, _From, State) ->
 		", hpx_category"
 		", hpx_fabric"
 		", hpx_price"
+		", hpx_size"
 		", hpx_barcode"
 
 		", hpx_top"
@@ -936,12 +951,15 @@ handle_call({set_barcode_print_template, Merchant}, _From, State) ->
 		", size_date"
 		", size_color"
 		", firm_date"
-
+		", offset_size"
+		
 		", merchant) values("
+		++ "\'" ++ ?to_s(Name) ++ "\',"
+		++ ?to_s(Shop) ++ ","
+		
 		++ ?to_s(4) ++ ","
 		++ ?to_s(3) ++ ","
-	    %% ++ ?to_s(0) ++ ","
-
+		
 		++ ?to_s(0) ++ ","
 		++ ?to_s(?YES) ++ ","
 		++ ?to_s(?YES) ++ ","
@@ -954,6 +972,7 @@ handle_call({set_barcode_print_template, Merchant}, _From, State) ->
 		
 		++ ?to_s(?YES) ++ ","
 		++ ?to_s(?YES) ++ ","
+		++ ?to_s(?NO) ++ ","
 
 		++ ?to_s(?NO) ++ ","
 		++ ?to_s(?NO) ++ "," 
@@ -966,6 +985,7 @@ handle_call({set_barcode_print_template, Merchant}, _From, State) ->
 		++ ?to_s(0) ++ ","
 		++ ?to_s(0) ++ ","
 		++ ?to_s(0) ++ ","
+		++ ?to_s(0) ++ ","
 		
 		++ ?to_s(?NO) ++ ","
 
@@ -973,6 +993,7 @@ handle_call({set_barcode_print_template, Merchant}, _From, State) ->
 		++ ?to_s(?NO) ++ ","
 		++ ?to_s(?NO) ++ ","
 		
+		++ ?to_s(0) ++ ","
 		++ ?to_s(0) ++ ","
 		++ ?to_s(0) ++ ","
 		++ ?to_s(0) ++ ","
@@ -987,6 +1008,7 @@ handle_call({set_barcode_print_template, Merchant}, _From, State) ->
 		++ ?to_s(0) ++ ","
 		++ ?to_s(8) ++ ","
 
+		++ ?to_s(0) ++ ","
 		++ ?to_s(0) ++ ","
 		++ ?to_s(0) ++ ","
 		++ ?to_s(0) ++ ","

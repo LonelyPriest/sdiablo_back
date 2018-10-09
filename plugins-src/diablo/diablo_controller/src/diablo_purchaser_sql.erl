@@ -14,6 +14,7 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
     Season      = ?v(<<"season">>, Attrs),
     Year        = ?v(<<"year">>, Attrs),
     OrgPrice    = ?v(<<"org_price">>, Attrs, 0),
+    VirPrice    = ?v(<<"vir_price">>, Attrs, 0), 
     TagPrice    = ?v(<<"tag_price">>, Attrs, 0), 
     EDiscount   = ?v(<<"ediscount">>, Attrs, 100),
     Discount    = ?v(<<"discount">>, Attrs, 100),
@@ -73,6 +74,7 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
 	", brand"
 	", firm"
 	", org_price"
+	", vir_price"
 	", tag_price"
 	", ediscount"
 	", discount"
@@ -102,6 +104,7 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
 	++ ?to_s(Firm) ++ ","
 	%% ++ ?to_s(Promotion) ++ ","
 	++ ?to_s(OrgPrice) ++ ","
+	++ ?to_s(VirPrice) ++ ","
 	++ ?to_s(TagPrice) ++ ","
 	++ ?to_s(EDiscount) ++ ","
 	++ ?to_s(Discount) ++ ","
@@ -397,6 +400,7 @@ good_match(style_number_with_firm, Merchant, StyleNumber, Firm) ->
 	", a.s_group"
 	", a.free"
 	", a.org_price"
+	", a.vir_price"
 	", a.tag_price"
 	", a.ediscount"
 	", a.discount"
@@ -440,6 +444,7 @@ good_match(all_style_number_with_firm, Merchant, StartTime, Firm) ->
 	", a.s_group"
 	", a.free"
 	", a.org_price"
+	", a.vir_price"
 	", a.tag_price"
 	", a.ediscount"
 	", a.discount"
@@ -485,7 +490,7 @@ inventory(abstract, Merchant, Shop, [{S1, B1}|T] = _Conditions) ->
     
     "select a.style_number, a.brand_id, a.type_id, a.sex, a.season"
 	", a.total, a.s_group, a.free"
-	", a.org_price, a.tag_price, a.ediscount, a.discount"
+	", a.org_price, a.vir_price, a.tag_price, a.ediscount, a.discount"
 	", a.path, a.shop, a.merchant" 
 
 	", b.color as color_id, b.size, b.total as amount"
@@ -493,7 +498,7 @@ inventory(abstract, Merchant, Shop, [{S1, B1}|T] = _Conditions) ->
 	
 	"(select style_number, brand as brand_id, type as type_id"
 	", sex, season, amount as total, s_group, free"
-	", org_price, tag_price, ediscount, discount"
+	", org_price, vir_price, tag_price, ediscount, discount"
 	", path, shop, merchant"
 	" from w_inventory where (" ++ C  ++ ")"
 	++ " and shop=" ++ ?to_s(Shop)
@@ -533,6 +538,7 @@ inventory({group_detail, MatchMode}, Merchant, Conditions, PageFun) ->
 	", a.promotion as pid"
 	", a.score as sid"
 
+	", a.vir_price"
 	", a.org_price"
 	", a.tag_price"
 	", a.ediscount"
@@ -1702,6 +1708,7 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
     Over        = ?v(<<"over">>, Inv, 0),
     %% Promotion   = ?v(<<"promotion">>, Inv),
     OrgPrice    = ?v(<<"org_price">>, Inv, 0),
+    VirPrice    = ?v(<<"vir_price">>, Inv, 0),
     TagPrice    = ?v(<<"tag_price">>, Inv, 0),
     %% EDiscount   = ?v(<<"ediscount">>, Inv),
     EDiscount   = stock(ediscount, OrgPrice, TagPrice), 
@@ -1735,7 +1742,7 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		{["insert into w_inventory(rsn"
 		  ", bcode, style_number, brand, type, sex, season, amount"
 		  ", firm, s_group, free, year, score"
-		  ", org_price, tag_price, ediscount, discount"
+		  ", org_price, vir_price, tag_price, ediscount, discount"
 		  ", path, alarm_day, shop, contailer, alarm_a"
 		  ", level, executive, category, fabric"
 		  ", merchant, last_sell, change_date, entry_date)"
@@ -1755,6 +1762,7 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		  ++ ?to_s(Score) ++ ","
 		  %% ++ ?to_s(Promotion) ++ ","
 		  ++ ?to_s(OrgPrice) ++ ","
+		  ++ ?to_s(VirPrice) ++ ","
 		  ++ ?to_s(TagPrice) ++ ","
 		  ++ ?to_s(EDiscount) ++ ","
 		  ++ ?to_s(Discount) ++ ","

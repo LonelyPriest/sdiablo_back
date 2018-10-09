@@ -946,46 +946,56 @@ function goodFabricCtrlProvide(
 
 
 function goodPrintTemplateCtrlProvide(
-    $scope, diabloUtilsService, diabloFilter, diabloPattern, baseService){
+    $scope, diabloUtilsService, diabloFilter, diabloPattern, baseService, user){
     var dialog = diabloUtilsService;
+    $scope.shops = [{id: -1, name:"默认店铺"}].concat(user.sortShops);
+
+    $scope.pattern = {name:diabloPattern.ch_en_num};
 
     $scope.refresh = function() {
 	baseService.list_print_template().then(function(templates) {
 	    console.log(templates);
 	    if (templates.length !== 0) {
-		$scope.template = templates[0];
-		$scope.o_template = angular.copy($scope.template);
-	    }
+		$scope.o_templates = angular.copy(templates);
+		$scope.templates  = templates; 
+		angular.forEach($scope.templates, function(t) {
+		    t.tshop = diablo_get_object(t.tshop_id, $scope.shops); 
+		    t.tname = t.tshop.name + "-" + t.name;
+		});
 
-	    console.log($scope.template);
+		$scope.template = $scope.templates[0];
+		console.log($scope.templates); 
+	    } 
 	});
     };
 
     $scope.refresh();
 
-    var p = ["width", "height",
+    var p = ["name",
+	     "width", "height",
 	     
 	     "shop", "style_number", "brand", "type", "firm", "code_firm"
 	     , "expire", "shift_date"
-	     , "color", "size"
+	     , "color", "size", "size_spec"
 	     
 	     , "level", "executive", "category", "fabric" 
-	     , "font", "font_name", "font_executive", "font_category", "font_price", "font_fabric"
+	     , "font", "font_name", "font_executive", "font_category", "font_price", "font_size", "font_fabric"
 	     
 	     , "bold" 
 	     , "solo_brand", "solo_color", "solo_size"
 	     
 	     , "hpx_each", "hpx_executive", "hpx_category", "hpx_fabric"
-	     , "hpx_price", "hpx_barcode"
+	     , "hpx_price", "hpx_size", "hpx_barcode"
 	     
 	     , "hpx_top", "hpx_left", "second_space"
 	     , "solo_snumber", "len_snumber"
-	    ,  "size_date", "size_color", "firm_date"];
+	    ,  "size_date", "size_color", "firm_date", "offset_size"];
     
     $scope.save_template = function() {
 	var update = {};
+	var o_template = diablo_get_object($scope.template.id, $scope.o_templates);
 	angular.forEach(p, function(o) {
-	    if ($scope.template[o] !== $scope.o_template[o]) {
+	    if ($scope.template[o] !== o_template[o]) {
 		update[o] = $scope.template[o]
 	    }
 	});
@@ -1022,25 +1032,37 @@ function goodPrintTemplateCtrlProvide(
     };
 
     $scope.create_template = function() {
-	baseService.create_print_template().then(function(result){
-	    if (result.ecode === 0) {
-		dialog.response_with_callback(
-		    true,
-		    "打印模板创建",
-		    "打印模板创建成功！！",
-		    undefined,
-		    function() {
-			$scope.refresh();
-			// diabloFilter.reset_print_template();
-		    });
-	    } else {
-		dialog.response(
-		    false,
-		    "打印模板创建",
-		    "打印模板创建失败！！" + baseService.error[result.ecode],
-		    undefined);
-	    };
-	});
+	var callback = function(params) {
+	    console.log(params);
+	    baseService.create_print_template(
+		params.shop.id, params.name
+	    ).then(function(result){
+		if (result.ecode === 0) {
+		    dialog.response_with_callback(
+			true,
+			"打印模板创建",
+			"打印模板创建成功！！",
+			undefined,
+			function() {
+			    $scope.refresh();
+			    // diabloFilter.reset_print_template();
+			});
+		} else {
+		    dialog.response(
+			false,
+			"打印模板创建",
+			"打印模板创建失败！！" + baseService.error[result.ecode],
+			undefined);
+		};
+	    });
+	};
+	
+	dialog.edit_with_modal(
+	    "new-template.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {shop:$scope.shops[0], shops: $scope.shops, pattern:$scope.pattern});
     }
 };
 

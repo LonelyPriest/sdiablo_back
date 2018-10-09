@@ -416,3 +416,27 @@ update w_retailer set merchant=51 where shop=164;
 
 
 
+-- 2018-10-10
+alter table print_template drop index merchant;
+alter table print_template add column name VARCHAR(64) default '' after id;
+alter table print_template add column tshop INTEGER default -1 after name;
+
+alter table print_template add column p_virprice TINYINT default 0 after code_firm;
+alter table print_template add column tag_price VARCHAR(32) default '' after firm_date;
+alter table print_template add column vir_price VARCHAR(32) default '' after tag_price;
+
+alter table print_template add column offset_size INTEGER default 40  after vir_price;
+
+alter table print_template add column font_size TINYINT default 0 after font_price;
+alter table print_template add column hpx_size TINYINT default 0 after hpx_price;
+
+
+alter table print_template add unique index uk(merchant, tshop, name);
+
+
+
+alter table w_inventory_good add column vir_price DECIMAL(10,2) default 0 after free;
+alter table w_inventory add column vir_price DECIMAL(10,2) default 0 after free;
+
+
+alter table print_template add column size_spec TINYINT default 0 after size;

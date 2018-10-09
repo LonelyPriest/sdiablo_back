@@ -611,9 +611,11 @@ handle_call({update_size_spec, Merchant, Attrs}, _From, State) ->
 handle_call({list_barcode_print_template, Merchant}, _From, State) ->
     ?DEBUG("list_barcode_print_template: Merchant  ~p", [Merchant]), 
     Sql0 = "select id"
+	", name"
+	", tshop as tshop_id"
+	
 	", width"
 	", height"
-    %% ", dual_column"
 	
 	", shop"
 	", style_number"
@@ -626,6 +628,7 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	
 	", color"
 	", size"
+	", size_spec"
 
 	", level"
 	", executive"
@@ -637,6 +640,7 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", font_executive"
 	", font_category"
 	", font_price"
+	", font_size"
 	", font_fabric"
 	
 	", bold"
@@ -650,6 +654,7 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", hpx_category"
 	", hpx_fabric"
 	", hpx_price"
+	", hpx_size"
 	", hpx_barcode"
 
 	", hpx_top"
@@ -662,6 +667,7 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", size_date"
 	", size_color"
 	", firm_date"
+	", offset_size"
 
     %% ", rbrand"
 	
@@ -673,7 +679,8 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
     ?DEBUG("update_barcode_print_template: Merchant ~p, attrs ~p", [Merchant, Attrs]),
     Id = ?v(<<"id">>, Attrs),
-    U = ?utils:v(width, integer, ?v(<<"width">>, Attrs)) 
+    U =?utils:v(name, string, ?v(<<"name">>, Attrs))
+	++ ?utils:v(width, integer, ?v(<<"width">>, Attrs)) 
 	++  ?utils:v(height, float, ?v(<<"height">>, Attrs))
     %% ++  ?utils:v(height, integer, ?v(<<"dual_column">>, Attrs))
 
@@ -689,6 +696,7 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	
 	++  ?utils:v(color, integer, ?v(<<"color">>, Attrs))
 	++  ?utils:v(size, integer, ?v(<<"size">>, Attrs))
+	++  ?utils:v(size_spec, integer, ?v(<<"size_spec">>, Attrs))
 	
 	++  ?utils:v(level, integer, ?v(<<"level">>, Attrs))
 	++  ?utils:v(executive, integer, ?v(<<"executive">>, Attrs))
@@ -700,6 +708,7 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(font_executive, integer, ?v(<<"font_executive">>, Attrs))
 	++  ?utils:v(font_category, integer, ?v(<<"font_category">>, Attrs))
 	++  ?utils:v(font_price, integer, ?v(<<"font_price">>, Attrs))
+	++  ?utils:v(font_size, integer, ?v(<<"font_size">>, Attrs))
 	++  ?utils:v(font_fabric, integer, ?v(<<"font_fabric">>, Attrs))
 	
 	++  ?utils:v(bold, integer, ?v(<<"bold">>, Attrs))
@@ -712,6 +721,7 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(hpx_category, integer, ?v(<<"hpx_category">>, Attrs))
 	++  ?utils:v(hpx_fabric, integer, ?v(<<"hpx_fabric">>, Attrs))
 	++  ?utils:v(hpx_price, integer, ?v(<<"hpx_price">>, Attrs))
+	++  ?utils:v(hpx_size, integer, ?v(<<"hpx_size">>, Attrs))
 	++  ?utils:v(hpx_barcode, integer, ?v(<<"hpx_barcode">>, Attrs))
 
 	++  ?utils:v(hpx_top, integer, ?v(<<"hpx_top">>, Attrs))
@@ -723,9 +733,11 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 
 	++  ?utils:v(size_date, integer, ?v(<<"size_date">>, Attrs))
 	++  ?utils:v(size_color, integer, ?v(<<"size_color">>, Attrs))
-	++  ?utils:v(firm_date, integer, ?v(<<"firm_date">>, Attrs)),
-    
+	++  ?utils:v(firm_date, integer, ?v(<<"firm_date">>, Attrs))
+	++  ?utils:v(offset_size, integer, ?v(<<"offset_size">>, Attrs)),
 
+    
+    
     Sql = "update print_template set " ++ ?utils:to_sqls(proplists, comma, U)
 	++ " where merchant=" ++ ?to_s(Merchant)
 	++ " and id=" ++ ?to_s(Id), 
@@ -823,7 +835,7 @@ sys_config() ->
 	      %% [7]: hide std_category
 	      %% [8]: hide level
 	      %% [9]: hide fabric
-	      %% [10]: hide promotion price
+	      %% [10]: hide vir_price
 	      
 	      {"h_stock",         "入库字段隐藏",         "00011011111", "0"},
 

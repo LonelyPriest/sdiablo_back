@@ -77,7 +77,7 @@ function baseConfig(angular){
 	    when('/setting/print_template', {
 		templateUrl: '/private/base/html/print_template.html',
 		controller: 'goodPrintTemplateCtrl',
-		resolve: angular.extend({})
+		resolve: angular.extend({}, user)
 	    }).
 	    when('/passwd', {
 		templateUrl: '/private/base/html/reset_password.html',
@@ -280,8 +280,9 @@ function baseConfig(angular){
 	};
 	
 	// print template
-	this.create_print_template = function() {
-	    return http.save({operation: 'create_print_template'}, {}).$promise;
+	this.create_print_template = function(shop, name) {
+	    return http.save(
+		{operation: 'create_print_template'}, {shop:shop, name:name}).$promise;
 	};
 	
 	this.update_print_template = function(t) {

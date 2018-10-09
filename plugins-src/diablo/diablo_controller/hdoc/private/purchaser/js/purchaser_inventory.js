@@ -282,28 +282,7 @@ function purchaserInventoryNewCtrlProvide (
 	var hide_mode  = stockUtils.stock_in_hide_mode(shopId, base); 
 	angular.extend($scope.base_settings, hide_mode);
 	
-	// $scope.base_settings.hide_color  = stockUtils.to_integer(hide_mode.charAt(0)),
-	// $scope.base_settings.hide_size   = stockUtils.to_integer(hide_mode.charAt(1)),
-	// $scope.base_settings.hide_sex    = stockUtils.to_integer(hide_mode.charAt(2)),
-	// $scope.base_settings.hide_expire = function() {
-	//     var h = stockUtils.to_integer(hide_mode.charAt(3));
-	//     if (diablo_empty_string===h) return diablo_yes;
-	//     else return stockUtils.to_integer(h);
-	// }();
-
-	// $scope.base_settings.hide_image = function () {
-	//     var h = stockUtils.to_integer(hide_mode.charAt(4));
-	//     if ( diablo_empty_string === h ) return diablo_yes;
-	//     else return stockUtils.to_integer(h);
-	// }();
-
-	// $scope.base_settings.select_type = function() {
-	//     if ( stockUtils.to_integer(hide_mode.charAt(5)) ) return false;
-	//     return true;
-	// }();
-
 	console.log($scope.base_settings);
-	
 	$scope.base_settings.stock_alarm     = stockUtils.stock_alarm(shopId, base);
 	$scope.base_settings.stock_alarm_a   = stockUtils.stock_alarm_a(shopId, base);
 	$scope.base_settings.stock_contailer = stockUtils.stock_contailer(shopId, base);
@@ -369,6 +348,7 @@ function purchaserInventoryNewCtrlProvide (
 	add.season       = src.season;
 	// add.pid          = src.pid;
 	add.org_price    = src.org_price;
+	add.vir_price    = src.vir_price;
 	add.tag_price    = src.tag_price;
 	add.ediscount    = src.ediscount;
 	add.discount     = src.discount;
@@ -640,7 +620,8 @@ function purchaserInventoryNewCtrlProvide (
 		over        : add.over,
 		s_group     : add.s_group,
 		free        : add.free,
-		// promotion   : add.pid,
+		
+		vir_price   : diablo_set_float(add.vir_price),
 		org_price   : diablo_set_float(add.org_price),
 		tag_price   : diablo_set_float(add.tag_price), 
 		ediscount   : diablo_set_float(add.ediscount),
@@ -1323,6 +1304,7 @@ function purchaserInventoryNewCtrlProvide (
 			  // sex:false,
 			  // year:false,
 			  // season:false,
+			  vir_price:false,
 			  tag_price:false,
 			  discount:false,
 			  color:false,
@@ -1341,12 +1323,7 @@ function purchaserInventoryNewCtrlProvide (
     $scope.select_tab_of_new_good = function(){
 	$scope.focus_of_inv.style_number=false;
 	$scope.on_focus_attr("style_number");
-	console.log($scope.focus_attrs);
-
-	// if (angular.isUndefined($scope.all_w_goods)
-	//     || $scope.all_w_goods.length === 0){
-	//     $scope.get_all_w_good();
-	// }
+	console.log($scope.focus_attrs); 
     };
 
     $scope.on_select_good_new = function(item, model, label){
@@ -1722,6 +1699,7 @@ function purchaserInventoryNewCtrlProvide (
     $scope.good_saving = false; 
     $scope.good = {
 	sex       : $scope.sex2objs[stockUtils.d_sex($scope.select.shop.id, base)],
+	vir_price : 0,
 	org_price : 0, 
 	tag_price : 0, 
 	ediscount : 0,
@@ -1941,6 +1919,7 @@ function purchaserInventoryNewCtrlProvide (
 		    year:      good.year,
 		    season:    good.season,
 		    org_price: good.org_price,
+		    vir_price: good.vir_price,
 		    tag_price: good.tag_price,
 		    ediscount: good.ediscount,
 		    discount:  good.discount,
@@ -2072,7 +2051,6 @@ function purchaserInventoryDetailCtrlProvide(
     filterFirm, filterType, filterCType, filterSizeGroup, filterColor, filterTemplate, base, user) {
     $scope.promotions = filterPromotion.concat([{id:diablo_invalid_index, name:"重置促销方案"}]);
     $scope.scores = filterScore.concat([{id:diablo_invalid_index, name:"重置积分方案", type_id:0}]);
-    $scope.template = filterTemplate.length !== 0 ? filterTemplate[0] : undefined;
     // console.log(filterTemplate);
 
     /*
@@ -2176,9 +2154,9 @@ function purchaserInventoryDetailCtrlProvide(
     // $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, base); 
     $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, base);
     $scope.setting.dual_barcode = stockUtils.dual_barcode_print(user.loginShop, base);
-    $scope.printU = new stockPrintU($scope.template, $scope.setting.auto_barcode, $scope.setting.dual_barcode);
-    $scope.printU.setPrinter($scope.setting.printer_barcode);
-    
+
+    $scope.printU = new stockPrintU($scope.setting.auto_barcode, $scope.setting.dual_barcode);
+    $scope.printU.setPrinter($scope.setting.printer_barcode); 
     /*
      * pagination 
      */
@@ -2451,18 +2429,20 @@ function purchaserInventoryDetailCtrlProvide(
     
     var dialog_barcode_title = "库存条码打印";
     var dialog_barcode_title_failed = "库存条码打印失败：";
+    
     $scope.p_barcode = function(inv) {
-	console.log(inv); 
-	if ($scope.template.firm && diablo_invalid_firm === inv.firm_id ) {
-	    dialog.response(
-		false,
-		dialog_barcode_title,
-		dialog_barcode_title_failed + purchaserService.error[2086]);
-	    return;
-	}
-
-	var print_barcode = function(barcode) {
+	console.log(inv);
+	var print_barcode = function(barcode, template) {
 	    console.log(barcode);
+	    $scope.printU.set_template(template); 
+	    if (template.firm && diablo_invalid_firm === inv.firm_id) {
+		dialog.response(
+		    false,
+		    dialog_barcode_title,
+		    dialog_barcode_title_failed + purchaserService.error[2086]);
+		return;
+	    }
+	    
 	    var firm = inv.firm_id === diablo_invalid_firm ? undefined : inv.firm.name;
 	    if (diablo_free_color_size === inv.free) {
 		$scope.printU.free_prepare(
@@ -2561,35 +2541,58 @@ function purchaserInventoryDetailCtrlProvide(
 	    }
 	};
 
+	var start_barcode = function(template) {
+	    purchaserService.gen_barcode(
+		inv.style_number, inv.brand_id, inv.shop_id
+	    ).then(function(result) {
+		console.log(result);
+		if (result.ecode === 0) {
+		    inv.bcode = result.barcode;
+		    print_barcode(result.barcode, template);
+		} else {
+		    dialog.response(
+			false,
+			"条码生成", "条码生成失败："
+			    + purchaserService.error[result.ecode]);
+		}
+	    });
+	};
+
+	$scope.templates = stockUtils.get_print_templates(inv.shop_id, filterTemplate);
+	console.log($scope.templates);
 	
-	purchaserService.gen_barcode(
-	    inv.style_number, inv.brand_id, inv.shop_id
-	).then(function(result) {
-	    console.log(result);
-	    if (result.ecode === 0) {
-		inv.bcode = result.barcode;
-		print_barcode(result.barcode);
-	    } else {
-		dialog.response(
-		    false,
-		    "条码生成", "条码生成失败："
-			+ purchaserService.error[result.ecode]);
-	    }
-	});
+	if ($scope.templates.length === 1) {
+	    start_barcode($scope.templates[0]);
+	} else {
+	    var callback2 = function(params) {
+		console.log(params);
+		start_barcode(params.templates.filter(function(t) {return t.select})[0]);
+	    };
+
+	    dialog.edit_with_modal(
+		"select-template.html",
+		undefined,
+		callback2,
+		undefined,
+		{templates: $scope.templates,
+		 check_only: stockUtils.check_select_only}); 
+	} 
     };
 
     $scope.p_barcode_all = function(inv) {
 	console.log(inv); 
-	if ($scope.template.firm && diablo_invalid_firm === inv.firm_id ) {
-	    dialog.response(
-		false,
-		dialog_barcode_title,
-		dialog_barcode_title_failed + purchaserService.error[2086]);
-	    return;
-	} 
-
-	var print_barcode = function(barcode) {
+	var print_barcode = function(barcode, template) {
 	    console.log(barcode);
+	    $scope.printU.set_template(template);
+	    
+	    if (template.firm && diablo_invalid_firm === inv.firm_id ) {
+		dialog.response(
+		    false,
+		    dialog_barcode_title,
+		    dialog_barcode_title_failed + purchaserService.error[2086]);
+		return;
+	    }
+	    
 	    var firm = inv.firm_id === diablo_invalid_firm ? undefined : inv.firm.name;
 	    var barcodes = []; 
 	    if (diablo_free_color_size === inv.free) {
@@ -2647,21 +2650,44 @@ function purchaserInventoryDetailCtrlProvide(
 	    } 
 	};
 
+	var start_barcode = function(template) {
+	    purchaserService.gen_barcode(
+		inv.style_number, inv.brand_id, inv.shop_id
+	    ).then(function(result) {
+		console.log(result);
+		if (result.ecode === 0) {
+		    inv.bcode = result.barcode;
+		    print_barcode(result.barcode, template);
+		} else {
+		    dialog.response(
+			false,
+			"条码生成", "条码生成失败："
+			    + purchaserService.error[result.ecode]);
+		}
+	    });
+	};
+
+	$scope.templates = stockUtils.get_print_templates(inv.shop_id, filterTemplate);
+	console.log($scope.templates);
 	
-	purchaserService.gen_barcode(
-	    inv.style_number, inv.brand_id, inv.shop_id
-	).then(function(result) {
-	    console.log(result);
-	    if (result.ecode === 0) {
-		inv.bcode = result.barcode;
-		print_barcode(result.barcode);
-	    } else {
-		dialog.response(
-		    false,
-		    "条码生成", "条码生成失败："
-			+ purchaserService.error[result.ecode]);
-	    }
-	});
+	if ($scope.templates.length === 1) {
+	    start_barcode($scope.templates[0]);
+	} else {
+	    var callback2 = function(params) {
+		console.log(params);
+		var t = params.templates.filter(function(t) {return t.select})[0];
+		start_barcode(t);
+	    };
+
+	    dialog.edit_with_modal(
+		"select-template.html",
+		undefined,
+		callback2,
+		undefined,
+		{templates: $scope.templates,
+		 check_only: stockUtils.check_select_only}); 
+	}
+	
     };
 
     var dialog_reset_barcode_title = "条码重置";
@@ -2750,15 +2776,14 @@ function purchaserInventoryDetailCtrlProvide(
 
 	console.log(condition);
 
-	var check_only = function(select, promotions){
-	    console.log(select);
-	    
-	    angular.forEach(promotions, function(p){
-		if (p.id !== select.id){
-		    p.select = false;
-		};
-	    });
-	};
+	// var check_only = function(select, promotions){
+	//     console.log(select); 
+	//     angular.forEach(promotions, function(p){
+	// 	if (p.id !== select.id){
+	// 	    p.select = false;
+	// 	};
+	//     });
+	// };
 
 	var check_select = function(promotions, scores){
 	    for (var i=0, l=promotions.length; i<l; i++){
@@ -2831,7 +2856,7 @@ function purchaserInventoryDetailCtrlProvide(
 	     promotions:   $scope.promotions,
 	     scores:       $scope.scores.filter(
 		 function(s){return s.type_id===0}),
-	     check_only:   check_only,
+	     check_only:   stockUtils.check_select_only,
 	     check_select: check_select}); 
 	
     };

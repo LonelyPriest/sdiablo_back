@@ -297,7 +297,7 @@ action(Session, Req, {"update_fabric"}, Payload) ->
 action(Session, Req, {"create_print_template"}, Payload) ->
     ?DEBUG("create_print_template: session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
-    case ?w_user_profile:set_template(barcode_print, Merchant) of
+    case ?w_user_profile:set_template(barcode_print, Merchant, Payload) of
 	{ok, _}  ->
 	    %% ?w_user_profile:update(setting, Merchant),
 	    ?utils:respond(200, Req, ?succ(create_print_template, Merchant));

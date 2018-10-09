@@ -147,11 +147,11 @@ function wgoodUpdateCtrlProvide(
 	    $scope.good.category  = diablo_get_object(good.category_id,  $scope.categories); 
 	}
 
+	$scope.good.fabrics = []; 
 	$scope.good.fabric_desc = diablo_empty_string; 
 	if (good.fabric_json) {
 	    var fabrics = angular.fromJson(good.fabric_json);
 	    // $scope.good.fabrics = angular.fromJson(good.fabric_json);
-	    $scope.good.fabrics = []; 
 	    angular.forEach(fabrics, function(f) {
 		var fabric = diablo_get_object(f.f, filterFabric);
 		if (angular.isDefined(fabric) && angular.isObject(fabric)) {
@@ -588,8 +588,9 @@ function wgoodUpdateCtrlProvide(
 	}();
 	update_good.sex       = good.sex.id;
 	update_good.year      = good.year;
-	update_good.season    = good.season.id;
+	update_good.season    = good.season.id; 
 	update_good.org_price = stockUtils.to_float(good.org_price);
+	update_good.vir_price = stockUtils.to_float(good.vir_price);
 	update_good.tag_price = stockUtils.to_float(good.tag_price); 
 	update_good.ediscount = stockUtils.to_integer(good.ediscount);
 	update_good.discount  = stockUtils.to_integer(good.discount);

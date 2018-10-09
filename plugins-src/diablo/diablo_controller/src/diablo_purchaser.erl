@@ -494,6 +494,7 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
     Year           = ?v(<<"year">>, Attrs),
     
     OrgPrice       = ?v(<<"org_price">>, Attrs),
+    VirPrice       = ?v(<<"vir_price">>, Attrs),
     TagPrice       = ?v(<<"tag_price">>, Attrs),
 
     EDiscount      = ?v(<<"ediscount">>, Attrs),
@@ -527,6 +528,7 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
     %% ++ ?utils:v(change_date, string, DateTime),
 
     UpdatePrice = ?utils:v(org_price, float, OrgPrice)
+	++ ?utils:v(vir_price, float, VirPrice)
 	++ ?utils:v(tag_price, float, TagPrice)
 	++ ?utils:v(ediscount, integer, EDiscount) 
 	++ ?utils:v(discount, integer, Discount),
@@ -537,17 +539,23 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 		     _ -> [] 
 		 end,
 
+    UpdateCategory = ?utils:v(level, integer, Level)
+	++ ?utils:v(executive, integer, StdExecutive)
+	++ ?utils:v(category, integer, SafetyCategory)
+	++ ?utils:v(fabric, string, Fabric),
+    
     %% UpdateAlarm = ?utils:v(alarm_day, integer, AlarmDay),
 
     UpdateGood = UpdateBase ++ UpdatePrice
 	++ ?utils:v(color, string, Colors)
 	++ UpdateFree
+	++ UpdateCategory
     %% ++ ?utils:v(s_group, string, SizeGroup)
 	++ ?utils:v(size, string, Sizes)
-	++ ?utils:v(level, integer, Level)
-	++ ?utils:v(executive, integer, StdExecutive)
-	++ ?utils:v(category, integer, SafetyCategory)
-	++ ?utils:v(fabric, string, Fabric)
+	%% ++ ?utils:v(level, integer, Level)
+	%% ++ ?utils:v(executive, integer, StdExecutive)
+	%% ++ ?utils:v(category, integer, SafetyCategory)
+	%% ++ ?utils:v(fabric, string, Fabric)
 	++ ?utils:v(change_date, string, DateTime),
     
     RBrand = fun(undefined) -> OrgBrand; (_) -> Brand end,
@@ -592,6 +600,7 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 		    UpdateInv = UpdateBase
 			++ UpdatePrice
 			++ UpdateFree
+			++ UpdateCategory
 		    %% ++ ?utils:v(s_group, string, SizeGroup)
 			++ ?utils:v(change_date, string, DateTime),
 		    
@@ -747,6 +756,7 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 				   proplists, comma,
 				   Update2
 				   ++ UpdateInv
+				   ++ UpdateCategory
 				   ++ UpdatePrice
 				   ++ UpdateFree)
 			     ++ " where "

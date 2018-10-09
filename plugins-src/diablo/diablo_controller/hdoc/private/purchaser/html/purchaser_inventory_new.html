@@ -788,6 +788,35 @@
 		  </div>
 		</div> 
 
+		<div x-ng-if="!base_settings.hide_vprice" class="form-group diablo-good-form-group">
+		  <label class="col-sm-3 col-md-3 control-label">
+		    虚拟价
+		  </label>
+		  <div class="col-sm-6 col-md-6"> 
+		    <div class="input-group">
+		      <input class="form-control"
+			     type="number" step="0.01" 
+			     name="vir_price"
+			     required
+			     disable-key
+			     ng-edit
+			     focus-auto="focus_attrs.vir_price"
+			     go-next-field
+			     next="tag_price"
+			     pre="type"
+			     auto-row="go_next_good_field"
+			     placeholder="虚拟价，支持二位小数"
+			     x-ng-pattern="/^\d+(.\d{1,2})?$/"
+			     x-ng-enter=""
+			     x-ng-model="good.vir_price"/>
+		      <span class="input-group-addon bg-white fg-red">*</span> 
+		    </div>
+		  </div>
+		  <div ng-if="form.gForm.vir_price.$invalid && !form.gForm.vir_price.$pristine">
+		    <span class="fg-red">格式（dd.dd）支持二位小数</span>
+		  </div>
+		</div>
+		
 		<div class="form-group diablo-good-form-group">
 		  <label class="col-sm-3 col-md-3 control-label">
 		    吊牌价
@@ -803,7 +832,7 @@
 			     focus-auto="focus_attrs.tag_price"
 			     go-next-field
 			     next="discount"
-			     pre="type"
+			     pre="vir_price"
 			     auto-row="go_next_good_field"
 			     placeholder="吊牌价，支持二位小数"
 			     x-ng-pattern="/^\d+(.\d{1,2})?$/"
@@ -812,11 +841,8 @@
 		      <span class="input-group-addon bg-white fg-red">*</span> 
 		    </div>
 		  </div>
-		  <div ng-if="form.gForm.tag_price.$invalid
-			      && !form.gForm.tag_price.$pristine">
-		    <span style="color:red">
-		      格式（dd.dd）支持二位小数
-		    </span>
+		  <div ng-if="form.gForm.tag_price.$invalid && !form.gForm.tag_price.$pristine">
+		    <span style="color:red">格式（dd.dd）支持二位小数</span>
 		  </div>
 		</div> 
 		
@@ -1246,11 +1272,12 @@
   <div class="modal-footer">
     <div class="btn-group">
       <button class="btn btn-primary"
-	      x-ng-disabled="!params.valid_amount(params.amount, params.ediscount)"
-	      x-ng-click="ok()">保存</button>
+	      x-ng-disabled="!params.valid_amount(params.amount, params.ediscount)" x-ng-click="ok()">保存</button>
       <button x-ng-if="!params.free"
-	      class="btn btn-danger" x-ng-click="params.add_exist_stock_color(cancel)">颜色</button>
-      <button x-ng-if="!params.free" class="btn btn-success" x-ng-click="edit()">尺码</button>
+	      class="btn btn-danger"
+	      x-ng-click="params.add_exist_stock_color(cancel)">颜色</button>
+      <button x-ng-if="!params.free"
+	      class="btn btn-success" x-ng-click="edit()">尺码</button>
       <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
     </div>
 </div>

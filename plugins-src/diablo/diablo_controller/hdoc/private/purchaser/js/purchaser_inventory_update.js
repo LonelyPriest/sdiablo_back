@@ -42,8 +42,8 @@ function purchaserInventoryNewUpdateCtrlProvide (
     // console.log(user.loginShop);
     // console.log($scope.setting);
 
-    $scope.template = filterTemplate.length !== 0 ? filterTemplate[0] : undefined;
-    $scope.printU = new stockPrintU($scope.template, $scope.setting.auto_barcode, $scope.setting.dual_barcode);
+    // $scope.template = filterTemplate.length !== 0 ? filterTemplate[0] : undefined;
+    $scope.printU = new stockPrintU($scope.setting.auto_barcode, $scope.setting.dual_barcode);
     $scope.printU.setPrinter($scope.setting.printer_barcode);
 
     var dialog = diabloUtilsService;
@@ -315,6 +315,10 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	$scope.setting.history_stock = stockUtils.history_stock(base.shop_id, $scope.ubase);
 	$scope.setting.q_start_time =
 	    dateFilter(stockUtils.start_time(base.shop_id, $scope.ubase, $.now(), dateFilter), "yyyy-MM-dd");
+
+	$scope.templates = stockUtils.get_print_templates(base.shop_id, filterTemplate);
+	console.log($scope.templates);
+	
 	
 	var length = invs.length;
 	var sorts  = [];
@@ -1020,41 +1024,58 @@ function purchaserInventoryNewUpdateCtrlProvide (
 
     $scope.disable_gen_barcode_all = false;
     $scope.p_barcode_all = function() {
-	if ($scope.setting.barcode_firm
-	    && diablo_invalid_firm === stockUtils.invalid_firm($scope.select.firm)) {
-	    diabloUtilsService.response(
-		false,
-		dialog_barcode_title,
-		dialog_barcode_title_failed + purchaserService.error[2086]);
-	    return;
-	}
+	// if ($scope.setting.barcode_firm
+	//     && diablo_invalid_firm === stockUtils.invalid_firm($scope.select.firm)) {
+	//     diabloUtilsService.response(
+	// 	false,
+	// 	dialog_barcode_title,
+	// 	dialog_barcode_title_failed + purchaserService.error[2086]);
+	//     return;
+	// } 
+	var callback = function(params) {
+	    // console.lo(params);
+	    var select_template = params.templates.filter(function(t) {return t.select})[0];
+	    if (select_template.firm
+		&& diablo_invalid_firm === stockUtils.invalid_firm($scope.select.firm) ) {
+		dialog.response(
+		    false,
+		    dialog_barcode_title,
+		    dialog_barcode_title_failed + purchaserService.error[2086]);
+	    } else {
+		for (var i=1, l=$scope.inventories.length; i<l; i++) {
+		    var one = $scope.inventories[i];
+		    $scope.p_barcode(one, select_template);
+		}
+	    } 
+	};
 	
-	$scope.disable_gen_barcode_all = true;
-	for (var i=1, l=$scope.inventories.length; i<l; i++) {
-	    var one = $scope.inventories[i];
-	    $scope.p_barcode(one);
-	    // break;
-	}
-	$scope.disable_gen_barcode_all = false;
+	dialog.edit_with_modal(
+	    "select-template.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {templates: $scope.templates,
+	     check_only: stockUtils.check_select_only}); 
     };
 
     if ($scope.setting.use_barcode && needCLodop()) loadCLodop();
     
     var dialog_barcode_title = "库存条码打印";
     var dialog_barcode_title_failed = "库存条码打印失败：";
-    $scope.p_barcode = function(inv) {
-	console.log(inv); 
-	if ($scope.template.firm && diablo_invalid_firm === inv.firm_id ) {
-	    dialog.response(
-		false,
-		dialog_barcode_title,
-		dialog_barcode_title_failed + purchaserService.error[2086]);
-	    return;
-	} 
-	
-	var print_barcode = function(barcode) {
-	    var expire = diablo_nolimit_day;
+    $scope.p_barcode = function(inv, select_template) {
+	console.log(inv);
+
+	var print_barcode = function(barcode, template) {
+	    $scope.printU.set_template(template);
+	    if (template.firm && diablo_invalid_firm === stockUtils.invalid_firm($scope.select.firm) ) {
+		dialog.response(
+		    false,
+		    dialog_barcode_title,
+		    dialog_barcode_title_failed + purchaserService.error[2086]);
+		return;
+	    }
 	    
+	    var expire = diablo_nolimit_day;
 	    if (inv.alarm_day !== diablo_nolimit_day) {
 		expire = stockUtils.to_integer(inv.alarm_day);
 	    } else {
@@ -1111,43 +1132,60 @@ function purchaserInventoryNewUpdateCtrlProvide (
 		    stockUtils.invalid_firm($scope.select.firm)); 
 	    }
 	};
-
-	// gen 
-	purchaserService.gen_barcode(
-	    inv.style_number, inv.brand_id, $scope.select.shop.id
-	).then(function(result) {
-	    console.log(result);
-	    if (result.ecode === 0) {
-
-		inv.level     = result.level;
-		inv.executive = diablo_get_object(result.executive, filterStdExecutive);
-		inv.category  = diablo_get_object(result.category, filterCategory); 
-		inv.sepcs = [];
-		if (angular.isObject(inv.type) && inv.type.cid !== diablo_invalid_index) {
-		    angular.forEach(filterSizeSpec, function(s) {
-			if (s.cid === d.type.cid) {
-			    d.specs.push(s);
-			}
-		    }) 
+	
+	var start_barcode = function(template){
+	    purchaserService.gen_barcode(
+		inv.style_number, inv.brand_id, $scope.select.shop.id
+	    ).then(function(result) {
+		console.log(result);
+		if (result.ecode === 0) {
+		    inv.level     = result.level;
+		    inv.executive = diablo_get_object(result.executive, filterStdExecutive);
+		    inv.category  = diablo_get_object(result.category, filterCategory); 
+		    inv.specs = [];
+		    if (angular.isObject(inv.type) && inv.type.cid !== diablo_invalid_index) {
+			angular.forEach(filterSizeSpec, function(s) {
+			    if (s.cid === inv.type.cid) {
+				inv.specs.push(s);
+			    }
+			}) 
+		    }
+		    
+		    if (result.fabric) {
+			inv.fabrics = angular.fromJson(result.fabric);
+			angular.forEach(inv.fabrics, function(f) {
+			    var fabric = diablo_get_object(f.f, filterFabric);
+			    if (angular.isDefined(fabric) && angular.isObject(fabric))
+				f.name = fabric.name; 
+			});
+		    } 
+		    print_barcode(result.barcode, template);
+		} else {
+		    dialog.response(
+			false,
+			dialog_barcode_title,
+			dialog_barcode_title_failed + purchaserService.error[result.ecode]);
 		}
-		
-		if (result.fabric) {
-		    inv.fabrics = angular.fromJson(result.fabric);
-		    angular.forEach(inv.fabrics, function(f) {
-			var fabric = diablo_get_object(f.f, filterFabric);
-			if (angular.isDefined(fabric) && angular.isObject(fabric))
-			    f.name = fabric.name; 
-		    });
-		}
-		
-		print_barcode(result.barcode);
-	    } else {
-		dialog.response(
-		    false,
-		    dialog_barcode_title,
-		    dialog_barcode_title_failed + purchaserService.error[result.ecode]);
-	    }
-	});
+	    });
+	};
+
+	if (angular.isDefined(select_template) && angular.isObject(select_template)) {
+	    start_barcode(select_template);
+	} else {
+	    var callback = function(params) {
+		console.log(params);
+		var t = params.templates.filter(function(t) {return t.select})[0];
+		start_barcode(t);
+	    };
+	    
+	    dialog.edit_with_modal(
+		"select-template.html",
+		undefined,
+		callback,
+		undefined,
+		{templates: $scope.templates,
+		 check_only: stockUtils.check_select_only});
+	}
     };
     
 };
