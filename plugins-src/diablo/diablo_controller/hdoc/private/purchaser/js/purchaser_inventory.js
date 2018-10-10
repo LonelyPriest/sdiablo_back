@@ -2048,7 +2048,8 @@ function purchaserInventoryDetailCtrlProvide(
     $scope, $routeParams, $q, dateFilter, diabloPattern, diabloFilter,
     diabloUtilsService, diabloPromise, purchaserService,
     localStorageService, filterPromotion, filterScore,  filterBrand,
-    filterFirm, filterType, filterCType, filterSizeGroup, filterColor, filterTemplate, base, user) {
+    filterFirm, filterType, filterCType, filterSizeGroup, filterColor,
+    filterSizeSpec, filterStdExecutive, filterCategory, filterFabric, filterTemplate, base, user) {
     $scope.promotions = filterPromotion.concat([{id:diablo_invalid_index, name:"重置促销方案"}]);
     $scope.scores = filterScore.concat([{id:diablo_invalid_index, name:"重置积分方案", type_id:0}]);
     // console.log(filterTemplate);
@@ -2306,6 +2307,28 @@ function purchaserInventoryDetailCtrlProvide(
 			d.score = diablo_get_object(d.sid, filterScore);
 			d.calc  = diablo_float_mul(d.org_price, d.amount);
 
+			d.executive = diablo_get_object(d.executive_id, filterStdExecutive);
+			d.category = diablo_get_object(d.category_id, filterCategory);
+			d.specs = [];
+			if (angular.isObject(d.type) && d.type.cid !== diablo_invalid_index) {
+			    angular.forEach(filterSizeSpec, function(s) {
+				if (s.cid === d.type.cid) {
+				    d.specs.push(s);
+				}
+			    }) 
+			}
+
+			if (d.fabric_json) {
+			    d.fabrics = angular.fromJson(d.fabric_json);
+			    d.fabric_desc = diablo_empty_string;
+			    angular.forEach(d.fabrics, function(f) {
+				var fabric = diablo_get_object(f.f, filterFabric);
+				if (angular.isDefined(fabric) && angular.isObject(fabric))
+				    f.name = fabric.name; 
+				d.fabric_desc += fabric.name + ":" + f.p.toString();
+			    });
+			}
+			
 			d.isAlarm = false;
 			if (d.alarm_day !== diablo_nolimit_day && 0 !== d.amount) {
 			    var limit = diablo_day_millisecond * d.alarm_day;
@@ -2547,7 +2570,7 @@ function purchaserInventoryDetailCtrlProvide(
 	    ).then(function(result) {
 		console.log(result);
 		if (result.ecode === 0) {
-		    inv.bcode = result.barcode;
+		    inv.bcode = result.barcode; 
 		    print_barcode(result.barcode, template);
 		} else {
 		    dialog.response(
