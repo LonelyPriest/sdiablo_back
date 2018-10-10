@@ -1368,17 +1368,21 @@ stockPrintU.prototype.printBarcode2 = function() {
 
     // fabric
     if (this.template.fabric) {
-	if (angular.isDefined(this.stock.fabric) && angular.isArray(this.stock.fabric)) {
+	if (angular.isDefined(this.stock.fabrics) && angular.isArray(this.stock.fabrics)) {
 	    for (var i=0, l=this.stock.fabrics.length; i<l; i++) {
 		var f = this.stock.fabrics[i];
 		
 		if (i === 0) {
 		    this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "成份：");
-		    if (this.dualPrint) {
+		    if (pSecond) {
 			this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, this.template.hpx_each, "成份：");
-		    } 
+		    }
+		    if (pThird) {
+			this.LODOP.ADD_PRINT_TEXT(top, startThird, iwpx, this.template.hpx_each, "成份：");
+		    }
 		    top += this.template.hpx_fabric;
-		} 
+		}
+		
 		this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, this.template.hpx_each, "      " + f.p + "%" + f.name); 
 		if (stockUtils.to_integer(this.template.font_fabric) !== 0) {
 		    this.LODOP.SET_PRINT_STYLEA(0, "FontSize", stockUtils.to_integer(this.template.font_fabric));
