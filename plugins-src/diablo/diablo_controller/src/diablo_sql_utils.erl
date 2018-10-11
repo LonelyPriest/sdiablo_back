@@ -124,18 +124,28 @@ condition(page_desc, {use_level, Sort}, CurrentPage, ItemsPerPage) ->
     	++ ", " ++ ?to_s(ItemsPerPage).
 
 
-like_condition(MatchMode, LikeKey, Conditions) ->
+like_condition(style_number, MatchMode, Conditions, LikeKey) ->
+    like_condition(style_number, MatchMode, Conditions, LikeKey, LikeKey).
+like_condition(style_number, MatchMode, Conditions, LikeKey, KeyInConditions) ->
     case MatchMode of
 	?AND ->
 	    ?sql_utils:condition(proplists, Conditions);
 	?LIKE ->
-	    case ?v(<<"b.style_number">>, Conditions, []) of
+	    %% case ?v(<<"b.style_number">>, Conditions, []) of
+	    %% 	[] ->
+	    %% 	    ?sql_utils:condition(proplists, Conditions);
+	    %% 	Like ->
+	    %% 	    " and " ++ ?to_s(LikeKey) ++ " like '" ++ ?to_s(Like) ++ "%'"
+	    %% 		++ ?sql_utils:condition(
+	    %% 		      proplists, lists:keydelete(LikeKey, 1, Conditions))
+	    %% end
+	    case ?v(KeyInConditions, Conditions, []) of
 		[] ->
 		    ?sql_utils:condition(proplists, Conditions);
 		Like ->
 		    " and " ++ ?to_s(LikeKey) ++ " like '" ++ ?to_s(Like) ++ "%'"
 			++ ?sql_utils:condition(
-			      proplists, lists:keydelete(LikeKey, 1, Conditions))
+			      proplists, lists:keydelete(KeyInConditions, 1, Conditions))
 	    end
     end.
 

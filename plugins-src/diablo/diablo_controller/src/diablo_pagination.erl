@@ -77,7 +77,7 @@ pagination(TotalFun, PageFun, Req, Payload) ->
 	%% 	%% {struct, lists:keydelete(<<"region">>, 1, Any)}
 	%% end,
 
-    ?DEBUG("conditions ~p", [Conditions]),
+    ?DEBUG("match ~p, conditions ~p", [Match, Conditions]),
     CurrentPage  = ?value(<<"page">>, Payload, 1), 
     ItemsPerPage = ?value(<<"count">>, Payload, ?DEFAULT_ITEMS_PERPAGE),
     

@@ -947,7 +947,7 @@ handle_call({total_rsn_group, MatchMode, Merchant, Conditions}, _From, State) ->
     	" where "
     %% ++ ?sql_utils:condition(proplists_suffix, CorrectCutDConditions)
 	++ "b.merchant=" ++ ?to_s(Merchant)
-	++ ?sql_utils:like_condition(MatchMode, <<"b.style_number">>, CorrectCutDConditions)
+	++ ?sql_utils:like_condition(style_number, MatchMode, CorrectCutDConditions, <<"b.style_number">>)
 	%% ++ case MatchMode of
 	%%        ?AND ->
 	%% 	   ?sql_utils:condition(proplists, CorrectCutDConditions);
@@ -2028,7 +2028,7 @@ sale_new(rsn_groups, MatchMode, Merchant, Conditions, PageFun) ->
     	" where "
     %% ++ ?sql_utils:condition(proplists_suffix, CorrectCutDConditions)
 	++ "b.merchant=" ++ ?to_s(Merchant)
-	++ ?sql_utils:like_condition(MatchMode, <<"b.style_number">>, CorrectCutDConditions)
+	++ ?sql_utils:like_condition(style_number, MatchMode, CorrectCutDConditions, <<"b.style_number">>)
 	%% ++ case MatchMode of
 	%%        ?AND ->
 	%% 	   ?sql_utils:condition(proplists, CorrectCutDConditions);

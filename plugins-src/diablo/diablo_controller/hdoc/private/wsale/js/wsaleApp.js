@@ -684,7 +684,7 @@ function wsaleNewProvide(
 	var limit_balance = function(){
 	    var max_draw = 0;
 	    if ($scope.select.surplus >= $scope.select.charge){
-		max_draw =  $scope.select.charge;
+		max_draw =  $scope.select.charge > 0 ? $scope.select.charge : 0;
 	    }  else {
 		max_draw = $scope.select.surplus; 
 	    }
@@ -713,6 +713,7 @@ function wsaleNewProvide(
 		},
 		 
 		 check_withdraw: function(balance){
+		     console.log(balance, limit_balance);
 		     return balance <= limit_balance;
 		 },
 		 

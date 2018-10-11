@@ -2666,6 +2666,7 @@ handle_call({filter_goods, Merchant, CurrentPage, ItemsPerPage, Fields}, _From, 
 
 %% inventory
 handle_call({total_groups, MatchMode, Merchant, Fields}, _From, State) ->
+    %% ?DEBUG("total_groups: MatchMode ~p, Fields ~p", [MatchMode, Fields]),
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Fields),
     RealyConditions = ?w_good_sql:realy_conditions(Merchant, NewConditions), 
     ExtraCondtion = ?w_good_sql:sort_condition(stock, NewConditions),
@@ -2677,7 +2678,7 @@ handle_call({total_groups, MatchMode, Merchant, Fields}, _From, State) ->
 	", sum(amount * tag_price) as t_pmoney"
 	" from w_inventory"
 	" where merchant=" ++ ?to_s(Merchant)
-	++ ?sql_utils:like_condition(MatchMode, <<"style_number">>, RealyConditions)
+	++ ?sql_utils:like_condition(style_number, MatchMode, RealyConditions, <<"style_number">>)
 	%% ++ case MatchMode of
 	%%        ?AND -> ?sql_utils:condition(proplists, RealyConditions);
 	%%        ?LIKE -> 

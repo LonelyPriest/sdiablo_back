@@ -514,19 +514,20 @@ action(Session, Req, {"filter_w_inventory_group"}, Payload) ->
     %% {struct, P}  = ?v(<<"fields">>, Payload), 
     %% Order = ?v(<<"order">>, P),
     NewPayload = proplists:delete(<<"mode">>, Payload), 
-
-    {struct, Fields}     = ?v(<<"fields">>, Payload), 
+    {struct, Fields}     = ?v(<<"fields">>, Payload),
+    
     CType = ?v(<<"ctype">>, Fields),
-    SType = ?v(<<"type">>, Fields),
+    SType = ?v(<<"type">>, Fields), 
     PayloadWithCtype = ?w_sale_request:replace_condition_with_ctype(Merchant, CType, SType, Fields, NewPayload), 
-    ?DEBUG("PayloadWithCtype ~p", [PayloadWithCtype]),
+    %% ?DEBUG("PayloadWithCtype ~p", [PayloadWithCtype]),
     
     Like = ?value(<<"match">>, Payload, 'and'),
     Brand = ?v(<<"brand">>, Fields),
-
+    
     {struct, NewFields}  = ?v(<<"fields">>, PayloadWithCtype), 
     PayloadWithLBrand =
 	?w_sale_request:replace_condition_with_lbrand(?to_a(Like), Merchant, Brand, NewFields, PayloadWithCtype),
+    %% ?DEBUG("PayloadWithLBrand ~p", [PayloadWithLBrand]),
     
     ?pagination:pagination(
        fun(Match, Conditions) ->

@@ -630,6 +630,8 @@ handle_call({update_bill_supplier, Merchant, {Attrs, OldAttrs}}, _From, State) -
     Shop     = ?v(<<"shop">>, Attrs),
     OldShop  = ?v(<<"shop_id">>, OldAttrs), 
     Mode     = ?v(<<"mode">>, Attrs),
+    OldMode  = ?v(<<"mode">>, OldAttrs),
+    
     %% OldMode  = ?v(<<"mode">>, OldAttrs),
     Bill     = ?v(<<"bill">>, Attrs),
     OldBill  = ?v(<<"bill">>, OldAttrs),
@@ -650,18 +652,20 @@ handle_call({update_bill_supplier, Merchant, {Attrs, OldAttrs}}, _From, State) -
     %% DateEnd = date_end(Datetime),
 
     {Cash, Card, Wire} = bill_mode(Mode, Bill),
+    {OldCash, OldCard, OldWire} = bill_mode(OldMode, OldBill),
+    
     Updates
 	= ?utils:v(shop, integer, get_modified(Shop, OldShop)) 
-	++ ?utils:v(employee, string, get_modified(Employee, OldEmployee))
+    %% ++ ?utils:v(employee, string, get_modified(Employee, OldEmployee))
 	++ ?utils:v(comment, string, get_modified(Comment, OldComment))
-	++ ?utils:v(entry_date, string, get_modified(Datetime, OldDatetime)), 
-
+	++ ?utils:v(entry_date, string, get_modified(Datetime, OldDatetime)),
     
     Sql10 = ["update w_bill_detail set "
 	     ++ ?utils:to_sqls(
 		   proplists,
 		   comma,
 		   Updates
+		   ++ ?utils:v(employee, string, get_modified(Employee, OldEmployee))
 		   ++ ?utils:v(mode, integer, Mode) 
 		   ++ ?utils:v(bill, float, get_modified(Bill, OldBill))
 		   ++ ?utils:v(veri, float, get_modified(Veri, OldVeri)) 
@@ -669,11 +673,15 @@ handle_call({update_bill_supplier, Merchant, {Attrs, OldAttrs}}, _From, State) -
 	     ++ " where merchant=" ++ ?to_s(Merchant)
 	     ++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'"],
 
-    UpdatesOfStock = Updates ++ ?utils:v(cash, float, Cash)
-	++ ?utils:v(card, float, Card)
-	++ ?utils:v(wire, float, Wire)
+    UpdatesOfStock = Updates
+	++ ?utils:v(employ, string, get_modified(Employee, OldEmployee))
+	++ ?utils:v(cash, float, get_modified(Cash, OldCash)) 
+	++ ?utils:v(card, float, get_modified(Card, OldCard))
+	++ ?utils:v(wire, float, get_modified(Wire, OldWire))
 	++ ?utils:v(has_pay, float, get_modified(Bill, OldBill))
 	++ ?utils:v(verificate, float, get_modified(Veri, OldVeri)),
+
+    ?DEBUG("UpdatesOfStock ~p", UpdatesOfStock),
     
     Sqls = 
 	case get_modified(Datetime, OldDatetime) of
@@ -682,9 +690,10 @@ handle_call({update_bill_supplier, Merchant, {Attrs, OldAttrs}}, _From, State) -
 		 ++ ?utils:to_sqls(proplists, comma, UpdatesOfStock)
 		 ++ " where merchant=" ++ ?to_s(Merchant)
 		 ++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'"]
-		 ++ case Bill + Veri - OldBill - OldVeri of
-			0 -> [];
-			Metric -> 
+		 ++ case Bill + Veri - OldBill - OldVeri == 0 of
+			true -> [];
+			false ->
+			    Metric = Bill + Veri - OldBill - OldVeri,
 			     ["update suppliers set balance=balance-" ++ ?to_s(Metric)
 			      ++ " where merchant=" ++ ?to_s(Merchant)
 			      ++ " and id=" ++ ?to_s(FirmId),
