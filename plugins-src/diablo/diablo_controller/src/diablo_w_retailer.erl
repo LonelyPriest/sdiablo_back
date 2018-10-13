@@ -1470,10 +1470,8 @@ handle_call({{filter_retailer, Order, Sort},
     {reply, Reply, State};
 
 
-handle_call({filter_consume,
-	     Merchant, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
-    ?DEBUG("filter_consume:merchant ~p, conditions ~p, page ~p",
-	   [Merchant, Conditions, CurrentPage]),
+handle_call({filter_consume, Merchant, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
+    ?DEBUG("filter_consume:merchant ~p, conditions ~p, page ~p", [Merchant, Conditions, CurrentPage]),
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
     FilterConditions = filter_condition(consume, NewConditions),
     SortCondtions = sort_condition(consume, NewConditions, <<"a.">>),

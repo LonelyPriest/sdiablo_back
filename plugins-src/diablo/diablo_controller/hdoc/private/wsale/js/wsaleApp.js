@@ -131,6 +131,11 @@ function wsaleConfg(angular){
 		controller: 'wsaleUploadCtrl',
 		resolve: angular.extend({}, user, base) 
 	    }).
+	    when('/employee_evaluation', {
+		templateUrl: '/private/wsale/html/wsale_employee_evaluation.html',
+		controller: 'wsaleEmployeeEvaluationCtrl',
+		resolve: angular.extend({}, employee, user) 
+	    }).
 	    otherwise({
 		templateUrl: '/private/wsale/html/new_wsale_detail.html',
 		controller: 'wsaleNewDetailCtrl',
@@ -265,6 +270,15 @@ function wsaleConfg(angular){
 		{operation: "filter_w_sale_rsn_group"},
 		{mode: mode,
 		 match:  angular.isDefined(match) ? match.op : undefined,
+		 fields: fields,
+		 page:   currentPage,
+		 count:  itemsPerpage}).$promise;
+	};
+
+	this.filter_employee_evaluation = function(match, fields, currentPage, itemsPerpage) {
+	    return http.save(
+		{operation: "filter_employee_evaluation"},
+		{match:  angular.isDefined(match) ? match.op : undefined,
 		 fields: fields,
 		 page:   currentPage,
 		 count:  itemsPerpage}).$promise;
@@ -2396,10 +2410,8 @@ function wsaleNewDetailProvide(
 	};
 	
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
-	    if (angular.isUndefined(search.shop)
-		|| !search.shop || search.shop.length === 0){
-		search.shop = $scope.shopIds.length === 0
-		    ? undefined : $scope.shopIds; 
+	    if (angular.isUndefined(search.shop) || !search.shop || search.shop.length === 0){
+		search.shop = $scope.shopIds.length === 0 ? undefined : $scope.shopIds; 
 	    }
 
 	    var items    = $scope.items_perpage;

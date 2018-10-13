@@ -223,6 +223,9 @@ function purchaserInventoryFixCtrlProvide(
 	    var add = $scope.inventories[i];
 	    if (0 === stockUtils.to_integer(add.fix))
 		continue;
+	    if (angular.isUndefined(add.color) || !angular.isObject(add.color))
+		continue;
+	    
 	    if (!in_stocks(add, added)) {
 		added.push({
 		    style_number: add.style_number,

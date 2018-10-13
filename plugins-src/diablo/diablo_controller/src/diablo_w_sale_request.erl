@@ -724,6 +724,18 @@ action(Session, Req, {"filter_w_sale_rsn_group"}, Payload) ->
 	    end
     end;
 
+action(Session, Req, {"filter_employee_evaluation"}, Payload) ->
+    ?DEBUG("filter_employee_evaluation with session ~p, paylaod~n~p", [Session, Payload]), 
+    Merchant  = ?session:get(merchant, Session),
+
+    ?pagination:pagination(
+       fun(Match, Conditions) ->
+	       ?w_sale:filter(total_employee_evaluation, ?to_a(Match), Merchant, Conditions)
+       end,
+       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
+	       ?w_sale:filter(employee_evaluation, Match, Merchant, Conditions, CurrentPage, ItemsPerPage)
+       end, Req, Payload);
+
 action(Session, Req, {"list_wsale_group_by_style_number"}, Payload) ->
     ?DEBUG("filter_w_sale_firm_detail with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant    = ?session:get(merchant, Session),
@@ -999,11 +1011,19 @@ sidebar(Session) ->
 
 	    SaleR =
 		[{"new_wsale_detail",
-		  "交易记录", "glyphicon glyphicon-bookmark"}],
+		  "交易记录", "glyphicon glyphicon-bookmark"},
+		 {"wsale_rsn_detail",
+		  "交易明细", "glyphicon glyphicon-map-marker"}]
+		++ case ?right_auth:authen(?employee_evaluation, Session) of
+		       {ok, ?employee_evaluation} -> 
+			   [{"employee_evaluation",
+			     "业绩统计", "glyphicon glyphicon-download"}];
+		       _ -> []
+		   end,
 	    
-	    SaleD =
-		[{"wsale_rsn_detail",
-		  "交易明细", "glyphicon glyphicon-map-marker"}],
+	    %% SaleD =
+	    %% 	[{"wsale_rsn_detail",
+	    %% 	  "交易明细", "glyphicon glyphicon-map-marker"}],
 
 	    Merchant = ?session:get(merchant, Session), 
 	    {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),
@@ -1021,7 +1041,7 @@ sidebar(Session) ->
 
 
 	    L1 = ?menu:sidebar(
-		    level_1_menu, WSale ++ WReject ++ SaleR ++ SaleD ++ UploadMenu),
+		    level_1_menu, WSale ++ WReject ++ SaleR ++ UploadMenu),
 	    
 	    L1
 		

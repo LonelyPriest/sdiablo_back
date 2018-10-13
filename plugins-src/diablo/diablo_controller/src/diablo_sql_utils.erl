@@ -123,7 +123,6 @@ condition(page_desc, {use_level, Sort}, CurrentPage, ItemsPerPage) ->
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
     	++ ", " ++ ?to_s(ItemsPerPage).
 
-
 like_condition(style_number, MatchMode, Conditions, LikeKey) ->
     like_condition(style_number, MatchMode, Conditions, LikeKey, LikeKey).
 like_condition(style_number, MatchMode, Conditions, LikeKey, KeyInConditions) ->

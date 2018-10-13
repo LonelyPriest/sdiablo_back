@@ -1,5 +1,10 @@
 var version_update = function(){
     var updates = [
+	{date: "2018-10-13",
+	 content:
+	 ["增加员工业绩统计"]
+	},
+	
 	{date: "2018-10-11",
 	 content:
 	 ["支持店铺同时选择多个条码打印模板，以支持不同的条码要求",

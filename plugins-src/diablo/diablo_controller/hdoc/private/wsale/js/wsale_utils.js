@@ -725,6 +725,15 @@ var wsaleUtils = function(){
 	    });
 
 	    return filterLevels.length === 0 ? undefined : filterLevels[0].discount;
+	},
+
+	first_day_of_month: function(){
+	    var now = new Date(); 
+	    var year = now.getFullYear();
+	    var month = now.getMonth();
+
+	    return {
+		first:new Date(year, month, 1).getTime(), current:now.getTime()};
 	}
 
 	// 

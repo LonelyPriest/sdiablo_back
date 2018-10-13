@@ -618,8 +618,82 @@ function wsaleRejectCtrlProvide(
 	diabloUtilsService.edit_with_modal(
 	    "wsale-reject-detail.html", undefined, undefined, $scope, payload)
     }; 
-}; 
+};
+
+function wsaleEmployeeEvaluationCtrlProvide(
+    $scope, diabloFilter, diabloPattern, diabloUtilsService, wsaleService, filterEmployee, user){
+    // console.log(filterEmployee);
+    var dialog = diabloUtilsService;
+
+    $scope.items_perpage = diablo_items_per_page();
+    $scope.max_page_size = 10;
+    $scope.default_page = 1; 
+    $scope.current_page = $scope.default_page;
+    $scope.total_items = 0;
+
+    $scope.shops = user.sortShops;
+    $scope.shopIds = user.shopIds;
+
+    $scope.filters = []; 
+    diabloFilter.reset_field();
+
+    diabloFilter.add_field("employee", filterEmployee);
+    diabloFilter.add_field("shop", $scope.shops);
+    
+    $scope.filter = diabloFilter.get_filter();
+    $scope.prompt = diabloFilter.get_prompt();
+    
+    var now = wsaleUtils.first_day_of_month();
+    $scope.time = diabloFilter.default_time(now.first, now.current);
+
+    $scope.do_search = function(page){
+	console.log($scope.filters);
+	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+	    if (angular.isUndefined(search.shop) || !search.shop || search.shop.length === 0){
+		search.shop = $scope.shopIds.length === 0 ? undefined : $scope.shopIds; 
+	    }
+	    
+	    wsaleService.filter_employee_evaluation(
+		$scope.match, search, page, $scope.items_perpage
+	    ).then(function(result){
+		console.log(result);
+		if (result.ecode === 0){
+		    if (page === $scope.default_page){
+			$scope.total_items = result.total;
+			$scope.total_balance = result.t_balance;
+			$scope.total_cash = result.t_cash;
+			$scope.total_card = result.t_card;
+			$scope.total_wxin = result.t_wxin;
+			$scope.total_draw = result.t_draw;
+			$scope.total_ticket = result.t_ticket;
+			$scope.total_veri = result.t_veri;
+		    }
+
+		    angular.forEach(result.data, function(d) {
+			d.employee = diablo_get_object(d.employee_id, filterEmployee);
+			d.shop = diablo_get_object(d.shop_id, $scope.shops);
+		    })
+
+		    diablo_order(result.data, (page - 1) * $scope.items_perpage + 1);
+		    $scope.evaluations = result.data;
+		    $scope.current_page = page; 
+		} 
+	    })
+	})
+    };
+
+    $scope.refresh = function(){
+	$scope.do_search($scope.default_page)
+    };
+
+    $scope.page_changed = function(page){
+	$scope.do_search(page)
+    };
+
+    $scope.refresh();
+};
 
 define (["wsaleApp"], function(app){
     app.controller("wsaleRejectCtrl", wsaleRejectCtrlProvide);
+    app.controller("wsaleEmployeeEvaluationCtrl", wsaleEmployeeEvaluationCtrlProvide);
 });

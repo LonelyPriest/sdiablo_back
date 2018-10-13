@@ -283,7 +283,9 @@ init([]) ->
 	 {?upload_w_sale,
 	  <<"销售单导入">>,   <<"upload_w_sale">>,  ?right_w_sale},
 	 {?update_w_sale_price,
-	  <<"修改销售单进货价">>,   <<"update_w_sale_price">>,  ?right_w_sale}
+	  <<"修改销售单进货价">>,   <<"update_w_sale_price">>,  ?right_w_sale},
+	 {?employee_evaluation,
+	  <<"员工业绩查询">>,   <<"filter_employee_evaluation">>,    ?right_w_sale}
 	],
 
     %% batch sale

@@ -100,12 +100,15 @@ filter(total_rsn_group, MatchMode, Merchant, Fields) ->
 
 filter(total_firm_detail, 'and', Merchant, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {total_firm_detail, Merchant, Fields}).
+    gen_server:call(Name, {total_firm_detail, Merchant, Fields});
+
+filter(total_employee_evaluation, 'and', Merchant, Fields) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {total_employee_evaluation, Merchant, Fields}).
 
 filter(news, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(
-      Name, {filter_news, Merchant, CurrentPage, ItemsPerPage, Fields});
+    gen_server:call(Name, {filter_news, Merchant, CurrentPage, ItemsPerPage, Fields});
 
 filter(rsn_group, MatchMode, Merchant, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -115,10 +118,11 @@ filter(rsn_group, MatchMode, Merchant, CurrentPage, ItemsPerPage, Fields) ->
 filter({rsn_group, Mode, Sort}, MatchMode, Merchant, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(
-      Name, {filter_rsn_group, {Mode, Sort}, MatchMode, Merchant, CurrentPage, ItemsPerPage, Fields}, 6 * 1000).
+      Name, {filter_rsn_group, {Mode, Sort}, MatchMode, Merchant, CurrentPage, ItemsPerPage, Fields}, 6 * 1000);
 
-    
-
+filter(employee_evaluation, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {filter_employee_evaluation, Merchant, CurrentPage, ItemsPerPage, Fields}).
 
 export(trans, Merchant, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -1154,6 +1158,63 @@ handle_call({update_price, Merchant, RSN, Updates}, _From, State) ->
 
     Reply = ?sql_utils:execute(write, Sql, RSN),
     {reply, Reply, State};
+
+handle_call({total_employee_evaluation, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("total_employee_evaluation: merchant ~p, conditions ~p", [Merchant, Conditions]),
+    SortConditions = sort_condition(wsale, Merchant, Conditions), 
+    Sql = "select count(*) as total"
+	", SUM(a.balance) as t_balance"
+	", SUM(a.cash) as t_cash"
+	", SUM(a.card) as t_card"
+	", SUM(a.wxin) as t_wxin"
+	", SUM(a.draw) as t_draw"
+	", SUM(a.veri) as t_veri"
+	", SUM(a.ticket) as t_ticket" 
+	" from "
+	" (select a.employee_id, a.shop_id, a.balance, a.cash, a.card, a.wxin, a.draw, a.ticket, a.veri"
+	" from "
+	"(select merchant"
+	", employ as employee_id"
+	", shop as shop_id"
+	", SUM(should_pay) as balance"
+	", SUM(cash) as cash"
+	", SUM(card) as card"
+	", SUM(wxin) as wxin"
+	", SUM(withdraw) as draw"
+	", SUM(verificate) as veri"
+	", SUM(ticket) as ticket"
+	" from w_sale a"
+    %% " where merchant=" ++ ?to_s(Merchant)
+	++ " where " ++ SortConditions
+	++ " group by employ, shop) a) a", 
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+handle_call({filter_employee_evaluation, Merchant, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
+    ?DEBUG("filter_employee_evaluation:merchant ~p, conditions ~p, page ~p", [Merchant, Conditions, CurrentPage]),
+    SortConditions = sort_condition(wsale, Merchant, Conditions),
+    Sql = 
+	" select a.employee_id, a.shop_id, a.balance, a.cash, a.card, a.wxin, a.draw, a.ticket, a.veri"
+	" from "
+	"(select merchant"
+	", employ as employee_id"
+	", shop as shop_id"
+	", SUM(should_pay) as balance"
+	", SUM(cash) as cash"
+	", SUM(card) as card"
+	", SUM(wxin) as wxin"
+	", SUM(withdraw) as draw"
+	", SUM(ticket) as ticket"
+	", SUM(verificate) as veri"
+	" from w_sale a"
+    %% " where merchant=" ++ ?to_s(Merchant)
+	++ " where " ++ SortConditions
+	++ " group by employ, shop) a"	
+	++ ?sql_utils:condition(page_desc, {use_balance, 0}, CurrentPage, ItemsPerPage),
+    
+    Reply =  ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
 
 handle_call(_Request, _From, State) ->
     Reply = ok,
