@@ -327,23 +327,24 @@ syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) ->
     {StockTransferOutTotal, StockTransferOutCost} = stock(t_out, StockTransferOut), 
     {StockFixTotal, StockFixCost} = stock(fix, StockFix),
 
-    case SellTotal == 0
-	andalso CBalance == 0
-	andalso StockInTotal == 0
-	andalso StockOutTotal == 0
-	andalso StockTransferInTotal == 0
-	andalso StockTransferOutTotal == 0
-	andalso StockFixTotal == 0 of
-	true ->
-	    syn_stastic_per_shop(Merchant, Shop, StartDay + 1, EndDay);
-	false ->
-	    Sql="select id, merchant, shop, day from w_daily_report"
-		" where merchant=" ++ ?to_s(Merchant)
-		++ " and shop=" ++ ?to_s(Shop)
-		++ " and day=\'" ++ ?to_s(BeginOfDay) ++ "\'",
-
-	    case ?sql_utils:execute(s_read, Sql) of
-		{ok, []} ->		    
+    %% ?DEBUG("StockInCost ~p, StockOutCost ~p, StockTransferInCost, StockTransferOutCost"),
+    
+    Sql="select id, merchant, shop, day from w_daily_report where merchant=" ++ ?to_s(Merchant)
+	++ " and shop=" ++ ?to_s(Shop)
+	++ " and day=\'" ++ ?to_s(BeginOfDay) ++ "\'",
+    
+    case ?sql_utils:execute(s_read, Sql) of
+	{ok, []} ->
+	    case SellTotal == 0
+		andalso CBalance == 0
+		andalso StockInTotal == 0
+		andalso StockOutTotal == 0
+		andalso StockTransferInTotal == 0
+		andalso StockTransferOutTotal == 0
+		andalso StockFixTotal == 0 of
+		true ->
+		    syn_stastic_per_shop(Merchant, Shop, StartDay + 1, EndDay);
+		false ->
 		    Sql1 = 
 			"insert into w_daily_report(merchant, shop"
 			", sell, sell_cost, balance, cash, card, wxin, veri, draw, ticket" 
@@ -364,7 +365,7 @@ syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) ->
 			++ ?to_s(SellVeri) ++ ","
 			++ ?to_s(SellDraw) ++ ","
 			++ ?to_s(SellTicket) ++ ","
-			
+
 			++ ?to_s(CBalance) ++ ","
 			++ ?to_s(0) ++ ","
 			++ ?to_s(StockCalcTotal) ++ ","
@@ -386,44 +387,43 @@ syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) ->
 			++ "\'" ++ ?to_s(BeginOfDay) ++ "\',"
 			++ "\'" ++ ?utils:current_time(format_localtime) ++ "\')",
 		    {ok, _} = ?sql_utils:execute(insert, Sql1), 
-		    syn_stastic_per_shop(Merchant, Shop, StartDay + 1, EndDay);
-		{ok, R} ->
-		    Updates = ?utils:v(sell, integer, SellTotal)
-			++ ?utils:v(sell_cost, integer, SellCost)
-			++ ?utils:v(balance, float, SellBalance)
-			++ ?utils:v(cash, float, SellCash)
-			++ ?utils:v(card, float, SellCard)
-			++ ?utils:v(wxin, float, SellWxin)
-			++ ?utils:v(draw, float, SellDraw)
-			++ ?utils:v(ticket, float, SellTicket)
-			++ ?utils:v(veri, float, SellVeri)
-			
-		    %% ++ ?utils:v(stock, integer, LastStockTotal)
-			++ ?utils:v(charge, float, CBalance)
-			++ ?utils:v(stockc, integer, StockCalcTotal)
-			++ ?utils:v(stock_cost, float, StockCalcCost)
-			
-			++ ?utils:v(stock_in, integer, StockInTotal)
-			++ ?utils:v(stock_out, integer, StockOutTotal)
-			++ ?utils:v(stock_in_cost, float, StockInCost)
-			++ ?utils:v(stock_out_cost, float, StockOutCost)
-
-			++ ?utils:v(t_stock_in, integer, StockTransferInTotal)
-			++ ?utils:v(t_stock_out, integer, StockTransferOutTotal)
-			++ ?utils:v(t_stock_in_cost, float, StockTransferInCost)
-			++ ?utils:v(t_stock_out_cost, float, StockTransferOutCost)
-
-			++ ?utils:v(stock_fix, integer, StockFixTotal)
-			++ ?utils:v(stock_fix_cost, float, StockFixCost),
-			
-		    Sql1 = "update w_daily_report set "
-			++ ?utils:to_sqls(proplists, comma, Updates)
-			++ " where id=" ++ ?to_s(?v(<<"id">>, R))
-			++ " and merchant=" ++ ?to_s(Merchant),
-		    {ok, _} = ?sql_utils:execute(write, Sql1, ?v(<<"id">>, R)),
 		    syn_stastic_per_shop(Merchant, Shop, StartDay + 1, EndDay)
-	    end
-	    
+	    end;
+	{ok, R} ->
+	    Updates = ?utils:v(sell, integer, SellTotal)
+		++ ?utils:v(sell_cost, integer, SellCost)
+		++ ?utils:v(balance, float, SellBalance)
+		++ ?utils:v(cash, float, SellCash)
+		++ ?utils:v(card, float, SellCard)
+		++ ?utils:v(wxin, float, SellWxin)
+		++ ?utils:v(draw, float, SellDraw)
+		++ ?utils:v(ticket, float, SellTicket)
+		++ ?utils:v(veri, float, SellVeri)
+
+	    %% ++ ?utils:v(stock, integer, LastStockTotal)
+		++ ?utils:v(charge, float, CBalance)
+		++ ?utils:v(stockc, integer, StockCalcTotal)
+		++ ?utils:v(stock_cost, float, StockCalcCost)
+
+		++ ?utils:v(stock_in, integer, StockInTotal)
+		++ ?utils:v(stock_out, integer, StockOutTotal)
+		++ ?utils:v(stock_in_cost, float, StockInCost)
+		++ ?utils:v(stock_out_cost, float, StockOutCost)
+
+		++ ?utils:v(t_stock_in, integer, StockTransferInTotal)
+		++ ?utils:v(t_stock_out, integer, StockTransferOutTotal)
+		++ ?utils:v(t_stock_in_cost, float, StockTransferInCost)
+		++ ?utils:v(t_stock_out_cost, float, StockTransferOutCost)
+
+		++ ?utils:v(stock_fix, integer, StockFixTotal)
+		++ ?utils:v(stock_fix_cost, float, StockFixCost),
+
+	    Sql1 = "update w_daily_report set "
+		++ ?utils:to_sqls(proplists, comma, Updates)
+		++ " where id=" ++ ?to_s(?v(<<"id">>, R))
+		++ " and merchant=" ++ ?to_s(Merchant),
+	    {ok, _} = ?sql_utils:execute(write, Sql1, ?v(<<"id">>, R)),
+	    syn_stastic_per_shop(Merchant, Shop, StartDay + 1, EndDay)
     end.
 
 task(gen_ticket, Datetime, Merchants) when is_list(Merchants) ->
@@ -788,22 +788,21 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [{S}|Shops], Sqls) ->
 	    {StockFixTotal, StockFixCost} = stock(fix, StockFix),
 
 	    case SellTotal == 0
-		andalso CBalance == 0
-		andalso StockInTotal == 0
-		andalso StockOutTotal == 0
-		andalso StockTransferInTotal == 0
-		andalso StockTransferOutTotal == 0
-		andalso StockFixTotal == 0 of
-		true ->
-		    %% ?DEBUG("no input, no daily report", []),
-		    gen_shop_report({StartTime, EndTime, GenDatetime}, M, Shops, Sqls);
-		false ->
-		    Sql0 = "select id, merchant, shop, day from w_daily_report"
-			" where merchant=" ++ ?to_s(M)
+	    	andalso CBalance == 0
+	    	andalso StockInTotal == 0
+	    	andalso StockOutTotal == 0
+	    	andalso StockTransferInTotal == 0
+	    	andalso StockTransferOutTotal == 0
+	    	andalso StockFixTotal == 0 of
+	    	true ->
+	    	    %% ?DEBUG("no input, no daily report", []),
+	    	    gen_shop_report({StartTime, EndTime, GenDatetime}, M, Shops, Sqls);
+	    	false ->
+		    Sql0 = "select id, merchant, shop, day from w_daily_report where merchant=" ++ ?to_s(M)
 			++ " and shop=" ++ ?to_s(ShopId)
 			++ " and day=\'" ++ ?to_s(StartTime) ++ "\'", 
 		    case ?sql_utils:execute(s_read, Sql0) of
-			{ok, []} ->
+			{ok, []} -> 
 			    Sql = 
 				"insert into w_daily_report(merchant, shop"
 				", sell, sell_cost, balance, cash, card, wxin, draw, ticket, veri"
@@ -848,6 +847,7 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [{S}|Shops], Sqls) ->
 				++ "\'" ++ GenDatetime ++ "\')", 
 			    gen_shop_report({StartTime, EndTime, GenDatetime}, M, Shops, [Sql|Sqls]);
 			{ok, R} ->
+			    ?DEBUG("R ~p", [R]),
 			    Updates = ?utils:v(sell, integer, SellTotal)
 				++ ?utils:v(sell_cost, integer, SellCost)
 				++ ?utils:v(balance, float, SellBalance)
@@ -989,6 +989,9 @@ get_stock(calc, Merchant, Conditions) ->
 	+ StockTransferInTotal - StockTransferOutTotal
 	+ StockFixTotal,
 
+    %% ?DEBUG("StockInCost ~p, StockOutCost ~p, SellCost ~p, StockTransferInCost ~p, StockTransferOutCost ~p",
+    %% 	  [StockInCost, StockOutCost, SellCost, StockTransferInCost, StockTransferOutCost]),
+    
     StockCalcCost = StockInCost + StockOutCost - SellCost
 	+ StockTransferInCost - StockTransferOutCost
 	+ StockFixCost,

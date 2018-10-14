@@ -221,8 +221,7 @@ action(Session, Req, {"del_w_inventory"}, Payload) ->
     end;
 
 action(Session, Req, {"filter_w_inventory_new"}, Payload) -> 
-    ?DEBUG("filter_w_inventory_new with session ~p, paylaod~n~p",
-	   [Session, Payload]),
+    ?DEBUG("filter_w_inventory_new with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session), 
     {struct, Fields} = ?v(<<"fields">>, Payload),
     SortMode = ?v(<<"mode">>, Payload, ?SORT_BY_ID),
@@ -994,9 +993,13 @@ action(Session, Req, {"set_w_inventory_promotion"}, Payload) ->
     Promotion = ?v(<<"promotion">>, Payload),
     Score     = ?v(<<"score">>, Payload),
     
+    CType     = ?v(<<"ctype">>, Conditions),
+    SType     = ?v(<<"type">>, Conditions), 
+    PayloadWithCtype = ?w_sale_request:replace_condition_with_ctype(Merchant, CType, SType, Conditions),
+    
     case ?w_inventory:purchaser_inventory(
 	    set_promotion, Merchant, [{<<"promotion">>, Promotion},
-				      {<<"score">>, Score}], Conditions) of
+				      {<<"score">>, Score}], PayloadWithCtype) of
 	{ok, _} ->
 	    ?utils:respond(
 	       200,

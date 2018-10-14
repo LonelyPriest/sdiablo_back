@@ -399,12 +399,10 @@ function wsaleNewProvide(
 			 wxin:false};
     
     $scope.auto_focus = function(attr){
-	if (!$scope.focus_attr[attr]){
-	    $scope.focus_attr[attr] = true;
-	}
 	for (var o in $scope.focus_attr){
-	    if (o !== attr) $scope.focus_attr[o] = false;
-	} 
+	    $scope.focus_attr[o] = false;
+	}
+	$scope.focus_attr[attr] = true; 
     };
     
     $scope.disable_focus = function() {
@@ -418,17 +416,17 @@ function wsaleNewProvide(
     };
 
     
-    $scope.key_action = function(key){
-	console.log(key); 
-	if (key === 113)
-	    $scope.auto_focus("cash")
+    // $scope.key_action = function(key){
+    // 	console.log(key); 
+    // 	if (key === 113)
+    // 	    $scope.auto_focus("cash")
 	
-	else if (key === 114)
-	    $scope.auto_focus("wxin")
+    // 	else if (key === 114)
+    // 	    $scope.auto_focus("wxin")
 
-	else if (key === 117) 
-	    $scope.auto_focus("card") 
-    };
+    // 	else if (key === 117) 
+    // 	    $scope.auto_focus("card") 
+    // };
     
     // wsaleGoodService.set_brand(filterBrand);
     wsaleGoodService.set_type(filterType);
@@ -1295,7 +1293,7 @@ function wsaleNewProvide(
     };
     
     var LODOP;
-    $scope.print_front = function(result, im_print){
+    $scope.print_front = function(result, im_print, callback){
 	// var oscript = document.createElement("script");
 	// oscript.src ="/public/assets/lodop/LodopFuncs.js";
 	// var head = document.head
@@ -1369,12 +1367,16 @@ function wsaleNewProvide(
 	
 	if (im_print === diablo_yes){
 	    ok_print();
+	    if (angular.isFunction(callback))
+		callback();
 	    sms_notify(result);
 	} else {
 	    var request = dialog.request(
 		"销售开单", "开单成功，是否打印销售单？", undefined, undefined, undefined); 
 	    request.result.then(function(close){
 		ok_print();
+		if (angular.isFunction(callback))
+		    callback();
 		sms_notify(result);
 	    })
 	}
@@ -1570,10 +1572,10 @@ function wsaleNewProvide(
 		$scope.select.rsn = result.rsn;
 		if (diablo_backend === p_mode){
 		    $scope.print_backend(result, im_print);
+		    success_callback(); 
 		} else {
-		    $scope.print_front(result, im_print); 
+		    $scope.print_front(result, im_print, success_callback); 
 		}
-		success_callback();
 	    } else {
 		dialog.response_with_callback(
 	    	    false,

@@ -213,6 +213,13 @@ init([]) ->
     CronPoolSup = {CronSup,
 		   {diablo_work_pool_sup, start_link, [?cron_agent]},
 		   Restart, Shutdown, supervisor, [CronSup]},
+
+    %% batch
+    BatchSalerSup = ?to_a(lists:concat([?b_saler, "_sup"])),
+    BatchSalerPoolSup = {
+      BatchSalerSup,
+      {diablo_work_pool_sup, start_link, [?b_saler]},
+      Restart, Shutdown, supervisor, [BatchSalerSup]},
     
     PoolSup = [
 	       %% WProfilePoolSup,
@@ -220,32 +227,14 @@ init([]) ->
 	       WInvPoolSup,
 	       WSalePoolSup,
 	       PromotionPoolSup,
-	       CronPoolSup],
+	       CronPoolSup,
+
+	       %% Batch Saler
+	       BatchSalerPoolSup
+	      ],
 
     {ok, {SupFlags, [IConv, Mysql, Employ, Merchant,
     		     Shop, Right, Supplier,
     		     InventorySN, Login, Session,
     		     RightTree, Authen, Attr]
 	  ++ WholeSale ++ PoolSup}}.
-
-    %% {ok, {SupFlags, [IConv, Mysql, Employ, Merchant,
-    %% 		     Shop, Right, Supplier,
-    %% 		     InventorySN, Login, Session,
-    %% 		     RightTree, Authen, Attr] ++ WholeSale}}.
-    
-    %% {ok, {SupFlags, [IConv, Mysql, Employ, Merchant,
-    %% 		     Shop, Right, Supplier,
-    %% 		     InventorySN, Login, Session,
-    %% 		     RightTree, Authen, Attr] ++ WholeSale}}.
-
-%%%===================================================================
-%%% Internal functions
-%%%===================================================================
-%% start_work_pool_sup() ->
-%%     Spec = {
-%%       diablo_merchant_work_sup,
-%%       {diablo_merchant_work_sup, start_link, []},
-%%       permanent, 2000, supervisor, [diablo_merchant_work_sup]
-%%      },
-
-%%     supervisor:start_child(?SERVER, Spec).

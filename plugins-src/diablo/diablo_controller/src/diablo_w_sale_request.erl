@@ -7,7 +7,8 @@
 
 -export([action/2, action/3, action/4]).
 -export([sale_note/3, sale_trans/3, note_class_with/3]).
--export([replace_condition_with_ctype/5,
+-export([replace_condition_with_ctype/4,
+	 replace_condition_with_ctype/5,
 	 replace_condition_with_lbrand/5]).
 
 -define(d, ?utils:seperator(csv)).

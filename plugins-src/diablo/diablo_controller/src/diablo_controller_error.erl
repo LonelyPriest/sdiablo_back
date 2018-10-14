@@ -277,8 +277,11 @@ success(good_update_std_executive, EId) ->
 success(good_update_ctype, CId) ->
     {0, "Success to update ctype " ++ ?to_s(CId)};
 success(create_print_template, Merchant) ->
-    {0, "Success to create print template of merchant " ++ ?to_s(Merchant)}.
+    {0, "Success to create print template of merchant " ++ ?to_s(Merchant)};
 
+%% batch
+success(new_batch_saler, Id) ->
+    {0, "Success to create a batch saler" ++ ?to_s(Id)}.
 
 %% -----------------------------------------------------------------------------
 %% error define
@@ -611,6 +614,10 @@ error(sms_rate_not_found, Merchant) ->
 error(sms_send_failed, Reason) ->
     {2599, "aile to send SMS: " ++ ?to_s(Reason)};
 
+%% batch saler
+error(batch_saler_exist, Name) ->
+    {7001, "batch saler exist: " ++ ?to_s(Name)};
+
 %% base
 error(base_card_exist, CardNo) ->
     {8001, "card:" ++ ?to_s(CardNo) ++ "has been exist"};
@@ -651,3 +658,4 @@ error(file_op_error, Error) ->
 error(params_error, Name) ->
     {9102, "parameter input error: " ++ [Name]}.
 
+%% batch

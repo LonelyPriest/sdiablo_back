@@ -442,9 +442,11 @@ create table w_retailer
 create table birth_discount
 (
     id              INTEGER AUTO_INCREMENT,
+    shop            INTEGER default -1,
     discount        INTEGER default 0,
-    limit           TINYINT default 0,
-    merchant        INTEGER default 0
+    climit          TINYINT default 0,
+    merchant        INTEGER default -1,
+    primary key     (id)
 ) default charset=utf8;
 
 create table w_retailer_level
@@ -1413,17 +1415,17 @@ create table print_template(
 create table batchsaler
 (
     id              INTEGER AUTO_INCREMENT,
+    shop            INTEGER default -1,
     name            VARCHAR(127) not null,
     py              VARCHAR(8) default null,
     type            TINYINT default 0,  -- 2: system, 0:common 
     balance         DECIMAL(10, 2) default 0, -- max: 99999999.99
     mobile          VARCHAR(11),
-    address         VARCHAR(255), 
+    address         VARCHAR(255),
+    remark          VARCHAR(255), 
     merchant        INTEGER default -1,
-    remark          VARCHAR(255),
     entry_date      DATETIME default 0, 
     deleted         INTEGER default 0, -- 0: no;  1: yes 
-    unique  key  uk (merchant, mobile),
-    key          dk (merchant),
+    unique  key  uk (merchant, name),
     primary key     (id)
 ) default charset=utf8;

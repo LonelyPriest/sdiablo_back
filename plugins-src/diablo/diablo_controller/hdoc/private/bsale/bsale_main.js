@@ -29,7 +29,7 @@ require.config({
 	"diablo-filter":       "/private/utils/javascript/diablo_filter_app", 
 
 	"bsale-utils" : "/private/bsale/js/bsale_utils",
-	"diablo-error": '/private/utils/javascript/diablo_error'
+	"diablo-batch-error": '/private/utils/javascript/diablo_batch_error'
     },
     
     shim: {
@@ -162,7 +162,7 @@ require.config({
             deps: ["jquery", "diablo-utils"]
 	},
 
-	"diablo-error":{
+	"diablo-batch-error":{
 	}
     }
 });
@@ -178,7 +178,7 @@ require([
     "diablo-init", "diablo-function", "diablo-authen",
     "diablo-pattern", "diablo-user-right", "diablo-authen-right",
     "diablo-login-out", "diablo-utils", "diablo-filter", 
-    "bsale-utils", "diablo-error", 
+    "bsale-utils", "diablo-batch-error", 
     "bsaleApp", "load_bsale"
 ], function($, angular) {
     $(function() {

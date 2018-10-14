@@ -450,6 +450,20 @@ diabloUtils.directive('ngEnter', function () {
     };
 });
 
+diabloUtils.directive('ngPlus', function () {
+    return function (scope, element, attrs) {
+        element.bind("keydown keypress", function (event) {
+            if(event.which === 43) {
+                scope.$apply(function (){
+                    scope.$eval(attrs.ngPlus);
+                });
+
+                event.preventDefault();
+            }
+        });
+    };
+});
+
 
 diabloUtils.directive('ngPulsate', function () {
     return {
@@ -947,6 +961,11 @@ diabloUtils.service("diabloUtilsService", function($uibModal){
 
     this.set_error = function(title, ecode) {
 	var ERROR = require("diablo-error");
+	this.response(false, title, ERROR[ecode], undefined);
+    };
+
+    this.set_batch_error = function(title, ecode) {
+	var ERROR = require("diablo-batch-error");
 	this.response(false, title, ERROR[ecode], undefined);
     };
     

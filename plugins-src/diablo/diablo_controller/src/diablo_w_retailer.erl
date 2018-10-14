@@ -20,7 +20,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
--export([retailer/2, retailer/3, retailer/4]).
+-export([retailer/2, retailer/3, retailer/4, default_profile/2]).
 -export([charge/2, charge/3, threshold_card/4, threshold_card_good/3]).
 -export([score/2, score/3, ticket/2, ticket/3, get_ticket/3, get_ticket/4, make_ticket/3]).
 -export([filter/4, filter/6]).

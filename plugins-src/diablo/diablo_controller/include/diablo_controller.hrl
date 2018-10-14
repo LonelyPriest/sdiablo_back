@@ -461,10 +461,10 @@
 
 -define(new_batch_saler,      ?right_b_sale + 9).
 -define(list_batch_saler,     ?right_b_sale + 10).
--define(delete_batch_saler,   ?right_b_sale + 11).
+-define(del_batch_saler,      ?right_b_sale + 11).
 -define(update_batch_saler,   ?right_b_sale + 12).
 -define(bill_batch_saler,     ?right_b_sale + 13).
--define(bank_batch_saler,     ?right_b_sale + 14).
+%% -define(bank_batch_saler,     ?right_b_sale + 14).
 
 %% public
 -define(http_route, diablo_controller_http_route).
@@ -487,6 +487,7 @@
 %% batch_sale
 -define(b_sale_request, diablo_batch_sale_request).
 -define(b_sale, diablo_batch_sale).
+-define(b_saler, diablo_batch_saler).
 
 %% shop
 -define(shop_request, diablo_controller_shop_request).

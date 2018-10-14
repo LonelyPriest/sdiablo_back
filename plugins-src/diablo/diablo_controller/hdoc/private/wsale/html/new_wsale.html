@@ -47,7 +47,7 @@
 		    <input class="form-control text-left"
 			   type="text"
 			   name="barcode"
-			   x-ng-edit
+			   x-ng-plus="auto_focus('cash')"
 			   x-ng-model="sale.barcode"
 			   placeholder="条码"
 			   focus-auto="focus_attr.barcode"
@@ -64,7 +64,7 @@
 		    <input class="form-control text-left"
 			   name="snumber"
 			   type="text"
-			   x-ng-edit
+			   x-ng-plus="auto_focus('cash')"
 			   x-ng-model="sale.style_number"
 			   focus-auto="focus_attr.style_number"
 			   placeholder="货号/品类"
@@ -93,7 +93,7 @@
 	<div class="panel panel-default"> 
 	  <div class="table-responsive">
 	    <!--EBGIN table supplier-->
-	    <table class="table table-bordered table-striped table-hover table-condensed table-advanced">
+	    <table class="table table-bordered table-striped table-hover table-condensed table-advanced" navtable>
 	      <thead>
 		<tr>
 		  <th class="text-center">序号</th>
@@ -161,6 +161,7 @@
 			       required
 			       disable-key
 			       x-ng-edit
+			       focus-auto="focus_attr.sell"
 			       x-ng-enter="inv.form.fprice.$invalid || auto_save_free(inv)"
 			       x-ng-pattern="/^\d+(.\d{1,2})?$/"
 			       x-ng-model="inv.fprice"/>
@@ -186,7 +187,6 @@
 		  	       x-ng-edit
 		  	       x-ng-pattern="pattern.sell"
 		  	       x-ng-model="inv.sell"
-		  	       focus-auto="focus_attr.sell"
 		  	       x-ng-enter="inv.form.sell.$invalid || auto_save_free(inv)" />
 		      </div>
 		    </form>

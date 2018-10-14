@@ -61,13 +61,13 @@ action(Session, Req, {"recover_employe", EmployId}) ->
 %%--------------------------------------------------------------------
 %% @desc: POST action
 %%--------------------------------------------------------------------
-action(Session, Req, {"new_employe"}, Payload) ->
-    ?DEBUG("new employ with session ~p,  paylaod ~p", [Session, Payload]),
+action(Session, Req, {"new_batch_saler"}, Payload) ->
+    ?DEBUG("new_batch_saler with session ~p,  paylaod ~p", [Session, Payload]),
 
     Merchant = ?session:get(merchant, Session),
-    case ?employ:employ(new, [{<<"merchant">>, Merchant}|Payload]) of
-	{ok, Name} ->
-	    ?utils:respond(200, Req, ?succ(add_employ, Name));
+    case ?b_saler:batch_saler(new, Merchant, Payload) of
+	{ok, Id} ->
+	    ?utils:respond(200, Req, ?succ(new_batch_saler, Id));
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;
@@ -124,8 +124,8 @@ sidebar(Session) ->
 	    %% {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),
 
 	    Saler = 
-		[{"new_saler", "新增客户", "glyphicon glyphicon-plus"},
-		 {"saler_detail", "客户详情", "glyphicon glyphicon-bookmark"}], 
+		[{"new_bsaler", "新增客户", "glyphicon glyphicon-plus"},
+		 {"bsaler_detail", "客户详情", "glyphicon glyphicon-bookmark"}], 
 
 
 	    L1 = ?menu:sidebar(
