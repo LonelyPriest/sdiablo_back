@@ -704,7 +704,7 @@ function bsaleNewProvide(
 		dialog.response_with_callback(
 	    	    false,
 		    "批发开单",
-		    "开单失败：" + bsaleService.error[result.ecode]
+		    "开单失败：" + bsaleService.error[result.ecode],
 		    undefined,
 		    function(){$scope.has_saved = false});
 		

@@ -475,7 +475,7 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 	       undefined -> [];
 	       _ -> " and employ=\'" ++ ?to_s(EmployeeId) ++ "\'"
 	   end
-	++ " and entry_date>\'" ++ ?to_s(StartDate) ++ "\'"
+	++ " and entry_date>=\'" ++ ?to_s(StartDate) ++ "\'"
 	++ " and entry_date<=\'" ++ ?to_s(EndDate) ++ "\'",
 
     ShiftSql = 
