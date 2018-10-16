@@ -84,10 +84,10 @@
 		    <!-- <th class="text-center">季节</th> -->
 		    <th>年度</th>
 		    
-		    <th x-ng-if="template && template.level">等级</th>
-		    <th x-ng-if="template && template.executive">执行标准</th>
-		    <th x-ng-if="template && template.category">安全类别</th>
-		    <th x-ng-if="template && template.fabric">面料</th>
+		    <th x-ng-if="!setting.hide_level">等级</th>
+		    <th x-ng-if="!setting.hide_executive">执行标准</th>
+		    <th x-ng-if="!setting.hide_category">安全类别</th>
+		    <th x-ng-if="!setting.hide_fabric">面料</th>
 		    
 		    <th x-ng-if="right.show_orgprice">进价</th>
 		    <th x-ng-if="right.show_orgprice">折扣进</th>
@@ -115,19 +115,19 @@
 		    <!-- <td>{{g.season}}</td> -->
 		    <td>{{g.year}}</td>
 
-		    <td x-ng-if="template && template.level">
+		    <td x-ng-if="!setting.hide_level">
 		      <div x-ng-if="g.level===-1" class="text-center">-</div>
 		      <div x-ng-if="g.level!==-1" class="text-center">{{g.level}}</div>
 		    </td>
-		    <td x-ng-if="template && template.executive">
+		    <td x-ng-if="!setting.hide_executive">
 		      <div x-ng-if="g.executive_id===-1" class="text-center">-</div>
 		      <div x-ng-if="g.executive_id!==-1">{{g.executive.name}}</div>
 		    </td>
-		    <td x-ng-if="template && template.category">
+		    <td x-ng-if="!setting.hide_category">
 		      <div x-ng-if="g.category_id===-1" class="text-center">-</div>
 		      <div x-ng-if="g.category_id!==-1">{{g.category.name}}</div>
 		    </td> 
-		    <td x-ng-if="template && template.fabric">
+		    <td x-ng-if="!setting.hide_fabric">
 		      <div x-ng-if="!g.fabric_desc" class="text-center">-</div>
 		      <div x-ng-if="g.fabric_desc">{{g.fabric_desc}}</div>
 		    </td>

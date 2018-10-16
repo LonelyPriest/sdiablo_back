@@ -1292,7 +1292,7 @@ function bsalerNewCtrlProvide(
     $scope, bsaleService, diabloPattern, diabloUtilsService, user){
     $scope.pattern = {name_address: diabloPattern.ch_name_address,
 		      tel_mobile:   diabloPattern.tel_mobile,
-		      name:         diabloPattern.chinese_name};
+		      name:         diabloPattern.chinese_lname};
     $scope.shops = user.sortShops;
     $scope.bsaler_types = bsaleService.bsaler_types;
     

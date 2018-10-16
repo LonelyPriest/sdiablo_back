@@ -60,6 +60,10 @@
 
      %% profile
      diablo_wuser_profile, diablo_sms_notify,
+
+     %% batch
+     diablo_batch_sale_request,
+     diablo_batch_saler,
      
      %% template
      base_frame,
@@ -84,7 +88,11 @@
      wprint_frame,
      wgood_frame,
      sys_frame,
-     wreport_frame]
+     wreport_frame,
+
+     %% batch
+     bsale_frame
+    ]
    },
 
    {registered,

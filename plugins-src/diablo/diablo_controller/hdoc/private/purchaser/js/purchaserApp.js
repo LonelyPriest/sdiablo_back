@@ -519,9 +519,7 @@ function stockConfg(angular){
 	    return http.save({operation: "fix_w_inventory"}, inventory).$promise;
 	}
 
-	this.filter_fix_w_inventory = function(
-	    match, fields, currentPage, itemsPerpage
-	){
+	this.filter_fix_w_inventory = function(match, fields, currentPage, itemsPerpage){
 	    return http.save(
 		{operation: "filter_fix_w_inventory"},
 		{match:  angular.isDefined(match) ? match.op : undefined,
@@ -551,6 +549,11 @@ function stockConfg(angular){
 	    return http.save(
 		{operation: "w_inventory_export"},
 		{condition: condition, e_type:e_type, mode:mode}).$promise;
+	};
+
+	this.export_fix_note = function(rsn) {
+	    return http.save(
+		{operation: "export_w_inventory_fix_note"}, {rsn: rsn}).$promise;
 	};
 
 	// transfer

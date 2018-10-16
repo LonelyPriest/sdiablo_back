@@ -1246,6 +1246,42 @@ action(Session, Req, {"print_w_inventory_fix_note"}, Payload) ->
 		     {<<"detail">>, {Detail}},
 		     {<<"note">>, Notes}]});
 
+action(Session, Req, {"export_w_inventory_fix_note"}, Payload) ->
+    Merchant = ?session:get(merchant, Session),
+    UserId      = ?session:get(id, Session),
+    RSN = ?v(<<"rsn">>, Payload), 
+    %% fix
+    %% {ok, Detail} = ?w_inventory:purchaser_inventory(get_fix, Merchant, RSN), 
+    case ?w_inventory:purchaser_inventory(list_fix_detail, Merchant, [{<<"rsn">>, RSN}]) of
+	{ok, Notes}->
+	    SortNotes = lists:sort(fun({N1}, {N2}) ->
+					   ?v(<<"id">>, N1) < ?v(<<"id">>, N2)
+				   end, Notes),
+	    {ok, ExportFile, Url} = ?utils:create_export_file("fix", Merchant, UserId),
+	    case file:open(ExportFile, [append, raw]) of
+		{ok, Fd} ->
+		    try
+			DoFun = fun(C) -> ?utils:write(Fd, C) end,
+			csv_head(fix_note, DoFun),
+			do_write(fix_note, DoFun, 1, SortNotes),
+			ok = file:datasync(Fd),
+			ok = file:close(Fd)
+		    catch
+			T:W -> 
+			    file:close(Fd),
+			    ?DEBUG("trace export:T ~p, W ~p~n~p", [T, W, erlang:get_stacktrace()]),
+			    ?utils:respond(200, Req, ?err(wsale_export_error, W)) 
+		    end,
+		    ?utils:respond(200, object, Req,
+				   {[{<<"ecode">>, 0},
+				     {<<"url">>, ?to_b(Url)}]});
+		{error, Error} -> ?utils:respond(200, Req, ?err(wsale_export_error, Error))
+	    end;
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+
 action(Session, Req, {"print_w_inventory_transfer"}, Payload) ->
     ?DEBUG("print_stock_tranasfer: session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
@@ -2161,6 +2197,35 @@ do_write(shift_note_color, Do, Count, [DH|DT], DictNotes,
 		     Code,
 		     ShowOrgPrice)
     end.
+
+csv_head(fix_note, Do) ->
+    H = "序号,款号,品牌,颜色,尺码,盘点数量,电脑数量,盈余",
+    Do(?utils:to_gbk(from_latin1, H)).
+do_write(fix_note, _Do, _Count, []) ->
+    ok;
+do_write(fix_note, Do, Count, [H|T]) ->
+    %% Rsn       = ?v(<<"rsn">>, H),
+    StyleNumber = ?v(<<"style_number">>, H),
+    Brand       = ?v(<<"brand">>, H),
+    Color       = ?v(<<"color">>, H),
+    Size        = ?v(<<"size">>, H),
+    ShopTotal   = ?v(<<"shop_total">>, H),
+    DBTotal     = ?v(<<"db_total">>, H),
+    
+    L = "\r\n"
+	++ ?to_s(Count) ++ ?d
+	++ "'" ++ ?to_s(StyleNumber) ++ "'" ++ ?d
+	++ ?to_s(Brand) ++ ?d
+	++ ?to_s(Color) ++ ?d
+	++ ?to_s(Size) ++ ?d
+	++ ?to_s(ShopTotal) ++ ?d
+	++ ?to_s(DBTotal) ++ ?d
+	++ ?to_s(ShopTotal - DBTotal),
+
+    Do(?utils:to_gbk(from_latin1, L)),
+    do_write(fix_note, Do, Count + 1, T).
+	
+    
     
 export_type(0) -> trans;
 export_type(1) -> trans_note;

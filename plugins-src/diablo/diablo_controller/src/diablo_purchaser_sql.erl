@@ -409,6 +409,11 @@ good_match(style_number_with_firm, Merchant, StyleNumber, Firm) ->
 	
 	", a.contailer"
 	", a.alarm_a"
+
+	", a.level"
+	", a.executive as executive_id"
+	", a.category as category_id"
+	", a.fabric as fabric_json"
 	
 	", a.entry_date"
 	
@@ -1196,7 +1201,8 @@ inventory(fix_rsn_groups, fix, Merchant, Conditions, PageFun) ->
 	   end,
     ?DEBUG("C1 ~p", [C1]),
 
-    "select a.rsn"
+    "select a.id"
+	", a.rsn"
 	", a.shop_id"
 	", a.style_number"
 	", a.brand_id"
@@ -1210,7 +1216,8 @@ inventory(fix_rsn_groups, fix, Merchant, Conditions, PageFun) ->
 	", c.name as brand"
 	
 	" from ("
-	"select rsn"
+	"select id"
+	", rsn"
 	", shop as shop_id"
 	", style_number"
 	", brand as brand_id"

@@ -2045,8 +2045,7 @@ handle_call({trace_transfer, Merchant, Conditions}, _From, State) ->
 
 handle_call({list_fix_detail, Merchant, Conditions}, _From, State) ->
     ?DEBUG("list_fix_detail  with merchant ~p, conditions ~p", [Merchant, Conditions]),
-    Sql = ?w_good_sql:inventory(
-	     fix_rsn_groups, fix, Merchant, Conditions, fun() -> [] end),
+    Sql = ?w_good_sql:inventory(fix_rsn_groups, fix, Merchant, Conditions, fun() -> [] end),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 

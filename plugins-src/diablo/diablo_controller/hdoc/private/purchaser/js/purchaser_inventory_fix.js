@@ -230,6 +230,7 @@ function purchaserInventoryFixCtrlProvide(
 		added.push({
 		    style_number: add.style_number,
 		    brand:        add.brand_id,
+		    firm:         add.firm_id,
 		    fix:          add.fix,
 		    color:        add.color.cid,
 		    size:         add.size,

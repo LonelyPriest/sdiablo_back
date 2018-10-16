@@ -377,7 +377,10 @@ init([]) ->
 	  <<"入库单中修改进货价">>, <<"update_oprice_on_stock_in">>, ?right_w_inventory },
 
 	 {?bill_firm_on_stock_in,
-	  <<"允许入库单中结帐">>, <<"bill_firm_on_stock_in">>, ?right_w_inventory } 
+	  <<"允许入库单中结帐">>, <<"bill_firm_on_stock_in">>, ?right_w_inventory },
+
+	 {?export_w_inventory_fix_note,
+	  <<"导出盘点明细">>, <<"export_w_inventory_fix_note">>, ?right_w_inventory }
 	],
 
     %% firm

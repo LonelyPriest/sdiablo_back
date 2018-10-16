@@ -92,44 +92,42 @@ function wgoodNewCtrlProvide(
     };
 
     $scope.is_same_good = false;
-    var check_same_good = function(style_number, brand_name){
-	// console.log(brand_name);
-	var brand = get_brand(brand_name);
-	if (angular.isUndefined(brand)
-	    || angular.isUndefined(style_number) || !style_number){
-	    $scope.good.firm = undefined;
-	    $scope.is_same_good = false;
-	} else {
-	    wgoodService.get_purchaser_good({
-		style_number:style_number, brand:brand.id
-	    }).then(function(result){
-		console.log(result);
-		if (angular.isDefined(result.style_number)){
-		    $scope.good.firm = undefined;
-		    $scope.is_same_good = true;
-		} else {
-		    $scope.good.firm = diablo_get_object(
-			brand.firm_id, $scope.firms);
-		    $scope.is_same_good = false;
-		}
+    // var check_same_good = function(style_number, brand_name){
+    // 	// console.log(brand_name);
+    // 	var brand = get_brand(brand_name);
+    // 	if (angular.isUndefined(brand) || angular.isUndefined(style_number) || !style_number){
+    // 	    $scope.good.firm = undefined;
+    // 	    $scope.is_same_good = false;
+    // 	} else {
+    // 	    wgoodService.get_purchaser_good({
+    // 		style_number:style_number, brand:brand.id
+    // 	    }).then(function(result){
+    // 		console.log(result);
+    // 		if (angular.isDefined(result.style_number)){
+    // 		    $scope.good.firm = undefined;
+    // 		    $scope.is_same_good = true;
+    // 		} else {
+    // 		    $scope.good.firm = diablo_get_object(brand.firm_id, $scope.firms);
+    // 		    $scope.is_same_good = false;
+    // 		}
 		
-	    })
-	} 
-    };
+    // 	    })
+    // 	} 
+    // };
 
-    var timeout_sytle_number = undefined;
-    $scope.$watch("good.style_number", function(newValue, oldValue){
-	if(angular.isUndefined(newValue)
-	   || angular.equals(newValue, oldValue)){
-	    return;
-	};
+    // var timeout_sytle_number = undefined;
+    // $scope.$watch("good.style_number", function(newValue, oldValue){
+    // 	if(angular.isUndefined(newValue)
+    // 	   || angular.equals(newValue, oldValue)){
+    // 	    return;
+    // 	};
 
-	$timeout.cancel(timeout_sytle_number);
-	timeout_sytle_number = $timeout(function(){
-	    // console.log(newValue, oldValue);
-	    check_same_good(newValue, $scope.good.brand);
-	}, diablo_delay)
-    });
+    // 	$timeout.cancel(timeout_sytle_number);
+    // 	timeout_sytle_number = $timeout(function(){
+    // 	    // console.log(newValue, oldValue);
+    // 	    check_same_good(newValue, $scope.good.brand);
+    // 	}, diablo_delay)
+    // });
 
 
     var timeout_brand = undefined;
@@ -666,7 +664,6 @@ function wgoodDetailCtrlProvide(
     var authen = new diabloAuthen(user.type, user.right, user.shop);
     $scope.right = authen.authenGoodRight(); 
 
-    var hide_mode  = stockUtils.stock_in_hide_mode(diablo_default_shop, base); 
     $scope.setting = {
 	use_barcode  :stockUtils.use_barcode(diablo_default_shop, base),
 	auto_barcode :stockUtils.auto_barcode(diablo_default_shop, base),
@@ -679,7 +676,9 @@ function wgoodDetailCtrlProvide(
 	//     else return stockUtils.to_integer(h);
 	// }()
 	
-    }; 
+    };
+
+    var hide_mode  = stockUtils.stock_in_hide_mode(diablo_default_shop, base); 
     angular.extend($scope.setting, hide_mode);
 
     $scope.templates = filterTemplate;

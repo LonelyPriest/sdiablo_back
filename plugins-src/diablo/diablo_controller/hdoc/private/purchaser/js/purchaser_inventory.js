@@ -2574,8 +2574,7 @@ function purchaserInventoryDetailCtrlProvide(
 		    print_barcode(result.barcode, template);
 		} else {
 		    dialog.response(
-			false,
-			"条码生成", "条码生成失败："
+			false, "条码生成", "条码生成失败："
 			    + purchaserService.error[result.ecode]);
 		}
 	    });

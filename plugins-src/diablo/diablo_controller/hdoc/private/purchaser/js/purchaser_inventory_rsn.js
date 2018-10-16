@@ -135,51 +135,51 @@ function purchaserInventoryFixRsnDetailCtrlProvide(
 	return undefined;
     }; 
     
-    $scope.rsn_detail = function(inv){
-	console.log(inv);
-	if (angular.isDefined(inv.amounts)
-	    && angular.isDefined(inv.colors)
-	    && angular.isDefined(inv.sizes)){
+    // $scope.rsn_detail = function(inv){
+    // 	console.log(inv);
+    // 	if (angular.isDefined(inv.amounts)
+    // 	    && angular.isDefined(inv.colors)
+    // 	    && angular.isDefined(inv.sizes)){
 	    
-	    diabloUtilsService.edit_with_modal(
-		"rsn-detail.html", undefined, undefined, $scope,
-		{colors:     inv.colors,
-		 sizes:      inv.sizes,
-		 amounts:    inv.amounts,
-		 // total:      inv.metric,
-		 path:       inv.path,
-		 get_amount: get_amount});
-	    return;
-	}
+    // 	    diabloUtilsService.edit_with_modal(
+    // 		"rsn-detail.html", undefined, undefined, $scope,
+    // 		{colors:     inv.colors,
+    // 		 sizes:      inv.sizes,
+    // 		 amounts:    inv.amounts,
+    // 		 // total:      inv.metric,
+    // 		 path:       inv.path,
+    // 		 get_amount: get_amount});
+    // 	    return;
+    // 	}
 	
-	purchaserService.w_invnetory_fix_rsn_detail(
-	    {rsn:inv.rsn, style_number:inv.style_number, brand:inv.brand_id}
-	).then(function(result){
-	    console.log(result);
+    // 	purchaserService.w_invnetory_fix_rsn_detail(
+    // 	    {rsn:inv.rsn, style_number:inv.style_number, brand:inv.brand_id}
+    // 	).then(function(result){
+    // 	    console.log(result);
 	    
-	    var order_sizes = diabloHelp.usort_size_group(inv.s_group, filterSizeGroup);
-	    var sort = diabloHelp.sort_stock(result.data, order_sizes, filterColor);
-	    console.log(sort);
+    // 	    var order_sizes = diabloHelp.usort_size_group(inv.s_group, filterSizeGroup);
+    // 	    var sort = diabloHelp.sort_stock(result.data, order_sizes, filterColor);
+    // 	    console.log(sort);
 	    
-	    inv.sizes   = sort.size;
-	    inv.colors  = sort.color;
-	    var amounts = [];
-	    angular.forEach(result.data, function(i){
-		if (!in_amount(amounts, i)){
-		    amounts.push({cid:i.color_id, size:i.size, exist:i.exist, fixed:i.fixed})
-		}; 
-	    });
+    // 	    inv.sizes   = sort.size;
+    // 	    inv.colors  = sort.color;
+    // 	    var amounts = [];
+    // 	    angular.forEach(result.data, function(i){
+    // 		if (!in_amount(amounts, i)){
+    // 		    amounts.push({cid:i.color_id, size:i.size, exist:i.exist, fixed:i.fixed})
+    // 		}; 
+    // 	    });
 	    
-	    inv.amounts = amounts;
-	    diabloUtilsService.edit_with_modal(
-		"rsn-detail.html", undefined, undefined, $scope,
-		{colors:     inv.colors,
-		 sizes:      inv.sizes,
-		 amounts:    inv.amounts,
-		 path:       inv.path,
-		 get_amount: get_amount});
-	}); 
-    }
+    // 	    inv.amounts = amounts;
+    // 	    diabloUtilsService.edit_with_modal(
+    // 		"rsn-detail.html", undefined, undefined, $scope,
+    // 		{colors:     inv.colors,
+    // 		 sizes:      inv.sizes,
+    // 		 amounts:    inv.amounts,
+    // 		 path:       inv.path,
+    // 		 get_amount: get_amount});
+    // 	}); 
+    // }
 
     $scope.print_note = function() {
 	var callback = function() {
@@ -192,7 +192,24 @@ function purchaserInventoryFixRsnDetailCtrlProvide(
 	diabloUtilsService.request(
 	    "盘点明细打印", "打印需要打印机支持A4纸张，确认要打印吗？",
 	    callback, undefined, undefined);
-    }
+    };
+
+    $scope.export_to = function() {
+	if (angular.isDefined($routeParams.rsn)) {
+	    purchaserService.export_fix_note($routeParams.rsn).then(function(result) {
+		if (result.ecode === 0){
+		    diabloUtilsService.response_with_callback(
+			true,
+			"盘点明细导出成功",
+			"创建文件成功，请点击确认下载！！",
+			undefined,
+			function(){window.location.href = result.url;}) 
+		} else {
+		    diabloUtilsService.set_error("盘点明细导出失败", result.ecode); 
+		}
+	    });
+	} 
+    };
     
 };
 

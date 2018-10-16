@@ -183,6 +183,11 @@ update  w_inventory_transfer a inner join (select rsn, cost from (select rsn, su
 update w_inventory a inner join (select style_number, brand, shop, tag_price, discount, ediscount from w_inventory_new_detail where merchant=4 group by style_number, brand, shop) b on \
 a.style_number=b.style_number and a.brand=b.brand and a.shop=b.shop set a.tag_price=b.tag_price, a.discount=b.discount and a.ediscount=b.ediscount;
 
+-- syn level, category, executive, fabric
+update w_inventory a inner join (select style_number, brand, merchant, level, category, executive, fabric from w_inventory_good where merchant=18) b \
+on a.style_number=b.style_number and a.brand=b.brand and a.merchant=b.merchant set a.level=b.level, a.category=b.category, a.executive=b.executive, a.fabric=b.fabric
+where a.merchant=18 and a.shop in(145,158)
+
 -- check sale
 select a.merchant, a.rsn, a.total, b.rsn, c.name from w_sale a left join w_sale_detail b on a.rsn=b.rsn left join merchants c on a.merchant=c.id where b.rsn is null and a.total!=0;
 select a.entry_date, a.rsn, a.total, b.rsn, b.total from w_sale a left join (select rsn, sum(total) as total from w_sale_detail group by rsn) b on a.rsn=b.rsn where a.total != b.total;

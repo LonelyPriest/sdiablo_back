@@ -69,7 +69,7 @@ var stockUtils = function(){
 		hide_sex:       stockUtils.to_integer(hide.charAt(2)),
 		hide_expire:    default_hide(hide.charAt(3)),
 		hide_image:     default_hide(hide.charAt(4)),
-		select_type:    default_hide(hide.charAt(5)),
+		editable_type:  default_hide(hide.charAt(5)) === diablo_yes ? false : true,
 		hide_executive: default_hide(hide.charAt(6)),
 		hide_category:  default_hide(hide.charAt(7)),
 		hide_level:     default_hide(hide.charAt(8)),

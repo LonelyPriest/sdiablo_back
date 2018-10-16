@@ -339,6 +339,7 @@
 -define(update_tprice_on_stock_in,          ?right_w_inventory + 32).
 -define(update_oprice_on_stock_in,          ?right_w_inventory + 33).
 -define(bill_firm_on_stock_in,              ?right_w_inventory + 34).
+-define(export_w_inventory_fix_note,        ?right_w_inventory + 35).
 
 
 

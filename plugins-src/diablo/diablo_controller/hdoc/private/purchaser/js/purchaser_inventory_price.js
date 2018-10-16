@@ -839,7 +839,7 @@ function stockFixNotePrintCtrlProvide(
     };
 
     $scope.go_back = function() {
-	diablo_goto_page("#/inventory_rsn_detail/fix" + diablo_set_string($scope.search.rsn));
+	diablo_goto_page("#inventory/inventory_rsn_detail/fix/" + diablo_set_string($scope.search.rsn));
     };
     
 };

@@ -655,16 +655,14 @@
 			</a>
 	  	      </span> 
 		    </div>
+		    <div ng-if="form.gForm.style_number.$invalid && !form.gForm.style_number.$pristine">
+		      <span class="fg-red">款号只能是字母，数字或横杠，2-10个字符</span>
 		  </div>
-		  <div ng-if="form.gForm.style_number.$invalid && !form.gForm.style_number.$pristine">
-		    <span class="fg-red">
-		      款号只能是字母，数字或横杠，2-10个字符
-		    </span>
-		  </div>
-		  <div ng-if="is_same_good"> <span class="fg-red">
-		      该款号，品牌所对应的货品已存在，请直接录入数量
-		    </span>
-		  </div>
+		  </div> 
+		  <!-- <div ng-if="is_same_good"> <span class="fg-red"> -->
+		  <!--     该款号，品牌所对应的货品已存在，请直接录入数量 -->
+		  <!--   </span> -->
+		  <!-- </div> -->
 		</div>
 
 		<!--brand-->
@@ -701,15 +699,13 @@
 			  <i class="glyphicon glyphicon-pushpin"></i>
 			</a>
 		    </div>
-		  </div>	      
-		  <div ng-if="form.gForm.brand.$invalid && !form.gForm.brand.$pristine">
-		    <span style="color:red">
-		      品牌只能是中文，字母或数字
-		    </span>
-		  </div>
-		  <div ng-if="is_same_good">
-		    <span class="fg-red">该款号，品牌所对应的货品已存在，请直接录入数量</span>
-		  </div>
+		    <div ng-if="form.gForm.brand.$invalid && !form.gForm.brand.$pristine">
+		      <span style="color:red">品牌只能是中文，字母或数字</span>
+		    </div>
+		  </div> 
+		  <!-- <div ng-if="is_same_good"> -->
+		  <!--   <span class="fg-red">该款号，品牌所对应的货品已存在，请直接录入数量</span> -->
+		  <!-- </div> -->
 		</div>
 		
 		<!--type-->
@@ -733,17 +729,16 @@
 			       x-ng-model="good.type"
 			       x-ng-pattern="pattern.type"
 			       x-ng-enter=""
-			       typeahead-editable="base_settings.select_type"
+			       typeahead-editable="base_settings.editable_type"
 			       uib-typeahead="t.name for t in types|filter:$viewValue|limitTo:20"/>
 		      </div> 
 		      <span class="input-group-addon bg-white fg-red">*</span>
 		    </div>
+		    <div ng-show="form.gForm.type.$invalid && !form.gForm.type.$pristine">
+		    <span style="color:red">中文，字母或数字或必须从下拉列表中选择</span>
 		  </div>
-		  <div ng-show="form.gForm.type.$invalid && !form.gForm.type.$pristine">
-		    <span style="color:red">
-		      中文，字母或数字或必须从下拉列表中选择
-		    </span>
 		  </div>
+		  
 		</div> 
 		
 		<div x-ng-if="!base_settings.hide_sex" class="form-group diablo-good-form-group">
@@ -840,10 +835,10 @@
 			     x-ng-model="good.tag_price"/>
 		      <span class="input-group-addon bg-white fg-red">*</span> 
 		    </div>
-		  </div>
-		  <div ng-if="form.gForm.tag_price.$invalid && !form.gForm.tag_price.$pristine">
-		    <span style="color:red">格式（dd.dd）支持二位小数</span>
-		  </div>
+		    <div ng-if="form.gForm.tag_price.$invalid && !form.gForm.tag_price.$pristine">
+		      <span style="color:red">格式（dd.dd）支持二位小数</span>
+		    </div>
+		  </div> 
 		</div> 
 		
 		<div class="form-group diablo-good-form-group">
@@ -872,13 +867,10 @@
 		      </div>
 		      <span class="input-group-addon bg-white fg-red">*</span>
 		    </div>
-		  </div>
-		  <div ng-if="form.gForm.discount.$invalid
-			      && !form.gForm.discount.$pristine">
-		    <span style="color:red">
-		      两位整数，无折扣请输入100
-		    </span>
-		  </div>
+		    <div ng-if="form.gForm.discount.$invalid && !form.gForm.discount.$pristine">
+		    <span style="color:red">两位整数，无折扣请输入100</span>
+		    </div>
+		  </div> 
 		</div> 
 
 		<div x-ng-if="!base_settings.hide_color"
@@ -954,9 +946,9 @@
 			     x-ng-model="good.alarm_day" />
 		      <span class="input-group-addon bg-white fg-red">*</span> 
 		    </div>
-		  </div>
-		  <div ng-if="goodForm.expire.$invalid && !goodForm.expire.$pristine">
-		    <span class="fg-red">整数或-1，-1表示无退货期限</span>
+		    <div ng-if="goodForm.expire.$invalid && !goodForm.expire.$pristine">
+		      <span class="fg-red">整数或-1，-1表示无退货期限</span>
+		    </div>
 		  </div>
 		</div>
 
@@ -1015,6 +1007,7 @@
 		    <div class="input-group">
 		      <input class="form-control" type="text"
 			     x-ng-readonly=true
+			     placeholder="请选择图片"
 			     x-ng-model="good.image.file.name"/>
 		      <span class="input-group-btn"> 
 			<image-upload image="good.image"></image-upload>
@@ -1089,7 +1082,7 @@
 		    <div class="pull-right">
 		      <button type="submit"
 			      class="btn btn-primary"
-			      ng-disabled="form.gForm.$invalid || is_same_good || good_saving"
+			      ng-disabled="form.gForm.$invalid || good_saving"
 			      focus-auto="focus_attrs.ok"
 			      go-next-field
 			      pre="size"
