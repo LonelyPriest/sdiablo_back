@@ -315,8 +315,8 @@ action(Session, Req, {"new_w_good"}, Payload) ->
 action(Session, Req, {"update_w_good"}, Payload) -> 
     Merchant = ?session:get(merchant, Session), 
     {struct, Good} = ?v(<<"good">>, Payload),
-    ?DEBUG("update purchaser good with session ~p, good~n~p",
-	   [Session, Good]),
+    ?DEBUG("update purchaser good with session ~p, good~n~p", [Session, Good]),
+    %% ?DEBUG("update_w_good: image ~p", [?v(<<"image">>, Payload)]),
     
     OStyleNumber = ?v(<<"o_style_number">>, Good),
     OBrandId     = ?v(<<"o_brand">>, Good),
@@ -385,10 +385,10 @@ action(Session, Req, {"update_w_good"}, Payload) ->
 	    end,
 
 	?DEBUG("NewPath ~p, OldPath ~p", [NewPath, OldPath]), 
-
 	ImagePath =
 	    case ?v(<<"image">>, Payload) of 
 		undefined ->
+		    ?DEBUG("no image, replace path ~p", [NewPath]), 
 		    case NewPath =:= OldPath of
 			true  ->
 			    undefined; 
@@ -403,19 +403,16 @@ action(Session, Req, {"update_w_good"}, Payload) ->
 			    end 
 		    end;
 		ImageData ->
-		    case NewPath =:= OldPath of
-			true ->
-			    ok = mk_image_dir(OldPath, Merchant), 
-			    ok = file:write_file(
-				   OldPath, base64:decode(ImageData));
-			false ->
-			    ok = file:delete(OldPath),
-			    ok = mk_image_dir(NewPath, Merchant), 
-
-			    ok = file:write_file(
-				   NewPath, base64:decode(ImageData))
-		    end,
-		    
+		    ?DEBUG("image, replace data and path ~p", [NewPath]), 
+		    case NewPath =:= OldPath of 
+		    	true ->
+		    	    ok = mk_image_dir(OldPath, Merchant), 
+		    	    ok = file:write_file(OldPath, base64:decode(ImageData));
+		    	false ->
+		    	    ok = file:delete(OldPath),
+		    	    ok = mk_image_dir(NewPath, Merchant), 
+		    	    ok = file:write_file(NewPath, base64:decode(ImageData))
+		    end, 
 		    filename:join(["image", ?to_s(Merchant), filename:basename(NewPath)])
 	    end,
 

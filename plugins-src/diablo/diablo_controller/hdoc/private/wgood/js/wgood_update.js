@@ -671,15 +671,14 @@ function wgoodUpdateCtrlProvide(
 	    }
 	}; 
 	
-	var image  = angular.isDefined($scope.image) && $scope.image
-	    ? $scope.image.dataUrl.replace(/^data:image\/(png|jpg);base64,/, "") : undefined;
+	var image;
+	if (angular.isDefined($scope.image) && $scope.image)
+	    image = $scope.image.dataUrl.replace(/^data:image\/(png|jpg);base64,/, "");
 
 	console.log(changed_good);
 
 	if (diablo_is_empty(changed_good) && angular.isUndefined(image)){
-	    diabloUtilsService.response(
-		false, "修改货品",
-		"修改货品资料失败：" + wgoodService.error[2099]);
+	    diabloUtilsService.response(false, "修改货品", "修改货品资料失败：" + wgoodService.error[2099]);
 	} else {
 	    changed_good.good_id        = update_good.id;
 	    // changed_good.shop           = update_good.shop;
@@ -691,11 +690,8 @@ function wgoodUpdateCtrlProvide(
 	    changed_good.image          = $scope.src_good.image;
 	    changed_good.shop           = $scope.good.shop.id;
 
-	    console.log(changed_good);
-
-	    wgoodService.update_purchaser_good(
-		changed_good, image
-	    ).then(function(state){
+	    console.log(changed_good); 
+	    wgoodService.update_purchaser_good(changed_good, image).then(function(state){
 		console.log(state);
 		if (state.ecode == 0){
 		    diabloUtilsService.response_with_callback(
@@ -710,9 +706,7 @@ function wgoodUpdateCtrlProvide(
 		} else{
 		    diabloUtilsService.response(
 			false,
-			"修改货品",
-			"修改货品资料失败："
-			    + wgoodService.error[state.ecode]);
+			"修改货品", "修改货品资料失败：" + wgoodService.error[state.ecode]);
 		}
 	    });
 	}

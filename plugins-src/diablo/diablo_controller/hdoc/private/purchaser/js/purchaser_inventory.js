@@ -1737,6 +1737,7 @@ function purchaserInventoryNewCtrlProvide (
 	good.alarm_day = $scope.good.alarm_day;
 
 	good.org_price = $scope.good.org_price;
+	good.vir_price = $scope.good.vir_price;
 	good.tag_price = $scope.good.tag_price;
 	good.discount  = $scope.good.discount; 
 	good.ediscount = $scope.good.ediscount;

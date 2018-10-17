@@ -440,3 +440,10 @@ alter table w_inventory add column vir_price DECIMAL(10,2) default 0 after free;
 
 
 alter table print_template add column size_spec TINYINT default 0 after size;
+
+
+-- 2018-10-16
+-- alter table print_template add column font_vprice TINYINT default 0 after font_fabric;
+alter table print_template add column offset_tagprice INTEGER default 0  after offset_size;
+alter table print_template add column offset_virprice INTEGER default 40  after offset_tagprice;
+alter table print_template add column p_tagprice TINYINT default 1 after p_virprice;

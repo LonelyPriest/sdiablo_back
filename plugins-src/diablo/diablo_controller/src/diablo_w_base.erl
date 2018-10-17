@@ -623,6 +623,10 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", type"
 	", firm"
 	", code_firm"
+
+	", p_virprice"
+	", p_tagprice"
+	
 	", expire"
 	", shift_date"
 	
@@ -642,6 +646,7 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", font_price"
 	", font_size"
 	", font_fabric"
+    %% ", font_vprice"
 	
 	", bold"
 	
@@ -667,9 +672,13 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", size_date"
 	", size_color"
 	", firm_date"
-	", offset_size"
 
-    %% ", rbrand"
+	", tag_price"
+	", vir_price"
+	
+	", offset_size"
+	", offset_tagprice"
+	", offset_virprice"
 	
 	" from print_template"
 	" where merchant=" ++ ?to_s(Merchant), 
@@ -690,6 +699,9 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(type, integer, ?v(<<"type">>, Attrs))
 	++  ?utils:v(firm, integer, ?v(<<"firm">>, Attrs))
 	++  ?utils:v(code_firm, integer, ?v(<<"code_firm">>, Attrs))
+
+	++  ?utils:v(p_virprice, integer, ?v(<<"p_virprice">>, Attrs))
+	++  ?utils:v(p_tagprice, integer, ?v(<<"p_tagprice">>, Attrs))
 	
 	++  ?utils:v(expire, integer, ?v(<<"expire">>, Attrs))
 	++  ?utils:v(shift_date, integer, ?v(<<"shift_date">>, Attrs))
@@ -710,8 +722,10 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(font_price, integer, ?v(<<"font_price">>, Attrs))
 	++  ?utils:v(font_size, integer, ?v(<<"font_size">>, Attrs))
 	++  ?utils:v(font_fabric, integer, ?v(<<"font_fabric">>, Attrs))
+    %% ++  ?utils:v(font_vprice, integer, ?v(<<"font_vprice">>, Attrs))
 	
 	++  ?utils:v(bold, integer, ?v(<<"bold">>, Attrs))
+	
 	++  ?utils:v(solo_brand, integer, ?v(<<"solo_brand">>, Attrs))
 	++  ?utils:v(solo_color, integer, ?v(<<"solo_color">>, Attrs))
 	++  ?utils:v(solo_size, integer, ?v(<<"solo_size">>, Attrs))
@@ -734,7 +748,13 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(size_date, integer, ?v(<<"size_date">>, Attrs))
 	++  ?utils:v(size_color, integer, ?v(<<"size_color">>, Attrs))
 	++  ?utils:v(firm_date, integer, ?v(<<"firm_date">>, Attrs))
-	++  ?utils:v(offset_size, integer, ?v(<<"offset_size">>, Attrs)),
+
+	++  ?utils:v(tag_price, string, ?v(<<"tag_price">>, Attrs))
+	++  ?utils:v(vir_price, string, ?v(<<"vir_price">>, Attrs))
+	
+	++  ?utils:v(offset_size, integer, ?v(<<"offset_size">>, Attrs))
+	++  ?utils:v(offset_tagprice, integer, ?v(<<"offset_tagprice">>, Attrs))
+	++  ?utils:v(offset_virprice, integer, ?v(<<"offset_virprice">>, Attrs)),
 
     
     

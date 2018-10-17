@@ -1267,6 +1267,40 @@ var wsalePrint = function(){
 		left -= ticket;
 	    }
 	}
+
+	if (wsaleUtils.to_float(withDraw) != 0){
+	    if (s) s += " ";
+	    if (withDraw >= left) {
+		s += "提现：" + left.toString();
+		left = 0;
+	    } else {
+		s += "提现：" + withDraw.toString();
+		left -= withDraw;
+	    }
+	}
+
+	if (wsaleUtils.to_float(wxin) != 0) {
+	    if (s) s += " ";
+	    if (wxin >= left) {
+		s += "微信：" + left.toString();
+		left = 0;
+	    } else {
+		s += "微信：" + wxin.toString();
+		left -= wxin;
+	    }
+	}
+
+	if (wsaleUtils.to_float(card) != 0){
+	    if (s) s += " ";
+	    
+	    if (card >= left){
+		s += "刷卡：" + left.toString();
+		left = 0;
+	    } else {
+		s += "刷卡：" + card.toString();
+		left -= card;
+	    }
+	}
 	
 	if (wsaleUtils.to_float(cash) != 0){
 	    if (s) s += " "; 
@@ -1279,37 +1313,6 @@ var wsalePrint = function(){
 		left -= cash;
 	    }
 	}
-	if (wsaleUtils.to_float(card) != 0){
-	    if (s) s += " ";
-	    
-	    if (card >= left){
-		s += "刷卡：" + left.toString();
-		left = 0;
-	    } else {
-		s += "刷卡：" + card.toString();
-		left -= card;
-	    }
-	}
-	if (wsaleUtils.to_float(wxin) != 0) {
-	    if (s) s += " ";
-	    if (wxin >= left) {
-		s += "微信：" + left.toString();
-		left = 0;
-	    } else {
-		s += "微信：" + wxin.toString();
-		left -= wxin;
-	    }
-	}
-	if (wsaleUtils.to_float(withDraw) != 0){
-	    if (s) s += " ";
-	    if (withDraw >= left) {
-		s += "提现：" + left.toString();
-		left = 0;
-	    } else {
-		s += "提现：" + withDraw.toString();
-		left -= withDraw;
-	    }
-	} 
 
 	return s; 
     };
@@ -1326,7 +1329,7 @@ var wsalePrint = function(){
 		30,
 		wsaleUtils.to_integer(direct) === 0 ? shop : shop + "（退）"); 
 	    LODOP.SET_PRINT_STYLEA(0, "FontSize", 13);
-	    LODOP.SET_PRINT_STYLEA(0, "Alignment", 2); 
+	    // LODOP.SET_PRINT_STYLEA(0, "Alignment", 2); 
 	    LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
 	    // LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
 
@@ -1459,7 +1462,7 @@ var wsalePrint = function(){
 		if (angular.isDefined(sale.has_pay)) {
 		    l1 = "现付：" + wsaleUtils.to_float(sale.has_pay).toString();
 		    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
-		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 13);
+		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 11);
 		    LODOP.SET_PRINT_STYLEA(0, "Bold", 1); 
 		    hLine += 20;
 		}
@@ -1467,7 +1470,7 @@ var wsalePrint = function(){
 		if (angular.isDefined(sale.charge)) {
 		    l1 = "找零：" + wsaleUtils.to_float(-sale.charge).toString();
 		    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
-		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 13);
+		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 11);
 		    LODOP.SET_PRINT_STYLEA(0, "Bold", 1); 
 		    hLine += 20;
 		}
@@ -1475,7 +1478,7 @@ var wsalePrint = function(){
 		if (printPerform && angular.isDefined(sale.perform) && sale.perform >= 0) {
 		    l1 = "优惠：" + wsaleUtils.to_float(sale.perform).toString();
 		    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
-		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 13);
+		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 11);
 		    LODOP.SET_PRINT_STYLEA(0, "Bold", 1); 
 		    hLine += 20;
 		}
@@ -1543,6 +1546,7 @@ var wsalePrint = function(){
 	    if (angular.isDefined(diablo_set_string(address))) {
 		// hLine += 20;
 		LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, "地址：" + address);
+		hLine += 20;
 	    }
 	},
 

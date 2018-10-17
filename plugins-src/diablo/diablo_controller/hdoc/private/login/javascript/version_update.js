@@ -1,5 +1,16 @@
 var version_update = function(){
     var updates = [
+	{date: "2018-10-17",
+	 content:
+	 ["优化标签打印"]
+	},
+	
+	{date: "2018-10-16",
+	 content:
+	 ["增加盘点记录可导出",
+	  "修正吊牌无法从库存中打印的问题"]
+	},
+	
 	{date: "2018-10-13",
 	 content:
 	 ["增加员工业绩统计"]

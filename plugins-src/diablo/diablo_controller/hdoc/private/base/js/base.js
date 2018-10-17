@@ -972,13 +972,16 @@ function goodPrintTemplateCtrlProvide(
     $scope.refresh();
 
     var p = ["name",
-	     "width", "height",
+	     "width", "height"
 	     
-	     "shop", "style_number", "brand", "type", "firm", "code_firm"
-	     , "expire", "shift_date"
-	     , "color", "size", "size_spec"
+	     , "shop", "style_number", "brand", "type", "firm", "code_firm"
+
+	     , "p_virprice", "p_tagprice"
 	     
-	     , "level", "executive", "category", "fabric" 
+	     , "expire", "shift_date" , "color", "size", "size_spec"
+	     
+	     , "level", "executive", "category", "fabric"
+	     
 	     , "font", "font_name", "font_executive", "font_category", "font_price", "font_size", "font_fabric"
 	     
 	     , "bold" 
@@ -988,12 +991,19 @@ function goodPrintTemplateCtrlProvide(
 	     , "hpx_price", "hpx_size", "hpx_barcode"
 	     
 	     , "hpx_top", "hpx_left", "second_space"
+	     
 	     , "solo_snumber", "len_snumber"
-	    ,  "size_date", "size_color", "firm_date", "offset_size"];
+	     
+	     , "size_date", "size_color", "firm_date"
+
+	     , "tag_price", "vir_price"
+	     
+	     , "offset_size", "offset_tagprice", "offset_virprice"];
     
     $scope.save_template = function() {
 	var update = {};
 	var o_template = diablo_get_object($scope.template.id, $scope.o_templates);
+	console.log($scope.template);
 	angular.forEach(p, function(o) {
 	    if ($scope.template[o] !== o_template[o]) {
 		update[o] = $scope.template[o]

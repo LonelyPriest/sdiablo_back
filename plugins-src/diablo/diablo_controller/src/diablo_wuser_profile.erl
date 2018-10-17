@@ -906,6 +906,9 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		", type"
 		", firm"
 		", code_firm"
+
+		", p_virprice"
+		", p_tagprice"
 		
 		", expire"
 		", shift_date"
@@ -926,6 +929,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		", font_price"
 		", font_size"
 		", font_fabric"
+	    %% ", font_vprice"
 		
 		", bold"
 		
@@ -951,7 +955,13 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		", size_date"
 		", size_color"
 		", firm_date"
+
+		", tag_price"
+		", vir_price"
+		
 		", offset_size"
+		", offset_tagprice"
+		", offset_virprice"
 		
 		", merchant) values("
 		++ "\'" ++ ?to_s(Name) ++ "\',"
@@ -960,58 +970,68 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(4) ++ ","
 		++ ?to_s(3) ++ ","
 		
-		++ ?to_s(0) ++ ","
-		++ ?to_s(?YES) ++ ","
-		++ ?to_s(?YES) ++ ","
-		++ ?to_s(?YES) ++ ","
-		++ ?to_s(?YES) ++ ","
-		++ ?to_s(?NO) ++ ","
-		
-		++ ?to_s(?NO) ++ ","
-		++ ?to_s(?NO) ++ ","
-		
-		++ ?to_s(?YES) ++ ","
-		++ ?to_s(?YES) ++ ","
-		++ ?to_s(?NO) ++ ","
+		++ ?to_s(0) ++ ","      %% shop
+		++ ?to_s(?YES) ++ ","   %% style_number
+		++ ?to_s(?YES) ++ ","   %% brand
+		++ ?to_s(?YES) ++ ","   %% type
+		++ ?to_s(?YES) ++ ","   %% firm
+		++ ?to_s(?NO) ++ ","    %% code_firm
 
-		++ ?to_s(?NO) ++ ","
-		++ ?to_s(?NO) ++ "," 
-		++ ?to_s(?NO) ++ ","
-		++ ?to_s(?NO) ++ ","
+		++ ?to_s(0) ++ ","      %% p_virprice
+		++ ?to_s(1) ++ ","      %% p_tagprice
 		
-		++ ?to_s(0) ++ ","
-		++ ?to_s(0) ++ ","
-		++ ?to_s(0) ++ ","
-		++ ?to_s(0) ++ ","
-		++ ?to_s(0) ++ ","
-		++ ?to_s(0) ++ ","
-		++ ?to_s(0) ++ ","
+		++ ?to_s(?NO) ++ ","    %% expire
+		++ ?to_s(?NO) ++ ","    %% shift_date
 		
-		++ ?to_s(?NO) ++ ","
+		++ ?to_s(?YES) ++ ","   %% color
+		++ ?to_s(?YES) ++ ","   %% size
+		++ ?to_s(?NO) ++ ","    %% size_spec
 
-		++ ?to_s(?NO) ++ ","
-		++ ?to_s(?NO) ++ ","
-		++ ?to_s(?NO) ++ ","
+		++ ?to_s(?NO) ++ ","    %% level
+		++ ?to_s(?NO) ++ ","    %% executive
+		++ ?to_s(?NO) ++ ","    %% category
+		++ ?to_s(?NO) ++ ","    %% fabric
 		
-		++ ?to_s(0) ++ ","
-		++ ?to_s(0) ++ ","
-		++ ?to_s(0) ++ ","
-		++ ?to_s(0) ++ ","
-		++ ?to_s(0) ++ ","
-		++ ?to_s(0) ++ ","
-		++ ?to_s(0) ++ ","
+		++ ?to_s(0) ++ ","      %% font
+		++ "\'\'" ++ ","      %% font_name
+		++ ?to_s(0) ++ ","      %% font_executive
+		++ ?to_s(0) ++ ","      %% font_category
+		++ ?to_s(0) ++ ","      %% font_price
+		++ ?to_s(0) ++ ","      %% font_size
+		++ ?to_s(0) ++ ","      %% font_fabrice
+	    %% ++ ?to_s(0) ++ ","      %% font_vprice
+		
+		++ ?to_s(?NO) ++ ","    %% bold
 
-		++ ?to_s(5) ++ ","
-		++ ?to_s(10) ++ ","
-		++ ?to_s(0) ++ ","
+		++ ?to_s(?NO) ++ ","    %% solo_brand
+		++ ?to_s(?NO) ++ ","    %% solo_color
+		++ ?to_s(?NO) ++ ","    %% solo_size
+		 
+		++ ?to_s(0) ++ ","      %% hpx_each
+		++ ?to_s(0) ++ ","      %% hpx_executive
+		++ ?to_s(0) ++ ","      %% hpx_category
+		++ ?to_s(0) ++ ","      %% hpx_fabric
+		++ ?to_s(0) ++ ","      %% hpx_price
+		++ ?to_s(0) ++ ","      %% hpx_size
+		++ ?to_s(0) ++ ","      %% hpx_barcode
 
-		++ ?to_s(0) ++ ","
-		++ ?to_s(8) ++ ","
+		++ ?to_s(5) ++ ","      %% hpx_top
+		++ ?to_s(10) ++ ","     %% hpx_left
+		++ ?to_s(0) ++ ","      %% second_space
 
-		++ ?to_s(0) ++ ","
-		++ ?to_s(0) ++ ","
-		++ ?to_s(0) ++ ","
-		++ ?to_s(0) ++ ","
+		++ ?to_s(0) ++ ","      %% solo_snumber
+		++ ?to_s(8) ++ ","      %% len_snumber
+
+		++ ?to_s(0) ++ ","      %% size_date
+		++ ?to_s(0) ++ ","      %% size_color
+		++ ?to_s(0) ++ ","      %% firm_date
+
+		++ "\'\'" ++ ","      %% tag_price
+		++ "\'\'" ++ ","      %% vir_price
+		
+		++ ?to_s(0) ++ ","      %% offset_size
+		++ ?to_s(0) ++ ","      %% offset_tagprice
+		++ ?to_s(0) ++ ","      %% offset_virprice
 		
 		++ ?to_s(Merchant)  ++ ")",
 

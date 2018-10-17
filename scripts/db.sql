@@ -1352,10 +1352,12 @@ create table print_template(
    type            TINYINT default 0,
    firm            TINYINT default 0,
    code_firm       TINYINT default 0,
+   
    p_virprice      TINYINT default 0,
+   p_tagprice      TINYINT default 1, 
    
    expire          TINYINT default 0, -- print expire data of the firm
-   
+   shift_date      TINYINT default 0,
    color           TINYINT default 0,
    size            TINYINT default 0,
    size_spec       TINYINT default 0,
@@ -1371,7 +1373,8 @@ create table print_template(
    font_category   TINYINT default 0,
    font_price      TINYINT default 0,
    font_size       TINYINT default 0,
-   font_fabric     TINYINT default 0,
+   font_fabric     TINYINT default 0, 
+   -- font_vprice     TINYINT default 0,
    
    bold            TINYINT default 0,
    
@@ -1399,10 +1402,13 @@ create table print_template(
    size_color      TINYINT default 0,
    firm_date       TINYINT default 0,
 
-   tag_price       VARCHAR(32) default '',
+   tag_price      VARCHAR(32) default '',
    vir_price      VARCHAR(32) default '',
    
-   offset_size     TINYINT default 0, 
+   offset_size     TINYINT default 0,
+   offset_tagprice TINYINT default 0,
+   offset_virprice TINYINT default 0,
+   
    merchant        INTEGER not null default -1,
    
    unique   key    (merchant, tshop, name),

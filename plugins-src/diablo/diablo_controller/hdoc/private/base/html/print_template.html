@@ -709,18 +709,101 @@
 		</tr>
 
 		<tr>
-		  <td>43</td>
+		  <td>44</td>
 		  <td>尺码规格描述</td>
 		  <td>
 		    <input class="form-control"
 			   type="number"
-			   step="1"
 			   disable-wheel
 			   disable-key
 			   ng-edit
 			   x-ng-model="template.size_spec"/>
 		  </td>
-		  <td>155/80A</td>
+		  <td>货品大类的规格描述</td>
+		</tr>
+
+		<tr>
+		  <td>45</td>
+		  <td>打印虚拟价格</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.p_virprice"/>
+		  </td>
+		  <td>显示零售价等字样</td>
+		</tr>
+
+		<tr>
+		  <td>46</td>
+		  <td>虚拟价格名字</td>
+		  <td>
+		    <input class="form-control"
+			   type="text"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.vir_price"/>
+		  </td>
+		  <td>标签上虚拟价格的名字如零售价等</td>
+		</tr>
+
+		<tr>
+		  <td>47</td>
+		  <td>打印吊牌价</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.p_tagprice"/>
+		  </td>
+		  <td>显示价格等字样,默认不显示</td>
+		</tr>
+
+		<tr>
+		  <td>48</td>
+		  <td>吊牌价格名字</td>
+		  <td>
+		    <input class="form-control"
+			   type="text"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.tag_price"/>
+		  </td>
+		  <td>标签上吊牌价格的名字如会员价等</td>
+		</tr>
+
+		<tr>
+		  <td>49</td>
+		  <td>虚拟价格偏移</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.offset_virprice"/>
+		  </td>
+		  <td>象素单位</td>
+		</tr>
+
+		<tr>
+		  <td>50</td>
+		  <td>吊牌价格偏移量</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   disable-wheel
+			   disable-key
+			   ng-edit
+			   x-ng-model="template.offset_tagprice"/>
+		  </td>
+		  <td>象素单位</td>
 		</tr>
 		
 	      </tbody>
