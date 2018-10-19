@@ -64,7 +64,8 @@ function shopConfig(angular){
 	    }).
 	    when('/region_detail', {
 		templateUrl: '/private/shop/html/region_detail.html',
-		controller: 'regionDetailCtrl' 
+		controller: 'regionDetailCtrl',
+		resolve: angular.extend({}, employee)
 	    }).
 	    otherwise({
 		templateUrl: '/private/shop/html/shop_detail.html',
@@ -178,11 +179,10 @@ function shopConfig(angular){
 		 promotion: promotion}).$promise;
 	};
 
-	this.add_region = function(name, comment) {
+	this.add_region = function(name, master, comment) {
 	    return shop.save(
 		{operation: "new_region"},
-		{name: name,
-		 comment: comment}).$promise;
+		{name: name, master: master, comment: comment}).$promise;
 	};
 
 	this.list_region = function() {

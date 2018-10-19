@@ -1005,18 +1005,6 @@ stockPrintU.prototype.prepare = function(
     // this.setBarcode(barcode);
     this.setFirm(firm);
     this.setCodeFirm(codeFirm);
-    // this.setColor(color);
-    // this.setSize(size);
-
-    // if (!this.autoBarcode) {
-    // 	this.setBarcode(barcode);
-    // } else {
-    // 	if (stock.free === 0) {
-    // 	    this.setBarcode(barcode.substr(0, barcode.length - diablo_barcode_lenth_of_color_size));
-    // 	} else {
-    // 	    this.setBarcode(barcode);
-    // 	}
-    // }
     
     var i=0, l=barcodes.length;
     while (i<l) {
@@ -1086,19 +1074,16 @@ stockPrintU.prototype.printBarcode2 = function() {
     
     // shop
     if (this.template.shop && angular.isDefined(this.shop)) {
-	line = this.shop;
+	line = this.shop; 
+	if (this.template.shift_date && !this.template.size_date && !this.template.firm_date) {
+	    if (angular.isDefined(line) && diablo_trim(line))
+		line = line + "-" + shift_date; 
+	}
+	
+	top = this.start_print(
+	    line, top, this.left, iwpx, this.template.hpx_each, 0, pSecond, pThird, startSecond, startThird);
     }
     
-    if (this.template.shift_date && !this.template.size_date && !this.template.firm_date) {
-	if (angular.isDefined(line) && diablo_trim(line))
-	    line = line + "-" + shift_date;
-	else 
-	    line = shift_date
-
-	top = this.start_print(
-	    line, top, this.left, iwpx, this.template.hpx_each, 0, pSecond, pThird, startSecond, startThird); 
-    }
-
     // firm
     if (this.template.firm) {
 	var firm = angular.isUndefined(this.firm) ? diablo_empty_string : this.firm; 
@@ -1400,6 +1385,6 @@ stockPrintU.prototype.printBarcode2 = function() {
 
     // this.LODOP.PRINT_SETUP();
     // this.LODOP.PRINT_DESIGN();
-    this.LODOP.PREVIEW();
-    // this.LODOP.PRINT(); 
+    // this.LODOP.PREVIEW();
+    this.LODOP.PRINT();
 };

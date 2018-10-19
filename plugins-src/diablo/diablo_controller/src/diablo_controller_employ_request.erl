@@ -100,7 +100,21 @@ sidebar(Session) ->
 	    _ -> []
 	end,
 
-    case S2 ++ S1 of
+    S3 = 
+	case ?right_auth:authen(?new_department, Session) of
+	    {ok, ?new_department} ->
+		[{"new_department", "新增部门", "glyphicon glyphicon-plus"}];
+	    _ -> []
+	end,
+
+    S4 = 
+	case ?right_auth:authen(?new_employe, Session) of
+	    {ok, ?new_employe} ->
+		[{"department_detail", "部门详情", "glyphicon glyphicon-book"}];
+	    _ -> []
+	end,
+
+    case S2 ++ S1 ++ S3 ++ S4 of
 	[] -> [];
 	Sidebar -> ?menu:sidebar(level_1_menu, Sidebar)
     end.

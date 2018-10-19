@@ -43,6 +43,7 @@ init([Name]) ->
 handle_call({new_saler, Merchant, Attrs}, _From, State) ->
     ?DEBUG("new_saler: merchant ~p, Attrs ~p", [Merchant, Attrs]),
     Shop     = ?v(<<"shop">>, Attrs, ?INVALID_OR_EMPTY),
+    Region   = ?v(<<"region">>, Attrs, ?INVALID_OR_EMPTY),
     Name     = ?v(<<"name">>, Attrs),
     PinYin   = ?v(<<"py">>, Attrs),
     Type     = ?v(<<"type">>, Attrs), 
@@ -60,9 +61,10 @@ handle_call({new_saler, Merchant, Attrs}, _From, State) ->
     case ?sql_utils:execute(s_read, Sql) of
         {ok, []} -> 
             Sql2 = "insert into batchsaler ("
-		"shop, name, py, type, balance, mobile, address, remark, merchant, entry_date)"
+		"shop, region, name, py, type, balance, mobile, address, remark, merchant, entry_date)"
                 ++ " values ("
 		++ ?to_s(Shop) ++ ","
+		++ ?to_s(Region) ++ ","
                 ++ "\'" ++ ?to_s(Name) ++ "\',"
 		++ "\'" ++ ?to_s(PinYin) ++ "\',"
 		++ ?to_s(Type) ++ ","

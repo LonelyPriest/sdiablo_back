@@ -1168,8 +1168,7 @@ action(Session, Req, {"gen_stock_barcode"}, Payload) ->
     %% {ok, Hide} = ?v(<<"h_stock">>, BaseSetting, ?HIDE_DEFAULT_MODE),
     
     
-    case ?w_inventory:purchaser_inventory(
-	    gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand) of
+    case ?w_inventory:purchaser_inventory(gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand) of
 	{ok, Barcode, Level, Category, Executive, Fabric} ->
 	    ?utils:respond(200, object, Req,
 			   {[{<<"ecode">>, 0},
@@ -1182,6 +1181,46 @@ action(Session, Req, {"gen_stock_barcode"}, Payload) ->
 	{error, Error} ->
     	    ?utils:respond(200, Req, Error)
     end;
+
+action(Session, Req, {"gen_stock_barcode_all"}, Payload) ->
+    ?DEBUG("gen_stock_barcode_all: session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    Shop = ?v(<<"shop">>, Payload),
+    AutoBarcode = ?v(<<"auto">>, Payload,  ?YES),
+    ?DEBUG("AutoBarcode ~p", [AutoBarcode]),
+
+    Stocks = ?v(<<"stock">>, Payload, []),
+    {_, Success, Failed} = 
+	lists:foldr(
+	  fun({struct, Stock}, {Acc0, Acc1, Acc2}) ->
+		  StyleNumber = ?v(<<"style_number">>, Stock),
+		  Brand = ?v(<<"brand">>, Stock),
+		  Gened = ?to_s(StyleNumber) ++ "-" ++ ?to_s(Brand), 
+		  case ?w_inventory:purchaser_inventory(
+			  gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand)
+		  of
+		      {ok, Barcode, Level, Category, Executive, Fabric} ->
+			  case lists:member(Gened, Acc0) of
+			      true -> Acc1;
+			      false ->
+				  {[Gened|Acc0],
+				   [{[{<<"style_number">>, StyleNumber},
+				      {<<"brand">>, Brand},
+				      {<<"barcode">>, ?to_b(Barcode)},
+				      {<<"level">>, Level},
+				      {<<"category">>, Category},
+				      {<<"executive">>, Executive},
+				      {<<"fabric">>, Fabric}]}|Acc1],
+				   Acc2}
+			  end;
+		      {error, _Error} ->
+			  {Acc0, Acc1, [{[{<<"style_number">>, StyleNumber},
+					  {<<"brand">>, Brand}]}|Acc2]}
+		  end
+	  end, {[], [], []}, Stocks),
+
+    ?utils:respond(200, object, Req, {[{<<"success">>, Success},
+				       {<<"failed">>, Failed}]}); 
 
 action(Session, Req, {"reset_stock_barcode"}, Payload) ->
     ?DEBUG("reset_stock_barcode: session ~p, payload ~p", [Session, Payload]),

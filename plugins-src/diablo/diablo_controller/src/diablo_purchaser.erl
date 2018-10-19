@@ -210,7 +210,7 @@ purchaser_inventory(tag_price, Merchant, Shop, StyleNumber, Brand) ->
 %%
 purchaser_inventory(gen_barcode, Merchant, Shop, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {gen_barcode, ?YES, Merchant, Shop, StyleNumber, Brand}).
+    gen_server:call(Name, {gen_barcode, ?YES, Merchant, Shop, StyleNumber, Brand}, 10 * 1000).
 
 purchaser_inventory(get_by_barcode, Merchant, Shop, Firm, Barcode, ExtraCondtion) ->
     Name = ?wpool:get(?MODULE, Merchant),

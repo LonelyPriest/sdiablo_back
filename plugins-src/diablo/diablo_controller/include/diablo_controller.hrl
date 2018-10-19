@@ -170,7 +170,7 @@
 	 "40",  "41",  "42",  "43",   "44",  "46",   "48",  "50",  "52",  "54", "56",
 	 "58",  "80",  "90",  "100", "105", "110", "115",  "120", "125", "130", "135",
 	 "140", "145", "150", "155", "160", "165", "170",  "175", "180", "185", "190",
-	 "195", "200", "4",   "6",   "7",   "5",   "45",   "47",  "95",
+	 "195", "200", "4",   "6",   "7",   "5",   "45",   "47",
 
 	 "70A", "70B", "70C", "70D", "70E",
 	 "75A", "75B", "75C", "75D", "75E",
@@ -268,6 +268,11 @@
 -define(update_employe,  ?right_employe + 3).
 -define(list_employe,    ?right_employe + 4).
 -define(recover_employe, ?right_employe + 5).
+
+-define(new_department,     ?right_employe + 6).
+-define(update_department,  ?right_employe + 7).
+-define(list_department,    ?right_employe + 8).
+-define(del_department,     ?right_employe + 9).
 
 %% right
 -define(new_role,       ?right_right + 1).

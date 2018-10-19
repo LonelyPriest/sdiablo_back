@@ -78,6 +78,8 @@ var rightAuthen = {
 	return {
 	    delete_retailer   :rightAuthen.root_right._retailer + 2, 
 	    reset_password    :rightAuthen.root_right._retailer + 14,
+	    delete_recharge   :rightAuthen.root_right._retailer + 15,
+	    update_recharge   :rightAuthen.root_right._retailer + 16,
 	    update_score      :rightAuthen.root_right._retailer + 17,
 	    export_retailer   :rightAuthen.root_right._retailer + 21,
 	    query_balance     :rightAuthen.root_right._retailer + 22,
@@ -349,6 +351,8 @@ diabloAuthen.prototype.authenRetailerRight = function() {
     return {
 	reset_password        :this.authenRetailer('reset_password'),
 	delete_retailer       :this.authenRetailer('delete_retailer'),
+	delete_recharge       :this.authenRetailer('delete_recharge'),
+	update_recharge       :this.authenRetailer('update_recharge'),
 	update_retailer_score :this.authenRetailer('update_score'),
 	export_retailer       :this.authenRetailer('export_retailer'),
 	query_balance         :this.authenRetailer('query_balance'),

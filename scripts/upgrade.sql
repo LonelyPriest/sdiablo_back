@@ -447,3 +447,7 @@ alter table print_template add column size_spec TINYINT default 0 after size;
 alter table print_template add column offset_tagprice INTEGER default 0  after offset_size;
 alter table print_template add column offset_virprice INTEGER default 40  after offset_tagprice;
 alter table print_template add column p_tagprice TINYINT default 1 after p_virprice;
+
+-- 2018-10-18
+alter table batchsaler add column region INTEGER default -1 after shop;
+alter table region add column master VARCHAR(8) default '' after name;

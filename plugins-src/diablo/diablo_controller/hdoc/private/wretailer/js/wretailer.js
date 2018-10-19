@@ -750,9 +750,12 @@ function wretailerChargeDetailCtrlProvide(
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
 
-    $scope.right = {
-	master: rightAuthen.authen_master(user.type),
-	update_phone: retailerUtils.authen(user.type, user.right, 'update_phone')};
+    // $scope.right = {
+    // 	master: rightAuthen.authen_master(user.type),
+    // 	update_phone: retailerUtils.authen(user.type, user.right, 'update_phone')};
+
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.right = authen.authenRetailerRight();
     
     var now = retailerUtils.first_day_of_month();
     $scope.time = diabloFilter.default_time(now.first, now.current);

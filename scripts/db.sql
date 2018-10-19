@@ -56,7 +56,8 @@ create table region
     id               INTEGER AUTO_INCREMENT, 
     merchant         INTEGER not null default -1, 
     name             VARCHAR(64) not null,
-    comment          VARCHAR(256) default null,
+    master           VARCHAR(8) default '',
+    comment          VARCHAR(256) default '',
     entry_date       DATETIME not null,
     deleted          INTEGER default 0, -- 0: no;  1: yes
     unique  key   uk (merchant, name),
@@ -1422,6 +1423,7 @@ create table batchsaler
 (
     id              INTEGER AUTO_INCREMENT,
     shop            INTEGER default -1,
+    region          INTEGER default -1,
     name            VARCHAR(127) not null,
     py              VARCHAR(8) default null,
     type            TINYINT default 0,  -- 2: system, 0:common 
@@ -1433,5 +1435,27 @@ create table batchsaler
     entry_date      DATETIME default 0, 
     deleted         INTEGER default 0, -- 0: no;  1: yes 
     unique  key  uk (merchant, name),
+    primary key     (id)
+) default charset=utf8;
+
+create table department
+(
+    id              INTEGER AUTO_INCREMENT,
+    name            VARCHAR(127) not null,
+    remark          VARCHAR(255), 
+    merchant        INTEGER default -1,
+    entry_date      DATETIME default 0, 
+    deleted         INTEGER default 0, -- 0: no;  1: yes 
+    unique  key  uk (merchant, name),
+    primary key     (id)
+) default charset=utf8;
+
+create table employee_locate(
+    id              INTEGER AUTO_INCREMENT,
+    department      INTEGER default -1,
+    employ          varchar(8) default '',
+    merchant        INTEGER default -1,
+    entry_date      DATETIME default 0, 
+    deleted         INTEGER default 0, -- 0: no;  1: yes
     primary key     (id)
 ) default charset=utf8;

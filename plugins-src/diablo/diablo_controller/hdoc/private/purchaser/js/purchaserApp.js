@@ -317,6 +317,7 @@ function stockConfg(angular){
 	    2016: "服务器条码校验失败，请注销当前用户后再操作！！",
 	    2017: "该货品无条码值，请先重置该货品条码值后再打印！！",
 	    2019: "厂商为空的情况下，不允许修改入库时间，请先填写厂商！！",
+	    2075: "条码生成失败，请重新操作！！", 
 	    2076: "非法条码，条码长度不小于9，请输入正确的条码值！！",
 	    2077: "导入的文件数量不能超过了2个！！", 
 	    2078: "无法单独修改积分方案，请关联修改吊牌价或折扣！！",
@@ -658,6 +659,11 @@ function stockConfg(angular){
 			     {style_number:style_number,
 			      brand:brand,
 			      shop:shop}).$promise;
+	};
+
+	this.gen_barcode_all = function(stocks, shop, auto_barcode) {
+	    return http.save({operation: "gen_stock_barcode_all"},
+			     {stock: stocks, shop:shop, auto:auto_barcode}).$promise;
 	};
 
 	this.reset_barcode = function(style_number, brand, shop) {

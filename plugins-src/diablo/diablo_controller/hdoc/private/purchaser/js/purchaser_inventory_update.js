@@ -44,9 +44,11 @@ function purchaserInventoryNewUpdateCtrlProvide (
 
     // $scope.template = filterTemplate.length !== 0 ? filterTemplate[0] : undefined;
     $scope.printU = new stockPrintU($scope.setting.auto_barcode, $scope.setting.dual_barcode);
-    $scope.printU.setPrinter($scope.setting.printer_barcode);
+    $scope.printU.setPrinter($scope.setting.printer_barcode); 
 
     var dialog = diabloUtilsService;
+
+    if ($scope.setting.use_barcode && needCLodop()) loadCLodop(); 
 
     $scope.go_back = function(){
 	console.log($routeParams.ppage);
@@ -800,23 +802,17 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	    if (amounts[i].cid === cid && amounts[i].size === sname){
 		return amounts[i];
 	    }
-	}
-	
+	} 
 	amounts.push(m); return m;
     };
 
     var valid_amount = function(amounts){
 	var unchanged = 0;
 	for (var i=0, l=amounts.length; i<l; i++){
-	    if(angular.isUndefined(amounts[i])
-	       || angular.isUndefined(amounts[i].count)
-	       || !amounts[i].count){
+	    if(angular.isUndefined(amounts[i]) || angular.isUndefined(amounts[i].count) || !amounts[i].count){
 		unchanged++;
 	    } 
-	}
-
-	// console.log(unchanged, l);
-	// console.log(amounts);
+	} 
 	return unchanged === l ? false : true;
     };
     
@@ -1022,16 +1018,130 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	$scope.inventories[0] = {$edit:false, $new:true}; 
     };
 
-    $scope.disable_gen_barcode_all = false;
+    var dialog_barcode_title = "库存条码打印";
+    var dialog_barcode_title_failed = "库存条码打印失败：";
+    
+    var get_index_of_ext_stock = function(stock, exts) {
+	var index = diablo_invalid_index;
+	for (var i=0, l=exts.length; i<l; i++) {
+	    if (stock.style_number === exts[i].style_number && stock.brand_id === exts[i].brand) {
+		index = i;
+		break;
+	    } 
+	}
+	return index;
+    };
+
+    var impl_ext_stock = function(stock, ext) {
+	stock.level     = ext.level;
+	stock.executive = diablo_get_object(ext.executive, filterStdExecutive);
+	stock.category  = diablo_get_object(ext.category, filterCategory); 
+	stock.specs = [];
+	if (angular.isObject(stock.type) && stock.type.cid !== diablo_invalid_index) {
+	    angular.forEach(filterSizeSpec, function(s) {
+		if (s.cid === stock.type.cid) {
+		    stock.specs.push(s);
+		}
+	    }) 
+	}
+	
+	if (ext.fabric) {
+	    stock.fabrics = angular.fromJson(ext.fabric);
+	    angular.forEach(stock.fabrics, function(f) {
+		var fabric = diablo_get_object(f.f, filterFabric);
+		if (angular.isDefined(fabric) && angular.isObject(fabric))
+		    f.name = fabric.name; 
+	    });
+	}
+
+	return stock;
+    };
+
+    var print_one_barcode = function(barcode, stock, template) {
+	console.log(stock);
+	$scope.printU.set_template(template);
+	if (template.firm && diablo_invalid_firm === stockUtils.invalid_firm($scope.select.firm) ) {
+	    dialog.response(
+		false,
+		dialog_barcode_title,
+		dialog_barcode_title_failed + purchaserService.error[2086]);
+	    return;
+	}
+	
+	var expire = diablo_nolimit_day;
+	if (stock.alarm_day !== diablo_nolimit_day) {
+	    expire = stockUtils.to_integer(stock.alarm_day);
+	} else {
+	    if (diablo_invalid_firm !== stockUtils.invalid_firm($scope.select.firm)) {
+		if (angular.isDefined($scope.select.firm.expire)
+		    &&  $scope.select.firm.expire !== diablo_nolimit_day) {
+		    expire = stockUtils.to_integer($scope.select.firm.expire); 
+		}
+	    }
+	}
+
+	if (expire !== diablo_nolimit_day)
+	    stock.expire_date = stockUtils.date_add(stock.entry_date, expire);
+
+	var firm;
+	if (diablo_invalid_firm !== stockUtils.invalid_firm($scope.select.firm))
+	    firm =  $scope.select.firm.name;
+	
+	var i, l, barcodes = []; 
+	if (stock.free_color_size) {
+	    for (i=0, l=stock.total; i<l; i++) {
+		barcodes.push(barcode); 
+	    }
+	    
+	    $scope.printU.free_prepare(
+		$scope.select.shop.name,
+		stock, 
+		stock.brand.name,
+		barcodes,
+		firm,
+		stockUtils.invalid_firm($scope.select.firm)); 
+	} 
+	else {
+	    barcodes = [];
+	    // sort by color, size
+	    var sorted_amounts = [];
+	    angular.forEach(stock.colors, function(color) {
+		for (i=0, l=stock.sizes.length; i<l; i++) {
+		    var size = stock.sizes[i];
+		    for (var j=0, k=stock.amounts.length; j<k; j++) {
+			var a = stock.amounts[j];
+			if (color.cid === a.cid && size === a.size) {
+			    sorted_amounts.push(a);
+			    break;
+			}
+		    }
+		}
+		
+	    });
+
+	    // console.log(sorted_amounts);
+	    angular.forEach(sorted_amounts, function(a) {
+		var color = diablo_find_color(a.cid, filterColor);
+		for (i=0, l=a.count; i<l; i++) {
+		    var o = stockUtils.gen_barcode_content2(barcode, color, a.size);
+		    if (angular.isDefined(o) && angular.isObject(o)) {
+			barcodes.push(o); 
+		    }
+		} 
+	    });
+	    
+	    console.log(barcodes); 
+	    $scope.printU.prepare(
+		$scope.select.shop.name,
+		stock,
+		stock.brand.name,
+		barcodes,
+		firm,
+		stockUtils.invalid_firm($scope.select.firm)); 
+	}
+    };
+    
     $scope.p_barcode_all = function() {
-	// if ($scope.setting.barcode_firm
-	//     && diablo_invalid_firm === stockUtils.invalid_firm($scope.select.firm)) {
-	//     diabloUtilsService.response(
-	// 	false,
-	// 	dialog_barcode_title,
-	// 	dialog_barcode_title_failed + purchaserService.error[2086]);
-	//     return;
-	// } 
 	var callback = function(params) {
 	    // console.lo(params);
 	    var select_template = params.templates.filter(function(t) {return t.select})[0];
@@ -1042,10 +1152,35 @@ function purchaserInventoryNewUpdateCtrlProvide (
 		    dialog_barcode_title,
 		    dialog_barcode_title_failed + purchaserService.error[2086]);
 	    } else {
+		var stocks = [];
+		var one;
 		for (var i=1, l=$scope.inventories.length; i<l; i++) {
-		    var one = $scope.inventories[i];
-		    $scope.p_barcode(one, select_template);
-		}
+		    one = $scope.inventories[i];
+		    stocks.push({style_number:one.style_number, brand:one.brand_id});
+		} 
+		// get barcode all
+		purchaserService.gen_barcode_all(
+		    stocks, $scope.select.shop.id, $scope.setting.auto_barcode
+		).then(function(result) {
+		    console.log(result);
+		    if (result.failed.length !== 0) {
+			var err = "";
+			angular.forEach(result.failed, function(f) {
+			    err += f.style_number + diablo_get_object(f.brand, $scope.brands).name;
+			});
+			dialog.response(
+			    false, dialog_barcode_title, "(" + err + ")" + purchaserService.error[2075]);
+		    } else {
+			var exts = result.success;
+			for (var j=1, k=$scope.inventories.length; j<k; j++) {
+			    one = $scope.inventories[j];
+			    var index = get_index_of_ext_stock(one, exts);
+			    var ext = exts[index];
+			    one = impl_ext_stock(one, ext); 
+			    print_one_barcode(ext.barcode, one, select_template)
+			}
+		    }
+		}); 
 	    } 
 	};
 	
@@ -1054,112 +1189,20 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	    undefined,
 	    callback,
 	    undefined,
-	    {templates: $scope.templates,
-	     check_only: stockUtils.check_select_only}); 
+	    {templates: $scope.templates, check_only: stockUtils.check_select_only}); 
     };
 
-    if ($scope.setting.use_barcode && needCLodop()) loadCLodop();
-    
-    var dialog_barcode_title = "库存条码打印";
-    var dialog_barcode_title_failed = "库存条码打印失败：";
-    $scope.p_barcode = function(inv, select_template) {
-	console.log(inv);
 
-	var print_barcode = function(barcode, template) {
-	    $scope.printU.set_template(template);
-	    if (template.firm && diablo_invalid_firm === stockUtils.invalid_firm($scope.select.firm) ) {
-		dialog.response(
-		    false,
-		    dialog_barcode_title,
-		    dialog_barcode_title_failed + purchaserService.error[2086]);
-		return;
-	    }
-	    
-	    var expire = diablo_nolimit_day;
-	    if (inv.alarm_day !== diablo_nolimit_day) {
-		expire = stockUtils.to_integer(inv.alarm_day);
-	    } else {
-		if (diablo_invalid_firm !== stockUtils.invalid_firm($scope.select.firm)) {
-		    if (angular.isDefined($scope.select.firm.expire)
-			&&  $scope.select.firm.expire !== diablo_nolimit_day) {
-			expire = stockUtils.to_integer($scope.select.firm.expire); 
-		    }
-		}
-	    }
-
-	    if (expire !== diablo_nolimit_day)
-		inv.expire_date = stockUtils.date_add(inv.entry_date, expire);
-
-	    // $scope.printU.setCodeFirm($scope.select.firm.id);
-	    var firm = undefined;
-	    if (diablo_invalid_firm !== stockUtils.invalid_firm($scope.select.firm))
-		firm =  $scope.select.firm.name;
-	    
-	    var barcodes = []; 
-	    if (inv.free_color_size) {
-		for (var i=0; i<inv.total; i++) {
-		    barcodes.push(barcode); 
-		}
-		
-		$scope.printU.free_prepare(
-		    $scope.select.shop.name,
-		    inv, 
-		    inv.brand.name,
-		    barcodes,
-		    firm,
-		    stockUtils.invalid_firm($scope.select.firm)); 
-	    }
-	    
-	    else {
-		barcodes = []; 
-		angular.forEach(inv.amounts, function(a) {
-		    var color = diablo_find_color(a.cid, filterColor);
-		    for (var i=0; i<a.count; i++) {
-			var o = stockUtils.gen_barcode_content2(barcode, color, a.size);
-			if (angular.isDefined(o) && angular.isObject(o)) {
-			    barcodes.push(o); 
-			}
-		    } 
-		});
-		
-		console.log(barcodes); 
-		$scope.printU.prepare(
-		    $scope.select.shop.name,
-		    inv,
-		    inv.brand.name,
-		    barcodes,
-		    firm,
-		    stockUtils.invalid_firm($scope.select.firm)); 
-	    }
-	};
-	
+    $scope.p_barcode = function(inv) {
+	console.log(inv); 
 	var start_barcode = function(template){
 	    purchaserService.gen_barcode(
 		inv.style_number, inv.brand_id, $scope.select.shop.id
 	    ).then(function(result) {
 		console.log(result);
 		if (result.ecode === 0) {
-		    inv.level     = result.level;
-		    inv.executive = diablo_get_object(result.executive, filterStdExecutive);
-		    inv.category  = diablo_get_object(result.category, filterCategory); 
-		    inv.specs = [];
-		    if (angular.isObject(inv.type) && inv.type.cid !== diablo_invalid_index) {
-			angular.forEach(filterSizeSpec, function(s) {
-			    if (s.cid === inv.type.cid) {
-				inv.specs.push(s);
-			    }
-			}) 
-		    }
-		    
-		    if (result.fabric) {
-			inv.fabrics = angular.fromJson(result.fabric);
-			angular.forEach(inv.fabrics, function(f) {
-			    var fabric = diablo_get_object(f.f, filterFabric);
-			    if (angular.isDefined(fabric) && angular.isObject(fabric))
-				f.name = fabric.name; 
-			});
-		    } 
-		    print_barcode(result.barcode, template);
+		    inv = impl_ext_stock(inv, result); 
+		    print_one_barcode(result.barcode, inv, template);
 		} else {
 		    dialog.response(
 			false,
@@ -1168,24 +1211,20 @@ function purchaserInventoryNewUpdateCtrlProvide (
 		}
 	    });
 	};
-
-	if (angular.isDefined(select_template) && angular.isObject(select_template)) {
-	    start_barcode(select_template);
-	} else {
-	    var callback = function(params) {
-		console.log(params);
-		var t = params.templates.filter(function(t) {return t.select})[0];
-		start_barcode(t);
-	    };
+	
+	var callback = function(params) {
+	    console.log(params);
+	    var t = params.templates.filter(function(t) {return t.select})[0];
+	    start_barcode(t);
+	};
 	    
-	    dialog.edit_with_modal(
-		"select-template.html",
-		undefined,
-		callback,
-		undefined,
-		{templates: $scope.templates,
-		 check_only: stockUtils.check_select_only});
-	}
+	dialog.edit_with_modal(
+	    "select-template.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {templates: $scope.templates,
+	     check_only: stockUtils.check_select_only});
     };
     
 };

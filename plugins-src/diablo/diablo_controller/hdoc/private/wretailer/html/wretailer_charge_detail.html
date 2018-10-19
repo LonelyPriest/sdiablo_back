@@ -119,12 +119,12 @@
 		    <td>{{c.accbalance}}</td> 
 		    <td>{{c.comment}}</td>
 		    <td>{{c.entry_date}}</td> 
-		    <td  x-ng-if="right.update_phone">
-		      <button class="btn diablo-button yellow-crusta"
+		    <td>
+		      <button x-ng-if="right.update_recharge" class="btn diablo-button yellow-crusta"
 		      	      x-ng-click="update_recharge(c)">修改
 		      	<i class="glyphicon glyphicon-edit"></i>
 		      </button> 
-		      <button class="btn diablo-button btn-danger"
+		      <button x-ng-if="right.delete_recharge" class="btn diablo-button btn-danger"
 			      x-ng-click="delete_recharge(c)">删除
 			<i class="glyphicon glyphicon-erase"></i></button> 
 		    </td>

@@ -588,24 +588,31 @@ function shopDetailCtrlProvide(
     };
 };
 
-function regionDetailCtrlProvide($scope, shopService, diabloUtilsService){
+function regionDetailCtrlProvide($scope, shopService, diabloUtilsService, filterEmployee){
+    $scope.employees = filterEmployee;
     var dialog = diabloUtilsService;
 
     $scope.refresh = function(){
 	shopService.list_region().then(function(data){
 	    console.log(data); 
 	    $scope.regions = angular.copy(data);
-	    diablo_order($scope.regions);
+	    diablo_order($scope.regions); 
+	    angular.forEach($scope.regions, function(r) {
+		r.master = diablo_get_object(r.master_id, filterEmployee);
+	    })
 	});	
-    };
-
+    }; 
     $scope.refresh();
 
     $scope.new_region = function(){
 	var callback = function(params){
 	    console.log(params);
-
-	    shopService.add_region(params.name, params.comment).then(function(state){
+	    var master = params.master;
+	    shopService.add_region(
+		params.name,
+		angular.isObject(master) && angular.isDefined(master.id) ? master.id : undefined,
+		params.comment, 
+	    ).then(function(state){
 		if (state.ecode === 0){
 		    dialog.response_with_callback
 		    (true,
@@ -622,7 +629,7 @@ function regionDetailCtrlProvide($scope, shopService, diabloUtilsService){
 	    });
 	};
 
-	dialog.edit_with_modal("new-region.html", undefined, callback, undefined, {});
+	dialog.edit_with_modal("new-region.html", undefined, callback, $scope, {});
     };
 
     $scope.update_region = function(region){

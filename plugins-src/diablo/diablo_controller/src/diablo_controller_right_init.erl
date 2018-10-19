@@ -235,7 +235,11 @@ init([]) ->
 	 {?list_employe,
 	  <<"查询员工">>, <<"list_employe">>,   ?right_employe},
 	 {?recover_employe,
-	  <<"恢复员工">>, <<"recover_employe">>,   ?right_employe}
+	  <<"恢复员工">>, <<"recover_employe">>,   ?right_employe},
+	 {?new_department, 
+	  <<"新增部门">>, <<"new_department">>,   ?right_employe},
+	 {?list_department,
+	  <<"部门详情">>, <<"department_detail">>,   ?right_employe}
 	],
 
     Right =
@@ -968,6 +972,7 @@ pass_action(wholesaler) ->
      <<"get_stock_by_barcode">>, 
      <<"syn_w_inventory_barcode">>,
      <<"gen_stock_barcode">>,
+     <<"gen_stock_barcode_all">>,
      %% <<"update_w_inventory_batch">>,
 
      %% inventory new
