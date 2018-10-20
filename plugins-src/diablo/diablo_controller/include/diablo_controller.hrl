@@ -119,7 +119,7 @@
 -define(VIP_DEFAULT_MODE, <<"0000">>).
 
 %% hide mode
--define(HIDE_DEFAULT_MODE, <<"00011011111">>).
+-define(HIDE_DEFAULT_MODE, <<"000110111111">>).
 
 %% sms
 -define(SMS_NOTIFY, <<"00">>).
@@ -177,7 +177,9 @@
 	 "80A", "80B", "80C", "80D", "80E", "80F",
 	 "85A", "85B", "85C", "85D", "85E", "85F",
 	 "90A", "90B", "90C", "90D", "90E", "90F",
-	 "95A", "95B", "95C", "95D", "95E", "95F"
+	 "95A", "95B", "95C", "95D", "95E", "95F",
+
+	 "55", "60", "65", "70", "75", "85", "95"
 	 ]).
 
 %% right module
@@ -345,6 +347,7 @@
 -define(update_oprice_on_stock_in,          ?right_w_inventory + 33).
 -define(bill_firm_on_stock_in,              ?right_w_inventory + 34).
 -define(export_w_inventory_fix_note,        ?right_w_inventory + 35).
+-define(offering_w_stock,                       ?right_w_inventory + 36).
 
 
 

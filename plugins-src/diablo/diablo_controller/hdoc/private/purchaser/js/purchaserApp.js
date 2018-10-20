@@ -630,7 +630,11 @@ function stockConfg(angular){
 
 	this.gift_stock = function(condition, attrs) {
 	    return http.save({operation: "gift_w_stock"}, {condition:condition, attrs:attrs}).$promise;
-	}
+	};
+
+	this.offering_stock = function(condition, attrs) {
+	    return http.save({operation: "offering_w_stock"}, {condition:condition, attrs:attrs}).$promise;
+	};
 
 	/*
 	 * trace

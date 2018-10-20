@@ -679,11 +679,11 @@ create table w_inventory_good
     discount         DECIMAL(4, 1), -- max: 100, discount of sell
     path             VARCHAR(255) default null, -- the image path
     alarm_day        TINYINT default -1,  -- the days of alarm
-
+    state            TINYINT default -1, -- 3:promotion
     --
     contailer        INTEGER default -1,
     alarm_a          INTEGER default 0,
-
+    
     --
     level            TINYINT default -1,
     executive        INTEGER default -1,
@@ -748,7 +748,8 @@ create table w_inventory
 
     --
     shop             INTEGER default -1,
-    state            INTEGER default 0,  -- 0: wait for check, 1: checked, 2: gift, 3:promotion
+    state            TINYINT default 0,  -- 3:promotion
+    gift             TINYINT default 0,
 
     merchant         INTEGER default -1,
     

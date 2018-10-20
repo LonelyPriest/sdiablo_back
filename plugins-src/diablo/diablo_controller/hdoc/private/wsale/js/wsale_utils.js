@@ -1559,8 +1559,8 @@ var wsalePrint = function(){
 	start_print: function(LODOP){
 	    // wsalePrint.init(LODOP);
 	    // LODOP.PRINT_DESIGN();
-	    // LODOP.PREVIEW();
-	    LODOP.PRINT();
+	    LODOP.PREVIEW();
+	    // LODOP.PRINT();
 	}
     }
 }();

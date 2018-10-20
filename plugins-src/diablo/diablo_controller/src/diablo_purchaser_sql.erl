@@ -17,6 +17,10 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
     VirPrice    = ?v(<<"vir_price">>, Attrs, 0), 
     TagPrice    = ?v(<<"tag_price">>, Attrs, 0), 
     EDiscount   = ?v(<<"ediscount">>, Attrs, 100),
+    SPrice      = case ?v(<<"sprice">>, Attrs, ?INVALID_OR_EMPTY) of
+		      1 -> 3;
+		      _ -> ?INVALID_OR_EMPTY
+		  end,
     Discount    = ?v(<<"discount">>, Attrs, 100),
     Colors      = ?v(<<"colors">>, Attrs, [?FREE_COLOR]),
     Path        = ?v(<<"path">>, Attrs, []),
@@ -78,6 +82,7 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
 	", tag_price"
 	", ediscount"
 	", discount"
+	", state"
 	", path"
 	", level"
 	", executive"
@@ -108,6 +113,7 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
 	++ ?to_s(TagPrice) ++ ","
 	++ ?to_s(EDiscount) ++ ","
 	++ ?to_s(Discount) ++ ","
+	++ ?to_s(SPrice) ++ ","
 	++ "\'" ++ ?to_s(Path) ++ "\',"
 	
 	++ ?to_s(Level) ++ ","
@@ -404,6 +410,7 @@ good_match(style_number_with_firm, Merchant, StyleNumber, Firm) ->
 	", a.tag_price"
 	", a.ediscount"
 	", a.discount"
+	", a.state"
 	", a.path"
 	", a.alarm_day"
 	
@@ -453,6 +460,7 @@ good_match(all_style_number_with_firm, Merchant, StartTime, Firm) ->
 	", a.tag_price"
 	", a.ediscount"
 	", a.discount"
+	", a.state"
 	", a.path"
 	", a.alarm_day"
 	
@@ -561,6 +569,7 @@ inventory({group_detail, MatchMode}, Merchant, Conditions, PageFun) ->
 	", a.sell"
 	", a.shop as shop_id"
 	", a.state"
+	", a.gift"
 	", a.last_sell"
 	", a.change_date"
 	", a.entry_date"
@@ -633,7 +642,20 @@ inventory(set_promotion, Merchant, Promotions, Conditions) ->
 	   end
 	++ " and deleted=" ++ ?to_s(?NO);
 
-inventory(set_gift, Merchant, StockState, Conditions) ->
+inventory(set_gift, Merchant, GiftState, Conditions) ->
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions), 
+    Updates = ?utils:v(gift, integer, GiftState), 
+    "update w_inventory set " ++ ?utils:to_sqls(proplists, comma, Updates)
+	++ " where " 
+	++ ?sql_utils:condition(proplists_suffix, NewConditions)
+	++ "merchant=" ++ ?to_s(Merchant)
+	++ case ?sql_utils:condition(time_no_prfix, StartTime, EndTime) of
+	       [] -> [];
+	       TimeSql ->  " and " ++ TimeSql
+	   end
+	++ " and deleted=" ++ ?to_s(?NO);
+
+inventory(set_offer, Merchant, StockState, Conditions) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions), 
     Updates = ?utils:v(state, integer, StockState), 
     "update w_inventory set " ++ ?utils:to_sqls(proplists, comma, Updates)
@@ -645,6 +667,7 @@ inventory(set_gift, Merchant, StockState, Conditions) ->
 	       TimeSql ->  " and " ++ TimeSql
 	   end
 	++ " and deleted=" ++ ?to_s(?NO);
+
 
 inventory(update_batch, Merchant, Attrs, Conditions) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
@@ -673,7 +696,8 @@ inventory(update_batch, Merchant, Attrs, Conditions) ->
 	case Imbalance of
 	    undefined ->
 		?utils:v(org_price, float, OrgPrice)
-		    ++ ?utils:v(tag_price, float, TagPrice);
+		    ++ ?utils:v(tag_price, float, TagPrice)
+		    ++ ?utils:v(state, integer, State);
 	    %% ++ ?utils:v(discount, float, Discount)
 	    %% ++ ?utils:v(contailer, integer, Contailer);
 	    _ ->
@@ -685,11 +709,8 @@ inventory(update_batch, Merchant, Attrs, Conditions) ->
 
     UpdateOfStock = UpdateOfGood
 	++ ?utils:v(score, integer, Score)
-	++ ?utils:v(state, integer, State)
-	++ ?utils:v(discount, float, Discount),
-    
-    
-    
+    %% ++ ?utils:v(state, integer, State)
+	++ ?utils:v(discount, float, Discount), 
 
     ?DEBUG("UpdateOfGood ~p, UpdateOfStock ~p", [UpdateOfGood, UpdateOfStock]),
 
@@ -883,6 +904,7 @@ inventory(list, Merchant, Conditions) ->
 	", a.ediscount"
 	", a.discount"
 	", a.state"
+	", a.gift"
 	", a.shop_id"
 
 	", b.color as color_id"
@@ -903,6 +925,7 @@ inventory(list, Merchant, Conditions) ->
 	", a.ediscount"
 	", a.discount"
 	", a.state"
+	", a.gift"
 	", a.shop as shop_id"
 	" from w_inventory a"
 	" where " ++ ?sql_utils:condition(proplists_suffix, NewConditions)
@@ -1392,7 +1415,7 @@ inventory_match(all_inventory, Merchant, Shop, Conditions) ->
 	", a.promotion as pid"
 	", a.score as sid"
 	", a.org_price, a.tag_price, a.ediscount, a.discount"
-	", a.state, a.path, a.entry_date"
+	", a.state, a.gift, a.path, a.entry_date"
 
 	", b.name as brand" 
 	", c.name as type"
@@ -1422,7 +1445,7 @@ inventory_match(of_in, Merchant, Shop, Ins) ->
 	", a.promotion as pid"
 	", a.score as sid"
 	", a.org_price, a.tag_price, a.ediscount, a.discount"
-	", a.state, a.path, a.entry_date"
+	", a.state, a.gift, a.path, a.entry_date"
 
 	", b.name as brand" 
 	", c.name as type"
@@ -1446,7 +1469,7 @@ inventory_match(Merchant, StyleNumber, Shop, Firm) ->
 	", a.promotion as pid"
 	", a.score as sid"
 	", a.org_price, a.tag_price, a.ediscount, a.discount"
-	", a.state, a.path, a.entry_date"
+	", a.state, a.gift, a.path, a.entry_date"
 	
 	", b.name as brand" 
 	", c.name as type"
@@ -1719,9 +1742,9 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
     TagPrice    = ?v(<<"tag_price">>, Inv, 0),
     %% EDiscount   = ?v(<<"ediscount">>, Inv),
     EDiscount   = stock(ediscount, OrgPrice, TagPrice), 
-    %% ?DEBUG("ediscount ~p", [EDiscount]),
-			  
+    %% ?DEBUG("ediscount ~p", [EDiscount]), 
     Discount    = ?v(<<"discount">>, Inv, 100),
+    SPrice      = ?v(<<"state">>, Inv, ?INVALID_OR_EMPTY),
     Path        = ?v(<<"path">>, Inv, []),
     AlarmDay    = ?v(<<"alarm_day">>, Inv, -1),
     Score       = ?v(<<"score">>, Inv, -1),
@@ -1750,7 +1773,7 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		  ", bcode, style_number, brand, type, sex, season, amount"
 		  ", firm, s_group, free, year, score"
 		  ", org_price, vir_price, tag_price, ediscount, discount"
-		  ", path, alarm_day, shop, contailer, alarm_a"
+		  ", path, alarm_day, shop, state, contailer, alarm_a"
 		  ", level, executive, category, fabric"
 		  ", merchant, last_sell, change_date, entry_date)"
 		  " values("
@@ -1776,6 +1799,7 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		  ++ "\"" ++ ?to_s(Path) ++ "\","
 		  ++ ?to_s(AlarmDay) ++ ","
 		  ++ ?to_s(Shop) ++ ","
+		  ++ ?to_s(SPrice) ++ ","
 		  ++ ?to_s(Contailer) ++ ","
 		  ++ ?to_s(Alarm_a) ++ ","
 

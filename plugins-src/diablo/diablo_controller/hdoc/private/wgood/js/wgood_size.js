@@ -50,7 +50,6 @@ function wgoodSizeDetailCtrlProvide(
     };
 
     var check_same = function(size, key, value){
-	// console.log(size, key, value); 
 	if (value) {
 	    if ($scope.shop_mode !== diablo_home_mode) 
 		if (diablo_invalid_index === size_to_barcode.indexOf(value))

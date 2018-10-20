@@ -448,6 +448,18 @@ alter table print_template add column offset_tagprice INTEGER default 0  after o
 alter table print_template add column offset_virprice INTEGER default 40  after offset_tagprice;
 alter table print_template add column p_tagprice TINYINT default 1 after p_virprice;
 
--- 2018-10-18
-alter table batchsaler add column region INTEGER default -1 after shop;
+-- 2018-10-19 --
 alter table region add column master VARCHAR(8) default '' after name;
+
+
+---------------------------------------------------------------------------------
+-- 2018-10-19
+alter table batchsaler add column region INTEGER default -1 after shop;
+---------------------------------------------------------------------------------
+
+
+-- 2018-10-20
+alter table w_inventory add column gift TINYINT default 0 after state;
+alter table w_inventory modify column state TINYINT default 0;
+alter table w_inventory_good add column state TINYINT default 0 after alarm_day;
+update w_inventory set gift=1 where state=2;

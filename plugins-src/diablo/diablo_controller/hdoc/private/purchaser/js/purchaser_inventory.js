@@ -38,6 +38,7 @@ function purchaserInventoryNewCtrlProvide (
     $scope.round             = diablo_round;
     $scope.full_years        = diablo_full_year;
     $scope.calc_row          = stockUtils.calc_row;
+    $scope.yes_no            = stockUtils.yes_no();
     
     $scope.disable_refresh   = true;
     $scope.timeout_auto_save = undefined; 
@@ -352,13 +353,14 @@ function purchaserInventoryNewCtrlProvide (
 	add.tag_price    = src.tag_price;
 	add.ediscount    = src.ediscount;
 	add.discount     = src.discount;
+	add.state        = src.state;
 	add.path         = src.path;
 	add.alarm_day    = src.alarm_day;
 	add.s_group      = src.s_group;
 	add.free         = src.free;
 	add.sizes        = src.size.split(",");
 	add.colors       = src.color.split(",");
-	add.over         = 0;
+	add.over         = 0; 
 	// exist stock in shop
 	add.stock        = 0;
 
@@ -626,6 +628,7 @@ function purchaserInventoryNewCtrlProvide (
 		tag_price   : diablo_set_float(add.tag_price), 
 		ediscount   : diablo_set_float(add.ediscount),
 		discount    : diablo_set_float(add.discount),
+		state       : add.state,
 
 		contailer   : add.contailer,
 		alarm_a     : add.alarm_a,
@@ -1704,6 +1707,7 @@ function purchaserInventoryNewCtrlProvide (
 	tag_price : 0, 
 	ediscount : 0,
 	discount  : 100,
+	sprice    : $scope.yes_no[0],
 	alarm_day : -1,
 	year      : diablo_now_year(),
 	season    : $scope.season2objs[stockUtils.valid_season(current_month)],
@@ -1732,7 +1736,7 @@ function purchaserInventoryNewCtrlProvide (
 	good.type_py = diablo_pinyin(good.type);
 	good.sex  = $scope.good.sex.id;
 	good.year = $scope.good.year; 
-	good.firm = angular.isDefined($scope.select.firm) && $scope.select.firm ? $scope.select.firm.id : undefined;
+	good.firm = stockUtils.invalid_firm($scope.select.firm);
 	good.season    = $scope.good.season.id; 
 	good.alarm_day = $scope.good.alarm_day;
 
@@ -1741,6 +1745,7 @@ function purchaserInventoryNewCtrlProvide (
 	good.tag_price = $scope.good.tag_price;
 	good.discount  = $scope.good.discount; 
 	good.ediscount = $scope.good.ediscount;
+	good.sprice    = stockUtils.get_object_id($scope.good.sprice);
 
 	good.contailer = $scope.good.contailer;
 	good.alarm_a   = $scope.good.alarm_a;
@@ -1813,58 +1818,11 @@ function purchaserInventoryNewCtrlProvide (
 	
 	// console.log(image);
 
-	// return;
-	
+	// return; 
 	diabloFilter.add_purchaser_good(good, image).then(function(state){
 	    console.log(state);
 	    $scope.good_saving = false;
 	    if (state.ecode == 0){
-		// reset color
-		// $scope.selectColors = [];
-		// $scope.good.colors="";
-		// // angular.forEach($scope.gcolors, function(colorInfo){
-		// //     angular.forEach(colorInfo, function(color){
-		// // 	// console.log(color);
-		// // 	angular.forEach(color, function(c){
-		// // 	    if (angular.isDefined(c.select)){
-		// // 		c.select = false;
-		// // 	    }
-		// // 	}) 
-		// //     })
-		// // });
-
-		// angular.forEach($scope.gcolors, function(cs){
-		//     angular.forEach(cs.colors, function(c){
-		// 	if (angular.isDefined(c.select))
-		// 	    c.select = false;
-
-		// 	if (angular.isDefined(c.disabled))
-		// 	    c.disabled = false;
-		//     })
-		// });
-		
-		// // console.log($scope.gcolors); 
-
-		// if (diablo_no === $scope.base_settings.group_color){
-		//     for (var i=0, l1=$scope.grouped_colors.length; i<l1; i++){
-		// 	for (var j in $scope.grouped_colors[i]){
-		// 	    if (angular.isDefined($scope.grouped_colors[i][j].select)){
-		// 		$scope.grouped_colors[i][j].select = false;
-		// 	    }
-
-		// 	    if (angular.isDefined($scope.grouped_colors[i][j].disabled))
-		// 		$scope.grouped_colors[i][j].disabled = false;
-		// 	}
-		//     }
-		//     // console.log($scope.grouped_colors); 
-		// };
-
-		// reset
-		// $scope.good.style_number = undefined;
-		// $scope.form.gForm.style_number.$pristine = true; 
-		// $scope.good.type = undefined;
-		// $scope.form.gForm.type.$pristine = true;
-
 		$scope.reset_select_color();
 		/*
 		 * add prompt
@@ -1923,6 +1881,7 @@ function purchaserInventoryNewCtrlProvide (
 		    vir_price: good.vir_price,
 		    tag_price: good.tag_price,
 		    ediscount: good.ediscount,
+		    state:     stockUtils.to_integer(good.sprice) === 1 ? 3 : diablo_invalid_index,
 		    discount:  good.discount,
 		    alarm_day: good.alarm_day,
 		    path:      state.path,
@@ -2949,6 +2908,7 @@ function purchaserInventoryDetailCtrlProvide(
 		check_invalid: function(select){
 		    if (0 === stockUtils.to_integer(select.tag_price)
 			&& 0 === stockUtils.to_integer(select.discount)
+			&& 0 === select.sprice.id
 			&& 1 === select.score.id){
 			return true;
 		    } 
@@ -3074,10 +3034,10 @@ function purchaserInventoryDetailCtrlProvide(
 	);
     };
 
-    $scope.gift_stock = function(inv, type) {
+    $scope.gift_stock = function(inv) {
 	console.log(inv);
 	var condition = {style_number:inv.style_number, brand:inv.brand.id, shop:inv.shop_id};
-	purchaserService.gift_stock(condition, {state:inv.state, type:type}).then(function(result){
+	purchaserService.gift_stock(condition, {gift:inv.gift}).then(function(result){
 	    console.log(result);
 	    if (result.ecode === 0){
 		dialog.response_with_callback(
@@ -3085,13 +3045,31 @@ function purchaserInventoryDetailCtrlProvide(
 		    "赠送标识设置",
 		    "赠送标识设置成功！！",
 		    undefined,
-		    function() {inv.state = result.state;});
+		    function() {inv.gift = result.gift;});
 	    } else {
 		dialog.response(
 		    false,
 		    "赠送标识设置",
 		    "赠送标识设置失败："
 			+ purchaserService.error[result.ecode]);
+	    }
+	});
+    };
+
+    $scope.offering_stock = function(inv) {
+	console.log(inv);
+	var condition = {style_number:inv.style_number, brand:inv.brand.id, shop:inv.shop_id};
+	purchaserService.offering_stock(condition, {state:inv.state}).then(function(result){
+	    console.log(result);
+	    if (result.ecode === 0){
+		dialog.response_with_callback(
+		    true,
+		    "特价标识设置",
+		    "特价标识设置成功！！",
+		    undefined,
+		    function() {inv.state = result.state;})
+	    } else {
+		dialog.set_error(false, "特价标识设置", result.ecode); 
 	    }
 	});
     };

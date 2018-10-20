@@ -184,8 +184,8 @@
 			</td>
 
 			<td x-ng-if="setting.gift_sale">
-			  <div x-ng-switch on="inv.state">
-			    <span x-ng-switch-when=2>是</span>
+			  <div x-ng-switch on="inv.gift">
+			    <span x-ng-switch-when=1>是</span>
 			    <span x-ng-switch-default>否</span>
 			  </div>
 			</td>
@@ -242,11 +242,11 @@
 			    <ul class="dropdown-menu">
 			      <li x-ng-if="stock_right.update_batch">
 				<a href="javascript:;" x-ng-click="update_price(inv)">价格修改</a>
-				<a href="javascript:;" x-ng-click="gift_stock(inv, 3)">特价标识</a>
+				<a href="javascript:;" x-ng-click="offering_stock(inv)">特价标识</a>
 			      </li>
 			      <li><a href="javascript:;" x-ng-click="update_stock(inv)">属性修改</a></li>
 			      <li x-ng-if="setting.gift_sale && stock_right.gift_stock">
-				<a href="javascript:;" x-ng-click="gift_stock(inv, 2)">赠送标识设置</a>
+				<a href="javascript:;" x-ng-click="gift_stock(inv)">赠送标识设置</a>
 			      </li>
 			      <li x-ng-if="setting.stock_alarm">
 				<a href="javascript:;" x-ng-click="update_alarm_a(inv)">预警数量</a>

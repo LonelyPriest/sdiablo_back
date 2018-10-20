@@ -74,7 +74,8 @@ var stockUtils = function(){
 		hide_category:  default_hide(hide.charAt(7)),
 		hide_level:     default_hide(hide.charAt(8)),
 		hide_fabric:    default_hide(hide.charAt(9)),
-		hide_vprice:    default_hide(hide.charAt(10)) 
+		hide_vprice:    default_hide(hide.charAt(10)),
+		hide_sprice:    default_hide(hide.charAt(11))
 	    }
 	    
 	},

@@ -284,37 +284,11 @@
 		    </thead>
 		    <tbody>
 		      <tr class="text-center" x-ng-repeat="inv in inventories">  
-			<td class="vert-align">{{inv.order_id}}</td>
-
-			<!-- <td x-ng-if="q_prompt===0" class="col-md-2 text-left vert-align"> -->
-			<!--   <span ng-if="!inv.$new">{{inv.style_number}}</span> -->
-			<!--   <form name="inv.form.good" ng-if="inv.$new"> -->
-			<!--     <div ng-class="{'has-error':inv.form.good.$invalid -->
-			<!-- 		   && !inv.form.good.$pristine}"> -->
-			<!--       <input class="form-control text-left" type="text" -->
-			<!-- 	     required -->
-			<!-- 	     ng-edit -->
-			<!-- 	     focus-auto="focus_of_inv.style_number" -->
-			<!-- 	     x-ng-model="inv.style_number" -->
-			<!-- 	     placeholder="货号" -->
-			<!-- 	     typeahead-editable="false" -->
-			<!-- 	     typeahead-select-on-exact="true" -->
-			<!-- 	     typeahead-append-to-body="true" -->
-			<!-- 	     typeahead-on-select="on_select_good($item, $model, $label)"  -->
-			<!-- 	     uib-typeahead="g as g.name for g in -->
-			<!-- 			all_w_goods|filter:{prompt:$viewValue}|limitTo:prompt_limit"/> -->
-			<!--       <span x-ng-show="loading"> -->
-			<!-- 	<i class="glyphicon glyphicon-refresh"></i> -->
-			<!--       </span> -->
-			<!--     </div> -->
-			<!--   </form> -->
-			<!-- </td> -->
-			
+			<td class="vert-align">{{inv.order_id}}</td> 
 			<td class="col-md-2 text-left vert-align">
 			  <span ng-if="!inv.$new">{{inv.style_number}}</span>
 			  <form name="inv.form.good" ng-if="inv.$new">
-			    <div ng-class="{'has-error':inv.form.good.$invalid
-					   && !inv.form.good.$pristine}">
+			    <div ng-class="{'has-error':inv.form.good.$invalid && !inv.form.good.$pristine}">
 			      <input class="form-control text-left" type="text"
 				     required
 				     focus-auto="focus_of_inv.style_number"
@@ -346,8 +320,7 @@
 			  <span x-ng-if="!inv.$new && !inv.update_directory">{{inv.tag_price}}</span>
 			  <form name="inv.form.tagprice"
 				x-ng-if="inv.$new && inv.free_color_size || inv.update_directory">
-		    	    <div ng-class="{'has-error':inv.form.tagprice.$invalid
-		    			   && !inv.form.tagprice.$pristine}">
+		    	    <div ng-class="{'has-error':inv.form.tagprice.$invalid && !inv.form.tagprice.$pristine}">
 		    	      <input class="form-control"
 		    		     type="number" step="0.01"
 		    		     placeholder="吊牌价"
@@ -367,9 +340,7 @@
 			    {{inv.discount}}
 			  </span> 
 			  <form name="inv.form.discount"
-				x-ng-if="inv.$new
-					 && inv.free_color_size
-					 || inv.update_directory">
+				x-ng-if="inv.$new && inv.free_color_size || inv.update_directory">
 		    	    <div ng-class="{'has-error':inv.form.discount.$invalid
 		    			   && !inv.form.discount.$pristine}">
 		    	      <input class="form-control"
@@ -388,8 +359,7 @@
 			  <span x-ng-if="!inv.$new && !inv.update_directory">
 		    	    {{inv.org_price}}</span>
 			  <form name="inv.form.orgprice"
-		    		x-ng-if="inv.$new && inv.free_color_size
-		    			 || inv.update_directory">
+		    		x-ng-if="inv.$new && inv.free_color_size || inv.update_directory">
 		    	    <div ng-class="{'has-error':inv.form.orgprice.$invalid
 		    			   && !inv.form.orgprice.$pristine}">
 		    	      <input class="form-control"
@@ -411,8 +381,7 @@
 		    	    {{inv.ediscount}}
 			  </span>
 			  <form name="inv.form.ediscount"
-		    		x-ng-if="inv.$new && inv.free_color_size
-		    			 || inv.update_directory">
+		    		x-ng-if="inv.$new && inv.free_color_size || inv.update_directory">
 		    	    <div ng-class="{'has-error':inv.form.ediscount.$invalid}">
 		    	      <input class="form-control"
 		    		     type="number" step="0.1"
@@ -433,9 +402,7 @@
 			    {{inv.total}}
 			  </span> 
 			  <form name="inv.form.amount"
-				x-ng-if="inv.$new
-					 && inv.free_color_size
-					 || inv.update_directory">
+				x-ng-if="inv.$new && inv.free_color_size || inv.update_directory">
 			    <div ng-class="{'has-error':inv.form.amount.$invalid
 					   && !inv.form.amount.$pristine}">
 			      <input class="form-control"
@@ -463,11 +430,8 @@
 			  <span x-ng-if="!inv.$new && !inv.update_directory">
 			    {{inv.over}}</span> 
 			  <form name="inv.form.over"
-				x-ng-if="inv.$new
-					 && inv.free_color_size
-					 || inv.update_directory">
-			    <div ng-class="{'has-error':inv.form.over.$invalid
-					   && !inv.form.over.$pristine}">
+				x-ng-if="inv.$new && inv.free_color_size || inv.update_directory">
+			    <div ng-class="{'has-error':inv.form.over.$invalid && !inv.form.over.$pristine}">
 			      <input class="form-control"
 				     type="number" step="1"
 				     placeholder="溢出数量"
@@ -604,25 +568,7 @@
 		  <div class="col-sm-6 col-md-6"> 
 		    <div class="input-group">
 		      <div x-ng-class="{'has-error':form.gForm.style_number.$invalid
-				       && !form.gForm.style_number.$pristine || is_same_good}">
-			<!-- <input type="text" -->
-			<!--        class="form-control" -->
-			<!--        name="style_number" -->
-			<!--        required  -->
-			<!--        capitalize -->
-			<!--        ng-edit -->
-			<!--        focus-auto="focus_attrs.style_number" -->
-			<!--        go-next-field -->
-			<!--        next="brand" -->
-			<!--        auto-row="go_next_good_field" -->
-			<!--        placeholder="请输入2-10位款号" -->
-			<!--        x-ng-blur="focus_attrs.style_number=false" -->
-			<!--        x-ng-model="good.style_number" -->
-			<!--        x-ng-pattern="pattern.style_number" -->
-			<!--        x-ng-enter="" -->
-			<!--        typeahead-on-select="on_select_good_new($item, $model, $label)" -->
-			<!--        uib-typeahead="g as g.name for g in -->
-			<!-- 		  all_w_goods|filter:{prompt:$viewValue}|limitTo:prompt_limit"/> -->
+				       && !form.gForm.style_number.$pristine || is_same_good}"> 
 			<input type="text"
 			       class="form-control"
 			       name="style_number"
@@ -659,10 +605,6 @@
 		      <span class="fg-red">款号只能是字母，数字或横杠，2-10个字符</span>
 		  </div>
 		  </div> 
-		  <!-- <div ng-if="is_same_good"> <span class="fg-red"> -->
-		  <!--     该款号，品牌所对应的货品已存在，请直接录入数量 -->
-		  <!--   </span> -->
-		  <!-- </div> -->
 		</div>
 
 		<!--brand-->
@@ -703,9 +645,6 @@
 		      <span style="color:red">品牌只能是中文，字母或数字</span>
 		    </div>
 		  </div> 
-		  <!-- <div ng-if="is_same_good"> -->
-		  <!--   <span class="fg-red">该款号，品牌所对应的货品已存在，请直接录入数量</span> -->
-		  <!-- </div> -->
 		</div>
 		
 		<!--type-->
@@ -713,8 +652,7 @@
 		  <label class="col-sm-3 col-md-3 control-label">类别</label>
 		  <div class="col-sm-6 col-md-6"> 
 		    <div class="input-group">
-		      <div x-ng-class="{'has-error':form.gForm.type.$invalid
-				       && !form.gForm.type.$pristine}">
+		      <div x-ng-class="{'has-error':form.gForm.type.$invalid && !form.gForm.type.$pristine}">
 			<input type="text"
 			       class="form-control"
 			       name="type"
@@ -742,9 +680,7 @@
 		</div> 
 		
 		<div x-ng-if="!base_settings.hide_sex" class="form-group diablo-good-form-group">
-		  <label class="col-sm-3 col-md-3 control-label">
-		    性别
-		  </label>
+		  <label class="col-sm-3 col-md-3 control-label">性别</label>
 		  <div class="col-sm-6 col-md-6"> 
 		    <select class="form-control" 
 			    x-ng-model="good.sex"
@@ -755,9 +691,7 @@
 		</div>
 
 		<div class="form-group diablo-good-form-group">
-		  <label class="col-sm-3 col-md-3 control-label">
-		    年度
-		  </label>
+		  <label class="col-sm-3 col-md-3 control-label">年度</label>
 		  <div class="col-sm-6 col-md-6">
 		    <div class="input-group">
 		      <select class="form-control" 
@@ -772,8 +706,7 @@
 		
 		<!--season-->
 		<div class="form-group diablo-good-form-group">
-		  <label class="col-sm-3 col-md-3 control-label">季节
-		  </label>
+		  <label class="col-sm-3 col-md-3 control-label">季节</label>
 		  <div class="col-sm-6 col-md-6"> 
 		    <select class="form-control" 
 			    x-ng-model="good.season"
@@ -781,12 +714,10 @@
 			    x-ng-options="s as s.name for s in season2objs">
 		    </select>
 		  </div>
-		</div> 
+		</div>
 
 		<div x-ng-if="!base_settings.hide_vprice" class="form-group diablo-good-form-group">
-		  <label class="col-sm-3 col-md-3 control-label">
-		    虚拟价
-		  </label>
+		  <label class="col-sm-3 col-md-3 control-label">虚拟价</label>
 		  <div class="col-sm-6 col-md-6"> 
 		    <div class="input-group">
 		      <input class="form-control"
@@ -806,16 +737,14 @@
 			     x-ng-model="good.vir_price"/>
 		      <span class="input-group-addon bg-white fg-red">*</span> 
 		    </div>
-		  </div>
-		  <div ng-if="form.gForm.vir_price.$invalid && !form.gForm.vir_price.$pristine">
-		    <span class="fg-red">格式（dd.dd）支持二位小数</span>
-		  </div>
+		    <div ng-if="form.gForm.vir_price.$invalid && !form.gForm.vir_price.$pristine">
+		      <span class="fg-red">格式（dd.dd）支持二位小数</span>
+		    </div>
+		  </div> 
 		</div>
 		
 		<div class="form-group diablo-good-form-group">
-		  <label class="col-sm-3 col-md-3 control-label">
-		    吊牌价
-		  </label>
+		  <label class="col-sm-3 col-md-3 control-label">吊牌价</label>
 		  <div class="col-sm-6 col-md-6"> 
 		    <div class="input-group">
 		      <input class="form-control"
@@ -842,13 +771,10 @@
 		</div> 
 		
 		<div class="form-group diablo-good-form-group">
-		  <label class="col-sm-3 col-md-3 control-label">
-		    折扣
-		  </label>
+		  <label class="col-sm-3 col-md-3 control-label">折扣</label>
 		  <div class="col-sm-6 col-md-6"> 
 		    <div class="input-group">
-		      <div ng-class="{'has-error':form.gForm.discount.$invalid
-				     && !form.gForm.discount.$pristine}">
+		      <div ng-class="{'has-error':form.gForm.discount.$invalid && !form.gForm.discount.$pristine}">
 			<input class="form-control"
 			       type="number" step="1" 
 			       name="discount"
@@ -868,13 +794,36 @@
 		      <span class="input-group-addon bg-white fg-red">*</span>
 		    </div>
 		    <div ng-if="form.gForm.discount.$invalid && !form.gForm.discount.$pristine">
-		    <span style="color:red">两位整数，无折扣请输入100</span>
+		      <span style="color:red">两位整数，无折扣请输入100</span>
 		    </div>
 		  </div> 
-		</div> 
+		</div>
 
-		<div x-ng-if="!base_settings.hide_color"
-		     class="form-group diablo-good-form-group">
+		<div x-ng-if="!base_settings.hide_sprice" class="form-group diablo-good-form-group">
+		  <label class="col-sm-3 col-md-3 control-label">特价</label>
+		  <div class="col-sm-6 col-md-6">
+		    <div class="input-group">
+		      <div ng-class="{'has-error':form.gForm.sprice.$invalid && !form.gForm.sprice.$pristine}">
+		    <input class="form-control"
+			   type="text"
+			   name="sprice"
+			   required
+			   x-ng-edit
+			   placeholder="0:否;1:是;默认为否"
+			   typeahead-editable="false"
+			   x-ng-model="good.sprice"
+			   x-ng-enter=""
+			   uib-typeahead="p as p.name for p in yes_no|filter:$viewValue"/>
+		      </div>
+		      <span class="input-group-addon bg-white fg-red">*</span>
+		    </div>
+		    <div ng-if="form.gForm.sprice.$invalid && !form.gForm.sprice.$pristine">
+		      <span style="color:red">0:否;1:是</span>
+		    </div>
+		  </div>
+		</div>
+
+		<div x-ng-if="!base_settings.hide_color" class="form-group diablo-good-form-group">
 		  <label class="col-sm-3 col-md-3 control-label">颜色</label>
 		  <div class="col-sm-6 col-md-6"> 
 		    <div class="input-group">

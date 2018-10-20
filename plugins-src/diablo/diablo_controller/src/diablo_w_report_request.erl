@@ -458,21 +458,25 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
     
     %% ?DEBUG("stockr ~p", [StockR]),
     
-    Sql = "select id, merchant, shop, employ entry_date"
+    Sql = "select id, merchant, shop, employ, entry_date"
 	" from w_change_shift"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and shop=" ++ ?to_s(ShopId)
-	++ case UserId of
-	       -1 -> [];
-	       _ ->
-		   case DistinctUser =:= ?YES of
-		       true -> " and account=" ++ ?to_s(UserId); 
-		       false -> []
-		   end
-	   end
+	++ case DistinctUser =:= ?YES of
+	    true -> " and account=" ++ ?to_s(UserId); 
+	    false -> " and account=-1"
+	end
+	%% ++ case UserId of
+	%%        -1 -> [];
+	%%        _ ->
+	%% 	   case DistinctUser =:= ?YES of
+	%% 	       true -> " and account=" ++ ?to_s(UserId); 
+	%% 	       false -> []
+	%% 	   end
+	%%    end
 	
 	++ case EmployeeId of
-	       undefined -> [];
+	       undefined -> " and employ=\'" ++ ?to_s(-1) ++ "\'";
 	       _ -> " and employ=\'" ++ ?to_s(EmployeeId) ++ "\'"
 	   end
 	++ " and entry_date>=\'" ++ ?to_s(StartDate) ++ "\'"

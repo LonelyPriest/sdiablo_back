@@ -1011,6 +1011,7 @@ function wsaleNewProvide(
 	add.s_group      = src.s_group;
 	add.free         = src.free;
 	add.state        = src.state;
+	add.gift         = src.gift;
 	add.entry        = src.entry_date;
 
 	// add.full_bcode   = angular.isUndefined(src.full_bcode) ? src.bcode : src.full_bcode;
@@ -1308,8 +1309,7 @@ function wsaleNewProvide(
 	    pinvs.push($scope.inventories[i]);
 	};
 
-	// console.log(pinvs);
-	
+	// console.log(pinvs); 
 	var ok_print = function(){
 	    console.log($scope.select);
 	    if (angular.isUndefined(LODOP)) LODOP = getLodop(); 
@@ -1358,26 +1358,22 @@ function wsaleNewProvide(
 	var sms_notify = function(status) {
 	    if (status.sms_code !== 0) {
 		var ERROR = require("diablo-error");
-		dialog.response(
-		    false,
-		    "销售开单",
-		    "开单成功！！发送短消息失败：" + ERROR[status.sms_code]); 
+		dialog.response(false, "销售开单", "开单成功！！发送短消息失败：" + ERROR[status.sms_code]); 
 	    }
 	};
 	
 	if (im_print === diablo_yes){
 	    ok_print();
+	    sms_notify(result); 
 	    if (angular.isFunction(callback))
 		callback();
-	    sms_notify(result);
 	} else {
-	    var request = dialog.request(
-		"销售开单", "开单成功，是否打印销售单？", undefined, undefined, undefined); 
+	    var request = dialog.request("销售开单", "开单成功，是否打印销售单？", undefined, undefined, undefined); 
 	    request.result.then(function(close){
-		ok_print();
+		ok_print(); 
+		sms_notify(result);
 		if (angular.isFunction(callback))
 		    callback();
-		sms_notify(result);
 	    })
 	}
     };
@@ -1791,7 +1787,7 @@ function wsaleNewProvide(
 	    }
 	}
 
-	console.log(not_enought);
+	// console.log(not_enought);
 	return not_enought;
     };
     

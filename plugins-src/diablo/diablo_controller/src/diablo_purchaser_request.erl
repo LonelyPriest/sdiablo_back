@@ -1025,6 +1025,22 @@ action(Session, Req, {"gift_w_stock"}, Payload) ->
     	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"offering_w_stock"}, Payload) ->
+    ?DEBUG("offering_w_stock with session ~p~n, paylaod ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    {struct, Conditions} = ?value(<<"condition">>, Payload),
+    {struct, Attrs} = ?value(<<"attrs">>, Payload, []),
+    case ?w_inventory:purchaser_inventory(set_offer, Merchant, Attrs, Conditions) of
+	{ok, State} ->
+	    ?utils:respond(
+	       200,
+	       Req,
+	       ?succ(update_w_inventory_batch, Merchant),
+	       {<<"state">>, State});
+	{error, Error} ->
+    	    ?utils:respond(200, Req, Error)
+    end;
+
 action(Session, Req, {"update_w_inventory_batch"}, Payload) ->
     ?DEBUG("update_w_inventory_batch with session ~p~n, paylaod ~p",
 	   [Session, Payload]),
