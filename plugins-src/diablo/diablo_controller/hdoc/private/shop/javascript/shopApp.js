@@ -17,8 +17,12 @@ function shopConfig(angular){
     shopApp.config(['$routeProvider', function($routeProvider){
 	var user = {"user": function(userService){
     	    return userService()}};
+	
 	var employee = {"filterEmployee": function(diabloNormalFilter){
 	    return diabloNormalFilter.get_employee()}};
+	
+	var department = {"filterDepartment": function(diabloNormalFilter){
+	    return diabloNormalFilter.get_department()}};
 
 	var promotion = {"filterPromotion": function(diabloNormalFilter){
 	    return diabloNormalFilter.get_promotion()}}; 
@@ -65,13 +69,12 @@ function shopConfig(angular){
 	    when('/region_detail', {
 		templateUrl: '/private/shop/html/region_detail.html',
 		controller: 'regionDetailCtrl',
-		resolve: angular.extend({}, employee)
+		resolve: angular.extend({}, department)
 	    }).
 	    otherwise({
 		templateUrl: '/private/shop/html/shop_detail.html',
 		controller: 'shopDetailCtrl' ,
-		resolve: angular.extend(
-		    {}, promotion, score, charge, employee, region, user)
+		resolve: angular.extend({}, promotion, score, charge, employee, region, user)
             })
     }]);
 
@@ -179,10 +182,10 @@ function shopConfig(angular){
 		 promotion: promotion}).$promise;
 	};
 
-	this.add_region = function(name, master, comment) {
+	this.add_region = function(name, department, comment) {
 	    return shop.save(
 		{operation: "new_region"},
-		{name: name, master: master, comment: comment}).$promise;
+		{name: name, department: department, comment: comment}).$promise;
 	};
 
 	this.list_region = function() {

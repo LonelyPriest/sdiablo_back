@@ -3,12 +3,12 @@
     <div class="portlet box purple">
 
       <div class="portlet-title">
-	<div class="caption"><i class="glyphicon glyphicon-menu-hamburger"></i>区域详情</div>
+	<div class="caption"><i class="glyphicon glyphicon-menu-hamburger"></i>部门详情</div>
 
 	<div class="actions">
 	  <div class="btn-group btn-group-solid">
 	    <a type="button" class="btn btn-success purple-stripe"
-		    x-ng-click="new_region()">新增
+		    x-ng-click="new_department()">新增
 	      <i class="glyphicon glyphicon-plus"></i></a>
 	    
 	    <a type="button" class="btn blue reload purple-stripe"
@@ -33,24 +33,28 @@
 		  <tr>
 		    <th>序号</th>
 		    <th>名称</th>
-		    <th>所属部门</th>
+		    <th>负责人</th>
 		    <th>备注</th> 
 		    <th>日期</th>
 		    <th>操作</th>
 		  </tr>
 		</thead>
 		<tbody>
-		  <tr ng-repeat="r in regions">
-		    <td>{{r.order_id}}</td>
-		    <td>{{r.name}}</td>
+		  <tr ng-repeat="d in departments">
+		    <td>{{d.order_id}}</td>
+		    <td>{{d.name}}</td>
 		    <td>
-		      <div x-ng-if="r.department">{{r.department.name}}</div>
+		      <div x-ng-if="d.master">{{d.master.name}}</div>
 		    </td>
-		    <td>{{r.comment}}</td> 
-		    <td>{{r.entry_date}}</td> 
-		    <td> 
+		    <td>{{d.comment}}</td> 
+		    <td>{{d.entry_date}}</td> 
+		    <td>
+		      <button class="btn diablo-button btn-success"
+			      x-ng-click="add_employee(d)">员工
+			<i class="glyphicon glyphicon-plus"></i></button>
+		      
 		      <button class="btn diablo-button btn-warning"
-			      x-ng-click="update_region(r)">修改
+			      x-ng-click="update_department(r)">修改
 			<i class="glyphicon glyphicon-edit"></i></button> 
 		    </td>
 
@@ -68,14 +72,14 @@
   </div>
 </div>
 
-<script type="text/ng-template" id="new-region.html">
+<script type="text/ng-template" id="new-department.html">
   <div class="modal-header">
     <button class="close" x-ng-click="cancel()" type="button">
       <span aria-hidden="true">&times;</span>
       <span class="sr-only"></span>
     </button>
     
-    <h4 class="modal-title"><span class="label label-sm label-primary">新增区域</span></h4>
+    <h4 class="modal-title"><span class="label label-sm label-primary">新增部门</span></h4>
   </div>
 
   <div class="modal-body">
@@ -101,13 +105,13 @@
 	</div>
 
 	<div class="form-group">
-	  <label class="col-sm-3 col-md-3 control-label">所属部门</label>
+	  <label class="col-sm-3 col-md-3 control-label">负责人</label>
 	  <div class="col-sm-6 col-md-6">
 	    <input type="text" class="form-control"
-		   placeholder="请选择部门"
-		   x-ng-model="params.department"
+		   placeholder="请选择负责人"
+		   x-ng-model="params.master"
 		   typeahead-editable="false"
-		   uib-typeahead="d as d.name for d in departments|filter:$viewValue|limitTo:20"/>
+		   uib-typeahead="e as e.name for e in employees|filter:$viewValue|limitTo:20"/>
 	  </div>
 	</div>
 	
@@ -136,7 +140,62 @@
 	    x-ng-disabled="rForm.$invalid"
 	    x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>  
+</script>
+
+
+<script type="text/ng-template" id="add-employee.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    
+    <h4 class="modal-title"><span class="label label-sm label-primary">新增员工</span></h4>
   </div>
-  
-  <!--END modal-footer-->
+
+  <div class="modal-body">
+    <form class="form-horizontal" name="rForm" novalidate> 
+      <div class="form-body"> 
+	<div class="form-group">
+	  <label class="col-sm-3 col-md-3 control-label">所属部门</label>
+	  <div class="col-sm-6 col-md-6">
+	    <input class="form-control"
+		   name="name"
+		   type="text" 
+		   readonly
+		   x-ng-model="params.department.name"/>
+	  </div>
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-3 col-md-3 control-label">员工</label>
+	  <div class="col-sm-6 col-md-6">
+	    <div class="input-group">
+	      <input type="text" class="form-control"
+		     required
+		     name="employee"
+		     placeholder="请选择员工"
+		     x-ng-model="params.employee"
+		     typeahead-editable="false"
+		     uib-typeahead="e as e.name for e in employees|filter:$viewValue|limitTo:20"/>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	    <div ng-show="rForm.employee.$invalid && !rForm.employee.$pristine">
+	      <span class="fg-red">员工只能从下接列表中选择</span>
+	    </div>
+	  </div>
+	</div> 
+	
+      </div>
+    </form>
+  </div>
+
+  <!--BEGIN modal-footer-->
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="rForm.$invalid"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>  
 </script>

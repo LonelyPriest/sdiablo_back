@@ -8,7 +8,7 @@ function employeeConfig(angular){
     var employeeApp = angular.module(
 	"employeeApp",
 	['ngRoute', 'ngResource', 'diabloPattern',
-	 'diabloAuthenApp', 'userApp', 'diabloUtils', 'ui.bootstrap']
+	 'diabloAuthenApp', 'diabloNormalFilterApp', 'userApp', 'diabloUtils', 'ui.bootstrap']
     ).config(function($httpProvider, authenProvider){
 	// $httpProvider.responseInterceptors.push(authenProvider.interceptor);
 	$httpProvider.interceptors.push(authenProvider.interceptor); 
@@ -17,6 +17,9 @@ function employeeConfig(angular){
     employeeApp.config(['$routeProvider', function($routeProvider){
 	var user = {"user": function(userService){
 	    return userService()}};
+
+	var employee = {"filterEmployee": function(diabloNormalFilter){
+	    return diabloNormalFilter.get_employee()}};
 	
 	$routeProvider.
 	    when('/employ_detail', {
@@ -29,6 +32,11 @@ function employeeConfig(angular){
 		controller: 'employNewCtrl',
 		resolve: angular.extend({}, user)
 	    }).
+	    when('/department_detail', {
+		templateUrl: '/private/employ/html/department_detail.html',
+		controller: 'departmentDetailCtrl',
+		resolve: angular.extend({}, employee, user)
+	    }).
 	    otherwise({
 		templateUrl: '/private/employ/html/employ_detail.html',
 		controller: 'employDetailCtrl',
@@ -39,7 +47,11 @@ function employeeConfig(angular){
     employeeApp.service("employService", function($resource, dateFilter){
 	// error information
 	this.error = {
-	    1401: "员工创建失败，已存在同样的员工手机号码"};
+	    1401: "员工创建失败，已存在同样的员工手机号码！！",
+	    1402: "该部门已存在，请重新输入部门名称！！",
+	    1403: "该员工已加入该门，请重新选择部门或员工！！"
+	};
+	
 
 	// =========================================================================    
 	var employ = $resource("/employ/:operation/:id",
@@ -81,6 +93,22 @@ function employeeConfig(angular){
 	    return employ.save(
 		{operation: "update_employe", id: one.id}, one).$promise;
 	};
+
+	this.add_department = function(name, master, comment) {
+	    return employ.save(
+		{operation: "new_department"},
+		{name: name, master: master, comment: comment}).$promise;
+	};
+
+	this.list_department = function() {
+	    return employ.query({operation: "list_department"}).$promise;
+	};
+
+	this.add_employee_of_department = function(department, employee) {
+	    return employ.save(
+		{operation: "add_employee_of_department"},
+		{department: department, employee:employee}).$promise;
+	};
     });
 
 
@@ -91,7 +119,6 @@ function employeeConfig(angular){
 	
 	$scope.refresh = function(){
 	    employService.list().$promise.then(function(employees){
-		// console.log(employees)
 		angular.forEach(employees, function(e){
 		    e.sex = diablo_sex2object[e.sex];
 		    e.shop = diablo_get_object(e.shop_id, $scope.shops);
@@ -289,7 +316,9 @@ function employeeConfig(angular){
 	};
 	
     });
-    
+
+    employeeApp.controller("departmentDetailCtrl", departmentDetailCtrlProvide);
+	
     employeeApp.controller("loginOutCtrl", function($scope, $resource){
 	$scope.home = function () {
 	    diablo_login_out($resource)
@@ -300,5 +329,67 @@ function employeeConfig(angular){
 };
 
 
+function departmentDetailCtrlProvide($scope, employService, diabloUtilsService, filterEmployee){
+    $scope.employees = filterEmployee;
+    var dialog = diabloUtilsService;
 
+    $scope.refresh = function(){
+	employService.list_department().then(function(data){
+	    console.log(data); 
+	    $scope.departments = angular.copy(data);
+	    diablo_order($scope.departments); 
+	    angular.forEach($scope.departments, function(d) {
+		d.master = diablo_get_object(d.master_id, filterEmployee);
+	    })
+	});	
+    }; 
+    $scope.refresh();
 
+    $scope.new_department = function(){
+	var callback = function(params){
+	    console.log(params);
+	    var master = params.master;
+	    employService.add_department(
+		params.name,
+		angular.isObject(master) && angular.isDefined(master.id) ? master.id : undefined,
+		params.comment, 
+	    ).then(function(state){
+		if (state.ecode === 0){
+		    dialog.response_with_callback
+		    (true,
+		     "新增部门",
+		     "新增部门 [" + params.name + "] 成功",
+		     undefined,
+		     function() {$scope.refresh()});
+		} else {
+		    dialog.response(
+			false,
+			"新增部门",
+			"新增部门失败：" + employService.error[state.ecode]);
+		}
+	    });
+	};
+
+	dialog.edit_with_modal("new-department.html", undefined, callback, $scope, {});
+    };
+
+    $scope.update_department = function(region){
+	dialog.response(false, "部门编辑", "部门编辑失败：暂不支持此操作！！")
+    };
+
+    $scope.add_employee = function(department) {
+	var callback = function(params) {
+	    console.log(params);
+	    employService.add_employee_of_department(params.department.id, params.employee.id).then(function(state){
+		if (state.ecode === 0){
+		    dialog.response(true, "新增部门员工", "新增部门员工[" + params.employee.name + "]成功");
+		} else {
+		    dialog.response(false, "新增部门员工", "新增部门员工失败：" + employService.error[state.ecode]);
+		}
+	    });
+	};
+
+	dialog.edit_with_modal("add-employee.html", undefined, callback, $scope, {department:department});
+    };
+    
+};

@@ -874,7 +874,8 @@ sys_config() ->
 	      %% [3]: print perform when on sale
 	      %% [4]: distinct account when on sale
 	      %% [5]: hide charge on sale
-	      {"p_balance",       "销售模式",             "000100",  "0"},
+	      %% [6]: print title when on stock out
+	      {"p_balance",       "销售模式",             "0001000",  "0"},
 	      
 	      {"gen_ticket",      "自动生成电子卷",       "0",   "0"},
 

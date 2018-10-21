@@ -588,8 +588,8 @@ function shopDetailCtrlProvide(
     };
 };
 
-function regionDetailCtrlProvide($scope, shopService, diabloUtilsService, filterEmployee){
-    $scope.employees = filterEmployee;
+function regionDetailCtrlProvide($scope, shopService, diabloUtilsService, filterDepartment){
+    $scope.departments = filterDepartment;
     var dialog = diabloUtilsService;
 
     $scope.refresh = function(){
@@ -598,7 +598,7 @@ function regionDetailCtrlProvide($scope, shopService, diabloUtilsService, filter
 	    $scope.regions = angular.copy(data);
 	    diablo_order($scope.regions); 
 	    angular.forEach($scope.regions, function(r) {
-		r.master = diablo_get_object(r.master_id, filterEmployee);
+		r.department = diablo_get_object(r.department_id, filterDepartment);
 	    })
 	});	
     }; 
@@ -607,10 +607,10 @@ function regionDetailCtrlProvide($scope, shopService, diabloUtilsService, filter
     $scope.new_region = function(){
 	var callback = function(params){
 	    console.log(params);
-	    var master = params.master;
+	    var department = params.department;
 	    shopService.add_region(
 		params.name,
-		angular.isObject(master) && angular.isDefined(master.id) ? master.id : undefined,
+		angular.isObject(department) && angular.isDefined(department.id) ? department.id : undefined,
 		params.comment, 
 	    ).then(function(state){
 		if (state.ecode === 0){

@@ -58,6 +58,8 @@ get(repo, Merchant) ->
     gen_server:call(?SERVER(Merchant), {get_repo_profile, Merchant});
 get(region, Merchant) ->
     gen_server:call(?SERVER(Merchant), {get_region_profile, Merchant});
+get(department, Merchant) ->
+    gen_server:call(?SERVER(Merchant), {get_department_profile, Merchant});
 get(print, Merchant) ->
     gen_server:call(?SERVER(Merchant), {get_print_profile, Merchant});
 get(print_format, Merchant) ->
@@ -150,6 +152,8 @@ update(shop, Merchant) ->
     gen_server:cast(?SERVER(Merchant), {update_shop, Merchant});
 update(employee, Merchant) ->
     gen_server:cast(?SERVER(Merchant), {update_employee, Merchant});
+update(department, Merchant) ->
+    gen_server:cast(?SERVER(Merchant), {update_department, Merchant});
 update(print, Merchant) ->
     gen_server:cast(?SERVER(Merchant), {update_print, Merchant});
 update(type, Merchant) ->
@@ -231,6 +235,7 @@ handle_call({new_profile, Merchant}, _From, State) ->
 	{ok, SMSRate}      = ?merchant:sms(list, Merchant),
 	{ok, SMSCenter}    = ?merchant:sms(list_center, Merchant),
 	{ok, Levels}       = ?w_retailer:retailer(list_level, Merchant),
+	{ok, Departments}  = ?employ:department(list, Merchant),
 
 	{ok, SysRetailers} = ?w_retailer:retailer(list_sys, Merchant),
 	
@@ -261,7 +266,8 @@ handle_call({new_profile, Merchant}, _From, State) ->
 
 				  sms_rate    = SMSRate,
 				  sms_center  = SMSCenter,
-				  level       = Levels
+				  level       = Levels,
+				  department  = Departments
 				  %% good     = ?to_tl(Goods)
 				 }
 			  })
@@ -542,6 +548,18 @@ handle_call({get_region_profile, Merchant}, _From, State) ->
 	[Regions] ->
 	    ?DEBUG("regions ~p of merchant ~p", [Regions, Merchant]),
 	    {reply, {ok, Regions}, State}
+    end;
+
+handle_call({get_department_profile, Merchant}, _From, State) ->
+    ?DEBUG("get_department_profile of merchant ~p", [Merchant]),
+    MS = ms(Merchant, department), 
+    case ets:select(?WUSER_PROFILE, MS) of
+	[] ->
+	    {ok, Departments} = ?employ:department(list, Merchant),
+	    {reply, {ok, Departments}, State};
+	[Departments] ->
+	    ?DEBUG("departments ~p of merchant ~p", [Departments, Merchant]),
+	    {reply, {ok, Departments}, State}
     end;
 
 handle_call({get_print_profile, Merchant}, _From, State) ->
@@ -1077,6 +1095,9 @@ handle_cast({Update, Merchant}, State) ->
 		    update_employee ->
 			{ok, Employees}    = ?employ:employ(list, Merchant),
 			Profile#wuser_profile{employee=Employees};
+		    update_department ->
+			{ok, Departments}   = ?employ:department(list, Merchant),
+			Profile#wuser_profile{department=Departments};
 		    update_print ->
 			{ok, Prints} = ?w_print:printer(list_conn, Merchant),
 			Profile#wuser_profile{print=Prints};
@@ -1302,6 +1323,12 @@ ms(Merchant, region) ->
     [{{'$1', #wuser_profile{merchant='$1', region='$2', _='_'}},
       [{'==', '$1', ?to_i(Merchant)}],
       ['$2']
+     }];
+
+ms(Merchant, department) ->
+    [{{'$1', #wuser_profile{merchant='$1', department='$2', _='_'}},
+      [{'==', '$1', ?to_i(Merchant)}],
+      ['$2']
      }].
 
 ms(Merchant, UserId, user) ->
@@ -1309,6 +1336,7 @@ ms(Merchant, UserId, user) ->
       [{'==', '$1', Merchant}, {'==', '$2', UserId}],
       ['$3']
      }].
+
 
 select(user, MS, RetryFun) ->
     Select = 

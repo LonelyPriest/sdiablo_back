@@ -34,6 +34,11 @@ action(Session, Req, {"list_employe"}) ->
 	    ?utils:respond(200, batch, Req, [])
     end;
 
+action(Session, Req, {"list_department"}) ->
+    ?DEBUG("list_department with session ~p", [Session]),
+    Merchant = ?session:get(merchant, Session),
+    ?utils:respond(batch, fun() -> ?w_user_profile:get(department, Merchant) end, Req);
+
 %%--------------------------------------------------------------------
 %% @desc: DELTE action
 %%--------------------------------------------------------------------
@@ -83,6 +88,34 @@ action(Session, Req, {"update_employe", Id}, Payload) ->
 	    ?utils:respond(200, Req, ?succ(update_employ, EmployId));
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
+    end;
+
+
+action(Session, Req, {"new_department"}, Payload) ->
+    ?DEBUG("new department with session ~p, paylaod ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    ?utils:respond(normal,
+		   fun()-> ?employ:department(new, Merchant, Payload) end,
+		   fun(DId)-> ?w_user_profile:update(department, Merchant),
+			      ?succ(add_employ, DId)
+		   end,
+		   Req);
+
+action(Session, Req, {"add_employee_of_department"}, Payload) ->
+    ?DEBUG("add_employee_of_department with Session ~p~npaylaod ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    
+    case ?v(<<"department">>, Payload) =:= undefined
+	orelse ?v(<<"employee">>, Payload) =:= undefined of
+	true ->
+	    ?utils:respond(200, Req, ?err(params_error, "add_employee_of_department"));
+	false -> 
+	    case ?employ:department(add_employee, Merchant, Payload) of
+		{ok, AddId} ->
+		    ?utils:respond(200, Req, ?succ(add_employ, AddId));
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end
     end.
 
 sidebar(Session) ->
@@ -100,21 +133,21 @@ sidebar(Session) ->
 	    _ -> []
 	end,
 
-    S3 = 
-	case ?right_auth:authen(?new_department, Session) of
-	    {ok, ?new_department} ->
-		[{"new_department", "新增部门", "glyphicon glyphicon-plus"}];
-	    _ -> []
-	end,
+    %% S3 = 
+    %% 	case ?right_auth:authen(?new_department, Session) of
+    %% 	    {ok, ?new_department} ->
+    %% 		[{"new_department", "新增部门", "glyphicon glyphicon-plus"}];
+    %% 	    _ -> []
+    %% 	end,
 
     S4 = 
-	case ?right_auth:authen(?new_employe, Session) of
-	    {ok, ?new_employe} ->
+	case ?right_auth:authen(?list_department, Session) of
+	    {ok, ?list_department} ->
 		[{"department_detail", "部门详情", "glyphicon glyphicon-book"}];
 	    _ -> []
 	end,
 
-    case S2 ++ S1 ++ S3 ++ S4 of
+    case S2 ++ S1 ++ S4 of
 	[] -> [];
 	Sidebar -> ?menu:sidebar(level_1_menu, Sidebar)
     end.

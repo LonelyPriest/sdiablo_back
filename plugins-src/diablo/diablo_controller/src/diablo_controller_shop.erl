@@ -419,23 +419,23 @@ handle_call({list_promotion, Merchant, Conditions}, _From, State) ->
 handle_call({new_region, Merchant, Attrs}, _From, State)->
     ?DEBUG("new region with props ~p", [Attrs]),
     Name      = ?v(<<"name">>, Attrs),
-    Master    = ?v(<<"master">>, Attrs, []),
+    Department    = ?v(<<"department">>, Attrs, []),
     Comment   = ?v(<<"comment">>, Attrs, []),
     Datetime  = ?utils:current_time(format_localtime),
 
     %% name can not be same
-    Sql = "select id, name  from region  where merchant=" ++ ?to_s(Merchant)
+    Sql = "select id, name from region  where merchant=" ++ ?to_s(Merchant)
 	++ " and name = " ++ "\"" ++ ?to_string(Name) ++ "\""
 	++ " and deleted=" ++ ?to_s(?NO),
 
     case ?sql_utils:execute(s_read, Sql) of
 	{ok, []} -> 
 	    Sql1 = "insert into region"
-		++ "(merchant, name, master, comment, entry_date)"
+		++ "(merchant, name, department, comment, entry_date)"
 		++ " values ("
 		++ ?to_s(Merchant) ++ ","
 		++ "\'" ++ ?to_s(Name) ++ "\'," 
-		++ "\'" ++ ?to_s(Master) ++ "\',"
+	        ++ ?to_s(Department) ++ ","
 		++ "\'" ++ ?to_s(Comment) ++ "\'," 
 		++ "\"" ++ ?to_s(Datetime) ++ "\")", 
 	    Reply = ?sql_utils:execute(insert, Sql1),
@@ -448,7 +448,7 @@ handle_call({new_region, Merchant, Attrs}, _From, State)->
     end;
 
 handle_call({list_region, Merchant, Conditions}, _From, State) ->
-    Sql = "select id, name, master as master_id, comment, entry_date from region"
+    Sql = "select id, name, department as department_id, comment, entry_date from region"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, Conditions)
 	++ " and deleted=" ++ ?to_s(?NO)

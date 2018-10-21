@@ -145,7 +145,7 @@ var diablo_vip_mode = "0000";
 /*
  * sale mode
  */
-var diablo_sale_mode ="000100";
+var diablo_sale_mode ="0001000";
 
 /*
  * direction

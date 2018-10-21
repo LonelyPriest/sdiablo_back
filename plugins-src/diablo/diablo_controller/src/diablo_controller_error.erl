@@ -335,6 +335,10 @@ error(region_exist, Name) ->
 %% employ
 error(employ_exist, Name) ->
     {1401, "employ " ++ ?to_s(Name) ++ " has been exist."};
+error(department_exist, Name) ->
+    {1402, "department " ++ ?to_s(Name) ++ " has been exist."};
+error(department_employee_added, Employee) ->
+    {1403, "the employee " ++ ?to_s(Employee) ++ " has been added."};
 
 
 %% right

@@ -1065,6 +1065,7 @@ function normalFilterProvider(){
 
     var _cards          = [];
     var _shops          = [];
+    var _departments    = [];
 
     
     this.$get = function($resource){
@@ -1097,9 +1098,6 @@ function normalFilterProvider(){
 	    get_employee: function(){
 		var cached = get_from_storage(cookie, "employee");
 		if (angular.isArray(cached) && cached.length !== 0) return cached; 
-		// if (_employees.length !== 0){
-		//     return _employees;
-		// }
 		else {
 		    return _employeeHttp.query(
 			{operation: 'list_employe'}
@@ -1114,6 +1112,20 @@ function normalFilterProvider(){
 			});
 			set_storage(cookie, "employee", _employees);
 			return _employees;
+		    });   
+		} 
+	    },
+
+	    get_department:function() {
+		var cached = get_from_storage(cookie, "department");
+		if (angular.isArray(cached) && cached.length !== 0) return cached; 
+		else {
+		    return _employeeHttp.query({operation: 'list_department'}).$promise.then(function(departments){
+			_departments = departments.map(function(d){
+			    return {id:d.id, name:d.name, py:diablo_pinyin(d.name)};
+			});
+			set_storage(cookie, "department", _departments);
+			return _departments;
 		    });   
 		} 
 	    },

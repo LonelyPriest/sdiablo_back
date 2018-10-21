@@ -488,11 +488,15 @@ function stockNewNotePrintCtrlProvide(
     var pageHeight = diablo_base_setting("prn_h_page", user.loginShop, base, parseFloat, 14);
     var pageWidth  = diablo_base_setting("prn_w_page", user.loginShop, base, parseFloat, 21.3);
     $scope.rbill_comment  = diablo_base_setting("rbill", diablo_default_shop, base, diablo_set_string, "");
-    // console.log(pageHeight, pageWidth);
-    // console.log($scope.rbill_comment); 
-    var notes = []; 
+
+    var saleMode = diablo_base_setting(
+	"p_balance", diablo_default_shop, base, function(s) {return s}, diablo_sale_mode);
+    $scope.print_title = stockUtils.to_integer(saleMode.charAt(6));
+    $scope.print_date = $.now();
+    
+    var notes = [];
     purchaserService.print_w_inventory_new_note($scope.search).then(function(result) {
-    	console.log(result);
+    	// console.log(result);
 	if (result.ecode === 0) {
 	    angular.forEach(result.data, function(d) {
 		var notes_of_shop = [];
@@ -509,12 +513,12 @@ function stockNewNotePrintCtrlProvide(
 		    }
 		});
 
-		notes.push({fid:d.fid, firm:d.firm, addr:d.addr, ns: notes_of_shop});
-		
+		notes.push({fid:d.fid, firm:d.firm, addr:d.addr, ns: notes_of_shop}); 
 	    }); 
 
 	    // console.log(notes);
 	    $scope.notes = [];
+	    $scope.firms = [];
 	    for (var i=0, l=notes.length; i<l; i++) {
 		var total = 0;
 		var ns = notes[i].ns.filter(function(n) {
@@ -523,16 +527,14 @@ function stockNewNotePrintCtrlProvide(
 		    return n.note.length !== 0
 		});
 
-		// diablo_order(ns); 
-		$scope.notes.push({
-		    fid: notes[i].fid,
-		    firm:notes[i].firm,
-		    addr:notes[i].addr,
-		    total:total, ns:ns});
+		// diablo_order(ns);
+		$scope.firms.push({fid: notes[i].fid, firm:notes[i].firm, addr:notes[i].addr, total:total}); 
+		$scope.notes.push({fid: notes[i].fid, firm:notes[i].firm, addr:notes[i].addr, total:total, ns:ns});
 	    }
-
+	    
+	    diablo_order($scope.firms);
 	    diablo_order($scope.notes);
-	    console.log($scope.notes);
+	    // console.log($scope.notes);
 	    
 	} else {
 	    dialog.response(
@@ -561,6 +563,16 @@ function stockNewNotePrintCtrlProvide(
 		LODOP.SET_PRINTER_INDEX(stockUtils.printer_bill(user.loginShop, base)); 
 		LODOP.SET_PRINT_PAGESIZE(0, pageWidth * 100, pageHeight * 100, ""); 
 		LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
+
+		if ($scope.print_title) {
+		    LODOP.NEWPAGEA();
+		    LODOP.ADD_PRINT_HTM(
+			"5%", "5%",  "90%", "BottomMargin:15mm",
+			strBodyStyle
+			    + "<body>"
+			    + document.getElementById("stock_new_title").innerHTML
+			    + "</body>"); 
+		} 
 
 		angular.forEach($scope.notes, function(n) {
 		    // if (pageHeight !== 0)

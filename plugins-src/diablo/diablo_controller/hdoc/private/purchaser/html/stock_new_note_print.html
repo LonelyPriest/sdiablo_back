@@ -20,8 +20,42 @@
 	</div> 
       </div> 
       
-      <!--BEGN portlet body--> 
+      <!--BEGN portlet body-->
       <div id="stock_new" class="portlet-body">
+	<div id="stock_new_title" x-ng-if="print_title">
+	  <h2 style="text-align:center"><span>厂商汇总</span><span>{{print_date|date: 'yyyy-MM-dd'}}</span></h2>
+	  <div class="table-responsive">
+	    <table class="table table-bordered table-striped" style="margin-bottom:5px"> 
+	      <thead>
+		<tr>
+		  <th class="text-center">序号</th>
+		  <th class="text-center">厂商</th>
+		  <th class="text-center">数量</th>
+		  <th class="text-center">地址</th>
+		</tr>
+	      </thead>
+	      
+	      <tbody>
+		<tr x-ng-repeat="f in firms"> 
+		  <td class="text-center">{{f.order_id}}</td>
+		  <td class="text-center">{{f.firm}}</td>
+		  <td class="text-center">{{f.total}}</td>
+		  <td class="text-center">{{f.addr}}</td>
+		</tr> 
+	      </tbody> 
+	    </table> <!--END table--> 
+	  </div>
+
+	  <h5 style="text-align:left">
+	    <p>
+	      <span>钱掌柜零售云平台</span>
+	      &nbsp&nbsp&nbsp&nbsp<span>联系方式：18692269329（微信）</span>
+	      &nbsp&nbsp&nbsp&nbsp<span>15292083301（微信）</span>
+	    </p>
+	  </h5>
+	  
+	</div>
+	
 	<div id={{n.fid}} x-ng-repeat="n in notes">
 	  <h2 style="text-align:center">
 	    <span x-ng-bind=n.firm></span> 

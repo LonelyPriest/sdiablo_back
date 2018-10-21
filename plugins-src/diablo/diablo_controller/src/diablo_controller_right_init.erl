@@ -239,7 +239,12 @@ init([]) ->
 	 {?new_department, 
 	  <<"新增部门">>, <<"new_department">>,   ?right_employe},
 	 {?list_department,
-	  <<"部门详情">>, <<"department_detail">>,   ?right_employe}
+	  <<"部门详情">>, <<"list_department">>,   ?right_employe},
+
+	 {?add_employee_of_department,
+	  <<"新增部门员工">>, <<"add_employee_of_department">>,   ?right_employe},
+	 {?del_employee_of_department,
+	  <<"删除部门员工">>, <<"del_employee_of_department">>,   ?right_employe}
 	],
 
     Right =

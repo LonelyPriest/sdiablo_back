@@ -56,7 +56,7 @@ create table region
     id               INTEGER AUTO_INCREMENT, 
     merchant         INTEGER not null default -1, 
     name             VARCHAR(64) not null,
-    master           VARCHAR(8) default '',
+    department       INTEGER not null default -1,
     comment          VARCHAR(256) default '',
     entry_date       DATETIME not null,
     deleted          INTEGER default 0, -- 0: no;  1: yes
@@ -1443,10 +1443,11 @@ create table department
 (
     id              INTEGER AUTO_INCREMENT,
     name            VARCHAR(127) not null,
-    remark          VARCHAR(255), 
+    master          VARCHAR(8) default '',
+    comment         VARCHAR(255), 
     merchant        INTEGER default -1,
-    entry_date      DATETIME default 0, 
-    deleted         INTEGER default 0, -- 0: no;  1: yes 
+    entry_date      DATETIME default 0,
+    deleted         SMALLINT default 0, -- 0: no;  1: yes 
     unique  key  uk (merchant, name),
     primary key     (id)
 ) default charset=utf8;
@@ -1454,9 +1455,11 @@ create table department
 create table employee_locate(
     id              INTEGER AUTO_INCREMENT,
     department      INTEGER default -1,
-    employ          varchar(8) default '',
+    employ          VARCHAR(8) default '',
+    position        SMALLINT(1) default 0, -- 0:common; 1:master
     merchant        INTEGER default -1,
     entry_date      DATETIME default 0, 
-    deleted         INTEGER default 0, -- 0: no;  1: yes
+    deleted         SMALLINT default 0, -- 0: no;  1: yes
+    unique key   uk (merchant, department, employ),
     primary key     (id)
 ) default charset=utf8;

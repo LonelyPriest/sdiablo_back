@@ -20,7 +20,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
--export([employ/2, employ/3, employ/4]).
+-export([employ/2, employ/3, employ/4, department/2, department/3]).
 
 -define(SERVER, ?MODULE). 
 -define(tbl_employ, "employees").
@@ -43,11 +43,16 @@ employ(recover, Merchant, EmployeeId) ->
 employ(list, Merchant, Conditions) ->
     gen_server:call(?MODULE, {list_employee, Merchant, Conditions}).
 
+department(new, Merchant, Attrs) -> 
+    gen_server:call(?MODULE, {new_department, Merchant, Attrs});
+department(add_employee, Merchant, Attrs) -> 
+    gen_server:call(?MODULE, {add_employee_of_department, Merchant, Attrs}).
+
+department(list, Merchant) ->
+    gen_server:call(?MODULE, {list_department, Merchant, []}).
+
 employ(update, Merchant, EmployeeId, Attrs) ->
     gen_server:call(?MODULE, {update_employee, Merchant, EmployeeId, Attrs}).
-
-
-
 
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
@@ -201,6 +206,78 @@ handle_call({list_employee, Merchant, Conditions}, _From, State) ->
 	    {reply, ?err(db_error, Error), State}
     end;
 
+handle_call({new_department, Merchant, Attrs}, _From, State)->
+    ?DEBUG("new department with props ~p", [Attrs]),
+    Name      = ?v(<<"name">>, Attrs),
+    Master    = ?v(<<"master">>, Attrs, []),
+    Comment   = ?v(<<"comment">>, Attrs, []),
+    Datetime  = ?utils:current_time(format_localtime),
+
+    %% name can not be same
+    Sql = "select id, name from department where merchant=" ++ ?to_s(Merchant)
+	++ " and name = " ++ "\"" ++ ?to_string(Name) ++ "\""
+	++ " and deleted=" ++ ?to_s(?NO),
+
+    case ?sql_utils:execute(s_read, Sql) of
+	{ok, []} -> 
+	    Sql1 = "insert into department"
+		++ "(merchant, name, master, comment, entry_date)"
+		++ " values ("
+		++ ?to_s(Merchant) ++ ","
+		++ "\'" ++ ?to_s(Name) ++ "\'," 
+		++ "\'" ++ ?to_s(Master) ++ "\',"
+		++ "\'" ++ ?to_s(Comment) ++ "\'," 
+		++ "\"" ++ ?to_s(Datetime) ++ "\")",
+	    
+	    Reply = ?sql_utils:execute(insert, Sql1),
+	    %% ?w_user_profile:update(region, Merchant),
+	    {reply, Reply, State};
+	{ok, _Any} ->
+	    {reply, {error, ?err(department_exist, Name)}, State};
+	Error ->
+	    {reply, Error, State}
+    end;
+
+handle_call({list_department, Merchant, Conditions}, _From, State) ->
+    Sql = "select id, name, master as master_id, comment, entry_date from department"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, Conditions)
+	++ " and deleted=" ++ ?to_s(?NO)
+	++ " order by id desc",
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({add_employee_of_department, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("add_employee_of_department: merchant ~p, Attrs ~p", [Merchant, Attrs]),
+    Department = ?v(<<"department">>, Attrs),
+    Employee   = ?v(<<"employee">>, Attrs),
+    
+    Sql = "select id, department, employ from employee_locate"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and department=" ++ ?to_s(Department)
+	++ " and employ=\'" ++ ?to_s(Employee) ++ "\'"
+	++ " and deleted=" ++ ?to_s(?NO),
+
+    case ?sql_utils:execute(s_read, Sql) of
+	{ok, []} ->
+	    Sql1 = "insert into employee_locate("
+		"department, employ, position, merchant, entry_date)"
+		" values ("
+		++ ?to_s(Department) ++ ","
+		++ "\'" ++ ?to_s(Employee) ++ "\',"
+		++ ?to_s(0) ++ ","
+		++ ?to_s(Merchant) ++ ","
+		++ "\'" ++ ?utils:current_time(format_localtime) ++ "\')",
+
+	    Reply = ?sql_utils:execute(insert, Sql1),
+	    {reply, Reply, State};
+	{ok, _Any} ->
+	    {reply, {error, ?err(department_employee_added, Employee)}, State};
+	Error ->
+	    {reply, Error, State}
+    end;
+		
+    
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.

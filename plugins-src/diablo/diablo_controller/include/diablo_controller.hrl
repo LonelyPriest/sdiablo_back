@@ -276,6 +276,9 @@
 -define(list_department,    ?right_employe + 8).
 -define(del_department,     ?right_employe + 9).
 
+-define(add_employee_of_department, ?right_employe + 10).
+-define(del_employee_of_department, ?right_employe + 11).
+
 %% right
 -define(new_role,       ?right_right + 1).
 -define(del_role,       ?right_right + 2).
@@ -656,7 +659,8 @@
 	  score       = [] :: list(),
 	  sms_rate    = [] :: list(),
 	  sms_center  = [] :: list(),
-	  level       = [] :: list()
+	  level       = [] :: list(),
+	  department  = [] :: list()
 	  %% login_right = [] :: list(),
 	  %% login_shop  = [] :: list()
 	 }).
