@@ -97,7 +97,7 @@ pagination(TotalFun, PageFun, Req, Payload) ->
 			    ?utils:respond(
 			       200, object, Req, {[{<<"ecode">>, 0},
 						   {<<"total">>, Total},
-						   {<<"data">>, Details}] ++ Others}); 
+						   {<<"data">>, Details}] ++ Others});
 			{error, Error} ->
 			    ?utils:respond(200, Req, Error) 
 		    end

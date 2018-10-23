@@ -504,16 +504,15 @@ function wsaleRsnDetailCtrlProvide (
 				// console.log(diablo_find_color(d.color_id, filterColor));
 				d.brand = diablo_get_object(d.brand_id, filterBrand).name;
 				d.type = diablo_get_object(d.type_id, filterType).name;
-				d.note = diablo_find_color(d.color_id, filterColor).cname
-				    + ":" + d.size;
+				d.note = diablo_find_color(d.color_id, filterColor).cname + ":" + d.size;
 				notes.push(d)
 			    }
 			}
 
 			// console.log(notes);
-			var hLine = wsalePrint.gen_body(LODOP, sale, notes, isRound, cakeMode);
+			var hLine = wsalePrint.gen_body(LODOP, sale, notes, isRound, cakeMode); 
+			var vip = wsaleUtils.isVip(retailer, no_vip, filterSysRetailer),
 			
-			var vip = wsaleUtils.isVip(retailer, no_vip, filterSysRetailer), 
 			hLine = wsalePrint.gen_stastic(LODOP, hLine, sale.direct, sale, vip); 
 			wsalePrint.gen_foot(LODOP, hLine, comments, pdate, shop.addr, cakeMode);
 			wsalePrint.start_print(LODOP); 

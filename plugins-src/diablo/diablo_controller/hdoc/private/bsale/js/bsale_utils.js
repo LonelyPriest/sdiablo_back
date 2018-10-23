@@ -24,6 +24,10 @@ var bsaleUtils = function(){
 	    }
 	},
 
+	select_employee: function(shop, base) {
+	    return diablo_base_setting("s_employee", shop, base, parseInt, diablo_no);
+	},
+	
 	check_sale: function(shop, base){
 	    return diablo_base_setting("check_sale", shop, base, parseInt, diablo_yes);
 	},
@@ -70,6 +74,101 @@ var bsaleUtils = function(){
     }
 }();
 
+
+var bsaleCalc = function(){
+    return {
+	get_inventory_count: function(inv, sellMode) {
+	    return sellMode === diablo_sale ? inv.sell : inv.reject;
+	},
+
+	calc_discount_of_verificate: function(inventories, mode, pay, verificate){
+	    if (bsaleUtils.to_integer(verificate) === 0){
+		return pay;
+	    } 
+	    var p1 = 0;
+	    var one;
+	    var count;
+	    for (var i=0, l=inventories.length; i<l; i++){
+		one = inventories[i];
+		// count = mode === diablo_sale ? one.sell : one.reject;
+		count = bsaleCalc.get_inventory_count(one, mode);
+		p1 += one.fprice * count;
+	    }
+
+	    var vdiscount = diablo_discount(verificate, p1);
+	    var calc = 0;
+	    for (var i=0, l=inventories.length; i<l; i++){
+		one = inventories[i];
+		// count = mode === diablo_sale ? one.sell : one.reject;
+		count = bsaleCalc.get_inventory_count(one, mode);
+		one.rdiscount = bsaleUtils.to_decimal(one.rdiscount - vdiscount);
+		one.rprice  = diablo_price(one.fprice, one.rdiscount);
+		
+		one.calc = bsaleUtils.to_decimal(one.rprice * count);
+		calc += one.calc;
+		console.log(one.calc);
+	    }
+
+	    return calc;
+	},
+	
+	calculate: function(inventories, saleMode, verificate, round){
+	    var total        = 0;
+	    var abs_total    = 0;
+	    var should_pay   = 0;
+	    var score        = 0; 
+
+	    for (var i=0, l=inventories.length; i<l; i++){
+		var one = inventories[i];
+		if (angular.isDefined(one.select) && !one.select) continue;
+
+		if (one.o_fprice !== one.fprice) {
+		    one.fdiscount = diablo_discount(one.fprice, one.tag_price); 
+		} else if (one.o_fdiscount !== one.fdiscount) {
+		    if (one.tag_price == 0) {
+		    	one.fprice = diablo_price(one.fprice, one.fdiscount); 
+		    } else {
+		    	one.fprice = diablo_price(one.tag_price, one.fdiscount); 
+		    }
+		}
+	    }
+	    
+	    for (var i=0, l=inventories.length; i<l; i++) {
+		var one = inventories[i];
+		var count = bsaleCalc.get_inventory_count(one, saleMode);
+
+		total      += bsaleUtils.to_integer(count);
+		abs_total  += Math.abs(bsaleUtils.to_integer(count)); 
+		
+		one.o_fprice = one.fprice;
+		one.o_fdiscount = one.fdiscount;
+		
+		one.rprice = one.fprice;
+		one.rdiscount = diablo_full_discount;
+		
+		one.calc = bsaleUtils.to_decimal(one.fprice * count); 
+		should_pay += one.calc;		
+	    } 
+
+	    // calcuate with verificate 
+	    should_pay = bsaleCalc.calc_discount_of_verificate(inventories, saleMode, should_pay, verificate); 
+	    if (bsaleUtils.to_integer(round) === diablo_yes) {
+		if (should_pay >= 0)
+		    should_pay = diablo_round(should_pay)
+		else {
+		    should_pay = -diablo_round(Math.abs(should_pay))
+		}
+	    }
+	    
+	    return {
+		total:      total,
+		abs_total:  abs_total,
+		should_pay: should_pay
+	    }; 
+	}
+    }
+}();
+	
 var gen_bsale_key = function(shop, bsaler, dateFilter){
     var now = $.now();
     return "bts-"
@@ -86,7 +185,7 @@ var bsaleDraft = function(storage, shop, bsaler, dateFilter){
     this.bsaler   = bsaler;
     // this.employee = employee;
     this.dateFilter = dateFilter;
-    this.key = gen_bsale_key(this.shop, this.retailer, this.dateFilter);
+    this.key = gen_bsale_key(this.shop, this.bsaler, this.dateFilter);
 };
 
 bsaleDraft.prototype.get_key = function(){
@@ -99,7 +198,7 @@ bsaleDraft.prototype.set_key = function(key){
 
 bsaleDraft.prototype.reset = function(){
     // console.log(this.key);
-    this.key = gen_bsale_key(this.shop, this.retailer, this.dateFilter);
+    this.key = gen_bsale_key(this.shop, this.bsaler, this.dateFilter);
 };
 
 bsaleDraft.prototype.change_shop = function(shop){

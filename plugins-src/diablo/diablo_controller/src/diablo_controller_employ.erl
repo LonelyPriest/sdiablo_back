@@ -43,13 +43,14 @@ employ(recover, Merchant, EmployeeId) ->
 employ(list, Merchant, Conditions) ->
     gen_server:call(?MODULE, {list_employee, Merchant, Conditions}).
 
+department(list, Merchant) ->
+    gen_server:call(?MODULE, {list_department, Merchant, []}).
 department(new, Merchant, Attrs) -> 
     gen_server:call(?MODULE, {new_department, Merchant, Attrs});
 department(add_employee, Merchant, Attrs) -> 
-    gen_server:call(?MODULE, {add_employee_of_department, Merchant, Attrs}).
-
-department(list, Merchant) ->
-    gen_server:call(?MODULE, {list_department, Merchant, []}).
+    gen_server:call(?MODULE, {add_employee_of_department, Merchant, Attrs});
+department(list_employee, Merchant, Department) -> 
+    gen_server:call(?MODULE, {list_employee_of_department, Merchant, Department}).
 
 employ(update, Merchant, EmployeeId, Attrs) ->
     gen_server:call(?MODULE, {update_employee, Merchant, EmployeeId, Attrs}).
@@ -261,14 +262,13 @@ handle_call({add_employee_of_department, Merchant, Attrs}, _From, State) ->
     case ?sql_utils:execute(s_read, Sql) of
 	{ok, []} ->
 	    Sql1 = "insert into employee_locate("
-		"department, employ, position, merchant, entry_date)"
+		"department, employ, position, merchant, entry)"
 		" values ("
 		++ ?to_s(Department) ++ ","
 		++ "\'" ++ ?to_s(Employee) ++ "\',"
 		++ ?to_s(0) ++ ","
 		++ ?to_s(Merchant) ++ ","
-		++ "\'" ++ ?utils:current_time(format_localtime) ++ "\')",
-
+		++ "\'" ++ ?utils:current_time(localdate) ++ "\')", 
 	    Reply = ?sql_utils:execute(insert, Sql1),
 	    {reply, Reply, State};
 	{ok, _Any} ->
@@ -276,8 +276,17 @@ handle_call({add_employee_of_department, Merchant, Attrs}, _From, State) ->
 	Error ->
 	    {reply, Error, State}
     end;
-		
-    
+
+handle_call({list_employee_of_department, Merchant, Department}, _From, State) ->
+    ?DEBUG("list_employee_of_department: merchant ~p, Department ~p", [Merchant, Department]), 
+    Sql = "select id, department, employ as employee_id, entry from employee_locate"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and department=" ++ ?to_s(Department)
+	++ " and deleted=" ++ ?to_s(?NO),
+
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.

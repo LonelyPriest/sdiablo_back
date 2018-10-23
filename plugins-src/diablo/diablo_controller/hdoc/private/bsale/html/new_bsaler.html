@@ -122,6 +122,16 @@
 	      </div> 
 	    </div>
 
+	    <div class="form-group"> 
+	      <label class="col-sm-3 col-md-3 control-label">所在区域</label>
+	      <div class="col-sm-6 col-md-6">
+	  	<select class="form-control" type="text"
+	  		x-ng-model="bsaler.region"
+	  		x-ng-options="r as r.name for r in regions">
+		</select>
+	      </div>
+	    </div>
+
 	    <div class="form-group">
 	      <label class="col-sm-3 col-md-3 control-label">备注</label>
 	      <div class="col-sm-6 col-md-6">

@@ -283,45 +283,17 @@
     <div class="portlet box light-grey diablo-margin-bottom-5">
       <div class="portlet-title">
 	<div class="caption"><i class="glyphicon glyphicon-jpy large"></i>
-	  <span>收银</span> 
+	  <span>结帐</span> 
 	</div>
 
 	<div class="actions"> 
 	  <button class="btn btn-success"
 	    	  x-ng-disabled="disable_save()"
-	    	  x-ng-click="save_wsale()">保存 <i class="glyphicon glyphicon-save"></i></button>
+	    	  x-ng-click="save_bsale()">保存<i class="glyphicon glyphicon-save"></i></button>
 	</div>
       </div>
 
-      <div class="portlet-body"> 
-	<div class="row diablo-good-form-group">
-	  <div class="col-xs-12 col-md-12">
-	    <div class="input-group">
-	      <span class="input-group-addon">
-	  	<i class="glyphicon glyphicon-map-marker fg-red"></i>员工
-	      </span>
-	      <select class="form-control" type="text"
-	      	      x-ng-model="select.employee"
-	      	      x-ng-change="change_employee()"
-	      	      x-ng-options="e as e.name for e in employees|filter:$viewValue">
-	      </select> 
-	    </div>
-	  </div>
-	</div>
-	
-	<div class="row diablo-good-form-group">
-	  <div class="col-xs-12 col-md-12">
-	    <div class="input-group">
-	      <span class="input-group-addon">
-		<i class="glyphicon glyphicon-comment fg-red"></i>备注</span>
-	      <input class="form-control"
-		     type="text"
-		     placeholder="备注"
-	    	     x-ng-model="select.comment"/>
-	    </div>
-	  </div>
-	</div>
-
+      <div class="portlet-body">
 	<div class="row diablo-good-form-group">
 	  <div class="col-xs-12 col-md-12">
 	    <div class="input-group">
@@ -343,6 +315,22 @@
 	    </div>
 	  </div> 
 	</div>
+	
+	<div class="row diablo-good-form-group">
+	  <div class="col-xs-12 col-md-12">
+	    <div class="input-group">
+	      <span class="input-group-addon">
+	  	<i class="glyphicon glyphicon-map-marker fg-red"></i>导购
+	      </span>
+	      <input class="form-control" type="text"
+	      	     x-ng-model="select.employee"
+	      	     x-ng-change="change_employee()"
+		     placeholder="请选择导购"
+		     typeahead-editable="false"
+		     uib-typeahead="e as e.name for e in employees|filter:$viewValue" />
+	    </div>
+	  </div>
+	</div>
 
 	<div class="row diablo-good-form-group">
 	  <div class="col-xs-12 col-md-12">
@@ -360,7 +348,7 @@
 	  		 x-ng-model="select.cash"
 			 x-ng-pattern="pattern.money"
 			 placeholder="现金"
-			 x-ng-enter="disable_save() || save_wsale()"/>
+			 x-ng-enter="disable_save() || save_bsale()"/>
 		</div>
 	      </form>
 	    </div>
@@ -383,7 +371,7 @@
 			 x-ng-pattern="pattern.money"
 	  		 x-ng-model="select.card"
 			 placeholder="刷卡"
-			 x-ng-enter="disable_save() || save_wsale()"/>
+			 x-ng-enter="disable_save() || save_bsale()"/>
 		</div>
 	      </form>
 	    </div>
@@ -405,7 +393,7 @@
 			 x-ng-pattern="pattern.money"
 	  		 x-ng-model="select.wxin"
 			 placeholder="微/支"
-			 x-ng-enter="disable_save() || save_wsale()"/>
+			 x-ng-enter="disable_save() || save_bsale()"/>
 		</div>
 	      </form>
 	    </div>
@@ -430,18 +418,49 @@
             </div>
           </div>
 	</div>
+
+	<div class="row diablo-good-form-group">
+	  <div class="col-xs-12 col-md-12">
+	    <div class="input-group">
+	      <span class="input-group-addon">
+		<i class="glyphicon glyphicon-comment fg-red"></i>备注</span>
+	      <input class="form-control"
+		     type="text"
+		     placeholder="备注"
+	    	     x-ng-model="select.comment"/>
+	    </div>
+	  </div>
+	</div>
 	
+      </div>
+
+      <div class="row">
+	<div class="col-xs-12 col-md-12"> 
+	  <h4 class="text-center" style="margin-top:-2px"> 
+    	    <span x-ng-if="select.region">
+    	      区域：<span class="fg-blue"><strong>{{select.region.name}}</strong></span>&nbsp&nbsp
+    	    </span>
+
+    	    <span x-ng-if="select.department">
+	      <span>部门：<span class="fg-blue">
+		  <strong>{{select.department.name}}</strong></span></span>&nbsp&nbsp
+    	      <span>负责人：</span><span class="fg-red">
+		<strong>{{select.department.master.name}}</strong>
+	      </span>&nbsp&nbsp
+    	    </span> 
+	  </h4>
+	</div>
       </div>
       
       <div class="row">
 	<div class="col-xs-12 col-md-12"> 
 	  <h4 class="text-center" style="margin-top:-2px"> 
-    	    <span x-ng-if="select.retailer && select.retailer.type_id!==2">上欠：
+    	    <span x-ng-if="select.bsaler && select.bsaler.id!==-1 && select.bsaler.type_id!==2">上欠：
     	      <span class="fg-blue sell-font"><strong>{{select.surplus}}</strong></span>&nbsp&nbsp
     	    </span>
 
-    	    <span x-ng-if="select.retailer && select.retailer.type_id!==2">本欠：
-    	      <span class="fg-red"><strong>{{select.left_balance}}</strong></span>&nbsp&nbsp
+    	    <span x-ng-if="select.bsaler && select.bsaler.id!==-1 && select.bsaler.type_id!==2">本欠：
+    	      <span class="fg-red sell-font"><strong>{{select.left_balance}}</strong></span>&nbsp&nbsp
     	    </span> 
 	  </h4>
 	</div>
@@ -534,8 +553,7 @@
 
     
     <div class="table-responsive">
-      <table class="table table-bordered
-		    table-striped table-condensed table-advanced" navtable>
+      <table class="table table-bordered table-striped table-condensed table-advanced" navtable>
 	<tbody>
 	  <tr>
 	    <td></td>

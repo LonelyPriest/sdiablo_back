@@ -174,11 +174,7 @@ function wretailerDetailCtrlProvide(
     $scope.do_search = function(page){
 	// console.log($scope.filters);
     	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
-	    console.log($scope.select.phone);
-	    // if (angular.isDefined($scope.select.phone) && angular.isObject($scope.select.phone)){
-	    // 	search.mobile = $scope.select.phone.mobile;
-	    // 	search.py = $scope.select.phone.py;
-	    // }
+	    console.log($scope.select.phone); 
 	    search = add_search_condition(search); 
 	    localStorageService.remove(diablo_key_retailer);
 	    localStorageService.set(diablo_key_retailer, {filter:$scope.filters,

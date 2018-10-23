@@ -278,6 +278,7 @@
 
 -define(add_employee_of_department, ?right_employe + 10).
 -define(del_employee_of_department, ?right_employe + 11).
+-define(list_employee_of_department, ?right_employe + 12).
 
 %% right
 -define(new_role,       ?right_right + 1).

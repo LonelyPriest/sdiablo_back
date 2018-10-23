@@ -116,6 +116,18 @@ action(Session, Req, {"add_employee_of_department"}, Payload) ->
 		{error, Error} ->
 		    ?utils:respond(200, Req, Error)
 	    end
+    end;
+
+action(Session, Req, {"list_employee_of_department"}, Payload) ->
+    ?DEBUG("list_employee_of_department with Session ~p~npaylaod ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    Department = ?v(<<"department">>, Payload),
+    %% ?utils:respond(batch, fun() -> ?employ:department(list_employee_of, Merchant, Department) end, Req),
+    case ?employ:department(list_employee, Merchant, Department) of
+	{ok, Employees} ->
+	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0}, {<<"data">>, Employees}]});
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
     end.
 
 sidebar(Session) ->

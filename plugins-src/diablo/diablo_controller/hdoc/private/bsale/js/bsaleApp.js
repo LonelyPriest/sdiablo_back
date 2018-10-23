@@ -52,7 +52,10 @@ function bsaleConfig(angular){
     bsaleApp.config(['$routeProvider', function($routeProvider){
 	// $locationProvider.html5Mode(true);
 	var user = {"user": function(userService){
-	    return userService()}}; 
+	    return userService()}};
+
+	var region = {"filterRegion": function(diabloNormalFilter){
+	    return diabloNormalFilter.get_region()}}; 
 
 	var brand = {"filterBrand": function(diabloFilter){
 	    return diabloFilter.get_brand()}};
@@ -71,9 +74,12 @@ function bsaleConfig(angular){
 	
 	var s_group = {"filterSizeGroup": function(diabloFilter){
 	    return diabloFilter.get_size_group()}}; 
+
+	var department = {"filterDepartment": function(diabloNormalFilter){
+	    return diabloNormalFilter.get_department()}};
 	
 	var base = {"base": function(diabloNormalFilter){
-	    return diabloNormalFilter.get_base_setting()}}; 
+	    return diabloNormalFilter.get_base_setting()}};
 	
 	$routeProvider. 
 	    when('/new_bsale', {
@@ -81,38 +87,75 @@ function bsaleConfig(angular){
 		controller: 'bsaleNewCtrl',
 		resolve: angular.extend(
 		    {},
-		    user, employee, s_group, brand, type, color, base)
+		    employee, s_group, brand, type, color, region, department, user, base)
+	    }).
+	    when('/detail_bsale', {
+		templateUrl: '/private/bsale/html/new_bsale_detail.html',
+		controller: 'bsaleNewDetailCtrl',
+		resolve: angular.extend(
+		    {},
+		    employee, s_group, brand, type, color, region, department, user, base)
+	    }).
+	    when('/note_bsale', {
+		templateUrl: '/private/bsale/html/new_bsale_note.html',
+		controller: 'bsaleNewNoteCtrl',
+		resolve: angular.extend(
+		    {},
+		    employee, s_group, brand, type, color, region, department, user, base)
 	    }). 
 	    when('/new_bsaler', {
 		templateUrl: '/private/bsale/html/new_bsaler.html',
 		controller: 'bsalerNewCtrl',
-		resolve: angular.extend({}, user)
+		resolve: angular.extend({}, region, user)
 	    }).
 	    when('/bsaler_detail', {
 		templateUrl: '/private/bsale/html/bsaler_detail.html',
 		controller: 'bsalerDetailCtrl',
 		resolve: angular.extend({}, user)
-	    }). 
+	    }).
 	    otherwise({
-		templateUrl: '/private/bsale/html/new_bsale.html',
+		templateUrl: '/private/bsale/html/new_bsale_detail.html',
 		controller: 'bsaleNewDetailCtrl',
 		resolve: angular.extend(
 		    {},
-		    user, employee, s_group, brand, type, color, base)
+		    employee, s_group, brand, type, color, region, department, user, base) 
             }) 
     }]);
 
     bsaleApp.service("bsaleService", function($http, $resource, dateFilter){
+	this.error = {
+	    2190: "该款号库存不存在！！请确认本店是否进货该款号！！",
+	    2192: "客户或营业员不存在，请建立客户或营业员资料！！",
+	    2193: "该款号吊牌价小于零，无法出售，请定价后再出售！！",
+	    2194: "该款号无入库记录，请先入库后再出售或重新选择货品！！",
+	    2195: "该条码对应的库存不存在，请确认条码是否正确，或通过款号模式开单！！",
+	    2196: "非法条码，条码长度不小于9，请输入正确的条码值！！",
+	    2401: "店铺打印机不存在或打印处理暂停状态！！",
+
+	    2708: "系统时间与服务器时间相差大于30分钟， 请检查系统时间或重新操作！！",
+	    2712: "货品数量校验不通过，请核对该货品数量后再导入！！", 
+	    2699: "修改前后信息一致，请重新编辑修改项！！",
+	    
+	    9001: "数据库操作失败，请联系服务人员！！"
+	};
+	
 	this.bsaler_types = [{name: "普通客户", id:0},
-			    {name: "系统客户", id:2}];
+			     {name: "系统客户", id:2}];
 
+	this.default_bsaler = {name: "", id:-1}; 
 
-	var request = $resource("/bsale/:operation/:id", {operation: '@operation', id: '@id'});
+	var request = $resource(
+	    "/bsale/:operation/:id", {operation: '@operation', id: '@id'}, {post: {method: 'POST', isArray: true}});
+
+	this.new_batch_sale = function(payload) {
+	    return request.save({operation: "new_batch_sale"}, payload).$promise;
+	};
 
 	this.new_bsaler = function(s) {
 	    return request.save(
 		{operation: "new_batch_saler"},
 		{shop:    s.shop,
+		 region:  s.region,
 		 name:    s.name,
 		 py:      s.py,
 		 type:    s.type,
@@ -121,7 +164,49 @@ function bsaleConfig(angular){
 		 address: s.address,
 		 remark:  s.remark}
 	    ).$promise;
-	}
+	};
+
+	this.filter_bsaler = function(mode, match, fields, currentPage, itemsPerpage){
+	    return request.save(
+		{operation: "list_batch_saler"},
+		{mode:   mode,
+		 match:  angular.isDefined(match) ? match.op : undefined,
+		 fields: fields,
+		 page:   currentPage,
+		 count:  itemsPerpage}).$promise;
+	};
+
+	var match_phone = function(viewValue, mode) {
+	    return request.post(
+		{operation: "match_bsaler_phone"}, {prompt:viewValue, mode: mode}
+	    ).$promise.then(function(phones) {
+		return phones.map(function(s) {
+		    return {id:   s.id,
+			    name: s.name + "," + s.mobile,
+			    mobile: s.mobile,
+			    balance: s.balance,
+			    region_id: s.region_id,
+			    shop_id: s.shop_id};
+		})
+	    });
+	};
+	
+	this.match_bsaler_phone = function(viewValue) {
+	    if (diablo_is_digit_string(viewValue)){
+		if (viewValue.length < 4) return; 
+		else return match_phone(viewValue, 0)
+	    } else if (diablo_is_letter_string(viewValue)){
+		return match_phone(viewValue, 1);
+	    } else if (diablo_is_chinese_string(viewValue)){
+		return match_phone(viewValue, 2);
+	    } else {
+		return;
+	    } 
+	};
+
+	this.get_bsaler_batch = function(bsalers) {
+	    return request.post({operation:'get_bsaler_batch'}, {bsaler:bsalers}).$promise;
+	};
 	
     });
 
@@ -137,7 +222,8 @@ function bsaleConfig(angular){
     bsaleApp.controller("bsalerDetailCtrl", bsalerDetailCtrlProvide);
 
     bsaleApp.controller("bsaleNewCtrl", bsaleNewProvide);
-
+    bsaleApp.controller("bsaleNewDetailCtrl", bsaleNewDetailCtrlProvide);
+    bsaleApp.controller("bsaleNewNoteCtrl", bsaleNewNoteCtrlProvide);
     
     return bsaleApp;
 };
@@ -146,10 +232,8 @@ function bsaleNewProvide(
     $scope, $q, $timeout, dateFilter, localStorageService,
     diabloUtilsService, diabloPromise, diabloFilter, diabloNormalFilter,
     diabloPattern, bsaleService,
-    user, 
-    filterEmployee,
-    filterSizeGroup, filterType, filterColor, base){
-    // console.log(base); 
+    filterEmployee, filterSizeGroup, filterType, filterColor, filterRegion, filterDepartment, user, base){
+    // console.log(filterRegion); 
     $scope.pattern    = {
 	money:    diabloPattern.decimal_2,
 	sell:     diabloPattern.integer_except_zero,
@@ -198,14 +282,17 @@ function bsaleNewProvide(
 	cash: undefined,
 	card: undefined,
 	wxin: undefined,
-
+	
 	total:        0,
 	abs_total:    0,
 	should_pay:   0, 
 	has_pay:      0, 
 	surplus:      0,
 	left_balance: 0,
-	datetime:     $scope.today()
+	datetime:     $scope.today(),
+
+	region: undefined,
+	department: undefined
     };
 
     // init
@@ -214,10 +301,10 @@ function bsaleNewProvide(
     
     var dialog = diabloUtilsService; 
     var get_setting = function(shopId){
+	$scope.setting.semployee     = bsaleUtils.select_employee(shopId, base);
 	$scope.setting.check_sale    = bsaleUtils.check_sale(shopId, base);
 	$scope.setting.negative_sale = bsaleUtils.negative_sale(shopId, base);
 	$scope.setting.round         = bsaleUtils.round(shopId, base);
-	$scope.setting.semployee     = bsaleUtils.s_employee(shopId, base);
 	$scope.setting.barcode_mode  = bsaleUtils.barcode_mode(shopId, base);
 	$scope.setting.barcode_auto  = bsaleUtils.barcode_auto(shopId, base); 
 	$scope.setting.scan_only     = bsaleUtils.to_integer(bsaleUtils.scan_only(shopId, base).charAt(0));
@@ -263,17 +350,17 @@ function bsaleNewProvide(
 	$scope.employees = select.filter;
 	$scope.select.employee = select.login;
 	if ($scope.setting.semployee) $scope.select.employee = undefined;
-    };
-    
+    }; 
     $scope.get_employee();
     
-    // retailer;
+    // batch saler;
     $scope.match_bsaler_phone = function(viewValue){
-	return bsaleUtils.match_bsaler_phone(viewValue, diabloFilter)
+	return bsaleService.match_bsaler_phone(viewValue);
     };
     
     $scope.set_bsaler = function(){
-    	if ($scope.select.bsaler.type_id !== diablo_system_retailer){
+    	if ($scope.select.bsaler.id !== diablo_invalid_index
+	    && $scope.select.bsaler.type_id !== diablo_system_retailer){
     	    $scope.select.surplus = bsaleUtils.to_decimal($scope.select.bsaler.balance);
     	    $scope.select.left_balance = $scope.select.surplus;
     	} 
@@ -283,6 +370,17 @@ function bsaleNewProvide(
 	// console.log(item);
 	console.log($scope.select.bsaler);
 	$scope.set_bsaler();
+
+	$scope.select.region = diablo_get_object($scope.select.bsaler.region_id, filterRegion);
+	// console.log($scope.select.region); 
+	if (angular.isObject($scope.select.region))
+	    $scope.select.department = diablo_get_object($scope.select.region.department_id, filterDepartment);
+
+	console.log($scope.select.department);
+	if (angular.isObject($scope.select.department)) {
+	    $scope.select.department.master =
+		diablo_get_object($scope.select.department.master_id, filterEmployee); 
+	}
 	
 	$scope.bsaleStorage.remove($scope.bsaleStorage.get_key());
 	$scope.bsaleStorage.change_bsaler($scope.select.bsaler.id);
@@ -290,30 +388,9 @@ function bsaleNewProvide(
 	$scope.re_calculate(); 
     };
 
-    $scope.sysBSalers = filterSysBSalers;
     $scope.reset_bsaler = function(){
-    	if (diablo_yes === $scope.setting.smember){
-    	    $scope.sysBSalers = filterSysBSalers.filter(function(r){
-    		return r.shop_id === $scope.select.shop.id;
-    	    });
-    	};
-	
-    	// console.log($scope.retailer);
-    	if ($scope.sysBSalers.length !== 0){
-    	    $scope.select.bsaler = $scope.sysBSalers[0];
-    	    if (user.loginBSaler !== diablo_invalid){
-    		for (var i=0, l=$scope.sysBSalers.length; i<l; i++){
-		    if (user.loginBSaler === $scope.sysBSalers[i].id){
-    			$scope.select.bsaler = $scope.sysBSalers[i]
-    			break;
-		    }
-    		}
-	    }
-	    
-    	    $scope.set_bsaler(); 
-    	};
-    };
-
+    	$scope.select.bsaler = bsaleService.default_bsaler;
+    }; 
     $scope.reset_bsaler();
     
     $scope.refresh = function(){
@@ -337,11 +414,7 @@ function bsaleNewProvide(
 	$scope.select.abs_total    = 0;
 	$scope.select.comment      = undefined;
 	
-	$scope.select.datetime     = $scope.today();
-	
-	if ($scope.setting.semployee)
-	    $scope.select.employee = undefined;
-	
+	$scope.select.datetime     = $scope.today(); 
 	$scope.disable_refresh     = true;
 	$scope.has_saved           = false;
 	
@@ -387,13 +460,12 @@ function bsaleNewProvide(
 	}); 
 	// console.log(retailerIds);
 	
-	diabloFilter.get_bsaler_batch(bsalerIds).then(function(bsalers){
+	bsaleService.get_bsaler_batch(bsalerIds).then(function(bsalers){
 	    console.log(bsalers); 
 	    var draft_filter = function(keys){
 		return keys.map(function(k){
 		    var p = k.split("-");
 		    return {sn:k,
-			    // employee:diablo_get_object(p[1], $scope.employees),
 			    bsaler:diablo_get_object(parseInt(p[1]), bsalers),
 			    shop:diablo_get_object(parseInt(p[2]), $scope.shops)}
 		});
@@ -454,12 +526,7 @@ function bsaleNewProvide(
 	
 	add.sex          = src.sex;
 	add.season       = src.season;
-	add.year         = src.year;
-	
-	add.pid          = src.pid;
-	add.promotion    = diablo_get_object(src.pid, $scope.promotions);
-	add.sid          = src.sid;
-	add.score        = diablo_get_object(src.sid, $scope.scores);
+	add.year         = src.year; 
 	
 	add.org_price    = src.org_price;
 	add.ediscount    = src.ediscount;
@@ -469,10 +536,8 @@ function bsaleNewProvide(
 	add.path         = src.path; 
 	add.s_group      = src.s_group;
 	add.free         = src.free;
-	add.state        = src.state;
 	add.entry        = src.entry_date;
 
-	// add.full_bcode   = angular.isUndefined(src.full_bcode) ? src.bcode : src.full_bcode;
 	add.full_name    = add.style_number + "/" + add.brand + "/" + add.type;
 
 	return add; 
@@ -637,10 +702,7 @@ function bsaleNewProvide(
 		    year        : add.year,
 		    entry       : add.entry,
 		    sell_total  : bsaleUtils.to_integer(add.sell),
-
-		    promotion   : add.pid,
-		    score       : add.sid,
-
+		    
 		    org_price   : add.org_price,
 		    ediscount   : add.ediscount,
 		    tag_price   : add.tag_price,
@@ -684,7 +746,8 @@ function bsaleNewProvide(
 	
 	console.log(base);
 
-	bsaleService.new_bsale({inventory:added.length===0 ? undefined:added, base:base, print:print}).then(function(result){
+	var payload = {inventory:added.length===0 ? undefined : added, base:base}; 
+	bsaleService.new_batch_sale(payload).then(function(result){
 	    console.log(result);
 	    var success_callback = function(){
 		// clear local storage
@@ -699,7 +762,7 @@ function bsaleNewProvide(
 	    
 	    if (result.ecode === 0){
 		$scope.select.rsn = result.rsn; 
-		// print
+		// print 
 	    } else {
 		dialog.response_with_callback(
 	    	    false,
@@ -751,10 +814,19 @@ function bsaleNewProvide(
     }; 
     
     $scope.re_calculate = function(){
-	// console.log("re_calculate");
 	$scope.select.total        = 0;
 	$scope.select.abs_total    = 0;
-	$scope.select.should_pay   = 0; 
+	$scope.select.should_pay   = 0;
+
+	var calc = bsaleCalc.calculate(
+	    $scope.inventories,
+	    diablo_sale,
+	    $scope.select.verificate,
+	    $scope.setting.round);
+	console.log(calc);
+	$scope.select.total      = calc.total;
+	$scope.select.abs_total  = calc.abs_total;
+	$scope.select.should_pay = calc.should_pay;
     };
 
     var valid_sell = function(amount){
@@ -880,16 +952,9 @@ function bsaleNewProvide(
 	    diabloUtilsService.response(false, "批发开单", "开单失败：" + bsaleService.error[2192]);
 	    return;
 	};
-
-	// inv.cdiscount      = inv.discount;
-	// inv.cprice         = inv.tag_price;
-
+	
 	inv.fdiscount = inv.discount;
-	inv.fprice    = diablo_price(inv.tag_price, inv.discount);
-
-	// inv.fdiscount = $scope.calc_discount(inv); 
-	// inv.fprice    = diablo_price(inv.tag_price, inv.fdiscount);
-
+	inv.fprice    = diablo_price(inv.tag_price, inv.discount); 
 	inv.o_fdiscount = inv.discount;
 	inv.o_fprice    = inv.fprice;
 	
@@ -1278,33 +1343,47 @@ function bsaleNewProvide(
 	    }; 
 	    $scope.save_free_update(inv); 
 	} 
-    };
-
-    $scope.gift_sale = function(inv) {
-	inv.fprice = 0;
-	$scope.bsaleStorage.save($scope.inventories.filter(function(r){return !r.$new}));
-	$scope.re_calculate();
-    };
+    }; 
 };
 
 
+function bsaleNewDetailCtrlProvide(
+    $scope, $q, $timeout, dateFilter, localStorageService,
+    diabloUtilsService, diabloPromise, diabloFilter, diabloNormalFilter,
+    diabloPattern, bsaleService,
+    filterEmployee, filterSizeGroup, filterType, filterColor, filterRegion, filterDepartment, user, base){
+    
+};
+
+function bsaleNewNoteCtrlProvide(
+    $scope, $q, $timeout, dateFilter, localStorageService,
+    diabloUtilsService, diabloPromise, diabloFilter, diabloNormalFilter,
+    diabloPattern, bsaleService,
+    filterEmployee, filterSizeGroup, filterType, filterColor, filterRegion, filterDepartment, user, base){
+    
+};
+    
 function bsalerNewCtrlProvide(
-    $scope, bsaleService, diabloPattern, diabloUtilsService, user){
+    $scope, bsaleService, diabloPattern, diabloUtilsService, filterRegion, user){
     $scope.pattern = {name_address: diabloPattern.ch_name_address,
 		      tel_mobile:   diabloPattern.tel_mobile,
 		      name:         diabloPattern.chinese_lname};
-    $scope.shops = user.sortShops;
+    
+    $scope.shops        = user.sortShops;
+    $scope.regions      = [{id:-1, name:"无"}].concat(filterRegion);
     $scope.bsaler_types = bsaleService.bsaler_types;
     
     $scope.bsaler = {
 	type :$scope.bsaler_types[0],
-	shop :$scope.shops[0]
+	shop :$scope.shops[0],
+	region: $scope.regions[0]
     };
 
     var dialog = diabloUtilsService;
     $scope.new_bsaler = function(bsaler) {
 	console.log(bsaler);
 	var saler = {shop:    bsaler.shop.id,
+		     region:  bsaler.region.id,
 		     name:    diablo_trim(bsaler.name),
 		     py:      diablo_pinyin(diablo_trim(bsaler.name)),
 		     type:    bsaler.type.id,
@@ -1315,7 +1394,7 @@ function bsalerNewCtrlProvide(
 	bsaleService.new_bsaler(saler).then(function(result) {
 	    console.log(result);
 	    if (result.ecode == 0) {
-		diablo_goto_page("#/basler_detail")
+		diablo_goto_page("#/bsaler_detail")
 	    } else {
 		dialog.set_batch_error("新增客户", result.ecode)
 	    }
@@ -1324,8 +1403,93 @@ function bsalerNewCtrlProvide(
 };
 
 function bsalerDetailCtrlProvide(
-    $scope, bsaleService, diabloPattern, diabloUtilsService, user){
+    $scope, bsaleService, diabloFilter, diabloPattern, diabloUtilsService, user){
+    $scope.filters = [];
+    diabloFilter.reset_field(); 
+    diabloFilter.add_field("region", $scope.regions);
+    diabloFilter.add_field("shop", user.sortShops);
+    $scope.filter = diabloFilter.get_filter();
+    $scope.prompt = diabloFilter.get_prompt();
+
+    $scope.goto_page = diablo_goto_page;
+    $scope.match_bsaler_phone = function(viewValue){
+	return bsaleService.match_bsaler_phone(viewValue);
+    };
+
+    var order_fields = {id:0, balance:1, consume:2};
+    $scope.sort = {mode: order_fields.id, sort:diablo_desc}; 
+    $scope.select         = {phone:undefined}; 
+    /*
+     * pagination
+     */
+    $scope.max_page_size = diablo_max_page_size();
+    $scope.items_perpage = diablo_items_per_page();
+    $scope.default_page  = 1;
+    $scope.current_page  = $scope.default_page;
+    $scope.total_items   = undefined;
+
+    var add_search_condition = function(search) {
+	if (angular.isDefined($scope.select.phone) && angular.isObject($scope.select.phone)){
+	    search.mobile = $scope.select.phone.mobile;
+	    search.py = $scope.select.phone.py;
+	} 
+	return search;
+    };
     
+    $scope.do_search = function(page){
+	// console.log($scope.filters);
+    	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+	    // console.log($scope.select.phone); 
+	    search = add_search_condition(search);
+	    console.log(search);
+	    // localStorageService.remove(diablo_key_retailer);
+	    // localStorageService.set(diablo_key_retailer, {filter:$scope.filters,
+	    // 						  phone: $scope.select.phone,
+	    // 						  page: page,
+	    // 						  t: now});
+
+	    // if (page !== $scope.default_page) {
+	    // 	var stastic = localStorageService.get("retailer-detail-stastic");
+	    // 	$scope.total_items       = stastic.total_items; 
+	    // 	$scope.total_balance     = stastic.total_balance;
+	    // 	$scope.total_consume     = stastic.total_consume; 
+	    // };
+	    
+    	    bsaleService.filter_bsaler(
+		$scope.sort, $scope.match, search, page, $scope.items_perpage
+    	    ).then(function(result){
+    		console.log(result);
+    		if (result.ecode === 0){
+    		    if (page === $scope.default_page){
+			$scope.total_items   = result.total;
+			$scope.total_balance = result.balance;
+			$scope.total_consume = result.consume;
+			$scope.salers = [];
+			// $scope.save_stastic();
+    		    } 
+		    $scope.salers = angular.copy(result.data); 
+		    angular.forEach($scope.salers, function(s){
+			s.type = diablo_get_object(s.type_id, bsaleService.bsaler_types);
+		    });
+		    
+    		    diablo_order($scope.salers, (page - 1) * $scope.items_perpage + 1);
+    		    $scope.current_page = page;
+    		} 
+    	    })
+    	})
+    };
+
+    $scope.refresh = function(){
+	// localStorageService.remove("retailer-detail-stastic");
+	$scope.select.phone = undefined;
+	$scope.do_search($scope.default_page);
+    };
+
+    $scope.page_changed = function(){
+	$scope.do_search($scope.current_page);
+    };
+
+    $scope.refresh();
 };
 
 

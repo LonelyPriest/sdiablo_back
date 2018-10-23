@@ -52,6 +52,10 @@
 		      <button class="btn diablo-button btn-success"
 			      x-ng-click="add_employee(d)">员工
 			<i class="glyphicon glyphicon-plus"></i></button>
+
+		      <button class="btn diablo-button btn-primary"
+			      x-ng-click="list_employee(d)">员工
+			<i class="glyphicon glyphicon-leaf"></i></button>
 		      
 		      <button class="btn diablo-button btn-warning"
 			      x-ng-click="update_department(r)">修改
@@ -198,4 +202,59 @@
 	    x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>  
+</script>
+
+
+<script type="text/ng-template" id="list-employee.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    <h4 class="modal-title">
+      <span class="label label-sm label-primary">
+	部门员工（<span >{{params.department.name}}</span>）
+      </span>
+    </h4>
+  </div>
+
+  <!--BEGIN modal body-->
+  <div class="modal-body">
+
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped table-condensed table-advanced">
+	<thead>
+	  <tr>
+	    <th></th>
+	    <th>工号</th>
+	    <th>名称</th>
+	    <th>日期</th> 
+	  </tr>
+	</thead>
+	<tbody>
+	  <tr x-ng-repeat="e in params.employees">
+	    <td class="text-center">
+	      <div class="checkbox checkbox-danger checkbox-circle">
+		<input id={{e.id}}
+		       type="checkbox"
+		       x-ng-model="e.select"
+		       x-ng-change="params.check_only(e, params.employees)"/>
+		<label for={{e.id}}></label>
+	      </div>
+	    </td> 
+	    <td class="vert-align">{{e.employee.id}}</td>
+	    <td class="vert-align">{{e.employee.name}}</td>
+	    <td class="vert-align">{{e.entry}}</td> 
+	  </tr>
+	</tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="pForm.$invalid"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
 </script>

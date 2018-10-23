@@ -1295,13 +1295,6 @@ function wsaleNewProvide(
     
     var LODOP;
     $scope.print_front = function(result, im_print, callback){
-	// var oscript = document.createElement("script");
-	// oscript.src ="/public/assets/lodop/LodopFuncs.js";
-	// var head = document.head
-	//     || document.getElementsByTagName("head")[0]
-	//     || document.documentElement;
-	// head.insertBefore(oscript, head.firstChild);
-	// console.log($scope.inventories.filter(function(r){return !r.$new}));
 	var pdate = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss");
 	var pinvs = [];
 	for (var i=0, l=$scope.inventories.length; i<l; i++){
@@ -1370,11 +1363,17 @@ function wsaleNewProvide(
 	} else {
 	    var request = dialog.request("销售开单", "开单成功，是否打印销售单？", undefined, undefined, undefined); 
 	    request.result.then(function(close){
+		console.log(close);
 		ok_print(); 
 		sms_notify(result);
 		if (angular.isFunction(callback))
 		    callback();
-	    })
+	    }, function(success) {
+		if (angular.isFunction(callback))
+		    callback();
+	    }, function(error) {
+		// console.log(error);
+	    });
 	}
     };
 

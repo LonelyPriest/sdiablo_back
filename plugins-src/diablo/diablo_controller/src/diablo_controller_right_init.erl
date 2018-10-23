@@ -244,7 +244,9 @@ init([]) ->
 	 {?add_employee_of_department,
 	  <<"新增部门员工">>, <<"add_employee_of_department">>,   ?right_employe},
 	 {?del_employee_of_department,
-	  <<"删除部门员工">>, <<"del_employee_of_department">>,   ?right_employe}
+	  <<"删除部门员工">>, <<"del_employee_of_department">>,   ?right_employe},
+	 {?list_employee_of_department,
+	  <<"查看部门员工">>, <<"list_employee_of_department">>,   ?right_employe}
 	],
 
     Right =
@@ -1097,6 +1099,9 @@ pass_action(wholesaler) ->
      <<"list_region">>,
 
      %% update soft
-     <<"download_stock_fix">>
-	 
+     <<"download_stock_fix">>,
+
+     %% batch sale
+     <<"get_bsaler_batch">>,
+     <<"match_bsaler_phone">> 
     ].

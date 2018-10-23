@@ -1458,8 +1458,104 @@ create table employee_locate(
     employ          VARCHAR(8) default '',
     position        SMALLINT(1) default 0, -- 0:common; 1:master
     merchant        INTEGER default -1,
-    entry_date      DATETIME default 0, 
+    entry           DATE default 0, 
     deleted         SMALLINT default 0, -- 0: no;  1: yes
     unique key   uk (merchant, department, employ),
     primary key     (id)
 ) default charset=utf8;
+
+
+create table batch_sale(
+    id             INTEGER AUTO_INCREMENT,
+    rsn            VARCHAR(32) not null, -- record sn
+    account        INTEGER not null default -1,
+    employ         VARCHAR(8) not null,
+    bsaler         INTEGER not null default -1, 
+    shop           INTEGER not null default -1, 
+    merchant       INTEGER not null default -1,
+
+    balance        DECIMAL(10, 2) default 0, -- max: 99999999.99
+    should_pay     DECIMAL(10, 2) default 0, -- max: 99999999.99
+    has_pay        DECIMAL(10, 2) default 0, -- max: 99999999.99
+    cash           DECIMAL(10, 2) default 0, -- max: 99999999.99
+    card           DECIMAL(10, 2) default 0, -- max: 99999999.99
+    wxin           DECIMAL(10, 2) default 0, -- max: 99999999.99
+    verificate     DECIMAL(10, 2) default 0, -- max: 99999999.99 
+    
+    total          INTEGER not null default 0, 
+    comment        VARCHAR(255) default null, 
+    
+    type           TINYINT  default -1, -- 0:sale 1:reject
+    state          TINYINT  default 0,  -- 0: wait for check, 1: checked
+    check_date     DATETIME default 0,  -- date of last change
+    entry_date     DATETIME default 0,
+    deleted        INTEGER default 0, -- 0: no;  1: yes
+    
+    unique  key uk (rsn),
+    key     dk     (merchant, shop, employ, bsaler),
+    primary key    (id)
+    
+)default charset=utf8;
+
+/*
+* sale
+*/
+create table batch_sale_detail(
+    id             INTEGER AUTO_INCREMENT,
+    rsn            VARCHAR(32) not null, -- rsn, unique
+    style_number   VARCHAR(64) not null,
+    brand          INTEGER not null default -1,
+    merchant       INTEGER not null default -1,
+    shop           INTEGER not null default -1,
+    
+    type           INTEGER default -1, -- stock type
+    sex            TINYINT default -1, -- 0: man, 1:woman 
+    s_group        VARCHAR(32) default 0,  -- which size group
+    free           TINYINT default 0,  -- free color and free size 
+    
+    season         TINYINT default -1, -- 0:spring, 1:summer, 2:autumn, 3:winter
+    firm           INTEGER default -1,
+    year           YEAR(4),
+    in_datetime    DATETIME default 0,
+    
+    total          INTEGER default 0,
+    promotion      INTEGER not null default -1, -- promotion
+    score          INTEGER not null default -1, -- score
+
+    org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
+    ediscount      DECIMAL(4, 1)  default 0, -- max: 100
+    
+    tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance 
+    fdiscount      DECIMAL(4, 1), -- max: 100
+    rdiscount      DECIMAL(4, 1), -- max: 100
+    fprice         DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
+    rprice         DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
+    
+    path           VARCHAR(255) default null, -- the image path
+    comment        VARCHAR(127) default null,
+    entry_date     DATETIME default 0,
+    op_date        DATETIME default 0,
+    deleted        INTEGER default 0, -- 0: no;  1: yes
+
+    unique  key uk (rsn, style_number, brand),
+    key     dk     (merchant, shop, style_number, brand, type, firm, year),
+    primary key    (id)
+)default charset=utf8;
+
+create table batch_sale_detail_amount(
+    id             INTEGER AUTO_INCREMENT,
+    rsn            VARCHAR(32) not null, -- record sn
+    style_number   VARCHAR(64) not null,
+    brand          INTEGER default -1,
+    color          INTEGER default -1,
+    size           VARCHAR(8) default null, -- S/26, M/27....
+    total          INTEGER default 0,
+    entry_date     DATETIME default 0,
+    merchant       INTEGER default -1,
+    shop           INTEGER default -1,
+    deleted        INTEGER default 0, -- 0: no;  1: yes
+
+    unique  key  uk (rsn, style_number, brand, color, size),
+    key     dk      (merchant, shop),
+    primary key    (id)
+)default charset=utf8;

@@ -109,8 +109,12 @@ function employeeConfig(angular){
 		{operation: "add_employee_of_department"},
 		{department: department, employee:employee}).$promise;
 	};
-    });
 
+	this.list_employee_of_department = function(department) {
+	    return employ.save(
+		{operation: "list_employee_of_department"}, {department: department}).$promise;
+	};
+    }); 
 
     employeeApp.controller("employDetailCtrl", function(
 	$scope, dateFilter, diabloPattern, diabloUtilsService, employService, user){
@@ -390,6 +394,41 @@ function departmentDetailCtrlProvide($scope, employService, diabloUtilsService, 
 	};
 
 	dialog.edit_with_modal("add-employee.html", undefined, callback, $scope, {department:department});
+    };
+
+
+    var check_select_only = function(select, items){
+	angular.forEach(items, function(e){
+	    if (e.id !== select.id){
+		e.select = false;
+	    }
+	})
+    }
+    
+    $scope.list_employee = function(d) {
+	employService.list_employee_of_department(d.id).then(function(result){
+	    if (result.ecode === 0){
+		var callback = function(params) {
+		    console.log(params);
+		};
+		
+		var employees = result.data; 
+		angular.forEach(employees, function(e) {
+		    e.employee = diablo_get_object(e.employee_id, $scope.employees);
+		});
+		
+		console.log(employees);
+		
+		dialog.edit_with_modal(
+		    "list-employee.html",
+		    undefined,
+		    callback,
+		    undefined,
+		    {department:d, employees:employees, check_only:check_select_only});
+	    } else {
+		dialog.response(false, "查看部门员工", "查看部门员工失败：" + employService.error[result.ecode]);
+	    }
+	});
     };
     
 };

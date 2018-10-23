@@ -55,7 +55,7 @@ angular.module("diabloPattern", []).service("diabloPattern", [function(){
     this.chinese = /^[\u4e00-\u9fa5]+$/;
     
     this.chinese_name = /^[0-9\u4e00-\u9fa5]{2,6}$/;
-    this.chinese_lname = /^[0-9\u4e00-\u9fa5]{2,15}$/;
+    this.chinese_lname = /^[0-9A-Za-z\u4e00-\u9fa5]{2,20}$/;
 
     this.ch_en_num = /^[\u4e00-\u9fa5A-Za-z0-9]+$/;
     

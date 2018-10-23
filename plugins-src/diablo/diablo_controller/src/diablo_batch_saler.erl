@@ -19,7 +19,8 @@
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
--export([batch_saler/3]).
+-export([batch_saler/3, match/3]).
+-export([filter/4, filter/6]).
 
 -define(SERVER, ?MODULE). 
 
@@ -30,7 +31,25 @@
 %%%===================================================================
 batch_saler(new, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {new_saler, Merchant, Attrs}).
+    gen_server:call(Name, {new_saler, Merchant, Attrs});
+
+batch_saler(get_batch, Merchant, BSalers) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {get_batch, Merchant, BSalers}).
+
+filter(total_saler, 'and', Merchant, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {total_saler, Merchant, Conditions}).
+
+filter({saler, Order, Sort}, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(
+      Name, {{filter_saler, Order, Sort}, Merchant, Conditions, CurrentPage, ItemsPerPage}).
+
+match(phone, Merchant, {Mode, Phone}) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {match_phone, Merchant, {Mode, Phone}}).
+
 
 start_link(Name) ->
     gen_server:start_link({local, Name}, ?MODULE, [Name], []).
@@ -52,10 +71,10 @@ handle_call({new_saler, Merchant, Attrs}, _From, State) ->
     Address  = ?v(<<"address">>, Attrs, []),
     Remark   = ?v(<<"remark">>, Attrs, []),
     
-    Sql = "select id, name, mobile, address from batchsaler"
-	++ " where name = " ++ "\'" ++ ?to_s(Name) ++ "\'"
-        ++ " and merchant = " ++ ?to_s(Merchant)
-    %% ++ " and mobile = " ++ "\'" ++ ?to_s(Mobile) ++ "\'" 
+    Sql = "select id, name, mobile from batchsaler"
+	%% ++ " where name = " ++ "\'" ++ ?to_s(Name) ++ "\'"
+        ++ " where merchant = " ++ ?to_s(Merchant)
+	++ " and mobile = " ++ "\'" ++ ?to_s(Mobile) ++ "\'" 
         ++ " and deleted = " ++ ?to_s(?NO),
 
     case ?sql_utils:execute(s_read, Sql) of
@@ -80,7 +99,118 @@ handle_call({new_saler, Merchant, Attrs}, _From, State) ->
             {reply, {error, ?err(batch_saler_exist, Name)}, State};
         Error ->
             {reply, Error, State}
-    end; 
+    end;
+
+handle_call({total_saler, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("total_saler: merchant ~p, conditions ~p", [Merchant, Conditions]),
+    {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions), 
+    Sql = "select count(*) as total"
+	", sum(balance) as balance"
+	" from batchsaler"
+	" where merchant=" ++ ?to_s(Merchant) 
+	++ ?sql_utils:condition(proplists, NewConditions),
+
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+handle_call({{filter_saler, Order, Sort}, Merchant, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
+    ?DEBUG("filter_retailer: order ~p, sort ~p, merchant ~p, conditions ~p, page ~p",
+	   [Order, Sort, Merchant, Conditions, CurrentPage]),
+    {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
+    
+    Sql = "select a.id"
+	", a.shop as shop_id"
+	", a.region as region_id" 
+	", a.name" 
+	", a.type as type_id"
+	", a.balance"
+	", a.mobile"
+	", a.address"
+	", a.merchant"
+	", a.remark" 
+	", a.entry_date"
+
+	", b.name as shop_name"
+	", c.name as region_name"
+	" from batchsaler a"
+	" left join shops b on a.shop=b.id"
+	" left join region c on a.region=c.id"
+	" where a.merchant=" ++ ?to_s(Merchant) 
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ ?sql_utils:condition(page_desc, {Order, Sort}, CurrentPage, ItemsPerPage),
+    Reply =  ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({match_phone, Merchant, {Mode, Phone}}, _From, #state{prompt=Prompt} = State) ->
+    ?DEBUG("match_phone: merchant ~p, Mode ~p, Phone ~p, state ~p", [Merchant, Mode, Phone, State]),
+
+    NewPrompt = 
+	case Prompt =:= 0 of
+	    true -> ?w_retailer:default_profile(prompt, Merchant);
+	    false -> Prompt
+	end,
+
+    First = string:substr(?to_s(Phone), 1, 1),
+    Last  = string:substr(?to_s(Phone), string:len(?to_s(Phone))),
+    Match = string:strip(?to_s(Phone), both, $/),
+
+    Name = case Mode of
+	       0 -> "mobile";
+	       1 -> "py";
+	       2 -> "name"
+	   end,
+
+    Sql = "select id"
+	", name"
+	", balance"
+	", py"
+	", mobile" 
+	", shop as shop_id"
+	", region as region_id"
+	", type as type_id"
+	", merchant" 
+	" from batchsaler"
+
+	++ " where merchant=" ++ ?to_s(Merchant)
+	++ " and "
+	++ case {First, Match, Last} of
+	       {"/", Match, "/"} ->
+		   Name ++ " =\'" ++ Match ++ "\'"; 
+	       {"/", Match, _} ->
+		   Name ++ " like \'" ++ Match ++ "%\'";
+	       {_, Match, "/"} ->
+		   Name ++ " like \'%" ++ Match ++ "\'";
+	       {_, Match, _}->
+		   Name ++ " like \'%" ++ Match ++ "%\'"
+	   end
+	++ " limit " ++ ?to_s(NewPrompt),
+
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, case NewPrompt =:= Prompt of
+		       true -> State;
+		       false ->
+			   ?w_user_profile:update(setting, Merchant),
+			   State#state{prompt=NewPrompt}
+		   end};
+
+
+handle_call({get_batch, Merchant, BSalers}, _From, State) ->
+    ?DEBUG("get_bsaler_batch with merchant ~p, BSalers ~p", [Merchant, BSalers]),
+    Sql = "select id"
+	", name"
+	", py"
+	", balance"
+	", mobile"
+	", shop as shop_id"
+	", region as region_id"
+	", type as type_id"
+	", merchant" 
+	" from batchsaler"
+	++ " where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, [{<<"id">>, lists:usort(BSalers)}]),
+
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
 
 handle_call(_Request, _From, State) ->
     Reply = ok,

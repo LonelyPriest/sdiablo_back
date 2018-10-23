@@ -1122,7 +1122,10 @@ function normalFilterProvider(){
 		else {
 		    return _employeeHttp.query({operation: 'list_department'}).$promise.then(function(departments){
 			_departments = departments.map(function(d){
-			    return {id:d.id, name:d.name, py:diablo_pinyin(d.name)};
+			    return {id:d.id,
+				    name:d.name,
+				    py:diablo_pinyin(d.name),
+				    master_id: d.master_id};
 			});
 			set_storage(cookie, "department", _departments);
 			return _departments;
@@ -1169,11 +1172,10 @@ function normalFilterProvider(){
 		var cached = get_from_storage(cookie, "region");
 		if (angular.isDefined(cached) && angular.isArray(cached)) return cached;
 		else {
-		    return _shopHttp.query({operation: "list_region"}).$promise.then(function(
-			regions){
+		    return _shopHttp.query({operation: "list_region"}).$promise.then(function(regions){
 			// console.log(regions);
 			var rs =  regions.map(function(r){
-			    return {name: r.name, id:r.id};
+			    return {id:r.id, name: r.name, department_id:r.department_id};
 			});
 			
 			set_storage(cookie, "region", rs);

@@ -973,7 +973,8 @@ var wsaleCalc = function(){
 		    if (one.state !== 3 && wsaleCalc.in_promotion_stock(one, stocksSortWithPromotion)) {
 			if (one.pid !== diablo_invalid_index) {
 			    if (vipPromotionMode) {
-				wsaleCalc.calc_vip_discount(vipDiscountMode, vipDiscount, one);
+				one.fdiscount = wsaleCalc.calc_vip_discount(vipDiscountMode, vipDiscount, one);
+				one.fprice = diablo_price(one.tag_price, one.fdiscount);
 			    } 
 			} else {
 			    one.fdiscount = wsaleCalc.calc_vip_discount(vipDiscountMode, vipDiscount, one);
@@ -1029,7 +1030,7 @@ var wsaleCalc = function(){
 	},
 
 	calc_discount_of_verificate: function(inventories, mode, pay, verificate){
-	    if (wsaleUtils.to_integer(verificate === 0)){
+	    if (wsaleUtils.to_integer(verificate) === 0){
 		return pay;
 	    } 
 	    var p1 = 0;

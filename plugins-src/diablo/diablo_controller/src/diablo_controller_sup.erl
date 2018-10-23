@@ -215,6 +215,12 @@ init([]) ->
 		   Restart, Shutdown, supervisor, [CronSup]},
 
     %% batch
+    BatchSaleSup = ?to_a(lists:concat([?b_sale, "_sup"])),
+    BatchSalePoolSup = {
+      BatchSaleSup,
+      {diablo_work_pool_sup, start_link, [?b_sale]},
+      Restart, Shutdown, supervisor, [BatchSaleSup]},
+    
     BatchSalerSup = ?to_a(lists:concat([?b_saler, "_sup"])),
     BatchSalerPoolSup = {
       BatchSalerSup,
@@ -230,6 +236,7 @@ init([]) ->
 	       CronPoolSup,
 
 	       %% Batch Saler
+	       BatchSalePoolSup,
 	       BatchSalerPoolSup
 	      ],
 

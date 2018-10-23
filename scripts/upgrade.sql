@@ -454,7 +454,7 @@ alter table region add column master VARCHAR(8) default '' after name;
 
 ---------------------------------------------------------------------------------
 -- 2018-10-19
-alter table batchsaler add column region INTEGER default -1 after shop;
+-- alter table batchsaler add column region INTEGER default -1 after shop;
 alter table region drop column master;
 alter table region add column department INTEGER default -1 after name;
 ---------------------------------------------------------------------------------

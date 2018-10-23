@@ -21,7 +21,47 @@
 	</div> 
       </div>
 
-      <div class="portlet-body"> 
+      <div class="portlet-body">
+	<div class="table-toolbar util-btn-margin-bottom-5">
+	  <div class="row">
+	    <div class="col-xs-12 col-ms-8 col-md-8">
+	      <div class="input-group">
+		<div class="has-feedback">
+	      	  <input
+	      	     class="form-control"
+		     type ="text"
+		     focus-auto=true
+	      	     x-ng-edit
+	      	     placeholder="请输入手机号码/姓名或拼音，手机号码与会员卡号至少输入4位"
+	      	     typeahead-editable="false"
+		     typeahead-wait-ms="300"
+		     typeahead-loading="loading"
+	      	     uib-typeahead="s as s.name for s in match_bsaler_phone($viewValue)"
+	      	     x-ng-model="select.phone"
+		     x-ng-enter="select.phone && do_search(default_page)"/>
+		  <span x-ng-show="loading">
+	  	    <i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
+		  </span>
+		</div>
+		<div class="input-group-btn">
+		  <button class="btn green"
+			  x-ng-disabled="!select.phone"
+			  x-ng-click="do_search(default_page)">
+	      	    <i class="glyphicon glyphicon-search"></i>
+	      	  </button>
+		</div> 
+	      </div> 
+	    </div> 
+
+	    <div class="col-md-4 col-sm-4 col-xs-12">
+	      <query-pattern ng-model="match" filters="filters" filter="filter"> </query-pattern>
+            </div>
+	    
+	  </div> <!--END row-->
+
+	  <query-group filters="filters" prompt="prompt" ok="do_search(default_page)"></query-group> 
+	</div>
+	
 	<div class="portlet-body">
 	  <div class="panel panel-default">
 	    <div class="table-responsive">
@@ -35,14 +75,25 @@
 		    <th>类型</th>
 		    <th>联系方式</th> 
 		    <th>联系地址</th>
-		    <th>备注</th> 
+		    <th>所在区域</th>
 		    <th>所在店铺</th>
+		    <th>备注</th> 
 		    <th>日期</th>
 		    <th>操作</th>
 		  </tr>
 		</thead>
 		<tbody>
-		  <tr ng-repeat="b in bsalers"> 
+		  <tr ng-repeat="b in salers track by b.order_id">
+		    <td x-ng-bind=b.order_id></td>
+		    <td x-ng-bind=b.name></td>
+		    <td x-ng-bind=b.balance></td>
+		    <td x-ng-bind=b.type.name></td>
+		    <td x-ng-bind=b.mobile></td>
+		    <td x-ng-bind=b.address></td>
+		    <td x-ng-bind=b.region_name></td>
+		    <td x-ng-bind=b.shop_name></td>
+		    <td x-ng-bind=b.comment></td>
+		    <td x-ng-bind=b.entry_date></td>
 		    <td> 
 		      <button class="btn diablo-button btn-warning"
 			      x-ng-click="udpate_bsaler(shop)">修改

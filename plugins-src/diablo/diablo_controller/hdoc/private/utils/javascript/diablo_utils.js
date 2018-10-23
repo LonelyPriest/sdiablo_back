@@ -938,8 +938,7 @@ diabloUtils.service("diabloUtilsService", function($uibModal){
 	})
     };
 
-    this.edit_with_modal = function(
-	templateUrl, size, callback, scope, params){
+    this.edit_with_modal = function(templateUrl, size, callback, scope, params){
 	return $uibModal.open({
 	    templateUrl: templateUrl,
 	    controller: 'diabloEditDialogCtrl',
@@ -974,26 +973,25 @@ diabloUtils.service("diabloUtilsService", function($uibModal){
     };
 });
 
-diabloUtils.controller("diabloDialogCtrl", function(
-    $scope, $uibModalInstance, message){
+diabloUtils.controller("diabloDialogCtrl", function($scope, $uibModalInstance, message){
     // console.log($scope);
     console.log($uibModalInstance);
     console.log(message);
     $scope.success = message.success;
     $scope.title = message.title;
     $scope.body  = message.body; 
-    
-    $scope.show_cancel =
-	angular.isDefined(message.show_cancel) ? message.show_cancel : true;
-    
+
+    $scope.show_cancel = angular.isDefined(message.show_cancel) ? message.show_cancel : true;
+
     $scope.cancel = function(){
 	$uibModalInstance.dismiss('cancel');
+	// if (angular.isDefined(message.cancel) && angular.isFunction(message.cancel)){
+	//     message.cancel()
+	// }
     };
 
     $scope.ok = function() {
-
 	$uibModalInstance.close('ok'); 
-
 	var ok_call = function(){
 	    if (angular.isDefined(message.callback) && typeof(message.callback) === "function"){
 		var callback = message.callback;
@@ -1003,8 +1001,8 @@ diabloUtils.controller("diabloDialogCtrl", function(
 		    callback();
 		}
 	    }
-	}
-
+	};
+	
 	$uibModalInstance.result.then(function(result) {
 	    if (result === 'ok'){
 		ok_call() 
@@ -1063,6 +1061,7 @@ diabloUtils.controller("diabloEditDialogCtrl", function($scope, $uibModalInstanc
     $scope.ok = function() {
 	$uibModalInstance.dismiss('ok');
 	if (angular.isDefined(callback) && typeof(callback) === "function"){
+	    delete $scope.params.edit;
 	    callback($scope.params);
 	}
     };

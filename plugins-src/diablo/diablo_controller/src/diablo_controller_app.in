@@ -63,6 +63,7 @@
 
      %% batch
      diablo_batch_sale_request,
+     diablo_batch_sale,
      diablo_batch_saler,
      
      %% template
