@@ -1,0 +1,242 @@
+<div class="row hidden-print">
+  <div class="col-md-12">
+    <div class="portlet box purple diablo-margin-bottom-5">
+      <div class="portlet-title">
+	<div class="caption">
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>交易记录
+	</div>	
+
+	<div class="actions">
+	  <div class="btn-group btn-group-solid">
+	    <a type="button"
+	       class="btn green purple-stripe hidden-xxs"
+	       x-ng-click="goto_page('#/new_bsale')">开单
+	      <i class="glyphicon glyphicon-plus"></i></a>
+	    
+	    <a type="button"
+	       class="btn red purple-stripe hidden-xxs"
+	       x-ng-click="goto_page('#/reject_bsale')">退货
+	      <i class="glyphicon glyphicon-minus"></i></a>
+
+	    <a type="button" class="btn yellow purple-stripe"
+	       x-ng-click="goto_page('#/bsale_note')">明细
+	      <i class="glyphicon glyphicon-map-marker"></i></a>
+
+	    <!-- <a type="button" -->
+	    <!--    class="btn blue purple-stripe hidden-xxs" -->
+	    <!--    x-ng-click="export_to()">导出 -->
+	    <!--   <i class="glyphicon glyphicon-export"></i></a> -->
+
+	    <a type="button" class="btn yellow-crusta reload purple-stripe"
+	       x-ng-click="do_search(default_page)">刷新
+	      <i class="icon icon-spinner fg-white"></i></a> 
+	  </div>
+	</div> 
+      </div>
+      
+      <!--BEGIN table container-->
+      <div class="portlet-body">
+	<div class="table-toolbar util-btn-margin-bottom-5">
+	  <!--BEGIN row-->
+	  <div class="row">
+            <div class="col-md-4 col-sm-4 col-xs-12">
+              <time-search
+		 glyphicon="glyphicon glyphicon-arrow-left fg-red"
+		 time="time.start_time" ok="do_search(default_page)">
+	      </time-search>
+            </div>
+
+            <div class="col-md-4 col-sm-4 col-xs-12">
+              <time-search
+		 glyphicon="glyphicon glyphicon-arrow-right fg-red"
+		 time="time.end_time" ok="do_search(default_page)">
+	      </time-search>
+            </div> 
+	    
+            <div class="col-md-4 col-sm-4 col-xs-12">
+              <query-pattern ng-model="match"
+                             filters="filters"
+                             filter="filter">
+	      </query-pattern>
+            </div>
+	  </div> <!--END row-->
+
+	  <query-group filters="filters"
+		       prompt="prompt"
+		       ok="do_search(default_page)">
+	  </query-group>
+	  
+	</div> <!--END table-toolbar-->
+	
+	<!--BEGN portlet body--> 
+	<div class="portlet-body">
+	  <!--BEGIN panel-->
+	  <div class="panel panel-default table-panel"> 
+
+	    <div class="table-responsive diablo-table"> 
+	      <table class="table table-bordered
+			    table-striped table-hover 
+			    table-condensed table-advanced
+			    table-slide table-scale table-row"> 
+		<thead>
+		  <tr>
+		    <th>序号</th>
+		    <th>登录帐号</th> 
+		    <th>单号</th>
+		    <th>交易</th>
+		    <th>店铺</th>
+		    <th>客户</th> 
+		    <th class="info">上欠</th>
+		    <th class="info">累欠</th>
+		    <th>导购</th> 
+		    <th>数量</th> 
+		    
+		    <th class="info">应收</th>
+		    <th class="info">实收</th>
+		    
+		    <th>现金</th>
+		    <th>刷卡</th>
+		    <th>微信</th> 
+		    <th>核销</th>
+		    
+		    <th>备注</th> 
+		    <th>日期</th> 
+		    <th>操作</th>
+		  </tr>
+		</thead>
+		
+		<tbody>
+		  <tr x-ng-repeat="r in records track by r.id">
+		    <td>{{r.order_id}}</td>
+		    <td x-ng-bind="r.account"></td>
+		    <td class="{{css(r.state, r.type)}}">{{r.crsn}}</td>
+		    <td class="{{css(r.state, r.type)}}" x-ng-switch on="r.type">
+		      <span x-ng-switch-when=0>开单</span>
+		      <span class="fg-red" x-ng-switch-when=1>退货</span>
+		    </td>
+		    <td class="{{css(r.state, r.type)}}">{{r.shop.name}}</td>
+		    <td class="{{css(r.state, r.type)}}">{{r.bsaler}}</td> 
+		    <td class="{{css(r.state, r.type)}}">{{r.balance}}</td>
+		    <td class="{{css(r.state, r.type)}}">{{r.acc_balance}}</td> 
+		    <td class="{{css(r.state, r.type)}}">{{r.employee.name}}</td> 
+		    <td class="{{css(r.state, r.type)}}">{{r.total}}</td> 
+		    <td class="{{css(r.state, r.type)}}" x-ng-switch on="r.type"> 
+		      <span class="fg-red" x-ng-switch-when=1>{{r.should_pay}}</span>
+		      <span x-ng-switch-default>{{r.should_pay}}</span>
+		    </td>
+
+		    <td class="{{css(r.state, r.type)}}" x-ng-switch on="r.type"> 
+		      <span class="fg-red" x-ng-switch-when=1>{{r.has_pay}}</span>
+		      <span x-ng-switch-default>{{r.has_pay}}</span>
+		    </td> 
+		    
+		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.cash}}</td>
+		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.card}}</td>
+		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.wxin}}</td>
+		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.verificate}}</td>
+
+		    <td class="{{css(r.state, r.type)}}">
+		      <span x-ng-if="r.comment">{{r.comment}}</span>
+		      <span x-ng-if="!r.comment"></span> 
+		    </td>
+		    
+		    <td class="{{css(r.state, r.type)}}">{{r.entry_date}}</td>
+
+		    <!-- <td x-ng-if="show.action"> -->
+		    <td> 
+		      <button class="btn diablo-button btn-primary"
+		    	      x-ng-click="rsn_detail(r)">
+			明细<i class="glyphicon glyphicon-map-marker"></i>
+		      </button>
+
+		      <button x-ng-if="shop_right.update_w_sale && r.state!==1"
+			      class="btn diablo-button yellow-crusta"
+			      x-ng-disabled="r.state===1"
+		      	      x-ng-click="update_detail(r)">修改
+			<i class="glyphicon glyphicon-edit"></i></button> 
+		      
+		      <button x-ng-if="shop_right.check_w_sale && r.state===0"
+			      class="btn diablo-button green"
+			      x-ng-disabled="r.state===1"
+		      	      x-ng-click="check_detail(r)">审核
+			<i class="glyphicon glyphicon-check"></i></button>
+		      <button x-ng-if="shop_right.check_w_sale && r.state===1"
+			      class="btn diablo-button red"
+			      x-ng-disabled="r.state===0"
+		      	      x-ng-click="uncheck_detail(r)">反审
+			<i class="glyphicon glyphicon-ban-circle"></i></button>
+		      
+		      <button x-ng-if="shop_right.check_w_sale && r.type===0 && r.state===0"
+			      class="btn diablo-button red"
+		      	      x-ng-click="delete_detail(r)">删除
+			<i class="glyphicon glyphicon-erase"></i></button> 
+		    </td> 
+		  </tr>
+
+		  <!--Total info-->
+		  <tr x-ng-if="total_items!==0" class="bg-white"> 
+		    <td colspan="9"></td> 
+		    <td>{{total_amounts}}</td>
+		    <td>{{total_spay}}</td>
+		    <td>{{total_rpay}}</td>
+		    <td></td>
+		    <td>{{total_cash}}</td>
+		    <td>{{total_card}}</td>
+		    <td>{{total_wxin}}</td>
+		    <td>{{total_withdraw}}</td>
+		    <td>{{total_ticket}}</td>
+		    <td colspan="4"></td>
+		  </tr>
+		</tbody>
+
+		<tfoot> 
+		</tfoot> 
+	      </table> <!--END table-->
+	      
+	    </div> <!--END table-responsive-->
+	  </div> <!--END panel--> 
+	</div> <!--END portlet body-->
+
+	<div x-ng-show="total_items>items_perpage" class="row">
+	  <div class="col-md-12, col-sm-12, col-xs-12">
+	    <div>
+	      <sapn>
+		<span>显示第 {{current_page}} / {{num_pages}} 项结果，
+		  共 {{total_items}} 项</span>
+		
+		<uib-pagination x-ng-show="!sequence_pagination"
+			    class="table-pagination pagination-lg pull-right "
+	      		    total-items="total_items"
+	      		    items-per-page="items_perpage"
+	      		    num-pages="num_pages"
+	      		    max-size="max_page_size"
+	      		    boundary-links="true"
+	      		    previous-text="&lsaquo;" next-text="&rsaquo;"
+	      		    first-text="&laquo;" last-text="&raquo;"
+	      		    x-ng-model="current_page"
+	      		    x-ng-change="page_changed()">
+		</uib-pagination>
+
+		<span x-ng-if="sequence_pagination"
+		      class="pull-right">
+		  <button class="btn red-sunglo btn-next-page"
+			  x-ng-disabled="current_page===num_pages"
+			  x-ng-click="auto_pagination()">
+		    <i class="glyphicon glyphicon-menu-down"></i>
+		  </button>
+		</span>
+	    </div>
+	  </div>
+	</div>
+	
+      </div> <!--END table container--> 
+    </div>
+  </div>
+    
+  <div class="col-md-12">
+    <div>
+      &nbsp&nbsp&nbsp&nbsp<span class="bg-lightOlive">浅绿色表示已审核</span> 
+    </div>
+  </div>
+  
+</div>

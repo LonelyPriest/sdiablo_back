@@ -177,7 +177,7 @@ userApp.factory("userService", function($resource, $q){
 	} 
 	else {
 	    return _user.get({operation: "get_login_user_info"}).$promise.then(function(result){
-		console.log(result);
+		// console.log(result);
 		_shops         = result.shop;
 		_rights        = result.right;
 		_loginType     = result.type;

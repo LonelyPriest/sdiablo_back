@@ -356,7 +356,7 @@ function departmentDetailCtrlProvide($scope, employService, diabloUtilsService, 
 	    employService.add_department(
 		params.name,
 		angular.isObject(master) && angular.isDefined(master.id) ? master.id : undefined,
-		params.comment, 
+		params.comment
 	    ).then(function(state){
 		if (state.ecode === 0){
 		    dialog.response_with_callback
