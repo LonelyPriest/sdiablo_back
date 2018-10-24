@@ -188,6 +188,11 @@ function shopConfig(angular){
 		{name: name, department: department, comment: comment}).$promise;
 	};
 
+	this.update_region = function(region, payload){
+	    return shop.save(
+		{operation: "update_region", id:region}, payload).$promise;
+	};
+
 	this.list_region = function() {
 	    return shop.query({operation: "list_region"}).$promise;
 	};

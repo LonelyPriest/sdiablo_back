@@ -21,7 +21,7 @@
 	 terminate/2, code_change/3]).
 
 -export([shop/3, shop/4, lookup/1, lookup/2]).
--export([region/2, region/3]).
+-export([region/2, region/3, region/4]).
 
 -export([repo/2, repo/3, badrepo/2, badrepo/3, promotion/2, promotion/3]).
 
@@ -48,6 +48,9 @@ region(new, Merchant, Attrs) ->
     gen_server:call(?MODULE, {new_region, Merchant, Attrs}).
 region(list, Merchant) ->
     gen_server:call(?MODULE, {list_region, Merchant, []}).
+
+region(update, Merchant, RegionId, Attrs) ->
+    gen_server:call(?MODULE, {update_region, Merchant, RegionId, Attrs}).
 
 lookup(Merchant) ->
     lookup(Merchant, []).
@@ -446,6 +449,25 @@ handle_call({new_region, Merchant, Attrs}, _From, State)->
 	Error ->
 	    {reply, Error, State}
     end;
+
+handle_call({update_region, Merchant, RegionId, Attrs}, _From, State) ->
+    ?DEBUG("Update_region with merchant ~p, RegionId ~p, Attrs ~p", [Merchant, RegionId, Attrs]), 
+    Name    = ?v(<<"name">>, Attrs),
+    Department = ?v(<<"department">>, Attrs),
+    Comment  = ?v(<<"comment">>, Attrs),
+
+    Updates = ?utils:v(name, string, Name)
+	++ ?utils:v(department, integer, Department)
+	++ ?utils:v(comment, string, Comment),
+    
+    Sql = "update region set "
+	++ ?utils:to_sqls(proplists, comma, Updates)
+	++ " where id=" ++ ?to_s(RegionId)
+	++ " and merchant=" ++ ?to_s(Merchant),
+    
+    Reply = ?sql_utils:execute(write, Sql, RegionId),
+    {reply, Reply, State};
+
 
 handle_call({list_region, Merchant, Conditions}, _From, State) ->
     Sql = "select id, name, department as department_id, comment, entry_date from region"

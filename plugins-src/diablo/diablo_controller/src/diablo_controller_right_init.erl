@@ -212,6 +212,7 @@ init([]) ->
 	 {?list_repo,   <<"查询仓库">>, <<"list_repo">>,   ?right_shop},
 
 	 {?new_region,  <<"新增区域">>, <<"new_region">>,  ?right_shop},
+	 {?update_region,  <<"修改区域">>, <<"update_region">>,  ?right_shop},
 	 
 	 %% {?new_badrepo, <<"新增次品仓">>, <<"new_badrepo">>, ?right_shop},
 	 %% {?del_badrepo, <<"删除次品仓">>, <<"del_badrepo">>, ?right_shop},

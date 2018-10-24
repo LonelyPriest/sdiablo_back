@@ -135,7 +135,19 @@ action(Session, Req, {"new_region"}, Payload) ->
     ?utils:respond(normal,
 		   fun()-> ?shop:region(new, Merchant, Payload) end,
 		   fun(RegionId)-> ?succ(add_shop, RegionId) end,
-		   Req).
+		   Req);
+
+action(Session, Req, {"update_region", RegionId}, Payload) ->
+    ?DEBUG("update_region with session ~p, regionId ~p, paylaod ~p",
+	   [Session, RegionId, Payload]), 
+    Merchant = ?session:get(merchant, Session),
+    case ?shop:region(update, Merchant, RegionId, Payload) of
+    	{ok, Id} ->
+	    ?w_user_profile:update(region, Merchant), 
+    	    ?utils:respond(200, Req, ?succ(update_shop, Id));
+    	{error, Error} ->
+    	    ?utils:respond(200, Req, Error)
+    end.
 
 sidebar(Session) ->
     AuthenFun =

@@ -263,6 +263,7 @@
 -define(new_region,          ?right_shop + 14).
 -define(list_region,         ?right_shop + 15).
 -define(update_shop_charge,  ?right_shop + 16).
+-define(update_region,       ?right_shop + 17).
 
 %% employ
 -define(new_employe,     ?right_employe + 1).

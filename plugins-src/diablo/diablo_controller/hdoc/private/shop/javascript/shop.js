@@ -611,7 +611,7 @@ function regionDetailCtrlProvide($scope, shopService, diabloUtilsService, filter
 	    shopService.add_region(
 		params.name,
 		angular.isObject(department) && angular.isDefined(department.id) ? department.id : undefined,
-		params.comment, 
+		params.comment
 	    ).then(function(state){
 		if (state.ecode === 0){
 		    dialog.response_with_callback
@@ -633,7 +633,38 @@ function regionDetailCtrlProvide($scope, shopService, diabloUtilsService, filter
     };
 
     $scope.update_region = function(region){
-	dialog.response(false, "修改区域", "修改区域失败：暂不支持此操作！！")
+	console.log(region);
+	var callback = function(params){
+	    console.log(params);
+	    var department_id = angular.isObject(params.department) ? params.department.id : diablo_invalid_index;
+	    shopService.update_region(
+		region.id,
+		{name: diablo_get_modified(params.name, region.name),
+		 department: diablo_get_modified(department_id, region.department_id),
+		 comment: diablo_get_modified(params.comment, region.comment)}
+	    ).then(function(state){
+		if (state.ecode === 0){
+		    dialog.response_with_callback
+		    (true,
+		     "区域编辑",
+		     "区域编辑 [" + params.name + "] 成功",
+		     undefined,
+		     function() {$scope.refresh()});
+		} else {
+		    dialog.response(
+			false,
+			"区域编辑",
+			"区域编辑失败：" + shopService.error[state.ecode]);
+		}
+	    });
+	};
+
+	dialog.edit_with_modal(
+	    "new-region.html",
+	    undefined,
+	    callback,
+	    $scope,
+	    {name:region.name, department:region.department, remark:region.comment});
     };
 	
 };
