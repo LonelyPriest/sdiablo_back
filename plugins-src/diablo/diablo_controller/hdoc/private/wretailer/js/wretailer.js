@@ -550,17 +550,13 @@ function wretailerDetailCtrlProvide(
     		console.log(result);
     		if (result.ecode == 0){
 		    dialog.response_with_callback(
-			true, "会员编辑",
-			"恭喜你，会员 ["
-			    + old_retailer.name + "] 信息修改成功！！",
+			true, "会员编辑", "会员 [" + old_retailer.name + "] 信息修改成功！！",
 			$scope, function(){
 			    $scope.do_search($scope.current_page);
 			});
     		} else{
 		    dialog.response(
-			false, "会员编辑",
-			"会员编辑失败："
-			    + wretailerService.error[result.ecode]);
+			false, "会员编辑", "会员编辑失败：" + wretailerService.error[result.ecode]);
     		}
     	    }) 
 	};

@@ -658,8 +658,8 @@ error(operation_invalid_session, Error) ->
     {9902, "operation with invalid session with error " ++ ?to_s(Error)};
 
 error(file_op_error, Error) ->
-    {9101, "failed to operator file:" ++ [Error]};
+    {9101, "failed to operator file:" ++ ?to_s(Error)};
 error(params_error, Name) ->
-    {9102, "parameter input error: " ++ [Name]}.
+    {9102, "parameter input error: " ++ ?to_s(Name)}.
 
 %% batch

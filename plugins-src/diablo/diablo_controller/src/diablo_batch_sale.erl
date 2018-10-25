@@ -15,7 +15,8 @@
 
 %% API
 -export([start_link/1]).
--export([bsale/4]).
+-export([bsale/3, bsale/4]).
+-export([filter/4, filter/6, match/3]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -30,7 +31,48 @@
 %%%===================================================================
 bsale(new, Merchant, Inventories, Props) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {new_sale, Merchant, Inventories, Props}).
+    gen_server:call(Name, {new_sale, Merchant, Inventories, Props});
+bsale(check, Merchant, RSN, Mode) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {check_sale, Merchant, RSN, Mode}).
+
+bsale(get_sale, Merchant, RSN) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {get_sale_new, Merchant, RSN});
+bsale(get_sale_new_detail, Merchant, RSN) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {get_sale_new_detail, Merchant, RSN});
+bsale(get_sale_new_note, Merchant, RSN) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {get_sale_new_note, Merchant, RSN}).
+
+filter(total_sale_new, 'and', Merchant, Fields) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {total_sale_new, Merchant, Fields});
+
+filter(total_sale_new_detail, MatchMode, Merchant, Fields) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {total_sale_new_detail, MatchMode, Merchant, Fields}, 6 * 1000).
+
+filter(sale_new, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {filter_sale_new, Merchant, Conditions, CurrentPage, ItemsPerPage});
+
+filter(sale_new_detail, MatchMode, Merchant, CurrentPage, ItemsPerPage, Fields) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(
+      Name, {filter_sale_new_detail,
+	     {use_id, 0}, MatchMode, Merchant, CurrentPage, ItemsPerPage, Fields}, 6 * 1000);
+
+filter({sale_new_detail, Mode, Sort}, MatchMode, Merchant, CurrentPage, ItemsPerPage, Fields) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(
+      Name, {filter_sale_new_detail,
+	     {Mode, Sort}, MatchMode, Merchant, CurrentPage, ItemsPerPage, Fields}, 6 * 1000).
+
+match(rsn, Merchant, {ViewValue, Condition}) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {match_rsn, Merchant, {ViewValue, Condition}}).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -117,6 +159,100 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 	Error ->
 	    {reply, Error, State}
     end;
+
+handle_call({check_sale, Merchant, RSN, Mode}, _From, State) ->
+    ?DEBUG("check_sale with merchant ~p, RSN ~p, mode ~p", [Merchant, RSN, Mode]),
+    Sql = "update batch_sale set state=" ++ ?to_s(Mode)
+	++ ", check_date=\'" ++ ?utils:current_time(localtime) ++ "\'"
+	++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+	++ " and merchant=" ++ ?to_s(Merchant),
+
+    Reply = ?sql_utils:execute(write, Sql, RSN),
+    {reply, Reply, State};
+
+handle_call({total_sale_new, Merchant, Fields}, _From, State) ->
+    CountSql = count_table(batchsale, Merchant, Fields),
+    Reply = ?sql_utils:execute(s_read, CountSql),
+    {reply, Reply, State}; 
+
+handle_call({filter_sale_new, Merchant, CurrentPage, ItemsPerPage, Fields}, _From, State) ->
+    ?DEBUG("filter_sale_new: currentPage ~p, ItemsPerpage ~p, Merchant ~p~n fields ~p",
+	   [CurrentPage, ItemsPerPage, Merchant, Fields]),
+    Sql = filter_bsale(batchsale_with_page, Merchant, CurrentPage, ItemsPerPage, Fields), 
+    Reply =  ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({total_sale_new_detail, MatchMode, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("total_sale_note with merchant ~p, matchMode ~p, conditions ~p",
+	   [Merchant, MatchMode, Conditions]),
+    {DConditions, SConditions} = filter_condition(batchsale, Conditions, [], []),
+
+    {StartTime, EndTime, CutSConditions} = ?sql_utils:cut(fields_with_prifix, SConditions), 
+    {_, _, CutDCondtions} = ?sql_utils:cut(fields_no_prifix, DConditions),
+
+    CorrectCutDConditions = ?utils:correct_condition(<<"b.">>, CutDCondtions),
+
+    Sql = "select count(*) as total"
+    	", SUM(b.total) as t_amount"
+	", SUM(b.tag_price * b.total) as t_tbalance"
+    	", SUM(b.rprice * b.total) as t_balance"
+	", SUM(b.org_price * b.total) as t_obalance"
+	
+    	" from batch_sale_detail b, batch_sale a"
+	
+    	" where "
+	++ "b.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:like_condition(style_number, MatchMode, CorrectCutDConditions, <<"b.style_number">>) 
+	++ " and b.rsn=a.rsn"
+
+	++ " and a.merchant=" ++ ?to_s(Merchant)
+    	++ ?sql_utils:condition(proplists, CutSConditions)
+    	++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime), 
+
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+handle_call({filter_sale_new_detail,
+	     {Mode, Sort}, MatchMode, Merchant, CurrentPage, ItemsPerPage, Conditions}, _From, State) ->
+    ?DEBUG("filter_rsn_group_and: mode ~p, sort ~p, MatchMode ~p, currentPage ~p, ItemsPerpage ~p, Merchant ~p~n",
+	   [Mode, Sort, MatchMode, CurrentPage, ItemsPerPage, Merchant]),
+    Sql = sale_new(sale_new_detail, MatchMode, Merchant, Conditions,
+		   fun() ->
+			   rsn_order(Mode) ++ ?sql_utils:sort(Sort)
+			       ++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
+			       ++ ", " ++ ?to_s(ItemsPerPage)
+		   end),
+    
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({get_sale_new, Merchant, RSN} , _From, State) ->
+    Sql = filter_bsale(fun()-> [] end, Merchant, [{<<"rsn">>, RSN}]),
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+handle_call({get_sale_new_detail, Merchant, RSN} , _From, State) ->
+    Sql = sale_new(sale_new_detail, 'and', Merchant, [{<<"rsn">>, RSN}], fun() -> [] end), 
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({get_sale_new_note, Merchant, RSN} , _From, State) ->
+    Sql = sale_new(sale_new_note, Merchant, [{<<"rsn">>, RSN}]),
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({match_rsn, Merchant, {ViewValue, Conditions}}, _From, State) ->
+    {StartTime, _EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions), 
+    Limit = ?w_retailer:get(prompt, Merchant),
+    Sql = "select id, rsn from batch_sale"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions) 
+	++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, undefined)
+	++ " and rsn like \'%" ++ ?to_s(ViewValue) ++ "\'"
+	++ " order by id desc"
+	++ " limit " ++ ?to_s(Limit), 
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
 
 handle_call(_Request, _From, State) ->
     Reply = ok,
@@ -290,5 +426,243 @@ bsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
 		   end|Acc1] 
 	  end, [], Amounts).
 
+
+count_table(batchsale, Merchant, Conditions) -> 
+    SortConditions = sort_condition(batchsale, Merchant, Conditions), 
+    CountSql = "select count(*) as total"
+    	", sum(a.total) as t_amount"
+    	", sum(a.should_pay) as t_spay"
+	", sum(a.has_pay) as t_hpay"
+    	", sum(a.cash) as t_cash"
+    	", sum(a.card) as t_card"
+	", sum(a.wxin) as t_wxin"
+	", sum(a.verificate) as t_veri" 
+	" from batch_sale a where " ++ SortConditions, 
+    CountSql.
+
+sort_condition(batchsale, Merchant, Conditions) ->
+    Comment = ?v(<<"comment">>, Conditions),
+    CutConditions = lists:keydelete(<<"comment">>, 1, Conditions), 
+    C = lists:foldr(
+	  fun({K, V}, Acc) when K =:= <<"check_state">>->
+		  [{<<"state">>, V}|Acc];
+	     (KV, Acc)->
+		  [KV|Acc]
+	  end, [], CutConditions),
+
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_with_prifix, C),
+
+    "a.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ case Comment of
+	       undefined -> [];
+	       0 -> " and a.comment!=\'\'";
+	       1 -> []
+	   end
+	++ case ?sql_utils:condition(time_with_prfix, StartTime, EndTime) of
+	       [] -> [];
+	       TimeSql -> " and " ++ TimeSql
+	   end.
+
+filter_bsale(PageFun, Merchant, Conditions) ->
+    ?DEBUG("filter_batch_sale: Merchant ~p, Conditions ~p", [Merchant, Conditions]),
+    SortConditions = sort_condition(batchsale, Merchant, Conditions), 
+    Sql = "select a.id"
+	", a.rsn"
+	", a.account"
+	", a.employ as employee_id"
+    	", a.bsaler as bsaler_id"
+	", a.shop as shop_id"
+
+	", a.balance"
+	", a.should_pay"
+	", a.has_pay"
+	", a.cash"
+	", a.card"
+	", a.wxin" 
+	", a.verificate"
+	", a.total"
+
+	", a.comment"
+	", a.type"
+	", a.state"
+	", a.entry_date"
+
+	", b.name as bsaler"
+	", b.region as region_id"
+	", c.name as account"
+
+    	" from batch_sale a" 
+	" left join batchsaler b on a.bsaler=b.id"
+	" left join users c on a.account=c.id"
+
+    	" where " ++ SortConditions
+	++ PageFun(), 
+    Sql.
+
+filter_bsale(batchsale_with_page, Merchant, Conditions, CurrentPage, ItemsPerPage) ->
+    ?DEBUG("batchsale_with_page:Merchant ~p, Conditions ~p, CurrentPage ~p, ItemsPerPage ~p",
+	   [Merchant, Conditions, CurrentPage, ItemsPerPage]),
+    %% SortConditions = sort_condition(batchsale, Merchant, Conditions),
+    PageFun = fun() -> ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage) end,
+    filter_bsale(PageFun, Merchant, Conditions). 
+	
+
+filter_condition(batchsale, [], Acc1, Acc2) ->
+    {lists:reverse(Acc1), lists:reverse(Acc2)};
+filter_condition(batchsale, [{<<"style_number">>,_} = S|T], Acc1, Acc2) ->
+    filter_condition(batchsale, T, [S|Acc1], Acc2);
+filter_condition(batchsale, [{<<"brand">>, _} = B|T], Acc1, Acc2) ->
+    filter_condition(batchsale, T, [B|Acc1], Acc2);
+filter_condition(batchsale, [{<<"firm">>, _} = F|T], Acc1, Acc2) ->
+    filter_condition(batchsale, T, [F|Acc1], Acc2);
+filter_condition(batchsale, [{<<"type">>, _} = OT|T], Acc1, Acc2) ->
+    filter_condition(batchsale, T, [OT|Acc1], Acc2);
+filter_condition(batchsale, [{<<"sex">>, _} = OT|T], Acc1, Acc2) ->
+    filter_condition(batchsale, T, [OT|Acc1], Acc2);
+filter_condition(batchsale, [{<<"year">>, _} = Y|T], Acc1, Acc2) ->
+    filter_condition(batchsale, T, [Y|Acc1], Acc2);
+filter_condition(batchsale, [{<<"season">>, _} = Y|T], Acc1, Acc2) ->
+    filter_condition(batchsale, T, [Y|Acc1], Acc2);
+filter_condition(batchsale, [{<<"org_price">>, OP} = _OP|T], Acc1, Acc2) ->
+    filter_condition(batchsale, T, [{<<"org_price">>, ?to_f(OP)}|Acc1], Acc2);
+
+
+filter_condition(batchsale, [{<<"rsn">>, _} = R|T], Acc1, Acc2) ->
+    filter_condition(batchsale, T, Acc1, [R|Acc2]);
+filter_condition(batchsale, [{<<"start_time">>, _} = ST|T], Acc1, Acc2) ->
+    filter_condition(batchsale, T, Acc1, [ST|Acc2]);
+filter_condition(batchsale, [{<<"end_time">>, _} = SE|T], Acc1, Acc2) ->
+    filter_condition(batchsale, T, Acc1, [SE|Acc2]);
+filter_condition(batchsale, [{<<"shop">>, _} = S|T], Acc1, Acc2) ->
+    filter_condition(batchsale, T, Acc1, [S|Acc2]);
+filter_condition(batchsale, [{<<"sell_type">>, ST}|T], Acc1, Acc2) ->
+    filter_condition(batchsale, T, Acc1, [{<<"type">>, ST}|Acc2]);
+filter_condition(batchsale, [O|T], Acc1, Acc2) ->
+    filter_condition(batchsale, T, Acc1, [O|Acc2]).
+
+
+sale_new(sale_new_detail, MatchMode, Merchant, Conditions, PageFun) ->
+    {DConditions, SConditions} = filter_condition(batchsale, Conditions, [], []),
+    {StartTime, EndTime, CutSConditions} = ?sql_utils:cut(fields_with_prifix, SConditions),
+
+    {_, _, CutDCondtions} = ?sql_utils:cut(fields_no_prifix, DConditions), 
+    CorrectCutDConditions = ?utils:correct_condition(<<"b.">>, CutDCondtions),
+
+    "select a.id"
+	", a.rsn"
+	", a.style_number"
+	", a.brand_id"
+	", a.type_id"
+	", a.sex"
+	", a.season"
+	", a.firm_id"
+	", a.year"
+	", a.s_group"
+	", a.free"
+	", a.total" 
+	", a.org_price"
+	", a.ediscount"
+	", a.tag_price"
+	", a.fdiscount"
+	", a.rdiscount"
+	", a.fprice"
+	", a.rprice"
+	", a.in_datetime"
+	", a.path"
+	", a.comment"
+	", a.entry_date"
+
+	", a.shop_id"
+	", a.bsaler_id"
+	", a.employee_id"
+	", a.sell_type"
+
+	", c.name as bsaler"
+    %% ", c.region as region_id"
+	", d.name as brand"
+	", e.name as type"
+
+	" from ("
+	"select b.id"
+	", b.rsn"
+	", b.style_number"
+	", b.brand as brand_id"
+	", b.type as type_id"
+	", b.sex"
+	", b.season"
+	", b.firm as firm_id"
+	", b.year"
+	", b.s_group"
+	", b.free"
+	", b.total" 
+	", b.org_price"
+	", b.ediscount"
+	", b.tag_price"
+	", b.fdiscount"
+	", b.rdiscount"
+	", b.fprice"
+	", b.rprice"
+	", b.in_datetime"
+	", b.path"
+	", b.comment"
+	", b.entry_date"
+
+	", a.shop as shop_id"
+	", a.bsaler as bsaler_id"
+	", a.employ as employee_id"
+	", a.type as sell_type"
+
+    %% ", c.name as bsaler"
+    %% ", d.name as brand"
+    %% ", e.name as type"
+
+    	" from batch_sale_detail b, batch_sale a"
+    %% " left join batchsaler c on a.bsaler=c.id"
+    %% " left join brands d on b.brand=d.id"
+    %% " left join inv_types e on b.type=e.id"
+
+    	" where "
+	++ "b.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:like_condition(style_number, MatchMode, CorrectCutDConditions, <<"b.style_number">>) 
+	++ " and b.rsn=a.rsn"
+
+	++ " and a.merchant=" ++ ?to_s(Merchant)
+    	++ ?sql_utils:condition(proplists, CutSConditions)
+    	++ case ?sql_utils:condition(time_with_prfix, StartTime, EndTime) of
+	       [] -> [];
+	       TimeSql -> " and " ++ TimeSql
+	   end
+    	++ PageFun() ++ ") a"
+
+	" left join batchsaler c on a.bsaler_id=c.id"
+	" left join brands d on a.brand_id=d.id"
+	" left join inv_types e on a.type_id=e.id".
+	
+sale_new(sale_new_note, Merchant, Conditions) ->
+    %% ?DEBUG("Merchant ~p, Conditions ~p", [Merchant, Conditions]), 
+    {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
+    "select a.rsn"
+	", a.style_number"
+	", a.brand as brand_id"
+	", a.shop as shop_id"
+	", a.color as color_id"
+	", a.size"
+	", a.total as amount"
+	", b.name as color"
+
+	" from (" 
+	"select rsn, style_number, brand, shop, color, size, total"
+	" from batch_sale_detail_amount"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions) ++  ") a"
+
+	" left join colors b on a.color=b.id".
+
 type(new) -> 0;
 type(reject) -> 1.
+
+rsn_order(use_id)    -> " order by b.id ";
+rsn_order(use_shop)  -> " order by a.shop ";
+rsn_order(use_brand) -> " order by b.brand ";
+rsn_order(use_firm)  -> " order by b.firm ".

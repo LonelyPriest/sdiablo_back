@@ -1007,7 +1007,8 @@ var wsaleCalc = function(){
 		} 
 	    } 
 
-	    // calcuate with verificate 
+	    // calcuate with verificate
+	    should_pay = wsaleUtils.to_decimal(should_pay);
 	    should_pay = wsaleCalc.calc_discount_of_verificate(inventories, saleMode, should_pay, verificate); 
 	    score  = wsaleUtils.calc_with_score(pscores, verificate); 
 	    
@@ -1038,21 +1039,21 @@ var wsaleCalc = function(){
 	    var count;
 	    for (var i=0, l=inventories.length; i<l; i++){
 		one = inventories[i];
-		// count = mode === diablo_sale ? one.sell : one.reject;
 		count = wsaleCalc.get_inventory_count(one, mode);
-		p1 += one.fprice * count;
-		// p1 += one.fprice * wsaleCalc.calc_count_with_promotion(count, one.promotion);
+		if (count >= 0)
+		    p1 += one.fprice * count;
 	    }
 
+	    p1 = wsaleUtils.to_decimal(p1);
 	    var vdiscount = diablo_discount(verificate, p1);
 	    var calc = 0;
 	    for (var i=0, l=inventories.length; i<l; i++){
 		one = inventories[i];
-		// count = mode === diablo_sale ? one.sell : one.reject;
 		count = wsaleCalc.get_inventory_count(one, mode);
-		one.rdiscount = wsaleUtils.to_decimal(one.rdiscount - vdiscount);
-		one.rprice  = diablo_price(one.fprice, one.rdiscount);
-		
+		if (count >=0 ){
+		    one.rdiscount = wsaleUtils.to_decimal(one.rdiscount - vdiscount);
+		    one.rprice  = diablo_price(one.fprice, one.rdiscount);
+		} 
 		one.calc = wsaleUtils.to_decimal(one.rprice * count);
 		calc += one.calc;
 		console.log(one.calc);

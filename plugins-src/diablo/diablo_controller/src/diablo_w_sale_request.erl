@@ -181,7 +181,6 @@ action(Session, Req, {"get_last_sale"}, Payload) ->
 action(Session, Req, {"filter_w_sale_new"}, Payload) ->
     ?DEBUG("filter_w_sale_new with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session), 
-    
     ?pagination:pagination(
        fun(Match, Conditions) ->
 	       ?w_sale:filter(total_news, ?to_a(Match), Merchant, Conditions)

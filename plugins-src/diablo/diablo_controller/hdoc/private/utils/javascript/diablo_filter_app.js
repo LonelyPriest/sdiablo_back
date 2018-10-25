@@ -338,7 +338,10 @@ function filterProvider(){
 		    _prompt.account = promptValues;
 		} else if (name === 'level'){
 		    _filter.fields.push({name:"level", chinese:"等级"});
-		    _prompt.level = promptValues;
+		    _prompt.level = promptValues; 
+		} else if (name === 'bsaler'){
+		    _filter.fields.push({name:"bsaler", chinese:"客户"});
+		    _prompt.bsaler = promptValues;
 		};
 		
 		return _filter;

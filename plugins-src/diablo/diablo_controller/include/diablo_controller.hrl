@@ -121,6 +121,9 @@
 %% hide mode
 -define(HIDE_DEFAULT_MODE, <<"000110111111">>).
 
+%% print mode
+-define(PRINT_DEFAULT_MODE, <<"000">>).
+
 %% sms
 -define(SMS_NOTIFY, <<"00">>).
 
@@ -470,7 +473,7 @@
 -define(list_batch_sale,   ?right_b_sale + 4).
 -define(check_batch_sale,  ?right_b_sale + 5).
 -define(del_batch_sale,    ?right_b_sale + 6).
--define(note_batch_sale,   ?right_b_sale + 7).
+-define(list_batch_sale_new_detail,  ?right_b_sale + 7).
 -define(book_batch_sale,   ?right_b_sale + 8).
 
 -define(new_batch_saler,      ?right_b_sale + 9).
@@ -478,7 +481,8 @@
 -define(del_batch_saler,      ?right_b_sale + 11).
 -define(update_batch_saler,   ?right_b_sale + 12).
 -define(bill_batch_saler,     ?right_b_sale + 13).
-%% -define(bank_batch_saler,     ?right_b_sale + 14).
+
+-define(print_batch_sale,     ?right_b_sale + 14).
 
 %% public
 -define(http_route, diablo_controller_http_route).

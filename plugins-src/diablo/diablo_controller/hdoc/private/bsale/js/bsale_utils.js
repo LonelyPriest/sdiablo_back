@@ -1,7 +1,23 @@
 var bsaleUtils = function(){
     return {
+	cache_page_condition: function(
+	    storage, key, conditions, start_time, end_time, current_page, datetime){
+	    storage.remove(key);
+	    storage.set(key, {filter:conditions,
+			      start_time:diablo_get_time(start_time),
+			      end_time: diablo_get_time(end_time),
+			      page: current_page,
+			      t: datetime});
+	},
+	
 	remove_cache_page: function(stroage){
 	    
+	},
+
+	start_time: function(shop, base, now, dateFun){
+	    return diablo_base_setting(
+		"qtime_start", shop, base, function(v){return v},
+		dateFun(now - diablo_day_millisecond * 30, "yyyy-MM-dd"));
 	},
 
 	to_decimal:function(v){
@@ -37,6 +53,43 @@ var bsaleUtils = function(){
 	    } 
 	},
 
+	format_time_from_second: function(time, dateFun) {
+	    var o = {};
+	    if (angular.isObject(time)) {
+		if (time.hasOwnProperty('start_time'))
+		    o.start_time = dateFun(time.start_time, "yyyy-MM-dd");
+		if (time.hasOwnProperty('end_time'))
+		    o.end_time = dateFun(time.start_time, "yyyy-MM-dd");
+	    }
+	    return o;
+	},
+
+	order_fields:function(){
+	    return {id:0, shop:1, brand:2, firm:3};
+	},
+
+	print_mode: function(shop, base){
+	    return diablo_base_setting("ptype", shop, base, parseInt, diablo_frontend);
+	},
+
+	sale_mode:function(shop, base) {
+	    var mode = diablo_base_setting("p_balance", shop, base, function(s) {return s}, diablo_sale_mode);
+	    return {
+		show_note: bsaleUtils.to_integer(mode.charAt(1))
+	    };
+	},
+
+	// print color or size or both
+	print_cs_mode:function(shop, base) {
+	    var mode = diablo_base_setting(
+		"p_color_size", shop, base, function(s) {return s}, diablo_bsale_print_cs_mode);
+	    return {
+		both: bsaleUtils.to_integer(mode.charAt(0)),
+		color_only: bsaleUtils.to_integer(mode.charAt(1)),
+		size_only: bsaleUtils.to_integer(mode.charAt(2))
+	    };
+	},
+	
 	select_employee: function(shop, base) {
 	    return diablo_base_setting("s_employee", shop, base, parseInt, diablo_no);
 	},
@@ -51,6 +104,10 @@ var bsaleUtils = function(){
 
 	round: function(shop, base){
 	    return diablo_base_setting("round", shop, base, parseInt, diablo_yes);
+	},
+
+	printer_bill: function(shop, base) {
+	    return diablo_base_setting("prn_bill", shop, base, parseInt, diablo_invalid_index);
 	},
 
 	barcode_mode: function(shop, base) {

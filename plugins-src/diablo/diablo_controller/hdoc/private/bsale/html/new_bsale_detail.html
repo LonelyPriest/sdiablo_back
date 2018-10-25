@@ -19,7 +19,7 @@
 	      <i class="glyphicon glyphicon-minus"></i></a>
 
 	    <a type="button" class="btn yellow purple-stripe"
-	       x-ng-click="goto_page('#/bsale_note')">明细
+	       x-ng-click="goto_page('#/note_bsale')">明细
 	      <i class="glyphicon glyphicon-map-marker"></i></a>
 
 	    <!-- <a type="button" -->
@@ -119,21 +119,20 @@
 		    <td class="{{css(r.state, r.type)}}">{{r.balance}}</td>
 		    <td class="{{css(r.state, r.type)}}">{{r.acc_balance}}</td> 
 		    <td class="{{css(r.state, r.type)}}">{{r.employee.name}}</td> 
-		    <td class="{{css(r.state, r.type)}}">{{r.total}}</td> 
+		    <td class="{{css(r.state, r.type)}}">{{r.total}}</td>
 		    <td class="{{css(r.state, r.type)}}" x-ng-switch on="r.type"> 
 		      <span class="fg-red" x-ng-switch-when=1>{{r.should_pay}}</span>
 		      <span x-ng-switch-default>{{r.should_pay}}</span>
-		    </td>
-
+		    </td> 
 		    <td class="{{css(r.state, r.type)}}" x-ng-switch on="r.type"> 
 		      <span class="fg-red" x-ng-switch-when=1>{{r.has_pay}}</span>
 		      <span x-ng-switch-default>{{r.has_pay}}</span>
 		    </td> 
 		    
-		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.cash}}</td>
-		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.card}}</td>
-		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.wxin}}</td>
-		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.verificate}}</td>
+		    <td class="{{css(r.state, r.type)}}">{{r.cash}}</td>
+		    <td class="{{css(r.state, r.type)}}">{{r.card}}</td>
+		    <td class="{{css(r.state, r.type)}}">{{r.wxin}}</td>
+		    <td class="{{css(r.state, r.type)}}">{{r.verificate}}</td>
 
 		    <td class="{{css(r.state, r.type)}}">
 		      <span x-ng-if="r.comment">{{r.comment}}</span>
@@ -145,31 +144,36 @@
 		    <!-- <td x-ng-if="show.action"> -->
 		    <td> 
 		      <button class="btn diablo-button btn-primary"
-		    	      x-ng-click="rsn_detail(r)">
+		    	      x-ng-click="goto_sale_note(r)">
 			明细<i class="glyphicon glyphicon-map-marker"></i>
 		      </button>
 
 		      <button x-ng-if="shop_right.update_w_sale && r.state!==1"
 			      class="btn diablo-button yellow-crusta"
 			      x-ng-disabled="r.state===1"
-		      	      x-ng-click="update_detail(r)">修改
+		      	      x-ng-click="update_sale(r)">修改
 			<i class="glyphicon glyphicon-edit"></i></button> 
 		      
 		      <button x-ng-if="shop_right.check_w_sale && r.state===0"
 			      class="btn diablo-button green"
 			      x-ng-disabled="r.state===1"
-		      	      x-ng-click="check_detail(r)">审核
+		      	      x-ng-click="check_sale(r)">审核
 			<i class="glyphicon glyphicon-check"></i></button>
 		      <button x-ng-if="shop_right.check_w_sale && r.state===1"
 			      class="btn diablo-button red"
 			      x-ng-disabled="r.state===0"
-		      	      x-ng-click="uncheck_detail(r)">反审
+		      	      x-ng-click="uncheck_sale(r)">反审
 			<i class="glyphicon glyphicon-ban-circle"></i></button>
 		      
 		      <button x-ng-if="shop_right.check_w_sale && r.type===0 && r.state===0"
 			      class="btn diablo-button red"
-		      	      x-ng-click="delete_detail(r)">删除
-			<i class="glyphicon glyphicon-erase"></i></button> 
+		      	      x-ng-click="delete_sale(r)">删除
+			<i class="glyphicon glyphicon-erase"></i></button>
+		      
+		      <button x-ng-if="r.state===1" class="btn diablo-button purple"
+		      	      x-ng-click="print_sale(r)">打印
+			<i class="glyphicon glyphicon-print"></i></button>
+		      
 		    </td> 
 		  </tr>
 
@@ -178,13 +182,10 @@
 		    <td colspan="9"></td> 
 		    <td>{{total_amounts}}</td>
 		    <td>{{total_spay}}</td>
-		    <td>{{total_rpay}}</td>
-		    <td></td>
+		    <td>{{total_hpay}}</td>
 		    <td>{{total_cash}}</td>
 		    <td>{{total_card}}</td>
-		    <td>{{total_wxin}}</td>
-		    <td>{{total_withdraw}}</td>
-		    <td>{{total_ticket}}</td>
+		    <td>{{total_wxin}}</td> 
 		    <td colspan="4"></td>
 		  </tr>
 		</tbody>

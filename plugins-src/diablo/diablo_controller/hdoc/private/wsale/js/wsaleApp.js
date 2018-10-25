@@ -2634,8 +2634,3 @@ function wsaleNewDetailProvide(
 	}) 
     };
 };
-
-// wsaleApp.controller("wsaleCtrl", function(
-//     $scope, localStorageService){
-//     diablo_remove_wsale_local_storage(localStorageService); 
-// });

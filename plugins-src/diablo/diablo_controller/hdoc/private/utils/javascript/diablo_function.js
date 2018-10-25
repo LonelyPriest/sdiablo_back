@@ -141,11 +141,15 @@ var diablo_stock_in_hide_mode = "00011011111";
  * vip mode
  */
 var diablo_vip_mode = "0000";
-
 /*
  * sale mode
  */
 var diablo_sale_mode ="0001000";
+/*
+ * batch sale print mode, color or size or both
+ */
+var diablo_bsale_print_cs_mode ="000";
+
 
 /*
  * direction

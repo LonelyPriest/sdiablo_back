@@ -399,6 +399,24 @@
 	  	    x-ng-init="f.value=f.value ? f.value : prompt.level[0]">
 	    </select>
 	  </span>
+
+	  <!--batch sale -->
+	  <span x-ng-switch-when="bsaler">
+	    <div class="has-feedback">
+	      <input type="text" class="form-control" placeholder="请输入客户/手机"
+	  	     x-ng-model="f.value"
+	  	     x-ng-edit
+		     typeahead-editable="false"
+	  	     typeahead-wait-ms="1000"
+	  	     typeahead-loading="loading_bsaler"
+		     typeahead-on-select="f.value && ok()"
+	  	     uib-typeahead="s as s.name for s in prompt.bsaler($viewValue)"
+	  	     x-ng-enter="f.value && ok()" />
+	      <span x-ng-show="loading_bsaler">
+	  	<i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
+	      </span>
+	    </div>
+	  </span>
 	  
 	</div> 
 	

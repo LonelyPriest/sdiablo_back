@@ -893,7 +893,11 @@ sys_config() ->
 	      {"bcode_use",       "条码开单模式",         "0",   "0"},
 	      {"bcode_auto",      "采用系统规则生成条码", "1",   "0"}, 
 	      {"trans_orgprice",  "移仓检测进价",         "1",   "0"},
-	      {"p_color_size",    "打印颜色尺码",         "0",   "0"}, 
+	      %% [0]: print color and size
+	      %% [1]: print color only
+	      %% [1]: print size only
+	      %% 000: no color and no size
+	      {"p_color_size",    "打印颜色尺码",         "000", "0"}, 
 	      {"saler_stock",      "营业员查看区域库存",  "0",   "0"},
 	      {"r_stock_oprice",    "厂商退货检测进价",   "1",   "0"},
 	      {"c_stock_oprice",    "入库审核检测进价",   "1",   "0"},

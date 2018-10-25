@@ -281,6 +281,9 @@ print_content(_ShopId, PBrand, _Model, 58, Merchant, Setting, Invs) ->
     {ok, Brands} = ?w_user_profile:get(brand, Merchant),
     {ok, Colors} = ?w_user_profile:get(color, Merchant),
     {ok, Types} = ?w_user_profile:get(type, Merchant),
+    <<PColorSize:1/binary, _/binary>> = ?v(<<"p_color_size">>, Setting),
+    
+    
 
     H = "款号" ++ pading(8)
 	++ "单价" ++ pading(2)
@@ -361,7 +364,7 @@ print_content(_ShopId, PBrand, _Model, 58, Merchant, Setting, Invs) ->
 		   %%    end
 		   ++ ?to_s(RPrice)
 		   ++ br(PBrand)
-		   ++ case ?to_i(?v(<<"p_color_size">>, Setting, 0)) of
+		   ++ case ?to_i(PColorSize) of
 			  0 ->
 			      pading(24 - 4) ++ "合：" ++ ?to_s(RPrice * SellTotal) ++ br(PBrand);
 			  1 ->

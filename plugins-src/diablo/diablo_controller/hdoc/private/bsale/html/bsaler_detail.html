@@ -83,7 +83,7 @@
 		  </tr>
 		</thead>
 		<tbody>
-		  <tr ng-repeat="b in salers track by b.order_id">
+		  <tr ng-repeat="b in salers track by b.id">
 		    <td x-ng-bind=b.order_id></td>
 		    <td x-ng-bind=b.name></td>
 		    <td x-ng-bind=b.balance></td>
@@ -92,14 +92,14 @@
 		    <td x-ng-bind=b.address></td>
 		    <td x-ng-bind=b.region_name></td>
 		    <td x-ng-bind=b.shop_name></td>
-		    <td x-ng-bind=b.comment></td>
+		    <td x-ng-bind=b.remark></td>
 		    <td x-ng-bind=b.entry_date></td>
 		    <td> 
 		      <button class="btn diablo-button btn-warning"
-			      x-ng-click="udpate_bsaler(shop)">修改
+			      x-ng-click="update_bsaler(b)">修改
 			<i class="glyphicon glyphicon-edit"></i></button>
 		      <button class="btn diablo-button red"
-			      x-ng-click="delete_bsaler(shop)">删除
+			      x-ng-click="delete_bsaler(b)">删除
 			<i class="glyphicon glyphicon-erase"></i></button>
 		    </td> 
 		  </tr>
@@ -137,3 +137,165 @@
 </div>
 
 
+<script type="text/ng-template" id="update-bsaler.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    
+    <h4 class="modal-title">
+      <span class="label label-sm label-primary">客户编辑</span>
+    </h4>
+  </div>
+
+  <div class="modal-body">
+    <form class="form-horizontal" name="bForm" novalidate> 
+      <div class="form-body">
+	
+	<div class="form-group"> 
+	  <label class="col-sm-2 col-md-2 control-label">所在店铺</label>
+	  <div class="col-sm-10 col-md-10">
+	    <select class="form-control" type="text"
+	  	    x-ng-model="params.bsaler.shop" 
+	  	    x-ng-options="s as s.name for s in params.shops">
+	    </select>
+	  </div>
+	</div>
+
+	<div class="form-group"> 
+	  <label class="col-sm-2 col-md-2 control-label">名称</label>
+	  <div class="col-sm-10 col-md-10">
+	    <div class="input-group">
+	      <div x-ng-class="{'has-error': bForm.name.$invalid && !bForm.name.$pristine}">
+		<input type="text"
+		       class="form-control"
+		       name="name"
+		       required
+		       placeholder="请输入客户名称"
+		       x-ng-model="params.bsaler.name"
+		       x-ng-pattern="params.pattern.name"/>
+	      </div>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	    <div ng-show="bForm.name.$invalid && !bForm.name.$pristine">
+	      <span class="fg-red">中文，只允许字母，数字，最少2个字符，不超过6个字符</span>
+	    </div>
+	  </div> 
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">联系方式</label>
+	  <div class="col-sm-10 col-md-10"> 
+	    <div class="input-group">
+	      <div x-ng-class="{'has-error': bForm.mobile.$invalid && !bForm.mobile.$pristine}">
+		<input class="form-control" type="tel"
+		       name="mobile"
+		       required
+		       x-ng-pattern="pattern.tel_mobile"
+		       placeholder="请输入电话或手机号码"
+		       class="form-control"
+		       x-ng-model="params.bsaler.mobile"
+		       x-ng-pattern="params.pattern.phone"/>
+	      </div>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	    <div ng-show="bForm.mobile.$invalid && !bForm.mobile.$pristine">
+	      <span class="fg-red">请输入正确的电话或手机号码</span>
+	    </div>
+	  </div> 
+	</div>
+
+	<div x-ng-if="params.bsaler.type_id!==2" class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">余额</label>
+	  <div class="col-sm-10 col-md-10">
+	    <div x-ng-class="{'has-error': bForm.balance.$invalid && !bForm.balance.$pristine}">
+	      <input class="form-control"
+		     type="number"
+		     step="0.01"
+		     name="balance"
+		     readonly
+		     class="form-control"
+		     placeholder="默认为0"
+		     x-ng-model="params.bsaler.balance" />
+	    </div>
+	    <div ng-show="bForm.balance.$invalid && !bForm.balance.$pristine">
+	      <span class="fg-red">请输入正确的数字，支持二位小数</span>
+	    </div>
+	  </div>
+	</div> 
+	
+	<!-- <div x-ng-if="params.bsaler.type_id===0" class="form-group"> -->
+	<!--   <label class="col-sm-2 col-md-2 control-label">会员类型</label> -->
+	<!--   <div class="col-sm-10 col-md-10"> -->
+	<!--     <select class="form-control" -->
+	<!-- 	    x-ng-model="params.bsaler.type" -->
+	<!-- 	    x-ng-options="t as t.name for t in params.types"> -->
+	<!--     </select> -->
+	<!--   </div>  -->
+	<!-- </div> -->
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">联系地址</label>
+	  <div class="col-sm-10 col-md-10">
+	    <div x-ng-class="{'has-error':bForm.address.$invalid && !bForm.address.$pristine}">
+	      <input type="text"
+		     class="form-control"
+		     name="address"
+		     placeholder="请输入联系地址"
+		     x-ng-model="params.bsaler.address"
+		     x-ng-pattern="pattern.address"/>
+	    </div>
+	    <div x-ng-show="bForm.address.$invalid && !bForm.address.$pristine">
+	      <span class="fg-red">必需以中文开头，只允许字母，数字</span>
+	    </div> 
+	  </div> 
+	</div>
+
+	<div class="form-group"> 
+	  <label class="col-sm-2 col-md-2 control-label">所在区域</label>
+	  <div class="col-sm-10 col-md-10">
+	    <div class="input-group">
+	      <input class="form-control" type="text"
+		     required
+		     name="region"
+	  	     x-ng-model="params.bsaler.region"
+		     typeahead-editable="false"
+		     uib-typeahead="r as r.name for r in params.regions|filter:$viewValue" />
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	    <div ng-show="bForm.region.$invalid && !bForm.region.$pristine">
+	      <span class="fg-red">中文，字母，数字，不支持特殊字符</span> 
+	    </div>
+	  </div>
+	</div>
+	
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">备注</label>
+	  <div class="col-sm-10 col-md-10">
+	    <div x-ng-class="{'has-error': bForm.comment.$invalid && !bForm.comment.$pristine}">
+	      <input type="text"
+		     class="form-control"
+		     name="comment"
+		     placeholder="请输入备注"
+		     x-ng-model="params.bsaler.remark"
+		     x-ng-pattern="pattern.comment"/>
+	    </div>
+	    <div ng-show="bForm.comment.$invalid && !bForm.comment.$pristine">
+	      <span class="fg-red">中文，字母，数字，不支持特殊字符</span> 
+	    </div>
+	  </div>
+	</div> 
+	
+      </div> 
+    </form>
+  </div>
+
+  <div class="modal-footer"> 
+    <button class="btn btn-primary"
+	    x-ng-disabled="bForm.$invalid"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
+  
+</script>

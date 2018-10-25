@@ -651,20 +651,9 @@ diabloUtils.directive('queryGroup', function () {
 	},
 	
 	link: function(scope, element, attrs){
-	    // console.log(scope);
-	    // scope.$watch('filters', function(newValue, oldValue){
-	    // 	// console.log(newValue);
-	    // 	// console.log(oldValue);
-		
-	    // })
 	    // console.log(scope.filters);
 	    // console.log(scope.prompt);
-	    // scope.is_even = function() {
-	    // 	console.log(scope.filters.length);
-	    // 	var even = scope.filters.length % 2 === 0;
-	    // 	console.log(even);
-	    // 	return even;
-	    // }
+	    
 
 	    var get_prompt = function(value, prompts){
 		if (angular.isUndefined(value))

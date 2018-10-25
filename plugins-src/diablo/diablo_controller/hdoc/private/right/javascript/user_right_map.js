@@ -12,7 +12,8 @@ var rightAuthen = {
 	_stock    : 100000,
 	_good     : 140000,
 	_firm     : 110000,
-	_retailer : 30000
+	_retailer : 30000,
+	_bsale    : 160000
     },
 
     shop_action: function(){
@@ -45,7 +46,23 @@ var rightAuthen = {
 	    update_w_sale: rightAuthen.root_right._wsale + 5,
 	    check_w_sale:  rightAuthen.root_right._wsale + 6,
 	    update_w_sale_price: rightAuthen.root_right._wsale + 10
-	}
+	};
+    },
+
+    batchsale_action: function() {
+	return {
+	    new_batch_sale:     rightAuthen.root_right._bsale + 1,
+	    reject_batch_sale:  rightAuthen.root_right._bsale + 2,
+	    update_batch_sale:  rightAuthen.root_right._bsale + 3,
+	    check_batch_sale:   rightAuthen.root_right._bsale + 5,
+	    delete_batch_sale:  rightAuthen.root_right._bsale + 6,
+	    book_batch_sale:    rightAuthen.root_right._bsale + 8,
+
+	    delete_batch_saler: rightAuthen.root_right._bsale + 11,
+	    bill_batch_saler:   rightAuthen.root_right._bsale + 13,
+
+	    print_batch_sale:   rightAuthen.root_right._bsale + 14
+	};
     },
 
     stock_action: function(){
@@ -361,6 +378,33 @@ diabloAuthen.prototype.authenRetailerRight = function() {
 	update_level          :this.authenRetailer('update_level'),
 	print_retailer        :this.authenRetailer('print_retailer'),
 	master                :this.master
+    };
+};
+
+
+diabloAuthen.prototype.authenBatchSale = function(action) {
+    return rightAuthen.authen(
+	this.userType, rightAuthen.batchsale_action()[action], this.userRight);
+};
+
+diabloAuthen.prototype.authenBatchSaleRight = function() {
+    return {
+	master     :this.master,
+	show_orgprice  :this.showOrgprice(), 
+	update_w_sale  :this.updateSale(),
+	check_w_sale   :this.checkSale(),
+	show_stastic   :this.master,
+
+	new_sale       :this.authenBatchSale('new_batch_sale'),
+	reject_sale    :this.authenBatchSale('reject_batch_sale'),
+	update_sale    :this.authenBatchSale('update_batch_sale'),
+	check_sale     :this.authenBatchSale('check_batch_sale'),
+	delete_sale    :this.authenBatchSale('delete_batch_sale'),
+	book_sale      :this.authenBatchSale('book_batch_sale'),
+	print_sale     :this.authenBatchSale('print_batch_sale'),
+
+	bill_saler     :this.authenBatchSale('bill_batch_saler')
+	
     };
 };
 

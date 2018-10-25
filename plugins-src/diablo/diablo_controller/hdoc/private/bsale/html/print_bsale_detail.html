@@ -1,0 +1,114 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="portlet box purple table-panel">
+      
+      <div class="portlet-title">
+	<div class="caption">
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>销售单打印</div>
+	
+	<div class="actions"> 
+	  <button class="btn red" type="button"
+		  x-ng-click="go_back()">返回
+	    <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
+
+	  <button class="btn green" type="button"
+		  x-ng-click="print()">打印
+	    <i class="glyphicon glyphicon-print"></i></button>
+	  
+	</div> 
+      </div> 
+      
+      <!--BEGN portlet body--> 
+      <div id="bsale_new" class="portlet-body">
+	<!--BEGIN panel-->
+	<h3 style="text-align:center">
+	  <span x-ng-bind=detail.shop.name></span>
+	  <span x-ng-if="detail.type===0"></span>
+	  <span x-ng-if="detail.type===1">（退货）</span> 
+	</h3> 
+	<h5>
+	  <div style="text-align:center">
+	    <span>客户：<span x-ng-bind=detail.bsaler></span></span> 
+	    &nbsp&nbsp&nbsp&nbsp<span>日期：<span x-ng-bind=detail.entry_date></span></span>
+	    &nbsp&nbsp&nbsp&nbsp<span>单号：<span x-ng-bind=detail.rsn></span></span>
+	  </div>
+	  <div style="text-align:center">
+	    <span>导购：<span x-ng-bind=detail.employee.name></span></span>
+	    &nbsp&nbsp&nbsp&nbsp<span>部门：<span x-ng-bind=detail.department.name></span></span>
+	    &nbsp&nbsp&nbsp&nbsp<span>负责人：<span x-ng-bind=detail.department.master.name></span></span>
+	  </div>
+	</h5>
+	<div class="table-responsive">
+	  <table class="table table-bordered table-striped" style="margin-bottom:5px"> 
+	      <thead>
+		<tr>
+		  <th class="text-center">序号</th>
+		  <th class="text-center">货号</th>
+		  <th class="text-center">品名</th>
+		  <th class="text-center">类型</th>
+		  <th class="text-center">数量</th>
+		  <th class="text-center">单价</th>
+		  <th class="text-center">合计</th> 
+		  
+		  <th x-ng-if="print_mode.both" class="text-center">小计</th>
+		  <th x-ng-if="print_mode.both" class="text-center">颜色</th>
+		  <th x-ng-if="print_mode.both" class="text-center">尺码</th> 
+		</tr>
+	      </thead>
+	      
+	      <tbody>
+		<tr x-ng-repeat="n in notes"> 
+		  <td class="text-center">{{n.order_id}}</td>
+		  <td class="text-center">{{n.style_number}}</td>
+		  <td class="text-center">{{n.brand}}</td>
+		  <td class="text-center">{{n.type}}</td>
+		  <td class="text-center">{{n.total}}</td>
+		  <td class="text-center">{{n.rprice}}</td>
+		  <td class="text-center">{{n.calc}}</td>
+		  
+		  <td x-ng-if="print_mode.both" class="text-center">{{n.amount}}</td>
+		  <td x-ng-if="print_mode.both" class="text-center">{{n.color.cname}}</td>
+		  <td x-ng-if="print_mode.both" style="text-center">{{n.size}}</td>
+		</tr>
+		
+		<tr>
+		  <td colspan="4"></td>
+		  <td class="text-center" x-ng-bind=total></td>
+		  <td></td>
+		  <td class="text-center" x-ng-bind=total_rprice></td>
+		</tr>
+	      </tbody> 
+	    </table> <!--END table--> 
+	</div>
+	<h4 style="text-align:center; margin-top:2px; margin-bottom:2px">
+	  <span>
+	    <span>上欠：<span class="sell-font"><strong>{{detail.balance}}</strong></span></span>
+	    &nbsp&nbsp&nbsp&nbsp<span>本次应付：
+	      <span class="sell-font"><strong>{{detail.should_pay}}</strong></span>
+	    </span>
+	    &nbsp&nbsp&nbsp&nbsp<span>本次实付：
+	      <span class="sell-font"><strong>{{detail.has_pay}}</strong></span>
+	    </span> 
+	    &nbsp&nbsp&nbsp&nbsp<span>核销：
+	      <span class="sell-font"><strong>{{detail.verificate}}</strong></span>
+	    </span> 
+	    &nbsp&nbsp&nbsp&nbsp<span>累欠：
+	      <span class="sell-font"><strong>{{detail.acc_balance}}</strong></span>
+	    </span>
+	    
+	  </span>
+	</h4>
+	
+	<h5 style="text-align:left; margin-top:2px; margin-bottom:2px">
+	  <p>
+	    <span>钱掌柜零售云平台</span>
+	    &nbsp&nbsp&nbsp&nbsp<span>联系方式：18692269329（微信）</span>
+	    &nbsp&nbsp&nbsp&nbsp<span>15292083301（微信）</span>
+	  </p>
+	</h5>
+      </div>
+    </div>
+    
+  </div>
+ 
+</div>

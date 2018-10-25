@@ -19,7 +19,7 @@
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
--export([batch_saler/3, match/3]).
+-export([batch_saler/3, batch_saler/4, match/3]).
 -export([filter/4, filter/6]).
 
 -define(SERVER, ?MODULE). 
@@ -33,9 +33,17 @@ batch_saler(new, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {new_saler, Merchant, Attrs});
 
+batch_saler(get, Merchant, BSalerId) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {get_batch, Merchant, [BSalerId]});
+
 batch_saler(get_batch, Merchant, BSalers) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {get_batch, Merchant, BSalers}).
+
+batch_saler(update, Merchant, BSalerId, {Attrs, OldAttrs}) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {update_saler, Merchant, BSalerId, {Attrs, OldAttrs}}).
 
 filter(total_saler, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
@@ -100,6 +108,85 @@ handle_call({new_saler, Merchant, Attrs}, _From, State) ->
         Error ->
             {reply, Error, State}
     end;
+
+handle_call({update_saler, Merchant, BSalerId, {Attrs, OldAttrs}}, _From, State) ->
+    ?DEBUG("update_retailer with merchant ~p, BSalerId ~p~nattrs ~p, oldattrs ~p",
+	   [Merchant, BSalerId, Attrs, OldAttrs]),
+
+    Shop     = ?v(<<"shop">>, Attrs), 
+    Name     = ?v(<<"name">>, Attrs),
+    Pinyin   = ?v(<<"py">>, Attrs),
+    Mobile   = ?v(<<"mobile">>, Attrs),
+    %% Balance  = ?v(<<"balance">>, Attrs),
+    Region   = ?v(<<"region">>, Attrs),
+    Address  = ?v(<<"address">>, Attrs),
+    Comment  = ?v(<<"comment">>, Attrs),
+    
+
+    OldShop     = ?v(<<"shop_id">>, OldAttrs), 
+    OldType     = ?v(<<"type_id">>, OldAttrs),
+    OldBalance  = ?v(<<"balance">>, OldAttrs),
+    OldRegion   = ?v(<<"region_id">>, OldAttrs),
+
+    Balance  = case ?v(<<"balance">>, Attrs) of
+		   undefined -> OldBalance;
+		   _Balance -> ?to_f(_Balance)
+	       end,
+
+    Type     = case ?v(<<"type">>, Attrs) of
+		   undefined -> OldType;
+		   _Type -> _Type
+	       end,
+    
+    IsMobileModified = 
+	case Mobile =:= undefined of
+	    true -> {ok, []};
+	    false -> 
+		Sql = case Type =:= ?SYSTEM_RETAILER of
+			  true ->
+			      "select id, name, mobile, address"
+				  ++ " from batchsaler" 
+				  ++ " where merchant=" ++ ?to_s(Merchant)
+				  ++ " and name=" ++ "\'" ++ ?to_s(Name) ++ "\'" 
+				  ++ " and mobile=" ++ "\'" ++ ?to_s(Mobile) ++ "\'" 
+				  ++ " and deleted=" ++ ?to_s(?NO);
+			  false ->
+			      "select id, name, mobile, address"
+				  ++ " from batchsaler" 
+				  ++ " where merchant=" ++ ?to_s(Merchant)
+				  ++ " and mobile=" ++ "\'" ++ ?to_s(Mobile) ++ "\'"
+				  ++ " and type!=" ++ ?to_s(?SYSTEM_RETAILER) 
+				  ++ " and deleted=" ++ ?to_s(?NO)
+		      end,
+		?sql_utils:execute(read, Sql)
+	end,
+
+    case IsMobileModified of 
+	{ok, []} -> 
+
+	    Updates = ?utils:v(name, string, Name) 
+		++ ?utils:v(py, string, Pinyin)
+		++ ?utils:v(mobile, string, Mobile)
+		++ ?utils:v(region, integer, ?supplier:get_modified(Region, OldRegion))
+		++ ?utils:v(shop, integer, ?supplier:get_modified(Shop, OldShop))
+		++ ?utils:v(address, string, Address)
+		++ ?utils:v(remark, string, Comment)
+		++ ?utils:v(type, integer, ?supplier:get_modified(Type, OldType)) 
+		++ ?utils:v(balance, float, ?supplier:get_modified(Balance, OldBalance)),
+
+	    Sql1 = "update batchsaler set "
+		++ ?utils:to_sqls(proplists, comma, Updates)
+		++ " where id=" ++ ?to_s(BSalerId)
+		++ " and merchant=" ++ ?to_s(Merchant),
+
+	    Reply = ?sql_utils:execute(write, Sql1, BSalerId), 
+	    {reply, Reply, State}; 
+	{ok, _} ->
+	    {reply, {error, ?err(batch_saler_exist, Mobile)}, State};
+	Error ->
+	    {reply, Error, State}
+    end;
+    
 
 handle_call({total_saler, Merchant, Conditions}, _From, State) ->
     ?DEBUG("total_saler: merchant ~p, conditions ~p", [Merchant, Conditions]),
@@ -209,7 +296,10 @@ handle_call({get_batch, Merchant, BSalers}, _From, State) ->
 	++ " where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, [{<<"id">>, lists:usort(BSalers)}]),
 
-    Reply = ?sql_utils:execute(read, Sql),
+    Reply = case length(BSalers) =:= 1 of
+		true -> ?sql_utils:execute(s_read, Sql);
+		false -> ?sql_utils:execute(read, Sql)
+	    end,
     {reply, Reply, State};
 
 handle_call(_Request, _From, State) ->
