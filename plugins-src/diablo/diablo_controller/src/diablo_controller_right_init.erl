@@ -906,6 +906,7 @@ pass_action(saler) ->
      <<"list_inventory_children">>,
      %% get the children of sales
      <<"list_sales_children">>,
+     <<"list_bsale_children">>,
      %% get the account role by a certain account id
      <<"list_account_right">>,
 

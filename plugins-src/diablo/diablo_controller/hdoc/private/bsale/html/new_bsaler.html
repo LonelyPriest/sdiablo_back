@@ -125,10 +125,18 @@
 	    <div class="form-group"> 
 	      <label class="col-sm-3 col-md-3 control-label">所在区域</label>
 	      <div class="col-sm-6 col-md-6">
-	  	<select class="form-control" type="text"
-	  		x-ng-model="bsaler.region"
-	  		x-ng-options="r as r.name for r in regions">
-		</select>
+		<div class="input-group">
+	  	<input class="form-control" type="text"
+		       name="region"
+	  	       x-ng-model="bsaler.region"
+		       required
+		       typeahead-editable="false"
+	  	       uib-typeahead="r as r.name for r in regions|filter:$viewValue"/>
+		<span class="input-group-addon bg-white fg-red">*</span>
+		</div>
+		<div ng-show="bForm.region.$invalid && !bForm.region.$pristine">
+		  <span class="fg-red">中文，字母，数字，不支持特殊字符</span> 
+		</div>
 	      </div>
 	    </div>
 

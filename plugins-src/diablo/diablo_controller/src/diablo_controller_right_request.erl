@@ -254,7 +254,10 @@ action(Session, Req, {"list_bsale_children"}) ->
 			 ?reject_batch_sale,
 			 ?update_batch_sale,
 			 ?check_batch_sale,
-			 ?list_batch_sale]},
+			 ?list_batch_sale,
+			 ?del_batch_sale,
+			 ?book_batch_sale,
+			 ?list_batch_sale_new_detail]},
 
     {ok, Children} =
 	?right_init:get_children(children_only, [{<<"id">>, RightId}]),
@@ -498,8 +501,7 @@ get_shops(Session, Module) ->
 	    ?SUPER ->
 		?shop:lookup();
 	    ?MERCHANT ->
-		{ok, S0} = ?w_user_profile:get(
-			      shop, ?session:get(merchant, Session)),
+		{ok, S0} = ?w_user_profile:get(shop, ?session:get(merchant, Session)),
 		lists:foldr(
 		  fun({AShop}, Acc) ->
 			  [{[{<<"shop_id">>,  ?v(<<"id">>, AShop)},

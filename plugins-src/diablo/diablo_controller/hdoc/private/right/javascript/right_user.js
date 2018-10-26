@@ -9,6 +9,7 @@ function roleUserNewCtrlProvide($scope, $q, $location, diabloUtilsService, right
 	promise(rightService.list_right_catlog)(),
 	promise(rightService.get_inventory_children)(),
 	promise(rightService.get_sales_children)(),
+	promise(rightService.get_bsale_children)(),
 	promise(rightService.list_shop)()
     ]).then(function(data){
 	console.log(data);
@@ -21,7 +22,8 @@ function roleUserNewCtrlProvide($scope, $q, $location, diabloUtilsService, right
 	// $scope.inventories = data[1];
 	$scope.all_right = data[0];
 	$scope.sales     = data[2];
-	$scope.shops     = data[3];
+	$scope.bsales    = data[3];
+	$scope.shops     = data[4];
 	
 	angular.forEach(data[1], function(inv){
 	    tree_utils.add_children(
@@ -31,6 +33,11 @@ function roleUserNewCtrlProvide($scope, $q, $location, diabloUtilsService, right
 	angular.forEach($scope.sales, function(sale){
 	    tree_utils.add_children(
 		$scope.userRoleTree, $scope.shops, sale.id)
+	});
+
+	angular.forEach($scope.bsales, function(bsale){
+	    tree_utils.add_children(
+		$scope.userRoleTree, $scope.shops, bsale.id)
 	});
 
 	$scope.init_tree = true;

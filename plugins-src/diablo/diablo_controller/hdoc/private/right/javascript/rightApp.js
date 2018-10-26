@@ -378,15 +378,19 @@ function rightConfig(angular){
 	// /////////////////////////////////////////////////////////////////////////////
 
 	this.list = function(){
-	    return right.list({operation: "list_right"})
+	    return right.list({operation: "list_right"});
 	};
 
 	this.get_inventory_children = function(){
-	    return right.query({operation: "list_inventory_children"})
+	    return right.query({operation: "list_inventory_children"});
 	};
 
 	this.get_sales_children = function(){
-	    return right.query({operation: "list_sales_children"})
+	    return right.query({operation: "list_sales_children"});
+	};
+
+	this.get_bsale_children = function() {
+	    return right.query({operation: "list_bsale_children"});
 	};
 
 	
