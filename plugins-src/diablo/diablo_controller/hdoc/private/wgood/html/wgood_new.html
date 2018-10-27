@@ -37,6 +37,7 @@
 			   name="style_number"
 			   required
 			   capitalize
+			   x-ng-edit
 			   placeholder="请输入2-10位款号" 
 			   x-ng-model="good.style_number"
 			   x-ng-pattern="pattern.style_number" 
@@ -67,6 +68,7 @@
 			   class="form-control"
 			   name="brand"
 			   required
+			   x-ng-edit
 			   placeholder="请输入品牌" 
 			   x-ng-model="good.brand"
 			   x-ng-pattern="pattern.brand"
@@ -94,6 +96,7 @@
 	    		 class="form-control"
 	    		 name="firm"
 	    		 required
+			 x-ng-edit
 	    		 placeholder="请选择厂商"
 	    		 x-ng-model="good.firm"
 	    		 x-ng-enter=""
@@ -117,6 +120,7 @@
 			   class="form-control"
 			   name="type"
 			   required
+			   x-ng-edit
 			   placeholder="豹纹马甲等"
 			   x-ng-model="good.type"
 			   x-ng-pattern="pattern.type"
@@ -171,6 +175,7 @@
 			 type="number" step="0.01" 
 			 name="tag_price"
 			 required
+			 x-ng-edit
 			 placeholder="吊牌价，支持二位小数"
 			 x-ng-pattern="pattern.price"
 			 x-ng-enter=""
@@ -184,7 +189,7 @@
 	      </div> 
 	    </div> 
 	    
-	    <div class="form-group diablo-good-form-group">
+	    <div x-ng-if="!base_settings.hide_discount" class="form-group diablo-good-form-group">
 	      <label class="col-sm-3 col-md-3 control-label">折扣</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
@@ -194,6 +199,7 @@
 			   type="number" step="1" 
 			   name="discount"
 			   required
+			   x-ng-edit
 			   placeholder="两位整数，无折扣请输入100"
 			   x-ng-pattern="pattern.discount"
 			   x-ng-model="good.discount"/>
@@ -206,7 +212,7 @@
 	      </div> 
 	    </div>
 
-	    <div class="form-group diablo-good-form-group">
+	    <div x-ng-if="right.show_orgprice" class="form-group diablo-good-form-group">
 	      <label class="col-sm-3 col-md-3 control-label">进货价</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
@@ -214,8 +220,8 @@
 			 type="number" step="0.01" 
 			 name="org_price"
 			 required
-			 placeholder="进货价，支持二位小数"
-			 
+			 x-ng-edit
+			 placeholder="进货价，支持二位小数" 
 			 x-ng-model-options="{debounce:300}"
 			 x-ng-change="row_change_price(good)"
 			 x-ng-pattern="pattern.price"
@@ -229,7 +235,7 @@
 	      </div> 
 	    </div> 
 
-	    <div class="form-group diablo-good-form-group">
+	    <div x-ng-if="right.show_orgprice" class="form-group diablo-good-form-group">
 	      <label class="col-sm-3 col-md-3 control-label">进货折扣率</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
@@ -239,6 +245,7 @@
 			   type="number" step="1" 
 			   name="ediscount"
 			   required
+			   x-ng-edit
 			   placeholder="支持二位小数，无折扣请输入100"
 			   x-ng-model="good.ediscount"
 			   x-ng-pattern="/^\d{2}(.\d{1,2})?$|100|0$/"
@@ -305,6 +312,7 @@
 			 type="number" step="1" 
 			 name="expire"
 			 required
+			 x-ng-edit
 			 placeholder="退货期限"
 			 x-ng-pattern="pattern.expire"
 			 x-ng-enter=""
@@ -315,7 +323,17 @@
 		  <span class="fg-red">整数或-1，-1表示无退货期限</span>
 		</div>
 	      </div> 
-	    </div> 
+	    </div>
+
+	    <div x-ng-if="!base_settings.hide_unit" class="form-group diablo-good-form-group">
+	      <label class="col-sm-3 col-md-3 control-label">计量单位</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<select class="form-control"
+			x-ng-model="good.unit"
+			x-ng-options="u for u in std_units">
+		</select>
+	      </div> 
+	    </div>
 
 	    <div x-ng-if="!base_settings.hide_level" class="form-group diablo-good-form-group">
 	      <label class="col-sm-3 col-md-3 control-label">等级</label>

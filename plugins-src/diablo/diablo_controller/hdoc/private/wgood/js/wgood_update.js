@@ -39,12 +39,14 @@ function wgoodUpdateCtrlProvide(
     var authen = new diabloAuthen(user.type, user.right, user.shop);
     $scope.stock_right = authen.authenStockRight();
 
+    $scope.std_units      = diablo_std_units;
+    // console.log($scope.std_units); 
     $scope.levels         = diablo_level;
     $scope.std_executives = filterStdExecutive;
     $scope.categories     = filterCategory;
     $scope.fabrics        = filterFabric;
     $scope.template       = filterTemplate.length!==0 ? filterTemplate[0] : undefined;
-    console.log($scope.template);
+    // console.log($scope.template);
     
     // $scope.stock_right = {
     // 	show_orgprice :stockUtils.authen_rainbow(user.type, user.right, 'show_orgprice'),
@@ -54,7 +56,7 @@ function wgoodUpdateCtrlProvide(
     
     // $scope.price_readonly = $scope.stock_right.update_tprice ? false : true; 
     $scope.route_params = {shop:false, from: stockUtils.to_integer($routeParams.from)}; 
-    console.log($scope.route_params); 
+    // console.log($scope.route_params); 
         
     // [{type:"红色", tid:1
     // 	    colors:[{name:"深红", id:1},
@@ -133,7 +135,9 @@ function wgoodUpdateCtrlProvide(
 	$scope.good.type      = diablo_get_object(good.type_id, $scope.types);
 	$scope.good.firm      = diablo_get_object(good.firm_id, $scope.firms);
 	$scope.good.sex       = diablo_get_object(good.sex, $scope.sexs);
-	$scope.good.season    = diablo_get_object(good.season, $scope.seasons);
+	$scope.good.season    = diablo_get_object(good.season, $scope.seasons); 
+	$scope.good.unit      = $scope.std_units[good.unit];
+
 
 	if (good.executive_id === diablo_invalid_index) {
 	    $scope.good.executive = $scope.std_executives.length === 0 ? undefined : $scope.std_executives[0];
@@ -165,7 +169,8 @@ function wgoodUpdateCtrlProvide(
 	    $scope.good.level = $scope.levels[0];
 	} else {
 	    $scope.good.level = $scope.levels[$scope.good.level];
-	} 
+	}
+	
 	console.log($scope.good);
 
 	if (angular.isDefined($routeParams.shop)){
@@ -595,8 +600,9 @@ function wgoodUpdateCtrlProvide(
 	update_good.ediscount = stockUtils.to_integer(good.ediscount);
 	update_good.discount  = stockUtils.to_integer(good.discount);
 	update_good.alarm_day = stockUtils.to_integer(good.alarm_day);
+	update_good.unit      = $scope.std_units.indexOf(good.unit);
 	
-	update_good.level       = function() {
+	update_good.level     = function() {
 	    var levelIndex = $scope.levels.indexOf(good.level);
 	    return levelIndex === 0 ? diablo_invalid_index : levelIndex;
 	}();

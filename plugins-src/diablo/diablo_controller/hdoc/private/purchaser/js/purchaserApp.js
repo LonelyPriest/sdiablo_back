@@ -217,7 +217,7 @@ function stockConfg(angular){
 		    firm,
 		    brand,
 		    type,
-		    s_group, std_executive, safety_category, fabric, ptemplate, base)
+		    s_group, std_executive, safety_category, fabric, ptemplate, user, base)
 	    }).
 	    when('/good/wgood_update/:id?/:shop?/:from?', {
 		templateUrl: '/private/wgood/html/wgood_update.html',

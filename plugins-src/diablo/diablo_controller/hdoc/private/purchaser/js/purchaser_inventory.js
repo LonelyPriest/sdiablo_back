@@ -37,6 +37,7 @@ function purchaserInventoryNewCtrlProvide (
     $scope.float_mul         = diablo_float_mul;
     $scope.round             = diablo_round;
     $scope.full_years        = diablo_full_year;
+    $scope.std_units         = diablo_std_units;
     $scope.calc_row          = stockUtils.calc_row;
     $scope.yes_no            = stockUtils.yes_no();
     
@@ -347,13 +348,15 @@ function purchaserInventoryNewCtrlProvide (
 	add.firm_id      = src.firm_id;
 	add.year         = src.year; 
 	add.season       = src.season;
+	
 	// add.pid          = src.pid;
 	add.org_price    = src.org_price;
 	add.vir_price    = src.vir_price;
 	add.tag_price    = src.tag_price;
 	add.ediscount    = src.ediscount;
 	add.discount     = src.discount;
-	add.state        = src.state;
+	
+	add.state        = src.state; 
 	add.path         = src.path;
 	add.alarm_day    = src.alarm_day;
 	add.s_group      = src.s_group;
@@ -367,6 +370,8 @@ function purchaserInventoryNewCtrlProvide (
 	add.contailer   = src.contailer;
 	add.alarm_a     = src.alarm_a;
 
+	add.unit        = src.unit;
+	
 	add.level       = src.level;
 	add.executive   = src.executive_id;
 	add.category    = src.category_id;
@@ -629,6 +634,7 @@ function purchaserInventoryNewCtrlProvide (
 		ediscount   : diablo_set_float(add.ediscount),
 		discount    : diablo_set_float(add.discount),
 		state       : add.state,
+		unit        : add.unit,
 
 		contailer   : add.contailer,
 		alarm_a     : add.alarm_a,
@@ -1714,13 +1720,16 @@ function purchaserInventoryNewCtrlProvide (
 	image     : undefined,
 	contailer : -1,
 	alarm_a   : $scope.base_settings.stock_alarm_a,
-
+	
 	level     : $scope.base_settings.hide_level ? undefined : $scope.levels[1],
 	executive : $scope.base_settings.hide_executive ? undefined : $scope.std_executives[0],
 	category  : $scope.base_settings.hide_category ? undefined : $scope.categories[0],
-	fabrics   : $scope.base_settings.hide_fabric ? undefined : []
+	fabrics   : $scope.base_settings.hide_fabric ? undefined : [],
+
+	unit      : $scope.base_settings.hide_unit ? undefined : $scope.std_units[0]
 	// d_image   : true
     };
+    // console.log($scope.good);
     
 
     $scope.new_good = function(){
@@ -1750,6 +1759,8 @@ function purchaserInventoryNewCtrlProvide (
 	good.contailer = $scope.good.contailer;
 	good.alarm_a   = $scope.good.alarm_a;
 
+	good.unit  = angular.isDefined($scope.good.unit) ? $scope.std_units.indexOf($scope.good.unit) : undefined;
+	
 	good.level     = angular.isDefined($scope.good.level) ? $scope.levels.indexOf($scope.good.level) : undefined;
 	good.executive = angular.isObject($scope.good.executive)  ? $scope.good.executive.id : undefined;
 	good.category  = angular.isObject($scope.good.category) ? $scope.good.category.id : undefined;
@@ -1894,6 +1905,8 @@ function purchaserInventoryNewCtrlProvide (
 		    contailer: good.contailer,
 		    alarm_a:   good.alarm_a,
 
+		    unit     : good.unit,
+		    
 		    level:        good.level,
 		    executive_id: good.executive,
 		    category_id:  good.category,
@@ -3214,32 +3227,7 @@ function purchaserInventoryNewDetailCtrlProvide (
      * authen
      */
     var authen = new diabloAuthen(user.type, user.right, user.shop);
-    $scope.shop_right = authen.authenStockRight(); 
-    // $scope.shop_right = {
-    // 	update_w_stock: rightAuthen.authen_shop_action(
-    // 	    user.type,
-    // 	    rightAuthen.stock_action()['update_w_stock'],
-    // 	    user.shop
-    // 	),
-
-    // 	check_w_stock: rightAuthen.authen_shop_action(
-    // 	    user.type,
-    // 	    rightAuthen.stock_action()['check_w_stock'],
-    // 	    user.shop
-    // 	),
-
-    // 	delete_w_stock: rightAuthen.authen_shop_action(
-    // 	    user.type,
-    // 	    rightAuthen.stock_action()['delete_w_stock'],
-    // 	    user.shop
-    // 	),
-
-    // 	show_balance:  stockUtils.authen_rainbow(user.type, user.right, 'show_orgprice'),
-    // 	print_w_stock: stockUtils.authen_stock(user.type, user.right, 'print_w_stock_new'),
-    // 	print_w_barcode: stockUtils.authen_stock(user.type, user.right, 'print_w_barcode')
-    // };
-
-    // console.log($scope.shop_right);
+    $scope.shop_right = authen.authenStockRight();
     
     $scope.hidden = {base:true, balance:true, comment:true};
     $scope.toggle_base = function(){

@@ -503,6 +503,7 @@ sort_sale_new_detail(sort_by_color, {K1, K2, K3} = K, [{H}|T], DictNote, Acc) ->
     RPrice      = ?v(<<"rprice">>, H),
     RDiscount   = ?v(<<"rdiscount">>, H), 
     Total       = ?v(<<"total">>, H),
+    Unit        = ?v(<<"unit">>, H),
     
     Key = <<StyleNumber/binary, <<"-">>/binary, BrandId/binary, <<"-">>/binary, ShopId/binary>>, 
     case dict:find(Key, DictNote) of
@@ -530,6 +531,7 @@ sort_sale_new_detail(sort_by_color, {K1, K2, K3} = K, [{H}|T], DictNote, Acc) ->
 		  {<<"brand">>, Brand},
 		  {<<"type">>, Type},
 		  {<<"total">>, Total},
+		  {<<"unit">>, Unit},
 		  {<<"tagPrice">>, TagPrice},
 		  {<<"rprice">>, RPrice},
 		  {<<"rdiscount">>, RDiscount},

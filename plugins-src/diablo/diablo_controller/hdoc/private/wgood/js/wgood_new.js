@@ -4,13 +4,14 @@ function wgoodNewCtrlProvide(
     $scope, $timeout, diabloPattern, diabloUtilsService, diabloFilter,
     wgoodService, filterPromotion, filterFirm, filterBrand,
     filterType, filterSizeGroup,
-    filterStdExecutive, filterCategory, filterFabric, filterTemplate, base) {
+    filterStdExecutive, filterCategory, filterFabric, filterTemplate, user, base) {
     // console.log(filterPromotion);
     $scope.promotions = filterPromotion;
     
     $scope.seasons    = diablo_season2objects;
     $scope.full_years = diablo_full_year; 
-    $scope.sexs       = diablo_sex2object; 
+    $scope.sexs       = diablo_sex2object;
+    $scope.std_units  = diablo_std_units;
 
     // use to print tag
     $scope.levels         = [1,2,3];
@@ -19,7 +20,7 @@ function wgoodNewCtrlProvide(
     $scope.fabrics        = filterFabric;
     // $scope.template       = filterTemplate.length!==0 ? filterTemplate[0] : undefined;
 
-    console.log($scope.fabrics);
+    // console.log($scope.fabrics);
     
     $scope.pattern = {
 	style_number: diabloPattern.style_number,
@@ -35,26 +36,13 @@ function wgoodNewCtrlProvide(
     var set_float  = diablo_set_float;
     
     var hide_mode  = stockUtils.stock_in_hide_mode(diablo_default_shop, base); 
-    $scope.base_settings = {
-	m_sgroup    :stockUtils.multi_sizegroup(-1, base)
-	// hide_color  :stockUtils.to_integer(hide_mode.charAt(0)),
-	// hide_size   :stockUtils.to_integer(hide_mode.charAt(1)),
-	// hide_sex    :stockUtils.to_integer(hide_mode.charAt(2)),
-	// hide_expire :function() {
-	//     var h = hide_mode.charAt(3);
-	//     if ( diablo_empty_string === h ) return diablo_yes;
-	//     else return stockUtils.to_integer(h);
-	// }(),
-	
-	// hide_image  :function () {
-	//     var h = stockUtils.to_integer(hide_mode.charAt(4));
-	//     if ( diablo_empty_string === h ) return diablo_yes;
-	//     else return stockUtils.to_integer(h);
-	// }(), 
-    };
+    $scope.base_settings = {m_sgroup :stockUtils.multi_sizegroup(-1, base)};
     angular.extend($scope.base_settings, hide_mode); 
     console.log($scope.base_settings);
 
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.right = authen.authenStockRight();
+    
     // $scope.colors = [{type:"红色", tid:1
     // 		  colors:[{name:"深红", id:1},
     // 			  {name:"粉红", id:2}]},
@@ -91,45 +79,7 @@ function wgoodNewCtrlProvide(
 	    });
     };
 
-    $scope.is_same_good = false;
-    // var check_same_good = function(style_number, brand_name){
-    // 	// console.log(brand_name);
-    // 	var brand = get_brand(brand_name);
-    // 	if (angular.isUndefined(brand) || angular.isUndefined(style_number) || !style_number){
-    // 	    $scope.good.firm = undefined;
-    // 	    $scope.is_same_good = false;
-    // 	} else {
-    // 	    wgoodService.get_purchaser_good({
-    // 		style_number:style_number, brand:brand.id
-    // 	    }).then(function(result){
-    // 		console.log(result);
-    // 		if (angular.isDefined(result.style_number)){
-    // 		    $scope.good.firm = undefined;
-    // 		    $scope.is_same_good = true;
-    // 		} else {
-    // 		    $scope.good.firm = diablo_get_object(brand.firm_id, $scope.firms);
-    // 		    $scope.is_same_good = false;
-    // 		}
-		
-    // 	    })
-    // 	} 
-    // };
-
-    // var timeout_sytle_number = undefined;
-    // $scope.$watch("good.style_number", function(newValue, oldValue){
-    // 	if(angular.isUndefined(newValue)
-    // 	   || angular.equals(newValue, oldValue)){
-    // 	    return;
-    // 	};
-
-    // 	$timeout.cancel(timeout_sytle_number);
-    // 	timeout_sytle_number = $timeout(function(){
-    // 	    // console.log(newValue, oldValue);
-    // 	    check_same_good(newValue, $scope.good.brand);
-    // 	}, diablo_delay)
-    // });
-
-
+    $scope.is_same_good = false; 
     var timeout_brand = undefined;
     $scope.$watch("good.brand", function(newValue, oldValue){
 	if(angular.isUndefined(newValue)
@@ -448,12 +398,14 @@ function wgoodNewCtrlProvide(
 	discount  : 100,
 	alarm_day : -1,
 	year      : diablo_now_year(),
-	season    : $scope.seasons[stockUtils.valid_season(current_month)],
+	season    : $scope.seasons[stockUtils.valid_season(current_month)], 
 	
 	level     : $scope.levels[0],
 	executive : $scope.std_executives.length!==0 ? $scope.std_executives[0] : undefined,
 	category  : $scope.categories.length!==0 ? $scope.categories[0] : undefined,
-	fabric    : []
+	fabric    : [],
+	
+	unit      : $scope.std_units[0]
     };
 
     $scope.row_change_tag = function(good){
@@ -478,12 +430,14 @@ function wgoodNewCtrlProvide(
     $scope.new_good = function(){
 	console.log($scope.good);
 	console.log($scope.image);
-	var good       = angular.copy($scope.good);
+	var good = angular.copy($scope.good);
 	if (good.hasOwnProperty('fabric_desc')) delete good.fabric_desc;
 	
 	good.firm      = good.firm.id;
 	good.season    = good.season.id;
 	good.sex       = good.sex.id;
+	good.unit      = $scope.std_units.indexOf(good.unit);
+	
 	good.executive = stockUtils.invalid_firm(good.executive);
 	good.category  = stockUtils.invalid_firm(good.category);
 	good.fabric    = function() {
@@ -623,6 +577,7 @@ function wgoodNewCtrlProvide(
 	    alarm_day:   $scope.good.alarm_day,
 	    sizes:       $scope.good.sizes, 
 
+	    unit:        $scope.good.unit,
 	    level:       $scope.good.level,
 	    executive:   $scope.good.executive,
 	    category:    $scope.good.category,

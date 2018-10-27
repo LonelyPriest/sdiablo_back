@@ -57,6 +57,7 @@ var stockUtils = function(){
 
 	stock_in_hide_mode: function(shop, base) {
 	    var hide = diablo_base_setting("h_stock", shop, base, function(s) {return s}, diablo_stock_in_hide_mode);
+	    // console.log(hide);
 	    var default_hide = function(v) {
 		if (v === diablo_empty_string)
 		    return diablo_yes;
@@ -75,7 +76,9 @@ var stockUtils = function(){
 		hide_level:     default_hide(hide.charAt(8)),
 		hide_fabric:    default_hide(hide.charAt(9)),
 		hide_vprice:    default_hide(hide.charAt(10)),
-		hide_sprice:    default_hide(hide.charAt(11))
+		hide_sprice:    default_hide(hide.charAt(11)),
+		hide_discount:  default_hide(hide.charAt(12)),
+		hide_unit:      default_hide(hide.charAt(13))
 	    }
 	    
 	},

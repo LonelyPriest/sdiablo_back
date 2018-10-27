@@ -146,7 +146,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 		++ ?to_s(type(new)) ++ ","
 		++ "\"" ++ ?to_s(DateTime) ++ "\");",
 
-	    Sql3 = "update batchsaler set balance=balance+" ++ ?to_s(ShouldPay - HasPay) 
+	    Sql3 = "update batchsaler set balance=balance+" ++ ?to_s(ShouldPay + Verificate - HasPay) 
 		++ " where id=" ++ ?to_s(?v(<<"id">>, Account)),
 	    
 	    AllSql = Sql1 ++ [Sql2] ++ [Sql3],
@@ -283,8 +283,8 @@ bsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
     OrgPrice    = ?v(<<"org_price">>, Inventory),
     TagPrice    = ?v(<<"tag_price">>, Inventory),
     FDiscount   = ?v(<<"fdiscount">>, Inventory),
+    FPrice      = ?v(<<"fprice">>, Inventory), 
     RDiscount   = ?v(<<"rdiscount">>, Inventory),
-    FPrice      = ?v(<<"fprice">>, Inventory),
     RPrice      = ?v(<<"rprice">>, Inventory),
 
     Firm        = ?v(<<"firm">>, Inventory),
@@ -299,6 +299,7 @@ bsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
     Free        = ?v(<<"free">>, Inventory),
     Path        = ?v(<<"path">>, Inventory, []),
     Comment     = ?v(<<"comment">>, Inventory, []),
+    Unit        = ?v(<<"unit">>, Inventory, 0),
 
     C1 =
 	fun() ->
@@ -336,8 +337,8 @@ bsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
 	 
 	     "insert into batch_sale_detail("
 		 "rsn, style_number, brand, merchant, shop, type, sex, s_group, free"
-		 ", season, firm, year, in_datetime, total"
-		 ", org_price, ediscount, tag_price, fdiscount, rdiscount, fprice, rprice"
+		 ", season, firm, year, in_datetime, total, unit"
+		 ", org_price, ediscount, tag_price, fdiscount, fprice, rdiscount, rprice"
 		 ", path, comment, entry_date) values("
 		 ++ "\"" ++ ?to_s(RSN) ++ "\","
 		 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
@@ -353,15 +354,16 @@ bsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
 		 ++ ?to_s(Year) ++ ","
 		 ++ "\'" ++ ?to_s(InDatetime) ++ "\'," 
 		 ++ ?to_s(Total) ++ ","
+		 ++ ?to_s(Unit) ++ ","
 	 
 		 ++ ?to_s(ValidOrgPrice) ++ ","
 		 ++ ?to_s(ValidEDiscount) ++ ","
 		 ++ ?to_s(TagPrice) ++ "," 
 		 ++ ?to_s(FDiscount) ++ ","
-		 ++ ?to_s(RDiscount) ++ ","
 		 ++ ?to_s(FPrice) ++ ","
+		 ++ ?to_s(RDiscount) ++ "," 
 		 ++ ?to_s(RPrice) ++ ","
-
+		 
 		 ++ "\"" ++ ?to_s(Path) ++ "\","
 		 ++ "\"" ++ ?to_s(Comment) ++ "\","
 		 ++ "\"" ++ ?to_s(Datetime) ++ "\")";
@@ -370,9 +372,9 @@ bsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
 		 ++ ", org_price=" ++ ?to_s(OrgPrice)
 		 ++ ", tag_price=" ++ ?to_s(TagPrice)
 		 ++ ", fdiscount=" ++ ?to_s(FDiscount)
-		 ++ ", rdiscount=" ++ ?to_s(RDiscount)
-		 ++ ", fprice=" ++ ?to_s(FPrice)
-		 ++ ", rprice=" ++ ?to_s(RPrice) 
+		 ++ ", fprice=" ++ ?to_s(FPrice) 
+	     %% ++ ", rdiscount=" ++ ?to_s(RDiscount)
+	     %% ++ ", rprice=" ++ ?to_s(RPrice) 
 		 ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
 		 ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 		 ++ " and brand=" ++ ?to_s(Brand);
@@ -560,7 +562,9 @@ sale_new(sale_new_detail, MatchMode, Merchant, Conditions, PageFun) ->
 	", a.year"
 	", a.s_group"
 	", a.free"
-	", a.total" 
+	", a.total"
+	", a.unit"
+	
 	", a.org_price"
 	", a.ediscount"
 	", a.tag_price"
@@ -568,6 +572,7 @@ sale_new(sale_new_detail, MatchMode, Merchant, Conditions, PageFun) ->
 	", a.rdiscount"
 	", a.fprice"
 	", a.rprice"
+	
 	", a.in_datetime"
 	", a.path"
 	", a.comment"
@@ -595,7 +600,9 @@ sale_new(sale_new_detail, MatchMode, Merchant, Conditions, PageFun) ->
 	", b.year"
 	", b.s_group"
 	", b.free"
-	", b.total" 
+	", b.total"
+	", b.unit"
+	
 	", b.org_price"
 	", b.ediscount"
 	", b.tag_price"
@@ -603,6 +610,7 @@ sale_new(sale_new_detail, MatchMode, Merchant, Conditions, PageFun) ->
 	", b.rdiscount"
 	", b.fprice"
 	", b.rprice"
+	
 	", b.in_datetime"
 	", b.path"
 	", b.comment"

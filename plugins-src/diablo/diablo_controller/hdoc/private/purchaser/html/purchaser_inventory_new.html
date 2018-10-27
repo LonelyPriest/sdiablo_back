@@ -244,9 +244,7 @@
 	  <uib-tabset>
 	    <uib-tab active="tab_active[0].active"
 		 select="focus.style_number=false; auto_focus('style_number')">
-	      <tab-heading>
-	      	入库<i class="glyphicon glyphicon-plus fg-red"></i>
-	      </tab-heading>
+	      <tab-heading>入库<i class="glyphicon glyphicon-plus fg-red"></i></tab-heading>
 	      <!--BEGIN panel-->
 	      <div class="panel panel-default">
 		<div class="table-responsive diablo-table">
@@ -266,7 +264,7 @@
 			<th x-ng-if="base_settings.t_trace" class="text-center">库存</th> 
 			
 			<th class="text-center">吊牌价</th>
-			<th class="text-center">折扣</th>
+			<th x-ng-if="!base_settings.hide_discount" class="text-center">折扣</th>
 			
 			<th x-ng-if="stock_right.show_orgprice"
 			    class="text-center">进价</th>
@@ -335,10 +333,8 @@
 			  </form>
 			</td>
 			
-			<td class="col-md-1 vert-align">
-			  <span x-ng-if="!inv.$new && !inv.update_directory">
-			    {{inv.discount}}
-			  </span> 
+			<td x-ng-if="!base_settings.hide_discount" class="col-md-1 vert-align">
+			  <span x-ng-if="!inv.$new && !inv.update_directory">{{inv.discount}}</span> 
 			  <form name="inv.form.discount"
 				x-ng-if="inv.$new && inv.free_color_size || inv.update_directory">
 		    	    <div ng-class="{'has-error':inv.form.discount.$invalid
@@ -562,9 +558,7 @@
 		   key="120"
 		   go="new_good()">
 		<div class="form-group diablo-good-form-group">
-		  <label class="col-sm-3 col-md-3 control-label">
-		    款号
-		  </label>
+		  <label class="col-sm-3 col-md-3 control-label">货号</label>
 		  <div class="col-sm-6 col-md-6"> 
 		    <div class="input-group">
 		      <div x-ng-class="{'has-error':form.gForm.style_number.$invalid
@@ -609,9 +603,7 @@
 
 		<!--brand-->
 		<div class="form-group diablo-good-form-group">
-		  <label class="col-sm-3 col-md-3 control-label">
-		    品牌
-		  </label>
+		  <label class="col-sm-3 col-md-3 control-label">品牌</label>
 		  <div class="col-sm-6 col-md-6"> 
 		    <div class="input-group">
 		      <div x-ng-class="{'has-error':form.gForm.brand.$invalid && !form.gForm.brand.$pristine
@@ -770,7 +762,7 @@
 		  </div> 
 		</div> 
 		
-		<div class="form-group diablo-good-form-group">
+		<div x-ng-if="!base_settings.hide_discount"  class="form-group diablo-good-form-group">
 		  <label class="col-sm-3 col-md-3 control-label">折扣</label>
 		  <div class="col-sm-6 col-md-6"> 
 		    <div class="input-group">
@@ -899,6 +891,16 @@
 		      <span class="fg-red">整数或-1，-1表示无退货期限</span>
 		    </div>
 		  </div>
+		</div>
+
+		<div x-ng-if="!base_settings.hide_unit" class="form-group diablo-good-form-group">
+		  <label class="col-sm-3 col-md-3 control-label">计量单位</label>
+		  <div class="col-sm-6 col-md-6"> 
+		    <select class="form-control"
+			    x-ng-model="good.unit"
+			    x-ng-options="u for u in std_units">
+		    </select>
+		  </div> 
 		</div>
 
 		<div x-ng-if="!base_settings.hide_level" class="form-group diablo-good-form-group">

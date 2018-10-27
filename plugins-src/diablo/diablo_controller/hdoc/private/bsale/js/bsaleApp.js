@@ -129,6 +129,7 @@ function bsaleConfig(angular){
 
     bsaleApp.service("bsaleService", function($http, $resource, dateFilter){
 	this.error = {
+	    2180: "库存不足，请选择另外货品！！",
 	    2190: "该款号库存不存在！！请确认本店是否进货该款号！！",
 	    2192: "客户或营业员不存在，请建立客户或营业员资料！！",
 	    2193: "该款号吊牌价小于零，无法出售，请定价后再出售！！",
@@ -136,7 +137,8 @@ function bsaleConfig(angular){
 	    2195: "该条码对应的库存不存在，请确认条码是否正确，或通过款号模式开单！！",
 	    2196: "非法条码，条码长度不小于9，请输入正确的条码值！！",
 	    2401: "店铺打印机不存在或打印处理暂停状态！！",
-
+	    
+	    2705: "应付款项与开单项计算有不符！！",
 	    2708: "系统时间与服务器时间相差大于30分钟， 请检查系统时间或重新操作！！",
 	    2712: "货品数量校验不通过，请核对该货品数量后再导入！！", 
 	    2699: "修改前后信息一致，请重新编辑修改项！！",
@@ -481,9 +483,12 @@ function bsaleNewProvide(
 	$scope.select.abs_total    = 0;
 	$scope.select.comment      = undefined;
 	
-	$scope.select.datetime     = $scope.today(); 
+	$scope.select.datetime     = $scope.today();
+	if ($scope.setting.semployee)
+	    $scope.select.employee = undefined;
+	
 	$scope.disable_refresh     = true;
-	$scope.has_saved           = false;
+	$scope.has_saved           = false; 
 	
 	$scope.focus_good_or_barcode();
 	$scope.bsaleStorage.reset();
@@ -597,7 +602,8 @@ function bsaleNewProvide(
 	add.ediscount    = src.ediscount;
 	add.tag_price    = src.tag_price; 
 	add.discount     = src.discount;
-	
+
+	add.unit         = src.unit;
 	add.path         = src.path; 
 	add.s_group      = src.s_group;
 	add.free         = src.free;
@@ -645,7 +651,7 @@ function bsaleNewProvide(
 
 	// invalid barcode
 	if (!barcode.cuted || !barcode.correct) {
-	    dialog.set_error("批发开单", 2196);
+	    dialog.response(false, "销售开单", "开单失败：" + bsaleService.error[2196]);
 	    return;
 	}
 	
@@ -653,13 +659,13 @@ function bsaleNewProvide(
 	    console.log(result);
 	    if (result.ecode === 0) {
 		if (diablo_is_empty(result.stock)) {
-		    dialog.set_error("批发开单", 2195);
+		    dialog.response(false, "销售开单", "开单失败：" + bsaleService.error[2195]);
 		} else {
 		    result.stock.full_bcode = barcode.correct;
 		    $scope.on_select_good(result.stock);
 		}
 	    } else {
-		dialog.set_error("批发开单", result.ecode);
+		dialog.response(false, "销售开单", "开单失败：" + bsaleService.error[2195]);
 	    }
 	});
 	
@@ -724,10 +730,7 @@ function bsaleNewProvide(
 	    return;
 	};
 	
-	var setv = diablo_set_float;
-	var seti = diablo_set_integer;
-	var sets = diablo_set_string;
-	
+	var sets = diablo_set_string; 
 	var added = [];
 	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    var add = $scope.inventories[i];
@@ -772,10 +775,11 @@ function bsaleNewProvide(
 		    ediscount   : add.ediscount,
 		    tag_price   : add.tag_price,
 		    fprice      : add.fprice,
-		    rprice      : add.rprice,
 		    fdiscount   : add.fdiscount,
+		    rprice      : add.rprice,
 		    rdiscount   : add.rdiscount,
 		    stock       : add.total,
+		    unit        : add.unit,
 		    
 		    path        : sets(add.path), 
 		    sizes       : add.sizes,
@@ -797,12 +801,12 @@ function bsaleNewProvide(
 	    comment:        sets($scope.select.comment),
 	    
 	    // balance:        $scope.select.surplus, 
-	    cash:           setv($scope.select.cash),
-	    card:           setv($scope.select.card),
-	    wxin:           setv($scope.select.wxin), 
-	    verificate:     setv($scope.select.verificate), 
+	    cash:           bsaleUtils.to_float($scope.select.cash),
+	    card:           bsaleUtils.to_float($scope.select.card),
+	    wxin:           bsaleUtils.to_float($scope.select.wxin), 
+	    verificate:     bsaleUtils.to_float($scope.select.verificate), 
 	    
-	    should_pay:     setv($scope.select.should_pay),
+	    should_pay:     bsaleUtils.to_float($scope.select.should_pay),
 	    has_pay:        $scope.select.has_pay,
 	    
 	    total:          $scope.select.total, 
@@ -827,15 +831,19 @@ function bsaleNewProvide(
 	    
 	    if (result.ecode === 0){
 		$scope.select.rsn = result.rsn; 
-		// print 
+		// print
+		dialog.response_with_callback(
+		    true,
+		    "销售开单", "开单成功，单号：" + result.rsn + ", 请等待审核...",
+		    undefined,
+		    function() {$scope.refresh()});
 	    } else {
 		dialog.response_with_callback(
 	    	    false,
-		    "批发开单",
+		    "销售开单",
 		    "开单失败：" + bsaleService.error[result.ecode],
 		    undefined,
-		    function(){$scope.has_saved = false});
-		
+		    function(){$scope.has_saved = false}); 
 	    } 
 	})
     };
@@ -845,7 +853,8 @@ function bsaleNewProvide(
 	$scope.select.has_pay += bsaleUtils.to_float($scope.select.cash); 
 	$scope.select.has_pay += bsaleUtils.to_float($scope.select.card);
 	$scope.select.has_pay += bsaleUtils.to_float($scope.select.wxin);
-	$scope.select.has_pay -= bsaleUtils.to_float($scope.select.verificate);
+	$scope.select.has_pay += bsaleUtils.to_float($scope.select.verificate);
+	$scope.select.has_pay = bsaleUtils.to_decimal($scope.select.has_pay);
     };
     
     $scope.$watch("select.cash", function(newValue, oldValue){
@@ -1003,9 +1012,9 @@ function bsaleNewProvide(
 	
 	// check stock total 
 	if ($scope.setting.check_sale && free_stock_not_enought(inv)) {
-	    // diabloUtilsService.set_error("销售开单", 2180); 
-	    var ERROR = require("diablo-batch-error"); 
-	    diabloUtilsService.request("批发开单", ERROR[2180], callback, true, undefined);
+	    // var ERROR = require("diablo-batch-error"); 
+	    // diabloUtilsService.request("批发开单", ERROR[2180], callback, true, undefined);
+	    diabloUtilsService.response(false, "销售开单", "开单失败：" + bsaleService.error[2180]);
 	} else {
 	    callback(false);
 	} 
@@ -1110,7 +1119,8 @@ function bsaleNewProvide(
 		    
 		    var after_add = function(){
 			if ($scope.setting.check_sale && cs_stock_not_enought(inv)) {
-			    diabloUtilsService.set_error("批发开单", 2180);
+			    // diabloUtilsService.set_error("批发开单", 2180);
+			    diabloUtilsService.response(false, "销售开单", "开单失败：" + bsaleService.error[2180]);
 			} else {
 			    inv.$edit = true;
 			    inv.$new = false;
@@ -2106,10 +2116,11 @@ function bsaleNewNoteCtrlProvide(
 function bsalePrintCtrlProvide(
     $scope, $routeParams, bsaleService, diabloFilter, diabloPattern, diabloUtilsService,
     filterEmployee, filterRegion, filterDepartment, user, base){
-    $scope.shops        = user.sortShops;
+    $scope.shops       = user.sortShops;
     $scope.employees   = filterEmployee;
     $scope.regions     = filterRegion;
     $scope.departments = filterDepartment;
+    $scope.std_units   = diablo_std_units;
     
     var dialog = diabloUtilsService;
 
@@ -2147,7 +2158,6 @@ function bsalePrintCtrlProvide(
 	    angular.forEach(result.note, function(n) {
 		n.order_id = order_id;
 		n.calc = bsaleUtils.to_decimal(n.rprice * n.total);
-		
 		$scope.notes.push(n);
 		$scope.total += n.total;
 		$scope.total_rprice = bsaleUtils.to_decimal($scope.total_rprice + n.calc);

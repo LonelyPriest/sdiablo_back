@@ -100,8 +100,8 @@
 		  <th x-ng-if="setting.barcode_mode" class="text-center">条码</th>
 		  <th class="text-center">货号/品类</th>
 		  <th x-ng-if="setting.check_sale" class="text-center">库存</th> 
-		  <th class="text-center">吊牌价</th>
-		  <th class="text-center">折扣</th> 
+		  <!-- <th class="text-center">参考价</th> -->
+		  <!-- <th class="text-center">折扣</th>  -->
 		  <th class="text-center">单价</th>
 		  <th class="text-center">数量</th>
 		  <!-- <th class="text-center">成交价</th> -->
@@ -124,27 +124,27 @@
 		  </td> 
 		  
 		  <td x-ng-if="setting.check_sale" class="vert-align">{{inv.total}}</td> 
-		  <td class="col-md-1 vert-align">{{inv.tag_price}}</td>
-
-		  <!--discount-->
-		  <td x-ng-if="!right.m_discount" class="vert-align">{{inv.fdiscount}}</td>
+		  <!-- <td class="col-md-1 vert-align">{{inv.tag_price}}</td> -->
 		  
-		  <td x-ng-if="right.m_discount" class="col-md-1 vert-align">
-		    <div x-ng-if="!inv.free_update">{{inv.fdiscount}}</div>
-		    <form name="inv.form.fdiscount"
-			  x-ng-if="!inv.$new && inv.free_update">
-		      <div ng-class="{'has-error': inv.form.fdiscount.$invalid && !inv.form.fdiscount.$pristine}">
-			<input class="form-control"
-			       type="number" step="0.1"
-			       required
-			       disable-key
-			       x-ng-edit
-			       x-ng-enter="inv.form.fdiscount.$invalid || auto_save_free(inv)"
-			       x-ng-pattern="pattern.discount"
-			       x-ng-model="inv.fdiscount" />
-		      </div>
-		    </form>
-		  </td>
+		  <!--discount-->
+		  <!-- <td x-ng-if="!right.m_discount" class="vert-align">{{inv.fdiscount}}</td> -->
+		  
+		  <!-- <td x-ng-if="right.m_discount" class="col-md-1 vert-align"> -->
+		  <!--   <div x-ng-if="!inv.free_update">{{inv.fdiscount}}</div> -->
+		  <!--   <form name="inv.form.fdiscount" -->
+		  <!-- 	  x-ng-if="!inv.$new && inv.free_update"> -->
+		  <!--     <div ng-class="{'has-error': inv.form.fdiscount.$invalid && !inv.form.fdiscount.$pristine}"> -->
+		  <!-- 	<input class="form-control" -->
+		  <!-- 	       type="number" step="0.1" -->
+		  <!-- 	       required -->
+		  <!-- 	       disable-key -->
+		  <!-- 	       x-ng-edit -->
+		  <!-- 	       x-ng-enter="inv.form.fdiscount.$invalid || auto_save_free(inv)" -->
+		  <!-- 	       x-ng-pattern="pattern.discount" -->
+		  <!-- 	       x-ng-model="inv.fdiscount" /> -->
+		  <!--     </div> -->
+		  <!--   </form> -->
+		  <!-- </td> -->
 		  
 		  <td x-ng-if="!right.m_price" class="vert-align">
 		    <div x-ng-if="(inv.fprice===0 || inv.fprice)">{{inv.fprice}}</div>
@@ -168,9 +168,6 @@
 		    </form>
 		  </td>
 		  
-		  <!-- <td class="vert-align">{{inv.total}}</td> -->
-
-		  <!-- sell count-->
 		  <td class="vert-align col-md-1">
 		    <div x-ng-if="!inv.free_update">
 		      <span x-ng-bind="inv.sell"></span> 
@@ -191,9 +188,7 @@
 		      </div>
 		    </form>
 		  </td>
-
-		  <!-- <td class="vert-align"><span class="fg-red">{{inv.rprice}}<span></td>  -->
-		  <!-- <td class="vert-align"><span class="fg-red">{{inv.rdiscount}}</span></td>  -->
+		  
 		  <td class="vert-align"><span>{{inv.calc}}</span></td>
 		  <td class="vert-align">
 		    <div x-ng-if="!inv.free_color_size">
@@ -202,15 +197,7 @@
 		    <div x-ng-if="inv.free_color_size">-</div>
 		  </td>
 		  
-		  <td class="text-left vert-align">
-		    <!-- <div x-ng-if="inv.$new"> -->
-		    <!--   <div class="btn-group">  -->
-		    <!-- 	<button class="btn diablo-input-button btn-warning" -->
-		    <!-- 		x-ng-click="delete_inventory_head()">删除 -->
-		    <!-- 	  <i class="glyphicon glyphicon-pushpin"></i></button> -->
-		    <!--   </div> -->
-		    <!-- </div> -->
-
+		  <td class="text-left vert-align"> 
 		    <div x-ng-if="inv.$edit">
 		      <div class="btn-group" x-ng-if="!inv.free_update">
 			<!-- <button class="btn diablo-input-button btn-primary" -->
@@ -255,7 +242,7 @@
 		  <td x-ng-if="setting.barcode_mode"></td>
 		  <td></td>
 		  <td x-ng-if="setting.check_sale"></td>
-		  <td colspan=3></td>
+		  <td></td>
 		  <td class="vert-align">{{select.abs_total}}</td>
 		  <!-- <td></td> -->
 		  <!-- <td></td> -->
@@ -320,7 +307,7 @@
 	  <div class="col-xs-12 col-md-12">
 	    <div class="input-group">
 	      <span class="input-group-addon">
-	  	<i class="glyphicon glyphicon-map-marker fg-red"></i>导购
+	  	<i class="glyphicon glyphicon-map-marker fg-red"></i>员工
 	      </span>
 	      <input class="form-control" type="text"
 	      	     x-ng-model="select.employee"
@@ -442,8 +429,8 @@
     	    </span>
 
     	    <span x-ng-if="select.department">
-	      <span>部门：<span class="fg-blue">
-		  <strong>{{select.department.name}}</strong></span></span>&nbsp&nbsp
+	      <!-- <span>部门：<span class="fg-blue"> -->
+	      <!-- 	  <strong>{{select.department.name}}</strong></span></span>&nbsp&nbsp -->
     	      <span>负责人：</span><span class="fg-red">
 		<strong>{{select.department.master.name}}</strong>
 	      </span>&nbsp&nbsp

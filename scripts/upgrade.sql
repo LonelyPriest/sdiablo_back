@@ -465,3 +465,8 @@ alter table w_inventory add column gift TINYINT default 0 after state;
 alter table w_inventory modify column state TINYINT default 0;
 alter table w_inventory_good add column state TINYINT default 0 after alarm_day;
 update w_inventory set gift=1 where state=2;
+
+-- 2018-10-26
+alter table w_inventory_good add column unit TINYINT default 0 after alarm_day;
+alter table w_inventory add column unit TINYINT default 0 after alarm_day;
+drop table batch_sale_detail;

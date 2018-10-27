@@ -504,6 +504,7 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
     EDiscount      = ?v(<<"ediscount">>, Attrs),
     Discount       = ?v(<<"discount">>, Attrs),
     AlarmDay       = ?v(<<"alarm_day">>, Attrs),
+    Unit           = ?v(<<"unit">>, Attrs),
     
     Colors         = ?v(<<"color">>, Attrs),
     SizeGroup      = ?v(<<"s_group">>, Attrs),
@@ -535,7 +536,8 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 	++ ?utils:v(vir_price, float, VirPrice)
 	++ ?utils:v(tag_price, float, TagPrice)
 	++ ?utils:v(ediscount, integer, EDiscount) 
-	++ ?utils:v(discount, integer, Discount),
+	++ ?utils:v(discount, integer, Discount)
+	++ ?utils:v(unit, integer, Unit),
 
     UpdateFree = case ?utils:v(color, string, Colors) of
 		     [] -> [];
@@ -828,6 +830,7 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 			    proplists,
 			    comma,
 			    Update2
+			    ++ ?utils:v(unit, integer, Unit)
 			    ++ ?utils:v(path, string, Path)
 			    ++ ?utils:v(firm, integer, Firm))
 		      ++ " where "

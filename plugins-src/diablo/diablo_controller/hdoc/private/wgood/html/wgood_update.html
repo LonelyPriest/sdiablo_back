@@ -223,7 +223,7 @@
 	      </div>
 	    </div>
 	    
-	    <div x-ng-if="stock_right.show_orgprice" class="form-group">
+	    <div class="form-group">
 	      <label class="col-sm-3 col-md-3 control-label">吊牌价</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
@@ -234,6 +234,7 @@
 			 required
 			 disable-key
 			 x-ng-edit
+			 readonly
 			 placeholder="吊牌价，支持二位小数"
 			 x-ng-pattern="pattern.price"
 			 x-ng-readonly="!stock_right.update_tprice"
@@ -248,19 +249,19 @@
 	      </div>
 	    </div>
 
-	    <div x-ng-if="stock_right.show_orgprice" class="form-group">
+	    <div x-ng-if="base_settings.hide_discount" class="form-group">
 	      <label class="col-sm-3 col-md-3 control-label">折扣</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
 		  <!-- <span class="input-group-addon">折扣</span>  -->
-		  <div ng-class="{'has-error':goodForm.discount.$invalid
-				 && !goodForm.discount.$pristine}">
+		  <div ng-class="{'has-error':goodForm.discount.$invalid && !goodForm.discount.$pristine}">
 		    <input type="number" step="0.1"
 			   class="form-control"
 			   name="discount"
 			   required
 			   disable-key
 			   x-ng-edit
+			   readonly
 			   placeholder="支持二位小数，无折扣请输入100"
 			   x-ng-pattern="pattern.discount"
 			   x-ng-readonly="!stock_right.update_tprice"
@@ -400,6 +401,16 @@
 	      </div>
 	    </div>
 
+	    <div x-ng-if="!base_settings.hide_unit" class="form-group diablo-good-form-group">
+	      <label class="col-sm-3 col-md-3 control-label">计量单位</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<select class="form-control"
+			x-ng-model="good.unit"
+			x-ng-options="u for u in std_units">
+		</select>
+	      </div> 
+	    </div>
+	    
 	    <div x-ng-if="!setting.hide_level" class="form-group diablo-good-form-group">
 	      <label class="col-sm-3 col-md-3 control-label">等级</label>
 	      <div class="col-sm-6 col-md-6"> 

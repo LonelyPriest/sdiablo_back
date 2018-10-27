@@ -679,6 +679,7 @@ create table w_inventory_good
     discount         DECIMAL(4, 1), -- max: 100, discount of sell
     path             VARCHAR(255) default null, -- the image path
     alarm_day        TINYINT default -1,  -- the days of alarm
+    unit             TINYINT default 0,  -- the days of alarm
     state            TINYINT default -1, -- 3:promotion
     --
     contailer        INTEGER default -1,
@@ -733,7 +734,8 @@ create table w_inventory
     discount         DECIMAL(4, 0), -- max: 100
     
     path             VARCHAR(255) default null, -- the image path
-    alarm_day        TINYINT default -1,  -- the days of alarm 
+    alarm_day        TINYINT default -1,  -- the days of alarm
+    unit             TINYINT default 0,  -- the days of alarm 
     sell             INTEGER default 0,  -- how many selled
 
     --
@@ -1519,18 +1521,17 @@ create table batch_sale_detail(
     in_datetime    DATETIME default 0,
     
     total          INTEGER default 0,
-    promotion      INTEGER not null default -1, -- promotion
-    score          INTEGER not null default -1, -- score
+    unit           TINYINT default 0, 
 
-    org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
+    org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
     ediscount      DECIMAL(4, 1)  default 0, -- max: 100
     
-    tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance 
+    tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
     fdiscount      DECIMAL(4, 1), -- max: 100
+    fprice         DECIMAL(10, 2) default 0, -- max: 99999999.99
     rdiscount      DECIMAL(4, 1), -- max: 100
-    fprice         DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
-    rprice         DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
-    
+    rprice         DECIMAL(10, 2) default 0, -- max: 99999999.99
+        
     path           VARCHAR(255) default null, -- the image path
     comment        VARCHAR(127) default null,
     entry_date     DATETIME default 0,
