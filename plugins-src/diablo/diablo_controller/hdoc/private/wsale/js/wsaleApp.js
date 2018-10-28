@@ -576,11 +576,9 @@ function wsaleNewProvide(
     };
     
     if ($scope.p_mode($scope.select.shop.id) === diablo_frontend){
-	if (needCLodop()) loadCLodop();
-	
+	if (needCLodop()) loadCLodop(); 
 	$scope.comments = wsaleUtils.comment($scope.select.shop.id, base);
 	$scope.p_num = wsaleUtils.print_num($scope.select.shop.id, base);
-	// console.log($scope.comments, $scope.p_num);
     }
     
     $scope.get_employee = function(){

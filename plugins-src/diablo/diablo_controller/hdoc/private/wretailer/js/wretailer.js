@@ -1317,7 +1317,7 @@ function wretailerThresholdCardDetailCtrlProvide(
 		    }).then(function(state) {
 			console.log(state);
 			if (state.ecode === 0) {
-			    var p_num = retailerUtils.print_num(params.shop.id, base); 
+			    var p_num = retailerUtils.print_num(params.shop.id, base);
 			    dialog.response_with_callback(
 				true,
 				title, title + "消费成功！！"

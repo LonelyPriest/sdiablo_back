@@ -14,7 +14,8 @@ var retailerUtils = function(){
 	},
 
 	print_num: function(shop, base){
-	    return diablo_base_setting("pum", shop, base, parseInt, 1);
+	    var p = diablo_base_setting("pum", shop, base, function(s) {return s}, diablo_print_num);
+	    return retailerUtils.to_integer(p.charAt(1));
 	},
 	
 	to_integer: function(v){

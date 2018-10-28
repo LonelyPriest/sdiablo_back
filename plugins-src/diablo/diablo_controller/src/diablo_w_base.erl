@@ -785,7 +785,7 @@ code_change(_OldVsn, State, _Extra) ->
 %%% Internal functions
 %%%===================================================================
 sys_config(shop) ->
-    [{"pum",             "打印份数",            "1",  "0"},
+    [{"pum",             "打印份数",            "11",  "0"},
      {"ptype",           "打印方式",            "1",  "0"}, %% 0: front; 1:backend
      {"pim_print",       "立即打印",            "0",  "0"},
 
@@ -798,7 +798,7 @@ sys_config(shop) ->
      {"d_sex",           "默认入库性别",         "0",   "0"},
      {"m_sale",          "允许负数退货",         "1",   "0"},
      {"round",           "四舍五入",             "1",   "0"},
-     {"h_stock",         "入库字段隐藏",         "00011011111111", "0"},
+     {"h_stock",         "入库字段隐藏",         "00011011111101", "0"},
      
      {"s_member",        "会员独立",             "0",   "0"},
      {"s_employee",      "营业员必选",           "0",   "0"},
@@ -822,7 +822,7 @@ sys_config() ->
     DefaultDate = lists:flatten(io_lib:format("~4..0w-~2..0w-~2..0w", [YY, MM, DD])),
     
     %%         ename,             cname,                 value,type
-    Values = [{"pum",             "打印份数",            "1",  "0"},
+    Values = [{"pum",             "打印份数",            "11",  "0"},
 	      {"ptype",           "打印方式",            "1",  "0"}, %% 0: front; 1:backend
 	      {"pim_print",       "立即打印",            "0",  "0"},
 
@@ -859,7 +859,7 @@ sys_config() ->
 	      %% [11]: hide promotion price
 	      %% [12]: hide discount 
 	      %% [13]: hide unit
-	      {"h_stock",         "入库字段隐藏",         "00011011111111", "0"},
+	      {"h_stock",         "入库字段隐藏",         "00011011111101", "0"},
 
 	      
 	      %% {"h_color",         "隐藏颜色",             "0",   "0"},
