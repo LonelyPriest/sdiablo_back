@@ -34,8 +34,7 @@
 %%% API
 %%%===================================================================
 retailer(list, Merchant) ->
-    Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {list_retailer, Merchant, []});
+    retailer(list, Merchant, []); 
 retailer(list_sys, Merchant) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {list_retailer, Merchant, [{<<"type">>, ?SYSTEM_RETAILER}], []});

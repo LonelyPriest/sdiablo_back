@@ -126,6 +126,16 @@ var bsaleUtils = function(){
 	    return diablo_base_setting("type_sale", shop, base, parseInt, diablo_no);
 	},
 
+	comment: function(shop, base){
+	    var comments = [];
+	    for (var i=1; i<5; i++) {
+		var c= diablo_base_setting(
+		    "comment" + i.toString(), shop, base, function(v){return v}, "");
+		if (c) {comments.push({id:i, name:c})} 
+	    } 
+	    return comments;
+	},
+
 	get_login_employee:function(shop, loginEmployee, employees){
 	    var filterEmployees = employees.filter(function(e){
 		return e.shop === shop && e.state === 0;

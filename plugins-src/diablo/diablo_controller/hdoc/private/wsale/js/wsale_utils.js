@@ -271,7 +271,7 @@ var wsaleUtils = function(){
 
 	print_num: function(shop, base){
 	    var p = diablo_base_setting("pum", shop, base, function(s) {return s}, diablo_print_num);
-	    return stockUtils.to_integer(p.charAt(0)); 
+	    return wsaleUtils.to_integer(p.charAt(0)); 
 	},
 
 	round: function(shop, base){

@@ -459,7 +459,7 @@ parse_date(<<H, T/binary>>, P) ->
 
 parse_birth(<<>>, P) ->
     {pack_date(P), <<>>};
-parse_birth(<<".", T/binary>>, P) ->
+parse_birth(<<"-", T/binary>>, P) ->
     {pack_date(P), T};
 parse_birth(<<H, T/binary>>, P) ->
     parse_birth(T, <<P/binary, H>>).

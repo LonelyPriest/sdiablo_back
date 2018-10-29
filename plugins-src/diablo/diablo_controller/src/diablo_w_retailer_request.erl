@@ -27,8 +27,7 @@ action(Session, Req) ->
 
 action(Session, Req, {"list_w_retailer"}) ->
     ?DEBUG("list w_retailer with session ~p", [Session]), 
-    Merchant = ?session:get(merchant, Session),
-    
+    Merchant = ?session:get(merchant, Session), 
     ?utils:respond(
        batch, fun() -> ?w_retailer:retailer(list, Merchant)end, Req);
 
