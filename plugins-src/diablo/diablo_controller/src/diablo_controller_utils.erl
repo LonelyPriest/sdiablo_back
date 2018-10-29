@@ -114,6 +114,7 @@ date_before({Year, Month, Date}, Before) ->
 respond(batch, Fun, Req) ->
     case Fun() of
 	{ok, Values} ->
+	    %% ?DEBUG("value ~p", [Values]),
 	    ?MODULE:respond(200, batch, Req, Values);
 	{error, _Error} ->
 	    ?MODULE:respond(200, batch, Req, [])

@@ -21,23 +21,23 @@
       <!--BEGN portlet body--> 
       <div id="bsale_new" class="portlet-body">
 	<!--BEGIN panel-->
-	<h3 style="text-align:center">
+	<h2 style="text-align:center">
 	  <span x-ng-bind=detail.shop.name></span>
 	  <span x-ng-if="detail.type===0"></span>
 	  <span x-ng-if="detail.type===1">（退货）</span> 
-	</h3> 
-	<h5>
+	</h2> 
+	<h4>
 	  <div style="text-align:center">
 	    <span>客户：<span x-ng-bind=detail.bsaler></span></span> 
 	    &nbsp&nbsp&nbsp&nbsp<span>日期：<span x-ng-bind=detail.entry_date></span></span>
 	    &nbsp&nbsp&nbsp&nbsp<span>单号：<span x-ng-bind=detail.rsn></span></span>
 	  </div>
 	  <div style="text-align:center">
-	    <span>经手人：<span x-ng-bind=detail.employee.name></span></span>
+	    <span>业务员：<span x-ng-bind=detail.employee.name></span></span>
 	    <!-- &nbsp&nbsp&nbsp&nbsp<span>部门：<span x-ng-bind=detail.department.name></span></span> -->
 	    &nbsp&nbsp&nbsp&nbsp<span>负责人：<span x-ng-bind=detail.department.master.name></span></span>
 	  </div>
-	</h5>
+	</h4>
 	<div class="table-responsive">
 	  <table class="table table-bordered table-striped" style="margin-bottom:5px"> 
 	      <thead>
@@ -49,7 +49,8 @@
 		  <th class="text-center">数量</th>
 		  <th class="text-center">单价</th>
 		  <th class="text-center">单位</th>
-		  <th class="text-center">合计</th> 
+		  <th class="text-center">合计</th>
+		  <th class="text-center">备注</th> 
 		  
 		  <th x-ng-if="print_mode.both" class="text-center">小计</th>
 		  <th x-ng-if="print_mode.both" class="text-center">颜色</th>
@@ -67,6 +68,7 @@
 		  <td class="text-center">{{n.rprice}}</td>
 		  <td class="text-center">{{std_units[n.unit]}}</td>
 		  <td class="text-center">{{n.calc}}</td>
+		  <td class="text-center">{{n.comment}}</td>
 		  
 		  <td x-ng-if="print_mode.both" class="text-center">{{n.amount}}</td>
 		  <td x-ng-if="print_mode.both" class="text-center">{{n.color.cname}}</td>
@@ -78,6 +80,7 @@
 		  <td class="text-center" x-ng-bind=total></td>
 		  <td colspan="2"></td>
 		  <td class="text-center" x-ng-bind=total_rprice></td>
+		  <td></td>
 		</tr>
 	      </tbody> 
 	    </table> <!--END table--> 

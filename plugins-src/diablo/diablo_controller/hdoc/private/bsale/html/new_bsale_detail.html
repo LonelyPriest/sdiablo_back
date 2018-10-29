@@ -8,12 +8,12 @@
 
 	<div class="actions">
 	  <div class="btn-group btn-group-solid">
-	    <a type="button"
+	    <button x-ng-if="right.new_sale" type="button"
 	       class="btn green purple-stripe hidden-xxs"
 	       x-ng-click="goto_page('#/new_bsale')">开单
-	      <i class="glyphicon glyphicon-plus"></i></a>
+	      <i class="glyphicon glyphicon-plus"></i></button>
 	    
-	    <a type="button"
+	    <a x-ng-if="right.reject_sale" type="button"
 	       class="btn red purple-stripe hidden-xxs"
 	       x-ng-click="goto_page('#/reject_bsale')">退货
 	      <i class="glyphicon glyphicon-minus"></i></a>
@@ -148,29 +148,29 @@
 			明细<i class="glyphicon glyphicon-map-marker"></i>
 		      </button>
 
-		      <button x-ng-if="shop_right.update_w_sale && r.state!==1"
+		      <button x-ng-if="right.update_sale && r.state!==1"
 			      class="btn diablo-button yellow-crusta"
 			      x-ng-disabled="r.state===1"
 		      	      x-ng-click="update_sale(r)">修改
 			<i class="glyphicon glyphicon-edit"></i></button> 
 		      
-		      <button x-ng-if="shop_right.check_w_sale && r.state===0"
+		      <button x-ng-if="right.check_sale && r.state===0"
 			      class="btn diablo-button green"
 			      x-ng-disabled="r.state===1"
 		      	      x-ng-click="check_sale(r)">审核
 			<i class="glyphicon glyphicon-check"></i></button>
-		      <button x-ng-if="shop_right.check_w_sale && r.state===1"
+		      <button x-ng-if="right.check_sale && r.state===1"
 			      class="btn diablo-button red"
 			      x-ng-disabled="r.state===0"
 		      	      x-ng-click="uncheck_sale(r)">反审
 			<i class="glyphicon glyphicon-ban-circle"></i></button>
 		      
-		      <button x-ng-if="shop_right.check_w_sale && r.type===0 && r.state===0"
+		      <button x-ng-if="right.delete_sale && r.type===0 && r.state===0"
 			      class="btn diablo-button red"
 		      	      x-ng-click="delete_sale(r)">删除
 			<i class="glyphicon glyphicon-erase"></i></button>
 		      
-		      <button x-ng-if="r.state===1" class="btn diablo-button purple"
+		      <button x-ng-if="r.state===1 && right.print_sale" class="btn diablo-button purple"
 		      	      x-ng-click="print_sale(r)">打印
 			<i class="glyphicon glyphicon-print"></i></button>
 		      

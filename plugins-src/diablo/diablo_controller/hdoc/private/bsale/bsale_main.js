@@ -179,7 +179,7 @@ require([
     "diablo-pattern", "diablo-user-right", "diablo-authen-right",
     "diablo-login-out", "diablo-utils", "diablo-filter", 
     "bsale-utils", "diablo-batch-error", 
-    "bsaleApp", "load_bsale"
+    "bsaleApp", "update_bsale_detail"
 ], function($, angular) {
     $(function() {
 	angular.bootstrap(document, ["bsaleApp"]);

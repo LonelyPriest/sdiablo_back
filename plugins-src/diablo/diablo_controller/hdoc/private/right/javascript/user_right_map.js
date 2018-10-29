@@ -391,8 +391,6 @@ diabloAuthen.prototype.authenBatchSaleRight = function() {
     return {
 	master     :this.master,
 	show_orgprice  :this.showOrgprice(), 
-	update_w_sale  :this.updateSale(),
-	check_w_sale   :this.checkSale(),
 	show_stastic   :this.master,
 
 	new_sale       :this.authenBatchSale('new_batch_sale'),

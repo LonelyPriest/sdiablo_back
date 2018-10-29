@@ -81,40 +81,49 @@ action(Session, Req, {"get_batch_sale"}, Payload) ->
 	undefined ->
 	    ?utils:respond(200, Req, ?err(params_error, "get_batch_sale"));
 	RSN ->
-	    %% BaseSettings = ?w_report_request:get_setting(Merchant, ?DEFAULT_BASE_SETTING),
-	    %% <<PColorSize:1/binary, PColor:1/binary, PSize:1/binary, _/binary>> = 
-	    %% 	case ?w_report_request:get_config(<<"p_color_size">>, BaseSettings) of
-	    %% 	    [] -> ?to_s(?PRINT_DEFAULT_MODE);
-	    %% 	    <<"0">> -> ?to_s(?PRINT_DEFAULT_MODE);
-	    %% 	    _Value -> ?to_s(_Value)
-	    %% 	end,
+	    case ?v(<<"mode">>, Payload) of
+		0 -> %% print mode
+		    Merchant = ?session:get(merchant, Session), 
+		    Conditions = [{<<"rsn">>, RSN}],
+		    %% new
+		    {ok, Sale} = ?b_sale:bsale(get_sale, Merchant, Conditions),
+		    %% ?DEBUG("Sale ~p", [Sale]),
 
-	    
-	    Merchant = ?session:get(merchant, Session), 
-	    %% new
-	    {ok, Sale} = ?b_sale:bsale(get_sale, Merchant, RSN),
-	    %% ?DEBUG("Sale ~p", [Sale]),
-	    
-	    %% detail
-	    {ok, Detail} = ?b_sale:bsale(get_sale_new_detail, Merchant, RSN),
-	    %% ?DEBUG("Detail ~p", [Detail]),
-	    
-	    %% amount
-	    {ok, Notes} = ?b_sale:bsale(get_sale_new_note, Merchant, RSN),
-	    %% ?DEBUG("Notes ~p", [Notes]),
-	    
-	    Key = {<<"style_number">>, <<"brand_id">>, <<"shop_id">>},
-	    DictNewNote = sale_new_note(to_dict, Key, Notes, dict:new()), 
-	    %% ?DEBUG("dict note ~p", [dict:to_list(DictNewNote)]),
-	    
-	    Sort = sort_sale_new_detail(sort_by_color, Key, Detail, DictNewNote, []),
-	    %% ?DEBUG("sort ~p", [Sort]),
-	    
-	    ?utils:respond(200, object, Req,
-			   {[{<<"ecode">>, 0},
-			     {<<"detail">>, {Sale}},
-			     {<<"note">>, Sort}]
-			   })
+		    %% detail
+		    {ok, Detail} = ?b_sale:bsale(get_sale_new_detail, Merchant, Conditions),
+		    %% ?DEBUG("Detail ~p", [Detail]),
+
+		    %% amount
+		    {ok, Notes} = ?b_sale:bsale(get_sale_new_note, Merchant, Conditions),
+		    %% ?DEBUG("Notes ~p", [Notes]),
+
+		    Key = {<<"style_number">>, <<"brand_id">>, <<"shop_id">>},
+		    DictNewNote = sale_new_note(to_dict, Key, Notes, dict:new()), 
+		    %% ?DEBUG("dict note ~p", [dict:to_list(DictNewNote)]),
+
+		    Sort = sort_sale_new_detail(sort_by_color, Key, Detail, DictNewNote, []),
+		    %% ?DEBUG("sort ~p", [Sort]),
+
+		    ?utils:respond(200, object, Req,
+				   {[{<<"ecode">>, 0},
+				     {<<"detail">>, {Sale}},
+				     {<<"note">>, Sort}]
+				   });
+		1 -> %% update mode
+		    Merchant = ?session:get(merchant, Session),
+		    Conditions = [{<<"rsn">>, RSN}],
+		    
+		    %% new
+		    {ok, Sale} = ?b_sale:bsale(get_sale, Merchant, Conditions),
+		    %% ?DEBUG("Sale ~p", [Sale]), 
+		    %% detail
+		    {ok, Detail} = ?b_sale:bsale(get_sale_new_transe, Merchant, Conditions), 
+		    ?utils:respond(200, object, Req,
+				   {[{<<"ecode">>, 0},
+				     {<<"sale">>, {Sale}},
+				     {<<"detail">>, Detail}]
+				   })
+	    end
     end;
 
 action(Session, Req, {"list_batch_sale"}, Payload) ->
@@ -232,6 +241,25 @@ action(Session, Req, {"list_batch_sale_new_detail"}, Payload) ->
 		{error, Error} ->
 		    ?utils:respond(200, Req, Error)
 	    end
+    end;
+
+action(Session, Req, {"update_batch_sale"}, Payload) ->
+    ?DEBUG("update_w_sale with session ~p~npaylaod ~p", [Session, Payload]), 
+    Merchant = ?session:get(merchant, Session),
+    Invs            = ?v(<<"inventory">>, Payload, []),
+    {struct, Base}  = ?v(<<"base">>, Payload),
+    RSN             = ?v(<<"rsn">>, Base),
+    
+    case ?b_sale:bsale(get_sale, Merchant, [{<<"rsn">>, RSN}]) of
+	{ok, OldBase} -> 
+	    case ?b_sale:bsale(update_sale, Merchant, lists:reverse(Invs), {Base, OldBase}) of
+		{ok, RSN} -> 
+		    ?utils:respond(200, Req, ?succ(update_w_sale, RSN), [{<<"rsn">>, ?to_b(RSN)}]); 
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end;
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
     end;
 
 %%--------------------------------------------------------------------------------
@@ -504,6 +532,8 @@ sort_sale_new_detail(sort_by_color, {K1, K2, K3} = K, [{H}|T], DictNote, Acc) ->
     RDiscount   = ?v(<<"rdiscount">>, H), 
     Total       = ?v(<<"total">>, H),
     Unit        = ?v(<<"unit">>, H),
+
+    Comment     = ?v(<<"comment">>, H),
     
     Key = <<StyleNumber/binary, <<"-">>/binary, BrandId/binary, <<"-">>/binary, ShopId/binary>>, 
     case dict:find(Key, DictNote) of
@@ -535,6 +565,7 @@ sort_sale_new_detail(sort_by_color, {K1, K2, K3} = K, [{H}|T], DictNote, Acc) ->
 		  {<<"tagPrice">>, TagPrice},
 		  {<<"rprice">>, RPrice},
 		  {<<"rdiscount">>, RDiscount},
+		  {<<"comment">>, Comment},
 		  {<<"note">>,
 		   lists:foldr(
 		     fun({ColorId, TotalOfColor, SizeDesc}, Acc1) ->

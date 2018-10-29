@@ -309,7 +309,7 @@ init([]) ->
 	 {?list_batch_sale, <<"批发记录查询">>,   <<"list_batch_sale">>,      ?right_b_sale},
 	 {?list_batch_sale_new_detail, <<"批发明细查询">>,   <<"list_batch_sale_new_detail">>,  ?right_b_sale},
 	 {?del_batch_sale, <<"批发记录删除">>,   <<"delete_batch_sale">>,     ?right_b_sale},
-	 {?del_batch_sale, <<"批发单打印">>,   <<"print_batch_sale">>,        ?right_b_sale},
+	 {?print_batch_sale, <<"批发单打印">>,   <<"print_batch_sale">>,        ?right_b_sale},
 
 	 {?new_batch_saler,     <<"新增批发客户">>, <<"new_batch_saler">>,    ?right_b_sale},
 	 {?list_batch_saler,    <<"查询批发客户">>, <<"list_batch_saler">>,   ?right_b_sale},

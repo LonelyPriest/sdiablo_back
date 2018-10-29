@@ -223,6 +223,14 @@ var diablo_month_unlimit_charge = 3;
 var diablo_quarter_unlimit_charge = 4;
 var diablo_year_unlimit_charge = 5;
 
+
+/*
+ * batch sale
+ */
+var diablo_std_units = ["未定义", "件", "盒", "瓶", "箱", "贴", "罐"];
+var diablo_batch_sale_print_mode = 0;
+var diablo_batch_sale_update_mode = 1;
+
 /**
  * the order must not be changed, if want to add size, add it at end
 **/
@@ -353,8 +361,6 @@ var diablo_sex2number = function(sex){
 var diablo_move_state = ["在途中", "已转移"];
 
 var diablo_level = ["未定义", "一等品", "二等品", "合格品"];
-
-var diablo_std_units = ["未定义", "件", "盒", "瓶", "箱", "贴", "罐"];
 
 var diablo_get_object = function(objectId, objects){
     if (!angular.isArray(objects)){

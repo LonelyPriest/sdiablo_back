@@ -92,6 +92,20 @@ function bsaleConfig(angular){
 		    {},
 		    employee, s_group, brand, type, color, region, department, user, base)
 	    }).
+	    when('/update_bsale_detail/:rsn?', {
+		templateUrl: '/private/bsale/html/update_bsale_detail.html',
+		controller: 'updateBSaleDetailCtrl',
+		resolve: angular.extend(
+		    {},
+		    employee, s_group, brand, type, color, region, department, user, base)
+	    }).
+	    when('/update_bsale_reject/:rsn?', {
+		templateUrl: '/private/bsale/html/update_bsale_reject.html',
+		controller: 'updateBSaleRejectCtrl',
+		resolve: angular.extend(
+		    {},
+		    employee, s_group, brand, type, color, region, department, user, base)
+	    }).
 	    when('/print_bsale/:rsn?', {
 		templateUrl: '/private/bsale/html/print_bsale_detail.html',
 		controller: 'bsalePrintCtrl',
@@ -198,8 +212,12 @@ function bsaleConfig(angular){
 	    return request.save({operation: "check_batch_sale"}, {rsn: rsn, mode:diablo_uncheck}).$promise;
 	};
 
-	this.get_batch_sale = function(rsn) {
-	    return request.save({operation: "get_batch_sale"}, {rsn: rsn}).$promise;
+	this.get_batch_sale = function(rsn, mode) {
+	    return request.save({operation: "get_batch_sale"}, {rsn: rsn, mode:mode}).$promise;
+	};
+
+	this.update_batch_sale = function(stock) {
+	    return request.save({operation: "update_batch_sale"}, stock).$promise;
 	};
 
 	/*================================================================================
@@ -307,7 +325,8 @@ function bsaleNewProvide(
 	money:    diabloPattern.decimal_2,
 	sell:     diabloPattern.integer_except_zero,
 	discount: diabloPattern.discount,
-	barcode:  diabloPattern.number};
+	barcode:  diabloPattern.number,
+	comment:  diabloPattern.comment};
     
     $scope.interval_per_5_minute = undefined;
     $scope.round  = diablo_round;
@@ -1205,21 +1224,7 @@ function bsaleNewProvide(
 	    $scope.bsaleStorage.remove($scope.bsaleStorage.get_key());
 	}
 
-	$scope.re_calculate();
-	
-	// promotion
-	for (var i=0, l=$scope.show_promotions.length; i<l; i++){
-	    if (inv.order_id === $scope.show_promotions[i].order_id){
-		break;
-	    }
-	}
-
-	$scope.show_promotions.splice(i, 1);
-	for (var i=0, l=$scope.show_promotions.length; i<l; i++){
-	    $scope.show_promotions[i].order_id = l - i; 
-	}
-
-	// $scope.disable_focus();
+	$scope.re_calculate(); 
 	// $scope.focus_good_or_barcode();
     };
 
@@ -1356,14 +1361,14 @@ function bsaleNewProvide(
 	    inv.$update = true;
 	
 	// save
-	$scope.bsaleStorage.save($scope.inventories.filter(function(r){return !r.$new}));
-
+	$scope.bsaleStorage.save($scope.inventories.filter(function(r){return !r.$new})); 
 	$scope.re_calculate();
 
 	// reset
 	// $scope.inventories[0] = {$edit:false, $new:true};
-	$scope.focus_good_or_barcode();
 	
+	$scope.focus_good_or_barcode();
+	inv.invalid_sell = false;
 	// inv.$update = false; 
     };
 
@@ -1386,18 +1391,10 @@ function bsaleNewProvide(
 	$scope.focus_good_or_barcode(); 
     };
 
-    $scope.auto_save_free = function(inv){
-	// $timeout.cancel($scope.timeout_auto_save);
-	
+    $scope.check_free_stock = function(inv) {
 	var sell = bsaleUtils.to_integer(inv.sell);
-	if (sell === 0) return
-	if (angular.isUndefined(inv.style_number)) return;
+	inv.invalid_sell = false;
 	
-
-	if (inv.$new && inv.free_color_size){
-	    $scope.add_free_inventory(inv);
-	}; 
-
 	if (!inv.$new && inv.free_update){
 	    if ($scope.setting.check_sale && sell > inv.total){
 		if (angular.isDefined(inv.form.sell)) {
@@ -1405,7 +1402,6 @@ function bsaleNewProvide(
 		    inv.form.sell.$pristine = false; 
 		}
 		inv.invalid_sell = true; 
-		return;
 	    }
 	    
 	    if (!$scope.setting.negative_sale && sell < 0) {
@@ -1414,9 +1410,24 @@ function bsaleNewProvide(
 		    inv.form.sell.$pristine = false;
 		}
 		inv.invalid_sell = true;
-		return;
-	    }; 
-	    $scope.save_free_update(inv); 
+	    };
+	    // $scope.save_free_update(inv); 
+	} 
+    };
+    
+    $scope.auto_save_free = function(inv){
+	// $timeout.cancel($scope.timeout_auto_save); 
+	var sell = bsaleUtils.to_integer(inv.sell);
+	if (sell === 0) return
+	if (angular.isUndefined(inv.style_number)) return;
+	
+
+	if (inv.$new && inv.free_color_size){
+	    $scope.add_free_inventory(inv);
+	};
+
+	if (!$scope.check_free_stock(inv)) {
+	    $scope.save_free_update(inv);
 	} 
     }; 
 };
@@ -1441,7 +1452,8 @@ function bsaleNewDetailCtrlProvide(
     $scope.current_page = $scope.default_page;
 
     var authen = new diabloAuthen(user.type, user.right, user.shop);
-    $scope.shop_right = authen.authenSaleRight();
+    $scope.right = authen.authenBatchSaleRight();
+    console.log($scope.right);
 
     var now = $.now();
 
@@ -1461,7 +1473,7 @@ function bsaleNewDetailCtrlProvide(
     };
 
     $scope.time = bsaleUtils.correct_query_time(
-	$scope.shop_right.master,
+	$scope.right.master,
 	show_sale_days,
 	$scope.qtime_start,
 	$scope.qtime_end,
@@ -1497,7 +1509,7 @@ function bsaleNewDetailCtrlProvide(
 	// console.log(page); 
 	$scope.current_page = page; 
 	// console.log($scope.time); 
-	if (!$scope.shop_right.master && show_sale_days !== diablo_nolimit_day){
+	if (!$scope.right.master && show_sale_days !== diablo_nolimit_day){
 	    var diff = now - diablo_get_time($scope.time.start_time); 
 	    if (diff - diablo_day_millisecond * show_sale_days > diablo_day_millisecond)
 	    	$scope.time.start_time = now - show_sale_days * diablo_day_millisecond;
@@ -1610,7 +1622,7 @@ function bsaleNewDetailCtrlProvide(
 
     $scope.uncheck_sale = function(r){
 	// console.log(r);
-	basleService.uncheck_batch_sale(r.rsn, diablo_uncheck).then(function(state){
+	bsaleService.uncheck_batch_sale(r.rsn, diablo_uncheck).then(function(state){
 	    console.log(state);
 	    if (state.ecode == 0){
 		dialog.response_with_callback(
@@ -1637,6 +1649,14 @@ function bsaleNewDetailCtrlProvide(
 		dialog.set_batch_error("销售单删除", state.ecode); 
 	    }
 	});
+    };
+
+    $scope.update_sale = function(r) {
+	if (r.type === 0){
+	    diablo_goto_page('#/update_bsale_detail/' + r.rsn);
+	} else {
+	    diablo_goto_page('#/update_bsale_reject/' + r.rsn); 
+	}
     };
 
     $scope.print_sale = function(r) {
@@ -2131,7 +2151,7 @@ function bsalePrintCtrlProvide(
     var pageWidth  = diablo_base_setting("prn_w_page", user.loginShop, base, parseFloat, 21.3);
 
     $scope.print_mode = bsaleUtils.print_cs_mode(diablo_default_shop, base); 
-    bsaleService.get_batch_sale($routeParams.rsn).then(function(result) {
+    bsaleService.get_batch_sale($routeParams.rsn, diablo_batch_sale_print_mode).then(function(result) {
     	console.log(result);
 	if (result.ecode === 0) {
 	    $scope.detail = result.detail;

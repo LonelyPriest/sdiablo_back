@@ -31,20 +31,26 @@
 %%%===================================================================
 bsale(new, Merchant, Inventories, Props) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {new_sale, Merchant, Inventories, Props});
+    gen_server:call(Name, {new_sale, Merchant, Inventories, Props}); 
+bsale(update_sale, Merchant, Inventories, {Props, OldProps}) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {update_sale, Merchant, Inventories, Props, OldProps}); 
 bsale(check, Merchant, RSN, Mode) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {check_sale, Merchant, RSN, Mode}).
 
-bsale(get_sale, Merchant, RSN) ->
+bsale(get_sale, Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {get_sale_new, Merchant, RSN});
-bsale(get_sale_new_detail, Merchant, RSN) ->
+    gen_server:call(Name, {get_sale_new, Merchant, Conditions});
+bsale(get_sale_new_detail, Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {get_sale_new_detail, Merchant, RSN});
-bsale(get_sale_new_note, Merchant, RSN) ->
+    gen_server:call(Name, {get_sale_new_detail, Merchant, Conditions});
+bsale(get_sale_new_note, Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {get_sale_new_note, Merchant, RSN}).
+    gen_server:call(Name, {get_sale_new_note, Merchant, Conditions});
+bsale(get_sale_new_transe, Merchant, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {get_sale_new_transe, Merchant, Conditions}).
 
 filter(total_sale_new, 'and', Merchant, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -160,6 +166,79 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 	    {reply, Error, State}
     end;
 
+handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State) ->
+    ?DEBUG("update_sale with merchant ~p~n~p, props ~p, OldProps ~p", [Merchant, Inventories, Props, OldProps]), 
+    Curtime    = ?utils:current_time(format_localtime), 
+
+    RSN        = ?v(<<"rsn">>, Props),
+    BSaler     = ?v(<<"bsaler">>, Props),
+    Shop       = ?v(<<"shop">>, Props), 
+    Datetime   = ?v(<<"datetime">>, Props, Curtime), 
+    Employee   = ?v(<<"employee">>, Props),
+
+    %% Balance    = ?v(<<"balance">>, Props),
+    ShouldPay  = ?v(<<"should_pay">>, Props, 0), 
+    Cash       = ?v(<<"cash">>, Props, 0),
+    Card       = ?v(<<"card">>, Props, 0),
+    Wxin       = ?v(<<"wxin">>, Props, 0),
+    HasPay     = ?v(<<"has_pay">>, Props, 0),
+    %% Verificate = ?v(<<"verificate">>, Props, 0),
+    Comment    = ?v(<<"comment">>, Props),
+
+    Total        = ?v(<<"total">>, Props),
+    
+    %% RSNId        = ?v(<<"id">>, OldProps),
+    OldEmployee  = ?v(<<"employee_id">>, OldProps),
+    OldBSaler    = ?v(<<"bsaler_id">>, OldProps),
+    OldDatetime  = ?v(<<"entry_date">>, OldProps),
+    
+    OldCash       = ?v(<<"cash">>, OldProps),
+    OldCard       = ?v(<<"card">>, OldProps),
+    OldWxin       = ?v(<<"wxin">>, OldProps),
+    OldShouldPay  = ?v(<<"should_pay">>, OldProps), 
+    OldHasPay     = ?v(<<"has_pay">>, OldProps),
+    %% OldVerificate = ?v(<<"verificate">>, OldProps, 0),
+    OldComment    = ?v(<<"comment">>, OldProps),
+    OldTotal       = ?v(<<"total">>, OldProps),
+    %% SellType     = ?v(<<"type">>, OldProps),
+
+    NewDatetime = case Datetime =:= OldDatetime of
+		      true -> Datetime;
+		      false -> ?utils:correct_datetime(datetime, Datetime)
+		  end,
+
+    Sql1 = sql(update_bsale, RSN, Merchant, Shop, NewDatetime, OldDatetime, Inventories),
+
+    IsSame = fun(_, New, Old) when New == Old -> undefined;
+		(number, New, _Old) -> New; 
+		(datetime, New, _Old) -> New;
+		(_, New, _Old) -> New
+	     end,
+    
+    Updates = ?utils:v(employ, string, IsSame(string, Employee, OldEmployee))
+	++ ?utils:v(bsaler, integer, IsSame(number, BSaler, OldBSaler)) 
+	++ ?utils:v(should_pay, float, IsSame(number, ShouldPay, OldShouldPay))
+	++ ?utils:v(cash, float, IsSame(number, Cash, OldCash))
+	++ ?utils:v(card, float, IsSame(number, Card, OldCard))
+	++ ?utils:v(wxin, float, IsSame(number, Wxin, OldWxin))
+	++ ?utils:v(has_pay, float, IsSame(number, HasPay, OldHasPay))
+	++ ?utils:v(total, integer, IsSame(number, Total, OldTotal))
+	++ ?utils:v(comment, string, IsSame(string, Comment, OldComment))
+	++ ?utils:v(entry_date, string, IsSame(datetime, NewDatetime, OldDatetime)), 
+
+    %% OldPay = OldShouldPay + OldVerificate - OldHasPay,
+    %% NewPay = ShouldPay + Verificate - HasPay,
+
+    Sqls = Sql1 ++ 
+	case BSaler =:= OldBSaler of
+	    true ->
+		update_sale(same_bsaler, Merchant, Updates, {Props, OldProps});
+	    false ->
+		update_sale(same_bsaler, Merchant, Updates, {Props, OldProps})
+	end,
+    Reply = ?sql_utils:execute(transaction, Sqls, RSN),
+    {reply, Reply, State};
+
 handle_call({check_sale, Merchant, RSN, Mode}, _From, State) ->
     ?DEBUG("check_sale with merchant ~p, RSN ~p, mode ~p", [Merchant, RSN, Mode]),
     Sql = "update batch_sale set state=" ++ ?to_s(Mode)
@@ -226,18 +305,86 @@ handle_call({filter_sale_new_detail,
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({get_sale_new, Merchant, RSN} , _From, State) ->
-    Sql = filter_bsale(fun()-> [] end, Merchant, [{<<"rsn">>, RSN}]),
+handle_call({get_sale_new, Merchant, Conditions} , _From, State) ->
+    Sql = filter_bsale(fun()-> [] end, Merchant, Conditions),
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
-handle_call({get_sale_new_detail, Merchant, RSN} , _From, State) ->
-    Sql = sale_new(sale_new_detail, 'and', Merchant, [{<<"rsn">>, RSN}], fun() -> [] end), 
+handle_call({get_sale_new_detail, Merchant, Conditions} , _From, State) ->
+    Sql = sale_new(sale_new_detail, 'and', Merchant, Conditions, fun() -> [] end), 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({get_sale_new_note, Merchant, RSN} , _From, State) ->
-    Sql = sale_new(sale_new_note, Merchant, [{<<"rsn">>, RSN}]),
+handle_call({get_sale_new_note, Merchant, Conditions} , _From, State) ->
+    Sql = sale_new(sale_new_note, Merchant, Conditions),
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({get_sale_new_transe, Merchant, Conditions} , _From, State) ->
+    ?DEBUG("sale_new_transe with merchant ~p, Conditions ~p", [Merchant, Conditions]),
+    Sql = "select a.rsn"
+	", a.style_number"
+	", a.brand_id"
+	", a.type_id"
+	", a.sex"
+	", a.s_group"
+	", a.free"
+	", a.season"
+	", a.firm_id"
+	", a.year"
+	", a.in_datetime"
+	", a.total"
+	", a.unit"
+	
+	", a.org_price"
+	", a.tag_price"
+	", a.ediscount"
+	", a.fdiscount"
+	", a.rdiscount"
+	", a.fprice"
+	", a.rprice"
+	
+	", a.path"
+	", a.comment"
+
+	", b.color as color_id"
+	", b.size"
+	", b.total as amount"
+
+	" from "
+
+	"(select id"
+	", rsn"
+	", style_number"
+	", brand as brand_id"
+	", type as type_id"
+	", sex"
+	", s_group"
+	", free"
+	", season"
+	", firm as firm_id"
+	", year"
+	", in_datetime"
+	", total"
+	", unit"
+	
+	", org_price"
+	", ediscount"
+	", tag_price"
+	", fdiscount"
+	", rdiscount"
+	", fprice"
+	", rprice"
+	
+	", path"
+	", comment"
+	" from batch_sale_detail"
+	" where " ++ ?utils:to_sqls(proplists, Conditions) ++ ") a"
+
+	" inner join batch_sale_detail_amount b on a.rsn=b.rsn"
+	" and a.style_number=b.style_number"
+	" and a.brand_id=b.brand",    
+
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
@@ -273,6 +420,219 @@ code_change(_OldVsn, State, _Extra) ->
 %%%===================================================================
 %%% Internal functions
 %%%===================================================================
+sql(update_bsale, RSN, _Merchant, _Shop, NewDatetime, OldDatetime, []) ->
+    case NewDatetime =:= OldDatetime of
+	true -> [];
+	false ->
+	    ["update batch_sale_detail set entry_date=\'"
+	     ++ ?to_s(NewDatetime) ++ "\'"
+	     ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'",
+	     "update batch_sale_detail_amount set entry_date=\'"
+	     ++ ?to_s(NewDatetime) ++ "\'"
+	     ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"]
+    end;
+
+sql(update_bsale, RSN, Merchant, Shop, NewDatetime, _OldDatetime, Inventories) -> 
+    lists:foldr(
+      fun({struct, Inv}, Acc0)-> 
+	      Operation   = ?v(<<"operation">>, Inv), 
+	      case Operation of
+		  <<"d">> ->
+		      Amounts = ?v(<<"amount">>, Inv),
+		      bsale(delete, RSN, NewDatetime, Merchant, Shop, Inv, Amounts) ++ Acc0; 
+		  <<"a">> ->
+		      Amounts = ?v(<<"amount">>, Inv), 
+		      bsale(new, RSN, NewDatetime, Merchant, Shop, Inv, Amounts) ++ Acc0; 
+		  <<"u">> -> 
+		      bsale(update, RSN, NewDatetime, Merchant, Shop, Inv) ++ Acc0
+	      end
+      end, [], Inventories).
+
+bsale(update, RSN, Datetime, Merchant, Shop, Inventory) -> 
+    StyleNumber    = ?v(<<"style_number">>, Inventory),
+    Brand          = ?v(<<"brand">>, Inventory),
+    OrgPrice       = ?v(<<"org_price">>, Inventory),
+    FPrice         = ?v(<<"fprice">>, Inventory),
+    RPrice         = ?v(<<"rprice">>, Inventory),
+    FDiscount      = ?v(<<"fdiscount">>, Inventory),
+    RDiscount      = ?v(<<"rdiscount">>, Inventory),
+    Comment        = ?v(<<"comment">>, Inventory, []),
+
+    ChangeAmounts  = ?v(<<"changed_amount">>, Inventory, []),
+
+    Metric = fun()->
+		     lists:foldl(
+		       fun({struct, Attr}, Acc) ->
+			       Count = ?v(<<"count">>, Attr),
+			       case ?v(<<"operation">>, Attr) of
+				   <<"d">> -> Acc - Count;
+				   <<"a">> -> Acc + Count;
+				   <<"u">> -> Acc + Count
+			       end
+		       end, 0, ChangeAmounts)
+	     end(),
+
+    ?DEBUG("metric ~p", [Metric]),
+
+    C1 =
+	fun(Color, Size) ->
+		?utils:to_sqls(proplists,
+			       [{<<"style_number">>, StyleNumber},
+				{<<"brand">>, Brand},
+				{<<"color">>, Color},
+				{<<"size">>,  Size},
+				{<<"shop">>,  Shop},
+				{<<"merchant">>, Merchant}])
+	end,
+
+    C2 =
+	fun(Color, Size) ->
+		?utils:to_sqls(
+		   proplists, [{<<"rsn">>, ?to_b(RSN)},
+			       {<<"style_number">>, StyleNumber},
+			       {<<"brand">>, Brand},
+			       {<<"color">>, Color},
+			       {<<"size">>, Size}])
+	end,
+
+
+    Sql0 = 
+	case Metric of
+	    0 -> ["update batch_sale_detail set "
+		  ++ "org_price=" ++ ?to_s(OrgPrice)
+		  ++ ", fdiscount=" ++ ?to_s(FDiscount)
+		  ++ ", rdiscount=" ++ ?to_s(RDiscount) 
+		  ++ ", fprice=" ++ ?to_s(FPrice)
+		  ++ ", rprice=" ++ ?to_s(RPrice)
+		  ++ ", comment=\'" ++ ?to_s(Comment) ++ "\'"
+		  ++ ", entry_date=\'" ++ ?to_s(Datetime) ++ "\'"
+		  ++ " where rsn=\"" ++ ?to_s(RSN) ++ "\""
+		  ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+		  ++ " and brand=" ++ ?to_s(Brand)];
+	    Metric -> 
+		["update w_inventory set amount=amount-" ++ ?to_s(Metric)
+		 ++ ", sell=sell+" ++ ?to_s(Metric)
+		 ++ " where "
+		 "style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+		 ++ " and brand=" ++ ?to_s(Brand)
+		 ++ " and shop=" ++ ?to_s(Shop)
+		 ++ " and merchant=" ++ ?to_s(Merchant),
+
+		 "update batch_sale_detail set total=total+" ++ ?to_s(Metric)
+		 ++ ", org_price=" ++ ?to_s(OrgPrice)
+		 ++ ", fdiscount=" ++ ?to_s(FDiscount)
+		 ++ ", rdiscount=" ++ ?to_s(RDiscount) 
+		 ++ ", fprice=" ++ ?to_s(FPrice)
+		 ++ ", rprice=" ++ ?to_s(RPrice)
+		 ++ ", comment=\'" ++ ?to_s(Comment) ++ "\'"
+		 ++ ", entry_date=\'" ++ ?to_s(Datetime) ++ "\'"
+		 ++ " where rsn=\"" ++ ?to_s(RSN) ++ "\""
+		 ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+		 ++ " and brand=" ++ ?to_s(Brand)]
+	end,
+
+    ChangeFun =
+	fun({struct, Attr}, Acc1) ->
+		?DEBUG("Attr ~p", [Attr]),
+		Color = ?v(<<"cid">>, Attr),
+		Size  = ?v(<<"size">>, Attr),
+		Count = ?v(<<"count">>, Attr),
+
+		case ?v(<<"operation">>, Attr) of 
+		    <<"a">> ->
+			Sql01 = "select id, style_number, brand, color, size"
+			    " from w_sale_detail_amount where " ++ C2(Color, Size),
+
+			["update w_inventory_amount set total=total-" ++ ?to_s(Count)
+			 ++ " where " ++ C1(Color, Size),
+
+			 case ?sql_utils:execute(s_read, Sql01) of
+			     {ok, []} ->
+				 "insert into batch_sale_detail_amount(rsn"
+				     ", style_number, brand, "
+				     "color, size, total, entry_date) values("
+				     ++ "\"" ++ ?to_s(RSN) ++ "\","
+				     ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
+				     ++ ?to_s(Brand) ++ ","
+				     ++ ?to_s(Color) ++ ","
+				     ++ "\'" ++ ?to_s(Size)  ++ "\',"
+				     ++ ?to_s(Count) ++ "," 
+				     ++ "\"" ++ ?to_s(Datetime) ++ "\")";
+			     {ok, _} ->
+				 "update w_sale_detail_amount"
+				     " set total=total+" ++ ?to_s(Count)
+				     ++ ", entry_date=\'" ++ ?to_s(Datetime) ++ "\'"
+				     ++ " where " ++ C2(Color, Size);
+			     {error, E00} ->
+				 throw({db_error, E00})
+			 end | Acc1];
+
+		    <<"d">> -> 
+			["update w_inventory_amount set total=total+"
+			 ++ ?to_s(Count) ++ " where " ++ C1(Color, Size), 
+
+			 "delete from w_sale_detail_amount"
+			 " where " ++ C2(Color, Size)
+			 | Acc1];
+		    <<"u">> -> 
+			["update w_inventory_amount"
+			 " set total=total-" ++ ?to_s(Count)
+			 ++ " where " ++ C1(Color, Size),
+
+			 " update w_sale_detail_amount"
+			 " set total=total+" ++ ?to_s(Count)
+			 ++ ", entry_date=\'" ++ ?to_s(Datetime) ++ "\'"
+			 ++ " where " ++ C2(Color, Size)|Acc1]
+		end
+	end,
+    Sql0 ++ lists:foldr(ChangeFun, [], ChangeAmounts). 
+
+bsale(delete, RSN, _DateTime, Merchant, Shop, Inventory, Amounts)
+  when is_list(Amounts)-> 
+    StyleNumber = ?v(<<"style_number">>, Inventory),
+    Brand       = ?v(<<"brand">>, Inventory), 
+
+    Metric = fun()->
+		     lists:foldl(
+		       fun({struct, Attr}, Acc) ->
+			       ?v(<<"sell_count">>, Attr) + Acc
+		       end, 0, Amounts)
+	     end(),
+
+    ["update w_inventory set amount=amount+" ++ ?to_s(Metric)
+     ++ ",sell=sell-" ++ ?to_s(Metric) 
+     ++ " where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+     ++ " and brand=" ++ ?to_s(Brand)
+     ++ " and shop=" ++ ?to_s(Shop)
+     ++ " and merchant=" ++ ?to_s(Merchant),
+
+     "delete from batch_sale_detail"
+     ++ " where rsn=\"" ++ ?to_s(RSN) ++ "\""
+     ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+     ++ " and brand=" ++ ?to_s(Brand)]
+	++ 
+        lists:foldr(
+	  fun({struct, Attr}, Acc1)->
+		  CId    = ?v(<<"cid">>, Attr),
+		  Size   = ?v(<<"size">>, Attr),
+		  Count  = ?v(<<"sell_count">>, Attr),
+		  ["update w_inventory_amount set total=total+" ++ ?to_s(Count)
+		   ++ " where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+		   ++ " and brand=" ++ ?to_s(Brand) 
+		   ++ " and color=" ++ ?to_s(CId)
+		   ++ " and size=\'" ++ ?to_s(Size) ++ "\'"
+		   ++ " and shop=" ++ ?to_s(Shop)
+		   ++ " and merchant=" ++ ?to_s(Merchant),
+
+		   "delete from batch_sale_detail_amount"
+		   " where rsn=\"" ++ ?to_s(RSN) ++ "\""
+		   ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+		   ++ " and brand=" ++ ?to_s(Brand)
+		   ++ " and color=" ++ ?to_s(CId)
+		   ++ " and size=\'" ++ ?to_s(Size) ++ "\'"
+		   | Acc1]
+	  end, [], Amounts);
+
 bsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) -> 
     ?DEBUG("batch_sale ~p with inv ~p, amounts ~p", [Action, Inventory, Amounts]), 
     StyleNumber = ?v(<<"style_number">>, Inventory),
@@ -334,7 +694,7 @@ bsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
      case ?sql_utils:execute(s_read, Sql00) of
 	 {ok, []} ->
 	     {ValidOrgPrice, ValidEDiscount} = {OrgPrice, ?w_good_sql:stock(ediscount, OrgPrice, TagPrice)},
-	 
+
 	     "insert into batch_sale_detail("
 		 "rsn, style_number, brand, merchant, shop, type, sex, s_group, free"
 		 ", season, firm, year, in_datetime, total, unit"
@@ -355,7 +715,7 @@ bsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
 		 ++ "\'" ++ ?to_s(InDatetime) ++ "\'," 
 		 ++ ?to_s(Total) ++ ","
 		 ++ ?to_s(Unit) ++ ","
-	 
+
 		 ++ ?to_s(ValidOrgPrice) ++ ","
 		 ++ ?to_s(ValidEDiscount) ++ ","
 		 ++ ?to_s(TagPrice) ++ "," 
@@ -363,7 +723,7 @@ bsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
 		 ++ ?to_s(FPrice) ++ ","
 		 ++ ?to_s(RDiscount) ++ "," 
 		 ++ ?to_s(RPrice) ++ ","
-		 
+
 		 ++ "\"" ++ ?to_s(Path) ++ "\","
 		 ++ "\"" ++ ?to_s(Comment) ++ "\","
 		 ++ "\"" ++ ?to_s(Datetime) ++ "\")";
@@ -427,7 +787,6 @@ bsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
 			   throw({db_error, E01})
 		   end|Acc1] 
 	  end, [], Amounts).
-
 
 count_table(batchsale, Merchant, Conditions) -> 
     SortConditions = sort_condition(batchsale, Merchant, Conditions), 
@@ -666,6 +1025,212 @@ sale_new(sale_new_note, Merchant, Conditions) ->
 	++ ?sql_utils:condition(proplists, NewConditions) ++  ") a"
 
 	" left join colors b on a.color=b.id".
+
+
+update_sale(same_bsaler, Merchant, Updates, {Props, OldProps})->
+    RSN        = ?v(<<"rsn">>, Props),
+    %% Shop        = ?v(<<"shop_id">>, OldProps),
+
+    ShouldPay   = ?v(<<"should_pay">>, Props),
+    HasPay      = ?v(<<"has_pay">>, Props, 0),
+    Verificate  = ?v(<<"verificate">>, Props, 0),
+    
+    OldShouldPay  = ?v(<<"should_pay">>, OldProps),
+    OldHasPay     = ?v(<<"has_pay">>, OldProps),
+    OldVerificate = ?v(<<"verificate">>, OldProps),
+    
+    Datetime     = ?v(<<"datetime">>, Props),
+    OldDatetime  = ?v(<<"entry_date">>, OldProps),
+
+    BSaler       = ?v(<<"bsaler">>, Props),
+    %% OldFirm    = ?v(<<"firm_id">>, OldProps),
+
+    Mbalance = (ShouldPay + Verificate - HasPay) - (OldShouldPay + OldVerificate - OldHasPay),
+
+    Sql0 = "select id, name, balance  from batchsaler where id=" ++ ?to_s(BSaler)
+	++ " and merchant=" ++ ?to_s(Merchant)
+	++ " and deleted=" ++ ?to_s(?NO),
+
+    {ok, QBSaler} = ?sql_utils:execute(s_read, Sql0),
+    BSalerCurBalance = ?v(<<"balance">>, QBSaler),
+
+    case ?to_b(Datetime) == ?to_b(OldDatetime) of
+	true ->
+	    ["update batch_sale set " ++ ?utils:to_sqls(proplists, comma, Updates)
+	     ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"]
+		++ 
+		case Mbalance == 0 of
+		    true -> [] ;
+		    false -> 
+			["update batch_sale set balance=balance+"
+			 ++ ?to_s(Mbalance)
+			 ++ " where merchant=" ++ ?to_s(Merchant)
+			 ++ " and bsaler=" ++ ?to_s(BSaler)
+			 ++ " and entry_date>\'" ++ ?to_s(OldDatetime) ++ "\'",
+			 
+			 "update batchsaler set balance=balance+" ++ ?to_s(Mbalance) 
+			 ++ " where id=" ++ ?to_s(BSaler)
+			 ++ " and merchant=" ++ ?to_s(Merchant)]
+		end;
+	false ->
+	    Sql = "select id, rsn, bsaler, shop, merchant, balance, should_pay, has_pay"
+		", verificate, entry_date"
+		" from batch_sale"
+		" where merchant=" ++ ?to_s(Merchant)
+		++ " and bsaler=" ++ ?to_s(BSaler)
+		++ " and state in(0, 1)"
+		++ " and entry_date<\'" ++ ?to_s(Datetime) ++ "\'"
+		++ " order by entry_date desc limit 1", 
+	    {ok, LastSaleIn} = ?sql_utils:execute(s_read, Sql), 
+	    LastBalance
+		= case LastSaleIn of
+		      [] ->
+			  Sql01 = "select id, rsn, bsaler, shop, merchant"
+			      ", balance, should_pay, has_pay, verificate, entry_date"
+			      " from batch_sale"
+			      " where merchant=" ++ ?to_s(Merchant)
+			      ++ " and bsaler=" ++ ?to_s(BSaler)
+			      ++ " and state in(0, 1)"
+			      ++ " and entry_date>\'" ++ ?to_s(Datetime) ++ "\'"
+			      ++ " order by entry_date limit 1",
+			  {ok, LastSaleInW} = ?sql_utils:execute(s_read, Sql01),
+			  case LastSaleInW of
+			      [] -> BSalerCurBalance;
+			      _ -> ?v(<<"balance">>, LastSaleInW, 0)
+			  end;
+		      _  -> ?v(<<"balance">>, LastSaleIn)
+				+ ?v(<<"should_pay">>, LastSaleIn)
+				+ ?v(<<"verificate">>, LastSaleIn) 
+				- ?v(<<"has_pay">>, LastSaleIn)
+		  end,
+
+	    ?DEBUG("LastBalance ~p", [LastBalance]),
+	    OldBackBalance = OldShouldPay + OldVerificate - OldHasPay,
+	    NewPayBalance = ShouldPay + Verificate - HasPay,
+
+	    UpdateSale = 
+		case ?to_b(Datetime) > ?to_b(OldDatetime) of
+		    true ->
+			Updates ++ ?utils:v(balance, float, LastBalance - OldBackBalance);
+		    false ->
+			Updates ++ ?utils:v(balance, float, LastBalance)
+		end,
+
+	    ["update batch_sale set balance=balance-" ++ ?to_s(OldBackBalance)
+	     ++ " where merchant=" ++ ?to_s(Merchant)
+	     ++ " and bsaler=" ++ ?to_s(BSaler)
+	     ++ " and entry_date>\'" ++ ?to_s(OldDatetime) ++ "\'",
+
+	     "update batch_sale set balance=balance+" ++ ?to_s(NewPayBalance)
+	     ++ " where merchant=" ++ ?to_s(Merchant)
+	     ++ " and bsaler=" ++ ?to_s(BSaler)
+	     ++ " and entry_date>\'" ++ ?to_s(Datetime) ++ "\'",
+
+	     "update batch_sale set " ++ ?utils:to_sqls(proplists, comma, UpdateSale)
+	     ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"]
+
+		++ case Mbalance == 0 of
+		       true -> [];
+		       false -> 
+			   ["update batchsaler set balance=balance+" ++ ?to_s(Mbalance) 
+			    ++ " where id=" ++ ?to_s(BSaler)
+			    ++ " and merchant=" ++ ?to_s(Merchant)]
+		   end
+    end;
+
+update_sale(diff_bsaler, Merchant, Updates, {Props, OldProps}) ->
+    RSN        = ?v(<<"rsn">>, Props),
+    %% Shop      = ?v(<<"shop_id">>, OldProps),
+
+    ShouldPay  = ?v(<<"should_pay">>, Props),
+    HasPay     = ?v(<<"has_pay">>, Props, 0),
+    Verificate  = ?v(<<"verificate">>, Props, 0),
+    
+    OldShouldPay = ?v(<<"should_pay">>, OldProps),
+    OldHasPay    = ?v(<<"has_pay">>, OldProps),
+    OldVerificate = ?v(<<"verificate">>, OldProps),
+    
+    Datetime   = ?v(<<"datetime">>, Props),
+    OldDatetime  = ?v(<<"entry_date">>, OldProps),
+
+    BSaler       = ?v(<<"bsaler">>, Props),
+    OldBSaler    = ?v(<<"bsaler_id">>, OldProps),
+
+    BackBalanceOfOld = OldShouldPay + OldVerificate - OldHasPay,
+    PayBalanceOfNew = ShouldPay + HasPay - Verificate,
+
+    Sql0 = "select id, name, balance  from batchsaler where id=" ++ ?to_s(BSaler)
+	++ " and merchant=" ++ ?to_s(Merchant)
+	++ " and deleted=" ++ ?to_s(?NO), 
+    {ok, Q0BSaler} = ?sql_utils:execute(s_read, Sql0),
+    NewBSalerCurBalance = ?v(<<"balance">>, Q0BSaler),
+
+    %% Sql01 = "select id, name, balance  from batchsaler where id=" ++ ?to_s(BSaler)
+    %% 	++ " and merchant=" ++ ?to_s(Merchant)
+    %% 	++ " and deleted=" ++ ?to_s(?NO), 
+    %% {ok, Q1BSaler} = ?sql_utils:execute(s_read, Sql01),
+    %% OldBSalerCurBalance = ?v(<<"balance">>, Q1BSaler),
+    
+    
+    Sql = "select id, rsn, bsaler, shop, merchant"
+	", balance, should_pay, has_pay, verificate, entry_date"
+	" from batch_sale"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and bsaler=" ++ ?to_s(BSaler)
+	++ " and state in(0, 1)"
+	++ " and entry_date<\'" ++ ?to_s(Datetime) ++ "\'"
+	++ " order by entry_date desc limit 1",
+
+    {ok, LastStockIn} = ?sql_utils:execute(s_read, Sql),
+
+    LastBalance =
+	case LastStockIn of
+	    [] ->
+		Sql01 = "select id, rsn, bsaler, shop, merchant"
+		    ", balance, should_pay, has_pay, verificate"
+		    ", entry_date"
+		    " from batch_sale"
+		    " where merchant=" ++ ?to_s(Merchant)
+		    ++ " and bsaler=" ++ ?to_s(BSaler)
+		    ++ " and state in(0, 1)"
+		    ++ " and entry_date>\'" ++ ?to_s(Datetime) ++ "\'"
+		    ++ " order by entry_date limit 1",
+		{ok, LastStockInW} = ?sql_utils:execute(s_read, Sql01),
+		case LastStockInW of
+		    [] -> NewBSalerCurBalance;
+		    _  ->?v(<<"balance">>, LastStockInW, 0)
+		end; 
+	    _  -> ?v(<<"balance">>, LastStockIn)
+		      + ?v(<<"should_pay">>, LastStockIn)
+		      + ?v(<<"verificate">>, LastStockIn)
+		      - ?v(<<"has_pay">>, LastStockIn)
+		     
+	end,
+
+    UpdateStock = Updates ++ ?utils:v(balance, float, LastBalance), 
+    ["update batch_sale set " "balance=balance-" ++ ?to_s(BackBalanceOfOld)
+     ++ " where merchant=" ++ ?to_s(Merchant)
+     ++ " and firm=" ++ ?to_s(OldBSaler)
+     ++ " and entry_date>\'" ++ ?to_s(OldDatetime) ++ "\'",
+
+     "update batchsaler set balance=balance-" ++ ?to_s(BackBalanceOfOld)
+     ++ " where id=" ++ ?to_s(OldBSaler)
+     ++ " and merchant=" ++ ?to_s(Merchant)]
+	
+	++
+	
+	["update batch_sale set balance=balance+" ++ ?to_s(PayBalanceOfNew)
+	 ++ " where merchant=" ++ ?to_s(Merchant)
+	 ++ " and bsaler=" ++ ?to_s(BSaler)
+	 ++ " and entry_date>\'" ++ ?to_s(Datetime) ++ "\'",
+
+	 "update batch_sale set "
+	 ++ ?utils:to_sqls(proplists, comma, UpdateStock)
+	 ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'",
+
+	 "update batchsaler set balance=balance+" ++ ?to_s(PayBalanceOfNew)
+	 ++ " where id=" ++ ?to_s(BSaler)
+	 ++ " and merchant=" ++ ?to_s(Merchant)].
 
 type(new) -> 0;
 type(reject) -> 1.

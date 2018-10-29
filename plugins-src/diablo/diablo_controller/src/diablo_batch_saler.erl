@@ -296,10 +296,11 @@ handle_call({get_batch, Merchant, BSalers}, _From, State) ->
 	++ " where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, [{<<"id">>, lists:usort(BSalers)}]),
 
-    Reply = case length(BSalers) =:= 1 of
-		true -> ?sql_utils:execute(s_read, Sql);
-		false -> ?sql_utils:execute(read, Sql)
-	    end,
+    %% Reply = case length(BSalers) =:= 1 of
+    %% 		true -> ?sql_utils:execute(s_read, Sql);
+    %% 		false -> ?sql_utils:execute(read, Sql)
+    %% 	    end,
+    Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
 handle_call(_Request, _From, State) ->

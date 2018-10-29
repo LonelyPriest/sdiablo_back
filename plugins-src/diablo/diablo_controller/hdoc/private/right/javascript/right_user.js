@@ -267,7 +267,8 @@ function roleUserDetailCtrlProvide($scope, $q, diabloUtilsService, rightService)
 	    promise(rightService.list_shop)(),
 	    // role right of current has been selected
 	    promise(rightService.get_right_by_role_id, role.id)(),
-	    promise(rightService.get_shop_by_role, role.id)()])
+	    promise(rightService.get_shop_by_role, role.id)(),
+	    promise(rightService.get_bsale_children)()])
 	    .then(function(data){
 		console.log(data); 
 		// data[0] are the right of all role
@@ -276,12 +277,14 @@ function roleUserDetailCtrlProvide($scope, $q, diabloUtilsService, rightService)
 		// data[3] are the shops of all role
 		// data[4] are the right of current role
 		// data[5] are the shops of current role
+		// data[6] are the child node of bsale
 		$scope.all_right             = data[0];
 		$scope.children_of_inventory = data[1];
 		$scope.children_of_sale      = data[2];
 		$scope.all_shops             = data[3];
 		$scope.current_right         = data[4];
 		$scope.current_shops         = data[5];
+		$scope.children_of_bsale      = data[6];
 
 		var callback = function(tree){
 		    // build tree of current role
@@ -321,6 +324,7 @@ function roleUserDetailCtrlProvide($scope, $q, diabloUtilsService, rightService)
 
 		    add_shops($scope.children_of_inventory, $scope.all_shops);
 		    add_shops($scope.children_of_sale, $scope.all_shops);
+		    add_shops($scope.children_of_bsale, $scope.all_shops);
 		};
 
 		rightService.tree_modal(

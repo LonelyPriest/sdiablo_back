@@ -16,7 +16,7 @@
 %% API
 -export([start_link/1]).
 -export([sale/3, sale/4, pay_order/3, pay_order/4]).
--export([rsn_detail/3]).
+-export([rsn_detail/3, get_modified/2]).
 -export([filter/4, filter/6, export/3]).
 -export([direct/1]).
 

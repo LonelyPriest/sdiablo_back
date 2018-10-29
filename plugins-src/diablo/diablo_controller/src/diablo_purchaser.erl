@@ -3417,8 +3417,7 @@ update_stock(same_firm, Merchant, CurrentTime, Updates, {Props, OldProps})->
     Firm       = ?v(<<"firm">>, Props),
     %% OldFirm    = ?v(<<"firm_id">>, OldProps),
 
-    Metricbalance = (ShouldPay + EPay - HasPay - VerifyPay)
-	- (OldShouldPay + OldEPay - OldHasPay - OldVerifyPay),
+    Metricbalance = (ShouldPay + EPay - HasPay - VerifyPay) - (OldShouldPay + OldEPay - OldHasPay - OldVerifyPay),
 
     FirmCurBalance =
 	case ?w_user_profile:get(firm, Merchant, Firm) of
@@ -3428,8 +3427,7 @@ update_stock(same_firm, Merchant, CurrentTime, Updates, {Props, OldProps})->
     
     case ?to_b(Datetime) == ?to_b(OldDatetime) of
 	true ->
-	    ["update w_inventory_new set "
-	     ++ ?utils:to_sqls(proplists, comma, Updates)
+	    ["update w_inventory_new set " ++ ?utils:to_sqls(proplists, comma, Updates)
 	     ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"]
 		++ 
 		case Metricbalance == 0 of

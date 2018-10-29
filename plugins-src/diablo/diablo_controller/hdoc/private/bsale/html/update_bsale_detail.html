@@ -1,0 +1,604 @@
+<div class="row">
+  <div class="col-md-8">
+    <div class="portlet box purple">
+      
+      <div class="portlet-title">
+	<div class="caption"><i class="glyphicon glyphicon-record"></i>
+	  <span>交易单编辑（销售）</span>
+	</div>
+	<div class="actions">
+	  <div class="btn-group btn-group-solid">
+	    <button type="button" class="btn red"
+		    x-ng-click="go_back()">返回
+	      <i class="glyphicon glyphicon-circle-arrow-left"></i></button> 
+	    <!-- <button class="btn btn-success purple-stripe" -->
+	    <!-- 	    x-ng-disabled="disable_save()" -->
+	    <!-- 	    x-ng-click="save_bsale()">保存 -->
+	    <!--   <i class="glyphicon glyphicon-save"></i></button>  -->
+	  </div>
+	</div>
+	<div class="tools">
+	</div>
+      </div>
+
+      <!--BEGIN table container-->
+      <div class="portlet-body">
+	<!--BEGIN table-toolbar-->
+	<div class="table-toolbar">
+	  <div class="row diablo-form-group"> 
+	    <div class="col-xs-12 col-md-12">
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-map-marker fg-red"></i>店铺
+		</span>
+	  	<input class="form-control"
+		       type="text"
+		       readonly
+	  	       x-ng-model="select.shop"
+	  	       typeahead-editable="false"
+	  	       uib-typeahead="s as s.name for s in shops|filter:$viewValue"/>
+		
+		<span class="input-group-addon"> <i class="glyphicon glyphicon-signal fg-red"></i>货号</span>
+		<form name="sform">
+		  <div ng-class="{'has-error':sform.snumber.$invalid && !sform.snumber.$pristine}">
+		    <input class="form-control text-left"
+			   name="snumber"
+			   type="text"
+			   x-ng-edit
+			   x-ng-model="sale.style_number"
+			   focus-auto="focus_attr.style_number"
+			   placeholder="货号/品类"
+			   typeahead-editable="false"
+			   typeahead-on-select="on_select_good($item, $model, $label)"
+			   typeahead-wait-ms="300"
+			   typeahead-loading="loading"
+			   uib-typeahead="g as g.name for g in match_style_number($viewValue)" />
+		    <span x-ng-show="loading">
+		      <i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
+		    </span>
+		  </div>
+		</form>
+	      </div>
+	    </div>
+	  </div> <!--END from-group-->
+	</div> <!--END table-toolbar-->
+	
+	<!--BEGN portlet body--> 
+	<div class="portlet-body">
+	  <!--BEGIN panel--> 
+	  <div class="panel panel-default">
+	    
+	    <div class="table-responsive">
+	      <!--EBGIN table supplier-->
+	      <table id="t_wreject"
+		     class="table table-bordered table-striped table-hover table-condensed table-advanced">
+		<thead class="stick-thead" fsm-sticky-header scroll-body="'#t_wreject'" scroll-stop="50">
+		  <tr>
+		    <th class="text-center">序号</th>
+		    <th class="text-center">货号/品名/品类</th>
+		    <th class="text-center">参考价</th>
+		    <th class="text-center">单价</th>
+		    <th class="text-center">折扣</th> 		    
+		    <th class="text-center">数量</th> 
+		    <th class="text-center">合计</th>
+		    <th class="text-center">备注</th>
+		    <th class="text-center">操作</th>
+		  </tr>
+		</thead>
+		<tbody>
+		  <tr class="text-center" ng-repeat="inv in inventories">
+		    
+		    <td class="vert-align">{{inv.order_id}}</td>
+		    <td class="col-md-2 text-left vert-align">
+		      <span>{{inv.full_name}}</span> 
+		    </td>
+		    
+		    <td class="col-md-1 vert-align">{{inv.tag_price}}</td> 
+		    
+		    <td class="col-md-1 vert-align">
+		      <div ng-if="!inv.free_update">
+		    	{{inv.fprice}}
+		      </div>
+		      <form name="inv.form.fprice"
+		    	    ng-if="!inv.$new && inv.free_update">
+		    	<div ng-class="{'has-error':inv.form.fprice.$invalid && !inv.form.fprice.$pristine}">
+		    	  <input class="form-control"
+		    		 type="number" step="0.01"
+		    		 required
+				 x-ng-edit
+				 disable-key
+		    		 x-ng-pattern="/^\d+(.\d{1,2})?$/"
+		    		 x-ng-model="inv.fprice" />
+		    	</div>
+		      </form>
+		    </td>
+		    
+		    <td class="col-md-1 vert-align">
+		      <div ng-if="!inv.free_update">{{inv.fdiscount}}</div> 
+		      <form name="inv.form.fdiscount" x-ng-if="!inv.$new && inv.free_update">
+			<div ng-class="{'has-error':inv.form.fdiscount.$invalid && !inv.form.fdiscount.$pristine}"> 
+			  <input class="form-control"
+				 type="number" step="0.01" 
+				 required
+				 x-ng-edit
+				 disable-key
+				 x-ng-model="inv.fdiscount" />
+			</div>
+		      </form>
+		    </td>
+
+		    <!-- sell count-->
+		    <td class="col-md-1 vert-align">
+		      <div x-ng-if="!inv.free_update">{{inv.reject}}</div>
+		      <form name="inv.form.sell"
+		      	    x-ng-if="!inv.$new && inv.free_update">
+		      	<div ng-class="{'has-error':inv.form.sell.$invalid && !inv.form.sell.$pristine}">
+		      	  <input class="form-control"
+		      		 type="number" step="1"
+		      		 placeholder="数量"
+		      		 required
+				 disable-key
+				 x-ng-edit
+		      		 x-ng-pattern="/^[+|\-]?[1-9][0-9]*$/"
+		      		 x-ng-model="inv.reject" />
+		      	</div>
+		      </form>
+		    </td>
+		    
+		    <td class="vert-align">{{inv.calc}}</td>
+		    <td class="vert-align col-md-1">
+			<input class="form-control input-xs"
+			       type="text"
+			       placeholder="备注"
+			       x-ng-model="inv.comment"/>
+		    </td>
+		    
+		    <td class="text-left vert-align"> 
+		      <span ng-if="inv.$edit">
+			<a class="btn diablo-input-button btn-primary"
+			   x-ng-if="!inv.free_update"
+			   x-ng-disabled="inv.free_color_size"
+			   x-ng-click="inventory_detail(inv)">详情
+			  <i class="glyphicon glyphicon-map-marker"></i></a>
+			
+			<a class="btn diablo-input-button yellow"
+			   x-ng-if="!inv.free_update"
+			   x-ng-click="update_inventory(inv)">修改
+			  <i class="glyphicon glyphicon-edit"></i></a>
+
+			<a class="btn diablo-input-button green"
+			   x-ng-if="!inv.free_update"
+			   x-ng-click="gift(inv)">赠送
+			  <i class="glyphicon glyphicon-gift"></i></a>
+			
+			<a class="btn diablo-input-button btn-primary"
+			   x-ng-if="!inv.free_update"
+			   x-ng-click="stock_info(inv)">库存
+			  <i class="glyphicon glyphicon-leaf"></i></a>
+
+			<a class="btn diablo-input-button btn-danger"
+			   x-ng-if="!inv.free_update"
+			   x-ng-click="delete_inventory(inv)">删除
+			  <i class="glyphicon glyphicon-erase"></i></a>
+
+			<a class="btn diablo-input-button btn-success"
+			   x-ng-if="inv.free_update"
+			   x-ng-disabled="inv.form.sell.$invalid
+					  || inv.form.fprice.$invalid || inv.form.fdiscount.$invalid"
+			   x-ng-click="save_free_update(inv)">保存
+			  <i class="glyphicon glyphicon-plus"></i></a>
+			
+			<a class="btn diablo-input-button btn-danger"
+			   ng-if="inv.free_update"
+			   x-ng-disabled=" inv.form.sell.$invalid"
+			   x-ng-click="cancel_free_update(inv)">取消
+			  <i class="glyphicon glyphicon-erase"></i></a> 
+		      </span> 
+		    </td>
+		  </tr>
+
+		  <tr x-ng-if="select.total!==0"class="text-center">
+		    <td colspan="5"></td>
+		    <td class="vert-align">{{select.total}}</td>
+		    <td class="vert-align">{{select.should_pay}}</td>
+		    <td></td>
+		  </tr>
+		</tbody> 
+	      </table> <!--END supplier table-->
+	    </div> <!--END table responsive--> 
+	  </div> <!--END panel--> 
+	  
+	</div> <!--END portlet body-->
+      </div> <!--END table container-->
+      
+    </div> <!--END portlet box-->
+  </div> <!--END col-md-8-->
+
+  <div class="col-md-4">
+    <div class="portlet box light-grey diablo-margin-bottom-5">
+      <div class="portlet-title">
+	<div class="caption"><i class="glyphicon glyphicon-jpy large"></i>
+	  <span>结帐</span> 
+	</div>
+
+	<div class="actions"> 
+	  <button class="btn btn-success"
+	    	  x-ng-disabled="disable_save()"
+	    	  x-ng-click="save_bsale()">保存<i class="glyphicon glyphicon-save"></i></button>
+	</div>
+      </div>
+
+      <div class="portlet-body">
+	<div class="row diablo-good-form-group">
+	  <div class="col-xs-12 col-md-12">
+	    <time-search time="select.rsn_datetime" oread="true"></time-search>
+	  </div> 
+	</div>
+	
+	<div class="row diablo-good-form-group">
+	  <div class="col-xs-12 col-md-12">
+	    <div class="input-group">
+	      <span class="input-group-addon">
+		<i class="glyphicon glyphicon-star fg-red"></i>客户</span>
+	      <input class="form-control" type="text"
+		     x-ng-edit
+		     name="retailer"
+	  	     x-ng-model="select.bsaler"
+	  	     placeholder="请选择客户"
+	  	     typeahead-editable="false"
+		     typeahead-wait-ms="300"
+		     readonly
+		     typeahead-loading="loading_bsaler"
+		     typeahead-on-select="on_select_bsaler($item, $model, $label)"
+		     uib-typeahead="s as s.name for s in match_bsaler_phone($viewValue)"/>
+	      <span x-ng-show="loading_bsaler">
+	  	<i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
+	      </span>
+	    </div>
+	  </div> 
+	</div>
+	
+	<div class="row diablo-good-form-group">
+	  <div class="col-xs-12 col-md-12">
+	    <div class="input-group">
+	      <span class="input-group-addon">
+	  	<i class="glyphicon glyphicon-map-marker fg-red"></i>业务员
+	      </span>
+	      <input class="form-control" type="text"
+	      	     x-ng-model="select.employee"
+		     placeholder="请选择业务员"
+		     typeahead-editable="false"
+		     uib-typeahead="e as e.name for e in employees|filter:$viewValue" />
+	    </div>
+	  </div>
+	</div>
+
+	<div class="row diablo-good-form-group">
+	  <div class="col-xs-12 col-md-12">
+	    <div class="input-group">
+	      <span class="input-group-addon">
+		<i class="glyphicon glyphicon-yen fg-red"></i>现金</span>
+	      <form name="select.form.cashForm">
+		<div ng-class="{'has-error':select.form.cashForm.$invalid
+			       && !select.form.cashForm.$pristine}">
+	  	  <input class="form-control"
+			 type="number" step="0.01"
+			 disable-key
+			 x-ng-edit
+			 focus-auto="focus_attr.cash"
+	  		 x-ng-model="select.cash"
+			 x-ng-pattern="pattern.money"
+			 placeholder="现金"
+			 x-ng-enter="disable_save() || save_bsale()"/>
+		</div>
+	      </form>
+	    </div>
+	  </div>
+	</div>
+
+	<div class="row diablo-good-form-group">
+	  <div class="col-xs-12 col-md-12">
+	    <div class="input-group">
+	      <span class="input-group-addon">
+		<i class="glyphicon glyphicon-credit-card fg-red"></i>刷卡</span>
+	      <form name="select.form.cardForm">
+		<div ng-class="{'has-error':select.form.cardForm.$invalid
+			       && !select.form.cardForm.$pristine}">
+	  	  <input class="form-control"
+			 type="number" step="0.01"
+			 disable-key
+			 x-ng-edit
+			 focus-auto="focus_attr.card"
+			 x-ng-pattern="pattern.money"
+	  		 x-ng-model="select.card"
+			 placeholder="刷卡"
+			 x-ng-enter="disable_save() || save_bsale()"/>
+		</div>
+	      </form>
+	    </div>
+	  </div>
+	</div>
+
+	<div class="row diablo-good-form-group">
+	  <div class="col-xs-12 col-md-12">
+	    <div class="input-group">
+	      <span class="input-group-addon">
+		<i class="glyphicon glyphicon-qrcode fg-red"></i>微/支</span>
+	      <form name="select.form.wForm">
+		<div ng-class="{'has-error':select.form.wForm.$invalid && !select.form.wForm.$pristine}">
+	  	  <input class="form-control"
+			 type="number" step="0.01"
+			 disable-key
+			 x-ng-edit
+			 focus-auto="focus_attr.wxin"
+			 x-ng-pattern="pattern.money"
+	  		 x-ng-model="select.wxin"
+			 placeholder="微/支"
+			 x-ng-enter="disable_save() || save_bsale()"/>
+		</div>
+	      </form>
+	    </div>
+	  </div>
+	</div>
+
+	<div class="row diablo-good-form-group">
+	  <div class="col-xs-12 col-md-12">
+            <div class="input-group">
+              <span class="input-group-addon">
+                <i class="glyphicon glyphicon-ban-circle fg-red"></i>核销</span>
+              <form name="select.form.vForm">
+                  <div ng-class="{'has-error':select.form.vForm.$invalid && !select.form.vForm.$pristine}">
+                    <input class="form-control"
+                           type="number" step="1"
+                           x-ng-pattern="pattern.money"
+                           x-ng-edit
+                           x-ng-model="select.verificate"
+                           placeholder="核销" />
+                  </div>
+              </form>
+            </div>
+          </div>
+	</div>
+
+	<div class="row diablo-good-form-group">
+	  <div class="col-xs-12 col-md-12">
+	    <div class="input-group">
+	      <span class="input-group-addon">
+		<i class="glyphicon glyphicon-comment fg-red"></i>备注</span>
+	      <input class="form-control"
+		     type="text"
+		     placeholder="备注"
+	    	     x-ng-model="select.comment"/>
+	    </div>
+	  </div>
+	</div>
+	
+      </div>
+
+      <div class="row">
+	<div class="col-xs-12 col-md-12"> 
+	  <h4 class="text-center" style="margin-top:-2px"> 
+    	    <span x-ng-if="select.region">
+    	      区域：<span class="fg-blue"><strong>{{select.region.name}}</strong></span>&nbsp&nbsp
+    	    </span>
+
+    	    <span x-ng-if="select.department">
+	      <!-- <span>部门：<span class="fg-blue"> -->
+	      <!-- 	  <strong>{{select.department.name}}</strong></span></span>&nbsp&nbsp -->
+    	      <span>负责人：</span><span class="fg-red">
+		<strong>{{select.department.master.name}}</strong>
+	      </span>&nbsp&nbsp
+    	    </span> 
+	  </h4>
+	</div>
+      </div>
+      
+      <div class="row">
+	<div class="col-xs-12 col-md-12"> 
+	  <h4 class="text-center" style="margin-top:-2px"> 
+    	    <span x-ng-if="select.bsaler && select.bsaler.id!==-1 && select.bsaler.type_id!==2">上欠：
+    	      <span class="fg-blue sell-font"><strong>{{select.surplus}}</strong></span>&nbsp&nbsp
+    	    </span>
+
+    	    <span x-ng-if="select.bsaler && select.bsaler.id!==-1 && select.bsaler.type_id!==2">本欠：
+    	      <span class="fg-red sell-font"><strong>{{select.left_balance}}</strong></span>&nbsp&nbsp
+    	    </span> 
+	  </h4>
+	</div>
+      </div>
+
+      <div class="row">
+	<div class="col-xs-12 col-md-12"> 
+	  <h4 class="diablo-margin-top-minus-10 text-center">
+	    <span>数量：<span class="fg-red sell-font"><strong>{{select.abs_total}}</strong></span></span>&nbsp&nbsp
+	    <span>应付：<span class="fg-red sell-font"><strong>{{select.should_pay}}</strong></span></span>&nbsp&nbsp
+	    <span>实付：<span class="fg-red sell-font"><strong>{{select.has_pay}}</strong></span></span>&nbsp&nbsp 
+	  </h4>
+	</div>
+      </div>
+
+      <div class="row">
+	<div class="col-xs-12 col-md-12"> 
+	  <h4 class="diablo-margin-top-minus-10 text-center"> 
+	    <span x-ng-if="select.cash">现金：
+    	      <span class="fg-blue sell-font"><strong>{{select.cash}}</strong></span>&nbsp&nbsp
+	    </span>
+	    <span x-ng-if="select.card">刷卡：
+    	      <span class="fg-blue sell-font"><strong>{{select.card}}</strong></span>&nbsp&nbsp
+	    </span>
+	    <span x-ng-if="select.wxin">微/支：
+    	      <span class="fg-blue sell-font"><strong>{{select.wxin}}</strong></span>&nbsp&nbsp
+	    </span>
+	  </h4>
+	</div>
+      </div>
+      
+    </div> 
+  </div>
+  
+</div> <!--END row-->
+
+
+<script type="text/ng-template" id="bsale-new.html">
+  <div class="modal-body"> 
+    <div class="diablo-form-group">
+      <div class="input-group">
+	
+	<span class="input-group-addon">
+	  <i class="glyphicon glyphicon-yen fg-red"></i>
+	</span>
+
+	<form name="fprice">
+	  <div ng-class="{'has-error':fprice.$invalid
+			 && !fprice.$pristine}">
+	    <input class="form-control text-center"
+		   type="number" step="0.01"
+		   required
+		   placeholder="请输入价格，支持两位小数"
+		   x-ng-pattern="/^\d+(.\d{1,2})?$/"
+		   x-ng-model="params.fprice" />
+	  </div>
+	</form>
+	
+	<span class="input-group-addon">
+	  <i class="glyphicon glyphicon-sort-by-attributes-alt fg-red"></i>
+	</span>
+	
+	<form name="fdiscount">
+	  <div ng-class="{'has-error':fdiscount.$invalid && !discount.$pristine}">
+	    <input class="form-control text-center"
+		   type="number" step="0.01"
+		   required
+		   x-ng-model="params.fdiscount"
+		   placeholder="请输入折扣，无折扣请输入100" />
+	  </div>
+	</form>
+	
+      </div>
+    </div>
+    
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped table-condensed table-advanced">
+	<tbody>
+	  <tr>
+	    <td></td>
+	    <td x-ng-repeat="s in params.sizes" x-ng-switch on="s">
+	      <span x-ng-switch-when="0">均码</span>
+	      <span x-ng-switch-default>{{s}}</span>
+	    </td>
+	  </tr>
+	  <tr x-ng-repeat="c in params.colors">
+	    <td class="col-md-1" x-ng-switch on="c.cid">
+	      <span x-ng-switch-when="0">均色</span>
+	      <span x-ng-switch-default>{{c.cname}}</span>
+	    </td>
+	    <td class="col-md-1" x-ng-repeat="s in params.sizes">
+	      <div x-ng-if="(amount=params.get_amount(c.cid, s, params.amounts))?true:false"> 
+		<div class="input-group">
+		  <span class="input-group-addon modal-input-group-addon">{{amount.count}}</span>
+		  <form name="aform">
+		    <div ng-class="{'has-error':aform.$invalid || !params.valid_sell(amount)}">
+		      <input x-ng-if="amount"
+			     class="form-control modal-input text-center"
+			     type="number"
+			     step="1"
+			     x-ng-model="amount.sell_count">
+		    </div>
+		  </form>
+		</div>
+		
+	      </div> 
+	    </td>
+	  </tr>
+	</tbody> 
+      </table>
+    </div> <!--END table-responsive-->
+    <image x-ng-show="params.path"
+	   class="img-responsive img-thumbnail"
+	   ng-src="{{params.path}}"></image>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="!params.valid(params.amounts)"
+	    x-ng-click="ok()">保存</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
+</script>
+
+
+<script type="text/ng-template" id="bsale-detail.html">
+  <div class="modal-body">
+    <div class="table-responsive">
+      <table class="table table-bordered
+		    table-striped table-condensed table-advanced">
+	<tbody>
+	  <tr>
+	    <td></td>
+	    <td x-ng-repeat="s in params.sizes" x-ng-switch on="s">
+	      <span x-ng-switch-when="0">均码</span>
+	      <span x-ng-switch-default>{{s}}</span>
+	    </td>
+	  </tr>
+	  <tr x-ng-repeat="c in params.colors">
+	    <td class="col-md-1" x-ng-switch on="c.cid">
+	      <span x-ng-switch-when="0">均色</span>
+	      <span x-ng-switch-default>{{c.cname}}</span>
+	    </td>
+	    <td x-ng-repeat="s in params.sizes">
+	      {{params.get_amount(c.cid, s, params.amounts).sell_count}} 
+	    </td>
+	  </tr>
+	</tbody>
+      </table>
+    </div> <!--END table-responsive-->
+    <image x-ng-show="params.path"
+	   class="img-responsive img-thumbnail"
+	   ng-src="{{params.path}}"></image>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary" x-ng-click="ok()">保存</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
+</script>
+
+<script type="text/ng-template" id="stock-info.html">
+  <div class="modal-body">
+    <div class="table-responsive">
+      <table class="table table-bordered
+		    table-striped table-condensed table-advanced">
+	<thead>
+	  <tr>
+	    <th>类别</th>
+	    <th>年度</th>
+	    <th>季节</th>
+	    <th>厂商</th>
+	    <th>当前库存</th>
+	    <th>进价</th>
+	    <th>吊牌价</th>
+	    <th>入库日期</th>
+	  </tr>
+	</thead>
+	<tbody>
+	  <tr x-ng-repeat="s in params.stock">
+	    <td>{{s.type.name}}</td>
+	    <td>{{s.year}}</td>
+	    <td>{{s.seasonObj.name}}</td>
+	    <td>{{s.fname}}</td>
+	    <td>{{s.total}}</td>
+	    <td>{{s.org_price}}</td>
+	    <td>{{s.tag_price}}</td>
+	    <td>{{s.entry_date}}</td>
+	  </tr>
+	</tbody>
+      </table>
+    </div> <!--END table-responsive-->
+    <image x-ng-show="params.path" class="img-responsive img-thumbnail" ng-src="{{params.path}}"></image>
+  </div>
+
+  <div class="modal-footer"> 
+    <button class="btn btn-primary" x-ng-click="cancel()">确定</button>
+  </div>
+</script>
+

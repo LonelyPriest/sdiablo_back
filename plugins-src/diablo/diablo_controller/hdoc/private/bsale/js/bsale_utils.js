@@ -1,5 +1,144 @@
 var bsaleUtils = function(){
+    var in_sort = function(sorts, sell){
+	var found = false;
+	for (var i=0, l=sorts.length; i<l; i++){
+	    if (sell.style_number === sorts[i].style_number && sell.brand_id === sorts[i].brand_id){
+		// sorts[i].total += sell.sell;
+		sorts[i].reject += sell.amount;
+		if (!in_array(sorts[i].colors_id, sell.color_id)) {
+		    sorts[i].colors_id.push(sell.color_id);
+		}		
+		sorts[i].amounts.push({
+		    cid        :sell.color_id,
+		    size       :sell.size,
+		    sell_count :sell.amount});
+		found = true;
+		break;
+	    } 
+	}
+	return found; 
+    };
+
+    var sort_bsale = function(base, sells) {
+	console.log(base);
+	var select             = {};
+	select.rsn             = base.rsn;
+	select.rsn_id          = base.id;
+	select.rsn_datetime    = diablo_set_datetime(base.entry_date);
+	select.region_id       = base.region_id,
+	select.bsaler_id       = base.bsaler_id;
+	select.shop_id         = base.shop_id; 
+	select.employee_id     = base.employee_id; 
+	
+	select.surplus    = base.balance;
+	select.cash       = base.cash;
+	select.card       = base.card;
+	select.wxin       = base.wxin;
+	select.verificate = base.verificate; 
+	select.should_pay = base.should_pay;
+	select.has_pay    = base.has_pay;
+	
+	select.comment    = base.comment;
+	select.total      = base.total;
+	
+	var sorts = [];
+	for (var i=0, l=sells.length; i<l; i++){
+	    var s = sells[i];
+	    if (!in_sort(sorts, s)){
+		var add = {$edit:true,
+			   $new:false,
+			   sizes: [],
+			   colors_id: [],
+			   amounts:[]};
+		add.style_number = s.style_number; 
+		add.brand_id = s.brand_id; 
+		add.type_id  = s.type_id;
+		add.sex     = s.sex;
+		add.season  = s.season;
+		add.firm_id = s.firm_id;
+		add.year    = s.year;
+		add.entry   = s.in_datetime;
+		add.free    = s.free;
+		add.path    = s.path;
+		add.unit    = s.unit;
+
+		add.free_color_size = s.free === 0 ? true : false; 
+		add.s_group = s.s_group;
+		add.comment = s.comment;
+		
+		add.org_price = s.org_price;
+		add.tag_price = s.tag_price;
+		add.ediscount = s.ediscount;
+		add.fprice    = s.fprice;
+		add.rprice    = s.rprice;
+		add.fdiscount = s.fdiscount;
+		add.rdiscount   = s.rdiscount;
+		add.o_fdiscount = s.fdiscount;
+		add.o_fprice    = s.fprice;
+		
+		add.reject    = s.amount;
+		add.total     = s.total;
+		
+		add.sizes.push(s.size); 
+		add.colors_id.push(s.color_id);
+		
+		add.amounts.push({cid: s.color_id, size:s.size, sell_count:s.amount}); 
+		sorts.push(add);
+	    }
+	}
+
+	return {select:select, details:sorts}
+    };
+
+    var get_size_group = function(gids, size_groups){
+	var gnames = [];
+	gids.split(",").map(function(id){
+	    angular.forEach(size_groups, function(g){
+		if (parseInt(id) === g.id){
+		    angular.forEach(diablo_sizegroup, function(sname){
+			if (g[sname]){
+			    if (!in_array(gnames, g[sname]))
+				gnames.push(g[sname]);
+			}
+		    })
+		}
+	    })
+	}); 
+	
+	return gnames;
+    };
+    
     return {
+	cover_bsale: function(base, sells, shops, brands, bsalers, employees, types, colors, size_groups, regions){
+	    var bsale         = sort_bsale(base, sells);
+	    var details       = bsale.details;
+	    var order_length  = details.length;
+	    
+	    angular.forEach(details, function(d){
+		if (d.sizes.length !== 1 || d.sizes[0] !== diablo_free_size){
+		    d.sizes = get_size_group(d.s_group, size_groups);
+		}
+
+		d.colors = d.colors_id.map(function(id){return diablo_find_color(id, colors);});
+		
+		d.brand     = diablo_get_object(d.brand_id, brands);
+		d.type      = diablo_get_object(d.type_id, types); 
+		d.select    = true;
+		// d.select    = d.total > 0 ? true : false;
+		d.full_name = d.style_number + "/" + d.brand.name + "/" + d.type.name;
+		d.order_id  = order_length; 
+		order_length--; 
+		
+	    });
+
+	    bsale.select.shop = diablo_get_object(bsale.select.shop_id, shops); 
+	    bsale.select.bsaler = diablo_get_object(bsale.select.bsaler_id, bsalers);
+	    bsale.select.region = diablo_get_object(bsale.select.region_id, regions); 
+	    // console.log(bsale);
+	    bsale.select.employee = diablo_get_object(bsale.select.employee_id, employees); 
+	    return bsale;
+	},
+	
 	cache_page_condition: function(
 	    storage, key, conditions, start_time, end_time, current_page, datetime){
 	    storage.remove(key);
