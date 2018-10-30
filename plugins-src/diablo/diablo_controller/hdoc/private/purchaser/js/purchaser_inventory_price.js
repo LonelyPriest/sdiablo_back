@@ -496,7 +496,7 @@ function stockNewNotePrintCtrlProvide(
     
     var notes = [];
     purchaserService.print_w_inventory_new_note($scope.search).then(function(result) {
-    	// console.log(result);
+    	console.log(result);
 	if (result.ecode === 0) {
 	    angular.forEach(result.data, function(d) {
 		var notes_of_shop = [];
@@ -513,7 +513,7 @@ function stockNewNotePrintCtrlProvide(
 		    }
 		});
 
-		notes.push({fid:d.fid, firm:d.firm, addr:d.addr, ns: notes_of_shop}); 
+		notes.push({fid:d.fid, firm:d.firm, addr:d.addr, mobile:d.mobile, ns: notes_of_shop}); 
 	    }); 
 
 	    // console.log(notes);
@@ -529,7 +529,13 @@ function stockNewNotePrintCtrlProvide(
 
 		// diablo_order(ns);
 		$scope.firms.push({fid: notes[i].fid, firm:notes[i].firm, addr:notes[i].addr, total:total}); 
-		$scope.notes.push({fid: notes[i].fid, firm:notes[i].firm, addr:notes[i].addr, total:total, ns:ns});
+		$scope.notes.push(
+		    {fid: notes[i].fid,
+		     firm:notes[i].firm,
+		     addr:notes[i].addr,
+		     mobile:notes[i].mobile,
+		     total:total,
+		     ns:ns});
 	    }
 	    
 	    diablo_order($scope.firms);

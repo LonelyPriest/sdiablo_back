@@ -220,6 +220,10 @@ function bsaleConfig(angular){
 	    return request.save({operation: "update_batch_sale"}, stock).$promise;
 	};
 
+	this.delete_batch_sale = function(rsn) {
+	    return request.save({operation: "delete_batch_sale"}, {rsn:rsn}).$promise;
+	};
+
 	/*================================================================================
 	 * batch saler
 	 *================================================================================*/
@@ -1636,7 +1640,7 @@ function bsaleNewDetailCtrlProvide(
     };
 
     $scope.delete_sale = function(r){
-	bsaleService.delete_bsale_new(r.rsn).then(function(state){
+	bsaleService.delete_batch_sale(r.rsn).then(function(state){
 	    console.log(state);
 	    if (state.ecode == 0){
 		dialog.response_with_callback(

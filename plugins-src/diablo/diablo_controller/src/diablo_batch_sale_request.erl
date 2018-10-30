@@ -262,6 +262,33 @@ action(Session, Req, {"update_batch_sale"}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"delete_batch_sale"}, Payload) ->
+    ?DEBUG("delete_batch_sale: session ~p, payload ~p", [Payload]),
+    Merchant = ?session:get(merchant, Session),
+    RSN = ?v(<<"rsn">>, Payload), 
+    Conditions = [{<<"rsn">>, RSN}],
+    case ?b_sale:bsale(get_sale, Merchant, Conditions) of
+	{ok, []} ->
+	    ?utils:respond(200, Req, ?err(wsale_empty, RSN));
+	{ok, SaleProps} ->
+	    case ?b_sale:bsale(get_sale_new_transe, Merchant, Conditions) of
+		{ok, []} -> 
+		    case ?b_sale:bsale(delete_sale, Merchant, SaleProps, Conditions) of
+			{ok, RSN} ->
+			    ?utils:respond(
+			       200, Req, ?succ(update_w_sale, RSN), Conditions);
+			{error, Error} ->
+			    ?utils:respond(200, Req, Error)
+		    end;
+		{ok, _} ->
+		    ?utils:respond(200, Req, ?err(wsale_trans_detail_not_empty, RSN)); 
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end;
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
 %%--------------------------------------------------------------------------------
 %% batch saler
 %%--------------------------------------------------------------------------------

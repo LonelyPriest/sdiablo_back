@@ -130,10 +130,10 @@ var retailerPrint = function(){
 	    top += 20; // 105
 	    LODOP.ADD_PRINT_LINE(top,  left, top, vWidth, 0, 1);
 
-	    return;
+	    return top;
 	},
 
-	gen_body: function(LODOP, sale){
+	gen_body: function(LODOP, sale, gen_body){
 	    var top = 115;
 	    LODOP.ADD_PRINT_TEXT(top, left, 70, hFont, "商品");
 	    LODOP.ADD_PRINT_TEXT(top, left + 70, 35, hFont, "单价");
@@ -149,7 +149,6 @@ var retailerPrint = function(){
 	    LODOP.ADD_PRINT_LINE(top, left, top, vWidth, 0, 1);
 	    
 	    top += 5;
-	    return top;
 	},
 
 	gen_stastic: function(LODOP, top, card, comment){

@@ -37,7 +37,10 @@ bsale(update_sale, Merchant, Inventories, {Props, OldProps}) ->
     gen_server:call(Name, {update_sale, Merchant, Inventories, Props, OldProps}); 
 bsale(check, Merchant, RSN, Mode) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {check_sale, Merchant, RSN, Mode}).
+    gen_server:call(Name, {check_sale, Merchant, RSN, Mode});
+bsale(delete_sale, Merchant, SaleProps, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {delete_sale_new, Merchant, SaleProps, Conditions}).
 
 bsale(get_sale, Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
@@ -51,6 +54,7 @@ bsale(get_sale_new_note, Merchant, Conditions) ->
 bsale(get_sale_new_transe, Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {get_sale_new_transe, Merchant, Conditions}).
+
 
 filter(total_sale_new, 'and', Merchant, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -303,6 +307,32 @@ handle_call({filter_sale_new_detail,
 		   end),
     
     Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({delete_sale_new, Merchant, SaleProps, Conditions}, _From, State) ->
+    ?DEBUG("delete_sale_new with merchant ~p, SaleProps, condition ~p", [Merchant, SaleProps, Conditions]),
+    RSN = ?v(<<"rsn">>, Conditions),
+
+    BSaler       = ?v(<<"bsaler_id">>, SaleProps),
+    Datetime     = ?v(<<"entry_date">>, SaleProps),
+    Verificate   = ?v(<<"verificate">>, SaleProps),
+    HasPay       = ?v(<<"has_pay">>, SaleProps), 
+
+    MBalance = HasPay - Verificate,
+
+    Sqls = ["update batch_sale set balance=balance+" ++ ?to_s(MBalance)
+	    ++ " where merchant=" ++ ?to_s(Merchant)
+	    ++ " and bsaler=" ++ ?to_s(BSaler)
+	    ++ " and entry_date>\'" ++ ?to_s(Datetime) ++ "\'",
+
+	    "update batchsaler set balance=balance+" ++ ?to_s(MBalance)
+	    ++ " where id=" ++ ?to_s(BSaler)
+	    ++ " and merchant=" ++ ?to_s(Merchant),
+
+	    "delete from batch_sale where merchant=" ++ ?to_s(Merchant)
+	    ++ " and " ++ ?utils:to_sqls(proplists, Conditions)],
+
+    Reply =  ?sql_utils:execute(transaction, Sqls, RSN),
     {reply, Reply, State};
 
 handle_call({get_sale_new, Merchant, Conditions} , _From, State) ->

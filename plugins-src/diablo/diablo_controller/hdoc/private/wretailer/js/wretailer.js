@@ -1318,6 +1318,7 @@ function wretailerThresholdCardDetailCtrlProvide(
 			console.log(state);
 			if (state.ecode === 0) {
 			    var p_num = retailerUtils.print_num(params.shop.id, base);
+			    var saleMode = retailerUtils.sale_mode(params.shop.id, base); 
 			    dialog.response_with_callback(
 				true,
 				title, title + "消费成功！！"
@@ -1333,21 +1334,24 @@ function wretailerThresholdCardDetailCtrlProvide(
 
 				    var start_print = function(LODOP, ptime) {
 					retailerPrint.init(LODOP);
-					retailerPrint.gen_head(
+					var top = retailerPrint.gen_head(
 					    LODOP,
 					    params.shop.name,
 					    state.rsn,
 					    params.employee.name,
 					    card.retailer + "-" + card.mobile,
 					    ptime);
-					
-					var top = retailerPrint.gen_body(
-					    LODOP, 
-					    {good_name: params.good.name,
-					     tag_price: params.good.tag_price,
-					     count:     params.count}
-					);
 
+					if (retailerUtils.to_integer(saleMode.charAt(7))) {
+					    top = retailerPrint.gen_body(
+						LODOP, 
+						{good_name: params.good.name,
+						 tag_price: params.good.tag_price,
+						 count:     params.count});
+					} else {
+					    top += 10;
+					} 
+					
 					top = retailerPrint.gen_stastic(
 					    LODOP,
 					    top,

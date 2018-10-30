@@ -876,10 +876,11 @@ sys_config() ->
 	      %% [4]: distinct account when on sale
 	      %% [5]: hide charge on sale
 	      %% [6]: print title when on stock out
-	      {"p_balance",       "销售模式",             "0001000",  "0"},
+	      %% [7]: print sale body on swiming comsume
+	      {"p_balance",       "销售模式",             "00000000",  "0"},
 	      
 	      {"gen_ticket",      "自动生成电子卷",       "0",   "0"},
-
+	      
 	      %% [0]: recharge 
 	      %% [1]: threshold_card
 	      {"recharge_sms",    "充值短信提醒",         "00",   "0"},

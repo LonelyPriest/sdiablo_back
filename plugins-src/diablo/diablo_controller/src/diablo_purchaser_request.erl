@@ -1410,9 +1410,15 @@ action(Session, Req, {"print_w_inventory_new_note"}, Payload) ->
 			     {<<"addr">>, case ?v(<<"vfirm_addr">>, N, <<>>) of
 					      <<>> ->
 						  ?v(<<"firm_addr">>, N, <<>>);
-					       _Addr ->
-						   _Addr
+					      _Addr ->
+						  _Addr
 					  end},
+			     {<<"mobile">>, case ?v(<<"vmobile">>, N, <<>>) of
+						<<>> ->
+						    ?v(<<"mobile">>, N, <<>>);
+						_Addr ->
+						    _Addr
+					    end},
 			     {<<"note">>, Notes}]}|Acc]
     		  end
 		  
