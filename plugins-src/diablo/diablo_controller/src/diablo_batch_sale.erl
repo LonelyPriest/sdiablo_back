@@ -228,7 +228,9 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 	++ ?utils:v(has_pay, float, IsSame(number, HasPay, OldHasPay))
 	++ ?utils:v(total, integer, IsSame(number, Total, OldTotal))
 	++ ?utils:v(comment, string, IsSame(string, Comment, OldComment))
-	++ ?utils:v(entry_date, string, IsSame(datetime, NewDatetime, OldDatetime)), 
+	++ ?utils:v(entry_date, string, IsSame(datetime, NewDatetime, OldDatetime)),
+
+    %% ?DEBUG("Updates ~p", [Updates]),
 
     %% OldPay = OldShouldPay + OldVerificate - OldHasPay,
     %% NewPay = ShouldPay + Verificate - HasPay,
@@ -1086,9 +1088,11 @@ update_sale(same_bsaler, Merchant, Updates, {Props, OldProps})->
 
     case ?to_b(Datetime) == ?to_b(OldDatetime) of
 	true ->
-	    ["update batch_sale set " ++ ?utils:to_sqls(proplists, comma, Updates)
-	     ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"]
-		++ 
+	    case Updates of
+		[] -> [];
+		_ -> ["update batch_sale set " ++ ?utils:to_sqls(proplists, comma, Updates)
+		      ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"]
+	    end ++ 
 		case Mbalance == 0 of
 		    true -> [] ;
 		    false -> 

@@ -612,6 +612,7 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
     ?DEBUG("list_barcode_print_template: Merchant  ~p", [Merchant]), 
     Sql0 = "select id"
 	", name"
+	", label"
 	", tshop as tshop_id"
 	
 	", width"
@@ -646,6 +647,7 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", font_price"
 	", font_size"
 	", font_fabric"
+	", font_label"
     %% ", font_vprice"
 	
 	", bold"
@@ -661,6 +663,7 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", hpx_price"
 	", hpx_size"
 	", hpx_barcode"
+	", hpx_label"
 
 	", hpx_top"
 	", hpx_left"
@@ -678,7 +681,8 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	
 	", offset_size"
 	", offset_tagprice"
-	", offset_virprice"
+	", offset_virprice" 
+	", offset_label"
 	
 	" from print_template"
 	" where merchant=" ++ ?to_s(Merchant), 
@@ -689,6 +693,7 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
     ?DEBUG("update_barcode_print_template: Merchant ~p, attrs ~p", [Merchant, Attrs]),
     Id = ?v(<<"id">>, Attrs),
     U =?utils:v(name, string, ?v(<<"name">>, Attrs))
+	++ ?utils:v(label, string, ?v(<<"label">>, Attrs))
 	++ ?utils:v(width, integer, ?v(<<"width">>, Attrs)) 
 	++  ?utils:v(height, float, ?v(<<"height">>, Attrs))
     %% ++  ?utils:v(height, integer, ?v(<<"dual_column">>, Attrs))
@@ -722,6 +727,7 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(font_price, integer, ?v(<<"font_price">>, Attrs))
 	++  ?utils:v(font_size, integer, ?v(<<"font_size">>, Attrs))
 	++  ?utils:v(font_fabric, integer, ?v(<<"font_fabric">>, Attrs))
+	++  ?utils:v(font_label, integer, ?v(<<"font_label">>, Attrs))
     %% ++  ?utils:v(font_vprice, integer, ?v(<<"font_vprice">>, Attrs))
 	
 	++  ?utils:v(bold, integer, ?v(<<"bold">>, Attrs))
@@ -737,6 +743,7 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(hpx_price, integer, ?v(<<"hpx_price">>, Attrs))
 	++  ?utils:v(hpx_size, integer, ?v(<<"hpx_size">>, Attrs))
 	++  ?utils:v(hpx_barcode, integer, ?v(<<"hpx_barcode">>, Attrs))
+	++  ?utils:v(hpx_label, integer, ?v(<<"hpx_label">>, Attrs))
 
 	++  ?utils:v(hpx_top, integer, ?v(<<"hpx_top">>, Attrs))
 	++  ?utils:v(hpx_left, integer, ?v(<<"hpx_left">>, Attrs))
@@ -754,7 +761,8 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	
 	++  ?utils:v(offset_size, integer, ?v(<<"offset_size">>, Attrs))
 	++  ?utils:v(offset_tagprice, integer, ?v(<<"offset_tagprice">>, Attrs))
-	++  ?utils:v(offset_virprice, integer, ?v(<<"offset_virprice">>, Attrs)),
+	++  ?utils:v(offset_virprice, integer, ?v(<<"offset_virprice">>, Attrs)) 
+	++  ?utils:v(offset_label, integer, ?v(<<"offset_label">>, Attrs)),
 
     
     
@@ -950,4 +958,5 @@ sys_config() ->
 	      {"shop_mode",         "店铺模式",           "1",    "0"},
 	      {"type_sale",         "品类开单模式",       "0",    "0"}	      
 	     ],
+    
     Values.

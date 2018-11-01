@@ -1345,6 +1345,7 @@ create table print_template(
    id              INTEGER AUTO_INCREMENT,
    
    name            VARCHAR(64),
+   lable           VARCHAR(8),
    tshop           INTEGER default -1,
    
    width           TINYINT default 0,
@@ -1377,7 +1378,8 @@ create table print_template(
    font_category   TINYINT default 0,
    font_price      TINYINT default 0,
    font_size       TINYINT default 0,
-   font_fabric     TINYINT default 0, 
+   font_fabric     TINYINT default 0,
+   font_label      TINYINT default 0,
    -- font_vprice     TINYINT default 0,
    
    bold            TINYINT default 0,
@@ -1412,6 +1414,7 @@ create table print_template(
    offset_size     TINYINT default 0,
    offset_tagprice TINYINT default 0,
    offset_virprice TINYINT default 0,
+   offset_label    TINYINT default 0,
    
    merchant        INTEGER not null default -1,
    

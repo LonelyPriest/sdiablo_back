@@ -1072,10 +1072,25 @@ stockPrintU.prototype.printBarcode2 = function() {
     var top = this.top; 
     var line, line2, line3;
     // console.log(iwpx, top);
+    // lable
+    line = diablo_trim(this.template.label); 
+    if (line) {
+	var offset_label = stockUtils.to_integer(this.template.offset_label);
+	top = this.start_print(
+	    line,
+	    top,
+	    this.left + offset_label,
+	    iwpx,
+	    stockUtils.to_integer(this.template.hpx_label),
+	    stockUtils.to_integer(this.template.font_label),
+	    pSecond,
+	    pThird,
+	    startSecond + offset_label,
+	    startThird + offset_label);
+    }
     
     // 2018-06-12 12:30:49 -> 180612 
-    var shift_date = this.stock.entry_date.substr(3,8).split(diablo_date_seprator).join(""); 
-    
+    var shift_date = this.stock.entry_date.substr(3,8).split(diablo_date_seprator).join("");    
     // shop
     if (this.template.shop && angular.isDefined(this.shop)) {
 	line = this.shop; 

@@ -971,8 +971,7 @@ function goodPrintTemplateCtrlProvide(
 
     $scope.refresh();
 
-    var p = ["name",
-	     "width", "height"
+    var p = ["name", "label", "width", "height"
 	     
 	     , "shop", "style_number", "brand", "type", "firm", "code_firm"
 
@@ -982,13 +981,14 @@ function goodPrintTemplateCtrlProvide(
 	     
 	     , "level", "executive", "category", "fabric"
 	     
-	     , "font", "font_name", "font_executive", "font_category", "font_price", "font_size", "font_fabric"
+	     , "font", "font_name", "font_executive", "font_category",
+	     "font_price", "font_size", "font_fabric", "font_label"
 	     
 	     , "bold" 
 	     , "solo_brand", "solo_color", "solo_size"
 	     
 	     , "hpx_each", "hpx_executive", "hpx_category", "hpx_fabric"
-	     , "hpx_price", "hpx_size", "hpx_barcode"
+	     , "hpx_price", "hpx_size", "hpx_barcode", "hpx_label"
 	     
 	     , "hpx_top", "hpx_left", "second_space"
 	     
@@ -998,7 +998,7 @@ function goodPrintTemplateCtrlProvide(
 
 	     , "tag_price", "vir_price"
 	     
-	     , "offset_size", "offset_tagprice", "offset_virprice"];
+	     , "offset_size", "offset_tagprice", "offset_virprice", "offset_label"];
     
     $scope.save_template = function() {
 	var update = {};

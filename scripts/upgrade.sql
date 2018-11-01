@@ -470,3 +470,9 @@ update w_inventory set gift=1 where state=2;
 alter table w_inventory_good add column unit TINYINT default 0 after alarm_day;
 alter table w_inventory add column unit TINYINT default 0 after alarm_day;
 drop table batch_sale_detail;
+
+-- 2018-11-02
+alter table print_template add column label VARCHAR(8) default '' after name;
+alter table print_template add column offset_label INTEGER default 0  after offset_virprice;
+alter table print_template add column font_label INTEGER default 0  after font_fabric;
+alter table print_template add column hpx_label INTEGER default 0  after hpx_barcode;

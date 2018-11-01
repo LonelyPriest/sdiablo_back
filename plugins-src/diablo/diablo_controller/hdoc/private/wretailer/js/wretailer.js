@@ -1341,23 +1341,22 @@ function wretailerThresholdCardDetailCtrlProvide(
 					    params.employee.name,
 					    card.retailer + "-" + card.mobile,
 					    ptime);
-
-					if (retailerUtils.to_integer(saleMode.charAt(7))) {
+					
+					if ( card.rule_id === diablo_theoretic_charge
+					     || retailerUtils.to_integer(saleMode.charAt(7)) ) {
 					    top = retailerPrint.gen_body(
-						LODOP, 
+						LODOP,
+						top,
 						{good_name: params.good.name,
-						 tag_price: params.good.tag_price,
-						 count:     params.count});
-					} else {
-					    top += 10;
-					} 
+						 tag_price: retailerUtils.to_float(params.good.tag_price),
+						 count:     params.count}
+					    );
+					}
 					
 					top = retailerPrint.gen_stastic(
 					    LODOP,
 					    top,
-					    {rule: card.rule,
-					     left_time: card.ctime,
-					     expire_date: card.edate},
+					    {rule: card.rule, left_time: card.ctime, expire_date: card.edate},
 					    params.comment);
 					
 					retailerPrint.gen_foot(LODOP, top, ptime); 

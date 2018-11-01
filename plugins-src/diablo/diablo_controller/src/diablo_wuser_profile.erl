@@ -912,6 +912,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	{ok, []} ->
 	    Sql1 = "insert into print_template ("
 		"name"
+		", lable"
 		", tshop"
 		
 		", width"
@@ -962,6 +963,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		", hpx_price"
 		", hpx_size"
 		", hpx_barcode"
+		", hpx_label"
 
 		", hpx_top"
 		", hpx_left"
@@ -980,10 +982,12 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		", offset_size"
 		", offset_tagprice"
 		", offset_virprice"
+		", offset_label"
 		
 		", merchant) values("
-		++ "\'" ++ ?to_s(Name) ++ "\',"
-		++ ?to_s(Shop) ++ ","
+		++ "\'" ++ ?to_s(Name) ++ "\',"  %% modal name
+		++ "\'""\',"                     %% lable name
+		++ ?to_s(Shop) ++ ","            %% modal of shop
 		
 		++ ?to_s(4) ++ ","
 		++ ?to_s(3) ++ ","
@@ -1017,6 +1021,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(0) ++ ","      %% font_price
 		++ ?to_s(0) ++ ","      %% font_size
 		++ ?to_s(0) ++ ","      %% font_fabrice
+		++ ?to_s(0) ++ ","      %% font_label
 	    %% ++ ?to_s(0) ++ ","      %% font_vprice
 		
 		++ ?to_s(?NO) ++ ","    %% bold
@@ -1032,7 +1037,8 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(0) ++ ","      %% hpx_price
 		++ ?to_s(0) ++ ","      %% hpx_size
 		++ ?to_s(0) ++ ","      %% hpx_barcode
-
+		++ ?to_s(0) ++ ","      %% hpx_label
+		
 		++ ?to_s(5) ++ ","      %% hpx_top
 		++ ?to_s(10) ++ ","     %% hpx_left
 		++ ?to_s(0) ++ ","      %% second_space
@@ -1050,6 +1056,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(0) ++ ","      %% offset_size
 		++ ?to_s(0) ++ ","      %% offset_tagprice
 		++ ?to_s(0) ++ ","      %% offset_virprice
+		++ ?to_s(0) ++ ","      %% offset_label
 		
 		++ ?to_s(Merchant)  ++ ")",
 

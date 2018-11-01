@@ -133,8 +133,8 @@ var retailerPrint = function(){
 	    return top;
 	},
 
-	gen_body: function(LODOP, sale, gen_body){
-	    var top = 115;
+	gen_body: function(LODOP, top, sale){
+	    top += 10;
 	    LODOP.ADD_PRINT_TEXT(top, left, 70, hFont, "商品");
 	    LODOP.ADD_PRINT_TEXT(top, left + 70, 35, hFont, "单价");
 	    LODOP.ADD_PRINT_TEXT(top, left + 105, 35, hFont, "次数");
@@ -147,12 +147,12 @@ var retailerPrint = function(){
 
 	    top += 15;
 	    LODOP.ADD_PRINT_LINE(top, left, top, vWidth, 0, 1);
-	    
-	    top += 5;
+
+	    return top;
 	},
 
 	gen_stastic: function(LODOP, top, card, comment){
-	    top += 5;
+	    top += 10;
 	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "消费类型：" + card.rule.name);
 	    
 	    var l = "";
