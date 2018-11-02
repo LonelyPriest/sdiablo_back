@@ -1331,7 +1331,7 @@ function wretailerThresholdCardDetailCtrlProvide(
 				function() {
 				    if (card.rule_id === diablo_theoretic_charge)
 					card.ctime -= params.count;
-
+				    
 				    var start_print = function(LODOP, ptime) {
 					retailerPrint.init(LODOP);
 					var top = retailerPrint.gen_head(
@@ -1342,8 +1342,7 @@ function wretailerThresholdCardDetailCtrlProvide(
 					    card.retailer + "-" + card.mobile,
 					    ptime);
 					
-					if ( card.rule_id === diablo_theoretic_charge
-					     || retailerUtils.to_integer(saleMode.charAt(7)) ) {
+					if (retailerUtils.to_integer(saleMode.charAt(7)) ) {
 					    top = retailerPrint.gen_body(
 						LODOP,
 						top,
@@ -1356,7 +1355,10 @@ function wretailerThresholdCardDetailCtrlProvide(
 					top = retailerPrint.gen_stastic(
 					    LODOP,
 					    top,
-					    {rule: card.rule, left_time: card.ctime, expire_date: card.edate},
+					    {cname: card.cname,
+					     rule: card.rule,
+					     left_time: card.ctime,
+					     expire_date: card.edate},
 					    params.comment);
 					
 					retailerPrint.gen_foot(LODOP, top, ptime); 

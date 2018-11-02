@@ -153,6 +153,9 @@ var retailerPrint = function(){
 
 	gen_stastic: function(LODOP, top, card, comment){
 	    top += 10;
+	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "会员项目：" + card.cname);
+	    
+	    top += 15;
 	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "消费类型：" + card.rule.name);
 	    
 	    var l = "";
@@ -186,8 +189,8 @@ var retailerPrint = function(){
 	},
 	
 	start_print: function(LODOP){
-	    // LODOP.PREVIEW();
-	    LODOP.PRINT();
+	    LODOP.PREVIEW();
+	    // LODOP.PRINT();
 	} 
     }
 }();

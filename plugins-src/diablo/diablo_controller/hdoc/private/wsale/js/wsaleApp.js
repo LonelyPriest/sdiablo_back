@@ -857,7 +857,8 @@ function wsaleNewProvide(
 	$scope.disable_refresh     = true;
 	$scope.has_saved           = false;
 	$scope.has_withdrawed      = false;
-	
+
+	$scope.disable_focus();
 	$scope.focus_good_or_barcode();
 	$scope.wsaleStorage.reset();
 	$scope.reset_retailer();
@@ -2034,8 +2035,8 @@ function wsaleNewProvide(
 	    $scope.show_promotions[i].order_id = l - i; 
 	}
 
-	// $scope.disable_focus();
-	// $scope.focus_good_or_barcode();
+	$scope.disable_focus();
+	$scope.focus_good_or_barcode();
     };
 
     /*

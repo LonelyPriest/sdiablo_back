@@ -1,5 +1,10 @@
 var version_update = function(){
     var updates = [
+	{date: "2018-11-01",
+	 content:
+	 ["标签增加打印合格证字段"]
+	},
+	
 	{date: "2018-10-17",
 	 content:
 	 ["优化标签打印"]
