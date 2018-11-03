@@ -53,8 +53,10 @@ bsale(get_sale_new_note, Merchant, Conditions) ->
     gen_server:call(Name, {get_sale_new_note, Merchant, Conditions});
 bsale(get_sale_new_transe, Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {get_sale_new_transe, Merchant, Conditions}).
-
+    gen_server:call(Name, {get_sale_new_transe, Merchant, Conditions});
+bsale(get_sale_rsn, Merchant, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {get_sale_new_rsn, Merchant, Conditions}). 
 
 filter(total_sale_new, 'and', Merchant, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -417,6 +419,42 @@ handle_call({get_sale_new_transe, Merchant, Conditions} , _From, State) ->
 	" and a.style_number=b.style_number"
 	" and a.brand_id=b.brand",    
 
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({get_sale_new_rsn, Merchant, Conditions} , _From, State) ->
+    ?DEBUG("get_sale_rsn with merchant=~p, conditions ~p", [Merchant, Conditions]),
+
+    {DetailConditions, SaleConditions} =
+	filter_condition(batchsaler, [{<<"merchant">>, Merchant}|Conditions], [], []),
+    ?DEBUG("sale conditions ~p, detail condition ~p", [SaleConditions, DetailConditions]), 
+
+    {StartTime, EndTime, CutSaleConditions} = ?sql_utils:cut(fields_with_prifix, SaleConditions),
+
+    Sql1 = 
+	"select a.rsn from w_sale a"
+	" where "
+	++ ?sql_utils:condition(proplists_suffix, CutSaleConditions)
+	++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime),
+    Sql = 
+	case ?v(<<"rsn">>, SaleConditions, []) of
+	    [] ->
+		case DetailConditions of
+		    [] -> Sql1;
+		    _ ->
+			"select a.rsn from batch_sale a "
+			    "inner join (select rsn from batch_sale_detail"
+			    " where rsn like "
+			    ++ "\'M-" ++ ?to_s(Merchant) ++"%\'"
+			    ++ ?sql_utils:condition(proplists, DetailConditions) ++ ") b"
+			    " on a.rsn=b.rsn"
+			    " where "
+			    ++ ?sql_utils:condition(proplists_suffix, CutSaleConditions)
+			    ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime) 
+		end;
+	    _ -> Sql1 
+	end ++ " order by id desc",
+    
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 

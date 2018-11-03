@@ -166,9 +166,9 @@ function bsaleConfig(angular){
 
 	this.check_state    = [{name:"未审核", id:0}, {name:"已审核", id:1}];
 	this.check_comment  = [{name:"不为空", id:0}];
-	this.export_type    = {trans:0, trans_note:1}; 
+	this.export_type    = {detail:0, note:1}; 
 	this.default_bsaler = {name: "", id:-1};
-
+	
 	this.diablo_key_bsale_detail  = "q-bsale-detail";
 	
 	this.diablo_key_bsale_note    = "q-bsale-note";
@@ -208,6 +208,10 @@ function bsaleConfig(angular){
 	    return request.save({operation: "check_batch_sale"}, {rsn: rsn, mode:diablo_check}).$promise;
 	};
 
+	this.check_print_batch_sale = function(rsn){
+	    return request.save({operation: "check_batch_sale"}, {rsn: rsn, mode:diablo_print}).$promise;
+	};
+
 	this.uncheck_batch_sale = function(rsn){
 	    return request.save({operation: "check_batch_sale"}, {rsn: rsn, mode:diablo_uncheck}).$promise;
 	};
@@ -223,6 +227,10 @@ function bsaleConfig(angular){
 	this.delete_batch_sale = function(rsn) {
 	    return request.save({operation: "delete_batch_sale"}, {rsn:rsn}).$promise;
 	};
+
+	this.csv_export = function(condition, type){
+	    return http.save({operation: "export_batch_sale"}, {condition: condition, type:type}).$promise;
+	}; 
 
 	/*================================================================================
 	 * batch saler
@@ -1616,7 +1624,7 @@ function bsaleNewDetailCtrlProvide(
 		    true,
 		    "销售单审核",
 		    "销售单审核成功！！单号：" + state.rsn,
-		    undefined, function(){r.state = 1})
+		    undefined, function(){r.state = diablo_check})
 	    	return;
 	    } else{
 		dialog.set_batch_error("销售单审核", state.ecode); 
@@ -1631,7 +1639,7 @@ function bsaleNewDetailCtrlProvide(
 	    if (state.ecode == 0){
 		dialog.response_with_callback(
 		    true, "销售单反审", "销售单反审成功！！单号：" + state.rsn,
-		    undefined, function(){r.state = 0})
+		    undefined, function(){r.state = diablo_uncheck})
 	    	return;
 	    } else{
 		dialog.set_batch_error("销售单反审", state.ecode); 
@@ -1665,12 +1673,25 @@ function bsaleNewDetailCtrlProvide(
 
     $scope.print_sale = function(r) {
 	var callback = function() {
-	    diablo_goto_page("#/print_bsale/" + r.rsn);
+	    bsaleService.check_print_batch_sale(r.rsn).then(function(state){
+		console.log(state);
+		if (state.ecode == 0){
+		    r.state = diablo_print;
+		    diablo_goto_page("#/print_bsale/" + r.rsn); 
+		    // dialog.response_with_callback(
+		    // 	true,
+		    // 	"销售单审核",
+		    // 	"销售单审核成功！！单号：" + state.rsn,
+		    // 	undefined, function(){r.state = 3})
+	    	    // return;
+		} else{
+		    dialog.set_batch_error("销售单打印", state.ecode); 
+		}
+	    })	    
 	}
 	
 	dialog.request(
-	    "销售单打印", "请确认打印机已连接好，确认要打印吗？",
-	    callback, undefined, undefined);
+	    "销售单打印", "请确认打印机已连接好，确认要打印吗？", callback, undefined, undefined);
     };
 
     $scope.export_to = function(){
@@ -2066,7 +2087,7 @@ function bsaleNewNoteCtrlProvide(
 	    }
 	    console.log(search);
 	    
-	    bsaleService.csv_export(bsaleService.export_type.trans_note, search).then(function(result){
+	    bsaleService.csv_export(search, bsaleService.export_type.note).then(function(result){
 	    	console.log(result);
 		if (result.ecode === 0){
 		    dialog.response_with_callback(

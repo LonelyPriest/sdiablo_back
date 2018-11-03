@@ -49,8 +49,10 @@ var diablo_reject   = 1;
 var diablo_rsn_all = 0;
 var diablo_rsn_new = 1;
 
+var diablo_uncheck = 0; 
 var diablo_check = 1;
-var diablo_uncheck = 0;
+var diablo_print = 2;
+
 
 var diablo_delete = 0;
 var diablo_abandon = 1;
@@ -115,6 +117,7 @@ var diablo_fix_draft_path = "C:\\fix.txt";
 var diablo_stock_has_abandoned = 7;
 var diablo_stock_has_checked = 1;
 var diablo_stock_has_unchecked = 0;
+var diablo_stock_has_printed = 2;
 var diablo_firm_bill = 9;
 var diablo_sort_by_date = 1;
 
@@ -953,6 +956,9 @@ diablo_stock_css = function(state, type){
 	}
 	if (diablo_stock_has_checked === state){
 	    return "bg-lightOlive";
+	}
+	if (diablo_stock_has_printed === state) {
+	    return "bg-orange"
 	}
     }
 };

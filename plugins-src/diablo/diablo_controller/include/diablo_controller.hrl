@@ -484,6 +484,7 @@
 -define(bill_batch_saler,     ?right_b_sale + 13).
 
 -define(print_batch_sale,     ?right_b_sale + 14).
+-define(export_batch_sale,    ?right_b_sale + 15).
 
 %% public
 -define(http_route, diablo_controller_http_route).

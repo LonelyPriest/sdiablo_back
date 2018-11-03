@@ -6,6 +6,8 @@
 -behaviour(gen_request).
 
 -export([action/2, action/3, action/4]).
+
+-define(d, ?utils:seperator(csv)).
 %%--------------------------------------------------------------------
 %% @desc: GET action
 %%--------------------------------------------------------------------
@@ -103,7 +105,7 @@ action(Session, Req, {"get_batch_sale"}, Payload) ->
 
 		    Sort = sort_sale_new_detail(sort_by_color, Key, Detail, DictNewNote, []),
 		    %% ?DEBUG("sort ~p", [Sort]),
-
+		    
 		    ?utils:respond(200, object, Req,
 				   {[{<<"ecode">>, 0},
 				     {<<"detail">>, {Sale}},
@@ -284,6 +286,113 @@ action(Session, Req, {"delete_batch_sale"}, Payload) ->
 		    ?utils:respond(200, Req, ?err(wsale_trans_detail_not_empty, RSN)); 
 		{error, Error} ->
 		    ?utils:respond(200, Req, Error)
+	    end;
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"export_batch_sale"}, Payload) ->
+    ?DEBUG("export_batch_sale:session ~p, paylaod ~n~p", [Session, Payload]),
+    Merchant    = ?session:get(merchant, Session),
+    UserId      = ?session:get(id, Session),
+    ExportType  = export_type(?v(<<"type">>, Payload, 0)),
+
+    {struct, Conditions} = ?v(<<"condition">>, Payload),
+
+
+    NewConditions = 
+	case ExportType of
+	    trans_note ->
+		{struct, CutConditions} = ?v(<<"condition">>, Payload),
+		{ok, Q} = ?b_sale:bsale(get_sale_rsn, Merchant, CutConditions),
+		{struct, C} = ?v(<<"fields">>,
+				 ?w_inventory_request:filter_condition(
+				    trans_note, [?v(<<"rsn">>, Rsn) || {Rsn} <- Q],
+				    CutConditions)),
+		C;
+	    trans -> Conditions
+	end,
+
+    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
+    ExportColorSize = ?to_i(?v(<<"export_note">>, BaseSetting, 0)),
+    ExportCode = ?to_i(?v(<<"export_code">>, BaseSetting, 0)),
+
+    case ?b_sale:export(ExportType, Merchant, NewConditions) of
+	{ok, []} ->
+	    ?utils:respond(200, Req, ?err(wsale_export_no_date, Merchant));
+	{ok, Transes} -> 
+	    %% write to file 
+	    {ok, ExportFile, Url} = ?utils:create_export_file("btrans", Merchant, UserId),
+
+	    case ExportColorSize =:= 1 andalso ExportType =:= trans_note of
+		true ->
+		    %% only rsn
+		    NoteConditions = [{<<"rsn">>, ?v(<<"rsn">>, NewConditions, [])}],
+		    case ?b_sale:export(note_with_color_size, Merchant, NoteConditions) of
+			[] ->
+			    ?utils:respond(200, Req, ?err(wsale_export_none, Merchant));
+			{ok, SaleNotes} ->
+			    {ok, Colors} = ?w_user_profile:get(color, Merchant),
+			    case file:open(ExportFile, [append, raw]) of
+				{ok, Fd} ->
+				    try
+					%% sort stock by color
+					DoFun = fun(C) -> ?utils:write(Fd, C) end, 
+					SortBSaleDetail = bsale_detail(to_dict, Transes, dict:new()),
+					SortBSaleNote = bsale_note(to_dict, SaleNotes, dict:new()),
+					csv_head(
+					  trans_note_color,
+					  DoFun,
+					  ExportCode),
+					do_write(
+					  trans_note_color,
+					  DoFun,
+					  1,
+					  SortBSaleDetail,
+					  SortBSaleNote,
+					  Colors,
+					  ExportCode,
+					  {0, 0, 0}),
+					ok = file:datasync(Fd),
+					ok = file:close(Fd)
+				    catch
+					T:W -> 
+					    file:close(Fd),
+					    ?DEBUG("trace export:T ~p, W ~p~n~p",
+						   [T, W, erlang:get_stacktrace()]),
+					    ?utils:respond(
+					       200, Req, ?err(wsale_export_error, W)) 
+				    end,
+				    ?utils:respond(200, object, Req,
+						   {[{<<"ecode">>, 0},
+						     {<<"url">>, ?to_b(Url)}]}); 
+				{error, Error} ->
+				    ?utils:respond(200, Req, ?err(wsale_export_error, Error))
+			    end
+		    end;
+		false -> 
+		    case file:open(ExportFile, [write, raw]) of
+			{ok, Fd} -> 
+			    try
+				DoFun = fun(C) -> ?utils:write(Fd, C) end,
+				csv_head(ExportType, DoFun, ExportCode),
+				do_write(ExportType, DoFun, 1, Transes, ExportCode, {0, 0, 0}),
+				ok = file:datasync(Fd),
+				ok = file:close(Fd)
+			    catch
+				T:W -> 
+				    file:close(Fd),
+				    ?DEBUG("trace export:T ~p, W ~p~n~p",
+					   [T, W, erlang:get_stacktrace()]),
+				    ?utils:respond(
+				       200, Req, ?err(wsale_export_error, W)) 
+			    end,
+			    ?utils:respond(200, object, Req,
+					   {[{<<"ecode">>, 0},
+					     {<<"url">>, ?to_b(Url)}]}); 
+			{error, Error} ->
+			    ?utils:respond(200, Req, ?err(wsale_export_error, Error))
+		    end
 	    end;
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
@@ -545,7 +654,7 @@ sale_new_note(to_dict, {K1, K2, K3} = K, [{H}|T], Dict) ->
 sort_sale_new_detail(sort_by_color, _Key, [], _DictNote, Acc) ->
     Acc; 
 sort_sale_new_detail(sort_by_color, {K1, K2, K3} = K, [{H}|T], DictNote, Acc) ->
-    ?DEBUG("H ~p", [H]),
+    %% ?DEBUG("H ~p", [H]),
     ShopId      = ?to_b(?v(K3, H)),
 
     StyleNumber = ?v(K1, H),
@@ -605,4 +714,512 @@ sort_sale_new_detail(sort_by_color, {K1, K2, K3} = K, [{H}|T], DictNote, Acc) ->
 	    sort_sale_new_detail(sort_by_color, K, T, DictNote, Acc)
     end.
 
+bsale_note(to_dict, [], Dict) ->
+    %% ?DEBUG("sale_note_to_dict ~p", [dict:to_list(Dict)]),
+    Dict;
+bsale_note(to_dict, [{H}|T], Dict) ->
+    %% ?DEBUG("H ~p", [H]),
+    StyleNumber = ?to_b(?v(<<"style_number">>, H)),
+    Brand = ?to_b(?v(<<"brand">>, H)),
+    Shop  = ?to_b(?v(<<"shop">>, H)),
+    %% Color = ?to_b(?v(<<"color">>, H)),
+    Key = <<StyleNumber/binary, Brand/binary, Shop/binary>>,
+
+    DictNew = 
+	case dict:find(Key, Dict) of
+	    error ->
+		dict:store(Key, [{H}], Dict);
+	    {ok, _V} ->
+		dict:update(
+		  Key,
+		  fun(V) ->
+
+			  %% lists:foldr(
+			  %%   fun({Note}, Acc) ->
+
+			  %%   end, [], V)
+			  [{H}] ++ V
+			  %% case is_tuple(V) of
+			  %%     true -> [{H}, V];
+			  %%     false -> [{H}] ++ V
+			  %% end
+		  end,
+		  Dict)
+		%% dict:append(Key, {H}, Dict)
+	end,
+
+    bsale_note(to_dict, T, DictNew);
+
+bsale_note(to_dict_with_rsn, [], Dict) ->
+    ?DEBUG("sale_note_to_dict_with_rsn ~p", [dict:to_list(Dict)]),
+    Dict;
+bsale_note(to_dict_with_rsn, [{H}|T], Dict) ->
+    %% ?DEBUG("H ~p", [H]),
+    Rsn = ?to_b(?v(<<"rsn">>, H)),
+    StyleNumber = ?to_b(?v(<<"style_number">>, H)),
+    Brand = ?to_b(?v(<<"brand">>, H)),
+    Shop  = ?to_b(?v(<<"shop">>, H)),
+
+    %% Color = ?v(<<"color">>, H),
+    ColorName = ?v(<<"cname">>, H),
+
+    Size  = ?v(<<"size">>,H),
+
+    Key = <<Rsn/binary,
+	    <<"-">>/binary,
+	    StyleNumber/binary,
+	    <<"-">>/binary,
+	    Brand/binary,
+	    <<"-">>/binary,
+	    Shop/binary>>,
+
+    DictNew = 
+	case dict:find(Key, Dict) of
+	    error ->
+		Note = [{<<"note">>, ?to_s(ColorName) ++ ?to_s(Size)}],
+		N = proplists:delete(<<"size">>, proplists:delete(<<"color">>, H)),
+		dict:store(Key, N ++ Note, Dict);
+	    {ok, _V} ->
+		dict:update(
+		  Key,
+		  fun(V) ->
+			  NewNote = ?v(<<"note">>, V) ++ ";"
+			      ++ ?to_s(ColorName) ++ ?to_s(Size),
+			  proplists:delete(<<"note">>, V) ++ [{<<"note">>, NewNote}]
+		  end,
+		  Dict)
+	end,
+
+    bsale_note(to_dict_with_rsn, T, DictNew).
+
+bsale_detail(to_dict, [], Dict) ->
+    %% ?DEBUG("sale_trans_to_Dict ~p", [dict:to_list(Dict)]),
+    dict:to_list(Dict); 
+bsale_detail(to_dict, [{H}|T], Dict) ->
+    %% ?DEBUG("H ~p", [H]),
+    StyleNumber = ?to_b(?v(<<"style_number">>, H)),
+    Brand = ?to_b(?v(<<"brand_id">>, H)),
+    Shop  = ?to_b(?v(<<"shop_id">>, H)),
+    %% Color = ?to_b(?v(<<"color">>, H)),
+    Key = <<StyleNumber/binary, Brand/binary, Shop/binary>>,
+
+    DictNew = 
+	case dict:find(Key, Dict) of
+	    error ->
+		dict:store(Key, [{H}], Dict);
+	    {ok, _V} ->
+		dict:update(
+		  Key,
+		  fun(V) ->
+			  %% ?DEBUG("V ~p", [V]),
+			  NewV = 
+			      lists:foldr(
+				fun({Note}, Acc) ->
+					%% ?DEBUG("note ~p", [Note]),
+					Exist = ?v(<<"total">>, Note),
+					Added = ?v(<<"total">>, H),
+					[{lists:keydelete(<<"total">>, 1, Note)
+					  ++ [{<<"total">>, Exist + Added}]}|Acc] 
+				end, [], V),
+			  NewV 
+		  end,
+		  Dict)
+		%% dict:append(Key, {H}, Dict)
+	end,
+
+    bsale_detail(to_dict, T, DictNew).    
+
+
+note_class_by(color, [], Sorts) ->
+    %% ?DEBUG("not_class_with_color: ~p", [dict:to_list(Sorts)]),
+    Sorts;
+note_class_by(color, [{H}|T], Sorts) ->
+    %% ?DEBUG("H ~p", [H]),
+    %% use color to key
+    Color = ?v(<<"color">>, H),
+    NewSorts = 
+	case dict:find(Color, Sorts) of
+	    error ->
+		dict:store(Color, [{H}], Sorts);
+	    {ok, _V} ->
+		dict:update(
+		  Color,
+		  fun(V) ->
+			  Size = ?v(<<"size">>, H),
+			  {Found, NewV} = 
+			      lists:foldr(
+				fun({Note}, {Found, Acc}) ->
+					case ?v(<<"size">>, Note) =:= Size of
+					    true ->
+						Exist = ?v(<<"total">>, Note),
+						Added = ?v(<<"total">>, H),
+						{true,
+						 [{lists:keydelete(<<"total">>, 1, Note)
+						   ++ [{<<"total">>, Exist + Added}]}|Acc]};
+					    false ->
+						{Found, [{Note}|Acc]}
+					end 
+				end, {fale, []}, V),
+			  case Found of
+			      true -> NewV;
+			      fale -> [{H}] ++ V
+			  end
+		  end, 
+		  Sorts)
+	end,
+
+    note_class_by(color, T, NewSorts).
+
+csv_head(detail, Do, ExportCode) ->
+    H = "序号,单号,交易,店铺,客户,上次结余,累计结余,店员,数量,应收,实收,积分,现金,刷卡,微信,提现,电子卷,核销,备注,日期",
+    C = 
+	case ExportCode of
+	    0 ->
+		?utils:to_utf8(from_latin1, H);
+	    1 ->
+		?utils:to_gbk(from_latin1, H)
+	end,
+    %% UTF8 = unicode:characters_to_list(H, utf8),
+    Do(C);
+csv_head(note, Do, ExportCode) -> 
+    H = "序号,单号,货号,品牌,类型,性别,季节,厂商,年度,上架日期,"
+	"参考价,单价,优惠,数量,小计,进价,折扣率,毛利率,备注,日期",
+    C = 
+	case ExportCode of
+	    0 ->
+		?utils:to_utf8(from_latin1, H);
+	    1 ->
+		?utils:to_gbk(from_latin1, H)
+	end,
+    Do(C);
+
+csv_head(note_with_color_size, Do, ExportCode) -> 
+    H = "序号,店铺,款号,品牌,类型,季节,厂商,年度,小计,数量,颜色,尺码,上架日期",
+    %% UTF8 = unicode:characters_to_list(H, utf8),
+    C = 
+	case ExportCode of
+	    0 ->
+		?utils:to_utf8(from_latin1, H);
+	    1 ->
+		?utils:to_gbk(from_latin1, H)
+	end,
+    %% Do(UTF8).
+    Do(C).
+
+do_write(detail, Do, _Seq, [], ExportCode, {Amount, SPay, RPay})->
+    L = "\r\n"
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?to_s(Amount) ++ ?d
+	++ ?to_s(SPay) ++ ?d
+	++ ?to_s(RPay) ++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d,
+    Line = 
+	case ExportCode of
+	    0 -> ?utils:to_utf8(from_latin1, L);
+	    1 -> ?utils:to_gbk(from_latin1, L)
+	end,
+    Do(Line);
+
+do_write(detail, Do, Seq, [{H}|T], ExportCode, {Amount, SPay, RPay}) ->
+    Rsn        = ?v(<<"rsn">>, H),
+    Type       = ?v(<<"type">>, H),
+    Shop       = ?v(<<"shop">>, H),
+    Retailer   = ?v(<<"retailer">>, H), 
+    Balance    = ?v(<<"balance">>, H),
+
+    Employee  = ?v(<<"employee">>, H),
+    Total     = ?v(<<"total">>, H),
+    HasPay    = ?v(<<"should_pay">>, H),
+    Score     = ?v(<<"score">>, H),
+
+    Cash      = ?v(<<"cash">>, H),
+    Card      = ?v(<<"card">>, H),
+    WXin      = ?v(<<"wxin">>, H),
+    WithDraw  = ?v(<<"withdraw">>, H),
+    Ticket    = ?v(<<"ticket">>, H), 
+    Verify    = ?v(<<"verificate">>, H), 
+
+    Comment   = ?v(<<"comment">>, H),
+    Datetime  = ?v(<<"entry_date">>, H),
+
+    AccBalance = Balance - WithDraw,
+    ShouldPay  = HasPay + Verify,
+
+    %% ?DEBUG("CBalance ~p", [CBalance]),
+
+    L = "\r\n"
+	++ ?to_s(Seq) ++ ?d
+	++ ?to_s(Rsn) ++ ?d
+	++ sale_type(Type) ++ ?d
+	++ ?to_s(Shop) ++ ?d
+	++ ?to_s(Retailer) ++ ?d
+	++ ?to_s(Balance) ++ ?d
+	++ ?to_s(AccBalance) ++ ?d
+
+	++ ?to_s(Employee) ++ ?d 
+	++ ?to_s(Total) ++ ?d
+	++ ?to_s(HasPay) ++ ?d
+	++ ?to_s(ShouldPay) ++ ?d
+	++ ?to_s(Score) ++ ?d
+
+	++ ?to_s(Cash) ++ ?d
+	++ ?to_s(Card) ++ ?d 
+	++ ?to_s(WXin) ++ ?d
+	++ ?to_s(WithDraw) ++ ?d
+	++ ?to_s(Ticket) ++ ?d
+	++ ?to_s(Verify) ++ ?d 
+	++ ?to_s(Comment) ++ ?d
+	++ ?to_s(Datetime),
+    %% UTF8 = unicode:characters_to_list(L, utf8),
+    %% Do(UTF8),
+    Line = 
+	case ExportCode of
+	    0 -> ?utils:to_utf8(from_latin1, L);
+	    1 -> ?utils:to_gbk(from_latin1, L)
+	end,
+    Do(Line), 
+    do_write(detail, Do, Seq + 1, T, ExportCode, {Amount + Total,
+						 SPay + ShouldPay,
+						 RPay + HasPay});
+
+do_write(note, Do, _Seq, [], ExportCode, {Amount, _SPay, _RPay})->
+    L = "\r\n"
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?to_s(Amount) ++ ?d
+	++ ?d
+	++ ?d
+	++ ?d,
+    Line = 
+	case ExportCode of
+	    0 -> ?utils:to_utf8(from_latin1, L);
+	    1 -> ?utils:to_gbk(from_latin1, L)
+	end,
+    Do(Line);
+
+do_write(note, Do, Seq, [{H}|T], ExportCode, {Amount, SPay, RPay}) ->
+    Rsn         = ?v(<<"rsn">>, H),
+    Retailer    = ?v(<<"retailer">>, H),
+    Promotion   = case ?v(<<"promotion">>, H) of
+		      <<>> -> "-";
+		      _P -> _P
+		  end,
+    Score       = case ?v(<<"score">>, H) of
+		      <<>> -> "-";
+		      _S -> _S
+		  end,
+    SellType    = ?v(<<"sell_type">>, H), 
+    Shop        = ?v(<<"shop">>, H),
+    Employee    = ?v(<<"employee">>, H),
+
+    StyleNumber = ?v(<<"style_number">>, H),
+    Brand       = ?v(<<"brand">>, H), 
+    Type        = ?v(<<"type">>, H),
+    Season      = ?v(<<"season">>, H),
+    Firm        = ?v(<<"firm">>, H),
+    Year        = ?v(<<"year">>, H),
+    InDatetime  = ?v(<<"in_datetime">>, H),
+    OrgPrice    = ?v(<<"org_price">>, H),
+    TagPrice    = ?v(<<"tag_price">>, H),
+    RPrice      = ?v(<<"rprice">>, H), 
+    Total       = ?v(<<"total">>, H),
+
+    Calc        =  RPrice * Total, 
+    Datetime    = ?v(<<"entry_date">>, H),
+
+    L = "\r\n"
+	++ ?to_s(Seq) ++ ?d
+	++ ?to_s(Rsn) ++ ?d
+	++ ?to_s(Retailer) ++ ?d
+	++ ?to_s(Promotion) ++ ?d
+	++ ?to_s(Score) ++ ?d 
+	++ sale_type(SellType) ++ ?d
+	++ ?to_s(Shop) ++ ?d
+	++ ?to_s(Employee) ++ ?d
+
+	++ "\'" ++ ?to_s(StyleNumber) ++ "\'" ++ ?d
+	++ ?to_s(Brand) ++ ?d
+	++ ?to_s(Type) ++ ?d
+	++ ?w_inventory_request:season(Season) ++ ?d
+	++ ?to_s(Firm) ++ ?d
+	++ ?to_s(Year) ++ ?d
+	++ ?to_s(InDatetime) ++ ?d
+	++ ?to_s(OrgPrice) ++ ?d 
+	++ ?to_s(TagPrice) ++ ?d 
+	++ ?to_s(RPrice) ++ ?d
+	++ ?to_s(Total) ++ ?d
+	++ ?to_s(Calc) ++ ?d 
+	++ ?to_s(?w_good_sql:stock(ediscount, RPrice, TagPrice)) ++ ?d 
+	++ ?to_s(Datetime),
+    %% UTF8 = unicode:characters_to_list(L, utf8),
+    %% Do(UTF8),
+    Line = 
+	case ExportCode of
+	    0 -> ?utils:to_utf8(from_latin1, L);
+	    1 -> ?utils:to_gbk(from_latin1, L)
+	end,
+    Do(Line),
+    do_write(note, Do, Seq + 1, T, ExportCode, {Amount + Total, SPay, RPay}).
+
+do_write(note_with_color_size, Do, _Seq, [], _DictNotes, _Colors, ExportCode, {Amount, _SPay, _RPay})->
+    L = "\r\n"
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d
+	++ ?d 
+	++ ?to_s(Amount) ++ ?d,
+
+    Line = 
+	case ExportCode of
+	    0 -> ?utils:to_utf8(from_latin1, L);
+	    1 -> ?utils:to_gbk(from_latin1, L)
+	end,
+    Do(Line);
+
+do_write(note_with_color_size, Do, Seq, [DH|DT], DictNotes, Colors, ExportCode, {Amount, SPay, RPay}) ->
+    {Key, [{H}]} = DH,
+    Shop        = ?v(<<"shop">>, H), 
+    StyleNumber = ?v(<<"style_number">>, H),
+    Brand       = ?v(<<"brand">>, H),
+    Type        = ?v(<<"type">>, H),
+    Season      = ?v(<<"season">>, H),
+    Firm        = ?v(<<"firm">>, H),
+    Year        = ?v(<<"year">>, H),
+    InDatetime  = ?v(<<"in_datetime">>, H), 
+    Total       = ?v(<<"total">>, H), 
+
+    case dict:find(Key, DictNotes) of
+	{ok, FindNotes} ->
+	    ?DEBUG("find notes ~p", [FindNotes]),
+	    ColoredNotes = note_class_by(color, FindNotes, dict:new()),
+
+	    Details = 
+		dict:fold(
+		  fun(K, SSNotes, Acc) ->
+			  {TotalOfColor, SizeDescs} = 
+			      lists:foldr(
+				fun({S}, {Total0, Descs}) ->
+					Size = ?v(<<"size">>, S),
+					TotalA = ?v(<<"total">>, S),
+					{Total0 + TotalA,
+					 Descs ++ ?to_s(Size) ++ ":" ++ ?to_s(TotalA) ++ ";"} 
+				end, {0, []}, SSNotes),
+
+			  [{K, TotalOfColor, SizeDescs}|Acc]
+
+		  end, [], ColoredNotes),
+	    %% ?DEBUG("Details ~p", [Details]),
+
+	    L = "\r\n"
+		++ ?to_s(Seq) ++ ?d
+	    %% ++ ?to_s(Rsn) ++ ?d
+	    %% ++ ?to_s(Retailer) ++ ?d
+	    %% ++ ?to_s(Promotion) ++ ?d
+	    %% ++ ?to_s(Score) ++ ?d 
+	    %% ++ sale_type(SellType) ++ ?d
+		++ ?to_s(Shop) ++ ?d
+	    %% ++ ?to_s(Employee) ++ ?d
+
+		++ "\'" ++ ?to_s(StyleNumber) ++ "\'" ++ ?d
+		++ ?to_s(Brand) ++ ?d
+		++ ?to_s(Type) ++ ?d
+		++ ?w_inventory_request:season(Season) ++ ?d
+		++ ?to_s(Firm) ++ ?d
+		++ ?to_s(Year) ++ ?d
+		++ ?to_s(Total) ++ ?d
+		++ ?d %% total of color
+		++ ?d %% color
+		++ ?d %% size
+		++ ?to_s(InDatetime),
+
+
+	    C = lists:foldr(
+		  fun({ColorId, TotalOfColor, SizeDescs}, Acc) ->
+			  L1 = "\r\n"
+			      ++ ?d
+			      ++ ?d
+			      ++ ?d
+			      ++ ?d 
+			      ++ ?d
+			      ++ ?d
+			      ++ ?d
+			      ++ ?d
+			      ++ ?d
+
+			      ++ ?to_s(TotalOfColor) ++ ?d
+			      ++ ?to_s(?w_inventory_request:get_color(ColorId, Colors)) ++ ?d
+			      ++ ?to_s(SizeDescs) ++ ?d
+			      ++ ?d,
+			  Acc ++ L1
+		  end, [], Details),
+
+	    %% UTF8 = unicode:characters_to_list(L, utf8),
+	    %% Do(UTF8),
+	    Line = 
+		case ExportCode of
+		    0 -> ?utils:to_utf8(from_latin1, L ++ C);
+		    1 -> ?utils:to_gbk(from_latin1, L ++ C)
+		end,
+	    Do(Line),
+	    do_write(note_with_color_size,
+		     Do,
+		     Seq + 1,
+		     DT,
+		     DictNotes,
+		     Colors,
+		     ExportCode,
+		     {Amount + Total, SPay, RPay});
+
+	error ->
+	    do_write(note_with_color_size,
+		     Do,
+		     Seq + 1,
+		     DT,
+		     DictNotes,
+		     Colors,
+		     ExportCode,
+		     {Amount + Total, SPay, RPay})
+    end.
+
 mode(0) -> use_id.
+
+sale_type(0) -> "开单";
+sale_type(1)-> "退货".
+
+export_type(0) -> detail;
+export_type(1) -> note.
