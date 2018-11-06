@@ -476,3 +476,6 @@ alter table print_template add column label VARCHAR(8) default '' after name;
 alter table print_template add column offset_label INTEGER default 0  after offset_virprice;
 alter table print_template add column font_label INTEGER default 0  after font_fabric;
 alter table print_template add column hpx_label INTEGER default 0  after hpx_barcode;
+
+-- 2018-11-06
+alter table print_template add column w_barcode INTEGER default 0  after offset_label;

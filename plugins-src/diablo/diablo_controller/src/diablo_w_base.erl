@@ -683,6 +683,8 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", offset_tagprice"
 	", offset_virprice" 
 	", offset_label"
+
+	", w_barcode"
 	
 	" from print_template"
 	" where merchant=" ++ ?to_s(Merchant), 
@@ -762,9 +764,9 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(offset_size, integer, ?v(<<"offset_size">>, Attrs))
 	++  ?utils:v(offset_tagprice, integer, ?v(<<"offset_tagprice">>, Attrs))
 	++  ?utils:v(offset_virprice, integer, ?v(<<"offset_virprice">>, Attrs)) 
-	++  ?utils:v(offset_label, integer, ?v(<<"offset_label">>, Attrs)),
+	++  ?utils:v(offset_label, integer, ?v(<<"offset_label">>, Attrs))
 
-    
+	++  ?utils:v(w_barcode, integer, ?v(<<"w_barcode">>, Attrs)), 
     
     Sql = "update print_template set " ++ ?utils:to_sqls(proplists, comma, U)
 	++ " where merchant=" ++ ?to_s(Merchant)

@@ -137,12 +137,12 @@ get_printer(Merchant, ShopId) ->
     VPrinters = [P || P <- Printers, length(P) =/= 0 ],
     {VPrinters, ShopInfo}.
 
-content(test, {Brand, Model, Column}, Shop, Setting) ->
+content(test, {Brand, Model, Column}, {Shop, ShopAddress, Setting}, []) ->
     title(Brand, Model, Shop)
-	++ body_foot(Brand, Model, Column, Setting);
+	++ body_foot(Brand, Model, Column, ShopAddress, Setting);
 
 content(normal, {Brand, Model, Column},
-	{Merchant, Shop, RSN, Retailer, Setting}, {Invs, Attrs, Print}) ->
+	{Merchant, Shop, ShopAddress, RSN, Retailer, Setting}, {Invs, Attrs, Print}) ->
 
     Datetime     = ?v(<<"datetime">>, Attrs),
     Vip          = case ?v(<<"vip">>, Attrs) of
@@ -167,8 +167,7 @@ content(normal, {Brand, Model, Column},
     Stastic = body_stastic(
 		Brand, Model, Column, TotalBalance, Attrs, Vip, STotal, RTotal),
 
-    Foot = body_foot(
-	     Brand, Model, Column, Setting),
+    Foot = body_foot(Brand, Model, Column, ShopAddress, Setting),
 
     Head ++ Body ++ Stastic ++ Foot.
 
@@ -199,7 +198,7 @@ call(Parent, {print, Action, RSN, Merchant, Invs, Attrs, Print}) ->
 			   _       ->
 			       ?v(<<"name">>, ShopInfo)
 		       end, 
-	    %% ShopAddr = ?v(<<"address">>, ShopInfo), 
+	    ShopAddress = ?v(<<"address">>, ShopInfo), 
 	    try
 		lists:foldr(
 		  fun(P, Acc) ->
@@ -226,13 +225,12 @@ call(Parent, {print, Action, RSN, Merchant, Invs, Attrs, Print}) ->
 				      content(
 					normal, 
 					{Brand, Model, Column},
-					{Merchant, ShopName, RSN, Retailer, Setting},
+					{Merchant, ShopName, ShopAddress, RSN, Retailer, Setting},
 					{Invs, Attrs, Print});
 				  test ->
 				      content(test,
 					      {Brand, Model, Column},
-					      ShopName,
-					      Setting)
+					      {ShopName, ShopAddress, Setting}, [])
 			      end,
 			  %% ?DEBUG("setting ~p", [Setting]),
 			  %% Vip = RetailerId =/= ?to_i(?v(<<"s_customer">>, Setting)),
@@ -436,8 +434,7 @@ print_content(ShopId, PBrand, Model, 80, Merchant, Setting, Invs) ->
 		  CleanTagPrice = clean_zero(TagPrice),
 		  Calc        = RPrice * SellTotal, 
 		  Discount    =
-		      binary_to_float(
-			float_to_binary(RPrice / TagPrice, [{decimals, 3}])) * 100,
+		      binary_to_float(float_to_binary(RPrice / TagPrice, [{decimals, 3}])) * 100,
 
 		  {NewSTotal, NewRTotal } =
 		      case SellTotal > 0 of
@@ -579,7 +576,7 @@ body_stastic(Brand, _Model, Column, _TotalBalance, Attrs, Vip, STotal, RTotal) -
 	   end
 	++ br(Brand).
     
-body_foot(Brand, _Model, Column, Setting) ->
+body_foot(Brand, _Model, Column, ShopAddress, Setting) ->
     %% ?DEBUG("body_foot with setting ~p", [Setting]), 
     [CH|CT] = [?v(<<"comment1">>, Setting, []),
 	       ?v(<<"comment2">>, Setting, []),
@@ -590,25 +587,24 @@ body_foot(Brand, _Model, Column, Setting) ->
     FirstComment = "顾客须知：" ++ br(Brand) 
 	++ "1：" ++ ?to_s(CH) ++ br(Brand),
 
-    Len = erlang:length(CT),
-    
+    Len = erlang:length(CT), 
     {OtherComment, _Order} =
 	lists:foldr(
 	  fun([], {Acc, Sequence}) ->
 		  {Acc, Sequence - 1};
 	     (M, {Acc, Sequence}) ->
-		  {?to_s(Sequence) ++ "："
-		   ++ ?to_s(M) ++ br(Brand) ++ Acc, Sequence - 1}
+		  {?to_s(Sequence) ++ "：" ++ ?to_s(M) ++ br(Brand) ++ Acc, Sequence - 1}
 	  end, {[], Len + 1}, CT), 
     %% ?DEBUG("OtherComment ~p, order ~p", [OtherComment, _Order]),
-    
+
+    Address = "地址：" ++ ?to_s(ShopAddress) ++ br(Brand),
     PrintDatetime =
 	case Column of
 	    58 -> pading(32 - 30);
 	    80 -> pading(48 - 30);
 	    _  -> []
 	end ++ "打印日期：" ++ ?utils:current_time(format_localtime), 
-    FirstComment ++ OtherComment ++ PrintDatetime.
+    FirstComment ++ OtherComment ++ Address ++ PrintDatetime.
 
 start_print(fcloud, SN, Key, Path, Num, Body) ->
     ?DEBUG("fcloud with sn ~p, key ~p, path ~p, num ~p, body~n~ts",

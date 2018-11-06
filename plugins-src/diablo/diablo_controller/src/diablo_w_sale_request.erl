@@ -1655,7 +1655,7 @@ sale_note(to_dict, [{H}|T], Dict) ->
     sale_note(to_dict, T, DictNew);
 
 sale_note(to_dict_with_rsn, [], Dict) ->
-    ?DEBUG("sale_note_to_dict_with_rsn ~p", [dict:to_list(Dict)]),
+    %% ?DEBUG("sale_note_to_dict_with_rsn ~p", [dict:to_list(Dict)]),
     Dict;
 sale_note(to_dict_with_rsn, [{H}|T], Dict) ->
     %% ?DEBUG("H ~p", [H]),

@@ -30,6 +30,7 @@
 %% check state
 -define(CHECKING, 0).
 -define(CHECKED, 1).
+-define(PRINTED, 2).
 -define(DISCARD, 7).
 
 -define(CHECK, 1).

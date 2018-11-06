@@ -299,6 +299,10 @@ function filterProvider(){
 		    _prompt.cards = promptValues;
 		} else if (name === 'discount'){
 		    _filter.fields.push({name:"discount", chinese:"折扣"});
+		} else if (name === 'mdiscount'){
+		    _filter.fields.push({name:"mdiscount", chinese:"折扣大于"}); 
+		} else if (name === 'ldiscount'){
+		    _filter.fields.push({name:"ldiscount", chinese:"折扣小于"});
 		} else if (name === 'tag_price'){
 		    _filter.fields.push({name:"tag_price", chinese:"吊牌价"});
 		} else if (name === 'org_price'){

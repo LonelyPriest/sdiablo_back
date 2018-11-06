@@ -1415,6 +1415,8 @@ create table print_template(
    offset_tagprice TINYINT default 0,
    offset_virprice TINYINT default 0,
    offset_label    TINYINT default 0,
+
+   w_barcode       INTEGER default 0,
    
    merchant        INTEGER not null default -1,
    

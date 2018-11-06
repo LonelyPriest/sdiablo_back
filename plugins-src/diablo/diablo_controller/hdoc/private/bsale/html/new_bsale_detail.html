@@ -148,7 +148,7 @@
 			明细<i class="glyphicon glyphicon-map-marker"></i>
 		      </button>
 
-		      <button x-ng-if="right.update_sale && r.state!==1"
+		      <button x-ng-if="right.update_sale && r.state===0"
 			      class="btn diablo-button yellow-crusta"
 			      x-ng-disabled="r.state===1"
 		      	      x-ng-click="update_sale(r)">修改
@@ -159,7 +159,7 @@
 			      x-ng-disabled="r.state===1"
 		      	      x-ng-click="check_sale(r)">审核
 			<i class="glyphicon glyphicon-check"></i></button>
-		      <button x-ng-if="right.check_sale && r.state===1"
+		      <button x-ng-if="right.check_sale && (r.state===1 || r.state===2)"
 			      class="btn diablo-button red"
 			      x-ng-disabled="r.state===0"
 		      	      x-ng-click="uncheck_sale(r)">反审
@@ -170,7 +170,8 @@
 		      	      x-ng-click="delete_sale(r)">删除
 			<i class="glyphicon glyphicon-erase"></i></button>
 		      
-		      <button x-ng-if="r.state===1 && right.print_sale" class="btn diablo-button purple"
+		      <button x-ng-if="right.print_sale && (r.state===1 || r.state===2)"
+			      class="btn diablo-button purple"
 		      	      x-ng-click="print_sale(r)">打印
 			<i class="glyphicon glyphicon-print"></i></button>
 		      

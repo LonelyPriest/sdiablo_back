@@ -1109,5 +1109,6 @@ pass_action(wholesaler) ->
      <<"get_batch_sale">>, 
      <<"match_bsale_rsn">>, 
      <<"get_bsaler_batch">>,
+     <<"check_print_batch_sale">>,
      <<"match_bsaler_phone">> 
     ].

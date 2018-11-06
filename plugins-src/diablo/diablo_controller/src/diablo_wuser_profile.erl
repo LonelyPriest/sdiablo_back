@@ -912,7 +912,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	{ok, []} ->
 	    Sql1 = "insert into print_template ("
 		"name"
-		", lable"
+		", label"
 		", tshop"
 		
 		", width"
@@ -948,6 +948,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		", font_price"
 		", font_size"
 		", font_fabric"
+		", font_label"
 	    %% ", font_vprice"
 		
 		", bold"
@@ -983,6 +984,8 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		", offset_tagprice"
 		", offset_virprice"
 		", offset_label"
+
+		", w_barcode"
 		
 		", merchant) values("
 		++ "\'" ++ ?to_s(Name) ++ "\',"  %% modal name
@@ -1057,6 +1060,8 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(0) ++ ","      %% offset_tagprice
 		++ ?to_s(0) ++ ","      %% offset_virprice
 		++ ?to_s(0) ++ ","      %% offset_label
+
+		++ ?to_s(0) ++ ","      %% w_barcode
 		
 		++ ?to_s(Merchant)  ++ ")",
 

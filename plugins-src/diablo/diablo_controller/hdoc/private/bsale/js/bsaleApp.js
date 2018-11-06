@@ -209,7 +209,7 @@ function bsaleConfig(angular){
 	};
 
 	this.check_print_batch_sale = function(rsn){
-	    return request.save({operation: "check_batch_sale"}, {rsn: rsn, mode:diablo_print}).$promise;
+	    return request.save({operation: "check_print_batch_sale"}, {rsn: rsn, mode:diablo_print}).$promise;
 	};
 
 	this.uncheck_batch_sale = function(rsn){
@@ -1700,7 +1700,7 @@ function bsaleNewDetailCtrlProvide(
 		search.shop = $scope.shopIds.length === 0 ? undefined : $scope.shopIds; 
 	    }
 	    console.log(search); 
-	    bsaleService.csv_export(bsaleService.export_type.trans, search)
+	    bsaleService.csv_export(bsaleService.export_type.detail, search)
 		.then(function(result){
 	    	    console.log(result);
 		    if (result.ecode === 0){

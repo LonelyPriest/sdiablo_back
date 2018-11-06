@@ -407,8 +407,7 @@ function wretailerDetailCtrlProvide(
 	    if (promotion.rule_id === diablo_theoretic_charge)
 		ctime = retailerUtils.to_integer(promotion.ctime) + retailerUtils.to_integer(promotion.cstime);
 
-	    if (is_unlimit_card(promotion.rule_id))
-		stime = dateFilter(params.stime, "yyyy-MM-dd");
+	    if (is_unlimit_card(promotion.rule_id)) stime = dateFilter(params.stime, "yyyy-MM-dd");
 	    
 	    wretailerService.new_recharge({
 		retailer:       retailer.id, 
@@ -1643,7 +1642,7 @@ function wretailerThresholdCardGoodCtrlProvide(
 function wretailerLevelCtrlProvide(
     $scope, diabloFilter, diabloPattern, diabloUtilsService, wretailerService, user){
     $scope.levels = diablo_retailer_levels;
-    $scope.shops  = user.sortShops;
+    $scope.shops  = [{id: -1, name:"== 默认所有店铺配置相同 =="}].concat(user.sortShops);
     var dialog = diabloUtilsService; 
     var lpattern = {name     :diabloPattern.chinese_name,
 		    score    :diabloPattern.number,

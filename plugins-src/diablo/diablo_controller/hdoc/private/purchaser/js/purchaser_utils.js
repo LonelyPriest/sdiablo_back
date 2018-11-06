@@ -1383,19 +1383,24 @@ stockPrintU.prototype.printBarcode2 = function() {
     
     top += hpx_price; 
 
+    var width_barcode = iwpx;
+    if (stockUtils.to_integer(this.template.w_barcode) !== 0) {
+	width_barcode = stockUtils.to_integer(this.template.w_barcode);
+    }
+    
     this.LODOP.ADD_PRINT_BARCODE(
-	top, this.left, iwpx, this.template.hpx_barcode, this.barcodeFormat, this.first.barcode);
+	top, this.left, width_barcode, this.template.hpx_barcode, this.barcodeFormat, this.first.barcode);
     this.LODOP.SET_PRINT_STYLEA(0, "FontSize", 7);
     
     if (pSecond) {
 	this.LODOP.ADD_PRINT_BARCODE(
-	    top, startSecond, iwpx, this.template.hpx_barcode, this.barcodeFormat, this.second.barcode);
+	    top, startSecond, width_barcode, this.template.hpx_barcode, this.barcodeFormat, this.second.barcode);
 	this.LODOP.SET_PRINT_STYLEA(0, "FontSize", 7);
     }
 
     if (pThird) {
 	this.LODOP.ADD_PRINT_BARCODE(
-	    top, startThird, iwpx, this.template.hpx_barcode, this.barcodeFormat, this.third.barcode);
+	    top, startThird, width_barcode, this.template.hpx_barcode, this.barcodeFormat, this.third.barcode);
 	this.LODOP.SET_PRINT_STYLEA(0, "FontSize", 7);
     }
     

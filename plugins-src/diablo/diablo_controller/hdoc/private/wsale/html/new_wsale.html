@@ -859,26 +859,25 @@
     <form class="form-horizontal" name="tForm" novalidate>
       <div class="form-body">
 	
-	<div x-ng-if="params.auto_batch" class="form-group">
-	  <label class="col-sm-3 col-md-3 control-label">批次号</label>
-	  <div class="col-sm-6 col-md-6">
-	    <input class="form-control"
-		   name="ticket"
-		   type="number"
-		   step="1"
-		   readonly
-		   required
-		   x-ng-model="params.ticket.batch"/>
-	  </div>
-	</div>
+	<!-- <div x-ng-if="params.auto_batch" class="form-group"> -->
+	<!--   <label class="col-sm-3 col-md-3 control-label">批次号</label> -->
+	<!--   <div class="col-sm-6 col-md-6"> -->
+	<!--     <input class="form-control" -->
+	<!-- 	   name="ticket" -->
+	<!-- 	   type="number" -->
+	<!-- 	   step="1" -->
+	<!-- 	   readonly -->
+	<!-- 	   required -->
+	<!-- 	   x-ng-model="params.ticket.batch"/> -->
+	<!--   </div> -->
+	<!-- </div> -->
 
-	<div x-ng-if="!params.auto_batch" class="form-group">
+	<div class="form-group">
 	  <label class="col-sm-3 col-md-3 control-label">批次号</label>
 	  <div class="col-sm-6 col-md-6">
 	    <input class="form-control"
 		   name="ticket"
 		   type="number"
-		   step="1"
 		   placeholder="请输入电子卷批次号"
 		   x-ng-edit
 		   disable-key

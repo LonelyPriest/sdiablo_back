@@ -76,6 +76,20 @@ action(Session, Req, {"check_batch_sale"}, Payload) ->
     	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"check_print_batch_sale"}, Payload) ->
+    ?DEBUG("chekc_print_batch_sale with session ~p, paylaod~n~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    RSN = ?v(<<"rsn">>, Payload, []),
+    Mode = ?v(<<"mode">>, Payload, ?PRINTED),
+
+    case ?b_sale:bsale(check, Merchant, RSN, Mode) of
+    	{ok, RSN} -> 
+    	    ?utils:respond(
+	       200, Req, ?succ(check_w_sale, RSN), {<<"rsn">>, ?to_b(RSN)});
+    	{error, Error} ->
+    	    ?utils:respond(200, Req, Error)
+    end;
+
 action(Session, Req, {"get_batch_sale"}, Payload) ->
     ?DEBUG("get_batch_sale with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
@@ -295,11 +309,9 @@ action(Session, Req, {"export_batch_sale"}, Payload) ->
     ?DEBUG("export_batch_sale:session ~p, paylaod ~n~p", [Session, Payload]),
     Merchant    = ?session:get(merchant, Session),
     UserId      = ?session:get(id, Session),
-    ExportType  = export_type(?v(<<"type">>, Payload, 0)),
-
+    ExportType  = export_type(?v(<<"type">>, Payload, 0)), 
     {struct, Conditions} = ?v(<<"condition">>, Payload),
-
-
+    
     NewConditions = 
 	case ExportType of
 	    trans_note ->
@@ -307,8 +319,7 @@ action(Session, Req, {"export_batch_sale"}, Payload) ->
 		{ok, Q} = ?b_sale:bsale(get_sale_rsn, Merchant, CutConditions),
 		{struct, C} = ?v(<<"fields">>,
 				 ?w_inventory_request:filter_condition(
-				    trans_note, [?v(<<"rsn">>, Rsn) || {Rsn} <- Q],
-				    CutConditions)),
+				    trans_note, [?v(<<"rsn">>, Rsn) || {Rsn} <- Q], CutConditions)),
 		C;
 	    trans -> Conditions
 	end,
@@ -322,13 +333,12 @@ action(Session, Req, {"export_batch_sale"}, Payload) ->
 	    ?utils:respond(200, Req, ?err(wsale_export_no_date, Merchant));
 	{ok, Transes} -> 
 	    %% write to file 
-	    {ok, ExportFile, Url} = ?utils:create_export_file("btrans", Merchant, UserId),
-
+	    {ok, ExportFile, Url} = ?utils:create_export_file("btrans", Merchant, UserId), 
 	    case ExportColorSize =:= 1 andalso ExportType =:= trans_note of
 		true ->
 		    %% only rsn
 		    NoteConditions = [{<<"rsn">>, ?v(<<"rsn">>, NewConditions, [])}],
-		    case ?b_sale:export(note_with_color_size, Merchant, NoteConditions) of
+		    case ?b_sale:export(sale_new_transe, Merchant, NoteConditions) of
 			[] ->
 			    ?utils:respond(200, Req, ?err(wsale_export_none, Merchant));
 			{ok, SaleNotes} ->
@@ -1030,15 +1040,7 @@ do_write(note, Do, _Seq, [], ExportCode, {Amount, _SPay, _RPay})->
 
 do_write(note, Do, Seq, [{H}|T], ExportCode, {Amount, SPay, RPay}) ->
     Rsn         = ?v(<<"rsn">>, H),
-    Retailer    = ?v(<<"retailer">>, H),
-    Promotion   = case ?v(<<"promotion">>, H) of
-		      <<>> -> "-";
-		      _P -> _P
-		  end,
-    Score       = case ?v(<<"score">>, H) of
-		      <<>> -> "-";
-		      _S -> _S
-		  end,
+    BSaler      = ?v(<<"BSaler">>, H), 
     SellType    = ?v(<<"sell_type">>, H), 
     Shop        = ?v(<<"shop">>, H),
     Employee    = ?v(<<"employee">>, H),
@@ -1054,6 +1056,7 @@ do_write(note, Do, Seq, [{H}|T], ExportCode, {Amount, SPay, RPay}) ->
     TagPrice    = ?v(<<"tag_price">>, H),
     RPrice      = ?v(<<"rprice">>, H), 
     Total       = ?v(<<"total">>, H),
+    Comment     = ?v(<<"comment">>, H),
 
     Calc        =  RPrice * Total, 
     Datetime    = ?v(<<"entry_date">>, H),
@@ -1061,9 +1064,7 @@ do_write(note, Do, Seq, [{H}|T], ExportCode, {Amount, SPay, RPay}) ->
     L = "\r\n"
 	++ ?to_s(Seq) ++ ?d
 	++ ?to_s(Rsn) ++ ?d
-	++ ?to_s(Retailer) ++ ?d
-	++ ?to_s(Promotion) ++ ?d
-	++ ?to_s(Score) ++ ?d 
+	++ ?to_s(BSaler) ++ ?d 
 	++ sale_type(SellType) ++ ?d
 	++ ?to_s(Shop) ++ ?d
 	++ ?to_s(Employee) ++ ?d
@@ -1221,5 +1222,6 @@ mode(0) -> use_id.
 sale_type(0) -> "开单";
 sale_type(1)-> "退货".
 
-export_type(0) -> detail;
-export_type(1) -> note.
+export_type(0) -> sale_new;
+export_type(1) -> sale_new_detail;
+export_type(2) -> sale_new_note.

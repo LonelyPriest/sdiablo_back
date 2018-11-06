@@ -755,8 +755,8 @@ function wsaleNewProvide(
     	$scope.select.ticket_custom  = undefined; 
 	
     	var callback = function(params){
-    	    // console.log(params); 
-    	    if (!params.auto_batch) {
+    	    // console.log(params, $scope.select.ticket_batch); 
+    	    if (params.ticket.batch !== $scope.select.ticket_batch) {
     	    	diabloFilter.get_ticket_by_batch(params.ticket.batch).then(function(result){
     	    	    console.log(result);
     	    	    var ecode = result.ecode;
@@ -792,19 +792,19 @@ function wsaleNewProvide(
     		$scope.select.ticket_sid = diablo_invalid_index;
 		
     		if (!diablo_is_empty(result.data)) {
-    		    batch   = diablo_set_integer(result.data.batch);
+		    batch   = diablo_set_integer(result.data.batch); 
     		    balance = diablo_set_integer(result.data.balance);
     		    $scope.select.ticket_sid = wsaleUtils.to_integer(result.data.sid);
     		    auto_batch = true; 
-    		}
+    		} 
+		$scope.select.ticket_batch = batch;
 		
     		diabloUtilsService.edit_with_modal(
     		    "new-ticket.html",
     		    undefined,
     		    callback,
     		    undefined,
-    		    {ticket: {batch: batch, balance: balance},
-    		     auto_batch: auto_batch});
+    		    {ticket: {batch: batch, balance: balance}, auto_batch: auto_batch});
     	    } else {
     		var ERROR = require("diablo-error");
     		diabloUtilsService.response(
@@ -1609,8 +1609,7 @@ function wsaleNewProvide(
 	// only score with cash, card, wxin
 	if (diablo_no === $scope.setting.draw_score
 	    && ( wsaleUtils.to_float($scope.select.withdraw) !== 0
-		 || wsaleUtils.to_float($scope.select.ticket_balance) !== 0)
-	   ) {
+		 || wsaleUtils.to_float($scope.select.ticket_balance) !== 0)) {
 	    var pay_orders = wsaleCalc.pay_order(
 		$scope.select.should_pay, [
 		    $scope.select.ticket_balance,

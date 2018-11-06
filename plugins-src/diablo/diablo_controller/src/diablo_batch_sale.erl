@@ -16,7 +16,7 @@
 %% API
 -export([start_link/1]).
 -export([bsale/3, bsale/4]).
--export([filter/4, filter/6, match/3]).
+-export([filter/4, filter/6, match/3, export/3]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -85,6 +85,16 @@ filter({sale_new_detail, Mode, Sort}, MatchMode, Merchant, CurrentPage, ItemsPer
 match(rsn, Merchant, {ViewValue, Condition}) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {match_rsn, Merchant, {ViewValue, Condition}}).
+
+export(sale_new, Merchant, Condition) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {export_sale_new, Merchant, Condition});
+export(sale_new_detail, Merchant, Condition) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {export_sale_new_detail, Merchant, Condition});
+export(sale_new_note, Merchant, Condition) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {export_sale_new_note, Merchant, Condition}).
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -468,6 +478,113 @@ handle_call({match_rsn, Merchant, {ViewValue, Conditions}}, _From, State) ->
 	++ " and rsn like \'%" ++ ?to_s(ViewValue) ++ "\'"
 	++ " order by id desc"
 	++ " limit " ++ ?to_s(Limit), 
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({export_sale_new, Merchant, Conditions}, _From, State)->
+    ?DEBUG("export_sale_new_detail: merchant ~p, condition ~p", [Merchant, Conditions]),
+    Sql = filter_table(batchsale, Merchant, Conditions),
+    Reply =  ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({export_sale_new_detail, Merchant, Conditions}, _From, State)->
+    %% ?DEBUG("new_trans_note_export: merchant ~p\nConditions~p", [Merchant, Conditions]),
+    CorrectCondition = ?utils:correct_condition(<<"a.">>, Conditions), 
+    Sql = "select a.id"
+	", a.rsn"
+	", a.style_number"
+	", a.brand_id"
+	", a.type_id"
+	", a.firm_id"
+	", a.season" 
+	", a.year"
+	", a.unit" 
+	", a.s_group"
+	", a.total"
+	
+	", a.org_price"
+	", a.tag_price"
+	", a.rprice"
+	
+	", a.in_datetime" 
+	", a.entry_date"
+	
+	", a.shop_id"
+	", a.bsaler_id"
+	", a.employee_id"
+	", a.sell_type"
+
+	", b.name as brand"
+	", d.name as type"
+	", e.name as firm"
+	", f.name as shop"
+	", g.name as bsaler"
+	", h.name as employee" 
+
+	" from (" 
+	"select a.id"
+	", a.rsn"
+	", a.style_number"
+	", a.brand as brand_id"
+	", a.type as type_id" 
+	", a.firm as firm_id"
+	", a.season" 
+	", a.year"
+	", a.unit"
+	", a.s_group"
+	", a.total" 
+	
+	", a.org_price"
+	", a.tag_price"
+	", rprice"
+	
+	", a.in_datetime"
+	", a.entry_date"
+
+	", b.shop as shop_id"
+	", b.bsaler as bsaler_id"
+	", b.employ as employee_id"
+	", b.type as sell_type"
+
+	" from w_sale_detail a"
+	" inner join w_sale b on a.rsn=b.rsn" 
+
+	" where " ++ ?utils:to_sqls(proplists, CorrectCondition) ++ ") a"
+
+	" left join brands b on a.brand_id=b.id"
+	" left join inv_types d  on a.type_id=d.id"
+	" left join suppliers e on a.firm_id=e.id"
+
+	" left join shops f on a.shop_id=f.id"
+	" left join batchsaler g on a.bsaler_id=g.id"
+	" left join employees h on a.employee_id=h.number and h.merchant=" ++ ?to_s(Merchant) 
+
+	++ " order by a.id desc",
+
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+
+handle_call({new_trans_note_color_size_export, Merchant, Conditions}, _From, State)->
+    %% ?DEBUG("new_trans_note_colro_size_export: merchant ~p\nConditions~p", [Merchant, Conditions]),
+
+    Sql = "select a.id"
+	", a.rsn"
+	", a.style_number"
+	", a.brand"
+	", a.color"
+	", a.size"
+	", a.total"
+	", a.shop" 
+	", a.merchant"
+
+	", b.name as cname"
+
+	" from w_sale_detail_amount a"
+	" left join colors b on a.merchant=b.merchant and a.color = b.id"
+	" where a.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, Conditions),
+
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
@@ -1303,6 +1420,29 @@ update_sale(diff_bsaler, Merchant, Updates, {Props, OldProps}) ->
 	 "update batchsaler set balance=balance+" ++ ?to_s(PayBalanceOfNew)
 	 ++ " where id=" ++ ?to_s(BSaler)
 	 ++ " and merchant=" ++ ?to_s(Merchant)].
+
+
+filter_table(batchsale, Merchant, Conditions) ->
+    SortConditions = sort_condition(batchsale, Merchant, Conditions),
+
+    Sql = "select a.id, a.rsn"
+	", a.employ as employee_id"
+	", a.bsaler as bsaler_id"
+	", a.shop as shop_id"
+
+	", a.balance, a.should_pay, a.has_pay, a.cash, a.card, a.wxin, a.verificate, a.total" 
+	", a.comment, a.type, a.entry_date"
+
+	", b.name as shop"
+	", c.name as employee"
+	", d.name as retailer"
+
+	" from batch_sale a"
+	" left join shops b on a.shop=b.id"
+	" left join employees c on a.employ=c.number and c.merchant=" ++ ?to_s(Merchant)
+	++ " left join batchsaler d on a.bsaler=d.id"
+	" where " ++ SortConditions ++ " order by a.id desc",
+    Sql.
 
 type(new) -> 0;
 type(reject) -> 1.
