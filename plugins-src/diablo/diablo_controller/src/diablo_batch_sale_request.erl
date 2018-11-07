@@ -314,14 +314,14 @@ action(Session, Req, {"export_batch_sale"}, Payload) ->
     
     NewConditions = 
 	case ExportType of
-	    trans_note ->
+	    sale_new_detail ->
 		{struct, CutConditions} = ?v(<<"condition">>, Payload),
 		{ok, Q} = ?b_sale:bsale(get_sale_rsn, Merchant, CutConditions),
 		{struct, C} = ?v(<<"fields">>,
 				 ?w_inventory_request:filter_condition(
 				    trans_note, [?v(<<"rsn">>, Rsn) || {Rsn} <- Q], CutConditions)),
 		C;
-	    trans -> Conditions
+	    sale_new -> Conditions
 	end,
 
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
@@ -334,7 +334,7 @@ action(Session, Req, {"export_batch_sale"}, Payload) ->
 	{ok, Transes} -> 
 	    %% write to file 
 	    {ok, ExportFile, Url} = ?utils:create_export_file("btrans", Merchant, UserId), 
-	    case ExportColorSize =:= 1 andalso ExportType =:= trans_note of
+	    case ExportColorSize =:= 1 andalso ExportType =:= sale_new_note of
 		true ->
 		    %% only rsn
 		    NoteConditions = [{<<"rsn">>, ?v(<<"rsn">>, NewConditions, [])}],
@@ -880,7 +880,7 @@ note_class_by(color, [{H}|T], Sorts) ->
 
     note_class_by(color, T, NewSorts).
 
-csv_head(detail, Do, ExportCode) ->
+csv_head(sale_new, Do, ExportCode) ->
     H = "序号,单号,交易,店铺,客户,上次结余,累计结余,店员,数量,应收,实收,积分,现金,刷卡,微信,提现,电子卷,核销,备注,日期",
     C = 
 	case ExportCode of
@@ -891,9 +891,8 @@ csv_head(detail, Do, ExportCode) ->
 	end,
     %% UTF8 = unicode:characters_to_list(H, utf8),
     Do(C);
-csv_head(note, Do, ExportCode) -> 
-    H = "序号,单号,货号,品牌,类型,性别,季节,厂商,年度,上架日期,"
-	"参考价,单价,优惠,数量,小计,进价,折扣率,毛利率,备注,日期",
+csv_head(sale_new_detail, Do, ExportCode) -> 
+    H = "序号,单号,导购,交易,店铺,客户,货号,品牌,类型,季节,厂商,年度,上架日期,参考价,单价,数量,小计,备注,日期",
     C = 
 	case ExportCode of
 	    0 ->
@@ -903,7 +902,7 @@ csv_head(note, Do, ExportCode) ->
 	end,
     Do(C);
 
-csv_head(note_with_color_size, Do, ExportCode) -> 
+csv_head(sale_new_note, Do, ExportCode) -> 
     H = "序号,店铺,款号,品牌,类型,季节,厂商,年度,小计,数量,颜色,尺码,上架日期",
     %% UTF8 = unicode:characters_to_list(H, utf8),
     C = 
@@ -916,7 +915,7 @@ csv_head(note_with_color_size, Do, ExportCode) ->
     %% Do(UTF8).
     Do(C).
 
-do_write(detail, Do, _Seq, [], ExportCode, {Amount, SPay, RPay})->
+do_write(sale_new, Do, _Seq, [], ExportCode, {Amount, SPay, RPay})->
     L = "\r\n"
 	++ ?d
 	++ ?d
@@ -945,7 +944,7 @@ do_write(detail, Do, _Seq, [], ExportCode, {Amount, SPay, RPay})->
 	end,
     Do(Line);
 
-do_write(detail, Do, Seq, [{H}|T], ExportCode, {Amount, SPay, RPay}) ->
+do_write(sale_new, Do, Seq, [{H}|T], ExportCode, {Amount, SPay, RPay}) ->
     Rsn        = ?v(<<"rsn">>, H),
     Type       = ?v(<<"type">>, H),
     Shop       = ?v(<<"shop">>, H),
@@ -1003,15 +1002,12 @@ do_write(detail, Do, Seq, [{H}|T], ExportCode, {Amount, SPay, RPay}) ->
 	    1 -> ?utils:to_gbk(from_latin1, L)
 	end,
     Do(Line), 
-    do_write(detail, Do, Seq + 1, T, ExportCode, {Amount + Total,
+    do_write(sale_new, Do, Seq + 1, T, ExportCode, {Amount + Total,
 						 SPay + ShouldPay,
 						 RPay + HasPay});
 
-do_write(note, Do, _Seq, [], ExportCode, {Amount, _SPay, _RPay})->
+do_write(sale_new_detail, Do, _Seq, [], ExportCode, {Amount, _SPay, _RPay})->
     L = "\r\n"
-	++ ?d
-	++ ?d
-	++ ?d
 	++ ?d
 	++ ?d
 	++ ?d
@@ -1031,6 +1027,7 @@ do_write(note, Do, _Seq, [], ExportCode, {Amount, _SPay, _RPay})->
 	++ ?d
 	++ ?d
 	++ ?d,
+	
     Line = 
 	case ExportCode of
 	    0 -> ?utils:to_utf8(from_latin1, L);
@@ -1038,9 +1035,9 @@ do_write(note, Do, _Seq, [], ExportCode, {Amount, _SPay, _RPay})->
 	end,
     Do(Line);
 
-do_write(note, Do, Seq, [{H}|T], ExportCode, {Amount, SPay, RPay}) ->
+do_write(sale_new_detail, Do, Seq, [{H}|T], ExportCode, {Amount, SPay, RPay}) ->
     Rsn         = ?v(<<"rsn">>, H),
-    BSaler      = ?v(<<"BSaler">>, H), 
+    BSaler      = ?v(<<"bsaler">>, H), 
     SellType    = ?v(<<"sell_type">>, H), 
     Shop        = ?v(<<"shop">>, H),
     Employee    = ?v(<<"employee">>, H),
@@ -1052,7 +1049,7 @@ do_write(note, Do, Seq, [{H}|T], ExportCode, {Amount, SPay, RPay}) ->
     Firm        = ?v(<<"firm">>, H),
     Year        = ?v(<<"year">>, H),
     InDatetime  = ?v(<<"in_datetime">>, H),
-    OrgPrice    = ?v(<<"org_price">>, H),
+    %% OrgPrice    = ?v(<<"org_price">>, H),
     TagPrice    = ?v(<<"tag_price">>, H),
     RPrice      = ?v(<<"rprice">>, H), 
     Total       = ?v(<<"total">>, H),
@@ -1064,10 +1061,10 @@ do_write(note, Do, Seq, [{H}|T], ExportCode, {Amount, SPay, RPay}) ->
     L = "\r\n"
 	++ ?to_s(Seq) ++ ?d
 	++ ?to_s(Rsn) ++ ?d
-	++ ?to_s(BSaler) ++ ?d 
+	++ ?to_s(Employee) ++ ?d
 	++ sale_type(SellType) ++ ?d
 	++ ?to_s(Shop) ++ ?d
-	++ ?to_s(Employee) ++ ?d
+	++ ?to_s(BSaler) ++ ?d 
 
 	++ "\'" ++ ?to_s(StyleNumber) ++ "\'" ++ ?d
 	++ ?to_s(Brand) ++ ?d
@@ -1076,12 +1073,14 @@ do_write(note, Do, Seq, [{H}|T], ExportCode, {Amount, SPay, RPay}) ->
 	++ ?to_s(Firm) ++ ?d
 	++ ?to_s(Year) ++ ?d
 	++ ?to_s(InDatetime) ++ ?d
-	++ ?to_s(OrgPrice) ++ ?d 
-	++ ?to_s(TagPrice) ++ ?d 
-	++ ?to_s(RPrice) ++ ?d
+	++ ?to_s(TagPrice) ++ ?d
+	++ ?to_s(RPrice) ++ ?d 
+    %% ++ ?to_s(OrgPrice) ++ ?d 
 	++ ?to_s(Total) ++ ?d
 	++ ?to_s(Calc) ++ ?d 
-	++ ?to_s(?w_good_sql:stock(ediscount, RPrice, TagPrice)) ++ ?d 
+
+	++ "\'" ++ ?to_s(Comment) ++ "\'" ++ ?d 
+    %% ++ ?to_s(?w_good_sql:stock(ediscount, RPrice, TagPrice)) ++ ?d 
 	++ ?to_s(Datetime),
     %% UTF8 = unicode:characters_to_list(L, utf8),
     %% Do(UTF8),
@@ -1091,9 +1090,9 @@ do_write(note, Do, Seq, [{H}|T], ExportCode, {Amount, SPay, RPay}) ->
 	    1 -> ?utils:to_gbk(from_latin1, L)
 	end,
     Do(Line),
-    do_write(note, Do, Seq + 1, T, ExportCode, {Amount + Total, SPay, RPay}).
+    do_write(sale_new_detail, Do, Seq + 1, T, ExportCode, {Amount + Total, SPay, RPay}).
 
-do_write(note_with_color_size, Do, _Seq, [], _DictNotes, _Colors, ExportCode, {Amount, _SPay, _RPay})->
+do_write(sale_new_note, Do, _Seq, [], _DictNotes, _Colors, ExportCode, {Amount, _SPay, _RPay})->
     L = "\r\n"
 	++ ?d
 	++ ?d
@@ -1112,7 +1111,7 @@ do_write(note_with_color_size, Do, _Seq, [], _DictNotes, _Colors, ExportCode, {A
 	end,
     Do(Line);
 
-do_write(note_with_color_size, Do, Seq, [DH|DT], DictNotes, Colors, ExportCode, {Amount, SPay, RPay}) ->
+do_write(sale_new_note, Do, Seq, [DH|DT], DictNotes, Colors, ExportCode, {Amount, SPay, RPay}) ->
     {Key, [{H}]} = DH,
     Shop        = ?v(<<"shop">>, H), 
     StyleNumber = ?v(<<"style_number">>, H),
@@ -1197,7 +1196,7 @@ do_write(note_with_color_size, Do, Seq, [DH|DT], DictNotes, Colors, ExportCode, 
 		    1 -> ?utils:to_gbk(from_latin1, L ++ C)
 		end,
 	    Do(Line),
-	    do_write(note_with_color_size,
+	    do_write(sale_new_note,
 		     Do,
 		     Seq + 1,
 		     DT,
@@ -1207,7 +1206,7 @@ do_write(note_with_color_size, Do, Seq, [DH|DT], DictNotes, Colors, ExportCode, 
 		     {Amount + Total, SPay, RPay});
 
 	error ->
-	    do_write(note_with_color_size,
+	    do_write(sale_new_note,
 		     Do,
 		     Seq + 1,
 		     DT,
@@ -1223,5 +1222,5 @@ sale_type(0) -> "开单";
 sale_type(1)-> "退货".
 
 export_type(0) -> sale_new;
-export_type(1) -> sale_new_detail;
-export_type(2) -> sale_new_note.
+export_type(1) -> sale_new_detail.
+

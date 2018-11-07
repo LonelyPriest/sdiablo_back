@@ -166,7 +166,7 @@ function bsaleConfig(angular){
 
 	this.check_state    = [{name:"未审核", id:0}, {name:"已审核", id:1}];
 	this.check_comment  = [{name:"不为空", id:0}];
-	this.export_type    = {detail:0, note:1}; 
+	this.export_type    = {sale_new:0, sale_new_detail:1}; 
 	this.default_bsaler = {name: "", id:-1};
 	
 	this.diablo_key_bsale_detail  = "q-bsale-detail";
@@ -229,7 +229,7 @@ function bsaleConfig(angular){
 	};
 
 	this.csv_export = function(condition, type){
-	    return http.save({operation: "export_batch_sale"}, {condition: condition, type:type}).$promise;
+	    return request.save({operation: "export_batch_sale"}, {condition: condition, type:type}).$promise;
 	}; 
 
 	/*================================================================================
@@ -1700,7 +1700,7 @@ function bsaleNewDetailCtrlProvide(
 		search.shop = $scope.shopIds.length === 0 ? undefined : $scope.shopIds; 
 	    }
 	    console.log(search); 
-	    bsaleService.csv_export(bsaleService.export_type.detail, search)
+	    bsaleService.csv_export(bsaleService.export_type.sale_new, search)
 		.then(function(result){
 	    	    console.log(result);
 		    if (result.ecode === 0){
@@ -2087,7 +2087,7 @@ function bsaleNewNoteCtrlProvide(
 	    }
 	    console.log(search);
 	    
-	    bsaleService.csv_export(search, bsaleService.export_type.note).then(function(result){
+	    bsaleService.csv_export(search, bsaleService.export_type.sale_new_detail).then(function(result){
 	    	console.log(result);
 		if (result.ecode === 0){
 		    dialog.response_with_callback(

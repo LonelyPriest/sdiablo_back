@@ -436,13 +436,13 @@ handle_call({get_sale_new_rsn, Merchant, Conditions} , _From, State) ->
     ?DEBUG("get_sale_rsn with merchant=~p, conditions ~p", [Merchant, Conditions]),
 
     {DetailConditions, SaleConditions} =
-	filter_condition(batchsaler, [{<<"merchant">>, Merchant}|Conditions], [], []),
+	filter_condition(batchsale, [{<<"merchant">>, Merchant}|Conditions], [], []),
     ?DEBUG("sale conditions ~p, detail condition ~p", [SaleConditions, DetailConditions]), 
 
     {StartTime, EndTime, CutSaleConditions} = ?sql_utils:cut(fields_with_prifix, SaleConditions),
 
     Sql1 = 
-	"select a.rsn from w_sale a"
+	"select a.rsn from batch_sale a"
 	" where "
 	++ ?sql_utils:condition(proplists_suffix, CutSaleConditions)
 	++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime),
@@ -496,6 +496,7 @@ handle_call({export_sale_new_detail, Merchant, Conditions}, _From, State)->
 	", a.brand_id"
 	", a.type_id"
 	", a.firm_id"
+	", a.bsaler_id"
 	", a.season" 
 	", a.year"
 	", a.unit" 
@@ -508,6 +509,7 @@ handle_call({export_sale_new_detail, Merchant, Conditions}, _From, State)->
 	
 	", a.in_datetime" 
 	", a.entry_date"
+	", a.comment"
 	
 	", a.shop_id"
 	", a.bsaler_id"
@@ -540,14 +542,15 @@ handle_call({export_sale_new_detail, Merchant, Conditions}, _From, State)->
 	
 	", a.in_datetime"
 	", a.entry_date"
+	", a.comment"
 
 	", b.shop as shop_id"
 	", b.bsaler as bsaler_id"
 	", b.employ as employee_id"
 	", b.type as sell_type"
 
-	" from w_sale_detail a"
-	" inner join w_sale b on a.rsn=b.rsn" 
+	" from batch_sale_detail a"
+	" inner join batch_sale b on a.rsn=b.rsn" 
 
 	" where " ++ ?utils:to_sqls(proplists, CorrectCondition) ++ ") a"
 
@@ -580,7 +583,7 @@ handle_call({new_trans_note_color_size_export, Merchant, Conditions}, _From, Sta
 
 	", b.name as cname"
 
-	" from w_sale_detail_amount a"
+	" from batch_sale_detail_amount a"
 	" left join colors b on a.merchant=b.merchant and a.color = b.id"
 	" where a.merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, Conditions),
@@ -728,7 +731,7 @@ bsale(update, RSN, Datetime, Merchant, Shop, Inventory) ->
 		case ?v(<<"operation">>, Attr) of 
 		    <<"a">> ->
 			Sql01 = "select id, style_number, brand, color, size"
-			    " from w_sale_detail_amount where " ++ C2(Color, Size),
+			    " from batch_sale_detail_amount where " ++ C2(Color, Size),
 
 			["update w_inventory_amount set total=total-" ++ ?to_s(Count)
 			 ++ " where " ++ C1(Color, Size),
@@ -746,7 +749,7 @@ bsale(update, RSN, Datetime, Merchant, Shop, Inventory) ->
 				     ++ ?to_s(Count) ++ "," 
 				     ++ "\"" ++ ?to_s(Datetime) ++ "\")";
 			     {ok, _} ->
-				 "update w_sale_detail_amount"
+				 "update batch_sale_detail_amount"
 				     " set total=total+" ++ ?to_s(Count)
 				     ++ ", entry_date=\'" ++ ?to_s(Datetime) ++ "\'"
 				     ++ " where " ++ C2(Color, Size);
@@ -758,7 +761,7 @@ bsale(update, RSN, Datetime, Merchant, Shop, Inventory) ->
 			["update w_inventory_amount set total=total+"
 			 ++ ?to_s(Count) ++ " where " ++ C1(Color, Size), 
 
-			 "delete from w_sale_detail_amount"
+			 "delete from batch_sale_detail_amount"
 			 " where " ++ C2(Color, Size)
 			 | Acc1];
 		    <<"u">> -> 
@@ -766,7 +769,7 @@ bsale(update, RSN, Datetime, Merchant, Shop, Inventory) ->
 			 " set total=total-" ++ ?to_s(Count)
 			 ++ " where " ++ C1(Color, Size),
 
-			 " update w_sale_detail_amount"
+			 " update batch_sale_detail_amount"
 			 " set total=total+" ++ ?to_s(Count)
 			 ++ ", entry_date=\'" ++ ?to_s(Datetime) ++ "\'"
 			 ++ " where " ++ C2(Color, Size)|Acc1]
