@@ -386,9 +386,10 @@ function stockNewDetailPrintCtrlProvide(
 
     $scope.shops = user.sortShops; 
     // console.log($scope.shops);
-
+    
     var LODOP;
-    if (needCLodop()) loadCLodop(); 
+    var print_access  = stockUtils.print_num(diablo_default_shop, base); 
+    if (needCLodop()) loadCLodop(print_access.protocal); 
     var dialog = diabloUtilsService;
 
     var pageHeight = diablo_base_setting("prn_h_page", user.loginShop, base, parseFloat, 14);
@@ -482,7 +483,8 @@ function stockNewNotePrintCtrlProvide(
     // console.log($scope.shops);
 
     var LODOP;
-    if (needCLodop()) loadCLodop(); 
+    var print_access = stockUtils.print_num(diablo_default_shop, base); 
+    if (needCLodop()) loadCLodop(print_access.protocal); 
     var dialog = diabloUtilsService;
 
     var pageHeight = diablo_base_setting("prn_h_page", user.loginShop, base, parseFloat, 14);
@@ -706,7 +708,8 @@ function stockTransferPrintCtrlProvide(
     // console.log($scope.shops);
 
     var LODOP;
-    if (needCLodop()) loadCLodop(); 
+    var print_access  = stockUtils.print_num(diablo_default_shop, base); 
+    if (needCLodop()) loadCLodop(print_access.protocal); 
     var dialog = diabloUtilsService;
 
     var pageHeight = diablo_base_setting("prn_h_page", user.loginShop, base, parseFloat, 14);
@@ -801,7 +804,8 @@ function stockFixNotePrintCtrlProvide(
     // console.log($scope.shops);
 
     var LODOP;
-    if (needCLodop()) loadCLodop(); 
+    var print_access  = stockUtils.print_num(diablo_default_shop, base); 
+    if (needCLodop()) loadCLodop(print_access.protocal); 
     var dialog = diabloUtilsService;
 
     var pageHeight = diablo_base_setting("prn_h_page", user.loginShop, base, parseFloat, 14);

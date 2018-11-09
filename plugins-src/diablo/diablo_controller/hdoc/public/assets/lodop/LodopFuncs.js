@@ -55,10 +55,14 @@ function needCLodop(){
 // 	// head.insertBefore( oscript,head.firstChild );
 // };
 
-function loadCLodop() {
+function loadCLodop(protocal) {
     var head = document.head || document.getElementsByTagName("head")[0] || document.documentElement;
     var oscript = document.createElement("script");
-    oscript.src ="http://localhost:63552/CLodopfuncs.js?priority=1";
+    if (protocal===1) {
+	oscript.src ="https://localhost:8443/CLodopfuncs.js";
+    } 
+    else 
+	oscript.src ="http://localhost:63552/CLodopfuncs.js?priority=1";
     // oscript.src ="http://192.168.0.102:63552/CLodopfuncs.js?priority=1";
     head.insertBefore( oscript,head.firstChild );
 };

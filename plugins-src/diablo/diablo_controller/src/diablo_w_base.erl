@@ -832,7 +832,10 @@ sys_config() ->
     DefaultDate = lists:flatten(io_lib:format("~4..0w-~2..0w-~2..0w", [YY, MM, DD])),
     
     %%         ename,             cname,                 value,type
-    Values = [{"pum",             "打印份数",            "11",  "0"},
+    %% [0]: common print num
+    %% [1]: swiming print num
+    %% [2]: print protocal 0:http 1:https default 0
+    Values = [{"pum",             "打印份数",            "110",  "0"},
 	      {"ptype",           "打印方式",            "1",  "0"}, %% 0: front; 1:backend
 	      {"pim_print",       "立即打印",            "0",  "0"},
 

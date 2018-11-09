@@ -63,6 +63,7 @@ require.config({
 
 	"fastclick": {},
 
+	// "bootstrap": {},
 	"bootstrap": {
 	    deps: ["jquery"]
 	},
@@ -102,6 +103,7 @@ require.config({
         },
 
 	// diablo
+	// "diablo-function": {},
 	"diablo-function": {
 	    deps: ["jquery"] 
 	},
@@ -154,6 +156,10 @@ require.config({
 		  "jquery-migrate",
 		  "fastclick"]
 	},
+
+	// "diablo-init":{
+	//     deps:["fastclick"]
+	// },
 	
 	// "diablo-employee": {
         //     exports: "diablo-employee",
@@ -171,7 +177,7 @@ require.config({
 	// }, 
 
 	"wsale-utils": {
-            deps: ["jquery", "diablo-utils"]
+            deps: ["diablo-utils"]
 	},
 
 	"diablo-error":{

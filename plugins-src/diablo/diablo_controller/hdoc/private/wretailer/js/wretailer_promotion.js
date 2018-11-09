@@ -263,7 +263,8 @@ function wretailerDetailPrintCtrlProvide(
     console.log($routeParams); 
     
     var LODOP;
-    if (needCLodop()) loadCLodop(); 
+    var print_access = retailerUtils.print_num(user.loginShop, base);
+    if (needCLodop()) loadCLodop(print_access.protocal); 
     var dialog = diabloUtilsService;
 
     var pageHeight = diablo_base_setting("prn_h_page", user.loginShop, base, parseFloat, 14);

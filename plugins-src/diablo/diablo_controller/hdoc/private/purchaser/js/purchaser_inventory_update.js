@@ -39,6 +39,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
     $scope.setting.auto_barcode    = stockUtils.auto_barcode(diablo_default_shop, $scope.ubase);
     $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, $scope.ubase);
     $scope.setting.dual_barcode = stockUtils.dual_barcode_print(user.loginShop, $scope.ubase);
+    $scope.setting.print_access  = stockUtils.print_num(diablo_default_shop, base); 
     // console.log(user.loginShop);
     // console.log($scope.setting);
 
@@ -48,7 +49,8 @@ function purchaserInventoryNewUpdateCtrlProvide (
 
     var dialog = diabloUtilsService;
 
-    if ($scope.setting.use_barcode && needCLodop()) loadCLodop(); 
+    if ($scope.setting.use_barcode && needCLodop())
+	loadCLodop($scope.setting.print_access.protocal); 
 
     $scope.go_back = function(){
 	console.log($routeParams.ppage);

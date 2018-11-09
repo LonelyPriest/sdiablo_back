@@ -23,8 +23,9 @@ function wreportDailyCtrlProvide(
     var print_mode = diablo_backend;
     for (var i=0, l=$scope.shopIds; i<l; i++){
 	if (diablo_frontend === reportUtils.print_mode($scope.shopIds[i], base)){
+	    var print_protocal = reportUtils.print_protocal($scope.shopIds[i], base);
 	    if (needCLodop()) {
-		loadCLodop();
+		loadCLodop(print_protocal);
 		break;
 	    };
 	}
@@ -209,8 +210,9 @@ function wreportDailyCtrlProvide(
     // console.log(sale_mode, distinct_user);
     
     $scope.shift_print = function(d) {
+	var print_protocal = reportUtils.print_protocal(d.shop.id, base);
 	if (diablo_frontend === reportUtils.print_mode(d.shop.id, base)) {
-	    if (needCLodop()) loadCLodop();
+	    if (needCLodop()) loadCLodop(print_protocal);
 	    $scope.print_shop_fronted(d, p_note);
 	} 
 	else

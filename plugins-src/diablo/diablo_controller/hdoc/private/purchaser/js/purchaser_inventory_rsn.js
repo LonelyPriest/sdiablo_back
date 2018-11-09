@@ -235,7 +235,8 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 	use_barcode: stockUtils.use_barcode(diablo_default_shop, base),
 	auto_barcode :stockUtils.auto_barcode(diablo_default_shop, base),
 	printer_barcode: stockUtils.printer_barcode(user.loginShop, base),
-	dual_barcode: stockUtils.dual_barcode_print(user.loginShop, base)
+	dual_barcode: stockUtils.dual_barcode_print(user.loginShop, base),
+	print_access: stockUtils.print_num(user.loginShop, base)
 	// barcode_width: stockUtils.barcode_width(diablo_default_shop, base),
 	// barcode_height: stockUtils.barcode_height(diablo_default_shop, base),
 	// barcode_firm: stockUtils.barcode_with_firm(diablo_default_shop, base)
@@ -604,7 +605,8 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
     };
 
 
-    if ($scope.setting.use_barcode && needCLodop()) loadCLodop();
+    if ($scope.setting.use_barcode && needCLodop())
+	loadCLodop($scope.setting.print_access.protocal);
     
     var dialog_barcode_title = "库存条码打印";
     var dialog_barcode_title_failed = "库存条码打印失败：";

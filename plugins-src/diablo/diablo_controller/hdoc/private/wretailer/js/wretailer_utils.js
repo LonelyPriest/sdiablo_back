@@ -14,8 +14,11 @@ var retailerUtils = function(){
 	},
 
 	print_num: function(shop, base){
-	    var p = diablo_base_setting("pum", shop, base, function(s) {return s}, diablo_print_num);
-	    return retailerUtils.to_integer(p.charAt(1));
+	    var p = diablo_base_setting(
+		"pum", shop, base, function(s) {return s}, diablo_print_num);
+	    return {common: stockUtils.to_integer(p.charAt(0)),
+		    swiming: stockUtils.to_integer(p.charAt(1)),
+		    protocal: stockUtils.to_integer(p.charAt(2))};
 	},
 	
 	to_integer: function(v){

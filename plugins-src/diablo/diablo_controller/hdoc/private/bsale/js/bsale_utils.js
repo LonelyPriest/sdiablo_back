@@ -211,6 +211,11 @@ var bsaleUtils = function(){
 	    return diablo_base_setting("ptype", shop, base, parseInt, diablo_frontend);
 	},
 
+	print_protocal: function(shop, base){
+	    var p = diablo_base_setting("pum", shop, base, function(s) {return s}, diablo_print_num);
+	    return reportUtils.to_integer(p.charAt(2)); 
+	},
+
 	sale_mode:function(shop, base) {
 	    var mode = diablo_base_setting("p_balance", shop, base, function(s) {return s}, diablo_sale_mode);
 	    return {

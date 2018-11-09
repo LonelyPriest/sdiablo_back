@@ -60,6 +60,11 @@ var reportUtils = function(){
 	    return diablo_base_setting("p_balance", shop, base, function(s) {return s}, diablo_sale_mode);
 	},
 
+	print_protocal: function(shop, base){
+	    var p = diablo_base_setting("pum", shop, base, function(s) {return s}, diablo_print_num);
+	    return reportUtils.to_integer(p.charAt(2)); 
+	},
+
 	f_sub:function(v1, v2){
 	    return diablo_rdight(reportUtils.to_float(v1) - reportUtils.to_float(v2), 2);
 	},

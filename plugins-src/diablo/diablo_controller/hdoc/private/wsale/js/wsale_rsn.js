@@ -67,9 +67,11 @@ function wsaleRsnDetailCtrlProvide (
     // prepare of print
     if ($scope.is_linked){
 	var shop = diablo_get_object(parseInt($routeParams.rsn.split("-")[3]), $scope.shops);
-	var p_mode = wsaleUtils.print_mode(shop.id, base);
-	if (diablo_frontend === p_mode)
-	    if (needCLodop()) loadCLodop();
+	var print_access = wsaleUtils.print_num(shop.id, base); 
+	if (diablo_frontend === wsaleUtils.print_mode(shop.id, base)) {
+	    if (needCLodop()) loadCLodop(print_access.protocal);
+	} 
+	    
     };
 
     // style_number

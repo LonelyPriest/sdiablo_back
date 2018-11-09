@@ -408,7 +408,9 @@ function bsaleNewProvide(
 	$scope.setting.barcode_mode  = bsaleUtils.barcode_mode(shopId, base);
 	$scope.setting.barcode_auto  = bsaleUtils.barcode_auto(shopId, base); 
 	$scope.setting.scan_only     = bsaleUtils.to_integer(bsaleUtils.scan_only(shopId, base).charAt(0));
-	$scope.setting.type_sale     = bsaleUtils.type_sale(shopId, base); 
+	$scope.setting.type_sale     = bsaleUtils.type_sale(shopId, base);
+	$scope.setting.print_protocal = bsaleUtils.print_protocal(shopId, base);
+	
 	console.log($scope.setting); 
     };
     
@@ -441,7 +443,7 @@ function bsaleNewProvide(
     };
     
     if (needCLodop()) {
-	loadCLodop(); 
+	loadCLodop($scope.setting.print_protocal); 
 	$scope.comments = bsaleUtils.comment($scope.select.shop.id, base);
     } 
     
@@ -1777,9 +1779,10 @@ function bsaleNewNoteCtrlProvide(
 
     // prepare of print
     if ($scope.is_linked){
-	var shop = diablo_get_object(parseInt($routeParams.rsn.split("-")[3]), $scope.shops);
-	var p_mode = bsaleUtils.print_mode(shop.id, base);
-	if (diablo_frontend === p_mode) if (needCLodop()) loadCLodop();
+	var shop = diablo_get_object(parseInt($routeParams.rsn.split("-")[3]),$scope.shops);
+	var print_protocal = bsaleUtils.print_protocal(shop.id, base);
+	if (diablo_frontend === bsaleUtils.print_mode(shop.id, base))
+	    if (needCLodop()) loadCLodop(print_protocal);
     };
 
     // style_number
@@ -2170,7 +2173,8 @@ function bsalePrintCtrlProvide(
     var dialog = diabloUtilsService;
 
     var LODOP;
-    if (needCLodop()) loadCLodop();
+    var print_protocal = bsaleUtils.print_protocal(user.loginShop, base);
+    if (needCLodop()) loadCLodop(print_protocal);
 
     var pageHeight = diablo_base_setting("prn_h_page", user.loginShop, base, parseFloat, 14);
     var pageWidth  = diablo_base_setting("prn_w_page", user.loginShop, base, parseFloat, 21.3);

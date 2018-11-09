@@ -1,5 +1,10 @@
 var version_update = function(){
     var updates = [
+	{date: "2018-11-09",
+	 content:
+	 ["增加https访问方式，解决dns劫持问题"]
+	},
+	
 	{date: "2018-11-01",
 	 content:
 	 ["标签增加打印合格证字段"]

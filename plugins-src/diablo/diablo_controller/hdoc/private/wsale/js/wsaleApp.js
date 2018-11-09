@@ -568,6 +568,7 @@ function wsaleNewProvide(
 	get_setting($scope.select.shop.id);	
 	// $scope.match_all_w_inventory(); 
 	$scope.get_employee();
+	$scope.reset_retailer();
 
 	$scope.wsaleStorage.remove($scope.wsaleStorage.get_key());
 	$scope.wsaleStorage.change_shop($scope.select.shop.id);
@@ -576,9 +577,10 @@ function wsaleNewProvide(
     };
     
     if ($scope.p_mode($scope.select.shop.id) === diablo_frontend){
-	if (needCLodop()) loadCLodop(); 
+	var print_access = wsaleUtils.print_num($scope.select.shop.id, base); 
+	if (needCLodop()) loadCLodop(print_access.protocal); 
 	$scope.comments = wsaleUtils.comment($scope.select.shop.id, base);
-	$scope.p_num = wsaleUtils.print_num($scope.select.shop.id, base);
+	$scope.p_num = print_access.common;
     }
     
     $scope.get_employee = function(){

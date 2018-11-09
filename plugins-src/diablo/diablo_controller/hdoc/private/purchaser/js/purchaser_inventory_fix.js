@@ -21,7 +21,9 @@ function purchaserInventoryFixCtrlProvide(
     
     if (needCLodop()) {
 	$scope.useFile = true;
-	loadCLodop(); 
+	
+	var print_access = stockUtils.print_num(diablo_default_shop, base);
+	loadCLodop(print_access.protocal); 
     }
 
     $scope.refresh = function(){

@@ -624,7 +624,7 @@ function wgoodDetailCtrlProvide(
 	auto_barcode :stockUtils.auto_barcode(diablo_default_shop, base),
 	printer_barcode: stockUtils.printer_barcode(user.loginShop, base),
 	dual_barcode: stockUtils.dual_barcode_print(user.loginShop, base),
-	
+	print_access: stockUtils.print_num(user.loginShop, base),
 	// hide_expire :function() {
 	//     var h = hide_mode.charAt(3);
 	//     if ( !h ) return diablo_yes;
@@ -876,7 +876,7 @@ function wgoodDetailCtrlProvide(
     var dialog_barcode_title_success = "货品条码打印成功：";
 
     if ($scope.setting.use_barcode && needCLodop())
-	loadCLodop();
+	loadCLodop($scope.setting.print_access.protocal);
     
     $scope.print_barcode = function(g) {
 	console.log(g);

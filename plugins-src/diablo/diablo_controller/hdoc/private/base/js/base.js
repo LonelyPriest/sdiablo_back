@@ -1309,10 +1309,13 @@ function goodSizeSpecCtrlProvide(
     };
 };
 
-function printerDetectCtrlProvide($scope, diabloUtilsService){
+function printerDetectCtrlProvide($scope, diabloUtilsService, user){
     var LODOP;
     var dialog = diabloUtilsService;
-    if (needCLodop()) loadCLodop();
+    var print_protocal = diablo_set_integer(diablo_base_setting(
+	"pum", user.loginShop, base, function(s) {return s}, diablo_print_num).charAt(2));
+
+    if (needCLodop()) loadCLodop(angular.isUndefined(print_protocal ? 0 : 1));
 
     $scope.refresh = function() {
 	if (angular.isUndefined(LODOP))

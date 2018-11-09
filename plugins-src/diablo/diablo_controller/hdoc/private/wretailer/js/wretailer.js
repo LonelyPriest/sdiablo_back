@@ -1198,9 +1198,10 @@ function wretailerThresholdCardDetailCtrlProvide(
     var print_mode = diablo_backend;
     for (var i=0, l=$scope.shopIds.length; i<l; i++){
 	print_mode = retailerUtils.print_mode($scope.shopIds[i], base);
+	var print_access = retailerUtils.print_num($scope.shopIds[i], base);
     	if (diablo_frontend === print_mode){
     	    if (needCLodop()) {
-    		loadCLodop();
+    		loadCLodop(print_access.protocal);
     		break;
     	    };
     	}

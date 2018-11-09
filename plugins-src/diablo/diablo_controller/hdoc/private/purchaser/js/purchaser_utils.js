@@ -83,6 +83,13 @@ var stockUtils = function(){
 	    
 	},
 
+	print_num: function(shop, base){
+	    var p = diablo_base_setting("pum", shop, base, function(s) {return s}, diablo_print_num);
+	    return {common: stockUtils.to_integer(p.charAt(0)),
+		    swiming: stockUtils.to_integer(p.charAt(1)),
+		    protocal: stockUtils.to_integer(p.charAt(2))}
+	},
+
 	stock_alarm: function(shop, base) {
 	    return diablo_base_setting("stock_warning", shop, base, parseInt, diablo_no);
 	},

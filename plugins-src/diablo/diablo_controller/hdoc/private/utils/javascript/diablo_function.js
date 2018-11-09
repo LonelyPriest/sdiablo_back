@@ -155,7 +155,7 @@ var diablo_bsale_print_cs_mode ="000";
 /*
  * number of print
  */
-var diablo_print_num = "11";
+var diablo_print_num = "110";
 
 
 /*

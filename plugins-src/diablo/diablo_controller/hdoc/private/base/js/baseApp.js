@@ -19,7 +19,7 @@ function baseConfig(angular){
 	    return userService()}};
 
 	var ctype = {"filterCType": function(diabloFilter) {
-	    return diabloFilter.list_good_ctype()}};
+	    return diabloFilter.list_good_ctype()}}; 
 	
 	$routeProvider.
 	    when('/printer/connect_new', {
@@ -34,7 +34,8 @@ function baseConfig(angular){
 	    }).
 	    when('/printer/detect', {
 		templateUrl: '/private/base/html/printer_detect.html',
-		controller: 'printerDetectCtrl'
+		controller: 'printerDetectCtrl',
+		resolve: angular.extend({}, user)
 	    }). 
 	    when('/bank/new_bank_card/:cardId?', {
 		templateUrl: '/private/base/html/bank_card_new.html',

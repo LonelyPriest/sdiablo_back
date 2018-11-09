@@ -121,6 +121,7 @@ function wsaleRejectCtrlProvide(
 		    $scope.setting.vip_mode = wsaleUtils.vip_mode(shopId, settings);
 		    var sale_mode = wsaleUtils.sale_mode(shopId, settings);
 		    $scope.setting.print_perform     = wsaleUtils.to_integer(sale_mode.charAt(3));
+		    $scope.setting.print_access = wsaleUtils.print_num(shopId, settings);
 		    // console.log($scope.setting);
 
 		    $scope.employees = wsaleUtils.get_login_employee(
@@ -129,7 +130,7 @@ function wsaleRejectCtrlProvide(
 			filterEmployee).filter;
 		    
 		    if (diablo_frontend === $scope.setting.p_mode) {
-			if (needCLodop()) loadCLodop(); 
+			if (needCLodop()) loadCLodop(print_access.protocal); 
 		    }
 		    
 		    $scope.old_inventories = wsale.details;
