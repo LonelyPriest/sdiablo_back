@@ -225,6 +225,7 @@ var diablo_theoretic_charge = 2;
 var diablo_month_unlimit_charge = 3;
 var diablo_quarter_unlimit_charge = 4;
 var diablo_year_unlimit_charge = 5;
+var diablo_half_of_year_unlimit_charge = 6;
 
 
 /*

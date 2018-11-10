@@ -750,6 +750,10 @@ handle_call({new_charge, Merchant, Attrs}, _From, State) ->
 	      ?YEAR_UNLIMIT_CHARGE ->
 		  "select id, name from w_charge"
 		      " where merchant=" ++ ?to_s(Merchant)
+		      ++ " and name=\'" ++ ?to_s(Name) ++ "\'";
+	      ?HALF_YEAR_UNLIMIT_CHARGE ->
+		  "select id, name from w_charge"
+		      " where merchant=" ++ ?to_s(Merchant)
 		      ++ " and name=\'" ++ ?to_s(Name) ++ "\'"
 	  end,
 
@@ -951,7 +955,9 @@ handle_call({recharge, Merchant, Attrs}, _From, State) ->
 						?QUARTER_UNLIMIT_CHARGE ->
 						    date_next(?QUARTER_UNLIMIT_CHARGE, {Year, Month, Date});
 						?YEAR_UNLIMIT_CHARGE ->
-						    date_next(?YEAR_UNLIMIT_CHARGE, {Year, Month, Date})
+						    date_next(?YEAR_UNLIMIT_CHARGE, {Year, Month, Date});
+						?HALF_YEAR_UNLIMIT_CHARGE ->
+						    date_next(?HALF_YEAR_UNLIMIT_CHARGE, {Year, Month, Date})
 					    end, 
 					
 					[case Rule of
@@ -2113,9 +2119,15 @@ date_next(?QUARTER_UNLIMIT_CHARGE, {Year, Month, Date}) ->
 	    {Year, Month + 3, day_of_next_month(Year, Month + 3, Date)}
     end;
 date_next(?YEAR_UNLIMIT_CHARGE, {Year, Month, Date}) ->
-    {Year + 1, Month, Date}.
+    {Year + 1, Month, Date};
 
-
+date_next(?HALF_YEAR_UNLIMIT_CHARGE, {Year, Month, Date}) ->
+    case Month + 6 > 12 of
+	true ->
+	    {Year + 1, (Month + 6) rem 12, day_of_next_month(Year, (Month + 6) rem 12, Date)};
+	false ->
+	    {Year, Month + 6, day_of_next_month(Year, Month + 6, Date)}
+    end.
 
 day_of_next_month(CurrentYear, NextMonth, CurrentDay) -> 
     Days = calendar:last_day_of_the_month(CurrentYear, NextMonth),

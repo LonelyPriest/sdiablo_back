@@ -213,7 +213,7 @@ var bsaleUtils = function(){
 
 	print_protocal: function(shop, base){
 	    var p = diablo_base_setting("pum", shop, base, function(s) {return s}, diablo_print_num);
-	    return reportUtils.to_integer(p.charAt(2)); 
+	    return bsaleUtils.to_integer(p.charAt(2)); 
 	},
 
 	sale_mode:function(shop, base) {

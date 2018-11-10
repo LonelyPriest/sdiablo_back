@@ -207,7 +207,8 @@ function wretailerConfig(angular) {
 	    {name:"次卡模式", id:diablo_theoretic_charge, remark: "充值与消费次数相关"},
 	    {name:"月卡模式", id:diablo_month_unlimit_charge, remark: "一个月内任意消费次数"},
 	    {name:"季卡模式", id:diablo_quarter_unlimit_charge, remark: "一个季度内内任意消费次数"},
-	    {name:"年卡模式", id:diablo_year_unlimit_charge, remark: "一年内任意消费次数"}
+	    {name:"年卡模式", id:diablo_year_unlimit_charge, remark: "一年内任意消费次数"},
+	    {name:"半年卡模式", id:diablo_half_of_year_unlimit_charge, remark: "一年内任意消费次数"}
 	];
 
 	this.threshold_cards = [{name:"次卡模式", id:diablo_theoretic_charge},

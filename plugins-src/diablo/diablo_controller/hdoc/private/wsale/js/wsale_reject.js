@@ -130,7 +130,7 @@ function wsaleRejectCtrlProvide(
 			filterEmployee).filter;
 		    
 		    if (diablo_frontend === $scope.setting.p_mode) {
-			if (needCLodop()) loadCLodop(print_access.protocal); 
+			if (needCLodop()) loadCLodop($scope.setting.print_access.protocal); 
 		    }
 		    
 		    $scope.old_inventories = wsale.details;
@@ -229,7 +229,7 @@ function wsaleRejectCtrlProvide(
     $scope.disable_save = function(){
 	var invalid = false;
 	// save one time only
-	if ($scope.has_saved || $scope.select.total === 0 || $scope.select.rcharge === 0)
+	if ($scope.has_saved || $scope.select.total === 0)
 	    return invalid = true;
 
 	if ($scope.select.retailer.type_id===1 && $scope.select.withdraw!==0 && !$scope.has_withdrawed)

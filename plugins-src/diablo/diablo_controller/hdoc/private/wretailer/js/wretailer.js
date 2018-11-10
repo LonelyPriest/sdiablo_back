@@ -353,6 +353,7 @@ function wretailerDetailCtrlProvide(
     var is_unlimit_card = function(rule_id) {
 	return rule_id === diablo_month_unlimit_charge
 	    || rule_id === diablo_quarter_unlimit_charge
+	    || rule_id === diablo_half_of_year_unlimit_charge
 	    || rule_id === diablo_year_unlimit_charge;
     };
 
@@ -432,7 +433,7 @@ function wretailerDetailCtrlProvide(
 		    dialog.response_with_callback(
 			true,
 			"会员充值",
-			"会员 [" + retailer.name + "] 充分值成功，"
+			"会员 [" + retailer.name + "] 充值成功，"
 			    + "帐户余额 [" + retailer.balance.toString() + " ]！！"
 			    + function(){
 				if (result.sms_code !== 0)
@@ -1288,6 +1289,8 @@ function wretailerThresholdCardDetailCtrlProvide(
 	    return "季卡消费"
 	else if (rule_id === diablo_year_unlimit_charge)
 	    return "年卡消费"
+	else if (rule_id === diablo_half_of_year_unlimit_charge)
+	    return "半年卡消费"
     };
     
     $scope.consume = function(card){
@@ -1317,7 +1320,8 @@ function wretailerThresholdCardDetailCtrlProvide(
 		    }).then(function(state) {
 			console.log(state);
 			if (state.ecode === 0) {
-			    var p_num = retailerUtils.print_num(params.shop.id, base);
+			    var p_num = retailerUtils.print_num(
+				params.shop.id, base).swiming;
 			    var saleMode = retailerUtils.sale_mode(params.shop.id, base); 
 			    dialog.response_with_callback(
 				true,

@@ -143,6 +143,7 @@
 -define(MONTH_UNLIMIT_CHARGE, 3).
 -define(QUARTER_UNLIMIT_CHARGE, 4).
 -define(YEAR_UNLIMIT_CHARGE, 5).
+-define(HALF_YEAR_UNLIMIT_CHARGE, 6).
 
 
 %% sale mode
