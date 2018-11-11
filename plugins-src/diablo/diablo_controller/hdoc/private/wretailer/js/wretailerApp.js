@@ -214,7 +214,9 @@ function wretailerConfig(angular) {
 	this.threshold_cards = [{name:"次卡模式", id:diablo_theoretic_charge},
 				{name:"月卡模式", id:diablo_month_unlimit_charge},
 				{name:"季卡模式", id:diablo_quarter_unlimit_charge},
-				{name:"年卡模式", id:diablo_year_unlimit_charge}];
+				{name:"年卡模式", id:diablo_year_unlimit_charge},
+				{name:"半年卡模式", id:diablo_half_of_year_unlimit_charge}
+			       ];
 	
 	this.retailer_types = [{name: "普通会员", id:0},
 			       {name: "充值会员", id:1},

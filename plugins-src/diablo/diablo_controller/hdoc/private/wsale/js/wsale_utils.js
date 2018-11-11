@@ -1557,6 +1557,7 @@ var wsalePrint = function(){
 
 	init: function(LODOP) {
 	    LODOP.PRINT_INIT("task_print_wsale");
+	    LODOP.SET_PRINTER_INDEX(-1);
 	    LODOP.SET_PRINT_PAGESIZE(3, 580, 0, "");
 	    LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
 	},

@@ -1496,6 +1496,8 @@ function wretailerThresholdCardSaleCtrlProvide(
 	    return "季卡消费"
 	else if (rule_id === diablo_year_unlimit_charge)
 	    return "年卡消费"
+	else if (rule_id === diablo_half_of_year_unlimit_charge)
+	    return "半年卡消费"
     };
     
     $scope.consume = function(card){
