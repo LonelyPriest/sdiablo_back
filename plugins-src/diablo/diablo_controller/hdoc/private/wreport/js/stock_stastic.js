@@ -7,11 +7,14 @@ function stockStasticCtrlProvide(
     $scope.shops = user.sortShops;
     $scope.shopIds = user.shopIds;
 
-    $scope.right = {
-	orgprice: rightAuthen.authen(user.type,
-				     rightAuthen.rainbow_action()['show_orgprice'],
-				     user.right)
-    }; 
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.right = authen.authenReportRight();
+    
+    // $scope.right = {
+    // 	orgprice: rightAuthen.authen(user.type,
+    // 				     rightAuthen.rainbow_action()['show_orgprice'],
+    // 				     user.right)
+    // }; 
     
     $scope.filters = [];
     diabloFilter.add_field("shop",     $scope.shops);

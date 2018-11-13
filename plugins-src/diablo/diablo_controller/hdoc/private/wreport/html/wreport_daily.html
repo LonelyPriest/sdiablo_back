@@ -66,9 +66,9 @@
 		      <th class="bg-orange">刷卡</th>
 		      <th class="bg-orange">微信</th>
 
-		      <th x-ng-if="right.master">销售成本</th>
-		      <th x-ng-if="right.master">毛利</th>
-		      <th x-ng-if="right.master">毛利率</th>
+		      <th x-ng-if="right.show_orgprice">销售成本</th>
+		      <th x-ng-if="right.show_gross_profit">毛利</th>
+		      <th x-ng-if="right.show_gross_profit">毛利率</th>
 		      
 		      <th>操作</th> 
 		      <!-- <th>充值</th> -->
@@ -103,13 +103,12 @@
 		      <td class="bg-orange">{{r.sale.ccard}}</td>
 		      <td class="bg-orange">{{r.sale.cwxin}}</td>
 
-		      <td x-ng-if="right.master">{{r.sale.cost}}</td>
-		      <td x-ng-if="right.master">{{r.sale.gross}}</td>
-		      <td x-ng-if="right.master">{{r.sale.margins}}</td>
+		      <td x-ng-if="right.show_orgprice">{{r.sale.cost}}</td>
+		      <td x-ng-if="right.show_gross_profit">{{r.sale.gross}}</td>
+		      <td x-ng-if="right.show_gross_profit">{{r.sale.margins}}</td>
 		      
 		      <td>
-		      	<button class="btn diablo-button purple"
-		      		x-ng-click="shift_print(r)">交班
+		      	<button class="btn diablo-button purple" x-ng-click="shift_print(r)">交班
 		      	  <i class="glyphicon glyphicon-print"></i></button>
 
 			<!-- <button class="btn diablo-button yellow-crusta" -->
@@ -150,9 +149,9 @@
 		      <td>{{total.ccash}}</td>
 		      <td>{{total.ccard}}</td>
 		      <td>{{total.cwxin}}</td>
-		      <td x-ng-if="right.master">{{total.sale_cost}}</td>
-		      <td x-ng-if="right.master">{{total.gross}}</td>
-		      <td x-ng-if="right.master">{{total.margins}}</td>
+		      <td x-ng-if="right.show_orgprice">{{total.sale_cost}}</td>
+		      <td x-ng-if="right.show_gross_profit">{{total.gross}}</td>
+		      <td x-ng-if="right.show_gross_profit">{{total.margins}}</td>
 		      <td></td>
 		      <!-- <td>{{total_cbalance}}</td> -->
 		      <!-- <td>{{total_withdraw}}</td> -->

@@ -29,7 +29,8 @@ var rightAuthen = {
 	return {
 	    modify_price_onsale  : rightAuthen.root_right._rainbow + 2,
 	    modify_discount_onsale : rightAuthen.root_right._rainbow + 3,
-	    show_orgprice: rightAuthen.root_right._rainbow + 4
+	    show_orgprice: rightAuthen.root_right._rainbow + 4,
+	    gross_profit:  rightAuthen.root_right._rainbow + 5
 	}
     },
 
@@ -43,6 +44,8 @@ var rightAuthen = {
 
     wsale_action: function(){
 	return {
+	    new_w_sale:    rightAuthen.root_right._wsale + 1,
+	    reject_w_sale: rightAuthen.root_right._wsale + 2,
 	    update_w_sale: rightAuthen.root_right._wsale + 5,
 	    check_w_sale:  rightAuthen.root_right._wsale + 6,
 	    update_w_sale_price: rightAuthen.root_right._wsale + 10
@@ -299,9 +302,21 @@ diabloAuthen.prototype.updatePriceOnSale = function() {
     return this.authenRainbow('modify_price_onsale');
 };
 
+diabloAuthen.prototype.showGrossProfit = function() {
+    return this.authenRainbow('gross_profit');
+};
+
 /*
  * sale action
  */
+diabloAuthen.prototype.newSale = function() {
+    return this.authenSaleByShop('new_w_sale');
+};
+
+diabloAuthen.prototype.rejectSale = function() {
+    return this.authenSaleByShop('reject_w_sale');
+};
+
 diabloAuthen.prototype.updateSale = function() {
     return this.authenSaleByShop('update_w_sale');
 };
@@ -354,12 +369,15 @@ diabloAuthen.prototype.authenSaleRight = function() {
 	m_price    :this.updatePriceOnSale(),
 	master     :this.master,
 
-	show_orgprice  :this.showOrgprice(), 
+	show_orgprice  :this.showOrgprice(),
+	new_w_sale     :this.newSale(),
+	reject_w_sale  :this.rejectSale(),
 	update_w_sale  :this.updateSale(),
 	check_w_sale   :this.checkSale(),
 	show_stastic   :this.master,
 
-	update_oprice_after_sale : this.updateOpriceAfterSale()
+	update_oprice_after_sale : this.updateOpriceAfterSale(),
+	show_gross_profit:  this.showGrossProfit()
     }
 };
 
@@ -378,6 +396,13 @@ diabloAuthen.prototype.authenRetailerRight = function() {
 	update_level          :this.authenRetailer('update_level'),
 	print_retailer        :this.authenRetailer('print_retailer'),
 	master                :this.master
+    };
+};
+
+diabloAuthen.prototype.authenReportRight = function() {
+    return {
+	show_orgprice:      this.showOrgprice(),
+	show_gross_profit:  this.showGrossProfit()
     };
 };
 

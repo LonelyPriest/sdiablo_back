@@ -8,12 +8,12 @@
 
 	<div class="actions">
 	  <div class="btn-group btn-group-solid">
-	    <a type="button"
+	    <a x-ng-if="shop_right.new_w_sale" type="button"
 	       class="btn green purple-stripe hidden-xxs"
 	       x-ng-click="goto_page('#/new_wsale')">开单
 	      <i class="glyphicon glyphicon-plus"></i></a>
 	    
-	    <a type="button"
+	    <a x-ng-if="shop_right.reject_w_sale" type="button"
 	       class="btn red purple-stripe hidden-xxs"
 	       x-ng-click="goto_page('#/reject_wsale')">退货
 	      <i class="glyphicon glyphicon-minus"></i></a>

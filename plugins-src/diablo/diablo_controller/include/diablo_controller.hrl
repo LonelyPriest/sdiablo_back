@@ -439,6 +439,7 @@
 -define(wsale_modify_price_onsale,    ?right_rainbow + 2).
 -define(wsale_modify_discount_onsale, ?right_rainbow + 3).
 -define(stock_show_orgprice,          ?right_rainbow + 4).
+-define(report_show_gross_profit,     ?right_rainbow + 5).
 %% -define(sms_notify,                   ?right_rainbow + 5).
 
 %% =============================================================================

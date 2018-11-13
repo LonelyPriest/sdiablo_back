@@ -37,13 +37,15 @@ function wreportDailyCtrlProvide(
     var now_day = dateFilter($scope.current_day, "yyyy-MM-dd");
     // var one_shop_report = {t_amount:0, t_hpay:0, t_spay:0, t_cash:0, t_card:0, t_verificate:0};
 
-    $scope.right = {
-	master: rightAuthen.authen(
-	    user.type,
-	    rightAuthen.rainbow_action()['show_orgprice'],
-	    user.right
-	)
-    };
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.right = authen.authenReportRight();
+    // $scope.right = {
+    // 	master: rightAuthen.authen(
+    // 	    user.type,
+    // 	    rightAuthen.rainbow_action()['show_orgprice'],
+    // 	    user.right
+    // 	)
+    // };
     
     $scope.refresh = function(){
         $scope.current_day = $.now();

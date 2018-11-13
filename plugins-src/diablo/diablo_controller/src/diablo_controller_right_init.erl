@@ -521,9 +521,9 @@ init([]) ->
 	 {?wsale_modify_discount_onsale,
 	  <<"开单修改折扣">>, <<"wsale_modify_discount">>, ?right_rainbow}, 
 	 {?stock_show_orgprice,
-	  <<"查看成本价">>, <<"stock_show_orgprice">>, ?right_rainbow}
-	 %% {?sms_notify,
-	 %%  <<"短信提醒">>, <<"sms_notify">>, ?right_rainbow}
+	  <<"查看成本价">>, <<"stock_show_orgprice">>, ?right_rainbow},
+	 {?report_show_gross_profit,
+	  <<"查看毛利率">>, <<"report_show_gross_profit">>, ?right_rainbow} 
 	],
 
     %% base setting
