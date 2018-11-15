@@ -402,7 +402,8 @@ diabloAuthen.prototype.authenRetailerRight = function() {
 diabloAuthen.prototype.authenReportRight = function() {
     return {
 	show_orgprice:      this.showOrgprice(),
-	show_gross_profit:  this.showGrossProfit()
+	show_gross_profit:  this.showGrossProfit(),
+	master:             this.master
     };
 };
 
@@ -414,7 +415,7 @@ diabloAuthen.prototype.authenBatchSale = function(action) {
 
 diabloAuthen.prototype.authenBatchSaleRight = function() {
     return {
-	master     :this.master,
+	master         :this.master,
 	show_orgprice  :this.showOrgprice(), 
 	show_stastic   :this.master,
 

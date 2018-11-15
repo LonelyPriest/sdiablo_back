@@ -1775,14 +1775,20 @@ start(new_sale, Req, Merchant, Invs, Base, Print) ->
 			{ok, {RSN, Phone, _ShouldPay, Balance, Score}} ->
 			    {SMSCode, _} =
 				try
-				    {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1), 
+				    BaseSettings = ?w_report_request:get_setting(Merchant, ?DEFAULT_BASE_SETTING),
+				    SMS =
+					case ?w_report_request:get_config(<<"consume_sms">>, BaseSettings) of
+					    [] -> 0;
+					    V -> ?to_i(V)
+					end,
+				    ?DEBUG("sms notify ~p", [SMS]),
+				    
 				    %% {ok, Retailer} = ?w_user_profile:get(
 				    %% 			retailer, Merchant, RetailerId), 
 				    %% SysVips  = sys_vip_of_shop(Merchant, ShopId),
 				    %% ?DEBUG("SysVips ~p, Retailer ~p", [SysVips, Retailer]),
 				    
-				    case Vip =:= true
-					andalso ?to_i(?v(<<"consume_sms">>, Setting, 0)) == 1 of
+				    case Vip =:= true andalso SMS =:= 1 of
 					true ->
 					    ShopName =
 						case ?w_user_profile:get(shop, Merchant, ShopId) of

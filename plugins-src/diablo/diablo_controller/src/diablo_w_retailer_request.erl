@@ -270,7 +270,7 @@ action(Session, Req, {"new_threshold_card_sale", Id}, Payload) ->
 		BaseSettings = ?w_report_request:get_setting(Merchant, ?DEFAULT_BASE_SETTING),
 		Notifies = 
 		    case ?w_report_request:get_config(<<"recharge_sms">>, BaseSettings) of
-			{ok, []} -> ?to_s(?SMS_NOTIFY);
+			[] -> ?to_s(?SMS_NOTIFY);
 			_Value when size(_Value) =/= 2 -> ?to_s(?SMS_NOTIFY);
 			_Value  -> ?to_s(_Value)
 		    end,

@@ -61,8 +61,9 @@ function loadCLodop(protocal) {
     if (protocal===1) {
 	oscript.src ="https://localhost:8443/CLodopfuncs.js";
     } 
-    else 
-	oscript.src ="http://localhost:63552/CLodopfuncs.js?priority=1";
+    else {
+	oscript.src ="http://localhost:63552/CLodopfuncs.js?priority=1"; 
+    }
     // oscript.src ="http://192.168.0.102:63552/CLodopfuncs.js?priority=1";
     head.insertBefore( oscript,head.firstChild );
 };
