@@ -253,10 +253,10 @@ call(Parent, {print, Action, RSN, Merchant, Invs, Attrs, Print}) ->
 			  %% 	   Brand, Model, Column, Setting),
 			  
 			  %% Content = Head ++ Body ++ Stastic ++ Foot,
-			  Num = ?to_i(?v(<<"pum">>, Setting, 1)),
+			  <<Num:1/binary, _/binary>> = ?v(<<"pum">>, Setting),
+			  ?DEBUG("Num ~p", [Num]),
 			  [{SN, fun() when Server =:= fcloud ->
-					start_print(
-					  fcloud, SN, Key, Path, Num, Content) 
+					start_print(fcloud, SN, Key, Path, ?to_i(Num), Content) 
 				end}|Acc]
 		  end, [], VPrinters) of
 		PrintInfo ->
