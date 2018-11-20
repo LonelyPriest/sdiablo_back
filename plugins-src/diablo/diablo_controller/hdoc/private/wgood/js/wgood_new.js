@@ -35,7 +35,7 @@ function wgoodNewCtrlProvide(
     var dialog     = diabloUtilsService;
     var set_float  = diablo_set_float;
     
-    var hide_mode  = stockUtils.stock_in_hide_mode(diablo_default_shop, base); 
+    var hide_mode  = stockUtils.stock_in_hide_mode(diablo_default_shop, base);
     $scope.base_settings = {m_sgroup :stockUtils.multi_sizegroup(-1, base)};
     angular.extend($scope.base_settings, hide_mode); 
     console.log($scope.base_settings);

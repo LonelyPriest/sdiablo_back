@@ -479,3 +479,6 @@ alter table print_template add column hpx_label INTEGER default 0  after hpx_bar
 
 -- 2018-11-06
 alter table print_template add column w_barcode INTEGER default 0  after offset_label;
+
+-- 2018-11-18
+-- alter table w_inventory_new_detail add column vir_price DECIMAL(10, 2) default 0 after alarm_day;

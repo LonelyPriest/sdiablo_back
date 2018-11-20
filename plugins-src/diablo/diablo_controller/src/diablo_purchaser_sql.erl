@@ -247,6 +247,7 @@ good(detail, Merchant, Conditions) ->
 	", a.size"
 	", a.s_group"
 	", a.free"
+	", a.vir_price"
 	", a.org_price"
 	", a.tag_price"
 	", a.ediscount"
@@ -997,6 +998,7 @@ inventory(get_new_amount, _Merchant, Conditions) ->
 	", a.s_group"
 	", a.free"
 	", a.year"
+	", a.vir_price"
 	", a.org_price"
 	", a.tag_price"
 	", a.ediscount"
@@ -1022,6 +1024,7 @@ inventory(get_new_amount, _Merchant, Conditions) ->
 	", free"
 	", year"
 	", org_price"
+	", vir_price"
 	", tag_price"
 	", ediscount"
 	", discount" 
@@ -1947,7 +1950,7 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		["insert into w_inventory_new_detail(rsn, style_number"
 		 ", brand, type, sex, season, amount, over"
 		 ", firm, s_group, free, year, alarm_day"
-		 ", org_price, tag_price, ediscount, discount"
+		 ", vir_price, org_price, tag_price, ediscount, discount"
 		 " , path, merchant, shop, entry_date) values("
 		 ++ "\"" ++ ?to_s(RSN) ++ "\","
 		 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
@@ -1971,6 +1974,7 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		 ++ ?to_s(AlarmDay) ++ "," 
 
 		 %% ++ ?to_s(Promotion) ++ ","
+		 ++ ?to_s(VirPrice) ++ ","
 		 ++ ?to_s(OrgPrice) ++ ","
 		 ++ ?to_s(TagPrice) ++ ","
 		 ++ ?to_s(EDiscount) ++ ","
@@ -1982,8 +1986,9 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 	    {ok, R20} ->
 		["update w_inventory_new_detail" 
 		 " set amount=amount+" ++ ?to_s(Total) 
-		 ++ ", org_price=" ++ ?to_s(OrgPrice)
+		 ++ ", org_price=" ++ ?to_s(OrgPrice) 
 		 ++ ", ediscount=" ++ ?to_s(EDiscount)
+		 ++ ", vir_price=" ++ ?to_s(VirPrice)
 		 ++ ", tag_price=" ++ ?to_s(TagPrice)
 		 ++ ", discount=" ++ ?to_s(Discount)
 		 ++ ", entry_date=" ++ "\"" ++ ?to_s(CurDateTime) ++ "\"" 
@@ -2071,7 +2076,7 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
     Sql3 = lists:foldr(NewFun, [], Amounts),
     Sql4 = case Exist of
 	       old_stock ->
-		   case OrgPrice =/= 0 of
+		   case OrgPrice /= 0 of
 		       true -> ["update w_inventory_good set org_price=" ++ ?to_s(OrgPrice)
 				++ ", ediscount=" ++ ?to_s(EDiscount)
 				++ ", tag_price=" ++ ?to_s(TagPrice)
@@ -2082,11 +2087,12 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		       false -> []
 		   end;
 	       new_stock ->
-		   case OrgPrice =/= 0 of
+		   case OrgPrice /= 0 of
 		       true -> ["update w_inventory_good set"
 				" firm=" ++ ?to_s(Firm)
 				++ ", org_price=" ++ ?to_s(OrgPrice)
 				++ ", ediscount=" ++ ?to_s(EDiscount)
+				++ ", vir_price="  ++ ?to_s(VirPrice)
 				++ ", tag_price=" ++ ?to_s(TagPrice)
 				++ ", discount=" ++ ?to_s(Discount)
 				++ " where style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
@@ -2237,6 +2243,7 @@ amount_update(Mode, RSN, Merchant, Shop, Datetime, Inv) ->
     StyleNumber    = ?v(<<"style_number">>, Inv),
     Brand          = ?v(<<"brand">>, Inv),
     %% Firm           = ?v(<<"firm">>, Inv),
+    VirPrice       = ?v(<<"vir_price">>, Inv, 0),
     OrgPrice       = ?v(<<"org_price">>, Inv, 0),
     TagPrice       = ?v(<<"tag_price">>, Inv),
     Discount       = ?v(<<"discount">>, Inv, 0),
@@ -2270,6 +2277,7 @@ amount_update(Mode, RSN, Merchant, Shop, Datetime, Inv) ->
     Updates =
 	%% ?utils:v(firm, integer, Firm)
 	?utils:v(org_price, float, OrgPrice)
+	++ ?utils:v(vir_price, float, VirPrice)
 	++ ?utils:v(tag_price, float, TagPrice)
 	++ ?utils:v(ediscount, float, EDiscount)
 	++ ?utils:v(discount, float, Discount), 
@@ -2317,7 +2325,7 @@ amount_update(Mode, RSN, Merchant, Shop, Datetime, Inv) ->
 		    ++ " and brand=" ++ ?to_s(Brand)
 		    ++ " and org_price=0",
 		    
-		    "update w_inventory_good set "
+		    "update w_inventory_good set " 
 		    ++ ?utils:to_sqls(proplists, comma, Updates) 
 		    ++ " where "
 		    ++ " merchant=" ++ ?to_s(Merchant)

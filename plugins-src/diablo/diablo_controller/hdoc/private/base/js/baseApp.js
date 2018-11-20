@@ -9,7 +9,7 @@ function baseConfig(angular){
 	'baseApp', [
 	    'ui.bootstrap', 'ngRoute', 'ngResource',
 	    'diabloAuthenApp', 'diabloPattern', 'diabloUtils', 'diabloFilterApp',
-	    'userApp', 'wprintApp'])
+	    'diabloNormalFilterApp', 'userApp', 'wprintApp'])
 	.config(function($httpProvider, authenProvider){
 	    $httpProvider.interceptors.push(authenProvider.interceptor); 
 	});
@@ -19,7 +19,10 @@ function baseConfig(angular){
 	    return userService()}};
 
 	var ctype = {"filterCType": function(diabloFilter) {
-	    return diabloFilter.list_good_ctype()}}; 
+	    return diabloFilter.list_good_ctype()}};
+
+	var base = {"base": function(diabloNormalFilter){
+	    return diabloNormalFilter.get_base_setting()}};
 	
 	$routeProvider.
 	    when('/printer/connect_new', {
@@ -35,7 +38,7 @@ function baseConfig(angular){
 	    when('/printer/detect', {
 		templateUrl: '/private/base/html/printer_detect.html',
 		controller: 'printerDetectCtrl',
-		resolve: angular.extend({}, user)
+		resolve: angular.extend({}, user, base)
 	    }). 
 	    when('/bank/new_bank_card/:cardId?', {
 		templateUrl: '/private/base/html/bank_card_new.html',

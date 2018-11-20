@@ -381,10 +381,14 @@
 		     typeahead-loading="loading_retailer"
 		     typeahead-on-select="on_select_retailer($item, $model, $label)"
 		     uib-typeahead="s as s.name for s in match_retailer_phone($viewValue)"/>
+	      <span class="input-group-btn"> 
+		<button class="btn btn-success" x-ng-click="new_retailer()">
+		  <i class="glyphicon glyphicon-plus"></i></button>
+	      </span>
 	      <span x-ng-show="loading_retailer">
 	  	<i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
-	      </span>
-	    </div>
+	      </span> 
+	    </div> 
 	  </div> 
 	</div>
 
@@ -899,6 +903,7 @@
 	</div>
 	
       </div>
+    </form>
   </div>
 
   <div class="modal-footer">
@@ -908,3 +913,120 @@
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>
 </script>
+
+<script type="text/ng-template" id="new-retailer.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button> 
+    <h4 class="modal-title"><span class="label label-sm label-primary">新增会员</span></h4>
+  </div>
+  
+  <div class="modal-body">
+    <form class="form-horizontal" name="tForm" novalidate>
+      <div class="form-body">
+	<div class="form-group"> 
+	  <label class="col-sm-3 col-md-3 control-label">名称</label>
+	  <div class="col-sm-6 col-md-6">
+	    <div class="input-group">
+	      <div x-ng-class="{'has-error': retailerNewForm.name.$invalid
+			       && !retailerNewForm.name.$pristine}">
+		<input type="text"
+		       class="form-control"
+		       name="name"
+		       required
+		       placeholder="请输入会员名称"
+		       x-ng-model="params.retailer.name"
+		       x-ng-pattern="params.pattern.name"/>
+	      </div>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	  </div>
+	  <div ng-show="retailerNewForm.name.$invalid && !retailerNewForm.name.$pristine">
+	    <span class="fg-red">中文，只允许字母，数字，最少2个字符，不超过6个字符</span>
+	  </div> 
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-3 col-md-3 control-label">联系方式</label>
+	  <div class="col-sm-6 col-md-6"> 
+	    <div class="input-group">
+	      <div x-ng-class="{'has-error': retailerNewForm.mobile.$invalid && !retailerNewForm.mobile.$pristine}">
+		<input class="form-control" type="tel"
+		       name="mobile"
+		       required
+		       x-ng-pattern="params.pattern.tel_mobile"
+		       placeholder="请输入电话或手机号码"
+		       class="form-control"
+		       x-ng-model="params.retailer.mobile"/>
+	      </div>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	  </div>
+	  <div ng-show="retailerNewForm.mobile.$invalid && !retailerNewForm.mobile.$pristine">
+	    <span class="fg-red">请输入正确的电话或手机号码</span>
+	  </div>
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-3 col-md-3 control-label">生日</label>
+	  <div class="col-sm-6 col-md-6">
+	    <time-search time="params.retailer.birth"></time-search>
+	  </div> 
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-3 col-md-3 control-label">会员类型</label>
+	  <div class="col-sm-6 col-md-6">
+	    <select class="form-control" type="text"
+	    	    x-ng-model="params.retailer.type"
+	    	    x-ng-options="t as t.name for t in params.retailer_types"
+		    x-ng-change="params.retailer.password=undefined">
+	    </select>
+	  </div>
+	</div>
+
+	<div x-ng-if="retailer.type.id!==2" class="form-group">
+	  <label class="col-sm-3 col-md-3 control-label">会员等级</label>
+	  <div class="col-sm-6 col-md-6">
+	    <select class="form-control" type="text"
+	    	    x-ng-model="params.retailer.level"
+	    	    x-ng-options="l as l.name for l in params.levels">
+	    </select>
+	  </div>
+	</div>
+
+	<div x-ng-if="retailer.type.id===1" class="form-group">
+	  <label class="col-sm-3 col-md-3 control-label">取现密码</label>
+	  <div class="col-sm-6 col-md-6">
+	    <div class="input-group">
+	      <div x-ng-class="{'has-error': retailerNewForm.pass.$invalid && !retailerNewForm.pass.$pristine}">
+		<input type="password"
+		       class="form-control"
+		       name="pass"
+		       required
+		       placeholder="请输入取现密码，默认为空"
+		       x-ng-model="params.retailer.password"
+		       x-ng-pattern="params.pattern.password"/>
+	      </div>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	  </div>
+	  <div ng-show="retailerNewForm.pass.$invalid && !retailerNewForm.pass.$pristine">
+	    <span class="fg-red">请输入6位数字串</span>
+	  </div> 
+	</div> 
+	
+	
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary" x-ng-disabled="tForm.$invalid" x-ng-click="ok()">确定</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
+</script>
+
+

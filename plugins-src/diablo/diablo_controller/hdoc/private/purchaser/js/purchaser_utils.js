@@ -1416,6 +1416,6 @@ stockPrintU.prototype.printBarcode2 = function() {
 
     // this.LODOP.PRINT_SETUP();
     // this.LODOP.PRINT_DESIGN();
-    // this.LODOP.PREVIEW();
-    this.LODOP.PRINT();
+    this.LODOP.PREVIEW();
+    // this.LODOP.PRINT();
 };

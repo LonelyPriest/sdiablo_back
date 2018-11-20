@@ -233,28 +233,25 @@
       </div>
     </div> <!--END portlet box-->
 
-    <div x-ng-if="right.master" x-ng-controller="realStasticController" class="portlet box green">
+    <div x-ng-if="right.show_orgprice && right.show_gross_profit" x-ng-controller="realStasticController"
+	 class="portlet box green">
       <div class="portlet-title">
 	<div class="caption"><i class="glyphicon glyphicon-time"></i>
           <span>{{current_day|date: 'yyyy-MM-dd'}}</span>
 	</div>
 	
 	<div class="actions">
-	  <button class="btn red reload hidden-xxs"
-                  x-ng-click="go_daily()">日报表
+	  <button class="btn red reload hidden-xxs" x-ng-click="go_daily()">日报表
             <i class="glyphicon glyphicon-calendar"></i></button>
 
 
-	  <button class="btn purple reload hidden-xxs"
-                  x-ng-click="go_month()">月报表
+	  <button class="btn purple reload hidden-xxs" x-ng-click="go_month()">月报表
             <i class="glyphicon glyphicon-calendar"></i></button>
 
-	  <button class="btn yellow-crusta reload hidden-xxs"
-                  x-ng-click="go_shift()">交班报表
+	  <button class="btn yellow-crusta reload hidden-xxs" x-ng-click="go_shift()">交班报表
             <i class="glyphicon glyphicon-transfer"></i></button>
 	  
-          <button class="btn blue reload "
-                  x-ng-click="do_search()">刷新
+          <button class="btn blue reload" x-ng-click="do_search()">刷新
             <i class="icon icon-spinner fg-white"></i></button> 
         </div>
       </div> 

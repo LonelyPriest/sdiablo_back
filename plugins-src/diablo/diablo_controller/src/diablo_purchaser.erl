@@ -2778,8 +2778,7 @@ handle_call({new_rsn_detail, Merchant, Conditions}, _From, State) ->
     {reply, Reply, State};
 
 handle_call({get_new_amount, Merchant, Conditions}, _From, State) ->
-    ?DEBUG("get_new_amount with merchant ~p, Conditions ~p",
-	   [Merchant, Conditions]), 
+    ?DEBUG("get_new_amount with merchant ~p, Conditions ~p", [Merchant, Conditions]), 
     Sql = ?w_good_sql:inventory(get_new_amount, Merchant, Conditions),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};

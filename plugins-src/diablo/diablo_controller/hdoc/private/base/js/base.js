@@ -1309,7 +1309,7 @@ function goodSizeSpecCtrlProvide(
     };
 };
 
-function printerDetectCtrlProvide($scope, diabloUtilsService, user){
+function printerDetectCtrlProvide($scope, diabloUtilsService, user, base){
     var LODOP;
     var dialog = diabloUtilsService;
     var print_protocal = diablo_set_integer(diablo_base_setting(

@@ -182,18 +182,17 @@ function wgoodUpdateCtrlProvide(
 
 	$scope.init_base_setting = function(shop) {
 	    var hide_mode  = stockUtils.stock_in_hide_mode(shop, base); 
-	    $scope.setting = {
-		multi_sgroup:stockUtils.multi_sizegroup(shop, base),
-		// hide_color  :stockUtils.to_integer(hide_mode.charAt(0)),
-		// hide_size   :stockUtils.to_integer(hide_mode.charAt(1)),
-		// hide_sex    :stockUtils.to_integer(hide_mode.charAt(2)),
-		// hide_expire :function() {
-		//     var h = hide_mode.charAt(3);
-		//     if ( !h ) return diablo_yes;
-		//     else return stockUtils.to_integer(h);
-		// }(),
-		auto_barcode :stockUtils.auto_barcode(diablo_default_setting, base)
-	    };
+	    $scope.setting = {multi_sgroup:stockUtils.multi_sizegroup(shop, base),
+			      // hide_color  :stockUtils.to_integer(hide_mode.charAt(0)),
+			      // hide_size   :stockUtils.to_integer(hide_mode.charAt(1)),
+			      // hide_sex    :stockUtils.to_integer(hide_mode.charAt(2)),
+			      // hide_expire :function() {
+			      //     var h = hide_mode.charAt(3);
+			      //     if ( !h ) return diablo_yes;
+			      //     else return stockUtils.to_integer(h);
+			      // }(),
+			      auto_barcode :stockUtils.auto_barcode(diablo_default_setting, base)
+			     };
 	    
 	    angular.extend($scope.setting, hide_mode); 
 	    console.log($scope.base_settings);

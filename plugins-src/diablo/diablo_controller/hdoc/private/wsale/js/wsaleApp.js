@@ -376,7 +376,10 @@ function wsaleNewProvide(
 	money:    diabloPattern.decimal_2,
 	sell:     diabloPattern.integer_except_zero,
 	discount: diabloPattern.discount,
-	barcode:  diabloPattern.number};
+	barcode:  diabloPattern.number,
+	name:     diabloPattern.chinese_name,
+	tel_mobile:   diabloPattern.tel_mobile
+    };
     
     // $scope.timeout_auto_save = undefined;
     $scope.interval_per_5_minute = undefined;

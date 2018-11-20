@@ -276,21 +276,16 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	
 	// $scope.old_select.brand =
 	//     $scope.get_object(base.brand_id, $scope.brands);
-	$scope.old_select.firm  =
-	    $scope.get_object(base.firm_id, $scope.firms);
-	
+	$scope.old_select.firm  = $scope.get_object(base.firm_id, $scope.firms); 
 	$scope.old_select.datetime = diablo_set_datetime(base.entry_date); 
 	
 	// $scope.old_select.surplus    = $scope.old_select.firm.balance;
-	var select = stockUtils.get_login_employee(
-	    base.shop_id, user.loginEmployee, filterEmployee); 
+	var select = stockUtils.get_login_employee(base.shop_id, user.loginEmployee, filterEmployee); 
 	$scope.select.employee = select.login;
 	$scope.employees = select.filter;
 	
-	$scope.old_select.shop =
-	    $scope.get_object(base.shop_id, $scope.shops);
-	$scope.old_select.employee =
-	    $scope.get_object(base.employee_id, $scope.employees);
+	$scope.old_select.shop = $scope.get_object(base.shop_id, $scope.shops);
+	$scope.old_select.employee = $scope.get_object(base.employee_id, $scope.employees);
 	
 	$scope.old_select.surplus    = base.balance;
 	$scope.old_select.comment    = base.comment;
@@ -308,8 +303,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	    $scope.old_select.e_pay_type = $scope.e_pay_types[0];
 	    $scope.old_select.e_pay      = undefined;
 	} else{
-	    $scope.old_select.e_pay_type
-		= diablo_get_object(base.e_pay_type, $scope.e_pay_types);
+	    $scope.old_select.e_pay_type = diablo_get_object(base.e_pay_type, $scope.e_pay_types);
 	    $scope.old_select.e_pay      = base.e_pay; 
 	}
 	
@@ -342,6 +336,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
 		
 		add.s_group         = invs[i].s_group;
 		add.free_color_size = invs[i].free === 0 ? true : false;
+		add.vir_price       = invs[i].vir_price;
 		add.org_price       = invs[i].org_price;
 		add.tag_price       = invs[i].tag_price;
 		// add.ediscount       = invs[i].ediscount;
@@ -382,6 +377,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
 
 	$scope.focus_row = sorts.length; 
 	$scope.inventories.unshift({$edit:false, $new:true});
+	// console.log($scope.inventories);
     });
     
     var reset_payment = function(newValue){
@@ -1176,6 +1172,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
 			var exts = result.success;
 			for (var j=1, k=$scope.inventories.length; j<k; j++) {
 			    one = $scope.inventories[j];
+			    // console.log(one);
 			    var index = get_index_of_ext_stock(one, exts);
 			    var ext = exts[index];
 			    one = impl_ext_stock(one, ext); 
