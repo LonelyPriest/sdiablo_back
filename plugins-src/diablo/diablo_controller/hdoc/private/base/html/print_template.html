@@ -873,6 +873,46 @@
 		  </td>
 		  <td>象素单位</td>
 		</tr>
+
+		<tr>
+		  <td>55</td>
+		  <td>自定义品牌</td>
+		  <td>
+		    <input class="form-control"
+			   type="text"
+			   x-ng-edit 
+			   x-ng-model="template.self_brand"/>
+		  </td>
+		  <td>标签上打印的品牌名字</td>
+		</tr>
+
+		<tr>
+		  <td>56</td>
+		  <td>标签打印机编号</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   x-ng-edit
+			   disable-wheel
+			   disable-key
+			   x-ng-model="template.printer"/>
+		  </td>
+		  <td>标签打印机编号</td>
+		</tr>
+
+		<tr>
+		  <td>57</td>
+		  <td>打印排数</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   x-ng-edit
+			   disable-wheel
+			   disable-key
+			   x-ng-model="template.dual_print"/>
+		  </td>
+		  <td>0:单排打印 1:双排打印 2:3排打印</td>
+		</tr>
 		
 	      </tbody>
 	    </table> <!--END table-->

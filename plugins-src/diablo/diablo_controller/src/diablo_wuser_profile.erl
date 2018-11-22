@@ -979,6 +979,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 
 		", tag_price"
 		", vir_price"
+		", self_brand"
 		
 		", offset_size"
 		", offset_tagprice"
@@ -986,6 +987,9 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		", offset_label"
 
 		", w_barcode"
+
+		", printer"
+		", dual_print"
 		
 		", merchant) values("
 		++ "\'" ++ ?to_s(Name) ++ "\',"  %% modal name
@@ -1055,6 +1059,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 
 		++ "\'\'" ++ ","      %% tag_price
 		++ "\'\'" ++ ","      %% vir_price
+		++ "\'\'" ++ ","      %% self_brand
 		
 		++ ?to_s(0) ++ ","      %% offset_size
 		++ ?to_s(0) ++ ","      %% offset_tagprice
@@ -1062,6 +1067,9 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(0) ++ ","      %% offset_label
 
 		++ ?to_s(0) ++ ","      %% w_barcode
+
+		++ ?to_s(-1) ++ ","     %% printer
+		++ ?to_s(0)  ++ ","     %% dual print
 		
 		++ ?to_s(Merchant)  ++ ")",
 

@@ -678,6 +678,7 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 
 	", tag_price"
 	", vir_price"
+	", self_brand"
 	
 	", offset_size"
 	", offset_tagprice"
@@ -685,6 +686,9 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", offset_label"
 
 	", w_barcode"
+
+	", printer"
+	", dual_print"
 	
 	" from print_template"
 	" where merchant=" ++ ?to_s(Merchant), 
@@ -760,13 +764,17 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 
 	++  ?utils:v(tag_price, string, ?v(<<"tag_price">>, Attrs))
 	++  ?utils:v(vir_price, string, ?v(<<"vir_price">>, Attrs))
+	++  ?utils:v(self_brand, string, ?v(<<"self_brand">>, Attrs))
 	
 	++  ?utils:v(offset_size, integer, ?v(<<"offset_size">>, Attrs))
 	++  ?utils:v(offset_tagprice, integer, ?v(<<"offset_tagprice">>, Attrs))
 	++  ?utils:v(offset_virprice, integer, ?v(<<"offset_virprice">>, Attrs)) 
 	++  ?utils:v(offset_label, integer, ?v(<<"offset_label">>, Attrs))
 
-	++  ?utils:v(w_barcode, integer, ?v(<<"w_barcode">>, Attrs)), 
+	++  ?utils:v(w_barcode, integer, ?v(<<"w_barcode">>, Attrs))
+
+	++  ?utils:v(printer, integer, ?v(<<"printer">>, Attrs))
+	++  ?utils:v(dual_print, integer, ?v(<<"dual_print">>, Attrs)),
     
     Sql = "update print_template set " ++ ?utils:to_sqls(proplists, comma, U)
 	++ " where merchant=" ++ ?to_s(Merchant)
@@ -813,13 +821,13 @@ sys_config(shop) ->
      {"s_member",        "会员独立",             "0",   "0"},
      {"s_employee",      "营业员必选",           "0",   "0"},
      
-     {"prn_barcode",       "条码打印机编号",     "-1",   "0"},
+     %% {"prn_barcode",       "条码打印机编号",     "-1",   "0"},
      {"prn_bill",          "单据打印机编号",     "-1",   "0"},
      {"prn_h_page",        "单据纸张高",         "14.0", "0"},
      {"prn_w_page",        "单据纸张宽",         "21.3", "0"},
      
      {"draw_score",        "提现积分",           "1",    "0"}, 
-     {"dual_barcode",      "双排条码",           "0",    "0"},
+     %% {"dual_barcode",      "双排条码",           "0",    "0"},
 
      {"r_discount",        "会员折扣模式",       "0000", "0"},
      {"scan_only",         "扫码模式",           "0000", "0"}
@@ -890,7 +898,8 @@ sys_config() ->
 	      %% [5]: hide charge on sale
 	      %% [6]: print title when on stock out
 	      %% [7]: print sale body on swiming comsume
-	      {"p_balance",       "销售模式",             "00000000",  "0"},
+	      %% [8]: scanner device 0:idata 1:c40
+	      {"p_balance",       "销售模式",             "000000000",  "0"},
 	      
 	      {"gen_ticket",      "自动生成电子卷",       "0",   "0"},
 	      
@@ -910,9 +919,10 @@ sys_config() ->
 	      {"trans_orgprice",  "移仓检测进价",         "1",   "0"},
 	      %% [0]: print color and size
 	      %% [1]: print color only
-	      %% [1]: print size only
+	      %% [2]: print size only
 	      %% 000: no color and no size
-	      {"p_color_size",    "打印颜色尺码",         "000", "0"}, 
+	      {"p_color_size",    "打印颜色尺码",         "000", "0"},
+	      
 	      {"saler_stock",      "营业员查看区域库存",  "0",   "0"},
 	      {"r_stock_oprice",    "厂商退货检测进价",   "1",   "0"},
 	      {"c_stock_oprice",    "入库审核检测进价",   "1",   "0"},
@@ -920,12 +930,12 @@ sys_config() ->
 	      {"export_code",       "导出编码格式",       "0",   "0"}, %% 0: utf8 1: gbk
 	      {"export_note",       "导出颜色尺码",       "0",   "0"}, %% 0: utf8 1: gbk
 
-	      {"prn_barcode",       "条码打印机编号",     "-1",   "0"},
+	      %% {"prn_barcode",       "条码打印机编号",     "-1",   "0"},
 	      {"prn_bill",          "单据打印机编号",     "-1",   "0"},
 	      {"prn_h_page",        "单据纸张高",         "14.0", "0"},
 	      {"prn_w_page",        "单据纸张宽",         "21.3", "0"},
 	      {"draw_score",        "提现积分",           "1",    "0"},
-	      {"dual_barcode",      "双排条码",           "0",    "0"},
+	      %% {"dual_barcode",      "双排条码",           "0",    "0"},
 	      {"draw_region",       "区域提现",           "0",    "0"},
 	      {"threshold_card",    "次卡消费模式",       "0",    "0"},
 	      %% vip mode

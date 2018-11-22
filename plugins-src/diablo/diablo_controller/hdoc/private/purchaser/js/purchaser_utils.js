@@ -755,6 +755,15 @@ stockPrintU.prototype.set_template = function(template) {
 	this.solo_snumber = stockUtils.to_integer(this.template.solo_snumber);
 	this.len_snumber  = stockUtils.to_integer(this.template.len_snumber);
 	
+	//compatible base config and print config
+	if (this.printerIndex === diablo_invalid_index) {
+	    this.printerIndex = this.template.printer;
+	}
+	
+	if (this.dualPrint === 0 || this.dualPrint === diablo_invalid_index) {
+	    this.dualPrint = this.template.dual_print;
+	}
+	
 	if (this.dualPrint === 1) {
 	    this.wpx = Math.floor((this.template.width * 2 + this.template.second_space * 0.1) * 96 / 2.54);
 	} else if (this.dualPrint === 2) {
@@ -788,7 +797,6 @@ stockPrintU.prototype.init = function() {
     else {
 	this.LODOP.SET_PRINT_PAGESIZE(1, this.template.width * 100, this.template.height * 100, ""); 
     }
-    
     
     if (stockUtils.to_integer(this.template.font) !== 0) {
 	this.LODOP.SET_PRINT_STYLE("FontSize", stockUtils.to_integer(this.template.font));
@@ -1127,7 +1135,11 @@ stockPrintU.prototype.printBarcode2 = function() {
     
     // brand
     if (this.template.brand && this.template.solo_brand){
-	line = "品牌：" + this.brand;
+	if (diablo_trim(this.template.self_brand)) {
+	    line = "品牌：" + diablo_trim(this.template.self_brand);
+	} else {
+	    line = "品牌：" + this.brand; 
+	}
 	top = this.start_print(
 	    line, top, this.left, iwpx, this.template.hpx_each, 0, pSecond, pThird, startSecond, startThird); 
     } 
@@ -1416,6 +1428,6 @@ stockPrintU.prototype.printBarcode2 = function() {
 
     // this.LODOP.PRINT_SETUP();
     // this.LODOP.PRINT_DESIGN();
-    this.LODOP.PREVIEW();
-    // this.LODOP.PRINT();
+    // this.LODOP.PREVIEW();
+    this.LODOP.PRINT();
 };

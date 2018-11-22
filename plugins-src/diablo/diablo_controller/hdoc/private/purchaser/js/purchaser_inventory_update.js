@@ -38,8 +38,8 @@ function purchaserInventoryNewUpdateCtrlProvide (
     $scope.setting.use_barcode     = stockUtils.use_barcode(diablo_default_shop, $scope.ubase);
     $scope.setting.auto_barcode    = stockUtils.auto_barcode(diablo_default_shop, $scope.ubase);
     $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, $scope.ubase);
-    $scope.setting.dual_barcode = stockUtils.dual_barcode_print(user.loginShop, $scope.ubase);
-    $scope.setting.print_access  = stockUtils.print_num(diablo_default_shop, base); 
+    $scope.setting.dual_barcode    = stockUtils.dual_barcode_print(user.loginShop, $scope.ubase);
+    // $scope.setting.print_access    = stockUtils.print_num(diablo_default_shop, base); 
     // console.log(user.loginShop);
     // console.log($scope.setting);
 
@@ -49,8 +49,8 @@ function purchaserInventoryNewUpdateCtrlProvide (
 
     var dialog = diabloUtilsService;
 
-    if ($scope.setting.use_barcode && needCLodop())
-	loadCLodop($scope.setting.print_access.protocal); 
+    // if ($scope.setting.use_barcode && needCLodop())
+    // 	loadCLodop($scope.setting.print_access.protocal); 
 
     $scope.go_back = function(){
 	console.log($routeParams.ppage);
@@ -313,9 +313,13 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	$scope.setting.history_stock = stockUtils.history_stock(base.shop_id, $scope.ubase);
 	$scope.setting.q_start_time =
 	    dateFilter(stockUtils.start_time(base.shop_id, $scope.ubase, $.now(), dateFilter), "yyyy-MM-dd");
-
+	$scope.setting.print_access    = stockUtils.print_num(base.shop_id, $scope.ubase);
+	
 	$scope.templates = stockUtils.get_print_templates(base.shop_id, filterTemplate);
 	console.log($scope.templates);
+
+	if ($scope.setting.use_barcode && needCLodop())
+	    loadCLodop($scope.setting.print_access.protocal); 
 	
 	
 	var length = invs.length;

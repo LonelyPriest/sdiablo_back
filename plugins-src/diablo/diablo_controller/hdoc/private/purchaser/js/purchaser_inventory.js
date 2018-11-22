@@ -2117,7 +2117,7 @@ function purchaserInventoryDetailCtrlProvide(
     $scope.setting.auto_barcode    = stockUtils.auto_barcode(diablo_default_shop, base); 
     $scope.setting.saler_stock     = stockUtils.saler_stock(diablo_default_shop, base);
     $scope.setting.gift_sale       = stockUtils.gift_sale(diablo_default_shop, base);
-    $scope.setting.print_access    = stockUtils.print_num(diablo_default_shop, base); 
+    $scope.setting.print_access    = stockUtils.print_num(user.loginShop, base);
     // if (needCLodop()) loadCLodop(print_mode.protocal); 
     
     // var hide_mode  = stockUtils.stock_in_hide_mode(diablo_default_shop, base); 

@@ -996,9 +996,11 @@ function goodPrintTemplateCtrlProvide(
 	     
 	     , "size_date", "size_color", "firm_date"
 
-	     , "tag_price", "vir_price"
+	     , "tag_price", "vir_price", "self_brand"
 	     
 	     , "offset_size", "offset_tagprice", "offset_virprice", "offset_label"
+
+	     , "printer", "dual_print"
 	     
 	     , "w_barcode"];
     

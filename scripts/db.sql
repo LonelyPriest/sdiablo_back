@@ -1410,13 +1410,17 @@ create table print_template(
 
    tag_price      VARCHAR(32) default '',
    vir_price      VARCHAR(32) default '',
+   self_brand     VARCHAR(32) default '',
    
    offset_size     TINYINT default 0,
    offset_tagprice TINYINT default 0,
    offset_virprice TINYINT default 0,
-   offset_label    TINYINT default 0,
+   offset_label    TINYINT default 0, 
 
    w_barcode       INTEGER default 0,
+
+   printer         TINYINT default -1,
+   dual_print      TINYINT default 0,
    
    merchant        INTEGER not null default -1,
    
