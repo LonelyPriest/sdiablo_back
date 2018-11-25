@@ -276,6 +276,10 @@ var wsaleUtils = function(){
 		    protocal: wsaleUtils.to_integer(p.charAt(2))}
 	},
 
+	printer_bill: function(shop, base) {
+	    return diablo_base_setting("prn_bill", shop, base, parseInt, diablo_invalid_index);
+	},
+
 	round: function(shop, base){
 	    return diablo_base_setting("round", shop, base, parseInt, diablo_yes);
 	},

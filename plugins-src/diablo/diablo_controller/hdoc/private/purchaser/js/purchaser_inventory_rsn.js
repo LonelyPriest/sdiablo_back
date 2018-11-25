@@ -600,7 +600,7 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
 	}
 	
 	dialog.request(
-	    "采购单打印", "采购单打印需要打印机支持A4纸张，确认要打印吗？",
+	    "采购单打印", "请确认打印机已连接好，确认要打印吗？",
 	    callback, undefined, undefined);
     };
 

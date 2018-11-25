@@ -163,6 +163,20 @@ function wsaleRsnDetailCtrlProvide (
 				   total_obalance:    $scope.total_obalance,
 				   t:now});
     };
+
+    var add_search_condition = function(search){
+	if (angular.isUndefined(search.rsn)){
+	    search.rsn  =  $routeParams.rsn ? $routeParams.rsn : undefined;
+	}; 
+	
+	if (angular.isUndefined(search.shop) || !search.shop || search.shop.length === 0){
+	    search.shop = $scope.shopIds.length === 0 ? undefined : $scope.shopIds; 
+	};
+	
+	console.log(search);
+
+	return search;
+    };
     
     /*
      * pagination 
@@ -200,17 +214,7 @@ function wsaleRsnDetailCtrlProvide (
 	}
 	
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
-	    if (angular.isUndefined(search.rsn)){
-		search.rsn  =  $routeParams.rsn ? $routeParams.rsn : undefined;
-	    }; 
-	    
-	    if (angular.isUndefined(search.shop)
-	    	|| !search.shop || search.shop.length === 0){
-	    	search.shop = $scope.shopIds.length === 0 ? undefined : $scope.shopIds; 
-	    };
-	    
-	    console.log(search);
-
+	    add_search_condition(search); 
 	    var items    = $scope.items_perpage;
 	    var page_num = page; 
 	    if ($scope.setting.se_pagination === diablo_yes){
@@ -279,16 +283,7 @@ function wsaleRsnDetailCtrlProvide (
 
     $scope.additional_mode = function() {
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
-	    if (angular.isUndefined(search.rsn)){
-		search.rsn  =  $routeParams.rsn ? $routeParams.rsn : undefined; 
-	    };
-	    
-	    if (angular.isUndefined(search.shop)
-		|| !search.shop || search.shop.length === 0){
-		search.shop = $scope.shopIds.length === 0 ? undefined : $scope.shopIds; 
-	    }
-	    console.log(search);
-	    
+	    add_search_condition(search); 
 	    wsaleService.list_wsale_group_by_style_number(search).then(function(result){
 	    	console.log(result);
 		if (result.ecode === 0){
@@ -408,19 +403,8 @@ function wsaleRsnDetailCtrlProvide (
 
     $scope.export_to = function(){
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
-	    if (angular.isUndefined(search.rsn)){
-		search.rsn  =  $routeParams.rsn ? $routeParams.rsn : undefined; 
-	    };
-	    
-	    if (angular.isUndefined(search.shop)
-		|| !search.shop || search.shop.length === 0){
-		search.shop = $scope.shopIds.length === 0 ? undefined : $scope.shopIds; 
-	    }
-	    console.log(search);
-	    
-	    wsaleService.csv_export(
-		wsaleService.export_type.trans_note, search
-	    ).then(function(result){
+	    add_search_condition(search); 
+	    wsaleService.csv_export(wsaleService.export_type.trans_note, search).then(function(result){
 	    	console.log(result);
 		if (result.ecode === 0){
 		    dialog.response_with_callback(
@@ -555,6 +539,18 @@ function wsaleRsnDetailCtrlProvide (
 		}
 	    })   
 	} 
+    };
+
+    $scope.print_note = function() {
+	var callback = function() {
+	    diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+		add_search_condition(search);
+		diablo_goto_page("#/wsale_print_note/" + angular.toJson(search)); 
+	    }); 
+	}
+	
+	dialog.request(
+	    "交易明细打印", "请确认打印机已连接好，确认要打印吗？", callback, undefined, undefined); 
     };
 
 
@@ -710,7 +706,82 @@ function wsaleUploadCtrlProvide (
     console.info('uploader', $scope.uploader);  
 };
 
+function wsalePrintNoteCtrlProvide(
+    $scope, $routeParams, diabloUtilsService, wsaleService,
+    filterBrand, filterFirm, filterType, filterColor, user, base){
+    // console.log($routeParams);
+    // $scope.rsn = $routeParams.rsn; 
+    $scope.shops = user.sortShops;
+    $scope.search = angular.fromJson($routeParams.note);
+    // console.log($scope.shops);
+    
+    var LODOP;
+    var print_access  = wsaleUtils.print_num(user.loginShop, base); 
+    if (needCLodop()) loadCLodop(print_access.protocal); 
+    var dialog = diabloUtilsService;
+
+    var pageHeight = diablo_base_setting("prn_h_page", user.loginShop, base, parseFloat, 14);
+    var pageWidth  = diablo_base_setting("prn_w_page", user.loginShop, base, parseFloat, 21.3);
+    
+    // console.log(base);
+    // console.log($scope.rbill_comment);
+    
+    wsaleService.print_w_sale_note(
+	wsaleService.export_type.trans_note,
+	$scope.search
+    ).then(function(result){
+    	console.log(result);
+	if (result.ecode === 0) {
+	    var order_id = 1;
+	    $scope.notes = result.data;
+	    $scope.total = 0;
+	    $scope.calc  = 0;
+	    for (var i=0,l=$scope.notes.length; i<l; i++) {
+		var n = $scope.notes[i];
+		n.order_id = order_id;
+		n.calc = wsaleUtils.to_decimal(n.rprice * n.total);
+		$scope.total += n.total;
+		$scope.calc += n.calc;
+		order_id++;
+	    } 
+	    $scope.calc = wsaleUtils.to_decimal($scope.calc);
+	} else {
+	    dialog.response(
+		false,
+		"交易明细打印",
+		"交易明细打印失败：获取交易明细失败，请核对后再打印！！")
+	}
+    });
+    
+    var strBodyStyle="<style>"
+	+ ".table-response {min-height: .01%; overflow-x:auto;}"
+	+ "table {border-spacing:0; border-collapse:collapse; width:100%}"
+	+ "td,th {padding:0; border:1 solid #000000; text-align:center;}"
+	+ ".table-bordered {border:1 solid #000000;}" 
+	+ "</style>";
+    $scope.print = function() {
+	if (angular.isUndefined(LODOP)) {
+	    LODOP = getLodop();
+	}
+
+	if (LODOP.CVERSION) {
+	    LODOP.PRINT_INIT("task_print_sale_note");
+	    LODOP.SET_PRINTER_INDEX(wsaleUtils.printer_bill(user.loginShop, base));
+	    LODOP.SET_PRINT_PAGESIZE(0, pageWidth * 100, pageHeight * 100, "");
+	    LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
+	    LODOP.ADD_PRINT_HTM(
+		"5%", "5%",  "90%", "BottomMargin:15mm",
+		strBodyStyle + "<body>" + document.getElementById("sale_note").innerHTML + "</body>");
+	    LODOP.PREVIEW(); 
+	}
+    };
+
+    $scope.go_back = function() {diablo_goto_page("#/wsale_rsn_detail");};
+    
+};
+
 define (["wsaleApp"], function(app){
     app.controller("wsaleRsnDetailCtrl", wsaleRsnDetailCtrlProvide);
+    app.controller("wsalePrintNoteCtrl", wsalePrintNoteCtrlProvide);
     app.controller("wsaleUploadCtrl", wsaleUploadCtrlProvide);
 });

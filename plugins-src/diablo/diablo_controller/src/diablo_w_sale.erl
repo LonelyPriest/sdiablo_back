@@ -602,8 +602,7 @@ handle_call({get_sale_rsn, Merchant, Conditions}, _From, State) ->
     ?DEBUG("get_sale_rsn with merchant=~p, conditions ~p", [Merchant, Conditions]),
     
     {DetailConditions, SaleConditions} =
-	filter_condition(
-	  wsale, [{<<"merchant">>, Merchant}|Conditions], [], []),
+	filter_condition(wsale, [{<<"merchant">>, Merchant}|Conditions], [], []),
     ?DEBUG("sale conditions ~p, detail condition ~p", [SaleConditions, DetailConditions]), 
 
     {StartTime, EndTime, CutSaleConditions}
@@ -620,18 +619,14 @@ handle_call({get_sale_rsn, Merchant, Conditions}, _From, State) ->
 		case DetailConditions of
 		    [] -> Sql1;
 		    _ ->
-			"select a.rsn from w_sale a "
-			    "inner join (select rsn from w_sale_detail"
-			    " where rsn like "
-			    ++ "\'M-" ++ ?to_s(Merchant) ++"%\'"
-			    ++ ?sql_utils:condition(
-				  proplists, DetailConditions) ++ ") b"
+			"select a.rsn from w_sale a inner join (select rsn from w_sale_detail"
+			    " where merchant=" ++ ?to_s(Merchant)
+			%% ++ "\'M-" ++ ?to_s(Merchant) ++"%\'"
+			    ++ ?sql_utils:condition(proplists, DetailConditions) ++ ") b"
 			    " on a.rsn=b.rsn"
 			    " where "
-			    ++ ?sql_utils:condition(
-				  proplists_suffix, CutSaleConditions)
-			    ++ ?sql_utils:condition(
-				  time_with_prfix, StartTime, EndTime) 
+			    ++ ?sql_utils:condition(proplists_suffix, CutSaleConditions)
+			    ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime) 
 		end;
 	    _ -> Sql1 
 	end ++ " order by id desc",

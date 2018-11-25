@@ -657,13 +657,11 @@ action(Session, Req, {"filter_w_sale_rsn_group"}, Payload) ->
 		?pagination:pagination(
 		   no_response,
 		   fun(Match, Conditions) ->
-			   ?w_sale:filter(total_rsn_group,
-					  ?to_a(Match), Merchant, Conditions)
+			   ?w_sale:filter(total_rsn_group, ?to_a(Match), Merchant, Conditions)
 		   end,
 		   fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
-			   ?w_sale:filter(
-			      {rsn_group, mode(Order), Sort},
-			      Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
+			   ?w_sale:filter({rsn_group, mode(Order), Sort},
+					  Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
 		   end, PayloadWithLBrand)
 	    of
 		{ok, Total, []} ->
@@ -673,8 +671,7 @@ action(Session, Req, {"filter_w_sale_rsn_group"}, Payload) ->
 		{ok, Total, Data, Extra} ->
 		    %% ?DEBUG("Total ~p, Data ~p, Extra ~p", [Total, Data, Extra]),
 		    %% get rsn
-		    %% {ok, AllColors} = ?w_user_profile:get(color, Merchant),
-		    
+		    %% {ok, AllColors} = ?w_user_profile:get(color, Merchant), 
 		    Rsns = lists:foldr(
 			     fun({D}, Acc) ->
 				     Rsn = ?v(<<"rsn">>, D),
@@ -915,6 +912,65 @@ action(Session, Req, {"w_sale_export"}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"print_w_sale_note"}, Payload) ->
+    ?DEBUG("print_w_sale_note with session ~p, paylaod ~n~p", [Session, Payload]),
+    Merchant    = ?session:get(merchant, Session), 
+    {struct, Fields} = ?v(<<"fields">>, Payload),
+    CType = ?v(<<"ctype">>, Fields),
+    SType = ?v(<<"type">>, Fields),
+
+    PayloadWithCtype = replace_condition_with_ctype(Merchant, CType, SType, Fields, Payload),
+    ?DEBUG("PayloadWithCtype ~p", [PayloadWithCtype]),
+
+    Like = ?value(<<"match">>, Payload, 'and'),
+    Brand = ?v(<<"brand">>, Fields),
+
+    {struct, NewFields}  = ?v(<<"fields">>, PayloadWithCtype), 
+    PayloadWithLBrand =
+	replace_condition_with_lbrand(?to_a(Like), Merchant, Brand, NewFields, PayloadWithCtype),
+    ?DEBUG("PayloadWithlbrand ~p", [PayloadWithLBrand]),
+
+    {struct, Conditions} = ?v(<<"fields">>, PayloadWithLBrand),
+    {ok, Q} = ?w_sale:sale(get_rsn, Merchant, Conditions),
+    {struct, NewConditions} =
+	?v(<<"fields">>,
+	   ?w_inventory_request:filter_condition(
+	      trans_note, [?v(<<"rsn">>, Rsn) || {Rsn} <- Q], Conditions)),
+    
+    {ok, Transes} = ?w_sale:export(trans_note, Merchant, NewConditions),
+    
+    NoteConditions = [{<<"rsn">>, ?v(<<"rsn">>, NewConditions, [])}],
+    {ok, SaleNotes} = ?w_sale:export(trans_note_color_size, Merchant, NoteConditions), 
+    NoteDict = sale_note(to_dict_with_rsn, SaleNotes, dict:new()),
+
+    TransesWithNote =
+	lists:foldr(
+	  fun({D}, Acc) ->
+		  %% ?DEBUG("D ~p", [D]),
+		  Rsn = ?to_b(?v(<<"rsn">>, D)),
+		  StyleNumber = ?to_b(?v(<<"style_number">>, D)),
+		  UBrand = ?to_b(?v(<<"brand_id">>, D)),
+		  Shop  = ?to_b(?v(<<"shop_id">>, D)),
+		  Key = <<Rsn/binary,
+			  <<"-">>/binary,
+			  StyleNumber/binary,
+			  <<"-">>/binary,
+			  UBrand/binary,
+			  <<"-">>/binary,
+			  Shop/binary>>,
+
+		  %% ?DEBUG("Key ~p", [Key]),
+		  case dict:find(Key, NoteDict) of
+		      error ->
+			  [{D ++ [{<<"note">>, <<>>}]}] ++ Acc;
+		      {ok, Find} ->
+			  Note = ?to_b(?v(<<"note">>, Find)),
+			  [{D ++ [{<<"note">>, Note}]}] ++ Acc
+		  end
+	  end, [], Transes),
+
+    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0}, {<<"data">>, TransesWithNote}]});
+    
 action(Session, Req, {"get_wsale_rsn"}, Payload) ->
     ?DEBUG("get_wsale_rsn with session ~p, Payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),

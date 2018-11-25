@@ -40,46 +40,44 @@
 	</h5>
 	<div class="table-responsive">
 	  <table class="table table-bordered table-striped" style="margin-bottom:5px"> 
-	      <thead>
-		<tr>
-		  <th class="text-center">序号</th>
-		  <th class="text-center">货号</th>
-		  <th class="text-center">品名</th>
-		  <th class="text-center">类型</th>
-		  <th class="text-center">小计</th>
-		  <th class="text-center">数量</th>
-		  <th class="text-center">颜色</th>
-		  <th class="text-center">尺码</th> 
-		</tr>
-	      </thead>
-	      
-	      <tbody>
-		<tr x-ng-repeat="n in notes"> 
-		  <td class="text-center">{{n.order_id}}</td>
-		  <td class="text-center">{{n.style_number}}</td>
-		  <td class="text-center">{{n.brand.name}}</td>
-		  <td class="text-center">{{n.type.name}}</td>
-		  <td class="text-center">{{n.total}}</td>
-		  
-		  <td class="text-center">{{n.amount}}</td>
-		  <td class="text-center">{{n.color.cname}}</td>
-		  <td style="text-center">{{n.size}}</td>
-		</tr>
+	    <thead>
+	      <tr>
+		<th class="text-center">序号</th>
+		<th class="text-center">货号</th>
+		<th class="text-center">品名</th>
+		<th class="text-center">类型</th>
+		<th class="text-center">小计</th>
+		<th class="text-center">数量</th>
+		<th class="text-center">颜色</th>
+		<th class="text-center">尺码</th> 
+	      </tr>
+	    </thead>
+	    
+	    <tbody>
+	      <tr x-ng-repeat="n in notes"> 
+		<td class="text-center">{{n.order_id}}</td>
+		<td class="text-center">{{n.style_number}}</td>
+		<td class="text-center">{{n.brand.name}}</td>
+		<td class="text-center">{{n.type.name}}</td>
+		<td class="text-center">{{n.total}}</td>
 		
-		<tr>
-		  <td colspan="4"></td>
-		  <td class="text-center" x-ng-bind=total></td>
-		  <td class="text-center" x-ng-bind=amount></td>
-		  <td colspan="2">
-		</tr>
-	      </tbody> 
-	    </table> <!--END table--> 
+		<td class="text-center">{{n.amount}}</td>
+		<td class="text-center">{{n.color.cname}}</td>
+		<td style="text-center">{{n.size}}</td>
+	      </tr>
+	      
+	      <tr>
+		<td colspan="4"></td>
+		<td class="text-center" x-ng-bind=total></td>
+		<td class="text-center" x-ng-bind=amount></td>
+		<td colspan="2">
+	      </tr>
+	    </tbody> 
+	  </table> <!--END table--> 
 	</div>
 	<h5 style="text-align:left">
 	  <p>
-	    <span>钱掌柜零售云平台</span>
-	    &nbsp&nbsp&nbsp&nbsp<span>联系方式：18692269329（微信）</span>
-	    &nbsp&nbsp&nbsp&nbsp<span>15292083301（微信）</span>
+	    <span>感谢使用钱掌柜零售云平台</span> 
 	  </p>
 	</h5>
       </div>

@@ -104,6 +104,11 @@ function wsaleConfg(angular){
 		resolve: angular.extend(
 		    {}, user, promotion, score, sysretailer, brand, employee, firm, s_group, type, color, ctype, base)
 	    }).
+	    when('/wsale_print_note/:note?', {
+		templateUrl: '/private/wsale/html/wsale_print_note.html',
+		controller: 'wsalePrintNoteCtrl',
+		resolve: angular.extend({}, user, brand, firm, s_group, type, color, base)
+	    }). 
 	    when('/wsale_firm_detail', {
 		templateUrl: '/private/wsale/html/wsale_firm_detail.html',
 		controller: 'wsaleFirmDetailCtrl',
@@ -337,7 +342,16 @@ function wsaleConfg(angular){
 	this.csv_export = function(e_type, condition){
 	    return http.save({operation: "w_sale_export"},
 			     {condition: condition, e_type:e_type}).$promise;
-	}; 
+	};
+
+	/*
+	 * print
+	 */
+	this.print_w_sale_note = function(e_type, condition) {
+	    return http.save(
+		{operation: "print_w_sale_note"},
+		{fields:condition, e_type: e_type}).$promise;
+	};
     });
 
     wsaleApp.controller("wsaleNewDetailCtrl", wsaleNewDetailProvide);

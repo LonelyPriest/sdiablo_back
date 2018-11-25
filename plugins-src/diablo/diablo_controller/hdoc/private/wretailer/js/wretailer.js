@@ -86,16 +86,16 @@ function wretailerDetailCtrlProvide(
 	return 's_customer' === s.name
     }).map(function(c){return parseInt(c.value)});
 
-    // var LODOP;
-    // var print_mode = diablo_backend;
-    // for (var i=0, l=$scope.shopIds.length; i<l; i++){
-    // 	if (diablo_frontend === retailerUtils.print_mode($scope.shopIds[i], base)){
-    // 	    if (needCLodop()) {
-    // 		loadCLodop();
-    // 		break;
-    // 	    };
-    // 	}
-    // }; 
+    var LODOP;
+    for (var i=0, l=$scope.shopIds.length; i<l; i++){
+	var print_access = retailerUtils.print_num($scope.shopIds[i], base);
+    	if (diablo_frontend === retailerUtils.print_mode($scope.shopIds[i], base)){
+    	    if (needCLodop()) {
+    		loadCLodop(print_access.protocal);
+    		break;
+    	    };
+    	}
+    }; 
 
     var authen = new diabloAuthen(user.type, user.right, user.shop);
     $scope.right = authen.authenRetailerRight();
@@ -378,7 +378,7 @@ function wretailerDetailCtrlProvide(
 
 	return validEmployees.length === 0 ? $scope.employees : validEmployees;
     }; 
-    
+
     $scope.charge = function(retailer){
 	console.log($scope.charges); 
 	var callback = function(params){
@@ -429,6 +429,37 @@ function wretailerDetailCtrlProvide(
 		    if (!is_theoretic_card(promotion.rule_id) && !is_unlimit_card(promotion.rule_id)) {
 			retailer.balance += charge_balance + retailerUtils.to_float(send_balance) 
 		    }
+
+		    var charge_shop = params.retailer.select_shop;
+		    var print_access = retailerUtils.print_num(charge_shop.id, base);
+		    var LODOP;
+		    var print_callback = function() {
+			if (diablo_frontend === retailerUtils.print_mode(charge_shop.id, base)){
+			    LODOP = getLodop();
+			    if (angular.isDefined(LODOP)){
+				retailerChargePrint.init(LODOP);
+				
+				var pdate = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss"); 
+				var top = retailerChargePrint.gen_head(
+				    LODOP,
+				    charge_shop.name,
+				    params.retailer.select_employee.name, 
+				    params.retailer.name,
+				    pdate);
+				
+				top = retailerChargePrint.gen_body(
+				    LODOP,
+				    top,
+				    {name:promotion.name,
+				     cbalance:charge_balance,
+				     sbalance:send_balance,
+				     comment:params.comment ? params.comment : diablo_empty_string});
+
+				retailerChargePrint.gen_foot(LODOP, top); 
+				retailerChargePrint.start_print(LODOP);
+			    } 
+			}
+		    };
 		    
 		    dialog.response_with_callback(
 			true,
@@ -442,32 +473,10 @@ function wretailerDetailCtrlProvide(
 				else return ""; 
 			    }(),
 			undefined, function(){
-			    // if (diablo_frontend === retailerUtils.print_mode(
-			// 	params.retailer.select_shop.id, base)){
-			// 	if (angular.isUndefined(LODOP)){
-			// 	    LODOP = getLodop(); 
-			// 	}
-			// 	if (angular.isDefined(LODOP)){
-			// 	    var pdate = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss");
-			// 	    var hLine = retailerPrint.gen_head(
-			// 		LODOP,
-			// 		params.retailer.name,
-			// 		params.retailer.select_shop.name,
-			// 		params.retailer.select_employee.name,
-			// 		pdate);
-				    
-			// 	    retailerPrint.gen_body(
-			// 		hLine, LODOP,
-			// 		{cbalance:charge_balance,
-			// 		 sbalance:send_balance,
-			// 		 comment:params.comment
-			// 		});
-				    
-			// 	    return retailerPrint.start_print(LODOP);
-			// 	} else {
-			// 	    console.log("get lodop failed...");
-			// 	}
-			//     } 
+			    dialog.request(
+				"会员充值",
+				"是否打印充值单据？",
+				print_callback, undefined, undefined); 
 			});
     		} else{
 		    dialog.response(
@@ -1320,8 +1329,7 @@ function wretailerThresholdCardDetailCtrlProvide(
 		    }).then(function(state) {
 			console.log(state);
 			if (state.ecode === 0) {
-			    var p_num = retailerUtils.print_num(
-				params.shop.id, base).swiming;
+			    var p_num = retailerUtils.print_num(params.shop.id, base).swiming;
 			    var saleMode = retailerUtils.sale_mode(params.shop.id, base); 
 			    dialog.response_with_callback(
 				true,

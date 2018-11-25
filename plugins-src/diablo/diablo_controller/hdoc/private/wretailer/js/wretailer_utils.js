@@ -197,3 +197,60 @@ var retailerPrint = function(){
 	} 
     }
 }();
+
+var retailerChargePrint = function(){
+    var left = 5;
+    var width = 219; // inch, 5.8 / 2.45 * 96 
+    var vWidth = width - 5; 
+    var hFont = 20; // height of font
+    
+    return {
+	init: function(LODOP) {
+	    LODOP.SET_PRINTER_INDEX(diablo_invalid_index);
+	    LODOP.SET_PRINT_PAGESIZE(3, 580, 0, ""); 
+	},
+	
+	gen_head: function(LODOP, shop, employee, retailer, date){
+	    LODOP.ADD_PRINT_TEXT(10, left, vWidth, 30, shop); 
+	    LODOP.SET_PRINT_STYLEA(0, "FontSize", 13);
+	    LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
+	    // LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
+
+	    var top = 40; 
+	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "客户：" + retailer);
+	    top += 15; // 55
+	    LODOP.ADD_PRINT_TEXT(top,  left, vWidth, hFont, "店员：" + employee);
+	    top += 15; // 70
+	    LODOP.ADD_PRINT_TEXT(top,  left, vWidth, hFont, "日期：" + date); 
+	    top += 20; // 85
+	    LODOP.ADD_PRINT_LINE(top,  left, top, vWidth, 0, 1);
+
+	    return top;
+	},
+
+	gen_body: function(LODOP, top, charge){
+	    top += 10;
+	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "充值项目：" + charge.name); 
+	    top += 15; 
+	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "充值金额：" + charge.cbalance.toString()); 
+	    top += 15; 
+	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "赠送金额：" + charge.sbalance.toString());
+	    top += 15;
+	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "充值备注：" + charge.comment); 
+	    top += 15;
+	    LODOP.ADD_PRINT_LINE(top, left, top, vWidth, 0, 1); 
+	    return top;
+	},
+
+	gen_foot: function(LODOP, top) {
+	    top += 5; 
+	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "谢谢惠顾！！");
+	    return top;
+	},
+	
+	start_print: function(LODOP){
+	    // LODOP.PREVIEW();
+	    LODOP.PRINT();
+	} 
+    }
+}();
