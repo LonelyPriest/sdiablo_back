@@ -1,7 +1,7 @@
 'use strict'
 
 function wretailerNewCtrlProvide(
-    $scope, wretailerService, diabloPattern, diabloUtilsService, user){
+    $scope, wretailerService, diabloFilter, diabloPattern, diabloUtilsService, user){
     $scope.pattern = {name_address: diabloPattern.ch_name_address,
 		      tel_mobile:   diabloPattern.tel_mobile,
 		      decimal_2:    diabloPattern.decimal_2,
@@ -30,8 +30,11 @@ function wretailerNewCtrlProvide(
 	level:$scope.levels[0]
     };
 
+    $scope.match_retailer_phone = function(viewValue){
+	return retailerUtils.match_retailer_phone(viewValue, diabloFilter)
+    };
+    
     $scope.new_wretailer = function(retailer){
-	// console.log(retailer);
 	wretailerService.new_wretailer(retailer).then(function(state){
 	    console.log(state);
 	    if (state.ecode == 0){
@@ -516,68 +519,74 @@ function wretailerDetailCtrlProvide(
 	    }
 	)
     };
-    
-    $scope.update_retailer = function(old_retailer){
-	console.log(old_retailer);
+
+    var get_modified = diablo_get_modified; 
+    $scope.update_retailer = function(oRetailer){
+	console.log(oRetailer);
+	oRetailer.intro = {id:oRetailer.intro_id, name:oRetailer.intro_name};
+	
 	var callback = function(params){
-	    console.log(params); 
+	    console.log(params);
+	    var uRetailer = params.retailer;
 	    var update_retailer = {
-		name: diablo_get_modified(params.retailer.name, old_retailer.name),
-		card: diablo_get_modified(params.retailer.card, old_retailer.card),
-		py: diablo_get_modified(
-		    diablo_pinyin(params.retailer.name),
-		    diablo_pinyin(old_retailer.name)),
-		
-		id_card: diablo_get_modified(params.retailer.id_card, old_retailer.id_card),
-		mobile: diablo_get_modified(params.retailer.mobile, old_retailer.mobile),
-		address: diablo_get_modified(params.retailer.address, old_retailer.address),
-		comment: diablo_get_modified(params.retailer.comment, old_retailer.comment),
-		shop: params.retailer.edit_shop ? params.retailer.shop.id : undefined,
-		type: diablo_get_modified(params.retailer.type, old_retailer.type),
-		level: function() {
-		    if (old_retailer.type_id !== 2)
-			return diablo_get_modified(
-			    params.retailer.olevel.level, old_retailer.level)
+		name:  get_modified(uRetailer.name, oRetailer.name),
+		card:  get_modified(uRetailer.card, oRetailer.card),
+		py:    get_modified(diablo_pinyin(uRetailer.name), diablo_pinyin(oRetailer.name)),
+		id_card: get_modified(uRetailer.id_card, oRetailer.id_card),
+		mobile:  get_modified(uRetailer.mobile,  oRetailer.mobile),
+		address: get_modified(uRetailer.address, oRetailer.address),
+		comment: get_modified(uRetailer.comment, oRetailer.comment),
+		shop:    uRetailer.edit_shop ? uRetailer.shop.id : undefined,
+		type:    get_modified(uRetailer.type, oRetailer.type),
+		intro: function() {
+		    if (uRetailer.intro && angular.isObject(uRetailer.intro))
+			return get_modified(uRetailer.intro.id, oRetailer.intro);
+		    return get_modified(diablo_invalid_index, oRetailer.intro);
 		}(),
+		level: function() {
+		    if (oRetailer.type_id !== 2)
+			return get_modified(uRetailer.olevel.level, oRetailer.level)}(),
 		
-		password:diablo_get_modified(
-		    params.retailer.password,
-		    old_retailer.password),
+		password:get_modified(uRetailer.password, oRetailer.password),
 		
-		birth:diablo_get_modified(
-		    params.retailer.birth.getTime(),
-		    old_retailer.birth.getTime()),
-		balance: diablo_get_modified(params.retailer.balance, old_retailer.balance)
+		birth:get_modified(uRetailer.birth.getTime(), oRetailer.birth.getTime()),
+		balance: get_modified(uRetailer.balance, oRetailer.balance)
 	    };
 	    
 	    console.log(update_retailer); 
 	    update_retailer.id = params.retailer.id;
-	    // update_retailer.obalance = old_retailer.balance;
+	    // update_retailer.obalance = oRetailer.balance;
 	    // console.log(update_retailer);
-	    
-	    wretailerService.update_retailer(update_retailer).then(function(result){
-    		console.log(result);
-    		if (result.ecode == 0){
-		    dialog.response_with_callback(
-			true, "会员编辑", "会员 [" + old_retailer.name + "] 信息修改成功！！",
-			$scope, function(){
-			    $scope.do_search($scope.current_page);
-			});
-    		} else{
-		    dialog.response(
-			false, "会员编辑", "会员编辑失败：" + wretailerService.error[result.ecode]);
-    		}
-    	    }) 
+
+	    if (update_retailer.intro !== diablo_invalid_index
+		&& update_retailer.intro === update_retailer.id) {
+		dialog.response(
+		    false, "会员编辑", "会员编辑失败：" + wretailerService.error[2199]);
+	    } else {
+		wretailerService.update_retailer(update_retailer).then(function(result){
+    		    console.log(result);
+    		    if (result.ecode == 0){
+			dialog.response_with_callback(
+			    true, "会员编辑", "会员 [" + oRetailer.name + "] 信息修改成功！！",
+			    $scope, function(){
+				$scope.do_search($scope.current_page);
+			    });
+    		    } else{
+			dialog.response(
+			    false, "会员编辑", "会员编辑失败：" + wretailerService.error[result.ecode]);
+    		    }
+    		}) 
+	    } 
 	};
 
 	var check_same = function(new_retailer){
-	    return angular.equals(new_retailer, old_retailer);
+	    return angular.equals(new_retailer, oRetailer);
 	};
 
 	var check_exist = function(new_retailer){
 	    for(var i=0, l=$scope.retailers.length; i<l; i++){
 		if (new_retailer.name === $scope.retailers[i].name
-		    && new_retailer.name !== old_retailer.name){
+		    && new_retailer.name !== oRetailer.name){
 		    return true;
 		}
 	    }
@@ -587,7 +596,7 @@ function wretailerDetailCtrlProvide(
 	
 	dialog.edit_with_modal(
 	    "update-wretailer.html", undefined, callback, $scope,
-	    {retailer:    old_retailer,
+	    {retailer:    oRetailer,
 	     types:       function(){
 		 if ($scope.right.master)
 		     return $scope.retailer_types;
@@ -600,8 +609,7 @@ function wretailerDetailCtrlProvide(
 	     shops:       $scope.shops,
 	     pattern:     pattern,
 	     check_same:  check_same,
-	     check_exist: check_exist,
-	     right: $scope.right})
+	     check_exist: check_exist})
     };
 
     $scope.delete_retailer = function(r){

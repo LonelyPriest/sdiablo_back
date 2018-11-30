@@ -277,6 +277,7 @@ init([Name]) ->
 handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
     ?DEBUG("new_retailer with attrs ~p", [Attrs]),
     Name     = ?v(<<"name">>, Attrs),
+    Intro    = ?v(<<"intro">>, Attrs, -1),
     Card     = ?v(<<"card">>, Attrs, []),
     Pinyin   = ?v(<<"py">>, Attrs, []),
     IDCard   = ?v(<<"id_card">>, Attrs, []),
@@ -314,10 +315,11 @@ handle_call({new_retailer, Merchant, Attrs}, _From, State) ->
 	{ok, []} ->
 	    DrawId = default_withdraw(Merchant, Shop, Type),
 	    Sql2 = "insert into w_retailer("
-		"name, level, card, py, id_card, birth, type, password, score"
+		"name, intro, level, card, py, id_card, birth, type, password, score"
 		" ,mobile, address, shop, draw, merchant, entry_date)"
 		++ " values (" 
 		++ "\'" ++ ?to_s(Name) ++ "\',"
+		++ ?to_s(Intro) ++ ","
 		++ ?to_s(Level) ++ ","
 		++ "\'" ++ ?to_s(Card) ++ "\',"
 		++ "\'" ++ ?to_s(Pinyin) ++ "\',"
@@ -415,6 +417,7 @@ handle_call({update_retailer, Merchant, RetailerId, {Attrs, OldAttrs}}, _From, S
 	   [Merchant, RetailerId, Attrs, OldAttrs]),
 
     Name     = ?v(<<"name">>, Attrs),
+    Intro    = ?v(<<"intro">>, Attrs),
     Card     = ?v(<<"card">>, Attrs),
     Pinyin   = ?v(<<"py">>, Attrs),
     IDCard   = ?v(<<"id_card">>, Attrs),
@@ -475,6 +478,7 @@ handle_call({update_retailer, Merchant, RetailerId, {Attrs, OldAttrs}}, _From, S
 		end,
 
 	    Updates = ?utils:v(name, string, Name)
+		++ ?utils:v(intro, integer, Intro)
 		++ ?utils:v(card, string, Card)
 		++ ?utils:v(py, string, Pinyin)
 		++ ?utils:v(id_card, string, IDCard)
@@ -569,6 +573,7 @@ handle_call({get_retailer, Merchant, RetailerId}, _From, State) ->
 	   [Merchant, RetailerId]),
     Sql = "select a.id"
 	", a.name"
+	", a.intro as intro_id"
 	", a.level"
 	", a.card"
 	", a.id_card"
@@ -591,7 +596,12 @@ handle_call({get_retailer, Merchant, RetailerId}, _From, State) ->
 
 handle_call({get_retailer_batch, Merchant, RetailerIds}, _From, State) ->
     ?DEBUG("get_retailer_batch with merchant ~p, retailerIds ~p", [Merchant, RetailerIds]),
-    Sql = "select id, merchant, name, level, py"
+    Sql = "select id"
+	", merchant"
+	", name"
+	", intro as intro_id"
+	", level"
+	", py"
 	", shop as shop_id"
 	", draw as draw_id"
 	", type as type_id"
@@ -654,6 +664,7 @@ handle_call({list_retailer, Merchant, Conditions, Mode}, _From, State) ->
     
     Sql = "select a.id"
 	", a.name"
+	", a.intro as intro_id"
 	", a.level"
 	", a.card"
 	", a.id_card"
@@ -1449,6 +1460,7 @@ handle_call({{filter_retailer, Order, Sort},
     Sql = "select a.id"
 	", a.merchant" 
 	", a.name"
+	", a.intro as intro_id"
 	", a.level"
 	", a.card"
 	", a.id_card"
@@ -1464,9 +1476,13 @@ handle_call({{filter_retailer, Order, Sort},
 	", a.entry_date"
 	", a.comment"
 
-	", b.name as shop_name" 
+	", b.name as shop_name"
+	", c.name as intro_name"
+	
 	" from w_retailer a"
 	" left join shops b on a.shop=b.id"
+	" left join (select id, name, merchant from w_retailer where merchant="
+	++ ?to_s(Merchant) ++ ") c on a.intro=c.id"
 	" where a.merchant=" ++ ?to_s(Merchant)
 	++ case {Month, Date} of
 	       {[], []} -> [];

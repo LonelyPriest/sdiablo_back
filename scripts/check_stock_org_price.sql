@@ -180,8 +180,15 @@ update  w_inventory_transfer a inner join (select rsn, cost from (select rsn, su
 
 
 -- syn tagprice
-update w_inventory a inner join (select style_number, brand, shop, tag_price, discount, ediscount from w_inventory_new_detail where merchant=4 group by style_number, brand, shop) b on \
-a.style_number=b.style_number and a.brand=b.brand and a.shop=b.shop set a.tag_price=b.tag_price, a.discount=b.discount and a.ediscount=b.ediscount;
+update w_inventory a inner join (select style_number, brand, shop, tag_price, discount, ediscount from w_inventory_new_detail where merchant=42 group by style_number, brand, shop) b on \
+a.style_number=b.style_number and a.brand=b.brand and a.shop=b.shop set a.tag_price=b.tag_price, a.discount=b.discount, a.ediscount=b.ediscount where a.merchant=42;
+
+update w_inventory a inner join (select style_number, brand, state from w_inventory_good where merchant=42) b on \
+a.style_number=b.style_number and a.brand=b.brand and a.shop=b.shop set a.state=b.state where a.merchant=42;
+
+update w_inventory a inner join (select style_number, brand, shop, merchant, tag_price, discount, ediscount, state, score from w_inventory_back where merchant=42) b on \
+a.style_number=b.style_number and a.brand=b.brand and a.shop=b.shop and a.merchant=b.merchant \
+set a.tag_price=b.tag_price, a.discount=b.discount, a.ediscount=b.ediscount, a.state=b.state, a.score=b.score where a.merchant=42;
 
 -- syn level, category, executive, fabric
 update w_inventory a inner join (select style_number, brand, merchant, level, category, executive, fabric from w_inventory_good where merchant=18) b \

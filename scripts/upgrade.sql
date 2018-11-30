@@ -488,3 +488,7 @@ alter table w_inventory_new_detail add column vir_price DECIMAL(10, 2) default 0
 alter table print_template add column self_brand VARCHAR(32) default '' after vir_price;
 alter table print_template add column printer TINYINT default -1  after w_barcode;
 alter table print_template add column dual_print TINYINT default -1  after printer;
+
+
+--2018-11-30
+alter table w_retailer add column intro INTEGER default -1 after name;

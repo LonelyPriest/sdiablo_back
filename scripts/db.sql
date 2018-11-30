@@ -430,6 +430,7 @@ create table w_retailer
     type            TINYINT default 0,  -- 0: common, 1: charge
     py              VARCHAR(8) default null,
     id_card         VARCHAR(18) default null,
+    intro           INTEGER default -1,
     change_date     DATETIME default 0, -- last changed
     entry_date      DATETIME default 0, -- last changed
     deleted         INTEGER default 0, -- 0: no;  1: yes

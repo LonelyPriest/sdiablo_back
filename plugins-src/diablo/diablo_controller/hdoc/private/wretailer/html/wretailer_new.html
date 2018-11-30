@@ -58,6 +58,28 @@
 	    </div>
 
 	    <div class="form-group"> 
+	      <label class="col-sm-3 col-md-3 control-label">介绍人</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<input type="text"
+		       class="form-control"
+		       name="intro"
+		       ng-edit
+		       placeholder="介绍人电话/姓名/拼音"
+		       typeahead-editable="false"
+		       typeahead-wait-ms="300"
+		       typeahead-loading="loading"
+		       uib-typeahead="s as s.name for s in match_retailer_phone($viewValue)"
+		       x-ng-model="retailer.intro" />
+		<span x-ng-show="loading">
+	  	  <i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
+		</span>
+	      </div>
+	      <div ng-show="retailerNewForm.intro.$invalid && !retailerNewForm.intro.$pristine">
+		<span class="fg-red">介绍人只能从下拉列表中获取</span>
+	      </div> 
+	    </div>
+
+	    <div class="form-group"> 
 	      <label class="col-sm-3 col-md-3 control-label">卡号</label>
 	      <div class="col-sm-6 col-md-6">
 		<div x-ng-class="{'has-error': retailerNewForm.card.$invalid

@@ -1,5 +1,18 @@
 var version_update = function(){
     var updates = [
+	{date: "2018-11-30",
+	 content:
+	 ["会员增加介绍人选项",
+	  "优化盘点机在大量数据下的扫描速度"]
+	},
+	
+	{date: "2018-11-23",
+	 content:
+	 ["增加交易明细打印",
+	  "增加会员充值打印",
+	  "修正部分bug, 优化程序性能"]
+	},
+	
 	{date: "2018-11-09",
 	 content:
 	 ["增加https访问方式，解决dns劫持问题"]
@@ -1098,11 +1111,19 @@ var version_update = function(){
 	    }
 
 	    var apk = "<div class='update-content'>"
-		+ "<a type='button' href='/qzg_stock_fix-release2018-11-12_10-43-45.apk' download=''>"
-		+ "<h5 class='text-center fg-pink'>盘点机软件(安卓版)下载</h5>"
+		+ "<a type='button' href='/qzg_stock_fix-release2018-11-28_12-05-00.apk' download=''>"
+		+ "<h5 class='text-center fg-pink'>盘点机软件(安卓)下载</h5>"
 		+ "</a>"
 		+ "</div>"
 	    $('body').append(apk);
+
+	    var scan_apk = "<div class='update-content'>"
+		+ "<a type='button' href='/iScan-V4.3.1.apk' download=''>"
+		+ "<h5 class='text-center fg-pink'>盘点机辅助软件(安卓)下载</h5>"
+		+ "</a>"
+		+ "</div>"
+	    $('body').append(scan_apk);
+	    
 	    $('body').append(content);
 		// .append("<div class='copyright'><span> 2015-2025 &copy;&nbsp钱掌柜&nbsp&nbsp&nbsp&nbsp</span>"
 		// 			     + "<span><i class='glyphicon glyphicon-star'></i>"

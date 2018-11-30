@@ -187,6 +187,7 @@ function wretailerConfig(angular) {
 	    2116: "券金额不能超过500元，请重新输入券金额",
 	    2117: "批次号已存在，请重新输入批次号",
 	    2118: "批次号不能超过9位，请重新输入批次号",
+	    2199: "介绍人不能是自己,请重新选择介绍人", 
 	    2501: "短信中心不存在，请联系服务人员！！",
 	    2502: "短信发送失败，余额不足，请联系服务人员充值！！",
 	    2503: "短信提醒服务没有开通，请联系服务人员开通该功能！！", 
@@ -229,6 +230,7 @@ function wretailerConfig(angular) {
 	    return http.save(
 		{operation:"new_w_retailer"},
 		{name:     r.name,
+		 intro:    r.intro && angular.isObject(r.intro) ? r.intro.id : undefined,
 		 card:     r.card ? r.card : undefined,
 		 py:       diablo_pinyin(r.name),
 		 id_card:  r.id_card ? r.card : undefined,
@@ -253,6 +255,7 @@ function wretailerConfig(angular) {
 		{id:       r.id,
 		 card:     r.card,
 		 name:     r.name,
+		 intro:    r.intro,
 		 py:       r.py,
 		 id_card:  r.id_card,
 		 mobile:   r.mobile,
