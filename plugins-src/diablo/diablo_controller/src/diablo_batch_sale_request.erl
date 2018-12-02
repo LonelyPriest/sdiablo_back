@@ -384,9 +384,19 @@ action(Session, Req, {"export_batch_sale"}, Payload) ->
 		    case file:open(ExportFile, [write, raw]) of
 			{ok, Fd} -> 
 			    try
+				{ok, Employees} = ?w_user_profile:get(employee, Merchant),
+				{ok, Regions} = ?w_user_profile:get(region, Merchant),
+				{ok, Departments} = ?w_user_profile:get(department, Merchant),
+				
 				DoFun = fun(C) -> ?utils:write(Fd, C) end,
+				?DEBUG("exportType ~p", [ExportType]),
 				csv_head(ExportType, DoFun, ExportCode),
-				do_write(ExportType, DoFun, 1, Transes, ExportCode, {0, 0, 0}),
+				do_write(ExportType,
+					 DoFun,
+					 1,
+					 Transes,
+					 {ExportCode, Employees, Regions, Departments},
+					 {0, 0, 0}),
 				ok = file:datasync(Fd),
 				ok = file:close(Fd)
 			    catch
@@ -394,8 +404,7 @@ action(Session, Req, {"export_batch_sale"}, Payload) ->
 				    file:close(Fd),
 				    ?DEBUG("trace export:T ~p, W ~p~n~p",
 					   [T, W, erlang:get_stacktrace()]),
-				    ?utils:respond(
-				       200, Req, ?err(wsale_export_error, W)) 
+				    ?utils:respond(200, Req, ?err(wsale_export_error, W)) 
 			    end,
 			    ?utils:respond(200, object, Req,
 					   {[{<<"ecode">>, 0},
@@ -892,7 +901,7 @@ csv_head(sale_new, Do, ExportCode) ->
     %% UTF8 = unicode:characters_to_list(H, utf8),
     Do(C);
 csv_head(sale_new_detail, Do, ExportCode) -> 
-    H = "序号,单号,导购,交易,店铺,客户,货号,品牌,类型,季节,厂商,年度,上架日期,参考价,单价,数量,小计,备注,日期",
+    H = "序号,单号,导购,区域,负责人,交易,店铺,客户,货号,品牌,类型,季节,厂商,年度,上架日期,参考价,单价,数量,小计,备注,日期",
     C = 
 	case ExportCode of
 	    0 ->
@@ -1006,8 +1015,11 @@ do_write(sale_new, Do, Seq, [{H}|T], ExportCode, {Amount, SPay, RPay}) ->
 						 SPay + ShouldPay,
 						 RPay + HasPay});
 
-do_write(sale_new_detail, Do, _Seq, [], ExportCode, {Amount, _SPay, _RPay})->
+do_write(sale_new_detail, Do, _Seq, [],
+	 {ExportCode, _Employees, _Regions, _Departments}, {Amount, _SPay, _RPay})->
     L = "\r\n"
+	++ ?d
+	++ ?d
 	++ ?d
 	++ ?d
 	++ ?d
@@ -1035,9 +1047,11 @@ do_write(sale_new_detail, Do, _Seq, [], ExportCode, {Amount, _SPay, _RPay})->
 	end,
     Do(Line);
 
-do_write(sale_new_detail, Do, Seq, [{H}|T], ExportCode, {Amount, SPay, RPay}) ->
+do_write(sale_new_detail, Do, Seq, [{H}|T],
+	 {ExportCode, Employees, Regions, Departments}, {Amount, SPay, RPay}) ->
     Rsn         = ?v(<<"rsn">>, H),
-    BSaler      = ?v(<<"bsaler">>, H), 
+    BSaler      = ?v(<<"bsaler">>, H),
+    RegionId    = ?v(<<"region_id">>, H),
     SellType    = ?v(<<"sell_type">>, H), 
     Shop        = ?v(<<"shop">>, H),
     Employee    = ?v(<<"employee">>, H),
@@ -1058,10 +1072,30 @@ do_write(sale_new_detail, Do, Seq, [{H}|T], ExportCode, {Amount, SPay, RPay}) ->
     Calc        =  RPrice * Total, 
     Datetime    = ?v(<<"entry_date">>, H),
 
+    {RegionName, DepartmentId} = 
+	case [R || {R} <- Regions, ?v(<<"id">>, R) =:= RegionId] of
+	    [] -> {[], ?INVALID_OR_EMPTY};
+	    [R] ->
+		{?v(<<"name">>, R), ?v(<<"department_id">>, R)}
+	end,
+    
+    DepartmentMaster =
+	case [D || {D} <- Departments, ?v(<<"id">>, D) =:= DepartmentId] of
+	    [] -> [];
+	    [D] ->
+		MasterId = ?v(<<"master_id">>, D),
+		case [M || M <- Employees, ?v(<<"number">>, M) =:= MasterId] of
+		    [] -> [];
+		    [Master]-> ?v(<<"name">>, Master)
+		end
+	end,
+
     L = "\r\n"
 	++ ?to_s(Seq) ++ ?d
 	++ ?to_s(Rsn) ++ ?d
 	++ ?to_s(Employee) ++ ?d
+	++ ?to_s(RegionName) ++ ?d
+	++ ?to_s(DepartmentMaster) ++ ?d
 	++ sale_type(SellType) ++ ?d
 	++ ?to_s(Shop) ++ ?d
 	++ ?to_s(BSaler) ++ ?d 
@@ -1090,7 +1124,8 @@ do_write(sale_new_detail, Do, Seq, [{H}|T], ExportCode, {Amount, SPay, RPay}) ->
 	    1 -> ?utils:to_gbk(from_latin1, L)
 	end,
     Do(Line),
-    do_write(sale_new_detail, Do, Seq + 1, T, ExportCode, {Amount + Total, SPay, RPay}).
+    do_write(sale_new_detail, Do, Seq + 1, T,
+	     {ExportCode, Employees, Regions, Departments}, {Amount + Total, SPay, RPay}).
 
 do_write(sale_new_note, Do, _Seq, [], _DictNotes, _Colors, ExportCode, {Amount, _SPay, _RPay})->
     L = "\r\n"

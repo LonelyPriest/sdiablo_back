@@ -1456,6 +1456,7 @@ handle_call({{filter_retailer, Order, Sort},
     Month = ?v(<<"month">>, Conditions, []),
     Date  = ?v(<<"date">>, Conditions, []),    
     SortConditions = lists:keydelete(<<"a.month">>, 1, lists:keydelete(<<"a.date">>, 1, NewConditions)),
+
     
     Sql = "select a.id"
 	", a.merchant" 

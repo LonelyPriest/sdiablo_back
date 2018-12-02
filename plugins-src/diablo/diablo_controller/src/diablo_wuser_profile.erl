@@ -546,7 +546,7 @@ handle_call({get_region_profile, Merchant}, _From, State) ->
 	    {ok, Regions} = ?shop:region(list, Merchant),
 	    {reply, {ok, Regions}, State};
 	[Regions] ->
-	    ?DEBUG("regions ~p of merchant ~p", [Regions, Merchant]),
+	    %% ?DEBUG("regions ~p of merchant ~p", [Regions, Merchant]),
 	    {reply, {ok, Regions}, State}
     end;
 
@@ -558,7 +558,7 @@ handle_call({get_department_profile, Merchant}, _From, State) ->
 	    {ok, Departments} = ?employ:department(list, Merchant),
 	    {reply, {ok, Departments}, State};
 	[Departments] ->
-	    ?DEBUG("departments ~p of merchant ~p", [Departments, Merchant]),
+	    %% ?DEBUG("departments ~p of merchant ~p", [Departments, Merchant]),
 	    {reply, {ok, Departments}, State}
     end;
 

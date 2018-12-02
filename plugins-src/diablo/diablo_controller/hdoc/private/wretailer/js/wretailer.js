@@ -523,7 +523,9 @@ function wretailerDetailCtrlProvide(
     var get_modified = diablo_get_modified; 
     $scope.update_retailer = function(oRetailer){
 	console.log(oRetailer);
-	oRetailer.intro = {id:oRetailer.intro_id, name:oRetailer.intro_name};
+	oRetailer.intro = {
+	    id:oRetailer.intro_id,
+	    name:oRetailer.intro_id === diablo_invalid_index ? "无" : oRetailer.intro_name};
 	
 	var callback = function(params){
 	    console.log(params);

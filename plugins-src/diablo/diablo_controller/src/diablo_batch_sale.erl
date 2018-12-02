@@ -521,6 +521,7 @@ handle_call({export_sale_new_detail, Merchant, Conditions}, _From, State)->
 	", e.name as firm"
 	", f.name as shop"
 	", g.name as bsaler"
+	", g.region as region_id"
 	", h.name as employee" 
 
 	" from (" 
