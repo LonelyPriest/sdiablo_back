@@ -1,7 +1,7 @@
 'use strict'
 
 function wretailerNewCtrlProvide(
-    $scope, wretailerService, diabloFilter, diabloPattern, diabloUtilsService, user){
+    $scope, wretailerService, diabloFilter, diabloPattern, diabloUtilsService, user, base){
     $scope.pattern = {name_address: diabloPattern.ch_name_address,
 		      tel_mobile:   diabloPattern.tel_mobile,
 		      decimal_2:    diabloPattern.decimal_2,
@@ -10,10 +10,9 @@ function wretailerNewCtrlProvide(
 		      name:         diabloPattern.chinese_name,
 		      id_card:      diabloPattern.id_card,
 		      card:         diabloPattern.card};
-
-    $scope.right = {master: rightAuthen.authen_master(user.type)};
-    
     $scope.shops = user.sortShops;
+
+    $scope.right = {master: rightAuthen.authen_master(user.type)};    
     if ($scope.right.master) {
 	$scope.retailer_types = wretailerService.retailer_types;
     } else {
@@ -21,6 +20,9 @@ function wretailerNewCtrlProvide(
 	    return t.id !== 2;
 	});
     };
+
+    var sale_mode = retailerUtils.sale_mode($scope.shops[0].id, base);
+    $scope.setting = {hide_pwd:retailerUtils.to_integer(sale_mode.charAt(9))}; 
     
     $scope.levels = diablo_retailer_levels;
     $scope.retailer = {
@@ -79,6 +81,9 @@ function wretailerDetailCtrlProvide(
     $scope.months          = retailerUtils.months();
     $scope.date_of_month   = retailerUtils.date_of_month();
     $scope.retailer_levels = diablo_retailer_levels;
+
+    var sale_mode = retailerUtils.sale_mode($scope.shops[0].id, base);
+    $scope.setting = {hide_pwd:retailerUtils.to_integer(sale_mode.charAt(9))}; 
     
     $scope.select         = {phone:undefined};
 
@@ -400,11 +405,12 @@ function wretailerDetailCtrlProvide(
 			return 0;
 		    }
 		}
-		else if (diablo_times_charge === promotion.rule_id) {
-		    return Math.floor(charge_balance / promotion.xtime);
-		} else {
-		    return undefined;
-		}
+		return 0;
+		// else if (diablo_times_charge === promotion.rule_id) {
+		//     return Math.floor(charge_balance / promotion.xtime);
+		// } else {
+		//     return undefined;
+		// }
 	    }();
 
 	    var ctime, stime;
@@ -414,8 +420,8 @@ function wretailerDetailCtrlProvide(
 	    if (is_unlimit_card(promotion.rule_id)) stime = dateFilter(params.stime, "yyyy-MM-dd");
 	    
 	    wretailerService.new_recharge({
+		shop:           params.retailer.select_shop.id, 
 		retailer:       retailer.id, 
-		shop:           params.retailer.select_shop.id,
 		employee:       params.retailer.select_employee.id, 
 		charge_balance: charge_balance,
 		cash:           retailerUtils.to_integer(params.charge),

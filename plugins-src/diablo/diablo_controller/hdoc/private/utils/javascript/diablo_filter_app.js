@@ -213,7 +213,7 @@ function filterProvider(){
 	function list_retailer_level() {
 	    return _retailerHttp.query(
 		{operation: "list_retailer_level"}).$promise;
-	};
+	}; 
 	
 	return{
 	    default_time: function(start, end){
@@ -567,8 +567,10 @@ function filterProvider(){
 			// console.log(phones);
 			return phones.map(function(r){
 			    return {id:      r.id,
-				    name:    r.name+ "," + r.mobile,
+				    name:    r.name+ "/" + r.mobile,
+				    wname:   r.name,
 				    birth:   r.birth.substr(5,8),
+				    wbirth:  r.birth,
 				    level:   r.level,
 				    mobile:  r.mobile,
 				    type_id: r.type_id,
@@ -579,6 +581,36 @@ function filterProvider(){
 				    balance: r.balance} 
 			})
 		    })
+	    },
+
+	    wretailer_charge: function(charge) {
+		return _retailerHttp.save({operation:"new_recharge"}, charge).$promise;
+	    },
+
+	    new_wretailer:function(r) {
+		return _retailerHttp.save(
+		    {operation:"new_w_retailer"},
+		    {name:     r.name,
+		     intro:    r.intro,
+		     py:       r.py,
+		     password: r.password, 
+		     mobile:   r.mobile,
+		     type:     r.type,
+		     level:    r.level,
+		     shop:     r.shop,
+		     birth:    r.birth}).$promise;
+	    },
+
+	    update_wretailer:function(r) {
+		return _retailerHttp.save(
+		    {operation: "update_w_retailer"},
+		    {id:       r.id,
+		     name:     r.name,
+		     py:       r.py,
+		     password: r.password,
+		     type:     r.type,
+		     birth:    dateFilter(r.birth, "yyyy-MM-dd"),
+		    }).$promise;
 	    },
 
 	    match_vfirm: function(viewValue, mode) {
@@ -594,10 +626,10 @@ function filterProvider(){
 		    {operation:'get_stock_by_barcode'}, {barcode:barcode, shop:shop, firm:firm}).$promise;
 	    },
 
-	    check_retailer_password: function(retailerId, password){
+	    check_retailer_password: function(retailerId, password, checkPwd){
 		return _retailerHttp.save(
 		    {operation: "check_w_retailer_password"},
-		    {id:retailerId, password:password}).$promise;
+		    {id:retailerId, password:password, check:checkPwd}).$promise;
 	    },
 
 	    check_retailer_region: function(retailerId, shopId) {

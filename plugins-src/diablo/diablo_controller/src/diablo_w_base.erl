@@ -899,6 +899,7 @@ sys_config() ->
 	      %% [6]: print title when on stock out
 	      %% [7]: print sale body on swiming comsume
 	      %% [8]: scanner device 0:idata 1:c40
+	      %% [9]: hide password for retailer
 	      {"p_balance",       "销售模式",             "000000000",  "0"},
 	      
 	      {"gen_ticket",      "自动生成电子卷",       "0",   "0"},

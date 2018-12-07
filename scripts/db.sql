@@ -1155,6 +1155,7 @@ create table w_charge_detail(
     cash            INTEGER not null default 0, -- cash
     card            INTEGER not null default 0, -- card
     wxin            INTEGER not null default 0, -- wxin
+    stock           VARCHAR(64) not null default '', 
     comment         VARCHAR(256) default null,
     
     entry_date      DATETIME default 0,

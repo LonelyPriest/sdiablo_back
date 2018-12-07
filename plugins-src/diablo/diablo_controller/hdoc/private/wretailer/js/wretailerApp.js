@@ -78,7 +78,7 @@ function wretailerConfig(angular) {
 	    when('/wretailer_new', {
 		templateUrl: '/private/wretailer/html/wretailer_new.html',
 		controller: 'wretailerNewCtrl',
-		resolve: angular.extend({}, user) 
+		resolve: angular.extend({}, user, base) 
 	    }).
 	    when('/wretailer_detail', {
 		templateUrl: '/private/wretailer/html/wretailer_detail.html',
@@ -204,7 +204,7 @@ function wretailerConfig(angular) {
 
 	this.charge_rules = [
 	    {name:"固定赠送模式", id:diablo_giving_charge, remark: "充值多少赠送固定金额"},
-	    {name:"N+1倍赠送模式", id:diablo_times_charge, remark: "充值N倍赠送1倍金额"},
+	    {name:"N倍模式",  id:diablo_times_charge, remark: "N倍充值"},
 	    {name:"次卡模式", id:diablo_theoretic_charge, remark: "充值与消费次数相关"},
 	    {name:"月卡模式", id:diablo_month_unlimit_charge, remark: "一个月内任意消费次数"},
 	    {name:"季卡模式", id:diablo_quarter_unlimit_charge, remark: "一个季度内内任意消费次数"},
@@ -219,9 +219,7 @@ function wretailerConfig(angular) {
 				{name:"半年卡模式", id:diablo_half_of_year_unlimit_charge}
 			       ];
 	
-	this.retailer_types = [{name: "普通会员", id:0},
-			       {name: "充值会员", id:1},
-			       {name: "系统会员", id:2}];
+	this.retailer_types = diablo_retailer_types;
 	
 	var http = $resource("/wretailer/:operation/:id",
     			     {operation: '@operation', id: '@id'});

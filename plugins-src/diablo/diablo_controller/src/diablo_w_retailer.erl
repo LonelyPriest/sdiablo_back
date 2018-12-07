@@ -20,7 +20,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 	 terminate/2, code_change/3]).
 
--export([retailer/2, retailer/3, retailer/4, default_profile/2]).
+-export([retailer/2, retailer/3, retailer/4, retailer/5, default_profile/2]).
 -export([charge/2, charge/3, threshold_card/4, threshold_card_good/3]).
 -export([score/2, score/3, ticket/2, ticket/3, get_ticket/3, get_ticket/4, make_ticket/3]).
 -export([filter/4, filter/6]).
@@ -78,12 +78,13 @@ retailer(update, Merchant, RetailerId, {Attrs, OldAttrs}) ->
 retailer(update_score, Merchant, RetailerId, Score) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {update_score, Merchant, RetailerId, Score});
-retailer(check_password, Merchant, RetailerId, Password) ->
-    Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {check_password, Merchant, RetailerId, Password});
 retailer(reset_password, Merchant, RetailerId, Password) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {reset_password, Merchant, RetailerId, Password}).
+
+retailer(check_password, Merchant, RetailerId, Password, CheckPwd) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {check_password, Merchant, RetailerId, Password, CheckPwd}).
 
 
 %% charge strategy
@@ -542,11 +543,14 @@ handle_call({update_score, Merchant, RetailerId, Score}, _From, State) ->
     {reply, Reply, State};
 
 
-handle_call({check_password, Merchant, RetailerId, Password}, _From, State) ->
+handle_call({check_password, Merchant, RetailerId, Password, CheckPwd}, _From, State) ->
     Sql = "select id, password, draw from w_retailer"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and id=" ++ ?to_s(RetailerId)
-	++ " and password=\'" ++ ?to_s(Password) ++ "\'"
+	++ case CheckPwd of
+	       ?YES -> " and password=\'" ++ ?to_s(Password) ++ "\'";
+	       ?NO -> []
+	   end
 	++ " and deleted=" ++ ?to_s(?NO),
 
     case ?sql_utils:execute(s_read, Sql) of
@@ -873,6 +877,7 @@ handle_call({recharge, Merchant, Attrs}, _From, State) ->
     SBalance    = ?v(<<"send_balance">>, Attrs, 0),
 
     ChargeId    = ?v(<<"charge">>, Attrs),
+    Stock       = ?v(<<"stock">>, Attrs, []),
     Comment     = ?v(<<"comment">>, Attrs, []), 
     Entry       = ?utils:current_time(format_localtime),
 
@@ -906,11 +911,11 @@ handle_call({recharge, Merchant, Attrs}, _From, State) ->
 				"insert into w_charge_detail(rsn"
 				    ", merchant, shop, employ, cid, retailer"
 				    ", ledate, lbalance, cbalance, sbalance"
-				    ", cash, card, wxin, comment, entry_date) values("
-				    ++ "\"" ++ ?to_s(SN) ++ "\","
+				    ", cash, card, wxin, stock, comment, entry_date) values("
+				    ++ "\'" ++ ?to_s(SN) ++ "\',"
 				    ++ ?to_s(Merchant) ++ ","
 				    ++ ?to_s(Shop) ++ ","
-				    ++ "\"" ++ ?to_s(Employee) ++ "\","
+				    ++ "\'" ++ ?to_s(Employee) ++ "\',"
 				    ++ ?to_s(ChargeId) ++ "," 
 				    ++ ?to_s(Retailer) ++ ","
 				    ++ "\'" ++ format_date(EndDate) ++ "\',"
@@ -920,8 +925,9 @@ handle_call({recharge, Merchant, Attrs}, _From, State) ->
 				    ++ ?to_s(Cash) ++ ","
 				    ++ ?to_s(Card) ++ ","
 				    ++ ?to_s(Wxin) ++ ","
-				    ++ "\"" ++ ?to_s(Comment) ++ "\"," 
-				    ++ "\"" ++ ?to_s(Entry) ++ "\")"
+				    ++ "\'" ++ ?to_s(Stock) ++ "\',"
+				    ++ "\'" ++ ?to_s(Comment) ++ "\'," 
+				    ++ "\'" ++ ?to_s(Entry) ++ "\')"
 			end,
 
 		    Rule = ?v(<<"rule_id">>, Charge, -1),
@@ -1558,7 +1564,9 @@ handle_call({filter_charge_detail, Merchant, Conditions, CurrentPage, ItemsPerPa
 	", a.retailer as retailer_id"
 	", a.ledate, a.lbalance"
 	", a.cbalance, a.sbalance, a.cash, a.card, a.wxin"
-	", a.comment, a.entry_date"
+	", a.stock" 
+	", a.comment"
+	", a.entry_date"
 	", b.name as retailer"
 	", b.mobile as mobile"
 	", c.name as shop"

@@ -147,7 +147,7 @@ var diablo_vip_mode = "0000";
 /*
  * sale mode
  */
-var diablo_sale_mode ="000000000";
+var diablo_sale_mode ="0000000000";
 /*
  * batch sale print mode, color or size or both
  */
@@ -314,6 +314,10 @@ var diablo_retailer_levels = [{id:0, level:0, name:"普通级"},
 			      {id:1, level:1, name:"金卡级"},
 			      {id:2, level:2, name:"白金级"},
 			      {id:3, level:3, name:"黑金级"}];
+
+var diablo_retailer_types = [{name: "普通会员", id:0},
+			     {name: "充值会员", id:1},
+			     {name: "系统会员", id:2}];
 
 var diablo_season = ["春", "夏", "秋", "冬"];
 var diablo_season2number = function(season){

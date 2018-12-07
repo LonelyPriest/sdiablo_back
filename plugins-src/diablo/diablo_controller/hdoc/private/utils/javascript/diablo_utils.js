@@ -179,6 +179,19 @@ diabloUtils.directive('barcodeScanner', function() {
 
 }).call(this);
 
+diabloUtils.directive('diabloDropdown', function () {
+    return function (scope, element, attrs) {
+        element.on("show.bs.dropdown", function () {	    
+            element.css("overflow", "inherit");
+	    console.log(1);
+        });
+	element.on("hide.bs.dropdown", function () {
+	    console.log(2);
+            element.css("overflow", "auto");
+        });
+    };
+});
+
 diabloUtils.directive('navtable', function() {
     return function(scope, element, attr){
 	

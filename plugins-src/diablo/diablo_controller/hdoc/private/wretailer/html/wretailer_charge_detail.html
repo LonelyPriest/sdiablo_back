@@ -88,6 +88,7 @@
 		    <th>微信</th>
 		    <th class="info">赠送金额</th>
 		    <th class="danger">累计余额</th>
+		    <th>货品</th> 
 		    <th>备注</th> 
 		    <th>充值日期</th>
 		    <th x-ng-if="right.master">操作</th>
@@ -116,7 +117,8 @@
 		    <td class="bg-orange">{{c.card}}</td>
 		    <td class="bg-teal">{{c.wxin}}</td>
 		    <td>{{c.sbalance}}</td>
-		    <td>{{c.accbalance}}</td> 
+		    <td>{{c.accbalance}}</td>
+		    <td>{{c.stock}}</td>
 		    <td>{{c.comment}}</td>
 		    <td>{{c.entry_date}}</td> 
 		    <td>

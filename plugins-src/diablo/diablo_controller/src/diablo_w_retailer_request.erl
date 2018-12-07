@@ -191,10 +191,12 @@ action(Session, Req, {"update_retailer_score", Id}, Payload) ->
     end;
 
 action(Session, Req, {"check_w_retailer_password", Id}, Payload) ->
+    ?DEBUG("check_w_retailer_password: Session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
     Password = ?v(<<"password">>, Payload),
+    CheckPwd = ?v(<<"check">>, Payload, ?YES),
 
-    case ?w_retailer:retailer(check_password, Merchant, Id, Password) of
+    case ?w_retailer:retailer(check_password, Merchant, Id, Password, CheckPwd) of
 	{ok, {Id, DrawId}} ->
 	    %% limt to withdraw
 	    Withdraw = 

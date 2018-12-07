@@ -21,7 +21,7 @@
       <!--BEGIN portlet-body-->
       <div class="portlet-body form">
 	<!--BEGIN from -->
-	<form class="form-horizontal" name="retailerNewForm" novalidate>
+	<form class="form-horizontal" name="rForm" novalidate>
 	  <!--BEGIN form body-->
 	  <div class="form-body">
 	    <div class="form-group"> 
@@ -34,13 +34,12 @@
 	      </div>
 	    </div>
 	  
-	    <!--Name-->
 	    <div class="form-group"> 
 	      <label class="col-sm-3 col-md-3 control-label">名称</label>
 	      <div class="col-sm-6 col-md-6">
 		<div class="input-group">
-		  <div x-ng-class="{'has-error': retailerNewForm.name.$invalid
-				   && !retailerNewForm.name.$pristine}">
+		  <div x-ng-class="{'has-error': rForm.name.$invalid
+				   && !rForm.name.$pristine}">
 		    <input type="text"
 			   class="form-control"
 			   name="name"
@@ -52,7 +51,7 @@
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div>
 	      </div>
-	      <div ng-show="retailerNewForm.name.$invalid && !retailerNewForm.name.$pristine">
+	      <div ng-show="rForm.name.$invalid && !rForm.name.$pristine">
 		<span class="fg-red">中文，只允许字母，数字，最少2个字符，不超过6个字符</span>
 	      </div> 
 	    </div>
@@ -74,7 +73,7 @@
 	  	  <i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
 		</span>
 	      </div>
-	      <div ng-show="retailerNewForm.intro.$invalid && !retailerNewForm.intro.$pristine">
+	      <div ng-show="rForm.intro.$invalid && !rForm.intro.$pristine">
 		<span class="fg-red">介绍人只能从下拉列表中获取</span>
 	      </div> 
 	    </div>
@@ -82,8 +81,7 @@
 	    <div class="form-group"> 
 	      <label class="col-sm-3 col-md-3 control-label">卡号</label>
 	      <div class="col-sm-6 col-md-6">
-		<div x-ng-class="{'has-error': retailerNewForm.card.$invalid
-				 && !retailerNewForm.card.$pristine}">
+		<div x-ng-class="{'has-error': rForm.card.$invalid && !rForm.card.$pristine}">
 		  <input type="text"
 			 class="form-control"
 			 name="card"
@@ -92,7 +90,7 @@
 			 x-ng-pattern="pattern.card"/>
 		</div>
 	      </div>
-	      <div ng-show="retailerNewForm.card.$invalid && !retailerNewForm.card.$pristine">
+	      <div ng-show="rForm.card.$invalid && !rForm.card.$pristine">
 		<span class="fg-red">数字，必需以9开头且不少于4位</span>
 	      </div> 
 	    </div>
@@ -100,8 +98,7 @@
 	    <div class="form-group"> 
 	      <label class="col-sm-3 col-md-3 control-label">身份证号码</label>
 	      <div class="col-sm-6 col-md-6">
-		<div x-ng-class="{'has-error': retailerNewForm.id_card.$invalid
-				 && !retailerNewForm.id_card.$pristine}">
+		<div x-ng-class="{'has-error': rForm.id_card.$invalid && !rForm.id_card.$pristine}">
 		  <input type="text"
 			 class="form-control"
 			 name="id_card"
@@ -110,7 +107,7 @@
 			 x-ng-pattern="pattern.id_card"/>
 		</div>
 	      </div>
-	      <div ng-show="retailerNewForm.id_card.$invalid && !retailerNewForm.id_card.$pristine">
+	      <div ng-show="rForm.id_card.$invalid && !rForm.id_card.$pristine">
 		<span class="fg-red">数字或字母，不少于8位</span>
 	      </div> 
 	    </div>
@@ -119,8 +116,7 @@
 	      <label class="col-sm-3 col-md-3 control-label">联系方式</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
-		  <div x-ng-class="{'has-error': retailerNewForm.mobile.$invalid
-				   && !retailerNewForm.mobile.$pristine}">
+		  <div x-ng-class="{'has-error': rForm.mobile.$invalid && !rForm.mobile.$pristine}">
 		    <input class="form-control" type="tel"
 			   name="mobile"
 			   required
@@ -132,8 +128,7 @@
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div>
 	      </div>
-	      <div ng-show="retailerNewForm.mobile.$invalid
-			    && !retailerNewForm.mobile.$pristine">
+	      <div ng-show="rForm.mobile.$invalid && !rForm.mobile.$pristine">
 		<span class="fg-red">请输入正确的电话或手机号码</span>
 	      </div>
 	    </div>
@@ -166,12 +161,11 @@
 	      </div>
 	    </div>
 
-	    <div x-ng-if="retailer.type.id===1" class="form-group">
+	    <div x-ng-if="!setting.hide_pwd && retailer.type.id===1" class="form-group">
 	      <label class="col-sm-3 col-md-3 control-label">取现密码</label>
 	      <div class="col-sm-6 col-md-6">
 		<div class="input-group">
-		  <div x-ng-class="{'has-error': retailerNewForm.pass.$invalid
-				   && !retailerNewForm.pass.$pristine}">
+		  <div x-ng-class="{'has-error': rForm.pass.$invalid && !rForm.pass.$pristine}">
 		    <input type="password"
 			   class="form-control"
 			   name="pass"
@@ -183,8 +177,7 @@
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div>
 	      </div>
-	      <div ng-show="retailerNewForm.pass.$invalid
-			    && !retailerNewForm.pass.$pristine">
+	      <div ng-show="rForm.pass.$invalid && !rForm.pass.$pristine">
 		<span class="fg-red">请输入6位数字串</span>
 	      </div> 
 	    </div> 
@@ -199,8 +192,8 @@
 	    <!-- 	       x-ng-model="retailer.balance" -->
 	    <!-- 	       x-ng-pattern="pattern.decimal_2"/> -->
 	    <!--   </div> -->
-	    <!--   <div ng-show="retailerNewForm.balance.$invalid -->
-	    <!-- 		    && !retailerNewForm.balance.$pristine"> -->
+	    <!--   <div ng-show="rForm.balance.$invalid -->
+	    <!-- 		    && !rForm.balance.$pristine"> -->
 	    <!-- 	<span class="fg-red">请输入正确的数字，支持两位小数</span> -->
 	    <!--   </div>  -->
 	    <!-- </div> -->
@@ -215,8 +208,8 @@
 	    <!-- 	       x-ng-model="retailer.consume" -->
 	    <!-- 	       x-ng-pattern="pattern.decimal_2"/> -->
 	    <!--   </div> -->
-	    <!--   <div ng-show="retailerNewForm.consume.$invalid -->
-	    <!-- 		    && !retailerNewForm.consume.$pristine"> -->
+	    <!--   <div ng-show="rForm.consume.$invalid -->
+	    <!-- 		    && !rForm.consume.$pristine"> -->
 	    <!-- 	<span class="fg-red">请输入正确的数字，支持两位小数</span> -->
 	    <!--   </div>  -->
 	    <!-- </div> -->
@@ -231,8 +224,7 @@
 		       x-ng-model="retailer.score"
 		       x-ng-pattern="pattern.score"/>
 	      </div>
-	      <div ng-show="retailerNewForm.score.$invalid
-			    && !retailerNewForm.score.$pristine">
+	      <div ng-show="rForm.score.$invalid && !rForm.score.$pristine">
 		<span class="fg-red">请输入数字串</span>
 	      </div> 
 	    </div>
@@ -240,8 +232,7 @@
 	    <div class="form-group">
 	      <label class="col-sm-3 col-md-3 control-label">联系地址</label>
 	      <div class="col-sm-6 col-md-6">
-		<div x-ng-class="{'has-error':retailerNewForm.address.$invalid
-				 && !retailerNewForm.address.$pristine}">
+		<div x-ng-class="{'has-error':rForm.address.$invalid && !rForm.address.$pristine}">
 		  <input type="text"
 			 class="form-control"
 			 name="address"
@@ -250,8 +241,7 @@
 			 x-ng-pattern="pattern.name_address"/>
 		</div>
 	      </div>
-	      <div ng-show="retailerNewForm.address.$invalid
-			    && !retailerNewForm.address.$pristine">
+	      <div ng-show="rForm.address.$invalid && !rForm.address.$pristine">
 		<span class="fg-red">必需以中文开头，只允许字母，数字</span>
 	      </div> 
 	    </div> 
@@ -263,7 +253,7 @@
 	    <div class="col-md-offset-3 col-md-6">
 	      <span class="pull-right">
 		<button class="btn btn-primary"
-			ng-disabled="retailerNewForm.$invalid" 
+			ng-disabled="rForm.$invalid" 
 			x-ng-click="new_wretailer(retailer)">确认</button>
 		<button class="btn btn-warning"
 			x-ng-click="cancel()">取消</button>

@@ -618,6 +618,9 @@ var wsaleUtils = function(){
 	},
 
 	to_decimal:function(v){
+	    if (angular.isUndefined(v) || isNaN(v) || (!v && v !== 0)){
+		return 0;
+	    }
 	    return diablo_rdight(v, 2);
 	},
 

@@ -199,13 +199,13 @@
 			      x-ng-click="delete_retailer(r)">删除
 			<i class="glyphicon glyphicon-erase"></i></button>
 
-		      <button x-ng-if="right.reset_password && r.type_id===1"
+		      <button x-ng-if="!setting.hide_pwd && right.reset_password && r.type_id===1"
 			      class="btn diablo-button blue-hoki"
 			      x-ng-click="reset_password(r)">重置密码
 			<i class="icon-key"></i></button>
 
 		      <button x-ng-if="right.update_retailer_score"
-			      class="btn diablo-button red-sunglo"
+			      class="btn diablo-button yellow"
 			      x-ng-click="update_score(r)">积分
 			<i class="glyphicon glyphicon-edit"></i></button> 
 		    </td>
@@ -475,9 +475,7 @@
 	  </div>
 	</div>
 
-	<div x-ng-if="!params.retailer.no_vip
-		      && params.retailer.type_id===0
-		      && params.retailer.type.id===1"
+	<div x-ng-if="!params.retailer.no_vip && params.retailer.type_id===0 && params.retailer.type.id===1"
 	     class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label">取现密码</label>
 	  <div class="col-sm-10 col-md-10"> 
@@ -675,24 +673,12 @@
 
 	<div x-ng-if="params.retailer.select_charge.rule_id===0
 		      || params.retailer.select_charge.rule_id===1" class="form-group">
-	  <span class="col-md-3 col-sm-3 col-xs-3 control-label">
-	    赠送金额
-	  </span>
+	  <span class="col-md-3 col-sm-3 col-xs-3 control-label"> 赠送金额</span>
 	  <div class="col-md-6 col-sm-6 col-xs-6">
-	    <div x-ng-switch on="params.retailer.select_charge.rule_id">
-	      <input x-ng-switch-when=0
-		     type="text"
-		     class="form-control fg-red"
-		     value="{{params.retailer.select_charge.balance}}"
-		     readonly />
-	    </div>
-	    <div x-ng-switch on="params.retailer.select_charge.rule_id">
-	      <input x-ng-switch-when=1
-		     type="text"
-		     class="form-control fg-red"
-		     value="{{(params.charge + params.card + params.wxin) / params.retailer.select_charge.xtime}}"
-		     readonly />
-	    </div>
+	    <input type="text"
+		   class="form-control fg-red"
+		   value="{{params.retailer.select_charge.balance}}"
+		   readonly /> 
 	  </div> 
 	</div>
 

@@ -492,3 +492,6 @@ alter table print_template add column dual_print TINYINT default -1  after print
 
 --2018-11-30
 alter table w_retailer add column intro INTEGER default -1 after name;
+
+--2018-12-06
+alter table w_charge_detail add column stock VARCHAR(64) not null default '' after wxin;
