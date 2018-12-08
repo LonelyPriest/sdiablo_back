@@ -12,12 +12,14 @@ function stockPromotionNewProvide(
 	semi_number :diabloPattern.semicolon_number
     };
     
-    $scope.rules = purchaserService.promotion_rules;
+    $scope.rules  = purchaserService.promotion_rules;
+    $scope.prules = purchaserService.promotion_prules;
 
     var now = $.now();
     $scope.promotion = {
 	// shop:      $scope.shops[0],
 	rule       :$scope.rules[0],
+	prule      :$scope.prules[0],
 	discount   :100,
 	sdate      :now,
 	edate      :now +  diablo_day_millisecond * 90
@@ -38,11 +40,13 @@ function stockPromotionNewProvide(
 	    $scope.promotion.edate = now +  diablo_day_millisecond * 90;
 	}
 
-	var rule_id = $scope.promotion.rule.id; 
+	var rule_id = $scope.promotion.rule.id;
+	var prule_id = $scope.promotion.prule.id;
 	var p = {
 	    // shop:     $scope.promotion.shop.id,
 	    name:     $scope.promotion.name,
 	    rule:     rule_id,
+	    prule:    prule_id,
 	    discount: rule_id === 0 ? $scope.promotion.discount : undefined,
 	    consume:  rule_id === 1 || rule_id === 2 ? $scope.promotion.consume : undefined,
 	    reduce:   rule_id === 1 || rule_id === 2 ? $scope.promotion.reduce : undefined,
@@ -86,7 +90,8 @@ function stockPromotionDetailProvide(
 	balance: diabloPattern.decimal_2,
 	comment: diabloPattern.comment};
     
-    $scope.rules = purchaserService.promotion_rules; 
+    $scope.rules = purchaserService.promotion_rules;
+    $scope.prules = purchaserService.promotion_prules;
     $scope.refresh = function(){
 	wgoodService.list_w_promotion().then(function(promotions){
 	    console.log(promotions);
@@ -94,6 +99,7 @@ function stockPromotionDetailProvide(
 	    var order = 0;
 	    angular.forEach(promotions, function(p){
 		p.rule = diablo_get_object(p.rule_id, $scope.rules);
+		p.prule = diablo_get_object(p.prule_id, $scope.prules); 
 		p.order_id = ++order;
 	    });
 	    

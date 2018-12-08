@@ -495,3 +495,6 @@ alter table w_retailer add column intro INTEGER default -1 after name;
 
 --2018-12-06
 alter table w_charge_detail add column stock VARCHAR(64) not null default '' after wxin;
+
+--2018-12-08
+alter table w_promotion add column prule TINYINT default 0 after sdiscount;

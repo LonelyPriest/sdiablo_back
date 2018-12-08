@@ -224,7 +224,19 @@
 		<span class="fg-red">格式80;75;70</span>
 	      </div> 
 	    </div>
-
+	    
+	    <div class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">促销价格</label>
+	      <div class="col-sm-6 col-md-6">
+		<div class="input-group">
+		  <select class="form-control"
+			  x-ng-model="promotion.prule"
+			  x-ng-options="p as p.name for p in prules"> 
+		  </select>
+		  <span class="input-group-addon bg-white fg-red">*</span>
+		</div> 
+	      </div>
+	    </div>
 	    
 	    <div class="form-group">
 	      <label class="col-md-3 col-sm-3 control-label">开始日期</label>

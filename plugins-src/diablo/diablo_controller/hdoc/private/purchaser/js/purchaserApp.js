@@ -361,6 +361,11 @@ function stockConfg(angular){
 	    {name: "M件N折",   id:3, remakr: "一件8折二件7折"},
 	    {name: "M件减免N", id:4, remakr: "一件少50二件少100"}
 	];
+
+	this.promotion_prules = [
+	    {id:0, name: "针对折后价促销"},
+	    {id:1, name: "针对吊牌价促销"}
+	];
 	
 	this.export_type = {trans:0, trans_note:1, stock:2, shift:3, shift_note:4};
 

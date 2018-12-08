@@ -831,12 +831,13 @@ function filterProvider(){
 		// }
 		else {
 		    return list_w_promotion().then(function(promotions){
-			// console.log(promotions);
+			console.log(promotions);
 			_promotions = promotions.map(function(p){
 			    return {
 				id:        p.id,
 				name:      p.name,
 				rule_id:   p.rule_id,
+				prule_id:  p.prule_id,
 				discount:  p.discount,
 				cmoney:    p.cmoney,
 				rmoney:    p.rmoney,

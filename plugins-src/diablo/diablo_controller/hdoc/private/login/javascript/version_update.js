@@ -1119,7 +1119,7 @@ var version_update = function(){
 	    }
 
 	    var apk = "<div class='update-content'>"
-		+ "<a type='button' href='/qzg_stock_fix-release2018-12-01_10-27-30.apk' download=''>"
+		+ "<a type='button' href='/qzg_stock_fix-release2018-12-08_20-32-40.apk' download=''>"
 		+ "<h5 class='text-center fg-pink'>盘点机软件(安卓)下载</h5>"
 		+ "</a>"
 		+ "</div>"

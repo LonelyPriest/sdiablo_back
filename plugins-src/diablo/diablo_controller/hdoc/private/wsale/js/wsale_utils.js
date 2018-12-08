@@ -865,12 +865,17 @@ var wsaleCalc = function(){
 			count = 0, totalPay = 0, rmoney = 0, vdiscount = 0, payAll = 0; 
 			angular.forEach(s.stocks, function(stock) {
 			    count = wsaleCalc.get_inventory_count(stock, saleMode);
-			    totalPay += diablo_price(stock.tag_price, stock.discount) * count;
+			    if (pm.prule_id === 0) {
+				totalPay += diablo_price(stock.tag_price, stock.discount) * count; 
+			    } else if (pm.prule_id === 1) {
+				totalPay += stock.tag_price * count; 
+			    }
+			    
 			    payAll += stock.tag_price * count;
 			}); 
 			totalPay = wsaleUtils.to_decimal(totalPay);
 
-			if (Math.abs(totalPay) > pm.cmoney) {
+			if (Math.abs(totalPay) >= pm.cmoney) {
 			    if (totalPay > 0)
 				rmoney = Math.floor(totalPay / pm.cmoney) * pm.rmoney;
 			    else
@@ -881,7 +886,11 @@ var wsaleCalc = function(){
 			vdiscount = diablo_discount(rmoney, payAll);
 
 			angular.forEach(s.stocks, function(stock) {
-			    stock.fdiscount = wsaleUtils.to_decimal(stock.discount - vdiscount);
+			    if (pm.prule_id === 0) {
+				stock.fdiscount = wsaleUtils.to_decimal(stock.discount - vdiscount); 
+			    } else if (pm.prule_id === 1) {
+				stock.fdiscount = wsaleUtils.to_decimal(diablo_full_discount - vdiscount); 
+			    }
 			    stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
 			}); 
 		    }

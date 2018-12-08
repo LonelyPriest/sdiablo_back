@@ -55,6 +55,7 @@ handle_call({new_promotion, Merchant, Attrs}, _From, State) ->
 
     %% Shop     = ?v(<<"shop">>, Attrs, -1),
     Name     = ?v(<<"name">>, Attrs),
+    PRule    = ?v(<<"prule">>, Attrs, 0),
     Rule     = ?v(<<"rule">>, Attrs),
     Discount = case Rule of
 		   0 -> ?v(<<"discount">>, Attrs, 100);
@@ -114,7 +115,7 @@ handle_call({new_promotion, Merchant, Attrs}, _From, State) ->
     case ?sql_utils:execute(s_read, Sql) of
 	{ok, []} ->
 	    Sql1 = "insert into w_promotion(merchant, name"
-		", rule, discount, cmoney, rmoney, scount, sdiscount, sdate, edate, remark"
+		", rule, discount, cmoney, rmoney, scount, sdiscount, prule, sdate, edate, remark"
 		", entry) values("
 		++ ?to_s(Merchant) ++ ","
 		%% ++ ?to_s(Shop) ++ ","
@@ -126,6 +127,8 @@ handle_call({new_promotion, Merchant, Attrs}, _From, State) ->
 		
 		++ "\'" ++ ?to_s(SCount) ++ "\',"
 		++ "\'" ++ ?to_s(SDiscount) ++ "\',"
+
+		++ ?to_s(PRule) ++ ","
 		
 		++ "\'" ++ ?to_s(SDate) ++ "\',"
 		++ "\'" ++ ?to_s(EDate) ++ "\',"
@@ -193,6 +196,8 @@ handle_call({list_promotion, Merchant}, _From, State) ->
 
 	", scount"
 	", sdiscount"
+
+	", prule as prule_id"
 	
 	", sdate"
 	", edate"

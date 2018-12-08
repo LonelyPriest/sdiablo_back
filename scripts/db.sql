@@ -587,6 +587,8 @@ create table w_promotion(
 
     scount          VARCHAR(32) default '',
     sdiscount       VARCHAR(32) default '',
+
+    prule           TINYINT default 0, -- 0:final price 1:tag_price
     
     sdate           DATE default 0,
     edate           DATE default 0,
