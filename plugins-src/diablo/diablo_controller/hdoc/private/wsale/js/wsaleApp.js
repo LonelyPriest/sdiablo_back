@@ -878,7 +878,8 @@ function wsaleNewProvide(
 			    var balance = params.retailer.balance + params.charge_balance;
 			    $scope.select.retailer = params.retailer;
 			    $scope.select.retailer.balance = balance;
-			    $scope.set_retailer(); 
+			    // $scope.set_retailer();
+			    $scope.on_select_retailer();
 			    $scope.select.employee = params.employee;
 			    $scope.gift_sale(stock);
 			    dialog.response_with_callback(
@@ -1068,7 +1069,8 @@ function wsaleNewProvide(
 			balance: 0
 		    }; 
 		    $scope.select.retailer = nRetailer;
-		    $scope.set_retailer();
+		    // $scope.set_retailer();
+		    $scope.on_select_retailer();
 	        } else {
 	    	    dialog.set_error("新增会员", result.ecode);
 	    	}
