@@ -281,15 +281,17 @@ read(Pool, Sql) ->
     Result =
         case mysql:fetch(Pool, Sql, ?SQL_TIME_OUT) of
             {data, #mysql_result{rows=[]}} ->
-		{ok, []};
-
+		{ok, []}; 
 	    {data, #mysql_result{fieldinfo=FieldInfo, rows=Rows}} ->
                 Fields = [Field || {_, Field, _, _} <- FieldInfo],
                 %% ?DEBUG("fields ~p~nRows ~p", [Fields, Rows]),
                 {ok, sql_result(Fields, Rows, [])};
 
             {error, #mysql_result{error=Error, errcode=ErrCode}} ->
-                {error, {ErrCode, Error}}
+                {error, {ErrCode, Error}};
+	    {error, _Error} ->
+		?DEBUG("db error ~ts", [?to_b(_Error)]),
+		{error, ?err(9001, "unkown db error")}
         end,
     Result.
 

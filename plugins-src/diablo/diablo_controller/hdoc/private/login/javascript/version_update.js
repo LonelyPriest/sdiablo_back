@@ -1,5 +1,10 @@
 var version_update = function(){
     var updates = [
+	{date: "2018-12-13",
+	 content:
+	 ["修正开单时，新增会员无法实时打会员折扣的问题"]
+	},
+	
 	{date: "2018-12-08",
 	 content:
 	 ["开单页面可新增会员",
