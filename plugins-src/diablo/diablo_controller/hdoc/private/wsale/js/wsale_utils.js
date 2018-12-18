@@ -947,7 +947,11 @@ var wsaleCalc = function(){
 			}
 
 			angular.forEach(s.stocks, function(stock) {
-			    stock.fdiscount = vdiscount;
+			    if (vdiscount !== 0) {
+				stock.fdiscount = vdiscount;
+			    } else {
+				stock.fdiscount = stock.discount;
+			    }
 			    stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
 			}); 
 		    } 
