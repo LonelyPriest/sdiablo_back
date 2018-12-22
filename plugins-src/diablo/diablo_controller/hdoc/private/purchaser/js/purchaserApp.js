@@ -617,10 +617,11 @@ function stockConfg(angular){
 	/*
 	 * update batch
 	 */
-	this.update_w_inventory_batch = function(condition, attrs){
+	this.update_w_inventory_batch = function(match, condition, attrs){
 	    return http.save(
 		{operation: "update_w_inventory_batch"},
-		{condition: condition,
+		{match: angular.isDefined(match) ? match.op : undefined,
+		 condition: condition,
 		 attrs: attrs}).$promise;
 	};
 

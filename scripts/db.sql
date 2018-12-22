@@ -582,8 +582,8 @@ create table w_promotion(
     
     rule            TINYINT not null default -1, 
     discount        DECIMAL(3, 0)  not null default 100,
-    cmoney          DECIMAL(10, 2) not null default 0,  -- consume money
-    rmoney          DECIMAL(10, 2) not null default 0,  -- reduce money
+    cmoney          VARCHAR(32) default '',  -- consume money
+    rmoney          VARCHAR(32) default '',  -- reduce money
 
     scount          VARCHAR(32) default '',
     sdiscount       VARCHAR(32) default '',

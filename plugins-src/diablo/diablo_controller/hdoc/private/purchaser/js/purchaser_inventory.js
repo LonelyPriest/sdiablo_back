@@ -2304,13 +2304,13 @@ function purchaserInventoryDetailCtrlProvide(
 			    });
 			}
 			
-			d.isAlarm = false;
-			if (d.alarm_day !== diablo_nolimit_day && 0 !== d.amount) {
-			    var limit = diablo_day_millisecond * d.alarm_day;
-			    if (diablo_set_date(d.entry_date) + limit < now ) {
-				d.isAlarm = true;
-			    }
-			}
+			// d.isAlarm = false;
+			// if (d.alarm_day !== diablo_nolimit_day && 0 !== d.amount) {
+			//     var limit = diablo_day_millisecond * d.alarm_day;
+			//     if (diablo_set_date(d.entry_date) + limit < now ) {
+			// 	d.isAlarm = true;
+			//     }
+			// }
 			
 			d.expire_date = diablo_none;
 			var expire = diablo_nolimit_day;
@@ -2867,7 +2867,7 @@ function purchaserInventoryDetailCtrlProvide(
 		});
 
 	console.log(condition);
-
+	
 	var callback = function(params){
 	    console.log(params);
 	    var update = {
@@ -2880,7 +2880,9 @@ function purchaserInventoryDetailCtrlProvide(
 		sprice: params.select.sprice.id
 	    };
 	    
-	    purchaserService.update_w_inventory_batch(condition, update).then(function(result){
+	    purchaserService.update_w_inventory_batch(
+		$scope.match, condition, update
+	    ).then(function(result){
 		console.log(result);
 		var s = "";
 		if ( 0 !== stockUtils.to_integer(update.tag_price))

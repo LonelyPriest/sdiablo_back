@@ -103,9 +103,9 @@ purchaser_inventory(set_promotion, Merchant, Promotions, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {set_promotion, Merchant, Promotions, Conditions});
 
-purchaser_inventory(update_batch, Merchant, Attrs, Conditions) ->
+purchaser_inventory({update_batch, MatchMode}, Merchant, Attrs, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {update_batch, Merchant, Attrs, Conditions});
+    gen_server:call(Name, {{update_batch, MatchMode}, Merchant, Attrs, Conditions});
 
 purchaser_inventory(set_gift, Merchant, Attrs, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -2385,12 +2385,10 @@ handle_call({set_promotion, Merchant, Promotions, Conditions}, _From, State) ->
     {reply, Reply, State};
 
 
-handle_call({update_batch, Merchant, Attrs, Conditions}, _From, State) ->
-    ?DEBUG("update_batch with merchant ~p, attrs ~p, conditions ~p",
-	   [Merchant, Attrs, Conditions]), 
-    Sqls = ?w_good_sql:inventory(
-	     update_batch, Merchant, Attrs, Conditions),
-
+handle_call({{update_batch, MatchMode}, Merchant, Attrs, Conditions}, _From, State) ->
+    ?DEBUG("update_batch: like ~p, merchant ~p, attrs ~p, conditions ~p",
+	   [MatchMode, Merchant, Attrs, Conditions]), 
+    Sqls = ?w_good_sql:inventory({update_batch, MatchMode}, Merchant, Attrs, Conditions), 
     Reply = ?sql_utils:execute(transaction, Sqls, Merchant),
     {reply, Reply, State};
 
@@ -2405,13 +2403,19 @@ handle_call({set_gift, Merchant, Attrs, Conditions}, _From, State) ->
     {reply, Reply, State};
 
 handle_call({set_offer, Merchant, Attrs, Conditions}, _From, State) ->
-    ?DEBUG("set_offer with merchant ~p, attrs ~p, conditions ~p", [Merchant, Attrs, Conditions]), 
-    StockState = case ?v(<<"state">>, Attrs) =:= 0 of
-		    true -> 3;
-		    false -> 0
-		end,
-    Sql = ?w_good_sql:inventory(set_offer, Merchant, StockState, Conditions), 
-    Reply = ?sql_utils:execute(write, Sql, StockState),
+    ?DEBUG("set_offer with merchant ~p, attrs ~p, conditions ~p", [Merchant, Attrs, Conditions]),
+    Offer = 
+	case ?v(<<"state">>, Attrs, 0) =:= 0 orelse ?v(<<"state">>, Attrs, 0) =:= ?INVALID_OR_EMPTY of
+	    true -> 3;
+	    false -> 0
+	end,
+	    
+    %% StockState = case ?v(<<"state">>, Attrs) =:= 0 of
+    %% 		    true -> 3;
+    %% 		    false -> 0
+    %% 		end,
+    Sql = ?w_good_sql:inventory(set_offer, Merchant, Offer, Conditions), 
+    Reply = ?sql_utils:execute(write, Sql, Offer),
     {reply, Reply, State};
 
 handle_call({update_stock_alarm, Merchant, Attrs, Conditions}, _From, State) ->

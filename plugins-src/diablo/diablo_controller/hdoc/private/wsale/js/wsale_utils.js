@@ -431,122 +431,122 @@ var wsaleUtils = function(){
 	    return scores;
 	},
 
-	calc_with_promotion: function(pmoneys, round){
-	    var balance = 0;
-	    var rbalance = 0;
-	    for ( var i=0, l=pmoneys.length; i<l; i++){
-		var p = pmoneys[i].p;
-		balance += pmoneys[i].money; 
+	// calc_with_promotion: function(pmoneys, round){
+	//     var balance = 0;
+	//     var rbalance = 0;
+	//     for ( var i=0, l=pmoneys.length; i<l; i++){
+	// 	var p = pmoneys[i].p;
+	// 	balance += pmoneys[i].money; 
 		
-		if (p.rule_id === 1){
-		    if (pmoneys[i].money >= 0){
-			rbalance += Math.floor(pmoneys[i].money / p.cmoney) *  p.rmoney; 
-		    } else {
-			rbalance += Math.ceil(pmoneys[i].money / p.cmoney) *  p.rmoney; 
-		    }
-		} 
-	    }
+	// 	if (p.rule_id === 1){
+	// 	    if (pmoneys[i].money >= 0){
+	// 		rbalance += Math.floor(pmoneys[i].money / p.cmoney) *  p.rmoney; 
+	// 	    } else {
+	// 		rbalance += Math.ceil(pmoneys[i].money / p.cmoney) *  p.rmoney; 
+	// 	    }
+	// 	} 
+	//     }
 
-	    // console.log(round);
-	    if (angular.isUndefined(round) || round) 
-		return {balance: diablo_round(balance - rbalance), rbalance: rbalance};
-	    else
-		return {balance: wsaleUtils.to_decimal(balance - rbalance), rbalance: rbalance};
-	},
+	//     // console.log(round);
+	//     if (angular.isUndefined(round) || round) 
+	// 	return {balance: diablo_round(balance - rbalance), rbalance: rbalance};
+	//     else
+	// 	return {balance: wsaleUtils.to_decimal(balance - rbalance), rbalance: rbalance};
+	// },
 
-	calc_discount_of_rmoney: function(fprice, count, promotion, pmoneys, inventories){
-	    // var r = {}; 
-	    if (promotion.rule_id === 0 ){
-		    return diablo_full_discount; 
-	    } else if (promotion.rule_id === 1){
-		var balance = 0;
-		var total_balance = 0;
-		var rmoney = 0;
+	// calc_discount_of_rmoney: function(fprice, count, promotion, pmoneys, inventories){
+	//     // var r = {}; 
+	//     if (promotion.rule_id === 0 ){
+	// 	    return diablo_full_discount; 
+	//     } else if (promotion.rule_id === 1){
+	// 	var balance = 0;
+	// 	var total_balance = 0;
+	// 	var rmoney = 0;
 		
-		for ( var i=0, l=pmoneys.length; i<l; i++ ){
-		    var p = pmoneys[i].p;
-		    if (promotion.id === p.id) {
-			if (p.rule_id === 1) {
-			    if (pmoneys[i].money >= 0){
-				rmoney = Math.floor(pmoneys[i].money / p.cmoney) * p.rmoney; 
-			    } else {
-				rmoney = Math.ceil(pmoneys[i].money / p.cmoney) * p.rmoney; 
-			    }
-			    total_balance += pmoneys[i].money;
-			    balance += pmoneys[i].money - rmoney;
-			} 
-		    } 
-		}
-		console.log(total_balance, balance, rmoney);
+	// 	for ( var i=0, l=pmoneys.length; i<l; i++ ){
+	// 	    var p = pmoneys[i].p;
+	// 	    if (promotion.id === p.id) {
+	// 		if (p.rule_id === 1) {
+	// 		    if (pmoneys[i].money >= 0){
+	// 			rmoney = Math.floor(pmoneys[i].money / p.cmoney) * p.rmoney; 
+	// 		    } else {
+	// 			rmoney = Math.ceil(pmoneys[i].money / p.cmoney) * p.rmoney; 
+	// 		    }
+	// 		    total_balance += pmoneys[i].money;
+	// 		    balance += pmoneys[i].money - rmoney;
+	// 		} 
+	// 	    } 
+	// 	}
+	// 	console.log(total_balance, balance, rmoney);
 		
-		if (rmoney !== 0 ){
-		    return diablo_discount(balance, total_balance);
-		} else {
-		    return diablo_full_discount;
-		}
-	    } else if (promotion.rule_id === 2) {
-		if (count >= 0)
-		    rmoney = fprice * Math.floor(count / (promotion.cmoney + promotion.rmoney)) * promotion.rmoney;
-		else
-		    rmoney = fprice * Math.ceil(count / (promotion.cmoney + promotion.rmoney)) * promotion.rmoney;
+	// 	if (rmoney !== 0 ){
+	// 	    return diablo_discount(balance, total_balance);
+	// 	} else {
+	// 	    return diablo_full_discount;
+	// 	}
+	//     } else if (promotion.rule_id === 2) {
+	// 	if (count >= 0)
+	// 	    rmoney = fprice * Math.floor(count / (promotion.cmoney + promotion.rmoney)) * promotion.rmoney;
+	// 	else
+	// 	    rmoney = fprice * Math.ceil(count / (promotion.cmoney + promotion.rmoney)) * promotion.rmoney;
 
-		var calc = wsaleUtils.to_decimal(fprice * count);
-		return diablo_discount(calc - rmoney, calc);
-	    } 
-	},
+	// 	var calc = wsaleUtils.to_decimal(fprice * count);
+	// 	return diablo_discount(calc - rmoney, calc);
+	//     } 
+	// },
 
-	calc_discount_of_brand_money:function(saleMode, stock, stockWithRule3) {
-	    // var sameBrandStocks = [];
-	    var sellTotal = 0;
-	    for (var i=0, l=stockWithRule3.length; i<l; i++) {
-		sellTotal += wsaleCalc.get_inventory_count(stockWithRule3[i], saleMode);
-	    }
+	// calc_discount_of_brand_money:function(saleMode, stock, stockWithRule3) {
+	//     // var sameBrandStocks = [];
+	//     var sellTotal = 0;
+	//     for (var i=0, l=stockWithRule3.length; i<l; i++) {
+	// 	sellTotal += wsaleCalc.get_inventory_count(stockWithRule3[i], saleMode);
+	//     }
 
-	    // get valid discount
-	    var scounts = stock.promotion.scount.split(diablo_semi_seperator);
-	    var sdiscounts = stock.promotion.sdiscount.split(diablo_semi_seperator);
+	//     // get valid discount
+	//     var scounts = stock.promotion.scount.split(diablo_semi_seperator);
+	//     var sdiscounts = stock.promotion.sdiscount.split(diablo_semi_seperator);
 
-	    var selectDiscount = diablo_full_discount;
-	    for (var i=0, l=scounts.length; i<l; i++) {
-	    	if ( wsaleUtils.to_integer(sellTotal) >= wsaleUtils.to_integer(scounts[i]) ) {
-	    	    selectDiscount = wsaleUtils.to_float(sdiscounts[i]);
-	    	}
-	    }
+	//     var selectDiscount = diablo_full_discount;
+	//     for (var i=0, l=scounts.length; i<l; i++) {
+	//     	if ( wsaleUtils.to_integer(sellTotal) >= wsaleUtils.to_integer(scounts[i]) ) {
+	//     	    selectDiscount = wsaleUtils.to_float(sdiscounts[i]);
+	//     	}
+	//     }
 
-	    angular.forEach(stockWithRule3, function(one) {
-	    	one.rdiscount = one.discount < selectDiscount ? one.discount : selectDiscount; 
-	    });
+	//     angular.forEach(stockWithRule3, function(one) {
+	//     	one.rdiscount = one.discount < selectDiscount ? one.discount : selectDiscount; 
+	//     });
 
-	    return stockWithRule3;
-	},
+	//     return stockWithRule3;
+	// },
 
-	calc_discount_of_minus_money:function(saleMode, stock, stockWithRule4) {
-	    var sellTotal = 0;
-	    var pay = 0; 
-	    for (var i=0, l=stockWithRule4.length; i<l; i++) {
-		sellTotal += wsaleCalc.get_inventory_count(stockWithRule4[i], saleMode);
-		pay += stockWithRule4[i].calc;
-	    }
+	// calc_discount_of_minus_money:function(saleMode, stock, stockWithRule4) {
+	//     var sellTotal = 0;
+	//     var pay = 0; 
+	//     for (var i=0, l=stockWithRule4.length; i<l; i++) {
+	// 	sellTotal += wsaleCalc.get_inventory_count(stockWithRule4[i], saleMode);
+	// 	pay += stockWithRule4[i].calc;
+	//     }
 
-	    // get valid discount
-	    var scounts = stock.promotion.scount.split(diablo_semi_seperator);
-	    var minus = stock.promotion.sdiscount.split(diablo_semi_seperator);
+	//     // get valid discount
+	//     var scounts = stock.promotion.scount.split(diablo_semi_seperator);
+	//     var minus = stock.promotion.sdiscount.split(diablo_semi_seperator);
 
-	    var selectMinus = 0;
-	    for (var i=0, l=scounts.length; i<l; i++) {
-	    	if ( wsaleUtils.to_integer(sellTotal) >= wsaleUtils.to_integer(scounts[i]) ) {
-	    	    selectMinus = wsaleUtils.to_integer(minus[i]);
-	    	}
-	    }
+	//     var selectMinus = 0;
+	//     for (var i=0, l=scounts.length; i<l; i++) {
+	//     	if ( wsaleUtils.to_integer(sellTotal) >= wsaleUtils.to_integer(scounts[i]) ) {
+	//     	    selectMinus = wsaleUtils.to_integer(minus[i]);
+	//     	}
+	//     }
 
-	    var vdiscount = diablo_discount(selectMinus, pay);
+	//     var vdiscount = diablo_discount(selectMinus, pay);
 	    
-	    angular.forEach(stockWithRule4, function(one) {
-		one.rdiscount = wsaleUtils.to_decimal(one.discount - vdiscount);
-	    });
+	//     angular.forEach(stockWithRule4, function(one) {
+	// 	one.rdiscount = wsaleUtils.to_decimal(one.discount - vdiscount);
+	//     });
 
-	    return stockWithRule4;
-	},
+	//     return stockWithRule4;
+	// },
 
 	calc_with_score: function(pscores, verificate){
 	    // console.log(pscores, verificate);
@@ -852,8 +852,7 @@ var wsaleCalc = function(){
 	    angular.forEach(stocksSortWithPromotion, function(s) {
 		if (s.pid !== diablo_invalid_index) {
 		    var count, totalPay, rmoney, vdiscount, payAll;
-		    var pm = s.stocks[0].promotion;
-		    
+		    var pm = s.stocks[0].promotion; 
 		    // promotion on discount
 		    if (pm.rule_id === 0) {
 			angular.forEach(s.stocks, function(stock) {
@@ -862,24 +861,40 @@ var wsaleCalc = function(){
 			})
 		    } 
 		    else if (pm.rule_id === 1) {
-			count = 0, totalPay = 0, rmoney = 0, vdiscount = 0, payAll = 0; 
+			count = 0, totalPay = 0, rmoney = 0, vdiscount = 0, payAll = 0;
+			var uPrice = 0; 
 			angular.forEach(s.stocks, function(stock) {
 			    count = wsaleCalc.get_inventory_count(stock, saleMode);
 			    if (pm.prule_id === 0) {
-				totalPay += diablo_price(stock.tag_price, stock.discount) * count; 
+				uPrice = diablo_price(stock.tag_price, stock.discount);
 			    } else if (pm.prule_id === 1) {
-				totalPay += stock.tag_price * count; 
-			    }
-			    
+				uPrice = stock.tag_price;
+			    } 
+			    totalPay += uPrice * count; 
 			    payAll += stock.tag_price * count;
 			}); 
 			totalPay = wsaleUtils.to_decimal(totalPay);
 
-			if (Math.abs(totalPay) >= pm.cmoney) {
-			    if (totalPay > 0)
-				rmoney = Math.floor(totalPay / pm.cmoney) * pm.rmoney;
-			    else
-				rmoney = Math.ceil(totalPay / pm.cmoney) * pm.rmoney;
+			var cms = pm.cmoney.split(diablo_semi_seperator);
+			var rms = pm.rmoney.split(diablo_semi_seperator);
+			var tm  = 0; 
+			for (var i=0, l= cms.length; i<l; i++) {
+			    var cm = wsaleUtils.to_integer(cms[i]);
+			    var rm = wsaleUtils.to_integer(rms[i]);
+			    if (Math.abs(totalPay) >= cm) {
+				if (totalPay > 0) {
+				    tm = Math.floor(totalPay / cm) * rm;
+				    if (rmoney < tm) {
+					rmoney = tm;
+				    }
+				}
+				else {
+				    tm = Math.ceil(totalPay / cm) * rm;
+				    if (rmoney > tm) {
+					rmoney = tm;
+				    }
+				}
+			    }
 			}
 
 			console.log(totalPay, rmoney);
@@ -894,43 +909,59 @@ var wsaleCalc = function(){
 			    stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
 			}); 
 		    }
+		    
 		    else if (pm.rule_id === 2) {
 			count = 0, totalPay = 0, rmoney = 0, vdiscount = 0, payAll = 0;
+
+			var orderStocks = [];
 			angular.forEach(s.stocks, function(stock) {
-			    count += wsaleCalc.get_inventory_count(stock, saleMode);
-			    totalPay += diablo_price(stock.tag_price, stock.discount) * count;
-			    payAll += stock.tag_price * count;
+			    var uPrice = diablo_price(stock.tag_price, stock.discount);
+			    var mCount =  wsaleCalc.get_inventory_count(stock, saleMode);
+			    totalPay += uPrice * mCount;
+			    count    += mCount; 
+			    payAll += stock.tag_price * mCount;
+			    orderStocks.push({price:uPrice, count:mCount});
 			});
 			totalPay = wsaleUtils.to_decimal(totalPay);
-
-			var sendSale = 0, saleCount = 0; 
-			if (Math.abs(count) > pm.cmoney) {
-			    if (count > 0)
-				sendSale = Math.floor(totalPay / (pm.cmoney + pm.rmoney)) * pm.rmoney;
-			    else
-				sendSale = Math.floor(totalPay / (pm.cmoney + pm.rmoney)) * pm.rmoney;
-			} 
-			console.log(count, sendSale);
-			
-			sendSale = Math.abs(sendSale);
-			angular.forEach(s.stocks, function(stock) {
-			    saleCount = Math.abs(wsaleCalc.get_inventory_count(stock, saleMode)); 
-			    if (sendSale > 0) {
-				if (saleCount > sendSale) {
-				    rmoney += diablo_price(stock.tag_price, stock.discount) * sendSale; 
-				} else {
-				    rmoney += diablo_price(stock.tag_price, stock.discount) * saleCount; 
-				} 
-				sendSale -= saleCount;
-			    }
+			orderStocks.sort(function(s1,s2) {
+			    return s1.price - s2.price;
 			});
 
+			var cms = pm.cmoney.split(diablo_semi_seperator);
+			var rms = pm.rmoney.split(diablo_semi_seperator);
+			var sendCount  = 0;
+			for (var i=0, l= cms.length; i<l; i++) {
+			    var cm = wsaleUtils.to_integer(cms[i]);
+			    var rm = wsaleUtils.to_integer(rms[i]);
+			    if (Math.abs(count) >= cm + rm) {
+				if (count > 0) {
+				    sendCount = Math.floor( count / (cm + rm) ) * rm; 
+				}
+				else {
+				    sendCount = Math.ceil( count / (cm + rm) ) * rm; 
+				}
+			    }
+			}
+
+			angular.forEach(orderStocks, function(o) {
+			    if (sendCount > 0) {
+				if (sendCount > o.count) {
+				    rmoney += o.count * o.price;
+				    sendCount -= o.count; 
+				} else {
+				    rmoney += sendCount * o.price;
+				    sendCount = 0; 
+				}
+			    }
+			});
+			
 			vdiscount = diablo_discount(rmoney, payAll); 
 			angular.forEach(s.stocks, function(stock) {
 			    stock.fdiscount = wsaleUtils.to_decimal(stock.discount - vdiscount);
 			    stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
 			}); 
-		    } 
+		    }
+		    
 		    else if (pm.rule_id === 3) {
 			count = 0, totalPay = 0, rmoney = 0, vdiscount = 0, payAll = 0; 
 			angular.forEach(s.stocks, function(stock) {
@@ -1409,7 +1440,11 @@ var wsalePrint = function(){
 		LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, d.rprice.toString());
 
 		top += 15;
-		LODOP.ADD_PRINT_TEXT(top, left, vWidth - left, hFont, d.note);
+		if (d.state === 3) {
+		    LODOP.ADD_PRINT_TEXT(top, left, vWidth - left, hFont, d.note + "/特价"); 
+		} else {
+		    LODOP.ADD_PRINT_TEXT(top, left, vWidth - left, hFont, d.note);
+		}
 		LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString());
 
 		top += 15;
@@ -1503,7 +1538,7 @@ var wsalePrint = function(){
 		if (printPerform && angular.isDefined(sale.perform) && sale.perform >= 0) {
 		    l1 = "优惠：" + wsaleUtils.to_float(sale.perform).toString();
 		    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
-		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 11);
+		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 9);
 		    LODOP.SET_PRINT_STYLEA(0, "Bold", 1); 
 		    hLine += 20;
 		}
@@ -1568,7 +1603,7 @@ var wsalePrint = function(){
 	    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, s);
 
 	    hLine += 20;
-	    if (angular.isDefined(diablo_set_string(address))) {
+	    if (address) {
 		// hLine += 20;
 		LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, "地址：" + address);
 		hLine += 20;

@@ -88,6 +88,7 @@ function stockPromotionDetailProvide(
     $scope.pattern = {
 	name: diabloPattern.ch_name_address,
 	balance: diabloPattern.decimal_2,
+	semi_number :diabloPattern.semicolon_number,
 	comment: diabloPattern.comment};
     
     $scope.rules = purchaserService.promotion_rules;

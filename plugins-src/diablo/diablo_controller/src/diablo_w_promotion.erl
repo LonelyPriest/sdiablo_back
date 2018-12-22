@@ -63,14 +63,14 @@ handle_call({new_promotion, Merchant, Attrs}, _From, State) ->
 	       end,
 		   
     Consume  = case Rule of
-		   1 -> ?v(<<"consume">>, Attrs, 0);
-		   2 -> ?v(<<"consume">>, Attrs, 0);
+		   1 -> ?v(<<"consume">>, Attrs, []);
+		   2 -> ?v(<<"consume">>, Attrs, []);
 		   _ -> 0
 	       end,
     
     Reduce   = case Rule of
-		   1 -> ?v(<<"reduce">>, Attrs, 0);
-		   2 -> ?v(<<"reduce">>, Attrs, 0);
+		   1 -> ?v(<<"reduce">>, Attrs, []);
+		   2 -> ?v(<<"reduce">>, Attrs, []);
 		   _ -> 0
 	       end,
 
@@ -93,6 +93,7 @@ handle_call({new_promotion, Merchant, Attrs}, _From, State) ->
     Sql = case Rule of
 	      0 -> "select id, name from w_promotion"
 		       " where merchant=" ++ ?to_s(Merchant)
+		       ++ " and rule=1"
 		       ++ " and discount=" ++ ?to_s(Discount);
 	      3 -> "select id, name from w_promotion"
 		       " where merchant=" ++ ?to_s(Merchant)
@@ -108,8 +109,9 @@ handle_call({new_promotion, Merchant, Attrs}, _From, State) ->
 	      _ ->
 		  "select id, name from w_promotion"
 		      " where merchant=" ++ ?to_s(Merchant)
-		      ++ " and cmoney=" ++ ?to_s(Consume)
-		      ++ " and rmoney=" ++ ?to_s(Reduce)
+		      ++ " and rule=" ++ ?to_s(Rule)
+		      ++ " and cmoney=\'" ++ ?to_s(Consume) ++ "\'"
+		      ++ " and rmoney=\'" ++ ?to_s(Reduce) ++ "\'" 
 	  end,
 
     case ?sql_utils:execute(s_read, Sql) of
@@ -122,8 +124,8 @@ handle_call({new_promotion, Merchant, Attrs}, _From, State) ->
 		++ "\'" ++ ?to_s(Name) ++ "\',"
 		++ ?to_s(Rule) ++ ","
 		++ ?to_s(Discount) ++ ","
-		++ ?to_s(Consume) ++ ","
-		++ ?to_s(Reduce) ++ ","
+		++ "\'" ++ ?to_s(Consume) ++ "\',"
+		++ "\'" ++ ?to_s(Reduce) ++ "\',"
 		
 		++ "\'" ++ ?to_s(SCount) ++ "\',"
 		++ "\'" ++ ?to_s(SDiscount) ++ "\',"
@@ -152,8 +154,8 @@ handle_call({update_promotion, Merchant, Attrs}, _From, State) ->
     Id       = ?v(<<"pid">>, Attrs),
     Name     = ?v(<<"name">>, Attrs),
     Discount = ?v(<<"discount">>, Attrs, 100),
-    CMoney   = ?v(<<"cmoney">>, Attrs, 0),
-    RMoney   = ?v(<<"rmoney">>, Attrs, 0),
+    CMoney   = ?v(<<"cmoney">>, Attrs, []),
+    RMoney   = ?v(<<"rmoney">>, Attrs, []),
     %% SDate    = ?v(<<"sdate">>, Attrs),
     %% EDate    = ?v(<<"edate">>, Attrs),
     Remark   = ?v(<<"remark">>, Attrs), 
@@ -168,8 +170,8 @@ handle_call({update_promotion, Merchant, Attrs}, _From, State) ->
 	{ok, []} ->
 	    Updates = ?utils:v(name, string, Name)
 		++ ?utils:v(discount, integer, Discount)
-		++ ?utils:v(cmoney,  float, CMoney)
-		++ ?utils:v(rmoney,  float, RMoney)
+		++ ?utils:v(cmoney,  string, CMoney)
+		++ ?utils:v(rmoney,  string, RMoney)
 		++ ?utils:v(remark, string, Remark),
 	    Sql1 = 
 		"update w_promotion set "

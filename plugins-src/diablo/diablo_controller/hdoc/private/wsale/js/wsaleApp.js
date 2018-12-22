@@ -850,43 +850,86 @@ function wsaleNewProvide(
     	}); 
     };
 
-    $scope.charge = function(stock) {
-	console.log(stock);
+    $scope.start_charge = function() {
+	var stocks = [];
+	for (var i=0,l=$scope.inventories.length; i<l; i++) {
+	    var stock = $scope.inventories[i];
+	    if (stock.charge) {
+		stocks.push(stock);
+	    }
+	}
+
+	if (stocks.length !== 0) {
+	    $scope.times_charge(stocks); 
+	} else {
+	    $scope.common_charge();
+	}
+    };
+    
+    $scope.times_charge = function(stocks) {
 	if ($scope.tcharges.length === 0) {
 	    dialog.set_error("会员充值", 2170);
 	} else {
+	    var select_charge = $scope.tcharges[0];
+	    for (var i=0, l=$scope.tcharges.length; i<l; i++){
+		if ($scope.select.shop.charge_id === $scope.tcharges[i].id){
+		    select_charge = $scope.tcharges[i];
+		    break;
+		}
+	    }
+	    console.log(select_charge); 
+
+	    var pay = 0;
+	    var desc = "";
+	    for (var i=0,l=stocks.length; i<l; i++) {
+		pay  += stocks[i].tag_price * stocks[i].sell;
+		desc += stocks[i].style_number + "/";
+	    }
+	    if (desc.length > 64) {
+		desc = desc.substr(0, 64);
+	    }
+	    
+	    var charge_balance = wsaleUtils.to_decimal(pay * select_charge.xtime);
+	    var retailer = $scope.select.retailer;
 	    var callback = function(params) {
 		console.log(params);
-		if (!wsaleUtils.isVip(params.retailer, $scope.setting.no_vip, $scope.sysRetailers)
-		    || params.retailer.type_id === diablo_common_retailer) {
+		if (!wsaleUtils.isVip(retailer, $scope.setting.no_vip, $scope.sysRetailers)
+		    || retailer.type_id === diablo_common_retailer) {
 		    dialog.set_error("会员充值", 2171);
 		} else {
 		    diabloFilter.wretailer_charge({
 			shop:           $scope.select.shop.id,
-			retailer:       params.retailer.id,
+			retailer:       $scope.select.retailer.id,
 			employee:       params.employee.id,
 			charge_balance: params.charge_balance,
 			cash:           wsaleUtils.to_decimal(params.cash),
 			card:           wsaleUtils.to_decimal(params.card),
 			wxin:           wsaleUtils.to_decimal(params.wxin),
 			charge:         params.select_charge.id,
-			stock:          stock.style_number + "-" + stock.brand,
+			stock:          desc,
 			comment:        params.comment 
 		    }).then(function(result) {
 			console.log(result);
 			if (result.ecode === 0) {
-			    var balance = params.retailer.balance + params.charge_balance;
-			    $scope.select.retailer = params.retailer;
-			    $scope.select.retailer.balance = balance;
-			    // $scope.set_retailer();
-			    $scope.on_select_retailer();
+			    retailer.balance = wsaleUtils.to_decimal(
+				retailer.balance + params.charge_balance); 
+			    // $scope.select.retailer = params.retailer;
+			    // $scope.select.retailer.balance = balance;
+			    $scope.set_retailer();
+			    // $scope.on_select_retailer();
 			    $scope.select.employee = params.employee;
-			    $scope.gift_sale(stock);
+			    angular.forEach(stocks, function(s) {
+				s.fprice = 0;
+				s.$update = true;
+			    });
+			    $scope.wsaleStorage.save(
+				$scope.inventories.filter(function(r){return !r.$new}));
+			    $scope.re_calculate(); 
 			    dialog.response_with_callback(
 				true,
 				"会员充值",
-				"会员 [" + params.retailer.name + "] 充值成功，"
-				    + "帐户余额 [" + balance.toString() + " ]！！"
+				"会员 [" + retailer.name + "] 充值成功，"
+				    + "帐户余额 [" + retailer.balance.toString() + " ]！！"
 				    + function(){
 					if (result.sms_code !== 0) {
 					    var ERROR = require("diablo-error");
@@ -902,17 +945,7 @@ function wsaleNewProvide(
 		    })
 		}
 	    };
-
-	    var select_charge = $scope.tcharges[0];
-	    for (var i=0, l=$scope.tcharges.length; i<l; i++){
-		if ($scope.select.shop.charge_id === $scope.tcharges[i].id){
-		    select_charge = $scope.tcharges[i];
-		    break;
-		}
-	    }
-	    console.log(select_charge); 
-
-	    var charge_balance = wsaleUtils.to_decimal(stock.tag_price * select_charge.xtime);
+	    
 	    dialog.edit_with_modal(
 		"wretailer-charge.html",
 		undefined,
@@ -977,16 +1010,15 @@ function wsaleNewProvide(
 		    }).then(function(result) {
 			console.log(result);
 			if (result.ecode === 0) {
-			    var all_balance = wsaleUtils.to_decimal(cbalance + sbalance);
 			    retailer.balance = wsaleUtils.to_decimal(
-				wsaleUtils.to_float(retailer.balance) + all_balance);
+				retailer.balance + cbalance + sbalance);
 			    $scope.set_retailer();
 			    $scope.select.employee = params.employee;
 			    dialog.response_with_callback(
 				true,
 				"会员充值",
-				"会员 [" + $scope.select.retailer.name + "] 充值成功，"
-				    + "帐户余额 [" + $scope.select.retailer.balance.toString() + " ]！！"
+				"会员 [" + retailer.name + "] 充值成功，"
+				    + "帐户余额 [" + retailer.balance.toString() + " ]！！"
 				    + function(){
 					if (result.sms_code !== 0) {
 					    var ERROR = require("diablo-error");
@@ -2041,6 +2073,7 @@ function wsaleNewProvide(
 	    $scope.setting.round);
 	
 	console.log(calc);
+	// console.log($scope.show_promotions);
 	$scope.select.total     = calc.total; 
 	$scope.select.abs_total = calc.abs_total;
 	$scope.select.should_pay= calc.should_pay; 

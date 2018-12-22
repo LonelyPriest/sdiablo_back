@@ -498,3 +498,11 @@ alter table w_charge_detail add column stock VARCHAR(64) not null default '' aft
 
 --2018-12-08
 alter table w_promotion add column prule TINYINT default 0 after sdiscount;
+
+
+--2018-12-23
+alter table w_promotion modify column cmoney integer not null default 0;
+alter table w_promotion modify column rmoney integer not null default 0;
+
+alter table w_promotion modify column cmoney VARCHAR(32) not null default '';
+alter table w_promotion modify column rmoney VARCHAR(32) not null default '';

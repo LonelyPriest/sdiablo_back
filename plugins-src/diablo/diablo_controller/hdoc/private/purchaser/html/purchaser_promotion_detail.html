@@ -168,7 +168,7 @@
 			   class="form-control"
 			   name="name"
 			   required
-			   placeholder="请输入厂商名称"
+			   placeholder="请输入方案名称"
 			   x-ng-pattern="pattern.name"
 			   x-ng-model="params.promotion.name"/>
 		  </div>
@@ -208,34 +208,30 @@
 	    <div x-ng-if="params.promotion.rule_id===1" class="form-group">
 	      <label class="col-sm-1 col-md-1 control-label">消费金额</label>
 	      <div class="col-sm-10 col-md-10">
-		<input type="number" step="1"
+		<input type="text"
 		       class="form-control"
 		       name="cmoney"
-		       disable-key
-		       disable-wheel
 		       placeholder="请输入消费金额"
 		       x-ng-model="params.promotion.cmoney"
-		       x-ng-pattern="pattern.balance"/>
+		       x-ng-pattern="pattern.semi_number"/>
 	      </div>
 	      <div ng-show="pForm.cmoney.$invalid && !pForm.cmoney.$pristine">
-		<span class="fg-red">只能是整数，不支持小数</span>
+		<span class="fg-red">800;1000;1500</span>
 	      </div> 
 	    </div>
 
 	    <div x-ng-if="params.promotion.rule_id===1" class="form-group">
 	      <label class="col-sm-1 col-md-1 control-label">赠送金额</label>
 	      <div class="col-sm-10 col-md-10">
-		<input type="number" step="1"
+		<input type="text"
 		       class="form-control"
 		       name="rmoney"
-		       disable-key
-		       disable-wheel
 		       placeholder="请输入赠送金额"
 		       x-ng-model="params.promotion.rmoney"
 		       x-ng-pattern="pattern.balance"/>
 	      </div>
 	      <div ng-show="pForm.rmoney.$invalid && !pForm.rmoney.$pristine">
-		<span class="fg-red">只能是整数，不支持小数</span>
+		<span class="fg-red">100;200;300</span>
 	      </div> 
 	    </div>
 

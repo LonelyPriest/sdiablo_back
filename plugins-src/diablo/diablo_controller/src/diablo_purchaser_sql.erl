@@ -703,10 +703,23 @@ inventory(set_offer, Merchant, StockState, Conditions) ->
 	++ " and deleted=" ++ ?to_s(?NO);
 
 
-inventory(update_batch, Merchant, Attrs, Conditions) ->
+inventory({update_batch, MatchMode}, Merchant, Attrs, Conditions) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
     RealyConditions = realy_conditions(Merchant, NewConditions),
     ExtraConditions = sort_condition(stock, NewConditions),
+    UpdateGoodCondition = lists:foldr(fun({<<"shop">>, _}, Acc)->
+					      Acc;
+					 ({<<"stock">>, _}, Acc) ->
+					      Acc;
+					 ({<<"msell">>, _}, Acc) ->
+					      Acc;
+					 ({<<"esell">>, _}, Acc) ->
+					      Acc;
+					 ({<<"less">>, _}, Acc) ->
+					      Acc;
+					 (A, Acc) ->
+					      [A|Acc]
+				      end, [], NewConditions),
     
     ?DEBUG("ExtraConditions ~p", [ExtraConditions]),
     OrgPrice  = ?v(<<"org_price">>, Attrs),
@@ -731,19 +744,14 @@ inventory(update_batch, Merchant, Attrs, Conditions) ->
 	    undefined ->
 		?utils:v(org_price, float, OrgPrice)
 		    ++ ?utils:v(tag_price, float, TagPrice)
-		    ++ ?utils:v(state, integer, State);
-	    %% ++ ?utils:v(discount, float, Discount)
-	    %% ++ ?utils:v(contailer, integer, Contailer);
+		    ++ ?utils:v(state, integer, State); 
 	    _ ->
-		%% ?utils:v(contailer, integer, Contailer)
 		[]
 	end
-    %% ++ ?utils:v(discount, float, Discount)
 	++ ?utils:v(contailer, integer, Contailer),
 
     UpdateOfStock = UpdateOfGood
 	++ ?utils:v(score, integer, Score)
-    %% ++ ?utils:v(state, integer, State)
 	++ ?utils:v(discount, float, Discount), 
 
     ?DEBUG("UpdateOfGood ~p, UpdateOfStock ~p", [UpdateOfGood, UpdateOfStock]),
@@ -779,8 +787,20 @@ inventory(update_batch, Merchant, Attrs, Conditions) ->
      %% 		", ediscount=" ++ ?to_s(stock(ediscount, OrgPrice, TagPrice))
      %% 	end
      ++ " where "
-     ++ "merchant=" ++ ?to_s(Merchant) 
-     ++ ?sql_utils:condition(proplists, RealyConditions)
+     ++ "merchant=" ++ ?to_s(Merchant)
+     ++ case MatchMode of
+	    ?AND ->
+		?sql_utils:condition(proplists, RealyConditions);
+	    ?LIKE ->
+		case ?v(<<"style_number">>, RealyConditions, []) of
+		    [] ->
+			?sql_utils:condition(proplists, RealyConditions);
+		    StyleNumber ->
+			" and style_number like '" ++ ?to_s(StyleNumber) ++ "%'"
+			    ++ ?sql_utils:condition(
+				  proplists, lists:keydelete(<<"style_number">>, 1, RealyConditions))
+		end
+	end
      ++ ExtraConditions
      ++ case ?sql_utils:condition(time_no_prfix, StartTime, EndTime) of
 	    [] -> [];
@@ -823,23 +843,21 @@ inventory(update_batch, Merchant, Attrs, Conditions) ->
 		    %% 	   {TagPrice, OrgPrice} ->
 		    %% 	       ", ediscount=" ++ ?to_s(stock(ediscount, OrgPrice, TagPrice))
 		    %%    end
-		    ++ " where " 
-		    ++ ?sql_utils:condition(
-			  proplists_suffix,
-			  lists:foldr(fun({<<"shop">>, _}, Acc)->
-					      Acc;
-					 ({<<"stock">>, _}, Acc) ->
-					      Acc;
-					 ({<<"msell">>, _}, Acc) ->
-					      Acc;
-					 ({<<"esell">>, _}, Acc) ->
-					      Acc;
-					 ({<<"less">>, _}, Acc) ->
-					      Acc;
-					 (A, Acc) ->
-					      [A|Acc]
-				      end, [], NewConditions))
+		    ++ " where "
 		    ++ "merchant=" ++ ?to_s(Merchant) 
+		    ++ case MatchMode of
+			   ?AND ->
+			       ?sql_utils:condition(proplists, UpdateGoodCondition);
+			   ?LIKE ->
+			       case ?v(<<"style_number">>, UpdateGoodCondition, []) of
+				   [] ->
+				       ?sql_utils:condition(proplists, UpdateGoodCondition);
+				   StyleNumber ->
+				       " and style_number like '" ++ ?to_s(StyleNumber) ++ "%'"
+					   ++ ?sql_utils:condition(
+						 proplists, lists:keydelete(<<"style_number">>, 1, UpdateGoodCondition))
+			       end
+		       end 
 		    ++ " and deleted=" ++ ?to_s(?NO)]
 	   end;
 

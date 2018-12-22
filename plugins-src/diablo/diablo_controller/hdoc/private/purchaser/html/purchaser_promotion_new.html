@@ -102,19 +102,19 @@
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
 		  <div x-ng-class="{'has-error':pForm.consume.$invalid && !pForm.consume.$pristine}">
-		    <input type="number" step="1"
+		    <input type="text"
 			   class="form-control"
 			   name="consume"
 			   required
-			   placeholder="请输入目标金额" 
+			   placeholder="请输入消费金额,用分号隔开" 
 			   x-ng-model="promotion.consume"
-			   x-ng-pattern="pattern.number"/>
+			   x-ng-pattern="pattern.semi_number"/>
 		  </div>
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div> 
 	      </div>
 	      <div ng-if="pForm.consume.$invalid && !pForm.consume.$pristine">
-		<span class="fg-red">金额只能是数字</span>
+		<span class="fg-red">格式800;1000;1500</span>
 	      </div> 
 	    </div>
 
@@ -122,21 +122,20 @@
 	      <label class="col-md-3 col-sm-3 control-label">减免金额</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
-		  <div x-ng-class="{'has-error':pForm.reduce.$invalid
-				   && !pForm.reduce.$pristine}">
-		    <input type="number" step="1"
+		  <div x-ng-class="{'has-error':pForm.reduce.$invalid && !pForm.reduce.$pristine}">
+		    <input type="texe"
 			   class="form-control"
 			   name="reduce"
 			   required
-			   placeholder="请输入减免金额" 
+			   placeholder="请输入减免金额,用分号隔开" 
 			   x-ng-model="promotion.reduce"
-			   x-ng-pattern="pattern.number"/>
+			   x-ng-pattern="pattern.semi_number"/>
 		  </div>
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div> 
 	      </div>
 	      <div ng-if="pForm.reduce.$invalid && !pForm.reduce.$pristine">
-		<span class="fg-red">金额只能是数字</span>
+		<span class="fg-red">格式100;200;300</span>
 	      </div> 
 	    </div>
 
@@ -145,19 +144,19 @@
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
 		  <div x-ng-class="{'has-error':pForm.cm.$invalid && !pForm.cm.$pristine}">
-		    <input type="number" step="1"
+		    <input type="text"
 			   class="form-control"
 			   name="cm"
 			   required
-			   placeholder="同类型商品购买数量" 
+			   placeholder="购买数量,用分号隔开" 
 			   x-ng-model="promotion.consume"
-			   x-ng-pattern="pattern.number"/>
+			   x-ng-pattern="pattern.semi_number"/>
 		  </div>
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div> 
 	      </div>
 	      <div ng-if="pForm.cm.$invalid && !pForm.cm.$pristine">
-		<span class="fg-red">购买数量只能是整数</span>
+		<span class="fg-red">3;4;5</span>
 	      </div> 
 	    </div>
 
@@ -166,19 +165,19 @@
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
 		  <div x-ng-class="{'has-error':pForm.sm.$invalid && !pForm.sm.$pristine}">
-		    <input type="number" step="1"
+		    <input type="text"
 			   class="form-control"
 			   name="sm"
 			   required
-			   placeholder="请输入减免金额" 
+			   placeholder="赠送数量,用分号隔开" 
 			   x-ng-model="promotion.reduce"
-			   x-ng-pattern="pattern.number"/>
+			   x-ng-pattern="pattern.semi_number"/>
 		  </div>
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div> 
 	      </div>
 	      <div ng-if="pForm.sm.$invalid && !pForm.sm.$pristine">
-		<span class="fg-red">赠送数量只能是整数</span>
+		<span class="fg-red">1;2;3</span>
 	      </div> 
 	    </div>
 

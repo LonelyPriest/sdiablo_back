@@ -97,6 +97,7 @@
 				   table-condensed table-advanced">
 	      <thead>
 		<tr>
+		  <th class="text-center">选择</th>
 		  <th class="text-center">序号</th>
 		  <th x-ng-if="setting.barcode_mode" class="text-center">条码</th>
 		  <th class="text-center">货号/品类</th>
@@ -113,9 +114,18 @@
 		</tr>
 	      </thead>
 	      <tbody>
-		<tr class="text-center" x-ng-repeat="inv in inventories"> 
-		  <td class="text-center vert-align">{{inv.order_id}}</td>
+		<tr class="text-center" x-ng-repeat="inv in inventories">
+		  <td x-ng-if="inv.state===3"></td> 
+		  <td x-ng-if="inv.state!==3">
+		    <div class="checkbox checkbox-danger checkbox-circle">
+		      <input id={{inv.order_id}}
+			     type="checkbox"
+			     x-ng-model="inv.charge"/>
+		      <label for={{inv.order_id}}></label>
+		    </div>
+		  </td>
 		  
+		  <td class="text-center vert-align">{{inv.order_id}}</td> 
 		  <td x-ng-if="setting.barcode_mode" class="text-left vert-align">
 	  	    <div>{{inv.bcode}}</div> 
 	  	  </td>
@@ -214,10 +224,9 @@
 				x-ng-click="delete_inventory(inv)">删除
 			  <i class="glyphicon glyphicon-erase"></i></button>
 
-			<button class="btn diablo-input-button green"
-				x-ng-click="charge(inv)">充值
-			  <i class="glyphicon glyphicon-yen"></i></button>
-			    
+			<!-- <button class="btn diablo-input-button green" -->
+			<!-- 	x-ng-click="charge(inv)">充值 -->
+			<!--   <i class="glyphicon glyphicon-yen"></i></button> --> 
 			
 			<button class="btn diablo-input-button green"
 				x-ng-if="setting.gift_sale && inv.gift"
@@ -245,6 +254,7 @@
 		</tr>
 
 		<tr x-ng-if="inventories.length>0" class="text-center">
+		  <td></td>
 		  <td></td>
 		  <td x-ng-if="setting.barcode_mode"></td>
 		  <td></td>
@@ -399,7 +409,7 @@
 		  <i class="glyphicon glyphicon-edit"></i></button>
 	      </span>
 	      <span x-ng-if="select.retailer.type_id===1" class="input-group-btn"> 
-		<button class="btn btn-danger" x-ng-click="common_charge()">
+		<button class="btn btn-danger" x-ng-click="start_charge()">
 		  <i class="glyphicon glyphicon-yen"></i></button>
 	      </span>
 	    </div> 
@@ -1099,39 +1109,29 @@
 	  </div>
 	</div>
 	
-	<div x-ng-if="params.$tcharge" class="form-group">
-	  <span class="col-md-3 col-sm-3 col-xs-3 control-label">会员名称</span>
-	  <div class="col-md-6 col-sm-6 col-xs-6">
-	    <input class="form-control" type="text"
-		   x-ng-edit
-		   required
-		   name="name"
-	  	   x-ng-model="params.retailer"
-	  	   placeholder="请选择会员"
-	  	   typeahead-editable="false"
-		   typeahead-wait-ms="300"
-		   typeahead-loading="cloading"
-		   uib-typeahead="s as s.name for s in match_retailer_phone($viewValue)"/> 
-	    <span x-ng-show="cloading">
-	      <i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
-	    </span>
-	    <div ng-show="tForm.name.$invalid && !tForm.name.$pristine">
-	      <span class="fg-red">会员只能从下拉列表中获取</span>
-	    </div>
-	  </div>
-	</div>
+	<!-- <div x-ng-if="params.$tcharge" class="form-group"> -->
+	<!--   <span class="col-md-3 col-sm-3 col-xs-3 control-label">会员名称</span> -->
+	<!--   <div class="col-md-6 col-sm-6 col-xs-6"> -->
+	<!--     <input class="form-control" type="text" -->
+	<!-- 	   x-ng-edit -->
+	<!-- 	   required -->
+	<!-- 	   name="name" -->
+	<!--   	   x-ng-model="params.retailer" -->
+	<!--   	   placeholder="请选择会员" -->
+	<!--   	   typeahead-editable="false" -->
+	<!-- 	   typeahead-wait-ms="300" -->
+	<!-- 	   typeahead-loading="cloading" -->
+	<!-- 	   uib-typeahead="s as s.name for s in match_retailer_phone($viewValue)"/>  -->
+	<!--     <span x-ng-show="cloading"> -->
+	<!--       <i class="icon-spinner icon-spin icon-2x form-control-feedback"></i> -->
+	<!--     </span> -->
+	<!--     <div ng-show="tForm.name.$invalid && !tForm.name.$pristine"> -->
+	<!--       <span class="fg-red">会员只能从下拉列表中获取</span> -->
+	<!--     </div> -->
+	<!--   </div> -->
+	<!-- </div> -->
 
-	<div x-ng-if="params.$tcharge" class="form-group">
-	  <span class="col-md-3 col-sm-3 col-xs-3 control-label">会员余额</span>
-	  <div class="col-md-6 col-sm-6 col-xs-6">
-	    <input class="form-control" type="text"
-		   required
-		   readonly
-	  	   x-ng-model="params.retailer.balance" /> 
-	  </div>
-	</div>
-
-	<div x-ng-if="params.$mcharge" class="form-group">
+	<div class="form-group">
 	  <span class="col-md-3 col-sm-3 col-xs-3 control-label">会员名称</span>
 	  <div class="col-md-6 col-sm-6 col-xs-6">
 	    <input class="form-control" type="text"
@@ -1141,7 +1141,17 @@
 	  </div>
 	</div>
 
-	<div x-ng-if="params.$mcharge" class="form-group">
+	<!-- <div x-ng-if="params.$tcharge" class="form-group"> -->
+	<!--   <span class="col-md-3 col-sm-3 col-xs-3 control-label">会员余额</span> -->
+	<!--   <div class="col-md-6 col-sm-6 col-xs-6"> -->
+	<!--     <input class="form-control" type="text" -->
+	<!-- 	   required -->
+	<!-- 	   readonly -->
+	<!--   	   x-ng-model="params.retailer.balance" />  -->
+	<!--   </div> -->
+	<!-- </div> -->
+
+	<div class="form-group">
 	  <span class="col-md-3 col-sm-3 col-xs-3 control-label">会员余额</span>
 	  <div class="col-md-6 col-sm-6 col-xs-6">
 	    <input class="form-control" type="text"

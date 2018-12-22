@@ -520,7 +520,7 @@ action(Session, Req, {"filter_w_inventory_group"}, Payload) ->
     PayloadWithCtype = ?w_sale_request:replace_condition_with_ctype(Merchant, CType, SType, Fields, NewPayload), 
     %% ?DEBUG("PayloadWithCtype ~p", [PayloadWithCtype]),
     
-    Like = ?value(<<"match">>, Payload, 'and'),
+    Like = ?v(<<"match">>, Payload, 'and'),
     Brand = ?v(<<"brand">>, Fields),
     
     {struct, NewFields}  = ?v(<<"fields">>, PayloadWithCtype), 
@@ -1047,9 +1047,10 @@ action(Session, Req, {"update_w_inventory_batch"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     {struct, Conditions} = ?value(<<"condition">>, Payload),
     {struct, Attrs} = ?value(<<"attrs">>, Payload, []),
+    Match = ?v(<<"match">>, Payload, 'and'),
     
     case ?w_inventory:purchaser_inventory(
-	    update_batch, Merchant, Attrs , Conditions) of
+	    {update_batch, ?to_a(Match)}, Merchant, Attrs , Conditions) of
 	{ok, Merchant} ->
 	    ?utils:respond(
 	       200,
