@@ -1042,7 +1042,7 @@ action(Session, Req, {"offering_w_stock"}, Payload) ->
     end;
 
 action(Session, Req, {"update_w_inventory_batch"}, Payload) ->
-    ?DEBUG("update_w_inventory_batch with session ~p~n, paylaod ~p",
+    ?DEBUG("update_w_inventory_batch with session ~p~n, payload ~p",
 	   [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
     {struct, Conditions} = ?value(<<"condition">>, Payload),

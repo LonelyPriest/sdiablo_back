@@ -2994,7 +2994,9 @@ function purchaserInventoryDetailCtrlProvide(
 
 	    var condition = {style_number:inv.style_number, brand:inv.brand.id, shop:inv.shop_id};
 
-	    purchaserService.update_w_inventory_batch(condition, update).then(function(result){
+	    purchaserService.update_w_inventory_batch(
+		undefined, condition, update
+	    ).then(function(result){
 		console.log(result);
 		if (result.ecode === 0){
 		    var tag_price = angular.isDefined(update.tag_price) ? update.tag_price : inv.tag_price;
