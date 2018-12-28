@@ -838,14 +838,14 @@ function filterProvider(){
 				name:      p.name,
 				rule_id:   p.rule_id,
 				prule_id:  p.prule_id,
-				discount:  p.discount,
+				discount:  p.discount, 
 				cmoney:    p.cmoney,
 				rmoney:    p.rmoney,
 				scount:    p.scount,
 				sdiscount: p.sdiscount,
-				
-				sdate:    p.sdate,
-				edate:    p.edate
+				member:    p.member,
+				sdate:     p.sdate,
+				edate:     p.edate
 			    }
 			});
 			set_storage(cookie, "promotion", _promotions);

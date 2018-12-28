@@ -767,7 +767,7 @@ stockPrintU.prototype.set_template = function(template) {
 	if (this.dualPrint === 1) {
 	    this.wpx = Math.floor((this.template.width * 2 + this.template.second_space * 0.1) * 96 / 2.54);
 	} else if (this.dualPrint === 2) {
-	    this.wpx = Math.floor((this.template.width * 3 + this.template.second_space * 0.1) * 96 / 2.54);
+	    this.wpx = Math.floor((this.template.width * 3 + this.template.second_space * 0.2) * 96 / 2.54);
 	}
 	else {
 	    this.wpx = Math.floor(this.template.width * 96 / 2.54); 
@@ -790,7 +790,7 @@ stockPrintU.prototype.init = function() {
     else if (this.dualPrint === 2) {
 	this.LODOP.SET_PRINT_PAGESIZE(
 	    1,
-	    this.template.width * 3 * 100 + this.template.second_space * 10,
+	    this.template.width * 3 * 100 + this.template.second_space * 10 * 2,
 	    this.template.height * 100,
 	    ""); 
     }

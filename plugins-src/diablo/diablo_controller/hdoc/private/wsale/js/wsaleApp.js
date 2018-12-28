@@ -505,6 +505,7 @@ function wsaleNewProvide(
 	score:        0,
 	pscores:      [],
 	charge:       0,
+	recharge:     0,
 	surplus:      0,
 	left_balance: 0,
 	sid:          -1,
@@ -918,6 +919,7 @@ function wsaleNewProvide(
 			    $scope.set_retailer();
 			    // $scope.on_select_retailer();
 			    $scope.select.employee = params.employee;
+			    $scope.select.recharge = params.charge_balance;
 			    angular.forEach(stocks, function(s) {
 				s.fprice = 0;
 				s.$update = true;
@@ -1014,6 +1016,7 @@ function wsaleNewProvide(
 				retailer.balance + cbalance + sbalance);
 			    $scope.set_retailer();
 			    $scope.select.employee = params.employee;
+			    $scope.select.recharge = cbalance;
 			    dialog.response_with_callback(
 				true,
 				"会员充值",
@@ -1222,6 +1225,7 @@ function wsaleNewProvide(
 	$scope.select.score        = 0;
 	$scope.select.pscores      = [];
 	$scope.select.charge       = 0;
+	$scope.select.recharge     = 0;
 	$scope.select.surplus      = $scope.select.retailer.balance;
 	$scope.select.left_balance = $scope.select.surplus;
 	$scope.select.verificate   = $scope.vpays[0],
@@ -1329,6 +1333,7 @@ function wsaleNewProvide(
 		$scope.wsaleStorage.set_key(draft.sn);
 		// $scope.select.employee = diablo_get_object(draft.employee.id, $scope.employees);
 		$scope.select.retailer = diablo_get_object(draft.retailer.id, retailers);
+		$scope.select.retailer.birth = $scope.select.retailer.birth.substr(5,8);
 		$scope.select.surplus  = $scope.select.retailer.balance;
 		$scope.get_employee(); 
 		
@@ -1715,6 +1720,7 @@ function wsaleNewProvide(
 			hLine,
 			0,
 			$scope.select,
+			$scope.select.retailer.balance,
 			wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers),
 			$scope.setting.print_perform); 
 		    wsalePrint.gen_foot(
@@ -2644,7 +2650,13 @@ function wsaleNewDetailProvide(
     $scope.default_page = 1; 
     $scope.disable_print = false;
     $scope.current_page = $scope.default_page;
-
+    
+    // var LODOP = undefined;
+    // if (diablo_frontend === wsaleUtils.print_mode(user.loginShop, base)) {
+    // 	var print_access = wsaleUtils.print_num(user.loginShop, base); 
+    // 	if (needCLodop()) loadCLodop(print_access.protocal);
+    // }
+    
     // var im_print = function(shopId){
     // 	return wsaleUtils.im_print(shopId, base); 
     // };
@@ -2841,7 +2853,7 @@ function wsaleNewDetailProvide(
 		
 		// console.log($scope); 
 		angular.forEach(result.data, function(d){
-		    d.crsn      = diablo_array_last(d.rsn.split(diablo_date_seprator));
+		    d.crsn     = diablo_array_last(d.rsn.split(diablo_date_seprator));
 		    d.shop     = diablo_get_object(d.shop_id, $scope.shops);
 		    d.employee = diablo_get_object(d.employee_id, filterEmployee);
 		    // d.retailer = diablo_get_object(d.retailer_id, filterRetailer);
@@ -2852,7 +2864,7 @@ function wsaleNewDetailProvide(
 		    // if (d.type === diablo_charge){
 		    // 	d.left_balance += d.cbalance + d.sbalance;
 		    // } 
-		});
+		}); 
 
 		if ($scope.sequence_pagination === diablo_no){
 		    $scope.records = result.data; 
@@ -2986,7 +2998,6 @@ function wsaleNewDetailProvide(
 	});
     };
     
-
     $scope.export_to = function(){
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
 	    if (angular.isUndefined(search.shop)

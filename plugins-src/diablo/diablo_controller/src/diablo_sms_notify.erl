@@ -3,7 +3,7 @@
 -include("../../../../include/knife.hrl").
 -include("diablo_controller.hrl").
 
--export([sms_notify/2, sign/1, sms/4]).
+-export([sms_notify/2, sign/1, sms/3, sms/4]).
 
 sms_notify(Merchant, {Shop, Phone, Action, Money, RetailerBalance, Score}) ->
     ?DEBUG("sms_notify: merchants ~p, shop ~p, phone ~p, action ~p, money ~p"
@@ -143,6 +143,27 @@ sms_once(aliqin, Merchant, {Shop, Phone, Action, Money, Balance, Score}) ->
 		    ?INFO("sms send http failed phone ~p, Reason", [Phone, Reason]),
 		    {error, {http_failed, Reason}}
 	    end
+    end.
+
+sms(charge, {Merchant, Name, Phone}, Balance) ->
+    {ok, SMSRate} = ?w_user_profile:get(sms_rate, Merchant),
+    %% ?DEBUG("smsrate ~p", [SMSRate]), 
+    Rate = ?v(<<"rate">>, SMSRate),
+    LeftBalance = ?v(<<"balance">>, SMSRate, 0), 
+    Count = trunc(LeftBalance) div Rate, 
+    SMSTemplate   = "SMS_153716629",
+    SMSParams = ?to_s(ejson:encode(
+			{[{<<"name">>, <<Name/binary, <<"-">>/binary, Phone/binary>>},
+			  {<<"money">>, ?to_b(Balance div 100)},
+			  {<<"count">>, ?to_b(Count)} 
+			 ]})),
+    case send_sms(Phone, SMSTemplate, SMSParams) of
+    	{ok, {sms_send, Phone}} = OK->
+    	    {ok, OK};
+    	{error, {sms_center_not_found, Merchant}} ->
+    	    ?err(sms_center_not_found, Merchant);
+    	{error, _} ->
+    	    ?err(sms_send_failed, Phone)
     end.
 
 sms(swiming, Merchant, Phone, {Shop, Action, LeftSwiming, Expire}) ->

@@ -670,11 +670,12 @@ inventory(set_promotion, Merchant, Promotions, Conditions) ->
 	++ " where " 
 	++ ?sql_utils:condition(proplists_suffix, NewConditions)
 	++ "merchant=" ++ ?to_s(Merchant)
+	++ " and state!=3"
+	++ " and deleted=" ++ ?to_s(?NO) 
 	++ case ?sql_utils:condition(time_no_prfix, StartTime, EndTime) of
 	       [] -> [];
 	       TimeSql ->  " and " ++ TimeSql
-	   end
-	++ " and deleted=" ++ ?to_s(?NO);
+	   end;
 
 inventory(set_gift, Merchant, GiftState, Conditions) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions), 

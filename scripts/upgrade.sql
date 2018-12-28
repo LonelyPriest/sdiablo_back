@@ -506,3 +506,6 @@ alter table w_promotion modify column rmoney integer not null default 0;
 
 alter table w_promotion modify column cmoney VARCHAR(32) not null default '';
 alter table w_promotion modify column rmoney VARCHAR(32) not null default '';
+
+--2018-12-26
+alter table w_promotion add column member TINYINT default 0 after prule;

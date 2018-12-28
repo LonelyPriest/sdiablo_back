@@ -1024,12 +1024,14 @@ var wsaleCalc = function(){
 		for (var i=0, l=inventories.length; i<l; i++) {
 		    // promotion first
 		    var one = inventories[i];
-		    if (one.state !== 3 && wsaleCalc.in_promotion_stock(one, stocksSortWithPromotion)) {
+		    // console.log(one);
+		    if (one.state !== 3) {
 			if (one.pid !== diablo_invalid_index) {
-			    if (vipPromotionMode) {
+			    if (wsaleCalc.in_promotion_stock(one, stocksSortWithPromotion)
+				&& diablo_yes === one.promotion.member) {
 				one.fdiscount = wsaleCalc.calc_vip_discount(vipDiscountMode, vipDiscount, one);
 				one.fprice = diablo_price(one.tag_price, one.fdiscount);
-			    } 
+			    }
 			} else {
 			    one.fdiscount = wsaleCalc.calc_vip_discount(vipDiscountMode, vipDiscount, one);
 			    one.fprice = diablo_price(one.tag_price, one.fdiscount);
@@ -1311,9 +1313,9 @@ var wsalePrint = function(){
     var width = 219; // inch, 5.8 / 2.45 * 96 
     var vWidth = width - 5; 
     var hFont = 20; // height of font
-    var pay = function(cash, card, wxin, withDraw, ticket, should_pay){
+    var check_pay = function(cash, card, wxin, withDraw, ticket, should_pay){
 	console.log(cash, card, withDraw, ticket);
-	var s = "";
+	var s = "", rdraw = 0;
 	var left = should_pay; 
 	if (wsaleUtils.to_float(ticket) != 0){
 	    s += "券：" + ticket.toString(); 
@@ -1324,18 +1326,20 @@ var wsalePrint = function(){
 	    }
 	}
 
-	if (wsaleUtils.to_float(withDraw) != 0){
+	if (left > 0 && wsaleUtils.to_float(withDraw) != 0){
 	    if (s) s += " ";
 	    if (withDraw >= left) {
+		rdraw = left; 
 		s += "提现：" + left.toString();
 		left = 0;
 	    } else {
+		rdraw = withDraw;
 		s += "提现：" + withDraw.toString();
 		left -= withDraw;
 	    }
 	}
 
-	if (wsaleUtils.to_float(wxin) != 0) {
+	if (left > 0 && wsaleUtils.to_float(wxin) != 0) {
 	    if (s) s += " ";
 	    if (wxin >= left) {
 		s += "微信：" + left.toString();
@@ -1346,7 +1350,7 @@ var wsalePrint = function(){
 	    }
 	}
 
-	if (wsaleUtils.to_float(card) != 0){
+	if (left > 0 && wsaleUtils.to_float(card) != 0){
 	    if (s) s += " ";
 	    
 	    if (card >= left){
@@ -1358,7 +1362,7 @@ var wsalePrint = function(){
 	    }
 	}
 	
-	if (wsaleUtils.to_float(cash) != 0){
+	if (left > 0 && wsaleUtils.to_float(cash) != 0){
 	    if (s) s += " "; 
 	    if (cash >= left){
 		s += "现金：" + left.toString();
@@ -1370,7 +1374,7 @@ var wsalePrint = function(){
 	    }
 	}
 
-	return s; 
+	return {rdraw:rdraw, s:s}; 
     };
 
     return {
@@ -1482,7 +1486,7 @@ var wsalePrint = function(){
 	    return top;
 	},
 
-	gen_stastic: function(LODOP, hLine, direct, sale, vip, printPerform){
+	gen_stastic: function(LODOP, hLine, direct, sale, balance, vip, printPerform){
 	    console.log(sale);
 	    // console.log(hLine);
 	    if (angular.isUndefined(direct)) direct = 0;
@@ -1510,56 +1514,79 @@ var wsalePrint = function(){
 	    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
 	    hLine += 15; 
 	    
-	    if (diablo_sale === direct) l1 = "实付："; 
+	    if (diablo_sale === direct) l1 = "实付：";
 	    if (diablo_reject === direct) l1 = "退款：";
-	    l1 += should_pay.toString(); 
-	    l1 += " " + pay(cash, card, wxin, withDraw, ticket, should_pay);
-	    console.log(l1); 
-	    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1); 
-	    hLine += 15;
+	    
+	    l1 += should_pay.toString();
 
+	    var pay = check_pay(cash, card, wxin, withDraw, ticket, should_pay);
+	    l1 += " " + pay.s;
+	    console.log(l1); 
+	    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
+	    hLine += 10
+	    LODOP.ADD_PRINT_LINE(hLine + 5, left, hLine + 5, vWidth, 0, 1); 
+	    hLine += 15; 
 	    if (diablo_sale === direct) {
+		var space = false;
 		if (angular.isDefined(sale.has_pay)) {
 		    l1 = "现付：" + wsaleUtils.to_float(sale.has_pay).toString();
-		    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
-		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 11);
-		    LODOP.SET_PRINT_STYLEA(0, "Bold", 1); 
-		    hLine += 20;
+		    LODOP.ADD_PRINT_TEXT(hLine, left, 75, hFont, l1);
+		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 8);
+		    LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
+		    space = true;
+		    // hLine += 20;
 		}
 		
 		if (angular.isDefined(sale.charge)) {
 		    l1 = "找零：" + wsaleUtils.to_float(-sale.charge).toString();
-		    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
-		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 11);
-		    LODOP.SET_PRINT_STYLEA(0, "Bold", 1); 
-		    hLine += 20;
+		    LODOP.ADD_PRINT_TEXT(hLine, left + 75, 70, hFont, l1);
+		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 8);
+		    LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
+		    space = true;
+		    // hLine += 20;
 		}
 		
 		if (printPerform && angular.isDefined(sale.perform) && sale.perform >= 0) {
 		    l1 = "优惠：" + wsaleUtils.to_float(sale.perform).toString();
-		    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
-		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 9);
-		    LODOP.SET_PRINT_STYLEA(0, "Bold", 1); 
-		    hLine += 20;
+		    LODOP.ADD_PRINT_TEXT(hLine, left + 145, vWidth - 145, hFont, l1);
+		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 8);
+		    LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
+		    space = true;
+		    // hLine += 20;
 		}
+
+		if (space) hLine += 15;
 	    }
 		
 
 	    if (vip) {
-		l1 = "上次积分：" + lscore.toString();
-		LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
+		l1 = "上积：" + lscore.toString();
+		LODOP.ADD_PRINT_TEXT(hLine, left, 70, hFont, l1);
+		// hLine += 15;
+		l1 = "本积：" + score.toString();
+		LODOP.ADD_PRINT_TEXT(hLine, left + 70, 65, hFont, l1);
+		// hLine += 15;
+		l1 = "累积：" + (lscore + score - ticketScore).toString();
+		LODOP.ADD_PRINT_TEXT(hLine, left + 135, vWidth - 135, hFont, l1);
 		hLine += 15;
-		l1 = "本次积分：" + score.toString();
-		LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
-		hLine += 15;
-		l1 = "累积积分：" + (lscore + score - ticketScore).toString();
-		LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
+	    } 
+
+	    if (vip && wsaleUtils.to_integer(balance)!=0) {
+		l1 = "余额：" + balance.toString();
+		LODOP.ADD_PRINT_TEXT(hLine, left, 70, hFont, l1);
+		// hLine += 15;
+		l1 = "提现：" + pay.rdraw.toString();
+		LODOP.ADD_PRINT_TEXT(hLine, left + 70, 65, hFont, l1);
+		// hLine += 15;
+		l1 = "结余：" + (balance - pay.rdraw).toString();
+		LODOP.ADD_PRINT_TEXT(hLine, left + 135, vWidth - 135, hFont, l1);
 		hLine += 15;
 	    }
 
 	    LODOP.ADD_PRINT_LINE(hLine + 5, left, hLine + 5, vWidth, 0, 1);
-
-	    return hLine + 15;
+	    hLine += 15;
+	    
+	    return hLine;
 	},
 	
 	gen_foot: function(LODOP, hLine, comments, date, address, cakeMode){

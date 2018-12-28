@@ -68,6 +68,7 @@
 		  <tr>
 		    <th>序号</th>
 		    <th>店铺</th>
+		    <th>帐号</th>
 		    <th>员工</th>
 
 		    <th>上期库存</th>
@@ -91,6 +92,7 @@
 		<tbody>
 		  <tr x-ng-repeat="r in d_reports">
 		    <td>{{r.order_id}}</td>
+		    <td>{{r.account}}</td>
 		    <td>{{r.shop.name}}</td>
 		    <td>{{r.employee.name}}</td>
 		    

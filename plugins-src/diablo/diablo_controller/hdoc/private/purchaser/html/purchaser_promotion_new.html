@@ -203,8 +203,8 @@
 	      </div> 
 	    </div>
 
-	    <div x-ng-if="promotion.rule.id===3 || promotion.rule.id===4" class="form-group">
-	      <label class="col-md-3 col-sm-3 control-label">购买折扣/金额</label>
+	    <div x-ng-if="promotion.rule.id===3||promotion.rule.id===4" class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">折扣/减免金额</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
 		  <div x-ng-class="{'has-error':pForm.dm.$invalid && !pForm.dm.$pristine}">
@@ -212,7 +212,7 @@
 			   class="form-control"
 			   name="dm"
 			   required
-			   placeholder="购买折扣,请用分号分开" 
+			   placeholder="折扣/减免金额,请用分号分开" 
 			   x-ng-model="promotion.sdiscount"
 			   x-ng-pattern="pattern.semi_number"/>
 		  </div>
@@ -225,12 +225,25 @@
 	    </div>
 	    
 	    <div class="form-group">
-	      <label class="col-md-3 col-sm-3 control-label">促销价格</label>
+	      <label class="col-md-3 col-sm-3 control-label">促销模式</label>
 	      <div class="col-sm-6 col-md-6">
 		<div class="input-group">
 		  <select class="form-control"
 			  x-ng-model="promotion.prule"
 			  x-ng-options="p as p.name for p in prules"> 
+		  </select>
+		  <span class="input-group-addon bg-white fg-red">*</span>
+		</div> 
+	      </div>
+	    </div>
+
+	    <div class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">会员折扣</label>
+	      <div class="col-sm-6 col-md-6">
+		<div class="input-group">
+		  <select class="form-control"
+			  x-ng-model="promotion.member"
+			  x-ng-options="y as y.name for y in yes_no"> 
 		  </select>
 		  <span class="input-group-addon bg-white fg-red">*</span>
 		</div> 

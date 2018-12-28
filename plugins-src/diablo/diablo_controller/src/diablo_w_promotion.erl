@@ -57,6 +57,7 @@ handle_call({new_promotion, Merchant, Attrs}, _From, State) ->
     Name     = ?v(<<"name">>, Attrs),
     PRule    = ?v(<<"prule">>, Attrs, 0),
     Rule     = ?v(<<"rule">>, Attrs),
+    Member   = ?v(<<"member">>, Attrs, 0),
     Discount = case Rule of
 		   0 -> ?v(<<"discount">>, Attrs, 100);
 		   _ -> 100
@@ -116,8 +117,20 @@ handle_call({new_promotion, Merchant, Attrs}, _From, State) ->
 
     case ?sql_utils:execute(s_read, Sql) of
 	{ok, []} ->
-	    Sql1 = "insert into w_promotion(merchant, name"
-		", rule, discount, cmoney, rmoney, scount, sdiscount, prule, sdate, edate, remark"
+	    Sql1 = "insert into w_promotion("
+		"merchant"
+		", name"
+		", rule"
+		", discount"
+		", cmoney"
+		", rmoney"
+		", scount"
+		", sdiscount"
+		", prule"
+		", member"
+		", sdate"
+		", edate"
+		", remark"
 		", entry) values("
 		++ ?to_s(Merchant) ++ ","
 		%% ++ ?to_s(Shop) ++ ","
@@ -131,6 +144,7 @@ handle_call({new_promotion, Merchant, Attrs}, _From, State) ->
 		++ "\'" ++ ?to_s(SDiscount) ++ "\',"
 
 		++ ?to_s(PRule) ++ ","
+		++ ?to_s(Member) ++ ","
 		
 		++ "\'" ++ ?to_s(SDate) ++ "\',"
 		++ "\'" ++ ?to_s(EDate) ++ "\',"
@@ -153,9 +167,13 @@ handle_call({update_promotion, Merchant, Attrs}, _From, State) ->
     ?DEBUG("update_promotion with merhcant ~p, attrs ~p", [Merchant, Attrs]),
     Id       = ?v(<<"pid">>, Attrs),
     Name     = ?v(<<"name">>, Attrs),
-    Discount = ?v(<<"discount">>, Attrs, 100),
-    CMoney   = ?v(<<"cmoney">>, Attrs, []),
-    RMoney   = ?v(<<"rmoney">>, Attrs, []),
+    Discount = ?v(<<"discount">>, Attrs),
+    CMoney   = ?v(<<"cmoney">>, Attrs),
+    RMoney   = ?v(<<"rmoney">>, Attrs),
+
+    SCount    = ?v(<<"scount">>, Attrs),
+    SDiscount = ?v(<<"sdiscount">>, Attrs),
+    Member    = ?v(<<"member">>, Attrs),
     %% SDate    = ?v(<<"sdate">>, Attrs),
     %% EDate    = ?v(<<"edate">>, Attrs),
     Remark   = ?v(<<"remark">>, Attrs), 
@@ -172,6 +190,9 @@ handle_call({update_promotion, Merchant, Attrs}, _From, State) ->
 		++ ?utils:v(discount, integer, Discount)
 		++ ?utils:v(cmoney,  string, CMoney)
 		++ ?utils:v(rmoney,  string, RMoney)
+		++ ?utils:v(scount,  string, SCount)
+		++ ?utils:v(sdiscount,  string, SDiscount)
+		++ ?utils:v(member,  integer, Member)
 		++ ?utils:v(remark, string, Remark),
 	    Sql1 = 
 		"update w_promotion set "
@@ -200,6 +221,8 @@ handle_call({list_promotion, Merchant}, _From, State) ->
 	", sdiscount"
 
 	", prule as prule_id"
+
+	", member"
 	
 	", sdate"
 	", edate"

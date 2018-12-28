@@ -589,6 +589,8 @@ create table w_promotion(
     sdiscount       VARCHAR(32) default '',
 
     prule           TINYINT default 0, -- 0:final price 1:tag_price
+
+    member          TINYINT default 0, -- 1: take member discount
     
     sdate           DATE default 0,
     edate           DATE default 0,
@@ -753,7 +755,7 @@ create table w_inventory
 
     --
     shop             INTEGER default -1,
-    state            TINYINT default 0,  -- 3:promotion
+    state            TINYINT default 0,  -- 3:special price
     gift             TINYINT default 0,
 
     merchant         INTEGER default -1,

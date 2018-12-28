@@ -112,10 +112,10 @@ function merchantConfig(angular){
 		{merchant: merchantId, rate: rate}).$promise;
 	};
 
-	this.charge_sms = function(merchantId, balance) {
+	this.charge_sms = function(merchantId, name, mobile, balance) {
 	    return merchant.save(
 		{operation: "charge_sms"},
-		{merchant: merchantId, balance: balance}).$promise;
+		{merchant: merchantId, name:name, mobile:mobile, balance: balance}).$promise;
 	};
 
 	this.list_sms_center = function(){
@@ -176,7 +176,9 @@ function merchantConfig(angular){
 	$scope.charge = function(merchant){
 	    var callback = function(params){
 		console.log(params);
-		merchantService.charge_sms(merchant.id, params.balance).then(function(result){
+		merchantService.charge_sms(
+		    merchant.id, merchant.name, merchant.mobile, params.balance
+		).then(function(result){
 		    console.log(result);
 		    if (result.ecode === 0){
 			dialog.response_with_callback(

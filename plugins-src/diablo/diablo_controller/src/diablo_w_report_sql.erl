@@ -122,24 +122,38 @@ daily(detail, Merchant, Conditions) ->
 
 shift(detail, Merchant, Conditions) ->
     ?DEBUG("shift_detail with merchant ~p, conditions ~p", [Merchant, Conditions]),
-    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_with_prifix, Conditions),
 
-    "select id, merchant, employ as employee_id, shop as shop_id"
-	", total as sell, balance, cash, card, wxin"
+    "select a.id"
+	", a.merchant"
+	", a.employ as employee_id"
+	", a.shop as shop_id"
+	", a.account as account_id"
+	", a.total as sell"
+	", a.balance"
+	", a.cash"
+	", a.card"
+	", a.wxin"
 	
-	", y_stock, stock"
+	", a.y_stock"
+	", a.stock"
 
-	", stock_in as stockIn"
-	", stock_out as stockOut"
+	", a.stock_in as stockIn"
+	", a.stock_out as stockOut"
 
-	", pcash, pcash_in as pcashIn"
+	", a.pcash"
+	", a.pcash_in as pcashIn"
 
-	", comment, entry_date"
+	", a.comment"
+	", a.entry_date"
 
-	" from w_change_shift"
-	" where merchant=" ++ ?to_s(Merchant)
+	", b.name as account"
+
+	" from w_change_shift a"
+	" left join users b on a.account=b.id"
+	" where a.merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions) 
-	++ case ?sql_utils:condition(time_no_prfix, StartTime, EndTime) of
+	++ case ?sql_utils:condition(time_with_prfix, StartTime, EndTime) of
 	       [] -> [];
 	       TimeSql ->
 		   " and " ++ TimeSql

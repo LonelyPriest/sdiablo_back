@@ -279,8 +279,9 @@
 	<!-- </uib-tabset> -->
 
 	<div x-ng-if="select.score!==0">
-	  <span class="fg-red">总积分：</span>
+	  <span class="fg-red">积分：</span>
 	  <span class="fg-color-darken"><strong>{{select.score}}</strong></span>
+	  
 	</div>
 	<div x-ng-repeat="p in show_promotions">
 	  <div>{{p.name}}&nbsp&nbsp&nbsp&nbsp
@@ -536,7 +537,10 @@
 	<div class="col-xs-12 col-md-12"> 
 	  <h4 class="diablo-margin-top-minus-10 text-center">
 	    <span>数量：<span class="fg-red sell-font"><strong>{{select.abs_total}}</strong></span></span>&nbsp&nbsp
-	    <!-- <span>应付：<span class="fg-blue sell-font"><strong>{{select.should_pay}}</strong></span></span>&nbsp&nbsp -->
+	    <span x-ng-if="select.recharge>0">充值：<span class="fg-blue sell-font"><strong>{{select.recharge}}</strong></span></span>&nbsp&nbsp
+	    <span>应付：<span class="fg-blue sell-font">
+		<strong>{{select.should_pay}}</strong>
+	    </span></span>&nbsp&nbsp
 	    <span>实付：<span class="fg-red sell-font"><strong>{{select.has_pay}}</strong></span></span>&nbsp&nbsp
 	    <span x-ng-if="!setting.hide_charge" >找零：
 	      <span class="fg-red sell-font"><strong>{{select.charge}}</strong></span></span> 

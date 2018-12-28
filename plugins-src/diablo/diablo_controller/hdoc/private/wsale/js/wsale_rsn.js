@@ -432,113 +432,116 @@ function wsaleRsnDetailCtrlProvide (
     
     var dialog = diabloUtilsService;
     $scope.print = function(){
-	var rsn = $routeParams.rsn;
-	var shop = diablo_get_object(parseInt(rsn.split("-")[3]), $scope.shops);
-	// console.log(shop);
-	var no_vip = wsaleUtils.no_vip(shop.id, base); 
-	var p_mode = wsaleUtils.print_mode(shop.id, base);
-	var comments = wsaleUtils.comment(shop.id, base);
-	var isRound  = wsaleUtils.round(shop.id, base);
-	var cakeMode = wsaleUtils.cake_mode(shop.id, base);
-	var pdate    = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss");
+    	var rsn = $routeParams.rsn;
+    	var shop = diablo_get_object(parseInt(rsn.split("-")[3]), $scope.shops);
+    	console.log(shop);
+    	var no_vip = wsaleUtils.no_vip(shop.id, base); 
+    	var p_mode = wsaleUtils.print_mode(shop.id, base);
+    	var comments = wsaleUtils.comment(shop.id, base);
+    	var isRound  = wsaleUtils.round(shop.id, base);
+    	var cakeMode = wsaleUtils.cake_mode(shop.id, base);
+	var sale_mode = wsaleUtils.sale_mode(shop.id, base);
+	var print_perform = wsaleUtils.to_integer(sale_mode.charAt(3));
+    	var pdate    = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss");
 
-	console.log(isRound, cakeMode);
-	
-	if (diablo_frontend === p_mode){
-	    if (angular.isUndefined(LODOP)) LODOP=getLodop();
-	    console.log(LODOP);
+    	console.log(isRound, cakeMode);
+    
+    	if (diablo_frontend === p_mode){
+    	    if (angular.isUndefined(LODOP)) LODOP=getLodop();
+    	    console.log(LODOP);
 
-	    if (angular.isDefined(LODOP)){
-		wsaleService.get_w_sale_new(rsn).then(function(result){
-		    console.log(result);
-		    var sale = result.sale;
-		    var detail = angular.copy(result.detail);
-		    // angular.forEach(detail, function(d){
-		    // 	d.brand = diablo_get_object(d.brand_id, filterBrand).name;
-		    // 	d.type = diablo_get_object(d.type_id, filterType).name;
-		    // });
+    	    if (angular.isDefined(LODOP)){
+    		wsaleService.get_w_sale_new(rsn).then(function(result){
+    		    console.log(result);
+    		    var sale = result.sale;
+    		    var detail = angular.copy(result.detail);
+    		    // angular.forEach(detail, function(d){
+    		    // 	d.brand = diablo_get_object(d.brand_id, filterBrand).name;
+    		    // 	d.type = diablo_get_object(d.type_id, filterType).name;
+    		    // });
 
-		    diabloFilter.get_wretailer_batch([sale.retailer_id]).then(function(retailers){
-			console.log(retailers);
-			// console.log(diablo_get_object(sale.retailer_id, retailers).name);
-			var retailer = diablo_get_object(sale.retailer_id, retailers);
-			wsalePrint.gen_head(
-			    LODOP,
-			    shop.name,
-			    rsn,
-			    diablo_get_object(sale.employ_id, filterEmployee).name,
-			    retailer.name,
-			    sale.entry_date);
+    		    diabloFilter.get_wretailer_batch([sale.retailer_id]).then(function(retailers){
+    			console.log(retailers);
+    			// console.log(diablo_get_object(sale.retailer_id, retailers).name);
+    			var retailer = diablo_get_object(sale.retailer_id, retailers);
+    			wsalePrint.gen_head(
+    			    LODOP,
+    			    shop.name,
+    			    rsn,
+    			    diablo_get_object(sale.employ_id, filterEmployee).name,
+    			    retailer.name,
+    			    sale.entry_date);
 
-			// sort sale
-			var notes= [];
-			for (var i=0, l=detail.length; i<l; i++) {
-			    var d = detail[i];
+    			// sort sale
+    			var notes= [];
+    			for (var i=0, l=detail.length; i<l; i++) {
+    			    var d = detail[i];
 
-			    var found = false; 
-			    for (var j=0, k=notes.length; j<k; j++) {
-				var ns = notes[j];
-				if (d.style_number === ns.style_number
-				    && d.brand_id === ns.brand_id) {
-				    // console.log(d.color_id);
-				    ns.note += ";"
-					+ diablo_find_color(d.color_id, filterColor).cname
-					+ ":" + d.size;
-				    found = true;
-				} 
-			    }
+    			    var found = false; 
+    			    for (var j=0, k=notes.length; j<k; j++) {
+    				var ns = notes[j];
+    				if (d.style_number === ns.style_number
+    				    && d.brand_id === ns.brand_id) {
+    				    // console.log(d.color_id);
+    				    ns.note += ";"
+    					+ diablo_find_color(d.color_id, filterColor).cname
+    					+ ":" + d.size;
+    				    found = true;
+    				} 
+    			    }
 
-			    if (!found) {
-				// console.log(diablo_find_color(d.color_id, filterColor));
-				d.brand = diablo_get_object(d.brand_id, filterBrand).name;
-				d.type = diablo_get_object(d.type_id, filterType).name;
-				d.note = diablo_find_color(d.color_id, filterColor).cname + ":" + d.size;
-				notes.push(d)
-			    }
-			}
+    			    if (!found) {
+    				// console.log(diablo_find_color(d.color_id, filterColor));
+    				d.brand = diablo_get_object(d.brand_id, filterBrand).name;
+    				d.type = diablo_get_object(d.type_id, filterType).name;
+    				d.note = diablo_find_color(d.color_id, filterColor).cname + ":" + d.size;
+    				notes.push(d)
+    			    }
+    			}
 
-			// console.log(notes);
-			var hLine = wsalePrint.gen_body(LODOP, sale, notes, isRound, cakeMode); 
-			var vip = wsaleUtils.isVip(retailer, no_vip, filterSysRetailer),
+    			// console.log(notes);
+    			var hLine = wsalePrint.gen_body(LODOP, sale, notes, isRound, cakeMode); 
+    			var vip = wsaleUtils.isVip(retailer, no_vip, filterSysRetailer),
 			
-			hLine = wsalePrint.gen_stastic(LODOP, hLine, sale.direct, sale, vip); 
-			wsalePrint.gen_foot(LODOP, hLine, comments, pdate, shop.addr, cakeMode);
-			wsalePrint.start_print(LODOP); 
-		    }); 
-		}); 
-	    }	    
-	} else {
-	    $scope.disable_print = true;
-	    wsaleService.print_w_sale(rsn).then(function(result){
-		console.log(result);
-		$scope.disable_print = false; 
-		if (result.ecode == 0){
-		    var msg = "";
-		    if (result.pcode == 0){
-			msg = "销售单打印成功！！单号："
-			    + result.rsn + "，请等待服务器打印";
-			dialog.response(true, "销售单打印", msg, $scope); 
-		    } else {
-			if (result.pinfo.length === 0){
-			    msg += wsaleService.error[result.pcode]
-			} else {
-			    angular.forEach(result.pinfo, function(p){
-				msg += "[" + p.device + "] "
-				    + wsaleService.error[p.ecode]
-			    })
-			};
-			msg = "销售单打印失败！！单号："
-			    + result.rsn + "，打印失败：" + msg;
-			dialog.response(false, "销售单打印", msg, $scope); 
-		    }
+    			hLine = wsalePrint.gen_stastic(
+			    LODOP, hLine, sale.direct, sale, sale.balance, vip, print_perform); 
+    			wsalePrint.gen_foot(LODOP, hLine, comments, pdate, shop.addr, cakeMode);
+    			wsalePrint.start_print(LODOP); 
+    		    }); 
+    		}); 
+    	    }	    
+    	} else {
+    	    $scope.disable_print = true;
+    	    wsaleService.print_w_sale(rsn).then(function(result){
+    		console.log(result);
+    		$scope.disable_print = false; 
+    		if (result.ecode == 0){
+    		    var msg = "";
+    		    if (result.pcode == 0){
+    			msg = "销售单打印成功！！单号："
+    			    + result.rsn + "，请等待服务器打印";
+    			dialog.response(true, "销售单打印", msg, $scope); 
+    		    } else {
+    			if (result.pinfo.length === 0){
+    			    msg += wsaleService.error[result.pcode]
+    			} else {
+    			    angular.forEach(result.pinfo, function(p){
+    				msg += "[" + p.device + "] "
+    				    + wsaleService.error[p.ecode]
+    			    })
+    			};
+    			msg = "销售单打印失败！！单号："
+    			    + result.rsn + "，打印失败：" + msg;
+    			dialog.response(false, "销售单打印", msg, $scope); 
+    		    }
 		    
-		} else{
-	    	    dialog.response(
-	    		false, "销售单打印",
-			"销售单打印失败：" + wsaleService.error[result.ecode]);
-		}
-	    })   
-	} 
+    		} else{
+    	    	    dialog.response(
+    	    		false, "销售单打印",
+    			"销售单打印失败：" + wsaleService.error[result.ecode]);
+    		}
+    	    })   
+    	} 
     };
 
     $scope.print_note = function() {

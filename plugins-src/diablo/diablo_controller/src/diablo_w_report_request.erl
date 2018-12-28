@@ -355,9 +355,6 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
     PCashIn    = ?v(<<"pcash_in">>, Content, 0),
     Comment    = ?v(<<"comment">>, Content, []), 
     Curtime    = ?utils:current_time(format_localtime), 
-    %% TimeEnd = time_of_end_day(),
-    %% TodayStart = ?utils:current_time(localdate),
-    %% TodayEnd = TodayStart ++ " " ++ TimeEnd,
     EndDate  = ?to_s(StartDate) ++ " " ++ time_of_end_day(),
 
     {ok, EmployeeInfo} = ?w_user_profile:get(employee, Merchant, EmployeeId), 
@@ -412,19 +409,7 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 	    -1 -> ConditionsWithEmployee;
 	    _ -> 
 		ConditionsWithEmployee ++ [{<<"account">>, UserId}] 
-	end,
-    
-    %% Conditions = case EmployeeId of
-    %% 		     undefined ->
-    %% 			 [{<<"shop">>, ShopId},
-    %% 			  {<<"start_time">>, ?to_b(StartDate)},
-    %% 			  {<<"end_time">>, ?to_b(EndDate)}];
-    %% 		     _ ->
-    %% 			 [{<<"shop">>, ShopId},
-    %% 			  {<<"employ">>, EmployeeId},
-    %% 			  {<<"start_time">>, ?to_b(StartDate)},
-    %% 			  {<<"end_time">>, ?to_b(EndDate)}]
-    %% 		 end,
+	end, 
 
     DropConditions = lists:keydelete(<<"account">>, 1 ,lists:keydelete(<<"employ">>, 1, Conditions)),
     

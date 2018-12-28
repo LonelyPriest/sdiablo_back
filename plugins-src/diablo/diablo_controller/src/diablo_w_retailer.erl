@@ -606,6 +606,7 @@ handle_call({get_retailer_batch, Merchant, RetailerIds}, _From, State) ->
 	", intro as intro_id"
 	", level"
 	", py"
+	", birth"
 	", shop as shop_id"
 	", draw as draw_id"
 	", type as type_id"

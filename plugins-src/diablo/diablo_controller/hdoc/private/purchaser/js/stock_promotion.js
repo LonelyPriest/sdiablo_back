@@ -14,12 +14,14 @@ function stockPromotionNewProvide(
     
     $scope.rules  = purchaserService.promotion_rules;
     $scope.prules = purchaserService.promotion_prules;
+    $scope.yes_no = stockUtils.yes_no();
 
     var now = $.now();
     $scope.promotion = {
 	// shop:      $scope.shops[0],
 	rule       :$scope.rules[0],
 	prule      :$scope.prules[0],
+	member     :$scope.yes_no[0],
 	discount   :100,
 	sdate      :now,
 	edate      :now +  diablo_day_millisecond * 90
@@ -164,15 +166,23 @@ function stockPromotionDetailProvide(
 	    'update-promotion.html', undefined, callback, undefined,
 	    {promotion:old_promotion,
 	     valid_promotion:valid_promotion,
+	     pattern:$scope.pattern,
 	     has_update: function(new_promotion){
-		 if (0 === new_promotion.rule_id)
-		     return diablo_is_same(new_promotion.discount, old_promotion.discount)
-		     && diablo_is_same(new_promotion.remark, old_promotion.remark) ? false:true;
-		 else if (1 === new_promotion.rule_id)
-		     return diablo_is_same(new_promotion.cmoney, old_promotion.cmoney)
-		     && diablo_is_same(new_promotion.rmoney, old_promotion.rmoney)
-		     && diablo_is_same(new_promotion.remark, old_promotion.remark) ? false:true;
-		 else return false; 
+		 if (diablo_is_same(new_promotion.member, old_promotion.member)
+		     && diablo_is_same(new_promotion.remark, old_promotion.remark)) {
+		     if (0 === new_promotion.rule_id
+			 && diablo_is_same(new_promotion.discount, old_promotion.discount))
+			 return false;
+		     else if ((1 === new_promotion.rule_id || 2 === new_promotion.rule_id)
+			      && diablo_is_same(new_promotion.cmoney, old_promotion.cmoney)
+			      && diablo_is_same(new_promotion.rmoney, old_promotion.rmoney))
+			 return false;
+		     else if ((3 === new_promotion.rule_id || 4 === new_promotion.rule_id)
+			      && diablo_is_same(new_promotion.scount, old_promotion.scount)
+			      && diablo_is_same(new_promotion.sdiscount, old_promotion.sdiscount))
+			 return false;
+		 }
+		 return true;
 	     }
 	    })
     };
