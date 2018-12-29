@@ -678,7 +678,9 @@ function wsaleNewProvide(
     		}
             } 
     	    $scope.set_retailer(); 
-    	};
+    	} else {
+	    $scope.select.retailer = filterSysRetailer[0];
+	}
     };
 
     $scope.reset_retailer();

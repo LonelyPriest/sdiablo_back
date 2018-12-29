@@ -524,7 +524,9 @@
     	    </span>
 	  </h5>
 	</div>
-	
+      </div>
+
+      <div class="row">
 	<div x-ng-if="select.retailer && select.retailer.type_id===1" class="col-xs-12 col-md-12"> 
 	  <h5 class="text-center" style="margin-top:-2px">
 	    <span x-ng-if="select.recharge>0">充值：<span class="fg-blue sell-font">
@@ -544,7 +546,7 @@
 
       <div class="row">
 	<div class="col-xs-12 col-md-12"> 
-	  <h5 class="diablo-margin-top-minus-10 text-center">
+	  <h5 class="text-center" style="margin-top:-2px">
 	    <span>数量：<span class="fg-red sell-font">
 		<strong>{{select.abs_total}}</strong></span></span>&nbsp&nbsp 
 	    <span>应付：<span class="fg-blue sell-font">
@@ -552,7 +554,9 @@
 	    </span>
 	  </h5>
 	</div>
+      </div>
 
+      <div class="row">
 	<div class="col-xs-12 col-md-12">
 	  <h5 class="text-center" style="margin-top:-2px">
 	    <span>实付：<span class="fg-red sell-font">
@@ -566,7 +570,7 @@
 
       <div class="row">
 	<div class="col-xs-12 col-md-12"> 
-	  <h5 class="diablo-margin-top-minus-10 text-center">
+	  <h5 class="text-center" style="margin-top:-2px">
 	    <span x-ng-if="select.ticket_balance">券：
     	      <span class="fg-blue sell-font"><strong>{{select.ticket_balance}}</strong></span>&nbsp&nbsp
 	    </span>
@@ -584,10 +588,10 @@
 	    </span>
 	  </h5>
 	</div>
-      </div>
-      
+      </div> 
     </div> 
   </div>
+  
 </div> <!--END row-->
 
 <script type="text/ng-template" id="wsale-new.html">
