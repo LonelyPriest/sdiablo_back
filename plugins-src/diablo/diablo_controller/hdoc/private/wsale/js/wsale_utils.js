@@ -1527,35 +1527,32 @@ var wsalePrint = function(){
 	    LODOP.ADD_PRINT_LINE(hLine + 5, left, hLine + 5, vWidth, 0, 1); 
 	    hLine += 15; 
 	    if (diablo_sale === direct) {
-		var space = false;
 		if (angular.isDefined(sale.has_pay)) {
 		    l1 = "现付：" + wsaleUtils.to_float(sale.has_pay).toString();
-		    LODOP.ADD_PRINT_TEXT(hLine, left, 75, hFont, l1);
-		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 8);
+		    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
+		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 9);
 		    LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
-		    space = true;
-		    // hLine += 20;
+		    hLine += 15;
 		}
 		
 		if (angular.isDefined(sale.charge)) {
 		    l1 = "找零：" + wsaleUtils.to_float(-sale.charge).toString();
-		    LODOP.ADD_PRINT_TEXT(hLine, left + 75, 70, hFont, l1);
-		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 8);
+		    LODOP.ADD_PRINT_TEXT(hLine, left, 80, hFont, l1);
+		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 9);
 		    LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
-		    space = true;
-		    // hLine += 20;
+		    // hLine += 15;
 		}
 		
 		if (printPerform && angular.isDefined(sale.perform) && sale.perform >= 0) {
 		    l1 = "优惠：" + wsaleUtils.to_float(sale.perform).toString();
-		    LODOP.ADD_PRINT_TEXT(hLine, left + 145, vWidth - 145, hFont, l1);
-		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 8);
+		    LODOP.ADD_PRINT_TEXT(hLine, left + 80, vWidth - 80, hFont, l1);
+		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 9);
 		    LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
-		    space = true;
+		    // space = true;
 		    // hLine += 20;
 		}
 
-		if (space) hLine += 15;
+		hLine += 15;
 	    }
 		
 

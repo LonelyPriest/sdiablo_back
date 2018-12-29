@@ -514,44 +514,59 @@
       </div>
 
       <div class="row">
-	<div class="col-xs-12 col-md-12"> 
-	  <h4 class="text-center" style="margin-top:-2px">
-    	    <span x-ng-if="select.retailer && select.retailer.type_id!==2">生日：
-    	      <span class="fg-blue sell-font"><strong>{{select.retailer.birth}}</strong></span>&nbsp&nbsp
+	<div x-ng-if="select.retailer && select.retailer.type_id!==2" class="col-xs-12 col-md-12"> 
+	  <h5 class="text-center" style="margin-top:-2px">
+    	    <span>生日：<span class="fg-blue sell-font">
+		<strong>{{select.retailer.birth}}</strong></span>&nbsp&nbsp
     	    </span>
-    	    <span x-ng-if="select.retailer && select.retailer.type_id!==2">积分：
-    	      <span class="fg-red sell-font"><strong>{{select.retailer.score}}</strong></span>&nbsp&nbsp
+    	    <span>积分：<span class="fg-red sell-font">
+		<strong>{{select.retailer.score}}</strong></span>
     	    </span>
-    	    <span x-ng-if="select.retailer && select.retailer.type_id===1">余额：
-    	      <span class="fg-blue sell-font"><strong>{{select.surplus}}</strong></span>&nbsp&nbsp
+	  </h5>
+	</div>
+	
+	<div x-ng-if="select.retailer && select.retailer.type_id===1" class="col-xs-12 col-md-12"> 
+	  <h5 class="text-center" style="margin-top:-2px">
+	    <span x-ng-if="select.recharge>0">充值：<span class="fg-blue sell-font">
+		<strong>{{select.recharge}}</strong></span>&nbsp&nbsp
+	    </span>
+	      
+    	    <span>余额：<span class="fg-blue sell-font">
+		<strong>{{select.surplus}}</strong></span>&nbsp&nbsp
     	    </span>
-
-    	    <span x-ng-if="select.retailer && select.retailer.type_id===1">结余：
-    	      <span class="fg-red"><strong>{{select.left_balance}}</strong></span>&nbsp&nbsp
+	      
+    	    <span>结余：<span class="fg-red sell-font">
+		<strong>{{select.left_balance}}</strong></span>&nbsp&nbsp
     	    </span> 
-	  </h4>
+	  </h5>
 	</div>
       </div>
 
       <div class="row">
 	<div class="col-xs-12 col-md-12"> 
-	  <h4 class="diablo-margin-top-minus-10 text-center">
-	    <span>数量：<span class="fg-red sell-font"><strong>{{select.abs_total}}</strong></span></span>&nbsp&nbsp
-	    <span x-ng-if="select.recharge>0">充值：<span class="fg-blue sell-font"><strong>{{select.recharge}}</strong></span></span>&nbsp&nbsp
+	  <h5 class="diablo-margin-top-minus-10 text-center">
+	    <span>数量：<span class="fg-red sell-font">
+		<strong>{{select.abs_total}}</strong></span></span>&nbsp&nbsp 
 	    <span>应付：<span class="fg-blue sell-font">
-		<strong>{{select.should_pay}}</strong>
-	    </span></span>&nbsp&nbsp
-	    <span>实付：<span class="fg-red sell-font"><strong>{{select.has_pay}}</strong></span></span>&nbsp&nbsp
-	    <span x-ng-if="!setting.hide_charge" >找零：
-	      <span class="fg-red sell-font"><strong>{{select.charge}}</strong></span></span> 
+		<strong>{{select.should_pay}}</strong></span>
+	    </span>
+	  </h5>
+	</div>
 
-	  </h4>
+	<div class="col-xs-12 col-md-12">
+	  <h5 class="text-center" style="margin-top:-2px">
+	    <span>实付：<span class="fg-red sell-font">
+		<strong>{{select.has_pay}}</strong></span></span>&nbsp&nbsp
+	    <span x-ng-if="!setting.hide_charge" >找零：<span class="fg-red sell-font">
+		<strong>{{select.charge}}</strong></span>
+	    </span> 
+	  </h5>
 	</div>
       </div>
 
       <div class="row">
 	<div class="col-xs-12 col-md-12"> 
-	  <h4 class="diablo-margin-top-minus-10 text-center">
+	  <h5 class="diablo-margin-top-minus-10 text-center">
 	    <span x-ng-if="select.ticket_balance">券：
     	      <span class="fg-blue sell-font"><strong>{{select.ticket_balance}}</strong></span>&nbsp&nbsp
 	    </span>
@@ -567,7 +582,7 @@
 	    <span x-ng-if="select.wxin">微/支：
     	      <span class="fg-blue sell-font"><strong>{{select.wxin}}</strong></span>&nbsp&nbsp
 	    </span>
-	  </h4>
+	  </h5>
 	</div>
       </div>
       
