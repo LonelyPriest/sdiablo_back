@@ -1025,10 +1025,9 @@ var wsaleCalc = function(){
 		    // promotion first
 		    var one = inventories[i];
 		    // console.log(one);
-		    if (one.state !== 3) {
+		    if (one.state !== 3 && wsaleCalc.in_promotion_stock(one, stocksSortWithPromotion)) {
 			if (one.pid !== diablo_invalid_index) {
-			    if (wsaleCalc.in_promotion_stock(one, stocksSortWithPromotion)
-				&& diablo_yes === one.promotion.member) {
+			    if (diablo_yes === one.promotion.member) {
 				one.fdiscount = wsaleCalc.calc_vip_discount(vipDiscountMode, vipDiscount, one);
 				one.fprice = diablo_price(one.tag_price, one.fdiscount);
 			    }

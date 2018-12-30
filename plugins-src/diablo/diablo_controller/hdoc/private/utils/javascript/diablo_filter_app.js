@@ -346,6 +346,9 @@ function filterProvider(){
 		} else if (name === 'bsaler'){
 		    _filter.fields.push({name:"bsaler", chinese:"客户"});
 		    _prompt.bsaler = promptValues;
+		}else if (name === 'sprice'){
+		    _filter.fields.push({name:"sprice", chinese:"特价"});
+		    _prompt.sprice = promptValues;
 		};
 		
 		return _filter;

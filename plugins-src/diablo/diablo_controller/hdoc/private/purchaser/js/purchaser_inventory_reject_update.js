@@ -681,7 +681,7 @@ function purchaserInventoryRejectUpdateCtrlProvide(
 		return $scope.select.e_pay_type.id; 
 	    }(),
 
-	    old_firm:       $scope.old_select.firm.id,
+	    old_firm:       stockUtils.invalid_firm($scope.old_select.firm),
 	    old_balance:    setv($scope.old_select.surplus),
 	    old_should_pay: stockUtils.get_opposite(setv($scope.old_select.should_pay)),
 	    old_epay:       stockUtils.get_opposite(setv($scope.old_select.e_pay)),

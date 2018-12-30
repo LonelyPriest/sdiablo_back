@@ -718,6 +718,12 @@ inventory({update_batch, MatchMode}, Merchant, Attrs, Conditions) ->
 					      Acc;
 					 ({<<"less">>, _}, Acc) ->
 					      Acc;
+					 ({<<"sprice">>, SPrice}, Acc) ->
+					      case SPrice of
+						  [] -> Acc;
+						  ?YES -> [{<<"state">>, ?SPRICE}|Acc];
+						  ?NO -> [{<<"state">>, [-1, 0, 1, 2]}|Acc]
+					      end; 
 					 (A, Acc) ->
 					      [A|Acc]
 				      end, [], NewConditions),
@@ -2503,7 +2509,13 @@ sort_condition(stock, Conditions, Prefix) ->
 	case ?v(<<"lsell">>, Conditions, []) of
 	    [] -> [];
 	    LessSell -> " and " ++ ?to_s(Prefix) ++ "sell<" ++ ?to_s(LessSell)
-	end.
+	end ++
+	
+	case ?v(<<"sprice">>, Conditions, []) of
+	    [] -> [];
+	    ?YES -> " and "  ++ ?to_s(Prefix) ++ "state=3";
+	    ?NO -> " and "  ++ ?to_s(Prefix) ++ "state in (-1, 0, 1, 2)"
+	end .
 	
 		 
 
@@ -2579,6 +2591,8 @@ realy_conditions(_Merchant, Conditions) ->
 	 ({<<"lsell">>, _}, Acc) ->
     	      Acc;
     	 ({<<"stock">>, _}, Acc) ->
+    	      Acc;
+	 ({<<"sprice">>, _}, Acc) ->
     	      Acc;
     	 (C, Acc) ->
     	      [C|Acc]

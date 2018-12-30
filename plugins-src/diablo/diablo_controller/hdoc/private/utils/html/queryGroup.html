@@ -141,11 +141,19 @@
 	    </select> 
 	  </span>
 
+	  <span x-ng-switch-when="sprice">
+	    <select type="text" class="form-control"
+	  	    x-ng-model="f.value"
+	  	    x-ng-options="s as s.name for s in prompt.sprice"
+	  	    x-ng-init="f.value=f.value ? f.value : prompt.sprice[0]">
+	    </select>
+	  </span>
+
 	  <span x-ng-switch-when="size">
 	    <input type="text" class="form-control" placeholder="请输入尺码"
 		   x-ng-model="f.value"
 		   typeahead-editable="false"
-	  	   uib-typeahead="c for c in prompt.size|filter:$viewValue|limitTo:8"/>
+	  	   uib-typeahead="c for c in prompt.size|filter:$viewValue"/>
 	  </span>
 
 	  <span x-ng-switch-when="shop">
@@ -211,7 +219,7 @@
 	  	    x-ng-init="f.value=f.value ? f.value : prompt.date[0]">
 	    </select>
 	  </span>
-
+	  
 	  <span x-ng-switch-when="supplier">
 	    <input type="text" class="form-control" placeholder="请输入供应商"
 		   x-ng-model="f.value"

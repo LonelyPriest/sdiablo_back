@@ -154,6 +154,8 @@
 -define(PY_MATCH, 0).
 -define(CH_MATCH, 1).
 
+-define(SPRICE, 3).
+
 %% pagination
 -define(DEFAULT_ITEMS_PERPAGE, 5).
 
