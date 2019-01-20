@@ -195,7 +195,14 @@ init([]) ->
 	  <<"修改会员等级定义">>, <<"update_retailer_level">>, ?right_w_retailer},
 
 	 {?print_w_retailer,
-	  <<"会员直接打印">>, <<"print_w_retailer">>, ?right_w_retailer} 
+	  <<"会员直接打印">>, <<"print_w_retailer">>, ?right_w_retailer},
+
+	 {?new_ticket_plane,
+	  <<"新增制券方案">>, <<"new_ticket_plane">>, ?right_w_retailer}, 
+	 {?update_ticket_plane,
+	  <<"新增制券方案">>, <<"update_ticket_plane">>, ?right_w_retailer}, 
+	 {?list_ticket_plane,
+	  <<"查看制券方案">>, <<"list_ticket_plane">>, ?right_w_retailer}
 	],
 
     
@@ -976,6 +983,7 @@ pass_action(wholesaler) ->
      <<"match_w_good_style_number">>,
      <<"list_w_promotion">>,
      <<"syn_type_pinyin">>,
+     <<"get_good_by_barcode">>,
 
      %% inventnory
      <<"list_w_inventory">>,

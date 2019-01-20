@@ -509,3 +509,6 @@ alter table w_promotion modify column rmoney VARCHAR(32) not null default '';
 
 --2018-12-26
 alter table w_promotion add column member TINYINT default 0 after prule;
+
+--2019-01-20
+alter table print_template add column barcode TINYINT default 1  after offset_label;

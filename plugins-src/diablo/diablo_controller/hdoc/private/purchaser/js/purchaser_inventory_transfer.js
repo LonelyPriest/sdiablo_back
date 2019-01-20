@@ -958,11 +958,20 @@ function purchaserInventoryTransferToDetailCtrlProvide (
 			    r.state=1; r.check_date=check_date;})
 	    	    return;
 		} else{
-	    	    dialog.response(
-	    		false,
-			"移仓调入确认",
-	    		"确认失败："
-			    + purchaserService.error[state.ecode]);
+		    if (state.ecode === 2021) {
+			dialog.response(
+	    		    false,
+			    "移仓调入确认",
+	    		    "确认失败："
+				+ purchaserService.error[2021]
+				+ state.stock);
+		    } else {
+			dialog.response(
+	    		    false,
+			    "移仓调入确认",
+	    		    "确认失败："
+				+ purchaserService.error[state.ecode]);
+		    } 
 		}
 	    })
 	};

@@ -188,7 +188,16 @@ action(Session, Req, {"get_used_w_good"}, Payload) ->
 					       {<<"data">>, Details}]});
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
-    end; 
+    end;
+
+action(Session, Req, {"get_good_by_barcode"}, Payload) ->
+    ?DEBUG("get_good_by_barcode with session ~p, payload~n~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    Barcode  = ?v(<<"barcode">>, Payload, []),
+    object_responed_with_code(
+      fun() ->
+	      ?w_inventory:purchaser_good(get_by_barcode, Merchant, Barcode)
+      end, Req); 
 
 action(Session, Req, {"match_w_good_style_number"}, Payload) ->
     ?DEBUG("match_w_good_style_number with session ~p, Payload ~p",

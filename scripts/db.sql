@@ -625,6 +625,7 @@ create table w_ticket(
 
 create table w_ticket_custom(
     id              INTEGER AUTO_INCREMENT,
+    plane           INTEGER default -1,
     batch           INTEGER not null,
     balance         INTEGER not null,
     retailer        INTEGER default -1, -- -1: who consumed
@@ -641,19 +642,22 @@ create table w_ticket_custom(
     
 ) default charset=utf8;
 
--- create table shop_promotion(
---     id              INTEGER AUTO_INCREMENT,
---     merchant        INTEGER not null default -1,
---     shop            INTEGER not null default -1,
---     pid             INTEGER not null default -1, -- reference to promotion
---     entry           DATETIME default 0,
---     deleted         INTEGER default 0, -- 0: no;  1: yes
-
---     unique  key uk  (merchant, shop, pid),
---     primary key     (id)
+create table w_ticket_plane(
+    id              INTEGER AUTO_INCREMENT,
+    name            VARCHAR(64) not null,
+    balance         INTEGER not null,
+    effect          TINYINT default -1,
+    expire          TINYINT default -1,
+    scount          TINYINT default -1, 
+    remark          VARCHAR(128) not null,
+    merchant        INTEGER not null default -1, 
+    entry_date      DATETIME default 0, 
+    deleted         INTEGER default 0, -- 0: no;  1: yes 
+    unique  key uk  (merchant, name),
+    key         dk  (merchant, retailer),
+    primary key     (id)
     
--- ) default charset=utf8;
-
+) default charset=utf8;
 
 /*
 * invnentory
@@ -1423,6 +1427,7 @@ create table print_template(
    offset_virprice TINYINT default 0,
    offset_label    TINYINT default 0, 
 
+   barcode         TINYINT default 0,   
    w_barcode       INTEGER default 0,
 
    printer         TINYINT default -1,

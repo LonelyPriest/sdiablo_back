@@ -339,18 +339,26 @@
 	</div>
 
 	<div class="actions">
-	  <button x-ng-if="select.retailer.type_id===1"
-	    	  class="btn green"
-	    	  x-ng-disabled="disable_withdraw()"
-	    	  x-ng-click="withdraw()">提现<i class="glyphicon glyphicon-yen"></i>
-	  </button>
-	  <button class="btn red"
-	    	  x-ng-click="get_ticket()">电子券<i class="glyphicon glyphicon-bookmark"></i>
-	  </button>
-	  
-	  <button class="btn btn-success"
-	    	  x-ng-disabled="disable_save()"
-	    	  x-ng-click="save_wsale()">保存 <i class="glyphicon glyphicon-save"></i></button>
+	  <div class="btn-group">
+	    <button x-ng-if="select.retailer.type_id===1 && select.retailer.balance!==0"
+	    	    class="btn green"
+	    	    x-ng-disabled="disable_withdraw()"
+	    	    x-ng-click="withdraw()">提现<i class="glyphicon glyphicon-yen"></i>
+	    </button>
+	    
+	    <button class="btn red"
+	    	    x-ng-click="get_ticket()">取券<i class="glyphicon glyphicon-bookmark"></i>
+	    </button>
+
+	    <button x-ng-if="false" class="btn blue"
+		    x-ng-disabled="disable_refresh"
+		    x-ng-click="gift_ticket()">赠券
+	      <i class="glyphicon glyphicon-send"></i></button>
+	    
+	    <button class="btn btn-success"
+	    	    x-ng-disabled="disable_save()"
+	    	    x-ng-click="save_wsale()">保存 <i class="glyphicon glyphicon-save"></i></button>
+	  </div>
 	</div>
       </div>
 

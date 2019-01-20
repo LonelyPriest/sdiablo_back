@@ -120,7 +120,7 @@
 -define(VIP_DEFAULT_MODE, <<"0000">>).
 
 %% hide mode
--define(HIDE_DEFAULT_MODE, <<"000110111111">>).
+-define(HIDE_DEFAULT_MODE, <<"000110111111011">>).
 
 %% print mode
 -define(PRINT_DEFAULT_MODE, <<"000">>).
@@ -187,7 +187,7 @@
 	 "95A", "95B", "95C", "95D", "95E", "95F",
 
 	 "55", "60", "65", "70", "75", "85", "95", "73", "78", "66", "51",
-	 "62", "67", "79", "72", "84", "59", "53"
+	 "62", "67", "79", "72", "84", "59", "53", "2", "3"
 	 ]).
 
 %% right module
@@ -253,6 +253,9 @@
 -define(update_retailer_level,       ?right_w_retailer + 33).
 -define(syn_score_ticket,            ?right_w_retailer + 34).
 -define(print_w_retailer,            ?right_w_retailer + 35).
+-define(new_ticket_plane,            ?right_w_retailer + 36).
+-define(update_ticket_plane,         ?right_w_retailer + 37).
+-define(list_ticket_plane,           ?right_w_retailer + 38).
 
 %% shop
 -define(new_shop,       ?right_shop + 1).

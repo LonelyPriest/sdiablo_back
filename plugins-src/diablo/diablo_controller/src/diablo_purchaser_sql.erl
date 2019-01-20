@@ -39,21 +39,25 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
 	       false -> 1
 	   end,
 
-    Barcode = 
-	case AutoBarcode of
-	    ?YES  -> 0;
-	    ?NO ->
-		case ?w_user_profile:get(type, Merchant, TypeId) of
-		    {ok, []} -> 0;
-		    {ok, [{Type}]} ->
-			%% ?DEBUG("type ~p", [Type]),
-			case ?v(<<"bcode">>, Type) of
-			    0 -> 0;
-			    _BCodeOfType ->
-				gen_barcode(self_barcode, Merchant, Year, Season, _BCodeOfType)
-			end;
-		    _ -> 0
-		end 
+    Barcode =
+	case ?v(<<"barcode">>, Attrs, []) of
+	    [] ->
+		case AutoBarcode of
+		    ?YES  -> ?INVALID_OR_EMPTY;
+		    ?NO ->
+			case ?w_user_profile:get(type, Merchant, TypeId) of
+			    {ok, []} -> ?INVALID_OR_EMPTY;
+			    {ok, [{Type}]} ->
+				%% ?DEBUG("type ~p", [Type]),
+				case ?v(<<"bcode">>, Type) of
+				    0 -> ?INVALID_OR_EMPTY;
+				    _BCodeOfType ->
+					gen_barcode(self_barcode, Merchant, Year, Season, _BCodeOfType)
+				end;
+			    _ -> 0
+			end
+		    end;
+	    _Barcode -> _Barcode
 	end,
 
     Level = ?v(<<"level">>, Attrs, -1), 
@@ -252,6 +256,7 @@ good(detail, Merchant, Conditions) ->
 	", a.tag_price"
 	", a.ediscount"
 	", a.discount"
+	", a.state"
 	", a.path" 
 	", a.alarm_day"
 	", a.unit"
@@ -267,11 +272,13 @@ good(detail, Merchant, Conditions) ->
 	", a.entry_date"
 
 	", b.name as brand"
+	", c.name as type"
 	%% ", c.name as executive"
 	%% ", d.name as category"
 	
 	" from w_inventory_good a" 
 	" left join brands b on a.brand=b.id"
+	" left join inv_types c on a.type=c.id"
 	" where "
 	++ ?sql_utils:condition(proplists_suffix, NewConditions)
 	++ "a.merchant=" ++ ?to_s(Merchant) 

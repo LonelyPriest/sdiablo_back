@@ -692,6 +692,30 @@ action(Session, Req, {"filter_custom_ticket_detail"}, Payload) ->
 		  custom_ticket_detail, Match, Merchant, Conditions, CurrentPage, ItemsPerPage)
        end, Req, Payload);
 
+action(Session, Req, {"new_ticket_plane"}, Payload) ->
+    ?DEBUG("new_ticket_plane with Session ~p~npaylaod ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    case ?w_retailer:retailer(add_ticket_plane, Merchant, Payload) of
+	{ok, PId} ->
+	    ?w_user_profile:update(ticket_plane, Merchant),
+	    ?utils:respond(
+	       200, Req, ?succ(add_ticket_plane, PId), {<<"id">>, pId});
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"update_ticket_plane"}, Payload) ->
+    ?DEBUG("update_ticket_plane with Session ~p~npaylaod ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    case ?w_retailer:retailer(update_ticket_plane, Merchant, Payload) of
+	{ok, Level} ->
+	    ?w_user_profile:update(ticket_plane, Merchant),
+	    ?utils:respond(
+	       200, Req, ?succ(add_ticket_plane, Level), {<<"id">>, Level});
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
 
 %%
 %% threshold card
@@ -911,6 +935,11 @@ sidebar(Session) ->
 		     [{"custom_ticket_detail", "优惠电子券", "glyphicon glyphicon-bold"}];
 		  _ -> []
 	      end
+	  ++ case ?right_auth:authen(?list_ticket_plane, Session) of
+		 {ok, ?list_ticket_plane} ->
+		     [{"plane_custom_ticket", "优惠券方案", "glyphicon glyphicon-italic"}];
+		 _ -> []
+	     end
 	 }],
     
     ThresholdCard = [{{"threshold_card", "次/月/季/年卡", "glyphicon glyphicon-credit-card" },

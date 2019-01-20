@@ -78,7 +78,8 @@ var stockUtils = function(){
 		hide_vprice:    default_hide(hide.charAt(10)),
 		hide_sprice:    default_hide(hide.charAt(11)),
 		hide_discount:  default_hide(hide.charAt(12)),
-		hide_unit:      default_hide(hide.charAt(13))
+		hide_unit:      default_hide(hide.charAt(13)),
+		hide_barcode:   default_hide(hide.charAt(14))
 	    }
 	    
 	},
@@ -1406,28 +1407,31 @@ stockPrintU.prototype.printBarcode2 = function() {
     if (stockUtils.to_integer(this.template.w_barcode) !== 0) {
 	width_barcode = stockUtils.to_integer(this.template.w_barcode);
     }
-    
-    this.LODOP.ADD_PRINT_BARCODE(
-	top, this.left, width_barcode, this.template.hpx_barcode, this.barcodeFormat, this.first.barcode);
-    this.LODOP.SET_PRINT_STYLEA(0, "FontSize", 7);
-    
-    if (pSecond) {
-	this.LODOP.ADD_PRINT_BARCODE(
-	    top, startSecond, width_barcode, this.template.hpx_barcode, this.barcodeFormat, this.second.barcode);
-	this.LODOP.SET_PRINT_STYLEA(0, "FontSize", 7);
-    }
 
-    if (pThird) {
+    if (this.template.barcode) {
 	this.LODOP.ADD_PRINT_BARCODE(
-	    top, startThird, width_barcode, this.template.hpx_barcode, this.barcodeFormat, this.third.barcode);
+	    top, this.left, width_barcode, this.template.hpx_barcode, this.barcodeFormat, this.first.barcode);
 	this.LODOP.SET_PRINT_STYLEA(0, "FontSize", 7);
+	
+	if (pSecond) {
+	    this.LODOP.ADD_PRINT_BARCODE(
+		top, startSecond, width_barcode, this.template.hpx_barcode, this.barcodeFormat, this.second.barcode);
+	    this.LODOP.SET_PRINT_STYLEA(0, "FontSize", 7);
+	}
+
+	if (pThird) {
+	    this.LODOP.ADD_PRINT_BARCODE(
+		top, startThird, width_barcode, this.template.hpx_barcode, this.barcodeFormat, this.third.barcode);
+	    this.LODOP.SET_PRINT_STYLEA(0, "FontSize", 7);
+	}
     }
+    
     
     // this.LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
     // this.LODOP.SET_PRINT_STYLEA(0, "Bold", 0);
 
     // this.LODOP.PRINT_SETUP();
     // this.LODOP.PRINT_DESIGN();
-    // this.LODOP.PREVIEW();
-    this.LODOP.PRINT();
+    this.LODOP.PREVIEW();
+    // this.LODOP.PRINT();
 };

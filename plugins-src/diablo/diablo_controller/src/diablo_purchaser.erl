@@ -54,6 +54,9 @@ purchaser_good(update, Merchant, Attrs) ->
 purchaser_good(lookup, Merchant, GoodId) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {lookup_good, Merchant, GoodId});
+purchaser_good(get_by_barcode, Merchant, Barcode) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {good_get_by_barcode, Merchant, Barcode});
 purchaser_good(delete, Merchant, {StyleNumber, Brand}) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {delete_good, Merchant, {StyleNumber, Brand}});
@@ -451,18 +454,25 @@ init([]) ->
 
 handle_call({new_good, Merchant, Attrs}, _Form, State) ->
     ?DEBUG("new_good with merchant ~p~nattrs~p", [Merchant, Attrs]),
-    %% Merchant    = ?v(<<"merchant">>, Attrs), 
+    %% Merchant    = ?v(<<"merchant">>, Attrs),
+    Barcode     = ?v(<<"barcode">>, Attrs, []),
     StyleNumber = ?v(<<"style_number">>, Attrs),
     BrandId     = ?v(<<"brand_id">>, Attrs),
     Shop        = ?v(<<"shop">>, Attrs),
     UseZero     = ?v(<<"zero_inventory">>, Attrs, ?NO),
     %% SelfBarcode = ?v(<<"self_barcode">>, Attrs, ?NO),
+    Sql = case ?v(<<"barcode">>, Attrs, []) of
+	      [] ->
+		  "select style_number, brand from w_inventory_good"
+		      " where style_number=" ++ "\"" ++ ?to_s(StyleNumber) ++ "\""
+		      ++ " and brand=" ++ ?to_s(BrandId)
+		      ++ " and merchant=" ++ ?to_s(Merchant) ++ ";";
+	      Barcode ->
+		  "select bcode from w_inventory_good"
+		      " where bcode=" ++ "\"" ++ ?to_s(Barcode) ++ "\""
+		      ++ " and merchant=" ++ ?to_s(Merchant) ++ ";"
+	  end,
     
-    Sql = "select style_number, brand from w_inventory_good"
-	" where style_number=" ++ "\"" ++ ?to_s(StyleNumber) ++ "\""
-	++ " and brand=" ++ ?to_s(BrandId)
-	++ " and merchant=" ++ ?to_s(Merchant) ++ ";",
-
     Reply = 
 	case ?sql_utils:execute(s_read, Sql) of
 	    {ok, []} ->
@@ -903,6 +913,12 @@ handle_call({lookup_good, Merchant}, _Form, State) ->
 handle_call({lookup_good, Merchant, GoodId}, _Form, State) ->
     ?DEBUG("lookup_good with merchant ~p, goodId ~p", [Merchant, GoodId]), 
     Sql = ?w_good_sql:good(detail, Merchant, [{<<"id">>, ?to_i(GoodId)}]),
+    Reply =  ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+handle_call({good_get_by_barcode, Merchant, Barcode}, _Form, State) ->
+    ?DEBUG("good_get_by_barcode with merchant ~p, Barcode ~p", [Merchant, Barcode]),
+    Sql = ?w_good_sql:good(detail, Merchant, [{<<"bcode">>, Barcode}]),
     Reply =  ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
     
@@ -1969,25 +1985,37 @@ handle_call({check_inventory_transfer, Merchant, CheckProps}, _From, State) ->
     RSN = ?v(<<"rsn">>, CheckProps),
     Sql = "select rsn, fshop, tshop, state from w_inventory_transfer"
         " where rsn=\"" ++ ?to_s(RSN) ++ "\"",
-    Reply =
-        case ?sql_utils:execute(s_read, Sql) of
+    case ?sql_utils:execute(s_read, Sql) of
             {ok, []} -> 
-                {error, ?err(stock_sn_not_exist, RSN)};
+                {reply, {error, ?err(stock_sn_not_exist, RSN)}, State};
 	    {ok, R} ->
                 case ?v(<<"state">>, R) of
                     ?IN_STOCK ->
-                        {error, ?err(stock_been_checked, RSN)};
+                        {reply, {error, ?err(stock_been_checked, RSN)},State};
                     ?IN_BACK ->
-                        {error, ?err(stock_been_canceled, RSN)};
+                        {reply, {error, ?err(stock_been_canceled, RSN)}, State};
                     ?IN_ROAD ->
-			FShop = ?v(<<"fshop">>, R),
-			TShop = ?v(<<"tshop">>, R), 
-                        Sqls = ?w_transfer_sql:check_transfer(
-				  Merchant, FShop, TShop, CheckProps),
-                        ?sql_utils:execute(transaction, Sqls, RSN)
+			case ?sql_utils:execute(read, ?w_transfer_sql:check_stock(Merchant, RSN)) of
+			    {ok, []} ->
+				FShop = ?v(<<"fshop">>, R),
+				TShop = ?v(<<"tshop">>, R), 
+				Sqls = ?w_transfer_sql:check_transfer(
+					  Merchant, FShop, TShop, CheckProps),
+				{reply, ?sql_utils:execute(transaction, Sqls, RSN), State};
+			    {ok, Checks} ->
+				{reply,
+				 {error,
+				  {not_enought_stock, 
+				   lists:foldr(
+				     fun({S}, Acc)->
+					     [?to_s(?v(<<"style_number">>, S))|Acc]
+				     end, [], Checks)}}, State}; 
+			    {error, Error}->
+				{reply, Error, State}
+			end
+				
                 end
-        end,
-    {reply, Reply, State};
+        end;
 
 handle_call({cancel_inventory_transfer, Merchant, RSN}, _From, State) ->
     ?DEBUG("cancel_inventory_transfer: rsn ~p", [RSN]),

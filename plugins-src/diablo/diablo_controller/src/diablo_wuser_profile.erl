@@ -986,6 +986,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		", offset_virprice"
 		", offset_label"
 
+		", barcode"
 		", w_barcode"
 
 		", printer"
@@ -1066,6 +1067,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(0) ++ ","      %% offset_virprice
 		++ ?to_s(0) ++ ","      %% offset_label
 
+		++ ?to_s(?YES) ++ ","   %% barcode
 		++ ?to_s(0) ++ ","      %% w_barcode
 
 		++ ?to_s(-1) ++ ","     %% printer

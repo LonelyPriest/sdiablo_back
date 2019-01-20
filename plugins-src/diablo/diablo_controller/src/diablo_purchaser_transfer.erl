@@ -551,3 +551,22 @@ cancel_transfer(Merchant, RSN) ->
      " and merchant=" ++ ?to_s(Merchant)
     ].
     
+check_stock(Merchant, RSN) ->
+    "select a.style_number, a.brand, a.fshop, a.amount, a.stock"
+	" from("
+	"select a.style_number"
+	", a.brand"
+	", a.fshop"
+	", a.merchant"
+	", a.amount"
+	", b.amount as stock"
+	" from w_inventory_transfer_detail a"
+	" left join w_inventory b on a.style_number=b.style_number"
+	" and a.brand=b.brand"
+	" and a.fshop=b.shop"
+	" and a.merchant=b.merchant"
+	" where a.rsn=\'" ++ ?to_s(RSN) ++ "\'"
+	" and a.merchant=" ++ ?to_s(Merchant) ++ ") a"
+	" where a.amount > a.stock".
+	
+	    

@@ -84,79 +84,14 @@
 	    <div class="col-xs-3 col-md-3"> 
 	      <div class="input-group">
 		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-comment fg-red"></i>
-		  备注
-		</span>
+		  <i class="glyphicon glyphicon-yen fg-red"></i>欠款</span>
 	  	<input class="form-control"
 		       type="text"
-		       ng-edit
-		       placeholder="备注"
-	  	       x-ng-model="select.comment"/>
+		       readonly
+	  	       x-ng-model="select.surplus"/>
 	      </div>
 	    </div>
 	    
-	    <div class="col-xs-9 col-md-9"> 
-	      <div class="input-group">
-		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-yen fg-red"></i>现金</span>
-		<form name="select.form.cashForm">
-		  <div ng-class="{'has-error':select.form.cashForm.$invalid
-				 && !select.form.cashForm.$pristine}">
-	  	    <input class="form-control"
-			   type="number" step="0.01"
-			   disable-key
-			   ng-edit
-			   placeholder="现金"
-			   x-ng-pattern="/^\d+(.\d{1,2})?$/"
-	  		   x-ng-model="select.cash" />
-		  </div>
-		</form>
-
-		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-credit-card fg-red"></i>
-		  刷卡
-		</span>
-		<form name="select.form.cardForm">
-		  <div ng-class="{'has-error':select.form.cardForm.$invalid
-				 && !select.form.cardForm.$pristine}">
-	  	    <input class="form-control"
-			   type="number" step="0.01"
-			   disable-key
-			   ng-edit
-			   placeholder="刷卡"
-			   x-ng-pattern="/^\d+(.\d{1,2})?$/"
-	  		   x-ng-model="select.card" />
-		  </div>
-		</form>
-
-		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-piggy-bank fg-red"></i>
-		  汇款
-		</span>
-		
-		<form name="select.form.wireForm">
-		  <div ng-class="{'has-error':select.form.wireForm.$invalid
-				 && !select.form.wireForm.$pristine}">
-	  	    <input class="form-control"
-			   type="number" step="0.01"
-			   disable-key
-			   ng-edit
-			   placeholder="汇款"
-			   x-ng-pattern="/^\d+(.\d{1,2})?$/" 
-	  		   x-ng-model="select.wire"/>
-		  </div> 
-		</form>
-
-		<span x-ng-if="stock_right.bill_firm_on_stock_in" class="input-group-addon">
-		  <i class="glyphicon glyphicon-yen fg-red"></i>欠款</span>
-	  	<input x-ng-if="stock_right.bill_firm_on_stock_in" class="form-control" readonly
-	  	       x-ng-model="select.surplus"/>
-	      </div>
-	    </div> 
-	  </div> <!--END row-->
-
-	  <!--BEGIN row-->
-	  <div class="row diablo-form-group">
 	    <div class="col-xs-3 col-sm-3 col-md-3"> 
 	      <div class="input-group">
 		<span class="input-group-addon">
@@ -168,42 +103,142 @@
 	      </div>
 	    </div>
 	    
-	    <div class="col-xs-9 col-sm-9 col-md-9"> 
+	    <div class="col-xs-3 col-md-3"> 
 	      <div class="input-group">
 		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-ban-circle fg-red"></i>
-		  核销
-		</span>
-		<form name="select.form.vForm">
-		  <div ng-class="{'has-error':select.form.vForm.$invalid
-				 && !select.form.vForm.$pristine}">
-	  	    <input class="form-control"
-			   type="number" step="0.01"
-			   placeholder="核销"
-			   x-ng-pattern="/^\d+(.\d{1,2})?$/"
-	  		   x-ng-model="select.verificate" />
-		  </div>
-		</form>
-		
-		<span x-ng-if="stock_right.bill_firm_on_stock_in" class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>应付</span>
-		<input x-ng-if="stock_right.bill_firm_on_stock_in" class="form-control" type="text" readonly
-		       x-ng-model="select.should_pay"/>
-
-		<span x-ng-if="stock_right.bill_firm_on_stock_in" class="input-group-addon">
-		  <i class="glyphicon glyphicon-yen fg-red"></i>实付</span>
-	  	<input x-ng-if="stock_right.bill_firm_on_stock_in" class="form-control" readonly
-	  	       x-ng-model="select.has_pay"/>
-
-		<span x-ng-if="stock_right.bill_firm_on_stock_in" class="input-group-addon">
-		  <i class="glyphicon glyphicon-yen fg-red"></i>结余</span>
-	  	<input x-ng-if="stock_right.bill_firm_on_stock_in" class="form-control"
-		       type="text" readonly
-	  	       x-ng-model="select.left_balance"/> 
+	  	<input class="form-control"
+		       type="text"
+		       readonly
+	  	       x-ng-model="select.should_pay"/>
 	      </div>
 	    </div> 
 	    
+	    <div class="col-xs-3 col-md-3"> 
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-comment fg-red"></i>
+		  备注
+		</span>
+	  	<input class="form-control"
+		       type="text"
+		       ng-edit
+		       placeholder="备注"
+	  	       x-ng-model="select.comment"/>
+	      </div>
+	    </div>
+
+	    
+	    
+	    <!-- <div class="col-xs-9 col-md-9">  -->
+	    <!--   <div class="input-group"> -->
+	    <!-- 	<span class="input-group-addon"> -->
+	    <!-- 	  <i class="glyphicon glyphicon-yen fg-red"></i>现金</span> -->
+	    <!-- 	<form name="select.form.cashForm"> -->
+	    <!-- 	  <div ng-class="{'has-error':select.form.cashForm.$invalid -->
+	    <!-- 			 && !select.form.cashForm.$pristine}"> -->
+	    <!-- 	    <input class="form-control" -->
+	    <!-- 		   type="number" step="0.01" -->
+	    <!-- 		   disable-key -->
+	    <!-- 		   ng-edit -->
+	    <!-- 		   placeholder="现金" -->
+	    <!-- 		   x-ng-pattern="/^\d+(.\d{1,2})?$/" -->
+	    <!-- 		   x-ng-model="select.cash" /> -->
+	    <!-- 	  </div> -->
+	    <!-- 	</form> -->
+
+	    <!-- 	<span class="input-group-addon"> -->
+	    <!-- 	  <i class="glyphicon glyphicon-credit-card fg-red"></i> -->
+	    <!-- 	  刷卡 -->
+	    <!-- 	</span> -->
+	    <!-- 	<form name="select.form.cardForm"> -->
+	    <!-- 	  <div ng-class="{'has-error':select.form.cardForm.$invalid -->
+	    <!-- 			 && !select.form.cardForm.$pristine}"> -->
+	    <!-- 	    <input class="form-control" -->
+	    <!-- 		   type="number" step="0.01" -->
+	    <!-- 		   disable-key -->
+	    <!-- 		   ng-edit -->
+	    <!-- 		   placeholder="刷卡" -->
+	    <!-- 		   x-ng-pattern="/^\d+(.\d{1,2})?$/" -->
+	    <!-- 		   x-ng-model="select.card" /> -->
+	    <!-- 	  </div> -->
+	    <!-- 	</form> -->
+
+	    <!-- 	<span class="input-group-addon"> -->
+	    <!-- 	  <i class="glyphicon glyphicon-piggy-bank fg-red"></i> -->
+	    <!-- 	  汇款 -->
+	    <!-- 	</span> -->
+		
+	    <!-- 	<form name="select.form.wireForm"> -->
+	    <!-- 	  <div ng-class="{'has-error':select.form.wireForm.$invalid -->
+	    <!-- 			 && !select.form.wireForm.$pristine}"> -->
+	    <!-- 	    <input class="form-control" -->
+	    <!-- 		   type="number" step="0.01" -->
+	    <!-- 		   disable-key -->
+	    <!-- 		   ng-edit -->
+	    <!-- 		   placeholder="汇款" -->
+	    <!-- 		   x-ng-pattern="/^\d+(.\d{1,2})?$/"  -->
+	    <!-- 		   x-ng-model="select.wire"/> -->
+	    <!-- 	  </div>  -->
+	    <!-- 	</form> -->
+
+	    <!-- 	<span x-ng-if="stock_right.bill_firm_on_stock_in" class="input-group-addon"> -->
+	    <!-- 	  <i class="glyphicon glyphicon-yen fg-red"></i>欠款</span> -->
+	    <!-- 	<input x-ng-if="stock_right.bill_firm_on_stock_in" class="form-control" readonly -->
+	    <!-- 	       x-ng-model="select.surplus"/> -->
+	    <!--   </div> -->
+	    <!-- </div> --> 
 	  </div> <!--END row-->
+
+	  <!--BEGIN row-->
+	  <!-- <div class="row diablo-form-group"> -->
+	  <!--   <div class="col-xs-3 col-sm-3 col-md-3">  -->
+	  <!--     <div class="input-group"> -->
+	  <!-- 	<span class="input-group-addon"> -->
+	  <!-- 	  <i class="glyphicon glyphicon-map-marker fg-red"></i> -->
+	  <!-- 	  总数 -->
+	  <!-- 	</span> -->
+	  <!-- 	<input class="form-control" type="text" readonly -->
+	  <!-- 	       x-ng-model="select.total"/> -->
+	  <!--     </div> -->
+	  <!--   </div> -->
+	    
+	  <!--   <div class="col-xs-9 col-sm-9 col-md-9">  -->
+	  <!--     <div class="input-group"> -->
+	  <!-- 	<span class="input-group-addon"> -->
+	  <!-- 	  <i class="glyphicon glyphicon-ban-circle fg-red"></i> -->
+	  <!-- 	  核销 -->
+	  <!-- 	</span> -->
+	  <!-- 	<form name="select.form.vForm"> -->
+	  <!-- 	  <div ng-class="{'has-error':select.form.vForm.$invalid -->
+	  <!-- 			 && !select.form.vForm.$pristine}"> -->
+	  <!-- 	    <input class="form-control" -->
+	  <!-- 		   type="number" step="0.01" -->
+	  <!-- 		   placeholder="核销" -->
+	  <!-- 		   x-ng-pattern="/^\d+(.\d{1,2})?$/" -->
+	  <!-- 		   x-ng-model="select.verificate" /> -->
+	  <!-- 	  </div> -->
+	  <!-- 	</form> -->
+		
+	  <!-- 	<span x-ng-if="stock_right.bill_firm_on_stock_in" class="input-group-addon"> -->
+	  <!-- 	  <i class="glyphicon glyphicon-yen fg-red"></i>应付</span> -->
+	  <!-- 	<input x-ng-if="stock_right.bill_firm_on_stock_in" class="form-control" type="text" readonly -->
+	  <!-- 	       x-ng-model="select.should_pay"/> -->
+
+	  <!-- 	<span x-ng-if="stock_right.bill_firm_on_stock_in" class="input-group-addon"> -->
+	  <!-- 	  <i class="glyphicon glyphicon-yen fg-red"></i>实付</span> -->
+	  <!-- 	<input x-ng-if="stock_right.bill_firm_on_stock_in" class="form-control" readonly -->
+	  <!-- 	       x-ng-model="select.has_pay"/> -->
+
+	  <!-- 	<span x-ng-if="stock_right.bill_firm_on_stock_in" class="input-group-addon"> -->
+	  <!-- 	  <i class="glyphicon glyphicon-yen fg-red"></i>结余</span> -->
+	  <!-- 	<input x-ng-if="stock_right.bill_firm_on_stock_in" class="form-control" -->
+	  <!-- 	       type="text" readonly -->
+	  <!-- 	       x-ng-model="select.left_balance"/>  -->
+	  <!--     </div> -->
+	  <!--   </div>  -->
+	    
+	  <!-- </div> --> <!--END row-->
 
 
 	  <!--BEGIN row-->
@@ -244,7 +279,7 @@
 	  <uib-tabset>
 	    <uib-tab active="tab_active[0].active"
 		 select="focus.style_number=false; auto_focus('style_number')">
-	      <tab-heading>入库<i class="glyphicon glyphicon-plus fg-red"></i></tab-heading>
+	      <tab-heading>入库草稿<i class="glyphicon glyphicon-plus fg-red"></i></tab-heading>
 	      <!--BEGIN panel-->
 	      <div class="panel panel-default">
 		<div class="table-responsive diablo-table">
@@ -255,8 +290,9 @@
 		    <thead>
 		      <tr>
 			<th class="text-center">序号</th>
-			<th class="text-center">货号</th>
-			<th class="text-center">品名</th>
+			<th class="text-center">条码</th>
+			<th class="text-center">货号/品名</th>
+			<!-- <th class="text-center">品名</th> -->
 			<th class="text-center">类别</th>
 			<!-- <th class="text-center">性别</th> -->
 			<th class="text-center">年份</th>
@@ -282,9 +318,10 @@
 		    </thead>
 		    <tbody>
 		      <tr class="text-center" x-ng-repeat="inv in inventories">  
-			<td class="vert-align">{{inv.order_id}}</td> 
-			<td class="col-md-2 text-left vert-align">
-			  <span ng-if="!inv.$new">{{inv.style_number}}</span>
+			<td class="vert-align">{{inv.order_id}}</td>
+			<td class="text-left vert-align">{{inv.bcode}}</td>
+			<td class="text-left vert-align">
+			  <span ng-if="!inv.$new">{{inv.style_number}}/{{inv.brand}}</span>
 			  <form name="inv.form.good" ng-if="inv.$new">
 			    <div ng-class="{'has-error':inv.form.good.$invalid && !inv.form.good.$pristine}">
 			      <input class="form-control text-left" type="text"
@@ -306,7 +343,7 @@
 			  </form>
 			</td>
 			<!-- <td>{{inv.style_number}}</td> -->
-			<td class="vert-align">{{inv.brand}}</td>
+			<!-- <td class="vert-align">{{inv.brand}}</td> -->
 			<td class="vert-align">{{inv.type}}</td>
 			<!-- <td class="vert-align">{{sexs[inv.sex]}}</td> -->
 			<!-- <td>{{inv.firm}}</td> -->
@@ -521,10 +558,12 @@
 
 		      <tr>
 		      <tr x-ng-if="inventories.length>1" class="text-center">
-			<td colspan="6"></td>
-			<td x-ng-bind=inv.stock></td>
-			<td x-ng-if="stock_right.show_orgprice" colspan="4"></td>
-			<td x-ng-if="!stock_right.show_orgprice" colspan="2"></td>
+			<td colspan="7"></td>
+			<td x-ng-if="base_settings.t_trace"></td>
+			<td></td>
+			<td x-ng-if="!base_settings.hide_discount"></td>
+			<td x-ng-if="stock_right.show_orgprice" colspan="2"></td>
+			<!-- <td x-ng-if="!stock_right.show_orgprice" colspan="2"></td> -->
 			<td class="vert-align fg-red">{{select.total}}</td>
 			<td x-ng-if="stock_right.show_orgprice"
 			    class="vert-align fg-red">{{select.should_pay}}</td>
@@ -544,7 +583,7 @@
 	    <uib-tab active="tab_active[1].active"
 		 select="select_tab_of_new_good()">
 	      <tab-heading>
-		货品<i class="glyphicon glyphicon-plus fg-red"></i>
+		新增货品<i class="glyphicon glyphicon-plus fg-red"></i>
 	      </tab-heading> 
 	    </uib-tab> 
 	  </uib-tabset>
@@ -552,11 +591,42 @@
 	  <div x-ng-if="tab_active[1].active" class="portlet-body form">
 	    <!--BEGIN from -->
 	    <form class="form-horizontal" name="form.gForm" novalidate>
-	      <!--BEGIN form body-->
+	      <!--BEGIN form body--> 
 	      <div class="form-body"
 		   ng-shortcut
 		   key="120"
 		   go="new_good()">
+		
+		<div x-ng-if="!base_settings.hide_barcode" class="form-group diablo-good-form-group">
+		  <label class="col-sm-3 col-md-3 control-label">条码</label>
+		  <div class="col-sm-6 col-md-6"> 
+		    <div class="input-group">
+		      <input class="form-control"
+			     type="text"
+			     name="bcode"
+			     ng-edit
+			     focus-auto="focus_attrs.barcode"
+			     go-next-field
+			     next="style_number"
+			     auto-row="go_next_good_field" 
+			     placeholder="货品条码"
+			     x-ng-pattern="pattern.barcode"
+			     x-ng-enter="get_good_by_barcode()"
+			     x-ng-model="good.bcode" />
+		      <span class="input-group-btn">
+			<a type="button" class="btn default fg-red"
+			   x-ng-disabled="!good.bcode"
+			   x-ng-click="reset_barcode()"> 
+			  <i class="glyphicon glyphicon-hand-right"></i>
+			</a>
+	  	      </span>
+		    </div>
+		    <div ng-if="goodForm.bcode.$invalid && !goodForm.bcode.$pristine">
+		      <span class="fg-red">请扫入原货品条码，只支持国标</span>
+		    </div>
+		  </div>
+		</div>
+		
 		<div class="form-group diablo-good-form-group">
 		  <label class="col-sm-3 col-md-3 control-label">货号</label>
 		  <div class="col-sm-6 col-md-6"> 
@@ -576,7 +646,7 @@
 			       placeholder="请输入2-10位款号"
 			       x-ng-blur="focus_attrs.style_number=false"
 			       x-ng-model="good.style_number"
-			       x-ng-pattern="pattern.style_number"
+			       x-ng-pattern=""
 			       x-ng-enter=""
 			       typeahead-on-select="on_select_good_new($item, $model, $label)"
 			       typeahead-wait-ms="500"
@@ -591,7 +661,7 @@
 			<a type="button" class="btn default fg-red"
 			   x-ng-disabled="!good.style_number"
 			   x-ng-click="reset_style_number()"> 
-			  <i class="glyphicon glyphicon-pushpin"></i>
+			  <i class="glyphicon glyphicon-hand-right"></i>
 			</a>
 	  	      </span> 
 		    </div>
@@ -630,7 +700,7 @@
 			<a type="button" class="btn default fg-red"
 				x-ng-disabled="!good.brand"
 				x-ng-click="reset_brand()"> 
-			  <i class="glyphicon glyphicon-pushpin"></i>
+			  <i class="glyphicon glyphicon-hand-right"></i>
 			</a>
 		    </div>
 		    <div ng-if="form.gForm.brand.$invalid && !form.gForm.brand.$pristine">
@@ -815,7 +885,8 @@
 		  </div>
 		</div>
 
-		<div x-ng-if="!base_settings.hide_color" class="form-group diablo-good-form-group">
+		<div x-ng-if="!base_settings.hide_color && !good.bcode"
+		     class="form-group diablo-good-form-group">
 		  <label class="col-sm-3 col-md-3 control-label">颜色</label>
 		  <div class="col-sm-6 col-md-6"> 
 		    <div class="input-group">
@@ -844,7 +915,7 @@
 		  </div>
 		</div>
 		
-		<div x-ng-if="!base_settings.hide_size"
+		<div x-ng-if="!base_settings.hide_size && !good.bcode"
 		     class="form-group diablo-good-form-group">
 		  <label class="col-sm-3 col-md-3 control-label">尺码</label>
 		  <div class="col-sm-6 col-md-6"> 

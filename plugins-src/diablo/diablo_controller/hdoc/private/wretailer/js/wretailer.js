@@ -1813,7 +1813,63 @@ function wretailerConsumeCtrlProvide(
     $scope.refresh();
 };
 
+function wretailerPlaneCustomTicketCtrlProvide(
+    $scope, diabloFilter, diabloPattern, diabloUtilsService, wretailerService, user){
+    var dialog = diabloUtilsService; 
+    var lpattern = {name     :diabloPattern.chinese_name,
+		    number   :diabloPattern.number,
+		    remark   :diabloPattern.comment};
 
+    $scope.refresh = function() {
+	wretailerService.list_ticket_plane().then(function(planes) {
+	    diablo_order(planes); 
+	});
+    };
+
+    $scope.new_plane = function() {
+	var callback = function(params) {
+	    console.log(params);
+	    wretailerService.new_ticket_plane(
+		diablo_trim(params.name),
+		retailerUtils.to_integer(params.balance),
+		retailerUtils.to_integer(params.effect),
+		retailerUtils.to_integer(params.expire),
+		retailerUtils.to_integer(params.scount),
+		diablo_trim(params.remark)
+	    ).then(function(result) {
+		console.log(result);
+		if (result.ecode === 0) {
+		    dialog.response_with_callback(
+			true, "新增制券方案", "新增制券方案成功！！", undefined, $scope.refresh);
+		} else {
+		    dialog.set_error("新增制券方案失败", result.ecode); 
+		}
+	    });
+	};
+
+	dialog.edit_with_modal("new-ticket-plane.html", undefined, callback, undefined, {});
+    };
+
+    $scope.update_plane = function(p) {
+	console.log(p);
+	var callback = function(params) {
+	    console.log(params);
+	    wretailerService.update_ticket_plane(
+		p.name, p.balance, p.effect, p.expire, p.scount, p.remark
+	    ).then(function(result) {
+		console.log(result);
+		if (result.ecode === 0) {
+		    dialog.response_with_callback(
+			true, "制券方案编辑", "制券方案编辑成功！！", undefined, $scope.refresh);
+		} else {
+		    dialog.set_error("制券方案编辑", result.ecode); 
+		}
+	    });
+	};
+
+	dialog.edit_with_modal("new-ticket-plane.html", undefined, callback, undefined, p);
+    };
+};
 
 
 define (["wretailerApp"], function(app){
@@ -1827,5 +1883,6 @@ define (["wretailerApp"], function(app){
     app.controller("wretailerThresholdCardSaleCtrl", wretailerThresholdCardSaleCtrlProvide);
     app.controller("wretailerLevelCtrl", wretailerLevelCtrlProvide);
     app.controller("wretailerConsumeCtrl", wretailerConsumeCtrlProvide);
+    app.controller("wretailerPlaneCustomTicketCtrl", wretailerPlaneCustomTicketCtrlProvide);
 });
 

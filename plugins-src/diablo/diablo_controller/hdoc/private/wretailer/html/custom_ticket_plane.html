@@ -1,0 +1,242 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="portlet box purple">
+      
+      <div class="portlet-title">
+	<div class="caption">
+	  <i class="glyphicon glyphicon-menu-hamburger"></i>
+	  优惠券方案
+	</div>	
+
+	<div class="actions">
+	  <div class="btn-group btn-group-solid">
+	    <button class="btn green hidden-xxs"
+		    x-ng-click="new_plane()">新增
+	      <i class="glyphicon glyphicon-plus"></i></button> 
+	    <button class="btn blue reload purple-stripe"
+		    x-ng-click="refresh()">刷新
+	      <i class="icon icon-spinner fg-white"></i></button>
+	  </div>
+	</div> 
+      </div>
+
+      <!--BEGIN table container-->
+      <div class="portlet-body">
+	<!--BEGIN table-toolbar-->
+	<div class="table-toolbar"> 
+	</div> <!--END table-toolbar-->
+	
+	<!--BEGN portlet body--> 
+	<div class="portlet-body"> 
+	  <div class="panel panel-default table-panel"> 
+	    <div class="table-responsive">
+	      <table class="table table-bordered
+			    table-striped table-hover
+			    table-condensed table-advanced">
+		<thead>
+		  <tr>
+		    <th>序号</th>
+		    <th>名称</th>
+		    <th>金额</th>
+		    <th>赠送数量</th>
+		    <th>生效期限</th>
+		    <th>失效期限</th>
+		    <th>备注</th> 
+		    <th>日期</th>
+		    <th>操作</th>
+		  </tr>
+		</thead>
+		
+		<tbody>
+		  <tr ng-repeat="p in planes">
+		    <td x-ng-bind=p.order_id></td> 
+		    <td x-ng-bind=p.name></td> 
+		    <td x-ng-bind=p.balance></td>
+		    <td x-ng-bind=p.scount></td>
+		    <td x-ng-bind=p.effect></td>
+		    <td x-ng-bind=p.expire></td>
+		    <td x-ng-bind=p.remark></td>
+		    <td x-ng-bind=p.entry_date></td>
+		    <td> 
+		      <button class="btn diablo-button btn-warning"
+			      x-ng-click="update_plane(l)">修改
+			<i class="glyphicon glyphicon-edit"></i></button> 
+		    </td>
+		  </tr> 
+		</tbody>
+
+		<tfoot></tfoot>
+		
+	      </table> <!--END table-->
+	    </div> <!--END table responsive-->
+	    
+	  </div> <!--END panel--> 
+	</div> <!--END portlet body--> 
+	
+      </div> <!--END table container-->
+      
+    </div>
+  </div>
+</div>
+
+<script type="text/ng-template" id="new-ticket-plane.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    <h4 class="modal-title">
+      <span class="label label-sm label-primary">制券方案</span>
+    </h4>
+  </div>
+
+  <!--BEGIN modal body-->
+  <div class="modal-body">
+    <form class="form-horizontal" name="pForm" novalidate>
+      <div class="form-body">
+	
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">名称</label>
+	  <div class="col-sm-10 col-md-10">
+	    <div class="input-group"> 
+	      <div x-ng-class="{'has-error':pForm.name.$invalid && !pForm.name.$pristine}">
+		<input class="form-control"
+		       name="name"
+		       type="text" required
+		       placeholder="请输入方案名称"
+		       x-ng-model="params.name"
+		       x-ng-pattern="params.pattern.name"/>
+	      </div>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	    <div>
+	      <span ng-show="pForm.name.$invalid && !pForm.name.$pristine">
+		<span class="fg-red">中文，只允许字母，数字</span>
+	      </span> 
+	    </div> 
+	  </div> 
+	</div>
+
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">金额</label>
+	  <div class="col-sm-10 col-md-10">
+	    <div class="input-group"> 
+	      <div x-ng-class="{'has-error': pForm.balance.$invalid && !pForm.balance.$pristine}">
+		<input class="form-control"
+		       name="balance" 
+		       type="number"
+		       required
+		       placeholder="请输入优惠券金额"
+		       x-ng-model="params.balance"
+		       x-ng-pattern="params.pattern.number"/>
+	      </div>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	    <div>
+	      <span ng-show="pForm.balance.$invalid && !pForm.balance.$pristine">
+		<span class="fg-red">金额只能是整数</span>
+	      </span> 
+	    </div> 
+	  </div>
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">赠送数量</label>
+	  <div class="col-sm-10 col-md-10">
+	    <div class="input-group"> 
+	      <div x-ng-class="{'has-error': pForm.scount.$invalid && !pForm.scount.$pristine}">
+		<input class="form-control"
+		       type="number"
+		       required
+		       name="scount"
+		       placeholder="可一次赠送的最大数量"
+		       x-ng-model="params.scount"
+		       x-ng-pattern="params.pattern.scount"/>
+	      </div>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	    <div>
+	      <span ng-show="pForm.sount.$invalid && !pForm.scount.$pristine">
+		<span class="fg-red">赠送数量只能是整数</span>
+	      </span> 
+	    </div> 
+	  </div>
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">生效期限</label>
+	  <div class="col-sm-10 col-md-10">
+	    <div class="input-group"> 
+	      <div x-ng-class="{'has-error': pForm.effect.$invalid && !pForm.effect.$pristine}">
+		<input class="form-control"
+		       type="number"
+		       required
+		       name="effect"
+		       placeholder="领券后开始生效的天数,-1表示不限制"
+		       x-ng-model="params.effect"
+		       x-ng-pattern="params.pattern.number"/>
+	      </div>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	    <div>
+	      <span ng-show="pForm.effect.$invalid && !pForm.effect.$pristine">
+		<span class="fg-red">生效期限只能是整数</span>
+	      </span> 
+	    </div> 
+	  </div>
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">失效期限</label>
+	  <div class="col-sm-10 col-md-10">
+	    <div class="input-group"> 
+	      <div x-ng-class="{'has-error': pForm.expire.$invalid && !pForm.expire.$pristine}">
+		<input class="form-control"
+		       type="number"
+		       required
+		       name="expire"
+		       placeholder="券生效后失效天数, -1表示不限制"
+		       x-ng-model="params.expire"
+		       x-ng-pattern="params.pattern.number"/>
+	      </div>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	    <div>
+	      <span ng-show="pForm.expire.$invalid && !pForm.expire.$pristine">
+		<span class="fg-red">失效期限只能是整数</span>
+	      </span> 
+	    </div> 
+	  </div>
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">备注</label>
+	  <div class="col-sm-10 col-md-10">
+	    <div x-ng-class="{'has-error': pForm.remark.$invalid && !pForm.remark.$pristine}">
+	      <input class="form-control"
+		     type="text"
+		     name="remark"
+		     placeholder="备注"
+		     x-ng-model="params.remark"
+		     x-ng-pattern="params.pattern.remark"/>
+	    </div>
+	    <div>
+	      <span ng-show="pForm.remark.$invalid && !pForm.remark.$pristine">
+		<span class="fg-red">中文，字母，数字，不支持特殊字符</span> 
+	      </span> 
+	    </div> 
+	  </div>
+	</div>
+
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="lForm.$invalid"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
+</script>

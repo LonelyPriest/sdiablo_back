@@ -685,6 +685,7 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", offset_virprice" 
 	", offset_label"
 
+	", barcode"
 	", w_barcode"
 
 	", printer"
@@ -771,6 +772,7 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(offset_virprice, integer, ?v(<<"offset_virprice">>, Attrs)) 
 	++  ?utils:v(offset_label, integer, ?v(<<"offset_label">>, Attrs))
 
+	++  ?utils:v(barcode, integer, ?v(<<"barcode">>, Attrs))
 	++  ?utils:v(w_barcode, integer, ?v(<<"w_barcode">>, Attrs))
 
 	++  ?utils:v(printer, integer, ?v(<<"printer">>, Attrs))
@@ -880,7 +882,8 @@ sys_config() ->
 	      %% [11]: hide promotion price
 	      %% [12]: hide discount 
 	      %% [13]: hide unit
-	      {"h_stock",         "入库字段隐藏",         "00011011111101", "0"},
+	      %% [14]: hide barcode
+	      {"h_stock",         "入库字段隐藏",         "000110111111011", "0"},
 
 	      
 	      %% {"h_color",         "隐藏颜色",             "0",   "0"},

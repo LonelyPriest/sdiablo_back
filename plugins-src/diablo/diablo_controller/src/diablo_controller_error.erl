@@ -470,6 +470,9 @@ error(purchaser_diff_time_with_empty_firm, Datetime) ->
     {2019, "empty firm but datetime has been changed:" ++ ?to_s(Datetime)};
 error(purchaser_good_in_used, StyleNumber) ->
     {2020, "the good is used:" ++ ?to_s(StyleNumber)};
+error(not_enought_stock, Stocks) ->
+    {2021, "not enought stock:" ++ ?to_s(Stocks)};
+
 
 
 %% retailer

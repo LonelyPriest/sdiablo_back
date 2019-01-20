@@ -161,6 +161,10 @@ function filterProvider(){
 	    return _goodHttp.save({operation: "new_w_good"}, {good:good, image:image}).$promise;
 	};
 
+	function get_good_by_barcode(barcode) {
+	    return _goodHttp.save({operation: "get_good_by_barcode"}, {barcode:barcode}).$promise;
+	};
+
 	function update_purchaser_good(good, image) {
 	    return _goodHttp.save({operation: "update_w_good"}, {good:good, image:image}).$promise;  
 	};
@@ -963,6 +967,10 @@ function filterProvider(){
 	    add_purchaser_good: function(good){
 		return add_purchaser_good(good);
 	    },
+
+	    get_good_by_barcode: function(barcode) {
+		return get_good_by_barcode(barcode);
+	    }, 
 
 	    update_purchaser_good:function(good, image) {
 		return update_purchaser_good(good, image);

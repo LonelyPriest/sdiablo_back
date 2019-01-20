@@ -139,7 +139,7 @@ var diablo_scan_mode = "0000";
 /*
  * hide mode
  */
-var diablo_stock_in_hide_mode = "00011011111101";
+var diablo_stock_in_hide_mode = "000110111111011";
 /*
  * vip mode
  */
@@ -156,6 +156,8 @@ var diablo_bsale_print_cs_mode ="000";
  * number of print
  */
 var diablo_print_num = "110";
+
+var diablo_std_barcode_length = 13;
 
 
 /*
@@ -258,7 +260,7 @@ var size_to_barcode =
      "95A", "95B", "95C", "95D", "95E", "95F",
 
      "55", "60", "65", "70", "75", "85", "95", "73", "78", "66", "51",
-     "62", "67", "79", "72", "84", "59", "53"];
+     "62", "67", "79", "72", "84", "59", "53", "2", "3"];
 
 // var f_size_to_barcode = [
 //     "FF",
@@ -1169,7 +1171,7 @@ var diabloHelp = function(){
 		    cuted = original.substr(1, original.length - diablo_ext_barcode_lenth_of_color_size - 1);
 		} 
 		else {
-		    cxorrect = original,
+		    correct = original,
 		    cuted = original;
 		} 
 	    } else {

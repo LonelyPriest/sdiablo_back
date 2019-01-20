@@ -776,6 +776,13 @@ action(Session, Req, {"check_w_inventory_transfer"}, Payload) ->
                Req,
                ?succ(check_w_inventory_transfer, RSN),
                {<<"rsn">>, ?to_b(RSN)});
+	{error, {not_enought_stock, Stocks}} -> 
+	    S = string:join(Stocks, ","),
+	    ?utils:respond(
+	       200,
+	       Req,
+	       ?err(not_enought_stock, ?to_b(S)),
+	       [{<<"stock">>, ?to_b(S)}]);
         {error, Error} ->
             ?utils:respond(200, Req, Error)
     end;
@@ -962,7 +969,9 @@ action(Session, Req, {"w_inventory_export"}, Payload) ->
 		    case file:open(ExportFile, [append, raw]) of
 			{ok, Fd} -> 
 			    try
-				DoFun = fun(C) -> ?utils:write(Fd, C) end, 
+				DoFun = fun(C) -> ?utils:write(Fd, C) end,
+				?DEBUG("ExportType ~p, ExportCode ~p, ShowOrgPrice ~p",
+				       [ExportType, ExportCode, ShowOrgPrice]),
 				csv_head(ExportType, DoFun, ExportCode, ShowOrgPrice),
 				do_write(ExportType, DoFun, 1, Transes, ExportCode, ShowOrgPrice),
 				ok = file:datasync(Fd),
