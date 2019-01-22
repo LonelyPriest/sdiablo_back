@@ -83,6 +83,9 @@ function bsaleConfig(angular){
 	
 	var base = {"base": function(diabloNormalFilter){
 	    return diabloNormalFilter.get_base_setting()}};
+
+	var sysbsaler = {"filterSysBSaler": function(diabloNormalFilter){
+    	    return diabloNormalFilter.get_sys_bsaler()}};
 	
 	$routeProvider. 
 	    when('/new_bsale', {
@@ -90,7 +93,7 @@ function bsaleConfig(angular){
 		controller: 'bsaleNewCtrl',
 		resolve: angular.extend(
 		    {},
-		    employee, s_group, brand, type, color, region, department, user, base)
+		    employee, s_group, brand, type, color, region, department, sysbsaler, user, base)
 	    }).
 	    when('/update_bsale_detail/:rsn?', {
 		templateUrl: '/private/bsale/html/update_bsale_detail.html',
@@ -167,7 +170,7 @@ function bsaleConfig(angular){
 	this.check_state    = [{name:"未审核", id:0}, {name:"已审核", id:1}];
 	this.check_comment  = [{name:"不为空", id:0}];
 	this.export_type    = {sale_new:0, sale_new_detail:1}; 
-	this.default_bsaler = {name: "", id:-1};
+	// this.default_bsaler = {name: "", id:-1};
 	
 	this.diablo_key_bsale_detail  = "q-bsale-detail";
 	
@@ -331,7 +334,8 @@ function bsaleNewProvide(
     $scope, $q, $timeout, dateFilter, localStorageService,
     diabloUtilsService, diabloPromise, diabloFilter, diabloNormalFilter,
     diabloPattern, bsaleService,
-    filterEmployee, filterSizeGroup, filterType, filterColor, filterRegion, filterDepartment, user, base){
+    filterEmployee, filterSizeGroup, filterType, filterColor, filterRegion,
+    filterDepartment, filterSysBSaler, user, base){
     // console.log(filterRegion); 
     $scope.pattern    = {
 	money:    diabloPattern.decimal_2,
@@ -401,6 +405,8 @@ function bsaleNewProvide(
     
     var dialog = diabloUtilsService; 
     var get_setting = function(shopId){
+	angular.extend($scope.setting, bsaleUtils.sale_mode(shopId, base));
+	
 	$scope.setting.semployee     = bsaleUtils.select_employee(shopId, base);
 	$scope.setting.check_sale    = bsaleUtils.check_sale(shopId, base);
 	$scope.setting.negative_sale = bsaleUtils.negative_sale(shopId, base);
@@ -409,8 +415,7 @@ function bsaleNewProvide(
 	$scope.setting.barcode_auto  = bsaleUtils.barcode_auto(shopId, base); 
 	$scope.setting.scan_only     = bsaleUtils.to_integer(bsaleUtils.scan_only(shopId, base).charAt(0));
 	$scope.setting.type_sale     = bsaleUtils.type_sale(shopId, base);
-	$scope.setting.print_protocal = bsaleUtils.print_protocal(shopId, base);
-	
+	$scope.setting.print_protocal = bsaleUtils.print_protocal(shopId, base);	
 	console.log($scope.setting); 
     };
     
@@ -491,8 +496,21 @@ function bsaleNewProvide(
     };
 
     $scope.reset_bsaler = function(){
-    	$scope.select.bsaler = bsaleService.default_bsaler;
-    }; 
+	$scope.sysBSalers = filterSysBSaler.filter(function(s){
+    	    return s.shop_id === $scope.select.shop.id;
+    	});
+
+	if ($scope.sysBSalers.length !== 0) {
+	    $scope.select.bsaler = $scope.sysBSalers[0];
+	} else {
+	    $scope.select.bsaler = $scope.filterSysBSaler[0];
+	}
+
+	if ($scope.setting.hide_bsaler) {
+	    $scope.select.bsaler.name = diablo_empty_string;
+	} 
+    };
+    
     $scope.reset_bsaler();
     
     $scope.refresh = function(){
@@ -762,6 +780,15 @@ function bsaleNewProvide(
 	    $scope.has_saved = false; 
 	    return;
 	};
+
+	if ($scope.setting.hide_bsaler && $scope.select.bsaler.type_id === diablo_system_retailer) {
+	    dialog.response(
+		false,
+		"批发开单",
+		"开单失败：" + bsaleService.error[2192]);
+	    $scope.has_saved = false; 
+	    return;
+	}
 	
 	var sets = diablo_set_string; 
 	var added = [];
@@ -1045,8 +1072,6 @@ function bsaleNewProvide(
 	
 	// check stock total 
 	if ($scope.setting.check_sale && free_stock_not_enought(inv)) {
-	    // var ERROR = require("diablo-batch-error"); 
-	    // diabloUtilsService.request("批发开单", ERROR[2180], callback, true, undefined);
 	    diabloUtilsService.response(false, "销售开单", "开单失败：" + bsaleService.error[2180]);
 	} else {
 	    callback(false);

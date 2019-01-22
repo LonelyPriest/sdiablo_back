@@ -883,13 +883,7 @@ sys_config() ->
 	      %% [12]: hide discount 
 	      %% [13]: hide unit
 	      %% [14]: hide barcode
-	      {"h_stock",         "入库字段隐藏",         "000110111111011", "0"},
-
-	      
-	      %% {"h_color",         "隐藏颜色",             "0",   "0"},
-	      %% {"h_size",          "隐藏尺码",             "0",   "0"},
-	      %% {"h_sex",           "隐藏性别",             "0",   "0"},
-	      %% {"h_expire",        "隐藏退货期限",             "0",   "0"},
+	      {"h_stock",         "入库字段隐藏",         "000110111111011", "0"}, 
 	      {"s_member",        "会员独立",             "0",   "0"},
 	      {"s_employee",      "营业员必选",           "0",   "0"},
 
@@ -903,7 +897,9 @@ sys_config() ->
 	      %% [7]: print sale body on swiming comsume
 	      %% [8]: scanner device 0:idata 1:c40
 	      %% [9]: hide password for retailer
-	      {"p_balance",       "销售模式",             "000000000",  "0"},
+	      %% [10]: hide bill info on stock in
+	      %% [11]: hide bsaler when on batchsale
+	      {"p_balance",       "销售模式",             "0000000000000",  "0"},
 	      
 	      {"gen_ticket",      "自动生成电子卷",       "0",   "0"},
 	      

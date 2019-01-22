@@ -19,7 +19,7 @@
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
--export([batch_saler/3, batch_saler/4, match/3]).
+-export([batch_saler/2, batch_saler/3, batch_saler/4, match/3]).
 -export([filter/4, filter/6]).
 
 -define(SERVER, ?MODULE). 
@@ -29,6 +29,10 @@
 %%%===================================================================
 %%% API
 %%%===================================================================
+batch_saler(list_sys, Merchant) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {list_sys, Merchant}).
+
 batch_saler(new, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {new_saler, Merchant, Attrs});
@@ -300,6 +304,22 @@ handle_call({get_batch, Merchant, BSalers}, _From, State) ->
     %% 		true -> ?sql_utils:execute(s_read, Sql);
     %% 		false -> ?sql_utils:execute(read, Sql)
     %% 	    end,
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({list_sys, Merchant}, _From, State) ->
+    Sql = "select id"
+	", name"
+	", py"
+    %% ", balance"
+    %% ", mobile"
+	", shop as shop_id"
+	", region as region_id"
+	", type as type_id"
+	", merchant" 
+	" from batchsaler"
+	++ " where merchant=" ++ ?to_s(Merchant)
+	++ " and type=" ++ ?to_s(?SYSTEM_RETAILER),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 

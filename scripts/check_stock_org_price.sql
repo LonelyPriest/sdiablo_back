@@ -191,9 +191,9 @@ a.style_number=b.style_number and a.brand=b.brand and a.shop=b.shop and a.mercha
 set a.tag_price=b.tag_price, a.discount=b.discount, a.ediscount=b.ediscount, a.state=b.state, a.score=b.score where a.merchant=42;
 
 -- syn level, category, executive, fabric
-update w_inventory a inner join (select style_number, brand, merchant, level, category, executive, fabric from w_inventory_good where merchant=18) b \
+update w_inventory a inner join (select style_number, brand, merchant, level, category, executive, fabric from w_inventory_good where merchant=2) b \
 on a.style_number=b.style_number and a.brand=b.brand and a.merchant=b.merchant set a.level=b.level, a.category=b.category, a.executive=b.executive, a.fabric=b.fabric
-where a.merchant=18 and a.shop in(145,158)
+where a.merchant=2 and a.shop in(3) and a.style_number='M173'
 
 -- check sale
 select a.merchant, a.rsn, a.total, b.rsn, c.name from w_sale a left join w_sale_detail b on a.rsn=b.rsn left join merchants c on a.merchant=c.id where b.rsn is null and a.total!=0;

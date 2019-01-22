@@ -1118,6 +1118,8 @@ function normalFilterProvider(){
     var _shops          = [];
     var _departments    = [];
 
+    var _sysbsalers     = [];
+
     
     this.$get = function($resource){
 	var _employeeHttp =
@@ -1128,15 +1130,12 @@ function normalFilterProvider(){
 	    $resource("/wbase/:operation", {operation: '@operation'});
 	var _invHttp  =
 	    $resource("/purchaser/:operation",
-		      {operation:'@operation'},
-		      {
-			  post_get: {method: 'POST', isArray: true}
-		      }); 
-	var _goodHttp =
-	    $resource("/wgood/:operation/:id", {operation: '@operation'});
+		      {operation:'@operation'}, {post_get: {method: 'POST', isArray: true}}); 
+	var _goodHttp = $resource("/wgood/:operation/:id", {operation: '@operation'});
 
-	var _shopHttp =
-	    $resource("/shop/:operation", {operation: '@operation'});
+	var _shopHttp = $resource("/shop/:operation", {operation: '@operation'});
+
+	var _bsaleHttp = $resource("/bsale/:operation/:id", {operation: '@operation', id: '@id'});
 
 	var cookie = 'filter-' + diablo_get_cookie("qzg_dyty_session");
 
@@ -1180,6 +1179,23 @@ function normalFilterProvider(){
 			});
 			set_storage(cookie, "department", _departments);
 			return _departments;
+		    });   
+		} 
+	    },
+
+	    get_sys_bsaler:function() {
+		var cached = get_from_storage(cookie, "sysbsaler");
+		if (angular.isArray(cached) && cached.length !== 0) return cached; 
+		else {
+		    return _bsaleHttp.query({operation: 'list_sys_bsaler'}).$promise.then(function(ss){
+			_sysbsalers = ss.map(function(s){
+			    return {id:      s.id,
+				    name:    s.name,
+				    type_id: s.type_id,
+				    shop_id: s.shop_id};
+			});
+			set_storage(cookie, "sysbsaler", _sysbsalers);
+			return _sysbsalers;
 		    });   
 		} 
 	    },

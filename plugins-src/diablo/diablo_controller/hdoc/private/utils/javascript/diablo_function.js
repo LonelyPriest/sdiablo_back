@@ -25,10 +25,12 @@ var diablo_invalid = -1;
 var diablo_female = 0;
 var diablo_male = 1;
 
+var diablo_default_barcode = 0;
 var diablo_free_size = "0";
 var diablo_free_color = 0;
 var diablo_free_color_size = 0;
 var diablo_empty_barcode = "0";
+var diablo_empty_db_barcode = "-1";
 var diablo_empty_string = "";
 
 var diablo_has_deleted=1;
@@ -147,7 +149,7 @@ var diablo_vip_mode = "0000";
 /*
  * sale mode
  */
-var diablo_sale_mode ="0000000000";
+var diablo_sale_mode ="000000000000";
 /*
  * batch sale print mode, color or size or both
  */

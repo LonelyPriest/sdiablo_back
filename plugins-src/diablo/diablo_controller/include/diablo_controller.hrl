@@ -677,7 +677,8 @@
 	  sms_rate    = [] :: list(),
 	  sms_center  = [] :: list(),
 	  level       = [] :: list(),
-	  department  = [] :: list()
+	  department  = [] :: list(),
+	  sysbsaler   = [] :: list()
 	  %% login_right = [] :: list(),
 	  %% login_shop  = [] :: list()
 	 }).

@@ -1,4 +1,10 @@
 var stockUtils = function(){
+    var default_hide = function(v) {
+	if (v === diablo_empty_string)
+	    return diablo_yes;
+	return stockUtils.to_integer(v);
+    };
+    
     return {
 	firm_prefix: 1000,
 	
@@ -58,16 +64,16 @@ var stockUtils = function(){
 	stock_in_hide_mode: function(shop, base) {
 	    var hide = diablo_base_setting("h_stock", shop, base, function(s) {return s}, diablo_stock_in_hide_mode);
 	    // console.log(hide);
-	    var default_hide = function(v) {
-		if (v === diablo_empty_string)
-		    return diablo_yes;
-		return stockUtils.to_integer(v);
-	    }
+	    // var default_hide = function(v) {
+	    // 	if (v === diablo_empty_string)
+	    // 	    return diablo_yes;
+	    // 	return stockUtils.to_integer(v);
+	    // }
 	    
 	    return {
-		hide_color:     stockUtils.to_integer(hide.charAt(0)),
-		hide_size:      stockUtils.to_integer(hide.charAt(1)),
-		hide_sex:       stockUtils.to_integer(hide.charAt(2)),
+		hide_color:     default_hide(hide.charAt(0)),
+		hide_size:      default_hide(hide.charAt(1)),
+		hide_sex:       default_hide(hide.charAt(2)),
 		hide_expire:    default_hide(hide.charAt(3)),
 		hide_image:     default_hide(hide.charAt(4)),
 		editable_type:  default_hide(hide.charAt(5)) === diablo_yes ? false : true,
@@ -181,7 +187,14 @@ var stockUtils = function(){
 
 	type_sale:function(shop, base) {
 	    return diablo_base_setting("type_sale", shop, base, parseInt, diablo_no);
-	}, 
+	},
+
+	bill_mode:function(shop, base) {
+	    var mode = diablo_base_setting("p_balance", shop, base, function(s) {return s}, diablo_sale_mode);
+	    return {
+		hide_bill: default_hide(mode.charAt(10))
+	    }
+	},
 	
 	yes_no: function() {return [{name:"否", id: 0}, {name:"是", id: 1}]},
 

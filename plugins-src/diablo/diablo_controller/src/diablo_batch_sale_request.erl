@@ -32,21 +32,21 @@ action(Session, Req, {"list_employe"}) ->
 	    ?utils:respond(200, batch, Req, Employees);
 	{error, _Error} ->
 	    ?utils:respond(200, batch, Req, [])
-    end.
+    end;
 
-%%--------------------------------------------------------------------
-%% @desc: DELTE action
-%%--------------------------------------------------------------------
-%% action(Session, Req, {"delete_employe", EmployId}) ->
-%%     ?DEBUG("delete employ with session ~p, id ~p", [Session, EmployId]),
-%%     Merchant = ?session:get(merchant, Session),
-%%     case ?employ:employ(delete, Merchant, EmployId) of
-%% 	{ok, EmployId} ->
-%% 	    ?w_user_profile:update(employee, Merchant),
-%% 	    ?utils:respond(200, Req, ?succ(delete_employ, EmployId));
-%% 	{error, Error} ->
-%% 	    ?utils:respond(200, Req, Error)
-%%     end.
+action(Session, Req, {"list_sys_bsaler"}) ->
+    ?DEBUG("list sys batch saler with session ~p", [Session]), 
+    Merchant = ?session:get(merchant, Session),
+    {ok, Shops}   = ?w_user_profile:get(user_shop, Merchant, Session),
+    ShopIds = lists:foldr(fun({Shop}, Acc) ->
+				  ShopId = ?v(<<"shop_id">>, Shop),
+				  case lists:member(ShopId, Acc) of
+				      true -> Acc;
+				      false ->[ShopId|Acc]
+				  end
+			  end, [], Shops),
+    ?DEBUG("ShopIds ~p", [ShopIds]),
+    ?utils:respond(batch, fun() -> ?w_user_profile:get(sys_bsaler, Merchant, ShopIds) end, Req).
 
 %%--------------------------------------------------------------------
 %% @desc: POST action
@@ -478,6 +478,7 @@ action(Session, Req, {"match_bsaler_phone"}, Payload) ->
     Phone = ?v(<<"prompt">>, Payload),
     Mode  = ?v(<<"mode">>, Payload, 0),
     ?utils:respond(batch, fun() -> ?b_saler:match(phone, Merchant, {Mode, Phone}) end, Req);
+
 
 action(Session, Req, {"match_bsale_rsn"}, Payload) ->
     ?DEBUG("match_bsale_rsn with session ~p, Payload ~p", [Session, Payload]),

@@ -297,9 +297,9 @@ function purchaserInventoryNewCtrlProvide (
 	console.log($scope.base_settings);
 	$scope.base_settings.stock_alarm     = stockUtils.stock_alarm(shopId, base);
 	$scope.base_settings.stock_alarm_a   = stockUtils.stock_alarm_a(shopId, base);
-	$scope.base_settings.stock_contailer = stockUtils.stock_contailer(shopId, base);
-
-	$scope.base_settings.stock_with_firm = stockUtils.stock_with_firm(shopId, base); 
+	$scope.base_settings.stock_contailer = stockUtils.stock_contailer(shopId, base); 
+	$scope.base_settings.stock_with_firm = stockUtils.stock_with_firm(shopId, base);
+	$scope.base_settings.hide_bill = stockUtils.bill_mode(shopId, base).hide_bill;
     }
 
     $scope.change_shop = function(){
@@ -1762,13 +1762,14 @@ function purchaserInventoryNewCtrlProvide (
     
 
     $scope.new_good = function(){
+	// console.log($scope.good);
 	if ($scope.form.gForm.$invalid || $scope.is_same_good || $scope.good_has_saved) return; 
 
 	$scope.good_saving = true; 
 	// var good       = angular.copy($scope.good);
 	var good       = {};
-	good.barcode      = $scope.good.bcode;
-	good.style_number = $scope.good.style_number;
+	good.bcode      = diablo_set_string($scope.good.bcode);
+	good.style_number = diablo_trim($scope.good.style_number);
 	good.brand = typeof($scope.good.brand)==="object" ? $scope.good.brand.name:$scope.good.brand; 
 	good.type =  typeof($scope.good.type)==="object" ? $scope.good.type.name: $scope.good.type;
 	good.type = diablo_trim(good.type);
@@ -1905,7 +1906,7 @@ function purchaserInventoryNewCtrlProvide (
 		    var agood = {
 			$new_good   : true,
 			id          : state.db,
-			bcode       : good.barcode,
+			bcode       : good.bcode,
 			style_number: good.style_number,
 			brand:     good.brand,
 			brand_id:  state.brand,
@@ -1962,8 +1963,10 @@ function purchaserInventoryNewCtrlProvide (
 	}
 	
 	// console.log(image);
-	if (angular.isDefined(good.barcode) && diablo_trim(good.barcode)) {
-	    if (good.barcode.length !== diablo_std_barcode_length) {
+	if (angular.isDefined(good.bcode) && good.bcode
+	    && good.bcode !== diablo_empty_barcode
+	    && good.bcode !== diablo_empty_db_barcode) {
+	    if (good.bcode.length !== diablo_std_barcode_length) {
 		diabloUtilsService.response_with_callback(
 	    	    false,
 		    "新增货品",

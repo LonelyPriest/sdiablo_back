@@ -110,6 +110,9 @@ get(type, Merchant, TypeId) ->
 %%     gen_server:call(?SERVER(Merchant), {get_retailer_profile, Merchant, Retailer});
 get(sys_retailer, Merchant, Shops) ->
     gen_server:call(?SERVER(Merchant), {get_sysretailer_profile, Merchant, Shops});
+get(sys_bsaler, Merchant, Shops) ->
+    gen_server:call(?SERVER(Merchant), {get_sysbsaler_profile, Merchant, Shops});
+
 get(firm, Merchant, Firm) ->
     gen_server:call(?SERVER(Merchant), {get_firm_profile, Merchant, Firm});
 get(employee, Merchant, Employee) ->
@@ -237,7 +240,8 @@ handle_call({new_profile, Merchant}, _From, State) ->
 	{ok, Levels}       = ?w_retailer:retailer(list_level, Merchant),
 	{ok, Departments}  = ?employ:department(list, Merchant),
 
-	{ok, SysRetailers} = ?w_retailer:retailer(list_sys, Merchant),
+	{ok, SysRetailers} = ?w_retailer:retailer(list_sys, Merchant), 
+	{ok, SysBSaler}    = ?b_saler:batch_saler(list_sys, Merchant),
 	
 	%% good
 	%% Goods = ?w_inventory:purchaser_good(lookup, Merchant), 
@@ -267,7 +271,9 @@ handle_call({new_profile, Merchant}, _From, State) ->
 				  sms_rate    = SMSRate,
 				  sms_center  = SMSCenter,
 				  level       = Levels,
-				  department  = Departments
+				  department  = Departments,
+
+				  sysbsaler   = SysBSaler
 				  %% good     = ?to_tl(Goods)
 				 }
 			  })
@@ -658,32 +664,7 @@ handle_call({get_type_profile, Merchant, TypeId}, _From, State) ->
 %%     {reply, {ok, Select}, State};
 
 handle_call({get_sysretailer_profile, Merchant, Shops}, _From, State) ->
-    ?DEBUG("get_sysretailer_profile: merchant ~p, shops ~p", [Merchant, Shops]),
-    %% Settings = select(ms(Merchant, setting), fun() -> ?w_base:setting(list, Merchant) end),
-    %% FilterSettings = 
-    %% 	case lists:filter(
-    %% 	       fun({S})->
-    %% 		       lists:member(?v(<<"shop">>, S), Shops) orelse ?v(<<"shop">>, S) =:= -1
-    %% 	       end, ?to_tl(Settings)) of
-    %% 	    [] -> [];
-    %% 	    Filter -> Filter
-    %% 	end, 
-    
-    %% SysVips = lists:foldr(
-    %% 		fun({S}, Acc) ->
-    %% 			case ?v(<<"ename">>, S) =:= <<"s_customer">> of
-    %% 			    true ->
-    %% 				SysVip = ?to_i(?v(<<"value">>, S)),
-    %% 				%% ?DEBUG("sysvip ~p", [SysVip]),
-    %% 				case lists:member(SysVip, Acc) of
-    %% 				    true -> Acc;
-    %% 				    false -> [SysVip] ++ Acc
-    %% 				end;
-    %% 			    false -> Acc
-    %% 			end
-    %% 		end, [], FilterSettings), 
-    %% ?DEBUG("SysVips ~p", [SysVips]),
-    
+    %% ?DEBUG("get_sysretailer_profile: merchant ~p, shops ~p", [Merchant, Shops]), 
     SysRetailers = select(ms(Merchant, sysretailer), fun() -> ?w_retailer:retailer(list_sys, Merchant) end),
     %% ?DEBUG("sysRetailers ~p", [SysRetailers]),
     
@@ -726,6 +707,32 @@ handle_call({get_sysretailer_profile, Merchant, Shops}, _From, State) ->
 %%     Select = select(MS, fun() -> ?w_retailer:retailer(list, Merchant) end),
 %%     SelectRetailer = filter(Select, <<"id">>, RetailerId),
 %%     {reply, {ok, SelectRetailer}, State};
+
+handle_call({get_sysbsaler_profile, Merchant, Shops}, _From, State) ->
+    SysBSalers = select(ms(Merchant, sysbsaler),
+			  fun() -> ?b_saler:batch_saler(list_sys, Merchant) end),
+    ?DEBUG("SysBSalers ~p", [SysBSalers]),
+
+    FilterBSalers = 
+	case lists:filter(
+	       fun({R})-> 
+		       lists:member(?v(<<"shop_id">>, R), Shops) end,
+	       ?to_tl(SysBSalers))
+	of
+	    [] -> [];
+	    RFilter -> RFilter
+	end, 
+    ?DEBUG("FilterBSalers ~p", [FilterBSalers]),
+
+    Simples = 
+	lists:foldr(
+	  fun({R}, Acc)->
+		  R1 = lists:keydelete(<<"address">>, 1, lists:keydelete(<<"merchant">>, 1, R)),
+		  [{R1}|Acc]
+	  end, [], FilterBSalers),
+
+    ?DEBUG("Simples ~p", [Simples]), 
+    {reply, {ok, Simples}, State};
 
 %%
 %% firm
@@ -1277,6 +1284,11 @@ ms(Merchant, itype) ->
      }];
 ms(Merchant, sysretailer) ->
     [{{'$1', #wuser_profile{merchant='$1', sysretailer='$2', _='_'}},
+      [{'==', '$1', ?to_i(Merchant)}],
+      ['$2']
+     }];
+ms(Merchant, sysbsaler) ->
+    [{{'$1', #wuser_profile{merchant='$1', sysbsaler='$2', _='_'}},
       [{'==', '$1', ?to_i(Merchant)}],
       ['$2']
      }];

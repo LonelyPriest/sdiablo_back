@@ -731,6 +731,7 @@ diabloUtils.directive('queryGroup', function () {
 			    break;
 			case "comment":
 			    f.value = get_prompt(f.value, scope.prompt.comment);
+			    break;
 			case "sprice":
 			    f.value = get_prompt(f.value, scope.prompt.sprice);
 			default: 

@@ -1,4 +1,10 @@
 var bsaleUtils = function(){
+    var default_hide = function(v) {
+	if (v === diablo_empty_string)
+	    return diablo_yes;
+	return bsaleUtils.to_integer(v);
+    };
+    
     var in_sort = function(sorts, sell){
 	var found = false;
 	for (var i=0, l=sorts.length; i<l; i++){
@@ -219,7 +225,8 @@ var bsaleUtils = function(){
 	sale_mode:function(shop, base) {
 	    var mode = diablo_base_setting("p_balance", shop, base, function(s) {return s}, diablo_sale_mode);
 	    return {
-		show_note: bsaleUtils.to_integer(mode.charAt(1))
+		show_note: default_hide(mode.charAt(1)),
+		hide_bsaler: default_hide(mode.charAt(11))
 	    };
 	},
 
@@ -269,7 +276,7 @@ var bsaleUtils = function(){
 	type_sale:function(shop, base) {
 	    return diablo_base_setting("type_sale", shop, base, parseInt, diablo_no);
 	},
-
+	
 	comment: function(shop, base){
 	    var comments = [];
 	    for (var i=1; i<5; i++) {
