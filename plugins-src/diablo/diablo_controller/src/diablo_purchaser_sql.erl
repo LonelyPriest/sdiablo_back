@@ -40,7 +40,7 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
 	   end,
 
     Barcode =
-	case ?v(<<"barcode">>, Attrs, []) of
+	case ?v(<<"bcode">>, Attrs, []) of
 	    [] ->
 		case AutoBarcode of
 		    ?YES  -> ?INVALID_OR_EMPTY;

@@ -701,7 +701,7 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
     Id = ?v(<<"id">>, Attrs),
     U =?utils:v(name, string, ?v(<<"name">>, Attrs))
 	++ ?utils:v(label, string, ?v(<<"label">>, Attrs))
-	++ ?utils:v(width, integer, ?v(<<"width">>, Attrs)) 
+	++ ?utils:v(width, float, ?v(<<"width">>, Attrs)) 
 	++  ?utils:v(height, float, ?v(<<"height">>, Attrs))
     %% ++  ?utils:v(height, integer, ?v(<<"dual_column">>, Attrs))
 

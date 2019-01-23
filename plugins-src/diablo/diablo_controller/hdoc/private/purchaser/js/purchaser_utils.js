@@ -1087,7 +1087,7 @@ stockPrintU.prototype.printBarcode2 = function() {
     }
 
     if (this.dualPrint - 2 >= 0) {
-	startThird = Math.floor((this.template.width * 2 + this.template.second_space * 0.1) * 96 / 2.54) + this.left;
+	startThird = Math.floor((this.template.width * 2 + this.template.second_space * 0.2) * 96 / 2.54) + this.left;
     }
     
     var pSecond = false;
@@ -1382,7 +1382,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 	this.start_print(line, top, this.left, iwpx, hpx_price, 0, pSecond, pThird, startSecond, startThird);
 
 	line = line2 = line3 = "￥" + this.stock.tag_price.toString();
-	if (!this.template.solo_color && !this.template.size_color) {
+	if (this.template.color && !this.template.solo_color && !this.template.size_color) {
 	    line = line + "  " + this.trim_color(this.first.color);
 	    if (pSecond)
 		line2 = line2 + "  " + this.trim_color(this.second.color);;
@@ -1390,7 +1390,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 		line3 = line3 + "  " + this.trim_color(this.third.color);;
 	}
 	
-	if (!this.template.solo_size) {
+	if (this.template.size && !this.template.solo_size) {
 	    line = line + this.trim_size(this.first.size);
 	    if (pSecond)
 		line2 = line2 + this.trim_size(this.second.size);
@@ -1445,6 +1445,6 @@ stockPrintU.prototype.printBarcode2 = function() {
 
     // this.LODOP.PRINT_SETUP();
     // this.LODOP.PRINT_DESIGN();
-    this.LODOP.PREVIEW();
-    // this.LODOP.PRINT();
+    // this.LODOP.PREVIEW();
+    this.LODOP.PRINT();
 };
