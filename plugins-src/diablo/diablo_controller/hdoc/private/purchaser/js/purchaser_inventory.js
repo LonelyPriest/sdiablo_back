@@ -291,15 +291,15 @@ function purchaserInventoryNewCtrlProvide (
 	// $scope.base_settings.image_allowed = stockUtils.image_allowed(shopId, base);
 	$scope.base_settings.price_on_region = stockUtils.price_on_region(shopId, base);
 
-	var hide_mode  = stockUtils.stock_in_hide_mode(shopId, base); 
-	angular.extend($scope.base_settings, hide_mode);
+	angular.extend($scope.base_settings, stockUtils.stock_in_hide_mode(shopId, base));
 	
 	console.log($scope.base_settings);
 	$scope.base_settings.stock_alarm     = stockUtils.stock_alarm(shopId, base);
 	$scope.base_settings.stock_alarm_a   = stockUtils.stock_alarm_a(shopId, base);
 	$scope.base_settings.stock_contailer = stockUtils.stock_contailer(shopId, base); 
 	$scope.base_settings.stock_with_firm = stockUtils.stock_with_firm(shopId, base);
-	$scope.base_settings.hide_bill = stockUtils.bill_mode(shopId, base).hide_bill;
+
+	angular.extend($scope.base_settings, stockUtils.bill_mode(shopId, base));
     }
 
     $scope.change_shop = function(){

@@ -43,7 +43,8 @@ function updateBSaleDetailCtrlProvide(
 	    $scope.inventories,
 	    diablo_reject,
 	    $scope.select.verificate,
-	    $scope.setting.round);
+	    $scope.setting.round,
+	    $scope.get_valid_price);
 	console.log(calc);
 	$scope.select.total      = calc.total;
 	$scope.select.abs_total  = calc.abs_total;
@@ -53,6 +54,22 @@ function updateBSaleDetailCtrlProvide(
     // rsn detail
     var rsn     = $routeParams.rsn
     var promise = diabloPromise.promise;
+    var get_setting = function(shopId){
+	angular.extend($scope.setting, bsaleUtils.sale_mode(shopId, base));
+	angular.extend($scope.setting, bsaleUtils.batch_mode(shopId, base));
+	
+	$scope.setting.semployee     = bsaleUtils.select_employee(shopId, base);
+	$scope.setting.check_sale    = bsaleUtils.check_sale(shopId, base);
+	$scope.setting.negative_sale = bsaleUtils.negative_sale(shopId, base);
+	$scope.setting.round         = bsaleUtils.round(shopId, base);
+	$scope.setting.barcode_mode  = bsaleUtils.barcode_mode(shopId, base);
+	$scope.setting.barcode_auto  = bsaleUtils.barcode_auto(shopId, base); 
+	$scope.setting.scan_only     = bsaleUtils.to_integer(bsaleUtils.scan_only(shopId, base).charAt(0));
+	$scope.setting.type_sale     = bsaleUtils.type_sale(shopId, base);
+	// $scope.setting.print_protocal = bsaleUtils.print_protocal(shopId, base);	
+	console.log($scope.setting); 
+    };
+    
     bsaleService.get_batch_sale(rsn, diablo_batch_sale_update_mode).then(function(result){
 	// console.log(result);
 	if (result.ecode === 0){
@@ -89,11 +106,21 @@ function updateBSaleDetailCtrlProvide(
 		$scope.select.o_bsaler = $scope.select.bsaler;
 		$scope.select.left_balance = $scope.select.surplus;
 		
-		// setting
-		var shopId = $scope.select.shop.id;
-		$scope.setting.check_sale = bsaleUtils.check_sale(shopId, $scope.base_settings);
-		$scope.setting.round = bsaleUtils.round(shopId, $scope.base_settings); 
-		$scope.setting.type_sale = bsaleUtils.type_sale(shopId, $scope.base_settings);
+		// setting 
+		$scope.setting = {};
+		get_setting($scope.select.shop.id, $scope.base_settings);
+
+		$scope.get_valid_price = function(stock) {
+		    if (0 === $scope.setting.sale_price)
+			return stock.tag_price;
+		    else 
+			return stock.vir_price;
+		};
+		
+		// var shopId = $scope.select.shop.id;
+		// $scope.setting.check_sale = bsaleUtils.check_sale(shopId, $scope.base_settings);
+		// $scope.setting.round = bsaleUtils.round(shopId, $scope.base_settings); 
+		// $scope.setting.type_sale = bsaleUtils.type_sale(shopId, $scope.base_settings);
 		
 		// inventory
 		$scope.old_inventories = bsale.details;

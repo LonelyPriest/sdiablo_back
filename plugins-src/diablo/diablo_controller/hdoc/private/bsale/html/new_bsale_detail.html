@@ -170,7 +170,14 @@
 		      	      x-ng-click="delete_sale(r)">删除
 			<i class="glyphicon glyphicon-erase"></i></button>
 		      
-		      <button x-ng-if="right.print_sale && (r.state===1 || r.state===2)"
+		      <button x-ng-if="right.print_sale
+				       && setting.print_with_check
+				       && (r.state===1 || r.state===2)"
+			      class="btn diablo-button purple"
+		      	      x-ng-click="print_sale(r)">打印
+			<i class="glyphicon glyphicon-print"></i></button>
+
+		      <button x-ng-if="right.print_sale && !setting.print_with_check"
 			      class="btn diablo-button purple"
 		      	      x-ng-click="print_sale(r)">打印
 			<i class="glyphicon glyphicon-print"></i></button>

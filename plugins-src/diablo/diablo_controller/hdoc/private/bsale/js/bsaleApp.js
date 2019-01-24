@@ -406,6 +406,7 @@ function bsaleNewProvide(
     var dialog = diabloUtilsService; 
     var get_setting = function(shopId){
 	angular.extend($scope.setting, bsaleUtils.sale_mode(shopId, base));
+	angular.extend($scope.setting, bsaleUtils.batch_mode(shopId, base));
 	
 	$scope.setting.semployee     = bsaleUtils.select_employee(shopId, base);
 	$scope.setting.check_sale    = bsaleUtils.check_sale(shopId, base);
@@ -435,10 +436,18 @@ function bsaleNewProvide(
 	else {
 	    $scope.auto_focus('style_number'); 
 	}
-    }; 
+    };
+    
     $scope.focus_good_or_barcode();
     console.log($scope.focus_attr);
 
+    $scope.get_valid_price = function(stock) {
+	if (0 === $scope.setting.sale_price)
+	    return stock.tag_price;
+	else 
+	    return stock.vir_price;
+    };
+    
     $scope.change_shop = function(){
 	get_setting($scope.select.shop.id);	
 	$scope.get_employee();
@@ -651,6 +660,7 @@ function bsaleNewProvide(
 	
 	add.org_price    = src.org_price;
 	add.ediscount    = src.ediscount;
+	add.vir_price    = src.vir_price;
 	add.tag_price    = src.tag_price; 
 	add.discount     = src.discount;
 
@@ -676,7 +686,7 @@ function bsaleNewProvide(
     
     $scope.on_select_good = function(item, model, label){
 	console.log(item); 
-	if (item.tag_price < 0){
+	if ($scope.get_valid_price(item) < 0){
 	    fail_response(2193, function(){}); 
 	    return;
 	};
@@ -726,7 +736,13 @@ function bsaleNewProvide(
      * save all
      */
     $scope.disable_save = function(){
-	return $scope.has_saved || $scope.draft || $scope.inventories.length === 0 ? true : false; 
+	if ($scope.has_saved || $scope.draft || $scope.inventories.length === 0)
+	    return true;
+	    
+	if ($scope.select.bsaler.type_id === 2
+	    && $scope.select.should_pay > $scope.select.has_pay) {
+	    return true;
+	}
     };
     
     var get_sale_detail = function(amounts){
@@ -781,7 +797,7 @@ function bsaleNewProvide(
 	    return;
 	};
 
-	if ($scope.setting.hide_bsaler && $scope.select.bsaler.type_id === diablo_system_retailer) {
+	if (!$scope.setting.hide_bsaler && $scope.select.bsaler.type_id === diablo_system_retailer) {
 	    dialog.response(
 		false,
 		"批发开单",
@@ -892,11 +908,29 @@ function bsaleNewProvide(
 	    if (result.ecode === 0){
 		$scope.select.rsn = result.rsn; 
 		// print
-		dialog.response_with_callback(
-		    true,
-		    "销售开单", "开单成功，单号：" + result.rsn + ", 请等待审核...",
-		    undefined,
-		    function() {$scope.refresh()});
+		if ($scope.setting.print_with_check) {
+		    dialog.response_with_callback(
+			true,
+			"销售开单", "开单成功，单号：" + result.rsn + ", 请等待审核...",
+			undefined,
+			function() {$scope.refresh()});
+		} else {
+		    dialog.response_with_callback(
+			true,
+			"销售开单", "开单成功，单号：" + result.rsn + ", 是否打印单据?",
+			undefined,
+			function() {
+			    bsaleService.check_print_batch_sale(result.rsn).then(function(state){
+				console.log(state);
+				if (state.ecode == 0){
+				    diablo_goto_page("#/print_bsale/" + result.rsn); 
+				} else{
+				    dialog.set_batch_error("销售单打印", state.ecode); 
+				}
+			    })
+			});
+		}
+		
 	    } else {
 		dialog.response_with_callback(
 	    	    false,
@@ -956,7 +990,8 @@ function bsaleNewProvide(
 	    $scope.inventories,
 	    diablo_sale,
 	    $scope.select.verificate,
-	    $scope.setting.round);
+	    $scope.setting.round,
+	    $scope.get_valid_price);
 	console.log(calc);
 	$scope.select.total      = calc.total;
 	$scope.select.abs_total  = calc.abs_total;
@@ -1086,7 +1121,8 @@ function bsaleNewProvide(
 	};
 	
 	inv.fdiscount = inv.discount;
-	inv.fprice    = diablo_price(inv.tag_price, inv.discount); 
+	// inv.fprice    = diablo_price(inv.tag_price, inv.discount);
+	inv.fprice    = diablo_price($scope.get_valid_price(inv), inv.discount); 
 	inv.o_fdiscount = inv.discount;
 	inv.o_fprice    = inv.fprice;
 	
@@ -1490,6 +1526,8 @@ function bsaleNewDetailCtrlProvide(
     $scope.disable_print = false;
     $scope.current_page = $scope.default_page;
 
+    $scope.setting = bsaleUtils.batch_mode(user.loginShop, base);
+
     var authen = new diabloAuthen(user.type, user.right, user.shop);
     $scope.right = authen.authenBatchSaleRight();
     console.log($scope.right);
@@ -1705,16 +1743,10 @@ function bsaleNewDetailCtrlProvide(
 		if (state.ecode == 0){
 		    r.state = diablo_print;
 		    diablo_goto_page("#/print_bsale/" + r.rsn); 
-		    // dialog.response_with_callback(
-		    // 	true,
-		    // 	"销售单审核",
-		    // 	"销售单审核成功！！单号：" + state.rsn,
-		    // 	undefined, function(){r.state = 3})
-	    	    // return;
 		} else{
 		    dialog.set_batch_error("销售单打印", state.ecode); 
 		}
-	    })	    
+	    })
 	}
 	
 	dialog.request(
@@ -2203,8 +2235,10 @@ function bsalePrintCtrlProvide(
 
     var pageHeight = diablo_base_setting("prn_h_page", user.loginShop, base, parseFloat, 14);
     var pageWidth  = diablo_base_setting("prn_w_page", user.loginShop, base, parseFloat, 21.3);
+    var batch_mode = bsaleUtils.batch_mode(user.loginShop, base);
 
-    $scope.print_mode = bsaleUtils.print_cs_mode(diablo_default_shop, base); 
+    $scope.print_mode = bsaleUtils.print_cs_mode(user.loginShop, base);
+	
     bsaleService.get_batch_sale($routeParams.rsn, diablo_batch_sale_print_mode).then(function(result) {
     	console.log(result);
 	if (result.ecode === 0) {
@@ -2284,7 +2318,11 @@ function bsalePrintCtrlProvide(
     };
 
     $scope.go_back = function() {
-	diablo_goto_page("#/list_bsale_new");
+	if (batch_mode.print_with_check)
+	    diablo_goto_page("#/list_bsale_new");
+	else {
+	    diablo_goto_page("#/new_bsale");
+	}
     };
 };
 

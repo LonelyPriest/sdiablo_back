@@ -225,8 +225,16 @@ var bsaleUtils = function(){
 	sale_mode:function(shop, base) {
 	    var mode = diablo_base_setting("p_balance", shop, base, function(s) {return s}, diablo_sale_mode);
 	    return {
-		show_note: default_hide(mode.charAt(1)),
-		hide_bsaler: default_hide(mode.charAt(11))
+		show_note:   default_hide(mode.charAt(1)),
+		hide_bsaler: default_hide(mode.charAt(11)),
+		sale_price:  bsaleUtils.to_integer(mode.charAt(13))
+	    };
+	},
+
+	batch_mode:function(shop, base) {
+	    var mode = diablo_base_setting("batch_mode", shop, base, function(s) {return s}, diablo_batch_mode);
+	    return {
+		print_with_check: default_hide(mode.charAt(0))
 	    };
 	},
 
@@ -235,9 +243,10 @@ var bsaleUtils = function(){
 	    var mode = diablo_base_setting(
 		"p_color_size", shop, base, function(s) {return s}, diablo_bsale_print_cs_mode);
 	    return {
-		both: bsaleUtils.to_integer(mode.charAt(0)),
+		both:       bsaleUtils.to_integer(mode.charAt(0)),
 		color_only: bsaleUtils.to_integer(mode.charAt(1)),
-		size_only: bsaleUtils.to_integer(mode.charAt(2))
+		size_only:  bsaleUtils.to_integer(mode.charAt(2)),
+		hide_unit:  default_hide(mode.charAt(3))
 	    };
 	},
 	
@@ -345,7 +354,7 @@ var bsaleCalc = function(){
 	    return calc;
 	},
 	
-	calculate: function(inventories, saleMode, verificate, round){
+	calculate: function(inventories, saleMode, verificate, round, getValidPrice){
 	    var total        = 0;
 	    var abs_total    = 0;
 	    var should_pay   = 0;
@@ -356,12 +365,13 @@ var bsaleCalc = function(){
 		if (angular.isDefined(one.select) && !one.select) continue;
 
 		if (one.o_fprice !== one.fprice) {
-		    one.fdiscount = diablo_discount(one.fprice, one.tag_price); 
+		    // one.fdiscount = diablo_discount(one.fprice, one.tag_price);
+		    one.fdiscount = diablo_discount(one.fprice, getValidPrice(one)); 
 		} else if (one.o_fdiscount !== one.fdiscount) {
-		    if (one.tag_price == 0) {
+		    if (getValidPrice(one) == 0) {
 		    	one.fprice = diablo_price(one.fprice, one.fdiscount); 
 		    } else {
-		    	one.fprice = diablo_price(one.tag_price, one.fdiscount); 
+		    	one.fprice = diablo_price(getValidPrice(one), one.fdiscount); 
 		    }
 		}
 	    }

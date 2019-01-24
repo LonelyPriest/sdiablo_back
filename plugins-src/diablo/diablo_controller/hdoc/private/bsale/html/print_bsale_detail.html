@@ -45,10 +45,10 @@
 		  <th class="text-center">序号</th>
 		  <th class="text-center">货号</th>
 		  <th class="text-center">品牌</th>
-		  <th class="text-center">类型</th>
+		  <th class="text-center">品类</th>
 		  <th class="text-center">数量</th>
 		  <th class="text-center">单价</th>
-		  <th class="text-center">单位</th>
+		  <th x-ng-if="!print_mode.hide_unit" class="text-center">单位</th>
 		  <th class="text-center">合计</th>
 		  <th class="text-center">备注</th> 
 		  
@@ -66,7 +66,8 @@
 		  <td class="text-center">{{n.type}}</td>
 		  <td class="text-center">{{n.total}}</td>
 		  <td class="text-center">{{n.rprice}}</td>
-		  <td class="text-center">{{std_units[n.unit]}}</td>
+		  <td x-ng-if="!print_mode.hide_unit"
+		      class="text-center">{{std_units[n.unit]}}</td>
 		  <td class="text-center">{{n.calc}}</td>
 		  <td class="text-center">{{n.comment}}</td>
 		  
@@ -78,7 +79,8 @@
 		<tr>
 		  <td colspan="4"></td>
 		  <td class="text-center" x-ng-bind=total></td>
-		  <td colspan="2"></td>
+		  <td x-ng-if="!print_mode.hide_unit"></td>
+		  <td></td>
 		  <td class="text-center" x-ng-bind=total_rprice></td>
 		  <td></td>
 		</tr>

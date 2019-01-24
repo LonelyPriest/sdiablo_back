@@ -981,8 +981,8 @@ function goodPrintTemplateCtrlProvide(
 	     
 	     , "level", "executive", "category", "fabric"
 	     
-	     , "font", "font_name", "font_executive", "font_category",
-	     "font_price", "font_size", "font_fabric", "font_label"
+	     , "font", "font_name", "font_executive", "font_category"
+	     , "font_price", "font_size", "font_fabric", "font_label"
 	     
 	     , "bold" 
 	     , "solo_brand", "solo_color", "solo_size"
@@ -1002,7 +1002,7 @@ function goodPrintTemplateCtrlProvide(
 
 	     , "printer", "dual_print"
 	     
-	     , "w_barcode"];
+	     , "barcode", "w_barcode"];
     
     $scope.save_template = function() {
 	var update = {};

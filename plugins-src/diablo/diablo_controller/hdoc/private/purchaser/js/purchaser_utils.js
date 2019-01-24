@@ -192,7 +192,8 @@ var stockUtils = function(){
 	bill_mode:function(shop, base) {
 	    var mode = diablo_base_setting("p_balance", shop, base, function(s) {return s}, diablo_sale_mode);
 	    return {
-		hide_bill: default_hide(mode.charAt(10))
+		hide_bill:      default_hide(mode.charAt(10)),
+		vir_price_name: stockUtils.to_integer(mode.charAt(12))
 	    }
 	},
 	

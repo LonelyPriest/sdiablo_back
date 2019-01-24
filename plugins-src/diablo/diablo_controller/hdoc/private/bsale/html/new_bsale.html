@@ -100,7 +100,7 @@
 		  <th x-ng-if="setting.barcode_mode" class="text-center">条码</th>
 		  <th class="text-center">货号/品名/品类</th>
 		  <th x-ng-if="setting.check_sale" class="text-center">库存</th> 
-		  <th class="text-center">参考价</th>
+		  <!-- <th class="text-center">参考价</th> -->
 		  <!-- <th class="text-center">折扣</th>  -->
 		  <th class="text-center">单价</th>
 		  <th class="text-center">数量</th>
@@ -126,9 +126,9 @@
 		  
 		  <td x-ng-if="setting.check_sale" class="vert-align">{{inv.total}}</td> 
 
-		  <td class="vert-align">
-		    <span>{{inv.tag_price}}</span> 
-		  </td>
+		  <!-- <td class="vert-align"> -->
+		  <!--   <span>{{inv.tag_price}}</span>  -->
+		  <!-- </td> -->
 		  
 		  <td x-ng-if="!right.m_price" class="vert-align">
 		    <div x-ng-if="(inv.fprice===0 || inv.fprice)">{{inv.fprice}}</div>
@@ -232,7 +232,6 @@
 		  <td x-ng-if="setting.barcode_mode"></td>
 		  <td></td>
 		  <td x-ng-if="setting.check_sale"></td>
-		  <td></td>
 		  <td></td>
 		  <td class="vert-align">{{select.abs_total}}</td>
 		  <td class="vert-align">{{select.should_pay}}</td>

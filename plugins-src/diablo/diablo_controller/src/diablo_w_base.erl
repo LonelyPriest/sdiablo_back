@@ -899,7 +899,9 @@ sys_config() ->
 	      %% [9]: hide password for retailer
 	      %% [10]: hide bill info on stock in
 	      %% [11]: hide bsaler when on batchsale
-	      {"p_balance",       "销售模式",             "0000000000000",  "0"},
+	      %% [12]: virtual price name 0: virtual price 1: batch price
+	      %% [13]: default price when on sale 0:tag_price, 1:vir_price
+	      {"p_balance",       "销售模式",             "00000000000000",  "0"},
 	      
 	      {"gen_ticket",      "自动生成电子卷",       "0",   "0"},
 	      
@@ -921,7 +923,8 @@ sys_config() ->
 	      %% [1]: print color only
 	      %% [2]: print size only
 	      %% 000: no color and no size
-	      {"p_color_size",    "打印颜色尺码",         "000", "0"},
+	      %% [3]: print unit
+	      {"p_color_size",    "打印颜色尺码",         "0001", "0"},
 	      
 	      {"saler_stock",      "营业员查看区域库存",  "0",   "0"},
 	      {"r_stock_oprice",    "厂商退货检测进价",   "1",   "0"},
@@ -971,7 +974,10 @@ sys_config() ->
 	      {"maling_rang",       "抹零范围",           "3",    "0"},
 	      %% 1: clothes mode, 2: child mode, 3: home mode
 	      {"shop_mode",         "店铺模式",           "1",    "0"},
-	      {"type_sale",         "品类开单模式",       "0",    "0"}	      
+	      {"type_sale",         "品类开单模式",       "0",    "0"},
+
+	      %%[0]:print with no check
+	      {"batch_mode",        "批发配置",           "0",    "0"}
 	     ],
     
     Values.
