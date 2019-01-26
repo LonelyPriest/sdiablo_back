@@ -5,7 +5,7 @@
 
 -behaviour(gen_request).
 
--export([action/2, action/3, action/4]).
+-export([action/2, action/3, action/4, mk_image_dir/2, image/2]).
 %%--------------------------------------------------------------------
 %% @desc: GET action
 %%--------------------------------------------------------------------

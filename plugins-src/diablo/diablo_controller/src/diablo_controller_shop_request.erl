@@ -83,7 +83,31 @@ action(Session, Req, {"update_shop", Id}, Payload) ->
     ?DEBUG("update a shop with session ~p, id ~p, paylaod ~p",
 	   [Session, Id, Payload]), 
     Merchant = ?session:get(merchant, Session),
-    case ?shop:shop(update, Merchant, Id, Payload) of
+
+    ImageFriendPath = 
+	case ?v(<<"bcode_friend">>, Payload) of
+	    undefined -> [];
+	    FriendData ->
+		FriendPath = filename:join([?w_good_request:image(dir, Merchant), Id, "friend.png"]),
+		ok = ?w_good_request:mk_image_dir(FriendPath, Merchant),
+		ok = file:write_file(FriendPath, base64:decode(FriendData)),
+		filename:join(["image", ?to_s(Merchant), Id, filename:basename(FriendPath)])
+	end,
+
+    ImagePayPath = 
+	case ?v(<<"bcode_pay">>, Payload) of
+	    undefined -> [];
+	    PayData ->
+		PayPath = filename:join([?w_good_request:image(dir, Merchant), Id, "pay.png"]),
+		ok = ?w_good_request:mk_image_dir(PayPath, Merchant),
+		ok = file:write_file(PayPath, base64:decode(PayData)),
+		filename:join(["image", ?to_s(Merchant), Id, filename:basename(PayPath)])
+	end,
+
+    Attrs = lists:keydelete(<<"bcode_friend">>, 1,  lists:keydelete(<<"bcode_pay">>, 1, Payload)),
+	    
+    case ?shop:shop(update, Merchant, Id, [{<<"bcode_friend">>, ImageFriendPath},
+					   {<<"bcode_pay">>, ImagePayPath}] ++  Attrs) of
     	{ok, Id} ->
 	    ?w_user_profile:update(shop, Merchant), 
 	    ?w_user_profile:update(user_shop, Merchant, Session), 

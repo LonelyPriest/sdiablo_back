@@ -25,10 +25,13 @@
 	  <span x-ng-bind=detail.shop.name></span>
 	  <span x-ng-if="detail.type===0"></span>
 	  <span x-ng-if="detail.type===1">（退货）</span> 
-	</h2> 
+	</h2>
+	<h3 x-ng-if="!print_mode.hide_address" style="text-align:center">
+	  <span x-ng-bind=detail.shop.addr></span>
+	</h3>
 	<h4>
 	  <div style="text-align:center">
-	    <span>客户：<span x-ng-bind=detail.bsaler></span></span> 
+	    <span>客户：<span x-ng-if="detail.bsaler_type!==2">{{detail.bsaler}}</span></span> 
 	    &nbsp&nbsp&nbsp&nbsp<span>日期：<span x-ng-bind=detail.entry_date></span></span>
 	    &nbsp&nbsp&nbsp&nbsp<span>单号：<span x-ng-bind=detail.rsn></span></span>
 	  </div>
@@ -40,52 +43,52 @@
 	</h4>
 	<div class="table-responsive">
 	  <table class="table table-bordered table-striped" style="margin-bottom:5px"> 
-	      <thead>
-		<tr>
-		  <th class="text-center">序号</th>
-		  <th class="text-center">货号</th>
-		  <th class="text-center">品牌</th>
-		  <th class="text-center">品类</th>
-		  <th class="text-center">数量</th>
-		  <th class="text-center">单价</th>
-		  <th x-ng-if="!print_mode.hide_unit" class="text-center">单位</th>
-		  <th class="text-center">合计</th>
-		  <th class="text-center">备注</th> 
-		  
-		  <th x-ng-if="print_mode.both" class="text-center">小计</th>
-		  <th x-ng-if="print_mode.both" class="text-center">颜色</th>
-		  <th x-ng-if="print_mode.both" class="text-center">尺码</th> 
-		</tr>
-	      </thead>
-	      
-	      <tbody>
-		<tr x-ng-repeat="n in notes"> 
-		  <td class="text-center">{{n.order_id}}</td>
-		  <td class="text-center">{{n.style_number}}</td>
-		  <td class="text-center">{{n.brand}}</td>
-		  <td class="text-center">{{n.type}}</td>
-		  <td class="text-center">{{n.total}}</td>
-		  <td class="text-center">{{n.rprice}}</td>
-		  <td x-ng-if="!print_mode.hide_unit"
-		      class="text-center">{{std_units[n.unit]}}</td>
-		  <td class="text-center">{{n.calc}}</td>
-		  <td class="text-center">{{n.comment}}</td>
-		  
-		  <td x-ng-if="print_mode.both" class="text-center">{{n.amount}}</td>
-		  <td x-ng-if="print_mode.both" class="text-center">{{n.color.cname}}</td>
-		  <td x-ng-if="print_mode.both" style="text-center">{{n.size}}</td>
-		</tr>
+	    <thead>
+	      <tr>
+		<th class="text-center">序号</th>
+		<th class="text-center">货号</th>
+		<th class="text-center">品牌</th>
+		<th class="text-center">品类</th>
+		<th class="text-center">数量</th>
+		<th class="text-center">单价</th>
+		<th x-ng-if="!print_mode.hide_unit" class="text-center">单位</th>
+		<th class="text-center">合计</th>
+		<th class="text-center">备注</th> 
 		
-		<tr>
-		  <td colspan="4"></td>
-		  <td class="text-center" x-ng-bind=total></td>
-		  <td x-ng-if="!print_mode.hide_unit"></td>
-		  <td></td>
-		  <td class="text-center" x-ng-bind=total_rprice></td>
-		  <td></td>
-		</tr>
-	      </tbody> 
-	    </table> <!--END table--> 
+		<th x-ng-if="print_mode.both" class="text-center">小计</th>
+		<th x-ng-if="print_mode.both" class="text-center">颜色</th>
+		<th x-ng-if="print_mode.both" class="text-center">尺码</th> 
+	      </tr>
+	    </thead>
+	    
+	    <tbody>
+	      <tr x-ng-repeat="n in notes"> 
+		<td class="text-center">{{n.order_id}}</td>
+		<td class="text-center">{{n.style_number}}</td>
+		<td class="text-center">{{n.brand}}</td>
+		<td class="text-center">{{n.type}}</td>
+		<td class="text-center">{{n.total}}</td>
+		<td class="text-center">{{n.rprice}}</td>
+		<td x-ng-if="!print_mode.hide_unit"
+		    class="text-center">{{std_units[n.unit]}}</td>
+		<td class="text-center">{{n.calc}}</td>
+		<td class="text-center">{{n.comment}}</td>
+		
+		<td x-ng-if="print_mode.both" class="text-center">{{n.amount}}</td>
+		<td x-ng-if="print_mode.both" class="text-center">{{n.color.cname}}</td>
+		<td x-ng-if="print_mode.both" style="text-center">{{n.size}}</td>
+	      </tr>
+	      
+	      <tr>
+		<td colspan="4"></td>
+		<td class="text-center" x-ng-bind=total></td>
+		<td x-ng-if="!print_mode.hide_unit"></td>
+		<td></td>
+		<td class="text-center" x-ng-bind=total_rprice></td>
+		<td></td>
+	      </tr>
+	    </tbody> 
+	  </table> <!--END table--> 
 	</div>
 	<h4 style="text-align:center; margin-top:5px; margin-bottom:5px">
 	  <span>
@@ -105,15 +108,18 @@
 	    
 	  </span>
 	</h4>
+	<h4 style="text-align:center">
+	  <image x-ng-show="detail.shop.bcode_friend"
+		 class="img-responsive img-thumbnail"
+		 ng-src="{{detail.shop.bcode_friend}}"></image>
+	  <image x-ng-show="detail.shop.bcode_pay"
+		 class="img-responsive img-thumbnail"
+		 ng-src="{{detail.shop.bcode_pay}}"></image>
+	</h4>
 	
-	<!-- <h5 style="text-align:left; margin-top:5px; margin-bottom:5px"> -->
-	<!--   <p> -->
-	<!--     <span>钱掌柜零售云平台</span> &nbsp&nbsp&nbsp&nbsp<span>联系方式：18692269329（微信）</span> &nbsp&nbsp&nbsp&nbsp<span>15292083301（微信）</span> -->
-	<!--   </p> -->
-	<!-- </h5> -->
       </div>
     </div>
     
   </div>
- 
+  
 </div>

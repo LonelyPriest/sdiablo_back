@@ -80,7 +80,6 @@ purchaser_good(reset_barcode, AutoBarcode, Merchant, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {reset_good_barcode, AutoBarcode, Merchant, StyleNumber, Brand}).
 
-
 purchaser_inventory(new, Merchant, Inventories, Props) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {new_inventory, Merchant, Inventories, Props}, 30 * 1000);
@@ -162,6 +161,7 @@ purchaser_inventory(cancel_transfer, Merchant, RSN) ->
     gen_server:call(
       Name, {cancel_inventory_transfer, Merchant, RSN});
 
+
 purchaser_inventory(list, Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {list_inventory, Merchant, Conditions});
@@ -203,7 +203,12 @@ purchaser_inventory(get_transfer, Merchant, RSN) ->
 
 purchaser_inventory(get_fix, Merchant, RSN) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {get_fix, Merchant, RSN}).
+    gen_server:call(Name, {get_fix, Merchant, RSN});
+
+purchaser_inventory(copy_attr, Merchant, Attrs) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {copy_attr, Merchant, Attrs}).
+
     
 purchaser_inventory(amount, Merchant, Shop, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -609,7 +614,7 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
     
     case StyleNumber =:= undefined andalso Brand =:= undefined of
 	true -> 
-	    case UpdateBase ++ UpdatePrice ++ UpdateFree of
+	    case UpdateBase ++ UpdatePrice ++ UpdateFree ++ UpdateCategory of
 		[] -> 
 		    {reply, ?sql_utils:execute(write, Sql1, GoodId), State};
 		_  ->
@@ -688,8 +693,7 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 
 	    UpdateFun =
 		fun(UId, Total) ->
-			"update w_inventory_amount"
-			    " set total=total+" ++ ?to_s(Total)
+			"update w_inventory_amount" " set total=total+" ++ ?to_s(Total)
 			    ++ " where id=" ++ ?to_s(UId)
 		end,
 	    
@@ -2530,6 +2534,20 @@ handle_call({get_fix, Merchant, RSN}, _From, State) ->
 	     fun()-> "" end),
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
+
+handle_call({copy_attr, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("copy_attr: merchant ~p, attrs ~p", [Merchant, Attrs]),
+    StyleNumber = ?v(<<"style_number">>, Attrs),
+    Brand  = ?v(<<"brand">>, Attrs),
+    Shop   = ?v(<<"shop">>, Attrs),
+
+    case StyleNumber =:= undefined orelse Brand =:= undefined orelse Shop  =:= undefined of
+	true ->
+	    {reply, {error, ?err(params_error, StyleNumber)}, State};
+	false ->
+	    Reply = ?w_good_sql:inventory(copy_attr, Merchant, Shop, StyleNumber, Brand),
+	    {reply, Reply, State}
+    end;
 
 handle_call({get_amount, Merchant, Shop, StyleNumber, Brand}, _From, State) ->
     ?DEBUG("get_amount, with Merchant ~p, Shop ~p, StyleNumber ~p, Brand ~p",

@@ -512,3 +512,7 @@ alter table w_promotion add column member TINYINT default 0 after prule;
 
 --2019-01-20
 alter table print_template add column barcode TINYINT default 1  after offset_label;
+
+--2019-01-25
+alter table shops add column bcode_friend VARCHAR(255) default '' not null after score;
+alter table shops add column bcode_pay VARCHAR(255) default '' not null after bcode_friend;

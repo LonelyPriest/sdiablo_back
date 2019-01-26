@@ -136,7 +136,9 @@ function shopConfig(angular){
 		 address:   ashop.address,
 		 region:    angular.isDefined(ashop.region) ? ashop.region : undefined,
 		 shopowner: angular.isDefined(ashop.employee) ? ashop.employee.id : undefined,
-		 repo: angular.isDefined(ashop.repo) ? ashop.repo.id : undefined}
+		 repo: angular.isDefined(ashop.repo) ? ashop.repo.id : undefined,
+		 bcode_friend: ashop.bcode_friend,
+		 bcode_pay:    ashop.bcode_pay}
 	    ).$promise;
 	};
 

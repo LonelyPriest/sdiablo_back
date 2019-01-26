@@ -81,7 +81,7 @@ userApp.factory("userService", function($resource, $q){
 	    sortShops: function(){
 		var sort = [];
 		angular.forEach(shops, function(s){
-		    // console.log(shops);
+		    // console.log(s);
 		    var shop = {id:  s.shop_id,
 				name:s.name,
 				addr:s.addr,
@@ -89,6 +89,8 @@ userApp.factory("userService", function($resource, $q){
 				region: s.region_id,
 				charge_id: s.charge_id,
 				score_id: s.score_id,
+				bcode_friend: s.bcode_friend,
+				bcode_pay: s.bcode_pay,
 				py:diablo_pinyin(s.name)};
 		    if (s.type === 0 && !in_array(sort, shop)){
 			if (shop.id === _loginShop){
@@ -147,6 +149,8 @@ userApp.factory("userService", function($resource, $q){
 				charge_id: s.charge_id,
 				score_id: s.score_id,
 				region: s.region_id,
+				bcode_friend: s.bcode_friend,
+				bcode_pay: s.bcode_pay,
 				py:diablo_pinyin(s.name)};
 
 		    if ( ((s.type === 0 && s.repo_id === -1) || s.type === 1)

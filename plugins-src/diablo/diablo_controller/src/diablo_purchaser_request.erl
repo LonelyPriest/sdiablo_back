@@ -51,10 +51,7 @@ action(Session, Req, {"new_w_inventory"}, Payload) ->
     {struct, Base} = ?v(<<"base">>, Payload), 
     Datetime       = ?v(<<"datetime">>, Base),
     Total          = ?v(<<"total">>, Base), 
-    %% Date = ?utils:to_date(datetime, Datetime),
-
-    %% ?DEBUG("current seconds ~p, date seconds ~p",
-    %% 	   [?utils:current_time(localtime2second), ?utils:datetime2seconds(Datetime)]),
+    
     case abs(?utils:current_time(localtime2second) - ?utils:datetime2seconds(Datetime)) > 3600 * 2 of
 	true ->
 	    CurDatetime    = ?utils:current_time(format_localtime), 
@@ -102,23 +99,11 @@ action(Session, Req, {"new_w_inventory"}, Payload) ->
     end;
 
 action(Session, Req, {"update_w_inventory"}, Payload) ->
-    ?DEBUG("update purchaser inventory with session ~p, paylaod~n~p",
-	   [Session, Payload]),
+    ?DEBUG("update purchaser inventory with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
     Invs = ?v(<<"inventory">>, Payload, []),
     {struct, Base} = ?v(<<"base">>, Payload),
-
-    %% Datetime = ?v(<<"datetime">>, Base), 
-    %% CurrentDate = ?utils:current_time(format_localtime),
-
-    %% case ?utils:to_date(datetime, Datetime) /= ?utils:to_date(datetime, CurrentDate) of
-    %% 	true ->
-    %% 	    ?utils:respond(200,
-    %% 			   Req,
-    %% 			   ?err(invalid_date, "update_w_inventory"),
-    %% 			   [{<<"fdatetime">>, Datetime},
-    %% 			    {<<"bdatetime">>, CurrentDate}]);
-    %% 	false -> 
+    
     RSN = ?v(<<"rsn">>, Base), 
     {ok, OldBase} = ?w_inventory:purchaser_inventory(get_new, Merchant, RSN),
     
@@ -1030,6 +1015,20 @@ action(Session, Req, {"gift_w_stock"}, Payload) ->
 	       Req,
 	       ?succ(update_w_inventory_batch, Merchant),
 	       {<<"state">>, State});
+	{error, Error} ->
+    	    ?utils:respond(200, Req, Error)
+    end;
+
+
+action(Session, Req, {"copy_w_stock_attr"}, Payload) ->
+    ?DEBUG("copy_w_stock with session ~p~n, paylaod ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session), 
+    case ?w_inventory:purchaser_inventory(copy_attr, Merchant, Payload) of
+	{ok, Merchant} ->
+	    ?utils:respond(
+	       200,
+	       Req,
+	       ?succ(update_w_inventory_batch, Merchant));
 	{error, Error} ->
     	    ?utils:respond(200, Req, Error)
     end;

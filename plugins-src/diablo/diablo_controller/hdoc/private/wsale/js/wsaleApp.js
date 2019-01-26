@@ -1726,7 +1726,7 @@ function wsaleNewProvide(
 			wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers),
 			$scope.setting.print_perform); 
 		    wsalePrint.gen_foot(
-			LODOP, hLine, $scope.comments, pdate, $scope.select.shop.addr, cakeMode);
+			LODOP, hLine, $scope.comments, pdate, $scope.select.shop, cakeMode);
 		    wsalePrint.start_print(LODOP); 
 		};
 		

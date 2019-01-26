@@ -329,13 +329,15 @@ function wretailerDetailCtrlProvide(
 
     $scope.use_order = function(mode){
 	$scope.sort.mode = mode;
-	// $scope.sort.sort = $scope.sort.sort === 0 ? 1 : 0; 
-	$scope.do_search($scope.current_page);
+	if ($scope.right.page_retailer) {
+	    $scope.do_search($scope.current_page); 
+	}
     }
 
-    $scope.do_search($scope.current_page);
+    if ($scope.right.page_retailer) {
+	$scope.do_search($scope.current_page); 
+    } 
 
-    
     $scope.new_retailer = function(){
 	$location.path("/wretailer_new"); 
     };

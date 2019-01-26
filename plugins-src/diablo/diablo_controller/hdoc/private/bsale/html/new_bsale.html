@@ -169,7 +169,12 @@
 		  	       x-ng-model="inv.sell"
 		  	       focus-auto="focus_attr.sell"
 			       x-ng-change="check_free_stock(inv)"
-		  	       x-ng-enter="inv.form.sell.$invalid || auto_save_free(inv)" />
+		  	       x-ng-enter="(inv.form.sell.$invalid
+					   || inv.form.sell.$invalid
+					   || inv.invalid_sell
+			    		   || inv.form.fprice.$invalid
+			    		   || inv.form.fdiscount.$invalid)
+					   || auto_save_free(inv)" />
 		      </div>
 		    </form>
 		  </td>
@@ -214,7 +219,7 @@
 					       || inv.invalid_sell
 			    		       || inv.form.fprice.$invalid
 			    		       || inv.form.fdiscount.$invalid"
-				x-ng-click="auto_free_update(inv)">保存
+				x-ng-click="auto_save_free(inv)">保存
 			  <i class="glyphicon glyphicon-plus"></i></button>
 			
 			<button class="btn diablo-input-button btn-danger"

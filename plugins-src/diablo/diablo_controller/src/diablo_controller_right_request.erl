@@ -510,7 +510,10 @@ get_shops(Session, Module) ->
 			     {<<"charge_id">>,?v(<<"charge_id">>, AShop)},
 			     {<<"score_id">>, ?v(<<"score_id">>, AShop)},
 			     {<<"region_id">>, ?v(<<"region_id">>, AShop)},
-			     {<<"type">>,     ?v(<<"type">>, AShop)},
+			     {<<"addr">>,      ?v(<<"address">>, AShop)},
+			     {<<"bcode_friend">>, ?v(<<"bcode_friend">>, AShop)},
+			     {<<"bcode_pay">>,    ?v(<<"bcode_pay">>, AShop)},
+			     {<<"type">>,         ?v(<<"type">>, AShop)},
 			     {<<"func_id">>, 
 			      case Module of
 				  inventory -> ?right_w_inventory;
@@ -531,10 +534,14 @@ get_shops(Session, Module) ->
 		  FunId  = ?v(<<"func_id">>, Shop),
 		  RepoId = ?v(<<"repo_id">>, Shop),
 		  Charge = ?v(<<"charge_id">>, Shop),
-		  Score  = ?v(<<"score_id">>, Shop),
+		  Score  = ?v(<<"score_id">>, Shop), 
 		  Region = ?v(<<"region_id">>, Shop),
+		  Address = ?v(<<"addr">>, Shop),
+		  BCodeFriend = ?v(<<"bcode_friend">>, Shop),
+		  BCodePay    = ?v(<<"bcode_pay">>, Shop),
 		  Type   = ?v(<<"type">>, Shop),
-		  S = {Id, Name, FunId, RepoId, Charge, Score, Region, Type},
+		  S = {Id, Name, FunId, RepoId, Charge, Score, Region, Type,
+		       Address, BCodeFriend, BCodePay},
 		  case lists:member(S, Acc) of
 		      true  ->  Acc;
 		      false -> [S|Acc]
@@ -579,6 +586,8 @@ login_user(shop, Session) ->
 	      fun({AShop}, Acc) ->
 		      [{[{<<"shop_id">>,   ?v(<<"id">>,   AShop)},
 			 {<<"name">>,      ?v(<<"name">>, AShop)},
+			 {<<"bcode_friend">>, ?v(<<"bcode_friend">>, AShop)},
+			 {<<"bcode_pay">>,    ?v(<<"bcode_pay">>, AShop)},
 			 {<<"addr">>,      ?v(<<"address">>, AShop)},
 			 {<<"repo_id">>,   ?v(<<"repo">>, AShop)},
 			 {<<"charge_id">>, ?v(<<"charge_id">>, AShop)},

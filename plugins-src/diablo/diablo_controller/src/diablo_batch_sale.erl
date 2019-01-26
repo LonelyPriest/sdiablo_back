@@ -1041,6 +1041,7 @@ filter_bsale(PageFun, Merchant, Conditions) ->
 	", a.entry_date"
 
 	", b.name as bsaler"
+	", b.type as bsaler_type"
 	", b.region as region_id"
 	", c.name as account"
 

@@ -739,7 +739,8 @@ function bsaleNewProvide(
 	if ($scope.has_saved || $scope.draft || $scope.inventories.length === 0)
 	    return true;
 	    
-	if ($scope.select.bsaler.type_id === 2
+	if (angular.isObject($scope.select.bsaler) &&
+	    $scope.select.bsaler.type_id === 2
 	    && $scope.select.should_pay > $scope.select.has_pay) {
 	    return true;
 	}

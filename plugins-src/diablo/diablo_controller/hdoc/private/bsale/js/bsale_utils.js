@@ -243,10 +243,13 @@ var bsaleUtils = function(){
 	    var mode = diablo_base_setting(
 		"p_color_size", shop, base, function(s) {return s}, diablo_bsale_print_cs_mode);
 	    return {
-		both:       bsaleUtils.to_integer(mode.charAt(0)),
-		color_only: bsaleUtils.to_integer(mode.charAt(1)),
-		size_only:  bsaleUtils.to_integer(mode.charAt(2)),
-		hide_unit:  default_hide(mode.charAt(3))
+		both:              bsaleUtils.to_integer(mode.charAt(0)),
+		color_only:        bsaleUtils.to_integer(mode.charAt(1)),
+		size_only:         bsaleUtils.to_integer(mode.charAt(2)),
+		hide_unit:         default_hide(mode.charAt(3)),
+		hide_bcode_friend: default_hide(mode.charAt(4)),
+		hide_bcode_pay:    default_hide(mode.charAt(5)),
+		hide_address:      default_hide(mode.charAt(6))
 	    };
 	},
 	

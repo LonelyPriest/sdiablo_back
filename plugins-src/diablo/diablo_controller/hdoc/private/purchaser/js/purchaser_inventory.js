@@ -3136,6 +3136,35 @@ function purchaserInventoryDetailCtrlProvide(
 	});
     };
 
+    $scope.copy_stock = function(inv) {
+	diabloFilter.get_purchaser_good(
+	    {style_number:inv.style_number, brand:inv.brand.id}
+	).then(function(result){
+	    console.log(result);
+	    if (result.ecode === 0){
+		if (!diablo_is_empty(result.data)) {
+		    dialog.set_error("复制库存属性", 2082); 
+		} else {
+		    purchaserService.copy_stock_attr(
+			inv.style_number, inv.brand.id, inv.shop_id
+		    ).then(function(result) {
+			if (result.ecode === 0){
+			    dialog.response(
+				true, "复制库存属性", "复制库存属性成功！！");
+			} else {
+			    dialog.set_error("复制库存属性", result.ecode); 
+			}
+		    })
+		} 
+	    } else {
+		var error = require("diablo-error");
+		dialog.response(
+		    false,
+		    "获取货品资料", "获取货品资料失败：" + error[result.ecode]);
+	    }
+	}) 
+    };
+
     $scope.offering_stock = function(inv) {
 	console.log(inv);
 	var condition = {style_number:inv.style_number, brand:inv.brand.id, shop:inv.shop_id};

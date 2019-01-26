@@ -46,6 +46,8 @@
 		    <th x-ng-show="authen_list_repo">所属仓库</th>
 		    <th>开张日期</th>
 		    <th>创建日期</th>
+		    <th>微信群</th>
+		    <th>收款码</th>
 		    <th>操作</th>
 		  </tr>
 		</thead>
@@ -84,6 +86,12 @@
 		    </td>
 		    <td>{{shop.open_date}}</td>
 		    <td>{{shop.entry_date}}</td>
+		    <td><image x-ng-show="shop.bcode_friend"
+			       class="img-responsive img-thumbnail"
+			       ng-src="{{shop.bcode_friend}}"></image></td>
+		    <td><image x-ng-show="shop.bcode_pay"
+			       class="img-responsive img-thumbnail"
+			       ng-src="{{shop.bcode_pay}}"></image></td>
 
 		    <td>
 		      <!-- <button class="btn btn-success diablo-button" -->
@@ -188,6 +196,68 @@
 	    </select>
 	  </div>
 	</div>
+
+	<div class="form-group">
+	  <div class="input-group">
+	    <span class="input-group-addon">
+	      <i class="glyphicon glyphicon-hand-right fg-red"></i>微信群</span>
+	    <div class=="input-group-addon">
+	      <input class="form-control" type="text"
+		     x-ng-readonly=true
+		     placeholder="请选择微信群图片"
+		     x-ng-model="params.bcode_friend.file.name"/>
+	    </div>
+	    <span class="input-group-btn">
+	      <span class="btn btn-primary btn-file">
+		<i class="glyphicon glyphicon-arrow-right"></i>
+		<input image-upload2 image="params.bcode_friend" id="bcode_friend"
+		       type="file" accept="image/*"/></span>
+	      <button class="btn btn-danger"
+		      x-ng-disabled="!params.bcode_friend"
+		      x-ng-click="params.bcode_friend=undefined">
+		<i class="glyphicon glyphicon-minus"></i>
+	      </button>
+	    </span> 
+	  </div>
+	  <div>
+	    <image-draw2 x-ng-show="params.bcode_friend"
+			 class="img-responsive img-thumbnail"
+	      		 org-image="params.bcode_friend">
+	    </image-draw2> 
+	  </div> 
+	</div>
+
+	<div class="form-group">
+	  <div class="input-group">
+	    <span class="input-group-addon">
+	      <i class="glyphicon glyphicon-hand-right fg-red"></i>收款码</span>
+	    <div class=="input-group-addon">
+	      <input class="form-control" type="text"
+		     x-ng-readonly=true
+		     placeholder="请选择收款码图片"
+		     x-ng-model="params.bcode_pay.file.name"/>
+	    </div>
+	    <span class="input-group-btn">
+	      <span class="btn btn-primary btn-file">
+		<i class="glyphicon glyphicon-arrow-right"></i>
+		<input image-upload2 image="params.bcode_pay" id="bcode_pay"
+		       type="file" accept="image/*"/></span>
+	      <button class="btn btn-danger"
+		      x-ng-disabled="!params.bcode_pay"
+		      x-ng-click="params.bcode_pay=undefined">
+		<i class="glyphicon glyphicon-minus"></i>
+	      </button>
+	    </span> 
+	  </div>
+	  <div>
+	    <image-draw2 x-ng-show="params.bcode_pay" 
+			 class="img-responsive img-thumbnail"
+	      		 org-image="params.bcode_pay" height=100 width=75>
+	    </image-draw2> 
+	  </div> 
+	</div>
+
+	
 	
 	<div class="form-group">
 	  <div class="input-group">
@@ -218,7 +288,7 @@
 				  in params.repertories|filter:$viewValue|limitTo:8">
 	    </select>
 	  </div>
-	</div>
+	</div> 
 
       </div>
     </form>
@@ -227,7 +297,8 @@
   <div class="modal-footer">
     <button class="btn btn-primary"
 	    x-ng-disabled="sForm.$invalid
-			   || !params.has_update(params.shop)
+			   || (!params.has_update(params.shop)
+			   && !params.bcode_friend && !params.bcode_pay)
 			   || !params.check_shop(params.shop)"
 	    x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>

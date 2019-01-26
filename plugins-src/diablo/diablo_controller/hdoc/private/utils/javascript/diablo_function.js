@@ -32,7 +32,6 @@ var diablo_free_color_size = 0;
 var diablo_empty_barcode = "0";
 var diablo_empty_db_barcode = "-1";
 var diablo_empty_string = "";
-
 var diablo_has_deleted=1;
 
 var diablo_frontend = 0;
@@ -930,6 +929,10 @@ var diablo_get_modified = function(newValue, oldValue){
     else
 	return newValue !== oldValue ? newValue : undefined;
 };
+
+diablo_get_image_from_url = function(url) {
+    return url.replace(/^data:image\/(png|jpg);base64,/, "");
+}
 
 
 var diablo_viewport = function () {

@@ -109,7 +109,8 @@ var rightAuthen = {
 	    delete_card_good  :rightAuthen.root_right._retailer + 30,
 	    update_level      :rightAuthen.root_right._retailer + 33,
 	    syn_score_ticket  :rightAuthen.root_right._retailer + 34,
-	    print_retailer    :rightAuthen.root_right._retailer + 35
+	    print_retailer    :rightAuthen.root_right._retailer + 35,
+	    page_retailer     :rightAuthen.root_right._retailer + 39
 	}
     },
 
@@ -395,6 +396,7 @@ diabloAuthen.prototype.authenRetailerRight = function() {
 	set_withdraw          :this.authenRetailer('set_withdraw'),
 	update_level          :this.authenRetailer('update_level'),
 	print_retailer        :this.authenRetailer('print_retailer'),
+	page_retailer         :this.authenRetailer('page_retailer'),
 	master                :this.master
     };
 };

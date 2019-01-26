@@ -8,16 +8,16 @@
 shop_action(Action, Shops) ->
     %% ?DEBUG("shpos ~p", [Shops]),
     lists:foldr(
-      fun({Id, Name, FunId, RepoId, Charge, Score, Region, Type}, Acc) ->
+      fun({Id, Name, FunId, RepoId, Charge, Score, Region, Type,
+	   Address, BCodeFriend, BCodePay}, Acc) ->
 	      {ok, Children} =
 		  ?right_init:get_children([{<<"id">>, FunId}]),
 
 	      %% ?DEBUG("Children ~p", [Children]),
 
-	      case [Child || {Child} <- Children,
-			     ?value(<<"id">>, Child) =:= Action] of
+	      case [Child || {Child} <- Children, ?value(<<"id">>, Child) =:= Action] of
 		  [] -> Acc;
-		  _  -> [{Id, Name, RepoId, Charge, Score, Region, Type}|Acc]
+		  _  -> [{Id, Name, RepoId, Charge, Score, Region, Type, Address, BCodeFriend, BCodePay}|Acc]
 	      end
       end, [], Shops).
     

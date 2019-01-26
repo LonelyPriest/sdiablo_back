@@ -923,7 +923,11 @@ sys_config() ->
 	      %% [1]: print color only
 	      %% [2]: print size only
 	      %% 000: no color and no size
-	      %% [3]: print unit
+	      
+	      %% [3]: hide unit
+	      %% [4]: hide bcode friend
+	      %% [5]: hide bcode pay
+	      %% [6]: hide address
 	      {"p_color_size",    "打印颜色尺码",         "0001", "0"},
 	      
 	      {"saler_stock",      "营业员查看区域库存",  "0",   "0"},

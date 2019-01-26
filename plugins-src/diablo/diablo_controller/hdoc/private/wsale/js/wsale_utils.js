@@ -1585,7 +1585,7 @@ var wsalePrint = function(){
 	    return hLine;
 	},
 	
-	gen_foot: function(LODOP, hLine, comments, date, address, cakeMode){
+	gen_foot: function(LODOP, hLine, comments, date, shop, cakeMode){
 	    // console.log(hLine);
 	    // console.log(comments);
 	    // console.log(date);
@@ -1625,11 +1625,16 @@ var wsalePrint = function(){
 	    var s = "打印日期：" + date;
 	    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, s);
 
-	    hLine += 20;
-	    if (address) {
-		// hLine += 20;
-		LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, "地址：" + address);
-		hLine += 20;
+	    if (shop.addr) {
+		hLine += 15;
+		LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, "地址：" + shop.addr);
+	    }
+
+	    if (shop.bcode_friend) {
+		hLine += 15;
+		LODOP.ADD_PRINT_IMAGE(
+		    hLine, left, 70, 70,
+		    "<img src='https://qzgui.com/" + shop.bcode_friend + "'/>");
 	    }
 	},
 
@@ -1643,8 +1648,8 @@ var wsalePrint = function(){
 	start_print: function(LODOP){
 	    // wsalePrint.init(LODOP);
 	    // LODOP.PRINT_DESIGN();
-	    // LODOP.PREVIEW();
-	    LODOP.PRINT();
+	    LODOP.PREVIEW();
+	    // LODOP.PRINT();
 	}
     }
 }();

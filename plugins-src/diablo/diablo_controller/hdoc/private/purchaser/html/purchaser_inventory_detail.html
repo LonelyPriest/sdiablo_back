@@ -244,13 +244,18 @@
 				<a href="javascript:;" x-ng-click="update_price(inv)">价格修改</a>
 				<a href="javascript:;" x-ng-click="offering_stock(inv)">特价标识</a>
 			      </li>
-			      <li><a href="javascript:;" x-ng-click="update_stock(inv)">属性修改</a></li>
+			      <li>
+				<a href="javascript:;" x-ng-click="update_stock(inv)">属性修改</a>
+			      </li>
 			      <li x-ng-if="setting.gift_sale && stock_right.gift_stock">
 				<a href="javascript:;" x-ng-click="gift_stock(inv)">赠送标识设置</a>
 			      </li>
+			      <li>
+				<a href="javascript:;" x-ng-click="copy_stock(inv)">复制货品</a>
+			      </li> 
 			      <li x-ng-if="setting.stock_alarm">
 				<a href="javascript:;" x-ng-click="update_alarm_a(inv)">预警数量</a>
-			      </li> 
+			      </li>
 			    </ul>
 			  </div>
 

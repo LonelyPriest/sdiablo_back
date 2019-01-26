@@ -505,7 +505,7 @@ function wsaleRsnDetailCtrlProvide (
 			
     			hLine = wsalePrint.gen_stastic(
 			    LODOP, hLine, sale.direct, sale, sale.balance, vip, print_perform); 
-    			wsalePrint.gen_foot(LODOP, hLine, comments, pdate, shop.addr, cakeMode);
+    			wsalePrint.gen_foot(LODOP, hLine, comments, pdate, shop, cakeMode);
     			wsalePrint.start_print(LODOP); 
     		    }); 
     		}); 

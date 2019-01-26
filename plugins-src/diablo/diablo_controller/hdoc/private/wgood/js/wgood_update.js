@@ -282,8 +282,8 @@ function wgoodUpdateCtrlProvide(
 		     || (angular.isDefined(c.fabric) && 0 === stockUtils.to_float(c.percent)) ) {
 		    dialog.response(
 			false,
-			"新增货品",
-			"新增货品失败：面料输入不正确，请确保面料从下拉框中选择，面料成份不为零");
+			"面料选择",
+			"面料选择失败失败：面料输入不正确，请确保面料从下拉框中选择，面料成份不为零");
 		    return;
 		}
 	    };

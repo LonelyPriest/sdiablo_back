@@ -256,6 +256,7 @@
 -define(new_ticket_plane,            ?right_w_retailer + 36).
 -define(update_ticket_plane,         ?right_w_retailer + 37).
 -define(list_ticket_plane,           ?right_w_retailer + 38).
+-define(page_w_retailer,             ?right_w_retailer + 39).
 
 %% shop
 -define(new_shop,       ?right_shop + 1).
@@ -323,9 +324,9 @@
 -define(list_w_sale,        ?right_w_sale + 7).
 -define(delete_w_sale,      ?right_w_sale + 8).
 -define(upload_w_sale,      ?right_w_sale + 9).
--define(update_w_sale_price, ?right_w_sale + 10).
--define(employee_evaluation, ?right_w_sale + 11).
--define(print_w_sale_note,   ?right_w_sale + 12).
+-define(update_w_sale_price,   ?right_w_sale + 10).
+-define(employee_evaluation,   ?right_w_sale + 11).
+-define(print_w_sale_note,     ?right_w_sale + 12).
 
 %% inventory
 -define(new_w_inventory,             ?right_w_inventory + 4).

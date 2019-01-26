@@ -1304,6 +1304,53 @@ diabloUtils.directive('imageDraw', function ($q) {
     }
 });
 
+diabloUtils.directive('imageDraw2', function ($q) {
+    function postLinkFn (scope, element, attrs){
+	var ctx = element.get(0).getContext("2d");
+
+	scope.$watch("orgImage.image", function(newValue, oldValue){
+	    console.log(scope);
+	    if (angular.isUndefined(newValue)
+		|| angular.equals(newValue, oldValue)){
+		return;
+	    };
+
+	    var options = scope.options; 
+	    var quality = options ? options.quality : 0.7; 
+	    var orgImage = scope.orgImage.image;
+	    console.log(orgImage);
+	    var height = scope.height ? scope.height : 70;
+	    var width = scope.width ? scope.width : 70; 
+	    console.log(height, width, quality);
+	    
+            element.attr("width", width);
+            element.attr("height", height);
+
+	    //draw image on canvas
+	    ctx.drawImage(orgImage, 0, 0, width, height); 
+	    scope.orgImage.dataUrl = element.get(0).toDataURL("image/png", quality);
+	})
+    };
+    
+    return{
+        restrict: 'AE',
+        template: '<canvas></canvas>',
+        replace: true,
+        transclude: true,
+        // require: "ngModel",
+        scope: {
+            orgImage: '=',
+	    options: '=',
+	    height: '=',
+	    width: '='
+        },
+
+        compile: function(element, attrs){
+            return postLinkFn;
+        }
+    }
+});
+
 diabloUtils.directive('imageUpload', function ($q) {
     'use strict'
 
@@ -1333,8 +1380,7 @@ diabloUtils.directive('imageUpload', function ($q) {
 	restrict: 'AE',
 	template: '<span class=\"btn btn-primary btn-file\">'
 	    +'<i class="glyphicon glyphicon-arrow-right"></i>'
-	    // +'<i class="glyphicon glyphicon-minus"></i>'
-	    +'<input type="file" accept="image/*"></input>'
+	    +'<input type="file" accept="image/*"/>'
 	    +'</span>',
 	replace: true,
 	transclude: true,
@@ -1368,7 +1414,7 @@ diabloUtils.directive('imageUpload', function ($q) {
 	    };
 	    
 	    angular.element('.btn-file :file').bind('change', function(evt){
-		// console.log(evt); 
+		// console.log(evt);
 		var file = evt.target.files[0];
 		// console.log(file);
 		if (angular.isDefined(file)) {
@@ -1385,8 +1431,93 @@ diabloUtils.directive('imageUpload', function ($q) {
 		    doResizing(imageResult, function(imageResult) {
 			applyScope(imageResult);
 		    });
-		} 
+		}
+		evt.stopPropagation(); 
+		return false;
 	    }) 
+	}
+    }
+});
+
+diabloUtils.directive('imageUpload2', function ($q) {
+    'use strict' 
+    var URL = window.URL || window.webkitURL; 
+    var createImage = function(url, callback) {
+	var image = new Image();
+	image.onload = function() {
+	    callback(image);
+	};
+	image.src = url;
+    };
+
+    var fileToDataURL = function (file) {
+	// console.log(file);
+	var deferred = $q.defer();
+	var reader = new FileReader(); 
+	reader.readAsDataURL(file);
+	
+	reader.onload = function (e) {
+	    deferred.resolve(e.target.result);
+	};
+	return deferred.promise;
+    };
+    
+    return {
+	restrict: 'AE', 
+	replace: true,
+	transclude: true,
+	scope: {
+	    id: '@',
+	    image: '=',
+	    maxHeight: '@?',
+	    maxWidth: '@?',
+	    quality: '@?',
+	    type: '@?'
+	},
+	
+	link: function(scope, element, attrs){
+	    var doResizing = function(imageResult, callback) {
+		createImage(imageResult.url, function(image) {
+		    console.log(image);
+		    // var dataURL = resizeImage(image, scope);
+		    // imageResult.resized = {
+		    // 	dataURL: dataURL,
+		    // 	type: dataURL.match(/:(.+\/.+);/)[1],
+		    // };
+		    imageResult.image = image; 
+		    callback(imageResult);
+		});
+	    };
+
+	    var applyScope = function(imageResult) {
+		scope.$apply(function() {
+		    console.log(imageResult);
+		    scope.image = imageResult;
+		});
+	    };
+	    
+	    // angular.element('.btn-file :file').bind('change', function(evt){
+	    angular.element('#'+scope.id).bind('change', function(evt){
+		// console.log(evt);
+		evt.stopImmediatePropagation();
+		var file = evt.target.files[0];
+		// console.log(file);
+		if (angular.isDefined(file)) {
+		    var imageResult = {
+			file: file,
+			url:  URL.createObjectURL(file)
+		    };
+
+		    fileToDataURL(file).then(function (dataURL) {
+			// imageResult.dataURL = dataURL; 
+		    });
+
+		    
+		    doResizing(imageResult, function(imageResult) {
+			applyScope(imageResult);
+		    });
+		}
+	    });
 	}
     }
 });

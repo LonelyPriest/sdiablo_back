@@ -155,6 +155,9 @@ handle_call({update_shop, Merchant, ShopId, Attrs}, _From, State) ->
     %% Charge  = ?v(<<"charge">>, Attrs),
     Score   = ?v(<<"score">>, Attrs),
     Region  = ?v(<<"region">>, Attrs),
+    BCodeFriend = ?v(<<"bcode_friend">>, Attrs),
+    BCodePay = ?v(<<"bcode_pay">>, Attrs),
+    
 
     ShopExist = 
 	case Name of
@@ -174,6 +177,8 @@ handle_call({update_shop, Merchant, ShopId, Attrs}, _From, State) ->
 		++ ?utils:v(address, string, Address)
 		++ ?utils:v(region, integer, Region)
 		++ ?utils:v(master, string, Master)
+		++ ?utils:v(bcode_friend, string, BCodeFriend)
+		++ ?utils:v(bcode_pay, string, BCodePay)
 	    %% ++ ?utils:v(charge, integer, Charge)
 		++ ?utils:v(score, integer, Score),
 	    Sql1 = "update shops set "
@@ -250,6 +255,8 @@ handle_call({list_shop, Merchant, Conditions}, _From, State) ->
 	", a.draw as draw_id"
 	", a.score as score_id"
 	", a.region as region_id"
+	", a.bcode_friend"
+	", a.bcode_pay"
 	", a.entry_date"
 	++ " from shops a" 
 	++ " where "

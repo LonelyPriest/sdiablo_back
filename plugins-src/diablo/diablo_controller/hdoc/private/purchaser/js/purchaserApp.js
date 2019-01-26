@@ -645,6 +645,13 @@ function stockConfg(angular){
 	    return http.save({operation: "offering_w_stock"}, {condition:condition, attrs:attrs}).$promise;
 	};
 
+	this.copy_stock_attr = function(style_number, brand, shop) {
+	    return http.save({operation: "copy_w_stock_attr"},
+			     {style_number:style_number,
+			      brand:brand,
+			      shop:shop}).$promise;
+	};
+
 	/*
 	 * trace
 	 */

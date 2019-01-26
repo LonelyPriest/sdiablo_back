@@ -68,7 +68,7 @@ function shopDetailCtrlProvide(
     // console.log(filterScore);
     // console.log(filterRegion);
     // console.log(user);
-    
+    console.log(user);
     $scope.promotions      = filterPromotion;
     // $scope.shop_promotions = filterShopPromotion.map(
     // 	function(p){return p.pid});
@@ -123,7 +123,7 @@ function shopDetailCtrlProvide(
     $scope.refresh = function(){
 	$scope.shops = [];
 	shopService.list().$promise.then(function(shops){
-	    // console.log(shops);
+	    console.log(shops);
 	    // $scope.shops = angular.copy(shops);
 	    // angular.forEach($scope.shops, function(s){
 	    // 	$scope.repo = $scope.get_repo(s.repo);
@@ -150,6 +150,9 @@ function shopDetailCtrlProvide(
 			address:      s.address,
 			open_date:    s.open_date,
 			entry_date:   s.entry_date,
+
+			bcode_friend: s.bcode_friend,
+			bcode_pay:    s.bcode_pay,
 			
 			repo_id:s.repo,
 			repo:$scope.authen_list_repo
@@ -186,7 +189,9 @@ function shopDetailCtrlProvide(
 		name: diablo_get_modified(params.shop.name, old_shop.name),
 		address: diablo_get_modified(params.shop.address, old_shop.address),
 		region: diablo_get_modified(params.shop.region, old_shop.region),
-		shopowner: diablo_get_modified(params.shop.shopowner, old_shop.shopowner)
+		shopowner: diablo_get_modified(params.shop.shopowner, old_shop.shopowner),
+		bcode_friend: params.bcode_friend ? diablo_get_image_from_url(params.bcode_friend.dataUrl) : undefined,
+		bcode_pay: params.bcode_pay ? diablo_get_image_from_url(params.bcode_pay.dataUrl) : undefined
 	    };
 	    
 	    // for (var o in params.shop){
@@ -217,8 +222,7 @@ function shopDetailCtrlProvide(
 
 	var check_shop = function(new_shop){
 	    for (var i=0, l=$scope.shops.length; i<l; i++){
-		if (new_shop.name === $scope.shops[i].name
-		    && new_shop.name !== old_shop.name){
+		if (new_shop.name === $scope.shops[i].name && new_shop.name !== old_shop.name){
 		    return false;
 		}
 	    }
@@ -234,7 +238,7 @@ function shopDetailCtrlProvide(
 	    "edit-shop.html", undefined, callback, $scope,
 	    {shop:angular.extend(
 		old_shop,
-		{employee:$scope.get_employee(old_shop.shopowner_id)}),
+		{employee:$scope.get_employee(old_shop.shopowner_id)}), 
 	     employees:        $scope.employees,
 	     repertories:      $scope.repertories,
 	     regions:          $scope.regions,
