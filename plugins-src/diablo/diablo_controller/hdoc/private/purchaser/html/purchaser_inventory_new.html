@@ -727,6 +727,7 @@
 			       focus-auto="focus_attrs.style_number"
 			       go-next-field
 			       next="brand"
+			       pre="bcode"
 			       auto-row="go_next_good_field"
 			       placeholder="请输入2-10位款号"
 			       x-ng-blur="focus_attrs.style_number=false"
@@ -807,7 +808,7 @@
 			       focus-auto="focus_attrs.type"
 			       ng-edit 
 			       go-next-field
-			       next="tag_price"
+			       next="vir_price"
 			       pre="brand"
 			       auto-row="go_next_good_field"
 			       placeholder="豹纹马甲等"
@@ -973,7 +974,7 @@
 		  </div>
 		</div>
 
-		<div x-ng-if="!base_settings.hide_color && !good.bcode"
+		<div x-ng-if="!base_settings.hide_color || (!base_settings.hide_barcode && good.bcode)"
 		     class="form-group diablo-good-form-group">
 		  <label class="col-sm-3 col-md-3 control-label">颜色</label>
 		  <div class="col-sm-6 col-md-6"> 
@@ -1003,7 +1004,7 @@
 		  </div>
 		</div>
 		
-		<div x-ng-if="!base_settings.hide_size && !good.bcode"
+		<div x-ng-if="!base_settings.hide_size || (!base_settings.hide_barcode && good.bcode)"
 		     class="form-group diablo-good-form-group">
 		  <label class="col-sm-3 col-md-3 control-label">尺码</label>
 		  <div class="col-sm-6 col-md-6"> 

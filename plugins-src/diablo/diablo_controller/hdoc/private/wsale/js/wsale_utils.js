@@ -1312,6 +1312,12 @@ var wsalePrint = function(){
     var width = 219; // inch, 5.8 / 2.45 * 96 
     var vWidth = width - 5; 
     var hFont = 20; // height of font
+    
+    var bold_style = function(LODOP) {
+	LODOP.SET_PRINT_STYLEA(0, "FontSize", 9);
+	LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
+    }
+    
     var check_pay = function(cash, card, wxin, withDraw, ticket, should_pay){
 	console.log(cash, card, withDraw, ticket);
 	var s = "", rdraw = 0;
@@ -1453,34 +1459,7 @@ var wsalePrint = function(){
 		top += 15;
 		LODOP.ADD_PRINT_LINE(top, left, top, vWidth, 0, 1);
 		top += 5; 
-	    });
-	    // } else {
-	    // 	LODOP.ADD_PRINT_TEXT(top,0,80,20,"类型"); 
-	    // 	LODOP.ADD_PRINT_TEXT(top,80,113,20,"数量"); 
-	    // 	LODOP.ADD_PRINT_TEXT(top,113,146,20,"单价"); 
-	    // 	LODOP.ADD_PRINT_TEXT(top,146,178,20,"小计");
-
-	    // 	hLine += 15;
-		
-	    // 	angular.forEach(inventories, function(d){
-	    // 	    var calc = function() {
-	    // 		if (angular.isUndefined(round) || round)
-	    // 		    return diablo_round(d.total * d.rprice).toString();
-	    // 		else
-	    // 		    return (d.total * d.rprice).toString();
-	    // 	    }();
-		    
-	    // 	    LODOP.ADD_PRINT_TEXT(top,0, 80, 20, d.type);
-	    // 	    LODOP.ADD_PRINT_TEXT(top, 80, 113, 20, d.total.toString());
-	    // 	    LODOP.ADD_PRINT_TEXT(top,113,146,20, d.tag_price.toString());
-	    // 	    LODOP.ADD_PRINT_TEXT(top,146,178,20, calc.toString()); 
-	    // 	    top += 15; 
-	    // 	});
-
-	    // 	// hLine += 5;
-	    // 	LODOP.ADD_PRINT_LINE(top,0,top,178,0,1);
-	    // 	hLine += 5;
-	    // }
+	    }); 
 	    sale.perform = perform;
 	    return top;
 	},
@@ -1526,29 +1505,30 @@ var wsalePrint = function(){
 	    LODOP.ADD_PRINT_LINE(hLine + 5, left, hLine + 5, vWidth, 0, 1); 
 	    hLine += 15; 
 	    if (diablo_sale === direct) {
+		LODOP.ADD_PRINT_TEXT(hLine, left, 70, hFont,  "现付");
+		bold_style(LODOP);
+		LODOP.ADD_PRINT_TEXT(hLine, left + 70, 65, hFont, "找零");
+		bold_style(LODOP);
+		LODOP.ADD_PRINT_TEXT(hLine, left + 135, vWidth - 100, hFont, "优惠");
+		bold_style(LODOP); 
+		hLine += 15;
+		
 		if (angular.isDefined(sale.has_pay)) {
-		    l1 = "现付：" + wsaleUtils.to_float(sale.has_pay).toString();
-		    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
-		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 9);
-		    LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
-		    hLine += 15;
+		    l1 = wsaleUtils.to_float(sale.has_pay).toString();
+		    LODOP.ADD_PRINT_TEXT(hLine, left, 70, hFont, l1);
+		    bold_style(LODOP);
 		}
 		
 		if (angular.isDefined(sale.charge)) {
-		    l1 = "找零：" + wsaleUtils.to_float(-sale.charge).toString();
-		    LODOP.ADD_PRINT_TEXT(hLine, left, 80, hFont, l1);
-		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 9);
-		    LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
-		    // hLine += 15;
+		    l1 = wsaleUtils.to_float(-sale.charge).toString()
+		    LODOP.ADD_PRINT_TEXT(hLine, left + 70, 65, hFont, l1);
+		    bold_style(LODOP);
 		}
 		
 		if (printPerform && angular.isDefined(sale.perform) && sale.perform >= 0) {
-		    l1 = "优惠：" + wsaleUtils.to_float(sale.perform).toString();
-		    LODOP.ADD_PRINT_TEXT(hLine, left + 80, vWidth - 80, hFont, l1);
-		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 9);
-		    LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
-		    // space = true;
-		    // hLine += 20;
+		    l1 = wsaleUtils.to_float(sale.perform).toString();
+		    LODOP.ADD_PRINT_TEXT(hLine, left + 135, vWidth - 135, hFont, l1);
+		    bold_style(LODOP);
 		}
 
 		hLine += 15;
@@ -1556,25 +1536,28 @@ var wsalePrint = function(){
 		
 
 	    if (vip) {
-		l1 = "上积：" + lscore.toString();
-		LODOP.ADD_PRINT_TEXT(hLine, left, 70, hFont, l1);
-		// hLine += 15;
-		l1 = "本积：" + score.toString();
-		LODOP.ADD_PRINT_TEXT(hLine, left + 70, 65, hFont, l1);
-		// hLine += 15;
-		l1 = "累积：" + (lscore + score - ticketScore).toString();
-		LODOP.ADD_PRINT_TEXT(hLine, left + 135, vWidth - 135, hFont, l1);
+		LODOP.ADD_PRINT_TEXT(hLine, left, 70, hFont,  "上次积分");
+		LODOP.ADD_PRINT_TEXT(hLine, left + 70, 65, hFont, "本次积分");
+		LODOP.ADD_PRINT_TEXT(hLine, left + 135, vWidth - 100, hFont, "累计积分");
+
+		hLine += 15;
+		LODOP.ADD_PRINT_TEXT(hLine, left, 70, hFont,  lscore.toString());
+		LODOP.ADD_PRINT_TEXT(hLine, left + 70, 65, hFont, score.toString());
+
+		l1 = (lscore + score - ticketScore).toString();
+		LODOP.ADD_PRINT_TEXT(hLine, left + 135, vWidth - 100, hFont, l1); 
 		hLine += 15;
 	    } 
 
-	    if (vip && wsaleUtils.to_integer(balance)!=0) {
-		l1 = "余额：" + balance.toString();
-		LODOP.ADD_PRINT_TEXT(hLine, left, 70, hFont, l1);
-		// hLine += 15;
-		l1 = "提现：" + pay.rdraw.toString();
-		LODOP.ADD_PRINT_TEXT(hLine, left + 70, 65, hFont, l1);
-		// hLine += 15;
-		l1 = "结余：" + (balance - pay.rdraw).toString();
+	    if (vip && wsaleUtils.to_integer(balance) != 0) {
+		LODOP.ADD_PRINT_TEXT(hLine, left, 70, hFont,  "余额");
+		LODOP.ADD_PRINT_TEXT(hLine, left + 70, 65, hFont, "提现");
+		LODOP.ADD_PRINT_TEXT(hLine, left + 135, vWidth - 100, hFont, "结余");
+
+		hLine += 15;
+		LODOP.ADD_PRINT_TEXT(hLine, left, 70, hFont, balance.toString());
+		LODOP.ADD_PRINT_TEXT(hLine, left + 70, 65, hFont, pay.rdraw.toString());
+		l1 = (balance - pay.rdraw).toString();
 		LODOP.ADD_PRINT_TEXT(hLine, left + 135, vWidth - 135, hFont, l1);
 		hLine += 15;
 	    }
@@ -1648,8 +1631,8 @@ var wsalePrint = function(){
 	start_print: function(LODOP){
 	    // wsalePrint.init(LODOP);
 	    // LODOP.PRINT_DESIGN();
-	    LODOP.PREVIEW();
-	    // LODOP.PRINT();
+	    // LODOP.PREVIEW();
+	    LODOP.PRINT();
 	}
     }
 }();
