@@ -1279,8 +1279,9 @@ function normalFilterProvider(){
 		    return _baseHttp.query(
 			{operation: "list_w_bank_card"}
 		    ).$promise.then(function(cs){
+			console.log(cs);
 			_cards = cs.map(function(c){
-			    return {id:c.id, name:c.name, bank:c.bank, no:c.no};
+			    return {id:c.id, name:c.name, bank:c.bank, no:c.no, type:c.type};
 			});
 			return _cards;
 		    })

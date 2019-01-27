@@ -1616,9 +1616,11 @@ var wsalePrint = function(){
 	    if (shop.bcode_friend) {
 		hLine += 15;
 		LODOP.ADD_PRINT_IMAGE(
-		    hLine, left, 70, 70,
-		    "<img src='https://qzgui.com/" + shop.bcode_friend + "'/>");
+		    hLine, left + 25, 120, 120,
+		    "<img src='https://qzgui.com/" + shop.bcode_friend + "?" + Math.random() + "'/>");
 	    }
+	    
+	    hLine += 15;
 	},
 
 	init: function(LODOP) {

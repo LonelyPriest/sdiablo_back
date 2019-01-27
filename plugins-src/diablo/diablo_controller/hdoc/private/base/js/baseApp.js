@@ -122,6 +122,7 @@ function baseConfig(angular){
 	    {cname: "备注3", ename: "comment3"},
 	    {cname: "备注4", ename: "comment4"},
 	    {cname: "退货单备注", ename: "rbill"},
+	    {cname: "批发联系方式", ename: "contact"},
 	];
 
 	this.print_types = [{cname:"前台打印", value: 0},
@@ -130,10 +131,13 @@ function baseConfig(angular){
 	this.yes_no = [
 	    {cname:"否", value: 0},
 	    {cname:"是", value: 1}, 
-	];
+	]; 
 
 	this.prompt_types = [{cname:"前台联想", value: 0},
-			     {cname:"后台联想", value: 1}]; 
+			     {cname:"后台联想", value: 1}];
+
+	this.bank_card_types = [{cname:"厂商结帐", value: 0},
+				{cname:"批发客户结帐", value: 1}];
 
 	var http = $resource("/wbase/:operation/:id", {operation: '@operation'},
 			     {

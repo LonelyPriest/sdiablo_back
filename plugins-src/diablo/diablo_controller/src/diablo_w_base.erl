@@ -115,6 +115,7 @@ handle_call({new_bank_card, Merchant, Attrs}, _From, State) ->
     CardName   = ?v(<<"name">>, Attrs),
     CardNo     = ?v(<<"no">>, Attrs),
     CardBank   = ?v(<<"bank">>, Attrs),
+    CardType   = ?v(<<"type">>, Attrs, 0),
     CardRemark = ?v(<<"remark">>, Attrs, ""),
 
     Sql = "select id, no from w_bank_card where no=\'" ++ ?to_s(CardNo) ++ "\'"
@@ -123,11 +124,12 @@ handle_call({new_bank_card, Merchant, Attrs}, _From, State) ->
     
     case ?sql_utils:execute(s_read, Sql) of
 	{ok, []} ->
-	    Sql1 = "insert into w_bank_card(name, no, bank, remark, merchant"
+	    Sql1 = "insert into w_bank_card(name, no, bank, type, remark, merchant"
 		", entry_date) values("
 		++ "\'" ++ ?to_s(CardName) ++ "\',"
 		++ "\'" ++ ?to_s(CardNo) ++ "\',"
 		++ "\'" ++ ?to_s(CardBank) ++ "\',"
+		++ ?to_s(CardType) ++ ","
 		++ "\'" ++ ?to_s(CardRemark) ++ "\',"
 		++ ?to_s(Merchant) ++ ","
 		++ "\'" ++ ?utils:current_time(localtime) ++ "\');",
@@ -146,11 +148,14 @@ handle_call({update_bank_card, Merchant, Attrs}, _From, State) ->
     CardId     = ?v(<<"id">>, Attrs),
     CardNo     = ?v(<<"no">>, Attrs),
     CardBank   = ?v(<<"bank">>, Attrs),
+    CardType   = ?v(<<"type">>, Attrs),
 
-    Sql = "update w_bank_card set"
-	" no=\'"   ++ ?to_s(CardNo) ++ "\',"
-	" bank=\'" ++ ?to_s(CardBank) ++ "\'"
-	" where id=" ++ ?to_s(CardId)
+    Updates = ?utils:v(no, string, CardNo)
+	++ ?utils:v(bank, string, CardBank)
+	++ ?utils:v(type, integer, CardType),
+
+    Sql = "update w_bank_card set" ++ ?utils:to_sqls(proplists, comma, Updates)
+	++ " where id=" ++ ?to_s(CardId)
 	++ " and merchant=" ++ ?to_s(Merchant),
 
     Reply = ?sql_utils:execute(write, Sql, CardNo),
@@ -168,7 +173,7 @@ handle_call({delete_bank_card, Merchant, CardId}, _From, State) ->
 	
 handle_call({list_bank_card, Merchant}, _From, State) ->
     ?DEBUG("list_bank_card with merchant ~p", [Merchant]),
-    Sql = "select id, name, no, bank, remark, entry_date from w_bank_card"
+    Sql = "select id, name, no, bank, type, remark, entry_date from w_bank_card"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and deleted=" ++ ?to_s(?NO),
     Reply = ?sql_utils:execute(read, Sql),

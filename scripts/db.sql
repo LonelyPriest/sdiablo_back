@@ -370,6 +370,7 @@ create table w_bank_card(
    name            VARCHAR(16) not null,
    no              VARCHAR(32) not null,
    bank            VARCHAR(64) not null,
+   type            TINYINT default 0, -- 0:to firm; 1: to batch saler
    remark          VARCHAR(64) default null,
    merchant        INTEGER not null,
    entry_date      DATE, 

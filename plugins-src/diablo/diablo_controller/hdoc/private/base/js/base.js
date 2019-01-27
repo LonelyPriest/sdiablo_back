@@ -2,10 +2,18 @@
 
 function bankCardNewCtrlProvide($scope, baseService, diabloUtilsService){
     // console.log($scope);
-
+    $scope.card_types = baseService.bank_card_types;
+    $scope.card = {type: $scope.card_types[0]};
+    
     $scope.new_card = function(){
 	console.log($scope.card);
-	baseService.new_card($scope.card).then(function(state){
+	baseService.new_card(
+	    {name:$scope.card.name,
+	     no:$scope.card.no,
+	     bank: $scope.card.bank,
+	     type: $scope.card.type.value,
+	     remark: $scope.card.remark}
+	).then(function(state){
 	    console.log(state);
 	    if (state.ecode == 0){
 		diabloUtilsService.response_with_callback(

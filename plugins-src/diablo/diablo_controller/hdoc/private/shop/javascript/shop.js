@@ -151,8 +151,8 @@ function shopDetailCtrlProvide(
 			open_date:    s.open_date,
 			entry_date:   s.entry_date,
 
-			bcode_friend: s.bcode_friend,
-			bcode_pay:    s.bcode_pay,
+			bcode_friend: s.bcode_friend ? s.bcode_friend + "?" + Math.random() : undefined,
+			bcode_pay:    s.bcode_pay ? s.bcode_pay + "?" + Math.random() : undefined,
 			
 			repo_id:s.repo,
 			repo:$scope.authen_list_repo

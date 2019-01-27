@@ -22,14 +22,20 @@
       <div id="bsale_new" class="portlet-body">
 	<!--BEGIN panel-->
 	<h2 style="text-align:center">
-	  <span x-ng-bind=detail.shop.name></span>
-	  <span x-ng-if="detail.type===0"></span>
-	  <span x-ng-if="detail.type===1">（退货）</span> 
+	    <span x-ng-bind=detail.shop.name></span>
+	    <span x-ng-if="detail.type===0"></span>
+	    <span x-ng-if="detail.type===1">（退货）</span>
 	</h2>
-	<h3 x-ng-if="!print_mode.hide_address" style="text-align:center">
+	<h3 x-ng-if="!print_mode.hide_address" style="text-align:center;margin-top:-10px">
 	  <span x-ng-bind=detail.shop.addr></span>
 	</h3>
-	<h4>
+	<h3 style="margin-top:-10px">
+	  <div style="text-align:center" x-ng-repeat="c in contacts">
+	    <span x-ng-bind=c></span>
+	  </div>
+	</h3>
+	
+	<h4 style="margin-top:-5px">
 	  <div style="text-align:center">
 	    <span>客户：<span x-ng-if="detail.bsaler_type!==2">{{detail.bsaler}}</span></span> 
 	    &nbsp&nbsp&nbsp&nbsp<span>日期：<span x-ng-bind=detail.entry_date></span></span>
@@ -109,12 +115,11 @@
 	  </span>
 	</h4>
 	<h4 style="text-align:center">
-	  <image x-ng-show="detail.shop.bcode_friend"
-		 class="img-responsive img-thumbnail"
-		 ng-src="{{detail.shop.bcode_friend}}"></image>
-	  <image x-ng-show="detail.shop.bcode_pay"
-		 class="img-responsive img-thumbnail"
-		 ng-src="{{detail.shop.bcode_pay}}"></image>
+	  <div x-ng-repeat="c in bank_card">
+	    <span>{{c.name}}</span>
+	    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>{{c.bank}}</span>
+	    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>{{c.no}}</span>
+	  </div> 
 	</h4>
 	
       </div>

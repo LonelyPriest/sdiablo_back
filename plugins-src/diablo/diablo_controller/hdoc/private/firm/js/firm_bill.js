@@ -27,7 +27,10 @@ function firmBillCtrlProvide(
 
     // $scope.full_years = diablo_full_year; 
     // $scope.check_year = diablo_now_year();
-    $scope.cards = [{no:"== 请选择银行卡号 ==", id:-1}] .concat(filterCard);
+    $scope.cards = [{no:"== 请选择银行卡号 ==", id:-1}].concat(filterCard.filter(function(c) {
+	return c.type === 0;
+    }));
+    
     $scope.employees  = filterEmployee;
     $scope.shops      = user.sortShops; 
     $scope.bill_modes = firmService.bill_modes;

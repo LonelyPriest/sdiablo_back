@@ -516,3 +516,7 @@ alter table print_template add column barcode TINYINT default 1  after offset_la
 --2019-01-25
 alter table shops add column bcode_friend VARCHAR(255) default '' not null after score;
 alter table shops add column bcode_pay VARCHAR(255) default '' not null after bcode_friend;
+
+
+--2019-01-27
+alter table w_bank_card add column type TINYINT default 0 not null after bank;

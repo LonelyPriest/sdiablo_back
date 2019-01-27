@@ -86,6 +86,9 @@ function bsaleConfig(angular){
 
 	var sysbsaler = {"filterSysBSaler": function(diabloNormalFilter){
     	    return diabloNormalFilter.get_sys_bsaler()}};
+
+	var card = {"filterCard": function(diabloNormalFilter){
+	    return diabloNormalFilter.get_card()}};
 	
 	$routeProvider. 
 	    when('/new_bsale', {
@@ -112,7 +115,7 @@ function bsaleConfig(angular){
 	    when('/print_bsale/:rsn?', {
 		templateUrl: '/private/bsale/html/print_bsale_detail.html',
 		controller: 'bsalePrintCtrl',
-		resolve: angular.extend({}, employee, region, department, user, base)
+		resolve: angular.extend({}, employee, region, department, card, user, base)
 	    }).
 	    when('/list_bsale_new', {
 		templateUrl: '/private/bsale/html/new_bsale_detail.html',
@@ -2221,12 +2224,14 @@ function bsaleNewNoteCtrlProvide(
 
 function bsalePrintCtrlProvide(
     $scope, $routeParams, bsaleService, diabloFilter, diabloPattern, diabloUtilsService,
-    filterEmployee, filterRegion, filterDepartment, user, base){
+    filterEmployee, filterRegion, filterDepartment, filterCard, user, base){
     $scope.shops       = user.sortShops;
     $scope.employees   = filterEmployee;
     $scope.regions     = filterRegion;
     $scope.departments = filterDepartment;
     $scope.std_units   = diablo_std_units;
+    // console.log(filterCard);
+    $scope.bank_card   = filterCard.filter(function(c) {return c.type===1});
     
     var dialog = diabloUtilsService;
 
@@ -2237,7 +2242,19 @@ function bsalePrintCtrlProvide(
     var pageHeight = diablo_base_setting("prn_h_page", user.loginShop, base, parseFloat, 14);
     var pageWidth  = diablo_base_setting("prn_w_page", user.loginShop, base, parseFloat, 21.3);
     var batch_mode = bsaleUtils.batch_mode(user.loginShop, base);
+    
+    var contacts = diablo_base_setting("contact", user.loginShop, base, function(s) {return s}, "").split(diablo_semi_seperator);
 
+    $scope.contacts = [];
+    for (var i=0, l=contacts.length; i<l; i+=3) {
+	var c = contacts[i];
+	if ( i + 1 < l) 
+	    c += '\xa0\xa0\xa0\xa0\xa0\xa0' + contacts[i+1];
+	if ( i + 2 < l)
+	    c += '\xa0\xa0\xa0\xa0\xa0\xa0' + contacts[i+2] ;
+	$scope.contacts.push(c);
+    }
+    
     $scope.print_mode = bsaleUtils.print_cs_mode(user.loginShop, base);
 	
     bsaleService.get_batch_sale($routeParams.rsn, diablo_batch_sale_print_mode).then(function(result) {
@@ -2311,9 +2328,19 @@ function bsalePrintCtrlProvide(
 	    LODOP.SET_PRINTER_INDEX(bsaleUtils.printer_bill(user.loginShop, base));
 	    LODOP.SET_PRINT_PAGESIZE(0, pageWidth * 100, pageHeight * 100, "");
 	    LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
+	    
 	    LODOP.ADD_PRINT_HTM(
-		"5%", "5%",  "90%", "BottomMargin:15mm",
-		strBodyStyle + "<body>" + document.getElementById("bsale_new").innerHTML + "</body>");
+	    	"5%", "5%",  "90%", "BottomMargin:15mm",
+	    	strBodyStyle + "<body>" + document.getElementById("bsale_new").innerHTML + "</body>");
+
+	    LODOP.ADD_PRINT_IMAGE(
+		"5%", "2%", 120, 120,
+		"<img src='https://qzgui.com/" + $scope.detail.shop.bcode_pay + "?" + Math.random() + "'/>");
+	    
+	    LODOP.ADD_PRINT_IMAGE(
+		"5%", "83%", 120, 120,
+		"<img src='https://qzgui.com/" + $scope.detail.shop.bcode_friend + "?" + Math.random() + "'/>");
+	    
 	    LODOP.PREVIEW(); 
 	}
     };

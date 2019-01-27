@@ -829,6 +829,8 @@ function purchaserInventoryNewCtrlProvide (
 	    // console.log("add new line");
 	    $scope.inventories.unshift({$edit:false, $new:true}); 
 	    $scope.disable_refresh = false;
+	    // reset barcode
+	    $scope.good.bcode = undefined;
 	    // $scope.stock_at_first = undefined;
 	    $scope.re_calculate();
 
