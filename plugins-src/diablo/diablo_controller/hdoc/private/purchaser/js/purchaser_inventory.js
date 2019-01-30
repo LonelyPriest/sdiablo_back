@@ -298,6 +298,7 @@ function purchaserInventoryNewCtrlProvide (
 	$scope.base_settings.stock_alarm_a   = stockUtils.stock_alarm_a(shopId, base);
 	$scope.base_settings.stock_contailer = stockUtils.stock_contailer(shopId, base); 
 	$scope.base_settings.stock_with_firm = stockUtils.stock_with_firm(shopId, base);
+	$scope.base_settings.auto_barcode    = stockUtils.auto_barcode(shopId, base); 
 
 	angular.extend($scope.base_settings, stockUtils.bill_mode(shopId, base));
     }
@@ -332,6 +333,7 @@ function purchaserInventoryNewCtrlProvide (
      * match
      */
     $scope.match_prompt_good = function(viewValue){
+	// console.log(viewValue);
 	if (angular.isUndefined(diablo_set_string(viewValue))
 	    || viewValue.length < diablo_filter_length) return;
 	
@@ -345,17 +347,33 @@ function purchaserInventoryNewCtrlProvide (
     $scope.qtime_start = function(shopId){
 	return stockUtils.start_time(shopId, base, $.now(), dateFilter); 
     };
-    
-    $scope.get_good_by_barcode = function() {
-	diabloFilter.get_good_by_barcode($scope.good.bcode).then(function(result) {
-	    console.log(result);
-	    if (result.ecode === 0) {
-		if (!diablo_is_empty(result.data))
-		    $scope.on_select_good_new(result.data);
-	    } else {
-		dialog.set_error("新增货品", result.ecode);
-	    }
-	});
+
+    $scope.get_good_by_barcode = function(bcode) {
+	// console.log(bcode);
+	// if (angular.isUndefined(bcode) || !bcode) {
+	//     dialog.set_error("新增货品",   2072);
+	// } else {
+	diabloHelp.scanner(
+	    bcode,
+	    $scope.base_settings.auto_barcode,
+	    $scope.select.shop.id,
+	    diabloFilter.get_good_by_barcode,
+	    diabloUtilsService,
+	    "新增货品",
+	    $scope.on_select_good_new,
+	    function() {});
+	    
+	    // diabloFilter.get_good_by_barcode(bcode).then(function(result) {
+	    // 	console.log(result);
+	    // 	if (result.ecode === 0) {
+	    // 	    if (!diablo_is_empty(result.data))
+	    // 		$scope.on_select_good_new(result.data);
+	    // 	} else {
+	    // 	    dialog.set_error("新增货品", result.ecode);
+	    // 	}
+	    // });
+	// }
+	
     };
     
     var copy_select = function(add, src){
@@ -1332,7 +1350,7 @@ function purchaserInventoryNewCtrlProvide (
 		      type:  diabloPattern.good_type,
 		      expire: diabloPattern.expire_date,
 		      percent: diabloPattern.percent,
-		      barcode: diabloPattern.positive_num};
+		      barcode: diabloPattern.number};
 
     $scope.focus_attrs = {
 	barcode: false,
@@ -1738,6 +1756,7 @@ function purchaserInventoryNewCtrlProvide (
     $scope.form = {};
     $scope.good_saving = false; 
     $scope.good = {
+	// bcode     : undefined,
 	sex       : $scope.sex2objs[stockUtils.d_sex($scope.select.shop.id, base)],
 	vir_price : 0,
 	org_price : 0, 

@@ -199,6 +199,12 @@ where a.merchant=2 and a.shop in(3) and a.style_number='M173'
 select a.merchant, a.rsn, a.total, b.rsn, c.name from w_sale a left join w_sale_detail b on a.rsn=b.rsn left join merchants c on a.merchant=c.id where b.rsn is null and a.total!=0;
 select a.entry_date, a.rsn, a.total, b.rsn, b.total from w_sale a left join (select rsn, sum(total) as total from w_sale_detail group by rsn) b on a.rsn=b.rsn where a.total != b.total;
 
+-- check firm
+select * from \
+(select a.id, a.name, a.balance, b.balance+b.should_pay-b.has_pay-b.verificate as acc, b.date from suppliers a left join \
+(select firm, balance, should_pay, has_pay, verificate, max(entry_date) as date from w_inventory_new where merchant=4 group by firm order by entry_date) b \
+on a.id=b.firm where a.merchant=4) a where a.balance!=a.acc;
+
 
 -- clear date
 delete from w_inventory_good where merchant=29;

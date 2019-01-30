@@ -194,10 +194,43 @@ action(Session, Req, {"get_good_by_barcode"}, Payload) ->
     ?DEBUG("get_good_by_barcode with session ~p, payload~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
     Barcode  = ?v(<<"barcode">>, Payload, []),
-    object_responed_with_code(
-      fun() ->
-	      ?w_inventory:purchaser_good(get_by_barcode, Merchant, Barcode)
-      end, Req); 
+
+    {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
+    AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSetting, ?YES)),
+
+    %% 128C code's lenght should be odd
+    <<ZZ:2/binary, _/binary>> = Barcode,
+    <<_Z:1/binary, SCode/binary>> = Barcode, 
+    NewBarcode = 
+	case AutoBarcode of
+	    ?YES -> 
+		case ZZ of
+		    <<"00">> ->
+			SCode;
+		    <<"0", _T/binary>> ->
+			SCode;
+		    _ ->
+			Barcode
+		end;
+	    ?NO ->
+		case ZZ of
+		    <<"00">> ->
+			SCode;
+		    <<"0", _T/binary>> ->
+			SCode;
+		    _ ->
+			Barcode
+		end
+	end,
+
+    ?DEBUG("newBarcode ~p", [Barcode]),
+    case ?w_inventory:purchaser_good(get_by_barcode, Merchant, NewBarcode) of
+	{ok, Good} ->
+	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
+					       {<<"stock">>, {Good} }]});
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
 
 action(Session, Req, {"match_w_good_style_number"}, Payload) ->
     ?DEBUG("match_w_good_style_number with session ~p, Payload ~p",

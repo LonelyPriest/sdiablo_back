@@ -1174,6 +1174,7 @@ var diabloHelp = function(){
 		}
 		else if (original.startsWith('00')) {
 		    correct = original.substr(1, original.length - 1); 
+		    // cuted = correct;
 		    cuted = original;
 		}
 		else if (original.startsWith('01') && original.length > 14 ) {
@@ -1203,8 +1204,14 @@ var diabloHelp = function(){
 	},
 
 	scanner:function(
-	    full_bcode, auto_barcode, shop, filterPromise, dialog, failTitle, callback
-	) {
+	    full_bcode,
+	    auto_barcode,
+	    shop,
+	    filterPromise,
+	    dialog,
+	    failTitle,
+	    callback,
+	    emptyCallback) {
 	    console.log(full_bcode);
 	    // get stock by barcode
 	    // stock info 
@@ -1221,7 +1228,10 @@ var diabloHelp = function(){
 		console.log(result);
 		if (result.ecode === 0) {
 		    if (diablo_is_empty(result.stock)) {
-			dialog.set_error(failTitle, 2195);
+			if (angular.isDefined(emptyCallback) && angular.isFunction(emptyCallback))
+			    emptyCallback();
+			else 
+			    dialog.set_error(failTitle, 2195);
 		    } else {
 			result.stock.full_bcode = barcode.correct;
 			callback(result.stock);

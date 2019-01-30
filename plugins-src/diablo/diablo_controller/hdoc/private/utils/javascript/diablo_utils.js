@@ -1241,7 +1241,7 @@ diabloUtils.directive('imageDraw', function ($q) {
 	var ctx = element.get(0).getContext("2d");
 
 	scope.$watch("orgImage.image", function(newValue, oldValue){
-	    console.log(scope);
+	    // console.log(scope);
 	    if (angular.isUndefined(newValue)
 		|| angular.equals(newValue, oldValue)){
 		return;
