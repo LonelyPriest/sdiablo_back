@@ -136,9 +136,9 @@ function wretailerConfig(angular) {
 		controller: 'wretailerCustomTicketDetailCtrl',
 		resolve: angular.extend({}, shop)
 	    }).
-	    when('/ticket/plane_custom_ticket', {
-		templateUrl: '/private/wretailer/html/custom_ticket_plane.html',
-		controller: 'wretailerPlaneCustomTicketCtrl',
+	    when('/ticket/plan_custom_ticket', {
+		templateUrl: '/private/wretailer/html/custom_ticket_plan.html',
+		controller: 'wretailerPlanCustomTicketCtrl',
 		resolve: angular.extend({}, user)
 	    }).
 	    // threshold card
@@ -464,14 +464,18 @@ function wretailerConfig(angular) {
 	    return http.save({operation: "syn_score_ticket"}, conditions).$promise;
 	};
 
-	this.new_ticket_plane = function(plane) {
-	    return http.save({operation: "new_ticket_plane"}, plane).$promise;
+	this.new_ticket_plan = function(plan) {
+	    return http.save({operation: "new_ticket_plan"}, plan).$promise;
 	};
 
-	this.update_ticket_plane = function(plane) {
-	    return http.save({operation: "update_ticket_plane"}, plane).$promise;
+	this.update_ticket_plan = function(plan) {
+	    return http.save({operation: "update_ticket_plan"}, plan).$promise;
 	};
 
+	this.list_ticket_plan = function() {
+	    return http.query({operation: "list_ticket_plan"}).$promise;
+	};
+	
 	// this.get_ticket_by_retailer = function(retailerId) {
 	//     return http.save(
 	// 	{operation: "get_w_retailer_ticket"}, {retailer:retailerId, mode:0}).$promise;

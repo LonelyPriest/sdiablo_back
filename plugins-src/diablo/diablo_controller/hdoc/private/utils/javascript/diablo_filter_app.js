@@ -217,7 +217,12 @@ function filterProvider(){
 	function list_retailer_level() {
 	    return _retailerHttp.query(
 		{operation: "list_retailer_level"}).$promise;
-	}; 
+	};
+
+	function list_ticket_plan() {
+	    return _retailerHttp.query(
+		{operation: "list_ticket_plan"}).$promise;
+	};
 	
 	return{
 	    default_time: function(start, end){
@@ -701,6 +706,30 @@ function filterProvider(){
 		return _retailerHttp.save(
 		    {operation: "get_w_retailer_ticket"},
 		    {retailer:retailerId, mode:diablo_ticket_by_retailer}).$promise;
+	    },
+
+	    get_ticket_plan:function() {
+		var cached = get_from_storage(cookie, "ticket_plan");
+		if (angular.isArray(cached) && cached.length !== 0) return cached
+		else {
+		    return list_ticket_plan().then(function(planes) {
+			var ps = levels.map(function(p) {
+			    return {name      :p.name,
+				    balance   :p.balance,
+				    effect    :p.effect,
+				    expire    :p.expire,
+				    scount    :p.scount}
+			});
+
+			set_storage(cookie, "ticket_plan", ps);
+			return ps;
+		    }); 
+		}
+		
+	    },
+	    
+	    reset_ticket_plan: function() {
+		clear_from_storage(cookie, "ticket_plan");
 	    },
 
 	    reset_firm: function(){

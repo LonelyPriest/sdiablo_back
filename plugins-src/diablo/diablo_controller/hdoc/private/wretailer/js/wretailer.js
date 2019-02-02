@@ -1815,7 +1815,7 @@ function wretailerConsumeCtrlProvide(
     $scope.refresh();
 };
 
-function wretailerPlaneCustomTicketCtrlProvide(
+function wretailerPlanCustomTicketCtrlProvide(
     $scope, diabloFilter, diabloPattern, diabloUtilsService, wretailerService, user){
     var dialog = diabloUtilsService; 
     var lpattern = {name     :diabloPattern.chinese_name,
@@ -1823,21 +1823,25 @@ function wretailerPlaneCustomTicketCtrlProvide(
 		    remark   :diabloPattern.comment};
 
     $scope.refresh = function() {
-	wretailerService.list_ticket_plane().then(function(planes) {
-	    diablo_order(planes); 
+	wretailerService.list_ticket_plan().then(function(planes) {
+	    console.log(planes);
+	    diablo_order(planes);
+	    $scope.planes = planes;
 	});
     };
 
-    $scope.new_plane = function() {
+    $scope.refresh();
+
+    $scope.new_plan = function() {
 	var callback = function(params) {
 	    console.log(params);
-	    wretailerService.new_ticket_plane(
-		diablo_trim(params.name),
-		retailerUtils.to_integer(params.balance),
-		retailerUtils.to_integer(params.effect),
-		retailerUtils.to_integer(params.expire),
-		retailerUtils.to_integer(params.scount),
-		diablo_trim(params.remark)
+	    wretailerService.new_ticket_plan(
+		{name: diablo_trim(params.name),
+		 balance: retailerUtils.to_integer(params.balance),
+		 effect: retailerUtils.to_integer(params.effect),
+		 expire: retailerUtils.to_integer(params.expire),
+		 scount: retailerUtils.to_integer(params.scount),
+		 remark: params.remark ? diablo_trim(params.remark) : undefined}
 	    ).then(function(result) {
 		console.log(result);
 		if (result.ecode === 0) {
@@ -1852,12 +1856,18 @@ function wretailerPlaneCustomTicketCtrlProvide(
 	dialog.edit_with_modal("new-ticket-plane.html", undefined, callback, undefined, {});
     };
 
-    $scope.update_plane = function(p) {
+    $scope.update_plan = function(p) {
 	console.log(p);
 	var callback = function(params) {
 	    console.log(params);
-	    wretailerService.update_ticket_plane(
-		p.name, p.balance, p.effect, p.expire, p.scount, p.remark
+	    wretailerService.update_ticket_plan(
+		{plan     :p.id,
+		 name     :diablo_get_modified(params.name, p.name),
+		 balance  :diablo_get_modified(params.balance, p.balance),
+		 effect   :diablo_get_modified(params.effect, p.effect),
+		 expire   :diablo_get_modified(params.expire, p.expire),
+		 scount   :diablo_get_modified(params.scount, p.scount),
+		 remark   :diablo_get_modified(params.remark, p.remark)}
 	    ).then(function(result) {
 		console.log(result);
 		if (result.ecode === 0) {
@@ -1885,6 +1895,6 @@ define (["wretailerApp"], function(app){
     app.controller("wretailerThresholdCardSaleCtrl", wretailerThresholdCardSaleCtrlProvide);
     app.controller("wretailerLevelCtrl", wretailerLevelCtrlProvide);
     app.controller("wretailerConsumeCtrl", wretailerConsumeCtrlProvide);
-    app.controller("wretailerPlaneCustomTicketCtrl", wretailerPlaneCustomTicketCtrlProvide);
+    app.controller("wretailerPlanCustomTicketCtrl", wretailerPlanCustomTicketCtrlProvide);
 });
 

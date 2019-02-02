@@ -253,9 +253,9 @@
 -define(update_retailer_level,       ?right_w_retailer + 33).
 -define(syn_score_ticket,            ?right_w_retailer + 34).
 -define(print_w_retailer,            ?right_w_retailer + 35).
--define(new_ticket_plane,            ?right_w_retailer + 36).
--define(update_ticket_plane,         ?right_w_retailer + 37).
--define(list_ticket_plane,           ?right_w_retailer + 38).
+-define(new_ticket_plan,            ?right_w_retailer + 36).
+-define(update_ticket_plan,         ?right_w_retailer + 37).
+-define(list_ticket_plan,           ?right_w_retailer + 38).
 -define(page_w_retailer,             ?right_w_retailer + 39).
 
 %% shop
@@ -678,6 +678,7 @@
 	  sms_rate    = [] :: list(),
 	  sms_center  = [] :: list(),
 	  level       = [] :: list(),
+	  ticket_plan = [] :: list(),
 	  department  = [] :: list(),
 	  sysbsaler   = [] :: list()
 	  %% login_right = [] :: list(),

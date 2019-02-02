@@ -139,11 +139,22 @@ ticket(consume, Merchant, {TicketId, Comment, Score2Money}) ->
     gen_server:call(Name, {consume_ticket, Merchant, {TicketId, Comment, Score2Money}});
 ticket(discard_custom_one, Merchant, TicketId) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {discard_custom_one, Merchant, TicketId}).
+    gen_server:call(Name, {discard_custom_one, Merchant, TicketId});
+
+ticket(new_plan, Merchant, Attrs) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {new_ticket_plan, Merchant, Attrs});
+ticket(update_plan, Merchant, Attrs) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {update_ticket_plan, Merchant, Attrs}).
+
+ticket(list_plan, Merchant) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {list_ticket_plan, Merchant});
+
 ticket(discard_custom_all, Merchant) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {discard_custom_all, Merchant}).
-
 
 get_ticket(by_retailer, Merchant, RetailerId) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -1333,6 +1344,88 @@ handle_call({consume_ticket, Merchant, {TicketId, Comment, Score2Money}}, _From,
 
     {reply, Reply, State};
 
+handle_call({new_ticket_plan, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("new_ticket_plan: merchant ~p, attrs ~p", [Merchant, Attrs]),
+    Name    = ?v(<<"name">>, Attrs),
+    Balance = ?v(<<"balance">>, Attrs),
+    Effect  = ?v(<<"effect">>, Attrs, 0),
+    Expire  = ?v(<<"expire">>, Attrs, 0),
+    MaxSend = ?v(<<"scount">>, Attrs, 1),
+    Remark  = ?v(<<"remark">>, Attrs, []),
+    Entry   = ?utils:current_time(format_localtime), 
+    %% balacen should be unique
+    Sql = "select id, name, balance from w_ticket_plan"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and balance=" ++ ?to_s(Balance),
+    case ?sql_utils:execute(s_read, Sql) of
+	{ok, []} ->
+	    Sql1 = "insert into w_ticket_plan("
+		"name"
+		", balance"
+		", effect"
+		", expire"
+		", scount"
+		", remark"
+		", merchant"
+		", entry_date) values("
+		++ "\'" ++ ?to_s(Name) ++ "\',"
+		++ ?to_s(Balance) ++ ","
+		++ ?to_s(Effect) ++ ","
+		++ ?to_s(Expire) ++ ","
+		++ ?to_s(MaxSend) ++ ","
+		++ "\'" ++ ?to_s(Remark) ++ "\',"
+		++ ?to_s(Merchant) ++ ","
+		++ "\'" ++ ?to_s(Entry) ++ "\')",
+	    Reply = ?sql_utils:execute(insert, Sql1),
+	    {reply, Reply, State};
+	{ok, _} ->
+	    {reply, ?err(ticket_plan_exist, Name), State}
+    end;
+
+handle_call({update_ticket_plan, Merchant, Attrs}, _From, State) ->
+    Id      = ?v(<<"plan">>, Attrs),
+    Name    = ?v(<<"name">>, Attrs),
+    Balance = ?v(<<"balance">>, Attrs),
+    Effect  = ?v(<<"effect">>, Attrs ),
+    Expire  = ?v(<<"expire">>, Attrs),
+    MaxSend = ?v(<<"scount">>, Attrs),
+    Remark  = ?v(<<"remark">>, Attrs),
+
+    Updates = ?utils:v(name, string, Name)
+	++ ?utils:v(balance, integer, Balance)
+	++ ?utils:v(effect, integer, Effect)
+	++ ?utils:v(expire, integer, Expire)
+	++ ?utils:v(scount, integer, MaxSend)
+	++ ?utils:v(remark, string, Remark),
+
+    UpdateFun =
+	fun() ->
+		Sql1 = "update w_ticket_plan set " ++ ?utils:to_sqls(proplists, comma, Updates)
+		    ++ " where merchant="  ++ ?to_s(Merchant)
+		    ++ " and id=" ++ ?to_s(Id),
+		Reply = ?sql_utils:execute(write, Sql1, Id),
+		{reply, Reply, State}
+	end,
+		   
+    case Balance of
+	undefined ->
+	    UpdateFun();
+	_ ->
+	    Sql = "select id, name, balance from w_ticket_plan"
+		" where merchant=" ++ ?to_s(Merchant)
+		++ " and balance=" ++ ?to_s(Balance),
+	    case ?sql_utils:execute(s_read, Sql) of
+		{ok, []} ->
+		    UpdateFun();
+		{ok, _} ->
+		    {reply, ?err(ticket_plan_exist, Id), State}
+	    end
+    end;
+
+handle_call({list_ticket_plan, Merchant}, _From, State) ->
+    Sql = "select id, merchant, name, balance, effect, expire, scount, entry_date"
+	" from w_ticket_plan where merchant=" ++ ?to_s(Merchant),
+    {reply, ?sql_utils:execute(read, Sql), State};
 
 handle_call({discard_custom_one, Merchant, TicketId}, _From, State) ->
     Sql = "select id, balance, retailer, state from w_ticket_custom"

@@ -46,6 +46,11 @@ action(Session, Req, {"list_sys_wretailer"}) ->
     ?utils:respond(
        batch, fun() -> ?w_user_profile:get(sys_retailer, Merchant, ShopIds) end, Req);
 
+action(Session, Req, {"list_ticket_plan"}) ->
+    ?DEBUG("list_ticket_plan: session ~p", [Session]), 
+    Merchant = ?session:get(merchant, Session),
+    ?utils:respond(
+       batch, fun() -> ?w_retailer:ticket(list_plan, Merchant)end, Req);
 
 action(Session, Req, {"del_w_retailer", Id}) ->
     ?DEBUG("delete_w_retailer with session ~p, Id ~p", [Session, Id]),
@@ -692,26 +697,24 @@ action(Session, Req, {"filter_custom_ticket_detail"}, Payload) ->
 		  custom_ticket_detail, Match, Merchant, Conditions, CurrentPage, ItemsPerPage)
        end, Req, Payload);
 
-action(Session, Req, {"new_ticket_plane"}, Payload) ->
-    ?DEBUG("new_ticket_plane with Session ~p~npaylaod ~p", [Session, Payload]),
+action(Session, Req, {"new_ticket_plan"}, Payload) ->
+    ?DEBUG("new_ticket_plan with Session ~p~npaylaod ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
-    case ?w_retailer:retailer(add_ticket_plane, Merchant, Payload) of
-	{ok, PId} ->
-	    ?w_user_profile:update(ticket_plane, Merchant),
-	    ?utils:respond(
-	       200, Req, ?succ(add_ticket_plane, PId), {<<"id">>, pId});
+    case ?w_retailer:ticket(new_plan, Merchant, Payload) of
+	{ok, Plan} ->
+	    ?w_user_profile:update(ticket_plan, Merchant),
+	    ?utils:respond(200, Req, ?succ(new_ticket_plan, Plan), {<<"id">>, Plan});
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;
 
-action(Session, Req, {"update_ticket_plane"}, Payload) ->
-    ?DEBUG("update_ticket_plane with Session ~p~npaylaod ~p", [Session, Payload]),
+action(Session, Req, {"update_ticket_plan"}, Payload) ->
+    ?DEBUG("update_ticket_plan with Session ~p~npaylaod ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
-    case ?w_retailer:retailer(update_ticket_plane, Merchant, Payload) of
-	{ok, Level} ->
-	    ?w_user_profile:update(ticket_plane, Merchant),
-	    ?utils:respond(
-	       200, Req, ?succ(add_ticket_plane, Level), {<<"id">>, Level});
+    case ?w_retailer:ticket(update_plan, Merchant, Payload) of
+	{ok, Plan} ->
+	    ?w_user_profile:update(ticket_plan, Merchant),
+	    ?utils:respond(200, Req, ?succ(new_ticket_plan, Plan));
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;
@@ -935,9 +938,9 @@ sidebar(Session) ->
 		     [{"custom_ticket_detail", "优惠电子券", "glyphicon glyphicon-bold"}];
 		  _ -> []
 	      end
-	  ++ case ?right_auth:authen(?list_ticket_plane, Session) of
-		 {ok, ?list_ticket_plane} ->
-		     [{"plane_custom_ticket", "优惠券方案", "glyphicon glyphicon-italic"}];
+	  ++ case ?right_auth:authen(?list_ticket_plan, Session) of
+		 {ok, ?list_ticket_plan} ->
+		     [{"plan_custom_ticket", "优惠券方案", "glyphicon glyphicon-italic"}];
 		 _ -> []
 	     end
 	 }],

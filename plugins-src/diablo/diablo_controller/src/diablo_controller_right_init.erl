@@ -197,12 +197,12 @@ init([]) ->
 	 {?print_w_retailer,
 	  <<"会员直接打印">>, <<"print_w_retailer">>, ?right_w_retailer},
 
-	 {?new_ticket_plane,
-	  <<"新增制券方案">>, <<"new_ticket_plane">>, ?right_w_retailer}, 
-	 {?update_ticket_plane,
-	  <<"新增制券方案">>, <<"update_ticket_plane">>, ?right_w_retailer}, 
-	 {?list_ticket_plane,
-	  <<"查看制券方案">>, <<"list_ticket_plane">>, ?right_w_retailer},
+	 {?new_ticket_plan,
+	  <<"新增制券方案">>, <<"new_ticket_plan">>, ?right_w_retailer}, 
+	 {?update_ticket_plan,
+	  <<"新增制券方案">>, <<"update_ticket_plan">>, ?right_w_retailer}, 
+	 {?list_ticket_plan,
+	  <<"查看制券方案">>, <<"list_ticket_plan">>, ?right_w_retailer},
 
 	 {?page_w_retailer,
 	  <<"会员翻页查看">>, <<"page_w_retailer">>, ?right_w_retailer}

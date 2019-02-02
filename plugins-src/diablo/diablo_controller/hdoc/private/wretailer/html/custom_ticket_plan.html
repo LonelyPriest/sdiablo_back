@@ -11,7 +11,7 @@
 	<div class="actions">
 	  <div class="btn-group btn-group-solid">
 	    <button class="btn green hidden-xxs"
-		    x-ng-click="new_plane()">新增
+		    x-ng-click="new_plan()">新增
 	      <i class="glyphicon glyphicon-plus"></i></button> 
 	    <button class="btn blue reload purple-stripe"
 		    x-ng-click="refresh()">刷新
@@ -59,7 +59,7 @@
 		    <td x-ng-bind=p.entry_date></td>
 		    <td> 
 		      <button class="btn diablo-button btn-warning"
-			      x-ng-click="update_plane(l)">修改
+			      x-ng-click="update_plan(p)">修改
 			<i class="glyphicon glyphicon-edit"></i></button> 
 		    </td>
 		  </tr> 
@@ -167,17 +167,13 @@
 	<div class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label">生效期限</label>
 	  <div class="col-sm-10 col-md-10">
-	    <div class="input-group"> 
-	      <div x-ng-class="{'has-error': pForm.effect.$invalid && !pForm.effect.$pristine}">
-		<input class="form-control"
-		       type="number"
-		       required
-		       name="effect"
-		       placeholder="领券后开始生效的天数,-1表示不限制"
-		       x-ng-model="params.effect"
-		       x-ng-pattern="params.pattern.number"/>
-	      </div>
-	      <span class="input-group-addon bg-white fg-red">*</span>
+	    <div x-ng-class="{'has-error': pForm.effect.$invalid && !pForm.effect.$pristine}">
+	      <input class="form-control"
+		     type="number"
+		     name="effect"
+		     placeholder="领券后开始生效的天数,默认产即生效"
+		     x-ng-model="params.effect"
+		     x-ng-pattern="params.pattern.number"/>
 	    </div>
 	    <div>
 	      <span ng-show="pForm.effect.$invalid && !pForm.effect.$pristine">
@@ -190,17 +186,13 @@
 	<div class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label">失效期限</label>
 	  <div class="col-sm-10 col-md-10">
-	    <div class="input-group"> 
-	      <div x-ng-class="{'has-error': pForm.expire.$invalid && !pForm.expire.$pristine}">
+	    <div x-ng-class="{'has-error': pForm.expire.$invalid && !pForm.expire.$pristine}">
 		<input class="form-control"
 		       type="number"
-		       required
 		       name="expire"
-		       placeholder="券生效后失效天数, -1表示不限制"
+		       placeholder="券生效后失效天数, 默认无限制"
 		       x-ng-model="params.expire"
 		       x-ng-pattern="params.pattern.number"/>
-	      </div>
-	      <span class="input-group-addon bg-white fg-red">*</span>
 	    </div>
 	    <div>
 	      <span ng-show="pForm.expire.$invalid && !pForm.expire.$pristine">
@@ -235,7 +227,7 @@
 
   <div class="modal-footer">
     <button class="btn btn-primary"
-	    x-ng-disabled="lForm.$invalid"
+	    x-ng-disabled="pForm.$invalid"
 	    x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>

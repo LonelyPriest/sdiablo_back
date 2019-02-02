@@ -629,7 +629,7 @@ create table w_ticket(
 
 create table w_ticket_custom(
     id              INTEGER AUTO_INCREMENT,
-    plane           INTEGER default -1,
+    plan            INTEGER default -1,
     batch           INTEGER not null,
     balance         INTEGER not null,
     retailer        INTEGER default -1, -- -1: who consumed
@@ -646,7 +646,7 @@ create table w_ticket_custom(
     
 ) default charset=utf8;
 
-create table w_ticket_plane(
+create table w_ticket_plan(
     id              INTEGER AUTO_INCREMENT,
     name            VARCHAR(64) not null,
     balance         INTEGER not null,
@@ -658,7 +658,6 @@ create table w_ticket_plane(
     entry_date      DATETIME default 0, 
     deleted         INTEGER default 0, -- 0: no;  1: yes 
     unique  key uk  (merchant, name),
-    key         dk  (merchant, retailer),
     primary key     (id)
     
 ) default charset=utf8;

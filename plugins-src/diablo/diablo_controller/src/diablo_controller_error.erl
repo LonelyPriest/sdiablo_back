@@ -210,6 +210,8 @@ success(add_threshold_card_good, Good) ->
     {0, "Success to add threshold card good:" ++ ?to_s(Good)};
 success(syn_score_ticket, Merchant) ->
     {0, "Success syn ticket of merchant:" ++ ?to_s(Merchant)};
+success(new_ticket_plan, Plan) ->
+    {0, "Success to add a new ticket plan:" ++ ?to_s(Plan)};
 
 %% wsale
 success(new_w_sale, RSn) ->
@@ -535,8 +537,9 @@ error(invalid_recharge, RechargeId) ->
 error(retailer_level_exist, Level) ->
     {2129, "the level of retailer exist:" ++ ?to_s(Level)};
 error(retailer_level_not_exist, Level) ->
-    {2130, "the level of retailer not exist:" ++ ?to_s(Level)}; 
-
+    {2130, "the level of retailer not exist:" ++ ?to_s(Level)};
+error(ticket_plan_exist, Name) ->
+    {2131, "ticket plan has been exist:" ++ ?to_s(Name)};
 
 %% wprint
 error(wprint_server_exist, Server) ->

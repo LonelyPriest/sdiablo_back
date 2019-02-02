@@ -66,6 +66,9 @@ get(print_format, Merchant) ->
     gen_server:call(?SERVER(Merchant), {get_print_format_profile, Merchant});
 get(type, Merchant) ->
     gen_server:call(?SERVER(Merchant), {get_type_profile, Merchant});
+get(ticket_plan, Merchant) ->
+    gen_server:call(?SERVER(Merchant), {get_ticket_plan_profile, Merchant});
+
 %% get(retailer, Merchant) ->
 %%     gen_server:call(?SERVER(Merchant), {get_retailer_profile, Merchant}); 
 get(firm, Merchant) ->
@@ -183,6 +186,8 @@ update(sms_rate, Merchant) ->
     gen_server:cast(?SERVER(Merchant), {update_sms_rate, Merchant});
 update(region, Merchant) ->
     gen_server:cast(?SERVER(Merchant), {update_region, Merchant});
+update(ticket_plan, Merchant) ->
+    gen_server:cast(?SERVER(Merchant), {update_ticket_plan, Merchant});
 update(retailer_level, Merchant) ->
     gen_server:cast(?SERVER(Merchant), {update_retailer_level, Merchant}).
 
@@ -237,10 +242,12 @@ handle_call({new_profile, Merchant}, _From, State) ->
 
 	{ok, SMSRate}      = ?merchant:sms(list, Merchant),
 	{ok, SMSCenter}    = ?merchant:sms(list_center, Merchant),
-	{ok, Levels}       = ?w_retailer:retailer(list_level, Merchant),
-	{ok, Departments}  = ?employ:department(list, Merchant),
-
-	{ok, SysRetailers} = ?w_retailer:retailer(list_sys, Merchant), 
+	
+	{ok, Levels}       = ?w_retailer:retailer(list_level, Merchant), 
+	{ok, SysRetailers} = ?w_retailer:retailer(list_sys, Merchant),
+	{ok, TicketPlanes} = ?w_retailer:ticket(list_plane, Merchant),
+	
+	{ok, Departments}  = ?employ:department(list, Merchant), 
 	{ok, SysBSaler}    = ?b_saler:batch_saler(list_sys, Merchant),
 	
 	%% good
@@ -271,6 +278,7 @@ handle_call({new_profile, Merchant}, _From, State) ->
 				  sms_rate    = SMSRate,
 				  sms_center  = SMSCenter,
 				  level       = Levels,
+				  ticket_plan = TicketPlanes,
 				  department  = Departments,
 
 				  sysbsaler   = SysBSaler
@@ -652,7 +660,11 @@ handle_call({get_type_profile, Merchant, TypeId}, _From, State) ->
     
     {reply, {ok, SelectType}, State};
 
-
+handle_call({get_ticket_plan_profile, Merchant}, _From, State) ->
+    ?DEBUG("get_ticket_plan_profile of merchant ~p", [Merchant]),
+    MS = ms(Merchant, ticket_plan),
+    Select = select(MS, fun() -> ?w_retailer:ticket(list_plane, Merchant) end),
+    {reply, {ok, Select}, State};
 
 %%
 %% retailer
@@ -733,6 +745,7 @@ handle_call({get_sysbsaler_profile, Merchant, Shops}, _From, State) ->
 
     ?DEBUG("Simples ~p", [Simples]), 
     {reply, {ok, Simples}, State};
+
 
 %%
 %% firm
@@ -1168,6 +1181,9 @@ handle_cast({Update, Merchant}, State) ->
 		    update_region ->
 			{ok, Regions} = ?shop:region(list, Merchant),
 			Profile#wuser_profile{region=Regions};
+		    update_ticket_plane ->
+			{ok, Planes} = ?w_retailer:ticket(list_plane, Merchant),
+			Profile#wuser_profile{ticket_plan=Planes};
 		    update_merchant ->
 			{ok, Info} = ?merchant:merchant(get, Merchant),
 			Profile#wuser_profile{info=Info};
@@ -1361,6 +1377,12 @@ ms(Merchant, region) ->
 
 ms(Merchant, department) ->
     [{{'$1', #wuser_profile{merchant='$1', department='$2', _='_'}},
+      [{'==', '$1', ?to_i(Merchant)}],
+      ['$2']
+     }];
+
+ms(Merchant, ticket_plan) ->
+    [{{'$1', #wuser_profile{merchant='$1', ticket_plan='$2', _='_'}},
       [{'==', '$1', ?to_i(Merchant)}],
       ['$2']
      }].
