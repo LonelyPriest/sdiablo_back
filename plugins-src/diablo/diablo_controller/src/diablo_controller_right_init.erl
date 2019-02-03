@@ -1054,6 +1054,7 @@ pass_action(wholesaler) ->
      <<"list_retailer_level">>,
      <<"filter_retailer_consume">>,
      <<"gift_ticket">>,
+     <<"list_ticket_plan">>,
      
      %% wsale
      %% <<"list_w_sale_new">>,
