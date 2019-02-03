@@ -49,10 +49,7 @@ function wsaleConfg(angular){
 
 	var employee = {"filterEmployee": function(diabloFilter){
 	    return diabloFilter.get_employee()}};
-
-	// var retailer = {"filterRetailer": function(diabloFilter){
-	// 	return diabloFilter.get_wretailer()}};
-
+	
 	var sysretailer = {"filterSysRetailer": function(diabloFilter){
     	    return diabloFilter.get_sys_wretailer()}};
 
@@ -79,13 +76,16 @@ function wsaleConfg(angular){
 
 	var ctype = {"filterCType": function(diabloFilter) {
 	    return diabloFilter.list_good_ctype()}};
+
+	var plan = {"filterTicketPlan": function(diabloFilter){
+            return diabloFilter.get_ticket_plan()}};
 	
 	$routeProvider. 
 	    when('/new_wsale', {
 		templateUrl: '/private/wsale/html/new_wsale.html',
 		controller: 'wsaleNewCtrl',
 		resolve: angular.extend(
-		    {}, user, promotion, charge, score, sysretailer, employee, s_group, brand, type, color, level, base)
+		    {}, user, promotion, charge, score, sysretailer, employee, s_group, brand, type, color, level, plan, base)
 	    }).
 	    when('/new_wsale_detail/:page?', {
 		templateUrl: '/private/wsale/html/new_wsale_detail.html',
@@ -375,7 +375,7 @@ function wsaleNewProvide(
     diabloPattern, wsaleService, wsaleGoodService,
     user, filterPromotion, filterCharge, filterScore,
     filterSysRetailer, filterEmployee,
-    filterSizeGroup, filterType, filterColor, filterLevel, base){
+    filterSizeGroup, filterType, filterColor, filterLevel, filterTicketPlan, base){
     // console.log(base);
     // console.log(filterLevel);
     $scope.promotions = filterPromotion;
@@ -851,6 +851,51 @@ function wsaleNewProvide(
     		    undefined);
     	    }
     	}); 
+    };
+
+    $scope.gift_ticket = function() {
+	var callback = function(params) {
+	    console.log(params);
+	    // get all ticket
+	    var send_tickets = [];
+	    angular.forEach(params.tickets, function(t) {
+		if (t.plan.id !== diablo_invalid_index) {
+		    send_tickets.push({balance:t.plan.balance});
+		}
+	    });
+	    console.log(send_tickets);
+
+	    diabloFilter.wretailer_gift_ticket({ticket:send_tickets}).then(function(result) {
+		console.log(result);
+		if (result.ecode === 0) {
+		    
+		} else {
+		    dialog.set_error("会员电子券赠送", result.ecode);
+		}
+	    });
+	};
+
+	// get max send count
+	var maxSend = 0;
+	angular.forEach(filterTicketPlan, function(p) {
+	    if (p.scount > maxSend)
+		maxSend = p.scount;
+	});
+	
+	dialog.edit_with_modal(
+	    "gift-ticket.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {tickets: [],
+	     add_ticket: function(tickets, planes) {
+		 tickets.push({plan:planes[0], count:1});
+	     }, 
+	     delete_ticket: function(tickets) {
+		 tickets.splice(-1, 1);
+	     },
+	     maxSend: maxSend,
+	     planes: [{id:-1, name:"请选择电子券金额"}].concat(filterTicketPlan)});
     };
 
     $scope.start_charge = function() {

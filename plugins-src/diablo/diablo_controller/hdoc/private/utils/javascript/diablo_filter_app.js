@@ -599,6 +599,10 @@ function filterProvider(){
 		return _retailerHttp.save({operation:"new_recharge"}, charge).$promise;
 	    },
 
+	    wretailer_gift_ticket: function(tickets) {
+		return _retailerHttp.save({operation:"gift_ticket"}, ticket).$promise;
+	    },
+
 	    new_wretailer:function(r) {
 		return _retailerHttp.save(
 		    {operation:"new_w_retailer"},
@@ -713,8 +717,9 @@ function filterProvider(){
 		if (angular.isArray(cached) && cached.length !== 0) return cached
 		else {
 		    return list_ticket_plan().then(function(planes) {
-			var ps = levels.map(function(p) {
-			    return {name      :p.name,
+			var ps = planes.map(function(p) {
+			    return {id        :p.id,
+				    name      :p.name,
 				    balance   :p.balance,
 				    effect    :p.effect,
 				    expire    :p.expire,

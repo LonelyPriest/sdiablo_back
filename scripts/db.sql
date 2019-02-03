@@ -42,6 +42,7 @@ create table merchants
     address          VARCHAR(256) not null,
     balance          INTEGER not null default 0, -- fen
     sms_send         INTEGER not null default 0,
+    state            TINYINT not null default 0,
     type             TINYINT default 0,
     -- province         TINYINT default -1, -- which province
     entry_date       DATE,
@@ -635,6 +636,7 @@ create table w_ticket_custom(
     retailer        INTEGER default -1, -- -1: who consumed
     state           INTEGER default 1, -- 0: discard; 1: checked; 2: consumed
     shop            INTEGER default -1, -- consumed shop
+    stime           DATE default 0 not null,
     remark          VARCHAR(128) not null,
     merchant        INTEGER not null default -1, 
     entry_date      DATETIME default 0, 

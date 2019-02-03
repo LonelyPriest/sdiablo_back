@@ -21,6 +21,7 @@
 -define(LOGIN_NO_USER_FIRE, "没有用户可以踢出！！注意：管理员用户无法踢出，请确认管理员是否在线！！").
 -define(INVALID_USER, "非法用户！！").
 -define(WRONG_USER_PASSWD, "用户名或密码错误").
+-define(LOGIN_NO_MONEY, "该用户已欠费，请缴费后开通！！").
 
 
 test_login(UserName, Passwd, Force) ->
@@ -102,30 +103,35 @@ action(Req, login, Force) ->
 		Passwd ->
 		    case ?login:login(UserName, Passwd) of	
 			{ok, UserDetail}    ->
-			    StartInfo = 
-				case ?session:get_session(by_user, UserName) of
-				    {ok, []} ->
-					start_force(Force, new_user, UserDetail); 
-				    {ok, {SessionId, Session}} -> 
-					start_force(Force, old_user, 
-						    SessionId, Session, UserDetail);
-				    {error, more_session} ->
-					{error, {1109, more_session}}
-				end,
-			    case StartInfo of
-				{ok, {Cookie, _CookieData, Path}} ->
-				    response_with_cookie(Req, Cookie, Path, UserName);
-				{error, {1105, _}} ->
-				    LoginForceFun(?LOGIN_USER_ACTIVE); 
-				{error, {1106, _}} ->
-				    LoginForceFun(?LOGIN_EXECCED_USER); 
-				{error, {1107, _}} ->
-				    LoginForceFun(?LOGIN_NO_USER_FIRE); 
-				{error, {1108, _}} ->
-				    LoginResponseFun(?INVALID_USER);
-				{error, {1109, _}} ->
-				    LoginResponseFun(?INVALID_USER)
-				    %% ?utils:respond(200, Req, Error)
+			    ?DEBUG("UserDetail ~p", [UserDetail]),
+			    case ?v(<<"state">>, UserDetail) of
+				?MERCHANT_NO_MONEY ->
+				    LoginForceFun(?LOGIN_NO_MONEY);
+				_ ->
+				    StartInfo = 
+					case ?session:get_session(by_user, UserName) of
+					    {ok, []} ->
+						start_force(Force, new_user, UserDetail); 
+					    {ok, {SessionId, Session}} -> 
+						start_force(Force, old_user, 
+							    SessionId, Session, UserDetail);
+					    {error, more_session} ->
+						{error, {1109, more_session}}
+					end,
+				    case StartInfo of
+					{ok, {Cookie, _CookieData, Path}} ->
+					    response_with_cookie(Req, Cookie, Path, UserName);
+					{error, {1105, _}} ->
+					    LoginForceFun(?LOGIN_USER_ACTIVE); 
+					{error, {1106, _}} ->
+					    LoginForceFun(?LOGIN_EXECCED_USER); 
+					{error, {1107, _}} ->
+					    LoginForceFun(?LOGIN_NO_USER_FIRE); 
+					{error, {1108, _}} ->
+					    LoginResponseFun(?INVALID_USER);
+					{error, {1109, _}} ->
+					    LoginResponseFun(?INVALID_USER)
+				    end
 			    end; 
 			{error, _Error} ->
 			    LoginResponseFun(?WRONG_USER_PASSWD) 

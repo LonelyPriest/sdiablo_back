@@ -350,8 +350,11 @@
 	    	    x-ng-click="get_ticket()">取券<i class="glyphicon glyphicon-bookmark"></i>
 	    </button>
 
-	    <button x-ng-if="false" class="btn blue"
-		    x-ng-disabled="disable_refresh"
+	    <!-- <button x-ng-if="select.retailer.type_id!==2" class="btn blue" -->
+	    <!-- 	    x-ng-click="gift_ticket()">赠券 -->
+	    <!--   <i class="glyphicon glyphicon-send"></i></button> -->
+
+	    <button class="btn blue"
 		    x-ng-click="gift_ticket()">赠券
 	      <i class="glyphicon glyphicon-send"></i></button>
 	    
@@ -1139,28 +1142,6 @@
 	    </select> 
 	  </div>
 	</div>
-	
-	<!-- <div x-ng-if="params.$tcharge" class="form-group"> -->
-	<!--   <span class="col-md-3 col-sm-3 col-xs-3 control-label">会员名称</span> -->
-	<!--   <div class="col-md-6 col-sm-6 col-xs-6"> -->
-	<!--     <input class="form-control" type="text" -->
-	<!-- 	   x-ng-edit -->
-	<!-- 	   required -->
-	<!-- 	   name="name" -->
-	<!--   	   x-ng-model="params.retailer" -->
-	<!--   	   placeholder="请选择会员" -->
-	<!--   	   typeahead-editable="false" -->
-	<!-- 	   typeahead-wait-ms="300" -->
-	<!-- 	   typeahead-loading="cloading" -->
-	<!-- 	   uib-typeahead="s as s.name for s in match_retailer_phone($viewValue)"/>  -->
-	<!--     <span x-ng-show="cloading"> -->
-	<!--       <i class="icon-spinner icon-spin icon-2x form-control-feedback"></i> -->
-	<!--     </span> -->
-	<!--     <div ng-show="tForm.name.$invalid && !tForm.name.$pristine"> -->
-	<!--       <span class="fg-red">会员只能从下拉列表中获取</span> -->
-	<!--     </div> -->
-	<!--   </div> -->
-	<!-- </div> -->
 
 	<div class="form-group">
 	  <span class="col-md-3 col-sm-3 col-xs-3 control-label">会员名称</span>
@@ -1171,17 +1152,7 @@
 	  	   x-ng-model="select.retailer.name" /> 
 	  </div>
 	</div>
-
-	<!-- <div x-ng-if="params.$tcharge" class="form-group"> -->
-	<!--   <span class="col-md-3 col-sm-3 col-xs-3 control-label">会员余额</span> -->
-	<!--   <div class="col-md-6 col-sm-6 col-xs-6"> -->
-	<!--     <input class="form-control" type="text" -->
-	<!-- 	   required -->
-	<!-- 	   readonly -->
-	<!--   	   x-ng-model="params.retailer.balance" />  -->
-	<!--   </div> -->
-	<!-- </div> -->
-
+	
 	<div class="form-group">
 	  <span class="col-md-3 col-sm-3 col-xs-3 control-label">会员余额</span>
 	  <div class="col-md-6 col-sm-6 col-xs-6">
@@ -1315,6 +1286,68 @@
 	    x-ng-disabled="cForm.$invalid||!params.check_charge(params.cash, params.card, params.wxin)"
 	    x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
-  </div>
-  
+  </div>  
 </script>
+
+<script type="text/ng-template" id="gift-ticket.html"> 
+  <div class="modal-body">
+    <div class="table-responsive">
+      <div class="btn-group table-panel pull-right">
+	<button x-ng-disabled="params.tickets.length===0"
+		x-ng-click="params.delete_ticket(params.tickets)"
+		type="button"
+		x-ng-disabled="params.tickets.length === 0"
+		class="btn red">
+	  <i class="glyphicon glyphicon-minus"></i></button> 
+	<button x-ng-click="params.add_ticket(params.tickets, params.planes)"
+		type="button"
+		x-ng-disabled="params.tickets.length === params.maxSend"
+		class="btn green">
+	  <i class="glyphicon glyphicon-plus"></i>
+	</button>
+      </div>
+      
+      <table class="table table-bordered table-striped table-condensed table-advanced">
+	<thead>
+	  <th>电子券金额</th>
+	  <th>电子券数量</th>
+	</thead>
+	
+	<tbody>
+	  <tr class="text-center" x-ng-repeat="c in params.tickets">
+	    <td class="vert-align">
+	      <form name="cForm">
+		<div ng-class="{'has-error':cForm.$invalid && !cForm.$pristine}">
+		  <select class="form-control"
+			  required
+			  x-ng-model="c.plan"
+			  x-ng-options="p.name for p in params.planes">
+		  </select>
+		</div>
+	      </form> 
+	    </td>
+
+	    <td class="vert-align">
+	      <form name="pForm">
+		<div ng-class="{'has-error':pForm.$invalid && !pForm.$pristine}">
+		  <input type="number"
+			 class="form-control"
+			 required
+			 readonly
+			 x-ng-model="c.count"/>
+		</div>
+	      </form>
+	    </td>
+	    
+	  </tr>
+	</tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary" x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>  
+</script>
+

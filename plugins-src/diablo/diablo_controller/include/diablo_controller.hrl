@@ -116,6 +116,10 @@
 -define(CHILD_MODE, 2).
 -define(HOME_MODE, 3).
 
+%% merchant state
+-define(MERCHANT_NORMAN, 0).
+-define(MERCHANT_NO_MONEY, 1).
+
 %% vip mode
 -define(VIP_DEFAULT_MODE, <<"0000">>).
 
@@ -253,10 +257,11 @@
 -define(update_retailer_level,       ?right_w_retailer + 33).
 -define(syn_score_ticket,            ?right_w_retailer + 34).
 -define(print_w_retailer,            ?right_w_retailer + 35).
--define(new_ticket_plan,            ?right_w_retailer + 36).
--define(update_ticket_plan,         ?right_w_retailer + 37).
--define(list_ticket_plan,           ?right_w_retailer + 38).
+-define(new_ticket_plan,             ?right_w_retailer + 36).
+-define(update_ticket_plan,          ?right_w_retailer + 37).
+-define(list_ticket_plan,            ?right_w_retailer + 38).
 -define(page_w_retailer,             ?right_w_retailer + 39).
+-define(gift_ticket,                 ?right_w_retailer + 40).
 
 %% shop
 -define(new_shop,       ?right_shop + 1).

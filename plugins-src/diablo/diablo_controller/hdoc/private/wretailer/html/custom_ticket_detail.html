@@ -63,22 +63,22 @@
 
 	  <div class="panel panel-default table-panel"> 
 	    <div class="table-responsive">
-	      <!--EBGIN table supplier-->
-	      <table class="table table-bordered
-			    table-striped table-hover
+	      <table class="table table-bordered table-striped table-hover
 			    table-condensed table-advanced">
 		<thead>
 		  <tr>
 		    <th>序号</th>
 		    <th>批次号</th>
-		    <th>会员</th>
+		    <th>制券方案</th>
+		    <th>赠送会员</th>
 		    <th>联系方式</th>
+		    <th>赠送日期</th> 
 		    <th>金额</th>
 		    <th>状态</th>
 		    <th>登记店铺</th>
 		    <th>消费店铺</th> 
-		    <th>备注</th> 
-		    <th>生成日期</th> 
+		    <th>备注</th>
+		    <th>制券日期</th> 
 		    <th>操作</th>
 		  </tr>
 		</thead> 
@@ -87,8 +87,16 @@
 		  <tr ng-repeat="t in tickets">
 		    <td x-ng-bind=t.order_id></td>
 		    <td x-ng-bind=t.batch></td>
-		    <td x-ng-bind=t.retailer></td>
-		    <td x-ng-bind=t.mobile></td>
+		    <td x-ng-bind=t.plan.name></td> 
+		    <td x-ng-switch on=t.retailer_id>
+		      <div x-ng-switch-when=-1 class="text-center">-</div>
+		      <div x-ng-switch-default>{{t.retailer}}</div>
+		    </td>
+		    <td x-ng-switch on=t.retailer_id>
+		      <div x-ng-switch-when=-1 class="text-center">-</div>
+		      <div x-ng-switch-default>{{t.mobile}}</div>
+		    </td>
+		    <td x-ng-bind=t.stime></td> 
 		    <td x-ng-bind=t.balance></td>
 		    <td>
 		      <div x-ng-switch on=t.state>
@@ -124,7 +132,7 @@
 		  </tr>
 
 		  <tr x-ng-if="total_items!==0" class="bg-white">
-		    <td colspan=4></td>
+		    <td colspan=6></td>
 		    <td>{{total_balance}}</td>
 		    <td></td>
 		  </tr>
@@ -184,6 +192,7 @@
 	  <div class="col-md-10">
 	    <input class="form-control"
 		   name="sbatch"
+		   required
 		   type="number"
 		   placeholder="开始批次号，不能使用已使用的批次号"
 		   x-ng-model="params.sbatch"
@@ -195,10 +204,21 @@
 	</div>
 
 	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">制券方案</label>
+	  <div class="col-md-10">
+	    <select class="form-control"
+		    required
+		    x-ng-model="params.plan"
+		    x-ng-options="p as p.name for p in params.planes"/> 
+	  </div>
+	</div>
+
+	<div class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label">制券数量</label>
 	  <div class="col-md-10">
 	    <input class="form-control"
 		   name="count"
+		   required
 		   type="number"
 		   placeholder="制券数量，不超过1000"
 		   x-ng-model="params.count"
@@ -214,6 +234,7 @@
 	  <div class="col-md-10">
 	    <input class="form-control"
 		   name="balance"
+		   required
 		   type="number"
 		   placeholder="券金额，不超过500"
 		   x-ng-model="params.balance"

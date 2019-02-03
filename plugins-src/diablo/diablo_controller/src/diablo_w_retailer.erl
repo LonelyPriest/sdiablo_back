@@ -146,7 +146,10 @@ ticket(new_plan, Merchant, Attrs) ->
     gen_server:call(Name, {new_ticket_plan, Merchant, Attrs});
 ticket(update_plan, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {update_ticket_plan, Merchant, Attrs}).
+    gen_server:call(Name, {update_ticket_plan, Merchant, Attrs});
+ticket(gift, Merchant, Tickets) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {gift_ticket, Merchant, Tickets}).
 
 ticket(list_plan, Merchant) ->
     Name = ?wpool:get(?MODULE, Merchant),
@@ -1422,6 +1425,10 @@ handle_call({update_ticket_plan, Merchant, Attrs}, _From, State) ->
 	    end
     end;
 
+handle_call({gift_ticket, Merchant, Tickets}, _From, State) ->
+    ?DEBUG("gift_ticket: merchant ~p, tickets ~p", [Merchant, Tickets]),
+    {reply, ok, State};
+
 handle_call({list_ticket_plan, Merchant}, _From, State) ->
     Sql = "select id, merchant, name, balance, effect, expire, scount, entry_date"
 	" from w_ticket_plan where merchant=" ++ ?to_s(Merchant),
@@ -1803,8 +1810,9 @@ handle_call({is_card_exist, Merchant, Card}, _From, State) ->
 handle_call({make_ticket_batch, Merchant, Attrs}, _From, State) ->
     ?DEBUG("make_ticket_batch: merchant ~p, Attrs ~p", [Merchant, Attrs]),
     StartBatch = ?v(<<"sbatch">>, Attrs),
-    Count = ?v(<<"count">>, Attrs),
-    Balance = ?v(<<"balance">>, Attrs),
+    Count      = ?v(<<"count">>, Attrs),
+    Balance    = ?v(<<"balance">>, Attrs),
+    Plan       = ?v(<<"plan">>, Attrs, ?INVALID_OR_EMPTY),
 
     Sql = "select id, batch from w_ticket_custom"
 	" where merchant=" ++ ?to_s(Merchant)
@@ -1815,7 +1823,7 @@ handle_call({make_ticket_batch, Merchant, Attrs}, _From, State) ->
 	    {ok, []} ->
 		%% make
 		Datetime = ?utils:current_time(format_localtime),
-		Sqls = make_ticket(Merchant, Datetime, Balance, StartBatch, Count, []),
+		Sqls = make_ticket(Merchant, Datetime, Balance, StartBatch, Plan, Count, []),
 		?DEBUG("sqls ~p", [Sqls]),
 		?sql_utils:execute(transaction, Sqls, StartBatch); 
 	    {ok, _} ->
@@ -1845,9 +1853,11 @@ handle_call({filter_custom_ticket_detail, Merchant, Conditions, CurrentPage, Ite
     Sql = 
 	"select a.id"
 	", a.batch"
+	", a.plan as plan_id"
 	", a.balance"
 	", a.retailer as retailer_id" 
 	", a.state"
+	", a.stime"
 	", a.shop as shop_id"
 	", a.remark"
 	", a.entry_date"
@@ -2200,11 +2210,12 @@ default_withdraw(Merchant, Shop, _RetailerType) ->
     end.
 
 
-make_ticket(_Merchant, _Datetime, _Balance, _StartBatch, 0, Acc) ->
+make_ticket(_Merchant, _Datetime, _Balance, _StartBatch, _Plan, 0, Acc) ->
     lists:reverse(Acc);
-make_ticket(Merchant, Datetime, Balance, StartBatch, Count, Acc) ->
+make_ticket(Merchant, Datetime, Balance, StartBatch, Plan, Count, Acc) ->
     Sql = "insert into w_ticket_custom("
 	"batch"
+	", plan"
 	", balance"
 	", retailer"
 	", state"
@@ -2213,6 +2224,7 @@ make_ticket(Merchant, Datetime, Balance, StartBatch, Count, Acc) ->
 	", merchant"
 	", entry_date) values("
 	++ ?to_s(StartBatch) ++ ","
+	++ ?to_s(Plan) ++ ","
 	++ ?to_s(Balance) ++ ","
 	++ ?to_s(-1) ++ ","
 	++ ?to_s(?CHECKED) ++ ","
@@ -2221,7 +2233,7 @@ make_ticket(Merchant, Datetime, Balance, StartBatch, Count, Acc) ->
 	++ ?to_s(Merchant) ++ ","
 	++ "\'" ++ ?to_s(Datetime) ++ "\')",
 
-    make_ticket(Merchant, Datetime, Balance, StartBatch + 1, Count - 1, [Sql|Acc]).
+    make_ticket(Merchant, Datetime, Balance, StartBatch + 1, Plan, Count - 1, [Sql|Acc]).
     
 date_next(?MONTH_UNLIMIT_CHARGE, {Year, Month, Date}) ->
     case Month + 1 > 12 of

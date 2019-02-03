@@ -1085,7 +1085,7 @@ function wretailerTicketDetailCtrlProvide(
 
 function wretailerCustomTicketDetailCtrlProvide(
     $scope, diabloFilter, diabloPattern, diabloUtilsService,
-    wretailerService, filterShop){
+    wretailerService, filterTicketPlan, filterShop){
     var dialog = diabloUtilsService; 
     // $scope.shops = user.sortShops;
     $scope.pattern = {positive_num: diabloPattern.positive_num};
@@ -1123,8 +1123,9 @@ function wretailerCustomTicketDetailCtrlProvide(
 		    angular.forEach($scope.tickets, function(t){
 			t.shop = diablo_get_object(t.shop_id, filterShop);
 		    	t.in_shop = diablo_get_object(t.in_shop_id, filterShop);
+			t.plan = diablo_get_object(t.plan_id, filterTicketPlan);
 		    });
-		    
+		    console.log($scope.tickets); 
 		    diablo_order($scope.tickets, (page - 1) * $scope.items_perpage + 1);
 		    $scope.current_page = page; 
 		} 
@@ -1146,6 +1147,7 @@ function wretailerCustomTicketDetailCtrlProvide(
 	    var sbatch  = retailerUtils.to_integer(params.sbatch);
 	    var count   = retailerUtils.to_integer(params.count);
 	    var balance = retailerUtils.to_integer(params.balance);
+	    var plan    = params.plan;
 	    
 	    if (sbatch.toString().length > diablo_max_ticket_batch) {
 		dialog.response(false, "批量制券", "批量制券失败：" + wretailerService.error[2118]);
@@ -1161,7 +1163,7 @@ function wretailerCustomTicketDetailCtrlProvide(
 	    }
 
 	    wretailerService.make_ticket_batch(
-		{sbatch:sbatch, count:count, balance:balance}
+		{sbatch:sbatch, count:count, balance:balance, plan:plan.id}
 	    ).then(function(result){
 		console.log(result);
 		if (result.ecode === 0){
@@ -1184,7 +1186,9 @@ function wretailerCustomTicketDetailCtrlProvide(
 	    undefined,
 	    callback,
 	    undefined,
-	    {num_pattern: $scope.pattern.positive_num}); 
+	    {num_pattern: $scope.pattern.positive_num,
+	     plan: filterTicketPlan[0],
+	     planes: filterTicketPlan}); 
     };
 
     $scope.discard = function(ticketId, mode) {

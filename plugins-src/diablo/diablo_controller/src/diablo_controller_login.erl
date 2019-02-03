@@ -60,7 +60,9 @@ handle_call({login, User, Passwd}, _From, State) ->
 	{ok, User0} ->
 	    case ?v(<<"type">>, User0) of
 		?SUPER ->
-		    {reply, {ok, [{<<"merchant">>, 0}, {<<"mtype">>, -1}|User0]}, State};
+		    {reply, {ok, [{<<"merchant">>, 0},
+				  {<<"mtype">>, -1},
+				  {<<"state">>, -1}|User0]}, State};
 		_ ->
 		    Sql1 = "select a.id, a.name, a.type, a.merchant"
 			", a.retailer as retailer_id"
@@ -68,11 +70,13 @@ handle_call({login, User, Passwd}, _From, State) ->
 			", a.shop as shop_id"
                         ", a.stime, a.etime, a.sdays"
 			
-			", b.type as mtype from users a, merchants b"
+			", b.type as mtype"
+			", b.state"
+			" from users a, merchants b"
 			
 			++ " where a.merchant=b.id"
-			++ " and a.name=" ++ "\"" ++ ?to_s(User) ++ "\""
-			++ " and a.password=" ++ "\"" ++ ?to_s(Passwd) ++ "\""
+			++ " and a.name=" ++ "\'" ++ ?to_s(User) ++ "\'"
+			++ " and a.password=" ++ "\'" ++ ?to_s(Passwd) ++ "\'"
 			++ " and a.deleted=" ++ ?to_string(?NO),
 		    case ?sql_utils:execute(s_read, Sql1) of
 			{ok, []} ->

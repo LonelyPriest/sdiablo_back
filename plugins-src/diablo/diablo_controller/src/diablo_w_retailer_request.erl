@@ -719,6 +719,17 @@ action(Session, Req, {"update_ticket_plan"}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"gift_ticket"}, Payload) ->
+    ?DEBUG("gift_ticket: Session ~p, paylaod ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    Tickets  = ?v(<<"ticket">>, Payload),
+    case ?w_retailer:ticket(gift, Merchant, Tickets) of
+	{ok, _Batchs} ->
+	    %% send sms
+	    ok;
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
 
 %%
 %% threshold card

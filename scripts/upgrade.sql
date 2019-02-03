@@ -520,3 +520,9 @@ alter table shops add column bcode_pay VARCHAR(255) default '' not null after bc
 
 --2019-01-27
 alter table w_bank_card add column type TINYINT default 0 not null after bank;
+
+
+--2019-02-04
+alter table merchants add column state TINYINT default 0 not null after sms_send;
+alter table w_ticket_custom add column stime DATE default 0 not null after shop;
+alter table w_ticket_custom add column plan integer default -1 not null after batch;

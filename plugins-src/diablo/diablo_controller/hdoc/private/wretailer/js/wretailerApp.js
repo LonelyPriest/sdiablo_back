@@ -72,7 +72,10 @@ function wretailerConfig(angular) {
 	    return diabloNormalFilter.get_region()}};
 
 	var shop = {"filterShop": function(diabloNormalFilter){
-            return diabloNormalFilter.get_shop()}}; 
+            return diabloNormalFilter.get_shop()}};
+
+	var ticket_plan = {"filterTicketPlan": function(diabloFilter){
+            return diabloFilter.get_ticket_plan()}};
 	
 	$routeProvider. 
 	    when('/wretailer_new', {
@@ -134,7 +137,7 @@ function wretailerConfig(angular) {
 	    when('/ticket/custom_ticket_detail', {
 		templateUrl: '/private/wretailer/html/custom_ticket_detail.html',
 		controller: 'wretailerCustomTicketDetailCtrl',
-		resolve: angular.extend({}, shop)
+		resolve: angular.extend({}, ticket_plan, shop)
 	    }).
 	    when('/ticket/plan_custom_ticket', {
 		templateUrl: '/private/wretailer/html/custom_ticket_plan.html',

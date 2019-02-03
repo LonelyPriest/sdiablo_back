@@ -205,7 +205,7 @@ init([]) ->
 	  <<"查看制券方案">>, <<"list_ticket_plan">>, ?right_w_retailer},
 
 	 {?page_w_retailer,
-	  <<"会员翻页查看">>, <<"page_w_retailer">>, ?right_w_retailer}
+	  <<"会员翻页查看">>, <<"page_w_retailer">>, ?right_w_retailer} 
 	],
 
     
@@ -1053,6 +1053,7 @@ pass_action(wholesaler) ->
      <<"list_threshold_card_good">>,
      <<"list_retailer_level">>,
      <<"filter_retailer_consume">>,
+     <<"gift_ticket">>,
      
      %% wsale
      %% <<"list_w_sale_new">>,
