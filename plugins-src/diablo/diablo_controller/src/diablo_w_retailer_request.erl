@@ -402,34 +402,38 @@ action(Session, Req, {"new_recharge"}, Payload) ->
 		   {ok, [{Shop}]} -> ?v(<<"name">>, Shop)
 	       end,
 
-    case ?w_retailer:charge(recharge, Merchant, Payload) of
-	{ok, {SN, Mobile, CBalance, Balance, Score}} -> 
-	    %% ?w_user_profile:update(retailer, Merchant),
-	    try
-		%% {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),
-		BaseSettings = ?w_report_request:get_setting(Merchant, ?DEFAULT_BASE_SETTING), 
-		<<SMS:1/binary, _/binary>> = ?w_report_request:get_config(<<"recharge_sms">>, BaseSettings), 
-		case ?to_i(SMS) of
-		    0 ->
-			?utils:respond(200, Req, ?succ(new_recharge, SN), [{<<"sms_code">>, 0}]);
-		    1 ->
-			{SMSCode, _} =
-			    ?notify:sms_notify(Merchant, {ShopName, Mobile, 0, CBalance, Balance, Score}),
-			?utils:respond(200,
-				       Req,
-				       ?succ(new_recharge, SN),
-				       [{<<"sms_code">>, SMSCode}]) 
-		end
-	    catch
-		_:{badmatch, _Error} ->
-		    {Code1, _} =  ?err(sms_send_failed, Merchant),
-		    ?utils:respond(
-		       200,
-		       Req,
-		       ?succ(new_recharge, SN), [{<<"sms_code">>, Code1}])
-	    end;
-	{error, Error} ->
-	    ?utils:respond(200, Req, Error)
+    ChargeId    = ?v(<<"charge">>, Payload),
+    case ?w_user_profile:get(charge, Merchant, ChargeId) of
+	{ok, []} ->
+	    ?utils:respond(200, Req,?err(charge_no_promotion, ChargeId));
+	{ok, Charge} -> 
+	    case ?w_retailer:charge(recharge, Merchant, {Payload, Charge}) of
+		{ok, {SN, Mobile, CBalance, Balance, Score}} -> 
+		    try
+			BaseSettings = ?w_report_request:get_setting(Merchant, ?DEFAULT_BASE_SETTING), 
+			<<SMS:1/binary, _/binary>> = ?w_report_request:get_config(<<"recharge_sms">>, BaseSettings), 
+			case ?to_i(SMS) of
+			    0 ->
+				?utils:respond(200, Req, ?succ(new_recharge, SN), [{<<"sms_code">>, 0}]);
+			    1 ->
+				{SMSCode, _} =
+				    ?notify:sms_notify(Merchant, {ShopName, Mobile, 0, CBalance, Balance, Score}),
+				?utils:respond(200,
+					       Req,
+					       ?succ(new_recharge, SN),
+					       [{<<"sms_code">>, SMSCode}]) 
+			end
+		    catch
+			_:{badmatch, _Error} ->
+			    {Code1, _} =  ?err(sms_send_failed, Merchant),
+			    ?utils:respond(
+			       200,
+			       Req,
+			       ?succ(new_recharge, SN), [{<<"sms_code">>, Code1}])
+		    end;
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end
     end;
 
 action(Session, Req, {"delete_recharge"}, Payload) ->

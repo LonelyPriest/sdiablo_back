@@ -245,7 +245,7 @@ handle_call({new_profile, Merchant}, _From, State) ->
 	
 	{ok, Levels}       = ?w_retailer:retailer(list_level, Merchant), 
 	{ok, SysRetailers} = ?w_retailer:retailer(list_sys, Merchant),
-	{ok, TicketPlanes} = ?w_retailer:ticket(list_plane, Merchant),
+	{ok, TicketPlanes} = ?w_retailer:ticket(list_plan, Merchant),
 	
 	{ok, Departments}  = ?employ:department(list, Merchant), 
 	{ok, SysBSaler}    = ?b_saler:batch_saler(list_sys, Merchant),
@@ -837,7 +837,7 @@ handle_call({get_charge, Merchant}, _From, State) ->
 handle_call({get_charge, Merchant, ChargeId}, _From, State) ->
     MS = ms(Merchant, charge),
     Select = select(MS, fun() -> ?w_retailer:charge(list, Merchant) end),
-    Charge = filter(Select, <<"id">>, ChargeId), 
+    Charge = filter(Select, <<"id">>, ChargeId),
     {reply, {ok, Charge}, State};
 
 handle_call({get_score, Merchant}, _From, State) ->

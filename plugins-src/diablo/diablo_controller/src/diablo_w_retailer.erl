@@ -99,9 +99,9 @@ charge(set_withdraw, Merchant, {DrawId, Conditions}) ->
     gen_server:call(Name, {set_withdraw, Merchant, {DrawId, Conditions}});
 
 %% recharge of retailer
-charge(recharge, Merchant, Attrs) ->
+charge(recharge, Merchant, {Attrs, ChargeRule}) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {recharge, Merchant, Attrs});
+    gen_server:call(Name, {recharge, Merchant, Attrs, ChargeRule});
 charge(delete_recharge, Merchant, {RechargeId, RechargeInfo}) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {delete_recharge, Merchant, RechargeId, RechargeInfo});
@@ -877,8 +877,8 @@ handle_call({list_charge, Merchant}, _From, State) ->
 
     {reply, Reply, State};
 
-handle_call({recharge, Merchant, Attrs}, _From, State) ->
-    ?DEBUG("recharge with merchant ~p, paylaod ~p", [Merchant, Attrs]),
+handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
+    ?DEBUG("recharge with merchant ~p, paylaod ~p, ChargeRule ~p", [Merchant, Attrs, ChargeRule]),
 
     Retailer = ?v(<<"retailer">>, Attrs),
     Shop     = ?v(<<"shop">>, Attrs),
@@ -896,10 +896,7 @@ handle_call({recharge, Merchant, Attrs}, _From, State) ->
     Comment     = ?v(<<"comment">>, Attrs, []), 
     Entry       = ?utils:current_time(format_localtime),
 
-    case ?w_user_profile:get(charge, Merchant, ChargeId) of
-	{ok, []} ->
-	    {reply, {error, ?err(charge_no_promotion, ChargeId)}};
-	{ok, Charge} ->
+    
 	    %% ?DEBUG("Charge ~p", [Charge]),
 	    Sql0 = "select id, name, mobile, balance, score from w_retailer"
 		" where id=" ++ ?to_s(Retailer)
@@ -945,7 +942,7 @@ handle_call({recharge, Merchant, Attrs}, _From, State) ->
 				    ++ "\'" ++ ?to_s(Entry) ++ "\')"
 			end,
 
-		    Rule = ?v(<<"rule_id">>, Charge, -1),
+		    Rule = ?v(<<"rule_id">>, ChargeRule, -1),
 		    case Rule =:= ?GIVING_CHARGE orelse Rule =:= ?TIMES_CHARGE of
 			true -> 
 			    Sql2 = [RechargeDetailSql(?INVALID_DATE),
@@ -1060,8 +1057,7 @@ handle_call({recharge, Merchant, Attrs}, _From, State) ->
 		    end; 
 		Error ->
 		    {reply, Error, State}
-	    end 
-    end; 
+	    end; 
 
 handle_call({delete_recharge, Merchant, RechargeId, RechargeInfo}, _From, State) ->
     ?DEBUG("delete_recharge: merchant ~p, RechargeId ~p, RechargeInfo ~p", [Merchant, RechargeId, RechargeInfo]), 
