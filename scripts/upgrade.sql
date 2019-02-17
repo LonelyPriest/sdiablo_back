@@ -526,3 +526,8 @@ alter table w_bank_card add column type TINYINT default 0 not null after bank;
 alter table merchants add column state TINYINT default 0 not null after sms_send;
 alter table w_ticket_custom add column stime DATE default 0 not null after shop;
 alter table w_ticket_custom add column plan integer default -1 not null after batch;
+
+
+--2019-02-18
+alter table print_template add column stock TINYINT default 0  after type;
+alter table print_template add column solo_date TINYINT default 0  after solo_size;

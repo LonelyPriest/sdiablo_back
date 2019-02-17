@@ -102,9 +102,9 @@ charge(set_withdraw, Merchant, {DrawId, Conditions}) ->
 charge(recharge, Merchant, {Attrs, ChargeRule}) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {recharge, Merchant, Attrs, ChargeRule});
-charge(delete_recharge, Merchant, {RechargeId, RechargeInfo}) ->
+charge(delete_recharge, Merchant, {RechargeId, RechargeInfo, ChargePromotion}) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {delete_recharge, Merchant, RechargeId, RechargeInfo});
+    gen_server:call(Name, {delete_recharge, Merchant, RechargeId, RechargeInfo, ChargePromotion});
 
 charge(update_recharge, Merchant, {ChargeId, Attrs}) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -897,170 +897,171 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
     Entry       = ?utils:current_time(format_localtime),
 
     
-	    %% ?DEBUG("Charge ~p", [Charge]),
-	    Sql0 = "select id, name, mobile, balance, score from w_retailer"
-		" where id=" ++ ?to_s(Retailer)
-		++ " and merchant=" ++ ?to_s(Merchant)
-		++ " and deleted=" ++ ?to_s(?NO) ++ ";",
+    %% ?DEBUG("Charge ~p", [Charge]),
+    Sql0 = "select id, name, mobile, balance, score from w_retailer"
+	" where id=" ++ ?to_s(Retailer)
+	++ " and merchant=" ++ ?to_s(Merchant)
+	++ " and deleted=" ++ ?to_s(?NO) ++ ";",
 
-	    case ?sql_utils:execute(s_read, Sql0) of
-		{ok, Account} -> 
-		    SN = lists:concat(
-			   ["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-", ?inventory_sn:sn(w_recharge, Merchant)]),
+    case ?sql_utils:execute(s_read, Sql0) of
+	{ok, Account} -> 
+	    SN = lists:concat(
+		   ["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-", ?inventory_sn:sn(w_recharge, Merchant)]),
 
-		    CurrentBalance = case ?v(<<"balance">>, Account) of
-					 <<>> -> 0;
-					 R    -> R
-				     end,
-		    Score = case ?v(<<"score">>, Account) of
-				<<>> -> 0;
-				_Score -> _Score
-			    end, 
-		    Mobile = ?v(<<"mobile">>, Account),
-		    
-		    RechargeDetailSql =
-			fun(EndDate) ->
-				"insert into w_charge_detail(rsn"
-				    ", merchant, shop, employ, cid, retailer"
-				    ", ledate, lbalance, cbalance, sbalance"
-				    ", cash, card, wxin, stock, comment, entry_date) values("
-				    ++ "\'" ++ ?to_s(SN) ++ "\',"
-				    ++ ?to_s(Merchant) ++ ","
-				    ++ ?to_s(Shop) ++ ","
-				    ++ "\'" ++ ?to_s(Employee) ++ "\',"
-				    ++ ?to_s(ChargeId) ++ "," 
-				    ++ ?to_s(Retailer) ++ ","
-				    ++ "\'" ++ format_date(EndDate) ++ "\',"
-				    ++ ?to_s(CurrentBalance) ++ ","
-				    ++ ?to_s(CBalance) ++ "," 
-				    ++ ?to_s(SBalance) ++ ","
-				    ++ ?to_s(Cash) ++ ","
-				    ++ ?to_s(Card) ++ ","
-				    ++ ?to_s(Wxin) ++ ","
-				    ++ "\'" ++ ?to_s(Stock) ++ "\',"
-				    ++ "\'" ++ ?to_s(Comment) ++ "\'," 
-				    ++ "\'" ++ ?to_s(Entry) ++ "\')"
+	    CurrentBalance = case ?v(<<"balance">>, Account) of
+				 <<>> -> 0;
+				 R    -> R
+			     end,
+	    Score = case ?v(<<"score">>, Account) of
+			<<>> -> 0;
+			_Score -> _Score
+		    end, 
+	    Mobile = ?v(<<"mobile">>, Account),
+
+	    RechargeDetailSql =
+		fun(EndDate) ->
+			"insert into w_charge_detail(rsn"
+			    ", merchant, shop, employ, cid, retailer"
+			    ", ledate, lbalance, cbalance, sbalance"
+			    ", cash, card, wxin, stock, comment, entry_date) values("
+			    ++ "\'" ++ ?to_s(SN) ++ "\',"
+			    ++ ?to_s(Merchant) ++ ","
+			    ++ ?to_s(Shop) ++ ","
+			    ++ "\'" ++ ?to_s(Employee) ++ "\',"
+			    ++ ?to_s(ChargeId) ++ "," 
+			    ++ ?to_s(Retailer) ++ ","
+			    ++ "\'" ++ format_date(EndDate) ++ "\',"
+			    ++ ?to_s(CurrentBalance) ++ ","
+			    ++ ?to_s(CBalance) ++ "," 
+			    ++ ?to_s(SBalance) ++ ","
+			    ++ ?to_s(Cash) ++ ","
+			    ++ ?to_s(Card) ++ ","
+			    ++ ?to_s(Wxin) ++ ","
+			    ++ "\'" ++ ?to_s(Stock) ++ "\',"
+			    ++ "\'" ++ ?to_s(Comment) ++ "\'," 
+			    ++ "\'" ++ ?to_s(Entry) ++ "\')"
+		end,
+
+	    Rule = ?v(<<"rule_id">>, ChargeRule, -1),
+	    case Rule =:= ?GIVING_CHARGE orelse Rule =:= ?TIMES_CHARGE of
+		true -> 
+		    Sql2 = [RechargeDetailSql(?INVALID_DATE),
+			    "update w_retailer set balance=balance+"
+			    ++ ?to_s(CBalance + SBalance) ++ " where id=" ++ ?to_s(Retailer)], 
+		    Reply =
+			case ?sql_utils:execute(transaction, Sql2, SN) of
+			    {ok, SN} ->
+				{ok, {SN, Mobile, CBalance, CurrentBalance + CBalance + SBalance, Score}};
+			    Error -> Error
+			end,
+		    %% ?w_user_profile:update(retailer, Merchant),
+		    {reply, Reply, State};
+		false  ->
+		    CTime       = ?v(<<"ctime">>, Attrs, -1),
+		    StartDate   = ?v(<<"stime">>, Attrs, ?INVALID_DATE),
+
+		    Sql01 = "select id, retailer, ctime, edate, cid, rule from w_card"
+			" where merchant=" ++ ?to_s(Merchant)
+			++ " and retailer=" ++ ?to_s(Retailer)
+			++ " and cid=" ++ ?to_s(ChargeId),
+
+		    Sql22 = 
+			case ?sql_utils:execute(s_read, Sql01) of 
+			    {ok, []} ->
+				{Year, Month, Date} =
+				    case Rule of
+					?THEORETIC_CHARGE -> ?INVALID_DATE;
+					_ ->
+					    ?utils:big_date(date, current_date(), StartDate)
+				    end,
+
+				EndDate = 
+				    case Rule of
+					?THEORETIC_CHARGE ->
+					    ?INVALID_DATE;
+					?MONTH_UNLIMIT_CHARGE ->
+					    date_next(?MONTH_UNLIMIT_CHARGE, {Year, Month, Date});
+					?QUARTER_UNLIMIT_CHARGE ->
+					    date_next(?QUARTER_UNLIMIT_CHARGE, {Year, Month, Date});
+					?YEAR_UNLIMIT_CHARGE ->
+					    date_next(?YEAR_UNLIMIT_CHARGE, {Year, Month, Date});
+					?HALF_YEAR_UNLIMIT_CHARGE ->
+					    date_next(?HALF_YEAR_UNLIMIT_CHARGE, {Year, Month, Date})
+				    end, 
+
+				[case Rule of
+				     ?THEORETIC_CHARGE -> RechargeDetailSql(?INVALID_DATE);
+				     _ ->
+					 %% must not to use at current day
+					 RechargeDetailSql(?utils:date_before({Year, Month, Date}, 1))
+				 end,
+				 "insert into w_card(retailer"
+				 ", ctime, sdate, edate, cid, rule, merchant, shop, entry_date) values("
+				 ++ ?to_s(Retailer) ++ ","
+				 ++ ?to_s(CTime) ++ ","
+				 ++ "\'" ++ format_date(Year, Month, Date) ++ "\',"
+				 ++ "\'" ++ format_date(EndDate) ++ "\',"
+				 ++ ?to_s(ChargeId) ++ ","
+				 ++ ?to_s(Rule) ++ ","
+				 ++ ?to_s(Merchant) ++ ","
+				 ++ ?to_s(Shop) ++ ","
+				 ++ "\'" ++ ?to_s(Entry) ++ "\')"];
+			    {ok, OCard} ->
+				EndDate = ?v(<<"edate">>, OCard, ?INVALID_DATE), 
+				%% {Year, Month, Date} = ?utils:to_date(date, EndDate),
+				{Year, Month, Date} =
+				    case Rule of
+					?THEORETIC_CHARGE -> ?INVALID_DATE;
+					_ ->
+					    ?utils:big_date(date, StartDate, EndDate)
+				    end,
+
+				[case Rule of
+				     ?THEORETIC_CHARGE -> RechargeDetailSql(?INVALID_DATE);
+				     _ -> RechargeDetailSql(?utils:to_date(date, EndDate))
+				 end, 
+				 case Rule of
+				     ?THEORETIC_CHARGE ->
+					 "update w_card set ctime=ctime+" ++ ?to_s(CTime);
+				     ?MONTH_UNLIMIT_CHARGE ->
+					 NextMonth = date_next(?MONTH_UNLIMIT_CHARGE, {Year, Month, Date}),
+					 "update w_card set edate=\'" ++ format_date(NextMonth) ++ "\'"; 
+				     ?QUARTER_UNLIMIT_CHARGE ->
+					 NextQuarter =
+					     date_next(?QUARTER_UNLIMIT_CHARGE, {Year, Month, Date}),
+					 "update w_card set edate=\'" ++ format_date(NextQuarter);
+				     ?YEAR_UNLIMIT_CHARGE ->
+					 NextYear = date_next(?YEAR_UNLIMIT_CHARGE, {Year, Month, Date}),
+					 "update w_card set edate=\'" ++ format_date(NextYear)
+				 end ++ 
+				     case Rule of
+					 ?THEORETIC_CHARGE -> [];
+					 _ ->
+					     case ?utils:compare_date(date, StartDate, EndDate) of 
+						 true ->
+						     ", sdate=\'" ++ ?to_s(StartDate) ++ "\'";
+						 false -> []
+					     end
+				     end
+				 ++ " where id=" ++ ?to_s(?v(<<"id">>, OCard))]
 			end,
 
-		    Rule = ?v(<<"rule_id">>, ChargeRule, -1),
-		    case Rule =:= ?GIVING_CHARGE orelse Rule =:= ?TIMES_CHARGE of
-			true -> 
-			    Sql2 = [RechargeDetailSql(?INVALID_DATE),
-				    "update w_retailer set balance=balance+"
-				    ++ ?to_s(CBalance + SBalance) ++ " where id=" ++ ?to_s(Retailer)], 
-			    Reply =
-				case ?sql_utils:execute(transaction, Sql2, SN) of
-				    {ok, SN} ->
-					{ok, {SN, Mobile, CBalance, CurrentBalance + CBalance + SBalance, Score}};
-				    Error -> Error
-				end,
-			    %% ?w_user_profile:update(retailer, Merchant),
-			    {reply, Reply, State};
-			false  ->
-			    CTime       = ?v(<<"ctime">>, Attrs, -1),
-			    StartDate   = ?v(<<"stime">>, Attrs, ?INVALID_DATE),
-			    
-			    Sql01 = "select id, retailer, ctime, edate, cid, rule from w_card"
-				" where merchant=" ++ ?to_s(Merchant)
-				++ " and retailer=" ++ ?to_s(Retailer)
-				++ " and cid=" ++ ?to_s(ChargeId),
-			    
-			    Sql22 = 
-				case ?sql_utils:execute(s_read, Sql01) of 
-				    {ok, []} ->
-					{Year, Month, Date} =
-					    case Rule of
-						?THEORETIC_CHARGE -> ?INVALID_DATE;
-						_ ->
-						    ?utils:big_date(date, current_date(), StartDate)
-					    end,
-					
-					EndDate = 
-					    case Rule of
-						?THEORETIC_CHARGE ->
-						    ?INVALID_DATE;
-						?MONTH_UNLIMIT_CHARGE ->
-						    date_next(?MONTH_UNLIMIT_CHARGE, {Year, Month, Date});
-						?QUARTER_UNLIMIT_CHARGE ->
-						    date_next(?QUARTER_UNLIMIT_CHARGE, {Year, Month, Date});
-						?YEAR_UNLIMIT_CHARGE ->
-						    date_next(?YEAR_UNLIMIT_CHARGE, {Year, Month, Date});
-						?HALF_YEAR_UNLIMIT_CHARGE ->
-						    date_next(?HALF_YEAR_UNLIMIT_CHARGE, {Year, Month, Date})
-					    end, 
-					
-					[case Rule of
-					     ?THEORETIC_CHARGE -> RechargeDetailSql(?INVALID_DATE);
-					     _ ->
-						 %% must not to use at current day
-						 RechargeDetailSql(?utils:date_before({Year, Month, Date}, 1))
-					 end,
-					 "insert into w_card(retailer"
-					 ", ctime, sdate, edate, cid, rule, merchant, shop, entry_date) values("
-					 ++ ?to_s(Retailer) ++ ","
-					 ++ ?to_s(CTime) ++ ","
-					 ++ "\'" ++ format_date(Year, Month, Date) ++ "\',"
-					 ++ "\'" ++ format_date(EndDate) ++ "\',"
-					 ++ ?to_s(ChargeId) ++ ","
-					 ++ ?to_s(Rule) ++ ","
-					 ++ ?to_s(Merchant) ++ ","
-					 ++ ?to_s(Shop) ++ ","
-					 ++ "\'" ++ ?to_s(Entry) ++ "\')"];
-				    {ok, OCard} ->
-					EndDate = ?v(<<"edate">>, OCard, ?INVALID_DATE), 
-					%% {Year, Month, Date} = ?utils:to_date(date, EndDate),
-					{Year, Month, Date} =
-					    case Rule of
-						?THEORETIC_CHARGE -> ?INVALID_DATE;
-						_ ->
-						    ?utils:big_date(date, StartDate, EndDate)
-					    end,
-
-					[case Rule of
-					     ?THEORETIC_CHARGE -> RechargeDetailSql(?INVALID_DATE);
-					     _ -> RechargeDetailSql(?utils:to_date(date, EndDate))
-					 end, 
-					 case Rule of
-					     ?THEORETIC_CHARGE ->
-						 "update w_card set ctime=ctime+" ++ ?to_s(CTime);
-					     ?MONTH_UNLIMIT_CHARGE ->
-						 NextMonth = date_next(?MONTH_UNLIMIT_CHARGE, {Year, Month, Date}),
-						 "update w_card set edate=\'" ++ format_date(NextMonth) ++ "\'"; 
-					     ?QUARTER_UNLIMIT_CHARGE ->
-						 NextQuarter =
-						     date_next(?QUARTER_UNLIMIT_CHARGE, {Year, Month, Date}),
-						 "update w_card set edate=\'" ++ format_date(NextQuarter);
-					     ?YEAR_UNLIMIT_CHARGE ->
-						 NextYear = date_next(?YEAR_UNLIMIT_CHARGE, {Year, Month, Date}),
-						 "update w_card set edate=\'" ++ format_date(NextYear)
-					 end ++ 
-					     case Rule of
-						 ?THEORETIC_CHARGE -> [];
-						 _ ->
-						     case ?utils:compare_date(date, StartDate, EndDate) of 
-							 true ->
-							     ", sdate=\'" ++ ?to_s(StartDate) ++ "\'";
-							 false -> []
-						     end
-					     end
-					 ++ " where id=" ++ ?to_s(?v(<<"id">>, OCard))]
-				end,
-
-			    Reply =
-				case ?sql_utils:execute(transaction, Sql22, SN) of
-				    {ok, SN} ->
-					{ok, {SN, Mobile, CBalance, CurrentBalance, Score}};
-				    Error -> Error
-				end,
-			    %% ?w_user_profile:update(retailer, Merchant),
-			    {reply, Reply, State}
-		    end; 
-		Error ->
-		    {reply, Error, State}
+		    Reply =
+			case ?sql_utils:execute(transaction, Sql22, SN) of
+			    {ok, SN} ->
+				{ok, {SN, Mobile, CBalance, CurrentBalance, Score}};
+			    Error -> Error
+			end,
+		    %% ?w_user_profile:update(retailer, Merchant),
+		    {reply, Reply, State}
 	    end; 
+	Error ->
+	    {reply, Error, State}
+    end; 
 
-handle_call({delete_recharge, Merchant, RechargeId, RechargeInfo}, _From, State) ->
-    ?DEBUG("delete_recharge: merchant ~p, RechargeId ~p, RechargeInfo ~p", [Merchant, RechargeId, RechargeInfo]), 
+handle_call({delete_recharge, Merchant, RechargeId, RechargeInfo, ChargePromotion}, _From, State) ->
+    ?DEBUG("delete_recharge: merchant ~p, RechargeId ~p, RechargeInfo ~p, ChargePromotion ~p",
+	   [Merchant, RechargeId, RechargeInfo, ChargePromotion]), 
     Sql1 = "delete from w_charge_detail where id=" ++ ?to_s(RechargeId)
 	++ " and merchant=" ++ ?to_s(Merchant),
 
@@ -1069,64 +1070,58 @@ handle_call({delete_recharge, Merchant, RechargeId, RechargeInfo}, _From, State)
 	    Reply = ?sql_utils:execute(write, Sql1, RechargeId),
 	    {reply, Reply, State};
 	_ ->
-	    ChargeId = ?v(<<"cid">>, RechargeInfo),
-	    RetailerId = ?v(<<"retailer">>, RechargeInfo),
-	    case ?w_user_profile:get(charge, Merchant, ChargeId) of 
-		{ok, []} ->
-		    {reply, {error, ?err(charge_no_promotion, ChargeId)}}; 
-		{ok, Charge} ->
-		    ?DEBUG("charge ~p", [Charge]),
-		    Rule = ?v(<<"rule_id">>, Charge),
-		    case Rule =:= ?GIVING_CHARGE orelse Rule =:= ?TIMES_CHARGE of
-			true -> 
-			    RSN      = ?v(<<"rsn">>, RechargeInfo),
-			    CBalance = ?v(<<"cbalance">>, RechargeInfo),
-			    SBalance = ?v(<<"sbalance">>, RechargeInfo),
-			    %% Retailer = ?v(<<"retailer">>, RechargeInfo),
-			    OBalance = ?v(<<"balance">>, RechargeInfo),
-			    Datetime = ?utils:current_time(format_localtime), 
-			    Sqls = 
-				[Sql1, 
-				 "update w_charge_detail set lbalance=lbalance-" ++ ?to_s(CBalance + SBalance) 
-				 ++ " where merchant=" ++ ?to_s(Merchant)
-				 ++ " and retailer=" ++ ?to_s(RetailerId)
-				 ++ " and id>" ++ ?to_s(RechargeId),
+	    RetailerId = ?v(<<"retailer">>, RechargeInfo), 
+	    Rule = ?v(<<"rule_id">>, ChargePromotion),
+	    case Rule =:= ?GIVING_CHARGE orelse Rule =:= ?TIMES_CHARGE of
+		true -> 
+		    RSN      = ?v(<<"rsn">>, RechargeInfo),
+		    CBalance = ?v(<<"cbalance">>, RechargeInfo),
+		    SBalance = ?v(<<"sbalance">>, RechargeInfo),
+		    %% Retailer = ?v(<<"retailer">>, RechargeInfo),
+		    OBalance = ?v(<<"balance">>, RechargeInfo),
+		    Datetime = ?utils:current_time(format_localtime), 
+		    Sqls = 
+			[Sql1, 
+			 "update w_charge_detail set lbalance=lbalance-" ++ ?to_s(CBalance + SBalance) 
+			 ++ " where merchant=" ++ ?to_s(Merchant)
+			 ++ " and retailer=" ++ ?to_s(RetailerId)
+			 ++ " and id>" ++ ?to_s(RechargeId),
 
-				 "update w_retailer set balance=balance-" ++ ?to_s(CBalance + SBalance)
-				 ++ " where id=" ++ ?to_s(RetailerId)
-				 ++ " and merchant=" ++ ?to_s(Merchant),
+			 "update w_retailer set balance=balance-" ++ ?to_s(CBalance + SBalance)
+			 ++ " where id=" ++ ?to_s(RetailerId)
+			 ++ " and merchant=" ++ ?to_s(Merchant),
 
-				 "insert into retailer_balance_history("
-				 "rsn, retailer, obalance, nbalance"
-				 ", action, merchant, entry_date) values("
-				 ++ "\'" ++ ?to_s(RSN) ++ "\',"
-				 ++ ?to_s(RetailerId) ++ ","
-				 ++ ?to_s(OBalance) ++ ","
-				 ++ ?to_s(OBalance - CBalance - SBalance) ++ "," 
-				 ++ ?to_s(?DELETE_RECHARGE) ++ "," 
-				 ++ ?to_s(Merchant) ++ ","
-				 ++ "\"" ++ ?to_s(Datetime) ++ "\")"], 
+			 "insert into retailer_balance_history("
+			 "rsn, retailer, obalance, nbalance"
+			 ", action, merchant, entry_date) values("
+			 ++ "\'" ++ ?to_s(RSN) ++ "\',"
+			 ++ ?to_s(RetailerId) ++ ","
+			 ++ ?to_s(OBalance) ++ ","
+			 ++ ?to_s(OBalance - CBalance - SBalance) ++ "," 
+			 ++ ?to_s(?DELETE_RECHARGE) ++ "," 
+			 ++ ?to_s(Merchant) ++ ","
+			 ++ "\"" ++ ?to_s(Datetime) ++ "\")"], 
+		    Reply = ?sql_utils:execute(transaction, Sqls, RechargeId),
+		    {reply, Reply, State} ;
+		false ->
+		    ChargeId = ?v(<<"cid">>, RechargeInfo), 
+		    case Rule of
+			?THEORETIC_CHARGE ->
+			    CTime = ?v(<<"ctime">>, ChargePromotion), 
+			    Sqls = ["update w_card set ctime=ctime-" ++ ?to_s(CTime)
+				    ++ " where merchant=" ++ ?to_s(Merchant)
+				    ++ " and retailer=" ++ ?to_s(RetailerId)
+				    ++ " and cid=" ++ ?to_s(ChargeId), Sql1],
 			    Reply = ?sql_utils:execute(transaction, Sqls, RechargeId),
-			    {reply, Reply, State} ;
-			false ->
-			    case Rule of
-				?THEORETIC_CHARGE ->
-				    CTime = ?v(<<"ctime">>, Charge), 
-				    Sqls = ["update w_card set ctime=ctime-" ++ ?to_s(CTime)
-					    ++ " where merchant=" ++ ?to_s(Merchant)
-					    ++ " and retailer=" ++ ?to_s(RetailerId)
-					    ++ " and cid=" ++ ?to_s(ChargeId), Sql1],
-				    Reply = ?sql_utils:execute(transaction, Sqls, RechargeId),
-				    {reply, Reply, State};
-				_ ->
-				    EndDate = ?v(<<"ledate">>, RechargeInfo),
-				    Sqls = ["update w_card set edate=\'" ++ ?to_s(EndDate) ++ "\'"
-					    ++ " where merchant=" ++ ?to_s(Merchant)
-					    ++ " and retailer=" ++ ?to_s(RetailerId)
-					    ++ " and cid=" ++ ?to_s(ChargeId), Sql1],
-				    Reply = ?sql_utils:execute(transaction, Sqls, RechargeId),
-				    {reply, Reply, State} 
-			    end
+			    {reply, Reply, State};
+			_ ->
+			    EndDate = ?v(<<"ledate">>, RechargeInfo),
+			    Sqls = ["update w_card set edate=\'" ++ ?to_s(EndDate) ++ "\'"
+				    ++ " where merchant=" ++ ?to_s(Merchant)
+				    ++ " and retailer=" ++ ?to_s(RetailerId)
+				    ++ " and cid=" ++ ?to_s(ChargeId), Sql1],
+			    Reply = ?sql_utils:execute(transaction, Sqls, RechargeId),
+			    {reply, Reply, State} 
 		    end
 	    end
     end; 

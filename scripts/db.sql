@@ -1370,6 +1370,7 @@ create table print_template(
    style_number    TINYINT default 0,
    brand           TINYINT default 0,
    type            TINYINT default 0,
+   stock           TINYINT default 0,
    firm            TINYINT default 0,
    code_firm       TINYINT default 0,
    
@@ -1402,6 +1403,7 @@ create table print_template(
    solo_brand      TINYINT default 0,
    solo_color      TINYINT default 0,
    solo_size       TINYINT default 0,
+   solo_date       TINYINT default 0,
    
    hpx_each        TINYINT default 0,
    hpx_executive   TINYINT default 0,

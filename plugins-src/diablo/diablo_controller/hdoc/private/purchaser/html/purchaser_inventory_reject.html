@@ -453,7 +453,7 @@
                      required
 		     ng-edit
 		     disable-key
-		     readonly="!stock_right.update_oprice"
+		     x-ng-readonly="!stock_right.update_oprice"
                      x-ng-pattern="/^\d+(.\d{1,2})?$/"
 		     ng-model-options="{debounce:300}"
 		     x-ng-change="params.get_price_info(params.tag_price, params, 1)"

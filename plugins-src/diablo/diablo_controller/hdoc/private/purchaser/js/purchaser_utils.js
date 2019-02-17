@@ -916,7 +916,7 @@ stockPrintU.prototype.print_size = function(size, shift_date, color, top, left, 
     this.LODOP.ADD_PRINT_TEXT(top, left + offset_size, width, hpx_size, line);
     this.set_print_font_size(this.template.font_size); 
 
-    if (this.template.shift_date && this.template.size_date) {		
+    if (this.template.shift_date && !this.template.solo_date && this.template.size_date) {		
     	this.LODOP.ADD_PRINT_TEXT(
     	    top, left + offset_size + 35, width, hpx_size, shift_date);
     	this.LODOP.SET_PRINT_STYLEA(0, "FontSize", 8);
@@ -1141,7 +1141,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 	else 
 	    line = "厂商：" + firm;
 
-	if (this.template.firm_date) 
+	if (this.template.firm_date && !this.template.solo_date) 
 	    line = line + "-" + shift_date;
 	
 	top = this.start_print(
@@ -1438,6 +1438,32 @@ stockPrintU.prototype.printBarcode2 = function() {
 		top, startThird, width_barcode, this.template.hpx_barcode, this.barcodeFormat, this.third.barcode);
 	    this.LODOP.SET_PRINT_STYLEA(0, "FontSize", 7);
 	}
+
+	top += this.template.hpx_barcode;
+    }
+
+    if (this.template.solo_date) {
+	line = shift_date;
+	if ( stockUtils.to_integer(this.stock.total) !== 0 )
+	    line += "-" + this.stock.total.toString();
+	if ( stockUtils.to_integer(stockUtils.to_integer(this.stock.amount) !== 0) )
+	    line += "-" + this.stock.amount.toString();
+	
+	this.LODOP.ADD_PRINT_TEXT(top, this.left, iwpx, 10, line);
+	this.LODOP.SET_PRINT_STYLEA(0, "FontSize", 8)
+	this.LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);;
+
+	if (pSecond) {
+	    this.LODOP.ADD_PRINT_TEXT(top, startSecond, iwpx, 10, line);
+	    this.LODOP.SET_PRINT_STYLEA(0, "FontSize", 8);
+	    this.LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);;
+	}
+
+	if (pThird) {
+	    this.LODOP.ADD_PRINT_TEXT(top, startThird, iwpx, 10, line);
+	    this.LODOP.SET_PRINT_STYLEA(0, "FontSize", 8);
+	    this.LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);;
+	} 
     }
     
     

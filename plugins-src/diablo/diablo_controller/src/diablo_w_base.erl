@@ -627,6 +627,7 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", style_number"
 	", brand"
 	", type"
+	", stock"
 	", firm"
 	", code_firm"
 
@@ -660,6 +661,7 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", solo_brand"
 	", solo_color"
 	", solo_size"
+	", solo_date"
 	
 	", hpx_each"
 	", hpx_executive"
@@ -714,6 +716,7 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(style_number, integer, ?v(<<"style_number">>, Attrs))
 	++  ?utils:v(brand, integer, ?v(<<"brand">>, Attrs))
 	++  ?utils:v(type, integer, ?v(<<"type">>, Attrs))
+	++  ?utils:v(stock, integer, ?v(<<"stock">>, Attrs))
 	++  ?utils:v(firm, integer, ?v(<<"firm">>, Attrs))
 	++  ?utils:v(code_firm, integer, ?v(<<"code_firm">>, Attrs))
 
@@ -747,6 +750,7 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(solo_brand, integer, ?v(<<"solo_brand">>, Attrs))
 	++  ?utils:v(solo_color, integer, ?v(<<"solo_color">>, Attrs))
 	++  ?utils:v(solo_size, integer, ?v(<<"solo_size">>, Attrs))
+	++  ?utils:v(solo_date, integer, ?v(<<"solo_date">>, Attrs))
 
 	++  ?utils:v(hpx_each, integer, ?v(<<"hpx_each">>, Attrs))
 	++  ?utils:v(hpx_executive, integer, ?v(<<"hpx_executive">>, Attrs))

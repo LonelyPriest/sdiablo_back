@@ -927,6 +927,34 @@
 		  </td>
 		  <td>标签上是否打印条码</td>
 		</tr>
+
+		<tr>
+		  <td>59</td>
+		  <td>打印库存数量</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   x-ng-edit
+			   disable-wheel
+			   disable-key
+			   x-ng-model="template.stock"/>
+		  </td>
+		  <td>打印当前批次入库的库存数量</td>
+		</tr>
+
+		<tr>
+		  <td>60</td>
+		  <td>货品上加日期独占一行</td>
+		  <td>
+		    <input class="form-control"
+			   type="number"
+			   x-ng-edit
+			   disable-wheel
+			   disable-key
+			   x-ng-model="template.solo_date"/>
+		  </td>
+		  <td>货品上加日期单独一行</td>
+		</tr>
 		
 	      </tbody>
 	    </table> <!--END table-->

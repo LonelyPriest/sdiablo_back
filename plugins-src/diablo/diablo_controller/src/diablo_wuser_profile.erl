@@ -943,6 +943,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		", style_number"
 		", brand"
 		", type"
+		", stock"
 		", firm"
 		", code_firm"
 
@@ -975,7 +976,8 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		
 		", solo_brand"
 		", solo_color"
-		", solo_size" 
+		", solo_size"
+		", solo_date"
 		
 		", hpx_each"
 		", hpx_executive"
@@ -1024,6 +1026,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(?YES) ++ ","   %% style_number
 		++ ?to_s(?YES) ++ ","   %% brand
 		++ ?to_s(?YES) ++ ","   %% type
+		++ ?to_s(?NO) ++ ","    %% stock
 		++ ?to_s(?YES) ++ ","   %% firm
 		++ ?to_s(?NO) ++ ","    %% code_firm
 
@@ -1057,6 +1060,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(?NO) ++ ","    %% solo_brand
 		++ ?to_s(?NO) ++ ","    %% solo_color
 		++ ?to_s(?NO) ++ ","    %% solo_size
+		++ ?to_s(?NO) ++ ","    %% solo_date
 		 
 		++ ?to_s(0) ++ ","      %% hpx_each
 		++ ?to_s(0) ++ ","      %% hpx_executive

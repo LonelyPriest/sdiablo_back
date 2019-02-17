@@ -443,13 +443,20 @@ action(Session, Req, {"delete_recharge"}, Payload) ->
     case ?w_retailer:charge(get_recharge, Merchant, RechargeId) of
 	{ok, []} ->
 	    ?utils:respond(200, Req, ?err(invalid_recharge, RechargeId));
-	{ok, Recharge} -> 
-	    case ?w_retailer:charge(delete_recharge, Merchant, {RechargeId, Recharge}) of
-		{ok, RechargeId} ->
-		    %% ?w_user_profile:update(retailer, Merchant),
-		    ?utils:respond(200, Req, ?succ(delete_recharge, RechargeId));
-		{error, Error} ->
-		    ?utils:respond(200, Req, Error)
+	{ok, Recharge} ->
+	    ChargeId = ?v(<<"cid">>, Recharge),
+	    case ?w_user_profile:get(charge, Merchant, ChargeId) of 
+		{ok, []} ->
+		    ?utils:respond(200, Req, ?err(charge_no_promotion, ChargeId));
+		{ok, ChargePromotion} ->
+		    case ?w_retailer:charge(
+			    delete_recharge, Merchant, {RechargeId, Recharge, ChargePromotion}) of
+			{ok, RechargeId} ->
+			    %% ?w_user_profile:update(retailer, Merchant),
+			    ?utils:respond(200, Req, ?succ(delete_recharge, RechargeId));
+			{error, Error} ->
+			    ?utils:respond(200, Req, Error)
+		    end
 	    end;
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)

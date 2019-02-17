@@ -981,7 +981,7 @@ function goodPrintTemplateCtrlProvide(
 
     var p = ["name", "label", "width", "height"
 	     
-	     , "shop", "style_number", "brand", "type", "firm", "code_firm"
+	     , "shop", "style_number", "brand", "type", "stock", "firm", "code_firm"
 
 	     , "p_virprice", "p_tagprice"
 	     
@@ -993,7 +993,7 @@ function goodPrintTemplateCtrlProvide(
 	     , "font_price", "font_size", "font_fabric", "font_label"
 	     
 	     , "bold" 
-	     , "solo_brand", "solo_color", "solo_size"
+	     , "solo_brand", "solo_color", "solo_size", "solo_date"
 	     
 	     , "hpx_each", "hpx_executive", "hpx_category", "hpx_fabric"
 	     , "hpx_price", "hpx_size", "hpx_barcode", "hpx_label"

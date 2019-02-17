@@ -55,7 +55,8 @@ function purchaserInventoryRejectCtrlProvide(
     };
 
     var authen = new diabloAuthen(user.type, user.right, user.shop);
-    $scope.stock_right = authen.authenStockRight(); 
+    $scope.stock_right = authen.authenStockRight();
+    console.log($scope.stock_right);
     
     $scope.focus = {barcode: false, style_number:false, reject: false};
     $scope.auto_focus = function(attr){
