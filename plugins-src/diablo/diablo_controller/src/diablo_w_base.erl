@@ -827,7 +827,7 @@ sys_config(shop) ->
      {"d_sex",           "默认入库性别",         "0",   "0"},
      {"m_sale",          "允许负数退货",         "1",   "0"},
      {"round",           "四舍五入",             "1",   "0"},
-     {"h_stock",         "入库字段隐藏",         "00011011111101", "0"},
+     {"h_stock",         "入库字段隐藏",         "000110111111011", "0"},
      
      {"s_member",        "会员独立",             "0",   "0"},
      {"s_employee",      "营业员必选",           "0",   "0"},
@@ -910,7 +910,8 @@ sys_config() ->
 	      %% [11]: hide bsaler when on batchsale
 	      %% [12]: virtual price name 0: virtual price 1: batch price
 	      %% [13]: default price when on sale 0:tag_price, 1:vir_price
-	      {"p_balance",       "销售模式",             "00000000000000",  "0"},
+	      %% [14]: show whole price on sale
+	      {"p_balance",       "销售模式",             "000000000000000",  "0"},
 	      
 	      {"gen_ticket",      "自动生成电子卷",       "0",   "0"},
 	      

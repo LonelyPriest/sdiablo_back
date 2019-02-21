@@ -1325,7 +1325,7 @@ function printerDetectCtrlProvide($scope, diabloUtilsService, user, base){
     var print_protocal = diablo_set_integer(diablo_base_setting(
 	"pum", user.loginShop, base, function(s) {return s}, diablo_print_num).charAt(2));
 
-    if (needCLodop()) loadCLodop(angular.isUndefined(print_protocal ? 0 : 1));
+    if (needCLodop()) loadCLodop(angular.isUndefined(print_protocal) || print_protocal === 0 ? 0 : 1);
 
     $scope.refresh = function() {
 	if (angular.isUndefined(LODOP))

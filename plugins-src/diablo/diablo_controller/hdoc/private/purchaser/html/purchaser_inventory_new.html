@@ -163,7 +163,7 @@
 	    		   x-ng-model="select.card" />
 	    	  </div>
 	    	</form>
-		</div>
+	      </div>
 	    </div>
 
 	    <div class="col-xs-3 col-md-3">
@@ -298,7 +298,7 @@
 	<div class="portlet-body">
 	  <uib-tabset>
 	    <uib-tab active="tab_active[0].active"
-		 select="focus.style_number=false; auto_focus('style_number')">
+		     select="focus.style_number=false; auto_focus('style_number')">
 	      <tab-heading>入库草稿<i class="glyphicon glyphicon-plus fg-red"></i></tab-heading>
 	      <!--BEGIN panel-->
 	      <div class="panel panel-default">
@@ -409,8 +409,7 @@
 			</td>
 
 			<td x-ng-if="stock_right.show_orgprice" class="col-md-1 vert-align">
-			  <span x-ng-if="!inv.$new && !inv.update_directory">
-		    	    {{inv.org_price}}</span>
+			  <span x-ng-if="!inv.$new && !inv.update_directory">{{inv.org_price}}</span>
 			  <form name="inv.form.orgprice"
 		    		x-ng-if="inv.$new && inv.free_color_size || inv.update_directory">
 		    	    <div ng-class="{'has-error':inv.form.orgprice.$invalid
@@ -451,9 +450,7 @@
 			</td>
 			
 			<td class="col-md-1 vert-align">
-			  <span x-ng-if="!inv.$new && !inv.update_directory">
-			    {{inv.total}}
-			  </span> 
+			  <span x-ng-if="!inv.$new && !inv.update_directory">{{inv.total}}</span> 
 			  <form name="inv.form.amount"
 				x-ng-if="inv.$new && inv.free_color_size || inv.update_directory">
 			    <div ng-class="{'has-error':inv.form.amount.$invalid
@@ -474,14 +471,11 @@
 
 			<td x-ng-if="stock_right.show_orgprice" class="col-md-1 vert-align">
 			  <span x-ng-if="inv.$new"></span>
-			  <span x-ng-if="!inv.$new">
-			    {{calc_row(inv.org_price, 100, inv.total - inv.over)}} 
-			  </span>
+			  <span x-ng-if="!inv.$new">{{calc_row(inv.org_price, 100, inv.total - inv.over)}}</span>
 			</td>
 
 			<td class="col-md-1 vert-align">
-			  <span x-ng-if="!inv.$new && !inv.update_directory">
-			    {{inv.over}}</span> 
+			  <span x-ng-if="!inv.$new && !inv.update_directory">{{inv.over}}</span> 
 			  <form name="inv.form.over"
 				x-ng-if="inv.$new && inv.free_color_size || inv.update_directory">
 			    <div ng-class="{'has-error':inv.form.over.$invalid && !inv.form.over.$pristine}">
@@ -601,7 +595,7 @@
 	    </uib-tab>
 
 	    <uib-tab active="tab_active[1].active"
-		 select="select_tab_of_new_good()">
+		     select="select_tab_of_new_good()">
 	      <tab-heading>
 		新增货品<i class="glyphicon glyphicon-plus fg-red"></i>
 	      </tab-heading> 
@@ -610,7 +604,7 @@
 
 	  <div x-ng-if="tab_active[1].active" class="portlet-body form">
 	    <!--BEGIN from -->
-	    <form class="form-horizontal" name="form.gForm" novalidate>
+	    <form class="form-horizontal" name="form.gForm" navform novalidate>
 	      <!--BEGIN form body--> 
 	      <div class="form-body"
 		   ng-shortcut
@@ -625,10 +619,7 @@
 			     type="text"
 			     name="bcode"
 			     x-ng-edit
-			     focus-auto="focus_attrs.barcode"
-			     go-next-field
-			     next="style_number"
-			     auto-row="go_next_good_field" 
+			     focus-auto="focus_attrs.barcode" 
 			     placeholder="货品条码"
 			     x-ng-model="good.bcode" 
 			     x-ng-blur="focus_attrs.barcode=false"
@@ -660,11 +651,7 @@
 			       required
 			       capitalize
 			       ng-edit
-			       focus-auto="focus_attrs.style_number"
-			       go-next-field
-			       next="brand"
-			       pre="bcode"
-			       auto-row="go_next_good_field"
+			       focus-auto="focus_attrs.style_number" 
 			       placeholder="请输入2-10位款号"
 			       x-ng-blur="focus_attrs.style_number=false"
 			       x-ng-model="good.style_number"
@@ -689,7 +676,7 @@
 		    </div>
 		    <div ng-if="form.gForm.style_number.$invalid && !form.gForm.style_number.$pristine">
 		      <span class="fg-red">款号只能是字母，数字或横杠，2-10个字符</span>
-		  </div>
+		    </div>
 		  </div> 
 		</div>
 
@@ -704,12 +691,7 @@
 			       class="form-control"
 			       name="brand"
 			       required
-			       focus-auto="focus_attrs.brand"
 			       ng-edit 
-			       go-next-field
-			       next="type"
-			       pre="style_number"
-			       auto-row="go_next_good_field"
 			       x-ng-blur="focus_attrs.brand=false" 
 			       placeholder="请输入品牌"
 			       x-ng-model="good.brand"
@@ -720,8 +702,8 @@
 		      <span class="input-group-addon bg-white fg-red">*</span>
 		      <span class="input-group-btn">
 			<a type="button" class="btn default fg-red"
-				x-ng-disabled="!good.brand"
-				x-ng-click="reset_brand()"> 
+			   x-ng-disabled="!good.brand"
+			   x-ng-click="reset_brand()"> 
 			  <i class="glyphicon glyphicon-hand-right"></i>
 			</a>
 		    </div>
@@ -741,12 +723,7 @@
 			       class="form-control"
 			       name="type"
 			       required
-			       focus-auto="focus_attrs.type"
 			       ng-edit 
-			       go-next-field
-			       next="vir_price"
-			       pre="brand"
-			       auto-row="go_next_good_field"
 			       placeholder="豹纹马甲等"
 			       x-ng-model="good.type"
 			       x-ng-pattern="pattern.type"
@@ -757,8 +734,8 @@
 		      <span class="input-group-addon bg-white fg-red">*</span>
 		    </div>
 		    <div ng-show="form.gForm.type.$invalid && !form.gForm.type.$pristine">
-		    <span style="color:red">中文，字母或数字或必须从下拉列表中选择</span>
-		  </div>
+		      <span style="color:red">中文，字母或数字或必须从下拉列表中选择</span>
+		    </div>
 		  </div>
 		  
 		</div> 
@@ -813,11 +790,6 @@
 			     required
 			     disable-key
 			     ng-edit
-			     focus-auto="focus_attrs.vir_price"
-			     go-next-field
-			     next="tag_price"
-			     pre="type"
-			     auto-row="go_next_good_field"
 			     placeholder="支持二位小数"
 			     x-ng-pattern="/^\d+(.\d{1,2})?$/"
 			     x-ng-enter=""
@@ -839,12 +811,7 @@
 			     name="tag_price"
 			     required
 			     disable-key
-			     ng-edit
-			     focus-auto="focus_attrs.tag_price"
-			     go-next-field
-			     next="discount"
-			     pre="vir_price"
-			     auto-row="go_next_good_field"
+			     ng-edit 
 			     placeholder="吊牌价，支持二位小数"
 			     x-ng-pattern="/^\d+(.\d{1,2})?$/"
 			     x-ng-enter=""
@@ -857,28 +824,21 @@
 		  </div> 
 		</div> 
 		
-		<div x-ng-if="!base_settings.hide_discount"  class="form-group diablo-good-form-group">
+		<div x-ng-if="!base_settings.hide_discount" class="form-group diablo-good-form-group">
 		  <label class="col-sm-3 col-md-3 control-label">折扣</label>
 		  <div class="col-sm-6 col-md-6"> 
 		    <div class="input-group">
-		      <div ng-class="{'has-error':form.gForm.discount.$invalid && !form.gForm.discount.$pristine}">
-			<input class="form-control"
-			       type="number" step="1" 
-			       name="discount"
-			       required
-			       disable-key
-			       ng-edit
-			       focus-auto="focus_attrs.discount"
-			       go-next-field
-			       next="color"
-			       pre="tag_price"
-			       auto-row="go_next_good_field" 
-			       placeholder="两位整数，无折扣请输入100"
-			       x-ng-pattern="/^\d{1,2}(\.\d{1,2})?$|100$|0$/"
-			       x-ng-enter=""
-			       x-ng-model="good.discount"/>
-		      </div>
-		      <span class="input-group-addon bg-white fg-red">*</span>
+		      <input class="form-control"
+			     type="number" step="1" 
+			     name="discount"
+			     required
+			     disable-key
+			     ng-edit 
+			     placeholder="两位整数，无折扣请输入100"
+			     x-ng-pattern="/^\d{1,2}(\.\d{1,2})?$|100$|0$/"
+			     x-ng-enter=""
+			     x-ng-model="good.discount"/>
+		      <span class="input-group-addon bg-white fg-red">*</span> 
 		    </div>
 		    <div ng-if="form.gForm.discount.$invalid && !form.gForm.discount.$pristine">
 		      <span style="color:red">两位整数，无折扣请输入100</span>
@@ -891,18 +851,18 @@
 		  <div class="col-sm-6 col-md-6">
 		    <div class="input-group">
 		      <div ng-class="{'has-error':form.gForm.sprice.$invalid && !form.gForm.sprice.$pristine}">
-		    <input class="form-control"
-			   type="text"
-			   name="sprice"
-			   required
-			   x-ng-edit
-			   placeholder="0:否;1:是;默认为否"
-			   typeahead-editable="false"
-			   x-ng-model="good.sprice"
-			   x-ng-enter=""
-			   uib-typeahead="p as p.name for p in yes_no|filter:$viewValue"/>
+			<input class="form-control"
+			       type="text"
+			       name="sprice"
+			       required
+			       x-ng-edit
+			       placeholder="0:否;1:是;默认为否"
+			       typeahead-editable="false"
+			       x-ng-model="good.sprice"
+			       x-ng-enter=""
+			       uib-typeahead="p as p.name for p in yes_no|filter:$viewValue"/>
+			<span class="input-group-addon bg-white fg-red">*</span> 
 		      </div>
-		      <span class="input-group-addon bg-white fg-red">*</span>
 		    </div>
 		    <div ng-if="form.gForm.sprice.$invalid && !form.gForm.sprice.$pristine">
 		      <span style="color:red">0:否;1:是</span>
@@ -910,8 +870,7 @@
 		  </div>
 		</div>
 
-		<div x-ng-if="!base_settings.hide_color
-			      && (base_settings.hide_barcode || !good.bcode)"
+		<div x-ng-if="!base_settings.hide_color && (base_settings.hide_barcode || !good.bcode)"
 		     class="form-group diablo-good-form-group">
 		  <label class="col-sm-3 col-md-3 control-label">颜色</label>
 		  <div class="col-sm-6 col-md-6"> 
@@ -919,12 +878,7 @@
 		      <input type="text"
 			     readonly
 			     name="color"
-			     class="form-control"
-			     focus-auto="focus_attrs.color"
-			     go-next-field
-			     next="size"
-			     pre="discount"
-			     auto-row="go_next_good_field"
+			     class="form-control" 
 			     placeholder="均色无需选择"
 			     x-ng-enter="base_settings.group_color?select_color():select_grouped_color()"
 			     x-ng-model="good.colors"/> 
@@ -939,7 +893,6 @@
 		      </span>
 		    </div>
 		  </div>
-		  <div>{{!base_settings.hide_barcode && good.bcode}}</div>
 		</div>
 		
 		<div x-ng-if="!base_settings.hide_size && (base_settings.hide_barcode || !good.bcode)"
@@ -948,12 +901,7 @@
 		  <div class="col-sm-6 col-md-6"> 
 		    <div class="input-group">
 		      <input type="text" readonly
-			     class="form-control"
-			     focus-auto="focus_attrs.size"
-			     go-next-field
-			     pre="color"
-			     next="expire"
-			     auto-row="go_next_good_field"
+			     class="form-control" 
 			     placeholder="均码无需选择"
 			     x-ng-enter="select_size()"
 			     x-ng-model="good.sizes" />
@@ -973,12 +921,7 @@
 		      <input class="form-control"
 			     type="number" step="1" 
 			     name="expire"
-			     required
-			     focus-auto="focus_attrs.expire"
-			     go-next-field
-			     pre="size"
-			     next="ok"
-			     auto-row="go_next_good_field" 
+			     required 
 			     placeholder="退货期限"
 			     x-ng-pattern="pattern.expire"
 			     x-ng-enter=""
@@ -1038,13 +981,12 @@
 		      <input type="text" readonly
 			     class="form-control"
 			     placeholder="默认为空"
-			     x-ng-model="good.fabric_desc">
-		  </input>
-		  <span class="input-group-btn">
-		    <button class="btn btn-primary"
-			    x-ng-click="select_fabric()">
-		      <i class="glyphicon glyphicon-arrow-right"></i></button> 
-		  </span>
+			     x-ng-model="good.fabric_desc"/>
+		      <span class="input-group-btn">
+			<button class="btn btn-primary"
+				x-ng-click="select_fabric()">
+			  <i class="glyphicon glyphicon-arrow-right"></i></button> 
+		      </span>
 		    </div>
 		  </div> 
 		</div>
@@ -1131,11 +1073,7 @@
 		    <div class="pull-right">
 		      <button type="submit"
 			      class="btn btn-primary"
-			      ng-disabled="form.gForm.$invalid || good_saving"
-			      focus-auto="focus_attrs.ok"
-			      go-next-field
-			      pre="size"
-			      auto-row="go_next_good_field"
+			      ng-disabled="form.gForm.$invalid || good_saving" 
 			      x-ng-click="new_good()">确定</button>
 		      <button type="button" class="btn btn-danger"
 		      	      x-ng-disabled="!good.style_number || !good.brand"
@@ -1159,7 +1097,7 @@
 
 <script type="text/ng-template" id="inventory-new.html">
   <div class="modal-body">
-      
+    
     <div class="diablo-form-group"> 
       <div class="input-group">
 	<span class="input-group-addon">
@@ -1322,7 +1260,7 @@
 	      class="btn btn-success" x-ng-click="edit()">尺码</button>
       <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
     </div>
-</div>
+  </div>
 </script>
 
 
@@ -1337,10 +1275,10 @@
 	<input class="form-control text-center"
 	       readonly
 	       x-ng-model="params.org_price"/>
-	  
+	
 	<span class="input-group-addon">
 	  <i class="glyphicon glyphicon-sort-by-attributes-alt fg-red"></i>
-	    折扣
+	  折扣
 	</span>
 	<input class="form-control text-center"
 	       readonly
@@ -1644,9 +1582,7 @@
 		<input id={{g.id}} type="checkbox"
 		       x-ng-model="g.select"
 		       x-ng-click="params.select_group(params.groups, g)"
-		       x-ng-enter="ok()"/>
-		<!-- <input id={{g.id}} type="checkbox" -->
-		<!--        x-ng-model="g.select"></input> -->
+		       x-ng-enter="ok()"/> 
 		<label for={{g.id}}>{{g.name}}</label>
 	      </div>
 	    </td>

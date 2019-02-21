@@ -365,7 +365,7 @@
 	</div>
       </div>
 
-      <div class="portlet-body"> 
+      <div class="portlet-body" navdiv> 
 	<div class="row diablo-good-form-group">
 	  <div class="col-xs-12 col-md-12">
 	    <div class="input-group">
@@ -428,6 +428,26 @@
 	  </div> 
 	</div>
 
+	<div x-ng-if="setting.show_wprice" class="row diablo-good-form-group">
+	  <div class="col-xs-12 col-md-12">
+	    <div class="input-group">
+	      <span class="input-group-addon">
+		<i class="glyphicon glyphicon-yen fg-red"></i>整单</span>
+	      <form name="select.form.wForm">
+		<div ng-class="{'has-error':select.form.wForm.$invalid && !select.form.wForm.$pristine}">
+	  	  <input class="form-control"
+			 type="number" step="1"
+			 disable-key
+			 x-ng-edit
+	  		 x-ng-model="select.wprice"
+			 x-ng-pattern="pattern.money"
+			 placeholder="整单价格"/>
+		</div>
+	      </form>
+	    </div>
+	  </div>
+	</div>
+	
 	<div class="row diablo-good-form-group">
 	  <div class="col-xs-12 col-md-12">
 	    <div class="input-group">
@@ -441,6 +461,7 @@
 			 disable-key
 			 x-ng-edit
 			 focus-auto="focus_attr.cash"
+			 x-ng-plus="focus_good_or_barcode()"
 	  		 x-ng-model="select.cash"
 			 x-ng-pattern="pattern.money"
 			 placeholder="现金"
@@ -457,14 +478,13 @@
 	      <span class="input-group-addon">
 		<i class="glyphicon glyphicon-credit-card fg-red"></i>刷卡</span>
 	      <form name="select.form.cardForm">
-		<div ng-class="{'has-error':select.form.cardForm.$invalid
-			       && !select.form.cardForm.$pristine}">
+		<div ng-class="{'has-error':select.form.cardForm.$invalid && !select.form.cardForm.$pristine}">
 	  	  <input class="form-control"
 			 type="number" step="0.01"
 			 disable-key
 			 x-ng-edit
-			 focus-auto="focus_attr.card"
 			 x-ng-pattern="pattern.money"
+			 x-ng-plus="focus_good_or_barcode()"
 	  		 x-ng-model="select.card"
 			 placeholder="刷卡"
 			 x-ng-enter="disable_save() || save_wsale()"/>
@@ -486,7 +506,7 @@
 			 type="number" step="0.01"
 			 disable-key
 			 x-ng-edit
-			 focus-auto="focus_attr.wxin"
+			 x-ng-plus="focus_good_or_barcode()"
 			 x-ng-pattern="pattern.money"
 	  		 x-ng-model="select.wxin"
 			 placeholder="微/支"

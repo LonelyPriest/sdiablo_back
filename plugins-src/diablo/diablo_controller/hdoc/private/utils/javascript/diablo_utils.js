@@ -242,6 +242,61 @@ diabloUtils.directive('navtable', function() {
 	    }
 	})
     };
+});
+
+diabloUtils.directive('navform', function() {
+    return function(scope, element, attr){
+	element.on("keydown", 'input, select', function(event){
+	    var form = $(this).parents('form:eq(0)');
+	    var es = form.find('input, select').filter(':visible');
+	    
+	    var i=-1, l;
+	    for (i=0, l=es.length; i<l; i++) {
+		if ($(es[i]).is(":focus")) {
+		    break;
+		}
+	    }
+	    
+	    switch(event.which) {
+	    case 37: // <Left>
+		if (i !== -1 && i !== 0) $(es[i-1]).focus();
+		break;
+	    case 39: // <Right>
+		if (i !== -1 || i !== l) $(es[i+1]).focus();
+		break;
+	    default:
+		break;
+	    }
+	})
+    };
+});
+
+diabloUtils.directive('navdiv', function() {
+    return function(scope, element, attr){
+	element.on("keydown", function(event){
+	    // console.log($(this));
+	    var es = $(this).find('input, select').filter(':visible');
+	    // console.log(es);
+	    
+	    var i=-1, l;
+	    for (i=0, l=es.length; i<l; i++) {
+	    	if ($(es[i]).is(":focus")) {
+	    	    break;
+	    	}
+	    }
+	    
+	    switch(event.which) {
+	    case 37: // <Left>
+	    	if (i !== -1 && i !== 0) $(es[i-1]).focus();
+	    	break;
+	    case 39: // <Right>
+	    	if (i !== -1 || i !== l) $(es[i+1]).focus();
+	    	break;
+	    default:
+	    	break;
+	    }
+	})
+    };
 }); 
 
 diabloUtils.directive('ngEdit', function () {

@@ -540,7 +540,8 @@ function wsaleNewProvide(
 	var sale_mode = wsaleUtils.sale_mode(shopId, base);
 	$scope.setting.print_perform = wsaleUtils.to_integer(sale_mode.charAt(3));
 	$scope.setting.hide_charge   = wsaleUtils.to_integer(sale_mode.charAt(5));
-	$scope.setting.hide_pwd      = wsaleUtils.to_integer(sale_mode.charAt(9));    
+	$scope.setting.hide_pwd      = wsaleUtils.to_integer(sale_mode.charAt(9));
+	$scope.setting.show_wprice   = wsaleUtils.to_integer(sale_mode.charAt(14));
 	
 	if (diablo_no === $scope.setting.cake_mode) {
 	    $scope.vpays = [0].concat(diablo_num2arrary($scope.setting.maling_rang)
@@ -1993,7 +1994,8 @@ function wsaleNewProvide(
 		};
 		
 		$scope.wsaleStorage.remove($scope.wsaleStorage.get_key()); 
-		$scope.refresh(); 
+		$scope.refresh();
+		$scope.focus_good_or_barcode();
 	    }
 	    
 	    if (result.ecode === 0){
@@ -2080,9 +2082,27 @@ function wsaleNewProvide(
 
     $scope.$watch("select.verificate", function(newValue, oldValue){
 	if (newValue === oldValue || angular.isUndefined(newValue)) return;
-	$scope.reset_payment(newValue);
+	// $scope.reset_payment(newValue);
 	$scope.re_calculate();
 	// $scope.reset_score();
+    });
+
+    $scope.$watch("select.wprice", function(newValue, oldValue){
+	if (angular.isUndefined(newValue) || newValue === oldValue ) return; 
+	var totalPay = 0;
+	for(var i=0, l=$scope.inventories.length; i<l; i++){
+	    var s = $scope.inventories[i];
+	    // s.$update = true;
+	    totalPay += wsaleUtils.to_decimal(s.fprice * s.sell); 
+	}
+	if (newValue) {
+	    $scope.select.verificate = diablo_round(totalPay) - wsaleUtils.to_integer(newValue);
+	}
+	else {
+	    $scope.select.verificate = 0;
+	}
+	// console.log(totalPay, $scope.select.verificate); 
+	$scope.re_calculate();
     });
     
     // var in_amount = function(amounts, inv){

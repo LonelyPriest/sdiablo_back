@@ -1,5 +1,12 @@
 var version_update = function(){
     var updates = [
+	{date: "2019-02-21",
+	 content:
+	 ["优化入库键盘操作",
+	  "优化开单入库操作",
+	  "开单增加整单一口价功能"]
+	},
+	
 	{date: "2019-01-26",
 	 content:
 	 ["优化小票打印，增加微信朋友圈二维码打印",
