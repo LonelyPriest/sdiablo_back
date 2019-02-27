@@ -1057,7 +1057,7 @@ var wsaleCalc = function(){
 		one.calc = wsaleUtils.to_decimal(one.fprice * count); 
 		should_pay += one.calc;
 
-		base_pay += diablo_price(one.tag_price, one.discount) * count;
+		base_pay += one.tag_price * count;
 		
 		show_promotions = wsaleUtils.format_promotion(one, show_promotions);
 		if (one.sid !== diablo_invalid_index){
