@@ -1,5 +1,11 @@
 var version_update = function(){
     var updates = [
+	{date: "2019-02-28",
+	 content:
+	 ["优化开单键盘操作",
+	  "估化开单时光标智能跳转能力"]
+	},
+	
 	{date: "2019-02-21",
 	 content:
 	 ["优化入库键盘操作",

@@ -823,6 +823,7 @@ var wsaleCalc = function(){
 	    var total        = 0;
 	    var abs_total    = 0;
 	    var should_pay   = 0;
+	    var base_pay     = 0;
 	    var score        = 0;
 	    
 	    var vipDiscountMode    = wsaleUtils.to_integer(vipMode.charAt(0));
@@ -1055,6 +1056,8 @@ var wsaleCalc = function(){
 		
 		one.calc = wsaleUtils.to_decimal(one.fprice * count); 
 		should_pay += one.calc;
+
+		base_pay += diablo_price(one.tag_price, one.discount) * count;
 		
 		show_promotions = wsaleUtils.format_promotion(one, show_promotions);
 		if (one.sid !== diablo_invalid_index){
@@ -1064,7 +1067,8 @@ var wsaleCalc = function(){
 
 	    // calcuate with verificate
 	    should_pay = wsaleUtils.to_decimal(should_pay);
-	    should_pay = wsaleCalc.calc_discount_of_verificate(inventories, saleMode, should_pay, verificate); 
+	    should_pay = wsaleCalc.calc_discount_of_verificate(inventories, saleMode, should_pay, verificate);
+	    base_pay = wsaleUtils.to_decimal(base_pay);
 	    score  = wsaleUtils.calc_with_score(pscores, verificate); 
 	    
 	    if (wsaleUtils.to_integer(round) === 1) {
@@ -1079,6 +1083,7 @@ var wsaleCalc = function(){
 		total:      total,
 		abs_total:  abs_total,
 		should_pay: should_pay,
+		base_pay:   base_pay,
 		score:      score,
 		pscores:    pscores
 		// rbalance:   calc_p.rbalance, 
@@ -1438,15 +1443,16 @@ var wsalePrint = function(){
 		
 		LODOP.ADD_PRINT_TEXT(top, left, 70, hFont, d.style_number); 
 		LODOP.ADD_PRINT_TEXT(top, left + 70, 35, hFont, d.tag_price.toString()); 
-		LODOP.ADD_PRINT_TEXT(top, left + 105, 35, hFont, d.total.toString()); 
-		LODOP.ADD_PRINT_TEXT(top, left + 140, left + 140, hFont, ediscount.toString());
+		LODOP.ADD_PRINT_TEXT(top, left + 105, 35, hFont, d.total.toString());
+		// LODOP.ADD_PRINT_TEXT(top, left + 140, left + 140, hFont, ediscount.toString());
+		LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString()); 
 		
 		top += 15;
 		var brand = angular.isObject(d.brand) && angular.isDefined(d.brand.name) ? d.brand.name : d.brand;
 		brand += angular.isObject(d.type) && angular.isDefined(d.type.name) ? d.type.name : d.type;
 		LODOP.ADD_PRINT_TEXT(top, left, vWidth - left, hFont, brand);
 		
-		LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, d.rprice.toString());
+		// LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, d.rprice.toString());
 
 		top += 15;
 		if (d.state === 3) {
@@ -1454,7 +1460,7 @@ var wsalePrint = function(){
 		} else {
 		    LODOP.ADD_PRINT_TEXT(top, left, vWidth - left, hFont, d.note);
 		}
-		LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString());
+		// LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString());
 
 		top += 15;
 		LODOP.ADD_PRINT_LINE(top, left, top, vWidth, 0, 1);

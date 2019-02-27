@@ -20,7 +20,7 @@
 
 	    <button class="btn btn-danger purple-stripe"
 		    x-ng-disabled="disable_refresh"
-		    x-ng-click="refresh()">挂单
+		    x-ng-click="hang_draft()">挂单
 	      <i class="glyphicon glyphicon-plus"></i></button> 
 	  </div>
 	</div>
@@ -44,7 +44,7 @@
 		  <i class="glyphicon glyphicon-barcode fg-red"></i>条码</span>
 		<form x-ng-if="setting.barcode_mode" name="bform">
 		  <div ng-class="{'has-error':bform.barcode.$invalid && !bform.barcode.$pristine}">
-		    <input class="form-control text-left"
+		    <input id="barcode" class="form-control text-left"
 			   type="text"
 			   name="barcode"
 			   x-ng-plus="auto_focus('cash')"
@@ -61,7 +61,7 @@
 		  <i class="glyphicon glyphicon-signal fg-red"></i>货号</span>
 		<form x-ng-if="!setting.scan_only" name="sform">
 		  <div ng-class="{'has-error':sform.snumber.$invalid && !sform.snumber.$pristine}">
-		    <input class="form-control text-left"
+		    <input id="snumber" class="form-control text-left"
 			   name="snumber"
 			   type="text"
 			   x-ng-plus="auto_focus('cash')"
@@ -259,11 +259,9 @@
 		  <td x-ng-if="setting.barcode_mode"></td>
 		  <td></td>
 		  <td x-ng-if="setting.check_sale"></td>
-		  <td colspan=3></td>
-		  <td class="vert-align">{{select.abs_total}}</td>
-		  <!-- <td></td> -->
-		  <!-- <td></td> -->
-		  <!-- <td x-ng-if="!setting.show_discount" colspan=2></td> -->
+		  <td colspan=2> {{select.base_pay}}</td>
+		  <td></td>
+		  <td class="vert-align">{{select.abs_total}}</td> 
 		  <td class="vert-align">{{select.should_pay}}</td>
 		  <td></td>
 		  <td></td>
@@ -375,7 +373,8 @@
 	      <select class="form-control" type="text"
 	      	      x-ng-model="select.employee"
 	      	      x-ng-change="change_employee()"
-	      	      x-ng-options="e as e.name for e in employees|filter:$viewValue">
+	      	      x-ng-options="e as e.name for e in employees|filter:$viewValue"
+		      x-ng-enter="disable_save() || save_wsale()">
 	      </select> 
 	    </div>
 	  </div>
@@ -522,10 +521,14 @@
 	    <div class="input-group">
 	      <span class="input-group-addon">
 	    	<i class="glyphicon glyphicon-ban-circle fg-red"></i>核销</span>
-	      <select class="form-control" type="text"
+	      <select x-ng-if="!setting.show_wprice" class="form-control"
 	  	      x-ng-model="select.verificate"
 	  	      x-ng-options="v for v in vpays">
 	      </select>
+	      <input x-ng-if="setting.show_wprice"
+		     class="form-control"
+		     type="text"
+	  	     x-ng-model="select.verificate" readonly />
 	    </div>
 	  </div>
 	</div>

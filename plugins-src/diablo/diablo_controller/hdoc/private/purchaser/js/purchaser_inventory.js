@@ -903,6 +903,12 @@ function purchaserInventoryNewCtrlProvide (
 				       $scope.add_inventory(stock);
 				   });
 			       },
+			       cancel_callback: function() {
+				   // reset barcode
+				   $scope.good.bcode = undefined;
+				   $scope.inventories[0] = {$edit:false, $new:true};
+			       },
+			       
 			       edit: function(){
 				   diablo_goto_page(
 				       "#/good/wgood_update"

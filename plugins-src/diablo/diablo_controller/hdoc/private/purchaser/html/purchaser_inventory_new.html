@@ -861,8 +861,8 @@
 			       x-ng-model="good.sprice"
 			       x-ng-enter=""
 			       uib-typeahead="p as p.name for p in yes_no|filter:$viewValue"/>
-			<span class="input-group-addon bg-white fg-red">*</span> 
 		      </div>
+		      <span class="input-group-addon bg-white fg-red">*</span> 
 		    </div>
 		    <div ng-if="form.gForm.sprice.$invalid && !form.gForm.sprice.$pristine">
 		      <span style="color:red">0:否;1:是</span>
@@ -1258,7 +1258,7 @@
 	      x-ng-click="params.add_exist_stock_color(cancel)">颜色</button>
       <button x-ng-if="!params.free"
 	      class="btn btn-success" x-ng-click="edit()">尺码</button>
-      <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+      <button class="btn btn-warning" x-ng-click="cancel(); params.cancel_callback()">取消</button>
     </div>
   </div>
 </script>

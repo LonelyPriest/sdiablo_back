@@ -245,56 +245,109 @@ diabloUtils.directive('navtable', function() {
 });
 
 diabloUtils.directive('navform', function() {
+    var setFoucs = function(es, direct) {
+	var i=-1, l, select;
+	for (i=0, l=es.length; i<l; i++) {
+	    if ($(es[i]).is(":focus")) {
+	    	break;
+	    }
+	}
+	
+	if ($(es[i]).is("select")) {
+	    select = $(es[i]).val();
+	    $(es[i]).on('change', function() {
+	    	$(es[i]).val(select);
+	    })
+	}
+
+	switch(direct) {
+	case 0:
+	    if (i !== -1 && i !== 0) {
+		$(es[i-1]).focus();
+		// if ($(es[i-1]).is("input"))
+		//     $(es[i-1]).select();
+	    };
+	    break;
+	case 1:
+	    if (i !== -1 || i !== l) {
+		$(es[i+1]).focus();
+		// if ($(es[i+1]).is("input"))
+		//     $(es[i+1]).select();
+	    };
+	    break;
+	default:
+	    break;
+	}
+    };
+    
     return function(scope, element, attr){
 	element.on("keydown", 'input, select', function(event){
+	    event.stopImmediatePropagation();
 	    var form = $(this).parents('form:eq(0)');
-	    var es = form.find('input, select').filter(':visible');
-	    
-	    var i=-1, l;
-	    for (i=0, l=es.length; i<l; i++) {
-		if ($(es[i]).is(":focus")) {
-		    break;
-		}
-	    }
-	    
+	    var es = form.find('input, select').filter(':visible'); 
 	    switch(event.which) {
-	    case 37: // <Left>
-		if (i !== -1 && i !== 0) $(es[i-1]).focus();
+	    case 37:  // <Left>
+		setFoucs(es, 0);
 		break;
-	    case 39: // <Right>
-		if (i !== -1 || i !== l) $(es[i+1]).focus();
+	    case 39:  // <Right>
+		setFoucs(es, 1);
 		break;
-	    default:
-		break;
-	    }
+	    } 
+	    return true;
 	})
     };
 });
 
 diabloUtils.directive('navdiv', function() {
     return function(scope, element, attr){
-	element.on("keydown", function(event){
-	    // console.log($(this));
-	    var es = $(this).find('input, select').filter(':visible');
-	    // console.log(es);
-	    
-	    var i=-1, l;
+	var setFoucs = function(es, direct) {
+	    var i=-1, l, select;
 	    for (i=0, l=es.length; i<l; i++) {
 	    	if ($(es[i]).is(":focus")) {
 	    	    break;
 	    	}
 	    }
 	    
-	    switch(event.which) {
-	    case 37: // <Left>
-	    	if (i !== -1 && i !== 0) $(es[i-1]).focus();
-	    	break;
-	    case 39: // <Right>
-	    	if (i !== -1 || i !== l) $(es[i+1]).focus();
-	    	break;
-	    default:
-	    	break;
+	    if ($(es[i]).is("select")) {
+	    	select = $(es[i]).val();
+	    	$(es[i]).on('change', function() {
+	    	    $(es[i]).val(select);
+	    	})
 	    }
+
+	   switch(direct) {
+	   case 0:
+	       if (i !== -1 && i !== 0) {
+		   $(es[i-1]).focus();
+	       }
+	       break;
+	   case 1:
+	       if (i !== -1 || i !== l) {
+		   $(es[i+1]).focus();
+		   // $(es[i+1]).focus( function() {
+		   //     if ($(this).is("input"))
+		   //     	   $(this).select();
+		   // });
+		   
+	       };
+	       break; 
+	   }
+	};
+	
+	element.on("keydown", function(event){
+	    // console.log($(this));
+	    var es = $(this).find('input, select').filter(':visible');
+	    // console.log(es); 
+	    switch(event.which) {
+	    case 37:  // <Left> 
+		setFoucs(es, 0);
+		break;
+	    case 39: // <Right>
+		setFoucs(es, 1);
+		break;
+	    }
+
+	    return true;
 	})
     };
 }); 
