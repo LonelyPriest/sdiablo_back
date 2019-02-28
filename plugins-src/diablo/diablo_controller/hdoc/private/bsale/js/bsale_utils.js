@@ -416,7 +416,6 @@ var bsaleCalc = function(){
 var gen_bsale_key = function(shop, bsaler, dateFilter){
     var now = $.now();
     return "bts-"
-    // + employee.toString()
 	+ bsaler.toString()
 	+ "-" + shop.toString()
 	+ "-" + dateFilter(now, 'mediumTime')

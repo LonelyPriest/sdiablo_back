@@ -592,8 +592,7 @@ function bsaleNewProvide(
 	dateFilter);
     
     $scope.disable_draft = function(){
-	return $scope.bsaleStorage.keys().length === 0 || $scope.inventories.length !== 0;
-	
+	return $scope.bsaleStorage.keys().length === 0 || $scope.inventories.length !== 0; 
     };
 
     $scope.hang_draft = function() {
