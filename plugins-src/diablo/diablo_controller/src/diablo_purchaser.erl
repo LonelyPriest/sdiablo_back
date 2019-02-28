@@ -2494,6 +2494,7 @@ handle_call({adjust_price, Merchant, Inventories, Attrs}, _From, State) ->
 			  1 -> ", score=-1";
 			  0 -> []
 		      end
+		   ++ ", promotion=-1"
 		   ++ " where merchant=" ++ ?to_s(Merchant)
 		   ++ " and " ++ ?utils:to_sqls(proplists, {<<"shop">>, Shop})
 		   ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"

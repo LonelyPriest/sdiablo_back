@@ -44,7 +44,7 @@
 		  <i class="glyphicon glyphicon-barcode fg-red"></i>条码</span>
 		<form x-ng-if="setting.barcode_mode" name="bform">
 		  <div ng-class="{'has-error':bform.barcode.$invalid && !bform.barcode.$pristine}">
-		    <input class="form-control text-left"
+		    <input id="barcode" class="form-control text-left"
 			   type="text"
 			   name="barcode"
 			   x-ng-edit
@@ -61,7 +61,7 @@
 		  <i class="glyphicon glyphicon-signal fg-red"></i>货号</span>
 		<form x-ng-if="!setting.scan_only" name="sform">
 		  <div ng-class="{'has-error':sform.snumber.$invalid && !sform.snumber.$pristine}">
-		    <input class="form-control text-left"
+		    <input id="snumber" class="form-control text-left"
 			   name="snumber"
 			   type="text"
 			   x-ng-edit
@@ -93,7 +93,8 @@
 	<div class="panel panel-default"> 
 	  <div class="table-responsive">
 	    <!--EBGIN table supplier-->
-	    <table class="table table-bordered table-striped table-hover table-condensed table-advanced">
+	    <table class="table table-bordered
+			  table-striped table-hover table-condensed table-advanced" navtable>
 	      <thead>
 		<tr>
 		  <th class="text-center">序号</th>
@@ -188,12 +189,6 @@
 			       x-ng-pattern="pattern.comment"
 			       x-ng-model="inv.comment"/>
 		    </td>
-		  <!-- <td class="vert-align"> -->
-		  <!--   <div x-ng-if="!inv.free_color_size"> -->
-		  <!--     <span x-ng-bind="inv.note" class="bg-blue"></span> -->
-		  <!--   </div> -->
-		  <!--   <div x-ng-if="inv.free_color_size">-</div> -->
-		  <!-- </td> -->
 		  
 		  <td class="text-left vert-align"> 
 		    <div x-ng-if="inv.$edit">
@@ -204,12 +199,7 @@
 			
 			<button class="btn diablo-input-button btn-danger"
 				x-ng-click="delete_inventory(inv)">删除
-			  <i class="glyphicon glyphicon-erase"></i></button>
-
-			<button class="btn diablo-input-button green"
-				x-ng-if="setting.gift_sale && inv.state===2"
-				x-ng-click="gift_sale(inv)">赠送
-			  <i class="glyphicon glyphicon-gift"></i></button>
+			  <i class="glyphicon glyphicon-erase"></i></button> 
 		      </div>
 
 		      <div class="btn-group btn-group-solid" x-ng-if="inv.free_update">

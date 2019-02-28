@@ -70,9 +70,9 @@
 	    
 	    <div class="table-responsive">
 	      <!--EBGIN table supplier-->
-	      <table id="t_wreject"
-		     class="table table-bordered table-striped table-hover table-condensed table-advanced">
-		<thead class="stick-thead" fsm-sticky-header scroll-body="'#t_wreject'" scroll-stop="50">
+	      <table class="table table-bordered
+			    table-striped table-hover table-condensed table-advanced" navtable>
+		<thead>
 		  <tr>
 		    <th class="text-center">序号</th>
 		    <th class="text-center">货号/品名/品类</th>
@@ -88,7 +88,7 @@
 		<tbody>
 		  <tr class="text-center" ng-repeat="inv in inventories">
 		    
-		    <td class="vert-align">{{inv.order_id}}</td>
+		    <td class="col-md-1 vert-align">{{inv.order_id}}</td>
 		    <td class="col-md-2 text-left vert-align">
 		      <span>{{inv.full_name}}</span> 
 		    </td>
@@ -99,8 +99,7 @@
 		      <div ng-if="!inv.free_update">
 		    	{{inv.fprice}}
 		      </div>
-		      <form name="inv.form.fprice"
-		    	    ng-if="!inv.$new && inv.free_update">
+		      <form name="inv.form.fprice" ng-if="!inv.$new && inv.free_update">
 		    	<div ng-class="{'has-error':inv.form.fprice.$invalid && !inv.form.fprice.$pristine}">
 		    	  <input class="form-control"
 		    		 type="number" step="0.01"
@@ -145,15 +144,15 @@
 		      </form>
 		    </td>
 		    
-		    <td class="vert-align">{{inv.calc}}</td>
-		    <td class="vert-align col-md-1">
+		    <td class="col-md-1 vert-align">{{inv.calc}}</td>
+		    <td class="vert-align col-md-2">
 			<input class="form-control input-xs"
 			       type="text"
 			       placeholder="备注"
 			       x-ng-model="inv.comment"/>
 		    </td>
 		    
-		    <td class="text-left vert-align"> 
+		    <td class="col-md-2 text-left vert-align"> 
 		      <span ng-if="inv.$edit">
 			<a class="btn diablo-input-button btn-primary"
 			   x-ng-if="!inv.free_update"
@@ -164,17 +163,7 @@
 			<a class="btn diablo-input-button yellow"
 			   x-ng-if="!inv.free_update"
 			   x-ng-click="update_inventory(inv)">修改
-			  <i class="glyphicon glyphicon-edit"></i></a>
-
-			<a class="btn diablo-input-button green"
-			   x-ng-if="!inv.free_update"
-			   x-ng-click="gift(inv)">赠送
-			  <i class="glyphicon glyphicon-gift"></i></a>
-			
-			<a class="btn diablo-input-button btn-primary"
-			   x-ng-if="!inv.free_update"
-			   x-ng-click="stock_info(inv)">库存
-			  <i class="glyphicon glyphicon-leaf"></i></a>
+			  <i class="glyphicon glyphicon-edit"></i></a> 
 
 			<a class="btn diablo-input-button btn-danger"
 			   x-ng-if="!inv.free_update"
@@ -197,11 +186,11 @@
 		    </td>
 		  </tr>
 
-		  <tr x-ng-if="select.total!==0"class="text-center">
-		    <td colspan="5"></td>
+		  <tr x-ng-if="select.total!==0" class="text-center">
+		    <td colspan="4"></td>
 		    <td class="vert-align">{{select.total}}</td>
 		    <td class="vert-align">{{select.should_pay}}</td>
-		    <td></td>
+		    <td colspan="2"></td>
 		  </tr>
 		</tbody> 
 	      </table> <!--END supplier table-->

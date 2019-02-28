@@ -195,6 +195,7 @@ function updateBSaleDetailCtrlProvide(
 	
 	add.org_price    = src.org_price;
 	add.tag_price    = src.tag_price;
+	add.vir_price    = src.vir_price;
 	add.ediscount    = src.ediscount;
 	add.discount     = src.discount;
 	
@@ -625,11 +626,17 @@ function updateBSaleDetailCtrlProvide(
     
     $scope.add_inventory = function(inv){
 	// console.log(inv);
+	inv.fdiscount  = inv.discount;
+	inv.fprice     = diablo_price($scope.get_valid_price(inv), inv.discount);
+	inv.o_fdiscount = inv.discount;
+	inv.o_fprice    = inv.fprice;
+	
 	if ($scope.setting.check_sale == diablo_no && inv.free === 0){
 	    inv.free_color_size = true;
-	    inv.fdiscount       = inv.discount;
-	    inv.fprice          = inv.tag_price;
-	    inv.amounts         = [{cid:0, size:0}];
+	    inv.fdiscount  = inv.discount;
+	    // inv.fprice     = diablo_price($scope.get_valid_price(inv), inv.discount); 
+	    // inv.fprice  = inv.tag_price;
+	    inv.amounts    = [{cid:0, size:0}];
 	} else {
 	    var promise   = diabloPromise.promise;
 	    var condition = {style_number: inv.style_number,
@@ -637,8 +644,7 @@ function updateBSaleDetailCtrlProvide(
 			     shop: $scope.select.shop.id}; 
 	    var calls     = []; 
 	    calls.push(promise(
-		diabloFilter.list_purchaser_inventory,
-		condition)()); 
+		diabloFilter.list_purchaser_inventory, condition)()); 
 	    $q.all(calls).then(function(data){
 		console.log(data);
 		// data[0] is the inventory belong to the shop
@@ -657,8 +663,8 @@ function updateBSaleDetailCtrlProvide(
 		console.log(inv.colors);
 		console.log(inv.amounts); 
 
-		inv.fdiscount = inv.discount; 
-		inv.fprice      = inv.tag_price;
+		// inv.fdiscount = inv.discount;
+		// inv.fprice   = inv.tag_price;
 
 		if(inv.free === 0){
 		    inv.free_color_size = true;
