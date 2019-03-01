@@ -1001,7 +1001,28 @@ function bsaleNewProvide(
 	    }
 	}
 	return undefined;
-    }; 
+    };
+
+    $scope.cut_bsale = function() {
+	var callback = function(params) {
+	    console.log(params);
+	    for (var i=0, l=$scope.inventories.length; i<l; i++) {
+		$scope.inventories[i].fdiscount = bsaleUtils.to_float(params.discount);
+		$scope.inventories[i].$update = true;
+	    }
+
+	    $scope.re_calculate();
+	};
+	
+	dialog.edit_with_modal(
+	    "cut-bsale.html",
+	    'small',
+	    callback,
+	    undefined,
+	    {pattern: {discount:$scope.pattern.discount},
+	     discount:undefined}
+	)
+    };
     
     $scope.re_calculate = function(){
 	$scope.select.total        = 0;

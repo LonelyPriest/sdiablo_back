@@ -1,4 +1,5 @@
-<div class="row hidden-print"> 
+<div class="row hidden-print"
+     ng-shortcut key="120" go="cut_bsale()">
   <div class="col-md-8"> 
     <div class="portlet box purple diablo-margin-bottom-5">
       
@@ -15,10 +16,12 @@
 	    
 	    <button class="btn btn-info purple-stripe"
 		    x-ng-disabled="disable_draft()"
+		    ng-shortcut
 		    x-ng-click="list_draft()">取单<i class="glyphicon glyphicon-send"></i>
 	    </button>
 
 	    <button class="btn btn-danger purple-stripe"
+		    ng-shortcut
 		    x-ng-disabled="disable_refresh"
 		    x-ng-click="hang_draft()">挂单
 	      <i class="glyphicon glyphicon-plus"></i></button> 
@@ -50,6 +53,7 @@
 			   x-ng-edit
 			   x-ng-model="sale.barcode"
 			   placeholder="条码"
+			   x-ng-plus="auto_focus('cash')"
 			   focus-auto="focus_attr.barcode"
 			   x-ng-pattern="pattern.barcode"
 			   barcode-scanner
@@ -68,6 +72,7 @@
 			   x-ng-model="sale.style_number"
 			   focus-auto="focus_attr.style_number"
 			   placeholder="货号/品类"
+			   x-ng-plus="auto_focus('cash')"
 			   typeahead-editable="false"
 			   typeahead-on-select="on_select_good($item, $model, $label)"
 			   typeahead-wait-ms="300"
@@ -254,7 +259,10 @@
 	  <span>结帐</span> 
 	</div>
 
-	<div class="actions"> 
+	<div class="actions">
+	  <button class="btn red" 
+	    	  x-ng-click="cut_bsale()">折扣<i class="glyphicon glyphicon-sort-by-attributes-alt"></i></button>
+	  
 	  <button class="btn btn-success"
 	    	  x-ng-disabled="disable_save()"
 	    	  x-ng-click="save_bsale()">保存<i class="glyphicon glyphicon-save"></i></button>
@@ -674,6 +682,51 @@
     <button class="btn btn-primary"
 	    x-ng-disabled="!params.valid(params.drafts)"
 	    x-ng-click="ok()">确定</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
+</script>
+
+
+<script type="text/ng-template" id="cut-bsale.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button> 
+    <h4 class="modal-title"><span class="label label-sm label-primary">整单折扣</span></h4>
+  </div>
+  
+  <div class="modal-body">
+    <form class="form-horizontal" name="cForm" novalidate>
+      <div class="form-body">
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">折扣</label>
+	  <div class="col-sm-8 col-md-8"> 
+	    <div class="input-group">
+	      <div x-ng-class="{'has-error': cForm.discount.$invalid && !cForm.discount.$pristine}">
+		<input class="form-control" type="number"
+		       name="discount"
+		       required
+		       x-ng-pattern="params.pattern.discount"
+		       focus-auto="true"
+		       placeholder="请输入整单折扣"
+		       class="form-control"
+		       x-ng-model="params.discount"
+		       x-ng-enter="cForm.$invalid || ok()"/>
+	      </div>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	    <div ng-show="cForm.discount.$invalid && !cForm.discount.$pristine">
+	      <span class="fg-red">折扣为两位整数</span>
+	    </div>
+	  </div>
+	</div> 
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary" x-ng-disabled="cForm.$invalid" x-ng-click="ok()">确定</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>
 </script>
