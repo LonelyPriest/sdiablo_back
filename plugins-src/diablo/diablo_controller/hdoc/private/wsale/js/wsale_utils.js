@@ -1011,7 +1011,32 @@ var wsaleCalc = function(){
 			    stock.fdiscount = wsaleUtils.to_decimal(stock.discount - vdiscount);
 			    stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
 			}); 
-		    };
+		    }
+		    else if (pm.rule_id === 5) {
+			count = 0, totalPay = 0, rmoney = 0, vdiscount = 0, payAll = 0;
+			var c = 0;
+			angular.forEach(s.stocks, function(stock) {
+			    c = wsaleCalc.get_inventory_count(stock, saleMode);
+			    count += c
+			    totalPay += diablo_price(stock.tag_price, stock.discount) * c;
+			    payAll += stock.tag_price * c;
+			}); 
+			
+			var scounts = pm.scount.split(diablo_semi_seperator);
+			var sminus = pm.sdiscount.split(diablo_semi_seperator);
+			
+			for (var i=0, l=scounts.length; i<l; i++) {
+	    		    if ( Math.abs(count) >= wsaleUtils.to_integer(scounts[i]) ) {
+	    			rmoney = wsaleUtils.to_integer(sminus[i]);
+	    		    }
+			}
+
+			vdiscount = diablo_discount(payAll - rmoney, payAll); 
+			angular.forEach(s.stocks, function(stock) {
+			    stock.fdiscount = wsaleUtils.to_decimal(stock.discount - vdiscount);
+			    stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
+			}); 
+		    } 
 		} else {
 		    angular.forEach(s.stocks, function(stock) {
 			stock.fdiscount = stock.discount;

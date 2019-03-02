@@ -53,8 +53,8 @@ function stockPromotionNewProvide(
 	    consume:  rule_id === 1 || rule_id === 2 ? $scope.promotion.consume : undefined,
 	    reduce:   rule_id === 1 || rule_id === 2 ? $scope.promotion.reduce : undefined,
 
-	    scount:   rule_id === 3 || rule_id === 4 ? $scope.promotion.scount : undefined,
-	    sdiscount:rule_id === 3 || rule_id === 4 ? $scope.promotion.sdiscount : undefined, 
+	    scount:   rule_id === 3 || rule_id === 4 || rule_id === 5 ? $scope.promotion.scount : undefined,
+	    sdiscount:rule_id === 3 || rule_id === 4 || rule_id === 5 ? $scope.promotion.sdiscount : undefined, 
 
 	    sdate:    dateFilter($scope.promotion.sdate, "yyyy-MM-dd"),
 	    edate:    dateFilter($scope.promotion.edate, "yyyy-MM-dd"),
@@ -177,7 +177,9 @@ function stockPromotionDetailProvide(
 			      && diablo_is_same(new_promotion.cmoney, old_promotion.cmoney)
 			      && diablo_is_same(new_promotion.rmoney, old_promotion.rmoney))
 			 return false;
-		     else if ((3 === new_promotion.rule_id || 4 === new_promotion.rule_id)
+		     else if ((3 === new_promotion.rule_id
+			       || 4 === new_promotion.rule_id
+			       || 5 === new_promotion.rule_id)
 			      && diablo_is_same(new_promotion.scount, old_promotion.scount)
 			      && diablo_is_same(new_promotion.sdiscount, old_promotion.sdiscount))
 			 return false;

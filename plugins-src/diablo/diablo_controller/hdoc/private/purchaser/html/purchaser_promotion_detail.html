@@ -49,7 +49,7 @@
 		    <th>赠送数量</th>
 
 		    <th>购买数量</th>
-		    <th>折扣/金额减免</th>
+		    <th>折扣/少钱/售价</th>
 		    
 		    <th>价格模式</th>
 		    <th>会员折扣</th>
@@ -102,6 +102,7 @@
 		       <div x-ng-switch on="p.rule.id">
 			<span x-ng-switch-when=3>{{p.scount}}</span>
 			<span x-ng-switch-when=4>{{p.scount}}</span>
+			<span x-ng-switch-when=5>{{p.scount}}</span>
 			<span x-ng-switch-default>-</span>
 		      </div>
 		    </td>
@@ -109,6 +110,7 @@
 		       <div x-ng-switch on="p.rule.id">
 			<span x-ng-switch-when=3>{{p.sdiscount}}</span>
 			<span x-ng-switch-when=4>{{p.sdiscount}}</span>
+			<span x-ng-switch-when=5>{{p.sdiscount}}</span>
 			<span x-ng-switch-default>-</span>
 		      </div>
 		    </td>
@@ -268,7 +270,9 @@
 	      </div> 
 	    </div>
 	    
-	    <div x-ng-if="params.promotion.rule_id===3 || params.promotion.rule_id===4"
+	    <div x-ng-if="params.promotion.rule_id===3
+			  || params.promotion.rule_id===4
+			  || params.promotion.rule_id===5"
 		 class="form-group">
 	      <label class="col-sm-2 col-md-2 control-label">购买数量</label>
 	      <div class="col-sm-8 col-md-8">
@@ -290,16 +294,18 @@
 	      </div> 
 	    </div>
 
-	    <div x-ng-if="params.promotion.rule_id===3 || params.promotion.rule_id===4"
+	    <div x-ng-if="params.promotion.rule_id===3
+			  || params.promotion.rule_id===4
+			  || params.promotion.rule_id===5"
 		 class="form-group">
-	      <label class="col-sm-2 col-md-2 control-label">折扣/金额</label>
+	      <label class="col-sm-2 col-md-2 control-label">折扣/减免/售价</label>
 	      <div class="col-sm-8 col-md-8">
 		<div class="input-group">
 		  <div x-ng-class="{'has-error':pForm.dm.$invalid && !pForm.dm.$pristine}">
 		    <input type="text"
 			   class="form-control"
 			   name="dm"
-			   placeholder="折扣/减免金额,用分号隔开"
+			   placeholder="折扣/减免金额/售价,用分号隔开"
 			   required
 			   x-ng-model="params.promotion.sdiscount"
 			   x-ng-pattern="params.pattern.semi_number"/>

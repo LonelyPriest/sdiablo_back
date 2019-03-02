@@ -362,7 +362,8 @@ function stockConfg(angular){
 	    {name: "金额减免", id:1, remakr: "交易金额达到目标值减免一定金额"},
 	    {name: "买M送N",   id:2, remakr: "同一类型的产品买M年送N件"},
 	    {name: "M件N折",   id:3, remakr: "一件8折二件7折"},
-	    {name: "M件减免N", id:4, remakr: "一件少50二件少100"}
+	    {name: "M件减N", id:4, remakr: "一件少50二件少100"},
+	    {name: "M件N钱",   id:5, remakr: "一件100二件80"},
 	];
 
 	this.promotion_prules = [

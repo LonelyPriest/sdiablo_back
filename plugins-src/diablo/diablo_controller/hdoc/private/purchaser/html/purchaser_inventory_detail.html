@@ -450,8 +450,8 @@
 	    <th>金额/购买</th>
 	    <th>减免/赠送</th>
 
-	    <th>购买数量</th>
-	    <th>折扣/金额</th>
+	    <th>数量</th>
+	    <th>折扣/减钱/售价</th>
 		    
 	    <th>开始日期</th>
 	    <th>结束日期</th> 
@@ -476,7 +476,8 @@
 		<span x-ng-switch-when=1>金额减免</span>
 		<span x-ng-switch-when=2>买M送N</span>
 		<span x-ng-switch-when=3>买M件N折</span>
-		<span x-ng-switch-when=4>买M件减免</span>
+		<span x-ng-switch-when=4>买M件减N</span>
+		<span x-ng-switch-when=5>买M件售N</span>
 	      </div>
 	    </td>
 	    <td class="vert-align">
@@ -505,6 +506,7 @@
 	      <div x-ng-switch on="p.rule_id">
 		<span x-ng-switch-when=3>{{p.scount}}</span>
 		<span x-ng-switch-when=4>{{p.scount}}</span>
+		<span x-ng-switch-when=5>{{p.scount}}</span>
 		<span x-ng-switch-default>-</span>
 	      </div>
 	    </td>
@@ -513,6 +515,7 @@
 	      <div x-ng-switch on="p.rule_id">
 		<span x-ng-switch-when=3>{{p.sdiscount}}</span>
 		<span x-ng-switch-when=4>{{p.sdiscount}}</span>
+		<span x-ng-switch-when=5>{{p.sdiscount}}</span>
 		<span x-ng-switch-when=0>-</span>
 	      </div>
 	    </td> 

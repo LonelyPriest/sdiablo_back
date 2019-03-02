@@ -78,12 +78,14 @@ handle_call({new_promotion, Merchant, Attrs}, _From, State) ->
     SCount  = case Rule of
 		  3 -> ?v(<<"scount">>, Attrs, []);
 		  4 -> ?v(<<"scount">>, Attrs, []);
+		  5 -> ?v(<<"scount">>, Attrs, []);
 		  _ -> []
 	      end,
 
     SDiscount  = case Rule of
 		     3 -> ?v(<<"sdiscount">>, Attrs, []);
 		     4 -> ?v(<<"sdiscount">>, Attrs, []);
+		     5 -> ?v(<<"sdiscount">>, Attrs, []);
 		     _ -> []
 	      end,
     
@@ -107,6 +109,13 @@ handle_call({new_promotion, Merchant, Attrs}, _From, State) ->
 		      ++ " and rule=4"
 		      ++ " and scount=\'" ++ ?to_s(SCount) ++ "\'"
 		      ++ " and sdiscount=\'" ++ ?to_s(SDiscount) ++ "\'";
+	      5 ->
+		  "select id, name from w_promotion"
+		      " where merchant=" ++ ?to_s(Merchant)
+		      ++ " and rule=5"
+		      ++ " and scount=\'" ++ ?to_s(SCount) ++ "\'"
+		      ++ " and sdiscount=\'" ++ ?to_s(SDiscount) ++ "\'";
+	      
 	      _ ->
 		  "select id, name from w_promotion"
 		      " where merchant=" ++ ?to_s(Merchant)

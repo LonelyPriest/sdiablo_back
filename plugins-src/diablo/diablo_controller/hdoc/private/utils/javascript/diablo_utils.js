@@ -246,6 +246,7 @@ diabloUtils.directive('navtable', function() {
 
 diabloUtils.directive('navform', function() {
     var setFoucs = function(es, direct) {
+	// console.log(ngModelCtrl);
 	var i=-1, l, select;
 	for (i=0, l=es.length; i<l; i++) {
 	    if ($(es[i]).is(":focus")) {
@@ -253,12 +254,14 @@ diabloUtils.directive('navform', function() {
 	    }
 	}
 	
-	if ($(es[i]).is("select")) {
-	    select = $(es[i]).val();
-	    $(es[i]).on('change', function() {
-	    	$(es[i]).val(select);
-	    })
-	}
+	// if ($(es[i]).is("select")) {
+	//     select = $(es[i]).val();
+	//     $(es[i]).on('change', function(event) {
+	// 	event.preventDefault();
+	// 	$(es[i]).get(0).selectedIndex = parseInt(select);
+	// 	ngModelCtrl.$render();
+	//     })
+	// }
 
 	switch(direct) {
 	case 0:
@@ -280,21 +283,26 @@ diabloUtils.directive('navform', function() {
 	}
     };
     
-    return function(scope, element, attr){
-	element.on("keydown", 'input, select', function(event){
-	    event.stopImmediatePropagation();
-	    var form = $(this).parents('form:eq(0)');
-	    var es = form.find('input, select').filter(':visible'); 
-	    switch(event.which) {
-	    case 37:  // <Left>
-		setFoucs(es, 0);
-		break;
-	    case 39:  // <Right>
-		setFoucs(es, 1);
-		break;
-	    } 
-	    return true;
-	})
+    return {
+	restrict: 'AE',
+	link: function(scope, element, attr) {
+	    // console.log(element, attr, ngModelCtrl);
+	    element.on("keydown", 'input', function(event){
+		event.stopImmediatePropagation();
+		var form = $(this).parents('form:eq(0)');
+		var es = form.find('input').filter(':visible'); 
+		switch(event.which) {
+		case 37:  // <Left>
+		    setFoucs(es, 0);
+		    break;
+		case 39:  // <Right>
+		    setFoucs(es, 1);
+		    break;
+		} 
+		return true;
+	    })
+	}
+	
     };
 });
 
@@ -308,12 +316,12 @@ diabloUtils.directive('navdiv', function() {
 	    	}
 	    }
 	    
-	    if ($(es[i]).is("select")) {
-	    	select = $(es[i]).val();
-	    	$(es[i]).on('change', function() {
-	    	    $(es[i]).val(select);
-	    	})
-	    }
+	    // if ($(es[i]).is("select")) {
+	    // 	select = $(es[i]).val();
+	    // 	$(es[i]).on('change', function() {
+	    // 	    $(es[i]).val(select);
+	    // 	})
+	    // }
 
 	   switch(direct) {
 	   case 0:
@@ -336,7 +344,7 @@ diabloUtils.directive('navdiv', function() {
 	
 	element.on("keydown", function(event){
 	    // console.log($(this));
-	    var es = $(this).find('input, select').filter(':visible');
+	    var es = $(this).find('input').filter(':visible');
 	    // console.log(es); 
 	    switch(event.which) {
 	    case 37:  // <Left> 

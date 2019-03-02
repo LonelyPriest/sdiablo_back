@@ -1,5 +1,4 @@
-<div class="row hidden-print"
-     ng-shortcut key="120" go="cut_bsale()">
+<div class="row hidden-print">
   <div class="col-md-8"> 
     <div class="portlet box purple diablo-margin-bottom-5">
       
@@ -53,7 +52,7 @@
 			   x-ng-edit
 			   x-ng-model="sale.barcode"
 			   placeholder="条码"
-			   x-ng-plus="auto_focus('cash')"
+			   x-ng-plus="focus_cash()"
 			   focus-auto="focus_attr.barcode"
 			   x-ng-pattern="pattern.barcode"
 			   barcode-scanner
@@ -72,7 +71,7 @@
 			   x-ng-model="sale.style_number"
 			   focus-auto="focus_attr.style_number"
 			   placeholder="货号/品类"
-			   x-ng-plus="auto_focus('cash')"
+			   x-ng-plus="focus_cash()"
 			   typeahead-editable="false"
 			   typeahead-on-select="on_select_good($item, $model, $label)"
 			   typeahead-wait-ms="300"
@@ -260,7 +259,8 @@
 	</div>
 
 	<div class="actions">
-	  <button class="btn red" 
+	  <button class="btn red"
+		  x-ng-disabled="disable_start_sale()"
 	    	  x-ng-click="cut_bsale()">折扣<i class="glyphicon glyphicon-sort-by-attributes-alt"></i></button>
 	  
 	  <button class="btn btn-success"
@@ -269,7 +269,7 @@
 	</div>
       </div>
 
-      <div class="portlet-body">
+      <div class="portlet-body" navdiv>
 	<div class="row diablo-good-form-group">
 	  <div class="col-xs-12 col-md-12">
 	    <div class="input-group">
@@ -315,12 +315,13 @@
 	      <form name="select.form.cashForm">
 		<div ng-class="{'has-error':select.form.cashForm.$invalid
 			       && !select.form.cashForm.$pristine}">
-	  	  <input class="form-control"
+	  	  <input id="cash_payment" class="form-control"
 			 type="number" step="0.01"
 			 disable-key
 			 x-ng-edit
 			 focus-auto="focus_attr.cash"
 	  		 x-ng-model="select.cash"
+			 x-ng-plus="focus_by_element()"
 			 x-ng-pattern="pattern.money"
 			 placeholder="现金"
 			 x-ng-enter="disable_save() || save_bsale()"/>
@@ -342,8 +343,8 @@
 			 type="number" step="0.01"
 			 disable-key
 			 x-ng-edit
-			 focus-auto="focus_attr.card"
 			 x-ng-pattern="pattern.money"
+			 x-ng-plus="focus_by_element()"
 	  		 x-ng-model="select.card"
 			 placeholder="刷卡"
 			 x-ng-enter="disable_save() || save_bsale()"/>
@@ -364,7 +365,7 @@
 			 type="number" step="0.01"
 			 disable-key
 			 x-ng-edit
-			 focus-auto="focus_attr.wxin"
+			 x-ng-plus="focus_cash()"
 			 x-ng-pattern="pattern.money"
 	  		 x-ng-model="select.wxin"
 			 placeholder="微/支"

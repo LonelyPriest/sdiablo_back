@@ -1,5 +1,10 @@
 var version_update = function(){
     var updates = [
+	{date: "2019-03-02",
+	 content:
+	 ["增加买M件不同售价的促销方案"]
+	},
+	
 	{date: "2019-02-28",
 	 content:
 	 ["优化开单键盘操作",

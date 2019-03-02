@@ -378,6 +378,7 @@ function bsaleNewProvide(
 	} 
     };
 
+
     $scope.disable_start_sale = function() {
 	return $scope.inventories.length === 0;
     };
@@ -449,6 +450,10 @@ function bsaleNewProvide(
 	    document.getElementById("snumber").focus();
 	}
     };
+
+    $scope.focus_cash = function(payment) {
+	document.getElementById("cash_payment").focus();
+    }
     
     $scope.focus_good_or_barcode();
     // console.log($scope.focus_attr);
