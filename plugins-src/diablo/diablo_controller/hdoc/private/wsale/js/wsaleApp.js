@@ -1898,7 +1898,22 @@ function wsaleNewProvide(
 	    // console.log(index);
 	    if (diablo_invalid_index !== index) {
 		var existSale = added[index];
-		existSale.sell_total += wsaleUtils.to_integer(add.sell)
+		existSale.sell_total += wsaleUtils.to_integer(add.sell);
+		existSale.all_tagprice += add.tag_price;
+		existSale.all_fprice += add.fprice;
+		existSale.all_rprice += add.rprice;
+		
+		// reset fdiscount
+		if (existSale.fdiscount !== add.fdiscount) {
+		    existSale.fdiscount = diablo_discount(existSale.all_fprice, existSale.all_tagprice);
+		    existSale.fprice = diablo_price(existSale.tag_price, existSale.fdiscount);
+		    existSale.rprice = diablo_price(existSale.fprice, existSale.rdiscount);
+		}
+		
+		// if (existSale.rdiscount !== add.rdiscount) {
+		//     existSale.rdiscount = diablo_discount(existSale.all_rprice, existSale.all_fprice);
+		//     existSale.rprice = diablo_price(existSale.fprice, existSale.rdiscount);
+		// }
 		
 		var details1 = get_sale_detail(add.amounts);
 		var existDetails = existSale.amounts;
@@ -1941,6 +1956,11 @@ function wsaleNewProvide(
 		    rprice      : add.rprice,
 		    fdiscount   : add.fdiscount,
 		    rdiscount   : add.rdiscount,
+
+		    all_fprice  : add.fprice,
+		    all_rprice  : add.rprice,
+		    all_tagprice: add.tag_price,
+		    
 		    stock       : add.total,
 		    
 		    path        : sets(add.path), 

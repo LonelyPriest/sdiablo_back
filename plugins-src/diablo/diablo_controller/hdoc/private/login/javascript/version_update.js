@@ -1,5 +1,11 @@
 var version_update = function(){
     var updates = [
+	{date: "2019-03-11",
+	 content:
+	 ["修正开单时同一货品不能以不同价格出售的问题",
+	  "优化盘点机App，增加同一货品扫描次数的显示"]
+	},
+	
 	{date: "2019-03-02",
 	 content:
 	 ["增加买M件不同售价的促销方案"]
