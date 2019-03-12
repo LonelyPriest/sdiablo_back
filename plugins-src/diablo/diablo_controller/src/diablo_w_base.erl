@@ -983,7 +983,8 @@ sys_config() ->
 	      %%[1]:add scan mode when stock_in
 	      %%[2]:add scan mode when stock_out
 	      %%[3]:add scan mode when stock_transfer
-	      {"scan_only",         "扫码模式",           "0000", "0"},
+	      %%[4]:foucs styleNumber when barcode use
+	      {"scan_only",         "扫码模式",           "00000", "0"},
 	      %% {"auto_level",        "会员自动升级",       "0",    "0"},
 	      {"maling_rang",       "抹零范围",           "3",    "0"},
 	      %% 1: clothes mode, 2: child mode, 3: home mode

@@ -662,7 +662,7 @@ function purchaserInventoryTransferFromDetailCtrlProvide (
     
     diabloFilter.reset_field();
     diabloFilter.add_field("fshop",    $scope.from_shops);
-    // diabloFilter.add_field("tshop",     user.sortShops);
+    diabloFilter.add_field("tshop",    filterShop);
     // diabloFilter.add_field("firm",     filterFirm);
     diabloFilter.add_field("employee", filterEmployee);
     diabloFilter.add_field("rsn", []); 
@@ -710,11 +710,15 @@ function purchaserInventoryTransferFromDetailCtrlProvide (
     $scope.do_search = function(page){
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
 	    console.log(search);
-	    if ((angular.isUndefined(search.fshop)
-		 || !search.fshop || search.fshop.length === 0)){
-		search.fshop = $scope.from_shops.length
-		    === 0 ? undefined : $scope.shopIds;
-	    };
+	    if (angular.isUndefined(search.fshop)
+		|| (angular.isArray(search.fshop) && search.fshop.length === 0)) {
+		search.fshop = $scope.from_shops.length === 0 ? undefined : $scope.shopIds; 
+	    }
+	    
+	    if (angular.isUndefined(search.tshop)
+		|| (angular.isArray(search.tshop) && search.tshop.length === 0)) {
+		search.tshop = undefined; 
+	    }
 
 	    localStorageService.set(
 		diablo_key_inventory_transfer,
@@ -830,8 +834,9 @@ function purchaserInventoryTransferToDetailCtrlProvide (
     
     diabloFilter.reset_field();
     // diabloFilter.add_field("rsn", []);
-    // diabloFilter.add_field("fshop",     user.sortShops);
     diabloFilter.add_field("tshop",     $scope.to_shops);
+    diabloFilter.add_field("fshop",     filterShop);
+
     // diabloFilter.add_field("firm",     filterFirm);
     diabloFilter.add_field("employee", filterEmployee); 
 
@@ -878,16 +883,14 @@ function purchaserInventoryTransferToDetailCtrlProvide (
     
     $scope.do_search = function(page){
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
-	    // if ((angular.isUndefined(search.fshopo)
-	    // 	 || !search.fshop || search.fshop.length === 0)){
-	    // 	search.fshop = user.sortShops.length
-	    // 	    === 0 ? undefined : user.shopIds;
-	    // };
-	    
-	    if ((angular.isUndefined(search.tshop)
-	    	 || !search.tshop || search.tshop.length === 0)){
-	    	search.tshop = $scope.to_shops.length
-	    	    === 0 ? undefined : $scope.shopIds;
+	    if (angular.isUndefined(search.tshop)
+		|| (angular.isArray(search.tshop) && search.tshop.length === 0)){
+	    	search.tshop = $scope.to_shops.length === 0 ? undefined : $scope.shopIds;
+	    }
+
+	    if (angular.isUndefined(search.fshop)
+		|| (angular.isArray(search.fshop) && search.fshop.length === 0)) {
+		search.fshop = undefined; 
 	    }
 
 	    localStorageService.set(
@@ -907,12 +910,9 @@ function purchaserInventoryTransferToDetailCtrlProvide (
 		    $scope.total_amounts = result.t_amount;
 		}
 		angular.forEach(result.data, function(d){
-		    d.fshop = diablo_get_object(
-			d.fshop_id, filterShop);
-		    d.tshop = diablo_get_object(
-			d.tshop_id, $scope.to_shops);
-		    d.employee = diablo_get_object(
-			d.employee_id, filterEmployee);
+		    d.fshop = diablo_get_object(d.fshop_id, filterShop);
+		    d.tshop = diablo_get_object(d.tshop_id, $scope.to_shops);
+		    d.employee = diablo_get_object(d.employee_id, filterEmployee);
 		})
 		$scope.records = result.data;
 		diablo_order_page(

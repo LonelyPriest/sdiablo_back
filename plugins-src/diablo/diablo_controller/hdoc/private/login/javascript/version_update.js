@@ -1,5 +1,17 @@
 var version_update = function(){
     var updates = [
+	{date: "2019-03-12",
+	 content:
+	 ["修正买M件N钱促销方式，当大于M件时，钱不改变的问题",
+	  "修正库存在大类条件下无法导出的问题",
+	  "N倍充值时，增加货品折扣充值",
+	  "增加充值方式智能判断，智能调整售价",
+	  "开单时，增加智能光标(条码，款号)跟随判断",
+	  "修正充值会员免密码模式时，无法按单号退货问题",
+	  "开单增加退货按键功能，不再需要用户主动输入负数表示",
+	  "调入调出记录增加调出店铺与调入店铺条件过滤"
+	 },
+	
 	{date: "2019-03-11",
 	 content:
 	 ["修正开单时同一货品不能以不同价格出售的问题",
@@ -1179,7 +1191,7 @@ var version_update = function(){
 	    }
 
 	    var apk = "<div class='update-content'>"
-		+ "<a type='button' href='/qzg_stock_fix-release2018-12-08_20-32-40.apk' download=''>"
+		+ "<a type='button' href='/qzg_stock_fix-release2019-03-11_21-25-20.apk' download=''>"
 		+ "<h5 class='text-center fg-pink'>盘点机软件(安卓)下载</h5>"
 		+ "</a>"
 		+ "</div>"

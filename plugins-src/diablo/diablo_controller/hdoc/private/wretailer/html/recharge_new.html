@@ -73,6 +73,21 @@
 	      </div>
 	    </div>
 
+	    <div x-ng-if="promotion.rule.id===1" class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">货品折扣</label>
+	      <div class="col-sm-6 col-md-6">
+		<div class="input-group">
+		  <input class="form-control"
+			 type="number" step="1"
+			 name="xdiscount"
+			 x-ng-pattern="pattern.number"
+			 placeholder="请输入充值货品折扣,默认无折扣100"
+			 x-ng-model="promotion.xdiscount" /> 
+		  <span class="input-group-addon bg-white fg-red">*</span>
+		</div> 
+	      </div>
+	    </div>
+
 	    <div x-ng-if="promotion.rule.id===2" class="form-group">
 	      <label class="col-md-3 col-sm-3 control-label">次数</label>
 	      <div class="col-sm-6 col-md-6"> 

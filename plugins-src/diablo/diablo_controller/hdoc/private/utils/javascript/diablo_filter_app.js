@@ -326,10 +326,10 @@ function filterProvider(){
 		    _filter.fields.push({name:"check_state", chinese:"审核状态"});
 		    _prompt.check_state = promptValues;
 		} else if(name === 'fshop'){
-		    _filter.fields.push({name:"fshop", chinese:"店铺"});
+		    _filter.fields.push({name:"fshop", chinese:"调出店铺"});
 		    _prompt.fshop = promptValues;
 		} else if(name === 'tshop'){
-		    _filter.fields.push({name:"tshop", chinese:"店铺"});
+		    _filter.fields.push({name:"tshop", chinese:"调入店铺"});
 		    _prompt.tshop = promptValues;
 		} else if(name === 'month'){
 		    _filter.fields.push({name:"month", chinese:"月份"});
@@ -1392,17 +1392,18 @@ function normalFilterProvider(){
 			// console.log(cs);
 			_charges = cs.map(function(c){
 			    return {
-				id:       c.id,
-				name:     c.name,
-				rule_id:  c.rule_id,
-				xtime:    c.xtime,
-				ctime:    c.ctime,
-				charge:   c.charge,
-				balance:  c.balance,
-				type:     c.type,
-				sdate:    c.sdate,
-				edate:    c.edate,
-				deleted:  c.deleted
+				id:        c.id,
+				name:      c.name,
+				rule_id:   c.rule_id,
+				xtime:     c.xtime,
+				xdiscount: c.xdiscount,
+				ctime:     c.ctime,
+				charge:    c.charge,
+				balance:   c.balance,
+				type:      c.type,
+				sdate:     c.sdate,
+				edate:     c.edate,
+				deleted:   c.deleted
 			    }
 			});
 

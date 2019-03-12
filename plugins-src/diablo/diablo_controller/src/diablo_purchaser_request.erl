@@ -899,7 +899,12 @@ action(Session, Req, {"w_inventory_export"}, Payload) ->
 			 CutConditions)),
 		C;
 	    trans -> Conditions;
-	    stock -> Conditions;
+	    stock ->
+		CType = ?v(<<"ctype">>, Conditions),
+		SType = ?v(<<"type">>, Conditions),
+		PayloadWithCtype = ?w_sale_request:replace_condition_with_ctype(
+				      Merchant, CType, SType, Conditions),
+		PayloadWithCtype;
 	    shift_note -> Conditions
 	end,
 

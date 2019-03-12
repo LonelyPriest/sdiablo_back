@@ -32,6 +32,7 @@ function wretailerRechargeNewCtrlProvide(
 	    {name:    $scope.promotion.name,
 	     rule:    $scope.promotion.rule.id,
 	     xtime:   $scope.promotion.rule.id !==1 ? undefined : $scope.promotion.time,
+	     xdiscount: $scope.promotion.rule.id !==1 ? undefined : $scope.promotion.xdiscount,
 	     ctime:   $scope.promotion.rule.id !==2 ? undefined : $scope.promotion.ctime,
 	     charge:  $scope.promotion.charge,
 	     balance: retailerUtils.to_integer($scope.promotion.balance),

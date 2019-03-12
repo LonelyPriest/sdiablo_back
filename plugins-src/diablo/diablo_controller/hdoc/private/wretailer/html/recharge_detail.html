@@ -41,6 +41,7 @@
 		      <th>规则</th>
 		      <th>消费次数</th>
 		      <th>倍数</th>
+		      <th>货品折扣</th>
 		      <th>充值金额(元)</th>
 		      <th>赠送金额(元)</th>
 		      <th>开始日期</th>
@@ -69,6 +70,14 @@
 			  <span x-ng-switch-default>-</span>
 			</div>
 		      </td>
+
+		      <td>
+			<div x-ng-switch on="p.rule_id">
+			  <span x-ng-switch-when=1>{{p.xdiscount}}</span>
+			  <span x-ng-switch-default>-</span>
+			</div>
+		      </td>
+		      
 		      <td>
 			<div x-ng-switch on="p.rule_id"> 
 			  <span x-ng-switch-when=0>{{p.charge}}</span>

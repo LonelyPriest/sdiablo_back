@@ -531,3 +531,6 @@ alter table w_ticket_custom add column plan integer default -1 not null after ba
 --2019-02-18
 alter table print_template add column stock TINYINT default 0  after type;
 alter table print_template add column solo_date TINYINT default 0  after solo_size;
+
+--2019-03-12
+alter table w_charge add column xdiscount TINYINT default 100 after ctime;

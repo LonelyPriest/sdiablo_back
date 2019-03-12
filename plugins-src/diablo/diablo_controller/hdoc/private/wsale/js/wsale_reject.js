@@ -120,7 +120,9 @@ function wsaleRejectCtrlProvide(
 		    $scope.setting.draw_score = wsaleUtils.draw_score(shopId, settings);
 		    $scope.setting.vip_mode = wsaleUtils.vip_mode(shopId, settings);
 		    var sale_mode = wsaleUtils.sale_mode(shopId, settings);
-		    $scope.setting.print_perform     = wsaleUtils.to_integer(sale_mode.charAt(3));
+		    $scope.setting.print_perform = wsaleUtils.to_integer(sale_mode.charAt(3));
+		    $scope.setting.hide_pwd      = wsaleUtils.to_integer(sale_mode.charAt(9));
+		    
 		    $scope.setting.print_access = wsaleUtils.print_num(shopId, settings);
 		    // console.log($scope.setting);
 
@@ -190,7 +192,7 @@ function wsaleRejectCtrlProvide(
 	var callback = function(params){
 	    console.log(params);
 	    diabloFilter.check_retailer_password(
-		params.retailer.id, params.retailer.password)
+		params.retailer.id, params.retailer.password, params.hide_pwd ? diablo_no : diablo_yes)
 		.then(function(result){
 		    console.log(result); 
 		    if (result.ecode === 0){
@@ -218,7 +220,9 @@ function wsaleRejectCtrlProvide(
 	     {id        :$scope.select.retailer.id,
 	      name      :$scope.select.retailer.name,
 	      withdraw  :$scope.select.withdraw,
-	      pattern   :$scope.pattern.passwd},
+	      pattern   :$scope.pattern.passwd,
+	     },
+	     hide_pwd   :$scope.setting.hide_pwd
 	    }
 	);
     };

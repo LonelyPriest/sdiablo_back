@@ -115,8 +115,8 @@
 	      </thead>
 	      <tbody>
 		<tr class="text-center" x-ng-repeat="inv in inventories">
-		  <td x-ng-if="inv.state===3"></td> 
-		  <td x-ng-if="inv.state!==3">
+		  <td x-ng-if="inv.state===3 || !inv.sell || inv.sell<=0"></td> 
+		  <td x-ng-if="inv.state!==3 && inv.sell > 0">
 		    <div class="checkbox checkbox-danger checkbox-circle">
 		      <input id={{inv.order_id}}
 			     type="checkbox"
@@ -224,9 +224,10 @@
 				x-ng-click="delete_inventory(inv)">删除
 			  <i class="glyphicon glyphicon-erase"></i></button>
 
-			<!-- <button class="btn diablo-input-button green" -->
-			<!-- 	x-ng-click="charge(inv)">充值 -->
-			<!--   <i class="glyphicon glyphicon-yen"></i></button> --> 
+			<button x-ng-if="inv.charge && inv.sell > 0"
+				class="btn diablo-input-button blue"
+				x-ng-click="reject_inventory(inv)">退货
+			  <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
 			
 			<button class="btn diablo-input-button green"
 				x-ng-if="setting.gift_sale && inv.gift"
@@ -419,7 +420,7 @@
 	      <span x-ng-show="loading_retailer">
 	  	<i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
 	      </span>
-	      <span x-ng-if="select.retailer.type_id!==2" class="input-group-btn"> 
+	      <span x-ng-if="select.retailer && select.retailer.type_id!==2" class="input-group-btn"> 
 		<button class="btn btn-warning" x-ng-click="update_retailer()">
 		  <i class="glyphicon glyphicon-edit"></i></button>
 	      </span>
@@ -725,9 +726,7 @@
 			     class="form-control modal-input text-center"
 			     type="number" step="1"
 			     disable-key
-			     x-ng-enter="!fprice.$invalid
-					 && !fdiscount.$invalid
-					 && params.valid(params.amounts) && ok()"
+			     x-ng-enter="!fprice.$invalid && !fdiscount.$invalid && params.valid(params.amounts) && ok()"
 			     x-ng-model="amount.sell_count"
 			     focus-auto="amount.focus" />
 		    </div>
@@ -752,7 +751,7 @@
 			   || !params.valid(params.amounts)"
 	    x-ng-click="ok()">保存
     </button>
-    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+    <button class="btn btn-warning" x-ng-click="params.close(cancel)">取消</button>
   </div>
 </script>
 
@@ -855,7 +854,8 @@
 	    <input class="form-control"
 		   type="number" step="1"
 		   required
-		   disable-key 
+		   disable-key
+		   x-ng-edit
 		   name="balance"
 		   x-ng-pattern="/^\d+(.\d{1,2})?$/"
 		   x-ng-model="params.retailer.withdraw"/>
