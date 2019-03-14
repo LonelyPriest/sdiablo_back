@@ -105,8 +105,11 @@
 		  <th x-ng-if="setting.barcode_mode" class="text-center">条码</th>
 		  <th class="text-center">货号/品名/品类</th>
 		  <th x-ng-if="setting.check_sale" class="text-center">库存</th> 
-		  <!-- <th class="text-center">参考价</th> -->
-		  <!-- <th class="text-center">折扣</th>  -->
+		  <th x-ng-if="!setting.hide_tagprice && setting.sale_price===0"
+		      class="text-center">零售价</th>
+		  <th x-ng-if="!setting.hide_virprice && setting.sale_price===1"
+		      class="text-center">批发价</th>
+		  <th x-ng-if="!setting.hide_discount" class="text-center">折扣</th>
 		  <th class="text-center">单价</th>
 		  <th class="text-center">数量</th>
 		  <!-- <th class="text-center">成交价</th> -->
@@ -122,23 +125,22 @@
 		  <td class="text-center vert-align">{{inv.order_id}}</td>
 		  
 		  <td x-ng-if="setting.barcode_mode" class="text-left vert-align">
-	  	    <div>{{inv.bcode}}</div> 
+		    <div>{{inv.bcode}}</div> 
 	  	  </td>
 		  
-		  <td class="text-left vert-align">
-		    <span>{{inv.full_name}}</span> 
-		  </td> 
-		  
+		  <td class="text-left vert-align"><span>{{inv.full_name}}</span></td> 
 		  <td x-ng-if="setting.check_sale" class="vert-align">{{inv.total}}</td> 
 
-		  <!-- <td class="vert-align"> -->
-		  <!--   <span>{{inv.tag_price}}</span>  -->
-		  <!-- </td> -->
+		  <td x-ng-if="!setting.hide_tagprice && setting.sale_price===0"
+		      class="vert-align">{{inv.tag_price}}</td>
+		  <td x-ng-if="!setting.hide_virprice && setting.sale_price===1"
+		      class="vert-align">{{inv.vir_price}}</td> 
+
+		  <td x-ng-if="!setting.hide_discount" class="vert-align">{{inv.fdiscount}}</td>
 		  
 		  <td x-ng-if="!right.m_price" class="vert-align">
 		    <div x-ng-if="(inv.fprice===0 || inv.fprice)">{{inv.fprice}}</div>
-		  </td>
-		  
+		  </td> 
 		  <td x-ng-if="right.m_price" class="col-md-1 vert-align">
 		    <div ng-if="!inv.free_update">
 		      <div x-ng-if="(inv.fprice===0 || inv.fprice)">{{inv.fprice}}</div>
@@ -231,6 +233,9 @@
 		  <td x-ng-if="setting.barcode_mode"></td>
 		  <td></td>
 		  <td x-ng-if="setting.check_sale"></td>
+		  <td x-ng-if="!setting.hide_discount"></td> 
+		  <td x-ng-if="!setting.hide_tagprice && setting.sale_price===0"></td>
+		  <td x-ng-if="!setting.hide_virprice && setting.sale_price===1"></td>
 		  <td></td>
 		  <td class="vert-align">{{select.abs_total}}</td>
 		  <td class="vert-align">{{select.should_pay}}</td>

@@ -80,6 +80,7 @@
 		    <th>类型</th>
 		    <!-- <th>季节</th> -->
 		    <th>数量</th>
+		    <th x-ng-if="setting.show_tagprice">吊牌价</th>
 		    <th x-ng-if="stock_right.show_orgprice">进价</th>
 		    <th x-ng-if="stock_right.show_orgprice">小计</th>
 		    <th>状态</th> 
@@ -100,6 +101,7 @@
 		    <td>{{inv.brand.name}}</td>
 		    <td>{{inv.type.name}}</td>
 		    <td>{{inv.amount}}</td>
+		    <td x-ng-if="setting.show_tagprice">{{inv.tag_price}}</td>
 		    <td x-ng-if="stock_right.show_orgprice">{{inv.org_price}}</td>
 		    <td x-ng-if="stock_right.show_orgprice">{{inv.calc}}</td>
 		    <td>

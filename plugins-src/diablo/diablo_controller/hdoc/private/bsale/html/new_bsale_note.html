@@ -84,6 +84,7 @@
 			    单号<i class="glyphicon glyphicon-forward fg-red"></i>
 			  </span>
 			</th>
+			
 			<th x-ng-if="!hidden.base" class="success">客户</th> 
 			
 			<th x-ng-if="!hidden.base">交易</th> 
@@ -105,7 +106,8 @@
 			<th >年度</th>
 			<th>上架日期</th> 
 			
-			<th class="info">参考价</th>
+			<th class="info">零售价</th>
+			<th x-ng-if="!setting.hide_virpice" class="info">批发价</th>
 			<th class="danger">单价</th>
 			<th class="success">优惠</th>
 			<th>数量</th>
@@ -146,7 +148,8 @@
 			<td>{{inv.year}}</td>
 			<td>{{inv.in_datetime}}</td>
 			
-			<td>{{inv.tag_price}}</td> 
+			<td>{{inv.tag_price}}</td>
+			<td x-ng-if="!setting.hide_virpice">{{inv.vir_price}}</td>
 			<td>{{inv.rprice}} </td>
 			<td>
 			  <div x-ng-if="inv.imbalance > 0" class="fg-red">{{inv.imbalance}}</div>
@@ -179,6 +182,7 @@
 		      <tr x-ng-if="total_items!==0" class="bg-white">
 			<td colspan={{calc_colspan()}}></td>
 			<td>{{total_tblance}}</td>
+			<td x-ng-if="!setting.hide_virpice"></td>
 			<td colspan=2></td>
 			<td>{{total_amounts}}</td>
 			<td>{{total_balance}}</td> 

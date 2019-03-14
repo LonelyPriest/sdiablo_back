@@ -924,6 +924,10 @@ function purchaserInventoryTransferFromRsnDetailCtrlProvide(
 	// master: rightAuthen.authen_master(user.type)
     };
 
+    $scope.setting = {
+	show_tagprice: stockUtils.to_integer(stockUtils.scan_mode(diablo_default_shop, base).charAt(5))
+    };
+
     $scope.total_items = 0;
     
     // initial
@@ -941,23 +945,7 @@ function purchaserInventoryTransferFromRsnDetailCtrlProvide(
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
     
-    var now = $.now();
-    // $scope.qtime_start = function(){
-    // 	var shop = -1
-    // 	if ($scope.shopIds.length === 1){
-    // 	        shop = $scope.shopIds[0];
-    // 	    };
-	
-    // 	return diablo_base_setting(
-    // 	        "qtime_start",
-    // 	        shop,
-    // 	        base,
-    // 	        diablo_set_date,
-    // 	        diabloFilter.default_start_time(now));
-    // }();
-    // console.log($scope.qtime_start);
-    
-    // $scope.time   = diabloFilter.default_time($scope.qtime_start);
+    var now = $.now(); 
     $scope.time   = diabloFilter.default_time(now - diablo_day_millisecond * 7, now);
     var storage = localStorageService.get(diablo_key_inventory_transfer_note);
     if (angular.isDefined(storage) && storage !== null){
@@ -966,7 +954,7 @@ function purchaserInventoryTransferFromRsnDetailCtrlProvide(
 	    $scope.time.start_time = storage.start_time; 
 	}
     };
-    
+
     // $scope.time   = diabloFilter.default_time();
     
     /*
@@ -1151,6 +1139,10 @@ function purchaserInventoryTransferToRsnDetailCtrlProvide(
 
     $scope.stock_right = {
 	show_orgprice: stockUtils.authen_rainbow(user.type, user.right, "show_orgprice")
+    };
+
+    $scope.setting = {
+	show_tagprice: stockUtils.to_integer(stockUtils.scan_mode(diablo_default_shop, base).charAt(5))
     };
 
     $scope.total_items = 0;

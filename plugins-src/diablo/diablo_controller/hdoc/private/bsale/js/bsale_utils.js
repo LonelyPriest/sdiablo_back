@@ -234,14 +234,16 @@ var bsaleUtils = function(){
 	batch_mode:function(shop, base) {
 	    var mode = diablo_base_setting("batch_mode", shop, base, function(s) {return s}, diablo_batch_mode);
 	    return {
-		print_with_check: default_hide(mode.charAt(0))
+		print_with_check: default_hide(mode.charAt(0)),
+		hide_tagprice:default_hide(mode.charAt(1)),
+		hide_virprice:default_hide(mode.charAt(2)),
+		hide_discount:default_hide(mode.charAt(3))
 	    };
 	},
 
 	// print color or size or both
 	print_cs_mode:function(shop, base) {
-	    var mode = diablo_base_setting(
-		"p_color_size", shop, base, function(s) {return s}, diablo_bsale_print_cs_mode);
+	    var mode = diablo_base_setting("p_color_size", shop, base, function(s) {return s}, diablo_bsale_print_cs_mode);
 	    return {
 		both:              bsaleUtils.to_integer(mode.charAt(0)),
 		color_only:        bsaleUtils.to_integer(mode.charAt(1)),
@@ -249,7 +251,10 @@ var bsaleUtils = function(){
 		hide_unit:         default_hide(mode.charAt(3)),
 		hide_bcode_friend: default_hide(mode.charAt(4)),
 		hide_bcode_pay:    default_hide(mode.charAt(5)),
-		hide_address:      default_hide(mode.charAt(6))
+		hide_address:      default_hide(mode.charAt(6)),
+		hide_p_discount:   default_hide(mode.charAt(7)),
+		hide_p_tagprice:   default_hide(mode.charAt(8)),
+		hide_p_virprice:   default_hide(mode.charAt(9))
 	    };
 	},
 	

@@ -45,6 +45,7 @@
 	    <span>业务员：<span x-ng-bind=detail.employee.name></span></span>
 	    <!-- &nbsp&nbsp&nbsp&nbsp<span>部门：<span x-ng-bind=detail.department.name></span></span> -->
 	    &nbsp&nbsp&nbsp&nbsp<span>负责人：<span x-ng-bind=detail.department.master.name></span></span>
+	    &nbsp&nbsp&nbsp&nbsp<span>备注：<span x-ng-bind=detail.comment></span></span>
 	  </div>
 	</h4>
 	<div class="table-responsive">
@@ -55,8 +56,23 @@
 		<th class="text-center">货号</th>
 		<th class="text-center">品牌</th>
 		<th class="text-center">品类</th>
-		<th class="text-center">数量</th>
-		<th class="text-center">单价</th>
+		<th x-ng-if="!print_mode.hide_p_virprice || !print_mode.hide_p_discount"
+		    class="text-center" x-ng-click="toggle_print()">数量
+		  <i x-ng-if="hide_print_base" class="glyphicon glyphicon-forward fg-red"></i>
+		  <i x-ng-if="!hide_print_base" class="glyphicon glyphicon-backward fg-red"></i>
+		</th>
+		<th x-ng-if="print_mode.hide_p_virprice && print_mode.hide_p_discount"
+		    class="text-center">数量</th> 
+
+		<th x-ng-if="!print_mode.hide_p_virprice && !hide_print_base"
+		    class="text-center">批发价
+		</th>
+		
+		<th x-ng-if="!print_mode.hide_p_discount && !hide_print_base"
+		    class="text-center">折扣
+		</th>
+		
+		<th class="text-center">单价</th> 
 		<th x-ng-if="!print_mode.hide_unit" class="text-center">单位</th>
 		<th class="text-center">合计</th>
 		<th class="text-center">备注</th> 
@@ -74,9 +90,18 @@
 		<td class="text-center">{{n.brand}}</td>
 		<td class="text-center">{{n.type}}</td>
 		<td class="text-center">{{n.total}}</td>
-		<td class="text-center">{{n.rprice}}</td>
-		<td x-ng-if="!print_mode.hide_unit"
-		    class="text-center">{{std_units[n.unit]}}</td>
+		
+		<td x-ng-if="!print_mode.hide_p_virprice && !hide_print_base"
+		    class="text-center">{{n.vir_price}}
+		</td>
+		<td x-ng-if="!print_mode.hide_p_discount && !hide_print_base"
+		    class="text-center">{{n.mdiscount}}
+		</td>
+		
+		<td class="text-center">{{n.fprice}}</td>
+		
+		
+		<td x-ng-if="!print_mode.hide_unit" class="text-center">{{std_units[n.unit]}}</td>
 		<td class="text-center">{{n.calc}}</td>
 		<td class="text-center">{{n.comment}}</td>
 		
@@ -88,6 +113,8 @@
 	      <tr>
 		<td colspan="4"></td>
 		<td class="text-center" x-ng-bind=total></td>
+		<td x-ng-if="!print_mode.hide_p_virprice && !hide_print_base"></td>
+		<td x-ng-if="!print_mode.hide_p_discount && !hide_print_base"></td>
 		<td x-ng-if="!print_mode.hide_unit"></td>
 		<td></td>
 		<td class="text-center" x-ng-bind=total_rprice></td>

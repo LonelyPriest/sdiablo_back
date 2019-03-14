@@ -1385,6 +1385,7 @@ inventory(transfer_rsn_groups, transfer, Merchant, Conditions, PageFun) ->
         ", b.free"
 	", b.year"
 	", b.amount"
+	", b.tag_price"
 	", b.org_price"
 	", b.path"
 	", b.entry_date"

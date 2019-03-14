@@ -833,6 +833,7 @@ bsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
 
     OrgPrice    = ?v(<<"org_price">>, Inventory),
     TagPrice    = ?v(<<"tag_price">>, Inventory),
+    VirPrice    = ?v(<<"vir_price">>, Inventory),
     FDiscount   = ?v(<<"fdiscount">>, Inventory),
     FPrice      = ?v(<<"fprice">>, Inventory), 
     RDiscount   = ?v(<<"rdiscount">>, Inventory),
@@ -887,10 +888,32 @@ bsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
 	     {ValidOrgPrice, ValidEDiscount} = {OrgPrice, ?w_good_sql:stock(ediscount, OrgPrice, TagPrice)},
 
 	     "insert into batch_sale_detail("
-		 "rsn, style_number, brand, merchant, shop, type, sex, s_group, free"
-		 ", season, firm, year, in_datetime, total, unit"
-		 ", org_price, ediscount, tag_price, fdiscount, fprice, rdiscount, rprice"
-		 ", path, comment, entry_date) values("
+		 "rsn"
+		 ", style_number"
+		 ", brand"
+		 ", merchant"
+		 ", shop"
+		 ", type"
+		 ", sex"
+		 ", s_group"
+		 ", free"
+		 ", season"
+		 ", firm"
+		 ", year"
+		 ", in_datetime"
+		 ", total"
+		 ", unit"
+		 ", org_price"
+		 ", ediscount"
+		 ", tag_price"
+		 ", vir_price"
+		 ", fdiscount"
+		 ", fprice"
+		 ", rdiscount"
+		 ", rprice"
+		 ", path"
+		 ", comment"
+		 ", entry_date) values("
 		 ++ "\"" ++ ?to_s(RSN) ++ "\","
 		 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
 		 ++ ?to_s(Brand) ++ ","
@@ -909,7 +932,8 @@ bsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
 
 		 ++ ?to_s(ValidOrgPrice) ++ ","
 		 ++ ?to_s(ValidEDiscount) ++ ","
-		 ++ ?to_s(TagPrice) ++ "," 
+		 ++ ?to_s(TagPrice) ++ ","
+		 ++ ?to_s(VirPrice) ++ "," 
 		 ++ ?to_s(FDiscount) ++ ","
 		 ++ ?to_s(FPrice) ++ ","
 		 ++ ?to_s(RDiscount) ++ "," 
@@ -1119,6 +1143,7 @@ sale_new(sale_new_detail, MatchMode, Merchant, Conditions, PageFun) ->
 	", a.org_price"
 	", a.ediscount"
 	", a.tag_price"
+	", a.vir_price"
 	", a.fdiscount"
 	", a.rdiscount"
 	", a.fprice"
@@ -1157,6 +1182,7 @@ sale_new(sale_new_detail, MatchMode, Merchant, Conditions, PageFun) ->
 	", b.org_price"
 	", b.ediscount"
 	", b.tag_price"
+	", b.vir_price"
 	", b.fdiscount"
 	", b.rdiscount"
 	", b.fprice"

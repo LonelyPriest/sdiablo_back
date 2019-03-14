@@ -534,3 +534,8 @@ alter table print_template add column solo_date TINYINT default 0  after solo_si
 
 --2019-03-12
 alter table w_charge add column xdiscount TINYINT default 100 after ctime;
+
+
+--2019-03-14
+alter table batch_sale_detail add column vir_price decimal(10,2) not null default 0;
+update batch_sale_detail set vir_price = fprice;

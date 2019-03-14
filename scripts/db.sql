@@ -1554,6 +1554,7 @@ create table batch_sale_detail(
     ediscount      DECIMAL(4, 1)  default 0, -- max: 100
     
     tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
+    vir_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
     fdiscount      DECIMAL(4, 1), -- max: 100
     fprice         DECIMAL(10, 2) default 0, -- max: 99999999.99
     rdiscount      DECIMAL(4, 1), -- max: 100

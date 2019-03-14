@@ -933,12 +933,16 @@ sys_config() ->
 	      %% [1]: print color only
 	      %% [2]: print size only
 	      %% 000: no color and no size
-	      
-	      %% [3]: hide unit
-	      %% [4]: hide bcode friend
-	      %% [5]: hide bcode pay
-	      %% [6]: hide address
-	      {"p_color_size",    "打印颜色尺码",         "0001", "0"},
+
+	      %% batch mode
+	      %% [3]: hide unit when print
+	      %% [4]: hide bcode friend when print
+	      %% [5]: hide bcode pay when print
+	      %% [6]: hide address when print
+	      %% [7]: hide discount when print
+	      %% [8]: hide tag price when print
+	      %% [9]: hide vir price when print
+	      {"p_color_size",    "打印颜色尺码",         "0001111111", "0"},
 	      
 	      {"saler_stock",      "营业员查看区域库存",  "0",   "0"},
 	      {"r_stock_oprice",    "厂商退货检测进价",   "1",   "0"},
@@ -984,15 +988,22 @@ sys_config() ->
 	      %%[2]:add scan mode when stock_out
 	      %%[3]:add scan mode when stock_transfer
 	      %%[4]:foucs styleNumber when barcode use
-	      {"scan_only",         "扫码模式",           "00000", "0"},
+	      %%[5]:show tag_price in stock transfer
+	      {"scan_only",         "扫码模式",           "000000", "0"},
 	      %% {"auto_level",        "会员自动升级",       "0",    "0"},
 	      {"maling_rang",       "抹零范围",           "3",    "0"},
 	      %% 1: clothes mode, 2: child mode, 3: home mode
 	      {"shop_mode",         "店铺模式",           "1",    "0"},
 	      {"type_sale",         "品类开单模式",       "0",    "0"},
 
+	      %%--------------------------------------------------------------------------------
+	      %% batch mode
+	      %%--------------------------------------------------------------------------------
 	      %%[0]:print with no check
-	      {"batch_mode",        "批发配置",           "0",    "0"}
+	      %%[1]:hide tag price when battch sale
+	      %%[2]:hide vir price when batch sale
+	      %%[3]:hide discount when batch sale
+	      {"batch_mode",        "批发配置",           "0111",    "0"}
 	     ],
     
     Values.

@@ -655,7 +655,7 @@
 			       placeholder="请输入2-10位款号"
 			       x-ng-blur="focus_attrs.style_number=false"
 			       x-ng-model="good.style_number"
-			       x-ng-pattern=""
+			       x-ng-pattern="pattern.style_number"
 			       x-ng-enter=""
 			       typeahead-on-select="on_select_good_new($item, $model, $label)"
 			       typeahead-wait-ms="500"
@@ -743,11 +743,15 @@
 		<div x-ng-if="!base_settings.hide_sex" class="form-group diablo-good-form-group">
 		  <label class="col-sm-3 col-md-3 control-label">性别</label>
 		  <div class="col-sm-6 col-md-6"> 
-		    <select class="form-control" 
-			    x-ng-model="good.sex"
-			    x-ng-enter=""
-			    x-ng-options="s as s.name for s in sex2objs">
-		    </select>
+		    <input class="form-control"
+			   type="text"
+			   name="sex"
+			   required
+			   x-ng-edit
+			   x-ng-model="good.sex"
+			   placeholder="0:女;1:男;2:童;3:鞋;4:配"
+			   x-ng-enter=""
+			   uib-typeahead="s as s.name for s in sex2objs|filter:$viewValue"/>
 		  </div>
 		</div>
 

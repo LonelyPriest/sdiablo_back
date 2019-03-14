@@ -875,6 +875,7 @@ function bsaleNewProvide(
 		    org_price   : add.org_price,
 		    ediscount   : add.ediscount,
 		    tag_price   : add.tag_price,
+		    vir_price   : add.vir_price,
 		    fprice      : add.fprice,
 		    fdiscount   : add.fdiscount,
 		    rprice      : add.rprice,
@@ -1840,6 +1841,9 @@ function bsaleNewNoteCtrlProvide(
     $scope.shopIds  = user.shopIds;
     
     $scope.setting     = {round:diablo_round_record};
+    angular.extend($scope.setting, bsaleUtils.sale_mode(diablo_default_shop, base));
+    angular.extend($scope.setting, bsaleUtils.batch_mode(diablo_default_shop, base));
+    
     $scope.total_items = 0;
     $scope.goto_page = diablo_goto_page;
     $scope.sexs        = diablo_sex;
@@ -2279,7 +2283,9 @@ function bsalePrintCtrlProvide(
     $scope.employees   = filterEmployee;
     $scope.regions     = filterRegion;
     $scope.departments = filterDepartment;
-    $scope.std_units   = diablo_std_units;
+    $scope.std_units   = diablo_std_units; 
+    $scope.hide_print_base = true;
+    $scope.toggle_print = function() {$scope.hide_print_base = !$scope.hide_print_base}
     // console.log(filterCard);
     $scope.bank_card   = filterCard.filter(function(c) {return c.type===1});
     
@@ -2306,6 +2312,7 @@ function bsalePrintCtrlProvide(
     }
     
     $scope.print_mode = bsaleUtils.print_cs_mode(user.loginShop, base);
+    // console.log($scope.print_mode);
 	
     bsaleService.get_batch_sale($routeParams.rsn, diablo_batch_sale_print_mode).then(function(result) {
     	console.log(result);
@@ -2334,6 +2341,7 @@ function bsalePrintCtrlProvide(
 	    angular.forEach(result.note, function(n) {
 		n.order_id = order_id;
 		n.calc = bsaleUtils.to_decimal(n.rprice * n.total);
+		n.mdiscount = bsaleUtils.to_decimal(n.fdiscount * n.rdiscount / 100);
 		$scope.notes.push(n);
 		$scope.total += n.total;
 		$scope.total_rprice = bsaleUtils.to_decimal($scope.total_rprice + n.calc);
@@ -2383,13 +2391,19 @@ function bsalePrintCtrlProvide(
 	    	"5%", "5%",  "90%", "BottomMargin:15mm",
 	    	strBodyStyle + "<body>" + document.getElementById("bsale_new").innerHTML + "</body>");
 
-	    LODOP.ADD_PRINT_IMAGE(
-		"5%", "2%", 120, 120,
-		"<img src='https://qzgui.com/" + $scope.detail.shop.bcode_pay + "?" + Math.random() + "'/>");
+	    if (!$scope.print_mode.hide_bcode_pay) {
+		LODOP.ADD_PRINT_IMAGE(
+		    "5%", "2%", 120, 120,
+		    "<img src='https://qzgui.com/"
+			+ $scope.detail.shop.bcode_pay + "?" + Math.random() + "'/>");
+	    }
 	    
-	    LODOP.ADD_PRINT_IMAGE(
-		"5%", "83%", 120, 120,
-		"<img src='https://qzgui.com/" + $scope.detail.shop.bcode_friend + "?" + Math.random() + "'/>");
+	    if (!$scope.print_mode.hide_bcode_friend) {
+		LODOP.ADD_PRINT_IMAGE(
+		    "5%", "83%", 120, 120,
+		    "<img src='https://qzgui.com/"
+			+ $scope.detail.shop.bcode_friend + "?" + Math.random() + "'/>");
+	    }
 	    
 	    LODOP.PREVIEW(); 
 	}

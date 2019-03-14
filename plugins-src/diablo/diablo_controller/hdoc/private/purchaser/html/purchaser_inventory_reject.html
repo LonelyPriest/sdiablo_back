@@ -431,71 +431,69 @@
 
 <script type="text/ng-template" id="inventory-new.html">
   <div class="modal-body">
-    <div class="row diablo-form-group">
-      <div x-ng-if="stock_right.show_orgprice" class="col-md-12 col-sm-12 col-xs-12">
-	<div class="input-group">
-	  <span class="input-group-addon">
-	    <i class="glyphicon glyphicon-jpy fg-red"></i>吊牌价
-	  </span>
-	  <input class="form-control"
-		 readonly
-		 x-ng-model="params.tag_price"/>
+    <!-- <div class="row diablo-form-group"> -->
+    <!--   <div x-ng-if="stock_right.show_orgprice" class="col-md-12 col-sm-12 col-xs-12"> -->
+    <!-- 	<div class="input-group"> -->
+    <!-- 	  <span class="input-group-addon"> -->
+    <!-- 	    <i class="glyphicon glyphicon-jpy fg-red"></i>吊牌价 -->
+    <!-- 	  </span> -->
+    <!-- 	  <input class="form-control" -->
+    <!-- 		 readonly -->
+    <!-- 		 x-ng-model="params.tag_price"/> -->
 	  
-	  <span class="input-group-addon">
-	    <i class="glyphicon glyphicon-jpy fg-red"></i>退货价
-	  </span>
+    <!-- 	  <span class="input-group-addon"> -->
+    <!-- 	    <i class="glyphicon glyphicon-jpy fg-red"></i>退货价 -->
+    <!-- 	  </span> -->
 	  
-	  <form name="fprice">
-            <div ng-class="{'has-error':fprice.$invalid
-                           && !fprice.$pristine}">
-              <input class="form-control"
-                     type="number" step="0.01"
-                     required
-		     ng-edit
-		     disable-key
-		     x-ng-readonly="!stock_right.update_oprice"
-                     x-ng-pattern="/^\d+(.\d{1,2})?$/"
-		     ng-model-options="{debounce:300}"
-		     x-ng-change="params.get_price_info(params.tag_price, params, 1)"
-                     x-ng-model="params.org_price"/>
-            </div>
-	  </form>
+    <!-- 	  <form name="fprice"> -->
+    <!--         <div ng-class="{'has-error':fprice.$invalid && !fprice.$pristine}"> -->
+    <!--           <input class="form-control" -->
+    <!--                  type="number" step="0.01" -->
+    <!--                  required -->
+    <!-- 		     ng-edit -->
+    <!-- 		     disable-key -->
+    <!-- 		     x-ng-readonly="!stock_right.update_oprice" -->
+    <!--                  x-ng-pattern="/^\d+(.\d{1,2})?$/" -->
+    <!-- 		     ng-model-options="{debounce:300}" -->
+    <!-- 		     x-ng-change="params.get_price_info(params.tag_price, params, 1)" -->
+    <!--                  x-ng-model="params.org_price"/> -->
+    <!--         </div> -->
+    <!-- 	  </form> -->
 
-	  <span class="input-group-addon">
-	    <i class="glyphicon glyphicon-sort-by-attributes-alt fg-red"></i>
-	    折扣率
-	  </span>
+    <!-- 	  <span class="input-group-addon"> -->
+    <!-- 	    <i class="glyphicon glyphicon-sort-by-attributes-alt fg-red"></i> -->
+    <!-- 	    折扣率 -->
+    <!-- 	  </span> -->
 
-	  <form name="fdiscount">
-	    <div ng-class="{'has-error':ediscount.$invalid
-			   && !ediscount.$pristine}"> 
-	      <input class="form-control"
-		     type="number" step="0.1" 
-		     required
-		     disable-key
-		     ng-edit
-		     readonly="!stock_right.update_oprice"
-		     x-ng-pattern="/^\d{1,2}(\.\d{1,2})?$|100$/"
-		     ng-model-options="{debounce:300}"
-		     x-ng-change="params.get_price_info(params.tag_price, params, 0)"
-		     x-ng-model="params.ediscount"/>
-	    </div> 
-	  </form> 
+    <!-- 	  <form name="fdiscount"> -->
+    <!-- 	    <div ng-class="{'has-error':ediscount.$invalid -->
+    <!-- 			   && !ediscount.$pristine}">  -->
+    <!-- 	      <input class="form-control" -->
+    <!-- 		     type="number" step="0.1"  -->
+    <!-- 		     required -->
+    <!-- 		     disable-key -->
+    <!-- 		     ng-edit -->
+    <!-- 		     readonly="!stock_right.update_oprice" -->
+    <!-- 		     x-ng-pattern="/^\d{1,2}(\.\d{1,2})?$|100$/" -->
+    <!-- 		     ng-model-options="{debounce:300}" -->
+    <!-- 		     x-ng-change="params.get_price_info(params.tag_price, params, 0)" -->
+    <!-- 		     x-ng-model="params.ediscount"/> -->
+    <!-- 	    </div>  -->
+    <!-- 	  </form>  -->
 	  
-	</div>
-      </div>
+    <!-- 	</div> -->
+    <!--   </div> -->
 
-      <div x-ng-if="!stock_right.show_orgprice" class="col-md-12 col-sm-12 col-xs-12">
-	<div class="input-group">
-	  <span class="input-group-addon">
-	    <i class="glyphicon glyphicon-jpy fg-red"></i>吊牌价
-	  </span>
-	  <input class="form-control" readonly x-ng-model="params.tag_price"/> 
-	</div>
-      </div>
+    <!--   <div x-ng-if="!stock_right.show_orgprice" class="col-md-12 col-sm-12 col-xs-12"> -->
+    <!-- 	<div class="input-group"> -->
+    <!-- 	  <span class="input-group-addon"> -->
+    <!-- 	    <i class="glyphicon glyphicon-jpy fg-red"></i>吊牌价 -->
+    <!-- 	  </span> -->
+    <!-- 	  <input class="form-control" readonly x-ng-model="params.tag_price"/>  -->
+    <!-- 	</div> -->
+    <!--   </div> -->
       
-    </div>
-    
+    <!-- </div> -->
     <div class="table-responsive">
       <table class="table table-bordered
 		    table-striped table-condensed table-advanced" navtable>
@@ -549,8 +547,7 @@
 
   <div class="modal-footer">
     <button class="btn btn-primary"
-	    x-ng-disabled="params.check_orgprice && params.org_price==0
-			   || !params.valid(params.amounts)"
+	    x-ng-disabled="params.check_orgprice && params.org_price==0 || !params.valid(params.amounts)"
 	    x-ng-click="ok()">保存
     </button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
@@ -559,36 +556,7 @@
 
 
 <script type="text/ng-template" id="inventory-detail.html">
-  <div class="modal-body">
-    <div class="row diablo-form-group">
-      <div class="col-md-12 col-sm-12 col-xs-12">
-	<div class="input-group">
-	  
-	  <span class="input-group-addon">
-	    <i class="glyphicon glyphicon-jpy fg-red"></i>吊牌价
-	  </span>
-	  <input class="form-control"
-		 readonly
-		 x-ng-model="params.tag_price"/>
-	  
-	  <span class="input-group-addon">
-	    <i class="glyphicon glyphicon-jpy fg-red"></i>退货价
-	  </span> 
-          <input class="form-control"
-                 readonly
-                 x-ng-model="params.org_price"/>
-	  
-	  <span class="input-group-addon">
-	    <i class="glyphicon glyphicon-sort-by-attributes-alt fg-red"></i>
-	    折扣率
-	  </span> 
-	  <input class="form-control"
-		 readonly
-		 x-ng-model="params.ediscount"/> 
-	</div>
-      </div>
-    </div>
-    
+  <div class="modal-body"> 
     <div class="table-responsive">
       <table class="table table-bordered
 		    table-striped table-condensed table-advanced">

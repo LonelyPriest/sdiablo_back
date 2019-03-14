@@ -853,7 +853,7 @@ function purchaserInventoryTransferToDetailCtrlProvide (
     // }();
     // console.log($scope.qtime_start);
     
-    // $scope.time   = diabloFilter.default_time($scope.qtime_start);
+    // $scope.time   = diabloFilter.default_time($scope.qtime_start); 
     $scope.time   = diabloFilter.default_time(now - diablo_day_millisecond * 7, now);
     var storage = localStorageService.get(diablo_key_inventory_transfer_to);
     // console.log(storage);
