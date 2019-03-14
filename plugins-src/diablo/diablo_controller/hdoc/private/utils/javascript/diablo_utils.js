@@ -266,14 +266,14 @@ diabloUtils.directive('navform', function() {
 	switch(direct) {
 	case 0:
 	    if (i !== -1 && i !== 0) {
-		$(es[i-1]).focus();
+		$(es[i-1]).focus().select();
 		// if ($(es[i-1]).is("input"))
 		//     $(es[i-1]).select();
 	    };
 	    break;
 	case 1:
 	    if (i !== -1 || i !== l) {
-		$(es[i+1]).focus();
+		$(es[i+1]).focus().select();
 		// if ($(es[i+1]).is("input"))
 		//     $(es[i+1]).select();
 	    };

@@ -537,5 +537,9 @@ alter table w_charge add column xdiscount TINYINT default 100 after ctime;
 
 
 --2019-03-14
-alter table batch_sale_detail add column vir_price decimal(10,2) not null default 0;
-update batch_sale_detail set vir_price = fprice;
+alter table batch_sale_detail add column vir_price decimal(10,2) not null default 0 after tag_price;
+--update batch_sale_detail set vir_price = fprice;
+update batch_sale_detail a
+inner join(select style_number, brand, merchant, shop, vir_price from w_inventory) b \
+on a.merchant=b.merchant and a.shop=b.shop and a.style_number=b.style_number and a.brand=b.brand \
+set a.vir_price=b.vir_price where a.merchant=61;
