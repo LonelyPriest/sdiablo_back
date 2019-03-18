@@ -382,6 +382,7 @@ handle_call({get_sale_new_transe, Merchant, Conditions} , _From, State) ->
 	
 	", a.org_price"
 	", a.tag_price"
+	", a.vir_price"
 	", a.ediscount"
 	", a.fdiscount"
 	", a.rdiscount"
@@ -415,6 +416,7 @@ handle_call({get_sale_new_transe, Merchant, Conditions} , _From, State) ->
 	", org_price"
 	", ediscount"
 	", tag_price"
+	", vir_price"
 	", fdiscount"
 	", rdiscount"
 	", fprice"
@@ -505,6 +507,7 @@ handle_call({export_sale_new_detail, Merchant, Conditions}, _From, State)->
 	
 	", a.org_price"
 	", a.tag_price"
+	", a.vir_price"
 	", a.rprice"
 	
 	", a.in_datetime" 
@@ -539,7 +542,8 @@ handle_call({export_sale_new_detail, Merchant, Conditions}, _From, State)->
 	
 	", a.org_price"
 	", a.tag_price"
-	", rprice"
+	", a.vir_price"
+	", a.rprice"
 	
 	", a.in_datetime"
 	", a.entry_date"

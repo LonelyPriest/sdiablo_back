@@ -2109,7 +2109,8 @@ function purchaserInventoryDetailCtrlProvide(
     diabloUtilsService, diabloPromise, purchaserService,
     localStorageService, filterPromotion, filterScore,  filterBrand,
     filterFirm, filterType, filterCType, filterSizeGroup, filterColor,
-    filterSizeSpec, filterStdExecutive, filterCategory, filterFabric, filterTemplate, base, user) {
+    filterSizeSpec, filterStdExecutive, filterCategory, filterFabric, filterTemplate,
+    filterRegion, base, user) {
     $scope.promotions = filterPromotion.concat([{id:diablo_invalid_index, name:"重置促销方案"}]);
     $scope.scores = filterScore.concat([{id:diablo_invalid_index, name:"重置积分方案", type_id:0}]);
     // console.log(filterTemplate);
@@ -2183,6 +2184,7 @@ function purchaserInventoryDetailCtrlProvide(
     diabloFilter.add_field("tag_price", []); 
     diabloFilter.add_field("discount", []);
     diabloFilter.add_field("shop", $scope.shops);
+    diabloFilter.add_field("region", filterRegion);
     diabloFilter.add_field("firm", filterFirm);
     diabloFilter.add_field("stock", stocks);
     diabloFilter.add_field("sprice", stockUtils.yes_no());
@@ -2282,8 +2284,8 @@ function purchaserInventoryDetailCtrlProvide(
     
     // filter
     var add_search_condition = function(search){
-	if (angular.isUndefined(search.shop)
-	    || !search.shop || search.shop.length === 0){
+	search = stockUtils.correct_condition_with_shop(search, $scope.shopIds, $scope.shops); 
+	if (angular.isUndefined(search.shop) || !search.shop || search.shop.length === 0){
 	    // search.shop = user.shopIds;
 	    if (diablo_yes !== $scope.setting.saler_stock) {
 		search.shop = $scope.shopIds.length === 0 ? undefined : $scope.shopIds;
@@ -2291,14 +2293,11 @@ function purchaserInventoryDetailCtrlProvide(
 		// more than shop means super user
 		search.shop = $scope.shopIds.length === 1 ? undefined : $scope.shopIds;
 		// search.shop = undefined;
-	    }
-	    // search.shop = $scope.shopIds
-	    // 	=== 0 ? undefined : $scope.shopIds;
+	    } 
 	}; 
     };
 
-    var now_date = diablo_now_date();
- 
+    var now_date = diablo_now_date(); 
     $scope.do_search = function(page){
 	if ($scope.tab_active.chart){
 	    $scope.mode = $scope.order_fields.sell;

@@ -113,7 +113,9 @@
 	      <tr>
 		<td colspan="4"></td>
 		<td class="text-center" x-ng-bind=total></td>
-		<td x-ng-if="!print_mode.hide_p_virprice && !hide_print_base"></td>
+		<td x-ng-if="!print_mode.hide_p_virprice && !hide_print_base" class="text-center">
+		  {{total_virprice}}
+		</td>
 		<td x-ng-if="!print_mode.hide_p_discount && !hide_print_base"></td>
 		<td x-ng-if="!print_mode.hide_unit"></td>
 		<td></td>

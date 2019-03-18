@@ -73,6 +73,7 @@ var bsaleUtils = function(){
 		add.comment = s.comment;
 		
 		add.org_price = s.org_price;
+		add.vir_price = s.vir_price;
 		add.tag_price = s.tag_price;
 		add.ediscount = s.ediscount;
 		add.fprice    = s.fprice;

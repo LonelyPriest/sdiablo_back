@@ -258,7 +258,7 @@ function filterProvider(){
 		    _filter.fields.push({name:"brand", chinese:"品牌"});
 		    _prompt.brand = promptValues;
 		} else if (name === 'ctype'){
-		    _filter.fields.push({name:"ctype", chinese:"类别大类"});
+		    _filter.fields.push({name:"ctype", chinese:"大类"});
 		    _prompt.ctype = promptValues;
 		} else if (name === 'type'){
 		    _filter.fields.push({name:"type", chinese:"类别"});

@@ -2335,16 +2335,20 @@ function bsalePrintCtrlProvide(
 	    $scope.notes = [];
 	    $scope.total  = 0;
 	    $scope.total_rprice = 0;
+	    $scope.total_virprice = 0;
 	    $scope.amount = 0;
 
 	    var order_id = 1;
 	    angular.forEach(result.note, function(n) {
 		n.order_id = order_id;
 		n.calc = bsaleUtils.to_decimal(n.rprice * n.total);
-		n.mdiscount = bsaleUtils.to_decimal(n.fdiscount * n.rdiscount / 100);
-		$scope.notes.push(n);
-		$scope.total += n.total;
-		$scope.total_rprice = bsaleUtils.to_decimal($scope.total_rprice + n.calc);
+		n.mdiscount = bsaleUtils.to_decimal(n.fdiscount * n.rdiscount / 100); 
+		$scope.total_rprice = bsaleUtils.to_decimal($scope.total_rprice + n.calc); 
+		$scope.total_virprice =
+		    bsaleUtils.to_decimal($scope.total_virprice + n.vir_price * n.total);
+		
+		$scope.total += n.total; 
+		$scope.notes.push(n); 
 		
 		if ($scope.print_mode.both) {
 		    for (var i=0, l=n.note.length; i<l; i++) {

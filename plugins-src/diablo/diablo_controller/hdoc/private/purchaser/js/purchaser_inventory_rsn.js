@@ -217,10 +217,8 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
     $scope, $routeParams, $location, dateFilter, diabloUtilsService, diabloFilter,
     purchaserService, localStorageService,
     user, filterBrand, filterFirm, filterType,
-    filterEmployee, filterSizeGroup, filterColor, filterTemplate, base){
-
+    filterEmployee, filterSizeGroup, filterColor, filterTemplate, filterRegion, base){
     // console.log(user.right);
-
     // var permitShops      = user.shopIds;
     $scope.shops     = user.sortShops.concat(user.sortBadRepoes);
     $scope.shopIds   = user.shopIds.concat(user.badrepoIds);
@@ -290,7 +288,8 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
     diabloFilter.add_field("firm",  filterFirm);
     diabloFilter.add_field("year",  diablo_full_year);
     diabloFilter.add_field("season",  diablo_season2objects);
-    diabloFilter.add_field("shop", user.sortShops); 
+    diabloFilter.add_field("shop", user.sortShops);
+    diabloFilter.add_field("region", filterRegion); 
     diabloFilter.add_field("purchaser_type", purchaserService.purchaser_type);
     diabloFilter.add_field("sex",   diablo_sex2object); 
     diabloFilter.add_field("rsn",   function(viewValue) {return undefined}); 
@@ -379,17 +378,10 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
     // console.log($scope.time);
 
     var add_search_condition = function(search){
-	if (angular.isUndefined(search.shop)
-	    || !search.shop || search.shop.length === 0){
-	    search.shop = user.shopIds.length
-		=== 0 ? undefined : $scope.shopIds; 
-	};
-	
+	search = stockUtils.correct_condition_with_shop(search, $scope.shopIds, $scope.shops); 
 	if (angular.isUndefined(search.rsn) && angular.isUndefined($routeParams.from)){
 	    search.rsn  =  $routeParams.rsn ? $routeParams.rsn : undefined; 
 	};
-
-	// return search;
     };
 
     $scope.cache_stastic = function(key){

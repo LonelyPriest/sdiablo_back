@@ -21,6 +21,9 @@ function reportConfig (){
 
 	var retailer = {"filterRetailer": function(diabloFilter){
 	    return diabloFilter.get_wretailer()}};
+
+	var region = {"filterRegion": function(diabloNormalFilter){
+	    return diabloNormalFilter.get_region()}};
 	
 	var employee = {"filterEmployee": function(diabloNormalFilter){
 	    return diabloNormalFilter.get_employee()}};
@@ -37,12 +40,12 @@ function reportConfig (){
 	    when('/stastic', {
     		templateUrl: '/private/wreport/html/stock_stastic.html',
 		controller: 'stockStasticCtrl',
-    		resolve: angular.extend({}, employee, user, base)
+    		resolve: angular.extend({}, employee, region, user, base)
 	    }).
 	    when('/m_stastic', {
     		templateUrl: '/private/wreport/html/month_stastic.html',
 		controller: 'monthStasticCtrl',
-    		resolve: angular.extend({}, employee, user, base)
+    		resolve: angular.extend({}, employee, region, user, base)
 	    }). 
 	    when('/switch_shift', {
     		templateUrl: '/private/wreport/html/shift_report.html',

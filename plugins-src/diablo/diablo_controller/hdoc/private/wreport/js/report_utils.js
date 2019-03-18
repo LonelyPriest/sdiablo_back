@@ -80,7 +80,27 @@ var reportUtils = function(){
 
 	    return {
 		first:new Date(year, month, 1).getTime(), current:now.getTime()};
+	},
+
+	correct_condition_with_shop: function(condition, shopIds, shops) {
+	    if (reportUtils.to_integer(condition.region) === 0){
+		if (angular.isUndefined(condition.shop) || condition.shop.length === 0){
+		    condition.shop = shopIds === 0 ? undefined : shopIds; 
+		}
+	    } else {
+		if (angular.isArray(condition.shop) && condition.shop.length !== 0){
+		    delete condition.region;
+		}
+		else {
+		    condition.shop = shops.filter(function(s){
+			return s.region === condition.region;
+		    }).map(function(s) { return s.id});
+		}
+	    }
+	    
+	    return condition;
 	}
+
     }
 }();
 

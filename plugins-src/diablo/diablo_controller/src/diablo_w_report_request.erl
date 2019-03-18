@@ -171,7 +171,7 @@ action(Session, Req, {"h_month_wreport"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     {struct, Conditions} = ?v(<<"condition">>, Payload),
 
-    case ?w_report:month_report(by_shop, Merchant, Conditions) of
+    case ?w_report:month_report(by_shop, Merchant, lists:keydelete(<<"region">>, 1, Conditions)) of
 	{ok, Details} ->
 	    ShopIds = ?v(<<"shop">>, Conditions), 
 	    {_, EndTime, _} = ?sql_utils:cut(fields_no_prifix, Conditions),

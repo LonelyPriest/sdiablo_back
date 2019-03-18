@@ -125,7 +125,7 @@ function stockConfg(angular){
 		templateUrl: '/private/purchaser/html/purchaser_inventory_new_rsn_detail.html',
 		controller: 'purchaserInventoryNewRsnDetailCtrl',
 		resolve: angular.extend(
-		    {}, user, brand, firm, type, employee, s_group, color, ptemplate, base)
+		    {}, user, brand, firm, type, employee, s_group, color, ptemplate, region, base)
 	    }).
 	    when('/inventory_new_detail/:page?', {
 		templateUrl: '/private/purchaser/html/purchaser_inventory_new_detail.html',
@@ -138,7 +138,7 @@ function stockConfg(angular){
 		resolve: angular.extend(
 		    {}, promotion, score,
 		    brand, firm, type, ctype, s_group, color,
-		    size_spec, std_executive, safety_category, fabric, ptemplate, base, user)
+		    size_spec, std_executive, safety_category, fabric, ptemplate , region, base, user)
 	    }).
 	    when('/inventory_detail/inventory_flow/:snumber?/:brand?', {
 		templateUrl: '/private/purchaser/html/purchaser_inventory_flow.html',

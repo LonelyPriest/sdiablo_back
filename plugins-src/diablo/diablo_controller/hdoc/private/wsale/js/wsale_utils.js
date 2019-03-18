@@ -1495,14 +1495,14 @@ var wsalePrint = function(){
 		LODOP.ADD_PRINT_TEXT(top, left, 70, hFont, d.style_number); 
 		LODOP.ADD_PRINT_TEXT(top, left + 70, 35, hFont, d.tag_price.toString()); 
 		LODOP.ADD_PRINT_TEXT(top, left + 105, 35, hFont, d.total.toString());
-		// LODOP.ADD_PRINT_TEXT(top, left + 140, left + 140, hFont, ediscount.toString());
-		LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString()); 
+		LODOP.ADD_PRINT_TEXT(top, left + 140, left + 140, hFont, ediscount.toString());
+		// LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString()); 
 		
 		top += 15;
 		var brand = angular.isObject(d.brand) && angular.isDefined(d.brand.name) ? d.brand.name : d.brand;
 		brand += angular.isObject(d.type) && angular.isDefined(d.type.name) ? d.type.name : d.type;
 		LODOP.ADD_PRINT_TEXT(top, left, vWidth - left, hFont, brand);
-		
+		LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString());
 		// LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, d.rprice.toString());
 
 		top += 15;

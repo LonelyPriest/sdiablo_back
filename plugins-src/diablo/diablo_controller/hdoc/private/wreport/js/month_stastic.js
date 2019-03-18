@@ -2,7 +2,7 @@
 
 function monthStasticCtrlProvide(
     $scope, dateFilter, diabloFilter, diabloUtilsService, wreportService,
-    filterEmployee, user, base){
+    filterEmployee, filterRegion, user, base){
     $scope.shops = user.sortShops;
     $scope.shopIds = user.shopIds;
 
@@ -45,10 +45,11 @@ function monthStasticCtrlProvide(
 
     $scope.filters = [];
     diabloFilter.reset_field(); 
-    diabloFilter.add_field("shop",     $scope.shops);
+    diabloFilter.add_field("shop", $scope.shops);
+    diabloFilter.add_field("region", filterRegion);
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
-
+    
     var now = reportUtils.first_day_of_month(); 
     $scope.time = diabloFilter.default_time(now.first, now.current);
 
@@ -82,23 +83,14 @@ function monthStasticCtrlProvide(
 	$scope.s_stastic.stockFixCost = 0;
     };
     
-    var add_shop_condition = function(search){
-	if (angular.isUndefined(search.shop)
-	    || !search.shop || search.shop.length === 0){
-	    // search.shop = user.shopIds;
-	    search.shop = $scope.shopIds === 0 ? undefined : $scope.shopIds;
-	};
-
-	return search;
-    }; 
-
     var to_i =  reportUtils.to_integer; 
     var to_f =  reportUtils.to_float;
     var decimal = reportUtils.to_decimal;
     
     $scope.do_search = function() {
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
-	    add_shop_condition(search);
+	    reportUtils.correct_condition_with_shop(search, $scope.shopIds, $scope.shops);
+	    console.log(search);
 
 	    wreportService.h_month_wreport(search).then(function(result){
 		console.log(result);
