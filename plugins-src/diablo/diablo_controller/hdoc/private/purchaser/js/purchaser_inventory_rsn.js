@@ -378,7 +378,8 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
     // console.log($scope.time);
 
     var add_search_condition = function(search){
-	search = stockUtils.correct_condition_with_shop(search, $scope.shopIds, $scope.shops); 
+	search = stockUtils.correct_condition_with_shop(
+	    search, $scope.shopIds, $scope.shops, diablo_no); 
 	if (angular.isUndefined(search.rsn) && angular.isUndefined($routeParams.from)){
 	    search.rsn  =  $routeParams.rsn ? $routeParams.rsn : undefined; 
 	};

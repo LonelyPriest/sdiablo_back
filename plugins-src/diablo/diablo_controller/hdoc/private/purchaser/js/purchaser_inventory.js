@@ -2284,17 +2284,21 @@ function purchaserInventoryDetailCtrlProvide(
     
     // filter
     var add_search_condition = function(search){
-	search = stockUtils.correct_condition_with_shop(search, $scope.shopIds, $scope.shops); 
-	if (angular.isUndefined(search.shop) || !search.shop || search.shop.length === 0){
-	    // search.shop = user.shopIds;
-	    if (diablo_yes !== $scope.setting.saler_stock) {
-		search.shop = $scope.shopIds.length === 0 ? undefined : $scope.shopIds;
-	    } else {
-		// more than shop means super user
-		search.shop = $scope.shopIds.length === 1 ? undefined : $scope.shopIds;
-		// search.shop = undefined;
-	    } 
-	}; 
+	search = stockUtils.correct_condition_with_shop(
+	    search, $scope.shopIds, $scope.shops, $scope.setting.saler_stock);
+	
+	// if (angular.isUndefined(search.shop) || !search.shop || search.shop.length === 0){
+	//     // search.shop = user.shopIds;
+	//     if (diablo_yes !== $scope.setting.saler_stock) {
+	// 	search.shop = $scope.shopIds.length === 0 ? undefined : $scope.shopIds;
+	//     } else {
+	// 	// more than shop means super user
+	// 	search.shop = $scope.shopIds.length === 1 ? undefined : $scope.shopIds;
+	// 	// search.shop = undefined;
+	//     } 
+	// };
+
+	return search;
     };
 
     var now_date = diablo_now_date(); 

@@ -572,10 +572,14 @@ var stockUtils = function(){
 	    })
 	},
 
-	correct_condition_with_shop: function(condition, shopIds, shops) {
+	correct_condition_with_shop: function(condition, shopIds, shops, useSalerStock) {
 	    if (stockUtils.to_integer(condition.region) === 0){
 		if (angular.isUndefined(condition.shop) || condition.shop.length === 0){
-		    condition.shop = shopIds === 0 ? undefined : shopIds; 
+		    if (diablo_yes === stockUtils.to_integer(useSalerStock)) {
+			condition.shop = undefined;
+		    } else {
+			condition.shop = shopIds === 0 ? undefined : shopIds; 
+		    }
 		}
 	    } else {
 		if (angular.isArray(condition.shop) && condition.shop.length !== 0){
