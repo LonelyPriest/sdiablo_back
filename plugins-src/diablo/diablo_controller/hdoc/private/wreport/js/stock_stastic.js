@@ -148,7 +148,7 @@ function stockStasticCtrlProvide(
     var dialog = diabloUtilsService;
     $scope.syn_report = function(){
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
-	    add_shop_condition(search);
+	    reportUtils.correct_condition_with_shop(search, $scope.shopIds, $scope.shops);
 	    // console.log(search);
 	    
 	    wreportService.syn_daily_report(search).then(function(result){
