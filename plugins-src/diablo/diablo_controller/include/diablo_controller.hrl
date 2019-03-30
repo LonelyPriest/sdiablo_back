@@ -332,6 +332,7 @@
 -define(update_w_sale_price,   ?right_w_sale + 10).
 -define(employee_evaluation,   ?right_w_sale + 11).
 -define(print_w_sale_note,     ?right_w_sale + 12).
+-define(export_w_sale_note,     ?right_w_sale + 13).
 
 %% inventory
 -define(new_w_inventory,             ?right_w_inventory + 4).

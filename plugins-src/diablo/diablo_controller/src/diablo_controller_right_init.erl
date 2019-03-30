@@ -309,7 +309,9 @@ init([]) ->
 	 {?employee_evaluation,
 	  <<"员工业绩查询">>,  <<"filter_employee_evaluation">>,    ?right_w_sale},
 	 {?print_w_sale_note,
-	  <<"销售明细打印">>,  <<"print_w_sale_note">>,    ?right_w_sale} 
+	  <<"销售明细打印">>,  <<"print_w_sale_note">>,    ?right_w_sale},
+	 {?export_w_sale_note,
+	  <<"销售明细导出">>,  <<"export_w_sale_note">>,    ?right_w_sale}
 	],
 
     %% batch sale

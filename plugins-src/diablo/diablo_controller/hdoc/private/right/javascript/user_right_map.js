@@ -48,7 +48,8 @@ var rightAuthen = {
 	    reject_w_sale: rightAuthen.root_right._wsale + 2,
 	    update_w_sale: rightAuthen.root_right._wsale + 5,
 	    check_w_sale:  rightAuthen.root_right._wsale + 6,
-	    update_w_sale_price: rightAuthen.root_right._wsale + 10
+	    update_w_sale_price: rightAuthen.root_right._wsale + 10,
+	    export_w_sale_note: rightAuthen.root_right._wsale + 13,
 	};
     },
 
@@ -330,6 +331,11 @@ diabloAuthen.prototype.updateOpriceAfterSale = function () {
     return this.authenSale('update_w_sale_price');
 };
 
+diabloAuthen.prototype.exportSaleNote = function() {
+    return this.authenSale('export_w_sale_note');
+};
+
+
 /*
  * retailre action
  */
@@ -378,7 +384,8 @@ diabloAuthen.prototype.authenSaleRight = function() {
 	show_stastic   :this.master,
 
 	update_oprice_after_sale : this.updateOpriceAfterSale(),
-	show_gross_profit:  this.showGrossProfit()
+	show_gross_profit:  this.showGrossProfit(),
+	export_w_sale_note: this.exportSaleNote()
     }
 };
 

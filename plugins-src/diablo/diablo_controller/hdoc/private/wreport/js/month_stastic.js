@@ -202,7 +202,8 @@ function monthStasticCtrlProvide(
     var dialog = diabloUtilsService;
     $scope.export_to = function(){
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
-	    add_shop_condition(search); 
+	    // add_shop_condition(search);
+	    reportUtils.correct_condition_with_shop(search, $scope.shopIds, $scope.shops);
 	    // console.log(search); 
 	    wreportService.export_month_report(search).then(function(result){
 	    	console.log(result);

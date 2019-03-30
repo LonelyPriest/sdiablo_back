@@ -1770,7 +1770,7 @@ object_responed(Fun, Req) ->
     end.
 
 filter_condition(trans_note, [], _Conditions) ->
-    [];
+    [{<<"fields">>, {struct, []}}];
 filter_condition(trans_note, Rsns, Conditions) ->
     [{<<"fields">>, {
 	  struct, [{<<"rsn">>, Rsns}]

@@ -38,6 +38,7 @@ function wsaleRsnDetailCtrlProvide (
      */
     var authen = new diabloAuthen(user.type, user.right, user.shop);
     $scope.right = authen.authenSaleRight();
+    console.log($scope.right);
     
     /* hidden */
     $scope.toggle_base = function(){

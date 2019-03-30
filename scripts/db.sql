@@ -44,6 +44,7 @@ create table merchants
     sms_send         INTEGER not null default 0,
     state            TINYINT not null default 0,
     type             TINYINT default 0,
+    shop_count       INTEGER not null default 0, 
     -- province         TINYINT default -1, -- which province
     entry_date       DATE,
     deleted          INTEGER default 0, -- 0: no;  1: yes

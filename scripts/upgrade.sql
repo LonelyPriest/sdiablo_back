@@ -543,3 +543,7 @@ update batch_sale_detail a
 inner join(select style_number, brand, merchant, shop, vir_price from w_inventory) b \
 on a.merchant=b.merchant and a.shop=b.shop and a.style_number=b.style_number and a.brand=b.brand \
 set a.vir_price=b.vir_price where a.merchant=61;
+
+
+--2019-03-23
+alter table merchants add column shop_count integer default -1 after sms_send;

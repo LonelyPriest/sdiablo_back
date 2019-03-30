@@ -207,33 +207,33 @@ on a.id=b.firm where a.merchant=4) a where a.balance!=a.acc;
 
 
 -- clear date
-delete from w_inventory_good where merchant=44;
+delete from w_inventory_good where merchant=49;
 
-delete from w_inventory_new_detail_amount where merchant=44;
-delete from w_inventory_new_detail where merchant=44;
-delete from w_inventory_new where merchant=44;
+delete from w_inventory_new_detail_amount where merchant=49;
+delete from w_inventory_new_detail where merchant=49;
+delete from w_inventory_new where merchant=49;
 
 -- clear stock
-delete from w_inventory_amount where merchant=44;
-delete from w_inventory where merchant=44;
+delete from w_inventory_amount where merchant=49;
+delete from w_inventory where merchant=49;
 
 -- clear sale
-delete from w_sale_detail_amount where merchant=44;
-delete from w_sale_detail where merchant=44;
-delete from w_sale where merchant=44;
+delete from w_sale_detail_amount where merchant=49;
+delete from w_sale_detail where merchant=49;
+delete from w_sale where merchant=49;
 
 -- clear transefer
-delete from w_inventory_transfer_detail_amount where merchant=44;
-delete from w_inventory_transfer_detail where merchant=44;
-delete from w_inventory_transfer where merchant=44;
+delete from w_inventory_transfer_detail_amount where merchant=49;
+delete from w_inventory_transfer_detail where merchant=49;
+delete from w_inventory_transfer where merchant=49;
 
 
 -- report
-delete from w_daily_report where merchant=44;
-delete from w_change_shift where merchant=44;
+delete from w_daily_report where merchant=49;
+delete from w_change_shift where merchant=49;
 
 -- charge
-delete from w_charge_detail where merchant=44;
+delete from w_charge_detail where merchant=49;
 
 
 -- brands
@@ -241,4 +241,4 @@ delete from brands where merchant=44;
 delete from inv_types where merchant=44;
 
 -- bill
-delete from w_bill_detail where merchant=44;
+delete from w_bill_detail where merchant=49;
