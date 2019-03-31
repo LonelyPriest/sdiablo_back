@@ -374,7 +374,7 @@ function filterProvider(){
 	    do_filter: function(filters, time, callback){
 		var search = {};
 		angular.forEach(filters, function(f){
-		    if (angular.isDefined(f.value) && f.value){
+		    if (angular.isDefined(f.value) && (f.value || f.value===0) ){
 			var value = undefined;
 			if (angular.isObject(f.value))
 			    value = f.value.id;

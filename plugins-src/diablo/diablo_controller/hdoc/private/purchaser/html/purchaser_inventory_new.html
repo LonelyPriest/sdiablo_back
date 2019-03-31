@@ -742,16 +742,23 @@
 		
 		<div x-ng-if="!base_settings.hide_sex" class="form-group diablo-good-form-group">
 		  <label class="col-sm-3 col-md-3 control-label">性别</label>
-		  <div class="col-sm-6 col-md-6"> 
-		    <input class="form-control"
-			   type="text"
-			   name="sex"
-			   required
-			   x-ng-edit
-			   x-ng-model="good.sex"
-			   placeholder="0:女;1:男;2:童;3:鞋;4:配"
-			   x-ng-enter=""
-			   uib-typeahead="s as s.name for s in sex2objs|filter:$viewValue"/>
+		  <div class="col-sm-6 col-md-6">
+		    <div class="input-group">
+		      <input class="form-control"
+			     type="text"
+			     name="sex"
+			     required
+			     x-ng-edit
+			     x-ng-model="good.sex"
+			     placeholder="0:女;1:男;2:童;3:鞋;4:配"
+			     x-ng-enter=""
+			     typeahead-editable="false"
+			     uib-typeahead="s as s.name for s in sex2objs|filter:$viewValue"/>
+		      <span class="input-group-addon bg-white fg-red">*</span> 
+		    </div>
+		  </div>
+		  <div ng-show="form.gForm.sex.$invalid && !form.gForm.sex.$pristine">
+		    <span style="color:red">必须从下拉列表中选择</span>
 		  </div>
 		</div>
 

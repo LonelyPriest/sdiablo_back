@@ -197,9 +197,10 @@ action(Session, Req, {"h_month_wreport"}, Payload) ->
 action(Session, Req, {"export_month_report"}, Payload) ->
     Merchant    = ?session:get(merchant, Session),
     UserId      = ?session:get(id, Session),
+    NewPayload  = lists:keydelete(<<"region">>, 1, Payload),
     ShopIds     = ?to_l(?v(<<"shop">>, Payload)),
 		      
-    {_, EndTime, _} = ?sql_utils:cut(fields_no_prifix, Payload),
+    {_, EndTime, _} = ?sql_utils:cut(fields_no_prifix, NewPayload), 
     Yestoday = yestoday(EndTime),
 
     {ok, AllShops} = ?w_user_profile:get(shop, Merchant),
@@ -212,7 +213,7 @@ action(Session, Req, {"export_month_report"}, Payload) ->
     %% ?DEBUG("valid shops ~p", [ValidShops]),
     
     try
-	{ok, Details} = ?w_report:month_report(by_shop, Merchant, Payload),
+	{ok, Details} = ?w_report:month_report(by_shop, Merchant, NewPayload),
 	%% ?DEBUG("details ~p", [Details]),
 	{ok, Stocks} = ?w_report:stock(of_day, Merchant, ShopIds, Yestoday),
 	%% ?DEBUG("Stocks ~p", [Stocks]),

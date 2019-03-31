@@ -454,7 +454,7 @@
 	
 	<div class="input-group-btn">
 	  <button type="button" class="btn btn-success"
-		  x-ng-disabled="!f.value" x-ng-click="ok()">
+		  x-ng-disabled="!f.value && f.value!==0" x-ng-click="ok()">
 	    <i class="glyphicon glyphicon-ok"></i></button>
 	</div>
 	

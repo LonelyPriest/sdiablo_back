@@ -6,6 +6,7 @@ function stockStasticCtrlProvide(
     // console.log(user);
     $scope.shops = user.sortShops;
     $scope.shopIds = user.shopIds;
+    $scope.disableSyn = false;
 
     var authen = new diabloAuthen(user.type, user.right, user.shop);
     $scope.right = authen.authenReportRight();
@@ -150,9 +151,10 @@ function stockStasticCtrlProvide(
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
 	    reportUtils.correct_condition_with_shop(search, $scope.shopIds, $scope.shops);
 	    // console.log(search);
-	    
+	    $scope.disableSyn = true;
 	    wreportService.syn_daily_report(search).then(function(result){
 		console.log(result);
+		$scope.disableSyn = false;
 		if (result.ecode === 0){
 		    dialog.response_with_callback(
 			true, "同步日报表", "同步日报表成功！！", undefined,

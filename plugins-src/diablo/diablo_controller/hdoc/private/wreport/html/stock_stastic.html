@@ -15,8 +15,9 @@
 	      <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
 
 	    <button type="button" class="btn green purple-stripe"
+		    x-ng-disabled="disableSyn"
 		    x-ng-click="syn_report()">同步
-	      <i class="glyphicon glyphicon-sort"></i></button>
+	      <i class="glyphicon glyphicon-sort"></i></button> 
 	    
 	    <button type="button" class="btn blue reload purple-stripe"
 		    x-ng-click="do_search(pagination.default_page)">刷新

@@ -151,6 +151,7 @@ function wsaleRsnDetailCtrlProvide (
     diabloFilter.add_field("org_price", []);
     diabloFilter.add_field("mdiscount", []);
     diabloFilter.add_field("ldiscount", []);
+    diabloFilter.add_field("lsell",     []);
    
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
