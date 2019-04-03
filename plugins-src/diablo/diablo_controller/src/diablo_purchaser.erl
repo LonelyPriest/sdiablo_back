@@ -130,9 +130,9 @@ purchaser_inventory(abstract, Merchant, Shop, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {abstract_inventory, Merchant, Shop, Conditions});
 
-purchaser_inventory(check, Merchant, RSN, Mode) ->
+purchaser_inventory(check, Merchant, RSN, Props) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {check_inventory, Merchant, RSN, Mode});
+    gen_server:call(Name, {check_inventory, Merchant, RSN, Props});
 
 purchaser_inventory(delete_new, Merchant, RSN, Mode) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -1505,20 +1505,23 @@ handle_call({update_inventory, Merchant, Inventories, {Props, OldProps}}, _From,
     %% 		end, 
     %% end; 
 
-handle_call({check_inventory, Merchant, RSN, Mode}, _From, State) ->
-    ?DEBUG("check_inventory with merchant ~p, RSN ~p, Mode ~p",
-	   [Merchant, RSN, Mode]),
+handle_call({check_inventory, Merchant, RSN, Props}, _From, State) ->
+    ?DEBUG("check_inventory with merchant ~p, RSN ~p, Props ~p",
+	   [Merchant, RSN, Props]),
     Sql0 = "select id, rsn, state from w_inventory_new"
 	++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
 	++ " and merchant=" ++ ?to_s(Merchant),
+
+    Mode       = ?v(<<"mode">>,  Props),
+    CheckFirm  = ?v(<<"firm">>,  Props),
+    CheckPrice = ?v(<<"price">>, Props),
 
     case ?sql_utils:execute(s_read, Sql0) of
 	{ok, []} ->
 	    {reply, {error, ?err(failed_to_get_stock_new, RSN)}, State};
 	{ok, New} ->
 	    StockState = ?v(<<"state">>, New),
-	    case StockState == ?DISCARD
-		orelse StockState == ?FIRM_BILL of
+	    case StockState == ?DISCARD orelse StockState == ?FIRM_BILL of
 		true -> {reply, {error, ?err(error_state_of_check, RSN)}, State};
 		false ->
 		    Sql = "update w_inventory_new set state=" ++ ?to_s(Mode)
@@ -1530,11 +1533,28 @@ handle_call({check_inventory, Merchant, RSN, Mode}, _From, State) ->
 			    Reply = ?sql_utils:execute(write, Sql, RSN),
 			    {reply, Reply, State};
 			1 ->
-			    Sql1 = "select style_number, brand"
-				", firm, org_price from w_inventory_new_detail"
-				" where rsn=\'" ++ ?to_s(RSN) ++ "\'"
-				++ " and merchant=" ++ ?to_s(Merchant)
-				++ " and (org_price=0 or firm=-1)",
+			    Sql1 = 
+				case CheckFirm =:= ?UNCHECK andalso CheckPrice =:= ?UNCHECK of
+				    true -> [];
+				    false ->
+					"select style_number, brand, firm, org_price"
+					    " from w_inventory_new_detail"
+					    " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+					    ++ " and merchant=" ++ ?to_s(Merchant)
+					    ++ case CheckFirm =:= ?CHECK
+						   andalso CheckPrice =:= ?CHECK of
+						   true -> " and (org_price=0 or firm=-1)";
+						   false ->
+						       case CheckFirm =:= ?CHECK of
+							   true -> " and firm=-1";
+							   false -> []
+						       end ++ 
+							   case CheckPrice =:= ?CHECK of
+							       true -> " and org_price=0";
+							       false -> []
+							   end
+					       end
+				end,
 			    %% case ?sql_utils:execute(read, Sql1) of
 			    %% 	{ok, [{R}]} ->
 			    %% 	    %% ?DEBUG("R ~p", [R]),
@@ -1550,14 +1570,19 @@ handle_call({check_inventory, Merchant, RSN, Mode}, _From, State) ->
 			    %% 			    {reply, Reply, State}
 			    %% 		    end
 			    %% 	    end
-			    %% end 
-			    case ?sql_utils:execute(read, Sql1) of
-			    	{ok, []} -> 
-			    	    Reply = ?sql_utils:execute(write, Sql, RSN),
-			    	    {reply, Reply, State};
-			    	{ok, R} ->
-			    	    {reply, {error, {zero_org_price, R}}, State}
-			    end
+			    %% end
+			    Reply = 
+				case Sql1 of
+				    [] -> ?sql_utils:execute(write, Sql, RSN);
+				    _ ->
+					case ?sql_utils:execute(read, Sql1) of
+					    {ok, []} -> 
+						?sql_utils:execute(write, Sql, RSN);
+					    {ok, R} ->
+						{error, {zero_org_price, R}}
+					end
+				end,
+			    {reply, Reply, State}
 		    end
 	    end;
 	{error, Error} ->
@@ -1794,118 +1819,165 @@ handle_call({reject_inventory, Merchant, Inventories, Props}, _From, State) ->
     RejectTotal = ?v(<<"total">>, Props),
     Comment     = ?v(<<"comment">>, Props, ""), 
 
-    Sql0 = "select a.id, a.merchant, a.balance"
-	", b.balance as lbalance, b.should_pay, b.has_pay, b.verificate, b.e_pay"
-	" from suppliers a"
-	" left join "
-	"(select id, merchant, firm, balance, should_pay"
-	", has_pay, verificate, e_pay from w_inventory_new"
-	" where merchant=" ++ ?to_s(Merchant)
-	++ " and firm=" ++ ?to_s(Firm)
-	++ " and state in (0,1)"
-	++ " order by entry_date desc limit 1) b on a.merchant=b.merchant and a.id=b.firm"
-	" where a.id=" ++ ?to_s(Firm)
-	++ " and a.merchant=" ++ ?to_s(Merchant)
-	++ " and a.deleted=" ++ ?to_s(?NO) ++ ";",
+    CheckFirmSql =
+	case Firm =:= ?INVALID_OR_EMPTY of
+	    true -> {ok, []};
+	    false ->
+		{ok,
+		 "select a.id, a.merchant, a.balance"
+		 ", b.balance as lbalance, b.should_pay, b.has_pay, b.verificate, b.e_pay"
+		 " from suppliers a"
+		 " left join "
+		 "(select id, merchant, firm, balance, should_pay"
+		 ", has_pay, verificate, e_pay from w_inventory_new"
+		 " where merchant=" ++ ?to_s(Merchant)
+		 ++ " and firm=" ++ ?to_s(Firm)
+		 ++ " and state in (0,1)"
+		 ++ " order by entry_date desc limit 1) b on a.merchant=b.merchant and a.id=b.firm"
+		 " where a.id=" ++ ?to_s(Firm)
+		 ++ " and a.merchant=" ++ ?to_s(Merchant)
+		 ++ " and a.deleted=" ++ ?to_s(?NO) ++ ";"}
+	end,
     
     %% Sql0 = "select id, merchant, balance from suppliers"
     %% 	" where id=" ++ ?to_s(Firm)
     %% 	++ " and merchant=" ++ ?to_s(Merchant)
     %% 	++ " and deleted=" ++ ?to_s(?NO) ++ ";",
-    case ?sql_utils:execute(s_read, Sql0) of 
-	{ok, Account} -> 
-	    FF = fun (V) when V =:= <<>> -> 0;
-		     (Any)  -> ?to_f(Any)
-		 end,
-	    
-	    LastBalance = FF(?v(<<"lbalance">>, Account, 0))
-		+ FF(?v(<<"should_pay">>, Account, 0))
-		+ FF(?v(<<"e_pay">>, Account, 0))
-		- FF(?v(<<"has_pay">>, Account, 0))
-		- FF(?v(<<"verificate">>, Account, 0)), 
-	    CurrentBalance = ?v(<<"balance">>, Account, 0),
+    StockOutSql = fun(RSN, CurrentBalance) ->
+			  ["insert into w_inventory_new(rsn"
+			   ", employ, firm, shop, merchant, balance"
+			  ", should_pay, has_pay, cash, card, wire"
+			  ", verificate, total, comment, e_pay_type, e_pay"
+			  ", type, entry_date, op_date) values(" 
+			  ++ "\"" ++ ?to_s(RSN) ++ "\","
+			  ++ "\"" ++ ?to_s(Employe) ++ "\","
+			  ++ ?to_s(Firm) ++ ","
+			  ++ ?to_s(Shop) ++ ","
+			  ++ ?to_s(Merchant) ++ ","
+			  ++ ?to_s(CurrentBalance) ++ "," 
+			  ++ ?to_s(ShouldPay) ++ ","
+			  ++ ?to_s(HasPay) ++ ","
+			  ++ ?to_s(Cash) ++ ","
+			  ++ ?to_s(Card) ++ ","
+			  ++ ?to_s(Wire) ++ ","
+			  ++ ?to_s(VerifyPay) ++ ","
+			  ++ ?to_s(-RejectTotal) ++ ","
+			  ++ "\'" ++ ?to_s(Comment) ++ "\',"
+			  ++ ?to_s(EPayType) ++ ","
+			  ++ ?to_s(-EPay) ++ ","
+			  ++ ?to_s(?REJECT_INVENTORY) ++ ","
+			  ++ "\'" ++ ?to_s(DateTime) ++ "\',"
+			  ++ "\'" ++ ?to_s(Now) ++ "\')"]
+		  end,
+    case CheckFirmSql of
+	{ok, []} ->
+	    RSN = rsn(reject,
+		      Merchant,
+		      Shop,
+		      ?inventory_sn:sn(w_inventory_reject_sn, Merchant)),
+	    Sql1 = case RejectTotal of
+		       0 -> [];
+		       _ -> sql(wreject, RSN, Merchant, Shop, Firm, DateTime, Inventories)
+		   end,
+	    Sql2 = StockOutSql(RSN, 0), 
+	    AllSql = Sql1 ++ Sql2,
+	    {reply, ?sql_utils:execute(transaction, AllSql, RSN), State};
+	{ok, Sql0} ->
+	    case ?sql_utils:execute(s_read, Sql0) of 
+		{ok, Account} -> 
+		    FF = fun (V) when V =:= <<>> -> 0;
+			     (Any)  -> ?to_f(Any)
+			 end,
 
-	    ?DEBUG("current balance ~p, last balance ~p",
-		   [?to_f(CurrentBalance), ?to_f(LastBalance)]),
+		    LastBalance = FF(?v(<<"lbalance">>, Account, 0))
+			+ FF(?v(<<"should_pay">>, Account, 0))
+			+ FF(?v(<<"e_pay">>, Account, 0))
+			- FF(?v(<<"has_pay">>, Account, 0))
+			- FF(?v(<<"verificate">>, Account, 0)), 
+		    CurrentBalance = ?v(<<"balance">>, Account, 0),
 
-	    case ?to_f(LastBalance) =:= ?to_f(CurrentBalance)
-		orelse (CurrentBalance /= 0 andalso ?v(<<"lbalance">>, Account) =:= <<>>) of
-		true -> 
-		    RSN = rsn(reject,
-			      Merchant,
-			      Shop,
-			      ?inventory_sn:sn(w_inventory_reject_sn, Merchant)),
+		    ?DEBUG("current balance ~p, last balance ~p", [?to_f(CurrentBalance), ?to_f(LastBalance)]),
 
-		    Sql1 = case RejectTotal of
-			       0 -> [];
-			       _ -> sql(wreject, RSN, Merchant, Shop, Firm, DateTime, Inventories)
-			   end, 
-	    
-	    %% RealBalance = ?v(<<"balance">>, Account),
-	    Sql2 = ["insert into w_inventory_new(rsn"
-		    ", employ, firm, shop, merchant, balance"
-		    ", should_pay, has_pay, cash, card, wire"
-		    ", verificate, total, comment, e_pay_type, e_pay"
-		    ", type, entry_date, op_date) values(" 
-		    ++ "\"" ++ ?to_s(RSN) ++ "\","
-		    ++ "\"" ++ ?to_s(Employe) ++ "\","
-		    ++ ?to_s(Firm) ++ ","
-		    ++ ?to_s(Shop) ++ ","
-		    ++ ?to_s(Merchant) ++ ","
-		    ++ ?to_s(CurrentBalance) ++ "," 
-		    ++ ?to_s(ShouldPay) ++ ","
-		    ++ ?to_s(HasPay) ++ ","
-		    ++ ?to_s(Cash) ++ ","
-		    ++ ?to_s(Card) ++ ","
-		    ++ ?to_s(Wire) ++ ","
-		    ++ ?to_s(VerifyPay) ++ ","
-		    ++ ?to_s(-RejectTotal) ++ ","
-		    ++ "\'" ++ ?to_s(Comment) ++ "\',"
-		    ++ ?to_s(EPayType) ++ ","
-		    ++ ?to_s(-EPay) ++ ","
-		    ++ ?to_s(?REJECT_INVENTORY) ++ ","
-		    ++ "\'" ++ ?to_s(DateTime) ++ "\',"
-		    ++ "\'" ++ ?to_s(Now) ++ "\')"],
+		    case ?to_f(LastBalance) =:= ?to_f(CurrentBalance)
+			orelse (CurrentBalance /= 0 andalso ?v(<<"lbalance">>, Account) =:= <<>>) of
+			true -> 
+			    RSN = rsn(reject,
+				      Merchant,
+				      Shop,
+				      ?inventory_sn:sn(w_inventory_reject_sn, Merchant)),
 
-		    Metric = ShouldPay - EPay, 
-		    Sql3 = 
-			case Metric == 0 orelse Firm == -1 of
-			    true -> [];
-			    false  -> 
-				["update suppliers set balance=balance+"
-				 ++ ?to_s(ShouldPay-EPay)
-				 ++ ", change_date=" ++ "\"" ++ Now ++ "\""
-				 ++ " where id=" ++ ?to_s(?v(<<"id">>, Account)),
+			    Sql1 = case RejectTotal of
+				       0 -> [];
+				       _ -> sql(wreject, RSN, Merchant, Shop, Firm, DateTime, Inventories)
+				   end, 
 
-				 "insert into firm_balance_history("
-				 "rsn, firm, balance, metric, action"
-				 ", shop, merchant, entry_date) values("
-				 ++ "\'" ++ ?to_s(RSN) ++ "\',"
-				 ++ ?to_s(Firm) ++ ","
-				 ++ ?to_s(CurrentBalance) ++ ","
-				 ++ ?to_s(ShouldPay-EPay) ++ ","
-				 ++ ?to_s(?REJECT_INVENTORY) ++ "," 
-				 ++ ?to_s(Shop) ++ ","
-				 ++ ?to_s(Merchant) ++ ","
-				 ++ "\"" ++ ?to_s(DateTime) ++ "\")"]
-			end, 
-		    AllSql = Sql1 ++ Sql2 ++ Sql3,
-		    %% ?DEBUG("AllSql ~p", [AllSql]),
-		    case ?sql_utils:execute(transaction, AllSql, RSN) of
-			{ok, _} = OK ->
-			    case Metric == 0 of
-				true -> ok;
-				false -> ?w_user_profile:update(firm, Merchant)
-			    end,
-			    {reply, OK, State};
-			{error, _} = Error-> 
-			    {reply, Error, State} 
+			    %% RealBalance = ?v(<<"balance">>, Account),
+			    Sql2 = StockOutSql(RSN, CurrentBalance),
+			    %% Sql2 = ["insert into w_inventory_new(rsn"
+			    %% 	    ", employ, firm, shop, merchant, balance"
+			    %% 	    ", should_pay, has_pay, cash, card, wire"
+			    %% 	    ", verificate, total, comment, e_pay_type, e_pay"
+			    %% 	    ", type, entry_date, op_date) values(" 
+			    %% 	    ++ "\"" ++ ?to_s(RSN) ++ "\","
+			    %% 	    ++ "\"" ++ ?to_s(Employe) ++ "\","
+			    %% 	    ++ ?to_s(Firm) ++ ","
+			    %% 	    ++ ?to_s(Shop) ++ ","
+			    %% 	    ++ ?to_s(Merchant) ++ ","
+			    %% 	    ++ ?to_s(CurrentBalance) ++ "," 
+			    %% 	    ++ ?to_s(ShouldPay) ++ ","
+			    %% 	    ++ ?to_s(HasPay) ++ ","
+			    %% 	    ++ ?to_s(Cash) ++ ","
+			    %% 	    ++ ?to_s(Card) ++ ","
+			    %% 	    ++ ?to_s(Wire) ++ ","
+			    %% 	    ++ ?to_s(VerifyPay) ++ ","
+			    %% 	    ++ ?to_s(-RejectTotal) ++ ","
+			    %% 	    ++ "\'" ++ ?to_s(Comment) ++ "\',"
+			    %% 	    ++ ?to_s(EPayType) ++ ","
+			    %% 	    ++ ?to_s(-EPay) ++ ","
+			    %% 	    ++ ?to_s(?REJECT_INVENTORY) ++ ","
+			    %% 	    ++ "\'" ++ ?to_s(DateTime) ++ "\',"
+			    %% 	    ++ "\'" ++ ?to_s(Now) ++ "\')"],
+
+			    Metric = ShouldPay - EPay, 
+			    Sql3 = 
+				case Metric == 0 orelse Firm == -1 of
+				    true -> [];
+				    false  -> 
+					["update suppliers set balance=balance+"
+					 ++ ?to_s(ShouldPay-EPay)
+					 ++ ", change_date=" ++ "\"" ++ Now ++ "\""
+					 ++ " where id=" ++ ?to_s(?v(<<"id">>, Account)),
+
+					 "insert into firm_balance_history("
+					 "rsn, firm, balance, metric, action"
+					 ", shop, merchant, entry_date) values("
+					 ++ "\'" ++ ?to_s(RSN) ++ "\',"
+					 ++ ?to_s(Firm) ++ ","
+					 ++ ?to_s(CurrentBalance) ++ ","
+					 ++ ?to_s(ShouldPay-EPay) ++ ","
+					 ++ ?to_s(?REJECT_INVENTORY) ++ "," 
+					 ++ ?to_s(Shop) ++ ","
+					 ++ ?to_s(Merchant) ++ ","
+					 ++ "\"" ++ ?to_s(DateTime) ++ "\")"]
+				end, 
+			    AllSql = Sql1 ++ Sql2 ++ Sql3,
+			    %% ?DEBUG("AllSql ~p", [AllSql]),
+			    case ?sql_utils:execute(transaction, AllSql, RSN) of
+				{ok, _} = OK ->
+				    case Metric == 0 of
+					true -> ok;
+					false -> ?w_user_profile:update(firm, Merchant)
+				    end,
+				    {reply, OK, State};
+				{error, _} = Error-> 
+				    {reply, Error, State} 
+			    end;
+			false ->
+			    {reply, {invalid_balance, {Firm, CurrentBalance, LastBalance}}, State}
 		    end;
-		false ->
-		    {reply, {invalid_balance, {Firm, CurrentBalance, LastBalance}}, State}
-	    end;
-	Error ->
-	    {reply, Error, State}
+		Error ->
+		    {reply, Error, State}
+	    end
     end;
 
 %% fix

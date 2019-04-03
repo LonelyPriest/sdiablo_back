@@ -925,10 +925,20 @@ sys_config() ->
 	      {"stock_warning",   "库存预警",             "0",   "0"},
 	      {"stock_warning_a", "库存预警数量",         "0",   "0"},
 	      {"stock_contailer", "货品货柜号",           "0",   "0"},
-	      {"stock_firm",      "入库区分厂商",         "1",   "0"},
+	      
+	      %% [0] check firm when stock in
+	      %% [1] check original price when stock transfer
+	      
+	      %% [2] check original price when stock out
+	      %% [3] check frim when stock out
+
+	      %% [4] check original price wheen stock check
+	      %% [5] check firm when stock check 
+	      {"stock_firm",      "入库区分厂商",         "111111",   "0"},
+	      
 	      {"bcode_use",       "条码开单模式",         "0",   "0"},
 	      {"bcode_auto",      "采用系统规则生成条码", "1",   "0"}, 
-	      {"trans_orgprice",  "移仓检测进价",         "1",   "0"},
+	      %% {"trans_orgprice",  "移仓检测进价",         "1",   "0"},
 	      %% [0]: print color and size
 	      %% [1]: print color only
 	      %% [2]: print size only
@@ -945,9 +955,9 @@ sys_config() ->
 	      {"p_color_size",    "打印颜色尺码",         "0001111111", "0"},
 	      
 	      {"saler_stock",      "营业员查看区域库存",  "0",   "0"},
-	      {"r_stock_oprice",    "厂商退货检测进价",   "1",   "0"},
-	      {"c_stock_oprice",    "入库审核检测进价",   "1",   "0"},
-	      {"c_stock_firm",      "入库审核检测厂商",   "1",   "0"},
+	      %% {"r_stock_oprice",    "厂商退货检测进价",   "1",   "0"},
+	      %% {"c_stock_oprice",    "入库审核检测进价",   "1",   "0"},
+	      %% {"c_stock_firm",      "入库审核检测厂商",   "1",   "0"},
 	      {"export_code",       "导出编码格式",       "0",   "0"}, %% 0: utf8 1: gbk
 	      {"export_note",       "导出颜色尺码",       "0",   "0"}, %% 0: utf8 1: gbk
 

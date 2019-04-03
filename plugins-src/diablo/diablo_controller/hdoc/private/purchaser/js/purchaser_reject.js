@@ -33,17 +33,12 @@ function purchaserInventoryRejectCtrlProvide(
 
     $scope.setting = {};
     $scope.get_setting = function(shop_id) {
-	$scope.setting.reject_negative = stockUtils.reject_negative(shop_id, base);
-	
-	$scope.setting.check_orgprice =
-	    stockUtils.check_oprice_with_reject_stock(diablo_default_shop, base);
-
-	$scope.setting.scan_mode =
-	    stockUtils.to_integer(stockUtils.scan_mode(shop_id, base).charAt(2));
-
+	$scope.setting.reject_negative = stockUtils.reject_negative(shop_id, base); 
+	$scope.setting.check_orgprice = stockUtils.stock_mode(diablo_default_shop, base).check_o_price;
+	$scope.setting.check_firm = stockUtils.stock_mode(diablo_default_shop, base).check_o_firm;
+	$scope.setting.scan_mode = stockUtils.to_integer(stockUtils.scan_mode(shop_id, base).charAt(2));
 	$scope.setting.auto_barcode = stockUtils.auto_barcode(diablo_default_shop, base); 
 	// $scope.setting.type_sale = stockUtils.type_sale(shop_id, base);
-
 	console.log($scope.setting);
 	
     } 
@@ -212,6 +207,10 @@ function purchaserInventoryRejectCtrlProvide(
 		existStock = $scope.inventories[i];
 	    }
 
+	    if (item.firm_id === diablo_invalid_firm && $scope.setting.check_firm === diablo_no) {
+		continue;
+	    }
+	    
 	    if (item.firm_id !== $scope.inventories[i].firm_id){
 		diabloUtilsService.response_with_callback(
 		    false, "退货", "退货失败：" + purchaserService.error[2093],
@@ -220,7 +219,8 @@ function purchaserInventoryRejectCtrlProvide(
 	    };
 	}
 
-	if (diablo_invalid_firm === stockUtils.invalid_firm($scope.select.firm)){
+	if (diablo_invalid_firm === stockUtils.invalid_firm($scope.select.firm)
+	    && $scope.setting.check_firm === diablo_yes){
 	    $scope.select.firm = diablo_get_object(item.firm_id, $scope.firms);
 	    $scope.change_firm();
 	};
@@ -286,7 +286,8 @@ function purchaserInventoryRejectCtrlProvide(
     };
     
     $scope.save_inventory = function(){
-	if (diablo_invalid_firm === stockUtils.invalid_firm($scope.select.firm)){
+	if (diablo_yes === $scope.setting.check_firm
+	    && diablo_invalid_firm === stockUtils.invalid_firm($scope.select.firm)){
 	    diabloUtilsService.response(
 		false,
 		"库存退回",
@@ -360,7 +361,7 @@ function purchaserInventoryRejectCtrlProvide(
 	var e_pay = setv($scope.select.extra_pay);
 	
 	var base = {
-	    firm:          $scope.select.firm.id,
+	    firm:          stockUtils.invalid_firm($scope.select.firm),
 	    shop:          $scope.select.shop.id,
 	    datetime:      dateFilter(
 		$scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),
@@ -386,11 +387,17 @@ function purchaserInventoryRejectCtrlProvide(
 	    if (state.ecode == 0){
 		// diabloFilter.reset_firm(); 
 		$scope.disable_refresh     = false;
-		$scope.select.firm.balance = $scope.select.left_balance;
-		$scope.select.surplus = $scope.select.firm.balance;
-	    	diabloUtilsService.response(
-	    	    true, "采购退货", "退货成功！！退货单号：" + state.rsn)
-	    	return;
+		if (stockUtils.invalid_firm($scope.select.firm) !== diablo_invalid_firm
+		    && $scope.setting.check_firm === diablo_yes) {
+		    $scope.select.firm.balance = $scope.select.left_balance;
+		    $scope.select.surplus = $scope.select.firm.balance;
+		} 
+	    	diabloUtilsService.response_with_callback(
+		    true,
+		    "采购退货",
+		    "退货成功！！退货单号：" + state.rsn,
+		    undefined,
+		    $scope.refresh)
 	    } else{
 	    	diabloUtilsService.response_with_callback(
 	    	    false,

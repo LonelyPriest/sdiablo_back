@@ -165,11 +165,15 @@ action(Session, Req, {"modify_w_inventory_new_balance"}, Payload) ->
 action(Session, Req, {"check_w_inventory"}, Payload) ->
     ?DEBUG("check purchaser inventory with session ~p, paylaod~n~p",
 	   [Session, Payload]),
-    Merchant = ?session:get(merchant, Session),
-    RSN = ?v(<<"rsn">>, Payload, []),
-    Mode = ?v(<<"mode">>, Payload, ?CHECK),
+    Merchant   = ?session:get(merchant, Session),
+    RSN        = ?v(<<"rsn">>, Payload, []),
+    Mode       = ?v(<<"mode">>, Payload, ?CHECK),
+    CheckFirm  = ?v(<<"firm">>, Payload, ?CHECK),
+    CheckPrice = ?v(<<"price">>, Payload, ?CHECK),
     
-    case ?w_inventory:purchaser_inventory(check, Merchant, RSN, Mode) of
+    case ?w_inventory:purchaser_inventory(
+	    check, Merchant, RSN,
+	    [{<<"mode">>, Mode}, {<<"firm">>, CheckFirm}, {<<"price">>, CheckPrice}]) of
     	{ok, RSN} -> 
     	    ?utils:respond(
 	       200, Req,

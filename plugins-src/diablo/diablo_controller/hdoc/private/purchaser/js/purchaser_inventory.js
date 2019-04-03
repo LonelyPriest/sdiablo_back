@@ -297,7 +297,7 @@ function purchaserInventoryNewCtrlProvide (
 	$scope.base_settings.stock_alarm     = stockUtils.stock_alarm(shopId, base);
 	$scope.base_settings.stock_alarm_a   = stockUtils.stock_alarm_a(shopId, base);
 	$scope.base_settings.stock_contailer = stockUtils.stock_contailer(shopId, base); 
-	$scope.base_settings.stock_with_firm = stockUtils.stock_with_firm(shopId, base);
+	$scope.base_settings.stock_with_firm = stockUtils.stock_mode(shopId, base).check_i_firm;
 	$scope.base_settings.auto_barcode    = stockUtils.auto_barcode(shopId, base); 
 
 	angular.extend($scope.base_settings, stockUtils.bill_mode(shopId, base));
@@ -3346,7 +3346,8 @@ function purchaserInventoryNewDetailCtrlProvide (
     
 
     $scope.base_setting = {
-	check_firm: stockUtils.check_firm_with_check_stock_in(-1, base)
+	check_firm:  stockUtils.stock_mode(-1, base).check_c_firm,
+	check_price: stockUtils.stock_mode(-1, base).check_c_price
     };
 
     /*
@@ -3408,13 +3409,14 @@ function purchaserInventoryNewDetailCtrlProvide (
     
     $scope.check_detail = function(r){
 	// console.log(r);
-	if (diablo_yes === $scope.base_setting.check_firm
-	    && r.firm_id === diablo_invalid_firm) {
+	if (diablo_yes === $scope.base_setting.check_firm && r.firm_id === diablo_invalid_firm) {
 	    diabloUtilsService.response(
-	    	false, "入库单审核",
-	    	"入库单审核失败：" + purchaserService.error[2013]);
+	    	false, "入库单审核", "入库单审核失败：" + purchaserService.error[2013]);
 	} else {
-	    purchaserService.check_w_inventory_new(r.rsn).then(function(state){
+	    purchaserService.check_w_inventory_new(
+		r.rsn,
+		$scope.base_setting.check_firm,
+		$scope.base_setting.check_price).then(function(state){
 		console.log(state);
 		if (state.ecode == 0){
 		    dialog.response_with_callback(
@@ -3432,9 +3434,7 @@ function purchaserInventoryNewDetailCtrlProvide (
 
     $scope.uncheck_detail = function(r){
 	console.log(r);
-	purchaserService.uncheck_w_inventory_new(
-	    r.rsn, diablo_uncheck
-	).then(function(state){
+	purchaserService.uncheck_w_inventory_new(r.rsn).then(function(state){
 	    console.log(state);
 	    if (state.ecode == 0){
 		dialog.response_with_callback(

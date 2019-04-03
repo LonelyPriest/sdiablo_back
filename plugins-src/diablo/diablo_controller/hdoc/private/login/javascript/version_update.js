@@ -1,5 +1,10 @@
 var version_update = function(){
     var updates = [
+	{date: "2019-04-03",
+	 content:
+	 ["增加无厂商可退货配置"]
+	},
+	
 	{date: "2019-03-18",
 	 content:
 	 ["库存详情增加区域筛选条件",

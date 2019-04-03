@@ -117,8 +117,16 @@ var stockUtils = function(){
 	    return diablo_base_setting("image_mode", shop, base, parseInt, diablo_no);
 	},
 
-	stock_with_firm: function(shop, base) {
-	    return diablo_base_setting("stock_firm", shop, base, parseInt, diablo_yes);
+	stock_mode: function(shop, base) {
+	    var m = diablo_base_setting("stock_firm", shop, base, function(s) {return s}, diablo_stock_mode);
+	    return {
+		check_i_firm:     default_hide(m.charAt(0)),
+		check_t_price:    default_hide(m.charAt(1)),
+		check_o_price:    default_hide(m.charAt(2)),
+		check_o_firm:     default_hide(m.charAt(3)),
+		check_c_price:    default_hide(m.charAt(4)),
+		check_c_firm:     default_hide(m.charAt(5))
+	    }
 	},
 
 	use_barcode: function(shop, base) {

@@ -34,7 +34,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
     $scope.setting    = {history_stock: false};
     $scope.pattern    = {discount:diabloPattern.discount};
     
-    $scope.setting.stock_with_firm = stockUtils.stock_with_firm(diablo_default_shop, $scope.ubase); 
+    $scope.setting.stock_with_firm = stockUtils.stock_mode(diablo_default_shop, $scope.ubase).check_i_firm; 
     $scope.setting.use_barcode     = stockUtils.use_barcode(diablo_default_shop, $scope.ubase);
     $scope.setting.auto_barcode    = stockUtils.auto_barcode(diablo_default_shop, $scope.ubase);
     $scope.setting.printer_barcode = stockUtils.printer_barcode(user.loginShop, $scope.ubase);

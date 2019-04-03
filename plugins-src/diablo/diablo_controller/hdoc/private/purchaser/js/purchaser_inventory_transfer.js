@@ -34,7 +34,7 @@ function purchaserInventoryTransferCtrlProvide (
     $scope.calc_row = stockUtils.calc_row;
 
     $scope.init_base_setting = function(shopId) {
-	$scope.base_settings.check_orgprice_of_transfer = stockUtils.trans_orgprice(shopId, base);
+	$scope.base_settings.check_orgprice_of_transfer = stockUtils.stock_mode(shopId, base).check_t_price;
 	$scope.base_settings.type_sale = stockUtils.type_sale(shopId, base);
 	// $scope.base_settings.use_barcode = stockUtils.use_barcode(shopId, base);
 	$scope.base_settings.scan_mode = stockUtils.to_integer(stockUtils.scan_mode(shopId, base).charAt(3));

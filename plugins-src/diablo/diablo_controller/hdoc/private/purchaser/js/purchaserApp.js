@@ -403,15 +403,17 @@ function stockConfg(angular){
 	    return http.save({operation: "update_w_inventory"}, inventory).$promise;
 	};
 
-	this.check_w_inventory_new = function(rsn){
+	this.check_w_inventory_new = function(rsn, check_firm, check_price){
 	    return http.save({operation: "check_w_inventory"},
-			     {rsn: rsn,
-			      mode: diablo_check}).$promise;
+			     {rsn:   rsn,
+			      mode:  diablo_check,
+			      firm:  check_firm,
+			      price: check_price}).$promise;
 	};
 
 	this.uncheck_w_inventory_new = function(rsn){
 	    return http.save({operation: "check_w_inventory"},
-			     {rsn: rsn,
+			     {rsn:  rsn,
 			      mode: diablo_uncheck}).$promise;
 	};
 
