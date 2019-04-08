@@ -1032,7 +1032,7 @@ var wsaleCalc = function(){
 			for (var i=0, l=scounts.length; i<l; i++) {
 	    		    if ( Math.abs(count) >= wsaleUtils.to_integer(scounts[i]) ) {
 	    			rmoney = wsaleUtils.to_integer(sminus[i]);
-				stopCount = scounts[i];
+				stopCount = wsaleUtils.to_integer(scounts[i]);
 	    		    }
 			}
 
@@ -1053,7 +1053,8 @@ var wsaleCalc = function(){
 			if (rmoney !== 0) {
 			    vdiscount = diablo_discount(payAll - rmoney, payAll);
 			    angular.forEach(s.stocks, function(stock) {
-				stock.fdiscount = wsaleUtils.to_decimal(stock.discount - vdiscount);
+				// stock.fdiscount = wsaleUtils.to_decimal(stock.discount - vdiscount);
+				stock.fdiscount = wsaleUtils.to_decimal(diablo_full_discount - vdiscount);
 				stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
 			    }); 
 			} else {
