@@ -125,7 +125,8 @@ var stockUtils = function(){
 		check_o_price:    default_hide(m.charAt(2)),
 		check_o_firm:     default_hide(m.charAt(3)),
 		check_c_price:    default_hide(m.charAt(4)),
-		check_c_firm:     default_hide(m.charAt(5))
+		check_c_firm:     default_hide(m.charAt(5)),
+		check_t_firm:     default_hide(m.charAt(6))
 	    }
 	},
 

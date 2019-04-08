@@ -933,8 +933,10 @@ sys_config() ->
 	      %% [3] check frim when stock out
 
 	      %% [4] check original price wheen stock check
-	      %% [5] check firm when stock check 
-	      {"stock_firm",      "入库区分厂商",         "111111",   "0"},
+	      %% [5] check firm when stock check
+
+	      %% [6] check firm when stock transfer
+	      {"stock_firm",      "入库区分厂商",         "1111111",   "0"},
 	      
 	      {"bcode_use",       "条码开单模式",         "0",   "0"},
 	      {"bcode_auto",      "采用系统规则生成条码", "1",   "0"}, 

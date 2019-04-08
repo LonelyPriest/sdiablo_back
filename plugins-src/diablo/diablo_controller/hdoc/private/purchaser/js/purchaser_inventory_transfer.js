@@ -35,6 +35,7 @@ function purchaserInventoryTransferCtrlProvide (
 
     $scope.init_base_setting = function(shopId) {
 	$scope.base_settings.check_orgprice_of_transfer = stockUtils.stock_mode(shopId, base).check_t_price;
+	$scope.base_settings.check_firm_of_transfer = stockUtils.stock_mode(shopId, base).check_t_firm;
 	$scope.base_settings.type_sale = stockUtils.type_sale(shopId, base);
 	// $scope.base_settings.use_barcode = stockUtils.use_barcode(shopId, base);
 	$scope.base_settings.scan_mode = stockUtils.to_integer(stockUtils.scan_mode(shopId, base).charAt(3));
@@ -177,7 +178,7 @@ function purchaserInventoryTransferCtrlProvide (
 
     $scope.on_select_inventory = function(item, model, label){
 	console.log(item); 
-	if (diablo_invalid_firm === item.firm_id){
+	if (diablo_invalid_firm === item.firm_id && $scope.base_settings.check_firm_of_transfer){
 	    diabloUtilsService.response_with_callback(
 		false, "库存移仓", "转移失败：" + purchaserService.error[2089],
 		$scope, function(){ $scope.inventories[0] = {$edit:false, $new:true}});

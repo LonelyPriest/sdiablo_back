@@ -156,7 +156,7 @@ var diablo_bsale_print_cs_mode ="0001111111";
 /*
  * stock_mode
  */
-var diablo_stock_mode = "111111";
+var diablo_stock_mode = "1111111";
 
 /*
  * batch mode

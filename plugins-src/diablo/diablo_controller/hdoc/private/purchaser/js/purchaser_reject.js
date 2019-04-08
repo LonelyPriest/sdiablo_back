@@ -213,7 +213,7 @@ function purchaserInventoryRejectCtrlProvide(
 	    
 	    if (item.firm_id !== $scope.inventories[i].firm_id){
 		diabloUtilsService.response_with_callback(
-		    false, "退货", "退货失败：" + purchaserService.error[2093],
+		    false, "采购退货", "退货失败：" + purchaserService.error[2093],
 		    $scope, function(){$scope.inventories[0] = {$edit:false, $new:true}});
 		return;
 	    };
@@ -684,8 +684,8 @@ function purchaserInventoryRejectCtrlProvide(
 	}
 	    
 	    
-	if (0 === stockUtils.to_float(inv.org_price)
-	    || 0 == stockUtils.to_float(inv.tag_price)){
+	if ( (0 === stockUtils.to_float(inv.org_price) && $scope.setting.check_orgprice)
+	     || 0 == stockUtils.to_float(inv.tag_price) ){
 	    diabloUtilsService.response(
 	    	false,
 	    	"采购退货",
