@@ -906,7 +906,6 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
     Shop     = ?v(<<"shop">>, Attrs),
     Employee = ?v(<<"employee">>, Attrs),
     %% CBalance    = ?v(<<"charge_balance">>, Attrs),
-    
     Cash     = ?v(<<"cash">>, Attrs, 0),
     Card     = ?v(<<"card">>, Attrs, 0),
     Wxin     = ?v(<<"wxin">>, Attrs, 0),
@@ -1129,8 +1128,13 @@ handle_call({delete_recharge, Merchant, RechargeId, RechargeInfo, ChargePromotio
 		    ChargeId = ?v(<<"cid">>, RechargeInfo), 
 		    case Rule of
 			?THEORETIC_CHARGE ->
-			    CTime = ?v(<<"ctime">>, ChargePromotion), 
-			    Sqls = ["update w_card set ctime=ctime-" ++ ?to_s(CTime)
+			    CTime = ?v(<<"ctime">>, ChargePromotion),
+			    STime = ?v(<<"sbalance">>, RechargeInfo),
+			    Sqls = ["update w_card set ctime=ctime-"
+				    ++ case ?to_i(STime) > 0 of
+					   true -> ?to_s(?to_i(CTime) + ?to_i(STime));
+					   false -> ?to_s(CTime)
+				       end
 				    ++ " where merchant=" ++ ?to_s(Merchant)
 				    ++ " and retailer=" ++ ?to_s(RetailerId)
 				    ++ " and cid=" ++ ?to_s(ChargeId), Sql1],

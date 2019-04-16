@@ -406,6 +406,8 @@ function wretailerDetailCtrlProvide(
 		    } else {
 			return 0;
 		    }
+		} else if (diablo_theoretic_charge === promotion.rule_id) {
+		    return retailerUtils.to_integer(promotion.cstime);
 		}
 		return 0;
 		// else if (diablo_times_charge === promotion.rule_id) {
