@@ -1342,6 +1342,8 @@ inventory(transfer_detail, transfer, Merchant, Conditions, PageFun) ->
         ", a.tshop as tshop_id"
         ", a.employ as employee_id"
         ", a.total"
+	", a.cost"
+    %% ", a.xcost"
 	", a.comment"
 	", a.state"
         ", a.check_date"
@@ -1387,6 +1389,8 @@ inventory(transfer_rsn_groups, transfer, Merchant, Conditions, PageFun) ->
 	", b.amount"
 	", b.tag_price"
 	", b.org_price"
+    %% ", b.xprice"
+    %% ", b.xdiscount"
 	", b.path"
 	", b.entry_date"
 

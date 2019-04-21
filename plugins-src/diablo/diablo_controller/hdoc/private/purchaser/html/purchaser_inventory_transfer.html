@@ -140,13 +140,25 @@
 		    <th class="text-center">序号</th>
 		    <th x-ng-if="base_settings.scan_mode" class="text-center">条码</th>
 		    <th class="text-center">货号</th>
-		    <th class="text-center">品牌</th>
-		    <th class="text-center">类别</th> 
+		    <!-- <th class="text-center">品牌</th>  -->
+		    <!-- <th class="text-center">类别</th>  -->
 		    <th class="text-center">季节</th>
 		    <th class="text-center">库存</th>
-		    <th x-ng-if="stock_right.show_orgprice" class="text-center">进价</th>
+		    <th x-ng-if="base_settings.show_tagprice" class="text-center">吊牌价</th>
 		    <th class="text-center">数量</th>
-		    <th x-ng-if="stock_right.show_orgprice" class="text-center">小计</th>
+
+		    <th x-ng-if="stock_right.show_orgprice && (!base_settings.xsale || !master)">
+		      进价</th>
+		    
+		    <th x-ng-if="base_settings.xsale && master" class="text-center">批发价</th>
+		    
+		    <th x-ng-if="!base_settings.xsale && stock_right.show_orgprice
+				 || base_settings.xsale && master
+				 || base_settings.xsale && !master && stock_right.show_orgprice"
+			class="text-center">折扣率</th>
+		    
+		    <th x-ng-if="base_settings.xsale || stock_right.show_orgprice"
+			class="text-center">小计</th> 
 		    <th class="text-center">操作</th>
 		  </tr>
 		</thead>
@@ -188,50 +200,83 @@
 		      </form>
 		    </td>
 
-		    <td class="vert-align">{{inv.brand}}</td>
-		    <td class="vert-align">{{inv.type}}</td> 
+		    <!-- <td class="vert-align">{{inv.brand}}</td> -->
+		    <!-- <td class="vert-align">{{inv.type}}</td>  -->
 		    <td class="vert-align">{{seasons[inv.season]}}</td>
 		    <td class="vert-align">{{inv.total}}</td> 
-
-		    <td x-ng-if="stock_right.show_orgprice" class="vert-align">{{inv.org_price}}</td>
+		    <td x-ng-if="base_settings.show_tagprice" class="vert-align">{{inv.tag_price}}</td>
 		    <td class="col-md-1 vert-align">
 		      <div x-ng-if="!inv.$new && !inv.free_update">
 			{{inv.reject}}
 		      </div> 
 		      <form name="inv.form.reject"
-			    ng-if="inv.$new && inv.free_color_size || !inv.$new && inv.free_update">
+			    x-ng-if="inv.$new && inv.free_color_size || !inv.$new && inv.free_update">
 			<div ng-class="{'has-error':inv.form.reject.$invalid
 				       && !inv.form.reject.$pristine
-				       || !valid_free_size_reject(inv)}"}>
+				       || !valid_free_size_reject(inv)}">
 			  <input class="form-control"
-				 type="number" step="1" 
+				 type="number" step="1"
+				 name="reject"
 				 required
 				 x-ng-edit
 				 x-ng-pattern="/^[1-9][0-9]*$/"
 				 x-ng-model="inv.amounts[0].reject_count"
 				 focus-auto="focus.transfer"
-				 x-ng-change="auto_save_free(inv)"
+				 x-ng-change="(base_settings.xsale && master) || auto_save_free(inv)"
 				 placeholder="数量" />
 		      </form>
 		    </td>
-
-		    <td class="vert-align" x-ng-if="stock_right.show_orgprice">
+		    
+		    <td x-ng-if="stock_right.show_orgprice && (!base_settings.xsale || !master)">
+		      {{inv.org_price}}
+		    </td>
+		    
+		    <td x-ng-if="base_settings.xsale && master" class="vert-align">{{inv.xprice}}</td> 
+		    
+		    <td x-ng-if="stock_right.show_orgprice && (!base_settings.xsale || !master)">
+		      {{inv.ediscount}}
+		    </td>
+		    
+		    <td x-ng-if="base_settings.xsale && master" class="col-md-1 vert-align">
+		      <div x-ng-if="!inv.$new && !inv.free_update">{{inv.xdiscount}}</div>
+		      <form x-ng-if="inv.$new && inv.free_color_size || !inv.$new && inv.free_update"
+			    name="inv.form.xdiscount">
+			<div ng-class="{'has-error': inv.form.bdiscount.$invalid && !inv.form.xdiscount.$pristine}">
+			  <input class="form-control"
+				 type="number" step="1"
+				 name="xdiscount"
+				 required
+				 disable-key
+				 x-ng-edit
+				 x-ng-pattern="pattern.discount"
+				 x-ng-model="inv.xdiscount"
+				 x-ng-enter="auto_save_free(inv)"
+				 x-ng-change="row_change_bdiscount(inv)"/>
+			</div>
+		      </form>
+		    </td>
+		    
+		    <td x-ng-if="base_settings.xsale && master" class="text-center vert-align">
+			<div x-ng-if="!inv.$new && inv.reject">
+			  {{calc_row(inv.xprice, 100, inv.reject)}}
+			</div>
+		    </td>
+		    
+		    <td x-ng-if="stock_right.show_orgprice && (!base_settings.xsale || !master)"
+			class="vert-align">
 		      <div x-ng-if="!inv.$new && inv.reject">
 			{{calc_row(inv.org_price, 100, inv.reject)}}
 		      </div>
-		    </td>
+		    </td> 
 		    
 		    <td class="text-left vert-align">
 		      <div x-ng-if="inv.$new"> 
-			<a class="btn diablo-input-button btn-success"
-			   x-ng-if="!inv.free_color_size"
-			   x-ng-disabled="inv.form.good.$invalid"
-			   x-ng-click="add_inventory(inv)">新增
+			<a class="btn diablo-input-button btn-success" x-ng-if="!inv.free_color_size"
+			   x-ng-disabled="inv.form.good.$invalid" x-ng-click="add_inventory(inv)">新增
 			  <i class="glyphicon glyphicon-plus"></i></a>
 			
 			<a class="btn diablo-input-button btn-warning"
-			   x-ng-disabled="!inv.style_number"
-			   x-ng-click="reset_inventory(inv)">重置
+			   x-ng-disabled="!inv.style_number" x-ng-click="reset_inventory(inv)">重置
 			  <i class="glyphicon glyphicon-pushpin"></i></a>
 		      </div>
 
@@ -270,13 +315,27 @@
 		  </tr>
 		  
 		  <tr x-ng-if="select.total!==0" class="text-center">
-		    <td colspan="8"></td> 
-		    <td class="vert-align">
-		      <span class="fg-red">{{select.total}}</span>
+		    <td></td>
+		    <td x-ng-if="base_settings.scan_mode"></td>
+		    <td colspan="3"></td>
+		    <td x-ng-if="base_settings.show_tagprice"></td>
+		    <td class="vert-align"> <span class="fg-red">{{select.total}}</span></td>
+
+		    <td x-ng-if="stock_right.show_orgprice && (!base_settings.xsale || !master)"></td>
+		    <td x-ng-if="base_settings.xsale && master" class="text-center"></td>
+		    
+		    <td x-ng-if="!base_settings.xsale && stock_right.show_orgprice
+				 || base_settings.xsale && master
+				 || base_settings.xsale && !master && stock_right.show_orgprice"
+			class="text-center"></td>
+		    
+		    <td x-ng-if="stock_right.show_orgprice && (!base_settings.xsale || !master)"
+			class="text-center">{{select.cost}}</td>
+
+		    <td x-ng-if="base_settings.xsale && master" class="text-center vert-align">
+		      {{select.xcost}}
 		    </td>
-		    <td x-ng-if="stock_right.show_orgprice" class="vert-align">
-		      {{select.cost}}
-		    </td>
+		    
 		    <td colspan="1"></td>
 		  </tr>
 		</tbody>
@@ -294,10 +353,47 @@
 
 
 <script type="text/ng-template" id="inventory-new.html">
-  <div class="modal-body"> 
+  <div class="modal-body">
+    <div x-ng-if="base_settings.xsale && master" class="diablo-form-group">
+      <div class="input-group">
+      	<span class="input-group-addon">
+      	  <i class="glyphicon glyphicon-yen fg-red"></i>批发折扣
+      	</span>
+
+	<form name="params.dForm">
+	  <div ng-class="{'has-error':params.dForm.$invalid && !params.dForm.$pristine}">
+	    <input id="xdiscount" class="form-control text-center"
+		   type="number" step="1"
+		   required
+		   disable-key
+		   x-ng-pattern="/^\d{1,2}$/"
+		   x-ng-model="params.xdiscount"
+		   focus-auto="true"
+		   placeholder="请输入批发折扣，两位整数且不包含小数点" />
+	  </div>
+	</form>
+
+	<!-- <span class="input-group-addon"> -->
+	<!--   <i class="glyphicon glyphicon-sort-by-attributes-alt fg-red"></i> -->
+	<!-- </span> -->
+
+	<!-- <form name="bprice"> -->
+	<!--   <div ng-class="{'has-error':fprice.$invalid && !fprice.$pristine}"> -->
+	<!--     <input class="form-control text-center" -->
+	<!-- 	   type="number" step="0.01" -->
+	<!-- 	   required -->
+	<!-- 	   disable-key  -->
+	<!-- 	   x-ng-model="params.fprice" -->
+	<!-- 	   placeholder="支持两位小数" -->
+	<!-- 	   x-ng-pattern="/^\d+(.\d{1,2})?$/"/> -->
+	<!--   </div> -->
+	<!-- </form> -->
+      </div>
+    </div>
+    
     <div class="table-responsive">
       <table class="table table-bordered table-striped
-		    table-condensed table-advanced" navtable>
+		    table-condensed table-advanced" navtable focus-table>
 	<tbody>
 	  <tr>
 	    <td></td>
@@ -328,7 +424,8 @@
 			     disable-wheel
 			     ng-edit
 			     ng-enter="params.valid(params.amounts) && ok()"
-			     focus-auto="s===params.sizes[0] && c.cid===params.colors[0].cid"/>
+			     focus-auto="!base_settings.xsale
+					 && s===params.sizes[0] && c.cid===params.colors[0].cid"/>
 		    </div>
 		  </form>
 		</div>
@@ -343,7 +440,9 @@
 
   <div class="modal-footer">
     <button class="btn btn-primary"
-	    x-ng-disabled="!params.valid(params.amounts)" x-ng-click="ok()">保存</button>
+	    x-ng-disabled="!params.valid(params.amounts)
+			   || (base_settings.xsale && master && params.dForm.$invalid)"
+	    x-ng-click="ok()">保存</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>
 </script>

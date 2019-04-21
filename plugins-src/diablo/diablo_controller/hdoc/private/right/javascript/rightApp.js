@@ -355,10 +355,10 @@ function rightConfig(angular){
 		{account: account.id, type: account.type})
 	};
 
-	this.update_account_role = function(account, role){
+	this.update_account_role = function(account, accountType, role){
 	    return right.save(
 		{operation: "update_account"},
-		{account: account.id, role: role.id})
+		{account: account.id, role: role.id, type:accountType})
 	};
 
 	this.update_user_account = function(account){

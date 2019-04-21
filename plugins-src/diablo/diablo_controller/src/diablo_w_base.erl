@@ -1001,7 +1001,8 @@ sys_config() ->
 	      %%[3]:add scan mode when stock_transfer
 	      %%[4]:foucs styleNumber when barcode use
 	      %%[5]:show tag_price in stock transfer
-	      {"scan_only",         "扫码模式",           "000000", "0"},
+	      %%[6]:xsale mode only use to batch sale transfer
+	      {"scan_only",         "扫码模式",           "0000000", "0"},
 	      %% {"auto_level",        "会员自动升级",       "0",    "0"},
 	      {"maling_rang",       "抹零范围",           "3",    "0"},
 	      %% 1: clothes mode, 2: child mode, 3: home mode

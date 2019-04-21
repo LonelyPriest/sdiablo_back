@@ -220,8 +220,8 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
     filterEmployee, filterSizeGroup, filterColor, filterTemplate, filterRegion, base){
     // console.log(user.right);
     // var permitShops      = user.shopIds;
-    $scope.shops     = user.sortShops.concat(user.sortBadRepoes);
-    $scope.shopIds   = user.shopIds.concat(user.badrepoIds);
+    $scope.shops     = user.sortShops;
+    $scope.shopIds   = user.shopIds;
     $scope.goto_page = diablo_goto_page;
 
     $scope.calc_row   = stockUtils.calc_row;
@@ -229,15 +229,11 @@ function purchaserInventoryNewRsnDetailCtrlProvide (
     $scope.css        = diablo_stock_css;
 
     $scope.setting = {
-	// self_barcode   :stockUtils.barcode_self(diablo_default_shop, base), 
 	use_barcode: stockUtils.use_barcode(diablo_default_shop, base),
 	auto_barcode :stockUtils.auto_barcode(diablo_default_shop, base),
 	printer_barcode: stockUtils.printer_barcode(user.loginShop, base),
 	dual_barcode: stockUtils.dual_barcode_print(user.loginShop, base),
-	print_access: stockUtils.print_num(user.loginShop, base)
-	// barcode_width: stockUtils.barcode_width(diablo_default_shop, base),
-	// barcode_height: stockUtils.barcode_height(diablo_default_shop, base),
-	// barcode_firm: stockUtils.barcode_with_firm(diablo_default_shop, base)
+	print_access: stockUtils.print_num(user.loginShop, base) 
     };
 
     $scope.template = filterTemplate.length !== 0 ? filterTemplate[0] : undefined;
@@ -899,8 +895,8 @@ function purchaserInventoryTransferFromRsnDetailCtrlProvide(
     // $scope.shops = user.sortAvailabeShops;
     // $scope.shops   = user.sortShops;
     // $scope.shopIds = user.shopIds;
-    $scope.shops  = user.sortBadRepoes.concat(user.sortShops, user.sortRepoes);
-    $scope.shopIds = user.shopIds.concat(user.badrepoIds, user.repoIds);
+    $scope.shops  = user.sortShops;
+    $scope.shopIds = user.shopIds;
     
     // style_number
     $scope.match_style_number = function(viewValue){
@@ -917,9 +913,15 @@ function purchaserInventoryTransferFromRsnDetailCtrlProvide(
 	// master: rightAuthen.authen_master(user.type)
     };
 
+    var tMode = stockUtils.scan_mode(diablo_default_shop, base);
     $scope.setting = {
-	show_tagprice: stockUtils.to_integer(stockUtils.scan_mode(diablo_default_shop, base).charAt(5))
+	show_tagprice: stockUtils.to_integer(tMode.charAt(5)),
+	xsale: stockUtils.to_integer(tMode.charAt(6))
     };
+
+    $scope.master = diablo_no; 
+    if ($scope.setting.xsale)
+	$scope.master = user.sortRepoes.length === 0 ? diablo_no : diablo_yes;
 
     $scope.total_items = 0;
     
@@ -998,6 +1000,7 @@ function purchaserInventoryTransferFromRsnDetailCtrlProvide(
 		    $scope.total_items = result.total;
 		    $scope.total_amounts = result.t_amount;
 		    $scope.total_cost = result.t_cost;
+		    $scope.total_xcost = result.t_xcost;
 		}
 		
 		angular.forEach(result.data, function(d){
@@ -1009,9 +1012,10 @@ function purchaserInventoryTransferFromRsnDetailCtrlProvide(
 		    d.type = diablo_get_object(d.type_id, filterType);
 
 		    d.calc = stockUtils.to_decimal(d.org_price * d.amount);
+		    d.xcalc = stockUtils.to_decimal(d.xprice * d.amount);
 		});
 		
-		$scope.inventories = result.data; 
+		$scope.inventories = result.data;
 		diablo_order_page(page, $scope.items_perpage, $scope.inventories);
 	    })
 	})
@@ -1117,8 +1121,8 @@ function purchaserInventoryTransferToRsnDetailCtrlProvide(
     // var permitShops =  user.shopIds;
     // $scope.shops = user.sortAvailabeShops;
     // $scope.shops   = user.sortShops;
-    $scope.shops  = user.sortBadRepoes.concat(user.sortShops, user.sortRepoes);
-    $scope.shopIds = user.shopIds.concat(user.badrepoIds, user.repoIds);
+    $scope.shops  = user.sortShops;
+    $scope.shopIds = user.shopIds;
     
     // style_number
     $scope.match_style_number = function(viewValue){
@@ -1134,9 +1138,15 @@ function purchaserInventoryTransferToRsnDetailCtrlProvide(
 	show_orgprice: stockUtils.authen_rainbow(user.type, user.right, "show_orgprice")
     };
 
+    var tMode = stockUtils.scan_mode(diablo_default_shop, base);
     $scope.setting = {
-	show_tagprice: stockUtils.to_integer(stockUtils.scan_mode(diablo_default_shop, base).charAt(5))
+	show_tagprice: stockUtils.to_integer(tMode.charAt(5)),
+	xsale: stockUtils.to_integer(tMode.charAt(6))
     };
+
+    $scope.master = diablo_no;
+    if ($scope.setting.xsale)
+	$scope.master = user.sortRepoes.length === 0 ? diablo_no : diablo_yes;
 
     $scope.total_items = 0;
     
@@ -1218,19 +1228,19 @@ function purchaserInventoryTransferToRsnDetailCtrlProvide(
 		    $scope.total_items = result.total;
 		    $scope.total_amounts = result.t_amount;
 		    $scope.total_cost = result.t_cost;
+		    $scope.total_xcost = result.t_xcost;
 		}
 		
 		angular.forEach(result.data, function(d){
-		    d.fshop = diablo_get_object(
-			d.fshop_id, filterShop);
-		    d.tshop = diablo_get_object(
-			d.tshop_id, $scope.shops);
+		    d.fshop = diablo_get_object(d.fshop_id, filterShop);
+		    d.tshop = diablo_get_object(d.tshop_id, $scope.shops);
 		    
 		    d.firm = diablo_get_object(d.firm_id, filterFirm);
 		    d.brand = diablo_get_object(d.brand_id, filterBrand);
 		    d.type = diablo_get_object(d.type_id, filterType);
 
 		    d.calc = stockUtils.to_decimal(d.org_price * d.amount);
+		    d.xcalc = stockUtils.to_decimal(d.xprice * d.amount);
 		});
 		
 		$scope.inventories = result.data; 

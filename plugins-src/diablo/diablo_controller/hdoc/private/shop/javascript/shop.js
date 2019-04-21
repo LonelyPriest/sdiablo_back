@@ -75,6 +75,7 @@ function shopDetailCtrlProvide(
     $scope.charges = filterCharge.filter(function(c){
 	return c.type===diablo_charge && c.deleted!==diablo_has_deleted;
     });
+    
     $scope.charges = $scope.charges.concat([{id:-1, name:"重置充值方案"}]);
     
     $scope.draws   = filterCharge.filter(function(c){
@@ -89,10 +90,7 @@ function shopDetailCtrlProvide(
     $scope.goto_page   = diablo_goto_page;
 
     // authen    
-    $scope.authen_list_repo =
-	rightAuthen.authen_menu(
-	    rightAuthen.shop_action["list_repo"],
-	    user.right); 
+    $scope.authen_list_repo = rightAuthen.authen_menu(rightAuthen.shop_action["list_repo"], user.right); 
     
     $scope.repertories = [];
     var deferred = $q.defer(); 
@@ -131,38 +129,38 @@ function shopDetailCtrlProvide(
 	    $scope.shops = [];
 	    angular.forEach(shops, function(s){
 		// console.log($scope.authen_list_repo);
-		if (s.type === diablo_shop){
-		    $scope.shops.push({
-			id: s.id,
-			name: s.name,
-			
-			charge_id: s.charge_id,
-			charge: diablo_get_object(s.charge_id, $scope.charges),
-			draw_id: s.draw_id,
-			draw: diablo_get_object(s.draw_id, $scope.draws),
+		// if (s.type === diablo_shop){
+		$scope.shops.push({
+		    id: s.id,
+		    name: s.name,
+		    
+		    charge_id: s.charge_id,
+		    charge: diablo_get_object(s.charge_id, $scope.charges),
+		    draw_id: s.draw_id,
+		    draw: diablo_get_object(s.draw_id, $scope.draws),
 
-			score_id: s.score_id,
-			score: diablo_get_object(s.score_id, $scope.scores),
+		    score_id: s.score_id,
+		    score: diablo_get_object(s.score_id, $scope.scores),
 
-			region_id: s.region_id,
-			region: diablo_get_object(s.region_id, $scope.regions),
-			
-			address:      s.address,
-			open_date:    s.open_date,
-			entry_date:   s.entry_date,
+		    region_id: s.region_id,
+		    region: diablo_get_object(s.region_id, $scope.regions),
+		    
+		    address:      s.address,
+		    open_date:    s.open_date,
+		    entry_date:   s.entry_date,
 
-			bcode_friend: s.bcode_friend ? s.bcode_friend + "?" + Math.random() : undefined,
-			bcode_pay:    s.bcode_pay ? s.bcode_pay + "?" + Math.random() : undefined,
-			
-			repo_id:s.repo,
-			repo:$scope.authen_list_repo
-			    ? $scope.get_repo(s.repo) : undefined,
-			
-			shopowner_id:s.shopowner_id,
-			shopowner:diablo_get_object(
-			    s.shopowner_id, $scope.employees)})
-		}
-	    }) 
+		    bcode_friend: s.bcode_friend ? s.bcode_friend + "?" + Math.random() : undefined,
+		    bcode_pay:    s.bcode_pay ? s.bcode_pay + "?" + Math.random() : undefined,
+		    
+		    repo_id:s.repo,
+		    repo:$scope.authen_list_repo
+			? $scope.get_repo(s.repo) : undefined,
+		    
+		    shopowner_id:s.shopowner_id,
+		    shopowner:diablo_get_object(
+			s.shopowner_id, $scope.employees)})
+		// }
+	    })
 	    diablo_order($scope.shops);
 	    // console.log($scope.shops);
 	});

@@ -2121,8 +2121,8 @@ function purchaserInventoryDetailCtrlProvide(
     $scope.tab_active = {time: true, chart:false};
     $scope.chart_data = {};
     
-    $scope.shops     = user.sortShops.concat(user.sortBadRepoes);
-    $scope.shopIds   = user.shopIds.concat(user.badrepoIds);
+    $scope.shops     = user.sortShops;
+    $scope.shopIds   = user.shopIds;
     
     $scope.sexs      = diablo_sex;
     $scope.seasons   = diablo_season;
@@ -3333,8 +3333,8 @@ function purchaserInventoryNewDetailCtrlProvide (
     // console.log(filterEmployee);
     // console.log(filterRegion);
 
-    $scope.shops   = user.sortShops.concat(user.sortBadRepoes);
-    $scope.shopIds = user.shopIds.concat(user.badrepoIds);
+    $scope.shops   = user.sortShops;
+    $scope.shopIds = user.shopIds;
     $scope.regions = filterRegion;
 
     $scope.f_add   = diablo_float_add;

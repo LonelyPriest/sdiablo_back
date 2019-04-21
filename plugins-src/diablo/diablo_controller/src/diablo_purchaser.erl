@@ -2030,8 +2030,12 @@ handle_call({transfer_inventory, Merchant, Inventories, Props}, _From, State) ->
     Total       = ?v(<<"total">>, Props),
     Cost        = ?v(<<"cost">>, Props),
     Comment     = ?v(<<"comment">>, Props, []),
-    TRSN        = rsn(transfer_from, Merchant, Shop,
-		      ?inventory_sn:sn(w_inventory_transfer_sn_from, Merchant)),
+
+    XSale       = ?v(<<"xsale">>, Props, ?NO),
+    XMaster     = ?v(<<"xmaster">>, Props, ?NO), 
+    XCost       = ?v(<<"xcost">>, Props, ?NO),
+    
+    TRSN = rsn(transfer_from, Merchant, Shop, ?inventory_sn:sn(w_inventory_transfer_sn_from, Merchant)),
     %% ToRSN = rsn(transfer_to, Merchant, ToShop,
     %%        ?inventory_sn:sn(w_inventory_transfer_sn_to, Merchant)),
 
@@ -2043,13 +2047,17 @@ handle_call({transfer_inventory, Merchant, Inventories, Props}, _From, State) ->
             ++ ?to_s(ToShop) ++ ","
             ++ "\"" ++ ?to_s(Employe) ++ "\","
             ++ ?to_s(Total) ++ ","
-	    ++ ?to_s(Cost) ++ ","
+	    ++ case XSale =:= ?YES andalso XMaster =:= ?YES of
+		true -> ?to_s(XCost);
+		false -> ?to_s(Cost)
+	       end ++ ","
+	    %% ++ ?to_s(XCost) ++ ","
             ++ "\"" ++ ?to_s(Comment) ++ "\","
             ++ ?to_s(Merchant) ++ ","
             ++ ?to_s(0) ++ ","
 
 	    ++ "\"" ++ ?to_s(DateTime) ++ "\")"],
-    Sql2 = sql(transfer_from, TRSN, Merchant, Shop, ToShop, DateTime, Inventories),
+    Sql2 = sql(transfer_from, TRSN, Merchant, Shop, ToShop, DateTime, {Inventories, Props}),
     ?DEBUG("Sql2 ~p", [Sql2]), 
     AllSql = Sql1 ++ Sql2,    %% ?DEBUG("AllSql ~p", [AllSql]),
     Reply = ?sql_utils:execute(transaction, AllSql, TRSN),
@@ -2769,10 +2777,12 @@ handle_call({filter_fix, Merchant, CurrentPage, ItemsPerPage, Fields}, _From, St
 
 %% transfer
 handle_call({total_transfer, Merchant, Fields}, _From, State) ->
-    Sql = "rsn, total",
+    Sql = "rsn, total, cost",
     CountTable = ?sql_utils:count_table(w_inventory_transfer, Sql, Merchant, Fields),
     CountSql = "select count(*) as total"
         ", sum(total) as t_amount"
+	", sum(cost) as t_cost"
+    %% ", sum(xcost) as t_xcost"
         " from ("
         ++ CountTable ++ ") a",
     %% Sql = ?sql_utils:count_table("w_inventory_fix", Merchant, Fields),
@@ -2951,6 +2961,7 @@ handle_call({total_transfer_rsn_groups, Merchant, Fields}, _From, State) ->
     CountSql = "select count(*) as total"
         ", SUM(amount) as t_amount"
 	", SUM(amount * org_price) as t_cost"
+    %% ", SUM(amount * xprice) as t_xcost"
         " from w_inventory_transfer_detail"
         " where rsn in(" ++ CountTable ++ ")",
     Reply = ?sql_utils:execute(s_read, CountSql),
@@ -3320,14 +3331,14 @@ sql(wreject, RSN, Merchant, Shop, Firm, DateTime, Inventories) ->
 		  ++ Acc0 
       end, [], Inventories);
 
-sql(transfer_from, RSN, Merchant, Shop, TShop, Datetime, Inventories) ->
+sql(transfer_from, RSN, Merchant, Shop, TShop, Datetime, {Inventories, Props}) ->
     RealyShop = ?w_good_sql:realy_shop(true, Merchant, Shop),
     lists:foldr(
       fun({struct, Inv}, Acc0)->
               %% Amounts = lists:reverse(?v(<<"amounts">>, Inv)),
               ?w_transfer_sql:amount_transfer(
                  transfer_from, RSN, Merchant, RealyShop, TShop,
-                 Datetime, Inv) ++ Acc0
+                 Datetime, Inv, Props) ++ Acc0
       end, [], Inventories).
 
 sql(wfix, RSN, Datetime, Merchant, Shop, {StocksNotInDB, StocksNotInShop, StocksDiff}) -> 

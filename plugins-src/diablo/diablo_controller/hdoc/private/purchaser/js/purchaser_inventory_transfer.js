@@ -7,9 +7,11 @@ function purchaserInventoryTransferCtrlProvide (
     purchaserService, user, filterShop, filterFirm, filterEmployee,
     filterSizeGroup, filterColor, base){
     // console.log(user); 
-    // console.log(filterShop);
-    $scope.shops = user.sortBadRepoes.concat(user.sortShops, user.sortRepoes);
-    console.log($scope.shops);
+    // console.log(filterShop); 
+    $scope.shops = user.sortShops;
+    // console.log($scope.shops);
+    // console.log(user.sortRepoes);
+    
     $scope.to_shops          = [];
     
     // $scope.f_add             = diablo_float_add;
@@ -28,6 +30,8 @@ function purchaserInventoryTransferCtrlProvide (
 	diablo_goto_page("#inventory/inventory_transfer_detail");
     };
 
+    $scope.pattern = {discount:diabloPattern.discount};
+
     var authen = new diabloAuthen(user.type, user.right, user.shop);
     $scope.stock_right = authen.authenStockRight(); 
 
@@ -38,10 +42,19 @@ function purchaserInventoryTransferCtrlProvide (
 	$scope.base_settings.check_firm_of_transfer = stockUtils.stock_mode(shopId, base).check_t_firm;
 	$scope.base_settings.type_sale = stockUtils.type_sale(shopId, base);
 	// $scope.base_settings.use_barcode = stockUtils.use_barcode(shopId, base);
-	$scope.base_settings.scan_mode = stockUtils.to_integer(stockUtils.scan_mode(shopId, base).charAt(3));
-	$scope.base_settings.auto_barcode = stockUtils.auto_barcode(diablo_default_shop, base); 
 
-	console.log($scope.base_settings);
+	var tMode = stockUtils.scan_mode(shopId, base);
+	$scope.base_settings.scan_mode = stockUtils.to_integer(tMode.charAt(3));
+	$scope.base_settings.show_tagprice = stockUtils.to_integer(tMode.charAt(5));
+	$scope.base_settings.xsale = stockUtils.to_integer(tMode.charAt(6));
+	$scope.base_settings.auto_barcode = stockUtils.auto_barcode(diablo_default_shop, base);
+
+	// can operater repo, means master
+	$scope.master = diablo_no; 
+	if ($scope.base_settings.xsale)
+	    $scope.master = user.sortRepoes.length === 0 ? diablo_no : diablo_yes;
+	
+	console.log($scope.base_settings, $scope.master);
     };
 
     var now = $.now();
@@ -58,10 +71,18 @@ function purchaserInventoryTransferCtrlProvide (
     };
 
     $scope.get_transfer_shop = function(){
-	$scope.to_shops = [];
+	$scope.to_shops = []; 
+	
 	for (var i=0, l=filterShop.length; i<l; i++){
 	    if ($scope.select.shop.id !== filterShop[i].id){
-		$scope.to_shops.push(filterShop[i]);
+		var ashop = filterShop[i];
+		if ($scope.base_settings.xsale && $scope.master === diablo_no) {
+		    if ( ashop.type === 1) {
+			$scope.to_shops.push(ashop); 
+		    }
+		} else {
+		    $scope.to_shops.push(ashop); 
+		}
 	    }
 	};
 
@@ -76,8 +97,8 @@ function purchaserInventoryTransferCtrlProvide (
 
     $scope.change_shop = function(){
 	$scope.get_valid_employee();
+	$scope.init_base_setting($scope.select.shop.id); 
 	$scope.get_transfer_shop();
-	$scope.init_base_setting($scope.select.shop.id);
 	$scope.focus_good_or_barcode();
 	// if ($scope.base_settings.q_prompt === diablo_frontend){
 	//     $scope.get_all_prompt_inventory();
@@ -119,9 +140,9 @@ function purchaserInventoryTransferCtrlProvide (
     };
 
     $scope.get_valid_employee();
+    $scope.init_base_setting($scope.select.shop.id); 
     $scope.get_transfer_shop();
-    $scope.init_base_setting($scope.select.shop.id);
-    $scope.focus_good_or_barcode();
+    $scope.focus_good_or_barcode();    
     
     // calender
     $scope.open_calendar = function(event){
@@ -133,36 +154,11 @@ function purchaserInventoryTransferCtrlProvide (
     $scope.today = function(){
 	return now;
     };
-
-    // $scope.base_settings.q_prompt = stockUtils.typeahead($scope.select.shop.id, base);
-    // $scope.base_settings.plimit = stockUtils.prompt_limit($scope.select.shop.id, base);
     
     $scope.qtime_start = function(shopId){
 	return stockUtils.start_time(shopId, base, now, dateFilter); 
     };
-
-    // console.log($scope.setting);
-    // $scope.get_all_prompt_inventory = function(){
-    // 	console.log($scope.select.shop);
-    // 	diabloNormalFilter.match_all_w_inventory(
-    // 	    {start_time:$scope.qtime_start($scope.select.shop.id),
-    // 	     shop:$scope.select.shop.id} 
-    // 	).$promise.then(function(invs){
-    // 	    // console.log(invs);
-    // 	    $scope.all_prompt_inventory = invs.map(function(v){
-    // 		var p = stockUtils.prompt_name(v.style_number, v.brand, v.type);
-    // 		return angular.extend(v, {name:p.name, prompt:p.prompt}); 
-    // 	    });
-
-    // 	    // console.log($scope.all_prompt_inventory);
-    // 	});
-    // };
     
-    // if ($scope.base_settings.q_prompt === diablo_frontend){
-    // 	// use backend always
-    // 	// $scope.get_all_prompt_inventory()
-    // };
-
     $scope.match_prompt_inventory = function(viewValue){
 	if (diablo_yes === $scope.base_settings.type_sale) {
 	    return diabloFilter.match_w_sale(
@@ -237,7 +233,7 @@ function purchaserInventoryTransferCtrlProvide (
 	    console.log(add); 
 	    // $scope.auto_focus("transfer");
 	    $scope.add_inventory(add);
-	} 
+	}
     };
 
     $scope.barcode_scanner = function(barcode) {
@@ -249,6 +245,12 @@ function purchaserInventoryTransferCtrlProvide (
 	    diabloUtilsService,
 	    "库存移仓",
 	    $scope.on_select_inventory)
+    };
+
+    $scope.row_change_xdiscount = function(inv) {
+	inv.xprice = diablo_price(
+	    stockUtils.to_float(inv.tag_price),
+	    stockUtils.to_float(inv.xdiscount));
     };
     
     /*
@@ -310,6 +312,9 @@ function purchaserInventoryTransferCtrlProvide (
 		tag_price   : add.tag_price,
 		ediscount   : add.ediscount,
 		discount    : add.discount,
+
+		xdiscount   : $scope.base_settings.xsale && $scope.master ? add.xdiscount : undefined,
+		xprice      : $scope.base_settings.xsale && $scope.master ? add.xprice : undefined,
 		
 		s_group     : add.s_group,
 		free        : add.free,
@@ -324,13 +329,21 @@ function purchaserInventoryTransferCtrlProvide (
 	}; 
 	
 	var base = {
-	    shop:          $scope.select.shop.id,
-	    tshop:         $scope.select.to_shop.id,
-	    datetime:      dateFilter($scope.select.date, "yyyy-MM-dd HH:mm:ss"),
-	    employee:      $scope.select.employee.id,
-	    comment:       sets($scope.select.comment), 
-	    total:         stockUtils.to_integer($scope.select.total),
-	    cost:          stockUtils.to_float($scope.select.cost)
+	    shop:      $scope.select.shop.id,
+	    shop_type: $scope.select.shop.type,
+	    
+	    tshop:     $scope.select.to_shop.id,
+	    tshop_type:$scope.select.to_shop.type,
+	    
+	    datetime:  dateFilter($scope.select.date, "yyyy-MM-dd HH:mm:ss"),
+	    employee:  $scope.select.employee.id,
+	    comment:   sets($scope.select.comment), 
+	    total:     stockUtils.to_integer($scope.select.total),
+	    cost:      stockUtils.to_decimal($scope.select.cost),
+
+	    xmaster:   $scope.master,
+	    xsale:     $scope.base_settings.xsale,
+	    xcost:     $scope.base_settings.xsale ? $scope.select.xcost : undefined
 	};
 
 	console.log(added);
@@ -361,13 +374,18 @@ function purchaserInventoryTransferCtrlProvide (
     $scope.re_calculate = function(){
 	$scope.select.total = 0;
 	$scope.select.cost = 0;
+	$scope.select.xcost = 0;
 	for (var i=1, l=$scope.inventories.length; i<l; i++){
 	    var one = $scope.inventories[i];
 	    // console.log(one);
 	    // $scope.select.cost += stockUtils.to_float(one.org_price);
 	    $scope.select.total += stockUtils.to_integer(one.reject);
 	    $scope.select.cost += stockUtils.to_float(one.org_price) * stockUtils.to_integer(one.reject);
-	} 
+	    $scope.select.xcost += stockUtils.to_float(one.xprice) * stockUtils.to_integer(one.reject); 
+	}
+
+	$scope.select.cost  = stockUtils.to_decimal($scope.select.cost);
+	$scope.select.xcost = stockUtils.to_decimal($scope.select.xcost);
     };
     
     /*
@@ -457,9 +475,10 @@ function purchaserInventoryTransferCtrlProvide (
 		    }
 		})
 
-		return {amounts: params.amounts,
-			reject:  reject_total,
-			org_price: params.org_price};
+		return {amounts:   params.amounts,
+			reject:    reject_total,
+			org_price: params.org_price,
+			xdiscount: params.xdiscount};
 	    };
 
 	    var after_add = function(){
@@ -480,6 +499,8 @@ function purchaserInventoryTransferCtrlProvide (
 		inv.amounts   = result.amounts;
 		inv.reject    = result.reject;
 		inv.org_price = result.org_price;
+		inv.xdiscount = stockUtils.to_integer(result.xdiscount);
+		$scope.row_change_xdiscount(inv);
 		after_add();
 	    };
 
@@ -636,8 +657,8 @@ function purchaserInventoryTransferFromDetailCtrlProvide (
     user, filterShop, filterEmployee, base){
     // console.log($routeParams);
 
-    $scope.from_shops = user.sortBadRepoes.concat(user.sortShops, user.sortRepoes);
-    $scope.shopIds = user.shopIds.concat(user.badrepoIds, user.repoIds);
+    $scope.from_shops = user.sortShops;
+    $scope.shopIds = user.shopIds;
     $scope.total_items = 0;
     $scope.goto_page = diablo_goto_page;
 
@@ -652,7 +673,16 @@ function purchaserInventoryTransferFromDetailCtrlProvide (
     $scope.stock_right = {
 	print:  stockUtils.authen_stock(user.type, user.right, 'print_stock_transfer'),
 	cancel: stockUtils.authen_stock(user.type, user.right, 'cancel_stock_transfer'),
-    }; 
+	show_orgprice: stockUtils.authen_rainbow(user.type, user.right, "show_orgprice")
+    };
+
+    $scope.base_settings = {
+	xsale: stockUtils.to_integer(stockUtils.scan_mode(diablo_default_shop, base).charAt(6))
+    };
+
+    $scope.master = diablo_no;
+    if ($scope.base_settings.xsale)
+	$scope.master = user.sortRepoes.length === 0 ? diablo_no : diablo_yes;
 
     /*
     ** filter
@@ -736,6 +766,8 @@ function purchaserInventoryTransferFromDetailCtrlProvide (
 		if (page === 1){
 		    $scope.total_items = result.total;
 		    $scope.total_amounts = result.t_amount;
+		    $scope.total_cost  = result.t_cost;
+		    // $scope.total_xcost = result.t_xcost;
 		}
 		angular.forEach(result.data, function(d){
 		    d.fshop = diablo_get_object(d.fshop_id, $scope.from_shops);
@@ -812,8 +844,8 @@ function purchaserInventoryTransferToDetailCtrlProvide (
     diabloFilter, purchaserService, 
     user, filterShop, filterEmployee, base){
 
-    $scope.to_shops  = user.sortBadRepoes.concat(user.sortShops, user.sortRepoes);
-    $scope.shopIds = user.shopIds.concat(user.badrepoIds, user.repoIds);
+    $scope.to_shops  = user.sortShops;
+    $scope.shopIds = user.shopIds;
     // console.log($scope.to_shops);
     $scope.goto_page = diablo_goto_page;
     $scope.total_items = 0;
@@ -826,6 +858,20 @@ function purchaserInventoryTransferToDetailCtrlProvide (
 	$scope.goto_page('#/inventory/inventory_rsn_detail/transfer_to');
     };
 
+    $scope.base_settings = {
+	xsale: stockUtils.to_integer(stockUtils.scan_mode(diablo_default_shop, base).charAt(6))
+    };
+
+    $scope.master = diablo_no; 
+    if ($scope.base_settings.xsale)
+	$scope.master = user.sortRepoes.length === 0 ? diablo_no : diablo_yes;
+
+    $scope.stock_right = {
+	// print:  stockUtils.authen_stock(user.type, user.right, 'print_stock_transfer'),
+	// cancel: stockUtils.authen_stock(user.type, user.right, 'cancel_stock_transfer'),
+	show_orgprice: stockUtils.authen_rainbow(user.type, user.right, "show_orgprice")
+    };
+    
     /*
     ** filter
     */ 
@@ -909,6 +955,8 @@ function purchaserInventoryTransferToDetailCtrlProvide (
 		if (page === 1){
 		    $scope.total_items = result.total;
 		    $scope.total_amounts = result.t_amount;
+		    $scope.total_cost = result.t_cost;
+		    // $scope.total_xcost = result.t_xcost;
 		}
 		angular.forEach(result.data, function(d){
 		    d.fshop = diablo_get_object(d.fshop_id, filterShop);
@@ -916,8 +964,7 @@ function purchaserInventoryTransferToDetailCtrlProvide (
 		    d.employee = diablo_get_object(d.employee_id, filterEmployee);
 		})
 		$scope.records = result.data;
-		diablo_order_page(
-		    page, $scope.items_perpage, $scope.records);
+		diablo_order_page(page, $scope.items_perpage, $scope.records);
 	    })
 
 	    $scope.current_page = page;
@@ -926,18 +973,15 @@ function purchaserInventoryTransferToDetailCtrlProvide (
     };
     
     // default the first page
-    // $scope.do_search($scope.default_page);
-
+    // $scope.do_search($scope.default_page); 
     $scope.page_changed = function(){
 	$scope.do_search($scope.current_page);
     };
-
-
+    
     // details
     $scope.rsn_detail = function(r){
 	// console.log(r);
-	diablo_goto_page(
-	    "#/inventory/inventory_rsn_detail/transfer_to/" + r.rsn);
+	diablo_goto_page("#/inventory/inventory_rsn_detail/transfer_to/" + r.rsn);
     };
 
     // check
@@ -946,7 +990,12 @@ function purchaserInventoryTransferToDetailCtrlProvide (
 	var callback = function(){
 	    var check_date = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss");
 	    purchaserService.check_w_inventory_transfer(
-		{rsn:r.rsn, tshop:r.tshop_id, datetime:check_date}
+		{rsn        :r.rsn,
+		 fshop      :r.fshop_id,
+		 fshop_type :r.fshop.type, 
+		 tshop      :r.tshop_id,
+		 datetime   :check_date,
+		 xsale      :$scope.base_settings.xsale}
 	    ).then(function(state){
 		console.log(state);
 		if (state.ecode == 0){

@@ -825,8 +825,7 @@ function accountUserDetailCtrlProvide(
 		update.role_id = function(){
 		    if (new_account.type !== 2) return undefined;
 		    else {
-			return rightService.get_modified(
-			    new_account.role.id, current_role.role_id); 
+			return rightService.get_modified(new_account.role.id, current_role.role_id); 
 		    }
                 }();
 

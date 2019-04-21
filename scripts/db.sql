@@ -977,6 +977,7 @@ create table w_inventory_transfer(
     employ         VARCHAR(8) not null,     -- employ
     total          INTEGER default 0,
     cost           DECIMAL(10, 2) default 0, -- max: 99999999.99
+    bcost          DECIMAL(10, 2) default 0, -- max: 99999999.99
     comment        VARCHAR(255) default null,
     merchant       INTEGER,
     
@@ -1008,7 +1009,11 @@ create table w_inventory_transfer_detail(
     org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
     tag_price      DECIMAL(10, 2) default 0, -- max: 99999999.99 
     discount       DECIMAL(4, 1)  default 100, -- max: 100
-    ediscount      DECIMAL(4, 1)  default 100, -- max: 100 
+    ediscount      DECIMAL(4, 1)  default 100, -- max: 100
+
+    bdiscount      DECIMAL(4, 1)  default 100, -- max: 100,
+    bprice         DECIMAL(10, 2) default 0, -- max: 99999999.99
+    
     amount         INTEGER default 0,
 
     path           VARCHAR(255) default null, -- the image path

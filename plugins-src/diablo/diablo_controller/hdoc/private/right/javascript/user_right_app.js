@@ -33,8 +33,9 @@ userApp.factory("userService", function($resource, $q){
     	    availableShopIds: function(){
 		var ids   = []; 
 		angular.forEach(shops, function(s){
-		    if ( ((s.type === 0 && s.repo_id === -1) || s.type === 1)
-			 && !in_array(ids, s.shop_id)){
+		    // if ( ((s.type === 0 && s.repo_id === -1) || s.type === 1)
+		    // 	 && !in_array(ids, s.shop_id))
+		    if (!in_array(ids, s.shop_id)) {
 			ids.push(s.shop_id);
 		    }
 		})
@@ -45,7 +46,7 @@ userApp.factory("userService", function($resource, $q){
 	    shopIds: function(){
 		var ids   = [];
 		angular.forEach(shops, function(s){
-                    if (s.type === 0 && !in_array(ids, s.shop_id)){
+                    if (!in_array(ids, s.shop_id)){
                         if (s.shop_id === _loginShop){
                             ids.splice(0, 0, s.shop_id);
                         } else {
@@ -57,13 +58,14 @@ userApp.factory("userService", function($resource, $q){
 	    }(),
 
 	    badrepoIds: function(){
-		var ids   = []; 
-		angular.forEach(shops, function(s){
-		    if (s.type === 2 && !in_array(ids, s.shop_id)){
-			ids.push(s.shop_id);
-		    }
-		})
-		return ids;
+		// var ids   = []; 
+		// angular.forEach(shops, function(s){
+		//     if (s.type === 2 && !in_array(ids, s.shop_id)){
+		// 	ids.push(s.shop_id);
+		//     }
+		// })
+		// return ids;
+		return [];
 	    }(),
 
 	    // repository only
@@ -85,14 +87,15 @@ userApp.factory("userService", function($resource, $q){
 		    var shop = {id:  s.shop_id,
 				name:s.name,
 				addr:s.addr,
-				repo:s.repo_id,
+				type:s.type,
+				// repo:s.repo_id,
 				region: s.region_id,
 				charge_id: s.charge_id,
 				score_id: s.score_id,
 				bcode_friend: s.bcode_friend,
 				bcode_pay: s.bcode_pay,
 				py:diablo_pinyin(s.name)};
-		    if (s.type === 0 && !in_array(sort, shop)){
+		    if (!in_array(sort, shop)){
 			if (shop.id === _loginShop){
                             sort.splice(0, 0, shop);
                         } else {
@@ -110,9 +113,13 @@ userApp.factory("userService", function($resource, $q){
 		    var repo = {id:  s.shop_id,
 				name:s.name,
 				addr:s.addr,
-				repo:s.repo_id,
+				// repo:s.repo_id,
+				type: s.type,
+				region: s.region_id,
 				charge_id: s.charge_id,
 				score_id: s.score_id,
+				bcode_friend: s.bcode_friend,
+				bcode_pay: s.bcode_pay,
 				py:diablo_pinyin(s.name)};
 		    if (s.type === 1 && !in_array(sort, repo)){
 			sort.push(repo); 
@@ -122,47 +129,49 @@ userApp.factory("userService", function($resource, $q){
 	    }(),
 
 	    sortBadRepoes: function(){
-		var sort = []; 
-		angular.forEach(shops, function(s){
-		    var shop = {id:  s.shop_id,
-				name:s.name,
-				repo:s.repo_id,
-				charge_id: s.charge_id,
-				score_id: s.score_id,
-				py:diablo_pinyin(s.name)};
-		    if (s.type === 2 && !in_array(sort, shop)){
-			sort.push(shop); 
-		    }
-		})
-		return sort;
+		// var sort = []; 
+		// angular.forEach(shops, function(s){
+		//     var shop = {id:  s.shop_id,
+		// 		name:s.name,
+		// 		repo:s.repo_id,
+		// 		charge_id: s.charge_id,
+		// 		score_id: s.score_id,
+		// 		py:diablo_pinyin(s.name)};
+		//     if (s.type === 2 && !in_array(sort, shop)){
+		// 	sort.push(shop); 
+		//     }
+		// })
+		// return sort;
+		return [];
 	    }(),
 
 	    // shops exclude the shop that bind to the repository,
 	    // or repository itself
 	    sortAvailabeShops: function(){
-		var sort = []; 
-		angular.forEach(shops, function(s){
-		    var repo = {id:  s.shop_id,
-				name:s.name,
-				addr:s.addr,
-				repo:s.repo_id,
-				charge_id: s.charge_id,
-				score_id: s.score_id,
-				region: s.region_id,
-				bcode_friend: s.bcode_friend,
-				bcode_pay: s.bcode_pay,
-				py:diablo_pinyin(s.name)};
+		// var sort = []; 
+		// angular.forEach(shops, function(s){
+		//     var repo = {id:  s.shop_id,
+		// 		name:s.name,
+		// 		addr:s.addr,
+		// 		repo:s.repo_id,
+		// 		charge_id: s.charge_id,
+		// 		score_id: s.score_id,
+		// 		region: s.region_id,
+		// 		bcode_friend: s.bcode_friend,
+		// 		bcode_pay: s.bcode_pay,
+		// 		py:diablo_pinyin(s.name)};
 
-		    if ( ((s.type === 0 && s.repo_id === -1) || s.type === 1)
-			 && !in_array(sort, repo)){
-			if (s.shop_id === _loginShop){
-                            sort.splice(0, 0, repo);
-                        } else {
-                            sort.push(repo);
-                        }
-		    } 
-		})
-		return sort;
+		//     if ( ((s.type === 0 && s.repo_id === -1) || s.type === 1)
+		// 	 && !in_array(sort, repo)){
+		// 	if (s.shop_id === _loginShop){
+                //             sort.splice(0, 0, repo);
+                //         } else {
+                //             sort.push(repo);
+                //         }
+		//     } 
+		// })
+		// return sort;
+		return [];
 	    }() 
 	}
     };

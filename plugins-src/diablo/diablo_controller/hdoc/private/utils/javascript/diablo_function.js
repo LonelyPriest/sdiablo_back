@@ -135,7 +135,7 @@ var diablo_bill_wire = 2;
 /*
  * scan mode
  */
-var diablo_scan_mode = "0000";
+var diablo_scan_mode = "0000000";
 /*
  * hide mode
  */

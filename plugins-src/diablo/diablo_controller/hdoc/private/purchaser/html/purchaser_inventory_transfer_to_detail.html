@@ -76,7 +76,8 @@
 		    <th>调出店铺</th>
 		    <th>调入店铺</th>
 		    <th>店员</th>
-		    <th>数量</th>
+		    <th>数量</th> 
+		    <th>小计</th>
 		    <th>状态</th>
 		    <th>备注</th>
 		    <th>调出日期</th>
@@ -92,6 +93,7 @@
 		    <td>{{r.tshop.name}}</td>
 		    <td>{{r.employee.name}}</td>
 		    <td>{{r.total}}</td>
+		    <td >{{r.cost}}</td>
 		    <td>
 		      <div x-ng-switch on="r.state">
 			<span class="bg-red"
@@ -140,6 +142,7 @@
 		  <tr x-ng-if="total_items!==0" class="bg-white">
 		    <td colspan=5></td>
 		    <td>{{total_amounts}}</td>
+		    <td>{{total_cost}}</td>
 		    <td colspan=5>
 		  </tr> 
 		</tbody>

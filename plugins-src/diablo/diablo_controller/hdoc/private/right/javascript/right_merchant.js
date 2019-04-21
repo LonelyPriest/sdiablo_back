@@ -264,9 +264,8 @@ function roleMerchantDetailCtrlProvide($scope, $q, $uibModal, rightService, diab
 	    return;
 	};
 
-	rightService.update_role(
-	    $scope.modify_role, added_nodes, deleted_nodes)
-	    .$promise.then(function(state){
+	rightService.update_role($scope.modify_role, added_nodes, deleted_nodes).$promise.then(
+	    function(state){
 		console.log(state);
 		if (state.ecode == 0){
 		    diabloUtilsService.response(true, "权限编辑", "权限编辑成功！！", $scope);
@@ -473,7 +472,7 @@ function accountMerchantDetailCtrlProvide(
 		    return;
 		};
 
-		rightService.update_account_role(account, newRole)
+		rightService.update_account_role(account, 1, newRole)
 		    .$promise.then(function(state){
 			console.log(state);
 			if (state.ecode == 0){

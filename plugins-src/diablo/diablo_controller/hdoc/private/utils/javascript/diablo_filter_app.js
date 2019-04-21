@@ -1421,14 +1421,13 @@ function normalFilterProvider(){
                 //     return _shops;
                 // }
 		else {
-                    return _shopHttp.query(
-                        {operation: "list_shop"}
-                    ).$promise.then(function(shops){
+                    return _shopHttp.query({operation: "list_shop"}).$promise.then(function(shops){
                         // console.log(shops);
                         _shops = shops.map(function(s){
                             return {id: s.id,
                                     name:s.name,
-                                    repo: s.repo,
+                                    // repo: s.repo,
+				    type: s.type,
                                     py:diablo_pinyin(s.name)};
                         });
 			set_storage(cookie, "shop", _shops)

@@ -13,8 +13,13 @@
 
 -compile(export_all).
 
-amount_transfer(transfer_from, RSN, Merchant, Shop, TShop, Datetime, Inv) ->
-    ?DEBUG("transfer inventory with rsn ~p~nInv ~p", [RSN, Inv]), 
+amount_transfer(transfer_from, RSN, Merchant, Shop, TShop, Datetime, Inv, Props) ->
+    ?DEBUG("transfer inventory with rsn ~p~nInv ~p", [RSN, Inv]),
+    XSale       = ?v(<<"xsale">>, Props, ?NO),
+    XMaster     = ?v(<<"xmaster">>, Props, ?NO), 
+    %% ShopType    = ?v(<<"shop_type">>, Props, ?SHOP),
+    %% TShopType   = ?v(<<"tshop_type">>, Props, ?SHOP),
+    
     Amounts     = ?v(<<"amounts">>, Inv),
     Barcode     = ?v(<<"bcode">>, Inv, 0),
     StyleNumber = ?v(<<"style_number">>, Inv),
@@ -28,6 +33,9 @@ amount_transfer(transfer_from, RSN, Merchant, Shop, TShop, Datetime, Inv) ->
     TagPrice    = ?v(<<"tag_price">>, Inv),
     EDiscount   = ?v(<<"ediscount">>, Inv),
     Discount    = ?v(<<"discount">>, Inv),
+
+    XDiscount   = ?v(<<"xdiscount">>, Inv, 0),
+    XPrice      = ?v(<<"xprice">>, Inv, 0),
     
     %% Amount      = lists:reverse(?v(<<"amount">>, Inv)),
     SizeGroup   = ?v(<<"s_group">>, Inv),
@@ -130,8 +138,9 @@ amount_transfer(transfer_from, RSN, Merchant, Shop, TShop, Datetime, Inv) ->
 			 "rsn, bcode, style_number"
 			 ", brand, type, sex, season, amount"
 			 ", firm, s_group, free, year"
-			 ", org_price, tag_price, discount"
-			 ", ediscount, path, merchant, fshop, tshop, entry_date) values("
+			 ", org_price, tag_price, discount, ediscount"
+			 %% ", xdiscount, xprice"
+			 ", path, merchant, fshop, tshop, entry_date) values("
 			 ++ "\'" ++ ?to_s(RSN) ++ "\',"
 			 ++ "\'" ++ ?to_s(Barcode) ++ "\',"
 			 ++ "\'" ++ ?to_s(StyleNumber) ++ "\',"
@@ -146,11 +155,31 @@ amount_transfer(transfer_from, RSN, Merchant, Shop, TShop, Datetime, Inv) ->
 			 ++ "\"" ++ ?to_s(SizeGroup) ++ "\","
 			 ++ ?to_s(Free) ++ ","
 			 ++ ?to_s(Year) ++ ","
-			 %% ++ ?to_s(AlarmDay) ++ "," 
-			 ++ ?to_s(OrgPrice) ++ ","
+			 
+			 ++ case XSale =:= ?YES
+				andalso XMaster =:= ?YES
+				%% andalso ShopType =:= ?REPERTORY
+				%% andalso TShopType =:= ?SHOP
+			    of
+				true -> ?to_s(XPrice);
+				false -> ?to_s(OrgPrice)
+			    end ++ ","
+			 
 			 ++ ?to_s(TagPrice) ++ ","
 			 ++ ?to_s(Discount) ++ ","
-			 ++ ?to_s(EDiscount) ++ "," 
+		     %% ++ ?to_s(EDiscount) ++ ","
+
+			 ++ case XSale =:= ?YES
+				andalso XMaster =:= ?YES
+				%% andalso ShopType =:= ?SHOP
+				%% andalso TShopType =:= ?REPERTORY
+			    of
+				true ->
+				    ?to_s(XDiscount);
+				false ->
+				    ?to_s(EDiscount)
+			    end ++ ","
+			 
 			 ++ "\"" ++ ?to_s(Path) ++ "\","
 			 ++ ?to_s(Merchant) ++ ","
 			 ++ ?to_s(Shop) ++ ","
@@ -234,6 +263,9 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
     %% Now = ?utils:current_time(format_localtime),
 
     RSN = ?v(<<"rsn">>, CheckProps),
+    %% XSale = ?v(<<"xsale">>, CheckProps, ?NO),
+    %% FShopType = ?v(<<"fshop_type">>, CheckProps, 0),
+    
     %% TShop = ?v(<<"tshop">>, CheckProps),
     Now = ?v(<<"datetime">>, CheckProps, ?utils:current_time(format_localtime)), 
     
@@ -255,7 +287,9 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
     	", org_price"
 	", tag_price"
 	", discount"
-	", ediscount"
+	", ediscount" 
+    %% ", xdiscount"
+    %% ", xprice" 
 	", amount"
 	", path"
 	", entry_date"
@@ -289,10 +323,14 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 		OrgPrice    = ?v(<<"org_price">>, Transfer),
 		TagPrice    = ?v(<<"tag_price">>, Transfer),
 		Discount    = ?v(<<"discount">>, Transfer),
-		EDiscount   = ?v(<<"ediscount">>, Transfer), 
+		EDiscount   = ?v(<<"ediscount">>, Transfer),
+
+		%% XDiscount   = ?v(<<"xdiscount">>, Transfer),
+		%% XPrice      = ?v(<<"xprice">>, Transfer),
+		
 		Amount      = ?v(<<"amount">>, Transfer), 
 		Path        = ?v(<<"path">>, Transfer, []),
-		AlarmDay    = ?v(<<"alarm_day">>, Transfer, ?DEFAULT_ALARM_DAY),
+		AlarmDay    = ?v(<<"alarm_day">>, Transfer, ?INVALID_OR_EMPTY),
 		EntryDate   = ?v(<<"entry_date">>, Transfer),
 
 		Sql22 = "select style_number, brand, entry_date"
@@ -315,7 +353,7 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 			["insert into w_inventory(rsn"
 			 ", bcode, style_number, brand, firm, type, sex, season, year"
 			 ", amount, s_group, free, promotion, score"
-			 ", org_price, tag_price, ediscount, discount"
+			 ", org_price, ediscount, tag_price, discount"
 			 ", path, alarm_day, shop, merchant"
 			 ", last_sell, change_date, entry_date)"
 			 " values("
@@ -332,12 +370,11 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 			 ++ "\"" ++ ?to_s(SizeGroup) ++ "\","
 			 ++ ?to_s(Free) ++ ","
 			 ++ ?to_s(-1) ++ ","
-			 ++ ?to_s(DefaultScore) ++ ","
-			 
-			 ++ ?to_s(OrgPrice) ++ ","
-			 ++ ?to_s(TagPrice) ++ ","
+			 ++ ?to_s(DefaultScore) ++ "," 
+			 ++ ?to_s(OrgPrice) ++ "," 
 			 ++ ?to_s(EDiscount) ++ "," 
-			 ++ ?to_s(Discount) ++ ","
+			 ++ ?to_s(TagPrice) ++ ","
+			 ++ ?to_s(Discount) ++ "," 
 			 
 			 ++ "\"" ++ ?to_s(Path) ++ "\","
 			 ++ ?to_s(AlarmDay) ++ ","
@@ -350,25 +387,7 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 				 [] -> ?to_s(EntryDate);
 				 _ -> ?to_s(?v(<<"entry_date">>, Good))
 			     end
-			 ++ "\")"
-
-			 %% "insert into w_inventory_amount(rsn"
-			 %% ", style_number, brand, color, size"
-			 %% ", shop, merchant, total, entry_date) select" 
-			 %% " -1"
-			 %% ", style_number"
-			 %% ", brand"
-			 %% ", color"
-			 %% ", size "
-			 %% ", " ++ ?to_s(TShop)
-			 %% ++ ", " ++ ?to_s(Merchant)
-			 %% ++ ", total"
-			 %% ", \"" ++ ?to_s(Now) ++ "\""
-			 %% " from w_inventory_transfer_detail_amount"
-			 %% " where rsn=\"" ++ ?to_s(RSN) ++ "\""
-			 %% " and style_number=\"" ++
-			 %%     ?to_s(StyleNumber) ++ "\""
-			 %% " and brand=" ++ ?to_s(Brand)
+			 ++ "\")" 
 			]; 
 		    {ok, R} ->
 			["update w_inventory set"

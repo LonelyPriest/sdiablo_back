@@ -358,7 +358,13 @@ diabloUtils.directive('navdiv', function() {
 	    return true;
 	})
     };
-}); 
+});
+
+diabloUtils.directive('focusTable', function() {
+    return function(scope, element, attrs){
+	
+    };
+});
 
 diabloUtils.directive('ngEdit', function () {
     return function (scope, element, attrs) {
@@ -1148,11 +1154,13 @@ diabloUtils.controller("diabloDialogCtrl", function($scope, $uibModalInstance, m
 diabloUtils.controller("diabloEditDialogCtrl", function($scope, $uibModalInstance, message){
     // console.log($scope);
     // console.log($modalInstance);
-    console.log(message); 
+    console.log(message);
+
+    var callback = message.callback;
+    $scope.params = angular.copy(message.params);
     
     var deviceAgent = navigator.userAgent.toLowerCase();
-    if (deviceAgent.match(/iphone|ipod|ipad/i)
-       ) {
+    if (deviceAgent.match(/iphone|ipod|ipad/i)) {
     	$uibModalInstance.opened.then(function(){
     	    $('.header').hide();
             $('.footer').hide();
@@ -1175,12 +1183,11 @@ diabloUtils.controller("diabloEditDialogCtrl", function($scope, $uibModalInstanc
     	}, function(){
             unbind();
     	});
-    };
+    }
     
     
     // $scope.out = {};
-    var callback = message.callback;
-    $scope.params = angular.copy(message.params);
+    
     // console.log($scope.params);
         
     $scope.cancel = function(){

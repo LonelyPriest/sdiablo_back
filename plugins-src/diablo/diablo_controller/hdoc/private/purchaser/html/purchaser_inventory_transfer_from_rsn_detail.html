@@ -86,8 +86,10 @@
 		    <!-- <th>季节</th> -->
 		    <th>数量</th>
 		    <th x-ng-if="setting.show_tagprice">吊牌价</th>
-		    <th x-ng-if="stock_right.show_orgprice">进价</th>
-		    <th x-ng-if="stock_right.show_orgprice">小计</th>
+		    <th x-ng-if="stock_right.show_orgprice && (!setting.xsale || !master)">进价</th>
+		    <th x-ng-if="setting.xsale && master">批发价</th>
+		    <th x-ng-if="(stock_right.show_orgprice && (setting.xsale || !master))
+				 || (setting.xsale && master)">小计</th>
 		    <th>状态</th> 
 		    <th>调出日期</th>
 		    <th>操作日期</th> 
@@ -107,8 +109,13 @@
 		    <td>{{inv.type.name}}</td>
 		    <td>{{inv.amount}}</td>
 		    <td x-ng-if="setting.show_tagprice">{{inv.tag_price}}</td>
-		    <td x-ng-if="stock_right.show_orgprice">{{inv.org_price}}</td>
-		    <td x-ng-if="stock_right.show_orgprice">{{inv.calc}}</td>
+		    
+		    <td x-ng-if="(stock_right.show_orgprice && (setting.xsale || !master))
+				 || (setting.xsale && master)">{{inv.org_price}}</td>
+
+		    <td x-ng-if="(stock_right.show_orgprice && (setting.xsale || !master))
+				 || (setting.xsale && master)">{{inv.calc}}</td> 
+		    
 		    <td>
 		      <div x-ng-switch on="inv.state">
 			<span class="bg-red"
@@ -138,12 +145,18 @@
 			明细<i class="glyphicon glyphicon-map-marker"></i></a>
 		    </td>
 		  </tr>
-		  <tr x-ng-if="stock_right.show_orgprice && total_items!==0">
+		  <tr x-ng-if="total_items!==0">
 		    <td colspan=8></td>
 		    <td>{{total_amounts}}</td>
-		    <td></td>
-		    <td>{{total_cost}}</td>
-		    <td colspan=3></td>
+		    <td x-ng-if="setting.show_tagprice"></td> 
+		    <td x-ng-if="(stock_right.show_orgprice && (setting.xsale || !master))
+				 || (setting.xsale && master)"></td> 
+		    <td x-ng-if="(stock_right.show_orgprice && (setting.xsale || !master))
+				 || (setting.xsale && master)">{{total_cost}}</td>
+
+		    <td x-ng-if="setting.xsale"></td>
+		    <td x-ng-if="setting.xsale">{{total_xcost}}</td>
+		    <td colspan=4></td>
 		  </tr>
 		</tbody>
 

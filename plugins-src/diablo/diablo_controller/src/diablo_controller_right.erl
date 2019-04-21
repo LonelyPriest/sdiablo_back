@@ -507,11 +507,12 @@ handle_call({update_account, Attrs}, _From, State) ->
     SDays         = ?v(<<"sdays">>, Attrs),
     
     Sql1 = case ?v(<<"role">>, Attrs) of
-              undefined -> [];
-              Role ->
-                  ["update user_to_role set role_id=" ++ ?to_s(Role)
-                   ++ " where user_id=" ++ ?to_s(Account)]
+	       undefined -> [];
+	       Role ->
+		   ["update user_to_role set role_id=" ++ ?to_s(Role)
+		    ++ " where user_id=" ++ ?to_s(Account)]
 	   end,
+    
     Updates =
 	?utils:v(shop, integer, LoginShop)
         %% ++ ?utils:v(firm, integer, LoginFirm)
