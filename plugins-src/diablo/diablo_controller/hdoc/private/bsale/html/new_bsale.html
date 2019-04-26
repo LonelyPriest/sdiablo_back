@@ -264,7 +264,7 @@
 	</div>
 
 	<div class="actions">
-	  <button class="btn red"
+	  <button x-ng-if="!setting.hide_wdiscount" class="btn red"
 		  x-ng-disabled="disable_start_sale()"
 	    	  x-ng-click="cut_bsale()">折扣<i class="glyphicon glyphicon-sort-by-attributes-alt"></i></button>
 	  

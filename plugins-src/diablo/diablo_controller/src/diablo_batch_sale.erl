@@ -15,7 +15,7 @@
 
 %% API
 -export([start_link/1]).
--export([bsale/3, bsale/4]).
+-export([bsale/3, bsale/4, bsale_prop/3, bsale_prop/4]).
 -export([filter/4, filter/6, match/3, export/3]).
 
 %% gen_server callbacks
@@ -56,7 +56,14 @@ bsale(get_sale_new_transe, Merchant, Conditions) ->
     gen_server:call(Name, {get_sale_new_transe, Merchant, Conditions});
 bsale(get_sale_rsn, Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {get_sale_new_rsn, Merchant, Conditions}). 
+    gen_server:call(Name, {get_sale_new_rsn, Merchant, Conditions}).
+
+bsale_prop(new, Merchant, Attrs) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {new_sale_prop, Merchant, Attrs}).
+bsale_prop(update, Merchant, PropId, Attrs) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {update_sale_prop, Merchant, PropId, Attrs}).
 
 filter(total_sale_new, 'and', Merchant, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -64,7 +71,12 @@ filter(total_sale_new, 'and', Merchant, Fields) ->
 
 filter(total_sale_new_detail, MatchMode, Merchant, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {total_sale_new_detail, MatchMode, Merchant, Fields}, 6 * 1000).
+    gen_server:call(Name, {total_sale_new_detail, MatchMode, Merchant, Fields}, 6 * 1000);
+
+filter(total_sale_prop, 'and', Merchant, Fields) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {total_sale_prop, Merchant, Fields}).
+
 
 filter(sale_new, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -80,7 +92,11 @@ filter({sale_new_detail, Mode, Sort}, MatchMode, Merchant, CurrentPage, ItemsPer
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(
       Name, {filter_sale_new_detail,
-	     {Mode, Sort}, MatchMode, Merchant, CurrentPage, ItemsPerPage, Fields}, 6 * 1000).
+	     {Mode, Sort}, MatchMode, Merchant, CurrentPage, ItemsPerPage, Fields}, 6 * 1000);
+
+filter(sale_prop, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {filter_sale_prop, Merchant, CurrentPage, ItemsPerPage, Conditions}).
 
 match(rsn, Merchant, {ViewValue, Condition}) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -594,6 +610,79 @@ handle_call({new_trans_note_color_size_export, Merchant, Conditions}, _From, Sta
 	++ ?sql_utils:condition(proplists, Conditions),
 
     Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({new_sale_prop, Merchant, Attrs}, _From, State)->
+    ?DEBUG("new_sale_prop with props ~p", [Attrs]),
+    Name      = ?v(<<"name">>, Attrs),
+    Comment   = ?v(<<"comment">>, Attrs, []),
+    Datetime  = ?utils:current_time(localdate),
+
+    %% name can not be same
+    Sql = "select id, name from batch_sale_prop  where merchant=" ++ ?to_s(Merchant)
+	++ " and name = " ++ "\"" ++ ?to_string(Name) ++ "\""
+	++ " and deleted=" ++ ?to_s(?NO),
+
+    case ?sql_utils:execute(s_read, Sql) of
+	{ok, []} -> 
+	    Sql1 = "insert into batch_sale_prop"
+		++ "(merchant, name, comment, entry)"
+		++ " values ("
+		++ ?to_s(Merchant) ++ ","
+		++ "\'" ++ ?to_s(Name) ++ "\'," 
+		++ "\'" ++ ?to_s(Comment) ++ "\'," 
+		++ "\"" ++ ?to_s(Datetime) ++ "\")", 
+	    Reply = ?sql_utils:execute(insert, Sql1),
+	    {reply, Reply, State};
+	{ok, _Any} ->
+	    {reply, {error, ?err(batch_sale_prop_exist, Name)}, State};
+	Error ->
+	    {reply, Error, State}
+    end;
+
+handle_call({update_sale_prop, Merchant, PropId, Attrs}, _From, State) ->
+    ?DEBUG("update_sale_prop with merchant ~p, PropId ~p, Attrs ~p", [Merchant, PropId, Attrs]), 
+    Name    = ?v(<<"name">>, Attrs),
+    Comment  = ?v(<<"comment">>, Attrs),
+
+    Updates = ?utils:v(name, string, Name) ++ ?utils:v(comment, string, Comment),
+
+    Sql = "update batch_sale_prop set "
+	++ ?utils:to_sqls(proplists, comma, Updates)
+	++ " where id=" ++ ?to_s(PropId)
+	++ " and merchant=" ++ ?to_s(Merchant),
+
+    Reply = 
+	case Name of
+	    undefined ->
+		?sql_utils:execute(write, Sql, PropId);
+	    _ ->
+		Sql1 = "select id, name from batch_sale_prop  where merchant=" ++ ?to_s(Merchant)
+		    ++ " and name = " ++ "\'" ++ ?to_string(Name) ++ "\'"
+		    ++ " and deleted=" ++ ?to_s(?NO),
+		case ?sql_utils:execute(s_read, Sql1) of
+		    [] ->
+			?sql_utils:execute(write, Sql, PropId);
+		    _ ->
+			{error, ?err(batch_sale_prop_exist, Name)}
+		end
+	end, 
+    {reply, Reply, State};
+
+handle_call({total_sale_prop, Merchant, _Fields}, _From, State) ->
+    CountSql = "select count(*) as total from batch_sale_prop"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and deleted=0",
+    Reply = ?sql_utils:execute(s_read, CountSql),
+    {reply, Reply, State};
+
+handle_call({filter_sale_prop, Merchant, CurrentPage, ItemsPerPage, Fields}, _From, State) ->
+    ?DEBUG("filter_sale_prop: currentPage ~p, ItemsPerpage ~p, Merchant ~p~n fields ~p",
+	   [CurrentPage, ItemsPerPage, Merchant, Fields]),
+    Sql = "select id, name, comment, entry from batch_sale_prop where merchant=" ++ ?to_s(Merchant)
+	++ " and deleted=0"
+	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
+    Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
 handle_call(_Request, _From, State) ->

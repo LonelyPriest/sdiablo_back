@@ -627,6 +627,8 @@ error(sms_send_failed, Reason) ->
 %% batch saler
 error(batch_saler_exist, Name) ->
     {7001, "batch saler exist: " ++ ?to_s(Name)};
+error(batch_sale_prop_exist, Name) ->
+    {7002, "batch sale prop exist: " ++ ?to_s(Name)};
 
 %% base
 error(base_card_exist, CardNo) ->

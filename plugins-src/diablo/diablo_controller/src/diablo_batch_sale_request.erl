@@ -472,6 +472,38 @@ action(Session, Req, {"get_bsaler_batch"}, Payload) ->
     BSalerIds = ?v(<<"bsaler">>, Payload, []), 
     ?utils:respond(batch, fun() -> ?b_saler:batch_saler(get_batch, Merchant, BSalerIds) end, Req);
 
+action(Session, Req, {"new_batch_sale_prop"}, Payload) ->
+    ?DEBUG("new_batch_sale_prop with session ~p, paylaod ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    ?utils:respond(normal,
+		   fun()-> ?b_sale:bsale_prop(new, Merchant, Payload) end,
+		   fun(RegionId)-> ?succ(add_shop, RegionId) end,
+		   Req);
+
+action(Session, Req, {"update_batch_sale_prop", PropId}, Payload) ->
+    ?DEBUG("update_batch_sale_prop with session ~p, PropId ~p, paylaod ~p",
+	   [Session, PropId, Payload]), 
+    Merchant = ?session:get(merchant, Session),
+    case ?b_sale:bsale_prop(update, Merchant, PropId, Payload) of
+    	{ok, Id} ->
+    	    ?utils:respond(200, Req, ?succ(update_shop, Id));
+    	{error, Error} ->
+    	    ?utils:respond(200, Req, Error)
+    end;
+
+
+action(Session, Req, {"list_batch_sale_prop"}, Payload) ->
+    ?DEBUG("list_batch_sale_prop with session ~p, payload~n~p", [Session, Payload]), 
+    Merchant  = ?session:get(merchant, Session), 
+    ?pagination:pagination(
+       fun(Match, Conditions) ->
+	       ?b_sale:filter(total_sale_prop, ?to_a(Match), Merchant, Conditions)
+       end,
+       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
+	       ?b_sale:filter(
+		  sale_prop, Match, Merchant, Conditions, CurrentPage, ItemsPerPage)
+       end, Req, Payload);
+
 action(Session, Req, {"match_bsaler_phone"}, Payload) ->
     ?DEBUG("match_bsaler_phone with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
@@ -501,7 +533,12 @@ action(Session, Req, {"match_bsale_rsn"}, Payload) ->
 		  end)
        end, Req).
 
-sidebar(Session) -> 
+sidebar(Session) ->
+    LoginShop = ?session:get(login_shop, Session),
+    Merchant = ?session:get(merchant, Session), 
+    BaseSettings = ?w_report_request:get_setting(Merchant, LoginShop),
+    BatchMode = ?w_report_request:get_config(<<"batch_mode">>, BaseSettings),
+    
     case ?right_request:get_shops(Session, bsale) of
 	[] ->
 	    ?menu:sidebar(level_2_menu, []);
@@ -527,7 +564,7 @@ sidebar(Session) ->
 		   {?list_batch_sale,
 		    "list_bsale_new",
 		    "交易记录",
-		    "glyphicon glyphicon-bookmark"}, Shops), 
+		    "glyphicon glyphicon-bookmark"}, Shops),
 
 	    NoteBatchSale =
 		?w_inventory_request:authen_shop_action(
@@ -541,8 +578,24 @@ sidebar(Session) ->
 
 	    Saler = 
 		[{"new_bsaler", "新增客户", "glyphicon glyphicon-plus"},
-		 {"bsaler_detail", "客户详情", "glyphicon glyphicon-bookmark"}], 
+		 {"bsaler_detail", "客户详情", "glyphicon glyphicon-bookmark"}],
 
+	    %% ?DEBUG("BatchMode ~p", [?to_s(BatchMode)]),
+	    HideSaleProp =
+		try
+		    ?to_i(lists:nth(6, ?to_s(BatchMode))) - 48
+		catch _:_ ->
+			?YES
+		end,
+	    %% ?DEBUG("HideSaleProp ~p", [HideSaleProp]),
+
+	    SaleProp =
+		case HideSaleProp of
+		    ?YES -> 
+			[]; 
+		    ?NO ->
+			[{"bsale_prop", "销售性质", "glyphicon glyphicon-map-marker"}]
+		end,
 
 	    L1 = ?menu:sidebar(
 		    level_1_menu,
@@ -551,7 +604,8 @@ sidebar(Session) ->
 		    ++ BatchReject
 		    ++ ListBatchSale
 		    ++ NoteBatchSale
-		    ++ Saler),
+		    ++ Saler
+		    ++ SaleProp),
 
 	    %% L2 = ?menu:sidebar(level_2_menu, Saler),
 

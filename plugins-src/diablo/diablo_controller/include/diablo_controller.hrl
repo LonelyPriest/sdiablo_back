@@ -484,14 +484,14 @@
 %% ================================================================================
 %% batch sale
 %% ================================================================================
--define(new_batch_sale,    ?right_b_sale + 1).
--define(reject_batch_sale, ?right_b_sale + 2).
--define(update_batch_sale, ?right_b_sale + 3).
--define(list_batch_sale,   ?right_b_sale + 4).
--define(check_batch_sale,  ?right_b_sale + 5).
--define(del_batch_sale,    ?right_b_sale + 6).
+-define(new_batch_sale,              ?right_b_sale + 1).
+-define(reject_batch_sale,           ?right_b_sale + 2).
+-define(update_batch_sale,           ?right_b_sale + 3).
+-define(list_batch_sale,             ?right_b_sale + 4).
+-define(check_batch_sale,            ?right_b_sale + 5).
+-define(del_batch_sale,              ?right_b_sale + 6).
 -define(list_batch_sale_new_detail,  ?right_b_sale + 7).
--define(book_batch_sale,   ?right_b_sale + 8).
+-define(book_batch_sale,             ?right_b_sale + 8).
 
 -define(new_batch_saler,      ?right_b_sale + 9).
 -define(list_batch_saler,     ?right_b_sale + 10).
@@ -501,6 +501,11 @@
 
 -define(print_batch_sale,     ?right_b_sale + 14).
 -define(export_batch_sale,    ?right_b_sale + 15).
+
+-define(new_batch_sale_prop,    ?right_b_sale + 16).
+-define(list_batch_sale_prop,   ?right_b_sale + 17).
+-define(update_batch_sale_prop, ?right_b_sale + 18).
+-define(delete_batch_sale_prop, ?right_b_sale + 19).
 
 %% public
 -define(http_route, diablo_controller_http_route).

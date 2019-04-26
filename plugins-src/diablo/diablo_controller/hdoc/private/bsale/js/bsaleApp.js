@@ -137,7 +137,13 @@ function bsaleConfig(angular){
 		templateUrl: '/private/bsale/html/bsaler_detail.html',
 		controller: 'bsalerDetailCtrl',
 		resolve: angular.extend({}, region, user)
+	    }). 
+	    when('/bsale_prop', {
+		templateUrl: '/private/bsale/html/bsale_prop.html',
+		controller: 'bsalePropCtrl',
+		resolve: angular.extend({})
 	    }).
+	    
 	    otherwise({
 		templateUrl: '/private/bsale/html/new_bsale_detail.html',
 		controller: 'bsaleNewDetailCtrl',
@@ -311,6 +317,27 @@ function bsaleConfig(angular){
 	this.get_bsaler_batch = function(bsalers) {
 	    return request.post({operation:'get_bsaler_batch'}, {bsaler:bsalers}).$promise;
 	};
+
+	// sale props
+	this.add_bsale_prop = function(name, comment) {
+	    return request.save(
+		{operation: "new_batch_sale_prop"},
+		{name: name, comment: comment}).$promise;
+	};
+
+	this.update_bsale_prop = function(propId, payload){
+	    return request.save(
+		{operation: "update_batch_sale_prop", id:propId}, payload).$promise;
+	};
+
+	this.filter_bsale_prop = function(match, fields, currentPage, itemsPerpage){
+	    return request.save(
+		{operation: "list_batch_sale_prop"},
+		{match:  angular.isDefined(match) ? match.op : undefined,
+		 fields: fields,
+		 page:   currentPage,
+		 count:  itemsPerpage}).$promise;
+	};
 	
     });
 
@@ -329,6 +356,9 @@ function bsaleConfig(angular){
     bsaleApp.controller("bsalePrintCtrl", bsalePrintCtrlProvide);
     bsaleApp.controller("bsaleNewDetailCtrl", bsaleNewDetailCtrlProvide);
     bsaleApp.controller("bsaleNewNoteCtrl", bsaleNewNoteCtrlProvide);
+
+    // sale props
+    bsaleApp.controller("bsalePropCtrl", bsalePropCtrlProvide);
     
     return bsaleApp;
 };
@@ -2628,4 +2658,100 @@ function bsalerDetailCtrlProvide(
 	     pattern:$scope.pattern,
 	     bsaler:s});
     }
+};
+
+function bsalePropCtrlProvide(
+    $scope, bsaleService, diabloFilter, diabloPattern, diabloUtilsService){
+    $scope.pattern = {address:diabloPattern.ch_name_address}; 
+    $scope.total_items   = 0;
+    $scope.default_page  = 1;
+    $scope.current_page  = $scope.default_page;
+    var dialog = diabloUtilsService;
+
+    diabloFilter.reset_field();
+    $scope.filter = diabloFilter.get_filter();
+    $scope.prompt = diabloFilter.get_prompt();
+
+    $scope.items_perpage = diablo_items_per_page();
+    $scope.max_page_size = diablo_max_page_size();
+
+    // var now = $.now();
+    $scope.do_search = function(page) {
+	$scope.current_page = page;
+	
+	diabloFilter.do_filter($scope.filters, undefined, function(search) {
+	    bsaleService.filter_bsale_prop(
+		$scope.match, search, page, $scope.items_perpage
+	    ).then(function(result) {
+		console.log(result);
+		if (result.ecode === 0) {
+		    if (page === $scope.default_page) {
+			$scope.total_items = result.total;
+		    }
+
+		    $scope.props = result.data;
+		    diablo_order_page(page, $scope.items_perpage, $scope.props); 
+		}
+	    })
+	}) 
+    };
+
+    $scope.refresh = function() {
+	$scope.do_search($scope.default_page); 
+    }
+    
+    $scope.new_sale_prop = function(){
+	var callback = function(params){
+	    console.log(params);
+	    bsaleService.add_bsale_prop(params.name, params.comment).then(function(state){
+		if (state.ecode === 0){
+		    dialog.response_with_callback
+		    (true,
+		     "新增销售性质",
+		     "新增销售性质 [" + params.name + "] 成功",
+		     undefined,
+		     function() {$scope.refresh()});
+		} else {
+		    dialog.response(
+			false,
+			"新增销售性质",
+			"新增销售性质失败：" + bsaleService.error[state.ecode]);
+		}
+	    });
+	}; 
+	dialog.edit_with_modal("new-bsale-prop.html", undefined, callback, $scope, {});
+    };
+
+    $scope.update_sale_prop = function(prop){
+	console.log(prop);
+	var callback = function(params){
+	    console.log(params);
+	    bsaleService.update_bsale_prop(
+		prop.id,
+		{name: diablo_get_modified(params.name, prop.name),
+		 comment: diablo_get_modified(params.comment, prop.comment)}
+	    ).then(function(state){
+		if (state.ecode === 0){
+		    dialog.response_with_callback
+		    (true,
+		     "销售性质编辑",
+		     "销价主性质编辑 [" + params.name + "] 成功",
+		     undefined,
+		     function() {$scope.refresh()});
+		} else {
+		    dialog.response(
+			false,
+			"销售性质编辑",
+			"销价性质编辑失败：" + bsaleService.error[state.ecode]);
+		}
+	    });
+	};
+
+	dialog.edit_with_modal(
+	    "new-bsale-prop.html",
+	    undefined,
+	    callback,
+	    $scope,
+	    {name:prop.name, remark:prop.comment});
+    };
 };

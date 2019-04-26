@@ -1594,3 +1594,19 @@ create table batch_sale_detail_amount(
     key     dk      (merchant, shop),
     primary key    (id)
 )default charset=utf8;
+
+
+create table batch_sale_prop(
+    id               INTEGER AUTO_INCREMENT,
+    name             VARCHAR(64) not null,
+    py		     VARCHAR(64) not null, 
+    merchant         INTEGER default -1, -- type belong to
+    comment          VARCHAR(128) default '',
+    entry            DATE,
+    deleted          INTEGER default 0, -- 0: no;  1: yes
+
+    unique  key     index_nm (merchant, name),
+    primary key      (id)
+)default charset=utf8;
+
+

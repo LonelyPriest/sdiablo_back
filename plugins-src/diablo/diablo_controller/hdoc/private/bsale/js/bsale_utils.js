@@ -238,7 +238,8 @@ var bsaleUtils = function(){
 		print_with_check: default_hide(mode.charAt(0)),
 		hide_tagprice:default_hide(mode.charAt(1)),
 		hide_virprice:default_hide(mode.charAt(2)),
-		hide_discount:default_hide(mode.charAt(3))
+		hide_discount:default_hide(mode.charAt(3)),
+		hide_wdiscount:default_hide(mode.charAt(4))
 	    };
 	},
 

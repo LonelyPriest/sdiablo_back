@@ -316,12 +316,14 @@ init([]) ->
 
     %% batch sale
     BSale =
-	[{?new_batch_sale, <<"批发开单">>,     <<"new_batch_sale">>,          ?right_b_sale},
-	 {?reject_batch_sale, <<"批发退货">>,     <<"reject_batch_sale">>,    ?right_b_sale}, 
-	 {?update_batch_sale, <<"批发记录编辑">>,   <<"update_batch_sale">>, ?right_b_sale},
-	 {?check_batch_sale, <<"批发记录审核">>,   <<"check_batch_sale">>,   ?right_b_sale},
-	 {?list_batch_sale, <<"批发记录查询">>,   <<"list_batch_sale">>,     ?right_b_sale},
-	 {?list_batch_sale_new_detail, <<"批发明细查询">>,   <<"list_batch_sale_new_detail">>,  ?right_b_sale},
+	[{?new_batch_sale,    <<"批发开单">>,       <<"new_batch_sale">>,     ?right_b_sale},
+	 {?reject_batch_sale, <<"批发退货">>,       <<"reject_batch_sale">>,  ?right_b_sale}, 
+	 {?update_batch_sale, <<"批发记录编辑">>,   <<"update_batch_sale">>,  ?right_b_sale},
+	 {?check_batch_sale,  <<"批发记录审核">>,   <<"check_batch_sale">>,   ?right_b_sale},
+	 {?list_batch_sale,   <<"批发记录查询">>,   <<"list_batch_sale">>,    ?right_b_sale},
+	 {?list_batch_sale_new_detail,
+	  <<"批发明细查询">>,   <<"list_batch_sale_new_detail">>,  ?right_b_sale},
+	 
 	 {?del_batch_sale, <<"批发记录删除">>,   <<"delete_batch_sale">>,    ?right_b_sale},
 	 {?print_batch_sale, <<"批发单打印">>,   <<"print_batch_sale">>,     ?right_b_sale},
 	 {?export_batch_sale, <<"批发单导出">>,   <<"export_batch_sale">>,   ?right_b_sale},
@@ -330,7 +332,12 @@ init([]) ->
 	 {?list_batch_saler,    <<"查询批发客户">>, <<"list_batch_saler">>,   ?right_b_sale},
 	 {?del_batch_saler,     <<"删除批发客户">>, <<"delete_batch_saler">>, ?right_b_sale},
 	 {?update_batch_saler,  <<"批发客户编辑">>, <<"update_batch_saler">>, ?right_b_sale},
-	 {?bill_batch_saler,    <<"批发客户结帐">>, <<"bill_batch_saler">>,   ?right_b_sale}
+	 {?bill_batch_saler,    <<"批发客户结帐">>, <<"bill_batch_saler">>,   ?right_b_sale},
+
+	 {?new_batch_sale_prop,    <<"新增批开性质">>, <<"new_batch_sale_prop">>,    ?right_b_sale},
+	 {?list_batch_sale_prop,   <<"查询批开性质">>, <<"list_batch_sale_prop">>,   ?right_b_sale},
+	 {?update_batch_sale_prop, <<"修改批开性质">>, <<"update_batch_sale_prop">>, ?right_b_sale},
+	 {?delete_batch_sale_prop, <<"删除批开性质">>, <<"delete_batch_sale_prop">>, ?right_b_sale}
 	],
     
     %% inventory

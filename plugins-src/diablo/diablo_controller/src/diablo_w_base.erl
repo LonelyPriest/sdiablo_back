@@ -1016,7 +1016,9 @@ sys_config() ->
 	      %%[1]:hide tag price when battch sale
 	      %%[2]:hide vir price when batch sale
 	      %%[3]:hide discount when batch sale
-	      {"batch_mode",        "批发配置",           "0111",    "0"}
+	      %%[4]:hide whole discount when batch sale
+	      %%[5]:hide properties when batch sale
+	      {"batch_mode",        "批发配置",           "011111",    "0"}
 	     ],
     
     Values.
