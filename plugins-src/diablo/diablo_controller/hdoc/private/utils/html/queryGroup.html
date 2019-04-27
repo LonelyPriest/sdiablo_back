@@ -449,6 +449,23 @@
 	      </span>
 	    </div>
 	  </span>
+
+	  <span x-ng-switch-when="prop">
+	    <div class="has-feedback">
+	      <input type="text" class="form-control" placeholder="请选择销售场景"
+	  	     x-ng-model="f.value"
+	  	     x-ng-edit
+		     typeahead-editable="false"
+	  	     typeahead-wait-ms="1000"
+	  	     typeahead-loading="loading_bsale_prop"
+		     typeahead-on-select="f.value && ok()"
+	  	     uib-typeahead="s as s.name for s in prompt.bsale_prop($viewValue)"
+	  	     x-ng-enter="f.value && ok()" />
+	      <span x-ng-show="loading_sale_prop">
+	  	<i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
+	      </span>
+	    </div>
+	  </span>
 	  
 	</div> 
 	

@@ -81,7 +81,7 @@
 		    <th class="text-center">折扣</th> 		    
 		    <th class="text-center">数量</th> 
 		    <th class="text-center">合计</th>
-		    <th class="text-center">备注</th>
+		    <th x-ng-if="!setting.hide_comment" class="text-center">备注</th>
 		    <th class="text-center">操作</th>
 		  </tr>
 		</thead>
@@ -145,11 +145,11 @@
 		    </td>
 		    
 		    <td class="col-md-1 vert-align">{{inv.calc}}</td>
-		    <td class="vert-align col-md-2">
-			<input class="form-control input-xs"
-			       type="text"
-			       placeholder="备注"
-			       x-ng-model="inv.comment"/>
+		    <td x-ng-if="!setting.hide_comment" class="vert-align col-md-2">
+		      <input class="form-control input-xs"
+			     type="text"
+			     placeholder="备注"
+			     x-ng-model="inv.comment"/>
 		    </td>
 		    
 		    <td class="col-md-2 text-left vert-align"> 
@@ -246,6 +246,27 @@
 	    </div>
 	  </div> 
 	</div>
+
+	<div x-ng-if="!setting.hide_sale_prop" class="row diablo-good-form-group">
+	  <div class="col-xs-12 col-md-12">
+	    <div class="input-group">
+	      <span class="input-group-addon">
+		<i class="glyphicon glyphicon-comment fg-red"></i>场景</span>
+	      <input class="form-control"
+		     type="text"
+		     x-ng-edit
+		     placeholder="请选择开单场景"
+		     typeahead-editable="false"
+		     typeahead-wait-ms="300"
+		     typeahead-loading="loading_sale_prop"
+	    	     uib-typeahead="p as p.name for p in match_bsale_prop($viewValue)"
+		     x-ng-model="select.sale_prop"/>
+	      <span x-ng-show="loading_sale_prop">
+	  	<i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
+	      </span>
+	    </div>
+	  </div>
+	</div>
 	
 	<div class="row diablo-good-form-group">
 	  <div class="col-xs-12 col-md-12">
@@ -253,8 +274,10 @@
 	      <span class="input-group-addon">
 	  	<i class="glyphicon glyphicon-map-marker fg-red"></i>业务员
 	      </span>
-	      <input class="form-control" type="text"
-	      	     x-ng-model="select.employee"
+	      <input class="form-control"
+		     type="text"
+		     required
+	      	     x-ng-model="select.employee" 
 		     placeholder="请选择业务员"
 		     typeahead-editable="false"
 		     uib-typeahead="e as e.name for e in employees|filter:$viewValue" />
@@ -349,7 +372,7 @@
           </div>
 	</div>
 
-	<div class="row diablo-good-form-group">
+	<div x-ng-if="!setting.hide_wcomment" class="row diablo-good-form-group">
 	  <div class="col-xs-12 col-md-12">
 	    <div class="input-group">
 	      <span class="input-group-addon">

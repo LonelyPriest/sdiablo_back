@@ -110,6 +110,12 @@ function employeeConfig(angular){
 		{department: department, employee:employee}).$promise;
 	};
 
+	this.del_employee_of_department = function(department, employee) {
+	    return employ.save(
+		{operation: "del_employee_of_department"},
+		{department: department, employee:employee}).$promise;
+	};
+
 	this.list_employee_of_department = function(department) {
 	    return employ.save(
 		{operation: "list_employee_of_department"}, {department: department}).$promise;
@@ -396,6 +402,26 @@ function departmentDetailCtrlProvide($scope, employService, diabloUtilsService, 
 	dialog.edit_with_modal("add-employee.html", undefined, callback, $scope, {department:department});
     };
 
+    $scope.delete_employee_of_department = function(emp) {
+	employService.del_employee_of_department(
+	    emp.department, emp.employee_id
+	).then(function(result) {
+	    console.log(result);
+	    if (result.ecode === 0) {
+		dialog.response(
+		    true,
+		    "删除部门员工",
+		    "删除部门员工[" + emp.employee.name + "]成功！！");
+	    } else {
+		dialog.response(
+		    false,
+		    "删除部门员工",
+		    "删除部门员工[" + emp.employee.name + "]失败！！"
+		    + employService.error[result.ecode]);
+	    }
+	})
+    };
+
 
     var check_select_only = function(select, items){
 	angular.forEach(items, function(e){
@@ -424,9 +450,40 @@ function departmentDetailCtrlProvide($scope, employService, diabloUtilsService, 
 		    undefined,
 		    callback,
 		    undefined,
-		    {department:d, employees:employees, check_only:check_select_only});
+		    {department:d,
+		     employees:employees,
+		     check_only:check_select_only,
+		     checked:function(employees) {
+			 var checked = false;
+			 for (var i=0, l=employees.length; i<l; i++) {
+			     if (employees[i].select) {
+				 checked = true;
+				 break;
+			     }
+			     
+			 }
+			 return checked;
+		     }, 
+		     delete_employee:function(close, employees) {
+			 if (angular.isFunction(close))
+			     close();
+			 var del_employee;
+			 for (var i=0, l=employees.length; i<l; i++) {
+			     if (employees[i].select) {
+				 del_employee = employees[i];
+				 break;
+			     }
+				 
+			 }
+
+			 if (angular.isDefined(del_employee))
+			     $scope.delete_employee_of_department(del_employee);
+		     }
+		    });
 	    } else {
-		dialog.response(false, "查看部门员工", "查看部门员工失败：" + employService.error[result.ecode]);
+		dialog.response(false,
+				"查看部门员工",
+				"查看部门员工失败：" + employService.error[result.ecode]);
 	    }
 	});
     };

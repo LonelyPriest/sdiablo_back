@@ -49,6 +49,8 @@ department(new, Merchant, Attrs) ->
     gen_server:call(?MODULE, {new_department, Merchant, Attrs});
 department(add_employee, Merchant, Attrs) -> 
     gen_server:call(?MODULE, {add_employee_of_department, Merchant, Attrs});
+department(del_employee, Merchant, Attrs) ->
+    gen_server:call(?MODULE, {del_employee_of_department, Merchant, Attrs});
 department(list_employee, Merchant, Department) -> 
     gen_server:call(?MODULE, {list_employee_of_department, Merchant, Department}).
 
@@ -253,11 +255,11 @@ handle_call({add_employee_of_department, Merchant, Attrs}, _From, State) ->
     Department = ?v(<<"department">>, Attrs),
     Employee   = ?v(<<"employee">>, Attrs),
     
-    Sql = "select id, department, employ from employee_locate"
+    Sql = "select id, department, employ, deleted from employee_locate"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and department=" ++ ?to_s(Department)
-	++ " and employ=\'" ++ ?to_s(Employee) ++ "\'"
-	++ " and deleted=" ++ ?to_s(?NO),
+	++ " and employ=\'" ++ ?to_s(Employee) ++ "\'",
+    %% ++ " and deleted=" ++ ?to_s(?NO),
 
     case ?sql_utils:execute(s_read, Sql) of
 	{ok, []} ->
@@ -271,11 +273,32 @@ handle_call({add_employee_of_department, Merchant, Attrs}, _From, State) ->
 		++ "\'" ++ ?utils:current_time(localdate) ++ "\')", 
 	    Reply = ?sql_utils:execute(insert, Sql1),
 	    {reply, Reply, State};
-	{ok, _Any} ->
-	    {reply, {error, ?err(department_employee_added, Employee)}, State};
+	{ok, Emp} ->
+	    case ?v(<<"deleted">>, Emp) of
+		?NO ->
+		    {reply, {error, ?err(department_employee_added, Employee)}, State};
+		?YES ->
+		    Sql1 = "update employee_locate set deleted=" ++ ?to_s(?NO)
+			++ " where merchant=" ++ ?to_s(Merchant)
+			++ " and department=" ++ ?to_s(Department)
+			++ " and employ=\'" ++ ?to_s(Employee) ++ "\'",
+		    Reply = ?sql_utils:execute(write, Sql1, Employee),
+		    {reply, Reply, State}
+	    end;
 	Error ->
 	    {reply, Error, State}
     end;
+
+handle_call({del_employee_of_department, Merchant, Attrs}, _From, State) ->
+    ?DEBUG("del_employee_of_department: merchant ~p, Attrs ~p", [Merchant, Attrs]),
+    Department = ?v(<<"department">>, Attrs),
+    Employee   = ?v(<<"employee">>, Attrs),
+    Sql = "update employee_locate set deleted=" ++ ?to_s(?YES)
+	++ " where merchant=" ++ ?to_s(Merchant)
+	++ " and department=" ++ ?to_s(Department)
+	++ " and employ=\'" ++ ?to_s(Employee) ++ "\'",
+    Reply = ?sql_utils:execute(write, Sql, Employee),
+    {reply, Reply, State};
 
 handle_call({list_employee_of_department, Merchant, Department}, _From, State) ->
     ?DEBUG("list_employee_of_department: merchant ~p, Department ~p", [Merchant, Department]), 

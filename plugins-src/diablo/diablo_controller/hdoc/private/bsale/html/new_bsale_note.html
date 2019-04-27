@@ -115,7 +115,8 @@
 			<th x-ng-if="right.show_orgprice">进价</th> 
 			<th>折扣率</th>
 			<th x-ng-if="right.show_orgprice">毛利率</th> 
-			<th>备注</th>
+			<th x-ng-if="!setting.hide_comment">备注</th>
+			<th x-ng-if="!setting.hide_sale_prop">场景</th>
 			<th>日期</th> 
 			<th>操作</th>
 		      </tr>
@@ -165,7 +166,8 @@
 			<td x-ng-if="right.show_orgprice">{{inv.org_price}}</td>
 			<td>{{inv.drate}}</td>
 			<td x-ng-if="right.show_orgprice" class="fg-magenta">{{inv.gprofit}} </td>
-			<td>{{inv.comment}}</td>
+			<td x-ng-if="!setting.hide_comment">{{inv.comment}}</td>
+			<td x-ng-if="!setting.hide_sale_prop">{{inv.prop}}</td>
 			<td>{{inv.entry_date}}</td>
 			<td>
 			  <button class="btn diablo-button btn-primary"

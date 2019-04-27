@@ -116,7 +116,7 @@
 		  <!-- <th class="text-center">折扣率</th>  -->
 		  <th class="text-center">合计</th>
 		  <!-- <th class="text-center">色/码</th> -->
-		  <th class="text-center">备注</th>
+		  <th x-ng-if="!setting.hide_comment" class="text-center">备注</th>
 		  <th class="text-center">操作</th>
 		</tr>
 	      </thead>
@@ -188,13 +188,13 @@
 		  
 		  <td class="vert-align"><span>{{inv.calc}}</span></td>
 
-		  <td class="vert-align col-md-1">
-			<input class="form-control input-xs"
-			       type="text"
-			       placeholder="备注"
-			       x-ng-pattern="pattern.comment"
-			       x-ng-model="inv.comment"/>
-		    </td>
+		  <td x-ng-if="!setting.hide_comment" class="vert-align col-md-1">
+		    <input class="form-control input-xs"
+			   type="text"
+			   placeholder="备注"
+			   x-ng-pattern="pattern.comment"
+			   x-ng-model="inv.comment"/>
+		  </td>
 		  
 		  <td class="text-left vert-align"> 
 		    <div x-ng-if="inv.$edit">
@@ -239,7 +239,7 @@
 		  <td></td>
 		  <td class="vert-align">{{select.abs_total}}</td>
 		  <td class="vert-align">{{select.should_pay}}</td>
-		  <td></td>
+		  <th x-ng-if="!setting.hide_comment"></th>
 		  <td></td>
 		</tr> 
 	      </tbody>
@@ -295,6 +295,27 @@
 	      </span>
 	    </div>
 	  </div> 
+	</div>
+
+	<div x-ng-if="!setting.hide_sale_prop" class="row diablo-good-form-group">
+	  <div class="col-xs-12 col-md-12">
+	    <div class="input-group">
+	      <span class="input-group-addon">
+		<i class="glyphicon glyphicon-comment fg-red"></i>场景</span>
+	      <input class="form-control"
+		     type="text"
+		     x-ng-edit
+		     placeholder="请选择开单场景"
+		     typeahead-editable="false"
+		     typeahead-wait-ms="300"
+		     typeahead-loading="loading_sale_prop"
+	    	     uib-typeahead="p as p.name for p in match_bsale_prop($viewValue)"
+		     x-ng-model="select.sale_prop"/>
+	      <span x-ng-show="loading_sale_prop">
+	  	<i class="icon-spinner icon-spin icon-2x form-control-feedback"></i>
+	      </span>
+	    </div>
+	  </div>
 	</div>
 	
 	<div class="row diablo-good-form-group">
@@ -400,7 +421,7 @@
           </div>
 	</div>
 
-	<div class="row diablo-good-form-group">
+	<div x-ng-if="!setting.hide_wcomment" class="row diablo-good-form-group">
 	  <div class="col-xs-12 col-md-12">
 	    <div class="input-group">
 	      <span class="input-group-addon">

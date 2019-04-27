@@ -118,6 +118,23 @@ action(Session, Req, {"add_employee_of_department"}, Payload) ->
 	    end
     end;
 
+action(Session, Req, {"del_employee_of_department"}, Payload) ->
+    ?DEBUG("del_employee_of_department with Session ~p~npaylaod ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+
+    case ?v(<<"department">>, Payload) =:= undefined
+	orelse ?v(<<"employee">>, Payload) =:= undefined of
+	true ->
+	    ?utils:respond(200, Req, ?err(params_error, "del_employee_of_department"));
+	false -> 
+	    case ?employ:department(del_employee, Merchant, Payload) of
+		{ok, Employee} ->
+		    ?utils:respond(200, Req, ?succ(add_employ, Employee));
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
+	    end
+    end;
+
 action(Session, Req, {"list_employee_of_department"}, Payload) ->
     ?DEBUG("list_employee_of_department with Session ~p~npaylaod ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
@@ -134,7 +151,7 @@ sidebar(Session) ->
     S1 = 
 	case ?right_auth:authen(?list_employe, Session) of
 	    {ok, ?list_employe} ->
-		[{"employ_detail", "员工详情", "glyphicon glyphicon-book"}];
+		[{"employ_detail", "员工详情", "glyphicon glyphicon-map-marker"}];
 	    _ -> []
 	end,
 
@@ -155,7 +172,7 @@ sidebar(Session) ->
     S4 = 
 	case ?right_auth:authen(?list_department, Session) of
 	    {ok, ?list_department} ->
-		[{"department_detail", "部门详情", "glyphicon glyphicon-book"}];
+		[{"department_detail", "部门详情", "glyphicon glyphicon-map-marker"}];
 	    _ -> []
 	end,
 

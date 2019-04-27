@@ -155,6 +155,7 @@ function bsaleConfig(angular){
 
     bsaleApp.service("bsaleService", function($http, $resource, dateFilter){
 	this.error = {
+	    2021: "库存不足，请检测库存后再销售！！",
 	    2180: "库存不足，请选择另外货品！！",
 	    2190: "该款号库存不存在！！请确认本店是否进货该款号！！",
 	    2192: "客户或营业员不存在，请建立客户或营业员资料！！",
@@ -319,10 +320,10 @@ function bsaleConfig(angular){
 	};
 
 	// sale props
-	this.add_bsale_prop = function(name, comment) {
+	this.add_bsale_prop = function(name, comment, py) {
 	    return request.save(
 		{operation: "new_batch_sale_prop"},
-		{name: name, comment: comment}).$promise;
+		{name: name, comment: comment, py:py}).$promise;
 	};
 
 	this.update_bsale_prop = function(propId, payload){
@@ -337,6 +338,21 @@ function bsaleConfig(angular){
 		 fields: fields,
 		 page:   currentPage,
 		 count:  itemsPerpage}).$promise;
+	};
+
+	this.match_bsale_prop = function(viewValue) {
+	    return request.post(
+		{operation: "match_batch_sale_prop"},
+		{prompt:viewValue, mode: function() {
+		    if (diablo_is_letter_string(viewValue)) return 1;
+		    else if (diablo_is_chinese_string) return 2;
+		    else return undefined;
+		}()}
+	    ).$promise.then(function(props) {
+		return props.map(function(p) {
+		    return {id:p.id, name: p.name};
+		})
+	    });
 	};
 	
     });
@@ -520,6 +536,10 @@ function bsaleNewProvide(
     // batch saler;
     $scope.match_bsaler_phone = function(viewValue){
 	return bsaleService.match_bsaler_phone(viewValue);
+    };
+
+    $scope.match_bsale_prop = function(viewValue) {
+	return bsaleService.match_bsale_prop(viewValue);
     };
     
     $scope.set_bsaler = function(){
@@ -912,6 +932,7 @@ function bsaleNewProvide(
 		    rdiscount   : add.rdiscount,
 		    stock       : add.total,
 		    unit        : add.unit,
+		    prop        : bsaleUtils.get_valid_id($scope.select.sale_prop),
 		    
 		    path        : sets(add.path), 
 		    sizes       : add.sizes,
@@ -942,7 +963,8 @@ function bsaleNewProvide(
 	    has_pay:        $scope.select.has_pay,
 	    
 	    total:          $scope.select.total, 
-	    round:          $scope.setting.round
+	    round:          $scope.setting.round,
+	    prop:           bsaleUtils.get_valid_id($scope.select.sale_prop)
 	};
 	
 	console.log(base);
@@ -990,10 +1012,15 @@ function bsaleNewProvide(
 		}
 		
 	    } else {
+		var error = bsaleService.error[result.ecode];
+		if (result.ecode === 2021) {
+		    error += result.style_number
+		}
+		
 		dialog.response_with_callback(
 	    	    false,
 		    "销售开单",
-		    "开单失败：" + bsaleService.error[result.ecode],
+		    "开单失败：" + error,
 		    undefined,
 		    function(){$scope.has_saved = false}); 
 	    } 
@@ -1871,8 +1898,8 @@ function bsaleNewNoteCtrlProvide(
     $scope.shopIds  = user.shopIds;
     
     $scope.setting     = {round:diablo_round_record};
-    angular.extend($scope.setting, bsaleUtils.sale_mode(diablo_default_shop, base));
-    angular.extend($scope.setting, bsaleUtils.batch_mode(diablo_default_shop, base));
+    angular.extend($scope.setting, bsaleUtils.sale_mode(user.loginShop, base));
+    angular.extend($scope.setting, bsaleUtils.batch_mode(user.loginShop, base));
     
     $scope.total_items = 0;
     $scope.goto_page = diablo_goto_page;
@@ -1940,7 +1967,7 @@ function bsaleNewNoteCtrlProvide(
     
     // base setting 
     $scope.setting.show_sale_day = user.sdays; 
-    angular.extend($scope.setting, bsaleUtils.sale_mode(diablo_default_shop, base));
+    angular.extend($scope.setting, bsaleUtils.sale_mode(user.login_shop, base));
     console.log($scope.setting);
     
     var storage = localStorageService.get(bsaleService.diablo_key_bsale_note);
@@ -1994,6 +2021,8 @@ function bsaleNewNoteCtrlProvide(
     diabloFilter.add_field("sell_type",    bsaleService.bsale_types);
     diabloFilter.add_field("rsn",          $scope.match_rsn);
     diabloFilter.add_field("org_price",    []);
+    if (!$scope.setting.hide_sale_prop)
+	diabloFilter.add_field("sale_prop",  bsaleService.match_bsale_prop);
     
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
@@ -2699,23 +2728,27 @@ function bsalePropCtrlProvide(
     $scope.refresh = function() {
 	$scope.do_search($scope.default_page); 
     }
+
+    $scope.page_changed = function(page) {
+	$scope.do_search(page)
+    }
     
     $scope.new_sale_prop = function(){
 	var callback = function(params){
 	    console.log(params);
-	    bsaleService.add_bsale_prop(params.name, params.comment).then(function(state){
+	    bsaleService.add_bsale_prop(
+		params.name, params.comment, diablo_pinyin(params.name)
+	    ).then(function(state){
+		console.log(state);
 		if (state.ecode === 0){
 		    dialog.response_with_callback
 		    (true,
-		     "新增销售性质",
-		     "新增销售性质 [" + params.name + "] 成功",
+		     "新增销售场景",
+		     "新增销售场景 [" + params.name + "] 成功",
 		     undefined,
 		     function() {$scope.refresh()});
 		} else {
-		    dialog.response(
-			false,
-			"新增销售性质",
-			"新增销售性质失败：" + bsaleService.error[state.ecode]);
+		    dialog.set_batch_error("新增销售场景", state.ecode); 
 		}
 	    });
 	}; 
@@ -2726,23 +2759,23 @@ function bsalePropCtrlProvide(
 	console.log(prop);
 	var callback = function(params){
 	    console.log(params);
+	    var name = diablo_get_modified(params.name, prop.name);
 	    bsaleService.update_bsale_prop(
 		prop.id,
-		{name: diablo_get_modified(params.name, prop.name),
+		{name: name,
+		 py: angular.isDefined(name) ? diablo_pinyin(name) : undefined,
 		 comment: diablo_get_modified(params.comment, prop.comment)}
 	    ).then(function(state){
+		console.log(state);
 		if (state.ecode === 0){
 		    dialog.response_with_callback
 		    (true,
-		     "销售性质编辑",
-		     "销价主性质编辑 [" + params.name + "] 成功",
+		     "销售场景编辑",
+		     "销价场景编辑 [" + params.name + "] 成功",
 		     undefined,
 		     function() {$scope.refresh()});
 		} else {
-		    dialog.response(
-			false,
-			"销售性质编辑",
-			"销价性质编辑失败：" + bsaleService.error[state.ecode]);
+		    dialog.set_batch_error("销售场景编辑", state.ecode); 
 		}
 	    });
 	};

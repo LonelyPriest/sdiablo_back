@@ -1018,7 +1018,9 @@ sys_config() ->
 	      %%[3]:hide discount when batch sale
 	      %%[4]:hide whole discount when batch sale
 	      %%[5]:hide properties when batch sale
-	      {"batch_mode",        "批发配置",           "011111",    "0"}
+	      %%[6]:hide comment when batch sale
+	      %%[7]:hide whole comment when batch sale
+	      {"batch_mode",        "批发配置",           "0111111",    "0"}
 	     ],
     
     Values.

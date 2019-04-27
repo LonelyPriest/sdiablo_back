@@ -59,7 +59,7 @@ action(Session, Req, {"new_batch_sale"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     UserId = ?session:get(id, Session), 
     Invs            = ?v(<<"inventory">>, Payload, []),
-    {struct, Base}  = ?v(<<"base">>, Payload), 
+    {struct, Base}  = ?v(<<"base">>, Payload),    
     start(new_bsale, Req, Merchant, Invs, Base ++ [{<<"user">>, UserId}]);
 
 action(Session, Req, {"check_batch_sale"}, Payload) ->
@@ -504,6 +504,13 @@ action(Session, Req, {"list_batch_sale_prop"}, Payload) ->
 		  sale_prop, Match, Merchant, Conditions, CurrentPage, ItemsPerPage)
        end, Req, Payload);
 
+action(Session, Req, {"match_batch_sale_prop"}, Payload) ->
+    ?DEBUG("match_batch_sale_prop with session ~p, paylaod~n~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    Phone = ?v(<<"prompt">>, Payload),
+    Mode  = ?v(<<"mode">>, Payload, 2),
+    ?utils:respond(batch, fun() -> ?b_sale:match(sale_prop, Merchant, {Mode, Phone}) end, Req);
+
 action(Session, Req, {"match_bsaler_phone"}, Payload) ->
     ?DEBUG("match_bsaler_phone with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
@@ -594,7 +601,7 @@ sidebar(Session) ->
 		    ?YES -> 
 			[]; 
 		    ?NO ->
-			[{"bsale_prop", "销售性质", "glyphicon glyphicon-map-marker"}]
+			[{"bsale_prop", "销售场景", "glyphicon glyphicon-map-marker"}]
 		end,
 
 	    L1 = ?menu:sidebar(
@@ -617,6 +624,7 @@ sidebar(Session) ->
 start(new_bsale, Req, Merchant, Invs, Base) ->
     Round            = ?v(<<"round">>, Base, 1),
     ShouldPay        = ?v(<<"should_pay">>, Base),
+    Shop             = ?v(<<"shop">>, Base),
     Datetime         = ?v(<<"datetime">>, Base),
     %% half an hour
     case abs(?utils:current_time(localtime2second) - ?utils:datetime2seconds(Datetime)) > 1800 of
@@ -628,7 +636,7 @@ start(new_bsale, Req, Merchant, Invs, Base) ->
 			   [{<<"fdate">>, Datetime},
 			    {<<"bdate">>, ?to_b(CurDatetime)}]);
 	false-> 
-	    case check_inventory(oncheck, Round, 0, ShouldPay, Invs) of
+	    case check_inventory({oncheck, Shop, Merchant}, Round, 0, ShouldPay, Invs) of 
 		{ok, _} -> 
 		    case ?b_sale:bsale(new, Merchant, lists:reverse(Invs), Base) of 
 			{ok, RSN} -> 
@@ -652,11 +660,19 @@ start(new_bsale, Req, Merchant, Invs, Base) ->
 		       Req,
 		       ?err(wsale_invalid_pay, Moneny),
 		       [{<<"should_pay">>, ShouldPay},
-			{<<"check_pay">>, Moneny}])
+			{<<"check_pay">>, Moneny}]);
+		{db_error, StyleNumber} ->
+		    ?utils:respond(200, Req, ?err(db_error, StyleNumber));
+		{not_enought_stock, StyleNumber} ->
+		    ?utils:respond(
+		       200,
+		       Req,
+		       ?err(not_enought_stock, StyleNumber),
+		       [{<<"style_number">>, StyleNumber}])
 	    end
     end.
 
-check_inventory(oncheck, Round, Moneny, ShouldPay, []) ->
+check_inventory({oncheck, _Shop, _Merchant}, Round, Moneny, ShouldPay, []) ->
     ?DEBUG("Moneny ~p, ShouldPay, ~p", [Moneny, ShouldPay]),
     case Round of
 	1 -> 
@@ -671,8 +687,9 @@ check_inventory(oncheck, Round, Moneny, ShouldPay, []) ->
 	    end
     end;
 
-check_inventory(oncheck, Round, Money, ShouldPay, [{struct, Inv}|T]) ->
+check_inventory({oncheck, Shop, Merchant}, Round, Money, ShouldPay, [{struct, Inv}|T]) ->
     StyleNumber = ?v(<<"style_number">>, Inv),
+    Brand = ?v(<<"brand">>, Inv),
     Amounts = ?v(<<"amounts">>, Inv),
     Count = ?v(<<"sell_total">>, Inv),
     DCount = lists:foldr(
@@ -686,8 +703,27 @@ check_inventory(oncheck, Round, Money, ShouldPay, [{struct, Inv}|T]) ->
 	undefined -> {error, Inv};
 	_ ->
 	    case Count =:= DCount of
-		true -> check_inventory(oncheck, Round, Money + Calc, ShouldPay, T);
-		false -> {error, Inv}
+		true ->
+		    %% is enought stock
+		    Sql = "select style_number, brand, amount, shop, merchant"
+			" from w_inventory"
+			" where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+			++ " and brand=" ++ ?to_s(Brand)
+			++ " and shop=" ++ ?to_s(Shop)
+			++ " and merchant=" ++ ?to_s(Merchant),
+		    case ?sql_utils:execute(s_read, Sql) of
+			{ok, Stock} ->
+			    case ?v(<<"amount">>, Stock) < Count of
+				true -> {not_enought_stock, StyleNumber};
+				false ->
+				    check_inventory(
+				      {oncheck, Shop, Merchant}, Round, Money + Calc, ShouldPay, T)
+			    end;
+			{error, _Error} ->
+			    {db_error, StyleNumber}
+		    end;
+		false ->
+		    {error, Inv}
 	    end
     end.
 
@@ -951,7 +987,7 @@ note_class_by(color, [{H}|T], Sorts) ->
     note_class_by(color, T, NewSorts).
 
 csv_head(sale_new, Do, ExportCode) ->
-    H = "序号,单号,交易,店铺,客户,上次结余,累计结余,店员,数量,应收,实收,积分,现金,刷卡,微信,提现,电子卷,核销,备注,日期",
+    H = "序号,单号,交易,店铺,客户,场景,上次结余,累计结余,店员,数量,应收,实收,积分,现金,刷卡,微信,提现,电子卷,核销,备注,日期",
     C = 
 	case ExportCode of
 	    0 ->
@@ -962,7 +998,7 @@ csv_head(sale_new, Do, ExportCode) ->
     %% UTF8 = unicode:characters_to_list(H, utf8),
     Do(C);
 csv_head(sale_new_detail, Do, ExportCode) -> 
-    H = "序号,单号,导购,区域,负责人,交易,店铺,客户,货号,品牌,类型,季节,厂商,年度,上架日期,参考价,单价,数量,小计,备注,日期",
+    H = "序号,单号,导购,区域,负责人,交易,店铺,客户,场景,货号,品牌,类型,季节,厂商,年度,上架日期,参考价,单价,数量,小计,备注,日期",
     C = 
 	case ExportCode of
 	    0 ->
@@ -995,6 +1031,7 @@ do_write(sale_new, Do, _Seq, [], ExportCode, {Amount, SPay, RPay})->
 	++ ?d
 	++ ?d
 	++ ?d
+	++ ?d
 	++ ?to_s(Amount) ++ ?d
 	++ ?to_s(SPay) ++ ?d
 	++ ?to_s(RPay) ++ ?d
@@ -1018,6 +1055,7 @@ do_write(sale_new, Do, Seq, [{H}|T], ExportCode, {Amount, SPay, RPay}) ->
     Rsn        = ?v(<<"rsn">>, H),
     Type       = ?v(<<"type">>, H),
     Shop       = ?v(<<"shop">>, H),
+    SaleProp   = ?v(<<"prop">>, H),
     Retailer   = ?v(<<"retailer">>, H), 
     Balance    = ?v(<<"balance">>, H),
 
@@ -1047,6 +1085,7 @@ do_write(sale_new, Do, Seq, [{H}|T], ExportCode, {Amount, SPay, RPay}) ->
 	++ sale_type(Type) ++ ?d
 	++ ?to_s(Shop) ++ ?d
 	++ ?to_s(Retailer) ++ ?d
+	++ ?to_s(SaleProp) ++ ?d
 	++ ?to_s(Balance) ++ ?d
 	++ ?to_s(AccBalance) ++ ?d
 
@@ -1062,7 +1101,7 @@ do_write(sale_new, Do, Seq, [{H}|T], ExportCode, {Amount, SPay, RPay}) ->
 	++ ?to_s(WithDraw) ++ ?d
 	++ ?to_s(Ticket) ++ ?d
 	++ ?to_s(Verify) ++ ?d 
-	++ ?to_s(Comment) ++ ?d
+	++ "\'" ++ ?to_s(Comment) ++ "\'" ++ ?d
 	++ ?to_s(Datetime),
     %% UTF8 = unicode:characters_to_list(L, utf8),
     %% Do(UTF8),
@@ -1079,6 +1118,7 @@ do_write(sale_new, Do, Seq, [{H}|T], ExportCode, {Amount, SPay, RPay}) ->
 do_write(sale_new_detail, Do, _Seq, [],
 	 {ExportCode, _Employees, _Regions, _Departments}, {Amount, _SPay, _RPay})->
     L = "\r\n"
+	++ ?d
 	++ ?d
 	++ ?d
 	++ ?d
@@ -1115,6 +1155,7 @@ do_write(sale_new_detail, Do, Seq, [{H}|T],
     RegionId    = ?v(<<"region_id">>, H),
     SellType    = ?v(<<"sell_type">>, H), 
     Shop        = ?v(<<"shop">>, H),
+    SaleProp    = ?v(<<"prop">>, H),
     Employee    = ?v(<<"employee">>, H),
 
     StyleNumber = ?v(<<"style_number">>, H),
@@ -1159,7 +1200,8 @@ do_write(sale_new_detail, Do, Seq, [{H}|T],
 	++ ?to_s(DepartmentMaster) ++ ?d
 	++ sale_type(SellType) ++ ?d
 	++ ?to_s(Shop) ++ ?d
-	++ ?to_s(BSaler) ++ ?d 
+	++ ?to_s(BSaler) ++ ?d
+	++ ?to_s(SaleProp) ++ ?d 
 
 	++ "\'" ++ ?to_s(StyleNumber) ++ "\'" ++ ?d
 	++ ?to_s(Brand) ++ ?d

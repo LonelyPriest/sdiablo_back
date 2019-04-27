@@ -545,11 +545,8 @@ on a.merchant=b.merchant and a.shop=b.shop and a.style_number=b.style_number and
 set a.vir_price=b.vir_price where a.merchant=61;
 
 
---2019-04-18
-alter table w_inventory_transfer add column xcost decimal(10,2) default 0 after cost;
-alter table w_inventory_transfer_detail add column xdiscount decimal(4,1) default 100 after ediscount;
-alter table w_inventory_transfer_detail add column xprice decimal(10,2) default 0 after xdiscount;
-
-
---2019-04-25
+--2019-04-27
+alter table batch_sale add column prop integer default -1 after type;
+-- alter table batch_sale_detail add column prop integer default -1 after unit;
+--
 alter table merchants add column shop_count integer default -1 after sms_send;

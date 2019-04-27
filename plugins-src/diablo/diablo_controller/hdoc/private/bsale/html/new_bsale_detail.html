@@ -97,9 +97,9 @@
 		    <th>现金</th>
 		    <th>刷卡</th>
 		    <th>微信</th> 
-		    <th>核销</th>
-		    
-		    <th>备注</th> 
+		    <th>核销</th> 
+		    <th x-ng-if="!setting.hide_wcomment">备注</th>
+		    <th x-ng-if="!setting.hide_sale_prop">场景</th> 
 		    <th>日期</th> 
 		    <th>操作</th>
 		  </tr>
@@ -134,9 +134,13 @@
 		    <td class="{{css(r.state, r.type)}}">{{r.wxin}}</td>
 		    <td class="{{css(r.state, r.type)}}">{{r.verificate}}</td>
 
-		    <td class="{{css(r.state, r.type)}}">
+		    <td x-ng-if="!setting.hide_wcomment" class="{{css(r.state, r.type)}}">
 		      <span x-ng-if="r.comment">{{r.comment}}</span>
 		      <span x-ng-if="!r.comment"></span> 
+		    </td>
+
+		    <td x-ng-if="!setting.hide_sale_prop" class="{{css(r.state, r.type)}}">
+		      <sapn x-ng-bind="r.prop"></span>
 		    </td>
 		    
 		    <td class="{{css(r.state, r.type)}}">{{r.entry_date}}</td>

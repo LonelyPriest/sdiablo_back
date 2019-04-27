@@ -3,7 +3,7 @@
     <div class="portlet box purple">
 
       <div class="portlet-title">
-	<div class="caption"><i class="glyphicon glyphicon-menu-hamburger"></i>销售性质</div>
+	<div class="caption"><i class="glyphicon glyphicon-menu-hamburger"></i>销售场景</div>
 
 	<div class="actions">
 	  <div class="btn-group btn-group-solid">
@@ -55,27 +55,27 @@
 	  </div> <!--END table responsive-->
 
 	</div> <!--END panel-->
-      </div> <!--END portlet body-->
 
-      <div x-ng-show="total_items>items_perpage" class="row">
-	<div class="col-md-12, col-sm-12, col-xs-12">
-	  <span>显示第 {{current_page}} / {{num_pages}} 项结果，
-	    共 {{total_items}} 项</span>
-	  <uib-pagination
-	     class="pagination-lg table-pagination pull-right"
-	     total-items="total_items"
-	     items-per-page="items_perpage"
-	     num-pages="num_pages"
-	     max-size="max_page_size"
-	     boundary-links="true"
-	     previous-text="&lsaquo;" next-text="&rsaquo;"
-	     first-text="&laquo;" last-text="&raquo;"
-	     x-ng-model="current_page"
-	     x-ng-change="page_changed()">
-	  </uib-pagination>
+	<div x-ng-show="total_items>items_perpage" class="row">
+	  <div class="col-md-12, col-sm-12, col-xs-12">
+	    <span>显示第 {{current_page}} / {{num_pages}} 项结果，
+	      共 {{total_items}} 项</span>
+	    <uib-pagination
+	       class="pagination-lg table-pagination pull-right"
+	       total-items="total_items"
+	       items-per-page="items_perpage"
+	       num-pages="num_pages"
+	       max-size="max_page_size"
+	       boundary-links="true"
+	       previous-text="&lsaquo;" next-text="&rsaquo;"
+	       first-text="&laquo;" last-text="&raquo;"
+	       x-ng-model="current_page"
+	       x-ng-change="page_changed(current_page)">
+	    </uib-pagination>
+	  </div>
 	</div>
-      </div>
-
+	
+      </div> <!--END portlet body--> 
     </div>
   </div>
 </div>
@@ -85,9 +85,8 @@
     <button class="close" x-ng-click="cancel()" type="button">
       <span aria-hidden="true">&times;</span>
       <span class="sr-only"></span>
-    </button>
-    
-    <h4 class="modal-title"><span class="label label-sm label-primary">新增销售性质</span></h4>
+    </button> 
+    <h4 class="modal-title"><span class="label label-sm label-primary">销售场景</span></h4>
   </div>
 
   <div class="modal-body">

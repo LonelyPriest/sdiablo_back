@@ -150,6 +150,7 @@ function updateBSaleDetailCtrlProvide(
 
     // bsaler;
     $scope.match_bsaler_phone = bsaleService.match_bsaler_phone;
+    $scope.match_bsale_prop = bsaleService.match_bsale_prop;
 
     $scope.set_bsaler = function(){
     	if ($scope.select.bsaler.id !== diablo_invalid_index
@@ -238,7 +239,8 @@ function updateBSaleDetailCtrlProvide(
      */
     $scope.disable_save = function(){
 	// save one time only
-	return $scope.has_saved;
+	return bsaleUtils.get_valid_id($scope.select.bsaler) === diablo_invalid_index
+	    || $scope.has_saved;
     };
     
     var get_update_amount = function(newAmounts, oldAmounts){
@@ -372,7 +374,8 @@ function updateBSaleDetailCtrlProvide(
 	console.log($scope.inventories); 
 	console.log($scope.select);
 
-	if (!angular.isObject($scope.select.bsaler) || !angular.isObject($scope.select.employee)){
+	if (bsaleUtils.get_valid_id($scope.select.bsaler) === diablo_invalid_index
+	    || bsaleUtils.get_valid_id($scope.select.employee) === diablo_invalid_index){
 	    dialog.response(
 		false,
 		"销售开单",
@@ -442,6 +445,7 @@ function updateBSaleDetailCtrlProvide(
 	    rsn:           $scope.select.rsn,
 	    bsaler:        $scope.select.bsaler.id,
 	    shop:          $scope.select.shop.id,
+	    prop:          bsaleUtils.get_valid_id($scope.select.sale_prop), 
 	    datetime:      dateFilter($scope.select.rsn_datetime, "yyyy-MM-dd HH:mm:ss"),
 	    employee:      $scope.select.employee.id,
 	    
@@ -474,6 +478,7 @@ function updateBSaleDetailCtrlProvide(
 		&& $scope.select.employee.id === $scope.old_select.employee.id
 		&& $scope.select.shop.id === $scope.old_select.shop.id
 		&& $scope.select.bsaler.id === $scope.old_select.bsaler.id
+		&& bsaleUtils.get_valid_id($scope.select.sale_prop) === bsaleUtils.get_valid_id($scope.old_select.sale_prop)
 		&& $scope.select.comment === $scope.old_select.comment
 		&&  new_datetime === old_datetime)){
 	    diabloUtilsService.response_with_callback(

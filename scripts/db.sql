@@ -1521,6 +1521,7 @@ create table batch_sale(
     comment        VARCHAR(255) default null, 
     
     type           TINYINT  default -1, -- 0:sale 1:reject
+    prop           INTEGER default -1,
     state          TINYINT  default 0,  -- 0: wait for check, 1: checked
     check_date     DATETIME default 0,  -- date of last change
     entry_date     DATETIME default 0,
@@ -1554,8 +1555,9 @@ create table batch_sale_detail(
     in_datetime    DATETIME default 0,
     
     total          INTEGER default 0,
-    unit           TINYINT default 0, 
-
+    unit           TINYINT default 0,
+    prop           INTEGER default -1,
+    
     org_price      DECIMAL(10, 2) default 0, -- max: 99999999.99
     ediscount      DECIMAL(4, 1)  default 0, -- max: 100
     

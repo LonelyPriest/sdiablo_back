@@ -100,7 +100,10 @@ filter(sale_prop, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
 
 match(rsn, Merchant, {ViewValue, Condition}) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {match_rsn, Merchant, {ViewValue, Condition}}).
+    gen_server:call(Name, {match_rsn, Merchant, {ViewValue, Condition}});
+match(sale_prop, Merchant, {Mode, Prop}) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {match_sale_prop, Merchant, {Mode, Prop}}).
 
 export(sale_new, Merchant, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -142,6 +145,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
     ShouldPay  = ?v(<<"should_pay">>, Props, 0),
     HasPay     = ?v(<<"has_pay">>, Props, 0),
     Total      = ?v(<<"total">>, Props, 0),
+    SaleProp   = ?v(<<"prop">>, Props, -1),
     
     Sql0 = "select id, name, balance  from batchsaler where id=" ++ ?to_s(BSaler)
 	++ " and merchant=" ++ ?to_s(Merchant)
@@ -165,7 +169,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 	    Sql2 = "insert into batch_sale(rsn"
 		", account, employ, bsaler, shop, merchant"
 		", balance, should_pay, has_pay, cash, card, wxin, verificate"
-		", total, comment, type, entry_date) values("
+		", total, prop, comment, type, entry_date) values("
 		++ "\"" ++ ?to_s(SaleSn) ++ "\","
 		++ ?to_s(UserId) ++ ","
 		++ "\'" ++ ?to_s(Employe) ++ "\',"
@@ -179,7 +183,8 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 		++ ?to_s(Card) ++ ","
 		++ ?to_s(Wxin) ++ "," 
 		++ ?to_s(Verificate) ++ ","
-		++ ?to_s(Total) ++ "," 
+		++ ?to_s(Total) ++ ","
+		++ ?to_s(SaleProp) ++ "," 
 		++ "\"" ++ ?to_s(Comment) ++ "\"," 
 		++ ?to_s(type(new)) ++ ","
 		++ "\"" ++ ?to_s(DateTime) ++ "\");",
@@ -207,6 +212,7 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
     Shop       = ?v(<<"shop">>, Props), 
     Datetime   = ?v(<<"datetime">>, Props, Curtime), 
     Employee   = ?v(<<"employee">>, Props),
+    SaleProp   = ?v(<<"prop">>, Props),
 
     %% Balance    = ?v(<<"balance">>, Props),
     ShouldPay  = ?v(<<"should_pay">>, Props, 0), 
@@ -222,6 +228,7 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
     %% RSNId        = ?v(<<"id">>, OldProps),
     OldEmployee  = ?v(<<"employee_id">>, OldProps),
     OldBSaler    = ?v(<<"bsaler_id">>, OldProps),
+    OldSaleProp  = ?v(<<"prop_id">>, OldProps), 
     OldDatetime  = ?v(<<"entry_date">>, OldProps),
     
     OldCash       = ?v(<<"cash">>, OldProps),
@@ -248,8 +255,9 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 	     end,
     
     Updates = ?utils:v(employ, string, IsSame(string, Employee, OldEmployee))
-	++ ?utils:v(bsaler, integer, IsSame(number, BSaler, OldBSaler)) 
-	++ ?utils:v(should_pay, float, IsSame(number, ShouldPay, OldShouldPay))
+	++ ?utils:v(bsaler, integer, IsSame(number, BSaler, OldBSaler))
+	++ ?utils:v(prop, integer, IsSame(number, SaleProp, OldSaleProp))
+	++ ?utils:v(should_pay, float, IsSame(number, ShouldPay, OldShouldPay)) 
 	++ ?utils:v(cash, float, IsSame(number, Cash, OldCash))
 	++ ?utils:v(card, float, IsSame(number, Card, OldCard))
 	++ ?utils:v(wxin, float, IsSame(number, Wxin, OldWxin))
@@ -517,7 +525,8 @@ handle_call({export_sale_new_detail, Merchant, Conditions}, _From, State)->
 	", a.bsaler_id"
 	", a.season" 
 	", a.year"
-	", a.unit" 
+	", a.unit"
+	", a.prop_id"
 	", a.s_group"
 	", a.total"
 	
@@ -541,7 +550,8 @@ handle_call({export_sale_new_detail, Merchant, Conditions}, _From, State)->
 	", f.name as shop"
 	", g.name as bsaler"
 	", g.region as region_id"
-	", h.name as employee" 
+	", h.name as employee"
+	", m.name as prop"
 
 	" from (" 
 	"select a.id"
@@ -566,6 +576,7 @@ handle_call({export_sale_new_detail, Merchant, Conditions}, _From, State)->
 	", a.comment"
 
 	", b.shop as shop_id"
+	", b.prop as prop_id"
 	", b.bsaler as bsaler_id"
 	", b.employ as employee_id"
 	", b.type as sell_type"
@@ -581,8 +592,8 @@ handle_call({export_sale_new_detail, Merchant, Conditions}, _From, State)->
 
 	" left join shops f on a.shop_id=f.id"
 	" left join batchsaler g on a.bsaler_id=g.id"
-	" left join employees h on a.employee_id=h.number and h.merchant=" ++ ?to_s(Merchant) 
-
+	" left join employees h on a.employee_id=h.number and h.merchant=" ++ ?to_s(Merchant)
+	++ " left join batch_sale_prop m on a.prop_id=m.id"
 	++ " order by a.id desc",
 
     Reply = ?sql_utils:execute(read, Sql),
@@ -616,6 +627,7 @@ handle_call({new_sale_prop, Merchant, Attrs}, _From, State)->
     ?DEBUG("new_sale_prop with props ~p", [Attrs]),
     Name      = ?v(<<"name">>, Attrs),
     Comment   = ?v(<<"comment">>, Attrs, []),
+    PY        = ?v(<<"py">>, Attrs, []),
     Datetime  = ?utils:current_time(localdate),
 
     %% name can not be same
@@ -626,10 +638,11 @@ handle_call({new_sale_prop, Merchant, Attrs}, _From, State)->
     case ?sql_utils:execute(s_read, Sql) of
 	{ok, []} -> 
 	    Sql1 = "insert into batch_sale_prop"
-		++ "(merchant, name, comment, entry)"
+		++ "(merchant, name, py, comment, entry)"
 		++ " values ("
 		++ ?to_s(Merchant) ++ ","
-		++ "\'" ++ ?to_s(Name) ++ "\'," 
+		++ "\'" ++ ?to_s(Name) ++ "\',"
+		++ "\'" ++ ?to_s(PY) ++ "\'," 
 		++ "\'" ++ ?to_s(Comment) ++ "\'," 
 		++ "\"" ++ ?to_s(Datetime) ++ "\")", 
 	    Reply = ?sql_utils:execute(insert, Sql1),
@@ -643,9 +656,12 @@ handle_call({new_sale_prop, Merchant, Attrs}, _From, State)->
 handle_call({update_sale_prop, Merchant, PropId, Attrs}, _From, State) ->
     ?DEBUG("update_sale_prop with merchant ~p, PropId ~p, Attrs ~p", [Merchant, PropId, Attrs]), 
     Name    = ?v(<<"name">>, Attrs),
-    Comment  = ?v(<<"comment">>, Attrs),
+    PY      = ?v(<<"py">>, Attrs),
+    Comment = ?v(<<"comment">>, Attrs),
 
-    Updates = ?utils:v(name, string, Name) ++ ?utils:v(comment, string, Comment),
+    Updates = ?utils:v(name, string, Name)
+	++ ?utils:v(comment, string, Comment)
+	++ ?utils:v(py, string, PY),
 
     Sql = "update batch_sale_prop set "
 	++ ?utils:to_sqls(proplists, comma, Updates)
@@ -658,16 +674,45 @@ handle_call({update_sale_prop, Merchant, PropId, Attrs}, _From, State) ->
 		?sql_utils:execute(write, Sql, PropId);
 	    _ ->
 		Sql1 = "select id, name from batch_sale_prop  where merchant=" ++ ?to_s(Merchant)
-		    ++ " and name = " ++ "\'" ++ ?to_string(Name) ++ "\'"
-		    ++ " and deleted=" ++ ?to_s(?NO),
+		    ++ " and name=" ++ "\'" ++ ?to_string(Name) ++ "\'"
+		    ++ " and deleted=" ++ ?to_s(?NO), 
 		case ?sql_utils:execute(s_read, Sql1) of
-		    [] ->
+		    {ok, []} ->
 			?sql_utils:execute(write, Sql, PropId);
 		    _ ->
 			{error, ?err(batch_sale_prop_exist, Name)}
 		end
 	end, 
     {reply, Reply, State};
+
+handle_call({match_sale_prop, Merchant, {Mode, Prop}}, _From, State) ->
+    ?DEBUG("match_sale_prop: merchant ~p, mode ~p, prop ~p", [Merchant, Mode, Prop]),
+    First = string:substr(?to_s(Prop), 1, 1),
+    Last  = string:substr(?to_s(Prop), string:len(?to_s(Prop))),
+    Match = string:strip(?to_s(Prop), both, $/),
+
+    Name = case Mode of
+	       1 -> "py";
+	       2 -> "name"
+	   end,
+
+    Sql = "select id, name, py, merchant from batch_sale_prop" 
+	++ " where merchant=" ++ ?to_s(Merchant)
+	++ " and "
+	++ case {First, Match, Last} of
+	       {"/", Match, "/"} ->
+		   Name ++ " =\'" ++ Match ++ "\'"; 
+	       {"/", Match, _} ->
+		   Name ++ " like \'" ++ Match ++ "%\'";
+	       {_, Match, "/"} ->
+		   Name ++ " like \'%" ++ Match ++ "\'";
+	       {_, Match, _}->
+		   Name ++ " like \'%" ++ Match ++ "%\'"
+	   end
+	++ " limit 20",
+
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State}; 
 
 handle_call({total_sale_prop, Merchant, _Fields}, _From, State) ->
     CountSql = "select count(*) as total from batch_sale_prop"
@@ -945,6 +990,7 @@ bsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
     Path        = ?v(<<"path">>, Inventory, []),
     Comment     = ?v(<<"comment">>, Inventory, []),
     Unit        = ?v(<<"unit">>, Inventory, 0),
+    %% SaleProp    = ?v(<<"prop">>, Inventory, -1),
 
     C1 =
 	fun() ->
@@ -996,6 +1042,7 @@ bsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
 		 ", in_datetime"
 		 ", total"
 		 ", unit"
+	     %% ", prop"
 		 ", org_price"
 		 ", ediscount"
 		 ", tag_price"
@@ -1022,6 +1069,7 @@ bsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
 		 ++ "\'" ++ ?to_s(InDatetime) ++ "\'," 
 		 ++ ?to_s(Total) ++ ","
 		 ++ ?to_s(Unit) ++ ","
+	     %%  ++ ?to_s(SaleProp) ++ ","
 
 		 ++ ?to_s(ValidOrgPrice) ++ ","
 		 ++ ?to_s(ValidEDiscount) ++ ","
@@ -1142,7 +1190,7 @@ filter_bsale(PageFun, Merchant, Conditions) ->
 	", a.employ as employee_id"
     	", a.bsaler as bsaler_id"
 	", a.shop as shop_id"
-
+	
 	", a.balance"
 	", a.should_pay"
 	", a.has_pay"
@@ -1154,6 +1202,7 @@ filter_bsale(PageFun, Merchant, Conditions) ->
 
 	", a.comment"
 	", a.type"
+	", a.prop as prop_id"
 	", a.state"
 	", a.entry_date"
 
@@ -1161,10 +1210,12 @@ filter_bsale(PageFun, Merchant, Conditions) ->
 	", b.type as bsaler_type"
 	", b.region as region_id"
 	", c.name as account"
+	", d.name as prop"
 
     	" from batch_sale a" 
 	" left join batchsaler b on a.bsaler=b.id"
 	" left join users c on a.account=c.id"
+	" left join batch_sale_prop d on a.prop=d.id"
 
     	" where " ++ SortConditions
 	++ PageFun(), 
@@ -1232,6 +1283,7 @@ sale_new(sale_new_detail, MatchMode, Merchant, Conditions, PageFun) ->
 	", a.free"
 	", a.total"
 	", a.unit"
+	", a.prop_id"
 	
 	", a.org_price"
 	", a.ediscount"
@@ -1256,6 +1308,7 @@ sale_new(sale_new_detail, MatchMode, Merchant, Conditions, PageFun) ->
     %% ", c.region as region_id"
 	", d.name as brand"
 	", e.name as type"
+	", f.name as prop"
 
 	" from ("
 	"select b.id"
@@ -1271,6 +1324,7 @@ sale_new(sale_new_detail, MatchMode, Merchant, Conditions, PageFun) ->
 	", b.free"
 	", b.total"
 	", b.unit"
+    %% ", b.prop as prop_id"
 	
 	", b.org_price"
 	", b.ediscount"
@@ -1290,6 +1344,7 @@ sale_new(sale_new_detail, MatchMode, Merchant, Conditions, PageFun) ->
 	", a.bsaler as bsaler_id"
 	", a.employ as employee_id"
 	", a.type as sell_type"
+	", a.prop as prop_id"
 
     %% ", c.name as bsaler"
     %% ", d.name as brand"
@@ -1315,7 +1370,9 @@ sale_new(sale_new_detail, MatchMode, Merchant, Conditions, PageFun) ->
 
 	" left join batchsaler c on a.bsaler_id=c.id"
 	" left join brands d on a.brand_id=d.id"
-	" left join inv_types e on a.type_id=e.id".
+	" left join inv_types e on a.type_id=e.id"
+	" left join batch_sale_prop f on a.prop_id=f.id"
+	.
 	
 sale_new(sale_new_note, Merchant, Conditions) ->
     %% ?DEBUG("Merchant ~p, Conditions ~p", [Merchant, Conditions]), 
@@ -1553,6 +1610,7 @@ filter_table(batchsale, Merchant, Conditions) ->
 	", a.employ as employee_id"
 	", a.bsaler as bsaler_id"
 	", a.shop as shop_id"
+	", a.prop as prop_id"
 
 	", a.balance, a.should_pay, a.has_pay, a.cash, a.card, a.wxin, a.verificate, a.total" 
 	", a.comment, a.type, a.entry_date"
@@ -1560,11 +1618,13 @@ filter_table(batchsale, Merchant, Conditions) ->
 	", b.name as shop"
 	", c.name as employee"
 	", d.name as retailer"
+	", e.name as prop"
 
 	" from batch_sale a"
-	" left join shops b on a.shop=b.id"
-	" left join employees c on a.employ=c.number and c.merchant=" ++ ?to_s(Merchant)
+	++ " left join shops b on a.shop=b.id"
+	++ " left join employees c on a.employ=c.number and c.merchant=" ++ ?to_s(Merchant)
 	++ " left join batchsaler d on a.bsaler=d.id"
+	++ " left join batch_sale_prop e on a.prop=e.id"
 	" where " ++ SortConditions ++ " order by a.id desc",
     Sql.
 

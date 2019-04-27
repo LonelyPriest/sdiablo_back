@@ -33,7 +33,8 @@ var bsaleUtils = function(){
 	select.rsn_datetime    = diablo_set_datetime(base.entry_date);
 	select.region_id       = base.region_id,
 	select.bsaler_id       = base.bsaler_id;
-	select.shop_id         = base.shop_id; 
+	select.shop_id         = base.shop_id;
+	// select.prop_id         = base.prop_id,
 	select.employee_id     = base.employee_id; 
 	
 	select.surplus    = base.balance;
@@ -46,6 +47,12 @@ var bsaleUtils = function(){
 	
 	select.comment    = base.comment;
 	select.total      = base.total;
+
+	select.sale_prop = {
+	    id:base.prop_id,
+	    name:function() {
+		return base.prop_id === diablo_invalid_index ? diablo_empty_string : base.prop;
+	    }()};
 	
 	var sorts = [];
 	for (var i=0, l=sells.length; i<l; i++){
@@ -160,6 +167,12 @@ var bsaleUtils = function(){
 	    
 	},
 
+	get_valid_id: function(obj) {
+	    if (angular.isDefined(obj) && angular.isObject(obj) && angular.isDefined(obj.id))
+		return obj.id; 
+	    return diablo_invalid_index;
+	},
+
 	start_time: function(shop, base, now, dateFun){
 	    return diablo_base_setting(
 		"qtime_start", shop, base, function(v){return v},
@@ -239,7 +252,10 @@ var bsaleUtils = function(){
 		hide_tagprice:default_hide(mode.charAt(1)),
 		hide_virprice:default_hide(mode.charAt(2)),
 		hide_discount:default_hide(mode.charAt(3)),
-		hide_wdiscount:default_hide(mode.charAt(4))
+		hide_wdiscount:default_hide(mode.charAt(4)),
+		hide_sale_prop:default_hide(mode.charAt(5)),
+		hide_comment:default_hide(mode.charAt(6)),
+		hide_wcomment:default_hide(mode.charAt(7))
 	    };
 	},
 

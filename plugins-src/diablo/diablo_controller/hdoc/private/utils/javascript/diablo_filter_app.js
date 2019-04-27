@@ -355,10 +355,13 @@ function filterProvider(){
 		} else if (name === 'bsaler'){
 		    _filter.fields.push({name:"bsaler", chinese:"客户"});
 		    _prompt.bsaler = promptValues;
-		}else if (name === 'sprice'){
+		} else if (name === 'sprice'){
 		    _filter.fields.push({name:"sprice", chinese:"特价"});
 		    _prompt.sprice = promptValues;
-		};
+		} else if (name === 'sale_prop') {
+		    _filter.fields.push({name:"prop", chinese:"销售场景"});
+		    _prompt.bsale_prop = promptValues;
+		}
 		
 		return _filter;
 	    },
@@ -400,8 +403,7 @@ function filterProvider(){
 		    search.start_time = diablo_filter_time(time.start_time, 0, dateFilter); 
 		    search.end_time   = diablo_filter_time(time.end_time, 1, dateFilter);    
 		} 
-		console.log(search);
-
+		console.log(search); 
 		return callback(search);
 	    },
 	    
