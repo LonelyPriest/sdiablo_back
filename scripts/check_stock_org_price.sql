@@ -248,3 +248,37 @@ delete from inv_types where merchant=62;
 
 -- bill
 delete from w_bill_detail where merchant=27;
+
+
+-- *--------------------------------------------------------------------------------
+-- *--------------------------------------------------------------------------------
+-- clear data of shop
+delete from w_inventory_new_detail_amount where merchant=46 and shop=152;
+delete from w_inventory_new_detail where merchant=46 and shop=152;
+delete from w_inventory_new where merchant=46 and shop=152;
+
+-- clear stock
+delete from w_inventory_amount where merchant=46 and shop=152;
+delete from w_inventory where merchant=46 and shop=152;
+
+-- clear sale
+delete from w_sale_detail_amount where merchant=46 and shop=152;
+delete from w_sale_detail where merchant=46 and shop=152;
+delete from w_sale where merchant=46 and shop=152;
+
+-- clear transefer
+delete from w_inventory_transfer_detail_amount where merchant=46 and fshop=151 and tshop=152;
+delete from w_inventory_transfer_detail where merchant=46 and fshop=151 and tshop=152;
+delete from w_inventory_transfer where merchant=46 and fshop=151 and tshop=152;
+
+delete from w_inventory_transfer_detail_amount where merchant=46 and fshop=152 and tshop=151;
+delete from w_inventory_transfer_detail where merchant=46 and fshop=152 and tshop=151;
+delete from w_inventory_transfer where merchant=46 and fshop=152 and tshop=151;
+
+
+-- report
+delete from w_daily_report where merchant=46 and shop=152;
+delete from w_change_shift where merchant=46 and shop=152;
+
+-- charge
+delete from w_charge_detail where merchant=46 and shop=152;

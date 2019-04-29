@@ -2356,7 +2356,8 @@ function bsalePrintCtrlProvide(
 
     var pageHeight = diablo_base_setting("prn_h_page", user.loginShop, base, parseFloat, 14);
     var pageWidth  = diablo_base_setting("prn_w_page", user.loginShop, base, parseFloat, 21.3);
-    var batch_mode = bsaleUtils.batch_mode(user.loginShop, base);
+    $scope.batch_mode = bsaleUtils.batch_mode(user.loginShop, base);
+    console.log($scope.batch_mode);
     
     var contacts = diablo_base_setting("contact", user.loginShop, base, function(s) {return s}, "").split(diablo_semi_seperator);
 
@@ -2473,7 +2474,7 @@ function bsalePrintCtrlProvide(
     };
 
     $scope.go_back = function() {
-	if (batch_mode.print_with_check)
+	if ($scope.batch_mode.print_with_check)
 	    diablo_goto_page("#/list_bsale_new");
 	else {
 	    diablo_goto_page("#/new_bsale");
