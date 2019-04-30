@@ -545,11 +545,17 @@ create table w_charge(
     name            VARCHAR(64) not null,
     rule	    TINYINT default 0, -- [0, 1, 2, 3, 4, 5]
     
-    xtime           TINYINT default 1, 
+    xtime           TINYINT default 1,
+    xdiscount       INTEGER default 100,
     ctime           INTEGER not null default -1, -- consume time 
     charge          INTEGER not null default 0,
     balance         INTEGER not null default 0, -- send balance when charge
     type            TINYINT default 0, -- 0:recharge 1:withdraw
+    
+    ibalance        INTEGER default -1, -- limit balance of one time when withdraw 
+    ishop           INTEGER default 0, -- limit shop when withdraw
+    icount          TINYINT default -1, -- limit count when with draw
+    
     sdate           DATE default 0,
     edate           DATE default 0,
     remark          VARCHAR(128) default null,

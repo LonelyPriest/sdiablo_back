@@ -731,11 +731,11 @@ handle_call({list_retailer, Merchant, Conditions, Mode}, _From, State) ->
 handle_call({new_charge, Merchant, Attrs}, _From, State) ->
     ?DEBUG("new_charge with merchant ~p, paylaod ~p", [Merchant, Attrs]),
 
-    Name    = ?v(<<"name">>, Attrs),
-    Rule    = ?v(<<"rule">>, Attrs, -1),
-    XTime   = ?v(<<"xtime">>, Attrs, 0),
+    Name      = ?v(<<"name">>, Attrs),
+    Rule      = ?v(<<"rule">>, Attrs, -1),
+    XTime     = ?v(<<"xtime">>, Attrs, 0),
     XDiscount = ?v(<<"xdiscount">>, Attrs, 100),
-    CTime   = ?v(<<"ctime">>, Attrs, 0),
+    CTime     = ?v(<<"ctime">>, Attrs, 0),
 
     %% N
     {Charge, Balance}  =
@@ -743,6 +743,10 @@ handle_call({new_charge, Merchant, Attrs}, _From, State) ->
 	    true -> {?v(<<"charge">>, Attrs, 0), ?v(<<"balance">>, Attrs, 0)};
 	    _ -> {0, 0}
 	end,
+
+    IShop    = ?v(<<"ishop">>, Attrs, ?NO),
+    IBalance = ?v(<<"ibalance">>, Attrs, ?INVALID_OR_EMPTY),
+    ICount   = ?v(<<"icount">>, Attrs, ?INVALID_OR_EMPTY),
     
     Type    = ?v(<<"type">>, Attrs),
     SDate   = ?v(<<"sdate">>, Attrs),
@@ -758,7 +762,8 @@ handle_call({new_charge, Merchant, Attrs}, _From, State) ->
 		      ++ " and charge=" ++ ?to_s(Charge)
 		      ++ " and balance=" ++ ?to_s(Balance)
 		      ++ " and rule=" ++ ?to_s(Rule)
-		      ++ " and type=" ++ ?to_s(Type);
+		      ++ " and type=" ++ ?to_s(Type)
+		      ++ " and ishop=" ++ ?to_s(IShop);
 	      ?TIMES_CHARGE ->
 		  %% N
 		  "select id, xtime from w_charge"
@@ -798,9 +803,22 @@ handle_call({new_charge, Merchant, Attrs}, _From, State) ->
 
     case ?sql_utils:execute(s_read, Sql) of
 	{ok, []} ->
-	    Sql1 = "insert into w_charge(merchant, name"
-		", rule, xtime, xdiscount, ctime, charge, balance, type"
-		", sdate, edate, remark, entry) values("
+	    Sql1 = "insert into w_charge(merchant"
+		", name"
+		", rule"
+		", xtime"
+		", xdiscount"
+		", ctime"
+		", charge"
+		", balance"
+		", type"
+		", ishop"
+		", ibalance"
+		", icount"
+		", sdate"
+		", edate"
+		", remark"
+		", entry) values("
 		++ ?to_s(Merchant) ++ ","
 	    %% ++ ?to_s(Shop) ++ ","
 		++ "\'" ++ ?to_s(Name) ++ "\',"
@@ -810,7 +828,10 @@ handle_call({new_charge, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(CTime) ++ ","
 		++ ?to_s(Charge) ++ ","
 		++ ?to_s(Balance) ++ ","
-		++ ?to_s(Type) ++ "," 
+		++ ?to_s(Type) ++ ","
+		++ ?to_s(IShop) ++ ","
+		++ ?to_s(IBalance) ++ ","
+		++ ?to_s(ICount) ++ "," 
 		++ "\'" ++ ?to_s(SDate) ++ "\',"
 		++ "\'" ++ ?to_s(EDate) ++ "\',"
 		++ "\'" ++ ?to_s(Remark) ++ "\',"
@@ -885,6 +906,9 @@ handle_call({list_charge, Merchant}, _From, State) ->
 	", charge"
 	", balance"
 	", type"
+	", ishop"
+	", icount"
+	", ibalance"
 	", sdate"
 	", edate"
 	", remark"
@@ -1209,13 +1233,15 @@ handle_call({get_recharge, Merchant, RechargeId}, _From, State) ->
     {reply, Reply, State};
 
 handle_call({last_recharge, Merchant, RetailerId}, _From, State) ->
-    Sql = "select a.id, a.rsn"
+    Sql = "select a.id"
+	", a.rsn"
+	", a.cid as charge_id"
 	", a.shop as shop_id" 
 	", a.retailer as retailer_id" 
 	" from w_charge_detail a"
 	" where a.merchant=" ++ ?to_s(Merchant)
-	++ " and retailer=" ++ ?to_s(RetailerId)
-	++ " order by id desc limit 1",
+	++ " and a.retailer=" ++ ?to_s(RetailerId)
+	++ " order by a.id desc limit 1",
 
     Reply =  ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};

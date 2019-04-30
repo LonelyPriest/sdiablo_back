@@ -255,6 +255,41 @@ action(Session, Req, {"check_w_retailer_region", Id}, Payload) ->
 	    ?utils:respond(200, Req, Error) 
     end;
 
+action(Session, Req, {"check_w_retailer_charge", Id}, Payload) ->
+    Merchant = ?session:get(merchant, Session),
+    ConsumeShopId = ?v(<<"shop">>, Payload),
+
+    %% get last charge
+    case ?w_retailer:retailer(last_recharge, Merchant, Id) of
+	{ok, []} ->
+	    ?utils:respond(200, Req, ?err(charge_none, Id));
+	{ok, LastCharge} ->
+	    %% ?DEBUG("LastCharge ~p", [LastCharge]),
+	    ChargeId = ?v(<<"charge_id">>, LastCharge),
+	    ChargeShopId = ?v(<<"shop_id">>, LastCharge), 
+	    %% get charge promotion
+	    case ?w_user_profile:get(charge, Merchant, ChargeId) of
+		{ok, []} ->
+		    ?utils:respond(200, Req, ?err(charge_none, ChargeId));
+		{ok, ChargePromotion} ->
+		    LimitShop    = ?v(<<"ishop">>, ChargePromotion),
+		    LimitBalance = ?v(<<"ibalance">>, ChargePromotion),
+		    LimitCount   = ?v(<<"icount">>, ChargePromotion), 
+
+		    SameShop = case ConsumeShopId =:= ChargeShopId of
+				   true -> ?YES;
+				   false -> ?NO
+			       end,
+		    ?utils:respond(200, Req, ?succ(charge_check_region, ChargeId),
+				   [{<<"ishop">>, LimitShop},
+				    {<<"ibalance">>, LimitBalance},
+				    {<<"icount">>, LimitCount},
+				    {<<"same_shop">>, SameShop}]) 
+	    end;
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error) 
+    end;
+
 
 action(Session, Req, {"new_threshold_card_sale", Id}, Payload) ->
     ?DEBUG("new_threshold_card_sale: session ~p, payload ~p", [Session, Payload]),
@@ -343,8 +378,7 @@ action(Session, Req, {"add_w_retailer_charge"}, Payload) ->
 	    case ?w_retailer:charge(new, Merchant, Payload) of
 		{ok, Id} ->
 		    ?w_user_profile:update(charge, Merchant),
-		    ?utils:respond(
-		       200, Req, ?succ(add_retailer_charge, Id));
+		    ?utils:respond(200, Req, ?succ(add_retailer_charge, Id));
 		{error, Error} ->
 		    ?utils:respond(200, Req, Error)
 	    end

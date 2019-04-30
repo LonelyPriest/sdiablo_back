@@ -655,6 +655,12 @@ function filterProvider(){
 		    {operation: "check_w_retailer_region"},
 		    {id:retailerId, shop:shopId}).$promise;
 	    },
+
+	    check_retailer_charge: function(retailerId, shopId) {
+		return _retailerHttp.save(
+		    {operation: "check_w_retailer_charge"},
+		    {id:retailerId, shop:shopId}).$promise;
+	    },
 	    
 	    list_threshold_card_good:function(deferred, shopIds) {
 		var cached = get_from_storage(cookie, "tcard_good");

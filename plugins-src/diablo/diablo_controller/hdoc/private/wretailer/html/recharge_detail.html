@@ -44,6 +44,11 @@
 		      <th>货品折扣</th>
 		      <th>充值金额(元)</th>
 		      <th>赠送金额(元)</th>
+		      
+		      <th>限制店铺</th>
+		      <th>提现额度</th>
+		      <th>提现次数</th>
+		      
 		      <th>开始日期</th>
 		      <th>结束日期</th>
 		      
@@ -85,12 +90,35 @@
 			  <span x-ng-switch-default>-</span>
 			</div>
 		      </td>
+		      
 		      <td>
 			<div x-ng-switch on="p.rule_id">
 			  <span x-ng-switch-when=0>{{p.balance}}</span>
 			  <span x-ng-switch-default>-</span>
 			</div> 
 		      </td>
+
+		      <td>
+			<div x-ng-if="p.rule_id===0 || p.rule_id===1">
+			  <div>{{p.ishop}}</div>
+			</div> 
+			  <div x-ng-if="p.rule_id!==0 && p.rule_id!==1">-</div>
+		      </td>
+
+		      <td>
+			<div x-ng-if="p.rule_id===0 || p.rule_id===1">
+			  <div>{{p.ibalance}}</div>
+			</div> 
+			  <div x-ng-if="p.rule_id!==0 && p.rule_id!==1">-</div>
+		      </td>
+
+		      <td>
+			<div x-ng-if="p.rule_id===0 || p.rule_id===1">
+			  <div>{{p.icount}}</div>
+			</div> 
+			  <div x-ng-if="p.rule_id!==0 && p.rule_id!==1">-</div>
+		      </td>
+		      
 		      <td>{{p.sdate}}</td>
 		      <td>{{p.edate}}</td> 
 		      <td>

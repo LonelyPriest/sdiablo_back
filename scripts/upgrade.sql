@@ -547,6 +547,11 @@ set a.vir_price=b.vir_price where a.merchant=61;
 
 --2019-04-27
 alter table batch_sale add column prop integer default -1 after type;
--- alter table batch_sale_detail add column prop integer default -1 after unit;
---
+
+--2019-04-30
+alter table w_charge add column ibalance integer default -1 after type;
+alter table w_charge add column ishop integer default 0 after ibalance;
+alter table w_charge add column icount tinyint default -1 after ishop;
+
+
 alter table merchants add column shop_count integer default -1 after sms_send;

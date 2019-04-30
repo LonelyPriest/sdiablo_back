@@ -139,7 +139,7 @@
 		  <input type="number" step="1"
 			 class="form-control"
 			 name="balance"
-			 placeholder="请输入减免金额，默认为0" 
+			 placeholder="请输入赠送金额，默认为0" 
 			 x-ng-model="promotion.balance"
 			 x-ng-pattern="pattern.number"/>
 		</div>
@@ -149,6 +149,52 @@
 	      </div> 
 	    </div>
 
+	    <div x-ng-if="promotion.rule.id===0 || promotion.rule.id===1" class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">限制店铺消费</label>
+	      <div class="col-sm-6 col-md-6">
+		<div class="input-group">
+		  <select class="form-control"
+			  x-ng-model="promotion.ishop"
+			  x-ng-options="y as y.name for y in yes_no"> 
+		  </select>
+		  <span class="input-group-addon bg-white fg-red">*</span>
+		</div> 
+	      </div>
+	    </div>
+
+	    <div x-ng-if="(promotion.rule.id===0 || promotion.rule.id===1) && promotion.icount===-1" class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">提现额度</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<div x-ng-class="{'has-error':rForm.ibalancet.$invalid && !rForm.ibalance.$pristine}">
+		  <input type="number" step="1"
+			 class="form-control"
+			 name="libalance"
+			 placeholder="请输入提现额度，默认不限制" 
+			 x-ng-model="promotion.ibalance"
+			 x-ng-pattern="pattern.limit_draw"/>
+		</div>
+	      </div>
+	      <div ng-if="rForm.libalance.$invalid && !rForm.libalance.$pristine">
+		<span class="fg-red">提现额度只能是除0外的数,-1表示不限制</span>
+	      </div> 
+	    </div>
+	    
+	    <div x-ng-if="(promotion.rule.id===0 || promotion.rule.id===1) && promotion.ibalance" class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">提现次数</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<div x-ng-class="{'has-error':rForm.icount.$invalid && !rForm.icount.$pristine}">
+		  <input type="number" step="1"
+			 class="form-control"
+			 name="icount"
+			 placeholder="请输入提现次数，默认不限制" 
+			 x-ng-model="promotion.icount"
+			 x-ng-pattern="pattern.limit_draw"/>
+		</div>
+	      </div>
+	      <div ng-if="rForm.icount.$invalid && !rForm.icount.$pristine">
+		<span class="fg-red">提现次数只能是除0外的数,-1表示不限制</span>
+	      </div> 
+	    </div> 
 	    
 	    <div class="form-group">
 	      <label class="col-md-3 col-sm-3 control-label">开始日期</label>

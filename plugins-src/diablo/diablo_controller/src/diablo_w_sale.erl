@@ -928,10 +928,16 @@ handle_call({total_rsn_group, MatchMode, Merchant, Conditions}, _From, State) ->
     MDiscount = ?v(<<"mdiscount">>, Conditions),
     LDiscount = ?v(<<"ldiscount">>, Conditions),
     LSell     = ?v(<<"lsell">>, Conditions),
+    MSell     = ?v(<<"msell">>, Conditions),
+    
     NewConditions = lists:keydelete(
 		      <<"mdiscount">>, 1,
-		      lists:keydelete(<<"ldiscount">>, 1,
-				      lists:keydelete(<<"lsell">>, 1, Conditions))),
+		      lists:keydelete(
+			<<"ldiscount">>, 1,
+			lists:keydelete(
+			  <<"lsell">>, 1,
+			  lists:keydelete(<<"msell">>, 1, Conditions)))),
+    
     {DConditions, SConditions} = filter_condition(wsale, NewConditions, [], []),
     
     
@@ -967,6 +973,12 @@ handle_call({total_rsn_group, MatchMode, Merchant, Conditions}, _From, State) ->
 	       undefined -> [];
 	       _ ->
 		   " and b.total<" ++ ?to_s(LSell)
+	   end
+
+	++ case MSell of
+	       undefined -> [];
+	       _ ->
+		   " and b.total>" ++ ?to_s(MSell)
 	   end
 	%% ++ case MatchMode of
 	%%        ?AND ->
@@ -2060,11 +2072,15 @@ filter_stock(news, [{H}|T], Stock, OrgPrice, EDiscount) ->
 sale_new(rsn_groups, MatchMode, Merchant, Conditions, PageFun) ->
     MDiscount = ?v(<<"mdiscount">>, Conditions),
     LDiscount = ?v(<<"ldiscount">>, Conditions),
-    LSell     = ?v(<<"lsell">>, Conditions), 
+    LSell     = ?v(<<"lsell">>, Conditions),
+    MSell     = ?v(<<"msell">>, Conditions), 
     NewConditions = lists:keydelete(
 		      <<"mdiscount">>, 1,
-		      lists:keydelete(<<"ldiscount">>, 1,
-				      lists:keydelete(<<"lsell">>, 1, Conditions))),
+		      lists:keydelete(
+			<<"ldiscount">>, 1,
+			lists:keydelete(
+			  <<"lsell">>, 1,
+			  lists:keydelete(<<"msell">>, 1, Conditions)))),
     
     {DConditions, SConditions} = filter_condition(wsale, NewConditions, [], []),
 
@@ -2127,6 +2143,12 @@ sale_new(rsn_groups, MatchMode, Merchant, Conditions, PageFun) ->
 	       undefined -> [];
 	       _ ->
 		   " and b.total<" ++ ?to_s(LSell)
+	   end
+
+	++ case MSell of
+	       undefined -> [];
+	       _ ->
+		   " and b.total>" ++ ?to_s(MSell)
 	   end
 	%% ++ case MatchMode of
 	%%        ?AND ->

@@ -4,30 +4,40 @@ function wretailerRechargeNewCtrlProvide(
     $scope, $routeParams, dateFilter, diabloPattern, diabloNormalFilter,
     diabloUtilsService, wretailerService){
     $scope.pattern = {
-	name      :diabloPattern.ch_en_num_beside_underline_bars,
-	number    :diabloPattern.number,
-	remark    :diabloPattern.comment
+	name         :diabloPattern.ch_en_num_beside_underline_bars,
+	number       :diabloPattern.number,
+	limit_draw   :diabloPattern.integer_except_zero,
+	remark       :diabloPattern.comment
     };
 
     $scope.action = retailerUtils.to_integer($routeParams.action); 
     $scope.label = $scope.action === 1 ? "提现" : "充值";
     $scope.rules = wretailerService.charge_rules;
     $scope.times = [3, 4, 5, 6, 7, 8, 9];
+    $scope.yes_no = retailerUtils.yes_no();
 
     var dialog = diabloUtilsService; 
     var now    = $.now();
-    
-    $scope.promotion = {
-	// discount   :100,
+
+    $scope.promotion = {	
 	rule       :$scope.rules[0],
 	time       :$scope.times[2],
+
+	ishop      :$scope.yes_no[0], 
+	ibalance   :diablo_invalid,
+	icount     :diablo_invalid,
+	
 	sdate      :now,
 	edate      :now + diablo_day_millisecond * 90
     };
+    console.log($scope.promotion);
 
+    
     $scope.new_promotion = function(){
 	console.log($scope.promotion);
 
+	var isChargeCard = $scope.promotion.rule.id ===0 || $scope.promotion.rule.id ===1;
+	
 	wretailerService.new_charge_promotion(
 	    {name:    $scope.promotion.name,
 	     rule:    $scope.promotion.rule.id,
@@ -36,7 +46,13 @@ function wretailerRechargeNewCtrlProvide(
 	     ctime:   $scope.promotion.rule.id !==2 ? undefined : $scope.promotion.ctime,
 	     charge:  $scope.promotion.charge,
 	     balance: retailerUtils.to_integer($scope.promotion.balance),
-	     type:    $scope.action,
+
+	     ishop:    isChargeCard ? $scope.promotion.ishop.id : undefined,
+	     ibalance: isChargeCard ? $scope.promotion.ibalance : undefined,
+	     icount:   isChargeCard ? $scope.promotion.icount   : undefined,
+	     
+	     
+	     type:    $scope.action, 
 	     sdate:   dateFilter($scope.promotion.sdate, "yyyy-MM-dd"),
 	     edate:   dateFilter($scope.promotion.edate, "yyyy-MM-dd"), 
 	     remark:  diablo_set_string($scope.promotion.remark)}

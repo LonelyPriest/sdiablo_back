@@ -755,7 +755,7 @@ function wsaleNewProvide(
 	    }); 
 	};
 	
-	var limit_balance = function(){
+	var limit_balance = function(ibalance, icount){
 	    var max_draw = 0;
 	    if ($scope.select.surplus >= $scope.select.charge){
 		max_draw =  $scope.select.charge > 0 ? $scope.select.charge : 0;
@@ -774,7 +774,7 @@ function wsaleNewProvide(
 	    } 
 	}(); 
 	
-	var startWithdraw = function() {
+	var startWithdraw = function(ibalance, icount) {
 	    diabloUtilsService.edit_with_modal(
 		"new-withdraw.html",
 		undefined,
@@ -784,7 +784,7 @@ function wsaleNewProvide(
 		    id        :$scope.select.retailer.id,
 		    name      :$scope.select.retailer.name,
 		    surplus   :$scope.select.surplus, 
-		    withdraw  :limit_balance 
+		    withdraw  :function(){limit_balance(ibalance, icount)}
 		},
 		 hide_pwd: $scope.setting.hide_pwd,
 		 check_withdraw: function(balance){
@@ -796,21 +796,48 @@ function wsaleNewProvide(
 		}
 	    )
 	}
+	
+	// check
+	diabloFilter.check_retailer_charge(
+	    $scope.select.retailer.id,
+	    $scope.select.shop.id
+	).then(function(result) {
+	    console.log(result);
+	    if (result.ecode === 0) {
+		var ishop    = result.ishop;
+		var ibalance = result.ibalance;
+		var icount   = result.icount;
+		var sameShop = result.same_shop;
 
-	if (diablo_yes === $scope.setting.draw_region) {
-	    diabloFilter.check_retailer_region(
-		$scope.select.retailer.id, $scope.select.shop.id
-	    ).then(function(result) {
-		console.log(result);
-		if (result.ecode === 0) {
-		    startWithdraw();
+		if (diablo_no === ishop) {
+		    if (diablo_yes === $scope.setting.draw_region) {
+			diabloFilter.check_retailer_region(
+			    $scope.select.retailer.id, $scope.select.shop.id
+			).then(function(result) {
+			    console.log(result);
+			    if (result.ecode === 0) {
+				startWithdraw(ibalance, icount);
+			    } else {
+				dialog.set_error("会员现金提取", result.ecode); 
+			    }
+			})
+		    } else {
+			startWithdraw(ibalance, icount);
+		    }
 		} else {
-		    dialog.set_error("会员现金提取", result.ecode); 
-		}
-	    })
-	} else {
-	    startWithdraw();
-	}
+		    if (diablo_no === sameShop) {
+			dialog.set_error("会员现金提取", 2150); 
+		    } else {
+			startWithdraw(ibalance, icount);
+		    }
+		} 
+	    } else {
+		dialog.set_error("会员现金提取", result.ecode); 
+	    }
+	})
+
+	
+	
 	
     }; 
     
@@ -1512,6 +1539,7 @@ function wsaleNewProvide(
 	add.ediscount    = src.ediscount;
 	add.tag_price    = src.tag_price; 
 	add.discount     = src.discount;
+	add.vir_price    = src.vir_price;
 	
 	add.path         = src.path; 
 	add.s_group      = src.s_group;

@@ -101,7 +101,9 @@ var retailerUtils = function(){
 		user_type,
 		rightAuthen.retailer_action()[action],
 		right_tree);
-	}
+	},
+
+	yes_no: function() {return [{name:"否", id: 0}, {name:"是", id: 1}]}
 
 	//
     }

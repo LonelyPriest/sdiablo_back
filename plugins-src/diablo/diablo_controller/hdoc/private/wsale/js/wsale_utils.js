@@ -1488,13 +1488,19 @@ var wsalePrint = function(){
 		    else
 			return (d.total * d.rprice).toString();
 		}();
-
-		perform += d.total * d.tag_price - calc;
 		
-		var ediscount = wsaleUtils.ediscount(d.rprice, d.tag_price).toString();
+		var vprice = d.tag_price;
+		if (wsaleUtils.to_integer(d.vir_price) > wsaleUtils.to_integer(d.tag_price)) {
+		    vprice = d.vir_price;
+		}
+		
+		var ediscount = wsaleUtils.ediscount(d.rprice, vprice).toString(); 
+		perform += d.total * vprice - calc;
+
+
 		
 		LODOP.ADD_PRINT_TEXT(top, left, 70, hFont, d.style_number); 
-		LODOP.ADD_PRINT_TEXT(top, left + 70, 35, hFont, d.tag_price.toString()); 
+		LODOP.ADD_PRINT_TEXT(top, left + 70, 35, hFont, vprice.toString()); 
 		LODOP.ADD_PRINT_TEXT(top, left + 105, 35, hFont, d.total.toString());
 		LODOP.ADD_PRINT_TEXT(top, left + 140, left + 140, hFont, ediscount.toString());
 		// LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString()); 
