@@ -1624,7 +1624,8 @@ get_inventory(barcode, Merchant, Shop, Firm, Barcode, ExtraConditions) ->
 	", a.vir_price"
 	", a.tag_price"
 	", a.ediscount"
-	", a.discount"
+	", a.discount" 
+	", a.amount"
 	
 	", a.state"
 	", a.unit"

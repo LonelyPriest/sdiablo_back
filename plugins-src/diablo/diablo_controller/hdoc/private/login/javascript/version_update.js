@@ -1,5 +1,11 @@
 var version_update = function(){
     var updates = [
+	{date: "2019-05-03",
+	 content:
+	 ["盘点机功能增强，当实物货品超过电脑数据时，主动报警",
+	  "盘点机功能增强，当实物货品第一次出现时，主动报警"]
+	},
+	
 	{date: "2019-04-28",
 	 content:
 	 ["批售模式下增加并发开单时的实时库存检测",
@@ -1212,7 +1218,7 @@ var version_update = function(){
 	    }
 
 	    var apk = "<div class='update-content'>"
-		+ "<a type='button' href='/qzg_stock_fix-release2019-03-11_21-25-20.apk' download=''>"
+		+ "<a type='button' href='/qzg_stock_fix-release2019-05-03_01-10-05.apk' download=''>"
 		+ "<h5 class='text-center fg-pink'>盘点机软件(安卓)下载</h5>"
 		+ "</a>"
 		+ "</div>"

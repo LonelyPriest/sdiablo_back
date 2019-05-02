@@ -1161,8 +1161,7 @@ action(Session, Req, {"get_stock_by_barcode"}, Payload) ->
 		end
     end,
     
-    ?DEBUG("newBarcode ~p", [Barcode]),
-	    
+    %% ?DEBUG("newBarcode ~p", [Barcode]), 
     case ?w_inventory:purchaser_inventory(get_by_barcode, Merchant, Shop, Firm, NewBarcode, ExtraConditions) of 
 	{ok, Stock} ->
 	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
