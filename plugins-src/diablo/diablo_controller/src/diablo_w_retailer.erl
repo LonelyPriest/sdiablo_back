@@ -115,7 +115,11 @@ charge(list_recharge, Merchant, Conditions) ->
     gen_server:call(Name, {list_recharge, Merchant, Conditions});
 charge(get_recharge, Merchant, RechargeId) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {get_recharge, Merchant, RechargeId}).
+    gen_server:call(Name, {get_recharge, Merchant, RechargeId});
+
+charge(get_charge, Merchant, ChargeId)  ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {get_charge, Merchant, ChargeId}).
 
 charge(list, Merchant) ->
     Name = ?wpool:get(?MODULE, Merchant),
@@ -746,7 +750,8 @@ handle_call({new_charge, Merchant, Attrs}, _From, State) ->
 
     IShop    = ?v(<<"ishop">>, Attrs, ?NO),
     IBalance = ?v(<<"ibalance">>, Attrs, ?INVALID_OR_EMPTY),
-    ICount   = ?v(<<"icount">>, Attrs, ?INVALID_OR_EMPTY),
+    MBalance = ?v(<<"mbalance">>, Attrs, ?INVALID_OR_EMPTY),
+    ICount   = ?v(<<"icount">>, Attrs, ?INVALID_OR_EMPTY), 
     
     Type    = ?v(<<"type">>, Attrs),
     SDate   = ?v(<<"sdate">>, Attrs),
@@ -814,6 +819,7 @@ handle_call({new_charge, Merchant, Attrs}, _From, State) ->
 		", type"
 		", ishop"
 		", ibalance"
+		", mbalance"
 		", icount"
 		", sdate"
 		", edate"
@@ -831,6 +837,7 @@ handle_call({new_charge, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(Type) ++ ","
 		++ ?to_s(IShop) ++ ","
 		++ ?to_s(IBalance) ++ ","
+		++ ?to_s(MBalance) ++ ","
 		++ ?to_s(ICount) ++ "," 
 		++ "\'" ++ ?to_s(SDate) ++ "\',"
 		++ "\'" ++ ?to_s(EDate) ++ "\',"
@@ -909,6 +916,7 @@ handle_call({list_charge, Merchant}, _From, State) ->
 	", ishop"
 	", icount"
 	", ibalance"
+	", mbalance"
 	", sdate"
 	", edate"
 	", remark"
@@ -922,6 +930,33 @@ handle_call({list_charge, Merchant}, _From, State) ->
     Reply = ?sql_utils:execute(read, Sql),
 
     {reply, Reply, State};
+
+handle_call({get_charge, Merchant, ChargeId}, _From, State) ->
+    ?DEBUG("get_charge: Merchant ~p, ChargeId ~p", [Merchant, ChargeId]),
+    Sql = "select id"
+	", name"
+	", rule as rule_id"
+	", xtime"
+	", xdiscount"
+	", ctime"
+	", charge"
+	", balance"
+	", type"
+	", ishop"
+	", icount"
+	", ibalance"
+	", mbalance"
+	", sdate"
+	", edate"
+	", deleted"
+	" from w_charge"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and id=" ++ ?to_s(ChargeId)
+	++ " and deleted=" ++ ?to_s(?NO),
+    Reply = ?sql_utils:execute(s_read, Sql),
+
+    {reply, Reply, State};
+
 
 handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
     ?DEBUG("recharge with merchant ~p, paylaod ~p, ChargeRule ~p", [Merchant, Attrs, ChargeRule]),
@@ -1236,7 +1271,9 @@ handle_call({last_recharge, Merchant, RetailerId}, _From, State) ->
     Sql = "select a.id"
 	", a.rsn"
 	", a.cid as charge_id"
-	", a.shop as shop_id" 
+	", a.shop as shop_id"
+	", cbalance"
+	", sbalance"
 	", a.retailer as retailer_id" 
 	" from w_charge_detail a"
 	" where a.merchant=" ++ ?to_s(Merchant)

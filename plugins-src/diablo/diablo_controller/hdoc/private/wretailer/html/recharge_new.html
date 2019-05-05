@@ -168,7 +168,7 @@
 		<div x-ng-class="{'has-error':rForm.ibalancet.$invalid && !rForm.ibalance.$pristine}">
 		  <input type="number" step="1"
 			 class="form-control"
-			 name="libalance"
+			 name="ibalance"
 			 placeholder="请输入提现额度，默认不限制" 
 			 x-ng-model="promotion.ibalance"
 			 x-ng-pattern="pattern.limit_draw"/>
@@ -178,8 +178,25 @@
 		<span class="fg-red">提现额度只能是除0外的数,-1表示不限制</span>
 	      </div> 
 	    </div>
+
+	    <div x-ng-if="(promotion.rule.id===0 || promotion.rule.id===1) && promotion.icount===-1" class="form-group">
+	      <label class="col-md-3 col-sm-3 control-label">提现阀值</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<div x-ng-class="{'has-error':rForm.mbalancet.$invalid && !rForm.mbalance.$pristine}">
+		  <input type="number" step="1"
+			 class="form-control"
+			 name="mbalance"
+			 placeholder="请输入提现阀值，默认不限制" 
+			 x-ng-model="promotion.mbalance"
+			 x-ng-pattern="pattern.limit_draw"/>
+		</div>
+	      </div>
+	      <div ng-if="rForm.libalance.$invalid && !rForm.libalance.$pristine">
+		<span class="fg-red">提现额度只能是除0外的数,-1表示不限制</span>
+	      </div> 
+	    </div>
 	    
-	    <div x-ng-if="(promotion.rule.id===0 || promotion.rule.id===1) && promotion.ibalance" class="form-group">
+	    <div x-ng-if="(promotion.rule.id===0 || promotion.rule.id===1) && promotion.ibalance===-1" class="form-group">
 	      <label class="col-md-3 col-sm-3 control-label">提现次数</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div x-ng-class="{'has-error':rForm.icount.$invalid && !rForm.icount.$pristine}">

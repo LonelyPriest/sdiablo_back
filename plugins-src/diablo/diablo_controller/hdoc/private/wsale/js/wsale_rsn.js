@@ -440,14 +440,21 @@ function wsaleRsnDetailCtrlProvide (
     	console.log(shop);
     	var no_vip = wsaleUtils.no_vip(shop.id, base); 
     	var p_mode = wsaleUtils.print_mode(shop.id, base);
-    	var comments = wsaleUtils.comment(shop.id, base);
+    	// var comments = wsaleUtils.comment(shop.id, base);
     	var isRound  = wsaleUtils.round(shop.id, base);
-    	var cakeMode = wsaleUtils.cake_mode(shop.id, base);
-	var sale_mode = wsaleUtils.sale_mode(shop.id, base);
-	var print_perform = wsaleUtils.to_integer(sale_mode.charAt(3));
+    	// var cakeMode = wsaleUtils.cake_mode(shop.id, base);
+	// var print_perform = wsaleUtils.to_integer(sale_mode.charAt(3));
     	var pdate    = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss");
 
-    	console.log(isRound, cakeMode);
+	var sale_mode = wsaleUtils.sale_mode(shop.id, base); 
+	var print_setting = {
+	    print_perform:  wsaleUtils.to_integer(sale_mode.charAt(3)),
+	    print_discount: wsaleUtils.to_integer(sale_mode.charAt(15)),
+	    cake_mode:      wsaleUtils.cake_mode(shop.id, base),
+	    comments:       wsaleUtils.comment(shop.id, base)
+	};
+
+    	// console.log(isRound, cakeMode);
     
     	if (diablo_frontend === p_mode){
     	    if (angular.isUndefined(LODOP)) LODOP=getLodop();
@@ -503,12 +510,12 @@ function wsaleRsnDetailCtrlProvide (
     			}
 
     			// console.log(notes);
-    			var hLine = wsalePrint.gen_body(LODOP, sale, notes, isRound, cakeMode); 
+    			var hLine = wsalePrint.gen_body(LODOP, sale, notes, isRound, print_setting); 
     			var vip = wsaleUtils.isVip(retailer, no_vip, filterSysRetailer),
 			
     			hLine = wsalePrint.gen_stastic(
-			    LODOP, hLine, sale.direct, sale, sale.balance, vip, print_perform); 
-    			wsalePrint.gen_foot(LODOP, hLine, comments, pdate, shop, cakeMode);
+			    LODOP, hLine, sale.direct, sale, sale.balance, vip, print_setting); 
+    			wsalePrint.gen_foot(LODOP, hLine, pdate, shop, print_setting);
     			wsalePrint.start_print(LODOP); 
     		    }); 
     		}); 

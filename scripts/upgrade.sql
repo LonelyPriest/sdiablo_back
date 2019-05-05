@@ -550,6 +550,8 @@ alter table batch_sale add column prop integer default -1 after type;
 
 --2019-04-30
 alter table w_charge add column ibalance integer default -1 after type;
+alter table w_charge add column mbalance integer default -1 after ibalance;
+
 alter table w_charge add column ishop integer default 0 after ibalance;
 alter table w_charge add column icount tinyint default -1 after ishop;
 

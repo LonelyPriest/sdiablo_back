@@ -116,6 +116,12 @@ var wsaleUtils = function(){
 	return gnames;
     };
 
+    var default_hide = function(v) {
+	if (v === diablo_empty_string)
+	    return diablo_yes;
+	return stockUtils.to_integer(v);
+    };
+
     return {
 	format_promotion: function(inv, promotions){
 	    // if (angular.isUndefined(inv.promotion)){
@@ -273,7 +279,7 @@ var wsaleUtils = function(){
 	    var p = diablo_base_setting("pum", shop, base, function(s) {return s}, diablo_print_num);
 	    return {common: wsaleUtils.to_integer(p.charAt(0)),
 		    swiming: wsaleUtils.to_integer(p.charAt(1)),
-		    protocal: wsaleUtils.to_integer(p.charAt(2))}
+		    protocal: wsaleUtils.to_integer(p.charAt(2))};
 	},
 
 	printer_bill: function(shop, base) {
@@ -1469,14 +1475,17 @@ var wsalePrint = function(){
 	    return;
 	},
 
-	gen_body: function(LODOP, sale, inventories, round, cakeMode){
+	gen_body: function(LODOP, sale, inventories, round, pSetting){
 	    var top = 115;
 	    var perform = 0;
 	    // if (diablo_no === cakeMode) {
 	    LODOP.ADD_PRINT_TEXT(top, left, 70, hFont, "款号"); 
 	    LODOP.ADD_PRINT_TEXT(top, left + 70, 35, hFont, "单价"); 
-	    LODOP.ADD_PRINT_TEXT(top, left + 105, 35, hFont, "数量"); 
-	    LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, "折扣率");
+	    LODOP.ADD_PRINT_TEXT(top, left + 105, 35, hFont, "数量");
+	    if (pSetting.print_discount)
+		LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, "折扣率");
+	    else
+		LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, "成交价");
 
 	    top += 15;
 	    
@@ -1502,7 +1511,14 @@ var wsalePrint = function(){
 		LODOP.ADD_PRINT_TEXT(top, left, 70, hFont, d.style_number); 
 		LODOP.ADD_PRINT_TEXT(top, left + 70, 35, hFont, vprice.toString()); 
 		LODOP.ADD_PRINT_TEXT(top, left + 105, 35, hFont, d.total.toString());
-		LODOP.ADD_PRINT_TEXT(top, left + 140, left + 140, hFont, ediscount.toString());
+		if (pSetting.print_discount) {
+		    LODOP.ADD_PRINT_TEXT(top, left + 140, left + 140, hFont, ediscount.toString()); 
+		}
+		else {
+		    LODOP.ADD_PRINT_TEXT(
+			top, left + 140, vWidth - left - 140, hFont, d.rprice.toString()); 
+		}
+		    
 		// LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString()); 
 		
 		top += 15;
@@ -1510,7 +1526,13 @@ var wsalePrint = function(){
 		brand += angular.isObject(d.type) && angular.isDefined(d.type.name) ? d.type.name : d.type;
 		LODOP.ADD_PRINT_TEXT(top, left, vWidth - left, hFont, brand);
 		LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString());
-		// LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, d.rprice.toString());
+		if (pSetting.print_discount) {
+		    LODOP.ADD_PRINT_TEXT(
+			top, left + 140, vWidth - left - 140, hFont, d.rprice.toString());
+		} else {
+		    LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString());
+		}
+		
 
 		top += 15;
 		if (d.state === 3) {
@@ -1518,7 +1540,10 @@ var wsalePrint = function(){
 		} else {
 		    LODOP.ADD_PRINT_TEXT(top, left, vWidth - left, hFont, d.note);
 		}
-		// LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString());
+
+		if (pSetting.print_discount) {
+		    LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString()); 
+		}
 
 		top += 15;
 		LODOP.ADD_PRINT_LINE(top, left, top, vWidth, 0, 1);
@@ -1528,7 +1553,7 @@ var wsalePrint = function(){
 	    return top;
 	},
 
-	gen_stastic: function(LODOP, hLine, direct, sale, balance, vip, printPerform){
+	gen_stastic: function(LODOP, hLine, direct, sale, balance, vip, pSetting){
 	    console.log(sale);
 	    // console.log(hLine);
 	    if (angular.isUndefined(direct)) direct = 0;
@@ -1589,7 +1614,7 @@ var wsalePrint = function(){
 		    bold_style(LODOP);
 		}
 		
-		if (printPerform && angular.isDefined(sale.perform) && sale.perform >= 0) {
+		if (pSetting.print_perform && angular.isDefined(sale.perform) && sale.perform >= 0) {
 		    l1 = wsaleUtils.to_float(sale.perform).toString();
 		    LODOP.ADD_PRINT_TEXT(hLine, left + 135, vWidth - 135, hFont, l1);
 		    bold_style(LODOP);
@@ -1632,16 +1657,16 @@ var wsalePrint = function(){
 	    return hLine;
 	},
 	
-	gen_foot: function(LODOP, hLine, comments, date, shop, cakeMode){
+	gen_foot: function(LODOP, hLine, date, shop, pSetting){
 	    // console.log(hLine);
 	    // console.log(comments);
 	    // console.log(date);
-	    if (diablo_no === cakeMode){
+	    if (diablo_no === pSetting.cake_mode){
 		var order = 1;
 		// var height = 0;
 		LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, "顾客需知：");
 		hLine += 20;
-		angular.forEach(comments, function(c){
+		angular.forEach(pSetting.comments, function(c){
 		    if (c){
 			var s = order.toString() + "：" + c.name;
 			// if (s.length > 30) hFont += 15;

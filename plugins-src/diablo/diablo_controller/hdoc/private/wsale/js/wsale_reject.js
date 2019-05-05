@@ -116,14 +116,23 @@ function wsaleRejectCtrlProvide(
 		    $scope.setting.comments = wsaleUtils.comment(shopId, settings);
 		    $scope.setting.p_mode = wsaleUtils.print_mode(shopId, settings);
 		    $scope.setting.round = wsaleUtils.round(shopId, settings);
-		    $scope.setting.cakeMode = wsaleUtils.cake_mode(shopId, settings);
+		    // $scope.setting.cakeMode = wsaleUtils.cake_mode(shopId, settings);
 		    $scope.setting.draw_score = wsaleUtils.draw_score(shopId, settings);
 		    $scope.setting.vip_mode = wsaleUtils.vip_mode(shopId, settings);
-		    var sale_mode = wsaleUtils.sale_mode(shopId, settings);
-		    $scope.setting.print_perform = wsaleUtils.to_integer(sale_mode.charAt(3));
-		    $scope.setting.hide_pwd      = wsaleUtils.to_integer(sale_mode.charAt(9));
 		    
+		    var sale_mode = wsaleUtils.sale_mode(shopId, settings);
+		    // $scope.setting.print_perform = wsaleUtils.to_integer(sale_mode.charAt(3));
+		    
+		    $scope.setting.hide_pwd      = wsaleUtils.to_integer(sale_mode.charAt(9)); 
 		    $scope.setting.print_access = wsaleUtils.print_num(shopId, settings);
+
+		    $scope.print_setting = {
+			print_discount: wsaleUtils.to_integer(sale_mode.charAt(15)),
+			print_perform:  wsaleUtils.to_integer(sale_mode.charAt(3)),
+			cake_mode:      wsaleUtils.cake_mode(shopId, settings),
+			comments:       wsaleUtils.comment(shopId, settings) 
+		    };
+		    
 		    // console.log($scope.setting);
 
 		    $scope.employees = wsaleUtils.get_login_employee(
@@ -307,7 +316,7 @@ function wsaleRejectCtrlProvide(
 		    wsaleService.direct.wreject);
 
 		var isRound = $scope.setting.round; 
-		var cakeMode = $scope.setting.cakeMode;
+		// var cakeMode = $scope.setting.cakeMode;
 		// console.log($scope.setting);
 		
 		var hLine = wsalePrint.gen_body(
@@ -315,23 +324,23 @@ function wsaleRejectCtrlProvide(
 		    $scope.select,
 		    $scope.inventories.filter(function(r){return !r.$new && r.select}),
 		    isRound,
-		    cakeMode); 
+		    $scope.print_setting); 
 		
 		hLine = wsalePrint.gen_stastic(
 		    LODOP,
 		    hLine,
 		    wsaleService.direct.wreject,
 		    $scope.select,
-		    wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers),
-		    $scope.setting.print_perform);
+		    wsaleUtils.isVip(
+			$scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers),
+		    $scope.print_setting);
 		
 		wsalePrint.gen_foot(
 		    LODOP,
 		    hLine,
-		    $scope.setting.comments,
 		    pdate,
 		    $scope.select.shop.addr,
-		    cakeMode);
+		    $scope.print_setting);
 		wsalePrint.start_print(LODOP);
 	    };
 	};

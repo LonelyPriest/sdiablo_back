@@ -552,8 +552,9 @@ create table w_charge(
     balance         INTEGER not null default 0, -- send balance when charge
     type            TINYINT default 0, -- 0:recharge 1:withdraw
     
-    ibalance        INTEGER default -1, -- limit balance of one time when withdraw 
-    ishop           INTEGER default 0, -- limit shop when withdraw
+    ibalance        INTEGER default -1, -- limit balance of one time when withdraw
+    mbalance        INTEGER default -1, -- threshold balance when with draw
+    ishop           INTEGER default 0,  -- limit shop when withdraw
     icount          TINYINT default -1, -- limit count when with draw
     
     sdate           DATE default 0,

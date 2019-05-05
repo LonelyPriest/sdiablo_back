@@ -47,6 +47,7 @@
 		      
 		      <th>限制店铺</th>
 		      <th>提现额度</th>
+		      <th>提现阀值</th>
 		      <th>提现次数</th>
 		      
 		      <th>开始日期</th>
@@ -107,14 +108,30 @@
 
 		      <td>
 			<div x-ng-if="p.rule_id===0 || p.rule_id===1">
-			  <div>{{p.ibalance}}</div>
+			  <div x-ng-switch on="p.ibalance">
+			    <span x-ng-switch-when=-1>-</span>
+			    <span x-ng-switch-default>{{p.ibalance}}</span>
+			  </div> 
+			</div> 
+			<div x-ng-if="p.rule_id!==0 && p.rule_id!==1">-</div>
+		      </td>
+
+		      <td>
+			<div x-ng-if="p.rule_id===0 || p.rule_id===1">
+			  <div x-ng-switch on="p.mbalance">
+			    <span x-ng-switch-when=-1>-</span>
+			    <span x-ng-switch-default>{{p.mbalance}}</span>
+			  </div> 
 			</div> 
 			  <div x-ng-if="p.rule_id!==0 && p.rule_id!==1">-</div>
 		      </td>
 
 		      <td>
 			<div x-ng-if="p.rule_id===0 || p.rule_id===1">
-			  <div>{{p.icount}}</div>
+			  <div x-ng-switch on="p.icount">
+			    <span x-ng-switch-when=-1>-</span>
+			    <span x-ng-switch-default>{{p.icount}}</span>
+			  </div> 
 			</div> 
 			  <div x-ng-if="p.rule_id!==0 && p.rule_id!==1">-</div>
 		      </td>

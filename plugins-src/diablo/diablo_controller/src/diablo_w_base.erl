@@ -854,12 +854,12 @@ sys_config() ->
     %% [0]: common print num
     %% [1]: swiming print num
     %% [2]: print protocal 0:http 1:https default 0
-    Values = [{"pum",             "打印份数",            "110",  "0"},
-	      {"ptype",           "打印方式",            "1",  "0"}, %% 0: front; 1:backend
-	      {"pim_print",       "立即打印",            "0",  "0"},
+    Values = [{"pum",             "打印份数",            "1101",  "0"},
+	      {"ptype",           "打印方式",            "1",     "0"}, %% 0: front; 1:backend
+	      {"pim_print",       "立即打印",            "0",     "0"},
 
 	      {"qtime_start",     "联想开始时间",        DefaultDate,  "0"}, 
-	      {"qtypeahead",      "联想方式",            "1",   "0"}, %% 0: front; 1:backend 
+	      {"qtypeahead",      "联想方式",            "1",    "0"}, %% 0: front; 1:backend 
 	      {"prompt",          "联想数目",            "20",   "0"},
 
 	      %% {"stock_alarm",     "库存告警",             "0",  "0"},
@@ -911,7 +911,8 @@ sys_config() ->
 	      %% [12]: virtual price name 0: virtual price 1: batch price
 	      %% [13]: default price when on sale 0:tag_price, 1:vir_price
 	      %% [14]: show whole price on sale
-	      {"p_balance",       "销售模式",             "000000000000000",  "0"},
+	      %% [15]: print discount on sale
+	      {"p_balance",       "销售模式",             "0000000000000001",  "0"},
 	      
 	      {"gen_ticket",      "自动生成电子卷",       "0",   "0"},
 	      

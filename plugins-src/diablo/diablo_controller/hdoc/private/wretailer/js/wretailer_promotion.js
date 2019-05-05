@@ -25,6 +25,7 @@ function wretailerRechargeNewCtrlProvide(
 
 	ishop      :$scope.yes_no[0], 
 	ibalance   :diablo_invalid,
+	mbalance   :diablo_invalid,
 	icount     :diablo_invalid,
 	
 	sdate      :now,
@@ -47,9 +48,10 @@ function wretailerRechargeNewCtrlProvide(
 	     charge:  $scope.promotion.charge,
 	     balance: retailerUtils.to_integer($scope.promotion.balance),
 
-	     ishop:    isChargeCard ? $scope.promotion.ishop.id : undefined,
-	     ibalance: isChargeCard ? $scope.promotion.ibalance : undefined,
-	     icount:   isChargeCard ? $scope.promotion.icount   : undefined,
+	     ishop:    isChargeCard ? retailerUtils.to_integer($scope.promotion.ishop.id) : undefined,
+	     ibalance: isChargeCard ? retailerUtils.to_integer($scope.promotion.ibalance) : undefined,
+	     mbalance: isChargeCard ? retailerUtils.to_integer($scope.promotion.mbalance) : undefined,
+	     icount:   isChargeCard ? retailerUtils.to_integer($scope.promotion.icount)   : undefined,
 	     
 	     
 	     type:    $scope.action, 

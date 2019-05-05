@@ -135,7 +135,8 @@
 		    <tbody>
 		      <tr ng-repeat="inv in inventories">
 			<td>{{inv.order_id}}</td> 
-			<td>{{inv.crsn}}</td>
+			<td>{{inv.crsn}}</div>
+			</td>
 			
 			<td x-ng-if="!hidden.base">{{inv.retailer}}</td>
 			<td x-ng-if="!hidden.base">{{inv.promotion.name}}</td>
@@ -148,15 +149,37 @@
 			
 			<td>{{inv.shop.name}}</td>
 			<td>{{inv.employee.name}}</td> 
-			<td>{{inv.style_number}}</td>
-			<td>{{inv.brand.name}}</td>
+			<td>
+			  <div x-ng-if="inv.total>=0">
+			    {{inv.style_number}}
+			  </div>
+			  <div x-ng-if="inv.total<0" class="fg-red">
+			    {{inv.style_number}}
+			  </div>
+			</td>
+			
+			<td>
+			  <div x-ng-if="inv.total>=0">
+			    {{inv.brand.name}}
+			  </div>
+			  <div x-ng-if="inv.total<0" class="fg-red">
+			    {{inv.brand.name}}
+			  </div>
+			</td>
 			<td x-ng-if="setting.show_note">
 			  <span x-ng-if="inv.free">
 			    <span class="bg-blue" x-ng-bind="inv.note"></span>
 			  </span>
 			  <span x-ng-if="!inv.free">-</span>
 			</td>
-			<td>{{inv.type.name}}</td>
+			<td>
+			  <div x-ng-if="inv.total>=0">
+			    {{inv.type.name}}
+			  </div>
+			  <div x-ng-if="inv.total<0" class="fg-red">
+			    {{inv.type.name}}
+			  </div>
+			</td>
 			<td>{{sexs[inv.sex]}}</td> 
 			<td>{{inv.oseason.name}}</td> 
 			<td>{{inv.firm.name}}</td>
@@ -174,9 +197,9 @@
 			  <div x-ng-if="inv.imbalance <= 0">{{inv.imbalance}}</div>
 			</td>
 			
-			<td x-ng-switch on="inv.sell_type"> 
-			  <span class="fg-red" x-ng-switch-when=1>{{inv.total}}</span>
-			  <span x-ng-switch-default>{{inv.total}}</span>
+			<td > 
+			  <div x-ng-if="inv.total>=0">{{inv.total}}</div>
+			  <div x-ng-if="inv.total<0" class="fg-red">{{inv.total}}</div>
 			</td> 
 			<td>{{inv.calc}} </td>
 			<!-- <td>{{inv.rdiscount}} </td> -->

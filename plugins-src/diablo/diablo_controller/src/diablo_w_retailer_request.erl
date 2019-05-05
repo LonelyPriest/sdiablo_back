@@ -265,16 +265,20 @@ action(Session, Req, {"check_w_retailer_charge", Id}, Payload) ->
 	    ?utils:respond(200, Req, ?err(charge_none, Id));
 	{ok, LastCharge} ->
 	    %% ?DEBUG("LastCharge ~p", [LastCharge]),
-	    ChargeId = ?v(<<"charge_id">>, LastCharge),
-	    ChargeShopId = ?v(<<"shop_id">>, LastCharge), 
+	    ChargeId     = ?v(<<"charge_id">>, LastCharge),
+	    ChargeShopId = ?v(<<"shop_id">>, LastCharge),
+	    CBalance     = ?v(<<"cbalance">>, LastCharge),
+	    SBalance     = ?v(<<"sbalance">>, LastCharge),
+	    
 	    %% get charge promotion
-	    case ?w_user_profile:get(charge, Merchant, ChargeId) of
+	    case ?w_retailer:charge(get_charge, Merchant, ChargeId) of
 		{ok, []} ->
 		    ?utils:respond(200, Req, ?err(charge_none, ChargeId));
 		{ok, ChargePromotion} ->
-		    LimitShop    = ?v(<<"ishop">>, ChargePromotion),
-		    LimitBalance = ?v(<<"ibalance">>, ChargePromotion),
-		    LimitCount   = ?v(<<"icount">>, ChargePromotion), 
+		    LimitShop       = ?v(<<"ishop">>, ChargePromotion),
+		    LimitBalance    = ?v(<<"ibalance">>, ChargePromotion),
+		    LimitCount      = ?v(<<"icount">>, ChargePromotion),
+		    ThresholdBalance = ?v(<<"mbalance">>, ChargePromotion), 
 
 		    SameShop = case ConsumeShopId =:= ChargeShopId of
 				   true -> ?YES;
@@ -282,7 +286,9 @@ action(Session, Req, {"check_w_retailer_charge", Id}, Payload) ->
 			       end,
 		    ?utils:respond(200, Req, ?succ(charge_check_region, ChargeId),
 				   [{<<"ishop">>, LimitShop},
+				    {<<"balance">>, CBalance + SBalance},
 				    {<<"ibalance">>, LimitBalance},
+				    {<<"mbalance">>, ThresholdBalance}, 
 				    {<<"icount">>, LimitCount},
 				    {<<"same_shop">>, SameShop}]) 
 	    end;

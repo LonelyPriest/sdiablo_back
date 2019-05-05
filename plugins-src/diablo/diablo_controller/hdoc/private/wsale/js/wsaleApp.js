@@ -528,7 +528,7 @@ function wsaleNewProvide(
 	$scope.setting.round         = wsaleUtils.round(shopId, base);
 	// $scope.setting.smember       = wsaleUtils.s_member(shopId, base);
 	$scope.setting.semployee     = wsaleUtils.s_employee(shopId, base);
-	$scope.setting.cake_mode     = wsaleUtils.cake_mode(shopId, base);
+	//$scope.setting.cake_mode     = wsaleUtils.cake_mode(shopId, base);
 	$scope.setting.barcode_mode  = wsaleUtils.barcode_mode(shopId, base);
 	$scope.setting.barcode_auto  = wsaleUtils.barcode_auto(shopId, base);
 	$scope.setting.draw_score    = wsaleUtils.draw_score(shopId, base);
@@ -544,12 +544,28 @@ function wsaleNewProvide(
 	$scope.setting.type_sale     = wsaleUtils.type_sale(shopId, base);
 
 	var sale_mode = wsaleUtils.sale_mode(shopId, base);
-	$scope.setting.print_perform = wsaleUtils.to_integer(sale_mode.charAt(3));
-	$scope.setting.hide_charge   = wsaleUtils.to_integer(sale_mode.charAt(5));
-	$scope.setting.hide_pwd      = wsaleUtils.to_integer(sale_mode.charAt(9));
-	$scope.setting.show_wprice   = wsaleUtils.to_integer(sale_mode.charAt(14));
+	// $scope.setting.print_perform  = wsaleUtils.to_integer(sale_mode.charAt(3));
+	$scope.setting.hide_charge    = wsaleUtils.to_integer(sale_mode.charAt(5));
+	$scope.setting.hide_pwd       = wsaleUtils.to_integer(sale_mode.charAt(9));
+	$scope.setting.show_wprice    = wsaleUtils.to_integer(sale_mode.charAt(14));
+	// $scope.setting.print_discount = wsaleUtils.to_integer(sale_mode.charAt(15));
+
+	$scope.print_setting = {
+	    print_discount: wsaleUtils.to_integer(sale_mode.charAt(15)),
+	    print_perform:  wsaleUtils.to_integer(sale_mode.charAt(3)),
+	    cake_mode:      wsaleUtils.cake_mode(shopId, base),
+	    comments:       wsaleUtils.comment(shopId, base) 
+	};
+
+
+	if ($scope.p_mode($scope.select.shop.id) === diablo_frontend){
+	    var print_access = wsaleUtils.print_num($scope.select.shop.id, base); 
+	    if (needCLodop()) loadCLodop(print_access.protocal); 
+	    $scope.p_num = print_access.common;
+	}
 	
-	if (diablo_no === $scope.setting.cake_mode) {
+	
+	if (diablo_no === $scope.print_setting.cake_mode) {
 	    $scope.vpays = [0].concat(diablo_num2arrary($scope.setting.maling_rang)
 				      .concat(diablo_num2arrary(-3)));
 	} else {
@@ -632,13 +648,6 @@ function wsaleNewProvide(
 	$scope.refresh(); 
     };
     
-    if ($scope.p_mode($scope.select.shop.id) === diablo_frontend){
-	var print_access = wsaleUtils.print_num($scope.select.shop.id, base); 
-	if (needCLodop()) loadCLodop(print_access.protocal); 
-	$scope.comments = wsaleUtils.comment($scope.select.shop.id, base);
-	$scope.p_num = print_access.common;
-    }
-    
     $scope.get_employee = function(){
 	var select = wsaleUtils.get_login_employee(
 	    $scope.select.shop.id, user.loginEmployee, filterEmployee);
@@ -714,7 +723,37 @@ function wsaleNewProvide(
 
     /*
      * with draw
-     */ 
+     */
+    var get_min_value = function(v1, v2) {
+	return v1 > v2 ? v2 : v1;
+    };
+
+    var get_limit_balance = function(mbalance, ibalance, icount, balance){
+	var max_draw = 0; 
+	if ($scope.select.should_pay > 0) {
+	    max_draw = get_min_value($scope.select.surplus, $scope.select.should_pay); 
+	    // threshold first
+	    if (ibalance !== diablo_invalid && ibalance !== 0) {
+		if ($scope.select.should_pay < mbalance) {
+		    max_draw = get_min_value(ibalance, max_draw);
+		} else {
+		    max_draw = get_min_value(
+			Math.floor($scope.select.should_pay / mbalance) * ibalance, max_draw);
+		}
+	    } else if (icount !== diablo_invalid && icount !== 0) {
+		max_draw = get_min_value(oneTakeBalance, Math.floor(balance / icount));
+	    }
+
+	    if ($scope.select.retailer.draw_id !== diablo_invalid_index){
+		var limit = diablo_get_object($scope.select.retailer.draw_id, $scope.draws);
+		console.log(limit);
+		if (angular.isObject(limit))
+		    max_draw = get_min_value(max_draw, limit.charge); 
+	    } 
+	} 
+	return max_draw; 
+    };
+    
     $scope.disable_withdraw = function(){
 	if (angular.isDefined($scope.select.retailer) && angular.isObject($scope.select.retailer)) {
 	    if ($scope.select.retailer.type_id !== diablo_charge_retailer)
@@ -754,27 +793,9 @@ function wsaleNewProvide(
 		}
 	    }); 
 	};
-	
-	var limit_balance = function(ibalance, icount){
-	    var max_draw = 0;
-	    if ($scope.select.surplus >= $scope.select.charge){
-		max_draw =  $scope.select.charge > 0 ? $scope.select.charge : 0;
-	    }  else {
-		max_draw = $scope.select.surplus; 
-	    }
-	    
-	    var limit = diablo_get_object($scope.select.retailer.draw_id, $scope.draws);
-	    console.log(limit);
-	    if (angular.isObject(limit)){
-		if (max_draw > limit.charge) {
-		    return limit.charge; 
-		}
-	    } else {
-		return max_draw;
-	    } 
-	}(); 
-	
-	var startWithdraw = function(ibalance, icount) {
+
+	var startWithdraw = function(mbalance, ibalance, icount, balance) {
+	    var limit_balance = get_limit_balance(mbalance, ibalance, icount, balance);
 	    diabloUtilsService.edit_with_modal(
 		"new-withdraw.html",
 		undefined,
@@ -784,7 +805,7 @@ function wsaleNewProvide(
 		    id        :$scope.select.retailer.id,
 		    name      :$scope.select.retailer.name,
 		    surplus   :$scope.select.surplus, 
-		    withdraw  :function(){limit_balance(ibalance, icount)}
+		    withdraw  :limit_balance
 		},
 		 hide_pwd: $scope.setting.hide_pwd,
 		 check_withdraw: function(balance){
@@ -798,17 +819,16 @@ function wsaleNewProvide(
 	}
 	
 	// check
-	diabloFilter.check_retailer_charge(
-	    $scope.select.retailer.id,
-	    $scope.select.shop.id
-	).then(function(result) {
+	diabloFilter.check_retailer_charge($scope.select.retailer.id, $scope.select.shop.id).then(function(result) {
 	    console.log(result);
 	    if (result.ecode === 0) {
 		var ishop    = result.ishop;
+		var balance  = result.balance;
 		var ibalance = result.ibalance;
+		var mbalance = result.mbalance;
 		var icount   = result.icount;
 		var sameShop = result.same_shop;
-
+		
 		if (diablo_no === ishop) {
 		    if (diablo_yes === $scope.setting.draw_region) {
 			diabloFilter.check_retailer_region(
@@ -816,29 +836,25 @@ function wsaleNewProvide(
 			).then(function(result) {
 			    console.log(result);
 			    if (result.ecode === 0) {
-				startWithdraw(ibalance, icount);
+				startWithdraw(mbalance, ibalance, icount, balance);
 			    } else {
 				dialog.set_error("会员现金提取", result.ecode); 
 			    }
 			})
 		    } else {
-			startWithdraw(ibalance, icount);
+			startWithdraw(mbalance, ibalance, icount, balance);
 		    }
 		} else {
 		    if (diablo_no === sameShop) {
 			dialog.set_error("会员现金提取", 2150); 
 		    } else {
-			startWithdraw(ibalance, icount);
+			startWithdraw(mbalance, ibalance, icount, balance);
 		    }
 		} 
 	    } else {
 		dialog.set_error("会员现金提取", result.ecode); 
 	    }
-	})
-
-	
-	
-	
+	}) 
     }; 
     
     $scope.get_ticket = function(){
@@ -1860,8 +1876,9 @@ function wsaleNewProvide(
 			wsaleService.direct.wsale);
 
 		    var isRound = $scope.setting.round; 
-		    var cakeMode = $scope.setting.cake_mode;
-		    var hLine = wsalePrint.gen_body(LODOP, $scope.select, pinvs, isRound, cakeMode); 
+		    // var cakeMode = $scope.setting.cake_mode;
+		    var hLine = wsalePrint.gen_body(
+			LODOP, $scope.select, pinvs, isRound, $scope.print_setting); 
 		    var selectRetailer = $scope.select.retailer.id; 
 		    // console.log($scope.select);
 		    hLine = wsalePrint.gen_stastic(
@@ -1870,10 +1887,11 @@ function wsaleNewProvide(
 			0,
 			$scope.select,
 			$scope.select.retailer.balance,
-			wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers),
-			$scope.setting.print_perform); 
-		    wsalePrint.gen_foot(
-			LODOP, hLine, $scope.comments, pdate, $scope.select.shop, cakeMode);
+			wsaleUtils.isVip(
+			    $scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers),
+			$scope.print_setting);
+		    
+		    wsalePrint.gen_foot(LODOP, hLine, pdate, $scope.select.shop, $scope.print_setting);
 		    wsalePrint.start_print(LODOP); 
 		};
 		
