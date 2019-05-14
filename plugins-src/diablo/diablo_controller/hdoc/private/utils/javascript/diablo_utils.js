@@ -1178,26 +1178,40 @@ diabloUtils.controller("diabloEditDialogCtrl", function($scope, $uibModalInstanc
 	    
     	$uibModalInstance.result.then(function () {
             unbind();
+	    $scope.cancel();
     	}, function () {
             unbind();
+	    $scope.cancel();
     	}, function(){
             unbind();
+	    $scope.cancel();
     	});
+    } else {
+	$uibModalInstance.result.then(function () {
+            $scope.cancel();
+	}, function () {
+	    $scope.cancel();
+	}, function(){
+	    $scope.cancel();
+	});
     }
-    
-    
     // $scope.out = {};
     
     // console.log($scope.params);
-        
+    var cancel_callback = $scope.params.cancel_callback;
     $scope.cancel = function(){
+	// console.log("cancel");
 	$uibModalInstance.dismiss('cancel');
+	if (angular.isDefined(cancel_callback) && typeof(cancel_callback) === "function"){
+	    cancel_callback();
+	}
     };
 
     $scope.ok = function() {
 	$uibModalInstance.dismiss('ok');
 	if (angular.isDefined(callback) && typeof(callback) === "function"){
 	    delete $scope.params.edit;
+	    delete $scope.params.cancel_callback;
 	    callback($scope.params);
 	}
     };

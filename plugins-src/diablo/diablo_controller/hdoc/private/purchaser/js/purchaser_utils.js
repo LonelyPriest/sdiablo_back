@@ -1228,9 +1228,9 @@ stockPrintU.prototype.printBarcode2 = function() {
     if (this.template.firm) {
 	var firm = angular.isUndefined(this.firm) ? diablo_empty_string : this.firm; 
 	if (this.template.code_firm && angular.isDefined(this.codeFirm)) 
-	    line = "厂商：" + this.codeFirm;
+	    line = "厂商:" + this.codeFirm;
 	else 
-	    line = "厂商：" + firm;
+	    line = "厂商:" + firm;
 
 	if (this.template.firm_date && !this.template.solo_date) 
 	    line = line + "-" + shift_date;
@@ -1242,9 +1242,9 @@ stockPrintU.prototype.printBarcode2 = function() {
     // brand
     if (this.template.brand && this.template.solo_brand){
 	if (diablo_trim(this.template.self_brand)) {
-	    line = "品牌：" + diablo_trim(this.template.self_brand);
+	    line = "品牌:" + diablo_trim(this.template.self_brand);
 	} else {
-	    line = "品牌：" + this.brand; 
+	    line = "品牌:" + this.brand; 
 	}
 	top = this.start_print(
 	    line, top, this.left, iwpx, this.template.hpx_each, 0, pSecond, pThird, startSecond, startThird); 
@@ -1258,7 +1258,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 
     // style number
     if (this.template.style_number) {
-	line = "款号：";
+	line = "款号:";
 	if (this.solo_snumber && this.stock.style_number.length > this.len_snumber) {
 	    // first line
 	    line += this.stock.style_number.substr(0, this.len_snumber);
@@ -1347,14 +1347,14 @@ stockPrintU.prototype.printBarcode2 = function() {
 
     // level
     if (this.template.level) {
-	line = "等级：" + diablo_level[this.stock.level];
+	line = "等级:" + diablo_level[this.stock.level];
 	top = this.start_print(
 	    line, top, this.left, iwpx, this.template.hpx_each, 0, pSecond, pThird, startSecond, startThird); 
     }
 
     // executive
     if (this.template.executive) {
-	line = "执行标准：";
+	line = "执行标准:";
 	this.start_print(line,
 			 top,
 			 this.left,
@@ -1367,7 +1367,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 			 startThird); 
 	top += this.template.hpx_executive;
 
-	line = "    " +  this.stock.executive.name; 
+	line = "   " +  this.stock.executive.name; 
 	this.start_print(line,
 			 top,
 			 this.left,
@@ -1383,7 +1383,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 
     // category
     if (this.template.category) {
-	line = "安全技术类别："
+	line = "安全技术类别:"
 	this.start_print(line,
 			 top,
 			 this.left,
@@ -1396,7 +1396,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 			 startThird); 
 	top += this.template.hpx_category;
 
-	line = "      " +  this.stock.category.name;
+	line = "     " +  this.stock.category.name;
 	this.start_print(line,
 			 top,
 			 this.left,
@@ -1414,7 +1414,7 @@ stockPrintU.prototype.printBarcode2 = function() {
     if (this.template.fabric) {
 	if (angular.isDefined(this.stock.fabrics) && angular.isArray(this.stock.fabrics)) {
 	    if (0 !== this.stock.fabrics.length) {
-		line = "成份：";
+		line = "成份:";
 		this.start_print(line,
 				 top,
 				 this.left,
@@ -1430,7 +1430,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 	    
 	    for (var i=0, l=this.stock.fabrics.length; i<l; i++) {
 		var f = this.stock.fabrics[i];
-		line = "      " + f.p + "%" + f.name; 
+		line = "     " + f.p + "%" + f.name; 
 		this.start_print(line,
 				 top,
 				 this.left,
@@ -1450,7 +1450,7 @@ stockPrintU.prototype.printBarcode2 = function() {
     var font_price = stockUtils.to_integer(this.template.font_price); 
     if (this.template.p_virprice && 0 !== this.to_i(this.stock.vir_price)) {
 	line = diablo_trim(this.template.vir_price);
-	if (line) line += "："; 
+	if (line) line += ":"; 
 	this.start_print(line, top, this.left, iwpx, hpx_price, 0, pSecond, pThird, startSecond, startThird);
 	
 	line = "￥" + this.stock.vir_price.toString(); 
@@ -1473,7 +1473,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 	    line = diablo_trim(this.template.my_price);
 	}
 	    
-	if (line) line += "：" ;
+	if (line) line += ":" ;
 	this.start_print(line, top, this.left, iwpx, hpx_price, 0, pSecond, pThird, startSecond, startThird);
 
 	line = line2 = line3 = "￥" + this.stock.tag_price.toString();

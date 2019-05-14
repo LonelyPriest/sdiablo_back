@@ -907,8 +907,7 @@ function purchaserInventoryNewCtrlProvide (
 				   // reset barcode
 				   $scope.good.bcode = undefined;
 				   $scope.inventories[0] = {$edit:false, $new:true};
-			       },
-			       
+			       }, 
 			       edit: function(){
 				   diablo_goto_page(
 				       "#/good/wgood_update"
@@ -1092,6 +1091,10 @@ function purchaserInventoryNewCtrlProvide (
 				       close();
 				   $scope.add_exist_stock_color(
 				       inv, function(stock) {$scope.update_inventory_with_new(stock);});
+			       }, 
+			       cancel_callback: function() {
+				   $scope.good.bcode = undefined;
+				   $scope.inventories[0] = {$edit:false, $new:true};
 			       },
 			       edit: function(){
 			       	   diablo_goto_page(
@@ -1274,6 +1277,10 @@ function purchaserInventoryNewCtrlProvide (
 				   $scope.add_exist_stock_color(inv, function(stock) {
 				       $scope.update_inventory(stock)
 				   });
+			       },
+			       cancel_callback: function() {
+				   $scope.good.bcode = undefined;
+				   $scope.inventories[0] = {$edit:false, $new:true};
 			       },
 			       edit: function(){
 				   diablo_goto_page(
