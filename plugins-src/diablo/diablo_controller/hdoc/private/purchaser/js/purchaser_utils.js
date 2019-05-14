@@ -971,7 +971,16 @@ stockPrintU.prototype.print_type = function(type, top, left, width, printSecond,
 	    this.set_print_font_size(this.template.font_type);
 	}
     } else {
-	this.LODOP.ADD_PRINT_TEXT(top, left, width, hpx_each, "品名：" + type);
+	this.LODOP.ADD_PRINT_TEXT(top, left, width, this.template.hpx_each, "品名：" + type);
+	this.set_print_font_size(this.template.font_type);
+	if (printSecond) {
+	    this.LODOP.ADD_PRINT_TEXT(top, startSecond, width, this.template.hpx_each, "品名：" + type);
+	    this.set_print_font_size(this.template.font_type);
+	}
+	if (printThird) {
+	    this.LODOP.ADD_PRINT_TEXT(top, startSecond, width, this.template.hpx_each, "品名：" + type);
+	    this.set_print_font_size(this.template.font_type);
+	} 
     }
     return top;
 };
@@ -1460,8 +1469,8 @@ stockPrintU.prototype.printBarcode2 = function() {
 
     if (this.template.p_tagprice) {
 	line = diablo_trim(this.template.tag_price);
-	if (this.stock.state === 3) {
-	    line = "特惠价"
+	if (this.stock.state === 3 && diablo_trim(this.template.my_price)) {
+	    line = diablo_trim(this.template.my_price);
 	}
 	    
 	if (line) line += "：" ;
@@ -1485,7 +1494,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 	}
 	
 	var offset_tagprice = this.to_i(this.template.offset_tagprice);
-	if (this.stock.state === 3) {
+	if (this.stock.state === 3 && diablo_trim(this.template.my_price)) {
 	    offset_tagprice = this.to_i(this.template.offset_myprice);
 	}
 	
