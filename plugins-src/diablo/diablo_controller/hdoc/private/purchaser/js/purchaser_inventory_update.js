@@ -1035,6 +1035,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
     };
 
     var impl_ext_stock = function(stock, ext) {
+	stock.state     = stockUtils.to_integer(ext.state);
 	stock.level     = ext.level;
 	stock.executive = diablo_get_object(ext.executive, filterStdExecutive);
 	stock.category  = diablo_get_object(ext.category, filterCategory); 

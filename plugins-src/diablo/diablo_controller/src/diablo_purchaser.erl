@@ -2231,6 +2231,7 @@ handle_call({gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _Fro
 	", a.year"
 	", a.season"
 	", a.free"
+	", a.state"
 	", a.merchant"
 
 	", a.level"
@@ -2300,6 +2301,7 @@ handle_call({gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _Fro
 			    case ?sql_utils:execute(transaction, Sqls, Barcode) of
 				{ok, Barcode} ->
 				    {reply, {ok, Barcode,
+					     ?v(<<"state">>, Stock),
 					     ?v(<<"level">>, Stock),
 					     ?v(<<"category_id">>, Stock),
 					     ?v(<<"executive_id">>, Stock),
@@ -2313,6 +2315,7 @@ handle_call({gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _Fro
 		    end;
 		false ->
 		    {reply, {ok, ABCode,
+			     ?v(<<"state">>, Stock),
 			     ?v(<<"level">>, Stock),
 			     ?v(<<"category_id">>, Stock),
 			     ?v(<<"executive_id">>, Stock),
