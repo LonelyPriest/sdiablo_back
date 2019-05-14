@@ -927,6 +927,54 @@ stockPrintU.prototype.set_print_font_size = function(font_size) {
 	this.LODOP.SET_PRINT_STYLEA(0, "FontSize", this.to_i(font_size)); 
 };
 
+stockPrintU.prototype.print_type = function(type, top, left, width, printSecond, printThird, startSecond, startThird) {
+    var hpx_type = stockUtils.to_integer(this.template.hpx_type);
+    var offset_type = stockUtils.to_integer(this.template.offset_type);
+    var count_type = stockUtils.to_integer(this.template.count_type);
+    if (offset_type > 0 && count_type > 0 && hpx_type > 0) {
+	this.LODOP.ADD_PRINT_TEXT(top, left, width, this.template.hpx_each, "品名：");
+	if (printSecond) {
+	    this.LODOP.ADD_PRINT_TEXT(top, startSecond, width, this.template.hpx_each, "品名：");
+	}
+	if (printThird) {
+	    this.LODOP.ADD_PRINT_TEXT(top, startThird, width, this.template.hpx_each, "品名：");
+	}
+	
+	if (type.length > count_type) {
+	    this.LODOP.ADD_PRINT_TEXT(top, left + offset_type, width, hpx_type, type.substr(0, count_type));
+	    this.set_print_font_size(this.template.font_type);
+	    
+	    if (printSecond) {
+		this.LODOP.ADD_PRINT_TEXT(top, startSecond + offset_type, width, hpx_type, type.substr(0, count_type));
+		this.set_print_font_size(this.template.font_type);
+	    }
+
+	    if (printThird) {
+		this.LODOP.ADD_PRINT_TEXT(top, startThird + offset_type, width, hpx_type, type.substr(0, count_type));
+		this.set_print_font_size(this.template.font_type);
+	    } 
+	    top += hpx_type;
+	    this.LODOP.ADD_PRINT_TEXT(top, left + offset_type, width, hpx_type, type.substr(count_type, type.length));
+	    this.set_print_font_size(this.template.font_type);
+
+	    if (printSecond) {
+		this.LODOP.ADD_PRINT_TEXT(top, startSecond + offset_type, width, hpx_type, type.substr(count_type, type.length));
+		this.set_print_font_size(this.template.font_type);
+	    }
+
+	    if (printThird) {
+		this.LODOP.ADD_PRINT_TEXT(top, startThird + offset_type, width, hpx_type, type.substr(count_type, type.length));
+		this.set_print_font_size(this.template.font_type);
+	    } 
+	} else {
+	    this.LODOP.ADD_PRINT_TEXT(top, left + offset_type, width, hpx_type, type);
+	    this.set_print_font_size(this.template.font_type);
+	}
+    } else {
+	this.LODOP.ADD_PRINT_TEXT(top, left, width, hpx_each, "品名：" + type);
+    }
+    return top;
+};
 
 stockPrintU.prototype.print_size = function(size, shift_date, color, top, left, width, hpx_size) {
     var line = this.trim_size(size);
@@ -958,7 +1006,6 @@ stockPrintU.prototype.print_size = function(size, shift_date, color, top, left, 
     	if (color !== diablo_free_color)
     	    this.LODOP.ADD_PRINT_TEXT(top, left + offset_size + 40, width, hpx_size, color);
     }
-    
     return;
 };
 
@@ -1113,6 +1160,9 @@ stockPrintU.prototype.printBarcode2 = function() {
     
     // var iwpx = this.wpx - this.left;
     var iwpx = Math.floor(this.template.width * 96 / 2.54) - this.left;
+    if (stockUtils.to_integer(this.template.offset_width) > 0) {
+	iwpx += stockUtils.to_integer(this.template.offset_width);
+    }
     var startSecond = 0;
     var startThird = 0;
     if (this.dualPrint - 1 >= 0) {
@@ -1193,9 +1243,8 @@ stockPrintU.prototype.printBarcode2 = function() {
 
     // type
     if (this.template.type) {
-	line = "品名：" + this.stock.type.name;
-	top = this.start_print(
-	    line, top, this.left, iwpx, this.template.hpx_each, 0, pSecond, pThird, startSecond, startThird); 
+	top = this.print_type(diablo_trim(this.stock.type.name), top, this.left, iwpx, pSecond, pThird, startSecond, startThird); 
+	top += this.template.hpx_each;
     }
 
     // style number
@@ -1281,7 +1330,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 	}
 
 	if (pThird) {
-	    this.print_size(this.third.size, shift_date, this.third.color, top, startSecond, iwpx, hpx_size); 
+	    this.print_size(this.third.size, shift_date, this.third.color, top, startThird, iwpx, hpx_size); 
 	}
 	
 	top += hpx_size;
@@ -1504,6 +1553,6 @@ stockPrintU.prototype.printBarcode2 = function() {
 
     // this.LODOP.PRINT_SETUP();
     // this.LODOP.PRINT_DESIGN();
-    // this.LODOP.PREVIEW();
-    this.LODOP.PRINT();
+    this.LODOP.PREVIEW();
+    // this.LODOP.PRINT();
 };

@@ -970,6 +970,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		", font_size"
 		", font_fabric"
 		", font_label"
+		", font_type"
 	    %% ", font_vprice"
 		
 		", bold"
@@ -987,6 +988,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		", hpx_size"
 		", hpx_barcode"
 		", hpx_label"
+		", hpx_type"
 
 		", hpx_top"
 		", hpx_left"
@@ -994,6 +996,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 
 		", solo_snumber"
 		", len_snumber"
+		", count_type"
 
 		", size_date"
 		", size_color"
@@ -1007,6 +1010,8 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		", offset_tagprice"
 		", offset_virprice"
 		", offset_label"
+		", offset_type"
+		", offset_width"
 
 		", barcode"
 		", w_barcode"
@@ -1053,6 +1058,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(0) ++ ","      %% font_size
 		++ ?to_s(0) ++ ","      %% font_fabrice
 		++ ?to_s(0) ++ ","      %% font_label
+		++ ?to_s(0) ++ ","      %% font_type
 	    %% ++ ?to_s(0) ++ ","      %% font_vprice
 		
 		++ ?to_s(?NO) ++ ","    %% bold
@@ -1070,6 +1076,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(0) ++ ","      %% hpx_size
 		++ ?to_s(0) ++ ","      %% hpx_barcode
 		++ ?to_s(0) ++ ","      %% hpx_label
+		++ ?to_s(0) ++ ","      %% hpx_type
 		
 		++ ?to_s(5) ++ ","      %% hpx_top
 		++ ?to_s(10) ++ ","     %% hpx_left
@@ -1077,6 +1084,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 
 		++ ?to_s(0) ++ ","      %% solo_snumber
 		++ ?to_s(8) ++ ","      %% len_snumber
+		++ ?to_s(0) ++ ","      %% count_type
 
 		++ ?to_s(0) ++ ","      %% size_date
 		++ ?to_s(0) ++ ","      %% size_color
@@ -1090,10 +1098,12 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(0) ++ ","      %% offset_tagprice
 		++ ?to_s(0) ++ ","      %% offset_virprice
 		++ ?to_s(0) ++ ","      %% offset_label
+		++ ?to_s(0) ++ ","      %% offset_type
+		++ ?to_s(0) ++ ","      %% offset_width
 
 		++ ?to_s(?YES) ++ ","   %% barcode
 		++ ?to_s(0) ++ ","      %% w_barcode
-
+		
 		++ ?to_s(-1) ++ ","     %% printer
 		++ ?to_s(0)  ++ ","     %% dual print
 		

@@ -556,4 +556,15 @@ alter table w_charge add column ishop integer default 0 after ibalance;
 alter table w_charge add column icount tinyint default -1 after ishop;
 
 
+--2019-05-10
+alter table print_template add column font_type tinyint default 0 after font_label;
+alter table print_template add column hpx_type tinyint default 0 after hpx_label;
+alter table print_template add column offset_type tinyint default 0 after offset_label;
+alter table print_template add column count_type tinyint default 0 after len_snumber;
+
+alter table print_template add column offset_width INTEGER default 0 after offset_type;
+
+
+
+
 alter table merchants add column shop_count integer default -1 after sms_send;

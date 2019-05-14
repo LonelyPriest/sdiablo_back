@@ -654,6 +654,7 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", font_size"
 	", font_fabric"
 	", font_label"
+	", font_type"
     %% ", font_vprice"
 	
 	", bold"
@@ -671,6 +672,7 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", hpx_size"
 	", hpx_barcode"
 	", hpx_label"
+	", hpx_type"
 
 	", hpx_top"
 	", hpx_left"
@@ -678,6 +680,7 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 
 	", solo_snumber"
 	", len_snumber"
+	", count_type"
 
 	", size_date"
 	", size_color"
@@ -691,6 +694,8 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", offset_tagprice"
 	", offset_virprice" 
 	", offset_label"
+	", offset_type"
+	", offset_width"
 
 	", barcode"
 	", w_barcode"
@@ -743,6 +748,7 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(font_size, integer, ?v(<<"font_size">>, Attrs))
 	++  ?utils:v(font_fabric, integer, ?v(<<"font_fabric">>, Attrs))
 	++  ?utils:v(font_label, integer, ?v(<<"font_label">>, Attrs))
+	++  ?utils:v(font_type, integer, ?v(<<"font_type">>, Attrs))
     %% ++  ?utils:v(font_vprice, integer, ?v(<<"font_vprice">>, Attrs))
 	
 	++  ?utils:v(bold, integer, ?v(<<"bold">>, Attrs))
@@ -760,6 +766,7 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(hpx_size, integer, ?v(<<"hpx_size">>, Attrs))
 	++  ?utils:v(hpx_barcode, integer, ?v(<<"hpx_barcode">>, Attrs))
 	++  ?utils:v(hpx_label, integer, ?v(<<"hpx_label">>, Attrs))
+	++  ?utils:v(hpx_type, integer, ?v(<<"hpx_type">>, Attrs))
 
 	++  ?utils:v(hpx_top, integer, ?v(<<"hpx_top">>, Attrs))
 	++  ?utils:v(hpx_left, integer, ?v(<<"hpx_left">>, Attrs))
@@ -767,6 +774,7 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 
 	++  ?utils:v(solo_snumber, integer, ?v(<<"solo_snumber">>, Attrs))
 	++  ?utils:v(len_snumber, integer, ?v(<<"len_snumber">>, Attrs))
+	++  ?utils:v(count_type, integer, ?v(<<"count_type">>, Attrs))
 
 	++  ?utils:v(size_date, integer, ?v(<<"size_date">>, Attrs))
 	++  ?utils:v(size_color, integer, ?v(<<"size_color">>, Attrs))
@@ -780,6 +788,8 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(offset_tagprice, integer, ?v(<<"offset_tagprice">>, Attrs))
 	++  ?utils:v(offset_virprice, integer, ?v(<<"offset_virprice">>, Attrs)) 
 	++  ?utils:v(offset_label, integer, ?v(<<"offset_label">>, Attrs))
+	++  ?utils:v(offset_type, integer, ?v(<<"offset_type">>, Attrs))
+	++  ?utils:v(offset_width, integer, ?v(<<"offset_width">>, Attrs))
 
 	++  ?utils:v(barcode, integer, ?v(<<"barcode">>, Attrs))
 	++  ?utils:v(w_barcode, integer, ?v(<<"w_barcode">>, Attrs))

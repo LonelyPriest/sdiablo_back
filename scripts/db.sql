@@ -1409,6 +1409,7 @@ create table print_template(
    font_size       TINYINT default 0,
    font_fabric     TINYINT default 0,
    font_label      TINYINT default 0,
+   font_type       TINYINT default 0,
    -- font_vprice     TINYINT default 0,
    
    bold            TINYINT default 0,
@@ -1426,6 +1427,8 @@ create table print_template(
    hpx_price       TINYINT default 0,
    hpx_size        TINYINT default 0,
    hpx_barcode     TINYINT default 0,
+   hpx_label       TINYINT default 0,
+   hpx_type        TINYINT default 0,
 
    hpx_top         TINYINT default 0,
    hpx_left        TINYINT default 0,
@@ -1433,6 +1436,7 @@ create table print_template(
 
    solo_snumber    TINYINT default 0,
    len_snumber     TINYINT default 0,
+   count_type      TINYINT default 0,
 
    size_date       TINYINT default 0,
    size_color      TINYINT default 0,
@@ -1445,10 +1449,13 @@ create table print_template(
    offset_size     TINYINT default 0,
    offset_tagprice TINYINT default 0,
    offset_virprice TINYINT default 0,
-   offset_label    TINYINT default 0, 
+   offset_label    TINYINT default 0,
+   offset_type     TINYINT default 0,
+   offset_width    TINYINT default 0,
 
    barcode         TINYINT default 0,   
    w_barcode       INTEGER default 0,
+   -- w_snumber       INTEGER default 0,  
 
    printer         TINYINT default -1,
    dual_print      TINYINT default 0,

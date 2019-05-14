@@ -990,23 +990,24 @@ function goodPrintTemplateCtrlProvide(
 	     , "level", "executive", "category", "fabric"
 	     
 	     , "font", "font_name", "font_executive", "font_category"
-	     , "font_price", "font_size", "font_fabric", "font_label"
+	     , "font_price", "font_size", "font_fabric", "font_label", "font_type"
 	     
 	     , "bold" 
 	     , "solo_brand", "solo_color", "solo_size", "solo_date"
 	     
 	     , "hpx_each", "hpx_executive", "hpx_category", "hpx_fabric"
-	     , "hpx_price", "hpx_size", "hpx_barcode", "hpx_label"
+	     , "hpx_price", "hpx_size", "hpx_barcode", "hpx_label", "hpx_type"
 	     
 	     , "hpx_top", "hpx_left", "second_space"
 	     
-	     , "solo_snumber", "len_snumber"
+	     , "solo_snumber", "len_snumber", "count_type"
 	     
 	     , "size_date", "size_color", "firm_date"
 
 	     , "tag_price", "vir_price", "self_brand"
 	     
 	     , "offset_size", "offset_tagprice", "offset_virprice", "offset_label"
+	     , "offset_type", "offset_width"
 
 	     , "printer", "dual_print"
 	     

@@ -1027,9 +1027,10 @@ var wsaleCalc = function(){
 		    }
 		    else if (pm.rule_id === 5) {
 			count = 0, totalPay = 0, rmoney = 0, vdiscount = 0, payAll = 0;
-			var c, stopCount = 0; 
+			// var c, stopCount = 0; 
 			var scounts = pm.scount.split(diablo_semi_seperator);
-			var sminus = pm.sdiscount.split(diablo_semi_seperator);
+			var sminus  = pm.sdiscount.split(diablo_semi_seperator);
+			var average = 0;
 
 			angular.forEach(s.stocks, function(stock){
 			    count += wsaleCalc.get_inventory_count(stock, saleMode);
@@ -1037,26 +1038,29 @@ var wsaleCalc = function(){
 			
 			for (var i=0, l=scounts.length; i<l; i++) {
 	    		    if ( Math.abs(count) >= wsaleUtils.to_integer(scounts[i]) ) {
-	    			rmoney = wsaleUtils.to_integer(sminus[i]);
-				stopCount = wsaleUtils.to_integer(scounts[i]);
+	    			// rmoney = wsaleUtils.to_integer(sminus[i]);
+				// stopCount = wsaleUtils.to_integer(scounts[i]);
+				average = wsaleUtils.to_decimal(
+				    wsaleUtils.to_integer(sminus[i]) / wsaleUtils.to_integer(scounts[i]));
 	    		    }
 			}
 
-			for (var i=0, l=s.stocks.length; i<l; i++) {
-			    var stock = s.stocks[i];
-			    c = wsaleCalc.get_inventory_count(s.stocks[i], saleMode);
-			    if ( stopCount <=0 )
-				break;
-			    if ( c >= stopCount ) {
-				payAll += stock.tag_price * stopCount;
-			    } else {
+			if (average !== 0) {
+			    for (var i=0, l=s.stocks.length; i<l; i++) {
+				var stock = s.stocks[i];
+				c = wsaleCalc.get_inventory_count(s.stocks[i], saleMode);
 				payAll += stock.tag_price * c;
-			    }
+				rmoney += average * c; 
+				// if ( stopCount <=0 )
+				//     break;
+				// if ( c >= stopCount ) {
+				//     payAll += stock.tag_price * stopCount;
+				// } else {
+				//     payAll += stock.tag_price * c;
+				// }
 
-			    stopCount -= c;
-			}
-
-			if (rmoney !== 0) {
+				// stopCount -= c;
+			    } 
 			    vdiscount = diablo_discount(payAll - rmoney, payAll);
 			    angular.forEach(s.stocks, function(stock) {
 				// stock.fdiscount = wsaleUtils.to_decimal(stock.discount - vdiscount);
