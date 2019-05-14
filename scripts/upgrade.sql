@@ -564,6 +564,9 @@ alter table print_template add column count_type tinyint default 0 after len_snu
 
 alter table print_template add column offset_width INTEGER default 0 after offset_type;
 
+alter table print_template add column my_price VARCHAR(32) default '' after vir_price;
+alter table print_template add column offset_myprice tinyint default 0 after offset_virprice;
+
 
 
 

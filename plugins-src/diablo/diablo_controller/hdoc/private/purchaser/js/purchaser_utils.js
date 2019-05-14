@@ -1460,6 +1460,10 @@ stockPrintU.prototype.printBarcode2 = function() {
 
     if (this.template.p_tagprice) {
 	line = diablo_trim(this.template.tag_price);
+	if (this.stock.state === 3) {
+	    line = "特惠价"
+	}
+	    
 	if (line) line += "：" ;
 	this.start_print(line, top, this.left, iwpx, hpx_price, 0, pSecond, pThird, startSecond, startThird);
 
@@ -1481,6 +1485,10 @@ stockPrintU.prototype.printBarcode2 = function() {
 	}
 	
 	var offset_tagprice = this.to_i(this.template.offset_tagprice);
+	if (this.stock.state === 3) {
+	    offset_tagprice = this.to_i(this.template.offset_myprice);
+	}
+	
 	this.LODOP.ADD_PRINT_TEXT(top, this.left + offset_tagprice, iwpx, hpx_price, line);
 	this.set_print_font_size(font_price); 
 
@@ -1492,8 +1500,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 	if (pThird) {
 	    this.LODOP.ADD_PRINT_TEXT(top, startThird + offset_tagprice, iwpx, hpx_price, line3);
 	    this.set_print_font_size(font_price); 
-	}
-	
+	} 
     }
     
     top += hpx_price; 
@@ -1553,6 +1560,6 @@ stockPrintU.prototype.printBarcode2 = function() {
 
     // this.LODOP.PRINT_SETUP();
     // this.LODOP.PRINT_DESIGN();
-    this.LODOP.PREVIEW();
-    // this.LODOP.PRINT();
+    // this.LODOP.PREVIEW();
+    this.LODOP.PRINT();
 };

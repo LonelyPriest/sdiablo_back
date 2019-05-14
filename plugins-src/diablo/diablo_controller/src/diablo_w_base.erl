@@ -688,11 +688,13 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 
 	", tag_price"
 	", vir_price"
+	", my_price"
 	", self_brand"
 	
 	", offset_size"
 	", offset_tagprice"
-	", offset_virprice" 
+	", offset_virprice"
+	", offset_myprice" 
 	", offset_label"
 	", offset_type"
 	", offset_width"
@@ -782,11 +784,13 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 
 	++  ?utils:v(tag_price, string, ?v(<<"tag_price">>, Attrs))
 	++  ?utils:v(vir_price, string, ?v(<<"vir_price">>, Attrs))
+	++  ?utils:v(my_price, string, ?v(<<"my_price">>, Attrs))
 	++  ?utils:v(self_brand, string, ?v(<<"self_brand">>, Attrs))
 	
 	++  ?utils:v(offset_size, integer, ?v(<<"offset_size">>, Attrs))
 	++  ?utils:v(offset_tagprice, integer, ?v(<<"offset_tagprice">>, Attrs))
-	++  ?utils:v(offset_virprice, integer, ?v(<<"offset_virprice">>, Attrs)) 
+	++  ?utils:v(offset_virprice, integer, ?v(<<"offset_virprice">>, Attrs))
+	++  ?utils:v(offset_myprice, integer, ?v(<<"offset_myprice">>, Attrs)) 
 	++  ?utils:v(offset_label, integer, ?v(<<"offset_label">>, Attrs))
 	++  ?utils:v(offset_type, integer, ?v(<<"offset_type">>, Attrs))
 	++  ?utils:v(offset_width, integer, ?v(<<"offset_width">>, Attrs))

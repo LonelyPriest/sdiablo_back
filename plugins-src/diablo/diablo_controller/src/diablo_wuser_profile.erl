@@ -1004,11 +1004,13 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 
 		", tag_price"
 		", vir_price"
+		", my_price"
 		", self_brand"
 		
 		", offset_size"
 		", offset_tagprice"
 		", offset_virprice"
+		", offset_myprice"
 		", offset_label"
 		", offset_type"
 		", offset_width"
@@ -1092,11 +1094,13 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 
 		++ "\'\'" ++ ","      %% tag_price
 		++ "\'\'" ++ ","      %% vir_price
+		++ "\'\'" ++ ","      %% my_price
 		++ "\'\'" ++ ","      %% self_brand
 		
 		++ ?to_s(0) ++ ","      %% offset_size
 		++ ?to_s(0) ++ ","      %% offset_tagprice
 		++ ?to_s(0) ++ ","      %% offset_virprice
+		++ ?to_s(0) ++ ","      %% offset_myprice
 		++ ?to_s(0) ++ ","      %% offset_label
 		++ ?to_s(0) ++ ","      %% offset_type
 		++ ?to_s(0) ++ ","      %% offset_width

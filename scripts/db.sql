@@ -1444,11 +1444,14 @@ create table print_template(
 
    tag_price      VARCHAR(32) default '',
    vir_price      VARCHAR(32) default '',
+   my_price       VARCHAR(32) default '',
    self_brand     VARCHAR(32) default '',
    
    offset_size     TINYINT default 0,
    offset_tagprice TINYINT default 0,
    offset_virprice TINYINT default 0,
+   offset_myprice  TINYINT default 0,
+
    offset_label    TINYINT default 0,
    offset_type     TINYINT default 0,
    offset_width    TINYINT default 0,
