@@ -1386,6 +1386,7 @@ function wsaleNewProvide(
 	$scope.select.surplus      = $scope.select.retailer.balance;
 	$scope.select.left_balance = $scope.select.surplus;
 	$scope.select.verificate   = $scope.vpays[0],
+	$scope.select.wprice       = undefined;
 	
 	$scope.select.total        = 0;
 	$scope.select.abs_total    = 0;
