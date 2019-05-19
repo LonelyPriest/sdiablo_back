@@ -551,7 +551,8 @@ function wsaleNewProvide(
 	// $scope.setting.print_discount = wsaleUtils.to_integer(sale_mode.charAt(15));
 
 	$scope.print_setting = {
-	    print_discount: wsaleUtils.to_integer(sale_mode.charAt(15)),
+	    print_discount: sale_mode.charAt(15) === diablo_empty_string ? diablo_yes
+		: wsaleUtils.to_integer(sale_mode.charAt(15)),
 	    print_perform:  wsaleUtils.to_integer(sale_mode.charAt(3)),
 	    cake_mode:      wsaleUtils.cake_mode(shopId, base),
 	    comments:       wsaleUtils.comment(shopId, base) 

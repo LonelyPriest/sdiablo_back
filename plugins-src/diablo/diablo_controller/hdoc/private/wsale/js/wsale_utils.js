@@ -1509,8 +1509,6 @@ var wsalePrint = function(){
 		
 		var ediscount = wsaleUtils.ediscount(d.rprice, vprice).toString(); 
 		perform += d.total * vprice - calc;
-
-
 		
 		LODOP.ADD_PRINT_TEXT(top, left, 70, hFont, d.style_number); 
 		LODOP.ADD_PRINT_TEXT(top, left + 70, 35, hFont, vprice.toString()); 
@@ -1525,10 +1523,7 @@ var wsalePrint = function(){
 		    
 		// LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString()); 
 		
-		top += 15;
-		var brand = angular.isObject(d.brand) && angular.isDefined(d.brand.name) ? d.brand.name : d.brand;
-		brand += angular.isObject(d.type) && angular.isDefined(d.type.name) ? d.type.name : d.type;
-		LODOP.ADD_PRINT_TEXT(top, left, vWidth - left, hFont, brand);
+		top += 15; 
 		LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString());
 		if (pSetting.print_discount) {
 		    LODOP.ADD_PRINT_TEXT(
@@ -1536,9 +1531,22 @@ var wsalePrint = function(){
 		} else {
 		    LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString());
 		}
-		
 
-		top += 15;
+		var brand = angular.isObject(d.brand) && angular.isDefined(d.brand.name) ? d.brand.name : d.brand;
+		brand += angular.isObject(d.type) && angular.isDefined(d.type.name) ? d.type.name : d.type;
+		var maxLines = Math.ceil(brand.length / 7);
+		for (var i=0; i<maxLines; i++) {
+		    LODOP.ADD_PRINT_TEXT(
+			top,
+			left,
+			vWidth - left,
+			hFont,
+			brand.substr(i*6, brand.length > i*7 ? 7 : brand.length));
+		    top += 15;
+		}
+		
+		// LODOP.ADD_PRINT_TEXT(top, left, vWidth - left, hFont, brand); 
+		// top += 5;
 		if (d.state === 3) {
 		    LODOP.ADD_PRINT_TEXT(top, left, vWidth - left, hFont, d.note + "/特价"); 
 		} else {
@@ -1667,26 +1675,21 @@ var wsalePrint = function(){
 	    // console.log(date);
 	    if (diablo_no === pSetting.cake_mode){
 		var order = 1;
-		// var height = 0;
 		LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, "顾客需知：");
 		hLine += 20;
 		angular.forEach(pSetting.comments, function(c){
 		    if (c){
-			var s = order.toString() + "：" + c.name;
-			// if (s.length > 30) hFont += 15;
-			hFont = hFont *  Math.ceil(s.length / 17);
-			
-			LODOP.ADD_PRINT_TEXT(
-			    hLine,
-			    left,
-			    vWidth,
-			    //hFont * Math.ceil((s.length / 15)),
-			    hFont,
-			    s);
-			hLine += Math.ceil((s.length / 17)) * 15 + 5; 
-			// console.log(s.length, Math.ceil((s.length / 15)) * 15 + 5); 
-			// if (s.length > 30) hLine += 15; 
-			// hLine += 15;
+			var s = order.toString() + ":" + c.name;
+			var maxLines = Math.ceil(s.length / 14); 
+			for (var i=0; i<maxLines; i++) {
+			    LODOP.ADD_PRINT_TEXT(
+				hLine,
+				left,
+				vWidth,
+				hFont,
+				s.substr(i*14, s.length > i*14 ? 14 : s.length));
+			    hLine += 15; 
+			} 
 			order++;
 		    }
 		});
@@ -1698,12 +1701,12 @@ var wsalePrint = function(){
 	    // console.log(s);
 	    // LODOP.ADD_PRINT_TEXT(hLine, 5, 178, 140, order.toString() + "：" + s);
 
-	    var s = "打印日期：" + date;
+	    var s = "打印日期:" + date;
 	    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, s);
 
 	    if (shop.addr) {
 		hLine += 15;
-		LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, "地址：" + shop.addr);
+		LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, "地址:" + shop.addr);
 	    }
 
 	    if (shop.bcode_friend) {

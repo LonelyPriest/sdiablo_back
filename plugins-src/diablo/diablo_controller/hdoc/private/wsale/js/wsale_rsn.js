@@ -446,16 +446,15 @@ function wsaleRsnDetailCtrlProvide (
 	// var print_perform = wsaleUtils.to_integer(sale_mode.charAt(3));
     	var pdate    = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss");
 
-	var sale_mode = wsaleUtils.sale_mode(shop.id, base); 
+	var sale_mode = wsaleUtils.sale_mode(shop.id, base);
 	var print_setting = {
 	    print_perform:  wsaleUtils.to_integer(sale_mode.charAt(3)),
-	    print_discount: wsaleUtils.to_integer(sale_mode.charAt(15)),
+	    print_discount: sale_mode.charAt(15) === diablo_empty_string ? diablo_yes
+		: wsaleUtils.to_integer(sale_mode.charAt(15)),
 	    cake_mode:      wsaleUtils.cake_mode(shop.id, base),
 	    comments:       wsaleUtils.comment(shop.id, base)
 	};
-
-    	// console.log(isRound, cakeMode);
-    
+	
     	if (diablo_frontend === p_mode){
     	    if (angular.isUndefined(LODOP)) LODOP=getLodop();
     	    console.log(LODOP);
