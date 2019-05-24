@@ -553,6 +553,11 @@ function wretailerConfig(angular) {
 	    return http.save(
 		{operation: "new_threshold_card_sale"}, sale).$promise;
 	};
+
+	this.delete_threshold_card_sale = function(sale) {
+	    return http.save(
+		{operation: "delete_threshold_card_sale"}, sale).$promise;
+	};
 	
 	/*
 	 * 

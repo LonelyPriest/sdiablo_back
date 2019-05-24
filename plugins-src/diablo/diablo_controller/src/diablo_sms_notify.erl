@@ -140,7 +140,7 @@ sms_once(aliqin, Merchant, {Shop, Phone, Action, Money, Balance, Score}) ->
 			    {error, {sms_send_failed, Code}}
 		    end;
 		{error, Reason} ->
-		    ?INFO("sms send http failed phone ~p, Reason", [Phone, Reason]),
+		    ?INFO("sms send http failed phone ~p, Reason ~p", [Phone, Reason]),
 		    {error, {http_failed, Reason}}
 	    end
     end.

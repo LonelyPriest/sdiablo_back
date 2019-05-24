@@ -1013,10 +1013,20 @@ var wsaleCalc = function(){
 			}
 
 			if (rmoney !== 0) {
-			    vdiscount = diablo_discount(rmoney, payAll); 
+			    if (pm.prule_id === 0) {
+				vdiscount = diablo_discount(rmoney, totalPay); 
+			    } else if (pm.prule_id === 1) {
+				vdiscount = diablo_discount(rmoney, payAll); 
+			    }
+			    
 			    angular.forEach(s.stocks, function(stock) {
-				stock.fdiscount = wsaleUtils.to_decimal(stock.discount - vdiscount);
-				stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
+				stock.fdiscount = wsaleUtils.to_decimal(diablo_full_discount - vdiscount);
+				if (pm.prule_id === 0) {
+				    stock.fprice = diablo_price(diablo_price(stock.tag_price, stock.discount), stock.fdiscount);
+				}
+				else if (pm.prule_id ===1) {
+				    stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
+				}
 			    }); 
 			} else {
 			    angular.forEach(s.stocks, function(stock) {
@@ -1051,19 +1061,9 @@ var wsaleCalc = function(){
 				c = wsaleCalc.get_inventory_count(s.stocks[i], saleMode);
 				payAll += stock.tag_price * c;
 				rmoney += average * c; 
-				// if ( stopCount <=0 )
-				//     break;
-				// if ( c >= stopCount ) {
-				//     payAll += stock.tag_price * stopCount;
-				// } else {
-				//     payAll += stock.tag_price * c;
-				// }
-
-				// stopCount -= c;
 			    } 
 			    vdiscount = diablo_discount(payAll - rmoney, payAll);
 			    angular.forEach(s.stocks, function(stock) {
-				// stock.fdiscount = wsaleUtils.to_decimal(stock.discount - vdiscount);
 				stock.fdiscount = wsaleUtils.to_decimal(diablo_full_discount - vdiscount);
 				stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
 			    }); 
@@ -1489,7 +1489,7 @@ var wsalePrint = function(){
 	    if (pSetting.print_discount)
 		LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, "折扣率");
 	    else
-		LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, "成交价");
+		LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, "折后价");
 
 	    top += 15;
 	    
@@ -1524,13 +1524,11 @@ var wsalePrint = function(){
 		// LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString()); 
 		
 		top += 15; 
-		LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString());
 		if (pSetting.print_discount) {
 		    LODOP.ADD_PRINT_TEXT(
 			top, left + 140, vWidth - left - 140, hFont, d.rprice.toString());
-		} else {
-		    LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString());
 		}
+		// LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString());
 
 		var brand = angular.isObject(d.brand) && angular.isDefined(d.brand.name) ? d.brand.name : d.brand;
 		brand += angular.isObject(d.type) && angular.isDefined(d.type.name) ? d.type.name : d.type;
@@ -1553,9 +1551,7 @@ var wsalePrint = function(){
 		    LODOP.ADD_PRINT_TEXT(top, left, vWidth - left, hFont, d.note);
 		}
 
-		if (pSetting.print_discount) {
-		    LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString()); 
-		}
+		LODOP.ADD_PRINT_TEXT(top, left + 140, vWidth - left - 140, hFont, calc.toString()); 
 
 		top += 15;
 		LODOP.ADD_PRINT_LINE(top, left, top, vWidth, 0, 1);

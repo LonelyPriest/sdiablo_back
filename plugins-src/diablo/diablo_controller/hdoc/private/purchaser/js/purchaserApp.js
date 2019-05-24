@@ -301,6 +301,7 @@ function stockConfg(angular){
 	// error information
 	this.error = {
 	    2001: "货品资料已存在！！",
+	    2002: "该促销方案已存在，请检查后重新输入！！",
 	    2003: "获取入库记录失败，请检查该入库记录！！",
 	    2004: "该入库记录已废弃，请选择其它入库记录！！",
 	    2005: "该单已废弃或属于结帐单，无法进行审核操作！！",
@@ -362,7 +363,7 @@ function stockConfg(angular){
 	    {name: "金额减免", id:1, remakr: "交易金额达到目标值减免一定金额"},
 	    {name: "买M送N",   id:2, remakr: "同一类型的产品买M年送N件"},
 	    {name: "M件N折",   id:3, remakr: "一件8折二件7折"},
-	    {name: "M件减N", id:4, remakr: "一件少50二件少100"},
+	    {name: "M件减N",   id:4, remakr: "一件少50二件少100"},
 	    {name: "M件N钱",   id:5, remakr: "一件100二件80"},
 	];
 

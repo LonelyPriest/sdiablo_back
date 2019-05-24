@@ -205,7 +205,10 @@ init([]) ->
 	  <<"查看制券方案">>, <<"list_ticket_plan">>, ?right_w_retailer},
 
 	 {?page_w_retailer,
-	  <<"会员翻页查看">>, <<"page_w_retailer">>, ?right_w_retailer} 
+	  <<"会员翻页查看">>, <<"page_w_retailer">>, ?right_w_retailer},
+
+	 {?delete_threshold_card_sale,
+	  <<"删除次卡商品销售">>, <<"delete_threshold_card_sale">>, ?right_w_retailer}
 	],
 
     

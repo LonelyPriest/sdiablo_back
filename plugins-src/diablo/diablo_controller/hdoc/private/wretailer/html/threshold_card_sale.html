@@ -67,7 +67,8 @@
 		    <th>消费价格</th> 
 		    <th>消费店铺</th>
 		    <th>备注</th> 
-		    <th>日期</th> 
+		    <th>日期</th>
+		    <th>操作</th>
 		  </tr>
 		</thead>
 		<tbody>
@@ -84,7 +85,12 @@
 		    <td x-ng-bind=s.tag_price></td>
 		    <td x-ng-bind=s.shop.name></td>
 		    <td x-ng-bind=s.comment></td>
-		    <td x-ng-bind=s.entry_date></td> 
+		    <td x-ng-bind=s.entry_date></td>
+		    <td>
+		      <button class="btn diablo-button red"
+			      x-ng-click="cancel_card_sale(s)">删除
+			<i class="glyphicon glyphicon-erase"></i>
+		    <td>
 		  </tr>
 		  
 		  <tr x-ng-if="total_items!==0">

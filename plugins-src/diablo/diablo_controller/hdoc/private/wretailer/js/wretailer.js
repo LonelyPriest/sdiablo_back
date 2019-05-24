@@ -1519,77 +1519,34 @@ function wretailerThresholdCardSaleCtrlProvide(
 	$scope.do_search(page)
     };
 
-    var get_card_title = function(rule_id) {
-	if (rule_id === diablo_theoretic_charge)
-	    return "次卡消费"
-	else if (rule_id === diablo_month_unlimit_charge)
-	    return "月卡消费"
-	else if (rule_id === diablo_quarter_unlimit_charge)
-	    return "季卡消费"
-	else if (rule_id === diablo_year_unlimit_charge)
-	    return "年卡消费"
-	else if (rule_id === diablo_half_of_year_unlimit_charge)
-	    return "半年卡消费"
-    };
-    
-    $scope.consume = function(card){
-	console.log(card);
-	var title = get_card_title(card.rule_id); 
-	var callback = function(params){
-	    console.log(params);
-	    diabloFilter.check_retailer_password(
-		card.retailer_id, params.card.password
-	    ).then(function(result){
-		// console.log(result);
-		if (result.ecode === 0){
-		    wretailerService.new_threshold_card_sale({
-			id        :card.id,
-			rule      :card.rule_id,
-			retailer  :card.retailer_id,
-			employee  :params.employee.id,
-			tag_price :params.good.tag_price,
-			shop      :params.shop.id,
-			comment   :params.comment,
-			count     :params.count
-		    }).then(function(state) {
-			console.log(state);
-			if (state.ecode === 0) {
-			    dialog.response_with_callback(
-				true,
-				title, title + "消费成功！！",
-				undefined,
-				function() {$scope.do_search($scope.current_page);})
-			} else {
-			    dialog.set_error(title, state.ecode); 
-			}
-		    });
-		} else {
-		    dialog.set_error(title, result.ecode); 
-		}
-	    }); 
-	}; 
+    $scope.cancel_card_sale = function(sale) {
+	console.log(sale);
+	var callback = function() {
+	    wretailerService.delete_threshold_card_sale(
+		{rsn:      sale.rsn,
+		 rule:     sale.rule_id,
+		 shop:     sale.shop_id,
+		 card:     sale.card_id,
+		 count:    sale.amount,
+		 retailer: sale.retailer_id
+		}).then(function(result) {
+		    console.log(result);
+		    if (result.ecode === 0) {
+			dialog.response_with_callback(
+			    true,
+			    "删除按次消费商品",
+			    "删除按次消费商品成功！！",
+			    undefined,
+			    $scope.page_changed($scope.current_page));
+		    } else {
+			dialog.set_error("删除按次消费商品", result.ecode); 
+		    }
+		});
+	}
 
-	dialog.edit_with_modal(
-	    "new-card-consume.html",
-	    undefined,
-	    callback,
-	    undefined,
-	    {title: title,
-	     employees: $scope.employees,
-	     goods: $scope.card_goods,
-	     shops: $scope.shops,
-	     
-	     card: {
-		 rule    :card.rule_id,
-		 retailer:card.retailer, 
-		 mobile  :card.mobile,
-		 ctime   :card.ctime,
-		 edate   :card.edate},
-	     count: 1,
-	     good: $scope.card_goods[0],
-	     shop: $scope.shops[0],
-	     comment_pattern: diabloPattern.comment}
-	);
+	diabloUtilsService.request(
+	    "删除按次消费商品", "确定要删除该消费记录吗？",
+	    callback, undefined, undefined);
     };
 };
 

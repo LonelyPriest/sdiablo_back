@@ -71,7 +71,7 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
     {RName, Phone, Shop, Score, Consume, Birth, Date} = H,
     ?DEBUG("H ~p", [H]),
     NewShop = case Shop of
-		  <<>> -> 135;
+		  <<>> -> 220;
 		  _ -> Shop
 	      end,
     NewScore = case Score of
@@ -88,10 +88,13 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
 		  <<>> -> <<"0000-00-00">>;
 		  %% _ -> <<"2017-", Birth/binary>>
 		   _ ->
-		       {BirthMonth, _BirthDate} = parse_birth(Birth, <<>>),
-		       BirthDate = pack_date(_BirthDate),
-		       << <<"2018-">>/binary, BirthMonth/binary, <<"-">>/binary, BirthDate/binary>> 
+		       %% {BirthMonth, _BirthDate} = parse_birth(Birth, <<>>),
+		       %% BirthDate = pack_date(_BirthDate),
+		       %% ?DEBUG("BirthMonth ~p, BirthDate ~p", [BirthMonth, BirthDate]),
+		       %% << <<"2018-">>/binary, BirthMonth/binary, <<"-">>/binary, BirthDate/binary>>
+		       Birth
 	      end,
+    ?DEBUG("NewBirth ~p", [NewBirth]),
 
     IsExist = 
 	case [ P || {_, P, _, _, _, _, _} <- Sort, P =:= Phone ] of
@@ -154,9 +157,10 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
 		    insert_into_member(Merchant, Datetime, Time, T, [H|Sort], Sql ++ Acc);
 		{ok, R} ->
 		    Sql = ["update w_retailer set score=score+" ++ ?to_s(NewScore)
-		     ++", consume=consume+" ++ ?to_s(NewConsume)
-		     ++ " where id=" ++ ?to_s(?v(<<"id">>, R))
-		     ++ " and merchant=" ++ ?to_s(Merchant)],
+			   ++", consume=consume+" ++ ?to_s(NewConsume)
+			   ++ ", birth=\'" ++ ?to_s(Birth) ++ "\'"
+			       ++ " where id=" ++ ?to_s(?v(<<"id">>, R))
+			   ++ " and merchant=" ++ ?to_s(Merchant)],
 		    insert_into_member(Merchant, Datetime, Time, T, [H|Sort], Sql ++ Acc)
 	    end
     end.

@@ -329,8 +329,7 @@ action(Session, Req, {"new_threshold_card_sale", Id}, Payload) ->
 			      ?NO
 		      end,
 
-		?DEBUG("sms ~p", [SMS]),
-			  
+		?DEBUG("sms ~p", [SMS]), 
 		case ?to_i(SMS) of
 		    0 ->
 			?utils:respond(
@@ -357,6 +356,17 @@ action(Session, Req, {"new_threshold_card_sale", Id}, Payload) ->
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end; 
+
+action(Session, Req, {"delete_threshold_card_sale"}, Payload) ->
+    ?DEBUG("delete_threshold_card_sale: session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    Card = ?v(<<"card">>, Payload),
+    Attrs = lists:keydelete(<<"card">>, 1, Payload),
+    ?utils:respond(
+       normal,
+       fun() ->?w_retailer:threshold_card(cancel_consume, Merchant, Card, Attrs) end,
+       fun(ConsumeCard) ->?succ(new_threshold_card_sale, ConsumeCard) end,
+       Req);
 
 action(Session, Req, {"reset_w_retailer_password", Id}, Payload) ->
     Merchant = ?session:get(merchant, Session),

@@ -189,12 +189,16 @@ threshold_card_good(list, Merchant, Shops) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {list_threshold_card_good, Merchant, Shops}).
 
+
 threshold_card(threshold_consume, Merchant, Card, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {threshold_card_consume, Merchant, Card, Attrs});
 threshold_card(expire_consume, Merchant, Card, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {expire_card_consume, Merchant, Card, Attrs}).
+    gen_server:call(Name, {expire_card_consume, Merchant, Card, Attrs});
+threshold_card(cancel_consume, Merchant, Card, Attrs) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {cancel_card_consume, Merchant, Card, Attrs}).
 
 filter(total_retailer, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
@@ -2237,6 +2241,25 @@ handle_call({expire_card_consume, Merchant, CardId, Attrs}, _From, State) ->
 	Error ->
 	    {reply, Error, State}
     end;
+
+handle_call({cancel_card_consume, Merchant, Card, Attrs}, _From, State) ->
+    ?DEBUG("cancel_card_consume: merchant ~p, card ~p, attrs ~p", [Merchant, Card, Attrs]),
+    RSN = ?v(<<"rsn">>, Attrs),
+    Sql = "delete from w_card_sale where merchant=" ++ ?to_s(Merchant)
+	++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'",
+    Reply = 
+	case ?v(<<"rule">>, Attrs) of
+	    ?THEORETIC_CHARGE ->
+		Count = ?v(<<"count">>, Attrs),
+		Sqls = ["update w_card set ctime=ctime+" ++ ?to_s(Count)
+			++ " where merchant="++ ?to_s(Merchant)
+			++ " and id=" ++ ?to_s(Card), Sql],
+		?sql_utils:execute(transaction, Sqls, Card);
+	    _ ->
+		?sql_utils:execute(write, Sql, Card)
+	end,
+    %% ?DEBUG("reply ~p", [Reply]),
+    {reply, Reply, State};
     
 handle_call(_Request, _From, State) ->
     Reply = ok,

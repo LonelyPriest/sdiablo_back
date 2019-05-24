@@ -1158,6 +1158,13 @@ diabloUtils.controller("diabloEditDialogCtrl", function($scope, $uibModalInstanc
 
     var callback = message.callback;
     $scope.params = angular.copy(message.params);
+
+    var cancel_callback = function() {
+	if (angular.isDefined($scope.params.cancel_callback)
+	    && typeof($scope.params.cancel_callback) === "function"){
+	    $scope.params.cancel_callback();
+	}
+    };
     
     var deviceAgent = navigator.userAgent.toLowerCase();
     if (deviceAgent.match(/iphone|ipod|ipad/i)) {
@@ -1187,28 +1194,32 @@ diabloUtils.controller("diabloEditDialogCtrl", function($scope, $uibModalInstanc
 	    $scope.cancel();
     	});
     } else {
-	$uibModalInstance.result.then(function () {
-            $scope.cancel();
-	}, function () {
-	    $scope.cancel();
-	}, function(){
-	    $scope.cancel();
+	$uibModalInstance.result.then(function (reason) {
+	    console.log(reason);
+	}, function (reason) {
+	    console.log(reason);
+	    cancel_callback();
+	}, function(reason){
+	    console.log(reason);
+	    // $scope.cancel();
+	    cancel_callback();
 	});
     }
     // $scope.out = {};
     
     // console.log($scope.params);
-    var cancel_callback = $scope.params.cancel_callback;
     $scope.cancel = function(){
 	// console.log("cancel");
-	$uibModalInstance.dismiss('cancel');
-	if (angular.isDefined(cancel_callback) && typeof(cancel_callback) === "function"){
-	    cancel_callback();
-	}
+	$uibModalInstance.close('cancel');
+	cancel_callback();
+    };
+
+    $scope.ok_cancel = function() {
+	$uibModalInstance.close('ok_cancel');
     };
 
     $scope.ok = function() {
-	$uibModalInstance.dismiss('ok');
+	$uibModalInstance.close('ok');
 	if (angular.isDefined(callback) && typeof(callback) === "function"){
 	    delete $scope.params.edit;
 	    delete $scope.params.cancel_callback;
