@@ -186,9 +186,11 @@ a.style_number=b.style_number and a.brand=b.brand and a.shop=b.shop set a.tag_pr
 update w_inventory a inner join (select style_number, brand, state from w_inventory_good where merchant=42) b on \
 a.style_number=b.style_number and a.brand=b.brand and a.shop=b.shop set a.state=b.state where a.merchant=42;
 
-update w_inventory a inner join (select style_number, brand, shop, merchant, tag_price, discount, ediscount, state, score from w_inventory_back where merchant=42) b on \
+mysqldump -uroot -pbxh --where="merchant='10'" sdiablo w_inventory > w_inventory_10.sql;
+update w_inventory a inner join (select style_number, brand, shop, merchant, tag_price, discount, ediscount, state, score from w_inventory_back where merchant=12) b on \
 a.style_number=b.style_number and a.brand=b.brand and a.shop=b.shop and a.merchant=b.merchant \
-set a.tag_price=b.tag_price, a.discount=b.discount, a.ediscount=b.ediscount, a.state=b.state, a.score=b.score where a.merchant=42;
+set a.tag_price=b.tag_price, a.discount=b.discount, a.ediscount=b.ediscount, a.state=b.state, a.score=b.score where a.merchant=12;
+%s/w_inventory/w_inventory_back/g
 
 -- syn level, category, executive, fabric
 update w_inventory a inner join (select style_number, brand, merchant, level, category, executive, fabric from w_inventory_good where merchant=2) b \

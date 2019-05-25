@@ -61,6 +61,17 @@ var stockUtils = function(){
 	    return diablo_base_setting("h_sex", shop, base, parseInt, diablo_no);
 	},
 
+	get_own_property_length:function(obj) {
+	    var c = 0;
+	    for (var o in obj) {
+		if (obj.hasOwnProperty(o)) {
+		    c++
+		}
+	    }
+
+	    return c;
+	},
+
 	stock_in_hide_mode: function(shop, base) {
 	    var hide = diablo_base_setting("h_stock", shop, base, function(s) {return s}, diablo_stock_in_hide_mode);
 	    // console.log(hide);

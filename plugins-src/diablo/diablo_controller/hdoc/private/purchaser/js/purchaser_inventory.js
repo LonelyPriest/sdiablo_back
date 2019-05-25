@@ -2957,85 +2957,86 @@ function purchaserInventoryDetailCtrlProvide(
     };
 
     $scope.update_batch = function(){
-	var condition = 
-	    diabloFilter.do_filter(
-		$scope.filters, $scope.time, function(search){
-		    add_search_condition(search); 
-		    return search; 
-		});
+	var condition = diabloFilter.do_filter(
+	    $scope.filters, $scope.time, function(search){
+		// add_search_condition(search); 
+		return search; 
+	    }); 
+	console.log(stockUtils.get_own_property_length(condition));
 
-	console.log(condition);
-	
-	var callback = function(params){
-	    console.log(params);
-	    var update = {
-		// season: params.select.season,
-		// year: params.select.year 
-		tag_price: diablo_set_integer(params.select.tag_price),
-		discount:  diablo_set_integer(params.select.discount),
-		imbalance: diablo_set_integer(params.select.imbalance),
-		score: params.select.score.id,
-		sprice: params.select.sprice.id
-	    };
-	    
-	    purchaserService.update_w_inventory_batch(
-		$scope.match, condition, update
-	    ).then(function(result){
-		console.log(result);
-		var s = "";
-		if ( 0 !== stockUtils.to_integer(update.tag_price))
-		    s += "吊牌价[" + update.tag_price.toString() + "]";
-		if (0 !== stockUtils.to_integer(update.discount)){
-		    if (s)
-			s += "  "
-		    s += "折扣[" + update.discount.toString() + "]"; 
+	if (stockUtils.get_own_property_length(condition) < 3) {
+	    dialog.set_error("批量修改库存价格", 2071);
+	} else {
+	    condition = add_search_condition(condition); 
+	    var callback = function(params){
+		console.log(params);
+		var update = {
+		    // season: params.select.season,
+		    // year: params.select.year 
+		    tag_price: diablo_set_integer(params.select.tag_price),
+		    discount:  diablo_set_integer(params.select.discount),
+		    imbalance: diablo_set_integer(params.select.imbalance),
+		    score: params.select.score.id,
+		    sprice: params.select.sprice.id
 		};
-
-		s += " 积分["  + params.select.score.name + "]";
-		s += " 特价["  + params.select.sprice.name + "]";
-		console.log(s);
 		
-		if (result.ecode === 0){
-		    s += "批量修改价格成功！！";
-		    dialog.response_with_callback(
-			true, "批量修改库存价格", s, undefined,
-			function(){
-			    $scope.do_search($scope.tab_page.page_of_time)
-			});
-		} else {
-		    dialog.response(
-			false,
-			"批量修改库存价格",
-			"批量修改库存价格失败："
-			    + purchaserService.error[result.ecode]);
+		purchaserService.update_w_inventory_batch(
+		    $scope.match, condition, update
+		).then(function(result){
+		    console.log(result);
+		    var s = "";
+		    if ( 0 !== stockUtils.to_integer(update.tag_price))
+			s += "吊牌价[" + update.tag_price.toString() + "]";
+		    if (0 !== stockUtils.to_integer(update.discount)){
+			if (s)
+			    s += "  "
+			s += "折扣[" + update.discount.toString() + "]"; 
+		    };
+
+		    s += " 积分["  + params.select.score.name + "]";
+		    s += " 特价["  + params.select.sprice.name + "]";
+		    console.log(s);
+		    
+		    if (result.ecode === 0){
+			s += "批量修改价格成功！！";
+			dialog.response_with_callback(
+			    true, "批量修改库存价格", s, undefined,
+			    function(){
+				$scope.do_search($scope.tab_page.page_of_time)
+			    });
+		    } else {
+			dialog.response(
+			    false,
+			    "批量修改库存价格",
+			    "批量修改库存价格失败："
+				+ purchaserService.error[result.ecode]);
+		    }
+		})
+	    };
+
+	    var yes_no = stockUtils.yes_no();
+	    // console.log(yes_no);
+	    dialog.edit_with_modal(
+		"stock-update-batch.html",
+		undefined,
+		callback,
+		undefined,
+		{
+		    check_invalid: function(select){
+			if (0 === stockUtils.to_integer(select.tag_price)
+			    && 0 === stockUtils.to_integer(select.discount)
+			    && 0 === select.sprice.id
+			    && 1 === select.score.id){
+			    return true;
+			} 
+			return false;
+		    },
+		    
+		    yes_no: yes_no,
+		    select: {score: yes_no[0], sprice: yes_no[0]}
 		}
-	    })
-	};
-
-	var yes_no = stockUtils.yes_no();
-	// console.log(yes_no);
-	dialog.edit_with_modal(
-	    "stock-update-batch.html",
-	    undefined,
-	    callback,
-	    undefined,
-	    {
-		check_invalid: function(select){
-		    if (0 === stockUtils.to_integer(select.tag_price)
-			&& 0 === stockUtils.to_integer(select.discount)
-			&& 0 === select.sprice.id
-			&& 1 === select.score.id){
-			return true;
-		    } 
-		    return false;
-		},
-		
-		yes_no: yes_no,
-		select: {score: yes_no[0], sprice: yes_no[0]}
-	    }
-	);
-
-	
+	    ); 
+	}
     };
 
     $scope.update_stock = function(inv){
