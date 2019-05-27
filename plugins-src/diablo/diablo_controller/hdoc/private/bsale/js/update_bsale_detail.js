@@ -33,6 +33,40 @@ function updateBSaleDetailCtrlProvide(
     $scope.go_back = function(){
 	diablo_goto_page("#/new_bsale_detail");
     };
+
+    $scope.focus_attr = {style_number:false,
+			 barcode:false,
+			 sell:false,
+			 cash:false,
+			 card:false,
+			 wxin:false};
+    
+    $scope.auto_focus = function(attr){
+	for (var o in $scope.focus_attr){
+	    $scope.focus_attr[o] = false;
+	}
+	$scope.focus_attr[attr] = true; 
+    };
+
+    $scope.focus_by_element = function() {
+	if ($scope.setting.barcode_mode) {
+	    document.getElementById("barcode").focus();
+	}
+	else {
+	    document.getElementById("snumber").focus();
+	}
+    };
+    
+    $scope.focus_good_or_barcode = function() {
+	$scope.sale.style_number = undefined;
+	$scope.sale.barcode = undefined;
+	if ($scope.setting.barcode_mode) {
+	    $scope.auto_focus('barcode'); 
+	}
+	else {
+	    $scope.auto_focus('style_number'); 
+	}
+    };
     
     $scope.re_calculate = function(){
 	$scope.select.total        = 0;
@@ -181,6 +215,9 @@ function updateBSaleDetailCtrlProvide(
 
     $scope.copy_select = function(add, src){
 	// add.id           = src.id;
+	add.bcode        = src.bcode;
+	add.full_bcode   = src.full_bcode;
+	
 	add.style_number = src.style_number;
 	
 	add.brand_id     = src.brand_id;
@@ -215,24 +252,66 @@ function updateBSaleDetailCtrlProvide(
     
     $scope.on_select_good = function(item, model, label){
 	console.log(item);
+	
 	// one good can be add only once at the same time
+	var existStock;
 	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    if (item.style_number === $scope.inventories[i].style_number
 		&& item.brand_id  === $scope.inventories[i].brand.id){
-		diabloUtilsService.response_with_callback(
-		    false,
-		    "销售单编辑",
-		    "销售单编辑失败：" + bsaleService.error[2191],
-		    $scope, function(){})}
+		existStock = $scope.inventories[i];
+		break;
+	    } 
 	};
+
+	if (angular.isDefined(existStock)) {
+	    diabloUtilsService.response_with_callback(
+		false,
+		"销售单编辑",
+		"销售单编辑失败：" + bsaleService.error[2191]
+		    + "编号：" + existStock.order_id.toString()
+		    + "货号：" + existStock.style_number,
+		$scope, function(){});
+	} else {
+	    // add at first allways 
+	    var add = {$new:true}; 
+	    add = $scope.copy_select(add, item);
+	    console.log(add); 
+	    $scope.add_inventory(add); 
+	}	
+    };
+
+    $scope.barcode_scanner = function(full_bcode) {
+	// console.log($scope.inventories);
+    	console.log(full_bcode);
+	if (angular.isUndefined(full_bcode) || !diablo_trim(full_bcode))
+	    return;
 	
-	// add at first allways 
-	var add = {$new:true}; 
-	add = $scope.copy_select(add, item);
-	console.log(add); 
-	$scope.add_inventory(add); 
-	return;
-    }; 
+	// get stock by barcode
+	// stock info 
+	var barcode = diabloHelp.correct_barcode(full_bcode, $scope.setting.barcode_auto); 
+	console.log(barcode);
+
+	// invalid barcode
+	if (!barcode.cuted || !barcode.correct) {
+	    dialog.response(false, "销售单编辑", "销售单编辑失败：" + bsaleService.error[2196]);
+	    return;
+	}
+	
+	diabloFilter.get_stock_by_barcode(barcode.cuted, $scope.select.shop.id).then(function(result){
+	    console.log(result);
+	    if (result.ecode === 0) {
+		if (diablo_is_empty(result.stock)) {
+		    dialog.response(false, "销售单编辑", "销售单编辑失败：" + bsaleService.error[2195]);
+		} else {
+		    result.stock.full_bcode = barcode.correct;
+		    $scope.on_select_good(result.stock);
+		}
+	    } else {
+		dialog.response(false, "销售单编辑", "销售单编辑单失败：" + bsaleService.error[2195]);
+	    }
+	});
+	
+    };
     
     /*
      * save all
@@ -419,7 +498,8 @@ function updateBSaleDetailCtrlProvide(
 		unit           : add.unit,
 
 		org_price      : add.org_price,
-		ediscount      : add.ediscount, 
+		ediscount      : add.ediscount,
+		vir_price      : add.vir_price,
 		tag_price      : add.tag_price, 
 		fprice         : add.fprice,
 		rprice         : add.rprice,
@@ -626,7 +706,8 @@ function updateBSaleDetailCtrlProvide(
 	$scope.sale.style_number = undefined;
 	
 	// add new line
-	$scope.re_calculate(); 
+	$scope.re_calculate();
+	$scope.focus_good_or_barcode(); 
     }; 
     
     $scope.add_inventory = function(inv){
@@ -684,7 +765,8 @@ function updateBSaleDetailCtrlProvide(
 			inv.order_id = $scope.inventories.length;
 			// reset
 			$scope.sale.style_number = undefined; 
-			$scope.re_calculate(); 
+			$scope.re_calculate();
+			$scope.focus_good_or_barcode(); 
 		    };
 		    
 		    var callback = function(params){
@@ -733,7 +815,7 @@ function updateBSaleDetailCtrlProvide(
 	}
 
 	$scope.re_calculate(); 
-	
+	$scope.focus_by_element();
     };
 
     // $scope.stock_info = function(inv){
@@ -809,7 +891,9 @@ function updateBSaleDetailCtrlProvide(
     $scope.save_free_update = function(inv){
 	inv.free_update = false; 
 	inv.amounts[0].sell_count = inv.reject;
-	$scope.re_calculate(); 
+	$scope.re_calculate();
+	// $scope.focus_good_or_barcode();
+	$scope.focus_by_element();
     }
 
     $scope.cancel_free_update = function(inv){

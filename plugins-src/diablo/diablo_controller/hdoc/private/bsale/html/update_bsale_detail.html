@@ -37,11 +37,30 @@
 	  	       x-ng-model="select.shop"
 	  	       typeahead-editable="false"
 	  	       uib-typeahead="s as s.name for s in shops|filter:$viewValue"/>
+
+		<span x-ng-if="setting.barcode_mode" class="input-group-addon">
+		  <i class="glyphicon glyphicon-barcode fg-red"></i>条码</span>
+		<form x-ng-if="setting.barcode_mode" name="bform">
+		  <div ng-class="{'has-error':bform.barcode.$invalid && !bform.barcode.$pristine}">
+		    <input id="barcode" class="form-control text-left"
+			   type="text"
+			   name="barcode"
+			   x-ng-edit
+			   x-ng-model="sale.barcode"
+			   placeholder="条码"
+			   x-ng-plus="focus_cash()"
+			   focus-auto="focus_attr.barcode"
+			   x-ng-pattern="pattern.barcode"
+			   barcode-scanner
+			   scanner="barcode_scanner"/>
+		  </div>
+		</form>
 		
-		<span class="input-group-addon"> <i class="glyphicon glyphicon-signal fg-red"></i>货号</span>
-		<form name="sform">
+		<span x-ng-if="!setting.scan_only" class="input-group-addon">
+		  <i class="glyphicon glyphicon-signal fg-red"></i>货号</span>
+		<form x-ng-if="!setting.scan_only" name="sform">
 		  <div ng-class="{'has-error':sform.snumber.$invalid && !sform.snumber.$pristine}">
-		    <input class="form-control text-left"
+		    <input id="snumber" class="form-control text-left" 
 			   name="snumber"
 			   type="text"
 			   x-ng-edit
@@ -75,6 +94,7 @@
 		<thead>
 		  <tr>
 		    <th class="text-center">序号</th>
+		    <!-- <th x-ng-if="setting.barcode_mode" class="text-center">条码</th> -->
 		    <th class="text-center">货号/品名/品类</th>
 		    <!-- <th class="text-center">参考价</th> -->
 		    <th class="text-center">单价</th>
@@ -89,6 +109,9 @@
 		  <tr class="text-center" ng-repeat="inv in inventories">
 		    
 		    <td class="col-md-1 vert-align">{{inv.order_id}}</td>
+		    <!-- <td x-ng-if="setting.barcode_mode" class="text-left vert-align"> -->
+		    <!--   <div>{{inv.bcode}}</div>  -->
+	  	    <!-- </td> -->
 		    <td class="col-md-2 text-left vert-align">
 		      <span>{{inv.full_name}}</span> 
 		    </td>
