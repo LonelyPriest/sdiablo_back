@@ -4,6 +4,7 @@ var diablo_delay_300ms = 300;
 
 var diablo_default_setting = -1;
 var diablo_default_shop = -1;
+var diablo_default_card = -1;
 var diablo_full_discount = 100;
 var diablo_pfree = 0.01;
 var diablo_invalid_employee = "-1";

@@ -844,10 +844,19 @@
 		   x-ng-model="params.retailer.surplus"/> 
 	  </div>
 	</div>
+
+	<div x-ng-if="params.retailer.limitWithdraw!==0" class="form-group">
+	  <label class="col-sm-3 col-md-3 control-label">限额提现</label>
+	  <div class="col-sm-6 col-md-6">
+	    <input class="form-control"
+		   type="number"
+		   readonly
+		   x-ng-model="params.retailer.limitWithdraw"/> 
+	  </div>
+	</div>
 	
 	<div class="form-group">
-	  <label class="col-sm-3 col-md-3 control-label">提现金额</label>
-	  
+	  <label class="col-sm-3 col-md-3 control-label">普通提现</label> 
 	  <div class="col-sm-6 col-md-6"> 
 	    <input class="form-control"
 		   type="number" step="1"
@@ -856,12 +865,12 @@
 		   x-ng-edit
 		   name="balance"
 		   x-ng-pattern="/^\d+(.\d{1,2})?$/"
-		   x-ng-model="params.retailer.withdraw"/>
-	    <div ng-show="withdrawForm.balance.$invalid && !withdrawForm.balance.$pristine">
-	      <span class="fg-red">金额只能是数字串</span>
-	    </div>
-	    <div ng-show="!params.check_withdraw(params.retailer.withdraw)">
-	      <span class="fg-red">余额不足或提现金额超过上限</span> 
+		   x-ng-model="params.retailer.unlimitWithdraw"/>
+	    <!-- <div ng-show="withdrawForm.balance.$invalid && !withdrawForm.balance.$pristine"> -->
+	    <!--   <span class="fg-red">金额只能是数字串</span> -->
+	    <!-- </div> -->
+	    <div ng-show="!params.check_withdraw(params.retailer.unlimitWithdraw)">
+	      <span class="fg-red">余额不足或提现金额超过上限</span>
 	    </div>
 	  </div> 
 	</div>
@@ -875,7 +884,7 @@
 		   type="password"
 		   name="withdraw"
 		   x-ng-model="params.retailer.password"
-		   x-ng-enter="withdrawForm.$valid && params.check_withdraw(params.retailer.withdraw) && ok()"/> 
+		   x-ng-enter="withdrawForm.$valid && params.check_withdraw(params.retailer.unlimitWithdraw) && ok()"/> 
 	  </div>
 	</div>
 	
@@ -884,7 +893,7 @@
 
   <div class="modal-footer">
     <button class="btn btn-primary"
-	    x-ng-disabled="withdrawForm.$invalid || !params.check_withdraw(params.retailer.withdraw)"
+	    x-ng-disabled="withdrawForm.$invalid || !params.check_withdraw(params.retailer.unlimitWithdraw)"
 	    x-ng-click="ok()">确定</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div> 

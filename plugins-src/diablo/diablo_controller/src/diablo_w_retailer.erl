@@ -23,6 +23,7 @@
 -export([retailer/2, retailer/3, retailer/4, retailer/5, default_profile/2]).
 -export([charge/2, charge/3, threshold_card/4, threshold_card_good/3]).
 -export([score/2, score/3, ticket/2, ticket/3, get_ticket/3, get_ticket/4, make_ticket/3]).
+-export([bank_card/3]).
 -export([filter/4, filter/6]).
 -export([match/3, syn/2, syn/3, get/2, card/3]).
 
@@ -86,7 +87,6 @@ retailer(check_password, Merchant, RetailerId, Password, CheckPwd) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {check_password, Merchant, RetailerId, Password, CheckPwd}).
 
-
 %% charge strategy
 charge(new, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -124,6 +124,11 @@ charge(get_charge, Merchant, ChargeId)  ->
 charge(list, Merchant) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {list_charge, Merchant}).
+
+%% bank card
+bank_card(get, Merchant, RetailerId) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {get_bank_card, Merchant, RetailerId}).
 
 %% score
 score(new, Merchant, Attrs) ->
@@ -961,6 +966,20 @@ handle_call({get_charge, Merchant, ChargeId}, _From, State) ->
 
     {reply, Reply, State};
 
+handle_call({get_bank_card, Merchant, RetailerId}, _From, State) ->
+    ?DEBUG("get_bank_card: merchant ~p, retailer ~p", [Merchant, RetailerId]),
+    Sql = "select id"
+	", retailer as retailer_id"
+	", balance"
+	", cid as charge_id"
+	", shop as shop_id"
+	", type"
+	" from w_retailer_bank"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and retailer=" ++ ?to_s(RetailerId)
+	++ " and balance > 0",
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
 
 handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
     ?DEBUG("recharge with merchant ~p, paylaod ~p, ChargeRule ~p", [Merchant, Attrs, ChargeRule]),
@@ -973,7 +992,8 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
     Card     = ?v(<<"card">>, Attrs, 0),
     Wxin     = ?v(<<"wxin">>, Attrs, 0),
     CBalance = ?to_i(Cash) + ?to_i(Card) + ?to_i(Wxin), 
-    SBalance    = ?v(<<"send_balance">>, Attrs, 0),
+    SBalance = ?v(<<"send_balance">>, Attrs, 0),
+    Goods    = ?v(<<"good">>, Attrs, []),
 
     ChargeId    = ?v(<<"charge">>, Attrs),
     Stock       = ?v(<<"stock">>, Attrs, []),
@@ -990,7 +1010,9 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
     case ?sql_utils:execute(s_read, Sql0) of
 	{ok, Account} -> 
 	    SN = lists:concat(
-		   ["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-", ?inventory_sn:sn(w_recharge, Merchant)]),
+		   ["M-",
+		    ?to_i(Merchant),
+		    "-S-", ?to_i(Shop), "-", ?inventory_sn:sn(w_recharge, Merchant)]),
 
 	    CurrentBalance = case ?v(<<"balance">>, Account) of
 				 <<>> -> 0;
@@ -1026,14 +1048,65 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 			    ++ "\'" ++ ?to_s(Entry) ++ "\')"
 		end,
 
+	    ChildTheoreticCardSql =
+		fun(Perent, CardGood, ConsumeCount) ->
+			"insert into w_child_card(fcard, good, ctime, merchant, shop, entry_date)"
+			    " values("
+			    ++ ?to_s(Perent) ++ ","
+			    ++ ?to_s(CardGood) ++ ","
+			    ++ ?to_s(ConsumeCount) ++ ","
+			    ++ ?to_s(Merchant) ++ ","
+			    ++ ?to_s(Shop) ++ ","
+			    ++ "\'" ++ ?to_s(Entry) ++ "\')"
+		end,
+
 	    Rule = ?v(<<"rule_id">>, ChargeRule, -1),
 	    case Rule =:= ?GIVING_CHARGE orelse Rule =:= ?TIMES_CHARGE of
-		true -> 
-		    Sql2 = [RechargeDetailSql(?INVALID_DATE),
-			    "update w_retailer set balance=balance+"
-			    ++ ?to_s(CBalance + SBalance) ++ " where id=" ++ ?to_s(Retailer)], 
+		true ->
+		    Sql2 = "update w_retailer set balance=balance+"
+			++ ?to_s(CBalance + SBalance) ++ " where id=" ++ ?to_s(Retailer), 
+		    LimitBalance = ?v(<<"ibalance">>, ChargeRule, ?INVALID_OR_EMPTY),
+		    LimitCount = ?v(<<"icount">>, ChargeRule, ?INVALID_OR_EMPTY),
+		    
+		    Sql20 = "select retailer, balance, cid from w_retailer_bank"
+			" where merchant=" ++ ?to_s(Merchant)
+			++ " and retailer=" ++ ?to_s(Retailer)
+			++ " and cid=" ++ ?to_s(ChargeId),
+		    Sql3 = 
+			case ?sql_utils:execute(s_read, Sql20) of
+			    {ok, []} ->
+				"insert into w_retailer_bank("
+				    "retailer"
+				    ", balance"
+				    ", cid"
+				    ", type"
+				    ", merchant"
+				    ", shop"
+				    ", entry_date) values("
+				    ++ ?to_s(Retailer) ++ ","
+				    ++ ?to_s(CBalance + SBalance) ++ ","
+				    ++ ?to_s(ChargeId) ++ ","
+				    ++ case LimitBalance =:= ?INVALID_OR_EMPTY
+				       andalso LimitCount =:= ?INVALID_OR_EMPTY of
+					   true -> "0";
+					   false -> "1"
+				       end ++ ","
+				    ++ ?to_s(Merchant) ++ ","
+				    ++ ?to_s(Shop) ++ ","
+				    ++ "\'" ++ ?to_s(Entry) ++ "\')";
+			    {ok, Card} ->
+				"update w_retailer_bank set balance=balance+"
+				    ++ ?to_s(CBalance + SBalance)
+				    ++ ", shop=" ++ ?to_s(Shop)
+				    ++ " where merchant=" ++ ?to_s(Merchant)
+				    ++ " and retailer=" ++ ?to_s(Retailer)
+				    ++ " and cid=" ++ ?to_s(ChargeId)
+				    ++ " and id=" ++ ?to_s(?v(<<"id">>, Card))
+		    end,
+				
+		    AllSqls =  [RechargeDetailSql(?INVALID_DATE), Sql2, Sql3], 
 		    Reply =
-			case ?sql_utils:execute(transaction, Sql2, SN) of
+			case ?sql_utils:execute(transaction, AllSqls, SN) of
 			    {ok, SN} ->
 				{ok, {SN, Mobile, CBalance, CurrentBalance + CBalance + SBalance, Score}};
 			    Error -> Error
@@ -1049,7 +1122,7 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 			++ " and retailer=" ++ ?to_s(Retailer)
 			++ " and cid=" ++ ?to_s(ChargeId),
 
-		    Sql22 = 
+		    {CardInfo, Sql22} = 
 			case ?sql_utils:execute(s_read, Sql01) of 
 			    {ok, []} ->
 				{Year, Month, Date} =
@@ -1072,8 +1145,8 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 					?HALF_YEAR_UNLIMIT_CHARGE ->
 					    date_next(?HALF_YEAR_UNLIMIT_CHARGE, {Year, Month, Date})
 				    end, 
-
-				[case Rule of
+				{new_card,
+				 [case Rule of
 				     ?THEORETIC_CHARGE -> RechargeDetailSql(?INVALID_DATE);
 				     _ ->
 					 %% must not to use at current day
@@ -1089,7 +1162,7 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 				 ++ ?to_s(Rule) ++ ","
 				 ++ ?to_s(Merchant) ++ ","
 				 ++ ?to_s(Shop) ++ ","
-				 ++ "\'" ++ ?to_s(Entry) ++ "\')"];
+				 ++ "\'" ++ ?to_s(Entry) ++ "\')"]};
 			    {ok, OCard} ->
 				EndDate = ?v(<<"edate">>, OCard, ?INVALID_DATE), 
 				%% {Year, Month, Date} = ?utils:to_date(date, EndDate),
@@ -1100,9 +1173,12 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 					    ?utils:big_date(date, StartDate, EndDate)
 				    end,
 
-				[case Rule of
-				     ?THEORETIC_CHARGE -> RechargeDetailSql(?INVALID_DATE);
-				     _ -> RechargeDetailSql(?utils:to_date(date, EndDate))
+				{exist_card,
+				 [case Rule of
+				     ?THEORETIC_CHARGE ->
+					 RechargeDetailSql(?INVALID_DATE);
+				     _ ->
+					 RechargeDetailSql(?utils:to_date(date, EndDate))
 				 end, 
 				 case Rule of
 				     ?THEORETIC_CHARGE ->
@@ -1128,12 +1204,51 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 					     end
 				     end
 				 ++ " where id=" ++ ?to_s(?v(<<"id">>, OCard))]
+
+				    ++ case Rule of
+					   ?THEORETIC_CHARGE ->
+					       lists:foldr(
+						 fun(Good, Acc) ->
+							 [ChildTheoreticCardSql(
+							   ?v(<<"id">>, OCard),
+							   ?v(<<"id">>, Good),
+							    ?v(<<"count">>, Good)) | Acc]
+						 end, [], Goods);
+					   _ ->
+					       []
+				       end
+				}
 			end,
 
 		    Reply =
 			case ?sql_utils:execute(transaction, Sql22, SN) of
 			    {ok, SN} ->
-				{ok, {SN, Mobile, CBalance, CurrentBalance, Score}};
+				case CardInfo of
+				    exist_card ->
+					{ok, {SN, Mobile, CBalance, CurrentBalance, Score}};
+				    new_card ->
+					{ok, ExistCard} = ?sql_utils:execute(s_read, Sql01),
+					Sql23 =
+					    lists:foldr(
+					      fun(Good, Acc) ->
+						      [ChildTheoreticCardSql(
+							 ?v(<<"id">>, ExistCard),
+							 ?v(<<"id">>, Good),
+							 ?v(<<"count">>, Good)) | Acc]
+					      end, [], Goods),
+					case ?sql_utils:execute(transaction, Sql23, SN) of
+					    {ok, SN} ->
+						{ok, {SN, Mobile, CBalance, CurrentBalance, Score}};
+					    Error ->
+						%% rollback
+						RollbackSql = "delete from w_card"
+						    " where merchant=" ++ ?to_s(Merchant)
+						    ++ " and retailer=" ++ ?to_s(Retailer)
+						    ++ " and cid=" ++ ?to_s(ChargeId),
+						?sql_utils:execute(write, RollbackSql, SN),
+						Error
+					end
+				end;
 			    Error -> Error
 			end,
 		    %% ?w_user_profile:update(retailer, Merchant),

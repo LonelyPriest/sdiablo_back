@@ -163,6 +163,8 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
     ShouldPay  = ?v(<<"should_pay">>, Props, 0),
     Total      = ?v(<<"total">>, Props, 0),
     Score      = ?v(<<"score">>, Props, 0),
+
+    BankCards  = ?v(<<"cards">>, Props, []),
     %% ScoreId    = ?v(<<"sid">>, Props, 0),
     %% DrawScore  = ?v(<<"draw_score">>, Props, 0),
 
@@ -232,9 +234,9 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 			++ ?to_s(Total) ++ ","
 			++ ?to_s(CurrentScore) ++ ","
 			++ ?to_s(Score) ++ "," 
-			++ "\"" ++ ?to_s(Comment) ++ "\"," 
+			++ "\'" ++ ?to_s(Comment) ++ "\'," 
 			++ ?to_s(type(new)) ++ ","
-			++ "\"" ++ ?to_s(DateTime) ++ "\");",
+			++ "\'" ++ ?to_s(DateTime) ++ "\');",
 
 		    Sql3 = ["update w_retailer set consume=consume+" ++ ?to_s(ShouldPay)
 			    ++ case NewWithdraw =< 0 of
@@ -269,7 +271,44 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 				   end
 			   end,
 
-		    AllSql = Sql1 ++ [Sql2] ++ Sql3 ++ Sql4,
+		    Sql5 = case NewWithdraw > 0 andalso BankCards =/= [] of
+			       true -> 
+				   lists:foldr(
+				     fun({struct, BankCard}, Acc) ->
+					     ?DEBUG("card ~p", [BankCard]),
+					     CardNo = ?v(<<"card">>, BankCard, ?INVALID_OR_EMPTY),
+					     CardDraw = ?v(<<"draw">>, BankCard, 0),
+					     case CardNo =:= ?INVALID_OR_EMPTY of
+						 true -> Acc;
+						 false ->
+						     ["insert into w_retailer_bank_flow(rsn"
+						      ", retailer"
+						      ", bank"
+						      ", balance"
+						      ", type"
+						      ", merchant"
+						      ", shop"
+						      ", entry_date) values("
+						      ++ "\'" ++ ?to_s(SaleSn) ++ "\',"
+						      ++ ?to_s(Retailer) ++ ","
+						      ++ ?to_s(CardNo) ++ ","
+						      ++ ?to_s(CardDraw) ++ ","
+						      ++ ?to_s(?CARD_CASH_OUT) ++ ","
+						      ++ ?to_s(Merchant) ++ ","
+						      ++ ?to_s(Shop) ++ ","
+						      ++ "\'" ++ ?to_s(DateTime) ++ "\')",
+
+						      "update w_retailer_bank set"
+						      " balance=balance-" ++ ?to_s(CardDraw)
+						      ++ " where merchant=" ++ ?to_s(Merchant)
+						      ++ " and retailer=" ++ ?to_s(Retailer)
+						      ++ " and id=" ++ ?to_s(CardNo)] ++ Acc 
+					     end 
+				     end, [], BankCards);
+			       false -> []
+			   end,
+		    AllSql = Sql1 ++ [Sql2] ++ Sql3 ++ Sql4 ++ Sql5,
+		    ?DEBUG("AllSql ~p", [AllSql]),
 		    case ?sql_utils:execute(transaction, AllSql, SaleSn) of
 			{ok, SaleSn} -> 
 			    {reply, {ok,
@@ -769,8 +808,9 @@ handle_call({filter_news, Merchant, CurrentPage, ItemsPerPage, Fields}, _From, S
 %% reject
 %% =============================================================================
 handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
-    ?DEBUG("reject_sale with merchant ~p~n~p, props ~p", [Merchant, Inventories, Props]),
+    ?DEBUG("reject_sale with merchant ~p~n~p, props ~p", [Merchant, Inventories, Props]), 
     UserId = ?v(<<"user">>, Props, -1),
+    SaleRsn    = ?v(<<"sale_rsn">>, Props),
     Retailer   = ?v(<<"retailer_id">>, Props),
     Shop       = ?v(<<"shop">>, Props), 
     %% Datetime   = ?v(<<"datetime">>, Props, ?utils:current_time(localtime)),
@@ -874,9 +914,9 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 		++ ?to_s(-Total) ++ ","
 		++ ?to_s(CurrentScore) ++ ","
 		++ ?to_s(-Score) ++ ","
-		++ "\"" ++ ?to_s(Comment) ++ "\"," 
+		++ "\'" ++ ?to_s(Comment) ++ "\'," 
 		++ ?to_s(type(reject)) ++ ","
-		++ "\"" ++ ?to_s(Datetime) ++ "\");",
+		++ "\'" ++ ?to_s(Datetime) ++ "\');",
 
 	    Sql3 = ["update w_retailer set consume=consume-" ++ ?to_s(ShouldPay)
 		++ case NewWithdraw > 0 of
@@ -907,8 +947,61 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 			end
 		end,
 
-	    AllSql = Sql1 ++ [Sql2] ++ Sql3 ++ Sql4,
+	    Sql5 = 
+		case NewWithdraw > 0 of
+		    true ->
+			Sql01= "select rsn, retailer, bank, balance from w_retailer_bank_flow"
+			    " where rsn=\'" ++ ?to_s(SaleRsn) ++ "\'"
+			    " and merchant=" ++ ?to_s(Merchant)
+			    ++ " and shop=" ++ ?to_s(Shop)
+			    ++ " and retailer=" ++ ?to_s(Retailer),
+			case ?sql_utils:execute(read, Sql01) of
+			    {ok, []} -> [];
+			    {ok, Flows} ->
+				NewFlows = card_flow(Flows, []),
+				?DEBUG("NewFlows ~p", [NewFlows]),
+				{_BackDraw, BackDrawSqls} = 
+				    lists:foldl(
+				      fun (_Flow, {LeftBackDraw, Acc}) when LeftBackDraw =< 0 ->
+					      {LeftBackDraw, Acc};
+					  ({CardNo, Draw}, {LeftBackDraw, Acc}) ->
+					      ?DEBUG("LeftBackDraw ~p, Draw ~p", [LeftBackDraw, Draw]),
+					      BackDraw =
+						  case LeftBackDraw - Draw > 0 of
+						      true -> Draw;
+						      false -> LeftBackDraw
+						  end,
+					      ?DEBUG("BackDraw ~p", [BackDraw]),
+					      {LeftBackDraw - Draw,
+					       ["insert into w_retailer_bank_flow(rsn"
+						", retailer"
+						", bank"
+						", balance"
+						", type"
+						", merchant"
+						", shop"
+						", entry_date) values("
+						++ "\'" ++ ?to_s(Sn) ++ "\',"
+						++ ?to_s(Retailer) ++ ","
+						++ ?to_s(CardNo) ++ ","
+						++ ?to_s(-BackDraw) ++ ","
+						++ ?to_s(?CARD_CASH_IN) ++ "," 
+						++ ?to_s(Merchant) ++ ","
+						++ ?to_s(Shop) ++ ","
+						++ "\'" ++ ?to_s(Datetime) ++ "\')",
 
+						"update w_retailer_bank set"
+						" balance=balance+" ++ ?to_s(BackDraw)
+						++ " where merchant=" ++ ?to_s(Merchant)
+						++ " and retailer=" ++ ?to_s(Retailer)
+						++ " and id=" ++ ?to_s(CardNo)] ++ Acc} 
+				      end, {NewWithdraw, []}, NewFlows),
+				BackDrawSqls
+			end;
+		    false -> []
+		end,
+	    ?DEBUG("Sql5 ~p", [Sql5]),
+	    AllSql = Sql1 ++ [Sql2] ++ Sql3 ++ Sql4 ++ Sql5, 
 	    case ?sql_utils:execute(transaction, AllSql, Sn) of
 		{error, _} = Error ->
 		    {reply, Error, State};
@@ -2203,10 +2296,16 @@ pay_order(reject, ShouldPay, [Pay|T], Pays) ->
 				       false -> Pay end
 				   |Pays]).
 
-
 get_modified(NewValue, OldValue) when NewValue =/= OldValue -> NewValue;
 get_modified(_NewValue, _OldValue) ->  undefined.
 
+card_flow([], Acc) ->
+    %% ?DEBUG("Acc ~p", [Acc]),
+    lists:sort(fun({_, B1}, {_, B2}) -> B1 =< B2 end, Acc );
+card_flow([{H}|T], Acc) ->
+    Card = ?v(<<"bank">>, H),
+    Draw = ?v(<<"balance">>, H),
+    card_flow(T, [{Card, Draw}|Acc]).
 
 rsn_order(use_id)    -> " order by b.id ";
 rsn_order(use_shop)  -> " order by a.shop ";

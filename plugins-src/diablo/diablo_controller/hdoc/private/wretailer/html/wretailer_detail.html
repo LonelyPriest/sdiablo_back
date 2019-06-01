@@ -707,6 +707,38 @@
 	  </div> 
 	</div>
 
+	<div x-ng-if="params.retailer.select_charge.rule_id===2" class="form-group">
+	  <div class="col-md-3 col-sm-3 col-xs-3 control-label">
+	    消费项目
+	  </div>
+	  <div class="col-md-6 col-sm-6 col-xs-6">
+	    <div class="row">
+	      <div class="col-md-12 col-sm-12 col-xs-12" class="table-responsive">
+		<table class="table table-striped table-condensed table-bordered">
+		  <tbody>
+		    <tr class="text-right" x-ng-repeat="g in params.goods">
+		      <td class="vert-align col-md-2 col-sm-2 col-xs-2">
+			<div class="checkbox checkbox-danger checkbox-circle">
+			  <input id="{{g.id}}" type="checkbox"
+				 x-ng-model="g.select"
+				 x-ng-click="params.calc_card_count(params.goods,
+					     params.retailer.select_charge.ctime,
+					     params.retailer.select_charge.cstime)"/>
+			  <label for="{{g.id}}"></label>
+			</div>
+		      </td>
+		      <td class="text-center vert-align" x-ng-bind="g.name"></td>
+		      <td class="col-md-6 col-sm-6 col-xs-6">
+			<input class="form-control" type="number" x-ng-model="g.count" />
+		      </td>
+		    </tr>
+		  </tbody>
+		</table>
+	      </div>
+	    </div>
+	  </div> 
+	</div>
+
 	<div x-ng-if="params.unlimit_card(params.retailer.select_charge.rule_id)" class="form-group">
 	  <label class="col-sm-3 col-md-3 control-label">消费开始日期</label>
 	  <div class="col-sm-6 col-md-6">

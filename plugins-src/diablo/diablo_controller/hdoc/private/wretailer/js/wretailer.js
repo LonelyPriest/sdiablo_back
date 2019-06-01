@@ -60,7 +60,7 @@ function wretailerNewCtrlProvide(
 
 
 function wretailerDetailCtrlProvide(
-    $scope, $location, dateFilter, diabloFilter, diabloPattern,
+    $scope, $location, $q, dateFilter, diabloFilter, diabloPattern,
     diabloUtilsService, localStorageService, wretailerService,
     filterEmployee, filterCharge, filterRegion, user, base){
     $scope.employees      = filterEmployee;
@@ -417,9 +417,14 @@ function wretailerDetailCtrlProvide(
 		// }
 	    }();
 
-	    var ctime, stime;
-	    if (promotion.rule_id === diablo_theoretic_charge)
+	    var ctime, stime, goods;
+	    if (promotion.rule_id === diablo_theoretic_charge) {
 		ctime = retailerUtils.to_integer(promotion.ctime) + retailerUtils.to_integer(promotion.cstime);
+		goods = params.goods.filter(function(g) {
+		    return angular.isDefined(g.select) && g.select;
+		})
+	    }
+		
 
 	    if (is_unlimit_card(promotion.rule_id)) stime = dateFilter(params.stime, "yyyy-MM-dd");
 	    
@@ -435,6 +440,7 @@ function wretailerDetailCtrlProvide(
 		charge:         promotion.id,
 		ctime:          ctime,
 		stime:          stime,
+		good:           goods,
 		comment:        params.comment
 	    }).then(function(result){
 		console.log(result); 
@@ -503,31 +509,65 @@ function wretailerDetailCtrlProvide(
 
 	var select_shop = $scope.shops[0];
 	var employees = get_employee(select_shop.id);
+
+	var start_charge = function(card_goods) {
+	    dialog.edit_with_modal(
+		"wretailer-charge.html",
+		undefined,
+		callback,
+		$scope,
+		{retailer:  {
+		    name: retailer.name,
+		    balance:retailer.balance,
+		    shops: $scope.shops,
+		    select_shop: select_shop,
+		    employees: employees,
+		    select_employee: employees[0],
+		    // charges: $scope.charges,
+		    // select_charge:get_charge($scope.shops[0].charge_id)
+		},
+		 
+		 goods: card_goods,
+		 card: 0,
+		 wxin: 0,
+		 stime: $.now(),
+		 pattern:  pattern,
+		 get_charge: get_charge,
+		 unlimit_card: is_unlimit_card,
+		 calc_card_count: function(goods, ctime, cstime) {
+		     var all_times = ctime + retailerUtils.to_integer(cstime);
+		     var good_count = 0;
+		     angular.forEach(goods, function(g) {
+		     	 if (angular.isDefined(g.select) && g.select) {
+		     	     good_count += 1;
+		     	 }
+		     });
+
+		     var per_count = Math.floor(all_times / good_count);
+		     var last_select = diablo_invalid_index;
+		     for (var i=0, l=goods.length; i<l; i++) {
+			 if (angular.isDefined(goods[i].select) && goods[i].select) {
+		     	     goods[i].count = per_count;
+			     last_select = i;
+		     	 } else {
+			     goods[i].count = undefined;
+			 }
+		     }
+
+		     if (last_select !== diablo_invalid_index) {
+			 goods[last_select].count += all_times % good_count;
+		     }
+		 }}
+	    )
+	};
 	
-	dialog.edit_with_modal(
-	    "wretailer-charge.html",
-	    undefined,
-	    callback,
-	    $scope,
-	    {retailer:  {
-		name: retailer.name,
-		balance:retailer.balance,
-		shops: $scope.shops,
-		select_shop: select_shop,
-		employees: employees,
-		select_employee: employees[0],
-		// charges: $scope.charges,
-		// select_charge:get_charge($scope.shops[0].charge_id)
-	    },
-	     card: 0,
-	     wxin: 0,
-	     stime: $.now(),
-	     pattern:  pattern,
-	     get_charge: get_charge,
-	     unlimit_card: is_unlimit_card
-	     // theoretic_card: is_theoretic_card
-	    }
-	)
+	
+	var deferred = $q.defer(); 
+	diabloFilter.list_threshold_card_good(deferred, $scope.shopIds);
+	deferred.promise.then(function(goods) {
+	    console.log(goods);
+	    start_charge(goods.map(function(g) { return {id:g.id, name:g.name}}));
+	}); 
     };
 
     var get_modified = diablo_get_modified; 

@@ -439,6 +439,7 @@ function wsaleRejectCtrlProvide(
 	var e_pay = setv($scope.select.extra_pay); 
 
 	var base = {
+	    sale_rsn:      $scope.select.rsn,
 	    retailer_id:   $scope.select.retailer.id,
 	    shop:          $scope.select.shop.id,
 	    datetime:      dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),

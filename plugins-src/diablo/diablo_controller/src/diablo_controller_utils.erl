@@ -5,6 +5,8 @@
 
 -compile(export_all).
 
+min_value(V1, V2) when V1 > V2 -> ?DEBUG("V1 ~p, V2 ~p", [V1, V2]), V2;
+min_value(V1, _V2) -> ?DEBUG("V1 ~p, V2 ~p", [V1, _V2]), V1.
 
 %%--------------------------------------------------------------------
 %% @desc : get current time

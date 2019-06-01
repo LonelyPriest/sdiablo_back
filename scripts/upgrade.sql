@@ -569,5 +569,7 @@ alter table print_template add column offset_myprice tinyint default 0 after off
 
 
 
+--2019-05-31
+insert into w_retailer_bank(retailer, balance, cid, type, merchant, shop, entry_date) values(125758,200,218,1,12,42,'2019-05-31 18:22:29');
 
 alter table merchants add column shop_count integer default -1 after sms_send;

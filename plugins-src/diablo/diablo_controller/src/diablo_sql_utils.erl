@@ -239,6 +239,8 @@ execute(transaction, Sqls, OkReturn) ->
     
 execute(read, Sql) ->
     case ?mysql:fetch(read, Sql) of
+	{ok, []} ->
+	    {ok, []};
 	{ok, Results} ->
 	    {ok, ?to_tl(Results)};
 	{error, timeout} ->

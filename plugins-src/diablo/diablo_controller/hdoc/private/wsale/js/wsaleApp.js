@@ -492,6 +492,7 @@ function wsaleNewProvide(
 	card: undefined,
 	wxin: undefined,
 	withdraw: undefined,
+	draw_cards:   undefined, 
 	
 	ticket_batch: undefined,
 	ticket_balance: undefined,
@@ -729,31 +730,31 @@ function wsaleNewProvide(
 	return v1 > v2 ? v2 : v1;
     };
 
-    var get_limit_balance = function(mbalance, ibalance, icount, balance){
-	var max_draw = 0; 
-	if ($scope.select.should_pay > 0) {
-	    max_draw = get_min_value($scope.select.surplus, $scope.select.should_pay); 
-	    // threshold first
-	    if (ibalance !== diablo_invalid && ibalance !== 0) {
-		if ($scope.select.should_pay < mbalance) {
-		    max_draw = get_min_value(ibalance, max_draw);
-		} else {
-		    max_draw = get_min_value(
-			Math.floor($scope.select.should_pay / mbalance) * ibalance, max_draw);
-		}
-	    } else if (icount !== diablo_invalid && icount !== 0) {
-		max_draw = get_min_value(oneTakeBalance, Math.floor(balance / icount));
-	    }
+    // var get_limit_balance = function(mbalance, ibalance, icount, balance){
+    // 	var max_draw = 0; 
+    // 	if ($scope.select.should_pay > 0) {
+    // 	    max_draw = get_min_value($scope.select.surplus, $scope.select.should_pay); 
+    // 	    // threshold first
+    // 	    if (ibalance !== diablo_invalid && ibalance !== 0) {
+    // 		if ($scope.select.should_pay < mbalance) {
+    // 		    max_draw = get_min_value(ibalance, max_draw);
+    // 		} else {
+    // 		    max_draw = get_min_value(
+    // 			Math.floor($scope.select.should_pay / mbalance) * ibalance, max_draw);
+    // 		}
+    // 	    } else if (icount !== diablo_invalid && icount !== 0) {
+    // 		max_draw = get_min_value(oneTakeBalance, Math.floor(balance / icount));
+    // 	    }
 
-	    if ($scope.select.retailer.draw_id !== diablo_invalid_index){
-		var limit = diablo_get_object($scope.select.retailer.draw_id, $scope.draws);
-		console.log(limit);
-		if (angular.isObject(limit))
-		    max_draw = get_min_value(max_draw, limit.charge); 
-	    } 
-	} 
-	return max_draw; 
-    };
+    // 	    if ($scope.select.retailer.draw_id !== diablo_invalid_index){
+    // 		var limit = diablo_get_object($scope.select.retailer.draw_id, $scope.draws);
+    // 		console.log(limit);
+    // 		if (angular.isObject(limit))
+    // 		    max_draw = get_min_value(max_draw, limit.charge); 
+    // 	    } 
+    // 	} 
+    // 	return max_draw; 
+    // };
     
     $scope.disable_withdraw = function(){
 	if (angular.isDefined($scope.select.retailer) && angular.isObject($scope.select.retailer)) {
@@ -766,27 +767,48 @@ function wsaleNewProvide(
 	} 
 	return false;
     };
+
+    var get_unlimit_draw = function(limitCardDraw, unlimitCardDraw, retailerLeftBalance, draw_cards) {
+	var cardDraw = unlimitCardDraw;
+	if ($scope.select.should_pay > 0 && retailerLeftBalance > 0) {
+	    var max_draw = get_min_value($scope.select.surplus, $scope.select.should_pay); 
+	    cardDraw = get_min_value(
+		retailerLeftBalance, max_draw - limitCardDraw - unlimitCardDraw) + unlimitCardDraw;
+	} 
+
+	if (cardDraw > unlimitCardDraw) {
+	    for (var i=0, l=draw_cards.length; i<l; i++) {
+		if (draw_cards[i].card === diablo_default_card) {
+		    draw_cards[i].draw = cardDraw;
+		    break; 
+		}
+	    }
+	}
+	
+	return cardDraw;
+    };
     
     $scope.withdraw = function(){
 	var callback = function(params){
 	    console.log(params);
+	    var all_widthdraw = params.retailer.limitWithdraw + params.retailer.unlimitWithdraw;
 	    diabloFilter.check_retailer_password(
 		params.retailer.id, params.retailer.password, params.hide_pwd ? diablo_no : diablo_yes
 	    ).then(function(result){
 		console.log(result);
 		if (result.ecode === 0){
-		    if (result.limit !== 0 && params.retailer.withdraw > result.limit){
+		    if (result.limit !== 0 && all_widthdraw > result.limit){
 			diabloUtilsService.response(
 			    false,
 			    "会员现金提取",
 			    "会员现金提取失败："
 				+ wsaleService.error[2698]
-				+ "上限[" + result.limit + "]，"
-				+ "实际提取[" + params.retailer.withdraw + "]",
+				+ "上限[" + result.limit + "]，实际提取[" + all_widthdraw + "]",
 			    undefined) 
 		    } else {
-			$scope.select.withdraw = params.retailer.withdraw;
+			$scope.select.withdraw = all_widthdraw;
 			$scope.has_withdrawed  = true;
+			$scope.select.draw_cards = params.cards;
 			$scope.reset_payment();
 		    } 
 		} else {
@@ -795,66 +817,123 @@ function wsaleNewProvide(
 	    }); 
 	};
 
-	var startWithdraw = function(mbalance, ibalance, icount, balance) {
-	    var limit_balance = get_limit_balance(mbalance, ibalance, icount, balance);
-	    diabloUtilsService.edit_with_modal(
-		"new-withdraw.html",
-		undefined,
-		callback,
-		undefined,
-		{retailer: {
-		    id        :$scope.select.retailer.id,
-		    name      :$scope.select.retailer.name,
-		    surplus   :$scope.select.surplus, 
-		    withdraw  :limit_balance
-		},
-		 hide_pwd: $scope.setting.hide_pwd,
-		 check_withdraw: function(balance){
-		     // console.log(balance, limit_balance);
-		     return balance <= limit_balance;
-		 },
+	// var startWithdraw = function(mbalance, ibalance, icount, balance) {
+	//     var limit_balance = get_limit_balance(mbalance, ibalance, icount, balance);
+	//     diabloUtilsService.edit_with_modal(
+	// 	"new-withdraw.html",
+	// 	undefined,
+	// 	callback,
+	// 	undefined,
+	// 	{retailer: {
+	// 	    id        :$scope.select.retailer.id,
+	// 	    name      :$scope.select.retailer.name,
+	// 	    surplus   :$scope.select.surplus, 
+	// 	    withdraw  :limit_balance
+	// 	},
+	// 	 hide_pwd: $scope.setting.hide_pwd,
+	// 	 check_withdraw: function(balance){
+	// 	     // console.log(balance, limit_balance);
+	// 	     return balance <= limit_balance;
+	// 	 },
 		 
-		 check_zero: function(balance) {return balance === 0 ? true:false}
-		}
-	    )
-	}
+	// 	 check_zero: function(balance) {return balance === 0 ? true:false}
+	// 	}
+	//     )
+	// }
+
+	var startWithdraw = function(limitCardDraw, unlimitCardDraw, retailerLeftBalance, draw_cards) {
+	    var unlimitWithdraw = get_unlimit_draw(limitCardDraw, unlimitCardDraw, retailerLeftBalance, draw_cards);
+	    diabloUtilsService.edit_with_modal(
+	    	"new-withdraw.html",
+	    	undefined,
+	    	callback,
+	    	undefined,
+	    	{retailer: {
+	    	    id             :$scope.select.retailer.id,
+	    	    name           :$scope.select.retailer.name,
+	    	    surplus        :$scope.select.surplus, 
+	    	    limitWithdraw  :limitCardDraw,
+		    unlimitWithdraw:unlimitWithdraw
+	    	},
+
+		 cards: draw_cards, 
+	    	 hide_pwd: $scope.setting.hide_pwd,
+	    	 check_withdraw: function(balance){return balance <= unlimitWithdraw;}, 
+	    	 check_zero: function(balance) {return balance === 0 ? true:false}
+	    	})
+	};
 	
 	// check
-	diabloFilter.check_retailer_charge($scope.select.retailer.id, $scope.select.shop.id).then(function(result) {
+	diabloFilter.check_retailer_charge(
+	    $scope.select.retailer.id,
+	    $scope.select.shop.id,
+	    $scope.select.should_pay,
+	    $scope.select.surplus 
+	).then(function(result) {
 	    console.log(result);
 	    if (result.ecode === 0) {
-		var ishop    = result.ishop;
-		var balance  = result.balance;
-		var ibalance = result.ibalance;
-		var mbalance = result.mbalance;
-		var icount   = result.icount;
-		var sameShop = result.same_shop;
-		
-		if (diablo_no === ishop) {
-		    if (diablo_yes === $scope.setting.draw_region) {
-			diabloFilter.check_retailer_region(
-			    $scope.select.retailer.id, $scope.select.shop.id
-			).then(function(result) {
-			    console.log(result);
-			    if (result.ecode === 0) {
-				startWithdraw(mbalance, ibalance, icount, balance);
-			    } else {
-				dialog.set_error("会员现金提取", result.ecode); 
-			    }
-			})
+		var calcDraw = result.cdraw; 
+		var cards = result.cards;
+
+		var retailerLeftBalance = $scope.select.surplus;
+		var limitCardDraw = 0; 
+		var unlimitCardDraw = 0;
+
+		var draw_cards = [];
+		angular.forEach(cards, function(c) {
+		    // allCardBalance =+ c.cardBalance;
+		    retailerLeftBalance -= c.balance;
+		    if (c.type === 1) {
+			if ( !c.limit_shop || (c.limit_shop && c.same_shop) ) {
+			    limitCardDraw += c.draw;
+			    draw_cards.push({card: c.card, draw:c.draw});
+			}
 		    } else {
-			startWithdraw(mbalance, ibalance, icount, balance);
-		    }
-		} else {
-		    if (diablo_no === sameShop) {
-			dialog.set_error("会员现金提取", 2150); 
-		    } else {
-			startWithdraw(mbalance, ibalance, icount, balance);
-		    }
-		} 
-	    } else {
-		dialog.set_error("会员现金提取", result.ecode); 
+			unlimitCardDraw += c.draw;
+			draw_cards.push({card: c.card, draw:c.draw});
+		    } 
+		});
+
+		// consume with limited shop
+		console.log(limitCardDraw);
+		console.log(unlimitCardDraw);
+		console.log(retailerLeftBalance);
+		console.log(draw_cards);
+		startWithdraw(limitCardDraw, unlimitCardDraw, retailerLeftBalance, draw_cards);
 	    }
+	    // if (result.ecode === 0) {
+	    // 	var ishop    = result.ishop;
+	    // 	var balance  = result.balance;
+	    // 	var ibalance = result.ibalance;
+	    // 	var mbalance = result.mbalance;
+	    // 	var icount   = result.icount;
+	    // 	var sameShop = result.same_shop;
+		
+	    // 	if (diablo_no === ishop) {
+	    // 	    if (diablo_yes === $scope.setting.draw_region) {
+	    // 		diabloFilter.check_retailer_region(
+	    // 		    $scope.select.retailer.id, $scope.select.shop.id
+	    // 		).then(function(result) {
+	    // 		    console.log(result);
+	    // 		    if (result.ecode === 0) {
+	    // 			startWithdraw(mbalance, ibalance, icount, balance);
+	    // 		    } else {
+	    // 			dialog.set_error("会员现金提取", result.ecode); 
+	    // 		    }
+	    // 		})
+	    // 	    } else {
+	    // 		startWithdraw(mbalance, ibalance, icount, balance);
+	    // 	    }
+	    // 	} else {
+	    // 	    if (diablo_no === sameShop) {
+	    // 		dialog.set_error("会员现金提取", 2150); 
+	    // 	    } else {
+	    // 		startWithdraw(mbalance, ibalance, icount, balance);
+	    // 	    }
+	    // 	} 
+	    // } else {
+	    // 	dialog.set_error("会员现金提取", result.ecode); 
+	    // }
 	}) 
     }; 
     
@@ -1370,6 +1449,7 @@ function wsaleNewProvide(
 	$scope.select.card         = undefined;
 	$scope.select.wxin         = undefined;
 	$scope.select.withdraw     = undefined;
+	$scope.select.draw_cards   = undefined;
 	
 	$scope.select.ticket_batch = undefined;
 	$scope.select.ticket_balance = undefined;
@@ -2106,10 +2186,11 @@ function wsaleNewProvide(
 	    total:          $scope.select.total,
 	    last_score:     $scope.select.retailer.score,
 	    score:          $scope.select.score,
-	    // sid             wsaleUtils.to_integer($scope.select.sid),
-	    // draw_score:     $scope.setting.draw_score,
+	    cards:          $scope.select.draw_cards.length === 0 ? undefined : $scope.select.draw_cards,
 	    
-	    round:          $scope.setting.round
+	    // sid             wsaleUtils.to_integer($scope.select.sid),
+	    // draw_score:     $scope.setting.draw_score, 
+	    round:          $scope.setting.round, 
 	    // draw_score:     $scope.setting.draw_score
 	};
 

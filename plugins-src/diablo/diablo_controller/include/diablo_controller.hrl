@@ -158,7 +158,13 @@
 -define(PY_MATCH, 0).
 -define(CH_MATCH, 1).
 
+%% special price
 -define(SPRICE, 3).
+
+%% bank card
+-define(DEFAULT_BANK_CARD, -1).
+-define(CARD_CASH_OUT, 0).
+-define(CARD_CASH_IN, 1).
 
 %% pagination
 -define(DEFAULT_ITEMS_PERPAGE, 5).

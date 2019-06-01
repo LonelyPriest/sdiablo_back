@@ -447,6 +447,37 @@ create table w_retailer
     primary key     (id)
 ) default charset=utf8;
 
+create table w_retailer_bank
+(
+    id              INTEGER AUTO_INCREMENT,
+    retailer        INTEGER not null default -1,
+    balance         DECIMAL(10, 2) default 0, -- max: 99999999.99 
+    cid             INTEGER default -1, -- charge id of w_charge
+    type            TINYINT default -1, -- 0:comman account, 1:limit account
+    merchant        INTEGER default -1,
+    shop            INTEGER default -1, -- location of charge
+    entry_date      DATETIME,
+    unique key      uk (merchant, retailer, cid),
+    primary key     (id)
+) default charset=utf8;
+
+create table w_retailer_bank_flow
+(
+    id              INTEGER AUTO_INCREMENT,
+    rsn             VARCHAR(32) default -1, -- rsn of w_sale
+    retailer        INTEGER not null default -1,
+    bank            INTEGER not null default -1, -- refer to w_retailer_bank, -1:means default account
+    balance         DECIMAL(10, 2) default 0, -- max: 99999999.99
+    type            TINYINT default -1, -- 0:cash out, 1:cash in
+    merchant        INTEGER default -1,
+    shop            INTEGER default -1, 
+    entry_date      DATETIME,
+    deleted         INTEGER default 0, -- 0: no;  1: yes
+    unique key      uk (rsn, bank),
+    key     dk     (merchant, shop, rsn, retailer, bank),
+    primary key     (id)
+) default charset=utf8;
+
 create table birth_discount
 (
     id              INTEGER AUTO_INCREMENT,
@@ -479,6 +510,19 @@ create table w_card
     edate           DATE default 0,
     cid             INTEGER default -1,
     rule            TINYINT default -1, -- 2: therotic times card, 3: month card, 4: quarter card, 5: year card
+    merchant        INTEGER default -1,
+    shop            INTEGER default -1, 
+    entry_date      DATETIME,
+    unique key      uk (merchant, retailer, cid),
+    primary key     (id)
+) default charset=utf8;
+
+create table w_child_card
+(
+    id              INTEGER AUTO_INCREMENT,
+    fcard           INTEGER not null default -1, -- father card, refer to w_card
+    good            INTEGER not null default -1, -- refer to w_card_good
+    ctime           INTEGER default -1, 
     merchant        INTEGER default -1,
     shop            INTEGER default -1, 
     entry_date      DATETIME,

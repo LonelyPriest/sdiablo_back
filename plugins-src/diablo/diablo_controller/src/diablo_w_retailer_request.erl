@@ -256,44 +256,164 @@ action(Session, Req, {"check_w_retailer_region", Id}, Payload) ->
     end;
 
 action(Session, Req, {"check_w_retailer_charge", Id}, Payload) ->
-    Merchant = ?session:get(merchant, Session),
-    ConsumeShopId = ?v(<<"shop">>, Payload),
-
+    ?DEBUG("check_w_retailer_charge: session ~p, Payload ~p", [Session, Payload]),
+    Merchant        = ?session:get(merchant, Session),
+    ConsumeShop     = ?v(<<"shop">>, Payload),
+    Pay             = ?v(<<"pay">>, Payload),
+    RetailerBalance = ?v(<<"balance">>, Payload),
+    MaxDraw         = ?utils:min_value(RetailerBalance, Pay),
+    ?DEBUG("MaxDraw ~p", [MaxDraw]),
     %% get last charge
-    case ?w_retailer:retailer(last_recharge, Merchant, Id) of
-	{ok, []} ->
-	    ?utils:respond(200, Req, ?err(charge_none, Id));
-	{ok, LastCharge} ->
-	    %% ?DEBUG("LastCharge ~p", [LastCharge]),
-	    ChargeId     = ?v(<<"charge_id">>, LastCharge),
-	    ChargeShopId = ?v(<<"shop_id">>, LastCharge),
-	    CBalance     = ?v(<<"cbalance">>, LastCharge),
-	    SBalance     = ?v(<<"sbalance">>, LastCharge),
-	    
-	    %% get charge promotion
-	    case ?w_retailer:charge(get_charge, Merchant, ChargeId) of
-		{ok, []} ->
-		    ?utils:respond(200, Req, ?err(charge_none, ChargeId));
-		{ok, ChargePromotion} ->
-		    LimitShop       = ?v(<<"ishop">>, ChargePromotion),
-		    LimitBalance    = ?v(<<"ibalance">>, ChargePromotion),
-		    LimitCount      = ?v(<<"icount">>, ChargePromotion),
-		    ThresholdBalance = ?v(<<"mbalance">>, ChargePromotion), 
+    %% case ?w_retailer:retailer(last_recharge, Merchant, Id) of
+    %% 	{ok, []} ->
+    %% 	    ?utils:respond(200, Req, ?err(charge_none, Id));
+    %% 	{ok, LastCharge} ->
+    %% 	    %% ?DEBUG("LastCharge ~p", [LastCharge]),
+    %% 	    ChargeId     = ?v(<<"charge_id">>, LastCharge),
+    %% 	    ChargeShopId = ?v(<<"shop_id">>, LastCharge),
+    %% 	    CBalance     = ?v(<<"cbalance">>, LastCharge),
+    %% 	    SBalance     = ?v(<<"sbalance">>, LastCharge),
 
-		    SameShop = case ConsumeShopId =:= ChargeShopId of
-				   true -> ?YES;
-				   false -> ?NO
-			       end,
-		    ?utils:respond(200, Req, ?succ(charge_check_region, ChargeId),
-				   [{<<"ishop">>, LimitShop},
-				    {<<"balance">>, CBalance + SBalance},
-				    {<<"ibalance">>, LimitBalance},
-				    {<<"mbalance">>, ThresholdBalance}, 
-				    {<<"icount">>, LimitCount},
-				    {<<"same_shop">>, SameShop}]) 
-	    end;
+    %% 	    %% get charge promotion
+    %% 	    case ?w_retailer:charge(get_charge, Merchant, ChargeId) of
+    %% 		{ok, []} ->
+    %% 		    ?utils:respond(200, Req, ?err(charge_none, ChargeId));
+    %% 		{ok, ChargePromotion} ->
+    %% 		    LimitShop       = ?v(<<"ishop">>, ChargePromotion),
+    %% 		    LimitBalance    = ?v(<<"ibalance">>, ChargePromotion),
+    %% 		    LimitCount      = ?v(<<"icount">>, ChargePromotion),
+    %% 		    ThresholdBalance = ?v(<<"mbalance">>, ChargePromotion), 
+
+    %% 		    SameShop = case ConsumeShopId =:= ChargeShopId of
+    %% 				   true -> ?YES;
+    %% 				   false -> ?NO
+    %% 			       end,
+    %% 		    ?utils:respond(200, Req, ?succ(charge_check_region, ChargeId),
+    %% 				   [{<<"ishop">>, LimitShop},
+    %% 				    {<<"balance">>, CBalance + SBalance},
+    %% 				    {<<"ibalance">>, LimitBalance},
+    %% 				    {<<"mbalance">>, ThresholdBalance}, 
+    %% 				    {<<"icount">>, LimitCount},
+    %% 				    {<<"same_shop">>, SameShop}]) 
+    %% 	    end;
+    %% 	{error, Error} ->
+    %% 	    ?utils:respond(200, Req, Error) 
+    %% end;
+    
+    %% has bank card
+    case 
+	case ?w_retailer:bank_card(get, Merchant, Id) of
+	    {ok, []} ->
+		case ?w_retailer:retailer(last_recharge, Merchant, Id) of
+		    {ok, []} ->
+			{error, ?err(charge_none, Id)};
+		    {ok, LastCharge} ->
+			ChargeId  = ?v(<<"charge_id">>, LastCharge),
+			ChargeShop = ?v(<<"shop_id">>, LastCharge),
+			case ?w_retailer:charge(get_charge, Merchant, ChargeId) of
+			    {ok, []} ->
+				{error, ?err(charge_none, ChargeId)};
+			    {ok, ChargePromotion} ->
+				LimitShop     = ?v(<<"ishop">>, ChargePromotion), 
+				LimitBalance  = ?v(<<"ibalance">>, ChargePromotion, ?INVALID_OR_EMPTY),
+				ThresholdBalance = ?v(<<"mbalance">>, ChargePromotion),
+				case LimitBalance =/= ?INVALID_OR_EMPTY andalso LimitBalance =/= 0 of
+				    true ->
+					LimitDraw = Pay div ThresholdBalance * LimitBalance,
+					{ok,
+					 ?utils:min_value(LimitDraw, MaxDraw),
+					 [{?DEFAULT_BANK_CARD, 
+					   ?utils:min_value(LimitDraw, MaxDraw),
+					   RetailerBalance,
+					   1,
+					   same_shop(ConsumeShop, ChargeShop),
+					   LimitShop,
+					   ChargeShop}]}; 
+				    false ->
+					LimitCount = ?v(<<"icount">>, ChargePromotion),
+					case LimitCount =/= ?INVALID_OR_EMPTY
+					    andalso LimitCount =/= 0 of
+					    true ->
+						CBalance     = ?v(<<"cbalance">>, LastCharge),
+						SBalance     = ?v(<<"sbalance">>, LastCharge),
+						OneTakeBalance = (CBalance + SBalance) div LimitCount,
+						{ok,
+						 ?utils:min_value(OneTakeBalance, RetailerBalance),
+						 [{?DEFAULT_BANK_CARD, 
+						   ?utils:min_value(OneTakeBalance, RetailerBalance),
+						   RetailerBalance,
+						   1,
+						   same_shop(ConsumeShop, ChargeShop),
+						   LimitShop,
+						   ChargeShop}]};
+					    false ->
+						{ok,
+						 MaxDraw,
+						 [{?DEFAULT_BANK_CARD,
+						   MaxDraw,
+						   RetailerBalance,
+						   0,
+						   same_shop(ConsumeShop, ChargeShop),
+						   LimitShop,
+						   ChargeShop}]}
+					end
+
+				end
+			end
+		end;
+	    {ok, BankCards} ->
+		SortBankCards = sort_bank_card(BankCards, []),
+		{CalcDraw, Draws} =
+		    draw_with_bank_card(SortBankCards, Merchant, ConsumeShop, Pay, MaxDraw, 0, []),
+		?DEBUG ("calcDraw ~p, Draws ~p", [CalcDraw, Draws]),
+		{ok, CalcDraw, Draws}
+		%% case MaxDraw > CalcDraw of
+		%%     true ->
+		%% 	case ?w_retailer:retailer(last_recharge, Merchant, Id) of
+		%% 	    {ok, []} ->
+		%% 		{ok, [{?DEFAULT_BANK_CARD, MaxDraw - CalcDraw, 1, 0}|Draws]};
+		%% 	    {ok, LastCharge} ->
+		%% 		ChargeId  = ?v(<<"charge_id">>, LastCharge),
+		%% 		ChargeShop = ?v(<<"shop_id">>, LastCharge),
+		%% 		case ?w_retailer:charge(get_charge, Merchant, ChargeId) of
+		%% 		    {ok, []} ->
+		%% 			{ok,
+		%% 			 [{?DEFAULT_BANK_CARD,
+		%% 			   MaxDraw - CalcDraw,
+		%% 			   same_shop(ConsumeShop, ChargeShop),
+		%% 			   0}|Draws]};
+		%% 		    {ok, ChargePromotion} ->
+		%% 			LimitShop       = ?v(<<"ishop">>, ChargePromotion), 
+		%% 			{ok,
+		%% 			 [{?DEFAULT_BANK_CARD,
+		%% 			   MaxDraw - CalcDraw,
+		%% 			   same_shop(ConsumeShop, ChargeShop),
+		%% 			   LimitShop}|Draws]}
+		%% 		    end
+		%% 	end; 
+		%%     false ->
+		%% 	{ok, Draws}
+		%% end
+	end
+    of
+	{ok, ShouldDraw, DrawInfos} ->
+	    ?DEBUG("ShouldDraw ~p, DrawInfos ~p", [ShouldDraw, DrawInfos]),
+	    MyDraw = 
+		lists:foldr(
+		  fun({Card, MDraw, CardBalance, CardType, SameShop, LimitShop, ChargeShop}, Acc) ->
+			  [{[{<<"card">>, Card},
+			     {<<"draw">>, MDraw},
+			     {<<"balance">>, CardBalance},
+			     {<<"type">>, CardType},
+			     {<<"same_shop">>, SameShop},
+			     {<<"limit_shop">>, LimitShop},
+			     {<<"charge_shop">>, ChargeShop}]}|Acc]
+		  end, [], DrawInfos), 
+	    ?utils:respond(200, Req, ?succ(charge_check_region, Id),
+			   [{<<"cdraw">>, ShouldDraw},
+			    {<<"cards">>, MyDraw}]);
 	{error, Error} ->
-	    ?utils:respond(200, Req, Error) 
+	    ?utils:respond(200, Req, ?err(charge_none, Error))
     end;
 
 
@@ -979,7 +1099,7 @@ sidebar(Session) ->
     Merchant = ?session:get(merchant, Session),
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, ?DEFAULT_BASE_SETTING),
     
-    S1 = [{"wretailer_detail", "会员详情", "glyphicon glyphicon-map-marker"}], 
+    S1 = [{"wretailer_detail", "会员详情", "glyphicon glyphicon-map-marker"}],
     S2 = 
 	case ?right_auth:authen(?new_w_retailer, Session) of
 	    {ok, ?new_w_retailer} ->
@@ -987,7 +1107,9 @@ sidebar(Session) ->
 	    _ -> []
 	end,
 
-    S3 = [{"wretailer_charge_detail", "充值记录", "glyphicon glyphicon-bookmark"}],
+    S3 = [{"wretailer_charge_detail", "充值记录", "glyphicon glyphicon-bookmark"}], 
+    S4 = [{"wretailer_account", "会员帐户", "glyphicon glyphicon-piggy-bank"}], 
+
 
     Recharge =
 	[{{"promotion", "充值积分", "glyphicon glyphicon-superscript"},
@@ -1028,7 +1150,7 @@ sidebar(Session) ->
     Consume = [{"consume", "消费统计", "glyphicon glyphicon-usd"}],
 
     
-    L1 = ?menu:sidebar(level_1_menu, S2 ++ S1 ++ S3),
+    L1 = ?menu:sidebar(level_1_menu, S2 ++ S1 ++ S4 ++ S3),
     L2 = ?menu:sidebar(level_2_menu, Ticket ++ Recharge ++
 			   case ?to_i(?v(<<"threshold_card">>, BaseSetting, ?NO)) of
 			       ?YES -> ThresholdCard;
@@ -1178,5 +1300,95 @@ mode(1) -> use_balance;
 mode(2) -> use_consume;
 mode(3) -> use_level.
 
-
-
+sort_bank_card([], Acc) ->
+    Acc;
+sort_bank_card([Card|T], Acc) ->
+    case ?v(<<"type">>, Card) of
+	1 ->
+	    sort_bank_card(T, [Card|Acc]);
+	_ ->
+	    sort_bank_card(T, Acc ++ [Card])
+    end.
+	    
+draw_with_bank_card(_Cards, _Merchant, _ConsumeShop, _Pay, MaxDraw, CalcDraw, Acc) when MaxDraw =<0 ->
+    {CalcDraw, Acc};
+draw_with_bank_card([], _Merchant, _ConsumeShop, _Pay, _MaxDraw, CalcDraw, Acc) ->
+    {CalcDraw, Acc};
+draw_with_bank_card([Card|T], Merchant, ConsumeShop, Pay, MaxDraw, CalcDraw,Acc) ->
+    ChargeId = ?v(<<"charge_id">>, Card),
+    BankCardId = ?v(<<"id">>, Card),
+    ChargeShop = ?v(<<"shop_id">>, Card),
+    CardBalance = ?v(<<"balance">>, Card),
+    CardType  = ?v(<<"type">>, Card),
+    case ?w_retailer:charge(get_charge, Merchant, ChargeId) of
+	{ok, []} ->
+	    draw_with_bank_card(T, Merchant, ConsumeShop, Pay, MaxDraw, CalcDraw, Acc);
+	{ok, ChargePromotion} ->
+	    LimitShop       = ?v(<<"ishop">>, ChargePromotion), 
+	    LimitBalance     = ?v(<<"ibalance">>, ChargePromotion, ?INVALID_OR_EMPTY),
+	    ThresholdBalance = ?v(<<"mbalance">>, ChargePromotion),
+	    case LimitBalance =/= ?INVALID_OR_EMPTY andalso LimitBalance =/= 0 of
+		true ->
+		    LimitDraw = ?utils:min_value(
+				   CardBalance, Pay div ThresholdBalance * LimitBalance),
+		    CanDraw = ?utils:min_value(LimitDraw, MaxDraw),
+		    draw_with_bank_card(
+		      T,
+		      Merchant,
+		      ConsumeShop,
+		      Pay,
+		      MaxDraw - CanDraw,
+		      CalcDraw + CalcDraw,
+		      [{BankCardId,
+			CanDraw,
+			CardBalance,
+			CardType,
+			same_shop(ConsumeShop, ChargeShop),
+			LimitShop,
+			ChargeShop}|Acc]);
+		false ->
+		    LimitCount = ?v(<<"icount">>, ChargePromotion),
+		    case LimitCount =/= ?INVALID_OR_EMPTY andalso LimitCount =/= 0 of
+			true ->
+			    CBalance     = ?v(<<"cbalance">>, ChargePromotion),
+			    SBalance     = ?v(<<"sbalance">>, ChargePromotion),
+			    OneTakeBalance = ?utils:min_value(
+						CardBalance, (CBalance + SBalance) div LimitCount),
+			    CanDraw = ?utils:min_value(OneTakeBalance, MaxDraw),
+			    draw_with_bank_card(
+			      T,
+			      Merchant,
+			      ConsumeShop,
+			      Pay,
+			      MaxDraw - CanDraw,
+			      CalcDraw + CanDraw,
+			      [{BankCardId,
+				CanDraw,
+				CardBalance,
+				CardType,
+				same_shop(ConsumeShop, ChargeShop),
+				LimitShop,
+				ChargeShop}|Acc]); 
+			false ->
+			    CanDraw = ?utils:min_value(CardBalance, MaxDraw),
+			    draw_with_bank_card(
+			      T,
+			      Merchant,
+			      ConsumeShop,
+			      Pay,
+			      MaxDraw - CanDraw,
+			      CalcDraw + CanDraw,
+			      [{BankCardId,
+				CanDraw,
+				CardBalance,
+				CardType,
+				same_shop(ConsumeShop, ChargeShop),
+				LimitShop,
+				ChargeShop}|Acc])
+		    end
+	    end
+    end.
+			    
+same_shop(S1, S2) when S1=:=S2 -> ?YES;
+same_shop(_S1, _S2) -> ?NO.
+    
