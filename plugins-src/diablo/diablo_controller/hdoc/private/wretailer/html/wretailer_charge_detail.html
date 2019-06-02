@@ -118,7 +118,12 @@
 		    <td class="bg-teal">{{c.wxin}}</td>
 		    <td>{{c.sbalance}}</td>
 		    <td>{{c.accbalance}}</td>
-		    <td>{{c.stock}}</td>
+		    <td>
+		      <div x-ng-switch on="c.charge.rule_id">
+			<span x-ng-switch-when=2>-</span> 
+			<span x-ng-switch-default>{{c.stock}}</span>
+		      </div>
+		    </td>
 		    <td>{{c.comment}}</td>
 		    <td>{{c.entry_date}}</td> 
 		    <td>

@@ -61,10 +61,10 @@
 		    <th>会员</th>
 		    <th>联系方式</th>
 		    <th>卡名称</th>
-		    <th>消费商品</th>
-		    <th>消费类型</th> 
+		    <!-- <th>消费商品</th> -->
+		    <th>卡类型</th> 
 		    <th>消费次数</th>
-		    <th>消费价格</th> 
+		    <!-- <th>消费价格</th>  -->
 		    <th>消费店铺</th>
 		    <th>备注</th> 
 		    <th>日期</th>
@@ -79,10 +79,10 @@
 		    <td x-ng-bind=s.retailer></td>
 		    <td x-ng-bind=s.mobile></td>
 		    <td x-ng-bind=s.cname></td>
-		    <td x-ng-bind=s.cgood.name></td> 
+		    <!-- <td x-ng-bind=s.cgood.name></td>  -->
 		    <td x-ng-bind=s.card.name></td>
 		    <td x-ng-bind=s.amount></td> 
-		    <td x-ng-bind=s.tag_price></td>
+		    <!-- <td x-ng-bind=s.tag_price></td> -->
 		    <td x-ng-bind=s.shop.name></td>
 		    <td x-ng-bind=s.comment></td>
 		    <td x-ng-bind=s.entry_date></td>
@@ -94,7 +94,7 @@
 		  </tr>
 		  
 		  <tr x-ng-if="total_items!==0">
-		    <td colspan=8></td>
+		    <td colspan=7></td>
 		    <td x-ng-bind=amount_items></td>
 		    <td colspan=4></td>
 		  </tr>

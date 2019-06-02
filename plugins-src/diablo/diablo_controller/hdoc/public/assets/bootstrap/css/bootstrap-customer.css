@@ -72,9 +72,6 @@ input[type="number"] {
   align-items: center;
 }
 
-
-
-
 /* .util-btn-margin-bottom-5 .btn { */
 /*   margin-bottom: 0px !important; */
 /* } */
@@ -95,6 +92,10 @@ input[type="number"] {
 
 .diablo-good-form-group {
     margin-bottom:10px !important;
+}
+
+.diablo-form-table {
+    margin-bottom:0px !important;
 }
 
 .row {

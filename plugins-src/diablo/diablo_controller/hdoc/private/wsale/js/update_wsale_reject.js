@@ -95,8 +95,14 @@ function wsaleUpdateRejectCtrlProvide(
 		$scope.setting.check_sale = wsaleUtils.check_sale(shopId, $scope.base_settings);
 		$scope.setting.no_vip     = wsaleUtils.no_vip(shopId, $scope.base_settings); 
 		$scope.setting.draw_score = wsaleUtils.draw_score(shopId, $scope.base_settings);
-		$scope.setting.vip_mode = wsaleUtils.vip_mode(shopId, $scope.base_settings);
-		$scope.setting.type_sale = wsaleUtils.type_sale(shopId, $scope.base_settings); 
+		$scope.setting.vip_mode   = wsaleUtils.vip_mode(shopId, $scope.base_settings);
+		$scope.setting.type_sale  = wsaleUtils.type_sale(shopId, $scope.base_settings);
+		$scope.setting.round      = wsaleUtils.round(shopId, $scope.base_settings);
+		
+		var sale_mode = wsaleUtils.sale_mode(shopId, $scope.base_settings);
+		$scope.setting.score_discount = wsaleUtils.to_integer(sale_mode.charAt(16)) * 10
+		    + wsaleUtils.to_integer(sale_mode.charAt(17));
+		
 		$scope.employees = wsaleUtils.get_login_employee(
 		    shopId,
 		    base.employ_id,
@@ -524,8 +530,10 @@ function wsaleUpdateRejectCtrlProvide(
 	    wsaleUtils.get_retailer_discount($scope.select.retailer.level, $scope.levels),
 	    $scope.inventories,
 	    $scope.show_promotions,
-	    diablo_reject,
-	    $scope.select.verificate);
+	    diablo_reject, 
+	    $scope.select.verificate,
+	    $scope.setting.round,
+	    $scope.setting.score_discount);
 
 	$scope.select.total     = calc.total; 
 	$scope.select.abs_total = calc.abs_total;

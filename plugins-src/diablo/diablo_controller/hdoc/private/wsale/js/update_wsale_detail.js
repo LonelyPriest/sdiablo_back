@@ -80,7 +80,8 @@ function wsaleUpdateDetailCtrlProvide(
 	    $scope.show_promotions,
 	    diablo_reject,
 	    $scope.select.verificate,
-	    $scope.setting.round);
+	    $scope.setting.round,
+	    $scope.setting.score_discount);
 
 	console.log(calc);
 	// console.log($scope.show_promotions); 
@@ -141,6 +142,10 @@ function wsaleUpdateDetailCtrlProvide(
 		$scope.setting.draw_score = wsaleUtils.draw_score(shopId, $scope.base_settings);
 		$scope.setting.vip_mode = wsaleUtils.vip_mode(shopId, $scope.base_settings);
 		$scope.setting.type_sale = wsaleUtils.type_sale(shopId, $scope.base_settings);
+
+		var sale_mode = wsaleUtils.sale_mode(shopId, $scope.base_settings);
+		$scope.setting.score_discount = wsaleUtils.to_integer(sale_mode.charAt(16)) * 10
+		    + wsaleUtils.to_integer(sale_mode.charAt(17));
 		
 		if (diablo_no === $scope.setting.cake_mode) 
 		    $scope.vpays = wsaleService.vpays;

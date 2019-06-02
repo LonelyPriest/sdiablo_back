@@ -126,6 +126,9 @@ function wsaleRejectCtrlProvide(
 		    $scope.setting.hide_pwd      = wsaleUtils.to_integer(sale_mode.charAt(9)); 
 		    $scope.setting.print_access = wsaleUtils.print_num(shopId, settings);
 
+		    $scope.setting.score_discount = wsaleUtils.to_integer(sale_mode.charAt(16)) * 10
+			+ wsaleUtils.to_integer(sale_mode.charAt(17));
+
 		    $scope.print_setting = {
 			print_discount: wsaleUtils.to_integer(sale_mode.charAt(15)),
 			print_perform:  wsaleUtils.to_integer(sale_mode.charAt(3)),
@@ -544,7 +547,9 @@ function wsaleRejectCtrlProvide(
 	    $scope.inventories,
 	    $scope.show_promotions,
 	    diablo_reject,
-	    $scope.select.verificate);
+	    $scope.select.verificate,
+	    $scope.setting.round,
+	    $scope.setting.score_discount);
 	
 	// console.log(calc);
 	

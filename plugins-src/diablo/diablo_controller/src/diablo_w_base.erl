@@ -926,7 +926,8 @@ sys_config() ->
 	      %% [13]: default price when on sale 0:tag_price, 1:vir_price
 	      %% [14]: show whole price on sale
 	      %% [15]: print discount on sale
-	      {"p_balance",       "销售模式",             "0000000000000001",  "0"},
+	      %% [16-17]: threshold discount of score 00:none
+	      {"p_balance",   "销售模式",   "000000000000000100",  "0"},
 	      
 	      {"gen_ticket",      "自动生成电子卷",       "0",   "0"},
 	      
@@ -1017,6 +1018,7 @@ sys_config() ->
 	      %%[4]:foucs styleNumber when barcode use
 	      %%[5]:show tag_price in stock transfer
 	      %%[6]:xsale mode only use to batch sale transfer
+	      
 	      {"scan_only",         "扫码模式",           "0000000", "0"},
 	      %% {"auto_level",        "会员自动升级",       "0",    "0"},
 	      {"maling_rang",       "抹零范围",           "3",    "0"},

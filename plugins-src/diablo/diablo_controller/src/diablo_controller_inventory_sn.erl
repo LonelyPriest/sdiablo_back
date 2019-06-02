@@ -100,6 +100,10 @@ sn(threshold_card_sale, Merchant) ->
     Key = ?to_atom("w-threshold-card-sale-sn-" ++ ?to_s(Merchant)),
     gen_server:call(?SERVER, {new, Key});
 
+sn(wretailer_card_sn, Merchant) ->
+    Key = ?to_atom("w-retailer-card-sn-" ++ ?to_s(Merchant)),
+    gen_server:call(?SERVER, {new, Key});
+
 sn(batch_sale_new_sn, Merchant) ->
     Key = ?to_atom("batch-sale-new-sn-" ++ ?to_s(Merchant)),
     gen_server:call(?SERVER, {new, Key}).
@@ -107,6 +111,7 @@ sn(batch_sale_new_sn, Merchant) ->
 sn(barcode_flow, Merchant, Year) ->
     Key = ?to_atom("w-barcode-flow-" ++ ?to_s(Merchant) ++ ?to_s(Year)),
     gen_server:call(?SERVER, {new, Key}).
+
 
 
 
@@ -207,6 +212,8 @@ handle_call({init, Merchant}, _From, State) ->
 		
 		mnesia:write(#unique_ids{merchant=?to_atom("w-ticket-sn-" ++ M) , id=0}), 
 		mnesia:write(#unique_ids{merchant=?to_atom("w-threshold-card-sale-sn-" ++ M) , id=0}),
+
+		mnesia:write(#unique_ids{merchant=?to_atom("w-retailer-card-sn-" ++ M) , id=0}),
 
 		mnesia:write(#unique_ids{merchant=?to_atom("batch-sale-new-sn-" ++ M) , id=0}) 
 	end,

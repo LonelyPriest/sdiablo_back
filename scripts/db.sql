@@ -504,6 +504,7 @@ create table w_retailer_level
 create table w_card
 (
     id              INTEGER AUTO_INCREMENT,
+    csn             VARCHAR(32) not null default '-1',
     retailer        INTEGER not null default -1,
     ctime           INTEGER default -1,
     sdate           DATE default 0,
@@ -520,13 +521,14 @@ create table w_card
 create table w_child_card
 (
     id              INTEGER AUTO_INCREMENT,
-    fcard           INTEGER not null default -1, -- father card, refer to w_card
+    csn             VARCHAR(32) not null default '-1', -- refer to w_card
+    retailer        INTEGER not null default -1, -- father card, w_retailer
     good            INTEGER not null default -1, -- refer to w_card_good
     ctime           INTEGER default -1, 
     merchant        INTEGER default -1,
     shop            INTEGER default -1, 
     entry_date      DATETIME,
-    unique key      uk (merchant, retailer, cid),
+    unique key      uk (merchant, retailer, csn, good),
     primary key     (id)
 ) default charset=utf8;
 
@@ -550,17 +552,39 @@ create table w_card_sale
     employee        VARCHAR(8) not null,
     retailer        INTEGER not null default -1,
     card            INTEGER not null default -1, -- refer to w_card
-    cid             INTEGER not null default -1, -- refer to w_card
-    amount          INTEGER not null default -1, -- refer to w_charge
-    cgood           INTEGER default -1, -- refer to card_good
-    tag_price       INTEGER default -1,
-    
+    cid             INTEGER not null default -1, -- refer to w_charge
+    amount          INTEGER not null default -1,
+    -- cgood           INTEGER default -1, -- refer to card_good
+    -- tag_price       INTEGER default -1, 
     merchant        INTEGER default -1,
     shop            INTEGER default -1,
     comment         VARCHAR(127) default null,
     entry_date      DATETIME,
     deleted         INTEGER default 0, -- 0: no;  1: yes
     unique key      uk (rsn),
+    key     dk     (merchant, shop, retailer),
+    primary key     (id)
+) default charset=utf8;
+
+create table w_card_sale_detail
+(
+    id              INTEGER AUTO_INCREMENT,
+    rsn             VARCHAR(32) default -1,
+    employee        VARCHAR(8) not null,
+    retailer        INTEGER not null default -1,
+    card            INTEGER not null default -1, -- refer to w_card
+    cid             INTEGER not null default -1, -- refer to w_charge
+    
+    amount          INTEGER not null default -1,    
+    good           INTEGER default -1, -- refer to card_good
+    tag_price       INTEGER default -1,
+    
+    merchant        INTEGER default -1,
+    shop            INTEGER default -1,
+    
+    entry_date      DATETIME,
+    deleted         INTEGER default 0, -- 0: no;  1: yes
+    unique key      uk (merchant, retailer, rsn, good),
     key     dk     (merchant, shop, retailer),
     primary key     (id)
 ) default charset=utf8;

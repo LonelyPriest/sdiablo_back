@@ -549,6 +549,8 @@ function wsaleNewProvide(
 	$scope.setting.hide_charge    = wsaleUtils.to_integer(sale_mode.charAt(5));
 	$scope.setting.hide_pwd       = wsaleUtils.to_integer(sale_mode.charAt(9));
 	$scope.setting.show_wprice    = wsaleUtils.to_integer(sale_mode.charAt(14));
+	$scope.setting.score_discount = wsaleUtils.to_integer(sale_mode.charAt(16)) * 10
+	    + wsaleUtils.to_integer(sale_mode.charAt(17));
 	// $scope.setting.print_discount = wsaleUtils.to_integer(sale_mode.charAt(15));
 
 	$scope.print_setting = {
@@ -2186,7 +2188,8 @@ function wsaleNewProvide(
 	    total:          $scope.select.total,
 	    last_score:     $scope.select.retailer.score,
 	    score:          $scope.select.score,
-	    cards:          $scope.select.draw_cards.length === 0 ? undefined : $scope.select.draw_cards,
+	    cards:          angular.isArray($scope.select.draw_cards)
+		&& $scope.select.draw_cards.length !== 0 ? $scope.select.draw_cards : undefined,
 	    
 	    // sid             wsaleUtils.to_integer($scope.select.sid),
 	    // draw_score:     $scope.setting.draw_score, 
@@ -2367,7 +2370,8 @@ function wsaleNewProvide(
 	    $scope.show_promotions,
 	    diablo_sale,
 	    $scope.select.verificate,
-	    $scope.setting.round);
+	    $scope.setting.round,
+	    $scope.setting.score_discount);
 	
 	console.log(calc);
 	// console.log($scope.show_promotions);

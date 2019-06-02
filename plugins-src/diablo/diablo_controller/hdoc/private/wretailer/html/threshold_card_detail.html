@@ -206,17 +206,45 @@
 	  </div>
 	</div>
 
-	<div class="form-group">
+	<div x-ng-if="params.has_child_card" class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label">消费商品</label>
 	  <div class="col-sm-8 col-md-8">
-	    <select class="form-control" type="text"
-		    x-ng-model="params.good"
-		    x-ng-options="g as g.name for g in params.goods">
-	    </select>
+	    <div class="row">
+	      <div class="col-md-12 col-sm-12 col-xs-12" class="table-responsive">
+		<table class="table diablo-form-table table-striped table-condensed table-bordered">
+		  <tbody>
+		    <tr class="text-right" x-ng-repeat="g in params.goods">
+		      <td class="vert-align col-md-2 col-sm-2 col-xs-2">
+			<div class="checkbox checkbox-danger checkbox-circle">
+			  <input id="{{g.id}}" type="checkbox"
+				 x-ng-model="g.select"/>
+			  <label for="{{g.id}}"></label>
+			</div>
+		      </td>
+		      <td class="text-center vert-align" x-ng-bind="g.name"></td>
+		      <td class="text-center vert-align" x-ng-bind="g.left"></td>
+		      <td class="col-md-6 col-sm-6 col-xs-6">
+			<input class="form-control" type="number" x-ng-model="g.count" />
+		      </td>
+		    </tr>
+		  </tbody>
+		</table>
+	      </div>
+	    </div> 
 	  </div>
 	</div>
 
-	<div class="form-group">
+	<div x-ng-if="!params.has_child_card" class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">消费商品</label>
+	  <div class="col-sm-8 col-md-8">
+	    <select class="form-control" type="text"
+	    	    x-ng-model="params.good"
+	    	    x-ng-options="g as g.name for g in params.goods">
+	    </select>
+	  </div>
+	</div>
+	
+	<div x-ng-if="!params.has_child_card" class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label">单价</label>
 	  <div class="col-sm-8 col-md-8">
 	    <input class="form-control" type="text"
@@ -225,14 +253,14 @@
 	  </div>
 	</div>
 	
-	<div class="form-group">
-	  <label class="col-sm-2 col-md-2 control-label">消费次数</label> 
+	<div x-ng-if="!params.has_child_card" class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">消费次数</label>
 	  <div class="col-sm-8 col-md-8">
 	    <div class="input-group">
 	      <input class="form-control"
 		     type="number" step="1"
 		     required
-		     disable-key 
+		     disable-key
 		     name="count"
 		     x-ng-pattern="/^[1-9]$/"
 		     x-ng-model="params.count"/>
@@ -240,8 +268,8 @@
 	    </div>
 	    <div ng-show="cForm.count.$invalid && !cForm.count.$pristine">
 	      <span class="fg-red">请输入1-9的整数</span>
-	    </div> 
-	  </div> 
+	    </div>
+	  </div>
 	</div>
 
 	<div x-ng-if="params.card.rule===2" class="form-group">
@@ -250,7 +278,7 @@
 	    <input class="form-control"
 		   type="text"
 		   readonly
-		   x-ng-model="params.card.ctime"/> 
+		   x-ng-model="params.card.ctime"/>
 	  </div>
 	</div>
 	
@@ -294,7 +322,7 @@
 
   <div class="modal-footer">
     <button class="btn btn-primary"
-	    x-ng-disabled="cForm.$invalid"
+	    x-ng-disabled="cForm.$invalid || !params.check_consume(params.goods)"
 	    x-ng-click="ok()">确定</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div> 

@@ -1134,6 +1134,8 @@ pass_action(wholesaler) ->
      %% update soft
      <<"download_stock_fix">>,
 
+     <<"list_threshold_child_card">>,
+
      %% batch sale
      <<"get_batch_sale">>, 
      <<"match_bsale_rsn">>, 

@@ -440,7 +440,8 @@ function wretailerDetailCtrlProvide(
 		charge:         promotion.id,
 		ctime:          ctime,
 		stime:          stime,
-		good:           goods,
+		good:           angular.isArray(goods) ? goods.map(
+		    function(g) {return {id:g.id, count:g.count}}) : undefined,
 		comment:        params.comment
 	    }).then(function(result){
 		console.log(result); 
@@ -1376,6 +1377,30 @@ function wretailerThresholdCardDetailCtrlProvide(
 	    ).then(function(result){
 		// console.log(result);
 		if (result.ecode === 0){
+		    var cgoods = [];
+		    var cgoods_to_print = [];
+		    var total_count = 0;
+		    
+		    if (card.rule_id !== diablo_theoretic_charge || !params.has_child_card) {
+			total_count = params.count; 
+			cgoods_to_print.push({g:params.good.id,
+					      n:params.good.name,
+					      c:params.count,
+					      p:params.good.tag_price}); 
+			cgoods.push({g:params.good.id, c:params.count, p:params.good.tag_price});
+		    } else {
+			angular.forEach(params.goods, function(g) {
+			    if (g.select) {
+				total_count += g.count;
+				cgoods_to_print.push({g:g.id,
+						      n:g.name,
+						      c:g.count,
+						      p:g.tag_price});
+				cgoods.push({g:g.id, c:g.count, p:g.tag_price});
+			    }
+			});
+		    }
+		    
 		    wretailerService.new_threshold_card_sale({
 			id        :card.id,
 			charge    :card.cid,
@@ -1383,13 +1408,13 @@ function wretailerThresholdCardDetailCtrlProvide(
 			retailer  :card.retailer_id,
 			mobile    :card.mobile,
 			employee  :params.employee.id,
-			cgood     :params.good.id,
-			tag_price :params.good.tag_price,
-			count     :params.count,
+			cgoods    :cgoods,
+			// tag_price :params.good.tag_price,
+			count     :total_count,
 			shop      :params.shop.id,
 			shop_name :params.shop.name,
-			comment   :params.comment,
-			count     :params.count
+			comment   :params.comment
+			// count     :params.count
 		    }).then(function(state) {
 			console.log(state);
 			if (state.ecode === 0) {
@@ -1406,7 +1431,7 @@ function wretailerThresholdCardDetailCtrlProvide(
 				undefined,
 				function() {
 				    if (card.rule_id === diablo_theoretic_charge)
-					card.ctime -= params.count;
+					card.ctime -= total_count;
 				    
 				    var start_print = function(LODOP, ptime) {
 					retailerPrint.init(LODOP);
@@ -1422,9 +1447,7 @@ function wretailerThresholdCardDetailCtrlProvide(
 					    top = retailerPrint.gen_body(
 						LODOP,
 						top,
-						{good_name: params.good.name,
-						 tag_price: retailerUtils.to_float(params.good.tag_price),
-						 count:     params.count}
+						cgoods_to_print 
 					    );
 					}
 					
@@ -1463,28 +1486,84 @@ function wretailerThresholdCardDetailCtrlProvide(
 	    }); 
 	}; 
 
-	dialog.edit_with_modal(
-	    "new-card-consume.html",
-	    undefined,
-	    callback,
-	    undefined,
-	    {title: title,
-	     employees: $scope.employees,
-	     goods: $scope.card_goods,
-	     shops: $scope.shops,
-	     
-	     card: {
-		 rule    :card.rule_id,
-		 retailer:card.retailer, 
-		 mobile  :card.mobile,
-		 ctime   :card.ctime,
-		 edate   :card.edate},
-	     count: 1,
-	     employee: $scope.employees[0],
-	     good: $scope.card_goods[0],
-	     shop: $scope.shops[0],
-	     comment_pattern: diabloPattern.comment}
-	);
+	var start_consume = function(goods, has_child) {
+	    dialog.edit_with_modal(
+		"new-card-consume.html",
+		undefined,
+		callback,
+		undefined,
+		{title: title,
+		 employees: $scope.employees,
+		 goods: goods,
+		 shops: $scope.shops,
+		 
+		 card: {
+		     rule    :card.rule_id,
+		     retailer:card.retailer, 
+		     mobile  :card.mobile,
+		     ctime   :card.ctime,
+		     edate   :card.edate},
+		 
+		 has_child_card: has_child,
+		 count: has_child ? undefined : 1,
+		 employee: $scope.employees[0],
+		 good: has_child ? undefined: goods[0],
+		 shop: $scope.shops[0],
+		 comment_pattern: diabloPattern.comment,
+		 check_consume: function(goods) {
+		     var valid = false;
+		     if (card.rule_id === diablo_theoretic_charge) {
+			 if (has_child) {
+			     for (var i=0, l=goods.length; i<l; i++) {
+				 if (goods[i].select
+				     && retailerUtils.to_integer(goods[i].count)<=goods[i].left) {
+				     valid = true;
+				     break;
+				 }
+			     }
+			 } else {
+			     valid = true;
+			 }
+			 
+		     } else {
+			 valid = true;
+		     }
+		     
+		     return valid;
+		 }}
+	    );
+	}; 
+	
+	if (card.rule_id === diablo_theoretic_charge) {
+	    // get child card
+	    wretailerService.list_threshold_child_card(
+		card.retailer_id, card.csn
+	    ).then(function(result) {
+		console.log(result);
+		if (result.ecode === 0) {
+		    var child_goods = [];
+		    for (var i=0, l= result.child.length; i<l; i++) {
+			for(var j=0, k=$scope.card_goods.length; j<k; j++) {
+			    if (result.child[i].good === $scope.card_goods[j].id) {
+				child_goods.push(
+				    {id:$scope.card_goods[j].id,
+				     name:$scope.card_goods[j].name,
+				     tag_price:$scope.card_goods[i].tag_price, 
+				     left:result.child[i].ctime,
+				     count:1});
+			    }
+			}
+		    } 
+		    start_consume(
+			child_goods.length === 0 ? $scope.card_goods : child_goods,
+			child_goods.length === 0 ? false : true);
+		} else {
+		    // error
+		}
+	    })
+	} else {
+	    start_consume($scope.card_goods, false)
+	} 
     };
 };
 
@@ -1584,9 +1663,10 @@ function wretailerThresholdCardSaleCtrlProvide(
 		});
 	}
 
-	diabloUtilsService.request(
-	    "删除按次消费商品", "确定要删除该消费记录吗？",
-	    callback, undefined, undefined);
+	// diabloUtilsService.request(
+	//     "删除按次消费商品", "确定要删除该消费记录吗？",
+	//     callback, undefined, undefined);
+	diabloUtilsService.response(false, "删除按次消费商品", "暂不支持该操作");
     };
 };
 

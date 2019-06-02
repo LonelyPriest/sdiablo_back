@@ -1,5 +1,12 @@
 var version_update = function(){
     var updates = [
+	{date: "2019-06-03",
+	 content:
+	 ["充值提现支持多种卡结算",
+	  "优化次卡消费方式",
+	  "增加折扣积分，某一折扣下，货品自动不计分"]
+	},
+	
 	{date: "2019-05-26",
 	 content:
 	 ["优化部分促销方案算法",

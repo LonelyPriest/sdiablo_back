@@ -138,17 +138,20 @@ var retailerPrint = function(){
 	    return top;
 	},
 
-	gen_body: function(LODOP, top, sale){
+	gen_body: function(LODOP, top, goods){
 	    top += 10;
 	    LODOP.ADD_PRINT_TEXT(top, left, 70, hFont, "商品");
 	    LODOP.ADD_PRINT_TEXT(top, left + 70, 35, hFont, "单价");
 	    LODOP.ADD_PRINT_TEXT(top, left + 105, 35, hFont, "次数");
 	    
-	    top += 15; 
-	    LODOP.ADD_PRINT_TEXT(top, left, 70, hFont, sale.good_name);
-	    top += 15;
-	    LODOP.ADD_PRINT_TEXT(top, left + 70, 35, hFont, sale.tag_price);
-	    LODOP.ADD_PRINT_TEXT(top, left + 105, 35, hFont, sale.count);
+	    angular.forEach(goods, function(g) {
+		top += 15; 
+		LODOP.ADD_PRINT_TEXT(top, left, 70, hFont, g.n);
+		top += 15;
+		LODOP.ADD_PRINT_TEXT(top, left + 70, 35, hFont, g.p);
+		LODOP.ADD_PRINT_TEXT(top, left + 105, 35, hFont, g.c);
+	    })
+	    
 
 	    top += 15;
 	    LODOP.ADD_PRINT_LINE(top, left, top, vWidth, 0, 1);

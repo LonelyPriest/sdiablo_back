@@ -581,8 +581,7 @@ var wsaleUtils = function(){
 			s = pscores[i];
 			pay_with_score -= s.money; 
 			if (pay_with_score > 0) 
-			    score += Math.floor(
-				diablo_round(s.money) / s.score.balance) * s.score.score;
+			    score += Math.floor(diablo_round(s.money) / s.score.balance) * s.score.score;
 			else
 			    score += Math.floor(
 				diablo_round(s.money + pay_with_score) / s.score.balance) * s.score.score;
@@ -825,7 +824,8 @@ var wsaleCalc = function(){
 			    show_promotions,
 			    saleMode,
 			    verificate,
-			    round){
+			    round,
+			    score_discount){
 	    var total        = 0;
 	    var abs_total    = 0;
 	    var should_pay   = 0;
@@ -926,7 +926,7 @@ var wsaleCalc = function(){
 			    var mCount =  wsaleCalc.get_inventory_count(stock, saleMode);
 			    totalPay += uPrice * mCount;
 			    count    += mCount; 
-			    payAll += stock.tag_price * mCount;
+			    payAll   += stock.tag_price * mCount;
 			    orderStocks.push({price:uPrice, count:mCount});
 			});
 			totalPay = wsaleUtils.to_decimal(totalPay);
@@ -1124,13 +1124,29 @@ var wsaleCalc = function(){
 		show_promotions = wsaleUtils.format_promotion(one, show_promotions);
 		if (one.sid !== diablo_invalid_index){
 		    pscores = wsaleUtils.sort_score(one.score, one.promotion, one.calc, pscores);
-		} 
+		}
 	    } 
 
 	    // calcuate with verificate
 	    should_pay = wsaleUtils.to_decimal(should_pay);
 	    should_pay = wsaleCalc.calc_discount_of_verificate(inventories, saleMode, should_pay, verificate);
 	    base_pay = wsaleUtils.to_decimal(base_pay);
+
+	    // reset score
+	    if (score_discount!==0) {
+		pscores = [];
+		if (diablo_discount(one.rprice, one.tag_price) > score_discount) {
+		    for (var i=0, l=inventories.length; i<l; i++) {
+			var one = inventories[i];
+			var count = wsaleCalc.get_inventory_count(one, saleMode); 
+			one.calc = wsaleUtils.to_decimal(one.fprice * count); 
+			if (one.sid !== diablo_invalid_index){
+			    pscores = wsaleUtils.sort_score(one.score, one.promotion, one.calc, pscores);
+			}
+		    }
+		} 
+	    } 
+	    
 	    score  = wsaleUtils.calc_with_score(pscores, verificate); 
 	    
 	    if (wsaleUtils.to_integer(round) === 1) {

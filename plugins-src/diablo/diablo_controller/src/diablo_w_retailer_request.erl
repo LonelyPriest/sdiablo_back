@@ -182,8 +182,7 @@ action(Session, Req, {"get_w_retailer_batch"}, Payload) ->
 
 action(Session, Req, {"update_retailer_score", Id}, Payload) ->
     ?DEBUG("update_retailer_score with Session ~p~npaylaod ~p",
-	   [Session, Payload]),
-
+	   [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
     Score = ?v(<<"score">>, Payload),
     case ?w_retailer:retailer(update_score, Merchant, Id, Score) of
@@ -191,6 +190,21 @@ action(Session, Req, {"update_retailer_score", Id}, Payload) ->
 	    %% ?w_user_profile:update(retailer, Merchant),
 	    ?utils:respond(
 	       200, Req, ?succ(update_w_retailer, RId));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"list_threshold_child_card"}, Payload) ->
+    ?DEBUG("list_retailer_child_card: Session ~p~npaylaod ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    Retailer = ?v(<<"retailer">>, Payload),
+    CSN      = ?v(<<"csn">>, Payload),
+    
+    case ?w_retailer:threshold_card(list_child, Merchant, Retailer, CSN) of
+	{ok, Childs} ->
+	    ?utils:respond(
+	       200, object, Req, {[{<<"ecode">>, 0},
+				   {<<"child">>, Childs}]});
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;
