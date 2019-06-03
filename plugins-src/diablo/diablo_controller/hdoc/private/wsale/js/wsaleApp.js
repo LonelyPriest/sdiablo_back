@@ -860,7 +860,13 @@ function wsaleNewProvide(
 
 		 cards: draw_cards, 
 	    	 hide_pwd: $scope.setting.hide_pwd,
-	    	 check_withdraw: function(balance){return balance <= unlimitWithdraw;}, 
+		 check_limit: function(limitWithdraw) {
+		     return limitWithdraw <= limitCardDraw;
+		 },
+		 
+	    	 check_withdraw: function(balance, limitWithdraw){
+		     return balance <= unlimitWithdraw + limitCardDraw - limitWithdraw;
+		 }, 
 	    	 check_zero: function(balance) {return balance === 0 ? true:false}
 	    	})
 	};

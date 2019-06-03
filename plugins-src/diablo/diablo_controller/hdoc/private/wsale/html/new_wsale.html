@@ -850,8 +850,11 @@
 	  <div class="col-sm-6 col-md-6">
 	    <input class="form-control"
 		   type="number"
-		   readonly
-		   x-ng-model="params.retailer.limitWithdraw"/> 
+		   name="limitBalance"
+		   x-ng-model="params.retailer.limitWithdraw"/>
+	    <div ng-show="!params.check_limit(params.retailer.limitWithdraw)">
+	      <span class="fg-red">限额帐户余额不足或提现超过上限</span>
+	    </div>
 	  </div>
 	</div>
 	
@@ -865,12 +868,9 @@
 		   x-ng-edit
 		   name="balance"
 		   x-ng-pattern="/^\d+(.\d{1,2})?$/"
-		   x-ng-model="params.retailer.unlimitWithdraw"/>
-	    <!-- <div ng-show="withdrawForm.balance.$invalid && !withdrawForm.balance.$pristine"> -->
-	    <!--   <span class="fg-red">金额只能是数字串</span> -->
-	    <!-- </div> -->
-	    <div ng-show="!params.check_withdraw(params.retailer.unlimitWithdraw)">
-	      <span class="fg-red">余额不足或提现金额超过上限</span>
+		   x-ng-model="params.retailer.unlimitWithdraw"/> 
+	    <div ng-show="!params.check_withdraw(params.retailer.unlimitWithdraw, params.retailer.limitWithdraw)">
+	      <span class="fg-red">帐户余额不足或提现超过上限</span>
 	    </div>
 	  </div> 
 	</div>
@@ -893,7 +893,9 @@
 
   <div class="modal-footer">
     <button class="btn btn-primary"
-	    x-ng-disabled="withdrawForm.$invalid || !params.check_withdraw(params.retailer.unlimitWithdraw)"
+	    x-ng-disabled="withdrawForm.$invalid
+			   || !params.check_limit(params.retailer.limitWithdraw)
+			   || !params.check_withdraw(params.retailer.unlimitWithdraw, params.retailer.limitWithdraw)"
 	    x-ng-click="ok()">确定</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div> 

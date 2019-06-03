@@ -1135,16 +1135,14 @@ var wsaleCalc = function(){
 	    // reset score
 	    if (score_discount!==0) {
 		pscores = [];
-		if (diablo_discount(one.rprice, one.tag_price) > score_discount) {
-		    for (var i=0, l=inventories.length; i<l; i++) {
-			var one = inventories[i];
-			var count = wsaleCalc.get_inventory_count(one, saleMode); 
-			one.calc = wsaleUtils.to_decimal(one.fprice * count); 
+		for (var i=0, l=inventories.length; i<l; i++) {
+		    var one = inventories[i]; 
+		    if (diablo_discount(one.rprice, one.tag_price) > score_discount) {
 			if (one.sid !== diablo_invalid_index){
 			    pscores = wsaleUtils.sort_score(one.score, one.promotion, one.calc, pscores);
 			}
 		    }
-		} 
+		}
 	    } 
 	    
 	    score  = wsaleUtils.calc_with_score(pscores, verificate); 

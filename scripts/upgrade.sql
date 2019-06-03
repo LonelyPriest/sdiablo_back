@@ -570,7 +570,18 @@ alter table print_template add column offset_myprice tinyint default 0 after off
 
 
 --2019-05-31
-insert into w_retailer_bank(retailer, balance, cid, type, merchant, shop, entry_date) values(125758,200,218,1,12,42,'2019-05-31 18:22:29');
+insert into w_retailer_bank(retailer, balance, cid, type, merchant, shop, entry_date) \
+values(45666,200,218,1,12,65,'2019-05-22 16:44:16');
+
+insert into w_retailer_bank(retailer, balance, cid, type, merchant, shop, entry_date) \
+values(46085,200,218,1,12,65,'2019-05-07 10:10:13');
+
+insert into w_retailer_bank(retailer, balance, cid, type, merchant, shop, entry_date) \
+values(46131,200,218,1,12,65,'2019-05-07 14:01:14');
+
+insert into w_retailer_bank(retailer, balance, cid, type, merchant, shop, entry_date) \
+values(45365,200,218,1,12,65,'2019-05-07 11:12:36');
+
 
 
 alter table w_card add column csn VARCHAR(32) not null default '-1' after id;

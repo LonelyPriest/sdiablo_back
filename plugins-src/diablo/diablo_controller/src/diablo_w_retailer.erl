@@ -2302,6 +2302,7 @@ handle_call({filter_threshold_card_good, Merchant, Conditions, CurrentPage, Item
 
 handle_call({threshold_card_consume, Merchant, CardId, Attrs}, _From, State) ->
     ?DEBUG("threshold_card_consume: merchant ~p, card ~p, attrs ~p", [Merchant, CardId, Attrs]),
+    CardSN   = ?v(<<"csn">>, Attrs),
     CGoods   = ?v(<<"cgoods">>, Attrs), 
     Count    = ?v(<<"count">>, Attrs),
     ChargeId = ?v(<<"charge">>, Attrs),
@@ -2378,7 +2379,14 @@ handle_call({threshold_card_consume, Merchant, CardId, Attrs}, _From, State) ->
 
 				   ++ ?to_s(Merchant) ++ ","
 				   ++ ?to_s(Shop) ++ ","
-				   ++ "\'" ++ Datetime ++ "\')"|Acc]
+				   ++ "\'" ++ Datetime ++ "\')",
+
+				   "update w_child_card set "
+				   "ctime=ctime-" ++ ?to_s(?v(<<"c">>, Good))
+				   ++ " where merchant=" ++ ?to_s(Merchant)
+				   ++ " and retailer=" ++ ?to_s(Retailer)
+				   ++ " and csn=\'" ++ ?to_s(CardSN) ++ "\'" 
+				   ++ " and good=" ++ ?to_s(?v(<<"g">>, Good)) |Acc]
 			  end, [], CGoods),
 		    case ?sql_utils:execute(transaction, [Sql1, Sql2] ++ Sql3, SN) of
 			{ok, SN} ->

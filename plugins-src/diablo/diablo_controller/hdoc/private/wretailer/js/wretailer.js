@@ -1403,6 +1403,7 @@ function wretailerThresholdCardDetailCtrlProvide(
 		    
 		    wretailerService.new_threshold_card_sale({
 			id        :card.id,
+			csn       :card.csn,
 			charge    :card.cid,
 			rule      :card.rule_id,
 			retailer  :card.retailer_id,
