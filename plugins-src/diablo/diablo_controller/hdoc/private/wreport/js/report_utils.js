@@ -118,14 +118,19 @@ var reportPrint = function(){
 	    
 	    var hLine = 5;
 	    
-	    LODOP.ADD_PRINT_TEXT(hLine, 0, 178, 30, shop); 
+	    LODOP.ADD_PRINT_TEXT(hLine, 0, 218, 30, shop); 
 	    LODOP.SET_PRINT_STYLEA(0,"FontSize",13);
-	    LODOP.SET_PRINT_STYLEA(0, "Alignment", 2); 
+	    // LODOP.SET_PRINT_STYLEA(0, "Alignment", 2); 
 	    LODOP.SET_PRINT_STYLEA(0,"bold",1);
 	    // LODOP.SET_PRINT_STYLEA(1,"Horient",2); 
 	    hLine += 35;
 
-	    LODOP.ADD_PRINT_TEXT(hLine, 0, 178, 30, "交班报表-" + account); 
+	    LODOP.ADD_PRINT_TEXT(
+		hLine,
+		0,
+		178,
+		30,
+		"交班报表-" + angular.isDefined(account) ? account : diablo_empty_string); 
 	    LODOP.SET_PRINT_STYLEA(0,"FontSize",10);
 	    LODOP.SET_PRINT_STYLEA(0, "Alignment", 2); 
 	    LODOP.SET_PRINT_STYLEA(0,"bold",1);

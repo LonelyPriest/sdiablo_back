@@ -25,7 +25,7 @@
 -export([score/2, score/3, ticket/2, ticket/3, get_ticket/3, get_ticket/4, make_ticket/3]).
 -export([bank_card/3]).
 -export([filter/4, filter/6]).
--export([match/3, syn/2, syn/3, get/2, card/3]).
+-export([match/3, syn/2, syn/3, get/2, card/3, sms/2]).
 
 -define(SERVER, ?MODULE). 
 
@@ -156,9 +156,9 @@ ticket(new_plan, Merchant, Attrs) ->
 ticket(update_plan, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {update_ticket_plan, Merchant, Attrs});
-ticket(gift, Merchant, Tickets) ->
+ticket(gift, Merchant, GiftInfo) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {gift_ticket, Merchant, Tickets}).
+    gen_server:call(Name, {gift_ticket, Merchant, GiftInfo}).
 
 ticket(list_plan, Merchant) ->
     Name = ?wpool:get(?MODULE, Merchant),
@@ -171,6 +171,9 @@ ticket(discard_custom_all, Merchant) ->
 get_ticket(by_retailer, Merchant, RetailerId) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {ticket_by_retailer, Merchant, RetailerId});
+get_ticket(by_promotion, Merchant, RetailerId) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {ticket_by_promotion, Merchant, RetailerId});
 
 get_ticket(by_batch, Merchant, {Batch, Mode, Custom}) -> 
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -1064,20 +1067,6 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 			    ++ "\'" ++ ?to_s(Entry) ++ "\')"
 		end,
 
-	    ChildTheoreticCardSql =
-		fun(CardSN, CardGood, ConsumeCount) ->
-			"insert into w_child_card(csn"
-			    ", retailer, good, ctime, merchant, shop, entry_date)"
-			    " values("
-			    ++ "\'" ++ ?to_s(CardSN) ++ "\',"
-			    ++ ?to_s(Retailer) ++ ","
-			    ++ ?to_s(CardGood) ++ ","
-			    ++ ?to_s(ConsumeCount) ++ ","
-			    ++ ?to_s(Merchant) ++ ","
-			    ++ ?to_s(Shop) ++ ","
-			    ++ "\'" ++ ?to_s(Entry) ++ "\')"
-		end,
-
 	    case Rule =:= ?GIVING_CHARGE orelse Rule =:= ?TIMES_CHARGE of
 		true ->
 		    Sql2 = "update w_retailer set balance=balance+"
@@ -1085,7 +1074,7 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 		    LimitBalance = ?v(<<"ibalance">>, ChargeRule, ?INVALID_OR_EMPTY),
 		    LimitCount = ?v(<<"icount">>, ChargeRule, ?INVALID_OR_EMPTY),
 		    
-		    Sql20 = "select retailer, balance, cid from w_retailer_bank"
+		    Sql20 = "select id, retailer, balance, cid from w_retailer_bank"
 			" where merchant=" ++ ?to_s(Merchant)
 			++ " and retailer=" ++ ?to_s(Retailer)
 			++ " and cid=" ++ ?to_s(ChargeId),
@@ -1111,14 +1100,14 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 				    ++ ?to_s(Merchant) ++ ","
 				    ++ ?to_s(Shop) ++ ","
 				    ++ "\'" ++ ?to_s(Entry) ++ "\')";
-			    {ok, Card} ->
+			    {ok, BankCard} ->
 				"update w_retailer_bank set balance=balance+"
 				    ++ ?to_s(CBalance + SBalance)
 				    ++ ", shop=" ++ ?to_s(Shop)
 				    ++ " where merchant=" ++ ?to_s(Merchant)
 				    ++ " and retailer=" ++ ?to_s(Retailer)
 				    ++ " and cid=" ++ ?to_s(ChargeId)
-				    ++ " and id=" ++ ?to_s(?v(<<"id">>, Card))
+				    ++ " and id=" ++ ?to_s(?v(<<"id">>, BankCard))
 		    end,
 				
 		    AllSqls =  [RechargeDetailSql(?INVALID_DATE), Sql2, Sql3], 
@@ -1170,6 +1159,20 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 				       "-S-",
 				       ?to_i(Shop), "-",
 				       ?inventory_sn:sn(wretailer_card_sn, Merchant)]),
+
+				ChildTheoreticCardSql =
+				    fun(CardGood, ConsumeCount) ->
+					    "insert into w_child_card(csn"
+						", retailer, good, ctime, merchant, shop, entry_date)"
+						" values("
+						++ "\'" ++ ?to_s(CardSN) ++ "\',"
+						++ ?to_s(Retailer) ++ ","
+						++ ?to_s(CardGood) ++ ","
+						++ ?to_s(ConsumeCount) ++ ","
+						++ ?to_s(Merchant) ++ ","
+						++ ?to_s(Shop) ++ ","
+						++ "\'" ++ ?to_s(Entry) ++ "\')"
+				    end,
 				
 				{new_card,
 				 [case Rule of
@@ -1204,7 +1207,6 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 					    lists:foldr(
 					      fun({struct, Good}, Acc) ->
 						      [ChildTheoreticCardSql(
-							 CardSN,
 							 ?v(<<"id">>, Good),
 							 ?v(<<"count">>, Good)) | Acc]
 					      end, [], Goods);
@@ -1309,17 +1311,23 @@ handle_call({delete_recharge, Merchant, RechargeId, RechargeInfo, ChargePromotio
 		    SBalance = ?v(<<"sbalance">>, RechargeInfo),
 		    %% Retailer = ?v(<<"retailer">>, RechargeInfo),
 		    OBalance = ?v(<<"balance">>, RechargeInfo),
-		    Datetime = ?utils:current_time(format_localtime), 
+		    Datetime = ?utils:current_time(format_localtime),
+		    AllBalance = CBalance + SBalance,
 		    Sqls = 
 			[Sql1, 
-			 "update w_charge_detail set lbalance=lbalance-" ++ ?to_s(CBalance + SBalance) 
+			 "update w_charge_detail set lbalance=lbalance-" ++ ?to_s(AllBalance) 
 			 ++ " where merchant=" ++ ?to_s(Merchant)
 			 ++ " and retailer=" ++ ?to_s(RetailerId)
 			 ++ " and id>" ++ ?to_s(RechargeId),
 
-			 "update w_retailer set balance=balance-" ++ ?to_s(CBalance + SBalance)
+			 "update w_retailer set balance=balance-" ++ ?to_s(AllBalance)
 			 ++ " where id=" ++ ?to_s(RetailerId)
 			 ++ " and merchant=" ++ ?to_s(Merchant),
+
+			 "update w_retailer_bank set balance=balance-" ++ ?to_s(AllBalance)
+			 ++ " where merchant=" ++ ?to_s(Merchant)
+			 ++ " and retailer=" ++ ?to_s(RetailerId)
+			 ++ " and cid=" ++ ?to_s(?v(<<"id">>, ChargePromotion)),
 
 			 "insert into retailer_balance_history("
 			 "rsn, retailer, obalance, nbalance"
@@ -1340,7 +1348,7 @@ handle_call({delete_recharge, Merchant, RechargeId, RechargeInfo, ChargePromotio
 			?THEORETIC_CHARGE ->
 			    CTime = ?v(<<"ctime">>, ChargePromotion),
 			    STime = ?v(<<"sbalance">>, RechargeInfo),
-			    ?DEBUG("CTime ~p, STime ~p", [CTime, STime]),
+			    %% ?DEBUG("CTime ~p, STime ~p", [CTime, STime]),
 			    Stock = ?v(<<"stock">>, RechargeInfo),
 			    %% ?DEBUG("Stock ~p", [Stock]),
 			    CardGoods = ejson:decode(?to_s(Stock)),
@@ -1363,7 +1371,7 @@ handle_call({delete_recharge, Merchant, RechargeId, RechargeInfo, ChargePromotio
 					      ++ " and good=" ++ ?to_s(?v(<<"g">>, Good, -1)) | Acc]
 				     end, [], CardGoods)
 				,
-			    ?DEBUG("Sqls ~p", [Sqls]),
+			    %% ?DEBUG("Sqls ~p", [Sqls]),
 			    Reply = ?sql_utils:execute(transaction, Sqls, RechargeId),
 			    {reply, Reply, State};
 			_ ->
@@ -1627,7 +1635,10 @@ handle_call({new_ticket_plan, Merchant, Attrs}, _From, State) ->
 		", entry_date) values("
 		++ "\'" ++ ?to_s(Name) ++ "\',"
 		++ ?to_s(Balance) ++ ","
-		++ ?to_s(Effect) ++ ","
+		++ case Effect of
+		       0 -> ?to_s(?INVALID_OR_EMPTY);
+		       _ -> ?to_s(Effect)
+		   end ++ ","
 		++ ?to_s(Expire) ++ ","
 		++ ?to_s(MaxSend) ++ ","
 		++ "\'" ++ ?to_s(Remark) ++ "\',"
@@ -1679,9 +1690,33 @@ handle_call({update_ticket_plan, Merchant, Attrs}, _From, State) ->
 	    end
     end;
 
-handle_call({gift_ticket, Merchant, Tickets}, _From, State) ->
-    ?DEBUG("gift_ticket: merchant ~p, tickets ~p", [Merchant, Tickets]),
-    {reply, ok, State};
+handle_call({gift_ticket, Merchant, {Shop, Retailer, Tickets} = GiftInfo}, _From, State) ->
+    ?DEBUG("gift_ticket: merchant ~p, GiftInfo ~p", [Merchant, GiftInfo]), 
+    Reply = 
+	case search_custome_ticket(Merchant, Tickets, [], [], 0) of
+	    {_Success, Failed, _Balance} when length(Failed) =/= 0 ->
+		{error, ?err(no_valid_ticket, Merchant)};
+	    {Success, _Failed, _Balance} when length(Success) =:= 0 ->
+		{error, ?err(no_valid_ticket, Merchant)};
+	    {Success, [], Balance} -> 
+		Sqls = 
+		    lists:foldr(
+		      fun({Plan, Batch}, Acc) ->
+			      ["update w_ticket_custom set retailer=" ++ ?to_s(Retailer)
+				  ++ ", in_shop=" ++ ?to_s(Shop)
+				  ++ " where merchant=" ++ ?to_s(Merchant)
+				  ++ " and plan=" ++ ?to_s(Plan)
+				  ++ " and batch=" ++ ?to_s(Batch)|Acc]
+		      end, [], Success),
+		
+		case ?sql_utils:execute(transaction, Sqls, Retailer) of
+		    {ok, Retailer} ->
+			{ok, Retailer, Balance};
+		    Error->
+			Error
+		end
+	end, 
+    {reply, Reply, State};
 
 handle_call({list_ticket_plan, Merchant}, _From, State) ->
     Sql = "select id, merchant, name, balance, effect, expire, scount, entry_date"
@@ -1719,6 +1754,14 @@ handle_call({ticket_by_retailer, Merchant, RetailerId}, _From, State) ->
 	++ " and retailer=" ++ ?to_s(RetailerId)
 	++ " and state=" ++ ?to_s(?CHECKED), 
     Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+handle_call({ticket_by_promotion, Merchant, RetailerId}, _From, State) ->
+    Sql = "select id, batch, balance, retailer, state from w_ticket_custom"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and retailer=" ++ ?to_s(RetailerId)
+	++ " and state=" ++ ?to_s(?CHECKED), 
+    Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
 handle_call({ticket_by_batch, Merchant, {Batch, Mode, Custom}}, _From, State) ->
@@ -2112,6 +2155,7 @@ handle_call({filter_custom_ticket_detail, Merchant, Conditions, CurrentPage, Ite
 	", a.retailer as retailer_id" 
 	", a.state"
 	", a.stime"
+	", a.in_shop as p_shop_id"
 	", a.shop as shop_id"
 	", a.remark"
 	", a.entry_date"
@@ -2667,3 +2711,60 @@ sort_condition(consume, Conditions, Prefix) ->
 	end.
 
 
+search_custome_ticket(_Merchant, [], Success, Failed, AllBalance)->
+    ?DEBUG("Success ~p, Failed ~p, AllBalance ~p", [Success, Failed, AllBalance]),
+    {Success, Failed, AllBalance};
+search_custome_ticket(Merchant, [{struct, Ticket}|T], Success, Failed, AllBalance)->
+    Plan    = ?v(<<"id">>, Ticket),
+    Balance = ?v(<<"balance">>, Ticket),
+    Count   = ?v(<<"count">>, Ticket),
+    Batchs  = find_custome_ticket_batch(by_plan, Plan, Success, []),
+    Sql = "select id, batch, plan, batch, balance"
+	" from w_ticket_custom"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and plan="  ++ ?to_s(Plan)
+	++ " and balance=" ++ ?to_s(Balance)
+	++ " and state=1 and deleted=0"
+	++ case Batchs of
+	       [] -> [];
+	       _ ->
+		   " and batch not in(" ++ string:join(Batchs, ",") ++ ")"
+	   end
+	++ " order by id"
+	++ " limit " ++ ?to_s(Count),
+
+    case ?sql_utils:execute(read, Sql) of
+	{ok, []} ->
+	    search_custome_ticket(Merchant, [], Success, [Plan|Failed], AllBalance);
+	{ok, UnusedTickets} ->
+	    Searchs = lists:foldr(fun({Unused}, Acc) ->
+					  [{Plan, ?to_s(?v(<<"batch">>, Unused))}|Acc]
+				  end, [], UnusedTickets),
+	    search_custome_ticket(Merchant, T, Searchs ++ Success, Failed, AllBalance + Balance)
+    end.
+
+find_custome_ticket_batch(by_plan, _Plan, [], Sort) ->
+    Sort;
+find_custome_ticket_batch(by_plan, Plan, [{P, Batch}|T], Sort) when Plan =:= P->
+    find_custome_ticket_batch(by_plan, Plan, T, [?to_s(Batch)|Sort]);
+find_custome_ticket_batch(by_plan, _Plan, _PlanTickets, Sort) ->
+    Sort.
+	    
+
+sms(promotion, Merchant) ->
+    Sql = "select id, mobile from w_retailer where merchant=" ++ ?to_s(Merchant)
+	++ " and type!=2 and deleted=0",
+    case ?sql_utils:execute(read, Sql) of
+	{ok, []} -> ok;
+	{ok, Retailers} ->
+	    lists:foreach(
+	      fun({R}) ->
+		      Phone = ?v(<<"mobile">>, R),
+		      %% ?DEBUG("Phone ~p", [Phone]),
+		      ?notify:sms(promotion, Merchant, Phone)
+	      end, Retailers);
+	Error -> Error
+    end.
+		
+	    
+				      

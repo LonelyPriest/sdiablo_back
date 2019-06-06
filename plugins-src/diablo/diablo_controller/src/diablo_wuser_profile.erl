@@ -1199,7 +1199,7 @@ handle_cast({Update, Merchant}, State) ->
 		    update_region ->
 			{ok, Regions} = ?shop:region(list, Merchant),
 			Profile#wuser_profile{region=Regions};
-		    update_ticket_plane ->
+		    update_ticket_plan ->
 			{ok, Planes} = ?w_retailer:ticket(list_plane, Merchant),
 			Profile#wuser_profile{ticket_plan=Planes};
 		    update_merchant ->

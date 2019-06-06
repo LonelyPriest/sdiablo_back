@@ -807,8 +807,7 @@ action(Session, Req, {"syn_score_ticket"}, Payload) ->
 
 action(Session, Req, {"get_w_retailer_ticket"}, Payload) ->
     ?DEBUG("get_w_retailer_ticket with session ~p, payload ~p", [Session, Payload]), 
-    Merchant = ?session:get(merchant, Session),
-    
+    Merchant = ?session:get(merchant, Session), 
     case 
 	case ?v(<<"mode">>, Payload, ?TICKET_BY_RETAILER) of
 	    ?TICKET_BY_RETAILER ->
@@ -824,6 +823,23 @@ action(Session, Req, {"get_w_retailer_ticket"}, Payload) ->
 	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0}, {<<"data">>, {Value}}]});
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"get_w_retailer_all_ticket"}, Payload) ->
+    ?DEBUG("get_w_retailer_all-ticket:session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    RetailerId = ?v(<<"retailer">>, Payload),
+    try
+	{ok, ScoreTicket}     = ?w_retailer:get_ticket(by_retailer, Merchant, RetailerId),
+	{ok, PromotionTickets} = ?w_retailer:get_ticket(by_promotion, Merchant, RetailerId),
+
+	?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
+					   {<<"sticket">>, {ScoreTicket}},
+					   {<<"pticket">>, PromotionTickets}]})
+    catch
+	_:{badmatch, {error, Error}} ->
+	    ?utils:respond(200, Req, Error)
+	
     end;
 
 action(Session, Req, {"make_ticket_batch"}, Payload) ->
@@ -918,10 +934,36 @@ action(Session, Req, {"gift_ticket"}, Payload) ->
     ?DEBUG("gift_ticket: Session ~p, paylaod ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
     Tickets  = ?v(<<"ticket">>, Payload),
-    case ?w_retailer:ticket(gift, Merchant, Tickets) of
-	{ok, _Batchs} ->
+
+    RetailerId      = ?v(<<"retailer">>, Payload),
+    RetailerPhone   = ?v(<<"retailer_phone">>, Payload),
+    RetailerName    = ?v(<<"retailer_name">>, Payload),
+
+    ShopId   = ?v(<<"shop">>, Payload),
+    ShopName = ?v(<<"shop_name">>, Payload), 
+    case ?w_retailer:ticket(gift, Merchant, {ShopId, RetailerId, Tickets}) of
+	{ok, RetailerId, Balance} ->
 	    %% send sms
-	    ok;
+	    try 
+		{ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1), 
+		SysVips  = ?w_sale_request:sys_vip_of_shop(Merchant, ShopId), 
+		case not lists:member(RetailerId, SysVips)
+		    andalso ?to_i(?v(<<"consume_sms">>, Setting, 0)) == 1 of
+		    true ->
+			{SMSCode, _} = 
+			    ?notify:sms(
+			       ticket, {Merchant, ShopName, RetailerName, RetailerPhone}, Balance),
+			?utils:respond(
+			   200, Req, ?succ(new_ticket_plan, RetailerId),
+			   [{<<"sms_code">>, SMSCode}]);
+		    false -> {0, none} 
+		end
+	    catch
+		_:{badmatch, _Error} ->
+		    ?INFO("failed to send sms phone:~p, merchant ~p, Error ~p",
+			  [RetailerId, Merchant, _Error]),
+		    ?utils:respond(200, Req, ?err(sms_send_failed, Merchant))
+	    end;
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;

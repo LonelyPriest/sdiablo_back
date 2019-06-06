@@ -75,7 +75,8 @@
 		    <th>赠送日期</th> 
 		    <th>金额</th>
 		    <th>状态</th>
-		    <th>登记店铺</th>
+		    <th>会员所在店铺</th>
+		    <th>卷赠送店铺</th>
 		    <th>消费店铺</th> 
 		    <th>备注</th>
 		    <th>制券日期</th> 
@@ -110,6 +111,13 @@
 		      <div x-ng-switch on=t.retailer_id>
 			<div x-ng-switch-when=-1 class="text-center">-</div>
 			<div x-ng-switch-default>{{t.in_shop.name}}</div>
+		      </div>
+		    </td>
+
+		    <td>
+		      <div x-ng-switch on=t.p_shop_id>
+			<div x-ng-switch-when=-1 class="text-center">-</div>
+			<div x-ng-switch-default>{{t.provide_shop.name}}</div>
 		      </div>
 		    </td>
 
@@ -209,7 +217,8 @@
 	    <select class="form-control"
 		    required
 		    x-ng-model="params.plan"
-		    x-ng-options="p as p.name for p in params.planes"/> 
+		    x-ng-options="p as p.name for p in params.planes"
+		    x-ng-change="params.balance=params.plan.balance"/> 
 	  </div>
 	</div>
 

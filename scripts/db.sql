@@ -429,7 +429,7 @@ create table w_retailer
     consume         DECIMAL(10, 2) default 0, -- max: 99999999.99
     score           INTEGER not null default 0,
     mobile          VARCHAR(11),
-    address         VARCHAR(255),
+    address         rrVARCHAR(255),
     shop            INTEGER default -1,
     draw            INTEGER default -1, -- with draw strategy
     merchant        INTEGER default -1, -- which merchant belong to
@@ -711,6 +711,7 @@ create table w_ticket_custom(
     balance         INTEGER not null,
     retailer        INTEGER default -1, -- -1: who consumed
     state           INTEGER default 1, -- 0: discard; 1: checked; 2: consumed
+    in_shop         INTEGER default -1, -- produce shop
     shop            INTEGER default -1, -- consumed shop
     stime           DATE default 0 not null,
     remark          VARCHAR(128) not null,
@@ -718,7 +719,7 @@ create table w_ticket_custom(
     entry_date      DATETIME default 0, 
     deleted         INTEGER default 0, -- 0: no;  1: yes
 
-    unique  key uk  (merchant, batch),
+    unique  key uk  (merchant, plan, batch),
     key         dk  (merchant, retailer),
     primary key     (id)
     

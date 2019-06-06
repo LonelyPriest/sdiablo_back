@@ -9,7 +9,8 @@
 -export([sale_note/3, sale_trans/3, note_class_with/3]).
 -export([replace_condition_with_ctype/4,
 	 replace_condition_with_ctype/5,
-	 replace_condition_with_lbrand/5]).
+	 replace_condition_with_lbrand/5,
+	 sys_vip_of_shop/2]).
 
 -define(d, ?utils:seperator(csv)).
 

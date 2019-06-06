@@ -943,12 +943,12 @@ stockPrintU.prototype.print_type = function(type, top, left, width, printSecond,
     var offset_type = stockUtils.to_integer(this.template.offset_type);
     var count_type = stockUtils.to_integer(this.template.count_type);
     if (offset_type > 0 && count_type > 0 && hpx_type > 0) {
-	this.LODOP.ADD_PRINT_TEXT(top, left, width, this.template.hpx_each, "品名：");
+	this.LODOP.ADD_PRINT_TEXT(top, left, width, this.template.hpx_each, "品名:");
 	if (printSecond) {
-	    this.LODOP.ADD_PRINT_TEXT(top, startSecond, width, this.template.hpx_each, "品名：");
+	    this.LODOP.ADD_PRINT_TEXT(top, startSecond, width, this.template.hpx_each, "品名:");
 	}
 	if (printThird) {
-	    this.LODOP.ADD_PRINT_TEXT(top, startThird, width, this.template.hpx_each, "品名：");
+	    this.LODOP.ADD_PRINT_TEXT(top, startThird, width, this.template.hpx_each, "品名:");
 	}
 	
 	if (type.length > count_type) {
@@ -982,14 +982,14 @@ stockPrintU.prototype.print_type = function(type, top, left, width, printSecond,
 	    this.set_print_font_size(this.template.font_type);
 	}
     } else {
-	this.LODOP.ADD_PRINT_TEXT(top, left, width, this.template.hpx_each, "品名：" + type);
+	this.LODOP.ADD_PRINT_TEXT(top, left, width, this.template.hpx_each, "品名:" + type);
 	this.set_print_font_size(this.template.font_type);
 	if (printSecond) {
-	    this.LODOP.ADD_PRINT_TEXT(top, startSecond, width, this.template.hpx_each, "品名：" + type);
+	    this.LODOP.ADD_PRINT_TEXT(top, startSecond, width, this.template.hpx_each, "品名:" + type);
 	    this.set_print_font_size(this.template.font_type);
 	}
 	if (printThird) {
-	    this.LODOP.ADD_PRINT_TEXT(top, startSecond, width, this.template.hpx_each, "品名：" + type);
+	    this.LODOP.ADD_PRINT_TEXT(top, startSecond, width, this.template.hpx_each, "品名:" + type);
 	    this.set_print_font_size(this.template.font_type);
 	} 
     }

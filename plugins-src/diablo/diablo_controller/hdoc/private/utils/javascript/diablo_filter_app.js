@@ -602,7 +602,7 @@ function filterProvider(){
 	    },
 
 	    wretailer_gift_ticket: function(tickets) {
-		return _retailerHttp.save({operation:"gift_ticket"}, ticket).$promise;
+		return _retailerHttp.save({operation:"gift_ticket"}, tickets).$promise;
 	    },
 
 	    new_wretailer:function(r) {
@@ -718,6 +718,11 @@ function filterProvider(){
 		return _retailerHttp.save(
 		    {operation: "get_w_retailer_ticket"},
 		    {retailer:retailerId, mode:diablo_ticket_by_retailer}).$promise;
+	    },
+
+	    get_all_ticket_by_retailer: function(retailerId) {
+		return _retailerHttp.save(
+		    {operation: "get_w_retailer_all_ticket"}, {retailer:retailerId}).$promise;
 	    },
 
 	    get_ticket_plan:function() {

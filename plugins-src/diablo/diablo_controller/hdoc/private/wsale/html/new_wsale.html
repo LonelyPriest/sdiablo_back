@@ -352,12 +352,8 @@
 	    <button class="btn red"
 	    	    x-ng-click="get_ticket()">取券<i class="glyphicon glyphicon-bookmark"></i>
 	    </button>
-
-	    <!-- <button x-ng-if="select.retailer.type_id!==2" class="btn blue" -->
-	    <!-- 	    x-ng-click="gift_ticket()">赠券 -->
-	    <!--   <i class="glyphicon glyphicon-send"></i></button> -->
-
-	    <button class="btn blue"
+	    
+	    <button x-ng-if="select.retailer.type_id!==2" class="btn blue" 
 		    x-ng-click="gift_ticket()">赠券
 	      <i class="glyphicon glyphicon-send"></i></button>
 	    
@@ -954,36 +950,88 @@
   </div>
   
   <div class="modal-body">
-    <form class="form-horizontal" name="tForm" novalidate>
-      <div class="form-body"> 
-	<div class="form-group">
-	  <label class="col-sm-3 col-md-3 control-label">批次号</label>
-	  <div class="col-sm-6 col-md-6">
-	    <input class="form-control"
-		   name="ticket"
-		   type="number"
-		   placeholder="请输入电子卷批次号"
-		   x-ng-edit
-		   disable-key
-		   disable-wheel
-		   required
-		   x-ng-model="params.ticket.batch"
-		   x-ng-enter="tForm.$valid && ok()"/>
-	  </div>
-	</div>
+    <table class="table table-bordered table-striped table-condensed table-advanced">
+      <thead class="bg-cyan">
+	<th class="col-md-2"></th>
+	<th class="col-md-3 text-center">批次</th>
+	<th class="col-md-4 text-center">类型</th>
+	<th class="col-md-3 text-center">金额</th>
+      </thead>
 
-	<div x-ng-if="params.auto_batch" class="form-group">
-	  <label class="col-sm-3 col-md-3 control-label">金额</label>
-	  <div class="col-sm-6 col-md-6">
-	    <input class="form-control"
-		   type="number"
-		   readonly
-		   x-ng-model="params.ticket.balance"/>
-	  </div>
-	</div>
+      <tbody>
+	<tr class="text-center" x-ng-repeat="s in params.stickets">
+	  <td class="vert-align">
+	    <div class="checkbox checkbox-danger checkbox-circle">
+	      <input id={{s.batch}}-{{s.id}}
+		     type="checkbox"
+		     x-ng-model="s.select"
+		     x-ng-click="params.check_select_sticket(s, params.stickets, params.ptickets)"/>
+	      <label for={{s.batch}}-{{s.id}}></label>
+	    </div>
+	  </td>
+	  <td class="vert-align">{{s.batch}}</td>
+	  <td class="vert-align">积分电子卷</td>
+	  <td class="vert-align">{{s.balance}}</td>
+	</tr>
+      </tbody>
+    </table>
+
+    <table class="table table-bordered table-striped table-condensed table-advanced">
+      <thead class="bg-magenta">
+	<th class="col-md-2"></th>
+	<th class="col-md-3 text-center">批次</th>
+	<th class="col-md-4 text-center">类型</th>
+	<th class="col-md-3 text-center">金额</th>
+      </thead>
+
+      <tbody>
+	<tr class="text-center" x-ng-repeat="p in params.ptickets">
+	  <td class="vert-align">
+	    <div class="checkbox checkbox-danger checkbox-circle">
+	      <input id={{p.batch}}-{{p.id}}
+		     type="checkbox"
+		     x-ng-model="p.select"
+		     x-ng-click="params.check_select_pticket(p, params.stickets, params.ptickets)"/>
+	      <label for={{p.batch}}-{{p.id}}></label>
+	    </div>
+	  </td>
+	  <td class="vert-align">{{p.batch}}</td>
+	  <td class="vert-align">优惠电子卷</td>
+	  <td class="vert-align">{{p.balance}}</td>
+	</tr>
+      </tbody>
+    </table>
+    
+    <!-- <form class="form-horizontal" name="tForm" novalidate> -->
+    <!--   <div class="form-body">  -->
+    <!-- 	<div class="form-group"> -->
+    <!-- 	  <label class="col-sm-3 col-md-3 control-label">批次号</label> -->
+    <!-- 	  <div class="col-sm-6 col-md-6"> -->
+    <!-- 	    <input class="form-control" -->
+    <!-- 		   name="ticket" -->
+    <!-- 		   type="number" -->
+    <!-- 		   placeholder="请输入电子卷批次号" -->
+    <!-- 		   x-ng-edit -->
+    <!-- 		   disable-key -->
+    <!-- 		   disable-wheel -->
+    <!-- 		   required -->
+    <!-- 		   x-ng-model="params.ticket.batch" -->
+    <!-- 		   x-ng-enter="tForm.$valid && ok()"/> -->
+    <!-- 	  </div> -->
+    <!-- 	</div> -->
+
+    <!-- 	<div x-ng-if="params.auto_batch" class="form-group"> -->
+    <!-- 	  <label class="col-sm-3 col-md-3 control-label">金额</label> -->
+    <!-- 	  <div class="col-sm-6 col-md-6"> -->
+    <!-- 	    <input class="form-control" -->
+    <!-- 		   type="number" -->
+    <!-- 		   readonly -->
+    <!-- 		   x-ng-model="params.ticket.balance"/> -->
+    <!-- 	  </div> -->
+    <!-- 	</div> -->
 	
-      </div>
-    </form>
+    <!--   </div> -->
+    <!-- </form> -->
   </div>
 
   <div class="modal-footer">
@@ -1382,7 +1430,9 @@
   </div>
 
   <div class="modal-footer">
-    <button class="btn btn-primary" x-ng-click="ok()">确认</button>
+    <button class="btn btn-primary"
+	    x-ng-disabled="!params.check_ticket(params.tickets)"
+	    x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>  
 </script>

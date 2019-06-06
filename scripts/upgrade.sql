@@ -589,4 +589,7 @@ alter table w_card add column csn VARCHAR(32) not null default '-1' after id;
 insert into w_card_sale_detail(rsn, employee, retailer, card, cid, amount, good, tag_price, merchant, shop, entry_date) select rsn, employee, retailer, card, cid, amount, cgood, tag_price, merchant, shop, entry_date from w_card_sale
 
 
+--2019-06-07
+alter table w_ticket_custom add column in_shop integer default -1 after state;
+
 alter table merchants add column shop_count integer default -1 after sms_send;

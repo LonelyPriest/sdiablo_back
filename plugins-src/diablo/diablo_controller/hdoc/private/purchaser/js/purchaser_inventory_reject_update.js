@@ -288,6 +288,7 @@ function purchaserInventoryRejectUpdateCtrlProvide(
 	$scope.select = angular.extend($scope.select, $scope.old_select);
 
 	// base setting
+	$scope.setting.stock_with_firm = stockUtils.stock_mode(baseInfo.shop_id, $scope.ubase).check_i_firm; 
 	$scope.setting.reject_negative = stockUtils.reject_negative(baseInfo.shop_id, $scope.ubase);
 	$scope.setting.history_stock = stockUtils.history_stock(baseInfo.shop_id, $scope.ubase);
 	$scope.setting.q_start_time =
@@ -574,8 +575,9 @@ function purchaserInventoryRejectUpdateCtrlProvide(
 	$scope.has_saved = true; 
 	console.log($scope.inventories);
 
-	if (angular.isUndefined($scope.select.firm)
-	    || diablo_is_empty($scope.select.firm)
+	if ( ($scope.setting.stock_with_firm
+	      && (angular.isUndefined($scope.select.firm)
+		  || diablo_is_empty($scope.select.firm)))
 	    || angular.isUndefined($scope.select.shop)
 	    || diablo_is_empty($scope.select.shop)
 	    || angular.isUndefined($scope.select.employee)
@@ -665,7 +667,7 @@ function purchaserInventoryRejectUpdateCtrlProvide(
 	    id:             $scope.select.rsn_id,
 	    mode:           diablo_stock_reject,
 	    rsn :           $scope.select.rsn,
-	    firm:           $scope.select.firm.id,
+	    firm:           stockUtils.invalid_firm($scope.select.firm),
 	    shop:           $scope.select.shop.id,
 	    datetime:       dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),
 	    employee:       $scope.select.employee.id,

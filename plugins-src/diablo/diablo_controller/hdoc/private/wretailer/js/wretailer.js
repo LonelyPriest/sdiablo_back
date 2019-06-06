@@ -1166,6 +1166,7 @@ function wretailerCustomTicketDetailCtrlProvide(
 		    angular.forEach($scope.tickets, function(t){
 			t.shop = diablo_get_object(t.shop_id, filterShop);
 		    	t.in_shop = diablo_get_object(t.in_shop_id, filterShop);
+			t.provide_shop =  diablo_get_object(t.p_shop_id, filterShop);
 			t.plan = diablo_get_object(t.plan_id, filterTicketPlan);
 		    });
 		    console.log($scope.tickets); 
@@ -1185,53 +1186,55 @@ function wretailerCustomTicketDetailCtrlProvide(
     };
 
     $scope.add_batch = function(){
+	var makeTicketTitle = "批量制券"; 
 	var callback = function(params){
 	    console.log(params);
 	    var sbatch  = retailerUtils.to_integer(params.sbatch);
 	    var count   = retailerUtils.to_integer(params.count);
 	    var balance = retailerUtils.to_integer(params.balance);
 	    var plan    = params.plan;
-	    
-	    if (sbatch.toString().length > diablo_max_ticket_batch) {
-		dialog.response(false, "批量制券", "批量制券失败：" + wretailerService.error[2118]);
-		return;
-	    }
-	    if (count > 1000) {
-		dialog.response(false, "批量制券", "批量制券失败：" + wretailerService.error[2115]);
-		return;
-	    }
-	    if (balance > 5000) {
-		dialog.response(false, "批量制券", "批量制券失败：" + wretailerService.error[2116]);
-		return;
-	    }
 
-	    wretailerService.make_ticket_batch(
-		{sbatch:sbatch, count:count, balance:balance, plan:plan.id}
-	    ).then(function(result){
-		console.log(result);
-		if (result.ecode === 0){
-		    dialog.response_with_callback(
-			true,
-			"批量制券",
-			"批量制券成功！！" ,
-			undefined,
-			function(){});
-		} else {
-		    dialog.response(
-			false, "批量制券", "批量制券失败："
-			    + wretailerService.error[result.ecode]);
-		}
-	    })
+	    if (sbatch.toString().length > diablo_max_ticket_batch) {
+		dialog.set_error();
+		dialog.response(makeTicketTitle, 2118);
+	    } else if (count > 1000) {
+		dialog.response(makeTicketTitle, 2115);
+	    } else if (balance > 5000) {
+		dialog.response(makeTicketTitle, 2116);
+	    } 
+	    else {
+		wretailerService.make_ticket_batch(
+		    {sbatch:sbatch, count:count, balance:balance, plan:plan.id}
+		).then(function(result){
+		    console.log(result);
+		    if (result.ecode === 0){
+			dialog.response_with_callback(
+			    true,
+			    makeTicketTitle,
+			    "批量制券成功！！" ,
+			    undefined,
+			    function(){});
+		    } else {
+			dialog.response(
+			    false, makeTicketTitle, wretailerService.error[result.ecode]);
+		    }
+		})
+	    } 
 	};
 
-	dialog.edit_with_modal(
-	    "add-ticket-batch.html",
-	    undefined,
-	    callback,
-	    undefined,
-	    {num_pattern: $scope.pattern.positive_num,
-	     plan: filterTicketPlan[0],
-	     planes: filterTicketPlan}); 
+	if (filterTicketPlan.length === 0) {
+	    dialog.response(makeTicketTitle, 2196);
+	} else {
+	    dialog.edit_with_modal(
+		"add-ticket-batch.html",
+		undefined,
+		callback,
+		undefined,
+		{num_pattern: $scope.pattern.positive_num,
+		 plan: filterTicketPlan[0],
+		 planes: filterTicketPlan,
+		 balance: filterTicketPlan[0].balance}); 
+	} 
     };
 
     $scope.discard = function(ticketId, mode) {

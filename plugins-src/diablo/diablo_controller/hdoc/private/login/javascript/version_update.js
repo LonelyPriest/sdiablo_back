@@ -1,5 +1,12 @@
 var version_update = function(){
     var updates = [
+	{date: "2019-06-07",
+	 content:
+	 ["优化积分电子卷与优惠电子卷",
+	  "完善优惠电子卷，取消纸质卷，直接绑定用户手机，并发送短信通知"
+	  ]
+	},
+	
 	{date: "2019-06-03",
 	 content:
 	 ["充值提现支持多种卡结算",

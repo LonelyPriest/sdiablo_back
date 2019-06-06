@@ -145,6 +145,19 @@ sms_once(aliqin, Merchant, {Shop, Phone, Action, Money, Balance, Score}) ->
 	    end
     end.
 
+sms(promotion, Merchant, Phone) ->
+    SMSTemplate = "SMS_167400277",
+    start_sms(Merchant, Phone, SMSTemplate, []);
+
+sms(ticket, {Merchant, Shop, Retailer, Phone}, Balance) -> 
+    SMSTemplate   = "SMS_167395687",
+    SMSParams = ?to_s(ejson:encode(
+			{[{<<"shop">>, Shop},
+			  {<<"user">>, Retailer},
+			  {<<"money">>, ?to_b(Balance)} 
+			 ]})),
+    start_sms(Merchant, Phone, SMSTemplate, SMSParams);
+    
 sms(charge, {Merchant, Name, Phone}, Balance) ->
     {ok, SMSRate} = ?w_user_profile:get(sms_rate, Merchant),
     %% ?DEBUG("smsrate ~p", [SMSRate]), 
@@ -174,7 +187,6 @@ sms(swiming, Merchant, Phone, {Shop, Action, LeftSwiming, Expire}) ->
 				     {<<"expire">>, limit_swiming(Expire)}
 				    ]})),
     start_sms(Merchant, Phone, SMSTemplate, SMSParams).
-
 
 start_sms(Merchant, Phone, SMSTemplate, SMSParams) ->
     case check_sms_rate(Merchant) of

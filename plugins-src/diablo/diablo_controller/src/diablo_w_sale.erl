@@ -260,7 +260,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 					    ++ " and batch=" ++ ?to_s(TicketBatch)
 					    ++ " and retailer=" ++ ?to_s(Retailer)];
 				       ?CUSTOM_TICKET ->
-					   ["update w_ticket_custom set "
+					   ["update w_ticket_custom set " 
 					    "state=" ++ ?to_s(?TICKET_STATE_CONSUMED)
 					    ++ ", retailer=" ++ ?to_s(Retailer)
 					    ++ ", shop=" ++ ?to_s(Shop)

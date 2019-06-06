@@ -200,7 +200,7 @@ init([]) ->
 	 {?new_ticket_plan,
 	  <<"新增制券方案">>, <<"new_ticket_plan">>, ?right_w_retailer}, 
 	 {?update_ticket_plan,
-	  <<"新增制券方案">>, <<"update_ticket_plan">>, ?right_w_retailer}, 
+	  <<"修改制券方案">>, <<"update_ticket_plan">>, ?right_w_retailer}, 
 	 {?list_ticket_plan,
 	  <<"查看制券方案">>, <<"list_ticket_plan">>, ?right_w_retailer},
 
@@ -1057,6 +1057,7 @@ pass_action(wholesaler) ->
      <<"list_w_retailer_score">>,
      <<"filter_charge_detail">>,
      <<"get_w_retailer_ticket">>,
+     <<"get_w_retailer_all_ticket">>,
      <<"match_retailer_phone">>,
      <<"syn_retailer_pinyin">>,
      <<"export_recharge_detail">>,
