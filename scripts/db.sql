@@ -429,7 +429,7 @@ create table w_retailer
     consume         DECIMAL(10, 2) default 0, -- max: 99999999.99
     score           INTEGER not null default 0,
     mobile          VARCHAR(11),
-    address         rrVARCHAR(255),
+    address         VARCHAR(255),
     shop            INTEGER default -1,
     draw            INTEGER default -1, -- with draw strategy
     merchant        INTEGER default -1, -- which merchant belong to

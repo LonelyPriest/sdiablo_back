@@ -208,6 +208,10 @@ select * from \
 on a.id=b.firm where a.merchant=4) a where a.balance!=a.acc;
 
 
+-- check retailer balance
+select a.id, a.type, a.retailer, a.merchant, a.balance, b.balance from w_retailer_bank a left join w_retailer b on a.retailer=b.id where a.balance!=b.balance;
+
+
 -- clear date
 delete from w_inventory_good where merchant=55;
 
