@@ -1144,5 +1144,6 @@ pass_action(wholesaler) ->
      <<"check_print_batch_sale">>,
      <<"match_bsaler_phone">>,
      <<"list_sys_bsaler">>,
-     <<"match_batch_sale_prop">>
+     <<"match_batch_sale_prop">>,
+     <<"list_batch_sale_stastic_note">>
     ].

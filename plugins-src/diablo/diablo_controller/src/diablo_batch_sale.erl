@@ -600,9 +600,7 @@ handle_call({export_sale_new_detail, Merchant, Conditions}, _From, State)->
     {reply, Reply, State};
 
 
-handle_call({new_trans_note_color_size_export, Merchant, Conditions}, _From, State)->
-    %% ?DEBUG("new_trans_note_colro_size_export: merchant ~p\nConditions~p", [Merchant, Conditions]),
-
+handle_call({export_sale_new_note, Merchant, Conditions}, _From, State)->
     Sql = "select a.id"
 	", a.rsn"
 	", a.style_number"

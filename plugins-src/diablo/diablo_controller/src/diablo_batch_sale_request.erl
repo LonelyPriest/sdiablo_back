@@ -259,6 +259,55 @@ action(Session, Req, {"list_batch_sale_new_detail"}, Payload) ->
 	    end
     end;
 
+action(Session, Req, {"list_batch_sale_stastic_note"}, Payload) ->
+    ?DEBUG("list_batch_sale_stastic_note: session ~p, payload~n~p", [Session, Payload]),
+    Merchant    = ?session:get(merchant, Session),
+    {struct, NewPayload} = ?v(<<"condition">>, Payload),
+    CType = ?v(<<"ctype">>, NewPayload),
+    SType = ?v(<<"type">>, NewPayload),
+    PayloadWithCtype = ?w_sale_request:replace_condition_with_ctype(Merchant, CType, SType, NewPayload),
+    ?DEBUG("PayloadWithCtype ~p", [PayloadWithCtype]),
+    {ok, Q} = ?b_sale:bsale(get_sale_rsn, Merchant, PayloadWithCtype),
+    case Q of
+	[] ->
+	    ?utils:respond(200, object, Req,
+			   {[{<<"ecode">>, 0},
+			     {<<"total">>, 0},
+			     {<<"note">>, []}]});
+	_ ->
+	    {struct, NewConditions} =
+		?v(<<"fields">>,
+		   ?w_inventory_request:filter_condition(
+		      trans_note, [?v(<<"rsn">>, Rsn) || {Rsn} <- Q], PayloadWithCtype)),
+
+	    ?DEBUG("NewConditions ~p", [NewConditions]),
+	    {ok, Colors} = ?w_user_profile:get(color, Merchant), 
+	    {ok, Sales} = ?b_sale:export(sale_new_detail, Merchant, NewConditions),
+	    ?DEBUG("sales ~p", [Sales]),
+	    NoteConditions = [{<<"rsn">>, ?v(<<"rsn">>, NewConditions, [])}],
+	    {ok, SaleNotes} = ?b_sale:export(sale_new_note, Merchant, NoteConditions),
+
+	    SortTranses = ?w_sale_request:sale_trans(to_dict, Sales, dict:new()),
+	    DictNotes = ?w_sale_request:sale_note(to_dict, SaleNotes, dict:new()),
+
+	    ?DEBUG("SortTranses ~p", [SortTranses]),
+	    ?DEBUG("DictNotes ~p", [DictNotes]),
+	    {Amount, Notes} = ?w_sale_request:print_wsale_new(sort_by_color, Colors, SortTranses, DictNotes, {0, []}),
+
+	    Sort = lists:sort(
+		     fun({N1}, {N2}) ->
+			     Firm1 = ?v(<<"firm_id">>, N1),
+			     Firm2 = ?v(<<"firm_id">>, N2),
+			     Firm1 > Firm2
+		     end, Notes),
+
+	    %% ?DEBUG("sort ~p", [Sort]),
+	    ?utils:respond(200, object, Req,
+			   {[{<<"ecode">>, 0},
+			     {<<"total">>, Amount},
+			     {<<"note">>, Sort}]})
+    end;
+
 action(Session, Req, {"update_batch_sale"}, Payload) ->
     ?DEBUG("update_w_sale with session ~p~npaylaod ~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),

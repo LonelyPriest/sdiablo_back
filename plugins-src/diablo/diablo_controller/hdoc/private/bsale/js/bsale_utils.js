@@ -255,7 +255,7 @@ var bsaleUtils = function(){
 		hide_wdiscount:default_hide(mode.charAt(4)),
 		hide_sale_prop:default_hide(mode.charAt(5)),
 		hide_comment:default_hide(mode.charAt(6)),
-		hide_wcomment:default_hide(mode.charAt(7))
+		hide_wcomment:default_hide(mode.charAt(7))		
 	    };
 	},
 
@@ -272,7 +272,8 @@ var bsaleUtils = function(){
 		hide_address:      default_hide(mode.charAt(6)),
 		hide_p_discount:   default_hide(mode.charAt(7)),
 		hide_p_tagprice:   default_hide(mode.charAt(8)),
-		hide_p_virprice:   default_hide(mode.charAt(9))
+		hide_p_virprice:   default_hide(mode.charAt(9)),
+		hide_p_balance:    default_hide(mode.charAt(9)),
 	    };
 	},
 	

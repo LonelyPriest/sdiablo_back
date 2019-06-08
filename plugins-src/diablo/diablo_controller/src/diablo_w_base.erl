@@ -957,6 +957,8 @@ sys_config() ->
 	      {"bcode_use",       "条码开单模式",         "0",   "0"},
 	      {"bcode_auto",      "采用系统规则生成条码", "1",   "0"}, 
 	      %% {"trans_orgprice",  "移仓检测进价",         "1",   "0"},
+
+	      
 	      %% [0]: print color and size
 	      %% [1]: print color only
 	      %% [2]: print size only
@@ -970,7 +972,8 @@ sys_config() ->
 	      %% [7]: hide discount when print
 	      %% [8]: hide tag price when print
 	      %% [9]: hide vir price when print
-	      {"p_color_size",    "打印颜色尺码",         "0001111111", "0"},
+	      %% [10]:hide batch retailer balance info when print 
+	      {"p_color_size",    "打印颜色尺码",         "00011111110", "0"},
 	      
 	      {"saler_stock",      "营业员查看区域库存",  "0",   "0"},
 	      %% {"r_stock_oprice",    "厂商退货检测进价",   "1",   "0"},
@@ -1037,7 +1040,7 @@ sys_config() ->
 	      %%[5]:hide properties when batch sale
 	      %%[6]:hide comment when batch sale
 	      %%[7]:hide whole comment when batch sale
-	      {"batch_mode",        "批发配置",           "0111111",    "0"}
+	      {"batch_mode",        "批发配置",           "01111111",    "0"}
 	     ],
     
     Values.

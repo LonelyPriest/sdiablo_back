@@ -1215,15 +1215,14 @@ function wretailerCustomTicketDetailCtrlProvide(
 			    undefined,
 			    function(){});
 		    } else {
-			dialog.response(
-			    false, makeTicketTitle, wretailerService.error[result.ecode]);
+			dialog.set_error(makeTicketTitle, wretailerService.error[result.ecode]);
 		    }
 		})
 	    } 
 	};
 
 	if (filterTicketPlan.length === 0) {
-	    dialog.response(makeTicketTitle, 2196);
+	    dialog.set_error(makeTicketTitle, 2191);
 	} else {
 	    dialog.edit_with_modal(
 		"add-ticket-batch.html",

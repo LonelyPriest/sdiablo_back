@@ -218,6 +218,12 @@ function bsaleConfig(angular){
 		 count:  itemsPerpage}).$promise;
 	};
 
+	this.list_bsale_stastic_note = function(condition) {
+	    return request.save(
+		{operation: "list_batch_sale_stastic_note"},
+		{condition: condition}).$promise;
+	};
+
 	this.check_batch_sale = function(rsn){
 	    return request.save({operation: "check_batch_sale"}, {rsn: rsn, mode:diablo_check}).$promise;
 	};

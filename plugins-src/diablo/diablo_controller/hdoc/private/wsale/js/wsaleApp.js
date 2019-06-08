@@ -1021,32 +1021,53 @@ function wsaleNewProvide(
     	    console.log(result);
 	    var callback = function(params) {
 		console.log(params);
-		var select_ticket, select_ticket_type;
-		for (var i=0, l=params.stickets.length; i<l; i++) {
-		    if (angular.isDefined(params.stickets[i].select) && params.stickets[i].select) {
-			select_ticket = params.stickets[i];
-			$scope.select.ticket_custom = diablo_score_ticket;
-			break;
-		    }
-		}
-
-		if (angular.isUndefined(select_ticket)) {
-		    for (var j=0, k=params.ptickets.length; j<k; j++) {
-			if (angular.isDefined(params.ptickets[j].select) && params.ptickets[j].select){
-			    select_ticket = params.ptickets[j];
+		if (wsaleUtils.to_integer(params.self_batch) > 0) {
+		    diabloFilter.get_ticket_by_batch(
+			params.self_batch
+		    ).then(function(result){
+			console.log(result);
+			if (result.ecode === 0 && !diablo_is_empty(result.data)) {
+			    $scope.select.ticket_batch = wsaleUtils.to_integer(result.data.batch);
+			    $scope.select.ticket_balance = wsaleUtils.to_integer(result.data.balance);
 			    $scope.select.ticket_custom = diablo_custom_ticket;
+			    $scope.reset_payment(); 
+			} else {
+			    if (diablo_is_empty(result.data)) {
+				dialog.set_error("会员电子卷获取", 2105); 
+			    }
+			    else {
+				dialog.set_error("会员电子卷获取", result.ecode); 
+			    }
+			}
+		    });
+		} else {
+		    var select_ticket, select_ticket_type;
+		    for (var i=0, l=params.stickets.length; i<l; i++) {
+			if (angular.isDefined(params.stickets[i].select) && params.stickets[i].select) {
+			    select_ticket = params.stickets[i];
+			    $scope.select.ticket_custom = diablo_score_ticket;
 			    break;
 			}
-		    }   
+		    }
+
+		    if (angular.isUndefined(select_ticket)) {
+			for (var j=0, k=params.ptickets.length; j<k; j++) {
+			    if (angular.isDefined(params.ptickets[j].select) && params.ptickets[j].select){
+				select_ticket = params.ptickets[j];
+				$scope.select.ticket_custom = diablo_custom_ticket;
+				break;
+			    }
+			}   
+		    }
+
+		    console.log(select_ticket);
+		    console.log(select_ticket_type);
+
+		    $scope.select.ticket_batch   = select_ticket.batch;
+		    $scope.select.ticket_balance = select_ticket.balance;
+		    $scope.reset_payment(); 
 		}
-
-		console.log(select_ticket);
-		console.log(select_ticket_type);
-
-		$scope.select.ticket_batch   = select_ticket.batch;
-		$scope.select.ticket_balance = select_ticket.balance;
-
-		$scope.reset_payment();
+		
 	    };
 	    
     	    if (result.ecode === 0){
@@ -1083,12 +1104,7 @@ function wsaleNewProvide(
 		     } 
 		    });
     	    } else {
-    		var ERROR = require("diablo-error");
-    		diabloUtilsService.response(
-    		    false,
-    		    "会员电子卷获取",
-    		    ERROR[result.ecode],
-    		    undefined);
+		dialog.set_error("会员电子卷获取", result.ecode); 
     	    }
     	}); 
     }
@@ -1782,8 +1798,14 @@ function wsaleNewProvide(
 	console.log(item); 
 	if (item.tag_price < 0){
 	    fail_response(2193, function(){}); 
-	    return;
-	};
+	} else {
+	    // auto focus
+	    $scope.auto_focus("sell"); 
+	    var add  = {$new:true}; 
+	    $scope.copy_select(add, item);
+	    console.log(add);
+	    $scope.add_inventory(add); 
+	}
 	
 	// has been added
 	// var existStock = undefined;
@@ -1806,15 +1828,7 @@ function wsaleNewProvide(
 	//     add = $scope.copy_select(add, item);
 	//     console.log(add);
 	//     $scope.add_inventory(add);
-	// }
-
-	// auto focus
-	$scope.auto_focus("sell");
-	
-	var add  = {$new:true}; 
-	$scope.copy_select(add, item);
-	console.log(add);
-	$scope.add_inventory(add); 
+	// } 
     };
 
     /*
@@ -2186,9 +2200,9 @@ function wsaleNewProvide(
 	
 	var setv = diablo_set_float;
 	var seti = diablo_set_integer;
-	var sets = diablo_set_string;
-	
+	var sets = diablo_set_string; 
 	var added = [];
+	
 	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    var add = $scope.inventories[i];
 	    var index = index_of_sale(add, added)
@@ -2776,8 +2790,7 @@ function wsaleNewProvide(
 			get_amount:     get_amount,
 			valid_sell:     valid_sell,
 			valid:          valid_all_sell,
-			close:        function(close) {
-			    if (angular.isFunction(close)) close();
+			cancel_callback:  function(close) {
 			    $scope.focus_by_element();
 			},
 			right:          $scope.right};
@@ -2945,6 +2958,7 @@ function wsaleNewProvide(
 	    // save
 	    // $scope.wsaleStorage.save($scope.inventories.filter(function(r){return !r.$new}));
 	    $scope.re_calculate();
+	    $scope.focus_by_element();
 
 	    if (angular.isDefined(updateCallback) && angular.isFunction(updateCallback))
 		updateCallback();
@@ -2964,8 +2978,7 @@ function wsaleNewProvide(
 		       get_amount:   get_amount, 
 		       valid_sell:   valid_sell,
 		       valid:        valid_all_sell,
-		       close:        function(close) {
-			   if (angular.isFunction(close)) close();
+		       cancel_callback:  function() {
 			   $scope.focus_by_element();
 		       },
 		       right:        $scope.right};
@@ -3018,33 +3031,28 @@ function wsaleNewProvide(
 	// $timeout.cancel($scope.timeout_auto_save);
 	
 	var sell = wsaleUtils.to_integer(inv.sell);
-	if (sell === 0) return
-	if (angular.isUndefined(inv.style_number)) return;
-	
+	if (sell !== 0 && angular.isDefined(inv.style_number)) {
+	    if (inv.$new && inv.free_color_size){
+		$scope.add_free_inventory(inv);
+	    } 
 
-	if (inv.$new && inv.free_color_size){
-	    $scope.add_free_inventory(inv);
-	}; 
-
-	if (!inv.$new && inv.free_update){
-	    if ($scope.setting.check_sale && sell > inv.total){
-		if (angular.isDefined(inv.form.sell)) {
-		    inv.form.sell.$invalid = true;
-		    inv.form.sell.$pristine = false; 
+	    if (!inv.$new && inv.free_update){
+		if ($scope.setting.check_sale && sell > inv.total){
+		    if (angular.isDefined(inv.form.sell)) {
+			inv.form.sell.$invalid = true;
+			inv.form.sell.$pristine = false; 
+		    }
+		    inv.invalid_sell = true; 
+		} else if (!$scope.setting.negative_sale && sell < 0) {
+		    if (angular.isDefined(inv.form.sell)) {
+			inv.form.sell.$invalid = true;
+			inv.form.sell.$pristine = false;
+		    }
+		    inv.invalid_sell = true;
+		} else {
+		    $scope.save_free_update(inv); 
 		}
-		inv.invalid_sell = true; 
-		return;
-	    }
-	    
-	    if (!$scope.setting.negative_sale && sell < 0) {
-		if (angular.isDefined(inv.form.sell)) {
-		    inv.form.sell.$invalid = true;
-		    inv.form.sell.$pristine = false;
-		}
-		inv.invalid_sell = true;
-		return;
-	    }; 
-	    $scope.save_free_update(inv); 
+	    } 
 	} 
     };
 

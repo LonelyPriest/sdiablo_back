@@ -110,6 +110,7 @@ var diablo_max_ticket_batch = 9;
 
 var diablo_seperator = ",";
 var diablo_semi_seperator = ";";
+var diablo_dash_seperator = "-";
 var diablo_fix_draft_path = "C:\\fix.txt";
 
 /*
@@ -152,7 +153,7 @@ var diablo_sale_mode ="000000000000000100";
 /*
  * batch sale print mode, color or size or both
  */
-var diablo_bsale_print_cs_mode ="0001111111";
+var diablo_bsale_print_cs_mode ="00011111110";
 
 /*
  * stock_mode
@@ -162,7 +163,7 @@ var diablo_stock_mode = "1111111";
 /*
  * batch mode
  */
-var diablo_batch_mode = "0111";
+var diablo_batch_mode = "01111111";
 
 /*
  * number of print
@@ -272,7 +273,7 @@ var size_to_barcode =
      "95A", "95B", "95C", "95D", "95E", "95F",
 
      "55", "60", "65", "70", "75", "85", "95", "73", "78", "66", "51",
-     "62", "67", "79", "72", "84", "59", "53", "2", "3"];
+     "62", "67", "79", "72", "84", "59", "53", "2", "3", "8XL"];
 
 // var f_size_to_barcode = [
 //     "FF",

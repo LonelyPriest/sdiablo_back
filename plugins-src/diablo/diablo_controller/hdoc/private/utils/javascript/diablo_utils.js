@@ -1110,7 +1110,7 @@ diabloUtils.service("diabloUtilsService", function($uibModal){
 
 diabloUtils.controller("diabloDialogCtrl", function($scope, $uibModalInstance, message){
     // console.log($scope);
-    console.log($uibModalInstance);
+    // console.log($scope);
     console.log(message);
     $scope.success = message.success;
     $scope.title = message.title;
@@ -1119,10 +1119,7 @@ diabloUtils.controller("diabloDialogCtrl", function($scope, $uibModalInstance, m
     $scope.show_cancel = angular.isDefined(message.show_cancel) ? message.show_cancel : true;
 
     $scope.cancel = function(){
-	$uibModalInstance.dismiss('cancel');
-	// if (angular.isDefined(message.cancel) && angular.isFunction(message.cancel)){
-	//     message.cancel()
-	// }
+	$uibModalInstance.dismiss('cancel'); 
     };
 
     $scope.ok = function() {

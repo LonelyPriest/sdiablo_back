@@ -10,7 +10,8 @@
 -export([replace_condition_with_ctype/4,
 	 replace_condition_with_ctype/5,
 	 replace_condition_with_lbrand/5,
-	 sys_vip_of_shop/2]).
+	 sys_vip_of_shop/2,
+	 print_wsale_new/5]).
 
 -define(d, ?utils:seperator(csv)).
 

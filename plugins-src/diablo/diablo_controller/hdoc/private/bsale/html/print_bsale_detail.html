@@ -126,7 +126,8 @@
 	    </tbody> 
 	  </table> <!--END table--> 
 	</div>
-	<h4 style="text-align:center; margin-top:5px; margin-bottom:5px">
+	<h4 x-ng-if="!print_mode.hide_p_balance"
+	    style="text-align:center; margin-top:5px; margin-bottom:5px">
 	  <span>
 	    <span>上欠：<span class="sell-font"><strong>{{detail.balance}}</strong></span></span>
 	    &nbsp&nbsp&nbsp&nbsp<span>本次应付：
