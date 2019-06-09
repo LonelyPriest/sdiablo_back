@@ -493,12 +493,18 @@ task(gen_ticket, Datetime, {Merchant, Conditions}) when is_number(Merchant) ->
     ?DEBUG("score2money ~p, ", [Score2Money]),
 
     
-    IsGenTicket = ?v(<<"gen_ticket">>, BaseSetting, 0),
+    TicketSetting = ?to_s(?v(<<"gen_ticket">>, BaseSetting, <<"00">>)),
+    ?DEBUG("TicketSetting ~p", [TicketSetting]),
+
+    AutoGenTicket = ?utils:nth(1, TicketSetting),
+    IsCheck = ?utils:nth(2, TicketSetting),
+    ?DEBUG("AutoGenTicket ~p, IsCheck ~p", [AutoGenTicket, IsCheck]),
+
     SysVips = sys_vip_of(merchant, Merchant),
     %% ?DEBUG("IsGenTicket ~p, SysVips ~p, Merchant ~p, score2money ~p", [IsGenTicket, SysVips, Merchant, Score2Money]),
     
     TicketSqls =
-	case ?to_i(IsGenTicket) =:= ?YES andalso length(Score2Money) =/= 0 of
+	case AutoGenTicket =:= ?YES andalso length(Score2Money) =/= 0 of
 	    true ->
 		AccScore    = ?v(<<"score">>, Score2Money), 
 		SendBalance = ?v(<<"balance">>, Score2Money),
@@ -573,11 +579,12 @@ task(gen_ticket, Datetime, {Merchant, Conditions}) when is_number(Merchant) ->
 					      {ok, []} ->
 						  Batch = ?inventory_sn:sn(w_ticket, Merchant), 
 						  ["insert into w_ticket(batch, sid, balance"
-						   ", retailer, merchant, entry_date) values("
+						   ", retailer, state, merchant, entry_date) values("
 						   ++ ?to_s(Batch) ++ ","
 						   ++ ?to_s(?v(<<"id">>, Score2Money)) ++ ","
 						   ++ ?to_s(TicketBalance) ++ ","
 						   ++ ?to_s(RetailerId) ++ ","
+						   ++ ?to_s(IsCheck) ++ ","
 						   ++ ?to_s(Merchant) ++ ","
 						   ++ "\'" ++ FormatDatetime ++ "\')"|Acc];
 					      {ok, E} ->
@@ -1120,3 +1127,5 @@ sys_vip_of(merchant, Merchant) ->
 		  end
 	  end, [], Settings),
     SysVips.
+
+

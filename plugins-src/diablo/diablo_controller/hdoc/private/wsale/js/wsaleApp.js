@@ -1101,7 +1101,31 @@ function wsaleNewProvide(
 			 angular.forEach(stickets, function(s) {
 			     s.select = false;
 			 });
-		     } 
+		     },
+
+		     check_valid: function(batch, stickets, ptickets) {
+			 var autoTicket = false;
+			 for (var i=0, l=stickets.length; i<l; i++) {
+			     if (angular.isDefined(stickets[i].select) && stickets[i].select) {
+				 autoTicket = true;
+				 break;
+			     }
+			 }
+
+			 if (!autoTicket) {
+			     for (var j=0, k=ptickets.length; j<k; j++) {
+				 if (angular.isDefined(ptickets[i].select) && ptickets[i].select) {
+				     autoTicket = true;
+				     break;
+				 }
+			     }
+			 }
+
+			 if (batch && autoTicket) return false;
+			 if (!batch && !autoTicket) return false;
+
+			 return true;
+		     }
 		    });
     	    } else {
 		dialog.set_error("会员电子卷获取", result.ecode); 

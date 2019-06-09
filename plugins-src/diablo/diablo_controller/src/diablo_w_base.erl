@@ -928,8 +928,10 @@ sys_config() ->
 	      %% [15]: print discount on sale
 	      %% [16-17]: threshold discount of score 00:none
 	      {"p_balance",   "销售模式",   "000000000000000100",  "0"},
-	      
-	      {"gen_ticket",      "自动生成电子卷",       "0",   "0"},
+
+	      %% [0]: auto generate ticket at 04:00
+	      %% [1]: use ticket with no check 0-> check 1-> no check
+	      {"gen_ticket",      "自动生成电子卷",       "00",   "0"},
 	      
 	      %% [0]: recharge 
 	      %% [1]: threshold_card
@@ -1020,9 +1022,11 @@ sys_config() ->
 	      %%[3]:add scan mode when stock_transfer
 	      %%[4]:foucs styleNumber when barcode use
 	      %%[5]:show tag_price in stock transfer
-	      %%[6]:xsale mode only use to batch sale transfer
-	      
-	      {"scan_only",         "扫码模式",           "0000000", "0"},
+	      %%[6]:xsale mode only used to batch sale transfer
+	      %%[7]:stock_transfer mode
+	      %%    0-> common transfer 
+	      %%    1-> fast transfer no dialog pop
+	      {"scan_only",         "扫码模式",           "00000001", "0"},
 	      %% {"auto_level",        "会员自动升级",       "0",    "0"},
 	      {"maling_rang",       "抹零范围",           "3",    "0"},
 	      %% 1: clothes mode, 2: child mode, 3: home mode

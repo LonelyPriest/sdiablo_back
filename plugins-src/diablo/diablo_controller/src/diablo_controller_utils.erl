@@ -388,3 +388,14 @@ to_utf8(from_latin1, S) ->
 to_gbk(from_latin1, S) ->
     U8 = to_utf8(from_latin1, S),
     diablo_iconv:convert("utf-8", "gbk", U8).
+
+
+nth(N, Setting) when is_binary(Setting)->
+    nth(N, ?to_s(Setting));
+nth(N, Setting) ->
+    try
+	?to_i(lists:nth(N, Setting)) - 48
+    catch _:_ ->
+	    ?NO
+    end.
+    

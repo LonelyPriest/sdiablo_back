@@ -46,6 +46,8 @@ function purchaserInventoryTransferCtrlProvide (
 
 	var tMode = stockUtils.scan_mode(shopId, base);
 	$scope.base_settings.scan_mode = stockUtils.to_integer(tMode.charAt(3));
+	$scope.base_settings.fast_transfer = stockUtils.to_integer(tMode.charAt(7));
+	
 	$scope.base_settings.show_tagprice = stockUtils.to_integer(tMode.charAt(5));
 	$scope.base_settings.xsale = stockUtils.to_integer(tMode.charAt(6));
 	$scope.base_settings.auto_barcode = stockUtils.auto_barcode(diablo_default_shop, base);
@@ -278,7 +280,7 @@ function purchaserInventoryTransferCtrlProvide (
 	return $scope.has_saved || $scope.inventories.length === 0; 
     };
 
-    var index_of_transfer = function(sale, exists) {
+    $scope.index_of_transfer = function(sale, exists) {
 	var index = diablo_invalid_index;;
 	for (var i=0, l=exists.length; i<l; i++) {
 	    if (sale.style_number === exists[i].style_number && sale.brand_id === exists[i].brand) {
@@ -289,7 +291,7 @@ function purchaserInventoryTransferCtrlProvide (
 	return index;
     };
 
-    var index_of_transfer_detail = function(existDetails, detail) {
+    $scope.index_of_transfer_detail = function(existDetails, detail) {
 	var index = diablo_invalid_index;
 	for (var j=0, k=existDetails.length; j<k; j++) {
 	    if (detail.cid === existDetails[j].cid && detail.size === existDetails[j].size) {
@@ -329,18 +331,18 @@ function purchaserInventoryTransferCtrlProvide (
 	
 	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    var add = $scope.inventories[i];
-	    var index = index_of_transfer(add, added)
+	    var index = $scope.index_of_transfer(add, added)
 	    if (diablo_invalid_index !== index) {
 		var existTransfer = added[index];
 		existTransfer.total += stockUtils.to_integer(add.reject); 
 		var details1 = get_transfer_detail(add.amounts);
 		var existDetails = existTransfer.amounts;
-		// console.log(existDetails);
-		// console.log(details1);
+		console.log(details1); 
+		console.log(existDetails);
 		angular.forEach(details1, function(d) {
-		    var indexDetail = index_of_transfer_detail(existDetails, d);
+		    var indexDetail = $scope.index_of_transfer_detail(existDetails, d);
 		    if (diablo_invalid_index !== indexDetail) {
-			existDetails[indexDetail].reject_count += d.reject_count;
+			existDetails[indexDetail].count += d.count;
 		    } else {
 			existDetails.push(d);
 		    } 
@@ -396,7 +398,7 @@ function purchaserInventoryTransferCtrlProvide (
 
 	console.log(added);
 	console.log(base);
-
+	
 	// $scope.has_saved = true
 	purchaserService.transfer_purchaser_inventory({
 	    inventory: added, base: base
@@ -515,26 +517,42 @@ function purchaserInventoryTransferCtrlProvide (
 
     var cs_stock_not_enought = function(stock) {
 	var not_enought = false;
+	var existStocks = [];
 	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    var s = $scope.inventories[i];
 	    if (stock.style_number === s.style_number && stock.brand_id === s.brand_id){
-		angular.forEach(stock.amounts, function(a) {
-		    var rejectCount = stockUtils.to_integer(a.reject_count);
-		    if (rejectCount !== 0) {
-			for (var j=0,k=s.amounts.length; j<k; j++) {
-			    if (a.cid === s.amounts[j].cid && a.size === s.amounts[j].size) {
-				if (rejectCount + stockUtils.to_integer(s.amounts[j].reject_count) > a.count) {
-				    not_enought = true;
-				    break;
-				}
-			    }
-			}
-		    } 
-		})
+		existStocks.push(s); 
 	    }
 	}
 
-	// console.log(not_enought);
+
+	var willAmounts = stock.amounts.filter(function(a) {
+	    return stockUtils.to_integer(a.reject_count) > 0;
+	}).map(function(m) {
+	    return {cid:m.cid, size:m.size, reject_count:m.reject_count, count:m.count}
+	});
+	
+	angular.forEach(existStocks, function(e) {
+	    var existAmounts = e.amounts;
+	    for (var j=0, k=willAmounts.length; j<k; j++) {
+		for (var m=0, n=existAmounts.length; m<n; m++) {
+		    if (existAmounts[m].reject_count > 0) {
+			if (existAmounts[m].cid === willAmounts[j].cid
+			    && existAmounts[m].size === willAmounts[j].size) {
+			    willAmounts[j].reject_count += existAmounts[m].reject_count;
+			    if (willAmounts[j].reject_count > willAmounts[j].count) {
+				not_enought = true;
+				break;
+			    }
+			}
+			    
+		    }
+		    
+		}
+	    }
+	});
+
+	console.log(willAmounts);	
 	return not_enought;
     };
     
@@ -608,6 +626,47 @@ function purchaserInventoryTransferCtrlProvide (
 		    var bcode_size = bcode_size_index === 0 ? diablo_free_size:size_to_barcode[bcode_size_index];
 		    // console.log(bcode_color);
 		    // console.log(bcode_size);
+		    var after_add = function(enought_check){
+			if (enought_check && cs_stock_not_enought(inv)) {
+			    dialog.set_error($scope.response_title, 2070);
+			}else {
+			    inv.$edit = true;
+			    inv.$new = false;
+			    // order
+			    $scope.inventories.unshift(inv); 
+			    inv.order_id = $scope.inventories.length;
+			    
+			    $scope.row_change_xdiscount(inv); 
+			    $scope.re_calculate();
+			    $scope.focus_by_element();
+			} 
+		    };
+		    
+		    var callback = function(params){
+			var result = add_callback(params);
+			// console.log(result);
+			inv.amounts   = result.amounts;
+			inv.reject    = result.reject;
+			inv.org_price = result.org_price;
+			inv.xdiscount = stockUtils.to_integer(result.xdiscount);
+			inv.note      = result.note;
+			after_add(true);
+		    };
+
+		    var start_transfer = function() {
+			var payload = {sizes:           inv.sizes,
+				       colors:          inv.colors,
+				       org_price:       inv.org_price,
+				       amounts:         inv.amounts,
+				       get_amount:      get_amount,
+				       valid:           valid_all,
+				       cancel_callback: $scope.focus_by_element};
+			
+			diabloUtilsService.edit_with_modal(
+			    "inventory-new.html", 'lg', callback, $scope, payload); 
+		    }
+		    
+		    
 		    angular.forEach(inv.amounts, function(a) {
 			// console.log(a.cid, inv.colors);
 			a.focus = false;
@@ -625,6 +684,25 @@ function purchaserInventoryTransferCtrlProvide (
 			    a.focus = true;
 			}
 		    });
+
+		    if ($scope.base_settings.fast_transfer) {
+			if (cs_stock_not_enought(inv)) {
+			    dialog.set_error($scope.response_title, 2070);
+			} else {
+			    var result = add_callback({amounts:inv.amounts});
+			    console.log(result);
+			    inv.amounts   = result.amounts;
+			    inv.reject    = result.reject;
+			    // fast mode can not change org_price and xdiscount of stock 
+			    // inv.org_price = result.org_price;
+			    // inv.xdiscount = stockUtils.to_integer(result.xdiscount);
+			    inv.note      = result.note;
+			    after_add(false); 
+			} 
+		    } else {
+			start_transfer();
+		    } 
+		    
 		} else {
 		    // inv.amounts[0].focus = true;
 		    for (var i=0, l=inv.amounts.length; i<l; i++) {
@@ -634,46 +712,9 @@ function purchaserInventoryTransferCtrlProvide (
 			    a.focus = true;
 			}
 		    }
-		}
-		
-		var after_add = function(){
-		    if (cs_stock_not_enought(inv)) {
-			dialog.set_error($scope.response_title, 2070);
-		    }else {
-			inv.$edit = true;
-			inv.$new = false;
-			// order
-			$scope.inventories.unshift(inv); 
-			inv.order_id = $scope.inventories.length;
-			
-			$scope.row_change_xdiscount(inv); 
-			$scope.re_calculate();
-			// $scope.focus_good_or_barcode();
-			$scope.focus_by_element();
-		    } 
-		};
-		
-		var callback = function(params){
-		    var result = add_callback(params);
-		    // console.log(result);
-		    inv.amounts   = result.amounts;
-		    inv.reject    = result.reject;
-		    inv.org_price = result.org_price;
-		    inv.xdiscount = stockUtils.to_integer(result.xdiscount);
-		    inv.note      = result.note;
-		    after_add();
-		};
-		
-		var payload = {sizes:           inv.sizes,
-			       colors:          inv.colors,
-			       org_price:       inv.org_price,
-			       amounts:         inv.amounts,
-			       get_amount:      get_amount,
-			       valid:           valid_all,
-			       cancel_callback: $scope.focus_by_element};
-		
-		diabloUtilsService.edit_with_modal(
-		    "inventory-new.html", 'lg', callback, $scope, payload); 
+		    
+		    start_transfer();
+		} 
 	    }
 	}) 
     };

@@ -14,8 +14,7 @@ var retailerUtils = function(){
 	},
 
 	print_num: function(shop, base){
-	    var p = diablo_base_setting(
-		"pum", shop, base, function(s) {return s}, diablo_print_num);
+	    var p = diablo_base_setting("pum", shop, base, function(s) {return s}, diablo_print_num);
 	    return {common: retailerUtils.to_integer(p.charAt(0)),
 		    swiming: retailerUtils.to_integer(p.charAt(1)),
 		    protocal: retailerUtils.to_integer(p.charAt(2))};

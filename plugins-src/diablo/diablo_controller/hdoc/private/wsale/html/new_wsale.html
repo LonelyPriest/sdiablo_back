@@ -1027,7 +1027,7 @@
 
   <div class="modal-footer">
     <button class="btn btn-primary"
-	    x-ng-disabled="tForm.$invalid"
+	    x-ng-disabled="!params.check_valid(params.self_batch, params.stickets, params.ptickets)"
 	    x-ng-click="ok()">确定</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>
