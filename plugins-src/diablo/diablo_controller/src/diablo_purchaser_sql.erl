@@ -662,27 +662,21 @@ inventory({group_detail, MatchMode}, Merchant, Conditions, PageFun) ->
 	++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime) ++  PageFun();
 
 inventory(set_promotion, Merchant, Promotions, Conditions) ->
-    {StartTime, EndTime, NewConditions} =
-	?sql_utils:cut(fields_no_prifix, Conditions),
-
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
+    RealyConditions = realy_conditions(Merchant, NewConditions),
+    ExtraConditions = sort_condition(stock, NewConditions), 
     Promotion = ?v(<<"promotion">>, Promotions),
-    Score     = ?v(<<"score">>, Promotions),
-
-    Updates = ?utils:v(promotion, integer, Promotion)
-	++ ?utils:v(score, integer, Score),
-
-    %% ?DEBUG("updates ~p", [Updates]),
+    Score     = ?v(<<"score">>, Promotions), 
+    Updates = ?utils:v(promotion, integer, Promotion) ++ ?utils:v(score, integer, Score),
     
     "update w_inventory set " ++ ?utils:to_sqls(proplists, comma, Updates)
-	++ " where " 
-	++ ?sql_utils:condition(proplists_suffix, NewConditions)
-	++ "merchant=" ++ ?to_s(Merchant)
-	++ " and state!=3"
-	++ " and deleted=" ++ ?to_s(?NO) 
+	++ " where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, RealyConditions)
+	++ ExtraConditions
 	++ case ?sql_utils:condition(time_no_prfix, StartTime, EndTime) of
 	       [] -> [];
 	       TimeSql ->  " and " ++ TimeSql
-	   end;
+	   end; 
 
 inventory(set_gift, Merchant, GiftState, Conditions) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions), 

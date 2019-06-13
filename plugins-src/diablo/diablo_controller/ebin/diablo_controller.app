@@ -37,7 +37,7 @@
                         diablo_cron_job_register,diablo_cron_control,
                         diablo_w_base_request,diablo_w_base,
                         diablo_controller_right_init,diablo_controller_authen,
-                        diablo_wuser_profile,diablo_sms_notify,
+                        diablo_wuser_profile,diablo_sms_notify,diablo_pay,
                         diablo_batch_sale_request,diablo_batch_sale,
                         diablo_batch_saler,base_frame,base_require_frame,
                         employ_frame,login,login_force,member_frame,

@@ -460,13 +460,13 @@ init([]) ->
 handle_call({new_good, Merchant, Attrs}, _Form, State) ->
     ?DEBUG("new_good with merchant ~p~nattrs~p", [Merchant, Attrs]),
     %% Merchant    = ?v(<<"merchant">>, Attrs),
-    Barcode     = ?v(<<"barcode">>, Attrs, []),
+    Barcode     = ?v(<<"bcode">>, Attrs, []),
     StyleNumber = ?v(<<"style_number">>, Attrs),
     BrandId     = ?v(<<"brand_id">>, Attrs),
     Shop        = ?v(<<"shop">>, Attrs),
     UseZero     = ?v(<<"zero_inventory">>, Attrs, ?NO),
     %% SelfBarcode = ?v(<<"self_barcode">>, Attrs, ?NO),
-    Sql = case ?v(<<"barcode">>, Attrs, []) of
+    Sql = case ?v(<<"bcode">>, Attrs, []) of
 	      [] ->
 		  "select style_number, brand from w_inventory_good"
 		      " where style_number=" ++ "\"" ++ ?to_s(StyleNumber) ++ "\""

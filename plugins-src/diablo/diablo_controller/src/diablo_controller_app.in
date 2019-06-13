@@ -59,7 +59,7 @@
      diablo_controller_right_init, diablo_controller_authen,
 
      %% profile
-     diablo_wuser_profile, diablo_sms_notify,
+     diablo_wuser_profile, diablo_sms_notify, diablo_pay,
 
      %% batch
      diablo_batch_sale_request,

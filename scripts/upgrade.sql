@@ -592,4 +592,5 @@ insert into w_card_sale_detail(rsn, employee, retailer, card, cid, amount, good,
 --2019-06-07
 alter table w_ticket_custom add column in_shop integer default -1 after state;
 
+--2019-06-12
 alter table merchants add column shop_count integer default -1 after sms_send;

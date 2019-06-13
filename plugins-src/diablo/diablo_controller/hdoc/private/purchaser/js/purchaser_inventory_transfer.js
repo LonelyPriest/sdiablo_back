@@ -589,22 +589,47 @@ function purchaserInventoryTransferCtrlProvide (
 	    inv.total   = sort.total;
 	    inv.sizes   = sort.size;
 	    inv.colors  = sort.color;
-	    inv.amounts = sort.sort;
+	    inv.amounts = sort.sort; 
 
-	    // var add_callback = function(params){
-	    // 	console.log(params.amounts); 
-	    // 	var reject_total = 0;
-	    // 	angular.forEach(params.amounts, function(a){
-	    // 	    if (angular.isDefined(a.reject_count) && a.reject_count){
-	    // 		reject_total += parseInt(a.reject_count);
-	    // 	    }
-	    // 	})
+	    var after_add = function(enought_check){
+		if (enought_check && cs_stock_not_enought(inv)) {
+		    dialog.set_error($scope.response_title, 2070);
+		}else {
+		    inv.$edit = true;
+		    inv.$new = false;
+		    // order
+		    $scope.inventories.unshift(inv); 
+		    inv.order_id = $scope.inventories.length;
+		    
+		    $scope.row_change_xdiscount(inv); 
+		    $scope.re_calculate();
+		    $scope.focus_by_element();
+		} 
+	    };
+	    
+	    var callback = function(params){
+		var result = add_callback(params);
+		// console.log(result);
+		inv.amounts   = result.amounts;
+		inv.reject    = result.reject;
+		inv.org_price = result.org_price;
+		inv.xdiscount = stockUtils.to_integer(result.xdiscount);
+		inv.note      = result.note;
+		after_add(true);
+	    };
 
-	    // 	return {amounts:   params.amounts,
-	    // 		reject:    reject_total,
-	    // 		org_price: params.org_price,
-	    // 		xdiscount: params.xdiscount};
-	    // };
+	    var start_transfer = function() {
+		var payload = {sizes:           inv.sizes,
+			       colors:          inv.colors,
+			       org_price:       inv.org_price,
+			       amounts:         inv.amounts,
+			       get_amount:      get_amount,
+			       valid:           valid_all,
+			       cancel_callback: $scope.focus_by_element};
+		
+		diabloUtilsService.edit_with_modal(
+		    "inventory-new.html", 'lg', callback, $scope, payload); 
+	    }
 	    
 	    if (inv.free === 0){
 		$scope.auto_focus("transfer"); 
@@ -626,46 +651,6 @@ function purchaserInventoryTransferCtrlProvide (
 		    var bcode_size = bcode_size_index === 0 ? diablo_free_size:size_to_barcode[bcode_size_index];
 		    // console.log(bcode_color);
 		    // console.log(bcode_size);
-		    var after_add = function(enought_check){
-			if (enought_check && cs_stock_not_enought(inv)) {
-			    dialog.set_error($scope.response_title, 2070);
-			}else {
-			    inv.$edit = true;
-			    inv.$new = false;
-			    // order
-			    $scope.inventories.unshift(inv); 
-			    inv.order_id = $scope.inventories.length;
-			    
-			    $scope.row_change_xdiscount(inv); 
-			    $scope.re_calculate();
-			    $scope.focus_by_element();
-			} 
-		    };
-		    
-		    var callback = function(params){
-			var result = add_callback(params);
-			// console.log(result);
-			inv.amounts   = result.amounts;
-			inv.reject    = result.reject;
-			inv.org_price = result.org_price;
-			inv.xdiscount = stockUtils.to_integer(result.xdiscount);
-			inv.note      = result.note;
-			after_add(true);
-		    };
-
-		    var start_transfer = function() {
-			var payload = {sizes:           inv.sizes,
-				       colors:          inv.colors,
-				       org_price:       inv.org_price,
-				       amounts:         inv.amounts,
-				       get_amount:      get_amount,
-				       valid:           valid_all,
-				       cancel_callback: $scope.focus_by_element};
-			
-			diabloUtilsService.edit_with_modal(
-			    "inventory-new.html", 'lg', callback, $scope, payload); 
-		    }
-		    
 		    
 		    angular.forEach(inv.amounts, function(a) {
 			// console.log(a.cid, inv.colors);
