@@ -1058,7 +1058,7 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 						     [{[{<<"g">>, ?v(<<"id">>, Good)},
 							{<<"c">>, ?v(<<"count">>, Good)}]}|Acc]
 					     end, [], Goods),
-				       ?DEBUG("NewGoods ~p", [NewGoods]),
+				       %% ?DEBUG("NewGoods ~p", [NewGoods]),
 				       "\'" ++ ?to_s(ejson:encode(NewGoods)) ++ "\'";
 				_ ->
 				    "\'" ++ ?to_s(Stock) ++ "\'"

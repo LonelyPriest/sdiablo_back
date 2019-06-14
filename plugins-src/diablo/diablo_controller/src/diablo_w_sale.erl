@@ -272,9 +272,13 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 			   end,
 
 		    Sql5 = case NewWithdraw > 0 andalso BankCards =/= [] of
-			       true -> 
+			       true ->
+				   LimitWithdraw = ?v(<<"limitWithdraw">>, Props),
+				   UnlimitWithdraw = ?v(<<"unlimitWithdraw">>, Props),
+				   NewBankCards = card_pay(BankCards, LimitWithdraw, UnlimitWithdraw, []),
+				   ?DEBUG("NewBankCards ~p", [NewBankCards]),
 				   lists:foldr(
-				     fun({struct, BankCard}, Acc) ->
+				     fun({BankCard}, Acc) ->
 					     ?DEBUG("card ~p", [BankCard]),
 					     CardNo = ?v(<<"card">>, BankCard, ?INVALID_OR_EMPTY),
 					     CardDraw = ?v(<<"draw">>, BankCard, 0),
@@ -304,7 +308,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 						      ++ " and retailer=" ++ ?to_s(Retailer)
 						      ++ " and id=" ++ ?to_s(CardNo)] ++ Acc 
 					     end 
-				     end, [], BankCards);
+				     end, [], NewBankCards);
 			       false -> []
 			   end,
 		    AllSql = Sql1 ++ [Sql2] ++ Sql3 ++ Sql4 ++ Sql5,
@@ -394,7 +398,6 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 
     Updates = ?utils:v(employ, string, get_modified(Employee, OldEmployee))
 	++ ?utils:v(retailer, integer, get_modified(Retailer, OldRetailer)) 
-    %% ++ ?utils:v(shop, integer, Shop)
 	++ ?utils:v(should_pay, float, get_modified(ShouldPay, OldShouldPay))
 	++ ?utils:v(cash, float, get_modified(NewCash, OldCash))
 	++ ?utils:v(card, float, get_modified(NewCard, OldCard))
@@ -411,7 +414,7 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 	    Sql2 = "update w_sale set " ++ ?utils:to_sqls(proplists, comma, Updates) 
 		++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'", 
 	    ?DEBUG("Sql2 ~ts", [Sql2]),
-
+	    
 	    AllSql = Sql1 ++ [Sql2] ++
 		case ?utils:v_0(consume, float, MShouldPay)
 		    ++ ?utils:v_0(score, integer, MScore)
@@ -425,20 +428,60 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 			   ++ " and merchant=" ++ ?to_s(Merchant)]
 		end 
 		++ case Withdraw - NewWithdraw /= 0 of
-		       true -> 
-			   ["update w_sale set balance=balance+" ++ ?to_s(Withdraw - NewWithdraw)
-			    %% ++ " where shop=" ++ ?to_s(Shop)
+		       true ->
+			   Sql01 = "update w_sale set balance=balance+"
+			       ++ ?to_s(Withdraw - NewWithdraw)
 			       ++ " where merchant=" ++ ?to_s(Merchant)
 			       ++ " and retailer=" ++ ?to_s(Retailer)
-			       ++ " and id>" ++ ?to_s(RSNId)];
-		       false -> []
-		   end,
-	    
+			       ++ " and id>" ++ ?to_s(RSNId),
+			   
+			   Sql00= "select id, rsn, retailer, bank, balance from w_retailer_bank_flow"
+			       " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+			       " and merchant=" ++ ?to_s(Merchant)
+			       ++ " and shop=" ++ ?to_s(Shop)
+			       ++ " and retailer=" ++ ?to_s(Retailer),
+
+			   Sql02 = 
+			       case ?sql_utils:execute(read, Sql00) of
+				   {ok, []} -> [];
+				   {ok, Flows} ->
+				       NewFlows = card_flow(Flows, []),
+				       ?DEBUG("NewFlows ~p", [NewFlows]),
+				       {_BackDraw, BackDrawSqls} = 
+					   lists:foldl(
+					     fun (_Flow, {LeftBackDraw, Acc}) when LeftBackDraw =< 0 ->
+						     {LeftBackDraw, Acc};
+						 ({FId, CardNo, Draw}, {LeftBackDraw, Acc}) ->
+						     ?DEBUG("LeftBackDraw ~p, Draw ~p",
+							    [LeftBackDraw, Draw]),
+						     BackDraw =
+							 case Draw - LeftBackDraw > 0 of
+							     true -> LeftBackDraw;
+							     false -> Draw
+							 end,
+						     ?DEBUG("BackDraw ~p", [BackDraw]),
+						     {Draw - LeftBackDraw,
+						      ["update w_retailer_bank_flow set "
+						       ++ "balance=balance-" ++ ?to_s(BackDraw)
+						       ++ " where id=" ++ ?to_s(FId),
+
+						       "update w_retailer_bank set "
+						       "balance=balance+" ++ ?to_s(BackDraw)
+						       ++ " where merchant=" ++ ?to_s(Merchant)
+						       ++ " and retailer=" ++ ?to_s(Retailer)
+						       ++ " and id=" ++ ?to_s(CardNo)] ++ Acc} 
+					     end, {Withdraw - NewWithdraw, []}, NewFlows),
+				       BackDrawSqls;
+				   false -> []
+			       end,
+			   [Sql01] ++ Sql02; 
+		       false ->
+			   []
+		   end, 
 	    Reply = ?sql_utils:execute(
 		       transaction, AllSql,
 		       {RSN, MShouldPay, MScore,
 			{OldRetailer, Withdraw}, {Retailer, NewWithdraw}}),
-	    %% ?w_user_profile:update(retailer, Merchant),
 	    {reply, Reply, State}; 
 	false ->
 	    Sql0 = "select id, rsn, retailer, shop, merchant"
@@ -950,7 +993,7 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 	    Sql5 = 
 		case NewWithdraw > 0 of
 		    true ->
-			Sql01= "select rsn, retailer, bank, balance from w_retailer_bank_flow"
+			Sql01= "select id, rsn, retailer, bank, balance from w_retailer_bank_flow"
 			    " where rsn=\'" ++ ?to_s(SaleRsn) ++ "\'"
 			    " and merchant=" ++ ?to_s(Merchant)
 			    ++ " and shop=" ++ ?to_s(Shop)
@@ -964,7 +1007,7 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 				    lists:foldl(
 				      fun (_Flow, {LeftBackDraw, Acc}) when LeftBackDraw =< 0 ->
 					      {LeftBackDraw, Acc};
-					  ({CardNo, Draw}, {LeftBackDraw, Acc}) ->
+					  ({_FId, CardNo, Draw}, {LeftBackDraw, Acc}) ->
 					      ?DEBUG("LeftBackDraw ~p, Draw ~p", [LeftBackDraw, Draw]),
 					      BackDraw =
 						  case LeftBackDraw - Draw > 0 of
@@ -2299,13 +2342,44 @@ pay_order(reject, ShouldPay, [Pay|T], Pays) ->
 get_modified(NewValue, OldValue) when NewValue =/= OldValue -> NewValue;
 get_modified(_NewValue, _OldValue) ->  undefined.
 
+card_pay([], _LimitWithdraw, _UnlimitWithdraw, Cards) ->
+    Cards;
+card_pay([{struct, H}|T], LimitWithdraw, UnlimitWithdraw, Cards) ->
+    C = ?v(<<"card">>, H),
+    Draw = ?v(<<"draw">>, H),
+    Type = ?v(<<"type">>, H),
+
+    case Type of
+	1 ->
+	    case LimitWithdraw > 0 of
+		true ->
+		    card_pay(T,
+			     LimitWithdraw - Draw,
+			     UnlimitWithdraw,
+			     [{[{<<"card">>, C}, {<<"draw">>, Draw}, {<<"type">>, Type}]}|Cards]);
+		false ->
+		    card_pay(T, LimitWithdraw, UnlimitWithdraw, Cards)
+	    end;
+	0 ->
+	    case UnlimitWithdraw > 0 of
+		true ->
+		    card_pay(T,
+			     LimitWithdraw,
+			     UnlimitWithdraw - Draw,
+			     [{[{<<"card">>, C}, {<<"draw">>, Draw}, {<<"type">>, Type}]}|Cards]);
+		false ->
+		    card_pay(T, LimitWithdraw, UnlimitWithdraw, Cards)
+	    end
+    end.
+
 card_flow([], Acc) ->
     %% ?DEBUG("Acc ~p", [Acc]),
-    lists:sort(fun({_, B1}, {_, B2}) -> B1 =< B2 end, Acc );
+    lists:sort(fun({_, _, B1}, {_, _, B2}) -> B1 =< B2 end, Acc );
 card_flow([{H}|T], Acc) ->
+    Id = ?v(<<"id">>, H),
     Card = ?v(<<"bank">>, H),
     Draw = ?v(<<"balance">>, H),
-    card_flow(T, [{Card, Draw}|Acc]).
+    card_flow(T, [{Id, Card, Draw}|Acc]).
 
 rsn_order(use_id)    -> " order by b.id ";
 rsn_order(use_shop)  -> " order by a.shop ";

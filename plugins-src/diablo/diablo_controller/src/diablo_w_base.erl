@@ -906,7 +906,7 @@ sys_config() ->
 	      %% [12]: hide discount 
 	      %% [13]: hide unit
 	      %% [14]: hide barcode
-	      {"h_stock",         "入库字段隐藏",         "000110111111011", "0"}, 
+	      {"h_stock",         "入库字段隐藏",         "0001"++"1011"++"1111"++"011", "0"}, 
 	      {"s_member",        "会员独立",             "0",   "0"},
 	      {"s_employee",      "营业员必选",           "0",   "0"},
 
@@ -927,7 +927,8 @@ sys_config() ->
 	      %% [14]: show whole price on sale
 	      %% [15]: print discount on sale
 	      %% [16-17]: threshold discount of score 00:none
-	      {"p_balance",   "销售模式",   "000000000000000100",  "0"},
+	      %% [18]: gift mode on sale directly
+	      {"p_balance",   "销售模式",   "0000"++"0000"++"0000"++"0001"++"000",  "0"},
 
 	      %% [0]: auto generate ticket at 04:00
 	      %% [1]: use ticket with no check 0-> check 1-> no check

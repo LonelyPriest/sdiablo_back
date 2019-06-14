@@ -492,6 +492,8 @@ function wsaleNewProvide(
 	card: undefined,
 	wxin: undefined,
 	withdraw: undefined,
+	limitdraw: undefined,
+	unlimitdraw: undefined,
 	draw_cards:   undefined, 
 	
 	ticket_batch: undefined,
@@ -551,6 +553,7 @@ function wsaleNewProvide(
 	$scope.setting.show_wprice    = wsaleUtils.to_integer(sale_mode.charAt(14));
 	$scope.setting.score_discount = wsaleUtils.to_integer(sale_mode.charAt(16)) * 10
 	    + wsaleUtils.to_integer(sale_mode.charAt(17));
+	$scope.setting.gift_direct    = wsaleUtils.to_integer(sale_mode.charAt(18));
 	// $scope.setting.print_discount = wsaleUtils.to_integer(sale_mode.charAt(15));
 
 	$scope.print_setting = {
@@ -795,7 +798,7 @@ function wsaleNewProvide(
 	    console.log(params);
 	    var all_widthdraw = params.retailer.limitWithdraw + params.retailer.unlimitWithdraw;
 	    diabloFilter.check_retailer_password(
-		params.retailer.id, params.retailer.password, params.hide_pwd ? diablo_no : diablo_yes
+		params.retailer.id, params.retailer.password, params.hide_pwd ? diablo_no:diablo_yes
 	    ).then(function(result){
 		console.log(result);
 		if (result.ecode === 0){
@@ -808,9 +811,28 @@ function wsaleNewProvide(
 				+ "上限[" + result.limit + "]，实际提取[" + all_widthdraw + "]",
 			    undefined) 
 		    } else {
-			$scope.select.withdraw = all_widthdraw;
-			$scope.has_withdrawed  = true;
+			var limitWithdraw = params.retailer.limitWithdraw;
+			var unlimitWithdraw = params.retailer.unlimitWithdraw;
+			for (var i=0, l=params.cards.length; i<l; i++) {
+			    var c = params.cards[i];
+			    if (1 === c.type && limitWithdraw > 0) {
+				c.draw = get_min_value(c.draw, limitWithdraw);
+				limitWithdraw -= c.draw;
+			    }
+
+			    if (0 === c.type && unlimitWithdraw > 0) {
+				c.draw = get_min_value(c.draw, unlimitWithdraw);
+				unlimitWithdraw -= c.draw;
+			    }
+			} 
 			$scope.select.draw_cards = params.cards;
+			console.log($scope.select.draw_cards);
+
+			$scope.select.withdraw = all_widthdraw;
+			$scope.select.limitWithdraw = params.retailer.limitWithdraw;
+			$scope.select.unlimitWithdraw = params.retailer.unlimitWithdraw;
+			$scope.has_withdrawed  = true;
+			
 			$scope.reset_payment();
 		    } 
 		} else {
@@ -818,31 +840,7 @@ function wsaleNewProvide(
 		}
 	    }); 
 	};
-
-	// var startWithdraw = function(mbalance, ibalance, icount, balance) {
-	//     var limit_balance = get_limit_balance(mbalance, ibalance, icount, balance);
-	//     diabloUtilsService.edit_with_modal(
-	// 	"new-withdraw.html",
-	// 	undefined,
-	// 	callback,
-	// 	undefined,
-	// 	{retailer: {
-	// 	    id        :$scope.select.retailer.id,
-	// 	    name      :$scope.select.retailer.name,
-	// 	    surplus   :$scope.select.surplus, 
-	// 	    withdraw  :limit_balance
-	// 	},
-	// 	 hide_pwd: $scope.setting.hide_pwd,
-	// 	 check_withdraw: function(balance){
-	// 	     // console.log(balance, limit_balance);
-	// 	     return balance <= limit_balance;
-	// 	 },
-		 
-	// 	 check_zero: function(balance) {return balance === 0 ? true:false}
-	// 	}
-	//     )
-	// }
-
+	
 	var startWithdraw = function(limitCardDraw, unlimitCardDraw, retailerLeftBalance, draw_cards) {
 	    var unlimitWithdraw = get_unlimit_draw(limitCardDraw, unlimitCardDraw, retailerLeftBalance, draw_cards);
 	    diabloUtilsService.edit_with_modal(
@@ -894,11 +892,11 @@ function wsaleNewProvide(
 		    if (c.type === 1) {
 			if ( !c.limit_shop || (c.limit_shop && c.same_shop) ) {
 			    limitCardDraw += c.draw;
-			    draw_cards.push({card: c.card, draw:c.draw});
+			    draw_cards.push({card: c.card, draw:c.draw, type:c.type});
 			}
 		    } else {
 			unlimitCardDraw += c.draw;
-			draw_cards.push({card: c.card, draw:c.draw});
+			draw_cards.push({card: c.card, draw:c.draw, type:c.type});
 		    } 
 		});
 
@@ -908,109 +906,9 @@ function wsaleNewProvide(
 		console.log(retailerLeftBalance);
 		console.log(draw_cards);
 		startWithdraw(limitCardDraw, unlimitCardDraw, retailerLeftBalance, draw_cards);
-	    }
-	    // if (result.ecode === 0) {
-	    // 	var ishop    = result.ishop;
-	    // 	var balance  = result.balance;
-	    // 	var ibalance = result.ibalance;
-	    // 	var mbalance = result.mbalance;
-	    // 	var icount   = result.icount;
-	    // 	var sameShop = result.same_shop;
-		
-	    // 	if (diablo_no === ishop) {
-	    // 	    if (diablo_yes === $scope.setting.draw_region) {
-	    // 		diabloFilter.check_retailer_region(
-	    // 		    $scope.select.retailer.id, $scope.select.shop.id
-	    // 		).then(function(result) {
-	    // 		    console.log(result);
-	    // 		    if (result.ecode === 0) {
-	    // 			startWithdraw(mbalance, ibalance, icount, balance);
-	    // 		    } else {
-	    // 			dialog.set_error("会员现金提取", result.ecode); 
-	    // 		    }
-	    // 		})
-	    // 	    } else {
-	    // 		startWithdraw(mbalance, ibalance, icount, balance);
-	    // 	    }
-	    // 	} else {
-	    // 	    if (diablo_no === sameShop) {
-	    // 		dialog.set_error("会员现金提取", 2150); 
-	    // 	    } else {
-	    // 		startWithdraw(mbalance, ibalance, icount, balance);
-	    // 	    }
-	    // 	} 
-	    // } else {
-	    // 	dialog.set_error("会员现金提取", result.ecode); 
-	    // }
+	    } 
 	}) 
     }; 
-
-    // $scope.get_ticket = function(){
-    // 	$scope.select.ticket_batch   = undefined;
-    // 	$scope.select.ticket_balance = undefined;
-    // 	$scope.select.ticket_custom  = undefined; 
-	
-    // 	var callback = function(params){
-    // 	    // console.log(params, $scope.select.ticket_batch); 
-    // 	    if (params.ticket.batch !== $scope.select.ticket_batch) {
-    // 	    	diabloFilter.get_ticket_by_batch(params.ticket.batch).then(function(result){
-    // 	    	    console.log(result);
-    // 	    	    var ecode = result.ecode;
-    // 	    	    if (ecode === 0 && !diablo_is_empty(result.data)) {
-    // 	    		$scope.select.ticket_batch = diablo_set_integer(result.data.batch);
-    // 	    		$scope.select.ticket_balance = diablo_set_integer(result.data.balance);
-    // 			$scope.select.ticket_custom = params.auto_batch ? diablo_score_ticket:diablo_custom_ticket;
-    // 	    		$scope.reset_payment();
-    // 	    	    } else {
-    // 	    		if (diablo_is_empty(result.data)) ecode = 2105;
-    // 	    		var ERROR = require("diablo-error");
-    // 	    		diabloUtilsService.response(
-    // 	    		    false,
-    // 	    		    "会员电子卷获取",
-    // 	    		    ERROR[ecode],
-    // 	    		    undefined);
-    // 	    	    } 
-    // 	    	});
-    // 	    } else {
-    // 	    	$scope.select.ticket_batch = params.ticket.batch;
-    // 	    	$scope.select.ticket_balance = params.ticket.balance;
-    // 		$scope.select.ticket_custom = params.auto_batch ? diablo_score_ticket:diablo_custom_ticket;
-    // 	    	$scope.reset_payment();
-    // 	    } 
-    // 	};
-	
-    // 	diabloFilter.get_ticket_by_retailer($scope.select.retailer.id).then(function(result){
-    // 	    console.log(result);
-    // 	    if (result.ecode === 0){
-    // 		var batch;
-    // 		var balance;
-    // 		var auto_batch = false;
-    // 		$scope.select.ticket_sid = diablo_invalid_index;
-		
-    // 		if (!diablo_is_empty(result.data)) {
-    // 		    batch   = diablo_set_integer(result.data.batch); 
-    // 		    balance = diablo_set_integer(result.data.balance);
-    // 		    $scope.select.ticket_sid = wsaleUtils.to_integer(result.data.sid);
-    // 		    auto_batch = true; 
-    // 		} 
-    // 		$scope.select.ticket_batch = batch;
-		
-    // 		diabloUtilsService.edit_with_modal(
-    // 		    "new-ticket.html",
-    // 		    undefined,
-    // 		    callback,
-    // 		    undefined,
-    // 		    {ticket: {batch: batch, balance: balance}, auto_batch: auto_batch});
-    // 	    } else {
-    // 		var ERROR = require("diablo-error");
-    // 		diabloUtilsService.response(
-    // 		    false,
-    // 		    "会员电子卷获取",
-    // 		    ERROR[result.ecode],
-    // 		    undefined);
-    // 	    }
-    // 	}); 
-    // };
 
     $scope.get_ticket = function() {
 	$scope.select.ticket_batch   = undefined;
@@ -1601,12 +1499,14 @@ function wsaleNewProvide(
 	$scope.select.form.cashForm.$invalid  = false;
 	$scope.select.form.wForm.$invalid  = false; 
 
-	$scope.select.rsn          = undefined;
-	$scope.select.cash         = undefined;
-	$scope.select.card         = undefined;
-	$scope.select.wxin         = undefined;
-	$scope.select.withdraw     = undefined;
-	$scope.select.draw_cards   = undefined;
+	$scope.select.rsn             = undefined;
+	$scope.select.cash            = undefined;
+	$scope.select.card            = undefined;
+	$scope.select.wxin            = undefined;
+	$scope.select.withdraw        = undefined;
+	$scope.select.limitWithdraw   = undefined;
+	$scope.select.unlimitWithdraw = undefined;
+	$scope.select.draw_cards      = undefined;
 	
 	$scope.select.ticket_batch = undefined;
 	$scope.select.ticket_balance = undefined;
@@ -2335,6 +2235,8 @@ function wsaleNewProvide(
 	    verificate:     setv($scope.select.verificate), 
 	    
 	    should_pay:     setv($scope.select.should_pay),
+	    limitWithdraw:  setv($scope.select.limitWithdraw),
+	    unlimitWithdraw:setv($scope.select.unlimitWithdraw),
 	    // has_pay:        $scope.select.has_pay,
 	    
 	    charge:         $scope.select.charge,

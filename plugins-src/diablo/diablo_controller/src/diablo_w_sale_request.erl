@@ -235,21 +235,19 @@ action(Session, Req, {"filter_w_sale_image"}, Payload) ->
 action(Session, Req, {"new_w_sale"}, Payload) ->
     ?DEBUG("new_w_sale with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
-    UserId = ?session:get(id, Session),
-    
+    UserId = ?session:get(id, Session), 
     Invs            = ?v(<<"inventory">>, Payload, []),
     {struct, Base}  = ?v(<<"base">>, Payload),
-    {struct, Print} = ?v(<<"print">>, Payload),
-    
-    TicketBatch      = ?v(<<"ticket_batch">>, Base),
-    TicketBalance    = ?v(<<"ticket">>, Base), 
+    {struct, Print} = ?v(<<"print">>, Payload), 
+    TicketBatch     = ?v(<<"ticket_batch">>, Base),
+    TicketBalance   = ?v(<<"ticket">>, Base), 
     TicketCustom    = ?v(<<"ticket_custom">>, Base, -1),
     
     case TicketBatch =/= undefined andalso TicketBalance =/= undefined of
 	true ->
 	    {ok, Ticket} = ?w_retailer:get_ticket(by_batch, Merchant, TicketBatch, TicketCustom), 
 	    case Ticket of
-		[] ->
+		[] -> 
 		    ?utils:respond(200, Req, ?err(ticket_not_exist, TicketBatch));
 		_ ->
 		    TicketInfo =
@@ -263,7 +261,8 @@ action(Session, Req, {"new_w_sale"}, Payload) ->
 					case lists:filter(
 					       fun({S})->
 						       ?v(<<"type_id">>, S) =:= 1
-							   andalso ?v(<<"id">>, S) =:= TicketSId end, Scores) of
+							   andalso ?v(<<"id">>, S) =:= TicketSId
+					       end, Scores) of
 					    [] ->
 						{error, ?err(wsale_invalid_ticket_score, TicketSId)}; 
 					    [{Score2Money}] ->

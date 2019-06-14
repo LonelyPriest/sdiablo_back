@@ -229,7 +229,7 @@
 			  <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
 			
 			<button class="btn diablo-input-button green"
-				x-ng-if="setting.gift_sale && inv.gift"
+				x-ng-if="(setting.gift_sale && inv.gift) || setting.gift_direct"
 				x-ng-click="gift_sale(inv)">赠送
 			  <i class="glyphicon glyphicon-gift"></i></button>
 		      </div>
