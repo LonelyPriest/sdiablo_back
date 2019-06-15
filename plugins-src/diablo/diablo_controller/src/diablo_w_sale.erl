@@ -435,17 +435,18 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 			       ++ " and retailer=" ++ ?to_s(Retailer)
 			       ++ " and id>" ++ ?to_s(RSNId),
 			   
-			   Sql00= "select id, rsn, retailer, bank, balance from w_retailer_bank_flow"
-			       " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
-			       " and merchant=" ++ ?to_s(Merchant)
-			       ++ " and shop=" ++ ?to_s(Shop)
-			       ++ " and retailer=" ++ ?to_s(Retailer),
+			   Sql00= "select a.id, a.rsn, a.retailer, a.bank, a.balance"
+			       " from w_retailer_bank_flow a"
+			       " where a.rsn=\'" ++ ?to_s(RSN) ++ "\'"
+			       " and a.merchant=" ++ ?to_s(Merchant)
+			       ++ " and a.shop=" ++ ?to_s(Shop)
+			       ++ " and a.retailer=" ++ ?to_s(Retailer),
 
 			   Sql02 = 
 			       case ?sql_utils:execute(read, Sql00) of
 				   {ok, []} -> [];
 				   {ok, Flows} ->
-				       NewFlows = card_flow(Flows, []),
+				       NewFlows = card_flow_sort(Flows, []),
 				       ?DEBUG("NewFlows ~p", [NewFlows]),
 				       {_BackDraw, BackDrawSqls} = 
 					   lists:foldl(
@@ -460,7 +461,7 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 							     false -> Draw
 							 end,
 						     ?DEBUG("BackDraw ~p", [BackDraw]),
-						     {Draw - LeftBackDraw,
+						     {LeftBackDraw - BackDraw,
 						      ["update w_retailer_bank_flow set "
 						       ++ "balance=balance-" ++ ?to_s(BackDraw)
 						       ++ " where id=" ++ ?to_s(FId),
@@ -2376,10 +2377,18 @@ card_flow([], Acc) ->
     %% ?DEBUG("Acc ~p", [Acc]),
     lists:sort(fun({_, _, B1}, {_, _, B2}) -> B1 =< B2 end, Acc );
 card_flow([{H}|T], Acc) ->
-    Id = ?v(<<"id">>, H),
+    Id   = ?v(<<"id">>, H),
     Card = ?v(<<"bank">>, H),
     Draw = ?v(<<"balance">>, H),
     card_flow(T, [{Id, Card, Draw}|Acc]).
+
+card_flow_sort([], Acc) ->
+    lists:sort(fun({_, _, B1}, {_, _, B2}) -> B1 > B2 end, Acc );
+card_flow_sort([{H}|T], Acc) ->
+    Id   = ?v(<<"id">>, H),
+    Card = ?v(<<"bank">>, H),
+    Draw = ?v(<<"balance">>, H), 
+    card_flow_sort(T, [{Id, Card, Draw}|Acc]).
 
 rsn_order(use_id)    -> " order by b.id ";
 rsn_order(use_shop)  -> " order by a.shop ";

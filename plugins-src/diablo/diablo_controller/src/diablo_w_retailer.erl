@@ -21,7 +21,7 @@
 	 terminate/2, code_change/3]).
 
 -export([retailer/2, retailer/3, retailer/4, retailer/5, default_profile/2]).
--export([charge/2, charge/3, threshold_card/4, threshold_card_good/3]).
+-export([charge/2, charge/3, threshold_card/3, threshold_card/4, threshold_card_good/3]).
 -export([score/2, score/3, ticket/2, ticket/3, get_ticket/3, get_ticket/4, make_ticket/3]).
 -export([bank_card/3]).
 -export([filter/4, filter/6]).
@@ -197,6 +197,12 @@ threshold_card_good(list, Merchant, Shops) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {list_threshold_card_good, Merchant, Shops}).
 
+threshold_card(get, Merchant, Card) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {get_threshold_card, Merchant, Card});
+threshold_card(delete, Merchant, CardAttr) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {delete_threshold_card, Merchant, CardAttr}).
 
 threshold_card(threshold_consume, Merchant, Card, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -643,7 +649,9 @@ handle_call({get_retailer_batch, Merchant, RetailerIds}, _From, State) ->
 	", shop as shop_id"
 	", draw as draw_id"
 	", type as type_id"
-	", balance, score, mobile"
+	", balance"
+	", score"
+	", mobile"
 	" from w_retailer"
 	++ " where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, [{<<"id">>, lists:usort(RetailerIds)}]),
@@ -1032,12 +1040,13 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 	    Mobile = ?v(<<"mobile">>, Account),
 
 	    RechargeDetailSql =
-		fun(EndDate) ->
-			"insert into w_charge_detail(rsn"
+		fun(CardNo, EndDate) ->
+			"insert into w_charge_detail(rsn, csn"
 			    ", merchant, shop, employ, cid, retailer"
 			    ", ledate, lbalance, cbalance, sbalance"
 			    ", cash, card, wxin, stock, comment, entry_date) values("
 			    ++ "\'" ++ ?to_s(SN) ++ "\',"
+			    ++ "\'" ++ ?to_s(CardNo) ++ "\',"
 			    ++ ?to_s(Merchant) ++ ","
 			    ++ ?to_s(Shop) ++ ","
 			    ++ "\'" ++ ?to_s(Employee) ++ "\',"
@@ -1059,7 +1068,11 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 							{<<"c">>, ?v(<<"count">>, Good)}]}|Acc]
 					     end, [], Goods),
 				       %% ?DEBUG("NewGoods ~p", [NewGoods]),
-				       "\'" ++ ?to_s(ejson:encode(NewGoods)) ++ "\'";
+				       case NewGoods of
+					   [] -> "\'\'";
+					   _ ->
+					       "\'" ++ ?to_s(ejson:encode(NewGoods)) ++ "\'"
+				       end;
 				_ ->
 				    "\'" ++ ?to_s(Stock) ++ "\'"
 			    end ++ ","
@@ -1110,7 +1123,7 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 				    ++ " and id=" ++ ?to_s(?v(<<"id">>, BankCard))
 		    end,
 				
-		    AllSqls =  [RechargeDetailSql(?INVALID_DATE), Sql2, Sql3], 
+		    AllSqls =  [RechargeDetailSql(?INVALID_OR_EMPTY, ?INVALID_DATE), Sql2, Sql3], 
 		    Reply =
 			case ?sql_utils:execute(transaction, AllSqls, SN) of
 			    {ok, SN} ->
@@ -1154,16 +1167,17 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 
 				CardSN =
 				    lists:concat(
-				      ["M-",
-				       ?to_i(Merchant),
-				       "-S-",
-				       ?to_i(Shop), "-",
+				      [?to_i(Merchant),
+				       "-",
+				       ?to_i(Shop),
+				       "-",
 				       ?inventory_sn:sn(wretailer_card_sn, Merchant)]),
 
 				ChildTheoreticCardSql =
 				    fun(CardGood, ConsumeCount) ->
 					    "insert into w_child_card(csn"
-						", retailer, good, ctime, merchant, shop, entry_date)"
+						", retailer"
+						", good, ctime, merchant, shop, entry_date)"
 						" values("
 						++ "\'" ++ ?to_s(CardSN) ++ "\',"
 						++ ?to_s(Retailer) ++ ","
@@ -1176,10 +1190,11 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 				
 				{new_card,
 				 [case Rule of
-				     ?THEORETIC_CHARGE -> RechargeDetailSql(?INVALID_DATE);
+				     ?THEORETIC_CHARGE -> RechargeDetailSql(CardSN, ?INVALID_DATE);
 				     _ ->
 					 %% must not to use at current day
-					 RechargeDetailSql(?utils:date_before({Year, Month, Date}, 1))
+					 RechargeDetailSql(
+					   CardSN, ?utils:date_before({Year, Month, Date}, 1))
 				 end,
 				 "insert into w_card(csn"
 				  ", retailer"
@@ -1190,6 +1205,7 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 				  ", rule"
 				  ", merchant"
 				  ", shop"
+				  %% ", good"
 				  ", entry_date) values("
 				  ++ "\'" ++ ?to_s(CardSN) ++ "\',"
 				  ++ ?to_s(Retailer) ++ ","
@@ -1199,7 +1215,7 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 				  ++ ?to_s(ChargeId) ++ ","
 				  ++ ?to_s(Rule) ++ ","
 				  ++ ?to_s(Merchant) ++ ","
-				  ++ ?to_s(Shop) ++ ","
+				  ++ ?to_s(Shop) ++ "," 
 				  ++ "\'" ++ ?to_s(Entry) ++ "\')"]
 				 
 				 ++ case Rule of
@@ -1230,9 +1246,9 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 				{exist_card,
 				 [case Rule of
 				     ?THEORETIC_CHARGE ->
-					 RechargeDetailSql(?INVALID_DATE);
+					 RechargeDetailSql(CardSN, ?INVALID_DATE);
 				     _ ->
-					 RechargeDetailSql(?utils:to_date(date, EndDate))
+					 RechargeDetailSql(CardSN, ?utils:to_date(date, EndDate))
 				 end, 
 				 case Rule of
 				     ?THEORETIC_CHARGE ->
@@ -1349,10 +1365,13 @@ handle_call({delete_recharge, Merchant, RechargeId, RechargeInfo, ChargePromotio
 			    CTime = ?v(<<"ctime">>, ChargePromotion),
 			    STime = ?v(<<"sbalance">>, RechargeInfo),
 			    %% ?DEBUG("CTime ~p, STime ~p", [CTime, STime]),
-			    Stock = ?v(<<"stock">>, RechargeInfo),
-			    %% ?DEBUG("Stock ~p", [Stock]),
-			    CardGoods = ejson:decode(?to_s(Stock)),
-			    ?DEBUG("CardGoods ~p", [CardGoods]),
+			    CardGoods = 
+				case ?v(<<"stock">>, RechargeInfo) of
+				    [] -> [];
+				    _Goods -> ejson:decode(?to_s(_Goods))
+				end,
+			    ?DEBUG("CardGoods ~p", [CardGoods]), 
+			    CardNo   = ?v(<<"csn">>, RechargeInfo), 
 			    Sqls = ["update w_card set ctime=ctime-"
 				    ++ case ?to_i(STime) > 0 of
 					   true -> ?to_s(?to_i(CTime) + ?to_i(STime));
@@ -1361,12 +1380,13 @@ handle_call({delete_recharge, Merchant, RechargeId, RechargeInfo, ChargePromotio
 				    ++ " where merchant=" ++ ?to_s(Merchant)
 				    ++ " and retailer=" ++ ?to_s(RetailerId)
 				    ++ " and cid=" ++ ?to_s(ChargeId),
-				    Sql1]
+				    Sql1] 
 				++ lists:foldr(
 				     fun({Good}, Acc) ->
 					     ["update w_child_card set "
 					      "ctime=ctime-" ++ ?to_s(?v(<<"c">>, Good, 0))
 					      ++ " where merchant=" ++ ?to_s(Merchant)
+					      ++ " and csn=\'" ++ ?to_s(CardNo) ++ "\'"
 					      ++ " and retailer=" ++ ?to_s(RetailerId)
 					      ++ " and good=" ++ ?to_s(?v(<<"g">>, Good, -1)) | Acc]
 				     end, [], CardGoods)
@@ -1436,6 +1456,7 @@ handle_call({list_recharge, Merchant, Conditions}, _From, State) ->
 handle_call({get_recharge, Merchant, RechargeId}, _From, State) ->
     Sql = "select a.id"
 	", a.rsn"
+	", a.csn"
 	", a.retailer"
 	", a.cid"
 	", a.ledate"
@@ -2217,7 +2238,7 @@ handle_call({filter_threshold_card, Merchant, Conditions, CurrentPage, ItemsPerP
     %% " left join shops c on a.shop=c.id"
 
 	" where a.merchant=" ++ ?to_s(Merchant)
-	++ ?sql_utils:condition(proplists, NewConditions)
+	++ ?sql_utils:condition(proplists, NewConditions ++ [{<<"a.deleted">>, 0}])
 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
@@ -2342,6 +2363,33 @@ handle_call({filter_threshold_card_good, Merchant, Conditions, CurrentPage, Item
 	++ ?sql_utils:condition(proplists, NewConditions)
 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
     Reply =  ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({get_threshold_card, Merchant, Card}, _Frobm, State) ->
+    ?DEBUG("get_threshold_card: Merchant ~p, Card ~p", [Merchant, Card]),
+    Sql = "select id, csn, retailer, rule, ctime, edate from w_card"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and id=" ++ ?to_s(Card),
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+handle_call({delete_threshold_card, Merchant, CardAttr}, _Frobm, State) ->
+    ?DEBUG("delete_threshold_card: Merchant ~p, CardAttr ~p", [Merchant, CardAttr]),
+    CardId = ?v(<<"id">>, CardAttr),
+    CardNo = ?v(<<"csn">>, CardAttr),
+    Retailer = ?v(<<"retailer">>, CardAttr),
+    Sql1 = "update w_card set deleted=1 where merchant=" ++ ?to_s(Merchant)
+	++ " and id=" ++ ?to_s(CardId)
+	++ " and retailer=" ++ ?to_s(Retailer), 
+    Reply = 
+	case CardNo =:= <<"-1">> of
+	    true -> ?sql_utils:execute(write, Sql1, CardId);
+	    false ->
+		Sql2 = "update w_child_card set deleted=1 where merchant=" ++ ?to_s(Merchant)
+		    ++ " and csn=\'" ++ ?to_s(CardNo) ++ "\'"
+		    ++ " and retailer=" ++ ?to_s(Retailer), 
+		?sql_utils:execute(transaction, [Sql1, Sql2], CardId)
+	end,
     {reply, Reply, State};
 
 handle_call({threshold_card_consume, Merchant, CardId, Attrs}, _From, State) ->

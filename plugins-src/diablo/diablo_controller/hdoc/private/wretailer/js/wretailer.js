@@ -558,7 +558,18 @@ function wretailerDetailCtrlProvide(
 		     if (last_select !== diablo_invalid_index) {
 			 goods[last_select].count += all_times % good_count;
 		     }
-		 }}
+		 }, 
+		 check_good: function(goods) {
+		     var valid = false;
+		     for (var i=0, l=goods.length; i<l; i++) {
+			 if (angular.isDefined(goods[i].select) && goods[i].select) {
+		     	     valid = true;
+			     break;
+		     	 }
+		     }
+		     return valid;
+		 }
+		}
 	    )
 	};
 	
@@ -1567,6 +1578,25 @@ function wretailerThresholdCardDetailCtrlProvide(
 	} else {
 	    start_consume($scope.card_goods, false)
 	} 
+    };
+
+    $scope.delete_card = function(card) {
+	console.log(card);
+	var title = "删除次/月/季/年/半年卡"; 
+	var callback = function() {
+	    wretailerService.delete_threshold_card(card.id).then(function(result) {
+		if (result.ecode === 0) {
+		    dialog.success_response_with_callback(
+			title,
+			title + "成功！！",
+			function() {$scope.do_search($scope.current_page);})
+		} else {
+		    dialog.set_error(title, result.ecode);
+		}
+	    })
+	}
+	
+	dialog.request(title, "确定要删除该卡吗?", callback, undefined, undefined);
     };
 };
 

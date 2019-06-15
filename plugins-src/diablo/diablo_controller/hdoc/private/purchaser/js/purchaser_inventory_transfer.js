@@ -632,12 +632,16 @@ function purchaserInventoryTransferCtrlProvide (
 	    }
 	    
 	    if (inv.free === 0){
-		$scope.auto_focus("transfer"); 
 		inv.free_color_size = true;
 		inv.amounts = [{cid:0, size:0}];
 		inv.reject  = 1;
 		$scope.auto_save_free(inv);
-		$scope.update_inventory(inv);
+		if ($scope.base_settings.fast_transfer) {
+		    $scope.focus_by_element();
+		} else {
+		    $scope.auto_focus("transfer"); 
+		    $scope.update_inventory(inv);
+		}
 	    } else {
 		inv.free_color_size = false;
 		

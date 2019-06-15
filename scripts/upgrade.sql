@@ -592,5 +592,16 @@ insert into w_card_sale_detail(rsn, employee, retailer, card, cid, amount, good,
 --2019-06-07
 alter table w_ticket_custom add column in_shop integer default -1 after state;
 
---2019-06-12
+--2019-06-15
+-- alter table w_card drop column csn;
+-- alter table w_child_card drop column csn;
+-- alter table w_card add column good VARCHAR(64) not null default '' after shop;
+
+
+alter table w_charge_detail add column csn VARCHAR(32) not null default '-1' after rsn;
+alter table w_card add column deleted TINYINT not null default 0;
+alter table w_child_card add column deleted TINYINT not null default 0;
+
+
+-- 9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;

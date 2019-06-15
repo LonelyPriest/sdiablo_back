@@ -211,6 +211,14 @@ on a.id=b.firm where a.merchant=4) a where a.balance!=a.acc;
 -- check retailer balance
 select a.id, a.type, a.retailer, a.merchant, a.balance, b.balance from w_retailer_bank a left join w_retailer b on a.retailer=b.id where a.balance!=b.balance;
 
+-- change card csn
+update w_card w inner join(\
+select a.id, insert(a.csn1, 3, 2, '') as csn2 from (select id, insert(csn, 1,2, '') as csn1 from w_card where csn!='-1') a\
+) b on w.id=b.id set w.csn=b.csn2;
+
+update w_child_card w inner join(\
+select a.id, insert(a.csn1, 3, 2, '') as csn2 from (select id, insert(csn, 1,2, '') as csn1 from w_child_card where csn!='-1') a\
+) b on w.id=b.id set w.csn=b.csn2;
 
 -- clear date
 delete from w_inventory_good where merchant=55;

@@ -559,6 +559,11 @@ function wretailerConfig(angular) {
 		{operation: "delete_threshold_card_sale"}, sale).$promise;
 	};
 
+	this.delete_threshold_card = function(card) {
+	    return http.save(
+		{operation: "delete_threshold_card"}, {card:card}).$promise;
+	};
+
 	this.list_threshold_child_card = function(retailer, card_sn) {
 	    return http.save(
 		{operation: "list_threshold_child_card"},

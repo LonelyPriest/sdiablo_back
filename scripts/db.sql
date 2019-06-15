@@ -512,7 +512,9 @@ create table w_card
     cid             INTEGER default -1,
     rule            TINYINT default -1, -- 2: therotic times card, 3: month card, 4: quarter card, 5: year card
     merchant        INTEGER default -1,
-    shop            INTEGER default -1, 
+    shop            INTEGER default -1,
+    -- good            VARCHAR(64) default '',
+    deleted         TINYINT default 0,
     entry_date      DATETIME,
     unique key      uk (merchant, retailer, cid),
     primary key     (id)
@@ -526,7 +528,8 @@ create table w_child_card
     good            INTEGER not null default -1, -- refer to w_card_good
     ctime           INTEGER default -1, 
     merchant        INTEGER default -1,
-    shop            INTEGER default -1, 
+    shop            INTEGER default -1,
+    delete          TINYINT delete 0,
     entry_date      DATETIME,
     unique key      uk (merchant, retailer, csn, good),
     primary key     (id)
@@ -1238,11 +1241,12 @@ create table w_sale_detail_amount(
 create table w_charge_detail(
     id              INTEGER AUTO_INCREMENT,
     rsn             VARCHAR(32) not null, -- record sn
+    csn             VARCHAR(32) not null default '-1', -- which card, refer to w_card
     merchant        INTEGER not null default -1,
     shop            INTEGER not null default -1, 
     employ          VARCHAR(8) not null,
     retailer        INTEGER not null default -1,
-    cid             INTEGER not null default -1, -- charge
+    cid             INTEGER not null default -1, -- refer to charge promotion
     ledate          DATE default 0,   -- last expire date where charge rule = [3, 4, 5] 
     lbalance        INTEGER not null default 0, -- last balance
     cbalance        INTEGER not null default 0, -- charge balance
@@ -1265,8 +1269,7 @@ create table w_charge_detail(
 /* bill to supplier */
 create table w_bill_detail(
     id              INTEGER AUTO_INCREMENT,
-    rsn             VARCHAR(32) not null, -- record sn
-
+    rsn             VARCHAR(32) not null, -- record sn 
     shop            INTEGER not null default -1, 
     firm            INTEGER not null default -1, -- charge
     mode            TINYINT not null default -1,

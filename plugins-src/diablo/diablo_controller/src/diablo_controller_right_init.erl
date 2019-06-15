@@ -208,7 +208,10 @@ init([]) ->
 	  <<"会员翻页查看">>, <<"page_w_retailer">>, ?right_w_retailer},
 
 	 {?delete_threshold_card_sale,
-	  <<"删除次卡商品销售">>, <<"delete_threshold_card_sale">>, ?right_w_retailer}
+	  <<"删除次卡商品销售">>, <<"delete_threshold_card_sale">>, ?right_w_retailer},
+
+	 {?delete_threshold_card,
+	  <<"删除次/月/季/年卡">>, <<"delete_threshold_card">>, ?right_w_retailer}
 	],
 
     

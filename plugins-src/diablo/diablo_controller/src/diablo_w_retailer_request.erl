@@ -659,6 +659,40 @@ action(Session, Req, {"update_recharge"}, Payload) ->
 	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"delete_threshold_card"}, Payload) ->
+    ?DEBUG("delete_threshold_card with session ~p, payload ~p", [Session, Payload]),
+    CardId = ?v(<<"card">>, Payload),
+    Merchant  = ?session:get(merchant, Session),
+    case
+	case ?w_retailer:threshold_card(get, Merchant, CardId) of
+	    {ok, Card} ->
+		case ?v(<<"rule">>, Card) =:= ?THEORETIC_CHARGE of 
+		    true ->
+			case ?v(<<"ctime">>, Card) > 0 of
+			    true ->
+				{error, ?err(threshold_card_non_zero, CardId)};
+			    false ->
+				?w_retailer:threshold_card(delete, Merchant, Card)
+			end;
+		    false ->
+			EDate = ?v(<<"edate">>, Card),
+			case ?utils:compare_date(date, ?utils:current_date(), EDate) of
+			    true ->
+				?w_retailer:threshold_card(delete, Merchant, Card);
+			    false ->
+				{error, ?err(threshold_card_non_expire, CardId)}
+			end 
+		end;
+	    Error ->
+		Error
+	end
+    of
+	{ok, CardId} ->
+	    ?utils:respond(200, Req, ?succ(update_recharge, CardId));
+	{error, _Error} ->
+	    ?utils:respond(200, Req, _Error)
+    end;
+
 action(Session, Req, {"filter_retailer_detail"}, Payload) ->
     ?DEBUG("filter_retailer with session ~p, payload~n~p", [Session, Payload]), 
     Merchant  = ?session:get(merchant, Session),
@@ -1394,7 +1428,7 @@ draw_with_bank_card([Card|T], Merchant, ConsumeShop, Pay, MaxDraw, CalcDraw,Acc)
 		      ConsumeShop,
 		      Pay,
 		      MaxDraw - CanDraw,
-		      CalcDraw + CalcDraw,
+		      CalcDraw + CanDraw,
 		      [{BankCardId,
 			CanDraw,
 			CardBalance,

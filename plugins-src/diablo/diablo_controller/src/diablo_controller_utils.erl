@@ -69,6 +69,10 @@ correct_datetime(datetime, Datetime) ->
 	    <<YYMMDD/binary, <<" ">>/binary, Time/binary>>
     end.
 
+current_date() ->
+    {{Year, Month, Date}, {_, _, _}} = calendar:now_to_local_time(erlang:now()),
+    {Year, Month, Date}.
+
 -spec to_date/2::(atom(), binary()|string()) -> calendar:date().
 to_date(datetime, Datetime) when is_list(Datetime)->
     <<YYMMDD:10/binary, _/binary>> = ?to_b(Datetime), 

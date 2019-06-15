@@ -110,9 +110,12 @@
 		    <td x-ng-bind=c.entry_date></td>
 		    <td x-ng-bind=c.shop.name></td>
 		    <td>
-		      <button class="btn diablo-button red-sunglo"
+		      <button class="btn diablo-button green"
 			      x-ng-click="consume(c)">刷卡
 			<i class="glyphicon glyphicon-yen"></i>
+			<button class="btn diablo-button red"
+			      x-ng-click="delete_card(c)">删除
+			<i class="glyphicon glyphicon-erase"></i>
 		    </td>
 		  </tr> 
 		</tbody> 

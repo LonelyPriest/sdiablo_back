@@ -1856,7 +1856,7 @@ start(new_sale, Req, Merchant, Invs, Base, Print) ->
 					       Merchant,
 					       {ShopName, Phone, 1, ShouldPay, Balance, Score});
 					false ->
-					    ?w_user_profile:update(sysretailer, Merchant),
+					    %% ?w_user_profile:update(sysretailer, Merchant),
 					    {0, none} 
 				    end
 				catch

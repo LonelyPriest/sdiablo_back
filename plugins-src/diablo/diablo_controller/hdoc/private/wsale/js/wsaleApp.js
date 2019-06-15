@@ -248,7 +248,6 @@ function wsaleConfg(angular){
 	    return http.save({operation: "print_w_sale"}, {rsn:rsn}).$promise;
 	};
 	
-
 	this.filter_w_sale_image = function(
 	    match, fields, currentPage, itemsPerpage){
 	    return http.save(
@@ -1634,9 +1633,11 @@ function wsaleNewProvide(
 		$scope.select_draft_key = draft.sn;
 		$scope.wsaleStorage.set_key(draft.sn);
 		// $scope.select.employee = diablo_get_object(draft.employee.id, $scope.employees);
-		$scope.select.retailer = diablo_get_object(draft.retailer.id, retailers);
-		$scope.select.retailer.birth = $scope.select.retailer.birth.substr(5,8);
-		$scope.select.surplus  = $scope.select.retailer.balance;
+		var r = diablo_get_object(draft.retailer.id, retailers);
+		r.name  = r.name + "/" + r.mobile;
+		r.birth = r.birth.substr(5,8);
+		$scope.select.retailer = r;
+		$scope.select.surplus  = r.balance;
 		$scope.get_employee(); 
 		
 		$scope.inventories = angular.copy(resource);
