@@ -1137,7 +1137,7 @@ var wsaleCalc = function(){
 		pscores = [];
 		for (var i=0, l=inventories.length; i<l; i++) {
 		    var one = inventories[i]; 
-		    if (diablo_discount(one.rprice, one.tag_price) > score_discount) {
+		    if (diablo_discount(one.rprice, one.tag_price) >= score_discount) {
 			if (one.sid !== diablo_invalid_index){
 			    pscores = wsaleUtils.sort_score(one.score, one.promotion, one.calc, pscores);
 			}
