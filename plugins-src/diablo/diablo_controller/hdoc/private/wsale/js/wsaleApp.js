@@ -905,6 +905,8 @@ function wsaleNewProvide(
 		console.log(retailerLeftBalance);
 		console.log(draw_cards);
 		startWithdraw(limitCardDraw, unlimitCardDraw, retailerLeftBalance, draw_cards);
+	    } else {
+		dialog.set_error("会员提现", result.ecode);
 	    } 
 	}) 
     }; 
@@ -938,11 +940,12 @@ function wsaleNewProvide(
 			}
 		    });
 		} else {
-		    var select_ticket, select_ticket_type;
+		    var select_ticket;
 		    for (var i=0, l=params.stickets.length; i<l; i++) {
 			if (angular.isDefined(params.stickets[i].select) && params.stickets[i].select) {
 			    select_ticket = params.stickets[i];
 			    $scope.select.ticket_custom = diablo_score_ticket;
+			    $scope.select.ticket_sid    = select_ticket.sid; 
 			    break;
 			}
 		    }
@@ -958,8 +961,6 @@ function wsaleNewProvide(
 		    }
 
 		    console.log(select_ticket);
-		    console.log(select_ticket_type);
-
 		    $scope.select.ticket_batch   = select_ticket.batch;
 		    $scope.select.ticket_balance = select_ticket.balance;
 		    $scope.reset_payment(); 
@@ -1998,10 +1999,12 @@ function wsaleNewProvide(
 		var start_print = function(){
 		    $scope.select.ticket_score = 0; 
 		    var sid = $scope.select.ticket_sid;
-		    if (diablo_invalid_index !== sid) {
+		    if (angular.isDefined(sid) && diablo_invalid_index !== sid) {
 			var s = diablo_get_object(sid, $scope.scores);
-			$scope.select.ticket_score =
-			    parseInt($scope.select.ticket_balance / s.balance) * s.score
+			if (angular.isObject(s)) {
+			    $scope.select.ticket_score =
+				parseInt($scope.select.ticket_balance / s.balance) * s.score;
+			} 
 		    }
 			
 		    wsalePrint.gen_head(

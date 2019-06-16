@@ -427,7 +427,7 @@ action(Session, Req, {"check_w_retailer_charge", Id}, Payload) ->
 			   [{<<"cdraw">>, ShouldDraw},
 			    {<<"cards">>, MyDraw}]);
 	{error, Error} ->
-	    ?utils:respond(200, Req, ?err(charge_none, Error))
+	    ?utils:respond(200, Req, Error)
     end;
 
 
@@ -979,10 +979,12 @@ action(Session, Req, {"gift_ticket"}, Payload) ->
 	{ok, RetailerId, Balance} ->
 	    %% send sms
 	    try 
-		{ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1), 
+		{ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),
+		SMSSetting = ?v(<<"recharge_sms">>, Setting, ?SMS_NOTIFY),
+		?DEBUG("SMSSetting ~p", [SMSSetting]),
 		SysVips  = ?w_sale_request:sys_vip_of_shop(Merchant, ShopId), 
 		case not lists:member(RetailerId, SysVips)
-		    andalso ?to_i(?v(<<"consume_sms">>, Setting, 0)) == 1 of
+		    andalso ?utils:nth(3, SMSSetting) == 1 of
 		    true ->
 			{SMSCode, _} = 
 			    ?notify:sms(

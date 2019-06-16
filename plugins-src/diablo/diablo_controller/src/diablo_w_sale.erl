@@ -59,9 +59,9 @@ sale(list_new, Merchant, Condition) ->
 sale(get_new, Merchant, RSN) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {get_new, Merchant, RSN}); 
-sale(delete_new, Merchant, RSN) ->
+sale(delete_new, Merchant, {RSN, Retailer}) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {delete_new, Merchant, RSN});
+    gen_server:call(Name, {delete_new, Merchant, RSN, Retailer});
 
 sale(last, Merchant, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -281,33 +281,32 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 				     fun({BankCard}, Acc) ->
 					     ?DEBUG("card ~p", [BankCard]),
 					     CardNo = ?v(<<"card">>, BankCard, ?INVALID_OR_EMPTY),
-					     CardDraw = ?v(<<"draw">>, BankCard, 0),
-					     case CardNo =:= ?INVALID_OR_EMPTY of
-						 true -> Acc;
-						 false ->
-						     ["insert into w_retailer_bank_flow(rsn"
-						      ", retailer"
-						      ", bank"
-						      ", balance"
-						      ", type"
-						      ", merchant"
-						      ", shop"
-						      ", entry_date) values("
-						      ++ "\'" ++ ?to_s(SaleSn) ++ "\',"
-						      ++ ?to_s(Retailer) ++ ","
-						      ++ ?to_s(CardNo) ++ ","
-						      ++ ?to_s(CardDraw) ++ ","
-						      ++ ?to_s(?CARD_CASH_OUT) ++ ","
-						      ++ ?to_s(Merchant) ++ ","
-						      ++ ?to_s(Shop) ++ ","
-						      ++ "\'" ++ ?to_s(DateTime) ++ "\')",
-
-						      "update w_retailer_bank set"
-						      " balance=balance-" ++ ?to_s(CardDraw)
-						      ++ " where merchant=" ++ ?to_s(Merchant)
-						      ++ " and retailer=" ++ ?to_s(Retailer)
-						      ++ " and id=" ++ ?to_s(CardNo)] ++ Acc 
-					     end 
+					     CardDraw = ?v(<<"draw">>, BankCard, 0), 
+					     ["insert into w_retailer_bank_flow(rsn"
+					      ", retailer"
+					      ", bank"
+					      ", balance"
+					      ", type"
+					      ", merchant"
+					      ", shop"
+					      ", entry_date) values("
+					      ++ "\'" ++ ?to_s(SaleSn) ++ "\',"
+					      ++ ?to_s(Retailer) ++ ","
+					      ++ ?to_s(CardNo) ++ ","
+					      ++ ?to_s(CardDraw) ++ ","
+					      ++ ?to_s(?CARD_CASH_OUT) ++ ","
+					      ++ ?to_s(Merchant) ++ ","
+					      ++ ?to_s(Shop) ++ ","
+					      ++ "\'" ++ ?to_s(DateTime) ++ "\')"]
+						 ++ case CardNo =:= ?INVALID_OR_EMPTY of
+							true -> [];
+							false ->
+							    ["update w_retailer_bank set"
+							     " balance=balance-" ++ ?to_s(CardDraw)
+							     ++ " where merchant=" ++ ?to_s(Merchant)
+							     ++ " and retailer=" ++ ?to_s(Retailer)
+							     ++ " and id=" ++ ?to_s(CardNo)]
+						    end ++ Acc
 				     end, [], NewBankCards);
 			       false -> []
 			   end,
@@ -464,13 +463,16 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 						     {LeftBackDraw - BackDraw,
 						      ["update w_retailer_bank_flow set "
 						       ++ "balance=balance-" ++ ?to_s(BackDraw)
-						       ++ " where id=" ++ ?to_s(FId),
-
-						       "update w_retailer_bank set "
-						       "balance=balance+" ++ ?to_s(BackDraw)
-						       ++ " where merchant=" ++ ?to_s(Merchant)
-						       ++ " and retailer=" ++ ?to_s(Retailer)
-						       ++ " and id=" ++ ?to_s(CardNo)] ++ Acc} 
+						       ++ " where id=" ++ ?to_s(FId)]
+						      ++ case CardNo =:= ?INVALID_OR_EMPTY of
+							     true -> [];
+							     false ->
+								 ["update w_retailer_bank set "
+								  "balance=balance+" ++ ?to_s(BackDraw)
+								  ++ " where merchant=" ++ ?to_s(Merchant)
+								  ++ " and retailer=" ++ ?to_s(Retailer)
+								  ++ " and id=" ++ ?to_s(CardNo)]
+							 end ++ Acc} 
 					     end, {Withdraw - NewWithdraw, []}, NewFlows),
 				       BackDrawSqls;
 				   false -> []
@@ -631,11 +633,15 @@ handle_call({get_new, Merchant, RSN}, _From, State) ->
     Reply =  ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
-handle_call({delete_new, Merchant, RSN}, _From, State) ->
+handle_call({delete_new, Merchant, RSN, Retailer}, _From, State) ->
     ?DEBUG("delete_new with merchant ~p, rsn ~p", [Merchant, RSN]),
-    Sql = "delete from w_sale where merchant=" ++ ?to_s(Merchant)
-	++ " and rsn =\'" ++ ?to_s(RSN) ++ "\'",
-    Reply =  ?sql_utils:execute(write, Sql, RSN),
+    Sqls = ["delete from w_sale where merchant=" ++ ?to_s(Merchant)
+	    ++ " and rsn =\'" ++ ?to_s(RSN) ++ "\'",
+	    "delete from w_retailer_bank_flow where merchant=" ++ ?to_s(Merchant)
+	    ++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'"
+	    ++ " and retailer=" ++ ?to_s(Retailer)
+	   ],
+    Reply =  ?sql_utils:execute(transaction, Sqls, RSN),
     {reply, Reply, State};
 
 handle_call({last_sale, Merchant, Conditions}, _From, State) ->
@@ -1032,13 +1038,16 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 						++ ?to_s(?CARD_CASH_IN) ++ "," 
 						++ ?to_s(Merchant) ++ ","
 						++ ?to_s(Shop) ++ ","
-						++ "\'" ++ ?to_s(Datetime) ++ "\')",
-
-						"update w_retailer_bank set"
-						" balance=balance+" ++ ?to_s(BackDraw)
-						++ " where merchant=" ++ ?to_s(Merchant)
-						++ " and retailer=" ++ ?to_s(Retailer)
-						++ " and id=" ++ ?to_s(CardNo)] ++ Acc} 
+						++ "\'" ++ ?to_s(Datetime) ++ "\')"]
+					       ++ case CardNo =:= ?INVALID_OR_EMPTY of
+						      true -> [];
+						      false -> 
+							  ["update w_retailer_bank set"
+							   " balance=balance+" ++ ?to_s(BackDraw)
+							   ++ " where merchant=" ++ ?to_s(Merchant)
+							   ++ " and retailer=" ++ ?to_s(Retailer)
+							   ++ " and id=" ++ ?to_s(CardNo)]
+						  end ++ Acc} 
 				      end, {NewWithdraw, []}, NewFlows),
 				BackDrawSqls
 			end;

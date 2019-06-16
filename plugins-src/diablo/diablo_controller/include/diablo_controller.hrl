@@ -130,7 +130,7 @@
 -define(PRINT_DEFAULT_MODE, <<"000">>).
 
 %% sms
--define(SMS_NOTIFY, <<"00">>).
+-define(SMS_NOTIFY, <<"000">>).
 
 %% sort
 -define(SORT_BY_ID, 0).

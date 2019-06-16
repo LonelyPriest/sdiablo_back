@@ -407,17 +407,16 @@ action(Session, Req, {"update_w_sale"}, Payload) ->
     %% end;
 
 action(Session, Req, {"delete_w_sale"}, Payload) ->
-    ?DEBUG("delete_w_sale: session ~p, payload ~p", [Payload]),
+    ?DEBUG("delete_w_sale: session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
-    RSN = ?v(<<"rsn">>, Payload),
-
+    RSN = ?v(<<"rsn">>, Payload), 
     case ?w_sale:sale(get_new, Merchant, RSN) of
 	{ok, []} ->
 	    ?utils:respond(200, Req, ?err(wsale_empty, RSN));
-	{ok, _} ->
+	{ok, New} ->
 	    case ?w_sale:sale(trans_detail, Merchant, {<<"rsn">>, ?to_b(RSN)}) of
 		{ok, []} -> 
-		    case ?w_sale:sale(delete_new, Merchant, RSN) of
+		    case ?w_sale:sale(delete_new, Merchant, {RSN, ?v(<<"retailer_id">>, New)}) of
 			{ok, RSN} ->
 			    ?utils:respond(
 			       200, Req, ?succ(update_w_sale, RSN), [{<<"rsn">>, ?to_b(RSN)}]);

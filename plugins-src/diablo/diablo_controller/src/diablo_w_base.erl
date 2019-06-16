@@ -936,7 +936,9 @@ sys_config() ->
 	      
 	      %% [0]: recharge 
 	      %% [1]: threshold_card
-	      {"recharge_sms",    "充值短信提醒",         "00",   "0"},
+	      %% [2]: gift ticket
+	      {"recharge_sms",    "充值短信提醒",         "000",   "0"},
+	      
 	      {"consume_sms",     "消费短信提醒",         "0",   "0"},
 	      
 	      {"price_on_region", "按区域填写价格",       "0",   "0"},

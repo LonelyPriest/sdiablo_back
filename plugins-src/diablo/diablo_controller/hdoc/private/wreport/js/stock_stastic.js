@@ -135,9 +135,7 @@ function stockStasticCtrlProvide(
 			d.shop = diablo_get_object(d.shop_id, $scope.shops);
 		    });
 		    console.log(page);
-		    diablo_order_page(
-			page, $scope.pagination.items_perpage, $scope.d_reports);
-
+		    diablo_order_page(page, $scope.pagination.items_perpage, $scope.d_reports); 
 		    console.log($scope.d_reports);
 		}
 	    });

@@ -33,11 +33,11 @@ sms_notify(Merchant, {Shop, Phone, Action, Money, RetailerBalance, Score}) ->
 					    ++ " where id=" ++ ?to_s(Merchant),
 					case ?sql_utils:execute(write, Sql, Merchant) of
 					    {ok, Merchant} ->
-						?w_user_profile:update(sms_rate, Merchant),
+						?w_user_profile:update(merchant, Merchant),
 						{0, Merchant};
 					    _Error ->
 						?sql_utils:execute(write, Sql, Merchant),
-						?w_user_profile:update(sms_rate, Merchant),
+						?w_user_profile:update(merchant, Merchant),
 						{0, Merchant}
 					end;
 				    {error, {sms_center_not_found, Merchant}} ->
@@ -150,7 +150,7 @@ sms(promotion, Merchant, Phone) ->
     start_sms(Merchant, Phone, SMSTemplate, []);
 
 sms(ticket, {Merchant, Shop, Retailer, Phone}, Balance) -> 
-    SMSTemplate   = "SMS_167395687",
+    SMSTemplate   = "SMS_167963895",
     SMSParams = ?to_s(ejson:encode(
 			{[{<<"shop">>, Shop},
 			  {<<"user">>, Retailer},
@@ -198,11 +198,11 @@ start_sms(Merchant, Phone, SMSTemplate, SMSParams) ->
 			++ ", sms_send=sms_send+1  where id=" ++ ?to_s(Merchant),
 		    case ?sql_utils:execute(write, Sql, Merchant) of
 			{ok, Merchant} ->
-			    ?w_user_profile:update(sms_rate, Merchant),
+			    ?w_user_profile:update(merchant, Merchant),
 			    {0, Merchant};
 			_Error ->
 			    ?sql_utils:execute(write, Sql, Merchant),
-			    ?w_user_profile:update(sms_rate, Merchant),
+			    ?w_user_profile:update(merchant, Merchant),
 			    {0, Merchant}
 		    end;
 		{error, {sms_center_not_found, Merchant}} ->

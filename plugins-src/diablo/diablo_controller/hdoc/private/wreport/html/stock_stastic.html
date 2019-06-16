@@ -71,12 +71,11 @@
 
 		    <th class="text-center" style="background-color:#FFCCFF">库存数量</th>
 		    <th class="text-center" style="background-color:#FFCCFF">库存计算数量</th>
-		    <th x-ng-if="right.orgprice" class="text-center">库存计算成本</th>
+		    <th x-ng-if="right.show_orgprice" class="text-center">库存计算成本</th>
 		    
 		    <th class="text-center" style="background-color:#FFCCCC">销售数量</th>
 		    <th class="text-center" style="background-color:#FFCCCC">销售金额</th>
-		    <th x-ng-if="right.orgprice" class="text-center"
-			style="background-color:#FFCCCC">销售成本</th> 
+		    <th x-ng-if="right.show_orgprice" class="text-center" style="background-color:#FFCCCC">销售成本</th> 
 		    <th class="text-center" style="background-color:#CCCCCC">现金</th>
 		    <th class="text-center" style="background-color:#CCCCCC">刷卡</th>
 		    <th class="text-center" style="background-color:#CCCCCC">微信</th>
@@ -109,11 +108,11 @@
 		    
 		    <td style="background-color:#FFCCFF">{{r.stock}}</td>
 		    <td style="background-color:#FFCCFF">{{r.stockc}}</td>
-		    <td x-ng-if="right.orgprice">{{r.stockCost}}</td>
+		    <td x-ng-if="right.show_orgprice">{{r.stockCost}}</td>
 
 		    <td style="background-color:#FFCCCC">{{r.sell}}</td>
 		    <td style="background-color:#FFCCCC">{{r.balance}}</td> 
-		    <td x-ng-if="right.orgprice"
+		    <td x-ng-if="right.show_orgprice"
 			style="background-color:#FFCCCC">{{r.sellCost}}</td>
 		    <td style="background-color:#CCCCCC">{{r.cash}}</td>
 		    <td style="background-color:#CCCCCC">{{r.card}}</td>
@@ -142,13 +141,15 @@
 		    
 		  </tr>
 		  <tr>
-		    <td x-ng-if="right.show_gross_profit" class="text-center" colspan=5>
-		      <span class="fg-red">毛利率：{{s_stastic.margins}}</span></td>
+		    <td x-ng-if="right.show_gross_profit" class="text-center" colspan=4>
+		      <span class="fg-red">毛利率：{{s_stastic.margins}}</span>
+		    </td> 
 		    <td x-ng-if="!right.show_gross_profit" colspan=4></td>
-		    <td>{{s_stastic.sell}}</td>
+		    <td x-ng-if="right.show_orgprice"></td>
 		    
+		    <td>{{s_stastic.sell}}</td>
 		    <td><div x-ng-if="right.show_orgprice">{{s_stastic.balance}}</div></td>
-		    <td><div x-ng-if="right.show_orgprice">{{s_stastic.sellCost}}</div></td>
+		    <td x-ng-if="right.show_orgprice">{{s_stastic.sellCost}}</td>
 		    <td><div x-ng-if="right.show_orgprice">{{s_stastic.cash}}</div></td>
 		    <td><div x-ng-if="right.show_orgprice">{{s_stastic.card}}</div></td>
 		    <td><div x-ng-if="right.show_orgprice">{{s_stastic.wxin}}</div></td>
