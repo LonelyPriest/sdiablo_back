@@ -495,11 +495,11 @@ function wsaleNewProvide(
 	unlimitdraw: undefined,
 	draw_cards:   undefined, 
 	
-	ticket_batch: undefined,
-	ticket_balance: undefined,
+	ticket_batchs: [],
+	ticket_balance: 0,
 	ticket_sid: -1,
 	ticket_score: 0,
-	ticket_custom: diablo_invalid,
+	ticket_custom: diablo_invalid_index,
 	
 	total:        0,
 	abs_total:    0,
@@ -677,8 +677,8 @@ function wsaleNewProvide(
     	    $scope.select.left_balance = $scope.select.surplus;
     	} 
     	$scope.select.o_retailer = $scope.select.retailer;
-    	$scope.select.ticket_batch = undefined;
-    	$scope.select.ticket_balance = undefined;
+    	$scope.select.ticket_batchs = [];
+    	$scope.select.ticket_balance = 0;
     };
     
     $scope.on_select_retailer = function(item, model, label){
@@ -912,9 +912,9 @@ function wsaleNewProvide(
     }; 
 
     $scope.get_ticket = function() {
-	$scope.select.ticket_batch   = undefined;
-	$scope.select.ticket_balance = undefined;
-	$scope.select.ticket_custom  = undefined;
+	$scope.select.ticket_batchs   = [];
+	$scope.select.ticket_balance  = 0;
+	$scope.select.ticket_custom   = diablo_invalid_index;
 
 	diabloFilter.get_all_ticket_by_retailer($scope.select.retailer.id).then(function(result){
     	    console.log(result);
@@ -926,7 +926,7 @@ function wsaleNewProvide(
 		    ).then(function(result){
 			console.log(result);
 			if (result.ecode === 0 && !diablo_is_empty(result.data)) {
-			    $scope.select.ticket_batch = wsaleUtils.to_integer(result.data.batch);
+			    $scope.select.ticket_batchs.push(wsaleUtils.to_integer(result.data.batch));
 			    $scope.select.ticket_balance = wsaleUtils.to_integer(result.data.balance);
 			    $scope.select.ticket_custom = diablo_custom_ticket;
 			    $scope.reset_payment(); 
@@ -943,26 +943,35 @@ function wsaleNewProvide(
 		    var select_ticket;
 		    for (var i=0, l=params.stickets.length; i<l; i++) {
 			if (angular.isDefined(params.stickets[i].select) && params.stickets[i].select) {
-			    select_ticket = params.stickets[i];
+			    
 			    $scope.select.ticket_custom = diablo_score_ticket;
+
+			    select_ticket = params.stickets[i];
 			    $scope.select.ticket_sid    = select_ticket.sid; 
+			    $scope.select.ticket_batchs.push(select_ticket.batch);
+			    $scope.select.ticket_balance += select_ticket.balance;
 			    break;
 			}
 		    }
+		    console.log(select_ticket);
 
 		    if (angular.isUndefined(select_ticket)) {
 			for (var j=0, k=params.ptickets.length; j<k; j++) {
 			    if (angular.isDefined(params.ptickets[j].select) && params.ptickets[j].select){
+				$scope.select.ticket_custom = diablo_custom_ticket; 
+
 				select_ticket = params.ptickets[j];
-				$scope.select.ticket_custom = diablo_custom_ticket;
-				break;
+				$scope.select.ticket_batchs.push(select_ticket.batch); 
+				$scope.select.ticket_balance += select_ticket.balance;
+				// break;
 			    }
 			}   
 		    }
 
-		    console.log(select_ticket);
-		    $scope.select.ticket_batch   = select_ticket.batch;
-		    $scope.select.ticket_balance = select_ticket.balance;
+		    // console.log(select_ticket);
+		    // $scope.select.ticket_batchs   = select_ticket.batch;
+		    // $scope.select.ticket_balance = select_ticket.balance;
+		    console.log($scope.select.ticket_batchs);
 		    $scope.reset_payment(); 
 		}
 		
@@ -991,11 +1000,11 @@ function wsaleNewProvide(
 		     },
 
 		     check_select_pticket: function(select, stickets, ptickets) {
-			 angular.forEach(ptickets, function(p) {
-			     if (select.batch !== p.batch) {
-				 p.select = false;
-			     }
-			 });
+			 // angular.forEach(ptickets, function(p) {
+			 //     if (select.batch !== p.batch) {
+			 // 	 p.select = false;
+			 //     }
+			 // });
 			 angular.forEach(stickets, function(s) {
 			     s.select = false;
 			 });
@@ -1012,7 +1021,7 @@ function wsaleNewProvide(
 
 			 if (!autoTicket) {
 			     for (var j=0, k=ptickets.length; j<k; j++) {
-				 if (angular.isDefined(ptickets[i].select) && ptickets[i].select) {
+				 if (angular.isDefined(ptickets[j].select) && ptickets[j].select) {
 				     autoTicket = true;
 				     break;
 				 }
@@ -1508,11 +1517,11 @@ function wsaleNewProvide(
 	$scope.select.unlimitWithdraw = undefined;
 	$scope.select.draw_cards      = undefined;
 	
-	$scope.select.ticket_batch = undefined;
-	$scope.select.ticket_balance = undefined;
+	$scope.select.ticket_batchs = [];
+	$scope.select.ticket_balance = 0;
 	$scope.select.ticket_score = 0;
 	$scope.select.ticket_sid   = diablo_invalid_index;
-	$scope.select.ticket_custom = diablo_invalid;
+	$scope.select.ticket_custom = diablo_invalid_index;
 	
 	$scope.select.has_pay      = 0;
 	$scope.select.should_pay   = 0;
@@ -1999,7 +2008,9 @@ function wsaleNewProvide(
 		var start_print = function(){
 		    $scope.select.ticket_score = 0; 
 		    var sid = $scope.select.ticket_sid;
-		    if (angular.isDefined(sid) && diablo_invalid_index !== sid) {
+		    if ($scope.select.ticket_custom === diablo_score_ticket
+			&& angular.isDefined(sid)
+			&& diablo_invalid_index !== sid) {
 			var s = diablo_get_object(sid, $scope.scores);
 			if (angular.isObject(s)) {
 			    $scope.select.ticket_score =
@@ -2227,7 +2238,7 @@ function wsaleNewProvide(
 	    datetime:       dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),
 	    employee:       $scope.select.employee.id,
 	    comment:        sets($scope.select.comment),
-	    ticket_batch:   seti($scope.select.ticket_batch),
+	    ticket_batchs:  $scope.select.ticket_batchs,
 	    ticket_custom:  $scope.select.ticket_custom,
 
 	    balance:        $scope.select.surplus, 

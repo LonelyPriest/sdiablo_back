@@ -41,7 +41,7 @@ var wsaleUtils = function(){
 	select.total      = base.total;
 	select.score      = base.score;
 	
-	select.tbatch        = base.tbatch;
+	select.tbatch        = base.tbatch === diablo_invalid_index ? [] : [].concat(base.tbatch);
 	select.tcustom       = base.tcustom;
 	select.ticket        = base.ticket; 
 	select.ticket_score  = base.ticket_score;

@@ -714,15 +714,21 @@ function filterProvider(){
 		    {batch:batchNo, mode:diablo_ticket_by_batch, custom:diablo_custom_ticket}).$promise;
 	    }, 
 
-	    get_ticket_by_retailer: function(retailerId){
+	    get_ticket_by_retailer: function(retailer){
 		return _retailerHttp.save(
 		    {operation: "get_w_retailer_ticket"},
-		    {retailer:retailerId, mode:diablo_ticket_by_retailer}).$promise;
+		    {retailer:retailer, mode:diablo_ticket_by_retailer}).$promise;
 	    },
 
 	    get_all_ticket_by_retailer: function(retailerId) {
 		return _retailerHttp.save(
 		    {operation: "get_w_retailer_all_ticket"}, {retailer:retailerId}).$promise;
+	    },
+
+	    get_ticket_by_sale: function(sale_rsn, custom) {
+		return _retailerHttp.save(
+		    {operation: "get_w_retailer_ticket"},
+		    {sale:sale_rsn, mode:diablo_ticket_by_sale, custom:custom}).$promise;
 	    },
 
 	    get_ticket_plan:function() {

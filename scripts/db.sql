@@ -691,6 +691,7 @@ create table w_promotion(
 create table w_ticket(
     id              INTEGER AUTO_INCREMENT,
     batch           INTEGER not null,
+    sale_rsn        VARCHAR(32) -- refer to w_sale
     sid             INTEGER default -1, -- score promotion
     balance         INTEGER not null,
     retailer        INTEGER default -1, -- -1: means no retailer to related
@@ -708,12 +709,13 @@ create table w_ticket(
 
 
 create table w_ticket_custom(
-    id              INTEGER AUTO_INCREMENT,
+    id              INTEGER AUTO_INCREMENT, 
     plan            INTEGER default -1,
     batch           INTEGER not null,
+    sale_rsn        VARCHAR(32) -- refer to w_sale
     balance         INTEGER not null,
     retailer        INTEGER default -1, -- -1: who consumed
-    state           INTEGER default 1, -- 0: discard; 1: checked; 2: consumed
+    state           INTEGER default 1, -- 0: discard; 1: checked; 2: consumed; 3:unused
     in_shop         INTEGER default -1, -- produce shop
     shop            INTEGER default -1, -- consumed shop
     stime           DATE default 0 not null,
@@ -722,8 +724,8 @@ create table w_ticket_custom(
     entry_date      DATETIME default 0, 
     deleted         INTEGER default 0, -- 0: no;  1: yes
 
-    unique  key uk  (merchant, plan, batch),
-    key         dk  (merchant, retailer),
+    unique  key uk  (merchant, batch),
+    key         dk  (merchant, plan, retailer),
     primary key     (id)
     
 ) default charset=utf8;

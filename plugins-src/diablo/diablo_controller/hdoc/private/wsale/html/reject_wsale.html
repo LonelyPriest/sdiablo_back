@@ -12,13 +12,17 @@
 		    x-ng-click="go_back()">返回
 	      <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
 
-	  <button x-ng-if="select.retailer.type_id===1
-			   && select.withdraw!==0
-			   && select.total!==0"
-		  class="btn green-meadow purple-stripe"
-		  x-ng-disabled="disable_withdraw()"
+	  <button x-ng-if="!disable_draw_back()"
+		  class="btn blue purple-strip"
+		  x-ng-disabled="has_withdrawed"
 		  x-ng-click="withdraw()">返现
 	      <i class="glyphicon glyphicon-yen"></i></button>
+
+	  <button x-ng-if="!disable_ticket_back()"
+		  class="btn yellow purple-stripe"
+		  x-ng-disabled="disable_withdraw()"
+		  x-ng-click="ticket_back()">返券
+	      <i class="glyphicon glyphicon-send"></i></button>
 	  
 	  <button x-ng-if="has_select_rsn" class="btn btn-success purple-stripe"
 		  x-ng-disabled="disable_save()"
@@ -515,6 +519,52 @@
 
   <div class="modal-footer">
     <button class="btn btn-primary" x-ng-click="ok()">保存</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
+</script>
+
+<script type="text/ng-template" id="ticket-back.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    
+    <h4 class="modal-title"><span class="label label-sm label-primary">电子卷信息</span></h4>
+  </div>
+  
+  <div class="modal-body"> 
+    <table x-ng-if="params.ptickets.length!==0"
+	   class="table table-bordered table-striped table-condensed table-advanced">
+      <thead>
+	<th class="col-md-2"></th>
+	<th class="danger col-md-3 text-center">批次</th>
+	<th class="danger col-md-4 text-center">类型</th>
+	<th class="danger col-md-3 text-center">金额</th>
+      </thead>
+
+      <tbody>
+	<tr class="text-center" x-ng-repeat="p in params.ptickets">
+	  <td class="vert-align">
+	    <div class="checkbox checkbox-danger checkbox-circle">
+	      <input id={{p.batch}}-{{p.id}}
+		     type="checkbox"
+		     x-ng-model="p.select" />
+	      <label for={{p.batch}}-{{p.id}}></label>
+	    </div>
+	  </td>
+	  <td class="vert-align">{{p.batch}}</td>
+	  <td class="vert-align">优惠电子卷</td>
+	  <td class="vert-align">{{p.balance}}</td>
+	</tr>
+      </tbody>
+    </table> 
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="!params.check_valid(params.ptickets)"
+	    x-ng-click="ok()">确定</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>
 </script>

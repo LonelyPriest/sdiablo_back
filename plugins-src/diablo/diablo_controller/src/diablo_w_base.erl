@@ -934,9 +934,9 @@ sys_config() ->
 	      %% [1]: use ticket with no check 0-> check 1-> no check
 	      {"gen_ticket",      "自动生成电子卷",       "00",   "0"},
 	      
-	      %% [0]: recharge 
-	      %% [1]: threshold_card
-	      %% [2]: gift ticket
+	      %% [0]: recharge notify
+	      %% [1]: threshold_card consume notify
+	      %% [2]: gift ticket notify
 	      {"recharge_sms",    "充值短信提醒",         "000",   "0"},
 	      
 	      {"consume_sms",     "消费短信提醒",         "0",   "0"},

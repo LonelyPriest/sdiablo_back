@@ -590,6 +590,9 @@ error(wsale_stock_not_unique, StyleNumber) ->
     {2711, "stock not unique: " ++ ?to_s(StyleNumber) ++ "."};
 error(wsale_invalid_stock_total, StyleNumber) ->
     {2712, "invalid stock total: " ++ ?to_s(StyleNumber) ++ "."};
+error(no_valid_ticket, Merchant) ->
+    {2713, "No valid ticket: " ++ ?to_s(Merchant) ++ "."};
+
 %% about print
 error(invalid_sn, PrintSN) ->
     {2411, "invalid SN of print " ++ ?to_s(PrintSN)};

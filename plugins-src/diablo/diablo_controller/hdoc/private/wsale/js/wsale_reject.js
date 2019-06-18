@@ -35,7 +35,12 @@ function wsaleRejectCtrlProvide(
     $scope.inventories = [];
     $scope.show_promotions = [];
     $scope.setting = {};
-    $scope.select = {datetime: $.now()};
+    $scope.select = {
+	datetime: $.now(),
+	withdraw: 0,
+	total: 0,
+	ticket: 0
+    };
 
     var authen = new diabloAuthen(user.type, user.right, user.shop);
     $scope.right = authen.authenSaleRight();
@@ -196,8 +201,11 @@ function wsaleRejectCtrlProvide(
     /*
      * withdraw
      */ 
-    $scope.disable_withdraw = function(){
-	return $scope.has_withdrawed;
+    $scope.disable_draw_back = function(){
+	return angular.isUndefined($scope.select.retailer)
+	    || $scope.select.retailer.type_id !== diablo_charge_retailer
+	    || $scope.select.withdraw === 0
+	    || $scope.select.total === 0;
     };
 
     $scope.withdraw = function(){
@@ -237,6 +245,61 @@ function wsaleRejectCtrlProvide(
 	     hide_pwd   :$scope.setting.hide_pwd
 	    }
 	);
+    };
+
+    $scope.disable_ticket_back = function() {
+	return angular.isUndefined($scope.select.retailer)
+	    || $scope.select.retailer.type_id === diablo_system_retailer
+	    || $scope.select.tcustom === diablo_score_ticket
+	    || $scope.select.ticket === 0
+	    || $scope.select.total === 0;
+    };
+    
+    $scope.ticket_back = function() {
+	diabloFilter.get_ticket_by_sale(
+	    $scope.select.rsn, diablo_custom_ticket
+	).then(function(result){
+	    console.log(result);
+	    if (result.ecode === 0){
+		var callback = function(params) {
+		    console.log(params);
+		    $scope.select.ticket = 0;
+		    $scope.select.tbatch = [];
+		    for (var j=0, k=params.ptickets.length; j<k; j++) {
+			if (angular.isDefined(params.ptickets[j].select) && params.ptickets[j].select){
+			    select_ticket = params.ptickets[j];
+			    $scope.select.tbatch.push(select_ticket.batch); 
+			    $scope.select.ticket += select_ticket.balance;
+			    // break;
+			}
+		    }   
+		};
+		
+		var promotionTickets = result.data.map(function(t) {
+		    return {batch:t.batch, balance:t.balance, select:true}
+		});
+		
+    		diabloUtilsService.edit_with_modal(
+    		    "ticket-back.html",
+    		    undefined,
+    		    callback,
+    		    undefined,
+    		    {ptickets: promotionTickets, 
+		     check_valid: function(ptickets) {
+			 var autoTicket = false;
+			 for (var j=0, k=ptickets.length; j<k; j++) {
+			     if (angular.isDefined(ptickets[j].select) && ptickets[j].select) {
+				 autoTicket = true;
+				 break;
+			     }
+			 }
+			 return autoTicket;
+		     }
+		    });
+    	    } else {
+		dialog.set_error("会员电子卷获取", result.ecode); 
+    	    }
+	})
     };
     
     /*
@@ -459,7 +522,7 @@ function wsaleRejectCtrlProvide(
 	    direct:        wsaleService.direct.wreject,
 	    total:         seti($scope.select.rtotal),
 	    score:         $scope.select.rscore, 
-	    tbatch:        $scope.select.tbatch,
+	    tbatch:        $scope.select.tbatch.length === 0 ? undefined : $scope.select.tbatch,
 	    tcustom:       $scope.select.tcustom,
 	    ticket_score:  $scope.select.ticket_score
 	};

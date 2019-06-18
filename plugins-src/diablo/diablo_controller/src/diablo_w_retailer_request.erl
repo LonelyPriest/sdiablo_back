@@ -675,13 +675,14 @@ action(Session, Req, {"delete_threshold_card"}, Payload) ->
 				?w_retailer:threshold_card(delete, Merchant, Card)
 			end;
 		    false ->
-			EDate = ?v(<<"edate">>, Card),
-			case ?utils:compare_date(date, ?utils:current_date(), EDate) of
-			    true ->
-				?w_retailer:threshold_card(delete, Merchant, Card);
-			    false ->
-				{error, ?err(threshold_card_non_expire, CardId)}
-			end 
+			?w_retailer:threshold_card(delete, Merchant, Card)
+			%% EDate = ?v(<<"edate">>, Card),
+			%% case ?utils:compare_date(date, ?utils:current_date(), EDate) of
+			%%     true ->
+			%% 	?w_retailer:threshold_card(delete, Merchant, Card);
+			%%     false ->
+			%% 	{error, ?err(threshold_card_non_expire, CardId)}
+			%% end 
 		end;
 	    Error ->
 		Error
@@ -850,11 +851,15 @@ action(Session, Req, {"get_w_retailer_ticket"}, Payload) ->
 	    ?TICKET_BY_BATCH ->
 		Batch = ?v(<<"batch">>, Payload),
 		UseCustomTicket = ?v(<<"custom">>, Payload, ?SCORE_TICKET), 
-		?w_retailer:get_ticket(by_batch, Merchant, Batch, UseCustomTicket)
+		?w_retailer:get_ticket(by_batch, Merchant, Batch, UseCustomTicket);
+	    ?TICKET_BY_SALE ->
+		UseCustomTicket = ?v(<<"custom">>, Payload, ?SCORE_TICKET),
+		SaleRsn = ?v(<<"sale">>, Payload),
+		?w_retailer:get_ticket(by_sale, Merchant, SaleRsn, UseCustomTicket)
 	end
     of 
 	{ok, Value} ->
-	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0}, {<<"data">>, {Value}}]});
+	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0}, {<<"data">>, ?to_tl(Value)}]});
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end;
@@ -976,7 +981,7 @@ action(Session, Req, {"gift_ticket"}, Payload) ->
     ShopId   = ?v(<<"shop">>, Payload),
     ShopName = ?v(<<"shop_name">>, Payload), 
     case ?w_retailer:ticket(gift, Merchant, {ShopId, RetailerId, Tickets}) of
-	{ok, RetailerId, Balance} ->
+	{ok, RetailerId, Balance, Count} ->
 	    %% send sms
 	    try 
 		{ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),
@@ -988,7 +993,9 @@ action(Session, Req, {"gift_ticket"}, Payload) ->
 		    true ->
 			{SMSCode, _} = 
 			    ?notify:sms(
-			       ticket, {Merchant, ShopName, RetailerName, RetailerPhone}, Balance),
+			       ticket,
+			       {Merchant, ShopName, RetailerName, RetailerPhone},
+			       {Balance, Count}),
 			?utils:respond(
 			   200, Req, ?succ(new_ticket_plan, RetailerId),
 			   [{<<"sms_code">>, SMSCode}]);

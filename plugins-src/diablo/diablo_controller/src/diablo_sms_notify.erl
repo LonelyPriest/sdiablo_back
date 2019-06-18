@@ -149,12 +149,13 @@ sms(promotion, Merchant, Phone) ->
     SMSTemplate = "SMS_167400277",
     start_sms(Merchant, Phone, SMSTemplate, []);
 
-sms(ticket, {Merchant, Shop, Retailer, Phone}, Balance) -> 
-    SMSTemplate   = "SMS_167963895",
+sms(ticket, {Merchant, Shop, Retailer, Phone}, {Balance, Count}) -> 
+    SMSTemplate   = "SMS_168285336",
     SMSParams = ?to_s(ejson:encode(
 			{[{<<"shop">>, Shop},
 			  {<<"user">>, Retailer},
-			  {<<"money">>, ?to_b(Balance)} 
+			  {<<"money">>, ?to_b(Balance)},
+			  {<<"count">>, ?to_b(Count)}
 			 ]})),
     start_sms(Merchant, Phone, SMSTemplate, SMSParams);
     

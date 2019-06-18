@@ -102,6 +102,7 @@ var diablo_custom_ticket = 1;
 
 var diablo_ticket_by_retailer = 0;
 var diablo_ticket_by_batch = 1;
+var diablo_ticket_by_sale = 2;
 
 var diablo_discard_ticket_one = 0;
 var diablo_discard_ticket_all = 1;

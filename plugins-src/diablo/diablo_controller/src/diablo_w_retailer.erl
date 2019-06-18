@@ -175,13 +175,18 @@ get_ticket(by_promotion, Merchant, RetailerId) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {ticket_by_promotion, Merchant, RetailerId});
 
-get_ticket(by_batch, Merchant, {Batch, Mode, Custom}) -> 
+get_ticket(by_batch, Merchant, {Batch, Mode, Custom}) when is_integer(Batch)-> 
+    get_ticket(by_batch, Merchant, {[Batch], Mode, Custom});
+get_ticket(by_batch, Merchant, {Batch, Mode, Custom})-> 
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {ticket_by_batch, Merchant, {Batch, Mode, Custom}}).
 
 get_ticket(by_batch, Merchant, Batch, Custom) ->
-    get_ticket(by_batch, Merchant, {Batch, ?TICKET_CHECKED, Custom}).
-
+    get_ticket(by_batch, Merchant, {Batch, ?TICKET_STATE_CHECKED, Custom});
+get_ticket(by_sale, Merchant, Sale, Custom) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {ticket_by_sale, Merchant, Sale, Custom}).
+   
 
 make_ticket(batch, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -1714,25 +1719,25 @@ handle_call({update_ticket_plan, Merchant, Attrs}, _From, State) ->
 handle_call({gift_ticket, Merchant, {Shop, Retailer, Tickets} = GiftInfo}, _From, State) ->
     ?DEBUG("gift_ticket: merchant ~p, GiftInfo ~p", [Merchant, GiftInfo]), 
     Reply = 
-	case search_custome_ticket(Merchant, Tickets, [], [], 0) of
-	    {_Success, Failed, _Balance} when length(Failed) =/= 0 ->
+	case search_custome_ticket(Merchant, Tickets, [], [], 0, 0) of
+	    {_Success, Failed, _Balance, _Count} when length(Failed) =/= 0 ->
 		{error, ?err(no_valid_ticket, Merchant)};
-	    {Success, _Failed, _Balance} when length(Success) =:= 0 ->
+	    {Success, _Failed, _Balance, _Count} when length(Success) =:= 0 ->
 		{error, ?err(no_valid_ticket, Merchant)};
-	    {Success, [], Balance} -> 
+	    {Success, [], Balance, Count} -> 
 		Sqls = 
 		    lists:foldr(
 		      fun({Plan, Batch}, Acc) ->
 			      ["update w_ticket_custom set retailer=" ++ ?to_s(Retailer)
-				  ++ ", in_shop=" ++ ?to_s(Shop)
-				  ++ " where merchant=" ++ ?to_s(Merchant)
-				  ++ " and plan=" ++ ?to_s(Plan)
-				  ++ " and batch=" ++ ?to_s(Batch)|Acc]
-		      end, [], Success),
-		
+			       ++ ", in_shop=" ++ ?to_s(Shop)
+			       ++ ", state=" ++ ?to_s(?TICKET_STATE_CHECKED)
+			       ++ " where merchant=" ++ ?to_s(Merchant)
+			       ++ " and plan=" ++ ?to_s(Plan)
+			       ++ " and batch=" ++ ?to_s(Batch)|Acc]
+		      end, [], Success), 
 		case ?sql_utils:execute(transaction, Sqls, Retailer) of
 		    {ok, Retailer} ->
-			{ok, Retailer, Balance};
+			{ok, Retailer, Balance, Count};
 		    Error->
 			Error
 		end
@@ -1778,14 +1783,14 @@ handle_call({ticket_by_retailer, Merchant, RetailerId}, _From, State) ->
     {reply, Reply, State};
 
 handle_call({ticket_by_promotion, Merchant, RetailerId}, _From, State) ->
-    Sql = "select id, batch, balance, retailer, state from w_ticket_custom"
+    Sql = "select id, plan, batch, balance, retailer, state from w_ticket_custom"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and retailer=" ++ ?to_s(RetailerId)
 	++ " and state=" ++ ?to_s(?CHECKED), 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({ticket_by_batch, Merchant, {Batch, Mode, Custom}}, _From, State) ->
+handle_call({ticket_by_batch, Merchant, {Batchs, Mode, Custom}}, _From, State) -> 
     Sql = case Custom of
 	      ?CUSTOM_TICKET ->
 		  "select id, batch, balance, state from w_ticket_custom";
@@ -1793,15 +1798,34 @@ handle_call({ticket_by_batch, Merchant, {Batch, Mode, Custom}}, _From, State) ->
 		  "select id, batch, balance, retailer, sid, state from w_ticket"
 	  end
 	++ " where merchant=" ++ ?to_s(Merchant)
-	++ " and batch=" ++ ?to_s(Batch)
+	++ ?sql_utils:condition(proplists, {<<"batch">>, Batchs})
+	%% ++ " and batch=" ++ ?to_s(Batch)
 	++ case Mode of
-	       ?TICKET_CHECKED -> " and state=" ++ ?to_s(?CHECKED);
+	       ?TICKET_CHECKED -> " and state=" ++ ?to_s(?TICKET_STATE_CHECKED);
 	       ?TICKET_ALL -> []
 	   end,
     
-    Reply = ?sql_utils:execute(s_read, Sql),
+    Reply = case Custom of
+		?SCORE_TICKET ->
+		    ?sql_utils:execute(s_read, Sql);
+		?CUSTOM_TICKET ->
+		    ?sql_utils:execute(read, Sql)
+	    end,
     {reply, Reply, State};
 
+handle_call({ticket_by_sale, Merchant, Sale, Custom}, _From, State) -> 
+    Sql = case Custom of
+	      ?CUSTOM_TICKET ->
+		  "select id, batch, balance, state from w_ticket_custom";
+	      ?SCORE_TICKET ->
+		  "select id, batch, balance, retailer, sid, state from w_ticket"
+	  end
+	++ " where merchant=" ++ ?to_s(Merchant)
+	++ " and sale_rsn=\'" ++ ?to_s(Sale) ++ "\'",
+
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+	
 handle_call({total_retailer, Merchant, Conditions}, _From, State) ->
     ?DEBUG("total_retailer: merchant ~p, conditions ~p", [Merchant, Conditions]),
     {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
@@ -2685,7 +2709,7 @@ make_ticket(Merchant, Datetime, Balance, StartBatch, Plan, Count, Acc) ->
 	++ ?to_s(Plan) ++ ","
 	++ ?to_s(Balance) ++ ","
 	++ ?to_s(-1) ++ ","
-	++ ?to_s(?CHECKED) ++ ","
+	++ ?to_s(?CUSTOM_TICKET_STATE_UNUSED) ++ ","
 	++ ?to_s(-1) ++ ","
 	++ "\'\'" ++ ","
 	++ ?to_s(Merchant) ++ ","
@@ -2759,20 +2783,22 @@ sort_condition(consume, Conditions, Prefix) ->
 	end.
 
 
-search_custome_ticket(_Merchant, [], Success, Failed, AllBalance)->
-    ?DEBUG("Success ~p, Failed ~p, AllBalance ~p", [Success, Failed, AllBalance]),
-    {Success, Failed, AllBalance};
-search_custome_ticket(Merchant, [{struct, Ticket}|T], Success, Failed, AllBalance)->
+search_custome_ticket(_Merchant, [], Success, Failed, AllBalance, AllCount)->
+    ?DEBUG("Success ~p, Failed ~p, AllBalance ~p, AllCount ~p",
+	   [Success, Failed, AllBalance, AllBalance]),
+    {Success, Failed, AllBalance, AllCount};
+search_custome_ticket(Merchant, [{struct, Ticket}|T], Success, Failed, AllBalance, AllCount)->
     Plan    = ?v(<<"id">>, Ticket),
     Balance = ?v(<<"balance">>, Ticket),
     Count   = ?v(<<"count">>, Ticket),
     Batchs  = find_custome_ticket_batch(by_plan, Plan, Success, []),
-    Sql = "select id, batch, plan, batch, balance"
+    Sql = "select id, batch, plan, balance"
 	" from w_ticket_custom"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and plan="  ++ ?to_s(Plan)
 	++ " and balance=" ++ ?to_s(Balance)
-	++ " and state=1 and deleted=0"
+	++ " and state=" ++ ?to_s(?CUSTOM_TICKET_STATE_UNUSED)
+	++" and deleted=0"
 	++ case Batchs of
 	       [] -> [];
 	       _ ->
@@ -2783,12 +2809,18 @@ search_custome_ticket(Merchant, [{struct, Ticket}|T], Success, Failed, AllBalanc
 
     case ?sql_utils:execute(read, Sql) of
 	{ok, []} ->
-	    search_custome_ticket(Merchant, [], Success, [Plan|Failed], AllBalance);
+	    search_custome_ticket(Merchant, [], Success, [Plan|Failed], AllBalance, AllCount);
 	{ok, UnusedTickets} ->
 	    Searchs = lists:foldr(fun({Unused}, Acc) ->
 					  [{Plan, ?to_s(?v(<<"batch">>, Unused))}|Acc]
 				  end, [], UnusedTickets),
-	    search_custome_ticket(Merchant, T, Searchs ++ Success, Failed, AllBalance + Balance)
+	    search_custome_ticket(
+	      Merchant,
+	      T,
+	      Searchs ++ Success,
+	      Failed,
+	      AllBalance + Balance,
+	      AllCount + Count)
     end.
 
 find_custome_ticket_batch(by_plan, _Plan, [], Sort) ->
