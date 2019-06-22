@@ -950,7 +950,7 @@ create table w_inventory_new_detail(
     deleted        INTEGER default 0, -- 0: no;  1: yes
     
     unique  key uk (rsn, style_number, brand),
-    key     dk (merchant, style_number, brand, type, firm, year),
+    key     dk (merchant, shop, style_number, brand, type, firm, year),
     primary key    (id)
 )default charset=utf8;
 

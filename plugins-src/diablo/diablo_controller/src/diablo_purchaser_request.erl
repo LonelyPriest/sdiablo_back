@@ -1094,6 +1094,37 @@ action(Session, Req, {"update_w_inventory_alarm"}, Payload) ->
     	    ?utils:respond(200, Req, Error)
     end;
 
+
+action(Session, Req, {"analysis_history_stock"}, Payload) ->
+    ?DEBUG("analysis_history_stock: session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    Conditions = Payload,
+    try
+	{ok, Shops}  = ?shop:lookup(Merchant),
+	%% ?DEBUG("shops ~p", [Shops]),
+	{ok, StockIn} = ?supplier:profit(profit_shop, stock_in_of_firm, Merchant, Conditions),
+	%% ?DEBUG("StockIn ~p", [StockIn]),
+	{ok, StockOut} = ?supplier:profit(profit_shop, stock_out_of_firm, Merchant, Conditions),
+	%% ?DEBUG("StockOut ~p", [StockOut]),
+	{ok, TransferIn} = ?supplier:profit(profit_shop, transfer_in_of_firm, Merchant, Conditions),
+	%% ?DEBUG("TransferIn ~p", [TransferIn]),
+	{ok, TransferOut} = ?supplier:profit(profit_shop, transfer_out_of_firm, Merchant, Conditions),
+	%% ?DEBUG("TransferOut ~p", [TransferOut]),
+	{ok, Sales} = ?supplier:profit(profit_shop, sale_of_firm, Merchant, Conditions), 
+	%% ?DEBUG("Sales ~p", [Sales]),
+	
+	HStocks = history_shop_stock(Shops, StockIn, StockOut, TransferIn, TransferOut, Sales, []),
+	
+	
+	%% ?DEBUG("Stocks ~p", [Stocks]),
+	?utils:respond(200, object, Req,
+		       {[{<<"ecode">>, 0},
+			 {<<"stock">>, HStocks}]})
+	
+    catch
+	_:{badmatch, {error, Error}} -> ?utils:respond(200, Req, Error) 
+    end;
+	
 action(Session, Req, {"adjust_w_inventory_price"}, Payload) ->
     ?DEBUG("adjust_w_inventory_price with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
@@ -1632,8 +1663,15 @@ sidebar(Session) ->
 
 	    TransR = [{"inventory_new_detail", "采购记录", "glyphicon glyphicon-download"}],
 	    TransD = [{"inventory_rsn_detail", "采购明细", "glyphicon glyphicon-map-marker"}], 
-	    InvDetail = [{"inventory_detail",  "库存详情", "glyphicon glyphicon-book"}], 
-		
+	    InvDetail = [{"inventory_detail",  "库存详情", "glyphicon glyphicon-book"}],
+
+	    HistoryStock = 
+		case ?right_auth:authen(?analysis_history_stock, Session) of
+		    {ok, ?analysis_history_stock} ->
+			[{"inventory_history", "历史库存", "glyphicon glyphicon-header"}]; 
+		    _ -> []
+		end,
+	    
 	    InvPrice =
 		case ?right_auth:authen(?adjust_w_inventory_price, Session) of
 		    {ok, ?adjust_w_inventory_price} ->
@@ -1729,7 +1767,7 @@ sidebar(Session) ->
 
 	    Level1 = ?menu:sidebar(
 			level_1_menu,
-			Record ++ Reject ++ TransR ++ TransD ++ InvDetail ++ InvPrice),
+			Record ++ Reject ++ TransR ++ TransD ++ InvDetail ++ HistoryStock ++ InvPrice),
 	    Level2 = ?menu:sidebar(
 			level_2_menu, InvMgr ++ Transfer ++ GoodMgr ++ PromotionMgr),
 
@@ -2696,13 +2734,8 @@ get_name(by_id, GivenID, [{H}|T]) ->
 	    get_name(by_id, GivenID, T)
     end.
 
-
 replace_condition_with_lbrand(?AND, _Merchant, _Brand, Payload) ->
     Payload;
-%% P = proplists:delete(<<"fields">>, Payload),
-%% PN = proplists:delete(<<"lbrand">>, Fields),
-%% [{<<"fields">>, {struct, PN}} |P];
-
 replace_condition_with_lbrand(?LIKE, Merchant, Brand, Payload) ->
     case Brand of
 	undefined ->
@@ -2722,4 +2755,33 @@ replace_condition_with_lbrand(?LIKE, Merchant, Brand, Payload) ->
 	    end
 	    %% _ ->
 	    %%     [{<<"fields">>, {struct, proplists:delete(<<"lbrand">>, Fields)}}|P]
+    end.
+
+history_shop_stock([], _StockIn, _StockOut, _TransferIn, _TransferOut, _Sale, Acc) ->
+    Acc;
+history_shop_stock([{Shop}|T], StockIn, StockOut, TransferIn, TransferOut, Sale, Acc) ->
+    ShopId = ?v(<<"id">>, Shop), 
+    ShopStockIn     = [{S} || {S} <- StockIn, ?v(<<"shop_id">>, S) =:= ShopId],
+    ShopStockOut    = [{S} || {S} <- StockOut, ?v(<<"shop_id">>, S) =:= ShopId],
+    ShopTransferIn  = [{S} || {S} <- TransferIn, ?v(<<"shop_id">>, S) =:= ShopId],
+    ShopTransferOut = [{S} || {S} <- TransferOut, ?v(<<"shop_id">>, S) =:= ShopId],
+    ShopSale        = [{S} || {S} <- Sale, ?v(<<"shop_id">>, S) =:= ShopId],
+
+    case ShopStockIn =:= []
+	andalso ShopStockOut =:= []
+	andalso ShopTransferIn =:= []
+	andalso ShopTransferOut =:= []
+	andalso ShopSale =:= []
+    of
+	true ->
+	    history_shop_stock(T, StockIn, StockOut, TransferIn, TransferOut, Sale, Acc);
+	false ->
+	    history_shop_stock(T, StockIn, StockOut, TransferIn, TransferOut, Sale,
+	    [{[{<<"shop_id">>, ShopId},
+	       {<<"shop_name">>, ?v(<<"name">>, Shop)},
+	       {<<"stock_in">>, ShopStockIn},
+	       {<<"stock_out">>, ShopStockOut},
+	       {<<"transfer_in">>, ShopTransferIn},
+	       {<<"transfer_out">>, ShopTransferOut},
+	       {<<"sale">>, ShopSale}]}|Acc])
     end.

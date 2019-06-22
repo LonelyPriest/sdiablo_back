@@ -607,5 +607,10 @@ alter table w_child_card add column deleted TINYINT not null default 0;
 --2019-06-17
 alter table w_ticket add column sale_rsn VARCHAR(32) not null default '-1' after batch;
 alter table w_ticket_custom add column sale_rsn VARCHAR(32) not null default '-1' after batch;
+
+--2019-06-18
+alter table w_inventory_new_detail drop index dk;
+alter table w_inventory_new_detail add index dk (merchant, shop, style_number, brand, type, firm, year);
+
 -- 9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;

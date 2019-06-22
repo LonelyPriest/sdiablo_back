@@ -38,6 +38,7 @@ supplier(w_new, Attrs) ->
 supplier(w_list, Merchant) ->
     gen_server:call(?MODULE, {w_list, Merchant}).
 
+
 supplier(w_delete, Merchant, Id) ->
     gen_server:call(?MODULE, {w_delete_supplier, Merchant, Id});
 supplier(w_update, Merchant, Attrs) ->
@@ -87,14 +88,15 @@ match(vfirm, Merchant, {Mode, Prompt}) ->
     gen_server:call(?MODULE, {match_vfirm, Merchant, Mode, Prompt}).
 
 profit(profit, Mode, Merchant, Conditions) ->
-    gen_server:call(?MODULE, {profit, Mode, Merchant, Conditions}).
+    gen_server:call(?MODULE, {profit, Mode, Merchant, Conditions});
+
+profit(profit_shop, Mode, Merchant, Conditions) ->
+    gen_server:call(?MODULE, {profit_shop, Mode, Merchant, Conditions}).
 
 %% stastic
 %% half of minitue
 sprofit(sprofit, Mode, Merchant, Conditions) ->
     gen_server:call(?MODULE, {sprofit, Mode, Merchant, Conditions}, 1000 * 30).
-
-
 
 update(code, Merchant, FirmId) ->
     gen_server:cast(?MODULE, {update_code, Merchant, FirmId}).
@@ -279,13 +281,13 @@ handle_call({w_list, Merchant}, _From, State) ->
     {reply, Reply, State};
 
 handle_call({page_total, Merchant, Conditions}, _From, State) ->
-    ?DEBUG("page_total: merchant ~p, Conditions ~p", [Merchant, Conditions]),
+    %% ?DEBUG("page_total: merchant ~p, Conditions ~p", [Merchant, Conditions]),
     NewConditions = lists:foldr(fun({<<"firm">>, Firm}, Acc) ->
 					[{<<"id">>, Firm}|Acc];
 				   (Others, Acc) ->
 					[Others|Acc]
 				end, [], Conditions),
-    Sql = "select count(*) as total" " from suppliers where merchant=" ++ ?to_s(Merchant)
+    Sql = "select count(*) as total from suppliers where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions),
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
@@ -1155,6 +1157,179 @@ handle_call({profit, stock_all, Merchant, Conditions}, _From, State) ->
 	++ " group by a.merchant, a.firm", 
 
     R = ?sql_utils:execute(read, Sql), 
+    {reply, R, State};
+
+handle_call({profit_shop, stock_in_of_firm, Merchant, Conditions}, _From, State) ->
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
+    Sql =
+	"select a.firm_id"
+	", a.shop_id"
+	", SUM(a.org_price * a.amount) as cost"
+	", SUM(a.org_price * a.over) as ocost"
+	", SUM(a.amount) as total"
+	", SUm(a.over) as over"
+	", b.name as firm"
+	
+	" from("
+	"select a.merchant"
+	", a.firm as firm_id"
+	", a.shop as shop_id"
+	", a.org_price"
+	", a.amount" 
+	", a.over"
+
+	" from w_inventory_new_detail a, w_inventory_new b" 
+	" where a.rsn=b.rsn"
+	" and a.merchant=b.merchant"
+	" and a.firm=b.firm"
+	" and a.shop=b.shop"
+	" and a.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+
+	++ " and b.type=0"
+	++ " and b.state in(0, 1)"
+	++ " and " ++ ?sql_utils:time_condition(StartTime, "b.entry_date", ge)
+	++ " and " ++ ?sql_utils:time_condition(EndTime, "b.entry_date", le) ++ ") a"
+
+	++ " left join suppliers b on a.firm_id=b.id"
+	++ " group by a.firm_id, a.shop_id",
+    
+    R = ?sql_utils:execute(read, Sql),
+    {reply, R, State};
+
+handle_call({profit_shop, stock_out_of_firm, Merchant, Conditions}, _From, State) ->
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
+    Sql =
+	"select a.firm_id"
+	", a.shop_id" 
+	", SUM(a.org_price * a.amount) as cost"
+	", SUM(a.org_price * a.over) as ocost"
+	", SUM(a.amount) as total"
+	", SUm(a.over) as over" 
+	", b.name as firm"
+	
+	" from("
+	"select a.merchant"
+	", a.firm as firm_id"
+	", a.shop as shop_id"
+	", a.org_price"
+	", a.amount" 
+	", a.over"
+
+	" from w_inventory_new_detail a, w_inventory_new b" 
+	" where a.rsn=b.rsn"
+	" and a.merchant=b.merchant"
+	" and a.firm=b.firm"
+	" and a.shop=b.shop"
+	" and a.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+
+	++ " and b.type=1"
+	++ " and b.state in(0, 1)"
+	++ " and " ++ ?sql_utils:time_condition(StartTime, "b.entry_date", ge)
+	++ " and " ++ ?sql_utils:time_condition(EndTime, "b.entry_date", le) ++ ") a"
+	
+	++ " left join suppliers b on a.firm_id=b.id"
+	++ " group by a.firm_id, a.shop_id",
+
+    R = ?sql_utils:execute(read, Sql),
+    {reply, R, State};
+
+handle_call({profit_shop, transfer_in_of_firm, Merchant, Conditions}, _From, State) ->
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
+    Sql =
+	"select a.firm_id"
+	", a.shop_id"
+	", SUM(a.org_price * a.amount) as tcost"
+	", SUM(a.amount) as total"
+	", b.name as firm"
+	
+	" from("
+	"select a.merchant"
+	", a.firm as firm_id"
+	", a.tshop as shop_id"
+	", a.org_price"
+	", a.amount" 
+	
+	" from w_inventory_transfer_detail a, w_inventory_transfer b" 
+	" where a.rsn=b.rsn"
+	" and a.merchant=b.merchant"
+	" and a.tshop=b.tshop"
+	" and a.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+
+	++ " and b.state=1"
+	++ " and " ++ ?sql_utils:time_condition(StartTime, "b.entry_date", ge)
+	++ " and " ++ ?sql_utils:time_condition(EndTime, "b.entry_date", le) ++ ") a"
+	
+	++ " left join suppliers b on a.firm_id=b.id" 
+	++ " group by a.firm_id, a.shop_id",
+
+    R = ?sql_utils:execute(read, Sql),
+    {reply, R, State};
+
+
+handle_call({profit_shop, transfer_out_of_firm, Merchant, Conditions}, _From, State) ->
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
+    Sql =
+	"select a.firm_id"
+	", a.shop_id"
+	", SUM(a.org_price * a.amount) as tcost"
+	", SUM(a.amount) as total"
+	", b.name as firm"
+	
+	" from("
+	"select a.merchant"
+	", a.firm as firm_id"
+	", a.fshop as shop_id"
+	", a.org_price"
+	", a.amount"
+	
+	" from w_inventory_transfer_detail a, w_inventory_transfer b" 
+	" where a.rsn=b.rsn"
+	" and a.merchant=b.merchant"
+	" and a.fshop=b.fshop"
+	" and a.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+
+	++ " and b.state=0"
+	++ " and " ++ ?sql_utils:time_condition(StartTime, "b.entry_date", ge)
+	++ " and " ++ ?sql_utils:time_condition(EndTime, "b.entry_date", le) ++ ") a"
+	++ " left join suppliers b on a.firm_id=b.id"
+	++ " group by a.firm_id, a.shop_id",
+
+    R = ?sql_utils:execute(read, Sql),
+    {reply, R, State};
+
+
+handle_call({profit_shop, sale_of_firm, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("sale_of_firm: Merchant ~p, conditions ~p", [Merchant, Conditions]),
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions), 
+    Sql =
+    	"select a.shop_id"
+	", a.firm_id"
+	", SUM(a.org_price * a.total) as scost" 
+	", SUM(a.total) as total"
+	", b.name as firm"
+    	" from " 
+    	"(select a.merchant"
+	", a.firm as firm_id"
+	", a.shop as shop_id"
+	", a.org_price"
+	", a.total"
+    	
+    	" from w_sale_detail a, w_sale b"
+	" where a.rsn=b.rsn"
+	" and a.merchant=b.merchant"
+	" and a.shop=b.shop"
+    	" and a.merchant=" ++ ?to_s(Merchant) 
+    	++ ?sql_utils:condition(proplists, NewConditions)
+	++ " and " ++ ?sql_utils:time_condition(StartTime, "b.entry_date", ge)
+	++ " and " ++ ?sql_utils:time_condition(EndTime, "b.entry_date", le) ++ ") a"
+	++ " left join suppliers b on a.firm_id=b.id"
+    	++ " group by a.firm_id, a.shop_id",
+
+    R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 
 handle_call({profit, balance, Merchant, Conditions}, _From, State) ->

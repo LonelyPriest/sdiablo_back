@@ -71,7 +71,7 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
     {RName, Phone, Shop, Score, Consume, Birth, Date} = H,
     ?DEBUG("H ~p", [H]),
     NewShop = case Shop of
-		  <<>> -> 214;
+		  <<>> -> 135;
 		  _ -> Shop
 	      end,
     NewScore = case Score of
@@ -155,14 +155,15 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
 			   ++ "\"" ++ ?to_s(NewBirth) ++ "\","
 			   ++ "\"" ++ ?to_s(Entry) ++ "\")"],
 		    insert_into_member(Merchant, Datetime, Time, T, [H|Sort], Sql ++ Acc);
-		{ok, R} ->
-		    Sql = ["update w_retailer set score=score+" ++ ?to_s(NewScore)
-			   ++", consume=consume+" ++ ?to_s(NewConsume)
-			   ++ ", birth=\'" ++ ?to_s(Birth) ++ "\'"
-			       ++ " where id=" ++ ?to_s(?v(<<"id">>, R))
-			   ++ " and merchant=" ++ ?to_s(Merchant)],
-		    insert_into_member(Merchant, Datetime, Time, T, [H|Sort], Sql ++ Acc)
-	    end
+		{ok, _R} ->
+		    %% Sql = ["update w_retailer set score=score+" ++ ?to_s(NewScore)
+		    %% 	   ++", consume=consume+" ++ ?to_s(NewConsume)
+		    %% 	   ++ ", birth=\'" ++ ?to_s(Birth) ++ "\'"
+		    %% 	       ++ " where id=" ++ ?to_s(?v(<<"id">>, _R))
+		    %% 	   ++ " and merchant=" ++ ?to_s(Merchant)],
+		    %% insert_into_member(Merchant, Datetime, Time, T, [H|Sort], Sql ++ Acc)
+		    insert_into_member(Merchant, Datetime, Time, T, Sort, Acc)
+		end
     end.
 
 import(firm, Merchant, Shop, Path) ->

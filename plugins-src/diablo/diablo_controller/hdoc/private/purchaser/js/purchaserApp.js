@@ -140,6 +140,11 @@ function stockConfg(angular){
 		    brand, firm, type, ctype, s_group, color,
 		    size_spec, std_executive, safety_category, fabric, ptemplate , region, base, user)
 	    }).
+	    when('/inventory_history', {
+		templateUrl: '/private/purchaser/html/purchaser_inventory_history.html',
+		controller: 'purchaserInventoryHistoryCtrl' ,
+		resolve: angular.extend({}, shop, user)
+	    }).
 	    when('/inventory_detail/inventory_flow/:snumber?/:brand?', {
 		templateUrl: '/private/purchaser/html/purchaser_inventory_flow.html',
 		controller: 'purchaserInventoryFlowCtrl' ,
@@ -654,6 +659,11 @@ function stockConfg(angular){
 			     {style_number:style_number,
 			      brand:brand,
 			      shop:shop}).$promise;
+	};
+
+	this.analysis_history_stock = function(condition) {
+	    return http.save(
+    		{operation: "analysis_history_stock"}, condition).$promise;
 	};
 
 	/*

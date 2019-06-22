@@ -184,7 +184,13 @@ purchaser_inventory(trace_new, Merchant, Conditions) ->
 purchaser_inventory(trace_transfer, Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {trace_transfer, Merchant, Conditions});
-    
+
+%% purchaser_inventory(total_active_firm_with_shop, Merchant, Conditions) ->
+%%     Name = ?wpool:get(?MODULE, Merchant), 
+%%     gen_server:call(Name, {total_active_firm_with_shop, Merchant, Conditions});
+%% purchaser_inventory(page_active_firm_with_shop, Merchant, {Conditions, CurrentPage, ItemsPerPage}) ->
+%%     Name = ?wpool:get(?MODULE, Merchant),
+%%     gen_server:call(Name, {page_active_firm_with_shop, Merchant, Conditions, CurrentPage, ItemsPerPage});
 %% purchaser_inventory(last_reject, Merchant, Conditions) ->
 %%     gen_server:call(?SERVER, {last_reject, Merchant, Conditions});
 purchaser_inventory(get_new, Merchant, RSN) ->
@@ -468,6 +474,11 @@ handle_call({new_good, Merchant, Attrs}, _Form, State) ->
     %% SelfBarcode = ?v(<<"self_barcode">>, Attrs, ?NO),
     Sql = case ?v(<<"bcode">>, Attrs, []) of
 	      [] ->
+		  "select style_number, brand from w_inventory_good"
+		      " where style_number=" ++ "\"" ++ ?to_s(StyleNumber) ++ "\""
+		      ++ " and brand=" ++ ?to_s(BrandId)
+		      ++ " and merchant=" ++ ?to_s(Merchant) ++ ";";
+	      <<"-1">> ->
 		  "select style_number, brand from w_inventory_good"
 		      " where style_number=" ++ "\"" ++ ?to_s(StyleNumber) ++ "\""
 		      ++ " and brand=" ++ ?to_s(BrandId)
@@ -3281,7 +3292,6 @@ handle_call({stock_detail_get_by_shop, Merchant, Shop, Firm, ExtraCondtion}, _Fr
     
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
-    
 
 handle_call(_Request, _From, State) ->
     Reply = ok,

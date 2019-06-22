@@ -657,7 +657,7 @@ function purchaserInventoryNewCtrlProvide (
 	    added.push({
 		// good        : add.id,
 		order_id    : add.order_id,
-		bcode       : add.bcode,
+		bcode       : add.bcode == diablo_empty_db_barcode ? undefined : add.bcode,
 		style_number: add.style_number,
 		brand       : add.brand_id,
 		firm        : add.firm_id,
@@ -3331,6 +3331,29 @@ function purchaserInventoryDetailCtrlProvide(
     };
 };
 
+function purchaserInventoryHistoryCtrlProvide(
+    $scope, dateFilter, diabloPattern, diabloFilter, diabloUtilsService, purchaserService,
+    filterShop, user){
+    $scope.filters = [];
+    diabloFilter.reset_field();
+
+    $scope.filter = diabloFilter.get_filter();
+    $scope.prompt = diabloFilter.get_prompt();
+
+    var now = stockUtils.first_day_of_month();
+    $scope.time = diabloFilter.default_time(now.first, now.current);
+    
+    $scope.do_search = function() {
+	diabloFilter.do_filter($scope.filters, $scope.time, function(search) {
+	    console.log(search);
+	    purchaserService.analysis_history_stock(search).then(function(result) {
+		console.log(result);
+	    })
+	});
+    }
+
+    $scope.do_search();
+};
 
 function purchaserInventoryNewDetailCtrlProvide (
     $scope, $routeParams, $location, dateFilter, diabloPattern,
@@ -3728,5 +3751,6 @@ function purchaserInventoryNewDetailCtrlProvide (
 define (["purchaserApp"], function(app){
     app.controller("purchaserInventoryNewCtrl", purchaserInventoryNewCtrlProvide);
     app.controller("purchaserInventoryDetailCtrl", purchaserInventoryDetailCtrlProvide);
+    app.controller("purchaserInventoryHistoryCtrl", purchaserInventoryHistoryCtrlProvide);
     app.controller("purchaserInventoryNewDetailCtrl", purchaserInventoryNewDetailCtrlProvide);
 });

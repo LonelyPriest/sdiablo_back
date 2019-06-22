@@ -424,7 +424,10 @@ init([]) ->
 	  <<"允许入库单中结帐">>, <<"bill_firm_on_stock_in">>, ?right_w_inventory },
 
 	 {?export_w_inventory_fix_note,
-	  <<"导出盘点明细">>, <<"export_w_inventory_fix_note">>, ?right_w_inventory }
+	  <<"导出盘点明细">>, <<"export_w_inventory_fix_note">>, ?right_w_inventory},
+
+	 {?analysis_history_stock,
+	  <<"历吏库存分析">>, <<"analysis_history_stock">>, ?right_w_inventory}
 	],
 
     %% firm

@@ -383,7 +383,8 @@
 -define(update_oprice_on_stock_in,          ?right_w_inventory + 33).
 -define(bill_firm_on_stock_in,              ?right_w_inventory + 34).
 -define(export_w_inventory_fix_note,        ?right_w_inventory + 35).
--define(offering_w_stock,                       ?right_w_inventory + 36).
+-define(offering_w_stock,                   ?right_w_inventory + 36).
+-define(analysis_history_stock,             ?right_w_inventory + 37).
 
 
 

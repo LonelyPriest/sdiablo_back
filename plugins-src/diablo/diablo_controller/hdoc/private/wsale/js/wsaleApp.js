@@ -380,6 +380,9 @@ function wsaleNewProvide(
     $scope.promotions = filterPromotion;
     $scope.scores     = filterScore;
     $scope.draws      = filterCharge.filter(function(d){return d.type === diablo_withdraw});
+    $scope.ticketPlans = filterTicketPlan.map(function(p) {
+	return {id:p.id, name: p.name + "-" + p.balance + "元", scount: p.scount}
+    });
     // console.log(filterCharge);
     $scope.charges = filterCharge.filter(function(d) {
 	return d.type === diablo_charge
@@ -925,13 +928,15 @@ function wsaleNewProvide(
 			params.self_batch
 		    ).then(function(result){
 			console.log(result);
-			if (result.ecode === 0 && !diablo_is_empty(result.data)) {
-			    $scope.select.ticket_batchs.push(wsaleUtils.to_integer(result.data.batch));
-			    $scope.select.ticket_balance = wsaleUtils.to_integer(result.data.balance);
-			    $scope.select.ticket_custom = diablo_custom_ticket;
+			if (result.ecode === 0 && result.data.length !== 0) {
+			    $scope.select.ticket_custom = diablo_custom_ticket; 
+			    for (var i=0, l=result.data.length; i<l; i++) {
+				$scope.select.ticket_batchs.push(result.data[i].batch);
+				$scope.select.ticket_balance += result.data[i].balance;
+			    }
 			    $scope.reset_payment(); 
 			} else {
-			    if (diablo_is_empty(result.data)) {
+			    if (result.data.length === 0) {
 				dialog.set_error("会员电子卷获取", 2105); 
 			    }
 			    else {
@@ -1082,7 +1087,7 @@ function wsaleNewProvide(
 
 	// get max send count
 	var maxSend = 0;
-	angular.forEach(filterTicketPlan, function(p) {
+	angular.forEach($scope.ticketPlans, function(p) {
 	    if (p.scount > maxSend)
 		maxSend = p.scount;
 	});
@@ -1110,7 +1115,7 @@ function wsaleNewProvide(
 		 return !invalid && tickets.length !== 0;
 	     },
 	     maxSend: maxSend,
-	     planes: [{id:-1, name:"请选择电子券金额"}].concat(filterTicketPlan)});
+	     planes: [{id:-1, name:"请选择电子券金额"}].concat($scope.ticketPlans)});
     };
 
     var get_charge_by_shop = function(charges) {
