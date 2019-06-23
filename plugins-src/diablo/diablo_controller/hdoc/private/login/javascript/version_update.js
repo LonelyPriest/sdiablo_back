@@ -1,5 +1,10 @@
 var version_update = function(){
     var updates = [
+	{date: "2019-06-21",
+	 content:
+	 ["增加按厂商店铺历史库存分析"]
+	},
+	
 	{date: "2019-06-16",
 	 content:
 	 ["解决挂单再取单后，打印小标无客户联系方式的问题",

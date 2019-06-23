@@ -3340,19 +3340,100 @@ function purchaserInventoryHistoryCtrlProvide(
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
 
+    $scope.hstocks = [];
+    
     var now = stockUtils.first_day_of_month();
     $scope.time = diabloFilter.default_time(now.first, now.current);
+
+    var get_stock = function(stocks) {
+	return stocks.length === 0 ? {} : stocks[0];
+    };
     
     $scope.do_search = function() {
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search) {
 	    console.log(search);
 	    purchaserService.analysis_history_stock(search).then(function(result) {
 		console.log(result);
+		if (result.ecode === 0) {
+		    $scope.hstocks = [];
+		    diablo_order(result.data);
+		    for (var i=0, l=result.data.length; i<l; i++) {
+			$scope.hstocks.push(
+			    {order_id  :result.data[i].order_id,
+			     shop_id   :result.data[i].shop_id,
+			     shop_name :result.data[i].shop_name});
+			var metric = {stock_in:
+				      {total:0, cost:0, over:0, ocost:0},
+				      stock_out:
+				      {total:0, cost:0},
+				      transfer_in:
+				      {total:0, cost:0},
+				      transfer_out:
+				      {total:0, cost:0},
+				      sale:
+				      {total:0, balance:0, cost:0}
+				     };
+			for (var j=0, k=result.data[i].stock.length; j<k; j++) {
+			    var s = result.data[i].stock[j];
+			    var stock_in     = get_stock(s.stock_in);
+			    var stock_out    = get_stock(s.stock_out);
+			    var transfer_in  = get_stock(s.transfer_in);
+			    var transfer_out = get_stock(s.transfer_out);
+			    var sale         = get_stock(s.sale);
+			    $scope.hstocks.push(
+				{firm_id      :s.firm_id,
+				 firm         :s.firm,
+				 stock_in     :stock_in,
+				 stock_out    :stock_out,
+				 transfer_in  :transfer_in,
+				 transfer_out :transfer_out,
+				 sale         :sale});
+			    
+			    metric.stock_in.total  += stockUtils.to_integer(stock_in.total);
+			    metric.stock_in.cost   += stockUtils.to_float(stock_in.cost);
+			    metric.stock_in.over   += stockUtils.to_integer(stock_in.over);
+			    metric.stock_in.ocost  += stockUtils.to_float(stock_in.ocost);
+
+			    metric.stock_out.total += stockUtils.to_integer(stock_out.total);
+			    metric.stock_out.cost  += stockUtils.to_float(stock_out.cost);
+
+			    metric.transfer_in.total +=  stockUtils.to_integer(transfer_in.total);
+			    metric.transfer_in.cost  +=  stockUtils.to_float(transfer_in.cost);
+
+			    metric.transfer_out.total +=  stockUtils.to_integer(transfer_out.total);
+			    metric.transfer_out.cost  +=  stockUtils.to_float(transfer_out.cost);
+
+			    metric.sale.total += stockUtils.to_integer(sale.total);
+			    metric.sale.balance += stockUtils.to_float(sale.balance);
+			    metric.sale.cost += stockUtils.to_float(sale.cost);
+			    
+			}
+
+			metric.stock_in.cost     = stockUtils.to_decimal(metric.stock_in.cost);
+			metric.stock_in.ocost    = stockUtils.to_decimal(metric.stock_in.ocost); 
+			metric.stock_out.cost    = stockUtils.to_decimal(metric.stock_out.cost); 
+			metric.transfer_in.cost  = stockUtils.to_decimal(metric.transfer_in.cost);
+			metric.transfer_in.cost  = stockUtils.to_decimal(metric.transfer_in.cost);
+			metric.transfer_out.cost = stockUtils.to_decimal(metric.transfer_out.cost);
+			metric.sale.balance      = stockUtils.to_decimal(metric.sale.balance);
+			metric.sale.cost      = stockUtils.to_decimal(metric.sale.cost);
+			
+			$scope.hstocks.push(metric); 
+		    }
+		    console.log($scope.hstocks);
+		}
 	    })
 	});
     }
 
-    $scope.do_search();
+    
+    $scope.refresh = function() {
+	$scope.do_search(); 
+    };
+
+    $scope.go_back = function() {
+	diablo_goto_page("#/inventory_detail");
+    } 
 };
 
 function purchaserInventoryNewDetailCtrlProvide (

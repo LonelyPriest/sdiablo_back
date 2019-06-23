@@ -63,22 +63,50 @@
 		  <tr>
 		    <th>序号</th>
 		    <th>店铺</th>
-		    <th>厂商</th> 
+		    <th>厂商</th>
+		    
 		    <th>入库</th>
-		    <th>入库成本</th> 
+		    <th>入库成本</th>
+		    <th>溢出</th>
+		    <th>溢出成本</th>
+		    
 		    <th>退货</th>
-		    <th>退货成本</th> 
+		    <th>退货成本</th>
+		    
 		    <th>调入</th>
-		    <th>调入成本</th> 
+		    <th>调入成本</th>
+		    
 		    <th>调出</th>
-		    <th>调出成本</th> 
-		    <th>销售</th> 
-		    <th>销售成本</th>
+		    <th>调出成本</th>
+		    
+		    <th>销售</th>
 		    <th>销售金额</th> 
+		    <th>销售成本</th>
 		  </tr>
 		</thead>
 		<tbody>
-		  <tr x-ng-repeat="s in stocks"> 
+		  <tr x-ng-repeat="h in hstocks">
+		    <td x-ng-bind=h.order_id></td>
+		    <td x-ng-bind=h.shop_name></td>
+		    <td x-ng-bind=h.firm></td>
+		    
+		    <td x-ng-bind=h.stock_in.total></td>
+		    <td x-ng-bind=h.stock_in.cost></td>
+		    <td x-ng-bind=h.stock_in.over></td>
+		    <td x-ng-bind=h.stock_in.ocost></td>
+
+		    <td x-ng-bind=h.stock_out.total></td>
+		    <td x-ng-bind=h.stock_out.cost></td>
+
+		    <td x-ng-bind=h.transfer_in.total></td>
+		    <td x-ng-bind=h.transfer_in.cost></td>
+
+		    <td x-ng-bind=h.transfer_out.total></td>
+		    <td x-ng-bind=h.transfer_out.cost></td>
+
+		    <td x-ng-bind=h.sale.total></td>
+		    <td x-ng-bind=h.sale.balance></td>
+		    <td x-ng-bind=h.sale.cost></td> 
 		  </tr>
 
 		  <tr x-ng-if="total_items!==0" class="bg-white">

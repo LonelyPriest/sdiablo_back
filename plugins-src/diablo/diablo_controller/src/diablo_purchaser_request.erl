@@ -1113,13 +1113,13 @@ action(Session, Req, {"analysis_history_stock"}, Payload) ->
 	{ok, Sales} = ?supplier:profit(profit_shop, sale_of_firm, Merchant, Conditions), 
 	%% ?DEBUG("Sales ~p", [Sales]),
 	
-	HStocks = history_shop_stock(Shops, StockIn, StockOut, TransferIn, TransferOut, Sales, []),
+	HStocks = history_shop_stock(Shops, StockIn, StockOut, TransferIn, TransferOut, Sales, []), 
+	HSortStocks = hstock_sort(shop, HStocks, []),
 	
-	
-	%% ?DEBUG("Stocks ~p", [Stocks]),
+	%% ?DEBUG("HSortStocks ~p", [HSortStocks]),
 	?utils:respond(200, object, Req,
 		       {[{<<"ecode">>, 0},
-			 {<<"stock">>, HStocks}]})
+			 {<<"data">>, HSortStocks}]})
 	
     catch
 	_:{badmatch, {error, Error}} -> ?utils:respond(200, Req, Error) 
@@ -2761,11 +2761,95 @@ history_shop_stock([], _StockIn, _StockOut, _TransferIn, _TransferOut, _Sale, Ac
     Acc;
 history_shop_stock([{Shop}|T], StockIn, StockOut, TransferIn, TransferOut, Sale, Acc) ->
     ShopId = ?v(<<"id">>, Shop), 
-    ShopStockIn     = [{S} || {S} <- StockIn, ?v(<<"shop_id">>, S) =:= ShopId],
-    ShopStockOut    = [{S} || {S} <- StockOut, ?v(<<"shop_id">>, S) =:= ShopId],
-    ShopTransferIn  = [{S} || {S} <- TransferIn, ?v(<<"shop_id">>, S) =:= ShopId],
-    ShopTransferOut = [{S} || {S} <- TransferOut, ?v(<<"shop_id">>, S) =:= ShopId],
-    ShopSale        = [{S} || {S} <- Sale, ?v(<<"shop_id">>, S) =:= ShopId],
+    %% ShopStockIn     = [{S} || {S} <- StockIn, ?v(<<"shop_id">>, S) =:= ShopId],
+    %% ShopStockOut    = [{S} || {S} <- StockOut, ?v(<<"shop_id">>, S) =:= ShopId],
+    %% ShopTransferIn  = [{S} || {S} <- TransferIn, ?v(<<"shop_id">>, S) =:= ShopId],
+    %% ShopTransferOut = [{S} || {S} <- TransferOut, ?v(<<"shop_id">>, S) =:= ShopId],
+    %% ShopSale        = [{S} || {S} <- Sale, ?v(<<"shop_id">>, S) =:= ShopId],
+    {ShopStockIn, F1} = 
+    	lists:foldr(
+    	  fun({S}, {Acc0, Acc1}) ->
+    		  case ?v(<<"shop_id">>, S) =:= ShopId of
+    		      true -> {[{S}|Acc0],
+			       [{[{<<"firm_id">>, ?v(<<"firm_id">>, S)},
+				  {<<"firm">>, ?v(<<"firm">>, S)}]} |Acc1]
+			      };
+    		      false -> {Acc0, Acc1}
+    		  end
+    	  end, {[], []}, StockIn),
+    %% ?DEBUG("F1 ~p", [F1]),
+
+    {ShopStockOut, F2} = 
+    	lists:foldr(
+    	  fun({S}, {Acc0, Acc1}) ->
+    		  case ?v(<<"shop_id">>, S) =:= ShopId of
+    		      true ->
+			  {[{S}|Acc0],
+			   case [{F} || {F} <- Acc1, ?v(<<"firm_id">>, F) =:= ?v(<<"firm_id">>, S)] of
+			       [] ->
+				   [{[{<<"firm_id">>, ?v(<<"firm_id">>, S)},
+				      {<<"firm">>, ?v(<<"firm">>, S)}]} |Acc1];
+			       _ ->
+				   Acc1
+			   end 
+			  };
+    		      false -> {Acc0, Acc1}
+    		  end
+    	  end, {[], F1}, StockOut), 
+
+    {ShopTransferIn, F3} =
+	lists:foldr(
+    	  fun({S}, {Acc0, Acc1}) ->
+    		  case ?v(<<"shop_id">>, S) =:= ShopId of
+    		      true ->
+			  {[{S}|Acc0],
+			   case [{F} || {F} <- Acc1, ?v(<<"firm_id">>, F) =:= ?v(<<"firm_id">>, S)] of
+			       [] ->
+				   [{[{<<"firm_id">>, ?v(<<"firm_id">>, S)},
+				      {<<"firm">>, ?v(<<"firm">>, S)}]} |Acc1] ;
+			       _ ->
+				   Acc1
+			   end 
+			  };		      
+    		      false -> {Acc0, Acc1}
+    		  end
+    	  end, {[], F2}, TransferIn), 
+
+    {ShopTransferOut, F4} =
+	lists:foldr(
+    	  fun({S}, {Acc0, Acc1}) ->
+    		  case ?v(<<"shop_id">>, S) =:= ShopId of
+    		      true ->
+			  {[{S}|Acc0],
+			   case [{F} || {F} <- Acc1, ?v(<<"firm_id">>, F) =:= ?v(<<"firm_id">>, S)] of
+			       [] ->
+				   [{[{<<"firm_id">>, ?v(<<"firm_id">>, S)},
+				      {<<"firm">>, ?v(<<"firm">>, S)}]} |Acc1];
+			       _ ->
+				   Acc1
+			   end 
+			  };
+    		      false -> {Acc0, Acc1}
+    		  end
+    	  end, {[], F3}, TransferOut), 
+
+    {ShopSale, F5} =
+	lists:foldr(
+    	  fun({S}, {Acc0, Acc1}) ->
+    		  case ?v(<<"shop_id">>, S) =:= ShopId of
+    		      true ->
+			  {[{S}|Acc0],
+			   case [{F} || {F} <- Acc1, ?v(<<"firm_id">>, F) =:= ?v(<<"firm_id">>, S)] of
+			       [] ->
+				   [{[{<<"firm_id">>, ?v(<<"firm_id">>, S)},
+				      {<<"firm">>, ?v(<<"firm">>, S)}]} |Acc1] ;
+			       _ ->
+				   Acc1
+			   end 
+			  };
+    		      false -> {Acc0, Acc1}
+    		  end
+    	  end, {[], F4}, Sale),
 
     case ShopStockIn =:= []
 	andalso ShopStockOut =:= []
@@ -2779,9 +2863,57 @@ history_shop_stock([{Shop}|T], StockIn, StockOut, TransferIn, TransferOut, Sale,
 	    history_shop_stock(T, StockIn, StockOut, TransferIn, TransferOut, Sale,
 	    [{[{<<"shop_id">>, ShopId},
 	       {<<"shop_name">>, ?v(<<"name">>, Shop)},
+	       {<<"firm">>, F5},
 	       {<<"stock_in">>, ShopStockIn},
 	       {<<"stock_out">>, ShopStockOut},
 	       {<<"transfer_in">>, ShopTransferIn},
 	       {<<"transfer_out">>, ShopTransferOut},
 	       {<<"sale">>, ShopSale}]}|Acc])
     end.
+
+hstock_sort(shop, [], Acc) ->
+    Acc;
+hstock_sort(shop, [{HStock}|T], Acc) ->
+    %% ?DEBUG("HStock ~p", [HStock]),
+    Firms = ?v(<<"firm">>, HStock),
+    Sorts = hstock_sort(
+	      firm,
+	      Firms,
+	      ?v(<<"stock_in">>, HStock),
+	      ?v(<<"stock_out">>, HStock),
+	      ?v(<<"transfer_in">>, HStock),
+	      ?v(<<"transfer_out">>, HStock),
+	      ?v(<<"sale">>, HStock),
+	      []),
+    %% ?DEBUG("Sorts ~p", [Sorts]),
+    hstock_sort(shop, T, [{[{<<"shop_id">>, ?v(<<"shop_id">>, HStock)},
+			    {<<"shop_name">>, ?v(<<"shop_name">>, HStock)},
+			    {<<"stock">>, Sorts}]}|Acc]).
+
+hstock_sort(firm, [], _StockIn, _StockOut, _TransferIn, _TransferOut, _Sale, Acc) ->
+    Acc;
+hstock_sort(firm, [{Firm}|T], StockIn, StockOut, TransferIn, TransferOut, Sale, Acc) ->
+    FirmId = ?v(<<"firm_id">>, Firm),
+    FirmStockIn = [{S} || {S} <- StockIn, ?v(<<"firm_id">>, S) =:= FirmId],
+    FirmStockOut = [{S} || {S} <- StockOut, ?v(<<"firm_id">>, S) =:= FirmId],
+    FirmStockTransferIn = [{S} || {S} <- TransferIn, ?v(<<"firm_id">>, S) =:= FirmId],
+    FirmStockTransferOut = [{S} || {S} <- TransferOut, ?v(<<"firm_id">>, S) =:= FirmId],
+    FirmStockSale = [{S} || {S} <- Sale, ?v(<<"firm_id">>, S) =:= FirmId],
+
+    hstock_sort(
+      firm,
+      T,
+      StockIn,
+      StockOut,
+      TransferIn,
+      TransferOut,
+      Sale,
+      [{[{<<"firm_id">>, FirmId},
+	 {<<"firm">>, ?v(<<"firm">>, Firm)},
+	 {<<"stock_in">>, FirmStockIn},
+	 {<<"stock_out">>, FirmStockOut},
+	 {<<"transfer_in">>, FirmStockTransferIn},
+	 {<<"transfer_out">>, FirmStockTransferOut},
+	 {<<"sale">>, FirmStockSale}]}|Acc] 
+     ).
+    

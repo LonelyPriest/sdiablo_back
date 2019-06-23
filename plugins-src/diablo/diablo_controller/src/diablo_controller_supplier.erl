@@ -1203,9 +1203,9 @@ handle_call({profit_shop, stock_out_of_firm, Merchant, Conditions}, _From, State
 	"select a.firm_id"
 	", a.shop_id" 
 	", SUM(a.org_price * a.amount) as cost"
-	", SUM(a.org_price * a.over) as ocost"
+    %% ", SUM(a.org_price * a.over) as ocost"
 	", SUM(a.amount) as total"
-	", SUm(a.over) as over" 
+    %% ", SUm(a.over) as over" 
 	", b.name as firm"
 	
 	" from("
@@ -1214,7 +1214,7 @@ handle_call({profit_shop, stock_out_of_firm, Merchant, Conditions}, _From, State
 	", a.shop as shop_id"
 	", a.org_price"
 	", a.amount" 
-	", a.over"
+    %% ", a.over"
 
 	" from w_inventory_new_detail a, w_inventory_new b" 
 	" where a.rsn=b.rsn"
@@ -1240,7 +1240,7 @@ handle_call({profit_shop, transfer_in_of_firm, Merchant, Conditions}, _From, Sta
     Sql =
 	"select a.firm_id"
 	", a.shop_id"
-	", SUM(a.org_price * a.amount) as tcost"
+	", SUM(a.org_price * a.amount) as cost"
 	", SUM(a.amount) as total"
 	", b.name as firm"
 	
@@ -1274,7 +1274,7 @@ handle_call({profit_shop, transfer_out_of_firm, Merchant, Conditions}, _From, St
     Sql =
 	"select a.firm_id"
 	", a.shop_id"
-	", SUM(a.org_price * a.amount) as tcost"
+	", SUM(a.org_price * a.amount) as cost"
 	", SUM(a.amount) as total"
 	", b.name as firm"
 	
@@ -1292,7 +1292,7 @@ handle_call({profit_shop, transfer_out_of_firm, Merchant, Conditions}, _From, St
 	" and a.merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions)
 
-	++ " and b.state=0"
+	++ " and b.state=1"
 	++ " and " ++ ?sql_utils:time_condition(StartTime, "b.entry_date", ge)
 	++ " and " ++ ?sql_utils:time_condition(EndTime, "b.entry_date", le) ++ ") a"
 	++ " left join suppliers b on a.firm_id=b.id"
@@ -1308,13 +1308,15 @@ handle_call({profit_shop, sale_of_firm, Merchant, Conditions}, _From, State) ->
     Sql =
     	"select a.shop_id"
 	", a.firm_id"
-	", SUM(a.org_price * a.total) as scost" 
+	", SUM(a.fprice * a.total) as balance" 
+	", SUM(a.org_price * a.total) as cost" 
 	", SUM(a.total) as total"
 	", b.name as firm"
     	" from " 
     	"(select a.merchant"
 	", a.firm as firm_id"
 	", a.shop as shop_id"
+	", a.fprice"
 	", a.org_price"
 	", a.total"
     	
