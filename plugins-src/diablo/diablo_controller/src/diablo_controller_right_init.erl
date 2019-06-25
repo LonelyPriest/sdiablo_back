@@ -236,7 +236,7 @@ init([]) ->
 
 	 {?new_cost_class,
 	 <<"新增费用类型">>, <<"new_cost_class">>, ?right_shop}, 
-	 {?new_cost_class,
+	 {?update_cost_class,
 	  <<"修改费用类型">>, <<"update_cost_class">>, ?right_shop},
 	 {?list_cost_class,
 	  <<"查看费用类型">>, <<"list_cost_class">>, ?right_shop} 
