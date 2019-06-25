@@ -174,8 +174,7 @@ handle_call({navbar, UserId}, _From, #func_tree{tree=Tree} = State) ->
 
     %% second, get right of thd role
     {ok, RightIds} = ?right:lookup_role_right({<<"role_id">>, RoleIds}),
-    ?DEBUG("RightIds ~p", [RightIds]),
-    
+    %% ?DEBUG("RightIds ~p", [RightIds]), 
     Roots = 
 	lists:foldr(
 	  fun({RightId}, Acc) ->
@@ -249,22 +248,8 @@ handle_call({get_user_shop, UserId}, _From, State) ->
     Shops = ?right:lookup_role_shop({<<"role_id">>, RoleIds}),
     {reply, Shops, State};
 
-handle_call({authen_action, Action, UserId}, _From,
-	    #func_tree{rights = Rights} = State) ->
-    ?DEBUG("authen action ~p  of user ~p", [Action, UserId]),
-    %% Reply = 
-    %% 	case ?right_init:get_action_id(Action) of
-    %% 	    none ->
-    %% 		{error, ?err(function_not_found, Action)};
-    %% 	    FunId ->
-    %% 		case authen_funcion(FunId, UserId) of
-    %% 		    []   ->
-    %% 			{error, ?err(not_enought_right, FunId)};
-    %% 		    Find ->
-    %% 			?DEBUG("find valid right ~p", [Find]),
-    %% 			{ok, FunId}
-    %% 		end
-    %% 	end,
+handle_call({authen_action, Action, UserId}, _From, #func_tree{rights = Rights} = State) ->
+    ?DEBUG("authen action ~p  of user ~p", [Action, UserId]), 
     PassActions = ?right_init:get_pass_action(),
 
     case lists:member(?to_b(Action), PassActions) of
@@ -272,11 +257,10 @@ handle_call({authen_action, Action, UserId}, _From,
 	    {reply, {ok, Action}, State};
 	false ->
 	    case dict:find(UserId, Rights) of
-	    {ok, UserTree} ->
-		    case gb_trees:lookup(?to_binary(Action), UserTree) of
+		{ok, UserTree} ->
+		    case gb_trees:lookup(?to_b(Action), UserTree) of
 			none       ->
-			    {reply,
-			     {error, ?err(not_enought_right, Action)}, State};
+			    {reply, {error, ?err(not_enought_right, Action)}, State};
 			{value, V} ->
 			    ?DEBUG("~p found of action ~p", [V, Action]),
 			    {reply, {ok, Action}, State}
@@ -336,6 +320,7 @@ handle_call({cache_right, UserId}, _From,
     RoleIds = get_roles(by_user, UserId),
 
     {ok, RightIds} = ?right:lookup_role_right({<<"role_id">>, RoleIds}),
+    ?DEBUG("RightIds ~p", [RightIds]),
 
     Children = 
 	lists:foldr(

@@ -2121,7 +2121,8 @@ function purchaserInventoryDetailCtrlProvide(
     $scope.promotions = filterPromotion.concat([{id:diablo_invalid_index, name:"重置促销方案"}]);
     $scope.scores = filterScore.concat([{id:diablo_invalid_index, name:"重置积分方案", type_id:0}]);
     // console.log(filterTemplate);
-
+    
+    $scope.unfold = true; 
     /*
      * tab-set
      */ 

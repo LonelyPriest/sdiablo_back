@@ -22,6 +22,7 @@
 
 -export([shop/3, shop/4, lookup/1, lookup/2]).
 -export([region/2, region/3, region/4]).
+-export([cost_class/2, cost_class/3, cost_class/4, cost/3, cost/4, cost/6]).
 
 -export([repo/2, repo/3, badrepo/2, badrepo/3, promotion/2, promotion/3]).
 
@@ -51,6 +52,22 @@ region(list, Merchant) ->
 
 region(update, Merchant, RegionId, Attrs) ->
     gen_server:call(?MODULE, {update_region, Merchant, RegionId, Attrs}).
+
+cost_class(new, Merchant, {Name, PinYin}) ->
+    gen_server:call(?MODULE, {new_cost_class, Merchant, Name, PinYin});
+cost_class(like_match, Merchant, {Prompt, Ascii}) ->
+    gen_server:call(?MODULE, {like_match_cost_class, Merchant, Prompt, Ascii}). 
+cost_class(total, Merchant) ->
+    gen_server:call(?MODULE, {total_cost_class, Merchant}).
+cost_class(filter, Merchant, CurrentPage, ItemsPerPage) ->
+    gen_server:call(?MODULE, {filter_cost_class, Merchant, CurrentPage, ItemsPerPage}).
+
+cost(new, Merchant, Cost) ->
+    gen_server:call(?MODULE, {new_daily_cost, Merchant, Cost}).
+cost(total, 'and', Merchant, Conditions) ->
+    gen_server:call(?MODULE, {total_daily_cost, Merchant, Conditions}).
+cost(filter, 'and', Merchant, CurrentPage, ItemsPerPage, Conditions) ->
+    gen_server:call(?MODULE, {filter_daily_cost, Merchant, CurrentPage, ItemsPerPage, Conditions}).
 
 lookup(Merchant) ->
     lookup(Merchant, []).
@@ -445,7 +462,7 @@ handle_call({new_region, Merchant, Attrs}, _From, State)->
 		++ " values ("
 		++ ?to_s(Merchant) ++ ","
 		++ "\'" ++ ?to_s(Name) ++ "\'," 
-	        ++ ?to_s(Department) ++ ","
+	        ++ "\'" ++ ?to_s(Department) ++ "\',"
 		++ "\'" ++ ?to_s(Comment) ++ "\'," 
 		++ "\"" ++ ?to_s(Datetime) ++ "\")", 
 	    Reply = ?sql_utils:execute(insert, Sql1),
@@ -484,7 +501,129 @@ handle_call({list_region, Merchant, Conditions}, _From, State) ->
 	++ " order by id desc",
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
+
+
+handle_call({new_cost_class, Merchant, Name, PinYin}, _From, State)->
+    ?DEBUG("new cost_class: Name ~p, PinYin ~p", [Name, PinYin]), 
+    %% name can not be same
+    Sql = "select id, name from cost_class where merchant=" ++ ?to_s(Merchant)
+	++ " and name=\'" ++ ?to_string(Name) ++ "\'"
+	++ " and deleted=" ++ ?to_s(?NO),
+
+    case ?sql_utils:execute(s_read, Sql) of
+	{ok, []} -> 
+	    Sql1 = "insert into cost_class(merchant, name, py) values ("
+		++ ?to_s(Merchant) ++ ","
+		++ "\'" ++ ?to_s(Name) ++ "\',"
+		++ "\'" ++ ?to_s(PinYin) ++ "\')",
+	    Reply = ?sql_utils:execute(insert, Sql1),
+	    {reply, Reply, State};
+	{ok, _Any} ->
+	    {reply, {error, ?err(cost_class_exist, Name)}, State};
+	Error ->
+	    {reply, Error, State}
+    end;
+
+handle_call({like_match_cost_class, Merchant, Prompt, Ascii}, _From, State) ->
+    Sql = "select id, name, py from cost_class"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and "
+	++ case Ascii of
+	       ?YES -> ?utils:check_match_mode(<<"py">>, Prompt);
+	       ?NO ->?utils:check_match_mode(<<"name">>, Prompt)
+	   end,
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({total_cost_class, Merchant}, _From, State) ->
+    Sql = ?sql_utils:count_table(cost_class, Merchant, []),
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+handle_call({filter_cost_class, Merchant, CurrentPage, ItemsPerPage}, _From, State) ->
+    Sql = "select id, name, py, merchant from cost_class"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({new_daily_cost, Merchant, Cost}, _From, State)->
+    ?DEBUG("new_daily_cost: Merchant ~p, Cost ~p", [Merchant, Cost]),
+    CostClass = ?v(<<"cost_class">>, Cost),
+    Cash = ?v(<<"cash">>, Cost, 0),
+    Card = ?v(<<"card">>, Cost, 0),
+    Wxin = ?v(<<"wxin">>, Cost, 0),
+    Comment = ?v(<<"comment">>, Cost, []),
+    Shop = ?v(<<"shop">>, Cost),
+    Balance = ?to_i(Cash) + ?to_i(Card) + ?to_i(Wxin),
+    Reply = 
+	case Balance > 0 of
+	    true ->
+		Sql =
+		    "insert into daily_cost("
+		    "shop"
+		    ", cost_class"
+		    ", balance"
+		    ", cash"
+		    ", card"
+		    ", wxin"
+		    ", comment"
+		    ", merchant"
+		    ", entry_date) values("
+		    ++ ?to_s(Shop) ++ ","
+		    ++ ?to_s(CostClass) ++ ","
+		    ++ ?to_s(Balance) ++ "," 
+		    ++ ?to_s(Cash) ++ ","
+		    ++ ?to_s(Card) ++ ","
+		    ++ ?to_s(Wxin) ++ ","
+		    ++ "\'" ++ ?to_s(Comment) ++ "\',"
+		    ++ ?to_s(Merchant) ++ ","
+		    ++ "\'" ++ ?utils:current_time(format_localtime) ++ "\')",
+		?sql_utils:execute(insert, Sql);
+	    false ->
+		?err(cost_zero_balance, CostClass)
+    end,
+    {reply, Reply, State};
+
+handle_call({total_daily_cost, Merchant, Conditions}, _From, State) ->
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
+    CountSql = "select count(*) as total"
+    	", sum(a.balance) as t_balance"
+    	", sum(a.cash) as t_cash"
+    	", sum(a.card) as t_card"
+	", sum(a.wxin) as t_wxin"
+	" from daily_cost a"
+	" where a.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime),
+	Reply = ?sql_utils:execute(s_read, CountSql),
+    {reply, Reply, State};
+
+handle_call({filter_daily_cost, Merchant, CurrentPage, ItemsPerPage, Conditions}, _From, State) ->
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
+    Sql = "select a.id"
+	", a.shop as shop_id"
+	", a.cost_class as cost_class_id"
+	", a.balance"
+	", a.cash"
+	", a.wxin"
+	", a.card"
+	", a.comment"
+	", a.entry_date"
+
+	", b.name as shop"
+	", c.name as cost_class"
 	
+	" from daily_cost a"
+	" left join shops b on a.shop=b.id"
+	" left join cost_class c on a.cost_class=c.id"
+	
+	" where a.merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ ?sql_utils:fix_condition(time, time_with_prfix, StartTime, EndTime)
+	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
 
 handle_call(_Request, _From, State) ->
     ?WARN("receive unkown request ~p", [_Request]),

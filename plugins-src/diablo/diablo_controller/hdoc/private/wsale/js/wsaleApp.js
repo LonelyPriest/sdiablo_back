@@ -141,6 +141,11 @@ function wsaleConfg(angular){
 		controller: 'wsaleEmployeeEvaluationCtrl',
 		resolve: angular.extend({}, employee, user) 
 	    }).
+	    when('/list_daily_cost', {
+		templateUrl: '/private/wsale/html/list_daily_cost.html',
+		controller: 'dailyCostCtrl',
+		resolve: angular.extend({}, user) 
+	    }). 
 	    otherwise({
 		templateUrl: '/private/wsale/html/new_wsale_detail.html',
 		controller: 'wsaleNewDetailCtrl',
@@ -341,6 +346,22 @@ function wsaleConfg(angular){
 	this.csv_export = function(e_type, condition){
 	    return http.save({operation: "w_sale_export"},
 			     {condition: condition, e_type:e_type}).$promise;
+	};
+
+	/*
+	 * daily cost
+	 */
+	this.new_daily_cost = function(cost) {
+	    return http.save({operation:"new_daily_cost"}, cost).$promise;
+	};
+	
+	this.list_daily_cost = function(match, fields, currentPage, itemsPerpage) {
+	    return http.save(
+		{operation: "list_daily_cost"},
+		{match:  angular.isDefined(match) ? match.op : undefined,
+		 fields: fields,
+		 page:   currentPage,
+		 count:  itemsPerpage}).$promise;
 	};
 
 	/*
@@ -3131,11 +3152,8 @@ function wsaleNewDetailProvide(
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
 
-    console.log($scope.filter);
-    console.log($scope.prompt);
-
-    
-    
+    // console.log($scope.filter);
+    // console.log($scope.prompt); 
     $scope.sequence_pagination = wsaleUtils.sequence_pagination(-1, base);
     
     /*
@@ -3154,7 +3172,7 @@ function wsaleNewDetailProvide(
     // };
 
     $scope.do_search = function(page){
-	console.log(page); 
+	// console.log(page); 
 	$scope.current_page = page; 
 	// console.log($scope.time); 
 	if (!$scope.shop_right.master && show_sale_days !== diablo_nolimit_day){

@@ -40,27 +40,27 @@ fix_condition(time, Fix, Start, End) ->
 condition(time_no_prfix, undefined, undefined) ->
     [];
 condition(time_no_prfix, Start, undefined) ->
-    time_condition(Start, "entry_date", ge);
+    time_condition(Start, "entry_date", more);
 condition(time_no_prfix, undefined, End) ->
-    time_condition(End, "entry_date", le);
+    time_condition(End, "entry_date", less);
 condition(time_no_prfix, Start, End) ->
-    time_condition(Start, "entry_date", ge)
-	++ " and " ++ time_condition(End, "entry_date", le);
+    time_condition(Start, "entry_date", more)
+	++ " and " ++ time_condition(End, "entry_date", less);
 
 condition(time_with_prfix, undefined, undefined) ->
     [];
 condition(time_with_prfix, Start, undefined) ->
-    time_condition(Start, "a.entry_date", ge);
+    time_condition(Start, "a.entry_date", more);
 condition(time_with_prfix, undefined, End) ->
-    time_condition(End, "a.entry_date", le);
+    time_condition(End, "a.entry_date", less);
 condition(time_with_prfix, Start, End) ->
-    time_condition(Start, "a.entry_date", ge)
-	++ " and " ++ time_condition(End, "a.entry_date", le);
+    time_condition(Start, "a.entry_date", more)
+	++ " and " ++ time_condition(End, "a.entry_date", less);
 
 condition(page_desc, CurrentPage, ItemsPerPage) ->
     " order by id desc"
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
-    	++ ", " ++ ?to_s(ItemsPerPage).
+	++ ", " ++ ?to_s(ItemsPerPage).
 
 condition(page_desc, {use_id, _Sort}, CurrentPage, ItemsPerPage) ->
     condition(page_desc, CurrentPage, ItemsPerPage);
@@ -191,6 +191,13 @@ time_condition(Time, TimeField, le) ->
 	undefined -> [];
 	Time ->
 	    ?to_s(TimeField) ++ "<=\"" ++ ?to_s(Time) ++ "\""
+    end;
+
+time_condition(Time, TimeField, more) ->
+    case Time of
+	undefined -> [];
+	Time ->
+	    ?to_s(TimeField) ++ ">\"" ++ ?to_s(Time) ++ "\""
     end;
 
 time_condition(Time, TimeField, less) ->

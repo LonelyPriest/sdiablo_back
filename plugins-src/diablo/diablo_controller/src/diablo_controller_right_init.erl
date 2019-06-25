@@ -227,17 +227,19 @@ init([]) ->
 	 {?update_repo, <<"修改仓库">>, <<"update_repo">>, ?right_shop},
 	 {?list_repo,   <<"查询仓库">>, <<"list_repo">>,   ?right_shop},
 
-	 {?new_region,  <<"新增区域">>, <<"new_region">>,  ?right_shop},
+	 {?new_region,  <<"新增区域">>, <<"new_region">>,        ?right_shop},
 	 {?update_region,  <<"修改区域">>, <<"update_region">>,  ?right_shop},
-	 
-	 %% {?new_badrepo, <<"新增次品仓">>, <<"new_badrepo">>, ?right_shop},
-	 %% {?del_badrepo, <<"删除次品仓">>, <<"del_badrepo">>, ?right_shop},
-	 %% {?update_badrepo,
-	 %%  <<"修改次品仓">>, <<"update_badrepo">>, ?right_shop},
-	 %% {?list_badrepo,
-	 %%  <<"查询次品仓">>, <<"list_badrepo">>,   ?right_shop}, 
+	 {?list_region,  <<"查看区域">>, <<"list_region">>,      ?right_shop},
+
 	 {?add_shop_promotion, 
-	  <<"编辑促销方案">>, <<"add_shop_promotion">>, ?right_shop}
+	  <<"编辑促销方案">>, <<"add_shop_promotion">>, ?right_shop},
+
+	 {?new_cost_class,
+	 <<"新增费用类型">>, <<"new_cost_class">>, ?right_shop}, 
+	 {?new_cost_class,
+	  <<"修改费用类型">>, <<"update_cost_class">>, ?right_shop},
+	 {?list_cost_class,
+	  <<"查看费用类型">>, <<"list_cost_class">>, ?right_shop} 
 	],
 
     
@@ -314,10 +316,16 @@ init([]) ->
 	  <<"修改销售单进货价">>, <<"update_w_sale_price">>,  ?right_w_sale},
 	 {?employee_evaluation,
 	  <<"员工业绩查询">>,  <<"filter_employee_evaluation">>,    ?right_w_sale},
+	 
 	 {?print_w_sale_note,
 	  <<"销售明细打印">>,  <<"print_w_sale_note">>,    ?right_w_sale},
 	 {?export_w_sale_note,
-	  <<"销售明细导出">>,  <<"export_w_sale_note">>,    ?right_w_sale}
+	  <<"销售明细导出">>,  <<"export_w_sale_note">>,    ?right_w_sale},
+
+	 {?new_daily_cost,    <<"新增日常费用">>, <<"new_daily_cost">>,       ?right_w_sale},
+	 {?delete_daily_cost, <<"删除日常费用">>, <<"delete_dailycost">>,    ?right_w_sale},
+	 {?update_daily_cost, <<"修改日常费用">>, <<"update_daily_cost">>,    ?right_w_sale},
+	 {?list_daily_cost,   <<"查询日常费用">>, <<"list_daily_cost">>,      ?right_w_sale}
 	],
 
     %% batch sale
@@ -1093,6 +1101,7 @@ pass_action(wholesaler) ->
      <<"w_sale_export">>,
      <<"get_wsale_rsn">>,
      <<"match_wsale_rsn">>,
+     <<"match_cost_class">>,
 
      %% base_setting
      <<"list_w_bank_card">>,

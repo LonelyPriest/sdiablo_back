@@ -172,7 +172,7 @@ sidebar(Session) ->
     S4 = 
 	case ?right_auth:authen(?list_department, Session) of
 	    {ok, ?list_department} ->
-		[{"department_detail", "部门详情", "glyphicon glyphicon-map-marker"}];
+		[{"department_detail", "部门详情", "glyphicon glyphicon-book"}];
 	    _ -> []
 	end,
 

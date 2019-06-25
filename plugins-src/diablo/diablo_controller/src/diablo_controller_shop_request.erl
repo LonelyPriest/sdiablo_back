@@ -45,7 +45,7 @@ action(Session, Req, {"list_shop_promotion"}) ->
     ?utils:respond(batch, fun() -> ?shop:promotion(list, Merchant) end, Req);
 
 action(Session, Req, {"list_region"}) ->
-    ?DEBUG("list_shop with session ~p", [Session]),
+    ?DEBUG("list_region with session ~p", [Session]),
     Merchant = ?session:get(merchant, Session),
     ?utils:respond(batch, fun() -> ?w_user_profile:get(region, Merchant) end, Req);
 
@@ -171,7 +171,31 @@ action(Session, Req, {"update_region", RegionId}, Payload) ->
     	    ?utils:respond(200, Req, ?succ(update_shop, Id));
     	{error, Error} ->
     	    ?utils:respond(200, Req, Error)
-    end.
+    end;
+
+action(Session, Req, {"new_cost_class"}, Payload) ->
+    ?DEBUG("new region with session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    Name = ?v(<<"name">>, Payload, []),
+    PinYin = ?v(<<"py">>, Payload, []),
+    ?utils:respond(normal,
+		   fun()-> ?shop:cost_class(new, Merchant, {Name, PinYin}) end,
+		   fun(RegionId)-> ?succ(add_shop, RegionId) end,
+		   Req);
+
+action(Session, Req, {"list_cost_class"}, Payload) ->
+    Merchant = ?session:get(merchant, Session),
+    ?pagination:pagination(
+       fun(_Match, _Conditions) -> ?shop:cost_class(total, Merchant) end,
+       fun(_Match, CurrentPage, ItemsPerPage, _Conditions) ->
+	       ?shop:cost_class(filter, Merchant, CurrentPage, ItemsPerPage)
+       end, Req, Payload);
+
+action(Session, Req, {"match_cost_class"}, Payload) ->
+    Merchant = ?session:get(merchant, Session),
+    Prompt   = ?v(<<"prompt">>, Payload),
+    Ascii    = ?v(<<"ascii">>, Payload, ?YES), 
+    ?utils:respond(batch, fun() ->?shop:cost_class(like_match, Merchant, {Prompt, Ascii}) end, Req).
 
 sidebar(Session) ->
     AuthenFun =
@@ -192,17 +216,26 @@ sidebar(Session) ->
 		    {?list_shop,
 		     {"shop_detail", "店铺详情", "glyphicon glyphicon-book"}}
 		   ]), 
+
     
-    Region = [{"region_detail", "区域", "glyphicon glyphicon-th-list"}] ,
-    L1 = ?menu:sidebar(level_1_menu, Region),
-    
-    SidebarShop = 
+    L1 = case AuthenFun(
+		[{?list_region,
+		  {"region_detail", "区域", "glyphicon glyphicon-th-list"}},
+		 {?list_cost_class,
+		  {"cost_class_detail", "费用类型", "glyphicon glyphicon-font"}}
+		]) of
+	     [] -> [];
+	     Region  ->
+		 ?menu:sidebar(level_1_menu, Region)
+	 end,
+
+    L2 = 
 	case ShopAuthen of
 	    []   -> [];
 	    Shop ->
-		[{{"shop", "店铺", "glyphicon glyphicon-star-empty"}, Shop}] 
+		[{{"shop", "店铺", "glyphicon glyphicon-map-marker"}, Shop}] 
 	end,
     
-    ?menu:sidebar(level_2_menu, SidebarShop) ++ L1.
+    ?menu:sidebar(level_2_menu, L2) ++ L1.
 
 

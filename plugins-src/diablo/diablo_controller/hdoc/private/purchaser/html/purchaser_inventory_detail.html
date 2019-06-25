@@ -106,20 +106,28 @@
 			  <i class="glyphicon glyphicon-triangle-bottom fg-red"></i></th> 
 			<th x-ng-click="use_order(order_fields.type)">类别
 			  <i class="glyphicon glyphicon-triangle-bottom fg-red"></i></th>
-			<th>性别</th>
-			<th x-ng-click="use_order(order_fields.firm)">厂商
+			<th x-ng-click="unfold=!unfold">
+			  <span x-ng-if="unfold">
+			    <i class="glyphicon glyphicon-backward fg-red"></i>
+			    性别</span>
+			  <span x-ng-if="!unfold">
+			    性别<i class="glyphicon glyphicon-forward fg-red"></i>
+			  </span>
+			</th>
+			<th x-ng-if="unfold" x-ng-click="use_order(order_fields.firm)">厂商
 			  <i class="glyphicon glyphicon-triangle-bottom fg-red"></i></th>
-			<th x-ng-click="use_order(order_fields.season)">季节
+			<th x-ng-if="unfold" x-ng-click="use_order(order_fields.season)">季节
 			  <i class="glyphicon glyphicon-triangle-bottom fg-red"></i></th>
-			<th x-ng-click="use_order(order_fields.year)">年度
+			<th x-ng-if="unfold" x-ng-click="use_order(order_fields.year)">年度
 			  <i class="glyphicon glyphicon-triangle-bottom fg-red"></i></th> 
-			<th x-ng-click="use_order(order_fields.tag_price)" class="warning">吊牌价 
+			<th x-ng-if="unfold" x-ng-click="use_order(order_fields.tag_price)"
+			    class="warning">吊牌价 
 			  <i class="glyphicon glyphicon-triangle-bottom fg-red"></th> 
-			<th x-ng-click="use_order(order_fields.discount)">折扣
+			<th x-ng-if="unfold" x-ng-click="use_order(order_fields.discount)">折扣
 			  <i class="glyphicon glyphicon-triangle-bottom fg-red"></i></th>
-			<th x-ng-if="stock_right.show_orgprice"
+			<th x-ng-if="unfold && stock_right.show_orgprice"
 			    class="success">进价</th>
-			<th x-ng-if="stock_right.show_orgprice"
+			<th x-ng-if="unfold && stock_right.show_orgprice"
 			    class="info">折扣率</th>
 			<th x-ng-click="use_order(order_fields.amount)">数量
 			  <i class="glyphicon glyphicon-triangle-bottom fg-red"></i></th>
@@ -146,14 +154,14 @@
 			<td>{{inv.brand.name}}</td> 
 			<td>{{inv.type.name}}</td> 
 			<td>{{sexs[inv.sex]}}</td> 
-			<td>{{inv.firm.name}}</td> 
-			<td>{{seasons[inv.season]}}</td> 
-			<td>{{inv.year}}</td> 
-			<td>{{inv.tag_price}}</td> 
-			<td>{{inv.discount}}</td>
+			<td x-ng-if="unfold">{{inv.firm.name}}</td> 
+			<td x-ng-if="unfold">{{seasons[inv.season]}}</td> 
+			<td x-ng-if="unfold">{{inv.year}}</td> 
+			<td x-ng-if="unfold">{{inv.tag_price}}</td> 
+			<td x-ng-if="unfold">{{inv.discount}}</td>
 			
-			<td x-ng-if="stock_right.show_orgprice">{{inv.org_price}}</td> 
-			<td x-ng-if="stock_right.show_orgprice">{{inv.ediscount}}</td> 
+			<td x-ng-if="unfold && stock_right.show_orgprice">{{inv.org_price}}</td> 
+			<td x-ng-if="unfold && stock_right.show_orgprice">{{inv.ediscount}}</td> 
 			<td class="{{css(inv.minalarm_a)}}">{{inv.amount}}</td>
 			<td x-ng-if="stock_right.show_orgprice">{{inv.calc}}</td> 
 			<td>{{inv.sell}}</td>
@@ -287,12 +295,22 @@
 		      <tr x-ng-if="total_items!==0" class="bg-white">
 			<td></td>
 			<td x-ng-if="setting.use_barcode"></td>
-			<td colspan="7"></td>
-			<td x-ng-bind="total_pmoney"></td>
-			<td x-ng-if="stock_right.show_orgprice" colspan="3"></td>
-			<td x-ng-if="!stock_right.show_orgprice" colspan="1"></td>
-			<td class="danger">{{total_amount}}</td>
-			<td x-ng-if="stock_right.show_orgprice">{{total_lmoney}}</td>
+			<td x-ng-if="unfold" colspan="7"></td>
+			<td x-ng-if="unfold" x-ng-bind="total_pmoney"></td> 
+			<td x-ng-if="!unfold" colspan="4"></td>
+			
+			<!-- <td x-ng-if="unfold && stock_right.show_orgprice" colspan="3"></td> -->
+			<td x-ng-if="unfold && !stock_right.show_orgprice" colspan="1"></td>
+			<td x-ng-if="unfold && !stock_right.show_orgprice" class="danger" x-ng-bind="total_amount"></td>
+			<td x-ng-if="unfold && stock_right.show_orgprice" colspan="3"></td>
+			<td x-ng-if="unfold && stock_right.show_orgprice" x-ng-bind="total_amount"></td>
+
+			<td x-ng-if="!unfold && !stock_right.show_orgprice"
+			    x-ng-bind="total_amount"></td>
+			<td x-ng-if="!unfold && stock_right.show_orgprice"
+			    x-ng-bind="total_amount"></td>
+			
+			<td x-ng-if="stock_right.show_orgprice" x-ng-bind="total_lmoney"></td>
 			<td><span x-ng-bind="total_sell"></span></td>
 			<td colspan="7"></td>
 		      </tr>

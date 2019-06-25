@@ -662,6 +662,15 @@ var wsaleUtils = function(){
 	    } 
 	},
 
+	first_day_of_month: function(){
+	    var now = new Date(); 
+	    var year = now.getFullYear();
+	    var month = now.getMonth();
+
+	    return {
+		first:new Date(year, month, 1).getTime(), current:now.getTime()};
+	},
+
 	cache_page_condition: function(
 	    storage, key, conditions, start_time, end_time, current_page, datetime){
 	    storage.remove(key);

@@ -629,6 +629,127 @@ function wsaleRsnDetailCtrlProvide (
     };
 };
 
+function dailyCostCtrlProvide (
+    $scope, dateFilter, diabloUtilsService, diabloFilter, diabloPattern, wsaleService, user) {
+    $scope.shops   = user.sortShops;
+    $scope.shopIds = user.shopIds;
+
+    $scope.filters = [];
+    diabloFilter.reset_field();
+    $scope.filter = diabloFilter.get_filter();
+    $scope.prompt = diabloFilter.get_prompt();
+
+    // pagination
+    $scope.total_items   = 0;
+    $scope.default_page  = 1;
+    $scope.current_page  = $scope.default_page;
+    $scope.items_perpage = diablo_items_per_page();
+    $scope.daily_costs   = [];
+    
+    var dialog = diabloUtilsService; 
+    var authen = new diabloAuthen(user.type, user.right, user.shop);
+    $scope.right = authen.authenSaleRight();
+
+    var now = wsaleUtils.first_day_of_month();
+    $scope.time = wsaleUtils.correct_query_time(
+	$scope.right.master,
+	user.sdays,
+	now.first,
+	now.current,
+	diabloFilter);
+    // console.log($scope.time);
+    
+    $scope.do_search = function(page) {
+	console.log(page);
+	if (!$scope.right.master && user.sdays !== diablo_nolimit_day){
+	    var diff = now - diablo_get_time($scope.time.start_time);
+	    // console.log(diff);
+	    if (diff - diablo_day_millisecond * user.sdays > diablo_day_millisecond)
+	    	$scope.time.start_time = now - user.sdays * diablo_day_millisecond;
+	    
+	    if ($scope.time.end_time < $scope.time.start_time)
+		$scope.time.end_time = now;
+	}
+
+	diabloFilter.do_filter($scope.filters, $scope.time, function(search) {
+	    if (angular.isUndefined(search.shop) || !search.shop || search.shop.length === 0){
+		search.shop = $scope.shopIds.length === 0 ? undefined : $scope.shopIds; 
+	    }
+	    
+	    wsaleService.list_daily_cost(
+		$scope.match, search, page, $scope.itemsPerpage
+	    ).then(function(result) {
+		console.log(result);
+		if (result.ecode === 0) {
+		    $scope.current_page = page; 
+		    if (page === 1) {
+			$scope.total_items   = result.total;
+			$scope.total_balance = result.t_balance;
+			$scope.total_cash    = result.t_cash;
+			$scope.total_card    = result.t_card;
+			$scope.total_wxin    = result.t_wxin; 
+		    }
+
+		    diablo_order_page(page, $scope.items_perpage, result.data);
+		    $scope.daily_costs = result.data;
+		}
+	    })
+	});
+    };
+
+    $scope.refresh = function() {
+	$scope.do_search($scope.default_page)
+    };
+
+    $scope.page_changed = function() {
+	$scope.do_search($scope.current_page)
+    };
+
+    $scope.match_cost_class = function(viewValue) {
+	return diabloFilter.match_cost_class(viewValue, diablo_is_ascii_string(viewValue));
+    };
+
+    $scope.new_daily_cost = function() {
+	var callback = function(params) {
+	    console.log(params);
+	    wsaleService.new_daily_cost(
+		{shop: params.shop.id,
+		 cost_class: params.cost_class.id,
+		 cash:wsaleUtils.to_integer(params.cash),
+		 card:wsaleUtils.to_integer(params.card),
+		 wxin:wsaleUtils.to_integer(params.wxin),
+		 comment: diablo_set_string(params.comment)
+		}).then(function(result) {
+		     console.log(result);
+		     if (result.ecode === 0) {
+			 $scope.refresh()
+		     } else {
+			 dialog.set_error("新增日常费用", result.ecode);
+		     }
+		 })
+	};
+	
+	dialog.edit_with_modal(
+	    "new-daily-cost.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {cash: 0,
+	     card: 0,
+	     wxin: 0,
+	     shops: $scope.shops,
+	     shop: $scope.shops[0],
+	     pattern:  {comment:diabloPattern.comment, number:diabloPattern.number},
+	     match_cost_class: $scope.match_cost_class,
+	     check_cost: function(cash, card, wxin) {
+		 return wsaleUtils.to_integer(cash)
+		     + wsaleUtils.to_integer(card)
+		     + wsaleUtils.to_integer(wxin) > 0;
+	     }
+	    }
+	);
+    };
+};
 
 function wsaleUploadCtrlProvide (
     $scope, $routeParams, dateFilter, FileUploader, diabloUtilsService, diabloFilter,
@@ -794,6 +915,7 @@ function wsalePrintNoteCtrlProvide(
 
 define (["wsaleApp"], function(app){
     app.controller("wsaleRsnDetailCtrl", wsaleRsnDetailCtrlProvide);
+    app.controller("dailyCostCtrl", dailyCostCtrlProvide);
     app.controller("wsalePrintNoteCtrl", wsalePrintNoteCtrlProvide);
     app.controller("wsaleUploadCtrl", wsaleUploadCtrlProvide);
 });

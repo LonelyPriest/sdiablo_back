@@ -71,6 +71,10 @@ function shopConfig(angular){
 		controller: 'regionDetailCtrl',
 		resolve: angular.extend({}, department)
 	    }).
+	    when('/cost_class_detail', {
+		templateUrl: '/private/shop/html/cost_class_detail.html',
+		controller: 'costClassDetailCtrl'
+	    }).
 	    otherwise({
 		templateUrl: '/private/shop/html/shop_detail.html',
 		controller: 'shopDetailCtrl' ,
@@ -86,6 +90,7 @@ function shopConfig(angular){
 	// error
 	this.error = {1301: "店铺创建失败，已存在同样的店铺名称！！",
 		      1302: "仓库创建失败，已存在同样的仓库名称！！",
+		      1304: "该费用类型已存在，请重新输入！！",
 		      1398: "同类型的促销方案只允许选择一个！！",
 		      1399: "修改前后信息一致，请重新编辑修改项！！",
 		      9001: "数据库操作失败，请联系服务人员！！"};
@@ -198,6 +203,17 @@ function shopConfig(angular){
 	this.list_region = function() {
 	    return shop.query({operation: "list_region"}).$promise;
 	};
+
+	this.add_cost_class = function(name) {
+	    return shop.save({operation: "new_cost_class"},
+			     {name: name, py: diablo_pinyin(name)}).$promise;
+	};
+
+	this.filter_cost_class = function(currentPage, itemsPerpage) {
+	    return shop.save(
+		{operation: "list_cost_class"}, {page:currentPage, count:itemsPerpage}).$promise;
+	};
+	
     });
 
     shopApp.controller("loginOutCtrl", function($scope, $resource){

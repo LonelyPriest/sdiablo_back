@@ -293,6 +293,9 @@
 -define(list_region,         ?right_shop + 15).
 -define(update_shop_charge,  ?right_shop + 16).
 -define(update_region,       ?right_shop + 17).
+-define(new_cost_class,      ?right_shop + 18).
+-define(update_cost_class,   ?right_shop + 19).
+-define(list_cost_class,     ?right_shop + 20).
 
 %% employ
 -define(new_employe,     ?right_employe + 1).
@@ -344,7 +347,11 @@
 -define(update_w_sale_price,   ?right_w_sale + 10).
 -define(employee_evaluation,   ?right_w_sale + 11).
 -define(print_w_sale_note,     ?right_w_sale + 12).
--define(export_w_sale_note,     ?right_w_sale + 13).
+-define(export_w_sale_note,    ?right_w_sale + 13).
+-define(new_daily_cost,         ?right_w_sale + 14).
+-define(delete_daily_cost,      ?right_w_sale + 15).
+-define(update_daily_cost,      ?right_w_sale + 16).
+-define(list_daily_cost,        ?right_w_sale + 17).
 
 %% inventory
 -define(new_w_inventory,             ?right_w_inventory + 4).

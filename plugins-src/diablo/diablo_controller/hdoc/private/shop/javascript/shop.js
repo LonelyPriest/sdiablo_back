@@ -667,12 +667,73 @@ function regionDetailCtrlProvide($scope, shopService, diabloUtilsService, filter
 	    callback,
 	    $scope,
 	    {name:region.name, department:region.department, remark:region.comment});
+    };	
+};
+
+function costClassDetailCtrlProvide($scope, diabloUtilsService, shopService, diabloPattern){
+    $scope.total_items   = 0;
+    $scope.default_page  = 1;
+    $scope.current_page  = $scope.default_page;
+    $scope.items_perpage = diablo_items_per_page();
+    var dialog = diabloUtilsService;
+
+    $scope.do_filter = function(page) {
+	shopService.filter_cost_class(page, $scope.items_perpage).then(function(result) {
+	    console.log(result);
+	    if (result.ecode === 0) {
+		if (page === $scope.default_page) {
+		    $scope.total_items = result.total;
+		}
+
+		diablo_order_page(page, $scope.items_perpage, result.data);
+		$scope.costs_class = result.data;
+	    }
+	});
     };
 	
+    
+    $scope.refresh = function(){
+	$scope.do_filter($scope.default_page);
+    };
+
+    $scope.page_changed = function(){
+    	$scope.do_filter($scope.current_page);
+    };
+
+    $scope.refresh();
+    
+    $scope.new_cost_class = function(){
+	var callback = function(params){
+	    console.log(params);
+	    var master = params.master;
+	    shopService.add_cost_class(diablo_trim(params.name)).then(function(result){
+		if (result.ecode === 0){
+		    dialog.response_with_callback(
+			true,
+			"新增费用类型",
+			"新增费用类型 [" + params.name + "] 成功",
+			undefined,
+			function() {$scope.refresh()});
+		} else {
+		    dialog.response(
+			false,
+			"新增费用类型",
+			"新增费用类型失败：" + shopService.error[result.ecode]);
+		}
+	    });
+	};
+
+	dialog.edit_with_modal("new-cost-class.html", undefined, callback, undefined, {});
+    };
+
+    $scope.update_cost_class = function(region){
+	dialog.response(false, "费用类型编辑", "费用类型编辑失败：暂不支持此操作！！")
+    };
 };
 
 define(["shopApp"], function(app){
     app.controller("newShopCtrl", newShopCtrlProvide);
     app.controller("shopDetailCtrl", shopDetailCtrlProvide);
     app.controller("regionDetailCtrl", regionDetailCtrlProvide);
+    app.controller("costClassDetailCtrl", costClassDetailCtrlProvide);
 });

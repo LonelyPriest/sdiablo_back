@@ -403,3 +403,21 @@ nth(N, Setting) ->
 	    ?NO
     end.
     
+
+check_match_mode(Field, Prompt) ->
+    check_match_mode(?to_s(Field), ?to_s(Prompt), []).
+check_match_mode(Field, Prompt, Prefix) ->
+    First = string:substr(Prompt, 1, 1),
+    Last = string:substr(Prompt, string:len(Field)),
+    Match = string:strip(Prompt, both, $/),
+
+    case {First, Match, Last} of
+	{"/", Match, "/"} ->
+	    ?to_s(Prefix) ++ Field ++ "=\'" ++ Match ++ "\'"; 
+	{"/", Match, _} ->
+	    ?to_s(Prefix) ++ Field ++ " like \'" ++ Match ++ "%\'";
+	{_, Match, "/"} ->
+	    ?to_s(Prefix) ++ Field ++ " like \'%" ++ Match ++ "\'";
+	{_, Match, _}->
+	    ?to_s(Prefix) ++ Field ++ " like \'%" ++ Match ++ "%\'"
+    end.

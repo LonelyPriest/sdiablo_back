@@ -1113,8 +1113,29 @@ action(Session, Req, {"update_w_sale_price"}, Payload) ->
 	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0}]});
 	{error, Error} ->
     	    ?utils:respond(200, Req, Error)
-    end.
+    end;
 
+action(Session, Req, {"new_daily_cost"}, Payload) ->
+    ?DEBUG("new_daily_cost: session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    ?utils:respond(
+       normal,
+       fun() -> ?shop:cost(new, Merchant, Payload) end,
+       fun(CostId) -> ?succ(add_shop, CostId) end,
+       Req);
+
+action(Session, Req, {"list_daily_cost"}, Payload) ->
+    ?DEBUG("list_daily_cost: Session ~p, Payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    ?pagination:pagination(
+       fun(Match, Conditions) ->
+	       ?shop:cost(total, ?to_a(Match), Merchant, Conditions)
+       end,
+       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
+	       ?shop:cost(
+		  filter,
+		  Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
+       end, Req, Payload). 
 
 sidebar(Session) -> 
     case ?right_request:get_shops(Session, sale) of
@@ -1142,12 +1163,14 @@ sidebar(Session) ->
 			   [{"employee_evaluation",
 			     "业绩统计", "glyphicon glyphicon-download"}];
 		       _ -> []
+		   end
+		++ case ?right_auth:authen(?list_daily_cost, Session) of
+		       {ok, ?list_daily_cost} ->
+			   [{"list_daily_cost",
+			     "日常费用", "glyphicon glyphicon-euro"}];
+		       _ -> []
 		   end,
 	    
-	    %% SaleD =
-	    %% 	[{"wsale_rsn_detail",
-	    %% 	  "交易明细", "glyphicon glyphicon-map-marker"}],
-
 	    Merchant = ?session:get(merchant, Session), 
 	    {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),
 

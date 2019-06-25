@@ -2675,7 +2675,6 @@ get_match_mode(style_number, StyleNumber, Prefix) ->
 	    ?to_s(Prefix) ++ "style_number like \'%" ++ Match ++ "%\'"
     end.
 
-
 gen_barcode(self_barcode, Merchant, Year, Season, Type) ->
     <<_:2/binary, YY/binary>> = ?to_b(Year),
     <<_:1/binary, Y/binary>>  = YY,

@@ -333,6 +333,10 @@ error(repo_exist, Name) ->
     {1302, "repo " ++ ?to_s(Name) ++ " has been exist."};
 error(region_exist, Name) ->
     {1303, "region " ++ ?to_s(Name) ++ " has been exist."};
+error(cost_class_exist, Name) ->
+    {1304, "cost class " ++ ?to_s(Name) ++ " has been exist."};
+error(cost_zero_balance, CostClass) ->
+    {1305, "balance of cost less then zero: " ++ ?to_s(CostClass) ++ "."};
 
 %% employ
 error(employ_exist, Name) ->

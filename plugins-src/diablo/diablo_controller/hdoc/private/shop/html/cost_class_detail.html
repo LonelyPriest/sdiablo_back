@@ -1,0 +1,127 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="portlet box purple">
+
+      <div class="portlet-title">
+	<div class="caption"><i class="glyphicon glyphicon-menu-hamburger"></i>费用类型</div> 
+	<div class="actions">
+	  <div class="btn-group btn-group-solid">
+	    <a type="button" class="btn btn-success purple-stripe"
+		    x-ng-click="new_cost_class()">新增
+	      <i class="glyphicon glyphicon-plus"></i></a>
+	    
+	    <a type="button" class="btn blue reload purple-stripe"
+		    x-ng-click="refresh()">刷新
+	      <i class="icon icon-spinner fg-white"></i></a>
+	  </div>
+	</div> 
+      </div>
+
+      <!--BEGIN table container-->
+      <div class="portlet-body"> 
+	<!--BEGN portlet body-->
+	<div class="portlet-body">
+	  <!--BEGIN panel-->
+	  <div class="panel panel-default">
+	    <!--EBGIN table responsive-->
+	    <div class="table-responsive">
+	      <!--BEGIN member table-->
+	      <table class="table table-bordered table-striped table-hover
+			    table-condensed table-advanced">
+		<thead>
+		  <tr>
+		    <th>序号</th>
+		    <th>名称</th>
+		    <th>拼音</th> 
+		    <th>操作</th>
+		  </tr>
+		</thead>
+		<tbody>
+		  <tr ng-repeat="c in costs_class">
+		    <td>{{c.order_id}}</td>
+		    <td>{{c.name}}</td>
+		    <td>{{c.py}}</td> 
+		    <td> 
+		      <button class="btn diablo-button btn-warning"
+			      x-ng-click="update_cost_class(c)">修改
+			<i class="glyphicon glyphicon-edit"></i></button> 
+		    </td>
+
+		  </tr>
+		</tbody>
+
+	      </table> <!--END VM table-->
+	    </div> <!--END table responsive-->
+
+	  </div> <!--END panel-->
+	</div> <!--END portlet body-->
+
+	<div x-ng-show="total_items>items_perpage" class="row">
+	  <div class="col-md-12, col-sm-12, col-xs-12">
+	    <div>
+	      <sapn>
+		<span>显示第 {{current_page}} / {{num_pages}} 项结果，
+		  共 {{total_items}} 项</span> 
+		<uib-pagination
+		   class="table-pagination pagination-lg pull-right "
+	      	   total-items="total_items"
+	      	   items-per-page="items_perpage"
+	      	   num-pages="num_pages"
+	      	   max-size="max_page_size"
+	      	   boundary-links="true"
+	      	   previous-text="&lsaquo;" next-text="&rsaquo;"
+	      	   first-text="&laquo;" last-text="&raquo;"
+	      	   x-ng-model="current_page"
+	      	   x-ng-change="page_changed()">
+		</uib-pagination> 
+	    </div>
+	  </div>
+	</div>
+	
+      </div> <!--END table container-->
+
+    </div>
+  </div>
+</div>
+
+<script type="text/ng-template" id="new-cost-class.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button> 
+    <h4 class="modal-title"><span class="label label-sm label-primary">新增费用类型</span></h4>
+  </div>
+
+  <div class="modal-body">
+    <form class="form-horizontal" name="rForm" novalidate> 
+      <div class="form-body"> 
+	<div class="form-group">
+	  <label class="col-sm-3 col-md-3 control-label">名称</label>
+	  <div class="col-sm-6 col-md-6">
+	    <div class="input-group">
+	      <input class="form-control"
+		     name="name"
+		     type="text" 
+		     required
+		     placeholder="请输入名称"
+		     x-ng-model="params.name"
+		     x-ng-pattern="/^[A-Za-z0-9-_\u4e00-\u9fa5]{1,10}$/"/>
+	      <span class="input-group-addon bg-white fg-red">*</span> 
+	    </div>
+	    <div ng-show="rForm.name.$invalid && !rForm.name.$pristine">
+	      <span class="fg-red">汉字，字母，下划线或数字，不超过10个字符</span>
+	    </div>
+	  </div>
+	</div> 
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="rForm.$invalid"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>  
+</script>

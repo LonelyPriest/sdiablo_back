@@ -73,6 +73,9 @@ function filterProvider(){
 	    "/purchaser/:operation", {operation: '@operation'},
 	    {query_by_post: {method: 'POST', isArray:true}});
 
+	var _shopHttp = $resource("/shop/:operation", {operation: '@operation'},
+				  {query_by_post: {method: 'POST', isArray:true}});
+	
 	var _goodHttp = $resource("/wgood/:operation/:id",
 				  {operation: '@operation', id:'@id'},
 				  {query_by_post: {method: 'POST', isArray: true}});
@@ -83,19 +86,14 @@ function filterProvider(){
 
 	var _retailerHttp = $resource("/wretailer/:operation/:id",
 				      {operation: '@operation', id:'@id'},
-				      {post: {method: 'POST', isArray: true}}
-				     );
+				      {post: {method: 'POST', isArray: true}});
 
 	var _wsaleHttp = $resource("/wsale/:operation/:id",
     				   {operation: '@operation', id: '@id'},
-				   {
-				       query_by_post: {method: 'POST', isArray: true}
-				   });
+				   {query_by_post: {method: 'POST', isArray: true}});
 
 	var _baseSettingHttp = $resource("/wbase/:operation/:id", {operation: '@operation'},
-					 {
-					     query_by_post: {method: 'POST', isArray: true}
-					 });
+					 {query_by_post: {method: 'POST', isArray: true}});
 	
 	var cookie = 'filter-' + diablo_get_cookie("qzg_dyty_session");
 
@@ -595,6 +593,17 @@ function filterProvider(){
 				    balance: r.balance} 
 			})
 		    })
+	    },
+
+	    match_cost_class: function(viewValue, ascii) {
+		return _shopHttp.query_by_post(
+		    {operation: 'match_cost_class'},
+		    {prompt: viewValue, ascii:ascii}
+		).$promise.then(function(costs_class) {
+		    return costs_class.map(function(c) {
+			return {id:c.id, name:c.name};
+		    });
+		})
 	    },
 
 	    wretailer_charge: function(charge) {

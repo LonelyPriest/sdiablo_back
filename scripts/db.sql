@@ -92,6 +92,35 @@ create table shops
     primary key        (id)
 ) default charset=utf8;
 
+create table cost_class
+(
+    id               INTEGER AUTO_INCREMENT, 
+    merchant         INTEGER not null default -1, 
+    name             VARCHAR(64) not null default '',
+    py               VARCHAR(64) not null default '',
+    deleted          INTEGER default 0, -- 0: no;  1: yes
+    unique  key   uk (merchant, name),
+    primary key      (id)
+) default charset=utf8;
+
+create table daily_cost
+(
+    id               INTEGER AUTO_INCREMENT,
+    shop             INTEGER not null default -1, 
+    cost_class       INTEGER not null default -1,  -- refer to cost_class
+    balance          INTEGER not null default 0,
+    cash             INTEGER not null default 0,
+    wxin             INTEGER not null default 0,
+    card             INTEGER not null default 0,
+    comment          VARCHAR(256) default '',
+    merchant         INTEGER not null default -1,
+    deleted          INTEGER default 0, -- 0: no;  1: yes
+    entry_date       DATETIME not null,
+    primary key      (id),
+    key           dk (merchant, shop, cost_class)
+) default charset=utf8;
+
+
 create table suppliers
 (
     id              INTEGER AUTO_INCREMENT,
@@ -529,7 +558,7 @@ create table w_child_card
     ctime           INTEGER default -1, 
     merchant        INTEGER default -1,
     shop            INTEGER default -1,
-    delete          TINYINT delete 0,
+    deleted         TINYINT default 0,
     entry_date      DATETIME,
     unique key      uk (merchant, retailer, csn, good),
     primary key     (id)
@@ -691,7 +720,7 @@ create table w_promotion(
 create table w_ticket(
     id              INTEGER AUTO_INCREMENT,
     batch           INTEGER not null,
-    sale_rsn        VARCHAR(32) -- refer to w_sale
+    sale_rsn        VARCHAR(32), -- refer to w_sale
     sid             INTEGER default -1, -- score promotion
     balance         INTEGER not null,
     retailer        INTEGER default -1, -- -1: means no retailer to related
@@ -712,7 +741,7 @@ create table w_ticket_custom(
     id              INTEGER AUTO_INCREMENT, 
     plan            INTEGER default -1,
     batch           INTEGER not null,
-    sale_rsn        VARCHAR(32) -- refer to w_sale
+    sale_rsn        VARCHAR(32), -- refer to w_sale
     balance         INTEGER not null,
     retailer        INTEGER default -1, -- -1: who consumed
     state           INTEGER default 1, -- 0: discard; 1: checked; 2: consumed; 3:unused
