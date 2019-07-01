@@ -1085,8 +1085,10 @@ function purchaserInventoryTransferToDetailCtrlProvide (
 	$scope.goto_page('#/inventory/inventory_rsn_detail/transfer_to');
     };
 
+    var tMode = stockUtils.scan_mode(diablo_default_shop, base);
     $scope.base_settings = {
-	xsale: stockUtils.to_integer(stockUtils.scan_mode(diablo_default_shop, base).charAt(6))
+	xsale: stockUtils.to_integer(tMode.charAt(6)),
+	check_stock: stockUtils.to_integer(tMode.charAt(8))
     };
 
     $scope.master = diablo_no; 
@@ -1222,7 +1224,8 @@ function purchaserInventoryTransferToDetailCtrlProvide (
 		 fshop_type :r.fshop.type, 
 		 tshop      :r.tshop_id,
 		 datetime   :check_date,
-		 xsale      :$scope.base_settings.xsale}
+		 xsale      :$scope.base_settings.xsale,
+		 check_stock:$scope.base_settings.check_stock}
 	    ).then(function(state){
 		console.log(state);
 		if (state.ecode == 0){

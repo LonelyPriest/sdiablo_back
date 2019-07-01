@@ -54,7 +54,24 @@
 		  <span class="fg-red">中文，只允许字母，数字，最少2个字符，不超过6个字符</span>
 		</div>
 	      </div> 
-	    </div> 
+	    </div>
+
+	    <div class="form-group">
+	      <label class="col-sm-3 col-md-3 control-label">客户编码</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<div x-ng-class="{'has-error': bForm.code.$invalid && !bForm.code.$pristine}">
+		  <input class="form-control" type="tel"
+			 name="code"
+			 x-ng-pattern="pattern.bsaler_code"
+			 placeholder="请输入客户编码"
+			 class="form-control"
+			 x-ng-model="bsaler.code"/>
+		</div> 
+		<div ng-show="bForm.code.$invalid && !bForm.code.$pristine">
+		  <span class="fg-red">请输入9位数字编码</span>
+		</div>
+	      </div> 
+	    </div>
 	    
 	    <div class="form-group">
 	      <label class="col-sm-3 col-md-3 control-label">联系方式</label>
@@ -76,7 +93,7 @@
 		</div>
 	      </div> 
 	    </div>
-	    
+
 	    <div class="form-group">
 	      <label class="col-sm-3 col-md-3 control-label">客户类型</label>
 	      <div class="col-sm-6 col-md-6">

@@ -2078,6 +2078,7 @@ handle_call({check_inventory_transfer, Merchant, CheckProps}, _From, State) ->
     ?DEBUG("check_inventory_transfer: checkprops ~p", [CheckProps]),
     %% Now = ?utils:current_time(format_localtime),
     RSN = ?v(<<"rsn">>, CheckProps),
+    CheckStock = ?v(<<"check_stock">>, CheckProps, ?NO),
     Sql = "select rsn, fshop, tshop, state from w_inventory_transfer"
         " where rsn=\"" ++ ?to_s(RSN) ++ "\"",
     case ?sql_utils:execute(s_read, Sql) of
@@ -2090,27 +2091,41 @@ handle_call({check_inventory_transfer, Merchant, CheckProps}, _From, State) ->
                     ?IN_BACK ->
                         {reply, {error, ?err(stock_been_canceled, RSN)}, State};
                     ?IN_ROAD ->
-			case ?sql_utils:execute(read, ?w_transfer_sql:check_stock(Merchant, RSN)) of
-			    {ok, []} ->
-				FShop = ?v(<<"fshop">>, R),
-				TShop = ?v(<<"tshop">>, R), 
+			FShop = ?v(<<"fshop">>, R),
+			TShop = ?v(<<"tshop">>, R), 
+			case
+			    case CheckStock of
+				?YES ->
+				    ?w_transfer_sql:check_stock(Merchant, RSN);
+				?NO ->
+				    []
+			    end
+			of
+			    [] ->
 				Sqls = ?w_transfer_sql:check_transfer(
 					  Merchant, FShop, TShop, CheckProps),
 				{reply, ?sql_utils:execute(transaction, Sqls, RSN), State};
-			    {ok, Checks} ->
-				{reply,
-				 {error,
-				  {not_enought_stock, 
-				   lists:foldr(
-				     fun({S}, Acc)->
-					     [?to_s(?v(<<"style_number">>, S))|Acc]
-				     end, [], Checks)}}, State}; 
-			    {error, Error}->
-				{reply, Error, State}
+			    CheckSql -> 
+				case ?sql_utils:execute(read, CheckSql) of
+				    {ok, []} -> 
+					Sqls = ?w_transfer_sql:check_transfer(
+						  Merchant, FShop, TShop, CheckProps),
+					{reply, ?sql_utils:execute(transaction, Sqls, RSN), State};
+				    {ok, Checks} ->
+					{reply,
+					 {error,
+					  {not_enought_stock, 
+					   lists:foldr(
+					     fun({S}, Acc)->
+						     [?to_s(?v(<<"style_number">>, S))|Acc]
+					     end, [], Checks)}}, State}; 
+				    {error, Error}->
+					{reply, Error, State}
+				end
 			end
 				
                 end
-        end;
+    end;
 
 handle_call({cancel_inventory_transfer, Merchant, RSN}, _From, State) ->
     ?DEBUG("cancel_inventory_transfer: rsn ~p", [RSN]),

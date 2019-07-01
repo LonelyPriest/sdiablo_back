@@ -265,6 +265,7 @@ function bsaleConfig(angular){
 		 type:    s.type,
 		 balance: s.balance,
 		 mobile:  s.mobile,
+		 code:    s.code,
 		 address: s.address,
 		 remark:  s.remark}
 	    ).$promise;
@@ -2457,6 +2458,11 @@ function bsalePrintCtrlProvide(
 	    LODOP.SET_PRINTER_INDEX(bsaleUtils.printer_bill(user.loginShop, base));
 	    LODOP.SET_PRINT_PAGESIZE(0, pageWidth * 100, pageHeight * 100, "");
 	    LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
+
+	    if (!$scope.print_mode.hide_p_code && $scope.detail.bsaler_code) {
+		LODOP.ADD_PRINT_BARCODE("1%", "83%", 100, 40, "128C", $scope.detail.bsaler_code);
+		LODOP.SET_PRINT_STYLEA(0, "FontSize", 9); 
+	    }
 	    
 	    LODOP.ADD_PRINT_HTM(
 	    	"5%", "5%",  "90%", "BottomMargin:15mm",
@@ -2497,7 +2503,8 @@ function bsalerNewCtrlProvide(
     $scope.pattern = {name_address: diabloPattern.ch_name_address,
 		      tel_mobile:   diabloPattern.tel_mobile,
 		      name:         diabloPattern.chinese_lname,
-		      comment:      diabloPattern.comment};
+		      comment:      diabloPattern.comment,
+		      bsaler_code:  diabloPattern.bsaler_code};
     
     $scope.shops        = user.sortShops;
     $scope.regions      = [{id:-1, name:"无"}].concat(filterRegion);
@@ -2519,6 +2526,7 @@ function bsalerNewCtrlProvide(
 		     type:    bsaler.type.id,
 		     balance: bsaleUtils.to_float(bsaler.balance),
 		     mobile:  diablo_trim(bsaler.mobile),
+		     code:    bsaler.code ? diablo_trim(bsaler.code) : undefined,
 		     address: bsaler.address ? diablo_trim(bsaler.address) : undefined,
 		     remark:  bsaler.remark ? diablo_trim(bsaler.remark) : undefined};
 	bsaleService.new_bsaler(saler).then(function(result) {
@@ -2529,6 +2537,10 @@ function bsalerNewCtrlProvide(
 		dialog.set_batch_error("新增客户", result.ecode);
 	    }
 	});
+    };
+
+    $scope.cancel = function() {
+	diablo_goto_page("#/bsaler_detail");
     };
 };
 
@@ -2543,7 +2555,8 @@ function bsalerDetailCtrlProvide(
     $scope.pattern = {address: diabloPattern.ch_name_address,
 		      phone:   diabloPattern.tel_mobile,
 		      name:    diabloPattern.chinese_lname,
-		      comment: diabloPattern.comment}; 
+		      comment: diabloPattern.comment,
+		      bsaler_code: diabloPattern.bsaler_code}; 
     
     $scope.filters = [];
     diabloFilter.reset_field(); 
@@ -2662,6 +2675,7 @@ function bsalerDetailCtrlProvide(
 		shop:    diablo_get_modified(params.bsaler.shop.id, s.shop_id),
 		name:    diablo_get_modified(diablo_trim(params.bsaler.name), s.name),
 		mobile:  diablo_get_modified(diablo_trim(params.bsaler.mobile), s.mobile),
+		code:    diablo_get_modified(diablo_trim(params.bsaler.code, s.code)),
 		balance: diablo_get_modified(params.bsaler.balance, s.balance),
 		address: diablo_get_modified(diablo_trim(params.bsaler.address), s.address),
 		region:  diablo_get_modified(params.bsaler.region.id, s.region_id),
@@ -2689,11 +2703,11 @@ function bsalerDetailCtrlProvide(
 	};
 
 	dialog.edit_with_modal(
-	    "update-bsaler.html", undefined, callback, undefined,
-	    {shops:$scope.shops,
-	     regions:$scope.regions,
-	     pattern:$scope.pattern,
-	     bsaler:s});
+	    "update-bsaler.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {shops:$scope.shops, regions:$scope.regions, pattern:$scope.pattern, bsaler:s});
     }
 };
 

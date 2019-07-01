@@ -612,5 +612,8 @@ alter table w_ticket_custom add column sale_rsn VARCHAR(32) not null default '-1
 alter table w_inventory_new_detail drop index dk;
 alter table w_inventory_new_detail add index dk (merchant, shop, style_number, brand, type, firm, year);
 
+--2019-07-02
+alter table batchsaler add column code varchar(32) not null default '' after mobile;
+
 -- 9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;

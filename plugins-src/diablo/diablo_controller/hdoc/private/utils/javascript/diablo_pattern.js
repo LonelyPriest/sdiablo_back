@@ -73,6 +73,7 @@ angular.module("diabloPattern", []).service("diabloPattern", [function(){
     this.passwd = /^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]{6,15}/;
 
     this.num_passwd = /^\d{6}$/;
+    this.bsaler_code = /^\d{9}$/;
 
     this.color=/^[A-Za-z0-9-_\u4e00-\u9fa5]{1,3}$/;
 

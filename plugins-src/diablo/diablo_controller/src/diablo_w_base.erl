@@ -970,15 +970,16 @@ sys_config() ->
 	      %% 000: no color and no size
 
 	      %% batch mode
-	      %% [3]: hide unit when print
-	      %% [4]: hide bcode friend when print
-	      %% [5]: hide bcode pay when print
-	      %% [6]: hide address when print
-	      %% [7]: hide discount when print
-	      %% [8]: hide tag price when print
-	      %% [9]: hide vir price when print
-	      %% [10]:hide batch retailer balance info when print 
-	      {"p_color_size",    "打印颜色尺码",         "00011111110", "0"},
+	      %% [3]:  hide unit when print
+	      %% [4]:  hide bcode friend when print
+	      %% [5]:  hide bcode pay when print
+	      %% [6]:  hide address when print
+	      %% [7]:  hide discount when print
+	      %% [8]:  hide tag price when print
+	      %% [9]:  hide vir price when print
+	      %% [10]: hide batch retailer balance info when print
+	      %% [11]: hide batch retailer code when print
+	      {"p_color_size",    "打印颜色尺码",         "000111111101", "0"},
 	      
 	      {"saler_stock",      "营业员查看区域库存",  "0",   "0"},
 	      %% {"r_stock_oprice",    "厂商退货检测进价",   "1",   "0"},
@@ -1029,6 +1030,7 @@ sys_config() ->
 	      %%[7]:stock_transfer mode
 	      %%    0-> common transfer 
 	      %%    1-> fast transfer no dialog pop
+	      %%[8]:check stock when stock transfer 0:uncheck, 1:check
 	      {"scan_only",         "扫码模式",           "00000001", "0"},
 	      %% {"auto_level",        "会员自动升级",       "0",    "0"},
 	      {"maling_rang",       "抹零范围",           "3",    "0"},

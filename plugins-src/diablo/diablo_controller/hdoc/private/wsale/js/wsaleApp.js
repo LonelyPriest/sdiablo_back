@@ -402,7 +402,7 @@ function wsaleNewProvide(
     $scope.scores     = filterScore;
     $scope.draws      = filterCharge.filter(function(d){return d.type === diablo_withdraw});
     $scope.ticketPlans = filterTicketPlan.map(function(p) {
-	return {id:p.id, name: p.name + "-" + p.balance + "元", scount: p.scount}
+	return {id:p.id, name: p.name + "-" + p.balance + "元", balance:p.balance, scount: p.scount}
     });
     // console.log(filterCharge);
     $scope.charges = filterCharge.filter(function(d) {

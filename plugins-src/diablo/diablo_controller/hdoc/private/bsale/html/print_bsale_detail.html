@@ -39,10 +39,10 @@
 	  <div style="text-align:center">
 	    <span>客户：<span x-ng-if="detail.bsaler_type!==2">{{detail.bsaler}}</span></span> 
 	    &nbsp&nbsp&nbsp&nbsp<span>日期：<span x-ng-bind=detail.entry_date></span></span>
-	    &nbsp&nbsp&nbsp&nbsp<span>单号：<span x-ng-bind=detail.rsn></span></span>
 	  </div>
 	  <div style="text-align:center">
-	    <span>业务员：<span x-ng-bind=detail.employee.name></span></span>
+	    <span>单号：<span x-ng-bind=detail.rsn></span></span> 
+	    &nbsp&nbsp&nbsp&nbsp<span>业务员：<span x-ng-bind=detail.employee.name></span></span>
 	    <!-- &nbsp&nbsp&nbsp&nbsp<span>部门：<span x-ng-bind=detail.department.name></span></span> -->
 	    &nbsp&nbsp&nbsp&nbsp<span>负责人：<span x-ng-bind=detail.department.master.name></span></span>
 	    <span x-ng-if="!batch_mode.hide_wcomment">&nbsp&nbsp&nbsp&nbsp备注：<span x-ng-bind=detail.comment></span></span>

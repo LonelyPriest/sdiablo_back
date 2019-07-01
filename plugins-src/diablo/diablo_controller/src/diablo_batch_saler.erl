@@ -80,6 +80,7 @@ handle_call({new_saler, Merchant, Attrs}, _From, State) ->
     Type     = ?v(<<"type">>, Attrs), 
     Balance  = ?v(<<"balance">>, Attrs, 0),
     Mobile   = ?v(<<"mobile">>, Attrs, []),
+    Code     = ?v(<<"code">>, Attrs, []),
     Address  = ?v(<<"address">>, Attrs, []),
     Remark   = ?v(<<"remark">>, Attrs, []),
     
@@ -91,9 +92,20 @@ handle_call({new_saler, Merchant, Attrs}, _From, State) ->
 
     case ?sql_utils:execute(s_read, Sql) of
         {ok, []} -> 
-            Sql2 = "insert into batchsaler ("
-		"shop, region, name, py, type, balance, mobile, address, remark, merchant, entry_date)"
-                ++ " values ("
+            Sql2 = "insert into batchsaler("
+		"shop"
+		", region"
+		", name"
+		", py"
+		", type"
+		", balance"
+		", mobile"
+		", code"
+		", address"
+		", remark"
+		", merchant"
+		", entry_date)"
+                ++ " values("
 		++ ?to_s(Shop) ++ ","
 		++ ?to_s(Region) ++ ","
                 ++ "\'" ++ ?to_s(Name) ++ "\',"
@@ -101,6 +113,7 @@ handle_call({new_saler, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(Type) ++ ","
                 ++ ?to_s(Balance) ++ ","
                 ++ "\'" ++ ?to_s(Mobile) ++ "\',"
+		++ "\'" ++ ?to_s(Code) ++ "\',"
                 ++ "\'" ++ ?to_s(Address) ++ "\',"
 		++ "\'" ++ ?to_s(Remark) ++ "\'," 
                 ++ ?to_s(Merchant) ++ ","
@@ -121,6 +134,7 @@ handle_call({update_saler, Merchant, BSalerId, {Attrs, OldAttrs}}, _From, State)
     Name     = ?v(<<"name">>, Attrs),
     Pinyin   = ?v(<<"py">>, Attrs),
     Mobile   = ?v(<<"mobile">>, Attrs),
+    Code     = ?v(<<"code">>, Attrs),
     %% Balance  = ?v(<<"balance">>, Attrs),
     Region   = ?v(<<"region">>, Attrs),
     Address  = ?v(<<"address">>, Attrs),
@@ -167,10 +181,10 @@ handle_call({update_saler, Merchant, BSalerId, {Attrs, OldAttrs}}, _From, State)
 
     case IsMobileModified of 
 	{ok, []} -> 
-
 	    Updates = ?utils:v(name, string, Name) 
 		++ ?utils:v(py, string, Pinyin)
 		++ ?utils:v(mobile, string, Mobile)
+		++ ?utils:v(code, string, Code)
 		++ ?utils:v(region, integer, ?supplier:get_modified(Region, OldRegion))
 		++ ?utils:v(shop, integer, ?supplier:get_modified(Shop, OldShop))
 		++ ?utils:v(address, string, Address)
@@ -216,6 +230,7 @@ handle_call({{filter_saler, Order, Sort}, Merchant, Conditions, CurrentPage, Ite
 	", a.type as type_id"
 	", a.balance"
 	", a.mobile"
+	", a.code"
 	", a.address"
 	", a.merchant"
 	", a.remark" 
@@ -255,7 +270,8 @@ handle_call({match_phone, Merchant, {Mode, Phone}}, _From, #state{prompt=Prompt}
 	", name"
 	", balance"
 	", py"
-	", mobile" 
+	", mobile"
+	", code"
 	", shop as shop_id"
 	", region as region_id"
 	", type as type_id"
@@ -292,6 +308,7 @@ handle_call({get_batch, Merchant, BSalers}, _From, State) ->
 	", py"
 	", balance"
 	", mobile"
+	", code"
 	", shop as shop_id"
 	", region as region_id"
 	", type as type_id"

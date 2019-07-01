@@ -1585,6 +1585,7 @@ create table batchsaler
     type            TINYINT default 0,  -- 2: system, 0:common 
     balance         DECIMAL(10, 2) default 0, -- max: 99999999.99
     mobile          VARCHAR(11),
+    code            VARCHAR(32), 
     address         VARCHAR(255),
     remark          VARCHAR(255), 
     merchant        INTEGER default -1,
