@@ -311,14 +311,14 @@
 		      <tr>
 			<th class="text-center">序号</th>
 			<th class="text-center">条码</th>
-			<th class="text-center">货号/品名</th>
+			<th class="text-center">货号/品名/品类</th>
 			<!-- <th class="text-center">品名</th> -->
-			<th class="text-center">类别</th>
+			<!-- <th class="text-center">类别</th> -->
 			<!-- <th class="text-center">性别</th> -->
 			<th class="text-center">年份</th>
 			<th class="text-center">季节</th>
 			<th x-ng-if="base_settings.t_trace" class="text-center">库存</th> 
-			
+			<th x-ng-if="!base_settings.hide_vprice" class="text-center">虚拟价</th> 
 			<th class="text-center">吊牌价</th>
 			<th x-ng-if="!base_settings.hide_discount" class="text-center">折扣</th>
 			
@@ -341,13 +341,13 @@
 			<td class="vert-align">{{inv.order_id}}</td>
 			<td class="text-left vert-align">{{inv.bcode}}</td>
 			<td class="text-left vert-align">
-			  <span ng-if="!inv.$new">{{inv.style_number}}/{{inv.brand}}</span>
+			  <span ng-if="!inv.$new">{{inv.name}}</span>
 			  <form name="inv.form.good" ng-if="inv.$new">
 			    <div ng-class="{'has-error':inv.form.good.$invalid && !inv.form.good.$pristine}">
 			      <input class="form-control text-left" type="text"
 				     required
 				     focus-auto="focus_of_inv.style_number"
-				     x-ng-model="inv.style_number"
+				     x-ng-model="inv.name"
 				     placeholder="货号"
 				     typeahead-editable="false"
 				     typeahead-select-on-exact="true"
@@ -364,13 +364,14 @@
 			</td>
 			<!-- <td>{{inv.style_number}}</td> -->
 			<!-- <td class="vert-align">{{inv.brand}}</td> -->
-			<td class="vert-align">{{inv.type}}</td>
+			<!-- <td class="vert-align">{{inv.type}}</td> -->
 			<!-- <td class="vert-align">{{sexs[inv.sex]}}</td> -->
 			<!-- <td>{{inv.firm}}</td> -->
 			<td class="vert-align">{{inv.year}}</td>
 			<td class="vert-align">{{seasons[inv.season]}}</td>
 			<td x-ng-if="base_settings.t_trace" class="vert-align">{{inv.stock}}</td>
-			
+
+			<td x-ng-if="!base_settings.hide_vprice" class="vert-align">{{inv.vir_price}}</td> 
 			<td class="col-md-1 vert-align">
 			  <span x-ng-if="!inv.$new && !inv.update_directory">{{inv.tag_price}}</span>
 			  <form name="inv.form.tagprice"
@@ -572,8 +573,9 @@
 
 		      <tr>
 		      <tr x-ng-if="inventories.length>1" class="text-center">
-			<td colspan="7"></td>
+			<td colspan="5"></td>
 			<td x-ng-if="base_settings.t_trace"></td>
+			<td x-ng-if="!base_settings.hide_vprice"></td>
 			<td></td>
 			<td x-ng-if="!base_settings.hide_discount"></td>
 			<td x-ng-if="stock_right.show_orgprice" colspan="2"></td>

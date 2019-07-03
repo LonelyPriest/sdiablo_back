@@ -74,7 +74,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
     /*
      * auto focus
      */
-    $scope.focus_attrs = {org_price:true, ediscount:false, tag_price:false, discount:false};
+    $scope.focus_attrs = {org_price:true, ediscount:false, vir_price:false, tag_price:false, discount:false};
     $scope.on_focus_attr = function(attr, inv){
 	// force syn
 	if (angular.isDefined(diablo_set_integer(inv.order_id))
@@ -310,6 +310,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	$scope.select = angular.extend($scope.select, $scope.old_select);
 	// console.log($scope.select);
 	// base setting
+	angular.extend($scope.setting, stockUtils.stock_in_hide_mode(base.shop_id, $scope.ubase)); 
 	$scope.setting.history_stock = stockUtils.history_stock(base.shop_id, $scope.ubase);
 	$scope.setting.q_start_time =
 	    dateFilter(stockUtils.start_time(base.shop_id, $scope.ubase, $.now(), dateFilter), "yyyy-MM-dd");
@@ -332,6 +333,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
 		add.brand_id        = invs[i].brand_id;
 		add.brand = $scope.get_object(invs[i].brand_id, $scope.brands);
 		add.type = $scope.get_object(invs[i].type_id, $scope.types);
+		add.name = add.style_number + "/" + add.brand.name + "/" + add.type.name;
 		add.sex             = invs[i].sex,
 		add.free            = invs[i].free,
 		add.season          = invs[i].season;
@@ -489,6 +491,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	add.season       = item.season;
 	add.firm_id      = item.firm_id;
 	add.org_price    = item.org_price;
+	add.vir_price    = item.vir_price;
 	add.tag_price    = item.tag_price;
 	add.ediscount    = item.ediscount;
 	add.discount     = item.discount;
@@ -591,17 +594,12 @@ function purchaserInventoryNewUpdateCtrlProvide (
 		    } else {
 			// console.log(newInv);
 			// console.log(oldInv);
-			if (stockUtils.to_float(newInv.org_price) !== stockUtils.to_float(oldInv.org_price)
-			    
-			    || stockUtils.to_float(newInv.ediscount) !== stockUtils.to_float(oldInv.ediscount)
-			    
+			if (stockUtils.to_float(newInv.org_price) !== stockUtils.to_float(oldInv.org_price) 
+			    || stockUtils.to_float(newInv.ediscount) !== stockUtils.to_float(oldInv.ediscount) 
 			    || stockUtils.to_integer(newInv.over) !== stockUtils.to_integer(oldInv.over)
-
-			    || stockUtils.to_float(newInv.tag_price) !== stockUtils.to_float(oldInv.tag_price)
-			    
-			    || stockUtils.to_float(newInv.discount) !== stockUtils.to_float(oldInv.discount)
-
-			    // || newInv.firm_id !== stockUtils.invalid_firm($scope.select.firm)
+			    || stockUtils.to_float(newInv.vir_price) !== stockUtils.to_float(oldInv.vir_price) 
+			    || stockUtils.to_float(newInv.tag_price) !== stockUtils.to_float(oldInv.tag_price) 
+			    || stockUtils.to_float(newInv.discount) !== stockUtils.to_float(oldInv.discount) 
 			   ){
 			    newInv.operation = 'u';
 			    changedInvs.push(newInv);
@@ -709,6 +707,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
 		s_group        : add.s_group,
 		free           : add.free,
 		org_price      : stockUtils.to_float(add.org_price),
+		vir_price      : stockUtils.to_float(add.vir_price),
 		tag_price      : stockUtils.to_float(add.tag_price), 
 		ediscount      : stockUtils.to_float(add.ediscount),
 		discount       : stockUtils.to_float(add.discount),

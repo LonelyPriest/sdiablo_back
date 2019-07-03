@@ -247,8 +247,8 @@ var diablo_half_of_year_unlimit_charge = 6;
 /*
  * batch sale
  */
-var diablo_std_units = ["未定义", "件", "盒", "瓶", "箱", "贴", "罐"];
-var diablo_batch_sale_print_mode = 0;
+var diablo_std_units = ["未定义", "件", "盒", "瓶", "箱", "贴", "罐", "厘米", "平米", "张", "台", "位", "点"];
+var diablo_batch_sale_print_mode  = 0;
 var diablo_batch_sale_update_mode = 1;
 
 /**

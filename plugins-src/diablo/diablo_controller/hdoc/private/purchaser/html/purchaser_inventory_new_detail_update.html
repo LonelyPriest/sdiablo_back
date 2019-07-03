@@ -372,11 +372,12 @@
 		<thead>
 		  <tr> 
 		    <th class="text-center">序号</th>
-		    <th class="text-center">货号</th>
-		    <th class="text-center">品名</th>
-		    <th class="text-center">类别</th> 
+		    <th class="text-center">货号/品名/品类</th>
+		    <!-- <th class="text-center">品名</th> -->
+		    <!-- <th class="text-center">类别</th>  -->
 		    <th class="text-center">季节</th>
 
+		    <th x-ng-if="!setting.hide_vprice" class="text-center">虚拟价</th>
 		    <th class="text-center">吊牌价</th>
 		    <th class="text-center">折扣</th>
 		    
@@ -395,14 +396,14 @@
 		    
 		    <td class="{{focus_css(inv.order_id, !inv.$new)}}"
 		       class="col-md-2 text-left vert-align">
-		      <span x-ng-if="!inv.$new">{{inv.style_number}}</span>
+		      <span x-ng-if="!inv.$new">{{inv.name}}</span>
 		      
 		      <form name="inv.form.good" x-ng-if="inv.$new">
 			<div ng-class="{'has-error':inv.form.good.$invalid
 				       && !inv.form.good.$pristine}">
 			  <input class="form-control text-left" type="text"
 				 required
-				 x-ng-model="inv.style_number"
+				 x-ng-model="inv.name"
 				 placeholder="货号"
 				 typeahead-editable="false"
 				 typeahead-on-select="on_select_good($item, $model, $label)"
@@ -417,11 +418,30 @@
 		      </form>
 		    </td>
 		    
-		    <td class="{{focus_css(inv.order_id, true)}}">{{inv.brand.name}}</td>
-		    <td class="{{focus_css(inv.order_id, true)}}">{{inv.type.name}}</td>
+		    <!-- <td class="{{focus_css(inv.order_id, true)}}">{{inv.brand.name}}</td> -->
+		    <!-- <td class="{{focus_css(inv.order_id, true)}}">{{inv.type.name}}</td> -->
 		    <!-- <td class="vert-align">{{sexs[inv.sex]}}</td> -->
 		    <td class="{{focus_css(inv.order_id, true)}}">{{seasons[inv.season]}}</td>
 
+		    <td x-ng-if="!setting.hide_vprice" class="{{focus_css(inv.order_id, inv.$new)}} col-md-1 vert-align">
+		      <span x-ng-if="inv.$new">{{inv.vir_price}}</span>
+		      <form x-ng-if="!inv.$new" name="inv.form.virprice">
+			<div ng-class="{'has-error':inv.form.virprice.$invalid
+				       && !inv.form.virprice.$pristine}">
+			  <input class="form-control"
+				 type="number" step="0.01"
+				 placeholder="吊牌价"
+				 x-ng-readonly="!stock_right.update_tprice"
+				 required
+				 disable-key
+				 ng-edit
+				 x-ng-focus="on_focus_attr('vir_price', inv)"
+				 x-ng-pattern="/^\d+(.\d{1,2})?$/"
+				 x-ng-model="inv.vir_price" />
+			</div>
+		      </form> 
+		    </td>
+		    
 		    <td class="{{focus_css(inv.order_id, inv.$new)}} col-md-1 vert-align">
 		      <span x-ng-if="inv.$new">{{inv.tag_price}}</span>
 		      <form x-ng-if="!inv.$new" name="inv.form.tagprice">
@@ -612,7 +632,8 @@
 		  </tr>
 
 		  <tr x-ng-if="select.total!==0" class="text-center bg-white">
-		    <td colspan="5"></td>
+		    <td colspan="3"></td>
+		    <td x-ng-if="!setting.hide_vprice"></td>
 		    <td>{{select.acc_tag_price}}</td>
 		    <td></td>
 		    <td class="vert-align">{{select.total}}</td>

@@ -1732,7 +1732,7 @@ var wsalePrint = function(){
 		hLine += 15;
 		LODOP.ADD_PRINT_IMAGE(
 		    hLine, left + 25, 120, 120,
-		    "<img src='https://qzgui.com/" + shop.bcode_friend + "?" + Math.random() + "'/>");
+		    "<img src='https://120.24.39.174/" + shop.bcode_friend + "?" + Math.random() + "'/>");
 	    }
 	    
 	    hLine += 15;

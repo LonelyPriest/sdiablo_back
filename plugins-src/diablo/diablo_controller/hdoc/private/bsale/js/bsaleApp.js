@@ -2458,11 +2458,6 @@ function bsalePrintCtrlProvide(
 	    LODOP.SET_PRINTER_INDEX(bsaleUtils.printer_bill(user.loginShop, base));
 	    LODOP.SET_PRINT_PAGESIZE(0, pageWidth * 100, pageHeight * 100, "");
 	    LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
-
-	    if (!$scope.print_mode.hide_p_code && $scope.detail.bsaler_code) {
-		LODOP.ADD_PRINT_BARCODE("1%", "83%", 100, 40, "128C", $scope.detail.bsaler_code);
-		LODOP.SET_PRINT_STYLEA(0, "FontSize", 9); 
-	    }
 	    
 	    LODOP.ADD_PRINT_HTM(
 	    	"5%", "5%",  "90%", "BottomMargin:15mm",
@@ -2480,6 +2475,11 @@ function bsalePrintCtrlProvide(
 		    "5%", "83%", 120, 120,
 		    "<img src='https://qzgui.com/"
 			+ $scope.detail.shop.bcode_friend + "?" + Math.random() + "'/>");
+	    }
+
+	    if (!$scope.print_mode.hide_p_code && $scope.detail.bsaler_code) {
+		LODOP.ADD_PRINT_BARCODE("3%", "83%", 100, 60, "128C", $scope.detail.bsaler_code);
+		LODOP.SET_PRINT_STYLEA(0, "FontSize", 9); 
 	    }
 	    
 	    LODOP.PREVIEW(); 

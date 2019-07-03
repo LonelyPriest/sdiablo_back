@@ -385,6 +385,7 @@ function purchaserInventoryNewCtrlProvide (
 	add.brand_id     = src.brand_id;
 	add.type         = src.type;
 	add.type_id      = src.type_id;
+	add.name         = src.style_number + "/" + src.brand + "/" + src.type;
 	add.sex          = src.sex;
 	add.firm_id      = src.firm_id;
 	add.year         = src.year; 
