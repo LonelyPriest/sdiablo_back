@@ -8,10 +8,13 @@
 %%%-------------------------------------------------------------------
 -module(diablo_controller).
 
+-include("../../../../include/knife.hrl").
+-include("diablo_controller.hrl").
+
 -behaviour(application).
 
 %% Application callbacks
--export([start/2, stop/1]).
+-export([start/2, stop/1, handle_gc/0]).
 
 %%%===================================================================
 %%% Application callbacks
@@ -28,9 +31,30 @@ start(normal, _StartArgs) ->
 	    ok = diablo_auto_gen_report:ticket(preferential, {4, 0, am}),
 	    ok = diablo_auto_gen_report:retailer_level(check, {5, 0, am}),
 
+	    GCTask = {
+	      %% {daily, [{0,  6,  am},
+	      %% 	       {0, 7, am},
+	      %% 	       {0, 8, am},
+	      %% 	       {0,  9,  am},
+	      %% 	       {0,  10,  am} 
+	      %% 	      ]},
+	      {daily, [{8,  00,  am},
+	      	       {10, 00, am},
+	      	       {11, 59, am},
+	      	       {2,  00,  pm},
+	      	       {4,  00,  pm},
+	      	       {6,  00,  pm},
+	      	       {8,  00,  pm},
+	      	       {10,  00,  pm},
+	      	       {11,  59,  pm}
+	      	      ]},
+	      {?MODULE, handle_gc, []}
+	     },
+
+	    ?cron:cron(GCTask), 
 	    %% init right data
 	    %% ok = diablo_controller_right_init:init(),
-	    {ok, Pid};
+	     {ok, Pid};
 	Error ->
 	    Error
     end.
@@ -38,6 +62,15 @@ start(normal, _StartArgs) ->
 
 stop(_State) ->
     ok.
+
+handle_gc() ->
+    ?INFO("--- handle_gc ---", []),
+    [erlang:garbage_collect(P) || P <- erlang:processes(),
+				  {status, waiting} == erlang:process_info(P, status)],
+    erlang:garbage_collect(),
+    ok.
+    
+
 
 %%%===================================================================
 %%% Internal functions

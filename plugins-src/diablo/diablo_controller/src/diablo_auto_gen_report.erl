@@ -163,7 +163,7 @@ handle_cast({stastic_per_shop, TriggerTime}, #state{merchant=Merchants, task_of_
 				      end}, 
 			  [?cron:cron(CronTask)|Acc] 
 		  end, [], Merchants),
-	    %% end, [], [4]),
+			  %% end, [], [73]),
 	    ?DEBUG("new tasks ~p with merchants ~p", [NewTasks, Merchants]),
 	    %% {noreply, #state{merchant=Merchants, task_of_per_shop=NewTasks}};
 	    {noreply, State#state{task_of_per_shop=NewTasks}};
@@ -188,7 +188,7 @@ handle_cast(cancel_ticket, #state{ticket_of_merchant=Tickets} = State) ->
 
 handle_cast({gen_ticket, TriggerTime}, #state{merchant=Merchants, ticket_of_merchant=Tickets} = State) ->
     %% ?DEBUG("gen_ticket time ~p, tickets ~p", [TriggerTime, Tickets]),
-    ?INFO("auto generate ticket at time ~p, tasks ~p", [TriggerTime, Tickets]),
+    %% ?INFO("auto generate ticket at time ~p, tasks ~p", [TriggerTime, Tickets]),
     case Tickets of
 	[] -> 
 	    NewTasks = 
