@@ -934,6 +934,7 @@ function purchaserInventoryTransferFromRsnDetailCtrlProvide(
     diabloFilter.add_field("brand", filterBrand);
     diabloFilter.add_field("type", filterType);
     diabloFilter.add_field("fshop", $scope.shops);
+    diabloFilter.add_field("tshop", $scope.shops);
     // diabloFilter.add_field("tshop", $scope.shops);
     diabloFilter.add_field("firm", filterFirm);
 
@@ -1159,6 +1160,7 @@ function purchaserInventoryTransferToRsnDetailCtrlProvide(
     diabloFilter.add_field("brand", filterBrand);
     diabloFilter.add_field("type", filterType);
     // diabloFilter.add_field("fshop", $scope.shops);
+    diabloFilter.add_field("fshop", $scope.shops);
     diabloFilter.add_field("tshop", $scope.shops);
     diabloFilter.add_field("firm", filterFirm);
 

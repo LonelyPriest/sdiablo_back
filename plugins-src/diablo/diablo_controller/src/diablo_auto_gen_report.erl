@@ -588,11 +588,20 @@ task(gen_ticket, Datetime, {Merchant, Conditions}) when is_number(Merchant) ->
 						   ++ ?to_s(Merchant) ++ ","
 						   ++ "\'" ++ FormatDatetime ++ "\')"|Acc];
 					      {ok, E} ->
-						  CurTicketBalance = ?v(<<"balance">>, E),
-						  case TicketBalance > CurTicketBalance of
+						  %% ["update w_ticket set "
+						  %%  " sid=" ++ ?to_s(?v(<<"id">>, Score2Money))
+						  %%  ++ ", balance=" ++ ?to_s(TicketBalance)
+						  %%  ++ ", entry_date=\'" ++ FormatDatetime ++ "\'"
+						  %%  ++ " where id=" ++ ?to_s(?v(<<"id">>, E))|Acc]
+						  case TicketBalance =/= ?v(<<"balance">>, E) of
 						      true ->
-							  ["update w_ticket set balance=" ++ ?to_s(TicketBalance)
-							  ++ " where id=" ++ ?to_s(?v(<<"id">>, E))|Acc];
+						  	  %% ["update w_ticket set balance=" ++ ?to_s(TicketBalance)
+						  	  %% ++ " where id=" ++ ?to_s(?v(<<"id">>, E))|Acc];
+						  	  ["update w_ticket set "
+						  	   " sid=" ++ ?to_s(?v(<<"id">>, Score2Money))
+						  	   ++ ", balance=" ++ ?to_s(TicketBalance)
+						  	   ++ ", entry_date=\'" ++ FormatDatetime ++ "\'"
+						  	   ++ " where id=" ++ ?to_s(?v(<<"id">>, E))|Acc];
 						      false -> Acc
 						  end
 					  end

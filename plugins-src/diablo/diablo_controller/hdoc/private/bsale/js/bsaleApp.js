@@ -2478,7 +2478,7 @@ function bsalePrintCtrlProvide(
 	    }
 
 	    if (!$scope.print_mode.hide_p_code && $scope.detail.bsaler_code) {
-		LODOP.ADD_PRINT_BARCODE("3%", "83%", 100, 60, "128C", $scope.detail.bsaler_code);
+		LODOP.ADD_PRINT_BARCODE("1%", "83%", 100, 60, "128C", $scope.detail.bsaler_code);
 		LODOP.SET_PRINT_STYLEA(0, "FontSize", 9); 
 	    }
 	    
