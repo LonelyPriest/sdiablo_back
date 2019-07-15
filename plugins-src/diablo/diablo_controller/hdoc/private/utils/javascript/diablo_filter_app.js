@@ -665,10 +665,10 @@ function filterProvider(){
 		    {id:retailerId, shop:shopId}).$promise;
 	    },
 
-	    check_retailer_charge: function(retailerId, shopId, pay, balance) {
+	    check_retailer_charge: function(retailerId, shopId, pay, balance, retailerDraw) {
 		return _retailerHttp.save(
 		    {operation: "check_w_retailer_charge"},
-		    {id:retailerId, shop:shopId, pay:pay, balance:balance}).$promise;
+		    {id:retailerId, shop:shopId, pay:pay, balance:balance, draw:retailerDraw}).$promise;
 	    },
 	    
 	    list_threshold_card_good:function(deferred, shopIds) {
@@ -749,6 +749,7 @@ function filterProvider(){
 			    return {id        :p.id,
 				    name      :p.name,
 				    balance   :p.balance,
+				    mbalance  :p.mbalance,
 				    effect    :p.effect,
 				    expire    :p.expire,
 				    scount    :p.scount}

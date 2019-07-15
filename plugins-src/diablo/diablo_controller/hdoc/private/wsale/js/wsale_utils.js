@@ -931,7 +931,10 @@ var wsaleCalc = function(){
 
 			var orderStocks = [];
 			angular.forEach(s.stocks, function(stock) {
-			    var uPrice = diablo_price(stock.tag_price, stock.discount);
+			    var uPrice = stock.tag_price;
+			    if (pm.prule_id === 0) {
+				uPrice = diablo_price(stock.tag_price, stock.discount);
+			    }
 			    var mCount =  wsaleCalc.get_inventory_count(stock, saleMode);
 			    totalPay += uPrice * mCount;
 			    count    += mCount; 
@@ -971,9 +974,17 @@ var wsaleCalc = function(){
 			    }
 			});
 			
-			vdiscount = diablo_discount(rmoney, payAll); 
+			vdiscount = diablo_discount(rmoney, payAll);
 			angular.forEach(s.stocks, function(stock) {
-			    stock.fdiscount = wsaleUtils.to_decimal(stock.discount - vdiscount);
+			    if (vdiscount !== 0) {
+				if (pm.prule_id === 0) {
+				    stock.fdiscount = wsaleUtils.to_decimal(stock.discount - vdiscount); 
+				} else if (pm.prule_id === 1) {
+				    stock.fdiscount = wsaleUtils.to_decimal(diablo_full_discount - vdiscount); 
+				}
+			    } else {
+				stock.fdiscount = stock.discount;
+			    } 
 			    stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
 			}); 
 		    }

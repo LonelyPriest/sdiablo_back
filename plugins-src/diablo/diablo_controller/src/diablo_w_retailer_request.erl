@@ -275,6 +275,7 @@ action(Session, Req, {"check_w_retailer_charge", Id}, Payload) ->
     ConsumeShop     = ?v(<<"shop">>, Payload),
     Pay             = ?v(<<"pay">>, Payload),
     RetailerBalance = ?v(<<"balance">>, Payload),
+    RetailerDraw    = ?v(<<"draw">>, Payload),
     MaxDraw         = ?utils:min_value(RetailerBalance, Pay),
     ?DEBUG("MaxDraw ~p", [MaxDraw]),
     %% get last charge
@@ -328,50 +329,65 @@ action(Session, Req, {"check_w_retailer_charge", Id}, Payload) ->
 			    {ok, []} ->
 				{error, ?err(charge_none, ChargeId)};
 			    {ok, ChargePromotion} ->
-				LimitShop     = ?v(<<"ishop">>, ChargePromotion), 
-				LimitBalance  = ?v(<<"ibalance">>, ChargePromotion, ?INVALID_OR_EMPTY),
-				ThresholdBalance = ?v(<<"mbalance">>, ChargePromotion),
-				case LimitBalance =/= ?INVALID_OR_EMPTY andalso LimitBalance =/= 0 of
-				    true ->
-					LimitDraw = Pay div ThresholdBalance * LimitBalance,
+				case RetailerDraw =/= ?INVALID_OR_EMPTY of
+				    true  ->
+					{ok, DrawStratege} = ?w_user_profile:get(charge, Merchant, RetailerDraw),
+					LimitDraw = ?v(<<"charge">>, DrawStratege),
 					{ok,
-					 ?utils:min_value(LimitDraw, MaxDraw),
-					 [{?DEFAULT_BANK_CARD, 
-					   ?utils:min_value(LimitDraw, MaxDraw),
-					   RetailerBalance,
-					   1,
-					   same_shop(ConsumeShop, ChargeShop),
-					   LimitShop,
-					   ChargeShop}]}; 
+					  ?utils:min_value(LimitDraw, MaxDraw),
+					  [{?DEFAULT_BANK_CARD, 
+					    ?utils:min_value(LimitDraw, MaxDraw),
+					    RetailerBalance,
+					    1,
+					    same_shop(ConsumeShop, ChargeShop),
+					    0,
+					    ChargeShop}]};
 				    false ->
-					LimitCount = ?v(<<"icount">>, ChargePromotion),
-					case LimitCount =/= ?INVALID_OR_EMPTY
-					    andalso LimitCount =/= 0 of
+					LimitShop     = ?v(<<"ishop">>, ChargePromotion), 
+					LimitBalance  = ?v(<<"ibalance">>, ChargePromotion, ?INVALID_OR_EMPTY),
+					ThresholdBalance = ?v(<<"mbalance">>, ChargePromotion),
+					case LimitBalance =/= ?INVALID_OR_EMPTY andalso LimitBalance =/= 0 of
 					    true ->
-						CBalance     = ?v(<<"cbalance">>, LastCharge),
-						SBalance     = ?v(<<"sbalance">>, LastCharge),
-						OneTakeBalance = (CBalance + SBalance) div LimitCount,
+						LimitDraw = Pay div ThresholdBalance * LimitBalance,
 						{ok,
-						 ?utils:min_value(OneTakeBalance, RetailerBalance),
+						 ?utils:min_value(LimitDraw, MaxDraw),
 						 [{?DEFAULT_BANK_CARD, 
-						   ?utils:min_value(OneTakeBalance, RetailerBalance),
+						   ?utils:min_value(LimitDraw, MaxDraw),
 						   RetailerBalance,
 						   1,
 						   same_shop(ConsumeShop, ChargeShop),
 						   LimitShop,
-						   ChargeShop}]};
+						   ChargeShop}]}; 
 					    false ->
-						{ok,
-						 MaxDraw,
-						 [{?DEFAULT_BANK_CARD,
-						   MaxDraw,
-						   RetailerBalance,
-						   0,
-						   same_shop(ConsumeShop, ChargeShop),
-						   LimitShop,
-						   ChargeShop}]}
-					end
+						LimitCount = ?v(<<"icount">>, ChargePromotion),
+						case LimitCount =/= ?INVALID_OR_EMPTY
+						    andalso LimitCount =/= 0 of
+						    true ->
+							CBalance     = ?v(<<"cbalance">>, LastCharge),
+							SBalance     = ?v(<<"sbalance">>, LastCharge),
+							OneTakeBalance = (CBalance + SBalance) div LimitCount,
+							{ok,
+							 ?utils:min_value(OneTakeBalance, RetailerBalance),
+							 [{?DEFAULT_BANK_CARD, 
+							   ?utils:min_value(OneTakeBalance, RetailerBalance),
+							   RetailerBalance,
+							   1,
+							   same_shop(ConsumeShop, ChargeShop),
+							   LimitShop,
+							   ChargeShop}]};
+						    false ->
+							{ok,
+							 MaxDraw,
+							 [{?DEFAULT_BANK_CARD,
+							   MaxDraw,
+							   RetailerBalance,
+							   0,
+							   same_shop(ConsumeShop, ChargeShop),
+							   LimitShop,
+							   ChargeShop}]}
+						end
 
+					end
 				end
 			end
 		end;
@@ -999,7 +1015,11 @@ action(Session, Req, {"gift_ticket"}, Payload) ->
 			?utils:respond(
 			   200, Req, ?succ(new_ticket_plan, RetailerId),
 			   [{<<"sms_code">>, SMSCode}]);
-		    false -> {0, none} 
+		    false ->
+			%% {0, none} 
+			?utils:respond(
+			   200, Req, ?succ(new_ticket_plan, RetailerId),
+			   [{<<"sms_code">>, 0}])
 		end
 	    catch
 		_:{badmatch, _Error} ->

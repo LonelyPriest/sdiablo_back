@@ -615,5 +615,9 @@ alter table w_inventory_new_detail add index dk (merchant, shop, style_number, b
 --2019-07-02
 alter table batchsaler add column code varchar(32) not null default '' after name;
 
+--2019-07-15
+alter table w_ticket_plan add column mbalance integer not null default -1 after scount;
+alter table w_ticket_custom add column etime DATE not null default 0 after stime;
+
 -- 9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;

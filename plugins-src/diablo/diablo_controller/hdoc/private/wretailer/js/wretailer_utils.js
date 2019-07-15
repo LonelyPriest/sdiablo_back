@@ -21,7 +21,7 @@ var retailerUtils = function(){
 	},
 	
 	to_integer: function(v){
-	    if (angular.isUndefined(v) || isNaN(v) || (!v && v !== 0)){
+	    if (angular.isUndefined(v) || isNaN(v) || (!v && v !== 0) || v === null){
 		return 0;
 	    } else{
 		return parseInt(v)

@@ -170,6 +170,8 @@
 -define(CARD_CASH_OUT, 0).
 -define(CARD_CASH_IN, 1).
 
+-define(TICKET_DATE_UNLIMIT, <<"0000-00-00">>).
+
 %% pagination
 -define(DEFAULT_ITEMS_PERPAGE, 5).
 

@@ -352,7 +352,9 @@
 	    	    x-ng-click="get_ticket()">取券<i class="glyphicon glyphicon-bookmark"></i>
 	    </button>
 	    
-	    <button x-ng-if="select.retailer.type_id!==2" class="btn blue" 
+	    <button x-ng-if="select.retailer.type_id!==2"
+		    x-ng-disabled="has_gift_ticket"
+		    class="btn blue" 
 		    x-ng-click="gift_ticket()">赠券
 	      <i class="glyphicon glyphicon-send"></i></button>
 	    
@@ -1371,12 +1373,11 @@
 	<button x-ng-disabled="params.tickets.length===0"
 		x-ng-click="params.delete_ticket(params.tickets)"
 		type="button"
-		x-ng-disabled="params.tickets.length === 0"
 		class="btn red">
 	  <i class="glyphicon glyphicon-minus"></i></button> 
 	<button x-ng-click="params.add_ticket(params.tickets, params.planes)"
 		type="button"
-		x-ng-disabled="params.tickets.length === params.maxSend"
+		x-ng-disabled="params.planes.length===1 || params.tickets.length===params.maxSend"
 		class="btn green">
 	  <i class="glyphicon glyphicon-plus"></i>
 	</button>

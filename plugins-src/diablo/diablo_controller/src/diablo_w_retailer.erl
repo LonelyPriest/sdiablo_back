@@ -1639,9 +1639,10 @@ handle_call({new_ticket_plan, Merchant, Attrs}, _From, State) ->
     ?DEBUG("new_ticket_plan: merchant ~p, attrs ~p", [Merchant, Attrs]),
     Name    = ?v(<<"name">>, Attrs),
     Balance = ?v(<<"balance">>, Attrs),
-    Effect  = ?v(<<"effect">>, Attrs, 0),
-    Expire  = ?v(<<"expire">>, Attrs, 0),
+    Effect  = ?utils:dbvalue(?v(<<"effect">>, Attrs, 0)), 
+    Expire  = ?utils:dbvalue(?v(<<"expire">>, Attrs, 0)),
     MaxSend = ?v(<<"scount">>, Attrs, 1),
+    MBalance = ?v(<<"mbalance">>, Attrs, 0),
     Remark  = ?v(<<"remark">>, Attrs, []),
     Entry   = ?utils:current_time(format_localtime), 
     %% balacen should be unique
@@ -1656,6 +1657,7 @@ handle_call({new_ticket_plan, Merchant, Attrs}, _From, State) ->
 		", effect"
 		", expire"
 		", scount"
+		", mbalance"
 		", remark"
 		", merchant"
 		", entry_date) values("
@@ -1667,6 +1669,7 @@ handle_call({new_ticket_plan, Merchant, Attrs}, _From, State) ->
 		   end ++ ","
 		++ ?to_s(Expire) ++ ","
 		++ ?to_s(MaxSend) ++ ","
+		++ ?to_s(MBalance) ++ ","
 		++ "\'" ++ ?to_s(Remark) ++ "\',"
 		++ ?to_s(Merchant) ++ ","
 		++ "\'" ++ ?to_s(Entry) ++ "\')",
@@ -1683,6 +1686,7 @@ handle_call({update_ticket_plan, Merchant, Attrs}, _From, State) ->
     Effect  = ?v(<<"effect">>, Attrs ),
     Expire  = ?v(<<"expire">>, Attrs),
     MaxSend = ?v(<<"scount">>, Attrs),
+    MBalance = ?v(<<"mbalance">>, Attrs),
     Remark  = ?v(<<"remark">>, Attrs),
 
     Updates = ?utils:v(name, string, Name)
@@ -1690,6 +1694,7 @@ handle_call({update_ticket_plan, Merchant, Attrs}, _From, State) ->
 	++ ?utils:v(effect, integer, Effect)
 	++ ?utils:v(expire, integer, Expire)
 	++ ?utils:v(scount, integer, MaxSend)
+	++ ?utils:v(mbalance, integer, MBalance)
 	++ ?utils:v(remark, string, Remark),
 
     UpdateFun =
@@ -1727,9 +1732,19 @@ handle_call({gift_ticket, Merchant, {Shop, Retailer, Tickets} = GiftInfo}, _From
 	    {Success, [], Balance, Count} -> 
 		Sqls = 
 		    lists:foldr(
-		      fun({Plan, Batch}, Acc) ->
+		      fun({Plan, Batch, Effect, Expire}, Acc) ->
+			      ValidEffect = case Effect == ?INVALID_OR_EMPTY of
+						true -> 0;
+						false -> Effect
+					    end, 
 			      ["update w_ticket_custom set retailer=" ++ ?to_s(Retailer)
-			       ++ ", in_shop=" ++ ?to_s(Shop)
+			       ++ ", in_shop=" ++ ?to_s(Shop) 
+			       ++ ", stime=\'" ++ ?utils:current_date_after(ValidEffect) ++ "\'"
+			       ++ case Expire == ?INVALID_OR_EMPTY of
+				      true -> [];
+				      false ->
+					  ", etime=\'" ++ ?utils:current_date_after(ValidEffect + Expire) ++ "\'"
+				  end
 			       ++ ", state=" ++ ?to_s(?TICKET_STATE_CHECKED)
 			       ++ " where merchant=" ++ ?to_s(Merchant)
 			       ++ " and plan=" ++ ?to_s(Plan)
@@ -1745,7 +1760,16 @@ handle_call({gift_ticket, Merchant, {Shop, Retailer, Tickets} = GiftInfo}, _From
     {reply, Reply, State};
 
 handle_call({list_ticket_plan, Merchant}, _From, State) ->
-    Sql = "select id, merchant, name, balance, effect, expire, scount, entry_date"
+    Sql = "select id"
+	", merchant"
+	", name"
+	", balance"
+	", mbalance"
+	", effect"
+	", expire"
+	", scount"
+	", mbalance"
+	", entry_date"
 	" from w_ticket_plan where merchant=" ++ ?to_s(Merchant),
     {reply, ?sql_utils:execute(read, Sql), State};
 
@@ -1783,11 +1807,36 @@ handle_call({ticket_by_retailer, Merchant, RetailerId}, _From, State) ->
     {reply, Reply, State};
 
 handle_call({ticket_by_promotion, Merchant, RetailerId}, _From, State) ->
-    Sql = "select id, plan, batch, balance, retailer, state from w_ticket_custom"
+    CurrentDate = ?utils:current_date(),
+    Sql = "select id, plan, batch, balance, retailer, stime, etime, state from w_ticket_custom"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and retailer=" ++ ?to_s(RetailerId)
-	++ " and state=" ++ ?to_s(?CHECKED), 
-    Reply = ?sql_utils:execute(read, Sql),
+	++ " and state=" ++ ?to_s(?CHECKED),
+    Reply = 
+	case ?sql_utils:execute(read, Sql) of
+	    {ok, []} -> {ok, []};
+	    {ok, Tickets} ->
+		{ok,
+		 lists:foldr(
+		   fun({T}, Acc) ->
+			   STime = ?v(<<"stime">>, T),
+			   ETime = ?v(<<"etime">>, T),
+			   case ?utils:ecompare_date(date, CurrentDate, STime) of
+			       true ->
+				   case ETime =:= ?TICKET_DATE_UNLIMIT of
+				       true -> [{T}|Acc];
+				       false ->
+					   case ?utils:compare_date(date, CurrentDate, ETime) of 
+					       true -> Acc;
+					       false -> [{T}|Acc]
+					   end
+				   end;
+			       false ->
+				   Acc
+			   end
+		  end, [], Tickets)};
+	    Error -> Error
+	end, 
     {reply, Reply, State};
 
 handle_call({ticket_by_batch, Merchant, {Batchs, Mode, Custom}}, _From, State) -> 
@@ -2189,7 +2238,7 @@ handle_call({total_custom_ticket_detail, Merchant, Conditions}, _From, State) ->
     {reply, Reply, State};
 
 handle_call({filter_custom_ticket_detail, Merchant, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
-    ?DEBUG("filter_ticket_detail: merchant ~p, conditions ~p, page ~p",
+    ?DEBUG("filter_custom_ticket_detail: merchant ~p, conditions ~p, page ~p",
 	   [Merchant, Conditions, CurrentPage]),
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
     Sql = 
@@ -2200,6 +2249,7 @@ handle_call({filter_custom_ticket_detail, Merchant, Conditions, CurrentPage, Ite
 	", a.retailer as retailer_id" 
 	", a.state"
 	", a.stime"
+	", a.etime"
 	", a.in_shop as p_shop_id"
 	", a.shop as shop_id"
 	", a.remark"
@@ -2788,11 +2838,16 @@ search_custome_ticket(_Merchant, [], Success, Failed, AllBalance, AllCount)->
 	   [Success, Failed, AllBalance, AllBalance]),
     {Success, Failed, AllBalance, AllCount};
 search_custome_ticket(Merchant, [{struct, Ticket}|T], Success, Failed, AllBalance, AllCount)->
-    Plan    = ?v(<<"id">>, Ticket),
-    Balance = ?v(<<"balance">>, Ticket),
-    Count   = ?v(<<"count">>, Ticket),
-    Batchs  = find_custome_ticket_batch(by_plan, Plan, Success, []),
-    Sql = "select id, batch, plan, balance"
+    Plan     = ?v(<<"id">>, Ticket),
+    Balance  = ?v(<<"balance">>, Ticket),
+    Count    = ?v(<<"count">>, Ticket),
+    Effect   = ?v(<<"effect">>, Ticket),
+    Expire   = ?v(<<"expire">>, Ticket),
+    Batchs   = find_custome_ticket_batch(by_plan, Plan, Success, []),
+    Sql = "select id"
+	", batch"
+	", plan"
+	", balance" 
 	" from w_ticket_custom"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and plan="  ++ ?to_s(Plan)
@@ -2811,9 +2866,10 @@ search_custome_ticket(Merchant, [{struct, Ticket}|T], Success, Failed, AllBalanc
 	{ok, []} ->
 	    search_custome_ticket(Merchant, [], Success, [Plan|Failed], AllBalance, AllCount);
 	{ok, UnusedTickets} ->
-	    Searchs = lists:foldr(fun({Unused}, Acc) ->
-					  [{Plan, ?to_s(?v(<<"batch">>, Unused))}|Acc]
-				  end, [], UnusedTickets),
+	    Searchs = lists:foldr(
+			fun({Unused}, Acc) ->
+				[{Plan, ?to_s(?v(<<"batch">>, Unused)), Effect, Expire}|Acc]
+			end, [], UnusedTickets),
 	    search_custome_ticket(
 	      Merchant,
 	      T,

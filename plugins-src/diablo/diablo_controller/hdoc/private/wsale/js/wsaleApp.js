@@ -401,8 +401,16 @@ function wsaleNewProvide(
     $scope.promotions = filterPromotion;
     $scope.scores     = filterScore;
     $scope.draws      = filterCharge.filter(function(d){return d.type === diablo_withdraw});
-    $scope.ticketPlans = filterTicketPlan.map(function(p) {
-	return {id:p.id, name: p.name + "-" + p.balance + "元", balance:p.balance, scount: p.scount}
+    $scope.ticketPlans = filterTicketPlan.filter(function(p) {
+	return !p.deleted
+    }).map(function(p) {
+	return {id:       p.id,
+		name:     p.name + "-" + p.balance + "元",
+		balance:  p.balance,
+		mbalance: p.mbalance,
+		effect:   p.effect,
+		expire:   p.expire,
+		scount:   p.scount}
     });
     // console.log(filterCharge);
     $scope.charges = filterCharge.filter(function(d) {
@@ -508,6 +516,7 @@ function wsaleNewProvide(
     $scope.show_promotions = [];
     $scope.disable_refresh = true;
     $scope.has_withdrawed  = false;
+    $scope.has_gift_ticket = false;
     
     $scope.select = {
 	rsn:  undefined,
@@ -897,7 +906,8 @@ function wsaleNewProvide(
 	    $scope.select.retailer.id,
 	    $scope.select.shop.id,
 	    $scope.select.should_pay,
-	    $scope.select.surplus 
+	    $scope.select.surplus,
+	    $scope.select.retailer.draw_id
 	).then(function(result) {
 	    console.log(result);
 	    if (result.ecode === 0) {
@@ -945,9 +955,7 @@ function wsaleNewProvide(
 	    var callback = function(params) {
 		console.log(params);
 		if (wsaleUtils.to_integer(params.self_batch) > 0) {
-		    diabloFilter.get_ticket_by_batch(
-			params.self_batch
-		    ).then(function(result){
+		    diabloFilter.get_ticket_by_batch(params.self_batch).then(function(result){
 			console.log(result);
 			if (result.ecode === 0 && result.data.length !== 0) {
 			    $scope.select.ticket_custom = diablo_custom_ticket; 
@@ -1072,10 +1080,15 @@ function wsaleNewProvide(
 	    // get all ticket
 	    var send_tickets = [];
 	    angular.forEach(params.tickets, function(t) {
-		if (t.plan.id !== diablo_invalid_index) {
-		    send_tickets.push({id:t.plan.id, balance:t.plan.balance, count:t.count});
-		}
+	    	if (t.plan.id !== diablo_invalid_index) {
+	    	    send_tickets.push({id      :t.plan.id,
+				       balance :t.plan.balance,
+				       count   :t.count,
+				       effect  :t.plan.effect,
+				       expire  :t.plan.expire});
+	    	}
 	    });
+	    
 	    console.log(send_tickets);
 
 	    diabloFilter.wretailer_gift_ticket({
@@ -1088,6 +1101,7 @@ function wsaleNewProvide(
 	    }).then(function(result) {
 		console.log(result);
 		if (result.ecode === 0) {
+		    $scope.has_gift_ticket = true;
 		    dialog.response(
 			true,
 			"会员优惠卷赠送",
@@ -1107,11 +1121,26 @@ function wsaleNewProvide(
 	};
 
 	// get max send count
-	var maxSend = 0;
-	angular.forEach($scope.ticketPlans, function(p) {
-	    if (p.scount > maxSend)
-		maxSend = p.scount;
-	});
+	var maxSend = 0, mbalance = 0, mindex = diablo_invalid_index, validPlans = [];
+	for (var i=0, l=$scope.ticketPlans.length; i<l; i++) {
+	    var p = $scope.ticketPlans[i];
+	    if (p.scount > maxSend) {
+		maxSend = p.scount; 
+	    }
+	    if (p.mbalance === diablo_invalid) {
+		validPlans.push(p);
+	    } else {
+		if ($scope.select.should_pay >= p.mbalance && p.mbalance > mbalance) {
+		    mbalance = p.balance;
+		    mindex   = i;
+		}
+	    }
+	    
+	};
+    
+	if (mindex !== diablo_invalid_index) {
+	    validPlans.push($scope.ticketPlans[mindex]);
+	}
 	
 	dialog.edit_with_modal(
 	    "gift-ticket.html",
@@ -1136,7 +1165,7 @@ function wsaleNewProvide(
 		 return !invalid && tickets.length !== 0;
 	     },
 	     maxSend: maxSend,
-	     planes: [{id:-1, name:"请选择电子券金额"}].concat($scope.ticketPlans)});
+	     planes: [{id:-1, name:"请选择电子券金额"}].concat(validPlans)});
     };
 
     var get_charge_by_shop = function(charges) {

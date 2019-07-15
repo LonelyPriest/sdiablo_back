@@ -1954,9 +1954,10 @@ function wretailerPlanCustomTicketCtrlProvide(
 	    wretailerService.new_ticket_plan(
 		{name: diablo_trim(params.name),
 		 balance: retailerUtils.to_integer(params.balance),
-		 effect: retailerUtils.to_integer(params.effect),
-		 expire: retailerUtils.to_integer(params.expire),
-		 scount: retailerUtils.to_integer(params.scount),
+		 effect:  retailerUtils.to_integer(params.effect),
+		 expire:  retailerUtils.to_integer(params.expire),
+		 scount:  retailerUtils.to_integer(params.scount),
+		 mbalance:retailerUtils.to_integer(params.mbalance), 
 		 remark: params.remark ? diablo_trim(params.remark) : undefined}
 	    ).then(function(result) {
 		console.log(result);

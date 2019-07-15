@@ -39,6 +39,7 @@
 		    <th>名称</th>
 		    <th>金额</th>
 		    <th>最大赠送数量</th>
+		    <th>卷赠送阀值</th> 
 		    <th>生效期限</th>
 		    <th>失效期限</th>
 		    <th>备注</th> 
@@ -53,8 +54,19 @@
 		    <td x-ng-bind=p.name></td> 
 		    <td x-ng-bind=p.balance></td>
 		    <td x-ng-bind=p.scount></td>
-		    <td x-ng-bind=p.effect></td>
-		    <td x-ng-bind=p.expire></td>
+		    <td x-ng-bind=p.mbalance></td> 
+		    <td>
+		      <div x-ng-switch on="p.effect">
+			<span x-ng-switch-when="-1">-</span>
+			<span x-ng-switch-default>{{p.effect}}</span>
+		      </div>
+		    </td>
+		    <td>
+		      <div x-ng-switch on="p.expire">
+			<span x-ng-switch-when="-1">-</span>
+			<span x-ng-switch-default>{{p.expire}}</span>
+		      </div>
+		    </td>
 		    <td x-ng-bind=p.remark></td>
 		    <td x-ng-bind=p.entry_date></td>
 		    <td> 
@@ -159,6 +171,29 @@
 	    <div>
 	      <span ng-show="pForm.sount.$invalid && !pForm.scount.$pristine">
 		<span class="fg-red">赠送数量只能是整数</span>
+	      </span> 
+	    </div> 
+	  </div>
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">赠送阀值</label>
+	  <div class="col-sm-10 col-md-10">
+	    <div class="input-group"> 
+	      <div x-ng-class="{'has-error': pForm.mbalance.$invalid && !pForm.mbalance.$pristine}">
+		<input class="form-control"
+		       name="mbalance" 
+		       type="number"
+		       required
+		       placeholder="请输入优惠券金额"
+		       x-ng-model="params.mbalance"
+		       x-ng-pattern="params.pattern.number"/>
+	      </div>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	    <div>
+	      <span ng-show="pForm.mbalance.$invalid && !pForm.mbalance.$pristine">
+		<span class="fg-red">赠送阀只能是整数，默认不限制</span>
 	      </span> 
 	    </div> 
 	  </div>

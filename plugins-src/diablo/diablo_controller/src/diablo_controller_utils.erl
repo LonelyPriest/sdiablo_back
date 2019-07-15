@@ -72,6 +72,10 @@ correct_datetime(datetime, Datetime) ->
 current_date() ->
     {{Year, Month, Date}, {_, _, _}} = calendar:now_to_local_time(erlang:now()),
     {Year, Month, Date}.
+current_date(format) ->
+    {{Year, Month, Date}, {_, _, _}} = calendar:now_to_local_time(erlang:now()),
+    lists:flatten(io_lib:format("~4..0w-~2..0w-~2..0w", [Year, Month, Date])).
+
 
 -spec to_date/2::(atom(), binary()|string()) -> calendar:date().
 to_date(datetime, Datetime) when is_list(Datetime)->
@@ -103,6 +107,14 @@ compare_date(date, {Y, M, D}, StringDate) ->
     compare_date(date, {Y, M, D}, to_date(date, StringDate));
 compare_date(date, StringDate0, StringDate1) ->
     compare_date(date, to_date(date, StringDate0), to_date(date, StringDate1)).
+
+
+ecompare_date(date, {Y, M, D}, {Y1, M1, D1}) ->
+    calendar:date_to_gregorian_days({Y, M, D}) >= calendar:date_to_gregorian_days({Y1, M1, D1});
+ecompare_date(date, {Y, M, D}, StringDate) ->
+    ecompare_date(date, {Y, M, D}, to_date(date, StringDate));
+ecompare_date(date, StringDate0, StringDate1) ->
+    ecompare_date(date, to_date(date, StringDate0), to_date(date, StringDate1)).
 			
 datetime2seconds(Datetime) when is_binary(Datetime)->
     <<YY:4/binary, "-",  MM:2/binary, "-", DD:2/binary, " ",
@@ -116,6 +128,15 @@ datetime2seconds(Datetime) ->
 date_before({Year, Month, Date}, Before) ->
     Days = calendar:date_to_gregorian_days({Year, Month, Date}),
     calendar:gregorian_days_to_date(Days - Before).
+
+date_after({Year, Month, Date}, After) ->
+    Days = calendar:date_to_gregorian_days({Year, Month, Date}),
+    calendar:gregorian_days_to_date(Days + After).
+
+current_date_after(After) ->
+    CurrentDate = current_date(),
+    {Year, Month, Date} = date_after(CurrentDate, After),
+    lists:flatten(io_lib:format("~4..0w-~2..0w-~2..0w", [Year, Month, Date])). 
 
 respond(batch, Fun, Req) ->
     case Fun() of
@@ -402,8 +423,12 @@ nth(N, Setting) ->
     catch _:_ ->
 	    ?NO
     end.
-    
 
+dbvalue(Value) when Value == 0 ->
+    ?INVALID_OR_EMPTY;
+dbvalue(Value) ->
+    Value.
+	
 check_match_mode(Field, Prompt) ->
     check_match_mode(?to_s(Field), ?to_s(Prompt), []).
 check_match_mode(Field, Prompt, Prefix) ->

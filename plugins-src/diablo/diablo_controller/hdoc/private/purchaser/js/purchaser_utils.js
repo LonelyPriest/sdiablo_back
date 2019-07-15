@@ -1238,8 +1238,10 @@ stockPrintU.prototype.printBarcode2 = function() {
     // firm
     if (this.template.firm) {
 	var firm = angular.isUndefined(this.firm) ? diablo_empty_string : this.firm; 
-	if (this.template.code_firm && angular.isDefined(this.codeFirm)) 
+	if (this.template.code_firm === 1 && angular.isDefined(this.codeFirm)) 
 	    line = "厂商:" + this.codeFirm;
+	else if (this.template.code_firm === 2)
+	    line = "厂商:" + diablo_pinyin(firm);
 	else 
 	    line = "厂商:" + firm;
 

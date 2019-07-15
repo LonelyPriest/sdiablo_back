@@ -748,11 +748,12 @@ create table w_ticket_custom(
     in_shop         INTEGER default -1, -- produce shop
     shop            INTEGER default -1, -- consumed shop
     stime           DATE default 0 not null,
+    etime           DATE default 0 not null,
     remark          VARCHAR(128) not null,
     merchant        INTEGER not null default -1, 
     entry_date      DATETIME default 0, 
     deleted         INTEGER default 0, -- 0: no;  1: yes
-
+    
     unique  key uk  (merchant, batch),
     key         dk  (merchant, plan, retailer),
     primary key     (id)
@@ -765,7 +766,8 @@ create table w_ticket_plan(
     balance         INTEGER not null,
     effect          TINYINT default -1,
     expire          TINYINT default -1,
-    scount          TINYINT default -1, 
+    scount          TINYINT default -1,
+    mbalance        INTEGER default -1, -- threshold balance when send ticket
     remark          VARCHAR(128) not null,
     merchant        INTEGER not null default -1, 
     entry_date      DATETIME default 0, 
