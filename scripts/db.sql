@@ -747,6 +747,7 @@ create table w_ticket_custom(
     state           INTEGER default 1, -- 0: discard; 1: checked; 2: consumed; 3:unused
     in_shop         INTEGER default -1, -- produce shop
     shop            INTEGER default -1, -- consumed shop
+    ishop           TINYINT default 0 not null, -- allowed consume at different shop. 0:yes; 1: no
     stime           DATE default 0 not null,
     etime           DATE default 0 not null,
     remark          VARCHAR(128) not null,
@@ -768,6 +769,7 @@ create table w_ticket_plan(
     expire          TINYINT default -1,
     scount          TINYINT default -1,
     mbalance        INTEGER default -1, -- threshold balance when send ticket
+    ishop           TINYINT default 0 not null, -- allowed consume at different shop. 0:yes; 1: no
     remark          VARCHAR(128) not null,
     merchant        INTEGER not null default -1, 
     entry_date      DATETIME default 0, 

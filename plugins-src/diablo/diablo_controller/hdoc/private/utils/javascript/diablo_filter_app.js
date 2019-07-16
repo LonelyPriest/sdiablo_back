@@ -729,9 +729,9 @@ function filterProvider(){
 		    {retailer:retailer, mode:diablo_ticket_by_retailer}).$promise;
 	    },
 
-	    get_all_ticket_by_retailer: function(retailerId) {
+	    get_all_ticket_by_retailer: function(retailerId, iShop) {
 		return _retailerHttp.save(
-		    {operation: "get_w_retailer_all_ticket"}, {retailer:retailerId}).$promise;
+		    {operation: "get_w_retailer_all_ticket"}, {retailer:retailerId, ishop: iShop}).$promise;
 	    },
 
 	    get_ticket_by_sale: function(sale_rsn, custom) {

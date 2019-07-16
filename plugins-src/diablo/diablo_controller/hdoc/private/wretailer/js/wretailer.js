@@ -1933,6 +1933,7 @@ function wretailerConsumeCtrlProvide(
 
 function wretailerPlanCustomTicketCtrlProvide(
     $scope, diabloFilter, diabloPattern, diabloUtilsService, wretailerService, user){
+    $scope.yes_no = retailerUtils.yes_no();
     var dialog = diabloUtilsService; 
     var lpattern = {name     :diabloPattern.chinese_name,
 		    number   :diabloPattern.number,
@@ -1957,7 +1958,8 @@ function wretailerPlanCustomTicketCtrlProvide(
 		 effect:  retailerUtils.to_integer(params.effect),
 		 expire:  retailerUtils.to_integer(params.expire),
 		 scount:  retailerUtils.to_integer(params.scount),
-		 mbalance:retailerUtils.to_integer(params.mbalance), 
+		 mbalance:retailerUtils.to_integer(params.mbalance),
+		 ishop:   retailerUtils.to_integer(params.ishop.id),
 		 remark: params.remark ? diablo_trim(params.remark) : undefined}
 	    ).then(function(result) {
 		console.log(result);
@@ -1970,7 +1972,12 @@ function wretailerPlanCustomTicketCtrlProvide(
 	    });
 	};
 
-	dialog.edit_with_modal("new-ticket-plane.html", undefined, callback, undefined, {});
+	dialog.edit_with_modal(
+	    "new-ticket-plane.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {ishop: $scope.yes_no[0], yes_no:$scope.yes_no});
     };
 
     $scope.update_plan = function(p) {

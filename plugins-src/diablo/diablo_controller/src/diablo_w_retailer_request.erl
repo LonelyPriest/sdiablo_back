@@ -882,11 +882,13 @@ action(Session, Req, {"get_w_retailer_ticket"}, Payload) ->
 
 action(Session, Req, {"get_w_retailer_all_ticket"}, Payload) ->
     ?DEBUG("get_w_retailer_all-ticket:session ~p, payload ~p", [Session, Payload]),
-    Merchant = ?session:get(merchant, Session),
-    RetailerId = ?v(<<"retailer">>, Payload),
+    Merchant    = ?session:get(merchant, Session),
+    RetailerId  = ?v(<<"retailer">>, Payload),
+    ConsumeShop = ?v(<<"ishop">>, Payload),
     try
 	{ok, ScoreTicket}     = ?w_retailer:get_ticket(by_retailer, Merchant, RetailerId),
-	{ok, PromotionTickets} = ?w_retailer:get_ticket(by_promotion, Merchant, RetailerId),
+	{ok, PromotionTickets} = ?w_retailer:get_ticket(by_promotion, Merchant, {RetailerId, ConsumeShop}),
+	
 
 	?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
 					   {<<"sticket">>, {ScoreTicket}},

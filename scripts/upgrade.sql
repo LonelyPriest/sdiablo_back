@@ -619,5 +619,9 @@ alter table batchsaler add column code varchar(32) not null default '' after nam
 alter table w_ticket_plan add column mbalance integer not null default -1 after scount;
 alter table w_ticket_custom add column etime DATE not null default 0 after stime;
 
+--2019-07-16
+alter table w_ticket_plan add column ishop tinyint not null default 0 after mbalance;
+-- alter table w_ticket_custom add column ishop tinyint not null default 0 after etime;
+
 -- 9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;

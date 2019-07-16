@@ -950,7 +950,10 @@ function wsaleNewProvide(
 	$scope.select.ticket_balance  = 0;
 	$scope.select.ticket_custom   = diablo_invalid_index;
 
-	diabloFilter.get_all_ticket_by_retailer($scope.select.retailer.id).then(function(result){
+	diabloFilter.get_all_ticket_by_retailer(
+	    $scope.select.retailer.id,
+	    $scope.select.shop.id
+	).then(function(result){
     	    console.log(result);
 	    var callback = function(params) {
 		console.log(params);

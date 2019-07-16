@@ -500,9 +500,7 @@ task(gen_ticket, Datetime, {Merchant, Conditions}) when is_number(Merchant) ->
     IsCheck = ?utils:nth(2, TicketSetting),
     ?DEBUG("AutoGenTicket ~p, IsCheck ~p", [AutoGenTicket, IsCheck]),
 
-    SysVips = sys_vip_of(merchant, Merchant),
-    %% ?DEBUG("IsGenTicket ~p, SysVips ~p, Merchant ~p, score2money ~p", [IsGenTicket, SysVips, Merchant, Score2Money]),
-    
+    SysVips = sys_vip_of(merchant, Merchant), 
     TicketSqls =
 	case AutoGenTicket =:= ?YES andalso length(Score2Money) =/= 0 of
 	    true ->
@@ -1120,21 +1118,25 @@ charge(info, [{ChargeInfo}]) ->
 
 
 sys_vip_of(merchant, Merchant) ->
-    {ok, Settings} = ?w_user_profile:get(setting, Merchant),
-    SysVips =
-	lists:foldr(
-	  fun({S}, Acc) ->
-		  case ?v(<<"ename">>, S) =:= <<"s_customer">> of
-		      true ->
-			  SysVip = ?to_i(?v(<<"value">>, S)),
-			  %% ?DEBUG("sysvip ~p", [SysVip]),
-			  case SysVip /= 0 andalso not lists:member(SysVip, Acc) of
-			      true -> [SysVip] ++ Acc;
-			      false -> Acc 
-			  end;
-		      false -> Acc
-		  end
-	  end, [], Settings),
-    SysVips.
+    %% {ok, Settings} = ?w_user_profile:get(setting, Merchant),
+    %% SysVips =
+    %% 	lists:foldr(
+    %% 	  fun({S}, Acc) ->
+    %% 		  case ?v(<<"ename">>, S) =:= <<"s_customer">> of
+    %% 		      true ->
+    %% 			  SysVip = ?to_i(?v(<<"value">>, S)),
+    %% 			  %% ?DEBUG("sysvip ~p", [SysVip]),
+    %% 			  case SysVip /= 0 andalso not lists:member(SysVip, Acc) of
+    %% 			      true -> [SysVip] ++ Acc;
+    %% 			      false -> Acc 
+    %% 			  end;
+    %% 		      false -> Acc
+    %% 		  end
+    %% 	  end, [], Settings),
+    {ok, SysVips} = ?w_user_profile:get(sys_retailer, Merchant), 
+    SimpleSysVips = [?v(<<"id">>, S) || {S} <- SysVips],
+    ?DEBUG("SimpleSysVips ~p", [SimpleSysVips]),
+    SimpleSysVips.
+
 
 

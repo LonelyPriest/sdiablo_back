@@ -171,9 +171,9 @@ ticket(discard_custom_all, Merchant) ->
 get_ticket(by_retailer, Merchant, RetailerId) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {ticket_by_retailer, Merchant, RetailerId});
-get_ticket(by_promotion, Merchant, RetailerId) ->
+get_ticket(by_promotion, Merchant, {RetailerId, ConsumeShop}) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {ticket_by_promotion, Merchant, RetailerId});
+    gen_server:call(Name, {ticket_by_promotion, Merchant, RetailerId, ConsumeShop});
 
 get_ticket(by_batch, Merchant, {Batch, Mode, Custom}) when is_integer(Batch)-> 
     get_ticket(by_batch, Merchant, {[Batch], Mode, Custom});
@@ -1642,7 +1642,8 @@ handle_call({new_ticket_plan, Merchant, Attrs}, _From, State) ->
     Effect  = ?utils:dbvalue(?v(<<"effect">>, Attrs, 0)), 
     Expire  = ?utils:dbvalue(?v(<<"expire">>, Attrs, 0)),
     MaxSend = ?v(<<"scount">>, Attrs, 1),
-    MBalance = ?v(<<"mbalance">>, Attrs, 0),
+    MBalance= ?v(<<"mbalance">>, Attrs, 0),
+    IShop   = ?v(<<"ishop">>, Attrs, 0),
     Remark  = ?v(<<"remark">>, Attrs, []),
     Entry   = ?utils:current_time(format_localtime), 
     %% balacen should be unique
@@ -1658,6 +1659,7 @@ handle_call({new_ticket_plan, Merchant, Attrs}, _From, State) ->
 		", expire"
 		", scount"
 		", mbalance"
+		", ishop"
 		", remark"
 		", merchant"
 		", entry_date) values("
@@ -1670,6 +1672,7 @@ handle_call({new_ticket_plan, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(Expire) ++ ","
 		++ ?to_s(MaxSend) ++ ","
 		++ ?to_s(MBalance) ++ ","
+		++ ?to_s(IShop) ++ ","
 		++ "\'" ++ ?to_s(Remark) ++ "\',"
 		++ ?to_s(Merchant) ++ ","
 		++ "\'" ++ ?to_s(Entry) ++ "\')",
@@ -1769,6 +1772,7 @@ handle_call({list_ticket_plan, Merchant}, _From, State) ->
 	", expire"
 	", scount"
 	", mbalance"
+	", ishop"
 	", entry_date"
 	" from w_ticket_plan where merchant=" ++ ?to_s(Merchant),
     {reply, ?sql_utils:execute(read, Sql), State};
@@ -1806,16 +1810,40 @@ handle_call({ticket_by_retailer, Merchant, RetailerId}, _From, State) ->
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
-handle_call({ticket_by_promotion, Merchant, RetailerId}, _From, State) ->
-    CurrentDate = ?utils:current_date(),
-    Sql = "select id, plan, batch, balance, retailer, stime, etime, state from w_ticket_custom"
-	" where merchant=" ++ ?to_s(Merchant)
-	++ " and retailer=" ++ ?to_s(RetailerId)
-	++ " and state=" ++ ?to_s(?CHECKED),
+handle_call({ticket_by_promotion, Merchant, RetailerId, ConsumeShop}, _From, State) ->
+    Sql = "select a.id"
+	", a.plan"
+	", a.batch"
+	", a.balance"
+	", a.retailer"
+	", a.in_shop"
+	", a.stime"
+	", a.etime"
+	", a.state"
+
+	", b.ishop"
+	" from w_ticket_custom a" 
+	" left join w_ticket_plan b on a.merchant=b.merchant and a.plan = b.id"
+	" where a.merchant=" ++ ?to_s(Merchant)
+	++ " and a.retailer=" ++ ?to_s(RetailerId)
+	++ " and a.state=" ++ ?to_s(?CHECKED),
     Reply = 
 	case ?sql_utils:execute(read, Sql) of
 	    {ok, []} -> {ok, []};
 	    {ok, Tickets} ->
+		NewTickets = 
+		    lists:filter(
+		      fun({T}) ->
+			      IShop = ?v(<<"ishop">>, T),
+			      case IShop of
+				  ?YES ->
+				      ?v(<<"in_shop">>, T) =:= ConsumeShop;
+				  ?NO ->
+				      true
+			      end
+		      end, Tickets),
+		?DEBUG("NewTickets ~p", [NewTickets]),
+		CurrentDate = ?utils:current_date(),
 		{ok,
 		 lists:foldr(
 		   fun({T}, Acc) ->
@@ -1834,7 +1862,7 @@ handle_call({ticket_by_promotion, Merchant, RetailerId}, _From, State) ->
 			       false ->
 				   Acc
 			   end
-		  end, [], Tickets)};
+		  end, [], NewTickets)};
 	    Error -> Error
 	end, 
     {reply, Reply, State};

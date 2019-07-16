@@ -68,6 +68,8 @@ get(type, Merchant) ->
     gen_server:call(?SERVER(Merchant), {get_type_profile, Merchant});
 get(ticket_plan, Merchant) ->
     gen_server:call(?SERVER(Merchant), {get_ticket_plan_profile, Merchant});
+get(sys_retailer, Merchant) ->
+    gen_server:call(?SERVER(Merchant), {get_sysretailer_profile, Merchant});
 
 %% get(retailer, Merchant) ->
 %%     gen_server:call(?SERVER(Merchant), {get_retailer_profile, Merchant}); 
@@ -674,6 +676,31 @@ handle_call({get_ticket_plan_profile, Merchant}, _From, State) ->
 %%     MS = ms(Merchant, retailer),
 %%     Select = select(MS, fun() -> ?w_retailer:retailer(list, Merchant) end),
 %%     {reply, {ok, Select}, State};
+
+handle_call({get_sysretailer_profile, Merchant}, _From, State) ->
+    %% ?DEBUG("get_sysretailer_profile: merchant ~p, shops ~p", [Merchant, Shops]), 
+    SysRetailers = select(ms(Merchant, sysretailer), fun() -> ?w_retailer:retailer(list_sys, Merchant) end),
+    %% ?DEBUG("sysRetailers ~p", [SysRetailers]), 
+    SimpleRetailers = 
+	lists:foldr(
+	  fun({R}, Acc)->
+		  R1 = lists:keydelete(
+			 <<"address">>, 1,
+			 lists:keydelete(
+			   <<"birth">>, 1,
+			   lists:keydelete(
+			     <<"consume">>, 1,
+			     lists:keydelete(
+			       <<"entry_date">>, 1,
+			       lists:keydelete(
+				 <<"shop">>, 1,
+				 lists:keydelete(<<"merchant">>, 1, R)))))),
+		  [{R1}|Acc]
+	  end, [], SysRetailers),
+
+    %% ?DEBUG("SimpleRetailers ~p", [SimpleRetailers]),
+
+    {reply, {ok, SimpleRetailers}, State};
 
 handle_call({get_sysretailer_profile, Merchant, Shops}, _From, State) ->
     %% ?DEBUG("get_sysretailer_profile: merchant ~p, shops ~p", [Merchant, Shops]), 
