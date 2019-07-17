@@ -102,7 +102,16 @@ var retailerUtils = function(){
 		right_tree);
 	},
 
-	yes_no: function() {return [{name:"否", id: 0}, {name:"是", id: 1}]}
+	yes_no: function() {
+	    return [{name:"否", id: 0}, {name:"是", id: 1}]
+	},
+
+	ticket_state: function() {
+	    return [{id:0, name:"已废弃"},
+		    {id:1, name:"已赠送"},
+		    {id:2, name:"已消费"},
+		    {id:3, name:"未赠送"}]
+	}
 
 	//
     }

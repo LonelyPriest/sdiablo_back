@@ -1727,12 +1727,12 @@ handle_call({update_ticket_plan, Merchant, Attrs}, _From, State) ->
 handle_call({gift_ticket, Merchant, {Shop, Retailer, Tickets} = GiftInfo}, _From, State) ->
     ?DEBUG("gift_ticket: merchant ~p, GiftInfo ~p", [Merchant, GiftInfo]), 
     Reply = 
-	case search_custome_ticket(Merchant, Tickets, [], [], 0, 0) of
-	    {_Success, Failed, _Balance, _Count} when length(Failed) =/= 0 ->
+	case search_custome_ticket(Merchant, Tickets, [], [], 0, 0, ?TICKET_EFFECT_NEVER) of
+	    {_Success, Failed, _Balance, _Count, _MinEffect} when length(Failed) =/= 0 ->
 		{error, ?err(no_valid_ticket, Merchant)};
-	    {Success, _Failed, _Balance, _Count} when length(Success) =:= 0 ->
+	    {Success, _Failed, _Balance, _Count, _MinEffect} when length(Success) =:= 0 ->
 		{error, ?err(no_valid_ticket, Merchant)};
-	    {Success, [], Balance, Count} -> 
+	    {Success, [], Balance, Count, MinEffect} -> 
 		Sqls = 
 		    lists:foldr(
 		      fun({Plan, Batch, Effect, Expire}, Acc) ->
@@ -1755,7 +1755,7 @@ handle_call({gift_ticket, Merchant, {Shop, Retailer, Tickets} = GiftInfo}, _From
 		      end, [], Success), 
 		case ?sql_utils:execute(transaction, Sqls, Retailer) of
 		    {ok, Retailer} ->
-			{ok, Retailer, Balance, Count};
+			{ok, Retailer, Balance, Count, MinEffect};
 		    Error->
 			Error
 		end
@@ -1837,13 +1837,15 @@ handle_call({ticket_by_promotion, Merchant, RetailerId, ConsumeShop}, _From, Sta
 			      IShop = ?v(<<"ishop">>, T),
 			      case IShop of
 				  ?YES ->
+				     %% ?DEBUG("same_shop ~p ~p", [?v(<<"in_shop">>, T), ConsumeShop]),
 				      ?v(<<"in_shop">>, T) =:= ConsumeShop;
 				  ?NO ->
 				      true
 			      end
 		      end, Tickets),
-		?DEBUG("NewTickets ~p", [NewTickets]),
-		CurrentDate = ?utils:current_date(),
+		%% ?DEBUG("NewTickets ~p", [NewTickets]),
+		%% CurrentDate = {2019, 7, 26},
+		CurrentDate = ?utils:current_date(), 
 		{ok,
 		 lists:foldr(
 		   fun({T}, Acc) ->
@@ -2254,7 +2256,7 @@ handle_call({make_ticket_batch, Merchant, Attrs}, _From, State) ->
 
 handle_call({total_custom_ticket_detail, Merchant, Conditions}, _From, State) ->
     ?DEBUG("total_custom_ticket_detail: merchant ~p, conditions ~p", [Merchant, Conditions]),
-    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, ticket_condition(custome, Conditions, [])),
     Sql = "select count(*) as total"
 	", sum(balance) as balance"
 	" from w_ticket_custom"
@@ -2267,8 +2269,9 @@ handle_call({total_custom_ticket_detail, Merchant, Conditions}, _From, State) ->
 
 handle_call({filter_custom_ticket_detail, Merchant, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
     ?DEBUG("filter_custom_ticket_detail: merchant ~p, conditions ~p, page ~p",
-	   [Merchant, Conditions, CurrentPage]),
-    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
+	   [Merchant, Conditions, CurrentPage]), 
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, ticket_condition(custome, Conditions, [])),
+    ?DEBUG("NewConditions ~p", [NewConditions]),
     Sql = 
 	"select a.id"
 	", a.batch"
@@ -2293,7 +2296,7 @@ handle_call({filter_custom_ticket_detail, Merchant, Conditions, CurrentPage, Ite
     %% " left join shops c on a.shop=c.id"
 
 	" where a.merchant=" ++ ?to_s(Merchant)
-	++ ?sql_utils:condition(proplists, NewConditions)
+	++ ?sql_utils:condition(proplists, ticket_condition(custome, NewConditions, []))
 	++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime)
 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
     Reply =  ?sql_utils:execute(read, Sql),
@@ -2861,11 +2864,11 @@ sort_condition(consume, Conditions, Prefix) ->
 	end.
 
 
-search_custome_ticket(_Merchant, [], Success, Failed, AllBalance, AllCount)->
-    ?DEBUG("Success ~p, Failed ~p, AllBalance ~p, AllCount ~p",
-	   [Success, Failed, AllBalance, AllBalance]),
-    {Success, Failed, AllBalance, AllCount};
-search_custome_ticket(Merchant, [{struct, Ticket}|T], Success, Failed, AllBalance, AllCount)->
+search_custome_ticket(_Merchant, [], Success, Failed, AllBalance, AllCount, MinEffect)->
+    ?DEBUG("Success ~p, Failed ~p, AllBalance ~p, AllCount ~p, MinEffect ~p",
+	   [Success, Failed, AllBalance, AllBalance, MinEffect]),
+    {Success, Failed, AllBalance, AllCount, MinEffect};
+search_custome_ticket(Merchant, [{struct, Ticket}|T], Success, Failed, AllBalance, AllCount, MinEffect)->
     Plan     = ?v(<<"id">>, Ticket),
     Balance  = ?v(<<"balance">>, Ticket),
     Count    = ?v(<<"count">>, Ticket),
@@ -2892,7 +2895,7 @@ search_custome_ticket(Merchant, [{struct, Ticket}|T], Success, Failed, AllBalanc
 
     case ?sql_utils:execute(read, Sql) of
 	{ok, []} ->
-	    search_custome_ticket(Merchant, [], Success, [Plan|Failed], AllBalance, AllCount);
+	    search_custome_ticket(Merchant, [], Success, [Plan|Failed], AllBalance, AllCount, MinEffect);
 	{ok, UnusedTickets} ->
 	    Searchs = lists:foldr(
 			fun({Unused}, Acc) ->
@@ -2904,7 +2907,11 @@ search_custome_ticket(Merchant, [{struct, Ticket}|T], Success, Failed, AllBalanc
 	      Searchs ++ Success,
 	      Failed,
 	      AllBalance + Balance,
-	      AllCount + Count)
+	      AllCount + Count,
+	     case MinEffect > Effect of
+		 true -> Effect;
+		 false -> MinEffect
+	     end)
     end.
 
 find_custome_ticket_batch(by_plan, _Plan, [], Sort) ->
@@ -2930,5 +2937,10 @@ sms(promotion, Merchant) ->
 	Error -> Error
     end.
 		
-	    
-				      
+ticket_condition(custome, [], Acc) ->
+    Acc;
+ticket_condition(custome, [{<<"ticket_state">>, State}|T], Acc) ->
+    ticket_condition(custome, T, [{<<"state">>, State}|Acc]);
+ticket_condition(custome, [H|T], Acc) ->
+    ticket_condition(custome, T, [H|Acc]).
+

@@ -359,6 +359,9 @@ function filterProvider(){
 		} else if (name === 'sale_prop') {
 		    _filter.fields.push({name:"prop", chinese:"销售场景"});
 		    _prompt.bsale_prop = promptValues;
+		} else if (name === 'ticket_state') {
+		    _filter.fields.push({name:"ticket_state", chinese:"状态"});
+		    _prompt.ticket_state = promptValues;
 		}
 		
 		return _filter;

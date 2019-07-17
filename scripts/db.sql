@@ -1185,6 +1185,7 @@ create table w_sale(
     cash           DECIMAL(10, 2) default 0, -- max: 99999999.99
     card           DECIMAL(10, 2) default 0, -- max: 99999999.99
     wxin           DECIMAL(10, 2) default 0, -- max: 99999999.99
+    alipay         DECIMAL(10, 2) default 0, -- max: 99999999.99
     withdraw       DECIMAL(10, 2) default 0, -- max: 99999999.99
     ticket         DECIMAL(10, 2) default 0, -- max: 99999999.99
     verificate     DECIMAL(10, 2) default 0, -- max: 99999999.99
@@ -1437,6 +1438,7 @@ create table sms_center(
     sms_template    VARCHAR(64) default -1,
     sms_type        VARCHAR(64) default -1,
     sms_version     VARCHAR(8) default -1, 
+    ticket_notify   VARCHAR(64) default -1,
     
     unique  key uk (merchant),
     primary key    (id)

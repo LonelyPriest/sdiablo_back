@@ -149,14 +149,24 @@ sms(promotion, Merchant, Phone) ->
     SMSTemplate = "SMS_167400277",
     start_sms(Merchant, Phone, SMSTemplate, []);
 
-sms(ticket, {Merchant, Shop, Retailer, Phone}, {Balance, Count}) -> 
-    SMSTemplate   = "SMS_168285336",
-    SMSParams = ?to_s(ejson:encode(
+sms(ticket, {Merchant, Shop, Retailer, Phone}, {Balance, Count, MinEffect}) ->
+    {SMSTemplate, SMSParams} = 
+	case Merchant of
+	    15 -> {"SMS_170835177",
+		   ?to_s(ejson:encode(
+			   {[{<<"m">>, ?to_b(Balance)},
+			     {<<"d">>, ?to_b(Count)},
+			     {<<"day">>, ?to_b(MinEffect)}
+			    ]}))};
+	    _ ->
+		{"SMS_168285336",
+		 ?to_s(ejson:encode(
 			{[{<<"shop">>, Shop},
 			  {<<"user">>, Retailer},
 			  {<<"money">>, ?to_b(Balance)},
 			  {<<"count">>, ?to_b(Count)}
-			 ]})),
+			 ]}))}
+	end,
     start_sms(Merchant, Phone, SMSTemplate, SMSParams);
     
 sms(charge, {Merchant, Name, Phone}, Balance) ->
@@ -317,6 +327,7 @@ sign(md5) ->
 	     [], "application/x-www-form-urlencoded;charset=utf-8", UTF8Body}, [], []).
 
 send_sms(Phone, SMSTemplate, SMSParams) ->
+    ?DEBUG("send_sms: phone ~p, template ~p, params ~p", [Phone, SMSTemplate, SMSParams]),
     URL       = "http://gw.api.taobao.com/router/rest",
     AppKey    = "23581677",
     AppSecret = "eab38d8733faf9d5c813a639afbcfbf2",

@@ -2149,21 +2149,25 @@ replace_condition_with_lbrand(?LIKE, Merchant, Brand, Fields, Payload) ->
     end.
 
 sys_vip_of_shop(Merchant, Shop) ->
-    {ok, Settings} = ?w_user_profile:get(setting, Merchant, Shop),
-    SysVips =
-	lists:foldr(
-	  fun({S}, Acc) ->
-		  case ?v(<<"ename">>, S) =:= <<"s_customer">> of
-		      true ->
-			  SysVip = ?to_i(?v(<<"value">>, S)),
-			  case lists:member(SysVip, Acc) of
-			      true -> Acc;
-			      false -> [SysVip] ++ Acc
-			  end;
-		      false -> Acc
-		  end
-	  end, [], Settings),
-    SysVips.
+    %% {ok, Settings} = ?w_user_profile:get(setting, Merchant, Shop),
+    %% SysVips =
+    %% 	lists:foldr(
+    %% 	  fun({S}, Acc) ->
+    %% 		  case ?v(<<"ename">>, S) =:= <<"s_customer">> of
+    %% 		      true ->
+    %% 			  SysVip = ?to_i(?v(<<"value">>, S)),
+    %% 			  case lists:member(SysVip, Acc) of
+    %% 			      true -> Acc;
+    %% 			      false -> [SysVip] ++ Acc
+    %% 			  end;
+    %% 		      false -> Acc
+    %% 		  end
+    %% 	  end, [], Settings),
+    %% SysVips.
+    {ok, SysVips} = ?w_user_profile:get(sys_retailer, Merchant),
+    SimpleSysVips = [?v(<<"id">>, S) || {S} <- SysVips, ?v(<<"shop_id">>, S) =:= Shop],
+    ?DEBUG("SimpleSysVips ~p", [SimpleSysVips]),
+    SimpleSysVips.
 
 send_sms(Merchant, Action, ShopId, Retailer, ShouldPay) ->
     try 

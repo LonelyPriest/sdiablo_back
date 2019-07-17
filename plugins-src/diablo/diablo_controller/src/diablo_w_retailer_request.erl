@@ -999,7 +999,7 @@ action(Session, Req, {"gift_ticket"}, Payload) ->
     ShopId   = ?v(<<"shop">>, Payload),
     ShopName = ?v(<<"shop_name">>, Payload), 
     case ?w_retailer:ticket(gift, Merchant, {ShopId, RetailerId, Tickets}) of
-	{ok, RetailerId, Balance, Count} ->
+	{ok, RetailerId, Balance, Count, MinEffect} ->
 	    %% send sms
 	    try 
 		{ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),
@@ -1013,7 +1013,7 @@ action(Session, Req, {"gift_ticket"}, Payload) ->
 			    ?notify:sms(
 			       ticket,
 			       {Merchant, ShopName, RetailerName, RetailerPhone},
-			       {Balance, Count}),
+			       {Balance, Count, MinEffect}),
 			?utils:respond(
 			   200, Req, ?succ(new_ticket_plan, RetailerId),
 			   [{<<"sms_code">>, SMSCode}]);
