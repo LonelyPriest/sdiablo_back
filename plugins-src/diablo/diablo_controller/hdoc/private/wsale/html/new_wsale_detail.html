@@ -301,7 +301,7 @@
 	  <i class="glyphicon glyphicon-minus"></i></button> 
 	<button x-ng-click="params.add_ticket(params.tickets, params.planes)"
 		type="button"
-		x-ng-disabled="params.tickets.length===params.maxSend"
+		x-ng-disabled="params.planes.length===0 || params.tickets.length===params.maxSend"
 		class="btn green">
 	  <i class="glyphicon glyphicon-plus"></i>
 	</button>
