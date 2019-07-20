@@ -171,17 +171,7 @@
 	  	       x-ng-model="select.has_pay"/>
 		</div>
 	    </div>
-
-	    <div class="col-sm-3 col-md-3"> 
-	      <div class="input-group">
-		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-yen fg-red"></i>找零</span>
-	  	<input class="form-control"
-		       type="number" readonly
-	  	       x-ng-model="select.charge"/>
-	      </div>
-	    </div>
-
+	    
 	    <div class="col-xs-3 col-md-3"> 
 	      <div class="input-group">
 		<span class="input-group-addon">
@@ -195,6 +185,23 @@
 			   x-ng-pattern="pattern.money"
 	  		   x-ng-model="select.wxin"
 			   placeholder="微信" />
+		  </div>
+		</form>
+	      </div> 
+	    </div>
+
+	    <div class="col-xs-3 col-md-3"> 
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-qrcode fg-red"></i>支付宝</span>
+		<form name="select.form.lForm">
+		  <div ng-class="{'has-error':select.form.lForm.$invalid && !select.form.lForm.$pristine}">
+	  	    <input class="form-control"
+			   type="number" step="0.01"
+			   disable-key
+			   x-ng-pattern="pattern.money"
+	  		   x-ng-model="select.aliPay"
+			   placeholder="支付宝" />
 		  </div>
 		</form>
 	      </div> 
@@ -222,7 +229,7 @@
 	      </div>
 	    </div>
 	    
-	    <div class="col-sm-6 col-md-6">
+	    <div class="col-sm-3 col-md-3">
 	      <div class="input-group">
 		<span class="input-group-addon">
 		  <i class="glyphicon glyphicon-yen fg-red"></i>金额</span>
@@ -231,6 +238,17 @@
 	  	       x-ng-model="select.ticket"/> 
 	      </div>
 	    </div>
+
+	    <div class="col-sm-3 col-md-3">
+	      <div class="input-group">
+	    	<span class="input-group-addon">
+	    	  <i class="glyphicon glyphicon-yen fg-red"></i>找零</span>
+	    	<input class="form-control"
+	    	       type="number" readonly
+	    	       x-ng-model="select.charge"/>
+	      </div>
+	    </div>
+	    
 	  </div>
 
 	  <div x-ng-if="select.withdraw>0 && select.retailer.type_id===1"

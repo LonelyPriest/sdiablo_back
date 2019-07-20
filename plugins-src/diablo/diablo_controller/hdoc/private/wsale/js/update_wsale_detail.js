@@ -491,6 +491,7 @@ function wsaleUpdateDetailCtrlProvide(
 	    cash:          setv($scope.select.cash),
 	    card:          setv($scope.select.card),
 	    wxin:          setv($scope.select.wxin),
+	    aliPay:        setv($scope.select.aliPay),
 	    ticket:        setv($scope.select.ticket),
 	    withdraw:      setv($scope.select.withdraw),
 	    verificate:    setv($scope.select.verificate),
@@ -519,6 +520,7 @@ function wsaleUpdateDetailCtrlProvide(
 	    && ($scope.select.cash === $scope.old_select.cash
 		&& $scope.select.card === $scope.old_select.card
 		&& $scope.select.wxin === $scope.old_select.wxin
+		&& $scope.select.aliPay === $scope.old_select.aliPay
 		&& $scope.select.withdraw === $scope.old_select.withdraw 
 		&& $scope.select.employee.id === $scope.old_select.employee.id
 		&& $scope.select.shop.id === $scope.old_select.shop.id
@@ -571,6 +573,7 @@ function wsaleUpdateDetailCtrlProvide(
 	$scope.select.has_pay += wsaleUtils.to_float($scope.select.cash); 
 	$scope.select.has_pay += wsaleUtils.to_float($scope.select.card);
 	$scope.select.has_pay += wsaleUtils.to_float($scope.select.wxin);
+	$scope.select.has_pay += wsaleUtils.to_float($scope.select.aliPay);
 
 	if ($scope.select.retailer.type_id === diablo_charge_retailer)
 	    $scope.select.has_pay += wsaleUtils.to_float($scope.select.withdraw);
@@ -592,9 +595,10 @@ function wsaleUpdateDetailCtrlProvide(
 		    $scope.select.ticket,
 		    $scope.select.withdraw,
 		    $scope.select.wxin,
+		    $scope.select.aliPay,
 		    $scope.select.card,
 		    $scope.select.cash]);
-	    var pay_with_score = pay_orders[2] + pay_orders[3] + pay_orders[4];
+	    var pay_with_score = pay_orders[2] + pay_orders[3] + pay_orders[4] + pay_orders[5];
 	    $scope.select.score = wsaleUtils.calc_score_of_pay(pay_with_score, $scope.select.pscores);
 	}
     };
@@ -614,6 +618,12 @@ function wsaleUpdateDetailCtrlProvide(
     $scope.$watch("select.wxin", function(newValue, oldValue){
 	if (newValue === oldValue || angular.isUndefined(newValue)) return;
 	if ($scope.select.form.wForm.$invalid) return;
+	reset_payment(newValue); 
+    });
+
+    $scope.$watch("select.aliPay", function(newValue, oldValue){
+	if (newValue === oldValue || angular.isUndefined(newValue)) return;
+	if ($scope.select.form.lForm.$invalid) return;
 	reset_payment(newValue); 
     });
 

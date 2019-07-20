@@ -34,6 +34,7 @@ var wsaleUtils = function(){
 	select.cash       = base.cash;
 	select.card       = base.card;
 	select.wxin       = base.wxin;
+	select.aliPay     = base.aliPay;
 	select.withdraw   = base.withdraw;
 	select.should_pay = base.should_pay;
 	
@@ -1219,7 +1220,7 @@ var wsaleCalc = function(){
 	},
 
 	pay_order: function(should_pay, pays) {
-	    // var pay = {ticket: 0, withdraw:0, wxin: 0, card: 0, cash:0};
+	    // var pay = {ticket: 0, withdraw:0, wxin: 0, card: 0, cash:0, aliPay};
 	    var orders = [];
 	    var left = should_pay;
 	    for (var i=0, l=pays.length; i<l; i++) {
@@ -1419,12 +1420,12 @@ var wsalePrint = function(){
 	LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
     }
     
-    var check_pay = function(cash, card, wxin, withDraw, ticket, should_pay){
+    var check_pay = function(cash, card, wxin, aliPay, withDraw, ticket, should_pay){
 	console.log(cash, card, withDraw, ticket);
 	var s = "", rdraw = 0;
 	var left = should_pay; 
 	if (wsaleUtils.to_float(ticket) != 0){
-	    s += "券：" + ticket.toString(); 
+	    s += "券:" + ticket.toString(); 
 	    if (ticket >= left) {
 		left = 0;
 	    } else {
@@ -1436,11 +1437,11 @@ var wsalePrint = function(){
 	    if (s) s += " ";
 	    if (withDraw >= left) {
 		rdraw = left; 
-		s += "提现：" + left.toString();
+		s += "提现:" + left.toString();
 		left = 0;
 	    } else {
 		rdraw = withDraw;
-		s += "提现：" + withDraw.toString();
+		s += "提现:" + withDraw.toString();
 		left -= withDraw;
 	    }
 	}
@@ -1448,10 +1449,21 @@ var wsalePrint = function(){
 	if (left > 0 && wsaleUtils.to_float(wxin) != 0) {
 	    if (s) s += " ";
 	    if (wxin >= left) {
-		s += "微信：" + left.toString();
+		s += "微信:" + left.toString();
 		left = 0;
 	    } else {
-		s += "微信：" + wxin.toString();
+		s += "微信:" + wxin.toString();
+		left -= wxin;
+	    }
+	}
+
+	if (left > 0 && wsaleUtils.to_float(aliPay) != 0) {
+	    if (s) s += " ";
+	    if (wxin >= left) {
+		s += "支付宝:" + left.toString();
+		left = 0;
+	    } else {
+		s += "支付宝:" + wxin.toString();
 		left -= wxin;
 	    }
 	}
@@ -1460,10 +1472,10 @@ var wsalePrint = function(){
 	    if (s) s += " ";
 	    
 	    if (card >= left){
-		s += "刷卡：" + left.toString();
+		s += "刷卡:" + left.toString();
 		left = 0;
 	    } else {
-		s += "刷卡：" + card.toString();
+		s += "刷卡:" + card.toString();
 		left -= card;
 	    }
 	}
@@ -1471,11 +1483,11 @@ var wsalePrint = function(){
 	if (left > 0 && wsaleUtils.to_float(cash) != 0){
 	    if (s) s += " "; 
 	    if (cash >= left){
-		s += "现金：" + left.toString();
+		s += "现金:" + left.toString();
 		left = 0;
 	    }
 	    else {
-		s += "现金：" + cash.toString();
+		s += "现金:" + cash.toString();
 		left -= cash;
 	    }
 	}
@@ -1599,11 +1611,12 @@ var wsalePrint = function(){
 	    console.log(sale);
 	    // console.log(hLine);
 	    if (angular.isUndefined(direct)) direct = 0;
-	    var cash = sale.cash;
-	    var card = sale.card;
+	    var cash     = sale.cash;
+	    var card     = sale.card;
 	    var withDraw = sale.withdraw;
-	    var wxin  = sale.wxin;
-	    var ticket = angular.isDefined(sale.ticket) ? sale.ticket : sale.ticket_balance;
+	    var wxin     = sale.wxin;
+	    var aliPay   = sale.aliPay;
+	    var ticket   = angular.isDefined(sale.ticket) ? sale.ticket : sale.ticket_balance;
 	    
 	    var total = sale.total;
 	    var should_pay = sale.should_pay;
@@ -1628,7 +1641,7 @@ var wsalePrint = function(){
 	    
 	    l1 += should_pay.toString();
 
-	    var pay = check_pay(cash, card, wxin, withDraw, ticket, should_pay);
+	    var pay = check_pay(cash, card, wxin, aliPay, withDraw, ticket, should_pay);
 	    l1 += " " + pay.s;
 	    console.log(l1); 
 	    LODOP.ADD_PRINT_TEXT(hLine, left, vWidth, hFont, l1);
@@ -1743,7 +1756,7 @@ var wsalePrint = function(){
 		hLine += 15;
 		LODOP.ADD_PRINT_IMAGE(
 		    hLine, left + 25, 120, 120,
-		    "<img src='https://120.24.39.174/" + shop.bcode_friend + "?" + Math.random() + "'/>");
+		    "<img src='https://qzgui.com/" + shop.bcode_friend + "?" + Math.random() + "'/>");
 	    }
 	    
 	    hLine += 15;

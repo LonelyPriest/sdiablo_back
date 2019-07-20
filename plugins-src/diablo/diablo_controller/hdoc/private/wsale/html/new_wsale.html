@@ -352,7 +352,7 @@
 	    	    x-ng-click="get_ticket()">取券<i class="glyphicon glyphicon-bookmark"></i>
 	    </button>
 	    
-	    <button x-ng-if="select.retailer.type_id!==2"
+	    <button x-ng-if="select.retailer.type_id!==2 && setting.gift_ticket_on_sale===0"
 		    x-ng-disabled="has_gift_ticket"
 		    class="btn blue" 
 		    x-ng-click="gift_ticket()">赠券
@@ -472,6 +472,51 @@
 	    </div>
 	  </div>
 	</div>
+	
+	<div class="row diablo-good-form-group">
+	  <div class="col-xs-12 col-md-12">
+	    <div class="input-group">
+	      <span class="input-group-addon">
+		<i class="glyphicon glyphicon-qrcode fg-red"></i>微信</span>
+	      <form name="select.form.wForm">
+		<div ng-class="{'has-error':select.form.wForm.$invalid
+			       && !select.form.wForm.$pristine}">
+	  	  <input class="form-control"
+			 type="number" step="0.01"
+			 disable-key
+			 x-ng-edit
+			 x-ng-plus="focus_good_or_barcode()"
+			 x-ng-pattern="pattern.money"
+	  		 x-ng-model="select.wxin"
+			 placeholder="微信"
+			 x-ng-enter="disable_save() || save_wsale()"/>
+		</div>
+	      </form>
+	    </div>
+	  </div>
+	</div>
+
+	<!-- <div class="row diablo-good-form-group"> -->
+	<!--   <div class="col-xs-12 col-md-12"> -->
+	<!--     <div class="input-group"> -->
+	<!--       <span class="input-group-addon"> -->
+	<!-- 	<i class="glyphicon glyphicon-qrcode fg-red"></i>支付宝</span> -->
+	<!--       <form name="select.form.lForm"> -->
+	<!-- 	<div ng-class="{'has-error':select.form.lForm.$invalid && !select.form.lForm.$pristine}"> -->
+	<!--   	  <input class="form-control" -->
+	<!-- 		 type="number" step="0.01" -->
+	<!-- 		 disable-key -->
+	<!-- 		 x-ng-edit -->
+	<!-- 		 x-ng-plus="focus_good_or_barcode()" -->
+	<!-- 		 x-ng-pattern="pattern.money" -->
+	<!--   		 x-ng-model="select.aliPay" -->
+	<!-- 		 placeholder="支付宝" -->
+	<!-- 		 x-ng-enter="disable_save() || save_wsale()"/> -->
+	<!-- 	</div> -->
+	<!--       </form> -->
+	<!--     </div> -->
+	<!--   </div> -->
+	<!-- </div> -->
 
 	<div class="row diablo-good-form-group">
 	  <div class="col-xs-12 col-md-12">
@@ -488,29 +533,6 @@
 			 x-ng-plus="focus_good_or_barcode()"
 	  		 x-ng-model="select.card"
 			 placeholder="刷卡"
-			 x-ng-enter="disable_save() || save_wsale()"/>
-		</div>
-	      </form>
-	    </div>
-	  </div>
-	</div>
-
-	<div class="row diablo-good-form-group">
-	  <div class="col-xs-12 col-md-12">
-	    <div class="input-group">
-	      <span class="input-group-addon">
-		<i class="glyphicon glyphicon-qrcode fg-red"></i>微/支</span>
-	      <form name="select.form.wForm">
-		<div ng-class="{'has-error':select.form.wForm.$invalid
-			       && !select.form.wForm.$pristine}">
-	  	  <input class="form-control"
-			 type="number" step="0.01"
-			 disable-key
-			 x-ng-edit
-			 x-ng-plus="focus_good_or_barcode()"
-			 x-ng-pattern="pattern.money"
-	  		 x-ng-model="select.wxin"
-			 placeholder="微/支"
 			 x-ng-enter="disable_save() || save_wsale()"/>
 		</div>
 	      </form>

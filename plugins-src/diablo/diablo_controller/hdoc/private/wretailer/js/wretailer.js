@@ -1155,6 +1155,7 @@ function wretailerCustomTicketDetailCtrlProvide(
 	return retailerUtils.match_retailer_phone(viewValue, diabloFilter)
     });
     diabloFilter.add_field("ticket_state", retailerUtils.ticket_state()),
+    diabloFilter.add_field("ticket_pshop", filterShop),
     
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();

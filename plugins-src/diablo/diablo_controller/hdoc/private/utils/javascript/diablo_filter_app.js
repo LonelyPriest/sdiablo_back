@@ -362,6 +362,9 @@ function filterProvider(){
 		} else if (name === 'ticket_state') {
 		    _filter.fields.push({name:"ticket_state", chinese:"状态"});
 		    _prompt.ticket_state = promptValues;
+		} else if (name === 'ticket_pshop') {
+		    _filter.fields.push({name:"ticket_pshop", chinese:"赠送电铺"});
+		    _prompt.ticket_pshop = promptValues;
 		}
 		
 		return _filter;

@@ -927,8 +927,9 @@ sys_config() ->
 	      %% [14]: show whole price on sale
 	      %% [15]: print discount on sale
 	      %% [16-17]: threshold discount of score 00:none
-	      %% [18]: gift mode on sale directly
-	      {"p_balance",   "销售模式",   "0000"++"0000"++"0000"++"0001"++"000",  "0"},
+	      %% [18]: gift good on sale directly 0: onoe, 1:send good directly
+	      %% [19]: gift_ticket 0: gift ticket on sale direct, 1:gift ticket with rsn
+	      {"p_balance",   "销售模式",   "0000"++"0000"++"0000"++"0001"++"000",  "00"},
 
 	      %% [0]: auto generate ticket at 04:00
 	      %% [1]: use ticket with no check 0-> check 1-> no check

@@ -995,10 +995,12 @@ action(Session, Req, {"gift_ticket"}, Payload) ->
     RetailerId      = ?v(<<"retailer">>, Payload),
     RetailerPhone   = ?v(<<"retailer_phone">>, Payload),
     RetailerName    = ?v(<<"retailer_name">>, Payload),
+    WithRSN         = ?v(<<"rsn">>, Payload, []),
 
     ShopId   = ?v(<<"shop">>, Payload),
-    ShopName = ?v(<<"shop_name">>, Payload), 
-    case ?w_retailer:ticket(gift, Merchant, {ShopId, RetailerId, Tickets}) of
+    ShopName = ?v(<<"shop_name">>, Payload),
+    
+    case ?w_retailer:ticket(gift, Merchant, {ShopId, RetailerId, Tickets, WithRSN}) of
 	{ok, RetailerId, Balance, Count, MinEffect} ->
 	    %% send sms
 	    try 

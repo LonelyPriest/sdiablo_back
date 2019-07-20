@@ -624,21 +624,13 @@ alter table w_ticket_plan add column ishop tinyint not null default 0 after mbal
 -- alter table w_ticket_custom add column ishop tinyint not null default 0 after etime;
 
 
-
---2019-07-18
-
-
-
-
-
-
-
-
-
 --2019-07-17
 alter table w_sale add column alipay DECIMAL(10, 2) default 0 after wxin
 alter table w_daily_report add column alipay DECIMAL(10, 2) default 0 after wxin
 alter table w_charge_detail add column alipay DECIMAL(10, 2) default 0 after wxin
+
+--2019-08-20
+alter table w_sale add column g_ticket TINYINT not null default 0 after comment;
 
 -- 9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;

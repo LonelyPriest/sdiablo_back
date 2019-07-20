@@ -1724,7 +1724,7 @@ handle_call({update_ticket_plan, Merchant, Attrs}, _From, State) ->
 	    end
     end;
 
-handle_call({gift_ticket, Merchant, {Shop, Retailer, Tickets} = GiftInfo}, _From, State) ->
+handle_call({gift_ticket, Merchant, {Shop, Retailer, Tickets, WithRSN} = GiftInfo}, _From, State) ->
     ?DEBUG("gift_ticket: merchant ~p, GiftInfo ~p", [Merchant, GiftInfo]), 
     Reply = 
 	case search_custome_ticket(Merchant, Tickets, [], [], 0, 0, ?TICKET_EFFECT_NEVER) of
@@ -1733,7 +1733,7 @@ handle_call({gift_ticket, Merchant, {Shop, Retailer, Tickets} = GiftInfo}, _From
 	    {Success, _Failed, _Balance, _Count, _MinEffect} when length(Success) =:= 0 ->
 		{error, ?err(no_valid_ticket, Merchant)};
 	    {Success, [], Balance, Count, MinEffect} -> 
-		Sqls = 
+		Sql0 = 
 		    lists:foldr(
 		      fun({Plan, Batch, Effect, Expire}, Acc) ->
 			      ValidEffect = case Effect == ?INVALID_OR_EMPTY of
@@ -1752,8 +1752,17 @@ handle_call({gift_ticket, Merchant, {Shop, Retailer, Tickets} = GiftInfo}, _From
 			       ++ " where merchant=" ++ ?to_s(Merchant)
 			       ++ " and plan=" ++ ?to_s(Plan)
 			       ++ " and batch=" ++ ?to_s(Batch)|Acc]
-		      end, [], Success), 
-		case ?sql_utils:execute(transaction, Sqls, Retailer) of
+		      end, [], Success),
+		Sql1 = 
+		    case WithRSN of
+			[] -> [];
+			_ ->
+			    ["update w_sale set g_ticket=1 where rsn=\'" ++ ?to_s(WithRSN) ++ "\'"
+			    ++ " and merchant=" ++ ?to_s(Merchant)
+			    ++ " and retailer=" ++ ?to_s(Retailer)]
+		    end,
+		
+		case ?sql_utils:execute(transaction, Sql0 ++ Sql1, Retailer) of
 		    {ok, Retailer} ->
 			{ok, Retailer, Balance, Count, MinEffect};
 		    Error->
@@ -2941,6 +2950,8 @@ ticket_condition(custome, [], Acc) ->
     Acc;
 ticket_condition(custome, [{<<"ticket_state">>, State}|T], Acc) ->
     ticket_condition(custome, T, [{<<"state">>, State}|Acc]);
+ticket_condition(custome, [{<<"ticket_pshop">>, State}|T], Acc) ->
+    ticket_condition(custome, T, [{<<"in_shop">>, State}|Acc]);
 ticket_condition(custome, [H|T], Acc) ->
     ticket_condition(custome, T, [H|Acc]).
 

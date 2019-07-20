@@ -90,7 +90,7 @@ function wsaleConfg(angular){
 	    when('/new_wsale_detail/:page?', {
 		templateUrl: '/private/wsale/html/new_wsale_detail.html',
 		controller: 'wsaleNewDetailCtrl',
-		resolve: angular.extend({}, user, employee, base) 
+		resolve: angular.extend({}, user, employee, plan, base) 
 	    }).
 	    when('/update_wsale_detail/:rsn?/:ppage?', {
 		templateUrl: '/private/wsale/html/update_wsale_detail.html',
@@ -149,7 +149,7 @@ function wsaleConfg(angular){
 	    otherwise({
 		templateUrl: '/private/wsale/html/new_wsale_detail.html',
 		controller: 'wsaleNewDetailCtrl',
-		resolve: angular.extend({}, user, employee, base)
+		resolve: angular.extend({}, user, employee, plan, base)
             }) 
     }]);
 
@@ -451,7 +451,8 @@ function wsaleNewProvide(
 			 sell:false,
 			 cash:false,
 			 card:false,
-			 wxin:false};
+			 wxin:false,
+			 aliPay:false};
     
     $scope.auto_focus = function(attr){
 	for (var o in $scope.focus_attr){
@@ -523,6 +524,7 @@ function wsaleNewProvide(
 	cash: undefined,
 	card: undefined,
 	wxin: undefined,
+	aliPay: undefined,
 	withdraw: undefined,
 	limitdraw: undefined,
 	unlimitdraw: undefined,
@@ -586,6 +588,7 @@ function wsaleNewProvide(
 	$scope.setting.score_discount = wsaleUtils.to_integer(sale_mode.charAt(16)) * 10
 	    + wsaleUtils.to_integer(sale_mode.charAt(17));
 	$scope.setting.gift_direct    = wsaleUtils.to_integer(sale_mode.charAt(18));
+	$scope.setting.gift_ticket_on_sale = wsaleUtils.to_integer(sale_mode.charAt(19));
 	// $scope.setting.print_discount = wsaleUtils.to_integer(sale_mode.charAt(15));
 
 	$scope.print_setting = {
@@ -1570,6 +1573,7 @@ function wsaleNewProvide(
 	$scope.select.cash            = undefined;
 	$scope.select.card            = undefined;
 	$scope.select.wxin            = undefined;
+	$scope.select.aliPay          = undefined;
 	$scope.select.withdraw        = undefined;
 	$scope.select.limitWithdraw   = undefined;
 	$scope.select.unlimitWithdraw = undefined;
@@ -2303,6 +2307,7 @@ function wsaleNewProvide(
 	    cash:           setv($scope.select.cash),
 	    card:           setv($scope.select.card),
 	    wxin:           setv($scope.select.wxin),
+	    aliPay:         setv($scope.select.aliPay),
 	    withdraw:       setv($scope.select.withdraw),
 	    ticket:         setv($scope.select.ticket_balance),
 	    verificate:     setv($scope.select.verificate), 
@@ -2379,6 +2384,7 @@ function wsaleNewProvide(
 	$scope.select.has_pay += wsaleUtils.to_float($scope.select.cash); 
 	$scope.select.has_pay += wsaleUtils.to_float($scope.select.card);
 	$scope.select.has_pay += wsaleUtils.to_float($scope.select.wxin);
+	$scope.select.has_pay += wsaleUtils.to_float($scope.select.aliPay);
 	
 	var withdraw = wsaleUtils.to_float($scope.select.withdraw);
 	if($scope.select.retailer.type_id === diablo_charge_retailer && withdraw > 0){
@@ -2396,7 +2402,7 @@ function wsaleNewProvide(
     };
 
     $scope.reset_score = function() {
-	// only score with cash, card, wxin
+	// only score with cash, card, wxin, aliPay
 	if (diablo_no === $scope.setting.draw_score
 	    && ( wsaleUtils.to_float($scope.select.withdraw) !== 0
 		 || wsaleUtils.to_float($scope.select.ticket_balance) !== 0)) {
@@ -2405,10 +2411,10 @@ function wsaleNewProvide(
 		    $scope.select.ticket_balance,
 		    $scope.select.withdraw,
 		    $scope.select.wxin,
+		    $scope.select.aliPay,
 		    $scope.select.card,
 		    $scope.select.cash]);
-	    // var pay_with_score = pay_orders[2] + pay_orders[3] + pay_orders[4] - $scope.select.verificate;
-	    var pay_with_score = pay_orders[2] + pay_orders[3] + pay_orders[4];
+	    var pay_with_score = pay_orders[2] + pay_orders[3] + pay_orders[4] + pay_order[5];
 	    $scope.select.score = wsaleUtils.calc_score_of_pay(pay_with_score, $scope.select.pscores);
 	}
     };
@@ -2428,6 +2434,13 @@ function wsaleNewProvide(
     });
 
     $scope.$watch("select.wxin", function(newValue, oldValue){
+	if (newValue === oldValue || angular.isUndefined(newValue)) return;
+	// if ($scope.select.form.wForm.$invalid) return;
+	$scope.reset_payment(newValue);
+	// $scope.reset_score();
+    });
+
+    $scope.$watch("select.aliPay", function(newValue, oldValue){
 	if (newValue === oldValue || angular.isUndefined(newValue)) return;
 	// if ($scope.select.form.wForm.$invalid) return;
 	$scope.reset_payment(newValue);
@@ -3080,7 +3093,7 @@ function wsaleNewProvide(
 function wsaleNewDetailProvide(
     $scope, $routeParams, $location, dateFilter, diabloUtilsService,
     localStorageService, diabloFilter, wsaleService,
-    user, filterEmployee, base){
+    user, filterEmployee, filterTicketPlan, base){
     $scope.shops     = user.sortShops.concat(user.sortBadRepoes);
     $scope.shopIds   = user.shopIds.concat(user.badrepoIds);
     $scope.records   = [];
@@ -3091,11 +3104,25 @@ function wsaleNewDetailProvide(
     $scope.f_mul     = diablo_float_mul;
     $scope.round     = diablo_round;
     $scope.css       = diablo_stock_css;
+
+    $scope.setting   = {};
     
     $scope.total_items   = 0;
     $scope.default_page = 1; 
     $scope.disable_print = false;
     $scope.current_page = $scope.default_page;
+
+    $scope.ticketPlans = filterTicketPlan.filter(function(p) {
+	return !p.deleted
+    }).map(function(p) {
+	return {id:       p.id,
+		name:     p.name + "-" + p.balance + "元",
+		balance:  p.balance,
+		mbalance: p.mbalance,
+		effect:   p.effect,
+		expire:   p.expire,
+		scount:   p.scount}
+    });
     
     // var LODOP = undefined;
     // if (diablo_frontend === wsaleUtils.print_mode(user.loginShop, base)) {
@@ -3186,7 +3213,9 @@ function wsaleNewDetailProvide(
 
     // console.log($scope.filter);
     // console.log($scope.prompt); 
-    $scope.sequence_pagination = wsaleUtils.sequence_pagination(-1, base);
+    $scope.sequence_pagination = wsaleUtils.sequence_pagination(diablo_default_shop, base); 
+    var sale_mode = wsaleUtils.sale_mode(diablo_default_shop, base);
+    $scope.setting.gift_ticket_on_sale = wsaleUtils.to_integer(sale_mode.charAt(19));
     
     /*
      * pagination 
@@ -3237,6 +3266,7 @@ function wsaleNewDetailProvide(
 	    $scope.total_cash        = stastic.total_cash;
 	    $scope.total_card        = stastic.total_card;
 	    $scope.total_wxin        = stastic.total_wxin;
+	    $scope.total_aliPay      = stastic.total_aliPay;
 	    $scope.total_withdraw    = stastic.total_withdraw;
 	    $scope.total_ticket      = stastic.total_ticket;
 	    $scope.total_balance     = stastic.total_balance;
@@ -3273,6 +3303,7 @@ function wsaleNewDetailProvide(
 		    $scope.total_cash        = result.t_cash;
 		    $scope.total_card        = result.t_card;
 		    $scope.total_wxin        = result.t_wxin;
+		    $scope.total_aliPay      = result.t_aliPay;
 		    $scope.total_withdraw    = result.t_withdraw;
 		    $scope.total_ticket      = result.t_ticket;
 		    $scope.total_balance     = result.t_balance;
@@ -3356,6 +3387,7 @@ function wsaleNewDetailProvide(
 	     total_cash:        $scope.total_cash,
 	     total_card:        $scope.total_card,
 	     total_wxin:        $scope.total_wxin,
+	     total_aliPay:      $scope.total_aliPay,
 	     total_withdraw:    $scope.total_withdraw,
 	     total_ticket:      $scope.total_ticket,
 	     total_balance:     $scope.total_balance,
@@ -3365,24 +3397,15 @@ function wsaleNewDetailProvide(
     $scope.rsn_detail = function(r){
 	// console.log(r);
 	// $scope.save_stastic(); 
-	diablo_goto_page(
-	    "#/wsale_rsn_detail/"
-		+ r.rsn
-		+ "/" + $scope.current_page.toString()
-		// + "/" + r.shop_id.toString()
-	);
+	diablo_goto_page("#/wsale_rsn_detail/" + r.rsn + "/" + $scope.current_page.toString());
     };
 
     $scope.update_detail = function(r){
 	// $scope.save_stastic();
 	if (r.type === 0){
-	    diablo_goto_page(
-		'#/update_wsale_detail/'
-		    + r.rsn + "/" + $scope.current_page.toString()); 
+	    diablo_goto_page('#/update_wsale_detail/' + r.rsn + "/" + $scope.current_page.toString()); 
 	} else {
-	    diablo_goto_page(
-		'#/update_wsale_reject/'
-		    + r.rsn + "/" + $scope.current_page.toString()); 
+	    diablo_goto_page('#/update_wsale_reject/' + r.rsn + "/" + $scope.current_page.toString()); 
 	}
     };
 
@@ -3439,6 +3462,107 @@ function wsaleNewDetailProvide(
 	    	    "销售删除失败：" + wsaleService.error[state.ecode]);
 	    }
 	});
+    };
+    
+    $scope.gift_ticket = function(r) {
+	console.log(r);
+	if (r.g_ticket === diablo_yes) {
+	    dialog.set_error("会员电子券赠送", 2714);
+	} else {
+	    var callback = function(params) {
+		console.log(params);
+		// get all ticket
+		var send_tickets = [];
+		angular.forEach(params.tickets, function(t) {
+	    	    if (t.plan.id !== diablo_invalid_index) {
+	    		send_tickets.push({id      :t.plan.id,
+					   balance :t.plan.balance,
+					   count   :t.count,
+					   effect  :t.plan.effect,
+					   expire  :t.plan.expire});
+	    	    }
+		});
+		
+		console.log(send_tickets);
+		
+		diabloFilter.wretailer_gift_ticket({
+		    shop           :r.shop_id,
+		    shop_name      :r.shop.name,
+		    retailer       :r.retailer_id,
+		    retailer_name  :r.retailer,
+		    retailer_phone :r.rphone,
+		    ticket         :send_tickets,
+		    rsn            :r.rsn
+		}).then(function(result) {
+		    console.log(result);
+		    if (result.ecode === 0) {
+			r.g_ticket = diablo_yes;
+			dialog.response(
+			    true,
+			    "会员优惠卷赠送",
+			    "会员[" + r.retailer + "] 卷赠送成功！！"
+				+ function() {
+				    if (result.sms_code !== 0) {
+					var ERROR = require("diablo-error");
+					return "发送短消息失败：" + ERROR[result.sms_code];
+				    } 
+				    else return ""; 
+				}()
+			);
+		    } else {
+			dialog.set_error("会员电子券赠送", result.ecode);
+		    }
+		});
+	    };
+
+	    // get max send count
+	    var maxSend = 0, mbalance = 0, mindex = diablo_invalid_index, validPlans = [];
+	    for (var i=0, l=$scope.ticketPlans.length; i<l; i++) {
+		var p = $scope.ticketPlans[i];
+		if (p.scount > maxSend) {
+		    maxSend = p.scount; 
+		}
+		if (p.mbalance === diablo_invalid) {
+		    validPlans.push(p);
+		} else {
+		    if (r.should_pay >= p.mbalance && p.mbalance > mbalance) {
+			mbalance = p.balance;
+			mindex   = i;
+		    }
+		}
+		
+	    };
+	    
+	    if (mindex !== diablo_invalid_index) {
+		validPlans.push($scope.ticketPlans[mindex]);
+	    }
+	    
+	    dialog.edit_with_modal(
+		"detail-gift-ticket.html",
+		undefined,
+		callback,
+		undefined,
+		{tickets: [],
+		 add_ticket: function(tickets, planes) {
+		     tickets.push({plan:planes[0], count:1});
+		 }, 
+		 delete_ticket: function(tickets) {
+		     tickets.splice(-1, 1);
+		 },
+		 check_ticket: function(tickets) {
+		     var invalid = false;
+		     for (var i=0, l=tickets.length; i<l; i++) {
+			 if (tickets[i].plan.id === diablo_invalid_index) {
+			     invalid = true;
+			     break;
+			 } 
+		     } 
+		     return !invalid && tickets.length !== 0;
+		 },
+		 maxSend: maxSend,
+		 planes: validPlans}
+	    );
+	} 
     };
     
     $scope.export_to = function(){

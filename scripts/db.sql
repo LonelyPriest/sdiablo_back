@@ -1197,9 +1197,10 @@ create table w_sale(
     lscore         INTEGER not null default 0,
     score          INTEGER not null default 0,
     comment        VARCHAR(255) default null, 
-    
+
+    g_ticket       TINYINT  default 0,  -- 0:none, 1: has been gift ticket 
     type           TINYINT  default -1, -- 0:sale 1:reject
-    state          TINYINT  default 0,  -- 0: wait for check, 1: checked
+    state          TINYINT  default 0,  -- 0:wait for check, 1: checked    
     check_date     DATETIME default 0,  -- date of last change
     entry_date     DATETIME default 0,
     deleted        INTEGER default 0, -- 0: no;  1: yes

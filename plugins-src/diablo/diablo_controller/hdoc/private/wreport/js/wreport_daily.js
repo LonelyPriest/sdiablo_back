@@ -1,6 +1,5 @@
 'use strict'
 
-
 function wreportDailyCtrlProvide(
     $scope, dateFilter, diabloFilter, diabloUtilsService, wreportService,
     wreportCommService, filterEmployee, user, base){
@@ -99,6 +98,7 @@ function wreportDailyCtrlProvide(
 			cash:0,
 			card:0,
 			wxin:0,
+			aliPay:0,
 			draw:0,
 			ticket:0,
 			veri:0,
@@ -115,15 +115,13 @@ function wreportDailyCtrlProvide(
 		    };
 		    
 		    angular.forEach($scope.sortShops, function(shop){
-			var s = {shop: shop, order_id: order_id};
-
+			var s = {shop: shop, order_id: order_id}; 
 			s.sale = reportUtils.filter_by_shop(shop.id, sale);
 			
 			s.profit = reportUtils.filter_by_shop(shop.id, profit); 
 			s.sale.cost = s.profit.org_price;
 			
-			s.sale.gross = reportUtils.f_sub(
-			    to_f(s.sale.spay), to_f(s.profit.org_price));
+			s.sale.gross = reportUtils.f_sub(to_f(s.sale.spay), to_f(s.profit.org_price));
 			
 			s.sale.margins = reportUtils.calc_profit(
 			    to_f(s.profit.org_price), to_f(s.sale.spay));
@@ -133,20 +131,20 @@ function wreportDailyCtrlProvide(
 
 			s.recharge = reportUtils.filter_by_shop(shop.id, recharge);
 			s.sale.cbalance = s.recharge.cbalance;
-			s.sale.ccash = s.recharge.tcash;
-			s.sale.ccard = s.recharge.tcard;
-			s.sale.cwxin = s.recharge.twxin;
+			s.sale.ccash   = s.recharge.tcash;
+			s.sale.ccard   = s.recharge.tcard;
+			s.sale.cwxin   = s.recharge.twxin;
+			// s.sale.caliPay = s.record.taliPay;
 
-			s.stock_in = reportUtils.filter_by_shop(shop.id, stockIn);
-			s.stock_out = reportUtils.filter_by_shop(shop.id, stockOut);
-			s.sale.stock_in = s.stock_in.total;
+			s.stock_in       = reportUtils.filter_by_shop(shop.id, stockIn);
+			s.stock_out      = reportUtils.filter_by_shop(shop.id, stockOut);
+			s.sale.stock_in  = s.stock_in.total;
 			s.sale.stock_out = s.stock_out.total;
 
-			s.transfer_in = reportUtils.filter_by_shop(shop.id, stockTransferIn);
+			s.transfer_in  = reportUtils.filter_by_shop(shop.id, stockTransferIn);
 			s.transfer_out = reportUtils.filter_by_shop(shop.id, stockTransferOut);
-			s.sale.transfer_in = s.transfer_in.total;
+			s.sale.transfer_in  = s.transfer_in.total;
 			s.sale.transfer_out = s.transfer_out.total;
-		
 			
 			$scope.total.sale += to_i(s.sale.total);
 			$scope.total.sale_cost += reportUtils.to_float(s.sale.cost);
@@ -156,6 +154,7 @@ function wreportDailyCtrlProvide(
 			$scope.total.cash += reportUtils.to_float(s.sale.cash);
 			$scope.total.card += reportUtils.to_float(s.sale.card);
 			$scope.total.wxin += reportUtils.to_float(s.sale.wxin);
+			$scope.total.aliPay += reportUtils.to_float(s.sale.aliPay);
 			$scope.total.draw += reportUtils.to_float(s.sale.draw);
 			$scope.total.ticket += reportUtils.to_float(s.sale.ticket);
 			$scope.total.veri += reportUtils.to_float(s.sale.veri);
@@ -164,6 +163,7 @@ function wreportDailyCtrlProvide(
 			$scope.total.ccash += reportUtils.to_integer(s.sale.ccash);
 			$scope.total.ccard += reportUtils.to_integer(s.sale.ccard);
 			$scope.total.cwxin += reportUtils.to_integer(s.sale.cwxin);
+			// $scope.total.caliPay + = reportUtils.to_integer(s.sale.caliPay);
 
 			$scope.total.stock_in += reportUtils.to_integer(s.sale.stock_in);
 			$scope.total.stock_out += reportUtils.to_integer(s.sale.stock_out);
@@ -182,7 +182,7 @@ function wreportDailyCtrlProvide(
 		}
 		
 	    })
-	}) 
+	})
     };
 
     $scope.refresh();

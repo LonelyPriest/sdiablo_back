@@ -150,7 +150,7 @@ var diablo_vip_mode = "0000";
 /*
  * sale mode
  */
-var diablo_sale_mode ="0000000000000001000";
+var diablo_sale_mode ="00000000000000010000";
 /*
  * batch sale print mode, color or size or both
  */

@@ -113,6 +113,7 @@
 		    <th x-ng-if="show.balance">现金</th>
 		    <th x-ng-if="show.balance">刷卡</th>
 		    <th x-ng-if="show.balance">微信</th>
+		    <th x-ng-if="show.balance">支付宝</th>
 		    <th x-ng-if="show.balance">提现</th>
 		    <th x-ng-if="show.balance">电子卷</th> 
 		    <th x-ng-if="show.balance">核销</th> 
@@ -156,6 +157,7 @@
 		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.cash}}</td>
 		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.card}}</td>
 		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.wxin}}</td>
+		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.aliPay}}</td>
 		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.withdraw}}</td>
 		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.ticket}}</td> 
 		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.verificate}}</td>
@@ -201,6 +203,11 @@
 			      x-ng-disabled="r.state===0"
 		      	      x-ng-click="uncheck_detail(r)">反审
 			<i class="glyphicon glyphicon-ban-circle"></i></button>
+
+		      
+		      <button x-ng-if="r.rtype!==2 && r.g_ticket!==1" class="btn diablo-button purple"
+		      	      x-ng-click="gift_ticket(r)">赠券
+			<i class="glyphicon glyphicon-send"></i></button>
 		      
 		      <button x-ng-if="shop_right.check_w_sale && r.type===0 && r.state===0"
 			      class="btn diablo-button red"
@@ -221,6 +228,7 @@
 		    <td></td>
 		    <td x-ng-if="show.balance">{{total_cash}}</td>
 		    <td x-ng-if="show.balance">{{total_card}}</td>
+		    <td x-ng-if="show.balance">{{total_wxin}}</td>
 		    <td x-ng-if="show.balance">{{total_wxin}}</td>
 		    <td x-ng-if="show.balance">{{total_withdraw}}</td>
 		    <td x-ng-if="show.balance">{{total_ticket}}</td>
@@ -281,9 +289,66 @@
   
 </div>
 
-<!-- <div class="row visible-print-inline"> -->
-<!-- <\!-- <div class="row"> -\-> -->
-<!--   <p class="print-font text-center"> -->
-<!--     <h4 x-ng-bind="p_shop.name" class="text-center"></h4> -->
-<!--   </p> -->
-<!-- </div> -->
+
+<script type="text/ng-template" id="detail-gift-ticket.html"> 
+  <div class="modal-body">
+    <div class="table-responsive">
+      <div class="btn-group table-panel pull-right">
+	<button x-ng-disabled="params.tickets.length===0"
+		x-ng-click="params.delete_ticket(params.tickets)"
+		type="button"
+		class="btn red">
+	  <i class="glyphicon glyphicon-minus"></i></button> 
+	<button x-ng-click="params.add_ticket(params.tickets, params.planes)"
+		type="button"
+		x-ng-disabled="params.tickets.length===params.maxSend"
+		class="btn green">
+	  <i class="glyphicon glyphicon-plus"></i>
+	</button>
+      </div>
+      
+      <table class="table table-bordered table-striped table-condensed table-advanced">
+	<thead>
+	  <th>电子券金额</th>
+	  <th>电子券数量</th>
+	</thead>
+	
+	<tbody>
+	  <tr class="text-center" x-ng-repeat="c in params.tickets">
+	    <td class="vert-align">
+	      <form name="cForm">
+		<div ng-class="{'has-error':cForm.$invalid && !cForm.$pristine}">
+		  <select class="form-control"
+			  required
+			  x-ng-model="c.plan"
+			  x-ng-options="p.name for p in params.planes">
+		  </select>
+		</div>
+	      </form> 
+	    </td>
+
+	    <td class="vert-align">
+	      <form name="pForm">
+		<div ng-class="{'has-error':pForm.$invalid && !pForm.$pristine}">
+		  <input type="number"
+			 class="form-control"
+			 required
+			 readonly
+			 x-ng-model="c.count"/>
+		</div>
+	      </form>
+	    </td>
+	    
+	  </tr>
+	</tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="!params.check_ticket(params.tickets)"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>  
+</script>
