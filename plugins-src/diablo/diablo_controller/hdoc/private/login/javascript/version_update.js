@@ -3,8 +3,8 @@ var version_update = function(){
 	{date: "2019-07-21",
 	 content:
 	 ["开单增加支付宝项",
-	  "销售记录增加支付宝统计"
-	  "各报表增加支付宝统计"
+	  "销售记录增加支付宝统计",
+	  "各报表增加支付宝统计",
 	  "交班打印增加支付宝项"]
 	},
 	
@@ -1295,6 +1295,13 @@ var version_update = function(){
 	    $('body').append(scan_apk);
 	    
 	    $('body').append(content);
+
+	    var filing = "<div class='update-content'>"
+		+ "<a type='butthon' href='http://www.beian.miit.gov.cn/'>"
+		+ "<h5 class='text-center fg-pink'>粤ICP备19078475号</h5>"
+		+ "</a>"
+		+ "</div>"
+	    $('body').append(filing);
 		// .append("<div class='copyright'><span> 2015-2025 &copy;&nbsp钱掌柜&nbsp&nbsp&nbsp&nbsp</span>"
 		// 			     + "<span><i class='glyphicon glyphicon-star'></i>"
 		// 			     + "QQ群：261033201"

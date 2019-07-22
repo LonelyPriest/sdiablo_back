@@ -162,8 +162,8 @@ handle_cast({stastic_per_shop, TriggerTime}, #state{merchant=Merchants, task_of_
 					      task(stastic_per_shop, Datetime, M)
 				      end}, 
 			  [?cron:cron(CronTask)|Acc] 
-			  %% end, [], Merchants),
-		  end, [], [35]),
+		  end, [], Merchants),
+			  %% end, [], [35]),
 	    ?DEBUG("new tasks ~p with merchants ~p", [NewTasks, Merchants]),
 	    %% {noreply, #state{merchant=Merchants, task_of_per_shop=NewTasks}};
 	    {noreply, State#state{task_of_per_shop=NewTasks}};
@@ -219,8 +219,8 @@ handle_cast({birth, TriggerTime}, #state{merchant=Merchants, birth_of_merchant=B
 					      task(auto_sms_at_birth, Datetime, [M])
 				      end}, 
 			  [?cron:cron(CronTask)|Acc] 
-			  %% end, [], Merchants),
-		  end, [], [35]),
+			  end, [], Merchants),
+	    %% end, [], [35]),
 	    ?DEBUG("new auto sms ~p with merchants ~p", [NewTasks, Merchants]),
 	    {noreply, State#state{birth_of_merchant=NewTasks}};
 	_ -> {noreply, State}
@@ -247,8 +247,8 @@ handle_cast({check_level, TriggerTime}, #state{merchant=Merchants, task_of_level
 					      task(check_level, Datetime, [M])
 				      end}, 
 			  [?cron:cron(CronTask)|Acc] 
-			  %% end, [], Merchants),
-	    end, [], [4]),
+		  end, [], Merchants),
+			  %% end, [], [4]),
 	    ?DEBUG("new level check ~p with merchants ~p", [NewTasks, Merchants]),
 	    {noreply, State#state{task_of_level_check=NewTasks}};
 	_ -> {noreply, State}
