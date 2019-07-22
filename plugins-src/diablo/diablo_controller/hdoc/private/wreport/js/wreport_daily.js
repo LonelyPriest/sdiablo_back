@@ -282,10 +282,10 @@ function wreportDailyCtrlProvide(
 	var callback = function(params){
 	    wreportService.print_wreport(
 		diablo_by_shop,
-		{account:  params.account,
+		{account:  diablo_set_string(params.account),
 		 shop:     d.shop.id,
 		 date:     dateFilter($scope.current_day, "yyyy-MM-dd"),
-		 employee: params.employee.id === "-1" ? undefined : params.employee.id,
+		 employee: diablo_set_string(params.employee.id),
 		 pcash:    diablo_set_float(params.pcash),
 		 pcash_in: diablo_set_float(params.pcash_in),
 		 comment:  diablo_set_string(params.comment)}

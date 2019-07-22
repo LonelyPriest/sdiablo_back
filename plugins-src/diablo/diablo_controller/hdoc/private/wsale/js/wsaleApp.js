@@ -589,6 +589,7 @@ function wsaleNewProvide(
 	    + wsaleUtils.to_integer(sale_mode.charAt(17));
 	$scope.setting.gift_direct    = wsaleUtils.to_integer(sale_mode.charAt(18));
 	$scope.setting.gift_ticket_on_sale = wsaleUtils.to_integer(sale_mode.charAt(19));
+	$scope.setting.charge_with_special = wsaleUtils.to_integer(sale_mode.charAt(20));
 	// $scope.setting.print_discount = wsaleUtils.to_integer(sale_mode.charAt(15));
 
 	$scope.print_setting = {

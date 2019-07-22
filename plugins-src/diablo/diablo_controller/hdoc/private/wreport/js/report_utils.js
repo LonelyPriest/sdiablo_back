@@ -172,7 +172,9 @@ var reportPrint = function(){
 	    hLine += 15;
 	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"刷卡  ：" + to_f(sale.sell_card)); 
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"微信  ：" + to_f(sale.sell_wxin)); 
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"微信  ：" + to_f(sale.sell_wxin));
+	    hLine += 15;
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"支付宝：" + to_f(sale.sell_aliPay)); 
 	    hLine += 15;
 	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"提现  ：" + to_f(sale.sell_draw)); 
 	    hLine += 15;

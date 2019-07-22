@@ -50,6 +50,7 @@ function stockStasticCtrlProvide(
 	cash: 0,
 	card: 0,
 	wxin: 0,
+	aliPay: 0,
 	draw: 0,
 	ticket: 0,
 	veri: 0,
@@ -102,6 +103,7 @@ function stockStasticCtrlProvide(
 			$scope.s_stastic.cash = result.cash;
 			$scope.s_stastic.card = result.card;
 			$scope.s_stastic.wxin = result.wxin;
+			$scope.s_stastic.aliPay = result.aliPay;
 			$scope.s_stastic.draw = result.draw;
 			$scope.s_stastic.ticket = result.ticket;
 			$scope.s_stastic.veri = result.veri;

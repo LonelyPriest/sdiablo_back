@@ -79,6 +79,7 @@
 		    <th class="text-center" style="background-color:#CCCCCC">现金</th>
 		    <th class="text-center" style="background-color:#CCCCCC">刷卡</th>
 		    <th class="text-center" style="background-color:#CCCCCC">微信</th>
+		    <th class="text-center" style="background-color:#CCCCCC">支付宝</th>
 		    <th class="text-center" style="background-color:#CCCCCC">提现</th>
 		    <th class="text-center" style="background-color:#CCCCCC">电子券</th>
 		    <th class="text-cente"  style="background-color:#CCCCCC">核销</th>
@@ -117,6 +118,7 @@
 		    <td style="background-color:#CCCCCC">{{r.cash}}</td>
 		    <td style="background-color:#CCCCCC">{{r.card}}</td>
 		    <td style="background-color:#CCCCCC">{{r.wxin}}</td>
+		    <td style="background-color:#CCCCCC">{{r.aliPay}}</td>
 		    <td style="background-color:#CCCCCC">{{r.draw}}</td>
 		    <td style="background-color:#CCCCCC">{{r.ticket}}</td>
 		    <td style="background-color:#CCCCCC">{{r.veri}}</td>
@@ -153,6 +155,7 @@
 		    <td><div x-ng-if="right.show_orgprice">{{s_stastic.cash}}</div></td>
 		    <td><div x-ng-if="right.show_orgprice">{{s_stastic.card}}</div></td>
 		    <td><div x-ng-if="right.show_orgprice">{{s_stastic.wxin}}</div></td>
+		    <td><div x-ng-if="right.show_orgprice">{{s_stastic.aliPay}}</div></td>
 		    <td><div x-ng-if="right.show_orgprice">{{s_stastic.draw}}</div></td>
 		    <td><div x-ng-if="right.show_orgprice">{{s_stastic.ticket}}</div></td>
 		    <td><div x-ng-if="right.show_orgprice">{{s_stastic.veri}}</div></td>

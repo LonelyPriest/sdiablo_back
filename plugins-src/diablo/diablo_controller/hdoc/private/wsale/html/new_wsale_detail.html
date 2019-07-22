@@ -205,7 +205,8 @@
 			<i class="glyphicon glyphicon-ban-circle"></i></button>
 
 		      
-		      <button x-ng-if="r.rtype!==2 && r.g_ticket!==1" class="btn diablo-button purple"
+		      <button x-ng-if="setting.gift_ticket_on_sale && r.rtype!==2 && r.g_ticket!==1"
+			      class="btn diablo-button purple"
 		      	      x-ng-click="gift_ticket(r)">赠券
 			<i class="glyphicon glyphicon-send"></i></button>
 		      
@@ -229,7 +230,7 @@
 		    <td x-ng-if="show.balance">{{total_cash}}</td>
 		    <td x-ng-if="show.balance">{{total_card}}</td>
 		    <td x-ng-if="show.balance">{{total_wxin}}</td>
-		    <td x-ng-if="show.balance">{{total_wxin}}</td>
+		    <td x-ng-if="show.balance">{{total_aliPay}}</td>
 		    <td x-ng-if="show.balance">{{total_withdraw}}</td>
 		    <td x-ng-if="show.balance">{{total_ticket}}</td>
 		    <!-- <td>{{total_balance - total_withdraw}}</td>  -->
@@ -265,8 +266,7 @@
 	      		    x-ng-change="page_changed()">
 		</uib-pagination>
 
-		<span x-ng-if="sequence_pagination"
-		      class="pull-right">
+		<span x-ng-if="sequence_pagination" class="pull-right">
 		  <button class="btn red-sunglo btn-next-page"
 			  x-ng-disabled="current_page===num_pages"
 			  x-ng-click="auto_pagination()">

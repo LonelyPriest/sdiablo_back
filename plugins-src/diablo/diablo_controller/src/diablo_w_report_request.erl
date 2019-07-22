@@ -250,6 +250,7 @@ action(Session, Req, {"export_month_report"}, Payload) ->
 			 {<<"cash">>, ?v(<<"cash">>, D, 0)},
 			 {<<"card">>, ?v(<<"card">>, D, 0)},
 			 {<<"wxin">>, ?v(<<"wxin">>, D, 0)},
+			 {<<"aliPay">>, ?v(<<"aliPay">>, D, 0)},
 			 {<<"veri">>, ?v(<<"veri">>, D, 0)},
 			 {<<"draw">>, ?v(<<"draw">>, D, 0)},
 			 {<<"ticket">>, ?v(<<"ticket">>, D, 0)},
@@ -274,7 +275,7 @@ action(Session, Req, {"export_month_report"}, Payload) ->
 	%% ?DEBUG("reports ~p", [MonthReports]),
 	
 	{ok, ExportFile, Url} = ?utils:create_export_file("mreport", Merchant, UserId),
-	Calcs = erlang:list_to_tuple(lists:duplicate(22, 0)),
+	Calcs = erlang:list_to_tuple(lists:duplicate(23, 0)),
 	case file:open(ExportFile, [append, raw]) of
 	    {ok, Fd} -> 
 		try
@@ -388,10 +389,9 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 		?NO
 	end,
 
-    ?DEBUG("distinct user ~p", [DistinctUser]),
-		 
+    ?DEBUG("distinct user ~p", [DistinctUser]), 
     UserId =  case ?v(<<"account">>, Content) of
-		  undefined -> -1;
+		  undefined -> ?INVALID_OR_EMPTY;
 		  Name ->
 		      case DistinctUser =:= ?YES of
 			  true ->
@@ -428,13 +428,13 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
     %% {ok, StockFix} = ?w_report:stastic(stock_fix, Merchant, Conditions), 
     {ok, StockR} = ?w_report:stastic(
 		      stock_real, Merchant,
-		      [{<<"shop">>, ShopId},
-		       {<<"start_time">>, get_config(<<"qtime_start">>, BaseSettings)}
+		      [{<<"shop">>, ShopId}
+		       %% {<<"start_time">>, get_config(<<"qtime_start">>, BaseSettings)}
 		      ]),
 
     {ok, LastStockInfo} = ?w_report:stastic(last_stock_of_shop, Merchant, ShopId, StartDate),
     
-    {SellTotal, SellBalance, SellCash, SellCard, SellWxin, SellDraw, SellTicket}
+    {SellTotal, SellBalance, SellCash, SellCard, SellWxin, SellAliPay, SellDraw, SellTicket}
 	= sell(info, SaleInfo),
     
     CurrentStockTotal = stock(total, StockR), 
@@ -444,23 +444,18 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
     
     %% ?DEBUG("stockr ~p", [StockR]),
     
-    Sql = "select id, merchant, shop, employ, entry_date"
+    Sql = "select id"
+	", merchant"
+	", shop"
+	", employ"
+	", entry_date"
 	" from w_change_shift"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and shop=" ++ ?to_s(ShopId)
 	++ case DistinctUser =:= ?YES of
 	    true -> " and account=" ++ ?to_s(UserId); 
 	    false -> " and account=-1"
-	end
-	%% ++ case UserId of
-	%%        -1 -> [];
-	%%        _ ->
-	%% 	   case DistinctUser =:= ?YES of
-	%% 	       true -> " and account=" ++ ?to_s(UserId); 
-	%% 	       false -> []
-	%% 	   end
-	%%    end
-	
+	   end 
 	++ case EmployeeId of
 	       undefined -> " and employ=\'" ++ ?to_s(-1) ++ "\'";
 	       _ -> " and employ=\'" ++ ?to_s(EmployeeId) ++ "\'"
@@ -473,7 +468,7 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 	    {ok, []} -> 
 		{insert,
 		 "insert into w_change_shift(merchant, account, employ, shop"
-		 ", total, balance, cash, card, wxin, withdraw, ticket"
+		 ", total, balance, cash, card, wxin, aliPay, withdraw, ticket"
 		 ", charge, ccash, ccard, cwxin"
 		 ", stock, y_stock, stock_in, stock_out"
 		 ", pcash, pcash_in"
@@ -491,6 +486,7 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 		 ++ ?to_s(SellCash) ++ ","
 		 ++ ?to_s(SellCard) ++ ","
 		 ++ ?to_s(SellWxin) ++ ","
+		 ++ ?to_s(SellAliPay) ++ ","
 		 ++ ?to_s(SellDraw) ++ ","
 		 ++ ?to_s(SellTicket) ++ ","
 
@@ -517,6 +513,7 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 		 ++ ", cash="++ ?to_s(SellCash)
 		 ++ ", card="++ ?to_s(SellCard)
 		 ++ ", wxin="++ ?to_s(SellWxin)
+		 ++ ", aliPay="++ ?to_s(SellAliPay)
 		 ++ ", withdraw="++ ?to_s(SellDraw)
 		 ++ ", ticket="++ ?to_s(SellTicket)
 
@@ -566,6 +563,7 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 		    ++ "现金  ：" ++ ?to_s(SellCash) ++ ?f_print:br(Brand)
 		    ++ "刷卡  ：" ++ ?to_s(SellCard) ++ ?f_print:br(Brand)
 		    ++ "微信  ：" ++ ?to_s(SellWxin) ++ ?f_print:br(Brand)
+		    ++ "支付宝：" ++ ?to_s(SellAliPay) ++ ?f_print:br(Brand)
 		    ++ "提现  ：" ++ ?to_s(SellDraw) ++ ?f_print:br(Brand)
 		    ++ "电子券：" ++ ?to_s(SellTicket) ++ ?f_print:br(Brand)
 		    ++ ?f_print:br(Brand)
@@ -623,23 +621,24 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 		<<"0">> ->
 		    %% ?utils:respond(200, Req, ?succ(print_wreport, ShopId));
 		    ReportInfo = {[{<<"sell_total">>, SellTotal},
-				  {<<"sell_balance">>, SellBalance},
-				  {<<"sell_cash">>, SellCash},
-				  {<<"sell_card">>, SellCard},
-				  {<<"sell_wxin">>, SellWxin},
-				  {<<"sell_draw">>, SellDraw},
-				  {<<"sell_ticket">>, SellTicket},
+				   {<<"sell_balance">>, SellBalance},
+				   {<<"sell_cash">>, SellCash},
+				   {<<"sell_card">>, SellCard},
+				   {<<"sell_wxin">>, SellWxin},
+				   {<<"sell_aliPay">>, SellAliPay},
+				   {<<"sell_draw">>, SellDraw},
+				   {<<"sell_ticket">>, SellTicket},
 
-				  {<<"charge_balance">>, ?v(<<"cbalance">>, Recharges, 0)},
-				  {<<"charge_cash">>, ?v(<<"tcash">>, Recharges, 0)},
-				  {<<"charge_card">>, ?v(<<"tcard">>, Recharges, 0)},
-				  {<<"charge_wxin">>, ?v(<<"twxin">>, Recharges, 0)},
+				   {<<"charge_balance">>, ?v(<<"cbalance">>, Recharges, 0)},
+				   {<<"charge_cash">>, ?v(<<"tcash">>, Recharges, 0)},
+				   {<<"charge_card">>, ?v(<<"tcard">>, Recharges, 0)},
+				   {<<"charge_wxin">>, ?v(<<"twxin">>, Recharges, 0)},
 
-				  {<<"lstock">>, LastStockTotal},
-				  {<<"cstock">>, CurrentStockTotal},
+				   {<<"lstock">>, LastStockTotal},
+				   {<<"cstock">>, CurrentStockTotal},
 
-				  {<<"stock_in">>, StockInTotal},
-				  {<<"stock_out">>, StockOutTotal}]},
+				   {<<"stock_in">>, StockInTotal},
+				   {<<"stock_out">>, StockOutTotal}]},
 		    
 		    ?utils:respond(200, object, Req,
 				   {[{<<"ecode">>, 0},
@@ -763,13 +762,14 @@ time_of_end_day() ->
 
 
 sell(info, [])->
-    {0, 0, 0, 0, 0, 0, 0};
+    {0, 0, 0, 0, 0, 0, 0, 0};
 sell(info, [{SaleInfo}])->
     {?v(<<"total">>, SaleInfo, 0),
      ?v(<<"spay">>, SaleInfo, 0),
      ?v(<<"cash">>, SaleInfo, 0),
      ?v(<<"card">>, SaleInfo, 0),
      ?v(<<"wxin">>, SaleInfo, 0),
+     ?v(<<"aliPay">>, SaleInfo, 0),
      ?v(<<"draw">>, SaleInfo, 0),
      ?v(<<"ticket">>, SaleInfo, 0)}.
 
@@ -791,10 +791,11 @@ yestoday(Datetime) when is_binary(Datetime)->
     lists:flatten(io_lib:format("~4..0w-~2..0w-~2..0w", [Year, Month, Day])).
     
 csv_head(month_report, Do) ->
-    Head = "序号,店铺,库存,库存成本"
-       ",销售数量,销售金额,销售成本,现金,刷卡,微信,提现,电子卷,核销"
-       ",充值,入库数量,入库成本,出库数量,出库成本"
-       ",调入数量,调入成本,调出数量,调出成本"
+    Head =
+	"序号,店铺,库存,库存成本"
+	",销售数量,销售金额,销售成本,现金,刷卡,微信,支付宝,提现,电子卷,核销"
+	",充值,入库数量,入库成本,出库数量,出库成本"
+	",调入数量,调入成本,调出数量,调出成本"
 	",盘点数量,盘点成本",
     %% UTF8 = unicode:characters_to_list(Head, utf8),
     %% GBK = diablo_iconv:convert("utf-8", "gbk", UTF8),
@@ -803,8 +804,9 @@ csv_head(month_report, Do) ->
 
 do_write(month_report, Do, _Count, [], Calcs) ->
     {CStockc, CStockCost,
-     CSell, CSellCost, CBalance, CCash, CCard, CWxin, CDraw, CTicket, CVeri,
-     Charge, CStockIn, CStockOut, CStockInCost, CStockOutCost,
+     CSell, CSellCost, CBalance, CCash, CCard, CWxin, CAliPay, CDraw, CTicket, CVeri,
+     Charge,
+     CStockIn, CStockOut, CStockInCost, CStockOutCost,
      CTStockIn, CTStockOut, CTStockInCost, CTStockOutCost,
      CStockFix, CStockFixCost} = Calcs,
 
@@ -820,6 +822,7 @@ do_write(month_report, Do, _Count, [], Calcs) ->
        ++ ?to_s(CCash) ++ ?d
        ++ ?to_s(CCard) ++ ?d
        ++ ?to_s(CWxin) ++ ?d
+       ++ ?to_s(CAliPay) ++ ?d
        ++ ?to_s(CDraw) ++ ?d
        ++ ?to_s(CTicket) ++ ?d
        ++ ?to_s(CVeri) ++ ?d
@@ -850,6 +853,7 @@ do_write(month_report, Do, Count, [{H}|T], Calcs) ->
     Cash = ?v(<<"cash">>, H),
     Card = ?v(<<"card">>, H),
     Wxin = ?v(<<"wxin">>, H),
+    AliPay = ?v(<<"aliPay">>, H),
     Draw = ?v(<<"draw">>, H),
     Ticket = ?v(<<"ticket">>, H),
     Veri = ?v(<<"veri">>, H), 
@@ -880,6 +884,7 @@ do_write(month_report, Do, Count, [{H}|T], Calcs) ->
 	++ ?to_s(Cash) ++ ?d
 	++ ?to_s(Card) ++ ?d
 	++ ?to_s(Wxin) ++ ?d
+	++ ?to_s(AliPay) ++ ?d
 	++ ?to_s(Draw) ++ ?d
 	++ ?to_s(Ticket) ++ ?d
 	++ ?to_s(Veri) ++ ?d
@@ -901,7 +906,7 @@ do_write(month_report, Do, Count, [{H}|T], Calcs) ->
     Do(?utils:to_gbk(from_latin1, L)),
     
     {CStockc, CStockCost,
-     CSell, CSellCost, CBalance, CCash, CCard, CWxin, CDraw, CTicket, CVeri,
+     CSell, CSellCost, CBalance, CCash, CCard, CWxin, CAliPay, CDraw, CTicket, CVeri,
      CCharge, CStockIn, CStockOut, CStockInCost, CStockOutCost,
      CTStockIn, CTStockOut, CTStockInCost, CTStockOutCost,
      CStockFix, CStockFixCost} = Calcs,
@@ -915,6 +920,7 @@ do_write(month_report, Do, Count, [{H}|T], Calcs) ->
 					      CCash + Cash,
 					      CCard + Card,
 					      CWxin + Wxin,
+					      CAliPay + AliPay,
 					      CDraw + Draw,
 					      CTicket + Ticket,
 					      CVeri + Veri,
@@ -934,9 +940,6 @@ do_write(month_report, Do, Count, [{H}|T], Calcs) ->
 					      CStockFixCost + StockFixCost}).
 	
 	
-
-
-
 get_setting(Merchant, Shop) ->
     {ok, S}  = ?w_user_profile:get(setting, Merchant),
     Select = 

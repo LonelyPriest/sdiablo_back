@@ -448,7 +448,7 @@ handle_call({stock_real, Merchant, Conditions}, _From, State)->
 	" from w_inventory"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions)
-	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime)
+	++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime)
 	++ " group by shop",
 
     R = ?sql_utils:execute(read, Sql),
@@ -456,7 +456,11 @@ handle_call({stock_real, Merchant, Conditions}, _From, State)->
 
 handle_call({last_stock_of_shop, Merchant, ShopIds, CurrentDay}, _From, State) ->
 
-    Sql = "select a.id, a.day, a.merchant, a.shop as shop_id, stock as total"
+    Sql = "select a.id"
+	", a.day"
+	", a.merchant"
+	", a.shop as shop_id"
+	", stock as total"
     	" from w_daily_report a "
     	"inner join (select max(day) as day, merchant, shop from w_daily_report"
     	" where merchant=" ++ ?to_s(Merchant)

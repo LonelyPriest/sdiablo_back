@@ -96,17 +96,40 @@ daily(detail, Merchant, Conditions) ->
     ?DEBUG("daily_detail with merchant ~p, conditions ~p", [Merchant, Conditions]),
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
     
-    "select id, merchant, shop as shop_id"
-	", sell, sell_cost as sellCost, balance, cash, card, wxin, draw, ticket, veri"
-	", charge, stock, stockc, stock_cost as stockCost"
+    "select id"
+	", merchant"
+	", shop as shop_id"
 	
-	", stock_in as stockIn, stock_in_cost as stockInCost"
-	", stock_out as stockOut, stock_out_cost as stockOutCost"
+	", sell"
+	", sell_cost as sellCost"
 	
-	", t_stock_in as tstockIn, t_stock_in_cost as tstockInCost"
-	", t_stock_out as tstockOut, t_stock_out_cost as tstockOutCost"
+	", balance"
+	", cash"
+	", card"
+	", wxin"
+	", aliPay"
+	", draw"
+	", ticket"
+	", veri"
 	
-	", stock_fix as stockFix, stock_fix_cost as stockFixCost"
+	", charge"
+	
+	", stock"
+	", stockc"
+	", stock_cost as stockCost"
+	
+	", stock_in as stockIn"
+	", stock_in_cost as stockInCost"
+	", stock_out as stockOut"
+	", stock_out_cost as stockOutCost"
+	
+	", t_stock_in as tstockIn"
+	", t_stock_in_cost as tstockInCost"
+	", t_stock_out as tstockOut"
+	", t_stock_out_cost as tstockOutCost"
+	
+	", stock_fix as stockFix"
+	", stock_fix_cost as stockFixCost"
 
 	", day, entry_date"
 
@@ -134,6 +157,7 @@ shift(detail, Merchant, Conditions) ->
 	", a.cash"
 	", a.card"
 	", a.wxin"
+	", a.aliPay"
 	
 	", a.y_stock"
 	", a.stock"

@@ -66,6 +66,8 @@ function switchShiftCtrlProvide(
 			$scope.s_stastic.balance = result.balance;
 			$scope.s_stastic.cash = result.cash;
 			$scope.s_stastic.card = result.card;
+			$scope.s_stastic.wxin = result.wxin;
+			$scope.s_stastic.aliPay = result.aliPay;
 
 			// $scope.s_stastic.stockIn = result.stockIn;
 			// $scope.s_stastic.stockOut = result.stockOut;

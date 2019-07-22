@@ -78,6 +78,8 @@
 		    <th>销售金额</th>
 		    <th style="background-color:#CCCCCC">现金</th>
 		    <th style="background-color:#CCCCCC">刷卡</th>
+		    <th style="background-color:#CCCCCC">微信</th>
+		    <th style="background-color:#CCCCCC">支付宝</th>
 
 		    <th>备用金</th> 
 		    <th>备用金结余</th>
@@ -92,8 +94,8 @@
 		<tbody>
 		  <tr x-ng-repeat="r in d_reports">
 		    <td>{{r.order_id}}</td>
-		    <td>{{r.account}}</td>
 		    <td>{{r.shop.name}}</td>
+		    <td>{{r.account}}</td> 
 		    <td>{{r.employee.name}}</td>
 		    
 		    <td>{{r.y_stock}}</td>
@@ -103,6 +105,8 @@
 		    <td>{{r.balance}}</td>
 		    <td style="background-color:#CCCCCC">{{r.cash}}</td>
 		    <td style="background-color:#CCCCCC">{{r.card}}</td>
+		    <td style="background-color:#CCCCCC">{{r.wxin}}</td>
+		    <td style="background-color:#CCCCCC">{{r.aliPay}}</td>
 
 		    <td>{{r.pcash}}</td>
 		    <td>{{r.pcashIn}}</td>
@@ -115,11 +119,13 @@
 		    
 		  </tr>
 		  <tr x-ng-if="s_stastic.total_items>0">
-		    <td colspan=5></td>
+		    <td colspan=6></td>
 		    <td>{{s_stastic.sell}}</td>
 		    <td>{{s_stastic.balance}}</td>
 		    <td>{{s_stastic.cash}}</td>
 		    <td>{{s_stastic.card}}</td>
+		    <td>{{s_stastic.wxin}}</td>
+		    <td>{{s_stastic.aliPay}}</td>
 		    <td colspan=6></td>
 		  </tr>
 		</tbody> 
