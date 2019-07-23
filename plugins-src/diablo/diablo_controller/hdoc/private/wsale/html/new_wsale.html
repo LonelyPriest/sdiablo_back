@@ -994,7 +994,7 @@
 	    </div>
 	  </td>
 	  <td class="vert-align">{{s.batch}}</td>
-	  <td class="vert-align">积分电子卷</td>
+	  <td class="vert-align">积分卷</td>
 	  <td class="vert-align">{{s.balance}}</td>
 	</tr>
       </tbody>
@@ -1004,9 +1004,10 @@
 	   class="table table-bordered table-striped table-condensed table-advanced">
       <thead>
 	<th class="col-md-2"></th>
-	<th class="danger col-md-3 text-center">批次</th>
-	<th class="danger col-md-4 text-center">类型</th>
-	<th class="danger col-md-3 text-center">金额</th>
+	<th class="danger text-center">名称</th>
+	<th class="danger text-center">批次</th>
+	<th class="danger text-center">类型</th>
+	<th class="danger col-md-2 text-center">金额</th>
       </thead>
 
       <tbody>
@@ -1020,8 +1021,9 @@
 	      <label for={{p.batch}}-{{p.id}}></label>
 	    </div>
 	  </td>
+	  <td class="vert-align">{{p.name}}</td>
 	  <td class="vert-align">{{p.batch}}</td>
-	  <td class="vert-align">优惠电子卷</td>
+	  <td class="vert-align">优惠卷</td>
 	  <td class="vert-align">{{p.balance}}</td>
 	</tr>
       </tbody>
@@ -1431,7 +1433,7 @@
 		  <input type="number"
 			 class="form-control"
 			 required
-			 readonly
+			 x-ng-edit
 			 x-ng-model="c.count"/>
 		</div>
 	      </form>

@@ -1649,7 +1649,7 @@ handle_call({new_ticket_plan, Merchant, Attrs}, _From, State) ->
     %% balacen should be unique
     Sql = "select id, name, balance from w_ticket_plan"
 	" where merchant=" ++ ?to_s(Merchant)
-	++ " and balance=" ++ ?to_s(Balance),
+	++ " and name=\'" ++ ?to_s(Name) ++ "\'",
     case ?sql_utils:execute(s_read, Sql) of
 	{ok, []} ->
 	    Sql1 = "insert into w_ticket_plan("
@@ -1830,7 +1830,8 @@ handle_call({ticket_by_promotion, Merchant, RetailerId, ConsumeShop}, _From, Sta
 	", a.etime"
 	", a.state"
 
-	", b.ishop"
+	", b.name"
+	", b.ishop" 
 	" from w_ticket_custom a" 
 	" left join w_ticket_plan b on a.merchant=b.merchant and a.plan = b.id"
 	" where a.merchant=" ++ ?to_s(Merchant)
@@ -2925,7 +2926,7 @@ search_custome_ticket(Merchant, [{struct, Ticket}|T], Success, Failed, AllBalanc
 
 find_custome_ticket_batch(by_plan, _Plan, [], Sort) ->
     Sort;
-find_custome_ticket_batch(by_plan, Plan, [{P, Batch}|T], Sort) when Plan =:= P->
+find_custome_ticket_batch(by_plan, Plan, [{P, Batch, _Effext, _Expire}|T], Sort) when Plan =:= P->
     find_custome_ticket_batch(by_plan, Plan, T, [?to_s(Batch)|Sort]);
 find_custome_ticket_batch(by_plan, _Plan, _PlanTickets, Sort) ->
     Sort.
