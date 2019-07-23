@@ -378,7 +378,10 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 	case EmployeeId of
 	    undefined -> Conditions;
 	    _ ->
-		Conditions ++ [{<<"employ">>, EmployeeId}]
+		case EmployeeId =:= <<"-1">> of
+		    true -> Conditions;
+		    false -> Conditions ++ [{<<"employ">>, EmployeeId}]
+		end
 	end,
 
     DistinctUser =
