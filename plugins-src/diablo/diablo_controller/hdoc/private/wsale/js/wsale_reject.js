@@ -516,6 +516,7 @@ function wsaleRejectCtrlProvide(
 	    cash:          setv($scope.select.cash),
 	    card:          setv($scope.select.card),
 	    wxin:          setv($scope.select.wxin),
+	    aliPay:        setv($scope.select.aliPay),
 	    ticket:        setv($scope.select.ticket),
 	    withdraw:      setv($scope.select.withdraw),
 	    verificate:    $scope.select.verificate,

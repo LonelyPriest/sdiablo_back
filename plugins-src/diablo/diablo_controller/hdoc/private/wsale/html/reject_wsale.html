@@ -5,7 +5,7 @@
       <div class="portlet-title">
 	<div class="caption">
 	  <i class="glyphicon glyphicon-menu-hamburger"></i>
-	  销售退货
+	  销售退货<span x-ng-if="!hidden.travel">-{{select.retailer.name}}</span>
 	</div>
 	<div class="actions">
 	  <button type="button" class="btn red"
@@ -108,33 +108,21 @@
 	  </div>
 
 	  <div x-ng-if="!hidden.travel" class="row diablo-form-group"> 
-	    <div class="col-xs-3 col-md-3"> 
-	      <div class="input-group">
-		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-star fg-red"></i>客户
-		</span> 
-		<input class="form-control" type="text"
-	  	       x-ng-model="select.retailer"
-	  	       placeholder="请选择客户"
-		       readonly
-	  	       typeahead-editable="false"
-		       typeahead-on-select="change_retailer()"
-	  	       uib-typeahead="r as r.name for r in
-	  			  retailers|filter:$viewValue|limitTo:20"/> 
-	      </div>
-	    </div> 
-
-	    <div class="col-xs-3 col-md-3">
-	      <div class="input-group">
-	    	<span class="input-group-addon">
-	    	  <i class="glyphicon glyphicon-calendar fg-red"></i>日期
-	    	</span>
-	    	<input type="text" class="form-control"
-	    	       uib-datepicker-popup="yyyy/MM/dd"
-	    	       readonly
-	    	       x-ng-model="select.rsn_datetime"/>
-	      </div>
-	    </div>
+	    <!-- <div class="col-xs-3 col-md-3">  -->
+	    <!--   <div class="input-group"> -->
+	    <!-- 	<span class="input-group-addon"> -->
+	    <!-- 	  <i class="glyphicon glyphicon-star fg-red"></i>客户 -->
+	    <!-- 	</span>  -->
+	    <!-- 	<input class="form-control" type="text" -->
+	    <!-- 	       x-ng-model="select.retailer" -->
+	    <!-- 	       placeholder="请选择客户" -->
+	    <!-- 	       readonly -->
+	    <!-- 	       typeahead-editable="false" -->
+	    <!-- 	       typeahead-on-select="change_retailer()" -->
+	    <!-- 	       uib-typeahead="r as r.name for r in -->
+	    <!-- 			  retailers|filter:$viewValue|limitTo:20"/>  -->
+	    <!--   </div> -->
+	    <!-- </div> --> 
 
 	    <div class="col-xs-3 col-md-3">
 	      <div class="input-group">
@@ -145,16 +133,35 @@
 	      </div>
 	    </div>
 	    
-	    <div class="col-xs-3 col-md-3"> 
+	    
+	    <div class="col-xs-3 col-md-3">
+	      <div class="input-group">
+	    	<span class="input-group-addon">
+	    	  <i class="glyphicon glyphicon-yen fg-red"></i>应付</span>
+	    	<input class="form-control" type="text" readonly
+	    	       x-ng-model="select.should_pay"/>
+	      </div>
+	    </div>
+
+	    <div class="col-xs-3 col-md-3">
 	      <div class="input-group">
 		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-comment fg-red"></i>备注</span>
-	  	<input class="form-control"
-		       type="text"
-		       placeholder="备注"
-	  	       x-ng-model="select.comment"/>
+		  <i class="glyphicon glyphicon-qrcode fg-red"></i>微信</span>
+	  	<input class="form-control" readonly
+	  	       x-ng-model="select.wxin"/>
 	      </div>
-	    </div> 
+	    </div>
+
+	    <div class="col-xs-3 col-md-3">
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-qrcode fg-red"></i>支付宝</span>
+	  	<input class="form-control" readonly
+	  	       x-ng-model="select.aliPay"/>
+	      </div>
+	    </div>
+	    
+	    
 	  </div> <!--END row-->
 
 	  <!--BEGIN row--> 
@@ -171,11 +178,14 @@
 	    <div class="col-xs-3 col-md-3">
 	      <div class="input-group">
 	    	<span class="input-group-addon">
-	    	  <i class="glyphicon glyphicon-yen fg-red"></i>应付</span>
-	    	<input class="form-control" type="text" readonly
-	    	       x-ng-model="select.should_pay"/>
+	    	  <i class="glyphicon glyphicon-calendar fg-red"></i>日期
+	    	</span>
+	    	<input type="text" class="form-control"
+	    	       uib-datepicker-popup="yyyy/MM/dd"
+	    	       readonly
+	    	       x-ng-model="select.rsn_datetime"/>
 	      </div>
-	    </div>
+	    </div> 
 	    
 
 	    <div class="col-xs-3 col-md-3">
@@ -187,6 +197,42 @@
 	      </div>
 	    </div>
 	    
+	    
+	    <div class="col-xs-3 col-md-3">
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-yen fg-red"></i>现金</span>
+	  	<input class="form-control" readonly
+	  	       x-ng-model="select.cash"/>
+	      </div>
+	    </div>
+
+	    <div class="col-xs-3 col-md-3">
+	      <div class="input-group">
+	    	<span class="input-group-addon">
+	    	  <i class="glyphicon glyphicon-yen fg-red"></i>提现</span>
+	    	<input class="form-control" type="text" readonly
+	    	       x-ng-model="select.withdraw"/>
+	      </div>
+	    </div>
+	    
+	  </div> <!--END row-->
+
+	  <!--BEGIN row-->
+	  <div x-ng-if="!hidden.travel" class="row diablo-form-group">
+
+	    <div class="col-xs-3 col-md-3"> 
+	      <div class="input-group">
+		<span class="input-group-addon">
+		  <i class="glyphicon glyphicon-comment fg-red"></i>备注</span>
+	  	<input class="form-control"
+		       type="text"
+		       placeholder="备注"
+	  	       x-ng-model="select.comment"/>
+	      </div>
+	    </div>
+
+
 
 	    <div class="col-xs-3 col-md-3">
 	      <div class="input-group">
@@ -196,19 +242,7 @@
 	    	       x-ng-model="select.verificate"/>
 	      </div>
 	    </div>
-
-	    <div class="col-xs-3 col-md-3">
-	      <div class="input-group">
-		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-yen fg-red"></i>现金</span>
-	  	<input class="form-control" readonly
-	  	       x-ng-model="select.cash"/>
-	      </div>
-	    </div>
-	  </div> <!--END row-->
-
-	  <!--BEGIN row-->
-	  <div x-ng-if="!hidden.travel" class="row diablo-form-group"> 
+	    
 	    <div class="col-xs-3 col-md-3">
 	      <div class="input-group">
 		<span class="input-group-addon">
@@ -217,25 +251,7 @@
 	  	       x-ng-model="select.card"/>
 	      </div>
 	    </div>
-
-	    <div class="col-xs-3 col-md-3">
-	      <div class="input-group">
-		<span class="input-group-addon">
-		  <i class="glyphicon glyphicon-qrcode fg-red"></i>微信</span>
-	  	<input class="form-control" readonly
-	  	       x-ng-model="select.wxin"/>
-	      </div>
-	    </div>
 	    
-	    <div class="col-xs-3 col-md-3">
-	      <div class="input-group">
-	    	<span class="input-group-addon">
-	    	  <i class="glyphicon glyphicon-yen fg-red"></i>提现</span>
-	    	<input class="form-control" type="text" readonly
-	    	       x-ng-model="select.withdraw"/>
-	      </div>
-	    </div>
-
 	    <div class="col-xs-3 col-md-3">
 	      <div class="input-group">
 	    	<span class="input-group-addon">

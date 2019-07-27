@@ -112,10 +112,10 @@ action(Session, Req, {"charge_sms"}, Payload) ->
     
     Balance = ?v(<<"balance">>, Payload),
     case ?merchant:sms(charge, Merchant, Balance) of
-	{ok, _} ->
-	    ?w_user_profile:update(merchant, Merchant),
+	{ok, _} -> 
 	    ?notify:sms(charge, {Merchant, Name, Mobile}, Balance),
-	    ?utils:respond(200, Req, ?succ(charge_sms, Merchant));
+	    ?w_user_profile:update(merchant, Merchant),
+	    ?utils:respond(200, Req, ?succ(charge_sms, Merchant)); 
 	{error, Error} ->
 	    ?utils:respond(200, Req, Error)
     end.

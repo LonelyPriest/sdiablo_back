@@ -1463,7 +1463,7 @@ var wsalePrint = function(){
 		s += "支付宝:" + left.toString();
 		left = 0;
 	    } else {
-		s += "支付宝:" + wxin.toString();
+		s += "支付宝:" + aliPay.toString();
 		left -= wxin;
 	    }
 	}

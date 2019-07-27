@@ -174,7 +174,7 @@ sms(charge, {Merchant, Name, Phone}, Balance) ->
     %% ?DEBUG("smsrate ~p", [SMSRate]), 
     Rate = ?v(<<"rate">>, SMSRate),
     LeftBalance = ?v(<<"balance">>, SMSRate, 0), 
-    Count = trunc(LeftBalance) div Rate, 
+    Count = trunc(LeftBalance + Balance) div Rate, 
     SMSTemplate   = "SMS_153716629",
     SMSParams = ?to_s(ejson:encode(
 			{[{<<"name">>, <<Name/binary, <<"-">>/binary, Phone/binary>>},
