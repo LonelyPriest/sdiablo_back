@@ -394,13 +394,11 @@
 		  <tr class="text-center" ng-repeat="inv in inventories"> 
 		    <td class="{{focus_css(inv.order_id, true)}}">{{inv.order_id}}</td>
 		    
-		    <td class="{{focus_css(inv.order_id, !inv.$new)}}"
-		       class="col-md-2 text-left vert-align">
+		    <td class="{{focus_css(inv.order_id, !inv.$new)}}" class="col-md-2 text-left vert-align">
 		      <span x-ng-if="!inv.$new">{{inv.name}}</span>
 		      
-		      <form name="inv.form.good" x-ng-if="inv.$new">
-			<div ng-class="{'has-error':inv.form.good.$invalid
-				       && !inv.form.good.$pristine}">
+		      <form x-ng-if="inv.$new" name="inv.form.good">
+			<div ng-class="{'has-error':inv.form.good.$invalid && !inv.form.good.$pristine}">
 			  <input class="form-control text-left" type="text"
 				 required
 				 x-ng-model="inv.name"
@@ -409,8 +407,7 @@
 				 typeahead-on-select="on_select_good($item, $model, $label)"
 				 typeahead-wait-ms="500"
 				 typeahead-loading="loading"
-				 uib-typeahead="g as g.name for g in
-					    match_prompt_good($viewValue)|limitTo:20"/>
+				 uib-typeahead="g as g.name for g in match_prompt_good($viewValue)|limitTo:20"/>
 			  <span x-ng-show="loading">
 			    <i class="glyphicon glyphicon-refresh"></i>
 			  </span>

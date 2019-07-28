@@ -437,7 +437,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
     $scope.match_prompt_good = function(viewValue){
 	return diabloFilter.match_wgood_with_firm(
 	    viewValue, stockUtils.match_firm(
-		$scope.setting.stock_with_firm$ ? scope.select.firm : diablo_invalid_firm) ); 
+		$scope.setting.stock_with_firm ? $scope.select.firm : diablo_invalid_firm) ); 
     }; 
     
     $scope.on_select_good = function(item, model, label){
@@ -449,8 +449,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
 		&& item.brand_id  === $scope.inventories[i].brand.id){
 		diabloUtilsService.response_with_callback(
 		    false,
-		    "采购单修改", "采购单修改失败："
-			+ purchaserService.error[2099],
+		    "采购单修改", "采购单修改失败：" + purchaserService.error[2099],
 		    $scope, function(){
 			$scope.inventories[0] = {$edit:false, $new:true}});
 		return;
@@ -483,6 +482,7 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	// add at first allways 
 	var add = $scope.inventories[0];
 	add.id           = item.id;
+	add.name         = item.name;
 	add.style_number = item.style_number;
 	add.brand        = $scope.get_object(item.brand_id, $scope.brands);
 	add.type         = $scope.get_object(item.type_id, $scope.types);

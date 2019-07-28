@@ -980,6 +980,14 @@ stockPrintU.prototype.print_type = function(type, top, left, width, printSecond,
 	} else {
 	    this.LODOP.ADD_PRINT_TEXT(top, left + offset_type, width, hpx_type, type);
 	    this.set_print_font_size(this.template.font_type);
+	    if (printSecond) {
+		this.LODOP.ADD_PRINT_TEXT(top, startSecond + offset_type, width, hpx_type, type);
+		this.set_print_font_size(this.template.font_type);
+	    }
+	    if (printThird) {
+		this.LODOP.ADD_PRINT_TEXT(top, startThird + offset_type, width, hpx_type, type);
+		this.set_print_font_size(this.template.font_type);
+	    }
 	}
     } else {
 	this.LODOP.ADD_PRINT_TEXT(top, left, width, this.template.hpx_each, "品名:" + type);

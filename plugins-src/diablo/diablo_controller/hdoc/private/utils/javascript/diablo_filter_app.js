@@ -499,8 +499,7 @@ function filterProvider(){
 			} else{
 			    return invs.map(function(inv){
 				return angular.extend(
-				    inv,
-				    {name:inv.style_number + "/" + inv.brand + "/" + inv.type})
+				    inv, {name:inv.style_number + "/" + inv.brand + "/" + inv.type})
 			    })
 			}
 		    })
