@@ -511,9 +511,10 @@ function wsaleUpdateRejectCtrlProvide(
 		    $scope.select.ticket,
 		    $scope.select.withdraw,
 		    $scope.select.wxin,
+		    $scope.select.aliPay,
 		    $scope.select.card,
 		    $scope.select.cash]);
-	    var pay_with_score = pay_orders[2] + pay_orders[3] + pay_orders[4];
+	    var pay_with_score = pay_orders[2] + pay_orders[3] + pay_orders[4] + pay_orders[5];
 	    $scope.select.score = wsaleUtils.calc_score_of_pay(pay_with_score, $scope.select.pscores);
 	}
     };

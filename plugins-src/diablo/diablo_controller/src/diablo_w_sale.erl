@@ -556,7 +556,7 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 
 		 "update w_sale set balance=balance+"
 		 ++ ?to_s(BackBalanceOfOldRetailer)
-		 ++ ", score=score-" ++ ?to_s(OldScore)
+		 ++ ", lscore=lscore-" ++ ?to_s(OldScore)
 		 %% ++ " where shop=" ++ ?to_s(Shop)
 		 ++ " where merchant=" ++ ?to_s(Merchant)
 		 ++ " and retailer=" ++ ?to_s(OldRetailer)
@@ -571,7 +571,7 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 
 		 "update w_sale set balance=balance-"
 		 ++ ?to_s(BalanceOfNewRetailer)
-		 ++ ", score=score+" ++ ?to_s(Score)
+		 ++ ", lscore=lscore+" ++ ?to_s(Score)
 		 %% ++ " where shop=" ++ ?to_s(Shop)
 		 ++ " where merchant=" ++ ?to_s(Merchant)
 		 ++ " and retailer=" ++ ?to_s(Retailer)
