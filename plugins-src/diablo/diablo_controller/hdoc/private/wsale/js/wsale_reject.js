@@ -588,7 +588,7 @@ function wsaleRejectCtrlProvide(
 		    $scope.select.ticket,
 		    $scope.select.withdraw,
 		    $scope.select.wxin,
-		    $scope.select.aliPay
+		    $scope.select.aliPay,
 		    $scope.select.card,
 		    $scope.select.cash]);
 	    var pay_with_score = pay_orders[2] + pay_orders[3] + pay_orders[4] + pay_orders[5];
