@@ -796,6 +796,8 @@ handle_call({new_charge, Merchant, Attrs}, _From, State) ->
 		      ++ " and balance=" ++ ?to_s(Balance)
 		      ++ " and rule=" ++ ?to_s(Rule)
 		      ++ " and type=" ++ ?to_s(Type)
+		      ++ " and mbalance=" ++ ?to_s(MBalance)
+		      ++ " and ibalance=" ++ ?to_s(IBalance)
 		      ++ " and ishop=" ++ ?to_s(IShop);
 	      ?TIMES_CHARGE ->
 		  %% N

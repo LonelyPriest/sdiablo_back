@@ -747,7 +747,7 @@ check_inventory({oncheck, Shop, Merchant}, Round, Money, ShouldPay, [{struct, In
 	       end, 0, Amounts),
 
     FPrice = ?v(<<"rprice">>, Inv),
-    Calc = FPrice * Count, 
+    Calc = ?to_f(FPrice * Count), 
     case StyleNumber of
 	undefined -> {error, Inv};
 	_ ->

@@ -1248,6 +1248,10 @@ var diabloHelp = function(){
 		    dialog.set_error(failTitle, result.ecode);
 		}
 	    }); 
+	},
+
+	pay_scan:function(payCode, shop, filterPromise, dialog, failTitle, callback) {
+	    
 	}
 
 	//

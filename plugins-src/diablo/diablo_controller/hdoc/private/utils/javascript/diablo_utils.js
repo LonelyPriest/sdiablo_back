@@ -25,6 +25,31 @@ diabloUtils.directive('barcodeScanner', function() {
     };
 });
 
+diabloUtils.directive('payScan', function() {
+    return {
+	restrict: 'A',    
+	scope: {
+            scanner: '&',
+	},
+
+	require: 'ngModel',
+	
+	link:  function(scope, element, attrs, modelCtrl){
+	    var callback = scope.scanner(); 
+	    element.bind("keydown", function(event) {
+		var value = modelCtrl.$modelValue;
+		if (13 === event.which) {
+		    scope.$apply(function() {
+			if (angular.isFunction(callback)) {
+			    callback(value)
+			}
+		    });
+		} 
+	    }); 
+	}
+    };
+});
+
 (function () {
     // var module;
     // module = angular.module("scanner.detection", []);

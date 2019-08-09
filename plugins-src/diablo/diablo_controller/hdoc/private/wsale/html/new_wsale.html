@@ -479,8 +479,7 @@
 	      <span class="input-group-addon">
 		<i class="glyphicon glyphicon-qrcode fg-red"></i>微信</span>
 	      <form name="select.form.wForm">
-		<div ng-class="{'has-error':select.form.wForm.$invalid
-			       && !select.form.wForm.$pristine}">
+		<div ng-class="{'has-error':select.form.wForm.$invalid && !select.form.wForm.$pristine}">
 	  	  <input class="form-control"
 			 type="number" step="0.01"
 			 disable-key
@@ -489,9 +488,13 @@
 			 x-ng-pattern="pattern.money"
 	  		 x-ng-model="select.wxin"
 			 placeholder="微信"
-			 x-ng-enter="disable_save() || save_wsale()"/>
+			 x-ng-enter="disable_save() || save_wsale()"/> 
 		</div>
 	      </form>
+	      <span class="input-group-btn"> 
+		<button class="btn btn-success" x-ng-click="pay_scan()">
+		  <i class="glyphicon glyphicon-plus"></i></button>
+	      </span>
 	    </div>
 	  </div>
 	</div>
@@ -1447,9 +1450,45 @@
 
   <div class="modal-footer">
     <button class="btn btn-primary"
-	    x-ng-disabled="!params.check_ticket(params.tickets)"
-	    x-ng-click="ok()">确认</button>
+	    x-ng-disabled="!params.check_ticket(params.tickets)" x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>  
 </script>
 
+<script type="text/ng-template" id="pay-scan.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button> 
+    <h4 class="modal-title"><span class="label label-sm label-primary">请扫描用户付款码</span></h4>
+  </div>
+  
+  <div class="modal-body"> 
+    <form class="form-horizontal" name="pForm" novalidate>
+      <div class="form-body">
+    	<div class="form-group">
+    	  <label class="col-sm-2 col-md-2 control-label">付款码</label>
+    	  <div class="col-sm-8 col-md-8">
+    	    <input class="form-control"
+    		   name="payCode"
+    		   type="number"
+    		   placeholder="请扫付款码"
+    		   x-ng-edit
+    		   disable-key
+    		   disable-wheel
+    		   required
+		   focus-auto="true"
+    		   x-ng-model="params.payCode"
+    		   x-ng-enter="pForm.$valid && ok()"/>
+    	  </div>
+    	</div> 
+      </div>
+    </form>
+    
+  </div> 
+  <div class="modal-footer">
+    <button class="btn btn-primary" x-ng-disabled="pForm.$invalid" x-ng-click="ok()">确定</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
+</script>

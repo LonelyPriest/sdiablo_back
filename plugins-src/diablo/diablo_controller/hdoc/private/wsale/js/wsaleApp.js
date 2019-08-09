@@ -3069,6 +3069,13 @@ function wsaleNewProvide(
 	} 
     };
 
+    $scope.pay_scan = function() {
+	var callback = function(params) {
+	    console.log(params);
+	}; 
+	dialog.edit_with_modal("pay-scan.html", undefined, callback, undefined, {});
+    };
+
     $scope.reject_inventory = function(inv) {
 	console.log(inv);
 	if (wsaleUtils.to_integer(inv.sell) > 0) {
