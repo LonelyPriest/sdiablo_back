@@ -3533,7 +3533,7 @@ function wsaleNewDetailProvide(
 		if (p.mbalance === diablo_invalid) {
 		    validPlans.push(p);
 		} else {
-		    if (r.should_pay >= p.mbalance && p.mbalance > mbalance) {
+		    if (r.has_pay - r.ticket >= p.mbalance && p.mbalance > mbalance) {
 			mbalance = p.balance;
 			mindex   = i;
 		    }

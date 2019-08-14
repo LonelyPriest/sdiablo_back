@@ -580,7 +580,7 @@ insert into w_retailer_bank(retailer, balance, cid, type, merchant, shop, entry_
 values(46131,200,218,1,12,65,'2019-05-07 14:01:14');
 
 insert into w_retailer_bank(retailer, balance, cid, type, merchant, shop, entry_date) \
-values(45365,200,218,1,12,65,'2019-05-07 11:12:36');
+values(45563,160,218,1,12,65,'2019-05-09 15:41:36');
 
 
 

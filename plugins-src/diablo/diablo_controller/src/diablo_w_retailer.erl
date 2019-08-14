@@ -981,8 +981,8 @@ handle_call({get_charge, Merchant, ChargeId}, _From, State) ->
 	", deleted"
 	" from w_charge"
 	" where merchant=" ++ ?to_s(Merchant)
-	++ " and id=" ++ ?to_s(ChargeId)
-	++ " and deleted=" ++ ?to_s(?NO),
+	++ " and id=" ++ ?to_s(ChargeId),
+    %%++ " and deleted=" ++ ?to_s(?NO),
     Reply = ?sql_utils:execute(s_read, Sql),
 
     {reply, Reply, State};
