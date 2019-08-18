@@ -923,9 +923,7 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 
     case ?sql_utils:execute(s_read, Sql0) of 
 	{ok, Account} -> 
-	    Sn = lists:concat(["M-", ?to_i(Merchant),
-			       "-S-", ?to_i(Shop), "-R-",
-			       ?inventory_sn:sn(w_sale_reject_sn, Merchant)]),
+	    Sn = lists:concat(["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-R-", ?inventory_sn:sn(w_sale_reject_sn, Merchant)]),
 	    {ShopType, RealyShop} = realy_shop(reject, Merchant, Shop),
 
 	    Sql1 =
@@ -1053,6 +1051,8 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 				[]
 			end
 		end,
+
+	    ?DEBUG("Sql4 ~p", [Sql4]),
 
 	    Sql5 = 
 		case NewWithdraw > 0 of

@@ -598,6 +598,8 @@ error(no_valid_ticket, Merchant) ->
     {2713, "No valid ticket: " ++ ?to_s(Merchant) ++ "."};
 error(ticket_gifted, RSN) ->
     {2714, "the ticket has ben gifted: " ++ ?to_s(RSN) ++ "."};
+error(invalid_ticket_balance, Batch) ->
+    {2715, "invalid balance of ticket: " ++ ?to_s(Batch) ++ "."};
 
 %% about print
 error(invalid_sn, PrintSN) ->

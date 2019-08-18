@@ -186,7 +186,6 @@ get_ticket(by_batch, Merchant, Batch, Custom) ->
 get_ticket(by_sale, Merchant, Sale, Custom) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {ticket_by_sale, Merchant, Sale, Custom}).
-   
 
 make_ticket(batch, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -1912,7 +1911,8 @@ handle_call({ticket_by_sale, Merchant, Sale, Custom}, _From, State) ->
 		  "select id, batch, balance, retailer, sid, state from w_ticket"
 	  end
 	++ " where merchant=" ++ ?to_s(Merchant)
-	++ " and sale_rsn=\'" ++ ?to_s(Sale) ++ "\'",
+	++ " and sale_rsn=\'" ++ ?to_s(Sale) ++ "\'"
+	++ " and state=" ++ ?to_s(?TICKET_STATE_CONSUMED),
 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};

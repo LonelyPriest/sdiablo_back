@@ -640,7 +640,7 @@ action(Session, Req, {"reject_w_sale"}, Payload) ->
     Invs = ?v(<<"inventory">>, Payload),
     {struct, Base}   = ?v(<<"base">>, Payload), 
     Datetime         = ?v(<<"datetime">>, Base),
-
+    
     RejectTotal = calc_count(reject, Invs, 0),
     case RejectTotal =/= ?v(<<"total">>, Base) of
 	true ->
@@ -654,28 +654,41 @@ action(Session, Req, {"reject_w_sale"}, Payload) ->
 				   ?err(wsale_invalid_date, "reject_w_sale"),
 				   [{<<"fdate">>, Datetime},
 				    {<<"bdate">>, ?to_b(CurDatetime)}]);
-		false -> 
-		    case ?w_sale:sale(reject, Merchant, lists:reverse(Invs), Base ++ [{<<"user">>, UserId}]) of 
-			{{ok, RSN}, Shop, RetailerId, RetailerType, BackWithdraw} ->
-			    case BackWithdraw =/= 0 of
-				true ->
-				    %% query agign to obtain the correct infomation
-				    {ok, Retailer} = ?w_retailer:retailer(get, Merchant, RetailerId),
-				    {SMSCode, _} = send_sms(Merchant, 2, Shop, Retailer, BackWithdraw),
-				    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
-						   [{<<"rsn">>, ?to_b(RSN)},
-						    {<<"sms_code">>, SMSCode}]); 
-				false ->
-				    case RetailerType =:= ?SYSTEM_RETAILER of
-					true -> ?w_user_profile:update(sysretailer, Merchant);
-					false -> ok
-				    end,
-				    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
-						   [{<<"rsn">>, ?to_b(RSN)}])
-			    end;
-			{error, Error} ->
-			    ?utils:respond(200, Req, Error)
-		    end
+		false ->
+		    TicketCustom = ?v(<<"tcustom">>, Base, ?INVALID_OR_EMPTY),
+		    Props = Base ++ [{<<"user">>, UserId}],
+		    case TicketCustom of
+			?INVALID_OR_EMPTY ->
+			    start(reject_w_sale, Req, Merchant, Invs, Props);
+			_ ->
+			   case ?v(<<"ticket_batchs">>, Base, []) of
+			       [] -> 
+				   SaleRsn = ?v(<<"sale_rsn">>, Base, []),
+				   case ?w_retailer:get_ticket(
+					   by_sale, Merchant, SaleRsn, TicketCustom) of
+				       {ok, []} -> 
+					   start(reject_w_sale, Req, Merchant, Invs, Props);
+				       {ok, [{OneTicket}]} ->
+					   Batch = ?v(<<"batch">>, OneTicket), 
+					   case ?v(<<"balance">>, OneTicket) /= ?v(<<"ticket">>, Base, 0) of
+					       true -> ?utils:respond(
+							  200,
+							  Req,
+							  ?err(invalid_ticket_balance, Batch));
+					       false ->
+						   NewProps = lists:keydelete(<<"tbatch">>, 1, Props),
+						   start(reject_w_sale,
+							 Req,
+							 Merchant,
+							 Invs,
+							 NewProps ++ [{<<"tbatch">>, [Batch]}])
+					   end
+				   end;
+			       _ ->
+				   start(reject_w_sale, Req, Merchant, Invs, Props)
+			   end
+				
+		    end 
 	    end
     end;
 
@@ -2018,6 +2031,29 @@ start(new_sale, Req, Merchant, Invs, Base, Print) ->
 		       [{<<"should_pay">>, ShouldPay},
 			{<<"check_pay">>, Moneny}])
 	    end
+    end.
+
+start(reject_w_sale, Req, Merchant, Invs, Props) ->
+    case ?w_sale:sale(reject, Merchant, lists:reverse(Invs), Props) of 
+	{{ok, RSN}, Shop, RetailerId, RetailerType, BackWithdraw} ->
+	    case BackWithdraw =/= 0 of
+		true ->
+		    %% query agign to obtain the correct infomation
+		    {ok, Retailer} = ?w_retailer:retailer(get, Merchant, RetailerId),
+		    {SMSCode, _} = send_sms(Merchant, 2, Shop, Retailer, BackWithdraw),
+		    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
+				   [{<<"rsn">>, ?to_b(RSN)},
+				    {<<"sms_code">>, SMSCode}]); 
+		false ->
+		    case RetailerType =:= ?SYSTEM_RETAILER of
+			true -> ?w_user_profile:update(sysretailer, Merchant);
+			false -> ok
+		    end,
+		    ?utils:respond(200, Req, ?succ(reject_w_sale, RSN),
+				   [{<<"rsn">>, ?to_b(RSN)}])
+	    end;
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
     end.
     
 check_inventory(oncheck, Round, Moneny, ShouldPay, []) ->

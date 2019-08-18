@@ -590,6 +590,7 @@ function wsaleNewProvide(
 	$scope.setting.gift_direct    = wsaleUtils.to_integer(sale_mode.charAt(18));
 	$scope.setting.gift_ticket_on_sale = wsaleUtils.to_integer(sale_mode.charAt(19));
 	$scope.setting.charge_with_special = wsaleUtils.to_integer(sale_mode.charAt(20));
+	$scope.setting.multi_ticket = wsaleUtils.to_integer(sale_mode.charAt(21));
 	// $scope.setting.print_discount = wsaleUtils.to_integer(sale_mode.charAt(15));
 
 	$scope.print_setting = {
@@ -1041,11 +1042,14 @@ function wsaleNewProvide(
 		     },
 
 		     check_select_pticket: function(select, stickets, ptickets) {
-			 // angular.forEach(ptickets, function(p) {
-			 //     if (select.batch !== p.batch) {
-			 // 	 p.select = false;
-			 //     }
-			 // });
+			 if (!$scope.setting.multi_ticket) {
+			     angular.forEach(ptickets, function(p) {
+				 if (select.batch !== p.batch) {
+			 	     p.select = false;
+				 }
+			     });
+			 } 
+			 
 			 angular.forEach(stickets, function(s) {
 			     s.select = false;
 			 });
@@ -2457,19 +2461,26 @@ function wsaleNewProvide(
 
     $scope.$watch("select.wprice", function(newValue, oldValue){
 	if (angular.isUndefined(newValue) || newValue === oldValue ) return; 
-	var totalPay = 0;
-	for(var i=0, l=$scope.inventories.length; i<l; i++){
-	    var s = $scope.inventories[i];
-	    // s.$update = true;
-	    totalPay += wsaleUtils.to_decimal(s.fprice * s.sell); 
-	}
 	if (newValue) {
-	    $scope.select.verificate = diablo_round(totalPay) - wsaleUtils.to_integer(newValue);
+	    var totalPay = 0;
+	    for(var i=0, l=$scope.inventories.length; i<l; i++){
+		var s = $scope.inventories[i];
+		// s.$update = true;
+		totalPay += wsaleUtils.to_decimal(s.tag_price * s.sell); 
+	    }
+	    
+	    var discount = diablo_discount(newValue, totalPay);
+	    console.log(newValue, totalPay, discount);
+	    for(var i=0, l=$scope.inventories.length; i<l; i++){
+		var s = $scope.inventories[i];
+		s.$update = true;
+		s.fdiscount = discount;
+		s.fprice = diablo_price(s.tag_price, s.fdiscount);
+	    }
 	}
 	else {
 	    $scope.select.verificate = 0;
 	}
-	// console.log(totalPay, $scope.select.verificate); 
 	$scope.re_calculate();
     });
     
@@ -2525,6 +2536,9 @@ function wsaleNewProvide(
 	$scope.select.pscores   = calc.pscores;
 	$scope.select.charge    = $scope.select.should_pay - $scope.select.has_pay;
 
+	// if ($scope.setting.show_wprice) {
+	//     $scope.select.verificate = 0;
+	// } 
 	$scope.reset_score();
     };
 

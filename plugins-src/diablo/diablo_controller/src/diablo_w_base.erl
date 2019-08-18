@@ -929,7 +929,8 @@ sys_config() ->
 	      %% [16-17]: threshold discount of score 00:none
 	      %% [18]: gift good on sale directly 0: onoe, 1:send good directly
 	      %% [19]: gift_ticket 0: gift ticket on sale direct, 1:gift ticket with rsn
-	      %% [19]: charge special 0: none, 1:special stock can charge
+	      %% [20]: charge special 0: none, 1:special stock can charge
+	      %% [21]: allowed multi ticket 0:limit, 1:allowed
 	      {"p_balance",   "销售模式",   "0000"++"0000"++"0000"++"0001"++"000",  "000"},
 
 	      %% [0]: auto generate ticket at 04:00
