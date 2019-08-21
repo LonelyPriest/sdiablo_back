@@ -1156,9 +1156,11 @@ function wretailerCustomTicketDetailCtrlProvide(
     });
     diabloFilter.add_field("ticket_state", retailerUtils.ticket_state()),
     diabloFilter.add_field("ticket_pshop", filterShop),
+    diabloFilter.add_field("ticket_plan", filterTicketPlan),
     
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
+    console.log($scope.prompt);
 
     var now = retailerUtils.first_day_of_month();
     $scope.time = diabloFilter.default_time(now.first, now.current);
@@ -1249,10 +1251,10 @@ function wretailerCustomTicketDetailCtrlProvide(
 	} 
     };
 
-    $scope.discard = function(ticketId, mode) {
-	console.log(ticketId);
+    var discard = function(condition, mode) {
+	console.log(condition);
 	var callback = function(params) {
-	    wretailerService.discard_custom_ticket(ticketId, mode).then(function(result){
+	    wretailerService.discard_custom_ticket(condition, mode).then(function(result){
 		if (result.ecode === 0){
 		    dialog.response_with_callback(
 			true, "优惠券废弃", "优惠券废弃成功！！" ,
@@ -1269,7 +1271,17 @@ function wretailerCustomTicketDetailCtrlProvide(
 	};
 
 	dialog.request("优惠券废弃", "优惠券废弃后不可恢复，确定要废弃吗？", callback, undefined, undefined);
-    };  
+    };
+    
+    $scope.discard_all = function() {
+	diabloFilter.do_filter($scope.filters, $scope.time, function(search) {
+	    discard(search, 1);
+	});
+    };
+
+    $scope.discard_one = function(ticketId) {
+	discard({tid:ticketId}, 0);
+    }; 
 };
 
 function wretailerThresholdCardDetailCtrlProvide(

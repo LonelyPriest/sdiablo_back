@@ -149,6 +149,9 @@ ticket(consume, Merchant, {TicketId, Comment, Score2Money}) ->
 ticket(discard_custom_one, Merchant, TicketId) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {discard_custom_one, Merchant, TicketId});
+ticket(discard_custom_all, Merchant, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {discard_custom_all, Merchant, Conditions});
 
 ticket(new_plan, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant),
@@ -162,11 +165,7 @@ ticket(gift, Merchant, GiftInfo) ->
 
 ticket(list_plan, Merchant) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {list_ticket_plan, Merchant});
-
-ticket(discard_custom_all, Merchant) ->
-    Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {discard_custom_all, Merchant}).
+    gen_server:call(Name, {list_ticket_plan, Merchant}).
 
 get_ticket(by_retailer, Merchant, RetailerId) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -1798,16 +1797,20 @@ handle_call({discard_custom_one, Merchant, TicketId}, _From, State) ->
 		Sql1 = "update w_ticket_custom set state=" ++ ?to_s(?CUSTOM_TICKET_STATE_DISCARD)
 		    ++ " where merchant=" ++ ?to_s(Merchant)
 		    ++ " and id=" ++ ?to_s(TicketId)
-		    ++ " and state=" ++ ?to_s(?TICKET_STATE_CHECKED),
+		    ++ " and state in(1,3)", %% checked, unused
 		?sql_utils:execute(write, Sql1, TicketId)
 	end,
 
     {reply, Reply, State};
 
-handle_call({discard_custom_all, Merchant}, _From, State) -> 
+handle_call({discard_custom_all, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("discard_custom_all: merchant ~p, Conditions ~p", [Merchant, Conditions]),
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, ticket_condition(custome, Conditions, [])),
     Sql = "update w_ticket_custom set state=" ++ ?to_s(?CUSTOM_TICKET_STATE_DISCARD)
 	++ " where merchant=" ++ ?to_s(Merchant)
-	++ " and state=" ++ ?to_s(?TICKET_STATE_CHECKED),
+	++ " and state in(1,3)" %% checked, unused
+	++ ?sql_utils:condition(proplists, NewConditions)
+	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime),
     Reply = ?sql_utils:execute(write, Sql, Merchant), 
     {reply, Reply, State};
 
@@ -1846,12 +1849,15 @@ handle_call({ticket_by_promotion, Merchant, RetailerId, ConsumeShop}, _From, Sta
 		    lists:filter(
 		      fun({T}) ->
 			      IShop = ?v(<<"ishop">>, T),
-			      case IShop of
-				  ?YES ->
-				     %% ?DEBUG("same_shop ~p ~p", [?v(<<"in_shop">>, T), ConsumeShop]),
-				      ?v(<<"in_shop">>, T) =:= ConsumeShop;
-				  ?NO ->
-				      true
+			      Plan = ?v(<<"plan">>, T),
+			      Plan =/= ?INVALID_OR_EMPTY
+				  andalso
+				  case IShop of
+				      ?YES ->
+					  %% ?DEBUG("same_shop ~p ~p", [?v(<<"in_shop">>, T), ConsumeShop]),
+					  ?v(<<"in_shop">>, T) =:= ConsumeShop;
+				      ?NO ->
+					  true
 			      end
 		      end, Tickets),
 		%% ?DEBUG("NewTickets ~p", [NewTickets]),
@@ -2955,6 +2961,8 @@ ticket_condition(custome, [{<<"ticket_state">>, State}|T], Acc) ->
     ticket_condition(custome, T, [{<<"state">>, State}|Acc]);
 ticket_condition(custome, [{<<"ticket_pshop">>, State}|T], Acc) ->
     ticket_condition(custome, T, [{<<"in_shop">>, State}|Acc]);
+ticket_condition(custome, [{<<"ticket_plan">>, State}|T], Acc) ->
+    ticket_condition(custome, T, [{<<"plan">>, State}|Acc]);
 ticket_condition(custome, [H|T], Acc) ->
     ticket_condition(custome, T, [H|Acc]).
 

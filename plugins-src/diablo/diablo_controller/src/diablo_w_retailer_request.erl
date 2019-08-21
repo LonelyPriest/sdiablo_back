@@ -931,11 +931,12 @@ action(Session, Req, {"make_ticket_batch"}, Payload) ->
 action(Session, Req, {"discard_custom_ticket"}, Payload) ->
     ?DEBUG("discard_custom_ticket: session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
-    TicketId = ?v(<<"tid">>, Payload),
+    {struct, Conditions} = ?v(<<"condition">>, Payload),
     DiscardMode = ?v(<<"mode">>, Payload),
 
     case DiscardMode of
 	?TICKET_DISCARD_ONE ->
+	    TicketId = ?v(<<"tid">>, Conditions),
 	    case ?w_retailer:ticket(discard_custom_one, Merchant, TicketId) of
 		{ok, TicketId} ->
 		    ?utils:respond(200, Req, ?succ(discard_ticket_one, TicketId));
@@ -943,7 +944,7 @@ action(Session, Req, {"discard_custom_ticket"}, Payload) ->
 		    ?utils:respond(200, Req, Error)
 	    end;
 	?TICKET_DISCARD_ALL ->
-	    case ?w_retailer:ticket(discard_custom_all, Merchant) of
+	    case ?w_retailer:ticket(discard_custom_all, Merchant, Conditions) of
 		{ok, Merchant} ->
 		    ?utils:respond(200, Req, ?succ(discard_ticket_all, Merchant));
 		{error, Error} ->

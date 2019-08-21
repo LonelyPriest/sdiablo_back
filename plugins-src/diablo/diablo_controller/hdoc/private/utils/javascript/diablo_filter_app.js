@@ -365,6 +365,9 @@ function filterProvider(){
 		} else if (name === 'ticket_pshop') {
 		    _filter.fields.push({name:"ticket_pshop", chinese:"赠送电铺"});
 		    _prompt.ticket_pshop = promptValues;
+		} else if (name === 'ticket_plan') {
+		    _filter.fields.push({name:"ticket_plan", chinese:"优惠券方案"});
+		    _prompt.ticket_plan = promptValues;
 		}
 		
 		return _filter;
@@ -753,6 +756,7 @@ function filterProvider(){
 			var ps = planes.map(function(p) {
 			    return {id        :p.id,
 				    name      :p.name,
+				    py:diablo_pinyin(p.name),
 				    balance   :p.balance,
 				    mbalance  :p.mbalance,
 				    effect    :p.effect,

@@ -13,7 +13,7 @@
 	      <i class="glyphicon glyphicon-plus"></i></button>
 
 	    <button class="btn red purple-stripe"
-	       x-ng-click="discard(-1, 1)">废弃
+		    x-ng-click="discard_all()">废弃
 	      <i class="glyphicon glyphicon-minus"></i></button>
 	    
 	    <button class="btn blue reload purple-stripe"
@@ -136,7 +136,7 @@
 		    <td>
 		      <button x-ng-if="t.state===1"
 			      class="btn red diablo-button"
-			      x-ng-click="discard(t.id, 0)">废弃
+			      x-ng-click="discard_one(t.id)">废弃
 			<i class="glyphicon glyphicon-erase"></i></button> 
 		    </td> 
 		  </tr>
