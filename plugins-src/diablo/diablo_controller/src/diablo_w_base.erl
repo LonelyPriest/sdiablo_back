@@ -931,7 +931,7 @@ sys_config() ->
 	      %% [19]: gift_ticket 0: gift ticket on sale direct, 1:gift ticket with rsn
 	      %% [20]: charge special 0: none, 1:special stock can charge
 	      %% [21]: allowed multi ticket 0:limit, 1:allowed
-	      {"p_balance",   "销售模式",   "0000"++"0000"++"0000"++"0001"++"000",  "000"},
+	      {"p_balance",   "销售模式",   "0000"++"0000"++"0000"++"0001"++"0000" ++ "00", "0"},
 
 	      %% [0]: auto generate ticket at 04:00
 	      %% [1]: use ticket with no check 0-> check 1-> no check
@@ -961,6 +961,7 @@ sys_config() ->
 
 	      %% [6] check firm when stock transfer
 	      {"stock_firm",      "入库区分厂商",         "1111111",   "0"},
+
 	      
 	      {"bcode_use",       "条码开单模式",         "0",   "0"},
 	      {"bcode_auto",      "采用系统规则生成条码", "1",   "0"}, 
