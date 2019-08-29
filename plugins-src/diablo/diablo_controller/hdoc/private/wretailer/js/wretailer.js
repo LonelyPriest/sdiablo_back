@@ -427,85 +427,90 @@ function wretailerDetailCtrlProvide(
 		
 
 	    if (is_unlimit_card(promotion.rule_id)) stime = dateFilter(params.stime, "yyyy-MM-dd");
-	    
-	    wretailerService.new_recharge({
-		shop:           params.retailer.select_shop.id, 
-		retailer:       retailer.id, 
-		employee:       params.retailer.select_employee.id, 
-		charge_balance: charge_balance,
-		cash:           retailerUtils.to_integer(params.charge),
-		card:           retailerUtils.to_integer(params.card),
-		wxin:           retailerUtils.to_integer(params.wxin),
-		send_balance:   send_balance,
-		charge:         promotion.id,
-		ctime:          ctime,
-		stime:          stime,
-		good:           angular.isArray(goods) ? goods.map(
-		    function(g) {return {id:g.id, count:g.count}}) : undefined,
-		comment:        params.comment
-	    }).then(function(result){
-		console.log(result); 
-		if (result.ecode == 0){
-		    if (!is_theoretic_card(promotion.rule_id) && !is_unlimit_card(promotion.rule_id)) {
-			retailer.balance += charge_balance + retailerUtils.to_float(send_balance) 
-		    }
 
-		    var charge_shop = params.retailer.select_shop;
-		    var print_access = retailerUtils.print_num(charge_shop.id, base);
-		    var LODOP;
-		    var print_callback = function() {
-			if (diablo_frontend === retailerUtils.print_mode(charge_shop.id, base)){
-			    LODOP = getLodop();
-			    if (angular.isDefined(LODOP)){
-				retailerChargePrint.init(LODOP);
-				
-				var pdate = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss"); 
-				var top = retailerChargePrint.gen_head(
-				    LODOP,
-				    charge_shop.name,
-				    params.retailer.select_employee.name, 
-				    params.retailer.name,
-				    pdate);
-				
-				top = retailerChargePrint.gen_body(
-				    LODOP,
-				    top,
-				    {name:promotion.name,
-				     cbalance:charge_balance,
-				     sbalance:send_balance,
-				     comment:params.comment ? params.comment : diablo_empty_string});
-
-				retailerChargePrint.gen_foot(LODOP, top); 
-				retailerChargePrint.start_print(LODOP);
-			    } 
+	    if (diablo_giving_charge === promotion.rule_id
+		&& send_balance !== 0 && send_balance !== wsaleUtils.to_integer(params.sbalance)) {
+		dialog.set_error("会员充值", 2172);
+	    } else {
+		wretailerService.new_recharge({
+		    shop:           params.retailer.select_shop.id, 
+		    retailer:       retailer.id, 
+		    employee:       params.retailer.select_employee.id, 
+		    charge_balance: charge_balance,
+		    cash:           retailerUtils.to_integer(params.charge),
+		    card:           retailerUtils.to_integer(params.card),
+		    wxin:           retailerUtils.to_integer(params.wxin),
+		    send_balance:   wsaleUtils.to_integer(params.sbalance),
+		    charge:         promotion.id,
+		    ctime:          ctime,
+		    stime:          stime,
+		    good:           angular.isArray(goods) ? goods.map(
+			function(g) {return {id:g.id, count:g.count}}) : undefined,
+		    comment:        params.comment
+		}).then(function(result){
+		    console.log(result); 
+		    if (result.ecode == 0){
+			if (!is_theoretic_card(promotion.rule_id) && !is_unlimit_card(promotion.rule_id)) {
+			    retailer.balance += charge_balance + retailerUtils.to_integer(params.sbalance) 
 			}
-		    };
-		    
-		    dialog.response_with_callback(
-			true,
-			"会员充值",
-			"会员 [" + retailer.name + "] 充值成功，"
-			    + "帐户余额 [" + retailer.balance.toString() + " ]！！"
-			    + function(){
-				if (result.sms_code !== 0)
-				    return "发送短消息失败："
-				    + wretailerService.error[result.sms_code];
-				else return ""; 
-			    }(),
-			undefined, function(){
-			    dialog.request(
-				"会员充值",
-				"是否打印充值单据？",
-				print_callback, undefined, undefined); 
-			});
-    		} else{
-		    dialog.response(
-			false,
-			"会员充值",
-			"会员充值失败："
-			    + wretailerService.error[result.ecode]);
-    		}
-	    })
+
+			var charge_shop = params.retailer.select_shop;
+			var print_access = retailerUtils.print_num(charge_shop.id, base);
+			var LODOP;
+			var print_callback = function() {
+			    if (diablo_frontend === retailerUtils.print_mode(charge_shop.id, base)){
+				LODOP = getLodop();
+				if (angular.isDefined(LODOP)){
+				    retailerChargePrint.init(LODOP);
+				    
+				    var pdate = dateFilter($.now(), "yyyy-MM-dd HH:mm:ss"); 
+				    var top = retailerChargePrint.gen_head(
+					LODOP,
+					charge_shop.name,
+					params.retailer.select_employee.name, 
+					params.retailer.name,
+					pdate);
+				    
+				    top = retailerChargePrint.gen_body(
+					LODOP,
+					top,
+					{name:promotion.name,
+					 cbalance:charge_balance,
+					 sbalance:send_balance,
+					 comment:params.comment ? params.comment : diablo_empty_string});
+
+				    retailerChargePrint.gen_foot(LODOP, top); 
+				    retailerChargePrint.start_print(LODOP);
+				} 
+			    }
+			};
+			
+			dialog.response_with_callback(
+			    true,
+			    "会员充值",
+			    "会员 [" + retailer.name + "] 充值成功，"
+				+ "帐户余额 [" + retailer.balance.toString() + " ]！！"
+				+ function(){
+				    if (result.sms_code !== 0)
+					return "发送短消息失败："
+					+ wretailerService.error[result.sms_code];
+				    else return ""; 
+				}(),
+			    undefined, function(){
+				dialog.request(
+				    "会员充值",
+				    "是否打印充值单据？",
+				    print_callback, undefined, undefined); 
+			    });
+    		    } else{
+			dialog.response(
+			    false,
+			    "会员充值",
+			    "会员充值失败："
+				+ wretailerService.error[result.ecode]);
+    		    }
+		})
+	    }
 	}; 
 
 	var select_shop = $scope.shops[0];
@@ -531,8 +536,9 @@ function wretailerDetailCtrlProvide(
 		 goods: card_goods,
 		 card: 0,
 		 wxin: 0,
-		 stime: $.now(),
-		 pattern:  pattern,
+		 sbalance: 0,
+		 stime:   $.now(),
+		 pattern: pattern,
 		 get_charge: get_charge,
 		 unlimit_card: is_unlimit_card,
 		 calc_card_count: function(goods, ctime, cstime) {

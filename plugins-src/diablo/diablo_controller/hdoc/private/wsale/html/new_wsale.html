@@ -1355,8 +1355,8 @@
 	  <div class="col-md-6 col-sm-6 col-xs-6">
 	    <input type="text"
 		   class="form-control fg-red"
-		   value="{{params.select_charge.balance}}"
-		   readonly /> 
+		   x-ng-edit
+		   x-ng-model="params.sbalance"> 
 	  </div> 
 	</div>
 	
@@ -1387,7 +1387,7 @@
 
   <div class="modal-footer"> 
     <button class="btn btn-primary"
-	    x-ng-disabled="cForm.$invalid||!params.check_charge(params.cash, params.card, params.wxin)"
+	    x-ng-disabled="cForm.$invalid||!params.check_charge(params.cash, params.card, params.wxin, params.sbalance)"
 	    x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>  

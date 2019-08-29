@@ -131,23 +131,23 @@
 	      </div> 
 	    </div>
 
-	    <div x-ng-if="promotion.rule.id===0 && action===0" class="form-group">
-	      <label class="col-md-3 col-sm-3 control-label">赠送金额(元)</label>
-	      <div class="col-sm-6 col-md-6"> 
-		<div x-ng-class="{'has-error':rForm.balance.$invalid
-				 && !rForm.balance.$pristine}">
-		  <input type="number" step="1"
-			 class="form-control"
-			 name="balance"
-			 placeholder="请输入赠送金额，默认为0" 
-			 x-ng-model="promotion.balance"
-			 x-ng-pattern="pattern.number"/>
-		</div>
-	      </div>
-	      <div ng-if="rForm.balance.$invalid && !rForm.balance.$pristine">
-		<span class="fg-red">金额只能是数字</span>
-	      </div> 
-	    </div>
+	    <!-- <div x-ng-if="promotion.rule.id===0 && action===0" class="form-group"> -->
+	    <!--   <label class="col-md-3 col-sm-3 control-label">赠送金额(元)</label> -->
+	    <!--   <div class="col-sm-6 col-md-6">  -->
+	    <!-- 	<div x-ng-class="{'has-error':rForm.balance.$invalid -->
+	    <!-- 			 && !rForm.balance.$pristine}"> -->
+	    <!-- 	  <input type="number" step="1" -->
+	    <!-- 		 class="form-control" -->
+	    <!-- 		 name="balance" -->
+	    <!-- 		 placeholder="请输入赠送金额，默认为0"  -->
+	    <!-- 		 x-ng-model="promotion.balance" -->
+	    <!-- 		 x-ng-pattern="pattern.number"/> -->
+	    <!-- 	</div> -->
+	    <!--   </div> -->
+	    <!--   <div ng-if="rForm.balance.$invalid && !rForm.balance.$pristine"> -->
+	    <!-- 	<span class="fg-red">金额只能是数字</span> -->
+	    <!--   </div>  -->
+	    <!-- </div> -->
 
 	    <div x-ng-if="promotion.rule.id===0 || promotion.rule.id===1" class="form-group">
 	      <label class="col-md-3 col-sm-3 control-label">限制店铺消费</label>

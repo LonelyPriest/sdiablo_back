@@ -1353,56 +1353,61 @@ function wsaleNewProvide(
 		    + wsaleUtils.to_integer(params.card)
 		    + wsaleUtils.to_integer(params.wxin);
 		
-		var sbalance = 0;
-		var promotion = params.select_charge; 
+		var sbalance  = 0;
+		var promotion = params.select_charge;
 		if (promotion.charge !== 0 && cbalance >= promotion.charge) {
 		    sbalance = Math.floor(cbalance / promotion.charge) * promotion.balance;
-		} 
+		}
 		
-		diabloFilter.wretailer_charge({
-		    shop:           $scope.select.shop.id,
-		    retailer:       $scope.select.retailer.id,
-		    employee:       params.employee.id,
-		    charge_balance: cbalance,
-		    send_balance:   sbalance,
-		    cash:           wsaleUtils.to_decimal(params.cash),
-		    card:           wsaleUtils.to_decimal(params.card),
-		    wxin:           wsaleUtils.to_decimal(params.wxin),
-		    charge:         promotion.id,
-		    comment:        params.comment 
-		}).then(function(result) {
-		    console.log(result);
-		    if (result.ecode === 0) {
-			retailer.balance = wsaleUtils.to_decimal(retailer.balance + cbalance + sbalance);
-			$scope.set_retailer();
-			$scope.select.employee = params.employee;
-			$scope.select.recharge = cbalance;
+		if (sbalance !== 0 && sbalance !== wsaleUtils.to_integer(params.sbalance)) {
+		    dialog.set_error("会员充值", 2172);
+		} else {
+		    diabloFilter.wretailer_charge({
+			shop:           $scope.select.shop.id,
+			retailer:       $scope.select.retailer.id,
+			employee:       params.employee.id,
+			charge_balance: cbalance,
+			send_balance:   wsaleUtils.to_integer(params.sbalance),
+			cash:           wsaleUtils.to_integer(params.cash),
+			card:           wsaleUtils.to_integer(params.card),
+			wxin:           wsaleUtils.to_integer(params.wxin),
+			charge:         promotion.id,
+			comment:        params.comment 
+		    }).then(function(result) {
+			console.log(result);
+			if (result.ecode === 0) {
+			    retailer.balance = wsaleUtils.to_decimal(retailer.balance + cbalance)
+				+ wsaleUtils.to_integer(params.sbalance);
+			    $scope.set_retailer();
+			    $scope.select.employee = params.employee;
+			    $scope.select.recharge = cbalance;
 
-			angular.forEach(stocks, function(s) {
-			    s.fprice = 0;
-			    s.$update = true;
-			});
-			$scope.re_calculate();
-			
-			dialog.response_with_callback(
-			    true,
-			    "会员充值",
-			    "会员 [" + retailer.name + "] 充值成功，"
-				+ "帐户余额 [" + retailer.balance.toString() + " ]！！"
-				+ function(){
-				    if (result.sms_code !== 0) {
-					var ERROR = require("diablo-error");
-					return "发送短消息失败：" + ERROR[result.sms_code];
-				    } 
-				    else return ""; 
-				}(),
-			    undefined,
-			    undefined);
-		    } else {
-			dialog.set_error("会员充值", result.ecode); 
-		    }
-		})
-	    }
+			    angular.forEach(stocks, function(s) {
+				s.fprice = 0;
+				s.$update = true;
+			    });
+			    $scope.re_calculate();
+			    
+			    dialog.response_with_callback(
+				true,
+				"会员充值",
+				"会员 [" + retailer.name + "] 充值成功，"
+				    + "帐户余额 [" + retailer.balance.toString() + " ]！！"
+				    + function(){
+					if (result.sms_code !== 0) {
+					    var ERROR = require("diablo-error");
+					    return "发送短消息失败：" + ERROR[result.sms_code];
+					} 
+					else return ""; 
+				    }(),
+				undefined,
+				undefined);
+			} else {
+			    dialog.set_error("会员充值", result.ecode); 
+			}
+		    })
+		}
+	    } 
 	};
 
 	// var select_charge = $scope.mcharges[0];
@@ -1421,18 +1426,19 @@ function wsaleNewProvide(
 	    $scope,
 	    {$mcharge:true,
 	     select_charge: default_charge,
-	     cash: 0,
-	     card: 0,
-	     wxin: 0,
+	     cash:     0,
+	     card:     0,
+	     wxin:     0,
+	     sbalance: 0,
 	     charges: $scope.mcharges,
 	     pattern:  {comment:diabloPattern.comment, number:diabloPattern.number},
 	     
-	     check_charge: function(cash, card, wxin) {
-		 return wsaleUtils.to_decimal(cash)
-		     + wsaleUtils.to_decimal(card)
-		     + wsaleUtils.to_decimal(wxin) > 0;
-	     }
-	    }
+	     check_charge: function(cash, card, wxin, sbalance) {
+		 return wsaleUtils.to_integer(cash)
+		     + wsaleUtils.to_integer(card)
+		     + wsaleUtils.to_integer(wxin)
+		     + wsaleUtils.to_integer(sbalance) > 0;
+	     }}
 	);
     };
 
