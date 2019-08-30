@@ -1410,9 +1410,9 @@ wsaleDraft.prototype.select = function(dialog, template, draftFilter, selectCall
 };
 
 var wsalePrint = function(){
-    var left = 5;
+    var left = 1;
     var width = 219; // inch, 5.8 / 2.45 * 96 
-    var vWidth = width - 5; 
+    var vWidth = width - left; 
     var hFont = 20; // height of font
     
     var bold_style = function(LODOP) {
