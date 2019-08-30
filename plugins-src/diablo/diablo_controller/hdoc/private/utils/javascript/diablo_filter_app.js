@@ -368,6 +368,9 @@ function filterProvider(){
 		} else if (name === 'ticket_plan') {
 		    _filter.fields.push({name:"ticket_plan", chinese:"优惠券方案"});
 		    _prompt.ticket_plan = promptValues;
+		} else if (name === 'ticket_batch') {
+		    _filter.fields.push({name:"ticket_batch", chinese:"优惠券券号"});
+		    _prompt.ticket_plan = promptValues;
 		}
 		
 		return _filter;

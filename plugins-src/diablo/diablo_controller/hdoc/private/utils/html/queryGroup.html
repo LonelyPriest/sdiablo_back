@@ -125,6 +125,15 @@
 	  	   uib-typeahead="p as p.name for p in prompt.ticket_plan|filter:$viewValue|limitTo:20"/> 
 	  </span>
 
+	  <span x-ng-switch-when="ticket_batch">
+	    <form name="bForm">
+	      <div ng-class="{'has-error':bForm.$invalid && !bForm.$pristine}">
+	  	<input type="text" class="form-control" placeholder="请输入券号"
+	  	       x-ng-model="f.value" type="number" />
+	      </div>
+	    </form>
+	  </span>
+
 	  <span x-ng-switch-when="color">
 	    <input type="text" class="form-control" placeholder="请输入颜色"
 		   x-ng-model="f.value"

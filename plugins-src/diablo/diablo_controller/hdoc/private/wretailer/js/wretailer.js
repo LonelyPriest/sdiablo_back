@@ -429,7 +429,7 @@ function wretailerDetailCtrlProvide(
 	    if (is_unlimit_card(promotion.rule_id)) stime = dateFilter(params.stime, "yyyy-MM-dd");
 
 	    if (diablo_giving_charge === promotion.rule_id
-		&& send_balance !== 0 && send_balance !== wsaleUtils.to_integer(params.sbalance)) {
+		&& send_balance !== 0 && send_balance !== retailerUtils.to_integer(params.sbalance)) {
 		dialog.set_error("会员充值", 2172);
 	    } else {
 		wretailerService.new_recharge({
@@ -440,7 +440,7 @@ function wretailerDetailCtrlProvide(
 		    cash:           retailerUtils.to_integer(params.charge),
 		    card:           retailerUtils.to_integer(params.card),
 		    wxin:           retailerUtils.to_integer(params.wxin),
-		    send_balance:   wsaleUtils.to_integer(params.sbalance),
+		    send_balance:   retailerUtils.to_integer(params.sbalance),
 		    charge:         promotion.id,
 		    ctime:          ctime,
 		    stime:          stime,
@@ -1162,7 +1162,8 @@ function wretailerCustomTicketDetailCtrlProvide(
     });
     diabloFilter.add_field("ticket_state", retailerUtils.ticket_state()),
     diabloFilter.add_field("ticket_pshop", filterShop),
-    diabloFilter.add_field("ticket_plan", filterTicketPlan),
+    diabloFilter.add_field("ticket_plan",  filterTicketPlan),
+    diabloFilter.add_field("ticket_batch", []),
     
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();

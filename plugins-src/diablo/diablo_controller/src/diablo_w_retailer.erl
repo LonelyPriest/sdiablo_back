@@ -181,7 +181,7 @@ get_ticket(by_batch, Merchant, {Batch, Mode, Custom})->
     gen_server:call(Name, {ticket_by_batch, Merchant, {Batch, Mode, Custom}}).
 
 get_ticket(by_batch, Merchant, Batch, Custom) ->
-    get_ticket(by_batch, Merchant, {Batch, ?TICKET_STATE_CHECKED, Custom});
+    get_ticket(by_batch, Merchant, {Batch, ?TICKET_CHECKED, Custom});
 get_ticket(by_sale, Merchant, Sale, Custom) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {ticket_by_sale, Merchant, Sale, Custom}).
@@ -1886,7 +1886,9 @@ handle_call({ticket_by_promotion, Merchant, RetailerId, ConsumeShop}, _From, Sta
 	end, 
     {reply, Reply, State};
 
-handle_call({ticket_by_batch, Merchant, {Batchs, Mode, Custom}}, _From, State) -> 
+handle_call({ticket_by_batch, Merchant, {Batchs, Mode, Custom}}, _From, State) ->
+    ?DEBUG("ticket_by_batch: merchant ~p, batchs ~p, mode ~p, custom ~p",
+	   [Merchant, Batchs, Mode, Custom]),
     Sql = case Custom of
 	      ?CUSTOM_TICKET ->
 		  "select id, batch, balance, state from w_ticket_custom";
@@ -2963,6 +2965,8 @@ ticket_condition(custome, [{<<"ticket_pshop">>, State}|T], Acc) ->
     ticket_condition(custome, T, [{<<"in_shop">>, State}|Acc]);
 ticket_condition(custome, [{<<"ticket_plan">>, State}|T], Acc) ->
     ticket_condition(custome, T, [{<<"plan">>, State}|Acc]);
+ticket_condition(custome, [{<<"ticket_batch">>, State}|T], Acc) ->
+    ticket_condition(custome, T, [{<<"batch">>, State}|Acc]);
 ticket_condition(custome, [H|T], Acc) ->
     ticket_condition(custome, T, [H|Acc]).
 
