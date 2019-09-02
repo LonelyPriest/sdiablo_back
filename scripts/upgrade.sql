@@ -637,9 +637,8 @@ alter table w_change_shift modify column account integer not null default -1;
 alter table w_change_shift modify column comment varchar(137) not null default '';
 
 
-
-
-
+--2019-09-02
+alter table print_template change column offset_width offset_fabric TINYINT default 0;
 
 
 alter table w_charge_detail add column alipay DECIMAL(10, 2) default 0 after wxin
@@ -650,3 +649,4 @@ alter table w_sale add column g_ticket TINYINT not null default 0 after comment;
 
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;
+

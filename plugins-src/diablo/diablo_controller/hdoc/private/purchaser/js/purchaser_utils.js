@@ -1188,9 +1188,9 @@ stockPrintU.prototype.printBarcode2 = function() {
     
     // var iwpx = this.wpx - this.left;
     var iwpx = Math.floor(this.template.width * 96 / 2.54) - this.left;
-    if (stockUtils.to_integer(this.template.offset_width) > 0) {
-	iwpx += stockUtils.to_integer(this.template.offset_width);
-    }
+    // if (stockUtils.to_integer(this.template.offset_width) > 0) {
+    // 	iwpx += stockUtils.to_integer(this.template.offset_width);
+    // }
     var startSecond = 0;
     var startThird = 0;
     if (this.dualPrint - 1 >= 0) {
@@ -1434,8 +1434,9 @@ stockPrintU.prototype.printBarcode2 = function() {
     // fabric
     if (this.template.fabric) {
 	if (angular.isDefined(this.stock.fabrics) && angular.isArray(this.stock.fabrics)) {
-	    if (0 !== this.stock.fabrics.length) {
-		line = "成份:";
+	    var fabric_length = this.stock.fabrics.length;
+	    if (0 !== fabric_length) {
+		line = "面料:";
 		this.start_print(line,
 				 top,
 				 this.left,
@@ -1446,15 +1447,31 @@ stockPrintU.prototype.printBarcode2 = function() {
 				 pThird,
 				 startSecond,
 				 startThird);
-		top += this.template.hpx_fabric;
-	    }
-	    
-	    for (var i=0, l=this.stock.fabrics.length; i<l; i++) {
-		var f = this.stock.fabrics[i];
-		line = "     " + f.p + "%" + f.name; 
+
+		var f = this.stock.fabrics[0];
+		line = f.p + "%" + f.name;
+
+		var offset_fabric = stockUtils.to_integer(this.template.offset_fabric);
+		offset_fabric = offset_fabric === 0 ? 40 : offset_fabric;
 		this.start_print(line,
 				 top,
-				 this.left,
+				 this.left + offset_fabric,
+				 iwpx,
+				 this.template.hpx_each,
+				 this.template.font_fabric,
+				 pSecond,
+				 pThird,
+				 startSecond,
+				 startThird);
+	    }
+	    
+	    for (var i=1, l=fabric_length; i<l; i++) {
+		var f = this.stock.fabrics[i];
+		line = f.p + "%" + f.name;
+		top += this.template.hpx_fabric;
+		this.start_print(line,
+				 top,
+				 this.left + offset_fabric,
 				 iwpx,
 				 this.template.hpx_fabric,
 				 this.template.font_fabric,
@@ -1462,8 +1479,9 @@ stockPrintU.prototype.printBarcode2 = function() {
 				 pThird,
 				 startSecond,
 				 startThird); 
-		top += this.template.hpx_fabric;
-	    } 
+	    }
+
+	    top += this.template.hpx_fabric;
 	} 
     }
 

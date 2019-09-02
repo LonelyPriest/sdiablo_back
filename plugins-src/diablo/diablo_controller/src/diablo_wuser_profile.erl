@@ -1040,7 +1040,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		", offset_myprice"
 		", offset_label"
 		", offset_type"
-		", offset_width"
+		", offset_fabric"
 
 		", barcode"
 		", w_barcode"
@@ -1130,7 +1130,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(0) ++ ","      %% offset_myprice
 		++ ?to_s(0) ++ ","      %% offset_label
 		++ ?to_s(0) ++ ","      %% offset_type
-		++ ?to_s(0) ++ ","      %% offset_width
+		++ ?to_s(0) ++ ","      %% offset_fabric
 
 		++ ?to_s(?YES) ++ ","   %% barcode
 		++ ?to_s(0) ++ ","      %% w_barcode
