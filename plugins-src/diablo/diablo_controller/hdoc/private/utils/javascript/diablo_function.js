@@ -28,6 +28,7 @@ var diablo_male = 1;
 
 var diablo_default_barcode = 0;
 var diablo_free_size = "0";
+var diablo_free_size_name = "均码";
 var diablo_free_color = 0;
 var diablo_free_color_size = 0;
 var diablo_empty_barcode = "0";

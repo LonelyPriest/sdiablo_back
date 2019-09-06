@@ -1006,7 +1006,8 @@ function goodPrintTemplateCtrlProvide(
 
 	     , "tag_price", "vir_price", "my_price", "self_brand"
 	     
-	     , "offset_size", "offset_tagprice", "offset_virprice" , "offset_myprice"
+	     , "offset_size", "offset_color"
+	     , "offset_tagprice", "offset_virprice" , "offset_myprice"
 	     , "offset_label" , "offset_type", "offset_fabric"
 
 	     , "printer", "dual_print"

@@ -639,6 +639,7 @@ alter table w_change_shift modify column comment varchar(137) not null default '
 
 --2019-09-02
 alter table print_template change column offset_width offset_fabric TINYINT default 0;
+alter table print_template add column offset_color TINYINT default 0 after offset_size;
 
 
 alter table w_charge_detail add column alipay DECIMAL(10, 2) default 0 after wxin

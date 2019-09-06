@@ -692,13 +692,14 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", self_brand"
 	
 	", offset_size"
+	", offset_color"
 	", offset_tagprice"
 	", offset_virprice"
 	", offset_myprice" 
 	", offset_label"
 	", offset_type"
 	", offset_fabric"
-
+	
 	", barcode"
 	", w_barcode"
 
@@ -788,6 +789,7 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(self_brand, string, ?v(<<"self_brand">>, Attrs))
 	
 	++  ?utils:v(offset_size, integer, ?v(<<"offset_size">>, Attrs))
+	++  ?utils:v(offset_color, integer, ?v(<<"offset_color">>, Attrs))
 	++  ?utils:v(offset_tagprice, integer, ?v(<<"offset_tagprice">>, Attrs))
 	++  ?utils:v(offset_virprice, integer, ?v(<<"offset_virprice">>, Attrs))
 	++  ?utils:v(offset_myprice, integer, ?v(<<"offset_myprice">>, Attrs)) 
