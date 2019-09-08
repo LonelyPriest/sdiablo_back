@@ -1554,7 +1554,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 		line3 = line3 + " " + this.trim_empty_size(this.third.size);
 	}
 
-	if (this.template.color && !this.template.solo_color
+	if (this.template.color && !this.template.solo_color && !this.template.size_color
 	    || this.template.size && !this.template.solo_size) {
 	    var offset_color = this.to_i(this.template.offset_color) + offset_tagprice;
 	    if (diablo_trim(line)) {

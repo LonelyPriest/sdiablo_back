@@ -1126,7 +1126,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		++ "\'\'" ++ ","      %% self_brand
 		
 		++ ?to_s(0) ++ ","      %% offset_size
-		++ ?to_s(0) ++ ","      %% offset_color
+		++ ?to_s(40) ++ ","      %% offset_color
 		++ ?to_s(0) ++ ","      %% offset_tagprice
 		++ ?to_s(0) ++ ","      %% offset_virprice
 		++ ?to_s(0) ++ ","      %% offset_myprice

@@ -109,6 +109,8 @@ compare_date(date, StringDate0, StringDate1) ->
     compare_date(date, to_date(date, StringDate0), to_date(date, StringDate1)).
 
 
+ecompare_date(date, {_Y, _M, _D}, {0, 0, 0}) ->
+    true;
 ecompare_date(date, {Y, M, D}, {Y1, M1, D1}) ->
     calendar:date_to_gregorian_days({Y, M, D}) >= calendar:date_to_gregorian_days({Y1, M1, D1});
 ecompare_date(date, {Y, M, D}, StringDate) ->
