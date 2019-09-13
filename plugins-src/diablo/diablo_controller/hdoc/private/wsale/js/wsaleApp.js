@@ -415,6 +415,7 @@ function wsaleNewProvide(
     // console.log(filterCharge);
     $scope.charges = filterCharge.filter(function(d) {
 	return d.type === diablo_charge
+	    && d.deleted === diablo_no
 	    && (d.rule_id === diablo_times_charge || d.rule_id === diablo_giving_charge)}); 
     $scope.tcharges = $scope.charges.filter(function(d){return d.rule_id === diablo_times_charge});
     $scope.mcharges = $scope.charges.filter(function(d){return d.rule_id === diablo_giving_charge});
@@ -3142,6 +3143,8 @@ function wsaleNewDetailProvide(
 
     $scope.ticketPlans = filterTicketPlan.filter(function(p) {
 	return !p.deleted
+    }).sort(function(p1, p2) {
+	return p2.balance - p1.balance;
     }).map(function(p) {
 	return {id:       p.id,
 		name:     p.name + "-" + p.balance + "元",
@@ -3150,7 +3153,9 @@ function wsaleNewDetailProvide(
 		effect:   p.effect,
 		expire:   p.expire,
 		scount:   p.scount}
-    });
+    }); 
+
+    console.log($scope.ticketPlans);
     
     // var LODOP = undefined;
     // if (diablo_frontend === wsaleUtils.print_mode(user.loginShop, base)) {
@@ -3496,6 +3501,8 @@ function wsaleNewDetailProvide(
 	console.log(r);
 	if (r.g_ticket === diablo_yes) {
 	    dialog.set_error("会员电子券赠送", 2714);
+	} else if ($scope.ticketPlans.length === 0) {
+	    dialog.set_error("会员电子券赠送", 2715);
 	} else {
 	    var callback = function(params) {
 		console.log(params);
@@ -3543,52 +3550,87 @@ function wsaleNewDetailProvide(
 		});
 	    };
 
-	    // get max send count
-	    var maxSend = 0, mbalance = 0, mindex = diablo_invalid_index, validPlans = [];
-	    for (var i=0, l=$scope.ticketPlans.length; i<l; i++) {
-		var p = $scope.ticketPlans[i];
-		if (p.scount > maxSend) {
-		    maxSend = p.scount; 
-		}
-		if (p.mbalance === diablo_invalid) {
-		    validPlans.push(p);
-		} else {
-		    if (r.has_pay - r.ticket >= p.mbalance && p.mbalance > mbalance) {
-			mbalance = p.balance;
-			mindex   = i;
-		    }
-		}
-		
-	    };
 	    
-	    if (mindex !== diablo_invalid_index) {
-		validPlans.push($scope.ticketPlans[mindex]);
+	    var realBalance = r.has_pay - r.ticket, ticketLength = $scope.ticketPlans.length;
+	    var validPlans = [], maxSend = 5;
+	    // max
+	    if (realBalance >= $scope.ticketPlans[0].mbalance) {
+		validPlans.push({plan:$scope.ticketPlans[0], count: 1});
+		realBalance -= $scope.ticketPlans[0].mbalance;
+		maxSend -= 1;
 	    }
+
+	    // min
+	    if (realBalance >= $scope.ticketPlans[ticketLength - 1].mbalance) {
+		validPlans.push({plan:$scope.ticketPlans[ticketLength - 1], count: 1});
+		realBalance -= $scope.ticketPlans[ticketLength - 1].mbalance;
+		maxSend -= 1;
+	    }
+
+	    for (var i=1, l=ticketLength - 1; i<l; i++) {
+		if (realBalance >= $scope.ticketPlans[i].mbalance) {
+		    validPlans.push({plan:$scope.ticketPlans[i], count: 1});
+		    realBalance -= $scope.ticketPlans[i].mbalance;
+		    maxSend -= 1;
+		}
+	    }
+
+	    // left use min
+	    while (maxSend > 0 && realBalance > $scope.ticketPlans[ticketLength - 1].mbalance) {
+		validPlans.push({plan:$scope.ticketPlans[ticketLength - 1], count: 1});
+		realBalance -= $scope.ticketPlans[ticketLength - 1].mbalance;
+		maxSend -= 1;
+	    }
+	    
+	    // get max send count
+	    // var maxSend = 0, mbalance = 0, mindex = diablo_invalid_index, validPlans = [];
+	    
+	    
+	    // for (var i=0, l=$scope.ticketPlans.length; i<l; i++) {
+	    // 	var p = $scope.ticketPlans[i];
+	    // 	if (p.scount > maxSend) {
+	    // 	    maxSend = p.scount; 
+	    // 	}
+	    // 	if (p.mbalance === diablo_invalid) {
+	    // 	    validPlans.push(p);
+	    // 	} else {
+	    // 	    if (r.has_pay - r.ticket >= p.mbalance && p.mbalance > mbalance) {
+	    // 		mbalance = p.balance;
+	    // 		mindex   = i;
+	    // 	    }
+	    // 	}
+		
+	    // };
+	    
+	    // if (mindex !== diablo_invalid_index) {
+	    // 	validPlans.push($scope.ticketPlans[mindex]);
+	    // }
 	    
 	    dialog.edit_with_modal(
 		"detail-gift-ticket.html",
 		undefined,
 		callback,
 		undefined,
-		{tickets: [],
-		 add_ticket: function(tickets, planes) {
-		     tickets.push({plan:planes[0], count:1});
-		 }, 
-		 delete_ticket: function(tickets) {
-		     tickets.splice(-1, 1);
-		 },
-		 check_ticket: function(tickets) {
-		     var invalid = false;
-		     for (var i=0, l=tickets.length; i<l; i++) {
-			 if (tickets[i].plan.id === diablo_invalid_index) {
-			     invalid = true;
-			     break;
-			 } 
-		     } 
-		     return !invalid && tickets.length !== 0;
-		 },
-		 maxSend: maxSend,
-		 planes: validPlans}
+		{tickets: validPlans,
+		 // add_ticket: function(tickets, planes) {
+		 //     tickets.push({plan:planes[0], count:1});
+		 // }, 
+		 // delete_ticket: function(tickets) {
+		 //     tickets.splice(-1, 1);
+		 // },
+		 // check_ticket: function(tickets) {
+		 //     var invalid = false;
+		 //     for (var i=0, l=tickets.length; i<l; i++) {
+		 // 	 if (tickets[i].plan.id === diablo_invalid_index) {
+		 // 	     invalid = true;
+		 // 	     break;
+		 // 	 } 
+		 //     } 
+		 //     return !invalid && tickets.length !== 0;
+		 // },
+		 // maxSend: maxSend,
+		 // planes: validPlans
+		}
 	    );
 	} 
     };

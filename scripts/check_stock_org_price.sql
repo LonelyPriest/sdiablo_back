@@ -66,7 +66,7 @@ update w_sale_detail a inner join(select style_number, brand, merchant, shop, en
 update w_sale_detail a inner join(select style_number, brand, merchant, shop, sex from w_inventory) b on a.merchant=b.merchant and a.shop=b.shop and a.style_number=b.style_number and a.brand=b.brand set a.sex=b.sex;
 
 -- syn org_price of w_sale_detail
-update w_sale_detail a inner join(select style_number, brand, merchant, shop, org_price, ediscount from w_inventory where merchant=33) b \
+update w_sale_detail a inner join(select style_number, brand, merchant, shop, org_price, ediscount from w_inventory where merchant=87) b \
 on a.merchant=b.merchant and a.shop=b.shop and a.style_number=b.style_number and a.brand=b.brand \
 set a.org_price=b.org_price, a.ediscount=b.ediscount;
 

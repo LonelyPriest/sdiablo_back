@@ -293,50 +293,50 @@
 <script type="text/ng-template" id="detail-gift-ticket.html"> 
   <div class="modal-body">
     <div class="table-responsive">
-      <div class="btn-group table-panel pull-right">
-	<button x-ng-disabled="params.tickets.length===0"
-		x-ng-click="params.delete_ticket(params.tickets)"
-		type="button"
-		class="btn red">
-	  <i class="glyphicon glyphicon-minus"></i></button> 
-	<button x-ng-click="params.add_ticket(params.tickets, params.planes)"
-		type="button"
-		x-ng-disabled="params.planes.length===0 || params.tickets.length===params.maxSend"
-		class="btn green">
-	  <i class="glyphicon glyphicon-plus"></i>
-	</button>
-      </div>
+      <!-- <div class="btn-group table-panel pull-right"> -->
+      <!-- 	<button x-ng-disabled="params.tickets.length===0" -->
+      <!-- 		x-ng-click="params.delete_ticket(params.tickets)" -->
+      <!-- 		type="button" -->
+      <!-- 		class="btn red"> -->
+      <!-- 	  <i class="glyphicon glyphicon-minus"></i></button>  -->
+      <!-- 	<button x-ng-click="params.add_ticket(params.tickets, params.planes)" -->
+      <!-- 		type="button" -->
+      <!-- 		x-ng-disabled="params.planes.length===0 || params.tickets.length===params.maxSend" -->
+      <!-- 		class="btn green"> -->
+      <!-- 	  <i class="glyphicon glyphicon-plus"></i> -->
+      <!-- 	</button> -->
+      <!-- </div> -->
       
       <table class="table table-bordered table-striped table-condensed table-advanced">
 	<thead>
-	  <th>电子券金额</th>
-	  <th>电子券数量</th>
+	  <th class="text-center">电子券金额</th>
+	  <th class="text-center">电子券数量</th>
 	</thead>
 	
 	<tbody>
 	  <tr class="text-center" x-ng-repeat="c in params.tickets">
-	    <td class="vert-align">
-	      <form name="cForm">
-		<div ng-class="{'has-error':cForm.$invalid && !cForm.$pristine}">
-		  <select class="form-control"
-			  required
-			  x-ng-model="c.plan"
-			  x-ng-options="p.name for p in params.planes">
-		  </select>
-		</div>
-	      </form> 
+	    <td class="vert-align" x-ng-bind="c.plan.name">
+	      <!-- <form name="cForm"> -->
+	      <!-- 	<div ng-class="{'has-error':cForm.$invalid && !cForm.$pristine}"> -->
+	      <!-- 	  <select class="form-control" -->
+	      <!-- 		  required -->
+	      <!-- 		  x-ng-model="c.plan" -->
+	      <!-- 		  x-ng-options="p.name for p in params.planes"> -->
+	      <!-- 	  </select> -->
+	      <!-- 	</div> -->
+	      <!-- </form>  -->
 	    </td>
 
-	    <td class="vert-align">
-	      <form name="pForm">
-		<div ng-class="{'has-error':pForm.$invalid && !pForm.$pristine}">
-		  <input type="number"
-			 class="form-control"
-			 required
-			 readonly
-			 x-ng-model="c.count"/>
-		</div>
-	      </form>
+	    <td class="vert-align" x-ng-bind="c.count">
+	      <!-- <form name="pForm"> -->
+	      <!-- 	<div ng-class="{'has-error':pForm.$invalid && !pForm.$pristine}"> -->
+	      <!-- 	  <input type="number" -->
+	      <!-- 		 class="form-control" -->
+	      <!-- 		 required -->
+	      <!-- 		 readonly -->
+	      <!-- 		 x-ng-model="c.count"/> -->
+	      <!-- 	</div> -->
+	      <!-- </form> -->
 	    </td>
 	    
 	  </tr>
@@ -347,7 +347,7 @@
 
   <div class="modal-footer">
     <button class="btn btn-primary"
-	    x-ng-disabled="!params.check_ticket(params.tickets)"
+	    x-ng-disabled="params.tickets.length===0"
 	    x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>  

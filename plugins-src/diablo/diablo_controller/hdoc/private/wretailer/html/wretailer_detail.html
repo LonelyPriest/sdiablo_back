@@ -702,6 +702,9 @@
 		   step="1"
 		   class="form-control fg-red"
 		   x-ng-model="params.retailer.select_charge.cstime"
+		   x-ng-change="params.calc_card_count(params.goods,
+				params.retailer.select_charge.ctime,
+				params.retailer.select_charge.cstime)"
 		   x-ng-pattern="pattern.number"/> 
 	  </div> 
 	</div>

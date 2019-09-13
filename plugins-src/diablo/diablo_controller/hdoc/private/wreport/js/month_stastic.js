@@ -23,6 +23,7 @@ function monthStasticCtrlProvide(
 	cash: 0,
 	card: 0,
 	wxin: 0,
+	aliPay: 0,
 	draw: 0,
 	ticket: 0,
 	veri: 0,
@@ -63,6 +64,7 @@ function monthStasticCtrlProvide(
 	$scope.s_stastic.cash = 0;
 	$scope.s_stastic.card = 0;
 	$scope.s_stastic.wxin = 0;
+	$scope.s_stastic.aliPay = 0;
 	$scope.s_stastic.draw = 0;
 	$scope.s_stastic.ticket = 0;
 	$scope.s_stastic.veri = 0;
@@ -126,6 +128,7 @@ function monthStasticCtrlProvide(
 			p.cash     = d.cash;
 			p.card     = d.card;
 			p.wxin     = d.wxin;
+			p.aliPay   = d.aliPay;
 			p.veri     = d.veri;
 			p.draw     = d.draw;
 			p.ticket   = d.ticket;
@@ -158,6 +161,7 @@ function monthStasticCtrlProvide(
 			$scope.s_stastic.cash += to_f(p.cash);
 			$scope.s_stastic.card += to_f(p.card);
 			$scope.s_stastic.wxin += to_f(p.wxin);
+			$scope.s_stastic.aliPay += to_f(p.aliPay);
 			$scope.s_stastic.draw += to_f(p.draw);
 			$scope.s_stastic.ticket += to_f(p.ticket);
 			$scope.s_stastic.veri += to_f(p.veri);
