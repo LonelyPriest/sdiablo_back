@@ -452,7 +452,8 @@ function wsaleRsnDetailCtrlProvide (
 	    print_discount: sale_mode.charAt(15) === diablo_empty_string ? diablo_yes
 		: wsaleUtils.to_integer(sale_mode.charAt(15)),
 	    cake_mode:      wsaleUtils.cake_mode(shop.id, base),
-	    comments:       wsaleUtils.comment(shop.id, base)
+	    comments:       wsaleUtils.comment(shop.id, base),
+	    head_seperater: wsaleUtils.to_integer(sale_mode.charAt(23)),
 	};
 	
     	if (diablo_frontend === p_mode){
@@ -473,13 +474,16 @@ function wsaleRsnDetailCtrlProvide (
     			console.log(retailers);
     			// console.log(diablo_get_object(sale.retailer_id, retailers).name);
     			var retailer = diablo_get_object(sale.retailer_id, retailers);
-    			wsalePrint.gen_head(
+    			var top = wsalePrint.gen_head(
     			    LODOP,
     			    shop.name,
     			    rsn,
     			    diablo_get_object(sale.employ_id, filterEmployee).name,
     			    retailer.name,
-    			    sale.entry_date);
+    			    sale.entry_date,
+			    sale.direct,
+			    print_setting
+			);
 
     			// sort sale
     			var notes= [];
@@ -509,12 +513,20 @@ function wsaleRsnDetailCtrlProvide (
     			}
 
     			// console.log(notes);
-    			var hLine = wsalePrint.gen_body(LODOP, sale, notes, isRound, print_setting); 
-    			var vip = wsaleUtils.isVip(retailer, no_vip, filterSysRetailer),
+    			top = wsalePrint.gen_body(
+			    LODOP, top, sale, notes, isRound, print_setting);
 			
-    			hLine = wsalePrint.gen_stastic(
-			    LODOP, hLine, sale.direct, sale, sale.balance, vip, print_setting); 
-    			wsalePrint.gen_foot(LODOP, hLine, pdate, shop, print_setting);
+    			// var vip = wsaleUtils.isVip(retailer, no_vip, filterSysRetailer), 
+    			top = wsalePrint.gen_stastic(
+			    LODOP,
+			    top,
+			    sale.direct,
+			    sale,
+			    sale.balance,
+			    wsaleUtils.isVip(retailer, no_vip, filterSysRetailer),
+			    print_setting);
+			
+    			wsalePrint.gen_foot(LODOP, top, pdate, shop, print_setting);
     			wsalePrint.start_print(LODOP); 
     		    }); 
     		}); 

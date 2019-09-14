@@ -934,7 +934,8 @@ sys_config() ->
 	      %% [20]: charge special 0: none, 1:special stock can charge
 	      %% [21]: allowed multi ticket 0:limit, 1:allowed
 	      %% [22]: gift ticket strategy 0:only one max ticket, 1:greed strategy
-	      {"p_balance",   "销售模式",   "0000"++"0000"++"0000"++"0001"++"0000" ++ "000", "0"},
+	      %% [23]: head title seperater by '-' when print. 0:one line, 1:seperaer by '-'
+	      {"p_balance",   "销售模式",   "0000"++"0000"++"0000"++"0001"++"0000" ++ "0000", "0"},
 
 	      %% [0]: auto generate ticket at 04:00
 	      %% [1]: use ticket with no check 0-> check 1-> no check

@@ -599,7 +599,8 @@ function wsaleNewProvide(
 		: wsaleUtils.to_integer(sale_mode.charAt(15)),
 	    print_perform:  wsaleUtils.to_integer(sale_mode.charAt(3)),
 	    cake_mode:      wsaleUtils.cake_mode(shopId, base),
-	    comments:       wsaleUtils.comment(shopId, base) 
+	    comments:       wsaleUtils.comment(shopId, base),
+	    head_seperater: wsaleUtils.to_integer(sale_mode.charAt(23)),
 	};
 
 
@@ -2092,24 +2093,31 @@ function wsaleNewProvide(
 			} 
 		    }
 			
-		    wsalePrint.gen_head(
+		    var top = wsalePrint.gen_head(
 			LODOP,
 			$scope.select.shop.name,
 			$scope.select.rsn,
 			$scope.select.employee.name,
 			$scope.select.retailer.name, 
 			dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),
-			wsaleService.direct.wsale);
+			wsaleService.direct.wsale,
+			$scope.print_setting);
 
 		    var isRound = $scope.setting.round; 
 		    // var cakeMode = $scope.setting.cake_mode;
-		    var hLine = wsalePrint.gen_body(
-			LODOP, $scope.select, pinvs, isRound, $scope.print_setting); 
+		    top = wsalePrint.gen_body(
+			LODOP,
+			top,
+			$scope.select,
+			pinvs,
+			isRound,
+			$scope.print_setting);
+		    
 		    var selectRetailer = $scope.select.retailer.id; 
 		    // console.log($scope.select);
-		    hLine = wsalePrint.gen_stastic(
+		    top = wsalePrint.gen_stastic(
 			LODOP,
-			hLine,
+			top,
 			0,
 			$scope.select,
 			$scope.select.retailer.balance,
@@ -2117,7 +2125,7 @@ function wsaleNewProvide(
 			    $scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers),
 			$scope.print_setting);
 		    
-		    wsalePrint.gen_foot(LODOP, hLine, pdate, $scope.select.shop, $scope.print_setting);
+		    wsalePrint.gen_foot(LODOP, top, pdate, $scope.select.shop, $scope.print_setting);
 		    wsalePrint.start_print(LODOP); 
 		};
 		

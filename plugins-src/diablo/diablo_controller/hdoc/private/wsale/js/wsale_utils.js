@@ -1496,22 +1496,34 @@ var wsalePrint = function(){
     };
 
     return {
-	gen_head: function(LODOP, shop, rsn, employee, retailer, date, direct){
+	gen_head: function(LODOP, shop, rsn, employee, retailer, date, direct, pSetting){
 	    // wsalePrint.init(LODOP);
 	    wsalePrint.init(LODOP);
-	    
-	    LODOP.ADD_PRINT_TEXT(
-		10,
-		left,
-		vWidth,
-		30,
-		wsaleUtils.to_integer(direct) === 0 ? shop : shop + "（退）"); 
-	    LODOP.SET_PRINT_STYLEA(0, "FontSize", 13);
-	    // LODOP.SET_PRINT_STYLEA(0, "Alignment", 2); 
-	    LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
-	    // LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
 
-	    var top = 40; 
+	    var top = 10;
+	    if (pSetting.head_seperater) {
+		var shopA = shop.split(diablo_dash_seperator);
+		for (var i=0, l=shopA.length; i<l; i++) {
+		    LODOP.ADD_PRINT_TEXT(top, left, vWidth, 30, shopA[i]); 
+		    LODOP.SET_PRINT_STYLEA(0, "FontSize", 13);
+		    LODOP.SET_PRINT_STYLEA(0, "Alignment", 2); 
+		    LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
+		    top += 25
+		}
+	    } else {
+		LODOP.ADD_PRINT_TEXT(
+		    top,
+		    left,
+		    vWidth,
+		    30,
+		    wsaleUtils.to_integer(direct) === 0 ? shop : shop + "（退）"); 
+		LODOP.SET_PRINT_STYLEA(0, "FontSize", 13);
+		LODOP.SET_PRINT_STYLEA(0, "Alignment", 2); 
+		LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
+		top += 25; 
+		// LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
+	    } 
+
 	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "单号：" + rsn); 
 	    top += 15; // 55
 	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "客户：" + retailer);
@@ -1522,11 +1534,11 @@ var wsalePrint = function(){
 	    top += 20; // 105
 	    LODOP.ADD_PRINT_LINE(top,  left, top, vWidth, 0, 1);
 
-	    return;
+	    return top;
 	},
 
-	gen_body: function(LODOP, sale, inventories, round, pSetting){
-	    var top = 115;
+	gen_body: function(LODOP, top, sale, inventories, round, pSetting){
+	    top += 15;
 	    var perform = 0;
 	    // if (diablo_no === cakeMode) {
 	    LODOP.ADD_PRINT_TEXT(top, left, 70, hFont, "款号"); 
