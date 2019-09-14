@@ -95,6 +95,7 @@ function wreportDailyCtrlProvide(
 			margins:0,
 			
 			spay:0,
+			sspay:0,
 			cash:0,
 			card:0,
 			wxin:0,
@@ -121,10 +122,8 @@ function wreportDailyCtrlProvide(
 			s.profit = reportUtils.filter_by_shop(shop.id, profit); 
 			s.sale.cost = s.profit.org_price;
 			
-			s.sale.gross = reportUtils.f_sub(to_f(s.sale.spay), to_f(s.profit.org_price));
 			
-			s.sale.margins = reportUtils.calc_profit(
-			    to_f(s.profit.org_price), to_f(s.sale.spay));
+			
 
 			s.sale.currentStock = reportUtils.filter_by_shop(shop.id, currentStock);
 			s.sale.lastStock = reportUtils.filter_by_shop(shop.id, lastStock);
@@ -134,6 +133,10 @@ function wreportDailyCtrlProvide(
 			s.sale.ccash   = s.recharge.tcash;
 			s.sale.ccard   = s.recharge.tcard;
 			s.sale.cwxin   = s.recharge.twxin;
+			s.sale.sspay   = s.sale.spay ? s.sale.spay - s.sale.ticket - s.sale.draw : undefined;
+			s.sale.gross = reportUtils.f_sub(to_f(s.sale.sspay), to_f(s.profit.org_price));
+			s.sale.margins = reportUtils.calc_profit(to_f(s.profit.org_price), to_f(s.sale.sspay));
+
 			// s.sale.caliPay = s.record.taliPay;
 
 			s.stock_in       = reportUtils.filter_by_shop(shop.id, stockIn);
@@ -150,6 +153,7 @@ function wreportDailyCtrlProvide(
 			$scope.total.sale_cost += reportUtils.to_float(s.sale.cost);
 			$scope.total.gross += to_f(s.sale.gross); 
 			$scope.total.spay += reportUtils.to_float(s.sale.spay);
+			$scope.total.sspay += reportUtils.to_float(s.sale.sspay); 
 			
 			$scope.total.cash += reportUtils.to_float(s.sale.cash);
 			$scope.total.card += reportUtils.to_float(s.sale.card);
@@ -176,7 +180,7 @@ function wreportDailyCtrlProvide(
 
 		    $scope.total.sale_cost = reportUtils.to_decimal($scope.total.sale_cost);
 		    $scope.total.gross = reportUtils.to_decimal($scope.total.gross);
-		    $scope.total.margins = reportUtils.calc_profit($scope.total.sale_cost, $scope.total.spay); 
+		    $scope.total.margins = reportUtils.calc_profit($scope.total.sale_cost, $scope.total.sspay); 
 		    // console.log($scope.report_data);
 		    // console.log($scope.total);
 		}

@@ -48,12 +48,14 @@ var rightAuthen = {
 	    reject_w_sale: rightAuthen.root_right._wsale + 2,
 	    update_w_sale: rightAuthen.root_right._wsale + 5,
 	    check_w_sale:  rightAuthen.root_right._wsale + 6,
+	    filter_w_sale_new: rightAuthen.root_right._wsale + 7,
 	    update_w_sale_price: rightAuthen.root_right._wsale + 10,
 	    export_w_sale_note:  rightAuthen.root_right._wsale + 13,
 	    // cost
 	    new_daily_cost:    rightAuthen.root_right._wsale + 14,
 	    delete_daily_cost: rightAuthen.root_right._wsale + 15,
-	    update_daily_cost: rightAuthen.root_right._wsale + 16
+	    update_daily_cost: rightAuthen.root_right._wsale + 16,
+	    export_w_sale_new: rightAuthen.root_right._wsale + 18
 	};
     },
 
@@ -331,12 +333,20 @@ diabloAuthen.prototype.checkSale = function() {
     return this.authenSaleByShop('check_w_sale');
 };
 
+diabloAuthen.prototype.listSale = function() {
+    return this.authenSaleByShop('filter_w_sale_new');
+};
+
 diabloAuthen.prototype.updateOpriceAfterSale = function () {
     return this.authenSale('update_w_sale_price');
 };
 
 diabloAuthen.prototype.exportSaleNote = function() {
     return this.authenSale('export_w_sale_note');
+};
+
+diabloAuthen.prototype.exportSaleNew = function() {
+    return this.authenSale('export_w_sale_new');
 };
 
 
@@ -386,10 +396,12 @@ diabloAuthen.prototype.authenSaleRight = function() {
 	update_w_sale  :this.updateSale(),
 	check_w_sale   :this.checkSale(),
 	show_stastic   :this.master,
+	list_w_sale    :this.listSale(),
 
 	update_oprice_after_sale : this.updateOpriceAfterSale(),
 	show_gross_profit:  this.showGrossProfit(),
 	export_w_sale_note: this.exportSaleNote(),
+	export_w_sale_new:  this.exportSaleNew(),
 
 	// daily cost
 	new_daily_cost:    this.authenSale('new_daily_cost'),

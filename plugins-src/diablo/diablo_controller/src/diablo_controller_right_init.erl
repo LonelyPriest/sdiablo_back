@@ -292,8 +292,8 @@ init([]) ->
 
     %% =========================================================================
     %% about wholesale
-    %% =========================================================================    
-
+    %% =========================================================================
+    
     %% sale
     WSale =
 	[{?new_w_sale,
@@ -320,7 +320,9 @@ init([]) ->
 	 {?print_w_sale_note,
 	  <<"销售明细打印">>,  <<"print_w_sale_note">>,    ?right_w_sale},
 	 {?export_w_sale_note,
-	  <<"销售明细导出">>,  <<"export_w_sale_note">>,    ?right_w_sale},
+	  <<"销售明细导出">>,  <<"export_w_sale_note">>,   ?right_w_sale},
+	 {?export_w_sale_note,
+	  <<"销售记录导出">>,  <<"export_w_sale_new">>,    ?right_w_sale},
 
 	 {?new_daily_cost,    <<"新增日常费用">>, <<"new_daily_cost">>,       ?right_w_sale},
 	 {?delete_daily_cost, <<"删除日常费用">>, <<"delete_dailycost">>,     ?right_w_sale},

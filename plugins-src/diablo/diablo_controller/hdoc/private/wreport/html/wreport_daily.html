@@ -53,6 +53,7 @@
 		      
 		      <th>销售</th>
 		      <th>营业额</th>
+		      <th>净营业额</th>
 		      
 		      <th style="background-color:#FFCC66">现金</th>
 		      <th style="background-color:#FFCC66">刷卡</th>
@@ -91,6 +92,7 @@
 		      
 		      <td>{{r.sale.total}}</td> 
 		      <td>{{r.sale.spay}}</td>
+		      <td>{{r.sale.sspay}}</td>
 		      
 		      <td style="background-color:#FFCC66">{{r.sale.cash}}</td>
 		      <td style="background-color:#FFCC66">{{r.sale.card}}</td>
@@ -140,7 +142,8 @@
 		      </td> 
 		      
 		      <td>{{total.sale}}</td>
-		      <td>{{total.spay}}</td> 
+		      <td>{{total.spay}}</td>
+		      <td>{{total.sspay}}</td> 
 		      <td>{{total.cash}}</td>
 		      <td>{{total.card}}</td>
 		      <td>{{total.wxin}}</td>

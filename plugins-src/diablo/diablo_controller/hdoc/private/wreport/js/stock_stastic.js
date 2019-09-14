@@ -109,6 +109,7 @@ function stockStasticCtrlProvide(
 			$scope.s_stastic.veri = result.veri;
 
 			$scope.s_stastic.charge = result.charge;
+			$scope.s_stastic.pure_balance = result.balance - result.ticket - result.draw;
 
 			// $scope.s_stastic.stock = result.stock;
 			// $scope.s_stastic.stockCost = result.stockCost;
@@ -127,7 +128,7 @@ function stockStasticCtrlProvide(
 			$scope.s_stastic.stockFixCost = result.stockFixCost;
 
 			$scope.s_stastic.margins = reportUtils.calc_profit(
-			    $scope.s_stastic.sellCost, $scope.s_stastic.balance);
+			    $scope.s_stastic.sellCost, $scope.s_stastic.pure_balance);
 
 			$scope.d_reports = [];
 		    }

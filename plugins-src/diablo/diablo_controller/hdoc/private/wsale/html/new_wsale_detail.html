@@ -8,28 +8,27 @@
 
 	<div class="actions">
 	  <div class="btn-group btn-group-solid">
-	    <a x-ng-if="shop_right.new_w_sale" type="button"
+	    <button x-ng-if="shop_right.new_w_sale"
 	       class="btn green purple-stripe hidden-xxs"
 	       x-ng-click="goto_page('#/new_wsale')">开单
-	      <i class="glyphicon glyphicon-plus"></i></a>
+	      <i class="glyphicon glyphicon-plus"></i></button>
 	    
-	    <a x-ng-if="shop_right.reject_w_sale" type="button"
+	    <button x-ng-if="shop_right.reject_w_sale"
 	       class="btn red purple-stripe hidden-xxs"
 	       x-ng-click="goto_page('#/reject_wsale')">退货
-	      <i class="glyphicon glyphicon-minus"></i></a>
+	      <i class="glyphicon glyphicon-minus"></i></button>
 
-	    <a type="button" class="btn yellow purple-stripe"
+	    <button class="btn yellow purple-stripe"
 	       x-ng-click="goto_page('#/wsale_rsn_detail')">明细
-	      <i class="glyphicon glyphicon-map-marker"></i></a>
+	      <i class="glyphicon glyphicon-map-marker"></i></button>
 
-	    <a type="button"
-	       class="btn blue purple-stripe hidden-xxs"
-	       x-ng-click="export_to()">导出
-	      <i class="glyphicon glyphicon-export"></i></a>
-
-	    <a type="button" class="btn yellow-crusta reload purple-stripe"
+	    <button x-ng-if="shop_right.export_w_sale_new" class="btn blue purple-stripe hidden-xxs"
+		    x-ng-click="export_to()">导出
+	      <i class="glyphicon glyphicon-export"></i></button>
+	    
+	    <button x-ng-if="shop_right.list_w_sale" class="btn yellow-crusta reload purple-stripe"
 	       x-ng-click="do_search(default_page)">刷新
-	      <i class="icon icon-spinner fg-white"></i></a> 
+	      <i class="icon icon-spinner fg-white"></i></button> 
 	  </div>
 	</div> 
       </div>
@@ -293,19 +292,19 @@
 <script type="text/ng-template" id="detail-gift-ticket.html"> 
   <div class="modal-body">
     <div class="table-responsive">
-      <!-- <div class="btn-group table-panel pull-right"> -->
-      <!-- 	<button x-ng-disabled="params.tickets.length===0" -->
-      <!-- 		x-ng-click="params.delete_ticket(params.tickets)" -->
-      <!-- 		type="button" -->
-      <!-- 		class="btn red"> -->
-      <!-- 	  <i class="glyphicon glyphicon-minus"></i></button>  -->
-      <!-- 	<button x-ng-click="params.add_ticket(params.tickets, params.planes)" -->
-      <!-- 		type="button" -->
-      <!-- 		x-ng-disabled="params.planes.length===0 || params.tickets.length===params.maxSend" -->
-      <!-- 		class="btn green"> -->
-      <!-- 	  <i class="glyphicon glyphicon-plus"></i> -->
-      <!-- 	</button> -->
-      <!-- </div> -->
+      <div class="btn-group table-panel pull-right">
+      	<button x-ng-disabled="params.tickets.length===0"
+      		x-ng-click="params.balance=params.delete_ticket(params.tickets, params.balance)"
+      		type="button"
+      		class="btn red">
+      	  <i class="glyphicon glyphicon-minus"></i></button>
+      	<button x-ng-click="params.balance=params.add_ticket(params.tickets, params.planes, params.balance)"
+		x-ng-disabled="params.balance<=0 || !params.check_ticket(params.planes, params.balance)"
+      		type="button"
+      		class="btn green">
+      	  <i class="glyphicon glyphicon-plus"></i>
+      	</button>
+      </div>
       
       <table class="table table-bordered table-striped table-condensed table-advanced">
 	<thead>
@@ -315,28 +314,29 @@
 	
 	<tbody>
 	  <tr class="text-center" x-ng-repeat="c in params.tickets">
-	    <td class="vert-align" x-ng-bind="c.plan.name">
-	      <!-- <form name="cForm"> -->
-	      <!-- 	<div ng-class="{'has-error':cForm.$invalid && !cForm.$pristine}"> -->
-	      <!-- 	  <select class="form-control" -->
-	      <!-- 		  required -->
-	      <!-- 		  x-ng-model="c.plan" -->
-	      <!-- 		  x-ng-options="p.name for p in params.planes"> -->
-	      <!-- 	  </select> -->
-	      <!-- 	</div> -->
-	      <!-- </form>  -->
+	    <td class="vert-align">
+	      <form name="cForm">
+	      	<div ng-class="{'has-error':cForm.$invalid && !cForm.$pristine}">
+	      	  <select class="form-control"
+	      		  required
+	      		  x-ng-model="c.plan"
+			  x-ng-change="params.balance=params.calc_balance(params.tickets)"
+	      		  x-ng-options="p.name for p in params.planes">
+	      	  </select>
+	      	</div>
+	      </form>
 	    </td>
 
-	    <td class="vert-align" x-ng-bind="c.count">
-	      <!-- <form name="pForm"> -->
-	      <!-- 	<div ng-class="{'has-error':pForm.$invalid && !pForm.$pristine}"> -->
-	      <!-- 	  <input type="number" -->
-	      <!-- 		 class="form-control" -->
-	      <!-- 		 required -->
-	      <!-- 		 readonly -->
-	      <!-- 		 x-ng-model="c.count"/> -->
-	      <!-- 	</div> -->
-	      <!-- </form> -->
+	    <td class="vert-align">
+	      <form name="pForm">
+	      	<div ng-class="{'has-error':pForm.$invalid && !pForm.$pristine}">
+	      	  <input type="number"
+	      		 class="form-control"
+	      		 required
+	      		 readonly
+	      		 x-ng-model="c.count"/>
+	      	</div>
+	      </form>
 	    </td>
 	    
 	  </tr>

@@ -28,7 +28,7 @@
 		    x-ng-click="export_to()">导出
 	      <i class="glyphicon glyphicon-export"></i></button> 
 	    
-	    <button type="button" class="btn blue purple-stripe reload"
+	    <button x-ng-if="right.list_w_sale" class="btn blue purple-stripe reload"
 		    x-ng-click="refresh()">刷新
 	      <i class="icon icon-spinner fg-white"></i></button> 
 	  </div>
