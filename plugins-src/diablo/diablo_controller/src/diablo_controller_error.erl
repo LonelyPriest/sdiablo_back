@@ -600,6 +600,8 @@ error(ticket_gifted, RSN) ->
     {2714, "the ticket has ben gifted: " ++ ?to_s(RSN) ++ "."};
 error(invalid_ticket_balance, Batch) ->
     {2715, "invalid balance of ticket: " ++ ?to_s(Batch) ++ "."};
+error(more_ticket_consume, Batchs) ->
+    {2610, "there are more tickets with batchs: " ++ ?to_s(Batchs) ++ "."};
 
 %% about print
 error(invalid_sn, PrintSN) ->

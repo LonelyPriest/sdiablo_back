@@ -197,14 +197,14 @@
 			      x-ng-disabled="r.state===1"
 		      	      x-ng-click="check_detail(r)">审核
 			<i class="glyphicon glyphicon-check"></i></button>
+		      
 		      <button x-ng-if="shop_right.check_w_sale && r.state===1"
 			      class="btn diablo-button red"
 			      x-ng-disabled="r.state===0"
 		      	      x-ng-click="uncheck_detail(r)">反审
 			<i class="glyphicon glyphicon-ban-circle"></i></button>
-
 		      
-		      <button x-ng-if="setting.gift_ticket_on_sale && r.rtype!==2 && r.g_ticket!==1"
+		      <button x-ng-if="setting.gift_ticket_on_sale && r.type===0 && !r.g_ticket"
 			      class="btn diablo-button purple"
 		      	      x-ng-click="gift_ticket(r)">赠券
 			<i class="glyphicon glyphicon-send"></i></button>

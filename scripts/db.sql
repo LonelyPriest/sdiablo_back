@@ -741,7 +741,8 @@ create table w_ticket_custom(
     id              INTEGER AUTO_INCREMENT, 
     plan            INTEGER default -1,
     batch           INTEGER not null,
-    sale_rsn        VARCHAR(32), -- refer to w_sale
+    sale_new        VARCHAR(32), -- refer to w_sale when gift ticket
+    sale_rsn        VARCHAR(32), -- refer to w_sale when use ticket
     balance         INTEGER not null,
     retailer        INTEGER default -1, -- -1: who consumed
     state           INTEGER default 1, -- 0: discard; 1: checked; 2: consumed; 3:unused

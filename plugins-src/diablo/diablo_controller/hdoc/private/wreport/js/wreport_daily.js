@@ -47,13 +47,18 @@ function wreportDailyCtrlProvide(
     // };
     
     $scope.refresh = function(){
-        $scope.current_day = $.now();
+        // $scope.current_day = $.now();
         $scope.do_search_by_shop(true);
     };
 
     $scope.disable_after_daily = function(){
         return dateFilter($scope.current_day, "yyyy-MM-dd") === now_day;
     };
+
+    $scope.today = function() {
+	$scope.current_day = $.now();
+        $scope.do_search_by_shop(true);
+    }
 
     $scope.after_daily = function(){
         $scope.current_day = $scope.current_day + diablo_day_millisecond;
@@ -91,11 +96,15 @@ function wreportDailyCtrlProvide(
 		    $scope.total = {
 			sale:0,
 			sale_cost:0,
-			gross:0,
+			
+			pure_gross:0,
+			pure_margins:0, 
+			gross: 0,
 			margins:0,
 			
 			spay:0,
 			sspay:0,
+			
 			cash:0,
 			card:0,
 			wxin:0,
@@ -120,10 +129,7 @@ function wreportDailyCtrlProvide(
 			s.sale = reportUtils.filter_by_shop(shop.id, sale);
 			
 			s.profit = reportUtils.filter_by_shop(shop.id, profit); 
-			s.sale.cost = s.profit.org_price;
-			
-			
-			
+			s.sale.cost = s.profit.org_price; 
 
 			s.sale.currentStock = reportUtils.filter_by_shop(shop.id, currentStock);
 			s.sale.lastStock = reportUtils.filter_by_shop(shop.id, lastStock);
@@ -134,8 +140,12 @@ function wreportDailyCtrlProvide(
 			s.sale.ccard   = s.recharge.tcard;
 			s.sale.cwxin   = s.recharge.twxin;
 			s.sale.sspay   = s.sale.spay ? s.sale.spay - s.sale.ticket - s.sale.draw : undefined;
-			s.sale.gross = reportUtils.f_sub(to_f(s.sale.sspay), to_f(s.profit.org_price));
-			s.sale.margins = reportUtils.calc_profit(to_f(s.profit.org_price), to_f(s.sale.sspay));
+			s.sale.pure_gross = reportUtils.f_sub(to_f(s.sale.sspay), to_f(s.profit.org_price));
+			s.sale.pure_margins = reportUtils.calc_profit(to_f(s.profit.org_price), to_f(s.sale.sspay));
+
+			s.sale.gross = reportUtils.f_sub(s.sale.spay - s.profit.org_price);
+			s.sale.margins = reportUtils.calc_profit(to_f(s.profit.org_price), to_f(s.sale.spay));
+			
 
 			// s.sale.caliPay = s.record.taliPay;
 
@@ -151,7 +161,8 @@ function wreportDailyCtrlProvide(
 			
 			$scope.total.sale += to_i(s.sale.total);
 			$scope.total.sale_cost += reportUtils.to_float(s.sale.cost);
-			$scope.total.gross += to_f(s.sale.gross); 
+			$scope.total.gross += to_f(s.sale.gross);
+			$scope.total.pure_gross += to_f(s.sale.pure_gross);
 			$scope.total.spay += reportUtils.to_float(s.sale.spay);
 			$scope.total.sspay += reportUtils.to_float(s.sale.sspay); 
 			
@@ -180,7 +191,9 @@ function wreportDailyCtrlProvide(
 
 		    $scope.total.sale_cost = reportUtils.to_decimal($scope.total.sale_cost);
 		    $scope.total.gross = reportUtils.to_decimal($scope.total.gross);
-		    $scope.total.margins = reportUtils.calc_profit($scope.total.sale_cost, $scope.total.sspay); 
+		    $scope.total.pure_gross = reportUtils.to_decimal($scope.total.pure_gross);
+		    $scope.total.margins = reportUtils.calc_profit($scope.total.sale_cost, $scope.total.spay);
+		    $scope.total.pure_margins = reportUtils.calc_profit($scope.total.sale_cost, $scope.total.sspay);
 		    // console.log($scope.report_data);
 		    // console.log($scope.total);
 		}

@@ -1146,6 +1146,7 @@ function wretailerTicketDetailCtrlProvide(
 function wretailerCustomTicketDetailCtrlProvide(
     $scope, diabloFilter, diabloPattern, diabloUtilsService,
     wretailerService, filterTicketPlan, filterShop){
+    // console.log(filterTicketPlan);
     var dialog = diabloUtilsService; 
     // $scope.shops = user.sortShops;
     $scope.pattern = {positive_num: diabloPattern.positive_num};

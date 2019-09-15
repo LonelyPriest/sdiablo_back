@@ -1741,6 +1741,10 @@ handle_call({gift_ticket, Merchant, {Shop, Retailer, Tickets, WithRSN} = GiftInf
 						false -> Effect
 					    end, 
 			      ["update w_ticket_custom set retailer=" ++ ?to_s(Retailer)
+			       ++ case WithRSN of
+				      [] -> [];
+				      _ -> ", sale_new=\'" ++ ?to_s(WithRSN) ++ "\'"
+				  end
 			       ++ ", in_shop=" ++ ?to_s(Shop) 
 			       ++ ", stime=\'" ++ ?utils:current_date_after(ValidEffect) ++ "\'"
 			       ++ case Expire == ?INVALID_OR_EMPTY of

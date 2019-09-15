@@ -86,7 +86,7 @@ function wsaleRejectCtrlProvide(
 	wsaleService.get_w_sale_new(item).then(function(result){
 	    console.log(result);
 	    if (result.ecode === 0){
-		var base        = result.sale;
+		var base = result.sale;
 		diabloFilter.get_wretailer_batch([base.retailer_id]).then(function(retailers){
 		    console.log(retailers);
 		    $scope.has_select_rsn = true; 
@@ -520,6 +520,7 @@ function wsaleRejectCtrlProvide(
 	    ticket:        setv($scope.select.ticket),
 	    withdraw:      setv($scope.select.withdraw),
 	    verificate:    $scope.select.verificate,
+	    g_ticket:      $scope.select.g_ticket,
 	    direct:        wsaleService.direct.wreject,
 	    total:         seti($scope.select.rtotal),
 	    score:         $scope.select.rscore, 

@@ -650,6 +650,7 @@ handle_call({get_new, Merchant, RSN}, _From, State) ->
 	", aliPay"
 	", withdraw"
 	", ticket"
+	", g_ticket"
 	", verificate"
 	", total"
 	", lscore"
@@ -912,8 +913,9 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
     Score      = ?v(<<"score">>, Props, 0),
 
     Ticket       = ?v(<<"ticket">>, Props, 0),
-    TicketScore  = ?v(<<"ticket_score">>, Props, 0),
+    TicketScore  = ?v(<<"ticket_score">>, Props, 0), 
     TicketBatchs = ?v(<<"tbatch">>, Props, []),
+    GTicket      = ?v(<<"g_ticket">>, Props, ?NO),
     TicketCustom = ?v(<<"tcustom">>, Props, ?INVALID_OR_EMPTY),
     
     Sql0 = "select id, name, balance, score, type from w_retailer"
@@ -1111,7 +1113,18 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 		    false -> []
 		end,
 	    ?DEBUG("Sql5 ~p", [Sql5]),
-	    AllSql = Sql1 ++ [Sql2] ++ Sql3 ++ Sql4 ++ Sql5, 
+	    
+	    Sql6 =
+		case GTicket of
+		    ?NO -> [];
+		    ?YES ->
+			["update w_ticket_custom set state=" ++ ?to_s(?CUSTOM_TICKET_STATE_DISCARD)
+			 ++ " where sale_new=\'" ++ ?to_s(SaleRsn) ++ "\'"
+			 ++ " and merchant=" ++ ?to_s(Merchant)
+			 ++ " and retailer=" ++ ?to_s(Retailer)
+			 ++ " and state=" ++ ?to_s(?TICKET_STATE_CHECKED)]
+		end, 
+	    AllSql = Sql1 ++ [Sql2] ++ Sql3 ++ Sql4 ++ Sql5 ++ Sql6, 
 	    case ?sql_utils:execute(transaction, AllSql, Sn) of
 		{error, _} = Error ->
 		    {reply, Error, State};

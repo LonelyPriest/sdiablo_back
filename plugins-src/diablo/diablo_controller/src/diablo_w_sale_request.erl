@@ -682,7 +682,17 @@ action(Session, Req, {"reject_w_sale"}, Payload) ->
 							 Merchant,
 							 Invs,
 							 NewProps ++ [{<<"tbatch">>, [Batch]}])
-					   end
+					   end;
+				       {ok, MoreTickets} ->
+					   Batchs = 
+					       lists:foldr(
+						 fun({Ticket}, Acc) ->
+							 [?to_s(?v(<<"batch">>, Ticket))|Acc]
+						 end, [], MoreTickets),
+					   ?utils:respond(
+					      200,
+					      Req,
+					      ?err(more_ticket_consume, Batchs))
 				   end;
 			       _ ->
 				   start(reject_w_sale, Req, Merchant, Invs, Props)

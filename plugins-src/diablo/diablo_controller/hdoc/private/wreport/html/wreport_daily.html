@@ -12,6 +12,10 @@
                   x-ng-click="pre_daily()">前一天
             <i class="glyphicon glyphicon-circle-arrow-left"></i></button>
 
+	  <button class="btn yellow"
+                  x-ng-click="today()">今天
+            <i class="glyphicon glyphicon-circle-arrow-down"></i></button>
+
           <button class="btn btn-success"
                   x-ng-if="!disable_after_daily()"
                   x-ng-click="after_daily()">后一天
@@ -71,6 +75,8 @@
 		      <th x-ng-if="right.show_orgprice">销售成本</th>
 		      <th x-ng-if="right.show_gross_profit">毛利</th>
 		      <th x-ng-if="right.show_gross_profit">毛利率</th>
+		      <th x-ng-if="right.show_gross_profit">净毛利</th>
+		      <th x-ng-if="right.show_gross_profit">净毛利率</th>
 		      
 		      <th>操作</th> 
 		      <!-- <th>充值</th> -->
@@ -110,6 +116,8 @@
 		      <td x-ng-if="right.show_orgprice">{{r.sale.cost}}</td>
 		      <td x-ng-if="right.show_gross_profit">{{r.sale.gross}}</td>
 		      <td x-ng-if="right.show_gross_profit">{{r.sale.margins}}</td>
+		      <td x-ng-if="right.show_gross_profit">{{r.sale.pure_gross}}</td>
+		      <td x-ng-if="right.show_gross_profit">{{r.sale.pure_margins}}</td>
 		      
 		      <td>
 		      	<button class="btn diablo-button purple" x-ng-click="shift_print(r)">交班
@@ -158,6 +166,8 @@
 		      <td x-ng-if="right.show_orgprice">{{total.sale_cost}}</td>
 		      <td x-ng-if="right.show_gross_profit">{{total.gross}}</td>
 		      <td x-ng-if="right.show_gross_profit">{{total.margins}}</td>
+		      <td x-ng-if="right.show_gross_profit">{{total.pure_gross}}</td>
+		      <td x-ng-if="right.show_gross_profit">{{total.pure_margins}}</td>
 		      <td></td>
 		      <!-- <td>{{total_cbalance}}</td> -->
 		      <!-- <td>{{total_withdraw}}</td> -->

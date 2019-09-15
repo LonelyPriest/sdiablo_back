@@ -147,9 +147,10 @@ function wsaleConfg(angular){
 		resolve: angular.extend({}, user) 
 	    }). 
 	    otherwise({
-		templateUrl: '/private/wsale/html/new_wsale_detail.html',
-		controller: 'wsaleNewDetailCtrl',
-		resolve: angular.extend({}, user, employee, plan, base)
+		templateUrl: '/private/wsale/html/new_wsale.html',
+		controller: 'wsaleNewCtrl',
+		resolve: angular.extend(
+		    {}, user, promotion, charge, score, sysretailer, employee, s_group, brand, type, color, level, plan, base)
             }) 
     }]);
 
@@ -3569,9 +3570,8 @@ function wsaleNewDetailProvide(
 	    var wholeBalance = (r.has_pay - r.ticket) - (r.has_pay - r.ticket) % 100;
 	    var realBalance = wholeBalance;
 	    var ticketLength = $scope.ticketPlans.length;
-	    var validPlans = [], maxSend;
-
-	    if ($scope.setting.gift_ticket_strategy === diablo_no) {
+	    var validPlans = [], maxSend; 
+	    if (0 === $scope.setting.gift_ticket_strategy) {
 		maxSend = 5;
 		// max
 		if (realBalance >= $scope.ticketPlans[0].mbalance) {
@@ -3601,7 +3601,15 @@ function wsaleNewDetailProvide(
 		    realBalance -= $scope.ticketPlans[ticketLength - 1].mbalance;
 		    maxSend -= 1;
 		}
-	    } else {
+	    } else if (1 === $scope.setting.gift_ticket_strategy) {
+		for (var i=0; i<ticketLength; i++) {
+		    if (realBalance >= $scope.ticketPlans[i].mbalance) {
+			validPlans.push({plan:$scope.ticketPlans[i], count: 1});
+			realBalance -= $scope.ticketPlans[i].mbalance;
+			break;
+		    }
+		}
+	    } else if (2 === $scope.setting.gift_ticket_strategy){
 		var i, use;
 		for (var i=0; i<ticketLength; i++) {
 		    if (realBalance >= $scope.ticketPlans[i].mbalance) {

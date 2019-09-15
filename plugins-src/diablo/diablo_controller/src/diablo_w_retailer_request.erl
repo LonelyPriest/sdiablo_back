@@ -173,7 +173,7 @@ action(Session, Req, {"update_retailer_level"}, Payload) ->
     end;
 
 action(Session, Req, {"get_w_retailer_batch"}, Payload) ->
-    ?DEBUG("update_w_retailer with Session ~p~npaylaod ~p", [Session, Payload]), 
+    ?DEBUG("get_w_retailer with Session ~p~npaylaod ~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
     RetailerIds = ?v(<<"retailer">>, Payload, []), 
     ?utils:respond(

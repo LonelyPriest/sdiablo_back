@@ -37,6 +37,7 @@ var wsaleUtils = function(){
 	select.aliPay     = base.aliPay;
 	select.withdraw   = base.withdraw;
 	select.should_pay = base.should_pay;
+	select.g_ticket   = base.g_ticket;
 	
 	select.comment    = base.comment;
 	select.total      = base.total;

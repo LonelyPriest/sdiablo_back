@@ -648,6 +648,10 @@ alter table w_charge_detail add column alipay DECIMAL(10, 2) default 0 after wxi
 --2019-08-20
 alter table w_sale add column g_ticket TINYINT not null default 0 after comment;
 
+
+--2019-09-15
+alter table w_ticket_custom add column sale_new varchar(32) not null default '' after batch;
+
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;
 
