@@ -1104,6 +1104,7 @@ pass_action(wholesaler) ->
      <<"get_wsale_rsn">>,
      <<"match_wsale_rsn">>,
      <<"match_cost_class">>,
+     <<"wsale_pay_scan">>,
 
      %% base_setting
      <<"list_w_bank_card">>,

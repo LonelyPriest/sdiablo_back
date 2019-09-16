@@ -73,9 +73,10 @@ create table shops
     type               TINYINT default 0, -- 0: shop, 1: repo
     name               VARCHAR(255) not null,
     address            VARCHAR(255),
-    open_date          DATE,
+    open_date          DATE, 
     master             VARCHAR(8) default null,
     region             INTEGER default -1, -- which repertory
+    pay_cd             VARCHAR(32) default '' not null, -- pay no, unique
 
     charge             INTEGER default -1, -- charge strategy
     draw               INTEGER default -1, -- withdraw strategy
@@ -83,6 +84,7 @@ create table shops
 
     bcode_friend       VARCHAR(255) default '' not null,
     bcode_pay          VARCHAR(255) default '' not null,
+    
     merchant           INTEGER default -1, -- which merchant belong to
     deleted            INTEGER default 0, -- 0: no;  1: yes
     entry_date         DATETIME not null,
@@ -1580,6 +1582,20 @@ create table print_template(
    primary key     (id)
    
 )default charset=utf8;
+
+create table w_pay
+(
+    id              INTEGER AUTO_INCREMENT,
+    pay_type        TINYINT default -1 not null, -- 0:wxin, 1:alipay
+    live            TINYINT default -1 not null, -- 0:sale, 1:recharge
+    sn              INTEGER default -1 not null,
+    balance         DECIMAL(10, 2) default 0 not null,
+    shop            INTEGER default -1 not null,
+    merchant        INTEGER default -1 not null 
+    entry_date      DATETIME default 0 not null,
+    unique key uk   (merchant, shop, rsn), 
+    primary key     (id)
+) default charset=utf8;
 
 
 -- wholesalers

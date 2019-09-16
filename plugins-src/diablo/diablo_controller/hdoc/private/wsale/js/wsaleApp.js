@@ -147,10 +147,9 @@ function wsaleConfg(angular){
 		resolve: angular.extend({}, user) 
 	    }). 
 	    otherwise({
-		templateUrl: '/private/wsale/html/new_wsale.html',
-		controller: 'wsaleNewCtrl',
-		resolve: angular.extend(
-		    {}, user, promotion, charge, score, sysretailer, employee, s_group, brand, type, color, level, plan, base)
+		templateUrl: '/private/wsale/html/new_wsale_detail.html',
+		controller: 'wsaleNewDetailCtrl',
+		resolve: angular.extend({}, user, employee, plan, base)
             }) 
     }]);
 
@@ -534,8 +533,8 @@ function wsaleNewProvide(
 	
 	ticket_batchs: [],
 	ticket_balance: 0,
-	ticket_sid: -1,
-	ticket_score: 0,
+	ticket_score: 0, 
+	ticket_sid: diablo_invalid_index,
 	ticket_custom: diablo_invalid_index,
 	
 	total:        0,
@@ -549,7 +548,8 @@ function wsaleNewProvide(
 	recharge:     0,
 	surplus:      0,
 	left_balance: 0,
-	sid:          -1,
+	sid:          diablo_invalid_index,
+	pay_order:    diablo_invalid_index,
 	datetime:     $scope.today()
     };
 
@@ -1598,7 +1598,9 @@ function wsaleNewProvide(
 	$scope.select.ticket_score = 0;
 	$scope.select.ticket_sid   = diablo_invalid_index;
 	$scope.select.ticket_custom = diablo_invalid_index;
-	
+
+	$scope.select.total        = 0;
+	$scope.select.abs_total    = 0; 
 	$scope.select.has_pay      = 0;
 	$scope.select.should_pay   = 0;
 	$scope.select.base_pay     = 0;
@@ -1608,13 +1610,13 @@ function wsaleNewProvide(
 	$scope.select.recharge     = 0;
 	$scope.select.surplus      = $scope.select.retailer.balance;
 	$scope.select.left_balance = $scope.select.surplus;
+	sid                        = diablo_invalid_index,
+	pay_order                  = diablo_invalid_index,
+	
 	$scope.select.verificate   = $scope.vpays[0],
-	$scope.select.wprice       = undefined;
+	$scope.select.wprice       = undefined; 
 	
-	$scope.select.total        = 0;
-	$scope.select.abs_total    = 0;
-	$scope.select.comment      = undefined;
-	
+	$scope.select.comment      = undefined; 
 	$scope.select.datetime     = $scope.today();
 	
 	if ($scope.setting.semployee)
@@ -2337,7 +2339,7 @@ function wsaleNewProvide(
 	    limitWithdraw:  setv($scope.select.limitWithdraw),
 	    unlimitWithdraw:setv($scope.select.unlimitWithdraw),
 	    // has_pay:        $scope.select.has_pay,
-	    
+	    pay_order:      $scope.select.pay_order,
 	    charge:         $scope.select.charge,
 	    total:          $scope.select.total,
 	    last_score:     $scope.select.retailer.score,
@@ -2345,10 +2347,7 @@ function wsaleNewProvide(
 	    cards:          angular.isArray($scope.select.draw_cards)
 		&& $scope.select.draw_cards.length !== 0 ? $scope.select.draw_cards : undefined,
 	    
-	    // sid             wsaleUtils.to_integer($scope.select.sid),
-	    // draw_score:     $scope.setting.draw_score, 
-	    round:          $scope.setting.round, 
-	    // draw_score:     $scope.setting.draw_score
+	    round:          $scope.setting.round,
 	};
 
 	var print = {
@@ -2422,19 +2421,23 @@ function wsaleNewProvide(
 	$scope.reset_score();
     };
 
+    $scope.calc_pay_order = function() {
+	return wsaleCalc.pay_order(
+	    $scope.select.should_pay,
+	    [$scope.select.ticket_balance,
+	     $scope.select.withdraw,
+	     $scope.select.wxin,
+	     $scope.select.aliPay,
+	     $scope.select.card,
+	     $scope.select.cash]);
+    };
+    
     $scope.reset_score = function() {
 	// only score with cash, card, wxin, aliPay
 	if (diablo_no === $scope.setting.draw_score
 	    && ( wsaleUtils.to_float($scope.select.withdraw) !== 0
 		 || wsaleUtils.to_float($scope.select.ticket_balance) !== 0)) {
-	    var pay_orders = wsaleCalc.pay_order(
-		$scope.select.should_pay, [
-		    $scope.select.ticket_balance,
-		    $scope.select.withdraw,
-		    $scope.select.wxin,
-		    $scope.select.aliPay,
-		    $scope.select.card,
-		    $scope.select.cash]);
+	    var pay_orders = calc_pay_order();
 	    var pay_with_score = pay_orders[2] + pay_orders[3] + pay_orders[4] + pay_orders[5];
 	    $scope.select.score = wsaleUtils.calc_score_of_pay(pay_with_score, $scope.select.pscores);
 	}
@@ -3102,8 +3105,60 @@ function wsaleNewProvide(
     $scope.pay_scan = function() {
 	var callback = function(params) {
 	    console.log(params);
-	}; 
-	dialog.edit_with_modal("pay-scan.html", undefined, callback, undefined, {});
+	    diabloFilter.pay_scan($scope.select.shop.id, params.payCode, params.balance).then(function(result) {
+		console.log(result);
+		var get_pay_balance = function() {
+		    $scope.select.pay_order = diablo_invalid_index;
+		    if (result.pay_type === diablo_wxin_scan) {
+			$scope.select.wxin = result.balance;
+			$scope.select.pay_order = result.pay_order;
+		    }
+		    else if (result.pay_type === diablo_alipay_scan) {
+			$scope.select.aliPay = result.balance;
+			$scope.select.pay_order = result.pay_order;
+		    }
+		    else {
+			$scope.select.wxin = 0;
+			$scope.select.aliPay = 0;
+		    } 
+		};
+		
+		if (result.ecode === 0) {
+		    get_pay_balance(); 
+		} else if (result.ecode === 99) {
+		    get_pay_balance();
+		    dialog.response(
+			true,
+			"扫码支付",
+			"扫码支付成功，系统记录支付信息失败！！");
+		} else if (result.ecode === 2614){
+		    dialog.response(
+			false,
+			"扫码支付",
+			"扫码支付失败，请重新扫码！！"
+			    + "错误码=" + result.pay_code.toString());
+		} else if (result.ecode === 2615){
+		    dialog.response(
+			false,
+			"扫码支付核对",
+			"扫码支付核对失败，请使用公众号或App核对！！"
+			    + "错误码=" + result.q_pay_code.toString());
+		} else {
+		    dialog.set_error("扫码支付", result.ecode)
+		}
+	    })
+	};
+	
+	// default wxin
+	var balance = $scope.select.charge;
+	if (balance > 0 &&  balance < diablo_max_pay_scan) {
+	    dialog.edit_with_modal(
+		"pay-scan.html",
+		undefined,
+		callback,
+		undefined,
+		{balance: balance});
+	}
     };
 
     $scope.reject_inventory = function(inv) {

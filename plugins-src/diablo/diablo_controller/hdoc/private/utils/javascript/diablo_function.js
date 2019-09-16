@@ -2,6 +2,10 @@
 var diablo_delay = 1000; //ms
 var diablo_delay_300ms = 300;
 
+var diablo_max_pay_scan = 10000;
+var diablo_wxin_scan = 0;
+var diablo_alipay_scan = 1;
+
 var diablo_default_setting = -1;
 var diablo_default_shop = -1;
 var diablo_default_card = -1;

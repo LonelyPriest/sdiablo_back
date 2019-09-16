@@ -44,6 +44,7 @@
 -define(REJECT_SALE, 1).
 -define(RSN_OF_ALL, 0).
 -define(RSN_OF_NEW, 1).
+-define(MAX_PAY_SCAN, 10000).
 
 %% transfer
 -define(IN_ROAD, 0).

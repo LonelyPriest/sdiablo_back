@@ -286,7 +286,6 @@ read(Pool, Sql) ->
                 Fields = [Field || {_, Field, _, _} <- FieldInfo],
                 %% ?DEBUG("fields ~p~nRows ~p", [Fields, Rows]),
                 {ok, sql_result(Fields, Rows, [])};
-
             {error, #mysql_result{error=Error, errcode=ErrCode}} ->
                 {error, {ErrCode, Error}};
 	    {error, _Error} ->

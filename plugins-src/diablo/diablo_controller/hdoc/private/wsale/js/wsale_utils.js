@@ -1221,7 +1221,7 @@ var wsaleCalc = function(){
 	},
 
 	pay_order: function(should_pay, pays) {
-	    // var pay = {ticket: 0, withdraw:0, wxin: 0, card: 0, cash:0, aliPay};
+	    // var pay = {ticket: 0, withdraw:0, wxin: 0, aliPay, card: 0, cash:0};
 	    var orders = [];
 	    var left = should_pay;
 	    for (var i=0, l=pays.length; i<l; i++) {

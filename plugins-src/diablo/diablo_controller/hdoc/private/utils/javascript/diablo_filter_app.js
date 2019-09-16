@@ -1164,6 +1164,11 @@ function filterProvider(){
 
 	    reset_print_template: function() {
 		clear_from_storage(cookie, "p_template");
+	    },
+
+	    pay_scan: function(shop, payCode, balance) {
+		return _wsaleHttp.save(
+		    {operation:"wsale_pay_scan"}, {shop:shop, code:payCode, balance:balance}).$promise;
 	    }
 	    
 	    // 

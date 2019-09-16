@@ -15,15 +15,14 @@
 
 %% API
 -export([start_link/1]).
--export([sale/3, sale/4, pay_order/3, pay_order/4]).
+-export([sale/3, sale/4, pay_order/3, pay_order/4, start_pay/3]).
 -export([rsn_detail/3, get_modified/2]).
 -export([filter/4, filter/6, export/3]).
 -export([direct/1]).
 
 
 %% gen_server callbacks
--export([init/1, handle_call/3, handle_cast/2, handle_info/2,
-	 terminate/2, code_change/3]).
+-export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 -export([sort_condition/3, filter_condition/4]).
 
 -define(SERVER, ?MODULE). 
@@ -89,7 +88,6 @@ rsn_detail(rsn, Merchant, Condition) ->
     gen_server:call(Name, {rsn_detail, Merchant, Condition}).
 
 
-
 filter(total_news, 'and', Merchant, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {total_news, Merchant, Fields});
@@ -123,6 +121,10 @@ filter({rsn_group, Mode, Sort}, MatchMode, Merchant, CurrentPage, ItemsPerPage, 
 filter(employee_evaluation, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {filter_employee_evaluation, Merchant, CurrentPage, ItemsPerPage, Fields}).
+
+start_pay(Merchant, Shop, {PayType, Live, PayOrderNo, Balance}) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {start_pay, Merchant, Shop, {PayType, Live, PayOrderNo, Balance}}).
 
 export(trans, Merchant, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -1478,6 +1480,25 @@ handle_call({filter_employee_evaluation, Merchant, Conditions, CurrentPage, Item
 	++ ?sql_utils:condition(page_desc, {use_balance, 0}, CurrentPage, ItemsPerPage),
     
     Reply =  ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+
+handle_call({start_pay, Merchant, Shop, {PayType, Live, PayOrderNo, Balance}}, _From, State) ->
+    Sql = "insert into w_pay("
+	"pay_type"
+	", live"
+	", sn"
+	", balance"
+	", shop"
+	", merchant"
+	", entry_date) values("
+	++ ?to_s(PayType)
+	++ ?to_s(Live)
+	++ ?to_s(PayOrderNo)
+	++ ?to_s(Balance)
+	++ ?to_s(Shop)
+	++ ?to_s(Merchant)
+	++ "\'" ++ ?utils:current_time(format_localtime) ++ "\')",
+    Reply =  ?sql_utils:execute(insert, Sql),
     {reply, Reply, State};
 
 

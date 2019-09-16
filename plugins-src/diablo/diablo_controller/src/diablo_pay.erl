@@ -2,28 +2,29 @@
 
 -include("../../../../include/knife.hrl").
 -include("diablo_controller.hrl").
--export([pay/1]).
-pay(wwt) ->
+-export([pay/3, pay/5]).
+pay(wwt, Merchant, MchntCd, PayCode, Moneny) ->
     Path = "http://test.zhihuishangjie.cn/api/v2/micropay",
     Version = "1.0",
-    InsCd = "d7772b0674a318d5",
-    MchntCd = "10001",
+    InsCd = "6f606eb525ffdc56",
+    %% MchntCd = "10001",
     TermId = "139887",
-    MchntOrder = "807",
-    OrderAmt = "0.01",
-    AuthCode = "134650742072170576", 
-    Random = "70",
+    MchntOrder = ?inventory_sn:sn(pay_order_sn, Merchant),
+    %% OrderAmt = "0.01",
+    %% AuthCode = "134650742072170576",
+    random:seed(),
+    Random = random:uniform(1000),
 
     S = 
 	lists:sort(
 	  [
 	   lists:concat(["version", Version]),
 	   lists:concat(["ins_cd", InsCd]) ,
-	   lists:concat(["mchnt_cd", MchntCd]),
+	   lists:concat(["mchnt_cd", ?to_s(MchntCd)]),
 	   lists:concat(["term_id", TermId]),
-	   lists:concat(["mchnt_order_no", MchntOrder]),
-	   lists:concat(["order_amt", OrderAmt]),
-	   lists:concat(["auth_code", AuthCode]),
+	   lists:concat(["mchnt_order_no", ?to_s(MchntOrder)]),
+	   lists:concat(["order_amt", ?to_s(Moneny)]),
+	   lists:concat(["auth_code", ?to_s(PayCode)]),
 	   lists:concat(["random_str", Random])
 	  ]),
     ?DEBUG("S ~ts", [S]),
@@ -47,8 +48,8 @@ pay(wwt) ->
 	    {<<"mchnt_cd">>, ?to_b(MchntCd)},
 	    {<<"term_id">>, ?to_b(TermId)},
 	    {<<"mchnt_order_no">>, ?to_b(MchntOrder)},
-	    {<<"order_amt">>, ?to_b(OrderAmt)},
-	    {<<"auth_code">>, ?to_b(AuthCode)},
+	    {<<"order_amt">>, ?to_b(Moneny)},
+	    {<<"auth_code">>, ?to_b(PayCode)},
 	    {<<"random_str">>, ?to_b(Random)},
 	    {<<"sign">>, ?to_b(SignMD5)}],
 
@@ -64,30 +65,36 @@ pay(wwt) ->
 	    ?DEBUG("Reply ~ts", [Reply]),
 	    {struct, Result} = mochijson2:decode(Reply),
 	    ?DEBUG("pay result ~p", [Result]),
-	    [{<<"code">>, _Code},
-	     {<<"msg">>, Msg},
-	     {<<"data">>, _Data}] = Result,
-	    ?DEBUG("msg ~ts", [Msg]);
+	    Code = ?v(<<"code">>, Result), 
+	    Info = ?v(<<"msg">>, Result), 
+	    %% Data = ?v(<<"data">>, Result),
+	    %% [{<<"code">>, Code},
+	    %%  {<<"msg">>, Msg},
+	    %%  {<<"data">>, _Data}] = Result,
+	    ?DEBUG("code ~p, msg ~ts", [Code, Info]),
+	    case Code of
+		?SUCCESS -> {ok, ?SUCCESS, MchntOrder};
+		_ -> {error, Code, MchntOrder}
+	    end;
 	{error, Reason} ->
 	    ?INFO("sms send http failed, Reason ~p", [Reason]),
-	    {error, {http_failed, Reason}}
-    end;
+	    {error, pay_http_failed, Reason}
+    end.
 
-pay(wwt_query) ->
+pay(wwt_query, MchntCd, MchntOrder) ->
     Path = "http://test.zhihuishangjie.cn/api/v2/commonQuery",
     Version = "1.0",
-    InsCd = "d7772b0674a318d5",
-    MchntCd = "10001",
-    MchntOrder = "807",
-    Random = "70",
+    InsCd = "6f606eb525ffdc56",
+    random:seed(),
+    Random = random:uniform(1000),
     S = 
 	lists:sort(
 	  [
 	   lists:concat(["version", Version]),
-	   lists:concat(["ins_cd", InsCd]) ,
-	   lists:concat(["mchnt_cd", MchntCd]),
-	   lists:concat(["mchnt_order_no", MchntOrder]),
-	   lists:concat(["random_str", Random])
+	   lists:concat(["ins_cd", ?to_s(InsCd)]) ,
+	   lists:concat(["mchnt_cd", ?to_s(MchntCd)]),
+	   lists:concat(["mchnt_order_no", ?to_s(MchntOrder)]),
+	   lists:concat(["random_str", ?to_s(Random)])
 	  ]),
     ?DEBUG("S ~ts", [S]),
 
@@ -113,12 +120,22 @@ pay(wwt_query) ->
 	{ok, {{"HTTP/1.1", 200, "OK"}, _Head, Reply}} ->
 	    ?DEBUG("Reply ~ts", [Reply]),
 	    {struct, Result} = mochijson2:decode(Reply),
-	    ?DEBUG("pay result ~p", [Result]),
-	    [{<<"code">>, _Code},
-	     {<<"msg">>, Msg},
-	     {<<"data">>, _Data}] = Result,
-	    ?DEBUG("msg ~ts", [Msg]);
+	    ?DEBUG("query pay order_no ~p with result:~p", [MchntOrder, Result]),
+	    Code = ?v(<<"code">>, Result),
+	    Info = ?v(<<"msg">>, Result),
+	    OrderType = ?v(<<"order_type">>, Result),
+	    Balance = ?v(<<"total_amount">>, Result),
+	    ?DEBUG("code ~p, msg ~ts", [Code, Info]),
+	    case Code of
+		?SUCCESS ->
+		    {ok, ?SUCCESS, MchntOrder, case OrderType of
+						   <<"WECHAT">> -> 0;
+						   <<"ALIPAYE">> -> 1;
+						   _ -> 9999
+					       end, Balance};
+		_ -> {error, Code, MchntOrder}
+	    end; 
 	{error, Reason} ->
 	    ?INFO("sms send http failed, Reason ~p", [Reason]),
-	    {error, {http_failed, Reason}}
+	    {error, q_pay_http_failed, Reason}
     end.

@@ -1158,7 +1158,85 @@ action(Session, Req, {"list_daily_cost"}, Payload) ->
 	       ?shop:cost(
 		  filter,
 		  Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
-       end, Req, Payload). 
+       end, Req, Payload);
+
+action(Session, Req, {"wsale_pay_scan"}, Payload) ->
+    ?DEBUG("wsale_pay_sacn: Session ~p, Payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    ShopId   = ?v(<<"shop">>, Payload),
+    PayCode  = ?v(<<"code">>, Payload),
+    Balance  = ?v(<<"balance">>, Payload),
+    case Balance > 0 andalso Balance < ?MAX_PAY_SCAN of
+	true ->
+	    %% merchant no
+	    case ?shop:shop(get, Merchant, ShopId) of
+		{ok, []} ->
+		    ?utils:respond(200, Req, ?err(pay_scan_no_shop, ShopId));
+		{ok, Shop} ->
+		    ?DEBUG("shop ~p", [Shop]),
+		    case ?v(<<"pay_cd">>, Shop) of
+			<<>> ->
+			    ?utils:respond(200, Req, ?err(pay_scan_not_open, ShopId));
+			undefined ->
+			    ?utils:respond(200, Req, ?err(pay_scan_not_open, ShopId));
+			MchntCd -> 
+			    case diablo_pay:pay(wwt, Merchant, MchntCd, PayCode, Balance) of
+				{ok, ?SUCCESS, PayOrderNo} ->
+				    case diablo_pay:pay(wwt_query, MchntCd, PayOrderNo) of
+					{ok, ?SUCCESS, PayOrderNo, PayType, PayBalance} ->
+					    case ?w_sale:start_pay(
+						    Merchant, ShopId,
+						    {PayType, ?NEW_SALE, PayOrderNo, PayBalance}) of
+						{ok, _} ->
+						    ?utils:respond(
+						       200,
+						       Req,
+						       ?succ(pay_scan, Merchant),
+						       [{<<"pay_order">>, ?to_b(PayOrderNo)},
+							{<<"balance">>, PayBalance},
+							{<<"pay_type">>, PayType}]);
+						{error, _Error} ->
+						    ?utils:respond(
+						       200,
+						       object,
+						       Req,
+						       {[{<<"ecode">>, 99}, 
+							 {<<"pay_order">>, ?to_b(PayOrderNo)},
+							 {<<"balance">>, PayBalance},
+							 {<<"pay_type">>, PayType}
+							]})
+					    end;
+					{error, q_pay_http_failed, ReasonQ} ->
+					    ?utils:respond(
+					       200,
+					       Req,
+					       ?err(q_pay_http_failed, ReasonQ));
+					{error, CodeQ, PayOrderNo} ->
+					    ?utils:respond(
+					       200,
+					       Req,
+					       ?err(q_pay_scan_failed, Merchant),
+					       [{<<"q_pay_code">>, CodeQ}])
+				    end;
+				{error, pay_http_failed, Reason} ->
+				    ?utils:respond(
+				       200,
+				       Req,
+				       ?err(pay_http_failed, Reason)); 
+				{error, Code, _PayOrderNo} ->
+				    ?utils:respond(
+				       200,
+				       Req,
+				       ?err(pay_scan_failed, Merchant),
+				       [{<<"pay_code">>, ?to_b(Code)}]) 
+			    end
+		    end;
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error) 
+	    end;
+	false ->
+	    ?utils:respond(200, Req, ?err(pay_can_max_balance, Balance))
+    end.
 
 sidebar(Session) -> 
     case ?right_request:get_shops(Session, sale) of
@@ -2246,10 +2324,4 @@ send_sms(Merchant, Action, ShopId, Retailer, ShouldPay) ->
 	    ?INFO("failed to send sms phone:~p, merchant ~p, Error ~p", [?v(<<"id">>, Retailer), Merchant, _Error]),
 	    ?err(sms_send_failed, Merchant)
     end.
-
-
-
-
-
-
-
+	    

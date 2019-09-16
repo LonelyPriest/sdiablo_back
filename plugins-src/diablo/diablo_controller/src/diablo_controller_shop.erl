@@ -37,6 +37,8 @@
 %%%===================================================================
 shop(new, Merchant, Attrs) ->
     gen_server:call(?MODULE, {new_shop, Merchant, Attrs});
+shop(get, Merchant, ShopId) ->
+    gen_server:call(?MODULE, {get_shop, Merchant, ShopId});
 shop(delete, Merchant, ShopId) ->
     gen_server:call(?MODULE, {delete_shop, Merchant, ShopId}).
 
@@ -156,9 +158,25 @@ handle_call({new_shop, Merchant, Props}, _From, State)->
 
 handle_call({delete_shop, Merchant, ShopId}, _From, State) ->
     ?DEBUG("delete_shop with merchant ~p, ShopId ~p", [Merchant, ShopId]),
-    Sql = "delete from shops where id=" ++ ?to_s(ShopId)
-	++ " and merchant=" ++ ?to_s(Merchant), 
-    Reply = ?sql_utils:execute(write, Sql, ShopId),
+    case ?sql_utils:execute(
+	    s_read,
+	    "select id, rsn from w_inventory_new"
+	    " where merchant=" ++ ?to_s(Merchant)
+	    ++" and shop=" ++ ?to_s(ShopId)
+	    ++ " limit 1") of
+	{ok, []} ->
+	    Sql = "delete from shops where id=" ++ ?to_s(ShopId) ++ " and merchant=" ++ ?to_s(Merchant), 
+	    Reply = ?sql_utils:execute(write, Sql, ShopId),
+	    {reply, Reply, State};
+	{ok, _Stocks} ->
+	    {reply, {error, ?err(shop_with_stocks, ShopId)}, State}
+    end;
+
+handle_call({get_shop, Merchant, ShopId}, _From, State) ->
+    Sql = "select id, name, pay_cd from shops"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and id=" ++ ?to_s(ShopId),
+    Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
 handle_call({update_shop, Merchant, ShopId, Attrs}, _From, State) ->
@@ -274,6 +292,7 @@ handle_call({list_shop, Merchant, Conditions}, _From, State) ->
 	", a.region as region_id"
 	", a.bcode_friend"
 	", a.bcode_pay"
+	", a.pay_cd"
 	", a.entry_date"
 	++ " from shops a" 
 	++ " where "
