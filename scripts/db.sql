@@ -1586,14 +1586,17 @@ create table print_template(
 create table w_pay
 (
     id              INTEGER AUTO_INCREMENT,
-    pay_type        TINYINT default -1 not null, -- 0:wxin, 1:alipay
-    live            TINYINT default -1 not null, -- 0:sale, 1:recharge
     sn              INTEGER default -1 not null,
+
+    type            TINYINT default -1 not null, -- 0:wxin, 1:alipay
+    live            TINYINT default -1 not null, -- 0:sale, 1:recharge
     balance         DECIMAL(10, 2) default 0 not null,
+    -- 0:pay success, 1:pay failed, 2:paying, 3:refund, 4:refund success, 5:refund fail
+    state           TINYINT default -1 not null, 
     shop            INTEGER default -1 not null,
-    merchant        INTEGER default -1 not null 
+    merchant        INTEGER default -1 not null,
     entry_date      DATETIME default 0 not null,
-    unique key uk   (merchant, shop, rsn), 
+    unique key uk   (merchant, shop, sn), 
     primary key     (id)
 ) default charset=utf8;
 

@@ -448,3 +448,8 @@ check_match_mode(Field, Prompt, Prefix) ->
 	{_, Match, _}->
 	    ?to_s(Prefix) ++ Field ++ " like \'%" ++ Match ++ "%\'"
     end.
+
+random(Max) ->
+    <<A:32, B:32, C:32>> = crypto:rand_bytes(12),
+    random:seed({A,B,C}),
+    random:uniform(Max).

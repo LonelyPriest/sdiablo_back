@@ -232,6 +232,8 @@ success(w_sale_uploaded, Shop) ->
     {0, "Success to upload wsale of shop " ++ ?to_s(Shop)};
 success(pay_scan, Merchant) ->
     {0, "Success to pay scan " ++ ?to_s(Merchant)};
+success(check_pay_scan, PayOrderNo) ->
+    {0, "Success to check pay scan " ++ ?to_s(PayOrderNo)};
 
 %% wprint
 success(new_wprint_server, Server) ->
@@ -608,16 +610,24 @@ error(more_ticket_consume, Batchs) ->
     {2610, "there are more tickets with batchs: " ++ ?to_s(Batchs) ++ "."};
 error(pay_http_failed, Reason) ->
     {2611, "start pay http failed: " ++ ?to_s(Reason) ++ "."};
-error(q_pay_http_failed, Reason) ->
+error(check_pay_http_failed, Reason) ->
     {2612, "start query pay http failed: " ++ ?to_s(Reason) ++ "."};
 error(pay_scan_not_open, Shop) ->
     {2613, "pay with scan not opened: " ++ ?to_s(Shop) ++ "."};
 error(pay_scan_failed, Merchant) ->
     {2614, "failed to pay scan: " ++ ?to_s(Merchant) ++ "."};
-error(q_pay_scan_failed, Merchant) ->
-    {2615, "failed to pay scan query: " ++ ?to_s(Merchant) ++ "."};
+error(check_pay_scan_failed, PayOrder) ->
+    {2615, "failed to pay scan query: " ++ ?to_s(PayOrder) ++ "."};
 error(pay_scan_no_shop, Shop) ->
     {2616, "failed to get shop with pay scan: " ++ ?to_s(Shop) ++ "."};
+error(invalid_pay_scan_code_len, PayCode) ->
+    {2617, "invalid pay code len:" ++ ?to_s(PayCode)};
+error(check_pay_scan_but_db_error, PayOrderNo) ->
+    {2686, "success to check pay, error to db:" ++ ?to_s(PayOrderNo)};
+error(pay_scan_unkown, PayOrderNo) ->
+    {2687, "unkown state while pay scan:" ++ ?to_s(PayOrderNo)};
+error(pay_scan_success_but_db_error, PayOrderNo) ->
+    {2688, "success to pay, error to db:" ++ ?to_s(PayOrderNo)};
 
 %% about print
 error(invalid_sn, PrintSN) ->

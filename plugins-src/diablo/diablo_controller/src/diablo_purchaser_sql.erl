@@ -748,16 +748,16 @@ inventory({update_batch, MatchMode}, Merchant, Attrs, Conditions) ->
 
     %% ?DEBUG("imbalance ~p", [Imbalance]),
     UpdateOfGood =
-	case Imbalance of
-	    undefined ->
+	case Imbalance =:= undefined orelse Imbalance == 0 of
+	    true ->
 		?utils:v(org_price, float, OrgPrice)
 		    ++ ?utils:v(tag_price, float, TagPrice)
 		    ++ ?utils:v(state, integer, State); 
-	    _ ->
+	    false ->
 		[]
 	end
 	++ ?utils:v(contailer, integer, Contailer),
-
+    
     UpdateOfStock = UpdateOfGood
 	++ ?utils:v(score, integer, Score)
 	++ ?utils:v(discount, float, Discount), 
@@ -765,8 +765,8 @@ inventory({update_batch, MatchMode}, Merchant, Attrs, Conditions) ->
     ?DEBUG("UpdateOfGood ~p, UpdateOfStock ~p", [UpdateOfGood, UpdateOfStock]),
 
     ["update w_inventory set " ++ ?utils:to_sqls(proplists, comma, UpdateOfStock)
-     ++ case Imbalance of
-	    undefined -> 
+     ++ case Imbalance =:= undefined orelse Imbalance == 0 of
+	    true -> 
 		%% ", ediscount=(org_price/" ++ ?to_s(TagPrice) ++ ")*100"
 		case {TagPrice, OrgPrice} of
 		    {undefined, undefined} ->
@@ -778,7 +778,7 @@ inventory({update_batch, MatchMode}, Merchant, Attrs, Conditions) ->
 		    {TagPrice, OrgPrice} ->
 			", ediscount=" ++ ?to_s(stock(ediscount, OrgPrice, TagPrice))
 		end;
-	    _ ->
+	    false ->
 		", tag_price=tag_price-" ++ ?to_s(Imbalance)
 		    ++ ", ediscount=(org_price/(tag_price-" ++ ?to_s(Imbalance) ++ "))*100"
 	end
@@ -821,8 +821,8 @@ inventory({update_batch, MatchMode}, Merchant, Attrs, Conditions) ->
 	       _ ->
 		   ["update w_inventory_good set "
 		    ++ ?utils:to_sqls(proplists, comma, UpdateOfGood)
-		    ++ case Imbalance of
-			   undefined ->
+		    ++ case Imbalance =:= undefined orelse Imbalance == 0 of
+			   true ->
 			       case {TagPrice, OrgPrice} of
 			       	   {undefined, undefined} ->
 			       	       [];
@@ -839,7 +839,7 @@ inventory({update_batch, MatchMode}, Merchant, Attrs, Conditions) ->
 			       %% 	   false -> ", ediscount=(org_price/" ++ ?to_s(TagPrice) ++ ")*100"
 			       %% end;
 
-			   _ -> []
+			   false -> []
 		       end
 		    %% ++ case {TagPrice, OrgPrice} of
 		    %% 	   {undefined, undefined} ->

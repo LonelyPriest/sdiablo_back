@@ -654,6 +654,9 @@ alter table w_ticket_custom add column sale_new varchar(32) not null default '' 
 --2019-09-16
 alter table shops add column pay_cd varchar(32) not null default '' after region;
 
+--2019-09-17
+alter table w_sale add column pay_sn integer not null default -1 after rsn;
+
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;
 

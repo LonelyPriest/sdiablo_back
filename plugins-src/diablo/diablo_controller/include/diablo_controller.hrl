@@ -44,7 +44,17 @@
 -define(REJECT_SALE, 1).
 -define(RSN_OF_ALL, 0).
 -define(RSN_OF_NEW, 1).
+
+%% pay scan
 -define(MAX_PAY_SCAN, 10000).
+-define(PAY_SCAN_CODE_LEN, 18).
+-define(PAY_SCAN_SUCCESS, 0).
+-define(PAY_SCAN_FAILED, 1).
+-define(PAY_SCAN_PAYING, 2).
+-define(PAY_SCAN_REFUND, 3).
+-define(PAY_SCAN_REFUND_SUCCESS, 4).
+-define(PAY_SCAN_REFUND_FAILED, 5).
+-define(PAY_SCAN_UNKOWN, 9).
 
 %% transfer
 -define(IN_ROAD, 0).

@@ -330,7 +330,7 @@ var stockUtils = function(){
 		return parseInt(v)
 	    }
 	},
-
+	
 	// to_string: function(v) {
 	//     if (angular.isUndefined(v) || !v) {
 	// 	return undefined;

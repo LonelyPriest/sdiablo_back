@@ -372,6 +372,7 @@ function wsaleConfg(angular){
 		{operation: "print_w_sale_note"},
 		{fields:condition, e_type: e_type}).$promise;
 	};
+	
     });
 
     wsaleApp.controller("wsaleNewDetailCtrl", wsaleNewDetailProvide);
@@ -548,7 +549,7 @@ function wsaleNewProvide(
 	recharge:     0,
 	surplus:      0,
 	left_balance: 0,
-	sid:          diablo_invalid_index,
+	// sid:          diablo_invalid_index,
 	pay_order:    diablo_invalid_index,
 	datetime:     $scope.today()
     };
@@ -1610,8 +1611,7 @@ function wsaleNewProvide(
 	$scope.select.recharge     = 0;
 	$scope.select.surplus      = $scope.select.retailer.balance;
 	$scope.select.left_balance = $scope.select.surplus;
-	sid                        = diablo_invalid_index,
-	pay_order                  = diablo_invalid_index,
+	$scope.select.pay_order    = diablo_invalid_index,
 	
 	$scope.select.verificate   = $scope.vpays[0],
 	$scope.select.wprice       = undefined; 
@@ -3102,54 +3102,99 @@ function wsaleNewProvide(
 	} 
     };
 
-    $scope.pay_scan = function() {
+
+    var get_pay_scan_balance = function(pay_order, pay_type, pay_balance) {
+	if (pay_type === diablo_wxin_scan) {
+	    $scope.select.wxin = wsaleUtils.to_float(pay_balance);
+	    $scope.select.pay_order = pay_order;
+	}
+	else if (pay_type === diablo_alipay_scan) {
+	    $scope.select.aliPay = wsaleUtils.to_float(pay_balance);
+	    $scope.select.pay_order = pay_order;
+	}
+	else {
+	    $scope.select.pay_order = diablo_invalid_index; 
+	    $scope.select.wxin = 0;
+	    $scope.select.aliPay = 0;
+	} 
+    };
+    
+    $scope.check_pay_scan = function(pay) {
+	diabloFilter.check_pay_scan(pay.sn, pay.shop_id).then(function(result) {
+	    console.log(result); 
+	    if (result.ecode === 0) {
+		// success
+		get_pay_scan_balance(pay.sn, result.pay_type, result.balance);
+		pay.state = result.pay_state; 
+	    } else if (result.ecode === 2686) {
+		get_pay_scan_balance(pay.sn, result.pay_type, result.balance);
+		pay.state = result.pay_state; 
+		dialog.response(
+		    true,
+		    "扫码支付核实",
+		    "扫码支付核实成功，系统更新支付信息失败！！");
+	    } else if (result.ecode === 2615) {
+		dialog.response(
+		    false,
+		    "扫码支付核实",
+		    "扫码支付核实失败，请尝试重新核实！！" + "错误码=" + result.pay_code.toString());
+	    } else {
+		dialog.set_error("扫码支付", result.ecode);
+	    }
+	});
+    };
+    
+    $scope.refresh_pay_scan = function(pay_order) {
+	var shopIds = user.shopIds.length === 0 ? undefined : user.shopIds; 
+	diabloFilter.filter_pay_scan(
+	    undefined, {shop:shopIds, pay_order:pay_order}, 1, diablo_items_per_page
+	).then(function(result) {
+	    console.log(result);
+	    $scope.pay_scan_history = result.data;
+	    diablo_order($scope.pay_scan_history);
+	})
+    }; 
+    
+    $scope.pay_scan = function(pay_type) {
 	var callback = function(params) {
 	    console.log(params);
-	    diabloFilter.pay_scan($scope.select.shop.id, params.payCode, params.balance).then(function(result) {
-		console.log(result);
-		var get_pay_balance = function() {
-		    $scope.select.pay_order = diablo_invalid_index;
-		    if (result.pay_type === diablo_wxin_scan) {
-			$scope.select.wxin = result.balance;
-			$scope.select.pay_order = result.pay_order;
-		    }
-		    else if (result.pay_type === diablo_alipay_scan) {
-			$scope.select.aliPay = result.balance;
-			$scope.select.pay_order = result.pay_order;
-		    }
-		    else {
-			$scope.select.wxin = 0;
-			$scope.select.aliPay = 0;
+	    if (params.pay_code.toString().length !== diablo_scan_code_length) {
+		dialog.set_error("扫码支付：", 2617);
+	    } else {
+		diabloFilter.pay_scan(
+		    $scope.select.shop.id,
+		    pay_type,
+		    params.pay_code,
+		    params.balance
+		).then(function(result) {
+		    console.log(result); 
+		    if (result.ecode === 0) {
+			get_pay_scan_balance(result.pay_order, result.pay_type, result.balance);
+			$scope.refresh_pay_scan(result.pay_order);
+		    } else if (result.ecode === 2687) {
+			$scope.refresh_pay_scan(result.pay_order);
+			dialog.response(
+			    false,
+			    "扫码支付",
+			    "用户支付状态未知，请主动通过支付记录核对支付结果后操作！！") 
+		    } else if (result.ecode === 2688) {
+			get_pay_scan_balance(result.pay_order, result.pay_type, result.balance);
+			dialog.response(
+			    true,
+			    "扫码支付",
+			    "扫码支付成功，系统记录支付信息失败！！");
+		    } else if (result.ecode === 2614) {
+			dialog.response(
+			    false,
+			    "扫码支付",
+			    "扫码支付失败，请重新扫码！！" + "错误码=" + result.pay_code.toString());
+		    } else {
+			dialog.set_error("扫码支付", result.ecode);
 		    } 
-		};
-		
-		if (result.ecode === 0) {
-		    get_pay_balance(); 
-		} else if (result.ecode === 99) {
-		    get_pay_balance();
-		    dialog.response(
-			true,
-			"扫码支付",
-			"扫码支付成功，系统记录支付信息失败！！");
-		} else if (result.ecode === 2614){
-		    dialog.response(
-			false,
-			"扫码支付",
-			"扫码支付失败，请重新扫码！！"
-			    + "错误码=" + result.pay_code.toString());
-		} else if (result.ecode === 2615){
-		    dialog.response(
-			false,
-			"扫码支付核对",
-			"扫码支付核对失败，请使用公众号或App核对！！"
-			    + "错误码=" + result.q_pay_code.toString());
-		} else {
-		    dialog.set_error("扫码支付", result.ecode)
-		}
-	    })
+		})
+	    } 
 	};
 	
-	// default wxin
 	var balance = $scope.select.charge;
 	if (balance > 0 &&  balance < diablo_max_pay_scan) {
 	    dialog.edit_with_modal(

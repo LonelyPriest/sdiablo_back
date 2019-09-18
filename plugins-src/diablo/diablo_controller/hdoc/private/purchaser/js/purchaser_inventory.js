@@ -2975,12 +2975,13 @@ function purchaserInventoryDetailCtrlProvide(
 		var update = {
 		    // season: params.select.season,
 		    // year: params.select.year 
-		    tag_price: diablo_set_integer(params.select.tag_price),
-		    discount:  diablo_set_integer(params.select.discount),
-		    imbalance: diablo_set_integer(params.select.imbalance),
+		    tag_price: diablo_set_float(params.select.tag_price),
+		    discount:  diablo_set_float(params.select.discount),
+		    imbalance: diablo_set_float(params.select.imbalance),
 		    score: params.select.score.id,
 		    sprice: params.select.sprice.id
 		};
+		console.log(update);
 		
 		purchaserService.update_w_inventory_batch(
 		    $scope.match, condition, update
@@ -3100,10 +3101,20 @@ function purchaserInventoryDetailCtrlProvide(
 	    ).then(function(result){
 		console.log(result);
 		if (result.ecode === 0){
-		    var tag_price = angular.isDefined(update.tag_price) ? update.tag_price : inv.tag_price;
-		    var org_price = angular.isDefined(update.org_price) ? update.org_price : inv.org_price;
-		    var discount  = angular.isDefined(update.discount)  ? update.discount  : inv.discount;
-		    var contailer = angular.isDefined(update.contailer) ? update.contailer : inv.contailer;
+		    var get_modified = function(newValue, oldValue) {
+			if (angular.isUndefined(newValue)) {
+			    return oldValue
+			} else {
+			    if (angular.isNumber(newValue) && angular.isNumber(oldValue)) {
+				return newValue !== oldValue ? newValue : oldValue;
+			    }  
+			} 
+		    };
+		    
+		    var tag_price = get_modified(update.tag_price, inv.tag_price);
+		    var org_price = get_modified(update.org_price, inv.org_price);
+		    var discount  = get_modified(update.discount, inv.discount);
+		    var contailer = get_modified(update.contailer, inv.contailer);
 		    var s = "修改价格成功！！"
 		    
 			+ "[吊牌价" + tag_price.toString() + "；" 
@@ -3117,6 +3128,7 @@ function purchaserInventoryDetailCtrlProvide(
 			true, "库存价格编辑", s, undefined,
 			function(){
 			    inv.tag_price = tag_price;
+			    inv.org_price = org_price;
 			    inv.discount  = discount;
 			    inv.ediscount = stockUtils.ediscount(org_price, tag_price);
 			    inv.contailer = contailer;

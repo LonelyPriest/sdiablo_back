@@ -15,7 +15,7 @@
 
 %% API
 -export([start_link/1]).
--export([sale/3, sale/4, pay_order/3, pay_order/4, start_pay/3]).
+-export([sale/3, sale/4, pay_order/3, pay_order/4, pay_scan/4]).
 -export([rsn_detail/3, get_modified/2]).
 -export([filter/4, filter/6, export/3]).
 -export([direct/1]).
@@ -88,43 +88,59 @@ rsn_detail(rsn, Merchant, Condition) ->
     gen_server:call(Name, {rsn_detail, Merchant, Condition}).
 
 
-filter(total_news, 'and', Merchant, Fields) ->
+filter(total_news, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {total_news, Merchant, Fields});
+    gen_server:call(Name, {total_news, Merchant, Conditions});
 
-filter(total_rsn_group, MatchMode, Merchant, Fields) ->
+filter(total_rsn_group, MatchMode, Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {total_rsn_group, MatchMode, Merchant, Fields}, 6 * 1000);
+    gen_server:call(Name, {total_rsn_group, MatchMode, Merchant, Conditions}, 6 * 1000);
 
-filter(total_firm_detail, 'and', Merchant, Fields) ->
+filter(total_firm_detail, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {total_firm_detail, Merchant, Fields});
+    gen_server:call(Name, {total_firm_detail, Merchant, Conditions});
 
-filter(total_employee_evaluation, 'and', Merchant, Fields) ->
+filter(total_employee_evaluation, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {total_employee_evaluation, Merchant, Fields}).
+    gen_server:call(Name, {total_employee_evaluation, Merchant, Conditions});
 
-filter(news, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
+filter(total_pay_scan, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {filter_news, Merchant, CurrentPage, ItemsPerPage, Fields});
+    gen_server:call(Name, {total_pay_scan, Merchant, Conditions}).
 
-filter(rsn_group, MatchMode, Merchant, CurrentPage, ItemsPerPage, Fields) ->
+filter(news, 'and', Merchant, CurrentPage, ItemsPerPage, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {filter_news, Merchant, CurrentPage, ItemsPerPage, Conditions});
+
+filter(rsn_group, MatchMode, Merchant, CurrentPage, ItemsPerPage, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(
-      Name, {filter_rsn_group, {use_id, 0}, MatchMode, Merchant, CurrentPage, ItemsPerPage, Fields}, 6 * 1000);
+      Name, {filter_rsn_group,
+	     {use_id, 0},
+	     MatchMode, Merchant, CurrentPage, ItemsPerPage, Conditions}, 6 * 1000);
 
-filter({rsn_group, Mode, Sort}, MatchMode, Merchant, CurrentPage, ItemsPerPage, Fields) ->
+filter({rsn_group, Mode, Sort}, MatchMode, Merchant, CurrentPage, ItemsPerPage, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(
-      Name, {filter_rsn_group, {Mode, Sort}, MatchMode, Merchant, CurrentPage, ItemsPerPage, Fields}, 6 * 1000);
+      Name, {filter_rsn_group,
+	     {Mode, Sort},
+	     MatchMode, Merchant, CurrentPage, ItemsPerPage, Conditions}, 6 * 1000);
 
-filter(employee_evaluation, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
+filter(employee_evaluation, 'and', Merchant, CurrentPage, ItemsPerPage, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {filter_employee_evaluation, Merchant, CurrentPage, ItemsPerPage, Fields}).
+    gen_server:call(Name, {filter_employee_evaluation, Merchant, CurrentPage, ItemsPerPage, Conditions});
 
-start_pay(Merchant, Shop, {PayType, Live, PayOrderNo, Balance}) ->
+filter(pay_scan, 'and', Merchant, CurrentPage, ItemsPerPage, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {filter_pay_scan, Merchant, CurrentPage, ItemsPerPage, Conditions}).
+
+pay_scan(start, Merchant, Shop, {PayType, PayState, Live, PayOrderNo, Balance}) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {start_pay, Merchant, Shop, {PayType, Live, PayOrderNo, Balance}}).
+    gen_server:call(Name, {start_pay_scan, Merchant, Shop, {PayType, PayState, Live, PayOrderNo, Balance}}); 
+pay_scan(check, Merchant, Shop, {PayType, PayState, PayOrderNo, Balance}) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {check_pay_scan, Merchant, Shop, {PayType, PayState, PayOrderNo, Balance}}).
+    
 
 export(trans, Merchant, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -167,7 +183,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
     Total      = ?v(<<"total">>, Props, 0),
     Score      = ?v(<<"score">>, Props, 0),
 
-    BankCards  = ?v(<<"cards">>, Props, []),
+    BankCards  = ?v(<<"cards">>, Props, []), 
     %% ScoreId    = ?v(<<"sid">>, Props, 0),
     %% DrawScore  = ?v(<<"draw_score">>, Props, 0),
 
@@ -175,6 +191,8 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
     TicketScore  = ?v(<<"ticket_score">>, Props, 0),
     TicketBatchs = ?v(<<"ticket_batchs">>, Props, []),
     TicketCustom = ?v(<<"ticket_custom">>, Props, -1),
+
+    PayOrder     = ?v(<<"pay_order">>, Props, -1),
     
     Sql0 = "select id, name, mobile, balance, score from w_retailer"
 	" where id=" ++ ?to_s(Retailer)
@@ -236,6 +254,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 			", score"
 			", comment"
 			", type"
+			", pay_sn"
 			", entry_date) values("
 			++ "\"" ++ ?to_s(SaleSn) ++ "\","
 			++ ?to_s(UserId) ++ ","
@@ -260,6 +279,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 			++ ?to_s(Score) ++ "," 
 			++ "\'" ++ ?to_s(Comment) ++ "\'," 
 			++ ?to_s(type(new)) ++ ","
+			++ ?to_s(PayOrder) ++ "," 
 			++ "\'" ++ ?to_s(DateTime) ++ "\');",
 
 		    Sql3 = ["update w_retailer set consume=consume+" ++ ?to_s(ShouldPay)
@@ -1482,26 +1502,72 @@ handle_call({filter_employee_evaluation, Merchant, Conditions, CurrentPage, Item
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({start_pay, Merchant, Shop, {PayType, Live, PayOrderNo, Balance}}, _From, State) ->
-    Sql = "insert into w_pay("
-	"pay_type"
-	", live"
-	", sn"
+handle_call({start_pay_scan, Merchant, Shop, {PayType, PayState, Live, PayOrderNo, Balance}}, _From, State) ->
+    Sql = "insert into w_pay(sn" 
+	", type"
+	", live" 
 	", balance"
+	", state"
+	
 	", shop"
 	", merchant"
 	", entry_date) values("
-	++ ?to_s(PayType)
-	++ ?to_s(Live)
-	++ ?to_s(PayOrderNo)
-	++ ?to_s(Balance)
-	++ ?to_s(Shop)
-	++ ?to_s(Merchant)
+	++ ?to_s(PayOrderNo) ++ ","
+	
+	++ ?to_s(PayType) ++ ","
+	++ ?to_s(Live) ++ ","
+	++ ?to_s(Balance) ++ ","
+	++ ?to_s(PayState) ++ ","
+	
+	++ ?to_s(Shop) ++ ","
+	++ ?to_s(Merchant) ++ ","
 	++ "\'" ++ ?utils:current_time(format_localtime) ++ "\')",
     Reply =  ?sql_utils:execute(insert, Sql),
     {reply, Reply, State};
 
+handle_call({check_pay_scan, Merchant, Shop, {PayType, PayState, PayOrderNo, Balance}}, _From, State) ->
+    Updates = ?utils:v(type, integer, PayType)
+	++ ?utils:v(state, integer, PayState)
+	++ ?utils:v(balance, float, Balance),
+    Sql = "update w_pay set " ++ ?utils:to_sqls(proplists, comma, Updates)
+	++ " where merchant=" ++ ?to_s(Merchant)
+	++ " and shop=" ++ ?to_s(Shop)
+	++ " and sn=" ++ ?to_s(PayOrderNo),
 
+    Reply = ?sql_utils:execute(write, Sql, PayOrderNo),
+    {reply, Reply, State};
+
+handle_call({total_pay_scan, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("total_pay_scan: merchant ~p, conditions ~p", [Merchant, Conditions]),
+    {StartTime, EndTime, UseConditions} = ?sql_utils:cut(fields_no_prifix, Conditions), 
+    Sql = "select count(*) as total"
+	", SUM(balance) as t_balance"
+	" from w_pay"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, UseConditions)
+	++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime),
+    Reply = ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State};
+
+handle_call({filter_pay_scan, Merchant, CurrentPage, ItemsPerPage, Conditions}, _From, State) ->
+    ?DEBUG("filter_pay_scan: merchant ~p, conditions ~p", [Merchant, Conditions]),
+    {StartTime, EndTime, UseConditions} = ?sql_utils:cut(fields_no_prifix, Conditions), 
+    Sql = "select id"
+	", sn"
+	", type"
+	", live"
+	", balance"
+	", state"
+	", shop as shop_id"
+	", entry_date"
+	" from w_pay"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, UseConditions)
+	++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime)
+	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
+    
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.

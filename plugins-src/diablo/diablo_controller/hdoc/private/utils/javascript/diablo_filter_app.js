@@ -1166,9 +1166,24 @@ function filterProvider(){
 		clear_from_storage(cookie, "p_template");
 	    },
 
-	    pay_scan: function(shop, payCode, balance) {
+	    pay_scan: function(shop, pay_type, pay_code, balance) {
 		return _wsaleHttp.save(
-		    {operation:"wsale_pay_scan"}, {shop:shop, code:payCode, balance:balance}).$promise;
+		    {operation:"w_pay_scan"},
+		    {shop:shop, type:pay_type, code:pay_code, balance:balance}).$promise;
+	    },
+
+	    filter_pay_scan: function(match, fields, currentPage, itemsPerpage) {
+		return _wsaleHttp.save(
+		    {operation:"filter_w_pay_scan"},
+		    {match: angular.isDefined(match) ? match.op : undefined,
+		     field: fields,
+		     page:  currentPage,
+		     count: itemsPerpage}).$promise;
+	    },
+
+	    check_pay_scan:function(pay_order, shop) {
+		return _wsaleHttp.save(
+		    {operation:"check_w_pay_scan"}, {pay_order:pay_order, shop:shop}).$promise;
 	    }
 	    
 	    // 

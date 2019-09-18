@@ -1160,12 +1160,13 @@ action(Session, Req, {"list_daily_cost"}, Payload) ->
 		  Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
        end, Req, Payload);
 
-action(Session, Req, {"wsale_pay_scan"}, Payload) ->
+action(Session, Req, {"w_pay_scan"}, Payload) ->
     ?DEBUG("wsale_pay_sacn: Session ~p, Payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
     ShopId   = ?v(<<"shop">>, Payload),
     PayCode  = ?v(<<"code">>, Payload),
     Balance  = ?v(<<"balance">>, Payload),
+    %% Balance = 0.01,
     case Balance > 0 andalso Balance < ?MAX_PAY_SCAN of
 	true ->
 	    %% merchant no
@@ -1173,7 +1174,6 @@ action(Session, Req, {"wsale_pay_scan"}, Payload) ->
 		{ok, []} ->
 		    ?utils:respond(200, Req, ?err(pay_scan_no_shop, ShopId));
 		{ok, Shop} ->
-		    ?DEBUG("shop ~p", [Shop]),
 		    case ?v(<<"pay_cd">>, Shop) of
 			<<>> ->
 			    ?utils:respond(200, Req, ?err(pay_scan_not_open, ShopId));
@@ -1181,49 +1181,48 @@ action(Session, Req, {"wsale_pay_scan"}, Payload) ->
 			    ?utils:respond(200, Req, ?err(pay_scan_not_open, ShopId));
 			MchntCd -> 
 			    case diablo_pay:pay(wwt, Merchant, MchntCd, PayCode, Balance) of
-				{ok, ?SUCCESS, PayOrderNo} ->
-				    case diablo_pay:pay(wwt_query, MchntCd, PayOrderNo) of
-					{ok, ?SUCCESS, PayOrderNo, PayType, PayBalance} ->
-					    case ?w_sale:start_pay(
-						    Merchant, ShopId,
-						    {PayType, ?NEW_SALE, PayOrderNo, PayBalance}) of
-						{ok, _} ->
-						    ?utils:respond(
-						       200,
-						       Req,
-						       ?succ(pay_scan, Merchant),
-						       [{<<"pay_order">>, ?to_b(PayOrderNo)},
-							{<<"balance">>, PayBalance},
-							{<<"pay_type">>, PayType}]);
-						{error, _Error} ->
-						    ?utils:respond(
-						       200,
-						       object,
-						       Req,
-						       {[{<<"ecode">>, 99}, 
-							 {<<"pay_order">>, ?to_b(PayOrderNo)},
-							 {<<"balance">>, PayBalance},
-							 {<<"pay_type">>, PayType}
-							]})
-					    end;
-					{error, q_pay_http_failed, ReasonQ} ->
+				{ok, ?PAY_SCAN_SUCCESS, PayOrder, PayType, PayBalance} ->
+				    Extra = [{<<"pay_order">>, ?to_b(PayOrder)},
+					     {<<"balance">>, PayBalance},
+					     {<<"pay_type">>, PayType}],
+				    case ?w_sale:pay_scan(
+					    start,
+					    Merchant,
+					    ShopId,
+					    {PayType, ?PAY_SCAN_SUCCESS, ?NEW_SALE, PayOrder, PayBalance}) of
+					{ok, _} ->
+					    ?utils:respond(
+					       200, Req, ?succ(pay_scan, Merchant), Extra);
+					{error, _Error} ->
 					    ?utils:respond(
 					       200,
 					       Req,
-					       ?err(q_pay_http_failed, ReasonQ));
-					{error, CodeQ, PayOrderNo} ->
-					    ?utils:respond(
-					       200,
-					       Req,
-					       ?err(q_pay_scan_failed, Merchant),
-					       [{<<"q_pay_code">>, CodeQ}])
+					       ?err(pay_scan_success_but_db_error, PayOrder),
+					       Extra)
+						
 				    end;
+				{error, ?PAY_SCAN_UNKOWN, PayOrderNo} ->
+				    PayType = ?v(<<"type">>, Payload),
+				    ?w_sale:pay_scan(
+				       start,
+				       Merchant,
+				       ShopId,
+				       {PayType, ?PAY_SCAN_UNKOWN, ?NEW_SALE, PayOrderNo, Balance}),
+				    ?utils:respond(
+				       200, Req, ?err(pay_scan_unkown, PayOrderNo),
+				       [{<<"pay_order">>, ?to_b(PayOrderNo)}]); 
+					
+				{error, invalid_pay_scan_code_len, PayCode} ->
+				    ?utils:respond(
+				       200,
+				       Req,
+				       ?err(invalid_pay_scan_code_len, PayCode));
 				{error, pay_http_failed, Reason} ->
 				    ?utils:respond(
 				       200,
 				       Req,
 				       ?err(pay_http_failed, Reason)); 
-				{error, Code, _PayOrderNo} ->
+				{error, Code, _PayOrderNo} -> 
 				    ?utils:respond(
 				       200,
 				       Req,
@@ -1236,6 +1235,60 @@ action(Session, Req, {"wsale_pay_scan"}, Payload) ->
 	    end;
 	false ->
 	    ?utils:respond(200, Req, ?err(pay_can_max_balance, Balance))
+    end;
+
+action(Session, Req, {"filter_w_pay_scan"}, Payload) ->
+    ?DEBUG("filter_w_pay_sacn: Session ~p, Payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    ?pagination:pagination(
+       fun(Match, Conditions) ->
+	       ?w_sale:filter(total_pay_scan, ?to_a(Match), Merchant, Conditions)
+       end,
+       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
+	       ?w_sale:filter(
+		  pay_scan,
+		  Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
+       end, Req, Payload);
+
+action(Session, Req, {"check_w_pay_scan"}, Payload) ->
+    ?DEBUG("check_w_pay_sacn: Session ~p, Payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    ShopId = ?v(<<"shop">>, Payload),
+    PayOrder = ?v(<<"pay_order">>, Payload),
+    case ?shop:shop(get, Merchant, ShopId) of
+	{ok, Shop} ->
+	    MchntCd = ?v(<<"pay_cd">>, Shop),
+	    case diablo_pay:pay(wwt_query, MchntCd, PayOrder) of
+		{ok, PayState, PayType, PayBalance} ->
+		    case ?w_sale:pay_scan(
+			    check,
+			    Merchant,
+			    ShopId,
+			    {PayType, PayState, PayOrder, PayBalance}) of
+			{ok, _} ->
+			    ?utils:respond(
+			       200,
+			       Req,
+			       ?succ(check_pay_scan, PayOrder),
+			      [{<<"balance">>, PayBalance},
+			       {<<"pay_type">>, PayType},
+			       {<<"pay_state">>, PayState}
+			      ]);
+			{error, _CheckError} ->
+			    ?utils:respond(
+			       200, Req, ?err(check_pay_scan_but_db_error, PayOrder))
+		    end; 
+		{error, check_pay_http_failed, Reason} ->
+		    ?utils:respond(200, Req, ?err(check_pay_http_failed, Reason));
+		{error, Code, MchntOrder} ->
+		    ?utils:respond(
+		       200,
+		       Req,
+		       ?err(check_pay_scan_failed, MchntOrder),
+		       [{<<"pay_code">>, ?to_b(Code)}])
+	    end;
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
     end.
 
 sidebar(Session) -> 
