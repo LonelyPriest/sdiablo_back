@@ -329,7 +329,7 @@
       
     </div> <!--END portlet box-->
 
-    <div class="row">
+    <div x-ng-if="setting.pay_scan" class="row">
       <div class="col-md-12">
 	<div class="portlet box light-grey diablo-margin-bottom-5" style="margin-top:30px">
 	  <div class="portlet-title">
@@ -567,7 +567,7 @@
 			 x-ng-enter="disable_save() || save_wsale()"/> 
 		</div>
 	      </form>
-	      <span class="input-group-btn"> 
+	      <span x-ng-if="setting.pay_scan" class="input-group-btn"> 
 		<button class="btn bg-magenta fg-white" x-ng-click="pay_scan(0)">
 		  <i class="glyphicon glyphicon-qrcode"></i></button>
 	      </span>
@@ -593,7 +593,7 @@
 			 x-ng-enter="disable_save() || save_wsale()"/>
 		</div>
 	      </form>
-	      <span class="input-group-btn"> 
+	      <span x-ng-if="setting.pay_scan" class="input-group-btn"> 
 		<button class="btn bg-magenta fg-white" x-ng-click="pay_scan(1)">
 		  <i class="glyphicon glyphicon-qrcode"></i></button>
 	      </span>
@@ -1577,8 +1577,8 @@
 	      <span class="input-group-addon"><i class="glyphicon glyphicon-barcode fg-red"></i></span>
 	      <from>
     		<input class="form-control"
-    		       name="payCode"
-    		       type="text"
+    		       name="pay_code"
+    		       type="password"
     		       placeholder="请扫付款码"
     		       x-ng-edit
     		       disable-key
