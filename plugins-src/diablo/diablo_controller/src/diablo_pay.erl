@@ -75,14 +75,15 @@ pay(wwt, Merchant, MchntCd, PayCode, Moneny) ->
 		    Info = ?v(<<"msg">>, Result),
 		    ?DEBUG("code ~p, msg ~ts", [Code, Info]),
 
-		    {struct, Data} = ?v(<<"data">>, Result),
-		    OrderType = ?v(<<"order_type">>, Data),
-		    Balance = ?v(<<"actual_amount">>, Data), 
 		    case Code of
-			0 -> {ok, ?PAY_SCAN_SUCCESS, MchntOrder, case OrderType of
+			0 ->
+			    {struct, Data} = ?v(<<"data">>, Result),
+			    OrderType = ?v(<<"order_type">>, Data),
+			    Balance = ?v(<<"actual_amount">>, Data), 
+			    {ok, ?PAY_SCAN_SUCCESS, MchntOrder, case OrderType of
 								     <<"WECHAT">> -> 0;
-								     <<"ALIPAYE">> -> 1;
-								     _ -> 9999
+								     <<"ALIPAY">> -> 1;
+								     _ -> 99
 								 end, Balance};
 			-1 ->
 			    {error, ?PAY_SCAN_UNKOWN, MchntOrder}; 

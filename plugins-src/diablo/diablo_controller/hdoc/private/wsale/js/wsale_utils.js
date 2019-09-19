@@ -1411,10 +1411,10 @@ wsaleDraft.prototype.select = function(dialog, template, draftFilter, selectCall
 };
 
 var wsalePrint = function(){
-    var left = 1;
-    var width = 219; // inch, 5.8 / 2.45 * 96 
+    var left   = 1;
+    var width  = 219; // inch, 5.8 / 2.45 * 96 
     var vWidth = width - left; 
-    var hFont = 20; // height of font
+    var hFont  = 20; // height of font
     
     var bold_style = function(LODOP) {
 	LODOP.SET_PRINT_STYLEA(0, "FontSize", 9);
@@ -1782,11 +1782,24 @@ var wsalePrint = function(){
 	    LODOP.SET_PRINT_MODE("PROGRAM_CONTENT_BYVAR", true);
 	},
 
-	start_print: function(LODOP){
+	start_print: function(LODOP, callback){
 	    // wsalePrint.init(LODOP);
 	    // LODOP.PRINT_DESIGN();
-	    // LODOP.PREVIEW();
-	    LODOP.PRINT();
-	}
+	    // LODOP.PREVIEW(); 
+	    LODOP.SET_PRINT_MODE("CATCH_PRINT_STATUS",true);
+	    if (LODOP.CVERSION) {
+		LODOP.On_Return = function(task, job) {
+		    if (job) {
+			if (angular.isFunction(callback)) callback(job);
+		    }
+		}
+		LODOP.PRINT(); 
+	    } else {
+		var job = LODOP.PRINT();
+		if (job) {
+		    if (angular.isFunction(callback)) callback(job); 
+		}
+	    }
+	} 
     }
 }();

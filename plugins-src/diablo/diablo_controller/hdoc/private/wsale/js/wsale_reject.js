@@ -372,21 +372,23 @@ function wsaleRejectCtrlProvide(
 	    // console.log($scope.select);
 	    
 	    if (angular.isDefined(LODOP)){
-		wsalePrint.gen_head(
+		var top = wsalePrint.gen_head(
 		    LODOP,
 		    $scope.select.shop.name,
 		    result.rsn,
 		    $scope.select.employee.name,
 		    $scope.select.retailer.name, 
 		    dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),
-		    wsaleService.direct.wreject);
+		    wsaleService.direct.wreject,
+		    $scope.print_setting);
 
 		var isRound = $scope.setting.round; 
 		// var cakeMode = $scope.setting.cakeMode;
 		// console.log($scope.setting);
 		
-		var hLine = wsalePrint.gen_body(
+		top = wsalePrint.gen_body(
 		    LODOP,
+		    top,
 		    $scope.select,
 		    $scope.inventories.filter(function(r){return !r.$new && r.select}),
 		    isRound,
@@ -394,7 +396,7 @@ function wsaleRejectCtrlProvide(
 		
 		hLine = wsalePrint.gen_stastic(
 		    LODOP,
-		    hLine,
+		    top,
 		    wsaleService.direct.wreject,
 		    $scope.select,
 		    wsaleUtils.isVip(
@@ -403,7 +405,7 @@ function wsaleRejectCtrlProvide(
 		
 		wsalePrint.gen_foot(
 		    LODOP,
-		    hLine,
+		    top,
 		    pdate,
 		    $scope.select.shop.addr,
 		    $scope.print_setting);
