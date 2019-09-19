@@ -2194,7 +2194,8 @@ function wsaleNewProvide(
 		    }, 2000, 3, false);
 		    
 		} else {
-		    if (angular.isFunction(callback)) callback();
+		    if (angular.isFunction(callback))
+			$scope.$apply(function() {callback();});
 		} 
 	    }
 	    
