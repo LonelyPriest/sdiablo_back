@@ -2079,144 +2079,146 @@ function wsaleNewProvide(
 	    $scope.inventories[i].total = $scope.inventories[i].sell;
 	    pinvs.push($scope.inventories[i]);
 	};
-	if (angular.isUndefined(LODOP)) LODOP = getLodop();
-	if (angular.isDefined(LODOP)) {
-	    console.log($scope.select);
+	// if (angular.isUndefined(LODOP)) LODOP = getLodop();
+	// if (angular.isDefined(LODOP)) {
+	console.log($scope.select);
 
-	    var sms_notify = function() {
-		if (result.sms_code !== 0) {
-		    var ERROR = require("diablo-error");
-		    dialog.response(false,
-				    "销售开单",
-				    "开单成功！！发送短消息失败：" + ERROR[result.sms_code]); 
-		}
-	    };
+	var sms_notify = function() {
+	    if (result.sms_code !== 0) {
+		var ERROR = require("diablo-error");
+		dialog.response(false,
+				"销售开单",
+				"开单成功！！发送短消息失败：" + ERROR[result.sms_code]); 
+	    }
+	};
+	
+	var start_print = function(print_callback){
+	    if (angular.isUndefined(LODOP)) LODOP = getLodop();
 	    
-	    var start_print = function(print_callback){
-		$scope.select.ticket_score = 0; 
-		var sid = $scope.select.ticket_sid;
-		if ($scope.select.ticket_custom === diablo_score_ticket
-		    && angular.isDefined(sid)
-		    && diablo_invalid_index !== sid) {
-		    var s = diablo_get_object(sid, $scope.scores);
-		    if (angular.isObject(s)) {
-			$scope.select.ticket_score =
-			    parseInt($scope.select.ticket_balance / s.balance) * s.score;
-		    } 
-		}
-		
-		var top = wsalePrint.gen_head(
-		    LODOP,
-		    $scope.select.shop.name,
-		    $scope.select.rsn,
-		    $scope.select.employee.name,
-		    $scope.select.retailer.name, 
-		    dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),
-		    wsaleService.direct.wsale,
-		    $scope.print_setting);
-
-		var isRound = $scope.setting.round; 
-		// var cakeMode = $scope.setting.cake_mode;
-		top = wsalePrint.gen_body(
-		    LODOP,
-		    top,
-		    $scope.select,
-		    pinvs,
-		    isRound,
-		    $scope.print_setting);
-		
-		var selectRetailer = $scope.select.retailer.id; 
-		// console.log($scope.select);
-		top = wsalePrint.gen_stastic(
-		    LODOP,
-		    top,
-		    0,
-		    $scope.select,
-		    $scope.select.retailer.balance,
-		    wsaleUtils.isVip(
-			$scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers),
-		    $scope.print_setting);
-		
-		wsalePrint.gen_foot(LODOP, top, pdate, $scope.select.shop, $scope.print_setting);
-		return wsalePrint.start_print(LODOP, print_callback); 
-	    }; 
-	    
-	    var print_interval = function(job) {
-		console.log("print_job:", job);
-		if ($scope.p_num > 1) {
-		    if ($scope.timer_of_print) {
-			$interval.cancel($scope.timer_of_print); 
-		    }
-
-		    var interval = 0; 
-		    $scope.timer_of_print = $interval(function() {
-			interval++;
-			console.log("interval:", interval);
-
-			var wait_print = function(status) {
-			    console.log("wait_print:", status);
-			    if ("1" === status) {
-				if ($scope.timer_of_print) $interval.cancel($scope.timer_of_print); 
-				
-				var t0 = $timeout(function() {
-				    $timeout.cancel(t0);
-				    for (var i=1; i<$scope.p_num; i++){
-					start_print(); 
-				    }
-				    if (angular.isFunction(callback)) {
-					$scope.$apply(function() {callback();});
-				    } 
-				}, 3000, false);
-			    } else {
-				if (interval >= 3) {
-				    console.log("wait for long, start print any way");
-				    if ($scope.timer_of_print) $interval.cancel($scope.timer_of_print); 
-				    for (var i=1; i<$scope.p_num; i++){
-					start_print(); 
-				    }
-				    
-				    if (angular.isFunction(callback)) 
-					$scope.$apply(function() {callback();});
-				}
-			    }
-			};
-			
-			if (LODOP.CVERSION) {
-			    LODOP.On_Return = function(task, status) {
-				wait_print(status);
-			    }; 
-			    LODOP.GET_VALUE('PRINT_STATUS_OK', job); 
-			} else {
-			    var status = LODOP.GET_VALUE('PRINT_STATUS_OK', job);
-			    wait_print(status);
-			}
-			
-		    }, 2000, 3, false);
-		    
-		} else {
-		    if (angular.isFunction(callback))
-			$scope.$apply(function() {callback();});
+	    $scope.select.ticket_score = 0; 
+	    var sid = $scope.select.ticket_sid;
+	    if ($scope.select.ticket_custom === diablo_score_ticket
+		&& angular.isDefined(sid)
+		&& diablo_invalid_index !== sid) {
+		var s = diablo_get_object(sid, $scope.scores);
+		if (angular.isObject(s)) {
+		    $scope.select.ticket_score =
+			parseInt($scope.select.ticket_balance / s.balance) * s.score;
 		} 
 	    }
 	    
-	    if (im_print === diablo_yes) {
-		sms_notify(); 
-		start_print(function(job) {print_interval(job)});
+	    var top = wsalePrint.gen_head(
+		LODOP,
+		$scope.select.shop.name,
+		$scope.select.rsn,
+		$scope.select.employee.name,
+		$scope.select.retailer.name, 
+		dateFilter($scope.select.datetime, "yyyy-MM-dd HH:mm:ss"),
+		wsaleService.direct.wsale,
+		$scope.print_setting);
+
+	    var isRound = $scope.setting.round; 
+	    // var cakeMode = $scope.setting.cake_mode;
+	    top = wsalePrint.gen_body(
+		LODOP,
+		top,
+		$scope.select,
+		pinvs,
+		isRound,
+		$scope.print_setting);
+	    
+	    var selectRetailer = $scope.select.retailer.id; 
+	    // console.log($scope.select);
+	    top = wsalePrint.gen_stastic(
+		LODOP,
+		top,
+		0,
+		$scope.select,
+		$scope.select.retailer.balance,
+		wsaleUtils.isVip(
+		    $scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers),
+		$scope.print_setting);
+	    
+	    wsalePrint.gen_foot(LODOP, top, pdate, $scope.select.shop, $scope.print_setting);
+	    return wsalePrint.start_print(LODOP, print_callback); 
+	}; 
+	
+	var print_interval = function(job) {
+	    console.log("print_job:", job);
+	    if ($scope.p_num > 1) {
+		if ($scope.timer_of_print) {
+		    $interval.cancel($scope.timer_of_print); 
+		}
+
+		var interval = 0; 
+		$scope.timer_of_print = $interval(function() {
+		    interval++;
+		    console.log("interval:", interval);
+
+		    var wait_print = function(status) {
+			console.log("wait_print:", status);
+			if ("1" === status) {
+			    if ($scope.timer_of_print) $interval.cancel($scope.timer_of_print); 
+			    
+			    var t0 = $timeout(function() {
+				$timeout.cancel(t0);
+				for (var i=1; i<$scope.p_num; i++){
+				    start_print(); 
+				}
+				if (angular.isFunction(callback)) {
+				    $scope.$apply(function() {callback();});
+				} 
+			    }, 3000, false);
+			} else {
+			    if (interval >= 3) {
+				console.log("wait for long, start print any way");
+				if ($scope.timer_of_print) $interval.cancel($scope.timer_of_print); 
+				for (var i=1; i<$scope.p_num; i++){
+				    start_print(); 
+				}
+				
+				if (angular.isFunction(callback)) 
+				    $scope.$apply(function() {callback();});
+			    }
+			}
+		    };
+		    
+		    if (LODOP.CVERSION) {
+			LODOP.On_Return = function(task, status) {
+			    wait_print(status);
+			}; 
+			LODOP.GET_VALUE('PRINT_STATUS_OK', job); 
+		    } else {
+			var status = LODOP.GET_VALUE('PRINT_STATUS_OK', job);
+			wait_print(status);
+		    }
+		    
+		}, 2000, 3, false);
+		
 	    } else {
-		var request = dialog.request(
-		    "销售开单", "开单成功，是否打印销售单？", undefined, undefined, undefined);
-		request.result.then(function(close){
-		    console.log(close);
-		    sms_notify();
-		    start_print(function(job) {print_interval(job)});
-		}, function(success) {
-		    if (angular.isFunction(callback))
-			callback(); 
-		}, function(error) {
-		    // console.log(error);
-		});
-	    }
+		if (angular.isFunction(callback))
+		    $scope.$apply(function() {callback();});
+	    } 
 	};
+	    
+	if (im_print === diablo_yes) {
+	    sms_notify(); 
+	    start_print(function(job) {print_interval(job);});
+	} else {
+	    var request = dialog.request(
+		"销售开单", "开单成功，是否打印销售单？", undefined, undefined, undefined);
+	    request.result.then(function(close){
+		console.log(close);
+		sms_notify();
+		start_print(function(job) {print_interval(job);});
+	    }, function(success) {
+		if (angular.isFunction(callback))
+		    callback(); 
+	    }, function(error) {
+		// console.log(error);
+	    });
+	}
+	// };
 	// console.log(pinvs); 
 	// var ok_print = function(){
 	//     console.log($scope.select);
@@ -2542,7 +2544,7 @@ function wsaleNewProvide(
 	if (diablo_no === $scope.setting.draw_score
 	    && ( wsaleUtils.to_float($scope.select.withdraw) !== 0
 		 || wsaleUtils.to_float($scope.select.ticket_balance) !== 0)) {
-	    var pay_orders = calc_pay_order();
+	    var pay_orders = $scope.calc_pay_order();
 	    var pay_with_score = pay_orders[2] + pay_orders[3] + pay_orders[4] + pay_orders[5];
 	    $scope.select.score = wsaleUtils.calc_score_of_pay(pay_with_score, $scope.select.pscores);
 	}

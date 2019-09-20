@@ -1129,8 +1129,7 @@ action(Session, Req, {"export_w_retailer"}, Payload) ->
     case ?w_retailer:retailer(list, Merchant, Conditions) of
 	[] -> ?utils:respond(200, Req, ?err(wretailer_export_none, Merchant));
 	{ok, Retailers} ->
-	    {ok, ExportFile, Url}
-		= ?utils:create_export_file("retailer", Merchant, UserId),
+	    {ok, ExportFile, Url} = ?utils:create_export_file("retailer", Merchant, UserId),
 	    SysVips = ?gen_report:sys_vip_of(merchant, Merchant),
 	    ?DEBUG("sysvips ~p", [SysVips]),
 	    NewRetailers = [{R} || {R} <- Retailers, not lists:member(?v(<<"id">>, R), SysVips)],
@@ -1283,7 +1282,7 @@ sidebar(Session) ->
     L1 ++ L2 ++ ?menu:sidebar(level_1_menu, Level) ++ ?menu:sidebar(level_1_menu, Consume).
 
 csv_head(retailer, Do, Code) ->
-    Head = "序号,名称,类型,等级,联系方式,余额,累计消费,累计积分,所在店铺,日期",
+    Head = "序号,名称,生日,类型,等级,联系方式,余额,累计消费,累计积分,所在店铺,日期",
     C = 
 	case Code of
 	    0 -> ?utils:to_utf8(from_latin1, Head);
@@ -1312,6 +1311,7 @@ do_write(retailer, Do, Count, [{H}|T], Code) ->
     %% ?DEBUG("retailer ~p", [H]),
     %% Id      = ?v(<<"id">>, H),
     Name    = ?v(<<"name">>, H),
+    Birth   = ?v(<<"birth">>, H),
     Type    = retailer_type(?v(<<"type_id">>, H)),
     Level   = retailer_level(?v(<<"level">>, H)),
     Mobile  = ?v(<<"mobile">>, H, []),
@@ -1325,6 +1325,7 @@ do_write(retailer, Do, Count, [{H}|T], Code) ->
     L = "\r\n"
 	++ ?to_s(Count) ++ ?d
 	++ ?to_s(Name) ++ ?d
+	++ ?to_s(Birth) ++ ?d 
 	++ ?to_s(Type) ++ ?d
 	++ ?to_s(Level) ++ ?d
 	++ ?to_s(Mobile) ++ ?d
