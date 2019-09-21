@@ -390,7 +390,7 @@
 			<button x-ng-if="h.state===9 || h.state===2 || h.state===3"
 				class="btn diablo-button btn-danger"
 		    		x-ng-click="check_pay_scan(h)">
-			  核对<i class="glyphicon glyphicon-check"></i>
+			  核实<i class="glyphicon glyphicon-check"></i>
 			</button>
 		      </td>
 		    </tr>
@@ -541,7 +541,7 @@
 			 x-ng-plus="focus_good_or_barcode()"
 	  		 x-ng-model="select.cash"
 			 x-ng-pattern="pattern.money"
-			 placeholder="现金"
+			 placeholder="现金" 
 			 x-ng-enter="disable_save() || save_wsale()"/>
 		</div>
 	      </form>

@@ -1259,37 +1259,42 @@ function wretailerCustomTicketDetailCtrlProvide(
 	} 
     };
 
-    var discard = function(condition, mode) {
+    var discard = function(condition, batch, mode) {
 	console.log(condition);
+	var title = mode===0 ? "优惠券废弃" : "优惠券恢复";
 	var callback = function(params) {
-	    wretailerService.discard_custom_ticket(condition, mode).then(function(result){
+	    wretailerService.discard_custom_ticket(condition, batch, mode).then(function(result){
 		if (result.ecode === 0){
 		    dialog.response_with_callback(
-			true, "优惠券废弃", "优惠券废弃成功！！" ,
+			true, title, "优惠券操作成功！！" ,
 			undefined,
 			function(){
 			    $scope.do_search($scope.current_page);
 			})
 		} else {
 		    dialog.response(
-			false, "优惠券废弃", "优惠券废弃失败："
-			    + wretailerService.error[result.ecode]);
+			false, title, "优惠券操作失败：" + wretailerService.error[result.ecode]);
 		}
 	    })
 	};
-
-	dialog.request("优惠券废弃", "优惠券废弃后不可恢复，确定要废弃吗？", callback, undefined, undefined);
+	
+	dialog.request(title, "确定要进行该操作吗？", callback, undefined, undefined);
     };
     
     $scope.discard_all = function() {
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search) {
-	    discard(search, 1);
+	    console.log(search);
+	    discard(search, 1, 0);
 	});
     };
 
     $scope.discard_one = function(ticketId) {
-	discard({tid:ticketId}, 0);
-    }; 
+	discard({tid:ticketId}, 0, 0);
+    };
+
+    $scope.recover_one = function(ticketId) {
+	discard({tid:ticketId}, 0, 1);
+    };
 };
 
 function wretailerThresholdCardDetailCtrlProvide(

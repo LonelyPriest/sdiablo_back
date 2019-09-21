@@ -22,7 +22,7 @@
 
 -export([retailer/2, retailer/3, retailer/4, retailer/5, default_profile/2]).
 -export([charge/2, charge/3, threshold_card/3, threshold_card/4, threshold_card_good/3]).
--export([score/2, score/3, ticket/2, ticket/3, get_ticket/3, get_ticket/4, make_ticket/3]).
+-export([score/2, score/3, ticket/2, ticket/3, ticket/4, get_ticket/3, get_ticket/4, make_ticket/3]).
 -export([bank_card/3]).
 -export([filter/4, filter/6]).
 -export([match/3, syn/2, syn/3, get/2, card/3, sms/2]).
@@ -146,12 +146,6 @@ ticket(effect, Merchant, TicketId) ->
 ticket(consume, Merchant, {TicketId, Comment, Score2Money}) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {consume_ticket, Merchant, {TicketId, Comment, Score2Money}});
-ticket(discard_custom_one, Merchant, TicketId) ->
-    Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {discard_custom_one, Merchant, TicketId});
-ticket(discard_custom_all, Merchant, Conditions) ->
-    Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {discard_custom_all, Merchant, Conditions});
 
 ticket(new_plan, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant),
@@ -162,6 +156,13 @@ ticket(update_plan, Merchant, Attrs) ->
 ticket(gift, Merchant, GiftInfo) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {gift_ticket, Merchant, GiftInfo}).
+
+ticket(discard_custom_one, Merchant, TicketId, Mode) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {discard_custom_one, Merchant, TicketId, Mode});
+ticket(discard_custom_all, Merchant, Conditions, Mode) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {discard_custom_all, Merchant, Conditions, Mode}).
 
 ticket(list_plan, Merchant) ->
     Name = ?wpool:get(?MODULE, Merchant),
@@ -1725,7 +1726,8 @@ handle_call({update_ticket_plan, Merchant, Attrs}, _From, State) ->
     end;
 
 handle_call({gift_ticket, Merchant, {Shop, Retailer, Tickets, WithRSN} = GiftInfo}, _From, State) ->
-    ?DEBUG("gift_ticket: merchant ~p, GiftInfo ~p", [Merchant, GiftInfo]), 
+    ?DEBUG("gift_ticket: merchant ~p, GiftInfo ~p", [Merchant, GiftInfo]),
+    Date = ?utils:current_time(localdate),
     Reply = 
 	case search_custome_ticket(Merchant, Tickets, [], [], 0, 0, ?TICKET_EFFECT_NEVER) of
 	    {_Success, Failed, _Balance, _Count, _MinEffect} when length(Failed) =/= 0 ->
@@ -1745,7 +1747,8 @@ handle_call({gift_ticket, Merchant, {Shop, Retailer, Tickets, WithRSN} = GiftInf
 				      [] -> [];
 				      _ -> ", sale_new=\'" ++ ?to_s(WithRSN) ++ "\'"
 				  end
-			       ++ ", in_shop=" ++ ?to_s(Shop) 
+			       ++ ", in_shop=" ++ ?to_s(Shop)
+			       ++ ", mtime=\'" ++ ?to_s(Date) ++ "\'"
 			       ++ ", stime=\'" ++ ?utils:current_date_after(ValidEffect) ++ "\'"
 			       ++ case Expire == ?INVALID_OR_EMPTY of
 				      true -> [];
@@ -1790,7 +1793,7 @@ handle_call({list_ticket_plan, Merchant}, _From, State) ->
 	" from w_ticket_plan where merchant=" ++ ?to_s(Merchant),
     {reply, ?sql_utils:execute(read, Sql), State};
 
-handle_call({discard_custom_one, Merchant, TicketId}, _From, State) ->
+handle_call({discard_custom_one, Merchant, TicketId, Mode}, _From, State) ->
     Sql = "select id, balance, retailer, state from w_ticket_custom"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and id=" ++ ?to_s(TicketId), 
@@ -1798,11 +1801,20 @@ handle_call({discard_custom_one, Merchant, TicketId}, _From, State) ->
 	case ?sql_utils:execute(s_read, Sql) of
 	    {ok, []} -> ?err(ticket_not_exist, TicketId);
 	    {ok, _R} ->
-		Sql1 = "update w_ticket_custom set state=" ++ ?to_s(?CUSTOM_TICKET_STATE_DISCARD)
-		    ++ " where merchant=" ++ ?to_s(Merchant)
-		    ++ " and id=" ++ ?to_s(TicketId)
-		    ++ " and state in(1,3)", %% checked, unused
-		?sql_utils:execute(write, Sql1, TicketId)
+		Sql1 = 
+		    case Mode of
+			0 ->
+			    "update w_ticket_custom set state=" ++ ?to_s(?CUSTOM_TICKET_STATE_DISCARD)
+				++ " where merchant=" ++ ?to_s(Merchant)
+				++ " and id=" ++ ?to_s(TicketId)
+				++ " and state in(1,3)"; %% checked, unused
+			1 ->
+			    "update w_ticket_custom set state=" ++ ?to_s(?TICKET_STATE_CHECKED)
+				++ " where merchant=" ++ ?to_s(Merchant)
+				++ " and id=" ++ ?to_s(TicketId)
+				++ " and state=" ++ ?to_s(?CUSTOM_TICKET_STATE_DISCARD) %% 
+		    end,
+		?sql_utils:execute(write, Sql1, TicketId) 
 	end,
 
     {reply, Reply, State};

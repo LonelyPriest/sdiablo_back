@@ -1,0 +1,136 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="portlet box purple">
+
+      <div class="portlet-title">
+	<div class="caption"><i class="glyphicon glyphicon-menu-hamburger"></i>支付明细</div> 
+	<div class="actions">
+	  <div class="btn-group btn-group-solid"> 
+	    <button type="button" class="btn blue reload purple-stripe"
+		    x-ng-click="refresh()">刷新
+	      <i class="icon icon-spinner fg-white"></i></button>
+	  </div>
+	</div> 
+      </div>
+
+      <!--BEGIN table container-->
+      <div class="portlet-body">
+	<div class="table-toolbar util-btn-margin-bottom-5">
+	  <div class="row">
+            <div class="col-md-4 col-sm-4 col-xs-12">
+              <time-search
+		 glyphicon="glyphicon glyphicon-arrow-left fg-red"
+		 time="time.start_time" ok="do_search(default_page)">
+	      </time-search>
+            </div>
+
+            <div class="col-md-4 col-sm-4 col-xs-12">
+              <time-search
+		 glyphicon="glyphicon glyphicon-arrow-right fg-red"
+		 time="time.end_time" ok="do_search(default_page)">
+	      </time-search>
+            </div> 
+	    
+            <div class="col-md-4 col-sm-4 col-xs-12">
+              <query-pattern ng-model="match" filters="filters" filter="filter"></query-pattern>
+            </div>
+	  </div>
+
+	  <query-group filters="filters" prompt="prompt" ok="do_search(default_page)"></query-group>
+	  
+	</div> <!--END table-toolbar-->
+	
+	<!--BEGN portlet body-->
+	<div class="portlet-body">
+	  <!--BEGIN panel-->
+	  <div class="panel panel-default">
+	    <!--EBGIN table responsive-->
+	    <div class="table-responsive">
+	      <!--BEGIN member table-->
+	      <table class="table table-bordered table-striped table-hover
+			    table-condensed table-advanced">
+		<thead>
+		  <tr>
+		    <th>序号</th>
+		    <th>订单号</th>
+		    <th>类型</th>
+		    <th>金额</th>
+		    <th>状态</th> 
+		    <th>日期</th> 
+		    <th>操作</th>
+		  </tr>
+		</thead>
+		<tbody>
+		  <tr ng-repeat="p in pay_detail">
+		    <td x-ng-bind="p.order_id"></td>
+		    <td x-ng-bind="p.sn"></td>
+		    <td>
+			<div x-ng-switch on="p.type">
+			  <div x-ng-switch-when=0>微信</div>
+			  <div x-ng-switch-when=1>支付宝</div>
+			  <div x-ng-switch-default>未知</div>
+			</div> 
+		      </td>
+		    <td x-ng-bind="p.balance"></td>
+
+		    <td>
+			<div x-ng-switch on="p.state">
+			  <div x-ng-switch-when=0><span class="fg-green">成功</span></div>
+			  <div x-ng-switch-when=1><span class="fg-red">失败</span></div>
+			  <div x-ng-switch-when=2><span class="fg-pink">支付中</span></div>
+			  <div x-ng-switch-when=3><span class="fg-magenta">转入退款</span></div>
+			  <div x-ng-switch-when=4><span class="fg-green">退款成功</span></div>
+			  <div x-ng-switch-when=5><span class="fg-red">退款失败</span></div>
+			  <div x-ng-switch-when=9><span class="fg-yellow">未知</span></div>
+			</div> 
+		      </td>
+		    <td x-ng-bind="p.entry_date"></td>
+		    <td>
+		      <button x-ng-if="h.state===9 || h.state===2 || h.state===3"
+			      class="btn diablo-button btn-danger"
+		    	      x-ng-click="check_pay_scan(h)">
+			核实<i class="glyphicon glyphicon-check"></i>
+		      </button>
+		    </td> 
+		  </tr>
+
+		  <tr x-ng-if="total_items > 0">
+		    <td colspan="3"></td>
+		    <td x-ng-bind="total_balance"></td> 
+		    <td colspan="4"></td>
+		  </tr>
+		</tbody>
+
+	      </table> <!--END VM table-->
+	    </div> <!--END table responsive-->
+
+	  </div> <!--END panel-->
+	</div> <!--END portlet body-->
+	
+	<div x-ng-show="total_items > 0 && total_items>items_perpage" class="row">
+	  <div class="col-md-12, col-sm-12, col-xs-12">
+	    <div>
+	      <sapn>
+		<span>显示第 {{current_page}} / {{num_pages}} 项结果，
+		  共 {{total_items}} 项</span> 
+		<uib-pagination
+		   class="table-pagination pagination-lg pull-right "
+	      	   total-items="total_items"
+	      	   items-per-page="items_perpage"
+	      	   num-pages="num_pages"
+	      	   max-size="max_page_size"
+	      	   boundary-links="true"
+	      	   previous-text="&lsaquo;" next-text="&rsaquo;"
+	      	   first-text="&laquo;" last-text="&raquo;"
+	      	   x-ng-model="current_page"
+	      	   x-ng-change="page_changed()">
+		</uib-pagination> 
+	    </div>
+	  </div>
+	</div>
+	
+      </div> <!--END table container-->
+
+    </div>
+  </div>
+</div> 

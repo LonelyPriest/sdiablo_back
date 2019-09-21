@@ -137,6 +137,10 @@
 		      <button x-ng-if="t.state===1"
 			      class="btn red diablo-button"
 			      x-ng-click="discard_one(t.id)">废弃
+			<i class="glyphicon glyphicon-erase"></i></button>
+		      <button x-ng-if="t.state===0"
+			      class="btn green diablo-button"
+			      x-ng-click="recover_one(t.id)">恢复
 			<i class="glyphicon glyphicon-erase"></i></button> 
 		    </td> 
 		  </tr>

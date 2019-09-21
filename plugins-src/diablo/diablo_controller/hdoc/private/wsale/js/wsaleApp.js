@@ -145,6 +145,11 @@ function wsaleConfg(angular){
 		templateUrl: '/private/wsale/html/list_daily_cost.html',
 		controller: 'dailyCostCtrl',
 		resolve: angular.extend({}, user) 
+	    }).
+	    when('/list_pay_scan', {
+		templateUrl: '/private/wsale/html/pay_scan_detail.html',
+		controller: 'payScanCtrl',
+		resolve: angular.extend({}, user) 
 	    }). 
 	    otherwise({
 		templateUrl: '/private/wsale/html/new_wsale_detail.html',
@@ -2328,6 +2333,15 @@ function wsaleNewProvide(
 	    $scope.has_saved = false; 
 	    return;
 	};
+
+	if ($scope.select.cash > diablo_max_sale_money
+	    || $scope.select.wxin > diablo_max_sale_money
+	    || $scope.select.aliPay > diablo_max_sale_money
+	    || $scope.select.card > diablo_max_sale_money) {
+	    diabloUtilsService.set_error("销售开单", 2197);
+	    $scope.has_saved = false;
+	    return;
+	}
 	
 	var setv = diablo_set_float;
 	var seti = diablo_set_integer;

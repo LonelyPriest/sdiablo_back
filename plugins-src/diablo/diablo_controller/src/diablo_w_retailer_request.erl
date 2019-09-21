@@ -932,19 +932,20 @@ action(Session, Req, {"discard_custom_ticket"}, Payload) ->
     ?DEBUG("discard_custom_ticket: session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
     {struct, Conditions} = ?v(<<"condition">>, Payload),
-    DiscardMode = ?v(<<"mode">>, Payload),
+    Batch = ?v(<<"batch">>, Payload),
+    Mode  = ?v(<<"mode">>, Payload, 0),
 
-    case DiscardMode of
+    case Batch of
 	?TICKET_DISCARD_ONE ->
 	    TicketId = ?v(<<"tid">>, Conditions),
-	    case ?w_retailer:ticket(discard_custom_one, Merchant, TicketId) of
+	    case ?w_retailer:ticket(discard_custom_one, Merchant, TicketId, Mode) of
 		{ok, TicketId} ->
 		    ?utils:respond(200, Req, ?succ(discard_ticket_one, TicketId));
 		{error, Error} ->
 		    ?utils:respond(200, Req, Error)
 	    end;
 	?TICKET_DISCARD_ALL ->
-	    case ?w_retailer:ticket(discard_custom_all, Merchant, Conditions) of
+	    case ?w_retailer:ticket(discard_custom_all, Merchant, Conditions, Mode) of
 		{ok, Merchant} ->
 		    ?utils:respond(200, Req, ?succ(discard_ticket_all, Merchant));
 		{error, Error} ->
@@ -1000,40 +1001,50 @@ action(Session, Req, {"gift_ticket"}, Payload) ->
 
     ShopId   = ?v(<<"shop">>, Payload),
     ShopName = ?v(<<"shop_name">>, Payload),
-    
-    case ?w_retailer:ticket(gift, Merchant, {ShopId, RetailerId, Tickets, WithRSN}) of
-	{ok, RetailerId, Balance, Count, MinEffect} ->
-	    %% send sms
-	    try 
-		{ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),
-		SMSSetting = ?v(<<"recharge_sms">>, Setting, ?SMS_NOTIFY),
-		?DEBUG("SMSSetting ~p", [SMSSetting]),
-		SysVips  = ?w_sale_request:sys_vip_of_shop(Merchant, ShopId), 
-		case not lists:member(RetailerId, SysVips)
-		    andalso ?utils:nth(3, SMSSetting) == 1 of
-		    true ->
-			{SMSCode, _} = 
-			    ?notify:sms(
-			       ticket,
-			       {Merchant, ShopName, RetailerName, RetailerPhone},
-			       {Balance, Count, MinEffect}),
-			?utils:respond(
-			   200, Req, ?succ(new_ticket_plan, RetailerId),
-			   [{<<"sms_code">>, SMSCode}]);
-		    false ->
-			%% {0, none} 
-			?utils:respond(
-			   200, Req, ?succ(new_ticket_plan, RetailerId),
-			   [{<<"sms_code">>, 0}])
-		end
-	    catch
-		_:{badmatch, _Error} ->
-		    ?INFO("failed to send sms phone:~p, merchant ~p, Error ~p",
-			  [RetailerId, Merchant, _Error]),
-		    ?utils:respond(200, Req, ?err(sms_send_failed, Merchant))
-	    end;
-	{error, Error} ->
-	    ?utils:respond(200, Req, Error)
+
+    case ?w_sale:sale(get_new, Merchant, WithRSN) of
+	{ok, SaleNew} ->
+	    case ?v(<<"g_ticket">>, SaleNew) of
+		?YES ->
+		    ?utils:respond(200, Req, ?err(ticket_gifted, WithRSN));
+		?NO ->
+		    case ?w_retailer:ticket(gift, Merchant, {ShopId, RetailerId, Tickets, WithRSN}) of
+			{ok, RetailerId, Balance, Count, MinEffect} ->
+			    %% send sms
+			    try 
+				{ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),
+				SMSSetting = ?v(<<"recharge_sms">>, Setting, ?SMS_NOTIFY),
+				?DEBUG("SMSSetting ~p", [SMSSetting]),
+				SysVips  = ?w_sale_request:sys_vip_of_shop(Merchant, ShopId), 
+				case not lists:member(RetailerId, SysVips)
+				    andalso ?utils:nth(3, SMSSetting) == 1 of
+				    true ->
+					{SMSCode, _} = 
+					    ?notify:sms(
+					       ticket,
+					       {Merchant, ShopName, RetailerName, RetailerPhone},
+					       {Balance, Count, MinEffect}),
+					?utils:respond(
+					   200, Req, ?succ(new_ticket_plan, RetailerId),
+					   [{<<"sms_code">>, SMSCode}]);
+				    false ->
+					%% {0, none} 
+					?utils:respond(
+					   200, Req, ?succ(new_ticket_plan, RetailerId),
+					   [{<<"sms_code">>, 0}])
+				end
+			    catch
+				_:{badmatch, _Error} ->
+				    ?INFO("failed to send sms phone:~p, merchant ~p, Error ~p",
+					  [RetailerId, Merchant, _Error]),
+				    ?utils:respond(200, Req, ?err(sms_send_failed, Merchant))
+			    end;
+			{error, Error} ->
+			    ?utils:respond(200, Req, Error)
+		    end;
+		{error, Error0} ->
+		    ?utils:respond(200, Req, Error0)
+	    end
     end;
 
 %%

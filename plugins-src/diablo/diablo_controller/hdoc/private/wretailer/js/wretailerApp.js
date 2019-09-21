@@ -497,9 +497,10 @@ function wretailerConfig(angular) {
 		{operation: "make_ticket_batch"}, ticket).$promise;
 	};
 
-	this.discard_custom_ticket = function(condition, mode) {
+	this.discard_custom_ticket = function(condition, batch, mode) {
 	    return http.save(
-		{operation: "discard_custom_ticket"}, {condition:condition, mode:mode}).$promise;
+		{operation: "discard_custom_ticket"},
+		{condition:condition, batch:batch, mode:mode}).$promise;
 	};
 
 	this.filter_custom_ticket_detail = function(match, fields, currentPage, itemsPerpage){

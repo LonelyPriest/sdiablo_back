@@ -751,6 +751,7 @@ create table w_ticket_custom(
     in_shop         INTEGER default -1, -- produce shop
     shop            INTEGER default -1, -- consumed shop
     ishop           TINYINT default 0 not null, -- allowed consume at different shop. 0:yes; 1: no
+    mtime           DATE default 0 not null, -- send time
     stime           DATE default 0 not null,
     etime           DATE default 0 not null,
     remark          VARCHAR(128) not null,

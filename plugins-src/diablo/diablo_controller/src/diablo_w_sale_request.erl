@@ -1325,12 +1325,13 @@ sidebar(Session) ->
 		       _ -> []
 		   end,
 	    
-	    Merchant = ?session:get(merchant, Session), 
-	    {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),
+	    Merchant = ?session:get(merchant, Session),
+	    BaseSettings = ?w_report_request:get_setting(Merchant, -1),
+	    %% {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),
 
 	    %% ?DEBUG("import ~p", [?v(<<"wsale_import">>, Setting)]),
 	    UploadMenu = 
-		case ?to_i(?v(<<"wsale_import">>, Setting, 0)) of
+		case ?to_i(?w_report_request:get_config(<<"wsale_import">>, BaseSettings)) of
 		    1 -> ?w_inventory_request:authen_shop_action(
 			    {?upload_w_sale,
 			     "upload_wsale",
@@ -1339,9 +1340,18 @@ sidebar(Session) ->
 		    0 -> []
 		end,
 
-
+	    %% use pay scan
+	    PayScan = 
+		case ?utils:nth(25, ?w_report_request:get_config(<<"p_balance">>, BaseSettings)) of
+		    ?YES ->
+			[{"list_pay_scan", "支付明细", "glyphicon glyphicon-qrcode"}];
+		    ?NO ->
+			[]
+		end,
+		    
+		
 	    L1 = ?menu:sidebar(
-		    level_1_menu, WSale ++ WReject ++ SaleR ++ UploadMenu),
+		    level_1_menu, WSale ++ WReject ++ SaleR ++ PayScan ++ UploadMenu),
 	    
 	    L1
 		

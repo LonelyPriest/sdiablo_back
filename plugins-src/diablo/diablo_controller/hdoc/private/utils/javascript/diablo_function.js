@@ -2,7 +2,8 @@
 var diablo_delay = 1000; //ms
 var diablo_delay_300ms = 300;
 
-var diablo_max_pay_scan = 10000;
+var diablo_max_pay_scan   = 99999;
+var diablo_max_sale_money = 99999;
 var diablo_wxin_scan = 0;
 var diablo_alipay_scan = 1;
 var diablo_scan_code_length = 18;
