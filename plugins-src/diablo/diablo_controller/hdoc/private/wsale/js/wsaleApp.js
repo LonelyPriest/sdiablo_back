@@ -3268,7 +3268,7 @@ function wsaleNewProvide(
     $scope.refresh_pay_scan = function(pay_order) {
 	var shopIds = user.shopIds.length === 0 ? undefined : user.shopIds; 
 	diabloFilter.filter_pay_scan(
-	    undefined, {shop:shopIds, pay_order:pay_order}, 1, diablo_items_per_page
+	    undefined, {shop:shopIds, pay_order:pay_order}, 1, diablo_items_per_page()
 	).then(function(result) {
 	    console.log(result);
 	    $scope.pay_scan_history = result.data;

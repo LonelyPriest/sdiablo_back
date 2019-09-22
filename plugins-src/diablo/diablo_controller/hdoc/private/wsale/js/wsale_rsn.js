@@ -811,7 +811,7 @@ function payScanCtrlProvide (
 	    }
 	    
 	    diabloFilter.filter_pay_scan(
-		$scope.match, search, page, $scope.itemsPerpage
+		$scope.match, search, page, $scope.items_perpage
 	    ).then(function(result) {
 		console.log(result);
 		if (result.ecode === 0) {

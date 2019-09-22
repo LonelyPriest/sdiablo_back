@@ -1002,48 +1002,58 @@ action(Session, Req, {"gift_ticket"}, Payload) ->
     ShopId   = ?v(<<"shop">>, Payload),
     ShopName = ?v(<<"shop_name">>, Payload),
 
-    case ?w_sale:sale(get_new, Merchant, WithRSN) of
-	{ok, SaleNew} ->
-	    case ?v(<<"g_ticket">>, SaleNew) of
-		?YES ->
-		    ?utils:respond(200, Req, ?err(ticket_gifted, WithRSN));
-		?NO ->
-		    case ?w_retailer:ticket(gift, Merchant, {ShopId, RetailerId, Tickets, WithRSN}) of
-			{ok, RetailerId, Balance, Count, MinEffect} ->
-			    %% send sms
-			    try 
-				{ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),
-				SMSSetting = ?v(<<"recharge_sms">>, Setting, ?SMS_NOTIFY),
-				?DEBUG("SMSSetting ~p", [SMSSetting]),
-				SysVips  = ?w_sale_request:sys_vip_of_shop(Merchant, ShopId), 
-				case not lists:member(RetailerId, SysVips)
-				    andalso ?utils:nth(3, SMSSetting) == 1 of
-				    true ->
-					{SMSCode, _} = 
-					    ?notify:sms(
-					       ticket,
-					       {Merchant, ShopName, RetailerName, RetailerPhone},
-					       {Balance, Count, MinEffect}),
-					?utils:respond(
-					   200, Req, ?succ(new_ticket_plan, RetailerId),
-					   [{<<"sms_code">>, SMSCode}]);
-				    false ->
-					%% {0, none} 
-					?utils:respond(
-					   200, Req, ?succ(new_ticket_plan, RetailerId),
-					   [{<<"sms_code">>, 0}])
-				end
-			    catch
-				_:{badmatch, _Error} ->
-				    ?INFO("failed to send sms phone:~p, merchant ~p, Error ~p",
-					  [RetailerId, Merchant, _Error]),
-				    ?utils:respond(200, Req, ?err(sms_send_failed, Merchant))
-			    end;
-			{error, Error} ->
-			    ?utils:respond(200, Req, Error)
+    GiftFun =
+	fun() ->
+		case ?w_retailer:ticket(gift, Merchant, {ShopId, RetailerId, Tickets, WithRSN}) of
+		    {ok, RetailerId, Balance, Count, MinEffect} ->
+			%% send sms
+			try 
+			    {ok, Setting} = ?wifi_print:detail(base_setting, Merchant, -1),
+			    SMSSetting = ?v(<<"recharge_sms">>, Setting, ?SMS_NOTIFY),
+			    ?DEBUG("SMSSetting ~p", [SMSSetting]),
+			    SysVips  = ?w_sale_request:sys_vip_of_shop(Merchant, ShopId), 
+			    case not lists:member(RetailerId, SysVips)
+				andalso ?utils:nth(3, SMSSetting) == 1 of
+				true ->
+				    {SMSCode, _} = 
+					?notify:sms(
+					   ticket,
+					   {Merchant, ShopName, RetailerName, RetailerPhone},
+					   {Balance, Count, MinEffect}),
+				    ?utils:respond(
+				       200, Req, ?succ(new_ticket_plan, RetailerId),
+				       [{<<"sms_code">>, SMSCode}]);
+				false ->
+				    %% {0, none} 
+				    ?utils:respond(
+				       200, Req, ?succ(new_ticket_plan, RetailerId),
+				       [{<<"sms_code">>, 0}])
+			    end
+			catch
+			    _:{badmatch, _Error} ->
+				?INFO("failed to send sms phone:~p, merchant ~p, Error ~p",
+				      [RetailerId, Merchant, _Error]),
+				?utils:respond(200, Req, ?err(sms_send_failed, Merchant))
+			end;
+		    {error, Error} ->
+			?utils:respond(200, Req, Error)
+		end
+	end,
+    
+    case WithRSN of
+	[] ->
+	    GiftFun();
+	_ ->
+	    case ?w_sale:sale(get_new, Merchant, WithRSN) of
+		{ok, SaleNew} ->
+		    case ?v(<<"g_ticket">>, SaleNew) of
+			?YES ->
+			    ?utils:respond(200, Req, ?err(ticket_gifted, WithRSN));
+			?NO ->
+			    GiftFun()
 		    end;
-		{error, Error0} ->
-		    ?utils:respond(200, Req, Error0)
+		{error, Error} ->
+		    ?utils:respond(200, Req, Error)
 	    end
     end;
 

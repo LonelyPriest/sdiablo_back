@@ -1175,10 +1175,10 @@ function filterProvider(){
 	    filter_pay_scan: function(match, fields, currentPage, itemsPerpage) {
 		return _wsaleHttp.save(
 		    {operation:"filter_w_pay_scan"},
-		    {match: angular.isDefined(match) ? match.op : undefined,
-		     field: fields,
-		     page:  currentPage,
-		     count: itemsPerpage}).$promise;
+		    {match:  angular.isDefined(match) ? match.op : undefined,
+		     fields: fields,
+		     page:   currentPage,
+		     count:  itemsPerpage}).$promise;
 	    },
 
 	    check_pay_scan:function(pay_order, shop) {
