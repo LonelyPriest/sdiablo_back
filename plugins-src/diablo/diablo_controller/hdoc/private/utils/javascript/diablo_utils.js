@@ -884,6 +884,8 @@ diabloUtils.directive('queryGroup', function () {
 			    break;
 			case "sprice":
 			    f.value = get_prompt(f.value, scope.prompt.sprice);
+			case "score":
+			    f.value = get_prompt(f.value, scope.prompt.score);
 			default: 
 			    break;
 			}

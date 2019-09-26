@@ -2120,7 +2120,8 @@ function purchaserInventoryDetailCtrlProvide(
     filterSizeSpec, filterStdExecutive, filterCategory, filterFabric, filterTemplate,
     filterRegion, base, user) {
     $scope.promotions = filterPromotion.concat([{id:diablo_invalid_index, name:"重置促销方案"}]);
-    $scope.scores = filterScore.concat([{id:diablo_invalid_index, name:"重置积分方案", type_id:0}]);
+    $scope.scores = filterScore.filter(function(s) {return s.type_id===0})
+	.concat([{id:diablo_invalid_index, name:"重置积分方案", type_id:0}]);
     // console.log(filterTemplate);
     
     $scope.unfold = true; 
@@ -2181,15 +2182,16 @@ function purchaserInventoryDetailCtrlProvide(
     $scope.filters = []; 
     diabloFilter.reset_field(); 
     diabloFilter.add_field("style_number", $scope.match_style_number);
-    diabloFilter.add_field("brand", filterBrand);
-    diabloFilter.add_field("ctype", filterCType);
-    diabloFilter.add_field("type",  filterType);
+    diabloFilter.add_field("brand",  filterBrand);
+    diabloFilter.add_field("ctype",  filterCType);
+    diabloFilter.add_field("type",   filterType);
     diabloFilter.add_field("season", diablo_season2objects);
-    diabloFilter.add_field("sex",  diablo_sex2object);
-    diabloFilter.add_field("year", diablo_full_year);
+    diabloFilter.add_field("sex",    diablo_sex2object);
+    diabloFilter.add_field("score",  $scope.scores);
+    diabloFilter.add_field("year",   diablo_full_year);
     if ($scope.stock_right.show_orgprice) {
 	diabloFilter.add_field("org_price", []);
-    }
+    };
     diabloFilter.add_field("tag_price", []); 
     diabloFilter.add_field("discount", []);
     diabloFilter.add_field("shop", $scope.shops);
@@ -2200,6 +2202,7 @@ function purchaserInventoryDetailCtrlProvide(
     diabloFilter.add_field("msell", []);
     diabloFilter.add_field("esell", []);
     diabloFilter.add_field("lsell", []);
+    
 
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
