@@ -138,9 +138,9 @@
 		  <td class="col-md-1 vert-align">{{inv.tag_price}}</td>
 
 		  <!--discount-->
-		  <td x-ng-if="!right.m_discount || setting.show_wprice" class="vert-align">{{inv.fdiscount}}</td>
+		  <td x-ng-if="!right.m_discount" class="vert-align">{{inv.fdiscount}}</td>
 		  
-		  <td x-ng-if="right.m_discount && !setting.show_wprice" class="col-md-1 vert-align">
+		  <td x-ng-if="right.m_discount" class="col-md-1 vert-align">
 		    <div x-ng-if="!inv.free_update">{{inv.fdiscount}}</div>
 		    <form name="inv.form.fdiscount"
 			  x-ng-if="!inv.$new && inv.free_update">
@@ -157,11 +157,11 @@
 		    </form>
 		  </td>
 		  
-		  <td x-ng-if="!right.m_price || setting.show_wprice" class="vert-align">
+		  <td x-ng-if="!right.m_price" class="vert-align">
 		    <div x-ng-if="(inv.fprice===0 || inv.fprice)">{{inv.fprice}}</div>
 		  </td>
 		  
-		  <td x-ng-if="right.m_price && !setting.show_wprice" class="col-md-1 vert-align">
+		  <td x-ng-if="right.m_price" class="col-md-1 vert-align">
 		    <div ng-if="!inv.free_update">
 		      <div x-ng-if="(inv.fprice===0 || inv.fprice)">{{inv.fprice}}</div>
 		    </div>

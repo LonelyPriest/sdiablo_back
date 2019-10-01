@@ -827,6 +827,19 @@ var wsaleCalc = function(){
 
 	    return find;
 	},
+
+	in_m2n_stocks:function(stock, m2nStocks) {
+	    var find = false;
+	    for (var i=0, l=m2nStocks.length; i<l; i++) {
+		if (stock.style_number === m2nStocks[i].style_number
+		    && stock.brand_id === m2nStocks[i].brand_id) {
+		    find = true;
+		    break;
+		} 
+	    }
+
+	    return find;
+	},
 	
 	calculate: function(isVip,
 			    vipMode,
@@ -867,6 +880,7 @@ var wsaleCalc = function(){
 		}		
 	    }
 
+	    var stocksNoWithM2N = [];
 	    angular.forEach(stocksSortWithPromotion, function(s) {
 		if (s.pid !== diablo_invalid_index) {
 		    var count, totalPay, rmoney, vdiscount, payAll;
@@ -986,6 +1000,7 @@ var wsaleCalc = function(){
 				}
 			    } else {
 				stock.fdiscount = stock.discount;
+				stocksNoWithM2N.push(stock);
 			    } 
 			    stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
 			}); 
@@ -1112,14 +1127,22 @@ var wsaleCalc = function(){
 		    // console.log(one);
 		    if (one.state !== 3 && wsaleCalc.in_promotion_stock(one, stocksSortWithPromotion)) {
 			if (one.pid !== diablo_invalid_index) {
+			    // M2N stock
+			    if (wsaleCalc.in_m2n_stocks(one, stocksNoWithM2N)) {
+				one.fdiscount = wsaleCalc.calc_vip_discount(vipDiscountMode, vipDiscount, one);
+				// one.fprice = diablo_price(one.tag_price, one.fdiscount);
+			    }
+			    
 			    if (diablo_yes === one.promotion.member) {
 				one.fdiscount = wsaleCalc.calc_vip_discount(vipDiscountMode, vipDiscount, one);
-				one.fprice = diablo_price(one.tag_price, one.fdiscount);
+				// one.fprice = diablo_price(one.tag_price, one.fdiscount);
 			    }
 			} else {
 			    one.fdiscount = wsaleCalc.calc_vip_discount(vipDiscountMode, vipDiscount, one);
-			    one.fprice = diablo_price(one.tag_price, one.fdiscount);
+			    // one.fprice = diablo_price(one.tag_price, one.fdiscount);
 			}
+
+			one.fprice = diablo_price(one.tag_price, one.fdiscount);
 		    } 
 		}
 	    }

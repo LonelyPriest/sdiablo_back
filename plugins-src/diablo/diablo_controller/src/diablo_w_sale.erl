@@ -2264,6 +2264,7 @@ filter_table(w_sale_with_page, Merchant, CurrentPage, ItemsPerPage, Conditions) 
 	", a.entry_date"
 	
 	", b.name as retailer"
+	", b.type as retailer_type"
 	", b.mobile as rphone"
 	", b.type as rtype"
 	", c.name as account"

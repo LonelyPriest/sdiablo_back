@@ -27,10 +27,10 @@
 	      <i class="glyphicon glyphicon-export"></i></button>
 	    
 	    <button x-ng-if="shop_right.list_w_sale" class="btn yellow-crusta reload purple-stripe"
-	       x-ng-click="do_search(default_page)">刷新
+		    x-ng-click="do_search(default_page)">刷新
 	      <i class="icon icon-spinner fg-white"></i></button> 
 	  </div>
-	</div> 
+	</div>
       </div>
       
       <!--BEGIN table container-->
@@ -204,7 +204,10 @@
 		      	      x-ng-click="uncheck_detail(r)">反审
 			<i class="glyphicon glyphicon-ban-circle"></i></button>
 		      
-		      <button x-ng-if="setting.gift_ticket_on_sale && r.type===0 && !r.g_ticket"
+		      <button x-ng-if="setting.gift_ticket_on_sale
+				       && r.retailer_type!==2
+				       && r.type===0
+				       && !r.g_ticket" 
 			      class="btn diablo-button purple"
 		      	      x-ng-click="gift_ticket(r)">赠券
 			<i class="glyphicon glyphicon-send"></i></button>

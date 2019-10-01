@@ -2350,14 +2350,15 @@ function wsaleNewProvide(
 	
 	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    var add = $scope.inventories[i];
+	    var sell_total = wsaleUtils.to_integer(add.sell); 
 	    var index = index_of_sale(add, added)
 	    // console.log(index);
 	    if (diablo_invalid_index !== index) {
 		var existSale = added[index];
-		existSale.sell_total += wsaleUtils.to_integer(add.sell);
-		existSale.all_tagprice += add.tag_price;
-		existSale.all_fprice += add.fprice;
-		existSale.all_rprice += add.rprice;
+		existSale.sell_total += sell_total;
+		existSale.all_tagprice += wsaleUtils.to_decimal(add.tag_price * sell_total);
+		existSale.all_fprice += wsaleUtils.to_decimal(add.fprice * sell_total);
+		existSale.all_rprice += wsaleUtils.to_decimal(add.rprice * sell_total);
 		
 		// reset fdiscount
 		if (existSale.fdiscount !== add.fdiscount) {
@@ -2400,7 +2401,7 @@ function wsaleNewProvide(
 		    season      : add.season,
 		    year        : add.year,
 		    entry       : add.entry,
-		    sell_total  : wsaleUtils.to_integer(add.sell),
+		    sell_total  : sell_total,
 
 		    promotion   : add.pid,
 		    score       : add.sid,
@@ -2413,9 +2414,9 @@ function wsaleNewProvide(
 		    fdiscount   : add.fdiscount,
 		    rdiscount   : add.rdiscount,
 
-		    all_fprice  : add.fprice,
-		    all_rprice  : add.rprice,
-		    all_tagprice: add.tag_price,
+		    all_fprice  : wsaleUtils.to_decimal(add.fprice * sell_total),
+		    all_rprice  : wsaleUtils.to_decimal(add.rprice * sell_total),
+		    all_tagprice: wsaleUtils.to_decimal(add.tag_price * sell_total),
 		    
 		    stock       : add.total,
 		    
