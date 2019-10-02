@@ -2293,12 +2293,20 @@ handle_call({make_ticket_batch, Merchant, Attrs}, _From, State) ->
 handle_call({total_custom_ticket_detail, Merchant, Conditions}, _From, State) ->
     ?DEBUG("total_custom_ticket_detail: merchant ~p, conditions ~p", [Merchant, Conditions]),
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, ticket_condition(custome, Conditions, [])),
+    
     Sql = "select count(*) as total"
 	", sum(balance) as balance"
 	" from w_ticket_custom"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions)
-	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime),
+	++ case ?sql_utils:time_condition(StartTime, <<"mtime">>, ge) of
+	       [] -> [];
+	       T1 -> " and " ++ T1
+	   end
+	++ case ?sql_utils:time_condition(EndTime, <<"mtime">>, less) of
+	       [] -> [];
+	       T2 -> " and " ++ T2
+	   end, 
 
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
@@ -2306,7 +2314,7 @@ handle_call({total_custom_ticket_detail, Merchant, Conditions}, _From, State) ->
 handle_call({filter_custom_ticket_detail, Merchant, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
     ?DEBUG("filter_custom_ticket_detail: merchant ~p, conditions ~p, page ~p",
 	   [Merchant, Conditions, CurrentPage]), 
-    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, ticket_condition(custome, Conditions, [])),
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, ticket_condition(custome, Conditions, [])),
     ?DEBUG("NewConditions ~p", [NewConditions]),
     Sql = 
 	"select a.id"
@@ -2315,6 +2323,7 @@ handle_call({filter_custom_ticket_detail, Merchant, Conditions, CurrentPage, Ite
 	", a.balance"
 	", a.retailer as retailer_id" 
 	", a.state"
+	", a.mtime"
 	", a.stime"
 	", a.etime"
 	", a.in_shop as p_shop_id"
@@ -2332,8 +2341,15 @@ handle_call({filter_custom_ticket_detail, Merchant, Conditions, CurrentPage, Ite
     %% " left join shops c on a.shop=c.id"
 
 	" where a.merchant=" ++ ?to_s(Merchant)
-	++ ?sql_utils:condition(proplists, ticket_condition(custome, NewConditions, []))
-	++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime)
+	++ ?sql_utils:condition(proplists, ?utils:correct_condition(<<"a.">>, NewConditions))
+	++ case ?sql_utils:time_condition(StartTime, <<"a.mtime">>, ge) of 
+	       [] -> [];
+	       T1 -> " and " ++ T1
+	   end
+	++ case ?sql_utils:time_condition(EndTime, <<"a.mtime">>, less) of
+	       [] -> [];
+	       T2 -> " and " ++ T2
+	   end
 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};

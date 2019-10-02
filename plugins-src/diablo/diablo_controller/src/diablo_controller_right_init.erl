@@ -321,7 +321,7 @@ init([]) ->
 	  <<"销售明细打印">>,  <<"print_w_sale_note">>,    ?right_w_sale},
 	 {?export_w_sale_note,
 	  <<"销售明细导出">>,  <<"export_w_sale_note">>,   ?right_w_sale},
-	 {?export_w_sale_note,
+	 {?export_w_sale_new,
 	  <<"销售记录导出">>,  <<"export_w_sale_new">>,    ?right_w_sale},
 
 	 {?new_daily_cost,    <<"新增日常费用">>, <<"new_daily_cost">>,       ?right_w_sale},

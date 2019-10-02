@@ -660,6 +660,12 @@ alter table w_sale add column pay_sn integer not null default -1 after rsn;
 --2019-09-21
 alter table w_ticket_custom add column mtime DATE not null default 0 after mtime;
 
+
+--2019-10-02
+update w_ticket_custom a inner join \
+(select id, stime from w_ticket_custom where merchant=4 and stime!=0 and mtime=0) b \
+on a.id=b.id set a.mtime=b.stime;
+
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;
 

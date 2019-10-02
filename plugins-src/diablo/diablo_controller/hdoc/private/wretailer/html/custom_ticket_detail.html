@@ -72,6 +72,7 @@
 		    <th>制券方案</th>
 		    <th>赠送会员</th>
 		    <th>联系方式</th>
+		    <th>赠送日期</th>
 		    <th>生效日期</th>
 		    <th>失效日期</th>
 		    <th>金额</th>
@@ -98,6 +99,7 @@
 		      <div x-ng-switch-when=-1 class="text-center">-</div>
 		      <div x-ng-switch-default>{{t.mobile}}</div>
 		    </td>
+		    <td x-ng-bind=t.mtime></td>
 		    <td x-ng-bind=t.stime></td>
 		    <td x-ng-bind=t.etime></td> 
 		    <td x-ng-bind=t.balance></td>
@@ -146,7 +148,7 @@
 		  </tr>
 
 		  <tr x-ng-if="total_items!==0" class="bg-white">
-		    <td colspan=7></td>
+		    <td colspan=8></td>
 		    <td>{{total_balance}}</td>
 		    <td></td>
 		  </tr>
