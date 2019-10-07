@@ -503,10 +503,11 @@ function wretailerConfig(angular) {
 		{condition:condition, batch:batch, mode:mode}).$promise;
 	};
 
-	this.filter_custom_ticket_detail = function(match, fields, currentPage, itemsPerpage){
+	this.filter_custom_ticket_detail = function(match, mode, fields, currentPage, itemsPerpage){
 	    return http.save(
 		{operation: "filter_custom_ticket_detail"},
 		{match:  angular.isDefined(match) ? match.op : undefined,
+		 mode:   mode,
 		 fields: fields,
 		 page:   currentPage,
 		 count:  itemsPerpage}).$promise;

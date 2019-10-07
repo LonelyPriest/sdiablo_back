@@ -956,15 +956,15 @@ action(Session, Req, {"discard_custom_ticket"}, Payload) ->
 action(Session, Req, {"filter_custom_ticket_detail"}, Payload) ->
     ?DEBUG("filter_custom_ticket_detail with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant  = ?session:get(merchant, Session),
-
+    Mode = ?v(<<"mode">>, Payload),
     ?pagination:pagination(
        fun(Match, Conditions) ->
 	       ?w_retailer:filter(
-		  total_custom_ticket_detail, ?to_a(Match), Merchant, Conditions)
+		  {total_custom_ticket_detail, Mode}, ?to_a(Match),  Merchant, Conditions)
        end,
        fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
 	       ?w_retailer:filter(
-		  custom_ticket_detail, Match, Merchant, Conditions, CurrentPage, ItemsPerPage)
+		  {custom_ticket_detail, Mode}, ?to_a(Match), Merchant, Conditions, CurrentPage, ItemsPerPage)
        end, Req, Payload);
 
 action(Session, Req, {"new_ticket_plan"}, Payload) ->

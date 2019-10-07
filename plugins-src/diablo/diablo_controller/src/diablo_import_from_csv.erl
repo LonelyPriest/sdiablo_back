@@ -11,7 +11,7 @@
 -include("../../../../include/knife.hrl").
 -include("diablo_controller.hrl").
 
--import(diablo_import_from_gjp, [pack_date/1, parse_birth/2]).
+%% -import(diablo_import_from_gjp, [pack_date/1, parse_birth/2]).
 
 -compile(export_all).
 
@@ -230,7 +230,7 @@ insert_into_db(Merchant, Shop, [], _F, Content) ->
     end; 
 
 insert_into_db(Merchant, Shop, [H|T], F, Content) ->
-    {Firm, _SN, _Brand, _Type, _YS, _TagPrice, _Discount, _Total, _Cost} = H,
+    {Firm, _SN, _BCode, _Brand, _Type, _YS, _TagPrice, _Discount, _Total, _Cost} = H,
 
     case F =:= Firm of
 	true ->
@@ -257,7 +257,7 @@ insert_int_db(firm, [], RSN, Employee, Merchant, Shop, Datetime, Sqls, AllTotal,
     
 insert_int_db(firm, [H|T], RSN, Employee, Merchant, Shop, Datetime, Sqls, AllTotal, AllCost) ->
     %% ?DEBUG("H ~p", [H]),
-    {_Firm, SN, Brand, Type, YS,
+    {_Firm, SN, BCode, Brand, Type, YS,
      TagPriceOfDecimal, DiscountOfDecimal, Total, CostOfDecimal} = H,
 
     TagPrice = case TagPriceOfDecimal of
@@ -278,19 +278,22 @@ insert_int_db(firm, [H|T], RSN, Employee, Merchant, Shop, Datetime, Sqls, AllTot
     {ok, BrandId} = ?attr:brand(new, Merchant, [{<<"name">>, Brand}]),
     {ok, TypeId} = case Type of
 		       <<>> -> {ok, 1423};
-		       _ -> ?attr:type(new, Merchant, Type)
+		       _ -> case ?attr:type(new, Merchant, [{<<"name">>, Type}]) of
+				{ok_exist, ExistTypeId} -> {ok, ExistTypeId};
+				_NewType -> _NewType
+			    end
 		   end,
     {Year, CSeason} = 
 	case YS of
-	    <<>> -> {2017, 1};
-	    <<"0">> -> {2017,1};
-	    <<"1">> -> {2017,1};
+	    <<>> -> {2019, 2};
+	    <<"0">> -> {2019,2};
+	    <<"1">> -> {2019,2};
 	    _ ->
 		try
 		    <<_Year:4/binary, _CSeason/binary>> = YS,
 		    {_Year, _CSeason}
 		catch _:_ ->
-			{2017, 1}
+			{2019, 2}
 		end
     end,
 
@@ -299,7 +302,7 @@ insert_int_db(firm, [H|T], RSN, Employee, Merchant, Shop, Datetime, Sqls, AllTot
 		 <<"年夏">> -> 1;
 		 <<"年秋">> -> 2;
 		 <<"年冬">> -> 3;
-		 _ -> 1
+		 _ -> 2
 	     end,
 
     EDiscount = stock(ediscount, ?to_f(Cost), ?to_f(TagPrice)),
@@ -316,13 +319,14 @@ insert_int_db(firm, [H|T], RSN, Employee, Merchant, Shop, Datetime, Sqls, AllTot
     Sql1 = 
 	case ?sql_utils:execute(s_read, Sql0) of
 	    {ok, []} ->
-		["insert into w_inventory(rsn"
+		["insert into w_inventory(rsn, bcode"
 		 ", style_number, brand, type, sex, season, amount, year"
 		 ", org_price, tag_price, ediscount, discount"
 		 ", alarm_day, shop, merchant"
 		 ", entry_date)"
 		 " values("
 		 ++ "\"" ++ ?to_s(-1) ++ "\","
+		 ++ "\"" ++ ?to_s(BCode) ++ "\","
 		 ++ "\"" ++ ?to_s(SN) ++ "\","
 		 ++ ?to_s(BrandId) ++ ","
 		 ++ ?to_s(TypeId) ++ ","
@@ -466,10 +470,11 @@ insert_int_db(firm, [H|T], RSN, Employee, Merchant, Shop, Datetime, Sqls, AllTot
 	case ?sql_utils:execute(s_read, Sql40) of
 	    {ok, []} ->
 		["insert into w_inventory_good"
-		 "(style_number, sex, color, year, season, type, size, s_group, free"
+		 "(bcode, style_number, sex, color, year, season, type, size, s_group, free"
 		 ", brand, firm, org_price, tag_price, ediscount, discount"
 		 ", alarm_day, merchant, change_date, entry_date"
 		 ") values("
+		 ++ "\"" ++ ?to_s(BCode) ++ "\","
 		 ++ "\"" ++ ?to_s(SN) ++ "\","
 		 ++ ?to_s(0) ++ ","
 		 ++ "\"" ++ ?to_s(0) ++ "\","
@@ -546,17 +551,17 @@ stock(ediscount, OrgPrice, TagPrice) ->
 sort(firm, [], Acc) ->
     Acc;
 sort(firm, [H|T], Acc) ->
-    {_Firm, SN, Brand, _Type, _YS, _TagPrice, _Discount, Total, _Cost} = H,
+    {_Firm, SN, _BCode, Brand, _Type, _YS, _TagPrice, _Discount, Total, _Cost} = H,
 
     NewAcc = 
-	case [ A || {_, SN2, Brand2, _, _, _, _, _, _} = A <- Acc, SN2 =:= SN, Brand2 =:= Brand] of
+	case [ A || {_, SN2, _BCode2, Brand2, _, _, _, _, _, _} = A <- Acc, SN2 =:= SN, Brand2 =:= Brand] of
 	    [] -> [H|Acc];
-	    [{_, _, _, _, _, _, _, Total2, _}] = S ->
+	    [{_, _, _, _, _, _, _, _, Total2, _}] = S ->
 		%% NewC = [{_Firm, SN, Brand, _Type, _YS,
 		%% 	 _TagPrice, _Discount, ?to_i(Total) + ?to_i(Total2), _Cost}],
 		%% ?DEBUG("new c ~p", [NewC]),
 		(Acc -- S)
-		    ++ [{_Firm, SN, Brand, _Type, _YS,
+		    ++ [{_Firm, SN, _BCode, Brand, _Type, _YS,
 			 _TagPrice, _Discount, ?to_i(Total) + ?to_i(Total2), _Cost}]
 	end,
     %% ?DEBUG("new acc ~p", [NewAcc]),

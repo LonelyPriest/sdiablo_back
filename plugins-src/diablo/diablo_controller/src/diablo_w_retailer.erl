@@ -233,9 +233,9 @@ filter(total_charge_detail, 'and', Merchant, Conditions) ->
 filter(total_ticket_detail, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {total_ticket_detail, Merchant, Conditions});
-filter(total_custom_ticket_detail, 'and', Merchant, Conditions) ->
+filter({total_custom_ticket_detail, Mode}, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {total_custom_ticket_detail, Merchant, Conditions}); 
+    gen_server:call(Name, {total_custom_ticket_detail, Mode, Merchant, Conditions}); 
 filter(total_threshold_card, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {total_threshold_card, Merchant, Conditions});
@@ -266,10 +266,10 @@ filter(ticket_detail, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(
       Name, {filter_ticket_detail, Merchant, Conditions, CurrentPage, ItemsPerPage});
-filter(custom_ticket_detail, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
+filter({custom_ticket_detail, Mode}, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(
-      Name, {filter_custom_ticket_detail, Merchant, Conditions, CurrentPage, ItemsPerPage});
+      Name, {filter_custom_ticket_detail, Mode, Merchant, Conditions, CurrentPage, ItemsPerPage});
 
 filter(threshold_card, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
     Name = ?wpool:get(?MODULE, Merchant),
@@ -2290,8 +2290,9 @@ handle_call({make_ticket_batch, Merchant, Attrs}, _From, State) ->
 	end,
     {reply, Reply, State};
 
-handle_call({total_custom_ticket_detail, Merchant, Conditions}, _From, State) ->
-    ?DEBUG("total_custom_ticket_detail: merchant ~p, conditions ~p", [Merchant, Conditions]),
+handle_call({total_custom_ticket_detail, Mode, Merchant, Conditions}, _From, State) ->
+    ?DEBUG("total_custom_ticket_detail: mode ~p, merchant ~p, conditions ~p",
+	   [Mode, Merchant, Conditions]),
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, ticket_condition(custome, Conditions, [])),
     
     Sql = "select count(*) as total"
@@ -2299,21 +2300,23 @@ handle_call({total_custom_ticket_detail, Merchant, Conditions}, _From, State) ->
 	" from w_ticket_custom"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions)
-	++ case ?sql_utils:time_condition(StartTime, <<"mtime">>, ge) of
-	       [] -> [];
-	       T1 -> " and " ++ T1
-	   end
-	++ case ?sql_utils:time_condition(EndTime, <<"mtime">>, less) of
-	       [] -> [];
-	       T2 -> " and " ++ T2
-	   end, 
+	++ case Mode of
+	       0 -> case ?sql_utils:time_condition(StartTime, <<"mtime">>, ge) of
+			[] -> [];
+			T1 -> " and " ++ T1
+		    end ++ case ?sql_utils:time_condition(EndTime, <<"mtime">>, less) of
+			       [] -> [];
+			       T2 -> " and " ++ T2
+			   end;
+	       1 -> ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime) 
+	   end,
 
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
-handle_call({filter_custom_ticket_detail, Merchant, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
-    ?DEBUG("filter_custom_ticket_detail: merchant ~p, conditions ~p, page ~p",
-	   [Merchant, Conditions, CurrentPage]), 
+handle_call({filter_custom_ticket_detail, Mode, Merchant, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
+    ?DEBUG("filter_custom_ticket_detail: mode ~p, merchant ~p, conditions ~p, page ~p",
+	   [Mode, Merchant, Conditions, CurrentPage]), 
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, ticket_condition(custome, Conditions, [])),
     ?DEBUG("NewConditions ~p", [NewConditions]),
     Sql = 
@@ -2342,13 +2345,16 @@ handle_call({filter_custom_ticket_detail, Merchant, Conditions, CurrentPage, Ite
 
 	" where a.merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, ?utils:correct_condition(<<"a.">>, NewConditions))
-	++ case ?sql_utils:time_condition(StartTime, <<"a.mtime">>, ge) of 
-	       [] -> [];
-	       T1 -> " and " ++ T1
-	   end
-	++ case ?sql_utils:time_condition(EndTime, <<"a.mtime">>, less) of
-	       [] -> [];
-	       T2 -> " and " ++ T2
+	++ case Mode of
+	       0 -> case ?sql_utils:time_condition(StartTime, <<"a.mtime">>, ge) of 
+			[] -> [];
+			T1 -> " and " ++ T1
+		    end ++ case ?sql_utils:time_condition(EndTime, <<"a.mtime">>, less) of
+			       [] -> [];
+			       T2 -> " and " ++ T2
+			   end;
+	       1 ->
+		   ?sql_utils:fix_condition(time, time_with_prfix, StartTime, EndTime)
 	   end
 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
     Reply =  ?sql_utils:execute(read, Sql),

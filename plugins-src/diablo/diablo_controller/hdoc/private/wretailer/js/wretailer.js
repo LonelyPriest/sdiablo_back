@@ -1150,12 +1150,27 @@ function wretailerCustomTicketDetailCtrlProvide(
     var dialog = diabloUtilsService; 
     // $scope.shops = user.sortShops;
     $scope.pattern = {positive_num: diabloPattern.positive_num};
-    $scope.items_perpage = diablo_items_per_page();
-    $scope.max_page_size = 10;
-    $scope.default_page = 1; 
-    $scope.current_page = $scope.default_page;
-    $scope.total_items = 0;
 
+    $scope.tab_active = {mtime:true, etime:false};
+    
+    $scope.default_page = 1;
+    $scope.max_page_size = 10;
+    $scope.items_perpage = diablo_items_per_page();
+    // ticket gift time
+    $scope.mticket = {
+	tickets: [],
+	total_balance: 0,
+	total_items: 0,
+	default_page: 1,
+	current_page: $scope.default_page};
+
+    // ticket entry time
+    $scope.eticket = {
+	tickets: [],
+	total_items: 0,
+	default_page: 1,
+	current_page: $scope.default_page};
+    
     $scope.filters = []; 
     diabloFilter.reset_field();
     diabloFilter.add_field("retailer", function(viewValue){
@@ -1175,26 +1190,42 @@ function wretailerCustomTicketDetailCtrlProvide(
 
     $scope.do_search = function(page){
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search){
+	    var mode;
+	    if ($scope.tab_active.mtime) mode = 0;
+	    else if ($scope.tab_active.etime) mode = 1;
+	    else mode = 0;
+	    
 	    wretailerService.filter_custom_ticket_detail(
-		$scope.match, search, page, $scope.items_perpage
+		$scope.match, mode, search, page, $scope.items_perpage
 	    ).then(function(result){
-		console.log(result);
-		$scope.tickets = angular.copy(result.data); 
+		console.log(result);		
 		if (result.ecode === 0){
 		    if (page === $scope.default_page){
-			$scope.total_items = result.total;
-			$scope.total_balance = result.balance;
+			if ($scope.tab_active.mtime) {
+			    $scope.mticket.total_items = result.total;
+			    $scope.mticket.total_balance = result.balance;
+			} else if ($scope.tab_active.etime) {
+			    $scope.eticket.total_items = result.total;
+			    $scope.eticket.total_balance = result.balance;
+			} 
 		    }
 
-		    angular.forEach($scope.tickets, function(t){
+		    angular.forEach(result.data, function(t){
 			t.shop = diablo_get_object(t.shop_id, filterShop);
 		    	t.in_shop = diablo_get_object(t.in_shop_id, filterShop);
 			t.provide_shop =  diablo_get_object(t.p_shop_id, filterShop);
 			t.plan = diablo_get_object(t.plan_id, filterTicketPlan);
 		    });
-		    console.log($scope.tickets); 
-		    diablo_order($scope.tickets, (page - 1) * $scope.items_perpage + 1);
-		    $scope.current_page = page; 
+		    
+		    diablo_order(result.data, (page - 1) * $scope.items_perpage + 1);
+		    if ($scope.tab_active.mtime) {
+			$scope.mticket.tickets = result.data;
+			$scope.mticket.current_page = page; 
+
+		    } else if ($scope.tab_active.etime) {
+			$scope.eticket.tickets = result.data;
+			$scope.eticket.current_page = page; 
+		    }
 		} 
 	    })
 	})

@@ -60,127 +60,257 @@
 	  </div>
 
 	  <!--BEGIN panel-->
-
-	  <div class="panel panel-default table-panel"> 
-	    <div class="table-responsive">
-	      <table class="table table-bordered table-striped table-hover
-			    table-condensed table-advanced">
-		<thead>
-		  <tr>
-		    <th>序号</th>
-		    <th>批次号</th>
-		    <th>制券方案</th>
-		    <th>赠送会员</th>
-		    <th>联系方式</th>
-		    <th>赠送日期</th>
-		    <th>生效日期</th>
-		    <th>失效日期</th>
-		    <th>金额</th>
-		    <th>状态</th>
-		    <th>会员所在店铺</th>
-		    <th>卷赠送店铺</th>
-		    <th>消费店铺</th> 
-		    <th>备注</th>
-		    <th>制券日期</th> 
-		    <th>操作</th>
-		  </tr>
-		</thead> 
-		
-		<tbody>
-		  <tr ng-repeat="t in tickets">
-		    <td x-ng-bind=t.order_id></td>
-		    <td x-ng-bind=t.batch></td>
-		    <td x-ng-bind=t.plan.name></td> 
-		    <td x-ng-switch on=t.retailer_id>
-		      <div x-ng-switch-when=-1 class="text-center">-</div>
-		      <div x-ng-switch-default>{{t.retailer}}</div>
-		    </td>
-		    <td x-ng-switch on=t.retailer_id>
-		      <div x-ng-switch-when=-1 class="text-center">-</div>
-		      <div x-ng-switch-default>{{t.mobile}}</div>
-		    </td>
-		    <td x-ng-bind=t.mtime></td>
-		    <td x-ng-bind=t.stime></td>
-		    <td x-ng-bind=t.etime></td> 
-		    <td x-ng-bind=t.balance></td>
-		    <td>
-		      <div x-ng-switch on=t.state>
-			<span x-ng-switch-when=0 class="fg-red">已废弃</span>
-			<span x-ng-switch-when=1>已确认</span>
-			<span x-ng-switch-when=2 class="fg-pink">已消费</span>
-		      </div>
-		    </td>
+	  <uib-tabset>
+	    <uib-tab active="tab_active.mtime">
+	      <tab-heading>赠券日期</tab-heading>
+	      <div class="panel panel-default table-panel"> 
+		<div class="table-responsive">
+		  <table class="table table-bordered table-striped table-hover
+				table-condensed table-advanced">
+		    <thead>
+		      <tr>
+			<th>序号</th>
+			<th>批次号</th>
+			<th>制券方案</th>
+			<th>赠送会员</th>
+			<th>联系方式</th>
+			<th>赠送日期</th>
+			<th>生效日期</th>
+			<th>失效日期</th>
+			<th>金额</th>
+			<th>状态</th>
+			<th>会员所在店铺</th>
+			<th>卷赠送店铺</th>
+			<th>消费店铺</th> 
+			<th>备注</th>
+			<th>制券日期</th> 
+			<th>操作</th>
+		      </tr>
+		    </thead> 
 		    
-		    <td>
-		      <div x-ng-switch on=t.retailer_id>
-			<div x-ng-switch-when=-1 class="text-center">-</div>
-			<div x-ng-switch-default>{{t.in_shop.name}}</div>
-		      </div>
-		    </td>
+		    <tbody>
+		      <tr ng-repeat="t in mticket.tickets">
+			<td x-ng-bind=t.order_id></td>
+			<td x-ng-bind=t.batch></td>
+			<td x-ng-bind=t.plan.name></td> 
+			<td x-ng-switch on=t.retailer_id>
+			  <div x-ng-switch-when=-1 class="text-center">-</div>
+			  <div x-ng-switch-default>{{t.retailer}}</div>
+			</td>
+			<td x-ng-switch on=t.retailer_id>
+			  <div x-ng-switch-when=-1 class="text-center">-</div>
+			  <div x-ng-switch-default>{{t.mobile}}</div>
+			</td>
+			<td x-ng-bind=t.mtime></td>
+			<td x-ng-bind=t.stime></td>
+			<td x-ng-bind=t.etime></td> 
+			<td x-ng-bind=t.balance></td>
+			<td>
+			  <div x-ng-switch on=t.state>
+			    <span x-ng-switch-when=0 class="fg-red">已废弃</span>
+			    <span x-ng-switch-when=1>已确认</span>
+			    <span x-ng-switch-when=2 class="fg-pink">已消费</span>
+			  </div>
+			</td>
+			
+			<td>
+			  <div x-ng-switch on=t.retailer_id>
+			    <div x-ng-switch-when=-1 class="text-center">-</div>
+			    <div x-ng-switch-default>{{t.in_shop.name}}</div>
+			  </div>
+			</td>
 
-		    <td>
-		      <div x-ng-switch on=t.p_shop_id>
-			<div x-ng-switch-when=-1 class="text-center">-</div>
-			<div x-ng-switch-default>{{t.provide_shop.name}}</div>
-		      </div>
-		    </td>
+			<td>
+			  <div x-ng-switch on=t.p_shop_id>
+			    <div x-ng-switch-when=-1 class="text-center">-</div>
+			    <div x-ng-switch-default>{{t.provide_shop.name}}</div>
+			  </div>
+			</td>
 
-		    <td>
-		      <div x-ng-switch on=t.shop_id>
-			<div x-ng-switch-when=-1 class="text-center">-</div>
-			<div x-ng-switch-default>{{t.shop.name}}</div>
-		      </div>
-		    </td>
+			<td>
+			  <div x-ng-switch on=t.shop_id>
+			    <div x-ng-switch-when=-1 class="text-center">-</div>
+			    <div x-ng-switch-default>{{t.shop.name}}</div>
+			  </div>
+			</td>
+			
+			<td x-ng-bind=t.remark></td>
+			<td x-ng-bind=t.entry_date></td>
+
+			<td>
+			  <button x-ng-if="t.state===1"
+				  class="btn red diablo-button"
+				  x-ng-click="discard_one(t.id)">废弃
+			    <i class="glyphicon glyphicon-erase"></i></button>
+			  <button x-ng-if="t.state===0"
+				  class="btn green diablo-button"
+				  x-ng-click="recover_one(t.id)">恢复
+			    <i class="glyphicon glyphicon-erase"></i></button> 
+			</td> 
+		      </tr>
+
+		      <tr x-ng-if="total_items!==0" class="bg-white">
+			<td colspan=8></td>
+			<td>{{mticket.total_balance}}</td>
+			<td></td>
+		      </tr>
+		      
+		    </tbody>
 		    
-		    <td x-ng-bind=t.remark></td>
-		    <td x-ng-bind=t.entry_date></td>
-
-		    <td>
-		      <button x-ng-if="t.state===1"
-			      class="btn red diablo-button"
-			      x-ng-click="discard_one(t.id)">废弃
-			<i class="glyphicon glyphicon-erase"></i></button>
-		      <button x-ng-if="t.state===0"
-			      class="btn green diablo-button"
-			      x-ng-click="recover_one(t.id)">恢复
-			<i class="glyphicon glyphicon-erase"></i></button> 
-		    </td> 
-		  </tr>
-
-		  <tr x-ng-if="total_items!==0" class="bg-white">
-		    <td colspan=8></td>
-		    <td>{{total_balance}}</td>
-		    <td></td>
-		  </tr>
-		  
-		</tbody>
+		    <tfoot>
+		    </tfoot>
+		    
+		  </table> <!--END table-->
+		</div> <!--END table responsive-->
 		
-		<tfoot>
-		</tfoot>
-		
-	      </table> <!--END table-->
-	    </div> <!--END table responsive-->
+	      </div> <!--END panel-->
+
+	      <div x-ng-show="mticket.total_items>items_perpage" class="row">
+		<div class="col-md-12, col-sm-12, col-xs-12">
+		  <span>显示第 {{mticket.current_page}} / {{num_pages}} 项结果，
+		    共 {{mticket.total_items}} 项</span>
+		  <uib-pagination
+		     class="pagination-lg table-pagination pull-right"
+		     total-items="mticket.total_items"
+		     items-per-page="items_perpage"
+		     num-pages="num_pages"
+		     max-size="max_page_size"
+		     boundary-links="true"
+		     previous-text="&lsaquo;" next-text="&rsaquo;"
+		     first-text="&laquo;" last-text="&raquo;"
+		     x-ng-model="current_page"
+		     x-ng-change="page_changed(mticket.current_page)">
+		  </uib-pagination>
+		</div>
+	      </div>
+	    </uib-tab>
+
+	    <uib-tab active="tab_active.etime">
+	      <tab-heading>制券日期</tab-heading>
+	      <div class="panel panel-default table-panel"> 
+		<div class="table-responsive">
+		  <table class="table table-bordered table-striped table-hover
+				table-condensed table-advanced">
+		    <thead>
+		      <tr>
+			<th>序号</th>
+			<th>批次号</th>
+			<th>制券方案</th>
+			<th>赠送会员</th>
+			<th>联系方式</th>
+			<th>赠送日期</th>
+			<th>生效日期</th>
+			<th>失效日期</th>
+			<th>金额</th>
+			<th>状态</th>
+			<th>会员所在店铺</th>
+			<th>卷赠送店铺</th>
+			<th>消费店铺</th> 
+			<th>备注</th>
+			<th>制券日期</th> 
+			<th>操作</th>
+		      </tr>
+		    </thead> 
+		    
+		    <tbody>
+		      <tr ng-repeat="t in eticket.tickets">
+			<td x-ng-bind=t.order_id></td>
+			<td x-ng-bind=t.batch></td>
+			<td x-ng-bind=t.plan.name></td> 
+			<td x-ng-switch on=t.retailer_id>
+			  <div x-ng-switch-when=-1 class="text-center">-</div>
+			  <div x-ng-switch-default>{{t.retailer}}</div>
+			</td>
+			<td x-ng-switch on=t.retailer_id>
+			  <div x-ng-switch-when=-1 class="text-center">-</div>
+			  <div x-ng-switch-default>{{t.mobile}}</div>
+			</td>
+			<td x-ng-bind=t.mtime></td>
+			<td x-ng-bind=t.stime></td>
+			<td x-ng-bind=t.etime></td> 
+			<td x-ng-bind=t.balance></td>
+			<td>
+			  <div x-ng-switch on=t.state>
+			    <span x-ng-switch-when=0 class="fg-red">已废弃</span>
+			    <span x-ng-switch-when=1>已确认</span>
+			    <span x-ng-switch-when=2 class="fg-pink">已消费</span>
+			  </div>
+			</td>
+			
+			<td>
+			  <div x-ng-switch on=t.retailer_id>
+			    <div x-ng-switch-when=-1 class="text-center">-</div>
+			    <div x-ng-switch-default>{{t.in_shop.name}}</div>
+			  </div>
+			</td>
+
+			<td>
+			  <div x-ng-switch on=t.p_shop_id>
+			    <div x-ng-switch-when=-1 class="text-center">-</div>
+			    <div x-ng-switch-default>{{t.provide_shop.name}}</div>
+			  </div>
+			</td>
+
+			<td>
+			  <div x-ng-switch on=t.shop_id>
+			    <div x-ng-switch-when=-1 class="text-center">-</div>
+			    <div x-ng-switch-default>{{t.shop.name}}</div>
+			  </div>
+			</td>
+			
+			<td x-ng-bind=t.remark></td>
+			<td x-ng-bind=t.entry_date></td>
+
+			<td>
+			  <button x-ng-if="t.state===1"
+				  class="btn red diablo-button"
+				  x-ng-click="discard_one(t.id)">废弃
+			    <i class="glyphicon glyphicon-erase"></i></button>
+			  <button x-ng-if="t.state===0"
+				  class="btn green diablo-button"
+				  x-ng-click="recover_one(t.id)">恢复
+			    <i class="glyphicon glyphicon-erase"></i></button> 
+			</td> 
+		      </tr>
+
+		      <tr x-ng-if="eticket.total_items!==0" class="bg-white">
+			<td colspan=8></td>
+			<td>{{eticket.total_balance}}</td>
+			<td></td>
+		      </tr>
+		      
+		    </tbody>
+		    
+		    <tfoot>
+		    </tfoot>
+		    
+		  </table> <!--END table-->
+		</div> <!--END table responsive--> 
+	      </div> <!--END panel-->
+
+	      <div x-ng-show="eticket.total_items>items_perpage" class="row">
+		<div class="col-md-12, col-sm-12, col-xs-12">
+		  <span>显示第 {{eticket.current_page}} / {{num_pages}} 项结果，
+		    共 {{total_items}} 项</span>
+		  <uib-pagination
+		     class="pagination-lg table-pagination pull-right"
+		     total-items="eticket.total_items"
+		     items-per-page="items_perpage"
+		     num-pages="num_pages"
+		     max-size="max_page_size"
+		     boundary-links="true"
+		     previous-text="&lsaquo;" next-text="&rsaquo;"
+		     first-text="&laquo;" last-text="&raquo;"
+		     x-ng-model="eticket.current_page"
+		     x-ng-change="page_changed(eticket.current_page)">
+		  </uib-pagination>
+		</div>
+	      </div> 
+	    </uib-tab>
 	    
-	  </div> <!--END panel-->
-
-	  <div x-ng-show="total_items>items_perpage" class="row">
-	    <div class="col-md-12, col-sm-12, col-xs-12">
-	      <span>显示第 {{current_page}} / {{num_pages}} 项结果，
-		共 {{total_items}} 项</span>
-	      <uib-pagination
-		 class="pagination-lg table-pagination pull-right"
-		 total-items="total_items"
-		 items-per-page="items_perpage"
-		 num-pages="num_pages"
-		 max-size="max_page_size"
-		 boundary-links="true"
-		 previous-text="&lsaquo;" next-text="&rsaquo;"
-		 first-text="&laquo;" last-text="&raquo;"
-		 x-ng-model="current_page"
-		 x-ng-change="page_changed(current_page)">
-	      </uib-pagination>
-	    </div>
-	  </div> 
+	    
+	  </uib-tabset>
+	  
 	</div> <!--END portlet body--> 
       </div> <!--END table container-->
       
