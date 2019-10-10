@@ -164,9 +164,13 @@ var reportPrint = function(){
 	    LODOP.ADD_PRINT_LINE(hLine,135,hLine,178,0,1); 
 	    hLine += 10;
 	    
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"数量  ：" + to_i(sale.sell_total));
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20, "数量  ：" + to_i(sale.sell_total));
 	    hLine += 15;
-	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"营业额：" + to_f(sale.sell_balance));
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20, "营业额：" + to_f(sale.sell_balance));
+	    hLine += 15;
+	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,
+				 "净营业额："
+				 + to_f(sale.sell_balance - sale.sell_ticket - s.sale.draw));
 	    hLine += 15;
 	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"现金  ：" + to_f(sale.sell_cash));
 	    hLine += 15;

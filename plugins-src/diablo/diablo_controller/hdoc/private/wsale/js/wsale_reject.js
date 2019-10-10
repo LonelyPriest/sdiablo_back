@@ -394,7 +394,7 @@ function wsaleRejectCtrlProvide(
 		    isRound,
 		    $scope.print_setting); 
 		
-		hLine = wsalePrint.gen_stastic(
+		top = wsalePrint.gen_stastic(
 		    LODOP,
 		    top,
 		    wsaleService.direct.wreject,
