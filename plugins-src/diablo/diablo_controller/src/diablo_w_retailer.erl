@@ -1819,14 +1819,24 @@ handle_call({discard_custom_one, Merchant, TicketId, Mode}, _From, State) ->
 
     {reply, Reply, State};
 
-handle_call({discard_custom_all, Merchant, Conditions}, _From, State) ->
-    ?DEBUG("discard_custom_all: merchant ~p, Conditions ~p", [Merchant, Conditions]),
+handle_call({discard_custom_all, Merchant, Conditions, Mode}, _From, State) ->
+    ?DEBUG("discard_custom_all: merchant ~p, Conditions ~p, Mode ~p", [Merchant, Conditions, Mode]),
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, ticket_condition(custome, Conditions, [])),
     Sql = "update w_ticket_custom set state=" ++ ?to_s(?CUSTOM_TICKET_STATE_DISCARD)
 	++ " where merchant=" ++ ?to_s(Merchant)
 	++ " and state in(1,3)" %% checked, unused
 	++ ?sql_utils:condition(proplists, NewConditions)
-	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime),
+	++ case Mode of
+	       0 -> case ?sql_utils:time_condition(StartTime, <<"mtime">>, ge) of
+			[] -> [];
+			T1 -> " and " ++ T1
+		    end ++ case ?sql_utils:time_condition(EndTime, <<"mtime">>, less) of
+			       [] -> [];
+			       T2 -> " and " ++ T2
+			   end;
+	       1 -> ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime) 
+	   end,
+    
     Reply = ?sql_utils:execute(write, Sql, Merchant), 
     {reply, Reply, State};
 
