@@ -780,6 +780,7 @@
 		     required
 		     disable-key 
 		     x-ng-model="params.fprice"
+		     x-ng-edit
 		     placeholder="支持两位小数"
 		     x-ng-pattern="/^\d+(.\d{1,2})?$/"/>
 	    </div>
@@ -803,9 +804,10 @@
 	      <input class="form-control text-center"
 		     type="number" step="0.01"
 		     required
-		     disable-key
+		     disable-key 
 		     x-ng-pattern="/^\d{1,2}(\.\d{1,2})?$|100$/"
 		     x-ng-model="params.fdiscount"
+		     x-ng-edit
 		     placeholder="dd.dd" />
 	    </div>
 	  </form>
