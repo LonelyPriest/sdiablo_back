@@ -663,6 +663,9 @@
     	    <span>积分：<span class="fg-red sell-font">
 		<strong>{{select.retailer.score}}</strong></span>
     	    </span>
+	    <span>备注：<span class="fg-red sell-font">
+		<strong>{{select.retailer.comment}}</strong></span>
+    	    </span>
 	  </h5>
 	</div>
       </div>
@@ -1310,6 +1313,21 @@
 	    </div>
 	  </div>
 	</div>
+
+	<!-- <div class="form-group"> -->
+	<!--   <label class="col-sm-3 col-md-3 control-label">备注</label> -->
+	<!--   <div class="col-sm-6 col-md-6"> -->
+	<!--     <input type="text" -->
+	<!-- 	   class="form-control" -->
+	<!-- 	   name="comment" -->
+	<!-- 	   placeholder="请输入备注" -->
+	<!-- 	   x-ng-model="params.retailer.comment" -->
+	<!-- 	   x-ng-pattern="params.pattern.comment"/>  -->
+	<!--   </div> -->
+	<!--   <div ng-show="tForm.comment.$invalid && !tForm.comment.$pristine"> -->
+	<!--     <span class="fg-red">中文，字母，数字，不支持特殊字符</span>  -->
+	<!--   </div>  -->
+	<!-- </div> -->
 	
       </div>
     </form>

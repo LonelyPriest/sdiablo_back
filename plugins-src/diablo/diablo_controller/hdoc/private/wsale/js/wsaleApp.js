@@ -3235,9 +3235,10 @@ function wsaleNewProvide(
 	    $scope.select.pay_order = pay_order;
 	}
 	else {
-	    $scope.select.pay_order = diablo_invalid_index; 
+	    // default alipay
+	    $scope.select.pay_order = pay_order; 
 	    $scope.select.wxin = 0;
-	    $scope.select.aliPay = 0;
+	    $scope.select.aliPay = wsaleUtils.to_float(pay_balance);
 	} 
     };
     
@@ -3269,7 +3270,7 @@ function wsaleNewProvide(
     $scope.refresh_pay_scan = function(pay_order) {
 	var shopIds = user.shopIds.length === 0 ? undefined : user.shopIds; 
 	diabloFilter.filter_pay_scan(
-	    undefined, {shop:shopIds, pay_order:pay_order}, 1, diablo_items_per_page()
+	    undefined, {shop:shopIds, sn:pay_order}, 1, diablo_items_per_page()
 	).then(function(result) {
 	    console.log(result);
 	    $scope.pay_scan_history = result.data;

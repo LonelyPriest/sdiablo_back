@@ -604,6 +604,7 @@ function filterProvider(){
 				    shop_id: r.shop_id,
 				    draw_id: r.draw_id,
 				    py:      r.py,
+				    comment: r.comment,
 				    balance: r.balance} 
 			})
 		    })

@@ -170,7 +170,7 @@ var reportPrint = function(){
 	    hLine += 15;
 	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,
 				 "净营业额："
-				 + to_f(sale.sell_balance - sale.sell_ticket - s.sale.draw));
+				 + to_f(sale.sell_balance - sale.sell_ticket - sale.sell_draw));
 	    hLine += 15;
 	    LODOP.ADD_PRINT_TEXT(hLine,0,178,20,"现金  ：" + to_f(sale.sell_cash));
 	    hLine += 15;

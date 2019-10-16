@@ -2222,6 +2222,7 @@ handle_call({match_phone, Merchant, {Mode, Phone}}, _From, #state{prompt=Prompt}
 	", balance"
 	", score"
 	", mobile"
+	", comment"
 	" from w_retailer"
 	
 	++ " where merchant=" ++ ?to_s(Merchant)

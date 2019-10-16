@@ -83,8 +83,10 @@ pay(wwt, Merchant, MchntCd, PayCode, Moneny) ->
 			    {ok, ?PAY_SCAN_SUCCESS, MchntOrder, case OrderType of
 								     <<"WECHAT">> -> 0;
 								     <<"ALIPAY">> -> 1;
-								     _ -> 99
-								 end, Balance};
+								     %% _ -> 99
+								    %% default alipay
+								    _ -> 1
+								    end, Balance};
 			-1 ->
 			    {error, ?PAY_SCAN_UNKOWN, MchntOrder}; 
 			_ ->
@@ -156,7 +158,8 @@ pay(wwt_query, MchntCd, MchntOrder) ->
 		    {ok, State, case OrderType of
 				    <<"WECHAT">> -> 0;
 				    <<"ALIPAYE">> -> 1;
-				    _ -> 9999
+				    %% _ -> 9999
+				    _ ->1
 				end, Balance};
 		_ -> {error, Code, MchntOrder}
 	    end; 

@@ -1194,6 +1194,7 @@ create table w_sale(
     ticket         DECIMAL(10, 2) default 0, -- max: 99999999.99
     verificate     DECIMAL(10, 2) default 0, -- max: 99999999.99
 
+    pay_sn         INTEGER not null default -1; 
     -- cbalance       INTEGER not null default 0, -- charge balance
     -- sbalance       INTEGER not null default 0, -- send balance of charging
     
