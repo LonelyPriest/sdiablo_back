@@ -601,6 +601,7 @@ function wsaleNewProvide(
 	$scope.setting.charge_with_special = wsaleUtils.to_integer(sale_mode.charAt(20));
 	$scope.setting.multi_ticket = wsaleUtils.to_integer(sale_mode.charAt(21));
 	$scope.setting.pay_scan = wsaleUtils.to_integer(sale_mode.charAt(24));
+	$scope.setting.disableWithDraw = wsaleUtils.to_integer(sale_mode.charAt(25));
 	// $scope.setting.print_discount = wsaleUtils.to_integer(sale_mode.charAt(15));
 
 	$scope.print_setting = {

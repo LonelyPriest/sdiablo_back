@@ -157,7 +157,7 @@ var diablo_vip_mode = "0000";
 /*
  * sale mode
  */
-var diablo_sale_mode ="00000000000000010000";
+var diablo_sale_mode ="00000000000000010000000000";
 /*
  * batch sale print mode, color or size or both
  */
@@ -249,6 +249,7 @@ var diablo_month_unlimit_charge = 3;
 var diablo_quarter_unlimit_charge = 4;
 var diablo_year_unlimit_charge = 5;
 var diablo_half_of_year_unlimit_charge = 6;
+var diablo_balance_limit_charge = 7;
 
 
 /*

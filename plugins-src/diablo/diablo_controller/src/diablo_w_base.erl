@@ -936,9 +936,10 @@ sys_config() ->
 	      %% [22]: gift ticket strategy 0:only one max ticket, 1:greed strategy
 	      %% [23]: head title seperater by '-' when print. 0:one line, 1:seperaer by '-'
 	      %% [24]: use pay scan
+	      %% [25]: disable withdarw on sale
 	      {"p_balance",
 	       "销售模式",
-	       "0000"++"0000"++"0000"++"0001"++"0000"++"0000"++"0", "0"},
+	       "0000"++"0000"++"0000"++"0001"++"0000"++"0000"++"00", "0"},
 
 	      %% [0]: auto generate ticket at 04:00
 	      %% [1]: use ticket with no check 0-> check 1-> no check

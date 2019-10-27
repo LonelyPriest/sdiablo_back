@@ -163,7 +163,7 @@
 -define(QUARTER_UNLIMIT_CHARGE, 4).
 -define(YEAR_UNLIMIT_CHARGE, 5).
 -define(HALF_YEAR_UNLIMIT_CHARGE, 6).
-
+-define(BALANCE_LIMIT_CHARGE, 7).
 
 %% sale mode
 -define(GOOD_SALE, 0).

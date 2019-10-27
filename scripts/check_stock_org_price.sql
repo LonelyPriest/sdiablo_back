@@ -12,12 +12,12 @@ select sum(x.intotal), sum(x.amount), sum(x.stotal) from (select a.style_number,
 -- all stock
 select sum(x.intotal), sum(x.amount), sum(x.stotal), sum(x.ftotal), sum(x.ttotal) from \
 (select a.style_number, a.brand, b.intotal, a.amount, c.stotal, d.ftotal, e.ttotal from \
-(select style_number, brand, amount from w_inventory where shop=139) a \
-left join (select style_number, brand, sum(amount) as intotal from w_inventory_new_detail where rsn like 'm-40-s-139-%' group by style_number, brand) b on a.style_number=b.style_number and a.brand=b.brand \
-left join (select style_number, brand, sum(total) as stotal from w_sale_detail where rsn like 'm-40-s-139-%' group by style_number, brand) c on a.style_number=c.style_number and a.brand=c.brand \
-left join (select a.style_number, brand, sum(a.amount) as ftotal from w_inventory_transfer_detail a, w_inventory_transfer b where a.fshop=139 and a.rsn=b.rsn and b.state=1 group by style_number, brand) d \
+(select style_number, brand, amount from w_inventory where shop=110) a \
+left join (select style_number, brand, sum(amount) as intotal from w_inventory_new_detail where rsn like 'm-15-s-110-%' group by style_number, brand) b on a.style_number=b.style_number and a.brand=b.brand \
+left join (select style_number, brand, sum(total) as stotal from w_sale_detail where rsn like 'm-15-s-110-%' group by style_number, brand) c on a.style_number=c.style_number and a.brand=c.brand \
+left join (select a.style_number, brand, sum(a.amount) as ftotal from w_inventory_transfer_detail a, w_inventory_transfer b where a.fshop=110 and a.rsn=b.rsn and b.state=1 group by style_number, brand) d \
 on a.style_number=d.style_number and a.brand=d.brand \
-left join (select a.style_number, brand, sum(a.amount) as ttotal from w_inventory_transfer_detail a, w_inventory_transfer b where a.tshop=139 and a.rsn=b.rsn and b.state=1 group by style_number, brand) e \
+left join (select a.style_number, brand, sum(a.amount) as ttotal from w_inventory_transfer_detail a, w_inventory_transfer b where a.tshop=110 and a.rsn=b.rsn and b.state=1 group by style_number, brand) e \
 on a.style_number=e.style_number and a.brand=e.brand) x;
 
 
@@ -41,7 +41,7 @@ left join (select a.rsn, a.amount from (select rsn, sum(amount) as amount from w
 */
 select x.rsn, x.total, x.amount from \
 (select a.rsn, b.style_number, b.brand, a.total, b.amount from w_inventory_new a left join \
-(select rsn, style_number, brand, sum(amount) as amount from w_inventory_new_detail where rsn like 'm-15-s-58-%' group by rsn) b on a.rsn=b.rsn where a.rsn like 'm-15-s-58-%') x where x.total!=x.amount;
+(select rsn, style_number, brand, sum(amount) as amount from w_inventory_new_detail where rsn like 'm-15-s-56-%' group by rsn) b on a.rsn=b.rsn where a.rsn like 'm-15-s-56-%') x where x.total!=x.amount;
 
 select a.rsn, a.style_number, a.brand, a.total, b.amount from \
 (select rsn, style_number, brand, sum(total) as total from w_inventory_new_detail_amount where rsn like 'm-16-s-62-%' group by rsn) a left join \

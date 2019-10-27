@@ -666,6 +666,8 @@ update w_ticket_custom a inner join \
 (select id, stime from w_ticket_custom where merchant=4 and stime!=0 and mtime=0) b \
 on a.id=b.id set a.mtime=b.stime;
 
+alter table print_template modify column label varchar(32) default '' after name;
+
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;
 

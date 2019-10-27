@@ -1070,23 +1070,33 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
 	     (Any)  -> ?to_f(Any)
 	 end,
 		 
-    Sql0 = "select a.id, a.merchant, a.balance"
-	", b.balance as lbalance, b.should_pay, b.has_pay, b.verificate, b.e_pay"
+    Sql0 = "select a.id"
+	", a.merchant"
+	", a.balance"
+	
+	", b.balance as lbalance"
+	", b.should_pay"
+	", b.has_pay"
+	", b.verificate"
+	", b.e_pay"
+	
 	" from suppliers a"
 	" left join "
+	
 	"(select id, merchant, firm, balance, should_pay"
 	", has_pay, verificate, e_pay from w_inventory_new"
 	" where merchant=" ++ ?to_s(Merchant)
 	++ " and firm=" ++ ?to_s(Firm)
 	++ " and state in (0,1)"
 	++ " order by entry_date desc limit 1) b on a.merchant=b.merchant and a.id=b.firm"
+	
 	" where a.id=" ++ ?to_s(Firm)
 	++ " and a.merchant=" ++ ?to_s(Merchant)
 	++ " and a.deleted=" ++ ?to_s(?NO) ++ ";",
 
     case ?sql_utils:execute(s_read, Sql0) of 
 	{ok, Account} ->
-	    %% ?INFO("account ~p", [Account]),
+	    ?INFO("account ~p", [Account]),
 	    LastBalance = FF(?v(<<"lbalance">>, Account, 0))
 		+ FF(?v(<<"should_pay">>, Account, 0))
 		+ FF(?v(<<"e_pay">>, Account, 0))

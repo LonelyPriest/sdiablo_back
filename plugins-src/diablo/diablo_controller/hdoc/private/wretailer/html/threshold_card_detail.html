@@ -72,7 +72,7 @@
 		    <th>联系方式</th>
 		    <th>卡名称</th>
 		    <th>卡类型</th>
-		    <th>剩余次数</th>
+		    <th>剩余次数/余额</th>
 		    <th>开始日期</th> 
 		    <th>结束日期</th> 
 		    <th>办卡日期</th>
@@ -90,6 +90,7 @@
 		    <td>
 		      <div x-ng-switch on=c.rule_id>
 			<span x-ng-switch-when=2>{{c.ctime}}</span>
+			<span x-ng-switch-when=7>{{c.ctime}}</span>
 			<span x-ng-switch-default>-</span>
 		      </div>
 		    </td>
@@ -197,7 +198,7 @@
 		   readonly
 		   x-ng-model="params.card.retailer"/> 
 	  </div>
-	</div>
+	</div> 
 
 	<div class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label">联系方式</label>
@@ -214,7 +215,7 @@
 	  <div class="col-sm-8 col-md-8">
 	    <div class="row">
 	      <div class="col-md-12 col-sm-12 col-xs-12" class="table-responsive">
-		<table class="table diablo-form-table table-striped table-condensed table-bordered">
+		<table class="table diablo-form-table table-striped table-condensed table-bordered"> 
 		  <tbody>
 		    <tr class="text-right" x-ng-repeat="g in params.goods">
 		      <td class="vert-align col-md-2 col-sm-2 col-xs-2">
@@ -225,7 +226,10 @@
 			</div>
 		      </td>
 		      <td class="text-center vert-align" x-ng-bind="g.name"></td>
-		      <td class="text-center vert-align" x-ng-bind="g.left"></td>
+		      <td class="text-center vert-align" >
+			<div x-ng-if="params.card.rule===7">{{g.tag_price}}</div>
+			<div x-ng-if="params.card.rule===2">{{g.left}}</div>
+		      </td>
 		      <td class="col-md-6 col-sm-6 col-xs-6">
 			<input class="form-control" type="number" x-ng-model="g.count" />
 		      </td>
@@ -237,7 +241,7 @@
 	  </div>
 	</div>
 
-	<div x-ng-if="!params.has_child_card" class="form-group">
+	<div x-ng-if="!params.has_child_card" class="form-group"> 
 	  <label class="col-sm-2 col-md-2 control-label">消费商品</label>
 	  <div class="col-sm-8 col-md-8">
 	    <select class="form-control" type="text"
@@ -284,6 +288,16 @@
 		   x-ng-model="params.card.ctime"/>
 	  </div>
 	</div>
+
+	<div x-ng-if="params.card.rule===7" class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label fg-red">帐户余额</label>
+	  <div class="col-sm-8 col-md-8">
+	    <input class="form-control"
+		   type="text"
+		   readonly
+		   x-ng-model="params.card.ctime"/>
+	  </div>
+	</div> 
 	
 	<div x-ng-if="params.card.rule!==2" class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label fg-red ">过期日期</label>
@@ -295,6 +309,21 @@
 	  </div>
 	</div>
 
+	<div x-ng-if="params.card.rule===7" class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">提现</label>
+	  <div class="col-sm-8 col-md-8">
+	    <div class="input-group">
+	      <input class="form-control"
+		     type="number" step="1"
+		     required
+		     disable-key
+		     name="fbalance"
+		     x-ng-model="params.fbalance"/>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div> 
+	  </div>
+	</div>
+	
 	<div class="form-group">
 	  <label class="col-sm-2 col-md-2 control-label">密码</label>
 	  <div class="col-sm-8 col-md-8">
@@ -325,7 +354,7 @@
 
   <div class="modal-footer">
     <button class="btn btn-primary"
-	    x-ng-disabled="cForm.$invalid || !params.check_consume(params.goods)"
+	    x-ng-disabled="cForm.$invalid || !params.check_consume(params.goods, params.fbalance)"
 	    x-ng-click="ok()">确定</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div> 

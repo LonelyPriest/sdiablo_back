@@ -767,7 +767,7 @@ handle_call({new_charge, Merchant, Attrs}, _From, State) ->
     XTime     = ?v(<<"xtime">>, Attrs, 0),
     XDiscount = ?v(<<"xdiscount">>, Attrs, 100),
     CTime     = ?v(<<"ctime">>, Attrs, 0),
-
+    
     %% N
     {Charge, Balance}  =
 	case Rule =:= 0 of
@@ -829,6 +829,11 @@ handle_call({new_charge, Merchant, Attrs}, _From, State) ->
 		      ++ " and rule=" ++ ?to_s(Rule)
 		      ++ " and name=\'" ++ ?to_s(Name) ++ "\'";
 	      ?HALF_YEAR_UNLIMIT_CHARGE ->
+		  "select id, name from w_charge" 
+		      " where merchant=" ++ ?to_s(Merchant)
+		      ++ " and rule=" ++ ?to_s(Rule)
+		      ++ " and name=\'" ++ ?to_s(Name) ++ "\'";
+	      ?BALANCE_LIMIT_CHARGE ->
 		  "select id, name from w_charge" 
 		      " where merchant=" ++ ?to_s(Merchant)
 		      ++ " and rule=" ++ ?to_s(Rule)
@@ -1017,7 +1022,8 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 
     ChargeId    = ?v(<<"charge">>, Attrs),
     Stock       = ?v(<<"stock">>, Attrs, []),
-    Comment     = ?v(<<"comment">>, Attrs, []), 
+    Comment     = ?v(<<"comment">>, Attrs, []),
+    
     Entry       = ?utils:current_time(format_localtime),
 
     Rule = ?v(<<"rule_id">>, ChargeRule, -1),
@@ -1141,6 +1147,7 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 		false  ->
 		    CTime       = ?v(<<"ctime">>, Attrs, -1),
 		    StartDate   = ?v(<<"stime">>, Attrs, ?INVALID_DATE),
+		    Period      = ?v(<<"period">>, Attrs, 0), 
 
 		    Sql01 = "select id, csn, retailer, ctime, edate, cid, rule from w_card"
 			" where merchant=" ++ ?to_s(Merchant)
@@ -1168,7 +1175,13 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 					?YEAR_UNLIMIT_CHARGE ->
 					    date_next(?YEAR_UNLIMIT_CHARGE, {Year, Month, Date});
 					?HALF_YEAR_UNLIMIT_CHARGE ->
-					    date_next(?HALF_YEAR_UNLIMIT_CHARGE, {Year, Month, Date})
+					    date_next(?HALF_YEAR_UNLIMIT_CHARGE, {Year, Month, Date});
+					?BALANCE_LIMIT_CHARGE ->
+					    UYear = (Period + Month) div 12,
+					    UMonth = (Period + Month) rem 12,
+					    {Year + UYear,
+					     UMonth,
+					     day_of_next_month(UYear, UMonth, Date)} 
 				    end,
 
 				CardSN =
@@ -1201,7 +1214,7 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 					 %% must not to use at current day
 					 RechargeDetailSql(
 					   CardSN, ?utils:date_before({Year, Month, Date}, 1))
-				 end,
+				  end,
 				 "insert into w_card(csn"
 				  ", retailer"
 				  ", ctime"
@@ -1214,8 +1227,13 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 				  %% ", good"
 				  ", entry_date) values("
 				  ++ "\'" ++ ?to_s(CardSN) ++ "\',"
-				  ++ ?to_s(Retailer) ++ ","
-				  ++ ?to_s(CTime) ++ ","
+				  ++ ?to_s(Retailer) ++ "," 
+				  ++ case Rule of
+					 ?BALANCE_LIMIT_CHARGE ->
+					     ?to_s(CBalance + SBalance);
+					 _ ->
+					     ?to_s(CTime) 
+				     end ++ ","
 				  ++ "\'" ++ format_date(Year, Month, Date) ++ "\',"
 				  ++ "\'" ++ format_date(EndDate) ++ "\',"
 				  ++ ?to_s(ChargeId) ++ ","
@@ -1232,9 +1250,13 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 							 ?v(<<"id">>, Good),
 							 ?v(<<"count">>, Good)) | Acc]
 					      end, [], Goods);
+					?BALANCE_LIMIT_CHARGE ->
+					    ["update w_retailer set balance=balance+"
+					     ++ ?to_s(CBalance + SBalance)
+					     ++ " where id=" ++ ?to_s(Retailer)];
 					_ ->
 					    []
-				    end
+				    end 
 				};
 			    
 			    {ok, OCard} ->
@@ -1268,7 +1290,17 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 					 "update w_card set edate=\'" ++ format_date(NextQuarter);
 				     ?YEAR_UNLIMIT_CHARGE ->
 					 NextYear = date_next(?YEAR_UNLIMIT_CHARGE, {Year, Month, Date}),
-					 "update w_card set edate=\'" ++ format_date(NextYear)
+					 "update w_card set edate=\'" ++ format_date(NextYear);
+				     ?BALANCE_LIMIT_CHARGE ->
+					 UYear = (Period + Month) div 12,
+					 UMonth = (Period + Month) rem 12,
+					 NextPeriod =
+					     {Year + UYear,
+					      UMonth,
+					      day_of_next_month(Year + UYear, UMonth, Date)},
+					 "update w_card set "
+					     "ctime=ctime+" ++ ?to_s(CBalance + SBalance)
+					     ++", edate=\'" ++ format_date(NextPeriod) ++ "\'"
 				 end ++ 
 				     case Rule of
 					 ?THEORETIC_CHARGE -> [];
@@ -1294,6 +1326,10 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 						       ++ " and retailer=" ++ ?to_s(Retailer)
 						       ++ " and good=" ++ ?to_s(GoodId)|Acc]
 					      end, [], Goods);
+					?BALANCE_LIMIT_CHARGE ->
+					    ["update w_retailer set balance=balance+"
+					     ++ ?to_s(CBalance + SBalance)
+					     ++ " where id=" ++ ?to_s(Retailer)];
 					_ ->
 					    []
 				    end
@@ -1326,15 +1362,16 @@ handle_call({delete_recharge, Merchant, RechargeId, RechargeInfo, ChargePromotio
 	_ ->
 	    RetailerId = ?v(<<"retailer">>, RechargeInfo), 
 	    Rule = ?v(<<"rule_id">>, ChargePromotion),
+
+	    RSN      = ?v(<<"rsn">>, RechargeInfo), 
+	    CBalance = ?v(<<"cbalance">>, RechargeInfo),
+	    SBalance = ?v(<<"sbalance">>, RechargeInfo),
+	    AllBalance = CBalance + SBalance,
+	    OBalance = ?v(<<"balance">>, RechargeInfo),
+	    Datetime = ?utils:current_time(format_localtime), 
 	    case Rule =:= ?GIVING_CHARGE orelse Rule =:= ?TIMES_CHARGE of
 		true -> 
-		    RSN      = ?v(<<"rsn">>, RechargeInfo),
-		    CBalance = ?v(<<"cbalance">>, RechargeInfo),
-		    SBalance = ?v(<<"sbalance">>, RechargeInfo),
-		    %% Retailer = ?v(<<"retailer">>, RechargeInfo),
-		    OBalance = ?v(<<"balance">>, RechargeInfo),
-		    Datetime = ?utils:current_time(format_localtime),
-		    AllBalance = CBalance + SBalance,
+		    %% Retailer = ?v(<<"retailer">>, RechargeInfo), 
 		    Sqls = 
 			[Sql1, 
 			 "update w_charge_detail set lbalance=lbalance-" ++ ?to_s(AllBalance) 
@@ -1403,9 +1440,33 @@ handle_call({delete_recharge, Merchant, RechargeId, RechargeInfo, ChargePromotio
 			_ ->
 			    EndDate = ?v(<<"ledate">>, RechargeInfo),
 			    Sqls = ["update w_card set edate=\'" ++ ?to_s(EndDate) ++ "\'"
+				    ++ case Rule of
+					   ?BALANCE_LIMIT_CHARGE ->
+					       ",ctime=ctime-" ++ ?to_s(AllBalance);
+					   _ -> []
+				       end
 				    ++ " where merchant=" ++ ?to_s(Merchant)
 				    ++ " and retailer=" ++ ?to_s(RetailerId)
-				    ++ " and cid=" ++ ?to_s(ChargeId), Sql1],
+				    ++ " and cid=" ++ ?to_s(ChargeId), Sql1]
+				++ case Rule of
+				       ?BALANCE_LIMIT_CHARGE ->
+					   ["update w_retailer set balance=balance-"
+					    ++ ?to_s(AllBalance)
+					    ++ " where id=" ++ ?to_s(RetailerId)
+					    ++ " and merchant=" ++ ?to_s(Merchant),
+					    
+					    "insert into retailer_balance_history("
+					    "rsn, retailer, obalance, nbalance"
+					    ", action, merchant, entry_date) values("
+					    ++ "\'" ++ ?to_s(RSN) ++ "\',"
+					    ++ ?to_s(RetailerId) ++ ","
+					    ++ ?to_s(OBalance) ++ ","
+					    ++ ?to_s(OBalance - CBalance - SBalance) ++ "," 
+					    ++ ?to_s(?DELETE_RECHARGE) ++ "," 
+					    ++ ?to_s(Merchant) ++ ","
+					    ++ "\"" ++ ?to_s(Datetime) ++ "\")"];
+				       _ -> []
+				   end, 
 			    Reply = ?sql_utils:execute(transaction, Sqls, RechargeId),
 			    {reply, Reply, State} 
 		    end
@@ -2570,7 +2631,6 @@ handle_call({threshold_card_consume, Merchant, CardId, Attrs}, _From, State) ->
     ?DEBUG("threshold_card_consume: merchant ~p, card ~p, attrs ~p", [Merchant, CardId, Attrs]),
     CardSN   = ?v(<<"csn">>, Attrs),
     CGoods   = ?v(<<"cgoods">>, Attrs), 
-    Count    = ?v(<<"count">>, Attrs),
     ChargeId = ?v(<<"charge">>, Attrs),
     Retailer = ?v(<<"retailer">>, Attrs),
     Employee = ?v(<<"employee">>, Attrs),
@@ -2578,7 +2638,7 @@ handle_call({threshold_card_consume, Merchant, CardId, Attrs}, _From, State) ->
     Shop     = ?v(<<"shop">>, Attrs),
     Comment  = ?v(<<"comment">>, Attrs, []),
     
-    Sql = "select id, merchant, retailer, rule, ctime from w_card"
+    Sql = "select id, merchant, retailer, rule, ctime, edate from w_card"
 	" where id=" ++ ?to_s(CardId)
 	++ " and merchant=" ++ ?to_s(Merchant)
 	++ " and cid=" ++ ?to_s(ChargeId),
@@ -2587,79 +2647,166 @@ handle_call({threshold_card_consume, Merchant, CardId, Attrs}, _From, State) ->
 	{ok, []} ->
 	    {reply, {error, ?err(threshold_card_not_exist, CardId)}, State};
 	{ok, Card} ->
-	    LeftCount = ?v(<<"ctime">>, Card, 0),
-	    case LeftCount < Count of
-		true ->
-		    {reply, {error, ?err(threshold_card_not_enought_count, CardId)}, State};
-		false -> 
-		    SN = lists:concat(
-			   ["M-", ?to_i(Merchant),
-			    "-S-", ?to_i(Shop), "-", ?inventory_sn:sn(threshold_card_sale, Merchant)]),
+	    case ?v(<<"rule">>, Card) of
+		?THEORETIC_CHARGE ->
+		    LeftCount = ?v(<<"ctime">>, Card, 0),
+		    Count    = ?v(<<"count">>, Attrs), 
+		    case LeftCount =< 0 orelse LeftCount < Count of
+			true ->
+			    {reply, {error, ?err(threshold_card_not_enought_count, CardId)}, State};
+			false -> 
+			    SN = lists:concat(
+				   ["M-", ?to_i(Merchant),
+				    "-S-", ?to_i(Shop),
+				    "-", ?inventory_sn:sn(threshold_card_sale, Merchant)]),
 
-		    Datetime = ?utils:current_time(format_localtime),
-		    
-		    Sql1 = "update w_card set ctime=ctime-" ++ ?to_s(Count)
-			++ " where id=" ++ ?to_s(CardId)
-			++ " and merchant=" ++ ?to_s(Merchant)
-			++ " and rule=" ++ ?to_s(?THEORETIC_CHARGE),
-		    
-		    Sql2 = "insert into w_card_sale(rsn"
-			", employee, retailer, card, cid, amount, merchant"
-			", shop, comment, entry_date) values("
-			++ "\'" ++ ?to_s(SN) ++ "\',"
-			++ "\'" ++ ?to_s(Employee) ++ "\',"
-			++ ?to_s(Retailer) ++ ","
-			++ ?to_s(CardId) ++ ","
-			++ ?to_s(ChargeId) ++ "," 
-			++ ?to_s(Count) ++ "," 
-			++ ?to_s(Merchant) ++ ","
-			++ ?to_s(Shop) ++ ","
-			++ "\'" ++ ?to_s(Comment) ++ "\',"
-			++ "\'" ++ Datetime ++ "\')",
+			    Datetime = ?utils:current_time(format_localtime),
 
-		    Sql3 =
-			lists:foldr(
-			  fun({struct, Good}, Acc) ->
-				  ["insert into w_card_sale_detail(rsn"
-				   ", employee"
-				   ", retailer"
-				   ", card"
-				   ", cid"
+			    Sql1 = ["update w_card set ctime=ctime-" ++ ?to_s(Count)
+				    ++ " where id=" ++ ?to_s(CardId)
+				    ++ " and merchant=" ++ ?to_s(Merchant)
+				    ++ " and rule=" ++ ?to_s(?THEORETIC_CHARGE),
 
-				   ", good"
-				   ", amount" 
-				   ", tag_price"
+				    "insert into w_card_sale(rsn"
+				    ", employee, retailer, card, cid, amount, merchant"
+				    ", shop, comment, entry_date) values("
+				    ++ "\'" ++ ?to_s(SN) ++ "\',"
+				    ++ "\'" ++ ?to_s(Employee) ++ "\',"
+				    ++ ?to_s(Retailer) ++ ","
+				    ++ ?to_s(CardId) ++ ","
+				    ++ ?to_s(ChargeId) ++ "," 
+				    ++ ?to_s(Count) ++ "," 
+				    ++ ?to_s(Merchant) ++ ","
+				    ++ ?to_s(Shop) ++ ","
+				    ++ "\'" ++ ?to_s(Comment) ++ "\',"
+				    ++ "\'" ++ Datetime ++ "\')"],
 
-				   ", merchant"
-				   ", shop"
-				   ", entry_date) values("
-				   ++ "\'" ++ ?to_s(SN) ++ "\',"
-				   ++ "\'" ++ ?to_s(Employee) ++ "\',"
-				   ++ ?to_s(Retailer) ++ ","
-				   ++ ?to_s(CardId) ++ ","
-				   ++ ?to_s(ChargeId) ++ ","
+			    Sql2 =
+				lists:foldr(
+				  fun({struct, Good}, Acc) ->
+					  ["insert into w_card_sale_detail(rsn"
+					   ", employee"
+					   ", retailer"
+					   ", card"
+					   ", cid"
 
-				   ++ ?to_s(?v(<<"g">>, Good)) ++ ","
-				   ++ ?to_s(?v(<<"c">>, Good)) ++ ","
-				   ++ ?to_s(?v(<<"p">>, Good)) ++ ","
+					   ", good"
+					   ", amount" 
+					   ", tag_price"
 
-				   ++ ?to_s(Merchant) ++ ","
-				   ++ ?to_s(Shop) ++ ","
-				   ++ "\'" ++ Datetime ++ "\')",
+					   ", merchant"
+					   ", shop"
+					   ", entry_date) values("
+					   ++ "\'" ++ ?to_s(SN) ++ "\',"
+					   ++ "\'" ++ ?to_s(Employee) ++ "\',"
+					   ++ ?to_s(Retailer) ++ ","
+					   ++ ?to_s(CardId) ++ ","
+					   ++ ?to_s(ChargeId) ++ ","
 
-				   "update w_child_card set "
-				   "ctime=ctime-" ++ ?to_s(?v(<<"c">>, Good))
-				   ++ " where merchant=" ++ ?to_s(Merchant)
-				   ++ " and retailer=" ++ ?to_s(Retailer)
-				   ++ " and csn=\'" ++ ?to_s(CardSN) ++ "\'" 
-				   ++ " and good=" ++ ?to_s(?v(<<"g">>, Good)) |Acc]
-			  end, [], CGoods),
-		    case ?sql_utils:execute(transaction, [Sql1, Sql2] ++ Sql3, SN) of
-			{ok, SN} ->
-			    {reply, {ok, SN, LeftCount - Count, ?INVALID_OR_EMPTY}, State};
-			_Error ->
-			    _Error
-		    end
+					   ++ ?to_s(?v(<<"g">>, Good)) ++ ","
+					   ++ ?to_s(?v(<<"c">>, Good)) ++ ","
+					   ++ ?to_s(?v(<<"p">>, Good)) ++ ","
+
+					   ++ ?to_s(Merchant) ++ ","
+					   ++ ?to_s(Shop) ++ ","
+					   ++ "\'" ++ Datetime ++ "\')",
+
+					   "update w_child_card set "
+					   "ctime=ctime-" ++ ?to_s(?v(<<"c">>, Good))
+					   ++ " where merchant=" ++ ?to_s(Merchant)
+					   ++ " and retailer=" ++ ?to_s(Retailer)
+					   ++ " and csn=\'" ++ ?to_s(CardSN) ++ "\'" 
+					   ++ " and good=" ++ ?to_s(?v(<<"g">>, Good)) |Acc]
+				  end, [], CGoods),
+			    case ?sql_utils:execute(transaction, Sql1 ++ Sql2, SN) of
+				{ok, SN} ->
+				    {reply, {ok, SN, LeftCount - Count, ?INVALID_OR_EMPTY}, State};
+				_Error ->
+				    _Error
+			    end
+		    end;
+		?BALANCE_LIMIT_CHARGE  ->
+		    LeftBalance = ?v(<<"ctime">>, Card, 0),
+		    FBalance    = ?v(<<"fbalance">>, Attrs, 0),
+		    case LeftBalance =< 0 orelse LeftBalance < FBalance of
+			true ->
+			    {reply, {error, ?err(balance_card_not_enought_money, CardId)}, State};
+			false ->
+			    ExpireDate = ?v(<<"edate">>, Card),
+			    case ?utils:compare_date(date, current_date(), ExpireDate) of
+				true ->
+				    {reply, {error, ?err(balance_card_expire, CardId)}, State};
+				false -> 
+				    SN = lists:concat(
+					   ["M-", ?to_i(Merchant),
+					    "-S-", ?to_i(Shop),
+					    "-", ?inventory_sn:sn(threshold_card_sale, Merchant)]),
+				    Datetime = ?utils:current_time(format_localtime),
+
+				    Sql1 = ["update w_card set ctime=ctime-" ++ ?to_s(FBalance)
+					    ++ " where id=" ++ ?to_s(CardId)
+					    ++ " and merchant=" ++ ?to_s(Merchant)
+					    ++ " and rule=" ++ ?to_s(?BALANCE_LIMIT_CHARGE),
+
+					    "update w_retailer set balance=balance-" ++ ?to_s(FBalance)
+					    ++ " where id=" ++ ?to_s(Retailer)
+					    ++ " and merchant=" ++ ?to_s(Merchant),
+
+					    "insert into w_card_sale(rsn"
+					    ", employee, retailer, card, cid, amount, merchant"
+					    ", shop, comment, entry_date) values("
+					    ++ "\'" ++ ?to_s(SN) ++ "\',"
+					    ++ "\'" ++ ?to_s(Employee) ++ "\',"
+					    ++ ?to_s(Retailer) ++ ","
+					    ++ ?to_s(CardId) ++ ","
+					    ++ ?to_s(ChargeId) ++ "," 
+					    ++ ?to_s(FBalance) ++ "," 
+					    ++ ?to_s(Merchant) ++ ","
+					    ++ ?to_s(Shop) ++ ","
+					    ++ "\'" ++ ?to_s(Comment) ++ "\',"
+					    ++ "\'" ++ Datetime ++ "\')"],
+
+				    Sql2 =
+					lists:foldr(
+					  fun({struct, Good}, Acc) ->
+						  ["insert into w_card_sale_detail(rsn"
+						   ", employee"
+						   ", retailer"
+						   ", card"
+						   ", cid"
+
+						   ", good"
+						   ", amount" 
+						   ", tag_price"
+
+						   ", merchant"
+						   ", shop"
+						   ", entry_date) values("
+						   ++ "\'" ++ ?to_s(SN) ++ "\',"
+						   ++ "\'" ++ ?to_s(Employee) ++ "\',"
+						   ++ ?to_s(Retailer) ++ ","
+						   ++ ?to_s(CardId) ++ ","
+						   ++ ?to_s(ChargeId) ++ ","
+
+						   ++ ?to_s(?v(<<"g">>, Good)) ++ ","
+						   ++ ?to_s(?v(<<"c">>, Good)) ++ ","
+						   ++ ?to_s(?v(<<"p">>, Good)) ++ ","
+
+						   ++ ?to_s(Merchant) ++ ","
+						   ++ ?to_s(Shop) ++ ","
+						   ++ "\'" ++ Datetime ++ "\')"] ++ Acc
+					  end, [], CGoods),
+
+				    case ?sql_utils:execute(transaction, Sql1 ++ Sql2, SN) of
+					{ok, SN} ->
+					    {reply,
+					     {ok, SN, LeftBalance - FBalance, ?INVALID_OR_EMPTY},
+					     State};
+					_Error ->
+					    _Error
+				    end
+			    end
+		    end 
 	    end;
 	Error ->
 	    {reply, Error, State}
@@ -2877,7 +3024,7 @@ date_next(?MONTH_UNLIMIT_CHARGE, {Year, Month, Date}) ->
 date_next(?QUARTER_UNLIMIT_CHARGE, {Year, Month, Date}) ->
     case Month + 3 > 12 of
 	true ->
-	    {Year + 1, (Month + 3) rem 12, day_of_next_month(Year, (Month + 3) rem 12, Date)};
+	    {Year + 1, (Month + 3) rem 12, day_of_next_month(Year + 1, (Month + 3) rem 12, Date)};
 	false ->
 	    {Year, Month + 3, day_of_next_month(Year, Month + 3, Date)}
     end;
@@ -2887,11 +3034,11 @@ date_next(?YEAR_UNLIMIT_CHARGE, {Year, Month, Date}) ->
 date_next(?HALF_YEAR_UNLIMIT_CHARGE, {Year, Month, Date}) ->
     case Month + 6 > 12 of
 	true ->
-	    {Year + 1, (Month + 6) rem 12, day_of_next_month(Year, (Month + 6) rem 12, Date)};
+	    {Year + 1, (Month + 6) rem 12, day_of_next_month(Year + 1, (Month + 6) rem 12, Date)};
 	false ->
 	    {Year, Month + 6, day_of_next_month(Year, Month + 6, Date)}
     end.
-
+   
 day_of_next_month(CurrentYear, NextMonth, CurrentDay) -> 
     Days = calendar:last_day_of_the_month(CurrentYear, NextMonth),
     case CurrentDay > Days of

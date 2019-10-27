@@ -174,15 +174,20 @@ var retailerPrint = function(){
 	    top += 15;
 	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "消费类型：" + card.rule.name);
 	    
-	    var l = "";
-	    if(card.rule.id === diablo_theoretic_charge) 
-		l += "剩余次数：" + card.left_time;
-	    else
-		l += "过期日期：" + card.expire_date;
-	    
-	    console.log(l);
-	    top += 15;
-	    LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, l);
+	    if(card.rule.id === diablo_theoretic_charge) {
+		top += 15;
+		LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "剩余次数：" + card.left_time);
+	    } else if (card.rule.id == diablo_balance_limit_charge) {
+		top += 15;
+		LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "消费我额：" + card.fbalance);
+		top += 15;
+		LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "帐户余额：" + card.left_time);
+		top += 15;
+		LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "卡有效期：" + card.expire_date);
+	    } else {
+		top += 15;
+		LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "卡有效期：" + card.expire_date);
+	    } 
 	    
 	    top += 15;
 	    l = "备注：" + (comment ? comment : "");

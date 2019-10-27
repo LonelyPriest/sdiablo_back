@@ -551,9 +551,13 @@ error(retailer_level_not_exist, Level) ->
 error(ticket_plan_exist, Name) ->
     {2131, "ticket plan has been exist:" ++ ?to_s(Name)};
 error(threshold_card_non_zero, Card) ->
-    {2132, "Threshold card's count is no zero:" ++ ?to_s(Card)};
+    {2132, "threshold card's count is no zero:" ++ ?to_s(Card)};
 error(threshold_card_non_expire, Card) ->
-    {2133, "Threshold card is in valid date:" ++ ?to_s(Card)};
+    {2133, "threshold card is in valid date:" ++ ?to_s(Card)};
+error(balance_card_not_enought_money, Card) ->
+    {2134, "balance limit card does not enought money:" ++ ?to_s(Card)};
+error(balance_card_expire, Card) ->
+    {2135, "balance limit card is in valid date:" ++ ?to_s(Card)};
 
 %% wprint
 error(wprint_server_exist, Server) ->

@@ -943,7 +943,7 @@ create table w_inventory_new(
     e_pay_type     TINYINT  default -1,
     e_pay          DECIMAL(10, 2) default 0, -- max: 99999999.99
 
-    type           TINYINT default -1,  -- 0: new inventory 1: reject inventory
+    type           TINYINT default -1,  -- 0: new inventory 1: reject inventory 1:bill
     
     state          TINYINT  default 0,  -- 0: wait for check, 1: checked
     check_date     DATETIME default 0, -- date of last change 
@@ -1488,7 +1488,7 @@ create table print_template(
    id              INTEGER AUTO_INCREMENT,
    
    name            VARCHAR(64),
-   lable           VARCHAR(8),
+   label           VARCHAR(8),
    tshop           INTEGER default -1,
    
    width           TINYINT default 0,

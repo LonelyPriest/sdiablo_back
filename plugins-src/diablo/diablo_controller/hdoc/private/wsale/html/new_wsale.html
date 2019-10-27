@@ -418,7 +418,9 @@
 
 	<div class="actions">
 	  <div class="btn-group">
-	    <button x-ng-if="select.retailer.type_id===1 && select.retailer.balance!==0"
+	    <button x-ng-if="!setting.disableWithDraw
+			     && select.retailer.type_id===1
+			     && select.retailer.balance!==0"
 	    	    class="btn green"
 	    	    x-ng-disabled="disable_withdraw()"
 	    	    x-ng-click="withdraw()">提现<i class="glyphicon glyphicon-yen"></i>

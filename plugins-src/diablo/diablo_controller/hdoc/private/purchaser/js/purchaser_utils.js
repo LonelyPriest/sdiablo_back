@@ -1571,11 +1571,11 @@ stockPrintU.prototype.printBarcode2 = function() {
 		this.LODOP.ADD_PRINT_TEXT(top, startThird + offset_color, iwpx, hpx_price, line3);
 		this.set_print_font_size(this.template.font_size); 
 	    } 
-	} 
+	}
+
+	top += hpx_price;
     }
     
-    top += hpx_price; 
-
     var width_barcode = iwpx;
     if (stockUtils.to_integer(this.template.w_barcode) !== 0) {
 	width_barcode = stockUtils.to_integer(this.template.w_barcode);

@@ -459,6 +459,8 @@ action(Session, Req, {"new_threshold_card_sale", Id}, Payload) ->
 		{error, ?err(invalid_threshold_card_rule, Id)};
 	    ?THEORETIC_CHARGE ->
 		?w_retailer:threshold_card(threshold_consume, Merchant, Id, Payload);
+	    ?BALANCE_LIMIT_CHARGE ->
+		?w_retailer:threshold_card(threshold_consume, Merchant, Id, Payload);
 	    _ ->
 		?w_retailer:threshold_card(expire_consume, Merchant, Id, Payload)
 	end 

@@ -217,14 +217,16 @@ function wretailerConfig(angular) {
 	    {name:"月卡模式", id:diablo_month_unlimit_charge, remark: "一个月内任意消费次数"},
 	    {name:"季卡模式", id:diablo_quarter_unlimit_charge, remark: "一个季度内内任意消费次数"},
 	    {name:"年卡模式", id:diablo_year_unlimit_charge, remark: "一年内任意消费次数"},
-	    {name:"半年卡模式", id:diablo_half_of_year_unlimit_charge, remark: "一年内任意消费次数"}
+	    {name:"半年卡模式", id:diablo_half_of_year_unlimit_charge, remark: "一年内任意消费次数"},
+	    {name:"余额卡模式", id:diablo_balance_limit_charge, remark: "帐户余额消费模式"}
 	];
 
 	this.threshold_cards = [{name:"次卡模式", id:diablo_theoretic_charge},
 				{name:"月卡模式", id:diablo_month_unlimit_charge},
 				{name:"季卡模式", id:diablo_quarter_unlimit_charge},
 				{name:"年卡模式", id:diablo_year_unlimit_charge},
-				{name:"半年卡模式", id:diablo_half_of_year_unlimit_charge}
+				{name:"半年卡模式", id:diablo_half_of_year_unlimit_charge},
+				{name:"余额卡模式", id:diablo_balance_limit_charge}
 			       ];
 	
 	this.retailer_types = diablo_retailer_types;

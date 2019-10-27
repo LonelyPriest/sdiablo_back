@@ -364,11 +364,16 @@ function wretailerDetailCtrlProvide(
 	return rule_id === diablo_month_unlimit_charge
 	    || rule_id === diablo_quarter_unlimit_charge
 	    || rule_id === diablo_half_of_year_unlimit_charge
-	    || rule_id === diablo_year_unlimit_charge;
+	    || rule_id === diablo_year_unlimit_charge
+	    || rule_id === diablo_balance_limit_charge
     };
 
     var is_theoretic_card = function(rule_id) {
 	return rule_id === diablo_theoretic_charge;
+    };
+
+    var is_balance_limit_card = function(rule_id) {
+	return rule_id === diablo_balance_limit_charge;
     };
 
     var get_charge = function(charge_id) {
@@ -444,13 +449,16 @@ function wretailerDetailCtrlProvide(
 		    charge:         promotion.id,
 		    ctime:          ctime,
 		    stime:          stime,
+		    period:         params.period,
 		    good:           angular.isArray(goods) ? goods.map(
 			function(g) {return {id:g.id, count:g.count}}) : undefined,
 		    comment:        params.comment
 		}).then(function(result){
 		    console.log(result); 
 		    if (result.ecode == 0){
-			if (!is_theoretic_card(promotion.rule_id) && !is_unlimit_card(promotion.rule_id)) {
+			if (!is_theoretic_card(promotion.rule_id)
+			    && !is_unlimit_card(promotion.rule_id)
+			    || is_balance_limit_card(promotion.rule_id)) {
 			    retailer.balance += charge_balance + retailerUtils.to_integer(params.sbalance) 
 			}
 
@@ -537,8 +545,9 @@ function wretailerDetailCtrlProvide(
 		 card: 0,
 		 wxin: 0,
 		 sbalance: 0,
-		 stime:   $.now(),
-		 pattern: pattern,
+		 stime:  $.now(),
+		 period: 0,
+		 pattern:pattern,
 		 get_charge: get_charge,
 		 unlimit_card: is_unlimit_card,
 		 calc_card_count: function(goods, ctime, cstime) {
@@ -1436,6 +1445,8 @@ function wretailerThresholdCardDetailCtrlProvide(
 	    return "年卡消费"
 	else if (rule_id === diablo_half_of_year_unlimit_charge)
 	    return "半年卡消费"
+	else if (rule_id === diablo_balance_limit_charge)
+	    return "余额卡消费"
     };
     
     $scope.consume = function(card){
@@ -1452,7 +1463,9 @@ function wretailerThresholdCardDetailCtrlProvide(
 		    var cgoods_to_print = [];
 		    var total_count = 0;
 		    
-		    if (card.rule_id !== diablo_theoretic_charge || !params.has_child_card) {
+		    if (card.rule_id !== diablo_theoretic_charge
+			&& card.rule_id !== diablo_balance_limit_charge
+			&& !params.has_child_card) {
 			total_count = params.count; 
 			cgoods_to_print.push({g:params.good.id,
 					      n:params.good.name,
@@ -1483,6 +1496,7 @@ function wretailerThresholdCardDetailCtrlProvide(
 			cgoods    :cgoods,
 			// tag_price :params.good.tag_price,
 			count     :total_count,
+			fbalance  :params.fbalance,
 			shop      :params.shop.id,
 			shop_name :params.shop.name,
 			comment   :params.comment
@@ -1504,6 +1518,8 @@ function wretailerThresholdCardDetailCtrlProvide(
 				function() {
 				    if (card.rule_id === diablo_theoretic_charge)
 					card.ctime -= total_count;
+				    else if (card.rule_id === diablo_balance_limit_charge)
+					card.ctime -= params.fbalance;
 				    
 				    var start_print = function(LODOP, ptime) {
 					retailerPrint.init(LODOP);
@@ -1529,6 +1545,7 @@ function wretailerThresholdCardDetailCtrlProvide(
 					    {cname: card.cname,
 					     rule: card.rule,
 					     left_time: card.ctime,
+					     fbalance: params.fbalance,
 					     expire_date: card.edate},
 					    params.comment);
 					
@@ -1582,7 +1599,7 @@ function wretailerThresholdCardDetailCtrlProvide(
 		 good: has_child ? undefined: goods[0],
 		 shop: $scope.shops[0],
 		 comment_pattern: diabloPattern.comment,
-		 check_consume: function(goods) {
+		 check_consume: function(goods, fbalance) {
 		     var valid = false;
 		     if (card.rule_id === diablo_theoretic_charge) {
 			 if (has_child) {
@@ -1595,12 +1612,19 @@ function wretailerThresholdCardDetailCtrlProvide(
 			     }
 			 } else {
 			     valid = true;
+			 } 
+		     } else if (card.rule_id === diablo_balance_limit_charge) {
+			 for (var i=0, l=goods.length; i<l; i++) {
+			     if (goods[i].select) {
+				 valid = true;
+				 break;
+			     }
 			 }
-			 
+			 if (valid)
+			     valid = card.ctime >= fbalance
 		     } else {
 			 valid = true;
-		     }
-		     
+		     } 
 		     return valid;
 		 }}
 	    );
@@ -1620,7 +1644,7 @@ function wretailerThresholdCardDetailCtrlProvide(
 				child_goods.push(
 				    {id:$scope.card_goods[j].id,
 				     name:$scope.card_goods[j].name,
-				     tag_price:$scope.card_goods[i].tag_price, 
+				     tag_price:$scope.card_goods[j].tag_price, 
 				     left:result.child[i].ctime,
 				     count:1});
 			    }
@@ -1633,7 +1657,18 @@ function wretailerThresholdCardDetailCtrlProvide(
 		    // error
 		}
 	    })
-	} else {
+	} else if (card.rule_id === diablo_balance_limit_charge) {
+	    var child_goods = [];
+	    for(var i=0, l=$scope.card_goods.length; i<l; i++) {
+		child_goods.push(
+		    {id:$scope.card_goods[i].id,
+		     name:$scope.card_goods[i].name,
+		     tag_price:$scope.card_goods[i].tag_price,
+		     count:1});
+	    }
+	    start_consume(child_goods, true);
+	}
+	else {
 	    start_consume($scope.card_goods, false)
 	} 
     };
