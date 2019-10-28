@@ -456,9 +456,7 @@ function wretailerDetailCtrlProvide(
 		}).then(function(result){
 		    console.log(result); 
 		    if (result.ecode == 0){
-			if (!is_theoretic_card(promotion.rule_id)
-			    && !is_unlimit_card(promotion.rule_id)
-			    || is_balance_limit_card(promotion.rule_id)) {
+			if (!is_theoretic_card(promotion.rule_id) && !is_unlimit_card(promotion.rule_id)) {
 			    retailer.balance += charge_balance + retailerUtils.to_integer(params.sbalance) 
 			}
 

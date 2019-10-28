@@ -1250,10 +1250,10 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 							 ?v(<<"id">>, Good),
 							 ?v(<<"count">>, Good)) | Acc]
 					      end, [], Goods);
-					?BALANCE_LIMIT_CHARGE ->
-					    ["update w_retailer set balance=balance+"
-					     ++ ?to_s(CBalance + SBalance)
-					     ++ " where id=" ++ ?to_s(Retailer)];
+					%% ?BALANCE_LIMIT_CHARGE ->
+					%%     ["update w_retailer set balance=balance+"
+					%%      ++ ?to_s(CBalance + SBalance)
+					%%      ++ " where id=" ++ ?to_s(Retailer)];
 					_ ->
 					    []
 				    end 
@@ -1326,10 +1326,10 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 						       ++ " and retailer=" ++ ?to_s(Retailer)
 						       ++ " and good=" ++ ?to_s(GoodId)|Acc]
 					      end, [], Goods);
-					?BALANCE_LIMIT_CHARGE ->
-					    ["update w_retailer set balance=balance+"
-					     ++ ?to_s(CBalance + SBalance)
-					     ++ " where id=" ++ ?to_s(Retailer)];
+					%% ?BALANCE_LIMIT_CHARGE ->
+					%%     ["update w_retailer set balance=balance+"
+					%%      ++ ?to_s(CBalance + SBalance)
+					%%      ++ " where id=" ++ ?to_s(Retailer)];
 					_ ->
 					    []
 				    end
@@ -1437,36 +1437,22 @@ handle_call({delete_recharge, Merchant, RechargeId, RechargeInfo, ChargePromotio
 			    %% ?DEBUG("Sqls ~p", [Sqls]),
 			    Reply = ?sql_utils:execute(transaction, Sqls, RechargeId),
 			    {reply, Reply, State};
-			_ ->
+			?BALANCE_LIMIT_CHARGE ->
 			    EndDate = ?v(<<"ledate">>, RechargeInfo),
-			    Sqls = ["update w_card set edate=\'" ++ ?to_s(EndDate) ++ "\'"
-				    ++ case Rule of
-					   ?BALANCE_LIMIT_CHARGE ->
-					       ",ctime=ctime-" ++ ?to_s(AllBalance);
-					   _ -> []
-				       end
+			    Sqls = ["update w_card set ctime=ctime-" ++ ?to_s(AllBalance)
+				    ++ ", edate=\'" ++ ?to_s(EndDate) ++ "\'"
 				    ++ " where merchant=" ++ ?to_s(Merchant)
 				    ++ " and retailer=" ++ ?to_s(RetailerId)
-				    ++ " and cid=" ++ ?to_s(ChargeId), Sql1]
-				++ case Rule of
-				       ?BALANCE_LIMIT_CHARGE ->
-					   ["update w_retailer set balance=balance-"
-					    ++ ?to_s(AllBalance)
-					    ++ " where id=" ++ ?to_s(RetailerId)
-					    ++ " and merchant=" ++ ?to_s(Merchant),
-					    
-					    "insert into retailer_balance_history("
-					    "rsn, retailer, obalance, nbalance"
-					    ", action, merchant, entry_date) values("
-					    ++ "\'" ++ ?to_s(RSN) ++ "\',"
-					    ++ ?to_s(RetailerId) ++ ","
-					    ++ ?to_s(OBalance) ++ ","
-					    ++ ?to_s(OBalance - CBalance - SBalance) ++ "," 
-					    ++ ?to_s(?DELETE_RECHARGE) ++ "," 
-					    ++ ?to_s(Merchant) ++ ","
-					    ++ "\"" ++ ?to_s(Datetime) ++ "\")"];
-				       _ -> []
-				   end, 
+				    ++ " and cid=" ++ ?to_s(ChargeId),
+				    Sql1],
+			    Reply = ?sql_utils:execute(transaction, Sqls, RechargeId),
+			    {reply, Reply, State};
+			_ ->
+			    EndDate = ?v(<<"ledate">>, RechargeInfo),
+			    Sqls = ["update w_card set edate=\'" ++ ?to_s(EndDate) ++ "\'" 
+				    ++ " where merchant=" ++ ?to_s(Merchant)
+				    ++ " and retailer=" ++ ?to_s(RetailerId)
+				    ++ " and cid=" ++ ?to_s(ChargeId), Sql1], 
 			    Reply = ?sql_utils:execute(transaction, Sqls, RechargeId),
 			    {reply, Reply, State} 
 		    end
@@ -2742,15 +2728,15 @@ handle_call({threshold_card_consume, Merchant, CardId, Attrs}, _From, State) ->
 					    "-S-", ?to_i(Shop),
 					    "-", ?inventory_sn:sn(threshold_card_sale, Merchant)]),
 				    Datetime = ?utils:current_time(format_localtime),
-
+				    
 				    Sql1 = ["update w_card set ctime=ctime-" ++ ?to_s(FBalance)
 					    ++ " where id=" ++ ?to_s(CardId)
 					    ++ " and merchant=" ++ ?to_s(Merchant)
 					    ++ " and rule=" ++ ?to_s(?BALANCE_LIMIT_CHARGE),
 
-					    "update w_retailer set balance=balance-" ++ ?to_s(FBalance)
-					    ++ " where id=" ++ ?to_s(Retailer)
-					    ++ " and merchant=" ++ ?to_s(Merchant),
+					    %% "update w_retailer set balance=balance-" ++ ?to_s(FBalance)
+					    %% ++ " where id=" ++ ?to_s(Retailer)
+					    %% ++ " and merchant=" ++ ?to_s(Merchant),
 
 					    "insert into w_card_sale(rsn"
 					    ", employee, retailer, card, cid, amount, merchant"
