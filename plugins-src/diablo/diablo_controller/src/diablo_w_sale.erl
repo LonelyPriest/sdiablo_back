@@ -1062,7 +1062,7 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 				["update w_ticket set sale_rsn=\'-1\'"
 				 ", state=" ++ ?to_s(?TICKET_STATE_CHECKED) 
 				 ++ " where merchant=" ++ ?to_s(Merchant)
-				 ++ " retailer=" ++ ?to_s(Retailer)
+				 ++ " and retailer=" ++ ?to_s(Retailer)
 				 ++ C0];
 			    ?CUSTOM_TICKET ->
 				["update w_ticket_custom set sale_rsn=\'-1\'"

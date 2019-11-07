@@ -413,6 +413,8 @@ function wretailerDetailCtrlProvide(
 		    }
 		} else if (diablo_theoretic_charge === promotion.rule_id) {
 		    return retailerUtils.to_integer(promotion.cstime);
+		} else if (diablo_balance_limit_charge === promotion.rule_id) {
+		    return retailerUtils.to_integer(promotion.sbalance);
 		}
 		return 0;
 		// else if (diablo_times_charge === promotion.rule_id) {
@@ -544,7 +546,7 @@ function wretailerDetailCtrlProvide(
 		 wxin: 0,
 		 sbalance: 0,
 		 stime:  $.now(),
-		 period: 0,
+		 period: undefined,
 		 pattern:pattern,
 		 get_charge: get_charge,
 		 unlimit_card: is_unlimit_card,
@@ -1461,8 +1463,8 @@ function wretailerThresholdCardDetailCtrlProvide(
 		    var cgoods_to_print = [];
 		    var total_count = 0;
 		    
-		    if (card.rule_id !== diablo_theoretic_charge
-			&& card.rule_id !== diablo_balance_limit_charge
+		    if (card.rule_id === diablo_theoretic_charge
+			// && card.rule_id !== diablo_balance_limit_charge 
 			&& !params.has_child_card) {
 			total_count = params.count; 
 			cgoods_to_print.push({g:params.good.id,

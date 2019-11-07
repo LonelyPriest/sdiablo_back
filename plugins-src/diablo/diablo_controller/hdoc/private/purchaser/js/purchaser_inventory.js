@@ -2941,18 +2941,23 @@ function purchaserInventoryDetailCtrlProvide(
 		}
 	    });
 	};
-
-	var select_shops = angular.isNumber(condition.shop)
-	    ? [].push(diablo_get_object(condition.shop, $scope.shops))
-	    : condition.shop.map(
-		function(s){return diablo_get_object(s, $scope.shops)});
-
+	
 	dialog.edit_with_modal(
 	    "purchaser-on-sale.html",
 	    undefined,
 	    callback,
 	    undefined,
-	    {shops: select_shops,
+	    {shops: function() {
+		if (angular.isDefined(condition.shop)) {
+		    if (angular.isNumber(condition.shop)) {
+			return [].push(diablo_get_object(condition.shop, $scope.shops));
+		    } else {
+			condition.shop.map(function(s){return diablo_get_object(s, $scope.shops)});
+		    }
+		} else {
+		    return $scope.shops;
+		}
+	    }(),
 	     promotions:   $scope.promotions,
 	     scores:       $scope.scores.filter(
 		 function(s){return s.type_id===0}),

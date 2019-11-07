@@ -1542,7 +1542,7 @@ var wsalePrint = function(){
 		    30,
 		    wsaleUtils.to_integer(direct) === 0 ? shop : shop + "（退）"); 
 		LODOP.SET_PRINT_STYLEA(0, "FontSize", 13);
-		LODOP.SET_PRINT_STYLEA(0, "Alignment", 2); 
+		// LODOP.SET_PRINT_STYLEA(0, "Alignment", 2); 
 		LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
 		top += 25; 
 		// LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);

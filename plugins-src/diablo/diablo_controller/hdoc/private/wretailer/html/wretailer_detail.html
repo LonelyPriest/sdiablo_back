@@ -672,11 +672,13 @@
 	</div>
 
 	<div x-ng-if="params.retailer.select_charge.rule_id===0
-		      || params.retailer.select_charge.rule_id===1" class="form-group">
+		      || params.retailer.select_charge.rule_id===1
+		      || params.retailer.select_charge.rule_id===7" class="form-group">
 	  <span class="col-md-3 col-sm-3 col-xs-3 control-label"> 赠送金额</span>
 	  <div class="col-md-8 col-sm-8 col-xs-8">
 	    <input type="text"
 		   class="form-control fg-red"
+		   x-ng-edit
 		   x-ng-model="params.sbalance" /> 
 	  </div> 
 	</div>
@@ -750,11 +752,13 @@
 	    <input type="number"
 		   step="1"
 		   name="period"
+		   required
 		   class="form-control fe-red"
-		   x-ng-model="params.period"/> 
-	  </div>
-	  <div ng-show="cForm.period.$invalid && !cForm.period.$pristine">
-	    <span class="fg-red">有效期只能是数字，0表示无限制</span> 
+		   x-ng-maxlength="2"
+		   x-ng-model="params.period"/>
+	    <div ng-show="cForm.period.$invalid && !cForm.period.$pristine">
+	      <span class="fg-red">有效期不能超过2位数</span> 
+	    </div> 
 	  </div> 
 	</div>
 
