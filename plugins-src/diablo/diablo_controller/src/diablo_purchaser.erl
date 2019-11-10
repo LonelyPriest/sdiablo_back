@@ -472,13 +472,13 @@ handle_call({new_good, Merchant, Attrs}, _Form, State) ->
     Shop        = ?v(<<"shop">>, Attrs),
     UseZero     = ?v(<<"zero_inventory">>, Attrs, ?NO),
     %% SelfBarcode = ?v(<<"self_barcode">>, Attrs, ?NO),
-    Sql = case ?v(<<"bcode">>, Attrs, []) of
-	      [] ->
+    Sql = case ?v(<<"bcode">>, Attrs, <<>>) of
+	      <<>> ->
 		  "select style_number, brand from w_inventory_good"
 		      " where style_number=" ++ "\"" ++ ?to_s(StyleNumber) ++ "\""
 		      ++ " and brand=" ++ ?to_s(BrandId)
 		      ++ " and merchant=" ++ ?to_s(Merchant) ++ ";";
-	      <<"-1">> ->
+	      ?EMPTY_DB_BARCODE ->
 		  "select style_number, brand from w_inventory_good"
 		      " where style_number=" ++ "\"" ++ ?to_s(StyleNumber) ++ "\""
 		      ++ " and brand=" ++ ?to_s(BrandId)

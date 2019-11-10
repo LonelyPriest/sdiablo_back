@@ -379,7 +379,7 @@ function purchaserInventoryNewCtrlProvide (
     var copy_select = function(add, src){
 	add.$new_good    = src.$new_good;
 	add.id           = src.id;
-	add.bcode        = src.bcode;
+	add.bcode        = src.bcode === diablo_empty_db_barcode ? undefined : src.bcode;
 	add.style_number = src.style_number;
 	add.brand        = src.brand;
 	add.brand_id     = src.brand_id;
@@ -850,6 +850,7 @@ function purchaserInventoryNewCtrlProvide (
 	    $scope.disable_refresh = false;
 	    // reset barcode
 	    $scope.good.bcode = undefined;
+	    $scope.good.sprice = $scope.yes_no[0];
 	    // $scope.stock_at_first = undefined;
 	    $scope.re_calculate();
 
@@ -1110,6 +1111,10 @@ function purchaserInventoryNewCtrlProvide (
 	}); 
     };
 
+    $scope.on_select_sprice = function($item, $model, $label) {
+	if ($model.id === 1) $scope.good.discount = 100;
+    };
+    
     $scope.reset_select_color = function() {
 	$scope.good.colors=""; 
 	$scope.selectColors = [];
@@ -1400,7 +1405,7 @@ function purchaserInventoryNewCtrlProvide (
     $scope.on_select_good_new = function(item, model, label){
 	console.log(item);
 	$scope.good.$new_good = false;
-	$scope.good.bcode = item.bcode;
+	$scope.good.bcode = item.bcode === diablo_empty_db_barcode ? undefined : item.bcode;
 	$scope.good.style_number = item.style_number;
 	$scope.good.type  = item.type;
 	$scope.good.brand = item.brand;
@@ -1821,7 +1826,7 @@ function purchaserInventoryNewCtrlProvide (
 	good.discount  = $scope.good.discount; 
 	good.ediscount = $scope.good.ediscount;
 	good.sprice    = stockUtils.get_object_id($scope.good.sprice);
-
+	
 	good.contailer = $scope.good.contailer;
 	good.alarm_a   = $scope.good.alarm_a;
 

@@ -873,6 +873,7 @@
 			       typeahead-editable="false"
 			       x-ng-model="good.sprice"
 			       x-ng-enter=""
+			       typeahead-on-select="on_select_sprice($item, $model, $label)"
 			       uib-typeahead="p as p.name for p in yes_no|filter:$viewValue"/>
 		      </div>
 		      <span class="input-group-addon bg-white fg-red">*</span> 
