@@ -1149,7 +1149,7 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 		    StartDate   = ?v(<<"stime">>, Attrs, ?INVALID_DATE),
 		    Period      = ?v(<<"period">>, Attrs, 0), 
 
-		    Sql01 = "select id, csn, retailer, ctime, edate, cid, rule from w_card"
+		    Sql01 = "select id, csn, retailer, ctime, edate, cid, rule, deleted from w_card"
 			" where merchant=" ++ ?to_s(Merchant)
 			++ " and retailer=" ++ ?to_s(Retailer)
 			++ " and cid=" ++ ?to_s(ChargeId),
@@ -1260,7 +1260,8 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 				};
 			    
 			    {ok, OCard} ->
-				EndDate = ?v(<<"edate">>, OCard, ?INVALID_DATE), 
+				EndDate = ?v(<<"edate">>, OCard, ?INVALID_DATE),
+				HasDeleted = ?v(<<"deleted">>, OCard, ?NO),
 				%% {Year, Month, Date} = ?utils:to_date(date, EndDate),
 				{Year, Month, Date} =
 				    case Rule of
@@ -1280,7 +1281,12 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 				 end, 
 				 case Rule of
 				     ?THEORETIC_CHARGE ->
-					 "update w_card set ctime=ctime+" ++ ?to_s(CTime);
+					 case HasDeleted of
+					     ?NO -> "update w_card set ctime=ctime+" ++ ?to_s(CTime);
+					     ?YES ->
+						 "update w_card set ctime=" ++ ?to_s(CTime)
+						     ++ ", deleted=" ++ ?to_s(?NO)
+					 end;
 				     ?MONTH_UNLIMIT_CHARGE ->
 					 NextMonth = date_next(?MONTH_UNLIMIT_CHARGE, {Year, Month, Date}),
 					 "update w_card set edate=\'" ++ format_date(NextMonth) ++ "\'"; 
@@ -1299,7 +1305,10 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 					      UMonth,
 					      day_of_next_month(Year + UYear, UMonth, Date)},
 					 "update w_card set "
-					     "ctime=ctime+" ++ ?to_s(CBalance + SBalance)
+					     ++ case HasDeleted of
+						    ?NO -> "ctime=ctime+";
+						    ?YES -> "ctime="
+						end ++ ?to_s(CBalance + SBalance)
 					     ++", edate=\'" ++ format_date(NextPeriod) ++ "\'"
 				 end ++ 
 				     case Rule of
