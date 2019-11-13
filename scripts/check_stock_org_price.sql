@@ -221,45 +221,48 @@ select a.id, insert(a.csn1, 3, 2, '') as csn2 from (select id, insert(csn, 1,2, 
 ) b on w.id=b.id set w.csn=b.csn2;
 
 -- clear date
-delete from w_inventory_good where merchant=45;
+delete from w_inventory_good where merchant=93;
 
-delete from w_inventory_new_detail_amount where merchant=45;
-delete from w_inventory_new_detail where merchant=45;
-delete from w_inventory_new where merchant=45;
+delete from w_inventory_new_detail_amount where merchant=93;
+delete from w_inventory_new_detail where merchant=93;
+delete from w_inventory_new where merchant=93;
 
 -- clear stock
-delete from w_inventory_amount where merchant=45;
-delete from w_inventory where merchant=45;
+delete from w_inventory_amount where merchant=93;
+delete from w_inventory where merchant=93;
 
 -- clear sale
-delete from w_sale_detail_amount where merchant=45;
-delete from w_sale_detail where merchant=45;
-delete from w_sale where merchant=45;
+delete from w_sale_detail_amount where merchant=93;
+delete from w_sale_detail where merchant=93;
+delete from w_sale where merchant=93;
 
 -- clear batch sale
-delete from batch_sale where merchant=45;
-delete from batch_sale_detail where merchant=45;
-delete from batch_sale_detail_amount where merchant=45;
-delete from batchsaler where merchant=34 and type!=45;
+delete from batch_sale where merchant=93;
+delete from batch_sale_detail where merchant=93;
+delete from batch_sale_detail_amount where merchant=93;
+delete from batchsaler where merchant=34 and type!=93;
 
 -- clear transefer
-delete from w_inventory_transfer_detail_amount where merchant=45;
-delete from w_inventory_transfer_detail where merchant=45;
-delete from w_inventory_transfer where merchant=45;
+delete from w_inventory_transfer_detail_amount where merchant=93;
+delete from w_inventory_transfer_detail where merchant=93;
+delete from w_inventory_transfer where merchant=93;
 
 
 -- report
-delete from w_daily_report where merchant=45;
-delete from w_change_shift where merchant=45;
+delete from w_daily_report where merchant=93;
+delete from w_change_shift where merchant=93;
 
 -- charge
-delete from w_charge_detail where merchant=45;
+delete from w_charge_detail where merchant=93;
 
 
 -- brands
-delete from brands where merchant=45;
-delete from inv_types where merchant=45;
+delete from brands where merchant=93;
+delete from inv_types where merchant=93;
+
+-- types
+delete from inv_types where merchant=93;
 
 -- bill
-delete from w_bill_detail where merchant=45;
+delete from w_bill_detail where merchant=93;
 

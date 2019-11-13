@@ -207,7 +207,7 @@ function wgoodTypeDetailCtrlProvide(
     var dialog = diabloUtilsService;
 
     $scope.refresh = function() {
-	wgoodApp.list_purchaser_type().then(function(types) {
+	wgoodService.list_purchaser_type().then(function(types) {
 	    $scope.goodType = types.map(function(t) {
 		return {id: t.id,
 			bcode: t.bcode,

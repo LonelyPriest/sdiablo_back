@@ -20,8 +20,10 @@ function wgoodSizeDetailCtrlProvide(
     console.log($scope.pattern);
     
     $scope.refresh = function(){
-	diabloFilter.get_size_group().then(function(groups){
-	    $scope.size_group = angular.copy(groups);
+	wgoodService.list_purchaser_size().then(function(groups){
+	    $scope.size_group = groups.map(function(s) {
+		return diablo_obj_strip(s);
+	    });
 	    diablo_order($scope.size_group);
 	    // console.log($scope.size_group);
 	})
