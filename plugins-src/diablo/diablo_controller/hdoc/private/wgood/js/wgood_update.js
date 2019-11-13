@@ -24,7 +24,8 @@ function wgoodUpdateCtrlProvide(
 	discount:     diabloPattern.discount,
 	price:        diabloPattern.positive_decimal_2,
 	expire:       diabloPattern.expire_date,
-	percent:      diabloPattern.percent};
+	percent:      diabloPattern.percent,
+	barcode:      diabloPattern.number};
 
     $scope.shops      = user.sortShops;
     $scope.promotions = filterPromotion;
@@ -135,9 +136,8 @@ function wgoodUpdateCtrlProvide(
 	$scope.good.type      = diablo_get_object(good.type_id, $scope.types);
 	$scope.good.firm      = diablo_get_object(good.firm_id, $scope.firms);
 	$scope.good.sex       = diablo_get_object(good.sex, $scope.sexs);
-	$scope.good.season    = diablo_get_object(good.season, $scope.seasons); 
-	$scope.good.unit      = $scope.std_units[good.unit];
-
+	$scope.good.season    = diablo_get_object(good.season, $scope.seasons);
+	$scope.good.unit      = $scope.std_units[good.unit]; 
 
 	if (good.executive_id === diablo_invalid_index) {
 	    $scope.good.executive = $scope.std_executives.length === 0 ? undefined : $scope.std_executives[0];
@@ -583,6 +583,7 @@ function wgoodUpdateCtrlProvide(
 	update_good.id           = good.id;
 	// update_good.shop         = good.shop.id;
 	update_good.style_number = good.style_number;
+	update_good.bcode        = good.bcode;
 	// update_good.brand_id     = good.brand_id;
 	update_good.brand  = typeof(good.barnd) === "object" ? good.brand.name: good.brand;
 	update_good.type  = typeof(good.type) === "object" ? good.type.name: good.type;
@@ -686,8 +687,7 @@ function wgoodUpdateCtrlProvide(
 	    diabloUtilsService.response(false, "修改货品", "修改货品资料失败：" + wgoodService.error[2099]);
 	} else {
 	    changed_good.good_id        = update_good.id;
-	    // changed_good.shop           = update_good.shop;
-	    
+	    // changed_good.shop           = update_good.shop; 
 	    changed_good.o_style_number = $scope.src_good.style_number;
 	    changed_good.o_brand        = $scope.src_good.brand_id;
 	    changed_good.o_path         = $scope.src_good.path;
@@ -695,25 +695,32 @@ function wgoodUpdateCtrlProvide(
 	    changed_good.image          = $scope.src_good.image;
 	    changed_good.shop           = $scope.good.shop.id;
 
-	    console.log(changed_good); 
-	    wgoodService.update_purchaser_good(changed_good, image).then(function(state){
-		console.log(state);
-		if (state.ecode == 0){
-		    diabloUtilsService.response_with_callback(
-			true, "修改货品", "修改货品资料成功！！", $scope,
-			function(){
-			    // reset cache, refresh
-			    diabloFilter.reset_firm();
-			    diabloFilter.reset_brand();
-			    diabloFilter.reset_type();
-			    $scope.go_back();
-			});
-		} else{
+	    console.log(changed_good);
+	    if (changed_good.bcode && changed_good.bcode !== diablo_empty_barcode
+		&& changed_good.bcode !== diablo_empty_db_barcode
+		&& changed_good.bcode.length !== diablo_std_barcode_length) {
 		    diabloUtilsService.response(
-			false,
-			"修改货品", "修改货品资料失败：" + wgoodService.error[state.ecode]);
-		}
-	    });
+			false, "修改货品", "修改货品资料失败：" + wgoodService.error[2073]);
+	    } else {
+		wgoodService.update_purchaser_good(changed_good, image).then(function(state){
+		    console.log(state);
+		    if (state.ecode == 0){
+			diabloUtilsService.response_with_callback(
+			    true, "修改货品", "修改货品资料成功！！", $scope,
+			    function(){
+				// reset cache, refresh
+				diabloFilter.reset_firm();
+				diabloFilter.reset_brand();
+				diabloFilter.reset_type();
+				$scope.go_back();
+			    });
+		    } else{
+			diabloUtilsService.response(
+			    false,
+			    "修改货品", "修改货品资料失败：" + wgoodService.error[state.ecode]);
+		    }
+		});
+	    } 
 	}
     };
 

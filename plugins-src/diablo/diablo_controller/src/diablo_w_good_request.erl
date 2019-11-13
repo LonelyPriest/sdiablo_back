@@ -370,6 +370,8 @@ action(Session, Req, {"update_w_good"}, Payload) ->
 		       undefined -> OFirm;
 		       _Firm     -> _Firm
 		   end,
+    
+    Barcode      = ?v(<<"bcode">>, Good),
 
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
     AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSetting, ?YES)),
@@ -394,27 +396,27 @@ action(Session, Req, {"update_w_good"}, Payload) ->
     	end, 
     
     try
-	TypeId = case ?v(<<"type">>, Good) of
-		     undefined -> undefined;
-		     Type ->
-			 
-			 %% {ok, TId} = ?attr:type(new, Merchant, Type),
-			 %% TId, 
-			 {ok, TId} =
-			     case ?attr:type(new, Merchant, [{<<"name">>, Type},
-							     {<<"auto_barcode">>, AutoBarcode}]) of
-				 {ok, _TypeId} -> {ok, _TypeId};
-				 {ok_exist, _TypeId} -> {ok, _TypeId};
-				 _Error -> _Error 
-			     end,
-			 TId
-		 end,
-
-	
+	%% check barcode
+	{ok, []} = check_params(barcode, Merchant, Barcode),
+	TypeId =
+	    case ?v(<<"type">>, Good) of
+		undefined -> undefined;
+		Type -> 
+		    %% {ok, TId} = ?attr:type(new, Merchant, Type),
+		    %% TId, 
+		    {ok, TId} =
+			case ?attr:type(new, Merchant, [{<<"name">>, Type},
+							{<<"auto_barcode">>, AutoBarcode}]) of
+			    {ok, _TypeId} -> {ok, _TypeId};
+			    {ok_exist, _TypeId} -> {ok, _TypeId};
+			    _Error -> _Error
+			end,
+		    TId
+	    end, 
 
 	BrandId = UpdateOrNewBrand(?v(<<"brand">>, Good)), 
 	OldPath = image(path, Merchant, OStyleNumber, OBrandId),
-	
+
 	NewPath= case {StyleNumber, BrandId} of
 		     {undefined, undefined}      ->
 			 OldPath;
@@ -424,7 +426,7 @@ action(Session, Req, {"update_w_good"}, Payload) ->
 			 image(path, Merchant, OStyleNumber, BrandId);
 		     {StyleNumber, BrandId}      ->
 			 image(path, Merchant, StyleNumber, BrandId)
-	    end,
+		 end,
 
 	?DEBUG("NewPath ~p, OldPath ~p", [NewPath, OldPath]), 
 	ImagePath =
@@ -447,16 +449,16 @@ action(Session, Req, {"update_w_good"}, Payload) ->
 		ImageData ->
 		    ?DEBUG("image, replace data and path ~p", [NewPath]), 
 		    case NewPath =:= OldPath of 
-		    	true ->
-		    	    ok = mk_image_dir(OldPath, Merchant), 
-		    	    ok = file:write_file(OldPath, base64:decode(ImageData));
-		    	false ->
-		    	    ok = file:delete(OldPath),
-		    	    ok = mk_image_dir(NewPath, Merchant), 
-		    	    ok = file:write_file(NewPath, base64:decode(ImageData))
+			true ->
+			    ok = mk_image_dir(OldPath, Merchant), 
+			    ok = file:write_file(OldPath, base64:decode(ImageData));
+			false ->
+			    ok = file:delete(OldPath),
+			    ok = mk_image_dir(NewPath, Merchant), 
+			    ok = file:write_file(NewPath, base64:decode(ImageData))
 		    end, 
 		    filename:join(["image", ?to_s(Merchant), filename:basename(NewPath)])
-	    end,
+	    end, 
 
 	case ?w_inventory:purchaser_good(
 		update, Merchant,
@@ -468,8 +470,8 @@ action(Session, Req, {"update_w_good"}, Payload) ->
 		   200, Req, ?succ(update_purchaser_good, GoodId));
 	    {error, Error} ->
 		?utils:respond(200, Req, Error)
-	end
-    catch
+	end	   
+    catch 
 	_:{badmatch, {error, {_, _}=FError}} ->
 	    ?WARN("failed to update good: Error ~p", [FError]),
 	    ?utils:respond(200, Req, FError);
@@ -725,3 +727,13 @@ mk_image_dir(Path, Merchant) ->
 	    ok = file:make_dir(image(dir, Merchant)),
 	    ok
     end.
+
+check_params(barcode, Merchant, Barcode) ->
+    case ?w_inventory:purchaser_good(get_by_barcode, Merchant, Barcode) of
+	{ok, []} -> {ok, []};
+	{ok, _Any} ->
+	    {error, ?err(good_barcode_exist, Barcode)};
+	_Error ->
+	    {error, _Error}
+    end.
+	    

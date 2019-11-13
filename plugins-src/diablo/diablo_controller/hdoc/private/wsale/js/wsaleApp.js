@@ -210,7 +210,11 @@ function wsaleConfg(angular){
 	this.wsale_mode = [{title: "款号模式"}, {title: "图片模式"}, {title: "条码模式"}]; 
 	this.check_state = [{name:"未审核", id:0},	{name:"已审核", id:1}];
 	this.check_comment = [{name:"不为空", id:0}];
-	this.export_type = {trans:0, trans_note:1}; 
+	this.export_type = {trans:0, trans_note:1};
+	this.pay_type = [{name:"微信", id:0}, {name:"支付宝", id:1}];
+	this.pay_state = [{name:"支付成功", id:0},
+			  {name:"支付失败", id:1},
+			  {name:"支付中",   id:2}];
 	
 
 	this.vpays = [0, 1, 2, 3, -1, -2, -3];

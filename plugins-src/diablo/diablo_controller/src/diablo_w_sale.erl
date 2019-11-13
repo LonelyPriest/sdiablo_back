@@ -308,7 +308,8 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 				       ?CUSTOM_TICKET -> 
 					   ["update w_ticket_custom set "
 					    "sale_rsn=\'" ++ ?to_s(SaleSn) ++ "\'"
-					    ", state=" ++ ?to_s(?TICKET_STATE_CONSUMED)
+					    ", state=" ++ ?to_s(?TICKET_STATE_CONSUMED) 
+					    ++ ", ctime=\'" ++ ?to_s(DateTime) ++ "\'"
 					    ++ ", retailer=" ++ ?to_s(Retailer)
 					    ++ ", shop=" ++ ?to_s(Shop)
 					    ++ " where merchant=" ++ ?to_s(Merchant)
@@ -1067,7 +1068,8 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 			    ?CUSTOM_TICKET ->
 				["update w_ticket_custom set sale_rsn=\'-1\'"
 				 ++ ", state=" ++ ?to_s(?TICKET_STATE_CHECKED)
-				 ++ ", shop=" ++ ?to_s(?INVALID_OR_EMPTY) 
+				 ++ ", shop=" ++ ?to_s(?INVALID_OR_EMPTY)
+				 ++ ", ctime=\'" ++ ?to_s(?TICKET_DATE_UNLIMIT) ++ "\'"
 				 ++ " where merchant=" ++ ?to_s(Merchant)
 				 ++ " and retailer=" ++ ?to_s(Retailer)
 				 ++ C0];
@@ -1539,19 +1541,22 @@ handle_call({check_pay_scan, Merchant, Shop, {PayType, PayState, PayOrderNo, Bal
 
 handle_call({total_pay_scan, Merchant, Conditions}, _From, State) ->
     ?DEBUG("total_pay_scan: merchant ~p, conditions ~p", [Merchant, Conditions]),
-    {StartTime, EndTime, UseConditions} = ?sql_utils:cut(fields_no_prifix, Conditions), 
+    {StartTime, EndTime, UseConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
+    SortConditions = filter_condition(pay_scan, UseConditions, []),
+    ?DEBUG("SortConditions ~p", SortConditions),
     Sql = "select count(*) as total"
 	", SUM(balance) as t_balance"
 	" from w_pay"
 	" where merchant=" ++ ?to_s(Merchant)
-	++ ?sql_utils:condition(proplists, UseConditions)
+	++ ?sql_utils:condition(proplists, SortConditions)
 	++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime),
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
 handle_call({filter_pay_scan, Merchant, CurrentPage, ItemsPerPage, Conditions}, _From, State) ->
     ?DEBUG("filter_pay_scan: merchant ~p, conditions ~p", [Merchant, Conditions]),
-    {StartTime, EndTime, UseConditions} = ?sql_utils:cut(fields_no_prifix, Conditions), 
+    {StartTime, EndTime, UseConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
+    SortConditions = filter_condition(pay_scan, UseConditions, []),
     Sql = "select id"
 	", sn"
 	", type"
@@ -1562,7 +1567,7 @@ handle_call({filter_pay_scan, Merchant, CurrentPage, ItemsPerPage, Conditions}, 
 	", entry_date"
 	" from w_pay"
 	" where merchant=" ++ ?to_s(Merchant)
-	++ ?sql_utils:condition(proplists, UseConditions)
+	++ ?sql_utils:condition(proplists, SortConditions)
 	++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime)
 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
     Reply = ?sql_utils:execute(read, Sql),
@@ -2367,6 +2372,17 @@ filter_condition(wsale, [{<<"sell_type">>, ST}|T], Acc1, Acc2) ->
     filter_condition(wsale, T, Acc1, [{<<"type">>, ST}|Acc2]);
 filter_condition(wsale, [O|T], Acc1, Acc2) ->
     filter_condition(wsale, T, Acc1, [O|Acc2]).
+
+filter_condition(pay_scan, [], Acc) ->
+    Acc;
+filter_condition(pay_scan, [{<<"pay_type">>, PT}|T], Acc) ->
+    filter_condition(pay_scan, T, [{<<"type">>, PT}|Acc]);
+filter_condition(pay_scan, [{<<"pay_state">>, ST}|T], Acc) ->
+    filter_condition(pay_scan, T, [{<<"state">>, ST}|Acc]);
+filter_condition(pay_scan, [H|T], Acc) ->
+    filter_condition(pay_scan, T, [H|Acc]).
+
+								  
 
 retailer(balance, Retailer) ->
     case ?v(<<"balance">>, Retailer) of

@@ -1179,6 +1179,13 @@ function wretailerCustomTicketDetailCtrlProvide(
 	total_items: 0,
 	default_page: 1,
 	current_page: $scope.default_page};
+
+    // ticket by consume tike
+    $scope.cticket = {
+	tickets: [],
+	total_items: 0,
+	default_page: 1,
+	current_page: $scope.default_page};
     
     $scope.filters = []; 
     diabloFilter.reset_field();
@@ -1202,6 +1209,7 @@ function wretailerCustomTicketDetailCtrlProvide(
 	    var mode;
 	    if ($scope.tab_active.mtime) mode = 0;
 	    else if ($scope.tab_active.etime) mode = 1;
+	    else if ($scope.tab_active.ctime) mode = 2;
 	    else mode = 0;
 	    
 	    wretailerService.filter_custom_ticket_detail(
@@ -1216,7 +1224,10 @@ function wretailerCustomTicketDetailCtrlProvide(
 			} else if ($scope.tab_active.etime) {
 			    $scope.eticket.total_items = result.total;
 			    $scope.eticket.total_balance = result.balance;
-			} 
+			} else if ($scope.tab_active.ctime) {
+			    $scope.cticket.total_items = result.total;
+			    $scope.cticket.total_balance = result.balance;
+			}
 		    }
 
 		    angular.forEach(result.data, function(t){
@@ -1233,8 +1244,12 @@ function wretailerCustomTicketDetailCtrlProvide(
 
 		    } else if ($scope.tab_active.etime) {
 			$scope.eticket.tickets = result.data;
-			$scope.eticket.current_page = page; 
-		    }
+			$scope.eticket.current_page = page;
+			
+		    } else if ($scope.tab_active.ctime) {
+			$scope.cticket.tickets = result.data;
+			$scope.cticket.current_page = page; 
+		    } 
 		} 
 	    })
 	})

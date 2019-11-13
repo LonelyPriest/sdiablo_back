@@ -142,6 +142,22 @@
 	    </form>
 	  </span>
 
+	  <span x-ng-switch-when="pay_state">
+	    <select type="text" class="form-control"
+		    x-ng-model="f.value"
+	  	    x-ng-options="ps as ps.name for ps in prompt.pay_state"
+		    x-ng-init="f.value=f.value ? f.value : prompt.pay_state[0]">
+	    </select> 
+	  </span>
+
+	  <span x-ng-switch-when="pay_type">
+	    <select type="text" class="form-control"
+		    x-ng-model="f.value"
+	  	    x-ng-options="pt as pt.name for pt in prompt.pay_type"
+		    x-ng-init="f.value=f.value ? f.value : prompt.pay_type[0]">
+	    </select> 
+	  </span>
+
 	  <span x-ng-switch-when="color">
 	    <input type="text" class="form-control" placeholder="请输入颜色"
 		   x-ng-model="f.value"

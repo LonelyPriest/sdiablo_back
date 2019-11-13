@@ -2375,7 +2375,15 @@ handle_call({total_custom_ticket_detail, Mode, Merchant, Conditions}, _From, Sta
 			       [] -> [];
 			       T2 -> " and " ++ T2
 			   end;
-	       1 -> ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime) 
+	       1 -> ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime) ;
+	       2 ->
+		   case ?sql_utils:time_condition(StartTime, <<"ctime">>, ge) of
+		       [] -> [];
+		       T1 -> " and " ++ T1
+		   end ++ case ?sql_utils:time_condition(EndTime, <<"ctime">>, less) of
+			      [] -> [];
+			      T2 -> " and " ++ T2
+			  end 
 	   end,
 
     Reply = ?sql_utils:execute(s_read, Sql),
@@ -2394,6 +2402,7 @@ handle_call({filter_custom_ticket_detail, Mode, Merchant, Conditions, CurrentPag
 	", a.retailer as retailer_id" 
 	", a.state"
 	", a.mtime"
+	", a.ctime"
 	", a.stime"
 	", a.etime"
 	", a.in_shop as p_shop_id"
@@ -2421,7 +2430,15 @@ handle_call({filter_custom_ticket_detail, Mode, Merchant, Conditions, CurrentPag
 			       T2 -> " and " ++ T2
 			   end;
 	       1 ->
-		   ?sql_utils:fix_condition(time, time_with_prfix, StartTime, EndTime)
+		   ?sql_utils:fix_condition(time, time_with_prfix, StartTime, EndTime);
+	       2 ->
+		   case ?sql_utils:time_condition(StartTime, <<"ctime">>, ge) of
+		       [] -> [];
+		       T1 -> " and " ++ T1
+		   end ++ case ?sql_utils:time_condition(EndTime, <<"ctime">>, less) of
+			      [] -> [];
+			      T2 -> " and " ++ T2
+			  end
 	   end
 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
     Reply =  ?sql_utils:execute(read, Sql),

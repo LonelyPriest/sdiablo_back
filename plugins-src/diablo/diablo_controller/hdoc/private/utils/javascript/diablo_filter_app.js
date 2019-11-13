@@ -374,6 +374,12 @@ function filterProvider(){
 		} else if (name === 'score') {
 		    _filter.fields.push({name:"score", chinese:"积分方案"});
 		    _prompt.score = promptValues;
+		} else if (name === 'pay_type') {
+		    _filter.fields.push({name:"pay_type", chinese:"支付方式"});
+		    _prompt.pay_type = promptValues;
+		} else if (name === 'pay_state') {
+		    _filter.fields.push({name:"pay_state", chinese:"支付状态"});
+		    _prompt.pay_state = promptValues;
 		}
 		
 		return _filter;

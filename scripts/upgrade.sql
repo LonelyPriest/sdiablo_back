@@ -668,6 +668,13 @@ on a.id=b.id set a.mtime=b.stime;
 
 alter table print_template modify column label varchar(32) default '' after name;
 
+--2019-11-13
+alter table w_ticket_custom add column ctime DATETIME not null default 0 after stime;
+
+update w_ticket_custom a inner join \
+(select rsn, entry_date from w_sale where merchant=4) b \
+on a.sale_rsn = b.rsn set a.ctime=b.entry_date;
+
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;
 

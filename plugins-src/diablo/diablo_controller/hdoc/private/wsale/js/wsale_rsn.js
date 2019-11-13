@@ -770,8 +770,13 @@ function payScanCtrlProvide (
 
     $scope.filters = [];
     diabloFilter.reset_field();
+    diabloFilter.add_field("pay_state", wsaleService.pay_state);
+    diabloFilter.add_field("pay_type", wsaleService.pay_type);
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
+
+    console.log($scope.filter);
+    console.log($scope.prompt);
 
     // pagination
     $scope.total_items   = 0;

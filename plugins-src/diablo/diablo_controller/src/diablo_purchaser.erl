@@ -509,6 +509,7 @@ handle_call({new_good, Merchant, Attrs}, _Form, State) ->
 handle_call({update_good, Merchant, Attrs}, _Form, State) ->
     ?DEBUG("update_good with merchant ~p~nattrs~n~p", [Merchant, Attrs]),
     GoodId         = ?v(<<"good_id">>, Attrs),
+    Barcode        = ?v(<<"bcode">>, Attrs),
     Shop           = ?v(<<"shop">>, Attrs),
 
     OrgStyleNumber = ?v(<<"o_style_number">>, Attrs),
@@ -574,7 +575,8 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
     UpdateCategory = ?utils:v(level, integer, Level)
 	++ ?utils:v(executive, integer, StdExecutive)
 	++ ?utils:v(category, integer, SafetyCategory)
-	++ ?utils:v(fabric, string, Fabric),
+	++ ?utils:v(fabric, string, Fabric)
+	++ ?utils:v(bcode, string, Barcode), 
     
     %% UpdateAlarm = ?utils:v(alarm_day, integer, AlarmDay),
 
@@ -933,9 +935,17 @@ handle_call({lookup_good, Merchant, GoodId}, _Form, State) ->
 
 handle_call({good_get_by_barcode, Merchant, Barcode}, _Form, State) ->
     ?DEBUG("good_get_by_barcode with merchant ~p, Barcode ~p", [Merchant, Barcode]),
-    Sql = ?w_good_sql:good(detail, Merchant, [{<<"bcode">>, Barcode}]),
-    Reply =  ?sql_utils:execute(s_read, Sql),
-    {reply, Reply, State};
+    case Barcode =:= undefined
+	orelse Barcode =:= []
+	orelse Barcode =:= <<>>
+	orelse Barcode =:= ?EMPTY_DB_BARCODE
+	orelse Barcode =:= <<"0">> of
+	true -> {reply, {ok, []}, State};
+	false ->
+	    Sql = ?w_good_sql:good(detail, Merchant, [{<<"bcode">>, Barcode}]),
+	    Reply =  ?sql_utils:execute(s_read, Sql),
+	    {reply, Reply, State}
+    end;
     
 handle_call({lookup_good, Merchant, StyleNumber, Brand}, _Form, State) ->
     ?DEBUG("lookup_good with merchant ~p, StyleNumber ~p, Brand ~p",
