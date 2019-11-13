@@ -130,6 +130,7 @@ function wretailerDetailCtrlProvide(
     diabloFilter.add_field("region", $scope.regions);
     diabloFilter.add_field("shop", user.sortShops);
     diabloFilter.add_field("level", $scope.retailer_levels);
+    diabloFilter.add_field("mscore",[]);
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
     

@@ -426,6 +426,17 @@
 	    </form>
 	  </span>
 
+	  <span x-ng-switch-when="mscore">
+	    <form name="sForm">
+	      <div ng-class="{'has-error':sForm.$invalid && !sForm.$pristine}">
+		<input type="number" step="1"
+		       disable-key
+		       class="form-control" placeholder="请输入累计积分"
+		       x-ng-model="f.value" />
+	      </div>
+	    </form>
+	  </span>
+
 	  <span x-ng-switch-when="firm">
 	    <input type="text" class="form-control" placeholder="请输入厂商名"
 		   x-ng-model="f.value"

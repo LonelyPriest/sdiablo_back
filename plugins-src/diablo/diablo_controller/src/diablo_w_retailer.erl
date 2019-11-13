@@ -2013,7 +2013,12 @@ handle_call({total_retailer, Merchant, Conditions}, _From, State) ->
 
     Month = ?v(<<"month">>, Conditions, []),
     Date  = ?v(<<"date">>, Conditions, []),
-    SortConditions = lists:keydelete(<<"month">>, 1, lists:keydelete(<<"date">>, 1, NewConditions)),
+    MScore = ?v(<<"mscore">>, Conditions, []),
+    SortConditions = lists:keydelete(
+		       <<"mscore">>, 1,
+		       lists:keydelete(
+			 <<"month">>, 1,
+			 lists:keydelete(<<"date">>, 1, NewConditions))),
 
     Sql = "select count(*) as total"
 	", sum(balance) as balance"
@@ -2029,6 +2034,11 @@ handle_call({total_retailer, Merchant, Conditions}, _From, State) ->
 		   " and dayofmonth(birth)=" ++ ?to_s(Date);
 	       {Month, Date} ->
 		   " and month(birth)=" ++ ?to_s(Month) ++ " and dayofmonth(birth)=" ++ ?to_s(Date)
+	   end
+	++ case MScore of
+	       [] -> [];
+	       _ ->
+		   " and score>=" ++ ?to_s(MScore)
 	   end
 	++ ?sql_utils:condition(proplists, SortConditions),
 
@@ -2084,9 +2094,14 @@ handle_call({{filter_retailer, Order, Sort},
 	   [Order, Sort, Merchant, Conditions, CurrentPage]),
     {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
     Month = ?v(<<"month">>, Conditions, []),
-    Date  = ?v(<<"date">>, Conditions, []),    
-    SortConditions = lists:keydelete(<<"a.month">>, 1, lists:keydelete(<<"a.date">>, 1, NewConditions)),
-
+    Date  = ?v(<<"date">>, Conditions, []),
+    MScore = ?v(<<"mscore">>, Conditions, []),
+    SortConditions = lists:keydelete(
+		       <<"a.mscore">>, 1,
+		       lists:keydelete(
+			 <<"a.month">>, 1,
+			 lists:keydelete(
+			   <<"a.date">>, 1, NewConditions))), 
     
     Sql = "select a.id"
 	", a.merchant" 
@@ -2125,7 +2140,12 @@ handle_call({{filter_retailer, Order, Sort},
 		   " and month(a.birth)=" ++ ?to_s(Month) ++ " and dayofmonth(a.birth)=" ++ ?to_s(Date)
 	   end 
 	++ ?sql_utils:condition(proplists, SortConditions)
-    %% ++ " and a.deleted=" ++ ?to_s(?NO) 
+	++ case MScore of
+	       [] -> [];
+	       _ ->
+		   " and a.score>=" ++ ?to_s(MScore)
+	   end 
+    %% ++ " and a.deleted=" ++ ?to_s(?NO)
 	++ ?sql_utils:condition(page_desc, {Order, Sort}, CurrentPage, ItemsPerPage),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
@@ -3177,4 +3197,3 @@ ticket_condition(custome, [{<<"ticket_batch">>, State}|T], Acc) ->
     ticket_condition(custome, T, [{<<"batch">>, State}|Acc]);
 ticket_condition(custome, [H|T], Acc) ->
     ticket_condition(custome, T, [H|Acc]).
-

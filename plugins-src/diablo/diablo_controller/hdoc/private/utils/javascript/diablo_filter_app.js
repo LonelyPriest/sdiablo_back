@@ -344,7 +344,10 @@ function filterProvider(){
 		} else if (name === 'mconsume'){
 		    _filter.fields.push({name:"mconsume", chinese:"消费大于"});
 		    _prompt.mconsume = promptValues;
-		} else if (name === 'account'){
+		} else if (name ==='mscore') {
+		    _filter.fields.push({name:"mscore", chinese:"积分大于"});
+		    _prompt.mscore = promptValues;
+		}else if (name === 'account'){
 		    _filter.fields.push({name:"account", chinese:"收银员"});
 		    _prompt.account = promptValues;
 		} else if (name === 'level'){
