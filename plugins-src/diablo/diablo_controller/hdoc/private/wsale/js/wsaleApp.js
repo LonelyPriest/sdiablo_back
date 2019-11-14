@@ -2757,42 +2757,45 @@ function wsaleNewProvide(
 
     var cs_stock_not_enought = function(stock) {
 	var not_enought = false;
-	var existStocks = [];
-	for(var i=0, l=$scope.inventories.length; i<l; i++){
-	    var s = $scope.inventories[i];
-	    if (stock.style_number === s.style_number && stock.brand_id === s.brand_id){
-		existStocks.push(s); 
+	if (stock.total < stock.sell) {
+	    not_enought = true; 
+	} else {
+	    var existStocks = [];
+	    for(var i=0, l=$scope.inventories.length; i<l; i++){
+		var s = $scope.inventories[i];
+		if (stock.style_number === s.style_number && stock.brand_id === s.brand_id){
+		    existStocks.push(s); 
+		}
 	    }
-	}
-
-	
-	var willAmounts = stock.amounts.filter(function(a) {
-	    return wsaleUtils.to_integer(a.sell_count) > 0;
-	}).map(function(m) {
-	    return {cid:m.cid, size:m.size, sell_count:m.sell_count, count:m.count}
-	});
-	
-	angular.forEach(existStocks, function(e) {
-	    var existAmounts = e.amounts;
-	    for (var j=0, k=willAmounts.length; j<k; j++) {
-		for (var m=0, n=existAmounts.length; m<n; m++) {
-		    if (existAmounts[m].sell_count > 0) {
-			if (existAmounts[m].cid === willAmounts[j].cid
-			    && existAmounts[m].size === willAmounts[j].size) {
-			    willAmounts[j].sell_count += existAmounts[m].sell_count;
-			    if (willAmounts[j].sell_count > willAmounts[j].count) {
-				not_enought = true;
-				break;
+	    
+	    var willAmounts = stock.amounts.filter(function(a) {
+		return wsaleUtils.to_integer(a.sell_count) > 0;
+	    }).map(function(m) {
+		return {cid:m.cid, size:m.size, sell_count:m.sell_count, count:m.count}
+	    });
+	    // console.log(willAmounts); 
+	    
+	    angular.forEach(existStocks, function(e) {
+		var existAmounts = e.amounts;
+		for (var j=0, k=willAmounts.length; j<k; j++) {
+		    for (var m=0, n=existAmounts.length; m<n; m++) {
+			if (existAmounts[m].sell_count > 0) {
+			    if (existAmounts[m].cid === willAmounts[j].cid
+				&& existAmounts[m].size === willAmounts[j].size) {
+				willAmounts[j].sell_count += existAmounts[m].sell_count;
+				if (willAmounts[j].sell_count > willAmounts[j].count) {
+				    not_enought = true;
+				    break;
+				}
 			    }
+			    
 			}
 			
 		    }
-		    
 		}
-	    }
-	});
-
-	// console.log(willAmounts);
+	    });
+	}
+	
 	return not_enought;
     };
     
