@@ -350,7 +350,7 @@
 	      </div>
 	    </div> 
 	    
-	    <div x-ng-if="!setting.hide_color && setting.hide_barcode" class="form-group">
+	    <div x-ng-if="!setting.hide_color && good.free!==0" class="form-group">
 	      <label class="col-sm-3 col-md-3 control-label">颜色</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">
@@ -373,7 +373,7 @@
 	      </div>
 	    </div>
 	    
-	    <div x-ng-if="!setting.hide_size && setting.hide_barcode" class="form-group">
+	    <div x-ng-if="!setting.hide_size && good.free!==0" class="form-group">
 	      <label class="col-sm-3 col-md-3 control-label">尺码</label>
 	      <div class="col-sm-6 col-md-6"> 
 		<div class="input-group">

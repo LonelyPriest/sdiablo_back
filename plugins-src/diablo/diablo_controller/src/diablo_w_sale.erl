@@ -404,6 +404,7 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
     Score        = ?v(<<"score">>, Props, 0),
 
     RSNId        = ?v(<<"id">>, OldProps),
+    TicketCustom = ?v(<<"tcustom">>, OldProps),
     OldEmployee  = ?v(<<"employ_id">>, OldProps),
     OldRetailer  = ?v(<<"retailer_id">>, OldProps),
     OldShouldPay = ?v(<<"should_pay">>, OldProps),
@@ -419,7 +420,7 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
     
     %% OldComment   = ?v(<<"comment">>, OldProps),
     OldTotal     = ?v(<<"total">>, OldProps),
-    SellType     = ?v(<<"type">>, OldProps),
+    SellType     = ?v(<<"type">>, OldProps), 
 
     MShouldPay   = ShouldPay - OldShouldPay,
     MScore       = Score - OldScore,
@@ -443,7 +444,7 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 		      false -> ?utils:correct_datetime(datetime, Datetime)
 		  end,
     
-    Sql1 = sql(update_wsale, RSN, Merchant, RealyShop, NewDatetime, OldDatetime, Inventories),
+    Sql1 = sql(update_wsale, RSN, Merchant, RealyShop, NewDatetime, OldDatetime, Inventories), 
 
     Updates = ?utils:v(employ, string, get_modified(Employee, OldEmployee))
 	++ ?utils:v(retailer, integer, get_modified(Retailer, OldRetailer)) 
@@ -461,11 +462,27 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 
     case Retailer =:= OldRetailer of
 	true ->
-	    Sql2 = "update w_sale set " ++ ?utils:to_sqls(proplists, comma, Updates) 
-		++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'", 
+	    Sql2 =
+		["update w_sale set " ++ ?utils:to_sqls(proplists, comma, Updates) 
+		 ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"
+		 ++ " and merchant=" ++ ?to_s(Merchant)]
+		
+	    %% custome ticket syn consume time
+		++ case NewDatetime =:= OldDatetime of
+		       true -> [];
+		       false ->
+			   case TicketCustom =:= ?CUSTOM_TICKET of
+			       true ->
+				   ["update w_ticket_custom set ctime=\'"
+				    ++ ?to_s(NewDatetime) ++ "\'"
+				    ++ " where sale_rsn=\'" ++ ?to_s(RSN) ++ "\'"
+				    ++ " and merchant=" ++ ?to_s(Merchant)];
+			       false -> []
+			   end
+		   end,
 	    ?DEBUG("Sql2 ~ts", [Sql2]),
 	    
-	    AllSql = Sql1 ++ [Sql2] ++
+	    AllSql = Sql1 ++ Sql2 ++
 		case ?utils:v_0(consume, float, MShouldPay)
 		    ++ ?utils:v_0(score, integer, MScore)
 		    ++ ?utils:v_0(balance, float, Withdraw - NewWithdraw) of
@@ -558,15 +575,27 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 		end,
 	    
 	    Sql2 = 
-		"update w_sale set "
-		++ ?utils:to_sqls(
+		["update w_sale set "
+		 ++ ?utils:to_sqls(
 		      proplists, comma,
 		      ?utils:v(balance, float, NewLastBalance)
 		      ++ ?utils:v(lscore, float, NewLastScore) ++ Updates) 
 		++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"
-		++ " and merchant=" ++ ?to_s(Merchant), 
-		%% ++ " and id=" ++ ?to_s(RSNId),
+		++ " and merchant=" ++ ?to_s(Merchant)]
 
+		++ case NewDatetime =:= OldDatetime of
+		   true -> [];
+		   false ->
+		       case TicketCustom =:= ?CUSTOM_TICKET of
+			   true ->
+			       ["update w_ticket_custom set ctime=\'"
+				++ ?to_s(NewDatetime) ++ "\'"
+				++ " where sale_rsn=\'" ++ ?to_s(RSN) ++ "\'"
+				++ " and merchant=" ++ ?to_s(Merchant)];
+			   false -> []
+		       end
+		   end,
+	    
 	    BackBalanceOfOldRetailer = Withdraw,
 	    BalanceOfNewRetailer =  NewWithdraw,
 
@@ -1604,12 +1633,14 @@ sql(update_wsale, RSN, _Merchant, _Shop, NewDatetime, OldDatetime, []) ->
 	    ["update w_sale_detail set entry_date=\'"
 	     ++ ?to_s(NewDatetime) ++ "\'"
 	     ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'",
+	     
 	     "update w_sale_detail_amount set entry_date=\'"
 	     ++ ?to_s(NewDatetime) ++ "\'"
 	     ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"]
     end;
     
-sql(update_wsale, RSN, Merchant, Shop, NewDatetime, _OldDatetime, Inventories) -> 
+sql(update_wsale, RSN, Merchant, Shop, NewDatetime, _OldDatetime, Inventories) ->
+    
     lists:foldr(
       fun({struct, Inv}, Acc0)-> 
 	      Operation   = ?v(<<"operation">>, Inv), 

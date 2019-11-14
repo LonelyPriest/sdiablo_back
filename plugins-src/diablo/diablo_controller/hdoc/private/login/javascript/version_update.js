@@ -1,5 +1,10 @@
 var version_update = function(){
     var updates = [
+	{date: "2019-11-14",
+	 content:
+	 ["开单扫码优化，有颜色或尺码的货品，扫码时不再弹出选择框，系统自动选择"]
+	},
+	
 	{date: "2019-11-13",
 	 content:
 	 ["增加优惠券用券日期查询",
