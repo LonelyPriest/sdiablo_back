@@ -645,7 +645,8 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", executive"
 	", category"
 	", fabric"
-
+	", feather"
+	
 	", font"
 	", font_name"
 	", font_executive"
@@ -653,6 +654,7 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", font_price"
 	", font_size"
 	", font_fabric"
+	", font_feather"
 	", font_label"
 	", font_type"
     %% ", font_vprice"
@@ -668,6 +670,7 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", hpx_executive"
 	", hpx_category"
 	", hpx_fabric"
+	", hpx_feather"
 	", hpx_price"
 	", hpx_size"
 	", hpx_barcode"
@@ -699,6 +702,8 @@ handle_call({list_barcode_print_template, Merchant}, _From, State) ->
 	", offset_label"
 	", offset_type"
 	", offset_fabric"
+	", offset_fabric3"
+	", offset_feather"
 	
 	", barcode"
 	", w_barcode"
@@ -742,6 +747,7 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(executive, integer, ?v(<<"executive">>, Attrs))
 	++  ?utils:v(category, integer, ?v(<<"category">>, Attrs))
 	++  ?utils:v(fabric, integer, ?v(<<"fabric">>, Attrs))
+	++  ?utils:v(feather, integer, ?v(<<"feather">>, Attrs))
 
 	++  ?utils:v(font, integer, ?v(<<"font">>, Attrs))
 	++  ?utils:v(font_name, string, ?v(<<"font_name">>, Attrs))
@@ -750,6 +756,7 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(font_price, integer, ?v(<<"font_price">>, Attrs))
 	++  ?utils:v(font_size, integer, ?v(<<"font_size">>, Attrs))
 	++  ?utils:v(font_fabric, integer, ?v(<<"font_fabric">>, Attrs))
+	++  ?utils:v(font_feather, integer, ?v(<<"font_feather">>, Attrs))
 	++  ?utils:v(font_label, integer, ?v(<<"font_label">>, Attrs))
 	++  ?utils:v(font_type, integer, ?v(<<"font_type">>, Attrs))
     %% ++  ?utils:v(font_vprice, integer, ?v(<<"font_vprice">>, Attrs))
@@ -765,6 +772,7 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(hpx_executive, integer, ?v(<<"hpx_executive">>, Attrs))
 	++  ?utils:v(hpx_category, integer, ?v(<<"hpx_category">>, Attrs))
 	++  ?utils:v(hpx_fabric, integer, ?v(<<"hpx_fabric">>, Attrs))
+	++  ?utils:v(hpx_feather, integer, ?v(<<"hpx_feather">>, Attrs))
 	++  ?utils:v(hpx_price, integer, ?v(<<"hpx_price">>, Attrs))
 	++  ?utils:v(hpx_size, integer, ?v(<<"hpx_size">>, Attrs))
 	++  ?utils:v(hpx_barcode, integer, ?v(<<"hpx_barcode">>, Attrs))
@@ -796,6 +804,8 @@ handle_call({update_barcode_print_template, Merchant, Attrs}, _From, State) ->
 	++  ?utils:v(offset_label, integer, ?v(<<"offset_label">>, Attrs))
 	++  ?utils:v(offset_type, integer, ?v(<<"offset_type">>, Attrs))
 	++  ?utils:v(offset_fabric, integer, ?v(<<"offset_fabric">>, Attrs))
+	++  ?utils:v(offset_fabric3, integer, ?v(<<"offset_fabric3">>, Attrs))
+	++  ?utils:v(offset_feather, integer, ?v(<<"offset_feather">>, Attrs))
 
 	++  ?utils:v(barcode, integer, ?v(<<"barcode">>, Attrs))
 	++  ?utils:v(w_barcode, integer, ?v(<<"w_barcode">>, Attrs))
@@ -908,7 +918,8 @@ sys_config() ->
 	      %% [12]: hide discount 
 	      %% [13]: hide unit
 	      %% [14]: hide barcode
-	      {"h_stock",         "入库字段隐藏",         "0001"++"1011"++"1111"++"011", "0"}, 
+	      %% [15]: hide feather
+	      {"h_stock",         "入库字段隐藏",         "0001"++"1011"++"1111"++"0111", "0"}, 
 	      {"s_member",        "会员独立",             "0",   "0"},
 	      {"s_employee",      "营业员必选",           "0",   "0"},
 

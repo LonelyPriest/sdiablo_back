@@ -88,6 +88,7 @@
 		    <th x-ng-if="!setting.hide_executive">执行标准</th>
 		    <th x-ng-if="!setting.hide_category">安全类别</th>
 		    <th x-ng-if="!setting.hide_fabric">面料</th>
+		    <th x-ng-if="!setting.hide_feather">充绒量</th>
 		    
 		    <th x-ng-if="right.show_orgprice">进价</th>
 		    <th x-ng-if="right.show_orgprice">折扣进</th>
@@ -130,6 +131,10 @@
 		    <td x-ng-if="!setting.hide_fabric">
 		      <div x-ng-if="!g.fabric_desc" class="text-center">-</div>
 		      <div x-ng-if="g.fabric_desc">{{g.fabric_desc}}</div>
+		    </td>
+		    <td x-ng-if="!setting.hide_feather">
+		      <div x-ng-if="!g.feather_desc" class="text-center">-</div>
+		      <div x-ng-if="g.feather_desc">{{g.feather_desc}}</div>
 		    </td>
 		    
 		    <td x-ng-if="right.show_orgprice">{{g.org_price}}</td>

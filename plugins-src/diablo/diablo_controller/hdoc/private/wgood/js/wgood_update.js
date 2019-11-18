@@ -33,6 +33,7 @@ function wgoodUpdateCtrlProvide(
     $scope.firms      = filterFirm;
     $scope.types      = filterType;
     $scope.groups     = filterSizeGroup
+    $scope.waynodes   = diablo_waynodes; 
     
     $scope.colors     = [];
     $scope.grouped_colors = [];
@@ -159,11 +160,26 @@ function wgoodUpdateCtrlProvide(
 	    angular.forEach(fabrics, function(f) {
 		var fabric = diablo_get_object(f.f, filterFabric);
 		if (angular.isDefined(fabric) && angular.isObject(fabric)) {
-		    $scope.good.fabrics.push({fabric:fabric.name, percent:stockUtils.to_integer(f.p)});
+		    $scope.good.fabrics.push({
+			fabric:fabric.name,
+			way:diablo_get_object(f.w, $scope.waynodes),
+			percent:stockUtils.to_integer(f.p)});
 		    $scope.good.fabric_desc += fabric.name + ":" + f.p.toString(); 
 		} 
 	    });
-	} 
+	};
+
+	$scope.good.feathers = [];
+	$scope.good.feather_desc = diablo_empty_string;
+	if (good.feather_json) {
+	    var feathers = angular.fromJson(good.feather_json);
+	    angular.forEach(feathers, function(f) {
+		if(!diablo_is_empty(f)) {
+		    $scope.good.feathers.push({wsize:f.m, weight:f.w});
+		    $scope.good.feather_desc += f.m.toString() + ":" + f.w.toString();
+		} 
+	    });
+	}
 
 	if ($scope.good.level === diablo_invalid_index) {
 	    $scope.good.level = $scope.levels[0];
@@ -305,15 +321,69 @@ function wgoodUpdateCtrlProvide(
 	    undefined,
 	    callback,
 	    undefined,
-	    {composites:$scope.good.fabrics,
+	    {composites:function(){
+		if(angular.isDefined($scope.good.fabrics)
+		   && angular.isArray($scope.good.fabrics)
+		   && $scope.good.fabrics.length > 0) {
+		    angular.forEach($scope.good.fabrics, function(f) {
+			f.way = diablo_get_object(f.way.id, $scope.waynodes);
+		    });
+		} 
+		return $scope.good.fabrics;
+	    }(),
+	     
+	     add_composite: function(composites, waynodes) {
+		 composites.push({fabric:undefined, way:waynodes[0], percent:undefined});
+	     },
+	     
+	     delete_composite: function(composites) {
+		 composites.splice(-1, 1);
+	     },
+	     fabrics:   $scope.fabrics,
+	     waynodes:  $scope.waynodes,
+	     p_percent: $scope.pattern.percent});
+    };
+
+    $scope.select_feather = function() {
+	var callback = function(params) {
+	    console.log(params.composites);
+	    var fs = params.composites; 
+	    // check
+	    for (var i=0, l=fs.length; i<l; i++) {
+		var f = fs[i];
+		if ( stockUtils.to_float(f.wsize) === 0 || stockUtils.to_float(f.weight) === 0 ) {
+		    dialog.set_error("新增货品", 2059); 
+		    return;
+		}
+	    };
+
+	    $scope.good.feathers = fs.filter(function(f) {
+		return angular.isDefined(f)
+		    && 0 !== stockUtils.to_float(f.wsize)
+		    && 0 !== stockUtils.to_float(f.weight)
+		
+	    });
+
+	    $scope.good.feather_desc = diablo_empty_string;
+	    angular.forEach($scope.good.feathers, function(f) {
+		$scope.good.feather_desc += f.wsize.toString() + ":" + f.weight.toString();
+	    });
+
+	    // console.log($scope.good.fabric_desc);
+	};
+	
+	dialog.edit_with_modal(
+	    "select-feather.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {composites:$scope.good.feathers,
 	     add_composite: function(composites) {
-		 composites.push({fabric:undefined, percent:undefined});
+		 composites.push({wsize:undefined, weight:undefined});
 	     },
 	     delete_composite: function(composites) {
 		 composites.splice(-1, 1);
 	     },
-	     fabrics: $scope.fabrics,
-	     p_percent: $scope.pattern.percent
 	    });
     };
 
@@ -612,10 +682,25 @@ function wgoodUpdateCtrlProvide(
 	update_good.fabric_json = function() {
 	    if (angular.isArray(good.fabrics) && good.fabrics.length !== 0) {
 		var cs = good.fabrics.map(function(f){
-		    return {f:stockUtils.get_object_by_name(f.fabric, filterFabric).id, p:f.percent};
+		    return {
+			f:stockUtils.get_object_by_name(f.fabric, filterFabric).id,
+			w:f.way.id,
+			p:f.percent};
 		});
 		console.log(cs); 
 		return angular.toJson(cs);
+	    } else {
+		return undefined;
+	    }
+	}();
+
+	update_good.feather_json = function() {
+	    if (angular.isArray(good.feathers) && good.feathers.length !== 0) {
+		var fs = good.feathers.map(function(f){
+		    return {m:f.wsize, w:f.weight};
+		});
+		console.log(fs); 
+		return angular.toJson(fs);
 	    } else {
 		return undefined;
 	    }

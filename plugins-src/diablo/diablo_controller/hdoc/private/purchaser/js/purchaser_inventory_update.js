@@ -1051,9 +1051,15 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	    stock.fabrics = angular.fromJson(ext.fabric);
 	    angular.forEach(stock.fabrics, function(f) {
 		var fabric = diablo_get_object(f.f, filterFabric);
-		if (angular.isDefined(fabric) && angular.isObject(fabric))
+		if (angular.isDefined(fabric) && angular.isObject(fabric)) {
 		    f.name = fabric.name; 
+		    f.way = diablo_get_object(stockUtils.to_integer(f.w), diablo_waynodes);
+		}
 	    });
+	}
+
+	if (ext.feather) {
+	    stock.feathers = angular.fromJson(ext.feather); 
 	}
 
 	return stock;

@@ -1569,7 +1569,8 @@ create table print_template(
 
    offset_label    TINYINT default 0,
    offset_type     TINYINT default 0,
-   offset_width    TINYINT default 0,
+   offset_fabric   TINYINT default 0,
+   offset_fabric3  TINYINT default 0,
 
    barcode         TINYINT default 0,   
    w_barcode       INTEGER default 0,

@@ -18,6 +18,7 @@ function wgoodNewCtrlProvide(
     $scope.std_executives = filterStdExecutive;
     $scope.categories     = filterCategory;
     $scope.fabrics        = filterFabric;
+    $scope.waynodes       = diablo_waynodes; 
     // $scope.template       = filterTemplate.length!==0 ? filterTemplate[0] : undefined;
 
     // console.log($scope.fabrics);
@@ -80,19 +81,19 @@ function wgoodNewCtrlProvide(
     };
 
     $scope.is_same_good = false; 
-    var timeout_brand = undefined;
-    $scope.$watch("good.brand", function(newValue, oldValue){
-	if(angular.isUndefined(newValue)
-	   || angular.equals(newValue, oldValue)){
-	    return;
-	}
+    // var timeout_brand = undefined;
+    // $scope.$watch("good.brand", function(newValue, oldValue){
+    // 	if(angular.isUndefined(newValue)
+    // 	   || angular.equals(newValue, oldValue)){
+    // 	    return;
+    // 	}
 
-	$timeout.cancel(timeout_brand);
-	timeout_brand = $timeout(function(){
-	    // console.log(newValue, oldValue); 
-	    check_same_good($scope.good.style_number, newValue);
-	}, diablo_delay_300ms) 
-    });
+    // 	$timeout.cancel(timeout_brand);
+    // 	timeout_brand = $timeout(function(){
+    // 	    // console.log(newValue, oldValue); 
+    // 	    check_same_good($scope.good.style_number, newValue);
+    // 	}, diablo_delay_300ms) 
+    // });
     
     // color
     $scope.colors = [];
@@ -337,34 +338,27 @@ function wgoodNewCtrlProvide(
     };
 
     $scope.select_fabric = function() {
-	// $scope.selectFabrics = [];
-
 	var callback = function(params) {
 	    console.log(params.composites);
-	    var cs = params.composites;
-	    
+	    var cs = params.composites; 
 	    // check
 	    for (var i=0, l=cs.length; i<l; i++) {
 		var c = cs[i];
 		if ( (angular.isUndefined(c.fabric) && 0 !== stockUtils.to_float(c.percent))
 		     || (angular.isDefined(c.fabric) && 0 === stockUtils.to_float(c.percent)) ) {
-		    dialog.response(
-			false,
-			"新增货品",
-			"新增货品失败：面料输入不正确，请确保面料从下拉框中选择，面料成份不为零");
+		    dialog.set_error("新增货品", 2060);
 		    return;
 		}
 	    };
 
-	    $scope.good.fabric = cs.filter(function(c) {
+	    $scope.good.fabrics = cs.filter(function(c) {
 		return angular.isDefined(c) && 0 !== stockUtils.to_float(c.percent);
 	    });
 
 	    $scope.good.fabric_desc = diablo_empty_string;
-	    angular.forEach($scope.good.fabric, function(f) {
+	    angular.forEach($scope.good.fabrics, function(f) {
 		$scope.good.fabric_desc += f.fabric + ":" + f.percent.toString();
-	    });
-
+	    }); 
 	    // console.log($scope.good.fabric_desc);
 	};
 	
@@ -373,17 +367,71 @@ function wgoodNewCtrlProvide(
 	    undefined,
 	    callback,
 	    undefined,
-	    {composites:$scope.good.fabric,
-	     add_composite: function(composites) {
-		 composites.push({fabric:undefined, percent:undefined});
+	    {composites:function(){
+		if(angular.isDefined($scope.good.fabrics)
+		   && angular.isArray($scope.good.fabrics)
+		   && $scope.good.fabrics.length > 0) {
+		    angular.forEach($scope.good.fabrics, function(f) {
+			f.way = diablo_get_object(f.way.id, $scope.waynodes);
+		    });
+		} 
+		return $scope.good.fabrics;
+	    }(),
+	     add_composite: function(composites, waynodes) {
+		 composites.push({fabric:undefined, way:waynodes[0], percent:undefined});
 	     },
 	     delete_composite: function(composites) {
 		 composites.splice(-1, 1);
 	     },
-	     fabrics: $scope.fabrics,
+	     fabrics:   $scope.fabrics,
+	     waynodes:  $scope.waynodes,
 	     p_percent: $scope.pattern.percent
 	    });
     };
+
+    $scope.select_feather = function() {
+	var callback = function(params) {
+	    console.log(params.composites);
+	    var fs = params.composites; 
+	    // check
+	    for (var i=0, l=fs.length; i<l; i++) {
+		var f = fs[i];
+		if ( stockUtils.to_float(f.wsize) === 0 || stockUtils.to_float(f.weight) === 0 ) {
+		    dialog.set_error("新增货品", 2059); 
+		    return;
+		}
+	    };
+
+	    $scope.good.feathers = fs.filter(function(f) {
+		return angular.isDefined(f)
+		    && 0 !== stockUtils.to_float(f.wsize)
+		    && 0 !== stockUtils.to_float(f.weight)
+		
+	    });
+
+	    $scope.good.feather_desc = diablo_empty_string;
+	    angular.forEach($scope.good.feathers, function(f) {
+		$scope.good.feather_desc += f.wsize.toString() + ":" + f.weight.toString();
+	    });
+
+	    // console.log($scope.good.fabric_desc);
+	};
+	
+	dialog.edit_with_modal(
+	    "select-feather.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {composites:$scope.good.feathers,
+	     add_composite: function(composites) {
+		 composites.push({wsize:undefined, weight:undefined});
+	     },
+	     delete_composite: function(composites) {
+		 composites.splice(-1, 1);
+	     },
+	    });
+    };
+    
 
     /*
      * new good
@@ -403,7 +451,8 @@ function wgoodNewCtrlProvide(
 	level     : $scope.levels[0],
 	executive : $scope.std_executives.length!==0 ? $scope.std_executives[0] : undefined,
 	category  : $scope.categories.length!==0 ? $scope.categories[0] : undefined,
-	fabric    : [],
+	fabrics   : [],
+	feathers  : [],
 	
 	unit      : $scope.std_units[0]
     };
@@ -431,22 +480,39 @@ function wgoodNewCtrlProvide(
 	console.log($scope.good);
 	console.log($scope.image);
 	var good = angular.copy($scope.good);
+	
 	if (good.hasOwnProperty('fabric_desc')) delete good.fabric_desc;
+	if (good.hasOwnProperty('feather_desc')) delete good.feather_desc;
+	if (good.hasOwnProperty('fabrics')) delete good.fabrics;
+	if (good.hasOwnProperty('feathers')) delete good.feathers;
 	
 	good.firm      = good.firm.id;
 	good.season    = good.season.id;
 	good.sex       = good.sex.id;
 	good.unit      = $scope.std_units.indexOf(good.unit);
 	
-	good.executive = stockUtils.invalid_firm(good.executive);
-	good.category  = stockUtils.invalid_firm(good.category);
-	good.fabric    = function() {
-	    if (good.fabric.length !== 0) {
-		var cs = good.fabric.map(function(f){
-		    return {f:stockUtils.get_object_by_name(f.fabric, $scope.fabrics).id, p:f.percent};
+	good.executive   = stockUtils.invalid_firm(good.executive);
+	good.category    = stockUtils.invalid_firm(good.category);
+	good.fabric      = function() {
+	    if ($scope.good.fabrics.length !== 0) {
+		var cs = $scope.good.fabrics.map(function(f){
+		    return {
+			f:stockUtils.get_object_by_name(f.fabric, $scope.fabrics).id,
+			w:f.way.id,
+			p:f.percent};
 		});
-		console.log(cs); 
 		return angular.toJson(cs);
+	    } else {
+		return undefined;
+	    }
+	}();
+
+	good.feather    = function() {
+	    if (angular.isArray($scope.good.feathers) && $scope.good.feathers.length !== 0) {
+		var fs = $scope.good.feathers.map(function(f){
+		    return {m:f.wsize, w:f.weight};
+		});
+		return angular.toJson(fs);
 	    } else {
 		return undefined;
 	    }
@@ -581,8 +647,10 @@ function wgoodNewCtrlProvide(
 	    level:       $scope.good.level,
 	    executive:   $scope.good.executive,
 	    category:    $scope.good.category,
-	    fabric:      $scope.good.fabric,
+	    fabrics:     $scope.good.fabrics,
 	    fabric_desc: $scope.good.fabric_desc,
+	    feathers:    $scope.good.feathers,
+	    feather_desc:$scope.good.feather_desc
 	};
 	
 	$scope.goodForm.style_number.$pristine = true;
@@ -700,9 +768,21 @@ function wgoodDetailCtrlProvide(
 			    d.fabric_desc = diablo_empty_string;
 			    angular.forEach(d.fabrics, function(f) {
 				var fabric = diablo_get_object(f.f, filterFabric);
-				if (angular.isDefined(fabric) && angular.isObject(fabric))
-				    f.name = fabric.name; 
-				    d.fabric_desc += fabric.name + ":" + f.p.toString();
+				if (angular.isDefined(fabric) && angular.isObject(fabric)) {
+				    f.name = fabric.name;
+				    f.way  = diablo_get_object(
+					stockUtils.to_integer(f.w), $scope.waynodes);
+				    d.fabric_desc += fabric.name + ":" + f.p.toString(); 
+				} 
+			    });
+			}
+
+			if (d.feather_json) {
+			    d.feathers = angular.fromJson(d.feather_json);
+			    d.feather_desc = diablo_empty_string;
+			    angular.forEach(d.feathers, function(f) {
+				if(!diablo_is_empty(f))
+				    d.feather_desc += f.m.toString() + ":" + f.w.toString();
 			    });
 			}
 

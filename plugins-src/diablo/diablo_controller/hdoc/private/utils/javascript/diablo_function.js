@@ -334,6 +334,14 @@ var diablo_obj_strip = function(obj){
     return obj;
 };
 
+var diablo_waynodes = [
+    {name: "面料",   id:0},
+    {name: "里料",   id:1},
+    {name: "胆料",   id:2},
+    {name: "辅料",   id:3},
+    {name: "填充物", id:4},
+];
+
 var diablo_retailer_levels = [{id:0, level:0, name:"普通级"},
 			      {id:1, level:1, name:"贵宾级"},
 			      {id:2, level:2, name:"银卡级"},
@@ -363,14 +371,16 @@ var diablo_season2objects = [
 ];
 
 var diablo_sex2object = [
-    {name:"女", id:0},
-    {name:"男", id:1},
-    {name:"童", id:2},
-    {name:"鞋", id:3},
-    {name:"配", id:4}
+    {name:"女",   id:0},
+    {name:"男",   id:1},
+    {name:"童",   id:2},
+    {name:"鞋",   id:3},
+    {name:"配",   id:4},
+    {name:"食品", id:5},
+    {name:"用品", id:6},
 ];
 
-var diablo_sex = ["女", "男", "童", "鞋", "配"];
+var diablo_sex = ["女", "男", "童", "鞋", "配", "食品", "用品"];
 
 var diablo_sizegroup = ["si", "sii", "siii", "siv", "sv", "svi", "svii"];
 

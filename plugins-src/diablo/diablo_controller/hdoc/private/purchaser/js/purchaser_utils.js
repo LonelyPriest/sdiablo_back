@@ -96,7 +96,8 @@ var stockUtils = function(){
 		hide_sprice:    default_hide(hide.charAt(11)),
 		hide_discount:  default_hide(hide.charAt(12)),
 		hide_unit:      default_hide(hide.charAt(13)),
-		hide_barcode:   default_hide(hide.charAt(14))
+		hide_barcode:   default_hide(hide.charAt(14)),
+		hide_feather:   default_hide(hide.charAt(15))
 	    }
 	    
 	},
@@ -898,7 +899,7 @@ stockPrintU.prototype.setCodeFirm = function(code) {
 stockPrintU.prototype.start_print = function(
     line, top, left, width, hpx, fontSize, printSecond, printThird, startSecond, startThird) {
     if (angular.isDefined(line) && diablo_trim(line)) {
-	this.LODOP.ADD_PRINT_TEXT(top, left, width, hpx, line); 
+	this.LODOP.ADD_PRINT_TEXT(top, left, width, hpx === 0 ? this.template.hpx_each : hpx, line); 
 	var size = stockUtils.to_integer(fontSize);
 	if (size !== 0)
 	    this.LODOP.SET_PRINT_STYLEA(0, "FontSize", size);
@@ -940,6 +941,10 @@ stockPrintU.prototype.to_i = function(v) {
 stockPrintU.prototype.set_print_font_size = function(font_size) {
     if (this.to_i(font_size) !== 0)
 	this.LODOP.SET_PRINT_STYLEA(0, "FontSize", this.to_i(font_size)); 
+};
+
+stockPrintU.prototype.get_non_zero_vaule = function(v1, v2) {
+    return this.to_i(v1) === 0 ? this.to_i(v2) : this.to_i(v1);
 };
 
 stockPrintU.prototype.print_type = function(type, top, left, width, printSecond, printThird, startSecond, startThird) {
@@ -1039,6 +1044,77 @@ stockPrintU.prototype.print_size = function(size, shift_date, color, top, left, 
     	    this.LODOP.ADD_PRINT_TEXT(top, left + offset_size + 40, width, hpx_size, color);
     }
     return;
+};
+
+stockPrintU.prototype.sort_waynode_by_fabric = function(fabrics) {
+    var ways = angular.copy(diablo_waynodes);
+    for (var i=0, l=ways.length; i<l; i++) {
+	ways[i].fabrics = [];
+	for (var j=0, k=fabrics.length; j<k; j++) {
+	    if (ways[i].id === stockUtils.to_integer(fabrics[j].w)) {
+		ways[i].fabrics.push(fabrics[j])
+	    }
+		
+	}
+    }
+    return ways;
+};
+
+stockPrintU.prototype.print_waynode = function(
+    waynode, top, left, width, printSecond, printThird, startSecond, startThird) {
+    var offset_fabric2 = stockUtils.to_integer(this.template.offset_fabric);
+    var offset_fabric3 = stockUtils.to_integer(this.template.offset_fabric3);
+    offset_fabric2 = offset_fabric2 === 0 ? 40 : offset_fabric2;
+    offset_fabric3 = offset_fabric3 === 0 ? 50 : offset_fabric2;
+    
+    var fabric_length = waynode.fabrics.length; 
+    if (0 !== fabric_length) {
+	var f; 
+	var name = waynode.name + ":"; 
+	this.start_print(name,
+			 top,
+			 left,
+			 width,
+			 this.template.hpx_each,
+			 0,
+			 printSecond,
+			 printThird,
+			 startSecond,
+			 startThird);
+
+	f = waynode.fabrics[0];
+	// line = f.p + "%" + f.name; 
+	this.start_print(f.p + "%" + f.name,
+			 top,
+			 left + (waynode.name.length === 2 ? offset_fabric2 : offset_fabric3),
+			 width,
+			 this.template.hpx_each,
+			 this.template.font_fabric,
+			 printSecond,
+			 printThird,
+			 startSecond,
+			 startThird);
+
+	for (var i=1, l=fabric_length; i<l; i++) {
+	    // line = f.p + "%" + f.name;
+	    f = waynode.fabrics[i];
+	    top += this.template.hpx_fabric;
+	    this.start_print(f.p + "%" + f.name,
+			     top,
+			     left + (waynode.name.length === 2 ? offset_fabric2 : offset_fabric3),
+			     width,
+			     this.template.hpx_fabric,
+			     this.template.font_fabric,
+			     printSecond,
+			     printThird,
+			     startSecond,
+			     startThird); 
+	}
+	
+	top += this.template.hpx_fabric;
+    }
+
+    return top;
 };
 
 
@@ -1421,7 +1497,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 			 startThird); 
 	top += this.template.hpx_category;
 
-	line = "     " +  this.stock.category.name;
+	line = "   " +  this.stock.category.name;
 	this.start_print(line,
 			 top,
 			 this.left,
@@ -1438,55 +1514,79 @@ stockPrintU.prototype.printBarcode2 = function() {
     // fabric
     if (this.template.fabric) {
 	if (angular.isDefined(this.stock.fabrics) && angular.isArray(this.stock.fabrics)) {
-	    var fabric_length = this.stock.fabrics.length;
-	    if (0 !== fabric_length) {
-		line = "面料:";
-		this.start_print(line,
-				 top,
-				 this.left,
-				 iwpx,
-				 this.template.hpx_each,
-				 0,
-				 pSecond,
-				 pThird,
-				 startSecond,
-				 startThird);
-
-		var f = this.stock.fabrics[0];
-		line = f.p + "%" + f.name;
-
-		var offset_fabric = stockUtils.to_integer(this.template.offset_fabric);
-		offset_fabric = offset_fabric === 0 ? 40 : offset_fabric;
-		this.start_print(line,
-				 top,
-				 this.left + offset_fabric,
-				 iwpx,
-				 this.template.hpx_each,
-				 this.template.font_fabric,
-				 pSecond,
-				 pThird,
-				 startSecond,
-				 startThird);
-	    }
-	    
-	    for (var i=1, l=fabric_length; i<l; i++) {
-		var f = this.stock.fabrics[i];
-		line = f.p + "%" + f.name;
-		top += this.template.hpx_fabric;
-		this.start_print(line,
-				 top,
-				 this.left + offset_fabric,
-				 iwpx,
-				 this.template.hpx_fabric,
-				 this.template.font_fabric,
-				 pSecond,
-				 pThird,
-				 startSecond,
-				 startThird); 
-	    }
-
-	    top += this.template.hpx_fabric;
+	    if (0 !== this.stock.fabrics.length) {
+		var waynodes = this.sort_waynode_by_fabric(this.stock.fabrics); 
+		for (var i=0, l=waynodes.length; i<l; i++) {
+		    top = this.print_waynode(
+			waynodes[i],
+			top,
+			this.left,
+			iwpx,
+			pSecond,
+			pThird,
+			startSecond,
+			startThird);
+		}
+	    } 
 	} 
+    }
+
+    // feather
+    if (this.template.feather) {
+	if (angular.isDefined(this.stock.feathers)
+	    && angular.isArray(this.stock.feathers)
+	    && this.stock.feathers.length > 0) {
+	    line = "充绒量:";
+	    this.start_print(line,
+			     top,
+			     this.left,
+			     iwpx,
+			     this.template.hpx_each,
+			     0,
+			     pSecond,
+			     pThird,
+			     startSecond,
+			     startThird);
+
+	    line = this.stock.feathers[0].m.toString() + "g"
+		+ "-" + this.stock.feathers[0].w.toString() + "g";
+	    
+	    this.start_print(
+		line,
+		top,
+		this.left + this.template.offset_feather,
+		iwpx,
+		this.template.hpx_each,
+		this.template.font_feather,
+		pSecond,
+		pThird,
+		startSecond,
+		startThird);
+	    
+	    top += this.get_non_zero_vaule(this.template.hpx_feather, this.template.hpx_each); 
+	    for (var i=1, l=this.stock.feathers.length; i<l; i+=2) {
+		line = this.stock.feathers[i].m.toString() + "g"
+		    + "-" + this.stock.feathers[i].w.toString() + "g";
+		if (i+1 < l) {
+		    line += "  " + this.stock.feathers[i+1].m.toString() + "g"
+			+ "-" + this.stock.feathers[i+1].w.toString() + "g";
+		}
+		
+		this.start_print(
+		    line,
+		    top,
+		    this.left + this.template.offset_feather,
+		    iwpx,
+		    this.template.hpx_feather,
+		    this.template.font_feather,
+		    pSecond,
+		    pThird,
+		    startSecond,
+		    startThird);
+		
+		top += this.get_non_zero_vaule(this.template.hpx_feather, this.template.hpx_each);
+	    }
+	}
     }
 
     var hpx_price = this.template.hpx_price === 0 ? this.template.hpx_each : this.template.hpx_price;

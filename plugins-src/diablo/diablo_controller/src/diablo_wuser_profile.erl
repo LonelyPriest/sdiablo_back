@@ -988,6 +988,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		", executive"
 		", category"
 		", fabric"
+		", feather"
 
 		", font"
 		", font_name"
@@ -996,6 +997,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		", font_price"
 		", font_size"
 		", font_fabric"
+		", font_feather"
 		", font_label"
 		", font_type"
 	    %% ", font_vprice"
@@ -1011,6 +1013,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		", hpx_executive"
 		", hpx_category"
 		", hpx_fabric"
+		", hpx_feather"
 		", hpx_price"
 		", hpx_size"
 		", hpx_barcode"
@@ -1042,6 +1045,8 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		", offset_label"
 		", offset_type"
 		", offset_fabric"
+		", offset_fabric3"
+		", offset_feather"
 
 		", barcode"
 		", w_barcode"
@@ -1079,6 +1084,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(?NO) ++ ","    %% executive
 		++ ?to_s(?NO) ++ ","    %% category
 		++ ?to_s(?NO) ++ ","    %% fabric
+		++ ?to_s(?NO) ++ ","    %% feather
 		
 		++ ?to_s(0) ++ ","      %% font
 		++ "\'\'" ++ ","      %% font_name
@@ -1087,6 +1093,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(0) ++ ","      %% font_price
 		++ ?to_s(0) ++ ","      %% font_size
 		++ ?to_s(0) ++ ","      %% font_fabrice
+		++ ?to_s(0) ++ ","      %% font_feather
 		++ ?to_s(0) ++ ","      %% font_label
 		++ ?to_s(0) ++ ","      %% font_type
 	    %% ++ ?to_s(0) ++ ","      %% font_vprice
@@ -1102,6 +1109,7 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(0) ++ ","      %% hpx_executive
 		++ ?to_s(0) ++ ","      %% hpx_category
 		++ ?to_s(0) ++ ","      %% hpx_fabric
+		++ ?to_s(0) ++ ","      %% hpx_feather
 		++ ?to_s(0) ++ ","      %% hpx_price
 		++ ?to_s(0) ++ ","      %% hpx_size
 		++ ?to_s(0) ++ ","      %% hpx_barcode
@@ -1133,6 +1141,8 @@ handle_call({set_barcode_print_template, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(0) ++ ","      %% offset_label
 		++ ?to_s(0) ++ ","      %% offset_type
 		++ ?to_s(0) ++ ","      %% offset_fabric
+		++ ?to_s(50) ++ ","     %% offset_fabric3
+		++ ?to_s(50) ++ ","     %% offset_feather
 
 		++ ?to_s(?YES) ++ ","   %% barcode
 		++ ?to_s(0) ++ ","      %% w_barcode

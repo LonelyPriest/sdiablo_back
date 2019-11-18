@@ -542,6 +542,7 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
     StdExecutive = ?v(<<"executive_id">>, Attrs),
     SafetyCategory = ?v(<<"category_id">>, Attrs),
     Fabric = ?v(<<"fabric_json">>, Attrs),
+    Feather = ?v(<<"feather_json">>, Attrs),
     
     %% Date     = ?utils:current_time(localdate),
     DateTime = ?utils:current_time(localtime),
@@ -576,6 +577,7 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 	++ ?utils:v(executive, integer, StdExecutive)
 	++ ?utils:v(category, integer, SafetyCategory)
 	++ ?utils:v(fabric, string, Fabric)
+	++ ?utils:v(feather, string, Feather)
 	++ ?utils:v(bcode, string, Barcode), 
     
     %% UpdateAlarm = ?utils:v(alarm_day, integer, AlarmDay),
@@ -2284,6 +2286,7 @@ handle_call({gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _Fro
 	", a.category as category_id"
 	", a.executive as executive_id"
 	", a.fabric as fabric_json"
+	", a.feather as feather_json"
 
 	", b.bcode as tbcode"
 
@@ -2353,7 +2356,8 @@ handle_call({gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _Fro
 					     ?v(<<"level">>, Stock),
 					     ?v(<<"category_id">>, Stock),
 					     ?v(<<"executive_id">>, Stock),
-					     ?v(<<"fabric_json">>, Stock)},
+					     ?v(<<"fabric_json">>, Stock),
+					     ?v(<<"feather_json">>, Stock)},
 				     State} ;
 				ErrorReply ->
 				    {reply, ErrorReply, State}
@@ -2367,7 +2371,8 @@ handle_call({gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _Fro
 			     ?v(<<"level">>, Stock),
 			     ?v(<<"category_id">>, Stock),
 			     ?v(<<"executive_id">>, Stock),
-			     ?v(<<"fabric_json">>, Stock)},
+			     ?v(<<"fabric_json">>, Stock),
+			     ?v(<<"feather_json">>, Stock)},
 		     State} 
 	    end
     end;

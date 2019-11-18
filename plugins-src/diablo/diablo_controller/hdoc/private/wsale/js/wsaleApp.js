@@ -2939,10 +2939,10 @@ function wsaleNewProvide(
 			    $scope.disable_refresh = false;
 			    $scope.inventories.unshift(inv);
 			    
-			    inv.order_id = $scope.inventories.length; 
+			    inv.order_id = $scope.inventories.length;
 			    // $scope.wsaleStorage.save($scope.inventories.filter(function(r){return !r.$new})); 
 			    $scope.re_calculate();
-			    $scope.focus_good_or_barcode(); 
+			    $scope.focus_good_or_barcode();
 			} 
 		    };
 

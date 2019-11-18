@@ -675,6 +675,17 @@ update w_ticket_custom a inner join \
 (select rsn, entry_date from w_sale where merchant=4) b \
 on a.sale_rsn = b.rsn set a.ctime=b.entry_date;
 
+--2019-11-17
+alter table print_template add column offset_fabric3 TINYINT default 0 after offset_fabric;
+
+alter table w_inventory_good add column feather VARCHAR(256) default null after fabric;
+alter table w_inventory add column feather VARCHAR(256) default null after fabric;
+
+alter table print_template add column feather TINYINT default 0 after fabric;
+alter table print_template add column font_feather TINYINT default 0 after font_fabric;
+alter table print_template add column hpx_feather TINYINT default 0 after hpx_fabric;
+alter table print_template add column offset_feather TINYINT default 0 after offset_fabric3;
+
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;
 

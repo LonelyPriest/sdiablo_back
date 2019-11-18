@@ -1,5 +1,10 @@
 var version_update = function(){
     var updates = [
+	{date: "2019-11-19",
+	 content:
+	 ["吊牌打印增加面料、里料、胆料、充绒量的选项打印"]
+	},
+	
 	{date: "2019-11-14",
 	 content:
 	 ["开单扫码优化，有颜色或尺码的货品，扫码时不再弹出选择框，系统自动选择"]

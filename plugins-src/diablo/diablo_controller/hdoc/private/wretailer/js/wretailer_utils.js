@@ -179,7 +179,7 @@ var retailerPrint = function(){
 		LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "剩余次数：" + card.left_time);
 	    } else if (card.rule.id == diablo_balance_limit_charge) {
 		top += 15;
-		LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "消费我额：" + card.fbalance);
+		LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "消费金额：" + card.fbalance);
 		top += 15;
 		LODOP.ADD_PRINT_TEXT(top, left, vWidth, hFont, "帐户余额：" + card.left_time);
 		top += 15;

@@ -380,6 +380,23 @@
 		</div>
 	      </div> 
 	    </div>
+
+	    <div x-ng-if="!base_settings.hide_feather" class="form-group diablo-good-form-group">
+	      <label class="col-sm-3 col-md-3 control-label">充绒量</label>
+	      <div class="col-sm-6 col-md-6"> 
+		<div class="input-group">
+		  <input type="text" readonly
+			 class="form-control"
+			 placeholder="默认为空"
+			 x-ng-model="good.feather_desc"/>
+		  <span class="input-group-btn">
+		    <button class="btn btn-primary"
+			    x-ng-click="select_feather()">
+		      <i class="glyphicon glyphicon-arrow-right"></i></button> 
+		  </span>
+		</div>
+	      </div> 
+	    </div>
 	    
 	    <!-- image --> 
 	    <div x-ng-show="!base_settings.hide_image" class="form-group diablo-good-form-group">
@@ -815,16 +832,17 @@
 		type="button"
 		class="btn red">
 	  <i class="glyphicon glyphicon-minus"></i></button> 
-	<button x-ng-click="params.add_composite(params.composites)"
+	<button x-ng-click="params.add_composite(params.composites, params.waynodes)"
 	   type="button"
 	   class="btn green">
 	  <i class="glyphicon glyphicon-plus"></i>
 	</button>
       </div>
       
-      <table class="table table-bordered table-striped table-condensed table-advanced">
+      <table class="table table-bordered table-striped table-condensed table-advanced" navtable>
 	<thead>
 	  <th>面料</th>
+	  <th>利用方式</th>
 	  <th>百分比</th>
 	</thead>
 	
@@ -843,6 +861,14 @@
 			 uib-typeahead="f.name for f in params.fabrics|filter:$viewValue|limitTo:20"/>
 		</div>
 	      </form> 
+	    </td>
+
+	    <td class="vert-align">
+	      <select class="form-control"
+		      type="text" 
+	  	      x-ng-model="c.way"
+		      x-ng-options="w as w.name for w in params.waynodes">
+	      </select> 
 	    </td>
 
 	    <td class="vert-align">
@@ -869,5 +895,69 @@
     <button class="btn btn-primary" x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>  
+</script>
+
+<script type="text/ng-template" id="select-feather.html"> 
+  <div class="modal-body">
+    <div class="table-responsive">
+      <div class="btn-group table-panel pull-right">
+	<button x-ng-disabled="params.composites.length===0"
+		x-ng-click="params.delete_composite(params.composites)"
+		type="button"
+		class="btn red">
+	  <i class="glyphicon glyphicon-minus"></i></button> 
+	<button x-ng-click="params.add_composite(params.composites)"
+		type="button"
+		class="btn green">
+	  <i class="glyphicon glyphicon-plus"></i>
+	</button>
+      </div>
+      
+      <table class="table
+		    table-bordered
+		    table-striped table-condensed table-advanced" navtable>
+	<thead>
+	  <th>尺码/重量(克)</th>
+	  <th>重量(克)</th>
+	</thead>
+	
+	<tbody>
+	  <tr class="text-center" x-ng-repeat="c in params.composites">
+	    <td class="vert-align">
+	      <form name="sForm">
+		<div ng-class="{'has-error':sForm.$invalid && !sForm.$pristine}">
+		  <input type="number" step="1"
+			 class="form-control"
+			 name="wsize"
+			 required
+			 placeholder="请输入尺码或重量"
+			 x-ng-model="c.wsize"/>
+		</div>
+	      </form> 
+	    </td> 
+
+	    <td class="vert-align">
+	      <form name="mForm">
+		<div ng-class="{'has-error':mForm.$invalid && !mForm.$pristine}">
+		  <input type="number" step="0.1"
+			 class="form-control"
+			 name="weight"
+			 required
+			 placeholder="请输入重量"
+			 x-ng-model="c.weight"/>
+		</div>
+	      </form>
+	    </td>
+	    
+	  </tr>
+	</tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary" x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
 </script>
 

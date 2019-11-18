@@ -1233,7 +1233,7 @@ action(Session, Req, {"gen_stock_barcode"}, Payload) ->
     
     
     case ?w_inventory:purchaser_inventory(gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand) of
-	{ok, Barcode, State, Level, Category, Executive, Fabric} = _Result ->
+	{ok, Barcode, State, Level, Category, Executive, Fabric, Feather} = _Result ->
 	    ?DEBUG("results ~p", [_Result]),
 	    ?utils:respond(200, object, Req,
 			   {[{<<"ecode">>, 0},
@@ -1242,7 +1242,8 @@ action(Session, Req, {"gen_stock_barcode"}, Payload) ->
 			     {<<"level">>, Level},
 			     {<<"category">>, Category},
 			     {<<"executive">>, Executive},
-			     {<<"fabric">>, Fabric}
+			     {<<"fabric">>, Fabric},
+			     {<<"feather">>, Feather}
 			    ]}); 
 	{error, Error} ->
     	    ?utils:respond(200, Req, Error)
@@ -1265,7 +1266,7 @@ action(Session, Req, {"gen_stock_barcode_all"}, Payload) ->
 		  case ?w_inventory:purchaser_inventory(
 			  gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand)
 		  of
-		      {ok, Barcode, State, Level, Category, Executive, Fabric} = _Result ->
+		      {ok, Barcode, State, Level, Category, Executive, Fabric, Feather} = _Result ->
 			  ?DEBUG("results ~p", [_Result]),
 			  
 			  case lists:member(Gened, Acc0) of
@@ -1279,7 +1280,8 @@ action(Session, Req, {"gen_stock_barcode_all"}, Payload) ->
 				      {<<"level">>, Level},
 				      {<<"category">>, Category},
 				      {<<"executive">>, Executive},
-				      {<<"fabric">>, Fabric}]}|Acc1],
+				      {<<"fabric">>, Fabric},
+				      {<<"feather">>, Feather}]}|Acc1],
 				   Acc2}
 			  end;
 		      {error, _Error} ->

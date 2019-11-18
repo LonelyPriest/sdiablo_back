@@ -63,7 +63,8 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
     Level = ?v(<<"level">>, Attrs, -1), 
     StdExecutive = ?v(<<"executive">>, Attrs, -1),
     SafetyCategory = ?v(<<"category">>, Attrs, -1),
-    Fabric = ?v(<<"fabric">>, Attrs, []),
+    Fabric  = ?v(<<"fabric">>, Attrs, []),
+    Feather = ?v(<<"feather">>, Attrs, []),
     
     {GIds, GNames} = decompose_size(Sizes),
     %% ?DEBUG("GIds ~p, GNames ~p", [GIds, GNames]),
@@ -93,6 +94,7 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
 	", executive"
 	", category"
 	", fabric"
+	", feather"
 	", alarm_day"
 	", unit"
 	", contailer"
@@ -126,6 +128,7 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
 	++ ?to_s(StdExecutive) ++ ","
 	++ ?to_s(SafetyCategory) ++ ","
 	++ "\'" ++ ?to_s(Fabric) ++ "\',"
+	++ "\'" ++ ?to_s(Feather) ++ "\',"
 	
 	++ ?to_s(AlarmDay) ++ ","
 	++ ?to_s(Unit) ++ ","
@@ -268,6 +271,7 @@ good(detail, Merchant, Conditions) ->
 	", a.executive as executive_id"
 	", a.category as category_id"
 	", a.fabric as fabric_json"
+	", a.feather as feather_json"
 	
 	", a.entry_date"
 
@@ -344,6 +348,7 @@ good(detail_no_join, Merchant, StyleNumber, Brand) ->
 	", a.executive as executive_id"
 	", a.category as category_id"
 	", a.fabric as fabric_json"
+	", a.feather as feather_json"
 	
 	", a.entry_date"
 	
@@ -434,6 +439,7 @@ good_match(style_number_with_firm, Merchant, StyleNumber, Firm) ->
 	", a.executive as executive_id"
 	", a.category as category_id"
 	", a.fabric as fabric_json"
+	", a.feather as feather_json"
 	
 	", a.entry_date"
 	
@@ -485,6 +491,7 @@ good_match(all_style_number_with_firm, Merchant, StartTime, Firm) ->
 	", a.executive as as.executive_id"
 	", a.category as category_id"
 	", a.fabric as fabric_json"
+	", a.feather as feather_json"
 	
 	", a.entry_date"
 	
@@ -606,6 +613,7 @@ inventory({group_detail, MatchMode}, Merchant, Conditions, PageFun) ->
 	", a.executive as executive_id"
 	", a.category as category_id"
 	", a.fabric as fabric_json"
+	", a.feather as feather_json"
 	
 	", a.sell"
 	", a.shop as shop_id"
@@ -1859,6 +1867,7 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
     StdExecutive = ?v(<<"executive">>, Inv, -1),
     SafetyCategory = ?v(<<"category">>, Inv, -1),
     Fabric = ?v(<<"fabric">>, Inv, []),
+    Feather = ?v(<<"feather">>, Inv, []),
 
     %% InventoryExist = ?sql_utils:execute(s_read, Sql0),
 
@@ -1903,6 +1912,8 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		  ", executive"
 		  ", category"
 		  ", fabric"
+		  ", feather"
+		  
 		  ", merchant, last_sell, change_date, entry_date)"
 		  " values("
 		  ++ "\"" ++ ?to_s(-1) ++ "\","
@@ -1936,6 +1947,7 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		  ++ ?to_s(StdExecutive) ++ ","
 		  ++ ?to_s(SafetyCategory) ++ ","
 		  ++ "\'" ++ ?to_s(Fabric) ++ "\',"
+		  ++ "\'" ++ ?to_s(Feather) ++ "\',"
 		  
 		  ++ ?to_s(Merchant) ++ ","
 		  ++ "\"" ++ ?to_s(CurDateTime) ++ "\","
