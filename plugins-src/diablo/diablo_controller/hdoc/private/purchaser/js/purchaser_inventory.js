@@ -853,7 +853,7 @@ function purchaserInventoryNewCtrlProvide (
 	    $scope.disable_refresh = false;
 	    // reset barcode
 	    $scope.good.bcode = undefined;
-	    $scope.good.sprice = $scope.yes_no[0];
+	    // $scope.good.sprice = $scope.yes_no[0];
 	    // $scope.stock_at_first = undefined;
 	    $scope.re_calculate();
 

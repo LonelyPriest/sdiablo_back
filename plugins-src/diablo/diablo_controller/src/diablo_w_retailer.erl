@@ -1267,8 +1267,13 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 				    case Rule of
 					?THEORETIC_CHARGE -> ?INVALID_DATE;
 					_ ->
-					    ?utils:big_date(date, StartDate, EndDate)
+					    case HasDeleted of
+						?YES -> ?utils:to_date(date, StartDate);
+						?NO ->
+						    ?utils:big_date(date, StartDate, EndDate)
+					    end
 				    end,
+				?DEBUG("Year ~p, Month ~p, Date ~p", [Year, Month, Date]),
 
 				CardSN = ?v(<<"csn">>, OCard),
 				
@@ -1289,14 +1294,31 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 					 end;
 				     ?MONTH_UNLIMIT_CHARGE ->
 					 NextMonth = date_next(?MONTH_UNLIMIT_CHARGE, {Year, Month, Date}),
-					 "update w_card set edate=\'" ++ format_date(NextMonth) ++ "\'"; 
+					 "update w_card set edate=\'" ++ format_date(NextMonth) ++ "\'"
+					     ++ ", deleted=" ++ ?to_s(?NO);
 				     ?QUARTER_UNLIMIT_CHARGE ->
 					 NextQuarter =
 					     date_next(?QUARTER_UNLIMIT_CHARGE, {Year, Month, Date}),
-					 "update w_card set edate=\'" ++ format_date(NextQuarter);
+					 "update w_card set edate=\'" ++ format_date(NextQuarter)
+					     ++ case HasDeleted of
+						    ?YES -> ", deleted=" ++ ?to_s(?NO);
+						    ?NO -> []
+						end;
+				     ?HALF_YEAR_UNLIMIT_CHARGE ->
+					 NextHalfYear =
+					     date_next(?HALF_YEAR_UNLIMIT_CHARGE, {Year, Month, Date}),
+					 "update w_card set edate=\'" ++ format_date(NextHalfYear) ++ "\'"
+					     ++ case HasDeleted of
+						       ?YES -> ", deleted=" ++ ?to_s(?NO);
+						       ?NO -> []
+						   end;
 				     ?YEAR_UNLIMIT_CHARGE ->
 					 NextYear = date_next(?YEAR_UNLIMIT_CHARGE, {Year, Month, Date}),
-					 "update w_card set edate=\'" ++ format_date(NextYear);
+					 "update w_card set edate=\'" ++ format_date(NextYear)
+					     ++ case HasDeleted of
+						       ?YES -> ", deleted=" ++ ?to_s(?NO);
+						       ?NO -> []
+						   end;
 				     ?BALANCE_LIMIT_CHARGE ->
 					 UYear = (Period + Month) div 12,
 					 UMonth = (Period + Month) rem 12,
@@ -1309,7 +1331,7 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 						    ?NO -> "ctime=ctime+";
 						    ?YES -> "ctime="
 						end ++ ?to_s(CBalance + SBalance)
-					     ++", edate=\'" ++ format_date(NextPeriod) ++ "\'"
+					     ++", edate=\'" ++ format_date(NextPeriod) ++ "\'" 
 				 end ++ 
 				     case Rule of
 					 ?THEORETIC_CHARGE -> [];
