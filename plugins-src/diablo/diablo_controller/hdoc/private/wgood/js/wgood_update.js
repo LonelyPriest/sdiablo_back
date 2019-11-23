@@ -162,7 +162,7 @@ function wgoodUpdateCtrlProvide(
 		if (angular.isDefined(fabric) && angular.isObject(fabric)) {
 		    $scope.good.fabrics.push({
 			fabric:fabric.name,
-			way:diablo_get_object(f.w, $scope.waynodes),
+			way:diablo_get_object(angular.isUndefined(f.w) ? 0:f.w, $scope.waynodes),
 			percent:stockUtils.to_integer(f.p)});
 		    $scope.good.fabric_desc += fabric.name + ":" + f.p.toString(); 
 		} 
