@@ -609,12 +609,12 @@ function wsaleNewProvide(
 	// $scope.setting.print_discount = wsaleUtils.to_integer(sale_mode.charAt(15));
 
 	$scope.print_setting = {
-	    print_discount: sale_mode.charAt(15) === diablo_empty_string ? diablo_yes
-		: wsaleUtils.to_integer(sale_mode.charAt(15)),
+	    print_discount: wsaleUtils.yes_default(sale_mode.charAt(15)),
 	    print_perform:  wsaleUtils.to_integer(sale_mode.charAt(3)),
 	    cake_mode:      wsaleUtils.cake_mode(shopId, base),
 	    comments:       wsaleUtils.comment(shopId, base),
 	    head_seperater: wsaleUtils.to_integer(sale_mode.charAt(23)),
+	    print_score:    wsaleUtils.yes_default(sale_mode.charAt(26))
 	};
 
 
@@ -1279,11 +1279,12 @@ function wsaleNewProvide(
 		    || retailer.type_id === diablo_common_retailer) {
 		    dialog.set_error("会员充值", 2171);
 		} else {
+		    var has_charged = (params.cash + params.card + params.wxin);
 		    diabloFilter.wretailer_charge({
 			shop:           $scope.select.shop.id,
 			retailer:       $scope.select.retailer.id,
 			employee:       params.employee.id,
-			charge_balance: params.charge_balance,
+			charge_balance: has_charged,
 			cash:           wsaleUtils.to_decimal(params.cash),
 			card:           wsaleUtils.to_decimal(params.card),
 			wxin:           wsaleUtils.to_decimal(params.wxin),
@@ -1293,13 +1294,13 @@ function wsaleNewProvide(
 		    }).then(function(result) {
 			console.log(result);
 			if (result.ecode === 0) {
-			    retailer.balance = wsaleUtils.to_decimal(retailer.balance + params.charge_balance); 
+			    retailer.balance = wsaleUtils.to_decimal(retailer.balance + has_charged); 
 			    // $scope.select.retailer = params.retailer;
 			    // $scope.select.retailer.balance = balance;
 			    $scope.set_retailer();
 			    // $scope.on_select_retailer();
 			    $scope.select.employee = params.employee;
-			    $scope.select.recharge = params.charge_balance;
+			    $scope.select.recharge = has_charged;
 			    angular.forEach(stocks, function(s) {
 				s.fprice = 0;
 				s.$update = true;
@@ -1341,16 +1342,16 @@ function wsaleNewProvide(
 		 wxin: 0,
 		 charges: $scope.tcharges,
 		 pattern:  {comment:diabloPattern.comment, number:diabloPattern.number},
-		 should_charge: function(cash, card, wxin) {
-		     return charge_balance - wsaleUtils.to_integer(cash)
-			 - wsaleUtils.to_integer(card)
-			 - wsaleUtils.to_integer(wxin);
-		 },
+		 // should_charge: function(cash, card, wxin) {
+		 //     return charge_balance - wsaleUtils.to_integer(cash)
+		 // 	 - wsaleUtils.to_integer(card)
+		 // 	 - wsaleUtils.to_integer(wxin);
+		 // },
 		 
 		 check_charge: function(cash, card, wxin) {
 		     return wsaleUtils.to_integer(cash)
 			 + wsaleUtils.to_integer(card)
-			 + wsaleUtils.to_integer(wxin) === charge_balance;
+			 + wsaleUtils.to_integer(wxin) >= charge_balance;
 		 }
 		}
 	    );

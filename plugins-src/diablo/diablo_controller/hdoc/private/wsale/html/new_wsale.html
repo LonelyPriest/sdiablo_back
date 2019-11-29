@@ -1500,9 +1500,9 @@
       </div>
     </form>
     <h4 x-ng-if="params.$tcharge" class="diablo-margin-top-minus-10 text-center">
-      <span>需充值金额：</span>
+      <span>已充值金额：</span>
       <span class="fg-red">
-	<strong>{{params.should_charge(params.cash, params.card, params.wxin)}}
+	<strong>{{params.cash+params.card+params.wxin}}
       </strong></span>
     </h4>
   </div>

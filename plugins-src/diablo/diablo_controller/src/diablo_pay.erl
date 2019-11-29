@@ -141,20 +141,19 @@ pay(wwt_query, MchntCd, MchntOrder) ->
 	    Info = ?v(<<"msg">>, Result),
 	    ?DEBUG("code ~p, msg ~ts", [Code, Info]),
 	    
-	    {struct, Data} = ?v(<<"data">>, Result),
-	    OrderType = ?v(<<"order_type">>, Data),
-	    Balance = ?v(<<"actual_amount">>, Data),
-	    State = case ?v(<<"trans_stat">>, Data) of
-			<<"SUCCESS">> -> ?PAY_SCAN_SUCCESS;
-			<<"PAYERROR">> -> ?PAY_SCAN_FAILED; 
-			<<"USERPAYING">> -> ?PAY_SCAN_PAYING;
-			<<"REFUND">> -> ?PAY_SCAN_REFUND;
-			<<"REFUND_SUCCESS">> -> ?PAY_SCAN_REFUND_SUCCESS;
-			<<"REFUND_FAIL">> -> ?PAY_SCAN_REFUND_FAILED 
-		    end,
-					    
 	    case Code of
 		0 ->
+		    {struct, Data} = ?v(<<"data">>, Result),
+		    OrderType = ?v(<<"order_type">>, Data),
+		    Balance = ?v(<<"actual_amount">>, Data),
+		    State = case ?v(<<"trans_stat">>, Data) of
+				<<"SUCCESS">> -> ?PAY_SCAN_SUCCESS;
+				<<"PAYERROR">> -> ?PAY_SCAN_FAILED; 
+				<<"USERPAYING">> -> ?PAY_SCAN_PAYING;
+				<<"REFUND">> -> ?PAY_SCAN_REFUND;
+				<<"REFUND_SUCCESS">> -> ?PAY_SCAN_REFUND_SUCCESS;
+				<<"REFUND_FAIL">> -> ?PAY_SCAN_REFUND_FAILED 
+			    end,
 		    {ok, State, case OrderType of
 				    <<"WECHAT">> -> 0;
 				    <<"ALIPAYE">> -> 1;

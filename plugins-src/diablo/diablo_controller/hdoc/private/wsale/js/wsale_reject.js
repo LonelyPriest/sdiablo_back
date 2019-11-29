@@ -135,10 +135,12 @@ function wsaleRejectCtrlProvide(
 			+ wsaleUtils.to_integer(sale_mode.charAt(17));
 
 		    $scope.print_setting = {
-			print_discount: wsaleUtils.to_integer(sale_mode.charAt(15)),
+			print_discount: wsaleUtils.yes_default(sale_mode.charAt(15)),
 			print_perform:  wsaleUtils.to_integer(sale_mode.charAt(3)),
 			cake_mode:      wsaleUtils.cake_mode(shopId, settings),
-			comments:       wsaleUtils.comment(shopId, settings) 
+			comments:       wsaleUtils.comment(shopId, settings),
+			head_seperater: wsaleUtils.to_integer(sale_mode.charAt(23)),
+			print_score:    wsaleUtils.yes_default(sale_mode.charAt(26))
 		    };
 		    
 		    // console.log($scope.setting);

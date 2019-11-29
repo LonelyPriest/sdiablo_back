@@ -116,13 +116,7 @@ var wsaleUtils = function(){
 	}); 
 	
 	return gnames;
-    };
-
-    var default_hide = function(v) {
-	if (v === diablo_empty_string)
-	    return diablo_yes;
-	return stockUtils.to_integer(v);
-    };
+    }; 
 
     return {
 	format_promotion: function(inv, promotions){
@@ -346,6 +340,17 @@ var wsaleUtils = function(){
 
 	sale_mode:function(shop, base) {
 	    return diablo_base_setting("p_balance", shop, base, function(s) {return s}, diablo_sale_mode);
+	},
+
+	get_print_setting:function(sale_mode) {
+	    return {
+		print_discount: wsaleUtils.yes_default(sale_mode.charAt(15)),
+		print_perform:  wsaleUtils.to_integer(sale_mode.charAt(3)),
+		cake_mode:      wsaleUtils.cake_mode(shopId, settings),
+		comments:       wsaleUtils.comment(shopId, settings),
+		head_seperater: wsaleUtils.to_integer(sale_mode.charAt(23)),
+		print_score:    wsaleUtils.yes_default(sale_mode.charAt(26))
+	    };
 	},
 	
 	get_login_employee:function(shop, loginEmployee, employees){
@@ -760,8 +765,14 @@ var wsaleUtils = function(){
 
 	    return {
 		first:new Date(year, month, 1).getTime(), current:now.getTime()};
-	}
+	},
 
+	yes_default: function(v) {
+	    if (v === diablo_empty_string)
+		return diablo_yes;
+	    return wsaleUtils.to_integer(v);
+	}
+	
 	// 
 	
     }
@@ -1715,7 +1726,7 @@ var wsalePrint = function(){
 	    }
 		
 
-	    if (vip) {
+	    if (vip && pSetting.print_score) {
 		LODOP.ADD_PRINT_TEXT(hLine, left, 70, hFont,  "上次积分");
 		LODOP.ADD_PRINT_TEXT(hLine, left + 70, 65, hFont, "本次积分");
 		LODOP.ADD_PRINT_TEXT(hLine, left + 135, vWidth - 100, hFont, "累计积分");

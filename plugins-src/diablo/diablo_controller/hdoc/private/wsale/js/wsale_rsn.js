@@ -449,11 +449,11 @@ function wsaleRsnDetailCtrlProvide (
 	var sale_mode = wsaleUtils.sale_mode(shop.id, base);
 	var print_setting = {
 	    print_perform:  wsaleUtils.to_integer(sale_mode.charAt(3)),
-	    print_discount: sale_mode.charAt(15) === diablo_empty_string ? diablo_yes
-		: wsaleUtils.to_integer(sale_mode.charAt(15)),
+	    print_discount: wsaleUtils.yes_default(sale_mode.charAt(15)),
 	    cake_mode:      wsaleUtils.cake_mode(shop.id, base),
 	    comments:       wsaleUtils.comment(shop.id, base),
 	    head_seperater: wsaleUtils.to_integer(sale_mode.charAt(23)),
+	    print_score:    wsaleUtils.to_integer(sale_mode.charAt(26))
 	};
 	
     	if (diablo_frontend === p_mode){
