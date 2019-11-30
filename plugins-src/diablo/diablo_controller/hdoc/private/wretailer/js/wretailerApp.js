@@ -473,9 +473,14 @@ function wretailerConfig(angular) {
 	    return http.save({operation: "new_ticket_plan"}, plan).$promise;
 	};
 
+	this.delete_ticket_plan = function(plan) {
+	    return http.delete({operation: "delete_ticket_plan", id:plan}).$promise;
+	};
+
 	this.update_ticket_plan = function(plan) {
 	    return http.save({operation: "update_ticket_plan"}, plan).$promise;
 	};
+	
 
 	this.list_ticket_plan = function() {
 	    return http.query({operation: "list_ticket_plan"}).$promise;

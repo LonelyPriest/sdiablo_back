@@ -825,14 +825,14 @@ function wgoodDetailCtrlProvide(
 		"good-detail.html", undefined, undefined, $scope,
 		{sizes:  good.size.split(","),
 		 colors: [{id:0}],
-		 path:   good.path});
+		 path:   good.path ? good.path + "?" + Math.random() : undefined});
 	} else{
 	    if (angular.isDefined(good.colors) && good.colors.length !== 0){
 		dialog.edit_with_modal(
 		    "good-detail.html", undefined, undefined, $scope,
 		    {sizes:  good.size.split(","),
 		     colors: good.colors,
-		     path:   good.path});
+		     path:   good.path ? good.path + "?" + Math.random() : undefined});
 	    } else{
 		good.colors = good.color.split(",").map(function(cid){
 		    return diablo_find_color(parseInt(cid), filterColor); 
@@ -841,7 +841,7 @@ function wgoodDetailCtrlProvide(
 		    "good-detail.html", undefined, undefined, $scope,
 		    {sizes:  good.size.split(","),
 		     colors: good.colors,
-		     path:   good.path});
+		     path:   good.path ? good.path + "?" + Math.random() : undefined});
 		// })
 	    }
 	}

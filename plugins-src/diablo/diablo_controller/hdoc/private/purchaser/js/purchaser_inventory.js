@@ -2575,7 +2575,7 @@ function purchaserInventoryDetailCtrlProvide(
 	if (angular.isDefined(inv.sizes) && angular.isDefined(inv.colors) && angular.isDefined(inv.amounts)){
 	    var payload = {sizes:      inv.sizes,
 			   colors:     inv.colors,
-			   path:       inv.path,
+			   path:       inv.path ? inv.path + "?" + Match.random() : undefined,
 			   stock_alarm: $scope.setting.stock_alarm,
 			   get_amount: get_amount 
 			  };
@@ -2598,6 +2598,7 @@ function purchaserInventoryDetailCtrlProvide(
 		inv.sizes   = sort.size;
 		inv.colors  = sort.color;
 		inv.amounts = sort.sort;
+		inv.path = inv.path ? inv.path + "?" + Math.random() : undefined;
 
 		var payload = {sizes:      inv.sizes,
 			       colors:     inv.colors,

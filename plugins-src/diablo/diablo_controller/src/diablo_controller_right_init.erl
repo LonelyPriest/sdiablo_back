@@ -198,7 +198,9 @@ init([]) ->
 	  <<"会员直接打印">>, <<"print_w_retailer">>, ?right_w_retailer},
 
 	 {?new_ticket_plan,
-	  <<"新增制券方案">>, <<"new_ticket_plan">>, ?right_w_retailer}, 
+	  <<"新增制券方案">>, <<"new_ticket_plan">>, ?right_w_retailer},
+	 {?delete_ticket_plan,
+	  <<"删除制券方案">>, <<"delete_ticket_plan">>, ?right_w_retailer}, 
 	 {?update_ticket_plan,
 	  <<"修改制券方案">>, <<"update_ticket_plan">>, ?right_w_retailer}, 
 	 {?list_ticket_plan,

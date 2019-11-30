@@ -35,33 +35,49 @@
 			    table-condensed table-advanced">
 		<thead>
 		  <tr>
-		    <th>序号</th>
-		    <th>名称</th>
-		    <th>金额</th>
-		    <th>最大赠送数量</th>
-		    <th>卷赠送阀值</th> 
-		    <th>生效期限</th>
-		    <th>失效期限</th>
-		    <th>限制店铺</th>
-		    <th>备注</th> 
-		    <th>日期</th>
-		    <th>操作</th>
+		    <th class="text-center">序号</th>
+		    <th class="text-center">名称</th>
+		    <th class="text-center">金额</th>
+		    <th class="text-center">最大赠送数量</th>
+		    <th class="text-center">卷赠送阀值</th>
+		    <th class="text-center">卷使用阀值</th> 
+		    <th class="text-center">生效期限</th>
+		    <th class="text-center">失效期限</th>
+		    <th class="text-center">限制店铺</th>
+		    <th class="text-center">备注</th> 
+		    <th class="text-center">日期</th>
+		    <th class="text-center">操作</th>
 		  </tr>
 		</thead>
 		
-		<tbody>
+		<tbody class="text-center">
 		  <tr ng-repeat="p in planes">
 		    <td x-ng-bind=p.order_id></td> 
 		    <td x-ng-bind=p.name></td> 
 		    <td x-ng-bind=p.balance></td>
 		    <td x-ng-bind=p.scount></td>
-		    <td x-ng-bind=p.mbalance></td> 
+		    
+		    <td>
+		      <div x-ng-switch on="p.mbalance">
+			<span x-ng-switch-when="-1">-</span>
+			<span x-ng-switch-default>{{p.mbalance}}</span>
+		      </div>
+		    </td>
+		    
+		    <td>
+		      <div x-ng-switch on="p.ubalance">
+			<span x-ng-switch-when="-1">-</span>
+			<span x-ng-switch-default>{{p.ubalance}}</span>
+		      </div>
+		    </td>
+		      
 		    <td>
 		      <div x-ng-switch on="p.effect">
 			<span x-ng-switch-when="-1">-</span>
 			<span x-ng-switch-default>{{p.effect}}</span>
 		      </div>
 		    </td>
+		    
 		    <td>
 		      <div x-ng-switch on="p.expire">
 			<span x-ng-switch-when="-1">-</span>
@@ -71,10 +87,14 @@
 		    <td>{{yes_no[p.ishop].name}}</td>
 		    <td x-ng-bind=p.remark></td>
 		    <td x-ng-bind=p.entry_date></td>
-		    <td> 
+		    <td class="text-left"> 
 		      <button class="btn diablo-button btn-warning"
 			      x-ng-click="update_plan(p)">修改
-			<i class="glyphicon glyphicon-edit"></i></button> 
+			<i class="glyphicon glyphicon-edit"></i></button>
+		      
+		      <button class="btn diablo-button btn-danger"
+			      x-ng-click="delete_plan(p)">删除
+			<i class="glyphicon glyphicon-erase"></i></button> 
 		    </td>
 		  </tr> 
 		</tbody>
@@ -196,6 +216,29 @@
 	    <div>
 	      <span ng-show="pForm.mbalance.$invalid && !pForm.mbalance.$pristine">
 		<span class="fg-red">赠送阀只能是整数，默认不限制</span>
+	      </span> 
+	    </div> 
+	  </div>
+	</div>
+
+	<div class="form-group">
+	  <label class="col-sm-2 col-md-2 control-label">使用阀值</label>
+	  <div class="col-sm-10 col-md-10">
+	    <div class="input-group"> 
+	      <div x-ng-class="{'has-error': uForm.ubalance.$invalid && !uForm.ubalance.$pristine}">
+		<input class="form-control"
+		       name="mbalance" 
+		       type="number"
+		       required
+		       placeholder="请输入优惠券使用阀值"
+		       x-ng-model="params.ubalance"
+		       x-ng-pattern="params.pattern.number"/>
+	      </div>
+	      <span class="input-group-addon bg-white fg-red">*</span>
+	    </div>
+	    <div>
+	      <span ng-show="pForm.ubalance.$invalid && !pForm.ubalance.$pristine">
+		<span class="fg-red">使用阀值只能是整数，默认不限制</span>
 	      </span> 
 	    </div> 
 	  </div>

@@ -755,7 +755,8 @@ function filterProvider(){
 
 	    get_all_ticket_by_retailer: function(retailerId, iShop) {
 		return _retailerHttp.save(
-		    {operation: "get_w_retailer_all_ticket"}, {retailer:retailerId, ishop: iShop}).$promise;
+		    {operation: "get_w_retailer_all_ticket"},
+		    {retailer:retailerId, ishop: iShop}).$promise;
 	    },
 
 	    get_ticket_by_sale: function(sale_rsn, custom) {

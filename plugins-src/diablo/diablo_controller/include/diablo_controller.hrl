@@ -290,6 +290,7 @@
 -define(gift_ticket,                 ?right_w_retailer + 40).
 -define(delete_threshold_card_sale,  ?right_w_retailer + 41).
 -define(delete_threshold_card,       ?right_w_retailer + 42).
+-define(delete_ticket_plan,          ?right_w_retailer + 43).
 
 %% shop
 -define(new_shop,       ?right_shop + 1).

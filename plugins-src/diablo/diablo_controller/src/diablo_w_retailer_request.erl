@@ -69,6 +69,17 @@ action(Session, Req, {"get_w_retailer", Id}) ->
     ?utils:respond(
        object, fun() -> ?w_retailer:retailer(get, Merchant, Id) end, Req);
 
+action(Session, Req, {"delete_ticket_plan", PlanId}) ->
+    ?DEBUG("delete_ticket_plan with Session ~p plan ~p", [Session, PlanId]),
+    Merchant = ?session:get(merchant, Session),
+    case ?w_retailer:ticket(delete_plan, Merchant, PlanId) of
+	{ok, PlanId} ->
+	    ?w_user_profile:update(ticket_plan, Merchant),
+	    ?utils:respond(200, Req, ?succ(new_ticket_plan, PlanId));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
 
 action(Session, Req, {"list_w_retailer_charge"}) ->
     ?DEBUG("list w_retailer_charge with session ~p", [Session]), 
@@ -889,7 +900,9 @@ action(Session, Req, {"get_w_retailer_all_ticket"}, Payload) ->
     ConsumeShop = ?v(<<"ishop">>, Payload),
     try
 	{ok, ScoreTicket}     = ?w_retailer:get_ticket(by_retailer, Merchant, RetailerId),
-	{ok, PromotionTickets} = ?w_retailer:get_ticket(by_promotion, Merchant, {RetailerId, ConsumeShop}),
+	{ok, PromotionTickets} = ?w_retailer:get_ticket(
+				    by_promotion, Merchant, {RetailerId, ConsumeShop}),
+	%% ?DEBUG("PromotionTickets ~p", [PromotionTickets]),
 	
 
 	?utils:respond(200, object, Req, {[{<<"ecode">>, 0},

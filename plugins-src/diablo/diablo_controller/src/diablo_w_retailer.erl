@@ -153,6 +153,9 @@ ticket(new_plan, Merchant, Attrs) ->
 ticket(update_plan, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {update_ticket_plan, Merchant, Attrs});
+ticket(delete_plan, Merchant, Plan) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {delete_ticket_plan, Merchant, Plan});
 ticket(gift, Merchant, GiftInfo) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {gift_ticket, Merchant, GiftInfo}).
@@ -1721,8 +1724,9 @@ handle_call({new_ticket_plan, Merchant, Attrs}, _From, State) ->
     Effect  = ?utils:dbvalue(?v(<<"effect">>, Attrs, 0)), 
     Expire  = ?utils:dbvalue(?v(<<"expire">>, Attrs, 0)),
     MaxSend = ?v(<<"scount">>, Attrs, 1),
-    MBalance= ?v(<<"mbalance">>, Attrs, 0),
-    IShop   = ?v(<<"ishop">>, Attrs, 0),
+    MBalance= ?v(<<"mbalance">>, Attrs, -1),
+    UBalance= ?v(<<"ubalance">>, Attrs, -1),
+    IShop   = ?v(<<"ishop">>, Attrs, -1),
     Remark  = ?v(<<"remark">>, Attrs, []),
     Entry   = ?utils:current_time(format_localtime), 
     %% balacen should be unique
@@ -1738,6 +1742,7 @@ handle_call({new_ticket_plan, Merchant, Attrs}, _From, State) ->
 		", expire"
 		", scount"
 		", mbalance"
+		", ubalance"
 		", ishop"
 		", remark"
 		", merchant"
@@ -1751,6 +1756,7 @@ handle_call({new_ticket_plan, Merchant, Attrs}, _From, State) ->
 		++ ?to_s(Expire) ++ ","
 		++ ?to_s(MaxSend) ++ ","
 		++ ?to_s(MBalance) ++ ","
+		++ ?to_s(UBalance) ++ ","
 		++ ?to_s(IShop) ++ ","
 		++ "\'" ++ ?to_s(Remark) ++ "\',"
 		++ ?to_s(Merchant) ++ ","
@@ -1769,6 +1775,7 @@ handle_call({update_ticket_plan, Merchant, Attrs}, _From, State) ->
     Expire  = ?v(<<"expire">>, Attrs),
     MaxSend = ?v(<<"scount">>, Attrs),
     MBalance = ?v(<<"mbalance">>, Attrs),
+    UBalance = ?v(<<"ubalance">>, Attrs),
     Remark  = ?v(<<"remark">>, Attrs),
 
     Updates = ?utils:v(name, string, Name)
@@ -1777,6 +1784,7 @@ handle_call({update_ticket_plan, Merchant, Attrs}, _From, State) ->
 	++ ?utils:v(expire, integer, Expire)
 	++ ?utils:v(scount, integer, MaxSend)
 	++ ?utils:v(mbalance, integer, MBalance)
+	++ ?utils:v(ubalance, integer, UBalance)
 	++ ?utils:v(remark, string, Remark),
 
     UpdateFun =
@@ -1802,6 +1810,31 @@ handle_call({update_ticket_plan, Merchant, Attrs}, _From, State) ->
 		    {reply, ?err(ticket_plan_exist, Id), State}
 	    end
     end;
+
+handle_call({list_ticket_plan, Merchant}, _From, State) ->
+    Sql = "select id"
+	", merchant"
+	", name"
+	", balance"
+	", mbalance"
+	", ubalance"
+	", effect"
+	", expire"
+	", scount"
+	", mbalance"
+	", ishop"
+	", entry_date"
+	" from w_ticket_plan where merchant=" ++ ?to_s(Merchant)
+	++ " and deleted=" ++ ?to_s(?NO), 
+    {reply, ?sql_utils:execute(read, Sql), State};
+
+handle_call({delete_ticket_plan, Merchant, Plan}, _From, State) ->
+    Sql = "update w_ticket_plan set deleted=" ++ ?to_s(?YES)
+	++ " where merchant=" ++ ?to_s(Merchant)
+	++ " and id=" ++ ?to_s(Plan),
+    Reply = ?sql_utils:execute(write, Sql, Plan),
+    {reply, Reply, State};
+    
 
 handle_call({gift_ticket, Merchant, {Shop, Retailer, Tickets, WithRSN} = GiftInfo}, _From, State) ->
     ?DEBUG("gift_ticket: merchant ~p, GiftInfo ~p", [Merchant, GiftInfo]),
@@ -1855,21 +1888,6 @@ handle_call({gift_ticket, Merchant, {Shop, Retailer, Tickets, WithRSN} = GiftInf
 		end
 	end, 
     {reply, Reply, State};
-
-handle_call({list_ticket_plan, Merchant}, _From, State) ->
-    Sql = "select id"
-	", merchant"
-	", name"
-	", balance"
-	", mbalance"
-	", effect"
-	", expire"
-	", scount"
-	", mbalance"
-	", ishop"
-	", entry_date"
-	" from w_ticket_plan where merchant=" ++ ?to_s(Merchant),
-    {reply, ?sql_utils:execute(read, Sql), State};
 
 handle_call({discard_custom_one, Merchant, TicketId, Mode}, _From, State) ->
     Sql = "select id, balance, retailer, state from w_ticket_custom"
@@ -1938,10 +1956,11 @@ handle_call({ticket_by_promotion, Merchant, RetailerId, ConsumeShop}, _From, Sta
 	", a.etime"
 	", a.state"
 
+	", b.ubalance"
 	", b.name"
 	", b.ishop" 
 	" from w_ticket_custom a" 
-	" left join w_ticket_plan b on a.merchant=b.merchant and a.plan = b.id"
+	" left join w_ticket_plan b on a.merchant=b.merchant and a.plan=b.id"
 	" where a.merchant=" ++ ?to_s(Merchant)
 	++ " and a.retailer=" ++ ?to_s(RetailerId)
 	++ " and a.state=" ++ ?to_s(?CHECKED),
@@ -1964,6 +1983,7 @@ handle_call({ticket_by_promotion, Merchant, RetailerId, ConsumeShop}, _From, Sta
 					  true
 			      end
 		      end, Tickets),
+		
 		%% ?DEBUG("NewTickets ~p", [NewTickets]),
 		%% CurrentDate = {2019, 7, 26},
 		CurrentDate = ?utils:current_date(), 

@@ -973,9 +973,10 @@ function wsaleNewProvide(
 
 	diabloFilter.get_all_ticket_by_retailer(
 	    $scope.select.retailer.id,
-	    $scope.select.shop.id
+	    $scope.select.shop.id,
 	).then(function(result){
     	    console.log(result);
+	    
 	    var callback = function(params) {
 		console.log(params);
 		if (wsaleUtils.to_integer(params.self_batch) > 0) {
@@ -1037,7 +1038,9 @@ function wsaleNewProvide(
 	    
     	    if (result.ecode === 0){
 		var scoreTicket = result.sticket;
-		var promotionTickets = result.pticket;
+		var promotionTickets = result.pticket.filter(function(p) {
+		    return p.ubalance === diablo_invalid || p.ubalance <= $scope.select.should_pay;
+		});
 		
     		diabloUtilsService.edit_with_modal(
     		    "new-ticket.html",
@@ -3826,6 +3829,11 @@ function wsaleNewDetailProvide(
 	} else if ($scope.ticketPlans.length === 0) {
 	    dialog.set_error("会员电子券赠送", 2715);
 	} else {
+	    var wholeBalance = (r.has_pay - r.ticket) - (r.has_pay - r.ticket) % 100;
+	    var realBalance  = wholeBalance;
+	    var ticketLength = $scope.ticketPlans.length;
+	    var validPlans   = [], maxSend;
+	    
 	    var callback = function(params) {
 		console.log(params);
 		// get all ticket
@@ -3876,12 +3884,7 @@ function wsaleNewDetailProvide(
 		    });
 		} 
 	    };
-
 	    
-	    var wholeBalance = (r.has_pay - r.ticket) - (r.has_pay - r.ticket) % 100;
-	    var realBalance = wholeBalance;
-	    var ticketLength = $scope.ticketPlans.length;
-	    var validPlans = [], maxSend; 
 	    if (0 === $scope.setting.gift_ticket_strategy) {
 		maxSend = 5;
 		// max

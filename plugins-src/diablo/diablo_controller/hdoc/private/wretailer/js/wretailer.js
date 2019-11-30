@@ -2068,6 +2068,7 @@ function wretailerPlanCustomTicketCtrlProvide(
 		 expire:  retailerUtils.to_integer(params.expire),
 		 scount:  retailerUtils.to_integer(params.scount),
 		 mbalance:retailerUtils.to_integer(params.mbalance),
+		 ubalance:retailerUtils.to_integer(params.ubalance),
 		 ishop:   retailerUtils.to_integer(params.ishop.id),
 		 remark: params.remark ? diablo_trim(params.remark) : undefined}
 	    ).then(function(result) {
@@ -2100,6 +2101,8 @@ function wretailerPlanCustomTicketCtrlProvide(
 		 effect   :diablo_get_modified(params.effect, p.effect),
 		 expire   :diablo_get_modified(params.expire, p.expire),
 		 scount   :diablo_get_modified(params.scount, p.scount),
+		 mbalance :diablo_get_modified(params.mbalance, p.mbalance),
+		 ubalance :diablo_get_modified(params.ubalance, p.ubalance),
 		 remark   :diablo_get_modified(params.remark, p.remark)}
 	    ).then(function(result) {
 		console.log(result);
@@ -2114,6 +2117,25 @@ function wretailerPlanCustomTicketCtrlProvide(
 
 	dialog.edit_with_modal("new-ticket-plane.html", undefined, callback, undefined, p);
     };
+
+    $scope.delete_plan = function(p) {
+	var callback = function() {
+	    wretailerService.delete_ticket_plan(p.id).then(function(result) {
+		console.log(result);
+		if (result.ecode === 0) {
+		    dialog.response_with_callback(
+			true, "删除制券方案", "删除制券方案成功！！", undefined, $scope.refresh);
+		} else {
+		    dialog.set_error("删除制券方案", result.ecode);
+		}
+	    });
+	};
+	
+	dialog.request(
+	    "删除制券方案",
+	    "制券方案删除后不可恢复，确定要该删除方案吗？",
+	    callback);
+    }
 };
 
 

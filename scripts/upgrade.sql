@@ -686,6 +686,9 @@ alter table print_template add column font_feather TINYINT default 0 after font_
 alter table print_template add column hpx_feather TINYINT default 0 after hpx_fabric;
 alter table print_template add column offset_feather TINYINT default 0 after offset_fabric3;
 
+--2019-11-30
+alter table w_ticket_plan add column ubalance INTEGER default -1 after mbalance;
+
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;
 
