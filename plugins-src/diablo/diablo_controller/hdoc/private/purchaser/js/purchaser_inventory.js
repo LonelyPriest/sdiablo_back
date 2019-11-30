@@ -11,7 +11,8 @@ function purchaserInventoryNewCtrlProvide (
     // console.log(user); 
     $scope.brands      = filterBrand;
     $scope.types       = filterType;
-    $scope.size_groups = filterSizeGroup;
+    $scope.size_groups = angular.copy(filterSizeGroup);
+    diablo_order($scope.size_groups);
     $scope.firms       = filterFirm;
     $scope.colors      = filterColor;
     $scope.color_types = filterColorType;
@@ -693,7 +694,7 @@ function purchaserInventoryNewCtrlProvide (
 		path        : add.path,
 		alarm_day   : add.alarm_day,
 		total       : add.total,
-		score       : $scope.select.shop.score_id 
+		score       : add.state === 3 ? diablo_invalid : $scope.select.shop.score_id 
 	    })
 	};
 
@@ -1674,6 +1675,28 @@ function purchaserInventoryNewCtrlProvide (
 	$scope.good.sizes = diablo_empty_string;
 	$scope.selectGroups = [];
     };
+
+    $scope.select_group = function(groups, g){
+	for(var i=0, l=groups.length; i<l; i++){
+	    if (groups[i].id !== g.id && diablo_no === $scope.base_settings.m_sgroup){
+		groups[i].select = false;
+	    }
+	}
+    };
+    
+    $scope.select_group_short = function(key, groups) {
+	// console.log(key, groups);
+	for(var i=0, l=groups.length; i<l; i++) {
+	    if (groups[i].order_id === key - 48) {
+		if (angular.isDefined(groups[i].select))
+		    groups[i].select = !groups[i].select;
+		else
+		    groups[i].select = true;
+
+		if (groups[i].select) $scope.select_group(groups, groups[i]);
+	    }
+	}
+    };
     
     $scope.select_size = function(){
 	var callback = function(params){
@@ -1689,21 +1712,21 @@ function purchaserInventoryNewCtrlProvide (
 	    }); 
 	    console.log($scope.selectGroups); 
 	    $scope.size_groups = params.groups;
-	};
+	}; 
 
-	var select_group = function(groups, g){
-	    for(var i=0, l=groups.length; i<l; i++){
-		if (groups[i].id !== g.id
-		    && diablo_no === $scope.base_settings.m_sgroup){
-		    groups[i].select = false;
-		}
-	    }
-	}
-
+	// force
+	angular.forEach($scope.size_groups, function(g) {
+	    if (angular.isDefined(g.select) && g.select)
+		g.focus = true;
+	    else
+		g.focus = (g.order_id === 1);
+	});
+	
 	diabloUtilsService.edit_with_modal(
 	    "select-size.html", 'lg',
-	    callback, $scope, {groups: $scope.size_groups,
-			       select_group: select_group});
+	    callback,
+	    $scope,
+	    {groups: $scope.size_groups});
     };
 
     /*

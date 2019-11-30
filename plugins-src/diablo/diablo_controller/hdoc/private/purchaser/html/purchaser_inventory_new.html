@@ -918,7 +918,10 @@
 			     class="form-control" 
 			     placeholder="均码无需选择"
 			     x-ng-enter="select_size()"
-			     x-ng-model="good.sizes" />
+			     x-ng-model="good.sizes"
+			     ng-shortcut
+			     key="67"
+			     go="free_size()"/>
 		      <span class="input-group-btn">
 			<button class="btn btn-primary" x-ng-click="select_size()">
 			  <i class="glyphicon glyphicon-arrow-right"></i>
@@ -1609,17 +1612,19 @@
     <div class="table-responsive">
       <table class="table table-bordered
 		    table-striped table-condensed table-advanced">
-	<tbody>
+	<tbody ng-keybind go="select_group_short" params="params.groups">
 	  <tr class="text-center" x-ng-repeat="g in params.groups">
 	    <td class="vert-align">
 	      <div class="checkbox checkbox-danger checkbox-circle">
 		<input id={{g.id}} type="checkbox"
 		       x-ng-model="g.select"
-		       x-ng-click="params.select_group(params.groups, g)"
+		       focus-auto="g.focus"
+		       x-ng-click="select_group(params.groups, g)"
 		       x-ng-enter="ok()"/> 
-		<label for={{g.id}}>{{g.name}}</label>
+		<label for={{g.id}}>{{g.order_id}}</label>
 	      </div>
 	    </td>
+	    <td class="vert-align">{{g.name}}</td>
 	    <td class="vert-align">{{g.si}}</td>
 	    <td class="vert-align">{{g.sii}}</td>
 	    <td class="vert-align">{{g.siii}}</td>

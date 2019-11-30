@@ -439,6 +439,29 @@ diabloUtils.directive('ngShortcut', function(){
     }
 });
 
+diabloUtils.directive('ngKeybind', function(){
+    return {
+	restrict: 'AE',
+	scope: {
+	    go: '=',
+	    params: '='
+	},
+	
+	link:function (scope, element, attrs) {
+            element.bind("keydown", function (event) {
+		// console.log(event);
+		var f = scope.go; 
+                scope.$apply(function(){
+		    if (angular.isFunction(f)) {
+			f(event.which, scope.params);
+		    }
+		}); 
+		event.preventDefault();
+	    });
+	}
+    }
+});
+
 diabloUtils.directive('saleShortcut', function(){
     return {
 	restrict: 'AE',
