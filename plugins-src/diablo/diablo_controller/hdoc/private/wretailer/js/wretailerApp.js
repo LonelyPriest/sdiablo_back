@@ -86,7 +86,7 @@ function wretailerConfig(angular) {
 	    when('/wretailer_detail', {
 		templateUrl: '/private/wretailer/html/wretailer_detail.html',
 		controller: 'wretailerDetailCtrl',
-		resolve: angular.extend({}, employee, charge, region, user, base)
+		resolve: angular.extend({}, employee, charge, region, ticket_plan, user, base)
 	    }).
 	    when('/print_w_retailer/:search/:sort?', {
 		templateUrl: '/private/wretailer/html/print_w_retailer.html',
@@ -137,7 +137,7 @@ function wretailerConfig(angular) {
 	    when('/ticket/custom_ticket_detail', {
 		templateUrl: '/private/wretailer/html/custom_ticket_detail.html',
 		controller: 'wretailerCustomTicketDetailCtrl',
-		resolve: angular.extend({}, ticket_plan, shop)
+		resolve: angular.extend({}, ticket_plan, shop, employee)
 	    }).
 	    when('/ticket/plan_custom_ticket', {
 		templateUrl: '/private/wretailer/html/custom_ticket_plan.html',
@@ -176,7 +176,7 @@ function wretailerConfig(angular) {
 	    otherwise({
 		templateUrl: '/private/wretailer/html/wretailer_detail.html',
 		controller: 'wretailerDetailCtrl',
-		resolve: angular.extend({}, employee, charge, region, user, base)
+		resolve: angular.extend({}, employee, charge, region, ticket_plan, user, base)
             })
     }]);
 

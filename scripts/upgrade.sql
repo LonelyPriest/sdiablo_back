@@ -689,6 +689,14 @@ alter table print_template add column offset_feather TINYINT default 0 after off
 --2019-11-30
 alter table w_ticket_plan add column ubalance INTEGER default -1 after mbalance;
 
+--2019-12-03
+alter table sms_rate add column sign VARCHAR(32) not null default '';
+alter table sms_rate add column team TINYINT not null default 0;
+alter table w_sale_detail add column reject TINYINT not null default 0;
+alter table w_sale modify column state VARCHAR(16) not null default '0';
+
+alter table w_ticket_custom add column employee VARCHAR(8) not null default '-1';
+
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;
 

@@ -72,7 +72,8 @@
 			<th>序号</th>
 			<th>批次号</th>
 			<th>制券方案</th>
-			<th>赠送会员</th>
+			<th>经手人</th>
+			<th>赠送会员</th> 
 			<th>联系方式</th>
 			<th>赠送日期</th>
 			<th>用券日期</th> 
@@ -93,7 +94,11 @@
 		      <tr ng-repeat="t in mticket.tickets">
 			<td x-ng-bind=t.order_id></td>
 			<td x-ng-bind=t.batch></td>
-			<td x-ng-bind=t.plan.name></td> 
+			<td x-ng-bind=t.plan.name></td>
+			<td x-ng-switch on=t.employee_id>
+			  <div x-ng-switch-when="-1" class="text-center">-</div>
+			  <div x-ng-switch-default>{{t.employee.name}}</div>
+			</td>
 			<td x-ng-switch on=t.retailer_id>
 			  <div x-ng-switch-when=-1 class="text-center">-</div>
 			  <div x-ng-switch-default>{{t.retailer}}</div>
@@ -151,8 +156,8 @@
 			</td> 
 		      </tr>
 
-		      <tr x-ng-if="total_items!==0" class="bg-white">
-			<td colspan=9></td>
+		      <tr x-ng-if="mticket.total_items!==0" class="bg-white">
+			<td colspan=10></td>
 			<td>{{mticket.total_balance}}</td>
 			<td></td>
 		      </tr>
@@ -198,6 +203,7 @@
 			<th>序号</th>
 			<th>批次号</th>
 			<th>制券方案</th>
+			<th>经手人</th>
 			<th>赠送会员</th>
 			<th>联系方式</th>
 			<th>赠送日期</th>
@@ -219,7 +225,11 @@
 		      <tr ng-repeat="t in eticket.tickets">
 			<td x-ng-bind=t.order_id></td>
 			<td x-ng-bind=t.batch></td>
-			<td x-ng-bind=t.plan.name></td> 
+			<td x-ng-bind=t.plan.name></td>
+			<td x-ng-switch on=t.employee_id>
+			  <div x-ng-switch-when="-1" class="text-center">-</div>
+			  <div x-ng-switch-default>{{t.employee.name}}</div>
+			</td>
 			<td x-ng-switch on=t.retailer_id>
 			  <div x-ng-switch-when=-1 class="text-center">-</div>
 			  <div x-ng-switch-default>{{t.retailer}}</div>
@@ -278,7 +288,7 @@
 		      </tr>
 
 		      <tr x-ng-if="eticket.total_items!==0" class="bg-white">
-			<td colspan=9></td>
+			<td colspan=10></td>
 			<td>{{eticket.total_balance}}</td>
 			<td></td>
 		      </tr>
@@ -323,6 +333,7 @@
 			<th>序号</th>
 			<th>批次号</th>
 			<th>制券方案</th>
+			<th>经手人</th>
 			<th>赠送会员</th>
 			<th>联系方式</th>
 			<th>赠送日期</th>
@@ -344,7 +355,11 @@
 		      <tr ng-repeat="t in cticket.tickets">
 			<td x-ng-bind=t.order_id></td>
 			<td x-ng-bind=t.batch></td>
-			<td x-ng-bind=t.plan.name></td> 
+			<td x-ng-bind=t.plan.name></td>
+			<td x-ng-switch on=t.employee_id>
+			  <div x-ng-switch-when="-1" class="text-center">-</div>
+			  <div x-ng-switch-default>{{t.employee.name}}</div>
+			</td>
 			<td x-ng-switch on=t.retailer_id>
 			  <div x-ng-switch-when=-1 class="text-center">-</div>
 			  <div x-ng-switch-default>{{t.retailer}}</div>
@@ -403,7 +418,7 @@
 		      </tr>
 
 		      <tr x-ng-if="cticket.total_items!==0" class="bg-white">
-			<td colspan=9></td>
+			<td colspan=10></td>
 			<td>{{cticket.total_balance}}</td>
 			<td></td>
 		      </tr>

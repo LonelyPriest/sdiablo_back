@@ -129,37 +129,37 @@
 		      x-ng-dblclick="(shop_right.update_w_sale && r.state!==1 && r.type!==1) && update_detail(r)">
 		    <td>{{r.order_id}}</td>
 		    <td x-ng-bind="r.account"></td>
-		    <td class="{{css(r.state, r.type)}}">{{r.crsn}}</td>
-		    <td class="{{css(r.state, r.type)}}" x-ng-switch on="r.type">
+		    <td class="{{css(r.check, r.type)}}">{{r.crsn}}</td>
+		    <td class="{{css(r.check, r.type)}}" x-ng-switch on="r.type">
 		      <span x-ng-switch-when=0>开单</span>
 		      <span class="fg-red" x-ng-switch-when=1>退货</span>
 		      <span class="fg-blue" x-ng-switch-when=2>充值</span>
 		    </td>
-		    <td class="{{css(r.state, r.type)}}">{{r.shop.name}}</td>
-		    <td class="{{css(r.state, r.type)}}">{{r.retailer}}</td>
-		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.base">{{r.balance}}</td>
-		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.base">{{r.left_balance}}</td> 
-		    <td class="{{css(r.state, r.type)}}">{{r.employee.name}}</td> 
-		    <td class="{{css(r.state, r.type)}}">{{r.total}}</td> 
-		    <td class="{{css(r.state, r.type)}}" x-ng-switch on="r.type"> 
+		    <td class="{{css(r.check, r.type)}}">{{r.shop.name}}</td>
+		    <td class="{{css(r.check, r.type)}}">{{r.retailer}}</td>
+		    <td class="{{css(r.check, r.type)}}" x-ng-if="show.base">{{r.balance}}</td>
+		    <td class="{{css(r.check, r.type)}}" x-ng-if="show.base">{{r.left_balance}}</td> 
+		    <td class="{{css(r.check, r.type)}}">{{r.employee.name}}</td> 
+		    <td class="{{css(r.check, r.type)}}">{{r.total}}</td> 
+		    <td class="{{css(r.check, r.type)}}" x-ng-switch on="r.type"> 
 		      <span class="fg-red" x-ng-switch-when=1>{{r.should_pay}}</span>
 		      <span x-ng-switch-default>{{r.should_pay}}</span>
 		    </td>
 
-		    <td class="{{css(r.state, r.type)}}" x-ng-switch on="r.type"> 
+		    <td class="{{css(r.check, r.type)}}" x-ng-switch on="r.type"> 
 		      <span class="fg-red" x-ng-switch-when=1>{{r.has_pay}}</span>
 		      <span x-ng-switch-default>{{r.has_pay}}</span>
 		    </td> 
 
-		    <td class="{{css(r.state, r.type)}}">{{r.score}}</td>
+		    <td class="{{css(r.check, r.type)}}">{{r.score}}</td>
 		    
-		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.cash}}</td>
-		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.card}}</td>
-		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.wxin}}</td>
-		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.aliPay}}</td>
-		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.withdraw}}</td>
-		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.ticket}}</td> 
-		    <td class="{{css(r.state, r.type)}}" x-ng-if="show.balance">{{r.verificate}}</td>
+		    <td class="{{css(r.check, r.type)}}" x-ng-if="show.balance">{{r.cash}}</td>
+		    <td class="{{css(r.check, r.type)}}" x-ng-if="show.balance">{{r.card}}</td>
+		    <td class="{{css(r.check, r.type)}}" x-ng-if="show.balance">{{r.wxin}}</td>
+		    <td class="{{css(r.check, r.type)}}" x-ng-if="show.balance">{{r.aliPay}}</td>
+		    <td class="{{css(r.check, r.type)}}" x-ng-if="show.balance">{{r.withdraw}}</td>
+		    <td class="{{css(r.check, r.type)}}" x-ng-if="show.balance">{{r.ticket}}</td> 
+		    <td class="{{css(r.check, r.type)}}" x-ng-if="show.balance">{{r.verificate}}</td>
 
 		    <!-- <td x-ng-if="show.balance"> -->
 		    <!--   <span x-ng-if="r.cbalance !== 0" class="fg-blue"> -->
@@ -172,12 +172,12 @@
 		    <!--   <span x-ng-if="r.sbalance === 0">{{r.sbalance}}</span> -->
 		    <!-- </td> -->
 
-		    <td class="{{css(r.state, r.type)}}">
+		    <td class="{{css(r.check, r.type)}}">
 		      <span x-ng-if="r.comment">{{r.comment}}</span>
 		      <span x-ng-if="!r.comment"></span> 
 		    </td>
 		    
-		    <td class="{{css(r.state, r.type)}}">{{r.entry_date}}</td>
+		    <td class="{{css(r.check, r.type)}}">{{r.entry_date}}</td>
 
 		    <!-- <td x-ng-if="show.action"> -->
 		    <td> 
@@ -186,19 +186,18 @@
 			明细<i class="glyphicon glyphicon-map-marker"></i>
 		      </button>
 
-		      <button x-ng-if="shop_right.update_w_sale && r.state!==1"
+		      <button x-ng-if="shop_right.update_w_sale && !r.check && r.reject!==2"
 			      class="btn diablo-button yellow-crusta"
-			      x-ng-disabled="r.state===1"
 		      	      x-ng-click="update_detail(r)">修改
 			<i class="glyphicon glyphicon-edit"></i></button>
 		      
-		      <button x-ng-if="shop_right.check_w_sale && r.state===0"
+		      <button x-ng-if="shop_right.check_w_sale && !r.check"
 			      class="btn diablo-button green"
 			      x-ng-disabled="r.state===1"
 		      	      x-ng-click="check_detail(r)">审核
 			<i class="glyphicon glyphicon-check"></i></button>
 		      
-		      <button x-ng-if="shop_right.check_w_sale && r.state===1"
+		      <button x-ng-if="shop_right.check_w_sale && r.check"
 			      class="btn diablo-button red"
 			      x-ng-disabled="r.state===0"
 		      	      x-ng-click="uncheck_detail(r)">反审
@@ -207,12 +206,16 @@
 		      <button x-ng-if="setting.gift_ticket_on_sale
 				       && r.retailer_type!==2
 				       && r.type===0
-				       && !r.g_ticket" 
+				       && !r.g_ticket
+				       && !r.reject" 
 			      class="btn diablo-button purple"
 		      	      x-ng-click="gift_ticket(r)">赠券
 			<i class="glyphicon glyphicon-send"></i></button>
 		      
-		      <button x-ng-if="shop_right.check_w_sale && r.type===0 && r.state===0"
+		      <button x-ng-if="shop_right.check_w_sale
+				       && r.type===0
+				       && !r.check
+				       && !r.reject"
 			      class="btn diablo-button red"
 		      	      x-ng-click="delete_detail(r)">删除
 			<i class="glyphicon glyphicon-erase"></i></button> 

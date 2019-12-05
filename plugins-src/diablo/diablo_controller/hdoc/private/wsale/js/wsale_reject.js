@@ -447,11 +447,16 @@ function wsaleRejectCtrlProvide(
 	
 	var added  = [];
 	var rtotal = 0;
+	var has_rejected = 0;
 	// var nscore = 0;
 	for(var i=0, l=$scope.inventories.length; i<l; i++){
 	    var add = $scope.inventories[i];
 	    // if (!add.select || add.total < 0) continue;
 	    if (!add.select) continue;
+	    if (add.has_rejected) {
+		has_rejected += add.reject;
+		continue;
+	    }
 	    rtotal += add.reject;
 	    added.push({
 		style_number: add.style_number,
@@ -505,7 +510,6 @@ function wsaleRejectCtrlProvide(
 	}
 
 	var setv = diablo_set_float; 
-	var seti = diablo_set_integer; 
 	var e_pay = setv($scope.select.extra_pay); 
 
 	var base = {
@@ -526,11 +530,13 @@ function wsaleRejectCtrlProvide(
 	    verificate:    $scope.select.verificate,
 	    g_ticket:      $scope.select.g_ticket,
 	    direct:        wsaleService.direct.wreject,
-	    total:         seti($scope.select.rtotal),
+	    total:         $scope.select.rtotal,
 	    score:         $scope.select.rscore, 
 	    tbatch:        $scope.select.tbatch.length === 0 ? undefined : $scope.select.tbatch,
 	    tcustom:       $scope.select.tcustom,
-	    ticket_score:  $scope.select.ticket_score
+	    ticket_score:  $scope.select.ticket_score,
+	    state:         $scope.select.state,
+	    reject_all:    has_rejected + rtotal === $scope.select.total ? diablo_yes : diablo_no
 	};
 	
 	var print = {
@@ -634,7 +640,7 @@ function wsaleRejectCtrlProvide(
 	for (var i=0, l=$scope.inventories.length; i<l; i++){
 	    var inv = $scope.inventories[i];
 	    // console.log(inv);
-	    if (!inv.select){
+	    if (!inv.select || inv.has_rejected){
 		if (diablo_invalid_index !== inv.sid) {
 		    if (diablo_no === $scope.setting.draw_score) {
 			for (var j=0, k=$scope.select.pscores; j<k; j++) {

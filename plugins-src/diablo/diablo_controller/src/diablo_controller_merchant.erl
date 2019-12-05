@@ -249,6 +249,52 @@ handle_call({new_sms_rate, Merchant, Rate}, _From, State) ->
 	    {reply, Error, State}
     end;
 
+handle_call({new_sms_sign, Merchant, SignName}, _From, State) ->
+    Sql0 = "select id, merchant, rate, sign from sms_rate"
+	" where merchant=" ++ ?to_s(Merchant), 
+    case ?sql_utils:execute(s_read, Sql0) of
+	{ok, []} ->
+	    {reply, {error, ?err(sms_rate_not_exist, Merchant)}, State};
+	{ok, SMS} ->
+	    case ?v(<<"sign">>, SMS) /= SignName of
+		true ->
+		    Timestamp = ?utils:current_time(timestamp),
+		    Account = ?ZZ_SMS_ACCOUNT ++ ?ZZ_SMS_PASSWORD ++ Timestamp,
+		    MD5Sign = crypto:hash(md5, Account),
+		    ?DEBUG("MD5Sing ~p", [MD5Sign]),
+		    AppId = "49",
+		    Name = "钱掌柜",
+		    Params = {[{<<"username">>, ?to_b(?ZZ_SMS_ACCOUNT)},
+			       {<<"timestamp">>, ?to_b(Timestamp)},
+			       {<<"signature">>, ?to_b(MD5Sign)},
+			       {<<"appid">>, ?to_b(AppId)},
+			       {<<"signature_name">>, ?to_b(Name)}
+			      ]},
+		    Body = ?to_s(ejson:encode(Params)),
+		    
+		    
+		    case httpc:request(
+		    	   post, {?ZZ_SMS_SIGN ++ "/signatureAdd",
+		    		  [], [], Body}, [], []) of
+		    	{ok, {{"HTTP/1.1", 200, "OK"}, _Head, Reply}} ->
+		    	    ?DEBUG("Reply ~ts", [Reply]),
+		    	    {struct, Result} = mochijson2:decode(Reply),
+		    	    ?DEBUG("sms result ~p", [Result]);
+			{error, Reason} ->
+		    	    {error, {http_failed, Reason}}
+		    end;
+		    
+		    %% Sql = "update sms_rate set sign=\'" ++ ?to_s(SignName) ++ "\'"
+		    %% 	" where merchant=" ++ ?to_s(Merchant),
+		    %% Reply = ?sql_utils:execute(write, Sql, SignName),
+		    %% {reply, Reply, State}; 
+		false ->
+		    {reply, {error, ?err(sms_sign_same, Merchant)}, State}
+	    end;
+	Error ->
+	    {reply, Error, State}
+    end;
+
 handle_call({charge_sms, Merchant, Balance}, _From, State) ->
     Sql = "update merchants set balance=balance+" ++ ?to_s(Balance)
 	++ " where id=" ++ ?to_s(Merchant),

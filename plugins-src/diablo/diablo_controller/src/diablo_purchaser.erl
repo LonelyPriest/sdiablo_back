@@ -2313,7 +2313,7 @@ handle_call({gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _Fro
 	    %% ?DEBUG("stock ~p", [Stock]),
 	    ABCode = ?v(<<"bcode">>, Stock),
 	    case ABCode =:= <<"0">>
-		orelse  ABCode =:= <<"-1">>
+		orelse  ABCode =:= ?EMPTY_DB_BARCODE
 		orelse ABCode =:= <<>> of
 		true -> 
 		    Year = ?v(<<"year">>, Stock),

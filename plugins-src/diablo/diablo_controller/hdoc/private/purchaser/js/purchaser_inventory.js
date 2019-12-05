@@ -1633,6 +1633,9 @@ function purchaserInventoryNewCtrlProvide (
 
 	    if (angular.isFunction(afterSelectCallback))
 		afterSelectCallback();
+
+	    document.getElementById("n-select-color").focus();
+	    
 	}; 
 
 	var on_select_ucolor = function(item, model, label){
@@ -1684,24 +1687,24 @@ function purchaserInventoryNewCtrlProvide (
 	}
     };
     
-    $scope.select_group_short = function(key, groups) {
-	// console.log(key, groups);
-	for(var i=0, l=groups.length; i<l; i++) {
-	    if (groups[i].order_id === key - 48) {
-		if (angular.isDefined(groups[i].select))
-		    groups[i].select = !groups[i].select;
-		else
-		    groups[i].select = true;
+    $scope.on_select_group_short = function(size, groups) {
+	if (size) {
+	    for(var i=0, l=groups.length; i<l; i++) {
+		if (groups[i].id === size.id) {
+		    if (angular.isDefined(groups[i].select))
+			groups[i].select = !groups[i].select;
+		    else
+			groups[i].select = true;
 
-		if (groups[i].select) $scope.select_group(groups, groups[i]);
+		    if (groups[i].select) $scope.select_group(groups, groups[i]);
+		}
 	    }
-	}
+	} 
     };
-    
+
     $scope.select_size = function(){
 	var callback = function(params){
-	    console.log(params.groups);
-	    
+	    console.log(params.groups);	    
 	    $scope.selectGroups = [];
 	    $scope.good.sizes = "";
 	    angular.forEach(params.groups, function(g){
@@ -1712,15 +1715,17 @@ function purchaserInventoryNewCtrlProvide (
 	    }); 
 	    console.log($scope.selectGroups); 
 	    $scope.size_groups = params.groups;
+	    // focus
+	    document.getElementById("n-select-size").focus();
 	}; 
 
 	// force
-	angular.forEach($scope.size_groups, function(g) {
-	    if (angular.isDefined(g.select) && g.select)
-		g.focus = true;
-	    else
-		g.focus = (g.order_id === 1);
-	});
+	// angular.forEach($scope.size_groups, function(g) {
+	//     if (angular.isDefined(g.select) && g.select)
+	// 	g.focus = true;
+	//     else
+	// 	g.focus = (g.order_id === 1);
+	// });
 	
 	diabloUtilsService.edit_with_modal(
 	    "select-size.html", 'lg',
@@ -2197,7 +2202,16 @@ function purchaserInventoryNewCtrlProvide (
 	    discount:  $scope.good.discount,
 	    alarm_day: -1,
 	    
-	    image: undefined
+	    image: undefined, 
+	    contailer : -1,
+	    
+	    level     : $scope.base_settings.hide_level ? undefined : $scope.levels[1],
+	    executive : $scope.base_settings.hide_executive ? undefined : $scope.std_executives[0],
+	    category  : $scope.base_settings.hide_category ? undefined : $scope.categories[0],
+	    fabrics   : $scope.base_settings.hide_fabric ? undefined : [],
+	    feathers  : $scope.base_settings.hide_feather ? undefined : [],
+
+	    unit      : $scope.base_settings.hide_unit ? undefined : $scope.std_units[0]
 	    // image.file: undefined,
 	    // d_image: true
 	};

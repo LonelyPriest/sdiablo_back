@@ -60,9 +60,14 @@ start_applications(Apps) ->
 manage_applications(Iterate, Do, Undo, SkipError, ErrorHandler, Apps) ->
     Iterate(fun (App, Acc) ->
                     case Do(App) of
-                        ok -> [App | Acc];
-                        {error, {SkipError, _}} -> Acc;
+                        ok ->
+			    io:format("App ~p start ...~n", [App]),
+			    [App | Acc];
+                        {error, {SkipError, _}} ->
+			    io:format("App ~p skip ...~n", [App]),
+			    Acc;
                         {error, Reason} ->
+			    io:format("App ~p start error ...~n", [App]),
                             lists:foreach(Undo, Acc),
                             ErrorHandler(App, Reason)
                     end

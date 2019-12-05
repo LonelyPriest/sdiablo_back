@@ -28,7 +28,7 @@ active() ->
 	    lists:member(App, InstalledPlugins)].
 
 prepare_plugins(EnabledFile, PluginDistDir, ExpandDir) ->
-    %% io:format("EnabledFile ~p~n", [EnabledFile]),
+    io:format("EnabledFile ~p~n", [EnabledFile]),
     AllPlugins = list(PluginDistDir),
     Enabled = read_enabled(EnabledFile),
     %%Enabled = lists:foldl(

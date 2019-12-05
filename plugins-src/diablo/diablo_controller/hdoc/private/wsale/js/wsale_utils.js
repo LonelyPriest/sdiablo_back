@@ -40,6 +40,7 @@ var wsaleUtils = function(){
 	select.g_ticket   = base.g_ticket;
 	
 	select.comment    = base.comment;
+	select.state      = base.state;
 	select.total      = base.total;
 	select.score      = base.score;
 	
@@ -84,6 +85,7 @@ var wsaleUtils = function(){
 		
 		add.reject    = s.amount;
 		add.total     = s.total;
+		add.has_rejected = s.has_rejected; 
 		
 		add.pid       = s.pid;
 		add.sid       = s.sid;
@@ -173,12 +175,10 @@ var wsaleUtils = function(){
 	    base, sells, shops, brands, retailers,
 	    employees, types, colors, size_groups, promotions, scores){
 	    var wsale         = sort_wsale(base, sells);
-	    var details       = wsale.details;
-	    var order_length  = details.length;
-	    
+	    // var details       = wsale.details;
+	    var order_length  = wsale.details.length; 
 	    var show_promotions = [];
-	    angular.forEach(details, function(d){
-
+	    angular.forEach(wsale.details, function(d){
 		if (d.sizes.length !== 1 || d.sizes[0] !== diablo_free_size){
 		    d.sizes = get_size_group(d.s_group, size_groups)
 		}
@@ -187,12 +187,12 @@ var wsaleUtils = function(){
 		    return diablo_find_color(id, colors)
 		});
 		
-		d.brand     = diablo_get_object(d.brand_id, brands);
-		d.type      = diablo_get_object(d.type_id, types); 
-		d.promotion = diablo_get_object(d.pid, promotions);
-		d.score     = diablo_get_object(d.sid, scores);
-		d.select    = true;
-		// d.select    = d.total > 0 ? true : false;
+		d.brand        = diablo_get_object(d.brand_id, brands);
+		d.type         = diablo_get_object(d.type_id, types); 
+		d.promotion    = diablo_get_object(d.pid, promotions);
+		d.score        = diablo_get_object(d.sid, scores); 
+		d.select       = true; 
+		
 		d.order_id  = order_length;
 
 		if (-1 !== d.pid && -1 !== d.sid){
@@ -283,7 +283,8 @@ var wsaleUtils = function(){
 	},
 
 	round: function(shop, base){
-	    return diablo_base_setting("round", shop, base, parseInt, diablo_yes);
+	    return wsaleUtils.to_integer(
+		diablo_base_setting("round", shop, base, parseInt, diablo_yes));
 	},
 
 	scanner: function(shop, base) {
@@ -610,7 +611,7 @@ var wsaleUtils = function(){
 	},
 
 	calc_score_of_money: function(money, score){
-	    return Math.floor(diablo_round(money) / score.balance) * score.score;
+	    return Math.floor(money / score.balance) * score.score;
 	},
 
 	to_float: function(v) {
@@ -874,7 +875,7 @@ var wsaleCalc = function(){
 	    var stocksSortWithPromotion = [];
 	    for (var i=0, l=inventories.length; i<l; i++){
 		var one = inventories[i];
-		if (angular.isDefined(one.select) && !one.select) continue;
+		if ( (angular.isDefined(one.select) && !one.select) || one.has_rejected) continue;
 
 		if (one.o_fprice !== one.fprice) {
 		    one.fdiscount = diablo_discount(one.fprice, one.tag_price); 
@@ -1165,6 +1166,11 @@ var wsaleCalc = function(){
 
 		total      += wsaleUtils.to_integer(count);
 		abs_total  += Math.abs(wsaleUtils.to_integer(count)); 
+
+		// if (round === 2) {
+		//     one.fprice = diablo_round(one.fprice);
+		//     one.fdiscount = diablo_discount(one.fprice, one.tag_price);
+		// }
 		
 		one.o_fprice = one.fprice;
 		one.o_fdiscount = one.fdiscount;
@@ -1203,12 +1209,16 @@ var wsaleCalc = function(){
 	    
 	    score  = wsaleUtils.calc_with_score(pscores, verificate); 
 	    
-	    if (wsaleUtils.to_integer(round) === 1) {
+	    if (round === 1) {
 		if (should_pay >= 0)
 		    should_pay = diablo_round(should_pay)
 		else {
 		    should_pay = -diablo_round(Math.abs(should_pay))
 		}
+	    } else if (round === 2) {
+		
+	    } else {
+		should_pay = wsaleUtils.to_decimal(should_pay);
 	    }
 	    
 	    return {
@@ -1225,10 +1235,12 @@ var wsaleCalc = function(){
 	calc_discount_of_verificate: function(inventories, mode, pay, verificate){
 	    if (wsaleUtils.to_integer(verificate) === 0){
 		return pay;
-	    } 
+	    }
+	    
 	    var p1 = 0;
 	    var one;
-	    var count;
+	    var count; 
+	    
 	    for (var i=0, l=inventories.length; i<l; i++){
 		one = inventories[i];
 		count = wsaleCalc.get_inventory_count(one, mode);

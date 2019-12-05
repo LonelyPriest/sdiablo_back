@@ -459,7 +459,6 @@ var diablo_remove_app_storage = function(appRex){
     }
 };
 
-
 /*
  * add ordered id
 */

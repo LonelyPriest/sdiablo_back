@@ -901,6 +901,9 @@ sys_config() ->
 	      {"m_sale",          "允许负数退货",         "1",   "0"},
 	      {"group_color",     "颜色分组",             "1",   "0"},
 	      {"image_mode",      "图片模式",             "0",   "0"},
+	      %% 0: round none
+	      %% 1: round multi good on sale
+	      %% 2: round single good on sale
 	      {"round",           "四舍五入",             "1",   "0"},
 	      
 	      %% [0]: hide color

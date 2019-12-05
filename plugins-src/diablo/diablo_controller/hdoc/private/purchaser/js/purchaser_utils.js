@@ -1448,7 +1448,7 @@ stockPrintU.prototype.printBarcode2 = function() {
 
     // level
     if (this.template.level) {
-	line = "等级:" + this.stock.level === diablo_invalid ? diablo_level[1] : diablo_level[this.stock.level];
+	line = "等级:" + (this.stock.level === diablo_invalid ? diablo_level[1] : diablo_level[this.stock.level]);
 	top = this.start_print(
 	    line, top, this.left, iwpx, this.template.hpx_each, 0, pSecond, pThird, startSecond, startThird); 
     }
@@ -1731,6 +1731,6 @@ stockPrintU.prototype.printBarcode2 = function() {
 
     // this.LODOP.PRINT_SETUP();
     // this.LODOP.PRINT_DESIGN();
-    // this.LODOP.PREVIEW();
-    this.LODOP.PRINT();
+    this.LODOP.PREVIEW();
+    // this.LODOP.PRINT();
 };

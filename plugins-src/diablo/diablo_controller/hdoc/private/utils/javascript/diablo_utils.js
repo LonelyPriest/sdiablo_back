@@ -439,7 +439,7 @@ diabloUtils.directive('ngShortcut', function(){
     }
 });
 
-diabloUtils.directive('ngKeybind', function(){
+diabloUtils.directive('ngKeybind', function($timeout){
     return {
 	restrict: 'AE',
 	scope: {
@@ -448,14 +448,17 @@ diabloUtils.directive('ngKeybind', function(){
 	},
 	
 	link:function (scope, element, attrs) {
-            element.bind("keydown", function (event) {
-		// console.log(event);
-		var f = scope.go; 
-                scope.$apply(function(){
-		    if (angular.isFunction(f)) {
-			f(event.which, scope.params);
-		    }
-		}); 
+            element.bind("keypress", function (event) {
+		// console.log(event.which);
+		if (event.which > 48 && event.which <= 57) {
+		    scope.$apply(function(){
+			var f = scope.go; 
+			if (angular.isFunction(f)) {
+			    f(keys, scope.params);
+			}
+			$timeout.cancel(promise);
+		    }); 
+		} 
 		event.preventDefault();
 	    });
 	}
@@ -630,6 +633,25 @@ diabloUtils.directive('ngEnter', function () {
                 event.preventDefault();
             }
         });
+    };
+});
+
+diabloUtils.directive('ngEnter2', function () {
+    return {
+	require: 'ngModel',
+	link: function (scope, element, attrs, ngModelCtrl) {
+            element.bind("keydown keypress", function (event) {
+		if(event.which === 13) {
+                    scope.$apply(function (){
+			scope.$eval(attrs.ngEnter2);
+                    });
+		    event.preventDefault();
+		    scope[attrs.ngModel]=undefined;
+		    ngModelCtrl.$setViewValue(undefined);
+		    ngModelCtrl.$render(); 
+		}
+            });
+	}
     };
 });
 

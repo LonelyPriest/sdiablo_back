@@ -199,7 +199,7 @@ function wsaleConfg(angular){
 	    2710: "货品库存不足，无法开单，请核对库存后再导入！！",
 	    2711: "货品款号不唯一，无法定位库存，请核对款号后再导入！！",
 	    2712: "货品数量校验不通过，请核对该货品数量后再导入！！",
-	    2697: "没有要退货的货品，请重新选择货品！！",
+	    2697: "没有要退货的货品或该货品已退货，请重新选择货品！！",
 	    2698: "会员提取金额超过系统上限！！",
 	    2699: "修改前后信息一致，请重新编辑修改项！！",
 	    9001: "数据库操作失败，请联系服务人员！！"};
@@ -412,7 +412,7 @@ function wsaleNewProvide(
     $scope.scores     = filterScore;
     $scope.draws      = filterCharge.filter(function(d){return d.type === diablo_withdraw});
     $scope.ticketPlans = filterTicketPlan.filter(function(p) {
-	return !p.deleted
+	return !p.deleted && p.mbalance === diablo_invalid;
     }).map(function(p) {
 	return {id:       p.id,
 		name:     p.name + "-" + p.balance + "元",
@@ -973,7 +973,7 @@ function wsaleNewProvide(
 
 	diabloFilter.get_all_ticket_by_retailer(
 	    $scope.select.retailer.id,
-	    $scope.select.shop.id,
+	    $scope.select.shop.id
 	).then(function(result){
     	    console.log(result);
 	    
@@ -1125,6 +1125,7 @@ function wsaleNewProvide(
 		shop           :$scope.select.shop.id,
 		shop_name      :$scope.select.shop.name,
 		retailer       :$scope.select.retailer.id,
+		employee       :$scope.select.employee.id,
 		retailer_name  :$scope.select.retailer.name,
 		retailer_phone :$scope.select.retailer.mobile,
 		ticket         :send_tickets
@@ -1151,26 +1152,13 @@ function wsaleNewProvide(
 	};
 
 	// get max send count
-	var maxSend = 0, mbalance = 0, mindex = diablo_invalid_index, validPlans = [];
+	var maxSend = 0, validPlans = [];
 	for (var i=0, l=$scope.ticketPlans.length; i<l; i++) {
-	    var p = $scope.ticketPlans[i];
-	    if (p.scount > maxSend) {
-		maxSend = p.scount; 
-	    }
-	    if (p.mbalance === diablo_invalid) {
-		validPlans.push(p);
-	    } else {
-		if ($scope.select.should_pay >= p.mbalance && p.mbalance > mbalance) {
-		    mbalance = p.balance;
-		    mindex   = i;
-		}
-	    }
-	    
-	};
-    
-	if (mindex !== diablo_invalid_index) {
-	    validPlans.push($scope.ticketPlans[mindex]);
-	}
+	    validPlans.push($scope.ticketPlans[i]);
+	    if ($scope.ticketPlans[i].scount > maxSend) {
+		maxSend = $scope.ticketPlans[i]; 
+	    } 
+	}; 
 	
 	dialog.edit_with_modal(
 	    "gift-ticket.html",
@@ -3465,7 +3453,7 @@ function wsaleNewDetailProvide(
     $scope.current_page = $scope.default_page;
 
     $scope.ticketPlans = filterTicketPlan.filter(function(p) {
-	return !p.deleted
+	return !p.deleted && p.mbalance !== diablo_invalid;
     }).sort(function(p1, p2) {
 	return p2.balance - p1.balance;
     }).map(function(p) {
@@ -3692,7 +3680,9 @@ function wsaleNewDetailProvide(
 		    d.has_pay  = d.should_pay;
 		    d.should_pay = wsaleUtils.to_decimal(d.should_pay + d.verificate);
 		    // charge
-		    d.left_balance = wsaleUtils.to_decimal(d.balance - d.withdraw); 
+		    d.left_balance = wsaleUtils.to_decimal(d.balance - d.withdraw);
+		    d.check  = wsaleUtils.to_integer(d.state.charAt(0)),
+		    d.reject = wsaleUtils.to_integer(d.state.charAt(1))
 		    // if (d.type === diablo_charge){
 		    // 	d.left_balance += d.cbalance + d.sbalance;
 		    // } 
@@ -3777,7 +3767,7 @@ function wsaleNewDetailProvide(
 		    true,
 		    "销售单审核",
 		    "销售单审核成功！！单号：" + state.rsn,
-		    $scope, function(){r.state = 1})
+		    $scope, function(){r.check = 1})
 	    	return;
 	    } else{
 	    	dialog.response(
@@ -3795,7 +3785,7 @@ function wsaleNewDetailProvide(
 	    if (state.ecode == 0){
 		dialog.response_with_callback(
 		    true, "销售单反审", "销售单反审成功！！单号：" + state.rsn,
-		    $scope, function(){r.state = 0})
+		    $scope, function(){r.check = 0})
 	    	return;
 	    } else{
 	    	diabloUtilsService.response(
@@ -3858,6 +3848,7 @@ function wsaleNewDetailProvide(
 			shop           :r.shop_id,
 			shop_name      :r.shop.name,
 			retailer       :r.retailer_id,
+			employee       :r.employee_id,
 			retailer_name  :r.retailer,
 			retailer_phone :r.rphone,
 			ticket         :send_tickets,

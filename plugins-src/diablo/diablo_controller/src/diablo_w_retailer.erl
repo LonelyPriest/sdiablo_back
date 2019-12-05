@@ -1180,11 +1180,16 @@ handle_call({recharge, Merchant, Attrs, ChargeRule}, _From, State) ->
 					?HALF_YEAR_UNLIMIT_CHARGE ->
 					    date_next(?HALF_YEAR_UNLIMIT_CHARGE, {Year, Month, Date});
 					?BALANCE_LIMIT_CHARGE ->
-					    UYear = (Period + Month) div 12,
-					    UMonth = (Period + Month) rem 12,
-					    {Year + UYear,
-					     UMonth,
-					     day_of_next_month(UYear, UMonth, Date)} 
+					    case Period of
+						12 -> {Year + 1, Month, Date};
+						_ ->
+						    UYear = (Period div 12)
+							+ ((Period rem 12 + Month) div 12),
+						    UMonth = (Period + Month) rem 12,
+						    {Year + UYear,
+						     UMonth,
+						     day_of_next_month(UYear, UMonth, Date)}
+					    end
 				    end,
 
 				CardSN =
@@ -1836,7 +1841,7 @@ handle_call({delete_ticket_plan, Merchant, Plan}, _From, State) ->
     {reply, Reply, State};
     
 
-handle_call({gift_ticket, Merchant, {Shop, Retailer, Tickets, WithRSN} = GiftInfo}, _From, State) ->
+handle_call({gift_ticket, Merchant, {Shop, Retailer, Tickets, WithRSN, Employee} = GiftInfo}, _From, State) ->
     ?DEBUG("gift_ticket: merchant ~p, GiftInfo ~p", [Merchant, GiftInfo]),
     Date = ?utils:current_time(localdate),
     Reply = 
@@ -1857,6 +1862,10 @@ handle_call({gift_ticket, Merchant, {Shop, Retailer, Tickets, WithRSN} = GiftInf
 			       ++ case WithRSN of
 				      [] -> [];
 				      _ -> ", sale_new=\'" ++ ?to_s(WithRSN) ++ "\'"
+				  end
+			       ++ case Employee of
+				      [] -> ", employee=\'" ++ ?to_s(?INVALID_OR_EMPTY) ++ "\'";
+				      _ -> ", employee=\'" ++ ?to_s(Employee) ++ "\'"
 				  end
 			       ++ ", in_shop=" ++ ?to_s(Shop)
 			       ++ ", mtime=\'" ++ ?to_s(Date) ++ "\'"
@@ -2461,6 +2470,7 @@ handle_call({filter_custom_ticket_detail, Mode, Merchant, Conditions, CurrentPag
 	", a.batch"
 	", a.plan as plan_id"
 	", a.balance"
+	", a.employee as employee_id"
 	", a.retailer as retailer_id" 
 	", a.state"
 	", a.mtime"
@@ -3113,7 +3123,8 @@ date_next(?HALF_YEAR_UNLIMIT_CHARGE, {Year, Month, Date}) ->
 	    {Year, Month + 6, day_of_next_month(Year, Month + 6, Date)}
     end.
    
-day_of_next_month(CurrentYear, NextMonth, CurrentDay) -> 
+day_of_next_month(CurrentYear, NextMonth, CurrentDay) ->
+    %% ?DEBUG("CurrentDay ~p, NextMonth ~p, CurrentDay ~p", [CurrentYear, NextMonth, CurrentDay]),
     Days = calendar:last_day_of_the_month(CurrentYear, NextMonth),
     case CurrentDay > Days of
 	true -> Days; 

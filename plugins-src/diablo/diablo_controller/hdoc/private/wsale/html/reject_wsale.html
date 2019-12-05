@@ -303,6 +303,7 @@
 		    <th class="text-center">成交价</th> 
 		    <th class="text-center">折扣率</th>
 		    <th class="text-center">合计</th>
+		    <th class="text-center">退货</th>
 		    <th class="text-center">操作</th>
 		  </tr>
 		</thead>
@@ -313,6 +314,7 @@
 			<input id={{inv.order_id}}
 			       type="checkbox"
 			       x-ng-model="inv.select"
+			       x-ng-disabled="inv.has_rejected"
 			       x-ng-click="re_calculate()"/>
 			<label for={{inv.order_id}}></label>
 		      </div>
@@ -329,6 +331,10 @@
 		    <td class="vert-align">{{inv.rprice}}</td>
 		    <td class="vert-align">{{inv.rdiscount}}</td>
 		    <td class="vert-align">{{inv.calc}}</td>
+		    <td class="vert-align">
+		      <div x-ng-if="inv.has_rejected" class="fg-red">否</div>
+		      <div x-ng-if="!inv.has_rejected">是</div>
+		    </td>
 		    
 		    <td class="text-left vert-align"> 
 		      <a class="btn diablo-input-button btn-primary"
@@ -345,6 +351,7 @@
 		    <td></td>
 		    <td></td>
 		    <td class="text-center">{{select.should_pay}}</td>
+		    <td></td>
 		    <td></td>
 		  </tr>
 		</tbody> 

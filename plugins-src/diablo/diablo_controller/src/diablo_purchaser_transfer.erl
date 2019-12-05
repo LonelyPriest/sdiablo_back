@@ -340,7 +340,7 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 		    ++ " and merchant=" ++ ?to_s(Merchant),
 		{ok, Good} = ?sql_utils:execute(s_read, Sql22),
 
-		Sql21 = "select id, style_number, brand, shop, merchant"
+		Sql21 = "select id, bcode, style_number, brand, shop, merchant"
 		    " from w_inventory"
 		    " where "
 		    "style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
@@ -390,8 +390,15 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 			 ++ "\")" 
 			]; 
 		    {ok, R} ->
-			["update w_inventory set"
-			 " amount=amount+" ++ ?to_s(Amount)
+			OldBCode = ?v(<<"bcode">>, R),
+			["update w_inventory set "
+			 ++ case OldBCode == ?EMPTY_DB_BARCODE
+			    orelse OldBCode == <<"0">>
+			    orelse OldBCode == <<>> of
+				true -> "bcode=\'" ++ ?to_s(Barcode) ++ "\', "; 
+				false -> []
+			    end
+			 ++ "amount=amount+" ++ ?to_s(Amount)
 			 ++ ", s_group=\'" ++ ?to_s(SizeGroup) ++ "\'"
 			 %% ++ ", org_price=" ++ ?to_s(OrgPrice) 
 			 %% ++ ", ediscount=" ++ ?to_s(eDiscount)

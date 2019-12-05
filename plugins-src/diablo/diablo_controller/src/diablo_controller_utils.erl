@@ -426,6 +426,31 @@ nth(N, Setting) ->
 	    ?NO
     end.
 
+replace_list_at(S, Position, Value) when is_list(Value) ->
+    ?to_s(replace_binary_list(?to_b(S), Position, ?to_b(Value), 1, <<>>));
+replace_list_at(S, Position, Value) ->
+    ?to_s(replace_binary_list(S, Position, ?to_b(Value), 1, <<>>)).
+    
+replace_binary_list(<<>>, Position, Value, _Len, Acc) ->
+    case Position =< size(Acc) of
+	true -> Acc;
+	false ->
+	    case Position - size(Acc) of
+		1 -> <<Acc/binary, Value/binary>>;
+		Any -> 
+		    R = binary:copy(<<"0">>, Any - 1),
+		    <<Acc/binary, R/binary, Value/binary>>
+	    end
+    end;
+    
+replace_binary_list(<<H:1/binary, T/binary>>, Position, Value, Len, Acc) ->
+    case Position =:= Len of
+	true ->
+	    replace_binary_list(T, Position, Value, Len + 1, <<Acc/binary, Value/binary>>); 
+	false ->
+	    replace_binary_list(T, Position, Value, Len + 1,  <<Acc/binary, H/binary>>)
+    end.
+
 dbvalue(Value) when Value == 0 ->
     ?INVALID_OR_EMPTY;
 dbvalue(Value) ->

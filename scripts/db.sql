@@ -46,6 +46,7 @@ create table merchants
     type             TINYINT default 0,
     shop_count       INTEGER not null default 0, 
     -- province         TINYINT default -1, -- which province
+    sms_sign         VARCHAR(32) not null default '';
     entry_date       DATE,
     deleted          INTEGER default 0, -- 0: no;  1: yes
     unique  key      name (name),
@@ -746,6 +747,7 @@ create table w_ticket_custom(
     sale_new        VARCHAR(32), -- refer to w_sale when gift ticket
     sale_rsn        VARCHAR(32), -- refer to w_sale when use ticket
     balance         INTEGER not null,
+    employee        VARCHAR(8) not null default '-1',
     retailer        INTEGER default -1, -- -1: who consumed
     state           INTEGER default 1, -- 0: discard; 1: checked; 2: consumed; 3:unused
     in_shop         INTEGER default -1, -- produce shop
@@ -836,6 +838,26 @@ create table w_inventory_good
     key              firm  (firm),
     key              bcode (bcode),
     
+    primary key      (id)
+)default charset=utf8;
+
+create table w_inventory_attr
+(
+    id               INTEGER AUTO_INCREMENT,
+    style_number     VARCHAR(64) not null,
+    brand            INTEGER default -1,
+
+    path             VARCHAR(255) default null, -- the image path --
+    level            TINYINT default -1,
+    executive        INTEGER default -1,
+    category         INTEGER default -1,
+    fabric           VARCHAR(256) default null,
+    --
+    merchant         INTEGER default -1,    
+    entry_date       DATETIME default 0,
+    deleted          INTEGER default 0, -- 0: no;  1: yes
+
+    unique key       uk (merchant, style_number, brand),    
     primary key      (id)
 )default charset=utf8;
 
@@ -1206,6 +1228,8 @@ create table w_sale(
 
     g_ticket       TINYINT  default 0,  -- 0:none, 1: has been gift ticket 
     type           TINYINT  default -1, -- 0:sale 1:reject
+    -- [0]-> 0: wait for check, 1: checked
+    -- [1]-> 0: sale normal, 1: some has been reject, 2: all has been reject
     state          TINYINT  default 0,  -- 0:wait for check, 1: checked    
     check_date     DATETIME default 0,  -- date of last change
     entry_date     DATETIME default 0,
@@ -1250,7 +1274,9 @@ create table w_sale_detail(
     rdiscount      DECIMAL(4, 1), -- max: 100
     fprice         DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
     rprice         DECIMAL(10, 2) default 0, -- max: 99999999.99, left blance
-    
+
+    -- 0: sale normal, 1: has been reject
+    reject         TINYINT not null default 0,
     path           VARCHAR(255) default null, -- the image path
     comment        VARCHAR(127) default null,
     entry_date     DATETIME default 0,
@@ -1426,6 +1452,8 @@ create table w_daily_report(
 create table sms_rate(
     id              INTEGER AUTO_INCREMENT,
     merchant        INTEGER not null default -1,
+    sign            VARCHAR(32) not null default '',
+    team            TINYINT not null default 0, -- 0:aliyun, 1:zz.253
     rate            INTEGER default 0, -- fen
     -- send            INTEGER not null default 0,    
     unique  key uk (merchant),

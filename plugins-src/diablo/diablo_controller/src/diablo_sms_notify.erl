@@ -3,7 +3,7 @@
 -include("../../../../include/knife.hrl").
 -include("diablo_controller.hrl").
 
--export([sms_notify/2, sign/1, sms/3, sms/4]).
+-export([sms_notify/2, sign/1, sms/1, sms/3, sms/4]).
 
 sms_notify(Merchant, {Shop, Phone, Action, Money, RetailerBalance, Score}) ->
     ?DEBUG("sms_notify: merchants ~p, shop ~p, phone ~p, action ~p, money ~p"
@@ -408,6 +408,54 @@ send_sms(Phone, SMSTemplate, SMSParams) ->
 	    {error, {http_failed, Reason}}
     end.
 
+sms(zz) ->
+    Timestamp = ?utils:current_time(timestamp),
+    ?DEBUG("timestamp ~p", [Timestamp]),
+    Account = "18692269329123456" ++ ?to_s(Timestamp),
+    ?DEBUG("Account ~p", [Account]),
+    MD5Sign = md5(Account), 
+    ?DEBUG("MD5Sign ~p", [MD5Sign]),
+    AppId = "49",
+    Name = <<"钱掌柜">>,
+    %% Params = {[{<<"username">>, <<"18692269329">>},
+    %% 	       {<<"password">>, <<"123456">>},
+    %% 	       {<<"timestamp">>, ?to_b(Timestamp)},
+    %% 	       {<<"signature">>, ?to_b(MD5Sign)},
+    %% 	       {<<"appid">>, ?to_b(AppId)},
+    %% 	       {<<"signature_name">>, ?to_b(Name)},
+    %% 	       {<<"remind_type">>, <<"0">>},
+    %% 	       {<<"remind_phone">>, <<>>},
+    %% 	       {<<"signature_scene_type">>, <<"1">>},
+    %% 	       {<<"is_online">>, <<"0">>},
+    %% 	       {<<"web_site">>, <<>>},
+    %% 	       {<<"sub_id">>, <<>>} 
+    %% 	      ]},
+
+    Body = lists:concat(["username=", "18692269329",
+			 "&password=", "123456",
+			 "&timestamp=", Timestamp,
+			 "&signature=", MD5Sign,
+			 "&appid=", AppId,
+			 "&signature_name=", ?to_s(Name)]),
+    UTF8Body = unicode:characters_to_list(Body, utf8),
+    ?DEBUG("body ~p", [UTF8Body]), 
+    ?DEBUG("URL ~p", [?ZZ_SMS_SIGN ++ "/signatureAdd"]),
+    case httpc:request(
+	   post, {?ZZ_SMS_SIGN ++ "/signatureAdd",
+		  [], "application/x-www-form-urlencoded;charset=utf-8", UTF8Body}, [], []) of
+	{ok, {{"HTTP/1.1", 200, "OK"}, _Head, Reply}} ->
+	    ?DEBUG("Head ~p", [_Head]),
+	    ?DEBUG("Reply ~ts", [Reply]),
+	    {struct, Result} = mochijson2:decode(Reply),
+	    ?DEBUG("sms result ~p", [Result]),
+	    Status = ?v(<<"status">>, Result),
+	    Code  = ?v(<<"code">>, Result),
+	    Msg   = ?v(<<"msg">>, Result),
+	    ?DEBUG("status ~p, code ~p, msg ~ts", [Status, Code, Msg]);
+	{error, Reason} ->
+	    {error, {http_failed, Reason}}
+    end.
+
 action(0) -> <<"充值">>;
 action(1) -> <<"消费">>;
 action(2) -> <<"退款">>.
@@ -415,4 +463,21 @@ action(2) -> <<"退款">>.
 
 limit_swiming(?INVALID_OR_EMPTY) -> <<"未限制">>;
 limit_swiming(V) ->  ?to_b(V).
+
+md5(S) -> 
+    Md5_bin =  erlang:md5(S),
+    Md5_list = binary_to_list(Md5_bin),
+    lists:flatten(list_to_hex(Md5_list)).
+
+list_to_hex(L) ->
+    lists:map(fun(X) -> int_to_hex(X) end, L).
+
+int_to_hex(N) when N < 256 -> 
+    [hex(N div 16), hex(N rem 16)].
+
+hex(N) when N < 10 ->
+    $0+N;
+hex(N) when N >= 10, N < 16 ->
+    $a + (N-10).
+
      

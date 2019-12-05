@@ -62,9 +62,8 @@ function wretailerNewCtrlProvide(
 function wretailerDetailCtrlProvide(
     $scope, $location, $q, dateFilter, diabloFilter, diabloPattern,
     diabloUtilsService, localStorageService, wretailerService,
-    filterEmployee, filterCharge, filterRegion, user, base){
+    filterEmployee, filterCharge, filterRegion, filterTicketPlan, user, base){
     $scope.employees      = filterEmployee;
-    // $scope.charges        = filterCharge;
     $scope.charges        = filterCharge.filter(function(c){
 	return c.type===diablo_charge && c.deleted!==diablo_has_deleted;
     });
@@ -74,8 +73,20 @@ function wretailerDetailCtrlProvide(
     })
     $scope.draws          = $scope.draws.concat([{id:-1, name:"重置提现方案"}]);;
     $scope.regions        = filterRegion;
+
+    $scope.ticketPlans = filterTicketPlan.filter(function(p) {
+	return !p.deleted && p.mbalance === diablo_invalid;
+    }).map(function(p) {
+	return {id:       p.id,
+		name:     p.name + "-" + p.balance + "元",
+		balance:  p.balance,
+		mbalance: p.mbalance,
+		effect:   p.effect,
+		expire:   p.expire,
+		scount:   p.scount}
+    });
     
-    $scope.shops           = user.sortShops.concat([{id:-1, name:"无"}]);
+    $scope.shops           = user.sortShops;
     $scope.shopIds         = user.shopIds;
     $scope.retailer_types  = wretailerService.retailer_types;
     $scope.months          = retailerUtils.months();
@@ -387,7 +398,7 @@ function wretailerDetailCtrlProvide(
 	return undefined;
     };
     
-    var get_employee = function(shop_id) {
+    $scope.get_employee = function(shop_id) {
 	var validEmployees = $scope.employees.filter(function(e) {
 	    return e.shop === shop_id && e.state === 0;
 	});
@@ -523,7 +534,7 @@ function wretailerDetailCtrlProvide(
 	}; 
 
 	var select_shop = $scope.shops[0];
-	var employees = get_employee(select_shop.id);
+	var employees = $scope.get_employee(select_shop.id);
 
 	var start_charge = function(card_goods) {
 	    dialog.edit_with_modal(
@@ -812,6 +823,91 @@ function wretailerDetailCtrlProvide(
 		}
 	    });
 	});
+    };
+    
+    $scope.gift_ticket = function(retailer) {
+	var callback = function(params) {
+	    console.log(params);
+	    // get all ticket
+	    var send_tickets = [];
+	    angular.forEach(params.tickets, function(t) {
+	    	if (t.plan.id !== diablo_invalid_index) {
+	    	    send_tickets.push({id      :t.plan.id,
+				       balance :t.plan.balance,
+				       count   :t.count,
+				       effect  :t.plan.effect,
+				       expire  :t.plan.expire});
+	    	}
+	    }); 
+	    console.log(send_tickets);
+
+	    diabloFilter.wretailer_gift_ticket({
+		shop           :params.select_shop.id,
+		shop_name      :params.select_shop.name,
+		retailer       :retailer.id,
+		employee       :params.select_employee.id,
+		retailer_name  :retailer.name,
+		retailer_phone :retailer.mobile,
+		ticket         :send_tickets
+	    }).then(function(result) {
+		console.log(result);
+		if (result.ecode === 0) {
+		    $scope.has_gift_ticket = true;
+		    dialog.response(
+			true,
+			"会员优惠卷赠送",
+			"会员[" + retailer.name + "] 卷赠送成功！！"
+			    + function() {
+				if (result.sms_code !== 0) {
+				    var ERROR = require("diablo-error");
+				    return "发送短消息失败：" + ERROR[result.sms_code];
+				} 
+				else return ""; 
+			    }()
+		    );
+		} else {
+		    dialog.set_error("会员电子券赠送", result.ecode);
+		}
+	    });
+	};
+	
+	// get max send count
+	var maxSend = 0, validPlans = [];
+	for (var i=0, l=$scope.ticketPlans.length; i<l; i++) {
+	    validPlans.push($scope.ticketPlans[i]);
+	    if ($scope.ticketPlans[i].scount > maxSend) {
+		maxSend = $scope.ticketPlans[i]; 
+	    }
+	};
+	
+	dialog.edit_with_modal(
+	    "gift-ticket.html",
+	    undefined,
+	    callback,
+	    $scope,
+	    {tickets: [],
+	     add_ticket: function(tickets, planes) {
+		 tickets.push({plan:planes[0], count:1});
+	     }, 
+	     delete_ticket: function(tickets) {
+		 tickets.splice(-1, 1);
+	     },
+	     check_ticket: function(tickets) {
+		 var invalid = false;
+		 for (var i=0, l=tickets.length; i<l; i++) {
+		     if (tickets[i].plan.id === diablo_invalid_index) {
+			 invalid = true;
+			 break;
+		     } 
+		 } 
+		 return !invalid && tickets.length !== 0;
+	     },
+	     retailer: retailer.name + "-" + retailer.mobile,
+	     shops: $scope.shops,
+	     select_shop: $scope.shops[0],
+	     employees: $scope.get_employee($scope.shops[0].id), 
+	     maxSend: maxSend,
+	     planes: [{id:-1, name:"请选择电子券金额"}].concat(validPlans)});
     };
 };
 
@@ -1155,7 +1251,7 @@ function wretailerTicketDetailCtrlProvide(
 
 function wretailerCustomTicketDetailCtrlProvide(
     $scope, diabloFilter, diabloPattern, diabloUtilsService,
-    wretailerService, filterTicketPlan, filterShop){
+    wretailerService, filterTicketPlan, filterShop, filterEmployee){
     // console.log(filterTicketPlan);
     var dialog = diabloUtilsService; 
     // $scope.shops = user.sortShops;
@@ -1236,6 +1332,7 @@ function wretailerCustomTicketDetailCtrlProvide(
 		    	t.in_shop = diablo_get_object(t.in_shop_id, filterShop);
 			t.provide_shop =  diablo_get_object(t.p_shop_id, filterShop);
 			t.plan = diablo_get_object(t.plan_id, filterTicketPlan);
+			t.employee = diablo_get_object(t.employee_id, filterEmployee);
 		    });
 		    
 		    diablo_order(result.data, (page - 1) * $scope.items_perpage + 1);
@@ -1294,7 +1391,7 @@ function wretailerCustomTicketDetailCtrlProvide(
 			    undefined,
 			    function(){});
 		    } else {
-			dialog.set_error(makeTicketTitle, wretailerService.error[result.ecode]);
+			dialog.set_error(makeTicketTitle, result.ecode);
 		    }
 		})
 	    } 

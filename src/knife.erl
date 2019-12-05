@@ -17,13 +17,12 @@
 
 -export([boot/0, rotate_logs/1, ensure_working_log_handlers/0]).
 
-boot()->
+boot()-> 
     knife_utils:start_it(
       fun()->
 	      %% knife frame loaded first
 	      ok = knife_utils:ensure_application_loaded(knife),
 
-	      
 	      %% log intilise
 	      ok = ensure_working_log_handlers(),
 
@@ -32,25 +31,24 @@ boot()->
 	      io:format("plugins=~p~n", [Plugins]),
 
 	      %% knife frame must be started first
-	      StartApps = [knife] ++ Plugins,
+	      StartApps = [inets, crypto, asn1, public_key, ssl, knife] ++ Plugins,
 	      io:format("StartApps=~p~n", [StartApps]),
 
 	      %% start all applications
 	      ok = knife_utils:start_applications(StartApps),
 	      ok = print_plugin_info(Plugins)
-      end).
+      end). 
 
 print_plugin_info([]) ->
     ok;
 print_plugin_info(Plugins) ->
     with_local_io(
-      fun() ->
-	      
+      fun() -> 
               io:format("~n-- plugins running~n"),
               [print_plugin_info(
                  AppName, element(2, application:get_key(AppName, vsn)))
                || AppName <- Plugins],
-              ok
+              ok 
       end).
 
 print_plugin_info(Plugin, Vsn) ->    
@@ -69,10 +67,13 @@ with_local_io(Fun) ->
 %%% Application callbacks
 %%%===================================================================
 start(_StartType, _StartArgs) ->
+    io:format("knife start .... ~n"),
     case knife_sup:start_link() of
 	{ok, Pid} ->
 	    %% register self
 	    true = register(knife, self()),
+	    StartApps = [inets, crypto, asn1, public_key, ssl],
+	    ok = knife_utils:start_applications(StartApps),
 	    {ok, Pid};
 	Error ->
 	    Error

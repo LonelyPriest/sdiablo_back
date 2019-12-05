@@ -229,7 +229,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 			lists:foldr(
 			  fun({struct, Inv}, Acc0)-> 
 				  Amounts = ?v(<<"amounts">>, Inv), 
-				  wsale(new, SaleSn, DateTime, Merchant, RealyShop, Inv, Amounts) ++ Acc0
+				  wsale(new, SaleSn, [], DateTime, Merchant, RealyShop, Inv, Amounts) ++ Acc0
 			  end, [], Inventories), 
 
 		    Sql2 = "insert into w_sale(rsn"
@@ -642,13 +642,22 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
 
 handle_call({check_new, Merchant, RSN, Mode}, _From, State) ->
     ?DEBUG("check_new with merchant ~p, RSN ~p, mode ~p", [Merchant, RSN, Mode]),
-    Sql = "update w_sale set state=" ++ ?to_s(Mode)
-	++ ", check_date=\'" ++ ?utils:current_time(localtime) ++ "\'"
-	++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
-	++ " and merchant=" ++ ?to_s(Merchant),
-
-    Reply = ?sql_utils:execute(write, Sql, RSN),
-    {reply, Reply, State};
+    Sql0 = "select rsn, state from w_sale"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'",
+    case ?sql_utils:execute(s_read, Sql0) of
+	{ok, Sale} ->
+	    <<_SaleState:1/binary, T/binary>> = ?v(<<"state">>, Sale),
+	    BinMode = ?to_b(Mode),
+	    Sql1 = "update w_sale set state=\'" ++ ?to_s(<<BinMode/binary, T/binary>>) ++ "\'"
+		++ ", check_date=\'" ++ ?utils:current_time(format_localtime) ++ "\'"
+		++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+		++ " and merchant=" ++ ?to_s(Merchant), 
+	    Reply = ?sql_utils:execute(write, Sql1, RSN),
+	    {reply, Reply, State};
+	Error ->
+	    {reply, Error, State}
+    end;
 
 handle_call({list_new, Merchant, Conditions}, _From, State) ->
     ?DEBUG("list_new with merchant ~p, condtions ~p", [Conditions, Merchant]),
@@ -709,6 +718,7 @@ handle_call({get_new, Merchant, RSN}, _From, State) ->
 	", score"
 	", comment"
 	", type"
+	", state"
 	", entry_date" 
 	" from w_sale" 
 	++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
@@ -879,6 +889,7 @@ handle_call({trans_detail, Merchant, Conditions}, _From, State) ->
 	", a.rprice"
 	", a.path"
 	", a.comment"
+	", a.has_rejected"
 	
 	", b.color as color_id"
 	", b.size"
@@ -909,6 +920,7 @@ handle_call({trans_detail, Merchant, Conditions}, _From, State) ->
 	", rprice"
 	", path"
 	", comment"
+	", reject as has_rejected"
 	" from w_sale_detail"
 	" where " ++ ?utils:to_sqls(proplists, Conditions) ++ ") a"
 
@@ -969,6 +981,11 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
     TicketBatchs = ?v(<<"tbatch">>, Props, []),
     GTicket      = ?v(<<"g_ticket">>, Props, ?NO),
     TicketCustom = ?v(<<"tcustom">>, Props, ?INVALID_OR_EMPTY),
+    SaleState    = ?v(<<"state">>, Props),
+    RejectAll    = case ?v(<<"reject_all">>, Props) of
+		       ?YES -> 2;
+		       ?NO  -> 1
+		   end,
     
     Sql0 = "select id, name, balance, score, type from w_retailer"
 	" where id=" ++ ?to_s(Retailer)
@@ -977,7 +994,13 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 
     case ?sql_utils:execute(s_read, Sql0) of 
 	{ok, Account} -> 
-	    Sn = lists:concat(["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-R-", ?inventory_sn:sn(w_sale_reject_sn, Merchant)]),
+	    RejectRsn = lists:concat(
+			  ["M-",
+			   ?to_i(Merchant),
+			   "-S-",
+			   ?to_i(Shop),
+			   "-R-",
+			   ?inventory_sn:sn(w_sale_reject_sn, Merchant)]),
 	    {ShopType, RealyShop} = realy_shop(reject, Merchant, Shop),
 
 	    Sql1 =
@@ -987,7 +1010,7 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 			  fun({struct, Inv}, Acc0)->
 				  Amounts = ?v(<<"amounts">>, Inv),
 				  wsale(reject_badrepo,
-					Sn,
+					RejectRsn,
 					Datetime,
 					Merchant,
 					{Shop, RealyShop},
@@ -999,7 +1022,8 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 			  fun({struct, Inv}, Acc0)->
 				  Amounts = ?v(<<"amounts">>, Inv),
 				  wsale(reject,
-					Sn,
+					RejectRsn,
+					SaleRsn,
 					Datetime,
 					Merchant,
 					RealyShop,
@@ -1020,56 +1044,63 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 		end,
 	    ?DEBUG("new pays ~p", [NewPays]),
 	    
-	    Sql2 = "insert into w_sale(rsn"
-		", account"
-		", employ"
-		", retailer"
-		", shop"
-		", merchant"
-		", tbatch"
-		", tcustom"
-		", balance"
-		", should_pay"
-		", cash"
-		", card"
-		", wxin"
-		", aliPay"
-		", ticket"
-		", withdraw"
-		", verificate"
-		", total"
-		", lscore"
-		", score"
-		", comment"
-		", type, entry_date) values("
-		++ "\"" ++ ?to_s(Sn) ++ "\","
-		++ ?to_s(UserId) ++ ","
-		++ "\'" ++ ?to_s(Employe) ++ "\',"
-		++ ?to_s(Retailer) ++ ","
-		++ ?to_s(Shop) ++ ","
-		++ ?to_s(Merchant) ++ ","
-	    %% ++ ?to_s(TicketBatch) ++ ","
-		++ ?to_s(-1) ++ ","
-		++ ?to_s(TicketCustom) ++ ","
-		++ ?to_s(CurrentBalance) ++ ","
-		++ ?to_s(-ShouldPay) ++ ","
-		++ ?to_s(-NewCash) ++ ","
-		++ ?to_s(-NewCard) ++ ","
-		++ ?to_s(-NewWxin) ++ ","
-		++ ?to_s(-NewAliPay) ++ ","
-		++ ?to_s(-NewTicket) ++ ","
-		%% ++ case Withdraw == ShouldPay of
-		%%        true  -> ?to_s(0) ++ ",";
-		%%        false -> ?to_s((Withdraw - ShouldPay)) ++ ","
-		%%    end
-		++ ?to_s(-NewWithdraw) ++ ","
-		++ ?to_s(-Verificate) ++ ","
-		++ ?to_s(-Total) ++ ","
-		++ ?to_s(CurrentScore) ++ ","
-		++ ?to_s(-Score) ++ ","
-		++ "\'" ++ ?to_s(Comment) ++ "\'," 
-		++ ?to_s(type(reject)) ++ ","
-		++ "\'" ++ ?to_s(Datetime) ++ "\');",
+	    Sql2 = ["insert into w_sale(rsn"
+		    ", account"
+		    ", employ"
+		    ", retailer"
+		    ", shop"
+		    ", merchant"
+		    ", tbatch"
+		    ", tcustom"
+		    ", balance"
+		    ", should_pay"
+		    ", cash"
+		    ", card"
+		    ", wxin"
+		    ", aliPay"
+		    ", ticket"
+		    ", withdraw"
+		    ", verificate"
+		    ", total"
+		    ", lscore"
+		    ", score"
+		    ", comment"
+		    ", type, entry_date) values("
+		    ++ "\"" ++ ?to_s(RejectRsn) ++ "\","
+		    ++ ?to_s(UserId) ++ ","
+		    ++ "\'" ++ ?to_s(Employe) ++ "\',"
+		    ++ ?to_s(Retailer) ++ ","
+		    ++ ?to_s(Shop) ++ ","
+		    ++ ?to_s(Merchant) ++ ","
+		    %% ++ ?to_s(TicketBatch) ++ ","
+		    ++ ?to_s(-1) ++ ","
+		    ++ ?to_s(TicketCustom) ++ ","
+		    ++ ?to_s(CurrentBalance) ++ ","
+		    ++ ?to_s(-ShouldPay) ++ ","
+		    ++ ?to_s(-NewCash) ++ ","
+		    ++ ?to_s(-NewCard) ++ ","
+		    ++ ?to_s(-NewWxin) ++ ","
+		    ++ ?to_s(-NewAliPay) ++ ","
+		    ++ ?to_s(-NewTicket) ++ ","
+		    %% ++ case Withdraw == ShouldPay of
+		    %%        true  -> ?to_s(0) ++ ",";
+		    %%        false -> ?to_s((Withdraw - ShouldPay)) ++ ","
+		    %%    end
+		    ++ ?to_s(-NewWithdraw) ++ ","
+		    ++ ?to_s(-Verificate) ++ ","
+		    ++ ?to_s(-Total) ++ ","
+		    ++ ?to_s(CurrentScore) ++ ","
+		    ++ ?to_s(-Score) ++ ","
+		    ++ "\'" ++ ?to_s(Comment) ++ "\'," 
+		    ++ ?to_s(type(reject)) ++ ","
+		    ++ "\'" ++ ?to_s(Datetime) ++ "\')",
+
+		    "update w_sale set "
+		    "state=\'" ++ ?utils:replace_list_at(SaleState, 2, RejectAll) ++ "\'"
+		    ++ " where merchant=" ++ ?to_s(Merchant)
+		    ++ " and shop=" ++ ?to_s(Shop)
+		    ++ " and rsn=\'" ++ ?to_s(SaleRsn) ++ "\'"
+		   ],
 
 	    Sql3 = ["update w_retailer set consume=consume-" ++ ?to_s(ShouldPay)
 		++ case NewWithdraw > 0 of
@@ -1143,7 +1174,7 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 						", merchant"
 						", shop"
 						", entry_date) values("
-						++ "\'" ++ ?to_s(Sn) ++ "\',"
+						++ "\'" ++ ?to_s(RejectRsn) ++ "\',"
 						++ ?to_s(Retailer) ++ ","
 						++ ?to_s(CardNo) ++ ","
 						++ ?to_s(-BackDraw) ++ ","
@@ -1177,8 +1208,8 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 			 ++ " and retailer=" ++ ?to_s(Retailer)
 			 ++ " and state=" ++ ?to_s(?TICKET_STATE_CHECKED)]
 		end, 
-	    AllSql = Sql1 ++ [Sql2] ++ Sql3 ++ Sql4 ++ Sql5 ++ Sql6, 
-	    case ?sql_utils:execute(transaction, AllSql, Sn) of
+	    AllSql = Sql1 ++ Sql2 ++ Sql3 ++ Sql4 ++ Sql5 ++ Sql6, 
+	    case ?sql_utils:execute(transaction, AllSql, RejectRsn) of
 		{error, _} = Error ->
 		    {reply, Error, State};
 		OK ->
@@ -2055,9 +2086,9 @@ wsale(reject_badrepo, RSN, DateTime, Merchant, {Shop, RealyShop}, Inventory, Amo
 			{error, E02} ->
 			    throw({db_error, E02})
 		    end|Acc1] 
-	  end, [], Amounts);
+	  end, [], Amounts).
 
-wsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) -> 
+wsale(Action, RSN, SaleRsn, Datetime, Merchant, Shop, Inventory, Amounts) -> 
     ?DEBUG("wsale ~p with inv ~p, amounts ~p", [Action, Inventory, Amounts]),
     
     StyleNumber = ?v(<<"style_number">>, Inventory),
@@ -2115,8 +2146,7 @@ wsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
     ["update w_inventory set amount=amount-" ++ ?to_s(Total)
      ++ ", sell=sell+" ++ ?to_s(Total) 
      ++ ", last_sell=" ++ "\'" ++ ?to_s(Datetime) ++ "\'"
-     ++ " where " ++ C1(),
-
+     ++ " where " ++ C1(), 
      case ?sql_utils:execute(s_read, Sql00) of
 	 {ok, []} ->
 	     {ValidOrgPrice, ValidEDiscount}
@@ -2125,10 +2155,31 @@ wsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
 		       reject -> {OrgPrice, ?w_good_sql:stock(ediscount, OrgPrice, TagPrice)}
 		   end,
 	     "insert into w_sale_detail("
-		 "rsn, style_number, brand, merchant, shop, type, sex, s_group, free"
-		 ", season, firm, year, in_datetime, total, promotion, score"
-		 ", org_price, ediscount, tag_price, fdiscount, rdiscount, fprice, rprice"
-		 ", path, comment, entry_date) values("
+		 "rsn"
+		 ", style_number"
+		 ", brand"
+		 ", merchant"
+		 ", shop"
+		 ", type"
+		 ", sex"
+		 ", s_group"
+		 ", free"
+		 ", season"
+		 ", firm"
+		 ", year"
+		 ", in_datetime"
+		 ", total"
+		 ", promotion"
+		 ", score"
+		 ", org_price"
+		 ", ediscount"
+		 ", tag_price"
+		 ", fdiscount"
+		 ", rdiscount"
+		 ", fprice, rprice"
+		 ", path"
+		 ", comment"
+		 ", entry_date) values("
 		 ++ "\"" ++ ?to_s(RSN) ++ "\","
 		 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
 		 ++ ?to_s(Brand) ++ ","
@@ -2216,7 +2267,17 @@ wsale(Action, RSN, Datetime, Merchant, Shop, Inventory, Amounts) ->
 		       {error, E01} ->
 			   throw({db_error, E01})
 		   end|Acc1] 
-	  end, [], Amounts).
+	  end, [], Amounts)
+	++ case Action of
+	       new -> []; 
+	       reject ->
+		   ["update w_sale_detail set reject=" ++ ?to_s(?YES)
+		    ++ " where merchant=" ++ ?to_s(Merchant)
+		    ++ " and shop=" ++ ?to_s(Shop)
+		    ++ " and rsn=\'" ++ ?to_s(SaleRsn) ++ "\'"
+		    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+		    ++ " and brand=" ++ ?to_s(Brand)]
+	   end.
 
 count_table(w_sale, Merchant, Conditions) -> 
     SortConditions = sort_condition(wsale, Merchant, Conditions),

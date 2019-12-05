@@ -94,10 +94,20 @@ action(Session, Req, {"update_merchant", Id}, Payload) ->
 
 action(Session, Req, {"new_sms_rate"}, Payload) ->
     ?DEBUG("new_sms_rate with session ~p, paylaod ~p", [Session, Payload]), 
-
     Merchant = ?v(<<"merchant">>, Payload),
     Rate = ?v(<<"rate">>, Payload),
     case ?merchant:sms(new_rate, Merchant, Rate) of
+	{ok, _} ->
+	    ?utils:respond(200, Req, ?succ(add_merchant, Merchant));
+	{error, Error} ->
+	    ?utils:respond(200, Req, Error)
+    end;
+
+action(Session, Req, {"new_sms_sign"}, Payload) ->
+    ?DEBUG("new_sms_sign with session ~p, paylaod ~p", [Session, Payload]), 
+    Merchant = ?v(<<"merchant">>, Payload),
+    Sign = ?v(<<"sign">>, Payload),
+    case ?merchant:sms(new_sign, Merchant, Sign) of
 	{ok, _} ->
 	    ?utils:respond(200, Req, ?succ(add_merchant, Merchant));
 	{error, Error} ->

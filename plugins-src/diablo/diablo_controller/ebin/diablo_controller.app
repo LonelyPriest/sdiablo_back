@@ -46,6 +46,7 @@
                         wretailer_frame,wprint_frame,wgood_frame,sys_frame,
                         wreport_frame,bsale_frame]},
               {registered,[diablo_controller,diablo_controller_sup]},
+              {applications,[kernel,stdlib,inets,crypto,asn1,public_key,ssl]},
               {applications,[kernel,stdlib]},
               {mod,{diablo_controller,[]}},
               {env,[{diablo_port,63552},

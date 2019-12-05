@@ -889,7 +889,7 @@
 		  <label class="col-sm-3 col-md-3 control-label">颜色</label>
 		  <div class="col-sm-6 col-md-6"> 
 		    <div class="input-group">
-		      <input type="text"
+		      <input id="n-select-color" type="text"
 			     readonly
 			     name="color"
 			     class="form-control" 
@@ -914,7 +914,7 @@
 		  <label class="col-sm-3 col-md-3 control-label">尺码</label>
 		  <div class="col-sm-6 col-md-6"> 
 		    <div class="input-group">
-		      <input type="text" readonly
+		      <input id="n-select-size" type="text" readonly
 			     class="form-control" 
 			     placeholder="均码无需选择"
 			     x-ng-enter="select_size()"
@@ -1609,10 +1609,23 @@
 
 <script type="text/ng-template" id="select-size.html"> 
   <div class="modal-body">
+    <div class="diablo-margin-bottom-5">
+      <input
+	 class="form-control"
+	 placeholder="请输入尺码序号"
+	 ng-edit
+	 focus-auto="true"
+	 typeahead-editable="false"
+	 typeahead-on-select=""
+	 uib-typeahead="s as '('+s.order_id+')'+s.name for s in params.groups|filter:$viewValue|limitTo:20"
+	 x-ng-model="params.select_size"
+	 x-ng-enter2="params.select_size?on_select_group_short(params.select_size, params.groups):ok()"/>
+    </div>
+    
     <div class="table-responsive">
       <table class="table table-bordered
 		    table-striped table-condensed table-advanced">
-	<tbody ng-keybind go="select_group_short" params="params.groups">
+	<tbody>
 	  <tr class="text-center" x-ng-repeat="g in params.groups">
 	    <td class="vert-align">
 	      <div class="checkbox checkbox-danger checkbox-circle">

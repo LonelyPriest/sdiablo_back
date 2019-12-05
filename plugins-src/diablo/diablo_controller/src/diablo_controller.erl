@@ -30,6 +30,7 @@ start(normal, _StartArgs) ->
 	    ok = diablo_auto_gen_report:report(stastic_per_shop, {2, 0, am}),
 	    ok = diablo_auto_gen_report:ticket(preferential, {4, 0, am}),
 	    ok = diablo_auto_gen_report:retailer_level(check, {5, 0, am}),
+	    
 
 	    GCTask = {
 	      %% {daily, [{0,  6,  am},

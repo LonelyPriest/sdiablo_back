@@ -185,7 +185,9 @@
 		      <button x-ng-if="r.type_id===1" class="btn green diablo-button"
 			      x-ng-click="charge(r)">充值
 			<i class="glyphicon glyphicon-yen"></i></button>
-		      
+		      <button x-ng-if="r.type_id!==2" class="btn red diablo-button"
+			      x-ng-click="gift_ticket(r)">赠券
+			<i class="glyphicon glyphicon-send"></i></button>
 		      <button class="btn diablo-button purple"
 			      x-ng-click="trans_info(r)">对帐
 			<i class="glyphicon glyphicon-check"></i></button>
@@ -531,9 +533,7 @@
     <form class="form-horizontal" name="cForm" novalidate> 
       <div class="form-body">
 	<div class="form-group">
-	  <span class="col-md-3 col-sm-3 col-xs-3 control-label">
-	    店铺
-	  </span>
+	  <span class="col-md-3 col-sm-3 col-xs-3 control-label">店铺</span>
 	  <div class="col-md-8 col-sm-8 col-xs-8">
 	    <select type="text"
 		    class="form-control"
@@ -1055,4 +1055,107 @@
 	    x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>
+</script>
+
+<script type="text/ng-template" id="gift-ticket.html"> 
+  <div class="modal-body">
+    <form class="form-horizontal" name="rForm" novalidate>
+      <div class="form-body">
+	<div class="form-group">
+	  <div class="input-group">
+	    <span class="input-group-addon">
+	      <i class="glyphicon glyphicon-star fg-red"></i>会员</span>
+	    <input class="form-control"
+		   type="text"
+		   readonly
+		   x-ng-model="params.retailer"/>
+	  </div>
+	</div>
+	
+	<div class="form-group">
+	  <div class="input-group">
+	    <span class="input-group-addon">
+	      <i class="glyphicon glyphicon-map-marker fg-red"></i>店铺</span>
+	    <select type="text"
+		    class="form-control"
+		    x-ng-model="params.select_shop"
+		    x-ng-change="params.employees=get_employee(params.select_shop.id)"
+		    x-ng-options="s as s.name for s in params.shops"> 
+	    </select>
+	  </div>
+	</div>
+	
+	<div class="form-group">
+	  <div class="input-group"> 
+	    <span class="input-group-addon">
+	      <i class="glyphicon glyphicon-user fg-red"></i>经手人</span>
+	    <select class="form-control" type="text"
+		    required
+		    x-ng-model="params.select_employee"
+		    x-ng-options="e as e.name for e in params.employees|filter:$viewValue">
+	    </select>
+	    <span class="input-group-btn"> 
+	      <button x-ng-disabled="params.tickets.length===0"
+		      x-ng-click="params.delete_ticket(params.tickets)"
+		      type="button"
+		      class="btn red">
+		<i class="glyphicon glyphicon-minus"></i></button> 
+	      <button x-ng-click="params.add_ticket(params.tickets, params.planes)"
+		      type="button"
+		      x-ng-disabled="params.planes.length===1 || params.tickets.length===params.maxSend"
+		      class="btn green">
+		<i class="glyphicon glyphicon-plus"></i>
+	      </button>
+	    </span>
+	  </div>
+	</div>
+
+	<div class="form-group">
+	  <div class="table-responsive"> 
+	    <table class="table table-bordered table-striped table-condensed table-advanced">
+	      <thead>
+		<th>电子券金额</th>
+		<th>电子券数量</th>
+	      </thead>
+
+	      <tbody>
+		<tr class="text-center" x-ng-repeat="c in params.tickets">
+		  <td class="vert-align">
+		    <form name="cForm">
+		      <div ng-class="{'has-error':cForm.$invalid && !cForm.$pristine}">
+			<select class="form-control"
+				required
+				x-ng-model="c.plan"
+				x-ng-options="p.name for p in params.planes">
+			</select>
+		      </div>
+		    </form> 
+		  </td>
+
+		  <td class="vert-align">
+		    <form name="pForm">
+		      <div ng-class="{'has-error':pForm.$invalid && !pForm.$pristine}">
+			<input type="number"
+			       class="form-control"
+			       required
+			       x-ng-edit
+			       x-ng-model="c.count"/>
+		      </div>
+		    </form>
+		  </td>
+		  
+		</tr>
+	      </tbody>
+	    </table>
+	  </div>
+	</div>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="rForm.$invalid || !params.check_ticket(params.tickets)" x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>  
 </script>

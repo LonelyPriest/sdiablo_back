@@ -50,6 +50,8 @@ function merchantConfig(angular){
 	    1201: "商家创建失败，已存在同样的商家名称！！",
 	    1202: "删除商家失败，请先删除该商家对应的所有帐户！！",
 	    1203: "商家费率信息已建立！！",
+	    1204: "商家短信费率不存在，请先生成短信费率！！",
+	    1205: "商家签名信息一致！！",
 	    1299: "商家修改前后信息一致，无需修改！！",
 	    9001: "数据库操作失败，请联系服务人员！！"};
 
@@ -110,6 +112,12 @@ function merchantConfig(angular){
 	    return merchant.save(
 		{operation: "new_sms_rate"},
 		{merchant: merchantId, rate: rate}).$promise;
+	};
+
+	this.new_rate = function(merchantId, sign){
+	    return merchant.save(
+		{operation: "new_sms_sign"},
+		{merchant: merchantId, sign: sign}).$promise;
 	};
 
 	this.charge_sms = function(merchantId, name, mobile, balance) {
@@ -282,6 +290,35 @@ function merchantConfig(angular){
 		callback,
 		undefined, 
 		{name:merchant.name, rate: merchant.rate})
+	};
+
+	$scope.new_sms_sign = function(merchant) {
+	    var callback = function(params){
+		console.log(params);
+		merchantService.new_sign(merchant.id, params.sign).then(function(result){
+		    console.log(result);
+		    if (result.ecode === 0){
+			dialog.response_with_callback(
+	    		    true,
+			    "新增短信签名",
+			    "商家 " + merchant.name + " 短信签名创建成功！！",
+	    		    undefined,
+			    function(){merchant.sign = params.sign});  
+		    } else {
+			dialog.response(
+	    		    false,
+			    "新增短信签名",
+	    		    "新增短信签名失败：" + merchantService.error[result.ecode]);
+		    }
+		});
+	    };
+	    
+	    dialog.edit_with_modal(
+		"new-sign.html",
+		undefined,
+		callback,
+		undefined, 
+		{name:merchant.name, sign: merchant.sign})
 	};
 
 	$scope.refresh();

@@ -329,6 +329,10 @@ error(account_of_merchant_not_empty, Merchant) ->
     {1202, "Account of Merchant " ++ ?to_s(Merchant) ++ " is not empty."};
 error(sms_rate_exist, Merchant) ->
     {1203, "sms rate of Merchant " ++ ?to_s(Merchant) ++ " has been exist."};
+error(sms_rate_not_exist, Merchant) ->
+    {1204, "sms rate does not exist " ++ ?to_s(Merchant) ++ "."};
+error(sms_sign_same, Merchant) ->
+    {1205, "same sms sign with merchant:" ++ ?to_s(Merchant) ++ "."};
 
 %% shop
 error(shop_exist, Name) ->
