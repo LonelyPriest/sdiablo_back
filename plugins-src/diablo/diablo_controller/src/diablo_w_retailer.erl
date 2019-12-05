@@ -1866,7 +1866,7 @@ handle_call({gift_ticket, Merchant, {Shop, Retailer, Tickets, WithRSN, Employee}
 			       ++ case Employee of
 				      [] -> ", employee=\'" ++ ?to_s(?INVALID_OR_EMPTY) ++ "\'";
 				      _ -> ", employee=\'" ++ ?to_s(Employee) ++ "\'"
-				  end
+				  end 
 			       ++ ", in_shop=" ++ ?to_s(Shop)
 			       ++ ", mtime=\'" ++ ?to_s(Date) ++ "\'"
 			       ++ ", stime=\'" ++ ?utils:current_date_after(ValidEffect) ++ "\'"
