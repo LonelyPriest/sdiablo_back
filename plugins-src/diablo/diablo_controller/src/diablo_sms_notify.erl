@@ -3,7 +3,7 @@
 -include("../../../../include/knife.hrl").
 -include("diablo_controller.hrl").
 
--export([sms_notify/2, sign/1, sms/1, sms/3, sms/4]).
+-export([sms_notify/2, sign/1, zz_sms/1, sms/3, sms/4]).
 
 sms_notify(Merchant, {Shop, Phone, Action, Money, RetailerBalance, Score}) ->
     ?DEBUG("sms_notify: merchants ~p, shop ~p, phone ~p, action ~p, money ~p"
@@ -408,15 +408,12 @@ send_sms(Phone, SMSTemplate, SMSParams) ->
 	    {error, {http_failed, Reason}}
     end.
 
-sms(zz) ->
+zz_sms(add_sign) ->
     Timestamp = ?utils:current_time(timestamp),
-    ?DEBUG("timestamp ~p", [Timestamp]),
     Account = "18692269329123456" ++ ?to_s(Timestamp),
-    ?DEBUG("Account ~p", [Account]),
     MD5Sign = md5(Account), 
-    ?DEBUG("MD5Sign ~p", [MD5Sign]),
     AppId = "49",
-    Name = <<"钱掌柜">>,
+    Sign = <<"钱掌柜">>,
     %% Params = {[{<<"username">>, <<"18692269329">>},
     %% 	       {<<"password">>, <<"123456">>},
     %% 	       {<<"timestamp">>, ?to_b(Timestamp)},
@@ -436,12 +433,12 @@ sms(zz) ->
 			 "&timestamp=", Timestamp,
 			 "&signature=", MD5Sign,
 			 "&appid=", AppId,
-			 "&signature_name=", ?to_s(Name)]),
+			 "&signature_name=", ?to_s(Sign)]),
     UTF8Body = unicode:characters_to_list(Body, utf8),
     ?DEBUG("body ~p", [UTF8Body]), 
     ?DEBUG("URL ~p", [?ZZ_SMS_SIGN ++ "/signatureAdd"]),
     case httpc:request(
-	   post, {?ZZ_SMS_SIGN ++ "/signatureAdd",
+	   post, {?ZZ_SMS_SIGN ++ "/signature/signatureAdd",
 		  [], "application/x-www-form-urlencoded;charset=utf-8", UTF8Body}, [], []) of
 	{ok, {{"HTTP/1.1", 200, "OK"}, _Head, Reply}} ->
 	    ?DEBUG("Head ~p", [_Head]),
@@ -452,6 +449,63 @@ sms(zz) ->
 	    Code  = ?v(<<"code">>, Result),
 	    Msg   = ?v(<<"msg">>, Result),
 	    ?DEBUG("status ~p, code ~p, msg ~ts", [Status, Code, Msg]);
+	{error, Reason} ->
+	    {error, {http_failed, Reason}}
+    end;
+
+zz_sms(add_template) ->
+    Timestamp = ?utils:current_time(timestamp),
+    Account = "18692269329123456" ++ ?to_s(Timestamp),
+    MD5Sign = md5(Account),
+    AppId = "49",
+    Sign = <<"钱掌柜">>,
+    Content = <<"会员提醒：欢迎光临{s}，本次消费成功，消费金额{m}，当前余额{b}，累计积分{c}，感谢您的惠顾！！">>,
+
+    Body = lists:concat(["username=", "18692269329",
+			 "&password=", "123456",
+			 "&timestamp=", Timestamp,
+			 "&signature=", MD5Sign,
+			 "&appid=", AppId,
+			 "&signature_name=", ?to_s(Sign),
+			 "&content=", ?to_s(Content)]),
+    UTF8Body = unicode:characters_to_list(Body, utf8),
+    case httpc:request(
+	   post, {?ZZ_SMS_SIGN ++ "/template/add",
+		  [], "application/x-www-form-urlencoded;charset=utf-8", UTF8Body}, [], []) of
+	{ok, {{"HTTP/1.1", 200, "OK"}, _Head, Reply}} ->
+	    ?DEBUG("Head ~p", [_Head]),
+	    ?DEBUG("Reply ~ts", [Reply]),
+	    {struct, Result} = mochijson2:decode(Reply),
+	    ?DEBUG("sms result ~p", [Result]),
+	    Status = ?v(<<"status">>, Result),
+	    Code  = ?v(<<"code">>, Result),
+	    Msg   = ?v(<<"msg">>, Result),
+	    ?DEBUG("status ~p, code ~p, msg ~ts", [Status, Code, Msg]);
+	{error, Reason} ->
+	    {error, {http_failed, Reason}}
+    end;
+
+zz_sms(send) ->
+    Account = "N3001234",
+    Password = "dLZJfzK5Mc7a9d",
+    Msg = "【钱掌柜】会员提醒：欢迎光临{$var}，本次消费成功，消费金额{$var}，当前余额{$var}，累计积分{$var}，感谢您的惠顾！！",
+    Params = "18692269329,一帆风顺,399,0,799",
+    SMSParams = ?to_s(ejson:encode({[{<<"account">>, ?to_b(Account)},
+				     {<<"password">>, ?to_b(Password)},
+				     {<<"msg">>, ?to_b(Msg)},
+				     {<<"params">>, ?to_b(Params)}]})),
+    UTF8Body = unicode:characters_to_list(SMSParams, utf8),
+    case httpc:request(
+	   post, {"https://smssh1.253.com/msg/variable/json",
+		  [], "application/json;charset=utf-8", UTF8Body}, [], []) of
+	{ok, {{"HTTP/1.1", 200, "OK"}, _Head, Reply}} ->
+	    ?DEBUG("Head ~p", [_Head]),
+	    ?DEBUG("Reply ~ts", [Reply]),
+	    {struct, Result} = mochijson2:decode(Reply),
+	    ?DEBUG("sms result ~p", [Result]),
+	    Code  = ?v(<<"code">>, Result),
+	    ErrorMsg   = ?v(<<"errorMsg">>, Result),
+	    ?DEBUG("code ~p, msg ~ts", [Code, ErrorMsg]);
 	{error, Reason} ->
 	    {error, {http_failed, Reason}}
     end.

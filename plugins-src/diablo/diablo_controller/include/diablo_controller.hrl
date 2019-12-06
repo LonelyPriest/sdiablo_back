@@ -195,7 +195,7 @@
 -define(SECONDS_BEFOR_1970, 62167219200).
 
 %% sms
--define(ZZ_SMS_SIGN, "https://zz.253.com/apis/signature").
+-define(ZZ_SMS_SIGN, "https://zz.253.com/apis").
 -define(ZZ_SMS_ACCOUNT, "N3001234").
 -define(ZZ_SMS_PASSWORD, "dLZJfzK5Mc7a9d").
 
