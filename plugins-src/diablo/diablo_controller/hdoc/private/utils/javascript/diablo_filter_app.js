@@ -591,13 +591,13 @@ function filterProvider(){
 		})
 	    },
 
-	    match_retailer_phone:function(viewValue, mode) {
+	    match_retailer_phone:function(viewValue, mode, shop, region) {
 		var http = $resource("/wretailer/:operation",
 				     {operation: '@operation'},
 				     {post: {method: 'POST', isArray: true}});
 		
 		return http.post({operation:'match_retailer_phone'},
-				 {prompt:viewValue, mode:mode})
+				 {prompt:viewValue, mode:mode, shop:shop, region:region})
 		    .$promise.then(function(phones){
 			// console.log(phones);
 			return phones.map(function(r){

@@ -2315,9 +2315,9 @@ handle_call({filter_ticket_detail, Merchant, Conditions, CurrentPage, ItemsPerPa
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({match_phone, Merchant, {Mode, Phone}}, _From, #state{prompt=Prompt} = State) ->
-    ?DEBUG("match_phone: merchant ~p, Mode ~p, Phone ~p, state ~p",
-	   [Merchant, Mode, Phone, State]),
+handle_call({match_phone, Merchant, {Mode, Phone, Shops}}, _From, #state{prompt=Prompt} = State) ->
+    ?DEBUG("match_phone: merchant ~p, Mode ~p, Phone ~p, shops ~p, state ~p",
+	   [Merchant, Mode, Phone, Shops, State]),
 
     NewPrompt = 
 	case Prompt =:= 0 of
@@ -2353,6 +2353,7 @@ handle_call({match_phone, Merchant, {Mode, Phone}}, _From, #state{prompt=Prompt}
 	" from w_retailer"
 	
 	++ " where merchant=" ++ ?to_s(Merchant)
+	++ ?sql_utils:condition(proplists, Shops)
 	++ " and "
 	++ case {First, Match, Last} of
 	       {"/", Match, "/"} ->

@@ -291,7 +291,7 @@ var wsaleUtils = function(){
 	    return diablo_base_setting("scanner", shop, base, parseInt, diablo_no);
 	},
 
-	s_member: function(shop, base) {
+	solo_retailer: function(shop, base) {
 	    return diablo_base_setting("s_member", shop, base, parseInt, diablo_no);
 	},
 
@@ -719,17 +719,17 @@ var wsaleUtils = function(){
 	    return o;
 	},
 
-	match_retailer_phone: function(viewValue, filterFun){
+	match_retailer_phone: function(viewValue, filterFun, shop, region){
 	    if (diablo_is_digit_string(viewValue)){
 		if (viewValue.length < 4) return;
 		else if (viewValue.startsWith("9"))
-		    return filterFun.match_retailer_phone(viewValue, 3);
+		    return filterFun.match_retailer_phone(viewValue, 3, shop, region);
 		else
-		    return filterFun.match_retailer_phone(viewValue, 0);
+		    return filterFun.match_retailer_phone(viewValue, 0, shop, region);
 	    } else if (diablo_is_letter_string(viewValue)){
-		return filterFun.match_retailer_phone(viewValue, 1);
+		return filterFun.match_retailer_phone(viewValue, 1, shop, region);
 	    } else if (diablo_is_chinese_string(viewValue)){
-		return filterFun.match_retailer_phone(viewValue, 2);
+		return filterFun.match_retailer_phone(viewValue, 2, shop, region);
 	    } else {
 		return;
 	    } 

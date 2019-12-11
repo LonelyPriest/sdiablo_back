@@ -1254,7 +1254,27 @@ action(Session, Req, {"match_retailer_phone"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     Phone = ?v(<<"prompt">>, Payload),
     Mode  = ?v(<<"mode">>, Payload, 0),
-    ?utils:respond(batch, fun() -> ?w_retailer:match(phone, Merchant, {Mode, Phone}) end, Req).
+    ShopId  = ?v(<<"shop">>, Payload, -1),
+    Shops = 
+	case ?v(<<"region">>, Payload) of
+	    undefined -> [];
+	    ?NO -> [];
+	    ?YES ->
+		{ok, AllShop} = ?w_user_profile:get(shop, Merchant),
+		case lists:filter(fun(S) -> ?v(<<"id">>, S) =:= ShopId end, AllShop) of
+		    [] -> [];
+		    Shop ->
+			SameRegionShops =
+			    lists:filter(
+			      fun(S) ->
+				      ?v(<<"region_id">>, Shop) =:= ?v(<<"region_id">>, S)
+			      end, AllShop),
+			lists:foldr(fun(S, Acc) ->
+					    [?v(<<"id">>, S)|Acc]
+				    end, [], SameRegionShops)
+		end
+	end, 
+    ?utils:respond(batch, fun() -> ?w_retailer:match(phone, Merchant, {Mode, Phone, Shops}) end, Req).
 
 sidebar(Session) ->
     Merchant = ?session:get(merchant, Session),

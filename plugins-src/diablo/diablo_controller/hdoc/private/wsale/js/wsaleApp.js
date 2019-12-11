@@ -576,7 +576,7 @@ function wsaleNewProvide(
 	$scope.setting.no_vip        = wsaleUtils.no_vip(shopId, base);
 	$scope.setting.q_backend     = $scope.q_typeahead(shopId);
 	$scope.setting.round         = wsaleUtils.round(shopId, base);
-	// $scope.setting.smember       = wsaleUtils.s_member(shopId, base);
+	$scope.setting.solo_retailer = wsaleUtils.solo_retailer(shopId, base);
 	$scope.setting.semployee     = wsaleUtils.s_employee(shopId, base);
 	//$scope.setting.cake_mode     = wsaleUtils.cake_mode(shopId, base);
 	$scope.setting.barcode_mode  = wsaleUtils.barcode_mode(shopId, base);
@@ -721,7 +721,11 @@ function wsaleNewProvide(
     
     // retailer;
     $scope.match_retailer_phone = function(viewValue){
-	return wsaleUtils.match_retailer_phone(viewValue, diabloFilter)
+	return wsaleUtils.match_retailer_phone(
+	    viewValue,
+	    diabloFilter,
+	    $scope.select.shop.id,
+	    $scope.setting.solo_retailer);
     };
     
     $scope.set_retailer = function(){
