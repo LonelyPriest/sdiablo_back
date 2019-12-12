@@ -34,7 +34,7 @@ var diablo_male = 1;
 
 var diablo_default_barcode = 0;
 var diablo_free_size = "0";
-var diablo_free_size_name = "均码";
+var diablo_free_size_name = "F";
 var diablo_free_color = 0;
 var diablo_free_color_size = 0;
 var diablo_empty_barcode = "0";
@@ -1191,7 +1191,7 @@ var diabloHelp = function(){
 
 	correct_barcode: function(original, auto_barcode) {
 	    var correct, cuted;
-	    if (auto_barcode) {
+	    if (1 === auto_barcode) {
 		var code_len = original.length; 
 		if (original.startsWith('1')) {
 		    correct = original; 

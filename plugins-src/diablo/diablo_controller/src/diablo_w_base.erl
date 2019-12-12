@@ -991,6 +991,7 @@ sys_config() ->
 
 	      
 	      {"bcode_use",       "条码开单模式",         "0",   "0"},
+	      %% 0: year + flow; 1: year + season + type + flow; 2:use style_number
 	      {"bcode_auto",      "采用系统规则生成条码", "1",   "0"}, 
 	      %% {"trans_orgprice",  "移仓检测进价",         "1",   "0"},
 
@@ -1062,7 +1063,7 @@ sys_config() ->
 	      %%    0-> common transfer 
 	      %%    1-> fast transfer no dialog pop
 	      %%[8]:check stock when stock transfer 0:uncheck, 1:check
-	      {"scan_only",         "扫码模式",           "00000001", "0"},
+	      {"scan_only",         "扫码模式",           "000000011", "0"},
 	      %% {"auto_level",        "会员自动升级",       "0",    "0"},
 	      {"maling_rang",       "抹零范围",           "3",    "0"},
 	      %% 1: clothes mode, 2: child mode, 3: home mode

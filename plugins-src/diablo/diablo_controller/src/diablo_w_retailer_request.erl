@@ -1261,15 +1261,17 @@ action(Session, Req, {"match_retailer_phone"}, Payload) ->
 	    ?NO -> [];
 	    ?YES ->
 		{ok, AllShop} = ?w_user_profile:get(shop, Merchant),
-		case lists:filter(fun(S) -> ?v(<<"id">>, S) =:= ShopId end, AllShop) of
+		%% ?DEBUG("AllShop ~p", [AllShop]),
+		case lists:filter(fun({S}) -> ?v(<<"id">>, S) =:= ShopId end, AllShop) of
 		    [] -> [];
-		    Shop ->
+		    [{Shop}] ->
+			%% ?DEBUG("Shop ~p", [Shop]),
 			SameRegionShops =
 			    lists:filter(
-			      fun(S) ->
+			      fun({S}) ->
 				      ?v(<<"region_id">>, Shop) =:= ?v(<<"region_id">>, S)
 			      end, AllShop),
-			lists:foldr(fun(S, Acc) ->
+			lists:foldr(fun({S}, Acc) ->
 					    [?v(<<"id">>, S)|Acc]
 				    end, [], SameRegionShops)
 		end

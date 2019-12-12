@@ -130,7 +130,9 @@ var wsaleUtils = function(){
 		order_id:  inv.order_id,
 		name:      inv.style_number
 		    + "-" + (inv.brand.name ? inv.brand.name : inv.brand)
-		    + "-" + (inv.type.name  ? inv.type.name: inv.type),
+		    + "-" + (inv.type.name  ? inv.type.name: inv.type)
+		    + "-" + (inv.state === 3 ? "特价" : "正价"),
+		
 		promotion: inv.promotion,
 		score:     inv.score
 	    }; 

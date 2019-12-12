@@ -289,9 +289,9 @@ filter(threshold_card_good, 'and', Merchant, Conditions, CurrentPage, ItemsPerPa
 
 
 %% match
-match(phone, Merchant, {Mode, Phone}) ->
+match(phone, Merchant, {Mode, Phone, Shops}) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {match_phone, Merchant, {Mode, Phone}}).
+    gen_server:call(Name, {match_phone, Merchant, {Mode, Phone, Shops}}).
 
 syn(pinyin, Merchant, Retailers) ->
     Name = ?wpool:get(?MODULE, Merchant),
@@ -2353,7 +2353,7 @@ handle_call({match_phone, Merchant, {Mode, Phone, Shops}}, _From, #state{prompt=
 	" from w_retailer"
 	
 	++ " where merchant=" ++ ?to_s(Merchant)
-	++ ?sql_utils:condition(proplists, Shops)
+	++ ?sql_utils:condition(proplists, [{<<"shop">>, Shops}])
 	++ " and "
 	++ case {First, Match, Last} of
 	       {"/", Match, "/"} ->

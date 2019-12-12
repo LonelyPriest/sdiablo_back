@@ -3438,8 +3438,8 @@ function wsaleNewDetailProvide(
     $scope, $routeParams, $location, dateFilter, diabloUtilsService,
     localStorageService, diabloFilter, wsaleService,
     user, filterEmployee, filterTicketPlan, base){
-    $scope.shops     = user.sortShops.concat(user.sortBadRepoes);
-    $scope.shopIds   = user.shopIds.concat(user.badrepoIds);
+    $scope.shops     = user.sortShops;
+    $scope.shopIds   = user.shopIds;
     $scope.records   = [];
     
     $scope.goto_page = diablo_goto_page;
@@ -3544,7 +3544,11 @@ function wsaleNewDetailProvide(
     };
 
     $scope.match_retailer = function(viewValue) {
-	return wsaleUtils.match_retailer_phone(viewValue, diabloFilter);
+	return wsaleUtils.match_retailer_phone(
+	    viewValue,
+	    diabloFilter,
+	    $scope.shopIds.length === 1 ? $scope.shopIds[0] : [],
+	    $scope.setting.solo_retailer);
     };
     
     // initial
@@ -3565,7 +3569,9 @@ function wsaleNewDetailProvide(
     $scope.sequence_pagination = wsaleUtils.sequence_pagination(diablo_default_shop, base); 
     var sale_mode = wsaleUtils.sale_mode(diablo_default_shop, base);
     $scope.setting.gift_ticket_on_sale = wsaleUtils.to_integer(sale_mode.charAt(19));
-    $scope.setting.gift_ticket_strategy = wsaleUtils.to_integer(sale_mode.charAt(22)); 
+    $scope.setting.gift_ticket_strategy = wsaleUtils.to_integer(sale_mode.charAt(22));
+    $scope.setting.solo_retailer = wsaleUtils.solo_retailer(
+	$scope.shopIds.length === 1 ? $scope.shopIds[0] : diablo_default_shop, base);
     
     /*
      * pagination 

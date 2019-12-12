@@ -81,7 +81,7 @@
 
 -define(FIRM_PREFIX, 1000).
 -define(ONE_DAY, (24 * 60 * 60)).
--define(SQL_TIME_OUT, 10 * 1000).
+-define(SQL_TIME_OUT, 30 * 1000).
 
 %% ticket
 -define(SCORE_TICKET, 0). 

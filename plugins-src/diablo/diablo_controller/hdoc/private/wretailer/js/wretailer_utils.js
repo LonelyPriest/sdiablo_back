@@ -65,13 +65,13 @@ var retailerUtils = function(){
 	    if (diablo_is_digit_string(viewValue)){
 		if (viewValue.length < 4) return;
 		else if (viewValue.startsWith("9"))
-		    return filterFun.match_retailer_phone(viewValue, 3);
+		    return filterFun.match_retailer_phone(viewValue, 3, [], 0);
 		else 
-		    return filterFun.match_retailer_phone(viewValue, 0);
+		    return filterFun.match_retailer_phone(viewValue, 0, [], 0);
 	    } else if (diablo_is_letter_string(viewValue)){
-		return filterFun.match_retailer_phone(viewValue, 1);
+		return filterFun.match_retailer_phone(viewValue, 1, [], 0);
 	    } else if (diablo_is_chinese_string(viewValue)){
-		return filterFun.match_retailer_phone(viewValue, 2);
+		return filterFun.match_retailer_phone(viewValue, 2, [], 0);
 	    } else {
 		return;
 	    } 

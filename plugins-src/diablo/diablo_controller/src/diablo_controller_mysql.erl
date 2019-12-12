@@ -331,6 +331,7 @@ transaction(Pool, Sqls) ->
     %% TransFun = fun() -> [F() || F <- Funs] end,
     TransFun = fun() -> exec_funs(Funs, []) end,
 
+    
     Reply = 
 	case mysql:transaction(Pool, TransFun, ?SQL_TIME_OUT) of
 	    {atomic, Result} ->

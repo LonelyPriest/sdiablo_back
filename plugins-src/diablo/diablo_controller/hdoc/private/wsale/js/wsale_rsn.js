@@ -6,8 +6,8 @@ function wsaleRsnDetailCtrlProvide (
     filterType, filterColor, filterCType, base){
     // console.log($routeParams);
     // console.log(filterEmployee);
-    $scope.shops    = user.sortShops.concat(user.sortBadRepoes);
-    $scope.shopIds  = user.shopIds.concat(user.badrepoIds);
+    $scope.shops    = user.sortShops;
+    $scope.shopIds  = user.shopIds;
     
     $scope.f_mul       = diablo_float_mul;
     $scope.round       = diablo_round;
@@ -93,6 +93,8 @@ function wsaleRsnDetailCtrlProvide (
     
     var sale_mode = wsaleUtils.sale_mode(diablo_default_shop, base);
     $scope.setting.show_note     = wsaleUtils.to_integer(sale_mode.charAt(1));
+    $scope.setting.solo_retailer = wsaleUtils.solo_retailer(
+	$scope.shopIds.length === 1 ? $scope.shopIds[0] : diablo_default_shop, base);
     
     var storage = localStorageService.get(diablo_key_wsale_trans_detail);
     console.log(storage);
@@ -143,7 +145,11 @@ function wsaleRsnDetailCtrlProvide (
     diabloFilter.add_field("firm",     filterFirm);
     diabloFilter.add_field("shop",     $scope.shops); 
     diabloFilter.add_field("retailer", function(viewValue){
-	return wsaleUtils.match_retailer_phone(viewValue, diabloFilter)
+	return wsaleUtils.match_retailer_phone(
+	    viewValue,
+	    diabloFilter,
+	    $scope.shopIds.length === 1 ? $scope.shopIds[0] : [],
+	    $scope.setting.solo_retailer)
     }); 
     diabloFilter.add_field("employee",  filterEmployee); 
     diabloFilter.add_field("sell_type", sell_type);

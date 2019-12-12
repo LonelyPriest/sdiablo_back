@@ -142,6 +142,7 @@ function wsaleUpdateDetailCtrlProvide(
 		$scope.setting.draw_score = wsaleUtils.draw_score(shopId, $scope.base_settings);
 		$scope.setting.vip_mode = wsaleUtils.vip_mode(shopId, $scope.base_settings);
 		$scope.setting.type_sale = wsaleUtils.type_sale(shopId, $scope.base_settings);
+		$scope.setting.solo_retailer = wsaleUtils.solo_retailer(shopId, $scope.base_settings);
 
 		var sale_mode = wsaleUtils.sale_mode(shopId, $scope.base_settings);
 		$scope.setting.score_discount = wsaleUtils.to_integer(sale_mode.charAt(16)) * 10
@@ -189,7 +190,8 @@ function wsaleUpdateDetailCtrlProvide(
 
     // retailer;
     $scope.match_retailer_phone = function(viewValue){
-	return wsaleUtils.match_retailer_phone(viewValue, diabloFilter)
+	return wsaleUtils.match_retailer_phone(
+	    viewValue, diabloFilter, $scope.select.shop.id, $scope.setting.solo_retailer);
     };
 
     $scope.copy_select = function(add, src){
@@ -483,8 +485,7 @@ function wsaleUpdateDetailCtrlProvide(
 	    retailer:      $scope.select.retailer.id,
 	    vip:           wsaleUtils.isVip($scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers),
 	    shop:          $scope.select.shop.id,
-	    datetime:      dateFilter($scope.select.rsn_datetime,
-				      "yyyy-MM-dd HH:mm:ss"),
+	    datetime:      dateFilter($scope.select.rsn_datetime, "yyyy-MM-dd HH:mm:ss"),
 	    employee:      $scope.select.employee.id,
 	    
 	    balance:       $scope.select.surplus, 
@@ -502,8 +503,7 @@ function wsaleUpdateDetailCtrlProvide(
 	    old_balance:     $scope.old_select.surplus,
 	    // old_withdraw:    $scope.old_select.withdraw,
 	    old_should_pay:  $scope.old_select.should_pay,
-	    old_datetime:    dateFilter($scope.old_select.rsn_datetime,
-				       "yyyy-MM-dd HH:mm:ss"),
+	    old_datetime:    dateFilter($scope.old_select.rsn_datetime, "yyyy-MM-dd HH:mm:ss"),
 	    old_score:       $scope.old_select.score,
 	    
 	    total:          seti($scope.select.total),

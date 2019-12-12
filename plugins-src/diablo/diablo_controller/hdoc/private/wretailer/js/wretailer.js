@@ -11,7 +11,7 @@ function wretailerNewCtrlProvide(
 		      id_card:      diabloPattern.id_card,
 		      card:         diabloPattern.card};
     $scope.shops = user.sortShops;
-
+    
     $scope.right = {master: rightAuthen.authen_master(user.type)};    
     if ($scope.right.master) {
 	$scope.retailer_types = wretailerService.retailer_types;
@@ -33,7 +33,7 @@ function wretailerNewCtrlProvide(
     };
 
     $scope.match_retailer_phone = function(viewValue){
-	return retailerUtils.match_retailer_phone(viewValue, diabloFilter)
+	return retailerUtils.match_retailer_phone(viewValue, diabloFilter);
     };
     
     $scope.new_wretailer = function(retailer){
@@ -336,7 +336,7 @@ function wretailerDetailCtrlProvide(
     };
 
     $scope.match_retailer_phone = function(viewValue){
-	return retailerUtils.match_retailer_phone(viewValue, diabloFilter)
+	return retailerUtils.match_retailer_phone(viewValue, diabloFilter);
     };
 
     $scope.use_order = function(mode){
@@ -927,7 +927,7 @@ function wretailerChargeDetailCtrlProvide(
     $scope.filters = []; 
     diabloFilter.reset_field();
     diabloFilter.add_field("retailer", function(viewValue){
-	return retailerUtils.match_retailer_phone(viewValue, diabloFilter)
+	return retailerUtils.match_retailer_phone(viewValue, diabloFilter);
     });
     diabloFilter.add_field("shop", $scope.shops);
     diabloFilter.add_field("employee", filterEmployee);
@@ -1098,7 +1098,7 @@ function wretailerTicketDetailCtrlProvide(
     $scope.filters = []; 
     diabloFilter.reset_field();
     diabloFilter.add_field("retailer", function(viewValue){
-	return retailerUtils.match_retailer_phone(viewValue, diabloFilter)
+	return retailerUtils.match_retailer_phone(viewValue, diabloFilter);
     });
     
     $scope.filter = diabloFilter.get_filter();
@@ -1287,12 +1287,12 @@ function wretailerCustomTicketDetailCtrlProvide(
     $scope.filters = []; 
     diabloFilter.reset_field();
     diabloFilter.add_field("retailer", function(viewValue){
-	return retailerUtils.match_retailer_phone(viewValue, diabloFilter)
+	return retailerUtils.match_retailer_phone(viewValue, diabloFilter);
     });
-    diabloFilter.add_field("ticket_state", retailerUtils.ticket_state()),
-    diabloFilter.add_field("ticket_pshop", filterShop),
-    diabloFilter.add_field("ticket_plan",  filterTicketPlan),
-    diabloFilter.add_field("ticket_batch", []),
+    diabloFilter.add_field("ticket_state", retailerUtils.ticket_state());
+    diabloFilter.add_field("ticket_pshop", filterShop);
+    diabloFilter.add_field("ticket_plan",  filterTicketPlan);
+    diabloFilter.add_field("ticket_batch", []);
     
     $scope.filter = diabloFilter.get_filter();
     $scope.prompt = diabloFilter.get_prompt();
@@ -1494,7 +1494,7 @@ function wretailerThresholdCardDetailCtrlProvide(
     $scope.filters = []; 
     diabloFilter.reset_field();
     diabloFilter.add_field("retailer", function(viewValue){
-	return retailerUtils.match_retailer_phone(viewValue, diabloFilter)
+	return retailerUtils.match_retailer_phone(viewValue, diabloFilter);
     });
     
     $scope.filter = diabloFilter.get_filter();
@@ -1536,7 +1536,7 @@ function wretailerThresholdCardDetailCtrlProvide(
 
 
     $scope.match_retailer_phone = function(viewValue){
-	return retailerUtils.match_retailer_phone(viewValue, diabloFilter)
+	return retailerUtils.match_retailer_phone(viewValue, diabloFilter);
     };
 
     $scope.refresh = function(){
@@ -1828,7 +1828,7 @@ function wretailerThresholdCardSaleCtrlProvide(
     $scope.filters = []; 
     diabloFilter.reset_field();
     diabloFilter.add_field("retailer", function(viewValue){
-	return retailerUtils.match_retailer_phone(viewValue, diabloFilter)
+	return retailerUtils.match_retailer_phone(viewValue, diabloFilter);
     });
     
     $scope.filter = diabloFilter.get_filter();
@@ -1866,7 +1866,7 @@ function wretailerThresholdCardSaleCtrlProvide(
 
 
     $scope.match_retailer_phone = function(viewValue){
-	return retailerUtils.match_retailer_phone(viewValue, diabloFilter)
+	return retailerUtils.match_retailer_phone(viewValue, diabloFilter);
     };
 
     $scope.refresh = function(){
