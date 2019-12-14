@@ -841,13 +841,12 @@ create table w_inventory_good
     primary key      (id)
 )default charset=utf8;
 
-create table w_inventory_attr
+create table w_inventory_print_attr
 (
     id               INTEGER AUTO_INCREMENT,
     style_number     VARCHAR(64) not null,
     brand            INTEGER default -1,
-
-    path             VARCHAR(255) default null, -- the image path --
+        
     level            TINYINT default -1,
     executive        INTEGER default -1,
     category         INTEGER default -1,

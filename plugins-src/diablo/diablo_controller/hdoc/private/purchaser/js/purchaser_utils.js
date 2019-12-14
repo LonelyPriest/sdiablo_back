@@ -1006,7 +1006,7 @@ stockPrintU.prototype.print_type = function(type, top, left, width, printSecond,
 	    this.set_print_font_size(this.template.font_type);
 	}
 	if (printThird) {
-	    this.LODOP.ADD_PRINT_TEXT(top, startSecond, width, this.template.hpx_each, "品名:" + type);
+	    this.LODOP.ADD_PRINT_TEXT(top, startThird, width, this.template.hpx_each, "品名:" + type);
 	    this.set_print_font_size(this.template.font_type);
 	} 
     }

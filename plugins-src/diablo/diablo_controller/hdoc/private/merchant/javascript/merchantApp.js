@@ -114,7 +114,7 @@ function merchantConfig(angular){
 		{merchant: merchantId, rate: rate}).$promise;
 	};
 
-	this.new_rate = function(merchantId, sign){
+	this.new_sign = function(merchantId, sign){
 	    return merchant.save(
 		{operation: "new_sms_sign"},
 		{merchant: merchantId, sign: sign}).$promise;
