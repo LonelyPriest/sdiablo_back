@@ -165,7 +165,7 @@ handle_call({delete_shop, Merchant, ShopId}, _From, State) ->
 	    ++" and shop=" ++ ?to_s(ShopId)
 	    ++ " limit 1") of
 	{ok, []} ->
-	    Sql = "delete from shops where id=" ++ ?to_s(ShopId) ++ " and merchant=" ++ ?to_s(Merchant), 
+	    Sql = "update from shops set deleted=1 where id=" ++ ?to_s(ShopId) ++ " and merchant=" ++ ?to_s(Merchant), 
 	    Reply = ?sql_utils:execute(write, Sql, ShopId),
 	    {reply, Reply, State};
 	{ok, _Stocks} ->

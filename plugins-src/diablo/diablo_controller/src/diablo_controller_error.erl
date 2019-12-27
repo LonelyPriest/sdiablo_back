@@ -562,6 +562,8 @@ error(balance_card_not_enought_money, Card) ->
     {2134, "balance limit card does not enought money:" ++ ?to_s(Card)};
 error(balance_card_expire, Card) ->
     {2135, "balance limit card is in valid date:" ++ ?to_s(Card)};
+error(invalid_ticket_state, State) ->
+    {2136, "invalid ticket state:" ++ ?to_s(State)};
 
 %% wprint
 error(wprint_server_exist, Server) ->

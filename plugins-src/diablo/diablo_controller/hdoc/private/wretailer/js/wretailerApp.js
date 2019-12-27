@@ -203,6 +203,7 @@ function wretailerConfig(angular) {
 	    2110: "该充值方案正在使用，请解挂该充值方案后再删除！！",
 	    2113: "该会员存在充值或销售记录，无法删除，请先删除该会员充值或销售记录后再删除！！",
 	    2114: "会员卡号已被使用，请选择新的会员卡号！！",
+	    2136: "已消费电子券无法废弃，请重新选择条件！！",
 	    9001: "数据库操作失败，请联系服务人员！！"};
 
 	this.score_rules = [
@@ -504,10 +505,10 @@ function wretailerConfig(angular) {
 		{operation: "make_ticket_batch"}, ticket).$promise;
 	};
 
-	this.discard_custom_ticket = function(condition, batch, mode) {
+	this.discard_custom_ticket = function(condition, batch, mode, active) {
 	    return http.save(
 		{operation: "discard_custom_ticket"},
-		{condition:condition, batch:batch, mode:mode}).$promise;
+		{condition:condition, batch:batch, mode:mode, active:active}).$promise;
 	};
 
 	this.filter_custom_ticket_detail = function(match, mode, fields, currentPage, itemsPerpage){

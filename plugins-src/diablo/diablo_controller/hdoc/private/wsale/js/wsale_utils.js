@@ -1841,7 +1841,7 @@ var wsalePrint = function(){
 			if (angular.isFunction(callback)) callback(job);
 		    }
 		}
-		LODOP.PRINT(); 
+		LODOP.PRINT();
 	    } else {
 		var job = LODOP.PRINT();
 		if (job) {

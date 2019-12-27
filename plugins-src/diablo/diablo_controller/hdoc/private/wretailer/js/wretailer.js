@@ -1412,11 +1412,11 @@ function wretailerCustomTicketDetailCtrlProvide(
 	} 
     };
 
-    var discard = function(condition, batch, mode) {
+    var discard = function(condition, batch, mode, active) {
 	console.log(condition);
 	var title = mode===0 ? "优惠券废弃" : "优惠券恢复";
 	var callback = function(params) {
-	    wretailerService.discard_custom_ticket(condition, batch, mode).then(function(result){
+	    wretailerService.discard_custom_ticket(condition, batch, mode, active).then(function(result){
 		if (result.ecode === 0){
 		    dialog.response_with_callback(
 			true, title, "优惠券操作成功！！" ,
@@ -1437,12 +1437,17 @@ function wretailerCustomTicketDetailCtrlProvide(
     $scope.discard_all = function() {
 	diabloFilter.do_filter($scope.filters, $scope.time, function(search) {
 	    console.log(search);
-	    discard(search, 1, 0);
+	    var active;
+	    if ($scope.tab_active.mtime) active = 0;
+	    else if ($scope.tab_active.etime) active = 1;
+	    else if ($scope.tab_active.ctime) active = 2;
+	    else active = 0;
+	    discard(search, 1, 0, active);
 	});
     };
 
     $scope.discard_one = function(ticketId) {
-	discard({tid:ticketId}, 0, 0);
+	discard({tid:ticketId}, 0, 0, 0);
     };
 
     $scope.recover_one = function(ticketId) {

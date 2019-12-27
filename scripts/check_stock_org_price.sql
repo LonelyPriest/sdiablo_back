@@ -33,19 +33,21 @@ select sum(x.ftotal), sum(x.amount) from
 left join w_inventory b on a.style_number=b.style_number and a.brand=b.brand and b.shop=17) x;
 
 -- check transfer
-select a.rsn, a.total, b.amount from (select rsn, total from w_inventory_transfer where fshop=9) a \
-left join (select a.rsn, a.amount from (select rsn, sum(amount) as amount from w_inventory_transfer_detail where fshop=9 group by rsn) a) b on a.rsn=b.rsn where a.total!=b.amount;
+select a.rsn, a.total, b.amount from (select rsn, total from w_inventory_transfer where fshop=93) a \
+left join (select a.rsn, a.amount from (select rsn, sum(amount) as amount from w_inventory_transfer_detail where fshop=93 group by rsn) a) b on a.rsn=b.rsn where a.total!=b.amount;
 
 /*
 * check stock in
 */
 select x.rsn, x.total, x.amount from \
 (select a.rsn, b.style_number, b.brand, a.total, b.amount from w_inventory_new a left join \
-(select rsn, style_number, brand, sum(amount) as amount from w_inventory_new_detail where rsn like 'm-15-s-56-%' group by rsn) b on a.rsn=b.rsn where a.rsn like 'm-15-s-56-%') x where x.total!=x.amount;
+(select rsn, style_number, brand, sum(amount) as amount from w_inventory_new_detail where rsn like 'm-23-s-93-%' group by rsn) b on \
+a.rsn=b.rsn where a.rsn like 'm-23-s-93-%') x where x.total!=x.amount;
 
 select a.rsn, a.style_number, a.brand, a.total, b.amount from \
-(select rsn, style_number, brand, sum(total) as total from w_inventory_new_detail_amount where rsn like 'm-16-s-62-%' group by rsn) a left join \
-(select rsn,style_number, brand, sum(amount) as amount from w_inventory_new_detail where rsn like 'm-16-s-62%' group by rsn) b on a.rsn=b.rsn where a.total!=b.amount;
+(select rsn, style_number, brand, sum(total) as total from w_inventory_new_detail_amount where rsn like 'm-23-s-93-%' group by rsn) a left join \
+(select rsn,style_number, brand, sum(amount) as amount from w_inventory_new_detail where rsn like 'm-23-s-93-%' group by rsn) b \
+on a.rsn=b.rsn where a.total!=b.amount;
 
 -- syn shop of w_inventory_new_detail
 update w_inventory_new_detail s inner join (select id, substring_index(a.s1, "-", -1) as shop from (select id, substring_index(rsn, "-", 4) as s1 from w_inventory_new_detail where shop=-1) a) ss on s.id=ss.id set s.shop=ss.shop;

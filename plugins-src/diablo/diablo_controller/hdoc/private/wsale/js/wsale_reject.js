@@ -401,6 +401,7 @@ function wsaleRejectCtrlProvide(
 		    top,
 		    wsaleService.direct.wreject,
 		    $scope.select,
+		    $scope.select.retailer.balance,
 		    wsaleUtils.isVip(
 			$scope.select.retailer, $scope.setting.no_vip, $scope.sysRetailers),
 		    $scope.print_setting);

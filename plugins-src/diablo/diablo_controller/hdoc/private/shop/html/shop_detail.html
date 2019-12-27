@@ -43,7 +43,8 @@
 		    <!-- <th>归属人</th> -->
 		    <th>地址</th>
 		    <th>区域</th>
-		    <th x-ng-show="authen_list_repo">所属仓库</th>
+		    <th>类型</th>
+		    <!-- <th x-ng-show="authen_list_repo">所属仓库</th> -->
 		    <th>开张日期</th>
 		    <th>创建日期</th>
 		    <th>微信群</th>
@@ -80,10 +81,16 @@
 		      <div x-ng-if="shop.region_id===-1">-</div>
 		      <div x-ng-if="shop.region_id!==-1">{{shop.region.name}}</div>
 		    </td>
-		    <td x-ng-if="authen_list_repo" x-ng-switch on="shop.repo">
-		      <div ng-switch-when=undefined>-</div>
-		      <div ng-switch-default>{{shop.repo.name}}</div>
+		    <td class="text-center">
+		      <div x-ng-if="shop.type===0">店铺</div>
+		      <div x-ng-if="shop.type===1">仓库</div>
 		    </td>
+		    
+		    <!-- <td x-ng-if="authen_list_repo" x-ng-switch on="shop.repo"> -->
+		    <!--   <div ng-switch-when=undefined>-</div> -->
+		    <!--   <div ng-switch-default>{{shop.repo.name}}</div> -->
+		    <!-- </td> -->
+		    
 		    <td>{{shop.open_date}}</td>
 		    <td>{{shop.entry_date}}</td>
 		    <td><image x-ng-show="shop.bcode_friend"

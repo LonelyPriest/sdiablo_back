@@ -949,6 +949,7 @@ action(Session, Req, {"discard_custom_ticket"}, Payload) ->
     {struct, Conditions} = ?v(<<"condition">>, Payload),
     Batch = ?v(<<"batch">>, Payload),
     Mode  = ?v(<<"mode">>, Payload, 0),
+    Active = ?v(<<"active">>, Payload, 0),
 
     case Batch of
 	?TICKET_DISCARD_ONE ->
@@ -960,11 +961,16 @@ action(Session, Req, {"discard_custom_ticket"}, Payload) ->
 		    ?utils:respond(200, Req, Error)
 	    end;
 	?TICKET_DISCARD_ALL ->
-	    case ?w_retailer:ticket(discard_custom_all, Merchant, Conditions, Mode) of
-		{ok, Merchant} ->
-		    ?utils:respond(200, Req, ?succ(discard_ticket_all, Merchant));
-		{error, Error} ->
-		    ?utils:respond(200, Req, Error)
+	    case ?v(<<"ticket_state">>, Conditions) of
+		?TICKET_STATE_CONSUMED ->
+		    ?utils:respond(200, Req, ?err(invalid_ticket_state, ?TICKET_STATE_CONSUMED));
+		_ ->
+		    case ?w_retailer:ticket(discard_custom_all, Merchant, Conditions, {Mode, Active}) of
+			{ok, Merchant} ->
+			    ?utils:respond(200, Req, ?succ(discard_ticket_all, Merchant));
+			{error, Error} ->
+			    ?utils:respond(200, Req, Error)
+		    end
 	    end
     end;
 

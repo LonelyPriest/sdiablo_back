@@ -162,10 +162,10 @@ ticket(gift, Merchant, GiftInfo) ->
 
 ticket(discard_custom_one, Merchant, TicketId, Mode) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {discard_custom_one, Merchant, TicketId, Mode});
-ticket(discard_custom_all, Merchant, Conditions, Mode) ->
+    gen_server:call(Name, {discard_custom_one, Merchant, TicketId, Mode}); 
+ticket(discard_custom_all, Merchant, Conditions, {Mode, Active}) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {discard_custom_all, Merchant, Conditions, Mode}).
+    gen_server:call(Name, {discard_custom_all, Merchant, Conditions, Mode, Active}).
 
 ticket(list_plan, Merchant) ->
     Name = ?wpool:get(?MODULE, Merchant),
@@ -1912,7 +1912,7 @@ handle_call({discard_custom_one, Merchant, TicketId, Mode}, _From, State) ->
 			    "update w_ticket_custom set state=" ++ ?to_s(?CUSTOM_TICKET_STATE_DISCARD)
 				++ " where merchant=" ++ ?to_s(Merchant)
 				++ " and id=" ++ ?to_s(TicketId)
-				++ " and state in(1,3)"; %% checked, unused
+				++"  and state in(1,3)"; %% checked, unused
 			1 ->
 			    "update w_ticket_custom set state=" ++ ?to_s(?TICKET_STATE_CHECKED)
 				++ " where merchant=" ++ ?to_s(Merchant)
@@ -1924,14 +1924,14 @@ handle_call({discard_custom_one, Merchant, TicketId, Mode}, _From, State) ->
 
     {reply, Reply, State};
 
-handle_call({discard_custom_all, Merchant, Conditions, Mode}, _From, State) ->
-    ?DEBUG("discard_custom_all: merchant ~p, Conditions ~p, Mode ~p", [Merchant, Conditions, Mode]),
-    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, ticket_condition(custome, Conditions, [])),
-    Sql = "update w_ticket_custom set state=" ++ ?to_s(?CUSTOM_TICKET_STATE_DISCARD)
+handle_call({discard_custom_all, Merchant, Conditions, Mode, Active}, _From, State) ->
+    ?DEBUG("discard_custom_all: merchant ~p, Conditions ~p, Mode ~p, Active ~p",
+	   [Merchant, Conditions, Mode, Active]),
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, ticket_condition(custome, Conditions, [])), 
+    Sql = "update w_ticket_custom set state=" ++ ?to_s(?CUSTOM_TICKET_STATE_DISCARD) 
 	++ " where merchant=" ++ ?to_s(Merchant)
-	++ " and state in(1,3)" %% checked, unused
 	++ ?sql_utils:condition(proplists, NewConditions)
-	++ case Mode of
+	++ case Active of
 	       0 -> case ?sql_utils:time_condition(StartTime, <<"mtime">>, ge) of
 			[] -> [];
 			T1 -> " and " ++ T1
@@ -1939,7 +1939,15 @@ handle_call({discard_custom_all, Merchant, Conditions, Mode}, _From, State) ->
 			       [] -> [];
 			       T2 -> " and " ++ T2
 			   end;
-	       1 -> ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime) 
+	       1 -> ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime) ;
+	       2 ->
+		   case ?sql_utils:time_condition(StartTime, <<"ctime">>, ge) of
+		       [] -> [];
+		       T1 -> " and " ++ T1
+		   end ++ case ?sql_utils:time_condition(EndTime, <<"ctime">>, less) of
+			      [] -> [];
+			      T2 -> " and " ++ T2
+			  end
 	   end,
     
     Reply = ?sql_utils:execute(write, Sql, Merchant), 
