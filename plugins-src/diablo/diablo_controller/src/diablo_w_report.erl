@@ -488,6 +488,7 @@ handle_call({recharge, Merchant, Conditions}, _From, State) ->
 	", sum(cash) as tcash"
 	", sum(card) as tcard"
 	", sum(wxin) as twxin"
+	", sum(sbalance) as sbalance"
 	", shop as shop_id"
 	" from w_charge_detail "
 	" where merchant=" ++ ?to_s(Merchant)

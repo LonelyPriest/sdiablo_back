@@ -117,6 +117,7 @@ function wreportDailyCtrlProvide(
 			ccash: 0,
 			ccard: 0,
 			cwxin: 0,
+			sbalance: 0,
 
 			stock_in: 0,
 			stock_out: 0,
@@ -139,6 +140,7 @@ function wreportDailyCtrlProvide(
 			s.sale.ccash   = s.recharge.tcash;
 			s.sale.ccard   = s.recharge.tcard;
 			s.sale.cwxin   = s.recharge.twxin;
+			s.sale.sbalance = s.recharge.sbalance;
 			s.sale.sspay   = s.sale.spay ? s.sale.spay - s.sale.ticket - s.sale.draw : undefined;
 			s.sale.pure_gross = reportUtils.f_sub(to_f(s.sale.sspay), to_f(s.profit.org_price));
 			s.sale.pure_margins = reportUtils.calc_profit(to_f(s.profit.org_price), to_f(s.sale.sspay));
@@ -178,6 +180,7 @@ function wreportDailyCtrlProvide(
 			$scope.total.ccash += reportUtils.to_integer(s.sale.ccash);
 			$scope.total.ccard += reportUtils.to_integer(s.sale.ccard);
 			$scope.total.cwxin += reportUtils.to_integer(s.sale.cwxin);
+			$scope.total.sbalance += reportUtils.to_integer(s.sale.sbalance);
 			// $scope.total.caliPay + = reportUtils.to_integer(s.sale.caliPay);
 
 			$scope.total.stock_in += reportUtils.to_integer(s.sale.stock_in);
