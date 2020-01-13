@@ -65,7 +65,9 @@ supplier(page_total, Merchant, Conditions) ->
 supplier({page_list, Mode, Sort}, Merchant, Conditions) ->
     supplier({page_list, Mode, Sort}, Merchant, Conditions, -1, -1).
 supplier({page_list, Mode, Sort}, Merchant, Conditions, CurrentPage, ItemsPerPage) ->
-    gen_server:call(?MODULE, {page_list, {Mode, Sort}, Merchant, Conditions, CurrentPage, ItemsPerPage}).
+    gen_server:call(?MODULE,
+		    {page_list, {Mode, Sort}, Merchant, Conditions, CurrentPage, ItemsPerPage},
+		    ?SQL_TIME_OUT).
 
 filter(total_bill, 'and', Merchant, Conditions) ->
     gen_server:call(?MODULE, {total_bill, Merchant, Conditions}); 
@@ -88,10 +90,10 @@ match(vfirm, Merchant, {Mode, Prompt}) ->
     gen_server:call(?MODULE, {match_vfirm, Merchant, Mode, Prompt}).
 
 profit(profit, Mode, Merchant, Conditions) ->
-    gen_server:call(?MODULE, {profit, Mode, Merchant, Conditions});
+    gen_server:call(?MODULE, {profit, Mode, Merchant, Conditions}, ?SQL_TIME_OUT);
 
 profit(profit_shop, Mode, Merchant, Conditions) ->
-    gen_server:call(?MODULE, {profit_shop, Mode, Merchant, Conditions}).
+    gen_server:call(?MODULE, {profit_shop, Mode, Merchant, Conditions}, ?SQL_TIME_OUT).
 
 %% stastic
 %% half of minitue

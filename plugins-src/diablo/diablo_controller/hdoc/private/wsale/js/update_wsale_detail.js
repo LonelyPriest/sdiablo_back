@@ -68,6 +68,7 @@ function wsaleUpdateDetailCtrlProvide(
 	$scope.select.total          = 0;
 	$scope.select.abs_total      = 0;
 	$scope.select.should_pay     = 0;
+	$scope.select.base_pay       = 0;
 	$scope.select.score          = 0;
 	$scope.select.charge         = 0;
 	// $scope.select.save_to_back   = 0;
@@ -87,6 +88,7 @@ function wsaleUpdateDetailCtrlProvide(
 	// console.log($scope.show_promotions); 
 	$scope.select.total     = calc.total; 
 	$scope.select.should_pay= calc.should_pay;
+	$scope.select.base_pay  = calc.base_pay;
 	$scope.select.score     = calc.score;
 	$scope.select.pscores   = calc.pscores;
 
@@ -496,6 +498,7 @@ function wsaleUpdateDetailCtrlProvide(
 	    ticket:        setv($scope.select.ticket),
 	    withdraw:      setv($scope.select.withdraw),
 	    verificate:    setv($scope.select.verificate),
+	    base_pay:      setv($scope.select.base_pay),
 	    should_pay:    setv($scope.select.should_pay),
 	    comment:       sets($scope.select.comment),
 

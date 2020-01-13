@@ -142,12 +142,12 @@
 		    <td class="{{css(r.check, r.type)}}">{{r.employee.name}}</td> 
 		    <td class="{{css(r.check, r.type)}}">{{r.total}}</td> 
 		    <td class="{{css(r.check, r.type)}}" x-ng-switch on="r.type"> 
-		      <span class="fg-red" x-ng-switch-when=1>{{r.should_pay}}</span>
-		      <span x-ng-switch-default>{{r.should_pay}}</span>
+		      <span class="fg-red" x-ng-switch-when=1>{{r.base_pay}}</span>
+		      <span x-ng-switch-default>{{r.base_pay}}</span>
 		    </td>
 
 		    <td class="{{css(r.check, r.type)}}" x-ng-switch on="r.type"> 
-		      <span class="fg-red" x-ng-switch-when=1>{{r.has_pay}}</span>
+		      <span class="fg-red" x-ng-switch-when=1>{{r.should_pay}}</span>
 		      <span x-ng-switch-default>{{r.has_pay}}</span>
 		    </td> 
 
@@ -186,7 +186,7 @@
 			明细<i class="glyphicon glyphicon-map-marker"></i>
 		      </button>
 
-		      <button x-ng-if="shop_right.update_w_sale && !r.check && r.reject!==2"
+		      <button x-ng-if="shop_right.update_w_sale && !r.check"
 			      class="btn diablo-button yellow-crusta"
 		      	      x-ng-click="update_detail(r)">修改
 			<i class="glyphicon glyphicon-edit"></i></button>
@@ -228,9 +228,9 @@
 		    <td x-ng-if="!show.base" colspan="7"></td>
 		    
 		    <td>{{total_amounts}}</td>
-		    <td x-ng-if="shop_right.show_stastic">{{total_spay}}</td>
+		    <td x-ng-if="shop_right.show_stastic">{{total_bpay}}</td>
 		    <td x-ng-if="!shop_right.show_stastic"></td>
-		    <td>{{total_rpay}}</td>
+		    <td>{{total_spay}}</td>
 		    <td></td>
 		    <td x-ng-if="show.balance">{{total_cash}}</td>
 		    <td x-ng-if="show.balance">{{total_card}}</td>

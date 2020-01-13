@@ -697,6 +697,9 @@ alter table w_sale modify column state VARCHAR(16) not null default '0';
 
 alter table w_ticket_custom add column employee VARCHAR(8) not null default '-1';
 
+--2020-01-13
+alter table w_sale add column base_pay DECIMAL(10,2) default 0 after balance;
+
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;
 

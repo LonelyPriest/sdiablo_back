@@ -475,7 +475,7 @@ function firmAnalysisProfitCtrlProvide(
 	diablo_goto_page("#/firm_detail");
     };
 
-    $scope.do_search($scope.current_page);
+    // $scope.do_search($scope.current_page);
 
     var dialog = diabloUtilsService;
     $scope.export_firm_profit = function() {

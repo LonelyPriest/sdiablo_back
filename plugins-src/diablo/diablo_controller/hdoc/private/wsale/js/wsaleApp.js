@@ -32,7 +32,7 @@ function wsaleConfg(angular){
 	    return original.apply($location, [path]);
 	};
     }]);
-   
+    
     wsaleApp.config(['$routeProvider', function($routeProvider){
 	// $locationProvider.html5Mode(true);
 	var user = {"user": function(userService){
@@ -429,6 +429,8 @@ function wsaleNewProvide(
 	    && (d.rule_id === diablo_times_charge || d.rule_id === diablo_giving_charge)}); 
     $scope.tcharges = $scope.charges.filter(function(d){return d.rule_id === diablo_times_charge});
     $scope.mcharges = $scope.charges.filter(function(d){return d.rule_id === diablo_giving_charge});
+    // console.log($scope.tcharges);
+    // console.log($scope.mcharges);
     // $scope.levels     = filterLevel; 
     
     // console.log($scope.draws);
@@ -1216,17 +1218,23 @@ function wsaleNewProvide(
 	    if ($scope.select.shop.charge_id === diablo_invalid_index) {
 		default_charge = $scope.tcharges.length !== 0 ? $scope.tcharges[0] : undefined;
 	    } else {
+		// default_charge = get_charge_by_shop($scope.charges);
 		default_charge = $scope.charges.length !== 0 ? get_charge_by_shop($scope.charges) : undefined;
+		if (angular.isDefined(default_charge)
+		    && default_charge.rule_id === diablo_giving_charge) {
+		    default_charge = $scope.tcharges.length !== 0 ? $scope.tcharges[0] : undefined;
+		}
 	    } 
 	    console.log(default_charge);
 	    if (angular.isUndefined(default_charge)) {
 		dialog.set_error("会员充值", 2170);
 	    } else {
-		if (default_charge.rule_id === diablo_giving_charge) {
-		    $scope.common_charge(default_charge, stocks);
-		} else if (default_charge.rule_id === diablo_times_charge) {
-		    $scope.times_charge(default_charge, stocks); 
-		}
+		// if (default_charge.rule_id === diablo_giving_charge) {
+		//     $scope.common_charge(default_charge, stocks);
+		// } else if (default_charge.rule_id === diablo_times_charge) {
+		//     $scope.times_charge(default_charge, stocks); 
+		// }
+		$scope.times_charge(default_charge, stocks); 
 	    } 
 	} else {
 	    default_charge = get_charge_by_shop($scope.mcharges);
@@ -2457,7 +2465,8 @@ function wsaleNewProvide(
 	    withdraw:       setv($scope.select.withdraw),
 	    ticket:         setv($scope.select.ticket_balance),
 	    verificate:     setv($scope.select.verificate), 
-	    
+
+	    base_pay:       setv($scope.select.base_pay),
 	    should_pay:     setv($scope.select.should_pay),
 	    limitWithdraw:  setv($scope.select.limitWithdraw),
 	    unlimitWithdraw:setv($scope.select.unlimitWithdraw),
@@ -3616,9 +3625,9 @@ function wsaleNewDetailProvide(
 	    // console.log(stastic);
 	    $scope.total_items       = stastic.total_items;
 	    $scope.total_amounts     = stastic.total_amounts;
+	    $scope.total_bpay        = stastic.total_bpay;
 	    $scope.total_spay        = stastic.total_spay;
-	    $scope.total_rpay        = stastic.total_rpay;
-	    // $scope.total_hpay        = stastic.total_hpay;
+	    $scope.total_veri        = stastic.total_veri;
 	    $scope.total_cash        = stastic.total_cash;
 	    $scope.total_card        = stastic.total_card;
 	    $scope.total_wxin        = stastic.total_wxin;
@@ -3654,8 +3663,9 @@ function wsaleNewDetailProvide(
 		if (page === 1) {
 		    $scope.total_items       = result.total;
 		    $scope.total_amounts     = result.t_amount;
+		    $scope.total_bpay        = result.t_bpay;
 		    $scope.total_spay        = result.t_spay;
-		    $scope.total_rpay        = result.t_rpay;
+		    $scope.total_veri        = result.t_veri;
 		    $scope.total_cash        = result.t_cash;
 		    $scope.total_card        = result.t_card;
 		    $scope.total_wxin        = result.t_wxin;
@@ -3667,19 +3677,6 @@ function wsaleNewDetailProvide(
 		    $scope.records = [];
 		    $scope.save_stastic();
 		}
-		
-		// if (page === 1 && angular.isUndefined(back_page)){
-		//     $scope.total_items       = result.total;
-		//     $scope.total_amounts     = result.t_amount;
-		//     $scope.total_spay        = result.t_spay;
-		//     $scope.total_rpay        = result.t_rpay;
-		//     $scope.total_cash        = result.t_cash;
-		//     $scope.total_card        = result.t_card;
-		//     $scope.total_withdraw    = result.t_withdraw;
-		//     $scope.total_balance     = result.t_balance;
-
-		//     $scope.records = [];
-		// }
 		
 		// console.log($scope); 
 		angular.forEach(result.data, function(d){
@@ -3740,8 +3737,9 @@ function wsaleNewDetailProvide(
 	    "wsale-trans-stastic",
 	    {total_items:       $scope.total_items,
 	     total_amounts:     $scope.total_amounts,
+	     total_bpay:        $scope.total_bpay,
 	     total_spay:        $scope.total_spay,
-	     total_rpay:        $scope.total_rpay,
+	     total_veri:        $scope.total_veri,
 	     total_cash:        $scope.total_cash,
 	     total_card:        $scope.total_card,
 	     total_wxin:        $scope.total_wxin,

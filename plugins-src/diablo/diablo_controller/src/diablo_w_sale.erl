@@ -178,7 +178,8 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
     AliPay     = ?v(<<"aliPay">>, Props, 0),
     Withdraw   = ?v(<<"withdraw">>, Props, 0),
     Verificate = ?v(<<"verificate">>, Props, 0),
-    
+
+    BasePay    = ?v(<<"base_pay">>, Props, 0),
     ShouldPay  = ?v(<<"should_pay">>, Props, 0),
     Total      = ?v(<<"total">>, Props, 0),
     Score      = ?v(<<"score">>, Props, 0),
@@ -241,6 +242,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 			", tbatch"
 			", tcustom"
 			", balance"
+			", base_pay"
 			", should_pay"
 			", cash"
 			", card"
@@ -266,6 +268,7 @@ handle_call({new_sale, Merchant, Inventories, Props}, _From, State) ->
 			++ ?to_s("-1") ++ ","
 			++ ?to_s(TicketCustom) ++ "," 
 			++ ?to_s(CurrentBalance) ++ ","
+			++ ?to_s(BasePay) ++ "," 
 			++ ?to_s(ShouldPay) ++ "," 
 			++ ?to_s(NewCash) ++ ","
 			++ ?to_s(NewCard) ++ ","
@@ -391,6 +394,7 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
     Employee   = ?v(<<"employee">>, Props),
 
     %% Balance    = ?v(<<"balance">>, Props),
+    BasePay    = ?v(<<"base_pay">>, Props, 0),
     ShouldPay  = ?v(<<"should_pay">>, Props, 0), 
     Cash       = ?v(<<"cash">>, Props, 0),
     Card       = ?v(<<"card">>, Props, 0),
@@ -407,6 +411,7 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
     TicketCustom = ?v(<<"tcustom">>, OldProps),
     OldEmployee  = ?v(<<"employ_id">>, OldProps),
     OldRetailer  = ?v(<<"retailer_id">>, OldProps),
+    OldBasePay   = ?v(<<"base_pay">>, OldProps),
     OldShouldPay = ?v(<<"should_pay">>, OldProps),
     OldDatetime  = ?v(<<"entry_date">>, OldProps),
     OldScore     = ?v(<<"score">>, OldProps),
@@ -447,7 +452,8 @@ handle_call({update_sale, Merchant, Inventories, Props, OldProps}, _From, State)
     Sql1 = sql(update_wsale, RSN, Merchant, RealyShop, NewDatetime, OldDatetime, Inventories), 
 
     Updates = ?utils:v(employ, string, get_modified(Employee, OldEmployee))
-	++ ?utils:v(retailer, integer, get_modified(Retailer, OldRetailer)) 
+	++ ?utils:v(retailer, integer, get_modified(Retailer, OldRetailer))
+	++ ?utils:v(base_pay, float, get_modified(BasePay, OldBasePay))
 	++ ?utils:v(should_pay, float, get_modified(ShouldPay, OldShouldPay))
 	++ ?utils:v(cash, float, get_modified(NewCash, OldCash))
 	++ ?utils:v(card, float, get_modified(NewCard, OldCard))
@@ -964,6 +970,7 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 
     %% Balance    = ?v(<<"balance">>, Props), 
     Comment    = ?v(<<"comment">>, Props, ""),
+    BasePay    = ?v(<<"base_pay">>, Props, 0),
     ShouldPay  = ?v(<<"should_pay">>, Props, 0),
     Cash       = ?v(<<"cash">>, Props, 0),
     Card       = ?v(<<"card">>, Props, 0),
@@ -1053,6 +1060,7 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 		    ", tbatch"
 		    ", tcustom"
 		    ", balance"
+		    ", base_pay"
 		    ", should_pay"
 		    ", cash"
 		    ", card"
@@ -1076,6 +1084,7 @@ handle_call({reject_sale, Merchant, Inventories, Props}, _From, State) ->
 		    ++ ?to_s(-1) ++ ","
 		    ++ ?to_s(TicketCustom) ++ ","
 		    ++ ?to_s(CurrentBalance) ++ ","
+		    ++ ?to_s(-BasePay) ++ ","
 		    ++ ?to_s(-ShouldPay) ++ ","
 		    ++ ?to_s(-NewCash) ++ ","
 		    ++ ?to_s(-NewCard) ++ ","
@@ -1670,8 +1679,7 @@ sql(update_wsale, RSN, _Merchant, _Shop, NewDatetime, OldDatetime, []) ->
 	     ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"]
     end;
     
-sql(update_wsale, RSN, Merchant, Shop, NewDatetime, _OldDatetime, Inventories) ->
-    
+sql(update_wsale, RSN, Merchant, Shop, NewDatetime, _OldDatetime, Inventories) ->    
     lists:foldr(
       fun({struct, Inv}, Acc0)-> 
 	      Operation   = ?v(<<"operation">>, Inv), 
@@ -1682,7 +1690,7 @@ sql(update_wsale, RSN, Merchant, Shop, NewDatetime, _OldDatetime, Inventories) -
 			    Shop, Inv, Amounts) ++ Acc0; 
 		  <<"a">> ->
 		      Amounts = ?v(<<"amount">>, Inv), 
-		      wsale(new, RSN, NewDatetime, Merchant,
+		      wsale(new, RSN, undefined, NewDatetime, Merchant,
 			    Shop, Inv, Amounts) ++ Acc0; 
 		  <<"u">> -> 
 		      wsale(update, RSN, NewDatetime, Merchant,
@@ -2284,8 +2292,9 @@ count_table(w_sale, Merchant, Conditions) ->
 
     CountSql = "select count(*) as total"
     	", sum(a.total) as t_amount"
-    	", sum(a.should_pay + a.verificate) as t_spay"
-	", sum(a.should_pay) as t_rpay"
+    	", sum(a.base_pay) as t_bpay"
+	", sum(a.should_pay) as t_spay"
+	", sum(a.verificate) as t_veri"
     	", sum(a.cash) as t_cash"
     	", sum(a.card) as t_card"
 	", sum(a.wxin) as t_wxin"
@@ -2306,6 +2315,7 @@ filter_table(w_sale, Merchant, Conditions) ->
 	", a.shop as shop_id"
     %% ", a.promotion as pid, a.charge as cid" 
 	", a.balance"
+	", a.base_pay"
 	", a.should_pay"
 	", a.cash"
 	", a.card"
@@ -2343,6 +2353,7 @@ filter_table(w_sale_with_page, Merchant, CurrentPage, ItemsPerPage, Conditions) 
     %% ", a.promotion as pid"
 	
 	", a.balance"
+	", a.base_pay"
 	", a.should_pay"
 	", a.cash"
 	", a.card"

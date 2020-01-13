@@ -1206,6 +1206,7 @@ create table w_sale(
     -- charge        INTEGER not null default -1,
     
     balance        DECIMAL(10, 2) default 0, -- max: 99999999.99
+    base_pay       DECIMAL(10, 2) default 0, -- max: 99999999.99
     should_pay     DECIMAL(10, 2) default 0, -- max: 99999999.99
     -- has_pay        DECIMAL(10, 2) default 0, -- max: 99999999.99
     cash           DECIMAL(10, 2) default 0, -- max: 99999999.99
