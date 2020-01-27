@@ -54,7 +54,8 @@ action(Session, Req, {"new_w_inventory"}, Payload) ->
     
     case abs(?utils:current_time(localtime2second) - ?utils:datetime2seconds(Datetime)) > 3600 * 2 of
 	true ->
-	    CurDatetime    = ?utils:current_time(format_localtime), 
+	    CurDatetime    = ?utils:current_time(format_localtime),
+	    ?DEBUG("operation date: ~p, current date ~p", [Datetime, CurDatetime]),
 	    ?utils:respond(200,
 			   Req,
 			   ?err(stock_invalid_date, "new_w_inventory"),
@@ -447,10 +448,11 @@ action(Session, Req, {"reject_w_inventory"}, Payload) ->
 
     case abs(?utils:current_time(localtime2second) - ?utils:datetime2seconds(Datetime)) > 3600 * 2 of
 	true ->
-	    CurDatetime = ?utils:current_time(format_localtime), 
+	    CurDatetime = ?utils:current_time(format_localtime),
+	    ?DEBUG("operation date: ~p, current date ~p", [Datetime, CurDatetime]),
 	    ?utils:respond(200,
 			   Req,
-			   ?err(stock_invalid_date, "update_w_inventory"),
+			   ?err(stock_invalid_date, "reject_w_inventory"),
 			   [{<<"fdate">>, Datetime},
 			    {<<"bdate">>, ?to_b(CurDatetime)}]);
 	false ->

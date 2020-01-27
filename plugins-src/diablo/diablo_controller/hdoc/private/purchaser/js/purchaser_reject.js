@@ -301,8 +301,7 @@ function purchaserInventoryRejectCtrlProvide(
 	var get_reject = function(amounts){
 	    var reject_amounts = [];
 	    for(var i=0, l=amounts.length; i<l; i++){
-		if (angular.isDefined(amounts[i].reject_count)
-		    && amounts[i].reject_count){
+		if (angular.isDefined(amounts[i].reject_count) && amounts[i].reject_count){
 		    amounts[i].reject_count
 			= parseInt(amounts[i].reject_count);
 		    reject_amounts.push(amounts[i]); 

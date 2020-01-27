@@ -263,9 +263,10 @@ tablet_login(Req, ?TABLET) ->
 
             ?DEBUG("StartInfo ~p", [StartInfo]),
             case StartInfo of
-                {ok, {_Cookie, CookieData, _Path}} ->
+                {ok, {_Cookie, CookieData, Path}} ->
                     ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
                                                        {<<"token">>, ?to_b(CookieData)},
+						       {<<"path">>, ?to_b(Path)},
                                                        {<<"einfo">>, <<>>}]});
                 {error, {ECode, _}} ->
                     ?utils:respond(200, object, Req, {[{<<"ecode">>, ECode},

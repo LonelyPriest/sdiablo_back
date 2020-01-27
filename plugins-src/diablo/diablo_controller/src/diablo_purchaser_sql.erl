@@ -1584,10 +1584,26 @@ inventory_match(Merchant, StyleNumber, Shop, Firm) ->
 	++ " limit " ++ ?to_s(P).
 
 inventory_match(all_reject, Merchant, Shop, Firm, StartTime) ->
-    "select a.id, a.bcode, a.style_number, a.brand as brand_id, a.type as type_id"
-	", a.sex, a.season, a.firm as firm_id, a.s_group, a.free, a.year"
-	", a.org_price, a.tag_price, a.ediscount, a.discount"
-	", a.path, a.alarm_day, a.entry_date"
+    "select a.id"
+	", a.bcode"
+	", a.style_number"
+	", a.brand as brand_id"
+	", a.type as type_id"
+	", a.sex"
+	", a.season"
+	", a.firm as firm_id"
+	", a.s_group"
+	", a.free"
+	", a.year"
+	
+	", a.org_price"
+	", a.tag_price"
+	", a.ediscount"
+	", a.discount"
+	
+	", a.path"
+	", a.alarm_day"
+	", a.entry_date"
 
 	", b.name as brand" 
 	", c.name as type"
@@ -1619,6 +1635,7 @@ get_inventory(barcode, Merchant, Shop, Firm, Barcode, ExtraConditions) ->
 	", a.s_group"
 	", a.free"
 	", a.year"
+	", a.alarm_day"
 	
 	", a.promotion as pid"
 	", a.score as sid"
