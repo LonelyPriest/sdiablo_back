@@ -1668,6 +1668,19 @@ get_inventory(barcode, Merchant, Shop, Firm, Barcode, ExtraConditions) ->
 	   end
 	++ ?sql_utils:condition(
 	      proplists, ?utils:correct_condition(<<"a.">>, ExtraConditions)).
+
+get_inventory(note, Merchant, Shop, Conditions) ->
+    Sql = "select style_number"
+	", brand as brand_id"
+	", color as color_id"
+	", size"
+	", total"
+	", shop as shop_id"
+	" from w_inventory_amount"
+	" where merchant=" ++ ?to_s(Merchant)
+	++ " and shop=" ++ ?to_s(Shop)
+	++ ?sql_utils:condition(proplists, Conditions),
+    Sql.
 	
 
 inventory(update_attr, Mode, RSN, Merchant, Shop, {Firm, OldFirm, Datetime,  OldDatetime}) ->

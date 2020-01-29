@@ -1031,6 +1031,7 @@ pass_action(wholesaler) ->
      <<"gen_stock_barcode">>,
      <<"gen_stock_barcode_all">>,
      <<"copy_w_stock">>,
+     <<"get_stock_note">>,
      %% <<"update_w_inventory_batch">>,
 
      %% inventory new

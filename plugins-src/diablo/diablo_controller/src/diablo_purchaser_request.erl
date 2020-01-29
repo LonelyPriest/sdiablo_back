@@ -433,6 +433,24 @@ action(Session, Req, {"get_w_inventory_tagprice"}, Payload) ->
     	    ?utils:respond(200, Req, Error)
     end;
 
+action(Session, Req, {"get_stock_note"}, Payload) ->
+    Merchant = ?session:get(merchant, Session),
+    Shop = ?v(<<"shop">>, Payload),
+    StyleNumber = ?v(<<"style_number">>, Payload),
+    Brand = ?v(<<"brand">>, Payload),
+    Color = ?v(<<"color">>, Payload),
+    Size  = ?v(<<"size">>, Payload),
+    case ?w_inventory:purchaser_inventory(
+	    get_note, Merchant, Shop, [{<<"style_number">>, StyleNumber},
+				       {<<"brand">>, Brand},
+				       {<<"color">>, Color},
+				       {<<"size">>, Size}]) of
+	{ok, Note} ->
+	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
+					       {<<"data">>, {Note}}]});
+	{error, Error} ->
+    	    ?utils:respond(200, Req, Error)
+    end;
     
 %% =============================================================================
 %% reject

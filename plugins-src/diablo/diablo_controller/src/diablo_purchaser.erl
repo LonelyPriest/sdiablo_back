@@ -146,7 +146,13 @@ purchaser_inventory(modify_balance, Merchant, RSN, Balance) ->
 
 purchaser_inventory(syn_barcode, Merchant, Barcode, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {syn_barcode, Merchant, Barcode, Conditions}).
+    gen_server:call(Name, {syn_barcode, Merchant, Barcode, Conditions});
+
+purchaser_inventory(get_note, Merchant, Shop, Conditions) ->
+    Name = ?wpool:get(?MODULE, Merchant),
+    gen_server:call(Name, {get_stock_note, Merchant, Shop, Conditions}).
+
+
 
 %%
 %% 
@@ -2521,6 +2527,13 @@ handle_call({get_by_barcode, Merchant, Shop, Firm, Barcode, ExtraCondtion}, _Fro
     ?DEBUG("get_by_barcode: Merchant ~p, Shop ~p, Firm ~p, Barcode ~p, ExtraCondtion ~p",
 	   [Merchant, Shop, Firm, Barcode, ExtraCondtion]), 
     Sql = ?w_good_sql:get_inventory(barcode, Merchant, Shop, Firm, Barcode, ExtraCondtion),
+    Reply =  ?sql_utils:execute(s_read, Sql),
+    ?DEBUG("reply ~p", [Reply]),
+    {reply, Reply, State};
+
+handle_call({get_stock_note, Merchant, Shop, Conditions}, _From, State) ->
+    ?DEBUG("get_stock_note: Merchant ~p, Shop ~p, condition ~p", [Merchant, Shop, Conditions]), 
+    Sql = ?w_good_sql:get_inventory(note, Merchant, Shop, Conditions),
     Reply =  ?sql_utils:execute(s_read, Sql),
     ?DEBUG("reply ~p", [Reply]),
     {reply, Reply, State};
