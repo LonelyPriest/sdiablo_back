@@ -1,5 +1,13 @@
 var version_update = function(){
     var updates = [
+	{date: "2020-1-30",
+	 content:
+	 ["盘点机增加扫描退货功能",
+	  "增加盘点机对首次出现的包括颜色尺码的判定，以解决盘点时，仓库有时未挂版的问题",
+	  "优化盘点机盘点功能，减少数据查询以加快盘点"
+	 ]
+	},
+	
 	{date: "2019-12-05",
 	 content:
 	 ["修正销售单可重复退货的问题，每张销售单中的货品仅可退一次",
@@ -1332,7 +1340,7 @@ var version_update = function(){
 	    }
 
 	    var apk = "<div class='update-content'>"
-		+ "<a type='button' href='/qzg_stock_fix-release2019-05-03_01-10-05.apk' download=''>"
+		+ "<a type='button' href='/qzg_stock_fix-release2020-01-30_19-48-20.apk' download=''>"
 		+ "<h5 class='text-center fg-pink'>盘点机软件(安卓)下载</h5>"
 		+ "</a>"
 		+ "</div>"
