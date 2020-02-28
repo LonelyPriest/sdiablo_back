@@ -176,8 +176,8 @@ sms_once(zz, Merchant, Sign, {Shop, Phone, Action, Money, Balance, Score}) ->
 	    Content = ?v(<<"content">>, Template),
 	    Text = case Sign == <<>> orelse Sign == [] of
 			  true ->
-			   <<"【大唐通用】", Content/binary>>;
-			   %% <<"【钱掌柜】", Content/binary>>;
+			   %% <<"【大唐通用】", Content/binary>>;
+			   <<"【钱掌柜】", Content/binary>>;
 			  false -> <<Sign/binary, Content/binary>>
 		      end,
 	    ?DEBUG("text ~ts", [Text]),
@@ -586,7 +586,7 @@ get_sms_template(zz, Action, Merchant, Templates) ->
     ?DEBUG("Action ~p, Merchant ~p, Templates ~p", [Action, Merchant, Templates]),
     case [ T || {T} <- Templates,
 	       case Action of
-		   0 -> ?v(<<"type">>, T ) =:= 1; %% charge
+		   0 -> ?v(<<"type">>, T ) =:= 0; %% charge
 		   1 -> ?v(<<"type">>, T) =:= 0; %% consume
 		   2 -> ?v(<<"type">>, T) =:= 2  %% ticket
 	       end] of
