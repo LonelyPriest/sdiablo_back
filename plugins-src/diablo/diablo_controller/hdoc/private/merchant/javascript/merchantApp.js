@@ -214,7 +214,65 @@ function merchantConfig(angular){
 
 	$scope.delete_merchant = function(merchant){
 	    diabloUtilsService.response(false, "删除商家", "暂不支持此操作！！", $scope);
-	}
+	};
+
+	$scope.new_sms_rate = function(merchant){
+	    var callback = function(params){
+		console.log(params);
+		merchantService.new_rate(merchant.id, params.rate).then(function(result){
+		    console.log(result);
+		    if (result.ecode === 0){
+			dialog.response_with_callback(
+	    		    true,
+			    "新增短信费率",
+			    "商家 " + merchant.name + " 短信费率创建成功！！",
+	    		    undefined,
+			    function(){merchant.sms_rate = params.rate});  
+		    } else {
+			dialog.response(
+	    		    false,
+			    "新增短信费率",
+	    		    "新增短信费率失败：" + merchantService.error[result.ecode]);
+		    }
+		});
+	    };
+	    
+	    dialog.edit_with_modal(
+		"new-rate.html",
+		undefined,
+		callback,
+		undefined, 
+		{name:merchant.name, rate: merchant.sms_rate})
+	};
+
+	$scope.new_sms_sign = function(merchant) {
+	    var callback = function(params){
+		console.log(params);
+		merchantService.new_sign(merchant.id, params.sign).then(function(result){
+		    console.log(result);
+		    if (result.ecode === 0){
+			dialog.response_with_callback(
+	    		    true,
+			    "新增短信签名",
+			    "商家 " + merchant.name + " 短信签名创建成功！！",
+	    		    undefined,
+			    function(){merchant.sign = params.sign});  
+		    } else {
+			dialog.response(
+	    		    false,
+			    "新增短信签名",
+	    		    "新增短信签名失败：" + merchantService.error[result.ecode]);
+		    }
+		});
+	    };
+	    
+	    dialog.edit_with_modal(
+		"new-sign.html",
+		undefined,
+		callback,
+		undefined, 
+		{name:merchant.name, sign: merchant.sign})
+	};
     });
 
     merchantApp.controller("merchantNewCtrl", function(

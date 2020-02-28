@@ -700,6 +700,15 @@ alter table w_ticket_custom add column employee VARCHAR(8) not null default '-1'
 --2020-01-13
 alter table w_sale add column base_pay DECIMAL(10,2) default 0 after balance;
 
+--2020-02-27
+insert into zz_sms_template(merchant, type, content) values(-1, 0, '会员提醒：欢迎光临{s}，本次消费成功，消费金额{m}，当前余额{b}，累计积分{c}，感谢您的惠顾！！');
+alter table merchants add column sms_rate INTEGER not null default 0 after sms_send;
+alter table merchants add column sms_sign VARCHAR(32) not null default '' after sms_rate;
+alter table merchants add column sms_team TINYINT not null default 0 after sms_rate;
+
+update merchants a inner join (select merchant, rate from sms_rate) b on a.id=b.merchant set a.sms_rate=b.rate;
+
+
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;
 

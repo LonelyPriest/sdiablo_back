@@ -55,7 +55,10 @@ sms(list_center) ->
 sms(list, Merchant) ->
     gen_server:call(?MODULE, {list_sms, Merchant});
 sms(list_center, Merchant) ->
-    gen_server:call(?MODULE, {list_sms_center, Merchant}).
+    gen_server:call(?MODULE, {list_sms_center, Merchant});
+sms(list_template, Merchant) ->
+    gen_server:call(?MODULE, {list_sms_template, Merchant}).
+
 
 sms(new_rate, Merchant, Rate) ->
     gen_server:call(?MODULE, {new_sms_rate, Merchant, Rate});
@@ -92,14 +95,15 @@ handle_call({new_merchant, Props}, _From, State)->
     case ?sql_utils:execute(s_read, Sql) of
 	{ok, []} -> 
 	    Sql1 = "insert into " ++ ?tbl_merchant
-		++ "(name, type, owner, mobile, address, entry_date)"
+		++ "(name, type, owner, mobile, sms_team, address, entry_date)"
 		++ " values ("
 		++ "\""  ++ ?to_s(Name) ++ "\""
 		++ ","   ++ ?to_s(Type)
 		++ ",\"" ++ ?to_s(Owner) ++ "\""
 		++ ",\"" ++ ?to_s(Mobile) ++ "\""
+		++ "," ++ ?to_s(?DEFAULT_MERCHANT)
 		++ ",\"" ++ ?to_s(Address) ++ "\""
-		++ ",\"" ++ ?utils:current_time(localdate) ++ "\");", 
+		++ ",\"" ++ ?utils:current_time(localdate) ++ "\")", 
 		
 	    %% ?DEBUG("sql to merchant ~p", [Sql1]),
 	    case ?sql_utils:execute(insert, Sql1) of
@@ -111,8 +115,8 @@ handle_call({new_merchant, Props}, _From, State)->
 			    {reply, {ok, Name}, State}; 
 			Error ->
 			    %% rollback
-			    Rollback = "delete from " ++ ?tbl_merchant
-				++ " where id=" ++ ?to_s(InsertId) ++ ";",
+			    Rollback = "delete from "
+				++ ?tbl_merchant ++ " where id=" ++ ?to_s(InsertId),
 			    case ?sql_utils:execute(write, Rollback, Name) of
 				{ok, Name} ->
 				    {reply, Error, State};
@@ -232,16 +236,32 @@ handle_call({list_sms_center, Merchant}, _From, State) ->
 	    {reply, Error, State}
     end;
 
-handle_call({new_sms_rate, Merchant, Rate}, _From, State) ->
-    Sql0 = "select id, merchant, rate from sms_rate"
-	" where merchant=" ++ ?to_s(Merchant),
+handle_call({list_sms_template, Merchant}, _From, State) ->
+    Sql = "select a.id"
+	", a.merchant"
+	", a.type"
+	", a.content"
+	" from zz_sms_template a"
+	" where a.merchant in (-1, " ++ ?to_s(Merchant) ++ ")",
+    case ?sql_utils:execute(read, Sql) of
+	{ok, Templates} ->
+	    {reply, {ok, Templates}, State};
+	_Error ->
+	    {reply, {ok, []}, State}
+    end;
 
+handle_call({new_sms_rate, Merchant, Rate}, _From, State) ->
+    Sql0 = "select id, sms_rate from merchants"
+	" where id=" ++ ?to_s(Merchant)
+	++ " and sms_rate=" ++ ?to_s(Rate), 
     case ?sql_utils:execute(s_read, Sql0) of
-	{ok, []} ->
-	    Sql = "insert into sms_rate(merchant, rate) values("
-		++ ?to_s(Merchant) ++ ","
-		++ ?to_s(Rate) ++ ")",
-	    Reply = ?sql_utils:execute(insert, Sql),
+	{ok, []} -> 
+	    %% Sql = "insert into sms_rate(merchant, rate) values("
+	    %% 	++ ?to_s(Merchant) ++ ","
+	    %% 	++ ?to_s(Rate) ++ ")",
+	    Sql = "update merchants set sms_rate=" ++ ?to_s(Rate)
+		++ " where id=" ++ ?to_s(Merchant),
+	    Reply = ?sql_utils:execute(write, Sql, Merchant),
 	    {reply, Reply, State};
 	{ok, _} ->
 	    {reply, {error, ?err(sms_rate_exist, Merchant)}, State};
@@ -250,47 +270,46 @@ handle_call({new_sms_rate, Merchant, Rate}, _From, State) ->
     end;
 
 handle_call({new_sms_sign, Merchant, SignName}, _From, State) ->
-    Sql0 = "select id, merchant, rate, sign from sms_rate"
-	" where merchant=" ++ ?to_s(Merchant), 
+    Sql0 = "select id, sms_sign from merchants"
+	" where id=" ++ ?to_s(Merchant)
+	++ " and sms_sign=\'" ++ ?to_s(SignName) ++ "\'",
     case ?sql_utils:execute(s_read, Sql0) of
 	{ok, []} ->
-	    {reply, {error, ?err(sms_rate_not_exist, Merchant)}, State};
-	{ok, SMS} ->
-	    case ?v(<<"sign">>, SMS) /= SignName of
-		true ->
-		    Timestamp = ?utils:current_time(timestamp),
-		    Account = ?ZZ_SMS_ACCOUNT ++ ?ZZ_SMS_PASSWORD ++ Timestamp,
-		    MD5Sign = crypto:hash(md5, Account),
-		    ?DEBUG("MD5Sing ~p", [MD5Sign]),
-		    AppId = "49",
-		    Name = "钱掌柜",
-		    Params = {[{<<"username">>, ?to_b(?ZZ_SMS_ACCOUNT)},
-			       {<<"timestamp">>, ?to_b(Timestamp)},
-			       {<<"signature">>, ?to_b(MD5Sign)},
-			       {<<"appid">>, ?to_b(AppId)},
-			       {<<"signature_name">>, ?to_b(Name)}
-			      ]},
-		    Body = ?to_s(ejson:encode(Params)),
-		    
-		    
-		    case httpc:request(
-		    	   post, {?ZZ_SMS_SIGN ++ "/signatureAdd",
-		    		  [], [], Body}, [], []) of
-		    	{ok, {{"HTTP/1.1", 200, "OK"}, _Head, Reply}} ->
-		    	    ?DEBUG("Reply ~ts", [Reply]),
-		    	    {struct, Result} = mochijson2:decode(Reply),
-		    	    ?DEBUG("sms result ~p", [Result]);
-			{error, Reason} ->
-		    	    {error, {http_failed, Reason}}
+	    Timestamp = ?utils:current_time(timestamp),
+	    Account = ?ZZ_SMS_ACCOUNT ++ ?ZZ_SMS_PASSWORD ++ Timestamp,
+	    MD5Sign = crypto:hash(md5, Account),
+	    ?DEBUG("MD5Sing ~p", [MD5Sign]),
+	    AppId = "49",
+	    Params = {[{<<"username">>, ?to_b(?ZZ_SMS_ACCOUNT)},
+		       {<<"timestamp">>, ?to_b(Timestamp)},
+		       {<<"signature">>, ?to_b(MD5Sign)},
+		       {<<"appid">>, ?to_b(AppId)},
+		       {<<"signature_name">>, ?to_b(SignName)}
+		      ]},
+	    Body = ?to_s(ejson:encode(Params)), 
+
+	    case httpc:request(
+		   post, {?ZZ_SMS_SIGN ++ "/signatureAdd",
+			  [], [], Body}, [], []) of
+		{ok, {{"HTTP/1.1", 200, "OK"}, _Head, Reply}} ->
+		    ?DEBUG("Reply ~ts", [Reply]),
+		    {struct, Result} = mochijson2:decode(Reply), 
+		    ?DEBUG("sms result ~p", [Result]),
+		    case ?v(<<"status">>, Result) of
+			<<"success">> ->
+			    Sql = "update merchants set sms_sign=\'" ++ ?to_s(SignName) ++ "\'"
+				++ " where id=" ++ ?to_s(Merchant),
+			    Reply = ?sql_utils:execute(write, Sql, Merchant),
+			    {reply, Reply, State};
+			_ ->
+			    ?INFO("add sms sign failed: ~ts", [?v(<<"msg">>, Result)]),
+			    {error, {failed_to_add_sms_sign, ?v(<<"code">>, Result)}}
 		    end;
-		    
-		    %% Sql = "update sms_rate set sign=\'" ++ ?to_s(SignName) ++ "\'"
-		    %% 	" where merchant=" ++ ?to_s(Merchant),
-		    %% Reply = ?sql_utils:execute(write, Sql, SignName),
-		    %% {reply, Reply, State}; 
-		false ->
-		    {reply, {error, ?err(sms_sign_same, Merchant)}, State}
+		{error, Reason} ->
+		    {error, {http_failed, Reason}}
 	    end;
+	{ok, _SMS} ->
+	    {reply, {error, ?err(sms_sign_exist, Merchant)}, State}; 
 	Error ->
 	    {reply, Error, State}
     end;
@@ -324,4 +343,15 @@ code_change(_OldVsn, State, _Extra) ->
 %%% Internal functions
 %%%===================================================================
 fields() ->
-    "id, name, owner, balance, mobile, sms_send, address, type, entry_date".
+    "id"
+	", name"
+	", owner"
+	", balance"
+	", mobile"
+	", sms_send"
+	", sms_rate"
+	", sms_sign"
+	", sms_team"
+	", address"
+	", type"
+	", entry_date".

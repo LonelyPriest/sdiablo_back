@@ -125,6 +125,7 @@
 
 -define(DEFAULT_ALARM_DAY, 7).
 -define(DEFAULT_BASE_SETTING, -1).
+-define(DEFAULT_MERCHANT, -1).
 
 %% shop mode
 -define(CLOTHES_MODE, 1).
@@ -729,7 +730,7 @@
 	  promotion   = [] :: list(),
 	  charge      = [] :: list(),
 	  score       = [] :: list(),
-	  sms_rate    = [] :: list(),
+	  sms_template= [] :: list(),
 	  sms_center  = [] :: list(),
 	  level       = [] :: list(),
 	  ticket_plan = [] :: list(),

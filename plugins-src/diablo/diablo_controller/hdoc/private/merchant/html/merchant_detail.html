@@ -68,8 +68,10 @@
 		    <td>名称</td>
 		    <td>类型</td>
 		    <td>经营人</td>
-		    <td>余额</td>
-		    <td>短信发送数目</td>
+		    <td>短信签名</td>
+		    <td>短信费率</td>
+		    <td>短信余额</td>
+		    <td>发送数量</td>
 		    <td>联系方式</td>
 		    <td>常驻地址</td>
 		    <td>注册日期</td>
@@ -82,8 +84,10 @@
 		    <td>{{merchant.name}}</td>
 		    <td>{{merchant.type_name}}</td>
 		    <td>{{merchant.owner}}</td>
-		    <td>{{merchant.balance}}</td>
-		    <td>{{merchant.sms_send}}</td>
+		    <td x-ng-bind=merchant.sms_sign></td>
+		    <td x-ng-bind=merchant.sms_rate></td> 
+		    <td x-ng-bind=merchant.balance></td>
+		    <td x-ng-bind=merchant.sms_send></td>
 		    <td>{{merchant.mobile}} </td> 
 		    <td>{{merchant.address}}</td> 
 		    <td>{{merchant.entry_date}}</td>
@@ -92,10 +96,16 @@
 		      <button class="btn green diablo-button" 
 			 x-ng-click="charge(merchant)">充值
 			<i class="glyphicon glyphicon-yen"></i></button>
-		      <button class="btn btn-primary diablo-button" 
+		      <button class="btn btn-warning diablo-button" 
 			 x-ng-click="update_merchant(merchant)">修改
+			<i class="glyphicon glyphicon-edit"></i></button> 
+		      <button class="btn btn-primary diablo-button"
+			      x-ng-click="new_sms_rate(merchant)">费率
+			<i class="glyphicon glyphicon-yen"></i></button>
+		      <button class="btn diablo-button purple"
+			      x-ng-click="new_sms_sign(merchant)">签名
 			<i class="glyphicon glyphicon-edit"></i></button>
-                      <button class="btn red diablo-button" 
+		      <button class="btn red diablo-button" 
 			 x-ng-click="delete_merchant(merchant)">删除
 			<i class="glyphicon glyphicon-erase"></i></button>
 		    </td>
@@ -256,6 +266,88 @@
   <div class="modal-footer">
     <button class="btn btn-primary"
 	    x-ng-disabled="rForm.$invalid"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
+</script>
+
+<script type="text/ng-template" id="new-rate.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    <h4 class="modal-title">
+      <span class="label label-sm label-primary">
+	新增短信费率（<span >{{params.name}}</span>）
+      </span>
+    </h4>
+  </div>
+
+  <!--BEGIN modal body-->
+  <div class="modal-body">
+    <form class="form-horizontal" name="rForm" novalidate>
+      <div class="form-group">
+	<label class="col-sm-2 col-md-2 control-label">费率（分）</label>
+	<div class="col-sm-8 col-md-8">
+	  <input class="form-control"
+		 required
+		 type="number"
+		 step="1"
+		 name="rate"
+		 class="form-control"
+		 x-ng-model="params.rate" /> 
+	</div>
+      </div>
+    </form> 
+    </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="rForm.$invalid"
+	    x-ng-click="ok()">确认</button>
+    <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
+  </div>
+</script>
+
+
+<script type="text/ng-template" id="new-sign.html">
+  <div class="modal-header">
+    <button class="close" x-ng-click="cancel()" type="button">
+      <span aria-hidden="true">&times;</span>
+      <span class="sr-only"></span>
+    </button>
+    <h4 class="modal-title">
+      <span class="label label-sm label-primary">
+	新增短信签名（<span >{{params.name}}</span>）
+      </span>
+    </h4>
+  </div>
+
+  <!--BEGIN modal body-->
+  <div class="modal-body">
+    <form class="form-horizontal" name="sForm" novalidate>
+      <div class="form-group">
+	<label class="col-sm-2 col-md-2 control-label">签名</label>
+	<div class="col-sm-8 col-md-8">
+	  <input class="form-control"
+		 required
+		 type="text"
+		 name="sign"
+		 class="form-control"
+		 x-ng-model="params.sign"
+		 x-ng-maxlength="16"/> 
+	</div>
+      </div>
+      <div ng-show="sForm.sign.$invalid && !sForm.sign.$pristine">
+	<span class="fg-red">中文，不超过16个字符</span>
+      </div> 
+    </form> 
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+	    x-ng-disabled="sForm.$invalid"
 	    x-ng-click="ok()">确认</button>
     <button class="btn btn-warning" x-ng-click="cancel()">取消</button>
   </div>

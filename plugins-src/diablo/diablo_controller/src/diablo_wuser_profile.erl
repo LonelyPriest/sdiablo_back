@@ -89,8 +89,8 @@ get(charge, Merchant) ->
     gen_server:call(?SERVER(Merchant), {get_charge, Merchant});
 get(score, Merchant) ->
     gen_server:call(?SERVER(Merchant), {get_score, Merchant});
-get(sms_rate, Merchant) ->
-    gen_server:call(?SERVER(Merchant), {get_sms_rate, Merchant});
+get(sms_template, Merchant) ->
+    gen_server:call(?SERVER(Merchant), {get_sms_template, Merchant});
 get(sms_center, Merchant) ->
     gen_server:call(?SERVER(Merchant), {get_sms_center, Merchant});
 get(retailer_level, Merchant) ->
@@ -184,17 +184,14 @@ update(charge, Merchant) ->
     gen_server:cast(?SERVER(Merchant), {update_charge, Merchant});
 update(score, Merchant) ->
     gen_server:cast(?SERVER(Merchant), {update_score, Merchant});
-update(sms_rate, Merchant) ->
-    gen_server:cast(?SERVER(Merchant), {update_sms_rate, Merchant});
+update(sms_template, Merchant) ->
+    gen_server:cast(?SERVER(Merchant), {update_sms_template, Merchant});
 update(region, Merchant) ->
     gen_server:cast(?SERVER(Merchant), {update_region, Merchant});
 update(ticket_plan, Merchant) ->
     gen_server:cast(?SERVER(Merchant), {update_ticket_plan, Merchant});
 update(retailer_level, Merchant) ->
     gen_server:cast(?SERVER(Merchant), {update_retailer_level, Merchant}).
-
-
-
 
 update(user_shop, Merchant, Session) ->
     gen_server:cast(?SERVER(Merchant), {update_user_shop, Merchant, Session}).
@@ -217,7 +214,6 @@ init([]) ->
 
 handle_call({new_profile, Merchant}, _From, State) ->
     ?DEBUG("new profile of merchant ~p", [Merchant]),
-
     try
 	{ok, MerchantInfo} = ?merchant:merchant(get, Merchant),
 	{ok, Shops}        = ?shop:lookup(Merchant),
@@ -242,7 +238,7 @@ handle_call({new_profile, Merchant}, _From, State) ->
 	{ok, Charges}      = ?w_retailer:charge(list, Merchant),
 	{ok, Scores}       = ?w_retailer:score(list, Merchant),
 
-	{ok, SMSRate}      = ?merchant:sms(list, Merchant),
+	{ok, SMSTemplate}      = ?merchant:sms(list_template, Merchant),
 	{ok, SMSCenter}    = ?merchant:sms(list_center, Merchant),
 	
 	{ok, Levels}       = ?w_retailer:retailer(list_level, Merchant), 
@@ -277,7 +273,7 @@ handle_call({new_profile, Merchant}, _From, State) ->
 				  charge      = Charges,
 				  score       = Scores,
 
-				  sms_rate    = SMSRate,
+				  sms_template = SMSTemplate, 
 				  sms_center  = SMSCenter,
 				  level       = Levels,
 				  ticket_plan = TicketPlanes,
@@ -872,9 +868,9 @@ handle_call({get_score, Merchant}, _From, State) ->
     Select = select(MS, fun() -> ?w_retailer:score(list, Merchant) end),
     {reply, {ok, Select}, State};
 
-handle_call({get_sms_rate, Merchant}, _From, State) ->
-    MS = ms(Merchant, sms_rate),
-    Select = select(MS, fun() -> ?merchant:sms(list, Merchant) end),
+handle_call({get_sms_template, Merchant}, _From, State) ->
+    MS = ms(Merchant, sms_template),
+    Select = select(MS, fun() -> ?merchant:sms(list_template, Merchant) end),
     {reply, {ok, Select}, State};
 
 handle_call({get_sms_center, Merchant}, _From, State) ->
@@ -1232,9 +1228,9 @@ handle_cast({Update, Merchant}, State) ->
 		    update_score ->
 			{ok, Scores} = ?w_retailer:score(list, Merchant),
 			Profile#wuser_profile{score=Scores};
-		    update_sms_rate ->
-			{ok, SMSRate}      = ?merchant:sms(list, Merchant),
-			Profile#wuser_profile{sms_rate=SMSRate};
+		    update_sms_template ->
+			{ok, SMSTemplate}      = ?merchant:sms(list_template, Merchant),
+			Profile#wuser_profile{sms_template=SMSTemplate};
 		    update_region ->
 			{ok, Regions} = ?shop:region(list, Merchant),
 			Profile#wuser_profile{region=Regions};
@@ -1327,13 +1323,16 @@ select(MS, RetryFun) ->
     Select = 
 	case ets:select(?WUSER_PROFILE, MS) of
 	    [] ->
+		?DEBUG("select none, use retry fun"),
 		{ok, R} = RetryFun(),
 		R;
 	    [[]] ->
+		?DEBUG("select none, use retry fun"),
 		{ok, R} = RetryFun(),
 		R;
 	    [R] ->
-		R
+		R;
+	    R -> R
 	end,
     %% ?DEBUG("select ~p", [ets:select(?WUSER_PROFILE, MS)]),
     Select.
@@ -1410,8 +1409,8 @@ ms(Merchant, score) ->
       [{'==', '$1', ?to_i(Merchant)}],
       ['$2']
      }];
-ms(Merchant, sms_rate) ->
-    [{{'$1', #wuser_profile{merchant='$1', sms_rate='$2', _='_'}},
+ms(Merchant, sms_template) ->
+    [{{'$1', #wuser_profile{merchant='$1', sms_template='$2', _='_'}},
       [{'==', '$1', ?to_i(Merchant)}],
       ['$2']
      }];

@@ -3,7 +3,15 @@
 -include("../../../../include/knife.hrl").
 -include("diablo_controller.hrl").
 
--export([sms_notify/2, sign/1, zz_sms/1, sms/3, sms/4]).
+-export([sms_notify/2, sign/1, zz_sms/1, sms/3, sms/4, init_sms/0, sms_once/4]).
+
+-define(zz_sms_account, <<"N3001234">>).
+-define(zz_sms_password, <<"dLZJfzK5Mc7a9d">>).
+
+init_sms() ->
+    Sqls= [<<"insert into zz_sms_template(merchant, type, content) values(-1, 0, \'会员提醒：欢迎光临{$var}，本次{$var}成功，消费金额{$var}，当前余额{$var}，累计积分{$var}，感谢您的惠顾！！\')">>],
+    ?sql_utils:execute(transaction, Sqls, ok).
+    
 
 sms_notify(Merchant, {Shop, Phone, Action, Money, RetailerBalance, Score}) ->
     ?DEBUG("sms_notify: merchants ~p, shop ~p, phone ~p, action ~p, money ~p"
@@ -14,39 +22,46 @@ sms_notify(Merchant, {Shop, Phone, Action, Money, RetailerBalance, Score}) ->
 	    {ok, []} -> ?err(sms_rate_not_found, Merchant);
 	    {ok, MerchantInfo} ->
 		?DEBUG("MerchantInfo ~p", [MerchantInfo]),
-		MerchantBalance = ?v(<<"balance">>, MerchantInfo),
+		MerchantBalance = ?v(<<"balance">>, MerchantInfo),	
+		Rate = ?v(<<"sms_rate">>, MerchantInfo),
+		?DEBUG("sms rate ~p, MerchantBalance ~p", [Rate, MerchantBalance]),
+		case Rate > MerchantBalance of
+		    true  -> ?err(sms_not_enought_blance, Merchant);
+		    false ->
+			Result = 
+			    case ?v(<<"sms_team">>, MerchantInfo) of
+				0 ->
+				    sms_once(aliqin, 
+					     Merchant,
+					     {Shop, Phone, Action, Money, RetailerBalance, Score});
+				1 ->
+				    Sign = ?v(<<"sms_sign">>, MerchantInfo),
+				    sms_once(zz,
+					     Merchant,
+					     Sign,
+					     {Shop, Phone, Action, Money, RetailerBalance, Score})
+			    end,
 
-		case ?w_user_profile:get(sms_rate, Merchant) of
-		    {ok, []} -> ?err(sms_rate_not_found, Merchant);
-		    {ok, SMSRate} ->
-			Rate = ?v(<<"rate">>, SMSRate),
-			?DEBUG("sms rate ~p, MerchantBalance ~p", [Rate, MerchantBalance]),
-			case Rate > MerchantBalance of
-			    true  -> ?err(sms_not_enought_blance, Merchant);
-			    false ->
-				case sms_once(aliqin,
-					      Merchant,
-					      {Shop, Phone, Action, Money, RetailerBalance, Score}) of
-				    {ok, {sms_send, Phone}} ->
-					Sql = "update merchants set balance=balance-" ++ ?to_s(Rate)
-					    ++ ", sms_send=sms_send+1"
-					    ++ " where id=" ++ ?to_s(Merchant),
-					case ?sql_utils:execute(write, Sql, Merchant) of
-					    {ok, Merchant} ->
-						?w_user_profile:update(merchant, Merchant),
-						{0, Merchant};
-					    _Error ->
-						?sql_utils:execute(write, Sql, Merchant),
-						?w_user_profile:update(merchant, Merchant),
-						{0, Merchant}
-					end;
-				    {error, {sms_center_not_found, Merchant}} ->
-					?err(sms_center_not_found, Merchant);
-				    {error, _} ->
-					?err(sms_send_failed, Merchant)
-				end
+			case Result of 
+			    {ok, {sms_send, Phone}} ->
+				Sql = "update merchants set balance=balance-" ++ ?to_s(Rate)
+				    ++ ", sms_send=sms_send+1"
+				    ++ " where id=" ++ ?to_s(Merchant),
+				case ?sql_utils:execute(write, Sql, Merchant) of
+				    {ok, Merchant} ->
+					?w_user_profile:update(merchant, Merchant),
+					{0, Merchant};
+				    _Error ->
+					?sql_utils:execute(write, Sql, Merchant),
+					?w_user_profile:update(merchant, Merchant),
+					{0, Merchant}
+				end;
+			    {error, {sms_center_not_found, Merchant}} ->
+				?err(sms_center_not_found, Merchant);
+			    {error, _} ->
+				?err(sms_send_failed, Merchant)
 			end
-		end
+		end 
 	end
     catch
 	_:_ ->
@@ -145,6 +160,62 @@ sms_once(aliqin, Merchant, {Shop, Phone, Action, Money, Balance, Score}) ->
 	    end
     end.
 
+sms_once(zz, Merchant, Sign, {Shop, Phone, Action, Money, Balance, Score}) ->
+    ?DEBUG("merchant ~p, Sign ~p, shop ~p, phone ~p, action ~p, money  ~p, balance ~p, score ~p",
+	  [Merchant, Sign, Shop, Phone, Action, Money, Balance, Score]),
+    NewBalance = ?f_print:clean_zero(Balance),
+    case ?w_user_profile:get(sms_template, Merchant) of
+	{ok, []} -> {error, {sms_template_not_found, Merchant}};
+	{ok, Templates} ->
+	    ?DEBUG("templates ~p", [Templates]),
+	    %% filter
+	    [Template] = get_sms_template(zz, Action, Merchant, Templates),
+	    ?DEBUG("template ~p", [Template]),
+	    %% Account = "N3001234",
+	    %% Password = "dLZJfzK5Mc7a9d",
+	    Content = ?v(<<"content">>, Template),
+	    Text = case Sign == <<>> orelse Sign == [] of
+			  true ->
+			   <<"【大唐通用】", Content/binary>>;
+			   %% <<"【钱掌柜】", Content/binary>>;
+			  false -> <<Sign/binary, Content/binary>>
+		      end,
+	    ?DEBUG("text ~ts", [Text]),
+ 			      
+	    Params = string:strip(?to_s(Phone))
+		++ "," ++ ?to_s(Shop)
+		++ "," ++ ?to_s(action(Action))
+		++ "," ++ ?to_s(Money)
+		++ "," ++ ?to_s(NewBalance)
+		++ "," ++ ?to_s(Score),
+	    ?DEBUG("params ~ts", [?to_b(Params)]),
+	    SMSParams = ?to_s(ejson:encode({[{<<"account">>, ?zz_sms_account},
+					     {<<"password">>,?zz_sms_password},
+					     {<<"msg">>, Text},
+					     {<<"params">>, ?to_b(Params)}]})),
+	    UTF8Body = unicode:characters_to_list(SMSParams, utf8),
+	    case httpc:request(
+		   post, {"https://smssh1.253.com/msg/variable/json",
+			  [], "application/json;charset=utf-8", UTF8Body}, [], []) of
+		{ok, {{"HTTP/1.1", 200, "OK"}, _Head, Reply}} ->
+		    ?DEBUG("Head ~p", [_Head]),
+		    ?DEBUG("Reply ~ts", [Reply]),
+		    {struct, Result} = mochijson2:decode(Reply),
+		    ?DEBUG("sms result ~p", [Result]),
+		    Code  = ?v(<<"code">>, Result),
+		    ErrorMsg   = ?v(<<"errorMsg">>, Result),
+		    ?DEBUG("code ~p, msg ~ts", [Code, ErrorMsg]),
+		    case ?to_i(Code) == 0 of
+			true -> {ok, {sms_send, Phone}};
+			false ->
+			    ?INFO("sms send failed phone ~p, code ~p", [Phone, Code]),
+			    {error, {sms_send_failed, Code}}
+		    end;
+		{error, Reason} ->
+		    {error, {http_failed, Reason}}
+	    end
+    end.
+    
 sms(promotion, Merchant, Phone) ->
     SMSTemplate = "SMS_167400277",
     start_sms(Merchant, Phone, SMSTemplate, []);
@@ -459,7 +530,8 @@ zz_sms(add_template) ->
     MD5Sign = md5(Account),
     AppId = "49",
     Sign = <<"钱掌柜">>,
-    Content = <<"会员提醒：欢迎光临{s}，本次消费成功，消费金额{m}，当前余额{b}，累计积分{c}，感谢您的惠顾！！">>,
+    Content = <<"会员提醒：欢迎光临{s}，本次{a}成功，消费金额{m}，当前余额{b}，累计积分{c}，感谢您的惠顾！！">>,
+    
 
     Body = lists:concat(["username=", "18692269329",
 			 "&password=", "123456",
@@ -510,6 +582,28 @@ zz_sms(send) ->
 	    {error, {http_failed, Reason}}
     end.
 
+get_sms_template(zz, Action, Merchant, Templates) ->
+    ?DEBUG("Action ~p, Merchant ~p, Templates ~p", [Action, Merchant, Templates]),
+    case [ T || {T} <- Templates,
+	       case Action of
+		   0 -> ?v(<<"type">>, T ) =:= 1; %% charge
+		   1 -> ?v(<<"type">>, T) =:= 0; %% consume
+		   2 -> ?v(<<"type">>, T) =:= 2  %% ticket
+	       end] of
+	FTemplates ->
+	    ?DEBUG("FTemplates ~p", [FTemplates]),
+	    case [T || T <- FTemplates, ?v(<<"merchant">>, T) =:= Merchant] of
+		[] ->
+		    [T || T <- FTemplates, ?v(<<"merchant">>, T) =:= -1];
+		UTemplates->
+		    ?DEBUG("UTemplates ~p", [UTemplates]),
+		    UTemplates
+	    end
+    end.
+	
+	
+
+    
 action(0) -> <<"充值">>;
 action(1) -> <<"消费">>;
 action(2) -> <<"退款">>.

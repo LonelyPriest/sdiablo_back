@@ -42,6 +42,9 @@ create table merchants
     address          VARCHAR(256) not null,
     balance          INTEGER not null default 0, -- fen
     sms_send         INTEGER not null default 0,
+    sms_rate         INTEGER not null default 0,
+    sms_sign         VARCHAR(32) not null default '',
+    sms_team         TINYINT not null default 0, -- 0:aliyun, 1:zz.253
     state            TINYINT not null default 0,
     type             TINYINT default 0,
     shop_count       INTEGER not null default 0, 
@@ -1217,7 +1220,7 @@ create table w_sale(
     ticket         DECIMAL(10, 2) default 0, -- max: 99999999.99
     verificate     DECIMAL(10, 2) default 0, -- max: 99999999.99
 
-    pay_sn         INTEGER not null default -1; 
+    pay_sn         INTEGER not null default -1,
     -- cbalance       INTEGER not null default 0, -- charge balance
     -- sbalance       INTEGER not null default 0, -- send balance of charging
     
@@ -1448,16 +1451,24 @@ create table w_daily_report(
     
 ) default charset=utf8;
 
+-- create table sms_rate(
+--     id              INTEGER AUTO_INCREMENT,
+--     merchant        INTEGER not null default -1,
+--     sign            VARCHAR(32) not null default '',
+--     team            TINYINT not null default 0, -- 0:aliyun, 1:zz.253
+--     rate            INTEGER default 0, -- fen
+--     -- send            INTEGER not null default 0,    
+--     unique  key uk (merchant, sign),
+--     primary key    (id)
+-- ) default charset=utf8;
 
-create table sms_rate(
-    id              INTEGER AUTO_INCREMENT,
-    merchant        INTEGER not null default -1,
-    sign            VARCHAR(32) not null default '',
-    team            TINYINT not null default 0, -- 0:aliyun, 1:zz.253
-    rate            INTEGER default 0, -- fen
-    -- send            INTEGER not null default 0,    
-    unique  key uk (merchant),
-    primary key    (id)
+create table zz_sms_template(
+   id              INTEGER AUTO_INCREMENT,
+   merchant        INTEGER not null default -1,
+   type            TINYINT default 0, -- 0:consume sms, 1:charge sms, 2:ticket sms
+   content         VARCHAR(256) default '',
+   unique  key (merchant, type),
+   primary key (id)
 ) default charset=utf8;
 
 

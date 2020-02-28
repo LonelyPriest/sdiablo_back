@@ -137,7 +137,7 @@ sidebar() ->
        level_1_menu, 
        [{"merchant_new", "新增商家", "glyphicon glyphicon-plus"},
 	{"merchant_detail", "商家详情", "glyphicon glyphicon-briefcase"},
-	{"merchant_sms_rate", "短信费率", "glyphicon glyphicon-yen"},
+	%% {"merchant_sms_rate", "短信费率", "glyphicon glyphicon-yen"},
 	{"merchant_sms_center", "短信中心", "glyphicon glyphicon-send"}
        ]).
 
