@@ -76,6 +76,7 @@ var wsaleUtils = function(){
 		
 		add.org_price = s.org_price;
 		add.tag_price = s.tag_price;
+		add.discount  = s.discount;
 		add.fprice    = s.fprice;
 		add.rprice    = s.rprice;
 		add.fdiscount = s.fdiscount;
@@ -1184,9 +1185,9 @@ var wsaleCalc = function(){
 		should_pay += one.calc;
 		
 		if (wsaleUtils.to_float(one.vir_price) > wsaleUtils.to_float(one.tag_price)) {
-		    base_pay += one.vir_price * count;
+		    base_pay += diablo_price(one.vir_price * count, one.discount);
 		} else {
-		    base_pay += one.tag_price * count; 
+		    base_pay += diablo_price(one.tag_price * count, one.discount); 
 		}
 		
 		show_promotions = wsaleUtils.format_promotion(one, show_promotions);

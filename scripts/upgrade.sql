@@ -708,6 +708,10 @@ alter table merchants add column sms_team TINYINT not null default 0 after sms_r
 
 update merchants a inner join (select merchant, rate from sms_rate) b on a.id=b.merchant set a.sms_rate=b.rate;
 
+--2020-03-04
+alter table w_sale_detail add column discount DECIMAL(4,1) default 0 after tag_price;
+update w_sale_detail set discount=100;
+
 
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;

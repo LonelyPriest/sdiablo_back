@@ -2418,6 +2418,7 @@ function wsaleNewProvide(
 		    org_price   : add.org_price,
 		    ediscount   : add.ediscount,
 		    tag_price   : add.tag_price,
+		    discount    : add.discount,
 		    fprice      : add.fprice,
 		    rprice      : add.rprice,
 		    fdiscount   : add.fdiscount,

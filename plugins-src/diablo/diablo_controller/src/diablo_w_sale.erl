@@ -889,6 +889,7 @@ handle_call({trans_detail, Merchant, Conditions}, _From, State) ->
 	", a.sid"
 	", a.org_price"
 	", a.tag_price"
+	", a.discount"
 	", a.fdiscount"
 	", a.rdiscount"
 	", a.fprice"
@@ -920,6 +921,7 @@ handle_call({trans_detail, Merchant, Conditions}, _From, State) ->
 	", score as sid"
 	", org_price"
 	", tag_price"
+	", discount"
 	", fdiscount"
 	", rdiscount"
 	", fprice"
@@ -2105,7 +2107,8 @@ wsale(Action, RSN, SaleRsn, Datetime, Merchant, Shop, Inventory, Amounts) ->
     Sex         = ?v(<<"sex">>, Inventory),
     
     OrgPrice    = ?v(<<"org_price">>, Inventory),
-    TagPrice    = ?v(<<"tag_price">>, Inventory), 
+    TagPrice    = ?v(<<"tag_price">>, Inventory),
+    Discount    = ?v(<<"discount">>, Inventory),
     FDiscount   = ?v(<<"fdiscount">>, Inventory),
     RDiscount   = ?v(<<"rdiscount">>, Inventory),
     FPrice      = ?v(<<"fprice">>, Inventory),
@@ -2182,6 +2185,7 @@ wsale(Action, RSN, SaleRsn, Datetime, Merchant, Shop, Inventory, Amounts) ->
 		 ", org_price"
 		 ", ediscount"
 		 ", tag_price"
+		 ", discount"
 		 ", fdiscount"
 		 ", rdiscount"
 		 ", fprice, rprice"
@@ -2207,7 +2211,8 @@ wsale(Action, RSN, SaleRsn, Datetime, Merchant, Shop, Inventory, Amounts) ->
 		 
 		 ++ ?to_s(ValidOrgPrice) ++ ","
 		 ++ ?to_s(ValidEDiscount) ++ ","
-		 ++ ?to_s(TagPrice) ++ "," 
+		 ++ ?to_s(TagPrice) ++ ","
+		 ++ ?to_s(Discount) ++ "," 
 		 ++ ?to_s(FDiscount) ++ ","
 		 ++ ?to_s(RDiscount) ++ ","
 		 ++ ?to_s(FPrice) ++ ","
@@ -2508,9 +2513,10 @@ valid_orgprice(stock, Merchant, Shop, Inventory) ->
     Sql = "select style_number, brand, org_price, ediscount, amount"
 	" from w_inventory_new_detail"
 	" where merchant=" ++ ?to_s(Merchant)
+	++ " and shop=" ++ ?to_s(Shop)
 	++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 	++ " and brand=" ++ ?to_s(Brand)
-	++ " and rsn like \'M-" ++ ?to_s(Merchant) ++ "-S-" ++ ?to_s(Shop) ++ "%\'" 
+    %% ++ " and rsn like \'M-" ++ ?to_s(Merchant) ++ "-S-" ++ ?to_s(Shop) ++ "%\'"
 	++ " order by id desc",
 
     case ?sql_utils:execute(read, Sql) of
@@ -2523,9 +2529,14 @@ filter_stock(news, [], _Stock, OrgPrice, EDiscount) ->
     {OrgPrice, EDiscount};
 filter_stock(news, [{H}|T], Stock, OrgPrice, EDiscount) ->
     Amount = ?v(<<"amount">>, H),
-    case Stock - Amount =< 0 of
-	true -> {?v(<<"org_price">>, H), ?v(<<"ediscount">>, H)};
-	false -> filter_stock(news, T, Stock - Amount, OrgPrice, EDiscount)
+    case Amount > 0 of
+	true ->
+	    case Stock - Amount =< 0 of
+		true -> {?v(<<"org_price">>, H), ?v(<<"ediscount">>, H)};
+		false -> filter_stock(news, T, Stock - Amount, OrgPrice, EDiscount)
+	    end;
+	false ->
+	    filter_stock(news, T, Stock, OrgPrice, EDiscount)
     end.
 
 sale_new(rsn_groups, MatchMode, Merchant, Conditions, PageFun) ->
