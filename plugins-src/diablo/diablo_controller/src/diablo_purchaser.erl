@@ -1066,7 +1066,8 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
 	   [Merchant, Inventories, Props]), 
     DateTime = ?utils:correct_datetime(datetime, ?v(<<"datetime">>, Props)),
     CurrentDatetime = ?utils:current_time(format_localtime),
-    
+
+    UserId     = ?v(<<"user">>, Props, -1),
     Shop       = ?v(<<"shop">>, Props),
     Firm       = ?v(<<"firm">>, Props, -1),
     Employee   = ?v(<<"employee">>, Props),
@@ -1134,11 +1135,26 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
 		    Sql1 = sql(wnew, RSn, Merchant, Shop, Firm, DateTime, Inventories), 
 
 		    Sql2 = "insert into w_inventory_new(rsn"
-			", employ, firm, shop, merchant, balance"
-			", should_pay, has_pay, cash, card, wire"
-			", verificate, total, comment"
-			", e_pay_type, e_pay, type, entry_date, op_date) values("
+			", account"
+			", employ"
+			", firm"
+			", shop"
+			", merchant"
+			", balance"
+			", should_pay"
+			", has_pay"
+			", cash"
+			", card"
+			", wire"
+			", verificate"
+			", total"
+			", comment"
+			", e_pay_type"
+			", e_pay, type"
+			", entry_date"
+			", op_date) values("
 			++ "\"" ++ ?to_s(RSn) ++ "\","
+			++ ?to_s(UserId) ++ ","
 			++ "\"" ++ ?to_s(Employee) ++ "\","
 			++ ?to_s(Firm) ++ ","
 			++ ?to_s(Shop) ++ ","
@@ -1840,6 +1856,7 @@ handle_call({reject_inventory, Merchant, Inventories, Props}, _From, State) ->
 	   [Merchant, Inventories, Props]),
 
     Now         = ?utils:current_time(format_localtime),
+    UserId      = ?v(<<"user">>, Props, -1),
     Shop        = ?v(<<"shop">>, Props),
     Firm        = ?v(<<"firm">>, Props),
     %% DateTime    = ?v(<<"datetime">>, Props, Now),
@@ -1884,29 +1901,45 @@ handle_call({reject_inventory, Merchant, Inventories, Props}, _From, State) ->
     %% 	++ " and deleted=" ++ ?to_s(?NO) ++ ";",
     StockOutSql = fun(RSN, CurrentBalance) ->
 			  ["insert into w_inventory_new(rsn"
-			   ", employ, firm, shop, merchant, balance"
-			  ", should_pay, has_pay, cash, card, wire"
-			  ", verificate, total, comment, e_pay_type, e_pay"
-			  ", type, entry_date, op_date) values(" 
-			  ++ "\"" ++ ?to_s(RSN) ++ "\","
-			  ++ "\"" ++ ?to_s(Employe) ++ "\","
-			  ++ ?to_s(Firm) ++ ","
-			  ++ ?to_s(Shop) ++ ","
-			  ++ ?to_s(Merchant) ++ ","
-			  ++ ?to_s(CurrentBalance) ++ "," 
-			  ++ ?to_s(ShouldPay) ++ ","
-			  ++ ?to_s(HasPay) ++ ","
-			  ++ ?to_s(Cash) ++ ","
-			  ++ ?to_s(Card) ++ ","
-			  ++ ?to_s(Wire) ++ ","
-			  ++ ?to_s(VerifyPay) ++ ","
-			  ++ ?to_s(-RejectTotal) ++ ","
-			  ++ "\'" ++ ?to_s(Comment) ++ "\',"
-			  ++ ?to_s(EPayType) ++ ","
-			  ++ ?to_s(-EPay) ++ ","
-			  ++ ?to_s(?REJECT_INVENTORY) ++ ","
-			  ++ "\'" ++ ?to_s(DateTime) ++ "\',"
-			  ++ "\'" ++ ?to_s(Now) ++ "\')"]
+			   ", account"
+			   ", employ"
+			   ", firm"
+			   ", shop"
+			   ", merchant"
+			   ", balance"
+			   ", should_pay"
+			   ", has_pay"
+			   ", cash"
+			   ", card"
+			   ", wire"
+			   ", verificate"
+			   ", total"
+			   ", comment"
+			   ", e_pay_type"
+			   ", e_pay"
+			   ", type"
+			   ", entry_date"
+			   ", op_date) values(" 
+			   ++ "\"" ++ ?to_s(RSN) ++ "\","
+			   ++ ?to_s(UserId) ++ ","
+			   ++ "\"" ++ ?to_s(Employe) ++ "\","
+			   ++ ?to_s(Firm) ++ ","
+			   ++ ?to_s(Shop) ++ ","
+			   ++ ?to_s(Merchant) ++ ","
+			   ++ ?to_s(CurrentBalance) ++ "," 
+			   ++ ?to_s(ShouldPay) ++ ","
+			   ++ ?to_s(HasPay) ++ ","
+			   ++ ?to_s(Cash) ++ ","
+			   ++ ?to_s(Card) ++ ","
+			   ++ ?to_s(Wire) ++ ","
+			   ++ ?to_s(VerifyPay) ++ ","
+			   ++ ?to_s(-RejectTotal) ++ ","
+			   ++ "\'" ++ ?to_s(Comment) ++ "\',"
+			   ++ ?to_s(EPayType) ++ ","
+			   ++ ?to_s(-EPay) ++ ","
+			   ++ ?to_s(?REJECT_INVENTORY) ++ ","
+			   ++ "\'" ++ ?to_s(DateTime) ++ "\',"
+			   ++ "\'" ++ ?to_s(Now) ++ "\')"]
 		  end,
     case CheckFirmSql of
 	{ok, []} ->

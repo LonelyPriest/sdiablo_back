@@ -1206,6 +1206,7 @@ inventory(new_detail, new, Merchant, Conditions, PageFun) ->
     %% 	?sql_utils:cut(fields_with_prifix, Conditions),
     "select a.id"
 	", a.rsn"
+	", a.account as account_id"
 	", a.employ as employee_id"
 	", a.firm as firm_id"
 	", a.shop as shop_id"
@@ -1225,7 +1226,10 @@ inventory(new_detail, new, Merchant, Conditions, PageFun) ->
 	", a.entry_date"
 	", a.op_date"
 
+	", b.name as account"
+
 	" from w_inventory_new a"
+	" left join users b on a.account=b.id"
 	" where " ++ SortConditions 
 	++ PageFun();
 

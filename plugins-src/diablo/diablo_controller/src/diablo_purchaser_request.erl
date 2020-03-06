@@ -47,6 +47,7 @@ action(Session, _Req, Unkown) ->
 action(Session, Req, {"new_w_inventory"}, Payload) ->
     ?DEBUG("new purchaser inventory with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UserId = ?session:get(id, Session),
     Invs = ?v(<<"inventory">>, Payload, []),
     {struct, Base} = ?v(<<"base">>, Payload), 
     Datetime       = ?v(<<"datetime">>, Base),
@@ -65,7 +66,7 @@ action(Session, Req, {"new_w_inventory"}, Payload) ->
 	    case stock(check, ?NEW_INVENTORY, Total, 0, Invs) of
 		ok ->
 		    case ?w_inventory:purchaser_inventory(
-			    new, Merchant, lists:reverse(Invs), Base) of
+			    new, Merchant, lists:reverse(Invs), [{<<"user">>, UserId}] ++ Base) of
 			{ok, RSn} -> 
 			    ?utils:respond(
 			       200,
@@ -458,6 +459,7 @@ action(Session, Req, {"get_stock_note"}, Payload) ->
 action(Session, Req, {"reject_w_inventory"}, Payload) ->
     ?DEBUG("reject purchasr inventory with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UserId = ?session:get(id, Session),
     Invs = ?v(<<"inventory">>, Payload),
     {struct, Base} = ?v(<<"base">>, Payload),
     Total          = ?v(<<"total">>, Base), 
@@ -477,7 +479,7 @@ action(Session, Req, {"reject_w_inventory"}, Payload) ->
 	    case stock(check, ?REJECT_INVENTORY, Total, 0, Invs) of
 		ok ->
 		    case ?w_inventory:purchaser_inventory(
-			    reject, Merchant, lists:reverse(Invs), Base) of 
+			    reject, Merchant, lists:reverse(Invs), [{<<"user">>, UserId}] ++ Base) of 
 			{ok, RSn} ->
 			    ?utils:respond(
 			       200, Req,

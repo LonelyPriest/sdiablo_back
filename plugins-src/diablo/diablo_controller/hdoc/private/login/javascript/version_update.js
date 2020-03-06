@@ -1,5 +1,12 @@
 var version_update = function(){
     var updates = [
+	{date: "2020-03-07",
+	 content:
+	 ["日常费用增加可修改功能",
+	  "入库单据增加帐号区分，方便多店时入库时区分由哪个端口入库"
+	 ]
+	},
+	
 	{date: "2020-1-30",
 	 content:
 	 ["盘点机增加扫描退货功能",

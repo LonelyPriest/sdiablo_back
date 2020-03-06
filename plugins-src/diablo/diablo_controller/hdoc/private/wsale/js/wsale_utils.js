@@ -869,6 +869,7 @@ var wsaleCalc = function(){
 	    var abs_total    = 0;
 	    var should_pay   = 0;
 	    var base_pay     = 0;
+	    var abs_pay      = 0;
 	    var score        = 0;
 	    
 	    var vipDiscountMode    = wsaleUtils.to_integer(vipMode.charAt(0));
@@ -1185,9 +1186,11 @@ var wsaleCalc = function(){
 		should_pay += one.calc;
 		
 		if (wsaleUtils.to_float(one.vir_price) > wsaleUtils.to_float(one.tag_price)) {
-		    base_pay += diablo_price(one.vir_price * count, one.discount);
+		    // base_pay += diablo_price(one.vir_price * count, one.discount);
+		    abs_pay += one.vir_price * count;
 		} else {
-		    base_pay += diablo_price(one.tag_price * count, one.discount); 
+		    // base_pay += diablo_price(one.tag_price * count, one.discount);
+		    abs_pay += one.tag_price * count;
 		}
 		
 		show_promotions = wsaleUtils.format_promotion(one, show_promotions);
@@ -1198,8 +1201,10 @@ var wsaleCalc = function(){
 
 	    // calcuate with verificate
 	    should_pay = wsaleUtils.to_decimal(should_pay);
+	    base_pay   = should_pay;
 	    should_pay = wsaleCalc.calc_discount_of_verificate(inventories, saleMode, should_pay, verificate);
-	    base_pay = wsaleUtils.to_decimal(base_pay);
+	    // base_pay = wsaleUtils.to_decimal(base_pay);
+	    abs_pay = wsaleUtils.to_decimal(abs_pay);
 
 	    // reset score
 	    if (score_discount!==0) {
@@ -1233,6 +1238,7 @@ var wsaleCalc = function(){
 		abs_total:  abs_total,
 		should_pay: should_pay,
 		base_pay:   base_pay,
+		abs_pay:    abs_pay,
 		score:      score,
 		pscores:    pscores
 		// rbalance:   calc_p.rbalance, 

@@ -179,6 +179,12 @@ condition(proplists_suffix, Conditions) ->
 	SQL -> SQL ++ " and "
     end.
 				 
+time_condition(non_prefix, ge2less, Start, End) ->
+    time_condition(Start, "entry_date", ge)
+	++ " and " ++ time_condition(End, "entry_date", less);
+time_condition(prefix, ge2less, Start, End) ->
+    time_condition(Start, "a.entry_date", ge)
+	++ " and " ++ time_condition(End, "a.entry_date", less).
 
 time_condition(Time, TimeField, ge) ->
     case Time of

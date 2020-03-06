@@ -736,7 +736,8 @@ function dailyCostCtrlProvide (
 		 cash:wsaleUtils.to_integer(params.cash),
 		 card:wsaleUtils.to_integer(params.card),
 		 wxin:wsaleUtils.to_integer(params.wxin),
-		 comment: diablo_set_string(params.comment)
+		 comment: diablo_set_string(params.comment),
+		 date: dateFilter(params.date, "yyyy-MM-dd")
 		}).then(function(result) {
 		     console.log(result);
 		     if (result.ecode === 0) {
@@ -752,11 +753,60 @@ function dailyCostCtrlProvide (
 	    undefined,
 	    callback,
 	    undefined,
-	    {cash: 0,
+	    {op:0,
+	     date: diablo_now_date(),
+	     cash: 0,
 	     card: 0,
 	     wxin: 0,
 	     shops: $scope.shops,
 	     shop: $scope.shops[0],
+	     pattern:  {comment:diabloPattern.comment, number:diabloPattern.number},
+	     match_cost_class: $scope.match_cost_class,
+	     check_cost: function(cash, card, wxin) {
+		 return wsaleUtils.to_integer(cash)
+		     + wsaleUtils.to_integer(card)
+		     + wsaleUtils.to_integer(wxin) > 0;
+	     }
+	    }
+	);
+    };
+
+    $scope.update_daily_cost = function(c) {
+	console.log(c);
+	var callback = function(params) {
+	    console.log(params); 
+	    wsaleService.update_daily_cost(
+		{cid: c.id,
+		 shop: diablo_get_modified(params.shop.id, c.shop_id),
+		 cash: diablo_get_modified(wsaleUtils.to_integer(params.cash), c.cash),
+		 card: diablo_get_modified(wsaleUtils.to_integer(params.card), c.card),
+		 wxin: diablo_get_modified(wsaleUtils.to_integer(params.wxin), c.wxin),
+		 comment: diablo_get_modified(diablo_set_string(params.comment), c.comment),
+		 date: diablo_get_modified(dateFilter(params.date, "yyyy-MM-dd"), c.entry_date)
+		}).then(function(result) {
+		    console.log(result);
+		    if (result.ecode === 0) {
+			$scope.refresh()
+		    } else {
+			dialog.set_error("编辑日常费用", result.ecode);
+		    }
+		})
+	};
+	
+	dialog.edit_with_modal(
+	    "new-daily-cost.html",
+	    undefined,
+	    callback,
+	    undefined,
+	    {op:1,
+	     date: diablo_set_date(c.entry_date),
+	     cash: c.cash,
+	     card: c.card,
+	     wxin: c.wxin,
+	     cost_class:c.cost_class,
+	     comment: c.comment,
+	     shops: $scope.shops,
+	     shop: diablo_get_object(c.shop_id, $scope.shops),
 	     pattern:  {comment:diabloPattern.comment, number:diabloPattern.number},
 	     match_cost_class: $scope.match_cost_class,
 	     check_cost: function(cash, card, wxin) {

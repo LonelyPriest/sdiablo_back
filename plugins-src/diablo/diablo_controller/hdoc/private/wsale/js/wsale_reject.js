@@ -477,6 +477,7 @@ function wsaleRejectCtrlProvide(
 		
 		org_price   : add.org_price, 
 		tag_price   : add.tag_price,
+		discount    : add.discount,
 		fdiscount   : add.fdiscount,
 		rdiscount   : add.rdiscount,
 		fprice      : add.fprice,

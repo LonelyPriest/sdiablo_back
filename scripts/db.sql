@@ -122,6 +122,7 @@ create table daily_cost
     merchant         INTEGER not null default -1,
     deleted          INTEGER default 0, -- 0: no;  1: yes
     entry_date       DATETIME not null,
+    op_date          DATETIME not null
     primary key      (id),
     key           dk (merchant, shop, cost_class)
 ) default charset=utf8;
@@ -950,6 +951,7 @@ create table w_inventory_amount(
 create table w_inventory_new(
     id             INTEGER AUTO_INCREMENT,
     rsn            VARCHAR(32) not null, -- record sn
+    account        INTEGER not null default -1,
     employ         VARCHAR(8) not null,
     firm           INTEGER default -1, 
     shop           INTEGER default -1,  -- which shop saled the goods

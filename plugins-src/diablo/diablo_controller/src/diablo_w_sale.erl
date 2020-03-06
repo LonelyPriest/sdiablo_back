@@ -2351,7 +2351,7 @@ filter_table(w_sale_with_page, Merchant, CurrentPage, ItemsPerPage, Conditions) 
     
     Sql = "select a.id"
 	", a.rsn"
-	", a.account"
+	", a.account as account_id"
 	", a.employ as employee_id"
     	", a.retailer as retailer_id"
 	", a.shop as shop_id"

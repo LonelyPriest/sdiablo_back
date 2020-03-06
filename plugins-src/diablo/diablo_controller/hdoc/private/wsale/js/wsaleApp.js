@@ -363,6 +363,10 @@ function wsaleConfg(angular){
 	this.new_daily_cost = function(cost) {
 	    return http.save({operation:"new_daily_cost"}, cost).$promise;
 	};
+
+	this.update_daily_cost = function(cost) {
+	    return http.save({operation:"update_daily_cost"}, cost).$promise;
+	};
 	
 	this.list_daily_cost = function(match, fields, currentPage, itemsPerpage) {
 	    return http.save(
@@ -555,6 +559,7 @@ function wsaleNewProvide(
 	has_pay:      0,
 	should_pay:   0,
 	base_pay:     0,
+	abs_pay:      0,
 	score:        0,
 	pscores:      [],
 	charge:       0,
@@ -1617,10 +1622,11 @@ function wsaleNewProvide(
 	$scope.select.ticket_custom = diablo_invalid_index;
 
 	$scope.select.total        = 0;
-	$scope.select.abs_total    = 0; 
+	$scope.select.abs_total    = 0;
 	$scope.select.has_pay      = 0;
 	$scope.select.should_pay   = 0;
 	$scope.select.base_pay     = 0;
+	$scope.select.abs_pay      = 0;
 	$scope.select.score        = 0;
 	$scope.select.pscores      = [];
 	$scope.select.charge       = 0;
@@ -2668,6 +2674,7 @@ function wsaleNewProvide(
 	$scope.select.abs_total    = 0;
 	$scope.select.should_pay   = 0;
 	$scope.select.base_pay     = 0;
+	$scope.select.abs_pay      = 0;
 	$scope.select.score        = 0;
 
 	// console.log($scope.inventoyies);
@@ -2690,6 +2697,7 @@ function wsaleNewProvide(
 	$scope.select.abs_total = calc.abs_total;
 	$scope.select.should_pay= calc.should_pay;
 	$scope.select.base_pay  = calc.base_pay;
+	$scope.select.abs_pay   = calc.abs_pay;
 	$scope.select.score     = calc.score; 
 	$scope.select.pscores   = calc.pscores;
 	$scope.select.charge    = $scope.select.should_pay - $scope.select.has_pay;

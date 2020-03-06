@@ -65,7 +65,10 @@ cost_class(filter, Merchant, CurrentPage, ItemsPerPage) ->
     gen_server:call(?MODULE, {filter_cost_class, Merchant, CurrentPage, ItemsPerPage}).
 
 cost(new, Merchant, Cost) ->
-    gen_server:call(?MODULE, {new_daily_cost, Merchant, Cost}).
+    gen_server:call(?MODULE, {new_daily_cost, Merchant, Cost});
+cost(update, Merchant, Cost) ->
+    gen_server:call(?MODULE, {update_daily_cost, Merchant, Cost}).
+
 cost(total, 'and', Merchant, Conditions) ->
     gen_server:call(?MODULE, {total_daily_cost, Merchant, Conditions}).
 cost(filter, 'and', Merchant, CurrentPage, ItemsPerPage, Conditions) ->
@@ -569,11 +572,12 @@ handle_call({filter_cost_class, Merchant, CurrentPage, ItemsPerPage}, _From, Sta
 handle_call({new_daily_cost, Merchant, Cost}, _From, State)->
     ?DEBUG("new_daily_cost: Merchant ~p, Cost ~p", [Merchant, Cost]),
     CostClass = ?v(<<"cost_class">>, Cost),
+    EntryDate = ?v(<<"date">>, Cost),
     Cash = ?v(<<"cash">>, Cost, 0),
     Card = ?v(<<"card">>, Cost, 0),
     Wxin = ?v(<<"wxin">>, Cost, 0),
     Comment = ?v(<<"comment">>, Cost, []),
-    Shop = ?v(<<"shop">>, Cost),
+    Shop = ?v(<<"shop">>, Cost), 
     Balance = ?to_i(Cash) + ?to_i(Card) + ?to_i(Wxin),
     Reply = 
 	case Balance > 0 of
@@ -588,7 +592,8 @@ handle_call({new_daily_cost, Merchant, Cost}, _From, State)->
 		    ", wxin"
 		    ", comment"
 		    ", merchant"
-		    ", entry_date) values("
+		    ", entry_date"
+		    ", op_date) values("
 		    ++ ?to_s(Shop) ++ ","
 		    ++ ?to_s(CostClass) ++ ","
 		    ++ ?to_s(Balance) ++ "," 
@@ -597,11 +602,37 @@ handle_call({new_daily_cost, Merchant, Cost}, _From, State)->
 		    ++ ?to_s(Wxin) ++ ","
 		    ++ "\'" ++ ?to_s(Comment) ++ "\',"
 		    ++ ?to_s(Merchant) ++ ","
+		    ++ "\'" ++ ?to_s(EntryDate) ++ "\',"
 		    ++ "\'" ++ ?utils:current_time(format_localtime) ++ "\')",
 		?sql_utils:execute(insert, Sql);
 	    false ->
-		?err(cost_zero_balance, CostClass)
+		{error, ?err(cost_zero_balance, CostClass)}
     end,
+    {reply, Reply, State};
+
+handle_call({update_daily_cost, Merchant, Cost}, _From, State) ->
+    ?DEBUG("update_daily_cost: Merchant ~p, Cost ~p", [Merchant, Cost]),
+    CostId = ?v(<<"cid">>, Cost),
+    EntryDate = ?v(<<"date">>, Cost),
+    Cash = ?v(<<"cash">>, Cost),
+    Card = ?v(<<"card">>, Cost),
+    Wxin = ?v(<<"wxin">>, Cost),
+    Comment = ?v(<<"comment">>, Cost),
+    Shop = ?v(<<"shop">>, Cost),
+    
+    Updates = ?utils:v(cash, integer, Cash)
+	++ ?utils:v(card, integer, Card)
+	++ ?utils:v(wxin, integer, Wxin)
+	++ ?utils:v(comment, string, Comment)
+	++ ?utils:v(shop, integer, Shop)
+	++ ?utils:v(entry_date, string, EntryDate),
+
+    Sql = "update daily_cost set "
+	++ ?utils:to_sqls(proplists, comma, Updates)
+	++ " where id=" ++ ?to_s(CostId)
+	++ " and merchant=" ++ ?to_s(Merchant),
+    
+    Reply = ?sql_utils:execute(write, Sql, CostId),
     {reply, Reply, State};
 
 handle_call({total_daily_cost, Merchant, Conditions}, _From, State) ->
@@ -614,7 +645,10 @@ handle_call({total_daily_cost, Merchant, Conditions}, _From, State) ->
 	" from daily_cost a"
 	" where a.merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions)
-	++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime),
+	++ case ?sql_utils:time_condition(non_prefix, ge2less, StartTime, EndTime) of
+	       [] -> [];
+	       Sql -> " and " ++ Sql
+	   end,
 	Reply = ?sql_utils:execute(s_read, CountSql),
     {reply, Reply, State};
 
@@ -629,6 +663,7 @@ handle_call({filter_daily_cost, Merchant, CurrentPage, ItemsPerPage, Conditions}
 	", a.card"
 	", a.comment"
 	", a.entry_date"
+	", a.op_date"
 
 	", b.name as shop"
 	", c.name as cost_class"
@@ -639,8 +674,11 @@ handle_call({filter_daily_cost, Merchant, CurrentPage, ItemsPerPage, Conditions}
 	
 	" where a.merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions)
-	++ ?sql_utils:fix_condition(time, time_with_prfix, StartTime, EndTime)
-	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage),
+	++ case ?sql_utils:time_condition(prefix, ge2less, StartTime, EndTime) of
+	       [] -> [];
+	       TimeSql -> " and " ++ TimeSql
+	   end
+	++ ?sql_utils:condition(page_desc, {use_datetime, 0}, CurrentPage, ItemsPerPage),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 

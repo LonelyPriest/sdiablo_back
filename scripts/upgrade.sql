@@ -713,6 +713,12 @@ alter table w_sale_detail add column discount DECIMAL(4,1) default 0 after tag_p
 update w_sale_detail set discount=100;
 
 
+--2020-03-06
+alter table w_inventory_new add column account INTEGER default -1 after rsn;
+alter table daily_cost add column op_date DATETIME default 0 after entry_date;
+update daily_cost set op_date=entry_date;
+alter table daily_cost modify column entry_date DATE not null default 0;
+
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;
 

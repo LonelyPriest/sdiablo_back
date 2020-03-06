@@ -1147,6 +1147,15 @@ action(Session, Req, {"new_daily_cost"}, Payload) ->
        fun(CostId) -> ?succ(add_shop, CostId) end,
        Req);
 
+action(Session, Req, {"update_daily_cost"}, Payload) ->
+    ?DEBUG("update_daily_cost: session ~p, payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    ?utils:respond(
+       normal,
+       fun() -> ?shop:cost(update, Merchant, Payload) end,
+       fun(CostId) -> ?succ(add_shop, CostId) end,
+       Req);
+
 action(Session, Req, {"list_daily_cost"}, Payload) ->
     ?DEBUG("list_daily_cost: Session ~p, Payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
