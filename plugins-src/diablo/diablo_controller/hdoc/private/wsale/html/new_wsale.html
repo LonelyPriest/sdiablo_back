@@ -135,7 +135,10 @@
 		  </td> 
 		  
 		  <td x-ng-if="setting.check_sale" class="vert-align">{{inv.total}}</td> 
-		  <td class="col-md-1 vert-align">{{inv.tag_price}}</td>
+		  <td class="col-md-1 vert-align">
+		    <div x-ng-if="inv.tag_price < inv.vir_price">{{inv.vir_price}}</div>
+		    <div x-ng-if="inv.tag_price >= inv.vir_price">{{inv.tag_price}}</div>
+		  </td>
 
 		  <!--discount-->
 		  <td x-ng-if="!right.m_discount" class="vert-align">{{inv.fdiscount}}</td>
