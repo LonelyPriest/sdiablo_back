@@ -2628,21 +2628,20 @@ function wsaleNewProvide(
 		s.fprice = diablo_price(s.tag_price, s.fdiscount); 
 	    }	    
 	} else {
-	    var totalPay = 0;
-	    for(var i=0, l=$scope.inventories.length; i<l; i++){
-		var s = $scope.inventories[i];
-		// s.$update = true;
-		totalPay += diablo_price(s.tag_price * s.sell, s.discount); 
-	    }
+	    // var totalPay = 0;
+	    // for(var i=0, l=$scope.inventories.length; i<l; i++){
+	    // 	var s = $scope.inventories[i];
+	    // 	totalPay += diablo_price(s.tag_price * s.sell, s.discount); 
+	    // }
 	    
-	    var mdiscount = diablo_discount(newValue, totalPay);
-	    // console.log(newValue, totalPay, mdiscount);
-	    for(var i=0, l=$scope.inventories.length; i<l; i++){
-		var s = $scope.inventories[i];
-		s.$update = true;
-		s.fdiscount = wsaleUtils.to_decimal(s.discount * mdiscount / 100);
-		s.fprice = diablo_price(s.tag_price, s.fdiscount);
-	    }
+	    // var mdiscount = diablo_discount(newValue, totalPay);
+	    // for(var i=0, l=$scope.inventories.length; i<l; i++){
+	    // 	var s = $scope.inventories[i];
+	    // 	s.$update = true;
+	    // 	s.fdiscount = wsaleUtils.to_decimal(s.discount * mdiscount / 100);
+	    // 	s.fprice = diablo_price(s.tag_price, s.fdiscount);
+	    // }
+	    $scope.select.verificate = $scope.select.base_pay - newValue;
 	}
 	
 	$scope.re_calculate();

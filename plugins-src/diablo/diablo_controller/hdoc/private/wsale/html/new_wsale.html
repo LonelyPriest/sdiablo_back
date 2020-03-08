@@ -413,7 +413,7 @@
   <div class="col-md-4">
     <div class="portlet box light-grey diablo-margin-bottom-5">
       <div class="portlet-title">
-	<div class="caption"><i class="glyphicon glyphicon-jpy large"></i>
+	<div class="caption"><i class="glyphicon glyphicon-jpy large fg-red"></i>
 	  <span>收银</span>
 	  <!-- <span>{{select.datetime|date: 'yyyy-MM-dd'}}</span> -->
 	  <!-- <span x-ng-bind=select.shop.name></span> -->
@@ -732,8 +732,11 @@
 	    <span x-ng-if="select.card">刷卡：
     	      <span class="fg-blue sell-font"><strong>{{select.card}}</strong></span>&nbsp&nbsp
 	    </span>
-	    <span x-ng-if="select.wxin">微/支：
+	    <span x-ng-if="select.wxin">微信：
     	      <span class="fg-blue sell-font"><strong>{{select.wxin}}</strong></span>&nbsp&nbsp
+	    </span>
+	    <span x-ng-if="select.wxin">支付宝：
+    	      <span class="fg-blue sell-font"><strong>{{select.aliPay}}</strong></span>&nbsp&nbsp
 	    </span>
 	  </h5>
 	</div>

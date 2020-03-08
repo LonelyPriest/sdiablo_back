@@ -69,6 +69,7 @@ function wsaleUpdateDetailCtrlProvide(
 	$scope.select.abs_total      = 0;
 	$scope.select.should_pay     = 0;
 	$scope.select.base_pay       = 0;
+	$scope.select.abs_pay        = 0;
 	$scope.select.score          = 0;
 	$scope.select.charge         = 0;
 	// $scope.select.save_to_back   = 0;
@@ -86,9 +87,11 @@ function wsaleUpdateDetailCtrlProvide(
 
 	console.log(calc);
 	// console.log($scope.show_promotions); 
-	$scope.select.total     = calc.total; 
+	$scope.select.total     = calc.total;
+	$scope.select.abs_total = calc.abs_total;
 	$scope.select.should_pay= calc.should_pay;
 	$scope.select.base_pay  = calc.base_pay;
+	$scope.select.abs_pay   = calc.abs_pay;
 	$scope.select.score     = calc.score;
 	$scope.select.pscores   = calc.pscores;
 
@@ -147,13 +150,11 @@ function wsaleUpdateDetailCtrlProvide(
 		$scope.setting.solo_retailer = wsaleUtils.solo_retailer(shopId, $scope.base_settings);
 
 		var sale_mode = wsaleUtils.sale_mode(shopId, $scope.base_settings);
+		$scope.setting.show_wprice    = wsaleUtils.to_integer(sale_mode.charAt(14)); 
 		$scope.setting.score_discount = wsaleUtils.to_integer(sale_mode.charAt(16)) * 10
 		    + wsaleUtils.to_integer(sale_mode.charAt(17));
 		
-		if (diablo_no === $scope.setting.cake_mode) 
-		    $scope.vpays = wsaleService.vpays;
-		else 
-		    $scope.vpays = wsaleService.cake_vpays;
+		$scope.vpays = $scope.setting.cake_mode === diablo_no ? wsaleService.vpays : wsaleService.cake_vpays
 		
 		$scope.employees = wsaleUtils.get_login_employee(
 		    $scope.select.shop.id,
@@ -634,6 +635,23 @@ function wsaleUpdateDetailCtrlProvide(
     $scope.$watch("select.verificate", function(newValue, oldValue){
     	if (newValue === oldValue || angular.isUndefined(newValue)) return;
     	reset_payment(newValue);
+    });
+
+    $scope.$watch("select.wprice", function(newValue, oldValue){
+	// console.log(newValue);
+	if (newValue === oldValue) return;
+	if (angular.isUndefined(newValue) || null === newValue) {
+	    for(var i=0, l=$scope.inventories.length; i<l; i++){
+		var s = $scope.inventories[i];
+		s.$update = false;
+		s.fdiscount = s.discount;
+		s.fprice = diablo_price(s.tag_price, s.fdiscount); 
+	    }	    
+	} else {
+	    $scope.select.verificate = $scope.select.base_pay - newValue;
+	}
+	
+	$scope.re_calculate();
     });
 
     var in_amount = function(amounts, inv){

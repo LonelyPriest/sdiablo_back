@@ -1,8 +1,11 @@
 <div class="input-group">
-  <span x-ng-if="glyphicon" class="input-group-btn">
-    <button type="button" class="btn">
-      <i class={{glyphicon}}></i></button>
+  <span x-ng-if="glyphicon && addon" class="input-group-addon">
+    <span><i class={{glyphicon}}></i>{{addon}}</span>
   </span>
+    <span x-ng-if="glyphicon && !addon" class="input-group-btn">
+      <button type="button" class="btn">
+	<i class={{glyphicon}}></i></button>
+    </span>
   <input type="text"
 	 class="form-control"
 	 x-ng-require="true"

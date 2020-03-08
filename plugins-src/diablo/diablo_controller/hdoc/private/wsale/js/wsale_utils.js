@@ -1176,7 +1176,7 @@ var wsaleCalc = function(){
 		// if (round === 2) {
 		//     one.fprice = diablo_round(one.fprice);
 		//     one.fdiscount = diablo_discount(one.fprice, one.tag_price);
-		// }
+		// } 
 
 		// should_pay
 		one.o_fprice = one.fprice;
@@ -1185,17 +1185,9 @@ var wsaleCalc = function(){
 		one.rprice = one.fprice;
 		one.rdiscount = diablo_full_discount;
 		
-		one.calc = wsaleUtils.to_decimal(one.fprice * count); 
+		one.calc = one.fprice * count; 
 		should_pay += one.calc;
 		
-		// if (wsaleUtils.one.vir_price > one.tag_price) {
-		//     // base_pay += diablo_price(one.vir_price * count, one.discount);
-		//     abs_pay += one.vir_price * count;
-		// } else {
-		//     // base_pay += diablo_price(one.tag_price * count, one.discount);
-		//     abs_pay += one.tag_price * count;
-		// }
-
 		// base_pay
 		if (one.$update) {
 		    base_pay += diablo_price(valid_price * count, one.discount);
@@ -1207,13 +1199,16 @@ var wsaleCalc = function(){
 		if (one.sid !== diablo_invalid_index){
 		    pscores = wsaleUtils.sort_score(one.score, one.promotion, one.calc, pscores);
 		}
-	    } 
+	    }
 
 	    // calcuate with verificate
-	    should_pay = wsaleUtils.to_decimal(should_pay);
+	    // console.log(verificate);
 	    should_pay = wsaleCalc.calc_discount_of_verificate(inventories, saleMode, should_pay, verificate);
+	    should_pay = wsaleUtils.to_decimal(should_pay); 
 	    base_pay = wsaleUtils.to_decimal(base_pay);
 	    abs_pay = wsaleUtils.to_decimal(abs_pay);
+	    
+	    // console.log(should_pay);
 
 	    // reset score
 	    if (score_discount!==0) {
@@ -1231,10 +1226,14 @@ var wsaleCalc = function(){
 	    score  = wsaleUtils.calc_with_score(pscores, verificate); 
 	    
 	    if (round === 1) {
-		if (should_pay >= 0)
-		    should_pay = diablo_round(should_pay)
-		else {
-		    should_pay = -diablo_round(Math.abs(should_pay))
+		if (should_pay >= 0) {
+		    should_pay = diablo_round(should_pay);
+		    base_pay   = diablo_round(base_pay);
+		    abs_pay    = diablo_round(abs_pay);
+		} else {
+		    should_pay = -diablo_round(Math.abs(should_pay));
+		    base_pay = -diablo_round(Math.abs(base_pay));
+		    abs_pay = -diablo_round(Math.abs(abs_pay));
 		}
 	    } else if (round === 2) {
 		
@@ -1277,12 +1276,15 @@ var wsaleCalc = function(){
 		one = inventories[i];
 		count = wsaleCalc.get_inventory_count(one, mode);
 		if (count >=0 ){
+		    // one.fdiscount = one.fdiscount * (diablo_full_discount - vdiscount) * 0.01;
+		    // one.fprice = diablo_price(one.fprice, one.fdiscount); 
 		    one.rdiscount = wsaleUtils.to_decimal(one.rdiscount - vdiscount);
 		    one.rprice  = diablo_price(one.fprice, one.rdiscount);
-		} 
+		}
+		
 		one.calc = wsaleUtils.to_decimal(one.rprice * count);
 		calc += one.calc;
-		console.log(one.calc);
+		// console.log(one.calc);
 	    }
 
 	    return calc;

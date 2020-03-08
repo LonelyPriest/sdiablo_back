@@ -1055,6 +1055,7 @@ diabloUtils.directive('timeSearch', function (){
 	transclude: true,
 	scope: {
 	    glyphicon: '@',
+	    addon:     '@',
 	    time:      '=',
 	    ok:        '&',
 	    clickOk:   '=',
