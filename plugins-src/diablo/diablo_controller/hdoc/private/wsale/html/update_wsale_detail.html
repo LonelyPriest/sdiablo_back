@@ -392,8 +392,8 @@
 		       scroll-body="'#t_wreject'"
 		       scroll-stop="50">
 		  <tr>
-		    <th class="text-center">序号</th>
-		    <th class="text-center">货号/品类</th>
+		    <th class="text-center col-md-1 col-sm-1">序号</th>
+		    <th class="text-center col-md-2 col-sm-2">货号/品类</th>
 		    <!-- <th class="text-center">品名</th> -->
 		    <th class="text-center">吊牌价</th> 
 		    <th class="text-center">折扣</th> 
@@ -401,9 +401,9 @@
 		    <th class="text-center">数量</th> 
 		    <!-- <th class="text-center">成交价</th>  -->
 		    <!-- <th class="text-center">折扣率</th> -->
-		    <th class="text-center">合计</th>
+		    <th class="text-center col-md-1 col-ms-1">合计</th>
 		    <!-- <th class="text-center">备注</th> -->
-		    <th class="text-center">操作</th>
+		    <th class="text-center col-md-2 col-sm-2">操作</th>
 		  </tr>
 		</thead>
 		<tbody>
@@ -460,7 +460,7 @@
 		    </td>
 		    
 		    <!-- sell count-->
-		    <td class="col-md-1 vert-align">
+		    <td class="col-md-1 col-sm-1 vert-align">
 		      <div x-ng-if="!inv.free_update">{{inv.reject}}</div>
 		      <form name="inv.form.sell"
 		      	    x-ng-if="!inv.$new && inv.free_update">
@@ -510,47 +510,48 @@
 		      <!-- 	  <i class="glyphicon glyphicon-pushpin"></i></a> -->
 		      <!-- </span> -->
 
-		      <span ng-if="inv.$edit">
-			<a class="btn diablo-input-button btn-primary"
-			   x-ng-if="!inv.free_update"
-			   x-ng-disabled="inv.free_color_size"
-			   x-ng-click="inventory_detail(inv)">详情
-			  <i class="glyphicon glyphicon-map-marker"></i></a>
-			
-			<a class="btn diablo-input-button yellow"
-			   x-ng-if="!inv.free_update"
-			   x-ng-click="update_inventory(inv)">修改
-			  <i class="glyphicon glyphicon-edit"></i></a>
+		      <span x-ng-if="inv.$edit">
+			<div class="btn-group-solid">
+			  <button class="btn diablo-input-button btn-primary" x-ng-if="!inv.free_update"
+				  x-ng-disabled="inv.free_color_size"
+				  x-ng-click="inventory_detail(inv)">详情
+			    <i class="glyphicon glyphicon-map-marker"></i></button>
+			  
+			  <button class="btn diablo-input-button yellow"
+				  x-ng-if="!inv.free_update"
+				  x-ng-click="update_inventory(inv)">修改
+			    <i class="glyphicon glyphicon-edit"></i></button>
 
-			<a class="btn diablo-input-button green"
-			   x-ng-if="!inv.free_update"
-			   x-ng-click="gift(inv)">赠送
-			  <i class="glyphicon glyphicon-gift"></i></a>
-			
-			<a class="btn diablo-input-button btn-primary"
-			   x-ng-if="!inv.free_update"
-			   x-ng-click="stock_info(inv)">库存
-			  <i class="glyphicon glyphicon-leaf"></i></a>
+			  <button class="btn diablo-input-button green"
+				  x-ng-if="!inv.free_update"
+				  x-ng-click="gift(inv)">赠送
+			    <i class="glyphicon glyphicon-gift"></i></button>
+			  
+			  <button class="btn diablo-input-button purple"
+				  x-ng-if="!inv.free_update"
+				  x-ng-click="stock_info(inv)">库存
+			    <i class="glyphicon glyphicon-leaf"></i></button>
 
-			<a class="btn diablo-input-button btn-danger"
-			   x-ng-if="!inv.free_update"
-			   x-ng-click="delete_inventory(inv)">删除
-			  <i class="glyphicon glyphicon-erase"></i></a>
+			  <button class="btn diablo-input-button btn-danger"
+				  x-ng-if="!inv.free_update"
+				  x-ng-click="delete_inventory(inv)">删除
+			    <i class="glyphicon glyphicon-erase"></i></button>
 
-			<a class="btn diablo-input-button btn-success"
-			   x-ng-if="inv.free_update"
-			   x-ng-disabled="inv.form.sell.$invalid
-					  || inv.form.fprice.$invalid
-					  || inv.form.fdiscount.$invalid"
-			   x-ng-click="save_free_update(inv)">保存
-			  <i class="glyphicon glyphicon-plus"></i></a>
-			
-			<a class="btn diablo-input-button btn-danger"
-			   ng-if="inv.free_update"
-			   x-ng-disabled=" inv.form.sell.$invalid"
-			   x-ng-click="cancel_free_update(inv)">取消
-			  <i class="glyphicon glyphicon-erase"></i></a> 
-		      </span> 
+			  <button class="btn diablo-input-button btn-success"
+				  x-ng-if="inv.free_update"
+				  x-ng-disabled="inv.form.sell.$invalid
+						 || inv.form.fprice.$invalid
+						 || inv.form.fdiscount.$invalid"
+				  x-ng-click="save_free_update(inv)">保存
+			    <i class="glyphicon glyphicon-plus"></i></button>
+			  
+			  <button class="btn diablo-input-button btn-danger"
+				  ng-if="inv.free_update"
+				  x-ng-disabled=" inv.form.sell.$invalid"
+				  x-ng-click="cancel_free_update(inv)">取消
+			    <i class="glyphicon glyphicon-erase"></i></button>
+			</div> 
+		      </span>
 		    </td>
 		  </tr>
 

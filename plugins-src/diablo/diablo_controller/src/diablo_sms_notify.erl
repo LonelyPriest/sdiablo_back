@@ -3,7 +3,7 @@
 -include("../../../../include/knife.hrl").
 -include("diablo_controller.hrl").
 
--export([sms_notify/2, sign/1, zz_sms/1, sms/3, sms/4, init_sms/0, sms_once/4]).
+-export([sms_notify/2, sign/1, zz_sms/1, sms/3, sms/4, init_sms/0, sms_once/4, check_sms_rate/1]).
 
 -define(zz_sms_account, <<"N3001234">>).
 -define(zz_sms_password, <<"dLZJfzK5Mc7a9d">>).
@@ -241,10 +241,10 @@ sms(ticket, {Merchant, Shop, Retailer, Phone}, {Balance, Count, MinEffect}) ->
     start_sms(Merchant, Phone, SMSTemplate, SMSParams);
     
 sms(charge, {Merchant, Name, Phone}, Balance) ->
-    {ok, SMSRate} = ?w_user_profile:get(sms_rate, Merchant),
+    {ok, MerchantInfo} = ?w_user_profile:get(merchant, Merchant),
     %% ?DEBUG("smsrate ~p", [SMSRate]), 
-    Rate = ?v(<<"rate">>, SMSRate),
-    LeftBalance = ?v(<<"balance">>, SMSRate, 0), 
+    Rate = ?v(<<"sms_rate">>, MerchantInfo),
+    LeftBalance = ?v(<<"balance">>, MerchantInfo, 0), 
     Count = trunc(LeftBalance + Balance) div Rate, 
     SMSTemplate   = "SMS_153716629",
     SMSParams = ?to_s(ejson:encode(
@@ -302,16 +302,11 @@ check_sms_rate(Merchant) ->
 	    {ok, []} -> ?err(sms_rate_not_found, Merchant);
 	    {ok, MerchantInfo} ->
 		?DEBUG("MerchantInfo ~p", [MerchantInfo]),
-		MerchantBalance = ?v(<<"balance">>, MerchantInfo), 
-		case ?w_user_profile:get(sms_rate, Merchant) of
-		    {ok, []} -> ?err(sms_rate_not_found, Merchant);
-		    {ok, SMSRate} ->
-			Rate = ?v(<<"rate">>, SMSRate),
-			?DEBUG("sms rate ~p, MerchantBalance ~p", [Rate, MerchantBalance]),
-			case Rate > MerchantBalance of
-			    true  -> ?err(sms_not_enought_blance, Merchant);
-			    false -> {ok, Rate}
-			end
+		MerchantBalance = ?v(<<"balance">>, MerchantInfo),
+		Rate = ?v(<<"sms_rate">>, MerchantInfo),
+		case Rate > MerchantBalance of
+		    true  -> ?err(sms_not_enought_blance, Merchant);
+		    false -> {ok, Rate}
 		end
 	end
     catch

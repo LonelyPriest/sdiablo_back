@@ -362,7 +362,7 @@ function purchaserInventoryRejectUpdateCtrlProvide(
     // match
     $scope.match_prompt_inventory = function(viewValue){
 	return diabloFilter.match_w_reject_inventory(
-	    viewValue, $scope.select.shop.id, $scope.select.firm.id); 
+	    viewValue, $scope.select.shop.id, stockUtils.invalid_firm($scope.select.firm)); 
     };
 
     $scope.qtime_start = function(shopId){
