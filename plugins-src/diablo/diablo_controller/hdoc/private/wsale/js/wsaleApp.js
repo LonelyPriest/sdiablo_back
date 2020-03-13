@@ -461,8 +461,8 @@ function wsaleNewProvide(
     $scope.setting = {q_backend:true, check_sale:true, negative_sale:true};
 
     var authen = new diabloAuthen(user.type, user.right, user.shop);
-    $scope.right = authen.authenSaleRight(); 
-
+    $scope.right = authen.authenSaleRight();
+    
     // console.log($scope.right);
     $scope.focus_attr = {style_number:false,
 			 barcode:false,
@@ -3377,7 +3377,10 @@ function wsaleNewProvide(
 	    diablo_order($scope.pay_scan_history);
 	})
     }; 
-    
+
+    var paySpeak = new diabloSpeak();
+    // paySpeak.set_text("300");
+    // paySpeak.speak();
     $scope.pay_scan = function(pay_type) {
 	var callback = function(params) {
 	    console.log(params);
@@ -3392,6 +3395,10 @@ function wsaleNewProvide(
 		).then(function(result) {
 		    console.log(result); 
 		    if (result.ecode === 0) {
+			// play sound
+			paySpeak.set_text(diablo_set_string(result.balance));
+			paySpeak.speak();
+			
 			get_pay_scan_balance(result.pay_order, result.pay_type, result.balance);
 			$scope.refresh_pay_scan(result.pay_order);
 		    } else if (result.ecode === 2687) {
@@ -3420,6 +3427,8 @@ function wsaleNewProvide(
 	
 	var balance = $scope.select.charge;
 	if (balance > 0 &&  balance < diablo_max_pay_scan) {
+	    paySpeak.set_text(diablo_set_string(balance));
+	    paySpeak.speak();
 	    dialog.edit_with_modal(
 		"pay-scan.html",
 		undefined,

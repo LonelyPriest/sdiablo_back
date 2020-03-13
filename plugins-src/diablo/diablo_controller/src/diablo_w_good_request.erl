@@ -61,24 +61,28 @@ action(Session, Req, {"list_w_promotion"}) ->
     
 action(Session, Req, {"list_w_good"}) ->
     ?DEBUG("list_purchaser_good with session ~p", [Session]),
-    Merchant = ?session:get(merchant, Session),    
-    Groups = ?w_inventory:purchaser_good(lookup, Merchant),
+    Merchant = ?session:get(merchant, Session),
+    UTable   = ?session:get(utable, Session),
+    
+    Groups = ?w_inventory:purchaser_good(lookup, {Merchant, UTable}),
     ?utils:respond(200, batch, Req, Groups);
 
 action(Session, Req, {"get_w_good", Id}) ->
     ?DEBUG("get_w_good_by_id with session ~p, id ~p", [Session, Id]),
     Merchant    = ?session:get(merchant, Session),
+    UTable   = ?session:get(utable, Session),
     object_responed(
-      fun() -> ?w_inventory:purchaser_good(lookup, Merchant, Id) end, Req).
+      fun() -> ?w_inventory:purchaser_good(lookup, {Merchant, UTable}, Id) end, Req).
 
 %%--------------------------------------------------------------------
 %% @desc: POST action
 %%--------------------------------------------------------------------
 action(Session, Req, {"delete_w_good"}, Payload) ->
-    ?DEBUG("delete_w_good with session ~p, Payload ~p", [Session, Payload]), 
+    ?DEBUG("delete_w_good with session ~p, Payload ~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    UTable   = ?session:get(utable, Session),
     StyleNumber = ?v(<<"style_number">>, Payload),
     Brand = ?v(<<"brand">>, Payload),
-    Merchant = ?session:get(merchant, Session),
 
     case ?w_inventory:purchaser_good(used, Merchant, StyleNumber, Brand) of
 	{ok, Details} ->
@@ -94,7 +98,8 @@ action(Session, Req, {"delete_w_good"}, Payload) ->
 		true ->
 		    ?utils:respond(200, Req, ?err(purchaser_good_in_used, StyleNumber));
 		false -> 
-		    case ?w_inventory:purchaser_good(delete, Merchant, {StyleNumber, Brand}) of
+		    case ?w_inventory:purchaser_good(
+			    delete, {Merchant, UTable}, {StyleNumber, Brand}) of
 			{ok, StyleNumber} ->
 			    ?utils:respond(200, Req, ?succ(delete_purchaser_good, StyleNumber));
 			{error, Error} ->
@@ -167,21 +172,25 @@ action(Session, Req, {"get_colors"}, Payload) ->
 action(Session, Req, {"get_w_good"}, Payload) ->
     ?DEBUG("get_w_good with session ~p, payload~n~p", [Session, Payload]),
     Merchant    = ?session:get(merchant, Session),
+    UTable   = ?session:get(utable, Session),
+    
     StyleNumber = ?v(<<"style_number">>, Payload),
     Brand       = ?v(<<"brand">>, Payload),
     object_responed_with_code(
       fun() ->
-	      ?w_inventory:purchaser_good(lookup, Merchant, StyleNumber, Brand)
+	      ?w_inventory:purchaser_good(lookup, {Merchant, UTable}, StyleNumber, Brand)
       end, Req); 
 
 
 action(Session, Req, {"get_used_w_good"}, Payload) ->
     ?DEBUG("get_used_w_good with session ~p, payload~n~p", [Session, Payload]),
     Merchant    = ?session:get(merchant, Session),
+    UTable   = ?session:get(utable, Session),
+    
     StyleNumber = ?v(<<"style_number">>, Payload),
     Brand       = ?v(<<"brand">>, Payload),
     %% Shops       = ?v(<<"shops">>, Payload),
-    case ?w_inventory:purchaser_good(used, Merchant, StyleNumber, Brand) of
+    case ?w_inventory:purchaser_good(used, {Merchant, UTable}, StyleNumber, Brand) of
 	{ok, Details} ->
 	    ?DEBUG("details ~p", [Details]),
 	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
@@ -193,8 +202,9 @@ action(Session, Req, {"get_used_w_good"}, Payload) ->
 action(Session, Req, {"get_good_by_barcode"}, Payload) ->
     ?DEBUG("get_good_by_barcode with session ~p, payload~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable   = ?session:get(utable, Session), 
     Barcode  = ?v(<<"barcode">>, Payload, []),
-
+    
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
     AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSetting, ?YES)),
 
@@ -224,7 +234,7 @@ action(Session, Req, {"get_good_by_barcode"}, Payload) ->
 	end,
 
     ?DEBUG("newBarcode ~p", [Barcode]),
-    case ?w_inventory:purchaser_good(get_by_barcode, Merchant, NewBarcode) of
+    case ?w_inventory:purchaser_good(get_by_barcode, {Merchant, UTable}, NewBarcode) of
 	{ok, Good} ->
 	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
 					       {<<"stock">>, {Good} }]});
@@ -236,21 +246,23 @@ action(Session, Req, {"match_w_good_style_number"}, Payload) ->
     ?DEBUG("match_w_good_style_number with session ~p, Payload ~p",
 	   [Session, Payload]),
     Merchant     = ?session:get(merchant, Session),
+    UTable       = ?session:get(utable, Session),
     PromptNumber = ?v(<<"prompt_value">>, Payload),
     batch_responed(
       fun() ->
-	      ?w_inventory:match(style_number, Merchant, PromptNumber )
+	      ?w_inventory:match(style_number, {Merchant, UTable}, PromptNumber )
       end, Req);
 
 action(Session, Req, {"match_w_good"}, Payload) ->
     ?DEBUG("match_w_good with session ~p, Payload ~p",
 	   [Session, Payload]),
     Merchant     = ?session:get(merchant, Session),
+    UTable       = ?session:get(utable, Session),
     PromptNumber = ?v(<<"prompt_value">>, Payload),
     Firm         = ?v(<<"firm">>, Payload), 
     batch_responed(
       fun() -> ?w_inventory:match(
-		  style_number_with_firm, Merchant, PromptNumber, Firm)
+		  style_number_with_firm, {Merchant, UTable}, PromptNumber, Firm)
       end, Req);
 
 
@@ -258,17 +270,19 @@ action(Session, Req, {"match_all_w_good"}, Payload) ->
     ?DEBUG("match_all_w_good with session ~p, payload ~p",
 	   [Session, Payload]),
     Merchant  = ?session:get(merchant, Session),
+    UTable       = ?session:get(utable, Session),
     StartTime = ?v(<<"start_time">>, Payload, []),
     Firm      = ?v(<<"firm">>, Payload, []),
 
     batch_responed(
       fun() -> ?w_inventory:match(
-		  all_style_number_with_firm, Merchant, StartTime, Firm)
+		  all_style_number_with_firm, {Merchant, UTable}, StartTime, Firm)
       end, Req);
 
 action(Session, Req, {"new_w_good"}, Payload) ->
     %% ?DEBUG("new_w_good with session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable   = ?session:get(utable, Session),
     {struct, Good} = ?v(<<"good">>, Payload),
     ?DEBUG("new purchaser good with session ~p, good~n~p", [Session, Good]),
     
@@ -322,7 +336,8 @@ action(Session, Req, {"new_w_good"}, Payload) ->
 					    ++ "-" ++ ?to_s(BrandId) ++ ".png"])
 		    end,
 	case ?w_inventory:purchaser_good(
-		new, Merchant,
+		new,
+		{Merchant, UTable},
 		[{<<"brand_id">>, BrandId},
 		 {<<"type_id">>, TypeId},
 		 {<<"path">>, ImagePath},
@@ -355,7 +370,9 @@ action(Session, Req, {"new_w_good"}, Payload) ->
     end;
 
 action(Session, Req, {"update_w_good"}, Payload) -> 
-    Merchant = ?session:get(merchant, Session), 
+    Merchant = ?session:get(merchant, Session),
+    UTable   = ?session:get(utable, Session),
+    
     {struct, Good} = ?v(<<"good">>, Payload),
     ?DEBUG("update purchaser good with session ~p, good~n~p", [Session, Good]),
     %% ?DEBUG("update_w_good: image ~p", [?v(<<"image">>, Payload)]),
@@ -461,10 +478,11 @@ action(Session, Req, {"update_w_good"}, Payload) ->
 	    end, 
 
 	case ?w_inventory:purchaser_good(
-		update, Merchant,
+		update,
+		{Merchant, UTable},
 		[{<<"brand_id">>, BrandId},
 		 {<<"type_id">>, TypeId},
-		 {<<"path">>, ImagePath} |Good]) of
+		 {<<"path">>, ImagePath}|Good]) of
 	    {ok, GoodId} -> 
 		?utils:respond(
 		   200, Req, ?succ(update_purchaser_good, GoodId));
@@ -483,14 +501,14 @@ action(Session, Req, {"update_w_good"}, Payload) ->
 action(Session, Req, {"filter_w_good"}, Payload) ->
     ?DEBUG("filter_w_good with session ~p~nPayload ~p", [Session, Payload]),
     Merchant  = ?session:get(merchant, Session),
-    
+    UTable   = ?session:get(utable, Session),
     ?pagination:pagination(
       fun(Match, Conditions) ->
-	      ?w_inventory:filter(total_goods, Match, Merchant, Conditions)
+	      ?w_inventory:filter(total_goods, Match, {Merchant, UTable}, Conditions)
       end,
       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
 	      ?w_inventory:filter(
-		 goods, Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
+		 goods, Match, {Merchant, UTable}, CurrentPage, ItemsPerPage, Conditions)
       end, Req, Payload);
 
 
@@ -642,12 +660,15 @@ action(Session, Req, {"syn_type_pinyin"}, Payload) ->
 
 action(Session, Req, {"reset_w_good_barcode"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
+    UTable   = ?session:get(utable, Session),
+    
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
     AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSetting, ?YES)), 
     StyleNumber = ?v(<<"style_number">>, Payload),
     Brand = ?v(<<"brand">>, Payload),
 
-    case ?w_inventory:purchaser_good(reset_barcode, AutoBarcode, Merchant, StyleNumber, Brand) of
+    case ?w_inventory:purchaser_good(
+	    reset_barcode, AutoBarcode, {Merchant, UTable}, StyleNumber, Brand) of
 	{ok, Barcode} ->
 	    ?utils:respond(200, object, Req,
 			   {[{<<"ecode">>, 0},

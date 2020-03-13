@@ -13,7 +13,7 @@
 
 -compile(export_all).
 
-amount_transfer(transfer_from, RSN, Merchant, Shop, TShop, Datetime, Inv, Props) ->
+amount_transfer(transfer_from, RSN, Merchant, UTable, Shop, TShop, Datetime, Inv, Props) ->
     ?DEBUG("transfer inventory with rsn ~p~nInv ~p", [RSN, Inv]),
     XSale       = ?v(<<"xsale">>, Props, ?NO),
     XMaster     = ?v(<<"xmaster">>, Props, ?NO), 
@@ -126,21 +126,36 @@ amount_transfer(transfer_from, RSN, Merchant, Shop, TShop, Datetime, Inv, Props)
     %% 	   end, 
 
     Sql00 = "select id, rsn, style_number, brand"
-	" from w_inventory_transfer_detail"
-	" where rsn=\"" ++ ?to_s(RSN) ++ "\""
+	%% " from w_inventory_transfer_detail"
+	" from" ++ ?table:t(stock_transfer_detail, Merchant, UTable)
+	++ " where rsn=\"" ++ ?to_s(RSN) ++ "\""
 	" and style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
 	++ " and brand=" ++ ?to_s(Brand),
 
     
     Sql2 = [ case ?sql_utils:execute(s_read, Sql00) of
 		 {ok, []} ->
-		     "insert into w_inventory_transfer_detail("
-			 "rsn, bcode, style_number"
-			 ", brand, type, sex, season, amount"
-			 ", firm, s_group, free, year"
+		     %% "insert into w_inventory_transfer_detail"
+		     "insert into" ++ ?table:t(stock_transfer_detail, Merchant, UTable)
+			 ++ "(rsn"
+			 ", bcode"
+			 ", style_number"
+			 ", brand"
+			 ", type"
+			 ", sex"
+			 ", season"
+			 ", amount"
+			 ", firm"
+			 ", s_group"
+			 ", free"
+			 ", year"
 			 ", org_price, tag_price, discount, ediscount"
 			 %% ", xdiscount, xprice"
-			 ", path, merchant, fshop, tshop, entry_date) values("
+			 ", path"
+			 ", merchant"
+			 ", fshop"
+			 ", tshop"
+			 ", entry_date) values("
 			 ++ "\'" ++ ?to_s(RSN) ++ "\',"
 			 ++ "\'" ++ ?to_s(Barcode) ++ "\',"
 			 ++ "\'" ++ ?to_s(StyleNumber) ++ "\',"
@@ -156,8 +171,7 @@ amount_transfer(transfer_from, RSN, Merchant, Shop, TShop, Datetime, Inv, Props)
 			 ++ ?to_s(Free) ++ ","
 			 ++ ?to_s(Year) ++ ","
 			 
-			 ++ case XSale =:= ?YES
-				andalso XMaster =:= ?YES
+			 ++ case XSale =:= ?YES andalso XMaster =:= ?YES
 				%% andalso ShopType =:= ?REPERTORY
 				%% andalso TShopType =:= ?SHOP
 			    of
@@ -186,8 +200,9 @@ amount_transfer(transfer_from, RSN, Merchant, Shop, TShop, Datetime, Inv, Props)
 			 ++ ?to_s(TShop) ++ "," 
 			 ++ "\"" ++ ?to_s(Datetime) ++ "\")";
 		 {ok, R0} ->
-		     "update w_inventory_transfer_detail"
-			 " set total=" ++ ?to_s(Total)
+		     %% "update w_inventory_transfer_detail"
+		     "update" ++ ?table:t(stock_transfer_detail, Merchant, UTable)
+			 ++ " set total=" ++ ?to_s(Total)
 			 ++ ", org_price=" ++ ?to_s(OrgPrice)
 			 ++ " where id=" ++ ?to_s(?v(<<"id">>, R0));
 		 {error, E00} ->
@@ -214,12 +229,16 @@ amount_transfer(transfer_from, RSN, Merchant, Shop, TShop, Datetime, Inv, Props)
 		
 		
 		Sql01 = "select id, rsn, style_number, brand, color, size"
-		    " from w_inventory_transfer_detail_amount"
-		    " where " ++ Condition,
+		%% " from w_inventory_transfer_detail_amount"
+		    " from" ++ ?table:t(stock_transfer_note, Merchant, UTable)
+		    ++ " where " ++ Condition,
 		
 		[case ?sql_utils:execute(s_read, Sql01) of
 		     {ok, []} ->
-			 "insert into w_inventory_transfer_detail_amount(rsn"
+			 "insert into"
+			 %%" w_inventory_transfer_detail_amount"
+			     ++ ?table:t(stock_transfer_note, Merchant, UTable)
+			     ++ "(rsn"
 			     ", style_number, brand, color, size"
 			     ", total, merchant, fshop, tshop, entry_date) values("
 			     ++ "\"" ++ ?to_s(RSN) ++ "\","
@@ -233,8 +252,10 @@ amount_transfer(transfer_from, RSN, Merchant, Shop, TShop, Datetime, Inv, Props)
 			     ++ ?to_s(TShop) ++ "," 
 			     ++ "\"" ++ ?to_s(Datetime) ++ "\")"; 
 		     {ok, R1} ->
-			 "update w_inventory_transfer_detail_amount set"
-			     " total=" ++ ?to_s(Count) 
+			 "update"
+			 %% " w_inventory_transfer_detail_amount"
+			     ++ ?table:t(stock_transfer_note, Merchant, UTable)
+			     ++ " set total=" ++ ?to_s(Count) 
 			     ++ ", entry_date="
 			     ++ "\"" ++ ?to_s(Datetime) ++ "\""
 			     ++ " where id="
@@ -257,7 +278,7 @@ amount_transfer(transfer_from, RSN, Merchant, Shop, TShop, Datetime, Inv, Props)
     %% ?DEBUG("all sqls ~p", [Sql1 ++ Sql2 ++ Sql3]),
     Sql2 ++ Sql3.
 
-check_transfer(Merchant, FShop, TShop, CheckProps) ->
+check_transfer(Merchant, UTable, FShop, TShop, CheckProps) ->
     ?DEBUG("check_inventory_transfer: FShop ~p, TShop ~p, checkprops ~p",
 	   [FShop, TShop, CheckProps]), 
     %% Now = ?utils:current_time(format_localtime),
@@ -269,8 +290,10 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
     %% TShop = ?v(<<"tshop">>, CheckProps),
     Now = ?v(<<"datetime">>, CheckProps, ?utils:current_time(format_localtime)), 
     
-    Sql1 = "update w_inventory_transfer set"
-	" state=" ++ ?to_s(?IN_STOCK)
+    Sql1 = "update"
+	%% " w_inventory_transfer"
+	++ ?table:t(stock_transfer, Merchant, UTable)
+	++ " set state=" ++ ?to_s(?IN_STOCK)
 	++ ", check_date=\"" ++ ?to_s(Now) ++ "\""
 	++ " where rsn=\"" ++ ?to_s(RSN) ++ "\"",
 
@@ -293,8 +316,9 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 	", amount"
 	", path"
 	", entry_date"
-	" from w_inventory_transfer_detail"
-	" where rsn=\'" ++ ?to_s(RSN) ++ "\'",
+	%% " from w_inventory_transfer_detail"
+	" from" ++ ?table:t(stock_transfer_detail, Merchant, UTable)
+	++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'",
 
     DefaultScore = case ?w_user_profile:get(shop, Merchant, TShop) of
 		       [] -> -1;
@@ -334,23 +358,27 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 		EntryDate   = ?v(<<"entry_date">>, Transfer),
 
 		Sql22 = "select style_number, brand, entry_date"
-		    " from w_inventory_good"
-		    " where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+		    %% " from w_inventory_good"
+		    " from" ++ ?table:t(good, Merchant, UTable)
+		    ++ " where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 		    " and brand=" ++ ?to_s(Brand)
 		    ++ " and merchant=" ++ ?to_s(Merchant),
 		{ok, Good} = ?sql_utils:execute(s_read, Sql22),
 
 		Sql21 = "select id, bcode, style_number, brand, shop, merchant"
-		    " from w_inventory"
-		    " where "
-		    "style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
-		    " and brand=" ++ ?to_s(Brand)
+		%%" from w_inventory"
+		    " from" ++ ?table:t(stock, Merchant, UTable)
+		    ++ " where style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
+		    ++ " and brand=" ++ ?to_s(Brand)
 		    ++ " and shop=" ++ ?to_s(TShop)
 		    ++ " and merchant=" ++ ?to_s(Merchant), 
 
 		case ?sql_utils:execute(s_read, Sql21) of
 		    {ok, []} -> 
-			["insert into w_inventory(rsn"
+			["insert into"
+			 %% " w_inventory"
+			 ++ ?table:t(stock, Merchant, UTable)
+			 ++ "(rsn"
 			 ", bcode, style_number, brand, firm, type, sex, season, year"
 			 ", amount, s_group, free, promotion, score"
 			 ", org_price, ediscount, tag_price, discount"
@@ -391,7 +419,8 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 			]; 
 		    {ok, R} ->
 			OldBCode = ?v(<<"bcode">>, R),
-			["update w_inventory set "
+			["update" ++ ?table:t(stock, Merchant, UTable)
+			 ++ " set "
 			 ++ case OldBCode == ?EMPTY_DB_BARCODE
 			    orelse OldBCode == <<"0">>
 			    orelse OldBCode == <<>> of
@@ -433,10 +462,16 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 		end ++
 		    case ?sql_utils:execute(
 			    read,
-			    "select id, style_number"
-			    ", brand, color, size, total, entry_date"
-			    " from w_inventory_transfer_detail_amount"
-			    " where rsn=\"" ++ ?to_s(RSN) ++ "\""
+			    "select id"
+			    ", style_number"
+			    ", brand"
+			    ", color"
+			    ", size"
+			    ", total"
+			    ", entry_date"
+			    %% " from w_inventory_transfer_detail_amount"
+			    " from" ++ ?table:t(stock_transfer_note)
+			    ++ " where rsn=\"" ++ ?to_s(RSN) ++ "\""
 			    " and style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
 			    " and brand=" ++ ?to_s(Brand)) of
 			{ok, []} -> [];
@@ -452,9 +487,10 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 				      Sql33 =
 					  "select id, style_number, brand, shop"
 					  ", color, size, merchant"
-					  " from w_inventory_amount"
-					  " where "
-					  " style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
+				      %% " from w_inventory_amount"
+					  " from" ++ ?table:t(stock_note, Merchant, UTable)
+					  ++ " where "
+					  " style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 					  " and brand=" ++ ?to_s(Brand)
 					  ++ " and shop=" ++ ?to_s(TShop)
 					  ++ " and color=" ++ ?to_s(Color)
@@ -469,10 +505,18 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 					      %% 	  ++ " and merchant=" ++ ?to_s(Merchant),
 					      %% {ok, Good} = ?sql_utils:execute(s_read, Sql22),
 					      
-					      ["insert into w_inventory_amount("
-					       "rsn, style_number, brand"
-					       ", color, size, shop, merchant"
-					       ", total, entry_date) values("
+					      ["insert into"
+					       %% " w_inventory_amount"
+					       ++ ?table:t(stock_note, Merchant, UTable)
+					       ++ "(rsn"
+					       ", style_number"
+					       ", brand"
+					       ", color"
+					       ", size"
+					       ", shop"
+					       ", merchant"
+					       ", total"
+					       ", entry_date) values("
 					       ++ "-1,"
 					       ++ "\"" ++ ?to_s(StyleNumber) ++ "\"," 
 					       ++ ?to_s(Brand) ++ ","
@@ -487,8 +531,10 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 						      _ -> ?to_s(?v(<<"entry_date">>, Good))
 						  end ++ "\")"];
 					  {ok, RR} ->
-					      ["update w_inventory_amount"
-					       " set total=total+" ++ ?to_s(Total)
+					      ["update"
+					       ++ ?table:t(stock_note, Merchant, UTable)
+					       %% " w_inventory_amount"
+					       ++ " set total=total+" ++ ?to_s(Total)
 					       ++ ", entry_date=\"" ++ ?to_s(Now) ++ "\""
 					       ++ " where id="
 					       ++ ?to_s(?v(<<"id">>, RR))];
@@ -505,11 +551,14 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 	       {ok, []} -> []; 
 	       {ok, Transfers} ->
 		   lists:foldr(CheckFun, [], Transfers)
-		       ++ ["update w_inventory_amount a inner join("
+		       ++ [%% "update w_inventory_amount a inner join("
+			   "update" ++ ?table:t(stock_note, Merchant, UTable) ++ " a"
+			   " inner join("
 			   "select style_number, brand, color"
 			   ", size, total"
-			   " from w_inventory_transfer_detail_amount"
-			   " where rsn=\"" ++ ?to_s(RSN) ++ "\") b"
+			   %% " from w_inventory_transfer_detail_amount"
+			   " from" ++ ?table:t(stock_transfer_note, Merchant, UTable)
+			   ++ " where rsn=\"" ++ ?to_s(RSN) ++ "\") b"
 			   " on a.style_number=b.style_number"
 			   " and a.brand=b.brand"
 			   " and a.size=b.size"
@@ -517,13 +566,15 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 			   %% " and a.shop=b.fshop" 
 			   " set a.total=a.total-b.total" 
 			   " where "
-			   ++ "a.merchant=" ++ ?to_s(Merchant) 
-			   ++ " and a.shop=" ++ ?to_s(FShop),
+			   "a.merchant=" ++ ?to_s(Merchant) ++ " and a.shop=" ++ ?to_s(FShop),
 
-			   "update w_inventory a inner join("
+			   %% "update w_inventory a inner join("
+			   "update" ++ ?table:t(stock, Merchant, UTable) ++ " a"
+			   " inner join("
 			   "select style_number, brand, amount"
-			   " from w_inventory_transfer_detail"
-			   " where rsn=\"" ++ ?to_s(RSN) ++ "\") b"
+			   %% " from w_inventory_transfer_detail"
+			   " from" ++ ?table:t(stock_transfer_detail, Merchant, UTable)
+			   ++ " where rsn=\"" ++ ?to_s(RSN) ++ "\") b"
 			   " on a.style_number=b.style_number"
 			   " and a.brand=b.brand" 
 			   %% " and a.shop=b.fshop" 
@@ -566,18 +617,21 @@ check_transfer(Merchant, FShop, TShop, CheckProps) ->
 	
     [Sql1] ++ Sql3.
 
-cancel_transfer(Merchant, RSN) ->
-    ["delete from w_inventory_transfer_detail_amount where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+cancel_transfer(Merchant, UTable, RSN) ->
+    ["delete from" ++ ?table:t(stock_transfer_note, Merchant, UTable)
+     ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
      " and merchant=" ++ ?to_s(Merchant),
      
-     "delete from w_inventory_transfer_detail where rsn=\'"++ ?to_s(RSN) ++ "\'"
-     " and merchant=" ++ ?to_s(Merchant),
+     "delete from" ++ ?table:t(stock_transfer_detail, Merchant, UTable)
+     ++ "where rsn=\'"++ ?to_s(RSN) ++ "\'"
+     ++ " and merchant=" ++ ?to_s(Merchant),
 
-     "delete from w_inventory_transfer where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+     "delete from" ++ ?table:t(stock_transfer, Merchant, UTable)
+     ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
      " and merchant=" ++ ?to_s(Merchant)
     ].
     
-check_stock(Merchant, RSN) ->
+check_stock(Merchant, UTable, RSN) ->
     "select a.style_number, a.brand, a.fshop, a.amount, a.stock"
 	" from("
 	"select a.style_number"
@@ -586,8 +640,11 @@ check_stock(Merchant, RSN) ->
 	", a.merchant"
 	", a.amount"
 	", b.amount as stock"
-	" from w_inventory_transfer_detail a"
-	" left join w_inventory b on a.style_number=b.style_number"
+    %% " from w_inventory_transfer_detail a"
+	" from" ++ ?table:t(stock_transfer_detail, Merchant, UTable) ++ " a"
+	" left join "
+    %% " w_inventory b"
+	++ ?table:t(stock, Merchant, UTable) ++ " b on a.style_number=b.style_number"
 	" and a.brand=b.brand"
 	" and a.fshop=b.shop"
 	" and a.merchant=b.merchant"

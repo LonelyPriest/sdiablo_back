@@ -40,156 +40,156 @@
 %%%===================================================================
 %%% API
 %%%===================================================================
-purchaser_good(lookup, Merchant) ->
+purchaser_good(lookup, {Merchant, UTable}) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {lookup_good, Merchant}).
+    gen_server:call(Name, {lookup_good, Merchant, UTable}).
 
-purchaser_good(new, Merchant, Attrs) ->
+purchaser_good(new, {Merchant, UTable}, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {new_good, Merchant, Attrs}); 
-purchaser_good(update, Merchant, Attrs) ->
+    gen_server:call(Name, {new_good, Merchant, UTable, Attrs}); 
+purchaser_good(update, {Merchant, UTable}, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {update_good, Merchant, Attrs});
+    gen_server:call(Name, {update_good, Merchant, UTable, Attrs});
 
-purchaser_good(lookup, Merchant, GoodId) ->
+purchaser_good(lookup, {Merchant, UTable}, GoodId) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {lookup_good, Merchant, GoodId});
-purchaser_good(get_by_barcode, Merchant, Barcode) ->
+    gen_server:call(Name, {lookup_good, Merchant, UTable, GoodId});
+purchaser_good(get_by_barcode, {Merchant, UTable}, Barcode) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {good_get_by_barcode, Merchant, Barcode});
-purchaser_good(delete, Merchant, {StyleNumber, Brand}) ->
+    gen_server:call(Name, {good_get_by_barcode, Merchant, UTable, Barcode});
+purchaser_good(delete, {Merchant, UTable}, {StyleNumber, Brand}) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {delete_good, Merchant, {StyleNumber, Brand}});
+    gen_server:call(Name, {delete_good, Merchant, UTable, {StyleNumber, Brand}});
 purchaser_good(price, Merchant, [{_StyleNumber, _Brand}|_] = Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {get_good_price, Merchant, Conditions}).
 
-purchaser_good(lookup, Merchant, StyleNumber, Brand) ->
+purchaser_good(lookup, {Merchant, UTable}, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {lookup_good, Merchant, StyleNumber, Brand});
+    gen_server:call(Name, {lookup_good, Merchant, UTable, StyleNumber, Brand});
     
-purchaser_good(used, Merchant, StyleNumber, Brand) ->
+purchaser_good(used, {Merchant, UTable}, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {lookup_used_good, Merchant, StyleNumber, Brand}).
-purchaser_good(used, Merchant, Shops, StyleNumber, Brand) ->
-    Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(
-      Name, {lookup_used_good, Merchant, Shops, StyleNumber, Brand});
+    gen_server:call(Name, {lookup_used_good, Merchant, UTable, StyleNumber, Brand}).
 
-purchaser_good(reset_barcode, AutoBarcode, Merchant, StyleNumber, Brand) ->
-    Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {reset_good_barcode, AutoBarcode, Merchant, StyleNumber, Brand}).
+%% purchaser_good(used, {Merchant, UTable}, Shops, StyleNumber, Brand) ->
+%%     Name = ?wpool:get(?MODULE, Merchant), 
+%%     gen_server:call(
+%%       Name, {lookup_used_good, Merchant, UTable, Shops, StyleNumber, Brand});
 
-purchaser_inventory(new, Merchant, Inventories, Props) ->
+purchaser_good(reset_barcode, AutoBarcode, {Merchant, UTable}, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {new_inventory, Merchant, Inventories, Props}, 30 * 1000);
-purchaser_inventory(update, Merchant, Inventories, {Props, OldProps}) ->
+    gen_server:call(Name, {reset_good_barcode, AutoBarcode, Merchant, UTable, StyleNumber, Brand}).
+
+purchaser_inventory(new, {Merchant, UTable}, Inventories, Props) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {update_inventory, Merchant, Inventories, {Props, OldProps}});
-purchaser_inventory(reject, Merchant, Inventories, Props) ->
+    gen_server:call(Name, {new_inventory, Merchant, UTable, Inventories, Props}, 30 * 1000);
+purchaser_inventory(update, {Merchant, UTable}, Inventories, {Props, OldProps}) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {reject_inventory, Merchant, Inventories, Props});
-purchaser_inventory(transfer, Merchant, Inventories, Props) ->
+    gen_server:call(Name, {update_inventory, Merchant, UTable, Inventories, {Props, OldProps}});
+purchaser_inventory(reject, {Merchant, UTable}, Inventories, Props) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {reject_inventory, Merchant, UTable, Inventories, Props});
+purchaser_inventory(transfer, {Merchant, UTable}, Inventories, Props) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {transfer_inventory, Merchant, Inventories, Props});
+    gen_server:call(Name, {transfer_inventory, Merchant, UTable, Inventories, Props});
 
-purchaser_inventory(fix, Merchant, {StocksNotInDB, StocksNotInShop, StocksDiff}, Props) ->
+purchaser_inventory(fix,
+		    {Merchant, UTable},
+		    {StocksNotInDB, StocksNotInShop, StocksDiff}, Props) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {
-		      fix_inventory,
-		      Merchant,
-		      {StocksNotInDB, StocksNotInShop, StocksDiff},
-		      Props});
+    gen_server:call(Name,
+		    {fix_inventory,
+		     Merchant,
+		     UTable,
+		     {StocksNotInDB, StocksNotInShop, StocksDiff},
+		     Props});
 
-purchaser_inventory(set_promotion, Merchant, Promotions, Conditions) ->
+purchaser_inventory(set_promotion, {Merchant, UTable}, Promotions, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {set_promotion, Merchant, Promotions, Conditions});
-
-purchaser_inventory({update_batch, MatchMode}, Merchant, Attrs, Conditions) ->
+    gen_server:call(Name, {set_promotion, Merchant, UTable, Promotions, Conditions});
+purchaser_inventory({update_batch, MatchMode}, {Merchant, UTable}, Attrs, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {{update_batch, MatchMode}, Merchant, Attrs, Conditions});
-
-purchaser_inventory(set_gift, Merchant, Attrs, Conditions) ->
+    gen_server:call(Name, {{update_batch, MatchMode}, Merchant, UTable, Attrs, Conditions});
+purchaser_inventory(set_gift, {Merchant, UTable}, Attrs, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {set_gift, Merchant, Attrs, Conditions});
-
-purchaser_inventory(set_offer, Merchant, Attrs, Conditions) ->
+    gen_server:call(Name, {set_gift, Merchant, UTable, Attrs, Conditions});
+purchaser_inventory(set_offer, {Merchant, UTable}, Attrs, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {set_offer, Merchant, Attrs, Conditions});
+    gen_server:call(Name, {set_offer, Merchant, UTable, Attrs, Conditions});
 
 
-purchaser_inventory(update_stock_alarm, Merchant, Attrs, Conditions) ->
+purchaser_inventory(update_stock_alarm, {Merchant, UTable}, Attrs, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {update_stock_alarm, Merchant, Attrs, Conditions});
+    gen_server:call(Name, {update_stock_alarm, Merchant, UTable, Attrs, Conditions});
 
-purchaser_inventory(adjust_price, Merchant, Inventories, Attrs) ->
+purchaser_inventory(adjust_price, {Merchant, UTable}, Inventories, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {adjust_price, Merchant, Inventories, Attrs});
+    gen_server:call(Name, {adjust_price, Merchant, UTable, Inventories, Attrs});
     
 purchaser_inventory(abstract, Merchant, Shop, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {abstract_inventory, Merchant, Shop, Conditions});
 
-purchaser_inventory(check, Merchant, RSN, Props) ->
+purchaser_inventory(check, {Merchant, UTable}, RSN, Props) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {check_inventory, Merchant, RSN, Props});
+    gen_server:call(Name, {check_inventory, Merchant, UTable, RSN, Props});
+purchaser_inventory(delete_new, {Merchant, UTable}, RSN, Mode) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {delete_new, Merchant, UTable, RSN, Mode});
+purchaser_inventory(comment, {Merchant, UTable}, RSN, Comment) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {comment_new, Merchant, UTable, RSN, Comment});
+purchaser_inventory(modify_balance, {Merchant, UTable}, RSN, Balance) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {modify_balance, Merchant, UTable, RSN, Balance});
 
-purchaser_inventory(delete_new, Merchant, RSN, Mode) ->
-    Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {delete_new, Merchant, RSN, Mode});
-purchaser_inventory(comment, Merchant, RSN, Comment) ->
-    Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {comment_new, Merchant, RSN, Comment});
-purchaser_inventory(modify_balance, Merchant, RSN, Balance) ->
-    Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {modify_balance, Merchant, RSN, Balance});
-
-purchaser_inventory(syn_barcode, Merchant, Barcode, Conditions) ->
+purchaser_inventory(syn_barcode, {Merchant, UTable}, Barcode, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {syn_barcode, Merchant, Barcode, Conditions});
+    gen_server:call(Name, {syn_barcode, Merchant, UTable, Barcode, Conditions});
 
-purchaser_inventory(get_note, Merchant, Shop, Conditions) ->
+purchaser_inventory(get_note, {Merchant, UTable}, Shop, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {get_stock_note, Merchant, Shop, Conditions}).
+    gen_server:call(Name, {get_stock_note, Merchant, UTable, Shop, Conditions}).
 
 
 
 %%
 %% 
 %%
-purchaser_inventory(check_transfer, Merchant, CheckProps) ->    
+purchaser_inventory(check_transfer, {Merchant, UTable}, CheckProps) ->    
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(
-      Name, {check_inventory_transfer, Merchant, CheckProps});
+      Name, {check_inventory_transfer, Merchant, UTable, CheckProps});
 
-purchaser_inventory(cancel_transfer, Merchant, RSN) -> 
+purchaser_inventory(cancel_transfer, {Merchant, UTable}, RSN) -> 
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(
-      Name, {cancel_inventory_transfer, Merchant, RSN});
+      Name, {cancel_inventory_transfer, Merchant, UTable, RSN});
 
 
-purchaser_inventory(list, Merchant, Conditions) ->
+purchaser_inventory(list, {Merchant, UTable}, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {list_inventory, Merchant, Conditions});
-purchaser_inventory(list_inventory_info, Merchant, Conditions) ->
+    gen_server:call(Name, {list_inventory, Merchant, UTable, Conditions});
+purchaser_inventory(list_inventory_info, {Merchant, UTable}, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {list_inventory_info, Merchant, Conditions});
-purchaser_inventory(list_new_detail, Merchant, Conditions) ->
+    gen_server:call(Name, {list_inventory_info, Merchant, UTable, Conditions});
+purchaser_inventory(list_new_detail, {Merchant, UTable}, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {list_new_detail, Merchant, Conditions});
-purchaser_inventory(list_fix_detail, Merchant, Conditions) ->
+    gen_server:call(Name, {list_new_detail, Merchant, UTable, Conditions});
+purchaser_inventory(list_fix_detail, {Merchant, UTable}, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {list_fix_detail, Merchant, Conditions});
+    gen_server:call(Name, {list_fix_detail, Merchant, UTable, Conditions});
 %% purchaser_inventory(list_transfer_detail, Merchant, Conditions) ->
 %%     Name = ?wpool:get(?MODULE, Merchant), 
 %%     gen_server:call(Name, {list_transfer_detail, Merchant, Conditions});
 
 %% trace
-purchaser_inventory(trace_new, Merchant, Conditions) ->
-    purchaser_inventory(list_new_detail, Merchant, Conditions);
-purchaser_inventory(trace_transfer, Merchant, Conditions) ->
+purchaser_inventory(trace_new, {Merchant, UTable}, Conditions) ->
+    purchaser_inventory(list_new_detail, Merchant, UTable, Conditions);
+purchaser_inventory(trace_transfer, {Merchant, UTable}, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {trace_transfer, Merchant, Conditions});
+    gen_server:call(Name, {trace_transfer, Merchant, UTable, Conditions});
 
 %% purchaser_inventory(total_active_firm_with_shop, Merchant, Conditions) ->
 %%     Name = ?wpool:get(?MODULE, Merchant), 
@@ -199,54 +199,54 @@ purchaser_inventory(trace_transfer, Merchant, Conditions) ->
 %%     gen_server:call(Name, {page_active_firm_with_shop, Merchant, Conditions, CurrentPage, ItemsPerPage});
 %% purchaser_inventory(last_reject, Merchant, Conditions) ->
 %%     gen_server:call(?SERVER, {last_reject, Merchant, Conditions});
-purchaser_inventory(get_new, Merchant, RSN) ->
+purchaser_inventory(get_new, {Merchant, UTable}, RSN) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {get_new, Merchant, RSN}); 
-purchaser_inventory(get_inventory_new_rsn, Merchant, Conditions) ->
+    gen_server:call(Name, {get_new, Merchant, UTable, RSN}); 
+purchaser_inventory(get_inventory_new_rsn, {Merchant, UTable}, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {get_inventory_new_rsn, Merchant, Conditions}); 
-purchaser_inventory(get_new_amount, Merchant, Conditions) ->
+    gen_server:call(Name, {get_inventory_new_rsn, Merchant, UTable, Conditions}); 
+purchaser_inventory(get_new_amount, {Merchant, UTable}, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {get_new_amount, Merchant, Conditions});
+    gen_server:call(Name, {get_new_amount, Merchant, UTable, Conditions});
 
-purchaser_inventory(get_transfer, Merchant, RSN) ->
+purchaser_inventory(get_transfer, {Merchant, UTable}, RSN) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {get_transfer, Merchant, RSN});
+    gen_server:call(Name, {get_transfer, Merchant, UTable, RSN});
 
-purchaser_inventory(get_fix, Merchant, RSN) ->
+purchaser_inventory(get_fix, {Merchant, UTable}, RSN) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {get_fix, Merchant, RSN});
+    gen_server:call(Name, {get_fix, Merchant, UTable, RSN});
 
-purchaser_inventory(copy_attr, Merchant, Attrs) ->
+purchaser_inventory(copy_attr, {Merchant, UTable}, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {copy_attr, Merchant, Attrs}).
+    gen_server:call(Name, {copy_attr, Merchant, UTable, Attrs}).
 
     
 purchaser_inventory(amount, Merchant, Shop, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {get_amount, Merchant, Shop, StyleNumber, Brand});
-purchaser_inventory(tag_price, Merchant, Shop, StyleNumber, Brand) ->
+purchaser_inventory(tag_price, {Merchant, UTable}, Shop, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {get_tagprice, Merchant, Shop, StyleNumber, Brand});
+    gen_server:call(Name, {get_tagprice, Merchant, UTable, Shop, StyleNumber, Brand});
 
 %%
 %% barcode
 %%
-purchaser_inventory(gen_barcode, Merchant, Shop, StyleNumber, Brand) ->
+purchaser_inventory(gen_barcode, {Merchant, UTable}, Shop, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {gen_barcode, ?YES, Merchant, Shop, StyleNumber, Brand}, 10 * 1000).
+    gen_server:call(Name, {gen_barcode, ?YES, Merchant, UTable, Shop, StyleNumber, Brand}, 10 * 1000).
 
-purchaser_inventory(get_by_barcode, Merchant, Shop, Firm, Barcode, ExtraCondtion) ->
+purchaser_inventory(get_by_barcode, {Merchant, UTable}, Shop, Firm, Barcode, ExtraCondtion) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {get_by_barcode, Merchant, Shop, Firm, Barcode, ExtraCondtion});
+    gen_server:call(Name, {get_by_barcode, Merchant, UTable, Shop, Firm, Barcode, ExtraCondtion});
 
-purchaser_inventory(gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand) ->
+purchaser_inventory(gen_barcode, AutoBarcode, {Merchant, UTable}, Shop, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand});
+    gen_server:call(Name, {gen_barcode, AutoBarcode, Merchant, UTable, Shop, StyleNumber, Brand});
 
-purchaser_inventory(reset_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand) ->
+purchaser_inventory(reset_barcode, AutoBarcode, {Merchant, UTable}, Shop, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {reset_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}).
+    gen_server:call(Name, {reset_barcode, AutoBarcode, Merchant, UTable, Shop, StyleNumber, Brand}).
 
 
 
@@ -256,60 +256,57 @@ purchaser_inventory(reset_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Bra
 %%
 %% match inventory
 %% match good
-match(style_number, Merchant, PromptNumber) ->
+match(style_number, {Merchant, UTable}, PromptNumber) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {match_style_number, Merchant, PromptNumber}).
-match(style_number_with_firm, Merchant, PromptNumber, Firm) ->
+    gen_server:call(Name, {match_style_number, Merchant, UTable, PromptNumber}).
+match(style_number_with_firm, {Merchant, UTable}, PromptNumber, Firm) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {match_style_number_with_firm,
-			   Merchant, PromptNumber, Firm});
-match(all_style_number_with_firm, Merchant, StartTime, Firm) ->
+    gen_server:call(Name, {match_style_number_with_firm, Merchant, UTable, PromptNumber, Firm});
+match(all_style_number_with_firm, {Merchant, UTable}, StartTime, Firm) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {match_all_style_number_with_firm,
-			   Merchant, StartTime, Firm});
+    gen_server:call(Name, {match_all_style_number_with_firm, Merchant, UTable, StartTime, Firm});
 
 %% match inventory
-match(inventory_with_type, Merchant, Shop, Types) ->
+match(inventory_with_type, {Merchant, UTable}, Shop, Types) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {match_inventory_in, Merchant, Shop, Types});
-match(inventory, Merchant, Prompt, Shop) ->
+    gen_server:call(Name, {match_inventory_in, Merchant, UTable, Shop, Types});
+match(inventory, {Merchant, UTable}, Prompt, Shop) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(
-      Name, {match_inventory, Merchant, Prompt, Shop}).
-match(inventory, all_inventory, Merchant, Shop, Conditions) ->
+    gen_server:call(Name, {match_inventory, Merchant, UTable, Prompt, Shop}).
+
+match(inventory, all_inventory, {Merchant, UTable}, Shop, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {match_all_inventory, Merchant, Shop, Conditions}); 
-match(inventory, Merchant, Prompt, Shop, Firm) ->
+    gen_server:call(Name, {match_all_inventory, Merchant, UTable, Shop, Conditions}); 
+match(inventory, {Merchant, UTable}, Prompt, Shop, Firm) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(
-      Name, {match_inventory, Merchant, Prompt, Shop, Firm}).
+    gen_server:call(Name, {match_inventory, Merchant, UTable, Prompt, Shop, Firm}).
 
 
-match(all_reject_inventory, QType, Merchant, Shop, Firm, StartTime) ->
+match(all_reject_inventory, QType, {Merchant, UTable}, Shop, Firm, StartTime) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(
-      Name, {match_all_reject_inventory,
-		QType, Merchant, Shop, Firm, StartTime}).
+      Name, {match_all_reject_inventory, QType, Merchant, UTable, Shop, Firm, StartTime}).
 
-match_stock(by_shop, Merchant, ShopIds, StartTime, Prompt) ->
+match_stock(by_shop, {Merchant, UTable}, ShopIds, StartTime, Prompt) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(
-      Name, {match_stock_by_shop, Merchant, ShopIds, StartTime, Prompt}).
+      Name, {match_stock_by_shop, Merchant, UTable, ShopIds, StartTime, Prompt}).
 
 %% =============================================================================
 %% filter with pagination
 %% =============================================================================
 %% new
-filter(total_news, 'and', Merchant, Fields) ->
+filter(total_news, 'and', {Merchant, UTable}, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {total_news, Merchant, Fields});
+    gen_server:call(Name, {total_news, Merchant, UTable, Fields});
 
-filter(total_new_rsn_groups, 'and', Merchant, Fields) ->
+filter(total_new_rsn_groups, 'and', {Merchant, UTable}, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {total_new_rsn_groups, Merchant, Fields});
-filter(total_new_rsn_groups, 'like', Merchant, Fields) ->
+    gen_server:call(Name, {total_new_rsn_groups, Merchant, UTable, Fields});
+
+filter(total_new_rsn_groups, 'like', {Merchant, UTable}, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {total_new_rsn_groups, Merchant, Fields});
+    gen_server:call(Name, {total_new_rsn_groups, Merchant, UTable, Fields});
 
 %% reject
 %% filter(total_rejects, 'and', Merchant, Fields) ->
@@ -319,131 +316,152 @@ filter(total_new_rsn_groups, 'like', Merchant, Fields) ->
 %%     gen_server:call(?SERVER, {total_new_rsn_groups, reject, Merchant, Fields});
 
 %% fix
-filter(total_fix, 'and', Merchant, Fields) ->
+filter(total_fix, 'and', {Merchant, UTable}, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {total_fix, Merchant, Fields});
+    gen_server:call(Name, {total_fix, Merchant, UTable, Fields});
 
-filter(total_fix_rsn_groups, 'and', Merchant, Fields) ->
+filter(total_fix_rsn_groups, 'and', {Merchant, UTable}, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {total_fix_rsn_groups, Merchant, Fields});
+    gen_server:call(Name, {total_fix_rsn_groups, Merchant, UTable, Fields});
 
 %% transfer
-filter(total_transfer, 'and', Merchant, Fields) ->
+filter(total_transfer, 'and', {Merchant, UTable}, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {total_transfer, Merchant, Fields});
+    gen_server:call(Name, {total_transfer, Merchant, UTable, Fields});
 
-filter(total_transfer_rsn_groups, 'and', Merchant, Fields) ->
+filter(total_transfer_rsn_groups, 'and', {Merchant, UTable}, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {total_transfer_rsn_groups, Merchant, Fields});
+    gen_server:call(Name, {total_transfer_rsn_groups, Merchant, UTable, Fields});
 
 %% inventory
-filter(total_groups, MatchMode, Merchant, Fields) ->
+filter(total_groups, MatchMode, {Merchant, UTable}, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {total_groups, MatchMode, Merchant, Fields});
+    gen_server:call(Name, {total_groups, MatchMode, Merchant, UTable, Fields});
 
 %% good
-filter(total_goods, 'and', Merchant, Fields) ->
+filter(total_goods, 'and', {Merchant, UTable}, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {total_goods, Merchant, Fields}).
+    gen_server:call(Name, {total_goods, {Merchant, UTable}, Fields}).
 
 %%
 %% filter detail
 %%
 %% new stock
-filter(news, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
+filter(news, 'and', {Merchant, UTable}, CurrentPage, ItemsPerPage, Fields) ->
     %% filter({news, ?SORT_BY_ID}, 'and', Merchant, CurrentPage, ItemsPerPage, Fields);
-    filter({news, ?SORT_BY_DATE}, 'and', Merchant, CurrentPage, ItemsPerPage, Fields); 
-filter({news, SortMode}, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
+    filter({news, ?SORT_BY_DATE}, 'and', {Merchant, UTable}, CurrentPage, ItemsPerPage, Fields);
+
+filter({news, SortMode}, 'and', {Merchant, UTable}, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(
-      Name, {{filter_news, SortMode}, Merchant, CurrentPage, ItemsPerPage, Fields});
+      Name, {{filter_news, SortMode}, Merchant, UTable, CurrentPage, ItemsPerPage, Fields});
 
-filter(new_rsn_groups, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
+filter(new_rsn_groups, 'and', {Merchant, UTable}, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {filter_new_rsn_groups,
-			   Merchant, CurrentPage, ItemsPerPage, Fields});
-filter(new_rsn_groups, 'like', Merchant, CurrentPage, ItemsPerPage, Fields) ->
+			   Merchant, UTable, CurrentPage, ItemsPerPage, Fields});
+
+filter(new_rsn_groups, 'like', {Merchant, UTable}, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {filter_new_rsn_groups,
-			   Merchant, CurrentPage, ItemsPerPage, Fields});
+			   Merchant, UTable, CurrentPage, ItemsPerPage, Fields});
 
 %% fix
-filter(fix, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
+filter(fix, 'and', {Merchant, UTable}, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(
-      Name, {filter_fix, Merchant, CurrentPage, ItemsPerPage, Fields});
+      Name, {filter_fix, Merchant, UTable, CurrentPage, ItemsPerPage, Fields});
 
-filter(fix_rsn_groups, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
+filter(fix_rsn_groups, 'and', {Merchant, UTable}, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {filter_fix_rsn_groups,
-			   Merchant, CurrentPage, ItemsPerPage, Fields});
+    gen_server:call(Name,
+		    {filter_fix_rsn_groups,
+		     Merchant,
+		     UTable,
+		     CurrentPage, ItemsPerPage, Fields});
 %% transfer
-filter(transfer, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
+filter(transfer, 'and', {Merchant, UTable}, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(
-      Name, {filter_transfer, Merchant, CurrentPage, ItemsPerPage, Fields});
+      Name, {filter_transfer, Merchant, UTable, CurrentPage, ItemsPerPage, Fields});
 
-filter(transfer_rsn_groups, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
+filter(transfer_rsn_groups, 'and', {Merchant, UTable}, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {filter_transfer_rsn_groups,
-                           Merchant, CurrentPage, ItemsPerPage, Fields});
+    gen_server:call(Name,
+		    {filter_transfer_rsn_groups,
+		     Merchant,
+		     UTable,
+		     CurrentPage, ItemsPerPage, Fields});
 
 %% inventory
-filter(groups, MatchMode, Merchant, CurrentPage, ItemsPerPage, Fields) ->
+filter(groups, MatchMode, {Merchant, UTable}, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant),
     %% default use id
     gen_server:call(
-      Name, {filter_groups, {use_id, 0}, MatchMode, Merchant, CurrentPage, ItemsPerPage, Fields});
+      Name,
+      {filter_groups,
+       {use_id, 0},
+       MatchMode,
+       Merchant,
+       UTable,
+       CurrentPage, ItemsPerPage, Fields});
 
-filter({groups, Mode, Sort}, MatchMode, Merchant, CurrentPage, ItemsPerPage, Fields) ->
+filter({groups, Mode, Sort}, MatchMode, {Merchant, UTable}, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(
-      Name, {filter_groups, {Mode, Sort}, MatchMode, Merchant, CurrentPage, ItemsPerPage, Fields});
+      Name,
+      {filter_groups,
+       {Mode, Sort},
+       MatchMode,
+       Merchant,
+       UTable,
+       CurrentPage, ItemsPerPage, Fields});
 
 %% good
-filter(goods, 'and', Merchant, CurrentPage, ItemsPerPage, Fields) ->
+filter(goods, 'and', {Merchant, UTable}, CurrentPage, ItemsPerPage, Fields) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {filter_goods, Merchant, CurrentPage, ItemsPerPage, Fields}).
+    gen_server:call(Name, {filter_goods, {Merchant, UTable}, CurrentPage, ItemsPerPage, Fields}).
 
 %% rsn
-rsn_detail(new_rsn, Merchant, Condition) ->
+rsn_detail(new_rsn, {Merchant, UTable}, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {new_rsn_detail, Merchant, Condition});
+    gen_server:call(Name, {new_rsn_detail, Merchant, UTable, Condition});
 
 rsn_detail(reject_rsn, Merchant, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {new_rsn_detail, Merchant, Condition});
 
-rsn_detail(fix_rsn, Merchant, Condition) ->
+rsn_detail(fix_rsn, {Merchant, UTable}, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {fix_rsn_detail, Merchant, Condition});
+    gen_server:call(Name, {fix_rsn_detail, Merchant, UTable, Condition});
 
-rsn_detail(transfer_rsn, Merchant, Condition) ->    
+rsn_detail(transfer_rsn, {Merchant, UTable}, Condition) ->    
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {transfer_rsn_detail, Merchant, Condition}).
+    gen_server:call(Name, {transfer_rsn_detail, Merchant, UTable, Condition}).
 
 %%
 %% export
 %%
-export(trans, Merchant, Condition, Mode) ->
+export(trans, {Merchant, UTable}, Condition, Mode) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {new_trans_export, Merchant, Condition, Mode});
+    gen_server:call(Name, {new_trans_export, Merchant, UTable, Condition, Mode}); 
+export(trans_note, {Merchant, UTable}, Condition, []) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {new_trans_note_export, Merchant, UTable, Condition});
 
-export(trans_note, Merchant, Condition, []) ->
+export(stock, {Merchant, UTable}, Condition, Mode) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {new_trans_note_export, Merchant, Condition});
-export(stock, Merchant, Condition, Mode) ->
+    gen_server:call(Name, {stock_export, Merchant, UTable, Condition, Mode});
+export(stock_note, {Merchant, UTable}, Condition, Mode) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {stock_export, Merchant, Condition, Mode});
-export(stock_note, Merchant, Condition, Mode) ->
+    gen_server:call(Name, {stock_note_export, Merchant, UTable, Condition, Mode});
+
+export(shift_note, {Merchant, UTable}, Condition, []) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {stock_note_export, Merchant, Condition, Mode});
-export(shift_note, Merchant, Condition, []) ->
+    gen_server:call(Name, {shift_note_export, Merchant, UTable, Condition});
+export(shift_note_color_size, {Merchant, UTable}, Condition, []) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {shift_note_export, Merchant, Condition});
-export(shift_note_color_size, Merchant, Condition, []) ->
-    Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {shift_note_color_size_export, Merchant, Condition}).
+    gen_server:call(Name, {shift_note_color_size_export, Merchant, UTable, Condition}).
 
 
 
@@ -454,9 +472,9 @@ export(shift_note_color_size, Merchant, Condition, []) ->
 %%     Name = ?wpool:get(?MODULE, Merchant),
 %%     gen_server:call(Name, {stock_detail_get_by_shop, Merchant, Shop, ?INVALID_OR_EMPTY}).
 
-stock(detail_get_by_shop, Merchant, Shop, Firm, ExtraCondtion) ->
+stock(detail_get_by_shop, {Merchant, UTable}, Shop, Firm, ExtraCondtion) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {stock_detail_get_by_shop, Merchant, Shop, Firm, ExtraCondtion}).
+    gen_server:call(Name, {stock_detail_get_by_shop, Merchant, UTable, Shop, Firm, ExtraCondtion}).
 
 
 start_link(Name) ->
@@ -469,7 +487,7 @@ start_link(Name) ->
 init([]) ->
     {ok, #state{}}.
 
-handle_call({new_good, Merchant, Attrs}, _Form, State) ->
+handle_call({new_good, Merchant, UTable, Attrs}, _Form, State) ->
     ?DEBUG("new_good with merchant ~p~nattrs~p", [Merchant, Attrs]),
     %% Merchant    = ?v(<<"merchant">>, Attrs),
     Barcode     = ?v(<<"bcode">>, Attrs, []),
@@ -480,18 +498,21 @@ handle_call({new_good, Merchant, Attrs}, _Form, State) ->
     %% SelfBarcode = ?v(<<"self_barcode">>, Attrs, ?NO),
     Sql = case ?v(<<"bcode">>, Attrs, <<>>) of
 	      <<>> ->
-		  "select style_number, brand from w_inventory_good"
-		      " where style_number=" ++ "\"" ++ ?to_s(StyleNumber) ++ "\""
+		  "select style_number, brand from "
+		      ++ ?table:good(Merchant, UTable)
+		      ++ " where style_number=" ++ "\"" ++ ?to_s(StyleNumber) ++ "\""
 		      ++ " and brand=" ++ ?to_s(BrandId)
 		      ++ " and merchant=" ++ ?to_s(Merchant) ++ ";";
 	      ?EMPTY_DB_BARCODE ->
-		  "select style_number, brand from w_inventory_good"
-		      " where style_number=" ++ "\"" ++ ?to_s(StyleNumber) ++ "\""
+		  "select style_number, brand from "
+		      ++ ?table:good(Merchant, UTable)
+		      ++ " where style_number=" ++ "\"" ++ ?to_s(StyleNumber) ++ "\""
 		      ++ " and brand=" ++ ?to_s(BrandId)
 		      ++ " and merchant=" ++ ?to_s(Merchant) ++ ";";
 	      Barcode ->
-		  "select bcode from w_inventory_good"
-		      " where bcode=" ++ "\"" ++ ?to_s(Barcode) ++ "\""
+		  "select bcode from "
+		      ++ ?table:good(Merchant, UTable)
+		      ++ " where bcode=" ++ "\"" ++ ?to_s(Barcode) ++ "\""
 		      ++ " and merchant=" ++ ?to_s(Merchant) ++ ";"
 	  end,
     
@@ -499,7 +520,7 @@ handle_call({new_good, Merchant, Attrs}, _Form, State) ->
 	case ?sql_utils:execute(s_read, Sql) of
 	    {ok, []} ->
 		GetShop = fun() -> ?w_good_sql:realy_shop(Merchant, Shop) end,
-		Sql1 = ?w_good_sql:good_new(Merchant, UseZero, GetShop, Attrs),
+		Sql1 = ?w_good_sql:good_new(Merchant, UTable, UseZero, GetShop, Attrs),
 		case erlang:length(Sql1) =:= 1 of
 		    true ->
 			[SqlH] = Sql1, ?sql_utils:execute(insert, SqlH);
@@ -512,8 +533,8 @@ handle_call({new_good, Merchant, Attrs}, _Form, State) ->
 	end,
     {reply, Reply, State};
 
-handle_call({update_good, Merchant, Attrs}, _Form, State) ->
-    ?DEBUG("update_good with merchant ~p~nattrs~n~p", [Merchant, Attrs]),
+handle_call({update_good, Merchant, UTable, Attrs}, _Form, State) ->
+    ?DEBUG("update_good with merchant ~p, utable ~P~nattrs~n~p", [Merchant, UTable, Attrs]),
     GoodId         = ?v(<<"good_id">>, Attrs),
     Barcode        = ?v(<<"bcode">>, Attrs),
     Shop           = ?v(<<"shop">>, Attrs),
@@ -615,7 +636,7 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 	   (false, S, B) ->
 		"style_number=\'" ++ ?to_s(S) ++ "\'"
 		    ++ " and brand=" ++ ?to_s(B)
-		    ++ " and merchant=" ++ ?to_s(Merchant) 
+		    ++ " and merchant=" ++ ?to_s(Merchant)
 	end,
     
 
@@ -628,7 +649,8 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 		     %% "M-" ++ ?to_s(Merchant) ++ "-S-" ++ ?to_s(Shop) ++ "%\'"
 	 end,
 
-    Sql1 = "update w_inventory_good set "
+    Sql1 = "update" ++ ?table:t(good, Merchant, UTable)
+	++ " set "
 	++ ?utils:to_sqls(proplists, comma, UpdateGood)
 	++ " where id=" ++ ?to_s(GoodId) 
 	++ " and merchant=" ++ ?to_s(Merchant),
@@ -646,7 +668,8 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 		    %% ++ ?utils:v(s_group, string, SizeGroup)
 			++ ?utils:v(change_date, string, DateTime),
 		    
-		    Sql2 = "update w_inventory set "
+		    Sql2 = "update" ++ ?table:t(stock, Merchant, UTable)
+			++ " set "
 			++ ?utils:to_sqls(proplists, comma, UpdateInv)
 			++ " where " ++ C(true, OrgStyleNumber, OrgBrand),
 
@@ -655,7 +678,9 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 			case UpdateBase of
 			    [] -> []; 
 			    U3  ->
-				["update w_inventory_new_detail set "
+				[%% "update w_inventory_new_detail set "
+				 "update" ++ ?table:t(stock_new_detail, Merchant, UTable)
+				 ++ " set "
 				 ++ ?utils:to_sqls(proplists, comma, U3)
 				 ++ " where "
 				 ++ C(true, OrgStyleNumber, OrgBrand)]
@@ -665,7 +690,9 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 						<<"sex">>, 1, U3)) of
 					[] -> [];
 					U1 ->
-					    ["update w_sale_detail set "
+					    [%% "update w_sale_detail set "
+					     "update" ++ ?table:t(wsale_new_detail, Merchant, UTable)
+					     ++ " set "
 					     ++ ?utils:to_sqls(proplists, comma, U1)
 					     ++ " where "
 					     ++ C(true, OrgStyleNumber, OrgBrand)]
@@ -680,8 +707,9 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 	    FindFun =
 		fun(Color, Size) ->
 			"select id, style_number, brand, color, size"
-			    " from w_inventory_amount"
-			    " where style_number=\'"
+			    %% " from w_inventory_amount"
+			    " from" ++ ?table:t(stock_note, Merchant, UTable)
+			    ++ " where style_number=\'"
 			    ++ (RStyleNumber(StyleNumber)) ++ "\'"
 			    ++ " and brand=" ++ ?to_s(RBrand(Brand))
 			    ++ " and color=" ++ ?to_s(Color)
@@ -695,10 +723,17 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 
 	    InsertFun =
 		fun(Color, Size, Total) ->
-			"insert into w_inventory_amount("
-			    "style_number, brand, color, size, shop, merchant"
-			    ", total, entry_date"
-			    ") values("
+			%% "insert into w_inventory_amount("
+			"insert into" ++ ?table:t(stock_note, Merchant, UTable)
+			    ++ "(style_number"
+			    ", brand"
+			    ", color"
+			    ", size"
+			    ", shop"
+			    ", merchant"
+			    ", total"
+			    ", entry_date"
+			    ")values("
 			    "\'" ++ (RStyleNumber(StyleNumber)) ++ "\'"
 			    ", " ++ ?to_s(RBrand(Brand)) ++ 
 			    ", " ++ ?to_s(Color) ++ 
@@ -714,7 +749,8 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 
 	    UpdateFun =
 		fun(UId, Total) ->
-			"update w_inventory_amount" " set total=total+" ++ ?to_s(Total)
+			"update" ++ ?table:t(stock_note, Merchant, UTable)
+			    ++ " set total=total+" ++ ?to_s(Total)
 			    ++ " where id=" ++ ?to_s(UId)
 		end,
 	    
@@ -742,19 +778,24 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 		Sql00 = 
 		    case ?sql_utils:execute(
 			    s_read, "select id, style_number, brand"
-			    " from w_inventory_good where "
+			    %% " from w_inventory_good where "
+			    " from " ++ ?table:t(good, Merchant, UTable)
+			    ++ " where "
 			    ++ C(false, RStyleNumber(StyleNumber), RBrand(Brand))) of
 			{ok, []} ->
 			    %% new, update only
-			    ["update w_inventory_good set "
+			    ["update" ++ ?table:t(good, Merchant, UTable)
+			     ++ " set "
 			     ++ ?utils:to_sqls(proplists, comma, Update2 ++ UpdateGood)
 			     ++ " where id=" ++ ?to_s(GoodId) 
 			     ++ " and merchant=" ++ ?to_s(Merchant)];
 			{ok, G} ->
 			    %% exist, delete the old
-			    ["delete from w_inventory_good where id=" ++ ?to_s(GoodId),
+			    ["delete from" ++ ?table:t(good, Merchant, UTable)
+			     ++ " where id=" ++ ?to_s(GoodId),
 			      
-			     "update w_inventory_good set "
+			     "update" ++ ?table:t(good, Merchant, UTable)
+			     ++ " set "
 			     ++ ?utils:to_sqls(proplists, comma, UpdateGood)
 			     ++ " where id=" ++ ?to_s(?v(<<"id">>, G))]
 		    end,
@@ -762,7 +803,9 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 
 		%% update record of new stock 
 		Sql10 = 
-		    ["update w_inventory_new_detail set "
+		    [%% "update w_inventory_new_detail set "
+		     "update" ++ ?table:t(stock_new_detail, Merchant, UTable)
+		     ++ " set "
 		     ++ ?utils:to_sqls(
 			   proplists,
 			   comma,
@@ -772,7 +815,9 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 			   ++ ?utils:v(firm, integer, Firm))
 		     ++ " where " ++ RC(OrgStyleNumber, OrgBrand),
 
-		     "update w_inventory_new_detail_amount set "
+		     %% "update w_inventory_new_detail_amount set "
+		     "update" ++ ?table:t(stock_new_note)
+		     ++ " set "
 		     ++ ?utils:to_sqls(proplists, comma, Update2)
 		     ++ " where "
 		     ++ RC(OrgStyleNumber, OrgBrand)],
@@ -787,12 +832,16 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 		Sql12 = 
 		    case ?sql_utils:execute(
 			    s_read,
-			    "select id, style_number, brand from w_inventory"
-			    " where "
+			    "select id, style_number, brand from "
+			    %% "w_inventory"
+			    ++ ?table:t(stock, Merchant, UTable)
+			    ++ " where "
 			    ++ C(true, RStyleNumber(StyleNumber), RBrand(Brand))) of
 			{ok, []} ->
 			    %% new, update only
-			    ["update w_inventory set "
+			    [%% "update w_inventory set "
+			     "update" ++ ?table:t(stock, Merchant, UTable)
+			     ++ " set "
 			     ++ ?utils:to_sqls(
 				   proplists, comma,
 				   Update2
@@ -803,17 +852,20 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 			     ++ " where "
 			     ++ C(true, OrgStyleNumber, OrgBrand),
 
-			     "update w_inventory_amount set "
-			     ++ ?utils:to_sqls(proplists, comma, Update2)
+			     %% "update w_inventory_amount set "
+			     "update" ++ ?table:t(stock_note)
+			     ++ " set " ++ ?utils:to_sqls(proplists, comma, Update2)
 			     ++ " where "
 			     ++ C(true, OrgStyleNumber, OrgBrand)];
 			{ok, S} ->
 			    %% exist, add amount
 			    Sqla = 
-				["update w_inventory a inner join("
+				[%% "update w_inventory a inner join("
+				 "update" ++ ?table:t(stock, Merchant, UTable) ++ " a inner join("
 				 "select style_number, brand, amount, sell"
-				 " from w_inventory"
-				 " where "
+				 %% " from w_inventory"
+				 " from " ++ ?table:t(stock, Merchant, UTable)
+				 ++ " where "
 				 ++ C(true, OrgStyleNumber, OrgBrand) ++ ") b"
 				 %% " on a.style_number=b.style_number"
 				 %% " and a.brand=b.brand"
@@ -828,8 +880,10 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 				case ?sql_utils:execute(
 					read, "select id"
 					", style_number, brand, color, size, total"
-					" from w_inventory_amount"
-					" where " ++ C(true, OrgStyleNumber, OrgBrand))
+					%% " from w_inventory_amount"
+					++ " from "
+					++ ?table:t(stock_note, Merchant, UTable)
+					++ " where " ++ C(true, OrgStyleNumber, OrgBrand))
 				of
 				    {ok, Rs} -> lists:foldr(FoldrFun, [], Rs)
 				end,
@@ -851,17 +905,21 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 			    %% " set a.total=a.total+b.total"
 			    %% " where a.merchant=" ++ ?to_s(Merchant),
 			    Sqla ++ Sqlb ++ 
-				[" delete from w_inventory"
-				 " where " ++ C(true, OrgStyleNumber, OrgBrand),
-				 " delete from w_inventory_amount"
-				 " where " ++ C(true, OrgStyleNumber, OrgBrand)]
+				[%% " delete from w_inventory"
+				 " delete from " ++ ?table:t(stock, Merchant, UTable)
+				 ++ " where " ++ C(true, OrgStyleNumber, OrgBrand),
+				 %% " delete from w_inventory_amount"
+				 " delete from " ++ ?table:t(stock_note, Merchant, UTable)
+				 ++ " where " ++ C(true, OrgStyleNumber, OrgBrand)]
 		    end,
 		
 		?DEBUG("Sql12 ~p", [Sql12]),
 
 		Sql14 =
-		    [ "update w_sale_detail set "
-		      ++ ?utils:to_sqls(
+		    [%% "update w_sale_detail set "
+		     "update" ++ ?table:t(sale_new_detail, Merchant, UTable)
+		     ++ " set "
+		     ++ ?utils:to_sqls(
 			    proplists,
 			    comma,
 			    Update2
@@ -871,7 +929,8 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 		      ++ " where "
 		      ++ RC(OrgStyleNumber, OrgBrand),
 
-		      "update w_sale_detail_amount set "
+		      %% "update w_sale_detail_amount set "
+		     "update" ++ ?table:t(sale_new_note, Merchant, UTable)
 		      ++ ?utils:to_sqls(proplists, comma, Update2)
 		      ++ " where "
 		      ++ RC(OrgStyleNumber, OrgBrand)],
@@ -880,7 +939,9 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 
 		%% transfer
 		Sql15 =
-		    ["update w_inventory_transfer_detail set "
+		    [%% "update w_inventory_transfer_detail set "
+		     "update" ++ ?table:t(stock_transfer_detail, Merchant, UTable)
+		     ++ " set "
 		     ++ ?utils:to_sqls(
 			   proplists,
 			   comma,
@@ -894,7 +955,8 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 		     
 		     %% ++ RC(OrgStyleNumber, OrgBrand),
 
-		     "update w_inventory_transfer_detail_amount set "
+		     %% "update w_inventory_transfer_detail_amount set "
+		     "update" ++ ?table:t(stock_transfer_note, Merchant, UTable)
 		     ++ ?utils:to_sqls(proplists, comma, Update2)
 		     ++ " where style_number=\'" ++ ?to_s(OrgStyleNumber) ++ "\'"
 		     ++ " and brand=" ++ ?to_s(OrgBrand)
@@ -922,26 +984,33 @@ handle_call({update_good, Merchant, Attrs}, _Form, State) ->
 	    end
     end;
 		
-handle_call({delete_good, Merchant, {StyleNumber, Brand}}, _Form, State) ->
+handle_call({delete_good, Merchant, UTable, {StyleNumber, Brand}}, _Form, State) ->
     ?DEBUG("delete_good with merchant ~p, StyleNumber ~p, Brand ~p", [Merchant, StyleNumber, Brand]),
-    Sqls = ?w_good_sql:good(delete, Merchant, {StyleNumber, Brand}), 
+    Sqls = ?w_good_sql:good(delete, {Merchant, UTable}, {StyleNumber, Brand}), 
     Reply = ?sql_utils:execute(transaction, Sqls, StyleNumber),
     {reply, Reply, State};
 
-handle_call({lookup_good, Merchant}, _Form, State) ->
+handle_call({lookup_good, Merchant, UTable}, _Form, State) ->
     ?DEBUG("lookup_good with merchant ~p", [Merchant]),
-    Sql = ?w_good_sql:good(detail, Merchant),
+    Sql = ?w_good_sql:good(detail, {Merchant, UTable}),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
 
-handle_call({lookup_good, Merchant, GoodId}, _Form, State) ->
+handle_call({lookup_good, Merchant, UTable, GoodId}, _Form, State) ->
     ?DEBUG("lookup_good with merchant ~p, goodId ~p", [Merchant, GoodId]), 
-    Sql = ?w_good_sql:good(detail, Merchant, [{<<"id">>, ?to_i(GoodId)}]),
+    Sql = ?w_good_sql:good(detail, {Merchant, UTable}, [{<<"id">>, ?to_i(GoodId)}]),
     Reply =  ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
-handle_call({good_get_by_barcode, Merchant, Barcode}, _Form, State) ->
+handle_call({lookup_good, Merchant, UTable, StyleNumber, Brand}, _Form, State) ->
+    ?DEBUG("lookup_good with merchant ~p, StyleNumber ~p, Brand ~p",
+	   [Merchant, StyleNumber, Brand]),
+    Sql = ?w_good_sql:good(detail_no_join, {Merchant, UTable}, StyleNumber, Brand),
+    Reply =  ?sql_utils:execute(s_read, Sql),
+    {reply, Reply, State}; 
+
+handle_call({good_get_by_barcode, Merchant, UTable, Barcode}, _Form, State) ->
     ?DEBUG("good_get_by_barcode with merchant ~p, Barcode ~p", [Merchant, Barcode]),
     case Barcode =:= undefined
 	orelse Barcode =:= []
@@ -950,22 +1019,15 @@ handle_call({good_get_by_barcode, Merchant, Barcode}, _Form, State) ->
 	orelse Barcode =:= <<"0">> of
 	true -> {reply, {ok, []}, State};
 	false ->
-	    Sql = ?w_good_sql:good(detail, Merchant, [{<<"bcode">>, Barcode}]),
+	    Sql = ?w_good_sql:good(detail, {Merchant, UTable}, [{<<"bcode">>, Barcode}]),
 	    Reply =  ?sql_utils:execute(s_read, Sql),
 	    {reply, Reply, State}
     end;
     
-handle_call({lookup_good, Merchant, StyleNumber, Brand}, _Form, State) ->
-    ?DEBUG("lookup_good with merchant ~p, StyleNumber ~p, Brand ~p",
-	   [Merchant, StyleNumber, Brand]),
-    Sql = ?w_good_sql:good(detail_no_join, Merchant, StyleNumber, Brand),
-    Reply =  ?sql_utils:execute(s_read, Sql),
-    {reply, Reply, State}; 
-
-handle_call({lookup_used_good, Merchant, StyleNumber, Brand}, _Form, State) ->
+handle_call({lookup_used_good, Merchant, UTable, StyleNumber, Brand}, _Form, State) ->
     ?DEBUG("lookup_used_good with merchant ~p, StyleNumber ~p, Brand ~p",
 	   [Merchant, StyleNumber, Brand]),
-    Sql = ?w_good_sql:good(used_detail, Merchant, StyleNumber, Brand),
+    Sql = ?w_good_sql:good(used_detail, {Merchant, UTable}, StyleNumber, Brand),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
@@ -978,44 +1040,42 @@ handle_call({get_good_price, Merchant, Conditions}, _Form, State) ->
 %%
 %% good match
 %%
-handle_call({match_style_number, Merchant, PromptNumber}, _Form, State) ->
+handle_call({match_style_number, Merchant, UTable, PromptNumber}, _Form, State) ->
     ?DEBUG("match_style_number with merchant ~p, promptNumber ~p",
 	   [Merchant, PromptNumber]),
-    Sql = ?w_good_sql:good_match(style_number, Merchant, PromptNumber),
+    Sql = ?w_good_sql:good_match(style_number, Merchant, UTable, PromptNumber),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({match_style_number_with_firm, Merchant, PromptNumber, Firm},
+handle_call({match_style_number_with_firm, Merchant, UTable, PromptNumber, Firm},
 	    _Form, State) ->
     ?DEBUG("match_style_number_with_firm with merchant ~p, promptNumber ~p"
 	   ", firm ~p", [Merchant, PromptNumber, Firm]),
-    Sql = ?w_good_sql:good_match(
-	     style_number_with_firm, Merchant, PromptNumber, Firm),
+    Sql = ?w_good_sql:good_match(style_number_with_firm, Merchant, UTable, PromptNumber, Firm),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({match_all_style_number_with_firm, Merchant, StartTime, Firm},
+handle_call({match_all_style_number_with_firm, Merchant, UTable, StartTime, Firm},
 	    _Form, State) ->
     ?DEBUG("match_all_style_number_with_firm with merchant ~p, start time ~p"
 	   ",firm ~p", [Merchant, StartTime, Firm]),
-    Sql = ?w_good_sql:good_match(
-	     all_style_number_with_firm, Merchant, StartTime, Firm),
+    Sql = ?w_good_sql:good_match(all_style_number_with_firm, Merchant, UTable, StartTime, Firm),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
 %% inventory match
-handle_call({match_inventory, Merchant, StyleNumber, Shop}, _Form, State) ->
+handle_call({match_inventory, Merchant, UTable, StyleNumber, Shop}, _Form, State) ->
     ?DEBUG("match_inventory: merchant ~p, styleNumber ~p, shop ~p", [Merchant, StyleNumber, Shop]),
     %% RealyShop = case QType of
     %% 		    1 -> Shop;
     %% 		    _ -> ?w_good_sql:realy_shop(Merchant, Shop)
     %% 		end,
     
-    Sql = ?w_good_sql:inventory_match(Merchant, StyleNumber, Shop),
+    Sql = ?w_good_sql:inventory_match(Merchant, UTable, StyleNumber, Shop, []),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({match_inventory, Merchant, StyleNumber, Shop, Firm}, _Form, State) ->
+handle_call({match_inventory, Merchant, UTable, StyleNumber, Shop, Firm}, _Form, State) ->
     ?DEBUG("match_inventory:merchant ~p, styleNumber ~p"
 	   ",shop ~p, firm ~p", [Merchant, StyleNumber, Shop, Firm]),
     %% RealyShop = case QType of
@@ -1023,18 +1083,18 @@ handle_call({match_inventory, Merchant, StyleNumber, Shop, Firm}, _Form, State) 
     %% 		    _ -> ?w_good_sql:realy_shop(Merchant, Shop)
     %% 		end,
     %% RealyShop = realy_shop(Merchant, Shop),
-    Sql = ?w_good_sql:inventory_match(Merchant, StyleNumber, Shop, Firm),
+    Sql = ?w_good_sql:inventory_match(Merchant, UTable, StyleNumber, Shop, Firm),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({match_inventory_in, Merchant, Shop, Ins}, _Form, State) ->
+handle_call({match_inventory_in, Merchant, UTable, Shop, Ins}, _Form, State) ->
     ?DEBUG("match_inventory_in: merchant ~p, shop ~p, ins ~p", [Merchant, Shop, Ins]),
-    Sql = ?w_good_sql:inventory_match(of_in, Merchant, Shop, Ins),
+    Sql = ?w_good_sql:inventory_match(of_in, Merchant, UTable, Shop, Ins),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
 handle_call({match_all_reject_inventory,
-	     QType, Merchant, Shop, Firm, StartTime}, _Form, State) ->
+	     QType, Merchant, UTable, Shop, Firm, StartTime}, _Form, State) ->
     ?DEBUG("match_all_reject_inventory with qtype ~p, merchant ~p"
 	   ", shop ~p, firm ~p, StartTime ~p",
 	   [QType, Merchant, Shop, Firm, StartTime]),
@@ -1043,25 +1103,25 @@ handle_call({match_all_reject_inventory,
 		    _ -> ?w_good_sql:realy_shop(Merchant, Shop)
 		end,
     Sql = ?w_good_sql:inventory_match(
-	     all_reject, Merchant, RealyShop, Firm, StartTime),
+	     all_reject, Merchant, UTable, RealyShop, Firm, StartTime),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State}; 
 
-handle_call({match_all_inventory, Merchant, Shop, Conditions}, _From, State) ->
+handle_call({match_all_inventory, Merchant, UTable, Shop, Conditions}, _From, State) ->
     ?DEBUG("match_all_inventory  with merchant ~p, shop ~p, conditions ~p",
 	   [Merchant, Shop, Conditions]),
     RealyShop = ?w_good_sql:realy_shop(Merchant, Shop),
-    Sql = ?w_good_sql:inventory_match(all_inventory, Merchant, RealyShop, Conditions),
+    Sql = ?w_good_sql:inventory_match(all_inventory, Merchant, UTable, RealyShop, Conditions),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({match_stock_by_shop, Merchant, ShopIds, StartTime, Prompt}, _From, State) ->
-    Sql = ?w_stock_match:match_stock(by_shop, Merchant, ShopIds, StartTime, Prompt),
+handle_call({match_stock_by_shop, Merchant, UTable, ShopIds, StartTime, Prompt}, _From, State) ->
+    Sql = ?w_stock_match:match_stock(by_shop, Merchant, UTable, ShopIds, StartTime, Prompt),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
 %% new
-handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
+handle_call({new_inventory, Merchant, UTable, Inventories, Props}, _From, State) ->
     ?DEBUG("new_inventory: merchant ~p~n, Inventories ~p, props ~p",
 	   [Merchant, Inventories, Props]), 
     DateTime = ?utils:correct_datetime(datetime, ?v(<<"datetime">>, Props)),
@@ -1102,9 +1162,17 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
 	" from suppliers a"
 	" left join "
 	
-	"(select id, merchant, firm, balance, should_pay"
-	", has_pay, verificate, e_pay from w_inventory_new"
-	" where merchant=" ++ ?to_s(Merchant)
+	"(select id"
+	", merchant"
+	", firm"
+	", balance"
+	", should_pay"
+	", has_pay"
+	", verificate"
+	", e_pay"
+    %% " from w_inventory_new"
+	" from" ++ ?table:t(stock_new, Merchant, UTable)
+	++ " where merchant=" ++ ?to_s(Merchant)
 	++ " and firm=" ++ ?to_s(Firm)
 	++ " and state in (0,1)"
 	++ " order by entry_date desc limit 1) b on a.merchant=b.merchant and a.id=b.firm"
@@ -1132,9 +1200,11 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
 			      Shop,
 			      ?inventory_sn:sn(w_inventory_new_sn, Merchant)),
 
-		    Sql1 = sql(wnew, RSn, Merchant, Shop, Firm, DateTime, Inventories), 
+		    Sql1 = sql(wnew, RSn, Merchant, UTable, Shop, Firm, DateTime, Inventories), 
 
-		    Sql2 = "insert into w_inventory_new(rsn"
+		    Sql2 = %% "insert into w_inventory_new(rsn"
+			"insert into" ++ ?table:t(stock_new, Merchant, UTable)
+			++ "(rsn"
 			", account"
 			", employ"
 			", firm"
@@ -1210,7 +1280,7 @@ handle_call({new_inventory, Merchant, Inventories, Props}, _From, State) ->
 	    {reply, Error, State}
     end;
 
-handle_call({update_inventory, Merchant, Inventories, {Props, OldProps}}, _From, State) ->
+handle_call({update_inventory, Merchant, UTable, Inventories, {Props, OldProps}}, _From, State) ->
     ?DEBUG("update_inventory: merchant ~p~n, inventories ~p, props ~p, OldProps ~p",
 	   [Merchant, Inventories, Props, OldProps]), 
     CurTime    = ?utils:current_time(format_localtime),
@@ -1254,7 +1324,13 @@ handle_call({update_inventory, Merchant, Inventories, {Props, OldProps}}, _From,
     RealyShop = ?w_good_sql:realy_shop(Merchant, Shop),
     
     UpdateBaseSql = ?w_good_sql:inventory(
-		       update_attr, Mode, RSN, Merchant, RealyShop, {Firm, OldFirm, Datetime, OldDatetime}),
+		       update_attr,
+		       Mode,
+		       RSN,
+		       Merchant,
+		       UTable,
+		       RealyShop,
+		       {Firm, OldFirm, Datetime, OldDatetime}),
 
     Sql1 = case Inventories of
 	       [] ->
@@ -1263,7 +1339,13 @@ handle_call({update_inventory, Merchant, Inventories, {Props, OldProps}}, _From,
 		   UpdateBaseSql;
 	       _ ->
 		   ?w_good_sql:inventory(
-		      update, Mode, RSN, Merchant, RealyShop, {Firm, Datetime, CurTime}, Inventories)
+		      update,
+		      Mode,
+		      RSN,
+		      Merchant,
+		      UTable,
+		      RealyShop,
+		      {Firm, Datetime, CurTime}, Inventories)
 		       ++ UpdateBaseSql
 	   end,
 
@@ -1292,8 +1374,18 @@ handle_call({update_inventory, Merchant, Inventories, {Props, OldProps}}, _From,
     try
 	Sqls =  Sql1 ++ 
 	    case Firm =:= OldFirm of
-		true  -> update_stock(same_firm, Merchant, CurTime, Updates, {Props, OldProps});
-		false -> update_stock(diff_firm, Merchant, CurTime, Updates, {Props, OldProps})
+		true  -> update_stock(same_firm,
+				      Merchant,
+				      UTable,
+				      CurTime,
+				      Updates,
+				      {Props, OldProps});
+		false -> update_stock(diff_firm,
+				      Merchant,
+				      UTable,
+				      CurTime,
+				      Updates,
+				      {Props, OldProps})
 	    end,
 
 	Reply = ?sql_utils:execute(transaction, Sqls, RSN),
@@ -1560,10 +1652,13 @@ handle_call({update_inventory, Merchant, Inventories, {Props, OldProps}}, _From,
     %% 		end, 
     %% end; 
 
-handle_call({check_inventory, Merchant, RSN, Props}, _From, State) ->
+handle_call({check_inventory, Merchant, UTable, RSN, Props}, _From, State) ->
     ?DEBUG("check_inventory with merchant ~p, RSN ~p, Props ~p",
 	   [Merchant, RSN, Props]),
-    Sql0 = "select id, rsn, state from w_inventory_new"
+    Sql0 = "select id"
+	", rsn"
+	", state"
+	" from" ++ ?table:t(stock_new, Merchant, UTable)
 	++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
 	++ " and merchant=" ++ ?to_s(Merchant),
 
@@ -1579,7 +1674,8 @@ handle_call({check_inventory, Merchant, RSN, Props}, _From, State) ->
 	    case StockState == ?DISCARD orelse StockState == ?FIRM_BILL of
 		true -> {reply, {error, ?err(error_state_of_check, RSN)}, State};
 		false ->
-		    Sql = "update w_inventory_new set state=" ++ ?to_s(Mode)
+		    Sql = "update" ++ ?table:t(stock_new, Merchant, UTable)
+			++ " set state=" ++ ?to_s(Mode)
 			++ ", check_date=\'" ++ ?utils:current_time(localtime) ++ "\'"
 			++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
 			++ " and merchant=" ++ ?to_s(Merchant),
@@ -1593,8 +1689,9 @@ handle_call({check_inventory, Merchant, RSN, Props}, _From, State) ->
 				    true -> [];
 				    false ->
 					"select style_number, brand, firm, org_price"
-					    " from w_inventory_new_detail"
-					    " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+					    %% " from w_inventory_new_detail"
+					    " from" ++ ?table:t(stock_new_detail, Merchant, UTable)
+					    ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
 					    ++ " and merchant=" ++ ?to_s(Merchant)
 					    ++ case CheckFirm =:= ?CHECK
 						   andalso CheckPrice =:= ?CHECK of
@@ -1644,13 +1741,13 @@ handle_call({check_inventory, Merchant, RSN, Props}, _From, State) ->
 	    {reply, Error, State}
     end;
 
-handle_call({delete_new, Merchant, RSN, Mode}, _From, State) ->
+handle_call({delete_new, Merchant, UTable, RSN, Mode}, _From, State) ->
     ?DEBUG("delete_inventory_new with merchant ~p, RSN ~p, Mode ~p",
 	   [Merchant, RSN, Mode]),
     Sql1 = ?w_good_sql:inventory(
 	      new_detail,
 	      new,
-	      Merchant,
+	      {Merchant, UTable},
 	      [{<<"rsn">>, ?to_b(RSN)}],
 	      fun()-> "" end),
 
@@ -1669,14 +1766,17 @@ handle_call({delete_new, Merchant, RSN, Mode}, _From, State) ->
 	    EPay = ?v(<<"e_pay">>, New),
 	    Entry = ?v(<<"entry_date">>, New),
 
-	    DeleteNewSqls = ["delete from w_inventory_new_detail_amount"
-			     " where rsn=\'" ++ ?to_s(RSN) ++ "\'",
+	    DeleteNewSqls = [%% "delete from w_inventory_new_detail_amount"
+			     "delete from" ++ ?table:t(stock_new_note, Merchant, UTable)
+			     ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'",
 
-			     "delete from w_inventory_new_detail"
-			     " where rsn=\'" ++ ?to_s(RSN) ++ "\'",
+			     %% "delete from w_inventory_new_detail"
+			     "delete from" ++ ?table:t(stock_new_detail, Merchant, UTable)
+			     ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'",
 
-			     "delete from w_inventory_new"
-			     " where rsn=\'" ++ ?to_s(RSN) ++ "\'"],
+			     %% "delete from w_inventory_new"
+			     "delete from" ++ ?table:t(stock_new, Merchant, UTable)
+			     ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"],
 	    
 	    case {Mode, StockState} of
 		{?ABANDON, ?DISCARD} ->
@@ -1687,20 +1787,28 @@ handle_call({delete_new, Merchant, RSN, Mode}, _From, State) ->
 		{_, ?CHECKING} ->
 		    Sql11 =
 			[
-			 "update w_inventory a inner join "
-			 "(select style_number, brand, amount"
-			 " from w_inventory_new_detail"
-			 " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+			 "update" ++ ?table:t(stock, Merchant, UTable) ++ " a inner join "
+			 "(select style_number"
+			 ", brand"
+			 ", amount"
+			 %% " from w_inventory_new_detail"
+			 " from" ++ ?table:t(stock_new_detail, Merchant, UTable)
+			 ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
 			 ") b"
 			 " on a.style_number=b.style_number and a.brand=b.brand"
 			 " set a.amount=a.amount-b.amount"
 			 " where a.merchant=" ++ ?to_s(Merchant)
 			 ++ " and shop=" ++ ?to_s(Shop),
 
-			 "update w_inventory_amount a inner join "
-			 "(select style_number, brand, color, size, total"
-			 " from w_inventory_new_detail_amount"
-			 " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+			 "update" ++ ?table:t(stock_note, Merchant, UTable) ++ " a inner join "
+			 "(select style_number"
+			 ", brand"
+			 ", color"
+			 ", size"
+			 ", total"
+			 %% " from w_inventory_new_detail_amount"
+			 " from" ++ ?table:t(stock_new_note, Merchant, UTable)
+			 ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
 			 ") b"
 			 " on a.style_number=b.style_number and a.brand=b.brand"
 			 " and a.color=b.color and a.size=b.size"
@@ -1726,8 +1834,9 @@ handle_call({delete_new, Merchant, RSN, Mode}, _From, State) ->
 				 ++ " where merchant=" ++ ?to_s(Merchant)
 				 ++ " and id=" ++ ?to_s(Firm),
 
-				 "update w_inventory_new set "
-				 "balance=balance-" ++ ?to_s(BackBalance)
+				 %% "update w_inventory_new"
+				 "update" ++ ?table:t(stock_new, Merchant, UTable)
+				 ++ " set balance=balance-" ++ ?to_s(BackBalance)
 				 ++ " where merchant=" ++ ?to_s(Merchant)
 				 %% ++ " and shop=" ++ ?to_s(Shop) 
 				 ++ " and firm=" ++ ?to_s(Firm)
@@ -1757,7 +1866,9 @@ handle_call({delete_new, Merchant, RSN, Mode}, _From, State) ->
 					0 -> [];
 					_ -> Sql11 ++ Sql21
 				    end ++
-				    ["update w_inventory_new set state=" ++ ?to_s(?DISCARD)
+				    [%% "update w_inventory_new"
+				     "update" ++ ?table:t(stock_new, Merchant, UTable)
+				     ++ " set state=" ++ ?to_s(?DISCARD)
 				     ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"],
 				
 				?sql_utils:execute(transaction, Sqls, RSN)
@@ -1773,17 +1884,25 @@ handle_call({delete_new, Merchant, RSN, Mode}, _From, State) ->
 	    {reply, {error, Error}, State}
     end;
 
-handle_call({comment_new, Merchant, RSN, Comment}, _From, State) ->
-    Sql = "update w_inventory_new set comment=\'" ++ ?to_s(Comment) ++ "\'"
+handle_call({comment_new, Merchant, UTable, RSN, Comment}, _From, State) ->
+    Sql = "update" ++ ?table:t(stock_new, Merchant, UTable)
+	++ " set comment=\'" ++ ?to_s(Comment) ++ "\'"
 	" where rsn=\'" ++ ?to_s(RSN) ++ "\'"
 	" and merchant=" ++ ?to_s(Merchant),
 
     Reply = ?sql_utils:execute(write, Sql, RSN),
     {reply, Reply, State};
 
-handle_call({modify_balance, Merchant, RSN, Balance}, _From, State) ->
-    Sql0 = "select id, merchant, rsn, firm, balance, type, entry_date from w_inventory_new"
-	" where merchant=" ++ ?to_s(Merchant)
+handle_call({modify_balance, Merchant, UTable, RSN, Balance}, _From, State) ->
+    Sql0 = "select id"
+	", merchant"
+	", rsn"
+	", firm"
+	", balance"
+	", type"
+	", entry_date"
+	" from" ++ ?table:t(stock_new, Merchant, UTable)
+	++ " where merchant=" ++ ?to_s(Merchant)
 	++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'",
     case ?sql_utils:execute(s_read, Sql0) of
 	{ok, []} ->
@@ -1802,12 +1921,15 @@ handle_call({modify_balance, Merchant, RSN, Balance}, _From, State) ->
 		    Type       = ?v(<<"type">>, New),
 		    MBalance   = Balance - OldBalance,
 
-		    Sql1 = ["update w_inventory_new set balance=" ++ ?to_s(Balance)
+		    Sql1 = [%% "update w_inventory_new"
+			    "update" ++ ?table:t(stock_new, Merchant, UTable)
+			    ++ " set balance=" ++ ?to_s(Balance)
 			    ++ " where merchant=" ++ ?to_s(Merchant)
 			    ++ " and firm=" ++ ?to_s(Firm)
 			    ++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'",
 
-			    "update w_inventory_new set balance=balance+" ++ ?to_s(MBalance)
+			    "update" ++ ?table:t(stock_new, Merchant, UTable)
+			    ++ " set balance=balance+" ++ ?to_s(MBalance)
 			    ++ " where merchant=" ++ ?to_s(Merchant)
 			    ++ " and firm=" ++ ?to_s(Firm)
 			    ++ " and state!=" ++ ?to_s(?DISCARD)
@@ -1851,7 +1973,7 @@ handle_call({modify_balance, Merchant, RSN, Balance}, _From, State) ->
     end;
 
 %% reject
-handle_call({reject_inventory, Merchant, Inventories, Props}, _From, State) ->
+handle_call({reject_inventory, Merchant, UTable, Inventories, Props}, _From, State) ->
     ?DEBUG("reject_inventory with merchant ~p~n~p, props ~p",
 	   [Merchant, Inventories, Props]),
 
@@ -1880,13 +2002,27 @@ handle_call({reject_inventory, Merchant, Inventories, Props}, _From, State) ->
 	    true -> {ok, []};
 	    false ->
 		{ok,
-		 "select a.id, a.merchant, a.balance"
-		 ", b.balance as lbalance, b.should_pay, b.has_pay, b.verificate, b.e_pay"
+		 "select a.id"
+		 ", a.merchant"
+		 ", a.balance"
+		 ", b.balance as lbalance"
+		 ", b.should_pay"
+		 ", b.has_pay"
+		 ", b.verificate"
+		 ", b.e_pay"
 		 " from suppliers a"
-		 " left join "
-		 "(select id, merchant, firm, balance, should_pay"
-		 ", has_pay, verificate, e_pay from w_inventory_new"
-		 " where merchant=" ++ ?to_s(Merchant)
+		 " left join " 
+		 "(select id"
+		 ", merchant"
+		 ", firm"
+		 ", balance"
+		 ", should_pay"
+		 ", has_pay"
+		 ", verificate"
+		 ", e_pay"
+		 %% " from w_inventory_new"
+		 " from" ++ ?table:t(stock_new, Merchant, UTable)
+		 ++ " where merchant=" ++ ?to_s(Merchant)
 		 ++ " and firm=" ++ ?to_s(Firm)
 		 ++ " and state in (0,1)"
 		 ++ " order by entry_date desc limit 1) b on a.merchant=b.merchant and a.id=b.firm"
@@ -1900,7 +2036,9 @@ handle_call({reject_inventory, Merchant, Inventories, Props}, _From, State) ->
     %% 	++ " and merchant=" ++ ?to_s(Merchant)
     %% 	++ " and deleted=" ++ ?to_s(?NO) ++ ";",
     StockOutSql = fun(RSN, CurrentBalance) ->
-			  ["insert into w_inventory_new(rsn"
+			  [%% "insert into w_inventory_new(rsn"
+			   "insert into" ++ ?table:t(stock_new, Merchant, UTable)
+			   ++ "(rsn"
 			   ", account"
 			   ", employ"
 			   ", firm"
@@ -1949,7 +2087,7 @@ handle_call({reject_inventory, Merchant, Inventories, Props}, _From, State) ->
 		      ?inventory_sn:sn(w_inventory_reject_sn, Merchant)),
 	    Sql1 = case RejectTotal of
 		       0 -> [];
-		       _ -> sql(wreject, RSN, Merchant, Shop, Firm, DateTime, Inventories)
+		       _ -> sql(wreject, RSN, Merchant, UTable, Shop, Firm, DateTime, Inventories)
 		   end,
 	    Sql2 = StockOutSql(RSN, 0), 
 	    AllSql = Sql1 ++ Sql2,
@@ -1980,7 +2118,13 @@ handle_call({reject_inventory, Merchant, Inventories, Props}, _From, State) ->
 
 			    Sql1 = case RejectTotal of
 				       0 -> [];
-				       _ -> sql(wreject, RSN, Merchant, Shop, Firm, DateTime, Inventories)
+				       _ -> sql(wreject,
+						RSN,
+						Merchant, UTable,
+						Shop,
+						Firm,
+						DateTime,
+						Inventories)
 				   end, 
 
 			    %% RealBalance = ?v(<<"balance">>, Account),
@@ -2055,6 +2199,7 @@ handle_call({reject_inventory, Merchant, Inventories, Props}, _From, State) ->
 %% fix
 handle_call({fix_inventory,
 	     Merchant,
+	     UTable,
 	     {StocksNotInDB, StocksNotInShop, StocksDiff}, Props},
 	    _From, State) ->
     ?DEBUG("fix_inventory with merchant ~p, props ~p", [Merchant, Props]), 
@@ -2072,11 +2217,19 @@ handle_call({fix_inventory,
 	     RSN,
 	     Datetime,
 	     Merchant,
+	     UTable,
 	     RealyShop,
 	     {StocksNotInDB, StocksNotInShop, StocksDiff}),
     
-    Sql2 = "insert into w_inventory_fix(rsn"
-	", merchant, shop, Firm, employ, shop_total, db_total, entry_date)"
+    Sql2 = "insert into" ++ ?table:t(stock_fix, Merchant, UTable)
+	++ "(rsn"
+	", merchant"
+	", shop"
+	", Firm"
+	", employ"
+	", shop_total"
+	", db_total"
+	", entry_date)"
 	" values("
 	++ "\"" ++ ?to_s(RSN) ++ "\","
 	++ ?to_s(Merchant) ++ "," 
@@ -2091,7 +2244,7 @@ handle_call({fix_inventory,
     {reply, Reply, State}; 
 
 
-handle_call({transfer_inventory, Merchant, Inventories, Props}, _From, State) ->
+handle_call({transfer_inventory, Merchant, UTable, Inventories, Props}, _From, State) ->
     ?DEBUG("transfer_inventory with merchant ~p~n~p, props ~p",
            [Merchant, Inventories, Props]),
     Now         = ?utils:current_time(localtime),
@@ -2111,9 +2264,18 @@ handle_call({transfer_inventory, Merchant, Inventories, Props}, _From, State) ->
     %% ToRSN = rsn(transfer_to, Merchant, ToShop,
     %%        ?inventory_sn:sn(w_inventory_transfer_sn_to, Merchant)),
 
-    Sql1 = ["insert into w_inventory_transfer(rsn"
-            ", fshop, tshop, employ, total, cost"
-            ", comment, merchant, state, entry_date) values("
+    Sql1 = [%%"insert into w_inventory_transfer"
+	    "insert into" ++ ?table:t(stock_transfer, Merchant, UTable)
+	    ++ "(rsn"
+            ", fshop"
+	    ", tshop"
+	    ", employ"
+	    ", total"
+	    ", cost"
+            ", comment"
+	    ", merchant"
+	    ", state"
+	    ", entry_date) values("
             ++ "\"" ++ ?to_s(TRSN) ++ "\","
             ++ ?to_s(Shop) ++ ","
             ++ ?to_s(ToShop) ++ ","
@@ -2129,13 +2291,13 @@ handle_call({transfer_inventory, Merchant, Inventories, Props}, _From, State) ->
             ++ ?to_s(0) ++ ","
 
 	    ++ "\"" ++ ?to_s(DateTime) ++ "\")"],
-    Sql2 = sql(transfer_from, TRSN, Merchant, Shop, ToShop, DateTime, {Inventories, Props}),
+    Sql2 = sql(transfer_from, TRSN, Merchant, UTable, Shop, ToShop, DateTime, {Inventories, Props}),
     ?DEBUG("Sql2 ~p", [Sql2]), 
     AllSql = Sql1 ++ Sql2,    %% ?DEBUG("AllSql ~p", [AllSql]),
     Reply = ?sql_utils:execute(transaction, AllSql, TRSN),
     {reply, Reply, State};
 
-handle_call({check_inventory_transfer, Merchant, CheckProps}, _From, State) -> 
+handle_call({check_inventory_transfer, Merchant, UTable, CheckProps}, _From, State) -> 
     ?DEBUG("check_inventory_transfer: checkprops ~p", [CheckProps]),
     %% Now = ?utils:current_time(format_localtime),
     RSN = ?v(<<"rsn">>, CheckProps),
@@ -2157,20 +2319,20 @@ handle_call({check_inventory_transfer, Merchant, CheckProps}, _From, State) ->
 			case
 			    case CheckStock of
 				?YES ->
-				    ?w_transfer_sql:check_stock(Merchant, RSN);
+				    ?w_transfer_sql:check_stock(Merchant, UTable, RSN);
 				?NO ->
 				    []
 			    end
 			of
 			    [] ->
 				Sqls = ?w_transfer_sql:check_transfer(
-					  Merchant, FShop, TShop, CheckProps),
+					  Merchant, UTable, FShop, TShop, CheckProps),
 				{reply, ?sql_utils:execute(transaction, Sqls, RSN), State};
 			    CheckSql -> 
 				case ?sql_utils:execute(read, CheckSql) of
 				    {ok, []} -> 
 					Sqls = ?w_transfer_sql:check_transfer(
-						  Merchant, FShop, TShop, CheckProps),
+						  Merchant, UTable, FShop, TShop, CheckProps),
 					{reply, ?sql_utils:execute(transaction, Sqls, RSN), State};
 				    {ok, Checks} ->
 					{reply,
@@ -2188,7 +2350,7 @@ handle_call({check_inventory_transfer, Merchant, CheckProps}, _From, State) ->
                 end
     end;
 
-handle_call({cancel_inventory_transfer, Merchant, RSN}, _From, State) ->
+handle_call({cancel_inventory_transfer, Merchant, UTable, RSN}, _From, State) ->
     ?DEBUG("cancel_inventory_transfer: rsn ~p", [RSN]),
     Sql = "select rsn, fshop, tshop, state from w_inventory_transfer"
         " where rsn=\"" ++ ?to_s(RSN) ++ "\"",
@@ -2203,13 +2365,13 @@ handle_call({cancel_inventory_transfer, Merchant, RSN}, _From, State) ->
                     ?IN_BACK ->
                         {error, ?err(stock_been_canceled, RSN)};
                     ?IN_ROAD -> 
-                        Sqls = ?w_transfer_sql:cancel_transfer(Merchant, RSN),
+                        Sqls = ?w_transfer_sql:cancel_transfer(Merchant, UTable, RSN),
                         ?sql_utils:execute(transaction, Sqls, RSN)
                 end
         end,
     {reply, Reply, State}; 
 
-handle_call({list_inventory, Merchant, Conditions}, _From, State) ->
+handle_call({list_inventory, Merchant, UTable, Conditions}, _From, State) ->
     ?DEBUG("list_inventory  with merchant ~p, conditions ~p", [Merchant, Conditions]), 
     QType = ?v(<<"qtype">>, Conditions, 0), 
     NewConditions = 
@@ -2225,37 +2387,37 @@ handle_call({list_inventory, Merchant, Conditions}, _From, State) ->
 		  [C|Acc]
 	  end, [], Conditions), 
 		   
-    Sql = ?w_good_sql:inventory(list, Merchant, NewConditions),
+    Sql = ?w_good_sql:inventory(list, {Merchant, UTable}, NewConditions),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({list_inventory_info, Merchant, Conditions}, _From, State) ->
-    Sql = ?w_good_sql:inventory(list_info, Merchant, Conditions),
+handle_call({list_inventory_info, Merchant, UTable, Conditions}, _From, State) ->
+    Sql = ?w_good_sql:inventory(list_info, {Merchant, UTable}, Conditions),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({list_new_detail, Merchant, Conditions}, _From, State) ->
+handle_call({list_new_detail, Merchant, UTable,  Conditions}, _From, State) ->
     ?DEBUG("list_new_detail  with merchant ~p, conditions ~p",
 	   [Merchant, Conditions]),
     Sql = ?w_good_sql:inventory(
-	     new_rsn_groups, new, Merchant, Conditions, fun() -> [] end),
+	     new_rsn_groups, new, {Merchant, UTable}, Conditions, fun() -> [] end),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({trace_transfer, Merchant, Conditions}, _From, State) ->
+handle_call({trace_transfer, Merchant, UTable, Conditions}, _From, State) ->
     ?DEBUG("trace_transfer  with merchant ~p, conditions ~p", [Merchant, Conditions]), 
     Sql = ?w_good_sql:inventory(
-	     transfer_rsn_groups, transfer, Merchant, Conditions, fun() -> [] end),
+	     transfer_rsn_groups, transfer, {Merchant, UTable}, Conditions, fun() -> [] end),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({list_fix_detail, Merchant, Conditions}, _From, State) ->
+handle_call({list_fix_detail, Merchant, UTable, Conditions}, _From, State) ->
     ?DEBUG("list_fix_detail  with merchant ~p, conditions ~p", [Merchant, Conditions]),
-    Sql = ?w_good_sql:inventory(fix_rsn_groups, fix, Merchant, Conditions, fun() -> [] end),
+    Sql = ?w_good_sql:inventory(fix_rsn_groups, fix, {Merchant, UTable}, Conditions, fun() -> [] end),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({syn_barcode, Merchant, Barcode, Conditions}, _From, State) ->
+handle_call({syn_barcode, Merchant, UTable, Barcode, Conditions}, _From, State) ->
     ?DEBUG("syn_barcode  with merchant ~p, barcode ~p, conditions ~p",
 	   [Merchant, Barcode, Conditions]),
 
@@ -2269,8 +2431,9 @@ handle_call({syn_barcode, Merchant, Barcode, Conditions}, _From, State) ->
 	", c.bcode as fbcode"
 	", d.bcode as tbcode"
 	
-	" from w_inventory a"
-	" left join brands b on a.brand=b.id"
+    %% " from w_inventory a"
+	" from" ++ ?table:t(stock, Merchant, UTable)
+	++ " left join brands b on a.brand=b.id"
 	" left join suppliers c on a.firm=c.id"
 	" left join inv_types d on a.type=d.id"
 
@@ -2297,8 +2460,9 @@ handle_call({syn_barcode, Merchant, Barcode, Conditions}, _From, State) ->
 			true ->
 			    {reply, {error, ?err(stock_invalid_barcode, Barcode)}, State};
 			false -> 
-			    Sql1 = "update w_inventory set bcode=\'" ++ ?to_s(NewBarcode) ++ "\'"
-				" where merchant=" ++ ?to_s(Merchant)
+			    Sql1 = "update" ++ ?table:t(stock, Merchant, UTable)
+				++ " set bcode=\'" ++ ?to_s(NewBarcode) ++ "\'"
+				++ " where merchant=" ++ ?to_s(Merchant)
 				++ ?sql_utils:condition(proplists, Conditions),
 			    Reply = ?sql_utils:execute(write, Sql1, Barcode),
 			    {reply, Reply, State}
@@ -2306,7 +2470,7 @@ handle_call({syn_barcode, Merchant, Barcode, Conditions}, _From, State) ->
 	    end
     end;
 
-handle_call({gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _From, State) ->
+handle_call({gen_barcode, AutoBarcode, Merchant, UTable, Shop, StyleNumber, Brand}, _From, State) ->
     ?DEBUG("gen_barcode:  autoBarcode ~p merchant ~p, shop ~p, style_number ~p, brand ~p",
 	   [AutoBarcode, Merchant, Shop, StyleNumber, Brand]),
     
@@ -2334,8 +2498,9 @@ handle_call({gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _Fro
     %% ", c.executive as executive_id"
     %% ", c.fabric as fabric_json"
 	
-	" from w_inventory a"
-	" left join inv_types b on a.type=b.id"
+    %% " from w_inventory a"
+	" from" ++ ?table:t(stock, Merchant, UTable)
+	++ " left join inv_types b on a.type=b.id"
 	
     %% " left join w_inventory_good c"
     %% " on a.style_number=c.style_number and a.brand=c.brand and a.merchant=c.merchant"
@@ -2370,22 +2535,23 @@ handle_call({gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _Fro
 			end,
 		    ?DEBUG("barcode ~p", [Barcode]),
 
-		    Sql0 = "select bcode, style_number, brand from w_inventory"
-			" where merchant=" ++ ?to_s(Merchant)
+		    Sql0 = "select bcode, style_number, brand"
+			" from" ++ ?table:t(stock, Merchant, UTable)
+			++ " where merchant=" ++ ?to_s(Merchant)
 			++ " and bcode=\'" ++ ?to_s(Barcode) ++ "\'",
 		    
 		    case ?sql_utils:execute(read, Sql0) of
 			{ok, []} ->
 			    %% use syn all stock's barcode in different shop
-			    Sqls = ["update w_inventory set "
-				    "bcode=\'" ++ ?to_s(Barcode) ++ "\'"
-				    " where merchant=" ++ ?to_s(Merchant)
+			    Sqls = ["update" ++ ?table:t(stock, Merchant, UTable)
+				    ++ " set bcode=\'" ++ ?to_s(Barcode) ++ "\'"
+				    ++ " where merchant=" ++ ?to_s(Merchant)
 				    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 				    ++ " and brand=" ++ ?to_s(Brand),
 
-				    "update w_inventory_good set "
-				    "bcode=\'" ++ ?to_s(Barcode) ++ "\'"
-				    " where merchant=" ++ ?to_s(Merchant)
+				    "update" ++ ?table:t(good, Merchant, UTable)
+				    ++ " set bcode=\'" ++ ?to_s(Barcode) ++ "\'"
+				    ++ " where merchant=" ++ ?to_s(Merchant)
 				    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 				    ++ " and brand=" ++ ?to_s(Brand)],
 			    case ?sql_utils:execute(transaction, Sqls, Barcode) of
@@ -2420,7 +2586,7 @@ handle_call({gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _Fro
 %%
 %% reset stock barcode
 %%
-handle_call({reset_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _From, State) ->
+handle_call({reset_barcode, AutoBarcode, Merchant, UTable, Shop, StyleNumber, Brand}, _From, State) ->
     ?DEBUG("reset_barcode: autoBarcode ~p,  merchant ~p, shop ~p, style_number ~p, brand ~p",
 	   [AutoBarcode, Merchant, Shop, StyleNumber, Brand]), 
 
@@ -2434,7 +2600,8 @@ handle_call({reset_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _F
 	", a.free"
 
 	", b.bcode as tbcode"
-	" from w_inventory a"
+	%% " from w_inventory a"
+	" from" ++ ?table:t(stock, Merchant, UTable) ++ " a"
 	" left join inv_types b on a.type=b.id"
 	
 	" where a.merchant=" ++ ?to_s(Merchant)
@@ -2462,20 +2629,21 @@ handle_call({reset_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _F
 	    
 	    ?DEBUG("barcode ~p", [Barcode]),
 	    Sql0 = "select bcode, style_number, brand" 
-		" from w_inventory " 
-		" where merchant=" ++ ?to_s(Merchant)
+	    %% " from w_inventory "
+		" from " ++ ?table:t(stock, Merchant, UTable)
+		++ " where merchant=" ++ ?to_s(Merchant)
 		++ " and bcode=\'" ++ ?to_s(Barcode) ++ "\'", 
 	    case ?sql_utils:execute(s_read, Sql0) of
 		{ok, []} ->
 		    %% use syn all stock's barcode in different shop
-		    Sqls = ["update w_inventory set "
-			    "bcode=\'" ++ ?to_s(Barcode) ++ "\'"
+		    Sqls = ["update" ++ ?table:t(stock, Merchant, UTable)
+			    ++ " set bcode=\'" ++ ?to_s(Barcode) ++ "\'"
 			    " where merchant=" ++ ?to_s(Merchant)
 			    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 			    ++ " and brand=" ++ ?to_s(Brand),
 
-			    "update w_inventory_good set "
-			    "bcode=\'" ++ ?to_s(Barcode) ++ "\'"
+			    "update" ++ ?table:t(good, Merchant, UTable)
+			    ++ " set bcode=\'" ++ ?to_s(Barcode) ++ "\'"
 			    " where merchant=" ++ ?to_s(Merchant)
 			    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 			    ++ " and brand=" ++ ?to_s(Brand)],
@@ -2486,7 +2654,7 @@ handle_call({reset_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand}, _F
 	    end 
     end;
 
-handle_call({reset_good_barcode, AutoBarcode, Merchant, StyleNumber, Brand}, _From, State) ->
+handle_call({reset_good_barcode, AutoBarcode, Merchant, UTable, StyleNumber, Brand}, _From, State) ->
     ?DEBUG("reset_good_barcode: autoBarcode ~p, merchant ~p, style_number ~p, brand ~p",
 	   [AutoBarcode, Merchant, StyleNumber, Brand]), 
 
@@ -2500,10 +2668,10 @@ handle_call({reset_good_barcode, AutoBarcode, Merchant, StyleNumber, Brand}, _Fr
 	", a.free"
 
 	", b.bcode as tbcode"
-	" from w_inventory_good a"
-	" left join inv_types b on a.type=b.id"
-	
-	" where a.merchant=" ++ ?to_s(Merchant)
+    %% " from w_inventory_good a"
+	" from" ++ ?table:t(good, Merchant, UTable) ++ " a"
+	++ " left join inv_types b on a.type=b.id" 
+	++ " where a.merchant=" ++ ?to_s(Merchant)
 	++ " and a.style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 	++ " and a.brand=" ++ ?to_s(Brand),
 
@@ -2530,19 +2698,21 @@ handle_call({reset_good_barcode, AutoBarcode, Merchant, StyleNumber, Brand}, _Fr
 			end,
 		    
 		    ?DEBUG("barcode ~p", [Barcode]),
-		    Sql0 = "select bcode, style_number, brand" 
-			" from w_inventory_good " 
-			" where merchant=" ++ ?to_s(Merchant)
+		    Sql0 = "select bcode, style_number, brand"
+			" from" ++ ?table:t(good, Merchant, UTable)
+			++ " where merchant=" ++ ?to_s(Merchant)
 			++ " and bcode=\'" ++ ?to_s(Barcode) ++ "\'", 
 		    case ?sql_utils:execute(s_read, Sql0) of
 			{ok, []} ->
 			    %% use syn all stock's barcode in different shop
-			    Sqls = ["update w_inventory_good set bcode=\'" ++ ?to_s(Barcode) ++ "\'"
+			    Sqls = ["update" ++ ?table:t(good, Merchant, UTable)
+				    ++ " set bcode=\'" ++ ?to_s(Barcode) ++ "\'"
 				    " where merchant=" ++ ?to_s(Merchant)
 				    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 				    ++ " and brand=" ++ ?to_s(Brand),
 
-				    "update w_inventory set bcode=\'" ++ ?to_s(Barcode) ++ "\'"
+				    "update" ++ ?table:t(stock, Merchant, UTable)
+				    ++ " set bcode=\'" ++ ?to_s(Barcode) ++ "\'"
 				    " where merchant=" ++ ?to_s(Merchant)
 				    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 				    ++ " and brand=" ++ ?to_s(Brand)],
@@ -2556,17 +2726,17 @@ handle_call({reset_good_barcode, AutoBarcode, Merchant, StyleNumber, Brand}, _Fr
 
 
 
-handle_call({get_by_barcode, Merchant, Shop, Firm, Barcode, ExtraCondtion}, _From, State) ->
+handle_call({get_by_barcode, Merchant, UTable, Shop, Firm, Barcode, ExtraCondtion}, _From, State) ->
     ?DEBUG("get_by_barcode: Merchant ~p, Shop ~p, Firm ~p, Barcode ~p, ExtraCondtion ~p",
 	   [Merchant, Shop, Firm, Barcode, ExtraCondtion]), 
-    Sql = ?w_good_sql:get_inventory(barcode, Merchant, Shop, Firm, Barcode, ExtraCondtion),
+    Sql = ?w_good_sql:get_inventory(barcode, Merchant, UTable, Shop, Firm, Barcode, ExtraCondtion),
     Reply =  ?sql_utils:execute(s_read, Sql),
     ?DEBUG("reply ~p", [Reply]),
     {reply, Reply, State};
 
-handle_call({get_stock_note, Merchant, Shop, Conditions}, _From, State) ->
+handle_call({get_stock_note, Merchant, UTable, Shop, Conditions}, _From, State) ->
     ?DEBUG("get_stock_note: Merchant ~p, Shop ~p, condition ~p", [Merchant, Shop, Conditions]), 
-    Sql = ?w_good_sql:get_inventory(note, Merchant, Shop, Conditions),
+    Sql = ?w_good_sql:get_inventory(note, Merchant, UTable, Shop, Conditions),
     Reply =  ?sql_utils:execute(s_read, Sql),
     ?DEBUG("reply ~p", [Reply]),
     {reply, Reply, State};
@@ -2590,33 +2760,31 @@ handle_call({abstract_inventory, Merchant, Shop, Conditions}, _From, State) ->
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({set_promotion, Merchant, Promotions, Conditions}, _From, State) ->
+handle_call({set_promotion, Merchant, UTable, Promotions, Conditions}, _From, State) ->
     ?DEBUG("set_promotion with merchant ~p, promotions ~p, conditions ~p", [Merchant, Promotions, Conditions]), 
-    Sql = ?w_good_sql:inventory(
-	     set_promotion, Merchant, Promotions, Conditions),
-    
+    Sql = ?w_good_sql:inventory(set_promotion, {Merchant, UTable}, Promotions, Conditions), 
     Reply = ?sql_utils:execute(write, Sql, ok),
     {reply, Reply, State};
 
 
-handle_call({{update_batch, MatchMode}, Merchant, Attrs, Conditions}, _From, State) ->
+handle_call({{update_batch, MatchMode}, Merchant, UTable, Attrs, Conditions}, _From, State) ->
     ?DEBUG("update_batch: like ~p, merchant ~p, attrs ~p, conditions ~p",
 	   [MatchMode, Merchant, Attrs, Conditions]), 
-    Sqls = ?w_good_sql:inventory({update_batch, MatchMode}, Merchant, Attrs, Conditions), 
+    Sqls = ?w_good_sql:inventory({update_batch, MatchMode}, {Merchant, UTable}, Attrs, Conditions), 
     Reply = ?sql_utils:execute(transaction, Sqls, Merchant),
     {reply, Reply, State};
 
-handle_call({set_gift, Merchant, Attrs, Conditions}, _From, State) ->
+handle_call({set_gift, Merchant, UTable, Attrs, Conditions}, _From, State) ->
     ?DEBUG("set_gift with merchant ~p, attrs ~p, conditions ~p", [Merchant, Attrs, Conditions]), 
     GiftState = case ?v(<<"gift">>, Attrs) =:= 0 of
 		    true -> 1;
 		    false -> 0
 		end,
-    Sql = ?w_good_sql:inventory(set_gift, Merchant, GiftState, Conditions), 
+    Sql = ?w_good_sql:inventory(set_gift, {Merchant, UTable}, GiftState, Conditions), 
     Reply = ?sql_utils:execute(write, Sql, GiftState),
     {reply, Reply, State};
 
-handle_call({set_offer, Merchant, Attrs, Conditions}, _From, State) ->
+handle_call({set_offer, Merchant, UTable, Attrs, Conditions}, _From, State) ->
     ?DEBUG("set_offer with merchant ~p, attrs ~p, conditions ~p", [Merchant, Attrs, Conditions]),
     Offer = 
 	case ?v(<<"state">>, Attrs, 0) =:= 0 orelse ?v(<<"state">>, Attrs, 0) =:= ?INVALID_OR_EMPTY of
@@ -2628,21 +2796,19 @@ handle_call({set_offer, Merchant, Attrs, Conditions}, _From, State) ->
     %% 		    true -> 3;
     %% 		    false -> 0
     %% 		end,
-    Sql = ?w_good_sql:inventory(set_offer, Merchant, Offer, Conditions), 
+    Sql = ?w_good_sql:inventory(set_offer, {Merchant, UTable}, Offer, Conditions), 
     Reply = ?sql_utils:execute(write, Sql, Offer),
     {reply, Reply, State};
 
-handle_call({update_stock_alarm, Merchant, Attrs, Conditions}, _From, State) ->
+handle_call({update_stock_alarm, Merchant, UTable, Attrs, Conditions}, _From, State) ->
     ?DEBUG("update_stock_alarm with merchant ~p, attrs ~p, conditions ~p",
 	   [Merchant, Attrs, Conditions]), 
-    Sqls = ?w_good_sql:inventory(
-	      update_stock_alarm, Merchant, Attrs, Conditions),
-
+    Sqls = ?w_good_sql:inventory(update_stock_alarm, {Merchant, UTable}, Attrs, Conditions), 
     Reply = ?sql_utils:execute(transaction, Sqls, Merchant),
     {reply, Reply, State};
 
 
-handle_call({adjust_price, Merchant, Inventories, Attrs}, _From, State) ->
+handle_call({adjust_price, Merchant, UTable, Inventories, Attrs}, _From, State) ->
     ?DEBUG("adjust_price with merchant ~p, inventories ~p, attrs ~p",
 	   [Merchant, Inventories, Attrs]),
 
@@ -2666,7 +2832,8 @@ handle_call({adjust_price, Merchant, Inventories, Attrs}, _From, State) ->
 			      %% 	      OrgPrice / TagPrice, [{decimals, 3}])) * 100
 		      end,
 		  
-		  ["update w_inventory set discount=" ++ ?to_s(Discount)
+		  ["update" ++ ?table:t(stock, Merchant, UTable)
+		   ++ " set discount=" ++ ?to_s(Discount)
 		   ++ case PMode of
 			  1 -> ", tag_price=" ++ ?to_s(TagPrice)
 				   ++ ", ediscount=" ++ ?to_s(EDiscount);
@@ -2685,40 +2852,40 @@ handle_call({adjust_price, Merchant, Inventories, Attrs}, _From, State) ->
     Reply = ?sql_utils:execute(transaction, Sqls, Merchant),
     {reply, Reply, State};
     
-handle_call({get_new, Merchant, RSN}, _From, State) ->
+handle_call({get_new, Merchant, UTable, RSN}, _From, State) ->
     ?DEBUG("get_new_inventory with merchant ~p, RSN ~p", [Merchant, RSN]),
     Sql = ?w_good_sql:inventory(
 	     new_detail,
 	     new,
-	     Merchant,
+	     {Merchant, UTable},
 	     [{<<"rsn">>, ?to_b(RSN)}],
 	     fun()-> "" end),
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
-handle_call({get_transfer, Merchant, RSN}, _From, State) ->
+handle_call({get_transfer, Merchant, UTable, RSN}, _From, State) ->
     ?DEBUG("get_transfer with merchant ~p, RSN ~p", [Merchant, RSN]),
     Sql = ?w_good_sql:inventory(
 	     transfer_detail,
 	     transfer,
-	     Merchant,
+	     {Merchant, UTable},
 	     [{<<"rsn">>, ?to_b(RSN)}],
 	     fun()-> "" end),
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
-handle_call({get_fix, Merchant, RSN}, _From, State) ->
+handle_call({get_fix, Merchant, UTable, RSN}, _From, State) ->
     ?DEBUG("get_stock_fix with merchant ~p, RSN ~p", [Merchant, RSN]),
     Sql = ?w_good_sql:inventory(
 	     fix_detail,
 	     fix,
-	     Merchant,
+	     {Merchant, UTable},
 	     [{<<"rsn">>, ?to_b(RSN)}],
 	     fun()-> "" end),
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
-handle_call({copy_attr, Merchant, Attrs}, _From, State) ->
+handle_call({copy_attr, Merchant, UTable, Attrs}, _From, State) ->
     ?DEBUG("copy_attr: merchant ~p, attrs ~p", [Merchant, Attrs]),
     StyleNumber = ?v(<<"style_number">>, Attrs),
     Brand  = ?v(<<"brand">>, Attrs),
@@ -2728,7 +2895,7 @@ handle_call({copy_attr, Merchant, Attrs}, _From, State) ->
 	true ->
 	    {reply, {error, ?err(params_error, StyleNumber)}, State};
 	false ->
-	    Reply = ?w_good_sql:inventory(copy_attr, Merchant, Shop, StyleNumber, Brand),
+	    Reply = ?w_good_sql:inventory(copy_attr, {Merchant, UTable}, Shop, StyleNumber, Brand),
 	    {reply, Reply, State}
     end;
 
@@ -2746,7 +2913,7 @@ handle_call({get_amount, Merchant, Shop, StyleNumber, Brand}, _From, State) ->
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
-handle_call({get_tagprice, Merchant, ShopId, StyleNumber, Brand}, _From, State) ->
+handle_call({get_tagprice, Merchant, UTable, ShopId, StyleNumber, Brand}, _From, State) ->
     ?DEBUG("get_tagprice, with Merchant ~p, Shop ~p, StyleNumber ~p, Brand ~p",
 	   [Merchant, ShopId, StyleNumber, Brand]),
 
@@ -2781,10 +2948,14 @@ handle_call({get_tagprice, Merchant, ShopId, StyleNumber, Brand}, _From, State) 
 		end
 	end, 
 									      
-    Sql = "select merchant, shop, style_number, brand"
+    Sql = "select merchant"
+	", shop"
+	", style_number"
+	", brand"
 	", amount, org_price, tag_price, discount, ediscount"
-	" from w_inventory"
-	" where style_number=" ++ "\'" ++ ?to_s(StyleNumber) ++ "\'"
+    %%" from w_inventory"
+	" from" ++ ?table:t(stock, Merchant, UTable)
+	++ " where style_number=" ++ "\'" ++ ?to_s(StyleNumber) ++ "\'"
 	" and brand=" ++ ?to_s(Brand)
 	++ " and " ++ ?utils:to_sqls(proplists, {<<"shop">>, ShopIds})
 	++ " and merchant=" ++ ?to_s(Merchant),
@@ -2820,13 +2991,14 @@ handle_call({get_tagprice, Merchant, ShopId, StyleNumber, Brand}, _From, State) 
 %% filter with pagination
 %% =============================================================================
 %% new
-handle_call({total_news, Merchant, Fields}, _From, State) ->
+handle_call({total_news, Merchant, UTable, Fields}, _From, State) ->
     {_, C} = ?w_good_sql:filter_condition(inventory_new, Fields, [], []),
-    CountSql = count_table(w_inventory_new, Merchant, C),
+    CountSql = count_table(w_inventory_new, Merchant, UTable, C),
     Reply = ?sql_utils:execute(s_read, CountSql),
     {reply, Reply, State}; 
 
-handle_call({{filter_news, SortMode}, Merchant, CurrentPage, ItemsPerPage, Fields}, _From, State) ->
+handle_call({{filter_news, SortMode},
+	     Merchant, UTable, CurrentPage, ItemsPerPage, Fields}, _From, State) ->
     ?DEBUG("filter_new_with_and: SortMode ~p, currentPage ~p, ItemsPerpage ~p"
 	   ", Merchant ~p~nfields ~p",
 	   [SortMode, CurrentPage, ItemsPerPage, Merchant, Fields]),
@@ -2836,7 +3008,7 @@ handle_call({{filter_news, SortMode}, Merchant, CurrentPage, ItemsPerPage, Field
 		 ?SORT_BY_ID -> {new_detail_with_pagination, use_id, 0};
 		 ?SORT_BY_DATE -> {new_detail_with_pagination, use_datetime, 0}
 	     end,
-	     Merchant, C, CurrentPage, ItemsPerPage), 
+	     {Merchant, UTable}, C, CurrentPage, ItemsPerPage), 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State}; 
 
@@ -2856,9 +3028,9 @@ handle_call({{filter_news, SortMode}, Merchant, CurrentPage, ItemsPerPage, Field
 %%     {reply, Reply, State}; 
 
 %% fix
-handle_call({total_fix, Merchant, Fields}, _From, State) ->
+handle_call({total_fix, Merchant, UTable, Fields}, _From, State) ->
     %% Sql = "rsn, exist, fixed, metric",
-    CountSql = ?sql_utils:count_table(w_inventory_fix, Merchant, Fields),
+    CountSql = ?sql_utils:count_table(?table:t(stock_fix, Merchant, UTable), Merchant, Fields),
     %% CountSql = "select count(*) as total"
     %% ", sum(exist) as t_exist"
     %% 	", sum(fixed) as t_fixed"
@@ -2868,55 +3040,54 @@ handle_call({total_fix, Merchant, Fields}, _From, State) ->
     Reply = ?sql_utils:execute(s_read, CountSql),
     {reply, Reply, State}; 
 
-handle_call({filter_fix, Merchant, CurrentPage, ItemsPerPage, Fields}, _From, State) ->
+handle_call({filter_fix, Merchant, UTable, CurrentPage, ItemsPerPage, Fields}, _From, State) ->
     ?DEBUG("filter_fix_with_and: currentPage ~p, ItemsPerpage ~p, Merchant ~p~n"
 	   "fields ~p", [CurrentPage, ItemsPerPage, Merchant, Fields]), 
     Sql = ?w_good_sql:inventory(
-	     fix_detail_with_pagination, Merchant, Fields, CurrentPage, ItemsPerPage),
+	     fix_detail_with_pagination, {Merchant, UTable}, Fields, CurrentPage, ItemsPerPage),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State}; 
 
 
 %% transfer
-handle_call({total_transfer, Merchant, Fields}, _From, State) ->
+handle_call({total_transfer, Merchant, UTable, Fields}, _From, State) ->
     Sql = "rsn, total, cost",
-    CountTable = ?sql_utils:count_table(w_inventory_transfer, Sql, Merchant, Fields),
+    CountTable = ?sql_utils:count_table(
+		    ?table:t(stock_transfer, Merchant, UTable), Sql, Merchant, Fields),
     CountSql = "select count(*) as total"
         ", sum(total) as t_amount"
 	", sum(cost) as t_cost"
-    %% ", sum(xcost) as t_xcost"
         " from ("
         ++ CountTable ++ ") a",
-    %% Sql = ?sql_utils:count_table("w_inventory_fix", Merchant, Fields),
     Reply = ?sql_utils:execute(s_read, CountSql),    {reply, Reply, State};
 
-handle_call({filter_transfer, Merchant, CurrentPage, ItemsPerPage, Fields}, _From, State) ->
+handle_call({filter_transfer, Merchant, UTable, CurrentPage, ItemsPerPage, Fields}, _From, State) ->
     ?DEBUG("filter_transfer_with_and: " "currentPage ~p, ItemsPerpage ~p, Merchant ~p~n"
            "fields ~p", [CurrentPage, ItemsPerPage, Merchant, Fields]),
     Sql = ?w_good_sql:inventory(
 	     transfer_detail_with_pagination,
-	     Merchant, Fields, CurrentPage, ItemsPerPage),
+	     {Merchant, UTable}, Fields, CurrentPage, ItemsPerPage),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
 
 %% good
-handle_call({total_goods, Merchant, Fields}, _From, State) ->
-    Sql = ?sql_utils:count_table("w_inventory_good", Merchant, Fields),
+handle_call({total_goods, {Merchant, UTable}, Fields}, _From, State) ->
+    Sql = ?sql_utils:count_table(?table:t(good, Merchant, UTable), Merchant, Fields),
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State}; 
 
-handle_call({filter_goods, Merchant, CurrentPage, ItemsPerPage, Fields}, _From, State) ->
+handle_call({filter_goods, {Merchant, UTable}, CurrentPage, ItemsPerPage, Fields}, _From, State) ->
     ?DEBUG("filter_goods_with_and: currentPage ~p, ItemsPerpage ~p, Merchant ~p~n"
 	   "fields ~p", [CurrentPage, ItemsPerPage, Merchant, Fields]),
 
     Sql = ?w_good_sql:good(
-	     detail_with_pagination, Merchant, Fields, CurrentPage, ItemsPerPage), 
+	     detail_with_pagination, {Merchant, UTable}, Fields, CurrentPage, ItemsPerPage), 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State}; 
 
 %% inventory
-handle_call({total_groups, MatchMode, Merchant, Fields}, _From, State) ->
+handle_call({total_groups, MatchMode, Merchant, UTable, Fields}, _From, State) ->
     %% ?DEBUG("total_groups: MatchMode ~p, Fields ~p", [MatchMode, Fields]),
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Fields),
     RealyConditions = ?w_good_sql:realy_conditions(Merchant, NewConditions), 
@@ -2927,8 +3098,9 @@ handle_call({total_groups, MatchMode, Merchant, Fields}, _From, State) ->
 	", sum(sell) as t_sell"
 	", sum(amount * org_price) as t_lmoney"
 	", sum(amount * tag_price) as t_pmoney"
-	" from w_inventory"
-	" where merchant=" ++ ?to_s(Merchant)
+    %%" from w_inventory"
+	" from" ++ ?table:t(stock, Merchant, UTable)
+	++ " where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:like_condition(style_number, MatchMode, RealyConditions, <<"style_number">>)
 	%% ++ case MatchMode of
 	%%        ?AND -> ?sql_utils:condition(proplists, RealyConditions);
@@ -2948,25 +3120,30 @@ handle_call({total_groups, MatchMode, Merchant, Fields}, _From, State) ->
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State}; 
 
-handle_call({filter_groups, {Mode, Sort}, MatchMode, Merchant,
+handle_call({filter_groups,
+	     {Mode, Sort},
+	     MatchMode,
+	     Merchant,
+	     UTable,
 	     CurrentPage, ItemsPerPage, Fields}, _From, State) ->
     ?DEBUG("filter_groups_with_and: mode ~p, sort ~p, currentPage ~p, ItemsPerpage ~p" ", Merchant ~p~nfields ~p",
 	   [Mode, Sort, CurrentPage, ItemsPerPage, Merchant, Fields]),
     %% C = realy_conditions(Merchant, Fields),
     Sql = ?w_good_sql:inventory({group_detail_with_pagination, MatchMode, Mode, Sort},
-				Merchant, Fields, CurrentPage, ItemsPerPage), 
+				{Merchant, UTable},
+				Fields, CurrentPage, ItemsPerPage), 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
 %% =============================================================================
 %% new
 %% =============================================================================
-handle_call({get_inventory_new_rsn, Merchant, Conditions}, _From, State) ->
-    Sql = ?w_good_sql:inventory(inventory_new_rsn, Merchant, Conditions),
+handle_call({get_inventory_new_rsn, Merchant, UTable, Conditions}, _From, State) ->
+    Sql = ?w_good_sql:inventory(inventory_new_rsn, {Merchant, UTable}, Conditions),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({total_new_rsn_groups, Merchant, Conditions}, _From, State) -> 
+handle_call({total_new_rsn_groups, Merchant, UTable, Conditions}, _From, State) -> 
     {DConditions, NConditions}
 	= ?w_good_sql:filter_condition(inventory_new, Conditions, [], []),
 
@@ -2983,7 +3160,9 @@ handle_call({total_new_rsn_groups, Merchant, Conditions}, _From, State) ->
 	", SUM(b.over) as t_over"
 	", SUM(b.org_price * (b.amount - b.over)) as t_balance"
 	", SUM(b.tag_price * b.amount) as g_balance"
-    	" from w_inventory_new_detail b, w_inventory_new a" 
+    %% " from w_inventory_new_detail b, w_inventory_new a"
+	" from" ++ ?table:t(stock_new_detail, Merchant, UTable) ++ " b,"
+	++ ?table:t(stock_new, Merchant, UTable) ++ " a" 
     	" where "
 	++ ?sql_utils:condition(proplists_suffix, CorrectCutDConditions)
 	++ "b.rsn=a.rsn"
@@ -2994,27 +3173,28 @@ handle_call({total_new_rsn_groups, Merchant, Conditions}, _From, State) ->
     Reply = ?sql_utils:execute(s_read, CountSql),
     {reply, Reply, State};
     
-handle_call({filter_new_rsn_groups, Merchant,
+handle_call({filter_new_rsn_groups, Merchant, UTable,
 	     CurrentPage, ItemsPerPage, Fields}, _From, State) ->
     ?DEBUG("filter_new_rsn_group_and: "
 	   "currentPage ~p, ItemsPerpage ~p, Merchant ~p~n"
 	   "fields ~p", [CurrentPage, ItemsPerPage, Merchant, Fields]), 
     Sql = ?w_good_sql:inventory(
-	     {new_rsn_group_with_pagination, use_id, 0}, Merchant,
+	     {new_rsn_group_with_pagination, use_id, 0},
+	     {Merchant, UTable},
 	     Fields, CurrentPage, ItemsPerPage), 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({new_rsn_detail, Merchant, Conditions}, _From, State) ->
+handle_call({new_rsn_detail, Merchant, UTable, Conditions}, _From, State) ->
     ?DEBUG("new_rsn_detail with merchant ~p, Conditions ~p",
 	   [Merchant, Conditions]), 
-    Sql = ?w_good_sql:inventory(new_rsn_detail, Merchant, Conditions),
+    Sql = ?w_good_sql:inventory(new_rsn_detail, {Merchant, UTable}, Conditions),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({get_new_amount, Merchant, Conditions}, _From, State) ->
+handle_call({get_new_amount, Merchant, UTable, Conditions}, _From, State) ->
     ?DEBUG("get_new_amount with merchant ~p, Conditions ~p", [Merchant, Conditions]), 
-    Sql = ?w_good_sql:inventory(get_new_amount, Merchant, Conditions),
+    Sql = ?w_good_sql:inventory(get_new_amount, Merchant, UTable, Conditions),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
@@ -3039,17 +3219,19 @@ handle_call({total_fix_rsn_groups, Merchant, Fields}, _From, State) ->
     {reply, Reply, State}; 
 
 handle_call({filter_fix_rsn_groups,
-	     Merchant, CurrentPage, ItemsPerPage, Fields}, _From, State) ->
+	     Merchant,
+	     UTable,
+	     CurrentPage, ItemsPerPage, Fields}, _From, State) ->
     ?DEBUG("filter_fix_rsn_group_and: currentPage ~p, ItemsPerpage ~p, Merchant ~p~n"
 	   "fields ~p", [CurrentPage, ItemsPerPage, Merchant, Fields]), 
     Sql = ?w_good_sql:inventory(
-	     fix_rsn_group_with_pagination, Merchant, Fields, CurrentPage, ItemsPerPage),
+	     fix_rsn_group_with_pagination, {Merchant, UTable}, Fields, CurrentPage, ItemsPerPage),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State}; 
 
-handle_call({fix_rsn_detail, Merchant, Conditions}, _From, State) ->
+handle_call({fix_rsn_detail, Merchant, UTable, Conditions}, _From, State) ->
     ?DEBUG("rsn_detail with merchant ~p, Conditions ~p", [Merchant, Conditions]), 
-    Sql = ?w_good_sql:inventory(fix_rsn_detail, Merchant, Conditions),
+    Sql = ?w_good_sql:inventory(fix_rsn_detail, {Merchant, UTable}, Conditions),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
@@ -3057,29 +3239,35 @@ handle_call({fix_rsn_detail, Merchant, Conditions}, _From, State) ->
 %% =============================================================================
 %% transfer
 %% =============================================================================
-handle_call({total_transfer_rsn_groups, Merchant, Fields}, _From, State) ->
+handle_call({total_transfer_rsn_groups, Merchant, UTable, Fields}, _From, State) ->
     Sql = "rsn",
     CountTable = ?sql_utils:count_table(w_inventory_transfer, Sql, Merchant, Fields),
     CountSql = "select count(*) as total"
         ", SUM(amount) as t_amount"
 	", SUM(amount * org_price) as t_cost"
     %% ", SUM(amount * xprice) as t_xcost"
-        " from w_inventory_transfer_detail"
-        " where rsn in(" ++ CountTable ++ ")",
+    %% " from w_inventory_transfer_detail"
+	" from" ++ ?table:t(stock_transfer_detail, Merchant, UTable)
+        ++ " where rsn in(" ++ CountTable ++ ")",
     Reply = ?sql_utils:execute(s_read, CountSql),
     {reply, Reply, State};
 
-handle_call({filter_transfer_rsn_groups, Merchant, CurrentPage, ItemsPerPage, Fields}, _From, State) ->
+handle_call({filter_transfer_rsn_groups,
+	     Merchant,
+	     UTable,
+	     CurrentPage, ItemsPerPage, Fields}, _From, State) ->
     ?DEBUG("filter_fix_rsn_group_and: " "currentPage ~p, ItemsPerpage ~p, Merchant ~p~n"
            "fields ~p", [CurrentPage, ItemsPerPage, Merchant, Fields]),
     Sql = ?w_good_sql:inventory(
              transfer_rsn_group_with_pagination,
-	     Merchant, Fields, CurrentPage, ItemsPerPage),
-    Reply = ?sql_utils:execute(read, Sql),    {reply, Reply, State};
+	     {Merchant, UTable},
+	     Fields, CurrentPage, ItemsPerPage),
+    Reply = ?sql_utils:execute(read, Sql),
+    {reply, Reply, State};
 
-handle_call({transfer_rsn_detail, Merchant, Conditions}, _From, State) ->
+handle_call({transfer_rsn_detail, Merchant, UTable, Conditions}, _From, State) ->
     ?DEBUG("transfer_rsn_detail with merchant ~p, Conditions ~p", [Merchant, Conditions]),
-    Sql = ?w_good_sql:inventory(transfer_rsn_detail, Merchant, Conditions),
+    Sql = ?w_good_sql:inventory(transfer_rsn_detail, Merchant, UTable, Conditions),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
@@ -3218,7 +3406,7 @@ handle_call({new_trans_note_export, Merchant, Conditions}, _From, State)->
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({stock_export, Merchant, Conditions, Mode}, _From, State) ->
+handle_call({stock_export, Merchant, UTable, Conditions, Mode}, _From, State) ->
     %% {StartTime, EndTime, NewConditions} =
     %% 	?sql_utils:cut(fields_with_prifix, ?w_good_sql:realy_conditions(Merchant, Conditions)),
 
@@ -3261,7 +3449,8 @@ handle_call({stock_export, Merchant, Conditions, Mode}, _From, State) ->
 	", d.name as type"
 	", e.name as firm"
 
-	" from w_inventory a"
+    %% " from w_inventory a"
+	" from" ++ ?table:t(stock, Merchant, UTable) ++ " a"
 	" left join shops b on a.shop=b.id"
 	" left join brands c on a.brand=c.id"
 	" left join inv_types d on a.type=d.id"
@@ -3279,7 +3468,7 @@ handle_call({stock_export, Merchant, Conditions, Mode}, _From, State) ->
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({stock_note_export, Merchant, Conditions, _Mode}, _From, State) ->
+handle_call({stock_note_export, Merchant, UTable, Conditions, _Mode}, _From, State) ->
     {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions), 
     RealyConditions = ?w_good_sql:realy_conditions(Merchant, NewConditions),
 
@@ -3306,9 +3495,14 @@ handle_call({stock_note_export, Merchant, Conditions, _Mode}, _From, State) ->
     %% ExtraCondtion = ?w_good_sql:sort_condition(stock, NewConditions, <<"a.">>), 
     Sql = case C1 of
 	      [] ->
-		  "select id, style_number, brand, color, size, total, merchant, shop"
-		      " from w_inventory_amount"
-		      " where merchant=" ++ ?to_s(Merchant)
+		  "select id"
+		      ", style_number"
+		      ", brand"
+		      ", color"
+		      ", size, total, merchant, shop"
+		  %% " from w_inventory_amount"
+		      " from" ++ ?table:t(stock_note, Merchant, UTable)
+		      ++ " where merchant=" ++ ?to_s(Merchant)
 		      ++ ?sql_utils:condition(proplists, C2);
 	      _ ->
 		  "select a.id"
@@ -3321,8 +3515,14 @@ handle_call({stock_note_export, Merchant, Conditions, _Mode}, _From, State) ->
 		      ", b.size"
 		      ", b.total"
 		      
-		      " from w_inventory a, w_inventory_amount b"
-		      " where a.style_number=b.style_number and a.brand=b.brand and a.merchant=b.merchant and a.shop=b.shop"
+		  %%" from w_inventory a, w_inventory_amount b"
+		      " from "
+		      ++ ?table:t(stock, Merchant, UTable) ++ " a,"
+		      ++ ?table:t(stock_note, Merchant, UTable)++ " b"
+		      " where a.style_number=b.style_number"
+		      " and a.brand=b.brand"
+		      " and a.merchant=b.merchant"
+		      " and a.shop=b.shop"
 		      " and " ++ ?utils:to_sqls(proplists, ?utils:correct_condition(<<"a.">>, C1))
 		      ++ ?sql_utils:condition(proplists, ?utils:correct_condition(<<"b.">>, C2))
 	  end,
@@ -3330,23 +3530,24 @@ handle_call({stock_note_export, Merchant, Conditions, _Mode}, _From, State) ->
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({shift_note_export, Merchant, Conditions}, _From, State) -> 
+handle_call({shift_note_export, Merchant, UTable, Conditions}, _From, State) -> 
     Sql = ?w_good_sql:inventory(
-	     transfer_rsn_groups, transfer, Merchant, Conditions, fun() -> [] end),
+	     transfer_rsn_groups, transfer, {Merchant, UTable}, Conditions, fun() -> [] end),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({shift_note_color_size_export, Merchant, Conditions}, _From, State) ->
-    Sql = ?w_good_sql:inventory(transfer_rsn_detail, Merchant, Conditions),
+handle_call({shift_note_color_size_export, Merchant, UTable, Conditions}, _From, State) ->
+    Sql = ?w_good_sql:inventory(transfer_rsn_detail, {Merchant, UTable}, Conditions),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({stock_detail_get_by_shop, Merchant, Shop, Firm, ExtraCondtion}, _From, State) ->
+handle_call({stock_detail_get_by_shop, Merchant, UTable, Shop, Firm, ExtraCondtion}, _From, State) ->
     Sql = case Firm =:= ?INVALID_OR_EMPTY andalso ExtraCondtion =:= [] of
 	      true ->
 		  "select style_number, brand, color, size, total, merchant, shop"
-		      " from w_inventory_amount"
-		      " where merchant=" ++ ?to_s(Merchant)
+		  %% " from w_inventory_amount"
+		      " from" ++ ?table:t(stock_note, Merchant, UTable)
+		      ++ " where merchant=" ++ ?to_s(Merchant)
 		      ++ " and shop=" ++ ?to_s(Shop)
 		      ++ " and total!=0"
 		      ++ " order by id desc";
@@ -3356,7 +3557,9 @@ handle_call({stock_detail_get_by_shop, Merchant, Shop, Firm, ExtraCondtion}, _Fr
 		      " from "
 		      
 		      "(select style_number, brand, merchant, shop, firm"
-		      " from w_inventory where merchant=" ++ ?to_s(Merchant)
+		  %% " from w_inventory"
+		      " from" ++ ?table:t(stock, Merchant, UTable)
+		      ++ " where merchant=" ++ ?to_s(Merchant)
 		      ++ " and shop=" ++ ?to_s(Shop)
 		      ++ case Firm of
 			     ?INVALID_OR_EMPTY -> [];
@@ -3367,8 +3570,9 @@ handle_call({stock_detail_get_by_shop, Merchant, Shop, Firm, ExtraCondtion}, _Fr
 
 		      " inner join "
 		      "(select style_number, brand, merchant, shop, color, size, total"
-		      " from w_inventory_amount"
-		      " where merchant=" ++ ?to_s(Merchant)
+		  %%  from w_inventory_amount"
+		      " from" ++ ?table:t(stock_note, Merchant, UTable)
+		      ++ " where merchant=" ++ ?to_s(Merchant)
 		      ++ " and shop=" ++ ?to_s(Shop)
 		      ++ " and total!=0) b"
 
@@ -3411,38 +3615,43 @@ rsn(fix, Merchant, Shop, Rsn) ->
     lists:concat(["M-", ?to_i(Merchant), "-S-", ?to_i(Shop), "-x-", Rsn]).
 
 %% @desc: geratte a sql
-sql(wnew, RSN, Merchant, Shop, Firm, DateTime, Inventories) ->
+sql(wnew, RSN, Merchant, UTable, Shop, Firm, DateTime, Inventories) ->
     RealyShop = ?w_good_sql:realy_shop(Merchant, Shop),
     lists:foldr(
       fun({struct, Inv}, Acc0)->
 	      Amounts      = lists:reverse(?v(<<"amount">>, Inv)),
 	      ?w_good_sql:amount_new(
-		 ?NEW_INVENTORY, RSN, Merchant, RealyShop, Firm, DateTime, Inv, Amounts)
+		 ?NEW_INVENTORY, RSN, Merchant, UTable, RealyShop, Firm, DateTime, Inv, Amounts)
 		  ++ Acc0 
       end, [], Inventories);
 
 
-sql(wreject, RSN, Merchant, Shop, Firm, DateTime, Inventories) ->
+sql(wreject, RSN, Merchant, UTable, Shop, Firm, DateTime, Inventories) ->
     RealyShop = ?w_good_sql:realy_shop(true, Merchant, Shop),
     lists:foldr(
       fun({struct, Inv}, Acc0)->
 	      Amounts = lists:reverse(?v(<<"amounts">>, Inv)),
 	      ?w_good_sql:amount_reject(
-		 RSN, Merchant, RealyShop, Firm, DateTime, Inv, Amounts)
+		 RSN, Merchant, UTable, RealyShop, Firm, DateTime, Inv, Amounts)
 		  ++ Acc0 
       end, [], Inventories);
 
-sql(transfer_from, RSN, Merchant, Shop, TShop, Datetime, {Inventories, Props}) ->
+sql(transfer_from, RSN, Merchant, UTable, Shop, TShop, Datetime, {Inventories, Props}) ->
     RealyShop = ?w_good_sql:realy_shop(true, Merchant, Shop),
     lists:foldr(
       fun({struct, Inv}, Acc0)->
               %% Amounts = lists:reverse(?v(<<"amounts">>, Inv)),
               ?w_transfer_sql:amount_transfer(
-                 transfer_from, RSN, Merchant, RealyShop, TShop,
+                 transfer_from,
+		 RSN,
+		 Merchant,
+		 UTable,
+		 RealyShop,
+		 TShop,
                  Datetime, Inv, Props) ++ Acc0
       end, [], Inventories).
 
-sql(wfix, RSN, Datetime, Merchant, Shop, {StocksNotInDB, StocksNotInShop, StocksDiff}) -> 
+sql(wfix, RSN, Datetime, Merchant, UTable, Shop, {StocksNotInDB, StocksNotInShop, StocksDiff}) -> 
     %% Shop       = ?v(<<"shop">>, Props),
     %% Employe    = ?v(<<"employee">>, Props),
 
@@ -3540,7 +3749,9 @@ sql(wfix, RSN, Datetime, Merchant, Shop, {StocksNotInDB, StocksNotInShop, Stocks
 		     Color = ?v(<<"color">>, Stock),
 		     Size  = ?v(<<"size">>, Stock),
 		     Fix   = ?v(<<"fix">>, Stock),
-		     ["insert into w_inventory_fix_detail_amount(rsn"
+		     [%% "insert into w_inventory_fix_detail_amount(rsn"
+		      "insert into" ++ ?table:t(stock_fix_note, Merchant, UTable)
+		      ++ "(rsn"
 		      ", merchant, shop, style_number"
 		      ", brand, color, size, db_total, shop_total, entry_date) values("
 		      ++ "\'" ++ ?to_s(RSN) ++ "\',"
@@ -3562,7 +3773,9 @@ sql(wfix, RSN, Datetime, Merchant, Shop, {StocksNotInDB, StocksNotInShop, Stocks
 		     Color = ?v(<<"color">>, Stock),
 		     Size  = ?v(<<"size">>, Stock),
 		     Total = ?v(<<"total">>, Stock),
-		     ["insert into w_inventory_fix_detail_amount(rsn"
+		     [%% "insert into w_inventory_fix_detail_amount"
+		      "insert into" ++ ?table:t(stock_fix_note, Merchant, UTable)
+		      ++ "(rsn"
 		      ", merchant, shop, style_number"
 		      ", brand, color, size, db_total, shop_total, entry_date) values("
 		      ++ "\'" ++ ?to_s(RSN) ++ "\',"
@@ -3585,7 +3798,9 @@ sql(wfix, RSN, Datetime, Merchant, Shop, {StocksNotInDB, StocksNotInShop, Stocks
 		     Size     = ?v(<<"size">>, Stock),
 		     FixTotal = ?v(<<"fix">>, Stock),
 		     DBTotal  = ?v(<<"db">>, Stock),
-		     ["insert into w_inventory_fix_detail_amount(rsn"
+		     [%% "insert into w_inventory_fix_detail_amount"
+		      "insert into" ++ ?table:t(stock_fix_note, Merchant, UTable)
+		      ++ "(rsn"
 		      ", merchant, shop, style_number"
 		      ", brand, color, size, db_total, shop_total, entry_date) values("
 		      ++ "\'" ++ ?to_s(RSN) ++ "\',"
@@ -3602,7 +3817,7 @@ sql(wfix, RSN, Datetime, Merchant, Shop, {StocksNotInDB, StocksNotInShop, Stocks
 
     Sql0 ++ Sql1 ++ Sql2.
 
-count_table(w_inventory_new, Merchant, Conditions) -> 
+count_table(w_inventory_new, Merchant, UTable, Conditions) -> 
     %% SubSql = "select a.rsn, a.total, a.should_pay, a.has_pay"
     %% 	", a.cash, a.card, a.wire, a.verificate"
     %% 	" from w_inventory_new a"
@@ -3616,7 +3831,9 @@ count_table(w_inventory_new, Merchant, Conditions) ->
 	", b.t_card"
 	", b.t_wire"
 	" from ("
-	"select a.merchant, count(*) as total from w_inventory_new a"
+	"select a.merchant, count(*) as total"
+    %% " from w_inventory_new a"
+	" from" ++ ?table:t(stock_new, Merchant, UTable) ++ " a"
 	" where "
 	++ ?w_good_sql:sort_condition(w_inventory_new, Merchant, Conditions) ++ ") a"
 
@@ -3629,7 +3846,9 @@ count_table(w_inventory_new, Merchant, Conditions) ->
     	", sum(a.card) as t_card"
     	", sum(a.wire) as t_wire"
     	", sum(a.verificate) as t_verificate"
-	" from w_inventory_new a where "
+    %% " from w_inventory_new a"
+	" from" ++ ?table:t(stock_new, Merchant, UTable) ++ " a"
+	" where "
 	++ ?w_good_sql:sort_condition(
 	      w_inventory_new,
 	      Merchant,
@@ -3647,7 +3866,7 @@ count_table(w_inventory_new, Merchant, Conditions) ->
 %%     S = lists:nth(4, string:tokens(?to_s(RSN), "-")),
 %%     S.
 
-update_stock(same_firm, Merchant, CurrentTime, Updates, {Props, OldProps})->
+update_stock(same_firm, Merchant, UTable, CurrentTime, Updates, {Props, OldProps})->
     RSN        = ?v(<<"rsn">>, Props),
     Shop      = ?v(<<"shop_id">>, OldProps),
     
@@ -3677,7 +3896,9 @@ update_stock(same_firm, Merchant, CurrentTime, Updates, {Props, OldProps})->
     
     case ?to_b(Datetime) == ?to_b(OldDatetime) of
 	true ->
-	    ["update w_inventory_new set " ++ ?utils:to_sqls(proplists, comma, Updates)
+	    [%% "update w_inventory_new "
+	     "update" ++ ?table:t(stock_new, Merchant, UTable)
+	     ++ " set " ++ ?utils:to_sqls(proplists, comma, Updates)
 	     ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"]
 		++ 
 		case Metricbalance == 0 of
@@ -3685,7 +3906,9 @@ update_stock(same_firm, Merchant, CurrentTime, Updates, {Props, OldProps})->
 		    false ->
 			case Firm =/= ?INVALID_OR_EMPTY of
 			    true ->
-				["update w_inventory_new set balance=balance+"
+				[%% "update w_inventory_new"
+				 "update" ++ ?table:t(stock_new, Merchant, UTable)
+				 ++ " set balance=balance+"
 				 ++ ?to_s(Metricbalance)
 				 ++ " where"
 				 ++ " merchant=" ++ ?to_s(Merchant)
@@ -3715,11 +3938,20 @@ update_stock(same_firm, Merchant, CurrentTime, Updates, {Props, OldProps})->
 	false ->
 	    case Firm =/= ?INVALID_OR_EMPTY of
 		true ->
-		    Sql = "select id, rsn, firm, shop, merchant"
-			", balance, should_pay, has_pay, e_pay"
-			", verificate, entry_date"
-			" from w_inventory_new"
-			" where merchant=" ++ ?to_s(Merchant)
+		    Sql = "select id"
+			", rsn"
+			", firm"
+			", shop"
+			", merchant"
+			", balance"
+			", should_pay"
+			", has_pay"
+			", e_pay"
+			", verificate"
+			", entry_date"
+		    %% " from w_inventory_new"
+			" from " ++ ?table:t(stock_new, Merchant, UTable)
+			++ " where merchant=" ++ ?to_s(Merchant)
 			++ " and firm=" ++ ?to_s(Firm)
 			++ " and state in(0, 1)"
 			++ " and entry_date<\'" ++ ?to_s(Datetime) ++ "\'"
@@ -3730,11 +3962,20 @@ update_stock(same_firm, Merchant, CurrentTime, Updates, {Props, OldProps})->
 		    LastBalance
 			= case LastStockIn of
 			      [] ->
-				  Sql01 = "select id, rsn, firm, shop, merchant"
-				      ", balance, should_pay, has_pay, e_pay, verificate"
+				  Sql01 = "select id"
+				      ", rsn"
+				      ", firm"
+				      ", shop"
+				      ", merchant"
+				      ", balance"
+				      ", should_pay"
+				      ", has_pay"
+				      ", e_pay"
+				      ", verificate"
 				      ", entry_date"
-				      " from w_inventory_new"
-				      " where merchant=" ++ ?to_s(Merchant)
+				  %% " from w_inventory_new"
+				      " from " ++ ?table:t(stock_new, Merchant, UTable)
+				      ++ " where merchant=" ++ ?to_s(Merchant)
 				      ++ " and firm=" ++ ?to_s(Firm)
 				      ++ " and state in(0, 1)"
 				      ++ " and entry_date>\'" ++ ?to_s(Datetime) ++ "\'"
@@ -3762,20 +4003,23 @@ update_stock(same_firm, Merchant, CurrentTime, Updates, {Props, OldProps})->
 				Updates ++ ?utils:v(balance, float, LastBalance)
 			end,
 		    
-		    ["update w_inventory_new set "
-		     "balance=balance-" ++ ?to_s(OldBackBalance)
+		    [%% "update w_inventory_new"
+		     "update" ++ ?table:t(stock_new, Merchant, UTable)
+		     ++ " set balance=balance-" ++ ?to_s(OldBackBalance)
 		     ++ " where merchant=" ++ ?to_s(Merchant)
 		     ++ " and firm=" ++ ?to_s(Firm)
 		     ++ " and entry_date>\'" ++ ?to_s(OldDatetime) ++ "\'",
 
-		     "update w_inventory_new set "
-		     "balance=balance+" ++ ?to_s(NewPayBalance)
+		     %% "update w_inventory_new"
+		     "update" ++ ?table:t(stock_new, Merchant, UTable)
+		     ++ " set balance=balance+" ++ ?to_s(NewPayBalance)
 		     ++ " where merchant=" ++ ?to_s(Merchant)
 		     ++ " and firm=" ++ ?to_s(Firm)
 		     ++ " and entry_date>\'" ++ ?to_s(Datetime) ++ "\'",
 
-		     "update w_inventory_new set "
-		     ++ ?utils:to_sqls(proplists, comma, UpdateStock)
+		     %% "update w_inventory_new"
+		     "update" ++ ?table:t(stock_new, Merchant, UTable)
+		     ++ " set " ++ ?utils:to_sqls(proplists, comma, UpdateStock)
 		     ++ " where rsn="
 		     ++ "\'" ++ ?to_s(RSN) ++ "\'"]
 
@@ -3801,13 +4045,14 @@ update_stock(same_firm, Merchant, CurrentTime, Updates, {Props, OldProps})->
 				    ++ "\"" ++ ?to_s(CurrentTime) ++ "\")"]
 			   end;
 		false ->
-		    ["update w_inventory_new set "
-		     ++ ?utils:to_sqls(proplists, comma, Updates)
+		    [%% "update w_inventory_new"
+		     "update" ++ ?table:t(stock_new, Merchant, UTable)
+		     ++ " set " ++ ?utils:to_sqls(proplists, comma, Updates)
 		     ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"]
 	    end
     end;
 
-update_stock(diff_firm, Merchant, CurrentTime, Updates, {Props, OldProps}) ->
+update_stock(diff_firm, Merchant, UTable, CurrentTime, Updates, {Props, OldProps}) ->
     RSN        = ?v(<<"rsn">>, Props),
     Shop      = ?v(<<"shop_id">>, OldProps),
     
@@ -3845,11 +4090,20 @@ update_stock(diff_firm, Merchant, CurrentTime, Updates, {Props, OldProps}) ->
     
     case Firm /= ?INVALID_OR_EMPTY of
 	true ->
-	    Sql = "select id, rsn, firm, shop, merchant"
-		", balance, should_pay, has_pay, e_pay"
-		", verificate, entry_date"
-		" from w_inventory_new"
-		" where merchant=" ++ ?to_s(Merchant)
+	    Sql = "select id"
+		", rsn"
+		", firm"
+		", shop"
+		", merchant"
+		", balance"
+		", should_pay"
+		", has_pay"
+		", e_pay"
+		", verificate"
+		", entry_date"
+		%% " from w_inventory_new"
+		" from" ++ ?table:t(stock_new, Merchant, UTable)
+		++ " where merchant=" ++ ?to_s(Merchant)
 		++ " and firm=" ++ ?to_s(Firm)
 		++ " and state in(0, 1)"
 		++ " and entry_date<\'" ++ ?to_s(Datetime) ++ "\'"
@@ -3860,11 +4114,20 @@ update_stock(diff_firm, Merchant, CurrentTime, Updates, {Props, OldProps}) ->
 	    LastBalance =
 		case LastStockIn of
 		    [] ->
-			Sql01 = "select id, rsn, firm, shop, merchant"
-			    ", balance, should_pay, has_pay, e_pay, verificate"
+			Sql01 = "select id"
+			    ", rsn"
+			    ", firm"
+			    ", shop"
+			    ", merchant"
+			    ", balance"
+			    ", should_pay"
+			    ", has_pay"
+			    ", e_pay"
+			    ", verificate"
 			    ", entry_date"
-			    " from w_inventory_new"
-			    " where merchant=" ++ ?to_s(Merchant)
+			%% " from w_inventory_new"
+			    " from" ++ ?table:t(stock_new, Merchant, UTable)
+			    ++ " where merchant=" ++ ?to_s(Merchant)
 			    ++ " and firm=" ++ ?to_s(Firm)
 			    ++ " and state in(0, 1)"
 			    ++ " and entry_date>\'" ++ ?to_s(Datetime) ++ "\'"
@@ -3885,8 +4148,9 @@ update_stock(diff_firm, Merchant, CurrentTime, Updates, {Props, OldProps}) ->
 	    
 	    case OldFirm /= ?INVALID_OR_EMPTY of
 		true ->
-		    ["update w_inventory_new set "
-		     "balance=balance-" ++ ?to_s(BackBalanceOfOldFirm)
+		    [%% "update w_inventory_new"
+		     "update" ++ ?table:t(stock_new, Merchant, UTable)
+		     ++ " set balance=balance-" ++ ?to_s(BackBalanceOfOldFirm)
 		     ++ " where merchant=" ++ ?to_s(Merchant)
 		     ++ " and firm=" ++ ?to_s(OldFirm)
 		     ++ " and entry_date>\'" ++ ?to_s(OldDatetime) ++ "\'",
@@ -3908,13 +4172,15 @@ update_stock(diff_firm, Merchant, CurrentTime, Updates, {Props, OldProps}) ->
 		     ++ "\"" ++ ?to_s(CurrentTime) ++ "\")"];
 		false -> []
 	    end ++ 
-		["update w_inventory_new set "
-		 "balance=balance+" ++ ?to_s(PayBalanceOfNewFirm)
+		[%% "update w_inventory_new"
+		 "update" ++ ?table:t(stock_new, Merchant, UTable)
+		 ++ " set balance=balance+" ++ ?to_s(PayBalanceOfNewFirm)
 		 ++ " where merchant=" ++ ?to_s(Merchant)
 		 ++ " and firm=" ++ ?to_s(Firm)
 		 ++ " and entry_date>\'" ++ ?to_s(Datetime) ++ "\'",
 
-		 "update w_inventory_new set "
+		 %% "update w_inventory_new set "
+		 "update" ++ ?table:t(stock_new, Merchant, UTable)
 		 ++ ?utils:to_sqls(proplists, comma, UpdateStock)
 		 ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'",
 
@@ -3936,12 +4202,14 @@ update_stock(diff_firm, Merchant, CurrentTime, Updates, {Props, OldProps}) ->
 	    case OldFirm /= ?INVALID_OR_EMPTY of
 		true ->
 		    UpdateStock = Updates ++ ?utils:v(balance, float, 0),
-		    ["update w_inventory_new set "
-		     ++ ?utils:to_sqls(proplists, comma, UpdateStock)
+		    [%% "update w_inventory_new"
+		     "update" ++ ?table:t(stock_new, Merchant, UTable)
+		     ++ " set " ++ ?utils:to_sqls(proplists, comma, UpdateStock)
 		     ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'",
 		     
-		     "update w_inventory_new set "
-		     "balance=balance-" ++ ?to_s(BackBalanceOfOldFirm)
+		     %% "update w_inventory_new"
+		     "update" ++ ?table:t(stock_new, Merchant, UTable)
+		     ++ " set balance=balance-" ++ ?to_s(BackBalanceOfOldFirm)
 		     ++ " where merchant=" ++ ?to_s(Merchant)
 		     ++ " and firm=" ++ ?to_s(OldFirm)
 		     ++ " and entry_date>\'" ++ ?to_s(OldDatetime) ++ "\'",

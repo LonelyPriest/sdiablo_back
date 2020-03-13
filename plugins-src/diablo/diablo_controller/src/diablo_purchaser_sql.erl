@@ -5,7 +5,7 @@
 
 -compile(export_all).
 
-good_new(Merchant, UseZero, GetShop, Attrs) ->
+good_new(Merchant, UTable, UseZero, GetShop, Attrs) ->
     StyleNumber = ?v(<<"style_number">>, Attrs),
     BrandId     = ?v(<<"brand_id">>, Attrs),
     TypeId      = ?v(<<"type_id">>, Attrs),
@@ -29,6 +29,7 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
 
     Contailer   = ?v(<<"contailer">>, Attrs, -1),
     Alarm_a     = ?v(<<"alarm_a">>, Attrs, 0),
+    Comment     = ?v(<<"comment">>, Attrs, []),
 
     Sizes       = ?v(<<"sizes">>, Attrs, [?FREE_SIZE]),
     AutoBarcode = ?v(<<"Autobarcode">>, Attrs, ?YES), 
@@ -70,8 +71,8 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
     %% ?DEBUG("GIds ~p, GNames ~p", [GIds, GNames]),
 
     Sql1 =
-	"insert into w_inventory_good"
-	"(bcode"
+	"insert into" ++ ?table:t(good, Merchant, UTable)
+	++ "(bcode"
 	", style_number"
 	", sex"
 	", color"
@@ -96,6 +97,7 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
 	", fabric"
 	", feather"
 	", alarm_day"
+	", comment"
 	", unit"
 	", contailer"
 	", alarm_a"
@@ -131,6 +133,7 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
 	++ "\'" ++ ?to_s(Feather) ++ "\',"
 	
 	++ ?to_s(AlarmDay) ++ ","
+	++ "\'" ++ ?to_s(Comment) ++ "\',"
 	++ ?to_s(Unit) ++ ","
 	++ ?to_s(Contailer) ++ ","
 	++ ?to_s(Alarm_a) ++ ","
@@ -163,9 +166,15 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
 
 	    InventoryAmount =
 		fun(Size, Color) ->
-			["insert into w_inventory_amount("
-			 "rsn, style_number, brand"
-			 ", color, size, shop, merchant, entry_date) values("
+			["insert into" ++ ?table:t(stock, Merchant, UTable) ++ "("
+			 "rsn"
+			 ", style_number"
+			 ", brand"
+			 ", color"
+			 ", size"
+			 ", shop"
+			 ", merchant"
+			 ", entry_date) values("
 			 ++ "-1,"
 			 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
 			 ++ ?to_s(BrandId) ++ ","
@@ -177,12 +186,28 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
 		end,
 
 	    [Sql1, 
-	     "insert into w_inventory(rsn"
-	     ", style_number, brand, type, sex, season, amount"
-	     ", firm, s_group, free, year"
-	     ", org_price, tag_price, ediscount, discount"
-	     ", path, alarm_day, shop, merchant"
-	     ", last_sell, change_date, entry_date)"
+	     "insert into" ++ ?table:t(stock, Merchant, UTable) ++ "("
+	     ", rsn"
+	     ", style_number"
+	     ", brand"
+	     ", type"
+	     ", sex"
+	     ", season"
+	     ", amount"
+	     ", firm"
+	     ", s_group"
+	     ", free, year"
+	     ", org_price"
+	     ", tag_price"
+	     ", ediscount"
+	     ", discount"
+	     ", path"
+	     ", alarm_day"
+	     ", shop"
+	     ", merchant"
+	     ", last_sell"
+	     ", change_date"
+	     ", entry_date)"
 	     " values("
 	     ++ "\"" ++ ?to_s(-1) ++ "\","
 	     ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
@@ -224,21 +249,23 @@ good_new(Merchant, UseZero, GetShop, Attrs) ->
 
     end.
      
-good(detail, Merchant) ->
-    good(detail, Merchant, []).
+good(detail, {Merchant, UTable}) ->
+    good(detail, {Merchant, UTable}, []).
 
 
-good(delete, Merchant, {StyleNumber, Brand}) -> 
-    ["delete from w_inventory where merchant=" ++ ?to_s(Merchant)
+good(delete, {Merchant, UTable}, {StyleNumber, Brand}) -> 
+    ["delete from" ++ ?table:t(stock, Merchant, UTable)
+     ++ " where merchant=" ++ ?to_s(Merchant)
      ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
      ++ " and brand=" ++ ?to_s(Brand),
      
-     "delete from w_inventory_good where merchant=" ++ ?to_s(Merchant)
+     "delete from" ++ ?table:t(good, Merchant, UTable)
+     ++ " where merchant=" ++ ?to_s(Merchant)
      ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
      ++ " and brand=" ++ ?to_s(Brand)
     ];
 
-good(detail, Merchant, Conditions) ->
+good(detail, {Merchant, UTable}, Conditions) ->
     {StartTime, EndTime, NewConditions} =
 	?sql_utils:cut(fields_with_prifix, Conditions), 
 	"select a.id"
@@ -280,7 +307,8 @@ good(detail, Merchant, Conditions) ->
 	%% ", c.name as executive"
 	%% ", d.name as category"
 	
-	" from w_inventory_good a" 
+	%% " from w_inventory_good a"
+	" from " ++ ?table:t(good, Merchant, UTable) ++ " a" 
 	" left join brands b on a.brand=b.id"
 	" left join inv_types c on a.type=c.id"
 	" where "
@@ -316,11 +344,11 @@ good(price, Merchant, [{_StyleNumber, _Brand}|_] = Conditions) ->
 	++ "and a.merchant=" ++ ?to_s(Merchant).
 
 good(detail_with_pagination,
-     Merchant, Conditions, CurrentPage, ItemsPerPage) -> 
-    good(detail, Merchant, Conditions)
+     {Merchant, UTable}, Conditions, CurrentPage, ItemsPerPage) -> 
+    good(detail, {Merchant, UTable}, Conditions)
 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage).
 
-good(detail_no_join, Merchant, StyleNumber, Brand) ->
+good(detail_no_join, {Merchant, UTable}, StyleNumber, Brand) ->
     "select a.id"
 	", a.bcode"
 	", a.style_number"
@@ -355,7 +383,7 @@ good(detail_no_join, Merchant, StyleNumber, Brand) ->
 	", b.name as brand"
 	", c.name as type"
 	
-	" from w_inventory_good a, brands b, inv_types c"
+	" from" ++ ?table:t(good, Merchant, UTable) ++ " a, brands b, inv_types c"
 	" where a.merchant=" ++ ?to_s(Merchant)
 	++ " and a.style_number='" ++ ?to_s(StyleNumber) ++ "'" 
 	++ " and brand=" ++ ?to_s(Brand)
@@ -363,7 +391,7 @@ good(detail_no_join, Merchant, StyleNumber, Brand) ->
 	++ " and a.brand=b.id"
 	++ " and a.type=c.id" ;
 
-good(used_detail, Merchant, StyleNumber, Brand) ->
+good(used_detail, {Merchant, UTable}, StyleNumber, Brand) ->
     "select a.id, style_number"
 	", a.brand as brand_id"
 	", a.firm as firm_id"
@@ -372,7 +400,7 @@ good(used_detail, Merchant, StyleNumber, Brand) ->
 	", a.amount"
 	", b.name as shop"
 	
-	" from w_inventory a"
+	" from" ++ ?table:t(stock, Merchant, UTable) ++ " a"
 	" left join shops b on a.shop=b.id"
 	
 	" where a.merchant=" ++ ?to_s(Merchant)
@@ -395,19 +423,20 @@ good(used_detail, Merchant, StyleNumber, Brand) ->
     %% 	++ " and b.deleted=" ++ ?to_s(?NO)
     %% 	++ " group by a.style_number, a.brand".
 
-good_match(style_number, Merchant, StyleNumber) ->
+good_match(style_number, Merchant, UTable, StyleNumber) ->
     P = prompt_num(Merchant),
     "select style_number"
 	", brand as brand_id"
-	" from w_inventory_good"
-	" where merchant=" ++ ?to_s(Merchant)
+	%% " from w_inventory_good"
+	" from" ++ ?table:t(good, Merchant, UTable)
+	++ " where merchant=" ++ ?to_s(Merchant)
     %% ++ " and deleted=" ++ ?to_s(?NO) 
     %% ++ " and style_number like \'" ++ ?to_s(StyleNumber) ++ "%\'"
 	++ " and " ++ get_match_mode(style_number, StyleNumber) 
 	++ " group by style_number"
 	++ " limit " ++ ?to_s(P).
 
-good_match(style_number_with_firm, Merchant, StyleNumber, Firm) ->
+good_match(style_number_with_firm, Merchant, UTable, StyleNumber, Firm) ->
     P = prompt_num(Merchant), 
     "select a.id"
 	", a.bcode"
@@ -446,7 +475,7 @@ good_match(style_number_with_firm, Merchant, StyleNumber, Firm) ->
 	", b.name as brand"
 	", c.name as type"
 	
-	" from w_inventory_good a, brands b, inv_types c"
+	" from" ++ ?table:t(good, Merchant, UTable) ++ " a, brands b, inv_types c"
 	" where a.merchant=" ++ ?to_s(Merchant)
 	++ case Firm of
 	       [] -> [];
@@ -460,7 +489,7 @@ good_match(style_number_with_firm, Merchant, StyleNumber, Firm) ->
 	++ " order by id desc"
 	++ " limit " ++ ?to_s(P);
 
-good_match(all_style_number_with_firm, Merchant, StartTime, Firm) ->
+good_match(all_style_number_with_firm, Merchant, UTable, StartTime, Firm) ->
     "select a.id"
 	", a.bcode"
 	", a.style_number"
@@ -497,9 +526,9 @@ good_match(all_style_number_with_firm, Merchant, StartTime, Firm) ->
 	
 	", b.name as brand"
 	", c.name as type"
-	
-	" from w_inventory_good a, brands b, inv_types c"
-	
+
+	%% " from w_inventory_good a, brands b, inv_types c"
+	" from" ++ ?table:t(good, Merchant, UTable) ++ " a, brands b, inv_types c" 
 	" where a.merchant=" ++ ?to_s(Merchant)
 	++ case Firm of
 	       [] -> [];
@@ -572,7 +601,7 @@ inventory(abstract, Merchant, Shop, [{S1, B1}|T] = _Conditions) ->
 	" and a.brand_id=b.brand"
 	" and a.shop=b.shop";
 
-inventory({group_detail, MatchMode}, Merchant, Conditions, PageFun) ->
+inventory({group_detail, MatchMode}, {Merchant, UTable}, Conditions, PageFun) ->
     ?DEBUG("group_detail:merchant ~p, Conditions ~p", [Merchant, Conditions]),
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions), 
     RealyConditions = realy_conditions(Merchant, NewConditions),
@@ -631,15 +660,18 @@ inventory({group_detail, MatchMode}, Merchant, Conditions, PageFun) ->
 	   end
 	++
 	
-	" from w_inventory a"
-	" left join shops b on a.shop=b.id"
+	%% " from w_inventory a"
+	" from" ++ ?table:t(stock, Merchant, UTable)
+	++ " left join shops b on a.shop=b.id"
 
 	++ case StockWarning of
 	       1 ->
 		   " left join ("
 		       "select style_number, brand, merchant, shop"
-		       ", MIN(total-alarm_a) as minalarm_a from w_inventory_amount"
-		       " where merchant=" ++ ?to_s(Merchant)
+		       ", MIN(total-alarm_a) as minalarm_a"
+		   %%" from w_inventory_amount"
+		       " from" ++ ?table:t(stock_note, Merchant, UTable)
+		       ++ " where merchant=" ++ ?to_s(Merchant)
 		       ++ ?sql_utils:condition(proplists, {<<"shop">>, ShopConditons})
 		       ++ " and total<alarm_a"
 		       ++ " group by style_number, brand, merchant, shop) c on "
@@ -669,7 +701,7 @@ inventory({group_detail, MatchMode}, Merchant, Conditions, PageFun) ->
 	++ ExtraConditions
 	++ " and " ++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime) ++  PageFun();
 
-inventory(set_promotion, Merchant, Promotions, Conditions) ->
+inventory(set_promotion, {Merchant, UTable}, Promotions, Conditions) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
     RealyConditions = realy_conditions(Merchant, NewConditions),
     ExtraConditions = sort_condition(stock, NewConditions), 
@@ -677,7 +709,8 @@ inventory(set_promotion, Merchant, Promotions, Conditions) ->
     Score     = ?v(<<"score">>, Promotions), 
     Updates = ?utils:v(promotion, integer, Promotion) ++ ?utils:v(score, integer, Score),
     
-    "update w_inventory set " ++ ?utils:to_sqls(proplists, comma, Updates)
+    "update" ++ ?table:t(stock, Merchant, UTable)
+	++ " set " ++ ?utils:to_sqls(proplists, comma, Updates)
 	++ " where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, RealyConditions)
 	++ ExtraConditions
@@ -686,10 +719,11 @@ inventory(set_promotion, Merchant, Promotions, Conditions) ->
 	       TimeSql ->  " and " ++ TimeSql
 	   end; 
 
-inventory(set_gift, Merchant, GiftState, Conditions) ->
+inventory(set_gift, {Merchant, UTable}, GiftState, Conditions) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions), 
     Updates = ?utils:v(gift, integer, GiftState), 
-    "update w_inventory set " ++ ?utils:to_sqls(proplists, comma, Updates)
+    "update" ++ ?table:t(stock, Merchant, UTable)
+	++ " set " ++ ?utils:to_sqls(proplists, comma, Updates)
 	++ " where " 
 	++ ?sql_utils:condition(proplists_suffix, NewConditions)
 	++ "merchant=" ++ ?to_s(Merchant)
@@ -699,10 +733,11 @@ inventory(set_gift, Merchant, GiftState, Conditions) ->
 	   end
 	++ " and deleted=" ++ ?to_s(?NO);
 
-inventory(set_offer, Merchant, StockState, Conditions) ->
+inventory(set_offer, {Merchant, UTable}, StockState, Conditions) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions), 
     Updates = ?utils:v(state, integer, StockState), 
-    "update w_inventory set " ++ ?utils:to_sqls(proplists, comma, Updates)
+    "update" ++ ?table:t(stock, Merchant, UTable)
+	++ " set " ++ ?utils:to_sqls(proplists, comma, Updates)
 	++ " where " 
 	++ ?sql_utils:condition(proplists_suffix, NewConditions)
 	++ "merchant=" ++ ?to_s(Merchant)
@@ -713,7 +748,7 @@ inventory(set_offer, Merchant, StockState, Conditions) ->
 	++ " and deleted=" ++ ?to_s(?NO);
 
 
-inventory({update_batch, MatchMode}, Merchant, Attrs, Conditions) ->
+inventory({update_batch, MatchMode}, {Merchant, UTable}, Attrs, Conditions) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
     RealyConditions = realy_conditions(Merchant, NewConditions),
     ExtraConditions = sort_condition(stock, NewConditions),
@@ -772,7 +807,8 @@ inventory({update_batch, MatchMode}, Merchant, Attrs, Conditions) ->
 
     ?DEBUG("UpdateOfGood ~p, UpdateOfStock ~p", [UpdateOfGood, UpdateOfStock]),
 
-    ["update w_inventory set " ++ ?utils:to_sqls(proplists, comma, UpdateOfStock)
+    ["update" ++ ?table:t(stock, Merchant, UTable)
+     ++ " set " ++ ?utils:to_sqls(proplists, comma, UpdateOfStock)
      ++ case Imbalance =:= undefined orelse Imbalance == 0 of
 	    true -> 
 		%% ", ediscount=(org_price/" ++ ?to_s(TagPrice) ++ ")*100"
@@ -827,8 +863,8 @@ inventory({update_batch, MatchMode}, Merchant, Attrs, Conditions) ->
 	++ case UpdateOfGood of
 	       [] -> [];
 	       _ ->
-		   ["update w_inventory_good set "
-		    ++ ?utils:to_sqls(proplists, comma, UpdateOfGood)
+		   ["update" ++ ?table:t(good, Merchant, UTable)
+		    ++ " set " ++ ?utils:to_sqls(proplists, comma, UpdateOfGood)
 		    ++ case Imbalance =:= undefined orelse Imbalance == 0 of
 			   true ->
 			       case {TagPrice, OrgPrice} of
@@ -877,7 +913,7 @@ inventory({update_batch, MatchMode}, Merchant, Attrs, Conditions) ->
 		    ++ " and deleted=" ++ ?to_s(?NO)]
 	   end;
 
-inventory(update_stock_alarm, Merchant, Attrs, Conditions) ->
+inventory(update_stock_alarm, {Merchant, UTable}, Attrs, Conditions) ->
     {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions), 
     MinAlarm = ?v(<<"alarm_a">>, Attrs),
     Amounts  = ?v(<<"amount">>, Attrs),
@@ -885,12 +921,13 @@ inventory(update_stock_alarm, Merchant, Attrs, Conditions) ->
     ?DEBUG("UpdateOfGood ~p", [UpdateOfGood]),
 
     Sql1 = 
-	["update w_inventory set " ++ ?utils:to_sqls(proplists, comma, UpdateOfGood)
+	["update" ++ ?table:t(stock, Merchant, UTable)
+	 ++ " set " ++ ?utils:to_sqls(proplists, comma, UpdateOfGood)
 	 ++ " where "
 	 ++ ?sql_utils:condition(proplists_suffix, NewConditions) 
 	 ++ "merchant=" ++ ?to_s(Merchant),
 
-	 "update w_inventory_good set "
+	 "update" ++ ?table:t(good, Merchant, UTable)
 	 ++ ?utils:to_sqls(proplists, comma, UpdateOfGood) 
 	 ++ " where " 
 	 ++ ?sql_utils:condition(
@@ -910,17 +947,19 @@ inventory(update_stock_alarm, Merchant, Attrs, Conditions) ->
 		  ColorId = ?v(<<"cid">>, Amount),
 		  Size    = ?v(<<"size">>, Amount),
 		  
-		  ["update w_inventory_amount set alarm_a=" ++ ?to_s(Alarm_a)
+		  ["update" ++ ?table:t(stock_note, Merchant, UTable)
+		   ++ " set alarm_a=" ++ ?to_s(Alarm_a)
 		   ++ " where "
-		   ++ ?sql_utils:condition(proplists_suffix,
-					   NewConditions ++ [{<<"color">>, ColorId}, {<<"size">>, Size}])
+		   ++ ?sql_utils:condition(
+			 proplists_suffix,
+			 NewConditions ++ [{<<"color">>, ColorId}, {<<"size">>, Size}])
 		   ++ "merchant=" ++ ?to_s(Merchant)] ++ Acc
 	  end, [], Amounts),
 
 
     Sql1 ++ Sql2.
 
-inventory(inventory_new_rsn, Merchant, Conditions) ->
+inventory(inventory_new_rsn, {Merchant, UTable}, Conditions) ->
     {DetailConditions, SaleConditions} = 
 	filter_condition(inventory_new,
 			 Conditions ++ [{<<"merchant">>, Merchant}], [], []),
@@ -933,7 +972,8 @@ inventory(inventory_new_rsn, Merchant, Conditions) ->
     TimeSql = ?sql_utils:condition(proplists_suffix, CutSaleConditions)
 	++ ?sql_utils:condition(time_with_prfix, StartTime, EndTime),
 
-    Sql1 = "select rsn from w_inventory_new a" ++ " where " ++ TimeSql,
+    %% Sql1 = "select rsn from w_inventory_new a" ++ " where " ++ TimeSql,
+    Sql1 = "select rsn from" ++ ?table:t(stock_new, Merchant, UTable) ++ " a" ++ " where " ++ TimeSql,
 	
     case ?v(<<"rsn">>, SaleConditions, []) of
 	[] ->
@@ -942,9 +982,10 @@ inventory(inventory_new_rsn, Merchant, Conditions) ->
 		_ ->
 		    Over = ?v(<<"over">>, DetailConditions, []),
 		    D = proplists:delete(<<"over">>, DetailConditions),
-		    "select a.rsn from w_inventory_new a "
-			"inner join (select rsn from w_inventory_new_detail"
-			" where rsn like " ++ "\'M-" ++ ?to_s(Merchant) ++"%\'"
+		    %% "select a.rsn from w_inventory_new a "
+		    "select a.rsn from" ++ ?table:t(stock_new, Merchant, UTable) ++ " a "
+			"inner join (select rsn from" ++ ?table:t(stock_new_detail, Merchant, UTable)
+			++ " where rsn like " ++ "\'M-" ++ ?to_s(Merchant) ++"%\'"
 			++ ?sql_utils:condition(proplists, D)
 			++ case Over of
 			       [] -> [];
@@ -958,7 +999,7 @@ inventory(inventory_new_rsn, Merchant, Conditions) ->
 	_ -> Sql1 
     end;
 
-inventory(list, Merchant, Conditions) ->
+inventory(list, {Merchant, UTable}, Conditions) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_with_prifix, Conditions),
 
     "select a.style_number"
@@ -995,32 +1036,46 @@ inventory(list, Merchant, Conditions) ->
 	", a.state"
 	", a.gift"
 	", a.shop as shop_id"
-	" from w_inventory a"
+    %% " from w_inventory a"
+	" from" ++ ?table:t(stock, Merchant, UTable) ++ " a"
 	" where " ++ ?sql_utils:condition(proplists_suffix, NewConditions)
 	++ "a.merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:fix_condition(time, time_with_prfix, StartTime, EndTime)
 	++") a "
 
-	" left join w_inventory_amount b on"
+    %% " left join w_inventory_amount b on"
+	" left join" ++ ?table:t(stock_note, Merchant, UTable) ++ " b on"
 	" a.style_number=b.style_number"
 	" and a.brand_id=b.brand"
 	" and a.shop_id=b.shop"
 	" and b.merchant=" ++ ?to_s(Merchant);
 
-inventory(list_info, Merchant, Conditions) ->
+inventory(list_info, {Merchant, UTable}, Conditions) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_with_prifix, Conditions), 
-    "select a.id, a.style_number, a.brand as brand_id, a.firm as firm_id"
-	", a.type as type_id, a.year, a.season, a.amount as total"
-	", a.org_price, a.tag_price, a.ediscount, a.discount"
-	", a.shop as shop_id, a.entry_date"
+    "select a.id"
+	", a.style_number"
+	", a.brand as brand_id"
+	", a.firm as firm_id"
+	", a.type as type_id"
+	", a.year"
+	", a.season"
+	", a.amount as total"
+	", a.org_price"
+	", a.tag_price"
+	", a.ediscount"
+	", a.discount"
+	", a.shop as shop_id"
+	", a.entry_date"
+	
 	", b.name as fname"
-	" from w_inventory a"
+    %% " from w_inventory a"
+	" from" ++ ?table:t(stock, Merchant, UTable) ++ " a"
 	" left join suppliers b on a.firm=b.id"
 	" where a.merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions) 
 	++ ?sql_utils:fix_condition(time, time_with_prfix, StartTime, EndTime); 
 
-inventory(get_new_amount, _Merchant, Conditions) ->
+inventory(get_new_amount, {Merchant, UTable}, Conditions) ->
     "select a.id"
 	", a.rsn"
 	", a.style_number"
@@ -1067,8 +1122,9 @@ inventory(get_new_amount, _Merchant, Conditions) ->
 	", path"
 	", alarm_day"
 	", entry_date"
-	" from w_inventory_new_detail"
-	" where " ++ ?utils:to_sqls(proplists, Conditions) ++ ") a"
+    %% " from w_inventory_new_detail"
+	" from" ++ ?table:t(stock_new_detail, Merchant, UTable)
+	++ " where " ++ ?utils:to_sqls(proplists, Conditions) ++ ") a"
 
 	" inner join "
 	"(select rsn"
@@ -1077,12 +1133,13 @@ inventory(get_new_amount, _Merchant, Conditions) ->
 	", color"
 	", size"
 	", total"
-	" from w_inventory_new_detail_amount"
-	" where " ++ ?utils:to_sqls(proplists, Conditions) ++ ") b"
+    %% " from w_inventory_new_detail_amount"
+	" from" ++ ?table:t(stock_new_note, Merchant, UTable)
+	++ " where " ++ ?utils:to_sqls(proplists, Conditions) ++ ") b"
 	" on a.rsn=b.rsn" 
 	" and a.style_number=b.style_number and a.brand_id=b.brand order by id";
 
-inventory(new_rsn_detail, _Merchant, Conditions) ->
+inventory(new_rsn_detail, {Merchant, UTable}, Conditions) ->
     {_StartTime, _EndTime, NewConditions} =
 	?sql_utils:cut(fields_no_prifix, Conditions),
     "select a.rsn"
@@ -1096,13 +1153,14 @@ inventory(new_rsn_detail, _Merchant, Conditions) ->
 	
 	" from (" 
 	"select rsn, style_number, brand, shop, color, size, total"
-	" from w_inventory_new_detail_amount"
-	" where " ++ ?sql_utils:condition(proplists_suffix, NewConditions)
+    %% " from w_inventory_new_detail_amount"
+	" from" ++ ?table:t(stock_new_note, Merchant, UTable)
+	++ " where " ++ ?sql_utils:condition(proplists_suffix, NewConditions)
 	++ "deleted=" ++ ?to_s(?NO) ++ ") a"
 	
 	" left join colors b on a.color=b.id";
     	
-inventory(fix_rsn_detail, _Merchant, Conditions) ->
+inventory(fix_rsn_detail, {Merchant, UTable}, Conditions) ->
     {_StartTime, _EndTime, NewConditions} =
 	?sql_utils:cut(fields_no_prifix, Conditions), 
     "select a.rsn, a.style_number, a.brand as brand_id"
@@ -1112,13 +1170,14 @@ inventory(fix_rsn_detail, _Merchant, Conditions) ->
 	" from ("
 
 	"select rsn, style_number, brand, color, size, exist, fixed, metric"
-	" from w_inventory_fix_detail_amount"
-	" where " ++ ?sql_utils:condition(proplists_suffix, NewConditions)
+	%% " from w_inventory_fix_detail_amount"
+	" from" ++ ?table:t(stock_note, Merchant, UTable)
+	++ " where " ++ ?sql_utils:condition(proplists_suffix, NewConditions)
 	++ "deleted=" ++ ?to_s(?NO) ++ ") a"
 
 	" left join colors b on a.color=b.id";
 
-inventory(transfer_rsn_detail, _Merchant, Conditions) ->    
+inventory(transfer_rsn_detail, {Merchant, UTable}, Conditions) ->    
     {_StartTime, _EndTime, NewConditions} =
         ?sql_utils:cut(fields_with_prifix, Conditions),
     "select a.rsn"
@@ -1129,8 +1188,9 @@ inventory(transfer_rsn_detail, _Merchant, Conditions) ->
 	", a.size"
 	", a.total as amount"
 	
-        " from w_inventory_transfer_detail_amount a" 
-        " where " ++ ?utils:to_sqls(proplists, NewConditions).
+    %% " from w_inventory_transfer_detail_amount a"
+	" from" ++ ?table:t(stock_transfer_note, Merchant, UTable)
+        ++ " where " ++ ?utils:to_sqls(proplists, NewConditions).
 
 
 
@@ -1149,7 +1209,7 @@ inventory(transfer_rsn_detail, _Merchant, Conditions) ->
 %% 	++ " where " ++ ?utils:to_sqls(proplists, CorrectC2)
 %% 	++ " order by id desc limit 1",
     
-inventory(new_rsn_groups, new, Merchant, Conditions, PageFun) ->
+inventory(new_rsn_groups, new, {Merchant, UTable}, Conditions, PageFun) ->
 
     {DConditions, NConditions}
 	= ?w_good_sql:filter_condition(inventory_new, Conditions, [], []),
@@ -1187,7 +1247,9 @@ inventory(new_rsn_groups, new, Merchant, Conditions, PageFun) ->
 	", a.type"
 	", a.state"
 	
-    	" from w_inventory_new_detail b, w_inventory_new a" 
+    	" from w_inventory_new_detail b, w_inventory_new a"
+	" from" ++ ?table:t(stock_new_detail, Merchant, UTable) ++ " b,"
+	++ ?table:t(stock_new, Merchant, UTable) ++ " a" 
     	" where "
 	++ ?sql_utils:condition(proplists_suffix, CorrectCutDConditions)
 	++ "b.rsn=a.rsn"
@@ -1200,7 +1262,7 @@ inventory(new_rsn_groups, new, Merchant, Conditions, PageFun) ->
 	   end 
 	++ PageFun(); 
 
-inventory(new_detail, new, Merchant, Conditions, PageFun) ->
+inventory(new_detail, new, {Merchant, UTable}, Conditions, PageFun) ->
     SortConditions = sort_condition(w_inventory_new, Merchant, Conditions),
     %% {StartTime, EndTime, NewConditions} =
     %% 	?sql_utils:cut(fields_with_prifix, Conditions),
@@ -1228,12 +1290,13 @@ inventory(new_detail, new, Merchant, Conditions, PageFun) ->
 
 	", b.name as account"
 
-	" from w_inventory_new a"
+	%% " from w_inventory_new a"
+	" from" ++ ?table:t(stock_new, Merchant, UTable) ++ " a"
 	" left join users b on a.account=b.id"
 	" where " ++ SortConditions 
 	++ PageFun();
 
-inventory(fix_detail, fix, Merchant, Conditions, PageFun) ->
+inventory(fix_detail, fix, {Merchant, UTable}, Conditions, PageFun) ->
     {StartTime, EndTime, NewConditions} =
 	?sql_utils:cut(fields_with_prifix, Conditions),
     "select a.id"
@@ -1244,14 +1307,15 @@ inventory(fix_detail, fix, Merchant, Conditions, PageFun) ->
 	", a.shop_total"
 	", a.db_total"
 	", a.entry_date" 
-	" from w_inventory_fix a"
+    %% " from w_inventory_fix a"
+	" from" ++ ?table:t(stock_fix, Merchant, UTable) ++ " a"
 
 	" where merchant="  ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions)
 	++ ?sql_utils:fix_condition(time, time_with_prfix, StartTime, EndTime)
 	++ PageFun();
 
-inventory(fix_rsn_groups, fix, Merchant, Conditions, PageFun) ->
+inventory(fix_rsn_groups, fix, {Merchant, UTable}, Conditions, PageFun) ->
     StartTime   = ?v(<<"start_time">>, Conditions),
     EndTime     = ?v(<<"end_time">>, Conditions),
     RSN         = ?v(<<"rsn">>, Conditions, []),
@@ -1327,19 +1391,20 @@ inventory(fix_rsn_groups, fix, Merchant, Conditions, PageFun) ->
     
     %% ", d.name as shop"
 	
-	" from w_inventory_fix_detail_amount "
+    %% " from w_inventory_fix_detail_amount "
+	" from" ++ ?table:t(fix_note, Merchant, UTable)
 	
 	%% " left join colors b on a.color=b.id"
 	%% " left join brands c on a.brand=c.id"
     %% " left join shops  d on a.shop=d.id"
 	
-	" where merchant=" ++ ?to_s(Merchant)
+	++ " where merchant=" ++ ?to_s(Merchant)
 	++ C1 ++ PageFun() ++ ") a"
 
 	" left join colors b on a.color_id=b.id"
 	" left join brands c on a.brand_id=c.id";
 
-inventory(transfer_detail, transfer, Merchant, Conditions, PageFun) ->
+inventory(transfer_detail, transfer, {Merchant, UTable}, Conditions, PageFun) ->
     {StartTime, EndTime, NewConditions} =
         ?sql_utils:cut(fields_with_prifix, Conditions),
     "select a.id"
@@ -1355,7 +1420,8 @@ inventory(transfer_detail, transfer, Merchant, Conditions, PageFun) ->
         ", a.check_date"
 	", a.entry_date"
 	
-        " from w_inventory_transfer a"
+        %% " from w_inventory_transfer a"
+	" from" ++ ?table:t(stock_transfer, Merchant, UTable) ++ " a"
 
         " where "
 	++ ?sql_utils:condition(proplists_suffix, NewConditions)
@@ -1364,7 +1430,7 @@ inventory(transfer_detail, transfer, Merchant, Conditions, PageFun) ->
         ++ PageFun();
 
 
-inventory(transfer_rsn_groups, transfer, Merchant, Conditions, PageFun) -> 
+inventory(transfer_rsn_groups, transfer, {Merchant, UTable}, Conditions, PageFun) -> 
     StartTime   = ?v(<<"start_time">>, Conditions),
     EndTime     = ?v(<<"end_time">>, Conditions),
     RSN         = ?v(<<"rsn">>, Conditions, []),
@@ -1405,7 +1471,9 @@ inventory(transfer_rsn_groups, transfer, Merchant, Conditions, PageFun) ->
         ", a.tshop as tshop_id"
         ", a.state"
         ", a.check_date as check_date"
-        " from w_inventory_transfer_detail b, w_inventory_transfer a"
+    %% " from w_inventory_transfer_detail b, w_inventory_transfer a"
+	" from" ++ ?table:t(stock_transfer_detail, Merchant, note) ++ " b,"
+	++ ?table:t(stock_transfer, Merchant, UTable) ++ " a"
         " where "
         ++ ?sql_utils:condition(proplists_suffix, C21)
         ++ "b.rsn=a.rsn"
@@ -1419,15 +1487,17 @@ inventory(transfer_rsn_groups, transfer, Merchant, Conditions, PageFun) ->
         ++ PageFun();
 
 inventory({group_detail_with_pagination, MatchMode, Mode, Sort},
-	  Merchant, Conditions, CurrentPage, ItemsPerPage) -> 
-    inventory({group_detail, MatchMode}, Merchant, Conditions,
+	  {Merchant, UTable},
+	  Conditions, CurrentPage, ItemsPerPage) -> 
+    inventory({group_detail, MatchMode}, {Merchant, UTable}, Conditions,
 	fun() ->
 		?sql_utils:condition(page_desc, {Mode, Sort}, CurrentPage, ItemsPerPage)
 	end);
 
 inventory({new_detail_with_pagination, Mode, Sort},
-	  Merchant, Conditions, CurrentPage, ItemsPerPage) -> 
-    inventory(new_detail, new, Merchant, Conditions,
+	  {Merchant, UTable},
+	  Conditions, CurrentPage, ItemsPerPage) -> 
+    inventory(new_detail, new, {Merchant, UTable}, Conditions,
 	      fun() -> 
 		      ?sql_utils:condition(page_desc, {Mode, Sort}, CurrentPage, ItemsPerPage)
 	      end);
@@ -1441,26 +1511,31 @@ inventory(reject_detail_with_pagination, Merchant, Conditions, CurrentPage, Item
 %%     inventory(reject_rsn_groups, Merchant, Conditions) 
 %% 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage);
 
-inventory(fix_detail_with_pagination, Merchant, Conditions, CurrentPage, ItemsPerPage) ->
-    inventory(fix_detail, fix, Merchant, Conditions,
+inventory(fix_detail_with_pagination, {Merchant, UTable}, Conditions, CurrentPage, ItemsPerPage) ->
+    inventory(fix_detail, fix, {Merchant, UTable}, Conditions,
 	fun() -> ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage) end);
 
-inventory(fix_rsn_group_with_pagination, Merchant, Conditions, CurrentPage, ItemsPerPage) ->
-    inventory(fix_rsn_groups, fix, Merchant, Conditions,
+inventory(fix_rsn_group_with_pagination, {Merchant, UTable}, Conditions, CurrentPage, ItemsPerPage) ->
+    inventory(fix_rsn_groups, fix, {Merchant, UTable}, Conditions,
 	fun() -> ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage) end);
 
 %% transfer
-inventory(transfer_detail_with_pagination, Merchant, Conditions, CurrentPage, ItemsPerPage) ->
-    inventory(transfer_detail, transfer, Merchant, Conditions,
+inventory(transfer_detail_with_pagination,
+	  {Merchant, UTable},
+	  Conditions, CurrentPage, ItemsPerPage) ->
+    inventory(transfer_detail, transfer, {Merchant, UTable}, Conditions,
               fun() -> ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage) end);
 
-inventory(transfer_rsn_group_with_pagination, Merchant, Conditions, CurrentPage, ItemsPerPage) ->
-    inventory(transfer_rsn_groups, transfer, Merchant, Conditions,
+inventory(transfer_rsn_group_with_pagination,
+	  {Merchant, UTable}, Conditions,
+	  CurrentPage, ItemsPerPage) ->
+    inventory(transfer_rsn_groups, transfer, {Merchant, UTable}, Conditions,
               fun() -> ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage) end);
 
 inventory({new_rsn_group_with_pagination, Mode, Sort},
-	  Merchant, Conditions, CurrentPage, ItemsPerPage) -> 
-    inventory(new_rsn_groups, new, Merchant, Conditions,
+	  {Merchant, UTable},
+	  Conditions, CurrentPage, ItemsPerPage) -> 
+    inventory(new_rsn_groups, new, {Merchant, UTable}, Conditions,
 	      fun() ->
 		      ?sql_utils:condition(page_desc, {Mode, Sort}, CurrentPage, ItemsPerPage)
 		      %% ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage)
@@ -1484,23 +1559,37 @@ inventory_match(Merchant, StyleNumber, Shop) ->
 	++ " limit " ++ ?to_s(P).
 
 
-inventory_match(all_inventory, Merchant, Shop, Conditions) ->
-    {StartTime, EndTime, NewConditions} =
-	?sql_utils:cut(fields_with_prifix, Conditions),
+inventory_match(all_inventory, Merchant, UTable, Shop, Conditions) ->
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_with_prifix, Conditions),
 
-    "select a.id, a.bcode, a.style_number, a.brand as brand_id, a.type as type_id"
-	", a.sex, a.season, a.firm as firm_id, a.s_group, a.free, a.year"
+    "select a.id"
+	", a.bcode"
+	", a.style_number"
+	", a.brand as brand_id"
+	", a.type as type_id"
+	", a.sex"
+	", a.season"
+	", a.firm as firm_id"
+	", a.s_group"
+	", a.free"
+	", a.year"
     %% ", a.amount as total"
 	", a.promotion as pid"
 	", a.score as sid"
-	", a.org_price, a.tag_price, a.ediscount, a.discount"
-	", a.state, a.gift, a.path, a.entry_date"
+	", a.org_price"
+	", a.tag_price"
+	", a.ediscount"
+	", a.discount"
+	", a.state"
+	", a.gift"
+	", a.path"
+	", a.entry_date"
 
 	", b.name as brand" 
 	", c.name as type"
-	" from w_inventory a"
-
-	" left join brands b on a.brand=b.id" 
+    %% " from w_inventory a"
+	" from" ++ ?table:t(stock, Merchant, UTable) 
+	++ " left join brands b on a.brand=b.id" 
 	" left join inv_types c on a.type=c.id"
 	
 	" where "
@@ -1516,21 +1605,36 @@ inventory_match(all_inventory, Merchant, Shop, Conditions) ->
 	   end
 	++ " order by id desc";
 
-inventory_match(of_in, Merchant, Shop, Ins) ->
+inventory_match(of_in, Merchant, UTable, Shop, Ins) ->
     P = ?w_retailer:get(prompt, Merchant),
 
-    "select a.id, a.bcode, a.style_number, a.brand as brand_id, a.type as type_id"
-	", a.sex, a.season, a.firm as firm_id, a.s_group, a.free, a.year"
+    "select a.id"
+	", a.bcode"
+	", a.style_number"
+	", a.brand as brand_id"
+	", a.type as type_id"
+	", a.sex"
+	", a.season"
+	", a.firm as firm_id"
+	", a.s_group"
+	", a.free"
+	", a.year"
 	", a.promotion as pid"
 	", a.score as sid"
-	", a.org_price, a.tag_price, a.ediscount, a.discount"
-	", a.state, a.gift, a.path, a.entry_date"
+	", a.org_price"
+	", a.tag_price"
+	", a.ediscount"
+	", a.discount"
+	", a.state"
+	", a.gift"
+	", a.path"
+	", a.entry_date"
 
 	", b.name as brand" 
 	", c.name as type"
-	" from w_inventory a"
-
-	" left join brands b on a.brand=b.id" 
+	%% " from w_inventory a"
+	" from" ++ ?table:t(stock, Merchant, UTable) 
+	++ " left join brands b on a.brand=b.id" 
 	" left join inv_types c on a.type=c.id"
 
 	" where a.merchant=" ++ ?to_s(Merchant) 
@@ -1540,7 +1644,7 @@ inventory_match(of_in, Merchant, Shop, Ins) ->
 	++ " order by a.id desc"
 	++ " limit " ++ ?to_s(P);
 
-inventory_match(Merchant, StyleNumber, Shop, Firm) ->
+inventory_match(Merchant, UTable, StyleNumber, Shop, Firm) ->
     P = ?w_retailer:get(prompt, Merchant),
 
     "select a.id"
@@ -1571,9 +1675,9 @@ inventory_match(Merchant, StyleNumber, Shop, Firm) ->
 	
 	", b.name as brand" 
 	", c.name as type"
-	" from w_inventory a"
-	
-	" left join brands b on a.brand=b.id" 
+    %% " from w_inventory a"
+	" from" ++ ?table:t(stock, Merchant, UTable) 
+	++ " left join brands b on a.brand=b.id" 
 	" left join inv_types c on a.type=c.id"
 
 	" where a.merchant=" ++ ?to_s(Merchant) 
@@ -1587,7 +1691,7 @@ inventory_match(Merchant, StyleNumber, Shop, Firm) ->
 	++ " order by a.id desc"
 	++ " limit " ++ ?to_s(P).
 
-inventory_match(all_reject, Merchant, Shop, Firm, StartTime) ->
+inventory_match(all_reject, Merchant, UTable, Shop, Firm, StartTime) ->
     "select a.id"
 	", a.bcode"
 	", a.style_number"
@@ -1611,9 +1715,9 @@ inventory_match(all_reject, Merchant, Shop, Firm, StartTime) ->
 
 	", b.name as brand" 
 	", c.name as type"
-	" from w_inventory a"
-
-	" left join brands b on a.brand=b.id" 
+    %% " from w_inventory a"
+	" from" ++ ?table:t(stock, Merchant, UTable) 
+	++ " left join brands b on a.brand=b.id" 
 	" left join inv_types c on a.type=c.id"
 	
 	" where a.shop=" ++ ?to_s(Shop)
@@ -1627,7 +1731,7 @@ inventory_match(all_reject, Merchant, Shop, Firm, StartTime) ->
     %% ++ " and deleted=" ++ ?to_s(?NO)
 	++ " order by a.id desc".
 
-get_inventory(barcode, Merchant, Shop, Firm, Barcode, ExtraConditions) ->
+get_inventory(barcode, Merchant, UTable, Shop, Firm, Barcode, ExtraConditions) ->
     "select a.id"
 	", a.bcode"
 	", a.style_number"
@@ -1658,8 +1762,8 @@ get_inventory(barcode, Merchant, Shop, Firm, Barcode, ExtraConditions) ->
 
 	", b.name as brand" 
 	", c.name as type"
-	" from w_inventory a"
-
+    %% " from w_inventory a"
+	" from" ++ ?table:t(stock, Merchant, UTable) ++ " a" 
 	" left join brands b on a.brand=b.id" 
 	" left join inv_types c on a.type=c.id"
 
@@ -1673,21 +1777,22 @@ get_inventory(barcode, Merchant, Shop, Firm, Barcode, ExtraConditions) ->
 	++ ?sql_utils:condition(
 	      proplists, ?utils:correct_condition(<<"a.">>, ExtraConditions)).
 
-get_inventory(note, Merchant, Shop, Conditions) ->
+get_inventory(note, Merchant, UTable, Shop, Conditions) ->
     Sql = "select style_number"
 	", brand as brand_id"
 	", color as color_id"
 	", size"
 	", total"
 	", shop as shop_id"
-	" from w_inventory_amount"
-	" where merchant=" ++ ?to_s(Merchant)
+    %% " from w_inventory_amount"
+	" from" ++ ?table:t(stock_note, Merchant, UTable)
+	++ " where merchant=" ++ ?to_s(Merchant)
 	++ " and shop=" ++ ?to_s(Shop)
 	++ ?sql_utils:condition(proplists, Conditions),
     Sql.
 	
 
-inventory(update_attr, Mode, RSN, Merchant, Shop, {Firm, OldFirm, Datetime,  OldDatetime}) ->
+inventory(update_attr, Mode, RSN, Merchant, UTable, Shop, {Firm, OldFirm, Datetime,  OldDatetime}) ->
     UpdateDate = case Datetime =/= OldDatetime of
 		     true ->
 			 ?utils:v(entry_date, string, Datetime);
@@ -1708,15 +1813,17 @@ inventory(update_attr, Mode, RSN, Merchant, Shop, {Firm, OldFirm, Datetime,  Old
 		 %% ++ ?utils:to_sqls(proplists, comma, Updates)
 		 %% ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'",
 		 
-		 "update w_inventory_new_detail set "
-		 ++ ?utils:to_sqls(proplists, comma, Updates)
+		 %% "update w_inventory_new_detail set "
+		 "update" ++ ?table:t(stock_new_detail, Merchant, UTable)
+		 ++ " set " ++ ?utils:to_sqls(proplists, comma, Updates)
 		 ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"]
 		
 		++
 		case UpdateDate of
 		    [] -> []; 
-		    _  -> ["update w_inventory_new_detail_amount set "
-			   ++ ?utils:to_sqls(proplists, comma, UpdateDate)
+		    _  -> [%% "update w_inventory_new_detail_amount set "
+			   "update" ++ ?table:t(stock_new_note, Merchant, UTable)
+			   ++ " set " ++ ?utils:to_sqls(proplists, comma, UpdateDate)
 			   ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'"]
 		end,
 		
@@ -1724,12 +1831,14 @@ inventory(update_attr, Mode, RSN, Merchant, Shop, {Firm, OldFirm, Datetime,  Old
 		case UpdateFirm of
 		    [] -> [];
 		    _ ->
-			["update w_inventory a inner join "
+			[%% "update w_inventory a inner join "
+			 "update" ++ ?table:t(stock, Merchant, UTable) ++ " a inner join "
 			 "(select style_number, brand"
-			 " from w_inventory_new_detail"
-			 " where rsn=\'" ++ ?to_s(RSN) ++ "\') b"
+			 %% " from w_inventory_new_detail"
+			 " from" ++ ?table:t(stock_new_detail, Merchant, UTable)
+			 ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\') b"
 			 " on a.style_number=b.style_number and a.brand=b.brand"
-			 " set " ++?utils:to_sqls(proplists, comma, UpdateFirm)
+			 " set " ++ ?utils:to_sqls(proplists, comma, UpdateFirm)
 			 ++ " where a.merchant=" ++ ?to_s(Merchant)
 			 ++ " and a.shop=" ++ ?to_s(Shop),
 			 
@@ -1742,18 +1851,21 @@ inventory(update_attr, Mode, RSN, Merchant, Shop, {Firm, OldFirm, Datetime,  Old
 			 %% ++ " where a.merchant=" ++ ?to_s(Merchant)
 			 %% ++ " and a.shop=" ++ ?to_s(Shop),
 
-			 "update w_inventory_good a inner join "
+			 %% "update w_inventory_good a inner join "
+			 "update" ++ ?table:t(good, Merchant, UTable) ++ " a inner join "
 			 "(select style_number, brand"
-			 " from w_inventory_new_detail"
-			 " where rsn=\'" ++ ?to_s(RSN) ++ "\') b"
+			 %% " from w_inventory_new_detail"
+			 " from" ++ ?table:t(stock_new_detail, Merchant, UTable)
+			 ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\') b"
 			 " on a.style_number=b.style_number and a.brand=b.brand"
 			 " set " ++?utils:to_sqls(proplists, comma, UpdateFirm)
 			 ++ " where a.merchant=" ++ ?to_s(Merchant),
 
-			 "update w_sale_detail a inner join "
+			 "update" ++ ?table:t(sale_detail, Merchant, UTable) ++ " a inner join "
 			 "(select style_number, brand"
-			 " from w_inventory_new_detail"
-			 " where rsn=\'" ++ ?to_s(RSN) ++ "\') b"
+			 %% " from w_inventory_new_detail"
+			 " from" ++ ?table:t(stock_new_detail, Merchant, UTable)
+			 ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\') b"
 			 " on a.style_number=b.style_number and a.brand=b.brand"
 			 " set " ++?utils:to_sqls(proplists, comma, UpdateFirm)
 			 ++ " where a.merchant=" ++ ?to_s(Merchant)
@@ -1805,7 +1917,7 @@ inventory(update_attr, Mode, RSN, Merchant, Shop, {Firm, OldFirm, Datetime,  Old
 	    end
     end.
 
-inventory(update, Mode, RSN, Merchant, Shop, {Firm, Datetime, Curtime}, Inventories) ->
+inventory(update, Mode, RSN, Merchant, UTable, Shop, {Firm, Datetime, Curtime}, Inventories) ->
     
     lists:foldr(
       fun({struct, Inv}, Acc0)-> 
@@ -1819,14 +1931,14 @@ inventory(update, Mode, RSN, Merchant, Shop, {Firm, Datetime, Curtime}, Inventor
 	      
 	      case Operation of
 		  <<"d">> ->
-		      amount_delete(RSN, Merchant, Shop, Inv, Amounts)
+		      amount_delete(RSN, Merchant, UTable, Shop, Inv, Amounts)
 			  ++ Acc0;
 		  <<"a">> ->
 		      amount_new(
-			Mode, RSN, Merchant, Shop, Firm, Curtime, Inv, Amounts)
+			Mode, RSN, Merchant, UTable, Shop, Firm, Curtime, Inv, Amounts)
 			  ++ Acc0; 
 		  <<"u">> -> 
-		      amount_update(Mode, RSN, Merchant, Shop, Datetime, Inv)
+		      amount_update(Mode, RSN, Merchant, UTable, Shop, Datetime, Inv)
 			  ++ Acc0
 	      end
       end, [], Inventories) .
@@ -1865,7 +1977,7 @@ join_with_comma([Last], Acc) ->
 join_with_comma([H|T], Acc) ->
     join_with_comma(T, Acc ++ ?to_s(H) ++ ",").
 
-amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
+amount_new(Mode, RSN, Merchant, UTable, Shop, Firm, CurDateTime, Inv, Amounts) ->
     ?DEBUG("new inventory with rsn ~p~namounts ~p", [RSN, Amounts]),
     BCode       = ?v(<<"bcode">>, Inv, -1),
     StyleNumber = ?v(<<"style_number">>, Inv),
@@ -1905,8 +2017,8 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 
     %% InventoryExist = ?sql_utils:execute(s_read, Sql0),
 
-    Sql0 = "select id, style_number, brand from w_inventory"
-	" where style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
+    Sql0 = "select id, style_number, brand from" ++ ?table:t(stock, Merchant, UTable)
+	++ " where style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
 	++ " and brand=" ++ ?to_s(Brand)
     %% ++ " and color=" ++ ?to_s(Color)
     %% ++ " and size=" ++ "\"" ++ ?to_s(Size) ++ "\""
@@ -1915,7 +2027,9 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
     {Sql1, Exist} = 
 	case ?sql_utils:execute(s_read, Sql0) of
 	    {ok, []} ->
-		{["insert into w_inventory(rsn"
+		{[%% "insert into w_inventory(rsn"
+		  "insert into" ++ ?table:t(stock, Merchant, UTable)
+		  ++ "(rsn"
 		  ", bcode"
 		  ", style_number"
 		  ", brand"
@@ -1948,7 +2062,10 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		  ", fabric"
 		  ", feather"
 		  
-		  ", merchant, last_sell, change_date, entry_date)"
+		  ", merchant"
+		  ", last_sell"
+		  ", change_date"
+		  ", entry_date)"
 		  " values("
 		  ++ "\"" ++ ?to_s(-1) ++ "\","
 		  ++ "\"" ++ ?to_s(BCode) ++ "\","
@@ -1988,10 +2105,11 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		  ++ "\"" ++ ?to_s(CurDateTime) ++ "\","
 		  ++ "\"" ++ ?to_s(CurDateTime) ++ "\")"], new_stock}; 
 	    {ok, R} ->
-		{["update w_inventory set"
-		 " amount=amount+" ++ ?to_s(Total)
-		 %% ++ ", promotion=" ++ ?to_s(Promotion)
-		 ++ case Mode of
+		{[%% "update w_inventory set"
+		  "update" ++ ?table:t(stock, Merchant, UTable)
+		  ++ " set amount=amount+" ++ ?to_s(Total)
+		  %% ++ ", promotion=" ++ ?to_s(Promotion)
+		  ++ case Mode of
 			?NEW_INVENTORY ->
 			    ", org_price=" ++ ?to_s(OrgPrice)
 				++ ", ediscount=" ++ ?to_s(EDiscount)
@@ -2019,19 +2137,39 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 	
     
     Sql20 = "select id, rsn, style_number, brand"
-	" from w_inventory_new_detail"
-	" where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+    %% " from w_inventory_new_detail"
+	" from" ++ ?table:t(stock_new_detail, Merchant, UTable)
+	++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
 	" and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 	" and brand=" ++ ?to_s(Brand),
     
     Sql2 = 
 	case ?sql_utils:execute(s_read, Sql20) of
 	    {ok, []} ->
-		["insert into w_inventory_new_detail(rsn, style_number"
-		 ", brand, type, sex, season, amount, over"
-		 ", firm, s_group, free, year, alarm_day"
-		 ", vir_price, org_price, tag_price, ediscount, discount"
-		 " , path, merchant, shop, entry_date) values("
+		[%% "insert into w_inventory_new_detail(rsn, style_number"
+		 "insert into" ++ ?table:t(stock_new_detail, Merchant, UTable)
+		 ++ "(rsn"
+		 ", style_number"
+		 ", brand"
+		 ", type"
+		 ", sex"
+		 ", season"
+		 ", amount"
+		 ", over"
+		 ", firm"
+		 ", s_group"
+		 ", free"
+		 ", year"
+		 ", alarm_day"
+		 ", vir_price"
+		 ", org_price"
+		 ", tag_price"
+		 ", ediscount"
+		 ", discount"
+		 " , path"
+		 ", merchant"
+		 ", shop"
+		 ", entry_date) values("
 		 ++ "\"" ++ ?to_s(RSN) ++ "\","
 		 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
 		 ++ ?to_s(Brand) ++ ","
@@ -2064,8 +2202,9 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		 ++ ?to_s(Shop) ++ ","
 		 ++ "\"" ++ ?to_s(CurDateTime) ++ "\")"];
 	    {ok, R20} ->
-		["update w_inventory_new_detail" 
-		 " set amount=amount+" ++ ?to_s(Total) 
+		[%% "update w_inventory_new_detail"
+		 "update" ++ ?table:t(stock_new_detail, Merchant, UTable)
+		 ++ " set amount=amount+" ++ ?to_s(Total) 
 		 ++ ", org_price=" ++ ?to_s(OrgPrice) 
 		 ++ ", ediscount=" ++ ?to_s(EDiscount)
 		 ++ ", vir_price=" ++ ?to_s(VirPrice)
@@ -2084,8 +2223,9 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		Count = ?v(<<"count">>, Attr),
 
 		Sql00 = "select id, style_number, brand, color, size"
-		    " from w_inventory_amount"
-		    " where style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
+		%% " from w_inventory_amount"
+		    " from" ++ ?table:t(stock_note, Merchant, UTable)
+		    ++ " where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 		    ++ " and brand=" ++ ?to_s(Brand)
 		    ++ " and color=" ++ ?to_s(Color)
 		    ++ " and size=" ++ "\"" ++ ?to_s(Size) ++ "\""
@@ -2094,8 +2234,9 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 
 		Sql01 =
 		    "select id, style_number, brand, color, size"
-		    " from w_inventory_new_detail_amount"
-		    " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
+		%% " from w_inventory_new_detail_amount"
+		    " from" ++ ?table:t(stock_new_note, Merchant, UTable)
+		    ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
 		    ++ " and style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
 		    ++ " and brand=" ++ ?to_s(Brand)
 		    ++ " and color=" ++ ?to_s(Color)
@@ -2105,7 +2246,9 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		
 		[case ?sql_utils:execute(s_read, Sql00) of
 		     {ok, []} ->
-			 "insert into w_inventory_amount(rsn"
+			 %% "insert into w_inventory_amount(rsn"
+			 "insert into" ++ ?table:t(stock_note, Merchant, UTable)
+			     ++ "(rsn"
 			     ", style_number, brand, color, size"
 			     ", shop, alarm_a, merchant, total, entry_date)"
 			     " values("
@@ -2120,8 +2263,9 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 			     ++ ?to_s(Count) ++ "," 
 			     ++ "\"" ++ ?to_s(CurDateTime) ++ "\")"; 
 		     {ok, R00} ->
-			 "update w_inventory_amount set"
-			     " total=total+" ++ ?to_s(Count) 
+			 %% "update w_inventory_amount set"
+			 "update" ++ ?table:t(stock_note, Merchant, UTable)
+			     ++ " set total=total+" ++ ?to_s(Count) 
 			 %% ++ ", entry_date="
 			 %% ++ "\"" ++ ?to_s(CurDateTime) ++ "\""
 			     ++ " where id=" ++ ?to_s(?v(<<"id">>, R00));
@@ -2131,7 +2275,9 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 
 		 case ?sql_utils:execute(s_read, Sql01) of
 		     {ok, []} ->
-			 "insert into w_inventory_new_detail_amount(rsn"
+			 %% "insert into w_inventory_new_detail_amount(rsn"
+			 "insert into" ++ ?table:t(stock_new_note, Merchant, UTable)
+			     ++ "(rsn"
 			     ", style_number, brand, color, size"
 			     ", total, merchant, shop, entry_date) values("
 			     ++ "\"" ++ ?to_s(RSN) ++ "\","
@@ -2144,8 +2290,9 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 			     ++ ?to_s(Shop) ++ "," 
 			     ++ "\"" ++ ?to_s(CurDateTime) ++ "\")";
 		     {ok, R01} ->
-			 "update w_inventory_new_detail_amount"
-			     " set total=total+" ++ ?to_s(Count)
+			 %% "update w_inventory_new_detail_amount"
+			 "update" ++ ?table:t(stock_new_note, Merchant, UTable)
+			     ++ " set total=total+" ++ ?to_s(Count)
 			     ++ ", entry_date=" ++ ?to_s(CurDateTime)
 			     ++ " where id=" ++ ?to_s(?v(<<"id">>, R01));
 		     {error, E00} ->
@@ -2157,7 +2304,8 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
     Sql4 = case Exist of
 	       old_stock ->
 		   case OrgPrice /= 0 of
-		       true -> ["update w_inventory_good set org_price=" ++ ?to_s(OrgPrice)
+		       true -> ["update" ++ ?table:t(good, Merchant, UTable)
+				++ " set org_price=" ++ ?to_s(OrgPrice)
 				++ ", ediscount=" ++ ?to_s(EDiscount)
 				++ ", tag_price=" ++ ?to_s(TagPrice)
 				++ ", discount=" ++ ?to_s(Discount)
@@ -2168,8 +2316,9 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 		   end;
 	       new_stock ->
 		   case OrgPrice /= 0 of
-		       true -> ["update w_inventory_good set"
-				" firm=" ++ ?to_s(Firm)
+		       true -> [
+				"update" ++ ?table:t(good, Merchant, UTable)
+				++ " firm=" ++ ?to_s(Firm)
 				++ ", org_price=" ++ ?to_s(OrgPrice)
 				++ ", ediscount=" ++ ?to_s(EDiscount)
 				++ ", vir_price="  ++ ?to_s(VirPrice)
@@ -2179,8 +2328,8 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 				++ " and brand=" ++ ?to_s(Brand) 
 				++ " and merchant=" ++ ?to_s(Merchant)];
 		       false -> [
-				 "update w_inventory_good set"
-				 " firm=" ++ ?to_s(Firm) 
+				 "update" ++ ?table:t(good, Merchant, UTable)
+				 ++ " firm=" ++ ?to_s(Firm) 
 				 ++ " where style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
 				 ++ " and brand=" ++ ?to_s(Brand) 
 				 ++ " and merchant=" ++ ?to_s(Merchant)]
@@ -2188,7 +2337,7 @@ amount_new(Mode, RSN, Merchant, Shop, Firm, CurDateTime, Inv, Amounts) ->
 	   end,
     Sql1 ++ Sql2 ++ Sql3 ++ Sql4.
 
-amount_reject(RSN, Merchant, Shop, Firm, Datetime, Inv, Amounts) ->
+amount_reject(RSN, Merchant, UTable, Shop, Firm, Datetime, Inv, Amounts) ->
     ?DEBUG("reject inventory with rsn ~p~namounts ~p", [RSN, Amounts]), 
     StyleNumber = ?v(<<"style_number">>, Inv),
     Brand       = ?v(<<"brand">>, Inv),
@@ -2210,21 +2359,38 @@ amount_reject(RSN, Merchant, Shop, Firm, Datetime, Inv, Amounts) ->
 
     %% purchaser rejecting means reject to the firm,
     %% so, should minus from the inventory
-    Sql1 = ["update w_inventory set"
-	    " amount=amount-" ++ ?to_s(Total)
+    Sql1 = [%% "update w_inventory set"
+	    "update" ++ ?table:t(stock, Merchant, UTable)
+	    ++ " set amount=amount-" ++ ?to_s(Total)
 	    ++ ", change_date=" ++ "\"" ++ ?to_s(Datetime) ++ "\""
 	    ++ " where style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
 	    ++ " and brand=" ++ ?to_s(Brand)
 	    ++ " and shop=" ++ ?to_s(Shop)
 	    ++ " and merchant=" ++ ?to_s(Merchant)],
     
-    Sql2 = ["insert into w_inventory_new_detail(rsn, style_number"
-	    ", brand, type, sex, season, amount, firm"
-	    ", s_group, free, year"
-	    ", org_price, tag_price, ediscount, discount"
-	    ", path, merchant, shop, entry_date) values("
-	    ++ "\"" ++ ?to_s(RSN) ++ "\","
-	    ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
+    Sql2 = [%% "insert into w_inventory_new_detail"
+	    "insert into" ++ ?table:t(stock_new_detail, Merchant, UTable)
+	    ++ "(rsn"
+	    ", style_number"
+	    ", brand"
+	    ", type"
+	    ", sex"
+	    ", season"
+	    ", amount"
+	    ", firm"
+	    ", s_group"
+	    ", free"
+	    ", year"
+	    ", org_price"
+	    ", tag_price"
+	    ", ediscount"
+	    ", discount"
+	    ", path"
+	    ", merchant"
+	    ", shop"
+	    ", entry_date) values("
+	    ++ "\'" ++ ?to_s(RSN) ++ "\',"
+	    ++ "\'" ++ ?to_s(StyleNumber) ++ "\',"
 	    ++ ?to_s(Brand) ++ ","
 	    ++ ?to_s(Type) ++ ","
 	    ++ ?to_s(Sex) ++ ","
@@ -2232,7 +2398,7 @@ amount_reject(RSN, Merchant, Shop, Firm, Datetime, Inv, Amounts) ->
 	    ++ ?to_s(-Total) ++ ","
 	    ++ ?to_s(Firm) ++ ","
 
-	    ++ "\"" ++ ?to_s(SizeGroup) ++ "\","
+	    ++ "\'" ++ ?to_s(SizeGroup) ++ "\',"
 	    ++ ?to_s(Free) ++ ","
 	    ++ ?to_s(Year) ++ "," 
 
@@ -2243,7 +2409,7 @@ amount_reject(RSN, Merchant, Shop, Firm, Datetime, Inv, Amounts) ->
 	    ++ "\"" ++ ?to_s(Path) ++ "\","
 	    ++ ?to_s(Merchant) ++ ","
 	    ++ ?to_s(Shop) ++ ","
-	    ++ "\"" ++ ?to_s(Datetime) ++ "\")"],
+	    ++ "\'" ++ ?to_s(Datetime) ++ "\')"],
 
     NewFun =
 	fun({struct, Attr}, Acc) ->
@@ -2251,8 +2417,8 @@ amount_reject(RSN, Merchant, Shop, Firm, Datetime, Inv, Amounts) ->
 		Size  = ?v(<<"size">>, Attr),
 		Count = ?v(<<"reject_count">>, Attr), 
 		
-		["update w_inventory_amount set"
-		 " total=total-" ++ ?to_s(Count) 
+		["update" ++ ?table:t(stock_note, Merchant, UTable)
+		 ++ " set total=total-" ++ ?to_s(Count) 
 		 ++ " where style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
 		 ++ " and brand=" ++ ?to_s(Brand)
 		 ++ " and color=" ++ ?to_s(Color)
@@ -2260,8 +2426,16 @@ amount_reject(RSN, Merchant, Shop, Firm, Datetime, Inv, Amounts) ->
 		 ++ " and shop=" ++ ?to_s(Shop)
 		 ++ " and merchant=" ++ ?to_s(Merchant), 
 		 
-		 "insert into w_inventory_new_detail_amount(rsn"
-		 ", style_number, brand, color, size, total, merchant, shop, entry_date)"
+		 "insert into" ++ ?table:t(stock_new_note, Merchant, UTable)
+		 ++ "(rsn"
+		 ", style_number"
+		 ", brand"
+		 ", color"
+		 ", size"
+		 ", total"
+		 ", merchant"
+		 ", shop"
+		 ", entry_date)"
 		 " values("
 		 ++ "\"" ++ ?to_s(RSN) ++ "\","
 		 ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
@@ -2278,19 +2452,21 @@ amount_reject(RSN, Merchant, Shop, Firm, Datetime, Inv, Amounts) ->
     %% ?DEBUG("all sqls ~p", [Sql1 ++ Sql2 ++ Sql3]),
     Sql1 ++ Sql2 ++ Sql3.
    
-amount_delete(RSN, Merchant, Shop, Inv, Amounts) ->
+amount_delete(RSN, Merchant, UTable, Shop, Inv, Amounts) ->
     ?DEBUG("delete inventory with rsn ~p~namounts ~p", [RSN, Amounts]), 
     StyleNumber = ?v(<<"style_number">>, Inv),
     Brand       = ?v(<<"brand">>, Inv),
     Metric      = update_metric(Amounts),
     
-    ["update w_inventory set amount=amount-" ++ ?to_s(Metric)
+    ["update" ++ ?table:t(stock, Merchant, UTable)
+     ++ " set amount=amount-" ++ ?to_s(Metric)
      ++ " where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
      ++ " and brand=" ++ ?to_s(Brand)
      ++ " and shop=" ++ ?to_s(Shop)
      ++ " and merchant=" ++ ?to_s(Merchant),
      
-     "delete from w_inventory_new_detail"
+     %% "delete from w_inventory_new_detail"
+     "delete from" ++ ?table:t(stock_new_detail, Merchant, UTable)
      ++ " where rsn=\"" ++ ?to_s(RSN) ++ "\""
      ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
      ++ " and brand=" ++ ?to_s(Brand)] ++
@@ -2300,8 +2476,9 @@ amount_delete(RSN, Merchant, Shop, Inv, Amounts) ->
 		  CId    = ?v(<<"cid">>, Attr),
 		  Size   = ?v(<<"size">>, Attr),
 		  Count  = ?v(<<"count">>, Attr),
-		  ["update w_inventory_amount set total=total-"
-		   ++ ?to_s(Count)
+		  [%% "update w_inventory_amount"
+		   "update" ++ ?table:t(stock_note, Merchant, UTable)
+		   ++ " set total=total-" ++ ?to_s(Count)
 		   ++ " where style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 		   ++ " and brand=" ++ ?to_s(Brand)
 		   ++ " and color=" ++ ?to_s(CId)
@@ -2309,8 +2486,9 @@ amount_delete(RSN, Merchant, Shop, Inv, Amounts) ->
 		   ++ " and shop=" ++ ?to_s(Shop) 
 		   ++ " and merchant=" ++ ?to_s(Merchant),
 
-		   "delete from w_inventory_new_detail_amount"
-		   " where rsn=\"" ++ ?to_s(RSN) ++ "\""
+		   %% "delete from w_inventory_new_detail_amount"
+		   "delete from" ++ ?table:t(stock_new_note, Merchant, UTable)
+		   ++ " where rsn=\'" ++ ?to_s(RSN) ++ "\'"
 		   ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 		   ++ " and brand=" ++ ?to_s(Brand)
 		   ++ " and color=" ++ ?to_s(CId)
@@ -2318,7 +2496,7 @@ amount_delete(RSN, Merchant, Shop, Inv, Amounts) ->
 		   | Acc1]
 	  end, [], Amounts).
 
-amount_update(Mode, RSN, Merchant, Shop, Datetime, Inv) ->
+amount_update(Mode, RSN, Merchant, UTable, Shop, Datetime, Inv) ->
     ?DEBUG("update inventory with rsn ~p~namounts ~p", [RSN, ?v(<<"changed_amount">>, Inv)]),
     StyleNumber    = ?v(<<"style_number">>, Inv),
     Brand          = ?v(<<"brand">>, Inv),
@@ -2363,11 +2541,12 @@ amount_update(Mode, RSN, Merchant, Shop, Datetime, Inv) ->
 	++ ?utils:v(discount, float, Discount), 
     
     Sql0 =
-	["update w_inventory_new_detail set "
-	 ++ case Metric of
-		0 -> [];
-		Metric -> "amount=amount+" ++ ?to_s(Metric) ++ ","
-	    end
+	[%% "update w_inventory_new_detail"
+	 "update" ++ ?table:t(stock_new_detail, Merchant, UTable)
+	 ++ " set " ++ case Metric of
+			   0 -> [];
+			   Metric -> "amount=amount+" ++ ?to_s(Metric) ++ ","
+		       end
 	 ++ ?utils:to_sqls(
 	       proplists,
 	       comma,
@@ -2379,11 +2558,12 @@ amount_update(Mode, RSN, Merchant, Shop, Datetime, Inv) ->
 	 ++ " and brand=" ++ ?to_s(Brand)]
 	++ case Mode of
 	       ?NEW_INVENTORY ->
-		   ["update w_inventory set "
-		    ++ case Metric of
-			   0 -> [];
-			   Metric -> "amount=amount+" ++ ?to_s(Metric) ++ ","
-		       end
+		   [%% "update w_inventory set "
+		    "update" ++ ?table:t(stock, Merchant, UTable)
+		    ++ " set " ++ case Metric of
+				      0 -> [];
+				      Metric -> "amount=amount+" ++ ?to_s(Metric) ++ ","
+				  end
 		    ++ ?utils:to_sqls(proplists, comma, Updates) 
 		    ++ " where "
 		    ++ " merchant=" ++ ?to_s(Merchant) 
@@ -2391,7 +2571,9 @@ amount_update(Mode, RSN, Merchant, Shop, Datetime, Inv) ->
 		    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 		    ++ " and brand=" ++ ?to_s(Brand),
 
-		    "update w_sale_detail set "
+		    %% "update w_sale_detail set "
+		    "update" ++ ?table:t(sale_new_detail, Merchant, UTable)
+		    ++ " set "
 		    ++ ?utils:to_sqls(
 			  proplists,
 			  comma,
@@ -2405,8 +2587,9 @@ amount_update(Mode, RSN, Merchant, Shop, Datetime, Inv) ->
 		    ++ " and brand=" ++ ?to_s(Brand)
 		    ++ " and org_price=0",
 		    
-		    "update w_inventory_good set " 
-		    ++ ?utils:to_sqls(proplists, comma, Updates) 
+		    %% "update w_inventory_good set "
+		    "update" ++ ?table:t(good, Merchant, UTable)
+		    ++ " set " ++ ?utils:to_sqls(proplists, comma, Updates) 
 		    ++ " where "
 		    ++ " merchant=" ++ ?to_s(Merchant)
 		    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
@@ -2415,8 +2598,8 @@ amount_update(Mode, RSN, Merchant, Shop, Datetime, Inv) ->
 		   case Metric of
 		       0 -> [];
 		       _ -> 
-			   ["update w_inventory set "
-			    "amount=amount+" ++ ?to_s(Metric)
+			   ["update" ++ ?table:t(stock, Merchant, UTable) 
+			    ++ " set amount=amount+" ++ ?to_s(Metric)
 			    ++ " where "
 			    ++ " merchant=" ++ ?to_s(Merchant) 
 			    ++ " and shop=" ++ ?to_s(Shop)
@@ -2435,18 +2618,27 @@ amount_update(Mode, RSN, Merchant, Shop, Datetime, Inv) ->
 		case ?v(<<"operation">>, Attr) of 
 		    <<"a">> -> 
 			Sql01 = "select id, style_number, brand, color, size"
-			    " from w_inventory_amount"
-			    " where " ++ C1(Color, Size),
+			%% " from w_inventory_amount"
+			    " from" ++ ?table:t(stock_note, Merchant, UTable)
+			    ++ " where " ++ C1(Color, Size),
 			
 			Sql02 = "select id, style_number, brand, color, size"
-			    " from w_inventory_new_detail_amount"
-			    " where " ++ C2(Color, Size),
+			%% " from w_inventory_new_detail_amount"
+			    " from " ++ ?table:t(stock_new_note, Merchant, UTable)
+			    ++ " where " ++ C2(Color, Size),
 			
 			[ case ?sql_utils:execute(s_read, Sql01) of
 			      {ok, []} ->
-				  "insert into w_inventory_amount(rsn"
-				      ", style_number, brand, color, size"
-				      ", shop, merchant, total"
+				  %% "insert into w_inventory_amount(rsn"
+				  "insert into" ++ ?table:t(stock_note, Merchant, UTable)
+				      ++ "(rsn"
+				      ", style_number"
+				      ", brand"
+				      ", color"
+				      ", size"
+				      ", shop"
+				      ", merchant"
+				      ", total"
 				      ", entry_date) values("
 				      ++ "\'" ++ ?to_s(-1) ++ "\',"
 				      ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
@@ -2458,7 +2650,8 @@ amount_update(Mode, RSN, Merchant, Shop, Datetime, Inv) ->
 				      ++ ?to_s(Count) ++ ","
 				      ++ "\"" ++ ?to_s(Datetime) ++ "\")";
 			      {ok, _} ->
-				  "update w_inventory_amount" " set total=total+" ++ ?to_s(Count)
+				  "update" ++ ?table:t(stock_note, Merchant, UTable)
+				      ++ " set total=total+" ++ ?to_s(Count)
 				      ++ " where " ++ C1(Color, Size);
 			      {error, E00} ->
 				  throw({db_error, E00})
@@ -2466,9 +2659,17 @@ amount_update(Mode, RSN, Merchant, Shop, Datetime, Inv) ->
 			 
 			 case ?sql_utils:execute(s_read, Sql02) of
 			     {ok, []} ->
-				 "insert into w_inventory_new_detail_amount("
-				     "rsn, style_number, brand, merchant, shop, color"
-				     ", size, total, entry_date) values("
+				 %% "insert into w_inventory_new_detail_amount"
+				 "insert into" ++ ?table:t(stock_new_note, Merchant, UTable)
+				     ++ "(rsn"
+				     ", style_number"
+				     ", brand"
+				     ", merchant"
+				     ", shop"
+				     ", color"
+				     ", size"
+				     ", total"
+				     ", entry_date) values("
 				     ++ "\"" ++ ?to_s(RSN) ++ "\","
 				     ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
 				     ++ ?to_s(Brand) ++ ","
@@ -2479,27 +2680,31 @@ amount_update(Mode, RSN, Merchant, Shop, Datetime, Inv) ->
 				     ++ ?to_s(Count) ++ "," 
 				     ++ "\"" ++ ?to_s(Datetime) ++ "\")";
 			     {ok, _} ->
-				 "update w_inventory_new_detail_amount"
-				     " set total=total+" ++ ?to_s(Count)
+				 "update" ++ ?table:t(stock_new_note, Merchant, UTable)
+				     ++ " set total=total+" ++ ?to_s(Count)
 				     ++ " where " ++ C2(Color, Size);
 			     {error, E00} ->
 				 throw({db_error, E00})
 			 end | Acc1];
 		    
 		    <<"d">> -> 
-			["update w_inventory_amount set total=total-"
-			 ++ ?to_s(Count) ++ " where " ++ C1(Color, Size),
+			["update" ++ ?table:t(stock_note, Merchant, UTable)
+			 ++ " set total=total-" ++ ?to_s(Count)
+			 ++ " where " ++ C1(Color, Size),
 			 
-			 "delete from w_inventory_new_detail_amount"
-			 " where " ++ C2(Color, Size)
+			 %% "delete from w_inventory_new_detail_amount"
+			 "delete from" ++ ?table:t(stock_new_note, Merchant, UTable)
+			 ++ " where " ++ C2(Color, Size)
 			 | Acc1];
 		    <<"u">> -> 
-			["update w_inventory_amount"
-			 " set total=total+" ++ ?to_s(Count)
+			[%% "update w_inventory_amount"
+			 "update" ++ ?table:t(stock_note, Merchant, UTable)
+			 ++ " set total=total+" ++ ?to_s(Count)
 			 ++ " where " ++ C1(Color, Size),
 
-			 " update w_inventory_new_detail_amount"
-			 " set total=total+" ++ ?to_s(Count)
+			 %% " update w_inventory_new_detail_amount"
+			 " update " ++ ?table:t(stock_new_note, Merchant, UTable)
+			 ++ " set total=total+" ++ ?to_s(Count)
 			 ++ " where " ++ C2(Color, Size)|Acc1]
 		end
 	end,

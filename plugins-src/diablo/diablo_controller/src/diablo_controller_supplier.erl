@@ -89,11 +89,11 @@ bill(check_time, Merchant, {Firm, Datetime}) ->
 match(vfirm, Merchant, {Mode, Prompt}) -> 
     gen_server:call(?MODULE, {match_vfirm, Merchant, Mode, Prompt}).
 
-profit(profit, Mode, Merchant, Conditions) ->
-    gen_server:call(?MODULE, {profit, Mode, Merchant, Conditions}, ?SQL_TIME_OUT);
+profit(profit, Mode, {Merchant, UTable}, Conditions) ->
+    gen_server:call(?MODULE, {profit, Mode, Merchant, UTable, Conditions}, ?SQL_TIME_OUT);
 
-profit(profit_shop, Mode, Merchant, Conditions) ->
-    gen_server:call(?MODULE, {profit_shop, Mode, Merchant, Conditions}, ?SQL_TIME_OUT).
+profit(profit_shop, Mode, {Merchant, UTable}, Conditions) ->
+    gen_server:call(?MODULE, {profit_shop, Mode, Merchant, UTable, Conditions}, ?SQL_TIME_OUT).
 
 %% stastic
 %% half of minitue
@@ -1161,7 +1161,7 @@ handle_call({profit, stock_all, Merchant, Conditions}, _From, State) ->
     R = ?sql_utils:execute(read, Sql), 
     {reply, R, State};
 
-handle_call({profit_shop, stock_in_of_firm, Merchant, Conditions}, _From, State) ->
+handle_call({profit_shop, stock_in_of_firm, Merchant, UTable, Conditions}, _From, State) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
     Sql =
 	"select a.firm_id"
@@ -1180,7 +1180,10 @@ handle_call({profit_shop, stock_in_of_firm, Merchant, Conditions}, _From, State)
 	", a.amount" 
 	", a.over"
 
-	" from w_inventory_new_detail a, w_inventory_new b" 
+    %% " from w_inventory_new_detail a, w_inventory_new b"
+	" from "
+	++ ?table:t(stock_new_detail, Merchant, UTable) ++ " a,"
+	++ ?table:t(stock_new, Merchant, UTable)++ "  b" 
 	" where a.rsn=b.rsn"
 	" and a.merchant=b.merchant"
 	" and a.firm=b.firm"
@@ -1199,7 +1202,7 @@ handle_call({profit_shop, stock_in_of_firm, Merchant, Conditions}, _From, State)
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 
-handle_call({profit_shop, stock_out_of_firm, Merchant, Conditions}, _From, State) ->
+handle_call({profit_shop, stock_out_of_firm, Merchant, UTable, Conditions}, _From, State) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
     Sql =
 	"select a.firm_id"
@@ -1218,7 +1221,10 @@ handle_call({profit_shop, stock_out_of_firm, Merchant, Conditions}, _From, State
 	", a.amount" 
     %% ", a.over"
 
-	" from w_inventory_new_detail a, w_inventory_new b" 
+    %% " from w_inventory_new_detail a, w_inventory_new b"
+	++ " from "
+	++ ?table:t(stock_new_detail, Merchant, UTable) ++ " a,"
+	++ ?table:t(stock_new, Merchant, UTable)++ "  b" 
 	" where a.rsn=b.rsn"
 	" and a.merchant=b.merchant"
 	" and a.firm=b.firm"
@@ -1237,7 +1243,7 @@ handle_call({profit_shop, stock_out_of_firm, Merchant, Conditions}, _From, State
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 
-handle_call({profit_shop, transfer_in_of_firm, Merchant, Conditions}, _From, State) ->
+handle_call({profit_shop, transfer_in_of_firm, Merchant, UTable, Conditions}, _From, State) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
     Sql =
 	"select a.firm_id"
@@ -1253,7 +1259,10 @@ handle_call({profit_shop, transfer_in_of_firm, Merchant, Conditions}, _From, Sta
 	", a.org_price"
 	", a.amount" 
 	
-	" from w_inventory_transfer_detail a, w_inventory_transfer b" 
+    %% " from w_inventory_transfer_detail a, w_inventory_transfer b"
+	++ " from "
+	++ ?table:t(stock_transfer_detail, Merchant, UTable) ++ " a,"
+	++ ?table:t(stock_transfer, Merchant, UTable)++ "  b" 
 	" where a.rsn=b.rsn"
 	" and a.merchant=b.merchant"
 	" and a.tshop=b.tshop"
@@ -1271,7 +1280,7 @@ handle_call({profit_shop, transfer_in_of_firm, Merchant, Conditions}, _From, Sta
     {reply, R, State};
 
 
-handle_call({profit_shop, transfer_out_of_firm, Merchant, Conditions}, _From, State) ->
+handle_call({profit_shop, transfer_out_of_firm, Merchant, UTable, Conditions}, _From, State) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
     Sql =
 	"select a.firm_id"
@@ -1287,7 +1296,10 @@ handle_call({profit_shop, transfer_out_of_firm, Merchant, Conditions}, _From, St
 	", a.org_price"
 	", a.amount"
 	
-	" from w_inventory_transfer_detail a, w_inventory_transfer b" 
+    %% " from w_inventory_transfer_detail a, w_inventory_transfer b"
+	++ " from "
+	++ ?table:t(stock_new_detail, Merchant, UTable) ++ " a,"
+	++ ?table:t(stock_new, Merchant, UTable)++ "  b" 
 	" where a.rsn=b.rsn"
 	" and a.merchant=b.merchant"
 	" and a.fshop=b.fshop"
@@ -1304,7 +1316,7 @@ handle_call({profit_shop, transfer_out_of_firm, Merchant, Conditions}, _From, St
     {reply, R, State};
 
 
-handle_call({profit_shop, sale_of_firm, Merchant, Conditions}, _From, State) ->
+handle_call({profit_shop, sale_of_firm, Merchant, UTable, Conditions}, _From, State) ->
     ?DEBUG("sale_of_firm: Merchant ~p, conditions ~p", [Merchant, Conditions]),
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions), 
     Sql =
@@ -1322,7 +1334,10 @@ handle_call({profit_shop, sale_of_firm, Merchant, Conditions}, _From, State) ->
 	", a.org_price"
 	", a.total"
     	
-    	" from w_sale_detail a, w_sale b"
+    	" from "
+    %% "w_sale_detail a, w_sale b"
+	++ ?table:t(sale_detail, Merchant, UTable) ++ " a,"
+	++ ?table:t(sale_new, Merchant, UTable)++ "  b" 
 	" where a.rsn=b.rsn"
 	" and a.merchant=b.merchant"
 	" and a.shop=b.shop"

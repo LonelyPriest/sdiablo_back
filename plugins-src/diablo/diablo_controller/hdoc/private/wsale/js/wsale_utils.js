@@ -1480,6 +1480,32 @@ wsaleDraft.prototype.select = function(dialog, template, draftFilter, selectCall
 	});
 };
 
+var diabloSpeak = function() {
+    this.utterance = undefined;
+    if('speechSynthesis' in window) {
+	this.utterance = new SpeechSynthesisUtterance();
+	if (angular.isDefined(this.utterance) && angular.isObject(this.utterance)) {
+	    this.utterance.lang = 'zh-CN';
+	    this.utterance.rate = 0.7;
+	}
+    }
+    console.log(this.utterance);
+};
+
+diabloSpeak.prototype.set_text = function(text) {
+    if (angular.isDefined(this.utterance) && angular.isObject(this.utterance)) {
+	this.utterance.text = angular.isUndefined(text) ? "" : text; 
+    }
+};
+
+diabloSpeak.prototype.speak = function() {
+    if (angular.isDefined(this.utterance) && angular.isObject(this.utterance)) {
+	window.speechSynthesis.cancel();
+	window.speechSynthesis.speak(this.utterance);
+    } 
+};
+
+
 var wsalePrint = function(){
     var left   = 1;
     var width  = 219; // inch, 5.8 / 2.45 * 96 

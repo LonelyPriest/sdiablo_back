@@ -220,16 +220,16 @@ count_table(Table, CountSql, Merchant, Conditions) ->
     
     Sql = "select " ++ CountSql ++ " from " ++ ?to_s(Table)
 	++ " where " ++ condition(proplists_suffix, NewConditions) 
-	++ " merchant="++ ?to_s(Merchant)
-
-	
+	++ " merchant="++ ?to_s(Merchant) 
 	++ case condition(time_no_prfix, StartTime, EndTime) of
 	       [] -> [];
 	       TimeSql -> " and " ++ TimeSql
 	   end,
     Sql.
 
-
+%%%================================================================================
+%%%sql execute
+%%%================================================================================
 execute(write, Sql, OkReturn) ->
     case ?mysql:fetch(write, Sql) of
 	{ok, _} ->

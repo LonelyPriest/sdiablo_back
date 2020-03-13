@@ -661,6 +661,8 @@
 %% sms notify
 -define(notify, diablo_sms_notify).
 
+-define(table, diablo_table).
+
 -define(value(Key, Proplists),
 	diablo_controller_utils:value_from_proplists(Key, Proplists)).
 -define(value(Key, Proplists, Default),
@@ -686,6 +688,7 @@
 	  mtype       = -1         :: integer(),
 	  sdays       = 0          :: integer(),
 	  tablet      = 0          :: integer(),
+	  utable      = 0          :: integer(),
 	  login_time  = undefined  :: string()   
 	 }).
 

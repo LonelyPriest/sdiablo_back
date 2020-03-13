@@ -64,13 +64,19 @@ handle_call({login, User, Passwd}, _From, State) ->
 				  {<<"mtype">>, -1},
 				  {<<"state">>, -1}|User0]}, State};
 		_ ->
-		    Sql1 = "select a.id, a.name, a.type, a.merchant"
+		    Sql1 = "select a.id"
+			", a.name"
+			", a.type"
+			", a.merchant"
 			", a.retailer as retailer_id"
 			", a.employee as employee_id"
 			", a.shop as shop_id"
-                        ", a.stime, a.etime, a.sdays"
+                        ", a.stime"
+			", a.etime"
+			", a.sdays"
 			
 			", b.type as mtype"
+			", b.unique_table as utable"
 			", b.state"
 			" from users a, merchants b"
 			

@@ -87,6 +87,7 @@ handle_call({new, User}, _From, State) ->
     MerchantType = ?v(<<"mtype">>, User),
     SDays        = ?v(<<"sdays">>, User),
     Tablet       = ?v(<<"tablet">>, User, 0),
+    UTable       = ?v(<<"utable">>, User, 0),
 
     MS = [{{'_', #session{user_name='$1', _='_'}},
 	   [{'==', '$1', ?to_b(UserName)}],
@@ -101,8 +102,7 @@ handle_call({new, User}, _From, State) ->
     %% SessionId = ?to_b(knife_uuid:v5(string, ?to_s(UserId))),
     SessionId = ?to_b(?to_s(Merchant) ++ "-" ++ ?to_s(UserId) ++ "-" ++ ?to_s(UserName)
 		      ++ "-" ++ knife_uuid:to_string(knife_uuid:uuid1())),
-    %% SessionId = <<P1/binary, UUID/binary>>,
-    
+    %% SessionId = <<P1/binary, UUID/binary>>, 
     true = ets:insert(
 	     ?SESSION, {SessionId,
 			#session{
@@ -117,6 +117,7 @@ handle_call({new, User}, _From, State) ->
 			  mtype       = ?to_i(MerchantType),
 			  sdays       = ?to_i(SDays),
 			  tablet      = ?to_i(Tablet),
+			  utable      = ?to_i(UTable),
 			  login_time  = ?utils:current_time(timestamp)}}),
     {reply, {ok, SessionId}, State};
 
@@ -310,6 +311,8 @@ get(time, Session) ->
     Session#session.login_time;
 get(tablet, Session) ->
     Session#session.tablet;
+get(utable, Session) ->
+    Session#session.utable;
 get(sdays, Session) ->
     Session#session.sdays.
 

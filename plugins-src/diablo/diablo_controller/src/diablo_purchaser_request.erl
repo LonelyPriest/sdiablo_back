@@ -47,6 +47,7 @@ action(Session, _Req, Unkown) ->
 action(Session, Req, {"new_w_inventory"}, Payload) ->
     ?DEBUG("new purchaser inventory with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
     UserId = ?session:get(id, Session),
     Invs = ?v(<<"inventory">>, Payload, []),
     {struct, Base} = ?v(<<"base">>, Payload), 
@@ -66,7 +67,10 @@ action(Session, Req, {"new_w_inventory"}, Payload) ->
 	    case stock(check, ?NEW_INVENTORY, Total, 0, Invs) of
 		ok ->
 		    case ?w_inventory:purchaser_inventory(
-			    new, Merchant, lists:reverse(Invs), [{<<"user">>, UserId}] ++ Base) of
+			    new,
+			    {Merchant, UTable},
+			    lists:reverse(Invs),
+			    [{<<"user">>, UserId}] ++ Base) of
 			{ok, RSn} -> 
 			    ?utils:respond(
 			       200,
@@ -103,6 +107,7 @@ action(Session, Req, {"new_w_inventory"}, Payload) ->
 action(Session, Req, {"update_w_inventory"}, Payload) ->
     ?DEBUG("update purchaser inventory with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
     Invs = ?v(<<"inventory">>, Payload, []),
     {struct, Base} = ?v(<<"base">>, Payload),
     
@@ -118,7 +123,7 @@ action(Session, Req, {"update_w_inventory"}, Payload) ->
 	    ?utils:respond(200, Req, ?err(purchaser_diff_time_with_empty_firm, Datetime));
 	false -> 
 	    case ?w_inventory:purchaser_inventory(
-		    update, Merchant, lists:reverse(Invs), {Base, OldBase}) of
+		    update, {Merchant, UTable}, lists:reverse(Invs), {Base, OldBase}) of
 		{ok, RSn} -> 
 		    ?utils:respond(
 		       200,
@@ -131,9 +136,10 @@ action(Session, Req, {"update_w_inventory"}, Payload) ->
 
 action(Session, Req, {"comment_w_inventory_new"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
     RSN = ?v(<<"rsn">>, Payload),
     Comment = ?v(<<"comment">>, Payload, []),
-    case ?w_inventory:purchaser_inventory(comment, Merchant, RSN, Comment) of
+    case ?w_inventory:purchaser_inventory(comment, {Merchant, UTable}, RSN, Comment) of
     	{ok, RSn} -> 
     	    ?utils:respond(
 	       200,
@@ -145,12 +151,13 @@ action(Session, Req, {"comment_w_inventory_new"}, Payload) ->
 
 action(Session, Req, {"modify_w_inventory_new_balance"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
     RSN = ?v(<<"rsn">>, Payload),
     Balance = ?v(<<"balance">>, Payload),
 
     case is_number(Balance) of
 	true -> 
-	    case ?w_inventory:purchaser_inventory(modify_balance, Merchant, RSN, Balance) of
+	    case ?w_inventory:purchaser_inventory(modify_balance, {Merchant, UTable}, RSN, Balance) of
 		{ok, RSn} -> 
 		    ?utils:respond(
 		       200,
@@ -168,13 +175,16 @@ action(Session, Req, {"check_w_inventory"}, Payload) ->
     ?DEBUG("check purchaser inventory with session ~p, paylaod~n~p",
 	   [Session, Payload]),
     Merchant   = ?session:get(merchant, Session),
+    UTable     = ?session:get(utable, Session),
     RSN        = ?v(<<"rsn">>, Payload, []),
     Mode       = ?v(<<"mode">>, Payload, ?CHECK),
     CheckFirm  = ?v(<<"firm">>, Payload, ?CHECK),
     CheckPrice = ?v(<<"price">>, Payload, ?CHECK),
     
     case ?w_inventory:purchaser_inventory(
-	    check, Merchant, RSN,
+	    check,
+	    {Merchant, UTable},
+	    RSN,
 	    [{<<"mode">>, Mode}, {<<"firm">>, CheckFirm}, {<<"price">>, CheckPrice}]) of
     	{ok, RSN} -> 
     	    ?utils:respond(
@@ -199,10 +209,11 @@ action(Session, Req, {"del_w_inventory"}, Payload) ->
     ?DEBUG("delete inventory with session ~p, paylaod~n~p",
 	   [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
     RSN = ?v(<<"rsn">>, Payload, []),
     Mode = ?v(<<"mode">>, Payload, ?DELETE), 
 
-    case ?w_inventory:purchaser_inventory(delete_new, Merchant, RSN, Mode) of
+    case ?w_inventory:purchaser_inventory(delete_new, {Merchant, UTable}, RSN, Mode) of
     	{ok, RSN} -> 
     	    ?utils:respond(
 	       200, Req,
@@ -213,7 +224,8 @@ action(Session, Req, {"del_w_inventory"}, Payload) ->
 
 action(Session, Req, {"filter_w_inventory_new"}, Payload) -> 
     ?DEBUG("filter_w_inventory_new with session ~p, paylaod~n~p", [Session, Payload]),
-    Merchant = ?session:get(merchant, Session), 
+    Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
     {struct, Fields} = ?v(<<"fields">>, Payload),
     SortMode = ?v(<<"mode">>, Payload, ?SORT_BY_ID),
     %% SortMode = ?v(<<"mode">>, Payload, ?SORT_BY_DATE), 
@@ -266,7 +278,8 @@ action(Session, Req, {"filter_w_inventory_new"}, Payload) ->
 		   [{<<"fields">>, {struct, Fields}}]
 		   ++ lists:keydelete(<<"fields">>, 1, NewPayload)}; 
 	    _ ->
-		case ?w_inventory:purchaser_inventory(get_inventory_new_rsn, Merchant, Fields) of
+		case ?w_inventory:purchaser_inventory(
+			get_inventory_new_rsn, {Merchant, UTable}, Fields) of
 		    {ok, []} -> {ok, []};
 		    {ok, RSNs} ->
 			{ok,
@@ -295,12 +308,12 @@ action(Session, Req, {"filter_w_inventory_new"}, Payload) ->
 	    	    ?pagination:pagination(
 	    	       fun(Match, Conditions) ->
 	    		       ?w_inventory:filter(
-	    			  total_news, ?to_a(Match), Merchant, Conditions)
+	    			  total_news, ?to_a(Match), {Merchant, UTable}, Conditions)
 	    	       end,
 	    	       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
 	    		       ?w_inventory:filter(
 	    			  {news, SortMode},
-				  Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
+				  Match, {Merchant, UTable}, CurrentPage, ItemsPerPage, Conditions)
 	    	       end, Req, NewConditions);
 	{error, ErrorS} ->
 	    ?utils:respond(200, Req, ErrorS)
@@ -310,7 +323,9 @@ action(Session, Req, {"filter_w_inventory_new"}, Payload) ->
 action(Session, Req, {"list_w_inventory_new_detail"}, Payload) ->
     ?DEBUG("list_w_inventory_new_detail with session ~p, paylaod ~p", [Session, Payload]),
     Merchant  = ?session:get(merchant, Session),
-    case ?w_inventory:purchaser_inventory(list_new_detail, Merchant, Payload) of
+    UTable = ?session:get(utable, Session),
+
+    case ?w_inventory:purchaser_inventory(list_new_detail, {Merchant, UTable}, Payload) of
 	{ok, Details} ->
 	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
 					       {<<"data">>, Details}]}); 
@@ -321,13 +336,14 @@ action(Session, Req, {"list_w_inventory_new_detail"}, Payload) ->
 action(Session, Req, {"list_w_inventory_flow"}, Payload) ->
     ?DEBUG("list_w_inventory_flow with session ~p, paylaod ~p", [Session, Payload]),
     Merchant  = ?session:get(merchant, Session),
-    
+    UTable = ?session:get(utable, Session),
     try
-	{ok, NewDetails} = ?w_inventory:purchaser_inventory(trace_new, Merchant, Payload),
+	{ok, NewDetails} = ?w_inventory:purchaser_inventory(trace_new, {Merchant, UTable}, Payload),
 	?DEBUG("NewDetails ~p", [NewDetails]),
-	{ok, SellDetails} = ?w_sale:sale(trace, Merchant, Payload),
+	{ok, SellDetails} = ?w_sale:sale(trace, {Merchant, UTable}, Payload),
 	?DEBUG("SellDetails ~p", [SellDetails]),
-	{ok, TransferDetail} = ?w_inventory:purchaser_inventory(trace_transfer, Merchant, Payload),
+	{ok, TransferDetail} = ?w_inventory:purchaser_inventory(
+				  trace_transfer, {Merchant, UTable}, Payload),
 	?DEBUG("TransferDetail ~p", [TransferDetail]),
 
 	?utils:respond(200, object, Req,
@@ -352,7 +368,8 @@ action(Session, Req, {"list_w_inventory_flow"}, Payload) ->
 action(Session, Req, {"list_w_inventory_info"}, Payload) ->
     ?DEBUG("list_w_inventory_info with session ~p, paylaod ~p", [Session, Payload]),
     Merchant  = ?session:get(merchant, Session),
-    case ?w_inventory:purchaser_inventory(list_inventory_info, Merchant, Payload) of
+    UTable = ?session:get(utable, Session),
+    case ?w_inventory:purchaser_inventory(list_inventory_info, {Merchant, UTable}, Payload) of
 	{ok, Details} ->
 	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
 					       {<<"data">>, Details}]}); 
@@ -361,9 +378,9 @@ action(Session, Req, {"list_w_inventory_info"}, Payload) ->
     end;
 
 action(Session, Req, {"filter_w_inventory_new_rsn_group"}, Payload) ->
-    ?DEBUG("filter_w_inventory_new_rsn_group with session ~p, paylaod~n~p", [Session, Payload]),
-
-    Merchant  = ?session:get(merchant, Session), 
+    ?DEBUG("filter_w_inventory_new_rsn_group with session ~p, paylaod~n~p", [Session, Payload]), 
+    Merchant  = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
 
     {struct, Fields}     = ?v(<<"fields">>, Payload), 
     CType = ?v(<<"ctype">>, Fields),
@@ -381,21 +398,20 @@ action(Session, Req, {"filter_w_inventory_new_rsn_group"}, Payload) ->
     ?pagination:pagination(
        fun(Match, Conditions) ->
 	       ?w_inventory:filter(
-		  total_new_rsn_groups, ?to_a(Match), Merchant, Conditions)
+		  total_new_rsn_groups, ?to_a(Match), {Merchant, UTable}, Conditions)
        end,
        fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
 	       ?w_inventory:filter(
-		  new_rsn_groups, Match, Merchant,
+		  new_rsn_groups, ?to_a(Match), {Merchant, UTable},
 		  CurrentPage, ItemsPerPage, Conditions)
        end, Req, PayloadWithLBrand);
 
 action(Session, Req, {"w_inventory_new_rsn_detail"}, Payload) ->
-    ?DEBUG("w_inventory_rsn_detail with session ~p, paylaod~n~p",
-	   [Session, Payload]),
-
+    ?DEBUG("w_inventory_rsn_detail with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
     %% RSn = ?v(<<"rsn">>, Payload),
-    case ?w_inventory:rsn_detail(new_rsn, Merchant, Payload) of 
+    case ?w_inventory:rsn_detail(new_rsn, {Merchant, UTable}, Payload) of 
     	{ok, Details} ->
 	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
 					       {<<"data">>, Details}]}); 
@@ -404,13 +420,12 @@ action(Session, Req, {"w_inventory_new_rsn_detail"}, Payload) ->
     end;
 
 action(Session, Req, {"get_w_inventory_new_amount"}, Payload) ->
-    ?DEBUG("get_new_amount_detail with session ~p, paylaod~n~p",
-	   [Session, Payload]),
-
+    ?DEBUG("get_new_amount_detail with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     %% RSn = ?v(<<"rsn">>, Payload),
-    case ?w_inventory:purchaser_inventory(
-	    get_new_amount, Merchant, Payload) of 
+    case ?w_inventory:purchaser_inventory(get_new_amount, {Merchant, UTable}, Payload) of 
     	{ok, Details} ->
 	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
 					       {<<"data">>, Details}]}); 
@@ -420,12 +435,14 @@ action(Session, Req, {"get_w_inventory_new_amount"}, Payload) ->
 
 action(Session, Req, {"get_w_inventory_tagprice"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     Shop = ?v(<<"shop">>, Payload),
     StyleNumber = ?v(<<"style_number">>, Payload),
     Brand = ?v(<<"brand">>, Payload),
 
     case ?w_inventory:purchaser_inventory(
-	    tag_price, Merchant, Shop, StyleNumber, Brand) of 
+	    tag_price, {Merchant, UTable}, Shop, StyleNumber, Brand) of 
     	{ok, Detail} ->
 	    %% ?DEBUG("detail ~p", [Detail]),
 	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
@@ -436,16 +453,21 @@ action(Session, Req, {"get_w_inventory_tagprice"}, Payload) ->
 
 action(Session, Req, {"get_stock_note"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     Shop = ?v(<<"shop">>, Payload),
     StyleNumber = ?v(<<"style_number">>, Payload),
     Brand = ?v(<<"brand">>, Payload),
     Color = ?v(<<"color">>, Payload),
     Size  = ?v(<<"size">>, Payload),
     case ?w_inventory:purchaser_inventory(
-	    get_note, Merchant, Shop, [{<<"style_number">>, StyleNumber},
-				       {<<"brand">>, Brand},
-				       {<<"color">>, Color},
-				       {<<"size">>, Size}]) of
+	    get_note,
+	    {Merchant, UTable},
+	    Shop,
+	    [{<<"style_number">>, StyleNumber},
+	     {<<"brand">>, Brand},
+	     {<<"color">>, Color},
+	     {<<"size">>, Size}]) of
 	{ok, Note} ->
 	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
 					       {<<"data">>, {Note}}]});
@@ -459,6 +481,8 @@ action(Session, Req, {"get_stock_note"}, Payload) ->
 action(Session, Req, {"reject_w_inventory"}, Payload) ->
     ?DEBUG("reject purchasr inventory with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     UserId = ?session:get(id, Session),
     Invs = ?v(<<"inventory">>, Payload),
     {struct, Base} = ?v(<<"base">>, Payload),
@@ -479,7 +503,9 @@ action(Session, Req, {"reject_w_inventory"}, Payload) ->
 	    case stock(check, ?REJECT_INVENTORY, Total, 0, Invs) of
 		ok ->
 		    case ?w_inventory:purchaser_inventory(
-			    reject, Merchant, lists:reverse(Invs), [{<<"user">>, UserId}] ++ Base) of 
+			    reject,
+			    {Merchant, UTable},
+			    lists:reverse(Invs), [{<<"user">>, UserId}] ++ Base) of 
 			{ok, RSn} ->
 			    ?utils:respond(
 			       200, Req,
@@ -517,6 +543,8 @@ action(Session, Req, {"reject_w_inventory"}, Payload) ->
 action(Session, Req, {"filter_w_inventory_group"}, Payload) -> 
     ?DEBUG("filter_w_inventory_group with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     {struct, Mode}     = ?v(<<"mode">>, Payload),
     Order = ?v(<<"mode">>, Mode),
     Sort  = ?v(<<"sort">>, Mode),
@@ -541,28 +569,30 @@ action(Session, Req, {"filter_w_inventory_group"}, Payload) ->
     
     ?pagination:pagination(
        fun(Match, Conditions) ->
-	       ?w_inventory:filter(total_groups, Match, Merchant, Conditions)
+	       ?w_inventory:filter(total_groups, Match, {Merchant, UTable}, Conditions)
        end,
        fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
 	       ?w_inventory:filter(
 		  {groups, mode(Order), Sort},
-		  Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
+		  Match, {Merchant, UTable}, CurrentPage, ItemsPerPage, Conditions)
        end, Req, PayloadWithLBrand); 
 
 action(Session, Req, {"list_w_inventory"}, Payload) ->
-    ?DEBUG("list purchaser inventory with session ~p, paylaod~n~p",
-	   [Session, Payload]),
+    ?DEBUG("list purchaser inventory with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     batch_responed(
-      fun() -> ?w_inventory:purchaser_inventory(list, Merchant, Payload) end, Req);
+      fun() -> ?w_inventory:purchaser_inventory(list, {Merchant, UTable}, Payload) end, Req);
 
 %% =============================================================================
 %% fix
 %% =============================================================================
 action(Session, Req, {"fix_w_inventory"}, Payload) ->
-    ?DEBUG("fix_w_inventory with session ~p, paylaod~n~p",
-	   [Session, Payload]),
-    Merchant       = ?session:get(merchant, Session),
+    ?DEBUG("fix_w_inventory with session ~p, paylaod~n~p", [Session, Payload]),
+    Merchant = ?session:get(merchant, Session),
+    UTable   = ?session:get(utable, Session),
+    
     ShopStocks     = ?v(<<"stock">>, Payload, []),
     {struct, Base} = ?v(<<"base">>, Payload),
     Shop = ?v(<<"shop">>, Base),
@@ -582,12 +612,10 @@ action(Session, Req, {"fix_w_inventory"}, Payload) ->
 				   [?v(<<"id">>, Type)|Acc]
 			   end, [], Types)}]
 		end
-	end,
-	
-
+	end, 
     %% {ShopTotal, ShopStockDict} = stock(shop_to_dict, ShopStocks, 0, dict:new()), 
     
-    case ?w_inventory:stock(detail_get_by_shop, Merchant, Shop, Firm, ExtraConditions) of
+    case ?w_inventory:stock(detail_get_by_shop, {Merchant, UTable}, Shop, Firm, ExtraConditions) of
 	{ok, DBStocks} ->
 	    {DBTotal, DBStockDict} = stock(to_dict, DBStocks, 0, dict:new()),
 	    {StocksNotInDB, StocksNotEqualDB}
@@ -603,7 +631,7 @@ action(Session, Req, {"fix_w_inventory"}, Payload) ->
 
 	    case ?w_inventory:purchaser_inventory(
 		    fix,
-		    Merchant,
+		    {Merchant, UTable},
 		    {StocksNotInDB, StocksNotInShop, StocksNotEqualDB},
 		    [{<<"db_total">>, DBTotal}, {<<"shop_total">>, ShopTotal}] ++ Base) of
 		{ok, RSN} -> 
@@ -637,45 +665,50 @@ action(Session, Req, {"fix_w_inventory"}, Payload) ->
     %% end;
 
 action(Session, Req, {"filter_fix_w_inventory"}, Payload) -> 
-    ?DEBUG("filter_fix_w_inventory with session ~p, paylaod~n~p",
-	   [Session, Payload]),
-
+    ?DEBUG("filter_fix_w_inventory with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
-    ?pagination:pagination(
-       fun(Match, Conditions) ->
-	       ?w_inventory:filter(
-		  total_fix, ?to_a(Match), Merchant, Conditions)
-       end,
-       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
-	       ?w_inventory:filter(
-		  fix, Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
-       end, Req, Payload);
-
-action(Session, Req, {"filter_w_inventory_fix_rsn_group"}, Payload) ->
-    ?DEBUG("filter_w_inventory_fix_rsn_group with session ~p, paylaod~n~p",
-	   [Session, Payload]),
-
-    Merchant  = ?session:get(merchant, Session),
+    UTable   = ?session:get(utable, Session),
     
     ?pagination:pagination(
        fun(Match, Conditions) ->
 	       ?w_inventory:filter(
-		  total_fix_rsn_groups, ?to_a(Match), Merchant, Conditions)
+		  total_fix, ?to_a(Match), {Merchant, UTable}, Conditions)
        end,
        fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
 	       ?w_inventory:filter(
-		  fix_rsn_groups, Match, Merchant,
+		  fix, Match, {Merchant, UTable}, CurrentPage, ItemsPerPage, Conditions)
+       end, Req, Payload);
+
+action(Session, Req, {"filter_w_inventory_fix_rsn_group"}, Payload) ->
+    ?DEBUG("filter_w_inventory_fix_rsn_group with session ~p, paylaod~n~p",
+	   [Session, Payload]), 
+    Merchant  = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
+    ?pagination:pagination(
+       fun(Match, Conditions) ->
+	       ?w_inventory:filter(
+		  total_fix_rsn_groups,
+		  ?to_a(Match),
+		  {Merchant, UTable}, Conditions)
+       end,
+       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
+	       ?w_inventory:filter(
+		  fix_rsn_groups,
+		  Match,
+		  {Merchant, UTable},
 		  CurrentPage, ItemsPerPage, Conditions)
        end, Req, Payload);
     
 
 action(Session, Req, {"w_inventory_fix_rsn_detail"}, Payload) ->
     ?DEBUG("w_inventory_rsn_detail with session ~p, paylaod~n~p",
-	   [Session, Payload]),
-
+	   [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     %% RSn = ?v(<<"rsn">>, Payload),
-    case ?w_inventory:rsn_detail(fix_rsn, Merchant, Payload) of 
+    case ?w_inventory:rsn_detail(fix_rsn, {Merchant, UTable}, Payload) of 
     	{ok, Details} ->
 	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
 					       {<<"data">>, Details}]}); 
@@ -689,6 +722,8 @@ action(Session, Req, {"w_inventory_fix_rsn_detail"}, Payload) ->
 action(Session, Req, {"transfer_w_inventory"}, Payload) ->
     ?DEBUG("transfer purchasr inventory with session~n~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     Invs = ?v(<<"inventory">>, Payload),
     {struct, Base} = ?v(<<"base">>, Payload),
     Total          = ?v(<<"total">>, Base), 
@@ -706,7 +741,9 @@ action(Session, Req, {"transfer_w_inventory"}, Payload) ->
 	    case stock(check, ?TRANSFER_INVENTORY, Total, 0, Invs) of
 		ok ->
 		    case ?w_inventory:purchaser_inventory(
-			    transfer, Merchant, lists:reverse(Invs), Base) of
+			    transfer,
+			    {Merchant, UTable},
+			    lists:reverse(Invs), Base) of
 			{ok, RSn} ->
 			    ?utils:respond(
 			       200,
@@ -736,28 +773,38 @@ action(Session, Req, {"transfer_w_inventory"}, Payload) ->
 action(Session, Req, {"filter_transfer_w_inventory"}, Payload) ->
     ?DEBUG("filter_transfer_w_inventory with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     ?pagination:pagination(
        fun(Match, Conditions) ->
-               ?w_inventory:filter(total_transfer, ?to_a(Match), Merchant, Conditions)
+               ?w_inventory:filter(total_transfer,
+				   ?to_a(Match),
+				   {Merchant, UTable},
+				   Conditions)
        end,
        fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
                ?w_inventory:filter(
-                  transfer, Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
+                  transfer,
+		  Match,
+		  {Merchant, UTable},
+		  CurrentPage, ItemsPerPage, Conditions)
        end, Req, Payload);
 
 action(Session, Req, {"filter_transfer_rsn_w_inventory"}, Payload) ->
     ?DEBUG("filter_transfer_rsn_w_inventory with session ~p~n, paylaod~n~p",
            [Session, Payload]),
     Merchant  = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     ?pagination:pagination(
        fun(Match, Conditions) ->
 	       ?w_inventory:filter(
-		  total_transfer_rsn_groups, ?to_a(Match), Merchant, Conditions)
+		  total_transfer_rsn_groups, ?to_a(Match), {Merchant, UTable}, Conditions)
        end,
        fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
                ?w_inventory:filter(
                   transfer_rsn_groups,
-                  Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
+                  Match, {Merchant, UTable}, CurrentPage, ItemsPerPage, Conditions)
        end, Req, Payload);
 
 
@@ -765,8 +812,10 @@ action(Session, Req, {"w_inventory_transfer_rsn_detail"}, Payload) ->
     ?DEBUG("w_inventory_transfer_rsn_detail with session ~p~n, paylaod~n~p",
            [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     %% RSn = ?v(<<"rsn">>, Payload),
-    case ?w_inventory:rsn_detail(transfer_rsn, Merchant, Payload) of
+    case ?w_inventory:rsn_detail(transfer_rsn, {Merchant, UTable}, Payload) of
         {ok, Details} ->
             ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
                                                {<<"data">>, Details}]});
@@ -778,9 +827,11 @@ action(Session, Req, {"w_inventory_transfer_rsn_detail"}, Payload) ->
 action(Session, Req, {"check_w_inventory_transfer"}, Payload) ->
     ?DEBUG("check_w_inventory_transfer with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     %% RSN = ?v(<<"rsn">>, Payload),
     %% TShop = ?v(<<"tshop">>, Payload), 
-    case ?w_inventory:purchaser_inventory(check_transfer, Merchant, Payload) of
+    case ?w_inventory:purchaser_inventory(check_transfer, {Merchant, UTable}, Payload) of
         {ok, RSN} ->
             ?utils:respond(
                200,
@@ -801,10 +852,12 @@ action(Session, Req, {"check_w_inventory_transfer"}, Payload) ->
 action(Session, Req, {"cancel_w_inventory_transfer"}, Payload) ->
     ?DEBUG("cancel_w_inventory_transfer with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     RSN = ?v(<<"rsn">>, Payload, []),
     %% RSN = ?v(<<"rsn">>, Payload),
     %% TShop = ?v(<<"tshop">>, Payload), 
-    case ?w_inventory:purchaser_inventory(cancel_transfer, Merchant, RSN) of
+    case ?w_inventory:purchaser_inventory(cancel_transfer, {Merchant, UTable}, RSN) of
         {ok, RSN} ->
             ?utils:respond(
                200,
@@ -820,20 +873,22 @@ action(Session, Req, {"cancel_w_inventory_transfer"}, Payload) ->
 %% match
 %% =============================================================================
 action(Session, Req, {"match_all_w_inventory"}, Payload) ->
-    ?DEBUG("match_all_w_inventory with session ~p, paylaod~n~p",
-	   [Session, Payload]),
+    ?DEBUG("match_all_w_inventory with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     Shop     = ?v(<<"shop">>, Payload),
     NewPayload = proplists:delete(<<"shop">>, Payload),
     batch_responed(
       fun() -> ?w_inventory:match(
-		  inventory, all_inventory, Merchant, Shop, NewPayload)
+		  inventory, all_inventory, {Merchant, UTable}, Shop, NewPayload)
       end, Req);
 
 action(Session, Req, {"match_all_reject_w_inventory"}, Payload) ->
-    ?DEBUG("match_all_reject_w_inventory with session ~p, paylaod~n~p",
-	   [Session, Payload]),
+    ?DEBUG("match_all_reject_w_inventory with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant   = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     Shop       = ?v(<<"shop">>, Payload),
     Firm       = ?v(<<"firm">>, Payload, []),
     QType      = ?v(<<"type">>, Payload, 0),
@@ -841,12 +896,14 @@ action(Session, Req, {"match_all_reject_w_inventory"}, Payload) ->
 
     batch_responed(
       fun() -> ?w_inventory:match(
-		  all_reject_inventory, QType, Merchant, Shop, Firm, StartTime) end, Req);
+		  all_reject_inventory, QType, {Merchant, UTable}, Shop, Firm, StartTime) end, Req);
 
 
 action(Session, Req, {"match_w_inventory"}, Payload) ->
     ?DEBUG("match_w_inventory with session ~p~npayload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     Prompt = ?v(<<"prompt">>, Payload),
     Shop        = ?v(<<"shop">>, Payload),
     Firm        = ?v(<<"firm">>, Payload),
@@ -858,10 +915,10 @@ action(Session, Req, {"match_w_inventory"}, Payload) ->
 	    ?GOOD_SALE ->
 		fun() when Firm =:= undefined->
 			?w_inventory:match(
-			   inventory, Merchant, Prompt, Shop);
+			   inventory, {Merchant, UTable}, Prompt, Shop);
 		   () ->
 			?w_inventory:match(
-			   inventory, Merchant, Prompt, Shop, Firm)
+			   inventory, {Merchant, UTable}, Prompt, Shop, Firm)
 		end;
 	    ?BRAND_TYPE_SALE ->
 		case ?attr:type(list, Merchant, Prompt, Ascii) of
@@ -870,7 +927,7 @@ action(Session, Req, {"match_w_inventory"}, Payload) ->
 		    {ok, Types} ->
 			fun() ->
 				?w_inventory:match(
-				   inventory_with_type, Merchant, Shop,
+				   inventory_with_type, {Merchant, UTable}, Shop,
 				   {<<"type">>,
 				    lists:foldr(
 				      fun({Type}, Acc) ->
@@ -885,17 +942,22 @@ action(Session, Req, {"match_w_inventory"}, Payload) ->
 action(Session, Req, {"match_stock_by_shop"}, Payload) ->
     ?DEBUG("match_stock_by_shop: session ~p, payload ~p", [Session, Payload]),
     Merchant  = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     ShopIds   = ?v(<<"shop">>, Payload),
     StartTime = ?v(<<"stime">>, Payload),
-    Prompt    = ?v(<<"prompt">>, Payload),
-
+    Prompt    = ?v(<<"prompt">>, Payload), 
     batch_responed(
-      fun()-> ?w_inventory:match_stock(by_shop, Merchant, ShopIds, StartTime, Prompt) end, Req);
+      fun()->
+	      ?w_inventory:match_stock(by_shop, {Merchant, UTable}, ShopIds, StartTime, Prompt)
+      end, Req);
 
 
 action(Session, Req, {"w_inventory_export"}, Payload) ->
     ?DEBUG("w_inventory_export with session ~p, paylaod ~n~p", [Session, Payload]),
     Merchant    = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     UserId      = ?session:get(id, Session),
     ExportType  = export_type(?v(<<"e_type">>, Payload, 0)),
 
@@ -916,7 +978,8 @@ action(Session, Req, {"w_inventory_export"}, Payload) ->
 	case ExportType of
 	    trans_note ->
 		{struct, CutConditions} = ?v(<<"condition">>, Payload),
-		{ok, Q} = ?w_inventory:purchaser_inventory(get_inventory_new_rsn, Merchant, CutConditions),
+		{ok, Q} = ?w_inventory:purchaser_inventory(
+			     get_inventory_new_rsn, Merchant, UTable, CutConditions),
 		{struct, C} =
 		    ?v(<<"fields">>,
 		       filter_condition(
@@ -944,7 +1007,7 @@ action(Session, Req, {"w_inventory_export"}, Payload) ->
 	    _ -> false
 	end,
 
-    case ?w_inventory:export(ExportType, Merchant, NewConditions, UseMode) of
+    case ?w_inventory:export(ExportType, {Merchant, UTable}, NewConditions, UseMode) of
 	{ok, []} ->
 	    ?utils:respond(200, Req, ?err(wsale_export_none, Merchant));
 	{ok, Transes} ->
@@ -959,7 +1022,7 @@ action(Session, Req, {"w_inventory_export"}, Payload) ->
 			stock ->
 			    case export(
 				   stock_note,
-				   Merchant,
+				   {Merchant, UTable},
 				   NewConditions, 
 				   {UseMode, Transes, ExportFile, Url, ExportCode, ShowOrgPrice}) of
 				{ok, OkReturn} ->
@@ -970,7 +1033,7 @@ action(Session, Req, {"w_inventory_export"}, Payload) ->
 			shift_note ->
 			    case export(
 				   shift_note,
-				   Merchant,
+				   {Merchant, UTable},
 				   Conditions,
 				   {UseMode, Transes, ExportFile, Url, ExportCode, ShowOrgPrice}) of
 				{ok, OkReturn} ->
@@ -1014,6 +1077,8 @@ action(Session, Req, {"w_inventory_export"}, Payload) ->
 action(Session, Req, {"set_w_inventory_promotion"}, Payload) ->
     ?DEBUG("set_w_inventory_promotion with session ~p~n, paylaod ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     {struct, Conditions} = ?value(<<"condition">>, Payload),
     Promotion = ?v(<<"promotion">>, Payload),
     Score     = ?v(<<"score">>, Payload),
@@ -1023,8 +1088,10 @@ action(Session, Req, {"set_w_inventory_promotion"}, Payload) ->
     PayloadWithCtype = ?w_sale_request:replace_condition_with_ctype(Merchant, CType, SType, Conditions),
     
     case ?w_inventory:purchaser_inventory(
-	    set_promotion, Merchant, [{<<"promotion">>, Promotion},
-				      {<<"score">>, Score}], PayloadWithCtype) of
+	    set_promotion,
+	    {Merchant, UTable},
+	    [{<<"promotion">>, Promotion}, 
+	     {<<"score">>, Score}], PayloadWithCtype) of
 	{ok, _} ->
 	    ?utils:respond(
 	       200,
@@ -1037,9 +1104,11 @@ action(Session, Req, {"set_w_inventory_promotion"}, Payload) ->
 action(Session, Req, {"gift_w_stock"}, Payload) ->
     ?DEBUG("gift_w_stock with session ~p~n, paylaod ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     {struct, Conditions} = ?value(<<"condition">>, Payload),
     {struct, Attrs} = ?value(<<"attrs">>, Payload, []),
-    case ?w_inventory:purchaser_inventory(set_gift, Merchant, Attrs, Conditions) of
+    case ?w_inventory:purchaser_inventory(set_gift, {Merchant, UTable}, Attrs, Conditions) of
 	{ok, State} ->
 	    ?utils:respond(
 	       200,
@@ -1053,8 +1122,10 @@ action(Session, Req, {"gift_w_stock"}, Payload) ->
 
 action(Session, Req, {"copy_w_stock_attr"}, Payload) ->
     ?DEBUG("copy_w_stock with session ~p~n, paylaod ~p", [Session, Payload]),
-    Merchant = ?session:get(merchant, Session), 
-    case ?w_inventory:purchaser_inventory(copy_attr, Merchant, Payload) of
+    Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
+    case ?w_inventory:purchaser_inventory(copy_attr, {Merchant, UTable}, Payload) of
 	{ok, Merchant} ->
 	    ?utils:respond(
 	       200,
@@ -1067,9 +1138,11 @@ action(Session, Req, {"copy_w_stock_attr"}, Payload) ->
 action(Session, Req, {"offering_w_stock"}, Payload) ->
     ?DEBUG("offering_w_stock with session ~p~n, paylaod ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     {struct, Conditions} = ?value(<<"condition">>, Payload),
     {struct, Attrs} = ?value(<<"attrs">>, Payload, []),
-    case ?w_inventory:purchaser_inventory(set_offer, Merchant, Attrs, Conditions) of
+    case ?w_inventory:purchaser_inventory(set_offer, {Merchant, UTable}, Attrs, Conditions) of
 	{ok, State} ->
 	    ?utils:respond(
 	       200,
@@ -1084,12 +1157,14 @@ action(Session, Req, {"update_w_inventory_batch"}, Payload) ->
     ?DEBUG("update_w_inventory_batch with session ~p~n, payload ~p",
 	   [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     {struct, Conditions} = ?value(<<"condition">>, Payload),
     {struct, Attrs} = ?value(<<"attrs">>, Payload, []),
     Match = ?v(<<"match">>, Payload, 'and'),
     
     case ?w_inventory:purchaser_inventory(
-	    {update_batch, ?to_a(Match)}, Merchant, Attrs , Conditions) of
+	    {update_batch, ?to_a(Match)}, {Merchant, UTable}, Attrs , Conditions) of
 	{ok, Merchant} ->
 	    ?utils:respond(
 	       200,
@@ -1102,11 +1177,13 @@ action(Session, Req, {"update_w_inventory_batch"}, Payload) ->
 action(Session, Req, {"update_w_inventory_alarm"}, Payload) ->
     ?DEBUG("update_w_inventory_alarm with session ~p~n, paylaod ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     {struct, Conditions} = ?value(<<"condition">>, Payload), 
     {struct, Attrs} = ?value(<<"attrs">>, Payload, []),
 
     case ?w_inventory:purchaser_inventory(
-	    update_stock_alarm, Merchant, Attrs, Conditions) of
+	    update_stock_alarm, {Merchant, UTable}, Attrs, Conditions) of
 	{ok, Merchant} ->
 	    ?utils:respond(
 	       200,
@@ -1120,19 +1197,26 @@ action(Session, Req, {"update_w_inventory_alarm"}, Payload) ->
 action(Session, Req, {"analysis_history_stock"}, Payload) ->
     ?DEBUG("analysis_history_stock: session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     Conditions = Payload,
     try
 	{ok, Shops}  = ?shop:lookup(Merchant),
 	%% ?DEBUG("shops ~p", [Shops]),
-	{ok, StockIn} = ?supplier:profit(profit_shop, stock_in_of_firm, Merchant, Conditions),
+	{ok, StockIn} = ?supplier:profit(
+			   profit_shop, stock_in_of_firm, {Merchant, UTable}, Conditions),
 	%% ?DEBUG("StockIn ~p", [StockIn]),
-	{ok, StockOut} = ?supplier:profit(profit_shop, stock_out_of_firm, Merchant, Conditions),
+	{ok, StockOut} = ?supplier:profit(
+			    profit_shop, stock_out_of_firm, {Merchant, UTable}, Conditions),
 	%% ?DEBUG("StockOut ~p", [StockOut]),
-	{ok, TransferIn} = ?supplier:profit(profit_shop, transfer_in_of_firm, Merchant, Conditions),
+	{ok, TransferIn} = ?supplier:profit(
+			      profit_shop, transfer_in_of_firm, {Merchant, UTable}, Conditions),
 	%% ?DEBUG("TransferIn ~p", [TransferIn]),
-	{ok, TransferOut} = ?supplier:profit(profit_shop, transfer_out_of_firm, Merchant, Conditions),
+	{ok, TransferOut} = ?supplier:profit(
+			       profit_shop, transfer_out_of_firm, {Merchant, UTable}, Conditions),
 	%% ?DEBUG("TransferOut ~p", [TransferOut]),
-	{ok, Sales} = ?supplier:profit(profit_shop, sale_of_firm, Merchant, Conditions), 
+	{ok, Sales} = ?supplier:profit(
+			 profit_shop, sale_of_firm, {Merchant, UTable}, Conditions), 
 	%% ?DEBUG("Sales ~p", [Sales]),
 	
 	HStocks = history_shop_stock(Shops, StockIn, StockOut, TransferIn, TransferOut, Sales, []), 
@@ -1150,10 +1234,12 @@ action(Session, Req, {"analysis_history_stock"}, Payload) ->
 action(Session, Req, {"adjust_w_inventory_price"}, Payload) ->
     ?DEBUG("adjust_w_inventory_price with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     Invs = ?v(<<"inventory">>, Payload, []),
     {struct, Base} = ?v(<<"base">>, Payload),
 
-    case ?w_inventory:purchaser_inventory(adjust_price, Merchant, Invs, Base) of
+    case ?w_inventory:purchaser_inventory(adjust_price, {Merchant, UTable}, Invs, Base) of
     	{ok, Merchant} -> 
     	    ?utils:respond(
 	       200,
@@ -1166,6 +1252,8 @@ action(Session, Req, {"adjust_w_inventory_price"}, Payload) ->
 action(Session, Req, {"get_stock_by_barcode"}, Payload) ->
     ?DEBUG("get_stock_by_barcode: session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     Barcode = ?v(<<"barcode">>, Payload),
     Shop = ?v(<<"shop">>, Payload),
     Firm = ?v(<<"firm">>, Payload, ?INVALID_OR_EMPTY), 
@@ -1215,7 +1303,13 @@ action(Session, Req, {"get_stock_by_barcode"}, Payload) ->
     end,
     
     %% ?DEBUG("newBarcode ~p", [Barcode]), 
-    case ?w_inventory:purchaser_inventory(get_by_barcode, Merchant, Shop, Firm, NewBarcode, ExtraConditions) of 
+    case ?w_inventory:purchaser_inventory(
+	    get_by_barcode,
+	    {Merchant, UTable},
+	    Shop,
+	    Firm,
+	    NewBarcode,
+	    ExtraConditions) of 
 	{ok, Stock} ->
 	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
 					       {<<"stock">>, {Stock} }]});
@@ -1226,12 +1320,14 @@ action(Session, Req, {"get_stock_by_barcode"}, Payload) ->
 action(Session, Req, {"syn_w_inventory_barcode"}, Payload) ->
     ?DEBUG("syn_w_inventory_barcode with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     %% StyleNumber = ?v(<<"style_number">>, Payload),
     %% Brand = ?v(<<"brand">>, Payload),
     %% Shop = ?v(<<"shop">>, Payload),
     Barcode = ?v(<<"barcode">>, Payload),
     Conditions = lists:keydelete(<<"barcode">>, 1, Payload),
-    case ?w_inventory:purchaser_inventory(syn_barcode, Merchant, Barcode, Conditions) of
+    case ?w_inventory:purchaser_inventory(syn_barcode, {Merchant, UTable}, Barcode, Conditions) of
 	{ok, Barcode} ->
 	    ?utils:respond(
 	       200,
@@ -1244,6 +1340,7 @@ action(Session, Req, {"syn_w_inventory_barcode"}, Payload) ->
 action(Session, Req, {"gen_stock_barcode"}, Payload) -> 
     ?DEBUG("gen_stock_barcode: session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
     
     StyleNumber = ?v(<<"style_number">>, Payload),
     Brand = ?v(<<"brand">>, Payload),
@@ -1254,7 +1351,13 @@ action(Session, Req, {"gen_stock_barcode"}, Payload) ->
     %% {ok, Hide} = ?v(<<"h_stock">>, BaseSetting, ?HIDE_DEFAULT_MODE),
     
     
-    case ?w_inventory:purchaser_inventory(gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand) of
+    case ?w_inventory:purchaser_inventory(
+	    gen_barcode,
+	    AutoBarcode,
+	    {Merchant, UTable},
+	    Shop,
+	    StyleNumber,
+	    Brand) of
 	{ok, Barcode, State, Level, Category, Executive, Fabric, Feather} = _Result ->
 	    ?DEBUG("results ~p", [_Result]),
 	    ?utils:respond(200, object, Req,
@@ -1274,6 +1377,8 @@ action(Session, Req, {"gen_stock_barcode"}, Payload) ->
 action(Session, Req, {"gen_stock_barcode_all"}, Payload) ->
     ?DEBUG("gen_stock_barcode_all: session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     Shop = ?v(<<"shop">>, Payload),
     AutoBarcode = ?v(<<"auto">>, Payload,  ?YES),
     ?DEBUG("AutoBarcode ~p", [AutoBarcode]),
@@ -1286,7 +1391,7 @@ action(Session, Req, {"gen_stock_barcode_all"}, Payload) ->
 		  Brand = ?v(<<"brand">>, Stock),
 		  Gened = ?to_s(StyleNumber) ++ "-" ++ ?to_s(Brand), 
 		  case ?w_inventory:purchaser_inventory(
-			  gen_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand)
+			  gen_barcode, AutoBarcode, {Merchant, UTable}, Shop, StyleNumber, Brand)
 		  of
 		      {ok, Barcode, State, Level, Category, Executive, Fabric, Feather} = _Result ->
 			  ?DEBUG("results ~p", [_Result]),
@@ -1318,6 +1423,8 @@ action(Session, Req, {"gen_stock_barcode_all"}, Payload) ->
 action(Session, Req, {"reset_stock_barcode"}, Payload) ->
     ?DEBUG("reset_stock_barcode: session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     StyleNumber = ?v(<<"style_number">>, Payload),
     Brand = ?v(<<"brand">>, Payload),
     Shop = ?v(<<"shop">>, Payload),
@@ -1326,7 +1433,7 @@ action(Session, Req, {"reset_stock_barcode"}, Payload) ->
     AutoBarcode = ?to_i(?v(<<"bcode_auto">>, BaseSetting, ?YES)),
     
     case ?w_inventory:purchaser_inventory(
-	    reset_barcode, AutoBarcode, Merchant, Shop, StyleNumber, Brand) of
+	    reset_barcode, AutoBarcode, {Merchant, UTable}, Shop, StyleNumber, Brand) of
 	{ok, Barcode} ->
 	    ?utils:respond(200, object, Req,
 			   {[{<<"ecode">>, 0},
@@ -1338,16 +1445,19 @@ action(Session, Req, {"reset_stock_barcode"}, Payload) ->
 action(Session, Req, {"print_w_inventory_new"}, Payload) ->
     ?DEBUG("print_stock_new: session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     RSN = ?v(<<"rsn">>, Payload),
 
     %% new
-    {ok, Detail} = ?w_inventory:purchaser_inventory(get_new, Merchant, RSN),
+    {ok, Detail} = ?w_inventory:purchaser_inventory(get_new, {Merchant, UTable}, RSN),
     %% ?DEBUG("detail ~p", [Detail]),
     %% detail
-    {ok, Transes} = ?w_inventory:purchaser_inventory(list_new_detail, Merchant, [{<<"rsn">>, RSN}]),
+    {ok, Transes} = ?w_inventory:purchaser_inventory(
+		       list_new_detail, {Merchant, UTable}, [{<<"rsn">>, RSN}]),
     %% ?DEBUG("transes ~p", [Transes]),
     %% amount
-    {ok, Notes} = ?w_inventory:rsn_detail(new_rsn, Merchant, [{<<"rsn">>, RSN}]),
+    {ok, Notes} = ?w_inventory:rsn_detail(new_rsn, {Merchant, UTable}, [{<<"rsn">>, RSN}]),
     %% ?DEBUG("Notes ~p", [Notes]),
     Key = {<<"style_number">>, <<"brand_id">>, <<"shop_id">>},
     DictNote = stock_note(
@@ -1368,11 +1478,14 @@ action(Session, Req, {"print_w_inventory_new"}, Payload) ->
 action(Session, Req, {"print_w_inventory_fix_note"}, Payload) ->
     ?DEBUG("print_stock_fix_note: session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     RSN = ?v(<<"rsn">>, Payload), 
     %% fix
-    {ok, Detail} = ?w_inventory:purchaser_inventory(get_fix, Merchant, RSN),
+    {ok, Detail} = ?w_inventory:purchaser_inventory(get_fix, {Merchant, UTable}, RSN),
     
-    {ok, Notes} = ?w_inventory:purchaser_inventory(list_fix_detail, Merchant, [{<<"rsn">>, RSN}]), 
+    {ok, Notes} = ?w_inventory:purchaser_inventory(list_fix_detail, {Merchant, UTable}, [{<<"rsn">>, RSN}]),
+    
     ?utils:respond(200, object, Req,
 		   {[{<<"ecode">>, 0},
 		     {<<"detail">>, {Detail}},
@@ -1380,11 +1493,13 @@ action(Session, Req, {"print_w_inventory_fix_note"}, Payload) ->
 
 action(Session, Req, {"export_w_inventory_fix_note"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     UserId      = ?session:get(id, Session),
     RSN = ?v(<<"rsn">>, Payload), 
     %% fix
     %% {ok, Detail} = ?w_inventory:purchaser_inventory(get_fix, Merchant, RSN), 
-    case ?w_inventory:purchaser_inventory(list_fix_detail, Merchant, [{<<"rsn">>, RSN}]) of
+    case ?w_inventory:purchaser_inventory(list_fix_detail, {Merchant, UTable}, [{<<"rsn">>, RSN}]) of
 	{ok, Notes}->
 	    SortNotes = lists:sort(fun({N1}, {N2}) ->
 					   ?v(<<"id">>, N1) < ?v(<<"id">>, N2)
@@ -1417,16 +1532,17 @@ action(Session, Req, {"export_w_inventory_fix_note"}, Payload) ->
 action(Session, Req, {"print_w_inventory_transfer"}, Payload) ->
     ?DEBUG("print_stock_tranasfer: session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
-    RSN = ?v(<<"rsn">>, Payload),
-
+    UTable = ?session:get(utable, Session),
+    
+    RSN = ?v(<<"rsn">>, Payload), 
     %% new
-    {ok, Detail} = ?w_inventory:purchaser_inventory(get_transfer, Merchant, RSN),
+    {ok, Detail} = ?w_inventory:purchaser_inventory(get_transfer, {Merchant, UTable}, RSN),
     ?DEBUG("detail ~p", [Detail]),
     %% detail
-    {ok, Transes} = ?w_inventory:purchaser_inventory(trace_transfer, Merchant, [{<<"rsn">>, RSN}]),
+    {ok, Transes} = ?w_inventory:purchaser_inventory(trace_transfer, {Merchant, UTable}, [{<<"rsn">>, RSN}]),
     %% ?DEBUG("transes ~p", [Transes]),
     %% amount
-    {ok, Notes} = ?w_inventory:rsn_detail(transfer_rsn, Merchant, [{<<"rsn">>, RSN}]),
+    {ok, Notes} = ?w_inventory:rsn_detail(transfer_rsn, {Merchant, UTable}, [{<<"rsn">>, RSN}]),
     %% ?DEBUG("Notes ~p", [Notes]),
 
     Key = {<<"style_number">>, <<"brand_id">>, <<"fshop_id">>},
@@ -1447,6 +1563,8 @@ action(Session, Req, {"print_w_inventory_transfer"}, Payload) ->
 action(Session, Req, {"print_w_inventory_new_note"}, Payload) ->
     ?DEBUG("print_w_inventory_note: session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     {struct, CutConditions} = ?v(<<"condition">>, Payload),
 
     Like = ?value(<<"match">>, Payload, 'like'),
@@ -1455,13 +1573,13 @@ action(Session, Req, {"print_w_inventory_new_note"}, Payload) ->
     PayloadWithLBrand = replace_condition_with_lbrand(?to_a(Like), Merchant, Brand, CutConditions),
     
     {ok, Q} = ?w_inventory:purchaser_inventory(
-		 get_inventory_new_rsn, Merchant, PayloadWithLBrand),
+		 get_inventory_new_rsn, {Merchant, UTable}, PayloadWithLBrand),
     
     {struct, C} = ?v(<<"fields">>,
 		     filter_condition(
 		       trans_note, [?v(<<"rsn">>, Rsn) || {Rsn} <- Q], PayloadWithLBrand)),
     
-    {ok, Transes} = ?w_inventory:export(trans_note, Merchant, C, []),
+    {ok, Transes} = ?w_inventory:export(trans_note, {Merchant, UTable}, C, []),
     Dict = note_to_dict_by_firm(Transes, dict:new()),
     %% ?DEBUG("dict note ~p", [dict:to_list(Dict)]),
 
@@ -1607,7 +1725,10 @@ export(stock_note, Merchant, Conditions, {UseMode, Transes, File, Url, ExportCod
 	    end
     end;
 
-export(shift_note, Merchant, _Conditions, {UseMode, Transes, File, Url, ExportCode, ShowOrgPrice}) ->
+export(shift_note,
+       {Merchant, UTable},
+       _Conditions,
+       {UseMode, Transes, File, Url, ExportCode, ShowOrgPrice}) ->
     %% get rsn
     RSNs = lists:foldr(fun({Transe}, Acc) ->
 			Rsn = ?v(<<"rsn">>, Transe),
@@ -1617,7 +1738,7 @@ export(shift_note, Merchant, _Conditions, {UseMode, Transes, File, Url, ExportCo
 			end
 		end, [], Transes),
     
-    case ?w_inventory:export(shift_note_color_size, Merchant, [{<<"rsn">>, RSNs}], UseMode) of
+    case ?w_inventory:export(shift_note_color_size, {Merchant, UTable}, [{<<"rsn">>, RSNs}], UseMode) of
 	[] ->
 	    {error, ?err(wsale_export_none, Merchant)};
 	{ok, ShiftNotes} -> 

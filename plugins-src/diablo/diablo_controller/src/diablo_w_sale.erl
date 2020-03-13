@@ -65,9 +65,9 @@ sale(delete_new, Merchant, {RSN, Retailer}) ->
 sale(last, Merchant, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {last_sale, Merchant, Condition});
-sale(trace, Merchant, Condition) -> 
+sale(trace, {Merchant, UTable}, Condition) -> 
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {trace_sale, Merchant, Condition});
+    gen_server:call(Name, {trace_sale, Merchant, UTable, Condition});
 
 sale(trans_detail, Merchant, Condition) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -780,9 +780,9 @@ handle_call({last_sale, Merchant, Conditions}, _From, State) ->
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
-handle_call({trace_sale, Merchant, Conditions}, _From, State) ->
+handle_call({trace_sale, Merchant, UTable, Conditions}, _From, State) ->
     ?DEBUG("trance_sale with merchant ~p, Conditions ~p", [Merchant, Conditions]),
-    Sql = sale_new(rsn_groups, 'and', Merchant, Conditions, fun() -> " order by id desc" end),
+    Sql = sale_new(rsn_groups, 'and', {Merchant, UTable}, Conditions, fun() -> " order by id desc" end),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State}; 
 
@@ -2539,7 +2539,7 @@ filter_stock(news, [{H}|T], Stock, OrgPrice, EDiscount) ->
 	    filter_stock(news, T, Stock, OrgPrice, EDiscount)
     end.
 
-sale_new(rsn_groups, MatchMode, Merchant, Conditions, PageFun) ->
+sale_new(rsn_groups, MatchMode, {Merchant, UTable}, Conditions, PageFun) ->
     MDiscount = ?v(<<"mdiscount">>, Conditions),
     LDiscount = ?v(<<"ldiscount">>, Conditions),
     LSell     = ?v(<<"lsell">>, Conditions),
@@ -2592,7 +2592,9 @@ sale_new(rsn_groups, MatchMode, Merchant, Conditions, PageFun) ->
 
 	", c.name as retailer"
 
-    	" from w_sale_detail b, w_sale a"
+    %% " from w_sale_detail b, w_sale a"
+	" from" ++ ?table:t(sale_detail, Merchant, UTable) ++ " b,"
+	++ ?table:t(sale_new, Merchant, UTable) ++ " a"
 	" left join w_retailer c on c.id=a.retailer"
 
     	" where "

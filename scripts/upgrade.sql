@@ -719,6 +719,10 @@ alter table daily_cost add column op_date DATETIME default 0 after entry_date;
 update daily_cost set op_date=entry_date;
 alter table daily_cost modify column entry_date DATE not null default 0;
 
+--2020-03-10
+alter table w_inventory_good add column comment VARCHAR(128) default '' after entry_date;
+alter table merchants add column unique_table TINYINT not null default 0 after entry_date;
+
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;
 
