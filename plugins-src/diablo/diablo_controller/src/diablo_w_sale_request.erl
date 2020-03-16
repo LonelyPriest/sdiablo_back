@@ -76,10 +76,12 @@ action(Session, Req, {"get_w_print_content", RSN}) ->
 action(Session, Req, {"get_w_sale_new", RSN}) ->
     ?DEBUG("get_w_sale_new with session ~p, paylaod~n~p", [Session, RSN]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     try
-	{ok, Sale} = ?w_sale:sale(get_new, Merchant, RSN),
+	{ok, Sale} = ?w_sale:sale(get_new, {Merchant, UTable}, RSN),
 	%% ?DEBUG("sale ~p", [Sale]),
-	{ok, Details} = ?w_sale:sale(trans_detail, Merchant, {<<"rsn">>, ?to_b(RSN)}), 
+	{ok, Details} = ?w_sale:sale(trans_detail, {Merchant, UTable}, {<<"rsn">>, ?to_b(RSN)}), 
 	?DEBUG("details ~p", [Details]),
 
 	{ok, TicketScore} =
@@ -165,15 +167,18 @@ action(Session, _Req, Action) ->
 %%--------------------------------------------------------------------
 action(Session, Req, {"list_w_sale_new"}, Payload) ->
     ?DEBUG("list_w_sale_new with session ~p, paylaod~n~p", [Session, Payload]), 
-    Merchant = ?session:get(merchant, Session), 
+    Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     batch_responed(
-      fun() -> ?w_sale:sale(list_new, Merchant, Payload) end, Req); 
+      fun() -> ?w_sale:sale(list_new, {Merchant, UTable}, Payload) end, Req); 
 
 action(Session, Req, {"get_last_sale"}, Payload) ->
     ?DEBUG("get_last_sale with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
 
-    case ?w_sale:sale(last, Merchant, Payload) of
+    case ?w_sale:sale(last, {Merchant, UTable}, Payload) of
 	{ok, Last} ->
 	    ?utils:respond(200, batch, Req, {Last});
 	{error, Error} ->
@@ -182,21 +187,27 @@ action(Session, Req, {"get_last_sale"}, Payload) ->
 
 action(Session, Req, {"filter_w_sale_new"}, Payload) ->
     ?DEBUG("filter_w_sale_new with session ~p, paylaod~n~p", [Session, Payload]), 
-    Merchant = ?session:get(merchant, Session), 
+    Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     ?pagination:pagination(
        fun(Match, Conditions) ->
-	       ?w_sale:filter(total_news, ?to_a(Match), Merchant, Conditions)
+	       ?w_sale:filter(total_news, ?to_a(Match), {Merchant, UTable}, Conditions)
        end,
        fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
 	       ?w_sale:filter(
 		  news,
-		  Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
+		  Match,
+		  {Merchant, UTable},
+		  CurrentPage, ItemsPerPage, Conditions)
        end, Req, Payload);
 
 action(Session, Req, {"filter_w_sale_image"}, Payload) ->
     ?DEBUG("filter_w_sale_image with session ~p, payload~n~p",
 	   [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     %% inventory
     {struct, F} = ?v(<<"fields">>, Payload),
     NewPayload = [{<<"fields">>,
@@ -208,12 +219,12 @@ action(Session, Req, {"filter_w_sale_image"}, Payload) ->
 	   no_response,
 	   fun(Match, Conditions) ->
 		   ?w_inventory:filter(
-		      total_groups, Match, Merchant, Conditions)
+		      total_groups, Match, {Merchant, UTable}, Conditions)
 	   end,
 	   fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
 		   ?w_inventory:filter(
 		      groups,
-		      Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
+		      Match, {Merchant, UTable}, CurrentPage, ItemsPerPage, Conditions)
 	   end, NewPayload),
 
     case Result of
@@ -235,7 +246,9 @@ action(Session, Req, {"filter_w_sale_image"}, Payload) ->
 action(Session, Req, {"new_w_sale"}, Payload) ->
     ?DEBUG("new_w_sale with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
-    UserId = ?session:get(id, Session), 
+    UTable = ?session:get(utable, Session), 
+    UserId = ?session:get(id, Session),
+    
     Invs            = ?v(<<"inventory">>, Payload, []),
     {struct, Base}  = ?v(<<"base">>, Payload),
     {struct, Print} = ?v(<<"print">>, Payload), 
@@ -251,8 +264,7 @@ action(Session, Req, {"new_w_sale"}, Payload) ->
 		{ok, Scores} = ?w_user_profile:get(score, Merchant),
 		case lists:filter(
 		       fun({S})->
-			       ?v(<<"type_id">>, S) =:= 1
-				   andalso ?v(<<"id">>, S) =:= TicketSId
+			       ?v(<<"type_id">>, S) =:= 1 andalso ?v(<<"id">>, S) =:= TicketSId
 		       end, Scores) of
 		    [] ->
 			{error, ?err(wsale_invalid_ticket_score, TicketSId)}; 
@@ -297,12 +309,12 @@ action(Session, Req, {"new_w_sale"}, Payload) ->
 		  lists:keydelete(<<"ticket_custom">>, 1, Base) ++ [{<<"user">>, UserId}],
 		  Print);
 	{ok_ticket, 0} ->
-	    start(new_sale, Req, Merchant, Invs, Base ++ [{<<"user">>, UserId}], Print);
+	    start(new_sale, Req, {Merchant, UTable}, Invs, Base ++ [{<<"user">>, UserId}], Print);
 	{ok_ticket, _TicketScore} ->
 	    start(
 	      new_sale,
 	      Req,
-	      Merchant,
+	      {Merchant, UTable},
 	      Invs,
 	      Base ++ [{<<"ticket_score">>, _TicketScore}, {<<"user">>, UserId}],
 	      Print);
@@ -437,16 +449,17 @@ action(Session, Req, {"new_w_sale"}, Payload) ->
 
 action(Session, Req, {"update_w_sale"}, Payload) ->
     ?DEBUG("update_w_sale with session ~p~npaylaod ~p", [Session, Payload]),
-
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session), 
+    
     Invs            = ?v(<<"inventory">>, Payload, []),
     {struct, Base}  = ?v(<<"base">>, Payload),
     RSN             = ?v(<<"rsn">>, Base),
     Vip             = ?v(<<"vip">>, Base, false),
     
-    case ?w_sale:sale(get_new, Merchant, RSN) of
+    case ?w_sale:sale(get_new, {Merchant, UTable}, RSN) of
 	{ok, OldBase} -> 
-	    case ?w_sale:sale(update, Merchant, lists:reverse(Invs), {Base, OldBase}) of
+	    case ?w_sale:sale(update, {Merchant, UTable}, lists:reverse(Invs), {Base, OldBase}) of
 		{ok, {RSN, BackBalance, _BackScore, {OldRetailerId, Withdraw}, {NewRetailerId, NewWithdraw}}} -> 
 		    case OldRetailerId =:= NewRetailerId andalso Withdraw /= NewWithdraw of
 			true ->
@@ -476,14 +489,18 @@ action(Session, Req, {"update_w_sale"}, Payload) ->
 action(Session, Req, {"delete_w_sale"}, Payload) ->
     ?DEBUG("delete_w_sale: session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     RSN = ?v(<<"rsn">>, Payload), 
-    case ?w_sale:sale(get_new, Merchant, RSN) of
+    case ?w_sale:sale(get_new, {Merchant, UTable}, RSN) of
 	{ok, []} ->
 	    ?utils:respond(200, Req, ?err(wsale_empty, RSN));
 	{ok, New} ->
-	    case ?w_sale:sale(trans_detail, Merchant, {<<"rsn">>, ?to_b(RSN)}) of
+	    case ?w_sale:sale(trans_detail, {Merchant, UTable}, {<<"rsn">>, ?to_b(RSN)}) of
 		{ok, []} -> 
-		    case ?w_sale:sale(delete_new, Merchant, {RSN, ?v(<<"retailer_id">>, New)}) of
+		    case ?w_sale:sale(delete_new,
+				      {Merchant, UTable},
+				      {RSN, ?v(<<"retailer_id">>, New)}) of
 			{ok, RSN} ->
 			    ?utils:respond(
 			       200, Req, ?succ(update_w_sale, RSN), [{<<"rsn">>, ?to_b(RSN)}]);
@@ -502,10 +519,11 @@ action(Session, Req, {"delete_w_sale"}, Payload) ->
 action(Session, Req, {"check_w_sale"}, Payload) ->
     ?DEBUG("chekc_w_sale with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     RSN = ?v(<<"rsn">>, Payload, []),
-    Mode = ?v(<<"mode">>, Payload, ?CHECK),
-
-    case ?w_sale:sale(check, Merchant, RSN, Mode) of
+    Mode = ?v(<<"mode">>, Payload, ?CHECK), 
+    case ?w_sale:sale(check, {Merchant, UTable}, RSN, Mode) of
     	{ok, RSN} -> 
     	    ?utils:respond(
 	       200, Req, ?succ(check_w_sale, RSN), {<<"rsn">>, ?to_b(RSN)});
@@ -517,11 +535,13 @@ action(Session, Req, {"check_w_sale"}, Payload) ->
 action(Session, Req, {"print_w_sale"}, Payload) ->
     ?DEBUG("print_w_sale with session ~p, paylaod ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     RSN      = ?v(<<"rsn">>, Payload),
     try
-	{ok, Sale} = ?w_sale:sale(get_new, Merchant, RSN),
+	{ok, Sale} = ?w_sale:sale(get_new, {Merchant, UTable}, RSN),
 	?DEBUG("sale ~p", [Sale]),
-	{ok, SaleDetails} = ?w_sale:sale(trans_detail, Merchant, {<<"rsn">>, ?to_b(RSN)}),
+	{ok, SaleDetails} = ?w_sale:sale(trans_detail, {Merchant, UTable}, {<<"rsn">>, ?to_b(RSN)}),
 	?DEBUG("details ~p", [SaleDetails]), 
 
 	{ok, TicketScore} = 
@@ -536,7 +556,9 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
 			    {ok, 0};
 			?SCORE_TICKET -> 
 			    {ok, Ticket} = ?w_retailer:get_ticket(
-					      by_batch, Merchant, {TicketBatch, ?TICKET_ALL, TicketType}),
+					      by_batch,
+					      Merchant,
+					      {TicketBatch, ?TICKET_ALL, TicketType}),
 			    case ?v(<<"sid">>, Ticket) of
 				?INVALID_OR_EMPTY -> {ok, 0};
 				TicketSid ->
@@ -552,7 +574,7 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
 					    TicketBalance = ?v(<<"balance">>, Ticket),
 					    case ?w_sale:direct(?v(<<"type">>, Sale)) of
 						wreject -> {ok, -TicketBalance div Balance * AccScore};
-						_ ->{ ok, -TicketBalance div Balance * AccScore}
+						_ ->{ok, -TicketBalance div Balance * AccScore}
 					    end
 				    end
 			    end
@@ -567,8 +589,7 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
 	%% {ok, Retailer} = ?w_user_profile:get(
 	%% 		    retailer, Merchant, ?v(<<"retailer_id">>, Sale)),
 	
-	{ok, Employee} = ?w_user_profile:get(
-			    employee, Merchant, ?v(<<"employ_id">>, Sale)),
+	{ok, Employee} = ?w_user_profile:get(employee, Merchant, ?v(<<"employ_id">>, Sale)),
 	%% {ok, Brands}   = ?w_user_profile:get(brand, Merchant),
 
 	%% GetBrand =
@@ -634,9 +655,10 @@ action(Session, Req, {"print_w_sale"}, Payload) ->
 action(Session, Req, {"reject_w_sale"}, Payload) ->
     ?DEBUG("reject_w_sale with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
-    UserId = ?session:get(id, Session),
-    %% UserId = ?right:get(account, Merchant, User),
+    UTable = ?session:get(utable, Session),
     
+    UserId = ?session:get(id, Session),
+    %% UserId = ?right:get(account, Merchant, User), 
     Invs = ?v(<<"inventory">>, Payload),
     {struct, Base}   = ?v(<<"base">>, Payload), 
     Datetime         = ?v(<<"datetime">>, Base),
@@ -659,7 +681,7 @@ action(Session, Req, {"reject_w_sale"}, Payload) ->
 		    Props = Base ++ [{<<"user">>, UserId}],
 		    case TicketCustom of
 			?INVALID_OR_EMPTY ->
-			    start(reject_w_sale, Req, Merchant, Invs, Props);
+			    start(reject_w_sale, Req, {Merchant, UTable}, Invs, Props);
 			_ ->
 			   case ?v(<<"ticket_batchs">>, Base, []) of
 			       [] -> 
@@ -667,7 +689,7 @@ action(Session, Req, {"reject_w_sale"}, Payload) ->
 				   case ?w_retailer:get_ticket(
 					   by_sale, Merchant, SaleRsn, TicketCustom) of
 				       {ok, []} -> 
-					   start(reject_w_sale, Req, Merchant, Invs, Props);
+					   start(reject_w_sale, Req, {Merchant, UTable}, Invs, Props);
 				       {ok, [{OneTicket}]} ->
 					   Batch = ?v(<<"batch">>, OneTicket), 
 					   case ?v(<<"balance">>, OneTicket) /= ?v(<<"ticket">>, Base, 0) of
@@ -704,9 +726,10 @@ action(Session, Req, {"reject_w_sale"}, Payload) ->
 
 action(Session, Req, {"filter_w_sale_rsn_group"}, Payload) ->
     ?DEBUG("filter_w_sale_rsn_group with session ~p, paylaod~n~p", [Session, Payload]), 
-    Merchant           = ?session:get(merchant, Session), 
-    {struct, Mode}     = ?v(<<"mode">>, Payload),
+    Merchant           = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
     
+    {struct, Mode}     = ?v(<<"mode">>, Payload), 
     Order = ?v(<<"mode">>, Mode),
     Sort  = ?v(<<"sort">>, Mode),
     ShowNote = ?v(<<"note">>, Mode),
@@ -735,23 +758,29 @@ action(Session, Req, {"filter_w_sale_rsn_group"}, Payload) ->
 	?NO -> 
 	    ?pagination:pagination(
 	       fun(Match, Conditions) ->
-		       ?w_sale:filter(total_rsn_group, ?to_a(Match), Merchant, Conditions)
+		       ?w_sale:filter(total_rsn_group, ?to_a(Match), {Merchant, UTable}, Conditions)
 	       end,
 	       fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
 		       ?w_sale:filter(
 			  {rsn_group, mode(Order), Sort},
-			  Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
+			  Match,
+			  {Merchant, UTable},
+			  CurrentPage, ItemsPerPage, Conditions)
 	       end, Req, PayloadWithLBrand);
 	?YES -> 
 	    case
 		?pagination:pagination(
 		   no_response,
 		   fun(Match, Conditions) ->
-			   ?w_sale:filter(total_rsn_group, ?to_a(Match), Merchant, Conditions)
+			   ?w_sale:filter(total_rsn_group,
+					  ?to_a(Match),
+					  {Merchant, UTable}, Conditions)
 		   end,
 		   fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
 			   ?w_sale:filter({rsn_group, mode(Order), Sort},
-					  Match, Merchant, CurrentPage, ItemsPerPage, Conditions)
+					  Match,
+					  {Merchant, UTable},
+					  CurrentPage, ItemsPerPage, Conditions)
 		   end, PayloadWithLBrand)
 	    of
 		{ok, Total, []} ->
@@ -814,18 +843,26 @@ action(Session, Req, {"filter_w_sale_rsn_group"}, Payload) ->
 action(Session, Req, {"filter_employee_evaluation"}, Payload) ->
     ?DEBUG("filter_employee_evaluation with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant  = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
 
     ?pagination:pagination(
        fun(Match, Conditions) ->
-	       ?w_sale:filter(total_employee_evaluation, ?to_a(Match), Merchant, Conditions)
+	       ?w_sale:filter(total_employee_evaluation,
+			      ?to_a(Match),
+			      {Merchant, UTable},
+			      Conditions)
        end,
        fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
-	       ?w_sale:filter(employee_evaluation, Match, Merchant, Conditions, CurrentPage, ItemsPerPage)
+	       ?w_sale:filter(employee_evaluation,
+			      Match,
+			      {Merchant, UTable},
+			      Conditions, CurrentPage, ItemsPerPage)
        end, Req, Payload);
 
 action(Session, Req, {"list_wsale_group_by_style_number"}, Payload) ->
     ?DEBUG("filter_w_sale_firm_detail with session ~p, paylaod~n~p", [Session, Payload]), 
-    Merchant    = ?session:get(merchant, Session),
+    Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
     {struct, NewPayload} = ?v(<<"condition">>, Payload),
 
     CType = ?v(<<"ctype">>, NewPayload),
@@ -833,7 +870,7 @@ action(Session, Req, {"list_wsale_group_by_style_number"}, Payload) ->
     PayloadWithCtype = replace_condition_with_ctype(Merchant, CType, SType, NewPayload),
     ?DEBUG("PayloadWithCtype ~p", [PayloadWithCtype]),
     
-    {ok, Q} = ?w_sale:sale(get_rsn, Merchant, PayloadWithCtype),
+    {ok, Q} = ?w_sale:sale(get_rsn, {Merchant, UTable}, PayloadWithCtype),
     case Q of
 	[] ->
 	    ?utils:respond(200, object, Req,
@@ -847,10 +884,11 @@ action(Session, Req, {"list_wsale_group_by_style_number"}, Payload) ->
 		      trans_note, [?v(<<"rsn">>, Rsn) || {Rsn} <- Q], PayloadWithCtype)),
 
 	    {ok, Colors} = ?w_user_profile:get(color, Merchant), 
-	    {ok, Sales} = ?w_sale:export(trans_note, Merchant, NewConditions),
+	    {ok, Sales} = ?w_sale:export(trans_note, {Merchant, UTable}, NewConditions),
 
 	    NoteConditions = [{<<"rsn">>, ?v(<<"rsn">>, NewConditions, [])}],
-	    {ok, SaleNotes} = ?w_sale:export(trans_note_color_size, Merchant, NoteConditions),
+	    {ok, SaleNotes} = ?w_sale:export(trans_note_color_size,
+					     {Merchant, UTable}, NoteConditions),
 
 	    SortTranses = sale_trans(to_dict, Sales, dict:new()),
 	    DictNotes = sale_note(to_dict, SaleNotes, dict:new()),
@@ -873,12 +911,12 @@ action(Session, Req, {"list_wsale_group_by_style_number"}, Payload) ->
     
 
 action(Session, Req, {"w_sale_rsn_detail"}, Payload) ->
-    ?DEBUG("w_sale_rsn_detail with session ~p, paylaod~n~p",
-	   [Session, Payload]),
-    
+    ?DEBUG("w_sale_rsn_detail with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     %% RSn = ?v(<<"rsn">>, Payload),
-    case ?w_sale:rsn_detail(rsn, Merchant, Payload) of 
+    case ?w_sale:rsn_detail(rsn, {Merchant, UTable}, Payload) of 
     	{ok, Details} ->
 	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0},
 					       {<<"data">>, Details}]}); 
@@ -889,6 +927,8 @@ action(Session, Req, {"w_sale_rsn_detail"}, Payload) ->
 action(Session, Req, {"w_sale_export"}, Payload) ->
     ?DEBUG("w_sale_export with session ~p, paylaod ~n~p", [Session, Payload]),
     Merchant    = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     UserId      = ?session:get(id, Session),
     ExportType  = export_type(?v(<<"e_type">>, Payload, 0)),
     
@@ -913,7 +953,7 @@ action(Session, Req, {"w_sale_export"}, Payload) ->
     ExportColorSize = ?to_i(?v(<<"export_note">>, BaseSetting, 0)),
     ExportCode = ?to_i(?v(<<"export_code">>, BaseSetting, 0)),
     
-    case ?w_sale:export(ExportType, Merchant, NewConditions) of
+    case ?w_sale:export(ExportType, {Merchant, UTable}, NewConditions) of
 	{ok, []} ->
 	    ?utils:respond(200, Req, ?err(wsale_export_no_date, Merchant));
 	{ok, Transes} -> 
@@ -925,7 +965,7 @@ action(Session, Req, {"w_sale_export"}, Payload) ->
 		true ->
 		    %% only rsn
 		    NoteConditions = [{<<"rsn">>, ?v(<<"rsn">>, NewConditions, [])}],
-		    case ?w_sale:export(trans_note_color_size, Merchant, NoteConditions) of
+		    case ?w_sale:export(trans_note_color_size, {Merchant, UTable}, NoteConditions) of
 			[] ->
 			    ?utils:respond(200, Req, ?err(wsale_export_none, Merchant));
 			{ok, SaleNotes} ->
@@ -1004,7 +1044,9 @@ action(Session, Req, {"w_sale_export"}, Payload) ->
 
 action(Session, Req, {"print_w_sale_note"}, Payload) ->
     ?DEBUG("print_w_sale_note with session ~p, paylaod ~n~p", [Session, Payload]),
-    Merchant    = ?session:get(merchant, Session), 
+    Merchant    = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     {struct, Fields} = ?v(<<"fields">>, Payload),
     CType = ?v(<<"ctype">>, Fields),
     SType = ?v(<<"type">>, Fields),
@@ -1021,16 +1063,16 @@ action(Session, Req, {"print_w_sale_note"}, Payload) ->
     ?DEBUG("PayloadWithlbrand ~p", [PayloadWithLBrand]),
 
     {struct, Conditions} = ?v(<<"fields">>, PayloadWithLBrand),
-    {ok, Q} = ?w_sale:sale(get_rsn, Merchant, Conditions),
+    {ok, Q} = ?w_sale:sale(get_rsn, {Merchant, UTable}, Conditions),
     {struct, NewConditions} =
 	?v(<<"fields">>,
 	   ?w_inventory_request:filter_condition(
 	      trans_note, [?v(<<"rsn">>, Rsn) || {Rsn} <- Q], Conditions)),
     
-    {ok, Transes} = ?w_sale:export(trans_note, Merchant, NewConditions),
+    {ok, Transes} = ?w_sale:export(trans_note, {Merchant, UTable}, NewConditions),
     
     NoteConditions = [{<<"rsn">>, ?v(<<"rsn">>, NewConditions, [])}],
-    {ok, SaleNotes} = ?w_sale:export(trans_note_color_size, Merchant, NoteConditions), 
+    {ok, SaleNotes} = ?w_sale:export(trans_note_color_size, {Merchant, UTable}, NoteConditions), 
     NoteDict = sale_note(to_dict_with_rsn, SaleNotes, dict:new()),
 
     TransesWithNote =
@@ -1064,13 +1106,19 @@ action(Session, Req, {"print_w_sale_note"}, Payload) ->
 action(Session, Req, {"get_wsale_rsn"}, Payload) ->
     ?DEBUG("get_wsale_rsn with session ~p, Payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     batch_responed(
       fun() -> ?w_sale:sale(
-		  get_rsn, Merchant, [{<<"sell_type">>, 0}|Payload]) end, Req);
+		  get_rsn,
+		  {Merchant, UTable},
+		  [{<<"sell_type">>, 0}|Payload]) end, Req);
 
 action(Session, Req, {"match_wsale_rsn"}, Payload) ->
     ?DEBUG("match_wsale_rsn with session ~p, Payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     %% {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
     %% StartTime = ?v(<<"qtime_start">>, BaseSetting),
     %% EndTime = ?v(<<"qtime_end">>, BaseSetting)
@@ -1082,7 +1130,7 @@ action(Session, Req, {"match_wsale_rsn"}, Payload) ->
     batch_responed(
       fun() -> ?w_sale:sale(
 		  match_rsn,
-		  Merchant,
+		  {Merchant, UTable},
 		  case Mode of
 		      ?RSN_OF_ALL ->
 			  {Prompt, Conditions};
@@ -1128,10 +1176,12 @@ action(Session, Req, {"upload_w_sale", ShopId}, Payload) ->
 action(Session, Req, {"update_w_sale_price"}, Payload) ->
     ?DEBUG("update_w_sale_price: session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     RSN = ?v(<<"rsn">>, Payload),
     {struct, Updates} = ?v(<<"update">>, Payload),
     
-    case ?w_sale:sale(update_price, Merchant, RSN, Updates) of
+    case ?w_sale:sale(update_price, {Merchant, UTable}, RSN, Updates) of
 	{ok, RSN} ->
 	    ?utils:respond(200, object, Req, {[{<<"ecode">>, 0}]});
 	{error, Error} ->
@@ -2068,7 +2118,7 @@ export_type(1) -> trans_note.
 %% 	_ -> inventory(check_style_number, T)
 %%     end.
 
-start(new_sale, Req, Merchant, Invs, Base, Print) ->
+start(new_sale, Req, {Merchant, UTable}, Invs, Base, Print) ->
     ImmediatelyPrint = ?v(<<"im_print">>, Print, ?NO),
     PMode            = ?v(<<"p_mode">>, Print, ?PRINT_BACKEND),
     Round            = ?v(<<"round">>, Base, 1),
@@ -2090,7 +2140,7 @@ start(new_sale, Req, Merchant, Invs, Base, Print) ->
 	false-> 
 	    case check_inventory(oncheck, Round, 0, ShouldPay, Invs) of
 		{ok, _} -> 
-		    case ?w_sale:sale(new, Merchant, lists:reverse(Invs), Base) of 
+		    case ?w_sale:sale(new, {Merchant, UTable}, lists:reverse(Invs), Base) of 
 			{ok, {RSN, Phone, _ShouldPay, Balance, Score}} ->
 			    {SMSCode, _} =
 				try
@@ -2193,8 +2243,8 @@ start(new_sale, Req, Merchant, Invs, Base, Print) ->
 	    end
     end.
 
-start(reject_w_sale, Req, Merchant, Invs, Props) ->
-    case ?w_sale:sale(reject, Merchant, lists:reverse(Invs), Props) of 
+start(reject_w_sale, Req, {Merchant, UTable}, Invs, Props) ->
+    case ?w_sale:sale(reject, {Merchant, UTable}, lists:reverse(Invs), Props) of 
 	{{ok, RSN}, Shop, RetailerId, RetailerType, BackWithdraw} ->
 	    case BackWithdraw =/= 0 of
 		true ->

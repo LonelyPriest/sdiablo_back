@@ -352,6 +352,7 @@ fields() ->
 	", sms_rate"
 	", sms_sign"
 	", sms_team"
+	", unique_table" 
 	", address"
 	", type"
 	", entry_date".

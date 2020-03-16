@@ -43,8 +43,9 @@ create table merchants
     balance          INTEGER not null default 0, -- fen
     sms_send         INTEGER not null default 0,
     sms_rate         INTEGER not null default 0,
-    sms_sign         VARCHAR(32) not null default '',
+    sms_sign         VARCHAR(32) not null default '', 
     sms_team         TINYINT not null default 0, -- 0:aliyun, 1:zz.253
+    unique_table     TINYINT not null default 0, -- 0:share table, 1:unique table
     state            TINYINT not null default 0,
     type             TINYINT default 0,
     shop_count       INTEGER not null default 0, 

@@ -60,9 +60,9 @@ retailer(update_level, Merchant, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {update_retailer_level, Merchant, Attrs});
 
-retailer(delete, Merchant, RetailerId) ->
+retailer(delete, {Merchant, UTable}, RetailerId) ->
     Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {delete_retailer, Merchant, RetailerId});
+    gen_server:call(Name, {delete_retailer, Merchant, UTable, RetailerId});
 retailer(get, Merchant, RetailerId) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {get_retailer, Merchant, RetailerId});
@@ -156,9 +156,9 @@ ticket(update_plan, Merchant, Attrs) ->
 ticket(delete_plan, Merchant, Plan) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {delete_ticket_plan, Merchant, Plan});
-ticket(gift, Merchant, GiftInfo) ->
+ticket(gift, {Merchant, UTable}, GiftInfo) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {gift_ticket, Merchant, GiftInfo}).
+    gen_server:call(Name, {gift_ticket, Merchant, UTable, GiftInfo}).
 
 ticket(discard_custom_one, Merchant, TicketId, Mode) ->
     Name = ?wpool:get(?MODULE, Merchant),
@@ -227,9 +227,9 @@ threshold_card(list_child, Merchant, Retailer, CardSN) ->
 filter(total_retailer, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {total_retailer, Merchant, Conditions});
-filter(total_consume, 'and', Merchant, Conditions) ->
+filter(total_consume, 'and', {Merchant, UTable}, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {total_consume, Merchant, Conditions}); 
+    gen_server:call(Name, {total_consume, Merchant, UTable, Conditions}); 
 filter(total_charge_detail, 'and', Merchant, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant),
     gen_server:call(Name, {total_charge_detail, Merchant, Conditions});
@@ -255,9 +255,9 @@ filter({retailer, Order, Sort}, 'and', Merchant, Conditions, CurrentPage, ItemsP
     gen_server:call(
       Name, {{filter_retailer, Order, Sort}, Merchant, Conditions, CurrentPage, ItemsPerPage});
 
-filter(consume, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
+filter(consume, 'and', {Merchant, UTable}, Conditions, CurrentPage, ItemsPerPage) ->
     Name = ?wpool:get(?MODULE, Merchant),
-    gen_server:call(Name, {filter_consume, Merchant, Conditions, CurrentPage, ItemsPerPage});
+    gen_server:call(Name, {filter_consume, Merchant, UTable, Conditions, CurrentPage, ItemsPerPage});
 
 
 filter(charge_detail, 'and', Merchant, Conditions, CurrentPage, ItemsPerPage) ->
@@ -666,9 +666,12 @@ handle_call({get_retailer_batch, Merchant, RetailerIds}, _From, State) ->
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({delete_retailer, Merchant, RetailerId}, _From, State) ->
+handle_call({delete_retailer, Merchant, UTable, RetailerId}, _From, State) ->
     ?DEBUG("delete_retailer with merchant ~p, retailerId ~p", [Merchant, RetailerId]),
-    Sql0 = "select id, retailer from w_sale where merchant=" ++ ?to_s(Merchant)
+    Sql0 = "select id, retailer"
+    %% " from w_sale"
+	" from" ++ ?table:t(sale_new, Merchant, UTable)
+	++ " where merchant=" ++ ?to_s(Merchant)
 	++ " and retailer=" ++ ?to_s(RetailerId)
 	++ " order by id desc limit 1",
     case ?sql_utils:execute(s_read, Sql0) of 
@@ -1841,7 +1844,10 @@ handle_call({delete_ticket_plan, Merchant, Plan}, _From, State) ->
     {reply, Reply, State};
     
 
-handle_call({gift_ticket, Merchant, {Shop, Retailer, Tickets, WithRSN, Employee} = GiftInfo}, _From, State) ->
+handle_call({gift_ticket,
+	     Merchant,
+	     UTable,
+	     {Shop, Retailer, Tickets, WithRSN, Employee} = GiftInfo}, _From, State) ->
     ?DEBUG("gift_ticket: merchant ~p, GiftInfo ~p", [Merchant, GiftInfo]),
     Date = ?utils:current_time(localdate),
     Reply = 
@@ -1884,7 +1890,8 @@ handle_call({gift_ticket, Merchant, {Shop, Retailer, Tickets, WithRSN, Employee}
 		    case WithRSN of
 			[] -> [];
 			_ ->
-			    ["update w_sale set g_ticket=1 where rsn=\'" ++ ?to_s(WithRSN) ++ "\'"
+			    ["update" ++ ?table:t(sale_new, Merchant, UTable)
+			     ++ " set g_ticket=1 where rsn=\'" ++ ?to_s(WithRSN) ++ "\'"
 			    ++ " and merchant=" ++ ?to_s(Merchant)
 			    ++ " and retailer=" ++ ?to_s(Retailer)]
 		    end,
@@ -2105,7 +2112,7 @@ handle_call({total_retailer, Merchant, Conditions}, _From, State) ->
     {reply, Reply, State};
 
 
-handle_call({total_consume, Merchant, Conditions}, _From, State) ->
+handle_call({total_consume, Merchant, UTable, Conditions}, _From, State) ->
     ?DEBUG("total_consume: merchant ~p, conditions ~p", [Merchant, Conditions]),
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
     FilterConditions = filter_condition(consume, NewConditions),
@@ -2117,8 +2124,9 @@ handle_call({total_consume, Merchant, Conditions}, _From, State) ->
 	" from "
 	"(select merchant"
 	", retailer"
-	", shop, SUM(should_pay - verificate) as consume from w_sale"
-	" where merchant=" ++ ?to_s(Merchant)
+	", shop, SUM(should_pay - verificate) as consume"
+	" from" ++ ?table:t(sale_new, Merchant, UTable)
+	++ " where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, FilterConditions)
 	++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime)
 	++ " group by retailer, shop) a"
@@ -2210,7 +2218,7 @@ handle_call({{filter_retailer, Order, Sort},
     {reply, Reply, State};
 
 
-handle_call({filter_consume, Merchant, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
+handle_call({filter_consume, Merchant, UTable, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
     ?DEBUG("filter_consume:merchant ~p, conditions ~p, page ~p", [Merchant, Conditions, CurrentPage]),
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
     FilterConditions = filter_condition(consume, NewConditions),
@@ -2236,8 +2244,9 @@ handle_call({filter_consume, Merchant, Conditions, CurrentPage, ItemsPerPage}, _
 	", SUM(should_pay - verificate) as consume"
 	", SUM(withDraw) as draw"
 	", SUM(ticket) as ticket" 
-	" from w_sale"
-	" where merchant=" ++ ?to_s(Merchant)
+    %% " from w_sale"
+	" from" ++ ?table:t(sale_new, Merchant, UTable)
+	++ " where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, FilterConditions)
     %% ++ SortCondtions
 	++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime)

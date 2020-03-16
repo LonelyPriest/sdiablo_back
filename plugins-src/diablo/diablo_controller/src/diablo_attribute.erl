@@ -62,8 +62,8 @@ brand(update, Merchant, Attrs) ->
     gen_server:call(?MODULE, {update_brand, Merchant, Attrs});
 brand(like, Merchant, Like) ->
     gen_server:call(?MODULE, {like_brand, Merchant, Like});
-brand(delete, Merchant, BrandId) ->
-    gen_server:call(?MODULE, {delete_brand, Merchant, BrandId }).
+brand(delete, {Merchant, UTable}, BrandId) ->
+    gen_server:call(?MODULE, {delete_brand, Merchant, UTable, BrandId }).
 brand(list, Merchant) ->
     gen_server:call(?MODULE, {list_brand, Merchant}).
 
@@ -414,8 +414,11 @@ handle_call({update_brand, Merchant, Attrs}, _From, State) ->
     {reply, Reply, State};
 
 
-handle_call({delete_brand, Merchant, BrandId}, _From, State) ->
-    Sql0 = "select style_number, brand from w_inventory_good where merchant=" ++ ?to_s(Merchant)
+handle_call({delete_brand, Merchant, UTable, BrandId}, _From, State) ->
+    Sql0 = "select style_number, brand"
+    %% " from w_inventory_good"
+	" from" ++ ?table:t(good, Merchant, UTable)
+	++ " where merchant=" ++ ?to_s(Merchant)
 	++ " and brand=" ++ ?to_s(BrandId),
 
     case ?sql_utils:execute(read, Sql0) of

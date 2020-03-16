@@ -39,8 +39,8 @@ supplier(w_list, Merchant) ->
     gen_server:call(?MODULE, {w_list, Merchant}).
 
 
-supplier(w_delete, Merchant, Id) ->
-    gen_server:call(?MODULE, {w_delete_supplier, Merchant, Id});
+supplier(w_delete, {Merchant, UTable}, Id) ->
+    gen_server:call(?MODULE, {w_delete_supplier, Merchant, UTable, Id});
 supplier(w_update, Merchant, Attrs) ->
     gen_server:call(?MODULE, {w_update_supplier, Merchant, Attrs});
 supplier(bill, Merchant, Attrs) ->
@@ -49,8 +49,8 @@ supplier(update_bill, Merchant, {Attrs, OldAttrs}) ->
     gen_server:call(?MODULE, {update_bill_supplier, Merchant, {Attrs, OldAttrs}});
 supplier(check_bill, Merchant, Attrs) ->
     gen_server:call(?MODULE, {check_bill_supplier, Merchant, Attrs});
-supplier(abandon_bill, Merchant, Attrs) ->
-    gen_server:call(?MODULE, {abandon_bill_supplier, Merchant, Attrs});
+supplier(abandon_bill, {Merchant, UTable}, Attrs) ->
+    gen_server:call(?MODULE, {abandon_bill_supplier, Merchant, UTable, Attrs});
 
 %%
 %% vfirm
@@ -62,11 +62,11 @@ supplier(update_vfirm, Merchant, Attrs) ->
 
 supplier(page_total, Merchant, Conditions) ->
     gen_server:call(?MODULE, {page_total, Merchant, Conditions});
-supplier({page_list, Mode, Sort}, Merchant, Conditions) ->
-    supplier({page_list, Mode, Sort}, Merchant, Conditions, -1, -1).
-supplier({page_list, Mode, Sort}, Merchant, Conditions, CurrentPage, ItemsPerPage) ->
+supplier({page_list, Mode, Sort}, {Merchant, UTable}, Conditions) ->
+    supplier({page_list, Mode, Sort}, {Merchant, UTable}, Conditions, -1, -1).
+supplier({page_list, Mode, Sort}, {Merchant, UTable}, Conditions, CurrentPage, ItemsPerPage) ->
     gen_server:call(?MODULE,
-		    {page_list, {Mode, Sort}, Merchant, Conditions, CurrentPage, ItemsPerPage},
+		    {page_list, {Mode, Sort}, Merchant, UTable, Conditions, CurrentPage, ItemsPerPage},
 		    ?SQL_TIME_OUT).
 
 filter(total_bill, 'and', Merchant, Conditions) ->
@@ -97,8 +97,8 @@ profit(profit_shop, Mode, {Merchant, UTable}, Conditions) ->
 
 %% stastic
 %% half of minitue
-sprofit(sprofit, Mode, Merchant, Conditions) ->
-    gen_server:call(?MODULE, {sprofit, Mode, Merchant, Conditions}, 1000 * 30).
+sprofit(sprofit, Mode, {Merchant, UTable}, Conditions) ->
+    gen_server:call(?MODULE, {sprofit, Mode, Merchant, UTable, Conditions}, 1000 * 30).
 
 update(code, Merchant, FirmId) ->
     gen_server:cast(?MODULE, {update_code, Merchant, FirmId}).
@@ -241,10 +241,12 @@ handle_call({w_update_supplier, Merchant, Attrs}, _From, State) ->
 
     {reply, Reply, State}; 
 
-handle_call({w_delete_supplier, Merchant, Id}, _From, State) ->
+handle_call({w_delete_supplier, Merchant, UTable, Id}, _From, State) ->
     ?DEBUG("w_delete_supplier with merchant ~p, Id ~p", [Merchant, Id]),
-    Sql0 = "select id, firm from w_inventory_new"
-	" where merchant=" ++ ?to_s(Merchant)
+    Sql0 = "select id, firm"
+    %% " from w_inventory_new"
+	++ ?table:t(stock_new, Merchant, UTable)
+	++ " where merchant=" ++ ?to_s(Merchant)
 	++ " and id=" ++ ?to_s(Id)
 	++ " order by id desc limit 1",
     case ?sql_utils:execute(s_read, Sql0) of
@@ -294,7 +296,12 @@ handle_call({page_total, Merchant, Conditions}, _From, State) ->
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
-handle_call({page_list, {Mode, Sort}, Merchant, Conditions, CurrentPage, ItemsPerPage}, _From, State) ->
+handle_call({page_list,
+	     {Mode, Sort},
+	     Merchant,
+	     UTable,
+	     Conditions,
+	     CurrentPage, ItemsPerPage}, _From, State) ->
     ?DEBUG("page_list: merchant ~p, Conditions ~p, CurrentPage ~p, ItemsPerPage ~p",
 	   [Merchant, Conditions, CurrentPage, ItemsPerPage]),
     NewConditions = lists:foldr(fun({<<"firm">>, Firm}, Acc) ->
@@ -318,7 +325,9 @@ handle_call({page_list, {Mode, Sort}, Merchant, Conditions, CurrentPage, ItemsPe
 	" left join" 
 	" (select firm as firm_id"
 	", SUM(total) as sell"
-	" from w_sale_detail where merchant=" ++ ?to_s(Merchant)
+    %% " from w_sale_detail"
+	" from" ++ ?table:t(sale_detail, Merchant, UTable)
+	++ " where merchant=" ++ ?to_s(Merchant)
 	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime) 
 	++ " group by firm) b on a.id=b.firm_id"
 
@@ -326,7 +335,9 @@ handle_call({page_list, {Mode, Sort}, Merchant, Conditions, CurrentPage, ItemsPe
 	" (select firm as firm_id"
 	", SUM(amount) as amount"
 	", SUM(org_price * amount) as cost"
-	" from w_inventory where merchant=" ++ ?to_s(Merchant)
+    %% " from w_inventory"
+	" from" ++ ?table:t(stock, Merchant, UTable)
+	++ " where merchant=" ++ ?to_s(Merchant)
 	++ " group by firm ) c on a.id=c.firm_id"
 	
 	++ " where a.merchant=" ++ ?to_s(Merchant)
@@ -488,7 +499,7 @@ handle_call({lookup_unconnect_brand, Condition}, _From, State) ->
     {ok, Suppliers} = ?mysql:fetch(read, Sql),
     {reply, ?to_tuplelist(Suppliers), State};
 
-handle_call({bill_supplier, Merchant, Attrs}, _From, State) ->
+handle_call({bill_supplier, Merchant, UTable, Attrs}, _From, State) ->
     ?DEBUG("bill_supplier with merchant ~p, attrs ~p", [Merchant, Attrs]), 
     ShopId   = ?v(<<"shop">>, Attrs),
     FirmId   = ?v(<<"firm">>, Attrs),
@@ -516,8 +527,9 @@ handle_call({bill_supplier, Merchant, Attrs}, _From, State) ->
 	{ok, Firm} ->
 	    Sql00 = "select id, rsn, firm, shop, merchant"
 		", balance, should_pay, has_pay, e_pay, verificate, entry_date"
-	    	" from w_inventory_new"
-	    	" where merchant=" ++ ?to_s(Merchant)
+	    %% " from w_inventory_new"
+		" from" ++ ?table:t(stock_new, Merchant, UTable)
+	    	++ " where merchant=" ++ ?to_s(Merchant)
 	    	++ " and firm=" ++ ?to_s(FirmId)
 		++ " and state in(0, 1)"
 	    	++ " and entry_date<\'" ++ ?to_s(Datetime) ++ "\'"
@@ -530,8 +542,10 @@ handle_call({bill_supplier, Merchant, Attrs}, _From, State) ->
 			    [] ->
 				Sql01 = "select id, rsn, firm, shop, merchant"
 				    ", balance, should_pay, has_pay, e_pay, verificate, entry_date"
-				    " from w_inventory_new"
-				    " where merchant=" ++ ?to_s(Merchant)
+				    " from"
+				%% " w_inventory_new"
+				    ++ ?table:t(stock_new, Merchant, UTable)
+				    ++ " where merchant=" ++ ?to_s(Merchant)
 				    ++ " and firm=" ++ ?to_s(FirmId)
 				    ++ " and state in(0, 1)"
 				    ++ " and entry_date>\'" ++ ?to_s(Datetime) ++ "\'"
@@ -572,7 +586,10 @@ handle_call({bill_supplier, Merchant, Attrs}, _From, State) ->
 
 		    {Cash, Card, Wire} = bill_mode(Mode, Bill),
 
-		    Sql2 = "insert into w_inventory_new(rsn"
+		    Sql2 = "insert into"
+		    %% " w_inventory_new"
+			++ ?table:t(stock_new, Merchant, UTable)
+			++ "(rsn"
 			", employ, firm, shop, merchant, balance"
 			", has_pay, cash, card, wire, verificate"
 			", comment, type, entry_date, op_date) values("
@@ -597,7 +614,8 @@ handle_call({bill_supplier, Merchant, Attrs}, _From, State) ->
 			++ " where merchant=" ++ ?to_s(Merchant)
 			++ " and id=" ++ ?to_s(FirmId),
 
-		    Sql4 = "update w_inventory_new set balance=balance-" ++ ?to_s(Bill + Veri)
+		    Sql4 = "update" ++ ?table:t(stock_new, Merchant, UTable)
+			++ " set balance=balance-" ++ ?to_s(Bill + Veri)
 			++ " where merchant=" ++ ?to_s(Merchant)
 			++ " and firm=" ++ ?to_s(FirmId)
 			++ " and entry_date>\'" ++ ?to_s(Datetime) ++ "\'",
@@ -622,7 +640,7 @@ handle_call({bill_supplier, Merchant, Attrs}, _From, State) ->
 	    {reply, Error, State}
     end;
 
-handle_call({update_bill_supplier, Merchant, {Attrs, OldAttrs}}, _From, State) ->
+handle_call({update_bill_supplier, Merchant, UTable, {Attrs, OldAttrs}}, _From, State) ->
     ?DEBUG("update_bill_supplier with merchant ~p, attrs ~p, oldattrs ~p",
 	   [Merchant, Attrs, OldAttrs]),
 
@@ -690,10 +708,12 @@ handle_call({update_bill_supplier, Merchant, {Attrs, OldAttrs}}, _From, State) -
     Sqls = 
 	case get_modified(Datetime, OldDatetime) of
 	    undefined ->
-		{ok, ["update w_inventory_new set "
-		 ++ ?utils:to_sqls(proplists, comma, UpdatesOfStock)
-		 ++ " where merchant=" ++ ?to_s(Merchant)
-		 ++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'"]
+		{ok, ["update"
+		      %% " w_inventory_new"
+		      ++ ?table:t(stock_new, Merchant, UTable)
+		      ++ " set " ++ ?utils:to_sqls(proplists, comma, UpdatesOfStock)
+		      ++ " where merchant=" ++ ?to_s(Merchant)
+		      ++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'"]
 		 ++ case Bill + Veri - OldBill - OldVeri == 0 of
 			true -> [];
 			false ->
@@ -708,8 +728,10 @@ handle_call({update_bill_supplier, Merchant, {Attrs, OldAttrs}}, _From, State) -
 			      ++ " and firm=" ++ ?to_s(FirmId)
 			      ++ " and id>" ++ ?to_s(BillId),
 
-			      "update w_inventory_new set "
-			      "balance=balance-" ++ ?to_s(Metric)
+			      "update"
+			      %% " w_inventory_new"
+			      ++ ?table:t(stock_new, Merchant, UTable)
+			      ++ " set balance=balance-" ++ ?to_s(Metric)
 			      ++ " where merchant=" ++ ?to_s(Merchant)
 			      ++ " and firm=" ++ ?to_s(FirmId)
 			      ++ " and entry_date>\'" ++ ?to_s(OldDatetime) ++ "\'"]
@@ -718,8 +740,9 @@ handle_call({update_bill_supplier, Merchant, {Attrs, OldAttrs}}, _From, State) -
 	    Datetime -> 
 		Sql00 = "select id, rsn, firm, shop, merchant"
 		    ", balance, should_pay, has_pay, e_pay, verificate, entry_date"
-		    " from w_inventory_new"
-		    " where merchant=" ++ ?to_s(Merchant)
+		%% " from w_inventory_new"
+		    " from" ++ ?table:t(stock_new, Merchant, UTable)
+		    ++ " where merchant=" ++ ?to_s(Merchant)
 		    ++ " and firm=" ++ ?to_s(FirmId)
 		    ++ " and state in(0, 1)"
 		    ++ " and entry_date<\'" ++ ?to_s(Datetime) ++ "\'"
@@ -732,8 +755,9 @@ handle_call({update_bill_supplier, Merchant, {Attrs, OldAttrs}}, _From, State) -
 				    Sql01 = "select id, rsn, firm, shop, merchant"
 					", balance, should_pay, has_pay, e_pay, verificate"
 					", entry_date"
-					" from w_inventory_new"
-					" where merchant=" ++ ?to_s(Merchant)
+				    %%" from w_inventory_new"
+					" from" ++ ?table:t(stock_new, Merchant, UTable)
+					++ " where merchant=" ++ ?to_s(Merchant)
 					++ " and firm=" ++ ?to_s(FirmId)
 					++ " and state in(0, 1)"
 					++ " and entry_date>\'" ++ ?to_s(Datetime) ++ "\'"
@@ -761,21 +785,26 @@ handle_call({update_bill_supplier, Merchant, {Attrs, OldAttrs}}, _From, State) -
 			Metric = Bill + Veri - OldBill - OldVeri,
 			    
 			{ok, 
-			 ["update w_inventory_new set "
-			  "balance=balance+" ++ ?to_s(OldBill + OldVeri)
+			 ["update"
+			  %% " w_inventory_new"
+			  ++ ?table:t(stock_new, Merchant, UTable)
+			  ++ " set balance=balance+" ++ ?to_s(OldBill + OldVeri)
 			  ++ " where merchant=" ++ ?to_s(Merchant)
 			  ++ " and firm=" ++ ?to_s(FirmId)
 			  ++ " and entry_date>\'" ++ ?to_s(OldDatetime) ++ "\'",
 
-			  "update w_inventory_new set "
-			  "balance=balance-" ++ ?to_s(Bill + Veri)
+			  "update"
+			  %% " w_inventory_new"
+			  ++ ?table:t(stock_new, Merchant, UTable)
+			  ++ " set balance=balance-" ++ ?to_s(Bill + Veri)
 			  ++ " where merchant=" ++ ?to_s(Merchant)
 			  ++ " and firm=" ++ ?to_s(FirmId)
 			  ++ " and entry_date>\'" ++ ?to_s(Datetime) ++ "\'"]
 
 			 ++ case ?to_b(Datetime) > ?to_b(OldDatetime) of
 				true ->
-				    ["update w_inventory_new set "
+				    ["update" ++ ?table:t(stock_new, Merchant, UTable)
+				     ++ " set "
 				     ++ ?utils:to_sqls(
 					   proplists,
 					   comma,
@@ -785,8 +814,8 @@ handle_call({update_bill_supplier, Merchant, {Attrs, OldAttrs}}, _From, State) -
 				     ++ " where merchant=" ++ ?to_s(Merchant)
 				     ++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'"];
 				false ->
-				    ["update w_inventory_new set "
-				     ++ ?utils:to_sqls(proplists, comma, AllUpdate)
+				    ["update" ++ ?table:t(stock_new, Merchant, UTable)
+				     ++ " set " ++ ?utils:to_sqls(proplists, comma, AllUpdate)
 				     ++ " where merchant=" ++ ?to_s(Merchant)
 				     ++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'"]
 			    end
@@ -831,7 +860,7 @@ handle_call({check_bill_supplier, Merchant, Attrs}, _From, State) ->
     Reply = ?sql_utils:execute(write, Sql, RSN),
     {reply, Reply, State};
 
-handle_call({abandon_bill_supplier, Merchant, Attrs}, _From, State) ->
+handle_call({abandon_bill_supplier, Merchant, UTable, Attrs}, _From, State) ->
     ?DEBUG("abandon_bill_supplier with merchant ~p, attrs ~p", [Merchant, Attrs]),
     RSN       = ?v(<<"rsn">>, Attrs),
     BillId    = ?v(<<"bill_id">>, Attrs),
@@ -850,8 +879,10 @@ handle_call({abandon_bill_supplier, Merchant, Attrs}, _From, State) ->
 		    ++ " where merchant=" ++ ?to_s(Merchant)
 		    ++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'",
 
-		    "update w_inventory_new set "
-		    "state=" ++ ?to_s(?DISCARD)
+		    "update"
+		    %% " w_inventory_new"
+		    ++ ?table:t(stock_new, Merchant, UTable)
+		    ++ " set state=" ++ ?to_s(?DISCARD)
 		    ++ " where merchant=" ++ ?to_s(Merchant)
 		    ++ " and rsn=\'" ++ ?to_s(RSN) ++ "\'",
 
@@ -865,8 +896,10 @@ handle_call({abandon_bill_supplier, Merchant, Attrs}, _From, State) ->
 		    ++ " and firm=" ++ ?to_s(FirmId)
 		    ++ " and id>" ++ ?to_s(BillId),
 
-		    "update w_inventory_new set "
-		    "balance=balance+" ++ ?to_s(Bill+Veri)
+		    "update"
+		    %% " w_inventory_new"
+		    ++ ?table:t(stock_new, Merchant, UTable)
+		    ++ " set balance=balance+" ++ ?to_s(Bill+Veri)
 		    ++ " where merchant=" ++ ?to_s(Merchant)
 		    ++ " and firm=" ++ ?to_s(FirmId)
 		    ++ " and entry_date>\'" ++ ?to_s(Datetime) ++ "\'"],
@@ -876,7 +909,7 @@ handle_call({abandon_bill_supplier, Merchant, Attrs}, _From, State) ->
 	    {reply, Reply, State}
     end;
 
-handle_call({bill_lookup, Merchant, Conditions}, _From, State) ->
+handle_call({bill_lookup, Merchant, UTable, Conditions}, _From, State) ->
     ?DEBUG("bill_lookup with merchant ~p, conditions ~p", [Merchant, Conditions]),
     RSN = ?v(<<"rsn">>, Conditions),
     NewConditions = ?utils:correct_condition(
@@ -888,7 +921,9 @@ handle_call({bill_lookup, Merchant, Conditions}, _From, State) ->
 	", a.comment, a.state, a.merchant, a.entry_date"
 
 	", b.id as sid"
-	" from w_bill_detail a, w_inventory_new b"
+	" from w_bill_detail a,"
+    %% " w_inventory_new b" 
+	++ ?table:t(stock_new, Merchant, UTable) ++ " b"
 	" where a.merchant=b.merchant and a.rsn=b.rsn"
 	" and a.merchant="++ ?to_s(Merchant)
 	++ " and a.rsn=\'" ++ ?to_s(RSN) ++ "\'"
@@ -986,7 +1021,7 @@ handle_call({match_vfirm, Merchant, Mode, Prompt}, _From, State) ->
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State}; 
 
-handle_call({profit, sale_of_firm, Merchant, Conditions}, _From, State) ->
+handle_call({profit, sale_of_firm, Merchant, UTable, Conditions}, _From, State) ->
     ?DEBUG("sale_of_firm: Merchant ~p, conditions ~p", [Merchant, Conditions]),
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
     %% Sql = 
@@ -1073,7 +1108,9 @@ handle_call({profit, sale_of_firm, Merchant, Conditions}, _From, State) ->
 	", b.merchant"
     	", b.firm as firm_id"
 	
-    	" from w_sale a, w_sale_detail b" 
+    %% " from w_sale a, w_sale_detail b"
+	" from" ++ ?table:t(sale_new, Merchant, UTable) ++ " a"
+	++ ?table:t(sale_detail, Merchant, UTable) ++ " b"
     	" where a.merchant=" ++ ?to_s(Merchant) 
     	++ ?sql_utils:condition(proplists, ?utils:correct_condition(<<"b.">>, NewConditions)) 
     	++ " and a.rsn=b.rsn"
@@ -1083,7 +1120,7 @@ handle_call({profit, sale_of_firm, Merchant, Conditions}, _From, State) ->
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 
-handle_call({profit, stock_in_of_firm, Merchant, Conditions}, _From, State) ->
+handle_call({profit, stock_in_of_firm, Merchant, UTable, Conditions}, _From, State) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
     %% CorrectConditions = ?utils:correct_condition(<<"a.">>, NewConditions),
     Sql =
@@ -1094,7 +1131,9 @@ handle_call({profit, stock_in_of_firm, Merchant, Conditions}, _From, State) ->
 	", SUM(a.amount) as amount"
 	", SUM(a.over) as over"
 	
-	" from w_inventory_new_detail a, w_inventory_new b" 
+    %% " from w_inventory_new_detail a, w_inventory_new b"
+	++ ?table:t(stock_new_detail, Merchant, UTable) ++ " a,"
+	++ ?table:t(stock_new, Merchant, UTable)++ "  b"
 	" where a.rsn=b.rsn"
 	" and a.merchant=b.merchant"
 	" and a.firm=b.firm"
@@ -1110,7 +1149,7 @@ handle_call({profit, stock_in_of_firm, Merchant, Conditions}, _From, State) ->
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 
-handle_call({profit, stock_out_of_firm, Merchant, Conditions}, _From, State) ->
+handle_call({profit, stock_out_of_firm, Merchant, UTable, Conditions}, _From, State) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
     %% CorrectConditions = ?utils:correct_condition(<<"a.">>, NewConditions),
 
@@ -1120,7 +1159,9 @@ handle_call({profit, stock_out_of_firm, Merchant, Conditions}, _From, State) ->
 	", SUM(a.org_price * a.amount) as cost"
 	", SUM(a.amount) as amount"
 
-	" from w_inventory_new_detail a, w_inventory_new b" 
+    %% " from w_inventory_new_detail a, w_inventory_new b"
+	++ ?table:t(stock_new_detail, Merchant, UTable) ++ " a,"
+	++ ?table:t(stock_new, Merchant, UTable)++ "  b"
 	" where a.rsn=b.rsn"
 	" and a.merchant=b.merchant"
 	" and a.firm=b.firm"
@@ -1136,7 +1177,7 @@ handle_call({profit, stock_out_of_firm, Merchant, Conditions}, _From, State) ->
     R = ?sql_utils:execute(read, Sql), 
     {reply, R, State};
 
-handle_call({profit, stock_all, Merchant, Conditions}, _From, State) ->
+handle_call({profit, stock_all, Merchant, UTable, Conditions}, _From, State) ->
     {_StartTime, _EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
     %% CorrectConditions = ?utils:correct_condition(<<"a.">>, NewConditions),
     Sql = "select a.merchant"
@@ -1150,7 +1191,8 @@ handle_call({profit, stock_all, Merchant, Conditions}, _From, State) ->
 	%% ", SUM(a.amount) as amount"
 	%% ", SUM(a.over) as over"
 
-	" from w_inventory a" 
+    %% " from w_inventory a"
+	" from" ++ ?table:t(stock, Merchant, UTable) ++ " a"
 	" where a.merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions) 
 	%% ++ " and a.rsn=b.rsn"
@@ -1183,7 +1225,7 @@ handle_call({profit_shop, stock_in_of_firm, Merchant, UTable, Conditions}, _From
     %% " from w_inventory_new_detail a, w_inventory_new b"
 	" from "
 	++ ?table:t(stock_new_detail, Merchant, UTable) ++ " a,"
-	++ ?table:t(stock_new, Merchant, UTable)++ "  b" 
+	++ ?table:t(stock_new, Merchant, UTable)++ "  b"
 	" where a.rsn=b.rsn"
 	" and a.merchant=b.merchant"
 	" and a.firm=b.firm"
@@ -1351,7 +1393,7 @@ handle_call({profit_shop, sale_of_firm, Merchant, UTable, Conditions}, _From, St
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 
-handle_call({profit, balance, Merchant, Conditions}, _From, State) ->
+handle_call({profit, balance, Merchant, UTable, Conditions}, _From, State) ->
     {_StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
     Sql = "select a.id"
 	", a.merchant"
@@ -1366,9 +1408,12 @@ handle_call({profit, balance, Merchant, Conditions}, _From, State) ->
 	", a.e_pay"
 	", a.entry_date"
 	
-	" from w_inventory_new a"
+    %% " from w_inventory_new a"
+	" from" ++ ?table:t(stock_new, Merchant, UTable) ++ " a"
 	" inner join"
-	" (select max(a.entry_date) as entry, a.merchant, a.firm from w_inventory_new a"
+	" (select max(a.entry_date) as entry, a.merchant, a.firm"
+    %% " from w_inventory_new a"
+	" from" ++ ?table:t(stock_new, Merchant, UTable) ++ " a"
 	" where a.merchant=" ++ ?to_s(Merchant)
 	++ " and a.state in(0, 1)" 
 	++ ?sql_utils:condition(proplists, NewConditions)
@@ -1383,7 +1428,7 @@ handle_call({profit, balance, Merchant, Conditions}, _From, State) ->
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 
-handle_call({profit, start_balance, Merchant, Conditions}, _From, State) ->
+handle_call({profit, start_balance, Merchant, UTable, Conditions}, _From, State) ->
     {StartTime, _EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
     Sql = "select a.id"
 	", a.merchant"
@@ -1397,10 +1442,13 @@ handle_call({profit, start_balance, Merchant, Conditions}, _From, State) ->
 	
 	", a.entry_date"
 
-	" from w_inventory_new a"
+    %% " from w_inventory_new a"
+	" from" ++ ?table:t(stock_new, Merchant, UTable) ++ " a"
 
 	" inner join"
-	" (select max(a.entry_date) as entry, a.merchant, a.firm from w_inventory_new a"
+	" (select max(a.entry_date) as entry, a.merchant, a.firm"
+    %% " from w_inventory_new a"
+	" from" ++ ?table:t(stock_new, Merchant, UTable) ++ " a"
 	" where a.merchant=" ++ ?to_s(Merchant)
 	++ " and a.state in(0, 1)"
 	++ ?sql_utils:condition(proplists, NewConditions)
@@ -1416,7 +1464,7 @@ handle_call({profit, start_balance, Merchant, Conditions}, _From, State) ->
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 
-handle_call({profit, end_balance, Merchant, Conditions}, _From, State) ->
+handle_call({profit, end_balance, Merchant, UTable, Conditions}, _From, State) ->
     {_StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
     Sql = "select a.id"
 	", a.merchant"
@@ -1430,11 +1478,14 @@ handle_call({profit, end_balance, Merchant, Conditions}, _From, State) ->
 
 	", a.entry_date"
 
-	" from w_inventory_new a"
+    %% " from w_inventory_new a"
+	" from" ++ ?table:t(stock_new, Merchant, UTable) ++ " a"
 
 	" inner join"
-	" (select max(a.entry_date) as entry, a.merchant, a.firm from w_inventory_new a"
-	" where a.merchant=" ++ ?to_s(Merchant)
+	" (select max(a.entry_date) as entry, a.merchant, a.firm"
+    %% " from w_inventory_new a"
+	" from" ++ ?table:t(stock_new, Merchant, UTable) ++ " a"
+	++ " where a.merchant=" ++ ?to_s(Merchant)
 	++ " and a.state in(0, 1)"
 	++ ?sql_utils:condition(proplists, NewConditions)
 	++ ?sql_utils:fix_condition(time, time_with_prfix, undefined, EndTime)
@@ -1449,7 +1500,7 @@ handle_call({profit, end_balance, Merchant, Conditions}, _From, State) ->
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 
-handle_call({profit, bill_balance, Merchant, Conditions}, _From, State) ->
+handle_call({profit, bill_balance, Merchant, UTable, Conditions}, _From, State) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
     
     Sql = "select merchant"
@@ -1458,8 +1509,9 @@ handle_call({profit, bill_balance, Merchant, Conditions}, _From, State) ->
 	", SUM(verificate) as verificate"
 	", SUM(e_pay) as e_pay"
 
-	" from w_inventory_new" 
-	" where merchant=" ++ ?to_s(Merchant)
+    %% " from w_inventory_new"
+	" from" ++ ?table:t(stock_new, Merchant, UTable)
+	++ " where merchant=" ++ ?to_s(Merchant)
 	++ " and state in(0, 1)"
 	++ ?sql_utils:condition(proplists, NewConditions)
 	++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime) 
@@ -1469,15 +1521,16 @@ handle_call({profit, bill_balance, Merchant, Conditions}, _From, State) ->
     {reply, R, State}; 
     
 
-handle_call({sprofit, balance, Merchant, Conditions}, _From, State) ->
+handle_call({sprofit, balance, Merchant, UTable, Conditions}, _From, State) ->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions), 
     Sql = "select merchant"
 	", SUM(should_pay) as should_pay"
 	", SUM(has_pay) as has_pay"
 	", SUM(verificate) as verificate"
 	", SUM(e_pay) as e_pay"
-	" from w_inventory_new" 
-	" where merchant=" ++ ?to_s(Merchant)
+    %% " from w_inventory_new"
+	" from" ++ ?table:t(stock_new, Merchant, UTable)
+	++ " where merchant=" ++ ?to_s(Merchant)
 	++ " and state in(0,1)" 
 	++ ?sql_utils:condition(proplists, NewConditions)
 	++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime),
@@ -1485,7 +1538,7 @@ handle_call({sprofit, balance, Merchant, Conditions}, _From, State) ->
     R = ?sql_utils:execute(s_read, Sql),
     {reply, R, State};
 
-handle_call({sprofit, stock_in, Merchant, Conditions}, _From, State) -> 
+handle_call({sprofit, stock_in, Merchant, UTable, Conditions}, _From, State) -> 
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(prefix, Conditions),
     Sql =
 	"select a.merchant"
@@ -1495,7 +1548,10 @@ handle_call({sprofit, stock_in, Merchant, Conditions}, _From, State) ->
 	", SUM(a.amount) as amount"
 	", SUM(a.over) as over"
 
-	" from w_inventory_new_detail a, w_inventory_new b" 
+    %% " from w_inventory_new_detail a, w_inventory_new b"
+	" from"
+	++ ?table:t(stock_new_detail, Merchant, UTable) ++ " a"
+	++ ?table:t(stock_new, Merchant, UTable) ++ " b"
 	" where a.rsn=b.rsn"
 	" and a.merchant=b.merchant"
 	" and a.merchant=" ++ ?to_s(Merchant)

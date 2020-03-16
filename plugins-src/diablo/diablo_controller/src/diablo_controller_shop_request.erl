@@ -53,11 +53,11 @@ action(Session, Req, {"list_region"}) ->
 %% @desc: DELTE action
 %%-------------------------------------------------------------------- 
 action(Session, Req, {"delete_shop", Id}) ->
-    ?DEBUG("delete_shop with session ~p, id ~p", [Session, Id]),
-    
+    ?DEBUG("delete_shop with session ~p, id ~p", [Session, Id]), 
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utils, Session),
     ?utils:respond(normal,
-		   fun()-> ?shop:shop(delete, Merchant, Id) end,
+		   fun()-> ?shop:shop(delete, {Merchant, UTable}, Id) end,
 		   fun(ShopId)-> ?succ(delete_shop, ShopId) end,
 		   Req).
 

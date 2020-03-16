@@ -11,7 +11,7 @@
 
 -compile(export_all).
 
-sale(new_by_shop, Merchant, Conditions) ->
+sale(new_by_shop, Merchant, UTable, Conditions) ->
     {StartTime, EndTime, NewConditions} = 
 	?sql_utils:cut(fields_no_prifix, Conditions), 
     "select shop as shop_id"
@@ -24,16 +24,16 @@ sale(new_by_shop, Merchant, Conditions) ->
 	%% ", sum(cbalance) as t_cbalance" 
 	", sum(withdraw) as t_withdraw"
 	
-	" from w_sale"
+    %% " from w_sale"
+	" from" ++ ?table:t(sale_new, Merchant, UTable)
 	++ " where " ++ ?utils:to_sqls(proplists, NewConditions)
 	++ " and merchant=" ++ ?to_s(Merchant)
 	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime)
 	++ " and deleted=" ++ ?to_s(?NO)
 	++ " group by shop";
 
-sale(new_by_retailer, Merchant, Conditions) ->
-    ?DEBUG("new_by_retailer with merchant ~p, conditions ~p",
-	   [Merchant, Conditions]), 
+sale(new_by_retailer, Merchant, UTable, Conditions) ->
+    ?DEBUG("new_by_retailer with merchant ~p, conditions ~p", [Merchant, Conditions]), 
     SortConditions = ?w_sale:sort_condition(wsale, Merchant, Conditions),
     
     %% {StartTime, EndTime, NewConditions} = 
@@ -49,15 +49,14 @@ sale(new_by_retailer, Merchant, Conditions) ->
     %% ", sum(cbalance) as t_cbalance" 
 	", sum(withdraw) as t_withdraw"
 	
-	" from w_sale a"
+    %% " from w_sale a"
+	" from" ++ ?table:t(sale_new, Merchant, UTable)
 	++ " where " ++ SortConditions
 	++ " and a.deleted=" ++ ?to_s(?NO)
 	++ " group by a.retailer";
 
-sale(new_by_good, Merchant, Conditions) ->
-    ?DEBUG("new_by_good with merchant ~p, conditions ~p",
-	   [Merchant, Conditions]),
-
+sale(new_by_good, Merchant, UTable, Conditions) ->
+    ?DEBUG("new_by_good with merchant ~p, conditions ~p", [Merchant, Conditions]), 
     {DConditions, SConditions}
 	= ?w_sale:filter_condition(wsale, Conditions, [], []),
 
@@ -77,7 +76,11 @@ sale(new_by_good, Merchant, Conditions) ->
     %% ", c.amount as t_stock"
 	
 	%% " from w_sale_detail a, w_sale b, w_inventory c, brands d"
-	" from w_sale_detail a, w_sale b, brands d"
+    %% " from w_sale_detail a, w_sale b, brands d"
+	" from"
+	++ ?table:t(sale_detail, Merchant, UTable) ++ " a"
+	++ ?table:t(sale_new, Merchant, UTable) ++ " b"
+	++ " brands d"
 	" where "
 	++ ?sql_utils:condition(proplists_suffix, CorrectCutDConditions)
 	++ "a.rsn=b.rsn"

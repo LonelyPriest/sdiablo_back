@@ -53,10 +53,11 @@ action(Session, Req, {"list_ticket_plan"}) ->
        batch, fun() -> ?w_retailer:ticket(list_plan, Merchant)end, Req);
 
 action(Session, Req, {"del_w_retailer", Id}) ->
-    ?DEBUG("delete_w_retailer with session ~p, Id ~p", [Session, Id]),
-
+    ?DEBUG("delete_w_retailer with session ~p, Id ~p", [Session, Id]), 
     Merchant = ?session:get(merchant, Session),
-    case ?w_retailer:retailer(delete, Merchant, Id) of
+    UTable   = ?session:get(utable, Session),
+
+    case ?w_retailer:retailer(delete, {Merchant, UTable}, Id) of
 	{ok, RetailerId} ->
 	    ?utils:respond(200, Req, ?succ(delete_w_retailer, RetailerId));
 	{error, Error} ->
@@ -564,7 +565,7 @@ action(Session, Req, {"add_w_retailer_charge"}, Payload) ->
     end;
 
 action(Session, Req, {"del_w_retailer_charge"}, Payload) ->
-    Merchant = ?session:get(merchant, Session),
+    Merchant = ?session:get(merchant, Session),    
     ChargeId = ?v(<<"cid">>, Payload),
     case ?w_retailer:charge(delete, Merchant, ChargeId) of
 	{ok, Id} -> 
@@ -783,13 +784,18 @@ action(Session, Req, {"print_w_retailer"}, Payload) ->
 action(Session, Req, {"filter_retailer_consume"}, Payload) ->
     ?DEBUG("filter_retailer_consume with session ~p, paylaod~n~p", [Session, Payload]), 
     Merchant  = ?session:get(merchant, Session),
+    UTable   = ?session:get(utable, Session),
 
     ?pagination:pagination(
        fun(Match, Conditions) ->
-	       ?w_retailer:filter(total_consume, ?to_a(Match), Merchant, Conditions)
+	       ?w_retailer:filter(total_consume, ?to_a(Match), {Merchant, UTable}, Conditions)
        end,
        fun(Match, CurrentPage, ItemsPerPage, Conditions) ->
-	       ?w_retailer:filter(consume, Match, Merchant, Conditions, CurrentPage, ItemsPerPage)
+	       ?w_retailer:filter(consume,
+				  Match,
+				  {Merchant, UTable},
+				  Conditions,
+				  CurrentPage, ItemsPerPage)
        end, Req, Payload);
 
 action(Session, Req, {"filter_charge_detail"}, Payload) ->
@@ -1012,9 +1018,10 @@ action(Session, Req, {"update_ticket_plan"}, Payload) ->
 
 action(Session, Req, {"gift_ticket"}, Payload) ->
     ?DEBUG("gift_ticket: Session ~p, paylaod ~p", [Session, Payload]),
-    Merchant = ?session:get(merchant, Session),
-    Tickets  = ?v(<<"ticket">>, Payload),
-
+    Merchant = ?session:get(merchant, Session), 
+    UTable = ?session:get(utable, Session),
+    
+    Tickets  = ?v(<<"ticket">>, Payload), 
     RetailerId      = ?v(<<"retailer">>, Payload),
     RetailerPhone   = ?v(<<"retailer_phone">>, Payload),
     RetailerName    = ?v(<<"retailer_name">>, Payload),
@@ -1027,7 +1034,9 @@ action(Session, Req, {"gift_ticket"}, Payload) ->
     GiftFun =
 	fun() ->
 		case ?w_retailer:ticket(
-			gift, Merchant, {ShopId, RetailerId, Tickets, WithRSN, Employee}) of
+			gift,
+			{Merchant, UTable},
+			{ShopId, RetailerId, Tickets, WithRSN, Employee}) of
 		    {ok, RetailerId, Balance, Count, MinEffect} ->
 			%% send sms
 			try 
@@ -1067,7 +1076,7 @@ action(Session, Req, {"gift_ticket"}, Payload) ->
 	[] ->
 	    GiftFun();
 	_ ->
-	    case ?w_sale:sale(get_new, Merchant, WithRSN) of
+	    case ?w_sale:sale(get_new, {Merchant, UTable}, WithRSN) of
 		{ok, SaleNew} ->
 		    case ?v(<<"g_ticket">>, SaleNew) of
 			?YES ->

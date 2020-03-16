@@ -40,16 +40,17 @@ action(Session, Req, {"list_brand"}) ->
 %%--------------------------------------------------------------------
 %% @desc: DELTE action
 %%--------------------------------------------------------------------
-action(Session, Req, {"delete_frim", FirmId}) ->
-    ?DEBUG("delete firm with session ~p, id ~p", [Session, FirmId]),
-    ok = ?supplier:supplier(delete, {"id", ?to_integer(FirmId)}),
-    ?utils:respond(200, Req, ?succ(delete_supplier, FirmId));
+%% action(Session, Req, {"delete_frim", FirmId}) ->
+%%     ?DEBUG("delete firm with session ~p, id ~p", [Session, FirmId]),
+%%     ok = ?supplier:supplier(delete, {"id", ?to_integer(FirmId)}),
+%%     ?utils:respond(200, Req, ?succ(delete_supplier, FirmId));
 
 action(Session, Req, {"delete_brand", Id}) ->
-    ?DEBUG("delete_brand with session ~p, id ~p", [Session, Id]),
-
+    ?DEBUG("delete_brand with session ~p, id ~p", [Session, Id]), 
     Merchant = ?session:get(merchant, Session),
-    case ?attr:brand(delete, Merchant, Id) of
+    UTable = ?session:get(utable, Session),
+    
+    case ?attr:brand(delete, {Merchant, UTable}, Id) of
 	{ok, GoodId} ->
 	    ?utils:respond(200, Req, ?succ(delete_purchaser_good, GoodId));
 	{error, Error} ->
@@ -74,11 +75,12 @@ action(Session, Req, {"new_firm"}, Payload) ->
     end;
 
 action(Session, Req, {"delete_firm"}, Payload) ->
-    ?DEBUG("update frim with session ~p,  paylaod ~p", [Session, Payload]),
-
+    ?DEBUG("update frim with session ~p,  paylaod ~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     FirmId  = ?v(<<"firm_id">>, Payload),
-    case ?supplier:supplier(w_delete, Merchant, FirmId) of
+    case ?supplier:supplier(w_delete, {Merchant, UTable}, FirmId) of
 	{ok, FirmId} ->
 	    ?utils:respond(200, Req, ?succ(delete_supplier, FirmId));
 	{error, Error} ->
@@ -219,6 +221,8 @@ action(Session, Req, {"check_w_firm_bill"}, Payload) ->
 action(Session, Req, {"abandon_w_firm_bill"}, Payload) ->
     ?DEBUG("check_w_firm_bill with session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     RSN = ?v(<<"rsn">>, Payload),
     
     case ?supplier:bill(lookup, Merchant, [{<<"rsn">>, RSN}]) of
@@ -241,7 +245,7 @@ action(Session, Req, {"abandon_w_firm_bill"}, Payload) ->
 		     {<<"veri">>, Veri},
 		     {<<"firm">>, Firm},
 		     {<<"datetime">>, Datetime}],
-	    case ?supplier:supplier(abandon_bill, Merchant, Attrs) of
+	    case ?supplier:supplier(abandon_bill, {Merchant, UTable}, Attrs) of
 		{ok, RSN} ->
 		    ?w_user_profile:update(firm, Merchant), 
 		    ?utils:respond(200, Req, ?succ(bill_abandon, RSN));
@@ -310,12 +314,14 @@ action(Session, Req, {"export_w_firm"}, Payload) ->
 
 action(Session, Req, {"analysis_profit_w_firm"}, Payload) ->
     ?DEBUG("analysis_profit_w_firm:session ~p, payload ~p", [Session, Payload]),
-    Merchant    = ?session:get(merchant, Session),
+    Merchant = ?session:get(merchant, Session),
+    UTable   = ?session:get(utable, Session),
+    
     {struct, Conditions} = ?v(<<"condition">>, Payload, []),
     CurrentPage = ?v(<<"page">>, Payload, 1),
     ItemsPerpage = ?v(<<"count">>, Payload, ?DEFAULT_ITEMS_PERPAGE),
 
-    {struct, Mode}     = ?v(<<"mode">>, Payload),
+    {struct, Mode} = ?v(<<"mode">>, Payload),
     Order = ?v(<<"mode">>, Mode),
     Sort  = ?v(<<"sort">>, Mode),
 
@@ -330,7 +336,8 @@ action(Session, Req, {"analysis_profit_w_firm"}, Payload) ->
 	    case CurrentPage =:= 1 of
 		true ->
 		    {ok, R} = ?supplier:supplier(page_total, Merchant, ConditionsWithOutTime),
-		    {ok, TBalance} = ?supplier:sprofit(sprofit, balance, Merchant, Conditions),
+		    {ok, TBalance} = ?supplier:sprofit(
+					sprofit, balance, {Merchant, UTable}, Conditions),
 		    ?DEBUG("tbalance ~p", [TBalance]),
 		    {?v(<<"total">>, R),
 		     {proplists:delete(<<"total">>, R) ++ proplists:delete(<<"merchant">>, TBalance)}
@@ -355,6 +362,7 @@ action(Session, Req, {"analysis_profit_w_firm"}, Payload) ->
 				 {page_list, ?w_inventory_request:mode(Order), Sort},
 				 Merchant,
 				 %% ConditionsWithOutTime,
+				 UTable,
 				 Conditions,
 				 CurrentPage,
 				 ItemsPerpage),
@@ -363,13 +371,28 @@ action(Session, Req, {"analysis_profit_w_firm"}, Payload) ->
 				      end, [], Firms), 
 		NConditions = [{<<"firm">>, FirmIds}|Conditions],
 	
-		{ok, Sales} = ?supplier:profit(profit, sale_of_firm, Merchant, NConditions),
-		{ok, StockIn} = ?supplier:profit(profit, stock_in_of_firm, Merchant, NConditions),
-		{ok, StockOut} = ?supplier:profit(profit, stock_out_of_firm, Merchant, NConditions),
+		{ok, Sales} = ?supplier:profit(profit, sale_of_firm, {Merchant, UTable}, NConditions),
+		{ok, StockIn} = ?supplier:profit(profit,
+						 stock_in_of_firm,
+						 {Merchant, UTable},
+						 NConditions),
+		{ok, StockOut} = ?supplier:profit(profit,
+						  stock_out_of_firm,
+						  {Merchant, UTable},
+						  NConditions),
 		%% {ok, StockAll} = ?supplier:profit(profit, stock_all, Merchant, NConditions),
-		{ok, StartBalance} = ?supplier:profit(profit, start_balance, Merchant, NConditions),
-		{ok, EndBalance} = ?supplier:profit(profit, end_balance, Merchant, NConditions),
-		{ok, BillBalance} = ?supplier:profit(profit, bill_balance, Merchant, NConditions),
+		{ok, StartBalance} = ?supplier:profit(profit,
+						      start_balance,
+						      {Merchant, UTable},
+						      NConditions),
+		{ok, EndBalance} = ?supplier:profit(profit,
+						    end_balance,
+						    {Merchant, UTable},
+						    NConditions),
+		{ok, BillBalance} = ?supplier:profit(profit,
+						     bill_balance,
+						     {Merchant, UTable},
+						     NConditions),
 
 		SS0 = 
 		    lists:foldr(
@@ -426,6 +449,7 @@ action(Session, Req, {"analysis_profit_w_firm"}, Payload) ->
 action(Session, Req, {"export_firm_profit"}, Payload) ->
     ?DEBUG("export_firm_profit: session ~p, payload ~p", [Session, Payload]),
     Merchant    = ?session:get(merchant, Session),
+    UTable      = ?session:get(utils, Session),
     UserId      = ?session:get(id, Session),
     
     {struct, Conditions} = ?v(<<"condition">>, Payload), 
@@ -458,21 +482,22 @@ action(Session, Req, {"export_firm_profit"}, Payload) ->
 	end,
     
     {ok, Firms} = ?supplier:supplier(
-		     {page_list, ?w_inventory_request:mode(Order), Sort}, Merchant, Conditions),
+		     {page_list, ?w_inventory_request:mode(Order), Sort},
+		     {Merchant, UTable}, Conditions),
     FirmIds = lists:foldr(fun({Firm}, Acc) ->
 				  [?v(<<"id">>, Firm)|Acc]
 			  end, [], Firms), 
     NConditions = [{<<"firm">>, FirmIds}|Conditions],
 
-    {ok, Sales} = ?supplier:profit(profit, sale_of_firm, Merchant, NConditions),
+    {ok, Sales} = ?supplier:profit(profit, sale_of_firm, {Merchant, UTable}, NConditions),
     %% ?DEBUG("sales ~p", [Sales]),
-    {ok, StocksIn} = ?supplier:profit(profit, stock_in_of_firm, Merchant, NConditions),
+    {ok, StocksIn} = ?supplier:profit(profit, stock_in_of_firm, {Merchant, UTable}, NConditions),
     %% ?DEBUG("stocksIn ~p", [StocksIn]),
-    {ok, StocksOut} = ?supplier:profit(profit, stock_out_of_firm, Merchant, NConditions),
+    {ok, StocksOut} = ?supplier:profit(profit, stock_out_of_firm, {Merchant, UTable}, NConditions),
     %% ?DEBUG("stocksOut ~p", [StocksOut]),
-    {ok, StartBalance} = ?supplier:profit(profit, start_balance, Merchant, NConditions),
-    {ok, EndBalance} = ?supplier:profit(profit, end_balance, Merchant, NConditions),
-    {ok, BillBalance} = ?supplier:profit(profit, bill_balance, Merchant, NConditions),
+    {ok, StartBalance} = ?supplier:profit(profit, start_balance, {Merchant, UTable}, NConditions),
+    {ok, EndBalance} = ?supplier:profit(profit, end_balance, {Merchant, UTable}, NConditions),
+    {ok, BillBalance} = ?supplier:profit(profit, bill_balance, {Merchant, UTable}, NConditions),
     %% {ok, StocksBalance} = ?supplier:profit(profit, balance, Merchant, NConditions),
     %% ?DEBUG("stocksBalance ~p", [StocksBalance]),
     

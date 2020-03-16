@@ -320,7 +320,7 @@ good(detail, {Merchant, UTable}, Conditions) ->
 	   end
 	++ " and a.deleted=" ++ ?to_s(?NO); 
 
-good(price, Merchant, [{_StyleNumber, _Brand}|_] = Conditions) ->
+good(price, {Merchant, UTable}, [{_StyleNumber, _Brand}|_] = Conditions) ->
     [{S1, B1}|T] = Conditions, 
     "select a.id"
 	", a.style_number"
@@ -334,7 +334,9 @@ good(price, Merchant, [{_StyleNumber, _Brand}|_] = Conditions) ->
     %% ", a.price4"
     %% ", a.price5"
 	", a.discount"
-	" from w_inventory_good a where (a.style_number, a.brand) in("
+    %%" from w_inventory_good a"
+	" from" ++ ?table:t(good, Merchant, UTable)
+	++ " where (a.style_number, a.brand) in("
 	++ lists:foldr(
 	     fun({StyleNumber, Brand}, Acc)->
 		     "(\'" ++ ?to_s(StyleNumber) ++ "\',"
@@ -541,7 +543,7 @@ good_match(all_style_number_with_firm, Merchant, UTable, StartTime, Firm) ->
 	" and a.type=c.id"
 	" order by id desc".
 
-inventory(abstract, Merchant, Shop, [{S1, B1}|T] = _Conditions) -> 
+inventory(abstract, {Merchant, UTable}, Shop, [{S1, B1}|T] = _Conditions) -> 
 
     C = lists:foldr(
     	  fun({S, B}, Acc)->
@@ -590,12 +592,16 @@ inventory(abstract, Merchant, Shop, [{S1, B1}|T] = _Conditions) ->
 	", path"
 	", shop"
 	", merchant"
-	" from w_inventory where (" ++ C  ++ ")"
+    %% " from w_inventory"
+	" from" ++ ?table:t(stock, Merchant, UTable)
+	++ " where (" ++ C  ++ ")"
 	++ " and shop=" ++ ?to_s(Shop)
 	++ " and merchant=" ++ ?to_s(Merchant)
 	++ " and deleted=" ++ ?to_s(?NO) ++ ") a"
 	
-	" left join w_inventory_amount b on"
+	" left join"
+    %% " w_inventory_amount"
+	++ ?table:t(stock_note, Merchant, UTable) ++ " b on"
 	" a.merchant=b.merchant"
 	" and a.style_number=b.style_number"
 	" and a.brand_id=b.brand"
@@ -1247,7 +1253,7 @@ inventory(new_rsn_groups, new, {Merchant, UTable}, Conditions, PageFun) ->
 	", a.type"
 	", a.state"
 	
-    	" from w_inventory_new_detail b, w_inventory_new a"
+    %% " from w_inventory_new_detail b, w_inventory_new a"
 	" from" ++ ?table:t(stock_new_detail, Merchant, UTable) ++ " b,"
 	++ ?table:t(stock_new, Merchant, UTable) ++ " a" 
     	" where "
@@ -1545,10 +1551,13 @@ inventory({new_rsn_group_with_pagination, Mode, Sort},
 %% match
 %%
 
-inventory_match(Merchant, StyleNumber, Shop) ->
+inventory_match(Merchant, UTable, StyleNumber, Shop) ->
     %% P = ?w_retailer:get(prompt, Merchant),
     P = prompt_num(Merchant),
-    "select style_number from w_inventory"
+    "select style_number"
+	" from"
+    %% " w_inventory"
+	++ ?table:t(stock, Merchant, UTable)
 	%% ++ " where style_number like \'%" ++ ?to_s(StyleNumber) ++ "%\'"
 	%% ++ " where style_number like \'%" ++ ?to_s(StyleNumber) ++ "\'"
 	++ " where merchant=" ++ ?to_s(Merchant)
@@ -2572,7 +2581,7 @@ amount_update(Mode, RSN, Merchant, UTable, Shop, Datetime, Inv) ->
 		    ++ " and brand=" ++ ?to_s(Brand),
 
 		    %% "update w_sale_detail set "
-		    "update" ++ ?table:t(sale_new_detail, Merchant, UTable)
+		    "update" ++ ?table:t(sale_detail, Merchant, UTable)
 		    ++ " set "
 		    ++ ?utils:to_sqls(
 			  proplists,

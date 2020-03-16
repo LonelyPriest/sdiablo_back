@@ -19,7 +19,7 @@
 	 terminate/2, code_change/3]).
 
 %% daily
--export([report/4, report/5, stastic/3, stastic/4, stock/4]).
+-export([report/5, report/6, stastic/3, stastic/4, stock/4]).
 -export([daily_report/3, daily_report/5, month_report/3]).
 -export([switch_shift_report/3, switch_shift_report/5]).
 
@@ -31,22 +31,22 @@
 %%% API
 %%%===================================================================
 
-report(total, by_shop, Merchant, Conditions) ->
-    gen_server:call(?SERVER, {total, by_shop, Merchant, Conditions}, ?SQL_TIME_OUT); 
-report(total, by_retailer, Merchant, Conditions) ->
-    gen_server:call(?SERVER, {total, by_retailer, Merchant, Conditions}, ?SQL_TIME_OUT);
-report(total, by_good, Merchant, Conditions) ->
-    gen_server:call(?SERVER, {total, by_good, Merchant, Conditions}, ?SQL_TIME_OUT).
+report(total, by_shop, Merchant, UTable, Conditions) ->
+    gen_server:call(?SERVER, {total, by_shop, Merchant, UTable, Conditions}, ?SQL_TIME_OUT); 
+report(total, by_retailer, Merchant, UTable, Conditions) ->
+    gen_server:call(?SERVER, {total, by_retailer, Merchant, UTable, Conditions}, ?SQL_TIME_OUT);
+report(total, by_good, Merchant, UTable, Conditions) ->
+    gen_server:call(?SERVER, {total, by_good, Merchant, UTable, Conditions}, ?SQL_TIME_OUT).
 
-report(by_shop, Merchant, CurrentPage, ItemsPerPage, Conditions) ->
+report(by_shop, Merchant, UTable, CurrentPage, ItemsPerPage, Conditions) ->
     gen_server:call(
-      ?SERVER, {by_shop, Merchant, CurrentPage, ItemsPerPage, Conditions}, ?SQL_TIME_OUT); 
-report(by_retailer, Merchant, CurrentPage, ItemsPerPage, Conditions) ->
+      ?SERVER, {by_shop, Merchant, UTable, CurrentPage, ItemsPerPage, Conditions}, ?SQL_TIME_OUT); 
+report(by_retailer, Merchant, UTable, CurrentPage, ItemsPerPage, Conditions) ->
     gen_server:call(
-      ?SERVER, {by_retailer, Merchant, CurrentPage, ItemsPerPage, Conditions}, ?SQL_TIME_OUT);
-report(by_good, Merchant, CurrentPage, ItemsPerPage, Conditions) ->
+      ?SERVER, {by_retailer, Merchant, UTable, CurrentPage, ItemsPerPage, Conditions}, ?SQL_TIME_OUT);
+report(by_good, Merchant, UTable, CurrentPage, ItemsPerPage, Conditions) ->
     gen_server:call(
-      ?SERVER, {by_good, Merchant, CurrentPage, ItemsPerPage, Conditions}, ?SQL_TIME_OUT).
+      ?SERVER, {by_good, Merchant, UTable, CurrentPage, ItemsPerPage, Conditions}, ?SQL_TIME_OUT).
 
 daily_report(total, Merchant, Conditions) ->
     gen_server:call(?SERVER, {total_of_daily, Merchant, Conditions}, ?SQL_TIME_OUT).
@@ -63,35 +63,35 @@ switch_shift_report(detail, Merchant, CurrentPage, ItemsPerPage, Conditions) ->
     gen_server:call(
       ?SERVER, {detail_of_shift, Merchant, CurrentPage, ItemsPerPage, Conditions}, ?SQL_TIME_OUT).
 
-stastic(stock_sale, Merchant, Conditions)->
-    gen_server:call(?SERVER, {stock_sale, Merchant, Conditions}, ?SQL_TIME_OUT);
-stastic(stock_profit, Merchant, Conditions)->
-    gen_server:call(?SERVER, {stock_profit, Merchant, Conditions}, ?SQL_TIME_OUT);
-stastic(stock_in, Merchant, Conditions)->
-    gen_server:call(?SERVER, {stock_in, Merchant, Conditions}, ?SQL_TIME_OUT);
-stastic(stock_out, Merchant, Conditions)->
-    gen_server:call(?SERVER, {stock_out, Merchant, Conditions}, ?SQL_TIME_OUT);
-stastic(stock_transfer_in, Merchant, Conditions)->
-    gen_server:call(?SERVER, {stock_transfer_in, Merchant, Conditions}, ?SQL_TIME_OUT);
-stastic(stock_transfer_out, Merchant, Conditions)->
-    gen_server:call(?SERVER, {stock_transfer_out, Merchant, Conditions}, ?SQL_TIME_OUT);
-stastic(stock_fix, Merchant, Conditions)->
-    gen_server:call(?SERVER, {stock_fix, Merchant, Conditions}, ?SQL_TIME_OUT);
-stastic(stock_real, Merchant, Conditions) ->
-    gen_server:call(?SERVER, {stock_real, Merchant, Conditions}, ?SQL_TIME_OUT);
 stastic(recharge, Merchant, Conditions) ->
     gen_server:call(?SERVER, {recharge, Merchant, Conditions}, ?SQL_TIME_OUT).
 
-
-stastic(current_stock_of_shop, Merchant, ShopId, CurrentDay) when is_number(ShopId) ->
-    gen_server:call(?SERVER, {current_stock_of_shop, Merchant, [ShopId], CurrentDay}, ?SQL_TIME_OUT);
-stastic(current_stock_of_shop, Merchant, ShopIds, CurrentDay)->
-    gen_server:call(?SERVER, {current_stock_of_shop, Merchant, ShopIds, CurrentDay}, ?SQL_TIME_OUT);
+stastic(stock_sale, Merchant, UTable, Conditions)->
+    gen_server:call(?SERVER, {stock_sale, Merchant, UTable, Conditions}, ?SQL_TIME_OUT);
+stastic(stock_profit, Merchant, UTable, Conditions)->
+    gen_server:call(?SERVER, {stock_profit, Merchant, UTable, Conditions}, ?SQL_TIME_OUT);
+stastic(stock_in, Merchant, UTable, Conditions)->
+    gen_server:call(?SERVER, {stock_in, Merchant, UTable, Conditions}, ?SQL_TIME_OUT);
+stastic(stock_out, Merchant, UTable, Conditions)->
+    gen_server:call(?SERVER, {stock_out, Merchant, UTable, Conditions}, ?SQL_TIME_OUT);
+stastic(stock_transfer_in, UTable, Merchant, Conditions)->
+    gen_server:call(?SERVER, {stock_transfer_in, Merchant, UTable, Conditions}, ?SQL_TIME_OUT);
+stastic(stock_transfer_out, UTable, Merchant, Conditions)->
+    gen_server:call(?SERVER, {stock_transfer_out, Merchant, UTable, Conditions}, ?SQL_TIME_OUT);
+stastic(stock_fix, Merchant, UTable, Conditions)->
+    gen_server:call(?SERVER, {stock_fix, Merchant, UTable, Conditions}, ?SQL_TIME_OUT);
+stastic(stock_real, Merchant, UTable, Conditions) ->
+    gen_server:call(?SERVER, {stock_real, Merchant, UTable, Conditions}, ?SQL_TIME_OUT);
 
 stastic(last_stock_of_shop, Merchant, ShopId, CurrentDay) when is_number(ShopId) ->
     gen_server:call(?SERVER, {last_stock_of_shop, Merchant, [ShopId], CurrentDay}, ?SQL_TIME_OUT);
 stastic(last_stock_of_shop, Merchant, ShopIds, CurrentDay)->
-    gen_server:call(?SERVER, {last_stock_of_shop, Merchant, ShopIds, CurrentDay}, ?SQL_TIME_OUT).
+    gen_server:call(?SERVER, {last_stock_of_shop, Merchant, ShopIds, CurrentDay}, ?SQL_TIME_OUT);
+
+stastic(current_stock_of_shop, Merchant, ShopId, CurrentDay) when is_number(ShopId) ->
+    gen_server:call(?SERVER, {current_stock_of_shop, Merchant, [ShopId], CurrentDay}, ?SQL_TIME_OUT);
+stastic(current_stock_of_shop, Merchant, ShopIds, CurrentDay)->
+    gen_server:call(?SERVER, {current_stock_of_shop, Merchant, ShopIds, CurrentDay}, ?SQL_TIME_OUT).
 
 
 stock(of_day, Merchant, ShopIds, Day) ->
@@ -107,7 +107,7 @@ start_link() ->
 init([]) ->
     {ok, #state{}}.
 
-handle_call({total, by_shop, Merchant, Conditions}, _From, State) ->
+handle_call({total, by_shop, Merchant, UTable, Conditions}, _From, State) ->
     CountSql = "count(distinct shop, merchant) as total"
 	", sum(total) as t_amount"
 	", sum(should_pay) as t_spay"
@@ -117,23 +117,24 @@ handle_call({total, by_shop, Merchant, Conditions}, _From, State) ->
 	", sum(aliPay) as t_aliPay"
 	", sum(withdraw) as t_withdraw"
 	", sum(ticket) as t_ticket",
-    Sql = ?sql_utils:count_table(w_sale, CountSql, Merchant, Conditions), 
+    Sql = ?sql_utils:count_table(
+	     ?table:t(sale_new, Merchant, UTable), CountSql, Merchant, Conditions), 
     Reply = ?sql_utils:execute(s_read, Sql),
     {reply, Reply, State};
 
-handle_call({total, by_retailer, Merchant, Conditions}, _From, State) ->
+handle_call({total, by_retailer, Merchant, UTable, Conditions}, _From, State) ->
     SortConditions = ?w_sale:sort_condition(wsale, Merchant, Conditions), 
     CountSql = "select count(distinct shop, merchant, retailer) as total"
 	", sum(should_pay) as t_spay"
 	", sum(cash) as t_cash"
 	", sum(card) as t_card"
 	", sum(withdraw) as t_withdraw"
-	" from w_sale a"
+	" from" ++ ?table:t(sale_new, Merchant, UTable) ++ " a"
 	" where " ++ SortConditions,
     Reply = ?sql_utils:execute(s_read, CountSql),
     {reply, Reply, State};
 
-handle_call({total, by_good, Merchant, Conditions}, _From, State) ->
+handle_call({total, by_good, Merchant, UTable, Conditions}, _From, State) ->
     {DConditions, SConditions}
 	= ?w_sale:filter_condition(wsale, Conditions, [], []),
 
@@ -149,7 +150,10 @@ handle_call({total, by_good, Merchant, Conditions}, _From, State) ->
 	"select count(distinct a.style_number, a.brand, b.shop, b.merchant)"
 	" as total"
 	", sum(a.total) as t_sell"
-	" from w_sale_detail a, w_sale b"
+    %% " from w_sale_detail a, w_sale b"
+	" from"
+	++ ?table:t(sale_detail, Merchant, UTable) ++ " a"
+	++ ?table:t(sale_new, Merchant, UTable) ++ " b"
 	" where "
 	++ ?sql_utils:condition(proplists_suffix, CorrectCutDConditions)
 	++ "a.rsn=b.rsn"
@@ -270,31 +274,35 @@ handle_call({detail_of_shift, Merchant, CurrentPage, ItemsPerPage, Conditions},
     {reply, Reply, State};
 
 
-handle_call({by_shop, Merchant, CurrentPage, ItemsPerPage, Conditions},
+handle_call({by_shop, Merchant, UTable, CurrentPage, ItemsPerPage, Conditions},
 	    _From, State) ->
     Sql = ?w_report_sql:sale(
 	     new_by_shop_with_pagination,
-	     Merchant, Conditions, CurrentPage, ItemsPerPage),
+	     Merchant,
+	     UTable,
+	     Conditions, CurrentPage, ItemsPerPage),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({by_retailer, Merchant, CurrentPage, ItemsPerPage, Conditions},
-	    _From, State) ->
+handle_call({by_retailer, Merchant, UTable, CurrentPage, ItemsPerPage, Conditions}, _From, State) ->
     Sql = ?w_report_sql:sale(
 	     new_by_retailer_with_pagination,
-	     Merchant, Conditions, CurrentPage, ItemsPerPage),
+	     Merchant,
+	     UTable,
+	     Conditions, CurrentPage, ItemsPerPage),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({by_good, Merchant, CurrentPage, ItemsPerPage, Conditions},
-	    _From, State) ->
+handle_call({by_good, Merchant, UTable, CurrentPage, ItemsPerPage, Conditions}, _From, State) ->
     Sql = ?w_report_sql:sale(
 	     new_by_good_with_pagination,
-	     Merchant, Conditions, CurrentPage, ItemsPerPage),
+	     Merchant,
+	     UTable,
+	     Conditions, CurrentPage, ItemsPerPage),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
-handle_call({stock_sale, Merchant, Conditions}, _From, State)->
+handle_call({stock_sale, Merchant, UTable, Conditions}, _From, State)->
     ?DEBUG("stock_sale: merchant ~p, Conditions ~p", [Merchant, Conditions]),
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(non_prefix, Conditions),
     
@@ -308,8 +316,9 @@ handle_call({stock_sale, Merchant, Conditions}, _From, State)->
 	", SUM(ticket) as ticket"
 	", SUM(verificate) as veri" 
 	", shop as shop_id"
-	" from w_sale "
-	" where merchant=" ++ ?to_s(Merchant)
+    %% " from w_sale "
+	" from" ++ ?table:t(sale_new, Merchant, UTable)
+	++ " where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions)
 	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime)
 	++ " group by shop",
@@ -317,14 +326,15 @@ handle_call({stock_sale, Merchant, Conditions}, _From, State)->
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 
-handle_call({stock_profit, Merchant, Conditions}, _From, State)->
+handle_call({stock_profit, Merchant, UTable, Conditions}, _From, State)->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
 
     Sql = "select SUM(total) as total"
 	", SUM(org_price * total) as org_price" 
 	", shop as shop_id"
-	" from w_sale_detail "
-	" where merchant=" ++ ?to_s(Merchant)
+    %% " from w_sale_detail "
+	" from" ++ ?table:t(sale_detail, Merchant, UTable)
+	++ " where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions)
 	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime)
 	++ " group by shop",
@@ -332,14 +342,15 @@ handle_call({stock_profit, Merchant, Conditions}, _From, State)->
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 
-handle_call({stock_in, Merchant, Conditions}, _From, State)->
+handle_call({stock_in, Merchant, UTable, Conditions}, _From, State)->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
 
     Sql = "select SUM(total) as total"
 	", SUM(should_pay) as cost"
 	", shop as shop_id"
-	" from w_inventory_new"
-	" where merchant=" ++ ?to_s(Merchant)
+    %% " from w_inventory_new"
+	" from" ++ ?table:t(stock_new, Merchant, UTable)
+	++ " where merchant=" ++ ?to_s(Merchant)
 	++ " and type=" ++ ?to_s(?NEW_INVENTORY)
 	++ " and state in(0,1)"
 	++ ?sql_utils:condition(proplists, NewConditions)
@@ -349,14 +360,15 @@ handle_call({stock_in, Merchant, Conditions}, _From, State)->
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 
-handle_call({stock_out, Merchant, Conditions}, _From, State)->
+handle_call({stock_out, Merchant, UTable, Conditions}, _From, State)->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
 
     Sql = "select SUM(total) as total"
 	", SUM(should_pay) as cost"
 	", shop as shop_id"
-	" from w_inventory_new "
-	" where merchant=" ++ ?to_s(Merchant)
+    %% " from w_inventory_new "
+	" from" ++ ?table:t(stock_new, Merchant, UTable)
+	++ " where merchant=" ++ ?to_s(Merchant)
 	++ " and type=" ++ ?to_s(?REJECT_INVENTORY)
 	++ " and state in(0,1)"
 	++ ?sql_utils:condition(proplists, NewConditions)
@@ -366,7 +378,7 @@ handle_call({stock_out, Merchant, Conditions}, _From, State)->
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 
-handle_call({stock_transfer_in, Merchant, Conditions}, _From, State)->
+handle_call({stock_transfer_in, Merchant, UTable, Conditions}, _From, State)->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
 
     CutConditions = lists:foldr(
@@ -379,8 +391,9 @@ handle_call({stock_transfer_in, Merchant, Conditions}, _From, State)->
     Sql = "select SUM(total) as total"
 	", SUM(cost) as cost"
 	", tshop as tshop_id"
-	" from w_inventory_transfer"
-	" where merchant=" ++ ?to_s(Merchant)
+    %% " from w_inventory_transfer"
+	" from" ++ ?table:t(stock_transfer, Merchant, UTable)
+	++ " where merchant=" ++ ?to_s(Merchant)
 	++ " and state=1"
 	++ ?sql_utils:condition(proplists, CutConditions)
 	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime)
@@ -389,9 +402,8 @@ handle_call({stock_transfer_in, Merchant, Conditions}, _From, State)->
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 
-handle_call({stock_transfer_out, Merchant, Conditions}, _From, State)->
-    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
-
+handle_call({stock_transfer_out, Merchant, UTable, Conditions}, _From, State)->
+    {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions), 
     CutConditions = lists:foldr(
 		      fun({<<"shop">>, V}, Acc) ->
 			      [{<<"fshop">>, V}|Acc];
@@ -403,8 +415,9 @@ handle_call({stock_transfer_out, Merchant, Conditions}, _From, State)->
 	", SUM(cost) as cost"
 	", fshop as fshop_id"
 	
-	" from w_inventory_transfer"
-	" where merchant=" ++ ?to_s(Merchant)
+    %% " from w_inventory_transfer"
+	" from" ++ ?table:t(stock_transfer, Merchant, UTable)
+	++ " where merchant=" ++ ?to_s(Merchant)
 	++ " and state=1"
 	++ ?sql_utils:condition(proplists, CutConditions)
 	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime)
@@ -413,15 +426,16 @@ handle_call({stock_transfer_out, Merchant, Conditions}, _From, State)->
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 
-handle_call({stock_fix, Merchant, Conditions}, _From, State)->
+handle_call({stock_fix, Merchant, UTable, Conditions}, _From, State)->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
 
     Sql = "select 0 as total"
 	", 0 as cost"
 	", shop as shop_id"
 
-	" from w_inventory_fix"
-	" where merchant=" ++ ?to_s(Merchant)
+    %% " from w_inventory_fix"
+	" from" ++ ?table:t(stock_fix, Merchant, UTable)
+	++ " where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions)
 	++ " and " ++ ?sql_utils:condition(time_no_prfix, StartTime, EndTime)
 	++ " group by shop",
@@ -438,15 +452,16 @@ handle_call({stock_fix, Merchant, Conditions}, _From, State)->
     R = ?sql_utils:execute(read, Sql),
     {reply, R, State};
 
-handle_call({stock_real, Merchant, Conditions}, _From, State)->
+handle_call({stock_real, Merchant, UTable, Conditions}, _From, State)->
     {StartTime, EndTime, NewConditions} = ?sql_utils:cut(fields_no_prifix, Conditions),
     %% ?DEBUG("Conditions ~p", [Conditions]),
 
     Sql = "select SUM(amount) as total"
 	", SUM(org_price * amount) as cost"
 	", shop as shop_id"
-	" from w_inventory"
-	" where merchant=" ++ ?to_s(Merchant)
+    %% " from w_inventory"
+	" from" ++ ?table:t(stock, Merchant, UTable)
+	++ " where merchant=" ++ ?to_s(Merchant)
 	++ ?sql_utils:condition(proplists, NewConditions)
 	++ ?sql_utils:fix_condition(time, time_no_prfix, StartTime, EndTime)
 	++ " group by shop",

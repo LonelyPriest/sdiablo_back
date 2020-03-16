@@ -68,7 +68,9 @@ action(Session, Req, {"delete_shop", Id}) ->
 %% ================================================================================
 action(Session, Req, {"daily_wreport", Type}, Payload) ->
     ?DEBUG("daily_wrport with session ~p, type ~p, paylaod~n~p", [Session, Type, Payload]), 
-    Merchant = ?session:get(merchant, Session), 
+    Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     case ?to_a(Type) of
 	by_shop ->
 	    try
@@ -77,14 +79,16 @@ action(Session, Req, {"daily_wreport", Type}, Payload) ->
 		CurrentDate = ?v(<<"start_time">>, Conditions),
 		{ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
 
-		{ok, StockSale} = ?w_report:stastic(stock_sale, Merchant, Conditions),
+		{ok, StockSale} = ?w_report:stastic(stock_sale, Merchant, UTable, Conditions),
 		{ok, StockProfit} = ?w_report:stastic(stock_profit, Merchant, Conditions),
 		
-		{ok, StockIn}  = ?w_report:stastic(stock_in, Merchant, Conditions),
-		{ok, StockOut} = ?w_report:stastic(stock_out, Merchant, Conditions),
+		{ok, StockIn}  = ?w_report:stastic(stock_in, Merchant, UTable, Conditions),
+		{ok, StockOut} = ?w_report:stastic(stock_out, Merchant, UTable, Conditions),
 		
-		{ok, StockTransferIn} = ?w_report:stastic(stock_transfer_in, Merchant, Conditions),
-		{ok, StockTransferOut} = ?w_report:stastic(stock_transfer_out, Merchant, Conditions),
+		{ok, StockTransferIn} = ?w_report:stastic(
+					   stock_transfer_in, Merchant, UTable, Conditions),
+		{ok, StockTransferOut} = ?w_report:stastic(
+					    stock_transfer_out, Merchant, UTable, Conditions),
 
 		{ok, StockR} =
 		    case ?to_s(CurrentDate) =:= ?utils:current_time(localdate) of
@@ -92,6 +96,7 @@ action(Session, Req, {"daily_wreport", Type}, Payload) ->
 			    ?w_report:stastic(
 			       stock_real,
 			       Merchant,
+			       UTable,
 			       lists:keydelete(<<"start_time">>, 1,
 					       lists:keydelete(<<"end_time">>, 1, Conditions))
 			       ++ [{<<"start_time">>, ?v(<<"qtime_start">>, BaseSetting)}]);
@@ -102,6 +107,7 @@ action(Session, Req, {"daily_wreport", Type}, Payload) ->
 				    ?w_report:stastic(
 				       stock_real,
 				       Merchant,
+				       UTable, 
 				       lists:keydelete(
 					 <<"start_time">>, 1,
 					 lists:keydelete(<<"end_time">>, 1, Conditions))
@@ -133,12 +139,12 @@ action(Session, Req, {"daily_wreport", Type}, Payload) ->
 	_ -> 
 	    ?pagination:pagination(
 	       fun(_Match, Conditions) ->
-		       ?w_report:report(total, ?to_a(Type), Merchant, Conditions)
+		       ?w_report:report(total, ?to_a(Type), {Merchant, UTable}, Conditions)
 	       end,
 
 	       fun(_Match, CurrentPage, ItemsPerPage, Conditions) ->
 		       ?w_report:report(
-			  ?to_a(Type), Merchant, CurrentPage, ItemsPerPage, Conditions)
+			  ?to_a(Type), {Merchant, UTable}, CurrentPage, ItemsPerPage, Conditions)
 	       end, Req, Payload)
     end;
 
@@ -158,8 +164,10 @@ action(Session, Req, {"h_daily_wreport"}, Payload) ->
 
 action(Session, Req, {"syn_daily_report"}, Payload) ->
     ?DEBUG ("syn_daily_report with session ~p, payload ~p", [Session, Payload]),
-    Merchant = ?session:get(merchant, Session), 
-    case ?gen_report:syn_report(stastic_per_shop, Merchant, Payload) of
+    Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
+    case ?gen_report:syn_report(stastic_per_shop, {Merchant, UTable}, Payload) of
 	{ok, Merchant} ->
 	    ?utils:respond(200, Req, ?succ(syn_daily_report, Merchant));
 	{error, Error} ->

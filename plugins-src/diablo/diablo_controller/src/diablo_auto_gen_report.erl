@@ -47,9 +47,9 @@ report(stastic_per_shop, TriggerTime) ->
     gen_server:cast(?SERVER, {stastic_per_shop, TriggerTime}). 
 cancel_report(stastic_per_shop) ->
     gen_server:cast(?SERVER, cancel_stastic_per_shop). 
-syn_report(stastic_per_shop, Merchant, Conditions) ->
+syn_report(stastic_per_shop, {Merchant, UTable}, Conditions) ->
     %% 30 minute
-    gen_server:call(?SERVER, {syn_stastic_per_shop, Merchant, Conditions}, 60000 * 30).
+    gen_server:call(?SERVER, {syn_stastic_per_shop, Merchant, UTable, Conditions}, 60000 * 30).
 
 add(report_task, Merchant, TriggerTime) ->
     gen_server:call(?SERVER, {add_report_task, Merchant, TriggerTime}).
@@ -114,7 +114,7 @@ handle_call(lookup_state, _From, #state{merchant=Merchants,
 					ticket_of_merchant=Tickets} = State) ->
     {reply, {Merchants, Tasks, Tickets}, State};
 
-handle_call({syn_stastic_per_shop, Merchant, Conditions}, _From, State) ->
+handle_call({syn_stastic_per_shop, Merchant, UTable, Conditions}, _From, State) ->
     ?DEBUG("syn_stastic_per_shop: merchant ~p, conditions ~p", [Merchant, Conditions]),
     StartTime = ?v(<<"start_time">>, Conditions),
     EndTime = ?v(<<"end_time">>, Conditions),
@@ -129,7 +129,7 @@ handle_call({syn_stastic_per_shop, Merchant, Conditions}, _From, State) ->
     try 
 	lists:foreach(
 	  fun(Shop) ->
-		  ok = syn_stastic_per_shop(Merchant, Shop, StartDays, EndDays)
+		  ok = syn_stastic_per_shop(Merchant, UTable, Shop, StartDays, EndDays)
 	  end, ToListFun(Shops)),
 	{reply, {ok, Merchant}, State}
     catch
@@ -276,9 +276,9 @@ terminate(_Reason, _State) ->
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
-syn_stastic_per_shop(_Merchant, _Shop, StartDay, EndDay) when StartDay >= EndDay -> 
+syn_stastic_per_shop(_Merchant, _UTable, _Shop, StartDay, EndDay) when StartDay >= EndDay -> 
     ok;
-syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) ->
+syn_stastic_per_shop(Merchant, UTable, Shop, StartDay, EndDay) ->
     %% {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, Shop),
     %% BaseSettings = ?w_report_request:get_setting(Merchant, Shop),
     
@@ -292,7 +292,9 @@ syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) ->
 		  {<<"end_time">>, ?to_b(EndOfDay)}],
 
     {ok, StockCalcTotal, StockCalcCost} =
-	get_stock(calc, Merchant,
+	get_stock(calc,
+		  Merchant,
+		  UTable,
 		  [{<<"shop">>, Shop},
 		   %% {<<"start_time">>, ?w_report_request:get_config(<<"qtime_start">>, BaseSettings)},
 		   {<<"end_time">>, ?to_b(EndOfDay)}
@@ -301,18 +303,18 @@ syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) ->
     %% {ok, LastStockInfo} = ?w_report:stastic(last_stock_of_shop, Merchant, Shop, BeginOfDay),
     %% LastStockTotal = stock(last_stock, LastStockInfo),
 
-    {ok, SaleInfo} = ?w_report:stastic(stock_sale, Merchant, Conditions),
+    {ok, SaleInfo} = ?w_report:stastic(stock_sale, Merchant, UTable, Conditions),
     {ok, ChargeInfo} = ?w_report:stastic(recharge, Merchant, Conditions),
     %% ?DEBUG("chargeInfo ~p", [ChargeInfo]),
-    {ok, SaleProfit} = ?w_report:stastic(stock_profit, Merchant, Conditions),
+    {ok, SaleProfit} = ?w_report:stastic(stock_profit, Merchant, UTable, Conditions),
 
-    {ok, StockIn}  = ?w_report:stastic(stock_in, Merchant, Conditions),
-    {ok, StockOut} = ?w_report:stastic(stock_out, Merchant, Conditions),
+    {ok, StockIn}  = ?w_report:stastic(stock_in, Merchant, UTable, Conditions),
+    {ok, StockOut} = ?w_report:stastic(stock_out, Merchant, UTable, Conditions),
 
-    {ok, StockTransferIn} = ?w_report:stastic(stock_transfer_in, Merchant, Conditions),
-    {ok, StockTransferOut} = ?w_report:stastic(stock_transfer_out, Merchant, Conditions),
+    {ok, StockTransferIn} = ?w_report:stastic(stock_transfer_in, Merchant, UTable, Conditions),
+    {ok, StockTransferOut} = ?w_report:stastic(stock_transfer_out, Merchant, UTable, Conditions),
 
-    {ok, StockFix} = ?w_report:stastic(stock_fix, Merchant, Conditions),
+    {ok, StockFix} = ?w_report:stastic(stock_fix, Merchant, UTable, Conditions),
 
     {SellTotal,
      SellBalance,
@@ -350,7 +352,7 @@ syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) ->
 		andalso StockTransferOutTotal == 0
 		andalso StockFixTotal == 0 of
 		true ->
-		    syn_stastic_per_shop(Merchant, Shop, StartDay + 1, EndDay);
+		    syn_stastic_per_shop(Merchant, UTable, Shop, StartDay + 1, EndDay);
 		false ->
 		    Sql1 = 
 			"insert into w_daily_report(merchant, shop"
@@ -419,7 +421,7 @@ syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) ->
 			++ "\'" ++ ?to_s(BeginOfDay) ++ "\',"
 			++ "\'" ++ ?utils:current_time(format_localtime) ++ "\')",
 		    {ok, _} = ?sql_utils:execute(insert, Sql1), 
-		    syn_stastic_per_shop(Merchant, Shop, StartDay + 1, EndDay)
+		    syn_stastic_per_shop(Merchant, UTable, Shop, StartDay + 1, EndDay)
 	    end;
 	{ok, R} ->
 	    Updates = ?utils:v(sell, integer, SellTotal)
@@ -456,7 +458,7 @@ syn_stastic_per_shop(Merchant, Shop, StartDay, EndDay) ->
 		++ " where id=" ++ ?to_s(?v(<<"id">>, R))
 		++ " and merchant=" ++ ?to_s(Merchant),
 	    {ok, _} = ?sql_utils:execute(write, Sql1, ?v(<<"id">>, R)),
-	    syn_stastic_per_shop(Merchant, Shop, StartDay + 1, EndDay)
+	    syn_stastic_per_shop(Merchant, UTable, Shop, StartDay + 1, EndDay)
     end.
 
 task(gen_ticket, Datetime, Merchants) when is_list(Merchants) ->
@@ -783,8 +785,11 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [{S}|Shops], Sqls) ->
     %% 	   [M, S, StartTime, EndTime, GenDatetime]),
     ShopId  = ?v(<<"id">>, S),
     %% ?DEBUG("ShopId ~p", [ShopId]),
-    {ok, BaseSetting} = ?wifi_print:detail(base_setting, M, -1), 
+    {ok, BaseSetting} = ?wifi_print:detail(base_setting, M, -1),
     IsShopDailyReport = ?v(<<"d_report">>, BaseSetting, 1),
+
+    {ok, MerchantInfo} = ?w_user_profile:get(merchant, M),
+    UTable = ?v(<<"unique_table">>, MerchantInfo, 0),
     %% ?DEBUG("IsShopDailyReport ~p", [IsShopDailyReport]),
     
     case ?to_i(IsShopDailyReport) of
@@ -793,30 +798,34 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [{S}|Shops], Sqls) ->
 			  {<<"start_time">>, ?to_b(StartTime)},
 			  {<<"end_time">>, ?to_b(EndTime)}],
 
-	    {ok, SaleInfo} = ?w_report:stastic(stock_sale, M, Conditions),
+	    {ok, SaleInfo} = ?w_report:stastic(stock_sale, M, UTable, Conditions),
 	    {ok, ChargeInfo} = ?w_report:stastic(recharge, M, Conditions),
-	    {ok, SaleProfit} = ?w_report:stastic(stock_profit, M, Conditions),
+	    {ok, SaleProfit} = ?w_report:stastic(stock_profit, M, UTable, Conditions),
 
-	    {ok, StockIn}  = ?w_report:stastic(stock_in, M, Conditions),
-	    {ok, StockOut} = ?w_report:stastic(stock_out, M, Conditions),
+	    {ok, StockIn}  = ?w_report:stastic(stock_in, M, UTable, Conditions),
+	    {ok, StockOut} = ?w_report:stastic(stock_out, M, UTable, Conditions),
 
-	    {ok, StockTransferIn} = ?w_report:stastic(stock_transfer_in, M, Conditions),
-	    {ok, StockTransferOut} = ?w_report:stastic(stock_transfer_out, M, Conditions),
+	    {ok, StockTransferIn} = ?w_report:stastic(stock_transfer_in, M, UTable, Conditions),
+	    {ok, StockTransferOut} = ?w_report:stastic(stock_transfer_out, M, UTable, Conditions),
 
-	    {ok, StockFix} = case ?w_report:stastic(stock_fix, M, Conditions) of
+	    {ok, StockFix} = case ?w_report:stastic(stock_fix, M, UTable, Conditions) of
 				 {ok, _StockFix} -> {ok, _StockFix};
 				 {error, _} -> {ok, []}
 			     end,
 
 	    {ok, StockCalcTotal, StockCalcCost} =
-		get_stock(calc, M,
+		get_stock(calc,
+			  M,
+			  UTable,
 			  [{<<"shop">>, ShopId},
 			   %% {<<"start_time">>, ?v(<<"qtime_start">>, BaseSetting)},
 			   {<<"end_time">>, ?to_b(EndTime)}
 			  ]),
 	    
 	    {ok, StockR} = ?w_report:stastic(
-			      stock_real, M,
+			      stock_real,
+			      M,
+			      UTable,
 			      [{<<"shop">>, ShopId}
 			       %% {<<"start_time">>, ?v(<<"qtime_start">>, BaseSetting)}
 			      ]),
@@ -853,7 +862,12 @@ gen_shop_report({StartTime, EndTime, GenDatetime}, M, [{S}|Shops], Sqls) ->
 	    	    %% ?DEBUG("no input, no daily report", []),
 	    	    gen_shop_report({StartTime, EndTime, GenDatetime}, M, Shops, Sqls);
 	    	false ->
-		    Sql0 = "select id, merchant, shop, day from w_daily_report where merchant=" ++ ?to_s(M)
+		    Sql0 = "select"
+			" id"
+			", merchant"
+			", shop"
+			", day"
+			" from w_daily_report where merchant=" ++ ?to_s(M)
 			++ " and shop=" ++ ?to_s(ShopId)
 			++ " and day=\'" ++ ?to_s(StartTime) ++ "\'", 
 		    case ?sql_utils:execute(s_read, Sql0) of
@@ -1043,14 +1057,14 @@ start_check_level(Merchant, Levels, [{Shop}|Shops], CheckSqls) ->
 	end,
     start_check_level(Merchant, Levels, Shops, [{Merchant, ShopId, Sqls}|CheckSqls]).
 
-get_stock(calc, Merchant, Conditions) ->
-    {ok, SaleInfo} = ?w_report:stastic(stock_sale, Merchant, Conditions),
-    {ok, SaleProfit} = ?w_report:stastic(stock_profit, Merchant, Conditions),
-    {ok, StockIn}  = ?w_report:stastic(stock_in, Merchant, Conditions),
-    {ok, StockOut} = ?w_report:stastic(stock_out, Merchant, Conditions),
-    {ok, StockTransferIn} = ?w_report:stastic(stock_transfer_in, Merchant, Conditions),
-    {ok, StockTransferOut} = ?w_report:stastic(stock_transfer_out, Merchant, Conditions),
-    {ok, StockFix} = case ?w_report:stastic(stock_fix, Merchant, Conditions) of
+get_stock(calc, Merchant, UTable, Conditions) ->
+    {ok, SaleInfo} = ?w_report:stastic(stock_sale, Merchant, UTable, Conditions),
+    {ok, SaleProfit} = ?w_report:stastic(stock_profit, Merchant, UTable, Conditions),
+    {ok, StockIn}  = ?w_report:stastic(stock_in, Merchant, UTable, Conditions),
+    {ok, StockOut} = ?w_report:stastic(stock_out, Merchant, UTable, Conditions),
+    {ok, StockTransferIn} = ?w_report:stastic(stock_transfer_in, Merchant, UTable, Conditions),
+    {ok, StockTransferOut} = ?w_report:stastic(stock_transfer_out, Merchant, UTable, Conditions),
+    {ok, StockFix} = case ?w_report:stastic(stock_fix, Merchant, UTable, Conditions) of
 			 {ok, _StockFix} -> {ok, _StockFix};
 			 {error, _} -> {ok, []}
 		     end,

@@ -39,8 +39,8 @@ shop(new, Merchant, Attrs) ->
     gen_server:call(?MODULE, {new_shop, Merchant, Attrs});
 shop(get, Merchant, ShopId) ->
     gen_server:call(?MODULE, {get_shop, Merchant, ShopId});
-shop(delete, Merchant, ShopId) ->
-    gen_server:call(?MODULE, {delete_shop, Merchant, ShopId}).
+shop(delete, {Merchant, UTable}, ShopId) ->
+    gen_server:call(?MODULE, {delete_shop, Merchant, UTable, ShopId}).
 
 shop(update, Merchant, ShopId, Attrs) ->
     gen_server:call(?MODULE, {update_shop, Merchant, ShopId, Attrs});
@@ -159,12 +159,14 @@ handle_call({new_shop, Merchant, Props}, _From, State)->
 	    {reply, Error, State}
     end;
 
-handle_call({delete_shop, Merchant, ShopId}, _From, State) ->
+handle_call({delete_shop, Merchant, UTable, ShopId}, _From, State) ->
     ?DEBUG("delete_shop with merchant ~p, ShopId ~p", [Merchant, ShopId]),
     case ?sql_utils:execute(
 	    s_read,
-	    "select id, rsn from w_inventory_new"
-	    " where merchant=" ++ ?to_s(Merchant)
+	    "select id, rsn"
+	    %% " from w_inventory_new"
+	    " from" ++ ?table:t(stock_new, Merchant, UTable)
+	    ++ " where merchant=" ++ ?to_s(Merchant)
 	    ++" and shop=" ++ ?to_s(ShopId)
 	    ++ " limit 1") of
 	{ok, []} ->
