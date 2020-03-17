@@ -187,18 +187,18 @@ shift(detail, Merchant, Conditions) ->
 	   end.
 
 sale(new_by_shop_with_pagination,
-     Merchant, Conditions, CurrentPage, ItemsPerPage) ->
-    sale(new_by_shop, Merchant, Conditions)
+     Merchant, UTable, Conditions, CurrentPage, ItemsPerPage) ->
+    sale(new_by_shop, Merchant, UTable, Conditions)
 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage);
 
 sale(new_by_retailer_with_pagination,
-     Merchant, Conditions, CurrentPage, ItemsPerPage) ->
-    sale(new_by_retailer, Merchant, Conditions)
+     Merchant, UTable, Conditions, CurrentPage, ItemsPerPage) ->
+    sale(new_by_retailer, Merchant, UTable, Conditions)
 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage);
 
 sale(new_by_good_with_pagination,
-     Merchant, Conditions, CurrentPage, ItemsPerPage) ->
-    sale(new_by_good, Merchant, Conditions)
+     Merchant, UTable, Conditions, CurrentPage, ItemsPerPage) ->
+    sale(new_by_good, Merchant, UTable, Conditions)
 	++ ?sql_utils:condition(page_desc, CurrentPage, ItemsPerPage).
 
 daily(daily_with_pagination,

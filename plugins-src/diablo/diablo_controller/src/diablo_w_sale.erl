@@ -995,9 +995,8 @@ handle_call({total_news, Merchant, UTable, Fields}, _From, State) ->
     {reply, Reply, State}; 
 
 handle_call({filter_news, Merchant, UTable, CurrentPage, ItemsPerPage, Fields}, _From, State) ->
-    ?DEBUG("filter_new_with_and: "
-	   "currentPage ~p, ItemsPerpage ~p, Merchant ~p~n"
-	   "fields ~p", [CurrentPage, ItemsPerPage, Merchant, Fields]),
+    ?DEBUG("filter_new_with_and:" "currentPage ~p, ItemsPerpage ~p, Merchant ~p~n" "fields ~p",
+	   [CurrentPage, ItemsPerPage, Merchant, Fields]),
     Sql = filter_table(
 	    w_sale_with_page, {Merchant, UTable}, CurrentPage, ItemsPerPage, Fields), 
     Reply =  ?sql_utils:execute(read, Sql),
@@ -2527,7 +2526,7 @@ filter_table(w_sale_with_page, {Merchant, UTable}, CurrentPage, ItemsPerPage, Co
 	", c.name as account"
 	
     %% " from w_sale a"
-	" from" ++ ?table:t(sale_new, Merchant, UTable)
+	" from" ++ ?table:t(sale_new, Merchant, UTable) ++ " a"
 	++ " left join w_retailer b on a.retailer=b.id"
 	++ " left join users c on a.account=c.id"
 	

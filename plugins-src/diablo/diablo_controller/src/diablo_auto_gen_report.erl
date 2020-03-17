@@ -163,7 +163,7 @@ handle_cast({stastic_per_shop, TriggerTime}, #state{merchant=Merchants, task_of_
 				      end}, 
 			  [?cron:cron(CronTask)|Acc] 
 		  end, [], Merchants),
-			  %% end, [], [35]),
+	    %% end, [], [103]),
 	    ?DEBUG("new tasks ~p with merchants ~p", [NewTasks, Merchants]),
 	    %% {noreply, #state{merchant=Merchants, task_of_per_shop=NewTasks}};
 	    {noreply, State#state{task_of_per_shop=NewTasks}};

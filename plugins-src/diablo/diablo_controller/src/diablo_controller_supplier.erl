@@ -1109,7 +1109,8 @@ handle_call({profit, sale_of_firm, Merchant, UTable, Conditions}, _From, State) 
     	", b.firm as firm_id"
 	
     %% " from w_sale a, w_sale_detail b"
-	" from" ++ ?table:t(sale_new, Merchant, UTable) ++ " a"
+	" from"
+	++ ?table:t(sale_new, Merchant, UTable) ++ " a,"
 	++ ?table:t(sale_detail, Merchant, UTable) ++ " b"
     	" where a.merchant=" ++ ?to_s(Merchant) 
     	++ ?sql_utils:condition(proplists, ?utils:correct_condition(<<"b.">>, NewConditions)) 
@@ -1129,11 +1130,11 @@ handle_call({profit, stock_in_of_firm, Merchant, UTable, Conditions}, _From, Sta
 	", SUM(a.org_price * a.amount) as cost"
 	", SUM(a.org_price * a.over) as ocost"
 	", SUM(a.amount) as amount"
-	", SUM(a.over) as over"
-	
+	", SUM(a.over) as over" 
     %% " from w_inventory_new_detail a, w_inventory_new b"
+	" from"
 	++ ?table:t(stock_new_detail, Merchant, UTable) ++ " a,"
-	++ ?table:t(stock_new, Merchant, UTable)++ "  b"
+	++ ?table:t(stock_new, Merchant, UTable)++ " b"
 	" where a.rsn=b.rsn"
 	" and a.merchant=b.merchant"
 	" and a.firm=b.firm"
@@ -1160,6 +1161,7 @@ handle_call({profit, stock_out_of_firm, Merchant, UTable, Conditions}, _From, St
 	", SUM(a.amount) as amount"
 
     %% " from w_inventory_new_detail a, w_inventory_new b"
+	" from"
 	++ ?table:t(stock_new_detail, Merchant, UTable) ++ " a,"
 	++ ?table:t(stock_new, Merchant, UTable)++ "  b"
 	" where a.rsn=b.rsn"
@@ -1266,7 +1268,7 @@ handle_call({profit_shop, stock_out_of_firm, Merchant, UTable, Conditions}, _Fro
     %% " from w_inventory_new_detail a, w_inventory_new b"
 	++ " from "
 	++ ?table:t(stock_new_detail, Merchant, UTable) ++ " a,"
-	++ ?table:t(stock_new, Merchant, UTable)++ "  b" 
+	++ ?table:t(stock_new, Merchant, UTable)++ " b" 
 	" where a.rsn=b.rsn"
 	" and a.merchant=b.merchant"
 	" and a.firm=b.firm"

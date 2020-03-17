@@ -35,7 +35,7 @@
                         diablo_w_report,diablo_auto_gen_report,
                         diablo_cron_agent,diablo_cron,
                         diablo_cron_job_register,diablo_cron_control,
-                        diablo_w_base_request,diablo_w_base,
+                        diablo_w_base_request,diablo_w_base,diablo_table,
                         diablo_controller_right_init,diablo_controller_authen,
                         diablo_wuser_profile,diablo_sms_notify,diablo_pay,
                         diablo_batch_sale_request,diablo_batch_sale,

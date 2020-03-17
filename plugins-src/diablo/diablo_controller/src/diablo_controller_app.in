@@ -53,7 +53,8 @@
      diablo_cron_agent, diablo_cron,
      diablo_cron_job_register, diablo_cron_control,
      %% base
-     diablo_w_base_request,    diablo_w_base, 
+     diablo_w_base_request,    diablo_w_base,
+     diablo_table,
      
      %% authen
      diablo_controller_right_init, diablo_controller_authen,

@@ -23,6 +23,8 @@ t_suffix(Merchant, UTable) when UTable =:= 1 ->
 
 t(good, Merchant, UTable) ->
     " w_inventory_good" ++ t_suffix(Merchant, UTable);
+t(good_extra, Merchant, UTable) ->
+    " w_inventory_good_extra" ++ t_suffix(Merchant, UTable);
 
 t(stock_new, Merchant, UTable) ->
     " w_inventory_new" ++ t_suffix(Merchant, UTable);

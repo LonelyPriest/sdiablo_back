@@ -781,7 +781,8 @@ function wgoodUpdateCtrlProvide(
 	    changed_good.shop           = $scope.good.shop.id;
 
 	    console.log(changed_good);
-	    if (changed_good.bcode && changed_good.bcode !== diablo_empty_barcode
+	    if (changed_good.bcode
+		&& changed_good.bcode !== diablo_empty_barcode
 		&& changed_good.bcode !== diablo_empty_db_barcode
 		&& changed_good.bcode.length !== diablo_std_barcode_length) {
 		    diabloUtilsService.response(

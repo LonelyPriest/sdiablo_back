@@ -376,7 +376,8 @@ action(Session, Req, {"update_w_good"}, Payload) ->
     {struct, Good} = ?v(<<"good">>, Payload),
     ?DEBUG("update purchaser good with session ~p, good~n~p", [Session, Good]),
     %% ?DEBUG("update_w_good: image ~p", [?v(<<"image">>, Payload)]),
-    
+
+    %% GoodId        = ?v(<<"good_id">>, Attrs),
     OStyleNumber = ?v(<<"o_style_number">>, Good),
     OBrandId     = ?v(<<"o_brand">>, Good),
     OImagePath   = ?v(<<"o_path">>, Good),
@@ -414,7 +415,14 @@ action(Session, Req, {"update_w_good"}, Payload) ->
     
     try
 	%% check barcode
-	{ok, []} = check_params(barcode, Merchant, Barcode),
+	%% {ok, []} = check_params(barcode, Merchant, UTable, Barcode),
+	{ok, OldGood} = ?w_inventory:purchaser_good(lookup, {Merchant, UTable}, OStyleNumber, OBrandId),
+	
+	case ?utils:check_empty(barcode, Barcode) of
+	    true -> ok;
+	    false -> {ok, []} = check_params(barcode, Merchant, UTable, Barcode)
+	end, 
+	    
 	TypeId =
 	    case ?v(<<"type">>, Good) of
 		undefined -> undefined;
@@ -482,7 +490,7 @@ action(Session, Req, {"update_w_good"}, Payload) ->
 		{Merchant, UTable},
 		[{<<"brand_id">>, BrandId},
 		 {<<"type_id">>, TypeId},
-		 {<<"path">>, ImagePath}|Good]) of
+		 {<<"path">>, ImagePath}|Good], OldGood) of
 	    {ok, GoodId} -> 
 		?utils:respond(
 		   200, Req, ?succ(update_purchaser_good, GoodId));
@@ -749,8 +757,8 @@ mk_image_dir(Path, Merchant) ->
 	    ok
     end.
 
-check_params(barcode, Merchant, Barcode) ->
-    case ?w_inventory:purchaser_good(get_by_barcode, Merchant, Barcode) of
+check_params(barcode, Merchant, UTable, Barcode) ->
+    case ?w_inventory:purchaser_good(get_by_barcode, {Merchant, UTable}, Barcode) of
 	{ok, []} -> {ok, []};
 	{ok, _Any} ->
 	    {error, ?err(good_barcode_exist, Barcode)};

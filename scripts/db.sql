@@ -825,6 +825,7 @@ create table w_inventory_good
     --
     contailer        INTEGER default -1,
     alarm_a          INTEGER default 0,
+    comment          VARCHAR(128) default '',
     
     --
     level            TINYINT default -1,
@@ -846,7 +847,7 @@ create table w_inventory_good
     primary key      (id)
 )default charset=utf8;
 
-create table w_inventory_print_attr
+create table w_inventory_good_extra
 (
     id               INTEGER AUTO_INCREMENT,
     style_number     VARCHAR(64) not null,
@@ -855,7 +856,8 @@ create table w_inventory_print_attr
     level            TINYINT default -1,
     executive        INTEGER default -1,
     category         INTEGER default -1,
-    fabric           VARCHAR(256) default null,
+    fabric           VARCHAR(256) default '',
+    feather          VARCHAR(256) default '',
     --
     merchant         INTEGER default -1,    
     entry_date       DATETIME default 0,

@@ -470,7 +470,7 @@ check_transfer(Merchant, UTable, FShop, TShop, CheckProps) ->
 			    ", total"
 			    ", entry_date"
 			    %% " from w_inventory_transfer_detail_amount"
-			    " from" ++ ?table:t(stock_transfer_note)
+			    " from" ++ ?table:t(stock_transfer_note, Merchant, UTable)
 			    ++ " where rsn=\"" ++ ?to_s(RSN) ++ "\""
 			    " and style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
 			    " and brand=" ++ ?to_s(Brand)) of

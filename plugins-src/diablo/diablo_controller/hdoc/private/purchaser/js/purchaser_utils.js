@@ -885,7 +885,7 @@ stockPrintU.prototype.setStock = function(stock) {
 };
 
 stockPrintU.prototype.setBrand = function(brand) {
-    this.brand = brand;
+    this.brand = diablo_trim(brand);
 };
 
 stockPrintU.prototype.setFirm = function(firm) {
@@ -1342,11 +1342,15 @@ stockPrintU.prototype.printBarcode2 = function() {
     
     // brand
     if (this.template.brand && this.template.solo_brand){
+	line = "品牌:";
+	if (2 === this.template.brand) line = "";
+	
 	if (diablo_trim(this.template.self_brand)) {
-	    line = "品牌:" + diablo_trim(this.template.self_brand);
+	    line += diablo_trim(this.template.self_brand); 
 	} else {
-	    line = "品牌:" + this.brand; 
+	    line += this.brand; 
 	}
+	
 	top = this.start_print(
 	    line, top, this.left, iwpx, this.template.hpx_each, 0, pSecond, pThird, startSecond, startThird); 
     } 
@@ -1360,6 +1364,8 @@ stockPrintU.prototype.printBarcode2 = function() {
     // style number
     if (this.template.style_number) {
 	line = "款号:";
+	if (2 === this.template.style_number) line="";
+	
 	if (this.solo_snumber && this.stock.style_number.length > this.len_snumber) {
 	    // first line
 	    line += this.stock.style_number.substr(0, this.len_snumber);
@@ -1367,7 +1373,10 @@ stockPrintU.prototype.printBarcode2 = function() {
 		line, top, this.left, iwpx, this.template.hpx_each, 0, pSecond, pThird, startSecond, startThird); 
 
 	    // second line
-	    line = "     " + this.stock.style_number.substr(this.len_snumber, this.stock.style_number.length);
+	    line = "     ";
+	    if (2 === this.template.style_number) line="";
+	    
+	    line += this.stock.style_number.substr(this.len_snumber, this.stock.style_number.length);
 	    if (this.template.expire && this.stock.expire_date !== diablo_none) {
 		line += this.stock.expire_date.split(diablo_date_seprator).join("");
 	    }
@@ -1731,6 +1740,6 @@ stockPrintU.prototype.printBarcode2 = function() {
 
     // this.LODOP.PRINT_SETUP();
     // this.LODOP.PRINT_DESIGN();
-    // this.LODOP.PREVIEW();
-    this.LODOP.PRINT();
+    this.LODOP.PREVIEW();
+    // this.LODOP.PRINT();
 };

@@ -360,9 +360,8 @@ action(Session, Req, {"analysis_profit_w_firm"}, Payload) ->
 	    false ->
 		{ok, Firms} = ?supplier:supplier(
 				 {page_list, ?w_inventory_request:mode(Order), Sort},
-				 Merchant,
+				 {Merchant, UTable},
 				 %% ConditionsWithOutTime,
-				 UTable,
 				 Conditions,
 				 CurrentPage,
 				 ItemsPerpage),

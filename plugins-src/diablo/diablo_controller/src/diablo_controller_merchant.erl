@@ -81,6 +81,7 @@ handle_call({new_merchant, Props}, _From, State)->
     Owner   = ?v(<<"owner">>, Props),
     Mobile  = ?v(<<"mobile">>, Props),
     Address = ?v(<<"address">>, Props),
+    UTable  = ?v(<<"utable">>, Props, 0),
 
     %% name can not be same
     Sql = "select " ++ fields()
@@ -95,15 +96,22 @@ handle_call({new_merchant, Props}, _From, State)->
     case ?sql_utils:execute(s_read, Sql) of
 	{ok, []} -> 
 	    Sql1 = "insert into " ++ ?tbl_merchant
-		++ "(name, type, owner, mobile, sms_team, address, entry_date)"
-		++ " values ("
-		++ "\""  ++ ?to_s(Name) ++ "\""
+		++ "(name"
+		", type"
+		", owner"
+		", mobile"
+		", sms_team"
+		", address"
+		", unique_table"
+		", entry_date) values ("
+		++ "\'"  ++ ?to_s(Name) ++ "\'"
 		++ ","   ++ ?to_s(Type)
-		++ ",\"" ++ ?to_s(Owner) ++ "\""
-		++ ",\"" ++ ?to_s(Mobile) ++ "\""
+		++ ",\'" ++ ?to_s(Owner) ++ "\'"
+		++ ",\'" ++ ?to_s(Mobile) ++ "\'"
 		++ "," ++ ?to_s(?DEFAULT_MERCHANT)
-		++ ",\"" ++ ?to_s(Address) ++ "\""
-		++ ",\"" ++ ?utils:current_time(localdate) ++ "\")", 
+		++ ",\'" ++ ?to_s(Address) ++ "\'"
+		++ ","   ++ ?to_s(UTable)
+		++ ",\'" ++ ?utils:current_time(localdate) ++ "\')", 
 		
 	    %% ?DEBUG("sql to merchant ~p", [Sql1]),
 	    case ?sql_utils:execute(insert, Sql1) of

@@ -185,6 +185,8 @@
 -define(TICKET_DATE_UNLIMIT, <<"0000-00-00">>).
 -define(TICKET_EFFECT_NEVER, 9999).
 
+-define(ONE_MONTH, 30).
+
 %% pagination
 -define(DEFAULT_ITEMS_PERPAGE, 5).
 

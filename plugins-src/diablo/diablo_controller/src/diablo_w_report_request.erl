@@ -80,7 +80,7 @@ action(Session, Req, {"daily_wreport", Type}, Payload) ->
 		{ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
 
 		{ok, StockSale} = ?w_report:stastic(stock_sale, Merchant, UTable, Conditions),
-		{ok, StockProfit} = ?w_report:stastic(stock_profit, Merchant, Conditions),
+		{ok, StockProfit} = ?w_report:stastic(stock_profit, Merchant, UTable, Conditions),
 		
 		{ok, StockIn}  = ?w_report:stastic(stock_in, Merchant, UTable, Conditions),
 		{ok, StockOut} = ?w_report:stastic(stock_out, Merchant, UTable, Conditions),
@@ -324,20 +324,22 @@ action(Session, Req, {"switch_shift_report"}, Payload) ->
 action(Session, Req, {"stock_stastic"}, Payload) ->
     ?DEBUG("stock_stastic with session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     {ok, BaseSetting} = ?wifi_print:detail(base_setting, Merchant, -1),
     %% ?DEBUG("baseSetting ~p", [BaseSetting]),
     NewPayload = [{<<"start_time">>, ?v(<<"qtime_start">>, BaseSetting)}]
 	++ lists:keydelete(<<"start_time">>, 1, Payload),
     try 
-	{ok, StockSale} = ?w_report:stastic(stock_sale, Merchant, NewPayload),
+	{ok, StockSale} = ?w_report:stastic(stock_sale, Merchant, UTable, NewPayload),
 	%% ?DEBUG("stock sale ~p", [StockSale]),
-	{ok, StockProfit} = ?w_report:stastic(stock_profit, Merchant, NewPayload),
-	{ok, StockIn}  = ?w_report:stastic(stock_in, Merchant, NewPayload),
-	{ok, StockOut} = ?w_report:stastic(stock_out, Merchant, NewPayload),
-	{ok, StockTransferIn} = ?w_report:stastic(stock_transfer_in, Merchant, NewPayload),
-	{ok, StockTransferOut} = ?w_report:stastic(stock_transfer_out, Merchant, NewPayload),
-	{ok, StockFix} = ?w_report:stastic(stock_fix, Merchant, NewPayload),
-	{ok, StockR} = ?w_report:stastic(stock_real, Merchant, NewPayload),
+	{ok, StockProfit} = ?w_report:stastic(stock_profit, Merchant, UTable, NewPayload),
+	{ok, StockIn}  = ?w_report:stastic(stock_in, Merchant, UTable, NewPayload),
+	{ok, StockOut} = ?w_report:stastic(stock_out, Merchant, UTable, NewPayload),
+	{ok, StockTransferIn} = ?w_report:stastic(stock_transfer_in, Merchant, UTable, NewPayload),
+	{ok, StockTransferOut} = ?w_report:stastic(stock_transfer_out, Merchant, UTable, NewPayload),
+	{ok, StockFix} = ?w_report:stastic(stock_fix, Merchant, UTable, NewPayload),
+	{ok, StockR} = ?w_report:stastic(stock_real, Merchant, UTable, NewPayload),
 	
 	?utils:respond(200, object, Req,
 		       {[{<<"ecode">>, 0},

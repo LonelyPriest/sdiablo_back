@@ -31,10 +31,11 @@ action(Session, Req) ->
 %%--------------------------------------------------------------------
 action(Session, Req, {"get_w_inventory_new", RSN}) ->
     ?DEBUG("get_w_inventory_new whith Session ~p, RSN ~p", [Session, RSN]),
-    Merchant = ?session:get(merchant, Session), 
+    Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
     object_responed(
       fun() ->
-	      ?w_inventory:purchaser_inventory(get_new, Merchant, RSN)
+	      ?w_inventory:purchaser_inventory(get_new, {Merchant, UTable}, RSN)
       end, Req);
     
 action(Session, _Req, Unkown) ->
@@ -112,7 +113,7 @@ action(Session, Req, {"update_w_inventory"}, Payload) ->
     {struct, Base} = ?v(<<"base">>, Payload),
     
     RSN = ?v(<<"rsn">>, Base), 
-    {ok, OldBase} = ?w_inventory:purchaser_inventory(get_new, Merchant, RSN),
+    {ok, OldBase} = ?w_inventory:purchaser_inventory(get_new, {Merchant, UTable}, RSN),
     
     Firm = ?v(<<"firm">>, Base), 
     Datetime   = ?v(<<"datetime">>, Base),

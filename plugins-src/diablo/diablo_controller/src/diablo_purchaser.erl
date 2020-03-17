@@ -47,10 +47,6 @@ purchaser_good(lookup, {Merchant, UTable}) ->
 purchaser_good(new, {Merchant, UTable}, Attrs) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {new_good, Merchant, UTable, Attrs}); 
-purchaser_good(update, {Merchant, UTable}, Attrs) ->
-    Name = ?wpool:get(?MODULE, Merchant), 
-    gen_server:call(Name, {update_good, Merchant, UTable, Attrs});
-
 purchaser_good(lookup, {Merchant, UTable}, GoodId) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {lookup_good, Merchant, UTable, GoodId});
@@ -67,6 +63,10 @@ purchaser_good(price, {Merchant, UTable}, [{_StyleNumber, _Brand}|_] = Condition
 purchaser_good(lookup, {Merchant, UTable}, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {lookup_good, Merchant, UTable, StyleNumber, Brand});
+
+purchaser_good(update, {Merchant, UTable}, Attrs, OldAttrs) ->
+    Name = ?wpool:get(?MODULE, Merchant), 
+    gen_server:call(Name, {update_good, Merchant, UTable, Attrs, OldAttrs});
     
 purchaser_good(used, {Merchant, UTable}, StyleNumber, Brand) ->
     Name = ?wpool:get(?MODULE, Merchant), 
@@ -499,19 +499,19 @@ handle_call({new_good, Merchant, UTable, Attrs}, _Form, State) ->
     Sql = case ?v(<<"bcode">>, Attrs, <<>>) of
 	      <<>> ->
 		  "select style_number, brand from "
-		      ++ ?table:good(Merchant, UTable)
+		      ++ ?table:t(good, Merchant, UTable)
 		      ++ " where style_number=" ++ "\"" ++ ?to_s(StyleNumber) ++ "\""
 		      ++ " and brand=" ++ ?to_s(BrandId)
 		      ++ " and merchant=" ++ ?to_s(Merchant) ++ ";";
 	      ?EMPTY_DB_BARCODE ->
 		  "select style_number, brand from "
-		      ++ ?table:good(Merchant, UTable)
+		      ++ ?table:t(good, Merchant, UTable)
 		      ++ " where style_number=" ++ "\"" ++ ?to_s(StyleNumber) ++ "\""
 		      ++ " and brand=" ++ ?to_s(BrandId)
 		      ++ " and merchant=" ++ ?to_s(Merchant) ++ ";";
 	      Barcode ->
 		  "select bcode from "
-		      ++ ?table:good(Merchant, UTable)
+		      ++ ?table:t(good, Merchant, UTable)
 		      ++ " where bcode=" ++ "\"" ++ ?to_s(Barcode) ++ "\""
 		      ++ " and merchant=" ++ ?to_s(Merchant) ++ ";"
 	  end,
@@ -533,14 +533,16 @@ handle_call({new_good, Merchant, UTable, Attrs}, _Form, State) ->
 	end,
     {reply, Reply, State};
 
-handle_call({update_good, Merchant, UTable, Attrs}, _Form, State) ->
-    ?DEBUG("update_good with merchant ~p, utable ~P~nattrs~n~p", [Merchant, UTable, Attrs]),
+handle_call({update_good, Merchant, UTable, Attrs, OldAttrs}, _Form, State) ->
+    ?DEBUG("update_good with merchant ~p, utable ~p~nattrs~p ~noldAttrs ~p",
+	   [Merchant, UTable, Attrs, OldAttrs]),
     GoodId         = ?v(<<"good_id">>, Attrs),
     Barcode        = ?v(<<"bcode">>, Attrs),
     Shop           = ?v(<<"shop">>, Attrs),
 
-    OrgStyleNumber = ?v(<<"o_style_number">>, Attrs),
-    OrgBrand       = ?v(<<"o_brand">>, Attrs),
+    OrgStyleNumber = ?v(<<"style_number">>, OldAttrs),
+    OrgBrand       = ?v(<<"brand_id">>, OldAttrs),
+    GoodExtraId    = ?v(<<"extra_id">>, OldAttrs),
 
     StyleNumber    = ?v(<<"style_number">>, Attrs),
     Brand          = ?v(<<"brand_id">>, Attrs),
@@ -570,6 +572,12 @@ handle_call({update_good, Merchant, UTable, Attrs}, _Form, State) ->
     SafetyCategory = ?v(<<"category_id">>, Attrs),
     Fabric = ?v(<<"fabric_json">>, Attrs),
     Feather = ?v(<<"feather_json">>, Attrs),
+
+    D_Level = ?v(<<"level">>, Attrs, ?INVALID_OR_EMPTY), 
+    D_StdExecutive = ?v(<<"executive_id">>, Attrs, ?INVALID_OR_EMPTY),
+    D_SafetyCategory = ?v(<<"category_id">>, Attrs, ?INVALID_OR_EMPTY),
+    D_Fabric = ?v(<<"fabric_json">>, Attrs, []),
+    D_Feather = ?v(<<"feather_json">>, Attrs, []),
     
     %% Date     = ?utils:current_time(localdate),
     DateTime = ?utils:current_time(localtime),
@@ -592,6 +600,7 @@ handle_call({update_good, Merchant, UTable, Attrs}, _Form, State) ->
 	++ ?utils:v(tag_price, float, TagPrice)
 	++ ?utils:v(ediscount, integer, EDiscount) 
 	++ ?utils:v(discount, integer, Discount)
+	++ ?utils:v(bcode, string, Barcode)
 	++ ?utils:v(unit, integer, Unit),
 
     UpdateFree = case ?utils:v(color, string, Colors) of
@@ -600,20 +609,20 @@ handle_call({update_good, Merchant, UTable, Attrs}, _Form, State) ->
 		     _ -> [] 
 		 end,
 
-    UpdateCategory = ?utils:v(level, integer, Level)
-	++ ?utils:v(executive, integer, StdExecutive)
-	++ ?utils:v(category, integer, SafetyCategory)
+    UpdateCategory = ?utils:v(level, integer, ?utils:get_modified(Level, ?INVALID_OR_EMPTY))
+	++ ?utils:v(executive, integer, ?utils:get_modified(StdExecutive, ?INVALID_OR_EMPTY))
+	++ ?utils:v(category, integer, ?utils:get_modified(SafetyCategory, ?INVALID_OR_EMPTY))
 	++ ?utils:v(fabric, string, Fabric)
-	++ ?utils:v(feather, string, Feather)
-	++ ?utils:v(bcode, string, Barcode), 
+	++ ?utils:v(feather, string, Feather), 
+    ?DEBUG("updateCategory ~p", [UpdateCategory]),
     
     %% UpdateAlarm = ?utils:v(alarm_day, integer, AlarmDay),
 
     UpdateGood = UpdateBase ++ UpdatePrice
-	++ ?utils:v(color, string, Colors)
 	++ UpdateFree
-	++ UpdateCategory
+    %% ++ UpdateCategory
     %% ++ ?utils:v(s_group, string, SizeGroup)
+	++ ?utils:v(color, string, Colors) 
 	++ ?utils:v(size, string, Sizes)
 	%% ++ ?utils:v(level, integer, Level)
 	%% ++ ?utils:v(executive, integer, StdExecutive)
@@ -649,6 +658,41 @@ handle_call({update_good, Merchant, UTable, Attrs}, _Form, State) ->
 		     %% "M-" ++ ?to_s(Merchant) ++ "-S-" ++ ?to_s(Shop) ++ "%\'"
 	 end,
 
+    GoodExtraFun = 
+	fun(D_StyleNumber, D_Brand, UpdateExtra) ->
+		case UpdateCategory of
+		    [] -> [];
+		    _ ->
+			case ?utils:check_empty(good_extra, GoodExtraId) of
+			    true ->
+				["insert into" ++ ?table:t(good_extra, Merchant, UTable)
+				 ++ "(style_number" 
+				 ", brand"
+
+				 ", level"
+				 ", executive"
+				 ", category"
+				 ", fabric"
+				 ", feather"
+				 ", merchant) values("
+				 ++ "\'" ++ ?to_s(D_StyleNumber) ++ "\'," 
+				 ++ ?to_s(D_Brand) ++ ","
+				 
+				 ++ ?to_s(D_Level) ++ ","
+				 ++ ?to_s(D_StdExecutive) ++ ","
+				 ++ ?to_s(D_SafetyCategory) ++ ","
+				 ++ "\'" ++ ?to_s(D_Fabric) ++ "\',"
+				 ++ "\'" ++ ?to_s(D_Feather) ++ "\',"
+				 ++ ?to_s(Merchant) ++ ")"];
+			    false ->
+				["update" ++ ?table:t(good_extra, Merchant, UTable)
+				 ++ " set "
+				 ++ ?utils:to_sqls(proplists, comma, UpdateExtra)
+				 ++ " where id=" ++ ?to_s(GoodExtraId)]
+			end
+		end
+	end,
+
     Sql1 = "update" ++ ?table:t(good, Merchant, UTable)
 	++ " set "
 	++ ?utils:to_sqls(proplists, comma, UpdateGood)
@@ -664,14 +708,15 @@ handle_call({update_good, Merchant, UTable, Attrs}, _Form, State) ->
 		    UpdateInv = UpdateBase
 			++ UpdatePrice
 			++ UpdateFree
-			++ UpdateCategory
+		    %% ++ UpdateCategory
 		    %% ++ ?utils:v(s_group, string, SizeGroup)
 			++ ?utils:v(change_date, string, DateTime),
 		    
 		    Sql2 = "update" ++ ?table:t(stock, Merchant, UTable)
 			++ " set "
 			++ ?utils:to_sqls(proplists, comma, UpdateInv)
-			++ " where " ++ C(true, OrgStyleNumber, OrgBrand),
+		    %% ++ " where " ++ C(true, OrgStyleNumber, OrgBrand)
+			++ " where " ++ C(false, OrgStyleNumber, OrgBrand),
 
 		    Sql3 =
 			%% case UpdateBase ++ UpdatePrice of
@@ -683,31 +728,38 @@ handle_call({update_good, Merchant, UTable, Attrs}, _Form, State) ->
 				 ++ " set "
 				 ++ ?utils:to_sqls(proplists, comma, U3)
 				 ++ " where "
-				 ++ C(true, OrgStyleNumber, OrgBrand)]
-				    ++ case lists:keydelete(
-					      <<"alarm_day">>, 1,
-					      lists:keydelete(
-						<<"sex">>, 1, U3)) of
+				 ++ C(false, OrgStyleNumber, OrgBrand)]
+				    %% ++ case lists:keydelete(
+				    %% 	      <<"alarm_day">>, 1,
+				    %% 	      lists:keydelete(
+				    %% 		<<"sex">>, 1, U3)) of
+				    ++ case lists:keydelete(<<"alarm_day">>, 1, U3) of
 					[] -> [];
 					U1 ->
 					    [%% "update w_sale_detail set "
-					     "update" ++ ?table:t(wsale_new_detail, Merchant, UTable)
+					     "update" ++ ?table:t(sale_detail, Merchant, UTable)
 					     ++ " set "
 					     ++ ?utils:to_sqls(proplists, comma, U1)
 					     ++ " where "
-					     ++ C(true, OrgStyleNumber, OrgBrand)]
+					     ++ C(false, OrgStyleNumber, OrgBrand)]
 				    end
 			end,
+
+		    Sql4 = GoodExtraFun(OrgStyleNumber, OrgBrand, UpdateCategory),
 		    
 		    {reply,
 		     ?sql_utils:execute(
-			transaction, [Sql1, Sql2] ++ Sql3, GoodId), State}
+			transaction, [Sql1, Sql2] ++ Sql3 ++ Sql4, GoodId), State}
 	    end;
 	false -> 
 	    FindFun =
 		fun(Color, Size) ->
-			"select id, style_number, brand, color, size"
-			    %% " from w_inventory_amount"
+			"select id"
+			    ", style_number"
+			    ", brand"
+			    ", color"
+			    ", size"
+			%% " from w_inventory_amount"
 			    " from" ++ ?table:t(stock_note, Merchant, UTable)
 			    ++ " where style_number=\'"
 			    ++ (RStyleNumber(StyleNumber)) ++ "\'"
@@ -762,10 +814,16 @@ handle_call({update_good, Merchant, UTable, Attrs}, _Form, State) ->
 			case ?sql_utils:execute(
 				s_read, FindFun(Color, Size)) of
 			    {ok, []} ->
-				[InsertFun(Color, Size, Total)|Acc];
+				case ?to_i(Total) =/= 0 of
+				    true -> [InsertFun(Color, Size, Total)|Acc];
+				    false -> Acc
+				end;
 			    {ok, F} ->
 				UId = ?v(<<"id">>, F),
-				[UpdateFun(UId, Total)|Acc]
+				case ?to_i(Total) =/= 0 of
+				    true -> [UpdateFun(UId, Total)|Acc];
+				    false -> Acc
+				end
 			end
 		end,
 	    
@@ -777,7 +835,10 @@ handle_call({update_good, Merchant, UTable, Attrs}, _Form, State) ->
 		%% update w_inventory_good 
 		Sql00 = 
 		    case ?sql_utils:execute(
-			    s_read, "select id, style_number, brand"
+			    s_read,
+			    "select id"
+			    ", style_number"
+			    ", brand"
 			    %% " from w_inventory_good where "
 			    " from " ++ ?table:t(good, Merchant, UTable)
 			    ++ " where "
@@ -788,16 +849,28 @@ handle_call({update_good, Merchant, UTable, Attrs}, _Form, State) ->
 			     ++ " set "
 			     ++ ?utils:to_sqls(proplists, comma, Update2 ++ UpdateGood)
 			     ++ " where id=" ++ ?to_s(GoodId) 
-			     ++ " and merchant=" ++ ?to_s(Merchant)];
+			     ++ " and merchant=" ++ ?to_s(Merchant)]
+				++ GoodExtraFun(
+				     RStyleNumber(StyleNumber),
+				     RBrand(Brand),
+				     Update2 ++ UpdateCategory);
 			{ok, G} ->
 			    %% exist, delete the old
 			    ["delete from" ++ ?table:t(good, Merchant, UTable)
 			     ++ " where id=" ++ ?to_s(GoodId),
+
+			     "delete from" ++ ?table:t(good_extra, Merchant, UTable)
+			     ++ " where " ++ C(false, OrgStyleNumber, OrgBrand),
 			      
 			     "update" ++ ?table:t(good, Merchant, UTable)
 			     ++ " set "
 			     ++ ?utils:to_sqls(proplists, comma, UpdateGood)
-			     ++ " where id=" ++ ?to_s(?v(<<"id">>, G))]
+			     ++ " where id=" ++ ?to_s(?v(<<"id">>, G)),
+
+			     "update" ++ ?table:t(good_extra, Merchant, UTable)
+			     ++ " set "
+			     ++ ?utils:to_sqls(proplists, comma, UpdateCategory)
+			     ++ " where " ++ C(false, RStyleNumber(StyleNumber), RBrand(Brand))]
 		    end,
 		?DEBUG("Sql00 ~p", [Sql00]),
 
@@ -816,7 +889,7 @@ handle_call({update_good, Merchant, UTable, Attrs}, _Form, State) ->
 		     ++ " where " ++ RC(OrgStyleNumber, OrgBrand),
 
 		     %% "update w_inventory_new_detail_amount set "
-		     "update" ++ ?table:t(stock_new_note)
+		     "update" ++ ?table:t(stock_new_note, Merchant, UTable)
 		     ++ " set "
 		     ++ ?utils:to_sqls(proplists, comma, Update2)
 		     ++ " where "
@@ -832,7 +905,10 @@ handle_call({update_good, Merchant, UTable, Attrs}, _Form, State) ->
 		Sql12 = 
 		    case ?sql_utils:execute(
 			    s_read,
-			    "select id, style_number, brand from "
+			    "select id"
+			    ", style_number"
+			    ", brand"
+			    " from "
 			    %% "w_inventory"
 			    ++ ?table:t(stock, Merchant, UTable)
 			    ++ " where "
@@ -846,23 +922,28 @@ handle_call({update_good, Merchant, UTable, Attrs}, _Form, State) ->
 				   proplists, comma,
 				   Update2
 				   ++ UpdateInv
-				   ++ UpdateCategory
+				   %% ++ UpdateCategory
 				   ++ UpdatePrice
 				   ++ UpdateFree)
 			     ++ " where "
 			     ++ C(true, OrgStyleNumber, OrgBrand),
 
 			     %% "update w_inventory_amount set "
-			     "update" ++ ?table:t(stock_note)
+			     "update" ++ ?table:t(stock_note, Merchant, UTable)
 			     ++ " set " ++ ?utils:to_sqls(proplists, comma, Update2)
 			     ++ " where "
-			     ++ C(true, OrgStyleNumber, OrgBrand)];
+			     ++ C(true, OrgStyleNumber, OrgBrand) 
+			    ];
 			{ok, S} ->
 			    %% exist, add amount
 			    Sqla = 
 				[%% "update w_inventory a inner join("
-				 "update" ++ ?table:t(stock, Merchant, UTable) ++ " a inner join("
-				 "select style_number, brand, amount, sell"
+				 "update" ++ ?table:t(stock, Merchant, UTable)
+				 ++ " a inner join("
+				 "select style_number"
+				 ", brand"
+				 ", amount"
+				 ", sell"
 				 %% " from w_inventory"
 				 " from " ++ ?table:t(stock, Merchant, UTable)
 				 ++ " where "
@@ -878,8 +959,13 @@ handle_call({update_good, Merchant, UTable, Attrs}, _Form, State) ->
 			    
 			    Sqlb = 
 				case ?sql_utils:execute(
-					read, "select id"
-					", style_number, brand, color, size, total"
+					read,
+					"select id"
+					", style_number"
+					", brand"
+					", color"
+					", size"
+					", total"
 					%% " from w_inventory_amount"
 					++ " from "
 					++ ?table:t(stock_note, Merchant, UTable)
@@ -920,20 +1006,21 @@ handle_call({update_good, Merchant, UTable, Attrs}, _Form, State) ->
 		     "update" ++ ?table:t(sale_detail, Merchant, UTable)
 		     ++ " set "
 		     ++ ?utils:to_sqls(
-			    proplists,
-			    comma,
-			    Update2
-			    ++ ?utils:v(unit, integer, Unit)
-			    ++ ?utils:v(path, string, Path)
-			    ++ ?utils:v(firm, integer, Firm))
-		      ++ " where "
-		      ++ RC(OrgStyleNumber, OrgBrand),
+			   proplists,
+			   comma,
+			   Update2
+			   ++ ?utils:v(unit, integer, Unit)
+			   ++ ?utils:v(path, string, Path)
+			   ++ ?utils:v(firm, integer, Firm))
+		     ++ " where "
+		     ++ RC(OrgStyleNumber, OrgBrand),
 
-		      %% "update w_sale_detail_amount set "
+		     %% "update w_sale_detail_amount set "
 		     "update" ++ ?table:t(sale_note, Merchant, UTable)
-		      ++ ?utils:to_sqls(proplists, comma, Update2)
-		      ++ " where "
-		      ++ RC(OrgStyleNumber, OrgBrand)],
+		     ++ " set "
+		     ++ ?utils:to_sqls(proplists, comma, Update2)
+		     ++ " where "
+		     ++ RC(OrgStyleNumber, OrgBrand)],
 		
 		?DEBUG("Sql14 ~p", [Sql14]),
 
@@ -957,6 +1044,7 @@ handle_call({update_good, Merchant, UTable, Attrs}, _Form, State) ->
 
 		     %% "update w_inventory_transfer_detail_amount set "
 		     "update" ++ ?table:t(stock_transfer_note, Merchant, UTable)
+		     ++ " set "
 		     ++ ?utils:to_sqls(proplists, comma, Update2)
 		     ++ " where style_number=\'" ++ ?to_s(OrgStyleNumber) ++ "\'"
 		     ++ " and brand=" ++ ?to_s(OrgBrand)
@@ -1012,11 +1100,12 @@ handle_call({lookup_good, Merchant, UTable, StyleNumber, Brand}, _Form, State) -
 
 handle_call({good_get_by_barcode, Merchant, UTable, Barcode}, _Form, State) ->
     ?DEBUG("good_get_by_barcode with merchant ~p, Barcode ~p", [Merchant, Barcode]),
-    case Barcode =:= undefined
-	orelse Barcode =:= []
-	orelse Barcode =:= <<>>
-	orelse Barcode =:= ?EMPTY_DB_BARCODE
-	orelse Barcode =:= <<"0">> of
+    %% case Barcode =:= undefined
+    %% 	orelse Barcode =:= []
+    %% 	orelse Barcode =:= <<>>
+    %% 	orelse Barcode =:= ?EMPTY_DB_BARCODE
+    %% 	orelse Barcode =:= <<"0">> of
+    case ?utils:check_empty(barcode, Barcode) of
 	true -> {reply, {ok, []}, State};
 	false ->
 	    Sql = ?w_good_sql:good(detail, {Merchant, UTable}, [{<<"bcode">>, Barcode}]),
@@ -2488,23 +2577,21 @@ handle_call({gen_barcode, AutoBarcode, Merchant, UTable, Shop, StyleNumber, Bran
 	", a.free"
 	", a.state"
 	", a.merchant"
-
-	", a.level"
-	", a.category as category_id"
-	", a.executive as executive_id"
-	", a.fabric as fabric_json"
-	", a.feather as feather_json"
-
+	
 	", b.bcode as tbcode"
 
-    %% ", c.level"
-    %% ", c.category as category_id"
-    %% ", c.executive as executive_id"
-    %% ", c.fabric as fabric_json"
+	", c.id as extra_id"
+	", c.level"
+	", c.executive as executive_id" 
+	", c.category as category_id"
+	", c.fabric as fabric_json"
+	", c.feather as feather_json" 
 	
     %% " from w_inventory a"
-	" from" ++ ?table:t(stock, Merchant, UTable)
+	" from" ++ ?table:t(stock, Merchant, UTable) ++ " a"
 	++ " left join inv_types b on a.type=b.id"
+	++ " left join" ++ ?table:t(good_extra, Merchant, UTable) ++ " c"
+	" on a.merchant=c.merchant and a.style_number=c.style_number and a.brand=c.brand"
 	
     %% " left join w_inventory_good c"
     %% " on a.style_number=c.style_number and a.brand=c.brand and a.merchant=c.merchant"
@@ -3085,8 +3172,7 @@ handle_call({total_goods, {Merchant, UTable}, Fields}, _From, State) ->
 
 handle_call({filter_goods, {Merchant, UTable}, CurrentPage, ItemsPerPage, Fields}, _From, State) ->
     ?DEBUG("filter_goods_with_and: currentPage ~p, ItemsPerpage ~p, Merchant ~p~n"
-	   "fields ~p", [CurrentPage, ItemsPerPage, Merchant, Fields]),
-
+	   "fields ~p", [CurrentPage, ItemsPerPage, Merchant, Fields]), 
     Sql = ?w_good_sql:good(
 	     detail_with_pagination, {Merchant, UTable}, Fields, CurrentPage, ItemsPerPage), 
     Reply = ?sql_utils:execute(read, Sql),
@@ -3200,7 +3286,7 @@ handle_call({new_rsn_detail, Merchant, UTable, Conditions}, _From, State) ->
 
 handle_call({get_new_amount, Merchant, UTable, Conditions}, _From, State) ->
     ?DEBUG("get_new_amount with merchant ~p, Conditions ~p", [Merchant, Conditions]), 
-    Sql = ?w_good_sql:inventory(get_new_amount, Merchant, UTable, Conditions),
+    Sql = ?w_good_sql:inventory(get_new_amount, {Merchant, UTable}, Conditions),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
@@ -4195,7 +4281,7 @@ update_stock(diff_firm, Merchant, UTable, CurrentTime, Updates, {Props, OldProps
 
 		 %% "update w_inventory_new set "
 		 "update" ++ ?table:t(stock_new, Merchant, UTable)
-		 ++ ?utils:to_sqls(proplists, comma, UpdateStock)
+		 ++ " set " ++ ?utils:to_sqls(proplists, comma, UpdateStock)
 		 ++ " where rsn=" ++ "\'" ++ ?to_s(RSN) ++ "\'",
 
 		 "update suppliers set balance=balance+" ++ ?to_s(PayBalanceOfNewFirm)

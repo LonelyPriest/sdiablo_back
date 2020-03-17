@@ -304,7 +304,7 @@ action(Session, Req, {"new_w_sale"}, Payload) ->
 	{ok_non_ticket, 0} ->
 	    start(new_sale,
 		  Req,
-		  Merchant,
+		  {Merchant, UTable},
 		  Invs,
 		  lists:keydelete(<<"ticket_custom">>, 1, Base) ++ [{<<"user">>, UserId}],
 		  Print);

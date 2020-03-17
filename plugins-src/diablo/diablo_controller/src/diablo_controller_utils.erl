@@ -127,6 +127,8 @@ datetime2seconds(Datetime) when is_binary(Datetime)->
 datetime2seconds(Datetime) ->
     datetime2seconds(?to_b(Datetime)).
 
+date_before(Before) ->
+    date_before(current_date(), Before).
 date_before({Year, Month, Date}, Before) ->
     Days = calendar:date_to_gregorian_days({Year, Month, Date}),
     calendar:gregorian_days_to_date(Days - Before).
@@ -138,7 +140,10 @@ date_after({Year, Month, Date}, After) ->
 current_date_after(After) ->
     CurrentDate = current_date(),
     {Year, Month, Date} = date_after(CurrentDate, After),
-    lists:flatten(io_lib:format("~4..0w-~2..0w-~2..0w", [Year, Month, Date])). 
+    lists:flatten(io_lib:format("~4..0w-~2..0w-~2..0w", [Year, Month, Date])).
+current_date_before(Before) ->
+    {Year, Month, Date} = date_before(Before),
+    lists:flatten(io_lib:format("~4..0w-~2..0w-~2..0w", [Year, Month, Date])).
 
 respond(batch, Fun, Req) ->
     case Fun() of
@@ -473,6 +478,20 @@ check_match_mode(Field, Prompt, Prefix) ->
 	{_, Match, _}->
 	    ?to_s(Prefix) ++ Field ++ " like \'%" ++ Match ++ "%\'"
     end.
+
+check_empty(barcode, Barcode) ->
+    Barcode =:= undefined
+	orelse Barcode =:= []
+	orelse Barcode =:= <<>>
+	orelse Barcode =:= ?EMPTY_DB_BARCODE
+	orelse Barcode =:= <<"0">>;
+
+check_empty(good_extra, GoodExtraId) ->
+    GoodExtraId =:= <<>>
+	orelse GoodExtraId =:= [].
+
+get_modified(NewValue, OldValue) when NewValue =/= OldValue -> NewValue;
+get_modified(_NewValue, _OldValue) ->  undefined.
 
 random(Max) ->
     <<A:32, B:32, C:32>> = crypto:rand_bytes(12),

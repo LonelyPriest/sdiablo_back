@@ -74,9 +74,9 @@ stastic(stock_in, Merchant, UTable, Conditions)->
     gen_server:call(?SERVER, {stock_in, Merchant, UTable, Conditions}, ?SQL_TIME_OUT);
 stastic(stock_out, Merchant, UTable, Conditions)->
     gen_server:call(?SERVER, {stock_out, Merchant, UTable, Conditions}, ?SQL_TIME_OUT);
-stastic(stock_transfer_in, UTable, Merchant, Conditions)->
+stastic(stock_transfer_in, Merchant, UTable, Conditions)->
     gen_server:call(?SERVER, {stock_transfer_in, Merchant, UTable, Conditions}, ?SQL_TIME_OUT);
-stastic(stock_transfer_out, UTable, Merchant, Conditions)->
+stastic(stock_transfer_out, Merchant, UTable, Conditions)->
     gen_server:call(?SERVER, {stock_transfer_out, Merchant, UTable, Conditions}, ?SQL_TIME_OUT);
 stastic(stock_fix, Merchant, UTable, Conditions)->
     gen_server:call(?SERVER, {stock_fix, Merchant, UTable, Conditions}, ?SQL_TIME_OUT);

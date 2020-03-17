@@ -60,12 +60,6 @@ good_new(Merchant, UTable, UseZero, GetShop, Attrs) ->
 		    end;
 	    _Barcode -> _Barcode
 	end,
-
-    Level = ?v(<<"level">>, Attrs, -1), 
-    StdExecutive = ?v(<<"executive">>, Attrs, -1),
-    SafetyCategory = ?v(<<"category">>, Attrs, -1),
-    Fabric  = ?v(<<"fabric">>, Attrs, []),
-    Feather = ?v(<<"feather">>, Attrs, []),
     
     {GIds, GNames} = decompose_size(Sizes),
     %% ?DEBUG("GIds ~p, GNames ~p", [GIds, GNames]),
@@ -91,11 +85,11 @@ good_new(Merchant, UTable, UseZero, GetShop, Attrs) ->
 	", discount"
 	", state"
 	", path"
-	", level"
-	", executive"
-	", category"
-	", fabric"
-	", feather"
+    %% ", level"
+    %% ", executive"
+    %% ", category"
+    %% ", fabric"
+    %% ", feather"
 	", alarm_day"
 	", comment"
 	", unit"
@@ -126,11 +120,11 @@ good_new(Merchant, UTable, UseZero, GetShop, Attrs) ->
 	++ ?to_s(SPrice) ++ ","
 	++ "\'" ++ ?to_s(Path) ++ "\',"
 	
-	++ ?to_s(Level) ++ ","
-	++ ?to_s(StdExecutive) ++ ","
-	++ ?to_s(SafetyCategory) ++ ","
-	++ "\'" ++ ?to_s(Fabric) ++ "\',"
-	++ "\'" ++ ?to_s(Feather) ++ "\',"
+	%% ++ ?to_s(Level) ++ ","
+	%% ++ ?to_s(StdExecutive) ++ ","
+	%% ++ ?to_s(SafetyCategory) ++ ","
+	%% ++ "\'" ++ ?to_s(Fabric) ++ "\',"
+	%% ++ "\'" ++ ?to_s(Feather) ++ "\',"
 	
 	++ ?to_s(AlarmDay) ++ ","
 	++ "\'" ++ ?to_s(Comment) ++ "\',"
@@ -141,9 +135,46 @@ good_new(Merchant, UTable, UseZero, GetShop, Attrs) ->
 	++ "\'" ++ ?to_s(DateTime) ++ "\',"
 	++ "\'" ++ ?to_s(DateTime) ++ "\');",
 
+
+    Level = ?v(<<"level">>, Attrs, -1), 
+    StdExecutive = ?v(<<"executive">>, Attrs, -1),
+    SafetyCategory = ?v(<<"category">>, Attrs, -1),
+    Fabric  = ?v(<<"fabric">>, Attrs, []),
+    Feather = ?v(<<"feather">>, Attrs, []),
+    
+    SqlExtra =
+	case Level =/= ?INVALID_OR_EMPTY
+	    orelse StdExecutive =/= ?INVALID_OR_EMPTY
+	    orelse SafetyCategory =/= ?INVALID_OR_EMPTY
+	    orelse Fabric =/= []
+	    orelse Feather =/= []
+	of
+	    true ->
+		["insert into" ++ ?table:t(good_extra, Merchant, UTable)
+		 ++ "(style_number" 
+		 ", brand"
+
+		 ", level"
+		 ", executive"
+		 ", category"
+		 ", fabric"
+		 ", feather"
+		 ", merchant) values("
+		 ++ "\'" ++ ?to_s(StyleNumber) ++ "\'," 
+		 ++ ?to_s(BrandId) ++ ","
+
+		 ++ ?to_s(Level) ++ ","
+		 ++ ?to_s(StdExecutive) ++ ","
+		 ++ ?to_s(SafetyCategory) ++ ","
+		 ++ "\'" ++ ?to_s(Fabric) ++ "\',"
+		 ++ "\'" ++ ?to_s(Feather) ++ "\'"
+		 ++ ?to_s(Merchant) ++ ")"];
+	    false -> []
+	end,
+
     case UseZero of
 	?NO ->
-	    [Sql1];
+	    [Sql1] ++ SqlExtra;
 	?YES ->
 	    Shop = GetShop(),
 	    FSize = fun(S) when S =:= <<>> -> [];
@@ -166,8 +197,8 @@ good_new(Merchant, UTable, UseZero, GetShop, Attrs) ->
 
 	    InventoryAmount =
 		fun(Size, Color) ->
-			["insert into" ++ ?table:t(stock, Merchant, UTable) ++ "("
-			 "rsn"
+			["insert into" ++ ?table:t(stock, Merchant, UTable)
+			 ++ "(rsn"
 			 ", style_number"
 			 ", brand"
 			 ", color"
@@ -185,55 +216,56 @@ good_new(Merchant, UTable, UseZero, GetShop, Attrs) ->
 			 ++ "\"" ++ ?to_s(DateTime) ++ "\")"]
 		end,
 
-	    [Sql1, 
-	     "insert into" ++ ?table:t(stock, Merchant, UTable) ++ "("
-	     ", rsn"
-	     ", style_number"
-	     ", brand"
-	     ", type"
-	     ", sex"
-	     ", season"
-	     ", amount"
-	     ", firm"
-	     ", s_group"
-	     ", free, year"
-	     ", org_price"
-	     ", tag_price"
-	     ", ediscount"
-	     ", discount"
-	     ", path"
-	     ", alarm_day"
-	     ", shop"
-	     ", merchant"
-	     ", last_sell"
-	     ", change_date"
-	     ", entry_date)"
-	     " values("
-	     ++ "\"" ++ ?to_s(-1) ++ "\","
-	     ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
-	     ++ ?to_s(BrandId) ++ ","
-	     ++ ?to_s(TypeId) ++ ","
-	     ++ ?to_s(Sex) ++ ","
-	     ++ ?to_s(Season) ++ ","
-	     ++ ?to_s(0) ++ ","
-	     ++ ?to_s(Firm) ++ ","
-	     %% ++ ?to_s(Color) ++ ","
-	     %% ++ "\"" ++ ?to_s(Size) ++ "\","
-	     ++ "\"" ++ join_with_comma(GIds) ++ "\","
-	     ++ ?to_s(Free) ++ ","
-	     ++ ?to_s(Year) ++ ","
-	     %% ++ ?to_s(Promotion) ++ ","
-	     ++ ?to_s(OrgPrice) ++ ","
-	     ++ ?to_s(TagPrice) ++ ","
-	     ++ ?to_s(EDiscount) ++ ","
-	     ++ ?to_s(Discount) ++ ","
-	     ++ "\"" ++ ?to_s(Path) ++ "\","
-	     ++ ?to_s(AlarmDay) ++ ","
-	     ++ ?to_s(Shop) ++ ","
-	     ++ ?to_s(Merchant) ++ ","
-	     ++ "\"" ++ ?to_s(DateTime) ++ "\","
-	     ++ "\"" ++ ?to_s(DateTime) ++ "\","
-	     ++ "\"" ++ ?to_s(DateTime) ++ "\")"] ++
+	    [Sql1]
+		++ SqlExtra
+		++ ["insert into" ++ ?table:t(stock, Merchant, UTable)
+		    ++ "(rsn"
+		    ", style_number"
+		    ", brand"
+		    ", type"
+		    ", sex"
+		    ", season"
+		    ", amount"
+		    ", firm"
+		    ", s_group"
+		    ", free, year"
+		    ", org_price"
+		    ", tag_price"
+		    ", ediscount"
+		    ", discount"
+		    ", path"
+		    ", alarm_day"
+		    ", shop"
+		    ", merchant"
+		    ", last_sell"
+		    ", change_date"
+		    ", entry_date)"
+		    " values("
+		    ++ "\"" ++ ?to_s(-1) ++ "\","
+		    ++ "\"" ++ ?to_s(StyleNumber) ++ "\","
+		    ++ ?to_s(BrandId) ++ ","
+		    ++ ?to_s(TypeId) ++ ","
+		    ++ ?to_s(Sex) ++ ","
+		    ++ ?to_s(Season) ++ ","
+		    ++ ?to_s(0) ++ ","
+		    ++ ?to_s(Firm) ++ ","
+		    %% ++ ?to_s(Color) ++ ","
+		    %% ++ "\"" ++ ?to_s(Size) ++ "\","
+		    ++ "\"" ++ join_with_comma(GIds) ++ "\","
+		    ++ ?to_s(Free) ++ ","
+		    ++ ?to_s(Year) ++ ","
+		    %% ++ ?to_s(Promotion) ++ ","
+		    ++ ?to_s(OrgPrice) ++ ","
+		    ++ ?to_s(TagPrice) ++ ","
+		    ++ ?to_s(EDiscount) ++ ","
+		    ++ ?to_s(Discount) ++ ","
+		    ++ "\"" ++ ?to_s(Path) ++ "\","
+		    ++ ?to_s(AlarmDay) ++ ","
+		    ++ ?to_s(Shop) ++ ","
+		    ++ ?to_s(Merchant) ++ ","
+		    ++ "\"" ++ ?to_s(DateTime) ++ "\","
+		    ++ "\"" ++ ?to_s(DateTime) ++ "\","
+		    ++ "\"" ++ ?to_s(DateTime) ++ "\")"] ++
 		lists:foldr(
 		  fun(GId, Acc0) ->
 			  {ok, G} =
@@ -292,18 +324,19 @@ good(detail, {Merchant, UTable}, Conditions) ->
 	", a.unit"
 	
 	", a.contailer"
-	", a.alarm_a"
-
-	", a.level"
-	", a.executive as executive_id"
-	", a.category as category_id"
-	", a.fabric as fabric_json"
-	", a.feather as feather_json"
-	
+	", a.alarm_a" 
 	", a.entry_date"
 
 	", b.name as brand"
 	", c.name as type"
+
+	", d.id as extra_id"
+	", d.level"
+	", d.executive as executive_id"
+	", d.category as category_id"
+	", d.fabric as fabric_json"
+	", d.feather as feather_json"
+	
 	%% ", c.name as executive"
 	%% ", d.name as category"
 	
@@ -311,6 +344,8 @@ good(detail, {Merchant, UTable}, Conditions) ->
 	" from " ++ ?table:t(good, Merchant, UTable) ++ " a" 
 	" left join brands b on a.brand=b.id"
 	" left join inv_types c on a.type=c.id"
+	" left join" ++ ?table:t(good_extra, Merchant, UTable) ++ " d"
+	" on a.merchant=d.merchant and a.style_number=d.style_number and a.brand=d.brand"
 	" where "
 	++ ?sql_utils:condition(proplists_suffix, NewConditions)
 	++ "a.merchant=" ++ ?to_s(Merchant) 
@@ -364,34 +399,49 @@ good(detail_no_join, {Merchant, UTable}, StyleNumber, Brand) ->
 	", a.size"
 	", a.s_group"
 	", a.free"
+	
+	", a.vir_price"
 	", a.org_price"
 	", a.tag_price"
 	", a.ediscount"
 	", a.discount"
+	", a.state"
 	", a.path"
-	", a.alarm_day"
-	
-	", a.contailer" 
-	", a.alarm_a"
+	", a.alarm_day" 
+	", a.unit"
 
-	", a.level"
-	", a.executive as executive_id"
-	", a.category as category_id"
-	", a.fabric as fabric_json"
-	", a.feather as feather_json"
-	
+	", a.contailer"
+	", a.alarm_a" 
 	", a.entry_date"
+	
+
+	%% ", a.level"
+	%% ", a.executive as executive_id"
+	%% ", a.category as category_id"
+	%% ", a.fabric as fabric_json"
+	%% ", a.feather as feather_json"
+	
 	
 	", b.name as brand"
 	", c.name as type"
+
+	", d.id as extra_id"
+	", d.level"
+	", d.executive as executive_id"
+	", d.category as category_id"
+	", d.fabric as fabric_json"
+	", d.feather as feather_json"
 	
-	" from" ++ ?table:t(good, Merchant, UTable) ++ " a, brands b, inv_types c"
+	" from" ++ ?table:t(good, Merchant, UTable) ++ " a"
+	" left join brands b on a.brand=b.id"
+	" left join inv_types c on a.type=c.id"
+	" left join" ++ ?table:t(good_extra, Merchant, UTable) ++ " d"
+	" on a.merchant=d.merchant and a.style_number=d.style_number and a.brand=d.brand"
+	
 	" where a.merchant=" ++ ?to_s(Merchant)
 	++ " and a.style_number='" ++ ?to_s(StyleNumber) ++ "'" 
-	++ " and brand=" ++ ?to_s(Brand)
-	++ " and a.deleted=" ++ ?to_s(?NO)
-	++ " and a.brand=b.id"
-	++ " and a.type=c.id" ;
+	++ " and a.brand=" ++ ?to_s(Brand)
+	++ " and a.deleted=" ++ ?to_s(?NO);
 
 good(used_detail, {Merchant, UTable}, StyleNumber, Brand) ->
     "select a.id, style_number"
@@ -466,26 +516,38 @@ good_match(style_number_with_firm, Merchant, UTable, StyleNumber, Firm) ->
 	", a.contailer"
 	", a.alarm_a"
 
-	", a.level"
-	", a.executive as executive_id"
-	", a.category as category_id"
-	", a.fabric as fabric_json"
-	", a.feather as feather_json"
+	%% ", a.level"
+	%% ", a.executive as executive_id"
+	%% ", a.category as category_id"
+	%% ", a.fabric as fabric_json"
+	%% ", a.feather as feather_json"
 	
 	", a.entry_date"
 	
 	", b.name as brand"
 	", c.name as type"
+
+	", d.id as extra_id"
+	", d.level"
+	", d.executive as executive_id"
+	", d.category as category_id"
+	", d.fabric as fabric_json"
+	", d.feather as feather_json"
 	
-	" from" ++ ?table:t(good, Merchant, UTable) ++ " a, brands b, inv_types c"
+	" from" ++ ?table:t(good, Merchant, UTable) ++ " a"
+	" left join brands b on a.brand=b.id"
+	" left join inv_types c on a.type=c.id"
+	" left join" ++ ?table:t(good_extra, Merchant, UTable) ++ " d"
+	" on a.merchant=d.merchant and a.style_number=d.style_number and a.brand=d.brand"
+	
 	" where a.merchant=" ++ ?to_s(Merchant)
 	++ case Firm of
 	       [] -> [];
 	       -1 -> [];
 	       _ -> ?sql_utils:condition(proplists, {<<"a.firm">>, Firm})
 	   end 
-	++ " and a.brand=b.id"
-	++ " and a.type=c.id"
+    %% ++ " and a.brand=b.id"
+    %% ++ " and a.type=c.id"
 	++ " and " ++ get_match_mode(style_number, StyleNumber, "a.") 
     %% ++ " and a.style_number like \'%" ++ ?to_s(StyleNumber) ++ "%\'"
 	++ " order by id desc"
@@ -518,19 +580,31 @@ good_match(all_style_number_with_firm, Merchant, UTable, StartTime, Firm) ->
 	", a.contailer"
 	", a.alarm_a"
 
-	", a.level"
-	", a.executive as as.executive_id"
-	", a.category as category_id"
-	", a.fabric as fabric_json"
-	", a.feather as feather_json"
+	%% ", a.level"
+	%% ", a.executive as as.executive_id"
+	%% ", a.category as category_id"
+	%% ", a.fabric as fabric_json"
+	%% ", a.feather as feather_json"
 	
 	", a.entry_date"
 	
 	", b.name as brand"
 	", c.name as type"
 
+	", d.id as extra_id"
+	", d.level"
+	", d.executive as executive_id"
+	", d.category as category_id"
+	", d.fabric as fabric_json"
+	", d.feather as feather_json"
+
 	%% " from w_inventory_good a, brands b, inv_types c"
-	" from" ++ ?table:t(good, Merchant, UTable) ++ " a, brands b, inv_types c" 
+	" from" ++ ?table:t(good, Merchant, UTable) ++ " a"
+	" left join brands b on a.brand=b.id"
+	" left join inv_types c on a.type=c.id"
+	" left join" ++ ?table:t(good_extra, Merchant, UTable) ++ " d"
+	" on a.merchant=d.merchant and a.style_number=d.style_number and a.brand=d.brand"
+	
 	" where a.merchant=" ++ ?to_s(Merchant)
 	++ case Firm of
 	       [] -> [];
@@ -538,10 +612,8 @@ good_match(all_style_number_with_firm, Merchant, UTable, StartTime, Firm) ->
 	       _ -> ?sql_utils:condition(proplists, {<<"a.firm">>, Firm})
 	   end
 	++ " and a.entry_date>=\'" ++ ?to_s(StartTime) ++ "\'"
-    %% ++ " and a.deleted=" ++ ?to_s(?NO)
-	++ " and a.brand=b.id"
-	" and a.type=c.id"
-	" order by id desc".
+	" and a.deleted=" ++ ?to_s(?NO)
+	++ " order by id desc".
 
 inventory(abstract, {Merchant, UTable}, Shop, [{S1, B1}|T] = _Conditions) -> 
 
@@ -644,11 +716,11 @@ inventory({group_detail, MatchMode}, {Merchant, UTable}, Conditions, PageFun) ->
 	", a.contailer"
 	", a.alarm_a"
 
-	", a.level"
-	", a.executive as executive_id"
-	", a.category as category_id"
-	", a.fabric as fabric_json"
-	", a.feather as feather_json"
+	%% ", a.level"
+	%% ", a.executive as executive_id"
+	%% ", a.category as category_id"
+	%% ", a.fabric as fabric_json"
+	%% ", a.feather as feather_json"
 	
 	", a.sell"
 	", a.shop as shop_id"
@@ -659,16 +731,26 @@ inventory({group_detail, MatchMode}, {Merchant, UTable}, Conditions, PageFun) ->
 	", a.entry_date"
 	
 	", b.name as shop"
+
+	", c.id as extra_id"
+	", c.level"
+	", c.executive as executive_id"
+	", c.category as category_id"
+	", c.fabric as fabric_json"
+	", c.feather as feather_json"
 	
 	++ case StockWarning of
-	       1 -> ", c.minalarm_a";
+	       1 -> ", d.minalarm_a";
 	       0 -> []
 	   end
 	++
 	
 	%% " from w_inventory a"
-	" from" ++ ?table:t(stock, Merchant, UTable)
+	" from"
+	++ ?table:t(stock, Merchant, UTable) ++ " a"
 	++ " left join shops b on a.shop=b.id"
+	" left join" ++ ?table:t(good_extra, Merchant, UTable) ++ " c"
+	" on a.merchant=c.merchant and a.style_number=c.style_number and c.brand=c.brand"
 
 	++ case StockWarning of
 	       1 ->
@@ -680,8 +762,8 @@ inventory({group_detail, MatchMode}, {Merchant, UTable}, Conditions, PageFun) ->
 		       ++ " where merchant=" ++ ?to_s(Merchant)
 		       ++ ?sql_utils:condition(proplists, {<<"shop">>, ShopConditons})
 		       ++ " and total<alarm_a"
-		       ++ " group by style_number, brand, merchant, shop) c on "
-		       "a.style_number=c.style_number and a.brand=c.brand and a.merchant=c.merchant"
+		       ++ " group by style_number, brand, merchant, shop) d"
+		       " on a.merchant=d.merchant and a.style_number=d.style_number and a.brand=d.brand"
 		       " and a.shop=c.shop";
 	       0 -> []
 	   end
@@ -1398,7 +1480,7 @@ inventory(fix_rsn_groups, fix, {Merchant, UTable}, Conditions, PageFun) ->
     %% ", d.name as shop"
 	
     %% " from w_inventory_fix_detail_amount "
-	" from" ++ ?table:t(fix_note, Merchant, UTable)
+	" from" ++ ?table:t(stock_fix_note, Merchant, UTable)
 	
 	%% " left join colors b on a.color=b.id"
 	%% " left join brands c on a.brand=c.id"
@@ -1597,7 +1679,7 @@ inventory_match(all_inventory, Merchant, UTable, Shop, Conditions) ->
 	", b.name as brand" 
 	", c.name as type"
     %% " from w_inventory a"
-	" from" ++ ?table:t(stock, Merchant, UTable) 
+	" from" ++ ?table:t(stock, Merchant, UTable) ++ " a"
 	++ " left join brands b on a.brand=b.id" 
 	" left join inv_types c on a.type=c.id"
 	
@@ -1642,7 +1724,7 @@ inventory_match(of_in, Merchant, UTable, Shop, Ins) ->
 	", b.name as brand" 
 	", c.name as type"
 	%% " from w_inventory a"
-	" from" ++ ?table:t(stock, Merchant, UTable) 
+	" from" ++ ?table:t(stock, Merchant, UTable) ++ " a"
 	++ " left join brands b on a.brand=b.id" 
 	" left join inv_types c on a.type=c.id"
 
@@ -1685,7 +1767,7 @@ inventory_match(Merchant, UTable, StyleNumber, Shop, Firm) ->
 	", b.name as brand" 
 	", c.name as type"
     %% " from w_inventory a"
-	" from" ++ ?table:t(stock, Merchant, UTable) 
+	" from" ++ ?table:t(stock, Merchant, UTable) ++ " a"
 	++ " left join brands b on a.brand=b.id" 
 	" left join inv_types c on a.type=c.id"
 
@@ -1725,7 +1807,7 @@ inventory_match(all_reject, Merchant, UTable, Shop, Firm, StartTime) ->
 	", b.name as brand" 
 	", c.name as type"
     %% " from w_inventory a"
-	" from" ++ ?table:t(stock, Merchant, UTable) 
+	" from" ++ ?table:t(stock, Merchant, UTable) ++ " a"
 	++ " left join brands b on a.brand=b.id" 
 	" left join inv_types c on a.type=c.id"
 	
@@ -1926,8 +2008,7 @@ inventory(update_attr, Mode, RSN, Merchant, UTable, Shop, {Firm, OldFirm, Dateti
 	    end
     end.
 
-inventory(update, Mode, RSN, Merchant, UTable, Shop, {Firm, Datetime, Curtime}, Inventories) ->
-    
+inventory(update, Mode, RSN, Merchant, UTable, Shop, {Firm, Datetime, Curtime}, Inventories) -> 
     lists:foldr(
       fun({struct, Inv}, Acc0)-> 
 	      Operation   = ?v(<<"operation">>, Inv), 
@@ -2018,15 +2099,18 @@ amount_new(Mode, RSN, Merchant, UTable, Shop, Firm, CurDateTime, Inv, Amounts) -
     Contailer  = ?v(<<"contailer">>, Inv, -1),
     Alarm_a    = ?v(<<"alarm_a">>, Inv, 0),
 
-    Level = ?v(<<"level">>, Inv, -1), 
-    StdExecutive = ?v(<<"executive">>, Inv, -1),
-    SafetyCategory = ?v(<<"category">>, Inv, -1),
-    Fabric = ?v(<<"fabric">>, Inv, []),
-    Feather = ?v(<<"feather">>, Inv, []),
+    %% Level = ?v(<<"level">>, Inv, -1), 
+    %% StdExecutive = ?v(<<"executive">>, Inv, -1),
+    %% SafetyCategory = ?v(<<"category">>, Inv, -1),
+    %% Fabric = ?v(<<"fabric">>, Inv, []),
+    %% Feather = ?v(<<"feather">>, Inv, []),
 
     %% InventoryExist = ?sql_utils:execute(s_read, Sql0),
 
-    Sql0 = "select id, style_number, brand from" ++ ?table:t(stock, Merchant, UTable)
+    Sql0 = "select id"
+	", style_number"
+	", brand"
+	" from" ++ ?table:t(stock, Merchant, UTable)
 	++ " where style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
 	++ " and brand=" ++ ?to_s(Brand)
     %% ++ " and color=" ++ ?to_s(Color)
@@ -2065,11 +2149,11 @@ amount_new(Mode, RSN, Merchant, UTable, Shop, Firm, CurDateTime, Inv, Amounts) -
 		  ", alarm_a"
 		  ", unit"
 		  
-		  ", level"
-		  ", executive"
-		  ", category"
-		  ", fabric"
-		  ", feather"
+		  %% ", level"
+		  %% ", executive"
+		  %% ", category"
+		  %% ", fabric"
+		  %% ", feather"
 		  
 		  ", merchant"
 		  ", last_sell"
@@ -2103,11 +2187,11 @@ amount_new(Mode, RSN, Merchant, UTable, Shop, Firm, CurDateTime, Inv, Amounts) -
 		  ++ ?to_s(Alarm_a) ++ ","
 		  ++ ?to_s(Unit) ++ "," 
 
-		  ++ ?to_s(Level) ++ ","
-		  ++ ?to_s(StdExecutive) ++ ","
-		  ++ ?to_s(SafetyCategory) ++ ","
-		  ++ "\'" ++ ?to_s(Fabric) ++ "\',"
-		  ++ "\'" ++ ?to_s(Feather) ++ "\',"
+		  %% ++ ?to_s(Level) ++ ","
+		  %% ++ ?to_s(StdExecutive) ++ ","
+		  %% ++ ?to_s(SafetyCategory) ++ ","
+		  %% ++ "\'" ++ ?to_s(Fabric) ++ "\',"
+		  %% ++ "\'" ++ ?to_s(Feather) ++ "\',"
 		  
 		  ++ ?to_s(Merchant) ++ ","
 		  ++ "\"" ++ ?to_s(CurDateTime) ++ "\","
@@ -2327,7 +2411,7 @@ amount_new(Mode, RSN, Merchant, UTable, Shop, Firm, CurDateTime, Inv, Amounts) -
 		   case OrgPrice /= 0 of
 		       true -> [
 				"update" ++ ?table:t(good, Merchant, UTable)
-				++ " firm=" ++ ?to_s(Firm)
+				++ " set firm=" ++ ?to_s(Firm)
 				++ ", org_price=" ++ ?to_s(OrgPrice)
 				++ ", ediscount=" ++ ?to_s(EDiscount)
 				++ ", vir_price="  ++ ?to_s(VirPrice)
@@ -2338,7 +2422,7 @@ amount_new(Mode, RSN, Merchant, UTable, Shop, Firm, CurDateTime, Inv, Amounts) -
 				++ " and merchant=" ++ ?to_s(Merchant)];
 		       false -> [
 				 "update" ++ ?table:t(good, Merchant, UTable)
-				 ++ " firm=" ++ ?to_s(Firm) 
+				 ++ " set firm=" ++ ?to_s(Firm) 
 				 ++ " where style_number=\"" ++ ?to_s(StyleNumber) ++ "\""
 				 ++ " and brand=" ++ ?to_s(Brand) 
 				 ++ " and merchant=" ++ ?to_s(Merchant)]
@@ -2588,19 +2672,20 @@ amount_update(Mode, RSN, Merchant, UTable, Shop, Datetime, Inv) ->
 			  comma,
 			  %% ?utils:v(firm, integer, Firm)
 			  ?utils:v(org_price, integer, OrgPrice)
-			  ++ ?utils:v(ediscount, float, EDiscount)
-			 )
+			  ++ ?utils:v(ediscount, float, EDiscount))
 		    ++ " where "
-		    ++ "rsn like \'M-" ++ ?to_s(Merchant) ++ "-S-" ++ ?to_s(Shop) ++ "-%\'"
+		    %% ++ "rsn like \'M-" ++ ?to_s(Merchant) ++ "-S-" ++ ?to_s(Shop) ++ "-%\'"
+		    ++ " merchant=" ++ ?to_s(Merchant)
+		    ++ " and shop=" ++ ?to_s(Shop)
 		    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 		    ++ " and brand=" ++ ?to_s(Brand)
 		    ++ " and org_price=0",
+		    %% ++ " and entry_date>\'" ++ ?utils:current_date_before(?ONE_MONTH) ++ "\'",
 		    
 		    %% "update w_inventory_good set "
 		    "update" ++ ?table:t(good, Merchant, UTable)
 		    ++ " set " ++ ?utils:to_sqls(proplists, comma, Updates) 
-		    ++ " where "
-		    ++ " merchant=" ++ ?to_s(Merchant)
+		    ++ " where merchant=" ++ ?to_s(Merchant)
 		    ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
 		    ++ " and brand=" ++ ?to_s(Brand)]; 
 	       ?REJECT_INVENTORY ->

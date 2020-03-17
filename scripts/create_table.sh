@@ -6,6 +6,7 @@ PASSWORD=$2
 SUFFIX=$3
 
 TABLE_GOOD=w_inventory_good_${SUFFIX}
+TABLE_GOOD_EXTRA=w_inventory_good_extra_${SUFFIX}
 TABLE_STOCK_NEW=w_inventory_new_${SUFFIX}
 TABLE_STOCK_NEW_DETAIL=w_inventory_new_detail_${SUFFIX}
 TABLE_STOCK_NEW_DETAIL_AMOUNT=w_inventory_new_detail_amount_${SUFFIX}
@@ -56,6 +57,7 @@ CREATE TABLE ${TABLE_GOOD} (
   state tinyint(4) DEFAULT 0,
   contailer int(11) DEFAULT -1,
   alarm_a int(11) DEFAULT -1,
+  comment VARCHAR(128) default '',
   merchant int(11) DEFAULT -1,
   change_date datetime DEFAULT 0,
   entry_date datetime DEFAULT 0,
@@ -376,7 +378,7 @@ CREATE TABLE ${TABLE_STOCK_FIX} (
   PRIMARY KEY (id),
   UNIQUE KEY uk (rsn),
   KEY dk (merchant,shop,employ)
-) ENGINE=InnoDB AUTO_INCREMENT=314 DEFAULT CHARSET=utf8;
+) DEFAULT CHARSET=utf8;
 
 CREATE TABLE ${TABLE_STOCK_FIX_DETAIL_AMOUNT} (
   id int(11) NOT NULL AUTO_INCREMENT,
@@ -394,7 +396,25 @@ CREATE TABLE ${TABLE_STOCK_FIX_DETAIL_AMOUNT} (
   PRIMARY KEY (id),
   UNIQUE KEY uk (rsn,style_number,brand,color,size),
   KEY dk (merchant,style_number,brand,color,size)
-) ENGINE=InnoDB AUTO_INCREMENT=118614 DEFAULT CHARSET=utf8;
+) DEFAULT CHARSET=utf8;
+
+CREATE TABLE ${TABLE_GOOD_EXTRA} (
+  id int(11) NOT NULL AUTO_INCREMENT,
+  style_number     VARCHAR(64) NOT NULL DEFAULT '',
+  brand            INTEGER DEFAULT -1,
+        
+  level            TINYINT DEFAULT -1,
+  executive        INTEGER DEFAULT -1,
+  category         INTEGER DEFAULT -1,
+  fabric           VARCHAR(256) DEFAULT '',
+  feather          VARCHAR(256) DEFAULT '',
+
+  merchant         INTEGER default -1,    
+  entry_date       DATETIME default 0,
+  deleted          INTEGER default 0, -- 0: no;  1: yes
+
+  unique key       uk (merchant, style_number, brand),    
+  primary key      (id)
+) DEFAULT CHARSET=utf8;
+
 EOF
-
-

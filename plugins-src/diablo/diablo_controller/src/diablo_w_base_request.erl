@@ -384,10 +384,9 @@ action(Session, Req, {"download_stock_fix"}, Payload) ->
 %% login out
 %% 
 action(Session, Req, {"destroy_login_user"}, Payload) ->
-    ?DEBUG("destroy_login_user with session ~p, payload ~p",
-	   [Session, Payload]),
+    ?DEBUG("destroy_login_user with session ~p, payload ~p", [Session, Payload]),
     User = ?session:get(name, Session),
-    %% ?DEBUG("Session ~p", [Session]),
+    ?DEBUG("Session ~p", [Session]),
     Ok = ?session:delete(Session#session.id),
     ?DEBUG("ok ~p", [Ok]),
     case Ok of

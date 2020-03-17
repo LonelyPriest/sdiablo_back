@@ -89,8 +89,8 @@ function merchantConfig(angular){
 		 type:      one.type.id,
 		 owner:     one.owner,
 		 address:   one.address,
-		 mobile:    one.mobile
-		}
+		 mobile:    one.mobile,
+		 utable:    one.utable}
 	    )};
 
 	this.destroy = function(one){
@@ -277,12 +277,10 @@ function merchantConfig(angular){
 
     merchantApp.controller("merchantNewCtrl", function(
 	$scope, $location, merchantService, diabloPattern, diabloUtilsService){
-	//$scope.merchant = {};
-	var dialog = diabloUtilsService;
-	
+	var dialog = diabloUtilsService; 
+	// $scope.merchant = {utable:0};
 	$scope.merchantTypes = merchantService.types; 
-	$scope.pattern_mobile=diabloPattern.mobile;
-
+	$scope.pattern_mobile=diabloPattern.mobile; 
 	$scope.merchant = {type: $scope.merchantTypes[0]};
 	
 	// new merchant
@@ -292,9 +290,13 @@ function merchantConfig(angular){
 		console.log(state);
 		if (state.ecode == 0){
 	    	    dialog.response_with_callback(
-	    		true, "新增商家",
+	    		true,
+			"新增商家",
 			"恭喜你，商家 " + $scope.merchant.name + " 成功创建！！",
-	    		$scope, function(){$location.path("/merchant_detail")}
+	    		$scope,
+			function(){
+			    $location.path("/merchant_detail")
+			}
 		    );
 		} else{
 	    	    dialog.response(
