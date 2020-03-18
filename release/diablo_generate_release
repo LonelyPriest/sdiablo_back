@@ -60,12 +60,10 @@ main(Options)->
 	    os:cmd("rm -rf " ++ StringSubSystem),
 	    ok = file:make_dir(StringSubSystem);
 	{error, Error} ->
-	    io:format("Can not create directory ~p, reason:~p~n",
-		      [StringSubSystem, Error])
+	    io:format("Can not create directory ~p, reason:~p~n", [StringSubSystem, Error])
     end,
 
-    ok = erl_tar:extract(StringSubSystem ++ ".tar.gz",
-			 [compressed, {cwd, StringSubSystem}]),
+    ok = erl_tar:extract(StringSubSystem ++ ".tar.gz", [compressed, {cwd, StringSubSystem}]),
 
     %% os:cmd("cp -r " ++ BinPath ++ " " ++ StringSubSystme ++ "/"),
     %% create_erl_bin(StringSubSystem),
@@ -94,7 +92,8 @@ main(Options)->
     %% build tar
     CurrTime = current_time(local),
     erl_tar:create(StringSubSystem ++ "-" ++ CurrTime ++ ".tar.gz",
-		   [StringSubSystem], [compressed]),
+		   [StringSubSystem],
+		   [compressed]),
     
     %% clean
     clean(StringSubSystem),
@@ -215,6 +214,8 @@ create_knife_frame(RootPath)->
 	++ filelib:wildcard(DepsPath ++ "/*/deps.mk")
 	++ filelib:wildcard(DepsPath ++ "/*/generate_*"),
 
+    
+
     %% io:format("no needs ~p~n", [NoNeeds]),
     lists:foreach(
       fun(NoNeed) ->
@@ -225,6 +226,11 @@ create_knife_frame(RootPath)->
      fun(Dir) ->
 	     os:cmd("mkdir -p " ++ RootPath ++ "/" ++ Dir)
      end, ["log", "mnesia", "plugins"]),
+
+    lists:foreach(
+      fun(NoneScript) ->
+    	      os:cmd("rm -f " ++ RootPath ++ "/scripts/" ++ NoneScript)
+      end, ["check_stock_org_price.sql", "drop_table.sh", "send_sms.py", "upgrade.sql"]),
     
     ok.
 

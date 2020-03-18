@@ -3378,7 +3378,6 @@ function wsaleNewProvide(
 	})
     }; 
 
-    var paySpeak = new diabloSpeak();
     // paySpeak.set_text("300");
     // paySpeak.speak();
     $scope.pay_scan = function(pay_type) {
@@ -3396,7 +3395,14 @@ function wsaleNewProvide(
 		    console.log(result); 
 		    if (result.ecode === 0) {
 			// play sound
-			paySpeak.set_text(diablo_set_string(result.balance));
+			var paySpeak = new diabloPaySpeak(); 
+			if (pay_type === diablo_wxin_scan) {
+			    paySpeak.set_text(
+				"微信收款" + diablo_set_string(result.balance) + "元"); 
+			} else {
+			    paySpeak.set_text(
+				"支付宝收款" + diablo_set_string(result.balance) + "元"); 
+			}
 			paySpeak.speak();
 			
 			get_pay_scan_balance(result.pay_order, result.pay_type, result.balance);
@@ -3427,7 +3433,8 @@ function wsaleNewProvide(
 	
 	var balance = $scope.select.charge;
 	if (balance > 0 &&  balance < diablo_max_pay_scan) {
-	    paySpeak.set_text(diablo_set_string(balance));
+	    // var paySpeak = new diabloPaySpeak(); 
+	    // paySpeak.set_text("微信收款" + diablo_set_string(balance) + "元");
 	    paySpeak.speak();
 	    dialog.edit_with_modal(
 		"pay-scan.html",

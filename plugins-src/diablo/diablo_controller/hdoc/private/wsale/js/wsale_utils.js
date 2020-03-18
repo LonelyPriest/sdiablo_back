@@ -1480,7 +1480,7 @@ wsaleDraft.prototype.select = function(dialog, template, draftFilter, selectCall
 	});
 };
 
-var diabloSpeak = function() {
+var diabloPaySpeak = function() {
     this.utterance = undefined;
     if('speechSynthesis' in window) {
 	this.utterance = new SpeechSynthesisUtterance();
@@ -1492,13 +1492,13 @@ var diabloSpeak = function() {
     console.log(this.utterance);
 };
 
-diabloSpeak.prototype.set_text = function(text) {
+diabloPaySpeak.prototype.set_text = function(text) {
     if (angular.isDefined(this.utterance) && angular.isObject(this.utterance)) {
 	this.utterance.text = angular.isUndefined(text) ? "" : text; 
     }
 };
 
-diabloSpeak.prototype.speak = function() {
+diabloPaySpeak.prototype.speak = function() {
     if (angular.isDefined(this.utterance) && angular.isObject(this.utterance)) {
 	window.speechSynthesis.cancel();
 	window.speechSynthesis.speak(this.utterance);
