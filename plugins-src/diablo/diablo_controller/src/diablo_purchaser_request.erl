@@ -583,8 +583,7 @@ action(Session, Req, {"list_w_inventory"}, Payload) ->
     Merchant = ?session:get(merchant, Session),
     UTable = ?session:get(utable, Session),
     
-    batch_responed(
-      fun() -> ?w_inventory:purchaser_inventory(list, {Merchant, UTable}, Payload) end, Req);
+    batch_responed(fun() -> ?w_inventory:purchaser_inventory(list, {Merchant, UTable}, Payload) end, Req);
 
 %% =============================================================================
 %% fix

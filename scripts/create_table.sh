@@ -68,6 +68,25 @@ CREATE TABLE ${TABLE_GOOD} (
   KEY bcode (bcode)
 ) DEFAULT CHARSET=utf8;
 
+CREATE TABLE ${TABLE_GOOD_EXTRA} (
+  id int(11) NOT NULL AUTO_INCREMENT,
+  style_number     VARCHAR(64) NOT NULL DEFAULT '',
+  brand            INTEGER DEFAULT -1,
+        
+  level            TINYINT DEFAULT -1,
+  executive        INTEGER DEFAULT -1,
+  category         INTEGER DEFAULT -1,
+  fabric           VARCHAR(256) DEFAULT '',
+  feather          VARCHAR(256) DEFAULT '',
+
+  merchant         INTEGER default -1,    
+  entry_date       DATETIME default 0,
+  deleted          INTEGER default 0, -- 0: no;  1: yes
+
+  unique key       uk (merchant, style_number, brand),    
+  primary key      (id)
+) DEFAULT CHARSET=utf8;
+
 CREATE TABLE ${TABLE_STOCK_NEW} (
   id int(11) NOT NULL AUTO_INCREMENT,
   rsn varchar(32) NOT NULL,
@@ -396,25 +415,6 @@ CREATE TABLE ${TABLE_STOCK_FIX_DETAIL_AMOUNT} (
   PRIMARY KEY (id),
   UNIQUE KEY uk (rsn,style_number,brand,color,size),
   KEY dk (merchant,style_number,brand,color,size)
-) DEFAULT CHARSET=utf8;
-
-CREATE TABLE ${TABLE_GOOD_EXTRA} (
-  id int(11) NOT NULL AUTO_INCREMENT,
-  style_number     VARCHAR(64) NOT NULL DEFAULT '',
-  brand            INTEGER DEFAULT -1,
-        
-  level            TINYINT DEFAULT -1,
-  executive        INTEGER DEFAULT -1,
-  category         INTEGER DEFAULT -1,
-  fabric           VARCHAR(256) DEFAULT '',
-  feather          VARCHAR(256) DEFAULT '',
-
-  merchant         INTEGER default -1,    
-  entry_date       DATETIME default 0,
-  deleted          INTEGER default 0, -- 0: no;  1: yes
-
-  unique key       uk (merchant, style_number, brand),    
-  primary key      (id)
 ) DEFAULT CHARSET=utf8;
 
 EOF

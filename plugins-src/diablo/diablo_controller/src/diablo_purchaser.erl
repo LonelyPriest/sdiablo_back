@@ -3363,7 +3363,7 @@ handle_call({filter_transfer_rsn_groups,
 
 handle_call({transfer_rsn_detail, Merchant, UTable, Conditions}, _From, State) ->
     ?DEBUG("transfer_rsn_detail with merchant ~p, Conditions ~p", [Merchant, Conditions]),
-    Sql = ?w_good_sql:inventory(transfer_rsn_detail, Merchant, UTable, Conditions),
+    Sql = ?w_good_sql:inventory(transfer_rsn_detail, {Merchant, UTable}, Conditions),
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 

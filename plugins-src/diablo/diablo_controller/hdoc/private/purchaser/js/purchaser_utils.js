@@ -614,7 +614,39 @@ var stockUtils = function(){
 	    }
 	    
 	    return condition;
-	} 
+	},
+
+	impl_ext_stock: function(stock, ext, execs, cates, specs, fabrics) {
+	    stock.state     = stockUtils.to_integer(ext.state);
+	    stock.level     = ext.level;
+	    stock.executive = diablo_get_object(ext.executive, execs);
+	    stock.category  = diablo_get_object(ext.category, cates); 
+	    stock.specs = [];
+	    if (angular.isObject(stock.type) && stock.type.cid !== diablo_invalid_index) {
+		angular.forEach(specs, function(s) {
+		    if (s.cid === stock.type.cid) {
+			stock.specs.push(s);
+		    }
+		}) 
+	    }
+	    
+	    if (ext.fabric) {
+		stock.fabrics = angular.fromJson(ext.fabric);
+		angular.forEach(stock.fabrics, function(f) {
+		    var fabric = diablo_get_object(f.f, fabrics);
+		    if (angular.isDefined(fabric) && angular.isObject(fabric)) {
+			f.name = fabric.name; 
+			f.way = diablo_get_object(stockUtils.to_integer(f.w), diablo_waynodes);
+		    }
+		});
+	    }
+
+	    if (ext.feather) {
+		stock.feathers = angular.fromJson(ext.feather); 
+	    }
+
+	    return stock;
+	}
 	//
     }
 }();
@@ -1457,9 +1489,23 @@ stockPrintU.prototype.printBarcode2 = function() {
 
     // level
     if (this.template.level) {
-	line = "等级:" + (this.stock.level === diablo_invalid ? diablo_level[1] : diablo_level[this.stock.level]);
+	line = "等级:";
+	if (this.stock.level === diablo_invalid || 0 === stockUtils.to_integer(this.stock.level)) {
+	    line += diablo_level[1];
+	} else {
+	    line += diablo_level[this.stock.level];
+	}
 	top = this.start_print(
-	    line, top, this.left, iwpx, this.template.hpx_each, 0, pSecond, pThird, startSecond, startThird); 
+	    line,
+	    top,
+	    this.left,
+	    iwpx,
+	    this.template.hpx_each,
+	    0,
+	    pSecond,
+	    pThird,
+	    startSecond,
+	    startThird); 
     }
 
     // executive
@@ -1477,7 +1523,13 @@ stockPrintU.prototype.printBarcode2 = function() {
 			 startThird); 
 	top += this.template.hpx_executive;
 
-	line = "   " +  this.stock.executive.name; 
+	line = "   ";
+	if (angular.isDefined(this.stock.executive)
+	    && angular.isObject(this.stock.executive)
+	    && this.stock.executive.hasOwnProperty('name')) {
+		line += this.stock.executive.name;
+	}
+	
 	this.start_print(line,
 			 top,
 			 this.left,
@@ -1506,7 +1558,13 @@ stockPrintU.prototype.printBarcode2 = function() {
 			 startThird); 
 	top += this.template.hpx_category;
 
-	line = "   " +  this.stock.category.name;
+	line = "   ";
+	if (angular.isDefined(this.stock.category)
+	    && angular.isObject(this.stock.category)
+	    && this.stock.category.hasOwnProperty('name')) {
+	    line += this.stock.category.name;
+	}
+	
 	this.start_print(line,
 			 top,
 			 this.left,
@@ -1740,6 +1798,6 @@ stockPrintU.prototype.printBarcode2 = function() {
 
     // this.LODOP.PRINT_SETUP();
     // this.LODOP.PRINT_DESIGN();
-    this.LODOP.PREVIEW();
-    // this.LODOP.PRINT();
+    // this.LODOP.PREVIEW();
+    this.LODOP.PRINT();
 };

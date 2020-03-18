@@ -1033,37 +1033,37 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	return index;
     };
 
-    var impl_ext_stock = function(stock, ext) {
-	stock.state     = stockUtils.to_integer(ext.state);
-	stock.level     = ext.level;
-	stock.executive = diablo_get_object(ext.executive, filterStdExecutive);
-	stock.category  = diablo_get_object(ext.category, filterCategory); 
-	stock.specs = [];
-	if (angular.isObject(stock.type) && stock.type.cid !== diablo_invalid_index) {
-	    angular.forEach(filterSizeSpec, function(s) {
-		if (s.cid === stock.type.cid) {
-		    stock.specs.push(s);
-		}
-	    }) 
-	}
+    // var impl_ext_stock = function(stock, ext) {
+    // 	stock.state     = stockUtils.to_integer(ext.state);
+    // 	stock.level     = ext.level;
+    // 	stock.executive = diablo_get_object(ext.executive, filterStdExecutive);
+    // 	stock.category  = diablo_get_object(ext.category, filterCategory); 
+    // 	stock.specs = [];
+    // 	if (angular.isObject(stock.type) && stock.type.cid !== diablo_invalid_index) {
+    // 	    angular.forEach(filterSizeSpec, function(s) {
+    // 		if (s.cid === stock.type.cid) {
+    // 		    stock.specs.push(s);
+    // 		}
+    // 	    }) 
+    // 	}
 	
-	if (ext.fabric) {
-	    stock.fabrics = angular.fromJson(ext.fabric);
-	    angular.forEach(stock.fabrics, function(f) {
-		var fabric = diablo_get_object(f.f, filterFabric);
-		if (angular.isDefined(fabric) && angular.isObject(fabric)) {
-		    f.name = fabric.name; 
-		    f.way = diablo_get_object(stockUtils.to_integer(f.w), diablo_waynodes);
-		}
-	    });
-	}
+    // 	if (ext.fabric) {
+    // 	    stock.fabrics = angular.fromJson(ext.fabric);
+    // 	    angular.forEach(stock.fabrics, function(f) {
+    // 		var fabric = diablo_get_object(f.f, filterFabric);
+    // 		if (angular.isDefined(fabric) && angular.isObject(fabric)) {
+    // 		    f.name = fabric.name; 
+    // 		    f.way = diablo_get_object(stockUtils.to_integer(f.w), diablo_waynodes);
+    // 		}
+    // 	    });
+    // 	}
 
-	if (ext.feather) {
-	    stock.feathers = angular.fromJson(ext.feather); 
-	}
+    // 	if (ext.feather) {
+    // 	    stock.feathers = angular.fromJson(ext.feather); 
+    // 	}
 
-	return stock;
-    };
+    // 	return stock;
+    // };
 
     var print_one_barcode = function(barcode, stock, template) {
 	console.log(stock);
@@ -1185,7 +1185,13 @@ function purchaserInventoryNewUpdateCtrlProvide (
 			    // console.log(one);
 			    var index = get_index_of_ext_stock(one, exts);
 			    var ext = exts[index];
-			    one = impl_ext_stock(one, ext); 
+			    one = stockUtils.impl_ext_stock(
+				one,
+				ext,
+				filterStdExecutive,
+				filterCategory,
+				filterSizeSpec,
+				filterFabric); 
 			    print_one_barcode(ext.barcode, one, select_template)
 			}
 		    }
@@ -1210,7 +1216,13 @@ function purchaserInventoryNewUpdateCtrlProvide (
 	    ).then(function(result) {
 		console.log(result);
 		if (result.ecode === 0) {
-		    inv = impl_ext_stock(inv, result); 
+		    inv = stockUtils.impl_ext_stock(
+			inv,
+			result,
+			filterStdExecutive,
+			filterCategory,
+			filterSizeSpec,
+			filterFabric); 
 		    print_one_barcode(result.barcode, inv, template);
 		} else {
 		    dialog.response(

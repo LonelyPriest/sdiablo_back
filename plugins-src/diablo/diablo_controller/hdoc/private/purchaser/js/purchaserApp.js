@@ -285,7 +285,9 @@ function stockConfg(angular){
 	    when('/inventory/inventory_rsn_detail/transfer_from/:rsn?', {
 		templateUrl: '/private/purchaser/html/purchaser_inventory_transfer_from_rsn_detail.html',
 	        controller: 'purchaserInventoryTransferFromRsnDetailCtrl',
-		resolve: angular.extend({}, user, shop, brand, type, firm, s_group, color, base)
+		resolve: angular.extend(
+		    {}, user, shop, brand, type, firm, s_group, color,
+		    std_executive, safety_category, fabric, size_spec, ptemplate, base)
             }).
 	    // adjust price
 	    when('/inventory_price', {

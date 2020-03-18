@@ -750,7 +750,7 @@ inventory({group_detail, MatchMode}, {Merchant, UTable}, Conditions, PageFun) ->
 	++ ?table:t(stock, Merchant, UTable) ++ " a"
 	++ " left join shops b on a.shop=b.id"
 	" left join" ++ ?table:t(good_extra, Merchant, UTable) ++ " c"
-	" on a.merchant=c.merchant and a.style_number=c.style_number and c.brand=c.brand"
+	" on a.merchant=c.merchant and a.style_number=c.style_number and a.brand=c.brand"
 
 	++ case StockWarning of
 	       1 ->
@@ -1265,7 +1265,8 @@ inventory(fix_rsn_detail, {Merchant, UTable}, Conditions) ->
 
 	" left join colors b on a.color=b.id";
 
-inventory(transfer_rsn_detail, {Merchant, UTable}, Conditions) ->    
+inventory(transfer_rsn_detail, {Merchant, UTable}, Conditions) ->
+    ?DEBUG("transfer_rsn_detail: merchant ~p, Conditions ~p", [Merchant, Conditions]),
     {_StartTime, _EndTime, NewConditions} =
         ?sql_utils:cut(fields_with_prifix, Conditions),
     "select a.rsn"
@@ -1277,8 +1278,8 @@ inventory(transfer_rsn_detail, {Merchant, UTable}, Conditions) ->
 	", a.total as amount"
 	
     %% " from w_inventory_transfer_detail_amount a"
-	" from" ++ ?table:t(stock_transfer_note, Merchant, UTable)
-        ++ " where " ++ ?utils:to_sqls(proplists, NewConditions).
+	" from" ++ ?table:t(stock_transfer_note, Merchant, UTable) ++ " a"
+        " where " ++ ?utils:to_sqls(proplists, NewConditions).
 
 
 
@@ -1560,7 +1561,7 @@ inventory(transfer_rsn_groups, transfer, {Merchant, UTable}, Conditions, PageFun
         ", a.state"
         ", a.check_date as check_date"
     %% " from w_inventory_transfer_detail b, w_inventory_transfer a"
-	" from" ++ ?table:t(stock_transfer_detail, Merchant, note) ++ " b,"
+	" from" ++ ?table:t(stock_transfer_detail, Merchant, UTable) ++ " b,"
 	++ ?table:t(stock_transfer, Merchant, UTable) ++ " a"
         " where "
         ++ ?sql_utils:condition(proplists_suffix, C21)

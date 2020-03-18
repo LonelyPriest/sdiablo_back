@@ -905,7 +905,7 @@ var diablo_find_color = function(cid, allColors){
 	return {cid:cid, bcode:0, cname:""};
     } else{
 	var c = diablo_get_object(cid, allColors);
-	// console.log(c);
+	console.log(c);
 	return {cid:cid, bcode:c.bcode, cname:c.name};
     }
 };

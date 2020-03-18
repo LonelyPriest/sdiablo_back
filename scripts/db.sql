@@ -50,7 +50,7 @@ create table merchants
     type             TINYINT default 0,
     shop_count       INTEGER not null default 0, 
     -- province         TINYINT default -1, -- which province
-    sms_sign         VARCHAR(32) not null default '';
+    sms_sign         VARCHAR(32) not null default '',
     entry_date       DATE,
     deleted          INTEGER default 0, -- 0: no;  1: yes
     unique  key      name (name),
@@ -123,7 +123,7 @@ create table daily_cost
     merchant         INTEGER not null default -1,
     deleted          INTEGER default 0, -- 0: no;  1: yes
     entry_date       DATETIME not null,
-    op_date          DATETIME not null
+    op_date          DATETIME not null,
     primary key      (id),
     key           dk (merchant, shop, cost_class)
 ) default charset=utf8;

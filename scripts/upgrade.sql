@@ -721,7 +721,16 @@ alter table daily_cost modify column entry_date DATE not null default 0;
 
 --2020-03-10
 alter table w_inventory_good add column comment VARCHAR(128) default '' after alarm_a;
-alter table merchants add column unique_table TINYINT not null default -1 after entry_date;
+alter table merchants add column unique_table TINYINT not null default 0 after entry_date;
+drop table w_inventory_print_attr;
+insert into w_inventory_good_extra(style_number, brand, level, executive, category, fabric, feather, merchant, entry_date)
+select style_number, brand, level, executive, category, fabric, feather, merchant, entry_date from w_inventory_good where level!=-1 and category!=-1 and executive!=-1;
+
+alter table w_inventory_good drop column level;
+alter table w_inventory_good drop column executive;
+alter table w_inventory_good drop column category;
+alter table w_inventory_good drop column fabric;
+alter table w_inventory_good drop column feather;
 
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;

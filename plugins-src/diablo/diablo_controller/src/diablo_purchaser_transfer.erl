@@ -623,7 +623,7 @@ cancel_transfer(Merchant, UTable, RSN) ->
      " and merchant=" ++ ?to_s(Merchant),
      
      "delete from" ++ ?table:t(stock_transfer_detail, Merchant, UTable)
-     ++ "where rsn=\'"++ ?to_s(RSN) ++ "\'"
+     ++ " where rsn=\'"++ ?to_s(RSN) ++ "\'"
      ++ " and merchant=" ++ ?to_s(Merchant),
 
      "delete from" ++ ?table:t(stock_transfer, Merchant, UTable)
