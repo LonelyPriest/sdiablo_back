@@ -3434,8 +3434,14 @@ function wsaleNewProvide(
 	var balance = $scope.select.charge;
 	if (balance > 0 &&  balance < diablo_max_pay_scan) {
 	    // var paySpeak = new diabloPaySpeak(); 
-	    // paySpeak.set_text("微信收款" + diablo_set_string(balance) + "元");
-	    paySpeak.speak();
+	    // if (pay_type === diablo_wxin_scan) {
+	    // 	paySpeak.set_text(
+	    // 	    "微信收款" + diablo_set_string(balance) + "元"); 
+	    // } else {
+	    // 	paySpeak.set_text(
+	    // 	    "支付宝收款" + diablo_set_string(balance) + "元"); 
+	    // }
+	    // paySpeak.speak();
 	    dialog.edit_with_modal(
 		"pay-scan.html",
 		undefined,
