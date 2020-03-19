@@ -93,7 +93,7 @@ url_match(post, Payload) ->
 	++ register_e(wsale,      ?w_sale_request, Payload) 
 	++ register_e(firm,       ?firm_request, Payload)
 	++ register_e(wretailer,  ?w_retailer_request, Payload) 
-	++ register_e(purchaser,  ?w_inventory_request, Payload)
+	++ register_e(purchaser,  ?w_inventory_request, Payload) 
 	++ register_e(wprint,     ?w_print_request, Payload) 
 	++ register_e(wgood,      ?w_good_request, Payload)
 	++ register_e(wreport,    ?w_report_request, Payload) 

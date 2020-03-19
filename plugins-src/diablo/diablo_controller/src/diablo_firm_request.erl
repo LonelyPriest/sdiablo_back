@@ -75,7 +75,7 @@ action(Session, Req, {"new_firm"}, Payload) ->
     end;
 
 action(Session, Req, {"delete_firm"}, Payload) ->
-    ?DEBUG("update frim with session ~p,  paylaod ~p", [Session, Payload]), 
+    ?DEBUG("delete frim with session ~p,  paylaod ~p", [Session, Payload]), 
     Merchant = ?session:get(merchant, Session),
     UTable = ?session:get(utable, Session),
     
@@ -173,12 +173,13 @@ action(Session, Req, {"update_brand"}, Payload) ->
 action(Session, Req, {"bill_w_firm"}, Payload) ->
     ?DEBUG("bill_w_firm with session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable  = ?session:get(utable, Session),
     FirmId = ?v(<<"firm">>, Payload),
     Datetime = ?v(<<"datetime">>, Payload),
     %% check time
     case ?supplier:bill(check_time, Merchant, {FirmId, Datetime}) of
 	{ok, check} -> 
-	    case ?supplier:supplier(bill, Merchant, Payload) of
+	    case ?supplier:supplier(bill, {Merchant, UTable}, Payload) of
 		{ok, FirmId} ->
 		    ?w_user_profile:update(firm, Merchant), 
 		    ?utils:respond(200, Req, ?succ(bill_firm, FirmId));
@@ -192,11 +193,13 @@ action(Session, Req, {"bill_w_firm"}, Payload) ->
 action(Session, Req, {"update_bill_w_firm"}, Payload) ->
     ?DEBUG("update_bill_w_firm with session ~p, payload ~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable  = ?session:get(utable, Session),
+    
     BillRSN  = ?v(<<"rsn">>, Payload),
 
     try
-	{ok, OldBill} = ?supplier:bill(lookup, Merchant, [{<<"rsn">>, BillRSN}]), 
-	case ?supplier:supplier(update_bill, Merchant, {Payload, OldBill}) of
+	{ok, OldBill} = ?supplier:bill(lookup, {Merchant, UTable}, [{<<"rsn">>, BillRSN}]), 
+	case ?supplier:supplier(update_bill, {Merchant, UTable}, {Payload, OldBill}) of
 	    {ok, RSN} ->
 		?w_user_profile:update(firm, Merchant), 
 		?utils:respond(200, Req, ?succ(update_bill_check, RSN));
@@ -225,10 +228,11 @@ action(Session, Req, {"abandon_w_firm_bill"}, Payload) ->
     
     RSN = ?v(<<"rsn">>, Payload),
     
-    case ?supplier:bill(lookup, Merchant, [{<<"rsn">>, RSN}]) of
+    case ?supplier:bill(lookup, {Merchant, UTable}, [{<<"rsn">>, RSN}]) of
 	{ok, []} ->
 	    ?utils:respond(200, Req, ?err(supplier_bill_not_exist, RSN));
 	{ok, TheBill} ->
+	    %% ?DEBUG("TheBill ~p", [TheBill]),
 	    BillId  = ?v(<<"id">>, TheBill),
 	    StockId = ?v(<<"sid">>, TheBill),
 	    State   = ?v(<<"state">>, TheBill),
@@ -259,8 +263,9 @@ action(Session, Req, {"abandon_w_firm_bill"}, Payload) ->
 action(Session, Req, {"get_firm_bill"}, Payload) ->
     ?DEBUG("get_firm_bill with session ~p, paylaod~n~p", [Session, Payload]),
     Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session), 
     ?utils:respond(
-       object, fun() -> ?supplier:bill(lookup, Merchant, Payload) end, Req); 
+       object, fun() -> ?supplier:bill(lookup, {Merchant, UTable}, Payload) end, Req); 
 
 action(Session, Req, {"filter_firm_bill_detail"}, Payload) -> 
     ?DEBUG("filter_firm_bill_detail with session ~p, paylaod~n~p",
@@ -448,7 +453,7 @@ action(Session, Req, {"analysis_profit_w_firm"}, Payload) ->
 action(Session, Req, {"export_firm_profit"}, Payload) ->
     ?DEBUG("export_firm_profit: session ~p, payload ~p", [Session, Payload]),
     Merchant    = ?session:get(merchant, Session),
-    UTable      = ?session:get(utils, Session),
+    UTable      = ?session:get(utable, Session),
     UserId      = ?session:get(id, Session),
     
     {struct, Conditions} = ?v(<<"condition">>, Payload), 

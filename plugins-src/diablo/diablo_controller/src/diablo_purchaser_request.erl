@@ -979,7 +979,7 @@ action(Session, Req, {"w_inventory_export"}, Payload) ->
 	    trans_note ->
 		{struct, CutConditions} = ?v(<<"condition">>, Payload),
 		{ok, Q} = ?w_inventory:purchaser_inventory(
-			     get_inventory_new_rsn, Merchant, UTable, CutConditions),
+			     get_inventory_new_rsn, {Merchant, UTable}, CutConditions),
 		{struct, C} =
 		    ?v(<<"fields">>,
 		       filter_condition(
@@ -1012,14 +1012,14 @@ action(Session, Req, {"w_inventory_export"}, Payload) ->
 	    ?utils:respond(200, Req, ?err(wsale_export_none, Merchant));
 	{ok, Transes} ->
 	    %% write to file 
-	    {ok, ExportFile, Url}
-		= ?utils:create_export_file("itrans", Merchant, UserId), 
+	    {ok, ExportFile, Url} = ?utils:create_export_file("itrans", Merchant, UserId), 
 	    %% case ExportColorSize =:= 1 andalso ExportType =:=stock of
 	    case ExportColorSize =:= ?YES
 		andalso (ExportType =:= stock orelse ExportType =:= shift_note) of 
 		true ->
 		    case ExportType of
 			stock ->
+			    %% ?DEBUG("export stock_note", []),
 			    case export(
 				   stock_note,
 				   {Merchant, UTable},
@@ -1031,6 +1031,7 @@ action(Session, Req, {"w_inventory_export"}, Payload) ->
 				    ?utils:respond(200, Req, Error)
 			    end; 
 			shift_note ->
+			    %% ?DEBUG("export shift_note", []),
 			    case export(
 				   shift_note,
 				   {Merchant, UTable},
@@ -1681,8 +1682,11 @@ print_inventory_new(sort_by_color, {K1, K2, K3} = K, [H|T], DictNote, Acc) ->
     end.
 
 
-export(stock_note, Merchant, Conditions, {UseMode, Transes, File, Url, ExportCode, ShowOrgPrice}) ->
-    case ?w_inventory:export(stock_note, Merchant, Conditions, UseMode) of
+export(stock_note,
+       {Merchant, UTable},
+       Conditions,
+       {UseMode, Transes, File, Url, ExportCode, ShowOrgPrice}) ->
+    case ?w_inventory:export(stock_note, {Merchant, UTable}, Conditions, UseMode) of
 	[] ->
 	    {error, ?err(wsale_export_none, Merchant)};
 	{ok, StockNotes} ->
@@ -1741,7 +1745,7 @@ export(shift_note,
     case ?w_inventory:export(shift_note_color_size, {Merchant, UTable}, [{<<"rsn">>, RSNs}], UseMode) of
 	[] ->
 	    {error, ?err(wsale_export_none, Merchant)};
-	{ok, ShiftNotes} -> 
+	{ok, ShiftNotes} ->
 	    {ok, Colors} = ?w_user_profile:get(color, Merchant),
 	    {ok, Shops}  = ?w_user_profile:get(shop, Merchant),
 	    {ok, Brands} = ?w_user_profile:get(brand, Merchant),

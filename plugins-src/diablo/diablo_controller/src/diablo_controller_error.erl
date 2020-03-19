@@ -673,9 +673,13 @@ error(sms_center_not_found, Merchant) ->
 error(sms_not_enought_blance, Merchant) ->
     {2502, "there is not enought balance of merchant: " ++ ?to_s(Merchant)};
 error(sms_rate_not_found, Merchant) ->
-    {2503, "SMS rate does not found: " ++ ?to_s(Merchant)}; 
+    {2503, "SMS rate does not found: " ++ ?to_s(Merchant)};
+error(sms_template_not_found, Merchant) ->
+    {2597, "faile to get zz SMS template: " ++ ?to_s(Merchant)};
+error(sms_http_failed, Reason) ->
+    {2598, "faile to request SMS: " ++ ?to_s(Reason)};
 error(sms_send_failed, Reason) ->
-    {2599, "aile to send SMS: " ++ ?to_s(Reason)};
+    {2599, "aili to send SMS: " ++ ?to_s(Reason)};
 
 %% batch saler
 error(batch_saler_exist, Name) ->

@@ -186,7 +186,7 @@ purchaser_inventory(list_fix_detail, {Merchant, UTable}, Conditions) ->
 
 %% trace
 purchaser_inventory(trace_new, {Merchant, UTable}, Conditions) ->
-    purchaser_inventory(list_new_detail, Merchant, UTable, Conditions);
+    purchaser_inventory(list_new_detail, {Merchant, UTable}, Conditions);
 purchaser_inventory(trace_transfer, {Merchant, UTable}, Conditions) ->
     Name = ?wpool:get(?MODULE, Merchant), 
     gen_server:call(Name, {trace_transfer, Merchant, UTable, Conditions});
@@ -1160,7 +1160,8 @@ handle_call({match_inventory, Merchant, UTable, StyleNumber, Shop}, _Form, State
     %% 		    _ -> ?w_good_sql:realy_shop(Merchant, Shop)
     %% 		end,
     
-    Sql = ?w_good_sql:inventory_match(Merchant, UTable, StyleNumber, Shop, []),
+    Sql = ?w_good_sql:inventory_match(Merchant, UTable, StyleNumber, Shop),
+    ?DEBUG("sql ~p", [Sql]),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
 
@@ -1171,7 +1172,7 @@ handle_call({match_inventory, Merchant, UTable, StyleNumber, Shop, Firm}, _Form,
     %% 		    1 -> ?w_good_sql:realy_shop(true, Merchant, Shop);
     %% 		    _ -> ?w_good_sql:realy_shop(Merchant, Shop)
     %% 		end,
-    %% RealyShop = realy_shop(Merchant, Shop),
+    %% RealyShop = ?w_good_sql:realy_shop(Merchant, Shop),
     Sql = ?w_good_sql:inventory_match(Merchant, UTable, StyleNumber, Shop, Firm),
     Reply =  ?sql_utils:execute(read, Sql),
     {reply, Reply, State};

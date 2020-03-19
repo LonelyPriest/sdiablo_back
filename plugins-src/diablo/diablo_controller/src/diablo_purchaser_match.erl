@@ -45,7 +45,7 @@ match_stock(by_shop, Merchant, UTable, ShopIds, StartTime, Promot) ->
 	", b.name as brand" 
 	", c.name as type"
     %%" from w_inventory a"
-	" from" ++ ?table:t(stock, Merchant, UTable) 
+	" from" ++ ?table:t(stock, Merchant, UTable) ++ " a"
 	++ " left join brands b on a.brand=b.id" 
 	" left join inv_types c on a.type=c.id"
 

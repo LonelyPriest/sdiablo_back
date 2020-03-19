@@ -358,7 +358,9 @@ action(Session, Req, {"stock_stastic"}, Payload) ->
 
 action(Session, Req, {"print_wreport", Type}, Payload) -> 
     ?DEBUG("print_wreport with session ~p, type ~p, payload~n~p",[Session, Type, Payload]),
-    Merchant = ?session:get(merchant, Session), 
+    Merchant = ?session:get(merchant, Session),
+    UTable = ?session:get(utable, Session),
+    
     {struct, Content}  = ?v(<<"content">>, Payload), 
     ShopId     = ?v(<<"shop">>, Content),
     StartDate  = ?v(<<"date">>, Content),
@@ -427,9 +429,9 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
 
     DropConditions = lists:keydelete(<<"account">>, 1 ,lists:keydelete(<<"employ">>, 1, Conditions)),
     
-    {ok, SaleInfo} = ?w_report:stastic(stock_sale, Merchant, ConditionsWithAccount), 
-    {ok, StockIn}  = ?w_report:stastic(stock_in, Merchant, DropConditions),
-    {ok, StockOut} = ?w_report:stastic(stock_out, Merchant, DropConditions),
+    {ok, SaleInfo} = ?w_report:stastic(stock_sale, Merchant, UTable, ConditionsWithAccount), 
+    {ok, StockIn}  = ?w_report:stastic(stock_in, Merchant, UTable, DropConditions),
+    {ok, StockOut} = ?w_report:stastic(stock_out, Merchant, UTable, DropConditions),
     {ok, Recharges} = case ?w_report:stastic(recharge, Merchant, DropConditions) of
 			  {ok, []} -> {ok, []};
 			  {ok, [{_Recharges}]} -> {ok, _Recharges}
@@ -440,7 +442,9 @@ action(Session, Req, {"print_wreport", Type}, Payload) ->
     %% {ok, StockTransferOut} = ?w_report:stastic(stock_transfer_out, Merchant, Conditions),
     %% {ok, StockFix} = ?w_report:stastic(stock_fix, Merchant, Conditions), 
     {ok, StockR} = ?w_report:stastic(
-		      stock_real, Merchant,
+		      stock_real,
+		      Merchant,
+		      UTable,
 		      [{<<"shop">>, ShopId}
 		       %% {<<"start_time">>, get_config(<<"qtime_start">>, BaseSettings)}
 		      ]),

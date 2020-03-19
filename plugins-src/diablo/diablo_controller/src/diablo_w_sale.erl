@@ -1317,7 +1317,7 @@ handle_call({total_rsn_group, MatchMode, Merchant, UTable, Conditions}, _From, S
     %% " from w_sale_detail b, w_sale a"
 	" from "
 	++ ?table:t(sale_detail, Merchant, UTable) ++ " b,"
-	++ ?table:t(sale_new, Merchant, UTable) ++ "a" 
+	++ ?table:t(sale_new, Merchant, UTable) ++ " a" 
     	" where "
     %% ++ ?sql_utils:condition(proplists_suffix, CorrectCutDConditions)
 	++ "b.merchant=" ++ ?to_s(Merchant)
@@ -1600,9 +1600,9 @@ handle_call({total_employee_evaluation, Merchant, UTable, Conditions}, _From, St
     {reply, Reply, State};
 
 handle_call({filter_employee_evaluation,
-	     {Merchant, UTable},
-	     Conditions,
-	     CurrentPage, ItemsPerPage}, _From, State) ->
+	     Merchant,
+	     UTable,
+	     CurrentPage, ItemsPerPage, Conditions}, _From, State) ->
     ?DEBUG("filter_employee_evaluation:merchant ~p, conditions ~p, page ~p", [Merchant, Conditions, CurrentPage]),
     SortConditions = sort_condition(wsale, Merchant, Conditions),
     Sql = 
@@ -1707,7 +1707,8 @@ handle_call({filter_pay_scan, Merchant, CurrentPage, ItemsPerPage, Conditions}, 
     Reply = ?sql_utils:execute(read, Sql),
     {reply, Reply, State};
     
-handle_call(_Request, _From, State) ->
+handle_call(Request, _From, State) ->
+    ?DEBUG("unkown request ~p", [Request]),
     Reply = ok,
     {reply, Reply, State}.
 

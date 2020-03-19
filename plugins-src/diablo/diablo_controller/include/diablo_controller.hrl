@@ -103,6 +103,13 @@
 -define(TICKET_DISCARD_ONE, 0).
 -define(TICKET_DISCARD_ALL, 1).
 
+
+%% sale action
+-define(NORMAL_CHARGE, 0).
+-define(NORMAL_SALE, 1).
+-define(NORMAL_REJECT_SALE, 2).
+-define(NORMAL_TICKET, 3).
+
 %% bill mode
 -define(CASH, 0).
 -define(CARD, 1).

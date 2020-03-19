@@ -84,7 +84,7 @@ action(Session, Req, {"delete_w_good"}, Payload) ->
     StyleNumber = ?v(<<"style_number">>, Payload),
     Brand = ?v(<<"brand">>, Payload),
 
-    case ?w_inventory:purchaser_good(used, Merchant, StyleNumber, Brand) of
+    case ?w_inventory:purchaser_good(used, {Merchant, UTable}, StyleNumber, Brand) of
 	{ok, Details} ->
 	    ?DEBUG("details ~p", [Details]),
 	    Shops = lists:foldr(

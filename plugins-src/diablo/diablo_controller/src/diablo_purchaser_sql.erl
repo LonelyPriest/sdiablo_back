@@ -167,7 +167,7 @@ good_new(Merchant, UTable, UseZero, GetShop, Attrs) ->
 		 ++ ?to_s(StdExecutive) ++ ","
 		 ++ ?to_s(SafetyCategory) ++ ","
 		 ++ "\'" ++ ?to_s(Fabric) ++ "\',"
-		 ++ "\'" ++ ?to_s(Feather) ++ "\'"
+		 ++ "\'" ++ ?to_s(Feather) ++ "\',"
 		 ++ ?to_s(Merchant) ++ ")"];
 	    false -> []
 	end,
@@ -294,8 +294,12 @@ good(delete, {Merchant, UTable}, {StyleNumber, Brand}) ->
      "delete from" ++ ?table:t(good, Merchant, UTable)
      ++ " where merchant=" ++ ?to_s(Merchant)
      ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
-     ++ " and brand=" ++ ?to_s(Brand)
-    ];
+     ++ " and brand=" ++ ?to_s(Brand),
+
+     "delete from" ++ ?table:t(good_extra, Merchant, UTable)
+     ++ " where merchant=" ++ ?to_s(Merchant)
+     ++ " and style_number=\'" ++ ?to_s(StyleNumber) ++ "\'"
+     ++ " and brand=" ++ ?to_s(Brand)];
 
 good(detail, {Merchant, UTable}, Conditions) ->
     {StartTime, EndTime, NewConditions} =
@@ -1737,6 +1741,7 @@ inventory_match(of_in, Merchant, UTable, Shop, Ins) ->
 	++ " limit " ++ ?to_s(P);
 
 inventory_match(Merchant, UTable, StyleNumber, Shop, Firm) ->
+    ?DEBUG("Merchant ~p, StyleNumber ~p, Shop ~p, Firm ~p", [Merchant, StyleNumber, Shop, Firm]),
     P = ?w_retailer:get(prompt, Merchant),
 
     "select a.id"
@@ -1769,11 +1774,16 @@ inventory_match(Merchant, UTable, StyleNumber, Shop, Firm) ->
 	", c.name as type"
     %% " from w_inventory a"
 	" from" ++ ?table:t(stock, Merchant, UTable) ++ " a"
-	++ " left join brands b on a.brand=b.id" 
+	" left join brands b on a.brand=b.id" 
 	" left join inv_types c on a.type=c.id"
 
 	" where a.merchant=" ++ ?to_s(Merchant) 
-	++ " and a.shop=" ++ ?to_s(Shop)
+    %% ++ " and a.shop=" ++ ?to_s(Shop)
+	++ case Shop of
+	       [] -> [];
+	       _ ->
+		  ?sql_utils:condition(proplists, [{<<"shop">>, Shop}])
+	   end
 	++ case Firm of
 	       [] -> [];
 	       -1 -> [];

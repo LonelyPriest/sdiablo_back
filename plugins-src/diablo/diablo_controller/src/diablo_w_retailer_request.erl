@@ -1064,7 +1064,13 @@ action(Session, Req, {"gift_ticket"}, Payload) ->
 			catch
 			    _:{badmatch, _Error} ->
 				?INFO("failed to send sms phone:~p, merchant ~p, Error ~p",
-				      [RetailerId, Merchant, _Error]),
+				      [RetailerPhone, Merchant, _Error]),
+
+				Report = ["web request failed", _Error,
+					  {trace, erlang:get_stacktrace()}],
+				%% ?DEBUG("Request failed: ~p ", [Report]),
+				?ERROR("Request failed: ~p", [Report]),
+				
 				?utils:respond(200, Req, ?err(sms_send_failed, Merchant))
 			end;
 		    {error, Error} ->

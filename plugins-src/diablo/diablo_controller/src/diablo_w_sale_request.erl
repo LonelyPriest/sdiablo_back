@@ -701,7 +701,7 @@ action(Session, Req, {"reject_w_sale"}, Payload) ->
 						   NewProps = lists:keydelete(<<"tbatch">>, 1, Props),
 						   start(reject_w_sale,
 							 Req,
-							 Merchant,
+							 {Merchant, UTable},
 							 Invs,
 							 NewProps ++ [{<<"tbatch">>, [Batch]}])
 					   end;
@@ -717,7 +717,7 @@ action(Session, Req, {"reject_w_sale"}, Payload) ->
 					      ?err(more_ticket_consume, Batchs))
 				   end;
 			       _ ->
-				   start(reject_w_sale, Req, Merchant, Invs, Props)
+				   start(reject_w_sale, Req, {Merchant, UTable}, Invs, Props)
 			   end
 				
 		    end 
@@ -801,7 +801,8 @@ action(Session, Req, {"filter_w_sale_rsn_group"}, Payload) ->
 			     end, [], Data),
 		    %% note
 		    {ok, SaleNotes} = ?w_sale:export(
-					 trans_note_color_size, Merchant,
+					 trans_note_color_size,
+					 {Merchant, UTable},
 					 [{<<"rsn">>, Rsns}]),
 		    NoteDict = sale_note(to_dict_with_rsn, SaleNotes, dict:new()),
 
@@ -856,7 +857,7 @@ action(Session, Req, {"filter_employee_evaluation"}, Payload) ->
 	       ?w_sale:filter(employee_evaluation,
 			      Match,
 			      {Merchant, UTable},
-			      Conditions, CurrentPage, ItemsPerPage)
+			      CurrentPage, ItemsPerPage, Conditions)
        end, Req, Payload);
 
 action(Session, Req, {"list_wsale_group_by_style_number"}, Payload) ->
@@ -939,7 +940,7 @@ action(Session, Req, {"w_sale_export"}, Payload) ->
 	case ExportType of
 	    trans_note ->
 		{struct, CutConditions} = ?v(<<"condition">>, Payload),
-		{ok, Q} = ?w_sale:sale(get_rsn, Merchant, CutConditions),
+		{ok, Q} = ?w_sale:sale(get_rsn, {Merchant, UTable}, CutConditions),
 		{struct, C} =
 		    ?v(<<"fields">>,
 		       ?w_inventory_request:filter_condition(

@@ -9,7 +9,11 @@
 -define(zz_sms_password, <<"dLZJfzK5Mc7a9d">>).
 
 init_sms() ->
-    Sqls= [<<"insert into zz_sms_template(merchant, type, content) values(-1, 0, \'会员提醒：欢迎光临{$var}，本次{$var}成功，消费金额{$var}，当前余额{$var}，累计积分{$var}，感谢您的惠顾！！\')">>],
+    Sqls= [
+	   %% <<"insert into zz_sms_template(merchant, type, content) values(-1, 0, \'会员提醒：欢迎光临{$var}，本次{$var}成功，消费金额{$var}，当前余额{$var}，累计积分{$var}，感谢您的惠顾！！\')">>
+	   <<"insert into zz_sms_template(merchant, type, content) values(-1, 3, \'尊敬的VIP：欢迎光临{$var}，现赠与总价值{$var}元的优惠券{$var}张，{$var}天激活后可使用，请保管好该信息并及时消费。\')">>,
+	   <<"insert into zz_sms_template(merchant, type, content) values(15, 3, \'尊敬的VIP，现赠予总价值{$var}元的优惠券{$var}张，{$var}天后激活可在钻石女人、艾莱依、E主题、波司登、千仞岗使用！\')">>
+	  ],
     ?sql_utils:execute(transaction, Sqls, ok).
     
 
@@ -221,25 +225,91 @@ sms(promotion, Merchant, Phone) ->
     start_sms(Merchant, Phone, SMSTemplate, []);
 
 sms(ticket, {Merchant, Shop, Retailer, Phone}, {Balance, Count, MinEffect}) ->
-    {SMSTemplate, SMSParams} = 
-	case Merchant of
-	    15 -> {"SMS_170835177",
-		   ?to_s(ejson:encode(
-			   {[{<<"m">>, ?to_b(Balance)},
-			     {<<"d">>, ?to_b(Count)},
-			     {<<"day">>, ?to_b(MinEffect)}
-			    ]}))};
-	    _ ->
-		{"SMS_168285336",
-		 ?to_s(ejson:encode(
-			{[{<<"shop">>, Shop},
-			  {<<"user">>, Retailer},
-			  {<<"money">>, ?to_b(Balance)},
-			  {<<"count">>, ?to_b(Count)}
-			 ]}))}
+    ?DEBUG("sms ticket: merchant ~p, retailer ~p, phone ~p, balance ~p, count ~p, effect ~p",
+	  [Merchant, Retailer, Phone, Balance, Count, MinEffect]),
+    %% case check_merchant_balance(zz, Merchant) of
+    %% 	{ok, {Rate, Team, Sign}} ->
+    %% 	    case Team of
+    %% 		0 ->
+    %% 		    {SMSTemplate, SMSParams} = 
+    %% 			case Merchant of
+    %% 			    15 -> {"SMS_170835177",
+    %% 				   ?to_s(ejson:encode(
+    %% 					   {[{<<"m">>, ?to_b(Balance)},
+    %% 					     {<<"d">>, ?to_b(Count)},
+    %% 					     {<<"day">>, ?to_b(MinEffect)}
+    %% 					    ]}))};
+    %% 			    _ ->
+    %% 				{"SMS_168285336",
+    %% 				 ?to_s(ejson:encode(
+    %% 					 {[{<<"shop">>, Shop},
+    %% 					   {<<"user">>, Retailer},
+    %% 					   {<<"money">>, ?to_b(Balance)},
+    %% 					   {<<"count">>, ?to_b(Count)}
+    %% 					  ]}))}
+    %% 			end,
+    %% 		    start_sms(Merchant, Phone, SMSTemplate, SMSParams);
+    %% 		1 -> 
+    %% 		    case get_sms_template(zz, ?NORMAL_TICKET, Merchant) of
+    %% 			{ok, Template} ->
+    %% 			    Params = string:strip(?to_s(Phone))
+    %% 				++ "," ++ ?to_s(Shop) 
+    %% 				++ "," ++ ?to_s(Balance)
+    %% 				++ "," ++ ?to_s(Count)
+    %% 				++ "," ++ ?to_s(MinEffect),
+    %% 			    ?DEBUG("params ~ts", [?to_b(Params)]),
+
+    %% 			    case send_sms(zz, Sign, Phone, Params, Template) of
+    %% 				{ok, {sms_send, Phone}} ->
+    %% 				    reset_merchant_balance(zz, Merchant, Rate),
+    %% 				    {?SUCCESS, Merchant};
+    %% 				{error, SendError} -> SendError
+    %% 			    end;
+    %% 			{error, GetTemplateError} ->
+    %% 			    GetTemplateError
+    %% 		    end
+    %% 	    end;
+    %% 	{error, CheckBalanceError} -> CheckBalanceError
+    %% end,
+
+    Callback =
+	fun() ->
+		{SMSTemplate, SMSParams} = 
+		    case Merchant of
+			15 -> {"SMS_170835177",
+			       ?to_s(ejson:encode(
+				       {[{<<"m">>, ?to_b(Balance)},
+					 {<<"d">>, ?to_b(Count)},
+					 {<<"day">>, ?to_b(MinEffect)}
+					]}))};
+			_ ->
+			    {"SMS_168285336",
+			     ?to_s(ejson:encode(
+				     {[{<<"shop">>, Shop},
+				       {<<"user">>, Retailer},
+				       {<<"money">>, ?to_b(Balance)},
+				       {<<"count">>, ?to_b(Count)}
+				      ]}))}
+		    end,
+		start_sms(Merchant, Phone, SMSTemplate, SMSParams)
 	end,
-    start_sms(Merchant, Phone, SMSTemplate, SMSParams);
     
+    ZZParams =
+	case Merchant of
+	    15 -> string:strip(?to_s(Phone))
+		      ++ "," ++ ?to_s(Balance)
+		      ++ "," ++ ?to_s(Count)
+		      ++ "," ++ ?to_s(MinEffect);
+	    _ ->
+		string:strip(?to_s(Phone))
+		    ++ "," ++ ?to_s(Shop) 
+		    ++ "," ++ ?to_s(Balance)
+		    ++ "," ++ ?to_s(Count)
+		    ++ "," ++ ?to_s(MinEffect)
+	end,
+    ?DEBUG("params ~ts", [?to_b(ZZParams)]),
+    rocket_sms_send(zz, Merchant, ?NORMAL_TICKET, Phone, ZZParams, Callback);
+		
 sms(charge, {Merchant, Name, Phone}, Balance) ->
     {ok, MerchantInfo} = ?w_user_profile:get(merchant, Merchant),
     %% ?DEBUG("smsrate ~p", [SMSRate]), 
@@ -577,13 +647,28 @@ zz_sms(send) ->
 	    {error, {http_failed, Reason}}
     end.
 
+
+get_sms_template(zz, Action, Merchant) ->
+    case ?w_user_profile:get(sms_template, Merchant) of
+	{ok, []} -> {error, ?err(sms_template_not_found, Merchant)};
+	{ok, Templates} ->
+	    case get_sms_template(zz, Action, Merchant, Templates) of
+		[] ->
+		    {error, ?err(sms_template_not_found, Merchant)};
+		[Template] ->
+		    ?DEBUG("template ~p", [Template]),
+		    {ok, Template}
+	    end
+    end.
+
 get_sms_template(zz, Action, Merchant, Templates) ->
     ?DEBUG("Action ~p, Merchant ~p, Templates ~p", [Action, Merchant, Templates]),
     case [ T || {T} <- Templates,
 	       case Action of
-		   0 -> ?v(<<"type">>, T ) =:= 0; %% charge
-		   1 -> ?v(<<"type">>, T) =:= 0; %% consume
-		   2 -> ?v(<<"type">>, T) =:= 2  %% ticket
+		   ?NORMAL_CHARGE -> ?v(<<"type">>, T) =:= 0; %% charge
+		   ?NORMAL_SALE -> ?v(<<"type">>, T) =:= 0;  %% sale
+		   ?NORMAL_REJECT_SALE -> ?v(<<"type">>, T) =:= 0;  %% reject sale
+		   ?NORMAL_TICKET -> ?v(<<"type">>, T) =:= 3   %% ticket
 	       end] of
 	FTemplates ->
 	    ?DEBUG("FTemplates ~p", [FTemplates]),
@@ -596,9 +681,92 @@ get_sms_template(zz, Action, Merchant, Templates) ->
 	    end
     end.
 	
-	
+check_merchant_balance(zz, Merchant) ->
+    case ?w_user_profile:get(merchant, Merchant) of
+	{ok, []} -> {error, ?err(sms_rate_not_found, Merchant)};
+	{ok, MerchantInfo} ->
+	    ?DEBUG("MerchantInfo ~p", [MerchantInfo]),
+	    MerchantBalance = ?v(<<"balance">>, MerchantInfo),	
+	    Rate = ?v(<<"sms_rate">>, MerchantInfo),
+	    ?DEBUG("sms rate ~p, MerchantBalance ~p", [Rate, MerchantBalance]),
+	    case Rate > MerchantBalance of
+		true  -> {error, ?err(sms_not_enought_blance, Merchant)};
+		false ->
+		    {ok, {Rate,
+			  ?v(<<"sms_team">>, MerchantInfo),
+			  ?v(<<"sms_sign">>, MerchantInfo)}}
+	    end;
+	_Error ->
+	    {error, ?err(sms_rate_not_found, Merchant)}
+    end.
 
-    
+send_sms(zz, Phone, Sign, MsgParams, SMSTemplate) ->
+    Content = ?v(<<"content">>, SMSTemplate),
+    Msg = case Sign == <<>> orelse Sign == [] of
+	      true -> <<"【钱掌柜】", Content/binary>>;
+	      false -> <<Sign/binary, Content/binary>>
+	  end,
+    SMSParams = ?to_s(ejson:encode({[{<<"account">>, ?zz_sms_account},
+				     {<<"password">>,?zz_sms_password},
+				     {<<"msg">>, Msg},
+				     {<<"params">>, ?to_b(MsgParams)}]})), 
+    UTF8Body = unicode:characters_to_list(SMSParams, utf8),
+    case httpc:request(
+	   post, {"https://smssh1.253.com/msg/variable/json",
+		  [], "application/json;charset=utf-8", UTF8Body}, [], []) of
+	{ok, {{"HTTP/1.1", 200, "OK"}, _Head, Reply}} ->
+	    ?DEBUG("Head ~p", [_Head]),
+	    ?DEBUG("Reply ~ts", [Reply]),
+	    {struct, Result} = mochijson2:decode(Reply),
+	    ?DEBUG("sms result ~p", [Result]),
+	    Code  = ?v(<<"code">>, Result),
+	    ErrorMsg   = ?v(<<"errorMsg">>, Result),
+	    ?DEBUG("code ~p, msg ~ts", [Code, ErrorMsg]),
+	    case ?to_i(Code) == 0 of
+		true -> {ok, Phone};
+		false ->
+		    ?INFO("sms send failed phone ~p, code ~p", [Phone, Code]),
+		    {error, ?err(sms_send_failed, Code)}
+	    end;
+	{error, Reason} ->
+	    {error, ?err(sms_http_failed, Reason)}
+    end.
+
+reset_merchant_balance(zz, Merchant, SMSRatee) ->
+    Sql = "update merchants set balance=balance-" ++ ?to_s(SMSRatee)
+	++ ", sms_send=sms_send+1"
+	++ " where id=" ++ ?to_s(Merchant),
+    case ?sql_utils:execute(write, Sql, Merchant) of
+	{ok, Merchant} ->
+	    ?w_user_profile:update(merchant, Merchant),
+	    {?SUCCESS, Merchant};
+	_Error ->
+	    ?sql_utils:execute(write, Sql, Merchant),
+	    ?w_user_profile:update(merchant, Merchant),
+	    {?SUCCESS, Merchant}
+    end.
+
+rocket_sms_send(zz, Merchant, Action, Phone, MsgParams, TeamCallback) ->
+    case check_merchant_balance(zz, Merchant) of
+	{ok, {Rate, Team, Sign}} ->
+	    case Team of
+		0 -> TeamCallback();
+		1 ->
+		    case get_sms_template(zz, Action, Merchant) of
+			{ok, Template} -> 
+			    case send_sms(zz, Phone, Sign, MsgParams, Template) of
+				{ok, Phone} ->
+				    reset_merchant_balance(zz, Merchant, Rate);
+				{error, SendError} -> SendError
+			    end;
+			{error, GetTemplateError} ->
+			    GetTemplateError
+		    end
+	    end;
+	{error, CheckBalanceError} -> CheckBalanceError
+    end.
+
+
 action(0) -> <<"充值">>;
 action(1) -> <<"消费">>;
 action(2) -> <<"退款">>.

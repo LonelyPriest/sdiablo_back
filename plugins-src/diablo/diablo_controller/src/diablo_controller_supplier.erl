@@ -43,10 +43,10 @@ supplier(w_delete, {Merchant, UTable}, Id) ->
     gen_server:call(?MODULE, {w_delete_supplier, Merchant, UTable, Id});
 supplier(w_update, Merchant, Attrs) ->
     gen_server:call(?MODULE, {w_update_supplier, Merchant, Attrs});
-supplier(bill, Merchant, Attrs) ->
-    gen_server:call(?MODULE, {bill_supplier, Merchant, Attrs});
-supplier(update_bill, Merchant, {Attrs, OldAttrs}) ->
-    gen_server:call(?MODULE, {update_bill_supplier, Merchant, {Attrs, OldAttrs}});
+supplier(bill, {Merchant, UTable}, Attrs) ->
+    gen_server:call(?MODULE, {bill_supplier, Merchant, UTable, Attrs});
+supplier(update_bill, {Merchant, UTable}, {Attrs, OldAttrs}) ->
+    gen_server:call(?MODULE, {update_bill_supplier, Merchant, UTable, {Attrs, OldAttrs}});
 supplier(check_bill, Merchant, Attrs) ->
     gen_server:call(?MODULE, {check_bill_supplier, Merchant, Attrs});
 supplier(abandon_bill, {Merchant, UTable}, Attrs) ->
@@ -81,8 +81,8 @@ filter(vfirm, 'and', Merchant, CurrentPage, ItemsPerPage, Conditions) ->
     gen_server:call(?MODULE, {vfirm_detail,
 			      Merchant, CurrentPage, ItemsPerPage, Conditions}).
 
-bill(lookup, Merchant, Conditions) ->
-    gen_server:call(?MODULE, {bill_lookup, Merchant, Conditions});
+bill(lookup, {Merchant, UTable}, Conditions) ->
+    gen_server:call(?MODULE, {bill_lookup, Merchant, UTable, Conditions});
 bill(check_time, Merchant, {Firm, Datetime}) ->
     gen_server:call(?MODULE, {bill_check_time, Merchant, Firm ,Datetime}).
 
@@ -245,9 +245,10 @@ handle_call({w_delete_supplier, Merchant, UTable, Id}, _From, State) ->
     ?DEBUG("w_delete_supplier with merchant ~p, Id ~p", [Merchant, Id]),
     Sql0 = "select id, firm"
     %% " from w_inventory_new"
+	" from"
 	++ ?table:t(stock_new, Merchant, UTable)
 	++ " where merchant=" ++ ?to_s(Merchant)
-	++ " and id=" ++ ?to_s(Id)
+	++ " and firm=" ++ ?to_s(Id)
 	++ " order by id desc limit 1",
     case ?sql_utils:execute(s_read, Sql0) of
 	{ok, []} ->
