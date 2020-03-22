@@ -1584,7 +1584,7 @@ inventory({group_detail_with_pagination, MatchMode, Mode, Sort},
 	  Conditions, CurrentPage, ItemsPerPage) -> 
     inventory({group_detail, MatchMode}, {Merchant, UTable}, Conditions,
 	fun() ->
-		?sql_utils:condition(page_desc, {Mode, Sort}, CurrentPage, ItemsPerPage)
+		?sql_utils:condition(page_desc, {Mode, Sort, "a."}, CurrentPage, ItemsPerPage)
 	end);
 
 inventory({new_detail_with_pagination, Mode, Sort},

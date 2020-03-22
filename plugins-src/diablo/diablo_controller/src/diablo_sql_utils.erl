@@ -64,48 +64,100 @@ condition(page_desc, CurrentPage, ItemsPerPage) ->
 
 condition(page_desc, {use_id, _Sort}, CurrentPage, ItemsPerPage) ->
     condition(page_desc, CurrentPage, ItemsPerPage);
+condition(page_desc, {use_id, _Sort, Prefix}, CurrentPage, ItemsPerPage) ->
+    " order by " ++ ?to_s(Prefix) ++ "id desc"
+	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
+	++ ", " ++ ?to_s(ItemsPerPage);
+
 condition(page_desc, {use_sell, Sort}, CurrentPage, ItemsPerPage) ->
     " order by sell " ++ ?MODULE:sort(Sort)
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
     	++ ", " ++ ?to_s(ItemsPerPage);
+condition(page_desc, {use_sell, Sort, Prefix}, CurrentPage, ItemsPerPage) ->
+    " order by " ++ ?to_s(Prefix) ++ "sell " ++ ?MODULE:sort(Sort)
+	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
+    	++ ", " ++ ?to_s(ItemsPerPage);
+
+
 condition(page_desc, {use_discount, Sort}, CurrentPage, ItemsPerPage) ->
     " order by discount " ++ ?MODULE:sort(Sort)
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
     	++ ", " ++ ?to_s(ItemsPerPage);
+condition(page_desc, {use_discount, Sort, Prefix}, CurrentPage, ItemsPerPage) ->
+    " order by " ++ ?to_s(Prefix) ++ "discount " ++ ?MODULE:sort(Sort)
+	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
+    	++ ", " ++ ?to_s(ItemsPerPage);
+
+
 condition(page_desc, {use_year, Sort}, CurrentPage, ItemsPerPage) ->
     " order by year " ++ ?MODULE:sort(Sort)
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
     	++ ", " ++ ?to_s(ItemsPerPage);
+condition(page_desc, {use_year, Sort, Prefix}, CurrentPage, ItemsPerPage) ->
+    " order by " ++ ?to_s(Prefix) ++ "year " ++ ?MODULE:sort(Sort)
+	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
+    	++ ", " ++ ?to_s(ItemsPerPage);
+
 condition(page_desc, {use_season, Sort}, CurrentPage, ItemsPerPage) ->
     " order by season " ++ ?MODULE:sort(Sort)
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
     	++ ", " ++ ?to_s(ItemsPerPage);
+condition(page_desc, {use_season, Sort, Prefix}, CurrentPage, ItemsPerPage) ->
+    " order by " ++ ?to_s(Prefix) ++ "season " ++ ?MODULE:sort(Sort)
+	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
+    	++ ", " ++ ?to_s(ItemsPerPage);
+
 condition(page_desc, {use_amount, Sort}, CurrentPage, ItemsPerPage) ->
     " order by amount " ++ ?MODULE:sort(Sort)
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
     	++ ", " ++ ?to_s(ItemsPerPage);
+condition(page_desc, {use_amount, Sort, Prefix}, CurrentPage, ItemsPerPage) ->
+    " order by " ++ ?to_s(Prefix) ++ "amount " ++ ?MODULE:sort(Sort)
+	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
+    	++ ", " ++ ?to_s(ItemsPerPage);
+
 condition(page_desc, {use_style_number, Sort}, CurrentPage, ItemsPerPage) ->
     " order by style_number " ++ ?MODULE:sort(Sort)
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
     	++ ", " ++ ?to_s(ItemsPerPage);
+condition(page_desc, {use_style_number, Sort, Prefix}, CurrentPage, ItemsPerPage) ->
+    " order by " ++ ?to_s(Prefix) ++ "style_number " ++ ?MODULE:sort(Sort)
+	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
+    	++ ", " ++ ?to_s(ItemsPerPage);
+
 condition(page_desc, {use_brand, Sort}, CurrentPage, ItemsPerPage) ->
     " order by brand " ++ ?MODULE:sort(Sort)
+	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage);
+condition(page_desc, {use_brand, Sort, Prefix}, CurrentPage, ItemsPerPage) ->
+    " order by " ++ ?to_s(Prefix) ++ "brand " ++ ?MODULE:sort(Sort)
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
     	++ ", " ++ ?to_s(ItemsPerPage);
+
 condition(page_desc, {use_type, Sort}, CurrentPage, ItemsPerPage) ->
-    " order by a.type " ++ ?MODULE:sort(Sort)
+    condition(page_desc, {use_type, Sort, "a."}, CurrentPage, ItemsPerPage);    
+condition(page_desc, {use_type, Sort, Prefix}, CurrentPage, ItemsPerPage) ->
+    " order by " ++ ?to_s(Prefix) ++ "type " ++ ?MODULE:sort(Sort)
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
     	++ ", " ++ ?to_s(ItemsPerPage);
+
 condition(page_desc, {use_firm, Sort}, CurrentPage, ItemsPerPage) ->
-    " order by a.firm " ++ ?MODULE:sort(Sort)
+    condition(page_desc, {use_firm, Sort, "a."}, CurrentPage, ItemsPerPage);
+condition(page_desc, {use_firm, Sort, Prefix}, CurrentPage, ItemsPerPage) ->
+    " order by " ++ ?to_s(Prefix) ++ "firm " ++ ?MODULE:sort(Sort)
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
     	++ ", " ++ ?to_s(ItemsPerPage);
+
 condition(page_desc, {use_datetime, Sort}, CurrentPage, ItemsPerPage) ->
-    " order by a.entry_date " ++ ?MODULE:sort(Sort)
+    condition(page_desc, {use_datetime, Sort, "a."}, CurrentPage, ItemsPerPage);
+condition(page_desc, {use_datetime, Sort, Prefix}, CurrentPage, ItemsPerPage) ->
+    " order by " ++ ?to_s(Prefix) ++ "entry_date " ++ ?MODULE:sort(Sort)
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
     	++ ", " ++ ?to_s(ItemsPerPage);
+
 condition(page_desc, {use_tag_price, Sort}, CurrentPage, ItemsPerPage) ->
-    " order by a.tag_price " ++ ?MODULE:sort(Sort)
+    condition(page_desc, {use_tag_price, Sort, "a."}, CurrentPage, ItemsPerPage);
+condition(page_desc, {use_tag_price, Sort, Prefix}, CurrentPage, ItemsPerPage) ->
+    " order by " ++ ?to_s(Prefix) ++ "tag_price " ++ ?MODULE:sort(Sort)
 	++ " limit " ++ ?to_s((CurrentPage-1)*ItemsPerPage)
     	++ ", " ++ ?to_s(ItemsPerPage);
 
