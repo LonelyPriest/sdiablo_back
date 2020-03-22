@@ -865,12 +865,15 @@ handle_call({update_good, Merchant, UTable, Attrs, OldAttrs}, _Form, State) ->
 			     "update" ++ ?table:t(good, Merchant, UTable)
 			     ++ " set "
 			     ++ ?utils:to_sqls(proplists, comma, UpdateGood)
-			     ++ " where id=" ++ ?to_s(?v(<<"id">>, G)),
-
-			     "update" ++ ?table:t(good_extra, Merchant, UTable)
-			     ++ " set "
-			     ++ ?utils:to_sqls(proplists, comma, UpdateCategory)
-			     ++ " where " ++ C(false, RStyleNumber(StyleNumber), RBrand(Brand))]
+			     ++ " where id=" ++ ?to_s(?v(<<"id">>, G))]
+				++ GoodExtraFun(
+				     RStyleNumber(StyleNumber),
+				     RBrand(Brand),
+				     UpdateCategory)
+			%% "update" ++ ?table:t(good_extra, Merchant, UTable)
+			%% ++ " set "
+			%% ++ ?utils:to_sqls(proplists, comma, UpdateCategory)
+			%% ++ " where " ++ C(false, RStyleNumber(StyleNumber), RBrand(Brand))]
 		    end,
 		?DEBUG("Sql00 ~p", [Sql00]),
 
