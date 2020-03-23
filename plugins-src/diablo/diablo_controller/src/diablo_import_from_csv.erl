@@ -71,7 +71,7 @@ insert_into_member(Merchant, Datetime, Time, [H|T], Sort, Acc) ->
     {RName, Phone, Shop, Score, Consume, Birth, Date} = H,
     ?DEBUG("H ~p", [H]),
     NewShop = case Shop of
-		  <<>> -> 301;
+		  <<>> -> 307;
 		  _ -> Shop
 	      end,
     NewScore = case Score of
