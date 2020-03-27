@@ -2118,8 +2118,7 @@ function wsaleNewProvide(
 	    $scope.select.ticket_score = 0; 
 	    var sid = $scope.select.ticket_sid;
 	    if ($scope.select.ticket_custom === diablo_score_ticket
-		&& angular.isDefined(sid)
-		&& diablo_invalid_index !== sid) {
+		&& angular.isDefined(sid) && diablo_invalid_index !== sid) {
 		var s = diablo_get_object(sid, $scope.scores);
 		if (angular.isObject(s)) {
 		    $scope.select.ticket_score =
@@ -2573,12 +2572,16 @@ function wsaleNewProvide(
     
     $scope.reset_score = function() {
 	// only score with cash, card, wxin, aliPay
-	if (diablo_no === $scope.setting.draw_score
+	if (diablo_score_only_cash === $scope.setting.draw_score
 	    && ( wsaleUtils.to_float($scope.select.withdraw) !== 0
 		 || wsaleUtils.to_float($scope.select.ticket_balance) !== 0)) {
 	    var pay_orders = $scope.calc_pay_order();
 	    var pay_with_score = pay_orders[2] + pay_orders[3] + pay_orders[4] + pay_orders[5];
 	    $scope.select.score = wsaleUtils.calc_score_of_pay(pay_with_score, $scope.select.pscores);
+	} else if (diablo_score_none === $scope.setting.draw_score
+		   && ( wsaleUtils.to_float($scope.select.withdraw) !== 0
+			|| wsaleUtils.to_float($scope.select.ticket_balance) !== 0)) {
+	    $scope.select.score = 0;
 	}
     };
     

@@ -683,28 +683,53 @@ action(Session, Req, {"reject_w_sale"}, Payload) ->
 			?INVALID_OR_EMPTY ->
 			    start(reject_w_sale, Req, {Merchant, UTable}, Invs, Props);
 			_ ->
-			   case ?v(<<"ticket_batchs">>, Base, []) of
+			   case ?v(<<"tbatch">>, Base, []) of
 			       [] -> 
 				   SaleRsn = ?v(<<"sale_rsn">>, Base, []),
-				   case ?w_retailer:get_ticket(
-					   by_sale, Merchant, SaleRsn, TicketCustom) of
+				   case ?w_retailer:get_ticket(by_sale, Merchant, SaleRsn, TicketCustom) of
 				       {ok, []} -> 
 					   start(reject_w_sale, Req, {Merchant, UTable}, Invs, Props);
 				       {ok, [{OneTicket}]} ->
-					   Batch = ?v(<<"batch">>, OneTicket), 
-					   case ?v(<<"balance">>, OneTicket) /= ?v(<<"ticket">>, Base, 0) of
-					       true -> ?utils:respond(
-							  200,
-							  Req,
-							  ?err(invalid_ticket_balance, Batch));
-					       false ->
-						   NewProps = lists:keydelete(<<"tbatch">>, 1, Props),
+					   Batch = ?v(<<"batch">>, OneTicket),
+					   NewProps = lists:keydelete(<<"tbatch">>, 1, Props), 
+					   case TicketCustom of
+					       ?SCORE_TICKET ->
+						   TicketBalance = ?v(<<"ticket">>, Base, 0),
+						   case calc_ticket_score(
+							  OneTicket, TicketBalance, Merchant) of
+						       {ok_ticket, TicketScore} -> 
+							   start(reject_w_sale,
+								 Req,
+								 {Merchant, UTable},
+								 Invs,
+								 NewProps
+								 ++ [{<<"tbatch">>, [Batch]}]
+								 ++ [{<<"ticket_score">>, TicketScore}]);
+						       {error, TicketError} ->
+							   ?utils:respond(200, Req, TicketError)
+						   end;
+					       ?CUSTOM_TICKET ->
 						   start(reject_w_sale,
 							 Req,
 							 {Merchant, UTable},
 							 Invs,
-							 NewProps ++ [{<<"tbatch">>, [Batch]}])
+							 NewProps
+							 ++ [{<<"tbatch">>, [Batch]}])
 					   end;
+					   %% Batch = ?v(<<"batch">>, OneTicket), 
+					   %% case ?v(<<"balance">>, OneTicket) /= ?v(<<"ticket">>, Base, 0) of
+					   %%     true -> ?utils:respond(
+					   %% 		  200,
+					   %% 		  Req,
+					   %% 		  ?err(invalid_ticket_balance, Batch));
+					   %%     false ->
+					   %% 	   NewProps = lists:keydelete(<<"tbatch">>, 1, Props),
+					   %% 	   start(reject_w_sale,
+					   %% 		 Req,
+					   %% 		 {Merchant, UTable},
+					   %% 		 Invs,
+					   %% 		 NewProps ++ [{<<"tbatch">>, [Batch]}])
+					   %% end;
 				       {ok, MoreTickets} ->
 					   Batchs = 
 					       lists:foldr(
@@ -2118,6 +2143,31 @@ export_type(1) -> trans_note.
 %% 	undefined -> throw({invalid_balance});
 %% 	_ -> inventory(check_style_number, T)
 %%     end.
+
+calc_ticket_score(Ticket, TicketBalance, Merchant) ->
+    case ?w_user_profile:get(score, Merchant) of
+	{ok, Scores} ->
+	    TicketSId = ?v(<<"sid">>, Ticket, ?INVALID_OR_EMPTY), 
+	    case lists:filter(
+		   fun({S})->
+			   ?v(<<"type_id">>, S) =:= 1 andalso ?v(<<"id">>, S) =:= TicketSId
+		   end, Scores) of
+		[] ->
+		    {error, ?err(wsale_invalid_ticket_score, TicketSId)}; 
+		[{Score2Money}] ->
+		    case TicketBalance /= ?v(<<"balance">>, Ticket) of
+			true ->
+			    {error, ?err(wsale_invalid_ticket_balance, TicketBalance)}; 
+			false -> 
+			    AccScore = ?v(<<"score">>, Score2Money), 
+			    Balance = ?v(<<"balance">>, Score2Money),
+			    TicketScore = TicketBalance div Balance * AccScore,
+			    {ok_ticket, TicketScore} 
+		    end 
+	    end;
+	_Error ->
+	    {error, ?err(get_score_profile_filed, Merchant)}
+    end.
 
 start(new_sale, Req, {Merchant, UTable}, Invs, Base, Print) ->
     ImmediatelyPrint = ?v(<<"im_print">>, Print, ?NO),

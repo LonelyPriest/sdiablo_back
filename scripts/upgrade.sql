@@ -732,6 +732,9 @@ alter table w_inventory_good drop column category;
 alter table w_inventory_good drop column fabric;
 alter table w_inventory_good drop column feather;
 
+--2020-03-27
+alter table w_sale add column account INTEGER default -1 after rsn;
+
 --9999-99-99
 alter table merchants add column shop_count integer default -1 after sms_send;
 

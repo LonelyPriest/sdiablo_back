@@ -681,6 +681,10 @@ error(sms_http_failed, Reason) ->
 error(sms_send_failed, Reason) ->
     {2599, "aili to send SMS: " ++ ?to_s(Reason)};
 
+%% profile
+error(get_score_profile_filed, Merchant) ->
+    {6001, "failed to get score profile: " ++ ?to_s(Merchant)};
+
 %% batch saler
 error(batch_saler_exist, Name) ->
     {7001, "batch saler exist: " ++ ?to_s(Name)};

@@ -230,7 +230,11 @@ create_knife_frame(RootPath)->
     lists:foreach(
       fun(NoneScript) ->
     	      os:cmd("rm -f " ++ RootPath ++ "/scripts/" ++ NoneScript)
-      end, ["check_stock_org_price.sql", "drop_table.sh", "send_sms.py", "upgrade.sql"]),
+      end, ["check_stock_org_price.sql",
+	    "drop_table.sh",
+	    "send_sms.py",
+	    "migration_table.sh",
+	    "upgrade.sql"]),
     
     ok.
 

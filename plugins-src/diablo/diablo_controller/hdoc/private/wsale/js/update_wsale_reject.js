@@ -502,10 +502,9 @@ function wsaleUpdateRejectCtrlProvide(
     };
 
     $scope.reset_score = function() {
-	if (diablo_no === $scope.setting.draw_score
+	if (diablo_score_only_cash === $scope.setting.draw_score
 	    && ( wsaleUtils.to_float($scope.select.withdraw) !== 0
-		 || wsaleUtils.to_float($scope.select.ticket) !== 0 )
-	   ) {
+		 || wsaleUtils.to_float($scope.select.ticket) !== 0 )) {
 	    var pay_orders = wsaleCalc.pay_order_of_reject(
 		$scope.select.should_pay, [
 		    $scope.select.ticket,
@@ -516,6 +515,10 @@ function wsaleUpdateRejectCtrlProvide(
 		    $scope.select.cash]);
 	    var pay_with_score = pay_orders[2] + pay_orders[3] + pay_orders[4] + pay_orders[5];
 	    $scope.select.score = wsaleUtils.calc_score_of_pay(pay_with_score, $scope.select.pscores);
+	} else if (diablo_score_only_cash === $scope.setting.draw_score
+		   && ( wsaleUtils.to_float($scope.select.withdraw) !== 0
+			|| wsaleUtils.to_float($scope.select.ticket) !== 0 )) {
+	    $scope.select.score = 0;
 	}
     };
     

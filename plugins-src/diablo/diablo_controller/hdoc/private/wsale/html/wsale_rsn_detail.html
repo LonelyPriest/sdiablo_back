@@ -85,6 +85,7 @@
 		    <thead>
 		      <tr>
 			<th>序号</th>
+			<th>收银员</th>
 			<th x-ng-click="toggle_base()" class="danger">
 			  <span x-ng-if="!hidden.base">
 			    <i class="glyphicon glyphicon-backward fg-red"></i>
@@ -134,7 +135,8 @@
 		    </thead>
 		    <tbody>
 		      <tr ng-repeat="inv in inventories">
-			<td>{{inv.order_id}}</td> 
+			<td>{{inv.order_id}}</td>
+			<td>{{inv.account}}</td> 
 			<td>{{inv.crsn}}</div>
 			</td>
 			

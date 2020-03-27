@@ -101,6 +101,14 @@ var diablo_type_sale = 1;
 var diablo_py_match = 0;
 var diablo_ch_match = 1;
 
+
+/*
+ * score mode
+ */
+var diablo_score_only_cash = 0;
+var diablo_score_any   = 1;
+var diablo_score_none  = 2;
+
 /*
  * ticket
  */

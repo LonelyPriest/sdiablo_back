@@ -1016,7 +1016,7 @@ handle_call({reject_sale, Merchant, UTable, Inventories, Props}, _From, State) -
     Employe    = ?v(<<"employee">>, Props),
 
     %% Balance    = ?v(<<"balance">>, Props), 
-    Comment    = ?v(<<"comment">>, Props, ""),
+    Comment    = ?v(<<"comment">>, Props, []),
     BasePay    = ?v(<<"base_pay">>, Props, 0),
     ShouldPay  = ?v(<<"should_pay">>, Props, 0),
     Cash       = ?v(<<"cash">>, Props, 0),
@@ -1031,7 +1031,8 @@ handle_call({reject_sale, Merchant, UTable, Inventories, Props}, _From, State) -
     Score      = ?v(<<"score">>, Props, 0),
 
     Ticket       = ?v(<<"ticket">>, Props, 0),
-    TicketScore  = ?v(<<"ticket_score">>, Props, 0), 
+    TicketScore  = ?v(<<"ticket_score">>, Props),
+    ?DEBUG("TicketScore ~p", [TicketScore]),
     TicketBatchs = ?v(<<"tbatch">>, Props, []),
     GTicket      = ?v(<<"g_ticket">>, Props, ?NO),
     TicketCustom = ?v(<<"tcustom">>, Props, ?INVALID_OR_EMPTY),
@@ -1163,6 +1164,7 @@ handle_call({reject_sale, Merchant, UTable, Inventories, Props}, _From, State) -
 		    ++ " and rsn=\'" ++ ?to_s(SaleRsn) ++ "\'"
 		   ],
 
+	    ?DEBUG("TicketScore ~p", [TicketScore]),
 	    Sql3 = ["update w_retailer set consume=consume-" ++ ?to_s(ShouldPay)
 		++ case NewWithdraw > 0 of
 		       true -> ", balance=balance+" ++ ?to_s(NewWithdraw);
@@ -1944,7 +1946,7 @@ wsale(update, RSN, Datetime, Merchant, UTable, Shop, Inventory) ->
 			 "delete from"
 			 %% " from w_sale_detail_amount"
 			 ++ ?table:t(sale_note, Merchant, UTable)
-			 ++ " set total=total+" ++ ?to_s(Count)
+			 %% ++ " set total=total+" ++ ?to_s(Count)
 			 ++ " where " ++ C2(Color, Size)
 			 | Acc1];
 		    <<"u">> -> 
@@ -2706,7 +2708,8 @@ sale_new(rsn_groups, MatchMode, {Merchant, UTable}, Conditions, PageFun) ->
 
     CorrectCutDConditions = ?utils:correct_condition(<<"b.">>, CutDCondtions),
 
-    "select b.id, b.rsn"
+    "select b.id"
+	", b.rsn"
 	", b.style_number"
 	", b.brand as brand_id"
 	", b.type as type_id"
@@ -2731,17 +2734,21 @@ sale_new(rsn_groups, MatchMode, {Merchant, UTable}, Conditions, PageFun) ->
 	", b.comment"
 	", b.entry_date"
 
+	", a.account as account_id"
 	", a.shop as shop_id"
 	", a.retailer as retailer_id"
 	", a.employ as employee_id"
 	", a.type as sell_type"
 
 	", c.name as retailer"
+	", d.name as account"
+	
 
     %% " from w_sale_detail b, w_sale a"
 	" from" ++ ?table:t(sale_detail, Merchant, UTable) ++ " b,"
 	++ ?table:t(sale_new, Merchant, UTable) ++ " a"
 	" left join w_retailer c on c.id=a.retailer"
+	" left join users d on d.id=a.account"
 
     	" where "
     %% ++ ?sql_utils:condition(proplists_suffix, CorrectCutDConditions)

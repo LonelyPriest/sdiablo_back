@@ -46,7 +46,7 @@ function wsaleRsnDetailCtrlProvide (
     };
     
     $scope.calc_colspan = function(){
-	var column = 16;
+	var column = 17;
 	if ($scope.setting.show_note)
 	    column += 1;
 	if ($scope.hidden.base)
@@ -151,7 +151,8 @@ function wsaleRsnDetailCtrlProvide (
 	    $scope.shopIds.length === 1 ? $scope.shopIds[0] : [],
 	    $scope.setting.solo_retailer)
     }); 
-    diabloFilter.add_field("employee",  filterEmployee); 
+    diabloFilter.add_field("employee",  filterEmployee);
+    diabloFilter.add_field("account",     []);
     diabloFilter.add_field("sell_type", sell_type);
     diabloFilter.add_field("rsn",       $scope.match_rsn);
     diabloFilter.add_field("org_price", []);
