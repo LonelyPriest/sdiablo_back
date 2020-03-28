@@ -294,7 +294,7 @@ handle_call({new_sale, Merchant, UTable, Inventories, Props}, _From, State) ->
 			++ ?to_s(PayOrder) ++ "," 
 			++ "\'" ++ ?to_s(DateTime) ++ "\');",
 
-		    Sql3 = ["update w_retailer set consume=consume+" ++ ?to_s(ShouldPay)
+		    Sql3 = ["update w_retailer set consume=consume+" ++ ?to_s(ShouldPay - Verificate)
 			    ++ case NewWithdraw =< 0 of
 				   true  -> [];
 				   false -> ", balance=balance-" ++ ?to_s(NewWithdraw)
@@ -1031,8 +1031,7 @@ handle_call({reject_sale, Merchant, UTable, Inventories, Props}, _From, State) -
     Score      = ?v(<<"score">>, Props, 0),
 
     Ticket       = ?v(<<"ticket">>, Props, 0),
-    TicketScore  = ?v(<<"ticket_score">>, Props),
-    ?DEBUG("TicketScore ~p", [TicketScore]),
+    TicketScore  = ?v(<<"ticket_score">>, Props, 0),
     TicketBatchs = ?v(<<"tbatch">>, Props, []),
     GTicket      = ?v(<<"g_ticket">>, Props, ?NO),
     TicketCustom = ?v(<<"tcustom">>, Props, ?INVALID_OR_EMPTY),

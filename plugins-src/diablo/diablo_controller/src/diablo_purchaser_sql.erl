@@ -782,7 +782,7 @@ inventory({group_detail, MatchMode}, {Merchant, UTable}, Conditions, PageFun) ->
 		       [] ->
 			   ?sql_utils:condition(proplists, ?utils:correct_condition(<<"a.">>, RealyConditions, []));
 		       StyleNumber ->
-			   " and style_number like '" ++ ?to_s(StyleNumber) ++ "%'"
+			   " and a.style_number like '" ++ ?to_s(StyleNumber) ++ "%'"
 			       ++ ?sql_utils:condition(
 				     proplists,
 				     ?utils:correct_condition(

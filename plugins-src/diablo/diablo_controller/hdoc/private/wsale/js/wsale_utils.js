@@ -855,6 +855,13 @@ var wsaleCalc = function(){
 
 	    return find;
 	},
+
+	get_valid_price:function(isVip, stock) {
+	    if (!isVip && stock.vir_price > 0 && stock.vir_price > stock.tag_price)
+		return stock.vir_price;
+	    else
+		return stock.tag_price;
+	},
 	
 	calculate: function(isVip,
 			    vipMode,
@@ -871,23 +878,33 @@ var wsaleCalc = function(){
 	    var base_pay     = 0;
 	    var abs_pay      = 0;
 	    var score        = 0;
+	    var valid_price  = 0;
 	    
 	    var vipDiscountMode    = wsaleUtils.to_integer(vipMode.charAt(0));
 	    var vipScoreMode       = wsaleUtils.to_integer(vipMode.charAt(2));
-	    var vipPromotionMode   = wsaleUtils.to_integer(vipMode.charAt(3)); 
+	    // var vipPromotionMode   = wsaleUtils.to_integer(vipMode.charAt(3));
+	    var scoreDiscountPerStock = wsaleUtils.to_integer(vipMode.charAt(3)); 
 
 	    var stocksSortWithPromotion = [];
-	    for (var i=0, l=inventories.length; i<l; i++){
+	    for (var i=0, l=inventories.length; i<l; i++) {
 		var one = inventories[i];
+		valid_price = wsaleCalc.get_valid_price(isVip, one);
 		if ( (angular.isDefined(one.select) && !one.select) || one.has_rejected) continue;
 
 		if (one.o_fprice !== one.fprice) {
-		    one.fdiscount = diablo_discount(one.fprice, one.tag_price); 
+		    // one.fdiscount = diablo_discount(one.fprice, one.tag_price);
+		    one.fdiscount = diablo_discount(one.fprice, valid_price);
+		    
 		} else if (one.o_fdiscount !== one.fdiscount) {
-		    if (one.tag_price == 0) {
+		    // if (one.tag_price == 0) {
+		    // 	one.fprice = diablo_price(one.fprice, one.fdiscount); 
+		    // } else {
+		    // 	one.fprice = diablo_price(one.tag_price, one.fdiscount); 
+		    // }
+		    if (valid_price == 0) {
 		    	one.fprice = diablo_price(one.fprice, one.fdiscount); 
 		    } else {
-		    	one.fprice = diablo_price(one.tag_price, one.fdiscount); 
+		    	one.fprice = diablo_price(valid_price, one.fdiscount); 
 		    }
 		} else {
 		    if (one.state !== 3 && !one.$update && diablo_sale === saleMode) {
@@ -904,8 +921,10 @@ var wsaleCalc = function(){
 		    // promotion on discount
 		    if (pm.rule_id === 0) {
 			angular.forEach(s.stocks, function(stock) {
-			    stock.fdiscount = stock.discount < pm.discount ? stock.discount : pm.discount;
-			    stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
+			    stock.fdiscount = stock.discount < pm.discount ? stock.discount : pm.discount; 
+			    // stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
+			    valid_price = wsaleCalc.get_valid_price(isVip, stock);
+			    stock.fprice = diablo_price(valid_price, stock.fdiscount);
 			})
 		    } 
 		    else if (pm.rule_id === 1) {
@@ -913,13 +932,17 @@ var wsaleCalc = function(){
 			var uPrice = 0; 
 			angular.forEach(s.stocks, function(stock) {
 			    count = wsaleCalc.get_inventory_count(stock, saleMode);
+			    valid_price = wsaleCalc.get_valid_price(isVip, stock);
 			    if (pm.prule_id === 0) {
-				uPrice = diablo_price(stock.tag_price, stock.discount);
+				// uPrice = diablo_price(stock.tag_price, stock.discount);
+				uPrice = diablo_price(valid_price, stock.discount);
 			    } else if (pm.prule_id === 1) {
-				uPrice = stock.tag_price;
+				// uPrice = stock.tag_price;
+				uPrice = stock.valid_price;
 			    } 
 			    totalPay += uPrice * count; 
-			    payAll += stock.tag_price * count;
+			    // payAll += stock.tag_price * count;
+			    payAll += stock.valid_price * count;
 			}); 
 			totalPay = wsaleUtils.to_decimal(totalPay);
 
@@ -953,8 +976,10 @@ var wsaleCalc = function(){
 				stock.fdiscount = wsaleUtils.to_decimal(stock.discount - vdiscount); 
 			    } else if (pm.prule_id === 1) {
 				stock.fdiscount = wsaleUtils.to_decimal(diablo_full_discount - vdiscount); 
-			    }
-			    stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
+			    } 
+			    // stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
+			    valid_price = wsaleCalc.get_valid_price(isVip, stock);
+			    stock.fprice = diablo_price(valid_price, stock.fdiscount);
 			}); 
 		    }
 		    
@@ -963,14 +988,17 @@ var wsaleCalc = function(){
 
 			var orderStocks = [];
 			angular.forEach(s.stocks, function(stock) {
-			    var uPrice = stock.tag_price;
+			    valid_price = wsaleCalc.get_valid_price(isVip, stock);
+			    // var uPrice = stock.tag_price;
+			    var uPrice = valid_price;
 			    if (pm.prule_id === 0) {
-				uPrice = diablo_price(stock.tag_price, stock.discount);
+				uPrice = diablo_price(valid_price, stock.discount);
 			    }
 			    var mCount =  wsaleCalc.get_inventory_count(stock, saleMode);
 			    totalPay += uPrice * mCount;
 			    count    += mCount; 
-			    payAll   += stock.tag_price * mCount;
+			    // payAll   += stock.tag_price * mCount;
+			    payAll   += valid_price * mCount;
 			    orderStocks.push({price:uPrice, count:mCount});
 			});
 			totalPay = wsaleUtils.to_decimal(totalPay);
@@ -1017,8 +1045,10 @@ var wsaleCalc = function(){
 			    } else {
 				stock.fdiscount = stock.discount;
 				stocksNoWithM2N.push(stock);
-			    } 
-			    stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
+			    }
+			    // stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
+			    valid_price = wsaleCalc.get_valid_price(isVip, stock);
+			    stock.fprice = diablo_price(valid_price, stock.fdiscount);
 			}); 
 		    }
 		    
@@ -1043,7 +1073,9 @@ var wsaleCalc = function(){
 			    } else {
 				stock.fdiscount = stock.discount;
 			    }
-			    stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
+			    // stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
+			    valid_price = wsaleCalc.get_valid_price(isVip, stock);
+			    stock.fprice = diablo_price(valid_price, stock.fdiscount);
 			}); 
 		    } 
 		    else if (pm.rule_id === 4) {
@@ -1051,9 +1083,12 @@ var wsaleCalc = function(){
 			var c = 0;
 			angular.forEach(s.stocks, function(stock) {
 			    c = wsaleCalc.get_inventory_count(stock, saleMode);
-			    count += c
-			    totalPay += diablo_price(stock.tag_price, stock.discount) * c;
-			    payAll += stock.tag_price * c;
+			    count += c 
+			    // totalPay += diablo_price(stock.tag_price, stock.discount) * c;
+			    // payAll += stock.tag_price * c;
+			    valid_price = wsaleCalc.get_valid_price(isVip, stock);
+			    totalPay += diablo_price(valid_price, stock.discount) * c;
+			    payAll += valid_price * c;
 			}); 
 			
 			var scounts = pm.scount.split(diablo_semi_seperator);
@@ -1074,17 +1109,22 @@ var wsaleCalc = function(){
 			    
 			    angular.forEach(s.stocks, function(stock) {
 				stock.fdiscount = wsaleUtils.to_decimal(diablo_full_discount - vdiscount);
+				valid_price = wsaleCalc.get_valid_price(isVip, stock);
 				if (pm.prule_id === 0) {
-				    stock.fprice = diablo_price(diablo_price(stock.tag_price, stock.discount), stock.fdiscount);
+				    // stock.fprice = diablo_price(diablo_price(stock.tag_price, stock.discount), stock.fdiscount);
+				    stock.fprice = diablo_price(diablo_price(valid_price, stock.discount), stock.fdiscount);
 				}
 				else if (pm.prule_id ===1) {
-				    stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
+				    // stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
+				    stock.fprice = diablo_price(valid_price, stock.fdiscount);
 				}
 			    }); 
 			} else {
 			    angular.forEach(s.stocks, function(stock) {
 				stock.fdiscount = stock.discount;
-				stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
+				valid_price = wsaleCalc.get_valid_price(isVip, stock);
+				// stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
+				stock.fprice = diablo_price(valid_price, stock.fdiscount);
 			    });
 			} 
 		    }
@@ -1112,25 +1152,33 @@ var wsaleCalc = function(){
 			    for (var i=0, l=s.stocks.length; i<l; i++) {
 				var stock = s.stocks[i];
 				c = wsaleCalc.get_inventory_count(s.stocks[i], saleMode);
-				payAll += stock.tag_price * c;
+				valid_price = wsaleCalc.get_valid_price(isVip, stock);
+				// payAll += stock.tag_price * c;
+				payAll += valid_price * c;
 				rmoney += average * c; 
 			    } 
 			    vdiscount = diablo_discount(payAll - rmoney, payAll);
 			    angular.forEach(s.stocks, function(stock) {
 				stock.fdiscount = wsaleUtils.to_decimal(diablo_full_discount - vdiscount);
-				stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
+				valid_price = wsaleCalc.get_valid_price(isVip, stock);
+				// stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
+				stock.fprice = diablo_price(valid_price, stock.fdiscount);
 			    }); 
 			} else {
 			    angular.forEach(s.stocks, function(stock) {
 				stock.fdiscount = stock.discount;
-				stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
+				valid_price = wsaleCalc.get_valid_price(isVip, stock);
+				// stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
+				stock.fprice = diablo_price(valid_price, stock.fdiscount);
 			    });
 			}
 		    } 
 		} else {
 		    angular.forEach(s.stocks, function(stock) {
 			stock.fdiscount = stock.discount;
-			stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
+			valid_price = wsaleCalc.get_valid_price(isVip, stock);
+			// stock.fprice = diablo_price(stock.tag_price, stock.fdiscount);
+			stock.fprice = diablo_price(valid_price, stock.fdiscount);
 		    }); 
 		}
 	    });
@@ -1158,7 +1206,9 @@ var wsaleCalc = function(){
 			    // one.fprice = diablo_price(one.tag_price, one.fdiscount);
 			}
 
-			one.fprice = diablo_price(one.tag_price, one.fdiscount);
+			valid_price = wsaleCalc.get_valid_price(isVip, stock);
+			// one.fprice = diablo_price(one.tag_price, one.fdiscount);
+			one.fprice = diablo_price(valid_price, one.fdiscount);
 		    } 
 		}
 	    }
@@ -1167,7 +1217,13 @@ var wsaleCalc = function(){
 	    for (var i=0, l=inventories.length; i<l; i++) {
 		var one = inventories[i];
 		var count = wsaleCalc.get_inventory_count(one, saleMode);
-		var valid_price =  one.vir_price > one.tag_price ? one.vir_price : one.tag_price;
+		
+		// var valid_price =  one.vir_price > one.tag_price ? one.vir_price : one.tag_price;
+		// var valid_price = one.tag_price;
+		// if (!isVip && one.tag_price < one.vir_price) {
+		//     valid_price = one.vir_price;
+		// }
+		valid_price = wsaleCalc.get_valid_price(isVip, one);
 
 		total      += wsaleUtils.to_integer(count);
 		abs_total  += Math.abs(wsaleUtils.to_integer(count));
@@ -1211,11 +1267,14 @@ var wsaleCalc = function(){
 	    // console.log(should_pay);
 
 	    // reset score
-	    if (score_discount!==0) {
+	    if (wsaleUtils.to_integer(score_discount) !== 0) {
 		pscores = [];
 		for (var i=0, l=inventories.length; i<l; i++) {
-		    var one = inventories[i]; 
-		    if (diablo_discount(one.rprice, one.tag_price) >= score_discount) {
+		    var one = inventories[i];
+		    valid_price = wsaleCalc.get_valid_price(isVip, one);
+		    // if (diablo_discount(one.rprice, one.tag_price) >= score_discount) {
+		    
+		    if (diablo_discount(one.rprice, valid_price) >= score_discount) {
 			if (one.sid !== diablo_invalid_index){
 			    pscores = wsaleUtils.sort_score(one.score, one.promotion, one.calc, pscores);
 			}
